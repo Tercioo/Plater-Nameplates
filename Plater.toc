@@ -1,0 +1,11 @@
+## Interface: 70000
+## Title: Plater
+## Notes: Config the new name plates
+## SavedVariables: PlaterDB
+## SavedVariablesPerCharacter: PlaterDBChr
+
+#@no-lib-strip@
+libs\libs.xml
+#@end-no-lib-strip@
+
+Plater.lua
