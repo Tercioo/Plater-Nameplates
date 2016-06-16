@@ -21,6 +21,7 @@ local CompareBit = bit.band
 local UnitIsPlayer = UnitIsPlayer
 local UnitClassification = UnitClassification
 local UnitDetailedThreatSituation = UnitDetailedThreatSituation
+local UnitAura = UnitAura
 
 local abs = math.abs
 local format = string.format
@@ -90,6 +91,7 @@ local default_config = {
 				cast_incombat = {80, 12},
 				mana = {100, 3},
 				mana_incombat = {100, 3},
+				buff_frame_y_offset = 10,
 				
 				actorname_text_spacing = 10,
 				actorname_text_size = 10,
@@ -137,6 +139,7 @@ local default_config = {
 				cast_incombat = {134, 12},
 				mana = {100, 3},
 				mana_incombat = {100, 3},
+				buff_frame_y_offset = 0,
 				
 				actorname_text_spacing = 12,
 				actorname_text_size = 12,
@@ -188,6 +191,7 @@ local default_config = {
 				cast_incombat = {100, 12},
 				mana = {100, 3},
 				mana_incombat = {100, 3},
+				buff_frame_y_offset = 0,
 				
 				actorname_text_spacing = 10,
 				actorname_text_size = 10,
@@ -278,6 +282,7 @@ local default_config = {
 				cast_incombat = {134, 12},
 				mana = {100, 3},
 				mana_incombat = {100, 3},
+				buff_frame_y_offset = 0,
 				
 				actorname_text_spacing = 12,
 				actorname_text_size = 11,
@@ -329,6 +334,8 @@ local default_config = {
 				cast_incombat = {140, 12},
 				mana = {100, 3},
 				mana_incombat = {100, 3},
+				buff_frame_y_offset = 0,
+				
 				actorname_text_spacing = 10,
 				actorname_text_size = 10,
 				actorname_text_font = "Arial Narrow",
@@ -473,6 +480,11 @@ local UNITREACTION_HOSTILE = 3
 local UNITREACTION_NEUTRAL = 4
 local UNITREACTION_FRIENDLY = 5
 
+local FILTER_DEBUFFS_BANNED = {}
+local FILTER_BUFFS_BANNED = {}
+local ALL_DEBUFFS = {}
+local ALL_BUFFS = {}
+
 --> copied from blizzard code
 local function IsPlayerEffectivelyTank()
 	local assignedRole = UnitGroupRolesAssigned ("player");
@@ -612,6 +624,11 @@ function Plater.OnInit (self)
 
 	--configuração do personagem
 	PlaterDBChr = PlaterDBChr or {first_run = {}}
+	PlaterDBChr.debuffsBanned = PlaterDBChr.debuffsBanned or {}
+	PlaterDBChr.buffsBanned = PlaterDBChr.buffsBanned or {}
+	
+	FILTER_DEBUFFS_BANNED = PlaterDBChr.debuffsBanned
+	FILTER_BUFFS_BANNED = PlaterDBChr.buffsBanned
 	
 	--verifica se é a primeira vez que rodou o addon no personagem
 	local check_first_run = function()
@@ -662,7 +679,9 @@ function Plater.OnInit (self)
 			else
 				local reaction = UnitReaction ("player", unit);
 				if (reaction and reaction <= 4) then
-					filter = "HARMFUL|INCLUDE_NAME_PLATE_ONLY|PLAYER";
+					filter = "HARMFUL|PLAYER"; --"HARMFUL|INCLUDE_NAME_PLATE_ONLY|PLAYER"
+				elseif (reaction and reaction > 4) then
+					filter = "HELPFUL|PLAYER";
 				else
 					filter = "NONE";
 				end
@@ -672,6 +691,53 @@ function Plater.OnInit (self)
 		end
 	end
 	InstallOverride (NPF_Name, Plater.DriverFuncNames.OnAuraUpdate, Override_UNIT_AURA_EVENT)
+	
+	local BUFF_MAX_DISPLAY = BUFF_MAX_DISPLAY
+	local CooldownFrame_Set = CooldownFrame_Set
+	local Override_UpdateBuffs = function (self, unit, filter)
+		self.unit = unit;
+		self.filter = filter;
+		self:UpdateAnchor();
+		for i = 1, BUFF_MAX_DISPLAY do
+			if (filter == "NONE" and self.buffList[i]) then
+				self.buffList[i]:Hide();
+				return;
+			end
+			local name, rank, texture, count, debuffType, duration, expirationTime, caster, _, nameplateShowPersonal, spellId, _, _, _, nameplateShowAll = UnitAura (unit, i, filter);
+			--retirada essa funcao  e apenas ira verificar o nome por enquanto
+			--if (self:ShouldShowBuff(name, caster, nameplateShowPersonal, nameplateShowAll, duration)) then
+			if (name and not FILTER_DEBUFFS_BANNED [spellId] and not FILTER_BUFFS_BANNED [spellId]) then
+				if (not self.buffList[i]) then
+					self.buffList[i] = CreateFrame ("Frame", self:GetParent():GetName() .. "Buff" .. i, self, "NameplateBuffButtonTemplate");
+					self.buffList[i]:SetMouseClickEnabled(false);
+				end
+				local buff = self.buffList[i];
+				buff:SetID(i);
+				buff.name = name;
+				buff.layoutIndex = i;
+				buff.Icon:SetTexture(texture);
+				if (count > 1) then
+					buff.CountFrame.Count:SetText(count);
+					buff.CountFrame.Count:Show();
+				else
+					buff.CountFrame.Count:Hide();
+				end
+				
+				CooldownFrame_Set (buff.Cooldown, expirationTime - duration, duration, duration > 0, true);
+				
+				buff:Show();
+			else
+				if (self.buffList[i]) then
+					self.buffList[i]:Hide();
+				end
+			end
+		end
+		self:Layout();
+	end
+	--NameplateBuffContainerMixin.UpdateBuffs = Override_UpdateBuffs
+	InstallOverride (NPB_Name, Plater.DriverFuncNames.OnUpdateBuffs, Override_UpdateBuffs)
+	--buffcontainermixin é diferente de nameplate frame mixin
+	
 	
 	--sobrepõe a função, economiza processamento uma vez que o resultado da função original não é usado
 	local Override_UNIT_AURA_ANCHORUPDATE = function (self)
@@ -1593,7 +1659,7 @@ function Plater.UpdatePlateSize (plateFrame)
 		buffFrame.Point2 = "bottom"
 		buffFrame.Anchor = healthFrame
 		buffFrame.X = 0
-		buffFrame.Y = -11	
+		buffFrame.Y = -11 + plateConfigs.buff_frame_y_offset
 		buffFrame:SetPoint (buffFrame.Point1, buffFrame.Anchor, buffFrame.Point2, buffFrame.X, buffFrame.Y)
 
 	elseif (order == 2) then
@@ -1639,7 +1705,7 @@ function Plater.UpdatePlateSize (plateFrame)
 		buffFrame.Point2 = "bottom"
 		buffFrame.Anchor = castFrame
 		buffFrame.X = 0
-		buffFrame.Y = -1
+		buffFrame.Y = -1 + plateConfigs.buff_frame_y_offset
 		buffFrame:SetPoint (buffFrame.Point1, buffFrame.Anchor, buffFrame.Point2, buffFrame.X, buffFrame.Y)
 		
 	elseif (order == 3) then
@@ -1690,7 +1756,7 @@ function Plater.UpdatePlateSize (plateFrame)
 		buffFrame.Point2 = "top"
 		buffFrame.Anchor = healthFrame
 		buffFrame.X = 0
-		buffFrame.Y = (buffFrameSize / 3) + 1
+		buffFrame.Y = (buffFrameSize / 3) + 1 + plateConfigs.buff_frame_y_offset
 		buffFrame:SetPoint (buffFrame.Point1, buffFrame.Anchor, buffFrame.Point2, buffFrame.X, buffFrame.Y)
 		
 		--mana
@@ -2394,7 +2460,7 @@ function Plater.OpenOptionsPanel()
 	local options_switch_template = DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_TEMPLATE")
 	local options_slider_template = DF:GetTemplate ("slider", "OPTIONS_SLIDER_TEMPLATE")
 	local options_button_template = DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE")
-
+	
 --	local f = CreateFrame ("frame", "PlaterOptionsPanel", UIParent)
 	Plater.db.profile.OptionsPanelDB = Plater.db.profile.OptionsPanelDB or {}
 	
@@ -2404,7 +2470,7 @@ function Plater.OpenOptionsPanel()
 	f:SetPoint ("center", UIParent, "center", 0, 0)
 	local profile = Plater.db.profile
 	
-	local frameConfigNames = {"Friendly Player", "Enemy Player", "Friendly Npc", "Enemy Npc", "Player Health Bar"}
+	local frameConfigNames = {"Friendly Player", "Enemy Player", "Friendly Npc", "Enemy Npc", "Player Health Bar", "Ignore Auras"}
 	local frameConfigShowEnableBox = {false, false, true, false}
 	
 	--home panel (main panel)
@@ -2421,12 +2487,17 @@ function Plater.OpenOptionsPanel()
 	local feedbackButton = DF:CreateButton (mainFrame, Plater.OpenFeedbackWindow, 100, 50, "Forum Thread\n\nPost Feedback", nil, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
 	feedbackButton:SetPoint ("topleft", mainFrame, "topleft", 380, -40)
 	
+	local help_config_text = DF:CreateLabel (mainFrame, "Click on those portraits\nto see individual options\n>>>>>>>", 12, "orange")
+	help_config_text:SetPoint ("topleft", mainFrame, "topleft", 370, -100)
+	help_config_text.align = ">"
+	
 	--constroi os frames dos 4 sub menus
 	local friendlyPCsFrame = CreateFrame ("frame", "$parentFriendlyPCsFrame", f)
 	local friendlyNPCsFrame = CreateFrame ("frame", "$parentFriendlyNPCsFrame", f)
 	local enemyPCsFrame = CreateFrame ("frame", "$parentEnemyPCsFrame", f)
 	local enemyNPCsFrame = CreateFrame ("frame", "$parentEnemyNPCsFrame", f)
 	local personalPlayerFrame = CreateFrame ("frame", "$parentPersonalPlayerFrame", f)
+	local auraFilterFrame = CreateFrame ("frame", "$parentAuraFilterFrame", f)
 
 	mainFrame:SetAllPoints()
 	friendlyPCsFrame:SetAllPoints()
@@ -2434,9 +2505,10 @@ function Plater.OpenOptionsPanel()
 	enemyPCsFrame:SetAllPoints()
 	enemyNPCsFrame:SetAllPoints()
 	personalPlayerFrame:SetAllPoints()
+	auraFilterFrame:SetAllPoints()
 	
 	-- coloca os frames em uma tabela
-	local subMenuFrames = {friendlyPCsFrame, enemyPCsFrame, friendlyNPCsFrame, enemyNPCsFrame, personalPlayerFrame}
+	local subMenuFrames = {friendlyPCsFrame, enemyPCsFrame, friendlyNPCsFrame, enemyNPCsFrame, personalPlayerFrame, auraFilterFrame}
 	local subMenuButton = {}
 	
 	local startX, startY, heightSize = 10, -90, 630
@@ -2509,6 +2581,8 @@ function Plater.OpenOptionsPanel()
 
 	--constroi o botao de config para a barra do player
 	local playerConfigButton = DF:CreateButton (mainFrame, select_menu, 70, 20, "config", 5, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
+	local auraConfigButton = DF:CreateButton (mainFrame, select_menu, 160, 60, "CONFIG AURAS\nAdd auras to Ignore List", 6, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
+	auraConfigButton:SetPoint ("topleft", mainFrame, "topleft", 350, -160)
 	
 	--controi os 4 botões para as opções dos frames
 	local subMenuImages = [[Interface\AddOns\Plater\images\platetypes]]
@@ -2796,6 +2870,7 @@ function Plater.OpenOptionsPanel()
 	table.sort (health_selection_overlay_options, function (t1, t2) return t1.label < t2.label end)
 	--
 	
+
 -------------------------------------------------------------------------------
 --opções do painel de interface da blizzard
 
@@ -2911,6 +2986,162 @@ local interface_options = {
 DF:BuildMenu (interfaceOptions, interface_options, 0, 0, 300 + 20, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)	
 
 playerConfigButton:SetPoint ("left", interfaceOptions.widget_list [2], "right", 2, 0)
+
+-------------------------------------------------------------------------------
+-- painel para configurar debuffs e buffs
+
+local welcomestring = DF:CreateLabel (auraFilterFrame, "Cast spells to fill buffs and debuffs\nlist from the combat log", 16, "orange")
+welcomestring:SetPoint ("topleft", self, "topleft", 10, -110)
+
+
+local ResetWidgets = function (self)
+	for _, widget in ipairs (self.widgets) do 
+		widget:Hide()
+	end
+	self.nextWidget = 1
+end
+
+local GetOrCreateWidget = function (self)
+	local index = self.nextWidget
+	local widget = self.widgets [index]
+	if (not widget) then
+		widget = DF:CreateButton (self, function()end, 160, 20, "", nil, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
+		tinsert (self.widgets, widget)
+	end
+	self.nextWidget = self.nextWidget + 1
+	return widget
+end
+
+local RefreshWidgets = function (self)
+	self:ResetWidgets()
+	for spellid, _ in pairs (self.spells) do
+		local widget = self:GetOrCreateWidget()
+		widget:SetPoint ("topleft", self, "topleft", 0, -20*(self.nextWidget-1))
+		widget:SetClickFunction (self.func, spellid)
+		local spellname, _, spellicon = GetSpellInfo (spellid)
+		widget:SetIcon (spellicon, 20, 20)
+		widget:SetText (spellname)
+		widget:Show()
+	end
+end
+
+--widgets do debuff
+	--lista do combat log
+	local debuffs_list = CreateFrame ("frame", nil, auraFilterFrame)
+	local name = DF:CreateLabel (debuffs_list, "Debuffs", 12, "orange")
+	local name2 = DF:CreateLabel (debuffs_list, "click to add to ignore list", 10, "white")
+	name:SetPoint ("bottomleft", debuffs_list, "topleft")
+	name2:SetPoint ("topleft", name, "bottomleft", 0, -1)
+	--lista dos ja banidos
+	local debuffs_added_list = CreateFrame ("frame", nil, auraFilterFrame)
+	local name = DF:CreateLabel (debuffs_added_list, "Debuffs Ignored", 12, "orange")
+	local name2 = DF:CreateLabel (debuffs_list, "click to remove from ignore list", 10, "white")
+	name:SetPoint ("bottomleft", debuffs_added_list, "topleft")
+	name2:SetPoint ("topleft", name, "bottomleft", 0, -1)
+
+	--lista do combat log
+	debuffs_list:SetSize (200, 400)
+	debuffs_list.widgets = {}
+	debuffs_list.spells = ALL_DEBUFFS
+	debuffs_list.func = function (self, button, spellid)
+		if (not FILTER_DEBUFFS_BANNED [spellid]) then
+			FILTER_DEBUFFS_BANNED [spellid] = true
+			debuffs_added_list:RefreshWidgets()
+		end
+	end
+	debuffs_list.ResetWidgets = ResetWidgets
+	debuffs_list.GetOrCreateWidget = GetOrCreateWidget
+	debuffs_list.RefreshWidgets = RefreshWidgets
+	debuffs_list.nextWidget = 1
+
+	--lista dos ja banidos
+	debuffs_added_list:SetSize (200, 400)
+	debuffs_added_list.widgets = {}
+	debuffs_added_list.spells = FILTER_DEBUFFS_BANNED
+	debuffs_added_list.func = function (self, button, spellid)
+		FILTER_DEBUFFS_BANNED [spellid] = nil
+		debuffs_added_list:RefreshWidgets()
+	end
+	debuffs_added_list.ResetWidgets = ResetWidgets
+	debuffs_added_list.GetOrCreateWidget = GetOrCreateWidget
+	debuffs_added_list.RefreshWidgets = RefreshWidgets
+	debuffs_added_list.nextWidget = 1
+
+--widgets do buff
+	--lista do combat log
+	local buffs_list = CreateFrame ("frame", nil, auraFilterFrame)
+	local name = DF:CreateLabel (buffs_list, "Buffs", 12, "orange")
+	local name2 = DF:CreateLabel (buffs_list, "click to add to ignore list", 10, "white")
+	name:SetPoint ("bottomleft", buffs_list, "topleft")
+	name2:SetPoint ("topleft", name, "bottomleft", 0, -1)
+	--lista dos ja banidos
+	local buffs_added_list = CreateFrame ("frame", nil, auraFilterFrame)
+	local name = DF:CreateLabel (buffs_added_list, "Buffs Ignored", 12, "orange")
+	local name2 = DF:CreateLabel (buffs_list, "click to remove from ignore list", 10, "white")
+	name:SetPoint ("bottomleft", buffs_added_list, "topleft")
+	name2:SetPoint ("topleft", name, "bottomleft", 0, -1)
+
+	--lista do combat log
+	buffs_list:SetSize (200, 400)
+	buffs_list.widgets = {}
+	buffs_list.spells = ALL_BUFFS
+	buffs_list.func = function (self, button, spellid)
+		if (not FILTER_BUFFS_BANNED [spellid]) then
+			FILTER_BUFFS_BANNED [spellid] = true
+			buffs_added_list:RefreshWidgets()
+		end
+	end
+	buffs_list.ResetWidgets = ResetWidgets
+	buffs_list.GetOrCreateWidget = GetOrCreateWidget
+	buffs_list.RefreshWidgets = RefreshWidgets
+	buffs_list.nextWidget = 1
+
+	--lista dos ja banidos
+	buffs_added_list:SetSize (200, 400)
+	buffs_added_list.widgets = {}
+	buffs_added_list.spells = FILTER_BUFFS_BANNED
+	buffs_added_list.func = function (self, button, spellid)
+		FILTER_BUFFS_BANNED [spellid] = nil
+		buffs_added_list:RefreshWidgets()
+	end
+	buffs_added_list.ResetWidgets = ResetWidgets
+	buffs_added_list.GetOrCreateWidget = GetOrCreateWidget
+	buffs_added_list.RefreshWidgets = RefreshWidgets
+	buffs_added_list.nextWidget = 1
+	
+--seta os pontos
+debuffs_list:SetPoint ("topleft", auraFilterFrame, "topleft", 10, -200)
+debuffs_added_list:SetPoint ("topleft", auraFilterFrame, "topleft", 440, -200)
+buffs_list:SetPoint ("topleft", auraFilterFrame, "topleft", 220, -200)
+buffs_added_list:SetPoint ("topleft", auraFilterFrame, "topleft", 660, -200)
+
+local readCombatLog = CreateFrame ("frame", nil, auraFilterFrame)
+readCombatLog:SetScript ("OnEvent", function (self, event, time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellid, spellname, spellschool, auraType, amount)
+	if (auraType == "BUFF" and sourceGUID == readCombatLog.playerGUID) then
+		if (not ALL_BUFFS [spellid]) then
+			ALL_BUFFS [spellid] = true
+			buffs_list:RefreshWidgets()
+		end
+	elseif (auraType == "DEBUFF" and sourceGUID == readCombatLog.playerGUID) then
+		if (not ALL_DEBUFFS [spellid]) then
+			ALL_DEBUFFS [spellid] = true
+			debuffs_list:RefreshWidgets()
+		end
+	end
+end)
+
+auraFilterFrame:SetScript ("OnShow", function()
+	--wipe (ALL_DEBUFFS)
+	debuffs_list:RefreshWidgets()
+	buffs_list:RefreshWidgets()
+	debuffs_added_list:RefreshWidgets()
+	buffs_added_list:RefreshWidgets()
+	readCombatLog.playerGUID = UnitGUID ("player")
+	readCombatLog:RegisterEvent ("COMBAT_LOG_EVENT_UNFILTERED")
+end)
+auraFilterFrame:SetScript ("OnHide", function()
+	readCombatLog:UnregisterEvent ("COMBAT_LOG_EVENT_UNFILTERED")
+end)
 
 -------------------------------------------------------------------------------
 -- opções para a barra do player
@@ -3932,8 +4163,25 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 			desc = "Which order plates should go above and below.",
 		},
 		
+		{type = "blank"},
+		{type = "label", get = function() return "Buff Frame:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		--y offset
+		{
+			type = "range",
+			get = function() return profile.plate_config.friendlyplayer.buff_frame_y_offset end,
+			set = function (self, fixedparam, value) 
+				profile.plate_config.friendlyplayer.buff_frame_y_offset = value
+				Plater.UpdateAllPlates()
+			end,
+			min = -64,
+			max = 64,
+			step = 1,
+			name = "Y Offset",
+			desc = "Adjusts the position on the Y axis.",
+		},
+		
 		--percent text
-		{type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"},
+		{type = "blank"}, {type = "blank"}, {type = "blank"},
 		{type = "label", get = function() return "Health Percent Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--enabled
 		{
@@ -4542,8 +4790,25 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 			desc = "Which order plates should go above and below.\n\nFrom bottom to top.",
 		},
 		
+		{type = "blank"},
+		{type = "label", get = function() return "Debuff Frame:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		--y offset
+		{
+			type = "range",
+			get = function() return profile.plate_config.enemyplayer.buff_frame_y_offset end,
+			set = function (self, fixedparam, value) 
+				profile.plate_config.enemyplayer.buff_frame_y_offset = value
+				Plater.UpdateAllPlates()
+			end,
+			min = -64,
+			max = 64,
+			step = 1,
+			name = "Y Offset",
+			desc = "Adjusts the position on the Y axis.",
+		},
+		
 		--percent text
-		{type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"},
+		{type = "blank"}, {type = "blank"}, {type = "blank"},
 		{type = "label", get = function() return "Health Percent Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--enabled
 		{
@@ -5161,8 +5426,25 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 			desc = "Which order plates should go above and below.\n\nFrom bottom to top.",
 		},
 		
+		{type = "blank"},
+		{type = "label", get = function() return "Buff Frame:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		--y offset
+		{
+			type = "range",
+			get = function() return profile.plate_config.friendlynpc.buff_frame_y_offset end,
+			set = function (self, fixedparam, value) 
+				profile.plate_config.friendlynpc.buff_frame_y_offset = value
+				Plater.UpdateAllPlates()
+			end,
+			min = -64,
+			max = 64,
+			step = 1,
+			name = "Y Offset",
+			desc = "Adjusts the position on the Y axis.",
+		},
+		
 		--percent text
-		{type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"},
+		{type = "blank"}, {type = "blank"}, {type = "blank"},
 		{type = "label", get = function() return "Health Percent Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--enabled
 		{
@@ -5900,50 +6182,23 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		},
 		
 		{type = "blank"},
-		{type = "label", get = function() return "Quest Color:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-		--enabled
+		{type = "label", get = function() return "Debuff Frame:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		--y offset
 		{
-			type = "toggle",
-			get = function() return profile.plate_config.enemynpc.quest_enabled end,
+			type = "range",
+			get = function() return profile.plate_config.enemynpc.buff_frame_y_offset end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.quest_enabled = value
+				profile.plate_config.enemynpc.buff_frame_y_offset = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Enabled",
-			desc = "Nameplates for objectives mobs, now have a new color.",
+			min = -64,
+			max = 64,
+			step = 1,
+			name = "Y Offset",
+			desc = "Adjusts the position on the Y axis.",
 		},
-		{
-			type = "color",
-			get = function()
-				local color = profile.plate_config.enemynpc.quest_color_enemy
-				return {color[1], color[2], color[3], color[4]}
-			end,
-			set = function (self, r, g, b, a) 
-				local color = profile.plate_config.enemynpc.quest_color_enemy
-				color[1], color[2], color[3], color[4] = r, g, b, a
-				--print (r, g, b)
-				Plater.UpdateAllPlates()
-			end,
-			name = "Hostile Npc",
-			desc = "Nameplate has this color when a hostile mob is a quest objective.",
-		},
-		{
-			type = "color",
-			get = function()
-				local color = profile.plate_config.enemynpc.quest_color_neutral
-				return {color[1], color[2], color[3], color[4]}
-			end,
-			set = function (self, r, g, b, a) 
-				local color = profile.plate_config.enemynpc.quest_color_neutral
-				color[1], color[2], color[3], color[4] = r, g, b, a
-				Plater.UpdateAllPlates()
-			end,
-			name = "Neutral Npc",
-			desc = "Nameplate has this color when a neutral mob is a quest objective.",
-		},		
 		
-		{type = "blank"},
-		
+		{type = "blank"}, {type = "blank"}, {type = "blank"},
 		--percent text
 		{type = "label", get = function() return "Health Percent Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--enabled
@@ -6154,6 +6409,49 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 			name = "Y Offset",
 			desc = "Slightly move the text vertically.",
 		},
+		
+		{type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"},
+		{type = "label", get = function() return "Quest Color:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		--enabled
+		{
+			type = "toggle",
+			get = function() return profile.plate_config.enemynpc.quest_enabled end,
+			set = function (self, fixedparam, value) 
+				profile.plate_config.enemynpc.quest_enabled = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Enabled",
+			desc = "Nameplates for objectives mobs, now have a new color.",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = profile.plate_config.enemynpc.quest_color_enemy
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = profile.plate_config.enemynpc.quest_color_enemy
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				--print (r, g, b)
+				Plater.UpdateAllPlates()
+			end,
+			name = "Hostile Npc",
+			desc = "Nameplate has this color when a hostile mob is a quest objective.",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = profile.plate_config.enemynpc.quest_color_neutral
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = profile.plate_config.enemynpc.quest_color_neutral
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllPlates()
+			end,
+			name = "Neutral Npc",
+			desc = "Nameplate has this color when a neutral mob is a quest objective.",
+		},			
 	
 	}
 	DF:BuildMenu (enemyNPCsFrame, options_table2, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
