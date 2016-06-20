@@ -616,6 +616,7 @@ function Plater.OnInit (self)
 	Plater:RegisterEvent ("PLAYER_REGEN_ENABLED")
 	Plater:RegisterEvent ("ZONE_CHANGED_NEW_AREA")
 	Plater:RegisterEvent ("FRIENDLIST_UPDATE")
+	Plater:RegisterEvent ("PLAYER_LOGOUT")
 	Plater:RegisterEvent ("QUEST_ACCEPTED")
 	Plater:RegisterEvent ("QUEST_ACCEPT_CONFIRM")
 	Plater:RegisterEvent ("QUEST_COMPLETE")
@@ -657,7 +658,7 @@ function Plater.OnInit (self)
 	end
 	Plater.CheckFirstRun()
 
-	C_Timer.After (5, Plater.UpdateCullingDistance)
+	C_Timer.After (4, Plater.UpdateCullingDistance)
 	
 	--seta a graça do jogador na barra dele --ajuda a evitar os 'desconhecidos' pelo cliente do jogo (frame da unidade)
 	InstallHook (Plater.GetDriverSubObjectName (CUF_Name, Plater.DriverFuncNames.OnNameUpdate), function (self)
@@ -884,34 +885,33 @@ function Plater.OnInit (self)
 	end)
 
 	InstallHook (Plater.GetDriverSubObjectName (CUF_Name, Plater.DriverFuncNames.OnUpdateHealth), function (self)
-		if (self:GetParent().isSelf) then
-			local min, max = self.healthBar:GetMinMaxValues()
-			if (self.healthBar:GetValue() / max < 0.27) then
-				if (not self.healthBar.PlayHealthFlash) then
-					Plater.CreateHealthFlashFrame (self:GetParent())
-				end
-				self.healthBar.PlayHealthFlash()
-			else
-				if (self.healthBar.PlayHealthFlash) then
-					if (self.healthBar:GetValue() / max > 0.5) then
-						self.healthBar.canHealthFlash = true
+		local plateFrame = self:GetParent()
+		if (plateFrame.isNamePlate) then
+			if (plateFrame.isSelf) then
+				local healthBar = self.healthBar
+				local min, max = healthBar:GetMinMaxValues()
+				if (healthBar:GetValue() / max < 0.27) then
+					if (not healthBar.PlayHealthFlash) then
+						Plater.CreateHealthFlashFrame (plateFrame)
+					end
+					healthBar.PlayHealthFlash()
+				else
+					if (healthBar.PlayHealthFlash) then
+						if (healthBar:GetValue() / max > 0.5) then
+							healthBar.canHealthFlash = true
+						end
 					end
 				end
+			else
+				local currentHealth = UnitHealth (plateFrame [MEMBER_UNITID])
+				self.healthBar:SetValue (currentHealth)
 			end
-		end
-	end)
-
-	--possível fix para o health da nameplate
-	hooksecurefunc ("CompactUnitFrame_UpdateHealth", function (UnitFrame)
-		local plateFrame = UnitFrame:GetParent()
-		if (not plateFrameisSelf and plateFrame.isNamePlate) then
-			local currentHealth = UnitHealth (plateFrame [MEMBER_UNITID])
-			UnitFrame.healthBar:SetValue (currentHealth)
 		end
 	end)
 	
 	Plater.UpdateUseClassColors()
-	C_Timer.After (5, Plater.QuestLogUpdated)
+	C_Timer.After (4.1, Plater.QuestLogUpdated)
+	C_Timer.After (5.1, Plater.UpdateAllPlates)
 end
 
 -- se o jogador estiver em combate, colorir a barra de acordo com o aggro do jogador
@@ -2514,6 +2514,11 @@ function Plater.SetCVarsOnFirstRun()
 	C_Timer.After (2, function()
 		SetCVar (CVAR_SHOWPERSONAL, CVAR_ENABLED)
 	end)
+end
+
+function Plater:PLAYER_LOGOUT()
+	--be safe, don't break shit
+	SetCVar (CVAR_CULLINGDISTANCE, 60)
 end
 
 function Plater.OpenFeedbackWindow()
@@ -6880,13 +6885,13 @@ end
 
 function Plater.GetNpcTypeIcon (npcType)
 	if (npcType == 1) then --important npc
-		return [[Interface\MINIMAP\ObjectIconsAtlas]], 393/512, 420/512, 138/512, 159/512
+		return [[Interface\MINIMAP\ObjectIconsAtlas]], 205/512, 236/512, 137/512, 160/512
 	elseif (npcType == 2) then --repair
-		return [[Interface\MINIMAP\ObjectIconsAtlas]], 122/512, 148/512, 443/512, 471/512
+		return [[Interface\MINIMAP\ObjectIconsAtlas]], 106/512, 132/512, 273/512, 302/512
 	elseif (npcType == 3) then --merchant
 		return [[Interface\GossipFrame\BankerGossipIcon]], 0, 1, 0, 1
 	elseif (npcType == 4) then --innkeeper
-		return [[Interface\MINIMAP\ObjectIconsAtlas]], 122/512, 148/512, 70/512, 96/512
+		return [[Interface\MINIMAP\ObjectIconsAtlas]], 36/512, 66/512, 442/512, 472/512
 	elseif (npcType == 5) then --banker
 		return [[Interface\GossipFrame\BankerGossipIcon]], 2/16, 1, 0, 1
 	elseif (npcType == 6) then --autioneer
@@ -6894,15 +6899,15 @@ function Plater.GetNpcTypeIcon (npcType)
 	elseif (npcType == 7) then --flyght master
 		return [[Interface\GossipFrame\TaxiGossipIcon]], 0, 1, 0, 1
 	elseif (npcType == 8) then --stable master
-		return [[Interface\MINIMAP\ObjectIconsAtlas]], 221/512, 253/512, 305/512, 337/512
+		return [[Interface\MINIMAP\ObjectIconsAtlas]], 104/512, 135/512, 442/512, 473/512
 	elseif (npcType == 9) then --pet master
-		return [[Interface\MINIMAP\ObjectIconsAtlas]], 223/512, 250/512, 206/512, 232/512
+		return [[Interface\MINIMAP\ObjectIconsAtlas]], 172/512, 201/512, 273/512, 301/512
 	elseif (npcType == 10) then --barber
 		return [[]], 0
 	elseif (npcType == 11) then --transmogrifier
 		return [[Interface\BUTTONS\UI-GroupLoot-DE-Up]], 0, 1, 0, 1
 	elseif (npcType == 12) then --food and drink
-		return [[Interface\MINIMAP\ObjectIconsAtlas]], 53/512, 81/512, 445/512, 471/512
+		return [[Interface\MINIMAP\ObjectIconsAtlas]], 35/512, 66/512, 341/512, 371/512
 	elseif (npcType == 20) then --fishing 
 		return [[Interface\Garrison\MobileAppIcons]], 0, 127/1024, 779/1024, 910/1024
 	elseif (npcType == 21) then --first aid
