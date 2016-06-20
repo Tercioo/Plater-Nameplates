@@ -2,7 +2,7 @@ if (true) then
 	--return
 	--but not today
 end
-
+--SCENARIOSPARTS
 --details! framework
 local DF = _G ["DetailsFramework"]
 if (not DF) then
@@ -84,6 +84,7 @@ local default_config = {
 			friendlyplayer = {
 				enabled = true,
 				plate_order = 3,
+				only_damaged = false,
 				
 				health = {70, 2},
 				health_incombat = {70, 2},
@@ -367,6 +368,7 @@ local default_config = {
 			},
 		},
 
+		culling_distance = 100,
 		use_playerclass_color = false,
 		debuff_size_multiplier = 1.3,
 		debuff_show_cc = true,
@@ -452,6 +454,7 @@ local STRING_OPTIONS = "FrameOptions"
 local CVAR_SHOWPERSONAL = "nameplateShowSelf"
 local CVAR_RESOURCEONTARGET = "nameplateResourceOnTarget"
 local CVAR_SHOWALL = "nameplateShowAll"
+local CVAR_CULLINGDISTANCE = "nameplateMaxDistance"
 local CVAR_AGGROFLASH = "ShowNamePlateLoseAggroFlash"
 local CVAR_ENEMY_ALL = "nameplateShowEnemies"
 local CVAR_ENEMY_MINIONS = "nameplateShowEnemyMinions"
@@ -482,6 +485,8 @@ local UNITREACTION_FRIENDLY = 5
 
 local FILTER_DEBUFFS_BANNED = {}
 local FILTER_BUFFS_BANNED = {}
+local FILTER_BUFF_DETECTION = ""
+local FILTER_BUFF_DETECTION2 = ""
 local ALL_DEBUFFS = {}
 local ALL_BUFFS = {}
 
@@ -629,6 +634,8 @@ function Plater.OnInit (self)
 	
 	FILTER_DEBUFFS_BANNED = PlaterDBChr.debuffsBanned
 	FILTER_BUFFS_BANNED = PlaterDBChr.buffsBanned
+	FILTER_BUFF_DETECTION = GetSpellInfo (203761)
+	FILTER_BUFF_DETECTION2 = GetSpellInfo (213486)
 	
 	--verifica se é a primeira vez que rodou o addon no personagem
 	local check_first_run = function()
@@ -649,6 +656,8 @@ function Plater.OnInit (self)
 		check_first_run()
 	end
 	Plater.CheckFirstRun()
+
+	C_Timer.After (5, Plater.UpdateCullingDistance)
 	
 	--seta a graça do jogador na barra dele --ajuda a evitar os 'desconhecidos' pelo cliente do jogo (frame da unidade)
 	InstallHook (Plater.GetDriverSubObjectName (CUF_Name, Plater.DriverFuncNames.OnNameUpdate), function (self)
@@ -675,7 +684,7 @@ function Plater.OnInit (self)
 		if (nameplate) then
 			local filter;
 			if (UnitIsUnit ("player", unit)) then
-				filter = "HELPFUL|INCLUDE_NAME_PLATE_ONLY";
+				filter = "HELPFUL|INCLUDE_NAME_PLATE_ONLY|PLAYER";
 			else
 				local reaction = UnitReaction ("player", unit);
 				if (reaction and reaction <= 4) then
@@ -892,6 +901,15 @@ function Plater.OnInit (self)
 		end
 	end)
 
+	--possível fix para o health da nameplate
+	hooksecurefunc ("CompactUnitFrame_UpdateHealth", function (UnitFrame)
+		local plateFrame = UnitFrame:GetParent()
+		if (not plateFrameisSelf and plateFrame.isNamePlate) then
+			local currentHealth = UnitHealth (plateFrame [MEMBER_UNITID])
+			UnitFrame.healthBar:SetValue (currentHealth)
+		end
+	end)
+	
 	Plater.UpdateUseClassColors()
 	C_Timer.After (5, Plater.QuestLogUpdated)
 end
@@ -1232,7 +1250,6 @@ local anchor_functions = {
 	end,
 	function (widget, config)--2
 		widget:ClearAllPoints()
-		widget:SetPoint ("center", widget:GetParent(), "center")
 		widget:SetPoint ("right", widget:GetParent(), "left", config.x, config.y)
 	end,
 	function (widget, config)--3
@@ -1241,7 +1258,6 @@ local anchor_functions = {
 	end,
 	function (widget, config)--4
 		widget:ClearAllPoints()
-		widget:SetPoint ("center", widget:GetParent(), "center")
 		widget:SetPoint ("top", widget:GetParent(), "bottom", config.x, config.y)
 	end,
 	function (widget, config)--5
@@ -1250,7 +1266,6 @@ local anchor_functions = {
 	end,
 	function (widget, config)--6
 		widget:ClearAllPoints()
-		widget:SetPoint ("center", widget:GetParent(), "center")
 		widget:SetPoint ("left", widget:GetParent(), "right", config.x, config.y)
 	end,
 	function (widget, config)--7
@@ -1259,7 +1274,6 @@ local anchor_functions = {
 	end,
 	function (widget, config)--8
 		widget:ClearAllPoints()
-		widget:SetPoint ("center", widget:GetParent(), "center")
 		widget:SetPoint ("bottom", widget:GetParent(), "top", config.x, config.y)
 	end,
 	function (widget, config)--9
@@ -1545,7 +1559,7 @@ function Plater.UpdatePlateText (plateFrame, plateConfigs)
 	DF:SetFontOutline (spellnameString, plateConfigs.spellname_text_shadow)
 	DF:SetFontFace (spellnameString, plateConfigs.spellname_text_font)
 	
-	--atualiza o texto da porcentagem
+	--atualiza o texto da porcentagem do cast
 	if (plateConfigs.spellpercent_text_enabled) then
 		spellPercentString:Show()
 		DF:SetFontColor (spellPercentString, plateConfigs.spellpercent_text_color)
@@ -1572,7 +1586,7 @@ function Plater.UpdatePlateText (plateFrame, plateConfigs)
 		levelString:Hide()
 	end
 
-	--atualiza o texto da porcentagem
+	--atualiza o texto da porcentagem da vida
 	if (plateConfigs.percent_text_enabled) then
 		lifeString:Show()
 		--apenas mostrar durante o combate
@@ -1592,8 +1606,6 @@ function Plater.UpdatePlateText (plateFrame, plateConfigs)
 		lifeString:Hide()
 	end
 
-	
-	
 end
 
 function Plater.UpdateLifePercentText (lifeString, unitId)
@@ -1651,6 +1663,7 @@ function Plater.UpdatePlateSize (plateFrame)
 			scalarValue = SizeOf_healthBar_Width > SizeOf_castBar_Width and -((SizeOf_healthBar_Width - SizeOf_castBar_Width) / 2) or ((SizeOf_castBar_Width - SizeOf_healthBar_Width) / 2)
 		end
 
+		healthFrame:ClearAllPoints()
 		healthFrame:SetPoint ("BOTTOMLEFT", castFrame, "TOPLEFT", scalarValue,  (-SizeOf_healthBar_Height) + (-SizeOf_castBar_Height) - 4);
 		healthFrame:SetPoint ("BOTTOMRIGHT", castFrame, "TOPRIGHT", -scalarValue,  (-SizeOf_healthBar_Height) + (-SizeOf_castBar_Height) - 4);
 		healthFrame:SetHeight (SizeOf_healthBar_Height / (isMinus and 2 or 1))
@@ -1697,6 +1710,7 @@ function Plater.UpdatePlateSize (plateFrame)
 --			isMinus = true
 --		end
 		
+		healthFrame:ClearAllPoints()
 		healthFrame:SetPoint ("BOTTOMLEFT", castFrame, "TOPLEFT", scalarValue,  (-SizeOf_healthBar_Height) + (-SizeOf_castBar_Height) + (-buffFrameSize) - 4);
 		healthFrame:SetPoint ("BOTTOMRIGHT", castFrame, "TOPRIGHT", -scalarValue,  (-SizeOf_healthBar_Height) + (-SizeOf_castBar_Height) + (-buffFrameSize) - 4);
 		healthFrame:SetHeight (SizeOf_healthBar_Height / (isMinus and 2 or 1))
@@ -1720,6 +1734,7 @@ function Plater.UpdatePlateSize (plateFrame)
 		local SizeOf_manaBar_Width = plateConfigs [manaKey][1]
 		local SizeOf_manaBar_Height = plateConfigs [manaKey][2]
 
+
 --		print (plateFrame:GetSize())
 --		print (plateFrame.UnitFrame:GetSize())
 		
@@ -1736,21 +1751,34 @@ function Plater.UpdatePlateSize (plateFrame)
 		castFrame.Icon:SetSize (SizeOf_castBar_Height, SizeOf_castBar_Height)
 		
 		local scalarValue
+		local passouPor = 0
 		if (Plater.zonePvpType ~= "sanctuary" or plateFrame [MEMBER_REACTION] == 4) then
 			scalarValue = SizeOf_healthBar_Width > SizeOf_castBar_Width and -((SizeOf_healthBar_Width - SizeOf_castBar_Width) / 2) or ((SizeOf_castBar_Width - SizeOf_healthBar_Width) / 2)
+			passouPor = 1
 		else
 			if (plateFrame.isSelf) then
 				scalarValue = SizeOf_healthBar_Width > SizeOf_castBar_Width and -((SizeOf_healthBar_Width - SizeOf_castBar_Width) / 2) or ((SizeOf_castBar_Width - SizeOf_healthBar_Width) / 2)
+				passouPor = 2
 			else
 				scalarValue = 70 > SizeOf_castBar_Width and -((70 - SizeOf_castBar_Width) / 2) or ((SizeOf_castBar_Width - 70) / 2)
+				passouPor = 3
 			end
 		end
 
 		--health
+		healthFrame:ClearAllPoints()
 		healthFrame:SetPoint ("BOTTOMLEFT", castFrame, "TOPLEFT", scalarValue,  1)
 		healthFrame:SetPoint ("BOTTOMRIGHT", castFrame, "TOPRIGHT", -scalarValue,  1)
 		healthFrame:SetHeight (SizeOf_healthBar_Height / (isMinus and 2 or 1))
 		
+--		if (UnitIsPlayer (plateFrame [MEMBER_UNITID])) then
+--			if (healthFrame:GetWidth()-2 > SizeOf_healthBar_Width) then
+				--bugou
+				--NAME - Tamanho na Config - Tamanha Atual - Scalar Value - Qual If Usou
+--				print (UnitName (plateFrame [MEMBER_UNITID]), SizeOf_healthBar_Width, floor (healthFrame:GetWidth()), scalarValue, passouPor, " | ", floor (castFrame:GetWidth()))
+--			end
+--		end
+
 		--buff
 		buffFrame.Point1 = "bottom"
 		buffFrame.Point2 = "top"
@@ -1834,8 +1862,22 @@ function Plater.ForceChangeHealthBarColor (healthBar, r, g, b)
 	healthBar.barTexture:SetVertexColor (r, g, b)
 end
 
+function Plater.CheckForDetectors (plateFrame)
+	local name, rank, texture, count, debuffType, duration, expirationTime, caster, _, nameplateShowPersonal, spellId, _, _, _, nameplateShowAll = UnitAura (plateFrame [MEMBER_UNITID], FILTER_BUFF_DETECTION)
+	if (name) then
+		plateFrame.Top3DFrame:Show()
+		plateFrame.Top3DFrame:SetModel ("Spells\\Blackfuse_LaserTurret_GroundBurn_State_Base")
+	else
+		local name, rank, texture, count, debuffType, duration, expirationTime, caster, _, nameplateShowPersonal, spellId, _, _, _, nameplateShowAll = UnitAura (plateFrame [MEMBER_UNITID], FILTER_BUFF_DETECTION2)
+		if (name) then
+			plateFrame.Top3DFrame:Show()
+			plateFrame.Top3DFrame:SetModel ("Spells\\Blackfuse_LaserTurret_GroundBurn_State_Base")
+		end
+	end
+end
+
+-- ~update
 function Plater.UpdatePlateFrame (plateFrame, actorType, order)
-	
 	actorType = actorType or plateFrame.actorType
 	order = order or plateFrame.order
 	
@@ -1858,6 +1900,7 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, order)
 	
 	plateFrame.actorNameSolo:Hide()
 	plateFrame.actorSubTitleSolo:Hide()
+	plateFrame.Top3DFrame:Hide()
 
 	--a plate esta desativada?
 	if (not Plater.CanShowPlateFor (actorType)) then
@@ -1883,7 +1926,7 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, order)
 		--se for um npc inimigo, ver se faz parte de alguma quest
 		if (actorType == ACTORTYPE_ENEMY_NPC and Plater.db.profile.plate_config [actorType].quest_enabled) then --actorType == ACTORTYPE_FRIENDLY_NPC or 
 			local isQuestMob = Plater.IsQuestObjective (plateFrame)
-			if (isQuestMob) then
+			if (isQuestMob and not IsTapDenied (plateFrame.UnitFrame)) then
 				if (plateFrame [MEMBER_REACTION] == UNITREACTION_NEUTRAL) then
 					Plater.ForceChangeHealthBarColor (healthFrame, unpack (Plater.db.profile.plate_config [actorType].quest_color_neutral))
 					plateFrame [MEMBER_QUEST] = true
@@ -1966,6 +2009,32 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, order)
 					plateFrame:Show()
 				end
 			end
+			
+			--suramar detectors
+			Plater.CheckForDetectors (plateFrame)
+
+		elseif (actorType == ACTORTYPE_FRIENDLY_PLAYER) then
+			if (Plater.db.profile.plate_config [actorType].only_damaged) then
+				if (UnitHealth (plateFrame [MEMBER_UNITID]) < UnitHealthMax (plateFrame [MEMBER_UNITID])) then
+					healthFrame:Show()
+					buffFrame:Show()
+					nameFrame:Show()
+					if (not plateFrame:IsShown() and not InCombatLockdown()) then
+						plateFrame:Show()
+					end
+				else
+					healthFrame:Hide()
+					buffFrame:Hide()
+					nameFrame:Hide()
+				end
+			else
+				healthFrame:Show()
+				buffFrame:Show()
+				nameFrame:Show()
+				if (not plateFrame:IsShown() and not InCombatLockdown()) then
+					plateFrame:Show()
+				end
+			end
 		else
 			--tudo okey, podemos mostrar a barra
 			healthFrame:Show()
@@ -1973,7 +2042,10 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, order)
 			nameFrame:Show()
 			if (not plateFrame:IsShown() and not InCombatLockdown()) then
 				plateFrame:Show()
-			end		
+			end
+			
+			--suramar detectors
+			Plater.CheckForDetectors (plateFrame)
 		end
 	end
 	
@@ -2075,21 +2147,40 @@ function Plater.AddIndicator (plateFrame, indicator)
 
 	thisIndicator:Show()
 	thisIndicator:SetTexCoord (0, 1, 0, 1)
+	thisIndicator:SetVertexColor (1, 1, 1)
 	thisIndicator:SetDesaturated (false)
+	thisIndicator:SetSize (10, 10)
 	
+	--esconde o icone default do jogo
+	plateFrame.UnitFrame.ClassificationFrame:Hide()
+	
+	-- ~icons
 	if (indicator == "pet") then
 		thisIndicator:SetTexture ([[Interface\AddOns\Plater\images\peticon]])
 	elseif (indicator == "Horde") then
 		thisIndicator:SetTexture ([[Interface\PVPFrame\PVP-Currency-Horde]])
+		thisIndicator:SetSize (12, 12)
+--		thisIndicator:SetTexCoord (661/1024, 701/1024, 317/512, 368/512)
 	elseif (indicator == "Alliance") then
+		--thisIndicator:SetTexture ([[Interface\PVPFrame\PVP-Conquest-Misc]])
+		--thisIndicator:SetTexCoord (719/1024, 758/1024, 316/512, 365/512)
 		thisIndicator:SetTexture ([[Interface\PVPFrame\PVP-Currency-Alliance]])
+		thisIndicator:SetTexCoord (4/32, 29/32, 2/32, 30/32)
+		thisIndicator:SetSize (12, 12)
 	elseif (indicator == "elite") then
-		thisIndicator:SetTexture ([[Interface\PVPFrame\TitlePrestige]])
-		thisIndicator:SetTexCoord (888/1024, 914/1024, 503/1024, 531/1024)
+		thisIndicator:SetTexture ([[Interface\GLUES\CharacterSelect\Glues-AddOn-Icons]])
+		--thisIndicator:SetTexture ([[Interface\Scenarios\SCENARIOSPARTS]])
+		thisIndicator:SetTexCoord (0.75, 1, 0, 1)
+		--thisIndicator:SetTexCoord (1/512, 47/512, 418/512, 460/512)
+		thisIndicator:SetVertexColor (1, .8, 0)
+		thisIndicator:SetSize (12, 12)
+		
 	elseif (indicator == "rare") then
-		thisIndicator:SetTexture ([[Interface\PVPFrame\TitlePrestige]])
-		thisIndicator:SetTexCoord (888/1024, 914/1024, 503/1024, 531/1024)
+		thisIndicator:SetTexture ([[Interface\GLUES\CharacterSelect\Glues-AddOn-Icons]])
+		thisIndicator:SetTexCoord (0.75, 1, 0, 1)
+		thisIndicator:SetSize (12, 12)
 		thisIndicator:SetDesaturated (true)
+		
 	elseif (indicator == "quest") then
 		thisIndicator:SetTexture ([[Interface\TARGETINGFRAME\PortraitQuestBadge]])
 		thisIndicator:SetTexCoord (2/32, 26/32, 1/32, 31/32)
@@ -2163,8 +2254,8 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame)
 	--level customizado
 	local actorLevel = plateFrame.UnitFrame.healthBar:CreateFontString (nil, "overlay", "GameFontNormal")
 	plateFrame.UnitFrame.healthBar.actorLevel = actorLevel
-	
 	--porcentagem de vida
+	
 	local lifePercent = plateFrame.UnitFrame.healthBar:CreateFontString (nil, "overlay", "GameFontNormal")
 	plateFrame.UnitFrame.healthBar.lifePercent = lifePercent
 	
@@ -2179,6 +2270,13 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame)
 	ExtraIcon1Timer:SetPoint ("left", ccIcon, "right", 0, 0)
 	ExtraIcon1Timer:Hide()
 	plateFrame.UnitFrame.ExtraIcon1Timer = ExtraIcon1Timer
+	
+	--icone três dimensões
+	plateFrame.Top3DFrame = CreateFrame ("playermodel", plateFrame:GetName() .. "3DFrame", plateFrame, "ModelWithControlsTemplate")
+	plateFrame.Top3DFrame:SetPoint ("bottom", plateFrame, "top", 0, -100)
+	plateFrame.Top3DFrame:SetSize (200, 250)
+	plateFrame.Top3DFrame:EnableMouse (false)
+	plateFrame.Top3DFrame:Hide()
 	
 	--fundo da castbar
 	local extraBackground = plateFrame.UnitFrame.castBar:CreateTexture (nil, "background")
@@ -2220,8 +2318,9 @@ end
 Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId)
 	--pega a nameplate deste jogador
 	local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId)
-
+	
 	plateFrame [MEMBER_GUID] = UnitGUID (unitBarId) or ""
+	plateFrame.isSelf = nil
 	Plater.CheckForNpcType (plateFrame)
 	
 	local name = UnitName (unitBarId)
@@ -2236,7 +2335,6 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId)
 			plateFrame.isSelf = true
 			Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_PLAYER)
 		else
-			plateFrame.isSelf = false
 			if (UnitIsPlayer (unitBarId)) then
 				--é um jogador, determinar se é um inimigo ou aliado
 				if (reaction >= UNITREACTION_FRIENDLY) then
@@ -2277,6 +2375,17 @@ function Plater.UpdateUseClassColors()
 	for index, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 		Plater.Execute (CUF_Name, Plater.DriverFuncNames ["OnChangeHealthConfig"], plateFrame.UnitFrame)
 	end
+end
+
+local CullingUnderCombat = function()
+	return Plater.UpdateCullingDistance()
+end
+function Plater.UpdateCullingDistance()
+	if (InCombatLockdown()) then	
+		return C_Timer.After (1, CullingUnderCombat)
+	end
+	local distance = Plater.db.profile.culling_distance
+	SetCVar (CVAR_CULLINGDISTANCE, distance)
 end
 
 Plater ["NAME_PLATE_UNIT_REMOVED"] = function (self, event, unitBarId)
@@ -2581,7 +2690,7 @@ function Plater.OpenOptionsPanel()
 
 	--constroi o botao de config para a barra do player
 	local playerConfigButton = DF:CreateButton (mainFrame, select_menu, 70, 20, "config", 5, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
-	local auraConfigButton = DF:CreateButton (mainFrame, select_menu, 160, 60, "CONFIG AURAS\nAdd auras to Ignore List", 6, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
+	local auraConfigButton = DF:CreateButton (mainFrame, select_menu, 160, 60, "CONFIG BUFFS/DEBUFFS\nAdd auras to Ignore List", 6, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
 	auraConfigButton:SetPoint ("topleft", mainFrame, "topleft", 350, -160)
 	
 	--controi os 4 botões para as opções dos frames
@@ -2635,80 +2744,92 @@ function Plater.OpenOptionsPanel()
 		local stringEnabled = DF:CreateLabel (checkboxEnabled, "Enabled", 14, "orange", nil, "isEnabledString", nil, "overlay")
 		stringEnabled:SetPoint ("left", checkboxEnabled, "right", 2, 0)
 		
-		local relevantSwitchFunc = function (self, actorTypeIndex, value)
-			local actorType = Plater.GetActorTypeByIndex (actorTypeIndex)
-			Plater.db.profile.plate_config [actorType].only_relevant = value
-			button.onlyNamesCheckbox:SetValue (false)
-			Plater.db.profile.plate_config [actorType].only_names = false
-			button.allNamesCheckbox:SetValue (false)
-			Plater.db.profile.plate_config [actorType].all_names = false
-			Plater.UpdateAllPlates()
-		end
+		if (i == 1) then
+			local onlyDamagedFunc = function (self, actorTypeIndex, value)
+				local actorType = Plater.GetActorTypeByIndex (actorTypeIndex)
+				Plater.db.profile.plate_config [actorType].only_damaged = value
+				Plater.UpdateAllPlates()
+			end
+			
+			local actorType = Plater.GetActorTypeByIndex (i)
+			local checkboxOnlyDamaged, labelOnlyDamaged = DF:CreateSwitch (button, onlyDamagedFunc, Plater.db.profile.plate_config [actorType].only_damaged, _, _, _, _, "onlyDamagedCheckbox", _, _, _, _, "", DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"), options_text_template)
+			checkboxOnlyDamaged:SetAsCheckBox()
+			checkboxOnlyDamaged.tooltip = "Only show nameplates for damaged friendly players."
+			checkboxOnlyDamaged:SetPoint ("topleft", checkboxEnabled, "bottomleft", 0, -2)
+			checkboxOnlyDamaged:SetFixedParameter (i)
+			local stringOnlyDamaged = DF:CreateLabel (checkboxOnlyDamaged, "Only Damaged", 10, "orange", nil, "onlyRelevantString", nil, "overlay")
+			stringOnlyDamaged:SetPoint ("left", checkboxOnlyDamaged, "right", 2, 0)
 		
-		local actorType = Plater.GetActorTypeByIndex (i)
-		local checkboxRelevant, labelRelevant = DF:CreateSwitch (button, relevantSwitchFunc, Plater.db.profile.plate_config [actorType].only_relevant, _, _, _, _, "relevantCheckbox", _, _, _, _, "", DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"), options_text_template)
-		checkboxRelevant:SetAsCheckBox()
-		checkboxRelevant.tooltip = "Show nameplates only for relevant friendly npcs.\n\nYou may config relevance by clicking on the draenei and then clicking on 'Config Relevance'."
-		checkboxRelevant:SetPoint ("topleft", checkboxEnabled, "bottomleft", 0, -2)
-		checkboxRelevant:SetFixedParameter (i)
-		local stringRelevant = DF:CreateLabel (checkboxRelevant, "Only Relevant", 10, "orange", nil, "onlyRelevantString", nil, "overlay")
-		stringRelevant:SetPoint ("left", checkboxRelevant, "right", 2, 0)
-		
-		local noRelevantNamesSwitchFunc = function (self, actorTypeIndex, value)
-			local actorType = Plater.GetActorTypeByIndex (actorTypeIndex)
-			Plater.db.profile.plate_config [actorType].relevant_and_proffesions = value
-			Plater.UpdateAllPlates()
-		end
-		local checkboxNoRelevantNames, labelNoRelevantNames = DF:CreateSwitch (button, noRelevantNamesSwitchFunc, Plater.db.profile.plate_config [actorType].relevant_and_proffesions, _, _, _, _, "noRelevantNamesCheckbox", _, _, _, _, "", DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"), options_text_template)
-		checkboxNoRelevantNames:SetAsCheckBox()
-		checkboxNoRelevantNames.tooltip = "When showing only important npcs, also shows names for non relevant npcs."
-		checkboxNoRelevantNames:SetPoint ("topleft", checkboxRelevant, "bottomleft", 20, -2)
-		checkboxNoRelevantNames:SetFixedParameter (i)
-		local stringNoRelevantNames = DF:CreateLabel (checkboxNoRelevantNames, "+ professions", 10, "orange", nil, "noRelevantNamesString", nil, "overlay")
-		stringNoRelevantNames:SetPoint ("left", checkboxNoRelevantNames, "right", 2, 0)
-		
-		local onlyNamesSwitchFunc = function (self, actorTypeIndex, value)
-			local actorType = Plater.GetActorTypeByIndex (actorTypeIndex)
-			Plater.db.profile.plate_config [actorType].only_names = value
-			checkboxRelevant:SetValue (false)
-			Plater.db.profile.plate_config [actorType].only_relevant = false
-			button.allNamesCheckbox:SetValue (false)
-			Plater.db.profile.plate_config [actorType].all_names = false
-			Plater.UpdateAllPlates()
-		end
-		local checkboxOnlyNames, labelOnlyNames = DF:CreateSwitch (button, onlyNamesSwitchFunc, Plater.db.profile.plate_config [actorType].only_names, _, _, _, _, "onlyNamesCheckbox", _, _, _, _, "", DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"), options_text_template)
-		checkboxOnlyNames:SetAsCheckBox()
-		checkboxOnlyNames.tooltip = "Show names for all relevant and non-relevant actors with showing its health bar.\n\nWon't show plates for trivial npcs."
-		checkboxOnlyNames:SetPoint ("topleft", checkboxRelevant, "bottomleft", 0, -20)
-		checkboxOnlyNames:SetFixedParameter (i)
-		local stringOnlyNames = DF:CreateLabel (checkboxOnlyNames, "All Proffesions", 10, "orange", nil, "noRelevantNamesString", nil, "overlay")
-		stringOnlyNames:SetPoint ("left", checkboxOnlyNames, "right", 2, 0)
+		elseif (i == 3) then
+			local relevantSwitchFunc = function (self, actorTypeIndex, value)
+				local actorType = Plater.GetActorTypeByIndex (actorTypeIndex)
+				Plater.db.profile.plate_config [actorType].only_relevant = value
+				button.onlyNamesCheckbox:SetValue (false)
+				Plater.db.profile.plate_config [actorType].only_names = false
+				button.allNamesCheckbox:SetValue (false)
+				Plater.db.profile.plate_config [actorType].all_names = false
+				Plater.UpdateAllPlates()
+			end
+			
+			local actorType = Plater.GetActorTypeByIndex (i)
+			local checkboxRelevant, labelRelevant = DF:CreateSwitch (button, relevantSwitchFunc, Plater.db.profile.plate_config [actorType].only_relevant, _, _, _, _, "relevantCheckbox", _, _, _, _, "", DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"), options_text_template)
+			checkboxRelevant:SetAsCheckBox()
+			checkboxRelevant.tooltip = "Show nameplates only for relevant friendly npcs.\n\nYou may config relevance by clicking on the draenei and then clicking on 'Config Relevance'."
+			checkboxRelevant:SetPoint ("topleft", checkboxEnabled, "bottomleft", 0, -2)
+			checkboxRelevant:SetFixedParameter (i)
+			local stringRelevant = DF:CreateLabel (checkboxRelevant, "Only Relevant", 10, "orange", nil, "onlyRelevantString", nil, "overlay")
+			stringRelevant:SetPoint ("left", checkboxRelevant, "right", 2, 0)
+			
+			local noRelevantNamesSwitchFunc = function (self, actorTypeIndex, value)
+				local actorType = Plater.GetActorTypeByIndex (actorTypeIndex)
+				Plater.db.profile.plate_config [actorType].relevant_and_proffesions = value
+				Plater.UpdateAllPlates()
+			end
+			local checkboxNoRelevantNames, labelNoRelevantNames = DF:CreateSwitch (button, noRelevantNamesSwitchFunc, Plater.db.profile.plate_config [actorType].relevant_and_proffesions, _, _, _, _, "noRelevantNamesCheckbox", _, _, _, _, "", DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"), options_text_template)
+			checkboxNoRelevantNames:SetAsCheckBox()
+			checkboxNoRelevantNames.tooltip = "When showing only important npcs, also shows names for non relevant npcs."
+			checkboxNoRelevantNames:SetPoint ("topleft", checkboxRelevant, "bottomleft", 20, -2)
+			checkboxNoRelevantNames:SetFixedParameter (i)
+			local stringNoRelevantNames = DF:CreateLabel (checkboxNoRelevantNames, "+ professions", 10, "orange", nil, "noRelevantNamesString", nil, "overlay")
+			stringNoRelevantNames:SetPoint ("left", checkboxNoRelevantNames, "right", 2, 0)
+			
+			local onlyNamesSwitchFunc = function (self, actorTypeIndex, value)
+				local actorType = Plater.GetActorTypeByIndex (actorTypeIndex)
+				Plater.db.profile.plate_config [actorType].only_names = value
+				checkboxRelevant:SetValue (false)
+				Plater.db.profile.plate_config [actorType].only_relevant = false
+				button.allNamesCheckbox:SetValue (false)
+				Plater.db.profile.plate_config [actorType].all_names = false
+				Plater.UpdateAllPlates()
+			end
+			local checkboxOnlyNames, labelOnlyNames = DF:CreateSwitch (button, onlyNamesSwitchFunc, Plater.db.profile.plate_config [actorType].only_names, _, _, _, _, "onlyNamesCheckbox", _, _, _, _, "", DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"), options_text_template)
+			checkboxOnlyNames:SetAsCheckBox()
+			checkboxOnlyNames.tooltip = "Show names for all relevant and non-relevant actors with showing its health bar.\n\nWon't show plates for trivial npcs."
+			checkboxOnlyNames:SetPoint ("topleft", checkboxRelevant, "bottomleft", 0, -20)
+			checkboxOnlyNames:SetFixedParameter (i)
+			local stringOnlyNames = DF:CreateLabel (checkboxOnlyNames, "All Proffesions", 10, "orange", nil, "noRelevantNamesString", nil, "overlay")
+			stringOnlyNames:SetPoint ("left", checkboxOnlyNames, "right", 2, 0)
 
-		local allNamesSwitchFunc = function (self, actorTypeIndex, value)
-			local actorType = Plater.GetActorTypeByIndex (actorTypeIndex)
-			Plater.db.profile.plate_config [actorType].all_names = value
-			
-			checkboxRelevant:SetValue (false)
-			Plater.db.profile.plate_config [actorType].only_relevant = false
-			button.onlyNamesCheckbox:SetValue (false)
-			Plater.db.profile.plate_config [actorType].only_names = false
-			
-			Plater.UpdateAllPlates()
+			local allNamesSwitchFunc = function (self, actorTypeIndex, value)
+				local actorType = Plater.GetActorTypeByIndex (actorTypeIndex)
+				Plater.db.profile.plate_config [actorType].all_names = value
+				
+				checkboxRelevant:SetValue (false)
+				Plater.db.profile.plate_config [actorType].only_relevant = false
+				button.onlyNamesCheckbox:SetValue (false)
+				Plater.db.profile.plate_config [actorType].only_names = false
+				
+				Plater.UpdateAllPlates()
+			end
+			local checkboxAllNames, labelOnlyNames = DF:CreateSwitch (button, allNamesSwitchFunc, Plater.db.profile.plate_config [actorType].all_names, _, _, _, _, "allNamesCheckbox", _, _, _, _, "", DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"), options_text_template)
+			checkboxAllNames:SetAsCheckBox()
+			checkboxAllNames.tooltip = "Show the name without the health bar for all npcs including trivial."
+			checkboxAllNames:SetPoint ("topleft", button.onlyNamesCheckbox, "bottomleft", 0, 0)
+			checkboxAllNames:SetFixedParameter (i)
+			local stringAllNames = DF:CreateLabel (checkboxAllNames, "Show All", 10, "orange", nil, "noRelevantNamesString", nil, "overlay")
+			stringAllNames:SetPoint ("left", checkboxAllNames, "right", 2, 0)
 		end
-		local checkboxAllNames, labelOnlyNames = DF:CreateSwitch (button, allNamesSwitchFunc, Plater.db.profile.plate_config [actorType].all_names, _, _, _, _, "allNamesCheckbox", _, _, _, _, "", DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"), options_text_template)
-		checkboxAllNames:SetAsCheckBox()
-		checkboxAllNames.tooltip = "Show the name without the health bar for all npcs including trivial."
-		checkboxAllNames:SetPoint ("topleft", button.onlyNamesCheckbox, "bottomleft", 0, 0)
-		checkboxAllNames:SetFixedParameter (i)
-		local stringAllNames = DF:CreateLabel (checkboxAllNames, "Show All", 10, "orange", nil, "noRelevantNamesString", nil, "overlay")
-		stringAllNames:SetPoint ("left", checkboxAllNames, "right", 2, 0)
-		
-		if (not frameConfigShowEnableBox [i]) then
-			checkboxRelevant:Hide()
-			checkboxNoRelevantNames:Hide()
-			checkboxOnlyNames:Hide()
-			checkboxAllNames:Hide()
-		end
+
 	end
 	
 	--cria o botão de configurar a relevancia para os friendly npcs
@@ -2990,9 +3111,12 @@ playerConfigButton:SetPoint ("left", interfaceOptions.widget_list [2], "right", 
 -------------------------------------------------------------------------------
 -- painel para configurar debuffs e buffs
 
-local welcomestring = DF:CreateLabel (auraFilterFrame, "Cast spells to fill buffs and debuffs\nlist from the combat log", 16, "orange")
+local welcomestring = DF:CreateLabel (auraFilterFrame, "Cast spells to fill buffs and debuffs list.", 16, "white")
 welcomestring:SetPoint ("topleft", self, "topleft", 10, -110)
-
+local subLine = DF:CreateImage (auraFilterFrame, nil, 300, 1)
+subLine:SetColorTexture (1, 1, 1, 0.7)
+subLine:SetPoint ("topleft", welcomestring, "bottomleft")
+subLine:SetPoint ("topright", welcomestring, "bottomright")
 
 local ResetWidgets = function (self)
 	for _, widget in ipairs (self.widgets) do 
@@ -3001,11 +3125,24 @@ local ResetWidgets = function (self)
 	self.nextWidget = 1
 end
 
+local onenter = function (self, capsule)
+	GameTooltip:SetOwner (self, "ANCHOR_RIGHT")
+	GameTooltip:SetSpellByID (capsule.spellid)
+	GameTooltip:Show()
+	capsule.textcolor = "white"
+end
+local onleave = function (self, capsule)
+	GameTooltip:Hide()
+	capsule.textcolor = "khaki"
+end
 local GetOrCreateWidget = function (self)
 	local index = self.nextWidget
 	local widget = self.widgets [index]
 	if (not widget) then
-		widget = DF:CreateButton (self, function()end, 160, 20, "", nil, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
+		widget = DF:CreateButton (self, function()end, 235, 20, "", nil, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
+		widget:SetHook ("OnEnter", onenter)
+		widget:SetHook ("OnLeave", onleave)
+		widget.textcolor = "wheat"
 		tinsert (self.widgets, widget)
 	end
 	self.nextWidget = self.nextWidget + 1
@@ -3021,6 +3158,7 @@ local RefreshWidgets = function (self)
 		local spellname, _, spellicon = GetSpellInfo (spellid)
 		widget:SetIcon (spellicon, 20, 20)
 		widget:SetText (spellname)
+		widget.spellid = spellid
 		widget:Show()
 	end
 end
@@ -3040,7 +3178,6 @@ end
 	name2:SetPoint ("topleft", name, "bottomleft", 0, -1)
 
 	--lista do combat log
-	debuffs_list:SetSize (200, 400)
 	debuffs_list.widgets = {}
 	debuffs_list.spells = ALL_DEBUFFS
 	debuffs_list.func = function (self, button, spellid)
@@ -3055,7 +3192,6 @@ end
 	debuffs_list.nextWidget = 1
 
 	--lista dos ja banidos
-	debuffs_added_list:SetSize (200, 400)
 	debuffs_added_list.widgets = {}
 	debuffs_added_list.spells = FILTER_DEBUFFS_BANNED
 	debuffs_added_list.func = function (self, button, spellid)
@@ -3082,7 +3218,6 @@ end
 	name2:SetPoint ("topleft", name, "bottomleft", 0, -1)
 
 	--lista do combat log
-	buffs_list:SetSize (200, 400)
 	buffs_list.widgets = {}
 	buffs_list.spells = ALL_BUFFS
 	buffs_list.func = function (self, button, spellid)
@@ -3097,7 +3232,6 @@ end
 	buffs_list.nextWidget = 1
 
 	--lista dos ja banidos
-	buffs_added_list:SetSize (200, 400)
 	buffs_added_list.widgets = {}
 	buffs_added_list.spells = FILTER_BUFFS_BANNED
 	buffs_added_list.func = function (self, button, spellid)
@@ -3111,9 +3245,17 @@ end
 	
 --seta os pontos
 debuffs_list:SetPoint ("topleft", auraFilterFrame, "topleft", 10, -200)
-debuffs_added_list:SetPoint ("topleft", auraFilterFrame, "topleft", 440, -200)
-buffs_list:SetPoint ("topleft", auraFilterFrame, "topleft", 220, -200)
-buffs_added_list:SetPoint ("topleft", auraFilterFrame, "topleft", 660, -200)
+buffs_list:SetPoint ("topleft", auraFilterFrame, "topleft", 260, -200)
+debuffs_added_list:SetPoint ("topleft", auraFilterFrame, "topleft", 520, -200)
+buffs_added_list:SetPoint ("topleft", auraFilterFrame, "topleft", 780, -200)
+
+local allframes = {debuffs_list, buffs_list, debuffs_added_list, buffs_added_list}
+for _, frame in ipairs (allframes) do
+	frame:SetBackdrop ({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", tile = true, tileSize = 16, edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
+	frame:SetBackdropColor (0, 0, 0, 0.5)
+	frame:SetBackdropBorderColor (0, 0, 0, 0.3)
+	frame:SetSize (240, 380)
+end
 
 local readCombatLog = CreateFrame ("frame", nil, auraFilterFrame)
 readCombatLog:SetScript ("OnEvent", function (self, event, time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellid, spellname, spellschool, auraType, amount)
@@ -3132,6 +3274,20 @@ end)
 
 auraFilterFrame:SetScript ("OnShow", function()
 	--wipe (ALL_DEBUFFS)
+	
+	for i = 1, BUFF_MAX_DISPLAY do
+		--buff
+		local name, rank, texture, count, debuffType, duration, expirationTime, caster, _, nameplateShowPersonal, spellId, _, _, _, nameplateShowAll = UnitAura ("player", i, "HELPFUL")
+		if (name) then
+			ALL_BUFFS [spellId] = true
+		end
+		--debuff
+		local name, rank, texture, count, debuffType, duration, expirationTime, caster, _, nameplateShowPersonal, spellId, _, _, _, nameplateShowAll = UnitAura ("player", i, "HARMFUL")
+		if (name) then
+			ALL_DEBUFFS [spellId] = true
+		end
+	end
+	
 	debuffs_list:RefreshWidgets()
 	buffs_list:RefreshWidgets()
 	debuffs_added_list:RefreshWidgets()
@@ -4160,7 +4316,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 			get = function() return profile.plate_config.friendlyplayer.plate_order end,
 			values = function() return build_order_options ("friendlyplayer") end,
 			name = "Order",
-			desc = "Which order plates should go above and below.",
+			desc = "How the health, cast and buff bars are ordered.\n\nFrom bottom (near the character head) to top.",
 		},
 		
 		{type = "blank"},
@@ -4787,7 +4943,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 			get = function() return profile.plate_config.enemyplayer.plate_order end,
 			values = function() return build_order_options ("enemyplayer") end,
 			name = "Order",
-			desc = "Which order plates should go above and below.\n\nFrom bottom to top.",
+			desc = "How the health, cast and buff bars are ordered.\n\nFrom bottom (near the character head) to top.",
 		},
 		
 		{type = "blank"},
@@ -5423,7 +5579,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 			get = function() return profile.plate_config.friendlynpc.plate_order end,
 			values = function() return build_order_options ("friendlynpc") end,
 			name = "Order",
-			desc = "Which order plates should go above and below.\n\nFrom bottom to top.",
+			desc = "How the health, cast and buff bars are ordered.\n\nFrom bottom (near the character head) to top.",
 		},
 		
 		{type = "blank"},
@@ -6178,7 +6334,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 			get = function() return profile.plate_config.enemynpc.plate_order end,
 			values = function() return build_order_options ("enemynpc") end,
 			name = "Order",
-			desc = "Which order plates should go above and below.\n\nFrom bottom to top.",
+			desc = "How the health, cast and buff bars are ordered.\n\nFrom bottom (near the character head) to top.",
 		},
 		
 		{type = "blank"},
@@ -6577,6 +6733,7 @@ local npc_types = {
 	[107326] = 9,
 	[108888] = 7,
 	[92839] = 2,
+	[98720] = 32,
 	[96999] = 3,
 	[108506] = 2,
 	[92457] = 33,
@@ -6624,9 +6781,10 @@ local npc_types = {
 	[96782] = 12,
 	[108560] = 2,
 	[93531] = 28,
-	[108553] = 3,
+	[111675] = 7,
+	[96822] = 5,
 	[98966] = 7,
-	[92245] = 2,
+	[98161] = 7,
 	[97876] = 2,
 	[93527] = 34,
 	[96990] = 12,
@@ -6634,59 +6792,59 @@ local npc_types = {
 	[98105] = 7,
 	[96980] = 2,
 	[96799] = 4,
-	[111327] = 7,
+	[93464] = 2,
 	[98106] = 4,
 	[97867] = 3,
-	[100559] = 7,
-	[92184] = 29,
+	[92456] = 33,
+	[92464] = 31,
 	[92560] = 7,
 	[103796] = 4,
-	[90638] = 2,
+	[93532] = 30,
 	[79858] = 9,
 	[94973] = 7,
 	[96975] = 2,
-	[93525] = 27,
+	[108534] = 12,
 	[97007] = 2,
-	[90639] = 7,
+	[97865] = 2,
 	[92194] = 25,
-	[89639] = 4,
+	[96807] = 4,
+	[93523] = 26,
 	[97852] = 4,
-	[92242] = 29,
 	[97868] = 7,
 	[95844] = 20,
-	[99867] = 11,
-	[110531] = 3,
-	[93521] = 26,
-	[97869] = 2,
-	[111627] = 2,
-	[93522] = 26,
-	[96976] = 2,
-	[96801] = 2,
-	[96785] = 12,
-	[89640] = 2,
-	[92195] = 30,
-	[112866] = 7,
-	[96817] = 5,
-	[96784] = 12,
+	[95118] = 4,
+	[96507] = 8,
 	[98124] = 7,
 	[93530] = 28,
-	[96507] = 8,
-	[95118] = 4,
-	[93523] = 26,
-	[96807] = 4,
-	[97865] = 2,
-	[108534] = 12,
+	[96784] = 12,
+	[112866] = 7,
+	[96976] = 2,
+	[92195] = 30,
+	[93522] = 26,
+	[89640] = 2,
+	[96785] = 12,
+	[96801] = 2,
+	[96817] = 5,
+	[111627] = 2,
+	[97869] = 2,
+	[93521] = 26,
+	[110531] = 3,
+	[92242] = 29,
+	[99867] = 11,
+	[89639] = 4,
+	[90639] = 7,
+	[93525] = 27,
 	[96977] = 2,
-	[93532] = 30,
-	[92464] = 31,
-	[92456] = 33,
-	[93464] = 2,
+	[90638] = 2,
+	[92184] = 29,
+	[100559] = 7,
+	[111327] = 7,
 	[96802] = 12,
 	[96818] = 5,
 	[111624] = 7,
 	[97870] = 7,
-	[98161] = 7,
-	[96822] = 5,
+	[92245] = 2,
+	[108553] = 3,
 }
 
 function Plater.CheckForNpcType (plateFrame)
