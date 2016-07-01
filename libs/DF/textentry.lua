@@ -143,6 +143,21 @@ DF.TextEntryCounter = 1
 
 ------------------------------------------------------------------------------------------------------------
 --> methods
+	local cleanfunction = function()end
+	function TextEntryMetaFunctions:SetEnterFunction (func, param1, param2)
+		if (func) then
+			_rawset (self, "func", func)
+		else
+			_rawset (self, "func", cleanfunction)
+		end
+		
+		if (param1 ~= nil) then
+			_rawset (self, "param1", param1)
+		end
+		if (param2 ~= nil) then
+			_rawset (self, "param2", param2)
+		end
+	end
 
 --> set point
 	function TextEntryMetaFunctions:SetPoint (MyAnchor, SnapTo, HisAnchor, x, y, Width)
@@ -295,7 +310,7 @@ DF.TextEntryCounter = 1
 	local OnEnter = function (textentry)
 
 		if (textentry.MyObject.OnEnterHook) then
-			local interrupt = textentry.MyObject.OnEnterHook (textentry)
+			local interrupt = textentry.MyObject.OnEnterHook (textentry, textentry.MyObject)
 			if (interrupt) then
 				return
 			end
@@ -318,7 +333,7 @@ DF.TextEntryCounter = 1
 	
 	local OnLeave = function (textentry)
 		if (textentry.MyObject.OnLeaveHook) then
-			local interrupt = textentry.MyObject.OnLeaveHook (textentry)
+			local interrupt = textentry.MyObject.OnLeaveHook (textentry, textentry.MyObject)
 			if (interrupt) then
 				return
 			end
@@ -338,7 +353,7 @@ DF.TextEntryCounter = 1
 	
 	local OnHide = function (textentry)
 		if (textentry.MyObject.OnHideHook) then
-			local interrupt = textentry.MyObject.OnHideHook (textentry)
+			local interrupt = textentry.MyObject.OnHideHook (textentry, textentry.MyObject)
 			if (interrupt) then
 				return
 			end
@@ -347,7 +362,7 @@ DF.TextEntryCounter = 1
 	
 	local OnShow = function (textentry)
 		if (textentry.MyObject.OnShowHook) then
-			local interrupt = textentry.MyObject.OnShowHook (textentry)
+			local interrupt = textentry.MyObject.OnShowHook (textentry, textentry.MyObject)
 			if (interrupt) then
 				return
 			end
@@ -357,7 +372,7 @@ DF.TextEntryCounter = 1
 	local OnEnterPressed = function (textentry, byScript) 
 	
 		if (textentry.MyObject.OnEnterPressedHook) then
-			local interrupt = textentry.MyObject.OnEnterPressedHook (textentry)
+			local interrupt = textentry.MyObject.OnEnterPressedHook (textentry, textentry.MyObject)
 			if (interrupt) then
 				return
 			end
@@ -384,7 +399,7 @@ DF.TextEntryCounter = 1
 	local OnEscapePressed = function (textentry)
 	
 		if (textentry.MyObject.OnEscapePressedHook) then
-			local interrupt = textentry.MyObject.OnEscapePressedHook (textentry)
+			local interrupt = textentry.MyObject.OnEscapePressedHook (textentry, textentry.MyObject)
 			if (interrupt) then
 				return
 			end
@@ -401,7 +416,7 @@ DF.TextEntryCounter = 1
 		if (textentry:IsShown()) then
 		
 			if (textentry.MyObject.OnEditFocusLostHook) then
-				local interrupt = textentry.MyObject.OnEditFocusLostHook (textentry)
+				local interrupt = textentry.MyObject.OnEditFocusLostHook (textentry, textentry.MyObject)
 				if (interrupt) then
 					return
 				end
@@ -429,7 +444,7 @@ DF.TextEntryCounter = 1
 	
 	local OnEditFocusGained = function (textentry)
 		if (textentry.MyObject.OnEditFocusGainedHook) then
-			local interrupt = textentry.MyObject.OnEditFocusGainedHook (textentry)
+			local interrupt = textentry.MyObject.OnEditFocusGainedHook (textentry, textentry.MyObject)
 			if (interrupt) then
 				return
 			end
@@ -439,7 +454,7 @@ DF.TextEntryCounter = 1
 	
 	local OnChar = function (textentry, text) 
 		if (textentry.MyObject.OnCharHook) then
-			local interrupt = textentry.MyObject.OnCharHook (textentry, text)
+			local interrupt = textentry.MyObject.OnCharHook (textentry, text, textentry.MyObject)
 			if (interrupt) then
 				return
 			end
@@ -448,7 +463,7 @@ DF.TextEntryCounter = 1
 	
 	local OnTextChanged = function (textentry, byUser) 
 		if (textentry.MyObject.OnTextChangedHook) then
-			local interrupt = textentry.MyObject.OnTextChangedHook (textentry, byUser)
+			local interrupt = textentry.MyObject.OnTextChangedHook (textentry, byUser, textentry.MyObject)
 			if (interrupt) then
 				return
 			end
@@ -457,7 +472,7 @@ DF.TextEntryCounter = 1
 	
 	local OnTabPressed = function (textentry) 
 		if (textentry.MyObject.OnTabPressedHook) then
-			local interrupt = textentry.MyObject.OnTabPressedHook (textentry, byUser)
+			local interrupt = textentry.MyObject.OnTabPressedHook (textentry, byUser, textentry.MyObject)
 			if (interrupt) then
 				return
 			end

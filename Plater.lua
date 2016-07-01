@@ -2,7 +2,7 @@ if (true) then
 	--return
 	--but not today
 end
---SCENARIOSPARTS
+
 --details! framework
 local DF = _G ["DetailsFramework"]
 if (not DF) then
@@ -368,6 +368,7 @@ local default_config = {
 			},
 		},
 
+		aggro_tick_rate = 0.10000000,
 		culling_distance = 100,
 		use_playerclass_color = false,
 		debuff_size_multiplier = 1.3,
@@ -394,14 +395,17 @@ local default_config = {
 		indicator_anchor = {side = 2, x = -2, y = 0},
 		
 		border_color = {0, 0, 0, .33},
-		
+
 		tank = {
 			colors = {
 				aggro = {.5, .5, 1},
 				noaggro = {1, 0, 0},
 				pulling = {1, 1, 0},
+				--nocombat = {0.698, 0.705, 1},
+				nocombat = {0.380, 0.003, 0},
 			},
 		},
+		
 		dps = {
 			colors = {
 				aggro = {1, .5, .5},
@@ -863,24 +867,85 @@ function Plater.OnInit (self)
 	end)
 	
 	InstallHook (Plater.GetDriverSubObjectName (CBF_Name, Plater.DriverFuncNames.OnCastBarEvent), function (self, event, ...)
-		if (event == "UNIT_SPELLCAST_START") then
-			local unitCast = ...
+	
+		local unit = ...
+		
+		if (event == "PLAYER_ENTERING_WORLD") then
+			if (not self.isNamePlate) then
+				return
+			end
+			
+			unit = self.unit
+			
+			local castname = UnitCastingInfo (unit)
+			local channelname = UnitChannelInfo (unit)
+			if (castname) then
+				event = "UNIT_SPELLCAST_START"
+			elseif (channelname) then
+				event = "UNIT_SPELLCAST_CHANNEL_START"
+			else
+				return
+			end
+		end
+		
+		if (event == "UNIT_SPELLCAST_START" and self.percentText) then
+			local unitCast = unit
 			if (unitCast ~= self.unit or not self.isNamePlate) then
 				return
 			end
-			local name, nameSubtext, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible = UnitCastingInfo (unitCast)
+			local name, nameSubtext, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, arg10 = UnitCastingInfo (unitCast)
 			self.Icon:SetTexture (texture)
 			self.Icon:Show()
+			self.Icon:SetDrawLayer ("OVERLAY", 5)
+			if (notInterruptible) then
+				self.BorderShield:ClearAllPoints()
+				self.BorderShield:SetPoint ("center", self.Icon, "center")
+				self.BorderShield:SetDrawLayer ("OVERLAY", 6)
+				self.BorderShield:Show()
+			else
+				self.BorderShield:Hide()
+			end
+			
+			self.ReUpdateNextTick = true
+			
+		elseif (event == "UNIT_SPELLCAST_CHANNEL_START" and self.percentText) then
+			local unitCast = unit
+			if (unitCast ~= self.unit or not self.isNamePlate) then
+				return
+			end
+			local name, nameSubtext, text, texture, startTime, endTime, isTradeSkill, notInterruptible = UnitChannelInfo (unitCast)
+			
+			self.Icon:SetTexture (texture)
+			self.Icon:Show()
+			self.Icon:SetDrawLayer ("OVERLAY", 5)
+			if (notInterruptible) then
+				self.BorderShield:ClearAllPoints()
+				self.BorderShield:SetPoint ("center", self.Icon, "center")
+				self.BorderShield:SetDrawLayer ("OVERLAY", 6)
+				self.BorderShield:Show()
+			else
+				self.BorderShield:Hide()
+			end
+			
+			self.ReUpdateNextTick = true
 		end
 	end)
 	
 	InstallHook (Plater.GetDriverSubObjectName (CBF_Name, Plater.DriverFuncNames.OnTick), function (self, deltaTime)
-		if (self.casting) then
-			self.percentText:SetText (format ("%.1f", abs (self.value - self.maxValue)))
-		elseif (self.channeling) then
-			self.percentText:SetText (format ("%.1f", abs (self.value - self.maxValue)))
-		else
-			self.percentText:SetText ("")
+		if (self.percentText) then --é uma castbar do plater?
+			if (self.casting) then
+				self.percentText:SetText (format ("%.1f", abs (self.value - self.maxValue)))
+			elseif (self.channeling) then
+				self.percentText:SetText (format ("%.1f", abs (self.value - self.maxValue)))
+			else
+				self.percentText:SetText ("")
+			end
+			
+			if (self.ReUpdateNextTick) then
+				self.BorderShield:ClearAllPoints()
+				self.BorderShield:SetPoint ("center", self.Icon, "center")
+				self.ReUpdateNextTick = nil
+			end
 		end
 	end)
 
@@ -928,43 +993,56 @@ function Plater.UpdateAggroPlates (self)
 
 	if (IsPlayerEffectivelyTank()) then
 		--se o jogador é TANK
-		if (not isTanking) then
+		if (isTanking == nil and UnitAffectingCombat (self.displayedUnit)) then
+			--não há aggro neste mob mas ele esta participando do combate
+			Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.tank.colors.noaggro))
+			
+		elseif (isTanking == nil and not UnitAffectingCombat (self.displayedUnit)) then
+			--náo ha aggro e ele não esta participando do combate
+			if (self [MEMBER_REACTION] == 4) then
+				--o mob é um npc neutro, apenas colorir com a cor neutra
+				Plater.ForceChangeHealthBarColor (self.healthBar, 1, 1, 0)
+			else
+				Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.tank.colors.nocombat))
+			end
+			
+		elseif (not isTanking) then
 			--o jogador não esta tankando
-			self.healthBar.barTexture:SetVertexColor (unpack (Plater.db.profile.tank.colors.noaggro))
+			Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.tank.colors.nocombat))
 		else
 			--o jogador esta tankando e:
 			if (threatStatus == 3) then --esta tankando com segurança
-				self.healthBar.barTexture:SetVertexColor (unpack (Plater.db.profile.tank.colors.aggro))
+				Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.tank.colors.aggro))
 			elseif (threatStatus == 2) then --esta tankando sem segurança
-				self.healthBar.barTexture:SetVertexColor (unpack (Plater.db.profile.tank.colors.pulling))
+				Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.tank.colors.pulling))
 			else --não esta tankando
-				self.healthBar.barTexture:SetVertexColor (unpack (Plater.db.profile.tank.colors.noaggro))
+				Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.tank.colors.noaggro))
 			end
 		end
 	else
 		--o player é DPS
 		if (isTanking) then
 			--o jogador esta tankando como dps
-			self.healthBar.barTexture:SetVertexColor (unpack (Plater.db.profile.dps.colors.aggro))
+			Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.dps.colors.aggro))
 			if (not self:GetParent().playerHasAggro) then
 				self:GetParent().PlayAggroFlash()
 			end
 			self:GetParent().playerHasAggro = true
 		else
 			if (threatStatus == 3) then --o jogador esta tankando como dps
-				self.healthBar.barTexture:SetVertexColor (unpack (Plater.db.profile.dps.colors.aggro))
+				Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.dps.colors.aggro))
 				if (not self:GetParent().playerHasAggro) then
 					self:GetParent().PlayAggroFlash()
 				end
 				self:GetParent().playerHasAggro = true
 			elseif (threatStatus == 2) then --esta tankando com pouco aggro
-				self.healthBar.barTexture:SetVertexColor (unpack (Plater.db.profile.dps.colors.aggro))
+				Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.dps.colors.aggro))
 				self:GetParent().playerHasAggro = true
 			elseif (threatStatus == 1) then --esta quase puxando o aggro
-				self.healthBar.barTexture:SetVertexColor (unpack (Plater.db.profile.dps.colors.pulling))
+				Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.dps.colors.pulling))
 				self:GetParent().playerHasAggro = false
 			elseif (threatStatus == 0) then --não esta tanando
-				self.healthBar.barTexture:SetVertexColor (unpack (Plater.db.profile.dps.colors.noaggro))
+				Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.dps.colors.noaggro))
 				self:GetParent().playerHasAggro = false
 			else
 				--não faz nada
@@ -974,16 +1052,16 @@ function Plater.UpdateAggroPlates (self)
 end
 
 -- ~ontick
-local EventTickFunction = function (plateFrame, elapsed)
+local EventTickFunction = function (plateFrame, deltaTime)
 	local unitFrame = plateFrame.UnitFrame
-
+	
 	--é realmente uma nameplate?
 	if (not unitFrame.healthBar.barTexture or not unitFrame.unit) then
 		return
 	end
 	
 	unitFrame.name:Hide()
-
+	
 	if (plateFrame.UnitFrame.hasCC) then
 		local name, rank, texture, count, debuffType, duration, expirationTime, caster, _, nameplateShowPersonal, spellId, _, _, _, nameplateShowAll = UnitDebuff (plateFrame.namePlateUnitToken, plateFrame.UnitFrame.hasCC)
 		if (expirationTime and duration) then
@@ -992,18 +1070,23 @@ local EventTickFunction = function (plateFrame, elapsed)
 	end
 	
 	if (InCombatLockdown()) then
-		--é inimigo?
-		local reaction = UnitReaction ("player", unitFrame.unit)
-		if (reaction <= 4 and not IsTapDenied (unitFrame)) then
-			--é um inimigo ou neutro
-			Plater.UpdateAggroPlates (unitFrame)
-		else
-			--o proprio jogo seta a cor da barra aqui
-		end
-		
-		if (Plater.db.profile.plate_config [plateFrame.actorType].percent_text_enabled) then
-			Plater.UpdateLifePercentText (plateFrame.UnitFrame.healthBar.lifePercent, plateFrame.namePlateUnitToken)
-		end
+		--if (plateFrame.UpdateAggroTick < 0) then
+			--é inimigo?
+			if (plateFrame [MEMBER_REACTION] <= 4 and not IsTapDenied (unitFrame)) then
+				--é um inimigo ou neutro
+				Plater.UpdateAggroPlates (unitFrame)
+			else
+				--o proprio jogo seta a cor da barra aqui
+			end
+			
+			if (Plater.db.profile.plate_config [plateFrame.actorType].percent_text_enabled) then
+				Plater.UpdateLifePercentText (plateFrame.UnitFrame.healthBar.lifePercent, plateFrame.namePlateUnitToken)
+			end
+			
+		--	plateFrame.UpdateAggroTick = Plater.db.profile.aggro_tick_rate
+		--else
+		--	plateFrame.UpdateAggroTick = plateFrame.UpdateAggroTick - deltaTime
+		--end
 	else
 		--nao esta em combate, verifica se a porcetagem esta para mostrar fora de combate
 		if (Plater.db.profile.plate_config [plateFrame.actorType].percent_text_enabled and Plater.db.profile.plate_config [plateFrame.actorType].percent_text_ooc) then
@@ -1011,9 +1094,12 @@ local EventTickFunction = function (plateFrame, elapsed)
 			plateFrame.UnitFrame.healthBar.lifePercent:Show()
 		end
 	end
-	
+end
 
-	
+function Plater.UpdateAllNameplateColors()
+	for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+		CompactUnitFrame_UpdateHealthColor (plateFrame.UnitFrame)
+	end
 end
 
 function Plater.SetPlateBackground (plateFrame)
@@ -1097,6 +1183,7 @@ function Plater:PLAYER_REGEN_ENABLED()
 	if (not InCombatLockdown() and Plater.db.profile.enemyplates_only_combat) then
 		SetCVar (CVAR_ENEMY_ALL, CVAR_DISABLED)
 	end
+	Plater.UpdateAllNameplateColors()
 end
 
 function Plater.CreateHealthFlashFrame (plateFrame)
@@ -1654,6 +1741,7 @@ function Plater.UpdatePlateSize (plateFrame)
 		castFrame:SetPoint ("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -scalarValue, buffFrameSize + SizeOf_healthBar_Height + 2);
 		castFrame:SetHeight (SizeOf_castBar_Height)
 		castFrame.Icon:SetSize (SizeOf_castBar_Height, SizeOf_castBar_Height)
+		castFrame.BorderShield:SetSize (SizeOf_castBar_Height*1.4, SizeOf_castBar_Height*1.4)
 		
 		local scalarValue
 		if (Plater.zonePvpType ~= "sanctuary") then
@@ -1696,6 +1784,7 @@ function Plater.UpdatePlateSize (plateFrame)
 		castFrame:SetPoint ("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -scalarValue, buffFrameSize + SizeOf_healthBar_Height + 2);
 		castFrame:SetHeight (SizeOf_castBar_Height)
 		castFrame.Icon:SetSize (SizeOf_castBar_Height, SizeOf_castBar_Height)
+		castFrame.BorderShield:SetSize (SizeOf_castBar_Height*1.4, SizeOf_castBar_Height*1.4)
 		
 		local scalarValue
 		if (Plater.zonePvpType ~= "sanctuary") then
@@ -1749,6 +1838,7 @@ function Plater.UpdatePlateSize (plateFrame)
 		castFrame:SetPoint ("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -scalarValue, 	0 )
 		castFrame:SetHeight (SizeOf_castBar_Height)
 		castFrame.Icon:SetSize (SizeOf_castBar_Height, SizeOf_castBar_Height)
+		castFrame.BorderShield:SetSize (SizeOf_castBar_Height*1.4, SizeOf_castBar_Height*1.4)
 		
 		local scalarValue
 		local passouPor = 0
@@ -1858,8 +1948,10 @@ end
 Plater:RegisterEvent ("PLAYER_ENTERING_WORLD")
 
 function Plater.ForceChangeHealthBarColor (healthBar, r, g, b)
-	healthBar.r, healthBar.g, healthBar.b = r, g, b
-	healthBar.barTexture:SetVertexColor (r, g, b)
+	if (r ~= healthBar.r or g ~= healthBar.g or b ~= healthBar.b) then
+		healthBar.r, healthBar.g, healthBar.b = r, g, b
+		healthBar.barTexture:SetVertexColor (r, g, b)
+	end
 end
 
 function Plater.CheckForDetectors (plateFrame)
@@ -2231,9 +2323,6 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame)
 	plateFrame.UnitFrame.isNamePlate = true
 	plateFrame.UnitFrame.BuffFrame.amtDebuffs = 0
 
-	--tick
-	plateFrame:HookScript ("OnUpdate", EventTickFunction)
-	
 	--nome customizado
 	local actorName = plateFrame.UnitFrame.healthBar:CreateFontString (nil, "artwork", "GameFontNormal")
 	plateFrame.UnitFrame.healthBar.actorName = actorName
@@ -2295,9 +2384,7 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame)
 	plateFrame.UnitFrame.castBar.BorderShield:SetTexture ([[Interface\ACHIEVEMENTFRAME\UI-Achievement-Progressive-IconBorder]])
 	plateFrame.UnitFrame.castBar.BorderShield:SetTexCoord (5/64, 37/64, 1/64, 36/64)
 	plateFrame.UnitFrame.castBar.isNamePlate = true
-	
 
-	
 	--icones indicadores
 	plateFrame.IconIndicators = {}
 	
@@ -2309,6 +2396,9 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame)
 	--flash de aggro
 	Plater.CreateAggroFlashFrame (plateFrame)
 	plateFrame.playerHasAggro = false
+	
+	plateFrame.UpdateAggroTick = Plater.db.profile.aggro_tick_rate
+	plateFrame:HookScript ("OnUpdate", EventTickFunction)
 end
 
 function Plater.CanShowPlateFor (actorType)
@@ -2325,10 +2415,12 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId)
 	
 	local name = UnitName (unitBarId)
 	plateFrame.UnitFrame.healthBar.actorName:SetText (name)
-
+	
 	Plater.UpdatePlateClickSpace (plateFrame)
+	
 	local reaction = UnitReaction ("player", unitBarId)
 	plateFrame [MEMBER_REACTION] = reaction
+	plateFrame.UnitFrame [MEMBER_REACTION] = reaction
 	
 	if (plateFrame.UnitFrame.unit) then
 		if (UnitIsUnit (unitBarId, "player")) then
@@ -2360,10 +2452,8 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId)
 	plateFrame.UnitFrame.castBar.BorderShield:ClearAllPoints()
 	plateFrame.UnitFrame.castBar.BorderShield:SetPoint ("left", plateFrame.UnitFrame.castBar, "left", 0, 0)
 
-	--aggro stuff
-	local isTanking, threatStatus = UnitDetailedThreatSituation ("player", unitBarId);
-	plateFrame.playerHasAggro = isTanking or false
-	Plater.UpdateAggroPlates (plateFrame.UnitFrame)
+	--tick
+	plateFrame.UpdateAggroTick = Plater.db.profile.aggro_tick_rate
 end
 
 function Plater.UpdateUseClassColors()
@@ -3625,7 +3715,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
 			name = "Aggro Color",
-			desc = "The name plate is painted with this color when you are a Tank and have aggro.",
+			desc = "When you are a Tank and have aggro.",
 		},
 		{
 			type = "color",
@@ -3651,7 +3741,20 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
 			name = "High Threat Color",
-			desc = "When you are neat to pull the aggro.",
+			desc = "When you are near to pull the aggro from the other tank or group member.",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = profile.tank.colors.nocombat
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = profile.tank.colors.nocombat
+				color[1], color[2], color[3], color[4] = r, g, b, a
+			end,
+			name = "Not in Combat Color",
+			desc = "When you are in combat and the enemy isn't in combat with you or with a member of your group.",
 		},
 		
 		{type = "blank"},
@@ -3802,7 +3905,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 				Plater.UpdateAllPlates()
 			end,
 			name = "Crowd Control Icon",
-			desc = "When the actor has a crown control spell (such as Polymorph).",
+			desc = "When the actor has a crowd control spell (such as Polymorph).",
 		},
 		
 		{type = "blank"}, {type = "blank"}, {type = "blank"},
