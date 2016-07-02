@@ -64,6 +64,7 @@ LibSharedMedia:Register ("statusbar", "WorldState Score", [[Interface\WorldState
 LibSharedMedia:Register ("statusbar", "DGround", [[Interface\AddOns\Plater\images\bar_background]])
 LibSharedMedia:Register ("statusbar", "PlaterBackground", [[Interface\AddOns\Plater\images\platebackground]])
 LibSharedMedia:Register ("statusbar", "PlaterTexture", [[Interface\AddOns\Plater\images\platetexture]])
+LibSharedMedia:Register ("statusbar", "PlaterHighlight", [[Interface\AddOns\Plater\images\plateselected]])
 
 LibSharedMedia:Register ("font", "Oswald", [[Interface\Addons\Plater\fonts\Oswald-Regular.otf]])
 LibSharedMedia:Register ("font", "Nueva Std Cond", [[Interface\Addons\Plater\fonts\NuevaStd-Cond.otf]])
@@ -365,6 +366,38 @@ local default_config = {
 				percent_text_anchor = {side = 9, x = 0, y = 0},
 				percent_text_alpha = 1,
 				percent_text_ooc = false,
+				
+				power_percent_text_enabled = true,
+				power_percent_text_size = 9,
+				power_percent_text_font = "Arial Narrow",
+				power_percent_text_shadow = true,
+				power_percent_text_color = {.9, .9, .9, 1},
+				power_percent_text_anchor = {side = 9, x = 0, y = 0},
+				power_percent_text_alpha = 1,
+			},
+		},
+		
+		resources = {
+			MONK = {
+				chi_scale = 2,
+			},
+			MAGE = {
+				arcane_charge_scale = 1,
+			},
+			DEATHKNIGHT = {
+				rune_scale = 1,
+			},
+			PALADIN = {
+				holypower_scale = 1,
+			},
+			ROGUE = {
+				combopoint_scale = 1,
+			},
+			DRUID = {
+				combopoint_scale = 1,
+			},
+			WARLOCK = {
+				soulshard_scale = 1,
 			},
 		},
 
@@ -375,9 +408,11 @@ local default_config = {
 		debuff_show_cc = true,
 		
 		health_statusbar_texture = "PlaterTexture", --"DGround"
-		health_selection_overlay = "Skyline",
+		health_selection_overlay = "PlaterHighlight",
 		health_statusbar_bgtexture = "PlaterBackground",
 		health_statusbar_bgcolor = {1, 1, 1, 1},
+		health_statusbar_bgalpha = 1,
+		health_statusbar_bgalpha_selected = .7,
 		
 		cast_statusbar_texture = "DGround",
 		cast_statusbar_bgtexture = "Details Serenity",
@@ -394,7 +429,7 @@ local default_config = {
 		indicator_quest = true,
 		indicator_anchor = {side = 2, x = -2, y = 0},
 		
-		border_color = {0, 0, 0, .33},
+		border_color = {0, 0, 0, .15},
 
 		tank = {
 			colors = {
@@ -426,6 +461,7 @@ Plater.DriverFuncNames = {
 	["OnUpdateBuffs"] = "UpdateBuffs",
 	["OnUpdateHealth"] = "UpdateHealth",
 	["OnUpdateAnchor"] = "UpdateAnchor",
+	["OnBorderUpdate"] = "SetVertexColor",
 	["OnChangeHealthConfig"] = "UpdateHealthColor",
 	["OnSelectionUpdate"] = "UpdateSelectionHighlight",
 	["OnAuraUpdate"] = "OnUnitAuraUpdate",
@@ -449,6 +485,7 @@ local NPF_Name = "NamePlateDriverFrame" --nameplate frame
 local NPB_Name = "NameplateBuffContainerMixin" --nameplate buff
 local CNP_Name = "CompactNamePlate" --compactnameplate
 local CBF_Name = "CastingBarFrame" --castingbar
+local BMX_Name = "NamePlateBorderTemplateMixin" --border mix-in
 
 --minor
 local STRING_DEFAULT = "Default"
@@ -678,9 +715,16 @@ function Plater.OnInit (self)
 			if (self.selectionHighlight:IsShown()) then
 				local targetedOverlayTexture = LibSharedMedia:Fetch ("statusbar", Plater.db.profile.health_selection_overlay)
 				self.selectionHighlight:SetTexture (targetedOverlayTexture)
+				self.healthBar.background:SetAlpha (Plater.db.profile.health_statusbar_bgalpha_selected)
+			else
+				self.healthBar.background:SetAlpha (1)
 			end
 			Plater.UpdatePlateBorders()
 		end
+	end)
+
+	InstallHook (Plater.GetDriverGlobalObject (BMX_Name), Plater.DriverFuncNames.OnBorderUpdate, function (self)
+		Plater.UpdatePlateBorders (self.plateFrame)
 	end)
 	
 	--sobrepõe a função que atualiza as auras
@@ -835,12 +879,16 @@ function Plater.OnInit (self)
 	end
 
 	InstallHook (Plater.GetDriverGlobalObject (NPF_Name), Plater.DriverFuncNames.OnResourceUpdate, function (self, onTarget, resourceFrame)
+	
+		--atualiza o tamanho da barra de mana
+		Plater.UpdateManaAndResourcesBar()
+	
 		if (not onTarget) then
 			-- ele esta chamando duas vezes, uma com resources no alvo e outra não
 			--ignorarando a que ele diz que não esta no alvo
 			return
 		end
-		
+
 		local plateFrame = C_NamePlate.GetNamePlateForUnit ("target")
 		
 		if (plateFrame) then
@@ -974,6 +1022,16 @@ function Plater.OnInit (self)
 		end
 	end)
 	
+	local powerPercent = ClassNameplateManaBarFrame:CreateFontString (nil, "overlay", "GameFontNormal")
+	ClassNameplateManaBarFrame.powerPercent = powerPercent
+	powerPercent:SetPoint ("center")
+	powerPercent:SetText ("100%")
+	
+	ClassNameplateManaBarFrame:HookScript ("OnValueChanged", function (self)
+		ClassNameplateManaBarFrame.powerPercent:SetText (floor (self:GetValue()/select (2, self:GetMinMaxValues()) * 100) .. "%")
+	end)
+	
+	
 	Plater.UpdateUseClassColors()
 	C_Timer.After (4.1, Plater.QuestLogUpdated)
 	C_Timer.After (5.1, Plater.UpdateAllPlates)
@@ -1021,6 +1079,7 @@ function Plater.UpdateAggroPlates (self)
 		end
 	else
 		--o player é DPS
+		
 		if (isTanking) then
 			--o jogador esta tankando como dps
 			Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.dps.colors.aggro))
@@ -1041,11 +1100,14 @@ function Plater.UpdateAggroPlates (self)
 			elseif (threatStatus == 1) then --esta quase puxando o aggro
 				Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.dps.colors.pulling))
 				self:GetParent().playerHasAggro = false
-			elseif (threatStatus == 0) then --não esta tanando
+			elseif (threatStatus == 0) then --não esta tankando
 				Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.dps.colors.noaggro))
 				self:GetParent().playerHasAggro = false
 			else
-				--não faz nada
+				if (threatStatus == nil and UnitAffectingCombat (self.displayedUnit)) then
+					Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.dps.colors.noaggro))
+					self:GetParent().playerHasAggro = false
+				end
 			end
 		end
 	end
@@ -1692,7 +1754,22 @@ function Plater.UpdatePlateText (plateFrame, plateConfigs)
 	else
 		lifeString:Hide()
 	end
-
+	
+	--atualiza o texto da porcentagem da mana
+	if (plateFrame.isSelf) then
+		if (plateConfigs.power_percent_text_enabled) then
+			local powerString = ClassNameplateManaBarFrame.powerPercent
+			DF:SetFontSize (powerString, plateConfigs.power_percent_text_size)
+			DF:SetFontFace (powerString, plateConfigs.power_percent_text_font)
+			DF:SetFontOutline (powerString, plateConfigs.power_percent_text_shadow)
+			DF:SetFontColor (powerString, plateConfigs.power_percent_text_color)
+			Plater.SetAnchor (powerString, plateConfigs.power_percent_text_anchor)
+			powerString:SetAlpha (plateConfigs.power_percent_text_alpha)
+			powerString:Show()
+		else
+			ClassNameplateManaBarFrame.powerPercent:Hide()
+		end
+	end
 end
 
 function Plater.UpdateLifePercentText (lifeString, unitId)
@@ -1763,6 +1840,12 @@ function Plater.UpdatePlateSize (plateFrame)
 		buffFrame.Y = -11 + plateConfigs.buff_frame_y_offset
 		buffFrame:SetPoint (buffFrame.Point1, buffFrame.Anchor, buffFrame.Point2, buffFrame.X, buffFrame.Y)
 
+		--player
+		if (plateFrame.isSelf) then
+			Plater.UpdateManaAndResourcesBar()
+			healthFrame.barTexture:SetVertexColor (DF:ParseColors ("lightgreen"))
+		end
+		
 	elseif (order == 2) then
 		--health, buffs, castbar
 		
@@ -1811,18 +1894,21 @@ function Plater.UpdatePlateSize (plateFrame)
 		buffFrame.Y = -1 + plateConfigs.buff_frame_y_offset
 		buffFrame:SetPoint (buffFrame.Point1, buffFrame.Anchor, buffFrame.Point2, buffFrame.X, buffFrame.Y)
 		
+		--player
+		if (plateFrame.isSelf) then
+			Plater.UpdateManaAndResourcesBar()
+			healthFrame.barTexture:SetVertexColor (DF:ParseColors ("lightgreen"))
+		end
+		
 	elseif (order == 3) then
 		--castbar, health, buffs
 
-		local castKey, heathKey, textKey, manaKey = Plater.GetHashKey (InCombatLockdown())
+		local castKey, heathKey, textKey = Plater.GetHashKey (InCombatLockdown())
 		local SizeOf_healthBar_Width = plateConfigs [heathKey][1]
 		local SizeOf_castBar_Width = plateConfigs [castKey][1]
 		local SizeOf_healthBar_Height = plateConfigs [heathKey][2]
 		local SizeOf_castBar_Height = plateConfigs [castKey][2]
 		local SizeOf_text = plateConfigs [textKey]
-		local SizeOf_manaBar_Width = plateConfigs [manaKey][1]
-		local SizeOf_manaBar_Height = plateConfigs [manaKey][2]
-
 
 --		print (plateFrame:GetSize())
 --		print (plateFrame.UnitFrame:GetSize())
@@ -1877,13 +1963,135 @@ function Plater.UpdatePlateSize (plateFrame)
 		buffFrame.Y = (buffFrameSize / 3) + 1 + plateConfigs.buff_frame_y_offset
 		buffFrame:SetPoint (buffFrame.Point1, buffFrame.Anchor, buffFrame.Point2, buffFrame.X, buffFrame.Y)
 		
-		--mana
+		--player
 		if (plateFrame.isSelf) then
-			ClassNameplateManaBarFrame:SetSize (SizeOf_manaBar_Width, SizeOf_manaBar_Height)
+			Plater.UpdateManaAndResourcesBar()
 			healthFrame.barTexture:SetVertexColor (DF:ParseColors ("lightgreen"))
+		end
+	end
+end
+
+function Plater.UpdateManaAndResourcesBar()
+	local profile = Plater.db.profile
+	local manaConfig = profile.plate_config [ACTORTYPE_PLAYER].mana
+	local locClass, class = UnitClass ("player")
+	local width, height = manaConfig[1], manaConfig[2]
+	
+	--mana and power
+	ClassNameplateManaBarFrame:SetSize (width, height)
+	
+	--chi windwalker
+	if (class == "MONK") then
+		ClassNameplateBrewmasterBarFrame:SetSize (width, height-2)
+		ClassNameplateBarWindwalkerMonkFrame:ClearAllPoints()
+		ClassNameplateBarWindwalkerMonkFrame:SetPoint ("topleft", ClassNameplateManaBarFrame, "bottomleft")
+		ClassNameplateBarWindwalkerMonkFrame:SetPoint ("topright", ClassNameplateManaBarFrame, "bottomright")
+		--ClassNameplateBarWindwalkerMonkFrame:SetSize (width, height-2)
+		local f = ClassNameplateBarWindwalkerMonkFrame
+		local scale = profile.resources.MONK.chi_scale
+		for i = 1, 5 do
+			local chi = f ["Chi" .. i]
+			chi:SetScale (scale)
+			local width = chi:GetWidth()
+			chi:ClearAllPoints()
+			chi:SetPoint ("center", (i-3)*width, 0)
+		end
+		
+	--arcane charge
+	elseif (class == "MAGE") then
+		local f = ClassNameplateBarMageFrame
+		f:ClearAllPoints()
+		f:SetPoint ("topleft", ClassNameplateManaBarFrame, "bottomleft")
+		f:SetPoint ("topright", ClassNameplateManaBarFrame, "bottomright")
+		
+		local scale = profile.resources.MAGE.arcane_charge_scale
+		for i = 1, 4 do
+			local charge = f ["Charge" .. i]
+			charge:SetScale (scale)
+			local width = charge:GetWidth()
+			charge:ClearAllPoints()
+			charge:SetPoint ("center", (i-2.5)*width, 0)
+		end
+	
+	--dk runes
+	elseif (class == "DEATHKNIGHT") then
+		local f = DeathKnightResourceOverlayFrame
+		f:ClearAllPoints()
+		f:SetPoint ("topleft", ClassNameplateManaBarFrame, "bottomleft")
+		f:SetPoint ("topright", ClassNameplateManaBarFrame, "bottomright")
+		
+		local scale = profile.resources.DEATHKNIGHT.rune_scale
+		for i = 1, 6 do
+			local charge = f ["Rune" .. i]
+			charge:SetScale (scale)
+			local width = charge:GetWidth()
+			charge:ClearAllPoints()
+			charge:SetPoint ("center", (i-3.5)*width, 0)
+		end
+
+	--paladin holy power
+	elseif (class == "PALADIN") then
+		local f = ClassNameplateBarPaladinFrame
+		f:ClearAllPoints()
+		f:SetPoint ("topleft", ClassNameplateManaBarFrame, "bottomleft")
+		f:SetPoint ("topright", ClassNameplateManaBarFrame, "bottomright")
+		
+		local scale = profile.resources.PALADIN.holypower_scale
+		for i = 1, 5 do
+			local charge = f ["Rune" .. i]
+			charge:SetScale (scale)
+			local width = charge:GetWidth()
+			charge:ClearAllPoints()
+			charge:SetPoint ("center", (i-3)*width, 0)
+		end
+		
+	elseif (class == "ROGUE" or class == "DRUID") then
+		local f = ClassNameplateBarRogueDruidFrame
+		f:ClearAllPoints()
+		f:SetPoint ("topleft", ClassNameplateManaBarFrame, "bottomleft")
+		f:SetPoint ("topright", ClassNameplateManaBarFrame, "bottomright")
+		
+		local scale
+		if (class == "ROGUE") then
+			scale = profile.resources.ROGUE.combopoint_scale
+		elseif (class == "DRUID") then
+			scale = profile.resources.DRUID.combopoint_scale
+		end
+		
+		for i = 1, 5 do
+			local charge = f ["Combo" .. i]
+			charge:SetScale (scale)
+			local width = charge:GetWidth()
+			charge:ClearAllPoints()
+			charge:SetPoint ("center", (i-3)*width, 0)
+		end
+		for i = 6, 8 do
+			local charge = f ["Combo" .. i]
+			charge:SetScale (scale)
+			local width = charge:GetWidth()
+			local height = charge:GetWidth()
+			charge:ClearAllPoints()
+			charge:SetPoint ("center", (i-2)*width, -(height/2)-3)
+		end
+
+	--warlock soul shards
+	elseif (class == "WARLOCK") then
+		local f = ClassNameplateBarWarlockFrame
+		f:ClearAllPoints()
+		f:SetPoint ("topleft", ClassNameplateManaBarFrame, "bottomleft")
+		f:SetPoint ("topright", ClassNameplateManaBarFrame, "bottomright")
+		
+		local scale = profile.resources.WARLOCK.soulshard_scale
+		for i = 1, 5 do
+			local charge = f ["Shard" .. i]
+			charge:SetScale (scale)
+			local width = charge:GetWidth()
+			charge:ClearAllPoints()
+			charge:SetPoint ("center", (i-3)*width, 0)
 		end
 		
 	end
+	
 end
 
 function Plater.ShouldForceSmallBar (plateFrame)
@@ -2162,6 +2370,9 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, order)
 	if (unitFrame.selectionHighlight:IsShown()) then
 		local targetedOverlayTexture = LibSharedMedia:Fetch ("statusbar", Plater.db.profile.health_selection_overlay)
 		unitFrame.selectionHighlight:SetTexture (targetedOverlayTexture)
+		unitFrame.healthBar.background:SetAlpha (Plater.db.profile.health_statusbar_bgalpha_selected)
+	else
+		unitFrame.healthBar.background:SetAlpha (1)
 	end
 
 	Plater.UpdatePlateBorders (plateFrame)
@@ -2322,6 +2533,7 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame)
 	plateFrame.isNamePlate = true
 	plateFrame.UnitFrame.isNamePlate = true
 	plateFrame.UnitFrame.BuffFrame.amtDebuffs = 0
+	plateFrame.UnitFrame.healthBar.border.plateFrame = plateFrame
 
 	--nome customizado
 	local actorName = plateFrame.UnitFrame.healthBar:CreateFontString (nil, "artwork", "GameFontNormal")
@@ -3402,6 +3614,21 @@ end)
 		Plater.UpdateAllPlates()
 	end
 	
+	local on_select_player_power_percent_text_font = function (_, _, value)
+		profile.plate_config.player.power_percent_text_font = value
+		Plater.UpdateAllPlates()
+	end
+	
+	local id, name, description, iconWindWalker = GetSpecializationInfoByID (269)
+	local id, name, description, iconArcane = GetSpecializationInfoByID (62)
+	local id, name, description, iconRune = GetSpecializationInfoByID (250)
+	local id, name, description, iconHolyPower = GetSpecializationInfoByID (66)
+	local id, name, description, iconRogueCB = GetSpecializationInfoByID (261)
+	local id, name, description, iconDruidCB = GetSpecializationInfoByID (103)
+	local id, name, description, iconSoulShard = GetSpecializationInfoByID (267)
+	
+	local locClass = UnitClass ("player")
+	
 	local options_personal = {
 		--life size
 		{type = "label", get = function() return "Health Bar Size:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
@@ -3465,6 +3692,10 @@ end)
 		},
 		--percent text
 		{type = "blank"},
+		{type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"},
+		{type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"},
+		{type = "blank"}, {type = "blank"}, {type = "blank"},
+		
 		{type = "label", get = function() return "Health Percent Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--enabled
 		{
@@ -3576,6 +3807,231 @@ end)
 			name = "Y Offset",
 			desc = "Slightly move the text vertically.",
 		},
+		
+		{type = "blank"},
+		{type = "label", get = function() return "Power Percent Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		--enabled
+		{
+			type = "toggle",
+			get = function() return profile.plate_config.player.power_percent_text_enabled end,
+			set = function (self, fixedparam, value) 
+				profile.plate_config.player.power_percent_text_enabled = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Enabled",
+			desc = "Show the percent text.",
+		},
+		--percent text size
+		{
+			type = "range",
+			get = function() return profile.plate_config.player.power_percent_text_size end,
+			set = function (self, fixedparam, value) 
+				profile.plate_config.player.power_percent_text_size = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 6,
+			max = 32,
+			step = 1,
+			name = "Size",
+			desc = "Size of the text.",
+		},
+		--percent text font
+		{
+			type = "select",
+			get = function() return profile.plate_config.player.power_percent_text_font end,
+			values = function() return DF:BuildDropDownFontList (on_select_player_power_percent_text_font) end,
+			name = "Font",
+			desc = "Font of the text.",
+		},
+		--percent text shadow
+		{
+			type = "toggle",
+			get = function() return profile.plate_config.player.power_percent_text_shadow end,
+			set = function (self, fixedparam, value) 
+				profile.plate_config.player.power_percent_text_shadow = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Shadow",
+			desc = "If the text has a black outline.",
+		},
+		--pecent text color
+		{
+			type = "color",
+			get = function()
+				local color = profile.plate_config.player.power_percent_text_color
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = profile.plate_config.player.power_percent_text_color
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllPlates()
+			end,
+			name = "Color",
+			desc = "The color of the text.",
+		},
+		--percent text alpha
+		{
+			type = "range",
+			get = function() return profile.plate_config.player.power_percent_text_alpha end,
+			set = function (self, fixedparam, value) 
+				profile.plate_config.player.power_percent_text_alpha = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			name = "Alpha",
+			desc = "Set the transparency of the text.",
+			usedecimals = true,
+		},
+		--percent anchor
+		{
+			type = "select",
+			get = function() return profile.plate_config.player.power_percent_text_anchor.side end,
+			values = function() return build_anchor_side_table ("player", "power_percent_text_anchor") end,
+			name = "Anchor",
+			desc = "Which side of the nameplate this widget is attach to.",
+		},
+		--percent anchor x offset
+		{
+			type = "range",
+			get = function() return profile.plate_config.player.power_percent_text_anchor.x end,
+			set = function (self, fixedparam, value) 
+				profile.plate_config.player.power_percent_text_anchor.x = value
+				Plater.UpdateAllPlates()
+			end,
+			min = -20,
+			max = 20,
+			step = 1,
+			name = "X Offset",
+			desc = "Slightly move the text horizontally.",
+		},
+		--percent anchor x offset
+		{
+			type = "range",
+			get = function() return profile.plate_config.player.power_percent_text_anchor.y end,
+			set = function (self, fixedparam, value) 
+				profile.plate_config.player.power_percent_text_anchor.y = value
+				Plater.UpdateAllPlates()
+			end,
+			min = -20,
+			max = 20,
+			step = 1,
+			name = "Y Offset",
+			desc = "Slightly move the text vertically.",
+		},		
+		
+		--pula a segunda linha
+		{type = "blank"}, {type = "blank"}, {type = "blank"},
+		
+		--class resources
+		{type = "label", get = function() return "Resources:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		--monk WW chi bar
+		{
+			type = "range",
+			get = function() return profile.resources.MONK.chi_scale end,
+			set = function (self, fixedparam, value) 
+				profile.resources.MONK.chi_scale = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 0.65,
+			max = 3,
+			step = 0.01,
+			usedecimals = true,
+			name = "|T"..iconWindWalker..":0|t Chi Scale",
+			desc = "Adjust the scale of this resource.",
+		},
+		--mage arcane charge
+		{
+			type = "range",
+			get = function() return profile.resources.MAGE.arcane_charge_scale end,
+			set = function (self, fixedparam, value) 
+				profile.resources.MAGE.arcane_charge_scale = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 0.65,
+			max = 3,
+			step = 0.01,
+			usedecimals = true,
+			name = "|T" .. iconArcane .. ":0|t Arcane Charge Scale",
+			desc = "Adjust the scale of this resource.",
+		},
+		--dk rune
+		{
+			type = "range",
+			get = function() return profile.resources.DEATHKNIGHT.rune_scale end,
+			set = function (self, fixedparam, value) 
+				profile.resources.DEATHKNIGHT.rune_scale = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 0.65,
+			max = 3,
+			step = 0.01,
+			usedecimals = true,
+			name = "|T" .. iconRune .. ":0|t Rune Scale",
+			desc = "Adjust the scale of this resource.",
+		},
+		--paladin holy power
+		{
+			type = "range",
+			get = function() return profile.resources.PALADIN.holypower_scale end,
+			set = function (self, fixedparam, value) 
+				profile.resources.PALADIN.holypower_scale = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 0.65,
+			max = 3,
+			step = 0.01,
+			usedecimals = true,
+			name = "|T" .. iconHolyPower .. ":0|t Holy Power Scale",
+			desc = "Adjust the scale of this resource.",
+		},
+		--rogue combo point
+		{
+			type = "range",
+			get = function() return profile.resources.ROGUE.combopoint_scale end,
+			set = function (self, fixedparam, value) 
+				profile.resources.ROGUE.combopoint_scale = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 0.65,
+			max = 3,
+			step = 0.01,
+			usedecimals = true,
+			name = "|T" .. iconRogueCB .. ":0|t Combo Point Scale",
+			desc = "Adjust the scale of this resource.",
+		},
+		--druid feral combo point
+		{
+			type = "range",
+			get = function() return profile.resources.DRUID.combopoint_scale end,
+			set = function (self, fixedparam, value) 
+				profile.resources.DRUID.combopoint_scale = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 0.65,
+			max = 3,
+			step = 0.01,
+			usedecimals = true,
+			name = "|T" .. iconDruidCB .. ":0|t Combo Point Scale",
+			desc = "Adjust the scale of this resource.",
+		},
+		--warlock shard
+		{
+			type = "range",
+			get = function() return profile.resources.WARLOCK.soulshard_scale end,
+			set = function (self, fixedparam, value) 
+				profile.resources.WARLOCK.soulshard_scale = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 0.65,
+			max = 3,
+			step = 0.01,
+			usedecimals = true,
+			name = "|T" .. iconSoulShard .. ":0|t Soul Shard Scale",
+			desc = "Adjust the scale of this resource.",
+		},
+
 }
 
 DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
