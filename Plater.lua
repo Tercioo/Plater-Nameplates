@@ -431,6 +431,8 @@ local default_config = {
 		
 		border_color = {0, 0, 0, .15},
 
+		not_affecting_combat_alpha = .6,
+		
 		tank = {
 			colors = {
 				aggro = {.5, .5, 1},
@@ -443,7 +445,8 @@ local default_config = {
 		
 		dps = {
 			colors = {
-				aggro = {1, .5, .5},
+				--aggro = {1, .5, .5},
+				aggro = {1, 0.317, 0.172},
 				noaggro = {.5, .5, 1},
 				pulling = {1, 1, 0},
 			},
@@ -466,6 +469,8 @@ Plater.DriverFuncNames = {
 	["OnSelectionUpdate"] = "UpdateSelectionHighlight",
 	["OnAuraUpdate"] = "OnUnitAuraUpdate",
 	["OnResourceUpdate"] = "SetupClassNameplateBar",
+	["OnOptionsUpdate"] = "UpdateNamePlateOptions",
+	["OnManaBarOptionsUpdate"] = "OnOptionsUpdated",
 	["OnCastBarEvent"] = "OnEvent",
 	["OnCastBarShow"] = "OnShow",
 	["OnTick"] = "OnUpdate",
@@ -486,6 +491,7 @@ local NPB_Name = "NameplateBuffContainerMixin" --nameplate buff
 local CNP_Name = "CompactNamePlate" --compactnameplate
 local CBF_Name = "CastingBarFrame" --castingbar
 local BMX_Name = "NamePlateBorderTemplateMixin" --border mix-in
+local MAB_Name = "ClassNameplateManaBarFrame" --mana bar
 
 --minor
 local STRING_DEFAULT = "Default"
@@ -1031,13 +1037,31 @@ function Plater.OnInit (self)
 		ClassNameplateManaBarFrame.powerPercent:SetText (floor (self:GetValue()/select (2, self:GetMinMaxValues()) * 100) .. "%")
 	end)
 	
-	
+	InstallHook (Plater.GetDriverGlobalObject (NPF_Name), Plater.DriverFuncNames.OnOptionsUpdate, function()
+		Plater.UpdateSelfPlate()
+	end)
+	InstallHook (Plater.GetDriverGlobalObject (MAB_Name), Plater.DriverFuncNames.OnManaBarOptionsUpdate, function()
+		ClassNameplateManaBarFrame:SetSize (unpack (Plater.db.profile.plate_config.player.mana))
+	end)
+
+	Plater.UpdateSelfPlate()
 	Plater.UpdateUseClassColors()
 	C_Timer.After (4.1, Plater.QuestLogUpdated)
 	C_Timer.After (5.1, Plater.UpdateAllPlates)
 end
 
--- se o jogador estiver em combate, colorir a barra de acordo com o aggro do jogador
+local re_update_self_plate = function()
+	Plater.UpdateSelfPlate()
+end
+function Plater.UpdateSelfPlate()
+	if (InCombatLockdown()) then
+		return C_Timer.After (.3, re_update_self_plate)
+	end
+	C_NamePlate.SetNamePlateSelfSize (unpack (Plater.db.profile.plate_config.player.health))
+	ClassNameplateManaBarFrame:SetSize (unpack (Plater.db.profile.plate_config.player.mana))
+end
+
+-- se o jogador estiver em combate, colorir a barra de acordo com o aggro do jogador ~aggro
 function Plater.UpdateAggroPlates (self)
 
 	if (not self.displayedUnit or UnitIsPlayer (self.displayedUnit) or Plater.petCache [self:GetParent() [MEMBER_GUID]] or self.displayedUnit:match ("pet%d$")) then
@@ -1049,30 +1073,36 @@ function Plater.UpdateAggroPlates (self)
 	local isTanking, threatStatus = UnitDetailedThreatSituation ("player", self.displayedUnit)
 	-- (3 = securely tanking, 2 = insecurely tanking, 1 = not tanking but higher threat than tank, 0 = not tanking and lower threat than tank)
 
-	if (IsPlayerEffectivelyTank()) then
+	self.aggroGlowUpper:Hide()
+	self.aggroGlowLower:Hide()
+	self:SetAlpha (1)
+	
+	if (IsPlayerEffectivelyTank()) then --true or 
 		--se o jogador é TANK
-		if (isTanking == nil and UnitAffectingCombat (self.displayedUnit)) then
-			--não há aggro neste mob mas ele esta participando do combate
-			Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.tank.colors.noaggro))
-			
-		elseif (isTanking == nil and not UnitAffectingCombat (self.displayedUnit)) then
-			--náo ha aggro e ele não esta participando do combate
-			if (self [MEMBER_REACTION] == 4) then
-				--o mob é um npc neutro, apenas colorir com a cor neutra
-				Plater.ForceChangeHealthBarColor (self.healthBar, 1, 1, 0)
+
+		if (not isTanking) then
+			if (UnitAffectingCombat (self.displayedUnit)) then
+				--não há aggro neste mob mas ele esta participando do combate
+				Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.tank.colors.noaggro))
 			else
-				Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.tank.colors.nocombat))
+				--náo ha aggro e ele não esta participando do combate
+				if (self [MEMBER_REACTION] == 4) then
+					--o mob é um npc neutro, apenas colorir com a cor neutra
+					Plater.ForceChangeHealthBarColor (self.healthBar, 1, 1, 0)
+				else
+					Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.tank.colors.nocombat))
+				end
+				
+				self:SetAlpha (Plater.db.profile.not_affecting_combat_alpha)
 			end
-			
-		elseif (not isTanking) then
-			--o jogador não esta tankando
-			Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.tank.colors.nocombat))
 		else
 			--o jogador esta tankando e:
 			if (threatStatus == 3) then --esta tankando com segurança
 				Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.tank.colors.aggro))
 			elseif (threatStatus == 2) then --esta tankando sem segurança
 				Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.tank.colors.pulling))
+				self.aggroGlowUpper:Show()
+				self.aggroGlowLower:Show()
 			else --não esta tankando
 				Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.tank.colors.noaggro))
 			end
@@ -1100,13 +1130,20 @@ function Plater.UpdateAggroPlates (self)
 			elseif (threatStatus == 1) then --esta quase puxando o aggro
 				Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.dps.colors.pulling))
 				self:GetParent().playerHasAggro = false
+				self.aggroGlowUpper:Show()
+				self.aggroGlowLower:Show()
+				
 			elseif (threatStatus == 0) then --não esta tankando
 				Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.dps.colors.noaggro))
 				self:GetParent().playerHasAggro = false
-			else
-				if (threatStatus == nil and UnitAffectingCombat (self.displayedUnit)) then
+			elseif (threatStatus == nil) then
+				if (UnitAffectingCombat (self.displayedUnit)) then
 					Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.dps.colors.noaggro))
 					self:GetParent().playerHasAggro = false
+				else
+				--	Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.dps.colors.noaggro))
+					self:GetParent().playerHasAggro = false
+					self:SetAlpha (Plater.db.profile.not_affecting_combat_alpha)
 				end
 			end
 		end
@@ -1965,6 +2002,9 @@ function Plater.UpdatePlateSize (plateFrame)
 		
 		--player
 		if (plateFrame.isSelf) then
+		
+			
+		
 			Plater.UpdateManaAndResourcesBar()
 			healthFrame.barTexture:SetVertexColor (DF:ParseColors ("lightgreen"))
 		end
@@ -2202,6 +2242,13 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, order)
 	plateFrame.actorSubTitleSolo:Hide()
 	plateFrame.Top3DFrame:Hide()
 
+	--remove a alpha colocada pelo aggro
+	unitFrame:SetAlpha (1)
+	
+	--remove o glow posto pelo aggro
+	unitFrame.aggroGlowUpper:Hide()
+	unitFrame.aggroGlowLower:Hide()
+	
 	--a plate esta desativada?
 	if (not Plater.CanShowPlateFor (actorType)) then
 		if (InCombatLockdown()) then
@@ -2609,6 +2656,25 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame)
 	Plater.CreateAggroFlashFrame (plateFrame)
 	plateFrame.playerHasAggro = false
 	
+	--aviso de aggro baixo
+	plateFrame.UnitFrame.aggroGlowUpper = plateFrame:CreateTexture (nil, "background", -4)
+	plateFrame.UnitFrame.aggroGlowUpper:SetPoint ("bottomleft", plateFrame.UnitFrame.healthBar, "topleft", -3, 0)
+	plateFrame.UnitFrame.aggroGlowUpper:SetPoint ("bottomright", plateFrame.UnitFrame.healthBar, "topright", 3, 0)
+	plateFrame.UnitFrame.aggroGlowUpper:SetTexture ([[Interface\BUTTONS\UI-Panel-Button-Glow]])
+	plateFrame.UnitFrame.aggroGlowUpper:SetTexCoord (0, 95/128, 0, 9/64)
+	plateFrame.UnitFrame.aggroGlowUpper:SetBlendMode ("ADD")
+	plateFrame.UnitFrame.aggroGlowUpper:SetHeight (4)
+	plateFrame.UnitFrame.aggroGlowUpper:Hide()
+	
+	plateFrame.UnitFrame.aggroGlowLower = plateFrame:CreateTexture (nil, "background", -4)
+	plateFrame.UnitFrame.aggroGlowLower:SetPoint ("topleft", plateFrame.UnitFrame.healthBar, "bottomleft", -3, 0)
+	plateFrame.UnitFrame.aggroGlowLower:SetPoint ("topright", plateFrame.UnitFrame.healthBar, "bottomright", 3, 0)
+	plateFrame.UnitFrame.aggroGlowLower:SetTexture ([[Interface\BUTTONS\UI-Panel-Button-Glow]])
+	plateFrame.UnitFrame.aggroGlowLower:SetTexCoord (0, 95/128, 30/64, 38/64)
+	plateFrame.UnitFrame.aggroGlowLower:SetBlendMode ("ADD")
+	plateFrame.UnitFrame.aggroGlowLower:SetHeight (4)
+	plateFrame.UnitFrame.aggroGlowLower:Hide()
+	
 	plateFrame.UpdateAggroTick = Plater.db.profile.aggro_tick_rate
 	plateFrame:HookScript ("OnUpdate", EventTickFunction)
 end
@@ -2664,6 +2730,10 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId)
 	plateFrame.UnitFrame.castBar.BorderShield:ClearAllPoints()
 	plateFrame.UnitFrame.castBar.BorderShield:SetPoint ("left", plateFrame.UnitFrame.castBar, "left", 0, 0)
 
+	--esconde os glow de aggro
+	plateFrame.UnitFrame.aggroGlowUpper:Hide()
+	plateFrame.UnitFrame.aggroGlowLower:Hide()
+	
 	--tick
 	plateFrame.UpdateAggroTick = Plater.db.profile.aggro_tick_rate
 end
@@ -3607,7 +3677,7 @@ auraFilterFrame:SetScript ("OnHide", function()
 end)
 
 -------------------------------------------------------------------------------
--- opções para a barra do player
+-- opções para a barra do player ~player
 	
 	local on_select_player_percent_text_font = function (_, _, value)
 		profile.plate_config.player.percent_text_font = value
@@ -3639,6 +3709,7 @@ end)
 				profile.plate_config.player.health[1] = value
 				profile.plate_config.player.health_incombat[1] = value
 				Plater.UpdateAllPlates()
+				Plater.UpdateSelfPlate()
 			end,
 			min = 50,
 			max = 300,
@@ -3653,6 +3724,7 @@ end)
 				profile.plate_config.player.health[2] = value
 				profile.plate_config.player.health_incombat[2] = value
 				Plater.UpdateAllPlates()
+				Plater.UpdateSelfPlate()
 			end,
 			min = 1,
 			max = 100,
@@ -3669,6 +3741,7 @@ end)
 				profile.plate_config.player.mana[1] = value
 				profile.plate_config.player.mana_incombat[1] = value
 				Plater.UpdateAllPlates()
+				Plater.UpdateSelfPlate()
 			end,
 			min = 50,
 			max = 300,
@@ -3683,6 +3756,7 @@ end)
 				profile.plate_config.player.mana[2] = value
 				profile.plate_config.player.mana_incombat[2] = value
 				Plater.UpdateAllPlates()
+				Plater.UpdateSelfPlate()
 			end,
 			min = 1,
 			max = 100,
