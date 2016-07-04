@@ -337,6 +337,7 @@ local default_config = {
 				mana = {100, 3},
 				mana_incombat = {100, 3},
 				buff_frame_y_offset = 0,
+				y_position_offset = -50,
 				
 				actorname_text_spacing = 10,
 				actorname_text_size = 10,
@@ -431,7 +432,7 @@ local default_config = {
 		
 		border_color = {0, 0, 0, .15},
 
-		not_affecting_combat_alpha = .6,
+		not_affecting_combat_alpha = .5,
 		
 		tank = {
 			colors = {
@@ -1843,7 +1844,14 @@ function Plater.UpdatePlateSize (plateFrame)
 		local SizeOf_healthBar_Height = plateConfigs [heathKey][2]
 		local SizeOf_castBar_Height = plateConfigs [castKey][2]
 		local SizeOf_text = plateConfigs [textKey]
-
+		local selfBarOffset = plateConfigs.y_position_offset
+		
+		local height_offset = 0
+		
+		if (plateFrame.isSelf) then
+			height_offset = selfBarOffset
+		end		
+		
 		--pegar o tamanho da barra de debuff para colocar a cast bar em cima dela
 		local buffFrameSize = 12 * Plater.db.profile.debuff_size_multiplier
 		
@@ -1851,8 +1859,8 @@ function Plater.UpdatePlateSize (plateFrame)
 		if (isMinus) then
 			scalarValue = scalarValue + (SizeOf_castBar_Width/5)
 		end
-		castFrame:SetPoint ("BOTTOMLEFT", unitFrame, "BOTTOMLEFT", scalarValue, buffFrameSize + SizeOf_healthBar_Height + 2);
-		castFrame:SetPoint ("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -scalarValue, buffFrameSize + SizeOf_healthBar_Height + 2);
+		castFrame:SetPoint ("BOTTOMLEFT", unitFrame, "BOTTOMLEFT", scalarValue, buffFrameSize + SizeOf_healthBar_Height + 2 + height_offset);
+		castFrame:SetPoint ("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -scalarValue, buffFrameSize + SizeOf_healthBar_Height + 2 + height_offset);
 		castFrame:SetHeight (SizeOf_castBar_Height)
 		castFrame.Icon:SetSize (SizeOf_castBar_Height, SizeOf_castBar_Height)
 		castFrame.BorderShield:SetSize (SizeOf_castBar_Height*1.4, SizeOf_castBar_Height*1.4)
@@ -1892,6 +1900,13 @@ function Plater.UpdatePlateSize (plateFrame)
 		local SizeOf_healthBar_Height = plateConfigs [heathKey][2]
 		local SizeOf_castBar_Height = plateConfigs [castKey][2]
 		local SizeOf_text = plateConfigs [textKey]
+		local selfBarOffset = plateConfigs.y_position_offset
+		
+		local height_offset = 0
+		
+		if (plateFrame.isSelf) then
+			height_offset = selfBarOffset
+		end		
 		
 		--pegar o tamanho da barra de debuff para colocar a cast bar em cima dela
 		local buffFrameSize = 12 * Plater.db.profile.debuff_size_multiplier
@@ -1900,8 +1915,8 @@ function Plater.UpdatePlateSize (plateFrame)
 		if (isMinus) then
 			scalarValue = scalarValue + (SizeOf_castBar_Width/5)
 		end
-		castFrame:SetPoint ("BOTTOMLEFT", unitFrame, "BOTTOMLEFT", scalarValue, buffFrameSize + SizeOf_healthBar_Height + 2);
-		castFrame:SetPoint ("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -scalarValue, buffFrameSize + SizeOf_healthBar_Height + 2);
+		castFrame:SetPoint ("BOTTOMLEFT", unitFrame, "BOTTOMLEFT", scalarValue, buffFrameSize + SizeOf_healthBar_Height + 2 + height_offset);
+		castFrame:SetPoint ("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -scalarValue, buffFrameSize + SizeOf_healthBar_Height + 2 + height_offset);
 		castFrame:SetHeight (SizeOf_castBar_Height)
 		castFrame.Icon:SetSize (SizeOf_castBar_Height, SizeOf_castBar_Height)
 		castFrame.BorderShield:SetSize (SizeOf_castBar_Height*1.4, SizeOf_castBar_Height*1.4)
@@ -1946,7 +1961,14 @@ function Plater.UpdatePlateSize (plateFrame)
 		local SizeOf_healthBar_Height = plateConfigs [heathKey][2]
 		local SizeOf_castBar_Height = plateConfigs [castKey][2]
 		local SizeOf_text = plateConfigs [textKey]
+		local selfBarOffset = plateConfigs.y_position_offset
 
+		local height_offset = 0
+		
+		if (plateFrame.isSelf) then
+			height_offset = selfBarOffset
+		end
+		
 --		print (plateFrame:GetSize())
 --		print (plateFrame.UnitFrame:GetSize())
 		
@@ -1957,8 +1979,8 @@ function Plater.UpdatePlateSize (plateFrame)
 			scalarValue = scalarValue + (SizeOf_castBar_Width/5)
 		end
 		
-		castFrame:SetPoint ("BOTTOMLEFT", unitFrame, "BOTTOMLEFT", scalarValue, 	0 ) ---SizeOf_healthBar_Height + (-SizeOf_castBar_Height + 2)
-		castFrame:SetPoint ("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -scalarValue, 	0 )
+		castFrame:SetPoint ("BOTTOMLEFT", unitFrame, "BOTTOMLEFT", scalarValue, height_offset) ---SizeOf_healthBar_Height + (-SizeOf_castBar_Height + 2)
+		castFrame:SetPoint ("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -scalarValue, height_offset)
 		castFrame:SetHeight (SizeOf_castBar_Height)
 		castFrame.Icon:SetSize (SizeOf_castBar_Height, SizeOf_castBar_Height)
 		castFrame.BorderShield:SetSize (SizeOf_castBar_Height*1.4, SizeOf_castBar_Height*1.4)
@@ -2002,9 +2024,6 @@ function Plater.UpdatePlateSize (plateFrame)
 		
 		--player
 		if (plateFrame.isSelf) then
-		
-			
-		
 			Plater.UpdateManaAndResourcesBar()
 			healthFrame.barTexture:SetVertexColor (DF:ParseColors ("lightgreen"))
 		end
@@ -3732,7 +3751,9 @@ end)
 			name = "Height",
 			desc = "Height of the health bar.",
 		},
+		
 		--mana size
+		{type = "blank"},
 		{type = "label", get = function() return "Power Bar Size:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
@@ -3764,9 +3785,24 @@ end)
 			name = "Height",
 			desc = "Height of the power bar.",
 		},
-		--percent text
 		{type = "blank"},
-		{type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"},
+		{type = "label", get = function() return "Location:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{
+			type = "range",
+			get = function() return profile.plate_config.player.y_position_offset end,
+			set = function (self, fixedparam, value) 
+				profile.plate_config.player.y_position_offset = value
+				Plater.UpdateAllPlates()
+				Plater.UpdateSelfPlate()
+			end,
+			min = -300,
+			max = 300,
+			step = 1,
+			name = "Y Offset",
+			desc = "Adjust the positioning on the Y axis.",
+		},
+		--percent text
+		{type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"},
 		{type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"},
 		{type = "blank"}, {type = "blank"}, {type = "blank"},
 		
@@ -4118,45 +4154,6 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 	--menu 1
 	local options_table1 = {
 	
-		{type = "label", get = function() return "Box Selecion Space:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-		{
-			type = "range",
-			get = function() return profile.click_space[1] end,
-			set = function (self, fixedparam, value) 
-				profile.click_space[1] = value
-				Plater.UpdatePlateClickSpace (nil, nil, true)
-			end,
-			min = 50,
-			max = 300,
-			step = 1,
-			name = "Width",
-			desc = "How large are area which accepts mouse clicks to select the target",
-		},
-		{
-			type = "range",
-			get = function() return profile.click_space[2] end,
-			set = function (self, fixedparam, value) 
-				profile.click_space[2] = value
-				Plater.UpdatePlateClickSpace (nil, nil, true)
-			end,
-			min = 1,
-			max = 100,
-			step = 1,
-			name = "Height",
-			desc = "The height of the are area which accepts mouse clicks to select the target",
-		},
-		{
-			type = "toggle",
-			get = function() return profile.click_space_always_show end,
-			set = function (self, fixedparam, value) 
-				profile.click_space_always_show = value
-				Plater.UpdatePlateClickSpace (nil, nil, true)
-			end,
-			name = "Always Show Background",
-			desc = "Enable a background showing the area of the clicable area.",
-		},
-		
-		{type = "blank"},
 		{type = "label", get = function() return "General Appearance:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
@@ -4232,7 +4229,21 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 			desc = "Color used to paint the cast bar background.",
 		},
 		
-		{type = "blank"},{type = "blank"},
+		{
+			type = "range",
+			get = function() return profile.not_affecting_combat_alpha end,
+			set = function (self, fixedparam, value) 
+				profile.not_affecting_combat_alpha = value
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			name = "Combat Alpha",
+			desc = "While you are in combat, set the alpha for other mobs which isn't in combat.",
+			usedecimals = true,
+		},		
+		
+		{type = "blank"},{type = "blank"},{type = "blank"},{type = "blank"},{type = "blank"},
 		{type = "label", get = function() return "Plate Color As a Tank:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "color",
@@ -4345,7 +4356,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 			name = "Color",
 			desc = "Color of the plate border.",
 		},
-		{type = "blank"}, {type = "blank"}, {type = "blank"},
+		{type = "blank"}, {type = "blank"},
 		{type = "label", get = function() return "Friendly Plates:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
@@ -4519,6 +4530,44 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 			step = 1,
 			name = "Y Offset",
 			desc = "Slightly move vertically.",
+		},
+		{type = "blank"},
+		{type = "label", get = function() return "Box Selection Space:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{
+			type = "range",
+			get = function() return profile.click_space[1] end,
+			set = function (self, fixedparam, value) 
+				profile.click_space[1] = value
+				Plater.UpdatePlateClickSpace (nil, nil, true)
+			end,
+			min = 50,
+			max = 300,
+			step = 1,
+			name = "Width",
+			desc = "How large are area which accepts mouse clicks to select the target",
+		},
+		{
+			type = "range",
+			get = function() return profile.click_space[2] end,
+			set = function (self, fixedparam, value) 
+				profile.click_space[2] = value
+				Plater.UpdatePlateClickSpace (nil, nil, true)
+			end,
+			min = 1,
+			max = 100,
+			step = 1,
+			name = "Height",
+			desc = "The height of the are area which accepts mouse clicks to select the target",
+		},
+		{
+			type = "toggle",
+			get = function() return profile.click_space_always_show end,
+			set = function (self, fixedparam, value) 
+				profile.click_space_always_show = value
+				Plater.UpdatePlateClickSpace (nil, nil, true)
+			end,
+			name = "Always Show Background",
+			desc = "Enable a background showing the area of the clicable area.",
 		},
 	}
 	
@@ -7286,6 +7335,8 @@ function SlashCmdList.PLATER (msg, editbox)
 
 			return
 		end
+	elseif (msg == "a") then
+	
 	end
 	Plater.OpenOptionsPanel()
 end
