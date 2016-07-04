@@ -2,7 +2,7 @@ if (true) then
 	--return
 	--but not today
 end
-
+ 
 --details! framework
 local DF = _G ["DetailsFramework"]
 if (not DF) then
