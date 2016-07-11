@@ -17,7 +17,18 @@ local SharedMedia = LibStub:GetLibrary("LibSharedMedia-3.0")
 
 local cleanfunction = function() end
 local APISliderFunctions = false
-DFSliderMetaFunctions = DFSliderMetaFunctions or {}
+
+do
+	local metaPrototype = {
+		WidgetType = "slider",
+		SetHook = DF.SetHook,
+		RunHooksForWidget = DF.RunHooksForWidget,
+	}
+
+	_G [DF.GlobalWidgetControlNames ["slider"]] = _G [DF.GlobalWidgetControlNames ["slider"]] or metaPrototype
+end
+
+local DFSliderMetaFunctions = _G [DF.GlobalWidgetControlNames ["slider"]]
 
 ------------------------------------------------------------------------------------------------------------
 --> metatables
@@ -87,19 +98,18 @@ DFSliderMetaFunctions = DFSliderMetaFunctions or {}
 		return _object()
 	end	
 
-	local get_members_function_index = {
-		["tooltip"] = gmember_tooltip,
-		["shown"] = gmember_shown,
-		["width"] = gmember_width,
-		["height"] = gmember_height,
-		["locked"] = gmember_locked,
-		["fractional"] = gmember_fractional,
-		["value"] = gmember_value,
-	}
+	DFSliderMetaFunctions.GetMembers = DFSliderMetaFunctions.GetMembers or {}
+	DFSliderMetaFunctions.GetMembers ["tooltip"] = gmember_tooltip
+	DFSliderMetaFunctions.GetMembers ["shown"] = gmember_shown
+	DFSliderMetaFunctions.GetMembers ["width"] = gmember_width
+	DFSliderMetaFunctions.GetMembers ["height"] = gmember_height
+	DFSliderMetaFunctions.GetMembers ["locked"] = gmember_locked
+	DFSliderMetaFunctions.GetMembers ["fractional"] = gmember_fractional
+	DFSliderMetaFunctions.GetMembers ["value"] = gmember_value
 
 	DFSliderMetaFunctions.__index = function (_table, _member_requested)
 
-		local func = get_members_function_index [_member_requested]
+		local func = DFSliderMetaFunctions.GetMembers [_member_requested]
 		if (func) then
 			return func (_table, _member_requested)
 		end
@@ -163,20 +173,19 @@ DFSliderMetaFunctions = DFSliderMetaFunctions or {}
 		_object (_value)
 	end
 	
-	local set_members_function_index = {
-		["tooltip"] = smember_tooltip,
-		["show"] = smember_show,
-		["hide"] = smember_hide,
-		["backdrop"] = smember_backdrop,
-		["width"] = smember_width,
-		["height"] = smember_height,
-		["locked"] = smember_locked,
-		["fractional"] = smember_fractional,
-		["value"] = smember_value,
-	}
+	DFSliderMetaFunctions.SetMembers = DFSliderMetaFunctions.SetMembers or {}
+	DFSliderMetaFunctions.SetMembers ["tooltip"] = smember_tooltip
+	DFSliderMetaFunctions.SetMembers ["show"] = smember_show
+	DFSliderMetaFunctions.SetMembers ["hide"] = smember_hide
+	DFSliderMetaFunctions.SetMembers ["backdrop"] = smember_backdrop
+	DFSliderMetaFunctions.SetMembers ["width"] = smember_width
+	DFSliderMetaFunctions.SetMembers ["height"] = smember_height
+	DFSliderMetaFunctions.SetMembers ["locked"] = smember_locked
+	DFSliderMetaFunctions.SetMembers ["fractional"] = smember_fractional
+	DFSliderMetaFunctions.SetMembers ["value"] = smember_value
 	
 	DFSliderMetaFunctions.__newindex = function (_table, _key, _value)
-		local func = set_members_function_index [_key]
+		local func = DFSliderMetaFunctions.SetMembers [_key]
 		if (func) then
 			return func (_table, _value)
 		else
@@ -324,16 +333,6 @@ DFSliderMetaFunctions = DFSliderMetaFunctions or {}
 		
 		return _rawset (self, "lockdown", true)
 	end
-	--print ("iskar disable:", DFSliderMetaFunctions.Disable)
-
---> hooks
-	function DFSliderMetaFunctions:SetHook (hookType, func)
-		if (func) then
-			_rawset (self, hookType.."Hook", func)
-		else
-			_rawset (self, hookType.."Hook", nil)
-		end
-	end
 
 ------------------------------------------------------------------------------------------------------------
 --> scripts
@@ -346,11 +345,10 @@ DFSliderMetaFunctions = DFSliderMetaFunctions or {}
 	
 		DetailsFrameworkSliderButtons1:ShowMe (slider)
 	
-		if (slider.MyObject.OnEnterHook) then
-			local interrupt = slider.MyObject.OnEnterHook (slider)
-			if (interrupt) then
-				return
-			end
+		local capsule = slider.MyObject
+		local kill = capsule:RunHooksForWidget ("OnEnter", slider, capsule)
+		if (kill) then
+			return
 		end
 
 		slider.thumb:SetAlpha (1)
@@ -379,11 +377,10 @@ DFSliderMetaFunctions = DFSliderMetaFunctions or {}
 	
 		DetailsFrameworkSliderButtons1:PrepareToHide()
 	
-		if (slider.MyObject.OnLeaveHook) then
-			local interrupt = slider.MyObject.OnLeaveHook (slider)
-			if (interrupt) then
-				return
-			end
+		local capsule = slider.MyObject
+		local kill = capsule:RunHooksForWidget ("OnLeave", slider, capsule)
+		if (kill) then
+			return
 		end
 		
 		slider.thumb:SetAlpha (.7)
@@ -652,25 +649,34 @@ DFSliderMetaFunctions = DFSliderMetaFunctions or {}
 	end
 	
 	local OnMouseDown = function (slider, button)
+		slider.MyObject.IsValueChanging = true
+		
+		local capsule = slider.MyObject
+		local kill = capsule:RunHooksForWidget ("OnMouseDown", slider, button, capsule)
+		if (kill) then
+			return
+		end
+		
 		if (button == "RightButton") then
 			slider.MyObject:TypeValue()
 		end
 	end
 	
 	local OnMouseUp = function (slider, button)
-		--if (button == "RightButton") then
-		--	if (slider.MyObject.typing_value) then
-		--		slider.MyObject:SetValue (slider.MyObject.previous_value [2])
-		--	end
-		--end
+		slider.MyObject.IsValueChanging = nil
+		
+		local capsule = slider.MyObject
+		local kill = capsule:RunHooksForWidget ("OnMouseUp", slider, button, capsule)
+		if (kill) then
+			return
+		end
 	end
 	
 	local OnHide = function (slider)
-		if (slider.MyObject.OnHideHook) then
-			local interrupt = slider.MyObject.OnHideHook (slider)
-			if (interrupt) then
-				return
-			end
+		local capsule = slider.MyObject
+		local kill = capsule:RunHooksForWidget ("OnHide", slider, capsule)
+		if (kill) then
+			return
 		end
 		
 		if (slider.MyObject.typing_value) then
@@ -681,11 +687,10 @@ DFSliderMetaFunctions = DFSliderMetaFunctions or {}
 	end
 	
 	local OnShow = function (slider)
-		if (slider.MyObject.OnShowHook) then
-			local interrupt = slider.MyObject.OnShowHook (slider)
-			if (interrupt) then
-				return
-			end
+		local capsule = slider.MyObject
+		local kill = capsule:RunHooksForWidget ("OnShow", slider, capsule)
+		if (kill) then
+			return
 		end
 	end
 	
@@ -709,13 +714,16 @@ DFSliderMetaFunctions = DFSliderMetaFunctions or {}
 		table_insert (slider.MyObject.previous_value, 1, amt)
 		table_remove (slider.MyObject.previous_value, 4)
 		
-		if (slider.MyObject.OnValueChangeHook) then
-			local interrupt = slider.MyObject.OnValueChangeHook (slider, slider.MyObject.FixedValue, amt)
-			if (interrupt) then
-				return
-			end
+		local capsule = slider.MyObject
+		local kill = capsule:RunHooksForWidget ("OnValueChanged", slider, capsule.FixedValue, amt, capsule)
+		if (kill) then
+			return
 		end
-
+		local kill = capsule:RunHooksForWidget ("OnValueChange", slider, capsule.FixedValue, amt, capsule)
+		if (kill) then
+			return
+		end
+		
 		if (slider.MyObject.OnValueChanged) then
 			slider.MyObject.OnValueChanged (slider, slider.MyObject.FixedValue, amt)
 		end
@@ -1086,17 +1094,8 @@ function DF:NewSlider (parent, container, name, member, w, h, min, max, step, de
 	h = h or 19
 	
 	--> default members:
-		--> hooks
-		SliderObject.OnEnterHook = nil
-		SliderObject.OnLeaveHook = nil
-		SliderObject.OnHideHook = nil
-		SliderObject.OnShowHook = nil
-		SliderObject.OnValueChangeHook = nil
-		--> misc
 		SliderObject.lockdown = false
 		SliderObject.container = container
-		SliderObject.have_tooltip = nil
-		SliderObject.FixedValue = nil
 		SliderObject.useDecimals = isDecemal or false
 		
 	SliderObject.slider = CreateFrame ("slider", name, parent)
@@ -1126,6 +1125,7 @@ function DF:NewSlider (parent, container, name, member, w, h, min, max, step, de
 
 	SliderObject.slider:SetBackdrop ({edgeFile = "Interface\\Buttons\\UI-SliderBar-Border", edgeSize = 8})
 	SliderObject.slider:SetBackdropColor (0.9, 0.7, 0.7, 1.0)
+	--SliderObject.slider:SetBackdropColor (0, 0, 0, 1)
 
 	SliderObject.thumb = SliderObject.slider:CreateTexture (nil, "artwork")
 	SliderObject.thumb:SetTexture ("Interface\\Buttons\\UI-ScrollBar-Knob")
@@ -1158,15 +1158,26 @@ function DF:NewSlider (parent, container, name, member, w, h, min, max, step, de
 	SliderObject.previous_value = {defaultv or 0, 0, 0}
 	
 	--> hooks
-		SliderObject.slider:SetScript ("OnEnter", OnEnter)
-		SliderObject.slider:SetScript ("OnLeave", OnLeave)
-		SliderObject.slider:SetScript ("OnHide", OnHide)
-		SliderObject.slider:SetScript ("OnShow", OnShow)
-		SliderObject.slider:SetScript ("OnValueChanged", OnValueChanged)
-		SliderObject.slider:SetScript ("OnMouseDown", OnMouseDown)
-		SliderObject.slider:SetScript ("OnMouseUp", OnMouseUp)
+	SliderObject.HookList = {
+		OnEnter = {},
+		OnLeave = {},
+		OnHide = {},
+		OnShow = {},
+		OnMouseDown = {},
+		OnMouseUp = {},
 		
-		
+		OnValueChange = {},
+		OnValueChanged = {},
+	}
+	
+	SliderObject.slider:SetScript ("OnEnter", OnEnter)
+	SliderObject.slider:SetScript ("OnLeave", OnLeave)
+	SliderObject.slider:SetScript ("OnHide", OnHide)
+	SliderObject.slider:SetScript ("OnShow", OnShow)
+	SliderObject.slider:SetScript ("OnValueChanged", OnValueChanged)
+	SliderObject.slider:SetScript ("OnMouseDown", OnMouseDown)
+	SliderObject.slider:SetScript ("OnMouseUp", OnMouseUp)
+
 	_setmetatable (SliderObject, DFSliderMetaFunctions)
 	
 	if (with_label) then

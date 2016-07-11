@@ -1,8 +1,8 @@
-if (true) then
+ if (true) then
 	--return
 	--but not today
 end
- 
+
 --details! framework
 local DF = _G ["DetailsFramework"]
 if (not DF) then
@@ -78,9 +78,9 @@ local default_config = {
 	
 	profile = {
 	
-		click_space = {150, 20},
+		click_space = {150, 45},
 		click_space_always_show = false,
-
+		
 		plate_config  = {
 			friendlyplayer = {
 				enabled = true,
@@ -330,14 +330,15 @@ local default_config = {
 			player = {
 				enabled = true,
 				plate_order = 3,
-				health = {100, 5},
-				health_incombat = {100, 5},
+				health = {150, 12},
+				health_incombat = {150, 12},
 				cast = {140, 8},
 				cast_incombat = {140, 12},
-				mana = {100, 3},
-				mana_incombat = {100, 3},
+				mana = {150, 8},
+				mana_incombat = {150, 8},
 				buff_frame_y_offset = 0,
 				y_position_offset = -50,
+				pvp_always_incombat = true,
 				
 				actorname_text_spacing = 10,
 				actorname_text_size = 10,
@@ -405,7 +406,10 @@ local default_config = {
 		aggro_tick_rate = 0.10000000,
 		culling_distance = 100,
 		use_playerclass_color = false,
-		debuff_size_multiplier = 1.3,
+		aura_width = 20,
+		aura_height = 14,
+		aura_timer = true,
+		aura_custom = {},
 		debuff_show_cc = true,
 		
 		health_statusbar_texture = "PlaterTexture", --"DGround"
@@ -538,6 +542,8 @@ local FILTER_BUFF_DETECTION2 = ""
 local ALL_DEBUFFS = {}
 local ALL_BUFFS = {}
 
+local CAN_USE_AURATIMER = true
+
 --> copied from blizzard code
 local function IsPlayerEffectivelyTank()
 	local assignedRole = UnitGroupRolesAssigned ("player");
@@ -656,6 +662,10 @@ function Plater.OnInit (self)
 	Plater:Msg (": |cFFFFFF00if you are seeing green bars instead, type /plater and change the textures to 'Blizzard Raid Bar'.|r")
 	
 	Plater.CombatTime = GetTime()
+	
+	if (OmniCC) then
+		--CAN_USE_AURATIMER = false
+	end
 
 	Plater:RegisterEvent ("NAME_PLATE_CREATED")
 	Plater:RegisterEvent ("NAME_PLATE_UNIT_ADDED")
@@ -757,52 +767,103 @@ function Plater.OnInit (self)
 	end
 	InstallOverride (NPF_Name, Plater.DriverFuncNames.OnAuraUpdate, Override_UNIT_AURA_EVENT)
 	
+	local auraWatch = function (ticker)
+		ticker.cooldown.Timer:SetText (floor (ticker.expireTime-GetTime()))
+	end
+
 	local BUFF_MAX_DISPLAY = BUFF_MAX_DISPLAY
 	local CooldownFrame_Set = CooldownFrame_Set
+	
+	local AddAura = function (self, i, auraWidth, auraHeight, name, rank, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
+		if (not self.buffList[i]) then
+			self.buffList[i] = CreateFrame ("Frame", self:GetParent():GetName() .. "Buff" .. i, self, "NameplateBuffButtonTemplate")
+			self.buffList[i]:SetMouseClickEnabled(false)
+			local timer = self.buffList[i].Cooldown:CreateFontString (nil, "overlay", "NumberFontNormal")
+			self.buffList[i].Cooldown.Timer = timer
+			timer:SetPoint ("center")
+		end
+		
+		local buff = self.buffList [i]
+		buff:SetID (i)
+		buff.name = name
+		buff.layoutIndex = i
+		buff.Icon:SetTexture(texture)
+		if (count > 1) then
+			buff.CountFrame.Count:SetText (count)
+			buff.CountFrame.Count:Show()
+		else
+			buff.CountFrame.Count:Hide()
+		end
+		
+		buff:SetSize (auraWidth, auraHeight)
+		buff.Icon:SetSize (auraWidth-2, auraHeight-2)
+		
+		if (buff.Cooldown.TimerTicker and not buff.Cooldown.TimerTicker._cancelled) then
+			buff.Cooldown.TimerTicker:Cancel()
+		end
+		
+		CooldownFrame_Set (buff.Cooldown, expirationTime - duration, duration, duration > 0, true)
+		
+		if (Plater.db.profile.aura_timer) then
+			local timeLeft = expirationTime - GetTime()
+			local ticker = C_Timer.NewTicker (.33, auraWatch, timeLeft*3)
+			ticker.expireTime = expirationTime
+			ticker.cooldown = buff.Cooldown
+			buff.Cooldown.Timer:Show()
+			buff.Cooldown.TimerTicker = ticker
+			auraWatch (ticker)
+		else
+			buff.Cooldown.Timer:Hide()
+		end
+		
+		buff:Show()
+		return buff
+	end
+	
 	local Override_UpdateBuffs = function (self, unit, filter)
-		self.unit = unit;
-		self.filter = filter;
-		self:UpdateAnchor();
+		self.unit = unit
+		self.filter = filter
+		self:UpdateAnchor()
+		
+		local auraWidth = Plater.db.profile.aura_width
+		local auraHeight = Plater.db.profile.aura_height
+		local lastValidIndex = 1
+		
 		for i = 1, BUFF_MAX_DISPLAY do
 			if (filter == "NONE" and self.buffList[i]) then
-				self.buffList[i]:Hide();
-				return;
+				self.buffList[i]:Hide()
+				return
 			end
-			local name, rank, texture, count, debuffType, duration, expirationTime, caster, _, nameplateShowPersonal, spellId, _, _, _, nameplateShowAll = UnitAura (unit, i, filter);
+			local name, rank, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId = UnitAura (unit, i, filter)
 			--retirada essa funcao  e apenas ira verificar o nome por enquanto
 			--if (self:ShouldShowBuff(name, caster, nameplateShowPersonal, nameplateShowAll, duration)) then
 			if (name and not FILTER_DEBUFFS_BANNED [spellId] and not FILTER_BUFFS_BANNED [spellId]) then
-				if (not self.buffList[i]) then
-					self.buffList[i] = CreateFrame ("Frame", self:GetParent():GetName() .. "Buff" .. i, self, "NameplateBuffButtonTemplate");
-					self.buffList[i]:SetMouseClickEnabled(false);
-				end
-				local buff = self.buffList[i];
-				buff:SetID(i);
-				buff.name = name;
-				buff.layoutIndex = i;
-				buff.Icon:SetTexture(texture);
-				if (count > 1) then
-					buff.CountFrame.Count:SetText(count);
-					buff.CountFrame.Count:Show();
-				else
-					buff.CountFrame.Count:Hide();
-				end
-				
-				CooldownFrame_Set (buff.Cooldown, expirationTime - duration, duration, duration > 0, true);
-				
-				buff:Show();
+				AddAura (self, i, auraWidth, auraHeight, name, rank, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
+				lastValidIndex = i
 			else
 				if (self.buffList[i]) then
-					self.buffList[i]:Hide();
+					self.buffList[i]:Hide()
 				end
 			end
 		end
-		self:Layout();
+		
+		for i = 1, #Plater.db.profile.aura_custom do
+			local name, rank, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId = UnitAura (unit, custom_auras[i].auraName)
+			if (name) then
+				local buff = AddAura (self, lastValidIndex, auraWidth, auraHeight, name, rank, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
+				if (custom_auras[i].border) then
+					buff:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
+					buff:SetBackdropBorderColor (1, 1, 0, 1)
+				end
+				lastValidIndex = lastValidIndex + 1
+			end
+		end
+		
+		self:Layout()
 	end
 	--NameplateBuffContainerMixin.UpdateBuffs = Override_UpdateBuffs
 	InstallOverride (NPB_Name, Plater.DriverFuncNames.OnUpdateBuffs, Override_UpdateBuffs)
 	--buffcontainermixin é diferente de nameplate frame mixin
-	
 	
 	--sobrepõe a função, economiza processamento uma vez que o resultado da função original não é usado
 	local Override_UNIT_AURA_ANCHORUPDATE = function (self)
@@ -813,15 +874,18 @@ function Plater.OnInit (self)
 	InstallOverride (NPB_Name, Plater.DriverFuncNames.OnUpdateAnchor, Override_UNIT_AURA_ANCHORUPDATE)
 	
 	--tamanho dos ícones dos debuffs sobre a nameplate
-	InstallHook (Plater.GetDriverGlobalObject (NPB_Name), Plater.DriverFuncNames.OnUpdateBuffs, function (self, unit, filter)
+	function Plater.UpdateAuraIcons (self, unit, filter)
 		local hasCC = false
-		local size = Plater.db.profile.debuff_size_multiplier
 		local show_cc = Plater.db.profile.debuff_show_cc
 		local amtDebuffs = 0
+		
+		local auraWidth = Plater.db.profile.aura_width
+		local auraHeight = Plater.db.profile.aura_height
+
 		for _, buffFrame in ipairs (self.buffList) do
 			if (buffFrame:IsShown()) then
-				buffFrame:SetSize (20*size, 14*size)
-				buffFrame.Icon:SetSize (18*size, 12*size)
+				buffFrame:SetSize (auraWidth, auraHeight)
+				buffFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 				if (show_cc) then
 					if (Plater.SpellIsCC (buffFrame.name)) then
 						hasCC = buffFrame.name
@@ -830,10 +894,6 @@ function Plater.OnInit (self)
 				amtDebuffs = amtDebuffs + 1
 			end
 		end
-		
-		--if (UnitIsUnit (unit, "target")) then
-		--	print ("BuffUpdate", amtDebuffs)
-		--end
 		
 		self.amtDebuffs = amtDebuffs
 		Plater.UpdateBuffContainer (self:GetParent():GetParent())
@@ -853,13 +913,19 @@ function Plater.OnInit (self)
 				end
 			end
 		end
-	end)
+	end
+	InstallHook (Plater.GetDriverGlobalObject (NPB_Name), Plater.DriverFuncNames.OnUpdateBuffs, Plater.UpdateAuraIcons)
+	function Plater.RefreshAuras()
+		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do 
+			Plater.UpdateAuraIcons (plateFrame.UnitFrame.BuffFrame)
+		end
+	end
 	
 	function Plater.PlateShowingDebuffFrame (plateFrame)
 		if (plateFrame.order == 3 and Plater.IsShowingResourcesOnTarget() and UnitIsUnit (plateFrame [MEMBER_UNITID], "target")) then --3 castbar, health, buffs
 			--puxa os resources pra cima
 			local SizeOf_healthBar_Height = plateFrame.UnitFrame.healthBar:GetHeight()
-			NamePlateTargetResourceFrame:SetPoint ("BOTTOM", plateFrame.UnitFrame.name, "TOP", 0, -4 + SizeOf_healthBar_Height + (Plater.db.profile.debuff_size_multiplier*14))
+			NamePlateTargetResourceFrame:SetPoint ("BOTTOM", plateFrame.UnitFrame.name, "TOP", 0, -4 + SizeOf_healthBar_Height + (Plater.db.profile.aura_height))
 		end
 	end
 	
@@ -1834,11 +1900,19 @@ function Plater.UpdatePlateSize (plateFrame)
 	local nameFrame = unitFrame.healthBar.actorName
 
 	local isMinus = Plater.ShouldForceSmallBar (plateFrame)
-
+	local isInCombat = InCombatLockdown()
+	
+	--sempre usar barras grandes quando estiver em pvp
+	if (plateFrame.actorType == ACTORTYPE_ENEMY_PLAYER) then
+		if ((Plater.zoneInstanceType == "pvp" or Plater.zoneInstanceType == "arena") and Plater.db.profile.plate_config.player.pvp_always_incombat) then
+			isInCombat = true
+		end
+	end
+	
 	if (order == 1) then
 		--debuff, health, castbar
 		
-		local castKey, heathKey, textKey = Plater.GetHashKey (InCombatLockdown())
+		local castKey, heathKey, textKey = Plater.GetHashKey (isInCombat)
 		local SizeOf_healthBar_Width = plateConfigs [heathKey][1]
 		local SizeOf_castBar_Width = plateConfigs [castKey][1]
 		local SizeOf_healthBar_Height = plateConfigs [heathKey][2]
@@ -1853,7 +1927,7 @@ function Plater.UpdatePlateSize (plateFrame)
 		end		
 		
 		--pegar o tamanho da barra de debuff para colocar a cast bar em cima dela
-		local buffFrameSize = 12 * Plater.db.profile.debuff_size_multiplier
+		local buffFrameSize = Plater.db.profile.aura_height
 		
 		local scalarValue = SizeOf_castBar_Width > plateWidth and -((SizeOf_castBar_Width - plateWidth) / 2) or ((plateWidth - SizeOf_castBar_Width) / 2)
 		if (isMinus) then
@@ -1894,7 +1968,7 @@ function Plater.UpdatePlateSize (plateFrame)
 	elseif (order == 2) then
 		--health, buffs, castbar
 		
-		local castKey, heathKey, textKey = Plater.GetHashKey (InCombatLockdown())
+		local castKey, heathKey, textKey = Plater.GetHashKey (isInCombat)
 		local SizeOf_healthBar_Width = plateConfigs [heathKey][1]
 		local SizeOf_castBar_Width = plateConfigs [castKey][1]
 		local SizeOf_healthBar_Height = plateConfigs [heathKey][2]
@@ -1909,7 +1983,7 @@ function Plater.UpdatePlateSize (plateFrame)
 		end		
 		
 		--pegar o tamanho da barra de debuff para colocar a cast bar em cima dela
-		local buffFrameSize = 12 * Plater.db.profile.debuff_size_multiplier
+		local buffFrameSize = Plater.db.profile.aura_height
 		
 		local scalarValue = SizeOf_castBar_Width > plateWidth and -((SizeOf_castBar_Width - plateWidth) / 2) or ((plateWidth - SizeOf_castBar_Width) / 2)
 		if (isMinus) then
@@ -1952,10 +2026,10 @@ function Plater.UpdatePlateSize (plateFrame)
 			healthFrame.barTexture:SetVertexColor (DF:ParseColors ("lightgreen"))
 		end
 		
-	elseif (order == 3) then
+	elseif (order == 3) then --~order
 		--castbar, health, buffs
-
-		local castKey, heathKey, textKey = Plater.GetHashKey (InCombatLockdown())
+		
+		local castKey, heathKey, textKey = Plater.GetHashKey (isInCombat)
 		local SizeOf_healthBar_Width = plateConfigs [heathKey][1]
 		local SizeOf_castBar_Width = plateConfigs [castKey][1]
 		local SizeOf_healthBar_Height = plateConfigs [heathKey][2]
@@ -1972,7 +2046,7 @@ function Plater.UpdatePlateSize (plateFrame)
 --		print (plateFrame:GetSize())
 --		print (plateFrame.UnitFrame:GetSize())
 		
-		local buffFrameSize = 12 * Plater.db.profile.debuff_size_multiplier
+		local buffFrameSize = Plater.db.profile.aura_height
 		local scalarValue = SizeOf_castBar_Width > plateWidth and -((SizeOf_castBar_Width - plateWidth) / 2) or ((plateWidth - SizeOf_castBar_Width) / 2)
 
 		if (isMinus) then
@@ -2211,6 +2285,13 @@ function Plater:PLAYER_ENTERING_WORLD()
 	if (not Plater.PlayerGuildName or Plater.PlayerGuildName == "") then
 		Plater.PlayerGuildName = "ThePlayerHasNoGuildName/30Char"
 	end
+	
+	local pvpType, isFFA, faction = GetZonePVPInfo()
+	Plater.zonePvpType = pvpType
+	
+	local name, instanceType, difficultyID, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, instanceMapID, instanceGroupSize = GetInstanceInfo()
+	Plater.zoneInstanceType = instanceType
+	
 end
 Plater:RegisterEvent ("PLAYER_ENTERING_WORLD")
 
@@ -2600,7 +2681,7 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame)
 	plateFrame.UnitFrame.isNamePlate = true
 	plateFrame.UnitFrame.BuffFrame.amtDebuffs = 0
 	plateFrame.UnitFrame.healthBar.border.plateFrame = plateFrame
-
+	
 	--nome customizado
 	local actorName = plateFrame.UnitFrame.healthBar:CreateFontString (nil, "artwork", "GameFontNormal")
 	plateFrame.UnitFrame.healthBar.actorName = actorName
@@ -2643,6 +2724,7 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame)
 	plateFrame.Top3DFrame:SetPoint ("bottom", plateFrame, "top", 0, -100)
 	plateFrame.Top3DFrame:SetSize (200, 250)
 	plateFrame.Top3DFrame:EnableMouse (false)
+	plateFrame.Top3DFrame:EnableMouseWheel (false)
 	plateFrame.Top3DFrame:Hide()
 	
 	--fundo da castbar
@@ -2971,9 +3053,12 @@ function Plater.OpenOptionsPanel()
 	
 	--controi o menu principal
 	--local f = DF:Create1PxPanel (UIParent, 900, 600, "Plater Options", "PlaterOptionsPanel", Plater.db.profile.OptionsPanelDB)
-	local f = DF:CreateSimplePanel (UIParent, 1100, 590, "Plater Options", "PlaterOptionsPanelFrame")
-	f:SetPoint ("center", UIParent, "center", 0, 0)
+	local f = DF:CreateSimplePanel (UIParent, 1100, 590, "Plater Options", "PlaterOptionsPanelFrame", {UseScaleBar = true}, Plater.db.profile.OptionsPanelDB)
+	--f:SetPoint ("center", UIParent, "center", 0, 0)
 	local profile = Plater.db.profile
+	
+	--adjust scale
+	
 	
 	local frameConfigNames = {"Friendly Player", "Enemy Player", "Friendly Npc", "Enemy Npc", "Player Health Bar", "Ignore Auras"}
 	local frameConfigShowEnableBox = {false, false, true, false}
@@ -3507,8 +3592,8 @@ playerConfigButton:SetPoint ("left", interfaceOptions.widget_list [2], "right", 
 -------------------------------------------------------------------------------
 -- painel para configurar debuffs e buffs
 
-local welcomestring = DF:CreateLabel (auraFilterFrame, "Cast spells to fill buffs and debuffs list.", 16, "white")
-welcomestring:SetPoint ("topleft", self, "topleft", 10, -110)
+local welcomestring = DF:CreateLabel (auraFilterFrame, "Cast spells to fill *your* buffs and debuffs list.", 16, "white")
+welcomestring:SetPoint ("topleft", self, "topleft", 10, -210)
 local subLine = DF:CreateImage (auraFilterFrame, nil, 300, 1)
 subLine:SetColorTexture (1, 1, 1, 0.7)
 subLine:SetPoint ("topleft", welcomestring, "bottomleft")
@@ -3640,17 +3725,18 @@ end
 	buffs_added_list.nextWidget = 1
 	
 --seta os pontos
-debuffs_list:SetPoint ("topleft", auraFilterFrame, "topleft", 10, -200)
-buffs_list:SetPoint ("topleft", auraFilterFrame, "topleft", 260, -200)
-debuffs_added_list:SetPoint ("topleft", auraFilterFrame, "topleft", 520, -200)
-buffs_added_list:SetPoint ("topleft", auraFilterFrame, "topleft", 780, -200)
+local yLoc = -260
+debuffs_list:SetPoint ("topleft", auraFilterFrame, "topleft", 10, yLoc)
+buffs_list:SetPoint ("topleft", auraFilterFrame, "topleft", 260, yLoc)
+debuffs_added_list:SetPoint ("topleft", auraFilterFrame, "topleft", 520, yLoc)
+buffs_added_list:SetPoint ("topleft", auraFilterFrame, "topleft", 780, yLoc)
 
 local allframes = {debuffs_list, buffs_list, debuffs_added_list, buffs_added_list}
 for _, frame in ipairs (allframes) do
 	frame:SetBackdrop ({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", tile = true, tileSize = 16, edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
 	frame:SetBackdropColor (0, 0, 0, 0.5)
 	frame:SetBackdropBorderColor (0, 0, 0, 0.3)
-	frame:SetSize (240, 380)
+	frame:SetSize (240, 320)
 end
 
 local readCombatLog = CreateFrame ("frame", nil, auraFilterFrame)
@@ -3801,11 +3887,10 @@ end)
 			name = "Y Offset",
 			desc = "Adjust the positioning on the Y axis.",
 		},
-		--percent text
-		{type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"},
-		{type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"},
-		{type = "blank"}, {type = "blank"}, {type = "blank"},
+
+		{type = "breakline"},
 		
+		--percent text
 		{type = "label", get = function() return "Health Percent Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--enabled
 		{
@@ -3827,7 +3912,7 @@ end)
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
-			max = 32,
+			max = 99,
 			step = 1,
 			name = "Size",
 			desc = "Size of the text.",
@@ -3940,7 +4025,7 @@ end)
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
-			max = 32,
+			max = 99,
 			step = 1,
 			name = "Size",
 			desc = "Size of the text.",
@@ -4030,9 +4115,8 @@ end)
 			name = "Y Offset",
 			desc = "Slightly move the text vertically.",
 		},		
-		
-		--pula a segunda linha
-		{type = "blank"}, {type = "blank"}, {type = "blank"},
+
+		{type = "breakline"},
 		
 		--class resources
 		{type = "label", get = function() return "Resources:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
@@ -4243,7 +4327,8 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 			usedecimals = true,
 		},		
 		
-		{type = "blank"},{type = "blank"},{type = "blank"},{type = "blank"},{type = "blank"},
+		{type = "breakline"},
+		
 		{type = "label", get = function() return "Plate Color As a Tank:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "color",
@@ -4356,7 +4441,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 			name = "Color",
 			desc = "Color of the plate border.",
 		},
-		{type = "blank"}, {type = "blank"},
+		
+		{type = "breakline"},
+		
 		{type = "label", get = function() return "Friendly Plates:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
@@ -4426,17 +4513,43 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "blank"},
 		{type = "label", get = function() return "Debuffs:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
-			type = "range",
-			get = function() return profile.debuff_size_multiplier end,
+			type = "toggle",
+			get = function() return profile.aura_timer end,
 			set = function (self, fixedparam, value) 
-				profile.debuff_size_multiplier = value
+				profile.aura_timer = value
+				Plater.RefreshAuras()
+				Plater.UpdateAllPlates()
 			end,
-			min = 0.5,
-			max = 3,
-			step = 0.1,
-			name = "Size Multiplier",
-			desc = "Multiply the default size by this value.",
-			usedecimals = true,
+			name = "Show Timer",
+			desc = "Time left on buff or debuff.",
+		},
+		{
+			type = "range",
+			get = function() return profile.aura_width end,
+			set = function (self, fixedparam, value) 
+				profile.aura_width = value
+				Plater.RefreshAuras()
+				Plater.UpdateAllPlates()
+			end,
+			min = 8,
+			max = 40,
+			step = 1,
+			name = "Width",
+			desc = "Debuff's icon width.",
+		},
+		{
+			type = "range",
+			get = function() return profile.aura_height end,
+			set = function (self, fixedparam, value) 
+				profile.aura_height = value
+				Plater.RefreshAuras()
+				Plater.UpdateAllPlates()
+			end,
+			min = 8,
+			max = 40,
+			step = 1,
+			name = "Height",
+			desc = "Debuff's icon height.",
 		},
 		{
 			type = "toggle",
@@ -4449,9 +4562,8 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 			desc = "When the actor has a crowd control spell (such as Polymorph).",
 		},
 		
-		{type = "blank"}, {type = "blank"}, {type = "blank"},
+		{type = "breakline"},
 		
-		{type = "blank"},
 		{type = "label", get = function() return "Icon Indicators:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
@@ -4766,7 +4878,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
-			max = 32,
+			max = 99,
 			step = 1,
 			name = "Size",
 			desc = "Size of the text.",
@@ -4844,7 +4956,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		},	
 		
 		--cast text size
-		{type = "blank"}, {type = "blank"},	
+		{type = "breakline"},
 		
 		--cast text size
 		{type = "label", get = function() return "Spell Name Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
@@ -4856,7 +4968,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
-			max = 32,
+			max = 99,
 			step = 1,
 			name = "Size",
 			desc = "Size of the text.",
@@ -4919,7 +5031,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
-			max = 32,
+			max = 99,
 			step = 1,
 			name = "Size",
 			desc = "Size of the text.",
@@ -5023,8 +5135,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 			desc = "Adjusts the position on the Y axis.",
 		},
 		
+		{type = "breakline"},
+		
 		--percent text
-		{type = "blank"}, {type = "blank"}, {type = "blank"},
 		{type = "label", get = function() return "Health Percent Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--enabled
 		{
@@ -5046,7 +5159,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
-			max = 32,
+			max = 99,
 			step = 1,
 			name = "Size",
 			desc = "Size of the text.",
@@ -5158,7 +5271,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
-			max = 32,
+			max = 99,
 			step = 1,
 			name = "Size",
 			desc = "Size of the text.",
@@ -5392,7 +5505,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
-			max = 32,
+			max = 99,
 			step = 1,
 			name = "Size",
 			desc = "Size of the text.",
@@ -5470,8 +5583,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 			desc = "Slightly move the text vertically.",
 		},	
 		
-		--cast text size
-		{type = "blank"}, {type = "blank"},		
+		{type = "breakline"},
 		
 		--cast text size
 		{type = "label", get = function() return "Spell Name Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
@@ -5483,7 +5595,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
-			max = 32,
+			max = 99,
 			step = 1,
 			name = "Size",
 			desc = "Size of the text.",
@@ -5546,7 +5658,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
-			max = 32,
+			max = 99,
 			step = 1,
 			name = "Size",
 			desc = "Size of the text.",
@@ -5650,8 +5762,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 			desc = "Adjusts the position on the Y axis.",
 		},
 		
+		{type = "breakline"},
+		
 		--percent text
-		{type = "blank"}, {type = "blank"}, {type = "blank"},
 		{type = "label", get = function() return "Health Percent Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--enabled
 		{
@@ -5673,7 +5786,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
-			max = 32,
+			max = 99,
 			step = 1,
 			name = "Size",
 			desc = "Size of the text.",
@@ -5785,7 +5898,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
-			max = 32,
+			max = 99,
 			step = 1,
 			name = "Size",
 			desc = "Size of the text.",
@@ -6029,7 +6142,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
-			max = 32,
+			max = 99,
 			step = 1,
 			name = "Size",
 			desc = "Size of the text.",
@@ -6106,8 +6219,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 			desc = "Slightly move the text vertically.",
 		},	
 		
-		--cast text size
-		{type = "blank"}, {type = "blank"},		
+		{type = "breakline"},
 		
 		--cast text size
 		{type = "label", get = function() return "Spell Name Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
@@ -6119,7 +6231,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
-			max = 32,
+			max = 99,
 			step = 1,
 			name = "Size",
 			desc = "Size of the text.",
@@ -6182,7 +6294,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
-			max = 32,
+			max = 99,
 			step = 1,
 			name = "Size",
 			desc = "Size of the text.",
@@ -6286,8 +6398,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 			desc = "Adjusts the position on the Y axis.",
 		},
 		
+		{type = "breakline"},
+		
 		--percent text
-		{type = "blank"}, {type = "blank"}, {type = "blank"},
 		{type = "label", get = function() return "Health Percent Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--enabled
 		{
@@ -6309,7 +6422,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
-			max = 32,
+			max = 99,
 			step = 1,
 			name = "Size",
 			desc = "Size of the text.",
@@ -6440,7 +6553,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
-			max = 32,
+			max = 99,
 			step = 1,
 			name = "Size",
 			desc = "Size of the text.",
@@ -6480,7 +6593,8 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 			desc = "The color of the text.",
 		},
 		
-		{type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"},
+		{type = "breakline"},
+		
 		{type = "label", get = function() return "Npc Name Text When no Health Bar Shown:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		--profession text size
@@ -6492,7 +6606,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
-			max = 32,
+			max = 99,
 			step = 1,
 			name = "Size",
 			desc = "Size of the text.",
@@ -6553,7 +6667,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
-			max = 32,
+			max = 99,
 			step = 1,
 			name = "Size",
 			desc = "Size of the text.",
@@ -6786,7 +6900,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
-			max = 32,
+			max = 99,
 			step = 1,
 			name = "Size",
 			desc = "Size of the text.",
@@ -6863,8 +6977,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 			desc = "Slightly move the text vertically.",
 		},	
 		
+		{type = "breakline"},
+		
 		--cast text size
-		{type = "blank"}, {type = "blank"},
 		{type = "label", get = function() return "Spell Name Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
@@ -6874,7 +6989,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
-			max = 32,
+			max = 99,
 			step = 1,
 			name = "Size",
 			desc = "Size of the text.",
@@ -6937,7 +7052,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
-			max = 32,
+			max = 99,
 			step = 1,
 			name = "Size",
 			desc = "Size of the text.",
@@ -7041,7 +7156,8 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 			desc = "Adjusts the position on the Y axis.",
 		},
 		
-		{type = "blank"}, {type = "blank"}, {type = "blank"},
+		{type = "breakline"},
+		
 		--percent text
 		{type = "label", get = function() return "Health Percent Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--enabled
@@ -7064,7 +7180,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
-			max = 32,
+			max = 99,
 			step = 1,
 			name = "Size",
 			desc = "Size of the text.",
@@ -7176,7 +7292,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
-			max = 32,
+			max = 99,
 			step = 1,
 			name = "Size",
 			desc = "Size of the text.",
@@ -7253,7 +7369,8 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 			desc = "Slightly move the text vertically.",
 		},
 		
-		{type = "blank"}, {type = "blank"}, {type = "blank"}, {type = "blank"},
+		{type = "breakline"},
+		
 		{type = "label", get = function() return "Quest Color:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--enabled
 		{

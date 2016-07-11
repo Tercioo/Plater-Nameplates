@@ -15,8 +15,19 @@ local _math_floor = math.floor --> lua local
 local loadstring = loadstring --> lua local
 
 local cleanfunction = function() end
-local PanelMetaFunctions = {}
 local APIFrameFunctions
+
+do
+	local metaPrototype = {
+		WidgetType = "panel",
+		SetHook = DF.SetHook,
+		RunHooksForWidget = DF.RunHooksForWidget,
+	}
+
+	_G [DF.GlobalWidgetControlNames ["panel"]] = _G [DF.GlobalWidgetControlNames ["panel"]] or metaPrototype
+end
+
+local PanelMetaFunctions = _G [DF.GlobalWidgetControlNames ["panel"]]
 
 ------------------------------------------------------------------------------------------------------------
 --> metatables
@@ -58,19 +69,18 @@ local APIFrameFunctions
 		return _rawget (_object, "is_locked")
 	end
 
-	local get_members_function_index = {
-		["tooltip"] = gmember_tooltip,
-		["shown"] = gmember_shown,
-		["color"] = gmember_color,
-		["backdrop"] = gmember_backdrop,
-		["width"] = gmember_width,
-		["height"] = gmember_height,
-		["locked"] = gmember_locked,
-	}
+	PanelMetaFunctions.GetMembers = PanelMetaFunctions.GetMembers or {}
+	PanelMetaFunctions.GetMembers ["tooltip"] = gmember_tooltip
+	PanelMetaFunctions.GetMembers ["shown"] = gmember_shown
+	PanelMetaFunctions.GetMembers ["color"] = gmember_color
+	PanelMetaFunctions.GetMembers ["backdrop"] = gmember_backdrop
+	PanelMetaFunctions.GetMembers ["width"] = gmember_width
+	PanelMetaFunctions.GetMembers ["height"] = gmember_height
+	PanelMetaFunctions.GetMembers ["locked"] = gmember_locked
 	
 	PanelMetaFunctions.__index = function (_table, _member_requested)
 
-		local func = get_members_function_index [_member_requested]
+		local func = PanelMetaFunctions.GetMembers [_member_requested]
 		if (func) then
 			return func (_table, _member_requested)
 		end
@@ -140,20 +150,19 @@ local APIFrameFunctions
 		return _rawset (_object, "rightButtonClose", _value)
 	end
 	
-	local set_members_function_index = {
-		["tooltip"] = smember_tooltip,
-		["show"] = smember_show,
-		["hide"] = smember_hide,
-		["color"] = smember_color,
-		["backdrop"] = smember_backdrop,
-		["width"] = smember_width,
-		["height"] = smember_height,
-		["locked"] = smember_locked,
-		["close_with_right"] = smember_right_close,
-	}
-	
+	PanelMetaFunctions.SetMembers = PanelMetaFunctions.SetMembers or {}
+	PanelMetaFunctions.SetMembers["tooltip"] = smember_tooltip
+	PanelMetaFunctions.SetMembers["show"] = smember_show
+	PanelMetaFunctions.SetMembers["hide"] = smember_hide
+	PanelMetaFunctions.SetMembers["color"] = smember_color
+	PanelMetaFunctions.SetMembers["backdrop"] = smember_backdrop
+	PanelMetaFunctions.SetMembers["width"] = smember_width
+	PanelMetaFunctions.SetMembers["height"] = smember_height
+	PanelMetaFunctions.SetMembers["locked"] = smember_locked
+	PanelMetaFunctions.SetMembers["close_with_right"] = smember_right_close
+
 	PanelMetaFunctions.__newindex = function (_table, _key, _value)
-		local func = set_members_function_index [_key]
+		local func = PanelMetaFunctions.SetMembers [_key]
 		if (func) then
 			return func (_table, _value)
 		else
@@ -309,24 +318,14 @@ local APIFrameFunctions
 		end
 	end
 
---> hooks
-	function PanelMetaFunctions:SetHook (hookType, func)
-		if (func) then
-			_rawset (self, hookType.."Hook", func)
-		else
-			_rawset (self, hookType.."Hook", nil)
-		end
-	end
-
 ------------------------------------------------------------------------------------------------------------
 --> scripts
 	
 	local OnEnter = function (frame)
-		if (frame.MyObject.OnEnterHook) then
-			local interrupt = frame.MyObject.OnEnterHook (frame, frame.MyObject)
-			if (interrupt) then
-				return
-			end
+		local capsule = frame.MyObject
+		local kill = capsule:RunHooksForWidget ("OnEnter", frame, capsule)
+		if (kill) then
+			return
 		end
 		
 		if (frame.MyObject.have_tooltip) then 
@@ -340,11 +339,10 @@ local APIFrameFunctions
 	end
 
 	local OnLeave = function (frame)
-		if (frame.MyObject.OnLeaveHook) then
-			local interrupt = frame.MyObject.OnLeaveHook (frame, frame.MyObject)
-			if (interrupt) then
-				return
-			end
+		local capsule = frame.MyObject
+		local kill = capsule:RunHooksForWidget ("OnLeave", frame, capsule)
+		if (kill) then
+			return
 		end
 		
 		if (frame.MyObject.have_tooltip) then 
@@ -354,29 +352,26 @@ local APIFrameFunctions
 	end
 	
 	local OnHide = function (frame)
-		if (frame.MyObject.OnHideHook) then
-			local interrupt = frame.MyObject.OnHideHook (frame, frame.MyObject)
-			if (interrupt) then
-				return
-			end
+		local capsule = frame.MyObject
+		local kill = capsule:RunHooksForWidget ("OnHide", frame, capsule)
+		if (kill) then
+			return
 		end
 	end
 	
 	local OnShow = function (frame)
-		if (frame.MyObject.OnShowHook) then
-			local interrupt = frame.MyObject.OnShowHook (frame, frame.MyObject)
-			if (interrupt) then
-				return
-			end
+		local capsule = frame.MyObject
+		local kill = capsule:RunHooksForWidget ("OnShow", frame, capsule)
+		if (kill) then
+			return
 		end
 	end
 	
 	local OnMouseDown = function (frame, button)
-		if (frame.MyObject.OnMouseDownHook) then
-			local interrupt = frame.MyObject.OnMouseDownHook (frame, button, frame.MyObject)
-			if (interrupt) then
-				return
-			end
+		local capsule = frame.MyObject
+		local kill = capsule:RunHooksForWidget ("OnMouseDown", frame, button, capsule)
+		if (kill) then
+			return
 		end
 		
 		if (frame.MyObject.container == UIParent) then
@@ -396,11 +391,10 @@ local APIFrameFunctions
 	end
 	
 	local OnMouseUp = function (frame, button)
-		if (frame.MyObject.OnMouseUpHook) then
-			local interrupt = frame.MyObject.OnMouseUpHook (frame, button, frame.MyObject)
-			if (interrupt) then
-				return
-			end
+		local capsule = frame.MyObject
+		local kill = capsule:RunHooksForWidget ("OnMouseUp", frame, button, capsule)
+		if (kill) then
+			return
 		end
 		
 		if (button == "RightButton" and frame.MyObject.rightButtonClose) then
@@ -456,15 +450,7 @@ function DF:NewPanel (parent, container, name, member, w, h, backdrop, backdropc
 		container = container.widget
 	end
 
-	
 	--> default members:
-		--> hooks
-		PanelObject.OnEnterHook = nil
-		PanelObject.OnLeaveHook = nil
-		PanelObject.OnHideHook = nil
-		PanelObject.OnShowHook = nil
-		PanelObject.OnMouseDownHook = nil
-		PanelObject.OnMouseUpHook = nil
 		--> misc
 		PanelObject.is_locked = true
 		PanelObject.container = container
@@ -490,6 +476,15 @@ function DF:NewPanel (parent, container, name, member, w, h, backdrop, backdropc
 	PanelObject.frame:SetHeight (h or 100)
 	
 	PanelObject.frame.MyObject = PanelObject
+	
+	PanelObject.HookList = {
+		OnEnter = {},
+		OnLeave = {},
+		OnHide = {},
+		OnShow = {},
+		OnMouseDown = {},
+		OnMouseUp = {},
+	}
 	
 	--> hooks
 		PanelObject.frame:SetScript ("OnEnter", OnEnter)
@@ -1499,8 +1494,26 @@ local SimplePanel_frame_backdrop = {edgeFile = [[Interface\Buttons\WHITE8X8]], e
 local SimplePanel_frame_backdrop_color = {0, 0, 0, 0.9}
 local SimplePanel_frame_backdrop_border_color = {0, 0, 0, 1}
 
+local create_scale_bar = function (self, config)
+	local scaleBar = DF:CreateSlider (self, 120, 14, 0.6, 1.6, 0.1, config.scale, true, "ScaleBar", nil, "Scale:", DF:GetTemplate ("slider", "OPTIONS_SLIDER_TEMPLATE"), DF:GetTemplate ("font", "OPTIONS_FONT_TEMPLATE"))
+	scaleBar:SetPoint ("right", self.Close, "left", -2, 0)
+	scaleBar.OnValueChanged = function (_, _, value)
+		config.scale = value
+		if (not scaleBar.IsValueChanging) then
+			self:SetScale (config.scale)
+		end
+	end
+	scaleBar:SetHook ("OnMouseUp", function()
+		self:SetScale (config.scale)
+	end)
+end
+
 local no_options = {}
-function DF:CreateSimplePanel (parent, w, h, title, name, panel_options)
+function DF:CreateSimplePanel (parent, w, h, title, name, panel_options, db)
+
+	if (db and name and not db [name]) then
+		db [name] = {scale = 1}
+	end
 	
 	if (not name) then
 		name = "DetailsFrameworkSimplePanel" .. DF.SimplePanelCounter
@@ -1553,6 +1566,11 @@ function DF:CreateSimplePanel (parent, w, h, title, name, panel_options)
 	title_string:SetTextColor (.8, .8, .8, 1)
 	title_string:SetText (title or "")
 	f.Title = title_string
+	
+	if (panel_options.UseScaleBar and db [name]) then
+		create_scale_bar (f, db [name])
+		f:SetScale (db [name].scale)
+	end
 	
 	f.Title:SetPoint ("center", title_bar, "center")
 	f.Close:SetPoint ("right", title_bar, "right", -2, 0)

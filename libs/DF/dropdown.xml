@@ -161,19 +161,19 @@
 			</OnLoad>
 		
 			<OnShow>
-				DetailsFrameworkDropDownOnShow (self);
+				<!--DetailsFrameworkDropDownOnShow (self);-->
 			</OnShow>
 			
 			<OnHide>
-				DetailsFrameworkDropDownOnHide (self);
+				<!--DetailsFrameworkDropDownOnHide (self);-->
 			</OnHide>
 		
 			<OnEnter>
-				DetailsFrameworkDropDownOnEnter (self);
+				<!--DetailsFrameworkDropDownOnEnter (self);-->
 			</OnEnter>
 			
 			<OnLeave>
-				DetailsFrameworkDropDownOnLeave (self);
+				<!--DetailsFrameworkDropDownOnLeave (self);-->
 			</OnLeave>
 		
 			<OnSizeChanged>
