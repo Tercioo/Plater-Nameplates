@@ -993,12 +993,15 @@ function DF:NewButton (parent, container, name, member, w, h, func, param1, para
 	
 	ButtonObject.button.text:SetText (text)
 	ButtonObject.button.text:SetPoint ("center", ButtonObject.button, "center")
-	
+
 	local text_width = ButtonObject.button.text:GetStringWidth()
 	if (text_width > w-15 and ButtonObject.button.text:GetText() ~= "") then
-		if (not short_method) then
+		if (short_method == false) then --> if is false, do not use auto resize
+			--do nothing
+		elseif (not short_method) then --> if the value is omitted, use the default resize
 			local new_width = text_width+15
 			ButtonObject.button:SetWidth (new_width)
+			
 		elseif (short_method == 1) then
 			local loop = true
 			local textsize = 11

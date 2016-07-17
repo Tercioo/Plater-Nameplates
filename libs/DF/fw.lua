@@ -1,5 +1,5 @@
 
-local dversion = 17
+local dversion = 21
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
 
@@ -29,6 +29,9 @@ DF.ButtonCounter = DF.ButtonCounter or init_counter
 DF.SliderCounter = DF.SliderCounter or init_counter
 DF.SwitchCounter = DF.SwitchCounter or init_counter
 DF.SplitBarCounter = DF.SplitBarCounter or init_counter
+
+DF.FRAMELEVEL_OVERLAY = 750
+DF.FRAMELEVEL_BACKGROUND = 150
 
 DF.FrameWorkVersion = tostring (dversion)
 function DF:PrintVersion()
@@ -105,6 +108,8 @@ local embed_functions = {
 	"GetFrameworkFolder",
 	"ShowPanicWarning",
 	"SetFrameworkDebugState",
+	"FindHighestParent",
+	"OpenInterfaceProfile",
 }
 
 DF.table = {}
@@ -1076,4 +1081,50 @@ function DF:AddMemberForWidget (widgetName, memberType, memberName, func)
 			error ("Details! Framework: AddMemberForWidget unknown widget type: " .. (widgetName or "") .. ".")
 		end
 	end
+end
+
+-----------------------------
+
+function DF:OpenInterfaceProfile()
+	InterfaceOptionsFrame_OpenToCategory (self.__name)
+	InterfaceOptionsFrame_OpenToCategory (self.__name)
+	for i = 1, 100 do
+		local button = _G ["InterfaceOptionsFrameAddOnsButton" .. i]
+		if (button) then
+			local text = _G ["InterfaceOptionsFrameAddOnsButton" .. i .. "Text"]
+			if (text) then
+				text = text:GetText()
+				if (text == self.__name) then
+					local toggle = _G ["InterfaceOptionsFrameAddOnsButton" .. i .. "Toggle"]
+					if (toggle) then
+						if (toggle:GetNormalTexture():GetTexture():find ("PlusButton")) then
+							--is minimized, need expand
+							toggle:Click()
+							_G ["InterfaceOptionsFrameAddOnsButton" .. i+1]:Click()
+						elseif (toggle:GetNormalTexture():GetTexture():find ("MinusButton")) then
+							--isn't minimized
+							_G ["InterfaceOptionsFrameAddOnsButton" .. i+1]:Click()
+						end
+					end
+					break
+				end
+			end
+		else
+			self:Msg ("Couldn't not find the profile panel.")
+			break
+		end
+	end
+end
+
+-----------------------------
+--safe copy from blizz api
+function DF:Mixin (object, ...)
+	for i = 1, select("#", ...) do
+		local mixin = select(i, ...);
+		for k, v in pairs(mixin) do
+			object[k] = v;
+		end
+	end
+
+	return object;
 end

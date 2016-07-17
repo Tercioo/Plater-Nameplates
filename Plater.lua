@@ -66,6 +66,9 @@ LibSharedMedia:Register ("statusbar", "PlaterBackground", [[Interface\AddOns\Pla
 LibSharedMedia:Register ("statusbar", "PlaterTexture", [[Interface\AddOns\Plater\images\platetexture]])
 LibSharedMedia:Register ("statusbar", "PlaterHighlight", [[Interface\AddOns\Plater\images\plateselected]])
 
+LibSharedMedia:Register ("statusbar", "testbar", [[Interface\AddOns\Plater\images\testbar.tga]])
+--LibSharedMedia:Register ("statusbar", "testbarBLP", [[Interface\AddOns\Plater\images\testbar]])
+
 LibSharedMedia:Register ("font", "Oswald", [[Interface\Addons\Plater\fonts\Oswald-Regular.otf]])
 LibSharedMedia:Register ("font", "Nueva Std Cond", [[Interface\Addons\Plater\fonts\NuevaStd-Cond.otf]])
 LibSharedMedia:Register ("font", "Accidental Presidency", [[Interface\Addons\Plater\fonts\Accidental Presidency.ttf]])
@@ -185,6 +188,7 @@ local default_config = {
 				relevant_and_proffesions = false,
 				only_names = false,
 				all_names = false,
+				relevance_state = 1,
 				plate_order = 3,
 				
 				health = {100, 2},
@@ -412,6 +416,12 @@ local default_config = {
 		aura_custom = {},
 		debuff_show_cc = true,
 		
+		target_highlight = true,
+		target_highlight_alpha = .3,
+		
+		hover_highlight = true,
+		hover_highlight_alpha = .3,
+		
 		health_statusbar_texture = "PlaterTexture", --"DGround"
 		health_selection_overlay = "PlaterHighlight",
 		health_statusbar_bgtexture = "PlaterBackground",
@@ -461,7 +471,16 @@ local default_config = {
 	}
 }
 
-local Plater = DF:CreateAddOn ("Plater", "PlaterDB", default_config)
+local options_table = {
+	name = "Plater Nameplates",
+	type = "group",
+	args = {
+		
+	}
+}
+
+local Plater = DF:CreateAddOn ("Plater", "PlaterDB", default_config, options_table)
+
 Plater.FriendsCache = {}
 Plater.QuestCache = {}
 Plater.DriverFuncNames = {
@@ -649,9 +668,19 @@ function Plater.SpellIsCC (spellName)
 	return LocalizedCrowdControl [spellName]
 end
 
-function Plater.OnInit (self)
+function Plater:RefreshConfig()
+	Plater.UpdateAllPlates()
+	if (PlaterOptionsPanelFrame) then
+		PlaterOptionsPanelFrame.RefreshOptionsFrame()
+	end
+end
+
+function Plater.OnInit()
 
 	--C_Timer.After (1, Plater.OpenOptionsPanel)
+	C_Timer.After (1, function()
+		--Plater.OpenInterfaceProfile()
+	end)
 	
 	--constrói a lista de cc
 	for spellId, _ in pairs (CrowdControl) do
@@ -672,6 +701,7 @@ function Plater.OnInit (self)
 	Plater:RegisterEvent ("NAME_PLATE_UNIT_REMOVED")
 	Plater:RegisterEvent ("PLAYER_REGEN_DISABLED")
 	Plater:RegisterEvent ("PLAYER_REGEN_ENABLED")
+	Plater:RegisterEvent ("PLAYER_TARGET_CHANGED")
 	Plater:RegisterEvent ("ZONE_CHANGED_NEW_AREA")
 	Plater:RegisterEvent ("FRIENDLIST_UPDATE")
 	Plater:RegisterEvent ("PLAYER_LOGOUT")
@@ -1111,6 +1141,14 @@ function Plater.OnInit (self)
 		ClassNameplateManaBarFrame:SetSize (unpack (Plater.db.profile.plate_config.player.mana))
 	end)
 
+	--> ~db
+	Plater.db.RegisterCallback (Plater, "OnProfileChanged", "RefreshConfig")
+	Plater.db.RegisterCallback (Plater, "OnProfileCopied", "RefreshConfig")
+	Plater.db.RegisterCallback (Plater, "OnProfileReset", "RefreshConfig")
+	--Plater.db.RegisterCallback (Plater, "OnNewProfile", "RefreshConfig")
+	--Plater.db.RegisterCallback (Plater, "OnProfileDeleted", "RefreshConfig")
+	--Plater.db.RegisterCallback (Plater, "OnDatabaseReset", "RefreshConfig")
+	
 	Plater.UpdateSelfPlate()
 	Plater.UpdateUseClassColors()
 	C_Timer.After (4.1, Plater.QuestLogUpdated)
@@ -2235,6 +2273,10 @@ function Plater.ShouldForceSmallBar (plateFrame)
 	end
 end
 
+function Plater:PLAYER_TARGET_CHANGED()
+	Plater.OnPlayerTargetChanged()
+end
+
 local wait_for_leave_combat = function()
 	Plater:ZONE_CHANGED_NEW_AREA()
 end
@@ -2527,6 +2569,7 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, order)
 	Plater.UpdatePlateSize (plateFrame)
 	Plater.UpdateIndicators (plateFrame, actorType)
 	Plater.UpdateBuffContainer (plateFrame)
+	Plater.UpdateTarget (plateFrame)
 end
 
 function Plater.UpdateIndicators (plateFrame, actorType)
@@ -2675,12 +2718,86 @@ function Plater.UpdatePlateBorders (plateFrame)
 	end	
 end
 
+function Plater.OnPlayerTargetChanged()
+	for index, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+		Plater.UpdateTarget (plateFrame)
+	end
+end
+-- ~target
+function Plater.UpdateTarget (plateFrame)
+	if (UnitIsUnit (plateFrame [MEMBER_UNITID], "target") and Plater.db.profile.target_highlight) then
+		plateFrame.TargetNeonUp:Show()
+		plateFrame.TargetNeonDown:Show()
+		Plater.UpdateTargetPoints (plateFrame)
+	else
+		plateFrame.TargetNeonUp:Hide()
+		plateFrame.TargetNeonDown:Hide()
+	end
+end
+
+function Plater.UpdateTargetPoints (plateFrame)
+	local healthBar = plateFrame.UnitFrame.healthBar
+	local width = healthBar:GetWidth()
+	local x = width/14
+	local alpha = Plater.db.profile.target_highlight_alpha
+	plateFrame.TargetNeonUp:SetAlpha (alpha)
+	plateFrame.TargetNeonUp:SetPoint ("topleft", healthBar, "bottomleft", -x, 0)
+	plateFrame.TargetNeonUp:SetPoint ("topright", healthBar, "bottomright", x, 0)
+	plateFrame.TargetNeonDown:SetAlpha (alpha)
+	plateFrame.TargetNeonDown:SetPoint ("bottomleft", healthBar, "topleft", -x, 0)
+	plateFrame.TargetNeonDown:SetPoint ("bottomright", healthBar, "topright", x, 0)
+end
+
 Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame)
 	--isto é uma nameplate
 	plateFrame.isNamePlate = true
 	plateFrame.UnitFrame.isNamePlate = true
 	plateFrame.UnitFrame.BuffFrame.amtDebuffs = 0
 	plateFrame.UnitFrame.healthBar.border.plateFrame = plateFrame
+	local healthBar = plateFrame.UnitFrame.healthBar
+	
+	--highlight para o mouse over
+	local mouseHighlight = healthBar:CreateTexture (nil, "overlay")
+	mouseHighlight:SetDrawLayer ("overlay", 7)
+	mouseHighlight:SetAllPoints()
+	mouseHighlight:SetTexture ([[Interface\ACHIEVEMENTFRAME\UI-Achievement-Alert-Glow]])
+	mouseHighlight:SetTexCoord (50/512, 300/512, 60/256, 100/256)
+	mouseHighlight:SetAlpha (.3)
+	mouseHighlight:Hide()
+	
+	local TargetNeonUp = healthBar:CreateTexture (nil, "overlay")
+	TargetNeonUp:SetDrawLayer ("overlay", 7)
+	TargetNeonUp:SetPoint ("topleft", healthBar, "bottomleft")
+	TargetNeonUp:SetPoint ("topright", healthBar, "bottomright")
+	TargetNeonUp:SetTexture ([[Interface\BUTTONS\UI-Panel-Button-Glow]])
+	TargetNeonUp:SetTexCoord (1/128, 95/128, 30/64, 38/64)
+	TargetNeonUp:SetDesaturated (true)
+	TargetNeonUp:SetBlendMode ("ADD")
+	TargetNeonUp:SetHeight (8)
+	TargetNeonUp:Hide()
+	plateFrame.TargetNeonUp = TargetNeonUp
+	
+	local  TargetNeonDown = healthBar:CreateTexture (nil, "overlay")
+	TargetNeonDown:SetDrawLayer ("overlay", 7)
+	TargetNeonDown:SetPoint ("bottomleft", healthBar, "topleft")
+	TargetNeonDown:SetPoint ("bottomright", healthBar, "topright")
+	TargetNeonDown:SetTexture ([[Interface\BUTTONS\UI-Panel-Button-Glow]])
+	TargetNeonDown:SetTexCoord (1/128, 95/128, 38/64, 30/64) --0, 95/128
+	TargetNeonDown:SetDesaturated (true)
+	TargetNeonDown:SetBlendMode ("ADD")
+	TargetNeonDown:SetHeight (8)
+	TargetNeonDown:Hide()
+	plateFrame.TargetNeonDown = TargetNeonDown
+	
+	plateFrame:SetScript ("OnEnter", function (self)
+		if (Plater.db.profile.hover_highlight) then
+			mouseHighlight:Show()
+			mouseHighlight:SetAlpha (Plater.db.profile.hover_highlight_alpha)
+		end
+	end)
+	plateFrame:SetScript ("OnLeave", function (self)
+		mouseHighlight:Hide()
+	end)
 	
 	--nome customizado
 	local actorName = plateFrame.UnitFrame.healthBar:CreateFontString (nil, "artwork", "GameFontNormal")
@@ -2858,7 +2975,7 @@ function Plater.UpdateCullingDistance()
 		return C_Timer.After (1, CullingUnderCombat)
 	end
 	local distance = Plater.db.profile.culling_distance
-	SetCVar (CVAR_CULLINGDISTANCE, distance)
+	--SetCVar (CVAR_CULLINGDISTANCE, distance)
 end
 
 Plater ["NAME_PLATE_UNIT_REMOVED"] = function (self, event, unitBarId)
@@ -2981,8 +3098,10 @@ function Plater.SetCVarsOnFirstRun()
 	InterfaceOptionsNamesPanelUnitNameplatesPersonalResource:Click()
 	
 	Plater.ShutdownInterfaceOptionsPanel()
-
+	
 	PlaterDBChr.first_run [UnitGUID ("player")] = true
+	
+	SetCVar (CVAR_CULLINGDISTANCE, 100)
 	
 	C_Timer.After (2, function()
 		SetCVar (CVAR_SHOWPERSONAL, CVAR_ENABLED)
@@ -2991,7 +3110,7 @@ end
 
 function Plater:PLAYER_LOGOUT()
 	--be safe, don't break shit
-	SetCVar (CVAR_CULLINGDISTANCE, 60)
+	--SetCVar (CVAR_CULLINGDISTANCE, 60)
 end
 
 function Plater.OpenFeedbackWindow()
@@ -3057,261 +3176,66 @@ function Plater.OpenOptionsPanel()
 	--f:SetPoint ("center", UIParent, "center", 0, 0)
 	local profile = Plater.db.profile
 	
-	--adjust scale
+	local frame_options = {
+		y_offset = 0,
+		button_width = 105,
+		button_height = 20,
+		button_x = 230,
+		button_y = -32,
+		button_text_size = 10,
+	} 
 	
-	
-	local frameConfigNames = {"Friendly Player", "Enemy Player", "Friendly Npc", "Enemy Npc", "Player Health Bar", "Ignore Auras"}
-	local frameConfigShowEnableBox = {false, false, true, false}
-	
-	--home panel (main panel)
-	local mainFrame = CreateFrame ("frame", "$parentMainFrame", f)
-	local title = DF:CreateLabel (mainFrame, "Plater Options", 32, "white")
-	title:SetPoint ("topleft", mainFrame, "topleft", 10, -30)
-	
-	--opções do menu de interface
-	local interfaceOptions = CreateFrame ("frame", "$parentInterfaceFrame", mainFrame)
-	interfaceOptions:SetPoint ("topleft", f, "topleft", 10, -90)
-	interfaceOptions:SetSize (400, 300)
-	
-	--beta feedback
-	local feedbackButton = DF:CreateButton (mainFrame, Plater.OpenFeedbackWindow, 100, 50, "Forum Thread\n\nPost Feedback", nil, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
-	feedbackButton:SetPoint ("topleft", mainFrame, "topleft", 380, -40)
-	
-	local help_config_text = DF:CreateLabel (mainFrame, "Click on those portraits\nto see individual options\n>>>>>>>", 12, "orange")
-	help_config_text:SetPoint ("topleft", mainFrame, "topleft", 370, -100)
-	help_config_text.align = ">"
-	
-	--constroi os frames dos 4 sub menus
-	local friendlyPCsFrame = CreateFrame ("frame", "$parentFriendlyPCsFrame", f)
-	local friendlyNPCsFrame = CreateFrame ("frame", "$parentFriendlyNPCsFrame", f)
-	local enemyPCsFrame = CreateFrame ("frame", "$parentEnemyPCsFrame", f)
-	local enemyNPCsFrame = CreateFrame ("frame", "$parentEnemyNPCsFrame", f)
-	local personalPlayerFrame = CreateFrame ("frame", "$parentPersonalPlayerFrame", f)
-	local auraFilterFrame = CreateFrame ("frame", "$parentAuraFilterFrame", f)
+	-- mainFrame é um frame vazio para sustentrar todos os demais frames, este frame sempre será mostrado
+	local mainFrame = DF:CreateTabContainer (f, "Plater Options", "PlaterOptionsPanelContainer", {
+		{name = "FrontPage", title = "Main Menu"},
+		{name = "PersonalBar", title = "Personal Bar"},
+		{name = "FriendlyPlayer", title = "Friendly Player"},
+		{name = "EnemyPlayer", title = "Enemy Player"},
+		{name = "FriendlyNpc", title = "Friendly Npc"},
+		{name = "EnemyNpc", title = "Enemy Npc"},
+		{name = "DebuffConfig", title = "Config Debuffs"},
+		{name = "ProfileManagement", title = "Profilies"},
+	}, 
+	frame_options)
 
-	mainFrame:SetAllPoints()
-	friendlyPCsFrame:SetAllPoints()
-	friendlyNPCsFrame:SetAllPoints()
-	enemyPCsFrame:SetAllPoints()
-	enemyNPCsFrame:SetAllPoints()
-	personalPlayerFrame:SetAllPoints()
-	auraFilterFrame:SetAllPoints()
+	local frontPageFrame = mainFrame.AllFrames [1]
+	local personalPlayerFrame = mainFrame.AllFrames [2]
+	local friendlyPCsFrame = mainFrame.AllFrames [3]
+	local friendlyNPCsFrame = mainFrame.AllFrames [5]
+	local enemyPCsFrame = mainFrame.AllFrames [4]
+	local enemyNPCsFrame = mainFrame.AllFrames [6]
+	local auraFilterFrame = mainFrame.AllFrames [7]
+	local profilesFrame = mainFrame.AllFrames [8]
+
+	local generalOptionsAnchor = CreateFrame ("frame", "$parentOptionsAnchor", frontPageFrame)
+	generalOptionsAnchor:SetSize (1, 1)
+	generalOptionsAnchor:SetPoint ("topleft", frontPageFrame, "topleft", 10, -290)
 	
-	-- coloca os frames em uma tabela
-	local subMenuFrames = {friendlyPCsFrame, enemyPCsFrame, friendlyNPCsFrame, enemyNPCsFrame, personalPlayerFrame, auraFilterFrame}
-	local subMenuButton = {}
+	f.AllMenuFrames = {}
+	for _, frame in ipairs (mainFrame.AllFrames) do
+		tinsert (f.AllMenuFrames, frame)
+	end
+	tinsert (f.AllMenuFrames, generalOptionsAnchor)
 	
-	local startX, startY, heightSize = 10, -90, 630
+	--> on profile change
+	function f.RefreshOptionsFrame()
+		for _, frame in ipairs (f.AllMenuFrames) do
+			frame:RefreshOptions()
+		end
+	end
+	
+	local startX, startY, heightSize = 10, -110, 630
 	local mainStartX, mainStartY, mainHeightSize = 10, -280, 800
 	
-	--esconde todos os frames
-	
-	local hide_all_submenus = function()
-		for _, frame in ipairs (subMenuFrames) do
-			frame:Hide()
-		end
-	end
-	hide_all_submenus()
-	
-	--constroi o menu com as 4 opções
-	local select_menu = function (self, button, value)
-		--esconde todos os sub menus
-		hide_all_submenus()
-		--volta para o main menu
-		if (value == -1) then
-			mainFrame:Show()
-			return
-		else
-			mainFrame:Hide()
-		end
-		
-		--mostra um dos menus
-		local menu = subMenuFrames [value]
-		if (menu) then
-			menu:Show()
-		end
-	end
-	
-	--cria os 4 botões de voltar e título
-	for index, frame in ipairs (subMenuFrames) do
-		local title = DF:CreateLabel (frame, frameConfigNames [index], 20, "white")
-		title:SetPoint ("topleft", frame, "topleft", 10, -30)
-		
-		local backButton = DF:CreateButton (frame, select_menu, 100, 20, "", -1)
-		backButton:SetPoint ("topleft", frame, "topleft", 10, -50)
-		backButton:SetText ("Go Back to Main Menu")
-		backButton:SetIcon ([[Interface\Buttons\UI-SpellbookIcon-PrevPage-Up]], 18, 18, "overlay", {0, 1, 0, 1})
-	end
-	
-	local on_mouse_down = function (self, button)
-		if (button == "LeftButton") then
-			if (not f.IsMoving) then
-				f:StartMoving()
-				f.IsMoving = true
-			end
-		elseif (button == "RightButton") then
-			if (not f.IsMoving) then
-				select_menu (_, _, -1)
-			end
-		end
-	end
-	local on_mouse_up = function (self, button)
-		if (f.IsMoving) then
-			f:StopMovingOrSizing()
-			f.IsMoving = false
-		end
-	end
-	for _, frame in ipairs (subMenuFrames) do
-		frame:SetScript ("OnMouseDown", on_mouse_down)
-		frame:SetScript ("OnMouseUp", on_mouse_up)
-		
-		local right_click_to_back = DF:CreateLabel (frame, "press right click to go back to main menu", 10, "gray")
-		right_click_to_back:SetPoint ("bottomright", frame, "bottomright", -1, 0)
-	end
-
-	--constroi o botao de config para a barra do player
-	local playerConfigButton = DF:CreateButton (mainFrame, select_menu, 70, 20, "config", 5, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
-	local auraConfigButton = DF:CreateButton (mainFrame, select_menu, 160, 60, "CONFIG BUFFS/DEBUFFS\nAdd auras to Ignore List", 6, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
-	auraConfigButton:SetPoint ("topleft", mainFrame, "topleft", 350, -160)
-	
-	--controi os 4 botões para as opções dos frames
-	local subMenuImages = [[Interface\AddOns\Plater\images\platetypes]]
-	local center_points = {-2, -1, 1, 5}
-	for i = 1, 4 do
-		local button = DF:CreateButton (mainFrame, select_menu, 128, 170, "", i)
-		tinsert (subMenuButton, button)
-		button:SetPoint ("topleft", mainFrame, "topleft", ((i-1)*130) + 550, -30)
-		
-		local image = DF:CreateImage (button, subMenuImages, 128, 128, "overlay", {0.25 * (i-1), 0.25 * i, 0, 1}, "image")
-		image:SetPoint ("center", button, "center", 0, 22)
-
-		local configLabel = DF:CreateLabel (button, "config plates for", 12, "orange", nil, "configLabel", nil, "overlay")
-		configLabel:SetAlpha (0.8)
-		configLabel:SetPoint ("top", button, "bottom", 0, 45)
-		local stringName = DF:CreateLabel (button, frameConfigNames[i], 14, "white", nil, "name", nil, "overlay")
-		stringName:SetPoint ("top", button, "bottom", 0, 30)
-		
-		local glowTexture = DF:CreateImage (button, [[Interface\AddOns\Plater\images\glow]], 256, 256, "background", nil, "glow")
-		glowTexture:SetPoint ("center", button, "center", center_points [i], 27)
-		glowTexture:SetAlpha (0.6)
-		glowTexture:Hide()
-		local configBackground = DF:CreateImage (button, nil, 110, 20, "border", nil, "configBackground")
-		local configString = DF:CreateLabel (button, "config", 10, "white", nil, "configString", nil, "artwork")
-		configBackground:SetPoint ("center", button, "center", 0, -20)
-		configBackground:SetColorTexture (1, 1, 1, 0.8)
-		configString:SetPoint ("center", configBackground, "center")
-		configBackground:Hide()
-		configString:Hide()
-		button:SetHook ("OnEnter", function()
-			glowTexture:Show()
-			--configBackground:Show()
-			--configString:Show()
+	--mostra o painel de profiles no menu de interface
+	profilesFrame:SetScript ("OnShow", function()
+		Plater:OpenInterfaceProfile()
+		f:Hide()
+		C_Timer.After (.5, function()
+			mainFrame:SetIndex (1)
+			mainFrame:SelectIndex (_, 1)
 		end)
-		button:SetHook ("OnLeave", function()
-			glowTexture:Hide()
-		end)
-		
-		local checkboxSwitchFunc = function (self, actorTypeIndex, value) 
-			local actorType = Plater.GetActorTypeByIndex (actorTypeIndex)
-			Plater.SetShowActorType (actorType, value)
-			Plater.UpdateAllPlates()
-		end
-		
-		local checkboxEnabled, labelEnabled = DF:CreateSwitch (button, checkboxSwitchFunc, Plater.CanShowPlateFor (Plater.GetActorTypeByIndex (i)), _, _, _, _, "enabledCheckbox", _, _, _, _, "", DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"), options_text_template)
-		checkboxEnabled:SetAsCheckBox()
-		checkboxEnabled.tooltip = "Show nameplates for this type of actor?"
-		checkboxEnabled:SetPoint ("topleft", stringName, "bottomleft", 0, -2)
-		checkboxEnabled:SetFixedParameter (i)
-		local stringEnabled = DF:CreateLabel (checkboxEnabled, "Enabled", 14, "orange", nil, "isEnabledString", nil, "overlay")
-		stringEnabled:SetPoint ("left", checkboxEnabled, "right", 2, 0)
-		
-		if (i == 1) then
-			local onlyDamagedFunc = function (self, actorTypeIndex, value)
-				local actorType = Plater.GetActorTypeByIndex (actorTypeIndex)
-				Plater.db.profile.plate_config [actorType].only_damaged = value
-				Plater.UpdateAllPlates()
-			end
-			
-			local actorType = Plater.GetActorTypeByIndex (i)
-			local checkboxOnlyDamaged, labelOnlyDamaged = DF:CreateSwitch (button, onlyDamagedFunc, Plater.db.profile.plate_config [actorType].only_damaged, _, _, _, _, "onlyDamagedCheckbox", _, _, _, _, "", DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"), options_text_template)
-			checkboxOnlyDamaged:SetAsCheckBox()
-			checkboxOnlyDamaged.tooltip = "Only show nameplates for damaged friendly players."
-			checkboxOnlyDamaged:SetPoint ("topleft", checkboxEnabled, "bottomleft", 0, -2)
-			checkboxOnlyDamaged:SetFixedParameter (i)
-			local stringOnlyDamaged = DF:CreateLabel (checkboxOnlyDamaged, "Only Damaged", 10, "orange", nil, "onlyRelevantString", nil, "overlay")
-			stringOnlyDamaged:SetPoint ("left", checkboxOnlyDamaged, "right", 2, 0)
-		
-		elseif (i == 3) then
-			local relevantSwitchFunc = function (self, actorTypeIndex, value)
-				local actorType = Plater.GetActorTypeByIndex (actorTypeIndex)
-				Plater.db.profile.plate_config [actorType].only_relevant = value
-				button.onlyNamesCheckbox:SetValue (false)
-				Plater.db.profile.plate_config [actorType].only_names = false
-				button.allNamesCheckbox:SetValue (false)
-				Plater.db.profile.plate_config [actorType].all_names = false
-				Plater.UpdateAllPlates()
-			end
-			
-			local actorType = Plater.GetActorTypeByIndex (i)
-			local checkboxRelevant, labelRelevant = DF:CreateSwitch (button, relevantSwitchFunc, Plater.db.profile.plate_config [actorType].only_relevant, _, _, _, _, "relevantCheckbox", _, _, _, _, "", DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"), options_text_template)
-			checkboxRelevant:SetAsCheckBox()
-			checkboxRelevant.tooltip = "Show nameplates only for relevant friendly npcs.\n\nYou may config relevance by clicking on the draenei and then clicking on 'Config Relevance'."
-			checkboxRelevant:SetPoint ("topleft", checkboxEnabled, "bottomleft", 0, -2)
-			checkboxRelevant:SetFixedParameter (i)
-			local stringRelevant = DF:CreateLabel (checkboxRelevant, "Only Relevant", 10, "orange", nil, "onlyRelevantString", nil, "overlay")
-			stringRelevant:SetPoint ("left", checkboxRelevant, "right", 2, 0)
-			
-			local noRelevantNamesSwitchFunc = function (self, actorTypeIndex, value)
-				local actorType = Plater.GetActorTypeByIndex (actorTypeIndex)
-				Plater.db.profile.plate_config [actorType].relevant_and_proffesions = value
-				Plater.UpdateAllPlates()
-			end
-			local checkboxNoRelevantNames, labelNoRelevantNames = DF:CreateSwitch (button, noRelevantNamesSwitchFunc, Plater.db.profile.plate_config [actorType].relevant_and_proffesions, _, _, _, _, "noRelevantNamesCheckbox", _, _, _, _, "", DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"), options_text_template)
-			checkboxNoRelevantNames:SetAsCheckBox()
-			checkboxNoRelevantNames.tooltip = "When showing only important npcs, also shows names for non relevant npcs."
-			checkboxNoRelevantNames:SetPoint ("topleft", checkboxRelevant, "bottomleft", 20, -2)
-			checkboxNoRelevantNames:SetFixedParameter (i)
-			local stringNoRelevantNames = DF:CreateLabel (checkboxNoRelevantNames, "+ professions", 10, "orange", nil, "noRelevantNamesString", nil, "overlay")
-			stringNoRelevantNames:SetPoint ("left", checkboxNoRelevantNames, "right", 2, 0)
-			
-			local onlyNamesSwitchFunc = function (self, actorTypeIndex, value)
-				local actorType = Plater.GetActorTypeByIndex (actorTypeIndex)
-				Plater.db.profile.plate_config [actorType].only_names = value
-				checkboxRelevant:SetValue (false)
-				Plater.db.profile.plate_config [actorType].only_relevant = false
-				button.allNamesCheckbox:SetValue (false)
-				Plater.db.profile.plate_config [actorType].all_names = false
-				Plater.UpdateAllPlates()
-			end
-			local checkboxOnlyNames, labelOnlyNames = DF:CreateSwitch (button, onlyNamesSwitchFunc, Plater.db.profile.plate_config [actorType].only_names, _, _, _, _, "onlyNamesCheckbox", _, _, _, _, "", DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"), options_text_template)
-			checkboxOnlyNames:SetAsCheckBox()
-			checkboxOnlyNames.tooltip = "Show names for all relevant and non-relevant actors with showing its health bar.\n\nWon't show plates for trivial npcs."
-			checkboxOnlyNames:SetPoint ("topleft", checkboxRelevant, "bottomleft", 0, -20)
-			checkboxOnlyNames:SetFixedParameter (i)
-			local stringOnlyNames = DF:CreateLabel (checkboxOnlyNames, "All Proffesions", 10, "orange", nil, "noRelevantNamesString", nil, "overlay")
-			stringOnlyNames:SetPoint ("left", checkboxOnlyNames, "right", 2, 0)
-
-			local allNamesSwitchFunc = function (self, actorTypeIndex, value)
-				local actorType = Plater.GetActorTypeByIndex (actorTypeIndex)
-				Plater.db.profile.plate_config [actorType].all_names = value
-				
-				checkboxRelevant:SetValue (false)
-				Plater.db.profile.plate_config [actorType].only_relevant = false
-				button.onlyNamesCheckbox:SetValue (false)
-				Plater.db.profile.plate_config [actorType].only_names = false
-				
-				Plater.UpdateAllPlates()
-			end
-			local checkboxAllNames, labelOnlyNames = DF:CreateSwitch (button, allNamesSwitchFunc, Plater.db.profile.plate_config [actorType].all_names, _, _, _, _, "allNamesCheckbox", _, _, _, _, "", DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"), options_text_template)
-			checkboxAllNames:SetAsCheckBox()
-			checkboxAllNames.tooltip = "Show the name without the health bar for all npcs including trivial."
-			checkboxAllNames:SetPoint ("topleft", button.onlyNamesCheckbox, "bottomleft", 0, 0)
-			checkboxAllNames:SetFixedParameter (i)
-			local stringAllNames = DF:CreateLabel (checkboxAllNames, "Show All", 10, "orange", nil, "noRelevantNamesString", nil, "overlay")
-			stringAllNames:SetPoint ("left", checkboxAllNames, "right", 2, 0)
-		end
-
-	end
+	end)
 	
 	--cria o botão de configurar a relevancia para os friendly npcs
 	local relevancePanel = CreateFrame ("frame", nil, friendlyNPCsFrame)
@@ -3390,10 +3314,10 @@ function Plater.OpenOptionsPanel()
 	local open_friendlynpc_relevance_panel = function()
 		relevancePanel:SetShown (not relevancePanel:IsShown())
 	end
-	local relevanceButton = DF:CreateButton (friendlyNPCsFrame, open_friendlynpc_relevance_panel, 200, 40, "Config Relevance", nil, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
-	relevanceButton:SetPoint ("topleft", friendlyNPCsFrame, "topleft", 227, -30)
+	local relevanceButton = DF:CreateButton (friendlyNPCsFrame, open_friendlynpc_relevance_panel, 200, 20, "Config Relevance", nil, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
+	relevanceButton:SetPoint ("topleft", friendlyNPCsFrame, "topleft", 237, -30)
 	
-	relevancePanel:SetPoint ("topleft", relevanceButton.widget, "bottomleft", 0, -5)
+	relevancePanel:SetPoint ("topleft", relevanceButton.widget, "bottomleft", 0, -35)
 	
 -------------------------
 -- funções gerais dos dropdowns
@@ -3409,10 +3333,10 @@ function Plater.OpenOptionsPanel()
 				value = i, 
 				onclick = function (_, _, value)
 					if (actorType) then
-						profile.plate_config [actorType][member].side = value
+						Plater.db.profile.plate_config [actorType][member].side = value
 						Plater.UpdateAllPlates()
 					else
-						profile [member].side = value
+						Plater.db.profile [member].side = value
 						Plater.UpdateAllPlates()
 					end
 				end
@@ -3422,7 +3346,7 @@ function Plater.OpenOptionsPanel()
 	end	
 	--
 	local health_bar_texture_selected = function (self, capsule, value)
-		profile.health_statusbar_texture = value
+		Plater.db.profile.health_statusbar_texture = value
 		Plater.UpdateAllPlates()
 	end
 	local health_bar_texture_options = {}
@@ -3432,7 +3356,7 @@ function Plater.OpenOptionsPanel()
 	table.sort (health_bar_texture_options, function (t1, t2) return t1.label < t2.label end)
 	--
 	local health_bar_bgtexture_selected = function (self, capsule, value)
-		profile.health_statusbar_bgtexture = value
+		Plater.db.profile.health_statusbar_bgtexture = value
 		Plater.UpdateAllPlates()
 	end
 	local health_bar_bgtexture_options = {}
@@ -3442,7 +3366,7 @@ function Plater.OpenOptionsPanel()
 	table.sort (health_bar_bgtexture_options, function (t1, t2) return t1.label < t2.label end)
 	--
 	local cast_bar_texture_selected = function (self, capsule, value)
-		profile.cast_statusbar_texture = value
+		Plater.db.profile.cast_statusbar_texture = value
 		Plater.UpdateAllPlates()
 	end
 	local cast_bar_texture_options = {}
@@ -3452,7 +3376,7 @@ function Plater.OpenOptionsPanel()
 	table.sort (cast_bar_texture_options, function (t1, t2) return t1.label < t2.label end)
 	--
 	local cast_bar_bgtexture_selected = function (self, capsule, value)
-		profile.cast_statusbar_bgtexture = value
+		Plater.db.profile.cast_statusbar_bgtexture = value
 		Plater.UpdateAllPlates()
 	end
 	local cast_bar_bgtexture_options = {}
@@ -3462,7 +3386,7 @@ function Plater.OpenOptionsPanel()
 	table.sort (cast_bar_bgtexture_options, function (t1, t2) return t1.label < t2.label end)
 	--
 	local health_selection_overlay_selected = function (self, capsule, value)
-		profile.health_selection_overlay = value
+		Plater.db.profile.health_selection_overlay = value
 		Plater.UpdateAllPlates()
 	end
 	local health_selection_overlay_options = {}
@@ -3475,7 +3399,6 @@ function Plater.OpenOptionsPanel()
 
 -------------------------------------------------------------------------------
 --opções do painel de interface da blizzard
-
 
 local interface_options = {
 
@@ -3494,6 +3417,7 @@ local interface_options = {
 			end,
 			name = "Personal Health and Mana Bars",
 			desc = "Shows a mini health and mana bars under your character.",
+			nocombat = true,
 		},
 		{
 			type = "toggle",
@@ -3508,6 +3432,7 @@ local interface_options = {
 			end,
 			name = "Show Resources on Target",
 			desc = "Shows your resource such as combo points above your current target.\n\n'Personal Health and Mana Bars' has to be enabled",
+			nocombat = true,
 		},
 		{
 			type = "toggle",
@@ -3522,6 +3447,7 @@ local interface_options = {
 			end,
 			name = "Always Show Nameplates",
 			desc = "Show nameplates for all units near you. If disabled on show relevant units when you are in combat.",
+			nocombat = true,
 		},
 		{
 			type = "toggle",
@@ -3536,6 +3462,7 @@ local interface_options = {
 			end,
 			name = "Stacking Nameplates",
 			desc = "Nameplates won't overlap each other.",
+			nocombat = true,
 		},
 		
 		{
@@ -3551,6 +3478,7 @@ local interface_options = {
 			end,
 			name = "Enemy Units (" .. (GetBindingKey ("NAMEPLATES") or "") .. "): Minions",
 			desc = "Show nameplate for enemy pets, totems and guardians.",
+			nocombat = true,
 		},
 		{
 			type = "toggle",
@@ -3565,6 +3493,7 @@ local interface_options = {
 			end,
 			name = "Enemy Units (V): Minor",
 			desc = "Show nameplate for minor enemies.",
+			nocombat = true,
 		},
 		{
 			type = "toggle",
@@ -3582,22 +3511,76 @@ local interface_options = {
 			end,
 			name = "Friendly Units (" .. (GetBindingKey ("FRIENDNAMEPLATES") or "") .. "): Minions",
 			desc = "Show nameplate for friendly pets, totems and guardians.\n\nAlso check the Enabled box below Friendly Npc Config.",
+			nocombat = true,
 		},
 }
 
-DF:BuildMenu (interfaceOptions, interface_options, 0, 0, 300 + 20, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)	
-
-playerConfigButton:SetPoint ("left", interfaceOptions.widget_list [2], "right", 2, 0)
+DF:BuildMenu (frontPageFrame, interface_options, startX, startY, 300 + 60, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)	
 
 -------------------------------------------------------------------------------
 -- painel para configurar debuffs e buffs
 
+local debuff_options = {
+	{type = "label", get = function() return "General Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_timer end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_timer = value
+			Plater.RefreshAuras()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Timer",
+		desc = "Time left on buff or debuff.",
+	},
+	{
+		type = "range",
+		get = function() return Plater.db.profile.aura_width end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_width = value
+			Plater.RefreshAuras()
+			Plater.UpdateAllPlates()
+		end,
+		min = 8,
+		max = 40,
+		step = 1,
+		name = "Width",
+		desc = "Debuff's icon width.",
+	},
+	{
+		type = "range",
+		get = function() return Plater.db.profile.aura_height end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_height = value
+			Plater.RefreshAuras()
+			Plater.UpdateAllPlates()
+		end,
+		min = 8,
+		max = 40,
+		step = 1,
+		name = "Height",
+		desc = "Debuff's icon height.",
+	},
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.debuff_show_cc end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.debuff_show_cc = value
+			Plater.UpdateAllPlates()
+		end,
+		name = "Crowd Control Icon",
+		desc = "When the actor has a crowd control spell (such as Polymorph).",
+	},
+}
+
+DF:BuildMenu (auraFilterFrame, debuff_options, startX, startY, 300 + 60, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)	
+
 local welcomestring = DF:CreateLabel (auraFilterFrame, "Cast spells to fill *your* buffs and debuffs list.", 16, "white")
-welcomestring:SetPoint ("topleft", self, "topleft", 10, -210)
+welcomestring:SetPoint ("topleft", self, "topleft", 10, -235)
 local subLine = DF:CreateImage (auraFilterFrame, nil, 300, 1)
 subLine:SetColorTexture (1, 1, 1, 0.7)
-subLine:SetPoint ("topleft", welcomestring, "bottomleft")
-subLine:SetPoint ("topright", welcomestring, "bottomright")
+--subLine:SetPoint ("topleft", welcomestring, "bottomleft")
+--subLine:SetPoint ("topright", welcomestring, "bottomright")
 
 local ResetWidgets = function (self)
 	for _, widget in ipairs (self.widgets) do 
@@ -3616,14 +3599,18 @@ local onleave = function (self, capsule)
 	GameTooltip:Hide()
 	capsule.textcolor = "khaki"
 end
+
+local aura_line_height = 14
+
 local GetOrCreateWidget = function (self)
 	local index = self.nextWidget
 	local widget = self.widgets [index]
 	if (not widget) then
-		widget = DF:CreateButton (self, function()end, 235, 20, "", nil, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
+		widget = DF:CreateButton (self, function()end, 235, aura_line_height, "", nil, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
 		widget:SetHook ("OnEnter", onenter)
 		widget:SetHook ("OnLeave", onleave)
 		widget.textcolor = "wheat"
+		widget.textsize = 10
 		tinsert (self.widgets, widget)
 	end
 	self.nextWidget = self.nextWidget + 1
@@ -3634,10 +3621,10 @@ local RefreshWidgets = function (self)
 	self:ResetWidgets()
 	for spellid, _ in pairs (self.spells) do
 		local widget = self:GetOrCreateWidget()
-		widget:SetPoint ("topleft", self, "topleft", 0, -20*(self.nextWidget-1))
+		widget:SetPoint ("topleft", self, "topleft", 0, -aura_line_height*(self.nextWidget-1))
 		widget:SetClickFunction (self.func, spellid)
 		local spellname, _, spellicon = GetSpellInfo (spellid)
-		widget:SetIcon (spellicon, 20, 20)
+		widget:SetIcon (spellicon, aura_line_height, aura_line_height)
 		widget:SetText (spellname)
 		widget.spellid = spellid
 		widget:Show()
@@ -3725,7 +3712,7 @@ end
 	buffs_added_list.nextWidget = 1
 	
 --seta os pontos
-local yLoc = -260
+local yLoc = -280
 debuffs_list:SetPoint ("topleft", auraFilterFrame, "topleft", 10, yLoc)
 buffs_list:SetPoint ("topleft", auraFilterFrame, "topleft", 260, yLoc)
 debuffs_added_list:SetPoint ("topleft", auraFilterFrame, "topleft", 520, yLoc)
@@ -3736,7 +3723,7 @@ for _, frame in ipairs (allframes) do
 	frame:SetBackdrop ({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", tile = true, tileSize = 16, edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
 	frame:SetBackdropColor (0, 0, 0, 0.5)
 	frame:SetBackdropBorderColor (0, 0, 0, 0.3)
-	frame:SetSize (240, 320)
+	frame:SetSize (240, 300)
 end
 
 local readCombatLog = CreateFrame ("frame", nil, auraFilterFrame)
@@ -3785,12 +3772,12 @@ end)
 -- opções para a barra do player ~player
 	
 	local on_select_player_percent_text_font = function (_, _, value)
-		profile.plate_config.player.percent_text_font = value
+		Plater.db.profile.plate_config.player.percent_text_font = value
 		Plater.UpdateAllPlates()
 	end
 	
 	local on_select_player_power_percent_text_font = function (_, _, value)
-		profile.plate_config.player.power_percent_text_font = value
+		Plater.db.profile.plate_config.player.power_percent_text_font = value
 		Plater.UpdateAllPlates()
 	end
 	
@@ -3809,10 +3796,10 @@ end)
 		{type = "label", get = function() return "Health Bar Size:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return profile.plate_config.player.health[1] end,
+			get = function() return Plater.db.profile.plate_config.player.health[1] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.player.health[1] = value
-				profile.plate_config.player.health_incombat[1] = value
+				Plater.db.profile.plate_config.player.health[1] = value
+				Plater.db.profile.plate_config.player.health_incombat[1] = value
 				Plater.UpdateAllPlates()
 				Plater.UpdateSelfPlate()
 			end,
@@ -3824,10 +3811,10 @@ end)
 		},
 		{
 			type = "range",
-			get = function() return profile.plate_config.player.health[2] end,
+			get = function() return Plater.db.profile.plate_config.player.health[2] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.player.health[2] = value
-				profile.plate_config.player.health_incombat[2] = value
+				Plater.db.profile.plate_config.player.health[2] = value
+				Plater.db.profile.plate_config.player.health_incombat[2] = value
 				Plater.UpdateAllPlates()
 				Plater.UpdateSelfPlate()
 			end,
@@ -3843,10 +3830,10 @@ end)
 		{type = "label", get = function() return "Power Bar Size:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return profile.plate_config.player.mana[1] end,
+			get = function() return Plater.db.profile.plate_config.player.mana[1] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.player.mana[1] = value
-				profile.plate_config.player.mana_incombat[1] = value
+				Plater.db.profile.plate_config.player.mana[1] = value
+				Plater.db.profile.plate_config.player.mana_incombat[1] = value
 				Plater.UpdateAllPlates()
 				Plater.UpdateSelfPlate()
 			end,
@@ -3858,10 +3845,10 @@ end)
 		},
 		{
 			type = "range",
-			get = function() return profile.plate_config.player.mana[2] end,
+			get = function() return Plater.db.profile.plate_config.player.mana[2] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.player.mana[2] = value
-				profile.plate_config.player.mana_incombat[2] = value
+				Plater.db.profile.plate_config.player.mana[2] = value
+				Plater.db.profile.plate_config.player.mana_incombat[2] = value
 				Plater.UpdateAllPlates()
 				Plater.UpdateSelfPlate()
 			end,
@@ -3875,9 +3862,9 @@ end)
 		{type = "label", get = function() return "Location:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return profile.plate_config.player.y_position_offset end,
+			get = function() return Plater.db.profile.plate_config.player.y_position_offset end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.player.y_position_offset = value
+				Plater.db.profile.plate_config.player.y_position_offset = value
 				Plater.UpdateAllPlates()
 				Plater.UpdateSelfPlate()
 			end,
@@ -3895,9 +3882,9 @@ end)
 		--enabled
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.player.percent_text_enabled end,
+			get = function() return Plater.db.profile.plate_config.player.percent_text_enabled end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.player.percent_text_enabled = value
+				Plater.db.profile.plate_config.player.percent_text_enabled = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Enabled",
@@ -3906,9 +3893,9 @@ end)
 		--percent text size
 		{
 			type = "range",
-			get = function() return profile.plate_config.player.percent_text_size end,
+			get = function() return Plater.db.profile.plate_config.player.percent_text_size end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.player.percent_text_size = value
+				Plater.db.profile.plate_config.player.percent_text_size = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
@@ -3920,7 +3907,7 @@ end)
 		--percent text font
 		{
 			type = "select",
-			get = function() return profile.plate_config.player.percent_text_font end,
+			get = function() return Plater.db.profile.plate_config.player.percent_text_font end,
 			values = function() return DF:BuildDropDownFontList (on_select_player_percent_text_font) end,
 			name = "Font",
 			desc = "Font of the text.",
@@ -3928,9 +3915,9 @@ end)
 		--percent text shadow
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.player.percent_text_shadow end,
+			get = function() return Plater.db.profile.plate_config.player.percent_text_shadow end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.player.percent_text_shadow = value
+				Plater.db.profile.plate_config.player.percent_text_shadow = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Shadow",
@@ -3940,11 +3927,11 @@ end)
 		{
 			type = "color",
 			get = function()
-				local color = profile.plate_config.player.percent_text_color
+				local color = Plater.db.profile.plate_config.player.percent_text_color
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.plate_config.player.percent_text_color
+				local color = Plater.db.profile.plate_config.player.percent_text_color
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
@@ -3954,9 +3941,9 @@ end)
 		--percent text alpha
 		{
 			type = "range",
-			get = function() return profile.plate_config.player.percent_text_alpha end,
+			get = function() return Plater.db.profile.plate_config.player.percent_text_alpha end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.player.percent_text_alpha = value
+				Plater.db.profile.plate_config.player.percent_text_alpha = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 0,
@@ -3969,7 +3956,7 @@ end)
 		--percent anchor
 		{
 			type = "select",
-			get = function() return profile.plate_config.player.percent_text_anchor.side end,
+			get = function() return Plater.db.profile.plate_config.player.percent_text_anchor.side end,
 			values = function() return build_anchor_side_table ("player", "percent_text_anchor") end,
 			name = "Anchor",
 			desc = "Which side of the nameplate this widget is attach to.",
@@ -3977,9 +3964,9 @@ end)
 		--percent anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.player.percent_text_anchor.x end,
+			get = function() return Plater.db.profile.plate_config.player.percent_text_anchor.x end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.player.percent_text_anchor.x = value
+				Plater.db.profile.plate_config.player.percent_text_anchor.x = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -3991,9 +3978,9 @@ end)
 		--percent anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.player.percent_text_anchor.y end,
+			get = function() return Plater.db.profile.plate_config.player.percent_text_anchor.y end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.player.percent_text_anchor.y = value
+				Plater.db.profile.plate_config.player.percent_text_anchor.y = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -4008,9 +3995,9 @@ end)
 		--enabled
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.player.power_percent_text_enabled end,
+			get = function() return Plater.db.profile.plate_config.player.power_percent_text_enabled end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.player.power_percent_text_enabled = value
+				Plater.db.profile.plate_config.player.power_percent_text_enabled = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Enabled",
@@ -4019,9 +4006,9 @@ end)
 		--percent text size
 		{
 			type = "range",
-			get = function() return profile.plate_config.player.power_percent_text_size end,
+			get = function() return Plater.db.profile.plate_config.player.power_percent_text_size end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.player.power_percent_text_size = value
+				Plater.db.profile.plate_config.player.power_percent_text_size = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
@@ -4033,7 +4020,7 @@ end)
 		--percent text font
 		{
 			type = "select",
-			get = function() return profile.plate_config.player.power_percent_text_font end,
+			get = function() return Plater.db.profile.plate_config.player.power_percent_text_font end,
 			values = function() return DF:BuildDropDownFontList (on_select_player_power_percent_text_font) end,
 			name = "Font",
 			desc = "Font of the text.",
@@ -4041,9 +4028,9 @@ end)
 		--percent text shadow
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.player.power_percent_text_shadow end,
+			get = function() return Plater.db.profile.plate_config.player.power_percent_text_shadow end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.player.power_percent_text_shadow = value
+				Plater.db.profile.plate_config.player.power_percent_text_shadow = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Shadow",
@@ -4053,11 +4040,11 @@ end)
 		{
 			type = "color",
 			get = function()
-				local color = profile.plate_config.player.power_percent_text_color
+				local color = Plater.db.profile.plate_config.player.power_percent_text_color
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.plate_config.player.power_percent_text_color
+				local color = Plater.db.profile.plate_config.player.power_percent_text_color
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
@@ -4067,9 +4054,9 @@ end)
 		--percent text alpha
 		{
 			type = "range",
-			get = function() return profile.plate_config.player.power_percent_text_alpha end,
+			get = function() return Plater.db.profile.plate_config.player.power_percent_text_alpha end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.player.power_percent_text_alpha = value
+				Plater.db.profile.plate_config.player.power_percent_text_alpha = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 0,
@@ -4082,7 +4069,7 @@ end)
 		--percent anchor
 		{
 			type = "select",
-			get = function() return profile.plate_config.player.power_percent_text_anchor.side end,
+			get = function() return Plater.db.profile.plate_config.player.power_percent_text_anchor.side end,
 			values = function() return build_anchor_side_table ("player", "power_percent_text_anchor") end,
 			name = "Anchor",
 			desc = "Which side of the nameplate this widget is attach to.",
@@ -4090,9 +4077,9 @@ end)
 		--percent anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.player.power_percent_text_anchor.x end,
+			get = function() return Plater.db.profile.plate_config.player.power_percent_text_anchor.x end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.player.power_percent_text_anchor.x = value
+				Plater.db.profile.plate_config.player.power_percent_text_anchor.x = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -4104,9 +4091,9 @@ end)
 		--percent anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.player.power_percent_text_anchor.y end,
+			get = function() return Plater.db.profile.plate_config.player.power_percent_text_anchor.y end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.player.power_percent_text_anchor.y = value
+				Plater.db.profile.plate_config.player.power_percent_text_anchor.y = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -4123,9 +4110,9 @@ end)
 		--monk WW chi bar
 		{
 			type = "range",
-			get = function() return profile.resources.MONK.chi_scale end,
+			get = function() return Plater.db.profile.resources.MONK.chi_scale end,
 			set = function (self, fixedparam, value) 
-				profile.resources.MONK.chi_scale = value
+				Plater.db.profile.resources.MONK.chi_scale = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 0.65,
@@ -4138,9 +4125,9 @@ end)
 		--mage arcane charge
 		{
 			type = "range",
-			get = function() return profile.resources.MAGE.arcane_charge_scale end,
+			get = function() return Plater.db.profile.resources.MAGE.arcane_charge_scale end,
 			set = function (self, fixedparam, value) 
-				profile.resources.MAGE.arcane_charge_scale = value
+				Plater.db.profile.resources.MAGE.arcane_charge_scale = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 0.65,
@@ -4153,9 +4140,9 @@ end)
 		--dk rune
 		{
 			type = "range",
-			get = function() return profile.resources.DEATHKNIGHT.rune_scale end,
+			get = function() return Plater.db.profile.resources.DEATHKNIGHT.rune_scale end,
 			set = function (self, fixedparam, value) 
-				profile.resources.DEATHKNIGHT.rune_scale = value
+				Plater.db.profile.resources.DEATHKNIGHT.rune_scale = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 0.65,
@@ -4168,9 +4155,9 @@ end)
 		--paladin holy power
 		{
 			type = "range",
-			get = function() return profile.resources.PALADIN.holypower_scale end,
+			get = function() return Plater.db.profile.resources.PALADIN.holypower_scale end,
 			set = function (self, fixedparam, value) 
-				profile.resources.PALADIN.holypower_scale = value
+				Plater.db.profile.resources.PALADIN.holypower_scale = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 0.65,
@@ -4183,9 +4170,9 @@ end)
 		--rogue combo point
 		{
 			type = "range",
-			get = function() return profile.resources.ROGUE.combopoint_scale end,
+			get = function() return Plater.db.profile.resources.ROGUE.combopoint_scale end,
 			set = function (self, fixedparam, value) 
-				profile.resources.ROGUE.combopoint_scale = value
+				Plater.db.profile.resources.ROGUE.combopoint_scale = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 0.65,
@@ -4198,9 +4185,9 @@ end)
 		--druid feral combo point
 		{
 			type = "range",
-			get = function() return profile.resources.DRUID.combopoint_scale end,
+			get = function() return Plater.db.profile.resources.DRUID.combopoint_scale end,
 			set = function (self, fixedparam, value) 
-				profile.resources.DRUID.combopoint_scale = value
+				Plater.db.profile.resources.DRUID.combopoint_scale = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 0.65,
@@ -4213,9 +4200,9 @@ end)
 		--warlock shard
 		{
 			type = "range",
-			get = function() return profile.resources.WARLOCK.soulshard_scale end,
+			get = function() return Plater.db.profile.resources.WARLOCK.soulshard_scale end,
 			set = function (self, fixedparam, value) 
-				profile.resources.WARLOCK.soulshard_scale = value
+				Plater.db.profile.resources.WARLOCK.soulshard_scale = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 0.65,
@@ -4235,15 +4222,64 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 --coloca as opções gerais no main menu logo abaixo dos 4 botões
 --OPÇÕES NO PAINEL PRINCIPAL
 
-	--menu 1
+function Plater.ChangeNpcRelavance (_, _, value)
+	if (value == 1) then
+		Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].only_relevant = true
+		Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].relevant_and_proffesions = false
+		Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].only_names = false
+		Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].all_names = false
+	elseif (value == 2) then
+		Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].only_relevant = true
+		Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].relevant_and_proffesions = true
+		Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].only_names = false
+		Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].all_names = false
+	elseif (value == 3) then
+		Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].only_relevant = false
+		Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].relevant_and_proffesions = false
+		Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].only_names = true
+		Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].all_names = false
+	elseif (value == 4) then
+		Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].only_relevant = false
+		Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].relevant_and_proffesions = false
+		Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].only_names = false
+		Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].all_names = true
+	end
+	
+	Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].relevance_state = value
+	
+	Plater.UpdateAllPlates()
+end
+local relevance_options = {
+	{label = "Only Relevant", value = 1, onclick = Plater.ChangeNpcRelavance},
+	{label = "Relevant + Professions", value = 2, onclick = Plater.ChangeNpcRelavance},
+	{label = "All Professions", value = 3, onclick = Plater.ChangeNpcRelavance},
+	{label = "All Npcs", value = 4, onclick = Plater.ChangeNpcRelavance},
+}
+
+function Plater.ChangeNameplateAnchor (_, _, value)
+	if (value == 0) then
+		SetCVar ("nameplateOtherAtBase", "0")
+	elseif (value == 1) then
+		SetCVar ("nameplateOtherAtBase", "1")
+	elseif (value == 2) then
+		SetCVar ("nameplateOtherAtBase", "2")
+	end
+end
+local nameplate_anchor_options = {
+	{label = "Head", value = 0, onclick = Plater.ChangeNameplateAnchor, desc = "All nameplates are placed above the character."},
+	{label = "Head/Feet", value = 1, onclick = Plater.ChangeNameplateAnchor, desc = "Friendly and neutral has the nameplate on their head, enemies below the feet."},
+	{label = "Feet", value = 2, onclick = Plater.ChangeNameplateAnchor, desc = "All nameplates are placed below the character."},
+}
+
+	--menu 1 ~general ~geral
 	local options_table1 = {
 	
 		{type = "label", get = function() return "General Appearance:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
-			get = function() return profile.use_playerclass_color end,
+			get = function() return Plater.db.profile.use_playerclass_color end,
 			set = function (self, fixedparam, value) 
-				profile.use_playerclass_color = value
+				Plater.db.profile.use_playerclass_color = value
 				Plater.UpdateUseClassColors()
 			end,
 			name = "Use Class Colors",
@@ -4251,14 +4287,14 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		},
 		{
 			type = "select",
-			get = function() return profile.health_statusbar_texture end,
+			get = function() return Plater.db.profile.health_statusbar_texture end,
 			values = function() return health_bar_texture_options end,
 			name = "Health Bar Texture",
 			desc = "Texture used on the health bar",
 		},
 		{
 			type = "select",
-			get = function() return profile.health_statusbar_bgtexture end,
+			get = function() return Plater.db.profile.health_statusbar_bgtexture end,
 			values = function() return health_bar_bgtexture_options end,
 			name = "Health Bar Background Texture",
 			desc = "Texture used on the health bar background",
@@ -4266,11 +4302,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.health_statusbar_bgcolor
+				local color = Plater.db.profile.health_statusbar_bgcolor
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.health_statusbar_bgcolor
+				local color = Plater.db.profile.health_statusbar_bgcolor
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
@@ -4279,21 +4315,21 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		},
 		{
 			type = "select",
-			get = function() return profile.health_selection_overlay end,
+			get = function() return Plater.db.profile.health_selection_overlay end,
 			values = function() return health_selection_overlay_options end,
 			name = "Target Overlay Texture",
 			desc = "Used above the health bar when it is the current target.",
 		},
 		{
 			type = "select",
-			get = function() return profile.cast_statusbar_texture end,
+			get = function() return Plater.db.profile.cast_statusbar_texture end,
 			values = function() return cast_bar_texture_options end,
 			name = "Cast Bar Texture",
 			desc = "Texture used on the cast bar",
 		},
 		{
 			type = "select",
-			get = function() return profile.cast_statusbar_bgtexture end,
+			get = function() return Plater.db.profile.cast_statusbar_bgtexture end,
 			values = function() return cast_bar_bgtexture_options end,
 			name = "Cast Bar Background Texture",
 			desc = "Texture used on the cast bar background.",
@@ -4301,23 +4337,22 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.cast_statusbar_bgcolor
+				local color = Plater.db.profile.cast_statusbar_bgcolor
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.cast_statusbar_bgcolor
+				local color = Plater.db.profile.cast_statusbar_bgcolor
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
 			name = "Cast Bar Background Color",
 			desc = "Color used to paint the cast bar background.",
 		},
-		
 		{
 			type = "range",
-			get = function() return profile.not_affecting_combat_alpha end,
+			get = function() return Plater.db.profile.not_affecting_combat_alpha end,
 			set = function (self, fixedparam, value) 
-				profile.not_affecting_combat_alpha = value
+				Plater.db.profile.not_affecting_combat_alpha = value
 			end,
 			min = 0,
 			max = 1,
@@ -4325,7 +4360,54 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 			name = "Combat Alpha",
 			desc = "While you are in combat, set the alpha for other mobs which isn't in combat.",
 			usedecimals = true,
-		},		
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.hover_highlight end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.hover_highlight = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Highlight",
+			desc = "Highlight effect when hovering over a nameplate.",
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.hover_highlight_alpha end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.hover_highlight_alpha = value
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			name = "Highlight Alpha",
+			desc = "Highlight Alpha.",
+			usedecimals = true,
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.target_highlight end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.target_highlight = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Target Highlight",
+			desc = "Highlight effect on the nameplate of your current target.",
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.target_highlight_alpha end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.target_highlight_alpha = value
+				Plater.OnPlayerTargetChanged()
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			name = "Target Highlight Alpha",
+			desc = "Target Highlight Alpha.",
+			usedecimals = true,
+		},
 		
 		{type = "breakline"},
 		
@@ -4333,11 +4415,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.tank.colors.aggro
+				local color = Plater.db.profile.tank.colors.aggro
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.tank.colors.aggro
+				local color = Plater.db.profile.tank.colors.aggro
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
 			name = "Aggro Color",
@@ -4346,11 +4428,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.tank.colors.noaggro
+				local color = Plater.db.profile.tank.colors.noaggro
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.tank.colors.noaggro
+				local color = Plater.db.profile.tank.colors.noaggro
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
 			name = "No Aggro Color",
@@ -4359,11 +4441,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.tank.colors.pulling
+				local color = Plater.db.profile.tank.colors.pulling
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.tank.colors.pulling
+				local color = Plater.db.profile.tank.colors.pulling
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
 			name = "High Threat Color",
@@ -4372,11 +4454,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.tank.colors.nocombat
+				local color = Plater.db.profile.tank.colors.nocombat
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.tank.colors.nocombat
+				local color = Plater.db.profile.tank.colors.nocombat
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
 			name = "Not in Combat Color",
@@ -4388,11 +4470,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.dps.colors.aggro
+				local color = Plater.db.profile.dps.colors.aggro
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.dps.colors.aggro
+				local color = Plater.db.profile.dps.colors.aggro
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
 			name = "Aggro Color",
@@ -4401,11 +4483,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.dps.colors.noaggro
+				local color = Plater.db.profile.dps.colors.noaggro
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.dps.colors.noaggro
+				local color = Plater.db.profile.dps.colors.noaggro
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
 			name = "No Aggro Color",
@@ -4414,11 +4496,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.dps.colors.pulling
+				local color = Plater.db.profile.dps.colors.pulling
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.dps.colors.pulling
+				local color = Plater.db.profile.dps.colors.pulling
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
 			name = "High Threat Color",
@@ -4430,11 +4512,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.border_color
+				local color = Plater.db.profile.border_color
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.border_color
+				local color = Plater.db.profile.border_color
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdatePlateBorders()
 			end,
@@ -4443,134 +4525,13 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		},
 		
 		{type = "breakline"},
-		
-		{type = "label", get = function() return "Friendly Plates:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-		{
-			type = "toggle",
-			get = function() return profile.friendlyplates_auto_show end,
-			set = function (self, fixedparam, value) 
-				profile.friendlyplates_auto_show = value
-			end,
-			name = "Force Show Friendly",
-			desc = "When allowed, the addon try to enable nameplates for friendly characters.",
-		},
-		{
-			type = "toggle",
-			get = function() return profile.friendlyplates_no_on_instances end,
-			set = function (self, fixedparam, value) 
-				profile.friendlyplates_no_on_instances = value
-			end,
-			name = "No Friendly on Instances",
-			desc = "Forces the addon to shutdown nameplates for friendly characters when entering an instance.",
-		},
-		{type = "blank"},
-		{type = "label", get = function() return "Enemy Plates:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-		{
-			type = "toggle",
-			get = function() return profile.enemyplates_only_combat end,
-			set = function (self, fixedparam, value) 
-				profile.enemyplates_only_combat = value
-				if (value) then
-					--apenas mostrar durante o combate
-					if (not InCombatLockdown()) then
-						Plater:PLAYER_REGEN_ENABLED()
-					end
-				else
-					if (not profile.enemyplates_only_in_instances or (profile.enemyplates_only_in_instances and IsInInstance())) then
-						if (not InCombatLockdown()) then
-							SetCVar (CVAR_ENEMY_ALL, CVAR_ENABLED)
-						end
-					end
-				end
-			end,
-			name = "Only Show in Combat",
-			desc = "Tries to hide enemy nameplates when you aren't in combat.",
-		},
-		{
-			type = "toggle",
-			get = function() return profile.enemyplates_only_in_instances end,
-			set = function (self, fixedparam, value) 
-				profile.enemyplates_only_in_instances = value
-				if (value) then
-					Plater:ZONE_CHANGED_NEW_AREA()
-				else
-					if (profile.enemyplates_only_combat) then
-						if (not InCombatLockdown()) then
-							Plater:PLAYER_REGEN_ENABLED()
-						end
-					else
-						if (not InCombatLockdown()) then
-							SetCVar (CVAR_ENEMY_ALL, CVAR_ENABLED)
-						end
-					end
-					
-				end
-			end,
-			name = "Only on Instances",
-			desc = "Tries to hide enemy nameplates when you aren't inside instances.",
-		},
-		
-		{type = "blank"},
-		{type = "label", get = function() return "Debuffs:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-		{
-			type = "toggle",
-			get = function() return profile.aura_timer end,
-			set = function (self, fixedparam, value) 
-				profile.aura_timer = value
-				Plater.RefreshAuras()
-				Plater.UpdateAllPlates()
-			end,
-			name = "Show Timer",
-			desc = "Time left on buff or debuff.",
-		},
-		{
-			type = "range",
-			get = function() return profile.aura_width end,
-			set = function (self, fixedparam, value) 
-				profile.aura_width = value
-				Plater.RefreshAuras()
-				Plater.UpdateAllPlates()
-			end,
-			min = 8,
-			max = 40,
-			step = 1,
-			name = "Width",
-			desc = "Debuff's icon width.",
-		},
-		{
-			type = "range",
-			get = function() return profile.aura_height end,
-			set = function (self, fixedparam, value) 
-				profile.aura_height = value
-				Plater.RefreshAuras()
-				Plater.UpdateAllPlates()
-			end,
-			min = 8,
-			max = 40,
-			step = 1,
-			name = "Height",
-			desc = "Debuff's icon height.",
-		},
-		{
-			type = "toggle",
-			get = function() return profile.debuff_show_cc end,
-			set = function (self, fixedparam, value) 
-				profile.debuff_show_cc = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Crowd Control Icon",
-			desc = "When the actor has a crowd control spell (such as Polymorph).",
-		},
-		
-		{type = "breakline"},
-		
 		{type = "label", get = function() return "Icon Indicators:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "toggle",
-			get = function() return profile.indicator_faction end,
+			get = function() return Plater.db.profile.indicator_faction end,
 			set = function (self, fixedparam, value) 
-				profile.indicator_faction = value
+				Plater.db.profile.indicator_faction = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Enemy Faction Icon",
@@ -4578,9 +4539,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		},
 		{
 			type = "toggle",
-			get = function() return profile.indicator_elite end,
+			get = function() return Plater.db.profile.indicator_elite end,
 			set = function (self, fixedparam, value) 
-				profile.indicator_elite = value
+				Plater.db.profile.indicator_elite = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Elite Icon",
@@ -4588,9 +4549,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		},
 		{
 			type = "toggle",
-			get = function() return profile.indicator_rare end,
+			get = function() return Plater.db.profile.indicator_rare end,
 			set = function (self, fixedparam, value) 
-				profile.indicator_rare = value
+				Plater.db.profile.indicator_rare = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Rare Icon",
@@ -4598,9 +4559,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		},
 		{
 			type = "toggle",
-			get = function() return profile.indicator_quest end,
+			get = function() return Plater.db.profile.indicator_quest end,
 			set = function (self, fixedparam, value) 
-				profile.indicator_quest = value
+				Plater.db.profile.indicator_quest = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Quest Icon",
@@ -4610,7 +4571,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--indicator icon anchor
 		{
 			type = "select",
-			get = function() return profile.indicator_anchor.side end,
+			get = function() return Plater.db.profile.indicator_anchor.side end,
 			values = function() return build_anchor_side_table (nil, "indicator_anchor") end,
 			name = "Anchor",
 			desc = "Which side of the nameplate this widget is attach to.",
@@ -4618,9 +4579,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--indicator icon anchor x offset
 		{
 			type = "range",
-			get = function() return profile.indicator_anchor.x end,
+			get = function() return Plater.db.profile.indicator_anchor.x end,
 			set = function (self, fixedparam, value) 
-				profile.indicator_anchor.x = value
+				Plater.db.profile.indicator_anchor.x = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -4632,9 +4593,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--indicator icon anchor y offset
 		{
 			type = "range",
-			get = function() return profile.indicator_anchor.y end,
+			get = function() return Plater.db.profile.indicator_anchor.y end,
 			set = function (self, fixedparam, value) 
-				profile.indicator_anchor.y = value
+				Plater.db.profile.indicator_anchor.y = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -4647,9 +4608,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Box Selection Space:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return profile.click_space[1] end,
+			get = function() return Plater.db.profile.click_space[1] end,
 			set = function (self, fixedparam, value) 
-				profile.click_space[1] = value
+				Plater.db.profile.click_space[1] = value
 				Plater.UpdatePlateClickSpace (nil, nil, true)
 			end,
 			min = 50,
@@ -4660,9 +4621,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		},
 		{
 			type = "range",
-			get = function() return profile.click_space[2] end,
+			get = function() return Plater.db.profile.click_space[2] end,
 			set = function (self, fixedparam, value) 
-				profile.click_space[2] = value
+				Plater.db.profile.click_space[2] = value
 				Plater.UpdatePlateClickSpace (nil, nil, true)
 			end,
 			min = 1,
@@ -4673,37 +4634,123 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		},
 		{
 			type = "toggle",
-			get = function() return profile.click_space_always_show end,
+			get = function() return Plater.db.profile.click_space_always_show end,
 			set = function (self, fixedparam, value) 
-				profile.click_space_always_show = value
+				Plater.db.profile.click_space_always_show = value
 				Plater.UpdatePlateClickSpace (nil, nil, true)
 			end,
 			name = "Always Show Background",
 			desc = "Enable a background showing the area of the clicable area.",
 		},
+		
+		{type = "breakline"},
+		{type = "label", get = function() return "General Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.CanShowPlateFor (ACTORTYPE_FRIENDLY_PLAYER) end,
+			set = function (self, fixedparam, value) 
+				Plater.SetShowActorType (ACTORTYPE_FRIENDLY_PLAYER, value)
+				Plater.UpdateAllPlates()
+			end,
+			name = "Friendly Players",
+			desc = "Show nameplate for friendly players.\n\n|cFFFFFF00Important|r: This option is dependent on the client`s nameplate state (on/off).\n\n|cFFFFFF00Important|r: when disabled but enabled on the client through (" .. (GetBindingKey ("FRIENDNAMEPLATES") or "") .. ") the healthbar isn't visible but the nameplate is still clickable.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].only_damaged end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].only_damaged = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Only Damaged Players",
+			desc = "Hide the health bar when a friendly character has full health.",
+		},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.CanShowPlateFor (ACTORTYPE_ENEMY_PLAYER) end,
+			set = function (self, fixedparam, value) 
+				Plater.SetShowActorType (ACTORTYPE_ENEMY_PLAYER, value)
+				Plater.UpdateAllPlates()
+			end,
+			name = "Enemy Players",
+			desc = "Show nameplate for enemy players.\n\n|cFFFFFF00Important|r: This option is dependent on the client`s nameplate state (on/off).\n\n|cFFFFFF00Important|r: when disabled but enabled on the client through (" .. (GetBindingKey ("NAMEPLATES") or "") .. ") the healthbar isn't visible but the nameplate is still clickable.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.CanShowPlateFor (ACTORTYPE_FRIENDLY_NPC) end,
+			set = function (self, fixedparam, value) 
+				Plater.SetShowActorType (ACTORTYPE_FRIENDLY_NPC, value)
+				Plater.UpdateAllPlates()
+			end,
+			name = "Friendly Npc",
+			desc = "Show nameplate for friendly npcs.\n\n|cFFFFFF00Important|r: This option is dependent on the client`s nameplate state (on/off).\n\n|cFFFFFF00Important|r: when disabled but enabled on the client through (" .. (GetBindingKey ("FRIENDNAMEPLATES") or "") .. ") the healthbar isn't visible but the nameplate is still clickable.",
+		},
+		{
+			type = "select",
+			get = function() return Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].relevance_state end,
+			values = function() return relevance_options end,
+			name = "Friendly Npc Relevance",
+			desc = "Modify the way friendly npcs are shown.\n\n|cFFFFFF00Important|r: This option is dependent on the client`s nameplate state (on/off).",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.CanShowPlateFor (ACTORTYPE_ENEMY_NPC) end,
+			set = function (self, fixedparam, value) 
+				Plater.SetShowActorType (ACTORTYPE_ENEMY_NPC, value)
+				Plater.UpdateAllPlates()
+			end,
+			name = "Enemy Npc",
+			desc = "Show nameplate for enemy npcs.\n\n|cFFFFFF00Important|r: This option is dependent on the client`s nameplate state (on/off).\n\n|cFFFFFF00Important|r: when disabled but enabled on the client through (" .. (GetBindingKey ("NAMEPLATES") or "") .. ") the healthbar isn't visible but the nameplate is still clickable.",
+		},
+		{
+			type = "range",
+			get = function() return tonumber (GetCVar ("nameplateMaxDistance")) end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateMaxDistance", value)
+				else
+					Plater:Msg ("you are in combat.")
+				end
+			end,
+			min = 1,
+			max = 100,
+			step = 1,
+			name = "Nameplate Distance",
+			desc = "How far you can see nameplates (in yards).\n\n|cFFFFFFFFDefault: 60|r",
+			nocombat = true,
+		},
+		{
+			type = "select",
+			get = function() return tonumber (GetCVar ("nameplateOtherAtBase")) end,
+			values = function() return nameplate_anchor_options end,
+			name = "Nameplate Anchor",
+			desc = "Where the nameplate shall anchor.",
+			nocombat = true,
+		},
+		
 	}
 	
-	DF:BuildMenu (mainFrame, options_table1, mainStartX, mainStartY, mainHeightSize + 20, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)	
-	
-
+	DF:BuildMenu (generalOptionsAnchor, options_table1, 0, 0, mainHeightSize + 20, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)	
 	
 ------------------------------------------------	
 --order functions
 
 	local on_select_friendlyplayer_order = function (_, _, value)
-		profile.plate_config.friendlyplayer.order = value
+		Plater.db.profile.plate_config.friendlyplayer.order = value
 		Plater.UpdateAllPlates()
 	end
 	local on_select_friendlynpc_order = function (_, _, value)
-		profile.plate_config.friendlynpc.order = value
+		Plater.db.profile.plate_config.friendlynpc.order = value
 		Plater.UpdateAllPlates()
 	end	
 	local on_select_enemyplayer_order = function (_, _, value)
-		profile.plate_config.enemyplayer.order = value
+		Plater.db.profile.plate_config.enemyplayer.order = value
 		Plater.UpdateAllPlates()
 	end
 	local on_select_enemynpc_order = function (_, _, value)
-		profile.plate_config.enemynpc.order = value
+		Plater.db.profile.plate_config.enemynpc.order = value
 		Plater.UpdateAllPlates()
 	end
 	
@@ -4716,7 +4763,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 				label = order_names[i], 
 				value = i, 
 				onclick = function (_, _, value)
-					profile.plate_config [actorType].plate_order = value
+					Plater.db.profile.plate_config [actorType].plate_order = value
 					Plater.UpdateAllPlates()
 				end
 			})
@@ -4725,26 +4772,26 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 	end
 	
 ------------------------------------------------	
---FriendlyPC painel de opções
+--FriendlyPC painel de opções ~friendly
 	
 	local on_select_friendly_playername_font = function (_, _, value)
-		profile.plate_config.friendlyplayer.actorname_text_font = value
+		Plater.db.profile.plate_config.friendlyplayer.actorname_text_font = value
 		Plater.UpdateAllPlates()
 	end
 	local on_select_friendly_playercastname_font = function (_, _, value)
-		profile.plate_config.friendlyplayer.spellname_text_font = value
+		Plater.db.profile.plate_config.friendlyplayer.spellname_text_font = value
 		Plater.UpdateAllPlates()
 	end
 	local on_select_friendlyplayer_level_text_font = function (_, _, value)
-		profile.plate_config.friendlyplayer.level_text_font = value
+		Plater.db.profile.plate_config.friendlyplayer.level_text_font = value
 		Plater.UpdateAllPlates()
 	end
 	local on_select_friendlyplayer_percent_text_font = function (_, _, value)
-		profile.plate_config.friendlyplayer.percent_text_font = value
+		Plater.db.profile.plate_config.friendlyplayer.percent_text_font = value
 		Plater.UpdateAllPlates()
 	end
 	local on_select_friendlyplayer_spellpercent_text_font = function (_, _, value)
-		profile.plate_config.friendlyplayer.spellpercent_text_font = value
+		Plater.db.profile.plate_config.friendlyplayer.spellpercent_text_font = value
 		Plater.UpdateAllPlates()
 	end
 
@@ -4753,9 +4800,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Health Bar Size out of Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlyplayer.health[1] end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.health[1] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.health[1] = value
+				Plater.db.profile.plate_config.friendlyplayer.health[1] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 50,
@@ -4766,9 +4813,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		},
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlyplayer.health[2] end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.health[2] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.health[2] = value
+				Plater.db.profile.plate_config.friendlyplayer.health[2] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 1,
@@ -4782,9 +4829,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Health Bar Size in Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlyplayer.health_incombat[1] end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.health_incombat[1] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.health_incombat[1] = value
+				Plater.db.profile.plate_config.friendlyplayer.health_incombat[1] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 50,
@@ -4795,9 +4842,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		},
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlyplayer.health_incombat[2] end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.health_incombat[2] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.health_incombat[2] = value
+				Plater.db.profile.plate_config.friendlyplayer.health_incombat[2] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 1,
@@ -4813,9 +4860,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Cast Bar Size out of Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlyplayer.cast[1] end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.cast[1] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.cast[1] = value
+				Plater.db.profile.plate_config.friendlyplayer.cast[1] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 50,
@@ -4826,9 +4873,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		},
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlyplayer.cast[2] end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.cast[2] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.cast[2] = value
+				Plater.db.profile.plate_config.friendlyplayer.cast[2] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 1,
@@ -4841,9 +4888,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Cast Bar Size in Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlyplayer.cast_incombat[1] end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.cast_incombat[1] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.cast_incombat[1] = value
+				Plater.db.profile.plate_config.friendlyplayer.cast_incombat[1] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 50,
@@ -4854,9 +4901,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		},
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlyplayer.cast_incombat[2] end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.cast_incombat[2] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.cast_incombat[2] = value
+				Plater.db.profile.plate_config.friendlyplayer.cast_incombat[2] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 1,
@@ -4871,10 +4918,10 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Player Name Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlyplayer.actorname_text_size end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.actorname_text_size end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.actorname_text_size = value
-				profile.plate_config.friendlyplayer.actorname_text_spacing = value-1
+				Plater.db.profile.plate_config.friendlyplayer.actorname_text_size = value
+				Plater.db.profile.plate_config.friendlyplayer.actorname_text_spacing = value-1
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
@@ -4886,7 +4933,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--player name font
 		{
 			type = "select",
-			get = function() return profile.plate_config.friendlyplayer.actorname_text_font end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.actorname_text_font end,
 			values = function() return DF:BuildDropDownFontList (on_select_friendly_playername_font) end,
 			name = "Font",
 			desc = "Font of the text.",
@@ -4895,11 +4942,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.plate_config.friendlyplayer.actorname_text_color
+				local color = Plater.db.profile.plate_config.friendlyplayer.actorname_text_color
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.plate_config.friendlyplayer.actorname_text_color
+				local color = Plater.db.profile.plate_config.friendlyplayer.actorname_text_color
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
@@ -4909,9 +4956,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--player name shadow
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.friendlyplayer.actorname_text_shadow end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.actorname_text_shadow end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.actorname_text_shadow = value
+				Plater.db.profile.plate_config.friendlyplayer.actorname_text_shadow = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Shadow",
@@ -4921,7 +4968,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--npc name anchor
 		{
 			type = "select",
-			get = function() return profile.plate_config.friendlyplayer.actorname_text_anchor.side end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.actorname_text_anchor.side end,
 			values = function() return build_anchor_side_table ("friendlyplayer", "actorname_text_anchor") end,
 			name = "Anchor",
 			desc = "Which side of the nameplate this widget is attach to.",
@@ -4929,9 +4976,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--npc name anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlyplayer.actorname_text_anchor.x end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.actorname_text_anchor.x end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.actorname_text_anchor.x = value
+				Plater.db.profile.plate_config.friendlyplayer.actorname_text_anchor.x = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -4943,9 +4990,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--npc name anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlyplayer.actorname_text_anchor.y end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.actorname_text_anchor.y end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.actorname_text_anchor.y = value
+				Plater.db.profile.plate_config.friendlyplayer.actorname_text_anchor.y = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -4962,9 +5009,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Spell Name Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlyplayer.spellname_text_size end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.spellname_text_size end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.spellname_text_size = value
+				Plater.db.profile.plate_config.friendlyplayer.spellname_text_size = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
@@ -4976,7 +5023,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast text font
 		{
 			type = "select",
-			get = function() return profile.plate_config.friendlyplayer.spellname_text_font end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.spellname_text_font end,
 			values = function() return DF:BuildDropDownFontList (on_select_friendly_playercastname_font) end,
 			name = "Font",
 			desc = "Font of the text.",
@@ -4985,11 +5032,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.plate_config.friendlyplayer.spellname_text_color
+				local color = Plater.db.profile.plate_config.friendlyplayer.spellname_text_color
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.plate_config.friendlyplayer.spellname_text_color
+				local color = Plater.db.profile.plate_config.friendlyplayer.spellname_text_color
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
@@ -4999,9 +5046,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast text shadow
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.friendlyplayer.spellname_text_shadow end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.spellname_text_shadow end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.spellname_text_shadow = value
+				Plater.db.profile.plate_config.friendlyplayer.spellname_text_shadow = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Shadow",
@@ -5014,9 +5061,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level enabled
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.friendlyplayer.level_text_enabled end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.level_text_enabled end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.level_text_enabled = value
+				Plater.db.profile.plate_config.friendlyplayer.level_text_enabled = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Enabled",
@@ -5025,9 +5072,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level text size
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlyplayer.level_text_size end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.level_text_size end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.level_text_size = value
+				Plater.db.profile.plate_config.friendlyplayer.level_text_size = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
@@ -5039,7 +5086,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level text font
 		{
 			type = "select",
-			get = function() return profile.plate_config.friendlyplayer.level_text_font end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.level_text_font end,
 			values = function() return DF:BuildDropDownFontList (on_select_friendlyplayer_level_text_font) end,
 			name = "Font",
 			desc = "Font of the text.",
@@ -5047,9 +5094,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level text shadow
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.friendlyplayer.level_text_shadow end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.level_text_shadow end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.level_text_shadow = value
+				Plater.db.profile.plate_config.friendlyplayer.level_text_shadow = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Shadow",
@@ -5058,9 +5105,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level text alpha
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlyplayer.level_text_alpha end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.level_text_alpha end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.level_text_alpha = value
+				Plater.db.profile.plate_config.friendlyplayer.level_text_alpha = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 0,
@@ -5073,7 +5120,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level anchor
 		{
 			type = "select",
-			get = function() return profile.plate_config.friendlyplayer.level_text_anchor.side end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.level_text_anchor.side end,
 			values = function() return build_anchor_side_table ("friendlyplayer", "level_text_anchor") end,
 			name = "Anchor",
 			desc = "Which side of the nameplate this widget is attach to.",
@@ -5081,9 +5128,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlyplayer.level_text_anchor.x end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.level_text_anchor.x end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.level_text_anchor.x = value
+				Plater.db.profile.plate_config.friendlyplayer.level_text_anchor.x = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -5095,9 +5142,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlyplayer.level_text_anchor.y end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.level_text_anchor.y end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.level_text_anchor.y = value
+				Plater.db.profile.plate_config.friendlyplayer.level_text_anchor.y = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -5112,7 +5159,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--plate order
 		{
 			type = "select",
-			get = function() return profile.plate_config.friendlyplayer.plate_order end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.plate_order end,
 			values = function() return build_order_options ("friendlyplayer") end,
 			name = "Order",
 			desc = "How the health, cast and buff bars are ordered.\n\nFrom bottom (near the character head) to top.",
@@ -5123,9 +5170,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--y offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlyplayer.buff_frame_y_offset end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.buff_frame_y_offset end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.buff_frame_y_offset = value
+				Plater.db.profile.plate_config.friendlyplayer.buff_frame_y_offset = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -64,
@@ -5142,9 +5189,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--enabled
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.friendlyplayer.percent_text_enabled end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.percent_text_enabled end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.percent_text_enabled = value
+				Plater.db.profile.plate_config.friendlyplayer.percent_text_enabled = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Enabled",
@@ -5153,9 +5200,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--percent text size
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlyplayer.percent_text_size end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.percent_text_size end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.percent_text_size = value
+				Plater.db.profile.plate_config.friendlyplayer.percent_text_size = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
@@ -5167,7 +5214,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--percent text font
 		{
 			type = "select",
-			get = function() return profile.plate_config.friendlyplayer.percent_text_font end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.percent_text_font end,
 			values = function() return DF:BuildDropDownFontList (on_select_friendlyplayer_percent_text_font) end,
 			name = "Font",
 			desc = "Font of the text.",
@@ -5175,9 +5222,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--percent text shadow
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.friendlyplayer.percent_text_shadow end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.percent_text_shadow end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.percent_text_shadow = value
+				Plater.db.profile.plate_config.friendlyplayer.percent_text_shadow = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Shadow",
@@ -5187,11 +5234,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.plate_config.friendlyplayer.percent_text_color
+				local color = Plater.db.profile.plate_config.friendlyplayer.percent_text_color
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.plate_config.friendlyplayer.percent_text_color
+				local color = Plater.db.profile.plate_config.friendlyplayer.percent_text_color
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
@@ -5201,9 +5248,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--percent text alpha
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlyplayer.percent_text_alpha end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.percent_text_alpha end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.percent_text_alpha = value
+				Plater.db.profile.plate_config.friendlyplayer.percent_text_alpha = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 0,
@@ -5216,7 +5263,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--percent anchor
 		{
 			type = "select",
-			get = function() return profile.plate_config.friendlyplayer.percent_text_anchor.side end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.percent_text_anchor.side end,
 			values = function() return build_anchor_side_table ("friendlyplayer", "percent_text_anchor") end,
 			name = "Anchor",
 			desc = "Which side of the nameplate this widget is attach to.",
@@ -5224,9 +5271,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--percent anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlyplayer.percent_text_anchor.x end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.percent_text_anchor.x end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.percent_text_anchor.x = value
+				Plater.db.profile.plate_config.friendlyplayer.percent_text_anchor.x = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -5238,9 +5285,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--percent anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlyplayer.percent_text_anchor.y end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.percent_text_anchor.y end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.percent_text_anchor.y = value
+				Plater.db.profile.plate_config.friendlyplayer.percent_text_anchor.y = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -5254,9 +5301,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Cast Time Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.friendlyplayer.spellpercent_text_enabled end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.spellpercent_text_enabled end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.spellpercent_text_enabled = value
+				Plater.db.profile.plate_config.friendlyplayer.spellpercent_text_enabled = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Enabled",
@@ -5265,9 +5312,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast time text
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlyplayer.spellpercent_text_size end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.spellpercent_text_size end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.spellpercent_text_size = value
+				Plater.db.profile.plate_config.friendlyplayer.spellpercent_text_size = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
@@ -5279,7 +5326,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast time text font
 		{
 			type = "select",
-			get = function() return profile.plate_config.friendlyplayer.spellpercent_text_font end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.spellpercent_text_font end,
 			values = function() return DF:BuildDropDownFontList (on_select_friendlyplayer_spellpercent_text_font) end,
 			name = "Font",
 			desc = "Font of the text.",
@@ -5287,9 +5334,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast time text shadow
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.friendlyplayer.spellpercent_text_shadow end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.spellpercent_text_shadow end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.spellpercent_text_shadow = value
+				Plater.db.profile.plate_config.friendlyplayer.spellpercent_text_shadow = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Shadow",
@@ -5299,11 +5346,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.plate_config.friendlyplayer.spellpercent_text_color
+				local color = Plater.db.profile.plate_config.friendlyplayer.spellpercent_text_color
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.plate_config.friendlyplayer.spellpercent_text_color
+				local color = Plater.db.profile.plate_config.friendlyplayer.spellpercent_text_color
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
@@ -5314,7 +5361,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast time anchor
 		{
 			type = "select",
-			get = function() return profile.plate_config.friendlyplayer.spellpercent_text_anchor.side end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.spellpercent_text_anchor.side end,
 			values = function() return build_anchor_side_table ("friendlyplayer", "spellpercent_text_anchor") end,
 			name = "Anchor",
 			desc = "Which side of the nameplate this widget is attach to.",
@@ -5322,9 +5369,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast time anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlyplayer.spellpercent_text_anchor.x end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.spellpercent_text_anchor.x end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.spellpercent_text_anchor.x = value
+				Plater.db.profile.plate_config.friendlyplayer.spellpercent_text_anchor.x = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -5336,9 +5383,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast time anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlyplayer.spellpercent_text_anchor.y end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.spellpercent_text_anchor.y end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlyplayer.spellpercent_text_anchor.y = value
+				Plater.db.profile.plate_config.friendlyplayer.spellpercent_text_anchor.y = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -5346,34 +5393,55 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 			step = 1,
 			name = "Y Offset",
 			desc = "Slightly move the text vertically.",
+		},
+		
+		{type = "breakline"},
+		{type = "label", get = function() return "Automatization:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.friendlyplates_auto_show end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.friendlyplates_auto_show = value
+			end,
+			name = "Force Show Friendly",
+			desc = "When allowed, the addon try to enable nameplates for friendly characters.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.friendlyplates_no_on_instances end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.friendlyplates_no_on_instances = value
+			end,
+			name = "No Friendly on Instances",
+			desc = "Forces the addon to shutdown nameplates for friendly characters when entering an instance.",
 		},		
 		
 	}
 	DF:BuildMenu (friendlyPCsFrame, options_table3, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 
 --------------------------------
---Enemy Player painel de opções	
+--Enemy Player painel de opções ~enemy
 
 	local on_select_enemy_playername_font = function (_, _, value)
-		profile.plate_config.enemyplayer.actorname_text_font = value
+		Plater.db.profile.plate_config.enemyplayer.actorname_text_font = value
 		Plater.UpdateAllPlates()
 	end
 	local on_select_enemy_playercastname_font = function (_, _, value)
-		profile.plate_config.enemyplayer.spellname_text_font = value
+		Plater.db.profile.plate_config.enemyplayer.spellname_text_font = value
 		Plater.UpdateAllPlates()
 	end
 	
 	local on_select_enemyplayer_level_text_font = function (_, _, value)
-		profile.plate_config.enemyplayer.level_text_font = value
+		Plater.db.profile.plate_config.enemyplayer.level_text_font = value
 		Plater.UpdateAllPlates()
 	end
 	local on_select_enemyplayer_percent_text_font = function (_, _, value)
-		profile.plate_config.enemyplayer.percent_text_font = value
+		Plater.db.profile.plate_config.enemyplayer.percent_text_font = value
 		Plater.UpdateAllPlates()
 	end
 	
 	local on_select_enemyplayer_spellpercent_text_font = function (_, _, value)
-		profile.plate_config.enemyplayer.spellpercent_text_font = value
+		Plater.db.profile.plate_config.enemyplayer.spellpercent_text_font = value
 		Plater.UpdateAllPlates()
 	end	
 	
@@ -5382,9 +5450,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Health Bar Size out of Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemyplayer.health[1] end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.health[1] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.health[1] = value
+				Plater.db.profile.plate_config.enemyplayer.health[1] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 50,
@@ -5395,9 +5463,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		},
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemyplayer.health[2] end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.health[2] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.health[2] = value
+				Plater.db.profile.plate_config.enemyplayer.health[2] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 1,
@@ -5411,9 +5479,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Health Bar Size in Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemyplayer.health_incombat[1] end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.health_incombat[1] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.health_incombat[1] = value
+				Plater.db.profile.plate_config.enemyplayer.health_incombat[1] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 50,
@@ -5424,9 +5492,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		},
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemyplayer.health_incombat[2] end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.health_incombat[2] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.health_incombat[2] = value
+				Plater.db.profile.plate_config.enemyplayer.health_incombat[2] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 1,
@@ -5440,9 +5508,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Cast Bar Size out of Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemyplayer.cast[1] end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.cast[1] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.cast[1] = value
+				Plater.db.profile.plate_config.enemyplayer.cast[1] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 50,
@@ -5453,9 +5521,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		},
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemyplayer.cast[2] end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.cast[2] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.cast[2] = value
+				Plater.db.profile.plate_config.enemyplayer.cast[2] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 1,
@@ -5468,9 +5536,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Cast Bar Size in Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemyplayer.cast_incombat[1] end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.cast_incombat[1] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.cast_incombat[1] = value
+				Plater.db.profile.plate_config.enemyplayer.cast_incombat[1] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 50,
@@ -5481,9 +5549,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		},
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemyplayer.cast_incombat[2] end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.cast_incombat[2] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.cast_incombat[2] = value
+				Plater.db.profile.plate_config.enemyplayer.cast_incombat[2] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 1,
@@ -5498,10 +5566,10 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Player Name Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemyplayer.actorname_text_size end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.actorname_text_size end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.actorname_text_size = value
-				profile.plate_config.enemyplayer.actorname_text_spacing = value-1
+				Plater.db.profile.plate_config.enemyplayer.actorname_text_size = value
+				Plater.db.profile.plate_config.enemyplayer.actorname_text_spacing = value-1
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
@@ -5514,7 +5582,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--player name font
 		{
 			type = "select",
-			get = function() return profile.plate_config.enemyplayer.actorname_text_font end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.actorname_text_font end,
 			values = function() return DF:BuildDropDownFontList (on_select_enemy_playername_font) end,
 			name = "Font",
 			desc = "Font of the text.",
@@ -5523,11 +5591,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.plate_config.enemyplayer.actorname_text_color
+				local color = Plater.db.profile.plate_config.enemyplayer.actorname_text_color
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.plate_config.enemyplayer.actorname_text_color
+				local color = Plater.db.profile.plate_config.enemyplayer.actorname_text_color
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
@@ -5537,9 +5605,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--player name shadow
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.enemyplayer.actorname_text_shadow end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.actorname_text_shadow end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.actorname_text_shadow = value
+				Plater.db.profile.plate_config.enemyplayer.actorname_text_shadow = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Shadow",
@@ -5549,7 +5617,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--npc name anchor
 		{
 			type = "select",
-			get = function() return profile.plate_config.enemyplayer.actorname_text_anchor.side end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.actorname_text_anchor.side end,
 			values = function() return build_anchor_side_table ("enemyplayer", "actorname_text_anchor") end,
 			name = "Anchor",
 			desc = "Which side of the nameplate this widget is attach to.",
@@ -5557,9 +5625,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--npc name anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemyplayer.actorname_text_anchor.x end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.actorname_text_anchor.x end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.actorname_text_anchor.x = value
+				Plater.db.profile.plate_config.enemyplayer.actorname_text_anchor.x = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -5571,9 +5639,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--npc name anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemyplayer.actorname_text_anchor.y end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.actorname_text_anchor.y end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.actorname_text_anchor.y = value
+				Plater.db.profile.plate_config.enemyplayer.actorname_text_anchor.y = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -5589,9 +5657,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Spell Name Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemyplayer.spellname_text_size end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.spellname_text_size end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.spellname_text_size = value
+				Plater.db.profile.plate_config.enemyplayer.spellname_text_size = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
@@ -5603,7 +5671,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast text font
 		{
 			type = "select",
-			get = function() return profile.plate_config.enemyplayer.spellname_text_font end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.spellname_text_font end,
 			values = function() return DF:BuildDropDownFontList (on_select_enemy_playercastname_font) end,
 			name = "Font",
 			desc = "Font of the text.",
@@ -5612,11 +5680,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.plate_config.enemyplayer.spellname_text_color
+				local color = Plater.db.profile.plate_config.enemyplayer.spellname_text_color
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.plate_config.enemyplayer.spellname_text_color
+				local color = Plater.db.profile.plate_config.enemyplayer.spellname_text_color
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
@@ -5626,9 +5694,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast text shadow
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.enemyplayer.spellname_text_shadow end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.spellname_text_shadow end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.spellname_text_shadow = value
+				Plater.db.profile.plate_config.enemyplayer.spellname_text_shadow = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Shadow",
@@ -5641,9 +5709,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level enabled
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.enemyplayer.level_text_enabled end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.level_text_enabled end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.level_text_enabled = value
+				Plater.db.profile.plate_config.enemyplayer.level_text_enabled = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Enabled",
@@ -5652,9 +5720,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level text size
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemyplayer.level_text_size end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.level_text_size end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.level_text_size = value
+				Plater.db.profile.plate_config.enemyplayer.level_text_size = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
@@ -5666,7 +5734,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level text font
 		{
 			type = "select",
-			get = function() return profile.plate_config.enemyplayer.level_text_font end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.level_text_font end,
 			values = function() return DF:BuildDropDownFontList (on_select_enemyplayer_level_text_font) end,
 			name = "Font",
 			desc = "Font of the text.",
@@ -5674,9 +5742,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level text shadow
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.enemyplayer.level_text_shadow end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.level_text_shadow end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.level_text_shadow = value
+				Plater.db.profile.plate_config.enemyplayer.level_text_shadow = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Shadow",
@@ -5685,9 +5753,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level text alpha
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemyplayer.level_text_alpha end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.level_text_alpha end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.level_text_alpha = value
+				Plater.db.profile.plate_config.enemyplayer.level_text_alpha = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 0,
@@ -5700,7 +5768,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level anchor
 		{
 			type = "select",
-			get = function() return profile.plate_config.enemyplayer.level_text_anchor.side end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.level_text_anchor.side end,
 			values = function() return build_anchor_side_table ("enemyplayer", "level_text_anchor") end,
 			name = "Anchor",
 			desc = "Which side of the nameplate this widget is attach to.",
@@ -5708,9 +5776,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemyplayer.level_text_anchor.x end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.level_text_anchor.x end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.level_text_anchor.x = value
+				Plater.db.profile.plate_config.enemyplayer.level_text_anchor.x = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -5722,9 +5790,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemyplayer.level_text_anchor.y end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.level_text_anchor.y end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.level_text_anchor.y = value
+				Plater.db.profile.plate_config.enemyplayer.level_text_anchor.y = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -5739,7 +5807,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Plate Order:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "select",
-			get = function() return profile.plate_config.enemyplayer.plate_order end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.plate_order end,
 			values = function() return build_order_options ("enemyplayer") end,
 			name = "Order",
 			desc = "How the health, cast and buff bars are ordered.\n\nFrom bottom (near the character head) to top.",
@@ -5750,9 +5818,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--y offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemyplayer.buff_frame_y_offset end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.buff_frame_y_offset end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.buff_frame_y_offset = value
+				Plater.db.profile.plate_config.enemyplayer.buff_frame_y_offset = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -64,
@@ -5769,9 +5837,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--enabled
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.enemyplayer.percent_text_enabled end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.percent_text_enabled end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.percent_text_enabled = value
+				Plater.db.profile.plate_config.enemyplayer.percent_text_enabled = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Enabled",
@@ -5780,9 +5848,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--percent text size
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemyplayer.percent_text_size end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.percent_text_size end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.percent_text_size = value
+				Plater.db.profile.plate_config.enemyplayer.percent_text_size = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
@@ -5794,7 +5862,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--percent text font
 		{
 			type = "select",
-			get = function() return profile.plate_config.enemyplayer.percent_text_font end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.percent_text_font end,
 			values = function() return DF:BuildDropDownFontList (on_select_enemyplayer_percent_text_font) end,
 			name = "Font",
 			desc = "Font of the text.",
@@ -5802,9 +5870,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--percent text shadow
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.enemyplayer.percent_text_shadow end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.percent_text_shadow end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.percent_text_shadow = value
+				Plater.db.profile.plate_config.enemyplayer.percent_text_shadow = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Shadow",
@@ -5814,11 +5882,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.plate_config.enemyplayer.percent_text_color
+				local color = Plater.db.profile.plate_config.enemyplayer.percent_text_color
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.plate_config.enemyplayer.percent_text_color
+				local color = Plater.db.profile.plate_config.enemyplayer.percent_text_color
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
@@ -5828,9 +5896,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--percent text alpha
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemyplayer.percent_text_alpha end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.percent_text_alpha end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.percent_text_alpha = value
+				Plater.db.profile.plate_config.enemyplayer.percent_text_alpha = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 0,
@@ -5843,7 +5911,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--percent anchor
 		{
 			type = "select",
-			get = function() return profile.plate_config.enemyplayer.percent_text_anchor.side end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.percent_text_anchor.side end,
 			values = function() return build_anchor_side_table ("enemyplayer", "percent_text_anchor") end,
 			name = "Anchor",
 			desc = "Which side of the nameplate this widget is attach to.",
@@ -5851,9 +5919,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--percent anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemyplayer.percent_text_anchor.x end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.percent_text_anchor.x end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.percent_text_anchor.x = value
+				Plater.db.profile.plate_config.enemyplayer.percent_text_anchor.x = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -5865,9 +5933,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--percent anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemyplayer.percent_text_anchor.y end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.percent_text_anchor.y end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.percent_text_anchor.y = value
+				Plater.db.profile.plate_config.enemyplayer.percent_text_anchor.y = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -5881,9 +5949,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Cast Time Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.enemyplayer.spellpercent_text_enabled end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.spellpercent_text_enabled end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.spellpercent_text_enabled = value
+				Plater.db.profile.plate_config.enemyplayer.spellpercent_text_enabled = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Enabled",
@@ -5892,9 +5960,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast time text
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemyplayer.spellpercent_text_size end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.spellpercent_text_size end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.spellpercent_text_size = value
+				Plater.db.profile.plate_config.enemyplayer.spellpercent_text_size = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
@@ -5906,7 +5974,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast time text font
 		{
 			type = "select",
-			get = function() return profile.plate_config.enemyplayer.spellpercent_text_font end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.spellpercent_text_font end,
 			values = function() return DF:BuildDropDownFontList (on_select_enemyplayer_spellpercent_text_font) end,
 			name = "Font",
 			desc = "Font of the text.",
@@ -5914,9 +5982,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast time text shadow
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.enemyplayer.spellpercent_text_shadow end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.spellpercent_text_shadow end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.spellpercent_text_shadow = value
+				Plater.db.profile.plate_config.enemyplayer.spellpercent_text_shadow = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Shadow",
@@ -5926,11 +5994,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.plate_config.enemyplayer.spellpercent_text_color
+				local color = Plater.db.profile.plate_config.enemyplayer.spellpercent_text_color
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.plate_config.enemyplayer.spellpercent_text_color
+				local color = Plater.db.profile.plate_config.enemyplayer.spellpercent_text_color
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
@@ -5941,7 +6009,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast time anchor
 		{
 			type = "select",
-			get = function() return profile.plate_config.enemyplayer.spellpercent_text_anchor.side end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.spellpercent_text_anchor.side end,
 			values = function() return build_anchor_side_table ("enemyplayer", "spellpercent_text_anchor") end,
 			name = "Anchor",
 			desc = "Which side of the nameplate this widget is attach to.",
@@ -5949,9 +6017,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast time anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemyplayer.spellpercent_text_anchor.x end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.spellpercent_text_anchor.x end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.spellpercent_text_anchor.x = value
+				Plater.db.profile.plate_config.enemyplayer.spellpercent_text_anchor.x = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -5963,9 +6031,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast time anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemyplayer.spellpercent_text_anchor.y end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.spellpercent_text_anchor.y end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemyplayer.spellpercent_text_anchor.y = value
+				Plater.db.profile.plate_config.enemyplayer.spellpercent_text_anchor.y = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -5973,42 +6041,42 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 			step = 1,
 			name = "Y Offset",
 			desc = "Slightly move the text vertically.",
-		},		
+		},
 		
 	}
 	DF:BuildMenu (enemyPCsFrame, options_table4, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 
 -----------------------------------------------	
---Friendly NPC painel de opções
+--Friendly NPC painel de opções ~friendly
 
 	local on_select_friendly_npcname_font = function (_, _, value)
-		profile.plate_config.friendlynpc.actorname_text_font = value
+		Plater.db.profile.plate_config.friendlynpc.actorname_text_font = value
 		Plater.UpdateAllPlates()
 	end
 	local on_select_friendly_npccastname_font = function (_, _, value)
-		profile.plate_config.friendlynpc.spellname_text_font = value
+		Plater.db.profile.plate_config.friendlynpc.spellname_text_font = value
 		Plater.UpdateAllPlates()
 	end
 	
 	local on_select_friendlynpc_level_text_font = function (_, _, value)
-		profile.plate_config.friendlynpc.level_text_font = value
+		Plater.db.profile.plate_config.friendlynpc.level_text_font = value
 		Plater.UpdateAllPlates()
 	end
 	local on_select_friendlynpc_percent_text_font = function (_, _, value)
-		profile.plate_config.friendlynpc.percent_text_font = value
+		Plater.db.profile.plate_config.friendlynpc.percent_text_font = value
 		Plater.UpdateAllPlates()
 	end	
 	local on_select_friendlynpc_titletext_text_font = function (_, _, value)
-		profile.plate_config.friendlynpc.big_actortitle_text_font = value
+		Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_font = value
 		Plater.UpdateAllPlates()
 	end
 	local on_select_friendlynpc_bignametext_text_font = function (_, _, value)
-		profile.plate_config.friendlynpc.big_actorname_text_font = value
+		Plater.db.profile.plate_config.friendlynpc.big_actorname_text_font = value
 		Plater.UpdateAllPlates()
 	end
 	
 	local on_select_friendlynpc_spellpercent_text_font = function (_, _, value)
-		profile.plate_config.friendlynpc.spellpercent_text_font = value
+		Plater.db.profile.plate_config.friendlynpc.spellpercent_text_font = value
 		Plater.UpdateAllPlates()
 	end	
 	
@@ -6019,9 +6087,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Health Bar Size out of Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlynpc.health[1] end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.health[1] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.health[1] = value
+				Plater.db.profile.plate_config.friendlynpc.health[1] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 50,
@@ -6032,9 +6100,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		},
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlynpc.health[2] end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.health[2] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.health[2] = value
+				Plater.db.profile.plate_config.friendlynpc.health[2] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 1,
@@ -6048,9 +6116,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Health Bar Size in Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlynpc.health_incombat[1] end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.health_incombat[1] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.health_incombat[1] = value
+				Plater.db.profile.plate_config.friendlynpc.health_incombat[1] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 50,
@@ -6061,9 +6129,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		},
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlynpc.health_incombat[2] end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.health_incombat[2] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.health_incombat[2] = value
+				Plater.db.profile.plate_config.friendlynpc.health_incombat[2] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 1,
@@ -6077,9 +6145,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Cast Bar Size out of Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlynpc.cast[1] end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.cast[1] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.cast[1] = value
+				Plater.db.profile.plate_config.friendlynpc.cast[1] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 50,
@@ -6090,9 +6158,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		},
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlynpc.cast[2] end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.cast[2] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.cast[2] = value
+				Plater.db.profile.plate_config.friendlynpc.cast[2] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 1,
@@ -6105,9 +6173,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Cast Bar Size in Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlynpc.cast_incombat[1] end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.cast_incombat[1] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.cast_incombat[1] = value
+				Plater.db.profile.plate_config.friendlynpc.cast_incombat[1] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 50,
@@ -6118,9 +6186,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		},
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlynpc.cast_incombat[2] end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.cast_incombat[2] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.cast_incombat[2] = value
+				Plater.db.profile.plate_config.friendlynpc.cast_incombat[2] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 1,
@@ -6135,10 +6203,10 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Npc Name Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlynpc.actorname_text_size end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.actorname_text_size end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.actorname_text_size = value
-				profile.plate_config.friendlynpc.actorname_text_spacing = value-1
+				Plater.db.profile.plate_config.friendlynpc.actorname_text_size = value
+				Plater.db.profile.plate_config.friendlynpc.actorname_text_spacing = value-1
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
@@ -6150,7 +6218,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--player name font
 		{
 			type = "select",
-			get = function() return profile.plate_config.friendlynpc.actorname_text_font end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.actorname_text_font end,
 			values = function() return DF:BuildDropDownFontList (on_select_enemy_npcname_font) end,
 			name = "Font",
 			desc = "Font of the text.",
@@ -6159,11 +6227,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.plate_config.friendlynpc.actorname_text_color
+				local color = Plater.db.profile.plate_config.friendlynpc.actorname_text_color
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.plate_config.friendlynpc.actorname_text_color
+				local color = Plater.db.profile.plate_config.friendlynpc.actorname_text_color
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
@@ -6173,9 +6241,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--player name shadow
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.friendlynpc.actorname_text_shadow end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.actorname_text_shadow end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.actorname_text_shadow = value
+				Plater.db.profile.plate_config.friendlynpc.actorname_text_shadow = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Shadow",
@@ -6185,7 +6253,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--npc name anchor
 		{
 			type = "select",
-			get = function() return profile.plate_config.friendlynpc.actorname_text_anchor.side end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.actorname_text_anchor.side end,
 			values = function() return build_anchor_side_table ("friendlynpc", "actorname_text_anchor") end,
 			name = "Anchor",
 			desc = "Which side of the nameplate this widget is attach to.",
@@ -6193,9 +6261,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--npc name anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlynpc.actorname_text_anchor.x end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.actorname_text_anchor.x end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.actorname_text_anchor.x = value
+				Plater.db.profile.plate_config.friendlynpc.actorname_text_anchor.x = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -6207,9 +6275,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--npc name anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlynpc.actorname_text_anchor.y end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.actorname_text_anchor.y end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.actorname_text_anchor.y = value
+				Plater.db.profile.plate_config.friendlynpc.actorname_text_anchor.y = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -6225,9 +6293,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Spell Name Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlynpc.spellname_text_size end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.spellname_text_size end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.spellname_text_size = value
+				Plater.db.profile.plate_config.friendlynpc.spellname_text_size = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
@@ -6239,7 +6307,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast text font
 		{
 			type = "select",
-			get = function() return profile.plate_config.friendlynpc.spellname_text_font end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.spellname_text_font end,
 			values = function() return DF:BuildDropDownFontList (on_select_enemy_npccastname_font) end,
 			name = "Font",
 			desc = "Font of the text.",
@@ -6248,11 +6316,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.plate_config.friendlynpc.spellname_text_color
+				local color = Plater.db.profile.plate_config.friendlynpc.spellname_text_color
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.plate_config.friendlynpc.spellname_text_color
+				local color = Plater.db.profile.plate_config.friendlynpc.spellname_text_color
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
@@ -6262,9 +6330,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast text shadow
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.friendlynpc.spellname_text_shadow end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.spellname_text_shadow end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.spellname_text_shadow = value
+				Plater.db.profile.plate_config.friendlynpc.spellname_text_shadow = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Shadow",
@@ -6277,9 +6345,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level enabled
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.friendlynpc.level_text_enabled end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.level_text_enabled end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.level_text_enabled = value
+				Plater.db.profile.plate_config.friendlynpc.level_text_enabled = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Enabled",
@@ -6288,9 +6356,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level text size
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlynpc.level_text_size end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.level_text_size end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.level_text_size = value
+				Plater.db.profile.plate_config.friendlynpc.level_text_size = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
@@ -6302,7 +6370,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level text font
 		{
 			type = "select",
-			get = function() return profile.plate_config.friendlynpc.level_text_font end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.level_text_font end,
 			values = function() return DF:BuildDropDownFontList (on_select_friendlynpc_level_text_font) end,
 			name = "Font",
 			desc = "Font of the text.",
@@ -6310,9 +6378,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level text shadow
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.friendlynpc.level_text_shadow end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.level_text_shadow end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.level_text_shadow = value
+				Plater.db.profile.plate_config.friendlynpc.level_text_shadow = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Shadow",
@@ -6321,9 +6389,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level text alpha
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlynpc.level_text_alpha end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.level_text_alpha end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.level_text_alpha = value
+				Plater.db.profile.plate_config.friendlynpc.level_text_alpha = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 0,
@@ -6336,7 +6404,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level anchor
 		{
 			type = "select",
-			get = function() return profile.plate_config.friendlynpc.level_text_anchor.side end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.level_text_anchor.side end,
 			values = function() return build_anchor_side_table ("friendlynpc", "level_text_anchor") end,
 			name = "Anchor",
 			desc = "Which side of the nameplate this widget is attach to.",
@@ -6344,9 +6412,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlynpc.level_text_anchor.x end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.level_text_anchor.x end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.level_text_anchor.x = value
+				Plater.db.profile.plate_config.friendlynpc.level_text_anchor.x = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -6358,9 +6426,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlynpc.level_text_anchor.y end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.level_text_anchor.y end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.level_text_anchor.y = value
+				Plater.db.profile.plate_config.friendlynpc.level_text_anchor.y = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -6375,7 +6443,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Plate Order:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "select",
-			get = function() return profile.plate_config.friendlynpc.plate_order end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.plate_order end,
 			values = function() return build_order_options ("friendlynpc") end,
 			name = "Order",
 			desc = "How the health, cast and buff bars are ordered.\n\nFrom bottom (near the character head) to top.",
@@ -6386,9 +6454,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--y offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlynpc.buff_frame_y_offset end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.buff_frame_y_offset end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.buff_frame_y_offset = value
+				Plater.db.profile.plate_config.friendlynpc.buff_frame_y_offset = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -64,
@@ -6405,9 +6473,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--enabled
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.friendlynpc.percent_text_enabled end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.percent_text_enabled end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.percent_text_enabled = value
+				Plater.db.profile.plate_config.friendlynpc.percent_text_enabled = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Enabled",
@@ -6416,9 +6484,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--percent text size
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlynpc.percent_text_size end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.percent_text_size end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.percent_text_size = value
+				Plater.db.profile.plate_config.friendlynpc.percent_text_size = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
@@ -6430,7 +6498,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--percent text font
 		{
 			type = "select",
-			get = function() return profile.plate_config.friendlynpc.percent_text_font end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.percent_text_font end,
 			values = function() return DF:BuildDropDownFontList (on_select_friendlynpc_percent_text_font) end,
 			name = "Font",
 			desc = "Font of the text.",
@@ -6438,9 +6506,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--percent text shadow
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.friendlynpc.percent_text_shadow end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.percent_text_shadow end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.percent_text_shadow = value
+				Plater.db.profile.plate_config.friendlynpc.percent_text_shadow = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Shadow",
@@ -6450,11 +6518,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.plate_config.friendlynpc.percent_text_color
+				local color = Plater.db.profile.plate_config.friendlynpc.percent_text_color
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.plate_config.friendlynpc.percent_text_color
+				local color = Plater.db.profile.plate_config.friendlynpc.percent_text_color
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
@@ -6464,9 +6532,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--percent text alpha
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlynpc.percent_text_alpha end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.percent_text_alpha end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.percent_text_alpha = value
+				Plater.db.profile.plate_config.friendlynpc.percent_text_alpha = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 0,
@@ -6479,7 +6547,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--percent anchor
 		{
 			type = "select",
-			get = function() return profile.plate_config.friendlynpc.percent_text_anchor.side end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.percent_text_anchor.side end,
 			values = function() return build_anchor_side_table ("friendlynpc", "percent_text_anchor") end,
 			name = "Anchor",
 			desc = "Which side of the nameplate this widget is attach to.",
@@ -6487,9 +6555,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--percent anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlynpc.percent_text_anchor.x end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.percent_text_anchor.x end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.percent_text_anchor.x = value
+				Plater.db.profile.plate_config.friendlynpc.percent_text_anchor.x = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -6501,9 +6569,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--percent anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlynpc.percent_text_anchor.y end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.percent_text_anchor.y end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.percent_text_anchor.y = value
+				Plater.db.profile.plate_config.friendlynpc.percent_text_anchor.y = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -6518,9 +6586,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--enabled
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.friendlynpc.quest_enabled end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.quest_enabled end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.quest_enabled = value
+				Plater.db.profile.plate_config.friendlynpc.quest_enabled = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Enabled",
@@ -6529,11 +6597,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.plate_config.friendlynpc.quest_color
+				local color = Plater.db.profile.plate_config.friendlynpc.quest_color
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.plate_config.friendlynpc.quest_color
+				local color = Plater.db.profile.plate_config.friendlynpc.quest_color
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
@@ -6547,9 +6615,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--profession text size
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlynpc.big_actortitle_text_size end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_size end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.big_actortitle_text_size = value
+				Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_size = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
@@ -6561,7 +6629,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--profession text font
 		{
 			type = "select",
-			get = function() return profile.plate_config.friendlynpc.big_actortitle_text_font end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_font end,
 			values = function() return DF:BuildDropDownFontList (on_select_friendlynpc_titletext_text_font) end,
 			name = "Font",
 			desc = "Font of the text.",
@@ -6569,9 +6637,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--profession text shadow
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.friendlynpc.big_actortitle_text_shadow end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_shadow end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.big_actortitle_text_shadow = value
+				Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_shadow = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Shadow",
@@ -6581,11 +6649,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.plate_config.friendlynpc.big_actortitle_text_color
+				local color = Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_color
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.plate_config.friendlynpc.big_actortitle_text_color
+				local color = Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_color
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
@@ -6600,9 +6668,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--profession text size
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlynpc.big_actorname_text_size end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.big_actorname_text_size end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.big_actorname_text_size = value
+				Plater.db.profile.plate_config.friendlynpc.big_actorname_text_size = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
@@ -6614,7 +6682,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--profession text font
 		{
 			type = "select",
-			get = function() return profile.plate_config.friendlynpc.big_actorname_text_font end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.big_actorname_text_font end,
 			values = function() return DF:BuildDropDownFontList (on_select_friendlynpc_bignametext_text_font) end,
 			name = "Font",
 			desc = "Font of the text.",
@@ -6622,9 +6690,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--profession text shadow
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.friendlynpc.big_actorname_text_shadow end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.big_actorname_text_shadow end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.big_actorname_text_shadow = value
+				Plater.db.profile.plate_config.friendlynpc.big_actorname_text_shadow = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Shadow",
@@ -6634,11 +6702,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.plate_config.friendlynpc.big_actorname_text_color
+				local color = Plater.db.profile.plate_config.friendlynpc.big_actorname_text_color
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.plate_config.friendlynpc.big_actorname_text_color
+				local color = Plater.db.profile.plate_config.friendlynpc.big_actorname_text_color
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
@@ -6650,9 +6718,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Cast Time Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.friendlynpc.spellpercent_text_enabled end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.spellpercent_text_enabled end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.spellpercent_text_enabled = value
+				Plater.db.profile.plate_config.friendlynpc.spellpercent_text_enabled = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Enabled",
@@ -6661,9 +6729,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast time text
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlynpc.spellpercent_text_size end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.spellpercent_text_size end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.spellpercent_text_size = value
+				Plater.db.profile.plate_config.friendlynpc.spellpercent_text_size = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
@@ -6675,7 +6743,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast time text font
 		{
 			type = "select",
-			get = function() return profile.plate_config.friendlynpc.spellpercent_text_font end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.spellpercent_text_font end,
 			values = function() return DF:BuildDropDownFontList (on_select_friendlynpc_spellpercent_text_font) end,
 			name = "Font",
 			desc = "Font of the text.",
@@ -6683,9 +6751,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast time text shadow
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.friendlynpc.spellpercent_text_shadow end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.spellpercent_text_shadow end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.spellpercent_text_shadow = value
+				Plater.db.profile.plate_config.friendlynpc.spellpercent_text_shadow = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Shadow",
@@ -6695,11 +6763,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.plate_config.friendlynpc.spellpercent_text_color
+				local color = Plater.db.profile.plate_config.friendlynpc.spellpercent_text_color
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.plate_config.friendlynpc.spellpercent_text_color
+				local color = Plater.db.profile.plate_config.friendlynpc.spellpercent_text_color
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
@@ -6710,7 +6778,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast time anchor
 		{
 			type = "select",
-			get = function() return profile.plate_config.friendlynpc.spellpercent_text_anchor.side end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.spellpercent_text_anchor.side end,
 			values = function() return build_anchor_side_table ("friendlynpc", "spellpercent_text_anchor") end,
 			name = "Anchor",
 			desc = "Which side of the nameplate this widget is attach to.",
@@ -6718,9 +6786,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast time anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlynpc.spellpercent_text_anchor.x end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.spellpercent_text_anchor.x end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.spellpercent_text_anchor.x = value
+				Plater.db.profile.plate_config.friendlynpc.spellpercent_text_anchor.x = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -6732,9 +6800,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast time anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.friendlynpc.spellpercent_text_anchor.y end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.spellpercent_text_anchor.y end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.friendlynpc.spellpercent_text_anchor.y = value
+				Plater.db.profile.plate_config.friendlynpc.spellpercent_text_anchor.y = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -6748,27 +6816,27 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 	DF:BuildMenu (friendlyNPCsFrame, friendly_npc_options_table, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 
 -----------------------------------------------	
---Enemy NPC painel de opções
+--Enemy NPC painel de opções ~enemy
 
 	local on_select_enemy_npcname_font = function (_, _, value)
-		profile.plate_config.enemynpc.actorname_text_font = value
+		Plater.db.profile.plate_config.enemynpc.actorname_text_font = value
 		Plater.UpdateAllPlates()
 	end
 	local on_select_enemy_npccastname_font = function (_, _, value)
-		profile.plate_config.enemynpc.spellname_text_font = value
+		Plater.db.profile.plate_config.enemynpc.spellname_text_font = value
 		Plater.UpdateAllPlates()
 	end
 	local on_select_enemy_level_text_font = function (_, _, value)
-		profile.plate_config.enemynpc.level_text_font = value
+		Plater.db.profile.plate_config.enemynpc.level_text_font = value
 		Plater.UpdateAllPlates()
 	end
 	local on_select_enemy_percent_text_font = function (_, _, value)
-		profile.plate_config.enemynpc.percent_text_font = value
+		Plater.db.profile.plate_config.enemynpc.percent_text_font = value
 		Plater.UpdateAllPlates()
 	end
 
 	local on_select_enemy_spellpercent_text_font = function (_, _, value)
-		profile.plate_config.enemynpc.spellpercent_text_font = value
+		Plater.db.profile.plate_config.enemynpc.spellpercent_text_font = value
 		Plater.UpdateAllPlates()
 	end
 
@@ -6778,9 +6846,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Health Bar Size out of Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemynpc.health[1] end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.health[1] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.health[1] = value
+				Plater.db.profile.plate_config.enemynpc.health[1] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 50,
@@ -6791,9 +6859,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		},
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemynpc.health[2] end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.health[2] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.health[2] = value
+				Plater.db.profile.plate_config.enemynpc.health[2] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 1,
@@ -6807,9 +6875,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Health Bar Size in Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemynpc.health_incombat[1] end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.health_incombat[1] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.health_incombat[1] = value
+				Plater.db.profile.plate_config.enemynpc.health_incombat[1] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 50,
@@ -6820,9 +6888,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		},
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemynpc.health_incombat[2] end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.health_incombat[2] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.health_incombat[2] = value
+				Plater.db.profile.plate_config.enemynpc.health_incombat[2] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 1,
@@ -6836,9 +6904,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Cast Bar Size out of Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemynpc.cast[1] end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.cast[1] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.cast[1] = value
+				Plater.db.profile.plate_config.enemynpc.cast[1] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 50,
@@ -6849,9 +6917,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		},
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemynpc.cast[2] end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.cast[2] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.cast[2] = value
+				Plater.db.profile.plate_config.enemynpc.cast[2] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 1,
@@ -6864,9 +6932,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Cast Bar Size in Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemynpc.cast_incombat[1] end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.cast_incombat[1] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.cast_incombat[1] = value
+				Plater.db.profile.plate_config.enemynpc.cast_incombat[1] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 50,
@@ -6877,9 +6945,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		},
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemynpc.cast_incombat[2] end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.cast_incombat[2] end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.cast_incombat[2] = value
+				Plater.db.profile.plate_config.enemynpc.cast_incombat[2] = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 1,
@@ -6893,10 +6961,10 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Npc Name Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemynpc.actorname_text_size end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.actorname_text_size end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.actorname_text_size = value
-				profile.plate_config.enemynpc.actorname_text_spacing = value-1
+				Plater.db.profile.plate_config.enemynpc.actorname_text_size = value
+				Plater.db.profile.plate_config.enemynpc.actorname_text_spacing = value-1
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
@@ -6908,7 +6976,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--player name font
 		{
 			type = "select",
-			get = function() return profile.plate_config.enemynpc.actorname_text_font end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.actorname_text_font end,
 			values = function() return DF:BuildDropDownFontList (on_select_enemy_npcname_font) end,
 			name = "Font",
 			desc = "Font of the text.",
@@ -6917,11 +6985,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.plate_config.enemynpc.actorname_text_color
+				local color = Plater.db.profile.plate_config.enemynpc.actorname_text_color
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.plate_config.enemynpc.actorname_text_color
+				local color = Plater.db.profile.plate_config.enemynpc.actorname_text_color
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
@@ -6931,9 +6999,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--player name shadow
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.enemynpc.actorname_text_shadow end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.actorname_text_shadow end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.actorname_text_shadow = value
+				Plater.db.profile.plate_config.enemynpc.actorname_text_shadow = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Shadow",
@@ -6943,7 +7011,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--npc name anchor
 		{
 			type = "select",
-			get = function() return profile.plate_config.enemynpc.actorname_text_anchor.side end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.actorname_text_anchor.side end,
 			values = function() return build_anchor_side_table ("enemynpc", "actorname_text_anchor") end,
 			name = "Anchor",
 			desc = "Which side of the nameplate this widget is attach to.",
@@ -6951,9 +7019,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--npc name anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemynpc.actorname_text_anchor.x end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.actorname_text_anchor.x end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.actorname_text_anchor.x = value
+				Plater.db.profile.plate_config.enemynpc.actorname_text_anchor.x = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -6965,9 +7033,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--npc name anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemynpc.actorname_text_anchor.y end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.actorname_text_anchor.y end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.actorname_text_anchor.y = value
+				Plater.db.profile.plate_config.enemynpc.actorname_text_anchor.y = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -6983,9 +7051,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Spell Name Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemynpc.spellname_text_size end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.spellname_text_size end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.spellname_text_size = value
+				Plater.db.profile.plate_config.enemynpc.spellname_text_size = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
@@ -6997,7 +7065,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast text font
 		{
 			type = "select",
-			get = function() return profile.plate_config.enemynpc.spellname_text_font end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.spellname_text_font end,
 			values = function() return DF:BuildDropDownFontList (on_select_enemy_npccastname_font) end,
 			name = "Font",
 			desc = "Font of the text.",
@@ -7006,11 +7074,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.plate_config.enemynpc.spellname_text_color
+				local color = Plater.db.profile.plate_config.enemynpc.spellname_text_color
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.plate_config.enemynpc.spellname_text_color
+				local color = Plater.db.profile.plate_config.enemynpc.spellname_text_color
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
@@ -7020,9 +7088,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast text shadow
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.enemynpc.spellname_text_shadow end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.spellname_text_shadow end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.spellname_text_shadow = value
+				Plater.db.profile.plate_config.enemynpc.spellname_text_shadow = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Shadow",
@@ -7035,9 +7103,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level enabled
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.enemynpc.level_text_enabled end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.level_text_enabled end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.level_text_enabled = value
+				Plater.db.profile.plate_config.enemynpc.level_text_enabled = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Enabled",
@@ -7046,9 +7114,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level text size
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemynpc.level_text_size end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.level_text_size end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.level_text_size = value
+				Plater.db.profile.plate_config.enemynpc.level_text_size = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
@@ -7060,7 +7128,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level text font
 		{
 			type = "select",
-			get = function() return profile.plate_config.enemynpc.level_text_font end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.level_text_font end,
 			values = function() return DF:BuildDropDownFontList (on_select_enemy_level_text_font) end,
 			name = "Font",
 			desc = "Font of the text.",
@@ -7068,9 +7136,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level text shadow
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.enemynpc.level_text_shadow end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.level_text_shadow end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.level_text_shadow = value
+				Plater.db.profile.plate_config.enemynpc.level_text_shadow = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Shadow",
@@ -7079,9 +7147,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level text alpha
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemynpc.level_text_alpha end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.level_text_alpha end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.level_text_alpha = value
+				Plater.db.profile.plate_config.enemynpc.level_text_alpha = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 0,
@@ -7094,7 +7162,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level anchor
 		{
 			type = "select",
-			get = function() return profile.plate_config.enemynpc.level_text_anchor.side end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.level_text_anchor.side end,
 			values = function() return build_anchor_side_table ("enemynpc", "level_text_anchor") end,
 			name = "Anchor",
 			desc = "Which side of the nameplate this widget is attach to.",
@@ -7102,9 +7170,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemynpc.level_text_anchor.x end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.level_text_anchor.x end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.level_text_anchor.x = value
+				Plater.db.profile.plate_config.enemynpc.level_text_anchor.x = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -7116,9 +7184,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--level anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemynpc.level_text_anchor.y end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.level_text_anchor.y end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.level_text_anchor.y = value
+				Plater.db.profile.plate_config.enemynpc.level_text_anchor.y = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -7133,7 +7201,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Plate Order:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "select",
-			get = function() return profile.plate_config.enemynpc.plate_order end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.plate_order end,
 			values = function() return build_order_options ("enemynpc") end,
 			name = "Order",
 			desc = "How the health, cast and buff bars are ordered.\n\nFrom bottom (near the character head) to top.",
@@ -7144,9 +7212,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--y offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemynpc.buff_frame_y_offset end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.buff_frame_y_offset end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.buff_frame_y_offset = value
+				Plater.db.profile.plate_config.enemynpc.buff_frame_y_offset = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -64,
@@ -7163,9 +7231,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--enabled
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.enemynpc.percent_text_enabled end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.percent_text_enabled end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.percent_text_enabled = value
+				Plater.db.profile.plate_config.enemynpc.percent_text_enabled = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Enabled",
@@ -7174,9 +7242,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--percent text size
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemynpc.percent_text_size end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.percent_text_size end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.percent_text_size = value
+				Plater.db.profile.plate_config.enemynpc.percent_text_size = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
@@ -7188,7 +7256,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--percent text font
 		{
 			type = "select",
-			get = function() return profile.plate_config.enemynpc.percent_text_font end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.percent_text_font end,
 			values = function() return DF:BuildDropDownFontList (on_select_enemy_percent_text_font) end,
 			name = "Font",
 			desc = "Font of the text.",
@@ -7196,9 +7264,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--percent text shadow
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.enemynpc.percent_text_shadow end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.percent_text_shadow end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.percent_text_shadow = value
+				Plater.db.profile.plate_config.enemynpc.percent_text_shadow = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Shadow",
@@ -7208,11 +7276,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.plate_config.enemynpc.percent_text_color
+				local color = Plater.db.profile.plate_config.enemynpc.percent_text_color
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.plate_config.enemynpc.percent_text_color
+				local color = Plater.db.profile.plate_config.enemynpc.percent_text_color
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
@@ -7222,9 +7290,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--percent text alpha
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemynpc.percent_text_alpha end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.percent_text_alpha end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.percent_text_alpha = value
+				Plater.db.profile.plate_config.enemynpc.percent_text_alpha = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 0,
@@ -7237,7 +7305,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--percent anchor
 		{
 			type = "select",
-			get = function() return profile.plate_config.enemynpc.percent_text_anchor.side end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.percent_text_anchor.side end,
 			values = function() return build_anchor_side_table ("enemynpc", "percent_text_anchor") end,
 			name = "Anchor",
 			desc = "Which side of the nameplate this widget is attach to.",
@@ -7245,9 +7313,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--percent anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemynpc.percent_text_anchor.x end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.percent_text_anchor.x end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.percent_text_anchor.x = value
+				Plater.db.profile.plate_config.enemynpc.percent_text_anchor.x = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -7259,9 +7327,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--percent anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemynpc.percent_text_anchor.y end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.percent_text_anchor.y end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.percent_text_anchor.y = value
+				Plater.db.profile.plate_config.enemynpc.percent_text_anchor.y = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -7275,9 +7343,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{type = "label", get = function() return "Cast Time Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.enemynpc.spellpercent_text_enabled end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.spellpercent_text_enabled end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.spellpercent_text_enabled = value
+				Plater.db.profile.plate_config.enemynpc.spellpercent_text_enabled = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Enabled",
@@ -7286,9 +7354,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast time text
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemynpc.spellpercent_text_size end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.spellpercent_text_size end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.spellpercent_text_size = value
+				Plater.db.profile.plate_config.enemynpc.spellpercent_text_size = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
@@ -7300,7 +7368,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast time text font
 		{
 			type = "select",
-			get = function() return profile.plate_config.enemynpc.spellpercent_text_font end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.spellpercent_text_font end,
 			values = function() return DF:BuildDropDownFontList (on_select_enemy_spellpercent_text_font) end,
 			name = "Font",
 			desc = "Font of the text.",
@@ -7308,9 +7376,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast time text shadow
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.enemynpc.spellpercent_text_shadow end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.spellpercent_text_shadow end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.spellpercent_text_shadow = value
+				Plater.db.profile.plate_config.enemynpc.spellpercent_text_shadow = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Shadow",
@@ -7320,11 +7388,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.plate_config.enemynpc.spellpercent_text_color
+				local color = Plater.db.profile.plate_config.enemynpc.spellpercent_text_color
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.plate_config.enemynpc.spellpercent_text_color
+				local color = Plater.db.profile.plate_config.enemynpc.spellpercent_text_color
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
@@ -7335,7 +7403,7 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast time anchor
 		{
 			type = "select",
-			get = function() return profile.plate_config.enemynpc.spellpercent_text_anchor.side end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.spellpercent_text_anchor.side end,
 			values = function() return build_anchor_side_table ("enemynpc", "spellpercent_text_anchor") end,
 			name = "Anchor",
 			desc = "Which side of the nameplate this widget is attach to.",
@@ -7343,9 +7411,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast time anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemynpc.spellpercent_text_anchor.x end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.spellpercent_text_anchor.x end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.spellpercent_text_anchor.x = value
+				Plater.db.profile.plate_config.enemynpc.spellpercent_text_anchor.x = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -7357,9 +7425,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--cast time anchor x offset
 		{
 			type = "range",
-			get = function() return profile.plate_config.enemynpc.spellpercent_text_anchor.y end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.spellpercent_text_anchor.y end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.spellpercent_text_anchor.y = value
+				Plater.db.profile.plate_config.enemynpc.spellpercent_text_anchor.y = value
 				Plater.UpdateAllPlates()
 			end,
 			min = -20,
@@ -7375,9 +7443,9 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		--enabled
 		{
 			type = "toggle",
-			get = function() return profile.plate_config.enemynpc.quest_enabled end,
+			get = function() return Plater.db.profile.plate_config.enemynpc.quest_enabled end,
 			set = function (self, fixedparam, value) 
-				profile.plate_config.enemynpc.quest_enabled = value
+				Plater.db.profile.plate_config.enemynpc.quest_enabled = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Enabled",
@@ -7386,11 +7454,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.plate_config.enemynpc.quest_color_enemy
+				local color = Plater.db.profile.plate_config.enemynpc.quest_color_enemy
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.plate_config.enemynpc.quest_color_enemy
+				local color = Plater.db.profile.plate_config.enemynpc.quest_color_enemy
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				--print (r, g, b)
 				Plater.UpdateAllPlates()
@@ -7401,11 +7469,11 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 		{
 			type = "color",
 			get = function()
-				local color = profile.plate_config.enemynpc.quest_color_neutral
+				local color = Plater.db.profile.plate_config.enemynpc.quest_color_neutral
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = profile.plate_config.enemynpc.quest_color_neutral
+				local color = Plater.db.profile.plate_config.enemynpc.quest_color_neutral
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
@@ -7413,6 +7481,52 @@ DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize,
 			desc = "Nameplate has this color when a neutral mob is a quest objective.",
 		},			
 	
+		{type = "blank"},
+		{type = "label", get = function() return "Automatization:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.enemyplates_only_combat end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.enemyplates_only_combat = value
+				if (value) then
+					--apenas mostrar durante o combate
+					if (not InCombatLockdown()) then
+						Plater:PLAYER_REGEN_ENABLED()
+					end
+				else
+					if (not Plater.db.profile.enemyplates_only_in_instances or (Plater.db.profile.enemyplates_only_in_instances and IsInInstance())) then
+						if (not InCombatLockdown()) then
+							SetCVar (CVAR_ENEMY_ALL, CVAR_ENABLED)
+						end
+					end
+				end
+			end,
+			name = "Only Show in Combat",
+			desc = "Tries to hide enemy nameplates when you aren't in combat.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.enemyplates_only_in_instances end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.enemyplates_only_in_instances = value
+				if (value) then
+					Plater:ZONE_CHANGED_NEW_AREA()
+				else
+					if (Plater.db.profile.enemyplates_only_combat) then
+						if (not InCombatLockdown()) then
+							Plater:PLAYER_REGEN_ENABLED()
+						end
+					else
+						if (not InCombatLockdown()) then
+							SetCVar (CVAR_ENEMY_ALL, CVAR_ENABLED)
+						end
+					end
+					
+				end
+			end,
+			name = "Only on Instances",
+			desc = "Tries to hide enemy nameplates when you aren't inside instances.",
+		},	
 	}
 	DF:BuildMenu (enemyNPCsFrame, options_table2, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 
