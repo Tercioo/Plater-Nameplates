@@ -3183,7 +3183,7 @@ function Plater.OpenOptionsPanel()
 		button_x = 230,
 		button_y = -32,
 		button_text_size = 10,
-	} 
+	}
 	
 	-- mainFrame é um frame vazio para sustentrar todos os demais frames, este frame sempre será mostrado
 	local mainFrame = DF:CreateTabContainer (f, "Plater Options", "PlaterOptionsPanelContainer", {
@@ -3194,7 +3194,7 @@ function Plater.OpenOptionsPanel()
 		{name = "FriendlyNpc", title = "Friendly Npc"},
 		{name = "EnemyNpc", title = "Enemy Npc"},
 		{name = "DebuffConfig", title = "Config Debuffs"},
-		{name = "ProfileManagement", title = "Profilies"},
+		{name = "ProfileManagement", title = "Profiles"},
 	}, 
 	frame_options)
 
@@ -3220,7 +3220,9 @@ function Plater.OpenOptionsPanel()
 	--> on profile change
 	function f.RefreshOptionsFrame()
 		for _, frame in ipairs (f.AllMenuFrames) do
-			frame:RefreshOptions()
+			if (frame.RefreshOptions) then
+				frame:RefreshOptions()
+			end
 		end
 	end
 	

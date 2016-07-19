@@ -1,5 +1,5 @@
 
-local dversion = 21
+local dversion = 22
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
 
@@ -342,13 +342,11 @@ function DF:CreateFlashAnimation (frame, onFinishFunc, onLoopFunc)
 	
 	FlashAnimation.fadeOut = FlashAnimation:CreateAnimation ("Alpha") --> fade out anime
 	FlashAnimation.fadeOut:SetOrder (1)
-	--FlashAnimation.fadeOut:SetChange (1)
 	FlashAnimation.fadeOut:SetFromAlpha (0)
 	FlashAnimation.fadeOut:SetToAlpha (1)
 	
 	FlashAnimation.fadeIn = FlashAnimation:CreateAnimation ("Alpha") --> fade in anime
 	FlashAnimation.fadeIn:SetOrder (2)
-	--FlashAnimation.fadeIn:SetChange (-1)
 	FlashAnimation.fadeIn:SetFromAlpha (1)
 	FlashAnimation.fadeIn:SetToAlpha (0)
 	
