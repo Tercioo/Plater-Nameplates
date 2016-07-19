@@ -1503,7 +1503,7 @@ function Plater.FRIENDLIST_UPDATE()
 	end
 	for i = 1, BNGetNumFriends() do 
 		local presenceID, presenceName, battleTag, isBattleTagPresence, toonName, toonID, client, isOnline, lastOnline, isAFK, isDND, messageText, noteText, isRIDFriend, broadcastTime, canSoR = BNGetFriendInfo (i)
-		if (isOnline) then
+		if (isOnline and toonName) then
 			Plater.FriendsCache [toonName] = true
 		end
 	end
