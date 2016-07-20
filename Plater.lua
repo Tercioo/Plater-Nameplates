@@ -1,4 +1,4 @@
-if (true) then
+ if (true) then
 	--return
 	--but not today
 end
@@ -526,7 +526,10 @@ local CVAR_SHOWPERSONAL = "nameplateShowSelf"
 local CVAR_RESOURCEONTARGET = "nameplateResourceOnTarget"
 local CVAR_SHOWALL = "nameplateShowAll"
 local CVAR_CULLINGDISTANCE = "nameplateMaxDistance"
+local CVAR_CEILING = "nameplateOtherTopInset"
+local CVAR_ANCHOR = "nameplateOtherAtBase"
 local CVAR_AGGROFLASH = "ShowNamePlateLoseAggroFlash"
+local CVAR_MOVEMENT_SPEED = "nameplateMotionSpeed"
 local CVAR_ENEMY_ALL = "nameplateShowEnemies"
 local CVAR_ENEMY_MINIONS = "nameplateShowEnemyMinions"
 local CVAR_ENEMY_MINUS = "nameplateShowEnemyMinus"
@@ -542,6 +545,10 @@ local CVAR_SCALE_VERTICAL = "NamePlateVerticalScale"
 
 local CVAR_ENABLED = "1"
 local CVAR_DISABLED = "0"
+
+local CVAR_ANCHOR_HEAD = "0"
+local CVAR_ANCHOR_BOTH = "1"
+local CVAR_ANCHOR_FEET = "2"
 
 local MEMBER_UNITID = "namePlateUnitToken"
 local MEMBER_GUID = "namePlateUnitGUID"
@@ -2795,6 +2802,7 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame)
 			mouseHighlight:SetAlpha (Plater.db.profile.hover_highlight_alpha)
 		end
 	end)
+	
 	plateFrame:SetScript ("OnLeave", function (self)
 		mouseHighlight:Hide()
 	end)
@@ -3087,6 +3095,7 @@ function Plater.SetCVarsOnFirstRun()
 	SetCVar (CVAR_CLASSCOLOR, CVAR_ENABLED)
 	
 	SetCVar (CVAR_SHOWPERSONAL, CVAR_DISABLED)
+	SetCVar (CVAR_CEILING, 0.02)
 	
 	--SetCVar (CVAR_SCALE_HORIZONTAL, "1.4")
 	SetCVar (CVAR_SCALE_HORIZONTAL, CVAR_ENABLED)
@@ -3402,9 +3411,25 @@ function Plater.OpenOptionsPanel()
 -------------------------------------------------------------------------------
 --opções do painel de interface da blizzard
 
+
+function Plater.ChangeNameplateAnchor (_, _, value)
+	if (value == 0) then
+		SetCVar (CVAR_ANCHOR, CVAR_ANCHOR_HEAD)
+	elseif (value == 1) then
+		SetCVar (CVAR_ANCHOR, CVAR_ANCHOR_BOTH)
+	elseif (value == 2) then
+		SetCVar (CVAR_ANCHOR, CVAR_ANCHOR_FEET)
+	end
+end
+local nameplate_anchor_options = {
+	{label = "Head", value = 0, onclick = Plater.ChangeNameplateAnchor, desc = "All nameplates are placed above the character."},
+	{label = "Head/Feet", value = 1, onclick = Plater.ChangeNameplateAnchor, desc = "Friendly and neutral has the nameplate on their head, enemies below the feet."},
+	{label = "Feet", value = 2, onclick = Plater.ChangeNameplateAnchor, desc = "All nameplates are placed below the character."},
+}
+
 local interface_options = {
 
-		{type = "label", get = function() return "Interface Options:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		--{type = "label", get = function() return "Interface Options:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 
 		{
 			type = "toggle",
@@ -3515,9 +3540,199 @@ local interface_options = {
 			desc = "Show nameplate for friendly pets, totems and guardians.\n\nAlso check the Enabled box below Friendly Npc Config.",
 			nocombat = true,
 		},
+		
+		
+		{
+			type = "range",
+			get = function() return tonumber (GetCVar (CVAR_CULLINGDISTANCE)) end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar (CVAR_CULLINGDISTANCE, value)
+				else
+					Plater:Msg ("you are in combat.")
+				end
+			end,
+			min = 1,
+			max = 100,
+			step = 1,
+			name = "View Distance",
+			desc = "How far you can see nameplates (in yards).\n\n|cFFFFFFFFDefault: 60|r",
+			nocombat = true,
+		},
+		{
+			type = "range",
+			get = function() return tonumber (GetCVar (CVAR_CEILING)) end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar (CVAR_CEILING, value)
+				else
+					Plater:Msg ("you are in combat.")
+				end
+			end,
+			min = 0.001,
+			max = 0.1,
+			step = 0.005,
+			thumbscale = 1.7,
+			usedecimals = true,
+			name = "Ceiling Gap",
+			desc = "Top margin, space where nameplates can't go at the top of your screen.\n\n|cFFFFFFFFDefault: 0.065|r",
+			nocombat = true,
+		},
+		{
+			type = "select",
+			get = function() return tonumber (GetCVar (CVAR_ANCHOR)) end,
+			values = function() return nameplate_anchor_options end,
+			name = "Anchor Point",
+			desc = "Where the nameplate is anchored to.\n\n|cFFFFFFFFDefault: Head|r",
+			nocombat = true,
+		},
+		{
+			type = "range",
+			get = function() return tonumber (GetCVar (CVAR_MOVEMENT_SPEED)) end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar (CVAR_MOVEMENT_SPEED, value)
+				else
+					Plater:Msg ("you are in combat.")
+				end
+			end,
+			min = 0.001,
+			max = 0.2,
+			step = 0.005,
+			thumbscale = 1.7,
+			usedecimals = true,
+			name = "Moviment Speed",
+			desc = "How fast the nameplate moves (when stacking is enabled).\n\n|cFFFFFFFFDefault: 0.025|r",
+			nocombat = true,
+		},
+		{
+			type = "range",
+			get = function() return tonumber (GetCVar ("nameplateOverlapV")) end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateOverlapV", value)
+				else
+					Plater:Msg ("you are in combat.")
+				end
+			end,
+			min = 0.2,
+			max = 1.6,
+			step = 0.1,
+			thumbscale = 1.7,
+			usedecimals = true,
+			name = "Vertical Padding",
+			desc = "Verticaly distance factor between each nameplate (when stacking is enabled).\n\n|cFFFFFFFFDefault: 1.10|r",
+			nocombat = true,
+		},
+		{
+			type = "range",
+			get = function() return tonumber (GetCVar ("nameplateMinAlpha")) end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateMinAlpha", value)
+				else
+					Plater:Msg ("you are in combat.")
+				end
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			thumbscale = 1.7,
+			usedecimals = true,
+			name = "Distance Alpha",
+			desc = "Alpha applied when the nameplate is far away from the camera.\n\n|cFFFFFF00Important|r: is the distance from the camera and |cFFFF4444not|r the distance from your character.\n\n|cFFFFFFFFDefault: 0.5|r",
+			nocombat = true,
+		},
+		{
+			type = "range",
+			get = function() return tonumber (GetCVar ("nameplateMinScale")) end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateMinScale", value)
+				else
+					Plater:Msg ("you are in combat.")
+				end
+			end,
+			min = 0.5,
+			max = 1,
+			step = 0.1,
+			thumbscale = 1.7,
+			usedecimals = true,
+			name = "Distance Scale",
+			desc = "Scale applied when the nameplate is far away from the camera.\n\n|cFFFFFF00Important|r: is the distance from the camera and |cFFFF4444not|r the distance from your character.\n\n|cFFFFFFFFDefault: 0.8|r",
+			nocombat = true,
+		},
+		{
+			type = "range",
+			get = function() return tonumber (GetCVar ("nameplateSelectedScale")) end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateSelectedScale", value)
+				else
+					Plater:Msg ("you are in combat.")
+				end
+			end,
+			min = 0.75,
+			max = 1.75,
+			step = 0.1,
+			thumbscale = 1.7,
+			usedecimals = true,
+			name = "Selected Scale",
+			desc = "The nameplate size for the current target is multiplied by this value.\n\n|cFFFFFFFFDefault: 1|r",
+			nocombat = true,
+		},
+		{
+			type = "range",
+			get = function() return tonumber (GetCVar ("nameplateGlobalScale")) end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateGlobalScale", value)
+				else
+					Plater:Msg ("you are in combat.")
+				end
+			end,
+			min = 0.75,
+			max = 2,
+			step = 0.1,
+			thumbscale = 1.7,
+			usedecimals = true,
+			name = "Global Scale",
+			desc = "Scale all nameplates.\n\n|cFFFFFFFFDefault: 1|r",
+			nocombat = true,
+		},
+
+		
+		
 }
 
-DF:BuildMenu (frontPageFrame, interface_options, startX, startY, 300 + 60, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)	
+
+
+local interface_title = Plater:CreateLabel (frontPageFrame, "Interface Options:", Plater:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
+interface_title:SetPoint (startX, startY)
+
+local in_combat_background = Plater:CreateImage (frontPageFrame)
+in_combat_background:SetColorTexture (.6, 0, 0, .1)
+in_combat_background:SetPoint ("topleft", interface_title, "bottomleft", 0, -2)
+in_combat_background:SetPoint ("bottomright", frontPageFrame, "bottomright", -10, 320)
+in_combat_background:Hide()
+
+local in_combat_label = Plater:CreateLabel (frontPageFrame, "you are in combat", 24, "silver")
+in_combat_label:SetPoint ("right", in_combat_background, "right", -10, 0)
+in_combat_label:Hide()
+
+frontPageFrame:RegisterEvent ("PLAYER_REGEN_DISABLED")
+frontPageFrame:RegisterEvent ("PLAYER_REGEN_ENABLED")
+frontPageFrame:SetScript ("OnEvent", function (self, event)
+	if (event == "PLAYER_REGEN_DISABLED") then
+		in_combat_background:Show()
+		in_combat_label:Show()
+	elseif (event == "PLAYER_REGEN_ENABLED") then
+		in_combat_background:Hide()
+		in_combat_label:Hide()
+	end
+end)
+
+DF:BuildMenu (frontPageFrame, interface_options, startX, startY-20, 300 + 60, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)	
 
 -------------------------------------------------------------------------------
 -- painel para configurar debuffs e buffs
@@ -4258,21 +4473,6 @@ local relevance_options = {
 	{label = "All Npcs", value = 4, onclick = Plater.ChangeNpcRelavance},
 }
 
-function Plater.ChangeNameplateAnchor (_, _, value)
-	if (value == 0) then
-		SetCVar ("nameplateOtherAtBase", "0")
-	elseif (value == 1) then
-		SetCVar ("nameplateOtherAtBase", "1")
-	elseif (value == 2) then
-		SetCVar ("nameplateOtherAtBase", "2")
-	end
-end
-local nameplate_anchor_options = {
-	{label = "Head", value = 0, onclick = Plater.ChangeNameplateAnchor, desc = "All nameplates are placed above the character."},
-	{label = "Head/Feet", value = 1, onclick = Plater.ChangeNameplateAnchor, desc = "Friendly and neutral has the nameplate on their head, enemies below the feet."},
-	{label = "Feet", value = 2, onclick = Plater.ChangeNameplateAnchor, desc = "All nameplates are placed below the character."},
-}
-
 	--menu 1 ~general ~geral
 	local options_table1 = {
 	
@@ -4706,32 +4906,7 @@ local nameplate_anchor_options = {
 			name = "Enemy Npc",
 			desc = "Show nameplate for enemy npcs.\n\n|cFFFFFF00Important|r: This option is dependent on the client`s nameplate state (on/off).\n\n|cFFFFFF00Important|r: when disabled but enabled on the client through (" .. (GetBindingKey ("NAMEPLATES") or "") .. ") the healthbar isn't visible but the nameplate is still clickable.",
 		},
-		{
-			type = "range",
-			get = function() return tonumber (GetCVar ("nameplateMaxDistance")) end,
-			set = function (self, fixedparam, value) 
-				if (not InCombatLockdown()) then
-					SetCVar ("nameplateMaxDistance", value)
-				else
-					Plater:Msg ("you are in combat.")
-				end
-			end,
-			min = 1,
-			max = 100,
-			step = 1,
-			name = "Nameplate Distance",
-			desc = "How far you can see nameplates (in yards).\n\n|cFFFFFFFFDefault: 60|r",
-			nocombat = true,
-		},
-		{
-			type = "select",
-			get = function() return tonumber (GetCVar ("nameplateOtherAtBase")) end,
-			values = function() return nameplate_anchor_options end,
-			name = "Nameplate Anchor",
-			desc = "Where the nameplate shall anchor.",
-			nocombat = true,
-		},
-		
+
 	}
 	
 	DF:BuildMenu (generalOptionsAnchor, options_table1, 0, 0, mainHeightSize + 20, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)	
