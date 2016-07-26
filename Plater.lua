@@ -2796,16 +2796,7 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame)
 	TargetNeonDown:Hide()
 	plateFrame.TargetNeonDown = TargetNeonDown
 	
-	plateFrame:SetScript ("OnEnter", function (self)
-		if (Plater.db.profile.hover_highlight) then
-			mouseHighlight:Show()
-			mouseHighlight:SetAlpha (Plater.db.profile.hover_highlight_alpha)
-		end
-	end)
-	
-	plateFrame:SetScript ("OnLeave", function (self)
-		mouseHighlight:Hide()
-	end)
+
 	
 	--nome customizado
 	local actorName = plateFrame.UnitFrame.healthBar:CreateFontString (nil, "artwork", "GameFontNormal")
