@@ -423,6 +423,9 @@ local default_config = {
 		aura_timer = true,
 		aura_custom = {},
 		
+		height_animation = true,
+		height_animation_speed = 15,
+		
 		aura_tracker = {
 			buff = {},
 			debuff = {},
@@ -471,7 +474,14 @@ local default_config = {
 		indicator_anchor = {side = 2, x = -2, y = 0},
 		
 		border_color = {0, 0, 0, .15},
-
+		border_thickness = 3,
+		
+		aggro_modifies = {
+			health_bar_color = true,
+			border_color = false,
+			actor_name_color = false,
+		},
+		
 		tank = {
 			colors = {
 				aggro = {.5, .5, 1},
@@ -535,6 +545,7 @@ Plater.DriverFuncNames = {
 	["OnCastBarEvent"] = "OnEvent",
 	["OnCastBarShow"] = "OnShow",
 	["OnTick"] = "OnUpdate",
+	["OnRaidTargetUpdate"] = "OnRaidTargetUpdate",
 }
 Plater.DriverConfigType = {
 	["FRIENDLY"] = "Friendly", 
@@ -732,6 +743,17 @@ local DB_AURA_Y_OFFSET
 local DB_TRACK_METHOD
 local DB_TRACKING_BUFFLIST
 local DB_TRACKING_DEBUFFLIST
+local DB_BORDER_COLOR_R
+local DB_BORDER_COLOR_G
+local DB_BORDER_COLOR_B
+local DB_BORDER_COLOR_A
+local DB_BORDER_THICKNESS
+local DB_AGGRO_CHANGE_HEALTHBAR_COLOR
+local DB_AGGRO_CHANGE_NAME_COLOR
+local DB_AGGRO_CHANGE_BORDER_COLOR
+local DB_ANIMATION_HEIGHT
+local DB_ANIMATION_HEIGHT_SPEED
+
 
 -- ~profile
 function Plater:RefreshConfig()
@@ -752,6 +774,16 @@ function Plater.RefreshDBUpvalues()
 	DB_AURA_ALPHA = Plater.db.profile.aura_alpha
 	DB_AURA_X_OFFSET = Plater.db.profile.aura_x_offset
 	DB_AURA_Y_OFFSET = Plater.db.profile.aura_y_offset
+	DB_BORDER_COLOR_R = Plater.db.profile.border_color [1]
+	DB_BORDER_COLOR_G = Plater.db.profile.border_color [2]
+	DB_BORDER_COLOR_B = Plater.db.profile.border_color [3]
+	DB_BORDER_COLOR_A = Plater.db.profile.border_color [4]
+	DB_BORDER_THICKNESS = Plater.db.profile.border_thickness
+	DB_AGGRO_CHANGE_HEALTHBAR_COLOR = Plater.db.profile.aggro_modifies.health_bar_color
+	DB_AGGRO_CHANGE_BORDER_COLOR = Plater.db.profile.aggro_modifies.border_color
+	DB_AGGRO_CHANGE_NAME_COLOR = Plater.db.profile.aggro_modifies.actor_name_color
+	DB_ANIMATION_HEIGHT = Plater.db.profile.height_animation
+	DB_ANIMATION_HEIGHT_SPEED = Plater.db.profile.height_animation_speed
 end
 
 function Plater.OnInit()
@@ -1307,6 +1339,12 @@ function Plater.OnInit()
 		ClassNameplateManaBarFrame.powerPercent:SetText (floor (self:GetValue()/select (2, self:GetMinMaxValues()) * 100) .. "%")
 	end)
 	
+	InstallHook (Plater.GetDriverGlobalObject (NPF_Name), Plater.DriverFuncNames.OnRaidTargetUpdate, function()
+		if (InCombatLockdown()) then
+			Plater.UpdateRaidMarker()
+		end
+	end)
+	
 	InstallHook (Plater.GetDriverGlobalObject (NPF_Name), Plater.DriverFuncNames.OnOptionsUpdate, function()
 		Plater.UpdateSelfPlate()
 	end)
@@ -1341,6 +1379,19 @@ function Plater.UpdateSelfPlate()
 end
 
 -- se o jogador estiver em combate, colorir a barra de acordo com o aggro do jogador ~aggro
+
+local set_aggro_color = function (self, r, g, b) --self.actorName
+	if (DB_AGGRO_CHANGE_HEALTHBAR_COLOR) then
+		Plater.ForceChangeHealthBarColor (self, r, g, b)
+	end
+	if (DB_AGGRO_CHANGE_BORDER_COLOR) then
+		Plater.ForceChangeBorderColor (self, r, g, b)
+	end
+	if (DB_AGGRO_CHANGE_NAME_COLOR) then
+		self.actorName:SetTextColor (r, g, b)
+	end
+end
+
 function Plater.UpdateAggroPlates (self)
 	if (not self.displayedUnit or UnitIsPlayer (self.displayedUnit) or Plater.petCache [self:GetParent() [MEMBER_GUID]] or self.displayedUnit:match ("pet%d$")) then
 		--não computar aggro de jogadores inimigos
@@ -1369,9 +1420,9 @@ function Plater.UpdateAggroPlates (self)
 				--não ha aggro e ele não esta participando do combate
 				if (self [MEMBER_REACTION] == 4) then
 					--o mob é um npc neutro, apenas colorir com a cor neutra
-					Plater.ForceChangeHealthBarColor (self.healthBar, 1, 1, 0)
+					set_aggro_color (self.healthBar, 1, 1, 0)
 				else
-					Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.tank.colors.nocombat))
+					set_aggro_color (self.healthBar, unpack (Plater.db.profile.tank.colors.nocombat))
 				end
 				
 				if (Plater.db.profile.not_affecting_combat_enabled) then --not self.PlateFrame [MEMBER_NOCOMBAT] and 
@@ -1382,13 +1433,13 @@ function Plater.UpdateAggroPlates (self)
 		else
 			--o jogador esta tankando e:
 			if (threatStatus == 3) then --esta tankando com segurança
-				Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.tank.colors.aggro))
+				set_aggro_color (self.healthBar, unpack (Plater.db.profile.tank.colors.aggro))
 			elseif (threatStatus == 2) then --esta tankando sem segurança
-				Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.tank.colors.pulling))
+				set_aggro_color (self.healthBar, unpack (Plater.db.profile.tank.colors.pulling))
 				self.aggroGlowUpper:Show()
 				self.aggroGlowLower:Show()
 			else --não esta tankando
-				Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.tank.colors.noaggro))
+				set_aggro_color (self.healthBar, unpack (Plater.db.profile.tank.colors.noaggro))
 			end
 			if (self.PlateFrame [MEMBER_NOCOMBAT]) then
 				self.PlateFrame [MEMBER_NOCOMBAT] = nil
@@ -1400,7 +1451,7 @@ function Plater.UpdateAggroPlates (self)
 		
 		if (isTanking) then
 			--o jogador esta tankando como dps
-			Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.dps.colors.aggro))
+			set_aggro_color (self.healthBar, unpack (Plater.db.profile.dps.colors.aggro))
 			if (not self:GetParent().playerHasAggro) then
 				self:GetParent().PlayAggroFlash()
 			end
@@ -1415,7 +1466,7 @@ function Plater.UpdateAggroPlates (self)
 				self:GetParent().playerHasAggro = false
 				
 				if (UnitAffectingCombat (self.displayedUnit)) then
-					Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.dps.colors.noaggro))
+					set_aggro_color (self.healthBar, unpack (Plater.db.profile.dps.colors.noaggro))
 					self:GetParent().playerHasAggro = false
 					
 					if (self.PlateFrame [MEMBER_NOCOMBAT]) then
@@ -1426,9 +1477,9 @@ function Plater.UpdateAggroPlates (self)
 					--não ha aggro e ele não esta participando do combate
 					if (self [MEMBER_REACTION] == 4) then
 						--o mob é um npc neutro, apenas colorir com a cor neutra
-						Plater.ForceChangeHealthBarColor (self.healthBar, 1, 1, 0)
+						set_aggro_color (self.healthBar, 1, 1, 0)
 					else
-						Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.tank.colors.nocombat))
+						set_aggro_color (self.healthBar, unpack (Plater.db.profile.tank.colors.nocombat))
 					end
 					
 					if (Plater.db.profile.not_affecting_combat_enabled) then --not self.PlateFrame [MEMBER_NOCOMBAT] and 
@@ -1438,21 +1489,21 @@ function Plater.UpdateAggroPlates (self)
 				end
 			else
 				if (threatStatus == 3) then --o jogador esta tankando como dps
-					Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.dps.colors.aggro))
+					set_aggro_color (self.healthBar, unpack (Plater.db.profile.dps.colors.aggro))
 					if (not self:GetParent().playerHasAggro) then
 						self:GetParent().PlayAggroFlash()
 					end
 					self:GetParent().playerHasAggro = true
 				elseif (threatStatus == 2) then --esta tankando com pouco aggro
-					Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.dps.colors.aggro))
+					set_aggro_color (self.healthBar, unpack (Plater.db.profile.dps.colors.aggro))
 					self:GetParent().playerHasAggro = true
 				elseif (threatStatus == 1) then --esta quase puxando o aggro
-					Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.dps.colors.pulling))
+					set_aggro_color (self.healthBar, unpack (Plater.db.profile.dps.colors.pulling))
 					self:GetParent().playerHasAggro = false
 					self.aggroGlowUpper:Show()
 					self.aggroGlowLower:Show()
 				elseif (threatStatus == 0) then --não esta tankando
-					Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.dps.colors.noaggro))
+					set_aggro_color (self.healthBar, unpack (Plater.db.profile.dps.colors.noaggro))
 					self:GetParent().playerHasAggro = false
 				end
 				
@@ -1715,9 +1766,9 @@ function Plater.UpdatePlateClickSpace (plateFrame, needReorder, isDebug, isConce
 	end
 end
 
-function Plater.UpdateAllPlates (forceUpdate)
+function Plater.UpdateAllPlates (forceUpdate, justAdded)
 	for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-		Plater.UpdatePlateFrame (plateFrame, nil, forceUpdate)
+		Plater.UpdatePlateFrame (plateFrame, nil, forceUpdate, justAdded)
 	end
 end
 
@@ -2413,7 +2464,48 @@ function Plater.UpdateLifePercentText (lifeString, unitId)
 	lifeString:SetText (floor (currentHealth / maxHealth * 100) .. "%")
 end
 
-function Plater.UpdatePlateSize (plateFrame)
+-- ~raidmarker ~raidtarget 
+function Plater.UpdateRaidMarker()
+	if (InCombatLockdown()) then
+		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+			if (plateFrame.UnitFrame.RaidTargetFrame.RaidTargetIcon:IsShown()) then
+				plateFrame.RaidTarget:Show()
+				plateFrame.RaidTarget:SetTexture (plateFrame.UnitFrame.RaidTargetFrame.RaidTargetIcon:GetTexture())
+				plateFrame.RaidTarget:SetTexCoord (plateFrame.UnitFrame.RaidTargetFrame.RaidTargetIcon:GetTexCoord())
+				local height = plateFrame.UnitFrame.healthBar:GetHeight() - 2
+				plateFrame.RaidTarget:SetSize (height, height)
+				plateFrame.RaidTarget:SetAlpha (.4)
+			end
+		end
+	else
+		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+			plateFrame.RaidTarget:Hide()
+		end
+	end
+end
+
+local change_height_up = function (self, deltaTime)
+	local increment = deltaTime * DB_ANIMATION_HEIGHT_SPEED * self.ToIncreace
+	local size = self:GetHeight() + increment
+	if (size >= self.TargetHeight) then
+		self:SetHeight (self.TargetHeight)
+		self:SetScript ("OnUpdate", nil)
+	else
+		self:SetHeight (size)
+	end
+end
+local change_height_down = function (self, deltaTime)
+	local decrease = deltaTime * DB_ANIMATION_HEIGHT_SPEED * self.ToDecrease
+	local size = self:GetHeight() - decrease
+	if (size <= self.TargetHeight) then
+		self:SetHeight (self.TargetHeight)
+		self:SetScript ("OnUpdate", nil)
+	else
+		self:SetHeight (size)
+	end
+end
+
+function Plater.UpdatePlateSize (plateFrame, justAdded)
 	if (not plateFrame.actorType) then
 		return
 	end
@@ -2432,7 +2524,7 @@ function Plater.UpdatePlateSize (plateFrame)
 
 	local isMinus = Plater.ShouldForceSmallBar (plateFrame)
 	local isInCombat = InCombatLockdown()
-	
+
 	--sempre usar barras grandes quando estiver em pvp
 	if (plateFrame.actorType == ACTORTYPE_ENEMY_PLAYER) then
 		if ((Plater.zoneInstanceType == "pvp" or Plater.zoneInstanceType == "arena") and DB_PLATE_CONFIG.player.pvp_always_incombat) then
@@ -2481,7 +2573,29 @@ function Plater.UpdatePlateSize (plateFrame)
 		healthFrame:ClearAllPoints()
 		healthFrame:SetPoint ("BOTTOMLEFT", castFrame, "TOPLEFT", scalarValue,  (-SizeOf_healthBar_Height) + (-SizeOf_castBar_Height) - 4);
 		healthFrame:SetPoint ("BOTTOMRIGHT", castFrame, "TOPRIGHT", -scalarValue,  (-SizeOf_healthBar_Height) + (-SizeOf_castBar_Height) - 4);
-		healthFrame:SetHeight (SizeOf_healthBar_Height / (isMinus and 2 or 1))
+		
+		local targetHeight = SizeOf_healthBar_Height / (isMinus and 2 or 1)
+		local currentHeight = healthFrame:GetHeight()
+		
+		if (justAdded or not DB_ANIMATION_HEIGHT) then
+			healthFrame:SetHeight (targetHeight)
+		else
+			if (currentHeight < targetHeight) then
+				if (not healthFrame.IsIncreasingHeight) then
+					healthFrame.IsDecreasingHeight = nil
+					healthFrame.TargetHeight = targetHeight
+					healthFrame.ToIncreace = targetHeight - currentHeight
+					healthFrame:SetScript ("OnUpdate", change_height_up)
+				end
+			elseif (currentHeight > targetHeight) then
+				if (not healthFrame.IsDecreasingHeight) then
+					healthFrame.IsIncreasingHeight = nil
+					healthFrame.TargetHeight = targetHeight
+					healthFrame.ToDecrease = currentHeight - targetHeight
+					healthFrame:SetScript ("OnUpdate", change_height_down)
+				end
+			end
+		end
 		
 		buffFrame.Point1 = "top"
 		buffFrame.Point2 = "bottom"
@@ -2542,7 +2656,29 @@ function Plater.UpdatePlateSize (plateFrame)
 		healthFrame:ClearAllPoints()
 		healthFrame:SetPoint ("BOTTOMLEFT", castFrame, "TOPLEFT", scalarValue,  (-SizeOf_healthBar_Height) + (-SizeOf_castBar_Height) + (-buffFrameSize) - 4);
 		healthFrame:SetPoint ("BOTTOMRIGHT", castFrame, "TOPRIGHT", -scalarValue,  (-SizeOf_healthBar_Height) + (-SizeOf_castBar_Height) + (-buffFrameSize) - 4);
-		healthFrame:SetHeight (SizeOf_healthBar_Height / (isMinus and 2 or 1))
+		
+		local targetHeight = SizeOf_healthBar_Height / (isMinus and 2 or 1)
+		local currentHeight = healthFrame:GetHeight()
+		
+		if (justAdded or not DB_ANIMATION_HEIGHT) then
+			healthFrame:SetHeight (targetHeight)
+		else
+			if (currentHeight < targetHeight) then
+				if (not healthFrame.IsIncreasingHeight) then
+					healthFrame.IsDecreasingHeight = nil
+					healthFrame.TargetHeight = targetHeight
+					healthFrame.ToIncreace = targetHeight - currentHeight
+					healthFrame:SetScript ("OnUpdate", change_height_up)
+				end
+			elseif (currentHeight > targetHeight) then
+				if (not healthFrame.IsDecreasingHeight) then
+					healthFrame.IsIncreasingHeight = nil
+					healthFrame.TargetHeight = targetHeight
+					healthFrame.ToDecrease = currentHeight - targetHeight
+					healthFrame:SetScript ("OnUpdate", change_height_down)
+				end
+			end
+		end
 		
 		buffFrame.Point1 = "top"
 		buffFrame.Point2 = "bottom"
@@ -2606,15 +2742,29 @@ function Plater.UpdatePlateSize (plateFrame)
 		healthFrame:ClearAllPoints()
 		healthFrame:SetPoint ("BOTTOMLEFT", castFrame, "TOPLEFT", scalarValue,  1)
 		healthFrame:SetPoint ("BOTTOMRIGHT", castFrame, "TOPRIGHT", -scalarValue,  1)
-		healthFrame:SetHeight (SizeOf_healthBar_Height / (isMinus and 2 or 1))
 		
---		if (UnitIsPlayer (plateFrame [MEMBER_UNITID])) then
---			if (healthFrame:GetWidth()-2 > SizeOf_healthBar_Width) then
-				--bugou
-				--NAME - Tamanho na Config - Tamanha Atual - Scalar Value - Qual If Usou
-
---			end
---		end
+		local targetHeight = SizeOf_healthBar_Height / (isMinus and 2 or 1)
+		local currentHeight = healthFrame:GetHeight()
+		
+		if (justAdded or not DB_ANIMATION_HEIGHT) then
+			healthFrame:SetHeight (targetHeight)
+		else
+			if (currentHeight < targetHeight) then
+				if (not healthFrame.IsIncreasingHeight) then
+					healthFrame.IsDecreasingHeight = nil
+					healthFrame.TargetHeight = targetHeight
+					healthFrame.ToIncreace = targetHeight - currentHeight
+					healthFrame:SetScript ("OnUpdate", change_height_up)
+				end
+			elseif (currentHeight > targetHeight) then
+				if (not healthFrame.IsDecreasingHeight) then
+					healthFrame.IsIncreasingHeight = nil
+					healthFrame.TargetHeight = targetHeight
+					healthFrame.ToDecrease = currentHeight - targetHeight
+					healthFrame:SetScript ("OnUpdate", change_height_down)
+				end
+			end
+		end
 
 		--buff
 		buffFrame.Point1 = "bottom"
@@ -2787,7 +2937,7 @@ function Plater.CheckForDetectors (plateFrame)
 end
 
 -- ~update
-function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate)
+function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate, justAdded)
 	actorType = actorType or plateFrame.actorType
 	
 	local order = DB_PLATE_CONFIG [actorType].plate_order
@@ -2798,6 +2948,8 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate)
 	local buffFrame = unitFrame.BuffFrame
 	local nameFrame = unitFrame.healthBar.actorName
 	
+	--unitFrame:SetScale (2)
+	
 	plateFrame.actorType = actorType
 	plateFrame.order = order
 	plateFrame.shouldShowNpcNameAndTitle = false
@@ -2805,12 +2957,15 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate)
 	plateFrame.shouldShowNpcTitle = false
 	plateFrame.onlyShowThePlayerName = false
 	
+	healthFrame.BorderIsAggroIndicator = nil
+	
 	local wasQuestPlate = plateFrame [MEMBER_QUEST]
 	plateFrame [MEMBER_QUEST] = false
 	
 	plateFrame.actorNameSolo:Hide()
 	plateFrame.actorSubTitleSolo:Hide()
 	plateFrame.Top3DFrame:Hide()
+	plateFrame.RaidTarget:Hide()
 
 	--remove a alpha colocada pelo aggro
 	--unitFrame:SetAlpha (1)
@@ -3012,10 +3167,12 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate)
 	--Plater.GetNpcFactionColor (plateFrame)
 	Plater.UpdatePlateBorders (plateFrame)
 	Plater.UpdatePlateText (plateFrame, DB_PLATE_CONFIG [actorType])
-	Plater.UpdatePlateSize (plateFrame)
+	Plater.UpdatePlateSize (plateFrame, justAdded)
+	Plater.UpdateRaidMarker()
 	Plater.UpdateIndicators (plateFrame, actorType)
 	Plater.UpdateBuffContainer (plateFrame)
 	Plater.UpdateTarget (plateFrame)
+	Plater.UpdatePlateBorderThickness (plateFrame)
 end
 
 -- ~indicators
@@ -3156,6 +3313,13 @@ function Plater.ClearIndicators (plateFrame)
 	plateFrame.IconIndicators.Next = 1
 end
 
+function Plater.ForceChangeBorderColor (self, r, g, b) --self = healthBar
+	for index, texture in ipairs (self.border.Textures) do
+		texture:SetVertexColor (r, g, b, 1)
+	end
+	self.BorderIsAggroIndicator = true
+end
+
 function Plater.UpdatePlateBorders (plateFrame)
 	--bordas
 	if (not plateFrame) then
@@ -3164,10 +3328,48 @@ function Plater.UpdatePlateBorders (plateFrame)
 		end
 		return
 	end
-	local r, g, b, a = unpack (Plater.db.profile.border_color)
+	if (plateFrame.UnitFrame.healthBar.BorderIsAggroIndicator) then
+		return
+	end
 	for index, texture in ipairs (plateFrame.UnitFrame.healthBar.border.Textures) do
-		texture:SetVertexColor (r, g, b, a)
-	end	
+		texture:SetVertexColor (DB_BORDER_COLOR_R, DB_BORDER_COLOR_G, DB_BORDER_COLOR_B, DB_BORDER_COLOR_A)
+	end
+	
+	--Plater.UpdatePlateBorderThickness (plateFrame)
+end
+
+function Plater.UpdatePlateBorderThickness (plateFrame)
+	if (not plateFrame) then
+		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+			Plater.UpdatePlateBorderThickness (plateFrame)
+		end
+		return
+	end
+	
+	local textures = plateFrame.UnitFrame.healthBar.border.Textures
+	
+	-- 9 a 12 nunca são escondias
+	if (DB_BORDER_THICKNESS == 1) then
+		--hida de 1 a 8
+		for i = 1, 8 do
+			textures [i]:Hide()
+		end
+		
+	elseif (DB_BORDER_THICKNESS == 2) then
+		--hida de 1 a 4
+		for i = 1, 4 do --in #plateFrame.UnitFrame.healthBar.border.Textures
+			textures [i]:Hide()
+		end
+		for i = 5, 8 do
+			textures [i]:Show()
+		end
+		
+	elseif (DB_BORDER_THICKNESS == 3) then
+		--mostra de 1 a 8
+		for i = 1, 8 do
+			textures [i]:Show()
+		end
+	end
 end
 
 function Plater.GetPlateAlpha (plateFrame)
@@ -3347,6 +3549,10 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame)
 	end)
 	--]]
 	
+	local raidTarget = healthBar:CreateTexture (nil, "overlay")
+	raidTarget:SetPoint ("right", -2, 0)
+	plateFrame.RaidTarget = raidTarget
+	
 	plateFrame [MEMBER_ALPHA] = 1
 	
 	create_alpha_animations (plateFrame)
@@ -3493,25 +3699,25 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) --~added
 		if (UnitIsUnit (unitBarId, "player")) then
 			plateFrame.isSelf = true
 			actorType = ACTORTYPE_PLAYER
-			Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_PLAYER)
+			Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_PLAYER, nil, true)
 		else
 			if (UnitIsPlayer (unitBarId)) then
 				--é um jogador, determinar se é um inimigo ou aliado
 				if (reaction >= UNITREACTION_FRIENDLY) then
-					Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_FRIENDLY_PLAYER)
+					Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_FRIENDLY_PLAYER, nil, true)
 					actorType = ACTORTYPE_FRIENDLY_PLAYER
 				else
-					Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_ENEMY_PLAYER)
+					Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_ENEMY_PLAYER, nil, true)
 					actorType = ACTORTYPE_ENEMY_PLAYER
 				end
 			else
 				--é um npc
 				if (reaction >= UNITREACTION_FRIENDLY) then
-					Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_FRIENDLY_NPC)
+					Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_FRIENDLY_NPC, nil, true)
 					actorType = ACTORTYPE_FRIENDLY_NPC
 				else
 					--inclui npcs que são neutros
-					Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_ENEMY_NPC)
+					Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_ENEMY_NPC, nil, true)
 					actorType = ACTORTYPE_ENEMY_NPC
 				end
 			end
@@ -3565,6 +3771,13 @@ Plater ["NAME_PLATE_UNIT_REMOVED"] = function (self, event, unitBarId)
 	local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId)
 	plateFrame.OnTickFrame:SetScript ("OnUpdate", nil)
 	plateFrame [MEMBER_QUEST] = false
+	local healthFrame = plateFrame.UnitFrame.healthBar
+	if (healthFrame:GetScript ("OnUpdate")) then
+		healthFrame:SetScript ("OnUpdate", nil)
+		healthFrame.IsIncreasingHeight = nil
+		healthFrame.IsDecreasingHeight = nil
+		healthFrame:SetHeight (healthFrame.TargetHeight)
+	end
 end
 
 local petCache = {}
@@ -4823,7 +5036,7 @@ local interface_options = {
 
 
 
-local interface_title = Plater:CreateLabel (frontPageFrame, "Interface Options:", Plater:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
+local interface_title = Plater:CreateLabel (frontPageFrame, "Interface Options (from the client):", Plater:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
 interface_title:SetPoint (startX, startY)
 
 local in_combat_background = Plater:CreateImage (frontPageFrame)
@@ -5002,7 +5215,7 @@ DF:BuildMenu (auraFilterFrame, debuff_options, startX, startY, 300, true, option
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config.player.health[1] = value
 				Plater.db.profile.plate_config.player.health_incombat[1] = value
-				Plater.UpdateAllPlates()
+				Plater.UpdateAllPlates (nil, true)
 				Plater.UpdateSelfPlate()
 			end,
 			min = 50,
@@ -5017,7 +5230,7 @@ DF:BuildMenu (auraFilterFrame, debuff_options, startX, startY, 300, true, option
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config.player.health[2] = value
 				Plater.db.profile.plate_config.player.health_incombat[2] = value
-				Plater.UpdateAllPlates()
+				Plater.UpdateAllPlates (nil, true)
 				Plater.UpdateSelfPlate()
 			end,
 			min = 1,
@@ -5525,6 +5738,7 @@ local relevance_options = {
 			name = "Cast Bar Background Color",
 			desc = "Color used to paint the cast bar background.",
 		},
+		--[[
 		{
 			type = "toggle",
 			get = function() return Plater.db.profile.hover_highlight end,
@@ -5548,6 +5762,7 @@ local relevance_options = {
 			desc = "Highlight Alpha.",
 			usedecimals = true,
 		},
+		--]]
 		{
 			type = "toggle",
 			get = function() return Plater.db.profile.target_highlight end,
@@ -5572,107 +5787,8 @@ local relevance_options = {
 			desc = "Target Highlight Alpha.",
 			usedecimals = true,
 		},
-		
-		{type = "breakline"},
-		
-		{type = "label", get = function() return "Plate Color As a Tank:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-		{
-			type = "color",
-			get = function()
-				local color = Plater.db.profile.tank.colors.aggro
-				return {color[1], color[2], color[3], color[4]}
-			end,
-			set = function (self, r, g, b, a) 
-				local color = Plater.db.profile.tank.colors.aggro
-				color[1], color[2], color[3], color[4] = r, g, b, a
-			end,
-			name = "Aggro Color",
-			desc = "When you are a Tank and have aggro.",
-		},
-		{
-			type = "color",
-			get = function()
-				local color = Plater.db.profile.tank.colors.noaggro
-				return {color[1], color[2], color[3], color[4]}
-			end,
-			set = function (self, r, g, b, a) 
-				local color = Plater.db.profile.tank.colors.noaggro
-				color[1], color[2], color[3], color[4] = r, g, b, a
-			end,
-			name = "No Aggro Color",
-			desc = "When you are the tank and the mob isn't attacking you.",
-		},
-		{
-			type = "color",
-			get = function()
-				local color = Plater.db.profile.tank.colors.pulling
-				return {color[1], color[2], color[3], color[4]}
-			end,
-			set = function (self, r, g, b, a) 
-				local color = Plater.db.profile.tank.colors.pulling
-				color[1], color[2], color[3], color[4] = r, g, b, a
-			end,
-			name = "High Threat Color",
-			desc = "When you are near to pull the aggro from the other tank or group member.",
-		},
-		{
-			type = "color",
-			get = function()
-				local color = Plater.db.profile.tank.colors.nocombat
-				return {color[1], color[2], color[3], color[4]}
-			end,
-			set = function (self, r, g, b, a) 
-				local color = Plater.db.profile.tank.colors.nocombat
-				color[1], color[2], color[3], color[4] = r, g, b, a
-			end,
-			name = "Not in Combat Color",
-			desc = "When you are in combat and the enemy isn't in combat with you or with a member of your group.",
-		},
-		
 		{type = "blank"},
-		{type = "label", get = function() return "Plate Color As a Dps:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-		{
-			type = "color",
-			get = function()
-				local color = Plater.db.profile.dps.colors.aggro
-				return {color[1], color[2], color[3], color[4]}
-			end,
-			set = function (self, r, g, b, a) 
-				local color = Plater.db.profile.dps.colors.aggro
-				color[1], color[2], color[3], color[4] = r, g, b, a
-			end,
-			name = "Aggro Color",
-			desc = "The name plate is painted with this color when you are a Dps (or healer) and have aggro.",
-		},
-		{
-			type = "color",
-			get = function()
-				local color = Plater.db.profile.dps.colors.noaggro
-				return {color[1], color[2], color[3], color[4]}
-			end,
-			set = function (self, r, g, b, a) 
-				local color = Plater.db.profile.dps.colors.noaggro
-				color[1], color[2], color[3], color[4] = r, g, b, a
-			end,
-			name = "No Aggro Color",
-			desc = "When you are a dps (or healer) and the mob isn't attacking you.",
-		},
-		{
-			type = "color",
-			get = function()
-				local color = Plater.db.profile.dps.colors.pulling
-				return {color[1], color[2], color[3], color[4]}
-			end,
-			set = function (self, r, g, b, a) 
-				local color = Plater.db.profile.dps.colors.pulling
-				color[1], color[2], color[3], color[4] = r, g, b, a
-			end,
-			name = "High Threat Color",
-			desc = "When you are neat to pull the aggro.",
-		},
-		
-		{type = "blank"},
-		{type = "label", get = function() return "Plate Border Color:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return "Border Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "color",
 			get = function()
@@ -5686,6 +5802,160 @@ local relevance_options = {
 			end,
 			name = "Color",
 			desc = "Color of the plate border.",
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.border_thickness end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.border_thickness = value
+				Plater.UpdatePlateBorderThickness()
+				Plater.RefreshDBUpvalues()
+			end,
+			min = 1,
+			max = 3,
+			step = 1,
+			name = "Thickness",
+			desc = "How thick the border should be.",
+		},
+		
+		{type = "breakline"},
+		
+		{type = "label", get = function() return "Plate Color by Aggro:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.tank.colors.aggro
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.tank.colors.aggro
+				color[1], color[2], color[3], color[4] = r, g, b, a
+			end,
+			name = "[tank] Aggro",
+			desc = "When you are a Tank and have aggro.",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.tank.colors.noaggro
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.tank.colors.noaggro
+				color[1], color[2], color[3], color[4] = r, g, b, a
+			end,
+			name = "[tank] No Aggro",
+			desc = "When you are the tank and the mob isn't attacking you.",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.tank.colors.pulling
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.tank.colors.pulling
+				color[1], color[2], color[3], color[4] = r, g, b, a
+			end,
+			name = "[tank] High Threat",
+			desc = "When you are near to pull the aggro from the other tank or group member.",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.tank.colors.nocombat
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.tank.colors.nocombat
+				color[1], color[2], color[3], color[4] = r, g, b, a
+			end,
+			name = "[tank] Not in Combat",
+			desc = "When you are in combat and the enemy isn't in combat with you or with a member of your group.",
+		},
+		
+		{type = "blank"},
+--		{type = "label", get = function() return "Plate Color As a Dps:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.dps.colors.aggro
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.dps.colors.aggro
+				color[1], color[2], color[3], color[4] = r, g, b, a
+			end,
+			name = "[dps] Aggro",
+			desc = "The name plate is painted with this color when you are a Dps (or healer) and have aggro.",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.dps.colors.noaggro
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.dps.colors.noaggro
+				color[1], color[2], color[3], color[4] = r, g, b, a
+			end,
+			name = "[dps] No Aggro",
+			desc = "When you are a dps (or healer) and the mob isn't attacking you.",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.dps.colors.pulling
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.dps.colors.pulling
+				color[1], color[2], color[3], color[4] = r, g, b, a
+			end,
+			name = "[dps] High Threat",
+			desc = "When you are neat to pull the aggro.",
+		},
+		
+		{type = "blank"},
+		{type = "label", get = function() return "Aggro Modifies:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+	
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.aggro_modifies.health_bar_color end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.aggro_modifies.health_bar_color = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+				if (not value) then
+					for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+						CompactUnitFrame_UpdateHealthColor (plateFrame.UnitFrame)
+					end
+				end
+			end,
+			name = "Health Bar Color",
+			desc = "Health Bar Color",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.aggro_modifies.border_color end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.aggro_modifies.border_color = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end,
+			name = "Border Color",
+			desc = "Border Color",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.aggro_modifies.actor_name_color end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.aggro_modifies.actor_name_color = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end,
+			name = "Name Color",
+			desc = "Name Color",
 		},
 		
 		{type = "breakline"},
@@ -6020,7 +6290,7 @@ local relevance_options = {
 			get = function() return Plater.db.profile.plate_config.friendlyplayer.health[1] end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config.friendlyplayer.health[1] = value
-				Plater.UpdateAllPlates()
+				Plater.UpdateAllPlates (nil, true)
 			end,
 			min = 50,
 			max = 300,
@@ -6033,7 +6303,7 @@ local relevance_options = {
 			get = function() return Plater.db.profile.plate_config.friendlyplayer.health[2] end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config.friendlyplayer.health[2] = value
-				Plater.UpdateAllPlates()
+				Plater.UpdateAllPlates (nil, true)
 			end,
 			min = 1,
 			max = 100,
@@ -6049,7 +6319,7 @@ local relevance_options = {
 			get = function() return Plater.db.profile.plate_config.friendlyplayer.health_incombat[1] end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config.friendlyplayer.health_incombat[1] = value
-				Plater.UpdateAllPlates()
+				Plater.UpdateAllPlates (nil, true)
 			end,
 			min = 50,
 			max = 300,
@@ -6062,7 +6332,7 @@ local relevance_options = {
 			get = function() return Plater.db.profile.plate_config.friendlyplayer.health_incombat[2] end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config.friendlyplayer.health_incombat[2] = value
-				Plater.UpdateAllPlates()
+				Plater.UpdateAllPlates (nil, true)
 			end,
 			min = 1,
 			max = 100,
@@ -6714,7 +6984,7 @@ local relevance_options = {
 			get = function() return Plater.db.profile.plate_config.enemyplayer.health[1] end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config.enemyplayer.health[1] = value
-				Plater.UpdateAllPlates()
+				Plater.UpdateAllPlates (nil, true)
 			end,
 			min = 50,
 			max = 300,
@@ -6727,7 +6997,7 @@ local relevance_options = {
 			get = function() return Plater.db.profile.plate_config.enemyplayer.health[2] end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config.enemyplayer.health[2] = value
-				Plater.UpdateAllPlates()
+				Plater.UpdateAllPlates (nil, true)
 			end,
 			min = 1,
 			max = 100,
@@ -6743,7 +7013,7 @@ local relevance_options = {
 			get = function() return Plater.db.profile.plate_config.enemyplayer.health_incombat[1] end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config.enemyplayer.health_incombat[1] = value
-				Plater.UpdateAllPlates()
+				Plater.UpdateAllPlates (nil, true)
 			end,
 			min = 50,
 			max = 300,
@@ -6756,7 +7026,7 @@ local relevance_options = {
 			get = function() return Plater.db.profile.plate_config.enemyplayer.health_incombat[2] end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config.enemyplayer.health_incombat[2] = value
-				Plater.UpdateAllPlates()
+				Plater.UpdateAllPlates (nil, true)
 			end,
 			min = 1,
 			max = 100,
@@ -7390,7 +7660,7 @@ local relevance_options = {
 			get = function() return Plater.db.profile.plate_config.friendlynpc.health[1] end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config.friendlynpc.health[1] = value
-				Plater.UpdateAllPlates()
+				Plater.UpdateAllPlates (nil, true)
 			end,
 			min = 50,
 			max = 300,
@@ -7403,7 +7673,7 @@ local relevance_options = {
 			get = function() return Plater.db.profile.plate_config.friendlynpc.health[2] end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config.friendlynpc.health[2] = value
-				Plater.UpdateAllPlates()
+				Plater.UpdateAllPlates (nil, true)
 			end,
 			min = 1,
 			max = 100,
@@ -7419,7 +7689,7 @@ local relevance_options = {
 			get = function() return Plater.db.profile.plate_config.friendlynpc.health_incombat[1] end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config.friendlynpc.health_incombat[1] = value
-				Plater.UpdateAllPlates()
+				Plater.UpdateAllPlates (nil, true)
 			end,
 			min = 50,
 			max = 300,
@@ -7432,7 +7702,7 @@ local relevance_options = {
 			get = function() return Plater.db.profile.plate_config.friendlynpc.health_incombat[2] end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config.friendlynpc.health_incombat[2] = value
-				Plater.UpdateAllPlates()
+				Plater.UpdateAllPlates (nil, true)
 			end,
 			min = 1,
 			max = 100,
@@ -8161,7 +8431,7 @@ local relevance_options = {
 			get = function() return Plater.db.profile.plate_config.enemynpc.health[1] end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config.enemynpc.health[1] = value
-				Plater.UpdateAllPlates()
+				Plater.UpdateAllPlates (nil, true)
 			end,
 			min = 50,
 			max = 300,
@@ -8174,7 +8444,7 @@ local relevance_options = {
 			get = function() return Plater.db.profile.plate_config.enemynpc.health[2] end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config.enemynpc.health[2] = value
-				Plater.UpdateAllPlates()
+				Plater.UpdateAllPlates (nil, true)
 			end,
 			min = 1,
 			max = 100,
@@ -8190,7 +8460,7 @@ local relevance_options = {
 			get = function() return Plater.db.profile.plate_config.enemynpc.health_incombat[1] end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config.enemynpc.health_incombat[1] = value
-				Plater.UpdateAllPlates()
+				Plater.UpdateAllPlates (nil, true)
 			end,
 			min = 50,
 			max = 300,
@@ -8203,7 +8473,7 @@ local relevance_options = {
 			get = function() return Plater.db.profile.plate_config.enemynpc.health_incombat[2] end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config.enemynpc.health_incombat[2] = value
-				Plater.UpdateAllPlates()
+				Plater.UpdateAllPlates (nil, true)
 			end,
 			min = 1,
 			max = 100,
