@@ -84,6 +84,8 @@ local default_config = {
 	
 		click_space = {150, 45},
 		click_space_always_show = false,
+		hide_friendly_castbars = false,
+		hide_enemy_castbars = false,
 		
 		plate_config  = {
 			friendlyplayer = {
@@ -415,6 +417,7 @@ local default_config = {
 		update_throttle = 0.15000000,
 		culling_distance = 100,
 		use_playerclass_color = false,
+		aura_enabled = true,
 		aura_width = 20,
 		aura_height = 14,
 		aura_x_offset = 0,
@@ -557,6 +560,7 @@ Plater.DriverConfigMembers = {
 	["UseRangeCheck"] = "fadeOutOfRange",
 	["UseAlwaysHostile"] = "considerSelectionInCombatAsHostile",
 	["CanShowUnitName"] = "displayName",
+	["HideCastBar"] = "hideCastbar",
 }
 
 --const
@@ -615,6 +619,7 @@ local MEMBER_REACTION = "namePlateUnitReaction"
 local MEMBER_ALPHA = "namePlateAlpha"
 local MEMBER_RANGE = "namePlateInRange"
 local MEMBER_NOCOMBAT = "namePlateNoCombat"
+local MEMBER_NAME = "namePlateUnitName"
 
 local CAN_USE_AURATIMER = true
 Plater.CanLoadFactionStrings = true
@@ -737,6 +742,7 @@ local DB_TICK_THROTTLE
 local DB_PLATE_CONFIG
 local DB_BUFF_BANNED
 local DB_DEBUFF_BANNED
+local DB_AURA_ENABLED
 local DB_AURA_ALPHA
 local DB_AURA_X_OFFSET
 local DB_AURA_Y_OFFSET
@@ -762,6 +768,8 @@ function Plater:RefreshConfig()
 		PlaterOptionsPanelFrame.RefreshOptionsFrame()
 	end
 	Plater.RefreshDBUpvalues()
+	Plater.UpdateUseCastBar()
+	Plater.UpdateUseClassColors()
 end
 function Plater.RefreshDBUpvalues()
 	DB_TICK_THROTTLE = Plater.db.profile.update_throttle
@@ -771,6 +779,7 @@ function Plater.RefreshDBUpvalues()
 	DB_TRACK_METHOD = Plater.db.profile.aura_tracker.track_method
 	DB_TRACKING_BUFFLIST = Plater.db.profile.aura_tracker.buff
 	DB_TRACKING_DEBUFFLIST = Plater.db.profile.aura_tracker.debuff
+	DB_AURA_ENABLED = Plater.db.profile.aura_enabled
 	DB_AURA_ALPHA = Plater.db.profile.aura_alpha
 	DB_AURA_X_OFFSET = Plater.db.profile.aura_x_offset
 	DB_AURA_Y_OFFSET = Plater.db.profile.aura_y_offset
@@ -1261,6 +1270,7 @@ function Plater.OnInit()
 				if (unitCast ~= self.unit or not self.isNamePlate) then
 					return
 				end
+				
 				local name, nameSubtext, text, texture, startTime, endTime, isTradeSkill, notInterruptible = UnitChannelInfo (unitCast)
 				
 				self.Icon:SetTexture (texture)
@@ -1644,7 +1654,7 @@ function Plater.UpdateAuras_Self_Automatic (self)
 	hide_non_used_auraFrames (self.buffList, auraIndex)
 end
 
--- ~ontick ~onupdate
+-- ~ontick ~onupdate ~tick
 local EventTickFunction = function (tickFrame, deltaTime)
 	
 	tickFrame.ThrottleUpdate = tickFrame.ThrottleUpdate - deltaTime
@@ -1663,19 +1673,21 @@ local EventTickFunction = function (tickFrame, deltaTime)
 		Plater.CheckRange (tickFrame.PlateFrame)
 		
 		--auras
-		tickFrame.BuffFrame:UpdateAnchor()
-		if (DB_TRACK_METHOD == 0x1) then --automático
-			if (tickFrame.actorType == ACTORTYPE_PLAYER) then
-				Plater.UpdateAuras_Self_Automatic (tickFrame.BuffFrame)
+		if (DB_AURA_ENABLED) then
+			tickFrame.BuffFrame:UpdateAnchor()
+			if (DB_TRACK_METHOD == 0x1) then --automático
+				if (tickFrame.actorType == ACTORTYPE_PLAYER) then
+					Plater.UpdateAuras_Self_Automatic (tickFrame.BuffFrame)
+				else
+					Plater.UpdateAuras_Automatic (tickFrame.BuffFrame, tickFrame.unit)
+				end
 			else
-				Plater.UpdateAuras_Automatic (tickFrame.BuffFrame, tickFrame.unit)
+				Plater.UpdateAuras_Manual (tickFrame.BuffFrame, tickFrame.unit)
 			end
-		else
-			Plater.UpdateAuras_Manual (tickFrame.BuffFrame, tickFrame.unit)
+			tickFrame.BuffFrame.unit = tickFrame.unit
+			tickFrame.BuffFrame:Layout()
+			tickFrame.BuffFrame:SetAlpha (DB_AURA_ALPHA)
 		end
-		tickFrame.BuffFrame.unit = tickFrame.unit
-		tickFrame.BuffFrame:Layout()
-		tickFrame.BuffFrame:SetAlpha (DB_AURA_ALPHA)
 		
 		--aggro
 		if (CAN_CHECK_AGGRO and InCombatLockdown()) then
@@ -2296,6 +2308,21 @@ function Plater.UpdatePlateText (plateFrame, plateConfigs)
 		end
 		
 		Plater.SetAnchor (nameString, plateConfigs.actorname_text_anchor) --manda a tabela com .anchor .x e .y	
+		
+		--se o texto estiver ancorado dentro da barra
+		if (plateConfigs.actorname_text_anchor.side >= 9) then
+			local stringSize = max (plateFrame.UnitFrame.healthBar:GetWidth() - 6, 44)
+			local name = plateFrame [MEMBER_NAME]
+			nameString:SetText (name)
+			
+			while (nameString:GetStringWidth() > stringSize) do
+				name = strsub (name, 1, #name-1)
+				nameString:SetText (name)
+				if (string.len (name) <= 1) then
+					break
+				end
+			end
+		end
 		
 		--seta o nome na linha secundária
 		if (plateFrame.shouldShowNpcNameAndTitle) then
@@ -3166,8 +3193,8 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate, justAdded)
 
 	--Plater.GetNpcFactionColor (plateFrame)
 	Plater.UpdatePlateBorders (plateFrame)
-	Plater.UpdatePlateText (plateFrame, DB_PLATE_CONFIG [actorType])
 	Plater.UpdatePlateSize (plateFrame, justAdded)
+	Plater.UpdatePlateText (plateFrame, DB_PLATE_CONFIG [actorType])
 	Plater.UpdateRaidMarker()
 	Plater.UpdateIndicators (plateFrame, actorType)
 	Plater.UpdateBuffContainer (plateFrame)
@@ -3676,7 +3703,7 @@ function Plater.CanShowPlateFor (actorType)
 	return DB_PLATE_CONFIG [actorType].enabled
 end
 
-Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) --~added
+Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added
 	--pega a nameplate deste jogador
 	local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId)
 	
@@ -3687,6 +3714,7 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) --~added
 	
 	local name = UnitName (unitBarId)
 	plateFrame.UnitFrame.healthBar.actorName:SetText (name)
+	plateFrame [MEMBER_NAME] = name
 	
 	Plater.UpdatePlateClickSpace (plateFrame)
 	
@@ -3754,6 +3782,11 @@ function Plater.UpdateUseClassColors()
 	for index, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 		Plater.Execute (CUF_Name, Plater.DriverFuncNames ["OnChangeHealthConfig"], plateFrame.UnitFrame)
 	end
+end
+
+function Plater.UpdateUseCastBar()
+	Plater.InjectOnDefaultOptions (CNP_Name, Plater.DriverConfigType ["ENEMY"], Plater.DriverConfigMembers ["HideCastBar"], Plater.db.profile.hide_enemy_castbars)
+	Plater.InjectOnDefaultOptions (CNP_Name, Plater.DriverConfigType ["FRIENDLY"], Plater.DriverConfigMembers ["HideCastBar"], Plater.db.profile.hide_friendly_castbars)
 end
 
 local CullingUnderCombat = function()
@@ -4443,9 +4476,9 @@ Plater.DefaultSpellRangeList = {
 	[266] = 686, --> warlock demo - Shadow Bolt
 	[267] = 116858, --> warlock destro - Chaos Bolt
 	
-	[71] = 100, --> warrior arms - Charge
+	[71] = 100, --> warrior arms - Charge --132337 on beta
 	[72] = 100, --> warrior fury - Charge
-	[73] = 335, --> warrior protect - Taunt
+	[73] = 355, --> warrior protect - Taunt
 }
 
 function Plater.GetNpcTypeIcon (npcType)
@@ -5068,6 +5101,26 @@ DF:BuildMenu (frontPageFrame, interface_options, startX, startY-20, 300 + 60, tr
 
 local debuff_options = {
 	{type = "label", get = function() return "General Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+	
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_enabled end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_enabled = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+			
+			if (not value) then
+				for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+					for _, frame in ipairs (plateFrame.UnitFrame.BuffFrame.buffList) do
+						frame:Hide()
+					end
+				end
+			end
+		end,
+		name = "Enabled",
+		desc = "Enabled",
+	},
 	{
 		type = "toggle",
 		get = function() return Plater.db.profile.aura_timer end,
@@ -5117,6 +5170,7 @@ local debuff_options = {
 		name = "Crowd Control Icon",
 		desc = "When the actor has a crowd control spell (such as Polymorph).",
 	},
+	{type = "blank"},
 	{
 		type = "range",
 		get = function() return Plater.db.profile.aura_alpha end,
@@ -5131,7 +5185,6 @@ local debuff_options = {
 		name = "Alpha",
 		desc = "Alpha",
 	},
-	{type = "blank"},
 	{
 		type = "range",
 		get = function() return Plater.db.profile.aura_x_offset end,
@@ -6090,6 +6143,7 @@ local relevance_options = {
 		{type = "breakline"},
 		{type = "label", get = function() return "General Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
+	--[[
 		{
 			type = "toggle",
 			get = function() return Plater.CanShowPlateFor (ACTORTYPE_FRIENDLY_PLAYER) end,
@@ -6100,7 +6154,6 @@ local relevance_options = {
 			name = "Friendly Players",
 			desc = "Show nameplate for friendly players.\n\n|cFFFFFF00Important|r: This option is dependent on the client`s nameplate state (on/off).\n\n|cFFFFFF00Important|r: when disabled but enabled on the client through (" .. (GetBindingKey ("FRIENDNAMEPLATES") or "") .. ") the healthbar isn't visible but the nameplate is still clickable.",
 		},
-		
 		{
 			type = "toggle",
 			get = function() return Plater.CanShowPlateFor (ACTORTYPE_ENEMY_PLAYER) end,
@@ -6111,6 +6164,7 @@ local relevance_options = {
 			name = "Enemy Players",
 			desc = "Show nameplate for enemy players.\n\n|cFFFFFF00Important|r: This option is dependent on the client`s nameplate state (on/off).\n\n|cFFFFFF00Important|r: when disabled but enabled on the client through (" .. (GetBindingKey ("NAMEPLATES") or "") .. ") the healthbar isn't visible but the nameplate is still clickable.",
 		},
+	--]]
 		{
 			type = "toggle",
 			get = function() return Plater.CanShowPlateFor (ACTORTYPE_FRIENDLY_NPC) end,
@@ -6128,6 +6182,29 @@ local relevance_options = {
 			name = "Friendly Npc Relevance",
 			desc = "Modify the way friendly npcs are shown.\n\n|cFFFFFF00Important|r: This option is dependent on the client`s nameplate state (on/off).",
 		},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.hide_enemy_castbars end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.hide_enemy_castbars = value
+				Plater.UpdateUseCastBar()
+			end,
+			name = "Hide Enemy Cast Bar",
+			desc = "Hide Enemy Cast Bar",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.hide_friendly_castbars end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.hide_friendly_castbars = value
+				Plater.UpdateUseCastBar()
+			end,
+			name = "Hide Friendly Cast Bar",
+			desc = "Hide Friendly Cast Bar",
+		},
+		
+	--[[
 		{
 			type = "toggle",
 			get = function() return Plater.CanShowPlateFor (ACTORTYPE_ENEMY_NPC) end,
@@ -6138,7 +6215,7 @@ local relevance_options = {
 			name = "Enemy Npc",
 			desc = "Show nameplate for enemy npcs.\n\n|cFFFFFF00Important|r: This option is dependent on the client`s nameplate state (on/off).\n\n|cFFFFFF00Important|r: when disabled but enabled on the client through (" .. (GetBindingKey ("NAMEPLATES") or "") .. ") the healthbar isn't visible but the nameplate is still clickable.",
 		},
-		
+--]]		
 		--alpha and range check
 		{
 			type = "toggle",
