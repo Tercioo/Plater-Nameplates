@@ -145,7 +145,7 @@ local default_config = {
 				use_playerclass_color = false,
 				fixed_class_color = {1, .4, .1},
 				
-				health = {120, 2},
+				health = {120, 6},
 				health_incombat = {130, 10},
 				cast = {134, 12},
 				cast_incombat = {134, 12},
@@ -449,7 +449,12 @@ local default_config = {
 		not_affecting_combat_alpha = .3,
 		range_check_alpha = 0.4,
 		target_highlight = true,
-		target_highlight_alpha = .3,
+		target_highlight_alpha = .5,
+		
+		target_shady_alpha = .6,
+		target_shady_enabled = true,
+		target_shady_combat_only = true,
+		
 		hover_highlight = true,
 		hover_highlight_alpha = .3,
 		
@@ -475,6 +480,8 @@ local default_config = {
 		indicator_quest = true,
 		indicator_enemyclass = false,
 		indicator_anchor = {side = 2, x = -2, y = 0},
+		
+		target_indicator = "NONE",
 		
 		border_color = {0, 0, 0, .15},
 		border_thickness = 3,
@@ -620,6 +627,7 @@ local MEMBER_ALPHA = "namePlateAlpha"
 local MEMBER_RANGE = "namePlateInRange"
 local MEMBER_NOCOMBAT = "namePlateNoCombat"
 local MEMBER_NAME = "namePlateUnitName"
+local MEMBER_TARGET = "namePlateIsTarget"
 
 local CAN_USE_AURATIMER = true
 Plater.CanLoadFactionStrings = true
@@ -736,6 +744,86 @@ function Plater.SpellIsCC (spellName)
 	return LocalizedCrowdControl [spellName]
 end
 
+local TargetIndicators = {
+	["NONE"] = {
+		path = [[Interface\ACHIEVEMENTFRAME\UI-Achievement-WoodBorder-Corner]],
+		coords = {{.9, 1, .9, 1}, {.9, 1, .9, 1}, {.9, 1, .9, 1}, {.9, 1, .9, 1}},
+		desaturated = false,
+		width = 10,
+		height = 10,
+		x = 1,
+		y = 1,
+	},
+	["Magneto"] = {
+		path = [[Interface\Artifacts\RelicIconFrame]],
+		coords = {{0, .5, 0, .5}, {0, .5, .5, 1}, {.5, 1, .5, 1}, {.5, 1, 0, .5}},
+		desaturated = false,
+		width = 10,
+		height = 10,
+		x = 1,
+		y = 1,
+	},
+	["Gray Bold"] = {
+		path = [[Interface\ContainerFrame\UI-Icon-QuestBorder]],
+		coords = {{0, .5, 0, .5}, {0, .5, .5, 1}, {.5, 1, .5, 1}, {.5, 1, 0, .5}},
+		desaturated = true,
+		width = 10,
+		height = 10,
+		x = 2,
+		y = 2,
+	},
+	["Pins"] = {
+		path = [[Interface\ITEMSOCKETINGFRAME\UI-ItemSockets]],
+		coords = {{145/256, 161/256, 3/256, 19/256}, {145/256, 161/256, 19/256, 3/256}, {161/256, 145/256, 19/256, 3/256}, {161/256, 145/256, 3/256, 19/256}},
+		desaturated = 1,
+		width = 4,
+		height = 4,
+		x = 2,
+		y = 2,
+	},
+	["Golden"] = {
+		path = [[Interface\PETBATTLES\PetBattle-GoldSpeedFrame]],
+		coords = {{1/128, 67/128, 1/128, 67/128}, {1/128, 67/128, 67/128, 1/128}, {67/128, 1/128, 67/128, 1/128}, {67/128, 1/128, 1/128, 67/128}},
+		desaturated = false,
+		width = 12,
+		height = 12,
+		x = 4,
+		y = 4,
+	},
+	["Silver"] = {
+		path = [[Interface\PETBATTLES\PETBATTLEHUD]],
+		coords = {{848/1024, 868/1024, 454/512, 474/512}, {848/1024, 868/1024, 474/512, 495/512}, {868/1024, 889/1024, 474/512, 495/512}, {868/1024, 889/1024, 454/512, 474/512}}, --848 889 454 495
+		desaturated = false,
+		width = 6,
+		height = 6,
+		x = 1,
+		y = 1,
+	},
+	["Ornament"] = {
+		path = [[Interface\PETBATTLES\PETJOURNAL]],
+		coords = {{124/512, 161/512, 71/1024, 99/1024}, {119/512, 156/512, 29/1024, 57/1024}}, 
+		desaturated = false,
+		width = 22,
+		height = 14,
+		x = 16,
+		y = 0,
+	},
+	["Epic"] = {
+		path = [[Interface\Reforging\Reforge-Texture]],
+		coords = {
+			{0/512, 16/512, 0/128, 16/128}, 
+			{0/512, 16/512, 16/128, 0/128}, 
+			{16/512, 0/512, 16/128, 0/128}, 
+			{16/512, 0/512, 0/128, 16/128}
+		},
+		desaturated = false,
+		width = 12,
+		height = 12,
+		x = 6,
+		y = 6,
+	},
+}
+
 --> general values
 
 local DB_TICK_THROTTLE
@@ -759,7 +847,14 @@ local DB_AGGRO_CHANGE_NAME_COLOR
 local DB_AGGRO_CHANGE_BORDER_COLOR
 local DB_ANIMATION_HEIGHT
 local DB_ANIMATION_HEIGHT_SPEED
+local DB_TARGET_SHADY_ENABLED
+local DB_TARGET_SHADY_ALPHA
+local DB_TARGET_SHADY_COMBATONLY
 
+local DB_NAME_NPCENEMY_ANCHOR
+local DB_NAME_NPCFRIENDLY_ANCHOR
+local DB_NAME_PLAYERENEMY_ANCHOR
+local DB_NAME_PLAYERFRIENDLY_ANCHOR
 
 -- ~profile
 function Plater:RefreshConfig()
@@ -772,27 +867,38 @@ function Plater:RefreshConfig()
 	Plater.UpdateUseClassColors()
 end
 function Plater.RefreshDBUpvalues()
-	DB_TICK_THROTTLE = Plater.db.profile.update_throttle
-	DB_PLATE_CONFIG = Plater.db.profile.plate_config
-	DB_BUFF_BANNED = Plater.db.profile.aura_tracker.buff_banned
-	DB_DEBUFF_BANNED = Plater.db.profile.aura_tracker.debuff_banned
-	DB_TRACK_METHOD = Plater.db.profile.aura_tracker.track_method
-	DB_TRACKING_BUFFLIST = Plater.db.profile.aura_tracker.buff
-	DB_TRACKING_DEBUFFLIST = Plater.db.profile.aura_tracker.debuff
-	DB_AURA_ENABLED = Plater.db.profile.aura_enabled
-	DB_AURA_ALPHA = Plater.db.profile.aura_alpha
-	DB_AURA_X_OFFSET = Plater.db.profile.aura_x_offset
-	DB_AURA_Y_OFFSET = Plater.db.profile.aura_y_offset
-	DB_BORDER_COLOR_R = Plater.db.profile.border_color [1]
-	DB_BORDER_COLOR_G = Plater.db.profile.border_color [2]
-	DB_BORDER_COLOR_B = Plater.db.profile.border_color [3]
-	DB_BORDER_COLOR_A = Plater.db.profile.border_color [4]
-	DB_BORDER_THICKNESS = Plater.db.profile.border_thickness
-	DB_AGGRO_CHANGE_HEALTHBAR_COLOR = Plater.db.profile.aggro_modifies.health_bar_color
-	DB_AGGRO_CHANGE_BORDER_COLOR = Plater.db.profile.aggro_modifies.border_color
-	DB_AGGRO_CHANGE_NAME_COLOR = Plater.db.profile.aggro_modifies.actor_name_color
-	DB_ANIMATION_HEIGHT = Plater.db.profile.height_animation
-	DB_ANIMATION_HEIGHT_SPEED = Plater.db.profile.height_animation_speed
+	local profile = Plater.db.profile
+
+	DB_TICK_THROTTLE = profile.update_throttle
+	DB_PLATE_CONFIG = profile.plate_config
+	DB_BUFF_BANNED = profile.aura_tracker.buff_banned
+	DB_DEBUFF_BANNED = profile.aura_tracker.debuff_banned
+	DB_TRACK_METHOD = profile.aura_tracker.track_method
+	DB_TRACKING_BUFFLIST = profile.aura_tracker.buff
+	DB_TRACKING_DEBUFFLIST = profile.aura_tracker.debuff
+	DB_AURA_ENABLED = profile.aura_enabled
+	DB_AURA_ALPHA = profile.aura_alpha
+	DB_AURA_X_OFFSET = profile.aura_x_offset
+	DB_AURA_Y_OFFSET = profile.aura_y_offset
+	DB_BORDER_COLOR_R = profile.border_color [1]
+	DB_BORDER_COLOR_G = profile.border_color [2]
+	DB_BORDER_COLOR_B = profile.border_color [3]
+	DB_BORDER_COLOR_A = profile.border_color [4]
+	DB_BORDER_THICKNESS = profile.border_thickness
+	DB_AGGRO_CHANGE_HEALTHBAR_COLOR = profile.aggro_modifies.health_bar_color
+	DB_AGGRO_CHANGE_BORDER_COLOR = profile.aggro_modifies.border_color
+	DB_AGGRO_CHANGE_NAME_COLOR = profile.aggro_modifies.actor_name_color
+	DB_ANIMATION_HEIGHT = profile.height_animation
+	DB_ANIMATION_HEIGHT_SPEED = profile.height_animation_speed
+	
+	DB_TARGET_SHADY_ENABLED = profile.target_shady_enabled
+	DB_TARGET_SHADY_ALPHA = profile.target_shady_alpha
+	DB_TARGET_SHADY_COMBATONLY = profile.target_shady_combat_only
+	
+	DB_NAME_NPCENEMY_ANCHOR = profile.plate_config.enemynpc.actorname_text_anchor.side
+	DB_NAME_NPCFRIENDLY_ANCHOR = profile.plate_config.friendlynpc.actorname_text_anchor.side
+	DB_NAME_PLAYERENEMY_ANCHOR = profile.plate_config.enemyplayer.actorname_text_anchor.side
+	DB_NAME_PLAYERFRIENDLY_ANCHOR = profile.plate_config.friendlyplayer.actorname_text_anchor.side
 end
 
 function Plater.OnInit()
@@ -814,6 +920,11 @@ function Plater.OnInit()
 	
 	if (OmniCC) then
 		--CAN_USE_AURATIMER = false
+	end
+	
+	Plater.RegenIsDisabled = false
+	if (InCombatLockdown()) then
+		Plater.RegenIsDisabled = true
 	end
 	
 	Plater.InjectOnDefaultOptions (CNP_Name, Plater.DriverConfigType ["FRIENDLY"], Plater.DriverConfigMembers ["CanShowUnitName"], false)
@@ -872,7 +983,18 @@ function Plater.OnInit()
 		check_first_run()
 	end
 	Plater.CheckFirstRun()
-
+	
+	Plater.TargetTextures2Sides = {}
+	Plater.TargetTextures4Sides = {}
+	for i = 1, 2 do
+		local targetTexture = UIParent:CreateTexture (nil, "overlay")
+		tinsert (Plater.TargetTextures2Sides, targetTexture)
+	end
+	for i = 1, 4 do
+		local targetTexture = UIParent:CreateTexture (nil, "overlay")
+		tinsert (Plater.TargetTextures4Sides, targetTexture)
+	end
+	
 	Plater:RegisterEvent ("NAME_PLATE_CREATED")
 	Plater:RegisterEvent ("NAME_PLATE_UNIT_ADDED")
 	Plater:RegisterEvent ("NAME_PLATE_UNIT_REMOVED")
@@ -894,11 +1016,17 @@ function Plater.OnInit()
 	Plater:RegisterEvent ("UNIT_QUEST_LOG_CHANGED")
 	Plater:RegisterEvent ("PLAYER_SPECIALIZATION_CHANGED")
 	
-	--seta a graça do jogador na barra dele --ajuda a evitar os 'desconhecidos' pelo cliente do jogo (frame da unidade)
+	--seta o nome do jogador na barra dele --ajuda a evitar os 'desconhecidos' pelo cliente do jogo (frame da unidade)
 	InstallHook (Plater.GetDriverSubObjectName (CUF_Name, Plater.DriverFuncNames.OnNameUpdate), function (self)
 		if (self.healthBar.actorName) then
-			self.healthBar.actorName:SetText (UnitName (self.unit))
-			Plater.FormatTextForFriend (self:GetParent(), self.healthBar.actorName, self.name:GetText(), DB_PLATE_CONFIG [self:GetParent().actorType])
+			local plateFrame = self:GetParent()
+			plateFrame [MEMBER_NAME] = UnitName (self.unit)
+			
+			Plater.UpdateUnitName (plateFrame)
+			
+			if (plateFrame.actorType == ACTORTYPE_FRIENDLY_PLAYER) then
+				Plater.FormatTextForFriend (self:GetParent(), self.healthBar.actorName, self.name:GetText(), DB_PLATE_CONFIG [self:GetParent().actorType])
+			end
 		end
 	end)
 	
@@ -1377,6 +1505,51 @@ function Plater.OnInit()
 	C_Timer.After (5.1, Plater.UpdateAllPlates)
 end
 
+function Plater.UpdateAllNames()
+	for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+		if (plateFrame.actorType == ACTORTYPE_PLAYER) then
+			plateFrame.NameAnchor = 0
+		elseif (plateFrame.actorType == UNITREACTION_FRIENDLY) then
+			plateFrame.NameAnchor = DB_NAME_PLAYERFRIENDLY_ANCHOR
+		elseif (plateFrame.actorType == ACTORTYPE_ENEMY_PLAYER) then
+			plateFrame.NameAnchor = DB_NAME_PLAYERENEMY_ANCHOR
+		elseif (plateFrame.actorType == ACTORTYPE_FRIENDLY_NPC) then
+			plateFrame.NameAnchor = DB_NAME_NPCFRIENDLY_ANCHOR
+		elseif (plateFrame.actorType == ACTORTYPE_ENEMY_NPC) then
+			plateFrame.NameAnchor = DB_NAME_NPCENEMY_ANCHOR
+		end
+	
+		Plater.UpdateUnitName (plateFrame)
+	end
+end
+
+function Plater.UpdateUnitName (plateFrame, fontString)
+	local nameString
+	if (plateFrame.onlyShowThePlayerName) then
+		nameString = plateFrame.actorSubTitleSolo
+	else
+		nameString = fontString or plateFrame.actorName
+	end
+
+	if (plateFrame.NameAnchor >= 9) then
+		local stringSize = max (plateFrame.UnitFrame.healthBar:GetWidth() - 6, 44)
+		local name = plateFrame [MEMBER_NAME]
+		local nameString = fontString or plateFrame.actorName
+		
+		nameString:SetText (name)
+		
+		while (nameString:GetStringWidth() > stringSize) do
+			name = strsub (name, 1, #name-1)
+			nameString:SetText (name)
+			if (string.len (name) <= 1) then
+				break
+			end
+		end
+	else
+		nameString:SetText (plateFrame [MEMBER_NAME])
+	end
+end
+
 local re_update_self_plate = function()
 	Plater.UpdateSelfPlate()
 end
@@ -1800,6 +1973,8 @@ function Plater:PLAYER_REGEN_DISABLED()
 		CAN_CHECK_AGGRO = true
 	end
 
+	Plater.RegenIsDisabled = true
+	
 	C_Timer.After (0.5, Plater.UpdateAllPlates)
 	Plater.CombatTime = GetTime()
 	if (Plater.db.profile.enemyplates_only_in_instances and (Plater.zoneInstanceType == "party" or Plater.zoneInstanceType == "raid")) then
@@ -1811,6 +1986,8 @@ function Plater:PLAYER_REGEN_DISABLED()
 end
 function Plater:PLAYER_REGEN_ENABLED()
 	CAN_CHECK_AGGRO = true
+	
+	Plater.RegenIsDisabled = false
 	
 	for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 		plateFrame [MEMBER_NOCOMBAT] = nil
@@ -1948,10 +2125,28 @@ function Plater.UpdateTarget (plateFrame)
 	if (UnitIsUnit (plateFrame [MEMBER_UNITID], "target") and Plater.db.profile.target_highlight) then
 		plateFrame.TargetNeonUp:Show()
 		plateFrame.TargetNeonDown:Show()
+		plateFrame [MEMBER_TARGET] = true
 		Plater.UpdateTargetPoints (plateFrame)
+		Plater.UpdateTargetTexture (plateFrame)
+		
+		--o target nunca tem obscuração
+		--tocar a animação se necessário
+		plateFrame.Obscured:Hide()
 	else
 		plateFrame.TargetNeonUp:Hide()
 		plateFrame.TargetNeonDown:Hide()
+		plateFrame [MEMBER_TARGET] = nil
+		
+		if (DB_TARGET_SHADY_ENABLED and (not DB_TARGET_SHADY_COMBATONLY or Plater.RegenIsDisabled)) then
+			if (not plateFrame.Obscured:IsShown()) then
+				--tocar a animação de fade in
+				--botar a texture de obscure
+			end
+			plateFrame.Obscured:Show()
+			plateFrame.Obscured:SetAlpha (DB_TARGET_SHADY_ALPHA)
+		else
+			plateFrame.Obscured:Hide()
+		end
 	end
 	Plater.CheckRange (plateFrame, true)
 end
@@ -1967,6 +2162,58 @@ function Plater.UpdateTargetPoints (plateFrame)
 	plateFrame.TargetNeonDown:SetAlpha (alpha)
 	plateFrame.TargetNeonDown:SetPoint ("bottomleft", healthBar, "topleft", -x, 0)
 	plateFrame.TargetNeonDown:SetPoint ("bottomright", healthBar, "topright", x, 0)
+end
+
+function Plater.UpdateTargetTexture (plateFrame)
+	preset = TargetIndicators [Plater.db.profile.target_indicator]
+	
+	local width, height = preset.width, preset.height
+	local x, y = preset.x, preset.y
+	local desaturated = preset.desaturated
+	local coords = preset.coords
+	local path = preset.path
+	
+	if (#coords == 4) then
+		for i = 1, 4 do
+			local texture = Plater.TargetTextures4Sides [i]
+			texture:Show()
+			texture:SetParent (plateFrame.UnitFrame.healthBar)
+			texture:SetTexture (path)
+			texture:SetTexCoord (unpack (coords [i]))
+			texture:SetSize (width, height)
+			texture:SetDesaturated (desaturated)
+			if (i == 1) then
+				texture:SetPoint ("topleft", -x, y)
+			elseif (i == 2) then
+				texture:SetPoint ("bottomleft", -x, -y)
+			elseif (i == 3) then
+				texture:SetPoint ("bottomright", x, -y)
+			elseif (i == 4) then
+				texture:SetPoint ("topright", x, y)
+			end
+		end
+		for i = 1, 2 do
+			Plater.TargetTextures2Sides [i]:Hide()
+		end
+	else
+		for i = 1, 2 do
+			local texture = Plater.TargetTextures2Sides [i]
+			texture:Show()
+			texture:SetParent (plateFrame.UnitFrame.healthBar)
+			texture:SetTexture (path)
+			texture:SetTexCoord (unpack (coords [i]))
+			texture:SetSize (width, height)
+			texture:SetDesaturated (desaturated)
+			if (i == 1) then
+				texture:SetPoint ("left", -x, y)
+			elseif (i == 2) then
+				texture:SetPoint ("right", x, -y)
+			end
+		end
+		for i = 1, 4 do
+			Plater.TargetTextures4Sides [i]:Hide()
+		end
+	end
 end
 
 function Plater.CreateHealthFlashFrame (plateFrame)
@@ -2261,12 +2508,12 @@ function Plater.UpdatePlateText (plateFrame, plateConfigs)
 		
 	elseif (plateFrame.onlyShowThePlayerName) then
 
-		local playerName = UnitName (plateFrame [MEMBER_UNITID])
-		local textString = plateFrame.actorNameSolo
+		local playerName = plateFrame [MEMBER_NAME]
+		--local textString = plateFrame.actorNameSolo
 		local textString = plateFrame.actorSubTitleSolo
 		
 		textString:Show()
-		textString:SetText (playerName)
+		Plater.UpdateUnitName (plateFrame, textString)
 		
 		DF:SetFontSize (textString, plateConfigs.actorname_text_size)
 		DF:SetFontFace (textString, plateConfigs.actorname_text_font)
@@ -2309,20 +2556,7 @@ function Plater.UpdatePlateText (plateFrame, plateConfigs)
 		
 		Plater.SetAnchor (nameString, plateConfigs.actorname_text_anchor) --manda a tabela com .anchor .x e .y	
 		
-		--se o texto estiver ancorado dentro da barra
-		if (plateConfigs.actorname_text_anchor.side >= 9) then
-			local stringSize = max (plateFrame.UnitFrame.healthBar:GetWidth() - 6, 44)
-			local name = plateFrame [MEMBER_NAME]
-			nameString:SetText (name)
-			
-			while (nameString:GetStringWidth() > stringSize) do
-				name = strsub (name, 1, #name-1)
-				nameString:SetText (name)
-				if (string.len (name) <= 1) then
-					break
-				end
-			end
-		end
+		Plater.UpdateUnitName (plateFrame)
 		
 		--seta o nome na linha secundária
 		if (plateFrame.shouldShowNpcNameAndTitle) then
@@ -2331,7 +2565,8 @@ function Plater.UpdatePlateText (plateFrame, plateConfigs)
 			if (plateConfigs.all_names) then
 				--nome
 				plateFrame.actorNameSolo:Show()
-				plateFrame.actorNameSolo:SetText (UnitName (plateFrame [MEMBER_UNITID]))
+				--plateFrame.actorNameSolo:SetText (UnitName (plateFrame [MEMBER_UNITID]))
+				Plater.UpdateUnitName (plateFrame, plateFrame.actorNameSolo)
 				
 				plateFrame.actorNameSolo:SetTextColor (unpack (plateConfigs.big_actorname_text_color))
 				DF:SetFontSize (plateFrame.actorNameSolo, plateConfigs.big_actorname_text_size)
@@ -2374,7 +2609,8 @@ function Plater.UpdatePlateText (plateFrame, plateConfigs)
 						---
 						--npc name
 						plateFrame.actorNameSolo:Show()
-						plateFrame.actorNameSolo:SetText (UnitName (plateFrame [MEMBER_UNITID]))
+						--plateFrame.actorNameSolo:SetText (UnitName (plateFrame [MEMBER_UNITID]))
+						Plater.UpdateUnitName (plateFrame, plateFrame.actorNameSolo)
 
 						plateFrame.actorNameSolo:SetTextColor (unpack (plateConfigs.big_actorname_text_color))
 						DF:SetFontSize (plateFrame.actorNameSolo, plateConfigs.big_actorname_text_size)
@@ -3516,7 +3752,7 @@ local ExtraIconFrame_SetIcon = function (self, icon, isCC, w, h, L, R, T, B)
 	self.Icon:SetTexCoord (L or 0, R or 1, T or 0, B or 1)
 end
 
-Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame)
+Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame) -- ~created
 	--isto é uma nameplate
 	plateFrame.UnitFrame.PlateFrame = plateFrame
 	plateFrame.isNamePlate = true
@@ -3524,6 +3760,7 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame)
 	plateFrame.UnitFrame.BuffFrame.amtDebuffs = 0
 	plateFrame.UnitFrame.healthBar.border.plateFrame = plateFrame
 	local healthBar = plateFrame.UnitFrame.healthBar
+	plateFrame.NameAnchor = 0
 	
 	--highlight para o mouse over
 	local mouseHighlight = healthBar:CreateTexture (nil, "overlay")
@@ -3575,7 +3812,7 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame)
 		mouseHighlight:Hide()
 	end)
 	--]]
-	
+
 	local raidTarget = healthBar:CreateTexture (nil, "overlay")
 	raidTarget:SetPoint ("right", -2, 0)
 	plateFrame.RaidTarget = raidTarget
@@ -3593,8 +3830,9 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame)
 	onTickFrame.BuffFrame = plateFrame.UnitFrame.BuffFrame
 	
 	--nome customizado
-	local actorName = plateFrame.UnitFrame.healthBar:CreateFontString (nil, "artwork", "GameFontNormal")
-	plateFrame.UnitFrame.healthBar.actorName = actorName
+	local actorName = healthBar:CreateFontString (nil, "artwork", "GameFontNormal")
+	healthBar.actorName = actorName
+	plateFrame.actorName = actorName --shortcut
 	
 	--nomes extras e sub titulo
 	local actorNameSolo = plateFrame:CreateFontString (nil, "artwork", "GameFontNormal")
@@ -3607,15 +3845,21 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame)
 	plateFrame.actorSubTitleSolo:Hide()
 	
 	plateFrame.UnitFrame.name:ClearAllPoints()
-	plateFrame.UnitFrame.name:SetPoint ("bottom", plateFrame.UnitFrame.healthBar.actorName, "bottom")
+	plateFrame.UnitFrame.name:SetPoint ("bottom", healthBar.actorName, "bottom")
 	
 	--level customizado
-	local actorLevel = plateFrame.UnitFrame.healthBar:CreateFontString (nil, "overlay", "GameFontNormal")
-	plateFrame.UnitFrame.healthBar.actorLevel = actorLevel
+	local actorLevel = healthBar:CreateFontString (nil, "overlay", "GameFontNormal")
+	healthBar.actorLevel = actorLevel
 	--porcentagem de vida
 	
-	local lifePercent = plateFrame.UnitFrame.healthBar:CreateFontString (nil, "overlay", "GameFontNormal")
-	plateFrame.UnitFrame.healthBar.lifePercent = lifePercent
+	local lifePercent = healthBar:CreateFontString (nil, "overlay", "GameFontNormal")
+	healthBar.lifePercent = lifePercent
+	
+	local obscuredTexture = healthBar:CreateTexture (nil, "overlay")
+	obscuredTexture:SetAllPoints()
+	obscuredTexture:SetTexture ("Interface\\Tooltips\\UI-Tooltip-Background")
+	obscuredTexture:SetVertexColor (0, 0, 0, 1)
+	plateFrame.Obscured = obscuredTexture
 
 	--icone extra, usado para ccs e para mostrar o tipo do npc
 	local ExtraIconFrame = CreateFrame ("frame", nil, healthBar)
@@ -3703,7 +3947,7 @@ function Plater.CanShowPlateFor (actorType)
 	return DB_PLATE_CONFIG [actorType].enabled
 end
 
-Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added
+Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ãdded
 	--pega a nameplate deste jogador
 	local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId)
 	
@@ -3712,10 +3956,8 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added
 	plateFrame.isSelf = nil
 	Plater.CheckForNpcType (plateFrame)
 	
-	local name = UnitName (unitBarId)
-	plateFrame.UnitFrame.healthBar.actorName:SetText (name)
-	plateFrame [MEMBER_NAME] = name
-	
+	plateFrame [MEMBER_NAME] = UnitName (unitBarId)
+
 	Plater.UpdatePlateClickSpace (plateFrame)
 	
 	local reaction = UnitReaction ("player", unitBarId)
@@ -3727,24 +3969,30 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added
 		if (UnitIsUnit (unitBarId, "player")) then
 			plateFrame.isSelf = true
 			actorType = ACTORTYPE_PLAYER
+			plateFrame.NameAnchor = 0
+			
 			Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_PLAYER, nil, true)
 		else
 			if (UnitIsPlayer (unitBarId)) then
 				--é um jogador, determinar se é um inimigo ou aliado
 				if (reaction >= UNITREACTION_FRIENDLY) then
+					plateFrame.NameAnchor = DB_NAME_PLAYERFRIENDLY_ANCHOR
 					Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_FRIENDLY_PLAYER, nil, true)
 					actorType = ACTORTYPE_FRIENDLY_PLAYER
 				else
+					plateFrame.NameAnchor = DB_NAME_PLAYERENEMY_ANCHOR
 					Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_ENEMY_PLAYER, nil, true)
 					actorType = ACTORTYPE_ENEMY_PLAYER
 				end
 			else
 				--é um npc
 				if (reaction >= UNITREACTION_FRIENDLY) then
+					plateFrame.NameAnchor = DB_NAME_NPCFRIENDLY_ANCHOR
 					Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_FRIENDLY_NPC, nil, true)
 					actorType = ACTORTYPE_FRIENDLY_NPC
 				else
 					--inclui npcs que são neutros
+					plateFrame.NameAnchor = DB_NAME_NPCENEMY_ANCHOR
 					Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_ENEMY_NPC, nil, true)
 					actorType = ACTORTYPE_ENEMY_NPC
 				end
@@ -4722,10 +4970,15 @@ function Plater.OpenOptionsPanel()
 				onclick = function (_, _, value)
 					if (actorType) then
 						Plater.db.profile.plate_config [actorType][member].side = value
+						Plater.RefreshDBUpvalues()
+						
 						Plater.UpdateAllPlates()
+						Plater.UpdateAllNames()
 					else
 						Plater.db.profile [member].side = value
+						Plater.RefreshDBUpvalues()
 						Plater.UpdateAllPlates()
+						Plater.UpdateAllNames()
 					end
 				end
 			})
@@ -5724,6 +5977,18 @@ local relevance_options = {
 	{label = "All Npcs", value = 4, onclick = Plater.ChangeNpcRelavance},
 }
 
+local on_select_target_indicator = function (_, _, indicator)
+	Plater.db.profile.target_indicator = indicator
+	Plater.OnPlayerTargetChanged()
+end
+local indicator_table = {}
+for name, indicatoirTable in pairs (TargetIndicators) do
+	tinsert (indicator_table, {label = name, value = name, onclick = on_select_target_indicator, icon = indicatoirTable.path, texcoord = indicatoirTable.coords[1]})
+end
+local build_target_indicator_table = function()
+	return indicator_table
+end
+
 	--menu 1 ~general ~geral
 	local options_table1 = {
 	
@@ -5816,32 +6081,9 @@ local relevance_options = {
 			usedecimals = true,
 		},
 		--]]
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.target_highlight end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.target_highlight = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Target Highlight",
-			desc = "Highlight effect on the nameplate of your current target.",
-		},
-		{
-			type = "range",
-			get = function() return Plater.db.profile.target_highlight_alpha end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.target_highlight_alpha = value
-				Plater.OnPlayerTargetChanged()
-			end,
-			min = 0,
-			max = 1,
-			step = 0.1,
-			name = "Target Highlight Alpha",
-			desc = "Target Highlight Alpha.",
-			usedecimals = true,
-		},
-		{type = "blank"},
-		{type = "label", get = function() return "Border Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+
+		--{type = "blank"},
+		--{type = "label", get = function() return "Border Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "color",
 			get = function()
@@ -5853,7 +6095,7 @@ local relevance_options = {
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdatePlateBorders()
 			end,
-			name = "Color",
+			name = "Border Color",
 			desc = "Color of the plate border.",
 		},
 		{
@@ -5867,9 +6109,32 @@ local relevance_options = {
 			min = 1,
 			max = 3,
 			step = 1,
-			name = "Thickness",
+			name = "Border Thickness",
 			desc = "How thick the border should be.",
 		},
+		
+		{type = "blank"},
+		{type = "label", get = function() return "Cast Bars:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.hide_enemy_castbars end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.hide_enemy_castbars = value
+				Plater.UpdateUseCastBar()
+			end,
+			name = "Hide Enemy Cast Bar",
+			desc = "Hide Enemy Cast Bar",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.hide_friendly_castbars end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.hide_friendly_castbars = value
+				Plater.UpdateUseCastBar()
+			end,
+			name = "Hide Friendly Cast Bar",
+			desc = "Hide Friendly Cast Bar",
+		},		
 		
 		{type = "breakline"},
 		
@@ -6141,81 +6406,84 @@ local relevance_options = {
 		},
 		
 		{type = "breakline"},
-		{type = "label", get = function() return "General Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return "Target:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		--target alpha
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.target_shady_enabled end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.target_shady_enabled = value
+				Plater.RefreshDBUpvalues()
+				Plater.OnPlayerTargetChanged()
+				--update
+			end,
+			name = "Use Target Shading",
+			desc = "Apply a layer of shadow when the unit is in range but isn't your current target.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.target_shady_combat_only end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.target_shady_combat_only = value
+				Plater.RefreshDBUpvalues()
+				Plater.OnPlayerTargetChanged()
+				--update
+			end,
+			name = "Target Shading Only in Combat",
+			desc = "Apply target shading only when in combat.",
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.target_shady_alpha end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.target_shady_alpha = value
+				Plater.RefreshDBUpvalues()
+				Plater.OnPlayerTargetChanged()
+				--update
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			name = "Target Shading Amount",
+			desc = "Amount of shade of apply.",
+			usedecimals = true,
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.target_highlight end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.target_highlight = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Target Highlight",
+			desc = "Highlight effect on the nameplate of your current target.",
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.target_highlight_alpha end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.target_highlight_alpha = value
+				Plater.OnPlayerTargetChanged()
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			name = "Target Highlight Alpha",
+			desc = "Target Highlight Alpha.",
+			usedecimals = true,
+		},
 		
-	--[[
-		{
-			type = "toggle",
-			get = function() return Plater.CanShowPlateFor (ACTORTYPE_FRIENDLY_PLAYER) end,
-			set = function (self, fixedparam, value) 
-				Plater.SetShowActorType (ACTORTYPE_FRIENDLY_PLAYER, value)
-				Plater.UpdateAllPlates()
-			end,
-			name = "Friendly Players",
-			desc = "Show nameplate for friendly players.\n\n|cFFFFFF00Important|r: This option is dependent on the client`s nameplate state (on/off).\n\n|cFFFFFF00Important|r: when disabled but enabled on the client through (" .. (GetBindingKey ("FRIENDNAMEPLATES") or "") .. ") the healthbar isn't visible but the nameplate is still clickable.",
-		},
-		{
-			type = "toggle",
-			get = function() return Plater.CanShowPlateFor (ACTORTYPE_ENEMY_PLAYER) end,
-			set = function (self, fixedparam, value) 
-				Plater.SetShowActorType (ACTORTYPE_ENEMY_PLAYER, value)
-				Plater.UpdateAllPlates()
-			end,
-			name = "Enemy Players",
-			desc = "Show nameplate for enemy players.\n\n|cFFFFFF00Important|r: This option is dependent on the client`s nameplate state (on/off).\n\n|cFFFFFF00Important|r: when disabled but enabled on the client through (" .. (GetBindingKey ("NAMEPLATES") or "") .. ") the healthbar isn't visible but the nameplate is still clickable.",
-		},
-	--]]
-		{
-			type = "toggle",
-			get = function() return Plater.CanShowPlateFor (ACTORTYPE_FRIENDLY_NPC) end,
-			set = function (self, fixedparam, value) 
-				Plater.SetShowActorType (ACTORTYPE_FRIENDLY_NPC, value)
-				Plater.UpdateAllPlates()
-			end,
-			name = "Friendly Npc",
-			desc = "Show nameplate for friendly npcs.\n\n|cFFFFFF00Important|r: This option is dependent on the client`s nameplate state (on/off).\n\n|cFFFFFF00Important|r: when disabled but enabled on the client through (" .. (GetBindingKey ("FRIENDNAMEPLATES") or "") .. ") the healthbar isn't visible but the nameplate is still clickable.",
-		},
 		{
 			type = "select",
-			get = function() return Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].relevance_state end,
-			values = function() return relevance_options end,
-			name = "Friendly Npc Relevance",
-			desc = "Modify the way friendly npcs are shown.\n\n|cFFFFFF00Important|r: This option is dependent on the client`s nameplate state (on/off).",
+			get = function() return Plater.db.profile.target_indicator end,
+			values = function() return build_target_indicator_table() end,
+			name = "Target Indicator",
+			desc = "Target Indicator",
 		},
 		
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.hide_enemy_castbars end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.hide_enemy_castbars = value
-				Plater.UpdateUseCastBar()
-			end,
-			name = "Hide Enemy Cast Bar",
-			desc = "Hide Enemy Cast Bar",
-		},
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.hide_friendly_castbars end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.hide_friendly_castbars = value
-				Plater.UpdateUseCastBar()
-			end,
-			name = "Hide Friendly Cast Bar",
-			desc = "Hide Friendly Cast Bar",
-		},
-		
-	--[[
-		{
-			type = "toggle",
-			get = function() return Plater.CanShowPlateFor (ACTORTYPE_ENEMY_NPC) end,
-			set = function (self, fixedparam, value) 
-				Plater.SetShowActorType (ACTORTYPE_ENEMY_NPC, value)
-				Plater.UpdateAllPlates()
-			end,
-			name = "Enemy Npc",
-			desc = "Show nameplate for enemy npcs.\n\n|cFFFFFF00Important|r: This option is dependent on the client`s nameplate state (on/off).\n\n|cFFFFFF00Important|r: when disabled but enabled on the client through (" .. (GetBindingKey ("NAMEPLATES") or "") .. ") the healthbar isn't visible but the nameplate is still clickable.",
-		},
---]]		
+		--{type = "blank"},
+		{type = "label", get = function() return "Alpha Control:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+
 		--alpha and range check
 		{
 			type = "toggle",
@@ -6254,8 +6522,8 @@ local relevance_options = {
 		},
 	}
 	
-	tinsert (options_table1, {type = "blank"})
-	tinsert (options_table1, {type = "label", get = function() return "Spells for Range Check" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")})
+	--tinsert (options_table1, {type = "blank"})
+	--tinsert (options_table1, {type = "label", get = function() return "Spells for Range Check" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")})
 	
 	local spells = {}
 	local offset
@@ -6290,7 +6558,7 @@ local relevance_options = {
 				end
 				return t
 			end,
-			name = "|T" .. spec_icon .. ":16:16|t " .. spec_name,
+			name = "Range Check |T" .. spec_icon .. ":16:16|t " .. spec_name,
 			desc = "Spell to range check on this specializartion.",
 		})
 		i = i + 1
@@ -6336,7 +6604,7 @@ local relevance_options = {
 	end
 	
 ------------------------------------------------	
---FriendlyPC painel de opções ~friendly
+--FriendlyPC painel de opções ~friendly ~friendlynpc
 	
 	local on_select_friendly_playername_font = function (_, _, value)
 		Plater.db.profile.plate_config.friendlyplayer.actorname_text_font = value
@@ -8322,6 +8590,27 @@ local relevance_options = {
 		
 		{type = "breakline"},
 		
+		{type = "label", get = function() return "General Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{
+			type = "toggle",
+			get = function() return Plater.CanShowPlateFor (ACTORTYPE_FRIENDLY_NPC) end,
+			set = function (self, fixedparam, value) 
+				Plater.SetShowActorType (ACTORTYPE_FRIENDLY_NPC, value)
+				Plater.UpdateAllPlates()
+			end,
+			name = "Show Friendly Npc",
+			desc = "Show nameplate for friendly npcs.\n\n|cFFFFFF00Important|r: This option is dependent on the client`s nameplate state (on/off).\n\n|cFFFFFF00Important|r: when disabled but enabled on the client through (" .. (GetBindingKey ("FRIENDNAMEPLATES") or "") .. ") the healthbar isn't visible but the nameplate is still clickable.",
+		},
+		{
+			type = "select",
+			get = function() return Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].relevance_state end,
+			values = function() return relevance_options end,
+			name = "Friendly Npc Relevance",
+			desc = "Modify the way friendly npcs are shown.\n\n|cFFFFFF00Important|r: This option is dependent on the client`s nameplate state (on/off).",
+		},
+		
+		{type = "blank"},
+		
 		{type = "label", get = function() return "Npc Name Text When no Health Bar Shown:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		--profession text size
@@ -9206,3 +9495,39 @@ end
 function Plater.UpdateUnitColor (self, unit)
 	
 end
+
+
+	--[[
+		{
+			type = "toggle",
+			get = function() return Plater.CanShowPlateFor (ACTORTYPE_FRIENDLY_PLAYER) end,
+			set = function (self, fixedparam, value) 
+				Plater.SetShowActorType (ACTORTYPE_FRIENDLY_PLAYER, value)
+				Plater.UpdateAllPlates()
+			end,
+			name = "Friendly Players",
+			desc = "Show nameplate for friendly players.\n\n|cFFFFFF00Important|r: This option is dependent on the client`s nameplate state (on/off).\n\n|cFFFFFF00Important|r: when disabled but enabled on the client through (" .. (GetBindingKey ("FRIENDNAMEPLATES") or "") .. ") the healthbar isn't visible but the nameplate is still clickable.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.CanShowPlateFor (ACTORTYPE_ENEMY_PLAYER) end,
+			set = function (self, fixedparam, value) 
+				Plater.SetShowActorType (ACTORTYPE_ENEMY_PLAYER, value)
+				Plater.UpdateAllPlates()
+			end,
+			name = "Enemy Players",
+			desc = "Show nameplate for enemy players.\n\n|cFFFFFF00Important|r: This option is dependent on the client`s nameplate state (on/off).\n\n|cFFFFFF00Important|r: when disabled but enabled on the client through (" .. (GetBindingKey ("NAMEPLATES") or "") .. ") the healthbar isn't visible but the nameplate is still clickable.",
+		},
+	--]]
+	--[[
+		{
+			type = "toggle",
+			get = function() return Plater.CanShowPlateFor (ACTORTYPE_ENEMY_NPC) end,
+			set = function (self, fixedparam, value) 
+				Plater.SetShowActorType (ACTORTYPE_ENEMY_NPC, value)
+				Plater.UpdateAllPlates()
+			end,
+			name = "Enemy Npc",
+			desc = "Show nameplate for enemy npcs.\n\n|cFFFFFF00Important|r: This option is dependent on the client`s nameplate state (on/off).\n\n|cFFFFFF00Important|r: when disabled but enabled on the client through (" .. (GetBindingKey ("NAMEPLATES") or "") .. ") the healthbar isn't visible but the nameplate is still clickable.",
+		},
+--]]		
