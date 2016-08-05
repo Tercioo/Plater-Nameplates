@@ -1772,17 +1772,16 @@ end
 
 function Plater.UpdateAuras_Manual (self, unit)
 	local auraIndex = 1
-	--> debuffs
+	--> buffs
 	for i = 1, #DB_TRACKING_BUFFLIST do
 		local name, rank, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId = UnitAura (unit, DB_TRACKING_BUFFLIST [i]) --, nil, "HELPFUL"
-		if (not name) then
-			break
-		else
+		print (name, DB_TRACKING_BUFFLIST [i], #DB_TRACKING_BUFFLIST)
+		if (name) then
 			AddAura (self, auraIndex, name, rank, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, true)
 			auraIndex = auraIndex + 1
 		end
 	end
-	--> buffs
+	--> debuffs
 	for i = 1, #DB_TRACKING_DEBUFFLIST do
 		local name, rank, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId = UnitAura (unit, DB_TRACKING_DEBUFFLIST [i], nil, "HARMFUL|PLAYER")
 		if (name) then
