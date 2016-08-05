@@ -348,7 +348,7 @@ local default_config = {
 				mana = {150, 8},
 				mana_incombat = {150, 8},
 				buff_frame_y_offset = 0,
-				y_position_offset = -50,
+				y_position_offset = -50, --deprecated
 				pvp_always_incombat = true,
 				
 				actorname_text_spacing = 10,
@@ -856,6 +856,11 @@ local DB_NAME_NPCFRIENDLY_ANCHOR
 local DB_NAME_PLAYERENEMY_ANCHOR
 local DB_NAME_PLAYERFRIENDLY_ANCHOR
 
+local DB_TEXTURE_CASTBAR
+local DB_TEXTURE_CASTBAR_BG
+local DB_TEXTURE_HEALTHBAR
+local DB_TEXTURE_HEALTHBAR_BG
+
 -- ~profile
 function Plater:RefreshConfig()
 	Plater.UpdateAllPlates()
@@ -899,6 +904,11 @@ function Plater.RefreshDBUpvalues()
 	DB_NAME_NPCFRIENDLY_ANCHOR = profile.plate_config.friendlynpc.actorname_text_anchor.side
 	DB_NAME_PLAYERENEMY_ANCHOR = profile.plate_config.enemyplayer.actorname_text_anchor.side
 	DB_NAME_PLAYERFRIENDLY_ANCHOR = profile.plate_config.friendlyplayer.actorname_text_anchor.side
+	
+	DB_TEXTURE_CASTBAR = LibSharedMedia:Fetch ("statusbar", Plater.db.profile.cast_statusbar_texture)
+	DB_TEXTURE_CASTBAR_BG = LibSharedMedia:Fetch ("statusbar", Plater.db.profile.cast_statusbar_bgtexture)
+	DB_TEXTURE_HEALTHBAR = LibSharedMedia:Fetch ("statusbar", Plater.db.profile.health_statusbar_texture)
+	DB_TEXTURE_HEALTHBAR_BG = LibSharedMedia:Fetch ("statusbar", Plater.db.profile.health_statusbar_bgtexture)	
 end
 
 function Plater.OnInit()
@@ -2802,13 +2812,8 @@ function Plater.UpdatePlateSize (plateFrame, justAdded)
 		local SizeOf_healthBar_Height = plateConfigs [heathKey][2]
 		local SizeOf_castBar_Height = plateConfigs [castKey][2]
 		local SizeOf_text = plateConfigs [textKey]
-		local selfBarOffset = plateConfigs.y_position_offset
 		
 		local height_offset = 0
-		
-		if (plateFrame.isSelf) then
-			height_offset = selfBarOffset
-		end		
 		
 		--pegar o tamanho da barra de debuff para colocar a cast bar em cima dela
 		local buffFrameSize = Plater.db.profile.aura_height
@@ -2880,14 +2885,9 @@ function Plater.UpdatePlateSize (plateFrame, justAdded)
 		local SizeOf_healthBar_Height = plateConfigs [heathKey][2]
 		local SizeOf_castBar_Height = plateConfigs [castKey][2]
 		local SizeOf_text = plateConfigs [textKey]
-		local selfBarOffset = plateConfigs.y_position_offset
 		
 		local height_offset = 0
-		
-		if (plateFrame.isSelf) then
-			height_offset = selfBarOffset
-		end		
-		
+
 		--pegar o tamanho da barra de debuff para colocar a cast bar em cima dela
 		local buffFrameSize = Plater.db.profile.aura_height
 		
@@ -2963,13 +2963,8 @@ function Plater.UpdatePlateSize (plateFrame, justAdded)
 		local SizeOf_healthBar_Height = plateConfigs [heathKey][2]
 		local SizeOf_castBar_Height = plateConfigs [castKey][2]
 		local SizeOf_text = plateConfigs [textKey]
-		local selfBarOffset = plateConfigs.y_position_offset
-
-		local height_offset = 0
 		
-		if (plateFrame.isSelf) then
-			height_offset = selfBarOffset
-		end
+		local height_offset = 0
 		
 		local buffFrameSize = Plater.db.profile.aura_height
 		local scalarValue = SizeOf_castBar_Width > plateWidth and -((SizeOf_castBar_Width - plateWidth) / 2) or ((plateWidth - SizeOf_castBar_Width) / 2)
@@ -3402,19 +3397,15 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate, justAdded)
 	buffFrame:ClearAllPoints()
 	nameFrame:ClearAllPoints()
 	
-	local castTexture = LibSharedMedia:Fetch ("statusbar", Plater.db.profile.cast_statusbar_texture)
-	local castBGTexture = LibSharedMedia:Fetch ("statusbar", Plater.db.profile.cast_statusbar_bgtexture)
-	local healthTexture = LibSharedMedia:Fetch ("statusbar", Plater.db.profile.health_statusbar_texture)
-	local healthBGTexture = LibSharedMedia:Fetch ("statusbar", Plater.db.profile.health_statusbar_bgtexture)
 	--ajusta a cast bar
-	castFrame:SetStatusBarTexture (castTexture)
-	castFrame.background:SetTexture (castBGTexture)
+	castFrame:SetStatusBarTexture (DB_TEXTURE_CASTBAR)
+	castFrame.background:SetTexture (DB_TEXTURE_CASTBAR_BG)
 	castFrame.background:SetVertexColor (unpack (Plater.db.profile.cast_statusbar_bgcolor))
-	castFrame.Flash:SetTexture (castTexture)
+	castFrame.Flash:SetTexture (DB_TEXTURE_CASTBAR)
 	castFrame.Icon:SetTexCoord (0.078125, 0.921875, 0.078125, 0.921875)
 	--ajusta a health bar
-	healthFrame.barTexture:SetTexture (healthTexture)
-	healthFrame.background:SetTexture (healthBGTexture)
+	healthFrame.barTexture:SetTexture (DB_TEXTURE_HEALTHBAR)
+	healthFrame.background:SetTexture (DB_TEXTURE_HEALTHBAR_BG)
 	healthFrame.background:SetVertexColor (unpack (Plater.db.profile.health_statusbar_bgcolor))
 	
 	if (unitFrame.selectionHighlight:IsShown()) then
@@ -4986,6 +4977,7 @@ function Plater.OpenOptionsPanel()
 	--
 	local health_bar_texture_selected = function (self, capsule, value)
 		Plater.db.profile.health_statusbar_texture = value
+		Plater.RefreshDBUpvalues()
 		Plater.UpdateAllPlates()
 	end
 	local health_bar_texture_options = {}
@@ -4996,6 +4988,7 @@ function Plater.OpenOptionsPanel()
 	--
 	local health_bar_bgtexture_selected = function (self, capsule, value)
 		Plater.db.profile.health_statusbar_bgtexture = value
+		Plater.RefreshDBUpvalues()
 		Plater.UpdateAllPlates()
 	end
 	local health_bar_bgtexture_options = {}
@@ -5006,6 +4999,7 @@ function Plater.OpenOptionsPanel()
 	--
 	local cast_bar_texture_selected = function (self, capsule, value)
 		Plater.db.profile.cast_statusbar_texture = value
+		Plater.RefreshDBUpvalues()
 		Plater.UpdateAllPlates()
 	end
 	local cast_bar_texture_options = {}
@@ -5016,6 +5010,7 @@ function Plater.OpenOptionsPanel()
 	--
 	local cast_bar_bgtexture_selected = function (self, capsule, value)
 		Plater.db.profile.cast_statusbar_bgtexture = value
+		Plater.RefreshDBUpvalues()
 		Plater.UpdateAllPlates()
 	end
 	local cast_bar_bgtexture_options = {}
@@ -5578,19 +5573,70 @@ DF:BuildMenu (auraFilterFrame, debuff_options, startX, startY, 300, true, option
 			desc = "Height of the power bar.",
 		},
 		{type = "blank"},
-		{type = "label", get = function() return "Location:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return "Personal Bar Location:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return Plater.db.profile.plate_config.player.y_position_offset end,
+			get = function() return tonumber (GetCVar ("nameplateSelfBottomInset")*100) end,
 			set = function (self, fixedparam, value) 
-				Plater.db.profile.plate_config.player.y_position_offset = value
+				--Plater.db.profile.plate_config.player.y_position_offset = value
+
+				if (InCombatLockdown()) then
+					Plater:Msg ("you are in combat.")
+					self:SetValue (tonumber (GetCVar ("nameplateSelfBottomInset")*100))
+					return
+				end
+				
+				SetCVar ("nameplateSelfBottomInset", value / 100)
+				SetCVar ("nameplateSelfTopInset", abs (value - 99) / 100)
+				
+				if (not Plater.PersonalAdjustLocation) then
+					Plater.PersonalAdjustLocation = CreateFrame ("frame", "PlaterPersonalBarLocation", UIParent)
+					local frame = Plater.PersonalAdjustLocation
+					frame:SetWidth (GetScreenWidth())
+					frame:SetHeight (20)
+					frame.Texture = frame:CreateTexture (nil, "background")
+					frame.Texture:SetTexture ([[Interface\AddOns\Plater\images\bar4_vidro]], true)
+					frame.Texture:SetAllPoints()
+					frame.Shadow = frame:CreateTexture (nil, "border")
+					frame.Shadow:SetTexture ([[Interface\ACHIEVEMENTFRAME\UI-Achievement-RecentHeader]], true)
+					frame.Shadow:SetPoint ("center")
+					frame.Shadow:SetSize (256, 18)
+					frame.Shadow:SetTexCoord (0, 1, 0, 22/32)
+					frame.Shadow:SetVertexColor (0, 0, 0, 1)
+					frame.Text = frame:CreateFontString (nil, "artwork", "GameFontNormal")
+					frame.Text:SetText ("Plater: Personal Bar Position")
+					frame.Text:SetPoint ("center")
+					
+					frame.HideAnimation = DF:CreateAnimationHub (frame, nil, function() frame:Hide() end)
+					DF:CreateAnimation (frame.HideAnimation, "Alpha", 1, 1, 1, 0)
+					
+					frame.CancelFunction = function()
+						frame.HideAnimation:Play()
+					end
+				end
+				
+				if (Plater.PersonalAdjustLocation.HideAnimation:IsPlaying()) then
+					Plater.PersonalAdjustLocation.HideAnimation:Stop()
+					Plater.PersonalAdjustLocation:SetAlpha (1)
+				end
+				Plater.PersonalAdjustLocation:Show()
+				
+				local percentValue = GetScreenHeight()/100
+				Plater.PersonalAdjustLocation:SetPoint ("bottom", UIParent, "bottom", 0, percentValue * value)
+				
+				if (Plater.PersonalAdjustLocation.Timer) then
+					Plater.PersonalAdjustLocation.Timer:Cancel()
+				end
+				Plater.PersonalAdjustLocation.Timer = C_Timer.NewTimer (3, Plater.PersonalAdjustLocation.CancelFunction)
+				
 				Plater.UpdateAllPlates()
 				Plater.UpdateSelfPlate()
 			end,
-			min = -300,
-			max = 300,
+			min = 2,
+			max = 98,
 			step = 1,
-			name = "Y Offset",
+			nocombat = true,
+			name = "Screen Position",
 			desc = "Adjust the positioning on the Y axis.",
 		},
 
