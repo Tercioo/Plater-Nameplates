@@ -863,11 +863,12 @@ local DB_TEXTURE_HEALTHBAR_BG
 
 -- ~profile
 function Plater:RefreshConfig()
+	Plater.RefreshDBUpvalues()
+	
 	Plater.UpdateAllPlates()
 	if (PlaterOptionsPanelFrame) then
 		PlaterOptionsPanelFrame.RefreshOptionsFrame()
 	end
-	Plater.RefreshDBUpvalues()
 	Plater.UpdateUseCastBar()
 	Plater.UpdateUseClassColors()
 end
@@ -1511,8 +1512,14 @@ function Plater.OnInit()
 	Plater.UpdateSelfPlate()
 	Plater.UpdateUseClassColors()
 	Plater.GetFactionNpcLocs()
+	
 	C_Timer.After (4.1, Plater.QuestLogUpdated)
 	C_Timer.After (5.1, Plater.UpdateAllPlates)
+	
+	for i = 1, 3 do
+		C_Timer.After (i, Plater.RefreshDBUpvalues)
+	end
+	
 end
 
 function Plater.UpdateAllNames()
@@ -1895,7 +1902,7 @@ local EventTickFunction = function (tickFrame, deltaTime)
 end
 
 --hooksecurefunc ("CompactUnitFrame_OnEvent", function (self, ...)
-	--print ("EVENT", ...)
+	
 --end)
 --considerSelectionInCombatAsHostile option
 --UNIT_THREAT_LIST_UPDATE
@@ -3195,7 +3202,7 @@ end
 -- ~update
 function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate, justAdded)
 	actorType = actorType or plateFrame.actorType
-	
+
 	local order = DB_PLATE_CONFIG [actorType].plate_order
 	
 	local unitFrame = plateFrame.UnitFrame --setallpoints
