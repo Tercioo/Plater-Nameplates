@@ -156,6 +156,9 @@ function DF:CreateCoolTip()
 			frame1 = CreateFrame ("Frame", "GameCooltipFrame1", UIParent, "DFCooltipMainFrameTemplate")
 			tinsert (UISpecialFrames, "GameCooltipFrame1")
 			DF:CreateFlashAnimation (frame1)
+			
+			DF:CreateBorder (frame1)
+			
 		else
 			frame1 = GameCooltipFrame1
 		end
@@ -174,6 +177,8 @@ function DF:CreateCoolTip()
 			tinsert (UISpecialFrames, "GameCooltipFrame2")
 			DF:CreateFlashAnimation (frame2)
 			frame2:SetClampedToScreen (true)
+			
+			DF:CreateBorder (frame2)
 		else
 			frame2 = GameCooltipFrame2
 		end
@@ -2846,6 +2851,11 @@ function DF:CreateCoolTip()
 		
 		function CoolTip:ShowCooltip (frame, menuType, color)
 
+			frame1:SetFrameStrata ("TOOLTIP")
+			frame2:SetFrameStrata ("TOOLTIP")
+			frame1:SetParent (UIParent)
+			frame2:SetParent (UIParent)
+		
 			CoolTip.had_interaction = false
 		
 			if (frame) then

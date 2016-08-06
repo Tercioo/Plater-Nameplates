@@ -468,6 +468,7 @@ local default_config = {
 		cast_statusbar_texture = "DGround",
 		cast_statusbar_bgtexture = "Details Serenity",
 		cast_statusbar_bgcolor = {0, 0, 0, 0.8},
+		cast_statusbar_color = {1, .7, 0, 1},
 		
 		friendlyplates_auto_show = false,
 		friendlyplates_no_on_instances = true,
@@ -1400,6 +1401,8 @@ function Plater.OnInit()
 				else
 					self.BorderShield:Hide()
 				end
+
+				self:SetStatusBarColor (unpack (Plater.db.profile.cast_statusbar_color))
 				
 				self.ReUpdateNextTick = true
 				self.ThrottleUpdate = 1
@@ -1423,6 +1426,8 @@ function Plater.OnInit()
 				else
 					self.BorderShield:Hide()
 				end
+				
+				self:SetStatusBarColor (unpack (Plater.db.profile.cast_statusbar_color))
 				
 				self.ReUpdateNextTick = true
 				self.ThrottleUpdate = 1
@@ -6093,6 +6098,20 @@ end
 			name = "Cast Bar Background Texture",
 			desc = "Texture used on the cast bar background.",
 		},
+		
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.cast_statusbar_color
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.cast_statusbar_color
+				color[1], color[2], color[3], color[4] = r, g, b, a
+			end,
+			name = "Cast Bar Color",
+			desc = "Cast Bar Color",
+		},
 		{
 			type = "color",
 			get = function()
@@ -6165,7 +6184,7 @@ end
 		},
 		
 		{type = "blank"},
-		{type = "label", get = function() return "Cast Bars:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		--{type = "label", get = function() return "Cast Bars:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
 			get = function() return Plater.db.profile.hide_enemy_castbars end,
