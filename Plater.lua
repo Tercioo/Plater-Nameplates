@@ -1545,6 +1545,21 @@ function Plater.UpdateAllNames()
 	end
 end
 
+function Plater.UpdateTextSize (plateFrame, nameString)
+	local stringSize = max (plateFrame.UnitFrame.healthBar:GetWidth() - 6, 44)
+	local name = plateFrame [MEMBER_NAME]
+	
+	nameString:SetText (name)
+	
+	while (nameString:GetStringWidth() > stringSize) do
+		name = strsub (name, 1, #name-1)
+		nameString:SetText (name)
+		if (string.len (name) <= 1) then
+			break
+		end
+	end
+end
+
 function Plater.UpdateUnitName (plateFrame, fontString)
 	local nameString
 	if (plateFrame.onlyShowThePlayerName) then
@@ -1559,17 +1574,29 @@ function Plater.UpdateUnitName (plateFrame, fontString)
 		local nameString = fontString or plateFrame.actorName
 		
 		nameString:SetText (name)
+		local stringWidth = nameString:GetStringWidth()
 		
-		while (nameString:GetStringWidth() > stringSize) do
-			name = strsub (name, 1, #name-1)
-			nameString:SetText (name)
-			if (string.len (name) <= 1) then
-				break
-			end
+		if (stringWidth > stringSize and nameString == plateFrame.actorName) then 
+			plateFrame:TickUpdate (true)
+		else
+			Plater.UpdateTextSize (plateFrame, nameString)
 		end
 	else
 		nameString:SetText (plateFrame [MEMBER_NAME])
 	end
+end
+
+local tick_update = function (self)
+	if (self.UpdateActorNameSize) then
+		Plater.UpdateTextSize (self:GetParent(), self:GetParent().actorName)
+	end
+	
+	self.UpdateActorNameSize = nil
+	self:SetScript ("OnUpdate", nil)
+end
+function Plater.TickUpdate (plateFrame, UpdateActorNameSize)
+	plateFrame.OnNextTickUpdate.UpdateActorNameSize = UpdateActorNameSize
+	plateFrame.OnNextTickUpdate:SetScript ("OnUpdate", tick_update)
 end
 
 local re_update_self_plate = function()
@@ -3830,6 +3857,15 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame) -- ~created
 	onTickFrame.UnitFrame = plateFrame.UnitFrame
 	onTickFrame.BuffFrame = plateFrame.UnitFrame.BuffFrame
 	
+	local onNextTickUpdate = CreateFrame ("frame", nil, plateFrame)
+	plateFrame.OnNextTickUpdate = onNextTickUpdate
+	onNextTickUpdate.unit = plateFrame [MEMBER_UNITID]
+	onNextTickUpdate.HealthBar = healthBar
+	onNextTickUpdate.PlateFrame = plateFrame
+	onNextTickUpdate.UnitFrame = plateFrame.UnitFrame
+	onNextTickUpdate.BuffFrame = plateFrame.UnitFrame.BuffFrame
+	plateFrame.TickUpdate = Plater.TickUpdate
+	
 	--nome customizado
 	local actorName = healthBar:CreateFontString (nil, "artwork", "GameFontNormal")
 	healthBar.actorName = actorName
@@ -4017,6 +4053,10 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ã
 	plateFrame.OnTickFrame.unit = plateFrame [MEMBER_UNITID]
 	plateFrame.OnTickFrame:SetScript ("OnUpdate", EventTickFunction)
 	EventTickFunction (plateFrame.OnTickFrame, 10)
+	
+	--one tick update
+	plateFrame.OnNextTickUpdate.actorType = actorType
+	plateFrame.OnNextTickUpdate.unit = plateFrame [MEMBER_UNITID]
 	
 	--range
 	Plater.CheckRange (plateFrame, true)
