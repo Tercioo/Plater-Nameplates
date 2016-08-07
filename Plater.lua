@@ -3961,7 +3961,7 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ã
 
 	Plater.UpdatePlateClickSpace (plateFrame)
 	
-	local reaction = UnitReaction ("player", unitBarId)
+	local reaction = UnitReaction (unitBarId, "player")
 	plateFrame [MEMBER_REACTION] = reaction
 	plateFrame.UnitFrame [MEMBER_REACTION] = reaction
 	local actorType
