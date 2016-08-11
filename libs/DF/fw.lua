@@ -1,5 +1,5 @@
 
-local dversion = 33
+local dversion = 35
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
 
@@ -1176,22 +1176,28 @@ end
 
 function DF:CreateAnimation (animation, type, order, duration, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
 	local anim = animation:CreateAnimation (type)
-
+	
 	anim:SetOrder (order or animation.NextAnimation)
 	anim:SetDuration (duration)
 	
-	if (type == "Alpha") then
+	type = string.upper (type)
+	
+	if (type == "ALPHA") then
 		anim:SetFromAlpha (arg1)
 		anim:SetToAlpha (arg2)
-		
-	elseif (type == "Scale") then
+	
+	elseif (type == "SCALE") then
 		anim:SetFromScale (arg1, arg2)
 		anim:SetToScale (arg3, arg4)
 		anim:SetOrigin (arg5 or "center", arg6 or 0, arg7 or 0) --point, x, y
 	
-	elseif (type == "Rotation") then
+	elseif (type == "ROTATION") then
 		anim:SetDegrees (arg1) --degree
 		anim:SetOrigin (arg2 or "center", arg3 or 0, arg4 or 0) --point, x, y
+		
+	elseif (type == "TRANSLATION") then
+		anim:SetOffset (arg1, arg2)
+		
 	end
 	
 	animation.NextAnimation = animation.NextAnimation + 1	
