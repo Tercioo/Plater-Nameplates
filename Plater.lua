@@ -1134,7 +1134,7 @@ function Plater.OnInit()
 		
 		if (show_cc) then
 			for i = 1, BUFF_MAX_DISPLAY do
-				local name, rank, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId = UnitAura (unit, i, nil, "HARMFUL") --, nil, "HARMFUL"
+				local name, rank, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId = UnitDebuff (unit, i, nil, "HARMFUL") --, nil, "HARMFUL"
 				if (not name) then
 					break
 				end
