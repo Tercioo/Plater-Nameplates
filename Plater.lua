@@ -26,6 +26,7 @@ local IsSpellInRange = IsSpellInRange
 local abs = math.abs
 local format = string.format
 local sort = table.sort
+local GetSpellInfo = GetSpellInfo
 
 --endd
 --dump color palette
@@ -289,7 +290,7 @@ local default_config = {
 				enabled = true,
 				plate_order = 3,
 				
-				health = {120, 2},
+				health = {110, 2},
 				health_incombat = {130, 10},
 				cast = {134, 12},
 				cast_incombat = {134, 12},
@@ -611,6 +612,9 @@ local FILTER_BUFF_DETECTION2 = ""
 local ALL_DEBUFFS = {}
 local ALL_BUFFS = {}
 
+local BUFF_CACHE = {}
+local DEBUFF_CACHE = {}
+
  --cvars
 local CVAR_ENABLED = "1"
 local CVAR_DISABLED = "0"
@@ -919,6 +923,8 @@ function Plater.RefreshDBUpvalues()
 	
 	DB_CASTBAR_HIDE_ENEMIES = profile.hide_enemy_castbars
 	DB_CASTBAR_HIDE_FRIENDLY = profile.hide_friendly_castbars
+	
+	Plater.UpdateAuraCache()
 end
 
 function Plater.OnInit()
@@ -1708,16 +1714,16 @@ end
 function Plater.UpdateAuras_Manual (self, unit)
 	local auraIndex = 1
 	--> buffs
-	for i = 1, #DB_TRACKING_BUFFLIST do
-		local name, rank, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId = UnitAura (unit, DB_TRACKING_BUFFLIST [i]) --, nil, "HELPFUL"
+	for i = 1, #BUFF_CACHE do
+		local name, rank, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId = UnitAura (unit, BUFF_CACHE [i]) --, nil, "HELPFUL"
 		if (name) then
 			AddAura (self, auraIndex, name, rank, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, true)
 			auraIndex = auraIndex + 1
 		end
 	end
 	--> debuffs
-	for i = 1, #DB_TRACKING_DEBUFFLIST do
-		local name, rank, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId = UnitAura (unit, DB_TRACKING_DEBUFFLIST [i], nil, "HARMFUL|PLAYER")
+	for i = 1, #DEBUFF_CACHE do
+		local name, rank, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId = UnitAura (unit, DEBUFF_CACHE [i], nil, "HARMFUL|PLAYER")
 		if (name) then
 			AddAura (self, auraIndex, name, rank, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 			auraIndex = auraIndex + 1
@@ -1899,6 +1905,27 @@ function Plater:PLAYER_SPECIALIZATION_CHANGED()
 	Plater.GetSpellForRangeCheck()
 end
 
+function Plater.UpdateAuraCache()
+	if (DB_TRACKING_DEBUFFLIST) then
+		wipe (DEBUFF_CACHE)
+		for i = 1, #DB_TRACKING_DEBUFFLIST do
+			local spellName = GetSpellInfo (DB_TRACKING_DEBUFFLIST [i])
+			if (spellName) then
+				DEBUFF_CACHE [#DEBUFF_CACHE+1] = spellName
+			end
+		end
+	end
+	if (DB_TRACKING_BUFFLIST) then
+		wipe (BUFF_CACHE)
+		for i = 1, #DB_TRACKING_BUFFLIST do
+			local spellName = GetSpellInfo (DB_TRACKING_BUFFLIST [i])
+			if (spellName) then
+				BUFF_CACHE [#BUFF_CACHE+1] = spellName
+			end
+		end
+	end
+end
+
 function Plater:PLAYER_REGEN_DISABLED()
 	if (IsResting()) then
 		CAN_CHECK_AGGRO = false
@@ -1907,6 +1934,8 @@ function Plater:PLAYER_REGEN_DISABLED()
 	end
 
 	Plater.RegenIsDisabled = true
+	
+	Plater.UpdateAuraCache()
 	
 	C_Timer.After (0.5, Plater.UpdateAllPlates)
 	Plater.CombatTime = GetTime()
