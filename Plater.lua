@@ -1502,7 +1502,7 @@ function Plater.UpdateSelfPlate()
 	ClassNameplateManaBarFrame:SetSize (unpack (DB_PLATE_CONFIG.player.mana))
 end
 
--- se o jogador estiver em combate, colorir a barra de acordo com o aggro do jogador ~aggro
+-- se o jogador estiver em combate, colorir a barra de acordo com o aggro do jogador ~aggro ãggro
 
 local set_aggro_color = function (self, r, g, b) --self.actorName
 	if (DB_AGGRO_CHANGE_HEALTHBAR_COLOR) then
@@ -1852,6 +1852,11 @@ local shutdown_platesize_debug = function (timer)
 		end
 	end
 end
+
+local re_UpdatePlateClickSpace = function()
+	Plater.UpdatePlateClickSpace()
+end
+
 function Plater.UpdatePlateClickSpace (plateFrame, needReorder, isDebug, isConceal)
 	if (plateFrame) then
 		--if (isConceal) then
@@ -1868,11 +1873,15 @@ function Plater.UpdatePlateClickSpace (plateFrame, needReorder, isDebug, isConce
 	end
 
 	if (not plateFrame) then
+		if (not Plater.CanChangePlateSize()) then
+			return C_Timer.After (1, re_UpdatePlateClickSpace)
+		end
 		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 			Plater.UpdatePlateClickSpace (plateFrame, true, isDebug)
 		end
 		return
 	end
+	
 	local width, height = Plater.db.profile.click_space[1], Plater.db.profile.click_space[2]
 	if (Plater.CanChangePlateSize()) then
 		--ajusta o tamanho de uma unica barra
@@ -1942,9 +1951,11 @@ function Plater:PLAYER_REGEN_DISABLED()
 	if (Plater.db.profile.enemyplates_only_in_instances and (Plater.zoneInstanceType == "party" or Plater.zoneInstanceType == "raid")) then
 		return
 	end
+--[[
 	if (not InCombatLockdown() and Plater.db.profile.enemyplates_only_combat) then
 		SetCVar (CVAR_ENEMY_ALL, CVAR_ENABLED)
 	end
+--]]
 end
 function Plater:PLAYER_REGEN_ENABLED()
 	CAN_CHECK_AGGRO = true
@@ -1959,9 +1970,11 @@ function Plater:PLAYER_REGEN_ENABLED()
 	if (Plater.db.profile.enemyplates_only_in_instances and (Plater.zoneInstanceType == "party" or Plater.zoneInstanceType == "raid")) then
 		return
 	end
+--[[
 	if (not InCombatLockdown() and Plater.db.profile.enemyplates_only_combat) then
 		SetCVar (CVAR_ENEMY_ALL, CVAR_DISABLED)
 	end
+--]]
 	Plater.UpdateAllNameplateColors()
 end
 
@@ -2033,6 +2046,7 @@ function Plater:ZONE_CHANGED_NEW_AREA()
 	Plater.zoneInstanceType = instanceType
 	
 	if (instanceType == "party" or instanceType == "raid") then
+	--[[
 		if (GetCVar (CVAR_FRIENDLY_ALL) == CVAR_ENABLED and Plater.db.profile.friendlyplates_no_on_instances) then
 			SetCVar (CVAR_FRIENDLY_ALL, CVAR_DISABLED)
 		end
@@ -2044,17 +2058,18 @@ function Plater:ZONE_CHANGED_NEW_AREA()
 		elseif (GetCVar (CVAR_ENEMY_ALL) == CVAR_ENABLED and Plater.db.profile.enemyplates_only_combat and not InCombatLockdown()) then
 			SetCVar (CVAR_ENEMY_ALL, CVAR_DISABLED)
 		end
-		
+	--]]
 		Plater.UpdateAllPlates()
 		return
 	else
+	--[[
 		if (Plater.db.profile.friendlyplates_auto_show) then
 			SetCVar (CVAR_FRIENDLY_ALL, CVAR_ENABLED)
 		end
 		if (GetCVar (CVAR_ENEMY_ALL) == CVAR_ENABLED and Plater.db.profile.enemyplates_only_combat and not InCombatLockdown()) then
 			SetCVar (CVAR_ENEMY_ALL, CVAR_DISABLED)
 		end
-		
+	--]]
 		Plater.UpdateAllPlates()
 		return
 	end
@@ -3146,6 +3161,7 @@ function Plater.ForceChangeHealthBarColor (healthBar, r, g, b)
 	end
 end
 
+-- ~detector
 function Plater.CheckForDetectors (plateFrame)
 	local name, rank, texture, count, debuffType, duration, expirationTime, caster, _, nameplateShowPersonal, spellId, _, _, _, nameplateShowAll = UnitAura (plateFrame [MEMBER_UNITID], FILTER_BUFF_DETECTION)
 	if (name) then
@@ -6462,6 +6478,7 @@ end
 			max = 300,
 			step = 1,
 			name = "Width",
+			nocombat = true,
 			desc = "How large are area which accepts mouse clicks to select the target",
 		},
 		{
@@ -6475,6 +6492,7 @@ end
 			max = 100,
 			step = 1,
 			name = "Height",
+			nocombat = true,
 			desc = "The height of the are area which accepts mouse clicks to select the target",
 		},
 		{
@@ -6484,6 +6502,7 @@ end
 				Plater.db.profile.click_space_always_show = value
 				Plater.UpdatePlateClickSpace (nil, nil, true)
 			end,
+			nocombat = true,
 			name = "Always Show Background",
 			desc = "Enable a background showing the area of the clicable area.",
 		},
