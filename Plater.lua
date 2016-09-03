@@ -583,6 +583,7 @@ local CVAR_ANCHOR = "nameplateOtherAtBase"
 local CVAR_AGGROFLASH = "ShowNamePlateLoseAggroFlash"
 local CVAR_MOVEMENT_SPEED = "nameplateMotionSpeed"
 local CVAR_MIN_ALPHA = "nameplateMinAlpha"
+local CVAR_MIN_ALPHA_DIST = "nameplateMinAlphaDistance"
 local CVAR_SHOWALL = "nameplateShowAll"
 local CVAR_ENEMY_ALL = "nameplateShowEnemies"
 local CVAR_ENEMY_MINIONS = "nameplateShowEnemyMinions"
@@ -976,19 +977,21 @@ function Plater.OnInit()
 	FILTER_BUFFS_BANNED = PlaterDBChr.buffsBanned
 	FILTER_BUFF_DETECTION = GetSpellInfo (203761)
 	FILTER_BUFF_DETECTION2 = GetSpellInfo (213486)
-
-	local re_set_min_alpha = function()
-		Plater.SetMinAlpha()
+	
+	local re_ForceCVars = function()
+		Plater.ForceCVars()
 	end
-	function Plater.SetMinAlpha()
+	function Plater.ForceCVars()
 		if (InCombatLockdown()) then
-			return C_Timer.After (1, re_set_min_alpha)
+			return C_Timer.After (1, re_ForceCVars)
 		end
-		SetCVar (CVAR_MIN_ALPHA, 0.9)
+		SetCVar (CVAR_MIN_ALPHA, 0.90135484)
+		SetCVar (CVAR_MIN_ALPHA_DIST, -10^5.2)
 	end
 	
 	C_Timer.After (1, Plater.GetSpellForRangeCheck)
 	C_Timer.After (4, Plater.UpdateCullingDistance)
+	C_Timer.After (4.1, Plater.ForceCVars)
 	
 	--verifica se é a primeira vez que rodou o addon no personagem
 	local check_first_run = function()
@@ -4208,7 +4211,69 @@ local function distance (x1,y1,x2,y2)
 end
 
 -- ~cvar
+local cvarDiagList = {
+	"nameplateMaxDistance",
+	"nameplateOtherTopInset",
+	"nameplateOtherAtBase",
+	"nameplateMinAlpha",
+	"nameplateMinAlphaDistance",
+	"nameplateShowAll",
+	"nameplateShowEnemies",
+	"nameplateShowEnemyMinions",
+	"nameplateShowEnemyMinus",
+	"nameplateShowFriends",
+	"nameplateShowFriendlyGuardians",
+	"nameplateShowFriendlyPets",
+	"nameplateShowFriendlyTotems",
+	"nameplateShowFriendlyMinions",
+	"NamePlateHorizontalScale",
+	"NamePlateVerticalScale",
+}
 function SlashCmdList.PLATER (msg, editbox)
+	if (msg == "dignostico" or msg == "diag" or msg == "debug") then
+		
+		print ("Plater Diagnostic:")
+		for i = 1, #cvarDiagList do
+			local cvar = cvarDiagList [i]
+			print ("|cFFC0C0C0" .. cvar, "|r->", GetCVar (cvar))
+		end
+		
+		local alphaPlateFrame = "there's no nameplate in the screen"
+		local alphaUnitFrame = ""
+		local alphaHealthFrame = ""
+		local testPlate
+		
+		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+			if (plateFrame [MEMBER_REACTION] < 4) then
+				testPlate = plateFrame
+				alphaPlateFrame = plateFrame:GetAlpha()
+				alphaUnitFrame = plateFrame.UnitFrame:GetAlpha()
+				alphaHealthFrame = plateFrame.UnitFrame.healthBar:GetAlpha()
+				break
+			end
+		end
+		
+		print ("|cFFC0C0C0Alpha|r", "->", alphaPlateFrame, "-", alphaUnitFrame, "-", alphaHealthFrame)
+		
+		if (testPlate) then
+			local w, h = testPlate:GetSize()
+			print ("|cFFC0C0C0Size|r", "->", w, h, "-", testPlate.UnitFrame.healthBar:GetSize())
+			
+			local point1, anchorFrame, point2, x, y = testPlate:GetPoint (1)
+			print ("|cFFC0C0C0Point|r", "->", point1, anchorFrame:GetName(), point2, x, y)
+			
+			local plateIsShown = testPlate:IsShown() and "yes" or "no"
+			local unitFrameIsShown = testPlate.UnitFrame:IsShown() and "yes" or "no"
+			local healthBarIsShown = testPlate.UnitFrame.healthBar:IsShown() and "yes" or "no"
+			print ("|cFFC0C0C0ShownStatus|r", "->", plateIsShown, "-", unitFrameIsShown, "-", healthBarIsShown)
+		else
+			print ("|cFFC0C0C0Size|r", "-> there's no nameplate in the screen")
+			print ("|cFFC0C0C0Point|r", "-> there's no nameplate in the screen")
+			print ("|cFFC0C0C0ShownStatus|r", "-> there's no nameplate in the screen")
+		end
+		
+		return
+	end
 	Plater.OpenOptionsPanel()
 end
 local ignored_npcs = {
