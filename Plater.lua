@@ -472,10 +472,10 @@ local default_config = {
 		cast_statusbar_color = {1, .7, 0, 1},
 		cast_statusbar_color_nointerrupt = {.5, .5, .5, 1},
 		
-		friendlyplates_auto_show = false,
-		friendlyplates_no_on_instances = true,
-		enemyplates_only_combat = false,
-		enemyplates_only_in_instances = false,
+		friendlyplates_auto_show = false, --removed
+		friendlyplates_no_on_instances = true, --removed
+		enemyplates_only_combat = false, --removed
+		enemyplates_only_in_instances = false, --removed
 		
 		indicator_faction = true,
 		indicator_elite = true,
@@ -1921,6 +1921,8 @@ function Plater.UpdateAuraCache()
 			local spellName = GetSpellInfo (DB_TRACKING_DEBUFFLIST [i])
 			if (spellName) then
 				DEBUFF_CACHE [#DEBUFF_CACHE+1] = spellName
+			else
+				DEBUFF_CACHE [#DEBUFF_CACHE+1] = DB_TRACKING_DEBUFFLIST [i]
 			end
 		end
 	end
@@ -1930,6 +1932,8 @@ function Plater.UpdateAuraCache()
 			local spellName = GetSpellInfo (DB_TRACKING_BUFFLIST [i])
 			if (spellName) then
 				BUFF_CACHE [#BUFF_CACHE+1] = spellName
+			else
+				BUFF_CACHE [#BUFF_CACHE+1] = DB_TRACKING_BUFFLIST [i]
 			end
 		end
 	end
@@ -1948,14 +1952,6 @@ function Plater:PLAYER_REGEN_DISABLED()
 	
 	C_Timer.After (0.5, Plater.UpdateAllPlates)
 	Plater.CombatTime = GetTime()
-	if (Plater.db.profile.enemyplates_only_in_instances and (Plater.zoneInstanceType == "party" or Plater.zoneInstanceType == "raid")) then
-		return
-	end
---[[
-	if (not InCombatLockdown() and Plater.db.profile.enemyplates_only_combat) then
-		SetCVar (CVAR_ENEMY_ALL, CVAR_ENABLED)
-	end
---]]
 end
 function Plater:PLAYER_REGEN_ENABLED()
 	CAN_CHECK_AGGRO = true
@@ -1967,14 +1963,6 @@ function Plater:PLAYER_REGEN_ENABLED()
 	end
 	
 	C_Timer.After (0.5, Plater.UpdateAllPlates)
-	if (Plater.db.profile.enemyplates_only_in_instances and (Plater.zoneInstanceType == "party" or Plater.zoneInstanceType == "raid")) then
-		return
-	end
---[[
-	if (not InCombatLockdown() and Plater.db.profile.enemyplates_only_combat) then
-		SetCVar (CVAR_ENEMY_ALL, CVAR_DISABLED)
-	end
---]]
 	Plater.UpdateAllNameplateColors()
 end
 
@@ -2044,35 +2032,7 @@ function Plater:ZONE_CHANGED_NEW_AREA()
 	
 	local name, instanceType, difficultyID, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, instanceMapID, instanceGroupSize = GetInstanceInfo()
 	Plater.zoneInstanceType = instanceType
-	
-	if (instanceType == "party" or instanceType == "raid") then
-	--[[
-		if (GetCVar (CVAR_FRIENDLY_ALL) == CVAR_ENABLED and Plater.db.profile.friendlyplates_no_on_instances) then
-			SetCVar (CVAR_FRIENDLY_ALL, CVAR_DISABLED)
-		end
-		
-		--verifica se 'somente instancias' esta ligado
-		if (Plater.db.profile.enemyplates_only_in_instances) then
-			SetCVar (CVAR_ENEMY_ALL, CVAR_ENABLED)
-		--se não estiver, verifica se 'apenas em combate' esta ligado
-		elseif (GetCVar (CVAR_ENEMY_ALL) == CVAR_ENABLED and Plater.db.profile.enemyplates_only_combat and not InCombatLockdown()) then
-			SetCVar (CVAR_ENEMY_ALL, CVAR_DISABLED)
-		end
-	--]]
-		Plater.UpdateAllPlates()
-		return
-	else
-	--[[
-		if (Plater.db.profile.friendlyplates_auto_show) then
-			SetCVar (CVAR_FRIENDLY_ALL, CVAR_ENABLED)
-		end
-		if (GetCVar (CVAR_ENEMY_ALL) == CVAR_ENABLED and Plater.db.profile.enemyplates_only_combat and not InCombatLockdown()) then
-			SetCVar (CVAR_ENEMY_ALL, CVAR_DISABLED)
-		end
-	--]]
-		Plater.UpdateAllPlates()
-		return
-	end
+	Plater.UpdateAllPlates()
 end
 
 function Plater:PLAYER_ENTERING_WORLD()
@@ -5323,11 +5283,7 @@ local interface_options = {
 			nocombat = true,
 		},
 
-		
-		
 }
-
-
 
 local interface_title = Plater:CreateLabel (frontPageFrame, "Interface Options (from the client):", Plater:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
 interface_title:SetPoint (startX, startY)
@@ -7352,24 +7308,6 @@ end
 			end,
 			name = "Use Class Colors",
 			desc = "Player name plates uses the player class color",
-		},
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.friendlyplates_auto_show end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.friendlyplates_auto_show = value
-			end,
-			name = "Force Show Friendly",
-			desc = "When allowed, the addon try to enable nameplates for friendly characters.",
-		},
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.friendlyplates_no_on_instances end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.friendlyplates_no_on_instances = value
-			end,
-			name = "No Friendly on Instances",
-			desc = "Forces the addon to shutdown nameplates for friendly characters when entering an instance.",
 		},
 		{
 			type = "toggle",
@@ -9540,54 +9478,7 @@ end
 			end,
 			name = "Neutral Npc",
 			desc = "Nameplate has this color when a neutral mob is a quest objective.",
-		},			
-	
-		{type = "blank"},
-		{type = "label", get = function() return "Automatization:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.enemyplates_only_combat end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.enemyplates_only_combat = value
-				if (value) then
-					--apenas mostrar durante o combate
-					if (not InCombatLockdown()) then
-						Plater:PLAYER_REGEN_ENABLED()
-					end
-				else
-					if (not Plater.db.profile.enemyplates_only_in_instances or (Plater.db.profile.enemyplates_only_in_instances and IsInInstance())) then
-						if (not InCombatLockdown()) then
-							SetCVar (CVAR_ENEMY_ALL, CVAR_ENABLED)
-						end
-					end
-				end
-			end,
-			name = "Only Show in Combat",
-			desc = "Tries to hide enemy nameplates when you aren't in combat.",
 		},
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.enemyplates_only_in_instances end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.enemyplates_only_in_instances = value
-				if (value) then
-					Plater:ZONE_CHANGED_NEW_AREA()
-				else
-					if (Plater.db.profile.enemyplates_only_combat) then
-						if (not InCombatLockdown()) then
-							Plater:PLAYER_REGEN_ENABLED()
-						end
-					else
-						if (not InCombatLockdown()) then
-							SetCVar (CVAR_ENEMY_ALL, CVAR_ENABLED)
-						end
-					end
-					
-				end
-			end,
-			name = "Only on Instances",
-			desc = "Tries to hide enemy nameplates when you aren't inside instances.",
-		},	
 	}
 	DF:BuildMenu (enemyNPCsFrame, options_table2, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 
