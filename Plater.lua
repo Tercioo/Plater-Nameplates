@@ -1031,6 +1031,8 @@ function Plater.OnInit()
 	Plater:RegisterEvent ("PLAYER_REGEN_ENABLED")
 	Plater:RegisterEvent ("PLAYER_TARGET_CHANGED")
 	Plater:RegisterEvent ("ZONE_CHANGED_NEW_AREA")
+	Plater:RegisterEvent ("ZONE_CHANGED_INDOORS")
+	Plater:RegisterEvent ("ZONE_CHANGED")
 	Plater:RegisterEvent ("FRIENDLIST_UPDATE")
 	Plater:RegisterEvent ("PLAYER_LOGOUT")
 	Plater:RegisterEvent ("QUEST_ACCEPTED")
@@ -1178,7 +1180,7 @@ function Plater.OnInit()
 	InstallHook (Plater.GetDriverGlobalObject (NPB_Name), Plater.DriverFuncNames.OnUpdateBuffs, Plater.UpdateAuraIcons)
 	function Plater.RefreshAuras()
 		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do 
-			Plater.UpdateAuraIcons (plateFrame.UnitFrame.BuffFrame)
+			Plater.UpdateAuraIcons (plateFrame.UnitFrame.BuffFrame, plateFrame [MEMBER_UNITID])
 		end
 	end
 	
@@ -2036,6 +2038,14 @@ function Plater:ZONE_CHANGED_NEW_AREA()
 	local name, instanceType, difficultyID, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, instanceMapID, instanceGroupSize = GetInstanceInfo()
 	Plater.zoneInstanceType = instanceType
 	Plater.UpdateAllPlates()
+end
+
+function Plater:ZONE_CHANGED_INDOORS()
+	return Plater:ZONE_CHANGED_NEW_AREA()
+end
+
+function Plater:ZONE_CHANGED()
+	return Plater:ZONE_CHANGED_NEW_AREA()
 end
 
 function Plater:PLAYER_ENTERING_WORLD()
@@ -3895,6 +3905,7 @@ end
 
 Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ãdded
 	--pega a nameplate deste jogador
+	
 	local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId)
 	
 	--use our own classification icons
