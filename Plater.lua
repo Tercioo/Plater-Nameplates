@@ -78,6 +78,8 @@ LibSharedMedia:Register ("font", "TrashHand", [[Interface\Addons\Plater\fonts\Tr
 LibSharedMedia:Register ("font", "Harry P", [[Interface\Addons\Plater\fonts\HARRYP__.TTF]])
 LibSharedMedia:Register ("font", "FORCED SQUARE", [[Interface\Addons\Plater\fonts\FORCED SQUARE.ttf]])
 
+
+
 local _
 local default_config = {
 	
@@ -333,6 +335,7 @@ local default_config = {
 				percent_text_anchor = {side = 9, x = 0, y = 0},
 				percent_text_alpha = 1,
 				percent_text_ooc = false,
+				percent_show_health = false,
 				
 				quest_enabled = true,
 				quest_color_enemy = {1, .369, 0},
@@ -1816,12 +1819,12 @@ local EventTickFunction = function (tickFrame, deltaTime)
 			end
 			
 			if (DB_PLATE_CONFIG [tickFrame.actorType].percent_text_enabled) then
-				Plater.UpdateLifePercentText (tickFrame.HealthBar.lifePercent, unitFrame.unit)
+				Plater.UpdateLifePercentText (tickFrame.HealthBar.lifePercent, unitFrame.unit, DB_PLATE_CONFIG [tickFrame.actorType].percent_show_health)
 			end
 		else
 			--nao esta em combate, verifica se a porcetagem esta para mostrar fora de combate
 			if (DB_PLATE_CONFIG [tickFrame.actorType].percent_text_enabled and DB_PLATE_CONFIG [tickFrame.actorType].percent_text_ooc) then
-				Plater.UpdateLifePercentText (tickFrame.HealthBar.lifePercent, unitFrame.unit)
+				Plater.UpdateLifePercentText (tickFrame.HealthBar.lifePercent, unitFrame.unit, DB_PLATE_CONFIG [tickFrame.actorType].percent_show_health)
 				tickFrame.HealthBar.lifePercent:Show()
 			end
 		end
@@ -2649,7 +2652,7 @@ function Plater.UpdatePlateText (plateFrame, plateConfigs)
 		DF:SetFontColor (lifeString, plateConfigs.percent_text_color)
 		Plater.SetAnchor (lifeString, plateConfigs.percent_text_anchor)
 		lifeString:SetAlpha (plateConfigs.percent_text_alpha)
-		Plater.UpdateLifePercentText (lifeString, plateFrame.namePlateUnitToken)
+		Plater.UpdateLifePercentText (lifeString, plateFrame.namePlateUnitToken, plateConfigs.percent_show_health)
 	else
 		lifeString:Hide()
 	end
@@ -2671,10 +2674,15 @@ function Plater.UpdatePlateText (plateFrame, plateConfigs)
 	end
 end
 
-function Plater.UpdateLifePercentText (lifeString, unitId)
+function Plater.UpdateLifePercentText (lifeString, unitId, showHealthAmount)
 	local currentHealth, maxHealth = UnitHealth (unitId), UnitHealthMax (unitId)
 	--lifeString:SetText (string.format ("%.2f", currentHealth / maxHealth * 100) .. "%")
-	lifeString:SetText (floor (currentHealth / maxHealth * 100) .. "%")
+	if (showHealthAmount) then
+		--percent_show_health
+		lifeString:SetText (DF.FormatNumber (currentHealth) .. " (" .. floor (currentHealth / maxHealth * 100) .. "%)")
+	else
+		lifeString:SetText (floor (currentHealth / maxHealth * 100) .. "%")
+	end
 end
 
 -- ~raidmarker ~raidtarget 
@@ -9413,6 +9421,17 @@ end
 			step = 1,
 			name = "Y Offset",
 			desc = "Slightly move the text vertically.",
+		},
+		--health amount
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.plate_config.enemynpc.percent_show_health end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.enemynpc.percent_show_health = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Show Health Amount",
+			desc = "Show Health Amount",
 		},
 		
 		{type = "blank"},
