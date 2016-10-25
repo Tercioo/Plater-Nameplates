@@ -1,4 +1,4 @@
-## Interface: 70000
+## Interface: 70100
 ## Title: Plater
 ## Notes: Config the new name plates
 ## SavedVariables: PlaterDB
