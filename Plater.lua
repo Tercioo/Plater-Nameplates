@@ -2439,11 +2439,11 @@ function Plater.QuestLogUpdated()
 end
 
 function Plater.FormatTextForFriend (plateFrame, actorNameString, playerName, plateConfigs)
-	if (GetGuildInfo (plateFrame.UnitFrame.unit) == Plater.PlayerGuildName) then
+	--if (GetGuildInfo (plateFrame.UnitFrame.unit) == Plater.PlayerGuildName) then
 		--DF:SetFontColor (actorNameString, "lime")
-		DF:SetFontColor (actorNameString, "chartreuse")
-		DF:SetFontOutline (actorNameString, false)
-	end	
+	--	DF:SetFontColor (actorNameString, "chartreuse")
+	--	DF:SetFontOutline (actorNameString, false)
+	--end	
 end
 
 -- ~updatetext
@@ -2745,7 +2745,7 @@ function Plater.UpdatePlateSize (plateFrame, justAdded)
 	local castFrame = unitFrame.castBar
 	local buffFrame = unitFrame.BuffFrame
 	local nameFrame = unitFrame.healthBar.actorName
-
+	
 	local isMinus = Plater.ShouldForceSmallBar (plateFrame)
 	local isInCombat = InCombatLockdown()
 
@@ -2882,6 +2882,7 @@ function Plater.UpdatePlateSize (plateFrame, justAdded)
 					healthFrame.IsDecreasingHeight = nil
 					healthFrame.TargetHeight = targetHeight
 					healthFrame.ToIncreace = targetHeight - currentHeight
+					--print ("!", healthFrame.ToIncreace, 2886)
 					healthFrame:SetScript ("OnUpdate", change_height_up)
 				end
 			elseif (currentHeight > targetHeight) then
@@ -2963,6 +2964,7 @@ function Plater.UpdatePlateSize (plateFrame, justAdded)
 					healthFrame.IsDecreasingHeight = nil
 					healthFrame.TargetHeight = targetHeight
 					healthFrame.ToIncreace = targetHeight - currentHeight
+					--print (healthFrame:GetName())
 					healthFrame:SetScript ("OnUpdate", change_height_up)
 				end
 			elseif (currentHeight > targetHeight) then
@@ -3716,6 +3718,39 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame) -- ~created
 	local healthBar = plateFrame.UnitFrame.healthBar
 	plateFrame.NameAnchor = 0
 	
+--[=[
+	local frameName = "PlaterHealthBar" .. math.random (1000*1000)
+	local newHealthBar = CreateFrame ("StatusBar", frameName, UIParent)
+
+	for a, b in pairs (healthBar) do
+		--newHealthBar [a] = b
+	end
+
+	newHealthBar.myHealPrediction = healthBar.myHealPrediction
+	newHealthBar.myHealAbsorb = healthBar.myHealAbsorb
+	newHealthBar.myHealAbsorbLeftShadow = healthBar.myHealAbsorbLeftShadow
+	newHealthBar.myHealAbsorbRightShadow = healthBar.myHealAbsorbRightShadow
+	newHealthBar.otherHealPrediction = healthBar.otherHealPrediction
+	newHealthBar.totalAbsorb = healthBar.totalAbsorb
+	newHealthBar.totalAbsorbOverlay = healthBar.totalAbsorbOverlay
+	newHealthBar.overAbsorbGlow = healthBar.overAbsorbGlow
+	newHealthBar.overHealAbsorbGlow = healthBar.overHealAbsorbGlow
+	
+	--
+	newHealthBar.background = healthBar.background
+	newHealthBar.border = healthBar.border
+	newHealthBar.barTexture = healthBar.barTexture
+	newHealthBar:SetStatusBarTexture (healthBar.barTexture)
+	--
+	
+--	print (newHealthBar, newHealthBar:GetName())
+	
+	plateFrame.UnitFrame.healthBar = newHealthBar
+	plateFrame.UnitFrame.newHealthBar = newHealthBar
+	healthBar = newHealthBar
+	newHealthBar.IsNew = true
+--]=]
+
 	--highlight para o mouse over
 	local mouseHighlight = healthBar:CreateTexture (nil, "overlay")
 	mouseHighlight:SetDrawLayer ("overlay", 7)
