@@ -396,25 +396,37 @@ local default_config = {
 		
 		resources = {
 			MONK = {
-				chi_scale = 2,
+				chi_scale = 0.95,
+				y_offset = 0,
+				background_alpha = 0.75,
 			},
 			MAGE = {
-				arcane_charge_scale = 1,
+				arcane_charge_scale = 0.95,
+				y_offset = 0,
 			},
 			DEATHKNIGHT = {
 				rune_scale = 1,
+				y_offset = 0,
 			},
 			PALADIN = {
-				holypower_scale = 1,
+				holypower_scale = 0.95,
+				y_offset = 0,
+				background_alpha = 0.75,
 			},
 			ROGUE = {
-				combopoint_scale = 1,
+				combopoint_scale = 0.95,
+				y_offset = 0,
+				background_alpha = 0.75,
 			},
 			DRUID = {
-				combopoint_scale = 1,
+				combopoint_scale = 0.95,
+				y_offset = 0,
+				background_alpha = 0.75,
 			},
 			WARLOCK = {
-				soulshard_scale = 1,
+				soulshard_scale = 0.95,
+				y_offset = 0,
+				background_alpha = 0.75,
 			},
 		},
 
@@ -957,11 +969,12 @@ function Plater.OnInit()
 		Plater.RegenIsDisabled = true
 	end
 	
-	Plater.InjectOnDefaultOptions (CNP_Name, Plater.DriverConfigType ["FRIENDLY"], Plater.DriverConfigMembers ["CanShowUnitName"], false)
-	Plater.InjectOnDefaultOptions (CNP_Name, Plater.DriverConfigType ["ENEMY"], Plater.DriverConfigMembers ["CanShowUnitName"], false)
-	Plater.InjectOnDefaultOptions (CNP_Name, Plater.DriverConfigType ["FRIENDLY"], Plater.DriverConfigMembers ["UseRangeCheck"], false)
-	Plater.InjectOnDefaultOptions (CNP_Name, Plater.DriverConfigType ["ENEMY"], Plater.DriverConfigMembers ["UseRangeCheck"], false)
-	Plater.InjectOnDefaultOptions (CNP_Name, Plater.DriverConfigType ["ENEMY"], Plater.DriverConfigMembers ["UseAlwaysHostile"], false)
+	
+--	Plater.InjectOnDefaultOptions (CNP_Name, Plater.DriverConfigType ["FRIENDLY"], Plater.DriverConfigMembers ["CanShowUnitName"], false)
+--	Plater.InjectOnDefaultOptions (CNP_Name, Plater.DriverConfigType ["ENEMY"], Plater.DriverConfigMembers ["CanShowUnitName"], false)
+--	Plater.InjectOnDefaultOptions (CNP_Name, Plater.DriverConfigType ["FRIENDLY"], Plater.DriverConfigMembers ["UseRangeCheck"], false)
+--	Plater.InjectOnDefaultOptions (CNP_Name, Plater.DriverConfigType ["ENEMY"], Plater.DriverConfigMembers ["UseRangeCheck"], false)
+--	Plater.InjectOnDefaultOptions (CNP_Name, Plater.DriverConfigType ["ENEMY"], Plater.DriverConfigMembers ["UseAlwaysHostile"], false)
 	
 	--configuração do personagem
 	PlaterDBChr = PlaterDBChr or {first_run = {}}
@@ -1030,14 +1043,18 @@ function Plater.OnInit()
 	Plater:RegisterEvent ("NAME_PLATE_CREATED")
 	Plater:RegisterEvent ("NAME_PLATE_UNIT_ADDED")
 	Plater:RegisterEvent ("NAME_PLATE_UNIT_REMOVED")
+	
+	Plater:RegisterEvent ("PLAYER_TARGET_CHANGED")
+	
 	Plater:RegisterEvent ("PLAYER_REGEN_DISABLED")
 	Plater:RegisterEvent ("PLAYER_REGEN_ENABLED")
-	Plater:RegisterEvent ("PLAYER_TARGET_CHANGED")
+	
 	Plater:RegisterEvent ("ZONE_CHANGED_NEW_AREA")
 	Plater:RegisterEvent ("ZONE_CHANGED_INDOORS")
 	Plater:RegisterEvent ("ZONE_CHANGED")
 	Plater:RegisterEvent ("FRIENDLIST_UPDATE")
 	Plater:RegisterEvent ("PLAYER_LOGOUT")
+	
 	Plater:RegisterEvent ("QUEST_ACCEPTED")
 	Plater:RegisterEvent ("QUEST_ACCEPT_CONFIRM")
 	Plater:RegisterEvent ("QUEST_COMPLETE")
@@ -1049,6 +1066,7 @@ function Plater.OnInit()
 	Plater:RegisterEvent ("QUEST_LOG_UPDATE")
 	Plater:RegisterEvent ("UNIT_QUEST_LOG_CHANGED")
 	Plater:RegisterEvent ("PLAYER_SPECIALIZATION_CHANGED")
+
 	
 	--seta o nome do jogador na barra dele --ajuda a evitar os 'desconhecidos' pelo cliente do jogo (frame da unidade)
 	InstallHook (Plater.GetDriverSubObjectName (CUF_Name, Plater.DriverFuncNames.OnNameUpdate), function (self)
@@ -1057,6 +1075,7 @@ function Plater.OnInit()
 			plateFrame [MEMBER_NAME] = UnitName (self.unit)
 			
 			Plater.UpdateUnitName (plateFrame)
+			self.name:SetText ("")
 			
 			if (plateFrame.actorType == ACTORTYPE_FRIENDLY_PLAYER) then
 				Plater.FormatTextForFriend (self:GetParent(), self.healthBar.actorName, self.name:GetText(), DB_PLATE_CONFIG [self:GetParent().actorType])
@@ -1103,7 +1122,8 @@ function Plater.OnInit()
 			nameplate.UnitFrame.BuffFrame:UpdateBuffs (unit, filter);
 		end
 	end
-	InstallOverride (NPF_Name, Plater.DriverFuncNames.OnAuraUpdate, Override_UNIT_AURA_EVENT)
+	--InstallOverride (NPF_Name, Plater.DriverFuncNames.OnAuraUpdate, Override_UNIT_AURA_EVENT)
+	InstallHook (_G [NPF_Name], Plater.DriverFuncNames.OnAuraUpdate, Override_UNIT_AURA_EVENT)
 	
 	local auraWatch = function (ticker)
 		ticker.cooldown.Timer:SetText (floor (ticker.expireTime-GetTime()))
@@ -1111,14 +1131,19 @@ function Plater.OnInit()
 	local BUFF_MAX_DISPLAY = BUFF_MAX_DISPLAY
 	local CooldownFrame_Set = CooldownFrame_Set
 	
-	function Plater.Override_UpdateBuffs (self, unit, filter)
-		--não esta sendo mais usado
-		if (true) then
-			return
-		end
+	function Plater.Override_UpdateBuffs (self, unit, filter, showAll)
+		self.isActive = false
+		self:Show()
+		
+		for i = 1, BUFF_MAX_DISPLAY do
+			if (self.buffList[i] and self.buffList[i].InUse) then
+				self.buffList[i]:Show()
+			end
+		end		
 	end
 	
-	InstallOverride (NPB_Name, Plater.DriverFuncNames.OnUpdateBuffs, Plater.Override_UpdateBuffs)
+	--InstallOverride (NPB_Name, Plater.DriverFuncNames.OnUpdateBuffs, Plater.Override_UpdateBuffs)
+	InstallHook (_G [NPB_Name], Plater.DriverFuncNames.OnUpdateBuffs, Plater.Override_UpdateBuffs)
 	--buffcontainermixin é diferente de nameplate frame mixin
 	
 	--sobrepõe a função, economiza processamento uma vez que o resultado da função original não é usado
@@ -1127,7 +1152,8 @@ function Plater.OnInit()
 			self:SetPoint (self.Point1, self.Anchor, self.Point2, self.X, self.Y)
 		end
 	end
-	InstallOverride (NPB_Name, Plater.DriverFuncNames.OnUpdateAnchor, Override_UNIT_AURA_ANCHORUPDATE)
+	--InstallOverride (NPB_Name, Plater.DriverFuncNames.OnUpdateAnchor, Override_UNIT_AURA_ANCHORUPDATE)
+	InstallHook (_G [NPB_Name], Plater.DriverFuncNames.OnUpdateAnchor, Override_UNIT_AURA_ANCHORUPDATE)
 	
 	--tamanho dos ícones dos debuffs sobre a nameplate
 	function Plater.UpdateAuraIcons (self, unit, filter)
@@ -1253,7 +1279,8 @@ function Plater.OnInit()
 		end
 	end)
 	
-	InstallHook (Plater.GetDriverSubObjectName (CBF_Name, Plater.DriverFuncNames.OnCastBarEvent), function (self, event, ...)
+	
+	local CastBarOnEventHook = function (self, event, ...)
 	
 		local unit = ...
 		
@@ -1334,9 +1361,10 @@ function Plater.OnInit()
 				
 			end
 		end
-	end)
+	end
+	InstallHook (Plater.GetDriverSubObjectName (CBF_Name, Plater.DriverFuncNames.OnCastBarEvent), CastBarOnEventHook)
 	
-	InstallHook (Plater.GetDriverSubObjectName (CBF_Name, Plater.DriverFuncNames.OnTick), function (self, deltaTime)
+	local CastBarOnTickHook = function (self, deltaTime)
 		if (self.percentText) then --é uma castbar do plater?
 			self.ThrottleUpdate = self.ThrottleUpdate - deltaTime
 			if (self.ThrottleUpdate < 0) then
@@ -1357,7 +1385,10 @@ function Plater.OnInit()
 				self.ThrottleUpdate = DB_TICK_THROTTLE
 			end
 		end
-	end)
+	end
+	InstallHook (Plater.GetDriverSubObjectName (CBF_Name, Plater.DriverFuncNames.OnTick), CastBarOnTickHook)
+	
+	
 
 	InstallHook (Plater.GetDriverSubObjectName (CUF_Name, Plater.DriverFuncNames.OnUpdateHealth), function (self)
 		local plateFrame = self:GetParent()
@@ -1384,11 +1415,12 @@ function Plater.OnInit()
 		end
 	end)
 	
+	
 	local powerPercent = ClassNameplateManaBarFrame:CreateFontString (nil, "overlay", "GameFontNormal")
 	ClassNameplateManaBarFrame.powerPercent = powerPercent
 	powerPercent:SetPoint ("center")
 	powerPercent:SetText ("100%")
-	
+
 	ClassNameplateManaBarFrame:HookScript ("OnValueChanged", function (self)
 		ClassNameplateManaBarFrame.powerPercent:SetText (floor (self:GetValue()/select (2, self:GetMinMaxValues()) * 100) .. "%")
 	end)
@@ -1405,7 +1437,7 @@ function Plater.OnInit()
 	InstallHook (Plater.GetDriverGlobalObject (MAB_Name), Plater.DriverFuncNames.OnManaBarOptionsUpdate, function()
 		ClassNameplateManaBarFrame:SetSize (unpack (DB_PLATE_CONFIG.player.mana))
 	end)
-
+--]=]
 	--> ~db
 	Plater.db.RegisterCallback (Plater, "OnProfileChanged", "RefreshConfig")
 	Plater.db.RegisterCallback (Plater, "OnProfileCopied", "RefreshConfig")
@@ -1416,7 +1448,6 @@ function Plater.OnInit()
 	
 	Plater.UpdateSelfPlate()
 	Plater.UpdateUseClassColors()
-	Plater.GetFactionNpcLocs()
 	
 	C_Timer.After (4.1, Plater.QuestLogUpdated)
 	C_Timer.After (5.1, Plater.UpdateAllPlates)
@@ -1651,7 +1682,7 @@ end
 
 
 local auraWatch = function (ticker)
-	ticker.cooldown.Timer:SetText (floor (ticker.expireTime-GetTime()))
+	ticker.cooldown.Timer:SetText (floor (ticker.expireTime-GetTime())) --error Timer is NIL
 end
 local BUFF_MAX_DISPLAY = BUFF_MAX_DISPLAY
 local CooldownFrame_Set = CooldownFrame_Set
@@ -1673,6 +1704,14 @@ local AddAura = function (self, i, name, rank, texture, count, debuffType, durat
 	end
 	
 	local buff = self.buffList [i]
+	
+	if (not buff.Cooldown.Timer) then
+		--> in case the aura got created inside default UI
+		local timer = buff.Cooldown:CreateFontString (nil, "overlay", "NumberFontNormal")
+		buff.Cooldown.Timer = timer
+		timer:SetPoint ("center")
+	end
+	
 	buff:SetID (i)
 	buff.name = name
 	buff.spellId = spellId
@@ -1690,7 +1729,7 @@ local AddAura = function (self, i, name, rank, texture, count, debuffType, durat
 	else
 		buff:SetBackdropBorderColor (0, 0, 0, 0)
 	end
-
+	
 	if (buff.Cooldown.TimerTicker and not buff.Cooldown.TimerTicker._cancelled) then
 		buff.Cooldown.TimerTicker:Cancel()
 	end
@@ -1702,7 +1741,7 @@ local AddAura = function (self, i, name, rank, texture, count, debuffType, durat
 		local ticker = C_Timer.NewTicker (.33, auraWatch, timeLeft*3)
 		ticker.expireTime = expirationTime
 		ticker.cooldown = buff.Cooldown
-		buff.Cooldown.Timer:Show()
+		buff.Cooldown.Timer:Show() --error Timer is NIL
 		buff.Cooldown.TimerTicker = ticker
 		auraWatch (ticker)
 	else
@@ -1710,12 +1749,14 @@ local AddAura = function (self, i, name, rank, texture, count, debuffType, durat
 	end
 	
 	buff:Show()
+	buff.InUse = true
 	return buff
 end
 
 local hide_non_used_auraFrames = function (self, auraIndex)
 	for i = auraIndex, #self do
 		self[i]:Hide()
+		self[i].InUse = false
 	end
 end
 
@@ -1780,6 +1821,9 @@ local EventTickFunction = function (tickFrame, deltaTime)
 	tickFrame.ThrottleUpdate = tickFrame.ThrottleUpdate - deltaTime
 	local unitFrame = tickFrame.UnitFrame
 	
+	unitFrame.healthBar:SetStatusBarColor (unitFrame.healthBar.R, unitFrame.healthBar.G, unitFrame.healthBar.B)
+--	print (unitFrame.healthBar.R, unitFrame.healthBar.G, unitFrame.healthBar.B)
+	
 	if (tickFrame.ThrottleUpdate < 0) then
 		--crowd control
 		if (unitFrame.hasCC) then
@@ -1839,9 +1883,12 @@ end
 --considerSelectionInCombatAsHostile option
 --UNIT_THREAT_LIST_UPDATE
 
+--força a default UI a trocar a cor das barras
 function Plater.UpdateAllNameplateColors()
 	for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-		CompactUnitFrame_UpdateHealthColor (plateFrame.UnitFrame)
+		--CompactUnitFrame_UpdateHealthColor (plateFrame.UnitFrame)
+		local healthBar = plateFrame.UnitFrame.healthBar
+		Plater.ForceChangeHealthBarColor (healthBar, healthBar.r, healthBar.g, healthBar.b)
 	end
 end
 
@@ -1971,7 +2018,7 @@ function Plater:PLAYER_REGEN_ENABLED()
 	end
 	
 	C_Timer.After (0.5, Plater.UpdateAllPlates)
-	Plater.UpdateAllNameplateColors()
+	Plater.UpdateAllNameplateColors() --vai dar erro? deu erro
 end
 
 function Plater.FRIENDLIST_UPDATE()
@@ -2826,7 +2873,9 @@ function Plater.UpdatePlateSize (plateFrame, justAdded)
 		--player
 		if (plateFrame.isSelf) then
 			Plater.UpdateManaAndResourcesBar()
-			healthFrame.barTexture:SetVertexColor (DF:ParseColors ("lightgreen"))
+			local r, g, b = DF:ParseColors ("lightgreen")
+			healthFrame.barTexture:SetVertexColor (r, g, b)
+			healthFrame.R, healthFrame.G, healthFrame.B = r, g, b
 		end
 		
 	elseif (order == 2) then
@@ -2994,6 +3043,7 @@ function Plater.UpdatePlateSize (plateFrame, justAdded)
 end
 
 function Plater.UpdateManaAndResourcesBar()
+
 	local profile = Plater.db.profile
 	local manaConfig = profile.plate_config [ACTORTYPE_PLAYER].mana
 	local locClass, class = UnitClass ("player")
@@ -3019,15 +3069,22 @@ function Plater.UpdateManaAndResourcesBar()
 		ClassNameplateBarWindwalkerMonkFrame:ClearAllPoints()
 		ClassNameplateBarWindwalkerMonkFrame:SetPoint ("topleft", anchorFrame, "bottomleft")
 		ClassNameplateBarWindwalkerMonkFrame:SetPoint ("topright", anchorFrame, "bottomright")
-		--ClassNameplateBarWindwalkerMonkFrame:SetSize (width, height-2)
+		
 		local f = ClassNameplateBarWindwalkerMonkFrame
+		
 		local scale = profile.resources.MONK.chi_scale
-		for i = 1, 5 do
+		local y_offset = profile.resources.MONK.y_offset
+		local background_alpha = profile.resources.MONK.background_alpha
+		
+		for i = 1, 6 do
 			local chi = f ["Chi" .. i]
-			chi:SetScale (scale)
-			local width = chi:GetWidth()
-			chi:ClearAllPoints()
-			chi:SetPoint ("center", (i-3)*width, 0)
+			if (chi) then
+				chi:SetScale (scale)
+				chi.OrbOff:SetAlpha (background_alpha)
+				local width = chi:GetWidth()
+				chi:ClearAllPoints()
+				chi:SetPoint ("center", (i-3)*width, y_offset)
+			end
 		end
 		
 	--arcane charge
@@ -3038,12 +3095,14 @@ function Plater.UpdateManaAndResourcesBar()
 		f:SetPoint ("topright", anchorFrame, "bottomright")
 		
 		local scale = profile.resources.MAGE.arcane_charge_scale
+		local y_offset = profile.resources.MAGE.y_offset
+		
 		for i = 1, 4 do
 			local charge = f ["Charge" .. i]
 			charge:SetScale (scale)
 			local width = charge:GetWidth()
 			charge:ClearAllPoints()
-			charge:SetPoint ("center", (i-2.5)*width, 0)
+			charge:SetPoint ("center", (i-2.5)*width, y_offset)
 		end
 	
 	--dk runes
@@ -3054,12 +3113,16 @@ function Plater.UpdateManaAndResourcesBar()
 		f:SetPoint ("topright", anchorFrame, "bottomright")
 		
 		local scale = profile.resources.DEATHKNIGHT.rune_scale
+		local y_offset = profile.resources.DEATHKNIGHT.y_offset
+		
 		for i = 1, 6 do
 			local charge = f ["Rune" .. i]
-			charge:SetScale (scale)
-			local width = charge:GetWidth()
-			charge:ClearAllPoints()
-			charge:SetPoint ("center", (i-3.5)*width, 0)
+			if (charge) then
+				charge:SetScale (scale)
+				local width = charge:GetWidth()
+				charge:ClearAllPoints()
+				charge:SetPoint ("center", (i-3.5)*width, y_offset)
+			end
 		end
 
 	--paladin holy power
@@ -3070,12 +3133,18 @@ function Plater.UpdateManaAndResourcesBar()
 		f:SetPoint ("topright", anchorFrame, "bottomright")
 		
 		local scale = profile.resources.PALADIN.holypower_scale
+		local y_offset = profile.resources.PALADIN.y_offset
+		local background_alpha = profile.resources.PALADIN.background_alpha
+		
 		for i = 1, 5 do
 			local charge = f ["Rune" .. i]
 			charge:SetScale (scale)
+			if (charge.OffTexture) then
+				charge.OffTexture:SetAlpha (background_alpha)
+			end
 			local width = charge:GetWidth()
 			charge:ClearAllPoints()
-			charge:SetPoint ("center", (i-3)*width, 0)
+			charge:SetPoint ("center", (i-3)*width, y_offset)
 		end
 		
 	elseif (class == "ROGUE" or class == "DRUID") then
@@ -3084,27 +3153,37 @@ function Plater.UpdateManaAndResourcesBar()
 		f:SetPoint ("topleft", anchorFrame, "bottomleft")
 		f:SetPoint ("topright", anchorFrame, "bottomright")
 		
-		local scale
+		local scale, background_alpha, y_offset
 		if (class == "ROGUE") then
 			scale = profile.resources.ROGUE.combopoint_scale
+			background_alpha = profile.resources.ROGUE.background_alpha
+			y_offset = profile.resources.ROGUE.y_offset
 		elseif (class == "DRUID") then
 			scale = profile.resources.DRUID.combopoint_scale
+			background_alpha = profile.resources.DRUID.background_alpha
+			y_offset = profile.resources.DRUID.y_offset
 		end
 		
 		for i = 1, 5 do
 			local charge = f ["Combo" .. i]
-			charge:SetScale (scale)
-			local width = charge:GetWidth()
-			charge:ClearAllPoints()
-			charge:SetPoint ("center", (i-3)*width, 0)
+			if (charge) then
+				charge:SetScale (scale)
+				charge.Background:SetAlpha (background_alpha)
+				local width = charge:GetWidth()
+				charge:ClearAllPoints()
+				charge:SetPoint ("center", (i-3)*width, y_offset)
+			end
 		end
 		for i = 6, 8 do
 			local charge = f ["Combo" .. i]
-			charge:SetScale (scale)
-			local width = charge:GetWidth()
-			local height = charge:GetWidth()
-			charge:ClearAllPoints()
-			charge:SetPoint ("center", (i-2)*width, -(height/2)-3)
+			if (charge) then
+				charge:SetScale (scale)
+				charge.Background:SetAlpha (background_alpha)
+				local width = charge:GetWidth()
+				local height = charge:GetWidth()
+				charge:ClearAllPoints()
+				charge:SetPoint ("center", (i-2)*width, (-(height/2)-3) + y_offset)
+			end
 		end
 
 	--warlock soul shards
@@ -3115,12 +3194,20 @@ function Plater.UpdateManaAndResourcesBar()
 		f:SetPoint ("topright", anchorFrame, "bottomright")
 		
 		local scale = profile.resources.WARLOCK.soulshard_scale
+		local y_offset = profile.resources.WARLOCK.y_offset
+		local background_alpha = profile.resources.WARLOCK.background_alpha
+		
 		for i = 1, 5 do
-			local charge = f ["Shard" .. i]
-			charge:SetScale (scale)
-			local width = charge:GetWidth()
-			charge:ClearAllPoints()
-			charge:SetPoint ("center", (i-3)*width, 0)
+			local charge = f.Shards [i]
+			if (charge) then
+				charge:SetScale (scale)
+				
+				charge.ShardOff:SetAlpha (background_alpha)
+				
+				local width = charge:GetWidth()
+				charge:ClearAllPoints()
+				charge:SetPoint ("center", (i-3)*width, y_offset)
+			end
 		end
 		
 	end
@@ -3135,11 +3222,10 @@ function Plater.ShouldForceSmallBar (plateFrame)
 	end
 end
 
-
-
 function Plater.ForceChangeHealthBarColor (healthBar, r, g, b)
-	if (r ~= healthBar.r or g ~= healthBar.g or b ~= healthBar.b) then
-		healthBar.r, healthBar.g, healthBar.b = r, g, b
+	if (r ~= healthBar.R or g ~= healthBar.G or b ~= healthBar.B) then
+		--healthBar.r, healthBar.g, healthBar.b = r, g, b
+		healthBar.R, healthBar.G, healthBar.B = r, g, b
 		healthBar.barTexture:SetVertexColor (r, g, b)
 	end
 end
@@ -3963,6 +4049,8 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ã
 
 	Plater.UpdatePlateClickSpace (plateFrame)
 	
+	plateFrame.UnitFrame.healthBar.R, plateFrame.UnitFrame.healthBar.G, plateFrame.UnitFrame.healthBar.B = plateFrame.UnitFrame.healthBar.r, plateFrame.UnitFrame.healthBar.g, plateFrame.UnitFrame.healthBar.b
+	
 	local reaction = UnitReaction (unitBarId, "player")
 	plateFrame [MEMBER_REACTION] = reaction
 	plateFrame.UnitFrame [MEMBER_REACTION] = reaction
@@ -4042,9 +4130,9 @@ end
 
 function Plater.UpdateUseClassColors()
 	if (Plater.db.profile.use_playerclass_color) then
-		Plater.InjectOnDefaultOptions (CNP_Name, Plater.DriverConfigType ["FRIENDLY"], Plater.DriverConfigMembers ["UseClassColors"], true)
+--		Plater.InjectOnDefaultOptions (CNP_Name, Plater.DriverConfigType ["FRIENDLY"], Plater.DriverConfigMembers ["UseClassColors"], true)
 	else
-		Plater.InjectOnDefaultOptions (CNP_Name, Plater.DriverConfigType ["FRIENDLY"], Plater.DriverConfigMembers ["UseClassColors"], false)
+--		Plater.InjectOnDefaultOptions (CNP_Name, Plater.DriverConfigType ["FRIENDLY"], Plater.DriverConfigMembers ["UseClassColors"], false)
 	end
 	for index, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 		Plater.Execute (CUF_Name, Plater.DriverFuncNames ["OnChangeHealthConfig"], plateFrame.UnitFrame)
@@ -4052,8 +4140,8 @@ function Plater.UpdateUseClassColors()
 end
 
 function Plater.UpdateUseCastBar()
-	Plater.InjectOnDefaultOptions (CNP_Name, Plater.DriverConfigType ["ENEMY"], Plater.DriverConfigMembers ["HideCastBar"], Plater.db.profile.hide_enemy_castbars)
-	Plater.InjectOnDefaultOptions (CNP_Name, Plater.DriverConfigType ["FRIENDLY"], Plater.DriverConfigMembers ["HideCastBar"], Plater.db.profile.hide_friendly_castbars)
+--	Plater.InjectOnDefaultOptions (CNP_Name, Plater.DriverConfigType ["ENEMY"], Plater.DriverConfigMembers ["HideCastBar"], Plater.db.profile.hide_enemy_castbars)
+--	Plater.InjectOnDefaultOptions (CNP_Name, Plater.DriverConfigType ["FRIENDLY"], Plater.DriverConfigMembers ["HideCastBar"], Plater.db.profile.hide_friendly_castbars)
 	Plater.RefreshDBUpvalues()
 end
 
@@ -4577,62 +4665,6 @@ function Plater.CheckForNpcType (plateFrame)
 		return
 	end
 end
---area da facção no mapa
-local factioncoords = function (self)
-	if (not InCombatLockdown()) then	
-		local locs_list = {{}, {}}
-		for faction_index, locs in ipairs (faction_coords1) do
-			for coord_index, coord in ipairs (locs) do
-				tinsert (locs_list[1], coord * faction_coord_mul)
-			end
-		end
-		for faction_index, locs in ipairs (faction_coords2) do
-			for coord_index, coord in ipairs (locs) do
-				tinsert (locs_list[2], coord * faction_coord_mul)
-			end
-		end
-		for faction_index, locs in ipairs (faction_coords3) do
-			for coord_index, coord in ipairs (locs) do
-				tinsert (locs_list[2], coord * faction_coord_mul)
-			end
-		end
-		for faction_index, locs in ipairs (faction_coords4) do
-			for coord_index, coord in ipairs (locs) do
-				tinsert (locs_list[2], coord * faction_coord_mul)
-			end
-		end
-		local faction_by_distance = Plater.db.profile.faction_check_type or 0
-		local faction_distance = faction_by_distance and Plater.db.profile.faction_hub_distance_to or 0
-		local cds = f[faction_by_distance][char] or {} --hold the coords
-		if (Plater.CanLoadFactionStrings) then
-			Plater.FactionIndex = {}
-			--azsuna, val'sharah, highmountain, stormheim, suramar, broken shore
-			for i = 1, 6 do
-				local area, area2 = 0, 0
-				for index, length in ipairs (locs_list[1]) do area = area + length*faction_coord_mul end
-				for index, length in ipairs (locs_list[2]) do area2 = area2 + length*faction_coord_mul end
-				local coords = f[cds (unpack (locs_list[1]))]
-				Plater.FactionIndex [i] = {coords (cds (unpack (locs_list[2])), area-area2/#locs_list)}
-			end
-			function Plater.IsInFactionZone (plateFrame)
-				local x, y = GetPlayerMapPosition()
-				for factionIndex, coords in ipairs (Plater.FactionIndex) do
-					if (x > coords[1] and y > coords[2] and x < coords[3] and y < coords[4]) then
-						return true
-					end
-				end
-			end
-		else
-			function Plater.IsInFactionZone()
-				return false
-			end
-			wipe (legion_factions)
-			wipe (factions_index)
-		end
-	else
-		Plater.GetFactionNpcLocs()
-	end
-end
 
 local factionNpcs = {
 	[92342] = 1,
@@ -4665,9 +4697,6 @@ function Plater.GetNpcFactionColor (plateFrame)
 			end
 		end
 	end
-end
-function Plater.GetFactionNpcLocs()
-	local timer = C_Timer.NewTimer (1, factioncoords)
 end
 
 function Plater.SetTextColorByClass (unit, text)
@@ -5961,6 +5990,7 @@ DF:BuildMenu (auraFilterFrame, debuff_options, startX, startY, 300, true, option
 		
 		--class resources
 		{type = "label", get = function() return "Resources:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		
 		--monk WW chi bar
 		{
 			type = "range",
@@ -5968,6 +5998,7 @@ DF:BuildMenu (auraFilterFrame, debuff_options, startX, startY, 300, true, option
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.resources.MONK.chi_scale = value
 				Plater.UpdateAllPlates()
+				Plater.UpdateManaAndResourcesBar()
 			end,
 			min = 0.65,
 			max = 3,
@@ -5976,6 +6007,37 @@ DF:BuildMenu (auraFilterFrame, debuff_options, startX, startY, 300, true, option
 			name = "|T"..iconWindWalker..":0|t Chi Scale",
 			desc = "Adjust the scale of this resource.",
 		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.resources.MONK.y_offset end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.resources.MONK.y_offset = value
+				Plater.UpdateAllPlates()
+				Plater.UpdateManaAndResourcesBar()
+			end,
+			min = -80,
+			max = 80,
+			step = 1,
+			name = "Y Offset",
+			desc = "Adjust the height position of the resource.",
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.resources.MONK.background_alpha end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.resources.MONK.background_alpha = value
+				Plater.UpdateAllPlates()
+				Plater.UpdateManaAndResourcesBar()
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			usedecimals = true,
+			name = "Background Alpha",
+		},
+		
+		
+		{type = "blank"},
 		--mage arcane charge
 		{
 			type = "range",
@@ -5983,6 +6045,7 @@ DF:BuildMenu (auraFilterFrame, debuff_options, startX, startY, 300, true, option
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.resources.MAGE.arcane_charge_scale = value
 				Plater.UpdateAllPlates()
+				Plater.UpdateManaAndResourcesBar()
 			end,
 			min = 0.65,
 			max = 3,
@@ -5991,13 +6054,32 @@ DF:BuildMenu (auraFilterFrame, debuff_options, startX, startY, 300, true, option
 			name = "|T" .. iconArcane .. ":0|t Arcane Charge Scale",
 			desc = "Adjust the scale of this resource.",
 		},
+		--mage arcane charge Y Offset
+		{
+			type = "range",
+			get = function() return Plater.db.profile.resources.MAGE.y_offset end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.resources.MAGE.y_offset = value
+				Plater.UpdateAllPlates()
+				Plater.UpdateManaAndResourcesBar()
+			end,
+			min = -80,
+			max = 80,
+			step = 1,
+			name = "Y Offset",
+			desc = "Adjust the height position of the resource.",
+		},
+		
+		
 		--dk rune
+		{type = "blank"},
 		{
 			type = "range",
 			get = function() return Plater.db.profile.resources.DEATHKNIGHT.rune_scale end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.resources.DEATHKNIGHT.rune_scale = value
 				Plater.UpdateAllPlates()
+				Plater.UpdateManaAndResourcesBar()
 			end,
 			min = 0.65,
 			max = 3,
@@ -6006,13 +6088,31 @@ DF:BuildMenu (auraFilterFrame, debuff_options, startX, startY, 300, true, option
 			name = "|T" .. iconRune .. ":0|t Rune Scale",
 			desc = "Adjust the scale of this resource.",
 		},
+		--dk rune Y Offset
+		{
+			type = "range",
+			get = function() return Plater.db.profile.resources.DEATHKNIGHT.y_offset end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.resources.DEATHKNIGHT.y_offset = value
+				Plater.UpdateAllPlates()
+				Plater.UpdateManaAndResourcesBar()
+			end,
+			min = -80,
+			max = 80,
+			step = 1,
+			name = "Y Offset",
+			desc = "Adjust the height position of the resource.",
+		},
+		
 		--paladin holy power
+		{type = "blank"},
 		{
 			type = "range",
 			get = function() return Plater.db.profile.resources.PALADIN.holypower_scale end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.resources.PALADIN.holypower_scale = value
 				Plater.UpdateAllPlates()
+				Plater.UpdateManaAndResourcesBar()
 			end,
 			min = 0.65,
 			max = 3,
@@ -6021,13 +6121,46 @@ DF:BuildMenu (auraFilterFrame, debuff_options, startX, startY, 300, true, option
 			name = "|T" .. iconHolyPower .. ":0|t Holy Power Scale",
 			desc = "Adjust the scale of this resource.",
 		},
+		--paladin y offset
+		{
+			type = "range",
+			get = function() return Plater.db.profile.resources.PALADIN.y_offset end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.resources.PALADIN.y_offset = value
+				Plater.UpdateAllPlates()
+				Plater.UpdateManaAndResourcesBar()
+			end,
+			min = -80,
+			max = 80,
+			step = 1,
+			name = "Y Offset",
+			desc = "Adjust the height position of the resource.",
+		},
+		--paladin background alpha
+		{
+			type = "range",
+			get = function() return Plater.db.profile.resources.PALADIN.background_alpha end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.resources.PALADIN.background_alpha = value
+				Plater.UpdateAllPlates()
+				Plater.UpdateManaAndResourcesBar()
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			usedecimals = true,
+			name = "Background Alpha",
+		},
+		
 		--rogue combo point
+		{type = "blank"},
 		{
 			type = "range",
 			get = function() return Plater.db.profile.resources.ROGUE.combopoint_scale end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.resources.ROGUE.combopoint_scale = value
 				Plater.UpdateAllPlates()
+				Plater.UpdateManaAndResourcesBar()
 			end,
 			min = 0.65,
 			max = 3,
@@ -6036,6 +6169,36 @@ DF:BuildMenu (auraFilterFrame, debuff_options, startX, startY, 300, true, option
 			name = "|T" .. iconRogueCB .. ":0|t Combo Point Scale",
 			desc = "Adjust the scale of this resource.",
 		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.resources.ROGUE.y_offset end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.resources.ROGUE.y_offset = value
+				Plater.UpdateAllPlates()
+				Plater.UpdateManaAndResourcesBar()
+			end,
+			min = -80,
+			max = 80,
+			step = 1,
+			name = "Y Offset",
+			desc = "Adjust the height position of the resource.",
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.resources.ROGUE.background_alpha end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.resources.ROGUE.background_alpha = value
+				Plater.UpdateAllPlates()
+				Plater.UpdateManaAndResourcesBar()
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			usedecimals = true,
+			name = "Background Alpha",
+		},
+		
+		{type = "blank"},
 		--druid feral combo point
 		{
 			type = "range",
@@ -6043,6 +6206,7 @@ DF:BuildMenu (auraFilterFrame, debuff_options, startX, startY, 300, true, option
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.resources.DRUID.combopoint_scale = value
 				Plater.UpdateAllPlates()
+				Plater.UpdateManaAndResourcesBar()
 			end,
 			min = 0.65,
 			max = 3,
@@ -6051,6 +6215,37 @@ DF:BuildMenu (auraFilterFrame, debuff_options, startX, startY, 300, true, option
 			name = "|T" .. iconDruidCB .. ":0|t Combo Point Scale",
 			desc = "Adjust the scale of this resource.",
 		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.resources.DRUID.y_offset end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.resources.DRUID.y_offset = value
+				Plater.UpdateAllPlates()
+				Plater.UpdateManaAndResourcesBar()
+			end,
+			min = -80,
+			max = 80,
+			step = 1,
+			name = "Y Offset",
+			desc = "Adjust the height position of the resource.",
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.resources.DRUID.background_alpha end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.resources.DRUID.background_alpha = value
+				Plater.UpdateAllPlates()
+				Plater.UpdateManaAndResourcesBar()
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			usedecimals = true,
+			name = "Background Alpha",
+		},
+		
+		
+		{type = "blank"},
 		--warlock shard
 		{
 			type = "range",
@@ -6058,6 +6253,7 @@ DF:BuildMenu (auraFilterFrame, debuff_options, startX, startY, 300, true, option
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.resources.WARLOCK.soulshard_scale = value
 				Plater.UpdateAllPlates()
+				Plater.UpdateManaAndResourcesBar()
 			end,
 			min = 0.65,
 			max = 3,
@@ -6066,6 +6262,37 @@ DF:BuildMenu (auraFilterFrame, debuff_options, startX, startY, 300, true, option
 			name = "|T" .. iconSoulShard .. ":0|t Soul Shard Scale",
 			desc = "Adjust the scale of this resource.",
 		},
+		--warlock shard height
+		{
+			type = "range",
+			get = function() return Plater.db.profile.resources.WARLOCK.y_offset end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.resources.WARLOCK.y_offset = value
+				Plater.UpdateAllPlates()
+				Plater.UpdateManaAndResourcesBar()
+			end,
+			min = -80,
+			max = 80,
+			step = 1,
+			name = "Y Offset",
+			desc = "Adjust the height position of the resource.",
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.resources.WARLOCK.background_alpha end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.resources.WARLOCK.background_alpha = value
+				Plater.UpdateAllPlates()
+				Plater.UpdateManaAndResourcesBar()
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			usedecimals = true,
+			name = "Background Alpha",
+		},
+		
+		
 
 }
 
