@@ -1132,6 +1132,12 @@ function Plater.OnInit()
 	local CooldownFrame_Set = CooldownFrame_Set
 	
 	function Plater.Override_UpdateBuffs (self, unit, filter, showAll)
+		if (not self [MEMBER_REACTION]) then
+			--parece que nao esta colocando reaction em barras de jogadores
+			return
+		end
+		--print (self:GetName())
+		
 		self.isActive = false
 		self:Show()
 		
@@ -1157,6 +1163,12 @@ function Plater.OnInit()
 	
 	--tamanho dos ícones dos debuffs sobre a nameplate
 	function Plater.UpdateAuraIcons (self, unit, filter)
+	
+		if (not self [MEMBER_REACTION]) then
+			--parece que nao esta colocando reaction em barras de jogadores
+			return
+		end
+	
 		local hasCC = false
 		local show_cc = Plater.db.profile.debuff_show_cc
 		local amtDebuffs = 0
@@ -1187,7 +1199,7 @@ function Plater.OnInit()
 		
 		self.amtDebuffs = amtDebuffs
 		Plater.UpdateBuffContainer (self:GetParent():GetParent())
-
+		
 		if (show_cc) then
 			local UnitFrame = self:GetParent()
 			if (hasCC) then
@@ -1391,6 +1403,11 @@ function Plater.OnInit()
 	
 
 	InstallHook (Plater.GetDriverSubObjectName (CUF_Name, Plater.DriverFuncNames.OnUpdateHealth), function (self)
+		if (not self [MEMBER_REACTION]) then
+			--parece que nao esta colocando reaction em barras de jogadores
+			return
+		end
+		
 		local plateFrame = self:GetParent()
 		if (plateFrame.isNamePlate) then
 			if (plateFrame.isSelf) then
@@ -4054,6 +4071,8 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ã
 	local reaction = UnitReaction (unitBarId, "player")
 	plateFrame [MEMBER_REACTION] = reaction
 	plateFrame.UnitFrame [MEMBER_REACTION] = reaction
+	plateFrame.UnitFrame.BuffFrame [MEMBER_REACTION] = reaction
+	
 	local actorType
 	
 	if (plateFrame.UnitFrame.unit) then
@@ -4102,13 +4121,13 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ã
 			end
 		end
 	end
-
+	
 	--icone da cast bar
 	plateFrame.UnitFrame.castBar.Icon:ClearAllPoints()
 	plateFrame.UnitFrame.castBar.Icon:SetPoint ("left", plateFrame.UnitFrame.castBar, "left", 0, 0)
 	plateFrame.UnitFrame.castBar.BorderShield:ClearAllPoints()
 	plateFrame.UnitFrame.castBar.BorderShield:SetPoint ("left", plateFrame.UnitFrame.castBar, "left", 0, 0)
-
+	
 	--esconde os glow de aggro
 	plateFrame.UnitFrame.aggroGlowUpper:Hide()
 	plateFrame.UnitFrame.aggroGlowLower:Hide()
