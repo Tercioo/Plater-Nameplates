@@ -2988,7 +2988,7 @@ function Plater.UpdatePlateSize (plateFrame, justAdded)
 		
 		local buffFrameSize = Plater.db.profile.aura_height
 		local scalarValue = SizeOf_castBar_Width > plateWidth and -((SizeOf_castBar_Width - plateWidth) / 2) or ((plateWidth - SizeOf_castBar_Width) / 2)
-
+		
 		if (isMinus) then
 			scalarValue = scalarValue + (SizeOf_castBar_Width/5)
 		end
@@ -3232,10 +3232,13 @@ function Plater.UpdateManaAndResourcesBar()
 end
 
 function Plater.ShouldForceSmallBar (plateFrame)
-	if (UnitClassification (plateFrame [MEMBER_UNITID]) == "minus") then
-		return true
-	elseif (Plater.petCache [plateFrame [MEMBER_GUID]]) then
-		return true
+	local inInstance = IsInInstance()
+	if (not inInstance) then
+		if (UnitClassification (plateFrame [MEMBER_UNITID]) == "minus") then
+			return true
+		elseif (Plater.petCache [plateFrame [MEMBER_GUID]]) then
+			return true
+		end
 	end
 end
 
