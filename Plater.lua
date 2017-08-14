@@ -430,6 +430,8 @@ local default_config = {
 			},
 		},
 
+		health_cutoff = true,
+		
 		update_throttle = 0.15000000,
 		culling_distance = 100,
 		use_playerclass_color = false,
@@ -654,7 +656,38 @@ local MEMBER_TARGET = "namePlateIsTarget"
 
 local CAN_USE_AURATIMER = true
 Plater.CanLoadFactionStrings = true
-local TOTAL_FACTIONS = 6 --legion
+
+local CONST_USE_HEALTHCUTOFF = false
+local CONST_HEALTHCUTOFF_AT = 20
+
+function Plater.GetHealthCutoffValue()
+	CONST_USE_HEALTHCUTOFF = false
+	
+	if (not Plater.db.profile.health_cutoff) then
+		return
+	end
+	
+	local classLoc, class = UnitClass ("player")
+	local spec = GetSpecialization()
+	if (spec and class) then
+		if (class == "PRIEST") then
+			--playing as shadow?
+			local specID = GetSpecializationInfo (spec)
+			if (specID and specID ~= 0) then
+				if (specID == 258) then --shadow
+					CONST_USE_HEALTHCUTOFF = true
+					
+					local _, _, _, using_ROS = GetTalentInfo (4, 2, 1)
+					if (using_ROS) then
+						CONST_HEALTHCUTOFF_AT = 0.35
+					else
+						CONST_HEALTHCUTOFF_AT = 0.20
+					end
+				end
+			end
+		end
+	end
+end
 
 --> copied from blizzard code
 local function IsPlayerEffectivelyTank()
@@ -1006,6 +1039,7 @@ function Plater.OnInit()
 	end
 	
 	C_Timer.After (1, Plater.GetSpellForRangeCheck)
+	C_Timer.After (4, Plater.GetHealthCutoffValue)
 	C_Timer.After (4, Plater.UpdateCullingDistance)
 	C_Timer.After (4.1, Plater.ForceCVars)
 	
@@ -1066,7 +1100,6 @@ function Plater.OnInit()
 	Plater:RegisterEvent ("QUEST_LOG_UPDATE")
 	Plater:RegisterEvent ("UNIT_QUEST_LOG_CHANGED")
 	Plater:RegisterEvent ("PLAYER_SPECIALIZATION_CHANGED")
-
 	
 	--seta o nome do jogador na barra dele --ajuda a evitar os 'desconhecidos' pelo cliente do jogo (frame da unidade)
 	InstallHook (Plater.GetDriverSubObjectName (CUF_Name, Plater.DriverFuncNames.OnNameUpdate), function (self)
@@ -1853,6 +1886,21 @@ local EventTickFunction = function (tickFrame, deltaTime)
 		--range
 		Plater.CheckRange (tickFrame.PlateFrame)
 		
+		--health cutoff
+		if (CONST_USE_HEALTHCUTOFF) then
+			local healthPercent = UnitHealth (tickFrame.unit) / UnitHealthMax (tickFrame.unit)
+			if (healthPercent < CONST_HEALTHCUTOFF_AT) then
+				if (not tickFrame.HealthBar.healthCutOff:IsShown()) then
+					tickFrame.HealthBar.healthCutOff:SetHeight (tickFrame.HealthBar:GetHeight())
+					tickFrame.HealthBar.healthCutOff:SetPoint ("left", tickFrame.HealthBar, "left", tickFrame.HealthBar:GetWidth() * CONST_HEALTHCUTOFF_AT, 0)
+					tickFrame.HealthBar.healthCutOff:Show()
+					tickFrame.HealthBar.healthCutOff.ShowAnimation:Play()
+				end
+			else
+				tickFrame.HealthBar.healthCutOff:Hide()
+			end
+		end
+		
 		--auras
 		if (DB_AURA_ENABLED) then
 			tickFrame.BuffFrame:UpdateAnchor()
@@ -1984,6 +2032,7 @@ end
 -- ~events
 function Plater:PLAYER_SPECIALIZATION_CHANGED()
 	Plater.GetSpellForRangeCheck()
+	Plater.GetHealthCutoffValue()
 end
 
 function Plater.UpdateAuraCache()
@@ -3907,7 +3956,32 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame) -- ~created
 		mouseHighlight:Hide()
 	end)
 	--]]
-
+	
+	--health cutoff
+	local healthCutOff = healthBar:CreateTexture (nil, "overlay")
+	healthCutOff:SetTexture ([[Interface\AddOns\Plater\images\health_bypass_indicator]])
+	healthCutOff:SetPoint ("left", healthBar, "left")
+	healthCutOff:SetSize (16, 25)
+	healthCutOff:SetBlendMode ("ADD")
+	healthCutOff:SetDrawLayer ("overlay", 7)
+	healthCutOff:Hide()
+	healthBar.healthCutOff = healthCutOff	
+	
+	local cutoffAnimationOnPlay = function()
+		healthCutOff:Show()
+	end
+	local cutoffAnimationOnStop = function()
+		healthCutOff:SetAlpha (.5)
+	end
+	
+	local healthCutOffShowAnimation = DF:CreateAnimationHub (healthCutOff, cutoffAnimationOnPlay, cutoffAnimationOnStop)
+	DF:CreateAnimation (healthCutOffShowAnimation, "Scale", 1, .2, .3, .3, 1.2, 1.2)
+	DF:CreateAnimation (healthCutOffShowAnimation, "Scale", 2, .2, 1.2, 1.2, 1, 1)
+	DF:CreateAnimation (healthCutOffShowAnimation, "Alpha", 1, .2, .2, 1)
+	DF:CreateAnimation (healthCutOffShowAnimation, "Alpha", 2, .2, 1, .5)
+	healthCutOff.ShowAnimation = healthCutOffShowAnimation
+	
+	--raid target
 	local raidTarget = healthBar:CreateTexture (nil, "overlay")
 	raidTarget:SetPoint ("right", -2, 0)
 	plateFrame.RaidTarget = raidTarget
