@@ -8,15 +8,15 @@
 -- :IterateOptionsTables() (and :GetOptionsTable() if only given one argument) return a function reference that the requesting config handling addon must call with valid "uiType", "uiName".
 -- @class file
 -- @name AceConfigRegistry-3.0
--- @release $Id: AceConfigRegistry-3.0.lua 1105 2013-12-08 22:11:58Z nevcairiel $
-local MAJOR, MINOR = "AceConfigRegistry-3.0", 15
+-- @release $Id: AceConfigRegistry-3.0.lua 1161 2017-08-12 14:30:16Z funkydude $
+local CallbackHandler = LibStub("CallbackHandler-1.0")
+
+local MAJOR, MINOR = "AceConfigRegistry-3.0", 17
 local AceConfigRegistry = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not AceConfigRegistry then return end
 
 AceConfigRegistry.tables = AceConfigRegistry.tables or {}
-
-local CallbackHandler = LibStub:GetLibrary("CallbackHandler-1.0")
 
 if not AceConfigRegistry.callbacks then
 	AceConfigRegistry.callbacks = CallbackHandler:New(AceConfigRegistry)
@@ -57,6 +57,7 @@ local istable={["table"]=true,   _="table"}
 local ismethodtable={["table"]=true,["string"]=true,["function"]=true,   _="methodname, funcref or table"}
 local optstring={["nil"]=true,["string"]=true, _="string"}
 local optstringfunc={["nil"]=true,["string"]=true,["function"]=true, _="string or funcref"}
+local optstringnumberfunc={["nil"]=true,["string"]=true,["number"]=true,["function"]=true, _="string, number or funcref"}
 local optnumber={["nil"]=true,["number"]=true, _="number"}
 local optmethod={["nil"]=true,["string"]=true,["function"]=true, _="methodname or funcref"}
 local optmethodfalse={["nil"]=true,["string"]=true,["function"]=true,["boolean"]={[false]=true},  _="methodname, funcref or false"}
@@ -82,7 +83,7 @@ local basekeys={
 		dialogHidden=optmethodbool,
 		dropdownHidden=optmethodbool,
 	cmdHidden=optmethodbool,
-	icon=optstringfunc,
+	icon=optstringnumberfunc,
 	iconCoords=optmethodtable,
 	handler=opttable,
 	get=optmethodfalse,
@@ -95,7 +96,7 @@ local basekeys={
 local typedkeys={
 	header={},
 	description={
-		image=optstringfunc,
+		image=optstringnumberfunc,
 		imageCoords=optmethodtable,
 		imageHeight=optnumber,
 		imageWidth=optnumber,
@@ -112,7 +113,7 @@ local typedkeys={
 		childGroups=optstring,
 	},
 	execute={
-		image=optstringfunc,
+		image=optstringnumberfunc,
 		imageCoords=optmethodtable,
 		imageHeight=optnumber,
 		imageWidth=optnumber,
@@ -127,7 +128,7 @@ local typedkeys={
 	},
 	toggle={
 		tristate=optbool,
-		image=optstringfunc,
+		image=optstringnumberfunc,
 		imageCoords=optmethodtable,
 	},
 	tristate={
