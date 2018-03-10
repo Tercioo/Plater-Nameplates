@@ -1458,6 +1458,16 @@ function Plater.OnInit()
 						end
 					end
 				end
+				
+				-- is out of combat, reposition the health bar since the player health bar automatically change place when showing out of combat
+				--it shows out of combat when the health had a decrease in value
+				--[=[
+				if (Plater.RegenIsDisabled and not InCombatLockdown()) then
+					local value = tonumber (GetCVar ("nameplateSelfBottomInset"))
+					SetCVar ("nameplateSelfBottomInset", value)
+					SetCVar ("nameplateSelfTopInset", abs (value - 99))
+				end
+				--]=]
 			else
 				local currentHealth = UnitHealth (plateFrame [MEMBER_UNITID])
 				self.healthBar:SetValue (currentHealth)
@@ -3044,10 +3054,15 @@ function Plater.UpdatePlateSize (plateFrame, justAdded)
 		
 		castFrame:SetPoint ("BOTTOMLEFT", unitFrame, "BOTTOMLEFT", scalarValue, height_offset) ---SizeOf_healthBar_Height + (-SizeOf_castBar_Height + 2)
 		castFrame:SetPoint ("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -scalarValue, height_offset)
-		castFrame:SetHeight (SizeOf_castBar_Height)
+
+		--10/03/2018: cast frame affecting the position of the player health bar when leaving combat
+		if (not plateFrame.isSelf ) then		
+			castFrame:SetHeight (SizeOf_castBar_Height)
+		end
 		castFrame.Icon:SetSize (SizeOf_castBar_Height, SizeOf_castBar_Height)
 		castFrame.BorderShield:SetSize (SizeOf_castBar_Height*1.4, SizeOf_castBar_Height*1.4)
-		
+
+
 		local scalarValue
 		local passouPor = 0
 		if (Plater.zonePvpType ~= "sanctuary" or plateFrame [MEMBER_REACTION] == 4) then
@@ -3070,7 +3085,7 @@ function Plater.UpdatePlateSize (plateFrame, justAdded)
 		
 		local targetHeight = SizeOf_healthBar_Height / (isMinus and 2 or 1)
 		local currentHeight = healthFrame:GetHeight()
-		
+
 		if (justAdded or not DB_ANIMATION_HEIGHT) then
 			healthFrame:SetHeight (targetHeight)
 		else
@@ -5034,7 +5049,7 @@ function Plater.OpenOptionsPanel()
 		{name = "EnemyPlayer", title = "Enemy Player"},
 		{name = "FriendlyNpc", title = "Friendly Npc"},
 		{name = "EnemyNpc", title = "Enemy Npc"},
-		{name = "DebuffConfig", title = "Config Debuffs"},
+		{name = "DebuffConfig", title = "Buffs & Debuffs"},
 		{name = "ProfileManagement", title = "Profiles"},
 	}, 
 	frame_options)
@@ -5799,9 +5814,12 @@ DF:BuildMenu (auraFilterFrame, debuff_options, startX, startY, 300, true, option
 					self:SetValue (tonumber (GetCVar ("nameplateSelfBottomInset")*100))
 					return
 				end
-				
+
 				SetCVar ("nameplateSelfBottomInset", value / 100)
 				SetCVar ("nameplateSelfTopInset", abs (value - 99) / 100)
+				
+				-- /run print ("BottomInset:", GetCVar ("nameplateSelfBottomInset"), "TopInset:", GetCVar ("nameplateSelfTopInset"))
+				--print ("BottomInset:", GetCVar ("nameplateSelfBottomInset"), "TopInset:", GetCVar ("nameplateSelfTopInset"))
 				
 				if (not Plater.PersonalAdjustLocation) then
 					Plater.PersonalAdjustLocation = CreateFrame ("frame", "PlaterPersonalBarLocation", UIParent)
@@ -5841,7 +5859,7 @@ DF:BuildMenu (auraFilterFrame, debuff_options, startX, startY, 300, true, option
 				if (Plater.PersonalAdjustLocation.Timer) then
 					Plater.PersonalAdjustLocation.Timer:Cancel()
 				end
-				Plater.PersonalAdjustLocation.Timer = C_Timer.NewTimer (3, Plater.PersonalAdjustLocation.CancelFunction)
+				Plater.PersonalAdjustLocation.Timer = C_Timer.NewTimer (10, Plater.PersonalAdjustLocation.CancelFunction)
 				
 				Plater.UpdateAllPlates()
 				Plater.UpdateSelfPlate()
