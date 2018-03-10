@@ -1,5 +1,5 @@
 
-local dversion = 62
+local dversion = 68
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
 
@@ -999,11 +999,15 @@ end
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> templates
 
-DF.font_templates = {}
+--fonts
+
+DF.font_templates = DF.font_templates or {}
 DF.font_templates ["ORANGE_FONT_TEMPLATE"] = {color = "orange", size = 11, font = "Accidental Presidency"}
 DF.font_templates ["OPTIONS_FONT_TEMPLATE"] = {color = "yellow", size = 12, font = "Accidental Presidency"}
 
-DF.dropdown_templates = {}
+-- dropdowns
+
+DF.dropdown_templates = DF.dropdown_templates or {}
 DF.dropdown_templates ["OPTIONS_DROPDOWN_TEMPLATE"] = {
 	backdrop = {edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true},
 	backdropcolor = {1, 1, 1, .5},
@@ -1012,7 +1016,9 @@ DF.dropdown_templates ["OPTIONS_DROPDOWN_TEMPLATE"] = {
 	onenterbordercolor = {1, 1, 1, 1},
 }
 
-DF.switch_templates = {}
+-- switches
+
+DF.switch_templates = DF.switch_templates or {}
 DF.switch_templates ["OPTIONS_CHECKBOX_TEMPLATE"] = {
 	backdrop = {edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true},
 	backdropcolor = {1, 1, 1, .5},
@@ -1034,14 +1040,18 @@ DF.switch_templates ["OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"] = {
 	onenterbordercolor = {1, 1, 1, 1},
 }
 
-DF.button_templates = {}
+-- buttons
+
+DF.button_templates = DF.button_templates or {}
 DF.button_templates ["OPTIONS_BUTTON_TEMPLATE"] = {
 	backdrop = {edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true},
 	backdropcolor = {1, 1, 1, .5},
 	backdropbordercolor = {0, 0, 0, 1},
 }
 
-DF.slider_templates = {}
+-- sliders
+
+DF.slider_templates = DF.slider_templates or {}
 DF.slider_templates ["OPTIONS_SLIDER_TEMPLATE"] = {
 	backdrop = {edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true},
 	backdropcolor = {1, 1, 1, .5},
@@ -1054,7 +1064,21 @@ DF.slider_templates ["OPTIONS_SLIDER_TEMPLATE"] = {
 	thumbcolor = {0, 0, 0, 0.5},
 }
 
-function DF:InstallTemplate (widget_type, template_name, template)
+function DF:InstallTemplate (widget_type, template_name, template, parent_name)
+
+	local newTemplate = {}
+	
+	--if has a parent, just copy the parent to the new template
+	if (parent_name and type (parent_name) == "string") then
+		local parentTemplate = DF:GetTemplate (widget_type, parent_name)
+		if (parentTemplate) then
+			DF.table.copy (newTemplate, parentTemplate)
+		end
+	end
+	
+	--copy the template passed into the new template
+	DF.table.copy (newTemplate, template)
+
 	widget_type = string.lower (widget_type)
 	
 	local template_table
@@ -1070,9 +1094,9 @@ function DF:InstallTemplate (widget_type, template_name, template)
 		template_table = DF.slider_templates
 	end
 
-	template_table [template_name] = template
+	template_table [template_name] = newTemplate
 	
-	return template
+	return newTemplate
 end
 
 function DF:GetTemplate (widget_type, template_name)

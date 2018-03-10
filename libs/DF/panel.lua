@@ -2415,24 +2415,21 @@ local chart_panel_align_timelabels = function (self, elapsed_time)
 end
 
 local chart_panel_set_scale = function (self, amt, func, text)
-
 	if (type (amt) ~= "number") then
 		return
 	end
 	
-	local piece = amt / 1000 / 8
-	if (not text or text == "") then
-		text = amt > 1000000 and "M" or amt > 1000 and "K"
-	end
-	
+	--each line amount, then multiply the line index by this number
+	local piece = amt / 8
+
 	for i = 1, 8 do
 		if (func) then
-			self ["dpsamt" .. math.abs (i-9)]:SetText ( func (piece*i) .. (text or ""))
+			self ["dpsamt" .. math.abs (i-9)]:SetText (func (piece*i))
 		else
 			if (piece*i > 1) then
-				self ["dpsamt" .. math.abs (i-9)]:SetText ( format ("%.1f", piece*i) .. (text or ""))
+				self ["dpsamt" .. math.abs (i-9)]:SetText (DF.FormatNumber (piece*i))
 			else
-				self ["dpsamt" .. math.abs (i-9)]:SetText ( format ("%.3f", piece*i) .. (text or ""))
+				self ["dpsamt" .. math.abs (i-9)]:SetText (format ("%.3f", piece*i))
 			end
 		end
 	end
@@ -2535,7 +2532,6 @@ local create_box = function (self, next_box)
 	self.BoxLabels [next_box] = thisbox
 	
 	local box = DF:NewImage (self.Graphic, nil, 16, 16, "border")
-	
 	local text = DF:NewLabel (self.Graphic)
 	
 	local border = DF:NewImage (self.Graphic, [[Interface\DialogFrame\UI-DialogBox-Gold-Corner]], 30, 30, "artwork")
@@ -2543,7 +2539,7 @@ local create_box = function (self, next_box)
 	border:SetTexture ([[Interface\DialogFrame\UI-DialogBox-Gold-Corner]])
 	
 	local checktexture = DF:NewImage (self.Graphic, [[Interface\Buttons\UI-CheckBox-Check]], 18, 18, "overlay")
-	checktexture:SetPoint ("center", box, "center", -1, -1)
+	checktexture:SetPoint ("center", box, "center", 0, -1)
 	checktexture:SetTexture ([[Interface\Buttons\UI-CheckBox-Check]])
 	
 	thisbox.box = box
@@ -2557,7 +2553,12 @@ local create_box = function (self, next_box)
 	button:SetScript ("OnClick", function()
 		chart_panel_enable_line (self, thisbox)
 	end)
-	button:SetPoint ("center", box.widget or box, "center")
+	button:SetPoint ("topleft", box.widget or box, "topleft", 0, 0)
+	button:SetPoint ("bottomright", box.widget or box, "bottomright", 0, 0)
+	
+	button:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
+	button:SetBackdropColor (0, 0, 0, 0.0)
+	button:SetBackdropBorderColor (0, 0, 0, 1)
 	
 	thisbox.button = button
 	
@@ -2566,7 +2567,7 @@ local create_box = function (self, next_box)
 	if (next_box == 1) then
 		thisbox.text:SetPoint ("topright", self, "topright", -35, -16)
 	else
-		thisbox.text:SetPoint ("right", self.BoxLabels [next_box-1].box, "left", -7, 0)
+		thisbox.text:SetPoint ("right", self.BoxLabels [next_box-1].box, "left", -17, 0)
 	end
 
 	return thisbox
@@ -2574,6 +2575,17 @@ local create_box = function (self, next_box)
 end
 
 local realign_labels = function (self)
+	
+	if (not self.ShowHeader) then
+		for _, box in ipairs (self.BoxLabels) do
+			box.check:Hide()
+			box.button:Hide()
+			box.border:Hide()
+			box.box:Hide()
+			box.text:Hide()
+		end
+		return
+	end
 	
 	local width = self:GetWidth() - 108
 	
@@ -2594,17 +2606,25 @@ local realign_labels = function (self)
 				line_width = box.text:GetStringWidth() + 26
 				box.text:SetPoint ("topright", self, "topright", -35, -40)
 			else
-				box.text:SetPoint ("right", self.BoxLabels [i-1].box, "left", -7, 0)
+				box.text:SetPoint ("right", self.BoxLabels [i-1].box, "left", -27, 0)
 			end
 		else
 			break
 		end
 	end
 	
+	if (self.HeaderOnlyIndicator) then
+		for _, box in ipairs (self.BoxLabels) do
+				box.check:Hide()
+			box.button:Hide()
+		end
+		return
+	end
+	
 end
 
 local chart_panel_add_label = function (self, color, name, type, number)
-
+	
 	local next_box = self.BoxLabelsAmount
 	local thisbox = self.BoxLabels [next_box]
 	
@@ -2613,19 +2633,19 @@ local chart_panel_add_label = function (self, color, name, type, number)
 	end
 	
 	self.BoxLabelsAmount = self.BoxLabelsAmount + 1
-
+	
 	thisbox.type = type
 	thisbox.index = number
-
+	
 	thisbox.box:SetColorTexture (unpack (color))
 	thisbox.text:SetText (name)
 	
 	thisbox.check:Show()
 	thisbox.button:Show()
-	thisbox.border:Show()
+	thisbox.border:Hide()
 	thisbox.box:Show()
 	thisbox.text:Show()
-
+	
 	thisbox.showing = true
 	thisbox.enabled = true
 	
@@ -2638,7 +2658,7 @@ local draw_overlay = function (self, this_overlay, overlayData, color)
 
 	local pixel = self.Graphic:GetWidth() / self.TimeScale
 	local index = 1
-	local r, g, b = unpack (color or line_default_color)
+	local r, g, b, a = unpack (color or line_default_color)
 	
 	for i = 1, #overlayData, 2 do
 		local aura_start = overlayData [i]
@@ -2659,7 +2679,7 @@ local draw_overlay = function (self, this_overlay, overlayData, color)
 			this_block:SetWidth (pixel*5)
 		end
 		
-		this_block:SetColorTexture (r, g, b, 0.25)
+		this_block:SetColorTexture (r, g, b, a or 0.25)
 		this_block:Show()
 		
 		index = index + 1
@@ -2686,13 +2706,87 @@ local chart_panel_add_overlay = function (self, overlayData, color, name, icon)
 		draw_overlay (self, this_overlay, overlayData, color)
 
 		tinsert (self.OData, {overlayData, color or line_default_color})
-		if (name) then
+		if (name and self.HeaderShowOverlays) then
 			self:AddLabel (color or line_default_color, name, "overlay", #self.OData)
 		end
 	end
 
 	self.OverlaysAmount = self.OverlaysAmount + 1
 end
+
+-- Define the tricube weight function
+function calc_cubeweight (i, j, d)
+    local w = ( 1 - math.abs ((j-i)/d)^3)^3
+    if w < 0 then
+        w = 0;
+    end
+    return w
+end
+
+local calc_lowess_smoothing = function (self, data, bandwidth)
+	local length = #data
+	local newData = {}
+	
+	for i = 1, length do
+		local A = 0
+		local B = 0
+		local C = 0
+		local D = 0
+		local E = 0
+	
+		-- Calculate span of values to be included in the regression
+		local jmin = floor (i-bandwidth/2)
+		local jmax = ceil (i+bandwidth/2)
+		if jmin < 1 then
+			jmin = 1
+		end
+		if jmax > length then
+			jmax = length
+		end
+		
+		-- For all the values in the span, compute the weight and then the linear fit		
+	
+		for j = jmin, jmax do
+			w = calc_cubeweight (i, j, bandwidth/2)
+			x = j
+			y = data [j]
+
+			A = A + w*x
+			B = B + w*y
+			C = C + w*x^2
+			D = D + w*x*y
+			E = E + w
+		end
+		
+		-- Calculate a (slope) and b (offset) for the linear fit
+		local a = (A*B-D*E)/(A^2 - C*E);
+		local b = (A*D-B*C)/(A^2 - C*E);
+
+		-- Calculate the smoothed value by the formula y=a*x+b (x <- i)
+		newData [i] = a*i+b;
+	
+	end
+	
+	return newData
+end
+
+local calc_stddev = function (self, data)
+	local total = 0
+	for i = 1, #data do
+		total = total + data[i]
+	end
+	local mean = total / #data
+	
+	local totalDistance = 0
+	for i = 1, #data do
+		totalDistance = totalDistance + ((data[i] - mean) ^ 2)
+	end
+	
+	local deviation = math.sqrt (totalDistance / #data)
+	return deviation
+end
+
+
 
 local SMA_table = {}
 local SMA_max = 0
@@ -2736,7 +2830,7 @@ local chart_panel_onresize = function (self)
 	
 	for i = 1, 17 do
 		local label = self.TimeLabels [i]
-		label:SetPoint ("bottomleft", self, "bottomleft", 78 + ((i-1)*spacement), 13)
+		label:SetPoint ("bottomleft", self, "bottomleft", 78 + ((i-1)*spacement), self.TimeLabelsHeight)
 		label.line:SetHeight (height - 45)
 	end
 	
@@ -2760,7 +2854,7 @@ local chart_panel_add_data = function (self, graphicData, color, name, elapsed_t
 	local amount = #graphicData
 	
 	local scaleW = 1/self:GetWidth()
-
+	
 	local content = graphicData
 	tinsert (content, 1, 0)
 	tinsert (content, 1, 0)
@@ -2885,8 +2979,8 @@ local chart_panel_add_data = function (self, graphicData, color, name, elapsed_t
 	f:SetTime (max_time)
 	
 	chart_panel_onresize (f)
-	
 end
+
 
 
 
@@ -2974,31 +3068,15 @@ function DF:CreateChartPanel (parent, w, h, name)
 	local title = DF:NewLabel (f, nil, "$parentTitle", "chart_title", "Chart!", nil, 20, {1, 1, 0})
 	title:SetPoint ("topleft", f, "topleft", 110, -13)
 
-	local bottom_texture = DF:NewImage (f, nil, 702, 25, "background", nil, nil, "$parentBottomTexture")
-	bottom_texture:SetColorTexture (0, 0, 0, .6)
-	bottom_texture:SetPoint ("bottomleft", f, "bottomleft", 8, 7)
-	bottom_texture:SetPoint ("bottomright", f, "bottomright", -8, 7)
-
 	f.Overlays = {}
 	f.OverlaysAmount = 1
 	
 	f.BoxLabels = {}
 	f.BoxLabelsAmount = 1
 	
-	f.TimeLabels = {}
-	for i = 1, 17 do 
-		local time = f:CreateFontString (nil, "overlay", "GameFontHighlightSmall")
-		time:SetText ("00:00")
-		time:SetPoint ("bottomleft", f, "bottomleft", 78 + ((i-1)*36), 13)
-		f.TimeLabels [i] = time
-		
-		local line = f:CreateTexture (nil, "border")
-		line:SetSize (1, h-45)
-		line:SetColorTexture (1, 1, 1, .1)
-		line:SetPoint ("bottomleft", time, "topright", 0, -10)
-		line:Hide()
-		time.line = line
-	end
+	f.ShowHeader = true
+	f.HeaderOnlyIndicator = false
+	f.HeaderShowOverlays = true
 	
 	--graphic
 		local g = LibStub:GetLibrary("LibGraph-2.0"):CreateGraphLine (name .. "Graphic", f, "topleft","topleft", 108, -35, w - 120, h - 67)
@@ -3022,11 +3100,12 @@ function DF:CreateChartPanel (parent, w, h, name)
 		f.Graphic = g
 		f.GData = {}
 		f.OData = {}
+		f.ChartFrames = {}
 	
 	--div lines
 		for i = 1, 8, 1 do
 			local line = g:CreateTexture (nil, "overlay")
-			line:SetColorTexture (1, 1, 1, .2)
+			line:SetColorTexture (1, 1, 1, .05)
 			line:SetWidth (670)
 			line:SetHeight (1.1)
 		
@@ -3036,8 +3115,34 @@ function DF:CreateChartPanel (parent, w, h, name)
 			s:SetPoint ("topleft", f, "topleft", 27, -61 + (-(24.6*i)))
 		
 			line:SetPoint ("topleft", s, "bottom", -27, 0)
+			line:SetPoint ("topright", g, "right", 0, 0)
 			s.line = line
 		end
+	
+	--create time labels and the bottom texture to use as a background to these labels
+		f.TimeLabels = {}
+		f.TimeLabelsHeight = 16
+		
+		for i = 1, 17 do 
+			local time = f:CreateFontString (nil, "overlay", "GameFontHighlightSmall")
+			time:SetText ("00:00")
+			time:SetPoint ("bottomleft", f, "bottomleft", 78 + ((i-1)*36), f.TimeLabelsHeight)
+			f.TimeLabels [i] = time
+			
+			local line = f:CreateTexture (nil, "border")
+			line:SetSize (1, h-45)
+			line:SetColorTexture (1, 1, 1, .1)
+			line:SetPoint ("bottomleft", time, "topright", 0, -10)
+			line:Hide()
+			time.line = line
+		end	
+		
+		local bottom_texture = DF:NewImage (f, nil, 702, 25, "background", nil, nil, "$parentBottomTexture")
+		bottom_texture:SetColorTexture (.1, .1, .1, .7)
+		bottom_texture:SetPoint ("topright", g, "bottomright", 0, 0)
+		bottom_texture:SetPoint ("bottomleft", f, "bottomleft", 8, 12)
+	
+	
 	
 	f.SetTime = chart_panel_align_timelabels
 	f.EnableVerticalLines = chart_panel_vlines_on
@@ -3051,6 +3156,8 @@ function DF:CreateChartPanel (parent, w, h, name)
 	f.AddOverlay = chart_panel_add_overlay
 	f.HideCloseButton = chart_panel_hide_close_button
 	f.RightClickClose = chart_panel_right_click_close
+	f.CalcStdDev = calc_stddev
+	f.CalcLowessSmoothing = calc_lowess_smoothing
 	
 	f:SetScript ("OnSizeChanged", chart_panel_onresize)
 	chart_panel_onresize (f)
