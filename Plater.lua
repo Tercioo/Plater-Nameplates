@@ -354,6 +354,7 @@ local default_config = {
 				buff_frame_y_offset = 0,
 				y_position_offset = -50, --deprecated
 				pvp_always_incombat = true,
+				show_buffs = true,
 				
 				actorname_text_spacing = 10,
 				actorname_text_size = 10,
@@ -1859,6 +1860,7 @@ function Plater.UpdateAuras_Automatic (self, unit)
 	hide_non_used_auraFrames (self.buffList, auraIndex)
 end
 function Plater.UpdateAuras_Self_Automatic (self)
+
 	local auraIndex = 1
 
 	--> buffs do jogador
@@ -1916,7 +1918,10 @@ local EventTickFunction = function (tickFrame, deltaTime)
 			tickFrame.BuffFrame:UpdateAnchor()
 			if (DB_TRACK_METHOD == 0x1) then --automático
 				if (tickFrame.actorType == ACTORTYPE_PLAYER) then
-					Plater.UpdateAuras_Self_Automatic (tickFrame.BuffFrame)
+					--update auras on the personal bar
+					if (DB_PLATE_CONFIG.player.show_buffs) then
+						Plater.UpdateAuras_Self_Automatic (tickFrame.BuffFrame)
+					end
 				else
 					Plater.UpdateAuras_Automatic (tickFrame.BuffFrame, tickFrame.unit)
 				end
@@ -5688,7 +5693,28 @@ local debuff_options = {
 		name = "Y Offset",
 		desc = "Y Offset",
 	},
-
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.plate_config.player.show_buffs end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.plate_config.player.show_buffs = value
+			Plater.UpdateAllPlates()
+			
+			
+			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+				if (plateFrame.isSelf) then
+					local buffFrame = plateFrame.UnitFrame.BuffFrame
+					for _, buffIconFrame in ipairs (buffFrame.buffList) do
+						buffIconFrame:Hide()
+						buffIconFrame.InUse = false
+					end
+					break
+				end
+			end
+		end,
+		name = "Show Buffs on Personal Bar",
+		desc = "Show Buffs on Personal Bar",
+	},
 }
 
 DF:BuildMenu (auraFilterFrame, debuff_options, startX, startY, 300, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)	
