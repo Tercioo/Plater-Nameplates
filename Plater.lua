@@ -519,8 +519,8 @@ local default_config = {
 				aggro = {.5, .5, 1},
 				noaggro = {1, 0, 0},
 				pulling = {1, 1, 0},
-				--nocombat = {0.698, 0.705, 1},
 				nocombat = {0.380, 0.003, 0},
+				anothertank = {0.729, 0.917, 1},
 			},
 		},
 		
@@ -634,6 +634,8 @@ local ALL_BUFFS = {}
 local BUFF_CACHE = {}
 local DEBUFF_CACHE = {}
 
+local TANK_CACHE = {}
+
  --cvars
 local CVAR_ENABLED = "1"
 local CVAR_DISABLED = "0"
@@ -699,6 +701,13 @@ local function IsPlayerEffectivelyTank()
 	end
 	return assignedRole == "TANK";
 end
+
+local function IsUnitEffectivelyTank (unit)
+	local assignedRole = UnitGroupRolesAssigned (unit);
+	return assignedRole == "TANK";
+end
+
+
 --copied from blizzard code
 local function IsTapDenied (frame)
 	return frame.optionTable.greyOutWhenTapDenied and not UnitPlayerControlled (frame.unit) and UnitIsTapDenied (frame.unit)
@@ -1633,12 +1642,32 @@ function Plater.UpdateAggroPlates (self)
 		--se o jogador é TANK
 
 		if (not isTanking) then
+		
 			if (UnitAffectingCombat (self.displayedUnit)) then
-				--não há aggro neste mob mas ele esta participando do combate
-				Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.tank.colors.noaggro))
-				if (self.PlateFrame [MEMBER_NOCOMBAT]) then
-					self.PlateFrame [MEMBER_NOCOMBAT] = nil
-					Plater.CheckRange (self.PlateFrame, true)
+			
+				if (IsInRaid()) then
+					--check is the mob is tanked by another tank in the raid
+					local unitTarget = UnitName (self.displayedUnit .. "target")
+					if (TANK_CACHE [unitTarget]) then
+						--não há aggro neste mob mas ele esta participando do combate
+						Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.tank.colors.anothertank))
+					else
+						--não há aggro neste mob mas ele esta participando do combate
+						Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.tank.colors.noaggro))
+					end
+					
+					if (self.PlateFrame [MEMBER_NOCOMBAT]) then
+						self.PlateFrame [MEMBER_NOCOMBAT] = nil
+						Plater.CheckRange (self.PlateFrame, true)
+					end
+				else
+					--não há aggro neste mob mas ele esta participando do combate
+					Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.tank.colors.noaggro))
+					
+					if (self.PlateFrame [MEMBER_NOCOMBAT]) then
+						self.PlateFrame [MEMBER_NOCOMBAT] = nil
+						Plater.CheckRange (self.PlateFrame, true)
+					end
 				end
 			else
 				--não ha aggro e ele não esta participando do combate
@@ -2082,6 +2111,22 @@ function Plater:PLAYER_REGEN_DISABLED()
 		CAN_CHECK_AGGRO = true
 	end
 
+	--> refresh tank cache
+		wipe (TANK_CACHE)
+		if (IsPlayerEffectivelyTank()) then
+			TANK_CACHE [UnitName ("player")] = true
+		end
+		
+		if (IsInRaid()) then
+			for i = 1, GetNumGroupMembers() do
+				if (IsUnitEffectivelyTank ("raid" .. i)) then
+					if (not UnitIsUnit ("raid" .. i, "player")) then
+						TANK_CACHE [UnitName ("raid" .. i)] = true
+					end
+				end
+			end
+		end
+	
 	Plater.RegenIsDisabled = true
 	
 	Plater.UpdateAuraCache()
@@ -6719,6 +6764,19 @@ end
 			name = "[tank] Not in Combat",
 			desc = "When you are in combat and the enemy isn't in combat with you or with a member of your group.",
 		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.tank.colors.anothertank
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.tank.colors.anothertank
+				color[1], color[2], color[3], color[4] = r, g, b, a
+			end,
+			name = "[tank] Tanked by Another Tank",
+			desc = "The enemy is being tanked by another tank in the raid.",
+		},		
 		
 		{type = "blank"},
 --		{type = "label", get = function() return "Plate Color As a Dps:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
