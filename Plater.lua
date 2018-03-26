@@ -6722,8 +6722,34 @@ end
 				local color = Plater.db.profile.tank.colors.aggro
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
-			name = "[tank] Aggro",
-			desc = "When you are a Tank and have aggro.",
+			name = "[tank] Aggro on You",
+			desc = "When you are tanking with solid aggro.",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.tank.colors.anothertank
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.tank.colors.anothertank
+				color[1], color[2], color[3], color[4] = r, g, b, a
+			end,
+			name = "[tank] Aggro on Another Tank",
+			desc = "The enemy is being tanked by another tank in the raid.",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.tank.colors.pulling
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.tank.colors.pulling
+				color[1], color[2], color[3], color[4] = r, g, b, a
+			end,
+			name = "[tank] Aggro on You Warning",
+			desc = "When you are tanking but others are close to pull the aggro from you.",
 		},
 		{
 			type = "color",
@@ -6736,20 +6762,7 @@ end
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
 			name = "[tank] No Aggro",
-			desc = "When you are the tank and the mob isn't attacking you.",
-		},
-		{
-			type = "color",
-			get = function()
-				local color = Plater.db.profile.tank.colors.pulling
-				return {color[1], color[2], color[3], color[4]}
-			end,
-			set = function (self, r, g, b, a) 
-				local color = Plater.db.profile.tank.colors.pulling
-				color[1], color[2], color[3], color[4] = r, g, b, a
-			end,
-			name = "[tank] High Threat",
-			desc = "When you are near to pull the aggro from the other tank or group member.",
+			desc = "The enemy is attacking a player that isn't a tank!.",
 		},
 		{
 			type = "color",
@@ -6764,20 +6777,7 @@ end
 			name = "[tank] Not in Combat",
 			desc = "When you are in combat and the enemy isn't in combat with you or with a member of your group.",
 		},
-		{
-			type = "color",
-			get = function()
-				local color = Plater.db.profile.tank.colors.anothertank
-				return {color[1], color[2], color[3], color[4]}
-			end,
-			set = function (self, r, g, b, a) 
-				local color = Plater.db.profile.tank.colors.anothertank
-				color[1], color[2], color[3], color[4] = r, g, b, a
-			end,
-			name = "[tank] Tanked by Another Tank",
-			desc = "The enemy is being tanked by another tank in the raid.",
-		},		
-		
+			
 		{type = "blank"},
 --		{type = "label", get = function() return "Plate Color As a Dps:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
