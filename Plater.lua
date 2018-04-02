@@ -1121,7 +1121,19 @@ function Plater.OnInit()
 			self.name:SetText ("")
 			
 			if (plateFrame.actorType == ACTORTYPE_FRIENDLY_PLAYER) then
-				Plater.FormatTextForFriend (self:GetParent(), self.healthBar.actorName, self.name:GetText(), DB_PLATE_CONFIG [self:GetParent().actorType])
+				--guild friend
+				if (not Plater.FormatTextForGuildFriend (self:GetParent(), self.healthBar.actorName, self.name:GetText(), DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER])) then
+					--check if is a friend from the friends list
+					if (Plater.FriendsCache [self.name:GetText()]) then
+						DF:SetFontColor (self.healthBar.actorName, "aqua")
+						DF:SetFontOutline (self.healthBar.actorName, false)
+						plateFrame.isFriend = true
+					else
+						DF:SetFontColor (self.healthBar.actorName, DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].actorname_text_color)
+						plateFrame.isFriend = nil
+					end
+				end
+				
 			end
 		end
 	end)
@@ -2224,12 +2236,24 @@ function Plater:ZONE_CHANGED()
 	return Plater:ZONE_CHANGED_NEW_AREA()
 end
 
+local delayed_guildname_check = function()
+	Plater.PlayerGuildName = GetGuildInfo ("player")
+	if (not Plater.PlayerGuildName or Plater.PlayerGuildName == "") then
+		Plater.PlayerGuildName = "ThePlayerHasNoGuildName/30Char"
+	end
+	
+	print ("delayind guild check:", Plater.PlayerGuildName)
+end
+
 function Plater:PLAYER_ENTERING_WORLD()
 	C_Timer.After (1, Plater.ZONE_CHANGED_NEW_AREA)
 	C_Timer.After (1, Plater.FRIENDLIST_UPDATE)
 	Plater.PlayerGuildName = GetGuildInfo ("player")
 	if (not Plater.PlayerGuildName or Plater.PlayerGuildName == "") then
 		Plater.PlayerGuildName = "ThePlayerHasNoGuildName/30Char"
+		
+		--somethimes guild information isn't available at the login
+		C_Timer.After (10, delayed_guildname_check)
 	end
 	
 	local pvpType, isFFA, faction = GetZonePVPInfo()
@@ -2611,12 +2635,16 @@ function Plater.QuestLogUpdated()
 	Plater.UpdateQuestCacheThrottle = C_Timer.NewTimer (2, update_quest_cache)
 end
 
-function Plater.FormatTextForFriend (plateFrame, actorNameString, playerName, plateConfigs)
-	--if (GetGuildInfo (plateFrame.UnitFrame.unit) == Plater.PlayerGuildName) then
-		--DF:SetFontColor (actorNameString, "lime")
-	--	DF:SetFontColor (actorNameString, "chartreuse")
-	--	DF:SetFontOutline (actorNameString, false)
-	--end	
+function Plater.FormatTextForGuildFriend (plateFrame, actorNameString, playerName, plateConfigs)
+	if (GetGuildInfo (plateFrame.UnitFrame.unit) == Plater.PlayerGuildName) then
+		DF:SetFontColor (actorNameString, "lime")
+		DF:SetFontColor (actorNameString, "chartreuse")
+		DF:SetFontOutline (actorNameString, false)
+		plateFrame.isFriend = true
+		return true
+	end	
+	
+	return false
 end
 
 -- ~updatetext
@@ -2644,15 +2672,20 @@ function Plater.UpdatePlateText (plateFrame, plateConfigs)
 		DF:SetFontSize (textString, plateConfigs.actorname_text_size)
 		DF:SetFontFace (textString, plateConfigs.actorname_text_font)
 		DF:SetFontOutline (textString, plateConfigs.actorname_text_shadow)
-		Plater.FormatTextForFriend (plateFrame, textString, playerName, plateConfigs)	
 		
-		if (Plater.FriendsCache [playerName]) then
-			DF:SetFontColor (textString, "aqua")
-			DF:SetFontOutline (textString, false)
-			plateFrame.isFriend = true
-		else
-			DF:SetFontColor (textString, plateConfigs.actorname_text_color)
-			plateFrame.isFriend = nil
+		--is a guild friend?
+		if (not Plater.FormatTextForGuildFriend (plateFrame, textString, playerName, plateConfigs)) then
+		
+			--check if is a friend from the friends list
+			if (Plater.FriendsCache [playerName]) then
+				DF:SetFontColor (textString, "aqua")
+				DF:SetFontOutline (textString, false)
+				plateFrame.isFriend = true
+			else
+				--isn't a friend at all
+				DF:SetFontColor (textString, plateConfigs.actorname_text_color)
+				plateFrame.isFriend = nil
+			end
 		end
 		
 	else
@@ -2663,21 +2696,24 @@ function Plater.UpdatePlateText (plateFrame, plateConfigs)
 		DF:SetFontSize (nameString, plateConfigs.actorname_text_size)
 		DF:SetFontFace (nameString, plateConfigs.actorname_text_font)
 		DF:SetFontOutline (nameString, plateConfigs.actorname_text_shadow)
-		Plater.FormatTextForFriend (plateFrame, nameString, playerName, plateConfigs)
-
-		if (Plater.FriendsCache [playerName]) then
-			DF:SetFontColor (nameString, "aqua")
-			DF:SetFontOutline (nameString, false)
-			plateFrame.isFriend = true
-		else
-			--DF:SetFontColor (nameString, plateConfigs.actorname_text_color)
-			--if (plateFrame.actorType == ACTORTYPE_ENEMY_NPC or plateFrame.actorType == ACTORTYPE_ENEMY_PLAYER) then
-			--if (plateFrame.actorType ~= ACTORTYPE_FRIENDLY_NPC) then
-				DF:SetFontColor (nameString, plateConfigs.actorname_text_color)
-			--else
-			--	DF:SetFontColor (nameString, "white")
-			--end
-			plateFrame.isFriend = nil
+		
+		if (not Plater.FormatTextForGuildFriend (plateFrame, nameString, playerName, plateConfigs)) then
+	
+			--check if is a friend from the friends list
+			if (Plater.FriendsCache [playerName]) then
+				DF:SetFontColor (nameString, "aqua")
+				DF:SetFontOutline (nameString, false)
+				plateFrame.isFriend = true
+			else
+				--DF:SetFontColor (nameString, plateConfigs.actorname_text_color)
+				--if (plateFrame.actorType == ACTORTYPE_ENEMY_NPC or plateFrame.actorType == ACTORTYPE_ENEMY_PLAYER) then
+				--if (plateFrame.actorType ~= ACTORTYPE_FRIENDLY_NPC) then
+					DF:SetFontColor (nameString, plateConfigs.actorname_text_color)
+				--else
+				--	DF:SetFontColor (nameString, "white")
+				--end
+				plateFrame.isFriend = nil
+			end
 		end
 		
 		Plater.SetAnchor (nameString, plateConfigs.actorname_text_anchor) --manda a tabela com .anchor .x e .y	
