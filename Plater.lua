@@ -2241,8 +2241,6 @@ local delayed_guildname_check = function()
 	if (not Plater.PlayerGuildName or Plater.PlayerGuildName == "") then
 		Plater.PlayerGuildName = "ThePlayerHasNoGuildName/30Char"
 	end
-	
-	print ("delayind guild check:", Plater.PlayerGuildName)
 end
 
 function Plater:PLAYER_ENTERING_WORLD()
