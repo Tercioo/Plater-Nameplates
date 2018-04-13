@@ -292,10 +292,10 @@ local default_config = {
 				enabled = true,
 				plate_order = 3,
 				
-				health = {110, 2},
-				health_incombat = {130, 10},
-				cast = {134, 12},
-				cast_incombat = {134, 12},
+				health = {92, 2},
+				health_incombat = {120, 10},
+				cast = {124, 12},
+				cast_incombat = {124, 12},
 				mana = {100, 3},
 				mana_incombat = {100, 3},
 				buff_frame_y_offset = 0,
@@ -2033,6 +2033,7 @@ local re_UpdatePlateClickSpace = function()
 	Plater.UpdatePlateClickSpace()
 end
 
+-- ~platesize
 function Plater.UpdatePlateClickSpace (plateFrame, needReorder, isDebug, isConceal)
 	if (plateFrame) then
 		--if (isConceal) then
@@ -2047,7 +2048,7 @@ function Plater.UpdatePlateClickSpace (plateFrame, needReorder, isDebug, isConce
 			plateFrame:SetBackdrop (nil)
 		end
 	end
-
+	
 	if (not plateFrame) then
 		if (not Plater.CanChangePlateSize()) then
 			return C_Timer.After (1, re_UpdatePlateClickSpace)
@@ -2061,7 +2062,16 @@ function Plater.UpdatePlateClickSpace (plateFrame, needReorder, isDebug, isConce
 	local width, height = Plater.db.profile.click_space[1], Plater.db.profile.click_space[2]
 	if (Plater.CanChangePlateSize()) then
 		--ajusta o tamanho de uma unica barra
+		
+		--> if this is a friendly player, reduce the size so it stay less annoying to deal with
+		if (plateFrame.actorType == ACTORTYPE_FRIENDLY_PLAYER) then
+			width, height = unpack (Plater.db.profile.plate_config.friendlyplayer.health)
+			height = height + 6
+			width = 40
+		end
+		
 		plateFrame:SetSize (width, height)
+		
 		if (needReorder) then
 			Plater.UpdatePlateFrame (plateFrame, plateFrame.actorType)
 		end
@@ -2241,6 +2251,8 @@ local delayed_guildname_check = function()
 	if (not Plater.PlayerGuildName or Plater.PlayerGuildName == "") then
 		Plater.PlayerGuildName = "ThePlayerHasNoGuildName/30Char"
 	end
+	
+	--print ("delayind guild check:", Plater.PlayerGuildName)
 end
 
 function Plater:PLAYER_ENTERING_WORLD()
