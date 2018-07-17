@@ -1,0 +1,22 @@
+------------------------------------------------------------------------
+r81 | galmok | 2018-02-25 06:31:34 +0000 (Sun, 25 Feb 2018) | 2 lines
+Changed paths:
+   M /trunk/LibCompress.lua
+   M /trunk/LibCompress.toc
+
+Reverted the : to . on functions.
+Upped the interface version to 70300.
+------------------------------------------------------------------------
+r80 | stanzilla | 2018-02-23 23:28:23 +0000 (Fri, 23 Feb 2018) | 1 line
+Changed paths:
+   M /trunk/LibCompress.lua
+
+more unused variable cleanups
+------------------------------------------------------------------------
+r79 | stanzilla | 2018-02-23 23:22:24 +0000 (Fri, 23 Feb 2018) | 1 line
+Changed paths:
+   M /trunk/LibCompress.lua
+
+clean up unused self argument usage
+------------------------------------------------------------------------
+

@@ -1,4 +1,4 @@
-## Interface: 70300
+## Interface: 80000
 ## Title: Plater
 ## Notes: Config the new name plates
 ## SavedVariables: PlaterDB
@@ -9,3 +9,4 @@ libs\libs.xml
 #@end-no-lib-strip@
 
 Plater.lua
+ScriptLibrary.lua

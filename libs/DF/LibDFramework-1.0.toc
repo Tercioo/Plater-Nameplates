@@ -1,10 +1,6 @@
-## Interface: 60200
+## Interface: 80000
 ## Title: Lib: LibDFramework-1.0
 ## Notes: Base Framework for many Addons
-
-LibStub\LibStub.lua
-CallbackHandler-1.0\CallbackHandler-1.0.lua
-LibSharedMedia-3.0\lib.xml
 
 #@no-lib-strip@
 embeds.xml
