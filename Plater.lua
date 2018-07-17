@@ -493,7 +493,7 @@ local default_config = {
 			is_buff = {0, .65, .1, 1},
 			is_show_all = {.7, .1, .1, 1},
 		},
-
+		
 		aura_tracker = {
 			buff = {},
 			debuff = {},
@@ -936,6 +936,35 @@ local default_config = {
 				},
 			},
 			
+			--Blade of Justice (paladin)
+			[184575] = {
+				{
+					enabled = true,
+					duration = 0.05, --seconds
+					animation_type = "scale",
+					cooldown = 0.75, --seconds
+					scale_upX = 1.05,
+					scale_upY = 1.05,
+					scale_downX = 0.95,
+					scale_downY = 0.95,
+				},
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .1,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = true,
+					duration = 0.1,
+					amplitude = 2,
+					frequency = 1,
+					fade_in = 0.01,
+					fade_out = 0.09,
+					cooldown = 0.5,
+					critical_scale = 1.2,
+				},
+			},
+			
 			--Hammer of the Righteous (paladin)
 			[53595] = {
 				{
@@ -964,6 +993,24 @@ local default_config = {
 					critical_scale = 1.05,
 				},
 			},
+			
+			--Crusader Strike (paladin)
+			[35395] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .1,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.12,
+					amplitude = 1,
+					frequency = 25,
+					fade_in = 0.01,
+					fade_out = 0.02,
+					cooldown = 0.5,
+				},
+			}, 
 			
 			--Avenger's Shield (paladin)
 			[31935] = {
@@ -1011,6 +1058,229 @@ local default_config = {
 					cooldown = 0.5,
 				},
 			},
+			
+			--Thunder Clap (warrior)
+			[6343] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .2,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.12,
+					amplitude = 0.95,
+					frequency = 200,
+					fade_in = 0.01,
+					fade_out = 0.01,
+					cooldown = 0.1,
+				},
+			},
+			
+			--Heroic Leap (warrior)
+			[52174] = {
+				{
+					enabled = true,
+					duration = 0.075, --seconds
+					animation_type = "scale",
+					cooldown = 0.75, --seconds
+					scale_upX = 1.15,
+					scale_upY = 1.15,
+					scale_downX = 0.8,
+					scale_downY = 0.8,
+				},
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .15,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.3,
+					amplitude = 6,
+					frequency = 50,
+					fade_in = 0.01,
+					fade_out = 0.2,
+					cooldown = 0.5,
+					critical_scale = 1.2,
+				},
+			}, 
+			
+			--Devastate (warrior)
+			[20243] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .1,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.12,
+					amplitude = 1,
+					frequency = 25,
+					fade_in = 0.01,
+					fade_out = 0.02,
+					cooldown = 0.5,
+				},
+			}, 
+			
+			--Shockwave (warrior)
+			[46968] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .1,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.10,
+					amplitude = 0.95,
+					frequency = 120,
+					fade_in = 0.01,
+					fade_out = 0.01,
+					cooldown = 0.1,
+				},
+			}, 
+			
+			--Death Strike (dk)
+			[49998] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .1,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.13,
+					amplitude = 1.8,
+					frequency = 25,
+					fade_in = 0.01,
+					fade_out = 0.02,
+					cooldown = 0.5,
+				},
+			}, 
+			
+			--Frost Strike (dk)
+			[222026] = {
+				{
+					enabled = true,
+					duration = 0.04, --seconds
+					animation_type = "scale",
+					cooldown = 0.75, --seconds
+					scale_upX = 1.1,
+					scale_upY = 1.1,
+					scale_downX = 0.9,
+					scale_downY = 0.9,
+				},
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = 1,
+					scaleY = -1,
+					absolute_sineX = false,
+					absolute_sineY = true,
+					duration = 0.08,
+					amplitude = 10,
+					frequency = 4.1,
+					fade_in = 0.01,
+					fade_out = 0.18,
+					cooldown = 0.5,
+				},
+			}, 
+			
+			--Obliterate (dk)
+			[222024] = {
+				{
+					enabled = true,
+					duration = 0.035, --seconds
+					animation_type = "scale",
+					cooldown = 0.75, --seconds
+					scale_upX = 1.1,
+					scale_upY = 1.1,
+					scale_downX = 0.9,
+					scale_downY = 0.9,
+				},
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = 1,
+					scaleY = -1,
+					absolute_sineX = true,
+					absolute_sineY = true,
+					duration = 0.075,
+					amplitude = 1.8,
+					frequency = 50,
+					fade_in = 0.01,
+					fade_out = 0.02,
+					cooldown = 0.5,
+					critical_scale = 2,
+				},
+			},
+			
+			--Scourge Strike (dk)
+			[55090] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = 1,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = true,
+					duration = 0.08,
+					amplitude = 10,
+					frequency = 4.1,
+					fade_in = 0.01,
+					fade_out = 0.18,
+					cooldown = 0.5,
+				},
+			}, 
+			
+			--Festering Strike (dk)
+			[85948] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .1,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.12,
+					amplitude = 1,
+					frequency = 25,
+					fade_in = 0.01,
+					fade_out = 0.02,
+					cooldown = 0.5,
+				},
+			}, 
+			
+			--Heart Strike (dk)
+			[206930] = {
+				{
+					enabled = true,
+					duration = 0.035, --seconds
+					animation_type = "scale",
+					cooldown = 0.75, --seconds
+					scale_upX = 1.1,
+					scale_upY = 1.1,
+					scale_downX = 0.9,
+					scale_downY = 0.9,
+				},
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = -1,
+					scaleY = 1,
+					absolute_sineX = true,
+					absolute_sineY = true,
+					duration = 0.075,
+					amplitude = 1.8,
+					frequency = 50,
+					fade_in = 0.01,
+					fade_out = 0.02,
+					cooldown = 0.5,
+					critical_scale = 2,
+				},
+			}, 
 			
 		},
 		
@@ -2382,7 +2652,7 @@ function Plater.OnInit()
 	
 	Plater.CompileAllScripts()
 
-	--configuração do personagem
+	--configuraï¿½ï¿½o do personagem
 	PlaterDBChr = PlaterDBChr or {first_run2 = {}}
 	PlaterDBChr.first_run2 = PlaterDBChr.first_run2 or {}
 	
@@ -2420,7 +2690,7 @@ function Plater.OnInit()
 	
 	Plater.RefreshColorOverride()
 	
-	--verifica se é a primeira vez que rodou o addon no personagem
+	--verifica se ï¿½ a primeira vez que rodou o addon no personagem
 	local check_first_run = function()
 		if (not UnitGUID ("player")) then
 			C_Timer.After (1, Plater.CheckFirstRun)
@@ -2548,7 +2818,7 @@ function Plater.OnInit()
 		Plater.UpdatePlateBorders (self.plateFrame)
 	end)
 	
-	--sobrepõe a função que atualiza as auras
+	--sobrepï¿½e a funï¿½ï¿½o que atualiza as auras
 	local Override_UNIT_AURA_EVENT = function (self, unit)
 		local nameplate = C_NamePlate.GetNamePlateForUnit (unit)
 		if (nameplate) then
@@ -2598,9 +2868,9 @@ function Plater.OnInit()
 	
 	--InstallOverride (NPB_Name, Plater.DriverFuncNames.OnUpdateBuffs, Plater.Override_UpdateBuffs)
 	InstallHook (_G [NPB_Name], Plater.DriverFuncNames.OnUpdateBuffs, Plater.Override_UpdateBuffs)
-	--buffcontainermixin é diferente de nameplate frame mixin
+	--buffcontainermixin ï¿½ diferente de nameplate frame mixin
 	
-	--sobrepõe a função, economiza processamento uma vez que o resultado da função original não é usado
+	--sobrepï¿½e a funï¿½ï¿½o, economiza processamento uma vez que o resultado da funï¿½ï¿½o original nï¿½o ï¿½ usado
 	local Override_UNIT_AURA_ANCHORUPDATE = function (self)
 		if (self.Point1) then
 			self:SetPoint (self.Point1, self.Anchor, self.Point2, self.X, self.Y)
@@ -2609,7 +2879,7 @@ function Plater.OnInit()
 	--InstallOverride (NPB_Name, Plater.DriverFuncNames.OnUpdateAnchor, Override_UNIT_AURA_ANCHORUPDATE)
 	InstallHook (_G [NPB_Name], Plater.DriverFuncNames.OnUpdateAnchor, Override_UNIT_AURA_ANCHORUPDATE)
 	
-	--tamanho dos ícones dos debuffs sobre a nameplate
+	--tamanho dos ï¿½cones dos debuffs sobre a nameplate
 	function Plater.UpdateAuraIcons (self, unit, filter)
 	
 		if (not self [MEMBER_REACTION]) then
@@ -2675,7 +2945,7 @@ function Plater.OnInit()
 			--esta plate possui debuffs sendo mostrados
 			Plater.PlateShowingDebuffFrame (plateFrame)
 		else
-			--esta plate não tem debuffs
+			--esta plate nï¿½o tem debuffs
 			Plater.PlateNotShowingDebuffFrame (plateFrame)
 		end
 	end
@@ -2686,8 +2956,8 @@ function Plater.OnInit()
 		Plater.UpdateManaAndResourcesBar()
 	
 		if (not onTarget) then
-			-- ele esta chamando duas vezes, uma com resources no alvo e outra não
-			--ignorarando a que ele diz que não esta no alvo
+			-- ele esta chamando duas vezes, uma com resources no alvo e outra nï¿½o
+			--ignorarando a que ele diz que nï¿½o esta no alvo
 			return
 		end
 
@@ -2809,7 +3079,7 @@ function Plater.OnInit()
 	InstallHook (Plater.GetDriverSubObjectName (CBF_Name, Plater.DriverFuncNames.OnCastBarEvent), CastBarOnEventHook)
 	
 	local CastBarOnTickHook = function (self, deltaTime)
-		if (self.percentText) then --é uma castbar do plater?
+		if (self.percentText) then --ï¿½ uma castbar do plater?
 		
 			self.ThrottleUpdate = self.ThrottleUpdate - deltaTime
 			
@@ -3063,7 +3333,7 @@ function Plater.UpdateSelfPlate()
 	ClassNameplateManaBarFrame:SetSize (unpack (DB_PLATE_CONFIG.player.mana))
 end
 
--- se o jogador estiver em combate, colorir a barra de acordo com o aggro do jogador ~aggro ãggro
+-- se o jogador estiver em combate, colorir a barra de acordo com o aggro do jogador ~aggro ï¿½ggro
 
 local set_aggro_color = function (self, r, g, b) --self.actorName
 	if (DB_AGGRO_CHANGE_HEALTHBAR_COLOR) then
@@ -3079,7 +3349,7 @@ end
 
 function Plater.UpdateNameplateThread (self)
 	if (not self.displayedUnit or UnitIsPlayer (self.displayedUnit) or Plater.petCache [self:GetParent() [MEMBER_GUID]] or self.displayedUnit:match ("pet%d$")) then
-		--não computar aggro de jogadores inimigos
+		--nï¿½o computar aggro de jogadores inimigos
 		return
 	end
 	
@@ -3091,7 +3361,7 @@ function Plater.UpdateNameplateThread (self)
 	--self:SetAlpha (1)
 	
 	if (IsPlayerEffectivelyTank()) then --true or 
-		--se o jogador é TANK
+		--se o jogador ï¿½ TANK
 
 		if (not isTanking) then
 		
@@ -3101,10 +3371,10 @@ function Plater.UpdateNameplateThread (self)
 					--check is the mob is tanked by another tank in the raid
 					local unitTarget = UnitName (self.displayedUnit .. "target")
 					if (TANK_CACHE [unitTarget]) then
-						--não há aggro neste mob mas ele esta participando do combate
+						--nï¿½o hï¿½ aggro neste mob mas ele esta participando do combate
 						Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.tank.colors.anothertank))
 					else
-						--não há aggro neste mob mas ele esta participando do combate
+						--nï¿½o hï¿½ aggro neste mob mas ele esta participando do combate
 						Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.tank.colors.noaggro))
 					end
 					
@@ -3113,7 +3383,7 @@ function Plater.UpdateNameplateThread (self)
 						Plater.CheckRange (self.PlateFrame, true)
 					end
 				else
-					--não há aggro neste mob mas ele esta participando do combate
+					--nï¿½o hï¿½ aggro neste mob mas ele esta participando do combate
 					Plater.ForceChangeHealthBarColor (self.healthBar, unpack (Plater.db.profile.tank.colors.noaggro))
 					
 					if (self.PlateFrame [MEMBER_NOCOMBAT]) then
@@ -3124,9 +3394,9 @@ function Plater.UpdateNameplateThread (self)
 			else
 				--if isn't a quest mob
 				if (not self.PlateFrame [MEMBER_QUEST]) then
-					--não ha aggro e ele não esta participando do combate
+					--nï¿½o ha aggro e ele nï¿½o esta participando do combate
 					if (self [MEMBER_REACTION] == 4) then
-						--o mob é um npc neutro, apenas colorir com a cor neutra
+						--o mob ï¿½ um npc neutro, apenas colorir com a cor neutra
 						set_aggro_color (self.healthBar, 1, 1, 0)
 					else
 						set_aggro_color (self.healthBar, unpack (Plater.db.profile.tank.colors.nocombat))
@@ -3140,13 +3410,13 @@ function Plater.UpdateNameplateThread (self)
 			end
 		else
 			--o jogador esta tankando e:
-			if (threatStatus == 3) then --esta tankando com segurança
+			if (threatStatus == 3) then --esta tankando com seguranï¿½a
 				set_aggro_color (self.healthBar, unpack (Plater.db.profile.tank.colors.aggro))
-			elseif (threatStatus == 2) then --esta tankando sem segurança
+			elseif (threatStatus == 2) then --esta tankando sem seguranï¿½a
 				set_aggro_color (self.healthBar, unpack (Plater.db.profile.tank.colors.pulling))
 				self.aggroGlowUpper:Show()
 				self.aggroGlowLower:Show()
-			else --não esta tankando
+			else --nï¿½o esta tankando
 				set_aggro_color (self.healthBar, unpack (Plater.db.profile.tank.colors.noaggro))
 			end
 			if (self.PlateFrame [MEMBER_NOCOMBAT]) then
@@ -3155,7 +3425,7 @@ function Plater.UpdateNameplateThread (self)
 			end
 		end
 	else
-		--o player é DPS
+		--o player ï¿½ DPS
 		
 		if (isTanking) then
 			--o jogador esta tankando como dps
@@ -3184,9 +3454,9 @@ function Plater.UpdateNameplateThread (self)
 				else
 					--if isn't a quest mob
 					if (not self.PlateFrame [MEMBER_QUEST]) then
-						--não ha aggro e ele não esta participando do combate
+						--nï¿½o ha aggro e ele nï¿½o esta participando do combate
 						if (self [MEMBER_REACTION] == 4) then
-							--o mob é um npc neutro, apenas colorir com a cor neutra
+							--o mob ï¿½ um npc neutro, apenas colorir com a cor neutra
 							set_aggro_color (self.healthBar, 1, 1, 0)
 						else
 							set_aggro_color (self.healthBar, unpack (Plater.db.profile.tank.colors.nocombat))
@@ -3214,7 +3484,7 @@ function Plater.UpdateNameplateThread (self)
 					self:GetParent().playerHasAggro = false
 					self.aggroGlowUpper:Show()
 					self.aggroGlowLower:Show()
-				elseif (threatStatus == 0) then --não esta tankando
+				elseif (threatStatus == 0) then --nï¿½o esta tankando
 					set_aggro_color (self.healthBar, unpack (Plater.db.profile.dps.colors.noaggro))
 					self:GetParent().playerHasAggro = false
 				end
@@ -3442,7 +3712,7 @@ local hide_non_used_auraFrames = function (self, auraIndex)
 	end
 end
 
--- ~auras ~ãura
+-- ~auras ~ï¿½ura
 
 function Plater.TrackSpecificAuras (self, unit, auraIndex, isBuff, aurasToCheck, isPersonal, noSpecial)
 
@@ -3751,7 +4021,7 @@ function Plater.AnimateRightWithAccel (self, deltaTime)
 	end
 end
 
--- ~ontick ~onupdate ~tick ~õnupdate õntick
+-- ~ontick ~onupdate ~tick ~ï¿½nupdate ï¿½ntick
 local EventTickFunction = function (tickFrame, deltaTime)
 	
 	tickFrame.ThrottleUpdate = tickFrame.ThrottleUpdate - deltaTime
@@ -3788,7 +4058,7 @@ local EventTickFunction = function (tickFrame, deltaTime)
 		--> check if is in combat so it can change the aggro color
 		elseif (InCombatLockdown()) then
 			if (tickFrame.PlateFrame [MEMBER_REACTION] <= 4) then
-				--é um inimigo ou neutro
+				--ï¿½ um inimigo ou neutro
 				Plater.UpdateNameplateThread (unitFrame)
 			else
 				--o proprio jogo seta a cor da barra aqui
@@ -3955,7 +4225,7 @@ local EventTickFunction = function (tickFrame, deltaTime)
 	end
 end
 
---força a default UI a trocar a cor das barras
+--forï¿½a a default UI a trocar a cor das barras
 function Plater.UpdateAllNameplateColors()
 	if (Plater.CanOverrideColor) then
 		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
@@ -4350,8 +4620,8 @@ function Plater.UpdateTarget (plateFrame)
 		Plater.UpdateTargetPoints (plateFrame) --neon
 		Plater.UpdateTargetIndicator (plateFrame) --border
 		
-		--o target nunca tem obscuração
-		--tocar a animação se necessário
+		--o target nunca tem obscuraï¿½ï¿½o
+		--tocar a animaï¿½ï¿½o se necessï¿½rio
 		plateFrame.Obscured:Hide()
 	else
 		plateFrame.TargetNeonUp:Hide()
@@ -4371,7 +4641,7 @@ function Plater.UpdateTarget (plateFrame)
 		
 		if (DB_TARGET_SHADY_ENABLED and (not DB_TARGET_SHADY_COMBATONLY or Plater.RegenIsDisabled)) then
 			if (not plateFrame.Obscured:IsShown()) then
-				--tocar a animação de fade in
+				--tocar a animaï¿½ï¿½o de fade in
 				--botar a texture de obscure
 			end
 			plateFrame.Obscured:Show()
@@ -4711,7 +4981,7 @@ function Plater.IsQuestObjective (plateFrame)
 		if (Plater.QuestCache [text]) then
 			--este npc percente a uma quest
 			if (not IsInGroup() and i < 8) then
-				--verifica se já fechou a quantidade necessária pra esse npc
+				--verifica se jï¿½ fechou a quantidade necessï¿½ria pra esse npc
 				local nextLineText = ScanQuestTextCache [i+1]:GetText()
 				if (nextLineText) then
 					local p1, p2 = nextLineText:match ("(%d%d)/(%d%d)") --^ - 
@@ -4807,7 +5077,7 @@ function Plater.UpdatePlateText (plateFrame, plateConfigs)
 	local lifeString = plateFrame.UnitFrame.healthBar.lifePercent
 
 	if (plateFrame.isSelf) then
-		--se a barra for do proprio jogador não tem porque setar o nome
+		--se a barra for do proprio jogador nï¿½o tem porque setar o nome
 		nameString:SetText ("")
 		
 	elseif (plateFrame.onlyShowThePlayerName) then
@@ -4887,7 +5157,7 @@ function Plater.UpdatePlateText (plateFrame, plateConfigs)
 		
 		Plater.UpdateUnitName (plateFrame)
 		
-		--seta o nome na linha secundária
+		--seta o nome na linha secundï¿½ria
 		if (plateFrame.shouldShowNpcNameAndTitle) then
 
 			--> mostra todos os npcs
@@ -4901,7 +5171,7 @@ function Plater.UpdatePlateText (plateFrame, plateConfigs)
 				DF:SetFontSize (plateFrame.actorNameSolo, plateConfigs.big_actorname_text_size)
 				DF:SetFontFace (plateFrame.actorNameSolo, plateConfigs.big_actorname_text_font)
 				DF:SetFontOutline (plateFrame.actorNameSolo, plateConfigs.big_actorname_text_shadow)
-				--profissão
+				--profissï¿½o
 				local subTitle = Plater.GetActorSubName (plateFrame)
 				if (subTitle and subTitle ~= "" and not subTitle:match ("%d")) then
 					plateFrame.actorSubTitleSolo:Show()
@@ -4915,7 +5185,7 @@ function Plater.UpdatePlateText (plateFrame, plateConfigs)
 					DF:SetFontOutline (plateFrame.actorSubTitleSolo, plateConfigs.big_actortitle_text_shadow)
 				end
 			else
-				--faz o scan no tooltip para saber se é um npc relevante
+				--faz o scan no tooltip para saber se ï¿½ um npc relevante
 				local subTitle = Plater.GetActorSubName (plateFrame)
 				if (subTitle and subTitle ~= "" and not Plater.IsIgnored (plateFrame, true)) then
 					if (not subTitle:match ("%d")) then
@@ -5564,7 +5834,7 @@ end
 --healthBar.b = b
 --healthBar:SetStatusBarColor (r, g, b)
 		
---plater ~API ãpi
+--plater ~API ï¿½pi
 
 function Plater.OnPlayCustomFlashAnimation (animationHub)
 	animationHub:GetParent():Show()
@@ -5730,7 +6000,7 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate, justAdded)
 			plateFrame:Hide()
 		end
 		
-	--a plate é de um NPC inimigo e estamos dentro de um santuário?
+	--a plate ï¿½ de um NPC inimigo e estamos dentro de um santuï¿½rio?
 	elseif (plateFrame [MEMBER_REACTION] < 4 and Plater.zonePvpType == "sanctuary") then
 		if (InCombatLockdown()) then
 			healthFrame:Hide()
@@ -5848,7 +6118,7 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate, justAdded)
 				plateFrame:Show()
 			end
 			
-			--se for um jogador da facção rival, verificar se pode mostrar a cor da classe ou é uma cor fixa
+			--se for um jogador da facï¿½ï¿½o rival, verificar se pode mostrar a cor da classe ou ï¿½ uma cor fixa
 			if (actorType == ACTORTYPE_ENEMY_PLAYER) then
 				if (not DB_PLATE_CONFIG [actorType].use_playerclass_color) then
 					Plater.ForceChangeHealthBarColor (healthFrame, unpack (DB_PLATE_CONFIG [actorType].fixed_class_color))
@@ -6150,7 +6420,7 @@ function Plater.UpdatePlateBorderThickness (plateFrame)
 	--the new border uses details! framework
 	local textures = plateFrame.UnitFrame.healthBar.border.Textures
 	
-	-- 9 a 12 nunca são escondias
+	-- 9 a 12 nunca sï¿½o escondias
 	if (DB_BORDER_THICKNESS <= 1) then
 		--hida de 1 a 8
 		for i = 1, 8 do
@@ -6213,7 +6483,7 @@ function Plater.CheckRange (plateFrame, onAdded)
 		return
 	end
 
-	--dummies nao efatam o combate e não tem aggro
+	--dummies nao efatam o combate e nï¿½o tem aggro
 	--as plates deles vao ficar sem alpha
 	
 	if (IsSpellInRange (Plater.SpellForRangeCheck, plateFrame [MEMBER_UNITID]) == 1) then
@@ -6341,7 +6611,7 @@ function Plater.CreateScaleAnimation (plateFrame)
 end
 
 Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame) -- ~created ~events
-	--isto é uma nameplate
+	--isto ï¿½ uma nameplate
 	plateFrame.UnitFrame.PlateFrame = plateFrame
 	plateFrame.isNamePlate = true
 	plateFrame.UnitFrame.isNamePlate = true
@@ -6497,7 +6767,7 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame) -- ~created ~
 	--> cache the extra icon frame inside the buff frame for speed
 	plateFrame.UnitFrame.BuffFrame.ExtraIconFrame = plateFrame.UnitFrame.ExtraIconFrame
 
-	--icone três dimensões
+	--icone trï¿½s dimensï¿½es
 	plateFrame.Top3DFrame = CreateFrame ("playermodel", plateFrame:GetName() .. "3DFrame", plateFrame, "ModelWithControlsTemplate")
 	plateFrame.Top3DFrame:SetPoint ("bottom", plateFrame, "top", 0, -100)
 	plateFrame.Top3DFrame:SetSize (200, 250)
@@ -6535,7 +6805,7 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame) -- ~created ~
 	percentText:SetPoint ("right", plateFrame.UnitFrame.castBar, "right")
 	plateFrame.UnitFrame.castBar.percentText = percentText
 	
-	--icone de não interrompível
+	--icone de nï¿½o interrompï¿½vel
 	plateFrame.UnitFrame.castBar.BorderShield:SetTexture ([[Interface\ACHIEVEMENTFRAME\UI-Achievement-Progressive-IconBorder]])
 	plateFrame.UnitFrame.castBar.BorderShield:SetTexCoord (5/64, 37/64, 1/64, 36/64)
 	plateFrame.UnitFrame.castBar.isNamePlate = true
@@ -6589,7 +6859,7 @@ function Plater.CanShowPlateFor (actorType)
 	return DB_PLATE_CONFIG [actorType].enabled
 end
 
-Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ãdded
+Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ï¿½dded
 	--pega a nameplate deste jogador
 	
 	local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId)
@@ -6643,7 +6913,7 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ã
 			Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_PLAYER, nil, true)
 		else
 			if (UnitIsPlayer (unitBarId)) then
-				--é um jogador, determinar se é um inimigo ou aliado
+				--ï¿½ um jogador, determinar se ï¿½ um inimigo ou aliado
 				if (reaction >= UNITREACTION_FRIENDLY) then
 					plateFrame.NameAnchor = DB_NAME_PLAYERFRIENDLY_ANCHOR
 					Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_FRIENDLY_PLAYER, nil, true)
@@ -6660,7 +6930,7 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ã
 					end
 				end
 			else
-				--é um npc
+				--ï¿½ um npc
 				if (reaction >= UNITREACTION_FRIENDLY) then
 					plateFrame.NameAnchor = DB_NAME_NPCFRIENDLY_ANCHOR
 					Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_FRIENDLY_NPC, nil, true)
@@ -6669,7 +6939,7 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ã
 						CastingBarFrame_SetUnit (castBar, nil, nil, nil)
 					end
 				else
-					--inclui npcs que são neutros
+					--inclui npcs que sï¿½o neutros
 					plateFrame.NameAnchor = DB_NAME_NPCENEMY_ANCHOR
 					Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_ENEMY_NPC, nil, true)
 					actorType = ACTORTYPE_ENEMY_NPC
@@ -7385,7 +7655,7 @@ function Plater.GetNpcTypeIcon (npcType)
 	end
 end
 
--- ~options õptions
+-- ~options ï¿½ptions
 function Plater.OpenOptionsPanel()
 
 	if (PlaterOptionsPanelFrame) then
@@ -7418,7 +7688,7 @@ function Plater.OpenOptionsPanel()
 		button_text_size = 10,
 	}
 	
-	-- mainFrame é um frame vazio para sustentrar todos os demais frames, este frame sempre será mostrado
+	-- mainFrame ï¿½ um frame vazio para sustentrar todos os demais frames, este frame sempre serï¿½ mostrado
 	local mainFrame = DF:CreateTabContainer (f, "Plater Options", "PlaterOptionsPanelContainer", 
 	{
 		{name = "FrontPage", title = "General Settings"},
@@ -7484,7 +7754,7 @@ function Plater.OpenOptionsPanel()
 	end)
 	
 -------------------------
--- funções gerais dos dropdowns
+-- funï¿½ï¿½es gerais dos dropdowns
 	local textures = LibSharedMedia:HashTable ("statusbar")
 
 	--anchor table
@@ -7571,7 +7841,7 @@ function Plater.OpenOptionsPanel()
 	
 
 -------------------------------------------------------------------------------
---opções do painel de interface da blizzard
+--opï¿½ï¿½es do painel de interface da blizzard
 
 
 function Plater.ChangeNameplateAnchor (_, _, value)
@@ -8389,7 +8659,7 @@ DF:BuildMenu (auraOptionsFrame, debuff_options, startX, startY, heightSize, true
 
 
 -------------------------------------------------------------------------------
--- opções para a barra do player ~player
+-- opï¿½ï¿½es para a barra do player ~player
 do
 		local on_select_player_percent_text_font = function (_, _, value)
 			Plater.db.profile.plate_config.player.percent_text_font = value
@@ -9186,8 +9456,8 @@ do
 end
 
 -------------------------------------------------------------------------------
---coloca as opções gerais no main menu logo abaixo dos 4 botões
---OPÇÕES NO PAINEL PRINCIPAL
+--coloca as opï¿½ï¿½es gerais no main menu logo abaixo dos 4 botï¿½es
+--OPï¿½ï¿½ES NO PAINEL PRINCIPAL
 
 function Plater.ChangeNpcRelavance (_, _, value)
 	if (value == 3) then
@@ -9816,7 +10086,7 @@ end
 	end
 	
 ------------------------------------------------	
---FriendlyPC painel de opções ~friendly ~friendlynpc
+--FriendlyPC painel de opï¿½ï¿½es ~friendly ~friendlynpc
 	
 	local on_select_friendly_playername_font = function (_, _, value)
 		Plater.db.profile.plate_config.friendlyplayer.actorname_text_font = value
@@ -10527,7 +10797,7 @@ end
 	DF:BuildMenu (friendlyPCsFrame, options_table3, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 
 --------------------------------
---Enemy Player painel de opções ~enemy
+--Enemy Player painel de opï¿½ï¿½es ~enemy
 
 	local on_select_enemy_playername_font = function (_, _, value)
 		Plater.db.profile.plate_config.enemyplayer.actorname_text_font = value
@@ -11224,7 +11494,7 @@ end
 	DF:BuildMenu (enemyPCsFrame, options_table4, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 
 -----------------------------------------------	
---Friendly NPC painel de opções ~friendly
+--Friendly NPC painel de opï¿½ï¿½es ~friendly
 
 	local on_select_friendly_npcname_font = function (_, _, value)
 		Plater.db.profile.plate_config.friendlynpc.actorname_text_font = value
@@ -12059,7 +12329,7 @@ end
 	DF:BuildMenu (friendlyNPCsFrame, friendly_npc_options_table, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 
 -----------------------------------------------	
---Enemy NPC painel de opções ~enemy
+--Enemy NPC painel de opï¿½ï¿½es ~enemy
 
 	do
 
@@ -14724,7 +14994,7 @@ end
 	
 	
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
---> ~auto ~ãuto
+--> ~auto ~ï¿½uto
 
 	--autoFrame
 		
@@ -14870,7 +15140,7 @@ end
 	DF:BuildMenu (autoFrame, auto_options, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)	
 	
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
---> ~threat ãggro ~aggro
+--> ~threat ï¿½ggro ~aggro
 	
 
 	local thread_options = {
@@ -15048,7 +15318,7 @@ end
 	
 	
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
---> ~advanced ãdvanced
+--> ~advanced ï¿½dvanced
 	
 
 	local advanced_options = {
