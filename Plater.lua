@@ -475,6 +475,12 @@ local default_config = {
 		aura_timer_text_size = 15,
 		aura_timer_text_anchor = {side = 9, x = 0, y = 0},
 		aura_timer_text_shadow = true,
+		aura_timer_text_color = {1, 1, 1, 1},
+
+		aura_stack_anchor = {side = 8, x = 0, y = 0},
+		aura_stack_size = 10,
+		aura_stack_shadow = true,
+		aura_stack_color = {1, 1, 1, 1},
 		
 		extra_icon_anchor = {side = 6, x = 2, y = 0},
 		extra_icon_auras = {},
@@ -488,9 +494,6 @@ local default_config = {
 		aura_show_dispellable = true,
 		aura_show_aura_by_the_player = true,
 		aura_show_buff_by_the_unit = true,
-		
-		aura_stack_anchor = {side = 8, x = 0, y = 0},
-		aura_stack_size = 10,
 		
 		aura_border_colors = {
 			steal_or_purge = {0, .5, .98, 1},
@@ -3625,9 +3628,6 @@ function Plater.AddAura (auraIconFrame, i, spellName, texture, count, debuffType
 	
 	auraIconFrame:EnableMouse (profile.aura_show_tooltip)
 	
-	Plater.SetAnchor (auraIconFrame.CountFrame.Count, profile.aura_stack_anchor)
-	DF:SetFontSize (auraIconFrame.CountFrame.Count, profile.aura_stack_size)
-	
 	if (isPersonal) then
 		local auraWidth = profile.aura_width_personal
 		local auraHeight = profile.aura_height_personal
@@ -3641,8 +3641,15 @@ function Plater.AddAura (auraIconFrame, i, spellName, texture, count, debuffType
 	end
 
 	if (count > 1) then
-		auraIconFrame.CountFrame.Count:SetText (count)
-		auraIconFrame.CountFrame.Count:Show()
+		local stackLabel = auraIconFrame.CountFrame.Count
+		stackLabel:SetText (count)
+		
+		DF:SetFontSize (stackLabel, profile.aura_stack_size)
+		DF:SetFontOutline (stackLabel, profile.aura_stack_shadow)
+		DF:SetFontColor (stackLabel, profile.aura_stack_color)
+		Plater.SetAnchor (stackLabel, profile.aura_stack_anchor)
+
+		stackLabel:Show()
 	else
 		auraIconFrame.CountFrame.Count:Hide()
 	end
@@ -3667,17 +3674,20 @@ function Plater.AddAura (auraIconFrame, i, spellName, texture, count, debuffType
 	end
 	
 	CooldownFrame_Set (auraIconFrame.Cooldown, expirationTime - duration, duration, duration > 0, true)
+	local timeLeft = expirationTime-GetTime()
 	
-	if (profile.aura_timer) then
+	if (profile.aura_timer and timeLeft > 0) then
 		--update the aura timer
-		local timeLeft = expirationTime-GetTime()
-		auraIconFrame.Cooldown.Timer:SetText (Plater.FormatTime (timeLeft))
-		auraIconFrame.Cooldown.Timer:Show()
 		
-		DF:SetFontSize (auraIconFrame.Cooldown.Timer, profile.aura_timer_text_size)
-		DF:SetFontOutline (auraIconFrame.Cooldown.Timer, profile.aura_timer_text_shadow)
-		Plater.SetAnchor (auraIconFrame.Cooldown.Timer, profile.aura_timer_text_anchor)
+		local timerLabel = auraIconFrame.Cooldown.Timer
+		timerLabel:SetText (Plater.FormatTime (timeLeft))
 		
+		DF:SetFontSize (timerLabel, profile.aura_timer_text_size)
+		DF:SetFontOutline (timerLabel, profile.aura_timer_text_shadow)
+		DF:SetFontColor (timerLabel, profile.aura_timer_text_color)
+		Plater.SetAnchor (timerLabel, profile.aura_timer_text_anchor)
+		
+		timerLabel:Show()
 	else
 		auraIconFrame.Cooldown.Timer:Hide()
 	end
@@ -3721,7 +3731,7 @@ local hide_non_used_auraFrames = function (self, auraIndex)
 	end
 end
 
--- ~auras ~ï¿½ura
+-- ~auras ãura
 
 function Plater.TrackSpecificAuras (self, unit, auraIndex, isBuff, aurasToCheck, isPersonal, noSpecial)
 
@@ -3747,7 +3757,7 @@ function Plater.TrackSpecificAuras (self, unit, auraIndex, isBuff, aurasToCheck,
 	else
 		--> debuffs
 		for i = 1, BUFF_MAX_DISPLAY do
-			local name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId = UnitDebuff (unit, i)
+			local name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId = UnitDebuff (unit, i, "HARMFUL|PLAYER")
 			if (not name) then
 				break
 			else
@@ -3800,7 +3810,7 @@ function Plater.UpdateAuras_Automatic (self, unit)
 			--check if the debuff isn't filtered out
 			elseif (not DB_DEBUFF_BANNED [spellName]) then
 		
-				--> important aura
+				--> important aura' 
 				if (DB_AURA_SHOW_IMPORTANT and (nameplateShowAll or isBossDebuff)) then
 					can_show_this_debuff = true
 				
@@ -7191,21 +7201,20 @@ function Plater.SetCVarsOnFirstRun()
 		return
 	end
 
-	SetCVar (CVAR_SHOWPERSONAL, CVAR_DISABLED)
+	--SetCVar (CVAR_SHOWPERSONAL, CVAR_DISABLED)
 	SetCVar (CVAR_RESOURCEONTARGET, CVAR_DISABLED)
 	SetCVar (CVAR_SHOWALL, CVAR_ENABLED)
 	SetCVar (CVAR_AGGROFLASH, CVAR_ENABLED)
 	SetCVar (CVAR_ENEMY_MINIONS, CVAR_ENABLED)
 	SetCVar (CVAR_ENEMY_MINUS, CVAR_ENABLED)
 	SetCVar (CVAR_PLATEMOTION, CVAR_ENABLED)
-	SetCVar (CVAR_FRIENDLY_ALL, CVAR_ENABLED)
+	--SetCVar (CVAR_FRIENDLY_ALL, CVAR_ENABLED)
 	SetCVar (CVAR_FRIENDLY_GUARDIAN, CVAR_DISABLED)
 	SetCVar (CVAR_FRIENDLY_PETS, CVAR_DISABLED)
 	SetCVar (CVAR_FRIENDLY_TOTEMS, CVAR_DISABLED)
 	SetCVar (CVAR_FRIENDLY_MINIONS, CVAR_DISABLED)
 	SetCVar (CVAR_CLASSCOLOR, CVAR_ENABLED)
 	
-	SetCVar (CVAR_SHOWPERSONAL, CVAR_DISABLED)
 	SetCVar (CVAR_CEILING, 0.025)
 	
 	--SetCVar (CVAR_SCALE_HORIZONTAL, "1.4")
@@ -7223,18 +7232,17 @@ function Plater.SetCVarsOnFirstRun()
 	SetCVar ("nameplateSelfBottomInset", 20 / 100)
 	SetCVar ("nameplateSelfTopInset", abs (20 - 99) / 100)
 
+	SetCVar (CVAR_CULLINGDISTANCE, 100)
+	
+	PlaterDBChr.first_run2 [UnitGUID ("player")] = true
+	Plater.db.profile.first_run2 = true
+	
+	Plater:ZONE_CHANGED_NEW_AREA()
+	
 	InterfaceOptionsNamesPanelUnitNameplatesMakeLarger:Click()
 	InterfaceOptionsNamesPanelUnitNameplatesPersonalResource:Click()
 	InterfaceOptionsNamesPanelUnitNameplatesPersonalResource:Click()
-	
 	Plater.ShutdownInterfaceOptionsPanel()
-	
-	PlaterDBChr.first_run2 [UnitGUID ("player")] = true
-	
-	SetCVar (CVAR_CULLINGDISTANCE, 100)
-	SetCVar (CVAR_SHOWPERSONAL, CVAR_ENABLED)
-	
-	Plater:ZONE_CHANGED_NEW_AREA()
 
 	--[=[
 		--> override settings based on the class
@@ -7250,7 +7258,7 @@ function Plater.SetCVarsOnFirstRun()
 		end	
 	--]=]
 	
-	Plater.db.profile.first_run2 = true
+	
 	
 	--Plater:Msg ("has installed custom CVars values, it is ready to work!")
 end
@@ -8229,7 +8237,7 @@ local debuff_options = {
 		desc = "Show debuffs on you on the Personal Bar.",
 	},
 	
-	{type = "breakline"},
+	{type = "blank"},
 	
 	{type = "label", get = function() return "Border Colors:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 
@@ -8281,7 +8289,8 @@ local debuff_options = {
 		desc = "Can Steal or Purge",
 	},
 	
-	{type = "blank"},
+	{type = "breakline"},
+	
 	{type = "label", get = function() return "Aura Timer:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	
 	{
@@ -8320,12 +8329,53 @@ local debuff_options = {
 		desc = "Shadow",
 	},
 	{
+		type = "color",
+		get = function()
+			local color = Plater.db.profile.aura_timer_text_color
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_timer_text_color
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = "Color",
+		desc = "Color",
+	},
+	{
 		type = "select",
 		get = function() return Plater.db.profile.aura_timer_text_anchor.side end,
 		values = function() return build_anchor_side_table (nil, "aura_timer_text_anchor") end,
 		name = "Anchor",
 		desc = "Which side of the buff icon the timer should attach to.",
-	},	
+	},
+	{
+		type = "range",
+		get = function() return Plater.db.profile.aura_timer_text_anchor.x end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_timer_text_anchor.x = value
+			Plater.UpdateAllPlates()
+		end,
+		min = -20,
+		max = 20,
+		step = 1,
+		name = "X Offset",
+		desc = "Slightly move the text horizontally.",
+	},
+	--y offset
+	{
+		type = "range",
+		get = function() return Plater.db.profile.aura_timer_text_anchor.y end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_timer_text_anchor.y = value
+			Plater.UpdateAllPlates()
+		end,
+		min = -20,
+		max = 20,
+		step = 1,
+		name = "Y Offset",
+		desc = "Slightly move the text vertically.",
+	},
 	
 	{type = "blank"},
 
@@ -8346,11 +8396,62 @@ local debuff_options = {
 		desc = "Size",
 	},
 	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_stack_shadow end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_stack_shadow = value
+			Plater.UpdateAllPlates()
+		end,
+		name = "Shadow",
+		desc = "Shadow",
+	},
+	{
+		type = "color",
+		get = function()
+			local color = Plater.db.profile.aura_stack_color
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_stack_color
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = "Color",
+		desc = "Color",
+	},
+	{
 		type = "select",
 		get = function() return Plater.db.profile.aura_stack_anchor.side end,
 		values = function() return build_anchor_side_table (nil, "aura_stack_anchor") end,
 		name = "Anchor",
 		desc = "Which side of the buff icon the stack counter should attach to.",
+	},
+	{
+		type = "range",
+		get = function() return Plater.db.profile.aura_stack_anchor.x end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_stack_anchor.x = value
+			Plater.UpdateAllPlates()
+		end,
+		min = -20,
+		max = 20,
+		step = 1,
+		name = "X Offset",
+		desc = "Slightly move the text horizontally.",
+	},
+	--y offset
+	{
+		type = "range",
+		get = function() return Plater.db.profile.aura_stack_anchor.y end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_stack_anchor.y = value
+			Plater.UpdateAllPlates()
+		end,
+		min = -20,
+		max = 20,
+		step = 1,
+		name = "Y Offset",
+		desc = "Slightly move the text vertically.",
 	},
 	
 	{type = "blank"},
@@ -8506,7 +8607,7 @@ DF:BuildMenu (auraOptionsFrame, debuff_options, startX, startY, heightSize, true
 		DF:SetFontSize (new_buff_string, 12)
 		
 		local new_buff_entry = DF:CreateTextEntry (specialAuraFrame, function()end, 200, 20, "NewSpecialAuraTextBox", _, _, options_dropdown_template)
-		new_buff_entry.tooltip = "Enter the buff name using lower case letters.\n\nYou can add several spells at once using |cFFFFFF00;|r to separate each spell name."
+		new_buff_entry.tooltip = "Enter the aura name using lower case letters.\n\nYou can add several spells at once using |cFFFFFF00;|r to separate each spell name.\n\nSpecial auras are a second row of auras, they are separated from the main aura row above the nameplate."
 		new_buff_entry:SetJustifyH ("left")
 		
 		new_buff_entry.SpellHashTable = {}
