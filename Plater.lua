@@ -469,8 +469,12 @@ local default_config = {
 		aura_x_offset = 0,
 		aura_y_offset = 0,
 		aura_alpha = 1,
-		aura_timer = true,
 		aura_custom = {},
+		
+		aura_timer = true,
+		aura_timer_text_size = 15,
+		aura_timer_text_anchor = {side = 9, x = 0, y = 0},
+		aura_timer_text_shadow = true,
 		
 		extra_icon_anchor = {side = 6, x = 2, y = 0},
 		extra_icon_auras = {},
@@ -534,7 +538,7 @@ local default_config = {
 		
 		stacking_nameplates_enabled = true,
 		
-		auto_toggle_stacking_enabled = true,
+		auto_toggle_stacking_enabled = false,
 		auto_toggle_stacking = {
 			["party"] = true,
 			["raid"] = true,
@@ -3669,6 +3673,11 @@ function Plater.AddAura (auraIconFrame, i, spellName, texture, count, debuffType
 		local timeLeft = expirationTime-GetTime()
 		auraIconFrame.Cooldown.Timer:SetText (Plater.FormatTime (timeLeft))
 		auraIconFrame.Cooldown.Timer:Show()
+		
+		DF:SetFontSize (auraIconFrame.Cooldown.Timer, profile.aura_timer_text_size)
+		DF:SetFontOutline (auraIconFrame.Cooldown.Timer, profile.aura_timer_text_shadow)
+		Plater.SetAnchor (auraIconFrame.Cooldown.Timer, profile.aura_timer_text_anchor)
+		
 	else
 		auraIconFrame.Cooldown.Timer:Hide()
 	end
@@ -8050,18 +8059,6 @@ local debuff_options = {
 	},
 	{
 		type = "toggle",
-		get = function() return Plater.db.profile.aura_timer end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_timer = value
-			Plater.RefreshAuras()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Show Timer",
-		desc = "Time left on buff or debuff.",
-	},
-	
-	{
-		type = "toggle",
 		get = function() return Plater.db.profile.aura_show_tooltip end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_show_tooltip = value
@@ -8285,17 +8282,56 @@ local debuff_options = {
 	},
 	
 	{type = "blank"},
+	{type = "label", get = function() return "Aura Timer:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+	
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_timer end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_timer = value
+			Plater.RefreshAuras()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show",
+		desc = "Time left on buff or debuff.",
+	},
+	{
+		type = "range",
+		get = function() return Plater.db.profile.aura_timer_text_size end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_timer_text_size = value
+			Plater.RefreshAuras()
+			Plater.UpdateAllPlates()
+		end,
+		min = 7,
+		max = 40,
+		step = 1,
+		name = "Size",
+		desc = "Size",
+	},
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_timer_text_shadow end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_timer_text_shadow = value
+			Plater.UpdateAllPlates()
+		end,
+		name = "Shadow",
+		desc = "Shadow",
+	},
+	{
+		type = "select",
+		get = function() return Plater.db.profile.aura_timer_text_anchor.side end,
+		values = function() return build_anchor_side_table (nil, "aura_timer_text_anchor") end,
+		name = "Anchor",
+		desc = "Which side of the buff icon the timer should attach to.",
+	},	
+	
+	{type = "blank"},
 
 	{type = "label", get = function() return "Stack Counter:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	
 	--stack text anchor
-	{
-		type = "select",
-		get = function() return Plater.db.profile.aura_stack_anchor.side end,
-		values = function() return build_anchor_side_table (nil, "aura_stack_anchor") end,
-		name = "Anchor",
-		desc = "Which side of the buff icon the stack counter should attach to.",
-	},
 	{
 		type = "range",
 		get = function() return Plater.db.profile.aura_stack_size end,
@@ -8308,6 +8344,13 @@ local debuff_options = {
 		step = 1,
 		name = "Size",
 		desc = "Size",
+	},
+	{
+		type = "select",
+		get = function() return Plater.db.profile.aura_stack_anchor.side end,
+		values = function() return build_anchor_side_table (nil, "aura_stack_anchor") end,
+		name = "Anchor",
+		desc = "Which side of the buff icon the stack counter should attach to.",
 	},
 	
 	{type = "blank"},
