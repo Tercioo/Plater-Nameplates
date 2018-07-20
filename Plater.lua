@@ -454,7 +454,7 @@ local default_config = {
 		use_playerclass_color = true, --friendly player
 		
 		use_health_animation = true,
-		health_animation_time_dilatation = 2.215321,
+		health_animation_time_dilatation = 2.615321,
 		
 		use_color_lerp = true,
 		color_lerp_speed = 12,
@@ -551,6 +551,8 @@ local default_config = {
 		},
 		
 		spell_animations = true,
+		spell_animations_scale = 1.0,
+		
 		spell_animation_list = {
 		
 			--chaos bolt
@@ -4627,7 +4629,7 @@ function Plater.UpdateTarget (plateFrame)
 
 	if (UnitIsUnit (plateFrame [MEMBER_UNITID], "target") and Plater.db.profile.target_highlight) then
 	
-		if (plateFrame.actorType ~= ACTORTYPE_FRIENDLY_PLAYER) then
+		if (plateFrame.actorType ~= ACTORTYPE_FRIENDLY_PLAYER and plateFrame.actorType ~= ACTORTYPE_FRIENDLY_NPC) then
 			plateFrame.TargetNeonUp:Show()
 			plateFrame.TargetNeonDown:Show()
 		else
@@ -6174,7 +6176,6 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate, justAdded)
 		unitFrame.healthBar.background:SetAlpha (1)
 	end
 
-	--Plater.GetNpcFactionColor (plateFrame)
 	Plater.UpdatePlateBorders (plateFrame)
 	Plater.UpdatePlateSize (plateFrame, justAdded)
 	Plater.UpdatePlateText (plateFrame, DB_PLATE_CONFIG [actorType])
@@ -6783,6 +6784,7 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame) -- ~created ~
 		show_text = true,
 	}
 	plateFrame.UnitFrame.ExtraIconFrame = DF:CreateIconRow (plateFrame.UnitFrame, "$parentExtraIconRow", options)
+	plateFrame.UnitFrame.ExtraIconFrame:ClearIcons()
 	--> cache the extra icon frame inside the buff frame for speed
 	plateFrame.UnitFrame.BuffFrame.ExtraIconFrame = plateFrame.UnitFrame.ExtraIconFrame
 
@@ -7087,11 +7089,15 @@ function Plater.DoNameplateAnimation (plateFrame, frameAnimations, spellName, is
 					frameShake = DF:CreateFrameShake (shakeTargetFrame, animationTable.duration, animationTable.amplitude, animationTable.frequency, animationTable.absolute_sineX, animationTable.absolute_sineY, animationTable.scaleX, animationTable.scaleY, animationTable.fade_in, animationTable.fade_out, points)
 					plateFrame.SpellAnimations ["frameshake" .. spellName] = frameShake
 				end
-
+				
+				local animationScale = Plater.db.profile.spell_animations_scale
+				
 				if (isCritical and animationTable.critical_scale) then
-					shakeTargetFrame:PlayFrameShake (frameShake, animationTable.scaleX * animationTable.critical_scale, animationTable.scaleY * animationTable.critical_scale)
+					animationScale = animationScale * animationTable.critical_scale
+					shakeTargetFrame:PlayFrameShake (frameShake, animationScale, animationScale, animationScale, DF:Clamp (0.75, 1.75, animationScale)) --, animationScale
 				else
-					shakeTargetFrame:PlayFrameShake (frameShake)
+					--scaleDirection, scaleAmplitude, scaleFrequency, scaleDuration
+					shakeTargetFrame:PlayFrameShake (frameShake, animationScale, animationScale, animationScale, DF:Clamp (0.75, 1.75, animationScale)) --, animationScale
 				end
 				
 				animationTable.animationCooldown [plateFrame] = GetTime() + animationTable.cooldown
@@ -7388,12 +7394,7 @@ function SlashCmdList.PLATER (msg, editbox)
 	end
 	Plater.OpenOptionsPanel()
 end
-local ignored_npcs = {
-	[90336] = true, --azurewing whelping - Azsuna
-	[88782] = true, --nar'thalas nightwatcher - Azsuna
-	[89634] = true, --nar'thalas citizen - Azsuna
-	[111625] = true, --warden trainee - Azsuna
-}
+
 local ignored_npcs_when_profession = {
 	[32751] = true, --warp huntress pet - Dalaran
 	[110571] = 1, --delas mooonfang - Dalaran
@@ -7438,39 +7439,6 @@ function Plater.CheckForNpcType (plateFrame)
 	end
 	
 	plateFrame [MEMBER_NPCID] = npcId
-end
-
-local factionNpcs = {
-	[92342] = 1,
-	[98867] = 1,
-	[90639] = 2,
-	[93639] = 2,
-	[93638] = 3,
-	[96541] = 3,
-	[91251] = 3,
-	[91111] = 3,
-	[98521] = 3,
-	[100001] = 3,
-	[91114] = 4,
-	[99854] = 4,
-	[111327] = 5,
-	[101845] = 5,
-}
-local factionColor = {.2, 1, .2, 1}
-function Plater.GetNpcFactionColor (plateFrame)
-	local unit = plateFrame [MEMBER_UNITID]
-	local guid = UnitGUID (unit)
-	if (guid) then
-		local npcID = select (6, strsplit ("-", guid))
-		npcID = tonumber (npcID)
-		if (npcID) then
-			local hasFaction = factionNpcs [npcID]
-			if (hasFaction) then
-				Plater.ForceChangeHealthBarColor (plateFrame.UnitFrame.healthBar, unpack (factionColor))
-				return true
-			end
-		end
-	end
 end
 
 function Plater.SetTextColorByClass (unit, text)
@@ -7613,64 +7581,6 @@ Plater.DefaultSpellRangeList = {
 	[72] = 355, --> warrior fury - Taunt
 	[73] = 355, --> warrior protect - Taunt
 }
-
-function Plater.GetNpcTypeIcon (npcType)
-	if (npcType == 1) then --important npc
-		return [[Interface\MINIMAP\ObjectIconsAtlas]], 205/512, 236/512, 137/512, 160/512
-	elseif (npcType == 2) then --repair
-		return [[Interface\MINIMAP\ObjectIconsAtlas]], 106/512, 132/512, 273/512, 302/512
-	elseif (npcType == 3) then --merchant
-		return [[Interface\GossipFrame\BankerGossipIcon]], 0, 1, 0, 1
-	elseif (npcType == 4) then --innkeeper
-		return [[Interface\MINIMAP\ObjectIconsAtlas]], 36/512, 66/512, 442/512, 472/512
-	elseif (npcType == 5) then --banker
-		return [[Interface\GossipFrame\BankerGossipIcon]], 2/16, 1, 0, 1
-	elseif (npcType == 6) then --autioneer
-		return [[Interface\GossipFrame\auctioneerGossipIcon]], 0, 1, 0, 1
-	elseif (npcType == 7) then --flyght master
-		return [[Interface\GossipFrame\TaxiGossipIcon]], 0, 1, 0, 1
-	elseif (npcType == 8) then --stable master
-		return [[Interface\MINIMAP\ObjectIconsAtlas]], 104/512, 135/512, 442/512, 473/512
-	elseif (npcType == 9) then --pet master
-		return [[Interface\MINIMAP\ObjectIconsAtlas]], 172/512, 201/512, 273/512, 301/512
-	elseif (npcType == 10) then --barber
-		return [[]], 0
-	elseif (npcType == 11) then --transmogrifier
-		return [[Interface\BUTTONS\UI-GroupLoot-DE-Up]], 0, 1, 0, 1
-	elseif (npcType == 12) then --food and drink
-		return [[Interface\MINIMAP\ObjectIconsAtlas]], 35/512, 66/512, 341/512, 371/512
-	elseif (npcType == 20) then --fishing 
-		return [[Interface\Garrison\MobileAppIcons]], 0, 127/1024, 779/1024, 910/1024
-	elseif (npcType == 21) then --first aid
-		return [[Interface\Garrison\MobileAppIcons]], 0, 130/1024, 650/1024, 779/1024
-	elseif (npcType == 22) then --archaeology
-		return [[Interface\Garrison\MobileAppIcons]], 130/1024, 260/1024, 0, 130/1024
-	elseif (npcType == 23) then --cooking
-		return [[Interface\Garrison\MobileAppIcons]], 0, 130/1024, 260/1024, 390/1024
-	elseif (npcType == 24) then --mining
-		return [[Interface\Garrison\MobileAppIcons]], 130/1024, 260/1024, 780/1024, 910/1024
-	elseif (npcType == 25) then --engineering
-		return [[Interface\Garrison\MobileAppIcons]], 0, 130/1024, 520/1024, 650/1024
-	elseif (npcType == 26) then --leatherworking
-		return [[Interface\Garrison\MobileAppIcons]], 520/1024, 650/1024, 130/1024, 260/1024
-	elseif (npcType == 27) then --tailor
-		return [[Interface\Garrison\MobileAppIcons]], 780/1024, 910/1024, 260/1024, 390/1024
-	elseif (npcType == 28) then --enchanting
-		return [[Interface\Garrison\MobileAppIcons]], 0, 130/1024, 390/1024, 520/1024
-	elseif (npcType == 29) then --blacksmith
-		return [[Interface\Garrison\MobileAppIcons]], 260/1024, 390/1024, 0, 130/1024
-	elseif (npcType == 30) then --inscription
-		return [[Interface\Garrison\MobileAppIcons]], 260/1024, 390/1024, 130/1024, 260/1024
-	elseif (npcType == 31) then --herbalism
-		return [[Interface\Garrison\MobileAppIcons]], 130/1024, 260/1024, 130/1024, 260/1024
-	elseif (npcType == 32) then --skinning
-		return [[Interface\Garrison\MobileAppIcons]], 650/1024, 780/1024, 260/1024, 390/1024
-	elseif (npcType == 33) then --alchemy
-		return [[Interface\Garrison\MobileAppIcons]], 0, 125/1024, 0, 130/1024
-	elseif (npcType == 34) then --jewelcraft
-		return [[Interface\Garrison\MobileAppIcons]], 395/1024, 515/1024, 130/1024, 260/1024
-	end
-end
 
 -- ~options �ptions
 function Plater.OpenOptionsPanel()
@@ -15497,6 +15407,20 @@ end
 			name = "Use Camera Shake on Nameplates",
 			desc = "Certain abilities causes a small camera shake, Plater enphasize it on the nameplate and add some shakes on other abilities.",
 		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.spell_animations_scale end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.spell_animations_scale = value
+			end,
+			min = 0.75,
+			max = 1.75,
+			step = 0.1,
+			name = "Shake Scale",
+			desc = "Shake Scale.",
+			thumbscale = 1.8,
+			usedecimals = true,
+		},
 		
 		{type = "blank"},
 		
@@ -15578,6 +15502,7 @@ end
 			max = 5,
 			step = 0.1,
 			usedecimals = true,
+			thumbscale = 1.7,
 			name = "Smooth Health Transition Speed",
 			desc = "How fast is the transition animation.",
 		},
@@ -15631,7 +15556,7 @@ end
 			step = 0.005,
 			thumbscale = 1.7,
 			usedecimals = true,
-			name = "Moviment Speed",
+			name = "Movement Speed",
 			desc = "How fast the nameplate moves (when stacking is enabled).\n\n|cFFFFFFFFDefault: 0.025|r\n\n|cFFFFFFFFRecommended: 0.05|r",
 			nocombat = true,
 		},
