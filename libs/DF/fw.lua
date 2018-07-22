@@ -1,5 +1,5 @@
 
-local dversion = 85
+local dversion = 86
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
 
@@ -265,7 +265,7 @@ else
 		elseif (numero > 999) then
 			return format ("%.1f", (numero/1000)) .. "K"
 		end
-		return format ("%.1f", numero)
+		return floor (numero)
 	end
 end
 

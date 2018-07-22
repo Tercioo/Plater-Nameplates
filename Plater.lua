@@ -2714,6 +2714,8 @@ function Plater.RefreshDBUpvalues()
 	Plater.UpdateAuraCache()
 end
 
+
+
 function Plater.OnInit()
 	
 	Plater.RefreshDBUpvalues()
@@ -2764,6 +2766,7 @@ function Plater.OnInit()
 	C_Timer.After (4.2, Plater.ForceCVars)
 	
 	Plater.RefreshColorOverride()
+	Plater.UpdateMaxCastbarTextLength()
 	
 	--> check if is the first time Plater is running in the account or in the character
 	local check_first_run = function()
@@ -3154,6 +3157,13 @@ function Plater.OnInit()
 				
 				self.FrameOverlay:SetBackdropBorderColor (0, 0, 0, 0)
 				
+				local textLenght = self.Text:GetStringWidth()
+				if (textLenght > Plater.MaxCastBarTextLength) then
+					Plater.UpdateSpellNameSize (self.Text)
+				end
+				--self.Text:ClearAllPoints()
+				--self.Text:SetPoint ("left", self.Icon, "right", 4, 0)
+				
 			elseif (event == "UNIT_SPELLCAST_CHANNEL_START") then
 				local unitCast = unit
 				if (unitCast ~= self.unit or not self.isNamePlate) then
@@ -3185,6 +3195,14 @@ function Plater.OnInit()
 				self.ThrottleUpdate = -1
 				
 				self.FrameOverlay:SetBackdropBorderColor (0, 0, 0, 0)
+				
+				local textLenght = self.Text:GetStringWidth()
+				if (textLenght > Plater.MaxCastBarTextLength) then
+					Plater.UpdateSpellNameSize (self.Text)
+				end
+				--self.Text:ClearAllPoints()
+				--self.Text:SetPoint ("left", self.Icon, "right", 4, 0)
+				
 			end
 			
 		end
@@ -3363,6 +3381,13 @@ function Plater.OnInit()
 	
 end
 
+function Plater.UpdateMaxCastbarTextLength()
+	local barWidth = Plater.db.profile.plate_config.enemynpc.cast_incombat
+	Plater.MaxCastBarTextLength = Plater.db.profile.plate_config.enemynpc.cast_incombat[1] - 40
+end
+--> set a default value here to be safe
+Plater.MaxCastBarTextLength = 200
+
 function Plater.UpdateAllNames()
 	for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 		if (plateFrame.actorType == ACTORTYPE_PLAYER) then
@@ -3379,6 +3404,18 @@ function Plater.UpdateAllNames()
 	
 		Plater.UpdateUnitName (plateFrame)
 	end
+end
+
+function Plater.UpdateSpellNameSize (nameString)
+	local spellName = nameString:GetText()
+	
+	while (nameString:GetStringWidth() > Plater.MaxCastBarTextLength) do
+		spellName = strsub (spellName, 1, #spellName - 1)
+		nameString:SetText (spellName)
+		if (string.len (spellName) <= 1) then
+			break
+		end
+	end	
 end
 
 function Plater.UpdateTextSize (plateFrame, nameString)
@@ -4167,13 +4204,22 @@ local EventTickFunction = function (tickFrame, deltaTime)
 			local healthPercent = UnitHealth (tickFrame.unit) / UnitHealthMax (tickFrame.unit)
 			if (healthPercent < CONST_HEALTHCUTOFF_AT) then
 				if (not tickFrame.HealthBar.healthCutOff:IsShown()) then
+				
 					tickFrame.HealthBar.healthCutOff:SetHeight (tickFrame.HealthBar:GetHeight())
 					tickFrame.HealthBar.healthCutOff:SetPoint ("left", tickFrame.HealthBar, "left", tickFrame.HealthBar:GetWidth() * CONST_HEALTHCUTOFF_AT, 0)
 					tickFrame.HealthBar.healthCutOff:Show()
 					tickFrame.HealthBar.healthCutOff.ShowAnimation:Play()
+					
+					tickFrame.HealthBar.executeRange:Show()
+					tickFrame.HealthBar.executeRange:SetTexCoord (0, CONST_HEALTHCUTOFF_AT, 0, 1)
+					tickFrame.HealthBar.executeRange:SetAlpha (0.2)
+					tickFrame.HealthBar.executeRange:SetVertexColor (.3, .3, .3)
+					tickFrame.HealthBar.executeRange:SetHeight (tickFrame.HealthBar:GetHeight())
+					tickFrame.HealthBar.executeRange:SetPoint ("right", tickFrame.HealthBar.healthCutOff, "left")
 				end
 			else
 				tickFrame.HealthBar.healthCutOff:Hide()
+				tickFrame.HealthBar.executeRange:Hide()
 			end
 		end
 		
@@ -6822,7 +6868,7 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame) -- ~created ~
 	healthCutOff:SetBlendMode ("ADD")
 	healthCutOff:SetDrawLayer ("overlay", 7)
 	healthCutOff:Hide()
-	healthBar.healthCutOff = healthCutOff	
+	healthBar.healthCutOff = healthCutOff
 	
 	local cutoffAnimationOnPlay = function()
 		healthCutOff:Show()
@@ -6830,6 +6876,12 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame) -- ~created ~
 	local cutoffAnimationOnStop = function()
 		healthCutOff:SetAlpha (.5)
 	end
+	
+	local executeRange = healthBar:CreateTexture (nil, "border")
+	executeRange:SetTexture ([[Interface\AddOns\Plater\images\execute_bar]])
+	executeRange:SetPoint ("left", healthBar, "left")
+	healthBar.executeRange = executeRange
+	executeRange:Hide()
 	
 	local healthCutOffShowAnimation = DF:CreateAnimationHub (healthCutOff, cutoffAnimationOnPlay, cutoffAnimationOnStop)
 	DF:CreateAnimation (healthCutOffShowAnimation, "Scale", 1, .2, .3, .3, 1.2, 1.2)
@@ -6903,6 +6955,7 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame) -- ~created ~
 	
 	--porcentagem de vida
 	local lifePercent = healthBar:CreateFontString (nil, "overlay", "GameFontNormal")
+	lifePercent:SetDrawLayer ("ARTWORK", 0)
 	healthBar.lifePercent = lifePercent
 	
 	local obscuredTexture = healthBar:CreateTexture (nil, "overlay")
@@ -6951,31 +7004,32 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame) -- ~created ~
 	DF:Mixin (plateFrame.UnitFrame.castBar, Plater.ScriptMetaFunctions)
 	plateFrame.UnitFrame.castBar:HookScript ("OnHide", plateFrame.UnitFrame.castBar.OnHideWidget)
 
+	--> overlay for cast bar border
 	plateFrame.UnitFrame.castBar.FrameOverlay = CreateFrame ("frame", "$parentOverlayFrame", plateFrame.UnitFrame.castBar)
 	plateFrame.UnitFrame.castBar.FrameOverlay:SetAllPoints()
 	plateFrame.UnitFrame.castBar.FrameOverlay:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
 	plateFrame.UnitFrame.castBar.FrameOverlay:SetBackdropBorderColor (1, 1, 1, 0)
 	
-	--porcentagem da cast bar
-	local percentText = plateFrame.UnitFrame.castBar:CreateFontString (nil, "background", "GameFontNormal")
+	--castbar percent, now anchored on the frame overlay so it'll be above the spell name and the cast bar it self
+	local percentText = plateFrame.UnitFrame.castBar.FrameOverlay:CreateFontString (nil, "overlay", "GameFontNormal")
 	percentText:SetPoint ("right", plateFrame.UnitFrame.castBar, "right")
 	plateFrame.UnitFrame.castBar.percentText = percentText
 	
-	--icone de n�o interromp�vel
+	--non interruptible cast shield
 	plateFrame.UnitFrame.castBar.BorderShield:SetTexture ([[Interface\ACHIEVEMENTFRAME\UI-Achievement-Progressive-IconBorder]])
 	plateFrame.UnitFrame.castBar.BorderShield:SetTexCoord (5/64, 37/64, 1/64, 36/64)
 	plateFrame.UnitFrame.castBar.isNamePlate = true
 	plateFrame.UnitFrame.castBar.ThrottleUpdate = 0
 
-	--icones indicadores
+	--indicators
 	plateFrame.IconIndicators = {}
 	
-	--nome que vem com o frame
+	--default string to show the name
 	plateFrame.UnitFrame.name:ClearAllPoints()
 	plateFrame.UnitFrame.name:SetPoint ("top", plateFrame.UnitFrame.healthBar, "bottom", 0, 0)
 	plateFrame.UnitFrame.name:SetPoint ("center", plateFrame.UnitFrame.healthBar, "center")
 	
-	--flash de aggro
+	--flash aggro
 	Plater.CreateAggroFlashFrame (plateFrame)
 	plateFrame.playerHasAggro = false
 	
@@ -6990,7 +7044,7 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame) -- ~created ~
 	plateFrame.FocusIndicator = focusIndicator
 	plateFrame.UnitFrame.FocusIndicator = focusIndicator
 	
-	--aviso de aggro baixo
+	--low aggro warning
 	plateFrame.UnitFrame.aggroGlowUpper = plateFrame:CreateTexture (nil, "background", -4)
 	plateFrame.UnitFrame.aggroGlowUpper:SetPoint ("bottomleft", plateFrame.UnitFrame.healthBar, "topleft", -3, 0)
 	plateFrame.UnitFrame.aggroGlowUpper:SetPoint ("bottomright", plateFrame.UnitFrame.healthBar, "topright", 3, 0)
@@ -7833,6 +7887,7 @@ function Plater.OpenOptionsPanel()
 				frame:RefreshOptions()
 			end
 		end
+		Plater.UpdateMaxCastbarTextLength()
 	end
 	
 	local startX, startY, heightSize = 10, -110, 670
@@ -12842,6 +12897,7 @@ end
 				set = function (self, fixedparam, value) 
 					Plater.db.profile.plate_config.enemynpc.cast_incombat[1] = value
 					Plater.UpdateAllPlates()
+					Plater.UpdateMaxCastbarTextLength()
 				end,
 				min = 50,
 				max = 300,
