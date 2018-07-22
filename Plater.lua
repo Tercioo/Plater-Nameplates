@@ -114,6 +114,9 @@ local default_config = {
 	
 	profile = {
 	
+		--> save some cvars values so it can restore when a new character login using Plater
+		saved_cvars = {},
+	
 		keybinds = {},
 	
 		click_space = {140, 28},
@@ -468,8 +471,12 @@ local default_config = {
 		aura_height = 16,
 		aura_x_offset = 0,
 		aura_y_offset = 0,
+		aura_grow_direction = 2, --> center
 		aura_alpha = 1,
 		aura_custom = {},
+		
+		--use blizzard aura tracking
+		aura_use_default = false,
 		
 		aura_timer = true,
 		aura_timer_text_size = 15,
@@ -482,7 +489,7 @@ local default_config = {
 		aura_stack_shadow = true,
 		aura_stack_color = {1, 1, 1, 1},
 		
-		extra_icon_anchor = {side = 6, x = 2, y = 0},
+		extra_icon_anchor = {side = 6, x = -4, y = 3},
 		extra_icon_auras = {},
 		
 		aura_width_personal = 32,
@@ -1316,8 +1323,11 @@ local default_config = {
 		indicator_rare = true,
 		indicator_quest = true,
 		indicator_enemyclass = false,
-		indicator_extra_raidmark = true,
 		indicator_anchor = {side = 2, x = -2, y = 0},
+		
+		indicator_extra_raidmark = true,
+		indicator_raidmark_scale = 1,
+		indicator_raidmark_anchor = {side = 2, x = 0, y = 0},
 		
 		target_indicator = "Silver",
 		
@@ -1378,10 +1388,7 @@ local Plater = DF:CreateAddOn ("Plater", "PlaterDB", default_config, { --options
 local CUF_Name = "CompactUnitFrame" --blizzard cuf
 local NPF_Name = "NamePlateDriverFrame" --nameplate frame
 local NPB_Name = "NameplateBuffContainerMixin" --nameplate buff
-local CNP_Name = "CompactNamePlate" --compactnameplate
 local CBF_Name = "CastingBarFrame" --castingbar
-local BMX_Name = "NamePlateBorderTemplateMixin" --border mix-in
-local MAB_Name = "ClassNameplateManaBarFrame" --mana bar
 
 Plater.FriendsCache = {}
 Plater.QuestCache = {}
@@ -1473,14 +1480,6 @@ end
 
 --spell animations - store a table with information about animation for spells
 local SPELL_WITH_ANIMATIONS = {}
-
---for scale animation
-Plater.AnimationScaleValues = {
-	ToX1 = 1.2,
-	ToY1 = 1.2,
-	ToX2 = 0.8,
-	ToY2 = 0.8,
-}
 
 --store players which have the tank role in the group
 local TANK_CACHE = {}
@@ -1636,8 +1635,6 @@ function Plater.IsShowingResourcesOnTarget()
 	return GetCVar (CVAR_SHOWPERSONAL) == CVAR_ENABLED and GetCVar (CVAR_RESOURCEONTARGET) == CVAR_ENABLED
 end
 
-Plater.GlobalNames = _G
-
 local TargetIndicators = {
 	["NONE"] = {
 		path = [[Interface\ACHIEVEMENTFRAME\UI-Achievement-WoodBorder-Corner]],
@@ -1769,6 +1766,8 @@ local DB_AURA_SHOW_IMPORTANT
 local DB_AURA_SHOW_DISPELLABLE
 local DB_AURA_SHOW_BYPLAYER
 local DB_AURA_SHOW_BYUNIT
+
+local DB_AURA_GROW_DIRECTION
 
 local IS_USING_DETAILS_INTEGRATION
 
@@ -2518,6 +2517,71 @@ function Plater:RefreshConfig()
 	Plater.UpdateUseClassColors()
 end
 
+function Plater.SaveConsoleVariables()
+	local cvarTable = Plater.db.profile.saved_cvars
+	
+	if (not cvarTable) then
+		return
+	end
+	
+	--> personal and resources
+	cvarTable [CVAR_SHOWPERSONAL] = GetCVar (CVAR_SHOWPERSONAL)
+	cvarTable [CVAR_RESOURCEONTARGET] = GetCVar (CVAR_RESOURCEONTARGET)
+	cvarTable ["nameplatePersonalShowAlways"] = GetCVar ("nameplatePersonalShowAlways")
+	cvarTable ["nameplatePersonalShowWithTarget"] = GetCVar ("nameplatePersonalShowWithTarget")
+	cvarTable ["nameplatePersonalShowInCombat"] = GetCVar ("nameplatePersonalShowInCombat")
+	cvarTable ["nameplateSelfAlpha"] = GetCVar ("nameplateSelfAlpha")
+	cvarTable ["nameplateSelfScale"] = GetCVar ("nameplateSelfScale")
+	
+	--> which nameplates to show
+	cvarTable [CVAR_SHOWALL] = GetCVar (CVAR_SHOWALL)
+	cvarTable [CVAR_AGGROFLASH] = GetCVar (CVAR_AGGROFLASH)
+	cvarTable [CVAR_ENEMY_MINIONS] = GetCVar (CVAR_ENEMY_MINIONS)
+	cvarTable [CVAR_ENEMY_MINUS] = GetCVar (CVAR_ENEMY_MINUS)
+	cvarTable [CVAR_FRIENDLY_GUARDIAN] = GetCVar (CVAR_FRIENDLY_GUARDIAN)
+	cvarTable [CVAR_FRIENDLY_PETS] = GetCVar (CVAR_FRIENDLY_PETS)
+	cvarTable [CVAR_FRIENDLY_TOTEMS] = GetCVar (CVAR_FRIENDLY_TOTEMS)
+	cvarTable [CVAR_FRIENDLY_MINIONS] = GetCVar (CVAR_FRIENDLY_MINIONS)
+	
+	--> make it show the class color of players
+	cvarTable [CVAR_CLASSCOLOR] = GetCVar (CVAR_CLASSCOLOR)
+	
+	--> just reset to default the clamp from the top side
+	cvarTable [CVAR_CEILING] = GetCVar (CVAR_CEILING)
+	
+	--> reset the horizontal and vertical scale
+	cvarTable [CVAR_SCALE_HORIZONTAL] = GetCVar (CVAR_SCALE_HORIZONTAL)
+	cvarTable [CVAR_SCALE_VERTICAL] = GetCVar (CVAR_SCALE_VERTICAL)
+	
+	--> stacking nameplates
+	cvarTable [CVAR_PLATEMOTION] = GetCVar (CVAR_PLATEMOTION)
+	
+	--> make the selection be a little bigger
+	cvarTable ["nameplateSelectedScale"] = GetCVar ("nameplateSelectedScale")
+	cvarTable ["nameplateMinScale"] = GetCVar ("nameplateMinScale")
+	cvarTable ["nameplateGlobalScale"] = GetCVar ("nameplateGlobalScale")
+	
+	--> distance between each nameplate when using stacking
+	cvarTable ["nameplateOverlapV"] = GetCVar ("nameplateOverlapV")
+	
+	--> movement speed of nameplates when using stacking, going above this isn't recommended
+	cvarTable [CVAR_MOVEMENT_SPEED] = GetCVar (CVAR_MOVEMENT_SPEED)
+	--> this must be 1 for bug reasons on the game client
+	cvarTable ["nameplateOccludedAlphaMult"] = GetCVar ("nameplateOccludedAlphaMult")
+	--> don't show friendly npcs
+	cvarTable ["nameplateShowFriendlyNPCs"] = GetCVar ("nameplateShowFriendlyNPCs")
+	--> make the personal bar hide very fast
+	cvarTable ["nameplatePersonalHideDelaySeconds"] = GetCVar ("nameplatePersonalHideDelaySeconds")
+	
+	--> location of the personagem bar
+	cvarTable ["nameplateSelfBottomInset"] = GetCVar ("nameplateSelfBottomInset")
+	cvarTable ["nameplateSelfTopInset"] = GetCVar ("nameplateSelfTopInset")
+	
+	--> view distance
+	cvarTable [CVAR_CULLINGDISTANCE] = GetCVar (CVAR_CULLINGDISTANCE)
+	
+end
+
 --place most used data into local upvalues to save process time
 function Plater.RefreshDBUpvalues()
 	local profile = Plater.db.profile
@@ -2576,6 +2640,8 @@ function Plater.RefreshDBUpvalues()
 	DB_AURA_SHOW_BYPLAYER = profile.aura_show_aura_by_the_player
 	DB_AURA_SHOW_BYUNIT = profile.aura_show_buff_by_the_unit
 
+	DB_AURA_GROW_DIRECTION = profile.aura_grow_direction
+	
 	DB_BORDER_COLOR_R = profile.border_color [1]
 	DB_BORDER_COLOR_G = profile.border_color [2]
 	DB_BORDER_COLOR_B = profile.border_color [3]
@@ -2699,7 +2765,7 @@ function Plater.OnInit()
 	
 	Plater.RefreshColorOverride()
 	
-	--verifica se ï¿½ a primeira vez que rodou o addon no personagem
+	--> check if is the first time Plater is running in the account or in the character
 	local check_first_run = function()
 		if (not UnitGUID ("player")) then
 			C_Timer.After (1, Plater.CheckFirstRun)
@@ -2710,6 +2776,7 @@ function Plater.OnInit()
 			C_Timer.After (15, Plater.SetCVarsOnFirstRun)
 			
 		elseif (not PlaterDBChr.first_run2 [UnitGUID ("player")]) then
+			--do not run cvars for individual characters
 			C_Timer.After (15, Plater.SetCVarsOnFirstRun)
 		else
 			Plater.ShutdownInterfaceOptionsPanel()
@@ -2823,7 +2890,7 @@ function Plater.OnInit()
 		end
 	end)
 
-	InstallHook (Plater.GetDriverGlobalObject (BMX_Name), Plater.DriverFuncNames.OnBorderUpdate, function (self)
+	InstallHook (Plater.GetDriverGlobalObject ("NamePlateBorderTemplateMixin"), Plater.DriverFuncNames.OnBorderUpdate, function (self)
 		Plater.UpdatePlateBorders (self.plateFrame)
 	end)
 	
@@ -2848,8 +2915,10 @@ function Plater.OnInit()
 			nameplate.UnitFrame.BuffFrame:UpdateBuffs (unit, filter);
 		end
 	end
-	--InstallOverride (NPF_Name, Plater.DriverFuncNames.OnAuraUpdate, Override_UNIT_AURA_EVENT)
-	InstallHook (_G [NPF_Name], Plater.DriverFuncNames.OnAuraUpdate, Override_UNIT_AURA_EVENT)
+
+	if (not Plater.db.profile.aura_use_default) then
+		InstallHook (_G [NPF_Name], Plater.DriverFuncNames.OnAuraUpdate, Override_UNIT_AURA_EVENT)
+	end
 
 	local BUFF_MAX_DISPLAY = BUFF_MAX_DISPLAY
 	local CooldownFrame_Set = CooldownFrame_Set
@@ -2859,25 +2928,14 @@ function Plater.OnInit()
 			--parece que nao esta colocando reaction em barras de jogadores
 			return
 		end
-		--print (self:GetName())
-		
+
+		--> shutdown the aura update from blizzard interface
 		self.isActive = false
-		--self:Show()
-		
-		--[=[
-		for i = 1, BUFF_MAX_DISPLAY do
-			--if (self.buffList[i] and self.buffList[i].InUse) then
-			if (self.PlaterBuffList[i] and self.PlaterBuffList[i].InUse) then
-				--self.buffList[i]:Show()
-				self.PlaterBuffList[i]:Show()
-			end
-		end
-		-]=]		
 	end
 	
-	--InstallOverride (NPB_Name, Plater.DriverFuncNames.OnUpdateBuffs, Plater.Override_UpdateBuffs)
-	InstallHook (_G [NPB_Name], Plater.DriverFuncNames.OnUpdateBuffs, Plater.Override_UpdateBuffs)
-	--buffcontainermixin ï¿½ diferente de nameplate frame mixin
+	if (not Plater.db.profile.aura_use_default) then
+		InstallHook (_G [NPB_Name], Plater.DriverFuncNames.OnUpdateBuffs, Plater.Override_UpdateBuffs)
+	end
 	
 	--sobrepï¿½e a funï¿½ï¿½o, economiza processamento uma vez que o resultado da funï¿½ï¿½o original nï¿½o ï¿½ usado
 	local Override_UNIT_AURA_ANCHORUPDATE = function (self)
@@ -2885,8 +2943,10 @@ function Plater.OnInit()
 			self:SetPoint (self.Point1, self.Anchor, self.Point2, self.X, self.Y)
 		end
 	end
-	--InstallOverride (NPB_Name, Plater.DriverFuncNames.OnUpdateAnchor, Override_UNIT_AURA_ANCHORUPDATE)
-	InstallHook (_G [NPB_Name], Plater.DriverFuncNames.OnUpdateAnchor, Override_UNIT_AURA_ANCHORUPDATE)
+	
+	if (not Plater.db.profile.aura_use_default) then
+		InstallHook (_G [NPB_Name], Plater.DriverFuncNames.OnUpdateAnchor, Override_UNIT_AURA_ANCHORUPDATE)
+	end
 	
 	--tamanho dos ï¿½cones dos debuffs sobre a nameplate
 	function Plater.UpdateAuraIcons (self, unit, filter)
@@ -2921,7 +2981,9 @@ function Plater.OnInit()
 		Plater.UpdateBuffContainer (self:GetParent():GetParent())
 	end
 	
-	InstallHook (Plater.GetDriverGlobalObject (NPB_Name), Plater.DriverFuncNames.OnUpdateBuffs, Plater.UpdateAuraIcons)
+	if (not Plater.db.profile.aura_use_default) then
+		InstallHook (Plater.GetDriverGlobalObject (NPB_Name), Plater.DriverFuncNames.OnUpdateBuffs, Plater.UpdateAuraIcons)
+	end
 	
 	function Plater.RefreshAuras()
 		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do 
@@ -2944,6 +3006,48 @@ function Plater.OnInit()
 			NamePlateTargetResourceFrame:SetPoint ("BOTTOM", plateFrame.UnitFrame.name, "TOP", 0, -4 + SizeOf_healthBar_Height)
 		end
 	end
+	
+	--> realign buff auras
+	InstallHook (LayoutMixin, "Layout", function (self)
+		--> grow directions are: 2 Center 1 Left 3 Right
+		if (DB_AURA_GROW_DIRECTION ~= 2 and self.isNameplate) then
+			--> format the buffFrame size to 1, 1 so the custom grow direction can be effective
+			self:SetSize (1, 1)
+		end
+	end)
+	
+	InstallHook (HorizontalLayoutMixin, "LayoutChildren", function (self, children, ignored, expandToHeight)
+		if (DB_AURA_GROW_DIRECTION ~= 2 and self.isNameplate) then
+			local padding = 1
+			local firstChild = children[1]
+			local anchorPoint = firstChild and firstChild:GetParent() --> get the buffContainer
+			
+			if (anchorPoint) then
+				--> set the point of the first child (the other children will follow the position)
+				firstChild:ClearAllPoints()
+				firstChild:SetPoint ("center", anchorPoint, "center", 0, 5)
+			
+				--> left to right
+				if (DB_AURA_GROW_DIRECTION == 3) then
+					--> iterate among all children
+					for i = 2, #children do
+						local child = children [i]
+						child:ClearAllPoints()
+						child:SetPoint ("topleft", children [i-1], "topright", padding, 0)
+					end
+
+				--> right to left
+				elseif (DB_AURA_GROW_DIRECTION == 1) then
+					--> iterate among all children
+					for i = 2, #children do
+						local child = children [i]
+						child:ClearAllPoints()
+						child:SetPoint ("topright", children [i-1], "topleft", -padding, 0)
+					end
+				end
+			end
+		end
+	end)
 	
 	--1 debuff, health, castbar
 	--2 health, buffs, castbar
@@ -3226,17 +3330,15 @@ function Plater.OnInit()
 		ClassNameplateManaBarFrame.powerPercent:SetText (floor (self:GetValue()/select (2, self:GetMinMaxValues()) * 100) .. "%")
 	end)
 	
-	InstallHook (Plater.GetDriverGlobalObject (NPF_Name), Plater.DriverFuncNames.OnRaidTargetUpdate, function()
-		if (InCombatLockdown()) then
-			Plater.UpdateRaidMarker()
-		end
+	InstallHook (Plater.GetDriverGlobalObject (NPF_Name), Plater.DriverFuncNames.OnRaidTargetUpdate, function (self)
+		Plater.UpdateRaidMarker()
 	end)
 	
 	InstallHook (Plater.GetDriverGlobalObject (NPF_Name), Plater.DriverFuncNames.OnOptionsUpdate, function()
 		Plater.UpdateSelfPlate()
 	end)
 	
-	InstallHook (Plater.GetDriverGlobalObject (MAB_Name), Plater.DriverFuncNames.OnManaBarOptionsUpdate, function()
+	InstallHook (Plater.GetDriverGlobalObject ("ClassNameplateManaBarFrame"), Plater.DriverFuncNames.OnManaBarOptionsUpdate, function()
 		ClassNameplateManaBarFrame:SetSize (unpack (DB_PLATE_CONFIG.player.mana))
 	end)
 	
@@ -3245,6 +3347,9 @@ function Plater.OnInit()
 	Plater.db.RegisterCallback (Plater, "OnProfileChanged", "RefreshConfig")
 	Plater.db.RegisterCallback (Plater, "OnProfileCopied", "RefreshConfig")
 	Plater.db.RegisterCallback (Plater, "OnProfileReset", "RefreshConfig")
+	Plater.db.RegisterCallback (Plater, "OnDatabaseShutdown", "SaveConsoleVariables")
+	
+	--saved_cvars
 	
 	Plater.UpdateSelfPlate()
 	Plater.UpdateUseClassColors()
@@ -3531,7 +3636,7 @@ function Plater.GetAuraIcon (self, i)
 	--self = BuffFrame
 
 	if (not self.PlaterBuffList[i]) then
-		local newFrameIcon = CreateFrame ("Frame", self:GetParent():GetName() .. "Buff" .. i, self, "NameplateBuffButtonTemplate")
+		local newFrameIcon = CreateFrame ("Frame", self:GetParent():GetName() .. "PlaterBuff" .. i, self, "NameplateBuffButtonTemplate")
 		newFrameIcon:Hide()
 		newFrameIcon.UnitFrame = self:GetParent()
 		newFrameIcon.spellId = 0
@@ -3567,7 +3672,7 @@ function Plater.GetAuraIcon (self, i)
 		newFrameIcon.ShowAnimation = iconShowInAnimation
 		
 	end
-		
+	
 	local auraIconFrame = self.PlaterBuffList [i]
 	return auraIconFrame
 end
@@ -4050,10 +4155,10 @@ local EventTickFunction = function (tickFrame, deltaTime)
 	--local healthBar = unitFrame.healthBar
 	
 	if (tickFrame.ThrottleUpdate < 0) then
-
+		
 		--make the db path smaller
 		local actorTypeDBConfig = DB_PLATE_CONFIG [tickFrame.actorType]
-	
+		
 		--range
 		Plater.CheckRange (tickFrame.PlateFrame)
 		
@@ -4188,7 +4293,7 @@ local EventTickFunction = function (tickFrame, deltaTime)
 	end
 	
 	--is mouse over ~highlight ~mouseover
-	if (DB_HOVER_HIGHLIGHT and (tickFrame.PlateFrame.actorType ~= ACTORTYPE_FRIENDLY_PLAYER and tickFrame.PlateFrame.actorType ~= ACTORTYPE_FRIENDLY_NPC)) then 
+	if (DB_HOVER_HIGHLIGHT and (tickFrame.PlateFrame.actorType ~= ACTORTYPE_FRIENDLY_PLAYER and tickFrame.PlateFrame.actorType ~= ACTORTYPE_FRIENDLY_NPC) and not tickFrame.PlateFrame.isSelf) then 
 		if (tickFrame.PlateFrame:IsMouseOver()) then
 			if (UNITGUID_UNDER_CURSOR == tickFrame.PlateFrame [MEMBER_GUID]) then
 				unitFrame.HighlightFrame:Show()
@@ -4323,7 +4428,8 @@ function Plater.UpdateAllPlates (forceUpdate, justAdded)
 end
 
 function Plater.GetAllShownPlates()
-	return C_NamePlate.GetNamePlates()
+	--return C_NamePlate.GetNamePlates()
+	return C_NamePlate.GetNamePlates (issecure())
 end
 
 -- ~events
@@ -4915,7 +5021,7 @@ function Plater.UpdateLevelTextAndColor (plateFrame, unitId)
 	local color = get_level_color (unitId, level)
 	plateFrame:SetTextColor (color.r, color.g, color.b)
 end
-local f = Plater.AllFrameNames or Plater.GlobalNames
+
 local anchor_functions = {
 	function (widget, config)--1
 		widget:ClearAllPoints()
@@ -5364,21 +5470,44 @@ function Plater.UpdateLifePercentText (healthBar, unitId, showHealthAmount, show
 end
 
 -- ~raidmarker ~raidtarget 
+function Plater.UpdateExtraRaidMarker()
+	if (not Plater.db.profile.indicator_extra_raidmark) then
+		return
+	end
+	for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+		if (plateFrame.UnitFrame.RaidTargetFrame.RaidTargetIcon:IsShown()) then
+			plateFrame.RaidTarget:Show()
+			plateFrame.RaidTarget:SetTexture (plateFrame.UnitFrame.RaidTargetFrame.RaidTargetIcon:GetTexture())
+			plateFrame.RaidTarget:SetTexCoord (plateFrame.UnitFrame.RaidTargetFrame.RaidTargetIcon:GetTexCoord())
+			local height = plateFrame.UnitFrame.healthBar:GetHeight() - 2
+			plateFrame.RaidTarget:SetSize (height, height)
+			plateFrame.RaidTarget:SetAlpha (.4)
+		end
+	end
+end
+
 function Plater.UpdateRaidMarker()
-	if (InCombatLockdown()) then
-		if (not Plater.db.profile.indicator_extra_raidmark) then
-			return
-		end
-		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-			if (plateFrame.UnitFrame.RaidTargetFrame.RaidTargetIcon:IsShown()) then
-				plateFrame.RaidTarget:Show()
-				plateFrame.RaidTarget:SetTexture (plateFrame.UnitFrame.RaidTargetFrame.RaidTargetIcon:GetTexture())
-				plateFrame.RaidTarget:SetTexCoord (plateFrame.UnitFrame.RaidTargetFrame.RaidTargetIcon:GetTexCoord())
-				local height = plateFrame.UnitFrame.healthBar:GetHeight() - 2
-				plateFrame.RaidTarget:SetSize (height, height)
-				plateFrame.RaidTarget:SetAlpha (.4)
+	--> big raid marker
+	for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+		if (plateFrame.UnitFrame.RaidTargetFrame.RaidTargetIcon:IsShown()) then
+
+			if (not plateFrame.UnitFrame.RaidTargetFrame.RaidTargetIcon.IsShowning) then
+				--play animations
+				plateFrame.UnitFrame.RaidTargetFrame.RaidTargetIcon.IsShowning = true
+				plateFrame.UnitFrame.RaidTargetFrame.RaidTargetIcon.ShowAnimation:Play()
 			end
+			
+			--> adjust scale and anchor
+			plateFrame.UnitFrame.RaidTargetFrame:SetScale (Plater.db.profile.indicator_raidmark_scale)
+			Plater.SetAnchor (plateFrame.UnitFrame.RaidTargetFrame, Plater.db.profile.indicator_raidmark_anchor)
+		else
+			plateFrame.UnitFrame.RaidTargetFrame.RaidTargetIcon.IsShowning = nil
 		end
+	end
+
+	--> extra raid marker
+	if (InCombatLockdown()) then
+		Plater.UpdateExtraRaidMarker()
 	else
 		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 			plateFrame.RaidTarget:Hide()
@@ -5639,7 +5768,7 @@ function Plater.UpdatePlateSize (plateFrame, justAdded)
 				end
 			end
 		end
-
+ 
 		--buff
 		buffFrame.Point1 = "bottom"
 		buffFrame.Point2 = "top"
@@ -6637,6 +6766,7 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame) -- ~created ~
 	plateFrame.UnitFrame.isNamePlate = true
 	plateFrame.UnitFrame.BuffFrame.amtDebuffs = 0
 	plateFrame.UnitFrame.BuffFrame.PlaterBuffList = {}
+	plateFrame.UnitFrame.BuffFrame.isNameplate = true
 	plateFrame.UnitFrame.healthBar.border.plateFrame = plateFrame
 	
 	local healthBar = plateFrame.UnitFrame.healthBar
@@ -6712,6 +6842,11 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame) -- ~created ~
 	local raidTarget = healthBar:CreateTexture (nil, "overlay")
 	raidTarget:SetPoint ("right", -2, 0)
 	plateFrame.RaidTarget = raidTarget
+	
+	local raidMarkAnimation = DF:CreateAnimationHub (plateFrame.UnitFrame.RaidTargetFrame.RaidTargetIcon)
+	DF:CreateAnimation (raidMarkAnimation, "Scale", 1, .075, .1, .1, 1.2, 1.2)
+	DF:CreateAnimation (raidMarkAnimation, "Scale", 2, .075, 1.2, 1.2, 1, 1)
+	plateFrame.UnitFrame.RaidTargetFrame.RaidTargetIcon.ShowAnimation = raidMarkAnimation
 	
 	plateFrame [MEMBER_ALPHA] = 1
 	
@@ -6998,6 +7133,7 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ï
 	
 end
 
+--> renew this function later, since 7,1 Driver config isn't rechable without tagging taints
 function Plater.UpdateUseClassColors()
 	if (Plater.db.profile.use_playerclass_color) then
 --		Plater.InjectOnDefaultOptions (CNP_Name, Plater.DriverConfigType ["FRIENDLY"], Plater.DriverConfigMembers ["UseClassColors"], true)
@@ -7009,6 +7145,7 @@ function Plater.UpdateUseClassColors()
 	end
 end
 
+--> renew this function later, since 7,1 Driver config isn't rechable without tagging taints
 function Plater.UpdateUseCastBar()
 --	Plater.InjectOnDefaultOptions (CNP_Name, Plater.DriverConfigType ["ENEMY"], Plater.DriverConfigMembers ["HideCastBar"], Plater.db.profile.hide_enemy_castbars)
 --	Plater.InjectOnDefaultOptions (CNP_Name, Plater.DriverConfigType ["FRIENDLY"], Plater.DriverConfigMembers ["HideCastBar"], Plater.db.profile.hide_friendly_castbars)
@@ -7207,38 +7344,68 @@ function Plater.SetCVarsOnFirstRun()
 		return
 	end
 
-	--SetCVar (CVAR_SHOWPERSONAL, CVAR_DISABLED)
-	SetCVar (CVAR_RESOURCEONTARGET, CVAR_DISABLED)
+	--> these are the cvars set for each character when they logon
+	
+	--disabled:
+		--SetCVar (CVAR_SHOWPERSONAL, CVAR_DISABLED)
+		--SetCVar (CVAR_RESOURCEONTARGET, CVAR_DISABLED)
+		--SetCVar (CVAR_FRIENDLY_ALL, CVAR_ENABLED)
+	
+	--> set the stacking to true
+	SetCVar (CVAR_PLATEMOTION, CVAR_ENABLED)
+	
+	--> make nameplates always shown and down't show minions
 	SetCVar (CVAR_SHOWALL, CVAR_ENABLED)
 	SetCVar (CVAR_AGGROFLASH, CVAR_ENABLED)
 	SetCVar (CVAR_ENEMY_MINIONS, CVAR_ENABLED)
 	SetCVar (CVAR_ENEMY_MINUS, CVAR_ENABLED)
-	SetCVar (CVAR_PLATEMOTION, CVAR_ENABLED)
-	--SetCVar (CVAR_FRIENDLY_ALL, CVAR_ENABLED)
 	SetCVar (CVAR_FRIENDLY_GUARDIAN, CVAR_DISABLED)
 	SetCVar (CVAR_FRIENDLY_PETS, CVAR_DISABLED)
 	SetCVar (CVAR_FRIENDLY_TOTEMS, CVAR_DISABLED)
 	SetCVar (CVAR_FRIENDLY_MINIONS, CVAR_DISABLED)
+	
+	--> make it show the class color of players
 	SetCVar (CVAR_CLASSCOLOR, CVAR_ENABLED)
 	
-	SetCVar (CVAR_CEILING, 0.025)
-	
-	--SetCVar (CVAR_SCALE_HORIZONTAL, "1.4")
+	--> just reset to default the clamp from the top side
+	SetCVar (CVAR_CEILING, 0.065)
+
+	--> reset the horizontal and vertical scale
 	SetCVar (CVAR_SCALE_HORIZONTAL, CVAR_ENABLED)
-	--SetCVar (CVAR_SCALE_VERTICAL, "2.7")
 	SetCVar (CVAR_SCALE_VERTICAL, CVAR_ENABLED)
 	
+	--> make the selection be a little bigger
 	SetCVar ("nameplateSelectedScale", 1.15)
+	
+	--> distance between each nameplate when using stacking
 	SetCVar ("nameplateOverlapV", 0.80)
+	
+	--> movement speed of nameplates when using stacking, going above this isn't recommended
 	SetCVar (CVAR_MOVEMENT_SPEED, 0.05)
+	--> this must be 1 for bug reasons on the game client
 	SetCVar ("nameplateOccludedAlphaMult", 1)
+	--> don't show friendly npcs
 	SetCVar ("nameplateShowFriendlyNPCs", 0)
+	--> make the personal bar hide very fast
 	SetCVar ("nameplatePersonalHideDelaySeconds", 0.2)
 	
+	--> location of the personagem bar
 	SetCVar ("nameplateSelfBottomInset", 20 / 100)
 	SetCVar ("nameplateSelfTopInset", abs (20 - 99) / 100)
 
+	--> view distance
 	SetCVar (CVAR_CULLINGDISTANCE, 100)
+	
+	--> try to restore cvars from the profile
+	local savedCVars = Plater.db and Plater.db.profile and Plater.db.profile.saved_cvars
+	if (savedCVars) then
+		for CVarName, CVarValue in pairs (savedCVars) do
+			SetCVar (CVarName, CVarValue)
+		end
+		if (PlaterOptionsPanelFrame) then
+			PlaterOptionsPanelFrame.RefreshOptionsFrame()
+		end
+	end
 	
 	PlaterDBChr.first_run2 [UnitGUID ("player")] = true
 	Plater.db.profile.first_run2 = true
@@ -7263,9 +7430,7 @@ function Plater.SetCVarsOnFirstRun()
 			print ("Plater Debug - Special Settings for Warrior Applied")
 		end	
 	--]=]
-	
-	
-	
+
 	--Plater:Msg ("has installed custom CVars values, it is ready to work!")
 end
 
@@ -7582,13 +7747,13 @@ Plater.DefaultSpellRangeList = {
 	[73] = 355, --> warrior protect - Taunt
 }
 
--- ~options ï¿½ptions
+-- ~options õptions
 function Plater.OpenOptionsPanel()
-
+	
 	if (PlaterOptionsPanelFrame) then
 		return PlaterOptionsPanelFrame:Show()
 	end
-
+	
 	--pega os templates dos os widgets
 	local options_text_template = DF:GetTemplate ("font", "OPTIONS_FONT_TEMPLATE")
 	local options_dropdown_template = DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE")
@@ -7605,6 +7770,9 @@ function Plater.OpenOptionsPanel()
 	
 	--f:SetPoint ("center", UIParent, "center", 0, 0)
 	local profile = Plater.db.profile
+	
+	local CVarDesc = "\n\n|cFFFF7700[*]|r |cFFa0a0a0CVar, not saved within Plater profile and is a Per-Character setting.|r"
+	local CVarIcon = "|cFFFF7700*|r"
 	
 	local frame_options = {
 		y_offset = 0,
@@ -7801,8 +7969,8 @@ local interface_options = {
 					self:SetValue (GetCVar (CVAR_SHOWPERSONAL) == CVAR_ENABLED)
 				end
 			end,
-			name = "Personal Health and Mana Bars",
-			desc = "Shows a mini health and mana bars under your character.",
+			name = "Personal Health and Mana Bars" .. CVarIcon,
+			desc = "Shows a mini health and mana bars under your character." .. CVarDesc,
 			nocombat = true,
 		},
 		{
@@ -7816,8 +7984,8 @@ local interface_options = {
 					self:SetValue (GetCVar (CVAR_RESOURCEONTARGET) == CVAR_ENABLED)
 				end
 			end,
-			name = "Show Resources on Target",
-			desc = "Shows your resource such as combo points above your current target.\n\n'Personal Health and Mana Bars' has to be enabled",
+			name = "Show Resources on Target" .. CVarIcon,
+			desc = "Shows your resource such as combo points above your current target.\n\n'Personal Health and Mana Bars' has to be enabled" .. CVarDesc,
 			nocombat = true,
 		},
 		{
@@ -7831,8 +7999,8 @@ local interface_options = {
 					self:SetValue (GetCVar (CVAR_SHOWALL) == CVAR_ENABLED)
 				end
 			end,
-			name = "Always Show Nameplates",
-			desc = "Show nameplates for all units near you. If disabled on show relevant units when you are in combat.",
+			name = "Always Show Nameplates" .. CVarIcon,
+			desc = "Show nameplates for all units near you. If disabled on show relevant units when you are in combat." .. CVarDesc,
 			nocombat = true,
 		},
 		{
@@ -7847,8 +8015,8 @@ local interface_options = {
 					self:SetValue (GetCVar (CVAR_PLATEMOTION) == CVAR_ENABLED)
 				end
 			end,
-			name = "Stacking Nameplates",
-			desc = "Nameplates won't overlap each other.",
+			name = "Stacking Nameplates" .. CVarIcon,
+			desc = "Nameplates won't overlap each other." .. CVarDesc,
 			nocombat = true,
 		},
 		
@@ -7867,8 +8035,8 @@ local interface_options = {
 			min = 1,
 			max = 100,
 			step = 1,
-			name = "View Distance",
-			desc = "How far you can see nameplates (in yards).\n\n|cFFFFFFFFDefault: 60|r",
+			name = "View Distance" .. CVarIcon,
+			desc = "How far you can see nameplates (in yards).\n\n|cFFFFFFFFDefault: 60|r" .. CVarDesc,
 			nocombat = true,
 		},
 		
@@ -7883,8 +8051,8 @@ local interface_options = {
 					self:SetValue (GetCVar (CVAR_ENEMY_MINIONS) == CVAR_ENABLED)
 				end
 			end,
-			name = "Enemy Units (" .. (GetBindingKey ("NAMEPLATES") or "") .. "): Minions",
-			desc = "Show nameplate for enemy pets, totems and guardians.",
+			name = "Enemy Units (" .. (GetBindingKey ("NAMEPLATES") or "") .. "): Minions" .. CVarIcon,
+			desc = "Show nameplate for enemy pets, totems and guardians." .. CVarDesc,
 			nocombat = true,
 		},
 		{
@@ -7898,8 +8066,8 @@ local interface_options = {
 					self:SetValue (GetCVar (CVAR_ENEMY_MINUS) == CVAR_ENABLED)
 				end
 			end,
-			name = "Enemy Units (V): Minor",
-			desc = "Show nameplate for minor enemies.",
+			name = "Enemy Units (V): Minor" .. CVarIcon,
+			desc = "Show nameplate for minor enemies." .. CVarDesc,
 			nocombat = true,
 		},
 		{
@@ -7916,8 +8084,8 @@ local interface_options = {
 					self:SetValue (GetCVar (CVAR_FRIENDLY_GUARDIAN) == CVAR_ENABLED)
 				end
 			end,
-			name = "Friendly Units (" .. (GetBindingKey ("FRIENDNAMEPLATES") or "") .. "): Minions",
-			desc = "Show nameplate for friendly pets, totems and guardians.\n\nAlso check the Enabled box below Friendly Npc Config.",
+			name = "Friendly Units (" .. (GetBindingKey ("FRIENDNAMEPLATES") or "") .. "): Minions" .. CVarIcon,
+			desc = "Show nameplate for friendly pets, totems and guardians.\n\nAlso check the Enabled box below Friendly Npc Config." .. CVarDesc,
 			nocombat = true,
 		},
 }
@@ -7952,6 +8120,23 @@ DF:BuildMenu (frontPageFrame, interface_options, startX, startY-20, 300 + 60, tr
 -------------------------------------------------------------------------------
 -- painel para configurar debuffs e buffs
 
+local grow_direction_names = {"Left", "Center", "Right"}
+local build_grow_direction_options = function()
+	local t = {}
+	for i = 1, #grow_direction_names do
+		tinsert (t, {
+			label = grow_direction_names [i], 
+			value = i, 
+			onclick = function (_, _, value)
+				Plater.db.profile.aura_grow_direction = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end
+		})
+	end
+	return t
+end
+
 local debuff_options = {
 	{type = "label", get = function() return "General Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	
@@ -7972,9 +8157,21 @@ local debuff_options = {
 				end
 			end
 		end,
-		name = "Enabled",
-		desc = "Enabled",
+		name = "Use Plater Auras",
+		desc = "Plater will add buffs and debuffs above nameplates.",
 	},
+	
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_use_default end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_use_default = value
+			Plater:Msg ("use Blizzard aura filtering requires a /reload.")
+		end,
+		name = "Use Blizzard Auras",
+		desc = "The default user interface will be allowed to add auras above the nameplate.\n\n|cFFFFFF00Important|r: Plater will also add auras, you may want disable the option above (|cFFFFAA00Use Plater Auras|r) in order to prevent duplicated debuffs.\n\n|cFFFFFF00Important|r: require |cFFFFAA00/reload|r after changing this setting.",
+	},
+	
 	{
 		type = "toggle",
 		get = function() return Plater.db.profile.aura_show_tooltip end,
@@ -7984,7 +8181,7 @@ local debuff_options = {
 		end,
 		name = "Show Tooltip",
 		desc = "Show tooltip when hovering over the aura icon.",
-	},	
+	},
 	{
 		type = "toggle",
 		get = function() return Plater.db.profile.debuff_show_cc end,
@@ -8041,6 +8238,17 @@ local debuff_options = {
 		name = "Alpha",
 		desc = "Alpha",
 	},
+	
+	--> grow direction
+	{
+		type = "select",
+		get = function() return Plater.db.profile.aura_grow_direction end,
+		values = function() return build_grow_direction_options() end,
+		name = "Grow Direction",
+		desc = "To which side aura icons should grow",
+	},
+	
+	
 	{
 		type = "range",
 		get = function() return Plater.db.profile.aura_x_offset end,
@@ -8075,18 +8283,6 @@ local debuff_options = {
 
 	{
 		type = "toggle",
-		get = function() return Plater.db.profile.aura_show_important end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_show_important = value
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Show Important Auras",
-		desc = "Show buffs and debuffs which the game tag as important.",
-	},
-	
-	{
-		type = "toggle",
 		get = function() return Plater.db.profile.aura_show_aura_by_the_player end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_show_aura_by_the_player = value
@@ -8096,6 +8292,36 @@ local debuff_options = {
 		name = "Show Auras Casted by You",
 		desc = "Show Auras Casted by You.",
 	},
+	
+	{type = "blank"},
+	
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_show_important end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_important = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Important Auras",
+		desc = "Show buffs and debuffs which the game tag as important.",
+	},
+	{
+		type = "color",
+		get = function()
+			local color = Plater.db.profile.aura_border_colors.is_show_all
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_border_colors.is_show_all
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = "Important Auras Border Color",
+		desc = "Important Auras Border Color",
+	},
+	
+	{type = "blank"},
 	
 	{
 		type = "toggle",
@@ -8108,6 +8334,22 @@ local debuff_options = {
 		name = "Show Dispellable Buffs",
 		desc = "Show auras which can be dispelled or stealed.",
 	},
+	{
+		type = "color",
+		get = function()
+			local color = Plater.db.profile.aura_border_colors.steal_or_purge
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_border_colors.steal_or_purge
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = "Dispellable Buffs Border Color",
+		desc = "Dispellable Buffs Border Color",
+	},
+	
+	{type = "blank"},
 
 	{
 		type = "toggle",
@@ -8119,38 +8361,7 @@ local debuff_options = {
 		end,
 		name = "Show Buffs Casted by the Unit",
 		desc = "Show Buffs Casted by the Unit it self",
-	},	
-
-	{
-		type = "toggle",
-		get = function() return Plater.db.profile.aura_show_buffs_personal end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_show_buffs_personal = value
-			Plater.RefreshDBUpvalues()
-			Plater.RefreshAuras()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Show Buffs on Personal Bar",
-		desc = "Show buffs on you on the Personal Bar.",
 	},
-	
-	{
-		type = "toggle",
-		get = function() return Plater.db.profile.aura_show_debuffs_personal end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_show_debuffs_personal = value
-			Plater.RefreshDBUpvalues()
-			Plater.RefreshAuras()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Show Debuffs on Personal Bar",
-		desc = "Show debuffs on you on the Personal Bar.",
-	},
-	
-	{type = "blank"},
-	
-	{type = "label", get = function() return "Border Colors:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-
 	--border color is buff
 	{
 		type = "color",
@@ -8163,40 +8374,8 @@ local debuff_options = {
 			color[1], color[2], color[3], color[4] = r, g, b, a
 			Plater.UpdateAllPlates()
 		end,
-		name = "Is Buff",
-		desc = "Is Buff",
-	},
-	
-	--border color is show all
-	{
-		type = "color",
-		get = function()
-			local color = Plater.db.profile.aura_border_colors.is_show_all
-			return {color[1], color[2], color[3], color[4]}
-		end,
-		set = function (self, r, g, b, a) 
-			local color = Plater.db.profile.aura_border_colors.is_show_all
-			color[1], color[2], color[3], color[4] = r, g, b, a
-			Plater.UpdateAllPlates()
-		end,
-		name = "Is Important",
-		desc = "Is Important",
-	},
-	
-	--border color steal or purge
-	{
-		type = "color",
-		get = function()
-			local color = Plater.db.profile.aura_border_colors.steal_or_purge
-			return {color[1], color[2], color[3], color[4]}
-		end,
-		set = function (self, r, g, b, a) 
-			local color = Plater.db.profile.aura_border_colors.steal_or_purge
-			color[1], color[2], color[3], color[4] = r, g, b, a
-			Plater.UpdateAllPlates()
-		end,
-		name = "Can Steal or Purge",
-		desc = "Can Steal or Purge",
+		name = "Buffs Border Color",
+		desc = "Buffs Border Color",
 	},
 	
 	{type = "breakline"},
@@ -8406,12 +8585,12 @@ DF:BuildMenu (auraOptionsFrame, debuff_options, startX, startY, heightSize, true
 		--> scroll with auras added to the special aura container
 		local specialAuraFrame = CreateFrame ("frame", nil, auraOptionsFrame)
 		specialAuraFrame:SetHeight (480)
-		specialAuraFrame:SetPoint ("topleft", auraOptionsFrame, "topleft", 480, startY)
+		specialAuraFrame:SetPoint ("topleft", auraOptionsFrame, "topleft", 540, startY)
 		specialAuraFrame:SetPoint ("topright", auraOptionsFrame, "topright", -10, startY)
-		DF:ApplyStandardBackdrop (specialAuraFrame)
+		DF:ApplyStandardBackdrop (specialAuraFrame, false, 0.6)
 		
-		local scroll_width = 330
-		local scroll_height = 450
+		local scroll_width = 280
+		local scroll_height = 440
 		local scroll_lines = 15
 		local scroll_line_height = 20
 		local backdrop_color = {.8, .8, .8, 0.2}
@@ -8503,9 +8682,11 @@ DF:BuildMenu (auraOptionsFrame, debuff_options, startX, startY, heightSize, true
 		local special_auras_added = DF:CreateScrollBox (specialAuraFrame, "$parentSpecialAurasAdded", scroll_refresh, Plater.db.profile.extra_icon_auras, scroll_width, scroll_height, scroll_lines, scroll_line_height)
 		DF:ReskinSlider (special_auras_added)
 		
+		special_auras_added.__background:SetAlpha (.4)
+		
 		local title = DF:CreateLabel (specialAuraFrame, "Special Auras:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
 		DF:SetFontSize (title, 12)
-		special_auras_added:SetPoint ("topleft", specialAuraFrame, "topleft", 10, -20)
+		special_auras_added:SetPoint ("topleft", specialAuraFrame, "topleft", 10, -25)
 		title:SetPoint ("bottomleft", special_auras_added, "topleft", 0, 2)
 		
 		for i = 1, scroll_lines do 
@@ -8626,7 +8807,7 @@ DF:BuildMenu (auraOptionsFrame, debuff_options, startX, startY, heightSize, true
 		
 		local fff = CreateFrame ("frame", "$parentExtraIconsSettings", auraOptionsFrame)
 		fff:SetAllPoints()
-		DF:BuildMenu (fff, especial_aura_settings, 860, -200, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)	
+		DF:BuildMenu (fff, especial_aura_settings, 870, -200, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)	
 
 		--when the profile has changed
 		function auraOptionsFrame:RefreshOptions()
@@ -8759,8 +8940,8 @@ do
 					end
 				end,
 				nocombat = true,
-				name = "Always Show",
-				desc = "If enabled, the personal health bar is always shown.\n\n|cFFFFFF00Important|r: 'Personal Health and Mana Bars' (in the Main Menu tab) must be enabled.",
+				name = "Always Show" .. CVarIcon,
+				desc = "If enabled, the personal health bar is always shown.\n\n|cFFFFFF00Important|r: 'Personal Health and Mana Bars' (in the Main Menu tab) must be enabled." .. CVarDesc,
 			},
 			{
 				type = "toggle",
@@ -8773,8 +8954,8 @@ do
 					end
 				end,
 				nocombat = true,
-				name = "Show When you Have a Target",
-				desc = "If enabled, show the personal bar when you have a target.\n\n|cFFFFFF00Important|r: 'Personal Health and Mana Bars' (in the Main Menu tab) must be enabled.",
+				name = "Show When you Have a Target" .. CVarIcon,
+				desc = "If enabled, show the personal bar when you have a target.\n\n|cFFFFFF00Important|r: 'Personal Health and Mana Bars' (in the Main Menu tab) must be enabled." .. CVarDesc,
 			},
 			{
 				type = "toggle",
@@ -8787,8 +8968,8 @@ do
 					end
 				end,
 				nocombat = true,
-				name = "Show In Combat",
-				desc = "If enabled, show the personal bar when you are in combat.\n\n|cFFFFFF00Important|r: 'Personal Health and Mana Bars' (in the Main Menu tab) must be enabled.",
+				name = "Show In Combat" .. CVarIcon,
+				desc = "If enabled, show the personal bar when you are in combat.\n\n|cFFFFFF00Important|r: 'Personal Health and Mana Bars' (in the Main Menu tab) must be enabled." .. CVarDesc,
 			},
 			{
 				type = "range",
@@ -8805,8 +8986,8 @@ do
 				step = 0.1,
 				thumbscale = 1.7,
 				usedecimals = true,
-				name = "Alpha",
-				desc = "Alpha",
+				name = "Alpha" .. CVarIcon,
+				desc = "Alpha" .. CVarDesc,
 				nocombat = true,
 			},
 			{
@@ -8824,11 +9005,39 @@ do
 				step = 0.1,
 				thumbscale = 1.7,
 				usedecimals = true,
-				name = "Scale",
-				desc = "Scale",
+				name = "Scale" .. CVarIcon,
+				desc = "Scale" .. CVarDesc,
 				nocombat = true,
 			},
 
+			{type = "blank"},
+			
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.aura_show_buffs_personal end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.aura_show_buffs_personal = value
+					Plater.RefreshDBUpvalues()
+					Plater.RefreshAuras()
+					Plater.UpdateAllPlates()
+				end,
+				name = "Show Buffs on Personal Bar",
+				desc = "Show buffs on you on the Personal Bar.",
+			},
+			
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.aura_show_debuffs_personal end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.aura_show_debuffs_personal = value
+					Plater.RefreshDBUpvalues()
+					Plater.RefreshAuras()
+					Plater.UpdateAllPlates()
+				end,
+				name = "Show Debuffs on Personal Bar",
+				desc = "Show debuffs on you on the Personal Bar.",
+			},			
+			
 			{type = "blank"},
 		
 			--life size
@@ -8964,8 +9173,8 @@ do
 				max = 98,
 				step = 1,
 				nocombat = true,
-				name = "Screen Position",
-				desc = "Adjust the positioning on the Y axis.",
+				name = "Screen Position" .. CVarIcon,
+				desc = "Adjust the positioning on the Y axis." .. CVarDesc,
 			},
 
 			{type = "breakline"},
@@ -9705,7 +9914,7 @@ end
 		},
 
 		{type = "breakline"},
-		{type = "label", get = function() return "Icon Indicators:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return "Indicators:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "toggle",
@@ -9797,6 +10006,60 @@ end
 		
 		{type = "blank"},
 		
+		{type = "label", get = function() return "Raid Mark:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		
+		{
+			type = "range",
+			get = function() return Plater.db.profile.indicator_raidmark_scale end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_raidmark_scale = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 0.2,
+			max = 2,
+			step = 0.1,
+			usedecimals = true,
+			name = "Scale",
+			desc = "Scale",
+		},
+		
+		--indicator icon anchor
+		{
+			type = "select",
+			get = function() return Plater.db.profile.indicator_raidmark_anchor.side end,
+			values = function() return build_anchor_side_table (nil, "indicator_raidmark_anchor") end,
+			name = "Anchor",
+			desc = "Which side of the nameplate this widget is attach to.",
+		},
+		--indicator icon anchor x offset
+		{
+			type = "range",
+			get = function() return Plater.db.profile.indicator_raidmark_anchor.x end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_raidmark_anchor.x = value
+				Plater.UpdateAllPlates()
+			end,
+			min = -20,
+			max = 20,
+			step = 1,
+			name = "X Offset",
+			desc = "Slightly move horizontally.",
+		},
+		--indicator icon anchor y offset
+		{
+			type = "range",
+			get = function() return Plater.db.profile.indicator_raidmark_anchor.y end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_raidmark_anchor.y = value
+				Plater.UpdateAllPlates()
+			end,
+			min = -20,
+			max = 20,
+			step = 1,
+			name = "Y Offset",
+			desc = "Slightly move vertically.",
+		},
+		
 		{
 			type = "toggle",
 			get = function() return Plater.db.profile.indicator_extra_raidmark end,
@@ -9806,44 +10069,8 @@ end
 				Plater.UpdateRaidMarker()
 			end,
 			name = "Extra Raid Mark",
-			desc = "Places an extra raid mark icon inside the health bar.",
+			desc = "Places an extra raid mark icon inside the health bar (|cFFFFFF00in combat only|r).",
 		},
-		
-		{type = "blank"},
-		
-		{type = "label", get = function() return "Focus:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-		
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.focus_indicator_enabled end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.focus_indicator_enabled = value
-				Plater.OnPlayerTargetChanged()
-			end,
-			name = "Show Focus Overlay",
-			desc = "Focus Indicator",
-		},
-		{
-			type = "color",
-			get = function()
-				local color = Plater.db.profile.focus_color
-				return {color[1], color[2], color[3], color[4]}
-			end,
-			set = function (self, r, g, b, a) 
-				local color = Plater.db.profile.focus_color
-				color[1], color[2], color[3], color[4] = r, g, b, a
-				Plater.OnPlayerTargetChanged()
-			end,
-			name = "Color",
-			desc = "Focus Color",
-		},
-		{
-			type = "select",
-			get = function() return Plater.db.profile.focus_texture end,
-			values = function() return focus_indicator_texture_options end,
-			name = "Texture",
-			desc = "Focus Texture",
-		},		
 		
 		{type = "breakline"},
 		
@@ -10012,6 +10239,44 @@ end
 		
 		
 		{type = "breakline"},
+		
+		{type = "label", get = function() return "Focus:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.focus_indicator_enabled end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.focus_indicator_enabled = value
+				Plater.OnPlayerTargetChanged()
+			end,
+			name = "Show Focus Overlay",
+			desc = "Focus Indicator",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.focus_color
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.focus_color
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.OnPlayerTargetChanged()
+			end,
+			name = "Color",
+			desc = "Focus Color",
+		},
+		{
+			type = "select",
+			get = function() return Plater.db.profile.focus_texture end,
+			values = function() return focus_indicator_texture_options end,
+			name = "Texture",
+			desc = "Focus Texture",
+		},
+		
+		{type = "blank"},
+		
+		
 		{type = "label", get = function() return "Alpha Control:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 
 		--alpha and range check
@@ -11598,8 +11863,8 @@ end
 				end
 			end,
 			nocombat = true,
-			name = "Enabled",
-			desc = "Show nameplate for friendly npcs.\n\n|cFFFFFF00Important|r: This option is dependent on the client`s nameplate state (on/off).\n\n|cFFFFFF00Important|r: when disabled but enabled on the client through (" .. (GetBindingKey ("FRIENDNAMEPLATES") or "") .. ") the healthbar isn't visible but the nameplate is still clickable.",
+			name = "Enabled" .. CVarIcon,
+			desc = "Show nameplate for friendly npcs.\n\n|cFFFFFF00Important|r: This option is dependent on the client`s nameplate state (on/off).\n\n|cFFFFFF00Important|r: when disabled but enabled on the client through (" .. (GetBindingKey ("FRIENDNAMEPLATES") or "") .. ") the healthbar isn't visible but the nameplate is still clickable." .. CVarDesc,
 		},
 
 		{
@@ -15529,16 +15794,16 @@ end
 			step = 0.005,
 			thumbscale = 1.7,
 			usedecimals = true,
-			name = "Top Clamp Size",
-			desc = "Top margin, space where nameplates can't pass through and 'get trapped in the screen'.\n\n|cFFFFFFFFDefault: 0.065|r\n\n|cFFFFFF00Important|r: setting to 0 disables this feature.",
+			name = "Top Clamp Size" .. CVarIcon,
+			desc = "Top margin, space where nameplates can't pass through and 'get trapped in the screen'.\n\n|cFFFFFFFFDefault: 0.065|r\n\n|cFFFFFF00Important|r: setting to 0 disables this feature." .. CVarDesc,
 			nocombat = true,
 		},
 		{
 			type = "select",
 			get = function() return tonumber (GetCVar (CVAR_ANCHOR)) end,
 			values = function() return nameplate_anchor_options end,
-			name = "Anchor Point",
-			desc = "Where the nameplate is anchored to.\n\n|cFFFFFFFFDefault: Head|r",
+			name = "Anchor Point" .. CVarIcon,
+			desc = "Where the nameplate is anchored to.\n\n|cFFFFFFFFDefault: Head|r" .. CVarDesc,
 			nocombat = true,
 		},
 		{
@@ -15556,8 +15821,8 @@ end
 			step = 0.005,
 			thumbscale = 1.7,
 			usedecimals = true,
-			name = "Movement Speed",
-			desc = "How fast the nameplate moves (when stacking is enabled).\n\n|cFFFFFFFFDefault: 0.025|r\n\n|cFFFFFFFFRecommended: 0.05|r",
+			name = "Movement Speed" .. CVarIcon,
+			desc = "How fast the nameplate moves (when stacking is enabled).\n\n|cFFFFFFFFDefault: 0.025|r\n\n|cFFFFFFFFRecommended: 0.05|r" .. CVarDesc,
 			nocombat = true,
 		},
 		{
@@ -15575,8 +15840,8 @@ end
 			step = 0.1,
 			thumbscale = 1.7,
 			usedecimals = true,
-			name = "Vertical Padding",
-			desc = "Verticaly distance factor between each nameplate (when stacking is enabled).\n\n|cFFFFFFFFDefault: 1.10|r\n\n|cFFFFFFFFRecommended: 0.80|r",
+			name = "Vertical Padding" .. CVarIcon,
+			desc = "Verticaly distance factor between each nameplate (when stacking is enabled).\n\n|cFFFFFFFFDefault: 1.10|r\n\n|cFFFFFFFFRecommended: 0.80|r" .. CVarDesc,
 			nocombat = true,
 		},
 		{
@@ -15594,8 +15859,8 @@ end
 			step = 0.1,
 			thumbscale = 1.7,
 			usedecimals = true,
-			name = "Distance Scale",
-			desc = "Scale applied when the nameplate is far away from the camera.\n\n|cFFFFFF00Important|r: is the distance from the camera and |cFFFF4444not|r the distance from your character.\n\n|cFFFFFFFFDefault: 0.8|r",
+			name = "Distance Scale" .. CVarIcon,
+			desc = "Scale applied when the nameplate is far away from the camera.\n\n|cFFFFFF00Important|r: is the distance from the camera and |cFFFF4444not|r the distance from your character.\n\n|cFFFFFFFFDefault: 0.8|r" .. CVarDesc,
 			nocombat = true,
 		},
 		{
@@ -15613,8 +15878,8 @@ end
 			step = 0.1,
 			thumbscale = 1.7,
 			usedecimals = true,
-			name = "Global Scale",
-			desc = "Scale all nameplates.\n\n|cFFFFFFFFDefault: 1|r",
+			name = "Global Scale" .. CVarIcon,
+			desc = "Scale all nameplates.\n\n|cFFFFFFFFDefault: 1|r" .. CVarDesc,
 			nocombat = true,
 		},
 		
