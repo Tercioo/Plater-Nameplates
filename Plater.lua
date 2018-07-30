@@ -1,6 +1,9 @@
 
 --identify the class on the first run and apply view distance and spells to check the line of sight
 
+--/run SetCVar ("nameplateSelfBottomInset", .2)
+--/run SetCVar ("nameplateSelfTopInset", .5)
+
  if (true) then
 	--return
 	--but not today
@@ -2843,8 +2846,7 @@ function Plater.OnInit()
 		--> fires when somebody changes faction near the player
 		local plateFrame = C_NamePlate.GetNamePlateForUnit (unit)
 		if (plateFrame) then
-			print ("Unit Changed Faction", plateFrame [MEMBER_UNITID], UnitName (unit), "Refreshing the nameplate...")
-			
+			--print ("Unit Changed Faction", plateFrame [MEMBER_UNITID], UnitName (unit), "Refreshing the nameplate...")
 			--refresh
 			Plater ["NAME_PLATE_UNIT_ADDED"] (Plater, "NAME_PLATE_UNIT_ADDED", plateFrame [MEMBER_UNITID])
 		end
@@ -3725,13 +3727,6 @@ function Plater.GetAuraIcon (self, i)
 		newFrameIcon:SetSize (auraWidth, auraHeight)
 		newFrameIcon.Icon:SetSize (auraWidth-2, auraHeight-2)
 		
-		if (not newFrameIcon.Cooldown.Timer) then
-			--> in case the aura got created inside default UI
-			local timer = newFrameIcon.Cooldown:CreateFontString (nil, "overlay", "NumberFontNormal")
-			newFrameIcon.Cooldown.Timer = timer
-			timer:SetPoint ("center")
-		end
-		
 		--mixin the meta functions for scripts
 		DF:Mixin (newFrameIcon, Plater.ScriptMetaFunctions)
 		newFrameIcon.IsAuraIcon = true
@@ -3855,16 +3850,16 @@ function Plater.AddAura (auraIconFrame, i, spellName, texture, count, debuffType
 	local timeLeft = expirationTime-GetTime()
 	
 	if (profile.aura_timer and timeLeft > 0) then
-		--update the aura timer
-		
+		--> update the aura timer
 		local timerLabel = auraIconFrame.Cooldown.Timer
-		timerLabel:SetText (Plater.FormatTime (timeLeft))
-		
+
 		DF:SetFontSize (timerLabel, profile.aura_timer_text_size)
 		DF:SetFontOutline (timerLabel, profile.aura_timer_text_shadow)
 		DF:SetFontColor (timerLabel, profile.aura_timer_text_color)
+		
 		Plater.SetAnchor (timerLabel, profile.aura_timer_text_anchor)
 		
+		timerLabel:SetText (Plater.FormatTime (timeLeft))
 		timerLabel:Show()
 	else
 		auraIconFrame.Cooldown.Timer:Hide()
@@ -4744,6 +4739,7 @@ end
 
 function Plater:ENCOUNTER_END()
 	Plater.CurrentEncounterID = nil
+	Plater.LatestEncounter = time()
 end
 
 function Plater:ENCOUNTER_START (encounterID)
@@ -7902,11 +7898,21 @@ Plater.DefaultSpellRangeList = {
 	[73] = 355, --> warrior protect - Taunt
 }
 
+function Plater.CheckOptionsTab()
+	if (Plater.LatestEncounter) then
+		if (Plater.LatestEncounter + 60 > time()) then
+			PlaterOptionsPanelContainer:SelectIndex (Plater, 8)
+		end
+	end
+end
+
 -- ~options õptions
 function Plater.OpenOptionsPanel()
 	
 	if (PlaterOptionsPanelFrame) then
-		return PlaterOptionsPanelFrame:Show()
+		PlaterOptionsPanelFrame:Show()
+		Plater.CheckOptionsTab()
+		return true
 	end
 	
 	--pega os templates dos os widgets
@@ -9061,16 +9067,14 @@ DF:BuildMenu (auraOptionsFrame, debuff_options, startX, startY, heightSize, true
 	do
 		--options
 		local scroll_width = 1050
-		local scroll_height = 422
-		local scroll_lines = 20
+		local scroll_height = 442
+		local scroll_lines = 21
 		local scroll_line_height = 20
 		local backdrop_color = {.2, .2, .2, 0.2}
 		local backdrop_color_on_enter = {.8, .8, .8, 0.4}
 		local y = startY
-		local headerY = y - 40
+		local headerY = y - 20
 		local scrollY = headerY - 20
-	
-		--ADD SOURCE - ADD SPELLID
 	
 		--header
 		local headerTable = {
@@ -9320,6 +9324,7 @@ DF:BuildMenu (auraOptionsFrame, debuff_options, startX, startY, heightSize, true
 		end
 		
 		--refresh scroll
+		local IsSearchingFor
 		local scroll_refresh = function (self, data, offset, total_lines)
 		
 			local dataInOrder = {}
@@ -9437,6 +9442,48 @@ DF:BuildMenu (auraOptionsFrame, debuff_options, startX, startY, heightSize, true
 		for i = 1, scroll_lines do 
 			spells_scroll:CreateLine (scroll_createline)
 		end
+
+		--create button to open spell list on Details!
+		local openDetailsSpellList = function()
+			if (Details) then
+				Details.OpenForge()
+				PlaterOptionsPanelFrame:Hide()
+				--select all spells in the details! all spells panel
+				if (DetailsForgePanel and DetailsForgePanel.SelectModule) then
+					-- module 2 is the All Spells
+					DetailsForgePanel.SelectModule (_, _, 2)
+				end
+			else
+				Plater:Msg ("Details! Damage Meter is required and isn't installed, get it on Twitch App!")
+			end
+		end
+		
+		local open_spell_list_button = DF:CreateButton (auraLastEventFrame, openDetailsSpellList, 160, 20, "Open Full Spell List", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+		open_spell_list_button:SetPoint ("bottomright", spells_scroll, "topright", 0, 24)
+		
+		--create search box
+			function auraLastEventFrame.OnSearchBoxTextChanged()
+				local text = auraLastEventFrame.AuraSearchTextEntry:GetText()
+				if (text and string.len (text) > 0) then
+					IsSearchingFor = text:lower()
+				else
+					IsSearchingFor = nil
+				end
+				spells_scroll:Refresh()
+			end
+
+			local aura_search_textentry = DF:CreateTextEntry (auraLastEventFrame, function()end, 160, 20, "AuraSearchTextEntry", _, _, options_dropdown_template)
+			aura_search_textentry:SetPoint ("right", open_spell_list_button, "left", -6, 0)
+			aura_search_textentry:SetHook ("OnChar",		auraLastEventFrame.OnSearchBoxTextChanged)
+			aura_search_textentry:SetHook ("OnTextChanged", 	auraLastEventFrame.OnSearchBoxTextChanged)
+			aura_search_label = DF:CreateLabel (auraLastEventFrame, "Search:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
+			aura_search_label:SetPoint ("right", aura_search_textentry, "left", -2, 0)
+		
+		--create the title
+		auraLastEventFrame.TitleDescText = Plater:CreateLabel (auraLastEventFrame, "Quick way to manage auras from a recent raid boss or dungeon run", 10, "silver")
+		auraLastEventFrame.TitleDescText:SetPoint ("bottomleft", spells_scroll, "topleft", 0, 26)
+		auraLastEventFrame.TitleText = Plater:CreateLabel (auraLastEventFrame, "Aura Ease", 14, "orange")
+		auraLastEventFrame.TitleText:SetPoint ("bottomleft", auraLastEventFrame.TitleDescText, "topleft", 0, 2)
 		
 	end
 
@@ -16575,7 +16622,8 @@ end
 	
 	DF:BuildMenu (advancedFrame, advanced_options, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 		
-	
+	--
+	Plater.CheckOptionsTab()
 end
 
 --update class color
