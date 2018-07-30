@@ -311,7 +311,8 @@ local function isOptionVisible (thisOption)
 end
 
 function DropDownMetaFunctions:Refresh()
-	local menu = self.func()
+	--> do a safe call
+	local menu =  DF:Dispatch (self.func, self)
 
 	if (#menu == 0) then
 		self:NoOption (true)
@@ -371,7 +372,7 @@ function DropDownMetaFunctions:Select (optionName, byOptionNumber)
 		return false
 	end
 
-	local menu = self.func()
+	local menu =  DF:Dispatch (self.func, self)
 
 	if (#menu == 0) then
 		self:NoOption (true)
@@ -602,7 +603,6 @@ function DetailsFrameworkDropDownOnMouseDown (button)
 						local name = button:GetName() .. "Row" .. i
 						local parent = scrollChild
 						
-						--_this_row = CreateFrame ("Button", name, parent, "DetailsFrameworkDropDownOptionTemplate")
 						_this_row = DF:CreateDropdownButton (parent, name)
 						local anchor_i = i-1
 						_this_row:SetPoint ("topleft", parent, "topleft", 5, (-anchor_i*20)-5)
@@ -947,13 +947,11 @@ function DF:NewDropDown (parent, container, name, member, w, h, func, default, t
 		--> misc
 		DropDownObject.container = container
 		
-	--DropDownObject.dropdown = CreateFrame ("Button", name, parent, "DetailsFrameworkDropDownTemplate")
 	DropDownObject.dropdown = DF:CreateNewDropdownFrame (parent, name)
 	
 	DropDownObject.widget = DropDownObject.dropdown
 	
 	DropDownObject.__it = {nil, nil}
-	--_G [name] = DropDownObject
 
 	if (not APIDropDownFunctions) then
 		APIDropDownFunctions = true

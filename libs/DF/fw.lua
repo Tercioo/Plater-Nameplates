@@ -129,6 +129,12 @@ local embed_functions = {
 	"CreateFrameShake",
 }
 
+DF.WidgetFunctions = {
+	GetCapsule = function (self)
+		return self.MyObject
+	end,
+}
+
 DF.table = {}
 
 function DF:GetFrameworkFolder()
@@ -156,6 +162,22 @@ function DF:FadeFrame (frame, t)
 		frame:SetAlpha (0)
 		frame:Hide()
 	end
+end
+
+function DF.table.addunique (t, index, value)
+	if (not value) then
+		value = index
+		index = #t + 1
+	end
+
+	for i = 1, #t do
+		if (t[i] == value) then
+			return false
+		end
+	end
+	
+	tinsert (t, index, value)
+	return true
 end
 
 function DF.table.reverse (t)
@@ -362,6 +384,18 @@ end
 function DF:trim (s)
 	local from = s:match"^%s*()"
 	return from > #s and "" or s:match(".*%S", from)
+end
+
+function DF:TruncateText (fontString, maxWidth)
+	local text = fontString:GetText()
+	
+	while (fontString:GetStringWidth() > maxWidth) do
+		text = strsub (text, 1, #text - 1)
+		fontString:SetText (text)
+		if (string.len (text) <= 1) then
+			break
+		end
+	end	
 end
 
 function DF:Msg (msg)
@@ -926,42 +960,15 @@ end
 	
 	function DF:ShowTutorialAlertFrame (maintext, desctext, clickfunc)
 		
-		local TutorialAlertFrame = _G.DetailsFrameworkTutorialAlertFrame
+		local TutorialAlertFrame = _G.DetailsFrameworkAlertFrame
 		
 		if (not TutorialAlertFrame) then
-			
-			TutorialAlertFrame = CreateFrame ("ScrollFrame", "DetailsFrameworkTutorialAlertFrame", UIParent, "DetailsFrameworkTutorialAlertFrameTemplate")
+
+			TutorialAlertFrame = CreateFrame ("frame", "DetailsFrameworkAlertFrame", UIParent, "MicroButtonAlertTemplate")
 			TutorialAlertFrame.isFirst = true
 			TutorialAlertFrame:SetPoint ("left", UIParent, "left", -20, 100)
-			
-			TutorialAlertFrame:SetWidth (290)
-			TutorialAlertFrame.ScrollChild:SetWidth (256)
-			
-			local scrollname = TutorialAlertFrame.ScrollChild:GetName()
-			_G [scrollname .. "BorderTopLeft"]:SetVertexColor (1, 0.8, 0, 1)
-			_G [scrollname .. "BorderTopRight"]:SetVertexColor (1, 0.8, 0, 1)
-			_G [scrollname .. "BorderBotLeft"]:SetVertexColor (1, 0.8, 0, 1)
-			_G [scrollname .. "BorderBotRight"]:SetVertexColor (1, 0.8, 0, 1)	
-			_G [scrollname .. "BorderLeft"]:SetVertexColor (1, 0.8, 0, 1)
-			_G [scrollname .. "BorderRight"]:SetVertexColor (1, 0.8, 0, 1)
-			_G [scrollname .. "BorderBottom"]:SetVertexColor (1, 0.8, 0, 1)
-			_G [scrollname .. "BorderTop"]:SetVertexColor (1, 0.8, 0, 1)
-			
-			local iconbg = _G [scrollname .. "QuestIconBg"]
-			iconbg:SetTexture ([[Interface\MainMenuBar\UI-MainMenuBar-EndCap-Human]])
-			iconbg:SetTexCoord (0, 1, 0, 1)
-			iconbg:SetSize (100, 100)
-			iconbg:ClearAllPoints()
-			iconbg:SetPoint ("bottomleft", TutorialAlertFrame.ScrollChild, "bottomleft")
-			
-			_G [scrollname .. "Exclamation"]:SetVertexColor (1, 0.8, 0, 1)
-			_G [scrollname .. "QuestionMark"]:SetVertexColor (1, 0.8, 0, 1)
-			
-			_G [scrollname .. "TopText"]:SetText ("Details!") --string
-			_G [scrollname .. "QuestName"]:SetText ("") --string
-			_G [scrollname .. "BottomText"]:SetText ("") --string
-			
-			TutorialAlertFrame.ScrollChild.IconShine:SetTexture ([[Interface\MainMenuBar\UI-MainMenuBar-EndCap-Human]])
+			TutorialAlertFrame:SetFrameStrata ("TOOLTIP")
+			TutorialAlertFrame:Hide()
 			
 			TutorialAlertFrame:SetScript ("OnMouseUp", function (self) 
 				if (self.clickfunc and type (self.clickfunc) == "function") then
@@ -972,21 +979,13 @@ end
 			TutorialAlertFrame:Hide()
 		end
 		
-		if (type (maintext) == "string") then
-			TutorialAlertFrame.ScrollChild.QuestName:SetText (maintext)
-		else
-			TutorialAlertFrame.ScrollChild.QuestName:SetText ("")
-		end
-		
-		if (type (desctext) == "string") then
-			TutorialAlertFrame.ScrollChild.BottomText:SetText (desctext)
-		else
-			TutorialAlertFrame.ScrollChild.BottomText:SetText ("")
-		end
+		--
+		TutorialAlertFrame.label = type (maintext) == "string" and maintext or type (desctext) == "string" and desctext or ""
+		MicroButtonAlert_SetText (TutorialAlertFrame, alert.label)
+		--
 		
 		TutorialAlertFrame.clickfunc = clickfunc
 		TutorialAlertFrame:Show()
-		DetailsTutorialAlertFrame_SlideInFrame (TutorialAlertFrame, "AUTOQUEST")
 	end
 	
 	local refresh_options = function (self)
@@ -2128,6 +2127,21 @@ function DF:QuickDispatch (func, ...)
 	return true
 end
 
+function DF:Dispatch (func, ...)
+	if (type (func) ~= "function") then
+		return dispatch_error (_, "Dispatch required a function.")
+	end
+
+	local okay, result1, result2, result3, result4 = xpcall (func, geterrorhandler(), ...)
+	
+	if (not okay) then
+		return nil
+	end
+	
+	return result1, result2, result3, result4
+end
+
+--/run local a, b =32,3; local f=function(c,d) return c+d, 2, 3;end; print (xpcall(f,geterrorhandler(),a,b))
 
 
 --doo elsee 
