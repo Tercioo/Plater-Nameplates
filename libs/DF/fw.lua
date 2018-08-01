@@ -1,5 +1,5 @@
 
-local dversion = 87
+local dversion = 88
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
 
@@ -696,7 +696,7 @@ end
 	
 	local disable_on_combat = {}
 	
-	function DF:BuildMenu (parent, menu, x_offset, y_offset, height, use_two_points, text_template, dropdown_template, switch_template, switch_is_box, slider_template, button_template)
+	function DF:BuildMenu (parent, menu, x_offset, y_offset, height, use_two_points, text_template, dropdown_template, switch_template, switch_is_box, slider_template, button_template, value_change_hook)
 		
 		if (not parent.widget_list) then
 			DF:SetAsOptionsPanel (parent)
@@ -734,6 +734,18 @@ end
 				dropdown:SetPoint ("left", label, "right", 2)
 				label:SetPoint (cur_x, cur_y)
 				
+				--> global callback
+				if (value_change_hook) then
+					dropdown:SetHook ("OnOptionSelected", value_change_hook)
+				end
+				
+				--> hook list
+				if (widget_table.hooks) then
+					for hookName, hookFunc in pairs (widget_table.hooks) do
+						dropdown:SetHook (hookName, hookFunc)
+					end
+				end
+				
 				local size = label.widget:GetStringWidth() + 140 + 4
 				if (size > max_x) then
 					max_x = size
@@ -752,6 +764,17 @@ end
 				
 				if (switch_is_box) then
 					switch:SetAsCheckBox()
+				end
+				
+				if (value_change_hook) then
+					switch:SetHook ("OnSwitch", value_change_hook)
+				end
+				
+				--> hook list
+				if (widget_table.hooks) then
+					for hookName, hookFunc in pairs (widget_table.hooks) do
+						switch:SetHook (hookName, hookFunc)
+					end
 				end
 				
 				local label = DF:NewLabel (parent, nil, "$parentLabel" .. index, nil, widget_table.name .. (use_two_points and ": " or ""), "GameFontNormal", widget_table.text_template or text_template or 12)
@@ -777,6 +800,19 @@ end
 				
 				if (widget_table.thumbscale) then
 					slider:SetThumbSize (slider.thumb:GetWidth()*widget_table.thumbscale, nil)
+				else
+					slider:SetThumbSize (slider.thumb:GetWidth()*1.3, nil)
+				end
+				
+				if (value_change_hook) then
+					slider:SetHook ("OnValueChanged", value_change_hook)
+				end
+				
+				--> hook list
+				if (widget_table.hooks) then
+					for hookName, hookFunc in pairs (widget_table.hooks) do
+						slider:SetHook (hookName, hookFunc)
+					end
 				end
 				
 				local label = DF:NewLabel (parent, nil, "$parentLabel" .. index, nil, widget_table.name .. (use_two_points and ": " or ""), "GameFontNormal", widget_table.text_template or text_template or 12)
@@ -805,6 +841,17 @@ end
 					colorpick:SetColor (default_value, g, b, a)
 				end
 				
+				if (value_change_hook) then
+					colorpick:SetHook ("OnColorChanged", value_change_hook)
+				end
+				
+				--> hook list
+				if (widget_table.hooks) then
+					for hookName, hookFunc in pairs (widget_table.hooks) do
+						colorpick:SetHook (hookName, hookFunc)
+					end
+				end
+				
 				local label = DF:NewLabel (parent, nil, "$parentLabel" .. index, nil, widget_table.name .. (use_two_points and ": " or ""), "GameFontNormal", widget_table.text_template or text_template or 12)
 				colorpick:SetPoint ("left", label, "right", 2)
 				label:SetPoint (cur_x, cur_y)
@@ -829,6 +876,15 @@ end
 				button.tooltip = widget_table.desc
 				button.widget_type = "execute"
 				
+				--> execute doesn't trigger global callback
+				
+				--> hook list
+				if (widget_table.hooks) then
+					for hookName, hookFunc in pairs (widget_table.hooks) do
+						button:SetHook (hookName, hookFunc)
+					end
+				end				
+				
 				local size = button:GetWidth() + 4
 				if (size > max_x) then
 					max_x = size
@@ -851,6 +907,15 @@ end
 				textentry:SetPoint ("left", label, "right", 2)
 				label:SetPoint (cur_x, cur_y)
 
+				--> text entry doesn't trigger global callback
+				
+				--> hook list
+				if (widget_table.hooks) then
+					for hookName, hookFunc in pairs (widget_table.hooks) do
+						textentry:SetHook (hookName, hookFunc)
+					end
+				end
+				
 				local size = label.widget:GetStringWidth() + 60 + 4
 				if (size > max_x) then
 					max_x = size
@@ -1260,7 +1325,7 @@ function DF:RunHooksForWidget (event, ...)
 	local hooks = self.HookList [event]
 	
 	if (not hooks) then
-		print (self.widget:GetName(), "sem hook para", event)
+		print (self.widget:GetName(), "no hooks for", event)
 		return
 	end
 	

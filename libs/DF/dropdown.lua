@@ -490,7 +490,7 @@ function DetailsFrameworkDropDownOptionClick (button)
 				error ("Details! Framework: dropdown " .. button:GetParent():GetParent():GetParent().MyObject:GetName() ..  " error: " .. errorText)
 			end
 			
-			--button.table.onclick (button:GetParent():GetParent():GetParent().MyObject, button.object.FixedValue, button.table.value)	
+			button:GetParent():GetParent():GetParent().MyObject:RunHooksForWidget ("OnOptionSelected", button:GetParent():GetParent():GetParent().MyObject, button.object.FixedValue, button.table.value)
 		end
 		
 	--> set the value of selected option in main object
@@ -1010,6 +1010,7 @@ function DF:NewDropDown (parent, container, name, member, w, h, func, default, t
 		OnLeave = {},
 		OnHide = {},
 		OnShow = {},
+		OnOptionSelected = {},
 	}	
 	
 	DropDownObject.dropdown:SetScript ("OnShow", DetailsFrameworkDropDownOnShow)

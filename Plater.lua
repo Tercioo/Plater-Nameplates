@@ -1,5 +1,6 @@
 
 --identify the class on the first run and apply view distance and spells to check the line of sight
+--the anchoring of the secondary aura row is not setting the anchor correctly, sometimes of anchors to the left sometimes on the right
 
 --/run SetCVar ("nameplateSelfBottomInset", .2)
 --/run SetCVar ("nameplateSelfTopInset", .5)
@@ -479,10 +480,19 @@ local default_config = {
 		aura_show_tooltip = false,
 		aura_width = 26,
 		aura_height = 16,
+		
+		--> aura frame 1
 		aura_x_offset = 0,
 		aura_y_offset = 0,
 		aura_grow_direction = 2, --> center
-		aura_alpha = 1,
+		
+		--> aura frame 2
+		buffs_on_aura2 = false,
+		aura2_x_offset = 0,
+		aura2_y_offset = 0,
+		aura2_grow_direction = 2, --> center
+		
+		aura_alpha = 0.85,
 		aura_custom = {},
 		
 		--use blizzard aura tracking
@@ -1394,6 +1404,12 @@ local Plater = DF:CreateAddOn ("Plater", "PlaterDB", default_config, { --options
 	}
 })
 
+--> if a widget has a RefreshID lower than the addon, it triggers a refresh on it
+local PLATER_REFRESH_ID = 1
+function Plater.IncreaseRefreshID()
+	PLATER_REFRESH_ID = PLATER_REFRESH_ID + 1
+end
+
 --major
 local CUF_Name = "CompactUnitFrame" --blizzard cuf
 local NPF_Name = "NamePlateDriverFrame" --nameplate frame
@@ -1772,12 +1788,15 @@ local DB_AURA_ALPHA
 local DB_AURA_X_OFFSET
 local DB_AURA_Y_OFFSET
 
+local DB_AURA_SEPARATE_BUFFS
+
 local DB_AURA_SHOW_IMPORTANT
 local DB_AURA_SHOW_DISPELLABLE
 local DB_AURA_SHOW_BYPLAYER
 local DB_AURA_SHOW_BYUNIT
 
-local DB_AURA_GROW_DIRECTION
+local DB_AURA_GROW_DIRECTION --> main aura frame
+local DB_AURA_GROW_DIRECTION2 --> secondary aura frame is adding buffs in a different frame
 
 local IS_USING_DETAILS_INTEGRATION
 
@@ -2646,6 +2665,8 @@ function Plater.RefreshDBUpvalues()
 	DB_AURA_ALPHA = profile.aura_alpha
 	DB_AURA_X_OFFSET = profile.aura_x_offset
 	DB_AURA_Y_OFFSET = profile.aura_y_offset
+	
+	DB_AURA_SEPARATE_BUFFS = Plater.db.profile.buffs_on_aura2
 
 	DB_AURA_SHOW_IMPORTANT = profile.aura_show_important
 	DB_AURA_SHOW_DISPELLABLE = profile.aura_show_dispellable
@@ -2653,6 +2674,7 @@ function Plater.RefreshDBUpvalues()
 	DB_AURA_SHOW_BYUNIT = profile.aura_show_buff_by_the_unit
 
 	DB_AURA_GROW_DIRECTION = profile.aura_grow_direction
+	DB_AURA_GROW_DIRECTION2 = profile.aura2_grow_direction
 	
 	DB_BORDER_COLOR_R = profile.border_color [1]
 	DB_BORDER_COLOR_G = profile.border_color [2]
@@ -2970,6 +2992,7 @@ function Plater.OnInit()
 
 		--> shutdown the aura update from blizzard interface
 		self.isActive = false
+		self.BuffsAnchor.isActive = false
 	end
 	
 	if (not Plater.db.profile.aura_use_default) then
@@ -2996,7 +3019,6 @@ function Plater.OnInit()
 		end
 
 		local amtDebuffs = 0
-		
 		for _, auraIconFrame in ipairs (self.PlaterBuffList) do
 			if (auraIconFrame:IsShown()) then
 			
@@ -3015,8 +3037,28 @@ function Plater.OnInit()
 				amtDebuffs = amtDebuffs + 1
 			end
 		end
+
+		for _, auraIconFrame in ipairs (self.BuffsAnchor.PlaterBuffList) do
+			if (auraIconFrame:IsShown()) then
+			
+				if (auraIconFrame.IsPersonal) then
+					local auraWidth = Plater.db.profile.aura_width_personal
+					local auraHeight = Plater.db.profile.aura_height_personal
+					auraIconFrame:SetSize (auraWidth, auraHeight)
+					auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
+				else
+					local auraWidth = Plater.db.profile.aura_width
+					local auraHeight = Plater.db.profile.aura_height
+					auraIconFrame:SetSize (auraWidth, auraHeight)
+					auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
+				end
+
+				amtDebuffs = amtDebuffs + 1
+			end
+		end		
 		
 		self.amtDebuffs = amtDebuffs
+		
 		Plater.UpdateBuffContainer (self:GetParent():GetParent())
 	end
 	
@@ -3038,7 +3080,7 @@ function Plater.OnInit()
 		end
 	end
 	
-	function Plater.PlateNotShowingDebuffFrame (plateFrame)
+	function Plater.PlateNotShowingDebuffFrame (plateFrame) 
 		if (plateFrame.order == 3 and Plater.IsShowingResourcesOnTarget() and UnitIsUnit (plateFrame [MEMBER_UNITID], "target")) then --3 castbar, health, buffs
 			--puxa os resources pra baixo
 			local SizeOf_healthBar_Height = plateFrame.UnitFrame.healthBar:GetHeight()
@@ -3047,41 +3089,64 @@ function Plater.OnInit()
 	end
 	
 	--> realign buff auras
-	InstallHook (LayoutMixin, "Layout", function (self)
+	InstallHook (LayoutMixin, "Layout", function (self) 
 		--> grow directions are: 2 Center 1 Left 3 Right
-		if (DB_AURA_GROW_DIRECTION ~= 2 and self.isNameplate) then
-			--> format the buffFrame size to 1, 1 so the custom grow direction can be effective
-			self:SetSize (1, 1)
+		if (self.isNameplate) then
+			--> main buff container
+			if (self.Name == "Main") then
+				if (DB_AURA_GROW_DIRECTION ~= 2) then
+					--> format the buffFrame size to 1, 1 so the custom grow direction can be effective
+					self:SetSize (1, 1)
+				end
+			
+			--> secondary buff container in case buffs are placed in a separated frame
+			elseif (self.Name == "Secondary") then
+				if (DB_AURA_GROW_DIRECTION2 ~= 2) then
+					--> format the buffFrame size to 1, 1 so the custom grow direction can be effective
+					self:SetSize (1, 1)
+				end
+			end
 		end
 	end)
 	
-	InstallHook (HorizontalLayoutMixin, "LayoutChildren", function (self, children, ignored, expandToHeight)
-		if (DB_AURA_GROW_DIRECTION ~= 2 and self.isNameplate) then
-			local padding = 1
-			local firstChild = children[1]
-			local anchorPoint = firstChild and firstChild:GetParent() --> get the buffContainer
+	InstallHook (HorizontalLayoutMixin, "LayoutChildren", function (self, children, ignored, expandToHeight) 
+		if (self.isNameplate) then
+			local growDirection
 			
-			if (anchorPoint) then
-				--> set the point of the first child (the other children will follow the position)
-				firstChild:ClearAllPoints()
-				firstChild:SetPoint ("center", anchorPoint, "center", 0, 5)
+			--> get the grow direction for the buff frame
+			if (self.Name == "Main") then
+				growDirection = DB_AURA_GROW_DIRECTION
+			elseif (self.Name == "Secondary") then
+				growDirection = DB_AURA_GROW_DIRECTION2
+			end
 			
-				--> left to right
-				if (DB_AURA_GROW_DIRECTION == 3) then
-					--> iterate among all children
-					for i = 2, #children do
-						local child = children [i]
-						child:ClearAllPoints()
-						child:SetPoint ("topleft", children [i-1], "topright", padding, 0)
-					end
+			if (growDirection ~= 2) then
+				local padding = 1
+				local firstChild = children[1]
+				local anchorPoint = firstChild and firstChild:GetParent() --> get the buffContainer
+				
+				if (anchorPoint) then
+					--> set the point of the first child (the other children will follow the position)
+					firstChild:ClearAllPoints()
+					firstChild:SetPoint ("center", anchorPoint, "center", 0, 5)
+				
+					--> left to right
+					if (growDirection == 3) then
+						--> iterate among all children
+						for i = 2, #children do
+							local child = children [i]
+							child:ClearAllPoints()
+							child:SetPoint ("topleft", children [i-1], "topright", padding, 0)
+						end
 
-				--> right to left
-				elseif (DB_AURA_GROW_DIRECTION == 1) then
-					--> iterate among all children
-					for i = 2, #children do
-						local child = children [i]
-						child:ClearAllPoints()
-						child:SetPoint ("topright", children [i-1], "topleft", -padding, 0)
+					--> right to left
+					elseif (growDirection == 1) then
+						--> iterate among all children
+						for i = 2, #children do
+							local child = children [i]
+							child:ClearAllPoints()
+							child:SetPoint ("topright", children [i-1], "topleft", -padding, 0)
+						end
 					end
 				end
 			end
@@ -3092,7 +3157,7 @@ function Plater.OnInit()
 	--2 health, buffs, castbar
 	--3 castbar, health, buffs
 	
-	function Plater.UpdateBuffContainer (plateFrame)
+	function Plater.UpdateBuffContainer (plateFrame) 
 		if ((plateFrame.UnitFrame.BuffFrame.amtDebuffs or 0) > 0) then
 			--esta plate possui debuffs sendo mostrados
 			Plater.PlateShowingDebuffFrame (plateFrame)
@@ -3704,17 +3769,27 @@ Plater.OnAuraIconHide = function (self)
 end
 
 --an aura is about to be added in the nameplate, need to get an icon for it ~geticonaura
-function Plater.GetAuraIcon (self, i)
+function Plater.GetAuraIcon (self, isBuff)
 	--self parent = NamePlate_X_UnitFrame
 	--self = BuffFrame
-
+	
+	if (isBuff and DB_AURA_SEPARATE_BUFFS) then
+		self = self.BuffsAnchor
+	end
+	
+	local i = self.NextAuraIcon
+	
 	if (not self.PlaterBuffList[i]) then
-		local newFrameIcon = CreateFrame ("Frame", self:GetParent():GetName() .. "PlaterBuff" .. i, self, "NameplateBuffButtonTemplate")
+		local newFrameIcon = CreateFrame ("Frame", self:GetParent():GetName() .. "Plater" .. self.Name .. "AuraIcon" .. i, self, "NameplateBuffButtonTemplate")
 		newFrameIcon:Hide()
 		newFrameIcon.UnitFrame = self:GetParent()
 		newFrameIcon.spellId = 0
+		newFrameIcon.ID = i
+		newFrameIcon.RefreshID = 0
+		newFrameIcon.IsPersonal = -1 --place holder
 		
 		self.PlaterBuffList[i] = newFrameIcon
+		
 		newFrameIcon:SetMouseClickEnabled (false)
 		newFrameIcon:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
 		
@@ -3736,10 +3811,10 @@ function Plater.GetAuraIcon (self, i)
 		DF:CreateAnimation (iconShowInAnimation, "Scale", 1, .05, .7, .7, 1.1, 1.1)
 		DF:CreateAnimation (iconShowInAnimation, "Scale", 2, .05, 1.1, 1.1, 1, 1)
 		newFrameIcon.ShowAnimation = iconShowInAnimation
-		
 	end
 	
 	local auraIconFrame = self.PlaterBuffList [i]
+	self.NextAuraIcon = self.NextAuraIcon + 1
 	return auraIconFrame
 end
 
@@ -3785,43 +3860,66 @@ end
 --update the aura icon, this icon is getted with GetAuraIcon
 function Plater.AddAura (auraIconFrame, i, spellName, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, isBuff, isShowAll, isDebuff, isPersonal)
 	auraIconFrame:SetID (i)
-	
-	if (auraIconFrame.spellId ~= spellId and (not isBuff and not auraIconFrame:IsShown() or auraIconFrame.IsShowingBuff)) then
-		auraIconFrame.ShowAnimation:Play()
+
+	--> check if the icon is showing a different aura
+	if (auraIconFrame.spellId ~= spellId) then
+		if (not isBuff and not auraIconFrame:IsShown() or auraIconFrame.IsShowingBuff) then
+			auraIconFrame.ShowAnimation:Play()
+		end
+
+		--> update the texture
+		auraIconFrame.Icon:SetTexture (texture)
+		--> update members
+		
+		auraIconFrame.spellId = spellId
+		auraIconFrame.layoutIndex = auraIconFrame.ID
+		auraIconFrame.IsShowingBuff = false
 	end
 	
 	--> caching the profile for performance
 	local profile = Plater.db.profile
 	
-	auraIconFrame.spellId = spellId
-	auraIconFrame.layoutIndex = i
-	auraIconFrame.IsShowingBuff = false
-	auraIconFrame.IsPersonal = isPersonal
-	auraIconFrame.Icon:SetTexture(texture)
-	
-	auraIconFrame:EnableMouse (profile.aura_show_tooltip)
-	
-	if (isPersonal) then
-		local auraWidth = profile.aura_width_personal
-		local auraHeight = profile.aura_height_personal
-		auraIconFrame:SetSize (auraWidth, auraHeight)
-		auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
-	else
-		local auraWidth = profile.aura_width
-		local auraHeight = profile.aura_height
-		auraIconFrame:SetSize (auraWidth, auraHeight)
-		auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
-	end
-
-	if (count > 1) then
-		local stackLabel = auraIconFrame.CountFrame.Count
-		stackLabel:SetText (count)
+	--> check if a full refresh is required
+	if (auraIconFrame.RefreshID < PLATER_REFRESH_ID) then
+		--if tooltip enabled
+		auraIconFrame:EnableMouse (profile.aura_show_tooltip)
 		
+		--stack counter
+		local stackLabel = auraIconFrame.CountFrame.Count
 		DF:SetFontSize (stackLabel, profile.aura_stack_size)
 		DF:SetFontOutline (stackLabel, profile.aura_stack_shadow)
 		DF:SetFontColor (stackLabel, profile.aura_stack_color)
 		Plater.SetAnchor (stackLabel, profile.aura_stack_anchor)
+		
+		--timer
+		local timerLabel = auraIconFrame.Cooldown.Timer
+		DF:SetFontSize (timerLabel, profile.aura_timer_text_size)
+		DF:SetFontOutline (timerLabel, profile.aura_timer_text_shadow)
+		DF:SetFontColor (timerLabel, profile.aura_timer_text_color)
+		Plater.SetAnchor (timerLabel, profile.aura_timer_text_anchor)
+		
+		auraIconFrame.RefreshID = PLATER_REFRESH_ID
+	end
 
+	--> update the icon size depending on where it is shown
+	if (auraIconFrame.IsPersonal ~= isPersonal) then
+		if (isPersonal) then
+			local auraWidth = profile.aura_width_personal
+			local auraHeight = profile.aura_height_personal
+			auraIconFrame:SetSize (auraWidth, auraHeight)
+			auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
+		else
+			local auraWidth = profile.aura_width
+			local auraHeight = profile.aura_height
+			auraIconFrame:SetSize (auraWidth, auraHeight)
+			auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
+		end
+	end
+	auraIconFrame.IsPersonal = isPersonal
+
+	if (count > 1) then
+		local stackLabel = auraIconFrame.CountFrame.Count
+		stackLabel:SetText (count)
 		stackLabel:Show()
 	else
 		auraIconFrame.CountFrame.Count:Hide()
@@ -3852,13 +3950,7 @@ function Plater.AddAura (auraIconFrame, i, spellName, texture, count, debuffType
 	if (profile.aura_timer and timeLeft > 0) then
 		--> update the aura timer
 		local timerLabel = auraIconFrame.Cooldown.Timer
-
-		DF:SetFontSize (timerLabel, profile.aura_timer_text_size)
-		DF:SetFontOutline (timerLabel, profile.aura_timer_text_shadow)
-		DF:SetFontColor (timerLabel, profile.aura_timer_text_color)
-		
-		Plater.SetAnchor (timerLabel, profile.aura_timer_text_anchor)
-		
+	
 		timerLabel:SetText (Plater.FormatTime (timeLeft))
 		timerLabel:Show()
 	else
@@ -3874,6 +3966,7 @@ function Plater.AddAura (auraIconFrame, i, spellName, texture, count, debuffType
 		end
 	end
 	
+	--> spell name must be update here and cannot be cached due to scripts
 	auraIconFrame.SpellName = spellName
 	auraIconFrame.InUse = true
 	auraIconFrame:Show()
@@ -3895,18 +3988,39 @@ function Plater.AddAura (auraIconFrame, i, spellName, texture, count, debuffType
 	return true
 end
 
-local hide_non_used_auraFrames = function (self, auraIndex)
-	for i = auraIndex, #self do
-		if (self [i]) then
-			self [i]:Hide()
-			self [i].InUse = false
+local hide_non_used_auraFrames = function (self)
+	--> regular buff frame
+	local nextAuraIndex = self.NextAuraIcon
+	for i = nextAuraIndex, #self.PlaterBuffList do
+		local icon = self.PlaterBuffList [i]
+		if (icon) then
+			icon:Hide()
+			icon.InUse = false
 		end
+	end
+	
+	--> if using a second buff frame to separate buffs, update it
+	if (DB_AURA_SEPARATE_BUFFS) then
+		--> secondary buff frame
+		self = self.BuffsAnchor
+		local nextAuraIndex = self.NextAuraIcon
+		
+		for i = nextAuraIndex, #self.PlaterBuffList do
+			local icon = self.PlaterBuffList [i]
+			if (icon) then
+				icon:Hide()
+				icon.InUse = false
+			end
+		end
+
+		--> weird adding the Layout() call inside the hide function, but saves on performance
+		--> update icon anchors
+		self:Layout()
 	end
 end
 
 -- ~auras ãura
-
-function Plater.TrackSpecificAuras (self, unit, auraIndex, isBuff, aurasToCheck, isPersonal, noSpecial)
+function Plater.TrackSpecificAuras (self, unit, isBuff, aurasToCheck, isPersonal, noSpecial)
 
 	if (isBuff) then
 		--> buffs
@@ -3916,9 +4030,8 @@ function Plater.TrackSpecificAuras (self, unit, auraIndex, isBuff, aurasToCheck,
 				break
 			else
 				if (aurasToCheck [name]) then
-					local auraIconFrame = Plater.GetAuraIcon (self, auraIndex)
-					Plater.AddAura (auraIconFrame, auraIndex, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, true, false, false, isPersonal)
-					auraIndex = auraIndex + 1
+					local auraIconFrame = Plater.GetAuraIcon (self, true)
+					Plater.AddAura (auraIconFrame, i, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, true, false, false, isPersonal)
 				end
 				
 				--> check if is a special aura
@@ -3935,9 +4048,8 @@ function Plater.TrackSpecificAuras (self, unit, auraIndex, isBuff, aurasToCheck,
 				break
 			else
 				if (aurasToCheck [name]) then
-					local auraIconFrame = Plater.GetAuraIcon (self, auraIndex)
-					Plater.AddAura (auraIconFrame, auraIndex, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, false, false, false, isPersonal)
-					auraIndex = auraIndex + 1
+					local auraIconFrame = Plater.GetAuraIcon (self)
+					Plater.AddAura (auraIconFrame, i, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, false, false, false, isPersonal)
 				end
 				
 				--> check if is a special aura
@@ -3948,32 +4060,36 @@ function Plater.TrackSpecificAuras (self, unit, auraIndex, isBuff, aurasToCheck,
 		end
 	end
 	
-	return auraIndex
+	return true
 end
 
 function Plater.UpdateAuras_Manual (self, unit, isPersonal)
 
 	self.ExtraIconFrame:ClearIcons()
 
-	local auraIndex = 1
-	auraIndex = Plater.TrackSpecificAuras (self, unit, auraIndex, false, MANUAL_TRACKING_DEBUFFS, isPersonal)
-	auraIndex = Plater.TrackSpecificAuras (self, unit, auraIndex, true, MANUAL_TRACKING_BUFFS, isPersonal)
+	--> reset next aura icon to use
+	self.NextAuraIcon = 1
+	self.BuffsAnchor.NextAuraIcon = 1
+	
+	Plater.TrackSpecificAuras (self, unit, false, MANUAL_TRACKING_DEBUFFS, isPersonal)
+	Plater.TrackSpecificAuras (self, unit, true, MANUAL_TRACKING_BUFFS, isPersonal)
 
 	--> hide not used aura frames
-	--hide_non_used_auraFrames (self.buffList, auraIndex)
-	hide_non_used_auraFrames (self.PlaterBuffList, auraIndex)
+	hide_non_used_auraFrames (self)
 end
 
 function Plater.UpdateAuras_Automatic (self, unit)
-	local auraIndex = 1
 
+	--> reset next aura icon to use
+	self.NextAuraIcon = 1
+	self.BuffsAnchor.NextAuraIcon = 1
+	
 	self.ExtraIconFrame:ClearIcons()
 	
 	--> debuffs
 		for i = 1, BUFF_MAX_DISPLAY do
 		
 			local spellName, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll = UnitDebuff (unit, i)
-			
 			--start as false, during the checks can be changed to true, if is true this debuff is added on the nameplate
 			local can_show_this_debuff
 			
@@ -3999,9 +4115,8 @@ function Plater.UpdateAuras_Automatic (self, unit)
 			
 			if (can_show_this_debuff) then
 				--get the icon to be used by this aura
-				local auraIconFrame = Plater.GetAuraIcon (self, auraIndex)
-				Plater.AddAura (auraIconFrame, auraIndex, spellName, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
-				auraIndex = auraIndex + 1
+				local auraIconFrame = Plater.GetAuraIcon (self)
+				Plater.AddAura (auraIconFrame, i, spellName, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 			end
 			
 		end
@@ -4017,27 +4132,23 @@ function Plater.UpdateAuras_Automatic (self, unit)
 
 				--> important aura
 				if (DB_AURA_SHOW_IMPORTANT and (nameplateShowAll or isBossDebuff)) then
-					local auraIconFrame = Plater.GetAuraIcon (self, auraIndex)
-					Plater.AddAura (auraIconFrame, auraIndex, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, false, true)
-					auraIndex = auraIndex + 1
+					local auraIconFrame = Plater.GetAuraIcon (self, true)
+					Plater.AddAura (auraIconFrame, i, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, false, true)
 				
 				--> is dispellable or can be steal
 				elseif (DB_AURA_SHOW_DISPELLABLE and canStealOrPurge) then
-					local auraIconFrame = Plater.GetAuraIcon (self, auraIndex)
-					Plater.AddAura (auraIconFrame, auraIndex, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
-					auraIndex = auraIndex + 1
+					local auraIconFrame = Plater.GetAuraIcon (self, true)
+					Plater.AddAura (auraIconFrame, i, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 				
 				--> is casted by the player
 				elseif (DB_AURA_SHOW_BYPLAYER and caster and UnitIsUnit (caster, "player")) then
-					local auraIconFrame = Plater.GetAuraIcon (self, auraIndex)
-					Plater.AddAura (auraIconFrame, auraIndex, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
-					auraIndex = auraIndex + 1
+					local auraIconFrame = Plater.GetAuraIcon (self, true)
+					Plater.AddAura (auraIconFrame, i, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 				
 				--> is casted by the unit it self
 				elseif (DB_AURA_SHOW_BYUNIT and caster and UnitIsUnit (caster, unit) and not isCastByPlayer) then
-					local auraIconFrame = Plater.GetAuraIcon (self, auraIndex)
-					Plater.AddAura (auraIconFrame, auraIndex, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, true)
-					auraIndex = auraIndex + 1
+					local auraIconFrame = Plater.GetAuraIcon (self, true)
+					Plater.AddAura (auraIconFrame, i, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, true)
 				
 				end
 				
@@ -4050,20 +4161,22 @@ function Plater.UpdateAuras_Automatic (self, unit)
 
 	--track extra auras
 		if (CAN_TRACK_EXTRA_BUFFS) then
-			auraIndex = Plater.TrackSpecificAuras (self, unit, auraIndex, true, AUTO_TRACKING_EXTRA_BUFFS, false, true)
+			Plater.TrackSpecificAuras (self, unit, true, AUTO_TRACKING_EXTRA_BUFFS, false, true)
 		end
 		
 		if (CAN_TRACK_EXTRA_DEBUFFS) then
-			auraIndex = Plater.TrackSpecificAuras (self, unit, auraIndex, false, AUTO_TRACKING_EXTRA_DEBUFFS, false, true)
+			Plater.TrackSpecificAuras (self, unit, false, AUTO_TRACKING_EXTRA_DEBUFFS, false, true)
 		end
 	
 	--hide non used icons
-		hide_non_used_auraFrames (self.PlaterBuffList, auraIndex)
+		hide_non_used_auraFrames (self)
 end
 
 function Plater.UpdateAuras_Self_Automatic (self)
 
-	local auraIndex = 1
+	--> reset next aura icon to use
+	self.NextAuraIcon = 1
+	self.BuffsAnchor.NextAuraIcon = 1
 	
 	self.ExtraIconFrame:ClearIcons()
 	
@@ -4076,14 +4189,12 @@ function Plater.UpdateAuras_Self_Automatic (self)
 				break
 				
 			elseif (not DB_DEBUFF_BANNED [name]) then
-				local auraIconFrame = Plater.GetAuraIcon (self, auraIndex)
-				Plater.AddAura (auraIconFrame, auraIndex, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, false, false, true, true)
+				local auraIconFrame = Plater.GetAuraIcon (self)
+				Plater.AddAura (auraIconFrame, i, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, false, false, true, true)
 				
 				if (SPECIAL_AURA_NAMES [name]) then
 					self.ExtraIconFrame:SetIcon (spellId, false, expirationTime - duration, duration)
 				end
-				
-				auraIndex = auraIndex + 1
 			end
 		end
 	end
@@ -4092,21 +4203,18 @@ function Plater.UpdateAuras_Self_Automatic (self)
 	if (Plater.db.profile.aura_show_buffs_personal) then
 		for i = 1, BUFF_MAX_DISPLAY do
 			local name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId = UnitBuff ("player", i, nil, "PLAYER")
-			
 			if (not name) then
 				break
 				
 			elseif (not DB_BUFF_BANNED [name] and (duration and (duration > 0 and duration < 91)) and (caster and UnitIsUnit (caster, "player"))) then
-				local auraIconFrame = Plater.GetAuraIcon (self, auraIndex)
-				Plater.AddAura (auraIconFrame, auraIndex, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, false, false, false, true)
-				auraIndex = auraIndex + 1
+				local auraIconFrame = Plater.GetAuraIcon (self, true)
+				Plater.AddAura (auraIconFrame, i, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, false, false, false, true)
 			end
 		end
 	end	
 	
 	--> hide not used aura frames
-	--hide_non_used_auraFrames (self.buffList, auraIndex)
-	hide_non_used_auraFrames (self.PlaterBuffList, auraIndex)
+	hide_non_used_auraFrames (self)
 end
 
 --debug animations
@@ -5709,8 +5817,18 @@ function Plater.UpdatePlateSize (plateFrame, justAdded)
 		buffFrame.Anchor = healthFrame
 		buffFrame.X = DB_AURA_X_OFFSET
 		buffFrame.Y = -11 + plateConfigs.buff_frame_y_offset + DB_AURA_Y_OFFSET
+		
+		buffFrame:ClearAllPoints()
 		buffFrame:SetPoint (buffFrame.Point1, buffFrame.Anchor, buffFrame.Point2, buffFrame.X, buffFrame.Y)
 
+		--> second aura frame
+		if (DB_AURA_SEPARATE_BUFFS) then
+			unitFrame.BuffFrame2.X = Plater.db.profile.aura2_x_offset
+			unitFrame.BuffFrame2.Y = -11 + plateConfigs.buff_frame_y_offset + Plater.db.profile.aura2_y_offset
+			unitFrame.BuffFrame2:ClearAllPoints()
+			unitFrame.BuffFrame2:SetPoint (buffFrame.Point1, buffFrame.Anchor, buffFrame.Point2, unitFrame.BuffFrame2.X, unitFrame.BuffFrame2.Y)
+		end
+		
 		--player
 		if (plateFrame.isSelf) then
 			Plater.UpdateManaAndResourcesBar()
@@ -5790,7 +5908,17 @@ function Plater.UpdatePlateSize (plateFrame, justAdded)
 		buffFrame.Anchor = castFrame
 		buffFrame.X = DB_AURA_X_OFFSET
 		buffFrame.Y = -1 + plateConfigs.buff_frame_y_offset + DB_AURA_Y_OFFSET
+		
+		buffFrame:ClearAllPoints()
 		buffFrame:SetPoint (buffFrame.Point1, buffFrame.Anchor, buffFrame.Point2, buffFrame.X, buffFrame.Y)
+		
+		--> second aura frame
+		if (DB_AURA_SEPARATE_BUFFS) then
+			unitFrame.BuffFrame2.X = Plater.db.profile.aura2_x_offset
+			unitFrame.BuffFrame2.Y = -1 + plateConfigs.buff_frame_y_offset + Plater.db.profile.aura2_y_offset
+			unitFrame.BuffFrame2:ClearAllPoints()
+			unitFrame.BuffFrame2:SetPoint (buffFrame.Point1, buffFrame.Anchor, buffFrame.Point2, unitFrame.BuffFrame2.X, unitFrame.BuffFrame2.Y)
+		end
 		
 		--player
 		if (plateFrame.isSelf) then
@@ -5869,16 +5997,26 @@ function Plater.UpdatePlateSize (plateFrame, justAdded)
 				end
 			end
 		end
- 
+		
 		--buff
 		buffFrame.Point1 = "bottom"
 		buffFrame.Point2 = "top"
 		buffFrame.Anchor = healthFrame
 		buffFrame.X = DB_AURA_X_OFFSET
 		buffFrame.Y = (buffFrameSize / 3) + 1 + plateConfigs.buff_frame_y_offset + DB_AURA_Y_OFFSET
+		
+		buffFrame:ClearAllPoints()
 		buffFrame:SetPoint (buffFrame.Point1, buffFrame.Anchor, buffFrame.Point2, buffFrame.X, buffFrame.Y)
 		
-		--player
+		--> second aura frame
+		if (DB_AURA_SEPARATE_BUFFS) then
+			unitFrame.BuffFrame2.X = Plater.db.profile.aura2_x_offset
+			unitFrame.BuffFrame2.Y = (buffFrameSize / 3) + 1 + plateConfigs.buff_frame_y_offset + Plater.db.profile.aura2_y_offset
+			unitFrame.BuffFrame2:ClearAllPoints()
+			unitFrame.BuffFrame2:SetPoint (buffFrame.Point1, buffFrame.Anchor, buffFrame.Point2, unitFrame.BuffFrame2.X, unitFrame.BuffFrame2.Y)
+		end
+		
+		--personal player bar
 		if (plateFrame.isSelf) then
 			Plater.UpdateManaAndResourcesBar()
 			healthFrame.barTexture:SetVertexColor (DF:ParseColors ("lightgreen"))
@@ -6889,7 +7027,32 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame) -- ~created ~
 	plateFrame.UnitFrame.BuffFrame.amtDebuffs = 0
 	plateFrame.UnitFrame.BuffFrame.PlaterBuffList = {}
 	plateFrame.UnitFrame.BuffFrame.isNameplate = true
+	
+	--> this technically should be causing taint
+	plateFrame.UnitFrame.BuffFrame.UpdateAnchor = function()end
+	
 	plateFrame.UnitFrame.healthBar.border.plateFrame = plateFrame
+	
+	--> second buff frame
+	plateFrame.UnitFrame.BuffFrame2 = CreateFrame ("frame", nil, plateFrame.UnitFrame, "HorizontalLayoutFrame")
+	Mixin (plateFrame.UnitFrame.BuffFrame2, NameplateBuffContainerMixin)
+	plateFrame.UnitFrame.BuffFrame2.UpdateAnchor = function()end
+	
+	plateFrame.UnitFrame.BuffFrame2:SetPoint ("RIGHT", plateFrame.UnitFrame.healthBar, 0, 0)
+	plateFrame.UnitFrame.BuffFrame2.spacing = 4
+	plateFrame.UnitFrame.BuffFrame2.fixedHeight = 14
+	plateFrame.UnitFrame.BuffFrame2:OnLoad()
+	plateFrame.UnitFrame.BuffFrame2:SetScript ("OnEvent", plateFrame.UnitFrame.BuffFrame2.OnEvent)
+	plateFrame.UnitFrame.BuffFrame2.amtDebuffs = 0
+	plateFrame.UnitFrame.BuffFrame2.PlaterBuffList = {}
+	plateFrame.UnitFrame.BuffFrame2.isNameplate = true
+	
+	--> buff frame doesn't has a name, make a name here to know which frame is being updated on :Layout() and to give names for icon frames
+	plateFrame.UnitFrame.BuffFrame.Name = "Main"
+	plateFrame.UnitFrame.BuffFrame2.Name = "Secondary"
+	
+	--> store the secondary anchor inside the regular buff container for speed
+	plateFrame.UnitFrame.BuffFrame.BuffsAnchor = plateFrame.UnitFrame.BuffFrame2
 	
 	local healthBar = plateFrame.UnitFrame.healthBar
 	plateFrame.NameAnchor = 0
@@ -6992,6 +7155,7 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame) -- ~created ~
 	onTickFrame.PlateFrame = plateFrame
 	onTickFrame.UnitFrame = plateFrame.UnitFrame
 	onTickFrame.BuffFrame = plateFrame.UnitFrame.BuffFrame
+	onTickFrame.BuffFrame2 = plateFrame.UnitFrame.BuffFrame2
 	
 	local onNextTickUpdate = CreateFrame ("frame", nil, plateFrame)
 	plateFrame.OnNextTickUpdate = onNextTickUpdate
@@ -7174,6 +7338,8 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ã
 	plateFrame [MEMBER_REACTION] = reaction
 	unitFrame [MEMBER_REACTION] = reaction
 	unitFrame.BuffFrame [MEMBER_REACTION] = reaction
+	unitFrame.BuffFrame2 [MEMBER_REACTION] = reaction
+	unitFrame.BuffFrame2.unit = unitBarId
 	
 	if (Plater.CanOverrideColor) then
 		Plater.ColorOverrider (unitFrame)
@@ -7901,7 +8067,7 @@ Plater.DefaultSpellRangeList = {
 function Plater.CheckOptionsTab()
 	if (Plater.LatestEncounter) then
 		if (Plater.LatestEncounter + 60 > time()) then
-			PlaterOptionsPanelContainer:SelectIndex (Plater, 8)
+			PlaterOptionsPanelContainer:SelectIndex (Plater, 11)
 		end
 	end
 end
@@ -7928,8 +8094,7 @@ function Plater.OpenOptionsPanel()
 	local f = DF:CreateSimplePanel (UIParent, 1100, 610, "Plater Options", "PlaterOptionsPanelFrame", {UseScaleBar = true}, Plater.db.profile.OptionsPanelDB)
 	f:SetFrameStrata ("MEDIUM")
 	DF:ApplyStandardBackdrop (f)
-	
-	--f:SetPoint ("center", UIParent, "center", 0, 0)
+
 	local profile = Plater.db.profile
 	
 	local CVarDesc = "\n\n|cFFFF7700[*]|r |cFFa0a0a0CVar, not saved within Plater profile and is a Per-Character setting.|r"
@@ -7937,10 +8102,10 @@ function Plater.OpenOptionsPanel()
 	
 	local frame_options = {
 		y_offset = 0,
-		button_width = 105,
+		button_width = 102,
 		button_height = 20,
-		button_x = 216,
-		button_y = -12,
+		button_x = 210,
+		button_y = -7,
 		button_text_size = 10,
 	}
 	
@@ -7948,39 +8113,47 @@ function Plater.OpenOptionsPanel()
 	local mainFrame = DF:CreateTabContainer (f, "Plater Options", "PlaterOptionsPanelContainer", 
 	{
 		{name = "FrontPage", title = "General Settings"},
-		{name = "FriendlyPlayer", title = "Friendly Player"},
+		{name = "ThreatConfig", title = "Threat / Aggro"},
+		{name = "PersonalBar", title = "Personal Bar"},
+		{name = "EnemyNpc", title = "Enemy Npc"},
 		{name = "EnemyPlayer", title = "Enemy Player"},
 		{name = "FriendlyNpc", title = "Friendly Npc"},
-		{name = "EnemyNpc", title = "Enemy Npc"},
+		{name = "FriendlyPlayer", title = "Friendly Player"},
+		{name = "Automation", title = "Auto"},
+		
 		{name = "DebuffConfig", title = "Buff Settings"},
 		{name = "DebuffBlacklist", title = "Buff Tracking"},
 		{name = "DebuffLastEvent", title = "Buff Ease"},
+		{name = "DebuffSpecialContainer", title = "Buff Special"},
 		{name = "Scripting", title = "Scripting"},
-		{name = "PersonalBar", title = "Personal Bar"},
-		{name = "Automation", title = "Auto"},
-		{name = "ThreatConfig", title = "Threat / Aggro"},
 		{name = "AdvancedConfig", title = "Advanced"},
 		{name = "ProfileManagement", title = "Profiles"},
 	}, 
 	frame_options)
+	
+	--> when any setting is changed, call this function
+	local globalCallback = function()
+		Plater.IncreaseRefreshID()
+	end
 
 	--1st row
 	local frontPageFrame = mainFrame.AllFrames [1]
-	local friendlyPCsFrame = mainFrame.AllFrames [2]
-	local friendlyNPCsFrame = mainFrame.AllFrames [3]
-	local enemyPCsFrame = mainFrame.AllFrames [4]
-	local enemyNPCsFrame = mainFrame.AllFrames [5]
-	local auraOptionsFrame = mainFrame.AllFrames [6]
-	local auraFilterFrame = mainFrame.AllFrames [7]
-	local auraLastEventFrame = mainFrame.AllFrames [8]
-
+	local threatFrame = mainFrame.AllFrames [2]
+	local personalPlayerFrame = mainFrame.AllFrames [3]
+	local enemyNPCsFrame = mainFrame.AllFrames [4]
+	local enemyPCsFrame = mainFrame.AllFrames [5]
+	local friendlyNPCsFrame = mainFrame.AllFrames [6]
+	local friendlyPCsFrame = mainFrame.AllFrames [7]
+	local autoFrame = mainFrame.AllFrames [8]
+	
 	--2nd row
-	local scriptingFrame = mainFrame.AllFrames [9]
-	local personalPlayerFrame = mainFrame.AllFrames [10]
-	local autoFrame = mainFrame.AllFrames [11]
-	local threatFrame = mainFrame.AllFrames [12]
-	local advancedFrame = mainFrame.AllFrames [13]
-	local profilesFrame = mainFrame.AllFrames [14]
+	local auraOptionsFrame = mainFrame.AllFrames [9]
+	local auraFilterFrame = mainFrame.AllFrames [10]
+	local auraLastEventFrame = mainFrame.AllFrames [11]
+	local auraSpecialFrame = mainFrame.AllFrames [12]
+	local scriptingFrame = mainFrame.AllFrames [13]
+	local advancedFrame = mainFrame.AllFrames [14]
+	local profilesFrame = mainFrame.AllFrames [15]
 
 	local generalOptionsAnchor = CreateFrame ("frame", "$parentOptionsAnchor", frontPageFrame)
 	generalOptionsAnchor:SetSize (1, 1)
@@ -8282,20 +8455,20 @@ frontPageFrame:SetScript ("OnEvent", function (self, event)
 	end
 end)
 
-DF:BuildMenu (frontPageFrame, interface_options, startX, startY-20, 300 + 60, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)	
+DF:BuildMenu (frontPageFrame, interface_options, startX, startY-20, 300 + 60, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 
 -------------------------------------------------------------------------------
 -- painel para configurar debuffs e buffs
 
 local grow_direction_names = {"Left", "Center", "Right"}
-local build_grow_direction_options = function()
+local build_grow_direction_options = function (memberName)
 	local t = {}
 	for i = 1, #grow_direction_names do
 		tinsert (t, {
 			label = grow_direction_names [i], 
 			value = i, 
 			onclick = function (_, _, value)
-				Plater.db.profile.aura_grow_direction = value
+				Plater.db.profile [memberName] = value
 				Plater.RefreshDBUpvalues()
 				Plater.UpdateAllPlates()
 			end
@@ -8361,7 +8534,24 @@ local debuff_options = {
 		desc = "When the actor has a crowd control spell (such as Polymorph).\n\nSpecial auras are a second row of auras, they are separated from the main aura row above the nameplate.",
 	},	
 	
+	{
+		type = "range",
+		get = function() return Plater.db.profile.aura_alpha end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_alpha = value
+			Plater.RefreshDBUpvalues()
+		end,
+		min = 0,
+		max = 1,
+		step = 0.01,
+		usedecimals = true,
+		thumbscale = 1.8,
+		name = "Alpha",
+		desc = "Alpha",
+	},
+	
 	{type = "blank"},
+	{type = "label", get = function() return "Aura Size:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	
 	{
 		type = "range",
@@ -8391,26 +8581,15 @@ local debuff_options = {
 		name = "Height",
 		desc = "Debuff's icon height.",
 	},
-	{
-		type = "range",
-		get = function() return Plater.db.profile.aura_alpha end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_alpha = value
-			Plater.RefreshDBUpvalues()
-		end,
-		min = 0,
-		max = 1,
-		step = 0.01,
-		usedecimals = true,
-		name = "Alpha",
-		desc = "Alpha",
-	},
+	
+	{type = "blank"},
+	{type = "label", get = function() return "Aura Frame 1:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	
 	--> grow direction
 	{
 		type = "select",
 		get = function() return Plater.db.profile.aura_grow_direction end,
-		values = function() return build_grow_direction_options() end,
+		values = function() return build_grow_direction_options ("aura_grow_direction") end,
 		name = "Grow Direction",
 		desc = "To which side aura icons should grow.\n\n|cFFFFFF00Important|r: debuffs are added first, buffs after.",
 	},
@@ -8446,103 +8625,55 @@ local debuff_options = {
 	},
 	
 	{type = "blank"},
-	{type = "label", get = function() return "Automatic Aura Tracking:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-
-	{
-		type = "toggle",
-		get = function() return Plater.db.profile.aura_show_aura_by_the_player end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_show_aura_by_the_player = value
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Show Auras Casted by You",
-		desc = "Show Auras Casted by You.",
-	},
-	
-	{type = "blank"},
+	{type = "label", get = function() return "Aura Frame 2:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	
 	{
 		type = "toggle",
-		get = function() return Plater.db.profile.aura_show_important end,
+		get = function() return Plater.db.profile.buffs_on_aura2 end,
 		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_show_important = value
+			Plater.db.profile.buffs_on_aura2 = value
 			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
-		name = "Show Important Auras",
-		desc = "Show buffs and debuffs which the game tag as important.",
+		name = "Enabled",
+		desc = "When enabled auras are separated: Buffs are placed on this second frame, Debuffs on the first.\n\n|cFFFFFF00Important|r: require /reload when disabling this feature.",
 	},
+	--> grow direction
 	{
-		type = "color",
-		get = function()
-			local color = Plater.db.profile.aura_border_colors.is_show_all
-			return {color[1], color[2], color[3], color[4]}
-		end,
-		set = function (self, r, g, b, a) 
-			local color = Plater.db.profile.aura_border_colors.is_show_all
-			color[1], color[2], color[3], color[4] = r, g, b, a
-			Plater.UpdateAllPlates()
-		end,
-		name = "Important Auras Border Color",
-		desc = "Important Auras Border Color",
+		type = "select",
+		get = function() return Plater.db.profile.aura2_grow_direction end,
+		values = function() return build_grow_direction_options ("aura2_grow_direction") end,
+		name = "Grow Direction",
+		desc = "To which side aura icons should grow.",
 	},
-	
-	{type = "blank"},
-	
+	--> offset
 	{
-		type = "toggle",
-		get = function() return Plater.db.profile.aura_show_dispellable end,
+		type = "range",
+		get = function() return Plater.db.profile.aura2_x_offset end,
 		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_show_dispellable = value
+			Plater.db.profile.aura2_x_offset = value
 			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
-		name = "Show Dispellable Buffs",
-		desc = "Show auras which can be dispelled or stealed.",
+		min = -100,
+		max = 100,
+		step = 1,
+		name = "X Offset",
+		desc = "X Offset",
 	},
 	{
-		type = "color",
-		get = function()
-			local color = Plater.db.profile.aura_border_colors.steal_or_purge
-			return {color[1], color[2], color[3], color[4]}
-		end,
-		set = function (self, r, g, b, a) 
-			local color = Plater.db.profile.aura_border_colors.steal_or_purge
-			color[1], color[2], color[3], color[4] = r, g, b, a
-			Plater.UpdateAllPlates()
-		end,
-		name = "Dispellable Buffs Border Color",
-		desc = "Dispellable Buffs Border Color",
-	},
-	
-	{type = "blank"},
-
-	{
-		type = "toggle",
-		get = function() return Plater.db.profile.aura_show_buff_by_the_unit end,
+		type = "range",
+		get = function() return Plater.db.profile.aura2_y_offset end,
 		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_show_buff_by_the_unit = value
+			Plater.db.profile.aura2_y_offset = value
 			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
-		name = "Show Buffs Casted by the Unit",
-		desc = "Show Buffs Casted by the Unit it self",
-	},
-	--border color is buff
-	{
-		type = "color",
-		get = function()
-			local color = Plater.db.profile.aura_border_colors.is_buff
-			return {color[1], color[2], color[3], color[4]}
-		end,
-		set = function (self, r, g, b, a) 
-			local color = Plater.db.profile.aura_border_colors.is_buff
-			color[1], color[2], color[3], color[4] = r, g, b, a
-			Plater.UpdateAllPlates()
-		end,
-		name = "Buffs Border Color",
-		desc = "Buffs Border Color",
+		min = -100,
+		max = 100,
+		step = 1,
+		name = "Y Offset",
+		desc = "Y Offset",
 	},
 	
 	{type = "breakline"},
@@ -8712,7 +8843,7 @@ local debuff_options = {
 	
 	{type = "blank"},
 	
-	{type = "label", get = function() return "Personal Bar:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+	{type = "label", get = function() return "Aura Size on Personal Bar:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	
 	{
 		type = "range",
@@ -8742,293 +8873,292 @@ local debuff_options = {
 		name = "Height",
 		desc = "Debuff's icon height.",
 	},
+	
+	{type = "breakline"},
 
+	{type = "label", get = function() return "Automatic Aura Tracking:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_show_aura_by_the_player end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_aura_by_the_player = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Auras Casted by You",
+		desc = "Show Auras Casted by You.",
+	},
+	
+	{type = "blank"},
+	
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_show_important end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_important = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Important Auras",
+		desc = "Show buffs and debuffs which the game tag as important.",
+	},
+	{
+		type = "color",
+		get = function()
+			local color = Plater.db.profile.aura_border_colors.is_show_all
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_border_colors.is_show_all
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = "Important Auras Border Color",
+		desc = "Important Auras Border Color",
+	},
+	
+	{type = "blank"},
+	
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_show_dispellable end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_dispellable = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Dispellable Buffs",
+		desc = "Show auras which can be dispelled or stealed.",
+	},
+	{
+		type = "color",
+		get = function()
+			local color = Plater.db.profile.aura_border_colors.steal_or_purge
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_border_colors.steal_or_purge
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = "Dispellable Buffs Border Color",
+		desc = "Dispellable Buffs Border Color",
+	},
+	
+	{type = "blank"},
+
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_show_buff_by_the_unit end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_buff_by_the_unit = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Buffs Casted by the Unit",
+		desc = "Show Buffs Casted by the Unit it self",
+	},
+	--border color is buff
+	{
+		type = "color",
+		get = function()
+			local color = Plater.db.profile.aura_border_colors.is_buff
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_border_colors.is_buff
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = "Buffs Border Color",
+		desc = "Buffs Border Color",
+	},	
+	
+	{type = "breakline"},
+	
+	--{type = "label", get = function() return "|TInterface\\GossipFrame\\AvailableLegendaryQuestIcon:0|tTest Auras:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+	{type = "label", get = function() return "Test Auras:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+	{
+		type = "toggle",
+		get = function() return Plater.DisableAuraTest and true or false end,
+		set = function (self, fixedparam, value) 
+			Plater.DisableAuraTest = value
+			if (value) then
+				auraOptionsFrame.DisableAuraTest()
+			else
+				auraOptionsFrame.EnableAuraTest()
+			end
+		end,
+		name = "|TInterface\\GossipFrame\\AvailableQuestIcon:0|tDisable Testing Auras",
+		desc = "Enable this to hide test auras shown when configuring.",
+	},
+	
+	
+	
 }
 
-DF:BuildMenu (auraOptionsFrame, debuff_options, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+DF:BuildMenu (auraOptionsFrame, debuff_options, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 
---> special aura container
-	do 
-		--> scroll with auras added to the special aura container
-		local specialAuraFrame = CreateFrame ("frame", nil, auraOptionsFrame)
-		specialAuraFrame:SetHeight (480)
-		specialAuraFrame:SetPoint ("topleft", auraOptionsFrame, "topleft", 540, startY)
-		specialAuraFrame:SetPoint ("topright", auraOptionsFrame, "topright", -10, startY)
-		DF:ApplyStandardBackdrop (specialAuraFrame, false, 0.6)
-		
-		local scroll_width = 280
-		local scroll_height = 440
-		local scroll_lines = 15
-		local scroll_line_height = 20
-		local backdrop_color = {.8, .8, .8, 0.2}
-		local backdrop_color_on_enter = {.8, .8, .8, 0.4}
-		local y = startY
-		
-		local line_onenter = function (self)
-			self:SetBackdropColor (unpack (backdrop_color_on_enter))
-			local spellid = select (7, GetSpellInfo (self.value))
-			if (spellid) then
-				GameTooltip:SetOwner (self, "ANCHOR_RIGHT");
-				GameTooltip:SetSpellByID (spellid)
-				GameTooltip:AddLine (" ")
-				GameTooltip:Show()
-			end
-		end
-		
-		local line_onleave = function (self)
-			self:SetBackdropColor (unpack (backdrop_color))
-			GameTooltip:Hide()
-		end
-		
-		local onclick_remove_button = function (self)
-			local spell = self:GetParent().value
-			local data = self:GetParent():GetParent():GetData()
-			
-			for i = 1, #data do
-				if (data[i] == spell) then
-					tremove (data, i)
-					break
-				end
-			end
-			
-			self:GetParent():GetParent():Refresh()
-			Plater.RefreshDBUpvalues()
-		end
-		
-		local scroll_createline = function (self, index)
-			local line = CreateFrame ("button", "$parentLine" .. index, self)
-			line:SetPoint ("topleft", self, "topleft", 1, -((index-1)*(scroll_line_height+1)) - 1)
-			line:SetSize (scroll_width - 2, scroll_line_height)
-			line:SetScript ("OnEnter", line_onenter)
-			line:SetScript ("OnLeave", line_onleave)
-			
-			line:SetBackdrop ({bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
-			line:SetBackdropColor (unpack (backdrop_color))
-			
-			local icon = line:CreateTexture ("$parentIcon", "overlay")
-			icon:SetSize (scroll_line_height - 2, scroll_line_height - 2)
-			
-			local name = line:CreateFontString ("$parentName", "overlay", "GameFontNormal")
+auraOptionsFrame.AuraTesting = {
+	DEBUFF = {
+		{
+			SpellName = "Shadow Word: Pain",
+			SpellTexture = 136207,
+			Count = 1,
+			Duration = 7,
+			SpellID = 589,
+		},
+		{
+			SpellName = "Vampiric Touch",
+			SpellTexture = 135978,
+			Count = 1,
+			Duration = 5,
+			SpellID = 34914,
+		},
+		{
+			SpellName = "Mind Flay",
+			SpellTexture = 136208,
+			Count = 3,
+			Duration = 5,
+			SpellID = 15407,
+		},
+	},
+	
+	BUFF = {
+		{
+			SpellName = "Twist of Fate",
+			SpellTexture = 237566,
+			Count = 1,
+			Duration = 9,
+			SpellID = 123254,
+		},
+		{
+			SpellName = "Empty Mind",
+			SpellTexture = 136206,
+			Count = 4,
+			Duration = 7,
+			SpellID = 247226,
+		},
+	}
+}
 
-			local remove_button = CreateFrame ("button", "$parentRemoveButton", line, "UIPanelCloseButton")
-			remove_button:SetSize (16, 16)
-			remove_button:SetScript ("OnClick", onclick_remove_button)
-			remove_button:SetPoint ("topright", line, "topright")
-			remove_button:GetNormalTexture():SetDesaturated (true)
-			
-			icon:SetPoint ("left", line, "left", 2, 0)
-			name:SetPoint ("left", icon, "right", 2, 0)
-			
-			line.icon = icon
-			line.name = name
-			line.removebutton = remove_button
-			
-			return line
-		end
+auraOptionsFrame.OnUpdateFunc = function (self, deltaTime)
+	
+	auraOptionsFrame.NextTime = auraOptionsFrame.NextTime - deltaTime
+	DB_AURA_ENABLED = false
+	
+	if (auraOptionsFrame.NextTime <= 0) then
+		auraOptionsFrame.NextTime = 0.016
+		
+		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 
-		local scroll_refresh = function (self, data, offset, total_lines)
-			for i = 1, total_lines do
-				local index = i + offset
-				local aura = data [index]
-				if (aura) then
-					local line = self:GetLine (i)
-					local name, _, icon = GetSpellInfo (aura)
-					line.value = aura
-					if (name) then
-						line.name:SetText (name)
-						line.icon:SetTexture (icon)
-						line.icon:SetTexCoord (.1, .9, .1, .9)
-					else
-						line.name:SetText (aura)
-						line.icon:SetTexture ([[Interface\InventoryItems\WoWUnknownItem01]])
+			local buffFrame = plateFrame.UnitFrame.BuffFrame
+			local buffFrame2 = plateFrame.UnitFrame.BuffFrame2
+			
+			buffFrame:SetAlpha (DB_AURA_ALPHA)
+			
+			--> reset next aura icon to use
+			buffFrame.NextAuraIcon = 1
+			buffFrame2.NextAuraIcon = 1
+		
+			if (not DB_AURA_SEPARATE_BUFFS) then
+				for index, auraTable in ipairs (auraOptionsFrame.AuraTesting.DEBUFF) do
+					local auraIconFrame = Plater.GetAuraIcon (buffFrame)
+					if (not auraTable.ApplyTime or auraTable.ApplyTime+auraTable.Duration < GetTime()) then
+						auraTable.ApplyTime = GetTime() + math.random (3, 12)
 					end
-				end
-			end
-		end
-		
-		local special_auras_added = DF:CreateScrollBox (specialAuraFrame, "$parentSpecialAurasAdded", scroll_refresh, Plater.db.profile.extra_icon_auras, scroll_width, scroll_height, scroll_lines, scroll_line_height)
-		DF:ReskinSlider (special_auras_added)
-		
-		special_auras_added.__background:SetAlpha (.4)
-		
-		local title = DF:CreateLabel (specialAuraFrame, "Special Auras:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
-		DF:SetFontSize (title, 12)
-		special_auras_added:SetPoint ("topleft", specialAuraFrame, "topleft", 10, -25)
-		title:SetPoint ("bottomleft", special_auras_added, "topleft", 0, 2)
-		
-		for i = 1, scroll_lines do 
-			special_auras_added:CreateLine (scroll_createline)
-		end
-		
-		--> text entry to input the aura name
-		local new_buff_string = DF:CreateLabel (specialAuraFrame, "Add Special Aura", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
-		DF:SetFontSize (new_buff_string, 12)
-		
-		local new_buff_entry = DF:CreateTextEntry (specialAuraFrame, function()end, 200, 20, "NewSpecialAuraTextBox", _, _, options_dropdown_template)
-		new_buff_entry.tooltip = "Enter the aura name using lower case letters.\n\nYou can add several spells at once using |cFFFFFF00;|r to separate each spell name.\n\nSpecial auras are a second row of auras, they are separated from the main aura row above the nameplate."
-		new_buff_entry:SetJustifyH ("left")
-		
-		new_buff_entry.SpellHashTable = {}
-		new_buff_entry.SpellIndexTable = {}
-		
-		function new_buff_entry.LoadGameSpells()
-			if (not next (new_buff_entry.SpellHashTable)) then
-				--load all spells in the game
-				DF:LoadAllSpells (new_buff_entry.SpellHashTable, new_buff_entry.SpellIndexTable)
-				return true
-			end
-		end
-		
-		new_buff_entry:SetHook ("OnEditFocusGained", function (self, capsule)
-			new_buff_entry.LoadGameSpells()
-			new_buff_entry.SpellAutoCompleteList = new_buff_entry.SpellIndexTable
-			new_buff_entry:SetAsAutoComplete ("SpellAutoCompleteList", nil, true)
-		end)
-		
-		--> add aura button
-		local add_buff_button = DF:CreateButton (specialAuraFrame, function()
-		
-			local text = new_buff_entry.text
-			new_buff_entry:SetText ("")
-			new_buff_entry:ClearFocus()
-			
-			if (text ~= "") then
-				--> check for more than one spellname
-				if (text:find (";")) then
-					for _, spellName in ipairs ({strsplit (";", text)}) do
-						spellName = DF:trim (spellName)
-						spellName = lower (spellName)
-						if (string.len (spellName) > 0) then
-							local spellId = new_buff_entry.SpellHashTable [spellName]
-							if (spellId) then
-								tinsert (Plater.db.profile.extra_icon_auras, spellId)
-							else
-								print ("spellId not found for spell:", spellName)
-							end
-						end
-					end
-				else
-					--get the spellId
-					local spellName = lower (text)
-					local spellId = new_buff_entry.SpellHashTable [spellName]
-					if (not spellId) then
-						print ("spellIs for spell ", spellName, "not found")
-						return
-					end
-				
-					tinsert (Plater.db.profile.extra_icon_auras, spellId)
-				end
-				
-				special_auras_added:Refresh()
-				Plater.RefreshDBUpvalues()
-			end
-			
-		end, 100, 20, "Add Aura", nil, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))		
-
-		new_buff_entry:SetPoint ("topleft",  special_auras_added, "topright", 40, 0)
-		new_buff_string:SetPoint ("bottomleft", new_buff_entry, "topleft", 0, 2)
-		add_buff_button:SetPoint ("topleft", new_buff_entry, "bottomleft", 0, -2)
-		add_buff_button.tooltip = "Add the aura to be tracked.\n\nClick an aura on the list to remove it."		
-		
-		--
-		local especial_aura_settings = {
-			{type = "label", get = function() return "Anchor Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-			--anchor
-			{
-				type = "select",
-				get = function() return Plater.db.profile.extra_icon_anchor.side end,
-				values = function() return build_anchor_side_table (false, "extra_icon_anchor") end,
-				name = "Anchor",
-				desc = "Which side of the nameplate this widget is attach to.",
-			},
-			--x offset
-			{
-				type = "range",
-				get = function() return Plater.db.profile.extra_icon_anchor.x end,
-				set = function (self, fixedparam, value) 
-					Plater.db.profile.extra_icon_anchor.x = value
-					Plater.UpdateAllPlates()
-				end,
-				min = -20,
-				max = 20,
-				step = 1,
-				name = "X Offset",
-				desc = "Slightly move the text horizontally.",
-			},
-			--y offset
-			{
-				type = "range",
-				get = function() return Plater.db.profile.extra_icon_anchor.y end,
-				set = function (self, fixedparam, value) 
-					Plater.db.profile.extra_icon_anchor.y = value
-					Plater.UpdateAllPlates()
-				end,
-				min = -20,
-				max = 20,
-				step = 1,
-				name = "Y Offset",
-				desc = "Slightly move the text vertically.",
-			},
-		
-		}
-		
-		local fff = CreateFrame ("frame", "$parentExtraIconsSettings", auraOptionsFrame)
-		fff:SetAllPoints()
-		DF:BuildMenu (fff, especial_aura_settings, 870, -200, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)	
-
-		--when the profile has changed
-		function auraOptionsFrame:RefreshOptions()
-			--update the script data for the scroll and refresh
-			special_auras_added:SetData (Plater.db.profile.extra_icon_auras)
-			special_auras_added:Refresh()
-		end
-		
-		specialAuraFrame:SetScript ("OnShow", function()
-			special_auras_added:Refresh()
-			
-			--not working properly, auras stay "flying" in the screen
-			
-			--[=[
-			fff:SetScript ("OnUpdate", function()
-				
-				for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-					plateFrame.UnitFrame.ExtraIconFrame:ClearIcons()
-					plateFrame.UnitFrame.ExtraIconFrame:SetIcon (248441, false, GetTime() - 2, 8)
-					plateFrame.UnitFrame.ExtraIconFrame:SetIcon (273769, false, GetTime() - 3, 12)
-					plateFrame.UnitFrame.ExtraIconFrame:SetIcon (206589, false, GetTime() - 6, 16)
-					plateFrame.UnitFrame.ExtraIconFrame:SetIcon (279565, false, GetTime() - 180, 360)
-
-					local spellName, _, spellIcon = GetSpellInfo (248441)
-					local auraIconFrame = Plater.GetAuraIcon (plateFrame.UnitFrame.BuffFrame, 1)
-					Plater.AddAura (auraIconFrame, 1, spellName, spellIcon, 1, "BUFF", 8, GetTime()+5, "player", false, false, 248441, false, false, false, false)
-					auraIconFrame.InUse = true
 					
-					local spellName, _, spellIcon = GetSpellInfo (273769)
-					local auraIconFrame = Plater.GetAuraIcon (plateFrame.UnitFrame.BuffFrame, 1)
-					Plater.AddAura (auraIconFrame, 2, spellName, spellIcon, 1, "BUFF", 12, GetTime()+2, "player", false, false, 273769, false, false, false, false)
-					auraIconFrame.InUse = true
+					if (not UnitIsUnit (plateFrame [MEMBER_UNITID], "player")) then
+						Plater.AddAura (auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID)
+					else
+						Plater.AddAura (auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, false, false, true, true)
+					end
 				end
-			end)
-			--]=]
-		end)
-		
-		specialAuraFrame:SetScript ("OnHide", function()
-			--[=[
-			fff:SetScript ("OnUpdate", nil)
-			
-			
-			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-				plateFrame.UnitFrame.ExtraIconFrame:ClearIcons()
-				hide_non_used_auraFrames (plateFrame.UnitFrame.BuffFrame, 1)
+				
+				for index, auraTable in ipairs (auraOptionsFrame.AuraTesting.BUFF) do
+					local auraIconFrame = Plater.GetAuraIcon (buffFrame)
+					if (not auraTable.ApplyTime or auraTable.ApplyTime+auraTable.Duration < GetTime()) then
+						auraTable.ApplyTime = GetTime() + math.random (3, 12)
+					end
+					
+					if (not UnitIsUnit (plateFrame [MEMBER_UNITID], "player")) then
+						Plater.AddAura (auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, true)
+					else
+						Plater.AddAura (auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, false, false, false, true)
+					end
+				end
+	
+				--hide icons on the second buff frame
+				for i = 1, #buffFrame2.PlaterBuffList do
+					local icon = buffFrame2.PlaterBuffList [i]
+					if (icon) then
+						icon:Hide()
+						icon.InUse = false
+					end
+				end
 			end
-			--]=]
+		
+			if (DB_AURA_SEPARATE_BUFFS) then
+				for index, auraTable in ipairs (auraOptionsFrame.AuraTesting.DEBUFF) do
+					local auraIconFrame = Plater.GetAuraIcon (buffFrame)
+					if (not auraTable.ApplyTime or auraTable.ApplyTime+auraTable.Duration < GetTime()) then
+						auraTable.ApplyTime = GetTime() + math.random (3, 12)
+					end
+					
+					if (not UnitIsUnit (plateFrame [MEMBER_UNITID], "player")) then
+						Plater.AddAura (auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID)
+					else
+						Plater.AddAura (auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, false, false, true, true)
+					end
+				end
 			
-		end)		
+				for index, auraTable in ipairs (auraOptionsFrame.AuraTesting.BUFF) do
+					local auraIconFrame = Plater.GetAuraIcon (buffFrame, true)
+					if (not auraTable.ApplyTime or auraTable.ApplyTime+auraTable.Duration < GetTime()) then
+						auraTable.ApplyTime = GetTime() + math.random (3, 12)
+					end
+					
+					if (not UnitIsUnit (plateFrame [MEMBER_UNITID], "player")) then
+						Plater.AddAura (auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "BUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, true)
+					else
+						Plater.AddAura (auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "BUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, false, false, false, true)
+					end
+				end
+			end
+			
+			hide_non_used_auraFrames (buffFrame)
+			buffFrame:Layout()
+		
+		end
 		
 	end
 	
-	
-	
+end
+
+auraOptionsFrame.EnableAuraTest = function()
+	DB_AURA_ENABLED = false
+	auraOptionsFrame.NextTime = 0.2
+	auraOptionsFrame:SetScript ("OnUpdate", auraOptionsFrame.OnUpdateFunc)
+end
+auraOptionsFrame.DisableAuraTest = function()
+	Plater.RefreshDBUpvalues()
+	auraOptionsFrame:SetScript ("OnUpdate", nil)
+end
+
+auraOptionsFrame:SetScript ("OnShow", function()
+	if (not Plater.DisableAuraTest) then
+		auraOptionsFrame.EnableAuraTest()
+	end
+end)
+
+auraOptionsFrame:SetScript ("OnHide", function()
+	auraOptionsFrame.DisableAuraTest()
+end)
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+--> aura tracking
+
 -- ~aura ~buff ~debuff
 
 	local aura_options = {
@@ -9060,7 +9190,7 @@ DF:BuildMenu (auraOptionsFrame, debuff_options, startX, startY, heightSize, true
 	auraFilterFrame.auraConfigPanel = auraConfigPanel
 
 
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> last event auras
 
 	--local auraLastEventFrame = mainFrame.AllFrames [8]
@@ -9487,8 +9617,296 @@ DF:BuildMenu (auraOptionsFrame, debuff_options, startX, startY, heightSize, true
 		
 	end
 
--------------------------------------------------------------------------------
--- opï¿½ï¿½es para a barra do player ~player
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--> special auras
+--> special aura container
+	do 
+		--> scroll with auras added to the special aura container
+		local specialAuraFrame = CreateFrame ("frame", nil, auraSpecialFrame)
+		specialAuraFrame:SetHeight (480)
+		specialAuraFrame:SetPoint ("topleft", auraSpecialFrame, "topleft", startX, startY)
+		specialAuraFrame:SetPoint ("topright", auraSpecialFrame, "topright", -10, startY)
+		--DF:ApplyStandardBackdrop (specialAuraFrame, false, 0.6)
+		
+		local scroll_width = 280
+		local scroll_height = 440
+		local scroll_lines = 15
+		local scroll_line_height = 20
+		local backdrop_color = {.8, .8, .8, 0.2}
+		local backdrop_color_on_enter = {.8, .8, .8, 0.4}
+		local y = startY
+		
+		local line_onenter = function (self)
+			self:SetBackdropColor (unpack (backdrop_color_on_enter))
+			local spellid = select (7, GetSpellInfo (self.value))
+			if (spellid) then
+				GameTooltip:SetOwner (self, "ANCHOR_RIGHT");
+				GameTooltip:SetSpellByID (spellid)
+				GameTooltip:AddLine (" ")
+				GameTooltip:Show()
+			end
+		end
+		
+		local line_onleave = function (self)
+			self:SetBackdropColor (unpack (backdrop_color))
+			GameTooltip:Hide()
+		end
+		
+		local onclick_remove_button = function (self)
+			local spell = self:GetParent().value
+			local data = self:GetParent():GetParent():GetData()
+			
+			for i = 1, #data do
+				if (data[i] == spell) then
+					tremove (data, i)
+					break
+				end
+			end
+			
+			self:GetParent():GetParent():Refresh()
+			Plater.RefreshDBUpvalues()
+		end
+		
+		local scroll_createline = function (self, index)
+			local line = CreateFrame ("button", "$parentLine" .. index, self)
+			line:SetPoint ("topleft", self, "topleft", 1, -((index-1)*(scroll_line_height+1)) - 1)
+			line:SetSize (scroll_width - 2, scroll_line_height)
+			line:SetScript ("OnEnter", line_onenter)
+			line:SetScript ("OnLeave", line_onleave)
+			
+			line:SetBackdrop ({bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
+			line:SetBackdropColor (unpack (backdrop_color))
+			
+			local icon = line:CreateTexture ("$parentIcon", "overlay")
+			icon:SetSize (scroll_line_height - 2, scroll_line_height - 2)
+			
+			local name = line:CreateFontString ("$parentName", "overlay", "GameFontNormal")
+
+			local remove_button = CreateFrame ("button", "$parentRemoveButton", line, "UIPanelCloseButton")
+			remove_button:SetSize (16, 16)
+			remove_button:SetScript ("OnClick", onclick_remove_button)
+			remove_button:SetPoint ("topright", line, "topright")
+			remove_button:GetNormalTexture():SetDesaturated (true)
+			
+			icon:SetPoint ("left", line, "left", 2, 0)
+			name:SetPoint ("left", icon, "right", 2, 0)
+			
+			line.icon = icon
+			line.name = name
+			line.removebutton = remove_button
+			
+			return line
+		end
+
+		local scroll_refresh = function (self, data, offset, total_lines)
+			for i = 1, total_lines do
+				local index = i + offset
+				local aura = data [index]
+				if (aura) then
+					local line = self:GetLine (i)
+					local name, _, icon = GetSpellInfo (aura)
+					line.value = aura
+					if (name) then
+						line.name:SetText (name)
+						line.icon:SetTexture (icon)
+						line.icon:SetTexCoord (.1, .9, .1, .9)
+					else
+						line.name:SetText (aura)
+						line.icon:SetTexture ([[Interface\InventoryItems\WoWUnknownItem01]])
+					end
+				end
+			end
+		end
+		
+		local special_auras_added = DF:CreateScrollBox (specialAuraFrame, "$parentSpecialAurasAdded", scroll_refresh, Plater.db.profile.extra_icon_auras, scroll_width, scroll_height, scroll_lines, scroll_line_height)
+		DF:ReskinSlider (special_auras_added)
+		special_auras_added.__background:SetAlpha (.4)
+		special_auras_added:SetPoint ("topleft", specialAuraFrame, "topleft", 0, -40)
+		
+		local title = DF:CreateLabel (specialAuraFrame, "Special Auras:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
+		DF:SetFontSize (title, 12)
+		title:SetPoint ("bottomleft", special_auras_added, "topleft", 0, 2)
+		
+		for i = 1, scroll_lines do 
+			special_auras_added:CreateLine (scroll_createline)
+		end
+		
+		--> text entry to input the aura name
+		local new_buff_string = DF:CreateLabel (specialAuraFrame, "Add Special Aura", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
+		DF:SetFontSize (new_buff_string, 12)
+		
+		local new_buff_entry = DF:CreateTextEntry (specialAuraFrame, function()end, 200, 20, "NewSpecialAuraTextBox", _, _, options_dropdown_template)
+		new_buff_entry.tooltip = "Enter the aura name using lower case letters.\n\nYou can add several spells at once using |cFFFFFF00;|r to separate each spell name.\n\nSpecial auras are a second row of auras, they are separated from the main aura row above the nameplate."
+		new_buff_entry:SetJustifyH ("left")
+		
+		new_buff_entry.SpellHashTable = {}
+		new_buff_entry.SpellIndexTable = {}
+		
+		function new_buff_entry.LoadGameSpells()
+			if (not next (new_buff_entry.SpellHashTable)) then
+				--load all spells in the game
+				DF:LoadAllSpells (new_buff_entry.SpellHashTable, new_buff_entry.SpellIndexTable)
+				return true
+			end
+		end
+		
+		new_buff_entry:SetHook ("OnEditFocusGained", function (self, capsule)
+			new_buff_entry.LoadGameSpells()
+			new_buff_entry.SpellAutoCompleteList = new_buff_entry.SpellIndexTable
+			new_buff_entry:SetAsAutoComplete ("SpellAutoCompleteList", nil, true)
+		end)
+		
+		--> add aura button
+		local add_buff_button = DF:CreateButton (specialAuraFrame, function()
+		
+			local text = new_buff_entry.text
+			new_buff_entry:SetText ("")
+			new_buff_entry:ClearFocus()
+			
+			if (text ~= "") then
+				--> check for more than one spellname
+				if (text:find (";")) then
+					for _, spellName in ipairs ({strsplit (";", text)}) do
+						spellName = DF:trim (spellName)
+						spellName = lower (spellName)
+						if (string.len (spellName) > 0) then
+							local spellId = new_buff_entry.SpellHashTable [spellName]
+							if (spellId) then
+								tinsert (Plater.db.profile.extra_icon_auras, spellId)
+							else
+								print ("spellId not found for spell:", spellName)
+							end
+						end
+					end
+				else
+					--get the spellId
+					local spellName = lower (text)
+					local spellId = new_buff_entry.SpellHashTable [spellName]
+					if (not spellId) then
+						print ("spellIs for spell ", spellName, "not found")
+						return
+					end
+				
+					tinsert (Plater.db.profile.extra_icon_auras, spellId)
+				end
+				
+				special_auras_added:Refresh()
+				Plater.RefreshDBUpvalues()
+			end
+			
+		end, 100, 20, "Add Aura", nil, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))		
+
+		new_buff_entry:SetPoint ("topleft",  special_auras_added, "topright", 40, 0)
+		new_buff_string:SetPoint ("bottomleft", new_buff_entry, "topleft", 0, 2)
+		add_buff_button:SetPoint ("topleft", new_buff_entry, "bottomleft", 0, -2)
+		add_buff_button.tooltip = "Add the aura to be tracked.\n\nClick an aura on the list to remove it."		
+		
+		--
+		local especial_aura_settings = {
+			{type = "label", get = function() return "Anchor Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			--anchor
+			{
+				type = "select",
+				get = function() return Plater.db.profile.extra_icon_anchor.side end,
+				values = function() return build_anchor_side_table (false, "extra_icon_anchor") end,
+				name = "Anchor",
+				desc = "Which side of the nameplate this widget is attach to.",
+			},
+			--x offset
+			{
+				type = "range",
+				get = function() return Plater.db.profile.extra_icon_anchor.x end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.extra_icon_anchor.x = value
+					Plater.UpdateAllPlates()
+				end,
+				min = -20,
+				max = 20,
+				step = 1,
+				name = "X Offset",
+				desc = "Slightly move the text horizontally.",
+			},
+			--y offset
+			{
+				type = "range",
+				get = function() return Plater.db.profile.extra_icon_anchor.y end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.extra_icon_anchor.y = value
+					Plater.UpdateAllPlates()
+				end,
+				min = -20,
+				max = 20,
+				step = 1,
+				name = "Y Offset",
+				desc = "Slightly move the text vertically.",
+			},
+		
+		}
+		
+		local fff = CreateFrame ("frame", "$parentExtraIconsSettings", auraSpecialFrame)
+		fff:SetAllPoints()
+		DF:BuildMenu (fff, especial_aura_settings, 570, startY - 27, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
+
+		--when the profile has changed
+		function auraSpecialFrame:RefreshOptions()
+			--update the script data for the scroll and refresh
+			special_auras_added:SetData (Plater.db.profile.extra_icon_auras)
+			special_auras_added:Refresh()
+		end
+		
+		specialAuraFrame:SetScript ("OnShow", function()
+			special_auras_added:Refresh()
+			
+			--not working properly, auras stay "flying" in the screen
+			
+			--[=[
+			fff:SetScript ("OnUpdate", function()
+				
+				for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+					plateFrame.UnitFrame.ExtraIconFrame:ClearIcons()
+					plateFrame.UnitFrame.ExtraIconFrame:SetIcon (248441, false, GetTime() - 2, 8)
+					plateFrame.UnitFrame.ExtraIconFrame:SetIcon (273769, false, GetTime() - 3, 12)
+					plateFrame.UnitFrame.ExtraIconFrame:SetIcon (206589, false, GetTime() - 6, 16)
+					plateFrame.UnitFrame.ExtraIconFrame:SetIcon (279565, false, GetTime() - 180, 360)
+
+					local spellName, _, spellIcon = GetSpellInfo (248441)
+					local auraIconFrame = Plater.GetAuraIcon (plateFrame.UnitFrame.BuffFrame, 1)
+					Plater.AddAura (auraIconFrame, 1, spellName, spellIcon, 1, "BUFF", 8, GetTime()+5, "player", false, false, 248441, false, false, false, false)
+					auraIconFrame.InUse = true
+					
+					local spellName, _, spellIcon = GetSpellInfo (273769)
+					local auraIconFrame = Plater.GetAuraIcon (plateFrame.UnitFrame.BuffFrame, 1)
+					Plater.AddAura (auraIconFrame, 2, spellName, spellIcon, 1, "BUFF", 12, GetTime()+2, "player", false, false, 273769, false, false, false, false)
+					auraIconFrame.InUse = true
+				end
+			end)
+			--]=]
+		end)
+		
+		specialAuraFrame:SetScript ("OnHide", function()
+			--[=[
+			fff:SetScript ("OnUpdate", nil)
+			
+			
+			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+				plateFrame.UnitFrame.ExtraIconFrame:ClearIcons()
+				hide_non_used_auraFrames (plateFrame.UnitFrame.BuffFrame, 1)
+			end
+			--]=]
+			
+		end)
+		
+		--create the title
+		auraSpecialFrame.TitleDescText = Plater:CreateLabel (auraSpecialFrame, "Track auras adding them to a special buff frame separated from the main buff line", 10, "silver")
+		auraSpecialFrame.TitleDescText:SetPoint ("bottomleft", special_auras_added, "topleft", 0, 26)
+		auraSpecialFrame.TitleText = Plater:CreateLabel (auraSpecialFrame, "Aura Special", 14, "orange")
+		auraSpecialFrame.TitleText:SetPoint ("bottomleft", auraSpecialFrame.TitleDescText, "topleft", 0, 2)
+		
+	end
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- personal player ~player
 do
 		local on_select_player_percent_text_font = function (_, _, value)
 			Plater.db.profile.plate_config.player.percent_text_font = value
@@ -9774,7 +10192,7 @@ do
 			{type = "breakline"},
 			
 			--percent text
-			{type = "label", get = function() return "Health Percent Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{type = "label", get = function() return "Health Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			--enabled
 			{
 				type = "toggle",
@@ -10309,7 +10727,7 @@ do
 
 	}
 
-	DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+	DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 end
 
 -------------------------------------------------------------------------------
@@ -10959,7 +11377,7 @@ end
 		i = i + 1
 	end	
 	
-	DF:BuildMenu (generalOptionsAnchor, options_table1, 0, 0, mainHeightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)	
+	DF:BuildMenu (generalOptionsAnchor, options_table1, 0, 0, mainHeightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 	
 ------------------------------------------------	
 --order functions
@@ -11458,7 +11876,7 @@ end
 		{type = "breakline"},
 		
 		--percent text
-		{type = "label", get = function() return "Health Percent Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return "Health Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--enabled
 		{
 			type = "toggle",
@@ -11707,7 +12125,7 @@ end
 		
 
 	}
-	DF:BuildMenu (friendlyPCsFrame, options_table3, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+	DF:BuildMenu (friendlyPCsFrame, options_table3, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 
 --------------------------------
 --Enemy Player painel de opï¿½ï¿½es ~enemy
@@ -12158,7 +12576,7 @@ end
 		{type = "breakline"},
 		
 		--percent text
-		{type = "label", get = function() return "Health Percent Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return "Health Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--enabled
 		{
 			type = "toggle",
@@ -12404,7 +12822,7 @@ end
 		},		
 
 	}
-	DF:BuildMenu (enemyPCsFrame, options_table4, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+	DF:BuildMenu (enemyPCsFrame, options_table4, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 
 -----------------------------------------------	
 --Friendly NPC painel de opï¿½ï¿½es ~friendly
@@ -12991,7 +13409,7 @@ end
 		{type = "breakline"},
 		
 		--percent text
-		{type = "label", get = function() return "Health Percent Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return "Health Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--enabled
 		{
 			type = "toggle",
@@ -13239,7 +13657,7 @@ end
 		
 	}
 	
-	DF:BuildMenu (friendlyNPCsFrame, friendly_npc_options_table, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+	DF:BuildMenu (friendlyNPCsFrame, friendly_npc_options_table, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 
 -----------------------------------------------	
 --Enemy NPC painel de opï¿½ï¿½es ~enemy
@@ -13700,7 +14118,7 @@ end
 			{type = "breakline"},
 			
 			--percent text
-			{type = "label", get = function() return "Health Percent Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{type = "label", get = function() return "Health Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			--enabled
 			{
 				type = "toggle",
@@ -13946,7 +14364,7 @@ end
 			},
 
 		}
-		DF:BuildMenu (enemyNPCsFrame, options_table2, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+		DF:BuildMenu (enemyNPCsFrame, options_table2, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 	end
 	
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -16051,7 +16469,7 @@ end
 		
 	}
 	
-	DF:BuildMenu (autoFrame, auto_options, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)	
+	DF:BuildMenu (autoFrame, auto_options, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)	
 	
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> ~threat ï¿½ggro ~aggro
@@ -16227,7 +16645,7 @@ end
 			
 	}
 	
-	DF:BuildMenu (threatFrame, thread_options, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)	
+	DF:BuildMenu (threatFrame, thread_options, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 	
 	
 	
@@ -16620,7 +17038,7 @@ end
 	
 	}
 	
-	DF:BuildMenu (advancedFrame, advanced_options, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+	DF:BuildMenu (advancedFrame, advanced_options, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 		
 	--
 	Plater.CheckOptionsTab()
