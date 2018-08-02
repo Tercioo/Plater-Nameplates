@@ -38,6 +38,10 @@ DF.OptionsFunctions = {
 			self.options = {}
 			self.options [optionName] = optionValue
 		end
+		
+		if (self.OnOptionChanged) then
+			DF:Dispatch (self.OnOptionChanged, self, optionName, optionValue)
+		end
 	end,
 	
 	GetOption = function (self, optionName)
@@ -4853,10 +4857,12 @@ DF.IconRowFunctions = {
 				iconFrame.Text:Hide()
 			end
 
+			iconFrame:SetSize (self.options.icon_width, self.options.icon_height)
 			iconFrame:Show()
 			
 			--> update the size of the frame
 			self:SetWidth ((self.options.left_padding * 2) + (self.options.icon_padding * (self.NextIcon-2)) + (self.options.icon_width * (self.NextIcon - 1)))
+			self:SetHeight (self.options.icon_height + (self.options.top_padding * 2))
 
 			--> show the frame
 			self:Show()
@@ -4903,7 +4909,12 @@ DF.IconRowFunctions = {
 		elseif (side == 13) then
 			return 1
 		end
-	end
+	end,
+	
+	OnOptionChanged = function (self, optionName)
+		self:SetBackdropColor (unpack (self.options.backdrop_color))
+		self:SetBackdropBorderColor (unpack (self.options.backdrop_border_color))
+	end,
 }
 
 local default_icon_row_options = {
@@ -4912,9 +4923,9 @@ local default_icon_row_options = {
 	texcoord = {.1, .9, .1, .9},
 	show_text = true,
 	text_color = {1, 1, 1, 1},
-	left_padding = 2, --distance between right and left
-	top_padding = 2, --distance between top and bottom 
-	icon_padding = 2, --distance between each icon
+	left_padding = 1, --distance between right and left
+	top_padding = 1, --distance between top and bottom 
+	icon_padding = 1, --distance between each icon
 	backdrop = {edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true},
 	backdrop_color = {0, 0, 0, 0.5},
 	backdrop_border_color = {0, 0, 0, 1},

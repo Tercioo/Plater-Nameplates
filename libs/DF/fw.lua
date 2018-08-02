@@ -1,5 +1,5 @@
 
-local dversion = 88
+local dversion = 89
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
 
@@ -122,6 +122,7 @@ local embed_functions = {
 	"FormatNumber",
 	"IntegerToTimer",
 	"QuickDispatch",
+	"Dispatch",
 	"CommaValue",
 	"RemoveRealmName",
 	"Trim",

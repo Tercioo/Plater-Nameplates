@@ -1,6 +1,5 @@
 
 --identify the class on the first run and apply view distance and spells to check the line of sight
---the anchoring of the secondary aura row is not setting the anchor correctly, sometimes of anchors to the left sometimes on the right
 
 --/run SetCVar ("nameplateSelfBottomInset", .2)
 --/run SetCVar ("nameplateSelfTopInset", .5)
@@ -509,7 +508,14 @@ local default_config = {
 		aura_stack_shadow = true,
 		aura_stack_color = {1, 1, 1, 1},
 		
-		extra_icon_anchor = {side = 6, x = -4, y = 3},
+		extra_icon_anchor = {side = 6, x = -4, y = 4},
+		extra_icon_show_timer = true,
+		extra_icon_width = 30,
+		extra_icon_height = 18,
+		extra_icon_wide_icon = true,
+		extra_icon_backdrop_color = {0, 0, 0, 0.5},
+		extra_icon_border_color = {0, 0, 0, 1},
+		
 		extra_icon_auras = {},
 		
 		aura_width_personal = 32,
@@ -1531,6 +1537,10 @@ local MEMBER_NOCOMBAT = "namePlateNoCombat"
 local MEMBER_NAME = "namePlateUnitName"
 local MEMBER_NAMELOWER = "namePlateUnitNameLower"
 local MEMBER_TARGET = "namePlateIsTarget"
+
+--icon texcoords
+Plater.WideIconCoords = {.1, .9, .1, .6}
+Plater.BorderLessIconCoords = {.1, .9, .1, .9}
 
 local CAN_USE_AURATIMER = true
 Plater.CanLoadFactionStrings = true
@@ -6575,8 +6585,13 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate, justAdded)
 
 	--update options in the extra icons row frame
 	Plater.SetAnchor (unitFrame.ExtraIconFrame, Plater.db.profile.extra_icon_anchor)
-	unitFrame.ExtraIconFrame:SetOption ("show_text", Plater.db.profile.aura_timer)
+	unitFrame.ExtraIconFrame:SetOption ("show_text", Plater.db.profile.extra_icon_show_timer)
 	unitFrame.ExtraIconFrame:SetOption ("grow_direction", unitFrame.ExtraIconFrame:GetIconGrowDirection())
+	unitFrame.ExtraIconFrame:SetOption ("icon_width", Plater.db.profile.extra_icon_width)
+	unitFrame.ExtraIconFrame:SetOption ("icon_height", Plater.db.profile.extra_icon_height)
+	unitFrame.ExtraIconFrame:SetOption ("texcoord", Plater.db.profile.extra_icon_wide_icon and Plater.WideIconCoords or Plater.BorderLessIconCoords)
+	unitFrame.ExtraIconFrame:SetOption ("backdrop_color", Plater.db.profile.extra_icon_backdrop_color)
+	unitFrame.ExtraIconFrame:SetOption ("backdrop_border_color", Plater.db.profile.extra_icon_border_color)
 	
 	--> details! integration
 		if (Details and Details.plater) then
@@ -9736,7 +9751,7 @@ end)
 		DF:SetFontSize (new_buff_string, 12)
 		
 		local new_buff_entry = DF:CreateTextEntry (specialAuraFrame, function()end, 200, 20, "NewSpecialAuraTextBox", _, _, options_dropdown_template)
-		new_buff_entry.tooltip = "Enter the aura name using lower case letters.\n\nYou can add several spells at once using |cFFFFFF00;|r to separate each spell name.\n\nSpecial auras are a second row of auras, they are separated from the main aura row above the nameplate."
+		new_buff_entry.tooltip = "Enter the aura name using lower case letters.\n\nYou can add several spells at once using |cFFFFFF00;|r to separate each spell name."
 		new_buff_entry:SetJustifyH ("left")
 		
 		new_buff_entry.SpellHashTable = {}
@@ -9799,7 +9814,7 @@ end)
 		new_buff_entry:SetPoint ("topleft",  special_auras_added, "topright", 40, 0)
 		new_buff_string:SetPoint ("bottomleft", new_buff_entry, "topleft", 0, 2)
 		add_buff_button:SetPoint ("topleft", new_buff_entry, "bottomleft", 0, -2)
-		add_buff_button.tooltip = "Add the aura to be tracked.\n\nClick an aura on the list to remove it."		
+		add_buff_button.tooltip = "Add the aura to be tracked."
 		
 		--
 		local especial_aura_settings = {
@@ -9839,6 +9854,87 @@ end)
 				step = 1,
 				name = "Y Offset",
 				desc = "Slightly move the text vertically.",
+			},
+			
+			--show timer
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.extra_icon_show_timer end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.extra_icon_show_timer = value
+					Plater.UpdateAllPlates()
+				end,
+				name = "Show Timer",
+				desc = "Show Timer",
+			},
+			--width
+			{
+				type = "range",
+				get = function() return Plater.db.profile.extra_icon_width end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.extra_icon_width = value
+					Plater.UpdateAllPlates()
+				end,
+				min = 8,
+				max = 128,
+				step = 1,
+				name = "Width",
+				desc = "Width",
+			},
+			--height
+			{
+				type = "range",
+				get = function() return Plater.db.profile.extra_icon_height end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.extra_icon_height = value
+					Plater.UpdateAllPlates()
+				end,
+				min = 8,
+				max = 128,
+				step = 1,
+				name = "Height",
+				desc = "Height",
+			},
+			--wide icons
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.extra_icon_wide_icon end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.extra_icon_wide_icon = value
+					Plater.UpdateAllPlates()
+				end,
+				name = "Wide Icons",
+				desc = "Wide Icons",
+			},
+			--backdrop color
+			{
+				type = "color",
+				get = function()
+					local color = Plater.db.profile.extra_icon_backdrop_color
+					return {color[1], color[2], color[3], color[4]}
+				end,
+				set = function (self, r, g, b, a) 
+					local color = Plater.db.profile.extra_icon_backdrop_color
+					color[1], color[2], color[3], color[4] = r, g, b, a
+					Plater.UpdateAllPlates()
+				end,
+				name = "Background Color",
+				desc = "Background Color",
+			},
+			--border color
+			{
+				type = "color",
+				get = function()
+					local color = Plater.db.profile.extra_icon_border_color
+					return {color[1], color[2], color[3], color[4]}
+				end,
+				set = function (self, r, g, b, a) 
+					local color = Plater.db.profile.extra_icon_border_color
+					color[1], color[2], color[3], color[4] = r, g, b, a
+					Plater.UpdateAllPlates()
+				end,
+				name = "Frame Border Color",
+				desc = "Frame Border Color",
 			},
 		
 		}
@@ -9897,7 +9993,7 @@ end)
 		end)
 		
 		--create the title
-		auraSpecialFrame.TitleDescText = Plater:CreateLabel (auraSpecialFrame, "Track auras adding them to a special buff frame separated from the main buff line", 10, "silver")
+		auraSpecialFrame.TitleDescText = Plater:CreateLabel (auraSpecialFrame, "Track auras adding them to a special buff frame separated from the main buff line. Use it to emphasize important auras from raid bosses or mythic dungeons.", 10, "silver")
 		auraSpecialFrame.TitleDescText:SetPoint ("bottomleft", special_auras_added, "topleft", 0, 26)
 		auraSpecialFrame.TitleText = Plater:CreateLabel (auraSpecialFrame, "Aura Special", 14, "orange")
 		auraSpecialFrame.TitleText:SetPoint ("bottomleft", auraSpecialFrame.TitleDescText, "topleft", 0, 2)
