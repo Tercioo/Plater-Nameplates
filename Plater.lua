@@ -1993,6 +1993,13 @@ end
 
 function Plater.CompileScript (scriptObject, ...)
 	
+	--check if the script is valid and if is enabled
+	if (not scriptObject) then
+		return
+	elseif (not scriptObject.Enabled) then
+		return
+	end
+	
 	--store the scripts to be compiled
 	local scriptCode, scriptFunctions = {}, {}
 	
@@ -3242,8 +3249,13 @@ function Plater.OnInit()
 				if (unitCast ~= self.unit or not self.isNamePlate) then
 					return
 				end
-				local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, arg10 = UnitCastingInfo (unitCast) --nameSubtext, 
+				
+				local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, spellId = UnitCastingInfo (unitCast) --nameSubtext, 
 				self.SpellName = name
+				self.SpellID = spellId
+				self.SpellTexture = texture
+				self.SpellStartTime = startTime/1000
+				self.SpellEndTime = endTime/1000
 				
 				self.Icon:SetTexture (texture)
 				self.Icon:Show()
@@ -3281,8 +3293,12 @@ function Plater.OnInit()
 					return
 				end
 				
-				local name, text, texture, startTime, endTime, isTradeSkill, notInterruptible = UnitChannelInfo (unitCast) --nameSubtext, 
+				local name, text, texture, startTime, endTime, isTradeSkill, notInterruptible, spellId = UnitChannelInfo (unitCast) --nameSubtext, 
 				self.SpellName = name
+				self.SpellID = spellId
+				self.SpellTexture = texture
+				self.SpellStartTime = startTime/1000
+				self.SpellEndTime = endTime/1000
 				
 				self.Icon:SetTexture (texture)
 				self.Icon:Show()
@@ -3353,8 +3369,18 @@ function Plater.OnInit()
 					--get the info about this particularly script
 					local scriptInfo = self:ScriptGetInfo (globalScriptObject, scriptContainer)
 					
+					local scriptEnv = scriptInfo.Env
+					scriptEnv._SpellID = self.SpellID
+					scriptEnv._UnitID = self.unit
+					scriptEnv._SpellName = self.SpellName
+					scriptEnv._Texture = self.SpellTexture
+					scriptEnv._Caster = self.unit
+					scriptEnv._Duration = self.SpellEndTime - self.SpellStartTime
+					scriptEnv._StartTime = self.SpellStartTime
+					scriptEnv._EndTime = self.SpellEndTime
+					scriptEnv._RemainingTime = max (self.SpellEndTime - GetTime(), 0)
+				
 					--run onupdate script
-					--is this the onshow or the onupdate?
 					self:ScriptRunOnUpdate (scriptInfo)
 				end
 				
@@ -3988,8 +4014,22 @@ function Plater.AddAura (auraIconFrame, i, spellName, texture, count, debuffType
 	if (globalScriptObject) then
 		--stored information about scripts
 		local scriptContainer = auraIconFrame:ScriptGetContainer()
+		
 		--get the info about this particularly script
 		local scriptInfo = auraIconFrame:ScriptGetInfo (globalScriptObject, scriptContainer)
+		
+		--set the aura information on the script env
+		local scriptEnv = scriptInfo.Env
+		scriptEnv._SpellID = spellId
+		scriptEnv._UnitID = caster
+		scriptEnv._SpellName = spellName
+		scriptEnv._Texture = texture
+		scriptEnv._Caster = caster
+		scriptEnv._StackCount = count
+		scriptEnv._Duration = duration
+		scriptEnv._StartTime = expirationTime - duration
+		scriptEnv._EndTime = expirationTime
+		scriptEnv._RemainingTime = max (expirationTime - GetTime(), 0)
 		
 		--run onupdate script
 		auraIconFrame:ScriptRunOnUpdate (scriptInfo)
@@ -4423,8 +4463,14 @@ local EventTickFunction = function (tickFrame, deltaTime)
 			--get the info about this particularly script
 			local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer)
 			
+			local scriptEnv = scriptInfo.Env
+			scriptEnv._UnitID = tickFrame.PlateFrame [MEMBER_UNITID]
+			scriptEnv._NpcID = tickFrame.PlateFrame [MEMBER_NPCID]
+			scriptEnv._UnitName = tickFrame.PlateFrame [MEMBER_NAME]
+			scriptEnv._UnitGUID = tickFrame.PlateFrame [MEMBER_GUID]
+			scriptEnv._HealthPercent = tickFrame.HealthBar.CurrentHealth / tickFrame.HealthBar.CurrentHealthMax * 100
+	
 			--run onupdate script
-			--is this the onshow or the onupdate?
 			unitFrame:ScriptRunOnUpdate (scriptInfo)
 		end
 		
@@ -7495,6 +7541,9 @@ Plater ["NAME_PLATE_UNIT_REMOVED"] = function (self, event, unitBarId)
 	--is mouse over ~highlight ~mouseover
 	plateFrame.UnitFrame.HighlightFrame:Hide()
 	plateFrame.UnitFrame.HighlightFrame.Shown = false
+	
+	--hide the friend highlight ~friend
+	plateFrame.friendHighlight:Hide()
 end
 
 function Plater.DoNameplateAnimation (plateFrame, frameAnimations, spellName, isCritical)
@@ -9475,20 +9524,32 @@ end)
 			local dataInOrder = {}
 			
 			if (IsSearchingFor and IsSearchingFor ~= "") then
-				for i = 1, #data do
-					local spellID = data[i] [1]
-					local spellName, _, spellIcon = GetSpellInfo (spellID)
-					
-					if (spellName:lower():find (IsSearchingFor)) then
-						dataInOrder [#dataInOrder+1] = {i, data[i], spellName}
+				if (self.SearchCachedTable and IsSearchingFor == self.SearchCachedTable.SearchTerm) then
+					dataInOrder = self.SearchCachedTable
+				else
+					for i = 1, #data do
+						local spellID = data[i] [1]
+						local spellName, _, spellIcon = GetSpellInfo (spellID)
+						
+						if (spellName:lower():find (IsSearchingFor)) then
+							dataInOrder [#dataInOrder+1] = {i, data[i], spellName}
+						end
 					end
+
+					self.SearchCachedTable = dataInOrder
+					self.SearchCachedTable.SearchTerm = IsSearchingFor
 				end
 			else
-				for i = 1, #data do
-					local spellID = data[i] [1]
-					local spellName, _, spellIcon = GetSpellInfo (spellID)
-					dataInOrder [#dataInOrder+1] = {i, data[i], spellName}
+				if (not self.CachedTable) then
+					for i = 1, #data do
+						local spellID = data[i] [1]
+						local spellName, _, spellIcon = GetSpellInfo (spellID)
+						dataInOrder [#dataInOrder+1] = {i, data[i], spellName}
+					end
+					self.CachedTable = dataInOrder
 				end
+				
+				dataInOrder = self.CachedTable
 			end
 
 			table.sort (dataInOrder, DF.SortOrder3R)
@@ -9564,7 +9625,6 @@ end)
 					end
 				end
 			end
-
 		end
 		
 		--create scroll
@@ -9578,6 +9638,9 @@ end)
 			for spellID, spellTable in pairs (DB_CAPTURED_SPELLS) do
 				tinsert (newData, {spellID, spellTable})
 			end
+			
+			self.CachedTable = nil
+			self.SearchCachedTable = nil
 			
 			self:SetData (newData)
 			self:Refresh()
@@ -14766,6 +14829,7 @@ end
 		on_save = type (on_save) == "boolean" and on_save
 		
 		local code = {}
+		--prebuild the code table with the code types (constructor/onupdate etc)
 		for i = 1, #Plater.CodeTypeNames do
 			local memberName = Plater.CodeTypeNames [i]
 			code [memberName] = ""
@@ -14789,8 +14853,9 @@ end
 			end
 		end
 
-		do 
+		do
 			local t = {}
+			--build a script table for the comppiler
 			for i = 1, #Plater.CodeTypeNames do
 				local memberName = Plater.CodeTypeNames [i]
 				tinsert (t, code [memberName])
@@ -15200,6 +15265,9 @@ end
 					end
 					
 					scriptingFrame.TriggerScrollBox:Refresh()
+				
+				--recompile all
+				Plater.WipeAndRecompileAllScripts()
 			end
 			
 			local build_script_type_dropdown_options = function()
@@ -15796,8 +15864,11 @@ end
 					
 					GameCooltip:AddLine ("UnitFrame Members", "", 1, "yellow", "yellow", 12, nil, "OUTLINE")
 					
+					local backgroundAlpha = 0.2
+					
 					for i = 1, #scriptingFrame.UnitFrameMembers do 
 						GameCooltip:AddLine (scriptingFrame.UnitFrameMembers [i])
+						GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
 					end
 					
 					GameCooltip:AddLine (" ")
@@ -15809,6 +15880,70 @@ end
 				end)
 				
 				unit_frame_small_help_frame:SetHook ("OnLeave", function()
+					GameCooltip:Hide()
+				end)
+				
+				--script env helper
+				local script_env_helper = DF:CreateButton (code_editor, function() end, 100, 20, "envTable Data", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				script_env_helper:SetIcon ([[Interface\FriendsFrame\UI-FriendsList-Small-Up]], 16, 16, "overlay", {.2, .74, .27, .75}, nil, 4)
+				script_env_helper:SetHook ("OnEnter", function()
+				
+					GameCooltip:Preset (2)
+					GameCooltip:SetOption ("TextSize", 11)
+					GameCooltip:SetOption ("FixedWidth", 400)
+					
+					local scriptObject = scriptingFrame.GetCurrentScriptObject()
+					
+					if (scriptObject) then
+						local backgroundAlpha = 0.2
+						if (scriptObject.ScriptType == 0x1) then
+							GameCooltip:AddLine ("envTable Member", "Description", 1, "yellow", "yellow", 12, nil, "OUTLINE")
+							
+							GameCooltip:AddLine ("envTable._SpellID", "ID of the spell", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+							GameCooltip:AddLine ("envTable._UnitID", "caster unitID", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+							GameCooltip:AddLine ("envTable._SpellName", "name of the spell", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+							GameCooltip:AddLine ("envTable._Texture", "texture for the icon", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+							GameCooltip:AddLine ("envTable._Caster", "unitID of the caster", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+							GameCooltip:AddLine ("envTable._StackCount", "amount of stacks the aura has", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+							GameCooltip:AddLine ("envTable._Duration", "total duration of the aura", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+							GameCooltip:AddLine ("envTable._StartTime", "GetTime() of when the aura was applied", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+							GameCooltip:AddLine ("envTable._EndTime", "GetTime() of when the aura will expire", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+							GameCooltip:AddLine ("envTable._RemainingTime", "time left in seconds", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+							
+						elseif (scriptObject.ScriptType == 0x2) then
+							GameCooltip:AddLine ("envTable Member", "Description", 1, "yellow", "yellow", 12, nil, "OUTLINE")
+							
+							GameCooltip:AddLine ("envTable._SpellID", "ID of the spell", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+							GameCooltip:AddLine ("envTable._UnitID", "caster unitID", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+							GameCooltip:AddLine ("envTable._SpellName", "name of the spell", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+							GameCooltip:AddLine ("envTable._Texture", "texture for the icon", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+							GameCooltip:AddLine ("envTable._Caster", "unitID of the caster", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+							GameCooltip:AddLine ("envTable._Duration", "total duration of the cast", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+							GameCooltip:AddLine ("envTable._StartTime", "GetTime() of when the cast was started", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+							GameCooltip:AddLine ("envTable._EndTime", "GetTime() of when the cast will finish", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+							GameCooltip:AddLine ("envTable._RemainingTime", "time left in seconds", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+						
+						elseif (scriptObject.ScriptType == 0x3) then
+							GameCooltip:AddLine ("envTable Member", "Description", 1, "yellow", "yellow", 12, nil, "OUTLINE")
+						
+							GameCooltip:AddLine ("envTable._UnitID", "unitID of the unit", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+							GameCooltip:AddLine ("envTable._NpcID", "npcID of the unit", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+							GameCooltip:AddLine ("envTable._UnitName", "name of the unit", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+							GameCooltip:AddLine ("envTable._UnitGUID", "GUID of the unit", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+							GameCooltip:AddLine ("envTable._HealthPercent", "health percent of the unit (0-100)", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+						end
+					else
+						GameCooltip:AddLine ("No script being edited")
+					end
+					
+					--GameCooltip:AddLine (" ")
+					--GameCooltip:AddLine ("click for more information", "", 1, "green")
+					
+					GameCooltip:SetOwner (script_env_helper.widget)
+					GameCooltip:Show()
+				end)
+				
+				script_env_helper:SetHook ("OnLeave", function()
 					GameCooltip:Hide()
 				end)
 				
@@ -15833,6 +15968,7 @@ end
 					add_API_dropdown:SetFrameStrata (code_editor:GetFrameStrata())
 					add_API_dropdown:SetFrameLevel (code_editor:GetFrameLevel()+100)
 					
+					script_env_helper:SetPoint ("bottomleft", code_editor, "topleft", 0, 2)
 					unit_frame_small_help_frame:SetPoint ("bottomright", code_editor, "topright", 0, 2)
 					add_API_dropdown:SetPoint ("right", unit_frame_small_help_frame, "left", -2, 0)
 					add_API_label:SetPoint ("right", add_API_dropdown, "left", -2, 0)
