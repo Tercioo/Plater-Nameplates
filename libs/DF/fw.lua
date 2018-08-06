@@ -1,5 +1,5 @@
 
-local dversion = 89
+local dversion = 92
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
 
@@ -1463,6 +1463,7 @@ function DF:CreateAnimationHub (parent, onPlay, onFinished)
 	local newAnimation = parent:CreateAnimationGroup()
 	newAnimation:SetScript ("OnPlay", onPlay)
 	newAnimation:SetScript ("OnFinished", onFinished)
+	newAnimation:SetScript ("OnStop", onFinished)
 	newAnimation.NextAnimation = 1
 	return newAnimation
 end
@@ -1500,6 +1501,9 @@ end
 local frameshake_shake_finished = function (parent, shakeObject)
 	if (shakeObject.IsPlaying) then
 		shakeObject.IsPlaying = false
+		shakeObject.TimeLeft = 0
+		shakeObject.IsFadingOut = false
+		shakeObject.IsFadingIn = false
 		
 		--> update the amount of shake running on this frame
 		parent.__frameshakes.enabled = parent.__frameshakes.enabled - 1
@@ -1508,7 +1512,18 @@ local frameshake_shake_finished = function (parent, shakeObject)
 		for i = 1, #shakeObject.Anchors do
 			local anchor = shakeObject.Anchors [i]
 			
-			if (#anchor == 3) then
+			--> automatic anchoring and reanching needs to the reviwed in the future
+			if (#anchor == 1) then
+				local anchorTo = unpack (anchor)
+				parent:ClearAllPoints()
+				parent:SetPoint (anchorTo)
+				
+			elseif (#anchor == 2) then
+				local anchorTo, point1 = unpack (anchor)
+				parent:ClearAllPoints()
+				parent:SetPoint (anchorTo, point1)
+				
+			elseif (#anchor == 3) then
 				local anchorTo, point1, point2 = unpack (anchor)
 				parent:SetPoint (anchorTo, point1, point2)
 				
@@ -1527,9 +1542,8 @@ local frameshake_do_update = function (parent, shakeObject, deltaTime)
 	
 	--> update time left
 	shakeObject.TimeLeft = max (shakeObject.TimeLeft - deltaTime, 0)
-	
+
 	if (shakeObject.TimeLeft > 0) then
-	
 		--> update fade in and out
 		if (shakeObject.IsFadingIn) then
 			shakeObject.IsFadingInTime = shakeObject.IsFadingInTime + deltaTime
@@ -1551,7 +1565,7 @@ local frameshake_do_update = function (parent, shakeObject, deltaTime)
 		
 		--> update position
 		local scaleShake = min (shakeObject.IsFadingIn and (shakeObject.IsFadingInTime / shakeObject.FadeInTime) or 1, shakeObject.IsFadingOut and (1 - shakeObject.IsFadingOutTime / shakeObject.FadeOutTime) or 1)
-		
+
 		if (scaleShake > 0) then
 
 			--> delate the time by the frequency on both X and Y offsets
@@ -1577,12 +1591,16 @@ local frameshake_do_update = function (parent, shakeObject, deltaTime)
 			for i = 1, #shakeObject.Anchors do
 				local anchor = shakeObject.Anchors [i]
 				
-				if (#anchor == 3) then
+				if (#anchor == 1 or #anchor == 3) then
 					local anchorTo, point1, point2 = unpack (anchor)
+					point1 = point1 or 0
+					point2 = point2 or 0
 					parent:SetPoint (anchorTo, point1 + newX, point2 + newY)
 					
 				elseif (#anchor == 5) then
 					local anchorName1, anchorTo, anchorName2, point1, point2 = unpack (anchor)
+					--parent:ClearAllPoints()
+					
 					parent:SetPoint (anchorName1, anchorTo, anchorName2, point1 + newX, point2 + newY)
 				end
 			end
@@ -1607,6 +1625,10 @@ local frameshake_update_all = function (parent, deltaTime)
 	end
 end
 
+local frameshake_stop = function (parent, shakeObject)
+	frameshake_shake_finished (parent, shakeObject)
+end
+
 --> scale direction scales the X and Y coordinates, scale strength scales the amplitude and frequency
 local frameshake_play = function (parent, shakeObject, scaleDirection, scaleAmplitude, scaleFrequency, scaleDuration)
 
@@ -1629,7 +1651,6 @@ local frameshake_play = function (parent, shakeObject, scaleDirection, scaleAmpl
 			shakeObject.IsFadingOut = false
 			shakeObject.IsFadingOutTime = 0
 		end
-		
 	else
 		--> create a new random offset
 		shakeObject.XSineOffset = math.pi * 2 * math.random()
@@ -1671,6 +1692,10 @@ local frameshake_play = function (parent, shakeObject, scaleDirection, scaleAmpl
 		
 		--> update the amount of shake running on this frame
 		parent.__frameshakes.enabled = parent.__frameshakes.enabled + 1
+		
+		if (not parent:GetScript ("OnUpdate")) then
+			parent:SetScript ("OnUpdate", function()end)
+		end
 	end
 
 	shakeObject.IsPlaying = true
@@ -1715,6 +1740,7 @@ function DF:CreateFrameShake (parent, duration, amplitude, frequency, absoluteSi
 			enabled = 0,
 		}
 		parent.PlayFrameShake = frameshake_play
+		parent.StopFrameShake = frameshake_stop
 		parent.UpdateFrameShake = frameshake_do_update
 		parent.UpdateAllFrameShake = frameshake_update_all
 		parent:HookScript ("OnUpdate", frameshake_update_all)
@@ -1729,7 +1755,7 @@ end
 -----------------------------
 --> glow overlay
 
-local play_glow_overlay = function (self)
+local glow_overlay_play = function (self)
 	self:Show()
 	if (self.animOut:IsPlaying()) then
 		self.animOut:Stop()
@@ -1737,20 +1763,41 @@ local play_glow_overlay = function (self)
 	self.animIn:Play()
 end
 
-local stop_glow_overlay = function (self)
+local glow_overlay_stop = function (self)
 	self.animOut:Stop()
 	self.animIn:Stop()
 	self:Hide()
 end
 
-local defaultColor = {1, 1, 1, 1}
+local glow_overlay_setcolor = function (self, antsColor, glowColor)
+	if (antsColor) then
+		local r, g, b, a = DF:ParseColors (antsColor)
+		self.ants:SetVertexColor (r, g, b, a)
+		self.AntsColor.r = r
+		self.AntsColor.g = g
+		self.AntsColor.b = b
+		self.AntsColor.a = a
+	end
+	
+	if (glowColor) then
+		local r, g, b, a = DF:ParseColors (glowColor)
+		self.outerGlow:SetVertexColor (r, g, b, a)
+		self.GlowColor.r = r
+		self.GlowColor.g = g
+		self.GlowColor.b = b
+		self.GlowColor.a = a
+	end
+end
 
 --this is most copied from the wow client code, few changes applied to customize it
 function DF:CreateGlowOverlay (parent, antsColor, glowColor)
 	local glowFrame = CreateFrame ("frame", parent:GetName() and "$parentGlow2" or "OverlayActionGlow" .. math.random (1, 10000000), parent, "ActionBarButtonSpellActivationAlert")
 	
-	glowFrame.Play = play_glow_overlay
-	glowFrame.Stop = stop_glow_overlay
+	glowFrame.Play = glow_overlay_play
+	glowFrame.Stop = glow_overlay_stop
+	glowFrame.SetColor = glow_overlay_setcolor
+	
+	glowFrame:Hide()
 	
 	parent.overlay = glowFrame
 	local frameWidth, frameHeight = parent:GetSize()
@@ -1759,14 +1806,16 @@ function DF:CreateGlowOverlay (parent, antsColor, glowColor)
 	
 	--Make the height/width available before the next frame:
 	parent.overlay:SetSize(frameWidth * scale, frameHeight * scale)
-	parent.overlay:SetPoint("TOPLEFT", parent, "TOPLEFT", -frameWidth * 0.2, frameHeight * 0.2)
-	parent.overlay:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", frameWidth * 0.2, -frameHeight * 0.2)
+	parent.overlay:SetPoint("TOPLEFT", parent, "TOPLEFT", -frameWidth * 0.32, frameHeight * 0.36)
+	parent.overlay:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", frameWidth * 0.32, -frameHeight * 0.36)
 	
 	local r, g, b, a = DF:ParseColors (antsColor or defaultColor)
 	glowFrame.ants:SetVertexColor (r, g, b, a)
+	glowFrame.AntsColor = {r, g, b, a}
 	
 	local r, g, b, a = DF:ParseColors (glowColor or defaultColor)
 	glowFrame.outerGlow:SetVertexColor (r, g, b, a)
+	glowFrame.GlowColor = {r, g, b, a}
 	
 	glowFrame.outerGlow:SetScale (1.2)
 	

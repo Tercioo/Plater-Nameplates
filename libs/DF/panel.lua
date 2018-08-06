@@ -2071,34 +2071,42 @@ function DF:ShowTextPromptPanel (message, callback)
 	if (not DF.text_prompt_panel) then
 		
 		local f = CreateFrame ("frame", "DetailsFrameworkPrompt", UIParent) 
-		f:SetSize (400, 100)
-		f:SetFrameStrata ("DIALOG")
-		f:SetPoint ("center", UIParent, "center", 0, 300)
-		f:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
-		f:SetBackdropColor (0, 0, 0, 0.8)
-		f:SetBackdropBorderColor (0, 0, 0, 1)
+		f:SetSize (400, 120)
+		f:SetFrameStrata ("FULLSCREEN")
+		f:SetPoint ("center", UIParent, "center", 0, 100)
+		f:EnableMouse (true)
+		f:SetMovable (true)
+		f:RegisterForDrag ("LeftButton")
+		f:SetScript ("OnDragStart", function() f:StartMoving() end)
+		f:SetScript ("OnDragStop", function() f:StopMovingOrSizing() end)
+		f:SetScript ("OnMouseDown", function (self, button) if (button == "RightButton") then f.EntryBox:ClearFocus() f:Hide() end end)
+		tinsert (UISpecialFrames, "DetailsFrameworkPrompt")
+		
+		DF:CreateTitleBar (f, "Prompt!")
+		DF:ApplyStandardBackdrop (f)
 		
 		local prompt = f:CreateFontString (nil, "overlay", "GameFontNormal")
-		prompt:SetPoint ("top", f, "top", 0, -15)
+		prompt:SetPoint ("top", f, "top", 0, -25)
 		prompt:SetJustifyH ("center")
+		prompt:SetSize (360, 36)
 		f.prompt = prompt
 
 		local button_text_template = DF:GetTemplate ("font", "OPTIONS_FONT_TEMPLATE")
 		local options_dropdown_template = DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE")
 
-		local button_true = DF:CreateButton (f, nil, 60, 20, "Okey", nil, nil, nil, nil, nil, nil, options_dropdown_template, button_text_template)
-		button_true:SetPoint ("bottomleft", f, "bottomleft", 10, 5)
-		f.button_true = button_true
-
-		local button_false = DF:CreateButton (f, function() f.textbox:ClearFocus(); f:Hide() end, 60, 20, "Cancel", nil, nil, nil, nil, nil, nil, options_dropdown_template, button_text_template)
-		button_false:SetPoint ("bottomright", f, "bottomright", -10, 5)
-		f.button_false = button_false
-		
 		local textbox = DF:CreateTextEntry (f, function()end, 380, 20, "textbox", nil, nil, options_dropdown_template)
-		textbox:SetPoint ("topleft", f, "topleft", 10, -45)
+		textbox:SetPoint ("topleft", f, "topleft", 10, -60)
 		f.EntryBox = textbox
 
-		button_true:SetClickFunction (function()
+		local button_true = DF:CreateButton (f, nil, 60, 20, "Okey", nil, nil, nil, nil, nil, nil, options_dropdown_template)
+		button_true:SetPoint ("bottomright", f, "bottomright", -10, 5)
+		f.button_true = button_true
+
+		local button_false = DF:CreateButton (f, function() f.textbox:ClearFocus(); f:Hide() end, 60, 20, "Cancel", nil, nil, nil, nil, nil, nil, options_dropdown_template)
+		button_false:SetPoint ("bottomleft", f, "bottomleft", 10, 5)
+		f.button_false = button_false
+		
+		local executeCallback = function()
 			local my_func = button_true.true_function
 			if (my_func) then
 				local okey, errormessage = pcall (my_func, textbox:GetText())
@@ -2108,6 +2116,14 @@ function DF:ShowTextPromptPanel (message, callback)
 				end
 				f:Hide()
 			end
+		end
+		
+		button_true:SetClickFunction (function()
+			executeCallback()
+		end)
+		
+		textbox:SetHook ("OnEnterPressed", function()
+			executeCallback()
 		end)
 	
 		f:Hide()
@@ -2119,7 +2135,6 @@ function DF:ShowTextPromptPanel (message, callback)
 	DetailsFrameworkPrompt.EntryBox:SetText ("")
 	DF.text_prompt_panel.prompt:SetText (message)
 	DF.text_prompt_panel.button_true.true_function = callback
-	
 	DF.text_prompt_panel.textbox:SetFocus (true)
 	
 end

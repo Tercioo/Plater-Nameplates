@@ -987,7 +987,8 @@ function DF:NewDropDown (parent, container, name, member, w, h, func, default, t
 	
 	local scroll = _G [DropDownObject.dropdown:GetName() .. "_ScrollFrame"]
 
-	DropDownObject.scroll = DF:NewScrollBar (scroll, _G [DropDownObject.dropdown:GetName() .. "_ScrollFrame".."_ScrollChild"], -25, -18)
+	DropDownObject.scroll = DF:NewScrollBar (scroll, _G [DropDownObject.dropdown:GetName() .. "_ScrollFrame".."_ScrollChild"], -18, -18)
+	DF:ReskinSlider (scroll)
 	
 	function DropDownObject:HideScroll()
 		scroll.baixo:Hide()
@@ -999,8 +1000,6 @@ function DF:NewDropDown (parent, container, name, member, w, h, func, default, t
 		scroll.cima:Show()
 		scroll.slider:Show()
 	end
-	
-	--button_down_scripts (DropDownObject, scroll.slider, scroll.baixo)
 	
 	DropDownObject:HideScroll()
 	DropDownObject.label:SetSize (DropDownObject.dropdown:GetWidth()-40, 10)
@@ -1111,12 +1110,14 @@ function DF:CreateNewDropdownFrame (parent, name)
 	scroll:SetSize (150, 150)
 	scroll:SetPoint ("topleft", f, "bottomleft", 0, 0)
 	f.dropdownframe = scroll
-	
+
 	local child = CreateFrame ("frame", "$Parent_ScrollChild", scroll)
 	child:SetSize (150, 150)
 	child:SetPoint ("topleft", scroll, "topleft", 0, 0)
 	child:SetBackdrop (child_backdrop)
 	child:SetBackdropColor (0, 0, 0, 1)
+	
+	DF:ApplyStandardBackdrop (child)
 	
 	local selected = child:CreateTexture ("$parent_SelectedTexture", "BACKGROUND")
 	selected:SetSize (150, 16)

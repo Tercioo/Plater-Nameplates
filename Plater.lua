@@ -452,6 +452,12 @@ local default_config = {
 			},
 		},
 		
+		--> special unit
+		pet_width_scale = 0.7,
+		pet_height_scale = 1,
+		minor_width_scale = 0.7,
+		minor_height_scale = 1,
+		
 		--> store spells from the latest event the player has been into
 		captured_spells = {},
 
@@ -1461,6 +1467,39 @@ Plater.CodeTypeNames = {
 	[4] = "OnShowCode",
 }
 
+Plater.TriggerDefaultMembers = {
+	[1] = {
+		"envTable._SpellID",
+		"envTable._UnitID",
+		"envTable._SpellName",
+		"envTable._Texture",
+		"envTable._Caster",
+		"envTable._StackCount",
+		"envTable._Duration",
+		"envTable._StartTime",
+		"envTable._EndTime",
+		"envTable._RemainingTime",
+	},
+	[2] = {
+		"envTable._SpellID",
+		"envTable._UnitID",
+		"envTable._SpellName",
+		"envTable._Texture",
+		"envTable._Caster",
+		"envTable._Duration",
+		"envTable._StartTime",
+		"envTable._EndTime",
+		"envTable._RemainingTime",
+	},
+	[3] = {
+		"envTable._UnitID",
+		"envTable._NpcID",
+		"envTable._UnitName",
+		"envTable._UnitGUID",
+		"envTable._HealthPercent",
+	},
+}
+
 local SCRIPT_TYPE_CONSTRUCTOR = Plater.CodeTypeNames [2]
 local SCRIPT_TYPE_ONUPDATE = Plater.CodeTypeNames [1]
 local SCRIPT_TYPE_ONHIDE = Plater.CodeTypeNames [3]
@@ -1537,6 +1576,7 @@ local MEMBER_NOCOMBAT = "namePlateNoCombat"
 local MEMBER_NAME = "namePlateUnitName"
 local MEMBER_NAMELOWER = "namePlateUnitNameLower"
 local MEMBER_TARGET = "namePlateIsTarget"
+local MEMBER_CLASSIFICATION = "namePlateClassification"
 
 --icon texcoords
 Plater.WideIconCoords = {.1, .9, .1, .6}
@@ -4371,7 +4411,7 @@ function Plater.AnimateRightWithAccel (self, deltaTime)
 	end
 end
 
--- ~ontick ~onupdate ~tick ~ï¿½nupdate ï¿½ntick
+-- ~ontick ~onupdate ~tick õupdate ï¿½ntick
 local EventTickFunction = function (tickFrame, deltaTime)
 	
 	tickFrame.ThrottleUpdate = tickFrame.ThrottleUpdate - deltaTime
@@ -5780,7 +5820,7 @@ function Plater.UpdateRaidMarker()
 	end
 end
 
-
+-- ~size
 function Plater.UpdatePlateSize (plateFrame, justAdded)
 	if (not plateFrame.actorType) then
 		return
@@ -5798,7 +5838,7 @@ function Plater.UpdatePlateSize (plateFrame, justAdded)
 	local buffFrame = unitFrame.BuffFrame
 	local nameFrame = unitFrame.healthBar.actorName
 	
-	local isMinus = Plater.ShouldForceSmallBar (plateFrame)
+	local unitType = Plater.GetUnitType (plateFrame)
 	local isInCombat = InCombatLockdown()
 
 	--sempre usar barras grandes quando estiver em pvp
@@ -5824,9 +5864,12 @@ function Plater.UpdatePlateSize (plateFrame, justAdded)
 		local buffFrameSize = Plater.db.profile.aura_height
 		
 		local scalarValue = SizeOf_castBar_Width > plateWidth and -((SizeOf_castBar_Width - plateWidth) / 2) or ((plateWidth - SizeOf_castBar_Width) / 2)
-		if (isMinus) then
+		if (unitType == "pet") then
+			scalarValue = scalarValue + (SizeOf_castBar_Width/5)
+		elseif (unitType == "minus") then
 			scalarValue = scalarValue + (SizeOf_castBar_Width/5)
 		end
+		
 		castFrame:SetPoint ("BOTTOMLEFT", unitFrame, "BOTTOMLEFT", scalarValue, buffFrameSize + SizeOf_healthBar_Height + 2 + height_offset);
 		castFrame:SetPoint ("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -scalarValue, buffFrameSize + SizeOf_healthBar_Height + 2 + height_offset);
 		castFrame:SetHeight (SizeOf_castBar_Height)
@@ -5991,92 +6034,109 @@ function Plater.UpdatePlateSize (plateFrame, justAdded)
 		local SizeOf_healthBar_Height = plateConfigs [heathKey][2]
 		local SizeOf_castBar_Height = plateConfigs [castKey][2]
 		local SizeOf_text = plateConfigs [textKey]
-		
+		local buffFrameSize = Plater.db.profile.aura_height
 		local height_offset = 0
 		
-		local buffFrameSize = Plater.db.profile.aura_height
-		local scalarValue = SizeOf_castBar_Width > plateWidth and -((SizeOf_castBar_Width - plateWidth) / 2) or ((plateWidth - SizeOf_castBar_Width) / 2)
-		
-		if (isMinus) then
-			scalarValue = scalarValue + (SizeOf_castBar_Width/5)
-		end
-		
-		castFrame:SetPoint ("BOTTOMLEFT", unitFrame, "BOTTOMLEFT", scalarValue, height_offset) ---SizeOf_healthBar_Height + (-SizeOf_castBar_Height + 2)
-		castFrame:SetPoint ("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -scalarValue, height_offset)
-		
-		--10/03/2018: cast frame affecting the position of the player health bar when leaving combat
-		if (not plateFrame.isSelf) then
-			castFrame:SetHeight (SizeOf_castBar_Height)
-		end
-		castFrame.Icon:SetSize (SizeOf_castBar_Height, SizeOf_castBar_Height)
-		castFrame.BorderShield:SetSize (SizeOf_castBar_Height*1.4, SizeOf_castBar_Height*1.4)
+		--> cast bar
+			local scalarValue = SizeOf_castBar_Width > plateWidth and -((SizeOf_castBar_Width - plateWidth) / 2) or ((plateWidth - SizeOf_castBar_Width) / 2)
+			
+			if (unitType == "pet") then
+				scalarValue = abs (Plater.db.profile.pet_width_scale - 2) * scalarValue
+			elseif (unitType == "minus") then
+				scalarValue = abs (Plater.db.profile.minor_width_scale - 2) * scalarValue
+			end
+			
+			castFrame:SetPoint ("BOTTOMLEFT", unitFrame, "BOTTOMLEFT", scalarValue, height_offset) ---SizeOf_healthBar_Height + (-SizeOf_castBar_Height + 2)
+			castFrame:SetPoint ("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -scalarValue, height_offset)
+			
+			--10/03/2018: cast frame affecting the position of the player health bar when leaving combat
+			if (not plateFrame.isSelf) then
+				if (unitType == "pet") then
+					SizeOf_castBar_Height = SizeOf_castBar_Height * Plater.db.profile.pet_height_scale
+					castFrame:SetHeight (SizeOf_castBar_Height)
+					
+				elseif (unitType == "minus") then
+					SizeOf_castBar_Height = SizeOf_castBar_Height * Plater.db.profile.minor_height_scale
+					castFrame:SetHeight (SizeOf_castBar_Height)
+					
+				else
+					castFrame:SetHeight (SizeOf_castBar_Height)
+				end
+			end
+			
+			castFrame.Icon:SetSize (SizeOf_castBar_Height, SizeOf_castBar_Height)
+			castFrame.BorderShield:SetSize (SizeOf_castBar_Height*1.4, SizeOf_castBar_Height*1.4)
 
-		local scalarValue
-		local passouPor = 0
-		if (Plater.ZonePvpType ~= "sanctuary" or plateFrame [MEMBER_REACTION] == 4) then
-			scalarValue = SizeOf_healthBar_Width > SizeOf_castBar_Width and -((SizeOf_healthBar_Width - SizeOf_castBar_Width) / 2) or ((SizeOf_castBar_Width - SizeOf_healthBar_Width) / 2)
-			passouPor = 1
-		else
-			if (plateFrame.isSelf) then
+		--> health bar
+			local scalarValue
+			if (plateFrame [MEMBER_REACTION] <= 4) then
 				scalarValue = SizeOf_healthBar_Width > SizeOf_castBar_Width and -((SizeOf_healthBar_Width - SizeOf_castBar_Width) / 2) or ((SizeOf_castBar_Width - SizeOf_healthBar_Width) / 2)
-				passouPor = 2
 			else
-				scalarValue = 70 > SizeOf_castBar_Width and -((70 - SizeOf_castBar_Width) / 2) or ((SizeOf_castBar_Width - 70) / 2)
-				passouPor = 3
-			end
-		end
-
-		--health
-		healthFrame:ClearAllPoints()
-		healthFrame:SetPoint ("BOTTOMLEFT", castFrame, "TOPLEFT", scalarValue,  1)
-		healthFrame:SetPoint ("BOTTOMRIGHT", castFrame, "TOPRIGHT", -scalarValue,  1)
-		
-		local targetHeight = SizeOf_healthBar_Height / (isMinus and 2 or 1)
-		local currentHeight = healthFrame:GetHeight()
-
-		if (justAdded or not Plater.db.profile.height_animation) then
-			healthFrame:SetHeight (targetHeight)
-		else
-			if (currentHeight < targetHeight) then
-				if (not healthFrame.IsIncreasingHeight) then
-					healthFrame.IsDecreasingHeight = nil
-					healthFrame.TargetHeight = targetHeight
-					healthFrame.ToIncreace = targetHeight - currentHeight
-					healthFrame.HAVE_HEIGHT_ANIMATION = "up"
-				end
-			elseif (currentHeight > targetHeight) then
-				if (not healthFrame.IsDecreasingHeight) then
-					healthFrame.IsIncreasingHeight = nil
-					healthFrame.TargetHeight = targetHeight
-					healthFrame.ToDecrease = currentHeight - targetHeight
-					healthFrame.HAVE_HEIGHT_ANIMATION = "down"
+				if (plateFrame.isSelf) then
+					scalarValue = SizeOf_healthBar_Width > SizeOf_castBar_Width and -((SizeOf_healthBar_Width - SizeOf_castBar_Width) / 2) or ((SizeOf_castBar_Width - SizeOf_healthBar_Width) / 2)
+				else
+					scalarValue = 70 > SizeOf_castBar_Width and -((70 - SizeOf_castBar_Width) / 2) or ((SizeOf_castBar_Width - 70) / 2)
 				end
 			end
-		end
+
+			--health
+			healthFrame:ClearAllPoints()
+			healthFrame:SetPoint ("BOTTOMLEFT", castFrame, "TOPLEFT", scalarValue,  1)
+			healthFrame:SetPoint ("BOTTOMRIGHT", castFrame, "TOPRIGHT", -scalarValue,  1)
+			
+			local targetHeight = SizeOf_healthBar_Height
+			if (unitType == "pet") then
+				targetHeight = targetHeight * Plater.db.profile.pet_height_scale
+			elseif (unitType == "minus") then
+				targetHeight = targetHeight * Plater.db.profile.minor_height_scale
+			end
+
+			local currentHeight = healthFrame:GetHeight()
+			
+			if (justAdded or not Plater.db.profile.height_animation) then
+				healthFrame:SetHeight (targetHeight)
+			else
+				if (currentHeight < targetHeight) then
+					if (not healthFrame.IsIncreasingHeight) then
+						healthFrame.IsDecreasingHeight = nil
+						healthFrame.TargetHeight = targetHeight
+						healthFrame.ToIncreace = targetHeight - currentHeight
+						healthFrame.HAVE_HEIGHT_ANIMATION = "up"
+					end
+				elseif (currentHeight > targetHeight) then
+					if (not healthFrame.IsDecreasingHeight) then
+						healthFrame.IsIncreasingHeight = nil
+						healthFrame.TargetHeight = targetHeight
+						healthFrame.ToDecrease = currentHeight - targetHeight
+						healthFrame.HAVE_HEIGHT_ANIMATION = "down"
+					end
+				end
+			end
 		
-		--buff
-		buffFrame.Point1 = "bottom"
-		buffFrame.Point2 = "top"
-		buffFrame.Anchor = healthFrame
-		buffFrame.X = DB_AURA_X_OFFSET
-		buffFrame.Y = (buffFrameSize / 3) + 1 + plateConfigs.buff_frame_y_offset + DB_AURA_Y_OFFSET
 		
-		buffFrame:ClearAllPoints()
-		buffFrame:SetPoint (buffFrame.Point1, buffFrame.Anchor, buffFrame.Point2, buffFrame.X, buffFrame.Y)
-		
-		--> second aura frame
-		if (DB_AURA_SEPARATE_BUFFS) then
-			unitFrame.BuffFrame2.X = Plater.db.profile.aura2_x_offset
-			unitFrame.BuffFrame2.Y = (buffFrameSize / 3) + 1 + plateConfigs.buff_frame_y_offset + Plater.db.profile.aura2_y_offset
-			unitFrame.BuffFrame2:ClearAllPoints()
-			unitFrame.BuffFrame2:SetPoint (buffFrame.Point1, buffFrame.Anchor, buffFrame.Point2, unitFrame.BuffFrame2.X, unitFrame.BuffFrame2.Y)
-		end
-		
-		--personal player bar
-		if (plateFrame.isSelf) then
-			Plater.UpdateManaAndResourcesBar()
-			healthFrame.barTexture:SetVertexColor (DF:ParseColors ("lightgreen"))
-		end
+		--> buff frame
+			buffFrame.Point1 = "bottom"
+			buffFrame.Point2 = "top"
+			buffFrame.Anchor = healthFrame
+			buffFrame.X = DB_AURA_X_OFFSET
+			buffFrame.Y = (buffFrameSize / 3) + 1 + plateConfigs.buff_frame_y_offset + DB_AURA_Y_OFFSET
+			
+			buffFrame:ClearAllPoints()
+			buffFrame:SetPoint (buffFrame.Point1, buffFrame.Anchor, buffFrame.Point2, buffFrame.X, buffFrame.Y)
+			
+			--> second aura frame
+			if (DB_AURA_SEPARATE_BUFFS) then
+				unitFrame.BuffFrame2.X = Plater.db.profile.aura2_x_offset
+				unitFrame.BuffFrame2.Y = (buffFrameSize / 3) + 1 + plateConfigs.buff_frame_y_offset + Plater.db.profile.aura2_y_offset
+				unitFrame.BuffFrame2:ClearAllPoints()
+				unitFrame.BuffFrame2:SetPoint (buffFrame.Point1, buffFrame.Anchor, buffFrame.Point2, unitFrame.BuffFrame2.X, unitFrame.BuffFrame2.Y)
+			end
+			
+			--personal player bar
+			if (plateFrame.isSelf) then
+				Plater.UpdateManaAndResourcesBar()
+				healthFrame.barTexture:SetVertexColor (DF:ParseColors ("lightgreen"))
+			end
 	end
 end
 
@@ -6252,15 +6312,14 @@ function Plater.UpdateManaAndResourcesBar()
 	
 end
 
-function Plater.ShouldForceSmallBar (plateFrame)
-	local inInstance = IsInInstance()
-	if (not inInstance) then
-		if (UnitClassification (plateFrame [MEMBER_UNITID]) == "minus") then
-			return true
-		elseif (Plater.petCache [plateFrame [MEMBER_GUID]]) then
-			return true
-		end
+function Plater.GetUnitType (plateFrame)
+	if (Plater.petCache [plateFrame [MEMBER_GUID]]) then
+		return "pet"
+	elseif (plateFrame [MEMBER_CLASSIFICATION] == "minus") then
+		return "minus"
 	end
+	
+	return "normal"
 end
 
 -- ~color
@@ -6283,9 +6342,12 @@ end
 
 function Plater.OnPlayCustomFlashAnimation (animationHub)
 	animationHub:GetParent():Show()
+	animationHub.Texture:Show()
+	--animationHub.Texture:Show()
 end
 function Plater.OnStopCustomFlashAnimation (animationHub)
 	animationHub:GetParent():Hide()
+	animationHub.Texture:Hide()
 end
 function Plater.UpdateCustomFlashAnimation (animationHub, duration, r, g, b)
 	for i = 1, #animationHub.AllAnimations do
@@ -6311,20 +6373,22 @@ function Plater.CreateFlash (frame, duration, amount, r, g, b)
 	end
 
 	--create the flash frame
-	local f = CreateFrame ("frame", nil, frame)
+	local f = CreateFrame ("frame", "PlaterFlashAnimationFrame".. math.random (1, 100000000), frame)
 	f:SetFrameLevel (frame:GetFrameLevel()+1)
 	f:SetAllPoints()
 	f:Hide()
 	
 	--create the flash texture
-	local t = f:CreateTexture (nil, "artwork")
+	local t = f:CreateTexture ("PlaterFlashAnimationTexture".. math.random (1, 100000000), "artwork")
 	t:SetColorTexture (r, g, b)
 	t:SetAllPoints()
 	t:SetBlendMode ("ADD")
+	t:Hide()
 	
 	--create the flash animation
 	local animationHub = DF:CreateAnimationHub (f, Plater.OnPlayCustomFlashAnimation, Plater.OnStopCustomFlashAnimation)
 	animationHub.AllAnimations = {}
+	animationHub.Parent = f
 	animationHub.Texture = t
 	animationHub.Amount = amount
 	animationHub.UpdateDurationAndColor = Plater.UpdateCustomFlashAnimation
@@ -7145,6 +7209,7 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame) -- ~created ~
 	TargetNeonUp:SetHeight (8)
 	TargetNeonUp:Hide()
 	plateFrame.TargetNeonUp = TargetNeonUp
+	plateFrame.UnitFrame.TargetNeonUp = TargetNeonUp
 	
 	local TargetNeonDown = plateFrame.UnitFrame:CreateTexture (nil, "overlay")
 	TargetNeonDown:SetDrawLayer ("overlay", 7)
@@ -7157,6 +7222,7 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame) -- ~created ~
 	TargetNeonDown:SetHeight (8)
 	TargetNeonDown:Hide()
 	plateFrame.TargetNeonDown = TargetNeonDown
+	plateFrame.UnitFrame.TargetNeonDown = TargetNeonDown
 	
 	Plater.CreateHighlightNameplate (plateFrame)
 
@@ -7284,6 +7350,7 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame) -- ~created ~
 	plateFrame.Top3DFrame:EnableMouse (false)
 	plateFrame.Top3DFrame:EnableMouseWheel (false)
 	plateFrame.Top3DFrame:Hide()
+	plateFrame.UnitFrame.Top3DFrame = plateFrame.Top3DFrame
 	
 	--castbar
 	--castbar background
@@ -7388,6 +7455,7 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ã
 	plateFrame.isSelf = nil
 	Plater.CheckForNpcType (plateFrame)
 	plateFrame [MEMBER_NAME] = UnitName (unitBarId) or ""
+	plateFrame [MEMBER_CLASSIFICATION] = UnitClassification (plateFrame [unitBarId])
 	plateFrame [MEMBER_NAMELOWER] = lower (plateFrame [MEMBER_NAME])
 
 	plateFrame.friendHighlight:Hide()
@@ -9633,6 +9701,12 @@ end)
 		spells_scroll:SetPoint ("topleft", auraLastEventFrame, "topleft", 10, scrollY)
 		
 		spells_scroll:SetScript ("OnShow", function (self)
+		
+			if (self.LastRefresh and self.LastRefresh+0.5 > GetTime()) then
+				return
+			end
+			self.LastRefresh = GetTime()
+		
 			local newData = {}
 			
 			for spellID, spellTable in pairs (DB_CAPTURED_SPELLS) do
@@ -14589,10 +14663,10 @@ end
 	}
 	
 	scriptingFrame.CodeTypes = {
-		{Name = "Constructor", Desc = "Use to create frames, store them inside |cFFFFFF00envTable|r.\n\nHide these frames on 'OnHide' script.\n\nAlso check if the frame already exists before creating it.", Value = 2},
-		{Name = "On Show", Desc = "Run when the widget visibility is changed, use to show your custom frames, textures, etc.", Value = 4},
-		{Name = "On Update", Desc = "Runs after the widget gets an update.", Value = 1},
-		{Name = "On Hide", Desc = "Run when the widget visibility is changed, use to hide your custom frames, textures, etc.", Value = 3},
+		{Name = "Constructor", Desc = "Is executed only once, create your custom stuff here like frames, textures, animations and store them inside |cFFFFFF00envTable|r.\n\nAlso check if the frame already exists before creating it!", Value = 2},
+		{Name = "On Show", Desc = "Executed when the trigger match!\n\nUse to show your custom frames, textures, play animations, etc.", Value = 4},
+		{Name = "On Update", Desc = "Executed after Plater updates the nameplate.\n\nUse this to update your custom stuff or override values that Plater might have set during the nameplate update, e.g. the nameplate color due to aggro checks.", Value = 1},
+		{Name = "On Hide", Desc = "Executed when the widget is Hide() or trigger doesn't match anymore.\n\nUse to hide your custom frames, textures, stop animations, etc.", Value = 3},
 	}
 	
 	scriptingFrame.APIList = {
@@ -14605,20 +14679,20 @@ end
 	}
 
 	scriptingFrame.FrameworkList = {
-		{Name = "CreateFlash",		 		Signature = "Plater.CreateFlash (parent, duration, amount, color)", 	Desc = "Creates a custom flash which can be triggered by the ReturnValue:Play()"},
-		{Name = "CreateFrameShake",		Signature = "Plater:CreateFrameShake (parent, duration, amplitude, frequency, absoluteSineX, absoluteSineY, scaleX, scaleY, fadeInTime, fadeOutTime, anchorPoints)",	Desc = "Creates a shake for the frame.\n\nStore the returned table inside the envTable and call parent:PlayFrameShake (returned table) to play the shake."},
+		{Name = "CreateFlash",		 		Signature = "Plater.CreateFlash (parent, duration, amountOfFlashes, color)", 	Desc = "Creates a custom flash which can be triggered by the ReturnValue:Play()\n\nUse:\n|cFFFFFF00ReturnedValue:Play()|r on OnShow.\n|cFFFFFF00ReturnedValue:Stop()|r on OnHide.", AddVar = true, AddCall = "--@ENV@:Play() --@ENV@:Stop()"},
+		--{Name = "CreateFrameShake",		Signature = "Plater:CreateFrameShake (parent, duration, amplitude, frequency, bAbsoluteSineX, bAbsoluteSineY, scaleX, scaleY, fadeInTime, fadeOutTime)",	Desc = "Creates a shake for the frame.\n\nStore the returned table inside the envTable and call parent:PlayFrameShake (returned table) to play the shake.", AddVar = true, AddCall = "--parent:PlayFrameShake(@ENV@)"}, -- --parent:StopFrameShake(@ENV@)
 		
-		{Name = "CreateLabel",		 		Signature = "Plater:CreateLabel (parent, text, size, color, font, member, name, layer)",	Desc = "Creates a fontstring.\n\nMembers:\n.text = 'new text'\n.textcolor = 'red'\n.textsize = 12\n.textfont = 'fontName'"},
-		{Name = "CreateImage",		 	Signature = "Plater:CreateImage (parent, texture, w, h, layer, coords, member, name)",	Desc = "Creates a texture.\n\nMembers:\n.texture = 'texture path'\n.alpha = 0.5\n.width = 300\n.height = 200"},
-		{Name = "CreateBar",		 		Signature = "Plater:CreateBar (parent, texture, w, h, value, member, name)",			Desc = "Creates progress bar.\n\nMembers:\n.value = 0.5\n.texture = 'texture path'\n.icon = 'texture path'\n.lefttext = 'new text'\n.righttext = 'new text'\n.color = color\n.width = 300\n.height = 200"},
+		{Name = "CreateLabel",		 		Signature = "Plater:CreateLabel (parent, text, size, color, font, member, name, layer)",	Desc = "Creates a fontstring, all parameters after 'parent' are optional.\n\nMembers:\n.text = 'new text'\n.textcolor = 'red'\n.textsize = 12\n.textfont = 'fontName'", AddVar = true},
+		{Name = "CreateImage",		 	Signature = "Plater:CreateImage (parent, texture, w, h, layer, coords, member, name)",	Desc = "Creates a texture, all parameters after 'parent' are optional.\n\nMembers:\n.texture = 'texture path'\n.alpha = 0.5\n.width = 300\n.height = 200", AddVar = true},
+		{Name = "CreateBar",		 		Signature = "Plater:CreateBar (parent, texture, w, h, value, member, name)",			Desc = "Creates progress bar, all parameters after 'parent' are optional.\n\nMembers:\n.value = 0.5\n.texture = 'texture path'\n.icon = 'texture path'\n.lefttext = 'new text'\n.righttext = 'new text'\n.color = color\n.width = 300\n.height = 200", AddVar = true},
 		
 		{Name = "SetFontSize",		 	Signature = "Plater:SetFontSize (fontString, fontSize, ...)",						Desc = "Set the size of a text, accept more than one size, automatically picks the bigger one."},
 		{Name = "SetFontFace",		 	Signature = "Plater:SetFontFace (fontString, fontFace)",						Desc = "Set the font of a text."},
 		{Name = "SetFontColor",		 	Signature = "Plater:SetFontColor (fontString, r, g, b, a)",						Desc = "Set the color of a text.\n\nColor formats are:\n|cFFFFFF00Just Values|r: r, g, b, a\n|cFFFFFF00Index Table|r: {r, g, b}\n|cFFFFFF00Hash Table|r: {r = 1, g = 1, b = 1}\n|cFFFFFF00Hex|r: '#FFFF0000' or '#FF0000'\n|cFFFFFF00Name|r: 'yellow' 'white'"},
 		
-		{Name = "CreateAnimationHub",		Signature = "Plater:CreateAnimationHub (parent, onShowFunc, onHideFunc)",		Desc = "Creates an object to hold animations, see 'CreateAnimation' to add animations to the hub.\n\nMethods:\n:Play() = plays all animations in the hub.\n:Stop() = stop all animations in the hub."},
-		{Name = "CreateAnimation",			Signature = "Plater:CreateAnimation (animationHub, animationType, order, duration, arg1, arg2, arg3, arg4)",	Desc = "Creates an animation.\n\nAnimation Types:\nAlpha: arg1 = alpha start, arg2 = alpha end.\nScale: arg1 = X start, arg2 = Y start, arg3 = X end, arg4 = Y end.\nRotation: arg1 = rotation degrees.\nTranslation: arg1 = X offset, arg2 = Y offset.\n\nOrder = 1 to 10, lower plays first\n\nDuration: how much time this animation takes to complete."},
-		{Name = "CreateGlowOverlay",		Signature = "Plater:CreateGlowOverlay (parent, dotColor, glowColor)",			Desc = "Creates a glow effect with animation."},
+		{Name = "CreateAnimationHub",		Signature = "Plater:CreateAnimationHub (parent, onShowFunc, onHideFunc)",		Desc = "Creates an object to hold animations, see 'CreateAnimation' to add animations to the hub. When ReturnedValue:Play() is called all animations in the hub start playing respecting the Order set in the CreateAnimation().\n\nUse onShowFunc and onHideFunc to show or hide custom frames, textures or text.\n\nMethods:\n|cFFFFFF00ReturnedValue:Play()|r plays all animations in the hub.\n|cFFFFFF00ReturnedValue:Stop()|r: stop all animations in the hub.", AddVar = true, AddCall = "--@ENV@:Play() --@ENV@:Stop()"},
+		{Name = "CreateAnimation",			Signature = "Plater:CreateAnimation (animationHub, animationType, order, duration, |cFFCCCCCCarg1|r, |cFFCCCCCCarg2|r, |cFFCCCCCCarg3|r, |cFFCCCCCCarg4|r)",	Desc = "Creates an animation within an animation hub.\n\nOrder: integer between 1 and 10, lower play first. Animations with the same Order play at the same time.\n\nDuration: how much time this animation takes to complete.\n\nAnimation Types:\n|cFFFFFF00\"Alpha\"|r:\n|cFFCCCCCCarg1|r: Alpha Start Value, |cFFCCCCCCarg2|r: Alpha End Value.\n\n|cFFFFFF00\"Scale\"|r:\n|cFFCCCCCCarg1|r: X Start, |cFFCCCCCCarg2|r: Y Start, |cFFCCCCCCarg3|r: X End, |cFFCCCCCCarg4|r: Y End.\n\n|cFFFFFF00\"Rotation\"|r:\n |cFFCCCCCCarg1|r: Rotation Degrees.\n\n|cFFFFFF00\"Transition\"|r:\n |cFFCCCCCCarg1|r: X Offset, |cFFCCCCCCarg2|r: Y Offset."},
+		{Name = "CreateGlowOverlay",		Signature = "Plater:CreateGlowOverlay (parent, dotColor, glowColor)",			Desc = "Creates a glow effect with animation.\n\nUse:\n|cFFFFFF00ReturnedValue:Play()|r on OnShow.\n|cFFFFFF00ReturnedValue:Stop()|r on OnHide.\n|cFFFFFF00ReturnedValue:SetColor (dotColor, glowColor)|r if need to change the color of the glow.", AddVar = true, AddCall = "--@ENV@:Play() --@ENV@:Stop()"},
 
 		{Name = "FormatNumber",			Signature = "Plater.FormatNumber (number)",	Desc = "Format a number to be short as possible.\n\nExample:\n300000 to 300K\n2500000 to 2.5M"},
 		{Name = "CommaValue",			Signature = "Plater:CommaValue (number)",	Desc = "Format a number separating by thousands and millions.\n\nExample: 300000 to 300.000\n2500000 to 2.500.000"},
@@ -14632,16 +14706,22 @@ end
 	scriptingFrame.UnitFrameMembers = {
 		"unitFrame.castBar",
 		"unitFrame.castBar.Text",
+		"unitFrame.castBar.FrameOverlay",
 		"unitFrame.castBar.percentText",
-		"unitFrame.castBar.extraBackground",
+		--"unitFrame.castBar.extraBackground",
 		"unitFrame.healthBar",
 		"unitFrame.healthBar.actorName",
-		"unitFrame.healthBar.actorLevel",
+		--"unitFrame.healthBar.actorLevel",
 		"unitFrame.healthBar.lifePercent",
 		"unitFrame.healthBar.border",
-		"unitFrame.healthBar.healthCutOff",
+		--"unitFrame.healthBar.healthCutOff",
 		"unitFrame.BuffFrame",
-		"unitFrame.ExtraIconFrame",
+		"unitFrame.BuffFrame2",
+		--"unitFrame.ExtraIconFrame",
+		"unitFrame.Top3DFrame",
+		--"unitFrame.FocusIndicator",
+		"unitFrame.TargetNeonUp",
+		"unitFrame.TargetNeonDown",
 	}
 	
 	--store all spells from the game in a hash table and also on the index table
@@ -15140,7 +15220,7 @@ end
 	end
 
 	do
-		local help_popup = DF:CreateSimplePanel (UIParent, 800, 430, "Plater Scripting Help", "PlaterScriptingHelp")
+		local help_popup = DF:CreateSimplePanel (UIParent, 1000, 450, "Plater Scripting Help", "PlaterScriptingHelp")
 		help_popup:SetFrameStrata ("DIALOG")
 		help_popup:SetPoint ("center")
 		DF:ApplyStandardBackdrop (help_popup, false, 1.2)
@@ -15153,12 +15233,13 @@ end
 		local frontpageText_Welcome = "Scripting allows you to apply a more depth customization into the nameplate.\n"
 		local frontpageText_Lua = "A basic knowledge of Lua programming may be required.\n\n"
 		local frontpageText_Triggers = "|cFFFFFF00How a Script Works:|r\n\nThere's three types of triggers: |cFFFF5500Auras|r, |cFFFF5500Spell Cast|r and |cFFFF5500Unit Name|r, when a condition for the trigger matches, it begins to run its code.\n\n"
-		local frontpageText_Scripts = "There's four types of code: |cFFFF5500Constructor|r runs only once, use to create frames and textures, |cFFFF5500On Show|r run each time the trigger is activated,\n|cFFFF5500On Update|r runs every time Plater updates the frame, |cFFFF5500On Hide|r runs when the trigger doesn't match the condition any more.\n"
-		local frontpageText_Function = "\n|cFFFFFF00Function Parameters:|r\n\n|cFFC0C0C0function (self, unit, unitFrame, envTable)\n    --code\nend|r\n\n|cFFFF5500self|r: is different for each trigger, for buffs is the frame of the icon, spell casting passes the frame of the cast bar\nand the unit frame is passed for unit names.\n|cFFFF5500unit|r: unitId of the unit shown in the nameplate.\n|cFFFF5500unitFrame|r: is the nameplate unit frame (parent of all widgets).\n|cFFFF5500envTable|r: a table where you can store data.\n"
+		local frontpageText_Scripts = "There's four types of code:\n|cFFFF5500Constructor|r: runs only once, use to create your custom frames, texture and animations.\n|cFFFF5500On Show|r: is executed each time the script triggers. Use this to show or play frames and animations created inside the constructor.\n|cFFFF5500On Update|r runs every time Plater updates the nameplate. Use this to override something that Plater have set, the nameplate color for example, or, update some information from your custom stuff.\n|cFFFF5500On Hide|r: executed when the trigger doesn't match the condition any more. Use this to hide and stop all your frames and animations.\n"
+		local frontpageText_Function = "\n|cFFFFFF00Function Parameters:|r\n\n|cFFC0C0C0function (self, unit, unitFrame, envTable)\n    --code\nend|r\n\n|cFFFF5500self|r: is different for each trigger, for buffs is the frame of the icon, spell casting passes the frame of the cast bar and the unit frame is passed for unit names.\n|cFFFF5500unit|r: unitId of the unit shown in the nameplate, use to query data, for example: UnitName (unitId).\n|cFFFF5500unitFrame|r: is the nameplate unit frame (parent of all widgets), the tooltip of the ? button has all the members to access all components of the nameplate from the unit frame.\n|cFFFF5500envTable|r: a table where you can store data, it also store information about the aura, cast and the unit shown depending on the type of the trigger.\n"
+		local frontpageText_ReturnValues = "\nWhat is a |cFFFF5500ReturnValue|r?\nIs what a function returns after a calling it, example:\nenvTable.MyFlash = Plater.CreateFlash (unitFrame.healthBar, 0.05, 2, 'white')\nPlater.CreateFlash() returned an object with information about the flash created, then this information is stored inside '|cFFFF5500envTable.MyFlash|r'\nYou can use it later to play the flash with '|cFFFF5500envTable.MyFlash:Play()|r' or stop it with '|cFFFF5500envTable.MyFlash:Stop()|r'."
 		
-		scripting_help_label.text = frontpageText_Welcome .. frontpageText_Lua .. frontpageText_Triggers .. frontpageText_Scripts .. frontpageText_Function
-		scripting_help_label.fontsize = 14	
-		scripting_help_label:SetPoint ("topleft", help_popup, "topleft", 5, -20)
+		scripting_help_label.text = frontpageText_Welcome .. frontpageText_Lua .. frontpageText_Triggers .. frontpageText_Scripts .. frontpageText_Function .. frontpageText_ReturnValues
+		scripting_help_label.fontsize = 14
+		scripting_help_label:SetPoint ("topleft", help_popup, "topleft", 5, -25)
 	end
 	
 	--create the frame which will hold the create panel
@@ -15854,98 +15935,131 @@ end
 				scriptingFrame.CodeEditorLuaEntry = code_editor
 				
 				--api help small frame
-				local unit_frame_small_help_frame = DF:CreateButton (code_editor, function() scriptingFrame.HelpFrame:Show() end, 20, 20, "", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
-				unit_frame_small_help_frame:SetIcon ([[Interface\GossipFrame\ActiveQuestIcon]], 18, 18, "overlay", {0, 1, 0, 1}, nil, 0, -4, nil, false)
-				unit_frame_small_help_frame:SetHook ("OnEnter", function()
+				local unit_frame_components_menu = DF:CreateButton (code_editor, function() end, 100, 20, "Components", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				unit_frame_components_menu:SetIcon ([[Interface\FriendsFrame\UI-FriendsList-Large-Up]], 16, 16, "overlay", {.2, .74, .27, .75}, nil, 4)
 				
+				local onSelectComponentMember = function (a, d, member)
+					code_editor.editbox:Insert (member)
+					GameCooltip:Hide()
+				end
+				
+				local buildComponentTableMenu = function()
 					GameCooltip:Preset (2)
 					GameCooltip:SetOption ("TextSize", 11)
 					GameCooltip:SetOption ("FixedWidth", 300)
 					
-					GameCooltip:AddLine ("UnitFrame Members", "", 1, "yellow", "yellow", 12, nil, "OUTLINE")
+					GameCooltip:AddLine ("Nameplate Components", "", 1, "yellow", "yellow", 12, nil, "OUTLINE")
 					
 					local backgroundAlpha = 0.2
 					
 					for i = 1, #scriptingFrame.UnitFrameMembers do 
 						GameCooltip:AddLine (scriptingFrame.UnitFrameMembers [i])
+						GameCooltip:AddMenu (1, onSelectComponentMember, scriptingFrame.UnitFrameMembers [i])
 						GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
 					end
-					
-					GameCooltip:AddLine (" ")
-					GameCooltip:AddLine ("click for more information", "", 1, "green")
-					
-					GameCooltip:SetOwner (unit_frame_small_help_frame.widget)
-					GameCooltip:Show()
-					
-				end)
+				end
+
+				unit_frame_components_menu.CoolTip = {
+					Type = "menu",
+					BuildFunc = buildComponentTableMenu,
+					ShowSpeed = 0.05,
+				}
 				
-				unit_frame_small_help_frame:SetHook ("OnLeave", function()
-					GameCooltip:Hide()
-				end)
+				GameCooltip2:CoolTipInject (unit_frame_components_menu)
 				
 				--script env helper
-				local script_env_helper = DF:CreateButton (code_editor, function() end, 100, 20, "envTable Data", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				local script_env_helper = DF:CreateButton (code_editor, function() end, 100, 20, "envTable", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 				script_env_helper:SetIcon ([[Interface\FriendsFrame\UI-FriendsList-Small-Up]], 16, 16, "overlay", {.2, .74, .27, .75}, nil, 4)
-				script_env_helper:SetHook ("OnEnter", function()
+				
+				local onSelectEnvTableMember = function (a, d, member)
+					code_editor.editbox:Insert (member)
+					GameCooltip:Hide()
+				end
+				
+				local buildEnvTableMenu = function()
+				
+					local scriptObject = scriptingFrame.GetCurrentScriptObject()
+				
+					if (not scriptObject) then
+						GameCooltip:Preset (2)
+						GameCooltip:SetOption ("TextSize", 11)
+						GameCooltip:SetOption ("FixedWidth", 400)
+						GameCooltip:AddLine ("*No script loaded", "", 1, "red")
+						GameCooltip:AddLine ("Use this menu to quick add to your code a member from envTable")
+						return
+					end
 				
 					GameCooltip:Preset (2)
 					GameCooltip:SetOption ("TextSize", 11)
 					GameCooltip:SetOption ("FixedWidth", 400)
-					
-					local scriptObject = scriptingFrame.GetCurrentScriptObject()
-					
-					if (scriptObject) then
+
+					--if (scriptObject) then
 						local backgroundAlpha = 0.2
-						if (scriptObject.ScriptType == 0x1) then
-							GameCooltip:AddLine ("envTable Member", "Description", 1, "yellow", "yellow", 12, nil, "OUTLINE")
+						--if (scriptObject.ScriptType == 0x1) then
+						if (not scriptObject or scriptObject.ScriptType == 0x1) then
+							GameCooltip:AddLine ("envTable Members for Trigger Buffs and Debuffs", "", 1, "yellow", "yellow", 12, nil, "OUTLINE")
 							
-							GameCooltip:AddLine ("envTable._SpellID", "ID of the spell", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
-							GameCooltip:AddLine ("envTable._UnitID", "caster unitID", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
-							GameCooltip:AddLine ("envTable._SpellName", "name of the spell", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
-							GameCooltip:AddLine ("envTable._Texture", "texture for the icon", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
-							GameCooltip:AddLine ("envTable._Caster", "unitID of the caster", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
-							GameCooltip:AddLine ("envTable._StackCount", "amount of stacks the aura has", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
-							GameCooltip:AddLine ("envTable._Duration", "total duration of the aura", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
-							GameCooltip:AddLine ("envTable._StartTime", "GetTime() of when the aura was applied", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
-							GameCooltip:AddLine ("envTable._EndTime", "GetTime() of when the aura will expire", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
-							GameCooltip:AddLine ("envTable._RemainingTime", "time left in seconds", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+							for index, member in ipairs (Plater.TriggerDefaultMembers [1]) do
+								GameCooltip:AddLine (member, "", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+								GameCooltip:AddMenu (1, onSelectEnvTableMember, member)
+							end
 							
-						elseif (scriptObject.ScriptType == 0x2) then
-							GameCooltip:AddLine ("envTable Member", "Description", 1, "yellow", "yellow", 12, nil, "OUTLINE")
-							
-							GameCooltip:AddLine ("envTable._SpellID", "ID of the spell", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
-							GameCooltip:AddLine ("envTable._UnitID", "caster unitID", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
-							GameCooltip:AddLine ("envTable._SpellName", "name of the spell", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
-							GameCooltip:AddLine ("envTable._Texture", "texture for the icon", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
-							GameCooltip:AddLine ("envTable._Caster", "unitID of the caster", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
-							GameCooltip:AddLine ("envTable._Duration", "total duration of the cast", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
-							GameCooltip:AddLine ("envTable._StartTime", "GetTime() of when the cast was started", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
-							GameCooltip:AddLine ("envTable._EndTime", "GetTime() of when the cast will finish", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
-							GameCooltip:AddLine ("envTable._RemainingTime", "time left in seconds", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
-						
-						elseif (scriptObject.ScriptType == 0x3) then
-							GameCooltip:AddLine ("envTable Member", "Description", 1, "yellow", "yellow", 12, nil, "OUTLINE")
-						
-							GameCooltip:AddLine ("envTable._UnitID", "unitID of the unit", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
-							GameCooltip:AddLine ("envTable._NpcID", "npcID of the unit", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
-							GameCooltip:AddLine ("envTable._UnitName", "name of the unit", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
-							GameCooltip:AddLine ("envTable._UnitGUID", "GUID of the unit", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
-							GameCooltip:AddLine ("envTable._HealthPercent", "health percent of the unit (0-100)", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+							--adds a space to separate from the infor of the next trigger
+							if (not scriptObject) then
+								GameCooltip:AddLine (" ")
+							end
 						end
-					else
-						GameCooltip:AddLine ("No script being edited")
-					end
-					
-					--GameCooltip:AddLine (" ")
-					--GameCooltip:AddLine ("click for more information", "", 1, "green")
-					
-					GameCooltip:SetOwner (script_env_helper.widget)
-					GameCooltip:Show()
-				end)
+						
+						if (not scriptObject or scriptObject.ScriptType == 0x2) then
+							GameCooltip:AddLine ("envTable Members for Trigger Spell Casting", "", 1, "yellow", "yellow", 12, nil, "OUTLINE")
+							
+							for index, member in ipairs (Plater.TriggerDefaultMembers [2]) do
+								GameCooltip:AddLine (member, "", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+								GameCooltip:AddMenu (1, onSelectEnvTableMember, member)
+							end
+							
+							--adds a space to separate from the infor of the next trigger
+							if (not scriptObject) then
+								GameCooltip:AddLine (" ")
+							end
+						end
+						
+						if (not scriptObject or scriptObject.ScriptType == 0x3) then
+							GameCooltip:AddLine ("envTable Members for Trigger Unit Name", "", 1, "yellow", "yellow", 12, nil, "OUTLINE")
+						
+							for index, member in ipairs (Plater.TriggerDefaultMembers [3]) do
+								GameCooltip:AddLine (member, "", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+								GameCooltip:AddMenu (1, onSelectEnvTableMember, member)
+							end
+							
+							GameCooltip:AddLine (" ")
+							GameCooltip:AddLine ("envTable Members From Constructor Code:", "", 1, "yellow", "yellow", 12, nil, "OUTLINE")
+							
+							--> get the constructor code from the editor if the current editing is the constructor or get the temporarily saved script from the script object
+							local code = scriptingFrame.CodeTypeDropdown.CodeType == 2 and scriptingFrame.CodeEditorLuaEntry:GetText() or scriptObject ["Temp_" .. Plater.CodeTypeNames [2]]
+							if (code) then
+								--> find all member names added to the envTable
+								--> add all members in the comments too
+								local alreadyAdded = {}
+								for _, memberName in code:gmatch ("(envTable%.)(.-)(%s)") do
+									memberName = DF:Trim (memberName)
+									if (not memberName:find ("%s") and not alreadyAdded [memberName]) then
+										alreadyAdded [memberName] = memberName
+										GameCooltip:AddLine ("envTable." .. memberName, "", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+										GameCooltip:AddMenu (1, onSelectEnvTableMember, "envTable." .. memberName)
+									end
+								end
+							end
+						end
+				end
 				
-				script_env_helper:SetHook ("OnLeave", function()
-					GameCooltip:Hide()
-				end)
+				script_env_helper.CoolTip = {
+					Type = "menu",
+					BuildFunc = buildEnvTableMenu,
+					ShowSpeed = 0.05,
+				}
+				
+				GameCooltip2:CoolTipInject (script_env_helper)
 				
 				--add api palette dropdown
 					local on_select_FW_option = function (self, fixed_parameter, option_selected)
@@ -15963,20 +16077,60 @@ end
 					end
 					
 					local add_API_label = DF:CreateLabel (edit_script_frame, "API Palette:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
-					local add_API_dropdown = DF:CreateDropDown (edit_script_frame, build_API_dropdown_options, 1, 160, 20, "AddAPIDropdown", _, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+					local add_API_dropdown = DF:CreateDropDown (edit_script_frame, build_API_dropdown_options, 1, 130, 20, "AddAPIDropdown", _, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
 					scriptingFrame.AddAPIDropdown = add_API_dropdown
 					add_API_dropdown:SetFrameStrata (code_editor:GetFrameStrata())
 					add_API_dropdown:SetFrameLevel (code_editor:GetFrameLevel()+100)
 					
+					--top left of the code editor
 					script_env_helper:SetPoint ("bottomleft", code_editor, "topleft", 0, 2)
-					unit_frame_small_help_frame:SetPoint ("bottomright", code_editor, "topright", 0, 2)
-					add_API_dropdown:SetPoint ("right", unit_frame_small_help_frame, "left", -2, 0)
+					unit_frame_components_menu:SetPoint ("left", script_env_helper, "right", 2, 0)
+					
+					--top right of the code editor
+					add_API_dropdown:SetPoint ("bottomright", code_editor, "topright", 0, 2)
 					add_API_label:SetPoint ("right", add_API_dropdown, "left", -2, 0)
 
 				--add framework palette dropdowns
+					local frameworkSelected
+					local memberNameCallback = function (text)
+						if (text and text ~= "" and not text:find ("%s")) then
+							text = DF:Trim (text)
+							local textToAdd = frameworkSelected.Signature
+							
+							--save the current cursor position
+							code_editor.editbox:SetFocus (true)
+							local cursorPosition = code_editor.editbox:GetCursorPosition()
+							
+							--insert the text
+							local textToInsert = "envTable." .. text .. " = envTable." .. text .. " or " .. frameworkSelected.Signature
+							code_editor.editbox:Insert (textToInsert)
+							
+							if (frameworkSelected.AddCall) then
+								code_editor.editbox:Insert ("\n")
+								local addCallString = frameworkSelected.AddCall
+								addCallString = addCallString:gsub ("@ENV@", "envTable." .. text)
+								code_editor.editbox:Insert (addCallString)
+								code_editor.editbox:Insert ("\n")
+							end
+
+							--restore the cursor position
+							local argumentStart = textToInsert:find ("%(")
+							code_editor.editbox:SetCursorPosition (cursorPosition + argumentStart)
+							
+						else
+							Plater:Msg ("Invalid variable name.")
+						end
+					end
+					
 					local on_select_FW_option = function (self, fixed_parameter, option_selected)
 						local framework = scriptingFrame.FrameworkList [option_selected]
-						code_editor.editbox:Insert (framework.Signature)
+						
+						if (framework.AddVar) then
+							frameworkSelected = framework
+							DF:ShowTextPromptPanel ("Name the variable using letters, numbers and no spaces (e.g. myFlash, overlayTexture, animation1)", memberNameCallback)
+						else
+							code_editor.editbox:Insert (framework.Signature)
+						end
 					end
 					
 					local build_FW_dropdown_options = function()
@@ -15989,7 +16143,7 @@ end
 					end
 					
 					local add_FW_label = DF:CreateLabel (edit_script_frame, "Framework Palette:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
-					local add_FW_dropdown = DF:CreateDropDown (edit_script_frame, build_FW_dropdown_options, 1, 160, 20, "AddFWDropdown", _, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+					local add_FW_dropdown = DF:CreateDropDown (edit_script_frame, build_FW_dropdown_options, 1, 130, 20, "AddFWDropdown", _, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
 					scriptingFrame.AddFWDropdown = add_FW_dropdown
 					add_FW_dropdown:SetFrameStrata (code_editor:GetFrameStrata())
 					add_FW_dropdown:SetFrameLevel (code_editor:GetFrameLevel()+100)
@@ -16091,7 +16245,7 @@ end
 	end
 	
 	--create new script script button, it does use the width of the scrollbox to select a created script	
-	local create_new_script_button = DF:CreateButton (scriptingFrame, onclick_create_new_script_button, scrollbox_size[1] - (28*2), buttons_size[2], "Create New Script", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+	local create_new_script_button = DF:CreateButton (scriptingFrame, onclick_create_new_script_button, scrollbox_size[1] - (28*3), buttons_size[2], "New Script", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 	create_new_script_button:SetPoint ("topleft", scriptingFrame, "topleft", 10, start_y)
 	create_new_script_button:SetIcon ([[Interface\BUTTONS\UI-PlusButton-Up]], 20, 20, "overlay", {0, 1, 0, 1})
 	
@@ -16173,6 +16327,11 @@ end
 	import_script_button:HookScript ("OnLeave", function()
 		GameCooltip:Hide()
 	end)
+	
+	--help button
+	local help_script_button = DF:CreateButton (scriptingFrame, function() scriptingFrame.HelpFrame:Show() end, 26, buttons_size[2], "", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+	help_script_button:SetPoint ("left", import_script_button, "right", 2, 0)
+	help_script_button:SetIcon ([[Interface\GossipFrame\ActiveQuestIcon]], 18, 18, "overlay", {0, 1, 0, 1}, nil, 0, -1, nil, false)
 
 	function Plater.SortScripts (t1, t2)
 		--> index 4 stores if the script is enabled
@@ -17268,6 +17427,65 @@ end
 			desc = "Friendly",
 		},
 	
+		{type = "blank"},
+		{type = "label", get = function() return "Special Units:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+	
+		{
+			type = "range",
+			get = function() return Plater.db.profile.pet_width_scale end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.pet_width_scale = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 0.2,
+			max = 2,
+			step = 0.1,
+			name = "Pet Width Scale",
+			desc = "Slightly adjust the size of nameplates when showing a pet",
+			usedecimals = true,
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.pet_height_scale end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.pet_height_scale = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 0.2,
+			max = 2,
+			step = 0.1,
+			name = "Pet Height Scale",
+			desc = "Slightly adjust the size of nameplates when showing a pet",
+			usedecimals = true,
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.minor_width_scale end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.minor_width_scale = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 0.2,
+			max = 2,
+			step = 0.1,
+			name = "Minor Unit Width Scale",
+			desc = "Slightly adjust the size of nameplates when showing a minor unit (these units has a smaller nameplate by default).",
+			usedecimals = true,
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.minor_height_scale end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.minor_height_scale = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 0.2,
+			max = 2,
+			step = 0.1,
+			name = "Minor Unit Height Scale",
+			desc = "Slightly adjust the size of nameplates when showing a minor unit (these units has a smaller nameplate by default).",
+			usedecimals = true,
+		},
 	}
 	
 	DF:BuildMenu (advancedFrame, advanced_options, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
