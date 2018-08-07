@@ -6337,8 +6337,37 @@ end
 --healthBar.g = g
 --healthBar.b = b
 --healthBar:SetStatusBarColor (r, g, b)
-		
---plater ~API ï¿½pi
+
+--plater ~API ãpi
+
+function Plater.CreateNameplateGlow (frame, color, left, right, top, bottom)
+	local antTable = {
+		Throttle = 0.025,
+		AmountParts = 15,
+		TexturePartsWidth = 167.4,
+		TexturePartsHeight = 83.6,
+		TextureWidth = 512,
+		TextureHeight = 512,
+		BlendMode = "ADD",
+		Color = color,
+		Texture = [[Interface\AddOns\Plater\images\ants_rectangle]],
+	}
+
+	--> ants
+	local f = DF:CreateAnts (frame, antTable, -27 + (left or 0), 25 + (right or 0), 5 + (top or 0), -7 + (bottom or 0))
+	f:SetFrameLevel (frame:GetFrameLevel() - 1)
+	
+	--> glow
+	local glow = f:CreateTexture (nil, "overlay")
+	glow:SetTexture ([[Interface\AddOns\Plater\images\nameplate_glow]])
+	glow:SetPoint ("center", frame, "center", 0, 0)
+	glow:SetSize (frame:GetWidth() + frame:GetWidth()/2.3, 36)
+	glow:SetBlendMode ("ADD")
+	glow:SetVertexColor (DF:ParseColors (color or "white"))
+	glow.GlowTexture = glow
+	
+	return f
+end
 
 function Plater.OnPlayCustomFlashAnimation (animationHub)
 	animationHub:GetParent():Show()
@@ -14692,8 +14721,9 @@ end
 		
 		{Name = "CreateAnimationHub",		Signature = "Plater:CreateAnimationHub (parent, onShowFunc, onHideFunc)",		Desc = "Creates an object to hold animations, see 'CreateAnimation' to add animations to the hub. When ReturnedValue:Play() is called all animations in the hub start playing respecting the Order set in the CreateAnimation().\n\nUse onShowFunc and onHideFunc to show or hide custom frames, textures or text.\n\nMethods:\n|cFFFFFF00ReturnedValue:Play()|r plays all animations in the hub.\n|cFFFFFF00ReturnedValue:Stop()|r: stop all animations in the hub.", AddVar = true, AddCall = "--@ENV@:Play() --@ENV@:Stop()"},
 		{Name = "CreateAnimation",			Signature = "Plater:CreateAnimation (animationHub, animationType, order, duration, |cFFCCCCCCarg1|r, |cFFCCCCCCarg2|r, |cFFCCCCCCarg3|r, |cFFCCCCCCarg4|r)",	Desc = "Creates an animation within an animation hub.\n\nOrder: integer between 1 and 10, lower play first. Animations with the same Order play at the same time.\n\nDuration: how much time this animation takes to complete.\n\nAnimation Types:\n|cFFFFFF00\"Alpha\"|r:\n|cFFCCCCCCarg1|r: Alpha Start Value, |cFFCCCCCCarg2|r: Alpha End Value.\n\n|cFFFFFF00\"Scale\"|r:\n|cFFCCCCCCarg1|r: X Start, |cFFCCCCCCarg2|r: Y Start, |cFFCCCCCCarg3|r: X End, |cFFCCCCCCarg4|r: Y End.\n\n|cFFFFFF00\"Rotation\"|r:\n |cFFCCCCCCarg1|r: Rotation Degrees.\n\n|cFFFFFF00\"Transition\"|r:\n |cFFCCCCCCarg1|r: X Offset, |cFFCCCCCCarg2|r: Y Offset."},
-		{Name = "CreateGlowOverlay",		Signature = "Plater:CreateGlowOverlay (parent, dotColor, glowColor)",			Desc = "Creates a glow effect with animation.\n\nUse:\n|cFFFFFF00ReturnedValue:Play()|r on OnShow.\n|cFFFFFF00ReturnedValue:Stop()|r on OnHide.\n|cFFFFFF00ReturnedValue:SetColor (dotColor, glowColor)|r if need to change the color of the glow.", AddVar = true, AddCall = "--@ENV@:Play() --@ENV@:Stop()"},
-
+		{Name = "CreateNameplateGlow",		Signature = "Plater.CreateNameplateGlow (parent, color, 0, 0, 0, 0)",			Desc = "Creates a glow effect around the nameplate.\n\nUse:\n|cFFFFFF00ReturnedValue:Show()|r on OnShow.\n|cFFFFFF00ReturnedValue:Hide()|r on OnHide.\n\nUse offsets to adjust the dot animation to fit the nameplate.", AddVar = true, AddCall = "--@ENV@:Show() --@ENV@:Hide() --@ENV@:SetOffset (-27, 25, 5, -7)"},
+		--{Name = "CreateGlowOverlay",		Signature = "Plater:CreateGlowOverlay (parent, dotColor, glowColor)",			Desc = "Creates a glow effect with animation.\n\nUse:\n|cFFFFFF00ReturnedValue:Play()|r on OnShow.\n|cFFFFFF00ReturnedValue:Stop()|r on OnHide.\n|cFFFFFF00ReturnedValue:SetColor (dotColor, glowColor)|r if need to change the color of the glow.", AddVar = true, AddCall = "--@ENV@:Play() --@ENV@:Stop()"},
+	
 		{Name = "FormatNumber",			Signature = "Plater.FormatNumber (number)",	Desc = "Format a number to be short as possible.\n\nExample:\n300000 to 300K\n2500000 to 2.5M"},
 		{Name = "CommaValue",			Signature = "Plater:CommaValue (number)",	Desc = "Format a number separating by thousands and millions.\n\nExample: 300000 to 300.000\n2500000 to 2.500.000"},
 		{Name = "IntegerToTimer",			Signature = "Plater:IntegerToTimer (number)",	Desc = "Format a number to time\n\nExample: 94 to 1:34"},

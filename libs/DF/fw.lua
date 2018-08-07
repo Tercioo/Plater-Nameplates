@@ -1,5 +1,5 @@
 
-local dversion = 92
+local dversion = 93
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
 
@@ -127,6 +127,7 @@ local embed_functions = {
 	"RemoveRealmName",
 	"Trim",
 	"CreateGlowOverlay",
+	"CreateAnts",
 	"CreateFrameShake",
 }
 
@@ -1196,8 +1197,43 @@ end
 --fonts
 
 DF.font_templates = DF.font_templates or {}
-DF.font_templates ["ORANGE_FONT_TEMPLATE"] = {color = "orange", size = 11, font = "Accidental Presidency"}
-DF.font_templates ["OPTIONS_FONT_TEMPLATE"] = {color = "yellow", size = 12, font = "Accidental Presidency"}
+
+--> detect which language is the client and select the font accordingly
+local clientLanguage = GetLocale()
+if (clientLanguage == "enGB") then
+	clientLanguage = "enUS"
+end
+
+DF.ClientLanguage = clientLanguage
+
+--> return the best font to use for the client language
+function DF:GetBestFontForLanguage (language, western, cyrillic, china, korean, taiwan)
+	if (not language) then
+		language = DF.ClientLanguage
+	end
+
+	if (language == "enUS" or language == "deDE" or language == "esES" or language == "esMX" or language == "frFR" or language == "itIT" or language == "ptBR") then
+		return western or "Accidental Presidency"
+		
+	elseif (language == "ruRU") then
+		return cyrillic or "Arial Narrow"
+		
+	elseif (language == "zhCN") then
+		return china or "AR CrystalzcuheiGBK Demibold"
+	
+	elseif (language == "koKR") then
+		return korean or "2002"
+		
+	elseif (language == "zhTW") then
+		return taiwan or "AR CrystalzcuheiGBK Demibold"
+	
+	end
+end
+
+--DF.font_templates ["ORANGE_FONT_TEMPLATE"] = {color = "orange", size = 11, font = "Accidental Presidency"}
+--DF.font_templates ["OPTIONS_FONT_TEMPLATE"] = {color = "yellow", size = 12, font = "Accidental Presidency"}
+DF.font_templates ["ORANGE_FONT_TEMPLATE"] = {color = "orange", size = 11, font = DF:GetBestFontForLanguage()}
+DF.font_templates ["OPTIONS_FONT_TEMPLATE"] = {color = "yellow", size = 12, font = DF:GetBestFontForLanguage()}
 
 -- dropdowns
 
@@ -1278,6 +1314,14 @@ function DF:InstallTemplate (widget_type, template_name, template, parent_name)
 	local template_table
 	if (widget_type == "font") then
 		template_table = DF.font_templates
+		
+		local font = template.font
+		if (font) then
+			--> fonts passed into the template has default to western
+			--> the framework will get the game client language and change the font if needed
+			font = DF:GetBestFontForLanguage (nil, font)
+		end
+		
 	elseif (widget_type == "dropdown") then
 		template_table = DF.dropdown_templates
 	elseif (widget_type == "button") then
@@ -1821,6 +1865,52 @@ function DF:CreateGlowOverlay (parent, antsColor, glowColor)
 	
 	return glowFrame
 end
+
+--> custom glow with ants animation
+local ants_set_texture_offset = function (self, leftOffset, rightOffset, topOffset, bottomOffset)
+	leftOffset = leftOffset or 0
+	rightOffset = rightOffset or 0
+	topOffset = topOffset or 0
+	bottomOffset = bottomOffset or 0
+
+	self:ClearAllPoints()
+	self:SetPoint ("topleft", leftOffset, topOffset)
+	self:SetPoint ("bottomright", rightOffset, bottomOffset)
+end
+
+function DF:CreateAnts (parent, antTable, leftOffset, rightOffset, topOffset, bottomOffset, antTexture)
+	leftOffset = leftOffset or 0
+	rightOffset = rightOffset or 0
+	topOffset = topOffset or 0
+	bottomOffset = bottomOffset or 0
+	
+	local f = CreateFrame ("frame", nil, parent)
+	f:SetPoint ("topleft", leftOffset, topOffset)
+	f:SetPoint ("bottomright", rightOffset, bottomOffset)
+	
+	f.SetOffset = ants_set_texture_offset
+	
+	local t = f:CreateTexture (nil, "overlay")
+	t:SetAllPoints()
+	t:SetTexture (antTable.Texture)
+	t:SetBlendMode (antTable.BlendMode or "ADD")
+	t:SetVertexColor (DF:ParseColors (antTable.Color or "white"))
+	f.Texture = t
+	
+	f.AntTable = antTable
+	
+	f:SetScript ("OnUpdate", function (self, deltaTime)
+		AnimateTexCoords (t, self.AntTable.TextureWidth, self.AntTable.TextureHeight, self.AntTable.TexturePartsWidth, self.AntTable.TexturePartsHeight, self.AntTable.AmountParts, deltaTime, self.AntTable.Throttle or 0.025)
+	end)
+	
+	return f
+end
+
+--[=[ --test ants
+do
+	local f = DF:CreateAnts (UIParent)
+end	
+--]=]
 
 -----------------------------
 --> borders
