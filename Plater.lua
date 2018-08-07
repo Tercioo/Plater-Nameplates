@@ -6340,6 +6340,11 @@ end
 
 --plater ~API ãpi
 
+function Plater.CreateIconGlow (frame, color)
+	local f = Plater:CreateGlowOverlay (frame, color, color)
+	return f
+end
+
 function Plater.CreateNameplateGlow (frame, color, left, right, top, bottom)
 	local antTable = {
 		Throttle = 0.025,
@@ -14711,9 +14716,9 @@ end
 		{Name = "CreateFlash",		 		Signature = "Plater.CreateFlash (parent, duration, amountOfFlashes, color)", 	Desc = "Creates a custom flash which can be triggered by the ReturnValue:Play()\n\nUse:\n|cFFFFFF00ReturnedValue:Play()|r on OnShow.\n|cFFFFFF00ReturnedValue:Stop()|r on OnHide.", AddVar = true, AddCall = "--@ENV@:Play() --@ENV@:Stop()"},
 		--{Name = "CreateFrameShake",		Signature = "Plater:CreateFrameShake (parent, duration, amplitude, frequency, bAbsoluteSineX, bAbsoluteSineY, scaleX, scaleY, fadeInTime, fadeOutTime)",	Desc = "Creates a shake for the frame.\n\nStore the returned table inside the envTable and call parent:PlayFrameShake (returned table) to play the shake.", AddVar = true, AddCall = "--parent:PlayFrameShake(@ENV@)"}, -- --parent:StopFrameShake(@ENV@)
 		
-		{Name = "CreateLabel",		 		Signature = "Plater:CreateLabel (parent, text, size, color, font, member, name, layer)",	Desc = "Creates a fontstring, all parameters after 'parent' are optional.\n\nMembers:\n.text = 'new text'\n.textcolor = 'red'\n.textsize = 12\n.textfont = 'fontName'", AddVar = true},
-		{Name = "CreateImage",		 	Signature = "Plater:CreateImage (parent, texture, w, h, layer, coords, member, name)",	Desc = "Creates a texture, all parameters after 'parent' are optional.\n\nMembers:\n.texture = 'texture path'\n.alpha = 0.5\n.width = 300\n.height = 200", AddVar = true},
-		{Name = "CreateBar",		 		Signature = "Plater:CreateBar (parent, texture, w, h, value, member, name)",			Desc = "Creates progress bar, all parameters after 'parent' are optional.\n\nMembers:\n.value = 0.5\n.texture = 'texture path'\n.icon = 'texture path'\n.lefttext = 'new text'\n.righttext = 'new text'\n.color = color\n.width = 300\n.height = 200", AddVar = true},
+		{Name = "CreateLabel",		 		Signature = "Plater:CreateLabel (parent, text, size, color, font, member, name, layer)",	Desc = "Creates a simple text to show in the nameplate, all parameters after 'parent' are optional.\n\nUse:\n|cFFFFFF00ReturnedValue:Show()|r on OnShow.\n|cFFFFFF00ReturnedValue:Hide()|r on OnHide.\n\nMembers:\n.text = 'new text'\n.textcolor = 'red'\n.textsize = 12\n.textfont = 'fontName'", AddVar = true, AddCall = "@ENV@:SetPoint ('center', 0, 0)"},
+		{Name = "CreateImage",		 	Signature = "Plater:CreateImage (parent, texture, w, h, layer, coords, member, name)",	Desc = "Creates a image to show in the nameplate, all parameters after 'parent' are optional.\n\nUse:\n|cFFFFFF00ReturnedValue:Show()|r on OnShow.\n|cFFFFFF00ReturnedValue:Hide()|r on OnHide.\n\nMembers:\n.texture = 'texture path'\n.alpha = 0.5\n.width = 300\n.height = 200", AddVar = true, AddCall = "@ENV@:SetPoint ('center', 0, 0)"},
+		{Name = "CreateBar",		 		Signature = "Plater:CreateBar (parent, texture, w, h, value, member, name)",			Desc = "Creates progress bar, all parameters after 'parent' are optional.\n\nUse:\n|cFFFFFF00ReturnedValue:Show()|r on OnShow.\n|cFFFFFF00ReturnedValue:Hide()|r on OnHide.\n\nMembers:\n.value = 0.5\n.texture = 'texture path'\n.icon = 'texture path'\n.lefttext = 'new text'\n.righttext = 'new text'\n.color = color\n.width = 300\n.height = 200", AddVar = true, AddCall = "@ENV@:SetPoint ('center', 0, 0)"},
 		
 		{Name = "SetFontSize",		 	Signature = "Plater:SetFontSize (fontString, fontSize, ...)",						Desc = "Set the size of a text, accept more than one size, automatically picks the bigger one."},
 		{Name = "SetFontFace",		 	Signature = "Plater:SetFontFace (fontString, fontFace)",						Desc = "Set the font of a text."},
@@ -14721,9 +14726,10 @@ end
 		
 		{Name = "CreateAnimationHub",		Signature = "Plater:CreateAnimationHub (parent, onShowFunc, onHideFunc)",		Desc = "Creates an object to hold animations, see 'CreateAnimation' to add animations to the hub. When ReturnedValue:Play() is called all animations in the hub start playing respecting the Order set in the CreateAnimation().\n\nUse onShowFunc and onHideFunc to show or hide custom frames, textures or text.\n\nMethods:\n|cFFFFFF00ReturnedValue:Play()|r plays all animations in the hub.\n|cFFFFFF00ReturnedValue:Stop()|r: stop all animations in the hub.", AddVar = true, AddCall = "--@ENV@:Play() --@ENV@:Stop()"},
 		{Name = "CreateAnimation",			Signature = "Plater:CreateAnimation (animationHub, animationType, order, duration, |cFFCCCCCCarg1|r, |cFFCCCCCCarg2|r, |cFFCCCCCCarg3|r, |cFFCCCCCCarg4|r)",	Desc = "Creates an animation within an animation hub.\n\nOrder: integer between 1 and 10, lower play first. Animations with the same Order play at the same time.\n\nDuration: how much time this animation takes to complete.\n\nAnimation Types:\n|cFFFFFF00\"Alpha\"|r:\n|cFFCCCCCCarg1|r: Alpha Start Value, |cFFCCCCCCarg2|r: Alpha End Value.\n\n|cFFFFFF00\"Scale\"|r:\n|cFFCCCCCCarg1|r: X Start, |cFFCCCCCCarg2|r: Y Start, |cFFCCCCCCarg3|r: X End, |cFFCCCCCCarg4|r: Y End.\n\n|cFFFFFF00\"Rotation\"|r:\n |cFFCCCCCCarg1|r: Rotation Degrees.\n\n|cFFFFFF00\"Transition\"|r:\n |cFFCCCCCCarg1|r: X Offset, |cFFCCCCCCarg2|r: Y Offset."},
-		{Name = "CreateNameplateGlow",		Signature = "Plater.CreateNameplateGlow (parent, color, 0, 0, 0, 0)",			Desc = "Creates a glow effect around the nameplate.\n\nUse:\n|cFFFFFF00ReturnedValue:Show()|r on OnShow.\n|cFFFFFF00ReturnedValue:Hide()|r on OnHide.\n\nUse offsets to adjust the dot animation to fit the nameplate.", AddVar = true, AddCall = "--@ENV@:Show() --@ENV@:Hide() --@ENV@:SetOffset (-27, 25, 5, -7)"},
-		--{Name = "CreateGlowOverlay",		Signature = "Plater:CreateGlowOverlay (parent, dotColor, glowColor)",			Desc = "Creates a glow effect with animation.\n\nUse:\n|cFFFFFF00ReturnedValue:Play()|r on OnShow.\n|cFFFFFF00ReturnedValue:Stop()|r on OnHide.\n|cFFFFFF00ReturnedValue:SetColor (dotColor, glowColor)|r if need to change the color of the glow.", AddVar = true, AddCall = "--@ENV@:Play() --@ENV@:Stop()"},
-	
+		
+		{Name = "CreateIconGlow",			Signature = "Plater.CreateIconGlow (self)",						Desc = "Creates a glow effect around an icon.\n\nUse:\n|cFFFFFF00ReturnedValue:Show()|r on OnShow.\n|cFFFFFF00ReturnedValue:Hide()|r on OnHide.\n|cFFFFFF00ReturnedValue:SetColor(dotColor, glowColor)|r to adjust the color.", AddVar = true, AddCall = "--@ENV@:Show() --@ENV@:Hide()"},
+		{Name = "CreateNameplateGlow",		Signature = "Plater:CreateGlowOverlay (unitFrame.healthBar)",	Desc = "Creates a glow effect around the nameplate.\n\nUse:\n|cFFFFFF00ReturnedValue:Show()|r on OnShow.\n|cFFFFFF00ReturnedValue:Hide()|r on OnHide.\n|cFFFFFF00ReturnedValue:SetColor(dotColor, glowColor)|r to adjust the color.\n\nUse offsets to adjust the dot animation to fit the nameplate.", AddVar = true, AddCall = "--@ENV@:Show() --@ENV@:Hide() --@ENV@:SetOffset (-27, 25, 5, -7)"},
+
 		{Name = "FormatNumber",			Signature = "Plater.FormatNumber (number)",	Desc = "Format a number to be short as possible.\n\nExample:\n300000 to 300K\n2500000 to 2.5M"},
 		{Name = "CommaValue",			Signature = "Plater:CommaValue (number)",	Desc = "Format a number separating by thousands and millions.\n\nExample: 300000 to 300.000\n2500000 to 2.500.000"},
 		{Name = "IntegerToTimer",			Signature = "Plater:IntegerToTimer (number)",	Desc = "Format a number to time\n\nExample: 94 to 1:34"},
@@ -15250,7 +15256,7 @@ end
 	end
 
 	do
-		local help_popup = DF:CreateSimplePanel (UIParent, 1000, 450, "Plater Scripting Help", "PlaterScriptingHelp")
+		local help_popup = DF:CreateSimplePanel (UIParent, 1000, 480, "Plater Scripting Help", "PlaterScriptingHelp")
 		help_popup:SetFrameStrata ("DIALOG")
 		help_popup:SetPoint ("center")
 		DF:ApplyStandardBackdrop (help_popup, false, 1.2)
@@ -15266,8 +15272,9 @@ end
 		local frontpageText_Scripts = "There's four types of code:\n|cFFFF5500Constructor|r: runs only once, use to create your custom frames, texture and animations.\n|cFFFF5500On Show|r: is executed each time the script triggers. Use this to show or play frames and animations created inside the constructor.\n|cFFFF5500On Update|r runs every time Plater updates the nameplate. Use this to override something that Plater have set, the nameplate color for example, or, update some information from your custom stuff.\n|cFFFF5500On Hide|r: executed when the trigger doesn't match the condition any more. Use this to hide and stop all your frames and animations.\n"
 		local frontpageText_Function = "\n|cFFFFFF00Function Parameters:|r\n\n|cFFC0C0C0function (self, unit, unitFrame, envTable)\n    --code\nend|r\n\n|cFFFF5500self|r: is different for each trigger, for buffs is the frame of the icon, spell casting passes the frame of the cast bar and the unit frame is passed for unit names.\n|cFFFF5500unit|r: unitId of the unit shown in the nameplate, use to query data, for example: UnitName (unitId).\n|cFFFF5500unitFrame|r: is the nameplate unit frame (parent of all widgets), the tooltip of the ? button has all the members to access all components of the nameplate from the unit frame.\n|cFFFF5500envTable|r: a table where you can store data, it also store information about the aura, cast and the unit shown depending on the type of the trigger.\n"
 		local frontpageText_ReturnValues = "\nWhat is a |cFFFF5500ReturnValue|r?\nIs what a function returns after a calling it, example:\nenvTable.MyFlash = Plater.CreateFlash (unitFrame.healthBar, 0.05, 2, 'white')\nPlater.CreateFlash() returned an object with information about the flash created, then this information is stored inside '|cFFFF5500envTable.MyFlash|r'\nYou can use it later to play the flash with '|cFFFF5500envTable.MyFlash:Play()|r' or stop it with '|cFFFF5500envTable.MyFlash:Stop()|r'."
+		local frontpageText_Parent = "\n\nWhat is a |cFFFF5500Parent|r?\nThe parent field required for create some widgets is the frame which will hold it, in other words: where it will be attach to."
 		
-		scripting_help_label.text = frontpageText_Welcome .. frontpageText_Lua .. frontpageText_Triggers .. frontpageText_Scripts .. frontpageText_Function .. frontpageText_ReturnValues
+		scripting_help_label.text = frontpageText_Welcome .. frontpageText_Lua .. frontpageText_Triggers .. frontpageText_Scripts .. frontpageText_Function .. frontpageText_ReturnValues .. frontpageText_Parent
 		scripting_help_label.fontsize = 14
 		scripting_help_label:SetPoint ("topleft", help_popup, "topleft", 5, -25)
 	end
@@ -16023,64 +16030,64 @@ end
 					GameCooltip:SetOption ("TextSize", 11)
 					GameCooltip:SetOption ("FixedWidth", 400)
 
-					--if (scriptObject) then
-						local backgroundAlpha = 0.2
-						--if (scriptObject.ScriptType == 0x1) then
-						if (not scriptObject or scriptObject.ScriptType == 0x1) then
-							GameCooltip:AddLine ("envTable Members for Trigger Buffs and Debuffs", "", 1, "yellow", "yellow", 12, nil, "OUTLINE")
-							
-							for index, member in ipairs (Plater.TriggerDefaultMembers [1]) do
-								GameCooltip:AddLine (member, "", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
-								GameCooltip:AddMenu (1, onSelectEnvTableMember, member)
-							end
-							
-							--adds a space to separate from the infor of the next trigger
-							if (not scriptObject) then
-								GameCooltip:AddLine (" ")
-							end
+					local backgroundAlpha = 0.2
+					--if (scriptObject.ScriptType == 0x1) then
+					if (not scriptObject or scriptObject.ScriptType == 0x1) then
+						GameCooltip:AddLine ("envTable Members for Trigger Buffs and Debuffs", "", 1, "yellow", "yellow", 12, nil, "OUTLINE")
+						
+						for index, member in ipairs (Plater.TriggerDefaultMembers [1]) do
+							GameCooltip:AddLine (member, "", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+							GameCooltip:AddMenu (1, onSelectEnvTableMember, member)
 						end
 						
-						if (not scriptObject or scriptObject.ScriptType == 0x2) then
-							GameCooltip:AddLine ("envTable Members for Trigger Spell Casting", "", 1, "yellow", "yellow", 12, nil, "OUTLINE")
-							
-							for index, member in ipairs (Plater.TriggerDefaultMembers [2]) do
-								GameCooltip:AddLine (member, "", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
-								GameCooltip:AddMenu (1, onSelectEnvTableMember, member)
-							end
-							
-							--adds a space to separate from the infor of the next trigger
-							if (not scriptObject) then
-								GameCooltip:AddLine (" ")
-							end
-						end
-						
-						if (not scriptObject or scriptObject.ScriptType == 0x3) then
-							GameCooltip:AddLine ("envTable Members for Trigger Unit Name", "", 1, "yellow", "yellow", 12, nil, "OUTLINE")
-						
-							for index, member in ipairs (Plater.TriggerDefaultMembers [3]) do
-								GameCooltip:AddLine (member, "", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
-								GameCooltip:AddMenu (1, onSelectEnvTableMember, member)
-							end
-							
+						--adds a space to separate from the infor of the next trigger
+						if (not scriptObject) then
 							GameCooltip:AddLine (" ")
-							GameCooltip:AddLine ("envTable Members From Constructor Code:", "", 1, "yellow", "yellow", 12, nil, "OUTLINE")
-							
-							--> get the constructor code from the editor if the current editing is the constructor or get the temporarily saved script from the script object
-							local code = scriptingFrame.CodeTypeDropdown.CodeType == 2 and scriptingFrame.CodeEditorLuaEntry:GetText() or scriptObject ["Temp_" .. Plater.CodeTypeNames [2]]
-							if (code) then
-								--> find all member names added to the envTable
-								--> add all members in the comments too
-								local alreadyAdded = {}
-								for _, memberName in code:gmatch ("(envTable%.)(.-)(%s)") do
-									memberName = DF:Trim (memberName)
-									if (not memberName:find ("%s") and not alreadyAdded [memberName]) then
-										alreadyAdded [memberName] = memberName
-										GameCooltip:AddLine ("envTable." .. memberName, "", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
-										GameCooltip:AddMenu (1, onSelectEnvTableMember, "envTable." .. memberName)
-									end
-								end
+						end
+					end
+					
+					if (not scriptObject or scriptObject.ScriptType == 0x2) then
+						GameCooltip:AddLine ("envTable Members for Trigger Spell Casting", "", 1, "yellow", "yellow", 12, nil, "OUTLINE")
+						
+						for index, member in ipairs (Plater.TriggerDefaultMembers [2]) do
+							GameCooltip:AddLine (member, "", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+							GameCooltip:AddMenu (1, onSelectEnvTableMember, member)
+						end
+						
+						--adds a space to separate from the infor of the next trigger
+						if (not scriptObject) then
+							GameCooltip:AddLine (" ")
+						end
+					end
+					
+					if (not scriptObject or scriptObject.ScriptType == 0x3) then
+						GameCooltip:AddLine ("envTable Members for Trigger Unit Name", "", 1, "yellow", "yellow", 12, nil, "OUTLINE")
+					
+						for index, member in ipairs (Plater.TriggerDefaultMembers [3]) do
+							GameCooltip:AddLine (member, "", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+							GameCooltip:AddMenu (1, onSelectEnvTableMember, member)
+						end
+					end
+					
+					GameCooltip:AddLine (" ")
+					GameCooltip:AddLine ("envTable Members From Constructor Code:", "", 1, "yellow", "yellow", 12, nil, "OUTLINE")
+					
+					--> get the constructor code from the editor if the current editing is the constructor or get the temporarily saved script from the script object
+					local code = scriptingFrame.CodeTypeDropdown.CodeType == 2 and scriptingFrame.CodeEditorLuaEntry:GetText() or scriptObject ["Temp_" .. Plater.CodeTypeNames [2]]
+					if (code) then
+						--> find all member names added to the envTable
+						--> add all members in the comments too
+						local alreadyAdded = {}
+						for _, memberName in code:gmatch ("(envTable%.)(.-)(%s)") do
+							memberName = DF:Trim (memberName)
+							if (not memberName:find ("%s") and not alreadyAdded [memberName]) then
+								alreadyAdded [memberName] = memberName
+								GameCooltip:AddLine ("envTable." .. memberName, "", 1, "orange", "white"); GameCooltip:AddStatusBar (100, 1, 0, 0, 0, backgroundAlpha)
+								GameCooltip:AddMenu (1, onSelectEnvTableMember, "envTable." .. memberName)
 							end
 						end
+					end
+						
 				end
 				
 				script_env_helper.CoolTip = {

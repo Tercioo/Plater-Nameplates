@@ -1,5 +1,5 @@
 
-local dversion = 93
+local dversion = 94
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
 
@@ -1800,17 +1800,27 @@ end
 --> glow overlay
 
 local glow_overlay_play = function (self)
-	self:Show()
+	if (not self:IsShown()) then
+		self:Show()
+	end
 	if (self.animOut:IsPlaying()) then
 		self.animOut:Stop()
 	end
-	self.animIn:Play()
+	if (not self.animIn:IsPlaying()) then
+		self.animIn:Play()
+	end
 end
 
 local glow_overlay_stop = function (self)
-	self.animOut:Stop()
-	self.animIn:Stop()
-	self:Hide()
+	if (self.animOut:IsPlaying()) then
+		self.animOut:Stop()
+	end
+	if (self.animIn:IsPlaying()) then
+		self.animIn:Stop()
+	end
+	if (self:IsShown()) then
+		self:Hide()
+	end
 end
 
 local glow_overlay_setcolor = function (self, antsColor, glowColor)
@@ -1833,9 +1843,19 @@ local glow_overlay_setcolor = function (self, antsColor, glowColor)
 	end
 end
 
+local glow_overlay_onshow = function (self)
+	glow_overlay_play (self)
+end
+
+local glow_overlay_onhide = function (self)
+	glow_overlay_stop (self)
+end
+
 --this is most copied from the wow client code, few changes applied to customize it
 function DF:CreateGlowOverlay (parent, antsColor, glowColor)
 	local glowFrame = CreateFrame ("frame", parent:GetName() and "$parentGlow2" or "OverlayActionGlow" .. math.random (1, 10000000), parent, "ActionBarButtonSpellActivationAlert")
+	glowFrame:HookScript ("OnShow", glow_overlay_onshow)
+	glowFrame:HookScript ("OnHide", glow_overlay_onhide)
 	
 	glowFrame.Play = glow_overlay_play
 	glowFrame.Stop = glow_overlay_stop
@@ -1862,7 +1882,6 @@ function DF:CreateGlowOverlay (parent, antsColor, glowColor)
 	glowFrame.GlowColor = {r, g, b, a}
 	
 	glowFrame.outerGlow:SetScale (1.2)
-	
 	return glowFrame
 end
 
