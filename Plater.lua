@@ -1490,6 +1490,7 @@ Plater.TriggerDefaultMembers = {
 		"envTable._StartTime",
 		"envTable._EndTime",
 		"envTable._RemainingTime",
+		"envTable._CastPercent",
 	},
 	[3] = {
 		"envTable._UnitID",
@@ -1977,9 +1978,14 @@ Plater.ScriptMetaFunctions = {
 	end,
 	
 	--	Plater.OnAuraIconHide = function (self)	
-		
+	
 	--run when the widget hides, usable with HookScript
 	OnHideWidget = function (self)
+		--> check if can quickly quit (if there's no script container for the nameplate)
+		if (not self.ScriptInfoTable) then
+			return
+		end
+		
 		local mainScriptTable
 		
 		if (self.IsAuraIcon) then
@@ -1989,8 +1995,10 @@ Plater.ScriptMetaFunctions = {
 		elseif (self.IsUnitNameplate) then
 			mainScriptTable = SCRIPT_UNIT				
 		end
-		
+
+		--> ScriptKey holds the name of the script currently running
 		local globalScriptObject = mainScriptTable [self.ScriptKey]
+		
 		--does the aura has a custom script?
 		if (globalScriptObject) then
 			--does the aura icon has a table with script information?
@@ -2000,6 +2008,12 @@ Plater.ScriptMetaFunctions = {
 				if (scriptInfo and scriptInfo.IsActive) then
 					self:ScriptRunOnHide (scriptInfo)
 				end
+			end
+		end
+
+		for globalTable, scriptInfo in pairs (self.ScriptInfoTable) do
+			if (scriptInfo.IsActive) then
+				Plater:Msg ("A script didn't shutdown properly: Bug? ScriptObject.Name: " .. (globalTable.Name or "??") .. " Current Script Key: " .. (self.ScriptKey or "??"))
 			end
 		end
 	end
@@ -3377,7 +3391,7 @@ function Plater.OnInit()
 	InstallHook (Plater.GetDriverSubObjectName (CBF_Name, Plater.DriverFuncNames.OnCastBarEvent), CastBarOnEventHook)
 	
 	local CastBarOnTickHook = function (self, deltaTime)
-		if (self.percentText) then --ï¿½ uma castbar do plater?
+		if (self.percentText) then --é uma castbar do plater?
 		
 			self.ThrottleUpdate = self.ThrottleUpdate - deltaTime
 			
@@ -3401,9 +3415,11 @@ function Plater.OnInit()
 
 				--get the script object of the aura which will be showing in this icon frame
 				local globalScriptObject = SCRIPT_CASTBAR [self.SpellName]
+				
+				self.ThrottleUpdate = DB_TICK_THROTTLE
 
 				--check if this aura has a custom script
-				if (globalScriptObject) then
+				if (globalScriptObject and self.SpellEndTime and GetTime() < self.SpellEndTime and (self.casting or self.channeling)) then
 					--stored information about scripts
 					local scriptContainer = self:ScriptGetContainer()
 					--get the info about this particularly script
@@ -3419,12 +3435,17 @@ function Plater.OnInit()
 					scriptEnv._StartTime = self.SpellStartTime
 					scriptEnv._EndTime = self.SpellEndTime
 					scriptEnv._RemainingTime = max (self.SpellEndTime - GetTime(), 0)
+					
+					if (self.casting) then
+						scriptEnv._CastPercent = self.value / self.maxValue * 100
+					elseif (self.channeling) then
+						scriptEnv._CastPercent = abs (self.value - self.maxValue) / self.maxValue * 100
+					end
 				
 					--run onupdate script
 					self:ScriptRunOnUpdate (scriptInfo)
 				end
 				
-				self.ThrottleUpdate = DB_TICK_THROTTLE
 			end
 		end
 	end
@@ -4038,7 +4059,6 @@ function Plater.AddAura (auraIconFrame, i, spellName, texture, count, debuffType
 		--is was showing a different aura, simulate a OnHide()
 		if (auraIconFrame.SpellName ~= spellName) then
 			auraIconFrame:OnHideWidget()
-			--Plater.OnAuraIconHide (auraIconFrame)
 		end
 	end
 	
@@ -4411,7 +4431,7 @@ function Plater.AnimateRightWithAccel (self, deltaTime)
 	end
 end
 
--- ~ontick ~onupdate ~tick õupdate ï¿½ntick
+-- ~ontick ~onupdate ~tick õupdate õntick
 local EventTickFunction = function (tickFrame, deltaTime)
 	
 	tickFrame.ThrottleUpdate = tickFrame.ThrottleUpdate - deltaTime
@@ -4493,6 +4513,9 @@ local EventTickFunction = function (tickFrame, deltaTime)
 			tickFrame.BuffFrame:Layout()
 			tickFrame.BuffFrame:SetAlpha (DB_AURA_ALPHA)
 		end
+		
+		--> delay for the next update
+		tickFrame.ThrottleUpdate = DB_TICK_THROTTLE
 
 		--get the script object of the aura which will be showing in this icon frame
 		local globalScriptObject = SCRIPT_UNIT [tickFrame.PlateFrame [MEMBER_NAMELOWER]] or SCRIPT_UNIT [tickFrame.PlateFrame [MEMBER_NPCID]]
@@ -4560,7 +4583,6 @@ local EventTickFunction = function (tickFrame, deltaTime)
 			end
 		end
 
-		tickFrame.ThrottleUpdate = DB_TICK_THROTTLE
 	end
 	
 	--unitFrame.healthBar:SetStatusBarColor (unitFrame.healthBar.R, unitFrame.healthBar.G, unitFrame.healthBar.B)
@@ -6360,15 +6382,17 @@ function Plater.CreateNameplateGlow (frame, color, left, right, top, bottom)
 
 	--> ants
 	local f = DF:CreateAnts (frame, antTable, -27 + (left or 0), 25 + (right or 0), 5 + (top or 0), -7 + (bottom or 0))
-	f:SetFrameLevel (frame:GetFrameLevel() - 1)
+	f:SetFrameLevel (frame:GetFrameLevel() + 1)
+	f:SetAlpha (ALPHA_BLEND_AMOUNT - 0.249845)
 	
 	--> glow
-	local glow = f:CreateTexture (nil, "overlay")
+	local glow = f:CreateTexture (nil, "background")
 	glow:SetTexture ([[Interface\AddOns\Plater\images\nameplate_glow]])
 	glow:SetPoint ("center", frame, "center", 0, 0)
 	glow:SetSize (frame:GetWidth() + frame:GetWidth()/2.3, 36)
 	glow:SetBlendMode ("ADD")
 	glow:SetVertexColor (DF:ParseColors (color or "white"))
+	glow:SetAlpha (ALPHA_BLEND_AMOUNT)
 	glow.GlowTexture = glow
 	
 	return f
@@ -7629,20 +7653,19 @@ Plater ["NAME_PLATE_UNIT_REMOVED"] = function (self, event, unitBarId)
 	plateFrame [MEMBER_QUEST] = false
 	
 	local healthFrame = plateFrame.UnitFrame.healthBar
-	
-	if (healthFrame:GetScript ("OnUpdate")) then
-		healthFrame:SetScript ("OnUpdate", nil)
-		healthFrame.IsIncreasingHeight = nil
-		healthFrame.IsDecreasingHeight = nil
-		if (healthFrame.TargetHeight) then
-			healthFrame:SetHeight (healthFrame.TargetHeight)
-		end
+	if (healthFrame.TargetHeight) then
+		healthFrame:SetHeight (healthFrame.TargetHeight)
 	end
+	healthFrame.IsIncreasingHeight = nil
+	healthFrame.IsDecreasingHeight = nil
 	
 	--hide the highlight
 	--is mouse over ~highlight ~mouseover
 	plateFrame.UnitFrame.HighlightFrame:Hide()
 	plateFrame.UnitFrame.HighlightFrame.Shown = false
+	
+	--> check if is running any script
+	plateFrame.UnitFrame:OnHideWidget()
 	
 	--hide the friend highlight ~friend
 	plateFrame.friendHighlight:Hide()
@@ -7833,6 +7856,9 @@ function Plater.SetCVarsOnFirstRun()
 		--SetCVar (CVAR_SHOWPERSONAL, CVAR_DISABLED)
 		--SetCVar (CVAR_RESOURCEONTARGET, CVAR_DISABLED)
 		--SetCVar (CVAR_FRIENDLY_ALL, CVAR_ENABLED)
+	--> location of the personal bar
+	--	SetCVar ("nameplateSelfBottomInset", 20 / 100)
+	--	SetCVar ("nameplateSelfTopInset", abs (20 - 99) / 100)
 	
 	--> set the stacking to true
 	SetCVar (CVAR_PLATEMOTION, CVAR_ENABLED)
@@ -7872,9 +7898,7 @@ function Plater.SetCVarsOnFirstRun()
 	--> make the personal bar hide very fast
 	SetCVar ("nameplatePersonalHideDelaySeconds", 0.2)
 	
-	--> location of the personagem bar
-	SetCVar ("nameplateSelfBottomInset", 20 / 100)
-	SetCVar ("nameplateSelfTopInset", abs (20 - 99) / 100)
+
 
 	--> view distance
 	SetCVar (CVAR_CULLINGDISTANCE, 100)
@@ -10386,7 +10410,77 @@ do
 				desc = "Height of the power bar.",
 			},
 			{type = "blank"},
-			{type = "label", get = function() return "Personal Bar Location:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			
+--	SetCVar ("nameplateSelfBottomInset", 20 / 100)
+--	SetCVar ("nameplateSelfTopInset", abs (20 - 99) / 100)
+			{type = "label", get = function() return "Personal Bar Constrain:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			
+			{
+				type = "range",
+				get = function() return tonumber (GetCVar ("nameplateSelfTopInset")*100) end,
+				set = function (self, fixedparam, value) 
+					--Plater.db.profile.plate_config.player.y_position_offset = value
+
+					if (InCombatLockdown()) then
+						Plater:Msg ("you are in combat.")
+						self:SetValue (tonumber (GetCVar ("nameplateSelfTopInset")*100))
+						return
+					end
+
+					--SetCVar ("nameplateSelfBottomInset", value / 100)
+					SetCVar ("nameplateSelfTopInset", abs (value - 99) / 100)
+					
+					if (not Plater.PersonalAdjustLocationTop) then
+						Plater.PersonalAdjustLocationTop = CreateFrame ("frame", "PlaterPersonalBarLocation", UIParent)
+						local frame = Plater.PersonalAdjustLocationTop
+						frame:SetWidth (GetScreenWidth())
+						frame:SetHeight (20)
+						frame.Texture = frame:CreateTexture (nil, "background")
+						frame.Texture:SetTexture ([[Interface\AddOns\Plater\images\bar4_vidro]], true)
+						frame.Texture:SetAllPoints()
+						frame.Shadow = frame:CreateTexture (nil, "border")
+						frame.Shadow:SetTexture ([[Interface\ACHIEVEMENTFRAME\UI-Achievement-RecentHeader]], true)
+						frame.Shadow:SetPoint ("center")
+						frame.Shadow:SetSize (256, 18)
+						frame.Shadow:SetTexCoord (0, 1, 0, 22/32)
+						frame.Shadow:SetVertexColor (0, 0, 0, 1)
+						frame.Text = frame:CreateFontString (nil, "artwork", "GameFontNormal")
+						frame.Text:SetText ("Plater: Top Constraint")
+						frame.Text:SetPoint ("center")
+						
+						frame.HideAnimation = DF:CreateAnimationHub (frame, nil, function() frame:Hide() end)
+						DF:CreateAnimation (frame.HideAnimation, "Alpha", 1, 1, 1, 0)
+						
+						frame.CancelFunction = function()
+							frame.HideAnimation:Play()
+						end
+					end
+					
+					if (Plater.PersonalAdjustLocationTop.HideAnimation:IsPlaying()) then
+						Plater.PersonalAdjustLocationTop.HideAnimation:Stop()
+						Plater.PersonalAdjustLocationTop:SetAlpha (1)
+					end
+					Plater.PersonalAdjustLocationTop:Show()
+					
+					local percentValue = GetScreenHeight()/100
+					Plater.PersonalAdjustLocationTop:SetPoint ("bottom", UIParent, "bottom", 0, percentValue * value)
+					
+					if (Plater.PersonalAdjustLocationTop.Timer) then
+						Plater.PersonalAdjustLocationTop.Timer:Cancel()
+					end
+					Plater.PersonalAdjustLocationTop.Timer = C_Timer.NewTimer (10, Plater.PersonalAdjustLocationTop.CancelFunction)
+					
+					Plater.UpdateAllPlates()
+					Plater.UpdateSelfPlate()
+				end,
+				min = 2,
+				max = 51,
+				step = 1,
+				nocombat = true,
+				name = "Top Constrain" .. CVarIcon,
+				desc = "Adjust the top constrain position where the personal bar cannot pass.\n\n|cFFFFFFFFDefault: 50|r" .. CVarDesc,
+			},
+			
 			{
 				type = "range",
 				get = function() return tonumber (GetCVar ("nameplateSelfBottomInset")*100) end,
@@ -10400,10 +10494,76 @@ do
 					end
 
 					SetCVar ("nameplateSelfBottomInset", value / 100)
-					SetCVar ("nameplateSelfTopInset", abs (value - 99) / 100)
+					--SetCVar ("nameplateSelfTopInset", value / 100)
 					
-					-- /run print ("BottomInset:", GetCVar ("nameplateSelfBottomInset"), "TopInset:", GetCVar ("nameplateSelfTopInset"))
-					--print ("BottomInset:", GetCVar ("nameplateSelfBottomInset"), "TopInset:", GetCVar ("nameplateSelfTopInset"))
+					if (not Plater.PersonalAdjustLocationBottom) then
+						Plater.PersonalAdjustLocationBottom = CreateFrame ("frame", "PlaterPersonalBarLocation", UIParent)
+						local frame = Plater.PersonalAdjustLocationBottom
+						frame:SetWidth (GetScreenWidth())
+						frame:SetHeight (20)
+						frame.Texture = frame:CreateTexture (nil, "background")
+						frame.Texture:SetTexture ([[Interface\AddOns\Plater\images\bar4_vidro]], true)
+						frame.Texture:SetAllPoints()
+						frame.Shadow = frame:CreateTexture (nil, "border")
+						frame.Shadow:SetTexture ([[Interface\ACHIEVEMENTFRAME\UI-Achievement-RecentHeader]], true)
+						frame.Shadow:SetPoint ("center")
+						frame.Shadow:SetSize (256, 18)
+						frame.Shadow:SetTexCoord (0, 1, 0, 22/32)
+						frame.Shadow:SetVertexColor (0, 0, 0, 1)
+						frame.Text = frame:CreateFontString (nil, "artwork", "GameFontNormal")
+						frame.Text:SetText ("Plater: Bottom Constraint")
+						frame.Text:SetPoint ("center")
+						
+						frame.HideAnimation = DF:CreateAnimationHub (frame, nil, function() frame:Hide() end)
+						DF:CreateAnimation (frame.HideAnimation, "Alpha", 1, 1, 1, 0)
+						
+						frame.CancelFunction = function()
+							frame.HideAnimation:Play()
+						end
+					end
+					
+					if (Plater.PersonalAdjustLocationBottom.HideAnimation:IsPlaying()) then
+						Plater.PersonalAdjustLocationBottom.HideAnimation:Stop()
+						Plater.PersonalAdjustLocationBottom:SetAlpha (1)
+					end
+					Plater.PersonalAdjustLocationBottom:Show()
+					
+					local percentValue = GetScreenHeight()/100
+					Plater.PersonalAdjustLocationBottom:SetPoint ("bottom", UIParent, "bottom", 0, percentValue * value)
+					
+					if (Plater.PersonalAdjustLocationBottom.Timer) then
+						Plater.PersonalAdjustLocationBottom.Timer:Cancel()
+					end
+					Plater.PersonalAdjustLocationBottom.Timer = C_Timer.NewTimer (10, Plater.PersonalAdjustLocationBottom.CancelFunction)
+					
+					Plater.UpdateAllPlates()
+					Plater.UpdateSelfPlate()
+				end,
+				min = 2,
+				max = 51,
+				step = 1,
+				nocombat = true,
+				name = "Bottom Constrain" .. CVarIcon,
+				desc = "Adjust the bottom constrain position where the personal bar cannot pass.\n\n|cFFFFFFFFDefault: 20|r" .. CVarDesc,
+			},
+
+			{type = "blank"},
+			{
+				type = "range",
+				get = function() return tonumber (GetCVar ("nameplateSelfBottomInset")*100) end,
+				set = function (self, fixedparam, value) 
+					--Plater.db.profile.plate_config.player.y_position_offset = value
+
+					if (InCombatLockdown()) then
+						Plater:Msg ("you are in combat.")
+						self:SetValue (tonumber (GetCVar ("nameplateSelfBottomInset")*100))
+						return
+					end
+
+					value = floor (value)
+					
+					SetCVar ("nameplateSelfBottomInset", value / 100)
+					SetCVar ("nameplateSelfTopInset", abs (value - 99) / 100)
 					
 					if (not Plater.PersonalAdjustLocation) then
 						Plater.PersonalAdjustLocation = CreateFrame ("frame", "PlaterPersonalBarLocation", UIParent)
@@ -10452,9 +10612,10 @@ do
 				max = 98,
 				step = 1,
 				nocombat = true,
-				name = "Screen Position" .. CVarIcon,
-				desc = "Adjust the positioning on the Y axis." .. CVarDesc,
+				name = "Fixed Position" .. CVarIcon,
+				desc = "Set a fixed position, the personal bar won't move." .. CVarDesc,
 			},
+--]=]
 
 			{type = "breakline"},
 			
@@ -13455,7 +13616,7 @@ end
 		{
 			type = "select",
 			get = function() return Plater.db.profile.plate_config.friendlynpc.actorname_text_font end,
-			values = function() return DF:BuildDropDownFontList (on_select_enemy_npcname_font) end,
+			values = function() return DF:BuildDropDownFontList (on_select_friendly_npcname_font) end,
 			name = "Font",
 			desc = "Font of the text.",
 		},
@@ -14718,7 +14879,7 @@ end
 		
 		{Name = "CreateLabel",		 		Signature = "Plater:CreateLabel (parent, text, size, color, font, member, name, layer)",	Desc = "Creates a simple text to show in the nameplate, all parameters after 'parent' are optional.\n\nUse:\n|cFFFFFF00ReturnedValue:Show()|r on OnShow.\n|cFFFFFF00ReturnedValue:Hide()|r on OnHide.\n\nMembers:\n.text = 'new text'\n.textcolor = 'red'\n.textsize = 12\n.textfont = 'fontName'", AddVar = true, AddCall = "@ENV@:SetPoint ('center', 0, 0)"},
 		{Name = "CreateImage",		 	Signature = "Plater:CreateImage (parent, texture, w, h, layer, coords, member, name)",	Desc = "Creates a image to show in the nameplate, all parameters after 'parent' are optional.\n\nUse:\n|cFFFFFF00ReturnedValue:Show()|r on OnShow.\n|cFFFFFF00ReturnedValue:Hide()|r on OnHide.\n\nMembers:\n.texture = 'texture path'\n.alpha = 0.5\n.width = 300\n.height = 200", AddVar = true, AddCall = "@ENV@:SetPoint ('center', 0, 0)"},
-		{Name = "CreateBar",		 		Signature = "Plater:CreateBar (parent, texture, w, h, value, member, name)",			Desc = "Creates progress bar, all parameters after 'parent' are optional.\n\nUse:\n|cFFFFFF00ReturnedValue:Show()|r on OnShow.\n|cFFFFFF00ReturnedValue:Hide()|r on OnHide.\n\nMembers:\n.value = 0.5\n.texture = 'texture path'\n.icon = 'texture path'\n.lefttext = 'new text'\n.righttext = 'new text'\n.color = color\n.width = 300\n.height = 200", AddVar = true, AddCall = "@ENV@:SetPoint ('center', 0, 0)"},
+		{Name = "CreateBar",		 		Signature = "Plater:CreateBar (parent, texture, w, h, value, member, name)",			Desc = "Creates progress bar, all parameters after 'parent' are optional.\n\nUse:\n|cFFFFFF00ReturnedValue:Show()|r on OnShow.\n|cFFFFFF00ReturnedValue:Hide()|r on OnHide.\n\nMembers:\n.value = 50\n.texture = 'texture path'\n.icon = 'texture path'\n.lefttext = 'new text'\n.righttext = 'new text'\n.color = color\n.width = 300\n.height = 200", AddVar = true, AddCall = "@ENV@:SetPoint ('center', 0, 0)"},
 		
 		{Name = "SetFontSize",		 	Signature = "Plater:SetFontSize (fontString, fontSize, ...)",						Desc = "Set the size of a text, accept more than one size, automatically picks the bigger one."},
 		{Name = "SetFontFace",		 	Signature = "Plater:SetFontFace (fontString, fontFace)",						Desc = "Set the font of a text."},
@@ -14728,7 +14889,7 @@ end
 		{Name = "CreateAnimation",			Signature = "Plater:CreateAnimation (animationHub, animationType, order, duration, |cFFCCCCCCarg1|r, |cFFCCCCCCarg2|r, |cFFCCCCCCarg3|r, |cFFCCCCCCarg4|r)",	Desc = "Creates an animation within an animation hub.\n\nOrder: integer between 1 and 10, lower play first. Animations with the same Order play at the same time.\n\nDuration: how much time this animation takes to complete.\n\nAnimation Types:\n|cFFFFFF00\"Alpha\"|r:\n|cFFCCCCCCarg1|r: Alpha Start Value, |cFFCCCCCCarg2|r: Alpha End Value.\n\n|cFFFFFF00\"Scale\"|r:\n|cFFCCCCCCarg1|r: X Start, |cFFCCCCCCarg2|r: Y Start, |cFFCCCCCCarg3|r: X End, |cFFCCCCCCarg4|r: Y End.\n\n|cFFFFFF00\"Rotation\"|r:\n |cFFCCCCCCarg1|r: Rotation Degrees.\n\n|cFFFFFF00\"Transition\"|r:\n |cFFCCCCCCarg1|r: X Offset, |cFFCCCCCCarg2|r: Y Offset."},
 		
 		{Name = "CreateIconGlow",			Signature = "Plater.CreateIconGlow (self)",						Desc = "Creates a glow effect around an icon.\n\nUse:\n|cFFFFFF00ReturnedValue:Show()|r on OnShow.\n|cFFFFFF00ReturnedValue:Hide()|r on OnHide.\n|cFFFFFF00ReturnedValue:SetColor(dotColor, glowColor)|r to adjust the color.", AddVar = true, AddCall = "--@ENV@:Show() --@ENV@:Hide()"},
-		{Name = "CreateNameplateGlow",		Signature = "Plater:CreateGlowOverlay (unitFrame.healthBar)",	Desc = "Creates a glow effect around the nameplate.\n\nUse:\n|cFFFFFF00ReturnedValue:Show()|r on OnShow.\n|cFFFFFF00ReturnedValue:Hide()|r on OnHide.\n|cFFFFFF00ReturnedValue:SetColor(dotColor, glowColor)|r to adjust the color.\n\nUse offsets to adjust the dot animation to fit the nameplate.", AddVar = true, AddCall = "--@ENV@:Show() --@ENV@:Hide() --@ENV@:SetOffset (-27, 25, 5, -7)"},
+		{Name = "CreateNameplateGlow",		Signature = "Plater.CreateNameplateGlow (unitFrame.healthBar)",	Desc = "Creates a glow effect around the nameplate.\n\nUse:\n|cFFFFFF00ReturnedValue:Show()|r on OnShow.\n|cFFFFFF00ReturnedValue:Hide()|r on OnHide.\n|cFFFFFF00ReturnedValue:SetColor(dotColor, glowColor)|r to adjust the color.\n\nUse offsets to adjust the dot animation to fit the nameplate.", AddVar = true, AddCall = "--@ENV@:Show() --@ENV@:Hide() --@ENV@:SetOffset (-27, 25, 5, -7)"},
 
 		{Name = "FormatNumber",			Signature = "Plater.FormatNumber (number)",	Desc = "Format a number to be short as possible.\n\nExample:\n300000 to 300K\n2500000 to 2.5M"},
 		{Name = "CommaValue",			Signature = "Plater:CommaValue (number)",	Desc = "Format a number separating by thousands and millions.\n\nExample: 300000 to 300.000\n2500000 to 2.500.000"},
@@ -15217,7 +15378,7 @@ end
 				spellId = scriptingFrame.SpellHashTable [string.lower (text)]
 				--if still fail, stop here
 				if (not spellId) then
-					Plater:Msg ("Trigger requires an ID of a valid spell")
+					Plater:Msg ("Trigger requires a valid spell name or an ID of a spell")
 					return
 				end
 			end
@@ -15407,7 +15568,7 @@ end
 			local add_trigger_label = DF:CreateLabel (edit_script_frame, "Add Trigger (Spell Id or Spell Name)", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
 			local add_trigger_textentry = DF:CreateTextEntry (edit_script_frame, function()end, 140, 20, "ScriptTriggerTextEntry", _, _, options_dropdown_template)
 			add_trigger_textentry:SetPoint ("topleft", add_trigger_label, "bottomleft", 0, -2)
-			add_trigger_textentry.tooltip = "|cFFFFFF00Buff and Spell Cast|r: Enter the spell name using lower case letters.\n\n|cFFFFFF00Unit Name|r: Enter the unit name or the npcID."
+			add_trigger_textentry.tooltip = "Enter data based on the trigger selected:\n\n|cFFFFFF00Buff and Spell Cast|r: Enter the spell name using lower case letters.\n\n|cFFFFFF00Unit Name|r: Enter the unit name or the npcID."
 			scriptingFrame.TriggerTextEntry = add_trigger_textentry
 			scriptingFrame.TriggerLabel = add_trigger_label
 			
