@@ -3311,6 +3311,8 @@ function Plater.OnInit()
 				self.SpellStartTime = startTime/1000
 				self.SpellEndTime = endTime/1000
 				
+				self.IsInterrupted = false
+				
 				self.Icon:SetTexture (texture)
 				self.Icon:Show()
 				self.Icon:SetDrawLayer ("OVERLAY", 5)
@@ -3354,6 +3356,8 @@ function Plater.OnInit()
 				self.SpellStartTime = startTime/1000
 				self.SpellEndTime = endTime/1000
 				
+				self.IsInterrupted = false
+				
 				self.Icon:SetTexture (texture)
 				self.Icon:Show()
 				self.Icon:SetDrawLayer ("OVERLAY", 5)
@@ -3383,6 +3387,24 @@ function Plater.OnInit()
 				end
 				--self.Text:ClearAllPoints()
 				--self.Text:SetPoint ("left", self.Icon, "right", 4, 0)
+			
+			elseif (event == "UNIT_SPELLCAST_INTERRUPTED") then
+				local unitCast = unit
+				if (unitCast ~= self.unit or not self.isNamePlate) then
+					return
+				end
+				
+				self:OnHideWidget()
+				self.IsInterrupted = true
+
+			elseif (event == "UNIT_SPELLCAST_STOP") then
+				local unitCast = unit
+				if (unitCast ~= self.unit or not self.isNamePlate) then
+					return
+				end
+				
+				self:OnHideWidget()
+				self.IsInterrupted = true
 				
 			end
 			
@@ -3419,7 +3441,7 @@ function Plater.OnInit()
 				self.ThrottleUpdate = DB_TICK_THROTTLE
 
 				--check if this aura has a custom script
-				if (globalScriptObject and self.SpellEndTime and GetTime() < self.SpellEndTime and (self.casting or self.channeling)) then
+				if (globalScriptObject and self.SpellEndTime and GetTime() < self.SpellEndTime and (self.casting or self.channeling) and not self.IsInterrupted) then
 					--stored information about scripts
 					local scriptContainer = self:ScriptGetContainer()
 					--get the info about this particularly script
@@ -7666,6 +7688,13 @@ Plater ["NAME_PLATE_UNIT_REMOVED"] = function (self, event, unitBarId)
 	
 	--> check if is running any script
 	plateFrame.UnitFrame:OnHideWidget()
+	plateFrame.UnitFrame.castBar:OnHideWidget()
+	for _, auraIconFrame in ipairs (plateFrame.UnitFrame.BuffFrame.PlaterBuffList) do
+		auraIconFrame:OnHideWidget()
+	end
+	for _, auraIconFrame in ipairs (plateFrame.UnitFrame.BuffFrame2.PlaterBuffList) do
+		auraIconFrame:OnHideWidget()
+	end
 	
 	--hide the friend highlight ~friend
 	plateFrame.friendHighlight:Hide()
@@ -7760,6 +7789,9 @@ PlaterCLEUParser.Parser = function (self)
 					if (plateFrame.UnitFrame.castBar.Text:GetText() == INTERRUPTED) then
 						if (plateFrame [MEMBER_GUID] == targetGUID) then
 							plateFrame.UnitFrame.castBar.Text:SetText (INTERRUPTED .. " [" .. Plater.SetTextColorByClass (sourceName, sourceName) .. "]")
+							plateFrame.UnitFrame.castBar.IsInterrupted = true
+							--> check and stop the casting script if any
+							plateFrame.UnitFrame.castBar:OnHideWidget()
 						end
 					end
 				end
