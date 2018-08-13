@@ -6324,7 +6324,8 @@ function Plater.UpdateManaAndResourcesBar()
 				local width = charge:GetWidth()
 				local height = charge:GetWidth()
 				charge:ClearAllPoints()
-				charge:SetPoint ("center", (i-2)*width, (-(height/2)-3) + y_offset)
+				charge:SetPoint ("center", (i-3)*width, y_offset)
+				--charge:SetPoint ("center", (i-2)*width, (-(height/2)-3) + y_offset)
 			end
 		end
 
@@ -6343,7 +6344,7 @@ function Plater.UpdateManaAndResourcesBar()
 			local charge = f.Shards [i]
 			if (charge) then
 				charge:SetScale (scale)
-				
+				 
 				charge.ShardOff:SetAlpha (background_alpha)
 				
 				local width = charge:GetWidth()
@@ -17313,7 +17314,7 @@ end
 				Plater.db.profile.spell_animations_scale = value
 			end,
 			min = 0.75,
-			max = 1.75,
+			max = 2.25,
 			step = 0.1,
 			name = "Shake Scale",
 			desc = "Shake Scale.",
