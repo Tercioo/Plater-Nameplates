@@ -98,6 +98,7 @@ LibSharedMedia:Register ("font", "FORCED SQUARE", [[Interface\Addons\Plater\font
 --font templates
 DF:InstallTemplate ("font", "PLATER_SCRIPTS_NAME", {color = "orange", size = 10, font = "Friz Quadrata TT"})
 DF:InstallTemplate ("font", "PLATER_SCRIPTS_TYPE", {color = "gray", size = 9, font = "Friz Quadrata TT"})
+DF:InstallTemplate ("font", "PLATER_SCRIPTS_TRIGGER_SPELLID", {color = {0.501961, 0.501961, 0.501961, .5}, size = 9, font = "Friz Quadrata TT"})
 DF:InstallTemplate ("font", "PLATER_BUTTON", {color = {1, .8, .2}, size = 10, font = "Friz Quadrata TT"})
 DF:InstallTemplate ("font", "PLATER_BUTTON_DISABLED", {color = {1/3, .8/3, .2/3}, size = 10, font = "Friz Quadrata TT"})
 
@@ -465,6 +466,8 @@ local default_config = {
 		script_data_trash = {}, --deleted scripts are placed here, they can be restored in 30 days
 		script_auto_imported = {}, --store the name and revision of scripts imported from the Plater script library
 		script_banned_user = {}, --players banned from sending scripts to this player
+		
+		patch_version = 0,
 		
 		health_cutoff = true,
 		
@@ -1975,9 +1978,8 @@ Plater.ScriptMetaFunctions = {
 		end
 		
 		scriptInfo.IsActive = false
+		self.ScriptKey = nil
 	end,
-	
-	--	Plater.OnAuraIconHide = function (self)	
 	
 	--run when the widget hides, usable with HookScript
 	OnHideWidget = function (self)
@@ -1996,7 +1998,7 @@ Plater.ScriptMetaFunctions = {
 			mainScriptTable = SCRIPT_UNIT				
 		end
 
-		--> ScriptKey holds the name of the script currently running
+		--> ScriptKey holds the trigger of the script currently running
 		local globalScriptObject = mainScriptTable [self.ScriptKey]
 		
 		--does the aura has a custom script?
@@ -2011,9 +2013,42 @@ Plater.ScriptMetaFunctions = {
 			end
 		end
 
-		for globalTable, scriptInfo in pairs (self.ScriptInfoTable) do
-			if (scriptInfo.IsActive) then
-				Plater:Msg ("A script didn't shutdown properly: Bug? ScriptObject.Name: " .. (globalTable.Name or "??") .. " Current Script Key: " .. (self.ScriptKey or "??"))
+		--[=[
+			for globalTable, scriptInfo in pairs (self.ScriptInfoTable) do
+				if (scriptInfo.IsActive) then
+					Plater:Msg ("A script didn't shutdown properly: Bug? ScriptObject.Name: " .. (globalTable.Name or "??") .. " Current Script Key: " .. (self.ScriptKey or "??"))
+				end
+			end
+		--]=]
+	end,
+	
+	--stop a running script by the trigger ID
+	--this is used when deleting a script or disabling it
+	KillScript = function (self, triggerID)
+		local mainScriptTable
+		
+		if (self.IsAuraIcon) then
+			mainScriptTable = SCRIPT_AURA
+			triggerID = GetSpellInfo (triggerID)
+			
+		elseif (self.IsCastBar) then
+			mainScriptTable = SCRIPT_CASTBAR
+			triggerID = GetSpellInfo (triggerID)
+			
+		elseif (self.IsUnitNameplate) then
+			mainScriptTable = SCRIPT_UNIT				
+		end
+		
+		if (self.ScriptKey and self.ScriptKey == triggerID) then
+			local globalScriptObject = mainScriptTable [triggerID]
+			if (globalScriptObject) then
+				local scriptContainer = self:ScriptGetContainer()
+				if (scriptContainer) then
+					local scriptInfo = self:ScriptGetInfo (globalScriptObject, scriptContainer)
+					if (scriptInfo and scriptInfo.IsActive) then
+						self:ScriptRunOnHide (scriptInfo)
+					end
+				end
 			end
 		end
 	end
@@ -2255,6 +2290,11 @@ function Plater.ImportScriptsFromLibrary()
 				local encodedString = autoImportScript.String
 				if (encodedString) then
 					Plater.ImportScriptString (encodedString, true, false)
+					if (autoImportScript.Revision == 1) then
+						Plater:Msg ("New Script Installed: " .. name)
+					else
+						Plater:Msg ("Applied Update to Script: " .. name)
+					end
 				end
 			end
 		end
@@ -2821,7 +2861,26 @@ function Plater.RefreshDBUpvalues()
 	Plater.UpdateAuraCache()
 end
 
-
+function Plater.ApplyPatches()
+	if (PlaterPatchLibrary) then
+		local currentPatch = Plater.db.profile.patch_version
+		for i = currentPatch+1, #PlaterPatchLibrary do
+		
+			local patch = PlaterPatchLibrary [i]
+			Plater:Msg ("Applied Patch #" .. i .. ":")
+			
+			for o = 1, #patch.Notes do
+				print (patch.Notes [o])
+			end
+			
+			DF:Dispatch (patch.Func)
+			
+			Plater.db.profile.patch_version = i
+		end
+		
+		PlaterPatchLibrary = nil
+	end
+end
 
 function Plater.OnInit()
 	
@@ -2854,6 +2913,7 @@ function Plater.OnInit()
 	Plater.PlayerGUID = UnitGUID ("player")
 	
 	Plater.ImportScriptsFromLibrary()
+	Plater.ApplyPatches()
 	
 	local re_ForceCVars = function()
 		Plater.ForceCVars()
@@ -4854,9 +4914,9 @@ function Plater:PLAYER_REGEN_ENABLED()
 		plateFrame [MEMBER_NOCOMBAT] = nil
 	end
 	
-	C_Timer.After (0.5, Plater.UpdateAllPlates)
-	C_Timer.After (0.5, Plater.UpdateAllNameplateColors) --avoid taint issues with the override color feature
-	
+	C_Timer.After (0.41, Plater.UpdateAllNameplateColors) --schedule to avoid taint issues
+	C_Timer.After (0.51, Plater.UpdateAllPlates)
+
 	--C_Timer.After (0.51, Plater.OnPlayerTargetChanged) --it update inside the tick after the animation is done
 end
 
@@ -14919,7 +14979,7 @@ end
 		{Name = "SetFontColor",		 	Signature = "Plater:SetFontColor (fontString, r, g, b, a)",						Desc = "Set the color of a text.\n\nColor formats are:\n|cFFFFFF00Just Values|r: r, g, b, a\n|cFFFFFF00Index Table|r: {r, g, b}\n|cFFFFFF00Hash Table|r: {r = 1, g = 1, b = 1}\n|cFFFFFF00Hex|r: '#FFFF0000' or '#FF0000'\n|cFFFFFF00Name|r: 'yellow' 'white'"},
 		
 		{Name = "CreateAnimationHub",		Signature = "Plater:CreateAnimationHub (parent, onShowFunc, onHideFunc)",		Desc = "Creates an object to hold animations, see 'CreateAnimation' to add animations to the hub. When ReturnedValue:Play() is called all animations in the hub start playing respecting the Order set in the CreateAnimation().\n\nUse onShowFunc and onHideFunc to show or hide custom frames, textures or text.\n\nMethods:\n|cFFFFFF00ReturnedValue:Play()|r plays all animations in the hub.\n|cFFFFFF00ReturnedValue:Stop()|r: stop all animations in the hub.", AddVar = true, AddCall = "--@ENV@:Play() --@ENV@:Stop()"},
-		{Name = "CreateAnimation",			Signature = "Plater:CreateAnimation (animationHub, animationType, order, duration, |cFFCCCCCCarg1|r, |cFFCCCCCCarg2|r, |cFFCCCCCCarg3|r, |cFFCCCCCCarg4|r)",	Desc = "Creates an animation within an animation hub.\n\nOrder: integer between 1 and 10, lower play first. Animations with the same Order play at the same time.\n\nDuration: how much time this animation takes to complete.\n\nAnimation Types:\n|cFFFFFF00\"Alpha\"|r:\n|cFFCCCCCCarg1|r: Alpha Start Value, |cFFCCCCCCarg2|r: Alpha End Value.\n\n|cFFFFFF00\"Scale\"|r:\n|cFFCCCCCCarg1|r: X Start, |cFFCCCCCCarg2|r: Y Start, |cFFCCCCCCarg3|r: X End, |cFFCCCCCCarg4|r: Y End.\n\n|cFFFFFF00\"Rotation\"|r:\n |cFFCCCCCCarg1|r: Rotation Degrees.\n\n|cFFFFFF00\"Transition\"|r:\n |cFFCCCCCCarg1|r: X Offset, |cFFCCCCCCarg2|r: Y Offset."},
+		{Name = "CreateAnimation",			Signature = "Plater:CreateAnimation (animationHub, animationType, order, duration, |cFFCCCCCCarg1|r, |cFFCCCCCCarg2|r, |cFFCCCCCCarg3|r, |cFFCCCCCCarg4|r)",	Desc = "Creates an animation within an animation hub.\n\nOrder: integer between 1 and 10, lower play first. Animations with the same Order play at the same time.\n\nDuration: how much time this animation takes to complete.\n\nAnimation Types:\n|cFFFFFF00\"Alpha\"|r:\n|cFFCCCCCCarg1|r: Alpha Start Value, |cFFCCCCCCarg2|r: Alpha End Value.\n\n|cFFFFFF00\"Scale\"|r:\n|cFFCCCCCCarg1|r: X Start, |cFFCCCCCCarg2|r: Y Start, |cFFCCCCCCarg3|r: X End, |cFFCCCCCCarg4|r: Y End.\n\n|cFFFFFF00\"Rotation\"|r:\n |cFFCCCCCCarg1|r: Rotation Degrees.\n\n|cFFFFFF00\"Translation\"|r:\n |cFFCCCCCCarg1|r: X Offset, |cFFCCCCCCarg2|r: Y Offset."},
 		
 		{Name = "CreateIconGlow",			Signature = "Plater.CreateIconGlow (self)",						Desc = "Creates a glow effect around an icon.\n\nUse:\n|cFFFFFF00ReturnedValue:Show()|r on OnShow.\n|cFFFFFF00ReturnedValue:Hide()|r on OnHide.\n|cFFFFFF00ReturnedValue:SetColor(dotColor, glowColor)|r to adjust the color.", AddVar = true, AddCall = "--@ENV@:Show() --@ENV@:Hide()"},
 		{Name = "CreateNameplateGlow",		Signature = "Plater.CreateNameplateGlow (unitFrame.healthBar)",	Desc = "Creates a glow effect around the nameplate.\n\nUse:\n|cFFFFFF00ReturnedValue:Show()|r on OnShow.\n|cFFFFFF00ReturnedValue:Hide()|r on OnHide.\n|cFFFFFF00ReturnedValue:SetColor(dotColor, glowColor)|r to adjust the color.\n\nUse offsets to adjust the dot animation to fit the nameplate.", AddVar = true, AddCall = "--@ENV@:Show() --@ENV@:Hide() --@ENV@:SetOffset (-27, 25, 5, -7)"},
@@ -14966,7 +15026,7 @@ end
 		
 		--check trash can timeout
 		local timeout = 60 * 60 * 24 * 30
-		local timeout = 60 * 60 * 24 * 1 --for testing, setting this to 1 day
+		--local timeout = 60 * 60 * 24 * 1 --for testing, setting this to 1 day
 		
 		for i = #Plater.db.profile.script_data_trash, 1, -1 do
 			local scriptObject = Plater.db.profile.script_data_trash [i]
@@ -15129,6 +15189,11 @@ end
 		
 		--update the overlapp button
 		scriptingFrame.UpdateOverlapButton()
+		
+		--remove focus of everything
+		scriptingFrame.ScriptNameTextEntry:ClearFocus()
+		scriptingFrame.ScriptDescTextEntry:ClearFocus()
+		scriptingFrame.TriggerTextEntry:ClearFocus()
 	end
 	
 	--hot reload the script by compiling it and applying it to the nameplates without saving
@@ -15177,10 +15242,55 @@ end
 		scriptingFrame.CodeEditorLuaEntry:ClearFocus()
 	end
 	
+	--when deleting or disabling a script object, it needs to stop any running script
+	function scriptingFrame.KillRunningScriptsForObject (scriptObject)
+		--kill scripts running for this script object
+		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+			local unitFrame = plateFrame.UnitFrame
+
+			if (scriptObject.ScriptType == 1) then
+				--buff and debuffs
+				--iterate among all icons shown in the nameplate and attempt to kill the script by its trigger
+				for _, iconAuraFrame in ipairs (unitFrame.BuffFrame.PlaterBuffList) do
+					for _, spellID in ipairs (scriptObject.SpellIds) do
+						iconAuraFrame:KillScript (spellID)
+					end
+				end
+				for _, iconAuraFrame in ipairs (unitFrame.BuffFrame2.PlaterBuffList) do
+					for _, spellID in ipairs (scriptObject.SpellIds) do
+						iconAuraFrame:KillScript (spellID)
+					end
+				end
+				
+			elseif (scriptObject.ScriptType == 2) then
+				--cast bar
+				for _, spellID in ipairs (scriptObject.SpellIds) do
+					unitFrame.castBar:KillScript (spellID)
+				end
+
+			elseif (scriptObject.ScriptType == 3) then
+				--nameplate
+				for _, triggerID in ipairs (scriptObject.NpcNames) do
+					unitFrame:KillScript (triggerID)
+				end
+
+			end
+			
+		end
+	end
+	
 	function scriptingFrame.RemoveScript (scriptId)
 		local scriptObjectToBeRemoved = scriptingFrame.GetScriptObject (scriptId)
 		local currentScript = scriptingFrame.GetCurrentScriptObject()
 		
+		--check if the script to be removed is valid
+		if (not scriptObjectToBeRemoved) then
+			return
+		end
+		
+		scriptingFrame.KillRunningScriptsForObject (scriptObjectToBeRemoved)
+		
+		--if is the current script being edited, cancel the edit
 		if (currentScript == scriptObjectToBeRemoved) then
 			--cancel the editing process
 			scriptingFrame.CancelEditing (true)
@@ -15441,6 +15551,12 @@ end
 		
 		--recompile all
 		Plater.WipeAndRecompileAllScripts()
+		
+		--clear the trigger box
+		scriptingFrame.TriggerTextEntry:SetText ("")
+		scriptingFrame.TriggerTextEntry:ClearFocus()
+		
+		Plater:Msg ("Trigger added!")
 	end
 	
 	--store the script object which is currently being edited
@@ -15619,7 +15735,7 @@ end
 			local add_trigger_button = DF:CreateButton (edit_script_frame, scriptingFrame.AddTrigger, 50, 20, "Add", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 			add_trigger_button:SetIcon ([[Interface\BUTTONS\UI-PlusButton-Up]], 20, 20, "overlay", {0, 1, 0, 1})
 			add_trigger_button:SetPoint ("left", add_trigger_textentry, "right", 2, 0)
-			add_trigger_button.tooltip = 
+			--add_trigger_button.tooltip = 
 			
 			add_trigger_button:SetHook ("OnEnter", function()
 				GameCooltip:Preset (2)
@@ -15629,7 +15745,7 @@ end
 				local scriptObject = scriptingFrame.GetCurrentScriptObject()
 				
 				if ((scriptObject.ScriptType == 1 or scriptObject.ScriptType == 2)) then
-					GameCooltip:AddLine ("|cFFFFFF00Important|r: it's normal for the Icon and Description of the spell you added to be different.\n\n|cFFFFFF00Important|r: the spell name is used to active the script.")
+					GameCooltip:AddLine ("|cFFFFFF00Important|r: it's normal for the Icon and Description of the spell you added to be different, The name of the spell is used to active the script.\n\nYou can enter the SpellID as well.")
 				else
 					GameCooltip:AddLine ("|cFFFFFF00Important|r: npc name isn't case-sensitive.\n\n|cFFFFFF00Important|r: you can use the npcId as well for the multi-language support of your script.")
 				end
@@ -15702,6 +15818,7 @@ end
 					self.Icon:SetAlpha (1)
 					self.SpellID = trigger
 					self.TriggerName:SetText (spellName)
+					self.TriggerID:SetText (trigger)
 					
 				elseif (scriptObject.ScriptType == 3) then
 					--npc name
@@ -15711,6 +15828,7 @@ end
 					self.Icon:SetAlpha (0.5)
 					self.SpellID = nil
 					self.TriggerName:SetText (trigger)
+					self.TriggerID:SetText ("")
 				end
 				
 				self.TriggerId = trigger_id
@@ -15759,6 +15877,7 @@ end
 					icon:SetSize (triggerbox_line_height - 2, triggerbox_line_height - 2)
 					
 					local trigger_name = DF:CreateLabel (line, "", DF:GetTemplate ("font", "PLATER_SCRIPTS_NAME"))
+					local trigger_id = DF:CreateLabel (line, "", DF:GetTemplate ("font", "PLATER_SCRIPTS_TRIGGER_SPELLID"))
 					
 					local remove_button = CreateFrame ("button", "$parentRemoveButton", line, "UIPanelCloseButton")
 					remove_button:SetSize (16, 16)
@@ -15768,9 +15887,11 @@ end
 
 					icon:SetPoint ("left", line, "left", 2, 0)
 					trigger_name:SetPoint ("topleft", icon, "topright", 4, -2)
+					trigger_id:SetPoint ("topleft", trigger_name, "bottomleft", 0, 0)
 					
 					line.Icon = icon
 					line.TriggerName = trigger_name
+					line.TriggerID = trigger_id
 					line.RemoveButton = remove_button
 
 					line.UpdateLine = update_trigger_line
@@ -16800,6 +16921,7 @@ end
 		if (scriptObject) then
 			scriptObject.Enabled = value
 			if (not value) then
+				scriptingFrame.KillRunningScriptsForObject (scriptObject)
 				Plater.WipeAndRecompileAllScripts()
 			else
 				Plater.CompileScript (scriptObject)
