@@ -313,7 +313,7 @@ local default_config = {
 				enabled = true,
 				plate_order = 3,
 				
-				health = {92, 2},
+				health = {92, 9},
 				health_incombat = {112, 9},
 				cast = {124, 12},
 				cast_incombat = {124, 12},
@@ -593,7 +593,7 @@ local default_config = {
 		},
 		
 		spell_animations = true,
-		spell_animations_scale = 1.0,
+		spell_animations_scale = 1.25,
 		
 		spell_animation_list = {
 		
@@ -8298,17 +8298,17 @@ function Plater.GetSpellForRangeCheck()
 end
 
 Plater.DefaultSpellRangeList = {
-	[577] = 198013, --> havoc demon hunter - Eye-Beam
+	[577] = 185245, --> havoc demon hunter - Torment
 	[581] = 185245, --> vengeance demon hunter - Torment
 
 	[250] = 56222, --> blood dk - dark command
 	[251] = 56222, --> frost dk - dark command
 	[252] = 56222, --> unholy dk - dark command
 	
-	[102] = 164815, -->  druid balance - Sunfire
-	[103] = 6795, -->  druid feral - Growl
+	[102] = 8921, -->  druid balance - Moonfire (45 yards)
+	[103] = 8921, -->  druid feral - Moonfire (40 yards)
 	[104] = 6795, -->  druid guardian - Growl
-	[105] = 5176, -->  druid resto - Solar Wrath
+	[105] = 8921, -->  druid resto - Moonfire (40 yards)
 
 	[253] = 193455, -->  hunter bm - Cobra Shot
 	[254] = 19434, --> hunter marks - Aimed Shot
@@ -8319,10 +8319,10 @@ Plater.DefaultSpellRangeList = {
 	[64] = 228597, --> mage frost - frostbolt
 	
 	[268] = 115546 , --> monk bm - Provoke
-	[269] = 115546, --> monk ww - Provoke
-	[270] = 115546, --> monk mw - Provoke
+	[269] = 117952, --> monk ww - Crackling Jade Lightning (40 yards)
+	[270] = 117952, --> monk mw - Crackling Jade Lightning (40 yards)
 	
-	[65] = 62124, --> paladin holy - Hand of Reckoning
+	[65] = 20473, --> paladin holy - Holy Shock (40 yards)
 	[66] = 62124, --> paladin protect - Hand of Reckoning
 	[70] = 62124, --> paladin ret - Hand of Reckoning
 	
@@ -8330,12 +8330,12 @@ Plater.DefaultSpellRangeList = {
 	[257] = 585, --> priest holy - Smite
 	[258] = 8092, --> priest shadow - Mind Blast
 	
-	[259] = 185565, --> rogue assassination - Poisoned Knife
-	[260] = 185763, --> rogue combat - Pistol Shot
-	[261] = 36554, --> rogue sub - Shadowstep
+	[259] = 185565, --> rogue assassination - Poisoned Knife (30 yards)
+	[260] = 185763, --> rogue outlaw - Pistol Shot (20 yards)
+	[261] = 114014, --> rogue sub - Shuriken Toss (30 yards)
 
-	[262] = 403, --> shaman elemental - Lightning Bolt
-	[263] = 51514, --> shamel enhancement - Hex
+	[262] = 188196, --> shaman elemental - Lightning Bolt
+	[263] = 187837, --> shaman enhancement - Lightning Bolt (instance cast)
 	[264] = 403, --> shaman resto - Lightning Bolt
 
 	[265] = 980, --> warlock aff - Agony
@@ -8659,7 +8659,7 @@ local interface_options = {
 			max = 100,
 			step = 1,
 			name = "View Distance" .. CVarIcon,
-			desc = "How far you can see nameplates (in yards).\n\n|cFFFFFFFFDefault: 60|r" .. CVarDesc,
+			desc = "How far you can see nameplates (in yards).\n\n|cFFFFFFFFDefault: 40|r" .. CVarDesc,
 			nocombat = true,
 		},
 		
@@ -17426,8 +17426,8 @@ end
 				Plater.db.profile.spell_animations = value
 				Plater.RefreshDBUpvalues()
 			end,
-			name = "Use Camera Shake on Nameplates",
-			desc = "Certain abilities causes a small camera shake, Plater enphasize it on the nameplate and add some shakes on other abilities.",
+			name = "Nameplate Shake (Spell Reaction)",
+			desc = "If enabled some of your abilities will cause the nameplate to shake or play a special effect when the ability hits the enemy.",
 		},
 		{
 			type = "range",
@@ -17436,10 +17436,10 @@ end
 				Plater.db.profile.spell_animations_scale = value
 			end,
 			min = 0.75,
-			max = 2.25,
+			max = 2.75,
 			step = 0.1,
-			name = "Shake Scale",
-			desc = "Shake Scale.",
+			name = "Nameplate Shake Intensity",
+			desc = "Nameplate Shake Intensity.",
 			thumbscale = 1.8,
 			usedecimals = true,
 		},
