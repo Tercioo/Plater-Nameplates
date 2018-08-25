@@ -488,7 +488,7 @@ local default_config = {
 		use_color_lerp = true,
 		color_lerp_speed = 12,
 		
-		height_animation = true,
+		height_animation = false,
 		height_animation_speed = 15,
 		
 		aura_enabled = true,
@@ -567,6 +567,7 @@ local default_config = {
 		
 		not_affecting_combat_enabled = false,
 		not_affecting_combat_alpha = .63,
+		range_check_enabled = true,
 		range_check_alpha = 0.5,
 		target_highlight = true,
 		target_highlight_alpha = .5,
@@ -1896,6 +1897,8 @@ local DB_NAME_PLAYERFRIENDLY_ANCHOR
 local DB_DO_ANIMATIONS
 local DB_ANIMATION_TIME_DILATATION
 
+local DB_USE_RANGE_CHECK
+
 local DB_TEXTURE_CASTBAR
 local DB_TEXTURE_CASTBAR_BG
 local DB_TEXTURE_HEALTHBAR
@@ -2761,6 +2764,8 @@ function Plater.RefreshDBUpvalues()
 	DB_HOVER_HIGHLIGHT = profile.hover_highlight
 	DB_HOVER_UNIT_HIGHLIGHT = profile.highlight_on_hover_unit_model
 	
+	DB_USE_RANGE_CHECK = profile.range_check_enabled
+	
 	if (DB_HOVER_HIGHLIGHT) then
 		TrackMouseOverFrame:SetScript ("OnUpdate", TrackMouseOverFrame.OnTickFunc)
 		--immediately update the unit on cursor upvalue
@@ -2930,7 +2935,6 @@ function Plater.OnInit()
 		end
 	end
 	Plater.SpellForRangeCheck = ""
-	
 	Plater.PlayerGUID = UnitGUID ("player")
 	
 	Plater.ImportScriptsFromLibrary()
@@ -7193,10 +7197,18 @@ end
 
 -- ~range
 function Plater.CheckRange (plateFrame, onAdded)
+
 	if (plateFrame [MEMBER_NOCOMBAT]) then
 		return
 	end
-	
+
+	if (not DB_USE_RANGE_CHECK) then
+		plateFrame.UnitFrame:SetAlpha (1)
+		plateFrame [MEMBER_ALPHA] = 1
+		plateFrame [MEMBER_RANGE] = true
+		return
+	end
+
 	if (plateFrame [MEMBER_REACTION] >= 5) then
 		plateFrame.UnitFrame:SetAlpha (1)
 		plateFrame [MEMBER_ALPHA] = 1
@@ -7205,6 +7217,11 @@ function Plater.CheckRange (plateFrame, onAdded)
 	end
 	
 	if (onAdded) then
+		--demon hunter Torment isn't working for range check
+		--print (Plater.SpellForRangeCheck, IsSpellInRange (Plater.SpellForRangeCheck, plateFrame [MEMBER_UNITID]), plateFrame [MEMBER_UNITID])
+		--IsSpellInRange (FindSpellBookSlotBySpellID (185245), "spell", plateFrame [MEMBER_UNITID]) 
+		--if (IsSpellInRange (FindSpellBookSlotBySpellID (185245), "spell", plateFrame [MEMBER_UNITID]) == 1) then
+		
 		if (IsSpellInRange (Plater.SpellForRangeCheck, plateFrame [MEMBER_UNITID]) == 1) then
 			plateFrame.FadedIn = true
 			local alpha = Plater.GetPlateAlpha (plateFrame)
@@ -8368,8 +8385,9 @@ function Plater.GetSpellForRangeCheck()
 end
 
 Plater.DefaultSpellRangeList = {
-	[577] = 185245, --> havoc demon hunter - Torment
-	[581] = 185245, --> vengeance demon hunter - Torment
+	-- 185245 spellID for Torment, it is always failing to check range with IsSpellInRange()
+	[577] = 278326, --> havoc demon hunter - Consume Magic
+	[581] = 278326, --> vengeance demon hunter - Consume Magic
 
 	[250] = 56222, --> blood dk - dark command
 	[251] = 56222, --> frost dk - dark command
@@ -11981,6 +11999,19 @@ end
 		},
 		
 		{type = "blank"},
+		
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.range_check_enabled end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.range_check_enabled = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end,
+			name = "Use Range Check",
+			desc = "Units that are out of range has their nameplates more transparent (adjust the amount in the slider below).\n\n|cFFFFFF00Important|r: check which spell you want to use to check the range.",
+		},
 		{
 			type = "range",
 			get = function() return Plater.db.profile.range_check_alpha end,
@@ -11993,7 +12024,7 @@ end
 			max = 1,
 			step = 0.1,
 			name = "Out of Range Alpha",
-			desc = "Amount of transparency to apply when the unit is out of range.",
+			desc = "Amount of alpha to apply when the unit is out of range.\n\n|cFFFFFF001.0|r: full opaque.\n|cFFFFFF00Zero|r: full transparent.",
 			usedecimals = true,
 		},
 	}
