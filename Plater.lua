@@ -1,6 +1,4 @@
 
---identify the class on the first run and apply view distance and spells to check the line of sight
-
 --/run SetCVar ("nameplateSelfBottomInset", .2)
 --/run SetCVar ("nameplateSelfTopInset", .5)
 
@@ -15,6 +13,8 @@ if (not DF) then
 	print ("|cFFFFAA00Plater: framework not found, if you just installed or updated the addon, please restart your client.|r")
 	return
 end
+
+local AlphaBlending = ALPHA_BLEND_AMOUNT + 0.0654785
 
 local unpack = unpack
 local ipairs = ipairs
@@ -78,6 +78,7 @@ LibSharedMedia:Register ("statusbar", "Details Serenity", [[Interface\AddOns\Pla
 LibSharedMedia:Register ("statusbar", "BantoBar", [[Interface\AddOns\Plater\images\BantoBar]])
 LibSharedMedia:Register ("statusbar", "Skyline", [[Interface\AddOns\Plater\images\bar_skyline]])
 LibSharedMedia:Register ("statusbar", "WorldState Score", [[Interface\WorldStateFrame\WORLDSTATEFINALSCORE-HIGHLIGHT]])
+LibSharedMedia:Register ("statusbar", "Details Flat", [[Interface\AddOns\Plater\images\bar_background]])
 LibSharedMedia:Register ("statusbar", "DGround", [[Interface\AddOns\Plater\images\bar_background]])
 LibSharedMedia:Register ("statusbar", "PlaterBackground", [[Interface\AddOns\Plater\images\platebackground]])
 LibSharedMedia:Register ("statusbar", "PlaterTexture", [[Interface\AddOns\Plater\images\platetexture]])
@@ -1343,14 +1344,15 @@ local default_config = {
 			
 		},
 		
-		health_statusbar_texture = "PlaterHealth",
+		--health_statusbar_texture = "PlaterHealth",
+		health_statusbar_texture = "Details Flat",
 		health_selection_overlay = "PlaterHighlight",
 		health_statusbar_bgtexture = "PlaterBackground",
 		health_statusbar_bgcolor = {1, 1, 1, 1},
 		health_statusbar_bgalpha = 1,
 		health_statusbar_bgalpha_selected = .7,
 		
-		cast_statusbar_texture = "DGround",
+		cast_statusbar_texture = "Details Flat",
 		cast_statusbar_bgtexture = "Details Serenity",
 		cast_statusbar_bgcolor = {0, 0, 0, 0.8},
 		cast_statusbar_color = {1, .7, 0, 1},
@@ -1362,6 +1364,7 @@ local default_config = {
 		enemyplates_only_in_instances = false, --removed
 		
 		indicator_faction = true,
+		indicator_spec = true,
 		indicator_elite = true,
 		indicator_rare = true,
 		indicator_quest = true,
@@ -1626,6 +1629,20 @@ function Plater.GetHealthCutoffValue()
 					end
 				end
 			end
+			
+		elseif (class == "MAGE") then
+			--playing fire mage?
+			local specID = GetSpecializationInfo (spec)
+			if (specID and specID ~= 0) then
+				if (specID == 63) then --fire
+					local _, _, _, using_SearingTouch = GetTalentInfo (1, 3, 1)
+					if (using_SearingTouch) then
+						CONST_USE_HEALTHCUTOFF = true
+						CONST_HEALTHCUTOFF_AT = 0.30
+					end
+				end
+			end
+			
 			
 		elseif (class == "WARRIOR") then
 			--is playing as a Arms warrior?
@@ -6968,6 +6985,16 @@ function Plater.UpdateIndicators (plateFrame, actorType)
 		if (config.indicator_enemyclass) then
 			Plater.AddIndicator (plateFrame, "classicon")
 		end
+		if (config.indicator_spec) then 
+			--> check if the user is using details
+			if (Details and Details.realversion >= 134) then
+				local spec = Details:GetSpecByGUID (plateFrame [MEMBER_GUID])
+				if (spec) then
+					local texture, L, R, T, B = Details:GetSpecIcon (spec)
+					Plater.AddIndicator (plateFrame, "specicon", texture, L, R, T, B)
+				end
+			end
+		end
 		
 	elseif (actorType == ACTORTYPE_ENEMY_NPC) then -- or actorType == ACTORTYPE_FRIENDLY_NPC
 		--verifica quest e elite npc
@@ -7001,7 +7028,7 @@ function Plater.UpdateIndicators (plateFrame, actorType)
 	end
 end
 
-function Plater.AddIndicator (plateFrame, indicator)
+function Plater.AddIndicator (plateFrame, indicator, ...)
 	local thisIndicator = plateFrame.IconIndicators [plateFrame.IconIndicators.Next]
 	if (not thisIndicator) then
 		local newIndicator = plateFrame.UnitFrame.healthBar:CreateTexture (nil, "overlay")
@@ -7057,8 +7084,14 @@ function Plater.AddIndicator (plateFrame, indicator)
 			thisIndicator:SetTexCoord (unpack (CLASS_ICON_TCOORDS [class]))
 		end
 	
+	elseif (indicator == "specicon") then
+		local texture, L, R, T, B = ...
+		thisIndicator:SetTexture (texture)
+		thisIndicator:SetTexCoord (L, R, T, B)
+	
 	elseif (indicator == "worldboss") then
 		thisIndicator:SetTexture ([[Interface\Scenarios\ScenarioIcon-Boss]])
+		
 	end
 	
 	if (plateFrame.IconIndicators.Next == 1) then
@@ -7191,7 +7224,7 @@ function Plater.GetPlateAlpha (plateFrame)
 	if (UnitIsUnit (plateFrame [MEMBER_UNITID], "target")) then
 		return 1
 	else
-		return 0.9
+		return AlphaBlending
 	end
 end
 
@@ -7203,15 +7236,15 @@ function Plater.CheckRange (plateFrame, onAdded)
 	end
 
 	if (not DB_USE_RANGE_CHECK) then
-		plateFrame.UnitFrame:SetAlpha (1)
-		plateFrame [MEMBER_ALPHA] = 1
+		plateFrame.UnitFrame:SetAlpha (AlphaBlending)
+		plateFrame [MEMBER_ALPHA] = AlphaBlending
 		plateFrame [MEMBER_RANGE] = true
 		return
 	end
 
 	if (plateFrame [MEMBER_REACTION] >= 5) then
-		plateFrame.UnitFrame:SetAlpha (1)
-		plateFrame [MEMBER_ALPHA] = 1
+		plateFrame.UnitFrame:SetAlpha (AlphaBlending)
+		plateFrame [MEMBER_ALPHA] = AlphaBlending
 		plateFrame [MEMBER_RANGE] = true
 		return
 	end
@@ -7260,8 +7293,8 @@ end
 local on_fade_in_finished = function (animation)
 	animation.playing = nil
 	animation:GetParent():GetParent().FadedIn = true
-	animation:GetParent():SetAlpha (1)
-	animation:GetParent():GetParent() [MEMBER_ALPHA] = 1
+	animation:GetParent():SetAlpha (AlphaBlending)
+	animation:GetParent():GetParent() [MEMBER_ALPHA] = AlphaBlending
 end
 local on_fade_out_finished = function (animation)
 	animation.playing = nil
@@ -7272,7 +7305,7 @@ local on_fade_out_finished = function (animation)
 end
 local plate_fade_in = function (plateFrame)
 	plateFrame.UnitFrame.FadeIn.Animation:SetFromAlpha (plateFrame.UnitFrame:GetAlpha())
-	plateFrame.UnitFrame.FadeIn.Animation:SetToAlpha (1)
+	plateFrame.UnitFrame.FadeIn.Animation:SetToAlpha (AlphaBlending)
 	plateFrame.UnitFrame.FadeIn:Play()
 end
 local plate_fade_out = function (plateFrame)
@@ -8384,6 +8417,7 @@ function Plater.GetSpellForRangeCheck()
 	end
 end
 
+-- ~range
 Plater.DefaultSpellRangeList = {
 	-- 185245 spellID for Torment, it is always failing to check range with IsSpellInRange()
 	[577] = 278326, --> havoc demon hunter - Consume Magic
@@ -11615,7 +11649,7 @@ end
 				Plater.UpdateAllPlates()
 			end,
 			name = "Execute Range",
-			desc = "Show an indicator when the unit is in execute range.\n\nPlater auto detects execute range for:\n\n|cFFFFFF00Hunter|r: Beast Master spec with Killer Instinct talent.\n\n|cFFFFFF00Warrior|r: Arms and Fury specs.\n\n|cFFFFFF00Priest|r: Shadow spec with Shadow Word: Death talent.",
+			desc = "Show an indicator when the unit is in execute range.\n\nPlater auto detects execute range for:\n\n|cFFFFFF00Hunter|r: Beast Master spec with Killer Instinct talent.\n\n|cFFFFFF00Warrior|r: Arms and Fury specs.\n\n|cFFFFFF00Priest|r: Shadow spec with Shadow Word: Death talent.\n\n|cFFFFFF00Mage|r: Fire spec with Searing Touch talent.",
 		},
 
 		
@@ -11659,6 +11693,18 @@ end
 			name = "Enemy Class",
 			desc = "Enemy player class icon.",
 		},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.indicator_spec end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_spec = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Enemy Spec",
+			desc = "Enemy player spec icon.\n\n|cFFFFFF00Important|r: must have Details! Damage Meter installed.",
+		},
+		--
 
 		--indicator icon anchor
 		{
