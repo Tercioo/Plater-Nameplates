@@ -530,8 +530,14 @@ local default_config = {
 		extra_icon_width = 30,
 		extra_icon_height = 18,
 		extra_icon_wide_icon = true,
+		extra_icon_caster_name = true,
 		extra_icon_backdrop_color = {0, 0, 0, 0.5},
 		extra_icon_border_color = {0, 0, 0, 1},
+		
+		debuff_show_cc = true, --extra frame show cc
+		debuff_show_cc_border = {.3, .2, .2, 1},
+		extra_icon_show_purge = true, --extra frame show purge
+		extra_icon_show_purge_border = {0, .925, 1, 1},
 		
 		extra_icon_auras = {},
 		
@@ -563,8 +569,6 @@ local default_config = {
 			buff_tracked = {},
 			debuff_tracked = {},
 		},
-		
-		debuff_show_cc = true,
 		
 		not_affecting_combat_enabled = false,
 		not_affecting_combat_alpha = .63,
@@ -1687,8 +1691,8 @@ end
 
 
 --copied from blizzard code
-local function IsTapDenied (frame)
-	return frame.unit and frame.optionTable.greyOutWhenTapDenied and not UnitPlayerControlled (frame.unit) and UnitIsTapDenied (frame.unit)
+local function IsTapDenied (unit)
+	return unit and not UnitPlayerControlled (unit) and UnitIsTapDenied (unit)
 end
 
 function Plater.GetDriverSubObjectName (driverName, funcName, isChildMember)
@@ -1926,11 +1930,14 @@ local DB_CASTBAR_HIDE_FRIENDLY
 
 local DB_CAPTURED_SPELLS = {}
 
+local DB_SHOW_PURGE_IN_EXTRA_ICONS
+
 local SCRIPT_AURA = {}
 local SCRIPT_CASTBAR = {}
 local SCRIPT_UNIT = {}
 
 local SPECIAL_AURA_NAMES = {}
+local CROWDCONTROL_AURA_NAMES = {}
 
 Plater.ScriptMetaFunctions = {
 	--get the table which stores all script information for the widget
@@ -2856,7 +2863,9 @@ function Plater.RefreshDBUpvalues()
 	DB_CASTBAR_HIDE_ENEMIES = profile.hide_enemy_castbars
 	DB_CASTBAR_HIDE_FRIENDLY = profile.hide_friendly_castbars
 	
-	DB_CAPTURED_SPELLS = Plater.db.profile.captured_spells
+	DB_CAPTURED_SPELLS = profile.captured_spells
+	
+	DB_SHOW_PURGE_IN_EXTRA_ICONS = profile.extra_icon_show_purge
 	
 	--
 	
@@ -2882,6 +2891,7 @@ function Plater.RefreshDBUpvalues()
 	end
 	
 	wipe (SPECIAL_AURA_NAMES)
+	wipe (CROWDCONTROL_AURA_NAMES)
 	
 	--build the crowd control list
 	if (profile.debuff_show_cc) then
@@ -2889,6 +2899,7 @@ function Plater.RefreshDBUpvalues()
 			local spellName = GetSpellInfo (spellId)
 			if (spellName) then
 				SPECIAL_AURA_NAMES [spellName] = true
+				CROWDCONTROL_AURA_NAMES [spellName] = true
 			end
 		end
 	end
@@ -3553,8 +3564,12 @@ function Plater.OnInit()
 					
 				elseif (self.channeling) then
 					--self.percentText:SetText (format ("%.1f", abs (self.value - self.maxValue))) --elapsed
-					self.percentText:SetText (format ("%.1f", abs (self.value))) -- remaining -- thanks nnogga
-					
+					local remainingTime = abs (self.value) -- remaining -- thanks nnogga
+					if (remainingTime > 999) then
+						self.percentText:SetText ("")
+					else
+						self.percentText:SetText (format ("%.1f", remainingTime))
+					end
 				else
 					self.percentText:SetText ("")
 				end
@@ -3571,7 +3586,14 @@ function Plater.OnInit()
 				if (self.unit and Plater.db.profile.castbar_target_show) then
 					local targetName = UnitName (self.unit .. "target")
 					if (targetName) then
-						self.FrameOverlay.TargetName:SetText (targetName)
+						local _, class = UnitClass (self.unit .. "target")
+						if (class) then 
+							self.FrameOverlay.TargetName:SetText (targetName)
+							self.FrameOverlay.TargetName:SetTextColor (DF:ParseColors (class))
+						else
+							self.FrameOverlay.TargetName:SetText (targetName)
+							DF:SetFontColor (self.FrameOverlay.TargetName, Plater.db.profile.castbar_target_color)
+						end
 					else
 						self.FrameOverlay.TargetName:SetText ("")
 					end
@@ -3631,6 +3653,8 @@ function Plater.OnInit()
 			if (plateFrame.isSelf) then
 				local healthBar = self.healthBar
 				local min, max = healthBar:GetMinMaxValues()
+				
+				--> flash if low health
 				if (healthBar:GetValue() / max < 0.27) then
 					if (not healthBar.PlayHealthFlash) then
 						Plater.CreateHealthFlashFrame (plateFrame)
@@ -3643,6 +3667,12 @@ function Plater.OnInit()
 						end
 					end
 				end
+				
+				local unitHealth = UnitHealth (plateFrame [MEMBER_UNITID])
+				local unitHealthMax = UnitHealthMax (plateFrame [MEMBER_UNITID])
+				
+				healthBar.CurrentHealth = unitHealth
+				healthBar.CurrentHealthMax = unitHealthMax
 				
 				-- is out of combat, reposition the health bar since the player health bar automatically change place when showing out of combat
 				--it shows out of combat when the health had a decrease in value
@@ -3844,7 +3874,9 @@ function Plater.UpdateSelfPlate()
 		return C_Timer.After (.3, re_update_self_plate)
 	end
 	C_NamePlate.SetNamePlateSelfClickThrough (DB_PLATE_CONFIG.player.click_through)
-	C_NamePlate.SetNamePlateSelfSize (unpack (DB_PLATE_CONFIG.player.health))
+	
+	--disabled due to modifying the player personal nameplate makes it be a little offset in the Y anchor making it to be in front of the player
+--	C_NamePlate.SetNamePlateSelfSize (unpack (DB_PLATE_CONFIG.player.health))
 	ClassNameplateManaBarFrame:SetSize (unpack (DB_PLATE_CONFIG.player.mana))
 end
 
@@ -4120,6 +4152,14 @@ function Plater.FormatTime (time)
 	end
 end
 
+--> show the tooltip in the aura icon
+hooksecurefunc (NameplateBuffButtonTemplateMixin, "OnEnter", function (iconFrame)
+	NamePlateTooltip:SetOwner (iconFrame, "ANCHOR_LEFT")
+	NamePlateTooltip:SetUnitAura (iconFrame:GetParent().unit, iconFrame:GetID(), iconFrame.filter)
+
+	iconFrame.UpdateTooltip = NameplateBuffButtonTemplateMixin.OnEnter
+end)
+
 --update the aura icon, this icon is getted with GetAuraIcon
 function Plater.AddAura (auraIconFrame, i, spellName, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, isBuff, isShowAll, isDebuff, isPersonal)
 	auraIconFrame:SetID (i)
@@ -4137,6 +4177,8 @@ function Plater.AddAura (auraIconFrame, i, spellName, texture, count, debuffType
 		auraIconFrame.spellId = spellId
 		auraIconFrame.layoutIndex = auraIconFrame.ID
 		auraIconFrame.IsShowingBuff = false
+
+		auraIconFrame.filter = debuffType == "DEBUFF" and "HARMFUL" or debuffType == "BUFF" and "HELPFUL" or ""
 	end
 	
 	--> caching the profile for performance
@@ -4295,6 +4337,29 @@ local hide_non_used_auraFrames = function (self)
 	end
 end
 
+function Plater.AddExtraIcon (self, spellName, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
+	local _, casterClass = UnitClass (caster or "")
+	local casterName
+	if (casterClass) then
+		casterName = UnitName (caster)
+	end
+	
+	local borderColor
+	
+	if (canStealOrPurge) then
+		borderColor = Plater.db.profile.extra_icon_show_purge_border
+		
+	elseif (CROWDCONTROL_AURA_NAMES [spellName]) then
+		borderColor = Plater.db.profile.debuff_show_cc_border
+	
+	else
+		borderColor = Plater.db.profile.extra_icon_border_color
+	end
+	
+	--spellId, borderColor, startTime, duration, forceTexture, descText
+	self.ExtraIconFrame:SetIcon (spellId, borderColor, expirationTime - duration, duration, false, casterName and {text = casterName, text_color = casterClass} or false)
+end
+
 -- ~auras ãura
 function Plater.TrackSpecificAuras (self, unit, isBuff, aurasToCheck, isPersonal, noSpecial)
 
@@ -4305,14 +4370,15 @@ function Plater.TrackSpecificAuras (self, unit, isBuff, aurasToCheck, isPersonal
 			if (not name) then
 				break
 			else
+				debuffType = "BUFF"
 				if (aurasToCheck [name]) then
 					local auraIconFrame = Plater.GetAuraIcon (self, true)
 					Plater.AddAura (auraIconFrame, i, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, true, false, false, isPersonal)
 				end
 				
 				--> check if is a special aura
-				if (not noSpecial and SPECIAL_AURA_NAMES [name]) then
-					self.ExtraIconFrame:SetIcon (spellId, false, expirationTime - duration, duration)
+				if (not noSpecial and (SPECIAL_AURA_NAMES [name] or DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge)) then
+					Plater.AddExtraIcon (self, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 				end
 			end
 		end
@@ -4323,14 +4389,15 @@ function Plater.TrackSpecificAuras (self, unit, isBuff, aurasToCheck, isPersonal
 			if (not name) then
 				break
 			else
+				debuffType = "DEBUFF"
 				if (aurasToCheck [name]) then
 					local auraIconFrame = Plater.GetAuraIcon (self)
 					Plater.AddAura (auraIconFrame, i, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, false, false, false, isPersonal)
 				end
 				
 				--> check if is a special aura
-				if (not noSpecial and SPECIAL_AURA_NAMES [name]) then
-					self.ExtraIconFrame:SetIcon (spellId, false, expirationTime - duration, duration)
+				if (not noSpecial and (SPECIAL_AURA_NAMES [name] or DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge)) then
+					Plater.AddExtraIcon (self, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 				end
 			end
 		end
@@ -4368,6 +4435,7 @@ function Plater.UpdateAuras_Automatic (self, unit)
 			local spellName, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll = UnitDebuff (unit, i)
 			--start as false, during the checks can be changed to true, if is true this debuff is added on the nameplate
 			local can_show_this_debuff
+			debuffType = "DEBUFF"
 			
 			if (not spellName) then
 				break
@@ -4384,8 +4452,8 @@ function Plater.UpdateAuras_Automatic (self, unit)
 					can_show_this_debuff = true
 				end
 
-				if (SPECIAL_AURA_NAMES [spellName]) then
-					self.ExtraIconFrame:SetIcon (spellId, false, expirationTime - duration, duration)
+				if (SPECIAL_AURA_NAMES [spellName] or DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge) then
+					Plater.AddExtraIcon (self, spellName, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 				end
 			end
 			
@@ -4400,6 +4468,7 @@ function Plater.UpdateAuras_Automatic (self, unit)
 	--> buffs
 		for i = 1, BUFF_MAX_DISPLAY do
 			local name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll = UnitBuff (unit, i)
+			debuffType = "BUFF"
 			
 			if (not name) then
 				break
@@ -4429,8 +4498,8 @@ function Plater.UpdateAuras_Automatic (self, unit)
 				end
 				
 				--> is a special aura?
-				if (SPECIAL_AURA_NAMES [name]) then
-					self.ExtraIconFrame:SetIcon (spellId, false, expirationTime - duration, duration)
+				if (SPECIAL_AURA_NAMES [name] or DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge) then
+					Plater.AddExtraIcon (self, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 				end
 			end
 		end
@@ -4460,6 +4529,7 @@ function Plater.UpdateAuras_Self_Automatic (self)
 	if (Plater.db.profile.aura_show_debuffs_personal) then
 		for i = 1, BUFF_MAX_DISPLAY do
 			local name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId = UnitDebuff ("player", i)
+			debuffType = "DEBUFF"
 			
 			if (not name) then
 				break
@@ -4468,8 +4538,8 @@ function Plater.UpdateAuras_Self_Automatic (self)
 				local auraIconFrame = Plater.GetAuraIcon (self)
 				Plater.AddAura (auraIconFrame, i, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, false, false, true, true)
 				
-				if (SPECIAL_AURA_NAMES [name]) then
-					self.ExtraIconFrame:SetIcon (spellId, false, expirationTime - duration, duration)
+				if (SPECIAL_AURA_NAMES [name] or DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge) then
+					Plater.AddExtraIcon (self, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 				end
 			end
 		end
@@ -4479,6 +4549,8 @@ function Plater.UpdateAuras_Self_Automatic (self)
 	if (Plater.db.profile.aura_show_buffs_personal) then
 		for i = 1, BUFF_MAX_DISPLAY do
 			local name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId = UnitBuff ("player", i, nil, "PLAYER")
+			debuffType = "BUFF"
+			
 			if (not name) then
 				break
 				
@@ -4599,13 +4671,12 @@ end
 
 -- ~ontick ~onupdate ~tick õupdate õntick
 local EventTickFunction = function (tickFrame, deltaTime)
-	
+
 	tickFrame.ThrottleUpdate = tickFrame.ThrottleUpdate - deltaTime
 	local unitFrame = tickFrame.UnitFrame
-	--local healthBar = unitFrame.healthBar
+	local healthBar = unitFrame.healthBar
 	
 	if (tickFrame.ThrottleUpdate < 0) then
-		
 		--make the db path smaller
 		local actorTypeDBConfig = DB_PLATE_CONFIG [tickFrame.actorType]
 		
@@ -4616,29 +4687,28 @@ local EventTickFunction = function (tickFrame, deltaTime)
 		if (CONST_USE_HEALTHCUTOFF) then
 			local healthPercent = UnitHealth (tickFrame.unit) / UnitHealthMax (tickFrame.unit)
 			if (healthPercent < CONST_HEALTHCUTOFF_AT) then
-				if (not tickFrame.HealthBar.healthCutOff:IsShown()) then
-				
-					tickFrame.HealthBar.healthCutOff:SetHeight (tickFrame.HealthBar:GetHeight())
-					tickFrame.HealthBar.healthCutOff:SetPoint ("left", tickFrame.HealthBar, "left", tickFrame.HealthBar:GetWidth() * CONST_HEALTHCUTOFF_AT, 0)
-					tickFrame.HealthBar.healthCutOff:Show()
-					tickFrame.HealthBar.healthCutOff.ShowAnimation:Play()
+				if (not healthBar.healthCutOff:IsShown()) then
+					healthBar.healthCutOff:SetHeight (healthBar:GetHeight())
+					healthBar.healthCutOff:SetPoint ("left", healthBar, "left", healthBar:GetWidth() * CONST_HEALTHCUTOFF_AT, 0)
+					healthBar.healthCutOff:Show()
+					healthBar.healthCutOff.ShowAnimation:Play()
 					
-					tickFrame.HealthBar.executeRange:Show()
-					tickFrame.HealthBar.executeRange:SetTexCoord (0, CONST_HEALTHCUTOFF_AT, 0, 1)
-					tickFrame.HealthBar.executeRange:SetAlpha (0.2)
-					tickFrame.HealthBar.executeRange:SetVertexColor (.3, .3, .3)
-					tickFrame.HealthBar.executeRange:SetHeight (tickFrame.HealthBar:GetHeight())
-					tickFrame.HealthBar.executeRange:SetPoint ("right", tickFrame.HealthBar.healthCutOff, "left")
+					healthBar.executeRange:Show()
+					healthBar.executeRange:SetTexCoord (0, CONST_HEALTHCUTOFF_AT, 0, 1)
+					healthBar.executeRange:SetAlpha (0.2)
+					healthBar.executeRange:SetVertexColor (.3, .3, .3)
+					healthBar.executeRange:SetHeight (healthBar:GetHeight())
+					healthBar.executeRange:SetPoint ("right", healthBar.healthCutOff, "left")
 				end
 			else
-				tickFrame.HealthBar.healthCutOff:Hide()
-				tickFrame.HealthBar.executeRange:Hide()
+				healthBar.healthCutOff:Hide()
+				healthBar.executeRange:Hide()
 			end
 		end
 		
 		--aggro
-		if (IsTapDenied (unitFrame)) then
-			Plater.ForceChangeHealthBarColor (unitFrame.healthBar, unpack (Plater.db.profile.tap_denied_color))
+		if (IsTapDenied (tickFrame.unit)) then
+			Plater.ForceChangeHealthBarColor (healthBar, unpack (Plater.db.profile.tap_denied_color))
 		
 		--> check if is in combat so it can change the aggro color
 		elseif (InCombatLockdown()) then
@@ -4650,13 +4720,13 @@ local EventTickFunction = function (tickFrame, deltaTime)
 			end
 			
 			if (actorTypeDBConfig.percent_text_enabled) then
-				Plater.UpdateLifePercentText (tickFrame.HealthBar, unitFrame.unit, actorTypeDBConfig.percent_show_health, actorTypeDBConfig.percent_text_show_decimals)
+				Plater.UpdateLifePercentText (healthBar, unitFrame.unit, actorTypeDBConfig.percent_show_health, actorTypeDBConfig.percent_text_show_decimals)
 			end
 		else
 			--nao esta em combate, verifica se a porcetagem esta para mostrar fora de combate
 			if (actorTypeDBConfig.percent_text_enabled and actorTypeDBConfig.percent_text_ooc) then
-				Plater.UpdateLifePercentText (tickFrame.HealthBar, unitFrame.unit, actorTypeDBConfig.percent_show_health, actorTypeDBConfig.percent_text_show_decimals)
-				tickFrame.HealthBar.lifePercent:Show()
+				Plater.UpdateLifePercentText (healthBar, unitFrame.unit, actorTypeDBConfig.percent_show_health, actorTypeDBConfig.percent_text_show_decimals)
+				healthBar.lifePercent:Show()
 			end
 		end
 
@@ -4697,7 +4767,7 @@ local EventTickFunction = function (tickFrame, deltaTime)
 			scriptEnv._NpcID = tickFrame.PlateFrame [MEMBER_NPCID]
 			scriptEnv._UnitName = tickFrame.PlateFrame [MEMBER_NAME]
 			scriptEnv._UnitGUID = tickFrame.PlateFrame [MEMBER_GUID]
-			scriptEnv._HealthPercent = tickFrame.HealthBar.CurrentHealth / tickFrame.HealthBar.CurrentHealthMax * 100
+			scriptEnv._HealthPercent = healthBar.CurrentHealth / healthBar.CurrentHealthMax * 100
 	
 			--run onupdate script
 			unitFrame:ScriptRunOnUpdate (scriptInfo)
@@ -4713,10 +4783,10 @@ local EventTickFunction = function (tickFrame, deltaTime)
 				if (unitDamageTable) then
 					local damage = unitDamageTable.CurrentDamage or 0
 					
-					local textString = unitFrame.healthBar.DetailsRealTime
+					local textString = healthBar.DetailsRealTime
 					textString:SetText (DF.FormatNumber (damage / PLATER_DPS_SAMPLE_SIZE))
 				else
-					local textString = unitFrame.healthBar.DetailsRealTime
+					local textString = healthBar.DetailsRealTime
 					textString:SetText ("")
 				end
 			end
@@ -4726,10 +4796,10 @@ local EventTickFunction = function (tickFrame, deltaTime)
 				if (unitDamageTable) then
 					local damage = unitDamageTable.CurrentDamageFromPlayer or 0
 					
-					local textString = unitFrame.healthBar.DetailsRealTimeFromPlayer
+					local textString = healthBar.DetailsRealTimeFromPlayer
 					textString:SetText (DF.FormatNumber (damage / PLATER_DPS_SAMPLE_SIZE))
 				else
-					local textString = unitFrame.healthBar.DetailsRealTimeFromPlayer
+					local textString = healthBar.DetailsRealTimeFromPlayer
 					textString:SetText ("")
 				end
 
@@ -4740,27 +4810,27 @@ local EventTickFunction = function (tickFrame, deltaTime)
 				if (unitDamageTable) then
 					local damage = unitDamageTable.TotalDamageTaken or 0
 					
-					local textString = unitFrame.healthBar.DetailsDamageTaken
+					local textString = healthBar.DetailsDamageTaken
 					textString:SetText (DF.FormatNumber (damage))
 				else
-					local textString = unitFrame.healthBar.DetailsDamageTaken
+					local textString = healthBar.DetailsDamageTaken
 					textString:SetText ("")
 				end
 			end
 		end
 
 	end
-	
-	--unitFrame.healthBar:SetStatusBarColor (unitFrame.healthBar.R, unitFrame.healthBar.G, unitFrame.healthBar.B)
+
+	--healthBar:SetStatusBarColor (healthBar.R, healthBar.G, healthBar.B)
 	-- ~lerpcolor
 	if (DB_LERP_COLOR) then
-		local currentR, currentG, currentB = unitFrame.healthBar.barTexture:GetVertexColor()
-		local r, g, b = DF:LerpLinearColor (deltaTime, DB_LERP_COLOR_SPEED, currentR, currentG, currentB, unitFrame.healthBar.R, unitFrame.healthBar.G, unitFrame.healthBar.B)
-		unitFrame.healthBar.barTexture:SetVertexColor (r, g, b)
+		local currentR, currentG, currentB = healthBar.barTexture:GetVertexColor()
+		local r, g, b = DF:LerpLinearColor (deltaTime, DB_LERP_COLOR_SPEED, currentR, currentG, currentB, healthBar.R, healthBar.G, healthBar.B)
+		healthBar.barTexture:SetVertexColor (r, g, b)
 	end
 	
 	--is mouse over ~highlight ~mouseover
-	if (DB_HOVER_HIGHLIGHT and (tickFrame.PlateFrame.actorType ~= ACTORTYPE_FRIENDLY_PLAYER and tickFrame.PlateFrame.actorType ~= ACTORTYPE_FRIENDLY_NPC) and not tickFrame.PlateFrame.isSelf) then 
+	if (DB_HOVER_HIGHLIGHT and tickFrame.CanCheckHighlight) then 
 		if (tickFrame.PlateFrame:IsMouseOver()) then
 			if (UNITGUID_UNDER_CURSOR == tickFrame.PlateFrame [MEMBER_GUID]) then
 				unitFrame.HighlightFrame:Show()
@@ -4786,36 +4856,38 @@ local EventTickFunction = function (tickFrame, deltaTime)
 	
 	--animate health bar ~animation
 	if (DB_DO_ANIMATIONS) then
-		if (unitFrame.healthBar.IsAnimating) then
-			unitFrame.healthBar.AnimateFunc (unitFrame.healthBar, deltaTime)
+		if (healthBar.IsAnimating) then
+			healthBar.AnimateFunc (healthBar, deltaTime)
 		end
 	end
 	
-	if (unitFrame.healthBar.HAVE_HEIGHT_ANIMATION) then
-		if (unitFrame.healthBar.HAVE_HEIGHT_ANIMATION == "up") then
-			local increment = deltaTime * Plater.db.profile.height_animation_speed * unitFrame.healthBar.ToIncreace
-			local size = unitFrame.healthBar:GetHeight() + increment
-			if (size >= unitFrame.healthBar.TargetHeight) then
-				unitFrame.healthBar:SetHeight (unitFrame.healthBar.TargetHeight)
-				unitFrame.healthBar.HAVE_HEIGHT_ANIMATION = nil
+	if (healthBar.HAVE_HEIGHT_ANIMATION) then
+
+		if (healthBar.HAVE_HEIGHT_ANIMATION == "up") then
+			local increment = deltaTime * Plater.db.profile.height_animation_speed * healthBar.ToIncreace
+			local size = healthBar:GetHeight() + increment
+			if (size + 0.0001 >= healthBar.TargetHeight) then
+				healthBar:SetHeight (healthBar.TargetHeight)
+				healthBar.HAVE_HEIGHT_ANIMATION = nil
 				Plater.UpdateTarget (tickFrame.PlateFrame)
 			else
-				unitFrame.healthBar:SetHeight (size)
+				healthBar:SetHeight (size)
 			end			
 			
-		elseif (unitFrame.healthBar.HAVE_HEIGHT_ANIMATION == "down") then
-			local decrease = deltaTime * Plater.db.profile.height_animation_speed * unitFrame.healthBar.ToDecrease
-			local size = unitFrame.healthBar:GetHeight() - decrease
-			if (size <= unitFrame.healthBar.TargetHeight) then
-				unitFrame.healthBar:SetHeight (unitFrame.healthBar.TargetHeight)
-				unitFrame.healthBar.HAVE_HEIGHT_ANIMATION = nil
+		elseif (healthBar.HAVE_HEIGHT_ANIMATION == "down") then
+			local decrease = deltaTime * Plater.db.profile.height_animation_speed * healthBar.ToDecrease
+			local size = healthBar:GetHeight() - decrease
+			if (size - 0.0001 <= healthBar.TargetHeight) then
+				healthBar:SetHeight (healthBar.TargetHeight)
+				healthBar.HAVE_HEIGHT_ANIMATION = nil
 				Plater.UpdateTarget (tickFrame.PlateFrame)
 			else
-				unitFrame.healthBar:SetHeight (size)
+				healthBar:SetHeight (size)
 			end			
 			
 		end
 	end
+
 end
 
 --forï¿½a a default UI a trocar a cor das barras
@@ -6257,13 +6329,14 @@ function Plater.UpdatePlateSize (plateFrame, justAdded)
 
 		--> health bar
 			local scalarValue
-			if (plateFrame [MEMBER_REACTION] <= 4) then
+			if (plateFrame [MEMBER_REACTION] <= 4) then --> enemy and neutral
 				scalarValue = SizeOf_healthBar_Width > SizeOf_castBar_Width and -((SizeOf_healthBar_Width - SizeOf_castBar_Width) / 2) or ((SizeOf_castBar_Width - SizeOf_healthBar_Width) / 2)
 			else
 				if (plateFrame.isSelf) then
 					scalarValue = SizeOf_healthBar_Width > SizeOf_castBar_Width and -((SizeOf_healthBar_Width - SizeOf_castBar_Width) / 2) or ((SizeOf_castBar_Width - SizeOf_healthBar_Width) / 2)
 				else
-					scalarValue = 70 > SizeOf_castBar_Width and -((70 - SizeOf_castBar_Width) / 2) or ((SizeOf_castBar_Width - 70) / 2)
+					--> friendly
+					scalarValue = SizeOf_healthBar_Width > SizeOf_castBar_Width and -((SizeOf_healthBar_Width - SizeOf_castBar_Width) / 2) or ((SizeOf_castBar_Width - SizeOf_healthBar_Width) / 2)
 				end
 			end
 
@@ -6300,7 +6373,6 @@ function Plater.UpdatePlateSize (plateFrame, justAdded)
 					end
 				end
 			end
-		
 		
 		--> buff frame
 			buffFrame.Point1 = "bottom"
@@ -6343,6 +6415,16 @@ function Plater.UpdateManaAndResourcesBar()
 		anchorFrame = C_NamePlate.GetNamePlateForUnit ("target")
 	else
 		anchorFrame = ClassNameplateManaBarFrame
+	end
+	
+	if (ClassNameplateManaBarFrame) then
+		if (ClassNameplateManaBarFrame.Border) then
+			ClassNameplateManaBarFrame.Border:Hide()
+		end
+		if (not ClassNameplateManaBarFrame.SoftShadow) then
+			DF:CreateBorderWithSpread (ClassNameplateManaBarFrame, .4, .2, .05, 1, 0.5)
+			ClassNameplateManaBarFrame.SoftShadow = true
+		end
 	end
 	
 	if (not anchorFrame) then
@@ -6630,7 +6712,7 @@ end
 
 function Plater.RefreshNameplateColor (unitFrame)
 	if (unitFrame.unit) then
-		if (IsTapDenied (unitFrame)) then
+		if (IsTapDenied (unitFrame.unit)) then
 			Plater.ForceChangeHealthBarColor (unitFrame.healthBar, unpack (Plater.db.profile.tap_denied_color))
 		else
 			if (InCombatLockdown()) then
@@ -6753,7 +6835,7 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate, justAdded)
 	--> check for quest color
 	if (actorType == ACTORTYPE_ENEMY_NPC and DB_PLATE_CONFIG [actorType].quest_enabled) then --actorType == ACTORTYPE_FRIENDLY_NPC or 
 		local isQuestMob = Plater.IsQuestObjective (plateFrame)
-		if (isQuestMob and not IsTapDenied (plateFrame.UnitFrame)) then
+		if (isQuestMob and not IsTapDenied (plateFrame.UnitFrame.unit)) then
 			if (plateFrame [MEMBER_REACTION] == UNITREACTION_NEUTRAL) then
 				Plater.ForceChangeHealthBarColor (healthFrame, unpack (DB_PLATE_CONFIG [actorType].quest_color_neutral))
 				plateFrame [MEMBER_QUEST] = true
@@ -6919,14 +7001,18 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate, justAdded)
 	Plater.UpdateTarget (plateFrame)
 
 	--update options in the extra icons row frame
-	Plater.SetAnchor (unitFrame.ExtraIconFrame, Plater.db.profile.extra_icon_anchor)
-	unitFrame.ExtraIconFrame:SetOption ("show_text", Plater.db.profile.extra_icon_show_timer)
-	unitFrame.ExtraIconFrame:SetOption ("grow_direction", unitFrame.ExtraIconFrame:GetIconGrowDirection())
-	unitFrame.ExtraIconFrame:SetOption ("icon_width", Plater.db.profile.extra_icon_width)
-	unitFrame.ExtraIconFrame:SetOption ("icon_height", Plater.db.profile.extra_icon_height)
-	unitFrame.ExtraIconFrame:SetOption ("texcoord", Plater.db.profile.extra_icon_wide_icon and Plater.WideIconCoords or Plater.BorderLessIconCoords)
-	unitFrame.ExtraIconFrame:SetOption ("backdrop_color", Plater.db.profile.extra_icon_backdrop_color)
-	unitFrame.ExtraIconFrame:SetOption ("backdrop_border_color", Plater.db.profile.extra_icon_border_color)
+	if (unitFrame.ExtraIconFrame.RefreshID < PLATER_REFRESH_ID) then
+		Plater.SetAnchor (unitFrame.ExtraIconFrame, Plater.db.profile.extra_icon_anchor)
+		unitFrame.ExtraIconFrame:SetOption ("show_text", Plater.db.profile.extra_icon_show_timer)
+		unitFrame.ExtraIconFrame:SetOption ("grow_direction", unitFrame.ExtraIconFrame:GetIconGrowDirection())
+		unitFrame.ExtraIconFrame:SetOption ("icon_width", Plater.db.profile.extra_icon_width)
+		unitFrame.ExtraIconFrame:SetOption ("icon_height", Plater.db.profile.extra_icon_height)
+		unitFrame.ExtraIconFrame:SetOption ("texcoord", Plater.db.profile.extra_icon_wide_icon and Plater.WideIconCoords or Plater.BorderLessIconCoords)
+		unitFrame.ExtraIconFrame:SetOption ("desc_text", Plater.db.profile.extra_icon_caster_name)
+		
+		--> update refresh ID
+		unitFrame.ExtraIconFrame.RefreshID = PLATER_REFRESH_ID
+	end
 	
 	--> details! integration
 		if (Details and Details.plater) then
@@ -7592,11 +7678,14 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame) -- ~created ~
 		texcoord = {.1, .9, .1, .9},
 		show_text = true,
 	}
+	
 	plateFrame.UnitFrame.ExtraIconFrame = DF:CreateIconRow (plateFrame.UnitFrame, "$parentExtraIconRow", options)
 	plateFrame.UnitFrame.ExtraIconFrame:ClearIcons()
+	--> initialize the refresh ID
+	plateFrame.UnitFrame.ExtraIconFrame.RefreshID = 0
 	--> cache the extra icon frame inside the buff frame for speed
 	plateFrame.UnitFrame.BuffFrame.ExtraIconFrame = plateFrame.UnitFrame.ExtraIconFrame
-
+	
 	--icone trï¿½s dimensï¿½es
 	plateFrame.Top3DFrame = CreateFrame ("playermodel", plateFrame:GetName() .. "3DFrame", plateFrame, "ModelWithControlsTemplate")
 	plateFrame.Top3DFrame:SetPoint ("bottom", plateFrame, "top", 0, -100)
@@ -7802,6 +7891,9 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ã
 	--esconde os glow de aggro
 	unitFrame.aggroGlowUpper:Hide()
 	unitFrame.aggroGlowLower:Hide()
+	
+	--can check highlight
+	plateFrame.OnTickFrame.CanCheckHighlight = actorType ~= ACTORTYPE_FRIENDLY_PLAYER and actorType ~= ACTORTYPE_FRIENDLY_NPC and not plateFrame.isSelf
 	
 	--tick
 	plateFrame.OnTickFrame.ThrottleUpdate = DB_TICK_THROTTLE
@@ -8100,7 +8192,7 @@ function Plater.SetCVarsOnFirstRun()
 	SetCVar ("nameplateSelectedScale", 1.15)
 	
 	--> distance between each nameplate when using stacking
-	SetCVar ("nameplateOverlapV", 0.80)
+	SetCVar ("nameplateOverlapV", 1.25)
 	
 	--> movement speed of nameplates when using stacking, going above this isn't recommended
 	SetCVar (CVAR_MOVEMENT_SPEED, 0.05)
@@ -8764,7 +8856,7 @@ local interface_options = {
 				end
 			end,
 			name = "Stacking Nameplates" .. CVarIcon,
-			desc = "Nameplates won't overlap each other." .. CVarDesc,
+			desc = "If enabled, nameplates won't overlap each other." .. CVarDesc .. "\n\n|cFFFFFF00Important|r: to set the amount of space between each nameplate see '|cFFFFFFFFNameplate Vertical Padding|r' under Advanced tab.",
 			nocombat = true,
 		},
 		{
@@ -8940,17 +9032,6 @@ local debuff_options = {
 		name = "Show Tooltip",
 		desc = "Show tooltip when hovering over the aura icon.",
 	},
-	{
-		type = "toggle",
-		get = function() return Plater.db.profile.debuff_show_cc end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.debuff_show_cc = value
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Add Crowd Control To Special Auras",
-		desc = "When the actor has a crowd control spell (such as Polymorph).\n\nSpecial auras are a second row of auras, they are separated from the main aura row above the nameplate.",
-	},	
 	
 	{
 		type = "range",
@@ -10278,7 +10359,6 @@ end)
 				name = "Y Offset",
 				desc = "Slightly move the text vertically.",
 			},
-			
 			--show timer
 			{
 				type = "toggle",
@@ -10290,6 +10370,18 @@ end)
 				name = "Show Timer",
 				desc = "Show Timer",
 			},
+			--show caster name
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.extra_icon_caster_name end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.extra_icon_caster_name = value
+					Plater.UpdateAllPlates()
+				end,
+				name = "Show Caster Name",
+				desc = "Show Caster Name (if player)",
+			},
+			
 			--width
 			{
 				type = "range",
@@ -10329,21 +10421,6 @@ end)
 				name = "Wide Icons",
 				desc = "Wide Icons",
 			},
-			--backdrop color
-			{
-				type = "color",
-				get = function()
-					local color = Plater.db.profile.extra_icon_backdrop_color
-					return {color[1], color[2], color[3], color[4]}
-				end,
-				set = function (self, r, g, b, a) 
-					local color = Plater.db.profile.extra_icon_backdrop_color
-					color[1], color[2], color[3], color[4] = r, g, b, a
-					Plater.UpdateAllPlates()
-				end,
-				name = "Background Color",
-				desc = "Background Color",
-			},
 			--border color
 			{
 				type = "color",
@@ -10356,11 +10433,78 @@ end)
 					color[1], color[2], color[3], color[4] = r, g, b, a
 					Plater.UpdateAllPlates()
 				end,
-				name = "Frame Border Color",
-				desc = "Frame Border Color",
+				name = "Default Border Color",
+				desc = "Default Border Color",
+			},
+			
+			{type = "breakline"},
+			
+			{type = "label", get = function() return "Auto Add These Types of Auras:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			
+			--show crowd control auras
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.debuff_show_cc end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.debuff_show_cc = value
+					Plater.RefreshDBUpvalues()
+					Plater.UpdateAllPlates()
+				end,
+				name = "Crowd Control",
+				desc = "When the unit has a crowd control spell (such as Polymorph).",
+			},
+			--cc border color
+			{
+				type = "color",
+				get = function()
+					local color = Plater.db.profile.debuff_show_cc_border
+					return {color[1], color[2], color[3], color[4]}
+				end,
+				set = function (self, r, g, b, a) 
+					local color = Plater.db.profile.debuff_show_cc_border
+					color[1], color[2], color[3], color[4] = r, g, b, a
+					Plater.UpdateAllPlates()
+				end,
+				name = "Crowd Control Border Color",
+				desc = "Crowd Control Border Color",
+			},
+			
+			{type = "blank"},
+			
+			--show purge icons
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.extra_icon_show_purge end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.extra_icon_show_purge = value
+					Plater.RefreshDBUpvalues()
+					Plater.UpdateAllPlates()
+				end,
+				name = "Dispellable",
+				desc = "When the unit has an aura which can be dispellable or purge by you",
+			},
+			--purge border color
+			{
+				type = "color",
+				get = function()
+					local color = Plater.db.profile.extra_icon_show_purge_border
+					return {color[1], color[2], color[3], color[4]}
+				end,
+				set = function (self, r, g, b, a) 
+					local color = Plater.db.profile.extra_icon_show_purge_border
+					color[1], color[2], color[3], color[4] = r, g, b, a
+					Plater.UpdateAllPlates()
+				end,
+				name = "Dispellable Border Color",
+				desc = "Dispellable Border Color",
 			},
 		
 		}
+		
+		auraSpecialFrame.ExampleImageDesc = DF:CreateLabel (auraSpecialFrame, "Special auras look like this:", 14)
+		auraSpecialFrame.ExampleImageDesc:SetPoint (330, -216)
+		auraSpecialFrame.ExampleImage = DF:CreateImage (auraSpecialFrame, [[Interface\AddOns\Plater\images\extra_icon_example]], 256*0.8, 128*0.8)
+		auraSpecialFrame.ExampleImage:SetPoint (330, -230)
 		
 		local fff = CreateFrame ("frame", "$parentExtraIconsSettings", auraSpecialFrame)
 		fff:SetAllPoints()
@@ -17792,7 +17936,7 @@ end
 					Plater:Msg ("you are in combat.")
 				end
 			end,
-			min = 0.001,
+			min = 0.02,
 			max = 0.2,
 			step = 0.005,
 			thumbscale = 1.7,
@@ -17813,11 +17957,11 @@ end
 			end,
 			min = 0.2,
 			max = 1.6,
-			step = 0.1,
+			step = 0.05,
 			thumbscale = 1.7,
 			usedecimals = true,
 			name = "Nameplate Vertical Padding" .. CVarIcon,
-			desc = "Min distance between each nameplate (when stacking is enabled).\n\n|cFFFFFFFFDefault: 1.10|r\n\n|cFFFFFFFFRecommended: 0.80|r" .. CVarDesc,
+			desc = "Min distance between each nameplate (when stacking is enabled).\n\n|cFFFFFFFFDefault: 1.10|r" .. CVarDesc .. "\n\n|cFFFFFF00Important|r: if you find issues with this setting, use:\n|cFFFFFFFF/run SetCVar ('nameplateOverlapV', '1.6')|r",
 			nocombat = true,
 		},
 		{
