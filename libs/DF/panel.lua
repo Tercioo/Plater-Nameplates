@@ -1165,6 +1165,8 @@ function DF:NewFillPanel (parent, rows, name, member, w, h, total_lines, fill_ro
 	panel.scrollframe = scrollframe
 	scrollframe.lines = {}
 	
+	DF:ReskinSlider (scrollframe)
+	
 	--create lines
 	function panel:UpdateRowAmount()
 		local size = options.rowheight

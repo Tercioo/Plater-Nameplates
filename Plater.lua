@@ -478,6 +478,7 @@ local default_config = {
 		patch_version = 0,
 		
 		health_cutoff = true,
+		health_cutoff_extra_glow = false,
 		
 		update_throttle = 0.15000000,
 		culling_distance = 100,
@@ -4343,7 +4344,8 @@ end
 function Plater.AddExtraIcon (self, spellName, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 	local _, casterClass = UnitClass (caster or "")
 	local casterName
-	if (casterClass) then
+	if (casterClass and UnitPlayerControlled (caster)) then
+		--adding only the name for players in case the player used a stun
 		casterName = UnitName (caster)
 	end
 	
@@ -4702,10 +4704,17 @@ local EventTickFunction = function (tickFrame, deltaTime)
 					healthBar.executeRange:SetVertexColor (.3, .3, .3)
 					healthBar.executeRange:SetHeight (healthBar:GetHeight())
 					healthBar.executeRange:SetPoint ("right", healthBar.healthCutOff, "left")
+					
+					if (Plater.db.profile.health_cutoff_extra_glow) then
+						healthBar.ExecuteGlowUp.ShowAnimation:Play()
+						healthBar.ExecuteGlowDown.ShowAnimation:Play()
+					end
 				end
 			else
 				healthBar.healthCutOff:Hide()
 				healthBar.executeRange:Hide()
+				healthBar.ExecuteGlowUp:Hide()
+				healthBar.ExecuteGlowDown:Hide()
 			end
 		end
 		
@@ -6776,9 +6785,13 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate, justAdded)
 	local castFrame = unitFrame.castBar
 	local buffFrame = unitFrame.BuffFrame
 	local nameFrame = unitFrame.healthBar.actorName
-	
-	healthFrame:SetFrameLevel (healthFrame:GetFrameLevel() + Plater.db.profile.healthbar_framelevel)
-	castFrame:SetFrameLevel (castFrame:GetFrameLevel() + Plater.db.profile.castbar_framelevel)
+
+	if (Plater.db.profile.healthbar_framelevel ~= 0) then
+		healthFrame:SetFrameLevel (healthFrame.DefaultFrameLevel + Plater.db.profile.healthbar_framelevel)
+	end
+	if (Plater.db.profile.castbar_framelevel ~= 0) then
+		castFrame:SetFrameLevel (castFrame.DefaultFrameLevel + Plater.db.profile.castbar_framelevel)
+	end
 	
 	--unitFrame.HighlightFrame.HighlightTexture:SetColorTexture (1, 1, 1, Plater.db.profile.hover_highlight_alpha)
 	unitFrame.HighlightFrame.HighlightTexture:SetTexture (DB_TEXTURE_HEALTHBAR)
@@ -7530,6 +7543,9 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame) -- ~created ~
 	
 	Plater.CreateScaleAnimation (plateFrame)
 	
+	plateFrame.UnitFrame.healthBar.DefaultFrameLevel = plateFrame.UnitFrame.healthBar:GetFrameLevel()
+	plateFrame.UnitFrame.castBar.DefaultFrameLevel = plateFrame.UnitFrame.castBar:GetFrameLevel()
+	
 	--target indicators stored inside the UnitFrame but their parent is the healthBar
 	plateFrame.UnitFrame.TargetTextures2Sides = {}
 	plateFrame.UnitFrame.TargetTextures4Sides = {}
@@ -7601,6 +7617,40 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame) -- ~created ~
 	DF:CreateAnimation (healthCutOffShowAnimation, "Alpha", 1, .2, .2, 1)
 	DF:CreateAnimation (healthCutOffShowAnimation, "Alpha", 2, .2, 1, .5)
 	healthCutOff.ShowAnimation = healthCutOffShowAnimation
+	
+	local executeGlowUp = healthBar:CreateTexture (nil, "overlay")
+	local executeGlowDown = healthBar:CreateTexture (nil, "overlay")
+	executeGlowUp:SetTexture ([[Interface\AddOns\Plater\images\blue_neon]])
+	executeGlowUp:SetTexCoord (0, 1, 0, 0.5)
+	executeGlowUp:SetHeight (32)
+	executeGlowUp:SetPoint ("bottom", healthBar, "top")
+	executeGlowUp:SetBlendMode ("ADD")
+	executeGlowDown:SetTexture ([[Interface\AddOns\Plater\images\blue_neon]])
+	executeGlowDown:SetTexCoord (0, 1, 0.5, 1)
+	executeGlowDown:SetHeight (30)
+	executeGlowDown:SetPoint ("top", healthBar, "bottom")
+	executeGlowDown:SetBlendMode ("ADD")
+	
+	local executeGlowAnimationOnPlay = function (self)
+		self:GetParent():Show()
+	end
+	local executeGlowAnimationOnStop = function()
+		
+	end
+	
+	executeGlowUp.ShowAnimation = DF:CreateAnimationHub (executeGlowUp, executeGlowAnimationOnPlay, executeGlowAnimationOnStop)
+	DF:CreateAnimation (executeGlowUp.ShowAnimation, "Scale", 1, .2, 1, .1, 1, 1.2, "bottom", 0, 0)
+	DF:CreateAnimation (executeGlowUp.ShowAnimation, "Scale", 1, .2, 1, 1, 1, 1)
+	
+	executeGlowDown.ShowAnimation = DF:CreateAnimationHub (executeGlowDown, executeGlowAnimationOnPlay, executeGlowAnimationOnStop)
+	DF:CreateAnimation (executeGlowDown.ShowAnimation, "Scale", 1, .2, 1, .1, 1, 1.2, "top", 0, 0)
+	DF:CreateAnimation (executeGlowDown.ShowAnimation, "Scale", 1, .2, 1, 1.1, 1, 1)
+
+	executeGlowUp:Hide()
+	executeGlowDown:Hide()
+	
+	healthBar.ExecuteGlowUp = executeGlowUp
+	healthBar.ExecuteGlowDown = executeGlowDown
 	
 	--raid target
 	local raidTarget = healthBar:CreateTexture (nil, "overlay")
@@ -7837,6 +7887,8 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ã
 	if (not CONST_USE_HEALTHCUTOFF) then
 		healthBar.healthCutOff:Hide()
 		healthBar.executeRange:Hide()
+		healthBar.ExecuteGlowUp:Hide()
+		healthBar.ExecuteGlowDown:Hide()
 	end
 	
 	local actorType
@@ -18294,7 +18346,18 @@ end
 			step = 1,
 			name = "CastBar Frame Level",
 			desc = "Add this to the default frame level of the castbar",
-		},		
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.health_cutoff_extra_glow end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.health_cutoff_extra_glow = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Add Extra Glow to Execute Range",
+			desc = "Add Extra Glow to Execute Range",
+		},
+		
 		
 		--]=]		
 	}
