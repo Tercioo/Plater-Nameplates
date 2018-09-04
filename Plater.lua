@@ -492,6 +492,9 @@ local default_config = {
 		height_animation = false,
 		height_animation_speed = 15,
 		
+		healthbar_framelevel = 0,
+		castbar_framelevel = 0,
+		
 		aura_enabled = true,
 		aura_show_tooltip = false,
 		aura_width = 26,
@@ -6773,6 +6776,9 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate, justAdded)
 	local castFrame = unitFrame.castBar
 	local buffFrame = unitFrame.BuffFrame
 	local nameFrame = unitFrame.healthBar.actorName
+	
+	healthFrame:SetFrameLevel (healthFrame:GetFrameLevel() + Plater.db.profile.healthbar_framelevel)
+	castFrame:SetFrameLevel (castFrame:GetFrameLevel() + Plater.db.profile.castbar_framelevel)
 	
 	--unitFrame.HighlightFrame.HighlightTexture:SetColorTexture (1, 1, 1, Plater.db.profile.hover_highlight_alpha)
 	unitFrame.HighlightFrame.HighlightTexture:SetTexture (DB_TEXTURE_HEALTHBAR)
@@ -18260,6 +18266,36 @@ end
 			name = "Border Thickness",
 			desc = "How thick the border should be.",
 		},
+		
+		{
+			type = "range",
+			get = function() return Plater.db.profile.healthbar_framelevel end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.healthbar_framelevel = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end,
+			min = -5,
+			max = 75,
+			step = 1,
+			name = "HealthBar Frame Level",
+			desc = "Add this to the default frame level of the healthbar",
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.castbar_framelevel end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.castbar_framelevel = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end,
+			min = -5,
+			max = 75,
+			step = 1,
+			name = "CastBar Frame Level",
+			desc = "Add this to the default frame level of the castbar",
+		},		
+		
 		--]=]		
 	}
 	
