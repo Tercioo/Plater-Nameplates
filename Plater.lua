@@ -540,7 +540,7 @@ local default_config = {
 		
 		debuff_show_cc = true, --extra frame show cc
 		debuff_show_cc_border = {.3, .2, .2, 1},
-		extra_icon_show_purge = true, --extra frame show purge
+		extra_icon_show_purge = false, --extra frame show purge
 		extra_icon_show_purge_border = {0, .925, 1, 1},
 		
 		extra_icon_auras = {},
@@ -568,7 +568,13 @@ local default_config = {
 			debuff_ban_percharacter = {},
 			options = {},
 			track_method = 0x1,
-			buff_banned = {[61574] = true, [61573] = true}, --banner of alliance and horde on training dummies
+			buff_banned = { 
+				--banner of alliance and horde on training dummies
+				[61574] = true, 
+				[61573] = true,
+				--challenger's might on mythic+
+				[206150] = true, 
+			},
 			debuff_banned = {},
 			buff_tracked = {},
 			debuff_tracked = {},
@@ -1381,7 +1387,7 @@ local default_config = {
 		
 		indicator_extra_raidmark = true,
 		indicator_raidmark_scale = 1,
-		indicator_raidmark_anchor = {side = 2, x = 0, y = 0},
+		indicator_raidmark_anchor = {side = 2, x = -1, y = 4},
 		
 		target_indicator = "Silver",
 		
@@ -1656,9 +1662,17 @@ function Plater.GetHealthCutoffValue()
 			--is playing as a Arms warrior?
 			local specID = GetSpecializationInfo (spec)
 			if (specID and specID ~= 0) then
-				if (specID == 71 or specID == 72) then --arms
+				if (specID == 71 or specID == 72) then --arms or fury
 					CONST_USE_HEALTHCUTOFF = true
 					CONST_HEALTHCUTOFF_AT = 0.20
+					
+					if (specID == 71) then --arms
+						local _, _, _, using_Massacre = GetTalentInfo (3, 1, 1)
+						if (using_Massacre) then
+							--if using massacre, execute can be used at 35% health in Arms spec
+							CONST_HEALTHCUTOFF_AT = 0.35
+						end
+					end
 				end
 			end
 			
@@ -10126,7 +10140,6 @@ end)
 		spells_scroll:SetPoint ("topleft", auraLastEventFrame, "topleft", 10, scrollY)
 		
 		spells_scroll:SetScript ("OnShow", function (self)
-		
 			if (self.LastRefresh and self.LastRefresh+0.5 > GetTime()) then
 				return
 			end
@@ -10167,6 +10180,15 @@ end)
 		
 		local open_spell_list_button = DF:CreateButton (auraLastEventFrame, openDetailsSpellList, 160, 20, "Open Full Spell List", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 		open_spell_list_button:SetPoint ("bottomright", spells_scroll, "topright", 0, 24)
+
+		--create the clean list button
+			local wipe_spell_list = function()
+				wipe (DB_CAPTURED_SPELLS)
+				spells_scroll:Hide()
+				C_Timer.After (0.016, function() spells_scroll:Show(); spells_scroll:Refresh() end)
+			end
+			local clear_list_button = DF:CreateButton (auraLastEventFrame, wipe_spell_list, 160, 20, "Clear List", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+			clear_list_button:SetPoint ("right", open_spell_list_button, "left", -6, 0)
 		
 		--create search box
 			function auraLastEventFrame.OnSearchBoxTextChanged()
@@ -10180,7 +10202,7 @@ end)
 			end
 
 			local aura_search_textentry = DF:CreateTextEntry (auraLastEventFrame, function()end, 160, 20, "AuraSearchTextEntry", _, _, options_dropdown_template)
-			aura_search_textentry:SetPoint ("right", open_spell_list_button, "left", -6, 0)
+			aura_search_textentry:SetPoint ("right", clear_list_button, "left", -6, 0)
 			aura_search_textentry:SetHook ("OnChar",		auraLastEventFrame.OnSearchBoxTextChanged)
 			aura_search_textentry:SetHook ("OnTextChanged", 	auraLastEventFrame.OnSearchBoxTextChanged)
 			aura_search_label = DF:CreateLabel (auraLastEventFrame, "Search:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
