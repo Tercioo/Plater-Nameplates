@@ -1505,7 +1505,6 @@ local SCRIPT_TYPE_ONHIDE = Plater.CodeTypeNames [3]
 local SCRIPT_TYPE_ONSHOW = Plater.CodeTypeNames [4]
 
 --const
-local CVAR_SHOWPERSONAL = "nameplateShowSelf"
 local CVAR_RESOURCEONTARGET = "nameplateResourceOnTarget"
 local CVAR_CULLINGDISTANCE = "nameplateMaxDistance"
 local CVAR_CEILING = "nameplateOtherTopInset"
@@ -1742,7 +1741,7 @@ do
 end
 
 function Plater.IsShowingResourcesOnTarget()
-	return GetCVar (CVAR_SHOWPERSONAL) == CVAR_ENABLED and GetCVar (CVAR_RESOURCEONTARGET) == CVAR_ENABLED
+	return GetCVar ("nameplateShowSelf") == CVAR_ENABLED and GetCVar (CVAR_RESOURCEONTARGET) == CVAR_ENABLED
 end
 
 local TargetIndicators = {
@@ -1883,6 +1882,7 @@ local DB_AURA_GROW_DIRECTION --> main aura frame
 local DB_AURA_GROW_DIRECTION2 --> secondary aura frame is adding buffs in a different frame
 
 local IS_USING_DETAILS_INTEGRATION
+local DB_UPDATE_FRAMELEVEL
 
 local DB_TRACK_METHOD
 local DB_BORDER_COLOR_R
@@ -2702,7 +2702,7 @@ function Plater.SaveConsoleVariables()
 	end
 	
 	--> personal and resources
-	cvarTable [CVAR_SHOWPERSONAL] = GetCVar (CVAR_SHOWPERSONAL)
+	cvarTable ["nameplateShowSelf"] = GetCVar ("nameplateShowSelf")
 	cvarTable [CVAR_RESOURCEONTARGET] = GetCVar (CVAR_RESOURCEONTARGET)
 	cvarTable ["nameplatePersonalShowAlways"] = GetCVar ("nameplatePersonalShowAlways")
 	cvarTable ["nameplatePersonalShowWithTarget"] = GetCVar ("nameplatePersonalShowWithTarget")
@@ -2853,6 +2853,12 @@ function Plater.RefreshDBUpvalues()
 	DB_CAPTURED_SPELLS = profile.captured_spells
 	
 	DB_SHOW_PURGE_IN_EXTRA_ICONS = profile.extra_icon_show_purge
+	
+	if (Plater.db.profile.healthbar_framelevel ~= 0 or Plater.db.profile.castbar_framelevel ~= 0) then
+		DB_UPDATE_FRAMELEVEL = true
+	else
+		DB_UPDATE_FRAMELEVEL = false
+	end
 	
 	--
 	
@@ -3358,7 +3364,7 @@ function Plater.OnInit()
 			elseif (class == "WARLOCK") then
 				classResourceBar = ClassNameplateBarWarlockFrame
 			end
-		
+			
 			classResourceBar:ClearAllPoints()
 			classResourceBar:SetPoint ("bottom", namePlateTarget.UnitFrame.healthBar, "bottom", 0, 2 + Plater.db.profile.resources.y_offset)
 			classResourceBar:SetScale (Plater.db.profile.resources.scale)
@@ -5803,6 +5809,12 @@ function Plater.FormatTextForGuildFriend (plateFrame, actorNameString, playerNam
 end
 
 function Plater.ShowTextHighlight (plateFrame, textString, color)
+
+	if (true) then
+		--disabled, sometimes it is in front of the text or not hidding with the nameplate
+		return
+	end
+
 	plateFrame.friendHighlight:Show()
 	plateFrame.friendHighlight:ClearAllPoints()
 	
@@ -5829,7 +5841,7 @@ function Plater.UpdatePlateText (plateFrame, plateConfigs)
 	local lifeString = plateFrame.UnitFrame.healthBar.lifePercent
 
 	if (plateFrame.isSelf) then
-		--se a barra for do proprio jogador n�o tem porque setar o nome
+		--name isn't shown in the personal bar
 		nameString:SetText ("")
 		
 	elseif (plateFrame.onlyShowThePlayerName) then
@@ -6095,12 +6107,20 @@ function Plater.UpdateLifePercentText (healthBar, unitId, showHealthAmount, show
 end
 
 -- ~raidmarker ~raidtarget 
-function Plater.UpdateExtraRaidMarker()
-	if (not Plater.db.profile.indicator_extra_raidmark) then
-		return
-	end
-	for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-		if (plateFrame.UnitFrame.RaidTargetFrame.RaidTargetIcon:IsShown()) then
+function Plater.UpdatePlateRaidMarker (plateFrame)
+	if (plateFrame.UnitFrame.RaidTargetFrame.RaidTargetIcon:IsShown()) then
+		if (not plateFrame.UnitFrame.RaidTargetFrame.RaidTargetIcon.IsShowning) then
+			--play animations
+			plateFrame.UnitFrame.RaidTargetFrame.RaidTargetIcon.IsShowning = true
+			plateFrame.UnitFrame.RaidTargetFrame.RaidTargetIcon.ShowAnimation:Play()
+		end
+		
+		--adjust scale and anchor
+		plateFrame.UnitFrame.RaidTargetFrame:SetScale (Plater.db.profile.indicator_raidmark_scale)
+		Plater.SetAnchor (plateFrame.UnitFrame.RaidTargetFrame, Plater.db.profile.indicator_raidmark_anchor)
+		
+		--mini mark inside the nameplate
+		if (Plater.db.profile.indicator_extra_raidmark) then
 			plateFrame.RaidTarget:Show()
 			plateFrame.RaidTarget:SetTexture (plateFrame.UnitFrame.RaidTargetFrame.RaidTargetIcon:GetTexture())
 			plateFrame.RaidTarget:SetTexCoord (plateFrame.UnitFrame.RaidTargetFrame.RaidTargetIcon:GetTexCoord())
@@ -6108,35 +6128,16 @@ function Plater.UpdateExtraRaidMarker()
 			plateFrame.RaidTarget:SetSize (height, height)
 			plateFrame.RaidTarget:SetAlpha (.4)
 		end
+	else
+		plateFrame.UnitFrame.RaidTargetFrame.RaidTargetIcon.IsShowning = nil
+		plateFrame.RaidTarget:Hide()
 	end
 end
 
+--iterate among all nameplates and update the raid target icon
 function Plater.UpdateRaidMarker()
-	--> big raid marker
 	for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-		if (plateFrame.UnitFrame.RaidTargetFrame.RaidTargetIcon:IsShown()) then
-
-			if (not plateFrame.UnitFrame.RaidTargetFrame.RaidTargetIcon.IsShowning) then
-				--play animations
-				plateFrame.UnitFrame.RaidTargetFrame.RaidTargetIcon.IsShowning = true
-				plateFrame.UnitFrame.RaidTargetFrame.RaidTargetIcon.ShowAnimation:Play()
-			end
-			
-			--> adjust scale and anchor
-			plateFrame.UnitFrame.RaidTargetFrame:SetScale (Plater.db.profile.indicator_raidmark_scale)
-			Plater.SetAnchor (plateFrame.UnitFrame.RaidTargetFrame, Plater.db.profile.indicator_raidmark_anchor)
-		else
-			plateFrame.UnitFrame.RaidTargetFrame.RaidTargetIcon.IsShowning = nil
-		end
-	end
-
-	--> extra raid marker
-	if (InCombatLockdown()) then
-		Plater.UpdateExtraRaidMarker()
-	else
-		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-			plateFrame.RaidTarget:Hide()
-		end
+		Plater.UpdatePlateRaidMarker (plateFrame)
 	end
 end
 
@@ -6657,25 +6658,6 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate, justAdded)
 	local buffFrame = unitFrame.BuffFrame
 	local nameFrame = unitFrame.healthBar.actorName
 
-	if (Plater.db.profile.healthbar_framelevel ~= 0) then
-		healthFrame:SetFrameLevel (healthFrame.DefaultFrameLevel + Plater.db.profile.healthbar_framelevel)
-	end
-	if (Plater.db.profile.castbar_framelevel ~= 0) then
-		castFrame:SetFrameLevel (castFrame.DefaultFrameLevel + Plater.db.profile.castbar_framelevel)
-	end
-	
-	--unitFrame.HighlightFrame.HighlightTexture:SetColorTexture (1, 1, 1, Plater.db.profile.hover_highlight_alpha)
-	unitFrame.HighlightFrame.HighlightTexture:SetTexture (DB_TEXTURE_HEALTHBAR)
-	unitFrame.HighlightFrame.HighlightTexture:SetBlendMode ("ADD")
-	unitFrame.HighlightFrame.HighlightTexture:SetAlpha (Plater.db.profile.hover_highlight_alpha)
-	
-	--> click area is shown?
-	if (Plater.db.profile.click_space_always_show) then
-		Plater.SetPlateBackground (plateFrame)
-	else
-		plateFrame:SetBackdrop (nil)
-	end
-	
 	plateFrame.actorType = actorType
 	plateFrame.order = order
 	plateFrame.shouldShowNpcNameAndTitle = false
@@ -6696,31 +6678,6 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate, justAdded)
 	--remove o glow posto pelo aggro
 	unitFrame.aggroGlowUpper:Hide()
 	unitFrame.aggroGlowLower:Hide()
-	
-	--can show the nameplate?
-	--[=[
-	if (not Plater.CanShowPlateFor (actorType)) then
-		if (InCombatLockdown()) then
-			healthFrame:Hide()
-			buffFrame:Hide()
-			nameFrame:Hide()
-		else
-			plateFrame:Hide()
-		end
-		
-	--a plate � de um NPC inimigo e estamos dentro de um santu�rio?
-	
-	elseif (plateFrame [MEMBER_REACTION] < 4 and Plater.ZonePvpType == "sanctuary") then
-		if (InCombatLockdown()) then
-			healthFrame:Hide()
-			buffFrame:Hide()
-			nameFrame:Hide()
-		else
-			plateFrame:Hide()
-		end
-
-	else
-	--]=]
 	
 	--> check for quest color
 	if (actorType == ACTORTYPE_ENEMY_NPC and DB_PLATE_CONFIG [actorType].quest_enabled) then --actorType == ACTORTYPE_FRIENDLY_NPC or 
@@ -6826,11 +6783,6 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate, justAdded)
 		buffFrame:Show()
 		nameFrame:Show()
 		
-		--deprecated?
-		--if (not plateFrame:IsShown() and not InCombatLockdown()) then
-		--	plateFrame:Show()
-		--end
-		
 		--> check for enemy player class color
 		if (actorType == ACTORTYPE_ENEMY_PLAYER) then
 			if (DB_PLATE_CONFIG [actorType].use_playerclass_color) then
@@ -6844,36 +6796,48 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate, justAdded)
 			else
 				Plater.ForceChangeHealthBarColor (healthFrame, unpack (DB_PLATE_CONFIG [actorType].fixed_class_color))
 			end
-			
-			--elseif (forceUpdate) then
-				--> only updating the enemy player on forced update and rellying on the Blizzard part...
-				--this is not a good idea
-			--	CompactUnitFrame_UpdateHealthColor (unitFrame)
-				
-			--end
 		end
 	end
-	
---	end  --> end of CanShow() and IsSanctuary()
 	
 	buffFrame:ClearAllPoints()
 	nameFrame:ClearAllPoints()
 	
-	--ajusta a cast bar
-	castFrame:SetStatusBarTexture (DB_TEXTURE_CASTBAR)
-	castFrame.background:SetTexture (DB_TEXTURE_CASTBAR_BG)
-	castFrame.background:SetVertexColor (unpack (Plater.db.profile.cast_statusbar_bgcolor))
-	castFrame.Flash:SetTexture (DB_TEXTURE_CASTBAR)
-	castFrame.Icon:SetTexCoord (0.078125, 0.921875, 0.078125, 0.921875)
+	if (unitFrame.RefreshID < PLATER_REFRESH_ID) then
+		unitFrame.RefreshID = PLATER_REFRESH_ID
+		
+		--update highlight texture
+		unitFrame.HighlightFrame.HighlightTexture:SetTexture (DB_TEXTURE_HEALTHBAR)
+		unitFrame.HighlightFrame.HighlightTexture:SetBlendMode ("ADD")
+		unitFrame.HighlightFrame.HighlightTexture:SetAlpha (Plater.db.profile.hover_highlight_alpha)
+		
+		--click area is shown?
+		if (Plater.db.profile.click_space_always_show) then
+			Plater.SetPlateBackground (plateFrame)
+		else
+			plateFrame:SetBackdrop (nil)
+		end
+		
+		--setup the cast bar
+		castFrame:SetStatusBarTexture (DB_TEXTURE_CASTBAR)
+		castFrame.background:SetTexture (DB_TEXTURE_CASTBAR_BG)
+		castFrame.background:SetVertexColor (unpack (Plater.db.profile.cast_statusbar_bgcolor))
+		castFrame.Flash:SetTexture (DB_TEXTURE_CASTBAR)
+		castFrame.Icon:SetTexCoord (0.078125, 0.921875, 0.078125, 0.921875)
+		
+		--setup the health bar
+		healthFrame.barTexture:SetTexture (DB_TEXTURE_HEALTHBAR)
+		healthFrame.background:SetTexture (DB_TEXTURE_HEALTHBAR_BG)
+		healthFrame.background:SetVertexColor (unpack (Plater.db.profile.health_statusbar_bgcolor))
+		
+		--update the energy bar on the personal bar
+		ClassNameplateManaBarFrame.Texture:SetTexture (DB_TEXTURE_HEALTHBAR)
+		
+		--update border
+		Plater.UpdatePlateBorders (plateFrame)
+		
 	
-	--adjust mana bar from self nameplate
-	ClassNameplateManaBarFrame.Texture:SetTexture (DB_TEXTURE_HEALTHBAR)
-	
-	--ajusta a health bar
-	healthFrame.barTexture:SetTexture (DB_TEXTURE_HEALTHBAR)
-	healthFrame.background:SetTexture (DB_TEXTURE_HEALTHBAR_BG)
-	healthFrame.background:SetVertexColor (unpack (Plater.db.profile.health_statusbar_bgcolor))
-	
+	end
+
 	if (unitFrame.selectionHighlight:IsShown()) then
 		local targetedOverlayTexture = LibSharedMedia:Fetch ("statusbar", Plater.db.profile.health_selection_overlay)
 		unitFrame.selectionHighlight:SetTexture (targetedOverlayTexture)
@@ -6882,14 +6846,34 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate, justAdded)
 		unitFrame.healthBar.background:SetAlpha (1)
 	end
 
-	Plater.UpdatePlateBorders (plateFrame)
+	--update the plate size for this unit
 	Plater.UpdatePlateSize (plateFrame, justAdded)
+	
+	--raid marker
+	Plater.UpdatePlateRaidMarker (plateFrame)
+	
+	--unit name
 	Plater.UpdatePlateText (plateFrame, DB_PLATE_CONFIG [actorType])
-	Plater.UpdateRaidMarker()
+	
+	--indicators for the unit
 	Plater.UpdateIndicators (plateFrame, actorType)
+	
+	--aura container
 	Plater.UpdateBuffContainer (plateFrame)
+	
+	--target indicator
 	Plater.UpdateTarget (plateFrame)
 
+	--update the frame level
+	if (DB_UPDATE_FRAMELEVEL) then
+		if (Plater.db.profile.healthbar_framelevel ~= 0) then
+			healthFrame:SetFrameLevel (healthFrame.DefaultFrameLevel + Plater.db.profile.healthbar_framelevel)
+		end
+		if (Plater.db.profile.castbar_framelevel ~= 0) then
+			castFrame:SetFrameLevel (castFrame.DefaultFrameLevel + Plater.db.profile.castbar_framelevel)
+		end
+	end
+	
 	--update options in the extra icons row frame
 	if (unitFrame.ExtraIconFrame.RefreshID < PLATER_REFRESH_ID) then
 		Plater.SetAnchor (unitFrame.ExtraIconFrame, Plater.db.profile.extra_icon_anchor)
@@ -6905,47 +6889,47 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate, justAdded)
 	end
 	
 	--> details! integration
-		if (Details and Details.plater) then
-			local detailsPlaterConfig = Details.plater
-			local is_using_details = false
-			
-			if (detailsPlaterConfig.realtime_dps_enabled) then
-				local textString = healthFrame.DetailsRealTime
-				Plater.SetAnchor (textString, detailsPlaterConfig.realtime_dps_anchor)
-				DF:SetFontSize (textString, detailsPlaterConfig.realtime_dps_size)
-				DF:SetFontOutline (textString, detailsPlaterConfig.realtime_dps_shadow)
-				DF:SetFontColor (textString, detailsPlaterConfig.realtime_dps_color)
-				is_using_details = true
-			end
-			
-			if (detailsPlaterConfig.realtime_dps_player_enabled) then
-				local textString = healthFrame.DetailsRealTimeFromPlayer
-				Plater.SetAnchor (textString, detailsPlaterConfig.realtime_dps_player_anchor)
-				DF:SetFontSize (textString, detailsPlaterConfig.realtime_dps_player_size)
-				DF:SetFontOutline (textString, detailsPlaterConfig.realtime_dps_player_shadow)
-				DF:SetFontColor (textString, detailsPlaterConfig.realtime_dps_player_color)
-				is_using_details = true
-			end
-			
-			if (detailsPlaterConfig.damage_taken_enabled) then
-				local textString = healthFrame.DetailsDamageTaken
-				Plater.SetAnchor (textString, detailsPlaterConfig.damage_taken_anchor)
-				DF:SetFontSize (textString, detailsPlaterConfig.damage_taken_size)
-				DF:SetFontOutline (textString, detailsPlaterConfig.damage_taken_shadow)
-				DF:SetFontColor (textString, detailsPlaterConfig.damage_taken_color)
-				is_using_details = true
-			end
-			
-			IS_USING_DETAILS_INTEGRATION = is_using_details
-		else
-			IS_USING_DETAILS_INTEGRATION = false
+	if (Details and Details.plater) then
+		local detailsPlaterConfig = Details.plater
+		local is_using_details = false
+		
+		if (detailsPlaterConfig.realtime_dps_enabled) then
+			local textString = healthFrame.DetailsRealTime
+			Plater.SetAnchor (textString, detailsPlaterConfig.realtime_dps_anchor)
+			DF:SetFontSize (textString, detailsPlaterConfig.realtime_dps_size)
+			DF:SetFontOutline (textString, detailsPlaterConfig.realtime_dps_shadow)
+			DF:SetFontColor (textString, detailsPlaterConfig.realtime_dps_color)
+			is_using_details = true
 		end
 		
-		--> reset all labels used by details!
+		if (detailsPlaterConfig.realtime_dps_player_enabled) then
+			local textString = healthFrame.DetailsRealTimeFromPlayer
+			Plater.SetAnchor (textString, detailsPlaterConfig.realtime_dps_player_anchor)
+			DF:SetFontSize (textString, detailsPlaterConfig.realtime_dps_player_size)
+			DF:SetFontOutline (textString, detailsPlaterConfig.realtime_dps_player_shadow)
+			DF:SetFontColor (textString, detailsPlaterConfig.realtime_dps_player_color)
+			is_using_details = true
+		end
+		
+		if (detailsPlaterConfig.damage_taken_enabled) then
+			local textString = healthFrame.DetailsDamageTaken
+			Plater.SetAnchor (textString, detailsPlaterConfig.damage_taken_anchor)
+			DF:SetFontSize (textString, detailsPlaterConfig.damage_taken_size)
+			DF:SetFontOutline (textString, detailsPlaterConfig.damage_taken_shadow)
+			DF:SetFontColor (textString, detailsPlaterConfig.damage_taken_color)
+			is_using_details = true
+		end
+		
+		--reset all labels used by details!
 		healthFrame.DetailsRealTime:SetText ("")
 		healthFrame.DetailsRealTimeFromPlayer:SetText ("")
 		healthFrame.DetailsDamageTaken:SetText ("")
-	
+		
+		IS_USING_DETAILS_INTEGRATION = is_using_details
+	else
+		IS_USING_DETAILS_INTEGRATION = false
+	end
+
 end
 
 -- ~indicators
@@ -7099,6 +7083,7 @@ function Plater.ForceChangeBorderColor (self, r, g, b) --self = healthBar
 	end
 	self.BorderIsAggroIndicator = true
 end
+
 -- ~border
 function Plater.UpdatePlateBorders (plateFrame)
 	--bordas
@@ -7108,6 +7093,7 @@ function Plater.UpdatePlateBorders (plateFrame)
 		end
 		return
 	end
+	
 	if (plateFrame.UnitFrame.healthBar.BorderIsAggroIndicator) then
 		return
 	end
@@ -7120,36 +7106,6 @@ function Plater.UpdatePlateBorders (plateFrame)
 	plateFrame.UnitFrame.healthBar:SetBorderColor (DB_BORDER_COLOR_R, DB_BORDER_COLOR_G, DB_BORDER_COLOR_B)
 	
 	Plater.UpdatePlateBorderThickness (plateFrame)
-	
-	--[=[
-	
-	--code for the old border using the blizzard ones
-	--the new border uses details! framework
-
-	for index, texture in ipairs (plateFrame.UnitFrame.healthBar.border.Textures) do
-		--the first 4 is the inner
-		--5 to 8 middle
-		--9 to 12 outside border
-		--[
-		
-		if (index <= 4) then
-			texture:SetVertexColor (DB_BORDER_COLOR_R, DB_BORDER_COLOR_G, DB_BORDER_COLOR_B, DB_BORDER_COLOR_A / 1)
-			--texture:SetAlpha (DB_BORDER_COLOR_A / 1)
-		
-		elseif (index <= 8) then
-			texture:SetVertexColor (DB_BORDER_COLOR_R, DB_BORDER_COLOR_G, DB_BORDER_COLOR_B, DB_BORDER_COLOR_A / 2)
-			--texture:SetAlpha (DB_BORDER_COLOR_A / 2)
-
-		elseif (index <= 12) then
-			texture:SetVertexColor (DB_BORDER_COLOR_R, DB_BORDER_COLOR_G, DB_BORDER_COLOR_B, DB_BORDER_COLOR_A / 3)
-			--texture:SetAlpha (DB_BORDER_COLOR_A / 3)
-			
-		end
-		--]]
-	end
-	--]=]
-	
-	
 end
 
 function Plater.UpdatePlateBorderThickness (plateFrame)
@@ -7161,39 +7117,6 @@ function Plater.UpdatePlateBorderThickness (plateFrame)
 	end
 	
 	plateFrame.UnitFrame.healthBar:SetLayerVisibility (true, DB_BORDER_THICKNESS >= 2, DB_BORDER_THICKNESS >= 3)
-	--print (DB_BORDER_THICKNESS, true, DB_BORDER_THICKNESS >= 2, DB_BORDER_THICKNESS >= 3) --debug
-	
-	
-	--plateFrame.UnitFrame.healthBar:SetLayerVisibility (true, true, true)
-	
-	--[=[
-	--old code for the default blizzard borders
-	--the new border uses details! framework
-	local textures = plateFrame.UnitFrame.healthBar.border.Textures
-	
-	-- 9 a 12 nunca s�o escondias
-	if (DB_BORDER_THICKNESS <= 1) then
-		--hida de 1 a 8
-		for i = 1, 8 do
-			textures [i]:Hide()
-		end
-		
-	elseif (DB_BORDER_THICKNESS <= 2) then
-		--hida de 1 a 4
-		for i = 1, 4 do --in #plateFrame.UnitFrame.healthBar.border.Textures
-			textures [i]:Hide()
-		end
-		for i = 5, 8 do
-			textures [i]:Show()
-		end
-		
-	elseif (DB_BORDER_THICKNESS >= 3) then
-		--mostra de 1 a 8
-		for i = 1, 8 do
-			textures [i]:Show()
-		end
-	end
-	--]=]
 end
 
 function Plater.GetPlateAlpha (plateFrame)
@@ -7385,8 +7308,9 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame) -- ~created ~
 	
 	--> this technically should be causing taint
 	plateFrame.UnitFrame.BuffFrame.UpdateAnchor = function()end
-	
 	plateFrame.UnitFrame.healthBar.border.plateFrame = plateFrame
+	
+	plateFrame.UnitFrame.RefreshID = 0
 	
 	--> second buff frame
 	plateFrame.UnitFrame.BuffFrame2 = CreateFrame ("frame", nil, plateFrame.UnitFrame, "HorizontalLayoutFrame")
@@ -8087,7 +8011,7 @@ function Plater.SetCVarsOnFirstRun()
 	--> these are the cvars set for each character when they logon
 	
 	--disabled:
-		--SetCVar (CVAR_SHOWPERSONAL, CVAR_DISABLED)
+		--SetCVar ("nameplateShowSelf", CVAR_DISABLED)
 		--SetCVar (CVAR_RESOURCEONTARGET, CVAR_DISABLED)
 		--SetCVar (CVAR_FRIENDLY_ALL, CVAR_ENABLED)
 	--> location of the personal bar
@@ -8726,13 +8650,13 @@ local interface_options = {
 
 		{
 			type = "toggle",
-			get = function() return GetCVar (CVAR_SHOWPERSONAL) == CVAR_ENABLED end,
+			get = function() return GetCVar ("nameplateShowSelf") == CVAR_ENABLED end,
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
-					SetCVar (CVAR_SHOWPERSONAL, math.abs (tonumber (GetCVar (CVAR_SHOWPERSONAL))-1))
+					SetCVar ("nameplateShowSelf", math.abs (tonumber (GetCVar ("nameplateShowSelf"))-1))
 				else
 					Plater:Msg ("you are in combat.")
-					self:SetValue (GetCVar (CVAR_SHOWPERSONAL) == CVAR_ENABLED)
+					self:SetValue (GetCVar ("nameplateShowSelf") == CVAR_ENABLED)
 				end
 			end,
 			name = "Personal Health and Mana Bars" .. CVarIcon,
@@ -11619,7 +11543,7 @@ end
 				Plater.UpdateRaidMarker()
 			end,
 			name = "Extra Raid Mark",
-			desc = "Places an extra raid mark icon inside the health bar (|cFFFFFF00in combat only|r).",
+			desc = "Places an extra raid mark icon inside the health bar.",
 		},
 		
 		{type = "breakline"},
