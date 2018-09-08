@@ -454,10 +454,10 @@ local default_config = {
 		culling_distance = 100,
 		use_playerclass_color = true, --friendly player
 		
-		use_health_animation = true,
+		use_health_animation = false,
 		health_animation_time_dilatation = 2.615321,
 		
-		use_color_lerp = true,
+		use_color_lerp = false,
 		color_lerp_speed = 12,
 		
 		height_animation = false,
@@ -6498,6 +6498,25 @@ function Plater.ForceChangeHealthBarColor (healthBar, r, g, b, forceNoLerp)
 	end
 end
 
+--[=[
+v7.3.5.072
+function Plater.ForceChangeHealthBarColor (healthBar, r, g, b)
+	if (r ~= healthBar.R or g ~= healthBar.G or b ~= healthBar.B) then
+		--healthBar.r, healthBar.g, healthBar.b = r, g, b
+		healthBar.R, healthBar.G, healthBar.B = r, g, b
+		healthBar.barTexture:SetVertexColor (r, g, b)
+	end
+end
+
+r43-release
+function Plater.ForceChangeHealthBarColor (healthBar, r, g, b)
+	if (r ~= healthBar.r or g ~= healthBar.g or b ~= healthBar.b) then
+		healthBar.r, healthBar.g, healthBar.b = r, g, b
+		healthBar.barTexture:SetVertexColor (r, g, b)
+	end
+end
+--]=]
+
 --test if still tainted... nop still taited
 --healthBar.r = r
 --healthBar.g = g
@@ -7679,8 +7698,10 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ã
 	if (Plater.CanOverrideColor) then
 		Plater.ColorOverrider (unitFrame)
 	else
+		--reset the nameplate color to default
 		healthBar.R, healthBar.G, healthBar.B = healthBar.r, healthBar.g, healthBar.b
-	end	
+		healthBar.barTexture:SetVertexColor (healthBar.R, healthBar.G, healthBar.B)
+	end
 	
 	--health amount
 	healthBar.CurrentHealth = UnitHealth (unitBarId)
