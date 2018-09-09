@@ -457,7 +457,7 @@ local default_config = {
 		use_health_animation = false,
 		health_animation_time_dilatation = 2.615321,
 		
-		use_color_lerp = false,
+		use_color_lerp = true,
 		color_lerp_speed = 12,
 		
 		height_animation = false,
@@ -6490,12 +6490,12 @@ end
 
 -- ~color
 function Plater.ForceChangeHealthBarColor (healthBar, r, g, b, forceNoLerp)
-	if (r ~= healthBar.R or g ~= healthBar.G or b ~= healthBar.B) then
+	--if (r ~= healthBar.R or g ~= healthBar.G or b ~= healthBar.B) then
 		healthBar.R, healthBar.G, healthBar.B = r, g, b
 		if (not DB_LERP_COLOR or forceNoLerp) then -- ~lerpcolor
 			healthBar.barTexture:SetVertexColor (r, g, b)
 		end
-	end
+	--end
 end
 
 --[=[
