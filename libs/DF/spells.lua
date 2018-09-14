@@ -604,6 +604,7 @@ DF.CrowdControlSpells = {
 	[710] = "WARLOCK", --Banish
 
 	[118] = "MAGE", --Polymorph
+	[61305] = "MAGE", --Polymorph (black cat)
 	[82691] = "MAGE", --Ring of Frost (debuff spellid)
 	[122] = "MAGE", --Frost Nova
 	[157997] = "MAGE", --Ice Nova
@@ -623,7 +624,7 @@ DF.CrowdControlSpells = {
 	[408] = "ROGUE", --Kidney Shot
 	[6770] = "ROGUE", --Sap
 	[1776] = "ROGUE", --Gouge
-
+	
 	[853] = "PALADIN", --Hammer of Justice
 	[20066] = "PALADIN", --Repentance (talent)
 	[105421] = "PALADIN", --Blinding Light (talent)
@@ -643,7 +644,7 @@ DF.CrowdControlSpells = {
 	[203123] = "DRUID", --Maim
 	[50259] = "DRUID", --Dazed (from Wild Charge)
 	[209753] = "DRUID", --Cyclone (from pvp talent)
-
+	
 	[3355] = "HUNTER", --Freezing Trap
 	[19577] = "HUNTER", --Intimidation
 	[190927] = "HUNTER", --Harpoon
@@ -654,6 +655,7 @@ DF.CrowdControlSpells = {
 	[115078] = "MONK", --Paralysis
 	[198909] = "MONK", --Song of Chi-Ji (talent)
 	[116706] = "MONK", --Disable
+	[107079] = "MONK", --Quaking Palm (racial)
 	
 	[118905] = "SHAMAN", --Static Charge (Capacitor Totem)
 	[51514] = "SHAMAN", --Hex
