@@ -624,6 +624,7 @@ DF.CrowdControlSpells = {
 	[408] = "ROGUE", --Kidney Shot
 	[6770] = "ROGUE", --Sap
 	[1776] = "ROGUE", --Gouge
+	[199804] = "ROGUE", --Between the Eyes
 	
 	[853] = "PALADIN", --Hammer of Justice
 	[20066] = "PALADIN", --Repentance (talent)

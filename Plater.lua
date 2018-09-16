@@ -1,4 +1,6 @@
 
+-- todo check code with review tag --review
+
  if (true) then
 	--return
 	--but not today
@@ -152,7 +154,7 @@ local default_config = {
 				only_damaged = true,
 				only_thename = true,
 				click_through = true,
-				show_guild_name = false,
+				show_guild_name = true,
 				
 				health = {70, 2},
 				health_incombat = {70, 2},
@@ -204,7 +206,7 @@ local default_config = {
 			enemyplayer = {
 				enabled = true,
 				plate_order = 3,
-				show_guild_name = false,
+				show_guild_name = true,
 				
 				use_playerclass_color = true,
 				fixed_class_color = {1, .4, .1},
@@ -254,6 +256,15 @@ local default_config = {
 				percent_text_color = {.9, .9, .9, 1},
 				percent_text_anchor = {side = 9, x = 0, y = 0},
 				percent_text_alpha = 1,
+				
+				big_actortitle_text_size = 11,
+				big_actortitle_text_font = "Arial Narrow",
+				big_actortitle_text_color = {1, .8, .0},
+				big_actortitle_text_shadow = true,
+				big_actorname_text_size = 9,
+				big_actorname_text_font = "Arial Narrow",
+				big_actorname_text_color = {.5, 1, .5},
+				big_actorname_text_shadow = true,
 			},
 
 			friendlynpc = {
@@ -382,10 +393,12 @@ local default_config = {
 				big_actortitle_text_size = 11,
 				big_actortitle_text_font = "Arial Narrow",
 				big_actortitle_text_shadow = true,
+				--big_actortitle_text_color = {1, .8, .0},
 				
 				big_actorname_text_size = 9,
 				big_actorname_text_font = "Arial Narrow",
 				big_actorname_text_shadow = true,
+				--big_actorname_text_color = {.5, 1, .5},
 			},
 	
 			player = {
@@ -2698,6 +2711,18 @@ function Plater.ColorOverrider (unitFrame)
 	end
 end
 
+--when the default unit frame refreshes the nameplate color, check if is in combat and if can use aggro to refresh the color by aggro
+InstallHook ("CompactUnitFrame_UpdateHealthColor", function (unitFrame)
+	if (unitFrame.isNamePlate and PLAYER_IN_COMBAT and unitFrame.CanCheckAggro) then
+		if (unitFrame:GetParent() [MEMBER_REACTION] <= 4) then
+			if (DB_AGGRO_CHANGE_HEALTHBAR_COLOR) then
+				local healthBar = unitFrame.healthBar
+				Plater.ForceChangeHealthBarColor (healthBar, healthBar.R, healthBar.G, healthBar.B)
+			end
+		end
+	end
+end)
+
 --refresh the use of the color overrider
 function Plater.RefreshColorOverride()
 	if (Plater.db.profile.color_override) then
@@ -3117,42 +3142,20 @@ function Plater.OnInit()
 	--seta o nome do jogador na barra dele --ajuda a evitar os 'desconhecidos' pelo cliente do jogo (frame da unidade)
 	InstallHook (Plater.GetDriverSubObjectName (CUF_Name, Plater.DriverFuncNames.OnNameUpdate), function (self)
 		if (self.healthBar.actorName) then
-			local plateFrame = self:GetParent()
+			local plateFrame = self.PlateFrame
 			plateFrame [MEMBER_NAME] = UnitName (self.unit)
+			
+			if (plateFrame.actorType == ACTORTYPE_FRIENDLY_PLAYER) then
+				plateFrame.playerGuildName = GetGuildInfo (plateFrame [MEMBER_UNITID])
+				Plater.UpdatePlateText (plateFrame, DB_PLATE_CONFIG [plateFrame.actorType], false)
+			end
 			
 			Plater.UpdateUnitName (plateFrame)
 			self.name:SetText ("")
-			
-			if (plateFrame.actorType == ACTORTYPE_FRIENDLY_PLAYER) then
-				--guild friend
-				if (not Plater.FormatTextForGuildFriend (self:GetParent(), self.healthBar.actorName, self.name:GetText(), DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER])) then
-					--check if is a friend from the friends list
-					if (Plater.FriendsCache [self.name:GetText()]) then
-						DF:SetFontColor (self.healthBar.actorName, "PLATER_FRIEND")
-						DF:SetFontOutline (self.healthBar.actorName, false)
-						plateFrame.isFriend = true
-					else
-						--check if is showing only the name and if is showing class colors
-						if (DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_thename and Plater.db.profile.use_playerclass_color) then
-							local _, unitClass = UnitClass (plateFrame [MEMBER_UNITID])
-							if (unitClass) then
-								local color = RAID_CLASS_COLORS [unitClass]
-								DF:SetFontColor (self.healthBar.actorName, color.r, color.g, color.b)
-							else
-								DF:SetFontColor (self.healthBar.actorName, DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].actorname_text_color)
-							end
-						else
-							DF:SetFontColor (self.healthBar.actorName, DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].actorname_text_color)
-						end
-						plateFrame.isFriend = nil
-					end
-				end
-				
-			end
 		end
 	end)
 	
-	--quando trocar de target, da overwrite na textura de overlay do selected target (frame da unidade)
+	--quando trocar de target, da overwrite na textura de overlay do selected target (frame da unidade) --review
 	InstallHook (Plater.GetDriverSubObjectName (CUF_Name, Plater.DriverFuncNames.OnSelectionUpdate), function (self)
 		if (self.isNamePlate) then
 			if (self.selectionHighlight:IsShown()) then
@@ -3798,26 +3801,8 @@ function Plater.OnInit()
 				end
 				
 				if (plateFrame.actorType == ACTORTYPE_FRIENDLY_PLAYER) then
-					if (DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_damaged) then
-					
-						if (UnitHealth (plateFrame [MEMBER_UNITID]) < UnitHealthMax (plateFrame [MEMBER_UNITID])) then
-							self.healthBar:Show()
-							self.BuffFrame:Show()
-							self.healthBar.actorName:Show()
-							
-							if (not plateFrame:IsShown() and not InCombatLockdown()) then
-								plateFrame:Show()
-							end
-						else
-							self.healthBar:Hide()
-							self.BuffFrame:Hide()
-							
-							if (DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_thename) then
-								plateFrame.actorSubTitleSolo:Show()
-							end
-						end
-						
-					end
+					Plater.ParseHealthSettingForPlayer (plateFrame)
+					Plater.UpdatePlateText (plateFrame, DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER], false)
 				end
 				
 			end
@@ -3922,18 +3907,21 @@ function Plater.UpdateTextSize (plateFrame, nameString)
 	end
 end
 
-function Plater.UpdateUnitName (plateFrame, fontString)
-	local nameString
-	if (plateFrame.onlyShowThePlayerName) then
-		nameString = plateFrame.actorSubTitleSolo
-	else
-		nameString = fontString or plateFrame.actorName
+function Plater.AddGuildNameToPlayerName (plateFrame)
+	local currentText = plateFrame.CurrentUnitNameString:GetText()
+	if (not currentText:find ("<")) then
+		plateFrame.CurrentUnitNameString:SetText (currentText .. "\n" .. "<" .. plateFrame.playerGuildName .. ">")
 	end
+end
+
+function Plater.UpdateUnitName (plateFrame, nameFontString)
+
+	local nameString = plateFrame.CurrentUnitNameString
 
 	if (plateFrame.NameAnchor >= 9) then
+		--remove some character from the unit name if the name is placed inside the nameplate
 		local stringSize = max (plateFrame.UnitFrame.healthBar:GetWidth() - 6, 44)
 		local name = plateFrame [MEMBER_NAME]
-		local nameString = fontString or plateFrame.actorName
 		
 		nameString:SetText (name)
 		local stringWidth = nameString:GetStringWidth()
@@ -3946,9 +3934,15 @@ function Plater.UpdateUnitName (plateFrame, fontString)
 	else
 		nameString:SetText (plateFrame [MEMBER_NAME])
 	end
+	
+	--check if the player has a guild, this check is done when the nameplate is added
+	if (plateFrame.playerGuildName) then
+		if (plateFrame.PlateConfig.show_guild_name) then
+			Plater.AddGuildNameToPlayerName (plateFrame)
+		end
+	end
+	
 end
-
-
 
 local tick_update = function (self)
 	if (self.UpdateActorNameSize) then
@@ -5397,7 +5391,7 @@ function Plater.UpdateTarget (plateFrame)
 
 	if (UnitIsUnit (plateFrame [MEMBER_UNITID], "target") and Plater.db.profile.target_highlight) then
 	
-		if (plateFrame.actorType ~= ACTORTYPE_FRIENDLY_PLAYER and plateFrame.actorType ~= ACTORTYPE_FRIENDLY_NPC) then
+		if (plateFrame.actorType ~= ACTORTYPE_FRIENDLY_PLAYER and plateFrame.actorType ~= ACTORTYPE_FRIENDLY_NPC and not plateFrame.PlayerCannotAttack) then
 			plateFrame.TargetNeonUp:Show()
 			plateFrame.TargetNeonDown:Show()
 		else
@@ -5408,9 +5402,7 @@ function Plater.UpdateTarget (plateFrame)
 		plateFrame [MEMBER_TARGET] = true
 		Plater.UpdateTargetPoints (plateFrame) --neon
 		Plater.UpdateTargetIndicator (plateFrame) --border
-		
-		--o target nunca tem obscuraï¿½ï¿½o
-		--tocar a animaï¿½ï¿½o se necessï¿½rio
+		--hide obscured texture
 		plateFrame.Obscured:Hide()
 	else
 		plateFrame.TargetNeonUp:Hide()
@@ -5429,10 +5421,6 @@ function Plater.UpdateTarget (plateFrame)
 		end
 		
 		if (DB_TARGET_SHADY_ENABLED and (not DB_TARGET_SHADY_COMBATONLY or PLAYER_IN_COMBAT)) then
-			if (not plateFrame.Obscured:IsShown()) then
-				--tocar a animaï¿½ï¿½o de fade in
-				--botar a texture de obscure
-			end
 			plateFrame.Obscured:Show()
 			plateFrame.Obscured:SetAlpha (DB_TARGET_SHADY_ALPHA)
 		else
@@ -5838,271 +5826,245 @@ function Plater.QuestLogUpdated()
 	Plater.UpdateQuestCacheThrottle = C_Timer.NewTimer (2, update_quest_cache)
 end
 
-function Plater.FormatTextForGuildFriend (plateFrame, actorNameString, playerName, plateConfigs)
-	local guildName = GetGuildInfo (plateFrame.UnitFrame.unit)
-	if (guildName) then
-		if (plateConfigs.show_guild_name) then
-			plateFrame.guildName:SetText ("<" .. guildName .. ">")
-			plateFrame.guildName:ClearAllPoints()
-			plateFrame.guildName:SetPoint ("top", actorNameString, "bottom", 0, -2)
-		end
-		if (guildName == Plater.PlayerGuildName) then
-			Plater.ShowTextHighlight (plateFrame, actorNameString, "PLATER_GUILD")
-			DF:SetFontColor (actorNameString, "PLATER_GUILD")
-			DF:SetFontColor (plateFrame.guildName, "PLATER_GUILD")
-			plateFrame.isFriend = true
-			return true
-		end
-	end
-	
-	return false
-end
-
-function Plater.ShowTextHighlight (plateFrame, textString, color)
-
-	if (true) then
-		--disabled, sometimes it is in front of the text or not hidding with the nameplate
-		return
-	end
-
-	plateFrame.friendHighlight:Show()
-	plateFrame.friendHighlight:ClearAllPoints()
-	
-	--plateFrame.friendHighlight:SetPoint ("center", textString, 0, 0)
-	plateFrame.friendHighlight:SetPoint ("topleft", textString, -10, 4)
-	plateFrame.friendHighlight:SetPoint ("bottomright", textString, 10, -5)
-	
-	if (not color) then 
-		plateFrame.friendHighlight:SetVertexColor (1, 1, 1)
-	else
-		plateFrame.friendHighlight:SetVertexColor (DF:ParseColors (color))
-	end
-	
-	plateFrame.friendHighlight:SetAlpha (0.5)
-end
-
 -- ~updatetext - called only from UpdatePlateFrame()
 -- update all texts in the nameplate, settings can variate from different unit types
 -- needReset is true when the previous unit type shown on this place is different from the current unit
 function Plater.UpdatePlateText (plateFrame, plateConfigs, needReset)
 	
+	if (plateFrame.isSelf) then
+		--name isn't shown in the personal bar
+		plateFrame.UnitFrame.healthBar.actorName:SetText ("")
+		
+		--update the power percent text
+		if (plateConfigs.power_percent_text_enabled and needReset) then
+			local powerString = ClassNameplateManaBarFrame.powerPercent
+			DF:SetFontSize (powerString, plateConfigs.power_percent_text_size)
+			DF:SetFontFace (powerString, plateConfigs.power_percent_text_font)
+			DF:SetFontOutline (powerString, plateConfigs.power_percent_text_shadow)
+			DF:SetFontColor (powerString, plateConfigs.power_percent_text_color)
+			Plater.SetAnchor (powerString, plateConfigs.power_percent_text_anchor)
+			powerString:SetAlpha (plateConfigs.power_percent_text_alpha)
+			powerString:Show()
+		else
+			ClassNameplateManaBarFrame.powerPercent:Hide()
+		end
+		
+		return
+		
+	elseif (plateFrame.IsFriendlyPlayerWithoutHealthBar) then --not critical code
+		--when the option to show only the player name is enabled
+		--special string to show the player name
+		local nameFontString = plateFrame.ActorNameSpecial
+		nameFontString:Show()
+		
+		--set the name in the string
+		plateFrame.CurrentUnitNameString = nameFontString
+		Plater.UpdateUnitName (plateFrame, nameFontString)
+		
+		DF:SetFontSize (nameFontString, plateConfigs.actorname_text_size)
+		DF:SetFontFace (nameFontString, plateConfigs.actorname_text_font)
+		DF:SetFontOutline (nameFontString, plateConfigs.actorname_text_shadow)
+		
+		--check if the player has a guild, this check is done when the nameplate is added
+		if (plateFrame.playerGuildName) then
+			if (plateConfigs.show_guild_name) then
+				Plater.AddGuildNameToPlayerName (plateFrame)
+			end
+		end
+		
+		--set the point of the name and guild texts
+		nameFontString:ClearAllPoints()
+		plateFrame.ActorNameSpecial:SetPoint ("center", plateFrame, "center", 0, 10)
+		
+		--format the color if is the same guild, a friend from friends list or color by player class
+		if (plateFrame.playerGuildName == Plater.PlayerGuildName) then
+			--is a guild friend?
+			DF:SetFontColor (nameFontString, "PLATER_GUILD")
+			plateFrame.isFriend = true
+			
+		elseif (Plater.FriendsCache [plateFrame [MEMBER_NAME]]) then
+			--is regular friend
+			DF:SetFontColor (nameFontString, "PLATER_FRIEND")
+			DF:SetFontOutline (nameFontString, plateConfigs.actorname_text_shadow)
+			plateFrame.isFriend = true
+			
+		else
+			--isn't friend, check if is showing only the name and if is showing class colors
+			if (Plater.db.profile.use_playerclass_color) then
+				local _, unitClass = UnitClass (plateFrame [MEMBER_UNITID])
+				if (unitClass) then
+					local color = RAID_CLASS_COLORS [unitClass]
+					DF:SetFontColor (nameFontString, color.r, color.g, color.b)
+				else
+					DF:SetFontColor (nameFontString, plateConfigs.actorname_text_color)
+				end
+			else
+				DF:SetFontColor (nameFontString, plateConfigs.actorname_text_color)
+			end
+
+			plateFrame.isFriend = nil
+		end
+		
+		return
+	
+	elseif (plateFrame.IsNpcWithoutHealthBar) then --not critical code
+	
+		--reset points for special units
+		plateFrame.ActorNameSpecial:ClearAllPoints()
+		plateFrame.ActorTitleSpecial:ClearAllPoints()
+		plateFrame.ActorNameSpecial:SetPoint ("center", plateFrame, "center", 0, 10)
+		plateFrame.ActorTitleSpecial:SetPoint ("top", plateFrame.ActorNameSpecial, "bottom", 0, -2)
+	
+		--there's two ways of showing this for friendly npcs (selected from the options panel): show all names or only npcs with profession names
+		--enemy npcs always show all
+		if (plateConfigs.all_names) then
+			plateFrame.ActorNameSpecial:Show()
+			plateFrame.CurrentUnitNameString = plateFrame.ActorNameSpecial
+			Plater.UpdateUnitName (plateFrame, plateFrame.ActorNameSpecial)
+			
+			--if this is an enemy or neutral npc
+			if (plateFrame [MEMBER_REACTION] <= 4) then
+			
+				local r, g, b, a
+				
+				--get the quest color if this npcs is a quest npc
+				if (plateFrame [MEMBER_QUEST]) then
+					if (plateFrame [MEMBER_REACTION] == UNITREACTION_NEUTRAL) then
+						r, g, b, a = unpack (plateConfigs.quest_color_neutral)
+					else
+						r, g, b, a = unpack (plateConfigs.quest_color_enemy)
+						g = g + 0.1
+						b = b + 0.1
+					end
+				else
+					r, g, b, a = 1, 1, 0, 1 --neutral
+					if (plateFrame [MEMBER_REACTION] <= 3) then
+						r, g, b, a = 1, .05, .05, 1
+					end
+				end
+				
+				plateFrame.ActorNameSpecial:SetTextColor (r, g, b, a)
+				DF:SetFontSize (plateFrame.ActorNameSpecial, plateConfigs.big_actorname_text_size)
+				DF:SetFontFace (plateFrame.ActorNameSpecial, plateConfigs.big_actorname_text_font)
+				DF:SetFontOutline (plateFrame.ActorNameSpecial, plateConfigs.big_actorname_text_shadow)
+				
+				--npc title
+				local subTitle = Plater.GetActorSubName (plateFrame)
+				if (subTitle and subTitle ~= "" and not subTitle:match ("%d")) then
+					plateFrame.ActorTitleSpecial:Show()
+					subTitle = DF:RemoveRealmName (subTitle)
+					plateFrame.ActorTitleSpecial:SetText ("<" .. subTitle .. ">")
+					plateFrame.ActorTitleSpecial:ClearAllPoints()
+					plateFrame.ActorTitleSpecial:SetPoint ("top", plateFrame.ActorNameSpecial, "bottom", 0, -2)
+					
+					plateFrame.ActorTitleSpecial:SetTextColor (r, g, b, a)
+					DF:SetFontSize (plateFrame.ActorTitleSpecial, plateConfigs.big_actortitle_text_size)
+					DF:SetFontFace (plateFrame.ActorTitleSpecial, plateConfigs.big_actortitle_text_font)
+					DF:SetFontOutline (plateFrame.ActorTitleSpecial, plateConfigs.big_actortitle_text_shadow)
+				else
+					plateFrame.ActorTitleSpecial:Hide()
+				end
+				
+			else
+				--it's a friendly npc
+				plateFrame.ActorNameSpecial:SetTextColor (unpack (plateConfigs.big_actorname_text_color))
+				DF:SetFontSize (plateFrame.ActorNameSpecial, plateConfigs.big_actorname_text_size)
+				DF:SetFontFace (plateFrame.ActorNameSpecial, plateConfigs.big_actorname_text_font)
+				DF:SetFontOutline (plateFrame.ActorNameSpecial, plateConfigs.big_actorname_text_shadow)
+				
+				--profession (title)
+				local subTitle = Plater.GetActorSubName (plateFrame)
+				if (subTitle and subTitle ~= "" and not subTitle:match ("%d")) then
+					plateFrame.ActorTitleSpecial:Show()
+					subTitle = DF:RemoveRealmName (subTitle)
+					plateFrame.ActorTitleSpecial:SetText ("<" .. subTitle .. ">")
+					plateFrame.ActorTitleSpecial:ClearAllPoints()
+					plateFrame.ActorTitleSpecial:SetPoint ("top", plateFrame.ActorNameSpecial, "bottom", 0, -2)
+					
+					plateFrame.ActorTitleSpecial:SetTextColor (unpack (plateConfigs.big_actortitle_text_color))
+					DF:SetFontSize (plateFrame.ActorTitleSpecial, plateConfigs.big_actortitle_text_size)
+					DF:SetFontFace (plateFrame.ActorTitleSpecial, plateConfigs.big_actortitle_text_font)
+					DF:SetFontOutline (plateFrame.ActorTitleSpecial, plateConfigs.big_actortitle_text_shadow)
+				end
+			end
+		else
+			--scan tooltip to check if there's an title for this npc
+			local subTitle = Plater.GetActorSubName (plateFrame)
+			if (subTitle and subTitle ~= "" and not Plater.IsIgnored (plateFrame, true)) then
+				if (not subTitle:match ("%d")) then --isn't level
+
+					plateFrame.ActorTitleSpecial:Show()
+					subTitle = DF:RemoveRealmName (subTitle)
+					plateFrame.ActorTitleSpecial:SetText ("<" .. subTitle .. ">")
+					plateFrame.ActorTitleSpecial:ClearAllPoints()
+					plateFrame.ActorTitleSpecial:SetPoint ("top", plateFrame.ActorNameSpecial, "bottom", 0, -2)
+					
+					plateFrame.ActorTitleSpecial:SetTextColor (unpack (plateConfigs.big_actortitle_text_color))
+					plateFrame.ActorNameSpecial:SetTextColor (unpack (plateConfigs.big_actorname_text_color))
+					
+					DF:SetFontSize (plateFrame.ActorTitleSpecial, plateConfigs.big_actortitle_text_size)
+					DF:SetFontFace (plateFrame.ActorTitleSpecial, plateConfigs.big_actortitle_text_font)
+					DF:SetFontOutline (plateFrame.ActorTitleSpecial, plateConfigs.big_actortitle_text_shadow)
+					
+					--npc name
+					plateFrame.ActorNameSpecial:Show()
+
+					plateFrame.CurrentUnitNameString = plateFrame.ActorNameSpecial
+					Plater.UpdateUnitName (plateFrame, plateFrame.ActorNameSpecial)
+
+					DF:SetFontSize (plateFrame.ActorNameSpecial, plateConfigs.big_actorname_text_size)
+					DF:SetFontFace (plateFrame.ActorNameSpecial, plateConfigs.big_actorname_text_font)
+					DF:SetFontOutline (plateFrame.ActorNameSpecial, plateConfigs.big_actorname_text_shadow)
+				end
+			end
+		end
+		
+		return
+	end
+	
+	--critical code
+	--the nameplate is showing the health bar
+	--cache the strings for performance
 	local spellnameString = plateFrame.UnitFrame.castBar.Text
 	local spellPercentString = plateFrame.UnitFrame.castBar.percentText
 	local nameString = plateFrame.UnitFrame.healthBar.actorName	
+	local guildString = plateFrame.ActorTitleSpecial
 	local levelString = plateFrame.UnitFrame.healthBar.actorLevel
 	local lifeString = plateFrame.UnitFrame.healthBar.lifePercent
 	
-	--clear the guild name
-	plateFrame.guildName:SetText ("")
+	--update the unit name
+	plateFrame.CurrentUnitNameString = nameString
+	Plater.UpdateUnitName (plateFrame)
 	
-	if (plateFrame.isSelf) then
-		--name isn't shown in the personal bar
-		nameString:SetText ("")
-		
-	elseif (plateFrame.onlyShowThePlayerName) then
+	--update the unit name text settings if required
+	if (needReset) then
+		DF:SetFontSize (nameString, plateConfigs.actorname_text_size)
+		DF:SetFontFace (nameString, plateConfigs.actorname_text_font)
+		DF:SetFontOutline (nameString, plateConfigs.actorname_text_shadow)
+	end
+	Plater.SetAnchor (nameString, plateConfigs.actorname_text_anchor)
 	
-		--get the player name
-		local playerName = plateFrame [MEMBER_NAME]
-		--special string to show the player name
-		local textString = plateFrame.actorSubTitleSolo
-		textString:Show()
-		
-		Plater.UpdateUnitName (plateFrame, textString)
-		
-		DF:SetFontSize (textString, plateConfigs.actorname_text_size)
-		DF:SetFontFace (textString, plateConfigs.actorname_text_font)
-		DF:SetFontOutline (textString, plateConfigs.actorname_text_shadow)
-		
-		DF:SetFontSize (plateFrame.guildName, plateConfigs.actorname_text_size)
-		DF:SetFontFace (plateFrame.guildName, plateConfigs.actorname_text_font)
-		DF:SetFontOutline (plateFrame.guildName, plateConfigs.actorname_text_shadow)
-		
-		--hide text highlight
-		plateFrame.friendHighlight:Hide()
-		
+	if (plateFrame.playerGuildName) then
+		if (plateConfigs.show_guild_name) then
+			Plater.AddGuildNameToPlayerName (plateFrame)
+		end
+	end
+	
+	if (plateFrame.playerGuildName == Plater.PlayerGuildName) then
 		--is a guild friend?
-		if (not Plater.FormatTextForGuildFriend (plateFrame, textString, playerName, plateConfigs)) then
-		
-			--check if is a friend from the friends list
-			if (Plater.FriendsCache [playerName]) then
-				DF:SetFontColor (textString, "PLATER_FRIEND")
-				DF:SetFontOutline (textString, plateConfigs.actorname_text_shadow)
-				Plater.ShowTextHighlight (plateFrame, textString, "PLATER_FRIEND")
-				plateFrame.isFriend = true
-			else
-				--isn't a friend
-				--check if is showing only the name and if is showing class colors
-				if (Plater.db.profile.use_playerclass_color) then
-					local _, unitClass = UnitClass (plateFrame [MEMBER_UNITID])
-					if (unitClass) then
-						local color = RAID_CLASS_COLORS [unitClass]
-						DF:SetFontColor (textString, color.r, color.g, color.b)
-						DF:SetFontColor (plateFrame.guildName, color.r, color.g, color.b)
-					else
-						DF:SetFontColor (textString, plateConfigs.actorname_text_color)
-						DF:SetFontColor (plateFrame.guildName, plateConfigs.actorname_text_color)
-					end
-				else
-					DF:SetFontColor (textString, plateConfigs.actorname_text_color)
-					DF:SetFontColor (plateFrame.guildName, plateConfigs.actorname_text_color)
-				end
+		DF:SetFontColor (nameString, "PLATER_GUILD")
+		DF:SetFontColor (guildString, "PLATER_GUILD")
+		plateFrame.isFriend = true
+	
+	elseif (Plater.FriendsCache [plateFrame [MEMBER_NAME]]) then
+		--is regular friend
+		DF:SetFontColor (textString, "PLATER_FRIEND")
+		DF:SetFontColor (guildString, "PLATER_FRIEND")
+		plateFrame.isFriend = true		
 
-				plateFrame.isFriend = nil
-			end
-		end
-		
 	else
-		--get the unit name from the blizzard namepalte
-		local playerName = plateFrame.UnitFrame.name:GetText()
-		
-		--update the unit name text settings if required
-		if (needReset) then
-			DF:SetFontSize (nameString, plateConfigs.actorname_text_size)
-			DF:SetFontFace (nameString, plateConfigs.actorname_text_font)
-			DF:SetFontOutline (nameString, plateConfigs.actorname_text_shadow)
-			
-			DF:SetFontSize (plateFrame.guildName, plateConfigs.actorname_text_size)
-			DF:SetFontFace (plateFrame.guildName, plateConfigs.actorname_text_font)
-			DF:SetFontOutline (plateFrame.guildName, plateConfigs.actorname_text_shadow)
-		end
-		Plater.SetAnchor (nameString, plateConfigs.actorname_text_anchor)
-		
-		--format for friendly list or guild friend
-		if (not Plater.FormatTextForGuildFriend (plateFrame, nameString, playerName, plateConfigs)) then
-			--check if is a friend from the friends list
-			if (Plater.FriendsCache [playerName]) then
-				DF:SetFontColor (nameString, "aqua")
-				DF:SetFontColor (plateFrame.guildName, "aqua")
-				DF:SetFontOutline (nameString, false)
-				plateFrame.isFriend = true
-			else
-				DF:SetFontColor (nameString, plateConfigs.actorname_text_color)
-				DF:SetFontColor (plateFrame.guildName, plateConfigs.actorname_text_color)
-				plateFrame.isFriend = nil
-			end
-		end
-		
-		--update the player name
-		Plater.UpdateUnitName (plateFrame)
-		
-		--seta o nome na linha secundï¿½ria
-		if (plateFrame.shouldShowNpcNameAndTitle) then
-			--> mostra todos os npcs
-			if (plateConfigs.all_names) then
-				--nome
-				plateFrame.actorNameSolo:Show()
-				Plater.UpdateUnitName (plateFrame, plateFrame.actorNameSolo)
-				
-				--check if this is an enemy/neutral npc but cannot attack him
-				if (plateFrame [MEMBER_REACTION] <= 4) then
-				
-					local r, g, b, a = 1, 1, 0, 1 --neutral
-					if (plateFrame [MEMBER_REACTION] == 3) then
-						r, g, b, a = 1, .6, .1, 1
-					elseif (plateFrame [MEMBER_REACTION] <= 2) then
-						r, g, b, a = 1, .2, .1, 1
-					end
-					
-					plateFrame.actorNameSolo:SetTextColor (r, g, b, a)
-					DF:SetFontSize (plateFrame.actorNameSolo, plateConfigs.big_actorname_text_size)
-					DF:SetFontFace (plateFrame.actorNameSolo, plateConfigs.big_actorname_text_font)
-					DF:SetFontOutline (plateFrame.actorNameSolo, plateConfigs.big_actorname_text_shadow)
-					
-					--npc title
-					local subTitle = Plater.GetActorSubName (plateFrame)
-					if (subTitle and subTitle ~= "" and not subTitle:match ("%d")) then
-						plateFrame.actorSubTitleSolo:Show()
-						plateFrame.actorSubTitleSolo:SetText ("<" .. subTitle .. ">")
-						plateFrame.actorSubTitleSolo:ClearAllPoints()
-						plateFrame.actorSubTitleSolo:SetPoint ("top", plateFrame.actorNameSolo, "bottom", 0, -2)
-						
-						plateFrame.actorSubTitleSolo:SetTextColor (r, g, b, a)
-						DF:SetFontSize (plateFrame.actorSubTitleSolo, plateConfigs.big_actortitle_text_size)
-						DF:SetFontFace (plateFrame.actorSubTitleSolo, plateConfigs.big_actortitle_text_font)
-						DF:SetFontOutline (plateFrame.actorSubTitleSolo, plateConfigs.big_actortitle_text_shadow)
-					end
-					
-				else
-					plateFrame.actorNameSolo:SetTextColor (unpack (plateConfigs.big_actorname_text_color))
-					DF:SetFontSize (plateFrame.actorNameSolo, plateConfigs.big_actorname_text_size)
-					DF:SetFontFace (plateFrame.actorNameSolo, plateConfigs.big_actorname_text_font)
-					DF:SetFontOutline (plateFrame.actorNameSolo, plateConfigs.big_actorname_text_shadow)
-					--profissï¿½o
-					local subTitle = Plater.GetActorSubName (plateFrame)
-					if (subTitle and subTitle ~= "" and not subTitle:match ("%d")) then
-						plateFrame.actorSubTitleSolo:Show()
-						plateFrame.actorSubTitleSolo:SetText ("<" .. subTitle .. ">")
-						plateFrame.actorSubTitleSolo:ClearAllPoints()
-						plateFrame.actorSubTitleSolo:SetPoint ("top", plateFrame.actorNameSolo, "bottom", 0, -2)
-						
-						plateFrame.actorSubTitleSolo:SetTextColor (unpack (plateConfigs.big_actortitle_text_color))
-						DF:SetFontSize (plateFrame.actorSubTitleSolo, plateConfigs.big_actortitle_text_size)
-						DF:SetFontFace (plateFrame.actorSubTitleSolo, plateConfigs.big_actortitle_text_font)
-						DF:SetFontOutline (plateFrame.actorSubTitleSolo, plateConfigs.big_actortitle_text_shadow)
-					end
-				end
-			else
-				--faz o scan no tooltip para saber se ï¿½ um npc relevante
-				local subTitle = Plater.GetActorSubName (plateFrame)
-				if (subTitle and subTitle ~= "" and not Plater.IsIgnored (plateFrame, true)) then
-					if (not subTitle:match ("%d")) then
-
-						plateFrame.actorSubTitleSolo:Show()
-						plateFrame.actorSubTitleSolo:SetText ("<" .. subTitle .. ">")
-						--plateFrame.actorSubTitleSolo:SetText (subTitle)
-						plateFrame.actorSubTitleSolo:ClearAllPoints()
-						plateFrame.actorSubTitleSolo:SetPoint ("top", plateFrame.actorNameSolo, "bottom", 0, -2)
-						
-						plateFrame.actorSubTitleSolo:SetTextColor (unpack (plateConfigs.big_actortitle_text_color))
-						DF:SetFontSize (plateFrame.actorSubTitleSolo, plateConfigs.big_actortitle_text_size)
-						DF:SetFontFace (plateFrame.actorSubTitleSolo, plateConfigs.big_actortitle_text_font)
-						DF:SetFontOutline (plateFrame.actorSubTitleSolo, plateConfigs.big_actortitle_text_shadow)
-						
-						---
-						--npc name
-						plateFrame.actorNameSolo:Show()
-						--plateFrame.actorNameSolo:SetText (UnitName (plateFrame [MEMBER_UNITID]))
-						Plater.UpdateUnitName (plateFrame, plateFrame.actorNameSolo)
-
-						plateFrame.actorNameSolo:SetTextColor (unpack (plateConfigs.big_actorname_text_color))
-						DF:SetFontSize (plateFrame.actorNameSolo, plateConfigs.big_actorname_text_size)
-						DF:SetFontFace (plateFrame.actorNameSolo, plateConfigs.big_actorname_text_font)
-						DF:SetFontOutline (plateFrame.actorNameSolo, plateConfigs.big_actorname_text_shadow)
-					end
-				end
-			end
-			
-		elseif (plateFrame.shouldShowNpcTitle) then
-			local subTitle = Plater.GetActorSubName (plateFrame)
-			if (subTitle and subTitle ~= "" and not subTitle:match ("%d") and not Plater.IsIgnored (plateFrame, true)) then
-				plateFrame.actorSubTitleSolo:Show()
-				plateFrame.actorNameSolo:SetText ("")
-				plateFrame.actorSubTitleSolo:SetText (subTitle)
-				plateFrame.actorSubTitleSolo:ClearAllPoints()
-				plateFrame.actorSubTitleSolo:SetPoint ("top", plateFrame.actorNameSolo, "bottom", 0, 3)
-				
-				plateFrame.actorSubTitleSolo:SetTextColor (unpack (plateConfigs.big_actortitle_text_color))
-				DF:SetFontSize (plateFrame.actorSubTitleSolo, plateConfigs.big_actortitle_text_size)
-				DF:SetFontFace (plateFrame.actorSubTitleSolo, plateConfigs.big_actortitle_text_font)
-				DF:SetFontOutline (plateFrame.actorSubTitleSolo, plateConfigs.big_actortitle_text_shadow)
-			end
-			
-		elseif (plateFrame.shouldShowNpcTitleWithBrackets) then
-			local subTitle = Plater.GetActorSubName (plateFrame)
-			if (subTitle and subTitle ~= "" and not subTitle:match ("%d")) then
-				plateFrame.actorSubTitleSolo:Show()
-				plateFrame.actorNameSolo:SetText ("")
-				plateFrame.actorSubTitleSolo:SetText ("<" .. subTitle .. ">")
-				plateFrame.actorSubTitleSolo:ClearAllPoints()
-				plateFrame.actorSubTitleSolo:SetPoint ("top", plateFrame.actorNameSolo, "bottom", 0, 3)
-				
-				plateFrame.actorSubTitleSolo:SetTextColor (unpack (plateConfigs.big_actortitle_text_color))
-				DF:SetFontSize (plateFrame.actorSubTitleSolo, plateConfigs.big_actortitle_text_size)
-				DF:SetFontFace (plateFrame.actorSubTitleSolo, plateConfigs.big_actortitle_text_font)
-				DF:SetFontOutline (plateFrame.actorSubTitleSolo, plateConfigs.big_actortitle_text_shadow)
-			end
-		end
-		
+		DF:SetFontColor (nameString, plateConfigs.actorname_text_color)
+		plateFrame.isFriend = nil
 	end
 
 	--atualiza o texto da cast bar
@@ -6167,22 +6129,6 @@ function Plater.UpdatePlateText (plateFrame, plateConfigs, needReset)
 		Plater.UpdateLifePercentText (plateFrame.UnitFrame.healthBar, plateFrame.namePlateUnitToken, plateConfigs.percent_show_health, plateConfigs.percent_text_show_decimals)
 	else
 		lifeString:Hide()
-	end
-	
-	--atualiza o texto da porcentagem da mana
-	if (plateFrame.isSelf) then
-		if (plateConfigs.power_percent_text_enabled) then
-			local powerString = ClassNameplateManaBarFrame.powerPercent
-			DF:SetFontSize (powerString, plateConfigs.power_percent_text_size)
-			DF:SetFontFace (powerString, plateConfigs.power_percent_text_font)
-			DF:SetFontOutline (powerString, plateConfigs.power_percent_text_shadow)
-			DF:SetFontColor (powerString, plateConfigs.power_percent_text_color)
-			Plater.SetAnchor (powerString, plateConfigs.power_percent_text_anchor)
-			powerString:SetAlpha (plateConfigs.power_percent_text_alpha)
-			powerString:Show()
-		else
-			ClassNameplateManaBarFrame.powerPercent:Hide()
-		end
 	end
 end
 
@@ -6765,6 +6711,46 @@ function Plater.SetCastBarBorderColor (castBar, r, g, b, a)
 	castBar.FrameOverlay:SetBackdropBorderColor (r, g, b, a)
 end
 
+--check the setting 'only_damaged' and 'only_thename' for player characters. not critical code, can run slow
+function Plater.ParseHealthSettingForPlayer (plateFrame)
+
+	plateFrame.IsFriendlyPlayerWithoutHealthBar = false
+
+	if (DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_damaged) then
+		if (UnitHealth (plateFrame [MEMBER_UNITID]) < UnitHealthMax (plateFrame [MEMBER_UNITID])) then
+			plateFrame.UnitFrame.healthBar:Show()
+			plateFrame.UnitFrame.BuffFrame:Show()
+			plateFrame.UnitFrame.BuffFrame2:Show()
+			plateFrame.UnitFrame.healthBar.actorName:Show()
+			
+			plateFrame.ActorNameSpecial:Hide()
+			plateFrame.ActorTitleSpecial:Hide()
+		else
+			plateFrame.UnitFrame.healthBar:Hide()
+			plateFrame.UnitFrame.BuffFrame:Hide()
+			plateFrame.UnitFrame.BuffFrame2:Hide()
+			plateFrame.UnitFrame.healthBar.actorName:Hide()
+			
+			if (DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_thename) then
+				plateFrame.IsFriendlyPlayerWithoutHealthBar = true
+			end
+		end
+		
+	elseif (DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_thename) then
+		plateFrame.UnitFrame.healthBar:Hide()
+		plateFrame.UnitFrame.BuffFrame:Hide()
+		plateFrame.UnitFrame.BuffFrame2:Hide()
+		plateFrame.UnitFrame.healthBar.actorName:Hide()
+		plateFrame.IsFriendlyPlayerWithoutHealthBar = true
+		
+	else
+		plateFrame.UnitFrame.healthBar:Show()
+		plateFrame.UnitFrame.BuffFrame:Show()
+		plateFrame.UnitFrame.BuffFrame2:Show()
+		plateFrame.UnitFrame.healthBar.actorName:Show()
+	end
+end
+
 -- ~update
 function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate, justAdded)
 	
@@ -6780,18 +6766,21 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate, justAdded)
 	
 	plateFrame.actorType = actorType
 	plateFrame.order = order
-	plateFrame.shouldShowNpcNameAndTitle = false
-	plateFrame.shouldShowNpcTitleWithBrackets = false
-	plateFrame.shouldShowNpcTitle = false
-	plateFrame.onlyShowThePlayerName = false
 	
+	local shouldForceRefresh = false
+	if (plateFrame.IsNpcWithoutHealthBar or plateFrame.IsFriendlyPlayerWithoutHealthBar) then
+		shouldForceRefresh = true
+		plateFrame.IsNpcWithoutHealthBar = false
+		plateFrame.IsFriendlyPlayerWithoutHealthBar = false
+	end
+
 	healthFrame.BorderIsAggroIndicator = nil
 	
 	local wasQuestPlate = plateFrame [MEMBER_QUEST]
 	plateFrame [MEMBER_QUEST] = false
 	
-	plateFrame.actorNameSolo:Hide()
-	plateFrame.actorSubTitleSolo:Hide()
+	plateFrame.ActorNameSpecial:Hide()
+	plateFrame.ActorTitleSpecial:Hide()
 	plateFrame.Top3DFrame:Hide()
 	plateFrame.RaidTarget:Hide()
 	
@@ -6820,91 +6809,60 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate, justAdded)
 			CompactUnitFrame_UpdateHealthColor (unitFrame)
 		end
 	end
-
+	
 	--se a plate for de npc amigo
 	if (actorType == ACTORTYPE_FRIENDLY_NPC) then
+	
 		if (IS_IN_OPEN_WORLD and DB_PLATE_CONFIG [actorType].quest_enabled and Plater.IsQuestObjective (plateFrame)) then
 			Plater.ForceChangeHealthBarColor (healthFrame, unpack (DB_PLATE_CONFIG [actorType].quest_color))
 
-			if (not plateFrame:IsShown() and not PLAYER_IN_COMBAT) then
-				plateFrame:Show()
-			end
 			healthFrame:Show()
 			buffFrame:Show()
 			nameFrame:Show()
 			
 			plateFrame [MEMBER_QUEST] = true
 		
-			--mostrar nomes de todos os npcs sem as barras de vida
 		elseif (DB_PLATE_CONFIG [actorType].only_names or DB_PLATE_CONFIG [actorType].all_names) then
-			if (not plateFrame:IsShown() and not PLAYER_IN_COMBAT) then
-				plateFrame:Show()
-			end
+			--show only the npc name without the health bar
+
 			healthFrame:Hide()
 			buffFrame:Hide()
 			nameFrame:Hide()
-			plateFrame.shouldShowNpcNameAndTitle = true
+			plateFrame.IsNpcWithoutHealthBar = true
 			
 		else
 			healthFrame:Show()
 			buffFrame:Show()
 			nameFrame:Show()
-			if (not plateFrame:IsShown() and not PLAYER_IN_COMBAT) then
-				plateFrame:Show()
-			end
+
 		end
 
 	elseif (actorType == ACTORTYPE_FRIENDLY_PLAYER) then
-		if (DB_PLATE_CONFIG [actorType].only_damaged) then
-			--the process of showing and hidding for damage only need to be moved to a separate function
-			if (UnitHealth (plateFrame [MEMBER_UNITID]) < UnitHealthMax (plateFrame [MEMBER_UNITID])) then
-				healthFrame:Show()
-				buffFrame:Show()
-				nameFrame:Show()
-				if (not plateFrame:IsShown() and not PLAYER_IN_COMBAT) then
-					plateFrame:Show()
-				end
-			else
-				healthFrame:Hide()
-				buffFrame:Hide()
-				nameFrame:Hide()
-				if (DB_PLATE_CONFIG [actorType].only_thename) then
-					plateFrame.onlyShowThePlayerName = true
-				end
-			end
-			
-		elseif (DB_PLATE_CONFIG [actorType].only_thename) then
-			healthFrame:Hide()
-			buffFrame:Hide()
-			nameFrame:Hide()
-			plateFrame.onlyShowThePlayerName = true
-			
-		else
-			healthFrame:Show()
-			buffFrame:Show()
-			nameFrame:Show()
-			if (not plateFrame:IsShown() and not PLAYER_IN_COMBAT) then
-				plateFrame:Show()
-			end
-		end
+		Plater.ParseHealthSettingForPlayer (plateFrame)
 		
-		if (not Plater.db.profile.use_playerclass_color) then
-			Plater.ForceChangeHealthBarColor (healthFrame, 1, 1, 1)
-		else
-			CompactUnitFrame_UpdateHealthColor (unitFrame)
-			--update internal Plater colors
-			healthFrame.R, healthFrame.G, healthFrame.B = healthFrame.r, healthFrame.g, healthFrame.b
+		if (not plateFrame.IsFriendlyPlayerWithoutHealthBar) then
+			--change the player health bar color (no class color uses hardcoded white color)
+			if (not Plater.db.profile.use_playerclass_color) then
+				Plater.ForceChangeHealthBarColor (healthFrame, 1, 1, 1)
+			else
+				local _, class = UnitClass (plateFrame [MEMBER_UNITID])
+				if (class) then		
+					local color = RAID_CLASS_COLORS [class]
+					Plater.ForceChangeHealthBarColor (healthFrame, color.r, color.g, color.b)
+				else
+					Plater.ForceChangeHealthBarColor (healthFrame, 1, 1, 1)
+				end
+			end
 		end
 		
 	else
 		--> enemy npc or enemy player pass throught here
-		
 		--check if this is an enemy npc but the player cannot attack it
 		if (plateFrame.PlayerCannotAttack) then
 			healthFrame:Hide()
 			buffFrame:Hide()
 			nameFrame:Hide()
-			plateFrame.shouldShowNpcNameAndTitle = true
+			plateFrame.IsNpcWithoutHealthBar = true
 			
 		else
 			healthFrame:Show()
@@ -6935,7 +6893,7 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate, justAdded)
 	castFrame:SetStatusBarTexture (DB_TEXTURE_CASTBAR)
 	
 	--update all texts in the nameplate
-	Plater.UpdatePlateText (plateFrame, DB_PLATE_CONFIG [actorType], plateFrame.PreviousUnitType ~= actorType or unitFrame.RefreshID < PLATER_REFRESH_ID)
+	Plater.UpdatePlateText (plateFrame, DB_PLATE_CONFIG [actorType], shouldForceRefresh or plateFrame.PreviousUnitType ~= actorType or unitFrame.RefreshID < PLATER_REFRESH_ID)
 
 	if (unitFrame.RefreshID < PLATER_REFRESH_ID) then
 		unitFrame.RefreshID = PLATER_REFRESH_ID
@@ -7608,32 +7566,24 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame) -- ~created ~
 	onNextTickUpdate.BuffFrame = plateFrame.UnitFrame.BuffFrame
 	plateFrame.TickUpdate = Plater.TickUpdate
 	
-	--actor name and guild name custom
+	--regular name
 	local actorName = healthBar:CreateFontString (nil, "artwork", "GameFontNormal")
 	healthBar.actorName = actorName
 	plateFrame.actorName = actorName --shortcut
-	local guildName = plateFrame.UnitFrame:CreateFontString (nil, "artwork", "GameFontNormal")
-	guildName:SetPoint ("top", actorName, "bottom", 0, -2)
-	healthBar.guildName = guildName
-	plateFrame.guildName = guildName --shortcut
+	plateFrame.CurrentUnitNameString = actorName
 	
-	--nomes extras e sub titulo
-	local actorNameSolo = plateFrame:CreateFontString (nil, "artwork", "GameFontNormal")
-	plateFrame.actorNameSolo = actorNameSolo
-	plateFrame.actorNameSolo:SetPoint ("center", plateFrame, "center")
-	plateFrame.actorNameSolo:Hide()
-	local actorSubTitleSolo = plateFrame:CreateFontString (nil, "artwork", "GameFontNormal")
-	plateFrame.actorSubTitleSolo = actorSubTitleSolo
-	plateFrame.actorSubTitleSolo:SetPoint ("top", actorNameSolo, "bottom", 0, -2)
-	plateFrame.actorSubTitleSolo:Hide()
-	
+	--special name and title
+	local ActorNameSpecial = plateFrame:CreateFontString (nil, "artwork", "GameFontNormal")
+	plateFrame.ActorNameSpecial = ActorNameSpecial
+	plateFrame.ActorNameSpecial:SetPoint ("center", plateFrame, "center")
+	plateFrame.ActorNameSpecial:Hide()
+	local ActorTitleSpecial = plateFrame:CreateFontString (nil, "artwork", "GameFontNormal")
+	plateFrame.ActorTitleSpecial = ActorTitleSpecial
+	plateFrame.ActorTitleSpecial:SetPoint ("top", ActorNameSpecial, "bottom", 0, -2)
+	plateFrame.ActorTitleSpecial:Hide()
+
 	plateFrame.UnitFrame.name:ClearAllPoints()
 	plateFrame.UnitFrame.name:SetPoint ("bottom", healthBar.actorName, "bottom")
-	
-	--friend highlight
-	plateFrame.friendHighlight = plateFrame:CreateTexture (nil, "background")
-	plateFrame.friendHighlight:SetTexture ([[Interface\AddOns\Plater\images\highlight]])
-	plateFrame.friendHighlight:Hide()
 	
 	--level customizado
 	local actorLevel = healthBar:CreateFontString (nil, "overlay", "GameFontNormal")
@@ -7679,6 +7629,10 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame) -- ~created ~
 	
 	--castbar
 	--castbar background
+	local castBarDefaultBackground = plateFrame.UnitFrame.castBar:CreateTexture (nil, "background")
+	castBarDefaultBackground:SetAllPoints()
+	castBarDefaultBackground:SetColorTexture (0, 0, 0, 0.5)
+	
 	local extraBackground = plateFrame.UnitFrame.castBar:CreateTexture (nil, "background")
 	extraBackground:SetAllPoints()
 	extraBackground:SetColorTexture (0, 0, 0, 1)
@@ -7782,11 +7736,12 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ã
 	
 	--use our own classification icons
 	unitFrame.ClassificationFrame:Hide()
-	plateFrame.friendHighlight:Hide()
 
 	--clear values
+	plateFrame.CurrentUnitNameString = plateFrame.actorName
 	plateFrame.isSelf = nil
-	plateFrame.playerCannotAttack = nil
+	plateFrame.PlayerCannotAttack = nil
+	plateFrame.playerGuildName = nil
 	plateFrame [MEMBER_NOCOMBAT] = nil
 	plateFrame [MEMBER_NPCID] = nil
 	
@@ -7834,13 +7789,16 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ã
 			plateFrame.isSelf = true
 			actorType = ACTORTYPE_PLAYER
 			plateFrame.NameAnchor = 0
-			
+			plateFrame.PlateConfig = DB_PLATE_CONFIG.player
 			Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_PLAYER, nil, true)
 		else
 			if (UnitIsPlayer (unitBarId)) then
 				--unit is a player
+				plateFrame.playerGuildName = GetGuildInfo (unitBarId)
+				
 				if (reaction >= UNITREACTION_FRIENDLY) then
 					plateFrame.NameAnchor = DB_NAME_PLAYERFRIENDLY_ANCHOR
+					plateFrame.PlateConfig = DB_PLATE_CONFIG.friendlyplayer
 					Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_FRIENDLY_PLAYER, nil, true)
 					actorType = ACTORTYPE_FRIENDLY_PLAYER
 					if (DB_CASTBAR_HIDE_FRIENDLY) then
@@ -7848,6 +7806,7 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ã
 					end
 				else
 					plateFrame.NameAnchor = DB_NAME_PLAYERENEMY_ANCHOR
+					plateFrame.PlateConfig = DB_PLATE_CONFIG.enemyplayer
 					Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_ENEMY_PLAYER, nil, true)
 					actorType = ACTORTYPE_ENEMY_PLAYER
 					if (DB_CASTBAR_HIDE_ENEMIES) then
@@ -7860,6 +7819,7 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ã
 				
 				if (reaction >= UNITREACTION_FRIENDLY) then
 					plateFrame.NameAnchor = DB_NAME_NPCFRIENDLY_ANCHOR
+					plateFrame.PlateConfig = DB_PLATE_CONFIG.friendlynpc
 					Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_FRIENDLY_NPC, nil, true)
 					actorType = ACTORTYPE_FRIENDLY_NPC
 					if (DB_CASTBAR_HIDE_FRIENDLY) then
@@ -7869,6 +7829,7 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ã
 					--includes neutral npcs
 					plateFrame.PlayerCannotAttack = not UnitCanAttack ("player", unitBarId)
 					plateFrame.NameAnchor = DB_NAME_NPCENEMY_ANCHOR
+					plateFrame.PlateConfig = DB_PLATE_CONFIG.enemynpc
 					Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_ENEMY_NPC, nil, true)
 					actorType = ACTORTYPE_ENEMY_NPC
 					if (DB_CASTBAR_HIDE_ENEMIES) then
@@ -7959,9 +7920,6 @@ Plater ["NAME_PLATE_UNIT_REMOVED"] = function (self, event, unitBarId)
 	for _, auraIconFrame in ipairs (plateFrame.UnitFrame.BuffFrame2.PlaterBuffList) do
 		auraIconFrame:OnHideWidget()
 	end
-	
-	--hide the friend highlight ~friend
-	plateFrame.friendHighlight:Hide()
 end
 
 function Plater.DoNameplateAnimation (plateFrame, frameAnimations, spellName, isCritical)
@@ -13502,6 +13460,7 @@ end
 	end
 	local on_select_friendlynpc_bignametext_text_font = function (_, _, value)
 		Plater.db.profile.plate_config.friendlynpc.big_actorname_text_font = value
+		Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_font = value
 		Plater.UpdateAllPlates()
 	end
 	
@@ -13596,59 +13555,6 @@ end
 		
 		{type = "blank"},
 		
-		{type = "label", get = function() return "Profession Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-		
-		--profession text size
-		{
-			type = "range",
-			get = function() return Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_size end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_size = value
-				Plater.UpdateAllPlates()
-			end,
-			min = 6,
-			max = 99,
-			step = 1,
-			name = "Size",
-			desc = "Size of the text.",
-		},
-		--profession text font
-		{
-			type = "select",
-			get = function() return Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_font end,
-			values = function() return DF:BuildDropDownFontList (on_select_friendlynpc_titletext_text_font) end,
-			name = "Font",
-			desc = "Font of the text.",
-		},
-		--profession text shadow
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_shadow end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_shadow = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Shadow",
-			desc = "If the text has a black outline.",
-		},
-		--profession text color
-		{
-			type = "color",
-			get = function()
-				local color = Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_color
-				return {color[1], color[2], color[3], color[4]}
-			end,
-			set = function (self, r, g, b, a) 
-				local color = Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_color
-				color[1], color[2], color[3], color[4] = r, g, b, a
-				Plater.UpdateAllPlates()
-			end,
-			name = "Color",
-			desc = "The color of the text.",
-		},	
-		
-		{type = "blank"},
-		
 		{type = "label", get = function() return "Npc Name Text When no Health Bar Shown:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--profession text size
 		{
@@ -13656,6 +13562,7 @@ end
 			get = function() return Plater.db.profile.plate_config.friendlynpc.big_actorname_text_size end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config.friendlynpc.big_actorname_text_size = value
+				Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_size = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 6,
@@ -13678,6 +13585,7 @@ end
 			get = function() return Plater.db.profile.plate_config.friendlynpc.big_actorname_text_shadow end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config.friendlynpc.big_actorname_text_shadow = value
+				Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_shadow = value
 				Plater.UpdateAllPlates()
 			end,
 			name = "Shadow",
@@ -13698,6 +13606,21 @@ end
 			name = "Color",
 			desc = "The color of the text.",
 		},
+		--profession text color
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_color
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_color
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllPlates()
+			end,
+			name = "Profession Text Color",
+			desc = "The color of the profession text below the npc name.",
+		},			
 
 		{type = "breakline"},
 
@@ -14338,6 +14261,12 @@ end
 			Plater.UpdateAllPlates()
 		end
 
+		local on_select_enemynpc_bignametext_text_font = function (_, _, value)
+			Plater.db.profile.plate_config.enemynpc.big_actorname_text_font = value
+			Plater.db.profile.plate_config.enemynpc.big_actortitle_text_font = value
+			Plater.UpdateAllPlates()
+		end
+
 		--menu 2 --enemy npc
 		local options_table2 = {
 		
@@ -14410,6 +14339,79 @@ end
 				desc = "Adjusts the position on the Y axis.",
 			},
 
+			
+			{type = "blank"},
+			
+			{type = "label", get = function() return "Npc Name Text When no Health Bar Shown:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			--profession text size
+			{
+				type = "range",
+				get = function() return Plater.db.profile.plate_config.enemynpc.big_actorname_text_size end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.plate_config.enemynpc.big_actorname_text_size = value
+					Plater.db.profile.plate_config.enemynpc.big_actortitle_text_size = value
+					Plater.UpdateAllPlates()
+				end,
+				min = 6,
+				max = 99,
+				step = 1,
+				name = "Size",
+				desc = "Size of the text.",
+			},
+			--profession text font
+			{
+				type = "select",
+				get = function() return Plater.db.profile.plate_config.enemynpc.big_actorname_text_font end,
+				values = function() return DF:BuildDropDownFontList (on_select_enemynpc_bignametext_text_font) end,
+				name = "Font",
+				desc = "Font of the text.",
+			},
+			--profession text shadow
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.plate_config.enemynpc.big_actorname_text_shadow end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.plate_config.enemynpc.big_actorname_text_shadow = value
+					Plater.db.profile.plate_config.enemynpc.big_actortitle_text_shadow = value
+					Plater.UpdateAllPlates()
+				end,
+				name = "Shadow",
+				desc = "If the text has a black outline.",
+			},
+			
+			--[=[
+			--profession text color
+			{
+				type = "color",
+				get = function()
+					local color = Plater.db.profile.plate_config.enemynpc.big_actorname_text_color
+					return {color[1], color[2], color[3], color[4]}
+				end,
+				set = function (self, r, g, b, a) 
+					local color = Plater.db.profile.plate_config.enemynpc.big_actorname_text_color
+					color[1], color[2], color[3], color[4] = r, g, b, a
+					Plater.UpdateAllPlates()
+				end,
+				name = "Color",
+				desc = "The color of the text.",
+			},
+			--profession text color
+			{
+				type = "color",
+				get = function()
+					local color = Plater.db.profile.plate_config.enemynpc.big_actortitle_text_color
+					return {color[1], color[2], color[3], color[4]}
+				end,
+				set = function (self, r, g, b, a) 
+					local color = Plater.db.profile.plate_config.enemynpc.big_actortitle_text_color
+					color[1], color[2], color[3], color[4] = r, g, b, a
+					Plater.UpdateAllPlates()
+				end,
+				name = "Profession Text Color",
+				desc = "The color of the profession text below the npc name.",
+			},
+			--]=]
+			
 			{type = "breakline"},
 		
 			--health bar size out of combat
