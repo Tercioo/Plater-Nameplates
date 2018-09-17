@@ -549,7 +549,9 @@ local default_config = {
 		extra_icon_show_purge = false, --extra frame show purge
 		extra_icon_show_purge_border = {0, .925, 1, 1},
 		
-		extra_icon_auras = {},
+		extra_icon_auras = {
+			277242, --symbiote of g'huun
+		},
 		
 		aura_width_personal = 32,
 		aura_height_personal = 20,
@@ -566,6 +568,19 @@ local default_config = {
 			is_buff = {0, .65, .1, 1},
 			is_show_all = {.7, .1, .1, 1},
 		},
+		
+		--store a table with spell name keys and with a value of a table with all spell IDs that has that exact name
+		aura_cache_by_name = {
+			["banner of the horde"] = {
+				61574,
+			},
+			["challenger's might"] = {
+				206150,
+			},
+			["banner of the alliance"] = {
+				61573,
+			},		
+		},		
 		
 		aura_tracker = {
 			buff = {},
@@ -3106,16 +3121,62 @@ function Plater.OnInit()
 	Plater:RegisterEvent ("ENCOUNTER_END")
 	Plater:RegisterEvent ("CHALLENGE_MODE_START")
 
-	function Plater:UNIT_FACTION (event, unit)
-		--> fires when somebody changes faction near the player
-		local plateFrame = C_NamePlate.GetNamePlateForUnit (unit)
-		if (plateFrame) then
-			--print ("Unit Changed Faction", plateFrame [MEMBER_UNITID], UnitName (unit), "Refreshing the nameplate...")
-			--refresh
+	function Plater.RunScheduledUpdate (timerObject)
+		local plateFrame = timerObject.plateFrame
+		local unitGUID = timerObject.GUID
+		
+		--checking the serial of the unit is the same in case this nameplate is being used on another unit
+		if (plateFrame:IsShown() and unitGUID == plateFrame [MEMBER_GUID]) then
 			Plater ["NAME_PLATE_UNIT_ADDED"] (Plater, "NAME_PLATE_UNIT_ADDED", plateFrame [MEMBER_UNITID])
 		end
 	end
 	
+	function Plater.ScheduleUpdateForNameplate (plateFrame)
+		--check if there's already an update scheduled for this unit
+		if (plateFrame.HasUpdateScheduled and not plateFrame.HasUpdateScheduled._cancelled) then
+			return
+		else
+			plateFrame.HasUpdateScheduled = C_Timer.NewTimer (0.75, Plater.RunScheduledUpdate)
+			plateFrame.HasUpdateScheduled.plateFrame = plateFrame
+			plateFrame.HasUpdateScheduled.GUID = plateFrame [MEMBER_GUID]
+		end
+	end
+	
+	--when a unit from unatackable change its state, this event triggers several times, a schedule is used to only update once
+	function Plater:UNIT_FLAGS (event, unit)
+		if (unit == "player") then
+			return
+		end
+		
+		local plateFrame = C_NamePlate.GetNamePlateForUnit (unit, issecure())
+		if (plateFrame) then
+			--rules if can schedule an update for unit flag event:
+			
+			--nameplate is from a npc which the player cannot attack and now the player can attack
+			local playerCannotAttack = plateFrame.PlayerCannotAttack
+			--the player is in open world, dungeons and raids does trigger unit flag event but won't need a full refresh
+			local playerInOpenWorld = IS_IN_OPEN_WORLD
+			
+			if (playerCannotAttack or playerInOpenWorld) then
+				--print ("UNIT_FLAG", plateFrame, issecure(), unit, unit and UnitName (unit))
+				Plater.ScheduleUpdateForNameplate (plateFrame)
+			end
+		end
+	end
+	
+	function Plater:UNIT_FACTION (event, unit)
+		if (unit == "player" or not UnitIsPlayer (unit)) then
+			return
+		end
+		
+		--fires when somebody changes faction near the player
+		local plateFrame = C_NamePlate.GetNamePlateForUnit (unit, issecure())
+		if (plateFrame) then
+			Plater.ScheduleUpdateForNameplate (plateFrame)
+		end
+	end
+	
+	Plater:RegisterEvent ("UNIT_FLAGS")
 	Plater:RegisterEvent ("UNIT_FACTION")
 	
 	--addon comm
@@ -4485,12 +4546,16 @@ function Plater.TrackSpecificAuras (self, unit, isBuff, aurasToCheck, isPersonal
 	else
 		--> debuffs
 		for i = 1, BUFF_MAX_DISPLAY do
-			local name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId = UnitDebuff (unit, i, "HARMFUL|PLAYER")
+			--using the PLAYER filter it'll avoid special auras to be scan
+			--local name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId = UnitDebuff (unit, i, "HARMFUL|PLAYER")
+			local name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId = UnitDebuff (unit, i)
 			if (not name) then
 				break
 			else
 				debuffType = "DEBUFF"
-				if (aurasToCheck [name]) then
+				--checking here if the debuff is placed by the player
+				if (caster and aurasToCheck [name] and UnitIsUnit (caster, "player")) then
+				--if (aurasToCheck [name]) then
 					local auraIconFrame = Plater.GetAuraIcon (self)
 					Plater.AddAura (auraIconFrame, i, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, false, false, false, isPersonal)
 				end
@@ -5180,7 +5245,9 @@ function Plater.FRIENDLIST_UPDATE()
 			Plater.FriendsCache [toonName] = true
 		end
 	end
-	Plater.UpdateAllPlates()
+	
+	--let's not trigger a full update on all plates because a friend is now online
+	--Plater.UpdateAllPlates()
 end
 
 function Plater:QUEST_REMOVED()
@@ -7745,6 +7812,14 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ã
 	plateFrame [MEMBER_NOCOMBAT] = nil
 	plateFrame [MEMBER_NPCID] = nil
 	
+	--check if this nameplate has an update scheduled
+	if (plateFrame.HasUpdateScheduled) then
+		if (not plateFrame.HasUpdateScheduled._cancelled) then
+			plateFrame.HasUpdateScheduled:Cancel()
+		end
+		plateFrame.HasUpdateScheduled = nil
+	end
+	
 	--cache values
 	plateFrame [MEMBER_GUID] = UnitGUID (unitBarId) or ""
 	plateFrame [MEMBER_NAME] = UnitName (unitBarId) or ""
@@ -9624,14 +9699,14 @@ end)
 --> aura tracking
 
 -- ~aura ~buff ~debuff
-
+	
 	local aura_options = {
 		height = 330, 
 		row_height = 16,
 		width = 200,
 		button_text_template = "PLATER_BUTTON", --text template
 	}
-
+	
 	local method_change_callback = function()
 		Plater.RefreshDBUpvalues()
 	end
@@ -9643,6 +9718,7 @@ end)
 		DEBUFFS_IGNORED = "Debuffs on the blacklist (filtered out)",
 		BUFFS_TRACKED = "Aditional buffs to track",
 		DEBUFFS_TRACKED = "Aditional debuffs to track",
+		MANUAL_DESC = "Auras are being tracked manually, the addon only check for auras you entered below.\nShow debuffs only casted by you, buffs from any source.\nYou may use the 'Buff Special' tab to add debuffs from any source.",
 	}
 	
 	auraFilterFrame:SetSize (f:GetWidth(), f:GetHeight() + startY)
@@ -10248,6 +10324,28 @@ end)
 			new_buff_entry:SetAsAutoComplete ("SpellAutoCompleteList", nil, true)
 		end)
 		
+		new_buff_entry.GetSpellIDFromString = function (text)
+			--check if the user entered a spell ID
+			local isSpellID = tonumber (text)
+			if (isSpellID and isSpellID > 1 and isSpellID < 10000000) then
+				local isValidSpellID = GetSpellInfo (isSpellID)
+				if (isValidSpellID) then
+					return isSpellID
+				else
+					return
+				end
+			end
+			
+			--get the spell ID from the spell name
+			text = lower (text)
+			local spellID = new_buff_entry.SpellHashTable [text]
+			if (not spellID) then
+				return
+			end
+			
+			return spellID
+		end		
+		
 		--> add aura button
 		local add_buff_button = DF:CreateButton (specialAuraFrame, function()
 		
@@ -10260,26 +10358,23 @@ end)
 				if (text:find (";")) then
 					for _, spellName in ipairs ({strsplit (";", text)}) do
 						spellName = DF:trim (spellName)
-						spellName = lower (spellName)
-						if (string.len (spellName) > 0) then
-							local spellId = new_buff_entry.SpellHashTable [spellName]
-							if (spellId) then
-								tinsert (Plater.db.profile.extra_icon_auras, spellId)
-							else
-								print ("spellId not found for spell:", spellName)
-							end
+						local spellID = new_buff_entry.GetSpellIDFromString (spellName)
+
+						if (spellID) then
+							tinsert (Plater.db.profile.extra_icon_auras, spellID)
+						else
+							print ("spellId not found for spell:", spellName)
 						end
 					end
 				else
 					--get the spellId
-					local spellName = lower (text)
-					local spellId = new_buff_entry.SpellHashTable [spellName]
-					if (not spellId) then
-						print ("spellIs for spell ", spellName, "not found")
+					local spellID = new_buff_entry.GetSpellIDFromString (text)
+					if (not spellID) then
+						print ("spellID for spell ", text, "not found")
 						return
 					end
 				
-					tinsert (Plater.db.profile.extra_icon_auras, spellId)
+					tinsert (Plater.db.profile.extra_icon_auras, spellID)
 				end
 				
 				special_auras_added:Refresh()

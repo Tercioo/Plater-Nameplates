@@ -90,7 +90,14 @@ do
 			--Plater.db.profile.aura_tracker.buff_tracked [260512] = true
 	end})
 	
-
-
+	-- #2
+	tinsert (PlaterPatchLibrary, {
+		Notes = {
+			"- Added 'Symbiote of G'huun' to Special Auras.",
+		},
+		Func = function()
+			--add symbiote of g'huun to extra icons
+			tinsert (Plater.db.profile.extra_icon_auras, 277242)
+	end})
 
 end
