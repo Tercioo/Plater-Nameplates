@@ -541,9 +541,9 @@ function DF:CreateAuraConfigPanel (parent, name, db, change_callback, options, t
 	local autoTrackList_LineOnEnter = function (self, capsule, value) 
 		local spellName = GetSpellInfo (value)
 		if (spellName) then
-			GameTooltip:SetOwner (self, "ANCHOR_TOPLEFT", -40, 0); 
-			GameTooltip:SetSpellByID(value); 
-			GameTooltip:Show() 
+			--GameTooltip:SetOwner (self, "ANCHOR_TOPLEFT", -40, 0); 
+			--GameTooltip:SetSpellByID(value); 
+			--GameTooltip:Show() 
 
 			local spellsWithSameName = db.aura_cache_by_name [lower (spellName)]
 			if (not spellsWithSameName) then

@@ -493,7 +493,7 @@ local default_config = {
 		use_health_animation = false,
 		health_animation_time_dilatation = 2.615321,
 		
-		use_color_lerp = true,
+		use_color_lerp = false,
 		color_lerp_speed = 12,
 		
 		height_animation = false,
@@ -549,9 +549,7 @@ local default_config = {
 		extra_icon_show_purge = false, --extra frame show purge
 		extra_icon_show_purge_border = {0, .925, 1, 1},
 		
-		extra_icon_auras = {
-			277242, --symbiote of g'huun
-		},
+		extra_icon_auras = {},
 		
 		aura_width_personal = 32,
 		aura_height_personal = 20,
@@ -2380,7 +2378,7 @@ function Plater.ImportScriptsFromLibrary()
 
 				local encodedString = autoImportScript.String
 				if (encodedString) then
-					Plater.ImportScriptString (encodedString, true, false)
+					Plater.ImportScriptString (encodedString, true, false, false)
 					if (autoImportScript.Revision == 1) then
 						Plater:Msg ("New Script Installed: " .. name)
 					else
@@ -2394,7 +2392,7 @@ function Plater.ImportScriptsFromLibrary()
 	end
 end
 
-function Plater.ImportScriptString (text, ignoreRevision, showDebug)
+function Plater.ImportScriptString (text, ignoreRevision, overrideTriggers, showDebug)
 	if (not text or type (text) ~= "string") then
 		return
 	end
@@ -2426,6 +2424,25 @@ function Plater.ImportScriptString (text, ignoreRevision, showDebug)
 								end
 							end
 							
+							--add to the new script object, triggers that the current script has, since the user might have added some
+							if (not overrideTriggers) then
+								if (newScript.ScriptType == 0x1 or newScript.ScriptType == 0x2) then
+									--aura or cast trigger
+									for index, trigger in ipairs (scriptObject.SpellIds) do
+										DF.table.addunique (newScript.SpellIds, trigger)
+									end
+								else
+									--npc trigger
+									for index, trigger in ipairs (scriptObject.NpcNames) do
+										DF.table.addunique (newScript.SpellIds, trigger)
+									end
+								end
+							end
+							
+							--keep the enabled state
+							newScript.Enabled = scriptObject.Enabled
+							
+							--replace the old script with the new one
 							tremove (Plater.db.profile.script_data, i)
 							tinsert (Plater.db.profile.script_data, i, newScript)
 							
@@ -3039,6 +3056,7 @@ function Plater.OnInit()
 	end
 	Plater.SpellForRangeCheck = ""
 	Plater.PlayerGUID = UnitGUID ("player")
+	Plater.PlayerClass = select (2, UnitClass ("player"))
 	
 	Plater.ImportScriptsFromLibrary()
 	Plater.ApplyPatches()
@@ -5112,6 +5130,12 @@ function Plater.UpdateAllPlates (forceUpdate, justAdded)
 	end
 end
 
+function Plater.FullRefreshAllPlates()
+	for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+		Plater ["NAME_PLATE_UNIT_ADDED"] (Plater, "NAME_PLATE_UNIT_ADDED", plateFrame [MEMBER_UNITID])
+	end
+end
+
 function Plater.GetAllShownPlates()
 	--return C_NamePlate.GetNamePlates()
 	return C_NamePlate.GetNamePlates (issecure())
@@ -5119,8 +5143,8 @@ end
 
 -- ~events
 function Plater:PLAYER_SPECIALIZATION_CHANGED()
-	Plater.GetSpellForRangeCheck()
-	Plater.GetHealthCutoffValue()
+	C_Timer.After (2, Plater.GetSpellForRangeCheck)
+	C_Timer.After (2, Plater.GetHealthCutoffValue)
 end
 
 function Plater.UpdateAuraCache()
@@ -7296,24 +7320,39 @@ function Plater.CheckRange (plateFrame, onAdded)
 		--IsSpellInRange (FindSpellBookSlotBySpellID (185245), "spell", plateFrame [MEMBER_UNITID]) 
 		--if (IsSpellInRange (FindSpellBookSlotBySpellID (185245), "spell", plateFrame [MEMBER_UNITID]) == 1) then
 		
-		if (IsSpellInRange (Plater.SpellForRangeCheck, plateFrame [MEMBER_UNITID]) == 1) then
-			plateFrame.FadedIn = true
-			local alpha = Plater.GetPlateAlpha (plateFrame)
-			plateFrame.UnitFrame:SetAlpha (alpha)
-			plateFrame [MEMBER_ALPHA] = alpha
-			plateFrame [MEMBER_RANGE] = true
+		if (Plater.SpellBookForRangeCheck) then
+			if (IsSpellInRange (Plater.SpellForRangeCheck, Plater.SpellBookForRangeCheck, plateFrame [MEMBER_UNITID]) == 1) then
+				plateFrame.FadedIn = true
+				local alpha = Plater.GetPlateAlpha (plateFrame)
+				plateFrame.UnitFrame:SetAlpha (alpha)
+				plateFrame [MEMBER_ALPHA] = alpha
+				plateFrame [MEMBER_RANGE] = true
+			else
+				plateFrame.FadedIn = nil
+				local alpha = Plater.db.profile.range_check_alpha
+				plateFrame.UnitFrame:SetAlpha (alpha)
+				plateFrame [MEMBER_ALPHA] = alpha
+				plateFrame [MEMBER_RANGE] = false
+			end
 		else
-			plateFrame.FadedIn = nil
-			local alpha = Plater.db.profile.range_check_alpha
-			plateFrame.UnitFrame:SetAlpha (alpha)
-			plateFrame [MEMBER_ALPHA] = alpha
-			plateFrame [MEMBER_RANGE] = false
+			if (IsSpellInRange (Plater.SpellForRangeCheck, plateFrame [MEMBER_UNITID]) == 1) then
+				plateFrame.FadedIn = true
+				local alpha = Plater.GetPlateAlpha (plateFrame)
+				plateFrame.UnitFrame:SetAlpha (alpha)
+				plateFrame [MEMBER_ALPHA] = alpha
+				plateFrame [MEMBER_RANGE] = true
+			else
+				plateFrame.FadedIn = nil
+				local alpha = Plater.db.profile.range_check_alpha
+				plateFrame.UnitFrame:SetAlpha (alpha)
+				plateFrame [MEMBER_ALPHA] = alpha
+				plateFrame [MEMBER_RANGE] = false
+			end
 		end
 	else
-
---test performance with druid guardian
---/run local f=CreateFrame("frame") f.Run=1 f:SetScript("OnUpdate", function(_,t) if (f.Run) then for i = 1, 1000000 do IsSpellInRange(25,"SPELL","target") end f.Run=nil else f:SetScript("OnUpdate",nil);print(t) end end)
---/run local f=CreateFrame("frame") f.Run=1 f:SetScript("OnUpdate", function(_,t) if (f.Run) then for i = 1, 1000000 do IsSpellInRange("Growl","target") end f.Run=nil else f:SetScript("OnUpdate",nil);print(t) end end)
+		--test performance with druid guardian
+		--/run local f=CreateFrame("frame") f.Run=1 f:SetScript("OnUpdate", function(_,t) if (f.Run) then for i = 1, 1000000 do IsSpellInRange(25,"SPELL","target") end f.Run=nil else f:SetScript("OnUpdate",nil);print(t) end end)
+		--/run local f=CreateFrame("frame") f.Run=1 f:SetScript("OnUpdate", function(_,t) if (f.Run) then for i = 1, 1000000 do IsSpellInRange("Growl","target") end f.Run=nil else f:SetScript("OnUpdate",nil);print(t) end end)
 
 		--regular range check during throttled tick
 		if (Plater.SpellBookForRangeCheck) then
@@ -8512,8 +8551,11 @@ Plater.SpecList = {
 local re_GetSpellForRangeCheck = function()
 	Plater.GetSpellForRangeCheck()
 end
+
 function Plater.GetSpellForRangeCheck()
+
 	Plater.SpellBookForRangeCheck = nil
+
 	local specIndex = GetSpecialization()
 	if (specIndex) then
 		local specID = GetSpecializationInfo (specIndex)
@@ -8540,11 +8582,12 @@ function Plater.GetSpellForRangeCheck()
 				end
 			end
 		else
-		 	C_Timer.After (5, re_GetSpellForRangeCheck)
+			C_Timer.After (5, re_GetSpellForRangeCheck)
 		end
 	else
 		C_Timer.After (5, re_GetSpellForRangeCheck)
 	end
+
 end
 
 -- ~range
@@ -8658,8 +8701,8 @@ function Plater.OpenOptionsPanel()
 		
 		{name = "DebuffConfig", title = "Buff Settings"},
 		{name = "DebuffBlacklist", title = "Buff Tracking"},
-		{name = "DebuffLastEvent", title = "Buff Ease"},
 		{name = "DebuffSpecialContainer", title = "Buff Special"},
+		{name = "DebuffLastEvent", title = "Buff Ease"},
 		{name = "Scripting", title = "Scripting"},
 		{name = "AdvancedConfig", title = "Advanced"},
 		{name = "ProfileManagement", title = "Profiles"},
@@ -8686,8 +8729,8 @@ function Plater.OpenOptionsPanel()
 	--2nd row
 	local auraOptionsFrame = mainFrame.AllFrames [9]
 	local auraFilterFrame = mainFrame.AllFrames [10]
-	local auraLastEventFrame = mainFrame.AllFrames [11]
-	local auraSpecialFrame = mainFrame.AllFrames [12]
+	local auraSpecialFrame = mainFrame.AllFrames [11]
+	local auraLastEventFrame = mainFrame.AllFrames [12]
 	local scriptingFrame = mainFrame.AllFrames [13]
 	local advancedFrame = mainFrame.AllFrames [14]
 	local profilesFrame = mainFrame.AllFrames [15]
@@ -11823,7 +11866,7 @@ end
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.hover_highlight = value
 				Plater.RefreshDBUpvalues()
-				Plater.UpdateAllPlates()
+				Plater.FullRefreshAllPlates()
 			end,
 			name = "Hover Over Highlight",
 			desc = "Highlight effect when the mouse is over the nameplate.\n\n|cFFFFFF00Important|r: for enemies only (players and npcs).",
@@ -15181,7 +15224,7 @@ end
 	scriptingFrame.CodeTypes = {
 		{Name = "Constructor", Desc = "Is executed only once, create your custom stuff here like frames, textures, animations and store them inside |cFFFFFF00envTable|r.\n\nAlso check if the frame already exists before creating it!", Value = 2},
 		{Name = "On Show", Desc = "Executed when the trigger match!\n\nUse to show your custom frames, textures, play animations, etc.", Value = 4},
-		{Name = "On Update", Desc = "Executed after Plater updates the nameplate.\n\nUse this to update your custom stuff or override values that Plater might have set during the nameplate update, e.g. the nameplate color due to aggro checks.", Value = 1},
+		{Name = "On Update", Desc = "Executed after Plater updates the nameplate (does not run every frame).\n\nUse this to update your custom stuff or override values that Plater might have set during the nameplate update, e.g. the nameplate color due to aggro checks.", Value = 1},
 		{Name = "On Hide", Desc = "Executed when the widget is Hide() or trigger doesn't match anymore.\n\nUse to hide your custom frames, textures, stop animations, etc.", Value = 3},
 	}
 	
@@ -15625,6 +15668,9 @@ end
 	
 		local text = scriptingFrame.ImportTextEditor:GetText()
 
+		--cleanup the text removing extra spaces and break lines
+		text = DF:Trim (text)
+		
 		if (string.len (text) > 0) then
 			local LibAceSerializer = LibStub:GetLibrary ("AceSerializer-3.0")
 			
