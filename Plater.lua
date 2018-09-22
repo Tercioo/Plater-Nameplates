@@ -154,7 +154,7 @@ local default_config = {
 				only_damaged = true,
 				only_thename = true,
 				click_through = true,
-				show_guild_name = true,
+				show_guild_name = false,
 				
 				health = {70, 2},
 				health_incombat = {70, 2},
@@ -192,8 +192,8 @@ local default_config = {
 				level_text_alpha = 0.3,
 				
 				percent_text_enabled = false,
-				percent_text_show_decimals = false,
 				percent_text_ooc = false,
+				percent_show_percent = true,
 				percent_show_health = false,
 				percent_text_size = 9,
 				percent_text_font = "Arial Narrow",
@@ -206,7 +206,7 @@ local default_config = {
 			enemyplayer = {
 				enabled = true,
 				plate_order = 3,
-				show_guild_name = true,
+				show_guild_name = false,
 				
 				use_playerclass_color = true,
 				fixed_class_color = {1, .4, .1},
@@ -247,8 +247,8 @@ local default_config = {
 				level_text_alpha = 0.3,
 				
 				percent_text_enabled = true,
-				percent_text_show_decimals = true,
 				percent_text_ooc = true,
+				percent_show_percent = true,
 				percent_show_health = true,
 				percent_text_size = 9,
 				percent_text_font = "Arial Narrow",
@@ -310,8 +310,8 @@ local default_config = {
 				level_text_alpha = 0.3,
 				
 				percent_text_enabled = false,
-				percent_text_show_decimals = false,
 				percent_text_ooc = false,
+				percent_show_percent = true,
 				percent_show_health = false,
 				percent_text_size = 9,
 				percent_text_font = "Arial Narrow",
@@ -375,9 +375,9 @@ local default_config = {
 				level_text_alpha = 0.3,
 				
 				percent_text_enabled = true,
-				percent_text_show_decimals = true,
 				percent_text_ooc = false,
-				percent_show_health = false,
+				percent_show_percent = true,
+				percent_show_health = true,
 				percent_text_size = 9,
 				percent_text_font = "Arial Narrow",
 				percent_text_shadow = true,
@@ -4876,7 +4876,7 @@ local EventTickFunction = function (tickFrame, deltaTime)
 					healthBar.healthCutOff:SetPoint ("left", healthBar, "left", healthBar:GetWidth() * CONST_HEALTHCUTOFF_AT, 0)
 					healthBar.healthCutOff:Show()
 					healthBar.healthCutOff.ShowAnimation:Play()
-					
+
 					healthBar.executeRange:Show()
 					healthBar.executeRange:SetTexCoord (0, CONST_HEALTHCUTOFF_AT, 0, 1)
 					healthBar.executeRange:SetAlpha (0.2)
@@ -4908,12 +4908,12 @@ local EventTickFunction = function (tickFrame, deltaTime)
 			end
 			
 			if (actorTypeDBConfig.percent_text_enabled) then
-				Plater.UpdateLifePercentText (healthBar, unitFrame.unit, actorTypeDBConfig.percent_show_health, actorTypeDBConfig.percent_text_show_decimals)
+				Plater.UpdateLifePercentText (healthBar, unitFrame.unit, actorTypeDBConfig.percent_show_health, actorTypeDBConfig.percent_show_percent)
 			end
 		else
 			--if not in combat, check if can show the percent health out of combat
 			if (actorTypeDBConfig.percent_text_enabled and actorTypeDBConfig.percent_text_ooc) then
-				Plater.UpdateLifePercentText (healthBar, unitFrame.unit, actorTypeDBConfig.percent_show_health, actorTypeDBConfig.percent_text_show_decimals)
+				Plater.UpdateLifePercentText (healthBar, unitFrame.unit, actorTypeDBConfig.percent_show_health, actorTypeDBConfig.percent_show_percent)
 				healthBar.lifePercent:Show()
 			end
 		end
@@ -6217,35 +6217,45 @@ function Plater.UpdatePlateText (plateFrame, plateConfigs, needReset)
 			lifeString:SetAlpha (plateConfigs.percent_text_alpha)
 		end
 		
-		Plater.UpdateLifePercentText (plateFrame.UnitFrame.healthBar, plateFrame.namePlateUnitToken, plateConfigs.percent_show_health, plateConfigs.percent_text_show_decimals)
+		Plater.UpdateLifePercentText (plateFrame.UnitFrame.healthBar, plateFrame.namePlateUnitToken, plateConfigs.percent_show_health, plateConfigs.percent_show_percent)
 	else
 		lifeString:Hide()
 	end
 end
 
-function Plater.UpdateLifePercentText (healthBar, unitId, showHealthAmount, showDecimals)
-	--get the cached health amount
+function Plater.UpdateLifePercentText (healthBar, unitId, showHealthAmount, showPercentAmount)
+	--get the cached health amount for performance
 	local currentHealth, maxHealth = healthBar.CurrentHealth, healthBar.CurrentHealthMax
-	local percentText = ""
-	local percent = currentHealth / maxHealth * 100
 	
-	if (showDecimals) then
+	if (showHealthAmount and showPercentAmount) then
+		local percent = currentHealth / maxHealth * 100
+		
 		if (percent < 10) then
-			percentText = format ("%.2f", percent)
+			healthBar.lifePercent:SetText (DF.FormatNumber (currentHealth) .. " (" .. format ("%.2f", percent) .. "%)")
+			
 		elseif (percent < 99.9) then
-			percentText = format ("%.1f", percent)
+			healthBar.lifePercent:SetText (DF.FormatNumber (currentHealth) .. " (" .. format ("%.1f", percent) .. "%)")
 		else
-			percentText = floor (percent)
+			healthBar.lifePercent:SetText (DF.FormatNumber (currentHealth) .. " (100%)")
 		end
-	else
-		percentText = floor (percent)
-	end
+		
+	elseif (showHealthAmount) then
+		healthBar.lifePercent:SetText (DF.FormatNumber (currentHealth))
 	
-	if (showHealthAmount) then
-		local healthAmount = DF.FormatNumber (currentHealth)
-		healthBar.lifePercent:SetText (healthAmount .. " (" .. percentText .. "%)")
+	elseif (showPercentAmount) then
+		local percent = currentHealth / maxHealth * 100
+		
+		if (percent < 10) then
+			healthBar.lifePercent:SetText (format ("%.2f", percent) .. "%")
+			
+		elseif (percent < 99.9) then
+			healthBar.lifePercent:SetText (format ("%.1f", percent) .. "%")
+		else
+			healthBar.lifePercent:SetText ("100%")
+		end
+	
 	else
-		healthBar.lifePercent:SetText (percentText .. "%")
+		healthBar.lifePercent:SetText ("")
 	end
 end
 
@@ -11103,7 +11113,7 @@ do
 			{type = "breakline"},
 			
 			--percent text
-			{type = "label", get = function() return "Health Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{type = "label", get = function() return "Health Information:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			--enabled
 			{
 				type = "toggle",
@@ -12615,7 +12625,7 @@ end
 		{type = "breakline"},
 		
 		--percent text
-		{type = "label", get = function() return "Health Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return "Health Information:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--enabled
 		{
 			type = "toggle",
@@ -12639,16 +12649,16 @@ end
 			name = "Out of Combat",
 			desc = "Show the percent even when isn't in combat.",
 		},
-		--use decimals
+		--percent amount
 		{
 			type = "toggle",
-			get = function() return Plater.db.profile.plate_config.friendlyplayer.percent_text_show_decimals end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.percent_show_percent end,
 			set = function (self, fixedparam, value) 
-				Plater.db.profile.plate_config.friendlyplayer.percent_text_show_decimals = value
+				Plater.db.profile.plate_config.friendlyplayer.percent_show_percent = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Show Decimals",
-			desc = "Without decimals: 56%\nWith decimals: 56.1%\n\nWithout decimals: 9%\nWith decimals: 9.16%",
+			name = "Show Percent Amount",
+			desc = "Show Percent Amount",
 		},		
 		--health amount
 		{
@@ -13324,7 +13334,7 @@ end
 		{type = "breakline"},
 		
 		--percent text
-		{type = "label", get = function() return "Health Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return "Health Information:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--enabled
 		{
 			type = "toggle",
@@ -13348,17 +13358,17 @@ end
 			name = "Out of Combat",
 			desc = "Show the percent even when isn't in combat.",
 		},
-		--use decimals
+		--percent amount
 		{
 			type = "toggle",
-			get = function() return Plater.db.profile.plate_config.enemyplayer.percent_text_show_decimals end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.percent_show_percent end,
 			set = function (self, fixedparam, value) 
-				Plater.db.profile.plate_config.enemyplayer.percent_text_show_decimals = value
+				Plater.db.profile.plate_config.enemyplayer.percent_show_percent = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Show Decimals",
-			desc = "Without decimals: 56%\nWith decimals: 56.1%\n\nWithout decimals: 9%\nWith decimals: 9.16%",
-		},		
+			name = "Show Percent Amount",
+			desc = "Show Percent Amount",
+		},
 		--health amount
 		{
 			type = "toggle",
@@ -14122,7 +14132,7 @@ end
 		{type = "breakline"},
 		
 		--percent text
-		{type = "label", get = function() return "Health Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return "Health Information:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--enabled
 		{
 			type = "toggle",
@@ -14146,17 +14156,17 @@ end
 			name = "Out of Combat",
 			desc = "Show the percent even when isn't in combat.",
 		},
-		--use decimals
+		--percent amount
 		{
 			type = "toggle",
-			get = function() return Plater.db.profile.plate_config.friendlynpc.percent_text_show_decimals end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.percent_show_percent end,
 			set = function (self, fixedparam, value) 
-				Plater.db.profile.plate_config.friendlynpc.percent_text_show_decimals = value
+				Plater.db.profile.plate_config.friendlynpc.percent_show_percent = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Show Decimals",
-			desc = "Without decimals: 56%\nWith decimals: 56.1%\n\nWithout decimals: 9%\nWith decimals: 9.16%",
-		},		
+			name = "Show Percent Amount",
+			desc = "Show Percent Amount",
+		},
 		--health amount
 		{
 			type = "toggle",
@@ -14910,7 +14920,7 @@ end
 			{type = "breakline"},
 			
 			--percent text
-			{type = "label", get = function() return "Health Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{type = "label", get = function() return "Health Information:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			--enabled
 			{
 				type = "toggle",
@@ -14934,16 +14944,16 @@ end
 				name = "Out of Combat",
 				desc = "Show the percent even when isn't in combat.",
 			},
-			--use decimals
+			--percent amount
 			{
 				type = "toggle",
-				get = function() return Plater.db.profile.plate_config.enemynpc.percent_text_show_decimals end,
+				get = function() return Plater.db.profile.plate_config.enemynpc.percent_show_percent end,
 				set = function (self, fixedparam, value) 
-					Plater.db.profile.plate_config.enemynpc.percent_text_show_decimals = value
+					Plater.db.profile.plate_config.enemynpc.percent_show_percent = value
 					Plater.UpdateAllPlates()
 				end,
-				name = "Show Decimals",
-				desc = "Without decimals: 56%\nWith decimals: 56.1%\n\nWithout decimals: 9%\nWith decimals: 9.16%",
+				name = "Show Percent Amount",
+				desc = "Show Percent Amount",
 			},
 			--health amount
 			{
