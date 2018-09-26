@@ -476,10 +476,17 @@ local default_config = {
 		--> store spells from the latest event the player has been into
 		captured_spells = {},
 
+		--script tab
 		script_data = {},
 		script_data_trash = {}, --deleted scripts are placed here, they can be restored in 30 days
 		script_auto_imported = {}, --store the name and revision of scripts imported from the Plater script library
 		script_banned_user = {}, --players banned from sending scripts to this player
+		
+		--hooking tab
+		hook_data = {},
+		hook_data_trash = {}, --deleted scripts are placed here, they can be restored in 30 days
+		hook_auto_imported = {}, --store the name and revision of scripts imported from the Plater script library
+		hook_banned_user = {}, --players banned from sending scripts to this player
 		
 		patch_version = 0,
 		
@@ -6156,7 +6163,7 @@ function Plater.UpdatePlateText (plateFrame, plateConfigs, needReset)
 	
 	elseif (Plater.FriendsCache [plateFrame [MEMBER_NAME]]) then
 		--is regular friend
-		DF:SetFontColor (textString, "PLATER_FRIEND")
+		DF:SetFontColor (nameString, "PLATER_FRIEND")
 		DF:SetFontColor (guildString, "PLATER_FRIEND")
 		plateFrame.isFriend = true		
 
@@ -8792,8 +8799,26 @@ function Plater.CreateAutoRunCodePanel()
 	local f = PlaterOptionsPanelFrame
 	local mainFrame = PlaterOptionsPanelContainer
 	
-	local profile = Plater.db.profile
+--[=[	
+		Plater.db.profile.hook_data
+		Plater.db.profile.hook_data_trash
+		Plater.db.profile.hook_auto_imported
+		Plater.db.profile.hook_banned_user
+	
+		hook_data = {},
+		hook_data_trash = {}, --deleted scripts are placed here, they can be restored in 30 days
+		hook_auto_imported = {}, --store the name and revision of scripts imported from the Plater script library
+		hook_banned_user = {}, --players banned from sending scripts to this player
+	--]=]
 
+	--later, move this to global Plater space
+	Plater.HookTypeNames = {
+		"Nameplate Added",
+		"Nameplate Created",
+		"Nameplate Removed",
+		"Nameplate Updated",
+	}	
+	
 	local frame_options = {
 		y_offset = 0,
 		button_width = 102,
@@ -8803,11 +8828,10 @@ function Plater.CreateAutoRunCodePanel()
 		button_text_size = 10,
 	}
 	
-	local runCodeFrame = mainFrame.AllFrames [14]
+	local hookFrame = mainFrame.AllFrames [14]
 	
-	local nopString = DF:CreateLabel (runCodeFrame, "In development\nnot available at the moment", 16, "yellow")
+	local nopString = DF:CreateLabel (hookFrame, "In development\nnot available at the moment", 16, "yellow")
 	nopString:SetPoint (10, -90)	
-	
 
 	local startX, startY, heightSize = 10, -110, 670
 	local mainHeightSize = 800
@@ -8832,8 +8856,83 @@ function Plater.CreateAutoRunCodePanel()
 	local luaeditor_backdrop_color = {.2, .2, .2, .5}
 	local luaeditor_border_color = {0, 0, 0, 1}
 	
+	--holds the current text to search
+	hookFrame.SearchString = ""
+	
+	hookFrame:SetScript ("OnShow", function()
+		--update the hook scripts scrollbox
+		--hookFrame.ScriptSelectionScrollBox:Refresh()
+		
+		--check trash can timeout
+		local timeout = 60 * 60 * 24 * 30
+		--local timeout = 60 * 60 * 24 * 1 --for testing, setting this to 1 day
+		
+		for i = #Plater.db.profile.hook_data_trash, 1, -1 do
+			local scriptObject = Plater.db.profile.hook_data_trash [i]
+			if (not scriptObject.__TrashAt or scriptObject.__TrashAt + timeout < time()) then
+				tremove (Plater.db.profile.hook_data_trash, i)
+			end
+		end
+	end)
+	
+	hookFrame:SetScript ("OnHide", function()
+		--save
+		local hookObject = hookFrame.GetCurrentHookObject()
+		if (hookObject) then
+			hookFrame.SaveScript()
+		end
+	end)
+	
+	hookFrame.DefaultScript = [=[
+		function (self, unitId, unitFrame, envTable)
+			
+		end
+	]=]
+	
+	--return the object for the script being edited
+	function hookFrame.GetCurrentHookObject()
+		
+	end
+	
+	--a new script has been created
+	function hookFrame.CreateNewScript()
+
+		--build the table of the new script
+		local newScriptObject = {
+			Enabled = true,
+			Name = "New Script",
+			Icon = "",
+			Desc = "",
+			Author = UnitName ("Player") .. "-" .. GetRealmName(),
+			Time = time(),
+			Revision = 1,
+			PlaterCore = Plater.CoreVersion,
+			
+			HookFunctions = {
+				--["Function Name"] = " CODE " ??
+			},
+			HookEvents = {
+				--["Event Name"] = " CODE " ?? 
+			}
+		}
+		
+		--add it to the database
+		tinsert (Plater.db.profile.hook_data, newScriptObject)
+		
+		--start editing the new script
+		hookFrame.EditScript (#Plater.db.profile.script_data)
+		
+		--refresh the scrollbox showing all scripts created
+		hookFrame.ScriptSelectionScrollBox:Refresh()
+	end
+	
+	
+	
+	
+	
+	
 	--edit script text entry
-		local code_editor = DF:NewSpecialLuaEditorEntry (runCodeFrame, edit_script_size[1], edit_script_size[2], "CodeEditor", "$parentCodeEditor")
+		local code_editor = DF:NewSpecialLuaEditorEntry (hookFrame, edit_script_size[1], edit_script_size[2], "CodeEditor", "$parentCodeEditor")
 		
 		code_editor.scroll:SetBackdrop (nil)
 		code_editor.editbox:SetBackdrop (nil)
@@ -8857,7 +8956,7 @@ function Plater.CreateAutoRunCodePanel()
 		code_editor.__background:SetHorizTile (true)
 		code_editor.__background:SetAllPoints()				
 		
-		runCodeFrame.CodeEditorLuaEntry = code_editor
+		hookFrame.CodeEditorLuaEntry = code_editor
 		
 		code_editor:SetPoint ("topleft", 155, -166)
 		code_editor:Disable()
