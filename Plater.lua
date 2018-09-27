@@ -6175,10 +6175,10 @@ function Plater.UpdatePlateText (plateFrame, plateConfigs, needReset)
 	--atualiza o texto da cast bar
 	if (needReset) then
 		DF:SetFontColor (spellnameString, plateConfigs.spellname_text_color)
-		DF:SetFontSize (spellnameString, plateConfigs.spellname_text_size)
 		DF:SetFontOutline (spellnameString, plateConfigs.spellname_text_shadow)
 		DF:SetFontFace (spellnameString, plateConfigs.spellname_text_font)
 	end
+	DF:SetFontSize (spellnameString, plateConfigs.spellname_text_size)
 	
 	--atualiza o texto da porcentagem do cast
 	if (plateConfigs.spellpercent_text_enabled) then
