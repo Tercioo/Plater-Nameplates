@@ -436,13 +436,15 @@ local default_config = {
 				level_text_alpha = 0.3,
 				
 				percent_text_enabled = true,
+				percent_text_ooc = true,
+				percent_show_percent = true,
+				percent_show_health = true,
 				percent_text_size = 9,
 				percent_text_font = "Arial Narrow",
 				percent_text_shadow = true,
 				percent_text_color = {.9, .9, .9, 1},
 				percent_text_anchor = {side = 9, x = 0, y = 0},
 				percent_text_alpha = 1,
-				percent_text_ooc = false,
 				
 				power_percent_text_enabled = true,
 				power_percent_text_size = 9,
@@ -3232,6 +3234,13 @@ function Plater.OnInit()
 			local plateFrame = self.PlateFrame
 			plateFrame [MEMBER_NAME] = UnitName (self.unit)
 			
+			if (plateFrame.isSelf) then
+				--name isn't shown in the personal bar
+				plateFrame.UnitFrame.healthBar.actorName:SetText ("")
+				self.name:SetText ("")
+				return
+			end
+			
 			if (plateFrame.actorType == ACTORTYPE_FRIENDLY_PLAYER) then
 				plateFrame.playerGuildName = GetGuildInfo (plateFrame [MEMBER_UNITID])
 				Plater.UpdatePlateText (plateFrame, DB_PLATE_CONFIG [plateFrame.actorType], false)
@@ -5937,24 +5946,25 @@ end
 function Plater.UpdatePlateText (plateFrame, plateConfigs, needReset)
 	
 	if (plateFrame.isSelf) then
-		--name isn't shown in the personal bar
-		plateFrame.UnitFrame.healthBar.actorName:SetText ("")
-		
+
 		--update the power percent text
-		if (plateConfigs.power_percent_text_enabled and needReset) then
+		if (plateConfigs.power_percent_text_enabled) then
 			local powerString = ClassNameplateManaBarFrame.powerPercent
-			DF:SetFontSize (powerString, plateConfigs.power_percent_text_size)
-			DF:SetFontFace (powerString, plateConfigs.power_percent_text_font)
-			DF:SetFontOutline (powerString, plateConfigs.power_percent_text_shadow)
-			DF:SetFontColor (powerString, plateConfigs.power_percent_text_color)
-			Plater.SetAnchor (powerString, plateConfigs.power_percent_text_anchor)
-			powerString:SetAlpha (plateConfigs.power_percent_text_alpha)
+			if (needReset) then
+				DF:SetFontSize (powerString, plateConfigs.power_percent_text_size)
+				DF:SetFontFace (powerString, plateConfigs.power_percent_text_font)
+				DF:SetFontOutline (powerString, plateConfigs.power_percent_text_shadow)
+				DF:SetFontColor (powerString, plateConfigs.power_percent_text_color)
+				Plater.SetAnchor (powerString, plateConfigs.power_percent_text_anchor)
+				powerString:SetAlpha (plateConfigs.power_percent_text_alpha)
+			end
 			powerString:Show()
 		else
 			ClassNameplateManaBarFrame.powerPercent:Hide()
 		end
 		
-		return
+		--return
+		--needReset = true
 		
 	elseif (plateFrame.IsFriendlyPlayerWithoutHealthBar) then --not critical code
 		--when the option to show only the player name is enabled
@@ -6178,6 +6188,7 @@ function Plater.UpdatePlateText (plateFrame, plateConfigs, needReset)
 		DF:SetFontOutline (spellnameString, plateConfigs.spellname_text_shadow)
 		DF:SetFontFace (spellnameString, plateConfigs.spellname_text_font)
 	end
+	--looks like the game reset the size when the cast bar is show
 	DF:SetFontSize (spellnameString, plateConfigs.spellname_text_size)
 	
 	--atualiza o texto da porcentagem do cast
@@ -6235,6 +6246,12 @@ function Plater.UpdatePlateText (plateFrame, plateConfigs, needReset)
 	else
 		lifeString:Hide()
 	end
+	
+	if (plateFrame.isSelf) then
+		--name isn't shown in the personal bar
+		plateFrame.UnitFrame.healthBar.actorName:SetText ("")
+	end
+	
 end
 
 function Plater.UpdateLifePercentText (healthBar, unitId, showHealthAmount, showPercentAmount)
@@ -6624,6 +6641,15 @@ end
 
 function Plater.UpdateManaAndResourcesBar()
 	if (not InCombatLockdown()) then
+		if (ClassNameplateManaBarFrame) then
+			if (ClassNameplateManaBarFrame.Border) then
+				ClassNameplateManaBarFrame.Border:Hide()
+			end
+			if (not ClassNameplateManaBarFrame.SoftShadow) then
+				DF:CreateBorderWithSpread (ClassNameplateManaBarFrame, .4, .2, .05, 1, 0.5)
+				ClassNameplateManaBarFrame.SoftShadow = true
+			end
+		end
 		NamePlateDriverFrame:SetupClassNameplateBars()
 	end
 end
