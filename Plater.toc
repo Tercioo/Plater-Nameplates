@@ -9,4 +9,8 @@ libs\libs.xml
 #@end-no-lib-strip@
 
 Plater.lua
-ScriptLibrary.lua
+Plater_OptionsPanel.lua
+Plater_ScriptingPanels.lua
+Plater_ScriptLibrary.lua
+Plater_AnimationEditor.lua
+Plater_ChangeLog.lua
