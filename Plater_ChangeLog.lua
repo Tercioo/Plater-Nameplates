@@ -2,6 +2,7 @@
 
 
 local Plater = Plater
+local _
 
 function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then

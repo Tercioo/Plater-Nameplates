@@ -3,7 +3,7 @@
 local Plater = Plater
 local GameCooltip = GameCooltip2
 local DF = DetailsFramework
-
+local _
 
 --get templates
 local options_text_template = DF:GetTemplate ("font", "OPTIONS_FONT_TEMPLATE")

@@ -3,6 +3,7 @@
 local Plater = Plater
 local DF = DetailsFramework
 local LibSharedMedia = LibStub:GetLibrary ("LibSharedMedia-3.0")
+local _
 
 --templates
 local options_text_template = DF:GetTemplate ("font", "OPTIONS_FONT_TEMPLATE")

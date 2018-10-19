@@ -3,6 +3,7 @@
 local Plater = Plater
 local GameCooltip = GameCooltip2
 local DF = DetailsFramework
+local _
 
 --sort scripts
 function Plater.SortScripts (t1, t2)
