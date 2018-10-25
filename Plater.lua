@@ -5434,9 +5434,8 @@ function Plater.UpdateNameplateThread (self) --self = UnitFrame
 		return
 	end
 	
-	local isTanking, status, threatpct = UnitDetailedThreatSituation ("player", self.displayedUnit)
+	local isTanking, threatStatus, threatpct = UnitDetailedThreatSituation ("player", self.displayedUnit)
 	self.namePlateThreatPercent = threatpct or 0
-	
 	-- (3 = securely tanking, 2 = insecurely tanking, 1 = not tanking but higher threat than tank, 0 = not tanking and lower threat than tank)
 
 	self.aggroGlowUpper:Hide()
@@ -5479,7 +5478,7 @@ function Plater.UpdateNameplateThread (self) --self = UnitFrame
 					--n�o ha aggro e ele n�o esta participando do combate
 					if (self [MEMBER_REACTION] == 4) then
 						--o mob � um npc neutro, apenas colorir com a cor neutra
-						set_aggro_color (self.healthBar, 1, 1, 0)
+						set_aggro_color (self.healthBar, 1, 1, 0) --ticket #185
 					else
 						set_aggro_color (self.healthBar, unpack (DB_AGGRO_TANK_COLORS.nocombat))
 					end
@@ -5502,15 +5501,16 @@ function Plater.UpdateNameplateThread (self) --self = UnitFrame
 				
 			else --n�o esta tankando
 				set_aggro_color (self.healthBar, unpack (DB_AGGRO_TANK_COLORS.noaggro))
-				
+
 			end
 			if (self.PlateFrame [MEMBER_NOCOMBAT]) then
 				self.PlateFrame [MEMBER_NOCOMBAT] = nil
 				Plater.CheckRange (self.PlateFrame, true)
-				
+
 			end
 		end
 	else
+
 		--dps
 		if (isTanking) then
 			--o jogador esta tankando como dps
@@ -5525,7 +5525,7 @@ function Plater.UpdateNameplateThread (self) --self = UnitFrame
 				self.PlateFrame [MEMBER_NOCOMBAT] = nil
 				Plater.CheckRange (self.PlateFrame, true)
 			end
-		else
+		else 	
 			if (threatStatus == nil) then
 				self.PlateFrame.playerHasAggro = false
 				
@@ -5541,7 +5541,7 @@ function Plater.UpdateNameplateThread (self) --self = UnitFrame
 					--if isn't a quest mob
 					if (not self.PlateFrame [MEMBER_QUEST]) then
 						--n�o ha aggro e ele n�o esta participando do combate
-						if (self [MEMBER_REACTION] == 4) then
+						if (self [MEMBER_REACTION] == 4) then --ticket #185
 							--o mob � um npc neutro, apenas colorir com a cor neutra
 							set_aggro_color (self.healthBar, 1, 1, 0)
 						else
