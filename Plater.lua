@@ -5685,13 +5685,23 @@ function Plater.AddAura (auraIconFrame, i, spellName, texture, count, debuffType
 
 		--> update the texture
 		auraIconFrame.Icon:SetTexture (texture)
-		--> update members
 		
+		--> update members
 		auraIconFrame.spellId = spellId
 		auraIconFrame.layoutIndex = auraIconFrame.ID
 		auraIconFrame.IsShowingBuff = false
 
-		auraIconFrame.filter = debuffType == "DEBUFF" and "HARMFUL" or debuffType == "BUFF" and "HELPFUL" or ""
+		if (debuffType == "DEBUFF") then
+			auraIconFrame.filter = "HARMFUL"
+			auraIconFrame:GetParent().HasDebuff = true
+			
+		elseif (debuffType == "BUFF") then
+			auraIconFrame.filter = "HELPFUL"
+			auraIconFrame:GetParent().HasBuff = true
+			
+		else
+			auraIconFrame.filter = ""
+		end
 	end
 	
 	--> caching the profile for performance
@@ -5939,6 +5949,10 @@ function Plater.UpdateAuras_Manual (self, unit, isPersonal)
 	--> reset next aura icon to use
 	self.NextAuraIcon = 1
 	self.BuffsAnchor.NextAuraIcon = 1
+	self.HasBuff = false
+	self.HasDebuff = false
+	self.BuffsAnchor.HasBuff = false --secondary buff anchor
+	self.BuffsAnchor.HasDebuff = false --secondary buff anchor
 	
 	Plater.TrackSpecificAuras (self, unit, false, MANUAL_TRACKING_DEBUFFS, isPersonal)
 	Plater.TrackSpecificAuras (self, unit, true, MANUAL_TRACKING_BUFFS, isPersonal)
@@ -5952,6 +5966,10 @@ function Plater.UpdateAuras_Automatic (self, unit)
 	--> reset next aura icon to use
 	self.NextAuraIcon = 1
 	self.BuffsAnchor.NextAuraIcon = 1
+	self.HasBuff = false
+	self.HasDebuff = false
+	self.BuffsAnchor.HasBuff = false --secondary buff anchor
+	self.BuffsAnchor.HasDebuff = false --secondary buff anchor
 	
 	self.ExtraIconFrame:ClearIcons()
 	
@@ -8326,6 +8344,35 @@ function Plater.SetCastBarBorderColor (castBar, r, g, b, a)
 	castBar.FrameOverlay:SetBackdropBorderColor (r, g, b, a)
 end
 
+function Plater.ShowHealthBar (unitFrame)
+	unitFrame.healthBar:Show()
+	unitFrame.BuffFrame:Show()
+	unitFrame.BuffFrame2:Show()
+	unitFrame.healthBar.actorName:Show()
+	
+	unitFrame:GetParent().IsFriendlyPlayerWithoutHealthBar = false
+	
+	unitFrame.ActorNameSpecial:Hide()
+	unitFrame.ActorTitleSpecial:Hide()
+end
+
+function Plater.HideHealthBar (unitFrame, showPlayerName, showNameNpc)
+	unitFrame.healthBar:Hide()
+	unitFrame.BuffFrame:Hide()
+	unitFrame.BuffFrame2:Hide()
+	unitFrame.healthBar.actorName:Hide()
+	
+	unitFrame:GetParent().IsFriendlyPlayerWithoutHealthBar = showPlayerName
+	unitFrame:GetParent().IsNpcWithoutHealthBar = showNameNpc
+	
+	if (showPlayerName) then
+		Plater.UpdatePlateText (unitFrame:GetParent(), DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER], false)
+		
+	elseif (showNameNpc) then
+		Plater.UpdatePlateText (unitFrame:GetParent(), DB_PLATE_CONFIG [ACTORTYPE_ENEMY_NPC], false)
+	end
+end
+
 --check the setting 'only_damaged' and 'only_thename' for player characters. not critical code, can run slow
 function Plater.ParseHealthSettingForPlayer (plateFrame)
 
@@ -8333,18 +8380,9 @@ function Plater.ParseHealthSettingForPlayer (plateFrame)
 
 	if (DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_damaged) then
 		if (UnitHealth (plateFrame [MEMBER_UNITID]) < UnitHealthMax (plateFrame [MEMBER_UNITID])) then
-			plateFrame.UnitFrame.healthBar:Show()
-			plateFrame.UnitFrame.BuffFrame:Show()
-			plateFrame.UnitFrame.BuffFrame2:Show()
-			plateFrame.UnitFrame.healthBar.actorName:Show()
-			
-			plateFrame.ActorNameSpecial:Hide()
-			plateFrame.ActorTitleSpecial:Hide()
+			Plater.ShowHealthBar (plateFrame.UnitFrame)
 		else
-			plateFrame.UnitFrame.healthBar:Hide()
-			plateFrame.UnitFrame.BuffFrame:Hide()
-			plateFrame.UnitFrame.BuffFrame2:Hide()
-			plateFrame.UnitFrame.healthBar.actorName:Hide()
+			Plater.HideHealthBar (plateFrame.UnitFrame)
 			
 			if (DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_thename) then
 				plateFrame.IsFriendlyPlayerWithoutHealthBar = true
@@ -8352,17 +8390,11 @@ function Plater.ParseHealthSettingForPlayer (plateFrame)
 		end
 		
 	elseif (DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_thename) then
-		plateFrame.UnitFrame.healthBar:Hide()
-		plateFrame.UnitFrame.BuffFrame:Hide()
-		plateFrame.UnitFrame.BuffFrame2:Hide()
-		plateFrame.UnitFrame.healthBar.actorName:Hide()
+		Plater.HideHealthBar (plateFrame.UnitFrame)
 		plateFrame.IsFriendlyPlayerWithoutHealthBar = true
 		
 	else
-		plateFrame.UnitFrame.healthBar:Show()
-		plateFrame.UnitFrame.BuffFrame:Show()
-		plateFrame.UnitFrame.BuffFrame2:Show()
-		plateFrame.UnitFrame.healthBar.actorName:Show()
+		Plater.ShowHealthBar (plateFrame.UnitFrame)
 	end
 end
 
