@@ -14,3 +14,4 @@ Plater_ScriptingPanels.lua
 Plater_ScriptLibrary.lua
 Plater_AnimationEditor.lua
 Plater_ChangeLog.lua
+Plater_Docs.lua
