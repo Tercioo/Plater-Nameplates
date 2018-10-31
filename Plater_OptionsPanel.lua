@@ -658,19 +658,33 @@ end)
 DF:BuildMenu (frontPageFrame, interface_options, startX, startY-20, 300 + 60, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 
 function frontPageFrame.OpenNewsWindow()
-	local options = {
-		width = 550,
-		height = 700,
-		line_amount = 13,
-		line_height = 50,
-	}
+	if (not PlaterNewsFrame) then
+		local options = {
+			width = 550,
+			height = 700,
+			line_amount = 13,
+			line_height = 50,
+		}
+		
+		local newsFrame = DF:CreateNewsFrame (UIParent, "PlaterNewsFrame", options, Plater.GetChangelogTable(), Plater.db.profile.news_frame)
+		newsFrame:SetFrameStrata ("FULLSCREEN")
+	end
 	
-	local newsFrame = DF:CreateNewsFrame (UIParent, "PlaterNewsFrame", options, Plater.GetChangelogTable(), Plater.db.profile.news_frame)
-	newsFrame:SetFrameStrata ("FULLSCREEN")
+	PlaterNewsFrame:Show()
+	Plater.db.profile.last_news_time = time()
+	
+	local numNews = DF:GetNumNews (Plater.GetChangelogTable(), Plater.db.profile.last_news_time)
+	frontPageFrame.NewsButton:SetText ("Open Change Log")
 end
 
 local openNewsButton = DF:CreateButton (frontPageFrame, frontPageFrame.OpenNewsWindow, 160, 20, "Open Change Log", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 openNewsButton:SetPoint ("topright", frontPageFrame, "topright", -49, -120)
+frontPageFrame.NewsButton = openNewsButton
+
+local numNews = DF:GetNumNews (Plater.GetChangelogTable(), Plater.db.profile.last_news_time)
+if (numNews > 0) then
+	frontPageFrame.NewsButton:SetText ("Open Change Log (|cFFFFFF00" .. numNews .."|r)")
+end
 
 -------------------------------------------------------------------------------
 -- painel para configurar debuffs e buffs

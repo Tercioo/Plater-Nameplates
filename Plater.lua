@@ -433,6 +433,7 @@ local default_config = {
 			},
 		},
 		
+		last_news_time = 0,
 		disable_omnicc_on_auras = false,
 		
 		resources = {
@@ -4318,6 +4319,14 @@ function Plater.OnInit()
 	Plater.CompileAllScripts ("script")
 	Plater.CompileAllScripts ("hook")
 	
+	local Masque = LibStub ("Masque", true)
+	if (Masque) then
+		Plater.Masque = {}
+		Plater.Masque.AuraFrame1 = Masque:Group ("Plater Nameplates", "Aura Frame 1")
+		Plater.Masque.AuraFrame2 = Masque:Group ("Plater Nameplates", "Aura Frame 2")
+		Plater.Masque.BuffSpecial = Masque:Group ("Plater Nameplates", "Buff Special")
+	end
+	
 	local re_ForceCVars = function()
 		Plater.ForceCVars()
 	end
@@ -5648,6 +5657,55 @@ function Plater.GetAuraIcon (self, isBuff)
 		DF:CreateAnimation (iconShowInAnimation, "Scale", 1, .05, .7, .7, 1.1, 1.1)
 		DF:CreateAnimation (iconShowInAnimation, "Scale", 2, .05, 1.1, 1.1, 1, 1)
 		newFrameIcon.ShowAnimation = iconShowInAnimation
+		
+		--masque support
+		if (Plater.Masque) then
+			if (self.Name == "Main") then
+				local t = {
+					FloatingBG = false,
+					Icon = newFrameIcon.Icon,
+					Cooldown = newFrameIcon.Cooldown,
+					Flash = false,
+					Pushed = false,
+					Normal = false,
+					Disabled = false,
+					Checked = false,
+					Border = newFrameIcon.Border,
+					AutoCastable = false,
+					Highlight = false,
+					HotKey = false,
+					Count = false,
+					Name = false,
+					Duration = false,
+					Shine = false,
+				}
+				Plater.Masque.AuraFrame1:AddButton (newFrameIcon, t)
+				Plater.Masque.AuraFrame1:ReSkin()
+				
+			elseif (self.Name == "Secondary") then
+				local t = {
+					FloatingBG = false,
+					Icon = newFrameIcon.Icon,
+					Cooldown = newFrameIcon.Cooldown,
+					Flash = false,
+					Pushed = false,
+					Normal = false,
+					Disabled = false,
+					Checked = false,
+					Border = newFrameIcon.Border,
+					AutoCastable = false,
+					Highlight = false,
+					HotKey = false,
+					Count = false,
+					Name = false,
+					Duration = false,
+					Shine = false,
+				}
+				Plater.Masque.AuraFrame2:AddButton (newFrameIcon, t)
+				Plater.Masque.AuraFrame2:ReSkin()
+				
+			end
+		end
 	end
 	
 	local auraIconFrame = self.PlaterBuffList [i]
@@ -5828,6 +5886,14 @@ function Plater.AddAura (auraIconFrame, i, spellName, texture, count, debuffType
 		auraIconFrame:ScriptRunOnUpdate (scriptInfo)
 	end	
 	
+	--Plater.Masque.AuraFrame1:ReSkin()
+	
+	
+	--auraIconFrame.Icon:Hide()
+	--auraIconFrame.Cooldown:SetBackdrop (nil)
+	--print (auraIconFrame.Border:GetObjectType())
+	--print (auraIconFrame.Icon:GetAlpha())
+
 	return true
 end
 
@@ -5884,7 +5950,30 @@ function Plater.AddExtraIcon (self, spellName, texture, count, debuffType, durat
 	end
 	
 	--spellId, borderColor, startTime, duration, forceTexture, descText
-	self.ExtraIconFrame:SetIcon (spellId, borderColor, expirationTime - duration, duration, false, casterName and {text = casterName, text_color = casterClass} or false)
+	local iconFrame = self.ExtraIconFrame:SetIcon (spellId, borderColor, expirationTime - duration, duration, false, casterName and {text = casterName, text_color = casterClass} or false)
+	if (Plater.Masque and not iconFrame.Masqued) then
+		local t = {
+			FloatingBG = false,
+			Icon = iconFrame.Texture,
+			Cooldown = iconFrame.Cooldown,
+			Flash = false,
+			Pushed = false,
+			Normal = false,
+			Disabled = false,
+			Checked = false,
+			Border = iconFrame.Border,
+			AutoCastable = false,
+			Highlight = false,
+			HotKey = false,
+			Count = false,
+			Name = false,
+			Duration = false,
+			Shine = false,
+		}
+		Plater.Masque.BuffSpecial:AddButton (iconFrame, t)
+		Plater.Masque.BuffSpecial:ReSkin()
+		iconFrame.Masqued = true
+	end
 end
 
 -- ~auras ãura
