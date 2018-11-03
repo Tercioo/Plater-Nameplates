@@ -62,6 +62,9 @@ Plater.APIList = {
 	{Name = "GetRaidMark", 			Signature = "Plater.GetRaidMark (unitFrame)", 						Desc = "Return which raid mark the nameplate has. Always return false if the nameplate is the personal health bar."},
 	{Name = "IsInCombat", 			Signature = "Plater.IsInCombat()", 								Desc = "Return 'true' if the player is in combat."},
 	{Name = "IsPlayerTank", 			Signature = "Plater.IsPlayerTank()", 							Desc = "Return 'true' if the player is in the tank role."},
+	
+	{Name = "DisableHighlight", 			Signature = "Plater.DisableHighlight (unitFrame)", 					Desc = "The nameplate won't highlight when the mouse passes over it."},
+	{Name = "EnableHighlight", 			Signature = "Plater.EnableHighlight (unitFrame)", 					Desc = "Enable the mouse over highlight."},
 }
 
 Plater.FrameworkList = {
@@ -125,6 +128,7 @@ Plater.NameplateComponents = {
 		"namePlateUnitNameLower",
 		"namePlateIsTarget",
 		"namePlateThreatPercent",
+		"PlayerCannotAttack",
 	},
 	
 	["unitFrame - Frames"] = {

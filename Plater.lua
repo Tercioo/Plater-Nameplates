@@ -9661,6 +9661,8 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ã
 				else
 					--includes neutral npcs
 					plateFrame.PlayerCannotAttack = not UnitCanAttack ("player", unitBarId)
+					unitFrame.PlayerCannotAttack = plateFrame.PlayerCannotAttack --expose to scripts
+					
 					plateFrame.NameAnchor = DB_NAME_NPCENEMY_ANCHOR
 					plateFrame.PlateConfig = DB_PLATE_CONFIG.enemynpc
 					Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_ENEMY_NPC, nil, true)
@@ -9700,12 +9702,9 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ã
 	
 	--highlight check
 	if (DB_HOVER_HIGHLIGHT and not plateFrame.PlayerCannotAttack and (actorType ~= ACTORTYPE_FRIENDLY_PLAYER and actorType ~= ACTORTYPE_FRIENDLY_NPC and not plateFrame.isSelf)) then
-		unitFrame.HighlightFrame:Show()
-		unitFrame.HighlightFrame.unit = plateFrame [MEMBER_UNITID]
-		unitFrame.HighlightFrame:SetScript ("OnUpdate", Plater.CheckHighlight)
+		Plater.EnableHighlight (unitFrame)
 	else
-		unitFrame.HighlightFrame:SetScript ("OnUpdate", nil)
-		unitFrame.HighlightFrame:Hide()
+		Plater.DisableHighlight (unitFrame)
 	end
 	
 	--range
@@ -9721,6 +9720,17 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ã
 			unitFrame:ScriptRunHook (scriptInfo, "Nameplate Added")
 		end
 	end
+end
+
+function Plater.EnableHighlight (unitFrame)
+	unitFrame.HighlightFrame:Show()
+	unitFrame.HighlightFrame.unit = unitFrame [MEMBER_UNITID]
+	unitFrame.HighlightFrame:SetScript ("OnUpdate", Plater.CheckHighlight)
+end
+
+function Plater.DisableHighlight (unitFrame)
+	unitFrame.HighlightFrame:SetScript ("OnUpdate", nil)
+	unitFrame.HighlightFrame:Hide()
 end
 
 function Plater.UpdateUseClassColors()
