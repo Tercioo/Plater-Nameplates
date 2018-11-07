@@ -1,5 +1,5 @@
 
-local dversion = 119
+local dversion = 120
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
 
@@ -2687,6 +2687,7 @@ DF.CLEncounterID = {
 function DF:GetCLEncounterIDs()
 	return DF.CLEncounterID
 end
+
 
 --doo elsee 
 --was doing double loops due to not enought height
