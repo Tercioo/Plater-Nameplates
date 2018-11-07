@@ -3808,13 +3808,19 @@ function DF:CreateTabContainer (parent, title, frame_name, frame_list, options_t
 		DF.TabContainerFunctions.CreateUnderlineGlow (tabButton)
 		
 		local right_click_to_back
-		if (i == 1) then
+		if (i == 1 or options_table.rightbutton_always_close) then
 			right_click_to_back = DF:CreateLabel (f, "right click to close", 10, "gray")
 			right_click_to_back:SetPoint ("bottomright", f, "bottomright", -1, options_table.right_click_y or 0)
+			if (options_table.close_text_alpha) then
+				right_click_to_back:SetAlpha (options_table.close_text_alpha)
+			end
 			f.IsFrontPage = true
 		else
 			right_click_to_back = DF:CreateLabel (f, "right click to go back to main menu", 10, "gray")
 			right_click_to_back:SetPoint ("bottomright", f, "bottomright", -1, options_table.right_click_y or 0)
+			if (options_table.close_text_alpha) then
+				right_click_to_back:SetAlpha (options_table.close_text_alpha)
+			end
 		end
 		
 		if (options_table.hide_click_label) then
@@ -6482,7 +6488,35 @@ end
 
 
 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--> statusbar info
 
+function DF:BuildStatusbarAuthorInfo (f)
+	
+	local authorName = DF:CreateLabel (f, "An addon by |cFFFFFFFFTercioo|r")
+	authorName.textcolor = "silver"
+	local discordLabel = DF:CreateLabel (f, "Discord: ")
+	discordLabel.textcolor = "silver"
+	
+	local options_dropdown_template = DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE")
+	local discordTextEntry = DF:CreateTextEntry (f, function()end, 200, 18, "DiscordTextBox", _, _, options_dropdown_template)
+	discordTextEntry:SetText ("https://discord.gg/AGSzAZX")
+	discordTextEntry:SetFrameLevel (5000)
+	
+	authorName:SetPoint ("left", f, "left", 2, 0)
+	discordLabel:SetPoint ("left", authorName, "right", 20, 0)
+	discordTextEntry:SetPoint ("left", discordLabel, "right", 2, 0)
+	
+	--format
+	authorName:SetAlpha (.4)
+	discordLabel:SetAlpha (.4)
+	discordTextEntry:SetAlpha (.4)
+	discordTextEntry:SetBackdropBorderColor (1, 1, 1, 0)
+	
+	discordTextEntry:SetHook ("OnEditFocusGained", function()
+		discordTextEntry:HighlightText()
+	end)
+end
 
 
 

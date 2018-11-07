@@ -123,6 +123,8 @@ function Plater.OpenOptionsPanel()
 		button_y = -7,
 		button_text_size = 10,
 		right_click_y = 5,
+		rightbutton_always_close = true,
+		close_text_alpha = 0.4,
 	}
 	
 	-- mainFrame � um frame vazio para sustentrar todos os demais frames, este frame sempre ser� mostrado
@@ -192,6 +194,8 @@ function Plater.OpenOptionsPanel()
 	statusBar:SetHeight (20)
 	DF:ApplyStandardBackdrop (statusBar)
 	statusBar:SetAlpha (0.8)
+	
+	DF:BuildStatusbarAuthorInfo (statusBar)
 	
 	f.AllMenuFrames = {}
 	for _, frame in ipairs (mainFrame.AllFrames) do
