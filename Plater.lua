@@ -2537,6 +2537,9 @@ Plater.UnitFrameKeys = {
 Plater.WideIconCoords = {.1, .9, .1, .6}
 Plater.BorderLessIconCoords = {.1, .9, .1, .9}
 
+Plater.AurasHorizontalPadding = 1
+Plater.MaxAurasPerRow = 10
+
 local CAN_USE_AURATIMER = true
 Plater.CanLoadFactionStrings = true
 
@@ -4179,11 +4182,13 @@ function Plater.RefreshDBUpvalues()
 	
 	DB_SHOW_PURGE_IN_EXTRA_ICONS = profile.extra_icon_show_purge
 	
-	if (Plater.db.profile.healthbar_framelevel ~= 0 or Plater.db.profile.castbar_framelevel ~= 0) then
+	if (Plater.db.profile.healthbar_framelevel ~= 0 or profile.castbar_framelevel ~= 0) then
 		DB_UPDATE_FRAMELEVEL = true
 	else
 		DB_UPDATE_FRAMELEVEL = false
 	end
+	
+	Plater.MaxAurasPerRow = floor (profile.plate_config.enemynpc.health_incombat[1] / (profile.aura_width + Plater.AurasHorizontalPadding))
 	
 	--
 	Plater.RefreshDBLists()
@@ -4695,10 +4700,11 @@ function Plater.OnInit()
 				growDirection = DB_AURA_GROW_DIRECTION2
 			end
 			
-			if (growDirection ~= 2) then
-				local padding = 1
+			if (growDirection ~= 2) then --different than center alignment
+				local padding = Plater.AurasHorizontalPadding
 				local firstChild = children[1]
 				local anchorPoint = firstChild and firstChild:GetParent() --> get the buffContainer
+				local framersPerRow = Plater.MaxAurasPerRow + 1
 				
 				if (anchorPoint) then
 					--> set the point of the first child (the other children will follow the position)
@@ -4711,7 +4717,12 @@ function Plater.OnInit()
 						for i = 2, #children do
 							local child = children [i]
 							child:ClearAllPoints()
-							child:SetPoint ("topleft", children [i-1], "topright", padding, 0)
+							if (i == framersPerRow) then
+								child:SetPoint ("bottomleft", firstChild, "topleft", 0, 12)
+								framersPerRow = framersPerRow + framersPerRow
+							else
+								child:SetPoint ("topleft", children [i-1], "topright", padding, 0)
+							end
 						end
 
 					--> right to left
@@ -4720,7 +4731,12 @@ function Plater.OnInit()
 						for i = 2, #children do
 							local child = children [i]
 							child:ClearAllPoints()
-							child:SetPoint ("topright", children [i-1], "topleft", -padding, 0)
+							if (i == framersPerRow) then
+								child:SetPoint ("bottomright", firstChild, "topright", 0, 12)
+								framersPerRow = framersPerRow + framersPerRow
+							else
+								child:SetPoint ("topright", children [i-1], "topleft", -padding, 0)
+							end
 						end
 					end
 				end
