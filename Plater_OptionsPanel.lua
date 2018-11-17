@@ -22,7 +22,6 @@ local CVAR_ENABLED = "1"
 local CVAR_DISABLED = "0"
 local CVAR_RESOURCEONTARGET = "nameplateResourceOnTarget"
 local CVAR_CULLINGDISTANCE = "nameplateMaxDistance"
-local CVAR_CEILING = "nameplateOtherTopInset"
 local CVAR_AGGROFLASH = "ShowNamePlateLoseAggroFlash"
 local CVAR_MOVEMENT_SPEED = "nameplateMotionSpeed"
 local CVAR_MIN_ALPHA = "nameplateMinAlpha"
@@ -672,13 +671,27 @@ function frontPageFrame.OpenNewsWindow()
 		
 		local newsFrame = DF:CreateNewsFrame (UIParent, "PlaterNewsFrame", options, Plater.GetChangelogTable(), Plater.db.profile.news_frame)
 		newsFrame:SetFrameStrata ("FULLSCREEN")
+		
+		local lastNews = Plater.db.profile.last_news_time
+		
+		newsFrame.NewsScroll.OnUpdateLineHook = function (line, lineIndex, data)
+		--/run Plater.db.profile.last_news_time = 1
+			local thisEntryTime = data [1]
+			if (thisEntryTime > lastNews) then
+				line.backdrop_color = {.4, .4, .4, .6}
+				line.backdrop_color_highlight = {.5, .5, .5, .8}
+				line:SetBackdropColor (.4, .4, .4, .6)
+			end
+		end
 	end
 	
 	PlaterNewsFrame:Show()
+	PlaterNewsFrame.NewsScroll:Refresh()
 	Plater.db.profile.last_news_time = time()
 	
 	local numNews = DF:GetNumNews (Plater.GetChangelogTable(), Plater.db.profile.last_news_time)
 	frontPageFrame.NewsButton:SetText ("Open Change Log")
+
 end
 
 local openNewsButton = DF:CreateButton (frontPageFrame, frontPageFrame.OpenNewsWindow, 160, 20, "Open Change Log", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
@@ -3140,6 +3153,26 @@ local targetOptions = {
 			name = "Target Always on the Screen",
 			desc = "When enabled, the nameplate of your target is always shown even when the enemy isn't in the screen.",
 		},
+		
+		{
+			type = "range",
+			get = function() return tonumber (GetCVar ("nameplateTargetBehindMaxDistance")) end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateTargetBehindMaxDistance", value)
+				else
+					Plater:Msg ("you are in combat.")
+				end
+			end,
+			min = 5,
+			max = 50,
+			step = 1,
+			thumbscale = 1.7,
+			name = "Target Behind You Distance" .. CVarIcon,
+			desc = "Max distance to allow show the nameplate of your target when the unit is behind you and not shown in the screen.\n\n|cFFFFFFFFDefault: 15|r" .. CVarDesc,
+			nocombat = true,
+		},
+		
 		{
 			type = "range",
 			get = function() return tonumber (GetCVar ("nameplateSelectedScale")) end,
@@ -4684,6 +4717,24 @@ local relevance_options = {
 			desc = "Adjusts the position on the Y axis.",
 		},		
 		
+		{type = "blank"},
+		
+		{type = "label", get = function() return "Cast Frame:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		--y offset
+		{
+			type = "range",
+			get = function() return Plater.db.profile.plate_config.enemyplayer.castbar_offset end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.enemyplayer.castbar_offset = value
+				Plater.UpdateAllPlates()
+			end,
+			min = -128,
+			max = 128,
+			step = 1,
+			name = "Y Offset",
+			desc = "Adjusts the position on the Y axis when using the order Cast Bar > Health Bar > Debuffs.",
+		},			
+		
 		{type = "breakline"},
 	
 		--health bar size out of combat
@@ -6226,6 +6277,23 @@ local relevance_options = {
 				desc = "Adjusts the position on the Y axis.",
 			},
 
+			{type = "blank"},
+			
+			{type = "label", get = function() return "Cast Frame:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			--y offset
+			{
+				type = "range",
+				get = function() return Plater.db.profile.plate_config.enemynpc.castbar_offset end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.plate_config.enemynpc.castbar_offset = value
+					Plater.UpdateAllPlates()
+				end,
+				min = -128,
+				max = 128,
+				step = 1,
+				name = "Y Offset",
+				desc = "Adjusts the position on the Y axis when using the order Cast Bar > Health Bar > Debuffs.",
+			},				
 			
 			{type = "blank"},
 			
@@ -7300,103 +7368,20 @@ local relevance_options = {
 		},
 		
 		{type = "blank"},
-		{type = "label", get = function() return "Animation Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.use_color_lerp end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.use_color_lerp = value
-				Plater.RefreshDBUpvalues()
-				Plater.UpdateAllPlates()
-			end,
-			name = "Use Smooth Color Transition",
-			desc = "Color changes does a smooth transition between the old and the new color.",
-		},
+		{type = "label", get = function() return "Client Settings (CVars):" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
-			get = function() return Plater.db.profile.color_lerp_speed end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.color_lerp_speed = value
-				Plater.RefreshDBUpvalues()
-				Plater.DebugColorAnimation()
-			end,
-			min = 1,
-			max = 50,
-			step = 1,
-			name = "Smooth Color Transition Speed",
-			desc = "How fast it transition between colors.",
-		},
-		
-		{type = "blank"},
-		
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.height_animation end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.height_animation = value
-				Plater.RefreshDBUpvalues()
-				Plater.UpdateAllPlates()
-			end,
-			name = "Use Smooth Height Transition",
-			desc = "Do a smooth animation when the nameplate's height changes.",
-		},
-		{
-			type = "range",
-			get = function() return Plater.db.profile.height_animation_speed end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.height_animation_speed = value
-				Plater.RefreshDBUpvalues()
-			end,
-			min = 1,
-			max = 50,
-			step = 1,
-			name = "Smooth Height Transition Speed",
-			desc = "How fast is the transition animation.",
-		},
-		
-		{type = "blank"},
-		
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.use_health_animation end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.use_health_animation = value
-				Plater.RefreshDBUpvalues()
-				Plater.UpdateAllPlates()
-			end,
-			name = "Use Smooth Health Transition",
-			desc = "Do a smooth animation when the nameplate's health value changes.",
-		},
-		{
-			type = "range",
-			get = function() return Plater.db.profile.health_animation_time_dilatation end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.health_animation_time_dilatation = value
-				Plater.RefreshDBUpvalues()
-				Plater.DebugHealthAnimation()
-			end,
-			min = 0.35,
-			max = 5,
-			step = 0.1,
-			usedecimals = true,
-			thumbscale = 1.7,
-			name = "Smooth Health Transition Speed",
-			desc = "How fast is the transition animation.",
-		},
-		
-		{type = "blank"},
-		
-		{type = "label", get = function() return "Advanced Nameplate:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-		{
-			type = "range",
-			get = function() return tonumber (GetCVar (CVAR_CEILING)) end,
+			get = function() return tonumber (GetCVar ("nameplateOtherTopInset")) end,
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
 					if (value == 0) then
-						SetCVar (CVAR_CEILING, -1)
+						SetCVar ("nameplateOtherTopInset", -1)
+						SetCVar ("nameplateLargeTopInset", -1)
+						
 					else
-						SetCVar (CVAR_CEILING, value)
+						SetCVar ("nameplateOtherTopInset", value)
+						SetCVar ("nameplateLargeTopInset", value)
 					end
 				else
 					Plater:Msg ("you are in combat.")
@@ -7407,18 +7392,31 @@ local relevance_options = {
 			step = 0.005,
 			thumbscale = 1.7,
 			usedecimals = true,
-			name = "Screen Padding (Top Side)" .. CVarIcon,
+			name = "Lock to Screen (Top Side)" .. CVarIcon,
 			desc = "Min space between the nameplate and the top of the screen. Increase this if some part of the nameplate are going out of the screen.\n\n|cFFFFFFFFDefault: 0.065|r\n\n|cFFFFFF00Important|r: setting to 0 disables this feature." .. CVarDesc,
 			nocombat = true,
 		},
+		
 		{
-			type = "select",
-			get = function() return tonumber (GetCVar ("nameplateOtherAtBase")) end,
-			values = function() return nameplate_anchor_options end,
-			name = "Anchor Point" .. CVarIcon,
-			desc = "Where the nameplate is anchored to.\n\n|cFFFFFFFFDefault: Head|r" .. CVarDesc,
+			type = "range",
+			get = function() return tonumber (GetCVar ("nameplateOverlapV")) end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateOverlapV", value)
+				else
+					Plater:Msg ("you are in combat.")
+				end
+			end,
+			min = 0.2,
+			max = 1.6,
+			step = 0.05,
+			thumbscale = 1.7,
+			usedecimals = true,
+			name = "Nameplate Vertical Distance" .. CVarIcon,
+			desc = "Min distance between each nameplate (when stacking is enabled).\n\n|cFFFFFFFFDefault: 1.10|r" .. CVarDesc .. "\n\n|cFFFFFF00Important|r: if you find issues with this setting, use:\n|cFFFFFFFF/run SetCVar ('nameplateOverlapV', '1.6')|r",
 			nocombat = true,
 		},
+		
 		{
 			type = "range",
 			get = function() return tonumber (GetCVar (CVAR_MOVEMENT_SPEED)) end,
@@ -7440,23 +7438,24 @@ local relevance_options = {
 		},
 		{
 			type = "range",
-			get = function() return tonumber (GetCVar ("nameplateOverlapV")) end,
+			get = function() return tonumber (GetCVar ("nameplateGlobalScale")) end,
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
-					SetCVar ("nameplateOverlapV", value)
+					SetCVar ("nameplateGlobalScale", value)
 				else
 					Plater:Msg ("you are in combat.")
 				end
 			end,
-			min = 0.2,
-			max = 1.6,
-			step = 0.05,
+			min = 0.75,
+			max = 2,
+			step = 0.1,
 			thumbscale = 1.7,
 			usedecimals = true,
-			name = "Nameplate Vertical Padding" .. CVarIcon,
-			desc = "Min distance between each nameplate (when stacking is enabled).\n\n|cFFFFFFFFDefault: 1.10|r" .. CVarDesc .. "\n\n|cFFFFFF00Important|r: if you find issues with this setting, use:\n|cFFFFFFFF/run SetCVar ('nameplateOverlapV', '1.6')|r",
+			name = "Global Scale" .. CVarIcon,
+			desc = "Scale all nameplates.\n\n|cFFFFFFFFDefault: 1|r" .. CVarDesc,
 			nocombat = true,
 		},
+		
 		{
 			type = "range",
 			get = function() return tonumber (GetCVar ("nameplateMinScale")) end,
@@ -7476,46 +7475,180 @@ local relevance_options = {
 			desc = "Scale applied when the nameplate is far away from the camera.\n\n|cFFFFFF00Important|r: is the distance from the camera and |cFFFF4444not|r the distance from your character.\n\n|cFFFFFFFFDefault: 0.8|r" .. CVarDesc,
 			nocombat = true,
 		},
+
 		{
-			type = "range",
-			get = function() return tonumber (GetCVar ("nameplateGlobalScale")) end,
-			set = function (self, fixedparam, value) 
-				if (not InCombatLockdown()) then
-					SetCVar ("nameplateGlobalScale", value)
-				else
-					Plater:Msg ("you are in combat.")
-				end
-			end,
-			min = 0.75,
-			max = 2,
-			step = 0.1,
-			thumbscale = 1.7,
-			usedecimals = true,
-			name = "Global Scale" .. CVarIcon,
-			desc = "Scale all nameplates.\n\n|cFFFFFFFFDefault: 1|r" .. CVarDesc,
-			nocombat = true,
-		},
-		{
-			type = "range",
-			get = function() return tonumber (GetCVar ("nameplateTargetBehindMaxDistance")) end,
-			set = function (self, fixedparam, value) 
-				if (not InCombatLockdown()) then
-					SetCVar ("nameplateTargetBehindMaxDistance", value)
-				else
-					Plater:Msg ("you are in combat.")
-				end
-			end,
-			min = 5,
-			max = 50,
-			step = 1,
-			thumbscale = 1.7,
-			name = "Behind the Camera Distance" .. CVarIcon,
-			desc = "Max distance to allow show the target nameplate when the unit is behind the camera.\n\n|cFFFFFFFFDefault: 15|r" .. CVarDesc,
+			type = "select",
+			get = function() return tonumber (GetCVar ("nameplateOtherAtBase")) end,
+			values = function() return nameplate_anchor_options end,
+			name = "Anchor Point" .. CVarIcon,
+			desc = "Where the nameplate is anchored to.\n\n|cFFFFFFFFDefault: Head|r" .. CVarDesc,
 			nocombat = true,
 		},
 		
+		{type = "blank"},
 		
+		{
+			type = "toggle",
+			get = function() return GetCVar ("nameplateShowEnemyGuardians") == CVAR_ENABLED end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateShowEnemyGuardians", math.abs (tonumber (GetCVar ("nameplateShowEnemyGuardians"))-1))
+				else
+					Plater:Msg ("you are in combat.")
+					self:SetValue (GetCVar ("nameplateShowEnemyGuardians") == CVAR_ENABLED)
+				end
+			end,
+			name = "Show Enemy Guardians" .. CVarIcon,
+			desc = "Show nameplates for enemies pets considered as guardian" .. CVarDesc,
+			nocombat = true,
+		},
 		
+		{
+			type = "toggle",
+			get = function() return GetCVar ("nameplateShowEnemyMinions") == CVAR_ENABLED end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateShowEnemyMinions", math.abs (tonumber (GetCVar ("nameplateShowEnemyMinions"))-1))
+				else
+					Plater:Msg ("you are in combat.")
+					self:SetValue (GetCVar ("nameplateShowEnemyMinions") == CVAR_ENABLED)
+				end
+			end,
+			name = "Show Enemy Minions" .. CVarIcon,
+			desc = "Show nameplates for enemies considered as minions" .. CVarDesc,
+			nocombat = true,
+		},
+		
+		{
+			type = "toggle",
+			get = function() return GetCVar ("nameplateShowEnemyMinus") == CVAR_ENABLED end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateShowEnemyMinus", math.abs (tonumber (GetCVar ("nameplateShowEnemyMinus"))-1))
+				else
+					Plater:Msg ("you are in combat.")
+					self:SetValue (GetCVar ("nameplateShowEnemyMinus") == CVAR_ENABLED)
+				end
+			end,
+			name = "Show Enemy Minor Units" .. CVarIcon,
+			desc = "Show nameplates of small units (usually they are units with max level but low health)" .. CVarDesc,
+			nocombat = true,
+		},
+
+		{
+			type = "toggle",
+			get = function() return GetCVar ("nameplateShowEnemyPets") == CVAR_ENABLED end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateShowEnemyPets", math.abs (tonumber (GetCVar ("nameplateShowEnemyPets"))-1))
+				else
+					Plater:Msg ("you are in combat.")
+					self:SetValue (GetCVar ("nameplateShowEnemyPets") == CVAR_ENABLED)
+				end
+			end,
+			name = "Show Enemy Pets" .. CVarIcon,
+			desc = "Show nameplates for enemy pets" .. CVarDesc,
+			nocombat = true,
+		},
+
+		{
+			type = "toggle",
+			get = function() return GetCVar ("nameplateShowEnemyTotems") == CVAR_ENABLED end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateShowEnemyTotems", math.abs (tonumber (GetCVar ("nameplateShowEnemyTotems"))-1))
+				else
+					Plater:Msg ("you are in combat.")
+					self:SetValue (GetCVar ("nameplateShowEnemyTotems") == CVAR_ENABLED)
+				end
+			end,
+			name = "Show Enemy Totems" .. CVarIcon,
+			desc = "Show enemy totems" .. CVarDesc,
+			nocombat = true,
+		},
+
+		{type = "blank"},
+		
+		{
+			type = "toggle",
+			get = function() return GetCVar ("nameplateShowFriendlyNPCs") == CVAR_ENABLED end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateShowFriendlyNPCs", math.abs (tonumber (GetCVar ("nameplateShowFriendlyNPCs"))-1))
+				else
+					Plater:Msg ("you are in combat.")
+					self:SetValue (GetCVar ("nameplateShowFriendlyNPCs") == CVAR_ENABLED)
+				end
+			end,
+			name = "Show Friendly Npcs" .. CVarIcon,
+			desc = "Show nameplates for friendly npcs" .. CVarDesc,
+			nocombat = true,
+		},
+		
+		{
+			type = "toggle",
+			get = function() return GetCVar ("nameplateShowFriendlyGuardians") == CVAR_ENABLED end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateShowFriendlyGuardians", math.abs (tonumber (GetCVar ("nameplateShowFriendlyGuardians"))-1))
+				else
+					Plater:Msg ("you are in combat.")
+					self:SetValue (GetCVar ("nameplateShowFriendlyGuardians") == CVAR_ENABLED)
+				end
+			end,
+			name = "Show Friendly Guadians" .. CVarIcon,
+			desc = "Show nameplates for friendly pets considered as guardian" .. CVarDesc,
+			nocombat = true,
+		},
+
+		{
+			type = "toggle",
+			get = function() return GetCVar ("nameplateShowFriendlyMinions") == CVAR_ENABLED end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateShowFriendlyMinions", math.abs (tonumber (GetCVar ("nameplateShowFriendlyMinions"))-1))
+				else
+					Plater:Msg ("you are in combat.")
+					self:SetValue (GetCVar ("nameplateShowFriendlyMinions") == CVAR_ENABLED)
+				end
+			end,
+			name = "Show Friendly Minions" .. CVarIcon,
+			desc = "Show nameplates for friendly units considered minions" .. CVarDesc,
+			nocombat = true,
+		},
+
+		{
+			type = "toggle",
+			get = function() return GetCVar ("nameplateShowFriendlyPets") == CVAR_ENABLED end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateShowFriendlyPets", math.abs (tonumber (GetCVar ("nameplateShowFriendlyPets"))-1))
+				else
+					Plater:Msg ("you are in combat.")
+					self:SetValue (GetCVar ("nameplateShowFriendlyPets") == CVAR_ENABLED)
+				end
+			end,
+			name = "Show Friendly Pets" .. CVarIcon,
+			desc = "Show nameplates for friendly pets" .. CVarDesc,
+			nocombat = true,
+		},
+
+		{
+			type = "toggle",
+			get = function() return GetCVar ("nameplateShowFriendlyTotems") == CVAR_ENABLED end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateShowFriendlyTotems", math.abs (tonumber (GetCVar ("nameplateShowFriendlyTotems"))-1))
+				else
+					Plater:Msg ("you are in combat.")
+					self:SetValue (GetCVar ("nameplateShowFriendlyTotems") == CVAR_ENABLED)
+				end
+			end,
+			name = "Show Friendly Totems" .. CVarIcon,
+			desc = "Show enemy totems" .. CVarDesc,
+			nocombat = true,
+		},
+
 		{type = "breakline"},
 	
 		{type = "label", get = function() return "Enemy Box Selection Space:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
@@ -7813,6 +7946,91 @@ local relevance_options = {
 			desc = "Add Extra Glow to Execute Range",
 		},
 		
+		{type = "blank"},
+		{type = "label", get = function() return "Animation Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.use_color_lerp end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.use_color_lerp = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end,
+			name = "Use Smooth Color Transition",
+			desc = "Color changes does a smooth transition between the old and the new color.",
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.color_lerp_speed end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.color_lerp_speed = value
+				Plater.RefreshDBUpvalues()
+				Plater.DebugColorAnimation()
+			end,
+			min = 1,
+			max = 50,
+			step = 1,
+			name = "Smooth Color Transition Speed",
+			desc = "How fast it transition between colors.",
+		},
+		
+		{type = "blank"},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.height_animation end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.height_animation = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end,
+			name = "Use Smooth Height Transition",
+			desc = "Do a smooth animation when the nameplate's height changes.",
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.height_animation_speed end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.height_animation_speed = value
+				Plater.RefreshDBUpvalues()
+			end,
+			min = 1,
+			max = 50,
+			step = 1,
+			name = "Smooth Height Transition Speed",
+			desc = "How fast is the transition animation.",
+		},
+		
+		{type = "blank"},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.use_health_animation end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.use_health_animation = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end,
+			name = "Use Smooth Health Transition",
+			desc = "Do a smooth animation when the nameplate's health value changes.",
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.health_animation_time_dilatation end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.health_animation_time_dilatation = value
+				Plater.RefreshDBUpvalues()
+				Plater.DebugHealthAnimation()
+			end,
+			min = 0.35,
+			max = 5,
+			step = 0.1,
+			usedecimals = true,
+			thumbscale = 1.7,
+			name = "Smooth Health Transition Speed",
+			desc = "How fast is the transition animation.",
+		},		
 		
 		--]=]		
 	}

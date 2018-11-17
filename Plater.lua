@@ -133,6 +133,7 @@ local default_config = {
 				mana = {100, 3},
 				mana_incombat = {100, 3},
 				buff_frame_y_offset = 10,
+				castbar_offset = 0,
 				
 				actorname_text_spacing = 10,
 				actorname_text_size = 10,
@@ -189,6 +190,7 @@ local default_config = {
 				mana = {100, 3},
 				mana_incombat = {100, 3},
 				buff_frame_y_offset = 0,
+				castbar_offset = 0,
 				
 				actorname_text_spacing = 12,
 				actorname_text_size = 12,
@@ -253,6 +255,7 @@ local default_config = {
 				mana = {100, 3},
 				mana_incombat = {100, 3},
 				buff_frame_y_offset = 0,
+				castbar_offset = 0,
 				
 				actorname_text_spacing = 10,
 				actorname_text_size = 10,
@@ -319,6 +322,7 @@ local default_config = {
 				mana = {100, 3},
 				mana_incombat = {100, 3},
 				buff_frame_y_offset = 0,
+				castbar_offset = 0,
 				
 				actorname_text_spacing = 10,
 				actorname_text_size = 11,
@@ -390,6 +394,7 @@ local default_config = {
 				pvp_always_incombat = true,
 				healthbar_color = {0.564706, 0.933333, 0.564706, 1},
 				healthbar_color_by_hp = false,
+				castbar_offset = 0, --not used?
 				
 				actorname_text_spacing = 10,
 				actorname_text_size = 10,
@@ -3974,6 +3979,12 @@ end
 
 --when the default unit frame refreshes the nameplate color, check if is in combat and if can use aggro to refresh the color by aggro
 function Plater.OnHealthColorChange_Hook (unitFrame)
+
+	--if there is not actorType this isn't a plater nameplate
+	if (not unitFrame.ActorType) then
+		return
+	end
+
 	if (unitFrame.isNamePlate and PLAYER_IN_COMBAT and unitFrame.CanCheckAggro) then
 		if (unitFrame:GetParent() [MEMBER_REACTION] <= 4) then
 			if (DB_AGGRO_CHANGE_HEALTHBAR_COLOR) then
@@ -6367,11 +6378,15 @@ local EventTickFunction = function (tickFrame, deltaTime)
 						healthBar.ExecuteGlowDown.ShowAnimation:Play()
 					end
 				end
+				
+				unitFrame.InExecuteRange = true
 			else
 				healthBar.healthCutOff:Hide()
 				healthBar.executeRange:Hide()
 				healthBar.ExecuteGlowUp:Hide()
 				healthBar.ExecuteGlowDown:Hide()
+				
+				unitFrame.InExecuteRange = false
 			end
 		end
 		
@@ -7079,7 +7094,7 @@ function Plater.UpdateTarget (plateFrame)
 			plateFrame.UnitFrame.IsTarget = false
 		end
 		
-		if (DB_TARGET_SHADY_ENABLED and (not DB_TARGET_SHADY_COMBATONLY or PLAYER_IN_COMBAT)) then
+		if (DB_TARGET_SHADY_ENABLED and (not DB_TARGET_SHADY_COMBATONLY or PLAYER_IN_COMBAT) and not plateFrame.isSelf) then
 			plateFrame.Obscured:Show()
 			plateFrame.Obscured:SetAlpha (DB_TARGET_SHADY_ALPHA)
 		else
@@ -8119,8 +8134,8 @@ function Plater.UpdatePlateSize (plateFrame, justAdded)
 		local SizeOf_castBar_Height = plateConfigs [castKey][2]
 		local SizeOf_text = plateConfigs [textKey]
 		local buffFrameSize = Plater.db.profile.aura_height
-		local height_offset = 0
-		
+		local height_offset = plateConfigs.castbar_offset
+
 		--> cast bar
 			local scalarValue = SizeOf_castBar_Width > plateWidth and -((SizeOf_castBar_Width - plateWidth) / 2) or ((plateWidth - SizeOf_castBar_Width) / 2)
 			
@@ -8166,8 +8181,8 @@ function Plater.UpdatePlateSize (plateFrame, justAdded)
 
 			--health
 			healthFrame:ClearAllPoints()
-			healthFrame:SetPoint ("BOTTOMLEFT", castFrame, "TOPLEFT", scalarValue,  1)
-			healthFrame:SetPoint ("BOTTOMRIGHT", castFrame, "TOPRIGHT", -scalarValue,  1)
+			healthFrame:SetPoint ("BOTTOMLEFT", castFrame, "TOPLEFT", scalarValue,  1 - height_offset)
+			healthFrame:SetPoint ("BOTTOMRIGHT", castFrame, "TOPRIGHT", -scalarValue,  1 - height_offset)
 			
 			local targetHeight = SizeOf_healthBar_Height
 			if (unitType == "pet") then
@@ -8516,6 +8531,7 @@ function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate, justAdded)
 	local nameFrame = unitFrame.healthBar.actorName
 	
 	plateFrame.actorType = actorType
+	unitFrame.ActorType = actorType --exposed to scripts
 	plateFrame.order = order
 	
 	local shouldForceRefresh = false
@@ -9567,7 +9583,10 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ã
 
 	--clear values
 	plateFrame.CurrentUnitNameString = plateFrame.actorName
+	
 	plateFrame.isSelf = nil
+	unitFrame.IsSelf = nil --value exposed to scripts
+	
 	plateFrame.PlayerCannotAttack = nil
 	plateFrame.playerGuildName = nil
 	plateFrame [MEMBER_NOCOMBAT] = nil
@@ -9576,6 +9595,8 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ã
 	plateFrame [MEMBER_NPCID] = nil
 	unitFrame [MEMBER_TARGET] = nil
 	unitFrame [MEMBER_NPCID] = nil
+
+	unitFrame.InExecuteRange = false
 	
 	--check if this nameplate has an update scheduled
 	if (plateFrame.HasUpdateScheduled) then
@@ -9635,6 +9656,7 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ã
 	if (unitFrame.unit) then
 		if (UnitIsUnit (unitBarId, "player")) then
 			plateFrame.isSelf = true
+			unitFrame.IsSelf = true --this is the value exposed to scripts
 			actorType = ACTORTYPE_PLAYER
 			plateFrame.NameAnchor = 0
 			plateFrame.PlateConfig = DB_PLATE_CONFIG.player

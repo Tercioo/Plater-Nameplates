@@ -129,6 +129,7 @@ Plater.NameplateComponents = {
 		"namePlateIsTarget",
 		"namePlateThreatPercent",
 		"PlayerCannotAttack",
+		"InExecuteRange",
 	},
 	
 	["unitFrame - Frames"] = {
