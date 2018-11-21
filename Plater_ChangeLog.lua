@@ -7,6 +7,9 @@ local _
 function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
+			{1542811859, "Scripting", "November 21, 2018", "Added hook script 'Target Color' (disabled by default), change the color of your current target."},
+			{1542811859, "Scripting", "November 21, 2018", "Added hook script 'Players Targeting a Target' (disabled by default), show the amount of players currently targeting a unit."},
+			{1542811859, "Level Text", "November 21, 2018", "Fixed level text always showing the level of the unit as 120."},
 			{1542475895, "Target Shading", "November 17, 2018", "Target Shading won't apply it's effect in the Personal Bar."},
 			{1542475895, "Console Variables", "November 17, 2018", "Renamed some options and added several options for CVars in the advanced tab."},
 			{1542475895, "Auras", "November 17, 2018", "When using aura grow direction to left or right, auras will grow in a second line if the total size of the icons passes the size of the nameplate."},

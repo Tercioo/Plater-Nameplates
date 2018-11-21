@@ -7741,7 +7741,7 @@ local relevance_options = {
 				Plater.RefreshColorOverride()
 			end,
 			name = "Override Default Colors",
-			desc = "Override Default Colors",
+			desc = "Override Default Colors.\n\n|cFFFFFF00Important|r: this override colors when out of combat, in combat Plater uses the colors from the Aggro/Threat tab.",
 		},
 		
 		{

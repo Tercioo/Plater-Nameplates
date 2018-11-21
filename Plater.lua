@@ -2430,6 +2430,7 @@ Plater.HookScripts = {
 	"Raid Target",
 	"Enter Combat",
 	"Leave Combat",
+	"Player Power Update",
 }
 
 --|cFFFFFF22 |r
@@ -2448,6 +2449,8 @@ Plater.HookScriptsDesc = {
 	["Raid Target"] = "A raid target mark has added, modified or removed (skull, cross, etc).\n\n|cFF44FF44Run on all nameplates shown in the screen|r.",
 	["Enter Combat"] = "Executed shortly after the player enter combat.\n\n|cFF44FF44Run on all nameplates shown in the screen|r.",
 	["Leave Combat"] = "Executed shortly after the player leave combat.\n\n|cFF44FF44Run on all nameplates shown in the screen|r.",
+	
+	["Player Power Update"] = "Run when the player power, such as combo points, gets an update.\n\n|cFF44FF44Run only on the nameplate of your current target|r.",
 }
 
 --const
@@ -2905,6 +2908,7 @@ local HOOK_RAID_TARGET = {ScriptAmount = 0}
 local HOOK_COMBAT_ENTER = {ScriptAmount = 0}
 local HOOK_COMBAT_LEAVE = {ScriptAmount = 0}
 local HOOK_NAMEPLATE_CONSTRUCTOR = {ScriptAmount = 0}
+local HOOK_PLAYER_POWER_UPDATE = {ScriptAmount = 0}
 
 local SPECIAL_AURA_NAMES = {}
 local SPECIAL_AURA_NAMES_MINE = {}
@@ -2924,7 +2928,7 @@ Plater.ScriptMetaFunctions = {
 	end,
 	
 	--get the table which stores the information for a single script
-	ScriptGetInfo = function (self, globalScriptObject, widgetScriptContainer)
+	ScriptGetInfo = function (self, globalScriptObject, widgetScriptContainer, isHookScript)
 		widgetScriptContainer = widgetScriptContainer or self:GetScriptContainer()
 		
 		--using the memory address of the original scriptObject from db.profile as the map key
@@ -2936,7 +2940,7 @@ Plater.ScriptMetaFunctions = {
 				Env = {}, 
 				IsActive = false
 			}
-			
+
 			if (globalScriptObject.HasConstructor and not scriptInfo.Initialized) then
 				local okay, errortext = pcall (globalScriptObject.Constructor, self, self.displayedUnit or self.unit or self:GetParent()[MEMBER_UNITID], self, scriptInfo.Env)
 				if (not okay) then
@@ -3056,7 +3060,7 @@ Plater.ScriptMetaFunctions = {
 					local globalScriptObject = HOOK_CAST_STOP [i]
 					local unitFrame = self:GetParent()
 					local scriptContainer = unitFrame:ScriptGetContainer()
-					local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer)
+					local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Cast Stop")
 					--run
 					unitFrame:ScriptRunHook (scriptInfo, "Cast Stop", self)
 				end
@@ -3128,7 +3132,7 @@ end
 
 Plater.CoreVersion = 1
 
-function Plater.WipeAndRecompileAllScripts (scriptType)
+function Plater.WipeAndRecompileAllScripts (scriptType, noHotReload)
 	if (scriptType == "script") then
 		table.wipe (SCRIPT_AURA)
 		table.wipe (SCRIPT_CASTBAR)
@@ -3136,7 +3140,7 @@ function Plater.WipeAndRecompileAllScripts (scriptType)
 		Plater.CompileAllScripts (scriptType)
 		
 	elseif (scriptType == "hook") then
-		Plater.WipeHookContainers()
+		Plater.WipeHookContainers (noHotReload)
 		Plater.CompileAllScripts (scriptType)
 	end
 end
@@ -3154,12 +3158,15 @@ Plater.AllHookGlobalContainers = {
 	HOOK_COMBAT_ENTER,
 	HOOK_COMBAT_LEAVE,
 	HOOK_NAMEPLATE_CONSTRUCTOR,
+	HOOK_PLAYER_POWER_UPDATE,
 }
 
-function Plater.WipeHookContainers()
+function Plater.WipeHookContainers (noHotReload)
 	for _, container in ipairs (Plater.AllHookGlobalContainers) do
-		for _, globalScriptObject in ipairs (container) do
-			globalScriptObject.NeedHotReload = true
+		if (not noHotReload) then
+			for _, globalScriptObject in ipairs (container) do
+				globalScriptObject.NeedHotReload = true
+			end
 		end
 		table.wipe (container)
 		container.ScriptAmount = 0
@@ -3191,6 +3198,8 @@ function Plater.GetContainerForHook (hookName)
 		return HOOK_COMBAT_ENTER
 	elseif (hookName == "Leave Combat") then
 		return HOOK_COMBAT_LEAVE
+	elseif (hookName == "Player Power Update") then
+		return HOOK_PLAYER_POWER_UPDATE
 	else
 		Plater:Msg ("Unknown hook: " .. (hookName or "Invalid Hook Name"))
 	end
@@ -4361,7 +4370,7 @@ function Plater.OnInit()
 	
 	function Plater.HookLoadCallback (encounterID)
 		Plater.EncounterID = encounterID
-		Plater.WipeAndRecompileAllScripts ("hook")
+		Plater.WipeAndRecompileAllScripts ("hook", true) --sending true to not dispatch a hotReload in the scripts
 	end
 	DF:CreateLoadFilterParser (Plater.HookLoadCallback)
 	
@@ -4428,7 +4437,29 @@ function Plater.OnInit()
 	Plater:RegisterEvent ("ENCOUNTER_START")
 	Plater:RegisterEvent ("ENCOUNTER_END")
 	Plater:RegisterEvent ("CHALLENGE_MODE_START")
+	
+	local eventFrame = CreateFrame ("frame")
+	
+	eventFrame:RegisterUnitEvent ("UNIT_DISPLAYPOWER", "player")
+	eventFrame:RegisterUnitEvent ("UNIT_POWER_FREQUENT", "player")
+	eventFrame:RegisterUnitEvent ("UNIT_MAXPOWER", "player")
 
+	eventFrame:SetScript ("OnEvent", function()
+		if (HOOK_PLAYER_POWER_UPDATE.ScriptAmount > 0) then
+			local plateFrame = C_NamePlate.GetNamePlateForUnit ("target", issecure())
+			if (plateFrame) then
+				for i = 1, HOOK_PLAYER_POWER_UPDATE.ScriptAmount do
+					local globalScriptObject = HOOK_PLAYER_POWER_UPDATE [i]
+					local unitFrame = plateFrame.UnitFrame
+					local scriptContainer = unitFrame:ScriptGetContainer()
+					local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Player Power Update")
+					--run
+					unitFrame:ScriptRunHook (scriptInfo, "Player Power Update")
+				end
+			end
+		end
+	end)
+	
 	function Plater.RunScheduledUpdate (timerObject)
 		local plateFrame = timerObject.plateFrame
 		local unitGUID = timerObject.GUID
@@ -5052,7 +5083,7 @@ function Plater.OnInit()
 						local globalScriptObject = HOOK_CAST_START [i]
 						local unitFrame = self:GetParent()
 						local scriptContainer = unitFrame:ScriptGetContainer()
-						local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer)
+						local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Cast Start")
 						--update envTable
 						local scriptEnv = scriptInfo.Env
 						scriptEnv._SpellID = self.SpellID
@@ -5162,7 +5193,7 @@ function Plater.OnInit()
 						local globalScriptObject = HOOK_CAST_UPDATE [i]
 						local unitFrame = self:GetParent()
 						local scriptContainer = unitFrame:ScriptGetContainer()
-						local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer)
+						local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Cast Update")
 						
 						--update envTable
 						local scriptEnv = scriptInfo.Env
@@ -6460,7 +6491,7 @@ local EventTickFunction = function (tickFrame, deltaTime)
 			for i = 1, HOOK_NAMEPLATE_UPDATED.ScriptAmount do
 				local globalScriptObject = HOOK_NAMEPLATE_UPDATED [i]
 				local scriptContainer = unitFrame:ScriptGetContainer()
-				local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer)
+				local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Nameplate Updated")
 				
 				local scriptEnv = scriptInfo.Env
 				scriptEnv._HealthPercent = healthBar.CurrentHealth / healthBar.CurrentHealthMax * 100
@@ -6730,7 +6761,7 @@ function Plater.ScheduleHookForCombat (timerObject)
 					local globalScriptObject = HOOK_COMBAT_ENTER [i]
 					local unitFrame = plateFrame.UnitFrame
 					local scriptContainer = unitFrame:ScriptGetContainer()
-					local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer)
+					local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Enter Combat")
 					--run
 					unitFrame:ScriptRunHook (scriptInfo, "Enter Combat")
 				end
@@ -6744,7 +6775,7 @@ function Plater.ScheduleHookForCombat (timerObject)
 					local globalScriptObject = HOOK_COMBAT_LEAVE [i]
 					local unitFrame = plateFrame.UnitFrame
 					local scriptContainer = unitFrame:ScriptGetContainer()
-					local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer)
+					local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Leave Combat")
 					--run
 					unitFrame:ScriptRunHook (scriptInfo, "Leave Combat")
 				end
@@ -7034,7 +7065,7 @@ function Plater.OnPlayerTargetChanged()
 				local globalScriptObject = HOOK_TARGET_CHANGED [i]
 				local unitFrame = plateFrame.UnitFrame
 				local scriptContainer = unitFrame:ScriptGetContainer()
-				local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer)
+				local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Target Changed")
 				--run
 				unitFrame:ScriptRunHook (scriptInfo, "Target Changed")
 			end
@@ -7332,18 +7363,28 @@ local get_level_color = function (unitId, unitLevel)
 	return default_level_color
 end
 
-function Plater.UpdateLevelTextAndColor (plateFrame, unitId)
+--only update the level text
+function Plater.UpdateLevelText (levelString, unitId)
 	local level = UnitLevel (unitId)
 	if (not level) then
-		plateFrame:SetText ("")
+		levelString:SetText ("")
 	elseif (level == -1) then
-		plateFrame:SetText ("??")
+		levelString:SetText ("??")
 	else
-		plateFrame:SetText (level)
+		levelString:SetText (level)
 	end
-	
+end
+
+function Plater.UpdateLevelColor (levelString, unitId)
+	local level = UnitLevel (unitId)
 	local color = get_level_color (unitId, level)
-	plateFrame:SetTextColor (color.r, color.g, color.b)
+	levelString:SetTextColor (color.r, color.g, color.b)
+end
+
+--updates the level text and the color
+function Plater.UpdateLevelTextAndColor (levelString, unitId)
+	Plater.UpdateLevelText (levelString, unitId)
+	Plater.UpdateLevelColor (levelString, unitId)
 end
 
 local anchor_functions = {
@@ -7777,6 +7818,8 @@ function Plater.UpdatePlateText (plateFrame, plateConfigs, needReset)
 			Plater.SetAnchor (levelString, plateConfigs.level_text_anchor)
 			Plater.UpdateLevelTextAndColor (levelString, plateFrame.namePlateUnitToken)
 			levelString:SetAlpha (plateConfigs.level_text_alpha)
+		else
+			Plater.UpdateLevelText (levelString, plateFrame.namePlateUnitToken)
 		end
 	else
 		levelString:Hide()
@@ -7906,7 +7949,7 @@ function Plater.UpdateRaidMarkersOnAllNameplates()
 				local globalScriptObject = HOOK_RAID_TARGET [i]
 				local unitFrame = plateFrame.UnitFrame
 				local scriptContainer = unitFrame:ScriptGetContainer()
-				local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer)
+				local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Raid Target")
 				--run
 				unitFrame:ScriptRunHook (scriptInfo, "Raid Target")
 			end
@@ -8277,6 +8320,46 @@ function Plater.ForceChangeHealthBarColor (healthBar, r, g, b, forceNoLerp)
 	--end
 end
 
+--do several checkes to determine which are the color of this nameplate
+function Plater.FormatNameplateColor (unitFrame)
+	local r, g, b
+	local unitID = unitFrame.unit
+	
+	if (unitFrame.isSelf) then
+		return
+		
+	elseif (not UnitIsConnected (unitID)) then
+		r, g, b = 0.5, 0.5, 0.5
+	else
+		if (Plater.CanOverrideColor) then
+			Plater.ColorOverrider (unitFrame)
+			return
+		else
+			--check if is a player
+			if (unitFrame.ActorType == ACTORTYPE_FRIENDLY_PLAYER or unitFrame.ActorType == ACTORTYPE_ENEMY_PLAYER) then
+				local _, class = UnitClass (unitID)
+				local classColor = RAID_CLASS_COLORS [class]
+				if (classColor and unitFrame.optionTable.useClassColors) then
+					r, g, b = classColor.r, classColor.g, classColor.b
+				end
+				
+			--check if is tapped
+			elseif (IsTapDenied (unitID)) then
+				r, g, b = unpack (Plater.db.profile.tap_denied_color)
+
+			else
+				--get the color from the client
+				r, g, b = UnitSelectionColor (unitID)
+			end
+		end
+	end
+	
+	local healthBar = unitFrame.healthBar
+	if (r ~= healthBar.R or g ~= healthBar.G or b ~= healthBar.B) then
+		Plater.ForceChangeHealthBarColor (healthBar, r, g, b, true)
+	end
+end
+
 --[=[
 v7.3.5.072
 function Plater.ForceChangeHealthBarColor (healthBar, r, g, b)
@@ -8409,13 +8492,13 @@ function Plater.RefreshNameplateColor (unitFrame)
 			Plater.ForceChangeHealthBarColor (unitFrame.healthBar, unpack (Plater.db.profile.tap_denied_color))
 		else
 			if (InCombatLockdown()) then
-				if (unitFrame:GetParent() [MEMBER_REACTION] <= 4) then
+				if (unitFrame:GetParent() [MEMBER_REACTION] <= 4 and DB_AGGRO_CHANGE_HEALTHBAR_COLOR) then
 					Plater.UpdateNameplateThread (unitFrame)
 				else
-					CompactUnitFrame_UpdateHealthColor (unitFrame)
+					Plater.FormatNameplateColor (unitFrame)
 				end
 			else
-				CompactUnitFrame_UpdateHealthColor (unitFrame)
+				Plater.FormatNameplateColor (unitFrame)
 			end
 		end
 	end
@@ -9549,7 +9632,7 @@ Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame) -- ~created ~
 		for i = 1, HOOK_NAMEPLATE_CREATED.ScriptAmount do
 			local globalScriptObject = HOOK_NAMEPLATE_CREATED [i]
 			local scriptContainer = plateFrame.UnitFrame:ScriptGetContainer()
-			local scriptInfo = plateFrame.UnitFrame:ScriptGetInfo (globalScriptObject, scriptContainer)
+			local scriptInfo = plateFrame.UnitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Nameplate Created")
 	
 			--run
 			plateFrame.UnitFrame:ScriptRunHook (scriptInfo, "Nameplate Created")
@@ -9753,7 +9836,7 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ã
 		for i = 1, HOOK_NAMEPLATE_ADDED.ScriptAmount do
 			local globalScriptObject = HOOK_NAMEPLATE_ADDED [i]
 			local scriptContainer = unitFrame:ScriptGetContainer()
-			local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer)
+			local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Nameplate Added")
 			--run
 			unitFrame:ScriptRunHook (scriptInfo, "Nameplate Added")
 		end
@@ -9791,7 +9874,7 @@ Plater ["NAME_PLATE_UNIT_REMOVED"] = function (self, event, unitBarId)
 			local globalScriptObject = HOOK_NAMEPLATE_REMOVED [i]
 			local unitFrame = plateFrame.UnitFrame
 			local scriptContainer = unitFrame:ScriptGetContainer()
-			local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer)
+			local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Nameplate Removed")
 			--run
 			plateFrame.UnitFrame:ScriptRunHook (scriptInfo, "Nameplate Removed")
 		end
