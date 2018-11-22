@@ -4276,10 +4276,12 @@ function Plater.RefreshDBLists()
 		end
 	end
 	
-	for index, spellId in ipairs (profile.extra_icon_auras_mine) do
-		local spellName = GetSpellInfo (spellId)
-		if (spellName) then
-			SPECIAL_AURA_NAMES_MINE [spellName] = true
+	for spellId, state in pairs (profile.extra_icon_auras_mine) do
+		if (state) then
+			local spellName = GetSpellInfo (spellId)
+			if (spellName) then
+				SPECIAL_AURA_NAMES_MINE [spellName] = true
+			end
 		end
 	end
 	
@@ -6191,6 +6193,7 @@ function Plater.UpdateAuras_Automatic (self, unit)
 				end
 				
 				--> is a special aura?
+				--Details:DumpTable (SPECIAL_AURA_NAMES_MINE)
 				if (not SPECIAL_AURA_NAMES_MINE [name] or (caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
 					if (SPECIAL_AURA_NAMES [name] or DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge) then
 						Plater.AddExtraIcon (self, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)

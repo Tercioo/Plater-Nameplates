@@ -1893,6 +1893,7 @@ Plater.CreateAuraTesting()
 		
 		local on_toggle_mine = function (self, spellID, state)
 			Plater.db.profile.extra_icon_auras_mine [spellID] = state
+			Plater.RefreshDBLists()
 		end
 		
 		local scroll_createline = function (self, index)
