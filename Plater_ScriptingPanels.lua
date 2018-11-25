@@ -29,6 +29,7 @@ local edit_script_size = {620, 431}
 
 local scrollbox_size = {200, 405}
 local scrollbox_lines = 13
+local hook_scrollbox_lines = 14
 local scrollbox_line_height = 30
 
 local triggerbox_size = {180, 288}
@@ -79,7 +80,7 @@ Plater.FrameworkList = {
 	{Name = "SetFontFace",		 	Signature = "Plater:SetFontFace (fontString, fontFace)",						Desc = "Set the font of a text."},
 	{Name = "SetFontColor",		 	Signature = "Plater:SetFontColor (fontString, r, g, b, a)",						Desc = "Set the color of a text.\n\nColor formats are:\n|cFFFFFF00Just Values|r: r, g, b, a\n|cFFFFFF00Index Table|r: {r, g, b}\n|cFFFFFF00Hash Table|r: {r = 1, g = 1, b = 1}\n|cFFFFFF00Hex|r: '#FFFF0000' or '#FF0000'\n|cFFFFFF00Name|r: 'yellow' 'white'"},
 	
-	{Name = "CreateAnimationHub",		Signature = "Plater:CreateAnimationHub (parent, onShowFunc, onHideFunc)",		Desc = "Creates an object to hold animations, see 'CreateAnimation' to add animations to the hub. When ReturnedValue:Play() is called all animations in the hub start playing respecting the Order set in the CreateAnimation().\n\nUse onShowFunc and onHideFunc to show or hide custom frames, textures or text.\n\nMethods:\n|cFFFFFF00ReturnedValue:Play()|r plays all animations in the hub.\n|cFFFFFF00ReturnedValue:Stop()|r: stop all animations in the hub.", AddVar = true, AddCall = "--@ENV@:Play() --@ENV@:Stop()"},
+	{Name = "CreateAnimationHub",		Signature = "Plater:CreateAnimationHub (parent, onPlayFunc, onStopFunc)",		Desc = "Creates an object to hold animations, see 'CreateAnimation' to add animations to the hub. When ReturnedValue:Play() is called all animations in the hub start playing respecting the Order set in the CreateAnimation().\n\nUse onShowFunc and onHideFunc to show or hide custom frames, textures or text.\n\nMethods:\n|cFFFFFF00ReturnedValue:Play()|r plays all animations in the hub.\n|cFFFFFF00ReturnedValue:Stop()|r: stop all animations in the hub.", AddVar = true, AddCall = "--@ENV@:Play() --@ENV@:Stop()"},
 	{Name = "CreateAnimation",			Signature = "Plater:CreateAnimation (animationHub, animationType, order, duration, |cFFCCCCCCarg1|r, |cFFCCCCCCarg2|r, |cFFCCCCCCarg3|r, |cFFCCCCCCarg4|r)",	Desc = "Creates an animation within an animation hub.\n\nOrder: integer between 1 and 10, lower play first. Animations with the same Order play at the same time.\n\nDuration: how much time this animation takes to complete.\n\nAnimation Types:\n|cFFFFFF00\"Alpha\"|r:\n|cFFCCCCCCarg1|r: Alpha Start Value, |cFFCCCCCCarg2|r: Alpha End Value.\n\n|cFFFFFF00\"Scale\"|r:\n|cFFCCCCCCarg1|r: X Start, |cFFCCCCCCarg2|r: Y Start, |cFFCCCCCCarg3|r: X End, |cFFCCCCCCarg4|r: Y End.\n\n|cFFFFFF00\"Rotation\"|r:\n |cFFCCCCCCarg1|r: Rotation Degrees.\n\n|cFFFFFF00\"Translation\"|r:\n |cFFCCCCCCarg1|r: X Offset, |cFFCCCCCCarg2|r: Y Offset."},
 	
 	{Name = "CreateIconGlow",			Signature = "Plater.CreateIconGlow (self)",						Desc = "Creates a glow effect around an icon.\n\nUse:\n|cFFFFFF00ReturnedValue:Show()|r on OnShow.\n|cFFFFFF00ReturnedValue:Hide()|r on OnHide.\n|cFFFFFF00ReturnedValue:SetColor(dotColor, glowColor)|r to adjust the color.", AddVar = true, AddCall = "--@ENV@:Show() --@ENV@:Hide()"},
@@ -400,7 +401,7 @@ Plater.TriggerDefaultMembers = {
 		if (scriptObject) then
 			scriptObject.Enabled = value
 			if (not value) then
-				Plater.WipeAndRecompileAllScripts (mainFrame.ScriptType) --TODO added the if conditions need to make the logic
+				Plater.WipeAndRecompileAllScripts (mainFrame.ScriptType)
 			else
 				if (mainFrame.ScriptType == "script") then
 					Plater.CompileScript (scriptObject)
@@ -986,19 +987,33 @@ function Plater.CreateHookingPanel()
 		hookFrame.ScriptDescTextEntry:ClearFocus()
 		
 		--transfer code from temp table to hook table
+		--check if has any script changes before wipe and recompile all scripts
+		
+		local haveChanges = false
+		
 		for hookName, _ in pairs (scriptObject.Hooks) do
+			if (scriptObject.Hooks [hookName] ~= scriptObject.HooksTemp [hookName]) then
+				haveChanges = true
+			end
 			scriptObject.Hooks [hookName] = scriptObject.HooksTemp [hookName]
 		end
 
 		--save the current code for the hook being edited now
 		if (scriptObject.LastHookEdited ~= "" and scriptObject.Hooks [scriptObject.LastHookEdited]) then
 			local currentCode = hookFrame.CodeEditorLuaEntry:GetText()
+			
+			if (scriptObject.Hooks [scriptObject.LastHookEdited] ~= currentCode) then
+				haveChanges = true
+			end
+			
 			scriptObject.Hooks [scriptObject.LastHookEdited] = currentCode
 			scriptObject.HooksTemp [scriptObject.LastHookEdited] = currentCode
 		end
 		
 		--do a hot reload on the script
-		hookFrame.ApplyScript()
+		if (haveChanges) then
+			hookFrame.ApplyScript()
+		end
 		
 		--refresh all nameplates shown in the screen
 		Plater.FullRefreshAllPlates()
@@ -1569,7 +1584,7 @@ function Plater.CreateHookingPanel()
 		for i = 1, totalLines do
 			local index = i + offset
 
-			local hook = hookList [i]
+			local hook = hookList [index]
 			if (hook) then
 				local line = self:GetLine (i)
 				line:UpdateLine (index, hook)
@@ -1632,7 +1647,7 @@ function Plater.CreateHookingPanel()
 	
 	--scroll showing all triggers of the script
 	local hookLabel = DF:CreateLabel (edit_script_frame, "Add Hooks:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
-	local hookScrollbox = DF:CreateScrollBox (edit_script_frame, "$parentHookScrollBox", refreshHookScrollBox, {}, triggerbox_size[1], triggerbox_size[2]+75, scrollbox_lines, triggerbox_line_height)
+	local hookScrollbox = DF:CreateScrollBox (edit_script_frame, "$parentHookScrollBox", refreshHookScrollBox, Plater.HookScripts, triggerbox_size[1], triggerbox_size[2]+75, hook_scrollbox_lines, triggerbox_line_height)
 	hookScrollbox:SetPoint ("topleft", hookLabel.widget, "bottomleft", 0, -4)
 	hookScrollbox:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
 	hookScrollbox:SetBackdropColor (0, 0, 0, 0.2)
@@ -1641,7 +1656,7 @@ function Plater.CreateHookingPanel()
 	DF:ReskinSlider (hookScrollbox)
 	
 	--create the scrollbox lines
-	for i = 1, scrollbox_lines do 
+	for i = 1, hook_scrollbox_lines do 
 		hookScrollbox:CreateLine (hookListCreateLine)
 	end
 	

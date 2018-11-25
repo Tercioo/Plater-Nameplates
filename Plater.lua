@@ -2419,6 +2419,7 @@ Plater.CodeTypeNames = {
 --this file are using this names at will to reduce overhead and amount of local variables
 Plater.HookScripts = {
 	"Constructor",
+	"Destructor",
 	"Nameplate Created",
 	"Nameplate Added",
 	"Nameplate Removed",
@@ -2431,11 +2432,13 @@ Plater.HookScripts = {
 	"Enter Combat",
 	"Leave Combat",
 	"Player Power Update",
+	"Player Talent Update",
 }
 
 --|cFFFFFF22 |r
 Plater.HookScriptsDesc = {
 	["Constructor"] = "Executed once when the nameplate run the hook for the first time.\n\nUse to initialize configs in the environment.\n\nAlways receive unitFrame in 'self' parameter.",
+	["Destructor"] = "Run when the hook is Disabled or unloaded due to Load Conditions.\n\nUse to hide all frames created.\n\n|cFF44FF44Run on all nameplates shown in the screen|r.",
 	["Nameplate Created"] = "Executed when a nameplate is created.\n\nRequires a |cFFFFFF22/reload|r after changing the code.",
 	["Nameplate Added"] = "Run after a nameplate is added to the screen.",
 	["Nameplate Removed"] = "Run when the nameplate is removed from the screen.",
@@ -2451,6 +2454,7 @@ Plater.HookScriptsDesc = {
 	["Leave Combat"] = "Executed shortly after the player leave combat.\n\n|cFF44FF44Run on all nameplates shown in the screen|r.",
 	
 	["Player Power Update"] = "Run when the player power, such as combo points, gets an update.\n\n|cFF44FF44Run only on the nameplate of your current target|r.",
+	["Player Talent Update"] = "When the player changes a talent or specialization.\n\n|cFF44FF44Run on all nameplates shown in the screen|r.",
 }
 
 --const
@@ -2909,6 +2913,7 @@ local HOOK_COMBAT_ENTER = {ScriptAmount = 0}
 local HOOK_COMBAT_LEAVE = {ScriptAmount = 0}
 local HOOK_NAMEPLATE_CONSTRUCTOR = {ScriptAmount = 0}
 local HOOK_PLAYER_POWER_UPDATE = {ScriptAmount = 0}
+local HOOK_PLAYER_TALENT_UPDATE = {ScriptAmount = 0}
 
 local SPECIAL_AURA_NAMES = {}
 local SPECIAL_AURA_NAMES_MINE = {}
@@ -2934,6 +2939,9 @@ Plater.ScriptMetaFunctions = {
 		--using the memory address of the original scriptObject from db.profile as the map key
 		local scriptInfo = widgetScriptContainer [globalScriptObject.DBScriptObject]
 		if (not scriptInfo or scriptInfo.GlobalScriptObject.NeedHotReload) then
+		
+			local forceHotReload = scriptInfo and scriptInfo.GlobalScriptObject.NeedHotReload
+		
 			scriptInfo = {
 				GlobalScriptObject = globalScriptObject, 
 				HotReload = -1, 
@@ -2941,7 +2949,7 @@ Plater.ScriptMetaFunctions = {
 				IsActive = false
 			}
 
-			if (globalScriptObject.HasConstructor and not scriptInfo.Initialized) then
+			if (globalScriptObject.HasConstructor and (not scriptInfo.Initialized or (isHookScript and forceHotReload))) then
 				local okay, errortext = pcall (globalScriptObject.Constructor, self, self.displayedUnit or self.unit or self:GetParent()[MEMBER_UNITID], self, scriptInfo.Env)
 				if (not okay) then
 					Plater:Msg ("Script |cFFAAAA22" .. scriptInfo.GlobalScriptObject.DBScriptObject.Name .. "|r Constructor error: " .. errortext)
@@ -3119,9 +3127,7 @@ function Plater.CompileAllScripts (scriptType)
 		end
 	elseif (scriptType == "hook") then
 		for scriptId, scriptObject in ipairs (Plater.GetAllScripts ("hook")) do
-			if (scriptObject.Enabled) then
-				Plater.CompileHook (scriptObject)
-			end
+			Plater.CompileHook (scriptObject)
 		end
 	end
 end
@@ -3159,6 +3165,7 @@ Plater.AllHookGlobalContainers = {
 	HOOK_COMBAT_LEAVE,
 	HOOK_NAMEPLATE_CONSTRUCTOR,
 	HOOK_PLAYER_POWER_UPDATE,
+	HOOK_PLAYER_TALENT_UPDATE,
 }
 
 function Plater.WipeHookContainers (noHotReload)
@@ -3175,7 +3182,7 @@ end
 
 function Plater.GetContainerForHook (hookName)
 	if (hookName == "Constructor") then
-		return HOOK_NAMEPLATE_CONSTRUCTOR
+		return HOOK_NAMEPLATE_CONSTRUCTOR	
 	elseif (hookName == "Nameplate Created") then
 		return HOOK_NAMEPLATE_CREATED
 	elseif (hookName == "Nameplate Added") then
@@ -3199,9 +3206,47 @@ function Plater.GetContainerForHook (hookName)
 	elseif (hookName == "Leave Combat") then
 		return HOOK_COMBAT_LEAVE
 	elseif (hookName == "Player Power Update") then
-		return HOOK_PLAYER_POWER_UPDATE
+		return HOOK_PLAYER_POWER_UPDATE	
+	elseif (hookName == "Player Talent Update") then
+		return HOOK_PLAYER_TALENT_UPDATE
 	else
 		Plater:Msg ("Unknown hook: " .. (hookName or "Invalid Hook Name"))
+	end
+end
+
+--store the names of hooks that passed the filters
+Plater.CurrentlyLoadedHooks = {}
+--store global objects of hooks with destructors, key is the script object, value is the global object
+Plater.DestructorScriptHooks = {}
+
+function Plater.RunDestructorForHook (scriptObject)
+	--check if the script has a destructor script
+	if (scriptObject.Hooks ["Destructor"]) then
+		--load and compile the destructor code
+		
+		local compiledScript, errortext = loadstring ("return " .. scriptObject.Hooks ["Destructor"], "Destructor for " .. scriptObject.Name)
+		if (not compiledScript) then
+			Plater:Msg ("failed to compile destructor for script " .. scriptObject.Name .. ": " .. errortext)
+		else
+			--store the function to execute
+			local func = compiledScript()
+			
+			--iterate among all nameplates
+			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+				if (plateFrame) then
+					
+					local globalScriptObject = Plater.DestructorScriptHooks [scriptObject]
+					local unitFrame = plateFrame.UnitFrame
+					local scriptContainer = unitFrame:ScriptGetContainer()
+					local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Destructor")
+
+					local okay, errortext = pcall (func, unitFrame, unitFrame.displayedUnit, unitFrame, scriptInfo.Env)
+					if (not okay) then
+						Plater:Msg ("Hook |cFFAAAA22" .. scriptInfo.GlobalScriptObject.DBScriptObject.Name .. "|r " .. scriptObject.Name .. " error: " .. errortext)
+					end
+				end
+			end
+		end		
 	end
 end
 
@@ -3211,13 +3256,26 @@ function Plater.CompileHook (scriptObject)
 	--check if the script is valid and if is enabled
 	if (not scriptObject) then
 		return
+		
 	elseif (not scriptObject.Enabled) then
+		--check if this hook is currently loaded
+		if (Plater.CurrentlyLoadedHooks [scriptObject]) then
+			Plater.CurrentlyLoadedHooks [scriptObject] = false
+			Plater.RunDestructorForHook (scriptObject)
+		end
 		return
 	end
 	
 	--check if can load this hook
 	if (not DF:PassLoadFilters (scriptObject.LoadConditions, Plater.EncounterID)) then
+		--check if this hook is currently loaded
+		if (Plater.CurrentlyLoadedHooks [scriptObject]) then
+			Plater.CurrentlyLoadedHooks [scriptObject] = false
+			Plater.RunDestructorForHook (scriptObject)
+		end
 		return
+	else
+		Plater.CurrentlyLoadedHooks [scriptObject] = true
 	end
 	
 	--store the scripts to be compiled
@@ -3236,20 +3294,24 @@ function Plater.CompileHook (scriptObject)
 	
 	--compile
 	for hookName, code in pairs (scriptCode) do
-		local compiledScript, errortext = loadstring (code, "Compiling " .. hookName .. " for " .. scriptObject.Name)
+		local compiledScript, errortext = loadstring (code, "" .. hookName .. " for " .. scriptObject.Name)
 		if (not compiledScript) then
 			Plater:Msg ("failed to compile " .. hookName .. " for script " .. scriptObject.Name .. ": " .. errortext)
 		else
-			--store the function to execute
-			globalScriptObject [hookName] = compiledScript()
-			
-			--insert the script in the global script container, no need to check if already exists, hook containers cache are cleaned before script compile
-			local globalScriptContainer = Plater.GetContainerForHook (hookName)
-			tinsert (globalScriptContainer, globalScriptObject)
-			globalScriptContainer.ScriptAmount = globalScriptContainer.ScriptAmount + 1
-			
-			if (hookName == "Constructor") then
-				globalScriptObject.HasConstructor = true
+			if (hookName == "Destructor") then
+				Plater.DestructorScriptHooks [scriptObject] = globalScriptObject
+			else
+				--store the function to execute
+				globalScriptObject [hookName] = compiledScript()
+				
+				--insert the script in the global script container, no need to check if already exists, hook containers cache are cleaned before script compile
+				local globalScriptContainer = Plater.GetContainerForHook (hookName)
+				tinsert (globalScriptContainer, globalScriptObject)
+				globalScriptContainer.ScriptAmount = globalScriptContainer.ScriptAmount + 1
+				
+				if (hookName == "Constructor") then
+					globalScriptObject.HasConstructor = true
+				end
 			end
 		end
 	end
@@ -3284,7 +3346,7 @@ function Plater.CompileScript (scriptObject, ...)
 
 	--compile
 	for scriptType, code in pairs (scriptCode) do
-		local compiledScript, errortext = loadstring (code, "Compiling " .. scriptType .. " for " .. scriptObject.Name)
+		local compiledScript, errortext = loadstring (code, "" .. scriptType .. " for " .. scriptObject.Name)
 		if (not compiledScript) then
 			Plater:Msg ("failed to compile " .. scriptType .. " for script " .. scriptObject.Name .. ": " .. errortext)
 		else
@@ -6685,15 +6747,34 @@ function Plater.GetAllShownPlates()
 	return C_NamePlate.GetNamePlates (issecure())
 end
 
+function Plater.DispatchTalentUpdateHookEvent()
+	if (HOOK_PLAYER_TALENT_UPDATE.ScriptAmount > 0) then
+		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+			if (plateFrame) then
+				for i = 1, HOOK_PLAYER_TALENT_UPDATE.ScriptAmount do
+					local globalScriptObject = HOOK_PLAYER_TALENT_UPDATE [i]
+					local unitFrame = plateFrame.UnitFrame
+					local scriptContainer = unitFrame:ScriptGetContainer()
+					local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Player Talent Update")
+					--run
+					unitFrame:ScriptRunHook (scriptInfo, "Player Talent Update")
+				end
+			end
+		end
+	end
+end
+
 -- ~events
 function Plater:PLAYER_SPECIALIZATION_CHANGED()
 	C_Timer.After (2, Plater.GetSpellForRangeCheck)
 	C_Timer.After (2, Plater.GetHealthCutoffValue)
+	C_Timer.After (1, Plater.DispatchTalentUpdateHookEvent)
 end
 
 function Plater:PLAYER_TALENT_UPDATE()
 	C_Timer.After (2, Plater.GetSpellForRangeCheck)
 	C_Timer.After (2, Plater.GetHealthCutoffValue)
+	C_Timer.After (1, Plater.DispatchTalentUpdateHookEvent)
 end
 
 function Plater.UpdateAuraCache()
