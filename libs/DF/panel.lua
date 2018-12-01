@@ -5039,7 +5039,20 @@ DF.IconRowFunctions = {
 				
 				if (self.options.show_text) then
 					iconFrame.CountdownText:Show()
-					iconFrame.CountdownText:SetText (floor (startTime + duration - GetTime()))
+					
+					local formattedTime = floor (startTime + duration - GetTime())
+					
+					if (formattedTime >= 3600) then
+						formattedTime = floor (formattedTime / 3600) .. "h"
+						
+					elseif (formattedTime >= 60) then
+						formattedTime = floor (formattedTime / 60) .. "m"
+						
+					else
+						formattedTime = floor (formattedTime)
+					end
+					
+					iconFrame.CountdownText:SetText (formattedTime)
 					iconFrame.Cooldown:SetHideCountdownNumbers (true)
 				else
 					iconFrame.CountdownText:Hide()

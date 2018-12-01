@@ -6051,6 +6051,7 @@ local hide_non_used_auraFrames = function (self)
 end
 Plater.HideNonUsedAuraFrames = hide_non_used_auraFrames
 
+--~special ~auraspecial
 function Plater.AddExtraIcon (self, spellName, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 	local _, casterClass = UnitClass (caster or "")
 	local casterName
@@ -11002,6 +11003,7 @@ function Plater.RefreshOmniCCGroup (fromInit)
 				if (Plater.db.profile.disable_omnicc_on_auras) then
 					DF.table.addunique (platerGroup.rules, "PlaterMainAuraIcon")
 					DF.table.addunique (platerGroup.rules, "PlaterSecondaryAuraIcon")
+					DF.table.addunique (platerGroup.rules, "ExtraIconRowIcon")
 					settingsGroup.enabled = false
 				else
 					wipe (platerGroup.rules)
