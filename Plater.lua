@@ -4502,6 +4502,17 @@ function Plater.OnInit()
 	Plater:RegisterEvent ("ENCOUNTER_END")
 	Plater:RegisterEvent ("CHALLENGE_MODE_START")
 	
+	--many times at saved variables load the spell database isn't loaded yet
+	function Plater:PLAYER_LOGIN()
+		C_Timer.After (0.1, Plater.UpdatePlateClickSpace)
+		C_Timer.After (0.2, Plater.GetSpellForRangeCheck)
+		C_Timer.After (0.4, Plater.ForceCVars)
+		
+		--wait more time for the talents information be received from the server
+		C_Timer.After (4, Plater.GetHealthCutoffValue)
+	end
+	Plater:RegisterEvent ("PLAYER_LOGIN")
+	
 	local eventFrame = CreateFrame ("frame")
 	
 	eventFrame:RegisterUnitEvent ("UNIT_DISPLAYPOWER", "player")
@@ -8266,6 +8277,7 @@ function Plater.UpdatePlateSize (plateFrame, justAdded)
 
 		--> cast bar
 			local scalarValue = SizeOf_castBar_Width > plateWidth and -((SizeOf_castBar_Width - plateWidth) / 2) or ((plateWidth - SizeOf_castBar_Width) / 2)
+			
 			
 			if (unitType == "pet") then
 				scalarValue = abs (Plater.db.profile.pet_width_scale - 2) * scalarValue
