@@ -2386,7 +2386,7 @@ Plater.DriverFuncNames = {
 	["OnChangeHealthConfig"] = "UpdateHealthColor",
 	["OnSelectionUpdate"] = "UpdateSelectionHighlight",
 	["OnAuraUpdate"] = "OnUnitAuraUpdate",
-	["OnResourceUpdate"] = "SetupClassNameplateBar",
+	["OnResourceUpdate"] = "SetupClassNameplateBars",
 	["OnOptionsUpdate"] = "UpdateNamePlateOptions",
 	["OnManaBarOptionsUpdate"] = "OnOptionsUpdated",
 	["OnCastBarEvent"] = "OnEvent",
@@ -4276,6 +4276,7 @@ function Plater.RefreshDBUpvalues()
 	Plater.RefreshDBLists()
 end
 
+-- ~db
 function Plater.RefreshDBLists()
 
 	local profile = Plater.db.profile
@@ -4515,6 +4516,7 @@ function Plater.OnInit()
 	
 	local eventFrame = CreateFrame ("frame")
 	
+	eventFrame:RegisterUnitEvent ("UNIT_POWER_UPDATE", "player")
 	eventFrame:RegisterUnitEvent ("UNIT_DISPLAYPOWER", "player")
 	eventFrame:RegisterUnitEvent ("UNIT_POWER_FREQUENT", "player")
 	eventFrame:RegisterUnitEvent ("UNIT_MAXPOWER", "player")
@@ -4773,7 +4775,7 @@ function Plater.OnInit()
 		if (plateFrame.order == 3 and Plater.IsShowingResourcesOnTarget() and UnitIsUnit (plateFrame [MEMBER_UNITID], "target")) then --3 castbar, health, buffs
 			--puxa os resources pra cima
 			local SizeOf_healthBar_Height = plateFrame.UnitFrame.healthBar:GetHeight()
-			NamePlateTargetResourceFrame:SetPoint ("BOTTOM", plateFrame.UnitFrame.name, "TOP", 0, -4 + SizeOf_healthBar_Height + (Plater.db.profile.aura_height))
+			NamePlateDriverFrame.classNamePlateMechanicFrame:SetPoint ("BOTTOM", plateFrame.UnitFrame.name, "TOP", 0, -4 + SizeOf_healthBar_Height + (Plater.db.profile.aura_height))
 		end
 	end
 	
@@ -4781,7 +4783,7 @@ function Plater.OnInit()
 		if (plateFrame.order == 3 and Plater.IsShowingResourcesOnTarget() and UnitIsUnit (plateFrame [MEMBER_UNITID], "target")) then --3 castbar, health, buffs
 			--puxa os resources pra baixo
 			local SizeOf_healthBar_Height = plateFrame.UnitFrame.healthBar:GetHeight()
-			NamePlateTargetResourceFrame:SetPoint ("BOTTOM", plateFrame.UnitFrame.name, "TOP", 0, -4 + SizeOf_healthBar_Height)
+			NamePlateDriverFrame.classNamePlateMechanicFrame:SetPoint ("BOTTOM", plateFrame.UnitFrame.name, "TOP", 0, -4 + SizeOf_healthBar_Height)
 		end
 	end
 	

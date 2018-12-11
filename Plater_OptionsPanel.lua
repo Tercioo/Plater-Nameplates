@@ -2091,11 +2091,11 @@ Plater.CreateAuraTesting()
 					Plater.db.profile.extra_icon_anchor.x = value
 					Plater.UpdateAllPlates()
 				end,
-				min = -20,
-				max = 20,
+				min = -100,
+				max = 100,
 				step = 1,
 				name = "X Offset",
-				desc = "Slightly move the text horizontally.",
+				desc = "Slightly move horizontally.",
 			},
 			--y offset
 			{
@@ -2105,11 +2105,11 @@ Plater.CreateAuraTesting()
 					Plater.db.profile.extra_icon_anchor.y = value
 					Plater.UpdateAllPlates()
 				end,
-				min = -20,
-				max = 20,
+				min = -100,
+				max = 100,
 				step = 1,
 				name = "Y Offset",
-				desc = "Slightly move the text vertically.",
+				desc = "Slightly move vertically.",
 			},
 			--show timer
 			{
