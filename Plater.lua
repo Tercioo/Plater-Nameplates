@@ -8064,7 +8064,7 @@ function Plater.GetRaidMark (unitFrame)
 	return GetRaidTargetIndex (plateFrame.namePlateUnitToken)
 end
 
--- ~size
+-- ~size ~update
 function Plater.UpdatePlateSize (plateFrame, justAdded)
 	if (not plateFrame.actorType) then
 		return
@@ -8280,7 +8280,6 @@ function Plater.UpdatePlateSize (plateFrame, justAdded)
 		--> cast bar
 			local scalarValue = SizeOf_castBar_Width > plateWidth and -((SizeOf_castBar_Width - plateWidth) / 2) or ((plateWidth - SizeOf_castBar_Width) / 2)
 			
-			
 			if (unitType == "pet") then
 				scalarValue = abs (Plater.db.profile.pet_width_scale - 2) * scalarValue
 			elseif (unitType == "minus") then
@@ -8354,6 +8353,11 @@ function Plater.UpdatePlateSize (plateFrame, justAdded)
 					end
 				end
 			end
+			
+			--plateFrame.driverFrame:
+			
+			DefaultCompactNamePlateFrameSetUpOptions.healthBarHeight = targetHeight
+			DefaultCompactNamePlateFrameSetUpOptions.castBarHeight = castFrame:GetHeight()
 		
 		--> buff frame
 			buffFrame.Point1 = "bottom"
@@ -9371,6 +9375,7 @@ function Plater.CreateScaleAnimation (plateFrame)
 end
 
 Plater ["NAME_PLATE_CREATED"] = function (self, event, plateFrame) -- ~created ~events
+
 	--isto ï¿½ uma nameplate
 	plateFrame.UnitFrame.PlateFrame = plateFrame
 	plateFrame.isNamePlate = true
@@ -9751,7 +9756,21 @@ Plater ["NAME_PLATE_UNIT_ADDED"] = function (self, event, unitBarId) -- ~added ã
 	if (not plateFrame) then
 		return
 	end
+
 	
+	 -- ~8.1
+--plateFrame.driverFrame.namePlateSetupFunctions.player = function()end
+--plateFrame.driverFrame.namePlateSetupFunctions.friendly = function()end
+--plateFrame.driverFrame.namePlateSetupFunctions.enemy = function()end
+
+plateFrame.driverFrame.namePlateAnchorFunctions.player = function()end
+plateFrame.driverFrame.namePlateAnchorFunctions.friendly = function()end
+plateFrame.driverFrame.namePlateAnchorFunctions.enemy = function()end
+
+--plateFrame.driverFrame.namePlateSetInsetFunctions.player = function()end
+--plateFrame.driverFrame.namePlateSetInsetFunctions.friendly = function()end
+--plateFrame.driverFrame.namePlateSetInsetFunctions.enemy = function()end	
+
 	--save the last unit type shown in this plate
 	plateFrame.PreviousUnitType = plateFrame.actorType
 	
