@@ -1,0 +1,2324 @@
+--details! framework
+local DF = _G ["DetailsFramework"]
+if (not DF) then
+	print ("|cFFFFAA00Plater: framework not found, if you just installed or updated the addon, please restart your client.|r")
+	return
+end
+
+local LibSharedMedia = LibStub:GetLibrary ("LibSharedMedia-3.0")
+
+LibSharedMedia:Register ("statusbar", "DGround", [[Interface\AddOns\Plater\images\bar_background]])
+LibSharedMedia:Register ("statusbar", "Details D'ictum", [[Interface\AddOns\Plater\images\bar4]])
+LibSharedMedia:Register ("statusbar", "Details Vidro", [[Interface\AddOns\Plater\images\bar4_vidro]])
+LibSharedMedia:Register ("statusbar", "Details D'ictum (reverse)", [[Interface\AddOns\Plater\images\bar4_reverse]])
+LibSharedMedia:Register ("statusbar", "Details Serenity", [[Interface\AddOns\Plater\images\bar_serenity]])
+LibSharedMedia:Register ("statusbar", "BantoBar", [[Interface\AddOns\Plater\images\BantoBar]])
+LibSharedMedia:Register ("statusbar", "Skyline", [[Interface\AddOns\Plater\images\bar_skyline]])
+LibSharedMedia:Register ("statusbar", "WorldState Score", [[Interface\WorldStateFrame\WORLDSTATEFINALSCORE-HIGHLIGHT]])
+LibSharedMedia:Register ("statusbar", "Details Flat", [[Interface\AddOns\Plater\images\bar_background]])
+LibSharedMedia:Register ("statusbar", "DGround", [[Interface\AddOns\Plater\images\bar_background]])
+LibSharedMedia:Register ("statusbar", "PlaterBackground", [[Interface\AddOns\Plater\images\platebackground]])
+LibSharedMedia:Register ("statusbar", "PlaterTexture", [[Interface\AddOns\Plater\images\platetexture]])
+LibSharedMedia:Register ("statusbar", "PlaterHighlight", [[Interface\AddOns\Plater\images\plateselected]])
+LibSharedMedia:Register ("statusbar", "PlaterFocus", [[Interface\AddOns\Plater\images\overlay_indicator_1]])
+LibSharedMedia:Register ("statusbar", "PlaterHealth", [[Interface\AddOns\Plater\images\nameplate_health_texture]])
+LibSharedMedia:Register ("statusbar", "testbar", [[Interface\AddOns\Plater\images\testbar.tga]])
+
+LibSharedMedia:Register ("font", "Oswald", [[Interface\Addons\Plater\fonts\Oswald-Regular.otf]])
+LibSharedMedia:Register ("font", "Nueva Std Cond", [[Interface\Addons\Plater\fonts\NuevaStd-Cond.otf]])
+LibSharedMedia:Register ("font", "Accidental Presidency", [[Interface\Addons\Plater\fonts\Accidental Presidency.ttf]])
+LibSharedMedia:Register ("font", "TrashHand", [[Interface\Addons\Plater\fonts\TrashHand.TTF]])
+LibSharedMedia:Register ("font", "Harry P", [[Interface\Addons\Plater\fonts\HARRYP__.TTF]])
+LibSharedMedia:Register ("font", "FORCED SQUARE", [[Interface\Addons\Plater\fonts\FORCED SQUARE.ttf]])
+
+--font templates
+DF:InstallTemplate ("font", "PLATER_SCRIPTS_NAME", {color = "orange", size = 10, font = "Friz Quadrata TT"})
+DF:InstallTemplate ("font", "PLATER_SCRIPTS_TYPE", {color = "gray", size = 9, font = "Friz Quadrata TT"})
+DF:InstallTemplate ("font", "PLATER_SCRIPTS_TRIGGER_SPELLID", {color = {0.501961, 0.501961, 0.501961, .5}, size = 9, font = "Friz Quadrata TT"})
+DF:InstallTemplate ("font", "PLATER_BUTTON", {color = {1, .8, .2}, size = 10, font = "Friz Quadrata TT"})
+DF:InstallTemplate ("font", "PLATER_BUTTON_DISABLED", {color = {1/3, .8/3, .2/3}, size = 10, font = "Friz Quadrata TT"})
+
+--button templates
+DF:InstallTemplate ("button", "PLATER_BUTTON_DISABLED", {backdropcolor = {.4, .4, .4, .3}, backdropbordercolor = {0, 0, 0, .5}}, "OPTIONS_BUTTON_TEMPLATE")
+
+DF:NewColor ("PLATER_FRIEND", .71, 1, 1, 1)
+DF:NewColor ("PLATER_GUILD", 0.498039, 1, .2, 1)
+
+DF:NewColor ("PLATER_DEBUFF", 1, 0.7117, 0.7117, 1)
+DF:NewColor ("PLATER_BUFF", 0.7117, 1, 0.7509, 1)
+DF:NewColor ("PLATER_CAST", 0.7117, 0.7784, 1, 1)
+
+--defining reaction constants here isnce they are used within the profile
+local UNITREACTION_HOSTILE = 3
+local UNITREACTION_NEUTRAL = 4
+local UNITREACTION_FRIENDLY = 5
+
+PLATER_DEFAULT_SETTINGS = {
+	
+	profile = {
+	
+		--> save some cvars values so it can restore when a new character login using Plater
+		saved_cvars = {},
+	
+		keybinds = {},
+	
+		click_space = {140, 28},
+		click_space_friendly = {140, 28},
+		click_space_always_show = false,
+		hide_friendly_castbars = false,
+		hide_enemy_castbars = false,
+		
+		--> offset of the whole nameplate
+		global_offset_y = 0,
+		global_offset_x = 0,
+		
+		plate_config  = {
+			friendlyplayer = {
+				enabled = true,
+				only_damaged = true,
+				only_thename = true,
+				click_through = true,
+				show_guild_name = false,
+				
+				health = {70, 2},
+				health_incombat = {70, 2},
+				cast = {80, 8},
+				cast_incombat = {80, 12},
+				mana = {100, 3},
+				mana_incombat = {100, 3},
+				buff_frame_y_offset = 10,
+				castbar_offset = 0,
+				
+				actorname_text_spacing = 10,
+				actorname_text_size = 10,
+				actorname_text_font = "Arial Narrow",
+				actorname_text_color = {1, 1, 1, 1},
+				actorname_text_outline = "OUTLINE",
+				actorname_text_shadow_color = {0, 0, 0, 1},
+				actorname_text_shadow_color_offset = {1, -1},
+				actorname_text_anchor = {side = 8, x = 0, y = 0},
+				
+				spellname_text_size = 10,
+				spellname_text_font = "Arial Narrow",
+				spellname_text_color = {1, 1, 1, 1},
+				spellname_text_outline = "NONE",
+				spellname_text_shadow_color = {0, 0, 0, 1},
+				spellname_text_shadow_color_offset = {1, -1},
+				spellname_text_anchor = {side = 9, x = 0, y = 0},
+				
+				spellpercent_text_enabled = false,
+				spellpercent_text_size = 10,
+				spellpercent_text_font = "Arial Narrow",
+				spellpercent_text_color = {1, 1, 1, 1},
+				spellpercent_text_outline = "OUTLINE",
+				spellpercent_text_shadow_color = {0, 0, 0, 1},
+				spellpercent_text_shadow_color_offset = {1, -1},
+				spellpercent_text_anchor = {side = 11, x = -2, y = 0},
+				
+				level_text_enabled = false,
+				level_text_anchor = {side = 7, x = 0, y = 1},
+				level_text_size = 10,
+				level_text_font = "Arial Narrow",
+				level_text_outline = "NONE",
+				level_text_shadow_color = {0, 0, 0, 1},
+				level_text_shadow_color_offset = {1, -1},
+				level_text_alpha = 0.3,
+				
+				percent_text_enabled = false,
+				percent_text_ooc = false,
+				percent_show_percent = true,
+				percent_text_show_decimals = true,
+				percent_show_health = false,
+				percent_text_size = 9,
+				percent_text_font = "Arial Narrow",
+				percent_text_outline = "OUTLINE",
+				percent_text_shadow_color = {0, 0, 0, 1},
+				percent_text_shadow_color_offset = {1, -1},
+				percent_text_color = {.9, .9, .9, 1},
+				percent_text_anchor = {side = 9, x = 0, y = 0},
+				percent_text_alpha = 1,
+			},
+			
+			enemyplayer = {
+				enabled = true,
+				show_guild_name = false,
+				
+				use_playerclass_color = true,
+				fixed_class_color = {1, .4, .1},
+				
+				health = {112, 12},
+				cast = {112, 10},
+				mana = {100, 4},
+				
+				health_incombat = {120, 16},
+				cast_incombat = {120, 12},
+				mana_incombat = {100, 4},
+				
+				buff_frame_y_offset = 0,
+				castbar_offset = 0,
+				
+				actorname_text_spacing = 12,
+				actorname_text_size = 12,
+				actorname_text_font = "Arial Narrow",
+				actorname_text_color = {1, 1, 1, 1},
+				actorname_text_outline = "NONE",
+				actorname_text_shadow_color = {0, 0, 0, 1},
+				actorname_text_shadow_color_offset = {1, -1},
+				actorname_text_anchor = {side = 4, x = 0, y = 0},
+				
+				spellname_text_size = 10,
+				spellname_text_font = "Arial Narrow",
+				spellname_text_color = {1, 1, 1, 1},
+				spellname_text_outline = "NONE",
+				spellname_text_shadow_color = {0, 0, 0, 1},
+				spellname_text_shadow_color_offset = {1, -1},
+				spellname_text_anchor = {side = 9, x = 0, y = 0},
+				
+				spellpercent_text_enabled = true,
+				spellpercent_text_size = 10,
+				spellpercent_text_font = "Arial Narrow",
+				spellpercent_text_color = {1, 1, 1, 1},
+				spellpercent_text_outline = "OUTLINE",
+				spellpercent_text_shadow_color = {0, 0, 0, 1},
+				spellpercent_text_shadow_color_offset = {1, -1},
+				spellpercent_text_anchor = {side = 11, x = -2, y = 0},
+				
+				level_text_enabled = true,
+				level_text_anchor = {side = 7, x = 0, y = 1},
+				level_text_size = 10,
+				level_text_font = "Arial Narrow",
+				level_text_outline = "NONE",
+				level_text_shadow_color = {0, 0, 0, 1},
+				level_text_shadow_color_offset = {1, -1},
+				level_text_alpha = 0.3,
+				
+				percent_text_enabled = true,
+				percent_text_ooc = true,
+				percent_show_percent = true,
+				percent_text_show_decimals = true,
+				percent_show_health = true,
+				percent_text_size = 9,
+				percent_text_font = "Arial Narrow",
+				percent_text_outline = "OUTLINE",
+				percent_text_shadow_color = {0, 0, 0, 1},
+				percent_text_shadow_color_offset = {1, -1},
+				percent_text_color = {.9, .9, .9, 1},
+				percent_text_anchor = {side = 9, x = 0, y = 0},
+				percent_text_alpha = 1,
+				
+				big_actortitle_text_size = 11,
+				big_actortitle_text_font = "Arial Narrow",
+				big_actortitle_text_color = {1, .8, .0},
+				big_actortitle_text_outline = "OUTLINE",
+				big_actortitle_text_shadow_color = {0, 0, 0, 1},
+				big_actortitle_text_shadow_color_offset = {1, -1},
+				
+				big_actorname_text_size = 9,
+				big_actorname_text_font = "Arial Narrow",
+				big_actorname_text_color = {.5, 1, .5},
+				big_actorname_text_outline = "OUTLINE",
+				big_actorname_text_shadow_color = {0, 0, 0, 1},
+				big_actorname_text_shadow_color_offset = {1, -1},
+			},
+
+			friendlynpc = {
+				only_names = true,
+				all_names = false,
+				relevance_state = 3,
+				enabled = true,
+				
+				health = {112, 12},
+				cast = {112, 10},
+				mana = {100, 4},
+				
+				health_incombat = {120, 16},
+				cast_incombat = {120, 12},
+				mana_incombat = {100, 4},
+				
+				buff_frame_y_offset = 0,
+				castbar_offset = 0,
+				
+				actorname_text_spacing = 10,
+				actorname_text_size = 10,
+				actorname_text_font = "Arial Narrow",
+				actorname_text_color = {1, 1, 1, 1},
+				actorname_text_outline = "NONE",
+				actorname_text_shadow_color = {0, 0, 0, 1},
+				actorname_text_shadow_color_offset = {1, -1},
+				actorname_text_anchor = {side = 8, x = 0, y = 0},
+				
+				spellname_text_size = 10,
+				spellname_text_font = "Arial Narrow",
+				spellname_text_color = {1, 1, 1, 1},
+				spellname_text_outline = "NONE",
+				spellname_text_shadow_color = {0, 0, 0, 1},
+				spellname_text_shadow_color_offset = {1, -1},
+				spellname_text_anchor = {side = 9, x = 0, y = 0},
+				
+				spellpercent_text_enabled = false,
+				spellpercent_text_size = 10,
+				spellpercent_text_font = "Arial Narrow",
+				spellpercent_text_color = {1, 1, 1, 1},
+				spellpercent_text_outline = "OUTLINE",
+				spellpercent_text_shadow_color = {0, 0, 0, 1},
+				spellpercent_text_shadow_color_offset = {1, -1},
+				spellpercent_text_anchor = {side = 11, x = -2, y = 0},
+				
+				level_text_enabled = false,
+				level_text_anchor = {side = 7, x = 0, y = 1},
+				level_text_size = 10,
+				level_text_font = "Arial Narrow",
+				level_text_outline = "NONE",
+				level_text_shadow_color = {0, 0, 0, 1},
+				level_text_shadow_color_offset = {1, -1},
+				level_text_alpha = 0.3,
+				
+				percent_text_enabled = false,
+				percent_text_ooc = false,
+				percent_show_percent = true,
+				percent_text_show_decimals = true,
+				percent_show_health = false,
+				percent_text_size = 9,
+				percent_text_font = "Arial Narrow",
+				percent_text_outline = "OUTLINE",
+				percent_text_shadow_color = {0, 0, 0, 1},
+				percent_text_shadow_color_offset = {1, -1},
+				percent_text_color = {.9, .9, .9, 1},
+				percent_text_anchor = {side = 9, x = 0, y = 0},
+				percent_text_alpha = 1,
+				
+				quest_enabled = true,
+				quest_color = {.5, 1, 0},
+				
+				big_actortitle_text_size = 11,
+				big_actortitle_text_font = "Arial Narrow",
+				big_actortitle_text_color = {1, .8, .0},
+				big_actortitle_text_outline = "OUTLINE",
+				big_actortitle_text_shadow_color = {0, 0, 0, 1},
+				big_actortitle_text_shadow_color_offset = {1, -1},
+				
+				big_actorname_text_size = 9,
+				big_actorname_text_font = "Arial Narrow",
+				big_actorname_text_color = {.5, 1, .5},
+				big_actorname_text_outline = "OUTLINE",
+				big_actorname_text_shadow_color = {0, 0, 0, 1},
+				big_actorname_text_shadow_color_offset = {1, -1},
+			},
+			
+			enemynpc = {
+				enabled = true,
+				all_names = true,
+				
+				health = {112, 12},
+				cast = {112, 10},
+				mana = {100, 4},
+				
+				health_incombat = {120, 16},
+				cast_incombat = {120, 12},
+				mana_incombat = {100, 4},
+				
+				buff_frame_y_offset = 0,
+				castbar_offset = 0,
+				
+				actorname_text_spacing = 10,
+				actorname_text_size = 11,
+				actorname_text_font = "Arial Narrow",
+				actorname_text_color = {1, 1, 1, 1},
+				actorname_text_outline = "NONE",
+				actorname_text_shadow_color = {0, 0, 0, 1},
+				actorname_text_shadow_color_offset = {1, -1},
+				actorname_text_anchor = {side = 4, x = 0, y = 0},
+				
+				spellname_text_size = 12,
+				spellname_text_font = "Arial Narrow",
+				spellname_text_color = {1, 1, 1, 1},
+				spellname_text_outline = "OUTLINE",
+				spellname_text_shadow_color = {0, 0, 0, 1},
+				spellname_text_shadow_color_offset = {1, -1},
+				spellname_text_anchor = {side = 9, x = 0, y = 0},
+				
+				spellpercent_text_enabled = true,
+				spellpercent_text_size = 11,
+				spellpercent_text_font = "Arial Narrow",
+				spellpercent_text_color = {1, 1, 1, 1},
+				spellpercent_text_outline = "OUTLINE",
+				spellpercent_text_shadow_color = {0, 0, 0, 1},
+				spellpercent_text_shadow_color_offset = {1, -1},
+				spellpercent_text_anchor = {side = 11, x = -2, y = 0},
+				
+				level_text_enabled = true,
+				level_text_anchor = {side = 7, x = 0, y = 1},
+				level_text_size = 8,
+				level_text_font = "Arial Narrow",
+				level_text_outline = "NONE",
+				level_text_shadow_color = {0, 0, 0, 1},
+				level_text_shadow_color_offset = {1, -1},
+				level_text_alpha = 0.3,
+				
+				percent_text_enabled = true,
+				percent_text_ooc = true,
+				percent_show_percent = true,
+				percent_text_show_decimals = true,
+				percent_show_health = true,
+				percent_text_size = 9,
+				percent_text_font = "Arial Narrow",
+				percent_text_outline = "OUTLINE",
+				percent_text_shadow_color = {0, 0, 0, 1},
+				percent_text_shadow_color_offset = {1, -1},
+				percent_text_color = {.9, .9, .9, 1},
+				percent_text_anchor = {side = 9, x = 0, y = 0},
+				percent_text_alpha = 1,
+				
+				quest_enabled = true,
+				quest_color_enemy = {1, .369, 0},
+				quest_color_neutral = {1, .65, 0},
+				
+				--no color / it'll auto colour by the reaction
+				big_actortitle_text_size = 10,
+				big_actortitle_text_font = "Arial Narrow",
+				big_actortitle_text_outline = "OUTLINE",
+				big_actortitle_text_shadow_color = {0, 0, 0, 1},
+				big_actortitle_text_shadow_color_offset = {1, -1},
+				--big_actortitle_text_color = {1, .8, .0},
+				
+				big_actorname_text_size = 10,
+				big_actorname_text_font = "Arial Narrow",
+				big_actorname_text_outline = "OUTLINE",
+				big_actorname_text_shadow_color = {0, 0, 0, 1},
+				big_actorname_text_shadow_color_offset = {1, -1},
+				--big_actorname_text_color = {.5, 1, .5},
+			},
+
+			player = {
+				enabled = true,
+				click_through = false,
+				health = {150, 12},
+				health_incombat = {150, 12},
+				mana = {150, 10},
+				mana_incombat = {150, 10},
+				buff_frame_y_offset = 0,
+				y_position_offset = -50, --deprecated
+				pvp_always_incombat = true,
+				healthbar_color = {0.564706, 0.933333, 0.564706, 1},
+				healthbar_color_by_hp = false,
+				castbar_offset = 0, --not used?
+				
+				castbar_enabled = true,
+				cast = {140, 10},
+				cast_incombat = {140, 10},
+				
+				actorname_text_spacing = 10,
+				actorname_text_size = 10,
+				actorname_text_font = "Arial Narrow",
+				actorname_text_color = {1, 1, 1, 1},
+				actorname_text_outline = "OUTLINE",
+				actorname_text_shadow_color = {0, 0, 0, 1},
+				actorname_text_shadow_color_offset = {1, -1},
+				actorname_text_anchor = {side = 8, x = 0, y = 0},
+				
+				spellname_text_size = 10,
+				spellname_text_font = "Arial Narrow",
+				spellname_text_color = {1, 1, 1, 1},
+				spellname_text_outline = "OUTLINE",
+				spellname_text_shadow_color = {0, 0, 0, 1},
+				spellname_text_shadow_color_offset = {1, -1},
+				spellname_text_anchor = {side = 9, x = 0, y = 0},
+				
+				spellpercent_text_enabled = true,
+				spellpercent_text_size = 10,
+				spellpercent_text_font = "Arial Narrow",
+				spellpercent_text_color = {1, 1, 1, 1},
+				spellpercent_text_outline = "OUTLINE",
+				spellpercent_text_shadow_color = {0, 0, 0, 1},
+				spellpercent_text_shadow_color_offset = {1, -1},
+				spellpercent_text_anchor = {side = 11, x = -2, y = 0},
+				
+				level_text_enabled = false,
+				level_text_anchor = {side = 7, x = 0, y = 1},
+				level_text_size = 10,
+				level_text_font = "Arial Narrow",
+				level_text_outline = "NONE",
+				level_text_shadow_color = {0, 0, 0, 1},
+				level_text_shadow_color_offset = {1, -1},
+				level_text_alpha = 0.3,
+				
+				percent_text_enabled = true,
+				percent_text_ooc = true,
+				percent_show_percent = true,
+				percent_text_show_decimals = true,
+				percent_show_health = true,
+				percent_text_size = 10,
+				percent_text_font = "Arial Narrow",
+				percent_text_outline = "OUTLINE",
+				percent_text_shadow_color = {0, 0, 0, 1},
+				percent_text_shadow_color_offset = {1, -1},
+				percent_text_color = {.9, .9, .9, 1},
+				percent_text_anchor = {side = 9, x = 0, y = 0},
+				percent_text_alpha = 1,
+				
+				power_enabled = true,
+				power_percent_text_enabled = true,
+				power_percent_text_size = 9,
+				power_percent_text_font = "Arial Narrow",
+				power_percent_text_outline = "OUTLINE",
+				power_percent_text_shadow_color = {0, 0, 0, 1},
+				power_percent_text_shadow_color_offset = {1, -1},
+				power_percent_text_color = {.9, .9, .9, 1},
+				power_percent_text_anchor = {side = 9, x = 0, y = 0},
+				power_percent_text_alpha = 1,
+
+			},
+		},
+		
+		last_news_time = 0,
+		disable_omnicc_on_auras = false,
+		
+		resources = {
+			scale = 0.8,
+			y_offset = 0,
+			y_offset_target = 8,
+			y_offset_target_withauras = 26,
+		},
+		
+		--> special unit
+		pet_width_scale = 0.7,
+		pet_height_scale = 1,
+		minor_width_scale = 0.7,
+		minor_height_scale = 1,
+		
+		castbar_target_show = false,
+		castbar_target_anchor = {side = 5, x = 0, y = 0},
+		castbar_target_text_size = 10,
+		castbar_target_outline = "OUTLINE",
+		castbar_target_shadow_color = {0, 0, 0, 1},
+		castbar_target_shadow_color_offset = {1, -1},
+		castbar_target_color = {0.968627, 0.992156, 1, 1},
+		castbar_target_font = "Arial Narrow",
+		
+		--> store spells from the latest event the player has been into
+		captured_spells = {},
+
+		--script tab
+		script_data = {},
+		script_data_trash = {}, --deleted scripts are placed here, they can be restored in 30 days
+		script_auto_imported = {}, --store the name and revision of scripts imported from the Plater script library
+		script_banned_user = {}, --players banned from sending scripts to this player
+		
+		--hooking tab
+		hook_data = {},
+		hook_data_trash = {}, --deleted scripts are placed here, they can be restored in 30 days
+		hook_auto_imported = {}, --store the name and revision of scripts imported from the Plater script library
+		
+		patch_version = 0,
+		
+		health_cutoff = true,
+		health_cutoff_extra_glow = false,
+		health_cutoff_hide_divisor = false,
+		
+		update_throttle = 0.25,
+		culling_distance = 100,
+		use_playerclass_color = true, --friendly player
+		
+		use_health_animation = false,
+		health_animation_time_dilatation = 2.615321,
+		
+		use_color_lerp = false,
+		color_lerp_speed = 12,
+		
+		healthbar_framelevel = 0,
+		castbar_framelevel = 0,
+		
+		aura_enabled = true,
+		aura_show_tooltip = false,
+		aura_width = 26,
+		aura_height = 16,
+		
+		--> aura frame 1
+		aura_x_offset = 0,
+		aura_y_offset = 0,
+		aura_grow_direction = 2, --> center
+		
+		--> aura frame 2
+		buffs_on_aura2 = false,
+		aura2_x_offset = 0,
+		aura2_y_offset = 0,
+		aura2_grow_direction = 2, --> center
+		
+		aura_alpha = 0.85,
+		aura_custom = {},
+		
+		aura_timer = true,
+		aura_timer_text_size = 15,
+		aura_timer_text_font = "Arial Narrow",
+		aura_timer_text_anchor = {side = 9, x = 0, y = 0},
+		aura_timer_text_outline = "OUTLINE",
+		aura_timer_text_shadow_color = {0, 0, 0, 1},
+		aura_timer_text_shadow_color_offset = {1, -1},
+		aura_timer_text_color = {1, 1, 1, 1},
+
+		aura_stack_anchor = {side = 8, x = 0, y = 0},
+		aura_stack_size = 10,
+		aura_stack_font = "Arial Narrow",
+		aura_stack_outline = "OUTLINE",
+		aura_stack_shadow_color = {0, 0, 0, 1},
+		aura_stack_shadow_color_offset = {1, -1},
+		aura_stack_color = {1, 1, 1, 1},
+		
+		extra_icon_anchor = {side = 6, x = -4, y = 4},
+		extra_icon_show_timer = true,
+		extra_icon_width = 30,
+		extra_icon_height = 18,
+		extra_icon_wide_icon = true,
+		extra_icon_caster_name = true,
+		extra_icon_backdrop_color = {0, 0, 0, 0.612853},
+		extra_icon_border_color = {0, 0, 0, 1},
+		
+		debuff_show_cc = true, --extra frame show cc
+		debuff_show_cc_border = {.3, .2, .2, 1},
+		extra_icon_show_purge = false, --extra frame show purge
+		extra_icon_show_purge_border = {0, .925, 1, 1},
+		
+		extra_icon_auras = {}, --auras for buff special tab
+		extra_icon_auras_mine = {}, --auras in the buff special that are only cast by the player
+		
+		aura_width_personal = 32,
+		aura_height_personal = 20,
+		aura_show_buffs_personal = false,
+		aura_show_debuffs_personal = true,
+		
+		aura_show_important = true,
+		aura_show_dispellable = true,
+		aura_show_aura_by_the_player = true,
+		aura_show_buff_by_the_unit = true,
+		
+		aura_border_colors = {
+			steal_or_purge = {0, .5, .98, 1},
+			is_buff = {0, .65, .1, 1},
+			is_show_all = {.7, .1, .1, 1},
+		},
+		
+		--store a table with spell name keys and with a value of a table with all spell IDs that has that exact name
+		aura_cache_by_name = {
+			["banner of the horde"] = {
+				61574,
+			},
+			["challenger's might"] = {
+				206150,
+			},
+			["banner of the alliance"] = {
+				61573,
+			},		
+		},		
+		
+		aura_tracker = {
+			buff = {},
+			debuff = {},
+			buff_ban_percharacter = {},
+			debuff_ban_percharacter = {},
+			options = {},
+			track_method = 0x1,
+			buff_banned = { 
+				--banner of alliance and horde on training dummies
+				[61574] = true, 
+				[61573] = true,
+				--challenger's might on mythic+
+				[206150] = true, 
+			},
+			debuff_banned = {},
+			buff_tracked = {},
+			debuff_tracked = {},
+		},
+		
+		not_affecting_combat_enabled = false,
+		not_affecting_combat_alpha = 0.799999,
+		range_check_enabled = true,
+		range_check_alpha = 0.5,
+		
+		target_highlight = true,
+		target_highlight_alpha = 0.75,
+		target_highlight_height = 14,
+		target_highlight_color = {0, 0.521568, 1, 1},
+		target_highlight_texture = [[Interface\AddOns\Plater\images\selection_indicator3]],
+		
+		target_shady_alpha = 0.6,
+		target_shady_enabled = true,
+		target_shady_combat_only = true,
+		
+		hover_highlight = true,
+		highlight_on_hover_unit_model = false,
+		hover_highlight_alpha = .30,
+		
+		auto_toggle_friendly_enabled = false,
+		auto_toggle_friendly = {
+			["party"] = false,
+			["raid"] = false,
+			["arena"] = false,
+			["world"] =  true,
+			["cities"] = true,
+		},
+		
+		stacking_nameplates_enabled = true,
+		
+		auto_toggle_stacking_enabled = false,
+		auto_toggle_stacking = {
+			["party"] = true,
+			["raid"] = true,
+			["arena"] = true,
+			["world"] =  true,
+			["cities"] = false,
+		},
+		
+		spell_animations = true,
+		spell_animations_scale = 1.25,
+		
+		spell_animation_list = {
+		
+			--chaos bolt
+			[116858] = {
+				{
+					enabled = true,
+					duration = 0.075, --seconds
+					animation_type = "scale",
+					cooldown = 0.75, --seconds
+					scale_upX = 1.075,
+					scale_upY = 1.075,
+					scale_downX = 0.915,
+					scale_downY = 0.915,
+				},
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = 0.1,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.15,
+					amplitude = 2,
+					frequency = 60,
+					fade_in = 0.05,
+					fade_out = 0.10,
+					cooldown = 0.25,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "WARLOCK",
+					spellid = 116858,
+				}
+			},
+		
+			--seed of corruption
+			[27285] = {
+				{
+					enabled = true,
+					duration = 0.075, --seconds
+					animation_type = "scale",
+					cooldown = 0.75, --seconds
+					scale_upX = 1.1,
+					scale_upY = 1.1,
+					scale_downX = 0.9,
+					scale_downY = 0.9,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "WARLOCK",
+					spellid = 27285,
+				}
+			},
+			
+			--hand of guldan
+			[86040] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = 0.1,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.15,
+					amplitude = 2,
+					frequency = 20,
+					fade_in = 0.05,
+					fade_out = 0.10,
+					cooldown = 0.25,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "WARLOCK",
+					spellid = 86040,
+				}
+			},
+			
+			--demonbolt
+			[264178] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .2,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.15,
+					amplitude = 3,
+					frequency = 25,
+					fade_in = 0.01,
+					fade_out = 0.08,
+					cooldown = 0.25,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "WARLOCK",
+					spellid = 264178,
+				}				
+			},
+			
+			--implosion
+			[196278] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .2,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.05,
+					amplitude = 0.75,
+					frequency = 200,
+					fade_in = 0.01,
+					fade_out = 0.01,
+					cooldown = 0.0,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "WARLOCK",
+					spellid = 196278,
+				}			
+			},
+			
+			--Secret Technique (Rogue)
+			[280720] = {
+			   [1] = {
+			      ["enabled"] = true,
+			      ["fade_out"] = 0.089999996125698,
+			      ["absolute_sineX"] = false,
+			      ["duration"] = 0.19999998807907,
+			      ["absolute_sineY"] = false,
+			      ["animation_type"] = "frameshake",
+			      ["scaleX"] = 0.1,
+			      ["amplitude"] = 0.89999997615814,
+			      ["critical_scale"] = 1.05,
+			      ["fade_in"] = 0.0099999997764826,
+			      ["scaleY"] = 1,
+			      ["cooldown"] = 0.5,
+			      ["frequency"] = 200,
+			   },
+			   ["info"] = {
+			      ["time"] = 1539292087,
+			      ["class"] = "ROGUE",
+			      ["spellid"] = 280720,
+			      ["desc"] = "",
+			   },
+			},
+			
+			--Shadowstrike (Rogue)
+			[185438] = {
+			   [1] = {
+			      ["enabled"] = true,
+			      ["fade_out"] = 0.19999998807907,
+			      ["duration"] = 0.099999994039536,
+			      ["absolute_sineX"] = false,
+			      ["absolute_sineY"] = true,
+			      ["animation_type"] = "frameshake",
+			      ["scaleX"] = 0.099998474121094,
+			      ["critical_scale"] = 1.05,
+			      ["amplitude"] = 6.460000038147,
+			      ["fade_in"] = 0,
+			      ["scaleY"] = -1,
+			      ["cooldown"] = 0.5,
+			      ["frequency"] = 25,
+			   },
+			   [2] = {
+			      ["enabled"] = true,
+			      ["scale_upX"] = 1.0299999713898,
+			      ["scale_upY"] = 1.0299999713898,
+			      ["cooldown"] = 0.75,
+			      ["duration"] = 0.05,
+			      ["scale_downY"] = 0.96999996900559,
+			      ["scale_downX"] = 0.96999996900559,
+			      ["animation_type"] = "scale",
+			   },
+			   ["info"] = {
+			      ["time"] = 1539204014,
+			      ["class"] = "ROGUE",
+			      ["spellid"] = 185438,
+			      ["desc"] = "",
+			   },
+			},
+			
+			--sinister strike (outlaw)
+			[197834] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .1,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.12,
+					amplitude = 1,
+					frequency = 25,
+					fade_in = 0.01,
+					fade_out = 0.02,
+					cooldown = 0.5,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "ROGUE",
+					spellid = 197834,
+				}				
+			},
+			
+			--Eviscerate (Rogue)
+			[196819] = {
+			   [1] = {
+			      ["animation_type"] = "scale",
+			      ["scale_upX"] = 1.1999999284744,
+			      ["enabled"] = true,
+			      ["scale_downX"] = 0.89999997615814,
+			      ["scale_downY"] = 0.89999997615814,
+			      ["duration"] = 0.04,
+			      ["cooldown"] = 0.75,
+			      ["scale_upY"] = 1.2999999523163,
+			   },
+			   [2] = {
+			      ["enabled"] = true,
+			      ["fade_out"] = 0.1799999922514,
+			      ["absolute_sineX"] = false,
+			      ["absolute_sineY"] = true,
+			      ["animation_type"] = "frameshake",
+			      ["scaleX"] = 1,
+			      ["duration"] = 0.21999999880791,
+			      ["amplitude"] = 5,
+			      ["fade_in"] = 0.0099999997764826,
+			      ["scaleY"] = 1,
+			      ["cooldown"] = 0.5,
+			      ["frequency"] = 3.3099999427795,
+			   },
+			   ["info"] = {
+			      ["spellid"] = 196819,
+			      ["class"] = "ROGUE",
+			      ["time"] = 0,
+			      ["desc"] = "",
+			   },
+			},
+
+			--Pistol Shot (Rogue)
+			[185763] =  {
+			   [1] =  {
+			      ["enabled"] = true,
+			      ["fade_out"] = 0.25999999046326,
+			      ["absolute_sineX"] = false,
+			      ["duration"] = 0.15999999642372,
+			      ["absolute_sineY"] = true,
+			      ["animation_type"] = "frameshake",
+			      ["scaleX"] = 0.099998474121094,
+			      ["amplitude"] = 3.6583230495453,
+			      ["critical_scale"] = 1.05,
+			      ["fade_in"] = 0.0099999997764826,
+			      ["scaleY"] = 1,
+			      ["cooldown"] = 0.5,
+			      ["frequency"] = 23.525663375854,
+			   },
+			   [2] =  {
+			      ["animation_type"] = "scale",
+			      ["scale_upX"] = 1.0299999713898,
+			      ["enabled"] = true,
+			      ["scale_downX"] = 0.96999996900559,
+			      ["scale_downY"] = 0.96999996900559,
+			      ["duration"] = 0.05,
+			      ["cooldown"] = 0.75,
+			      ["scale_upY"] = 1.0299999713898,
+			   },
+			   ["info"] =  {
+			      ["time"] = 1539275610,
+			      ["class"] = "ROGUE",
+			      ["spellid"] = 185763,
+			      ["desc"] = "",
+			   },
+			},
+
+			--Dispatch (Rogue)
+			[2098] =  {
+			   [1] =  {
+			      ["scale_upY"] = 1.1999999284744,
+			      ["scale_upX"] = 1.1000000238419,
+			      ["enabled"] = true,
+			      ["scale_downX"] = 0.89999997615814,
+			      ["scale_downY"] = 0.89999997615814,
+			      ["duration"] = 0.04,
+			      ["cooldown"] = 0.75,
+			      ["animation_type"] = "scale",
+			   },
+			   [2] =  {
+			      ["enabled"] = true,
+			      ["fade_out"] = 0.079999998211861,
+			      ["absolute_sineX"] = false,
+			      ["absolute_sineY"] = true,
+			      ["animation_type"] = "frameshake",
+			      ["scaleX"] = 1,
+			      ["duration"] = 0.21999999880791,
+			      ["amplitude"] = 1.5,
+			      ["fade_in"] = 0,
+			      ["scaleY"] = 1,
+			      ["cooldown"] = 0.5,
+			      ["frequency"] = 2.710000038147,
+			   },
+			   ["info"] =  {
+			      ["time"] = 1539293610,
+			      ["class"] = "ROGUE",
+			      ["spellid"] = 2098,
+			      ["desc"] = "",
+			   },
+			},
+
+			--Envenom (Rogue)
+			[32645] =  {
+			   [1] =  {
+			      ["animation_type"] = "scale",
+			      ["scale_upX"] = 1.1000000238419,
+			      ["enabled"] = true,
+			      ["scale_downX"] = 0.89999997615814,
+			      ["scale_downY"] = 0.89999997615814,
+			      ["duration"] = 0.04,
+			      ["cooldown"] = 0.75,
+			      ["scale_upY"] = 1.1999999284744,
+			   },
+			   [2] =  {
+			      ["enabled"] = true,
+			      ["fade_out"] = 0.1799999922514,
+			      ["absolute_sineX"] = false,
+			      ["absolute_sineY"] = true,
+			      ["animation_type"] = "frameshake",
+			      ["scaleX"] = 1,
+			      ["duration"] = 0.12000000476837,
+			      ["amplitude"] = 4.0999999046326,
+			      ["fade_in"] = 0.0099999997764826,
+			      ["scaleY"] = 1,
+			      ["cooldown"] = 0.5,
+			      ["frequency"] = 2.6099998950958,
+			   },
+			   ["info"] =  {
+			      ["spellid"] = 32645,
+			      ["class"] = "ROGUE",
+			      ["time"] = 0,
+			      ["desc"] = "",
+			   },
+			},
+
+			
+			--Between the Eyes (Rogue)
+			[199804] =  {
+			   [1] =  {
+			      ["enabled"] = true,
+			      ["fade_out"] = 0.09,
+			      ["absolute_sineX"] = false,
+			      ["duration"] = 0.19999998807907,
+			      ["absolute_sineY"] = true,
+			      ["animation_type"] = "frameshake",
+			      ["scaleX"] = 1,
+			      ["amplitude"] = 1.1699999570847,
+			      ["critical_scale"] = 1.05,
+			      ["fade_in"] = 0.0099999997764826,
+			      ["scaleY"] = 0.88999938964844,
+			      ["cooldown"] = 0.5,
+			      ["frequency"] = 23.525676727295,
+			   },
+			   [2] =  {
+			      ["enabled"] = true,
+			      ["scale_upX"] = 1.0499999523163,
+			      ["animation_type"] = "scale",
+			      ["cooldown"] = 0.75,
+			      ["duration"] = 0.050000000745058,
+			      ["scale_downY"] = 1,
+			      ["scale_downX"] = 1,
+			      ["scale_upY"] = 1.0499999523163,
+			   },
+			   ["info"] =  {
+			      ["time"] = 1539293872,
+			      ["class"] = "ROGUE",
+			      ["spellid"] = 199804,
+			      ["desc"] = "",
+			   },
+			},
+
+			
+			--mutilate (assassination)
+			[5374] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .1,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.12,
+					amplitude = 1,
+					frequency = 25,
+					fade_in = 0.01,
+					fade_out = 0.02,
+					cooldown = 0.5,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "ROGUE",
+					spellid = 5374,
+				}
+			},
+			
+			--envenom (assassination)
+			[32645] = {
+				{
+					enabled = true,
+					duration = 0.04, --seconds
+					animation_type = "scale",
+					cooldown = 0.75, --seconds
+					scale_upX = 1.1,
+					scale_upY = 1.1,
+					scale_downX = 0.9,
+					scale_downY = 0.9,
+				},
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = 1,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = true,
+					duration = 0.08,
+					amplitude = 10,
+					frequency = 4.1,
+					fade_in = 0.01,
+					fade_out = 0.18,
+					cooldown = 0.5,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "ROGUE",
+					spellid = 32645,
+				}
+			},
+			
+			--toxic blade (assassination)
+			[245388] = {
+				{
+					enabled = true,
+					duration = 0.03, --seconds
+					animation_type = "scale",
+					cooldown = 0.75, --seconds
+					scale_upX = 1.1,
+					scale_upY = 1.1,
+					scale_downX = 0.9,
+					scale_downY = 0.9,
+				},
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = 1,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.06,
+					amplitude = 5,
+					frequency = 2,
+					fade_in = 0.01,
+					fade_out = 0.01,
+					cooldown = 0.5,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "ROGUE",
+					spellid = 245388,
+				}
+			},
+			
+			--arcane blast (mage)
+			[30451] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .1,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.12,
+					amplitude = 1,
+					frequency = 25,
+					fade_in = 0.01,
+					fade_out = 0.02,
+					cooldown = 0.5,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "MAGE",
+					spellid = 30451,
+				}
+			},
+			
+			--arcane missiles (mage)
+			[7268] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .2,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.1,
+					amplitude = 0.75,
+					frequency = 200,
+					fade_in = 0.01,
+					fade_out = 0.01,
+					cooldown = 0.0,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "MAGE",
+					spellid = 7268,
+				}
+			},
+			
+			--arcane barrage (mage)
+			[44425] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .1,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.12,
+					amplitude = 1,
+					frequency = 25,
+					fade_in = 0.01,
+					fade_out = 0.02,
+					cooldown = 0.5,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "MAGE",
+					spellid = 44425,
+				}
+			},
+			
+			--glacial spike (frost mage)
+			[228600] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .1,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = true,
+					duration = 0.1,
+					amplitude = 10,
+					frequency = 1,
+					fade_in = 0.01,
+					fade_out = 0.09,
+					cooldown = 0.5,
+					critical_scale = 1.2,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "MAGE",
+					spellid = 228600,
+				}
+			},
+			
+			--flurry (frost mage)
+			[228354] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .1,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.12,
+					amplitude = 1,
+					frequency = 25,
+					fade_in = 0.01,
+					fade_out = 0.02,
+					cooldown = 0.5,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "MAGE",
+					spellid = 228354,
+				}
+			},
+			
+			--ice lance (frost mage)
+			[228598] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .1,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.12,
+					amplitude = 2,
+					frequency = 25,
+					fade_in = 0.01,
+					fade_out = 0.02,
+					cooldown = 0.5,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "MAGE",
+					spellid = 228598,
+				}
+			},
+			
+			--pyro (fire mage)
+			[11366] = {
+				{
+					enabled = true,
+					duration = 0.05, --seconds
+					animation_type = "scale",
+					cooldown = 0.75, --seconds
+					scale_upX = 1.15,
+					scale_upY = 1.15,
+					scale_downX = 0.8,
+					scale_downY = 0.8,
+				},
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .1,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = true,
+					duration = 0.1,
+					amplitude = 10,
+					frequency = 1,
+					fade_in = 0.01,
+					fade_out = 0.09,
+					cooldown = 0.5,
+					critical_scale = 1.2,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "MAGE",
+					spellid = 11366,
+				}
+			},
+			
+			--dragon's breath (fire mage)
+			[31661] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .2,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.1,
+					amplitude = 0.75,
+					frequency = 200,
+					fade_in = 0.01,
+					fade_out = 0.01,
+					cooldown = 0.0,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "MAGE",
+					spellid = 31661,
+				}
+			},
+			
+			--fire blast (fire mage)
+			[108853] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .1,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.12,
+					amplitude = 1,
+					frequency = 25,
+					fade_in = 0.01,
+					fade_out = 0.02,
+					cooldown = 0.5,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "MAGE",
+					spellid = 108853,
+				}
+			},
+			
+			--Blade of Justice (paladin)
+			[184575] = {
+				{
+					enabled = true,
+					duration = 0.05, --seconds
+					animation_type = "scale",
+					cooldown = 0.75, --seconds
+					scale_upX = 1.05,
+					scale_upY = 1.05,
+					scale_downX = 0.95,
+					scale_downY = 0.95,
+				},
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .1,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = true,
+					duration = 0.1,
+					amplitude = 2,
+					frequency = 1,
+					fade_in = 0.01,
+					fade_out = 0.09,
+					cooldown = 0.5,
+					critical_scale = 1.2,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "PALADIN",
+					spellid = 184575,
+				}
+			},
+			
+			--Hammer of the Righteous (paladin)
+			[53595] = {
+				{
+					enabled = true,
+					duration = 0.05, --seconds
+					animation_type = "scale",
+					cooldown = 0.75, --seconds
+					scale_upX = 1.03,
+					scale_upY = 1.03,
+					scale_downX = 0.97,
+					scale_downY = 0.97,
+				},
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .1,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = true,
+					duration = 0.1,
+					amplitude = 3,
+					frequency = 1,
+					fade_in = 0.01,
+					fade_out = 0.09,
+					cooldown = 0.5,
+					critical_scale = 1.05,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "PALADIN",
+					spellid = 53595,
+				}
+			},
+			
+			--Crusader Strike (paladin)
+			[35395] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .1,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.12,
+					amplitude = 1,
+					frequency = 25,
+					fade_in = 0.01,
+					fade_out = 0.02,
+					cooldown = 0.5,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "PALADIN",
+					spellid = 35395,
+				}
+			}, 
+			
+			--Avenger's Shield (paladin)
+			[31935] = {
+				{
+					enabled = true,
+					duration = 0.05, --seconds
+					animation_type = "scale",
+					cooldown = 0.75, --seconds
+					scale_upX = 1.03,
+					scale_upY = 1.03,
+					scale_downX = 0.97,
+					scale_downY = 0.97,
+				},
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = 1,
+					scaleY = 1,
+					absolute_sineX = true,
+					absolute_sineY = false,
+					duration = 0.1,
+					amplitude = 6,
+					frequency = 1,
+					fade_in = 0.01,
+					fade_out = 0.09,
+					cooldown = 0.5,
+					critical_scale = 1.05,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "PALADIN",
+					spellid = 31935,
+				}
+			},
+			
+			--Judgment (paladin)
+			[275779] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .1,
+					scaleY = -1, --absolute sine * -1 makes the shake always go down
+					absolute_sineX = false,
+					absolute_sineY = true,
+					duration = 0.12,
+					amplitude = 1,
+					frequency = 25,
+					fade_in = 0.01,
+					fade_out = 0.02,
+					cooldown = 0.5,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "PALADIN",
+					spellid = 275779,
+				}
+			},
+			
+			--Thunder Clap (warrior)
+			[6343] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .2,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.12,
+					amplitude = 0.95,
+					frequency = 200,
+					fade_in = 0.01,
+					fade_out = 0.01,
+					cooldown = 0.1,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "WARRIOR",
+					spellid = 6343,
+				}
+			},
+			
+			--Heroic Leap (warrior)
+			[52174] = {
+				{
+					enabled = true,
+					duration = 0.075, --seconds
+					animation_type = "scale",
+					cooldown = 0.75, --seconds
+					scale_upX = 1.15,
+					scale_upY = 1.15,
+					scale_downX = 0.8,
+					scale_downY = 0.8,
+				},
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .15,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.3,
+					amplitude = 6,
+					frequency = 50,
+					fade_in = 0.01,
+					fade_out = 0.2,
+					cooldown = 0.5,
+					critical_scale = 1.2,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "WARRIOR",
+					spellid = 52174,
+				}
+			}, 
+			
+			--Devastate (warrior)
+			[20243] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .1,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.12,
+					amplitude = 1,
+					frequency = 25,
+					fade_in = 0.01,
+					fade_out = 0.02,
+					cooldown = 0.5,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "WARRIOR",
+					spellid = 20243,
+				}
+			}, 
+			
+			--Shockwave (warrior)
+			[46968] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .1,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.10,
+					amplitude = 0.95,
+					frequency = 120,
+					fade_in = 0.01,
+					fade_out = 0.01,
+					cooldown = 0.1,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "WARRIOR",
+					spellid = 46968,
+				}
+			}, 
+			
+			--Death Strike (dk)
+			[49998] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .1,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.13,
+					amplitude = 1.8,
+					frequency = 25,
+					fade_in = 0.01,
+					fade_out = 0.02,
+					cooldown = 0.5,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "DEATHKNIGHT",
+					spellid = 49998,
+				}
+			}, 
+			
+			--Frost Strike (dk)
+			[222026] = {
+				{
+					enabled = true,
+					duration = 0.04, --seconds
+					animation_type = "scale",
+					cooldown = 0.75, --seconds
+					scale_upX = 1.1,
+					scale_upY = 1.1,
+					scale_downX = 0.9,
+					scale_downY = 0.9,
+				},
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = 1,
+					scaleY = -1,
+					absolute_sineX = false,
+					absolute_sineY = true,
+					duration = 0.08,
+					amplitude = 10,
+					frequency = 3.1,
+					fade_in = 0.01,
+					fade_out = 0.18,
+					cooldown = 0.5,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "DEATHKNIGHT",
+					spellid = 222026,
+				}
+			}, 
+			
+			--breath of sindragosa
+			[155166] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .2,
+					scaleY = .6,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.2,
+					amplitude = 0.45,
+					frequency = 200,
+					fade_in = 0.01,
+					fade_out = 0.01,
+					cooldown = 0.0,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "DEATHKNIGHT",
+					spellid = 155166,
+				}
+			},
+			
+			--Obliterate (dk)
+			[222024] = {
+				{
+					enabled = true,
+					duration = 0.035, --seconds
+					animation_type = "scale",
+					cooldown = 0.75, --seconds
+					scale_upX = 1.1,
+					scale_upY = 1.1,
+					scale_downX = 0.9,
+					scale_downY = 0.9,
+				},
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = 1,
+					scaleY = -1,
+					absolute_sineX = true,
+					absolute_sineY = true,
+					duration = 0.075,
+					amplitude = 1.8,
+					frequency = 50,
+					fade_in = 0.01,
+					fade_out = 0.02,
+					cooldown = 0.5,
+					critical_scale = 2,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "DEATHKNIGHT",
+					spellid = 222024,
+				}
+			},
+			
+			--Scourge Strike (dk)
+			[55090] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = 1,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = true,
+					duration = 0.08,
+					amplitude = 10,
+					frequency = 4.1,
+					fade_in = 0.01,
+					fade_out = 0.18,
+					cooldown = 0.5,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "DEATHKNIGHT",
+					spellid = 55090,
+				}
+			}, 
+			
+			--Festering Strike (dk)
+			[85948] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .1,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.12,
+					amplitude = 1,
+					frequency = 25,
+					fade_in = 0.01,
+					fade_out = 0.02,
+					cooldown = 0.5,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "DEATHKNIGHT",
+					spellid = 85948,
+				}
+			}, 
+			
+			--Heart Strike (dk)
+			[206930] = {
+				{
+					enabled = true,
+					duration = 0.035, --seconds
+					animation_type = "scale",
+					cooldown = 0.75, --seconds
+					scale_upX = 1.1,
+					scale_upY = 1.1,
+					scale_downX = 0.9,
+					scale_downY = 0.9,
+				},
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = -1,
+					scaleY = 1,
+					absolute_sineX = true,
+					absolute_sineY = true,
+					duration = 0.075,
+					amplitude = 1.8,
+					frequency = 50,
+					fade_in = 0.01,
+					fade_out = 0.02,
+					cooldown = 0.5,
+					critical_scale = 2,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "DEATHKNIGHT",
+					spellid = 206930,
+				}
+			}, 
+			
+			--Chi Burst (Monk)
+			[148135] =  {
+			   [1] =  {
+			      ["enabled"] = true,
+			      ["fade_out"] = 0.09,
+			      ["absolute_sineX"] = false,
+			      ["duration"] = 0.099999994039536,
+			      ["absolute_sineY"] = false,
+			      ["animation_type"] = "frameshake",
+			      ["scaleX"] = 1,
+			      ["amplitude"] = 1.75,
+			      ["critical_scale"] = 1.05,
+			      ["fade_in"] = 0.01,
+			      ["scaleY"] = 1,
+			      ["cooldown"] = 0.5,
+			      ["frequency"] = 60.874122619629,
+			   },
+			   ["info"] =  {
+			      ["time"] = 1539295958,
+			      ["class"] = "MONK",
+			      ["spellid"] = 148135,
+			      ["desc"] = "",
+			   },
+			},
+
+			--Blackout Strike (Monk)
+			[205523] =  {
+			   [1] =  {
+			      ["enabled"] = true,
+			      ["fade_out"] = 0.09,
+			      ["absolute_sineX"] = false,
+			      ["duration"] = 0.099999994039536,
+			      ["absolute_sineY"] = false,
+			      ["animation_type"] = "frameshake",
+			      ["scaleX"] = 0.099998474121094,
+			      ["amplitude"] = 3,
+			      ["critical_scale"] = 1.05,
+			      ["fade_in"] = 0.01,
+			      ["scaleY"] = 1,
+			      ["cooldown"] = 0.5,
+			      ["frequency"] = 1,
+			   },
+			   ["info"] =  {
+			      ["time"] = 1539295885,
+			      ["class"] = "MONK",
+			      ["spellid"] = 205523,
+			      ["desc"] = "",
+			   },
+			},
+
+			--Tiger Palm (Monk)
+			[100780] =  {
+			   [1] =  {
+			      ["enabled"] = true,
+			      ["fade_out"] = 0.09,
+			      ["absolute_sineX"] = false,
+			      ["duration"] = 0.099999994039536,
+			      ["absolute_sineY"] = false,
+			      ["animation_type"] = "frameshake",
+			      ["scaleX"] = 0.1,
+			      ["amplitude"] = 1,
+			      ["critical_scale"] = 1.05,
+			      ["fade_in"] = 0.01,
+			      ["scaleY"] = 1,
+			      ["cooldown"] = 0.5,
+			      ["frequency"] = 1,
+			   },
+			   ["info"] =  {
+			      ["time"] = 1539295910,
+			      ["class"] = "MONK",
+			      ["spellid"] = 100780,
+			      ["desc"] = "",
+			   },
+			},
+			
+			--Blackout Kick (Monk)
+			[100784] =  {
+			   [1] =  {
+			      ["enabled"] = true,
+			      ["fade_out"] = 0.09,
+			      ["absolute_sineX"] = false,
+			      ["duration"] = 0.099999994039536,
+			      ["absolute_sineY"] = false,
+			      ["animation_type"] = "frameshake",
+			      ["scaleX"] = 1,
+			      ["amplitude"] = 3,
+			      ["critical_scale"] = 1.05,
+			      ["fade_in"] = 0.01,
+			      ["scaleY"] = 1,
+			      ["cooldown"] = 0.5,
+			      ["frequency"] = 1,
+			   },
+			   ["info"] =  {
+			      ["time"] = 1539296312,
+			      ["class"] = "MONK",
+			      ["spellid"] = 100784,
+			      ["desc"] = "",
+			   },
+			},
+
+			--Spinning Crane Kick (Monk)
+			[107270] =  {
+			   [1] =  {
+			      ["enabled"] = true,
+			      ["fade_out"] = 0.089999996125698,
+			      ["duration"] = 0.1499999910593,
+			      ["absolute_sineX"] = false,
+			      ["absolute_sineY"] = false,
+			      ["animation_type"] = "frameshake",
+			      ["scaleX"] = 0.099998474121094,
+			      ["amplitude"] = 0.1499999910593,
+			      ["critical_scale"] = 1.05,
+			      ["fade_in"] = 0.0099999997764826,
+			      ["scaleY"] = 1,
+			      ["cooldown"] = 0.5,
+			      ["frequency"] = 200,
+			   },
+			   ["info"] =  {
+			      ["spellid"] = 107270,
+			      ["class"] = "MONK",
+			      ["time"] = 1539296490,
+			      ["desc"] = "",
+			   },
+			},
+
+
+			--Fists of Fury (Monk)
+			[117418] =  {
+			   [1] =  {
+			      ["scaleY"] = 1,
+			      ["fade_out"] = 0.1499999910593,
+			      ["absolute_sineX"] = false,
+			      ["duration"] = 0.1799999922514,
+			      ["absolute_sineY"] = false,
+			      ["animation_type"] = "frameshake",
+			      ["scaleX"] = 0.099998474121094,
+			      ["enabled"] = true,
+			      ["amplitude"] = 0.1499999910593,
+			      ["fade_in"] = 0.0099999997764826,
+			      ["critical_scale"] = 1.05,
+			      ["cooldown"] = 0.5,
+			      ["frequency"] = 116.00999450684,
+			   },
+			   ["info"] =  {
+			      ["time"] = 1539296387,
+			      ["class"] = "MONK",
+			      ["spellid"] = 117418,
+			      ["desc"] = "",
+			   },
+			},
+
+			
+			--Rising Sun Kick (Monk)
+			[185099] =  {
+			   [1] =  {
+			      ["enabled"] = true,
+			      ["fade_out"] = 0.18999999761581,
+			      ["absolute_sineX"] = false,
+			      ["duration"] = 0.19999998807907,
+			      ["absolute_sineY"] = true,
+			      ["animation_type"] = "frameshake",
+			      ["scaleX"] = 0,
+			      ["amplitude"] = 3,
+			      ["critical_scale"] = 1.05,
+			      ["fade_in"] = 0,
+			      ["scaleY"] = 0.84999847412109,
+			      ["cooldown"] = 0.5,
+			      ["frequency"] = 1,
+			   },
+			   ["info"] =  {
+			      ["time"] = 1539712435,
+			      ["class"] = "MONK",
+			      ["spellid"] = 185099,
+			      ["desc"] = "",
+			   },
+			},
+			
+			--Blade Dance (Demon Hunter)
+			[199552] =  {
+			   [1] =  {
+			      ["enabled"] = true,
+			      ["fade_out"] = 0.099999994039536,
+			      ["duration"] = 0.099999994039536,
+			      ["absolute_sineX"] = true,
+			      ["absolute_sineY"] = false,
+			      ["animation_type"] = "frameshake",
+			      ["scaleX"] = 0.20000076293945,
+			      ["critical_scale"] = 1.05,
+			      ["amplitude"] = 2.5,
+			      ["fade_in"] = 0,
+			      ["scaleY"] = 0.79999923706055,
+			      ["cooldown"] = 0.5,
+			      ["frequency"] = 1,
+			   },
+			   [2] =  {
+			      ["enabled"] = true,
+			      ["scale_upX"] = 1.0299999713898,
+			      ["animation_type"] = "scale",
+			      ["scale_downX"] = 0.96999996900559,
+			      ["scale_downY"] = 0.96999996900559,
+			      ["duration"] = 0.05,
+			      ["cooldown"] = 0.75,
+			      ["scale_upY"] = 1.0299999713898,
+			   },
+			   ["info"] =  {
+			      ["spellid"] = 199552,
+			      ["class"] = "DEMONHUNTER",
+			      ["time"] = 1539717392,
+			      ["desc"] = "",
+			   },
+			},
+			--Chaos Strike (Demon Hunter)
+			[199547] =  {
+			   [1] =  {
+			      ["enabled"] = true,
+			      ["fade_out"] = 0.089999996125698,
+			      ["absolute_sineX"] = false,
+			      ["duration"] = 0.1,
+			      ["absolute_sineY"] = true,
+			      ["animation_type"] = "frameshake",
+			      ["scaleX"] = 0.59999847412109,
+			      ["amplitude"] = 3,
+			      ["critical_scale"] = 1.05,
+			      ["fade_in"] = 0.0099999997764826,
+			      ["scaleY"] = 1,
+			      ["cooldown"] = 0.5,
+			      ["frequency"] = 1,
+			   },
+			   [2] =  {
+			      ["enabled"] = true,
+			      ["scale_upX"] = 1.039999961853,
+			      ["animation_type"] = "scale",
+			      ["cooldown"] = 0.75,
+			      ["duration"] = 0.05,
+			      ["scale_downY"] = 0.96999996900558,
+			      ["scale_downX"] = 0.96999996900558,
+			      ["scale_upY"] = 1.039999961853,
+			   },
+			   ["info"] =  {
+			      ["time"] = 1539717795,
+			      ["class"] = "DEMONHUNTER",
+			      ["spellid"] = 199547,
+			      ["desc"] = "",
+			   },
+			},
+			--Demon's Bite (Demon Hunter)
+			[162243] =  {
+			   [1] =  {
+			      ["enabled"] = true,
+			      ["fade_out"] = 0.089999996125698,
+			      ["duration"] = 0.099999994039535,
+			      ["absolute_sineX"] = false,
+			      ["absolute_sineY"] = true,
+			      ["animation_type"] = "frameshake",
+			      ["scaleX"] = 0.099998474121094,
+			      ["critical_scale"] = 1.05,
+			      ["amplitude"] = 1,
+			      ["fade_in"] = 0.0099999997764826,
+			      ["scaleY"] = 1,
+			      ["cooldown"] = 0.5,
+			      ["frequency"] = 1,
+			   },
+			   ["info"] =  {
+			      ["spellid"] = 162243,
+			      ["class"] = "DEMONHUNTER",
+			      ["time"] = 1539717356,
+			      ["desc"] = "",
+			   },
+			},
+			--Eye Beam (Demon Hunter)
+			[198030] =  {
+			   [1] =  {
+			      ["enabled"] = true,
+			      ["fade_out"] = 0.089999996125698,
+			      ["duration"] = 0.31999999284744,
+			      ["absolute_sineX"] = false,
+			      ["absolute_sineY"] = false,
+			      ["animation_type"] = "frameshake",
+			      ["scaleX"] = 0.099998474121094,
+			      ["critical_scale"] = 1.05,
+			      ["amplitude"] = 0.5,
+			      ["fade_in"] = 0.0099999997764826,
+			      ["scaleY"] = 1,
+			      ["cooldown"] = 0.5,
+			      ["frequency"] = 200,
+			   },
+			   ["info"] =  {
+			      ["spellid"] = 198030,
+			      ["class"] = "DEMONHUNTER",
+			      ["time"] = 1539717136,
+			      ["desc"] = "",
+			   },
+			},
+			--Infernal Strike (Demon Hunter)
+			[189112] =  {
+			   [1] =  {
+			      ["enabled"] = true,
+			      ["fade_out"] = 0.34999999403954,
+			      ["duration"] = 0.40000000596046,
+			      ["absolute_sineX"] = true,
+			      ["absolute_sineY"] = true,
+			      ["animation_type"] = "frameshake",
+			      ["scaleX"] = 0,
+			      ["amplitude"] = 1.8799999952316,
+			      ["critical_scale"] = 1.05,
+			      ["fade_in"] = 0,
+			      ["scaleY"] = 1,
+			      ["cooldown"] = 0.5,
+			      ["frequency"] = 51.979999542236,
+			   },
+			   ["info"] =  {
+			      ["time"] = 1539715467,
+			      ["class"] = "DEMONHUNTER",
+			      ["spellid"] = 189112,
+			      ["desc"] = "",
+			   },
+			},
+			--Shear (Demon Hunter)
+			[203782] =  {
+			   [1] =  {
+			      ["enabled"] = true,
+			      ["fade_out"] = 0.089999996125698,
+			      ["duration"] = 0.099999994039536,
+			      ["absolute_sineX"] = true,
+			      ["absolute_sineY"] = false,
+			      ["animation_type"] = "frameshake",
+			      ["scaleX"] = 0,
+			      ["critical_scale"] = 1.05,
+			      ["amplitude"] = 1.5,
+			      ["fade_in"] = 0.0099999997764826,
+			      ["scaleY"] = -1,
+			      ["cooldown"] = 0.5,
+			      ["frequency"] = 1,
+			   },
+			   ["info"] =  {
+			      ["spellid"] = 203782,
+			      ["class"] = "DEMONHUNTER",
+			      ["time"] = 1539716639,
+			      ["desc"] = "",
+			   },
+			},
+			--Soul Cleave (Demon Hunter)
+			[228478] =  {
+			   [1] =  {
+			      ["enabled"] = true,
+			      ["fade_out"] = 0.099999994039536,
+			      ["duration"] = 0.099999994039535,
+			      ["absolute_sineX"] = true,
+			      ["absolute_sineY"] = false,
+			      ["animation_type"] = "frameshake",
+			      ["scaleX"] = 0.20000076293945,
+			      ["critical_scale"] = 1.05,
+			      ["amplitude"] = 2.5,
+			      ["fade_in"] = 0,
+			      ["scaleY"] = 0.79999923706055,
+			      ["cooldown"] = 0.5,
+			      ["frequency"] = 1,
+			   },
+			   [2] =  {
+			      ["animation_type"] = "scale",
+			      ["scale_upX"] = 1.0299999713898,
+			      ["scale_upY"] = 1.0299999713898,
+			      ["scale_downX"] = 0.96999996900559,
+			      ["scale_downY"] = 0.96999996900559,
+			      ["duration"] = 0.05,
+			      ["cooldown"] = 0.75,
+			      ["enabled"] = true,
+			   },
+			   ["info"] =  {
+			      ["spellid"] = 228478,
+			      ["class"] = "DEMONHUNTER",
+			      ["time"] = 1539716636,
+			      ["desc"] = "",
+			   },
+			},
+			--Throw Glaive (Demon Hunter)
+			[204157] =  {
+			   [1] =  {
+			      ["enabled"] = true,
+			      ["fade_out"] = 0.089999996125698,
+			      ["duration"] = 0.1,
+			      ["absolute_sineX"] = false,
+			      ["absolute_sineY"] = true,
+			      ["animation_type"] = "frameshake",
+			      ["scaleX"] = 1,
+			      ["critical_scale"] = 1.05,
+			      ["amplitude"] = 6,
+			      ["fade_in"] = 0.0099999997764826,
+			      ["scaleY"] = 1,
+			      ["cooldown"] = 0.5,
+			      ["frequency"] = 1,
+			   },
+			   [2] =  {
+			      ["animation_type"] = "scale",
+			      ["scale_upX"] = 1.03,
+			      ["scale_upY"] = 1.03,
+			      ["scale_downX"] = 0.97,
+			      ["scale_downY"] = 0.97,
+			      ["duration"] = 0.05,
+			      ["cooldown"] = 0.75,
+			      ["enabled"] = true,
+			   },
+			   ["info"] =  {
+			      ["spellid"] = 204157,
+			      ["class"] = "DEMONHUNTER",
+			      ["time"] = 1539716637,
+			      ["desc"] = "",
+			   },
+			},
+
+		},
+		
+		health_statusbar_texture = "PlaterHealth",
+		--health_statusbar_texture = "Details Flat",
+		
+		health_selection_overlay = "Details Flat",
+		health_selection_overlay_alpha = 0.1,
+		
+		health_statusbar_bgtexture = "PlaterBackground",
+		health_statusbar_bgcolor = {0.0431372, 0.0431372, 0.0431372, 1},
+		
+		cast_statusbar_texture = "Details Flat",
+		cast_statusbar_bgtexture = "Details Serenity",
+		cast_statusbar_bgcolor = {0, 0, 0, 0.797810},
+		cast_statusbar_color = {1, .7, 0, 0.96},
+		cast_statusbar_color_nointerrupt = {.5, .5, .5, 0.96},
+		
+		indicator_faction = true,
+		indicator_spec = true,
+		indicator_elite = true,
+		indicator_rare = true,
+		indicator_quest = true,
+		indicator_enemyclass = false,
+		indicator_anchor = {side = 2, x = -2, y = 0},
+		
+		indicator_extra_raidmark = true,
+		indicator_raidmark_scale = 1,
+		indicator_raidmark_anchor = {side = 2, x = -1, y = 4},
+		
+		target_indicator = "Silver",
+		
+		color_override = true,
+		color_override_colors = {
+			[UNITREACTION_HOSTILE] = {0.917647, 0.2784313, 0.2078431, 1},
+			[UNITREACTION_FRIENDLY] = {0.9254901, 0.8, 0.2666666, 1},
+			[UNITREACTION_NEUTRAL] = {0.023529, 0.823529, 0.023518, 1},
+		},
+		
+		border_color = {0, 0, 0, .834},
+		border_thickness = 1,
+		
+		focus_indicator_enabled = true,
+		focus_color = {0, 0, 0, 0.5},
+		focus_texture = "PlaterFocus",
+		
+		tap_denied_color = {.9, .9, .9},
+		
+		aggro_modifies = {
+			health_bar_color = true,
+			border_color = false,
+			actor_name_color = false,
+		},
+		
+		tank = {
+			colors = {
+				aggro = {.5, .5, 1},
+				noaggro = {1, 0, 0},
+				pulling = {1, 1, 0},
+				nocombat = {0.505, 0.003, 0},
+				anothertank = {0.729, 0.917, 1},
+			},
+		},
+		
+		dps = {
+			colors = {
+				aggro = {1, 0.109803, 0},
+				noaggro = {.5, .5, 1},
+				pulling = {1, .8, 0},
+			},
+		},
+		
+		news_frame = {},
+		first_run2 = false,
+	}
+}

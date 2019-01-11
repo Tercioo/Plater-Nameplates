@@ -876,6 +876,9 @@ local ButtonMetaFunctions = _G [DF.GlobalWidgetControlNames ["button"]]
 		local x, y = GetCursorPosition()
 		x = _math_floor (x)
 		y = _math_floor (y)
+		
+		button.mouse_down = button.mouse_down or 0 --avoid issues when the button was pressed while disabled and release when enabled
+		
 		if (
 			(x == button.x and y == button.y) or
 			(button.mouse_down+0.5 > GetTime() and button:IsMouseOver())
