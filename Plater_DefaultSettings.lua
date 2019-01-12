@@ -481,10 +481,10 @@ PLATER_DEFAULT_SETTINGS = {
 		},
 		
 		--> special unit
-		pet_width_scale = 0.7,
-		pet_height_scale = 1,
-		minor_width_scale = 0.7,
-		minor_height_scale = 1,
+		pet_width_scale = 0.8,
+		pet_height_scale = 0.9,
+		minor_width_scale = 0.8,
+		minor_height_scale = 0.9,
 		
 		castbar_target_show = false,
 		castbar_target_anchor = {side = 5, x = 0, y = 0},
@@ -2281,8 +2281,8 @@ PLATER_DEFAULT_SETTINGS = {
 		color_override = true,
 		color_override_colors = {
 			[UNITREACTION_HOSTILE] = {0.917647, 0.2784313, 0.2078431, 1},
-			[UNITREACTION_FRIENDLY] = {0.9254901, 0.8, 0.2666666, 1},
-			[UNITREACTION_NEUTRAL] = {0.023529, 0.823529, 0.023518, 1},
+			[UNITREACTION_NEUTRAL] = {0.9254901, 0.8, 0.2666666, 1},
+			[UNITREACTION_FRIENDLY] = {0.023529, 0.823529, 0.023518, 1},
 		},
 		
 		border_color = {0, 0, 0, .834},

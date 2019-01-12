@@ -1487,6 +1487,7 @@ Plater.DefaultSpellRangeList = {
 					ShowPowerBar = false, 
 					ShowBorder = false, 
 					CanModifyHealhBarColor = false,
+					ShowTargetOverlay = false,
 				}
 				
 				local healthBarOptions = {
@@ -1529,7 +1530,7 @@ Plater.DefaultSpellRangeList = {
 			
 			-- "PlaterMainAuraIcon"
 			-- "PlaterSecondaryAuraIcon"
-			
+
 			--> buff frames
 				--main buff frame
 				plateFrame.unitFrame.BuffFrame = CreateFrame ("frame", plateFrame.unitFrame:GetName() .. "BuffFrame1", plateFrame.unitFrame, "HorizontalLayoutFrame")
@@ -1615,6 +1616,12 @@ Plater.DefaultSpellRangeList = {
 				TargetNeonDown:Hide()
 				plateFrame.TargetNeonDown = TargetNeonDown
 				plateFrame.unitFrame.TargetNeonDown = TargetNeonDown
+				
+			--> target overlay
+				plateFrame.unitFrame.targetOverlayTexture = healthBar:CreateTexture (nil, "artwork")
+				plateFrame.unitFrame.targetOverlayTexture:SetDrawLayer ("artwork", 2)
+				plateFrame.unitFrame.targetOverlayTexture:SetBlendMode ("ADD")
+				plateFrame.unitFrame.targetOverlayTexture:SetAllPoints()
 			
 			--> create the highlight texture (when the mouse passes over the nameplate and receives a highlight)
 				Plater.CreateHighlightNameplate (plateFrame)
@@ -1953,7 +1960,7 @@ Plater.DefaultSpellRangeList = {
 			plateFrame [MEMBER_GUID] = UnitGUID (unitID) or ""
 			plateFrame [MEMBER_NAME] = UnitName (unitID) or ""
 			plateFrame [MEMBER_NAMELOWER] = lower (plateFrame [MEMBER_NAME])
-			plateFrame [MEMBER_CLASSIFICATION] = UnitClassification (plateFrame [unitID])
+			plateFrame [MEMBER_CLASSIFICATION] = UnitClassification (unitID)
 			
 			--cache values into the unitFrame as well to reduce the overhead on scripts and hooks
 			unitFrame [MEMBER_NAME] = plateFrame [MEMBER_NAME]
@@ -3919,7 +3926,18 @@ end
 
 		local unitType = Plater.GetUnitType (plateFrame)
 		
+		--print (unitType, UnitName (unitFrame.unit))
+		
 		--todo: add minor and pet scale
+		
+		if (unitType == "pet") then
+			healthBarHeight = healthBarHeight * Plater.db.profile.pet_height_scale
+			healthBarWidth = healthBarWidth * Plater.db.profile.pet_width_scale
+
+		elseif (unitType == "minus") then
+			healthBarHeight = healthBarHeight * Plater.db.profile.minor_height_scale
+			healthBarWidth = healthBarWidth * Plater.db.profile.minor_width_scale
+		end
 		
 		--unit frame - is set to be the same size as the plateFrame
 			unitFrame:ClearAllPoints()
@@ -3932,12 +3950,6 @@ end
 			xOffSet = xOffSet + namePlateOffSetX
 			local yOffSet = (plateFrame:GetHeight() - healthBarHeight) / 2
 			yOffSet = yOffSet + namePlateOffSetY
-			
-			if (unitType == "pet") then
-				--scalarValue = abs (Plater.db.profile.pet_width_scale - 2) * scalarValue
-			elseif (unitType == "minus") then
-				--scalarValue = abs (Plater.db.profile.minor_width_scale - 2) * scalarValue
-			end
 			
 			healthBar:ClearAllPoints()
 			PixelUtil.SetPoint (healthBar, "topleft", unitFrame, "topleft", xOffSet + profile.global_offset_x, -yOffSet + profile.global_offset_y)
@@ -4453,9 +4465,16 @@ end
 				plateFrame.TargetNeonDown:Hide()
 			end
 			
+			if (not plateFrame.unitFrame.healthBar:IsShown()) then
+				plateFrame.unitFrame.targetOverlayTexture:Hide()
+			else
+				plateFrame.unitFrame.targetOverlayTexture:Show()
+			end
+			
 		else
 			plateFrame.TargetNeonUp:Hide()
 			plateFrame.TargetNeonDown:Hide()
+			plateFrame.unitFrame.targetOverlayTexture:Hide()
 			
 			plateFrame [MEMBER_TARGET] = nil
 			plateFrame.unitFrame [MEMBER_TARGET] = nil
@@ -5300,8 +5319,8 @@ end
 			
 			--target overlay texture
 			local targetedOverlayTexture = LibSharedMedia:Fetch ("statusbar", Plater.db.profile.health_selection_overlay)
-			unitFrame.targetOverlay:SetTexture (targetedOverlayTexture)
-			unitFrame.targetOverlay:SetAlpha (Plater.db.profile.health_selection_overlay_alpha)
+			unitFrame.targetOverlayTexture:SetTexture (targetedOverlayTexture)
+			unitFrame.targetOverlayTexture:SetAlpha (Plater.db.profile.health_selection_overlay_alpha)
 		end
 		
 		--update the plate size for this unit
@@ -6152,6 +6171,8 @@ end
 		
 		plateFrame [MEMBER_NPCID] = npcId
 		plateFrame.unitFrame [MEMBER_NPCID] = npcId
+		
+		return npcId
 	end
 	
 	function Plater.GetUnitType (plateFrame)
@@ -6267,12 +6288,20 @@ end
 		end,
 		
 		SPELL_SUMMON = function (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical)
+		--[=[ --some actors are not having the pet flag 0x3000, so we are directly adding all target summons into the cache
+			print ("Summon", targetFlag, bit.band (targetFlag, 0x00003000) ~= 0)
+			
 			if (sourceFlag and bit.band (sourceFlag, 0x00003000) ~= 0) then
+				print ("new pet", sourceName, targetName)
 				PET_CACHE [sourceGUID] = time
 				
 			elseif (targetFlag and bit.band (targetFlag, 0x00003000) ~= 0) then
+				print ("new pet", sourceName, targetName)
 				PET_CACHE [targetGUID] = time
 			end
+		--]=]
+		
+			PET_CACHE [targetGUID] = time
 		end,
 		
 		SPELL_INTERRUPT = function (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical)

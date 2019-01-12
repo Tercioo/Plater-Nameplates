@@ -131,6 +131,7 @@ function Plater.OpenOptionsPanel()
 	-- mainFrame � um frame vazio para sustentrar todos os demais frames, este frame sempre ser� mostrado
 	local mainFrame = DF:CreateTabContainer (f, "Plater Options", "PlaterOptionsPanelContainer", 
 	{
+		--when chaging these indexes also need to change the function f.CopySettings
 		{name = "FrontPage", title = "General Settings"},
 		{name = "ThreatConfig", title = "Threat / Colors"},
 		{name = "TargetConfig", title = "Target"},
@@ -213,6 +214,45 @@ function Plater.OpenOptionsPanel()
 		end
 		Plater.UpdateMaxCastbarTextLength()
 	end
+	
+	function f.CopySettingsConfirmed()
+		DF.table.copy (Plater.db.profile.plate_config [f.CopyingTo], Plater.db.profile.plate_config [f.CopyingFrom])
+		PlaterOptionsPanelFrame.RefreshOptionsFrame()
+		Plater:Msg ("settings copied.")
+	end
+	
+	--> copy settings from one actor type to another
+	function f.CopySettings (_, _, from)
+		local currentTab = mainFrame.CurrentIndex
+		local settingsTo
+		if (currentTab == 4) then
+			settingsTo = "player"
+		elseif (currentTab == 5) then
+			settingsTo = "enemynpc"
+		elseif (currentTab == 6) then
+			settingsTo = "enemyplayer"
+		elseif (currentTab == 7) then
+			settingsTo = "friendlynpc"
+		elseif (currentTab == 8) then
+			settingsTo = "friendlyplayer"
+		end
+		
+		if (settingsTo) then
+			f.CopyingFrom = from
+			f.CopyingTo = settingsTo
+			DF:ShowPromptPanel ("Copy setting from '" .. from .. "' to '" .. settingsTo .. "' ?", f.CopySettingsConfirmed, function() f.CopyingFrom = nil; f.CopyingTo = nil; end)
+		else
+			Plater:Msg ("failed to get the settings for the current selected tab.")
+		end
+	end
+	
+	local copy_settings_options = {
+		{label = "Personal Bar", value = "player", onclick = f.CopySettings},
+		{label = "Enemy Npc", value = "enemynpc", onclick = f.CopySettings},
+		{label = "Enemy Player", value = "enemyplayer", onclick = f.CopySettings},
+		{label = "Friendly Npc", value = "friendlynpc", onclick = f.CopySettings},
+		{label = "Friendly Player", value = "friendlyplayer", onclick = f.CopySettings},
+	}
 	
 ------------------------------------------------------------------------------------------------------------
 --> profile frame
@@ -2391,6 +2431,15 @@ do
 		local options_personal = {
 
 			{type = "label", get = function() return "General Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			
+			{
+				type = "select",
+				get = function() return "player" end,
+				values = function() return copy_settings_options end,
+				name = "Copy",
+				desc = "Copy settings from another tab.\n\nWhen selecting an option a confirmation box is shown to confirm the copy.",
+			},
+			
 			{
 				type = "toggle",
 				get = function() return Plater.db.profile.plate_config.player.click_through end,
@@ -4382,6 +4431,15 @@ local relevance_options = {
 	
 	
 		{type = "label", get = function() return "General Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		
+		{
+			type = "select",
+			get = function() return "player" end,
+			values = function() return copy_settings_options end,
+			name = "Copy",
+			desc = "Copy settings from another tab.\n\nWhen selecting an option a confirmation box is shown to confirm the copy.",
+		},	
+		
 		{
 			type = "toggle",
 			get = function() return Plater.db.profile.use_playerclass_color end,
@@ -5179,6 +5237,15 @@ local relevance_options = {
 	
 		
 		{type = "label", get = function() return "General Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		
+		{
+			type = "select",
+			get = function() return "player" end,
+			values = function() return copy_settings_options end,
+			name = "Copy",
+			desc = "Copy settings from another tab.\n\nWhen selecting an option a confirmation box is shown to confirm the copy.",
+		},
+		
 		{
 			type = "toggle",
 			get = function() return Plater.db.profile.plate_config.enemyplayer.use_playerclass_color end,
@@ -5989,6 +6056,15 @@ local relevance_options = {
 	local friendly_npc_options_table = {
 	
 		{type = "label", get = function() return "General Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		
+		{
+			type = "select",
+			get = function() return "player" end,
+			values = function() return copy_settings_options end,
+			name = "Copy",
+			desc = "Copy settings from another tab.\n\nWhen selecting an option a confirmation box is shown to confirm the copy.",
+		},
+		
 		{
 			type = "toggle",
 			get = function() return GetCVarBool ("nameplateShowFriendlyNPCs") end,
@@ -6870,12 +6946,20 @@ local relevance_options = {
 			Plater.db.profile.plate_config.enemynpc.big_actortitle_text_font = value
 			Plater.UpdateAllPlates()
 		end
-
+		
 		--menu 2 --enemy npc
 		local options_table2 = {
 		
 			{type = "label", get = function() return "General Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-			--enabled
+			
+			{
+				type = "select",
+				get = function() return "player" end,
+				values = function() return copy_settings_options end,
+				name = "Copy",
+				desc = "Copy settings from another tab.\n\nWhen selecting an option a confirmation box is shown to confirm the copy.",
+			},
+			
 			{
 				type = "toggle",
 				get = function() return Plater.db.profile.plate_config.enemynpc.quest_enabled end,
