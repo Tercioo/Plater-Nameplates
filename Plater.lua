@@ -1631,8 +1631,7 @@ Plater.DefaultSpellRangeList = {
 				local healthCutOff = healthBar:CreateTexture (nil, "overlay")
 				healthCutOff:SetDrawLayer ("overlay", 7)
 				healthCutOff:SetTexture ([[Interface\AddOns\Plater\images\health_bypass_indicator]])
-				PixelUtil.SetPoint (healthCutOff, "left", healthBar, "left", 0, 0)
-				healthCutOff:SetSize (16, 25)
+
 				healthCutOff:SetBlendMode ("ADD")
 				healthCutOff:Hide()
 				healthBar.healthCutOff = healthCutOff
@@ -4074,8 +4073,9 @@ end
 				local healthPercent = UnitHealth (tickFrame.unit) / UnitHealthMax (tickFrame.unit)
 				if (healthPercent < DB_HEALTHCUTOFF_AT) then
 					if (not healthBar.healthCutOff:IsShown()) then
-						healthBar.healthCutOff:SetHeight (healthBar:GetHeight())
-						healthBar.healthCutOff:SetPoint ("left", healthBar, "left", healthBar:GetWidth() * DB_HEALTHCUTOFF_AT, 0)
+						healthBar.healthCutOff:ClearAllPoints()
+						healthBar.healthCutOff:SetSize (healthBar:GetHeight(), healthBar:GetHeight())
+						healthBar.healthCutOff:SetPoint ("center", healthBar, "left", healthBar:GetWidth() * DB_HEALTHCUTOFF_AT, 0)
 						
 						if (not Plater.db.profile.health_cutoff_hide_divisor) then
 							healthBar.healthCutOff:Show()
@@ -4090,7 +4090,7 @@ end
 						healthBar.executeRange:SetAlpha (0.2)
 						healthBar.executeRange:SetVertexColor (.3, .3, .3)
 						healthBar.executeRange:SetHeight (healthBar:GetHeight())
-						healthBar.executeRange:SetPoint ("right", healthBar.healthCutOff, "left")
+						healthBar.executeRange:SetPoint ("right", healthBar.healthCutOff, "center")
 						
 						if (Plater.db.profile.health_cutoff_extra_glow) then
 							healthBar.ExecuteGlowUp.ShowAnimation:Play()
@@ -5407,6 +5407,7 @@ end
 
 	-- ~border
 	--changes the border color, this call is used internally on Plater
+	--see Plater.SetBorderColor for scripting calls
 	function Plater.ForceChangeBorderColor (self, r, g, b) --self = healthBar
 		--this call is from the retail game, file: blizzard_nameplates.lua
 		self.border:SetVertexColor (r, g, b)
@@ -6890,6 +6891,7 @@ end
 	
 	--changes the border color, this call is for the API, can be called from external sources
 	function Plater.SetBorderColor (unitFrame, r, g, b) --self = healthBar
+		r, g, b = DF:ParseColors (r, g, b)
 		--this call is from the retail game, file: blizzard_nameplates.lua
 		unitFrame.healthBar.border:SetVertexColor (r, g, b)
 	end
