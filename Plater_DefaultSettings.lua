@@ -537,6 +537,7 @@ PLATER_DEFAULT_SETTINGS = {
 		aura_x_offset = 0,
 		aura_y_offset = 0,
 		aura_grow_direction = 2, --> center
+		aura_breakline_space = 12, --space between the first and second line when the aura break line
 		
 		--> aura frame 2
 		buffs_on_aura2 = false,
@@ -2315,6 +2316,7 @@ PLATER_DEFAULT_SETTINGS = {
 				aggro = {1, 0.109803, 0},
 				noaggro = {.5, .5, 1},
 				pulling = {1, .8, 0},
+				notontank = {.5, .5, 1}, --color inside dungeon when the mob is not in the tank aggro and not on the player
 			},
 		},
 		

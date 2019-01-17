@@ -1280,6 +1280,17 @@ Plater.DefaultSpellRangeList = {
 							end
 						end
 					end
+				
+				--is in group and is inside a dungeon
+				--there's only one tank on dungeon but dps may see if a unit is not in the tank aggro
+				elseif (IsInGroup() and Plater.ZoneInstanceType == "party") then
+					for i = 1, GetNumGroupMembers() -1 do
+						if (IsUnitEffectivelyTank ("party" .. i)) then
+							if (not UnitIsUnit ("party" .. i, "player")) then
+								TANK_CACHE [UnitName ("party" .. i)] = true
+							end
+						end
+					end
 				end
 			
 			Plater.UpdateAuraCache()
@@ -1918,6 +1929,14 @@ Plater.DefaultSpellRangeList = {
 			unitFrame.namePlateUnitToken = unitID
 			unitFrame.displayedUnit = unitID
 			plateFrame [MEMBER_UNITID] = unitID
+			
+			plateFrame.QuestAmountCurrent = nil
+			plateFrame.QuestAmountTotal = nil
+			unitFrame.QuestAmountCurrent = nil
+			unitFrame.QuestAmountTotal = nil
+			
+			--cache the unit target id, so it doesnt need to waste cycles building up on aggro checks
+			unitFrame.targetUnitID = unitID .. "target"
 
 			--clear values
 			plateFrame.CurrentUnitNameString = plateFrame.unitName
@@ -2448,7 +2467,7 @@ function Plater.OnInit()
 								local child = children [i]
 								child:ClearAllPoints()
 								if (i == framersPerRow) then
-									child:SetPoint ("bottomleft", firstChild, "topleft", 0, 12)
+									child:SetPoint ("bottomleft", firstChild, "topleft", 0, Plater.db.profile.aura_breakline_space)
 									framersPerRow = framersPerRow + framersPerRow
 								else
 									child:SetPoint ("topleft", children [i-1], "topright", padding, 0)
@@ -2462,7 +2481,7 @@ function Plater.OnInit()
 								local child = children [i]
 								child:ClearAllPoints()
 								if (i == framersPerRow) then
-									child:SetPoint ("bottomright", firstChild, "topright", 0, 12)
+									child:SetPoint ("bottomright", firstChild, "topright", 0, Plater.db.profile.aura_breakline_space)
 									framersPerRow = framersPerRow + framersPerRow
 								else
 									child:SetPoint ("topright", children [i-1], "topleft", -padding, 0)
@@ -3797,7 +3816,7 @@ end
 			
 		else
 			--check if is a player
-			if (unitFrame.ActorType == ACTORTYPE_FRIENDLY_PLAYER or unitFrame.ActorType == ACTORTYPE_ENEMY_PLAYER) then
+			if (UnitIsPlayer (unitID) and (unitFrame.ActorType == ACTORTYPE_FRIENDLY_PLAYER or unitFrame.ActorType == ACTORTYPE_ENEMY_PLAYER)) then
 				local _, class = UnitClass (unitID)
 				local classColor = RAID_CLASS_COLORS [class]
 				if (classColor) then -- and unitFrame.optionTable.useClassColors
@@ -4289,7 +4308,7 @@ end
 				
 					if (IsInRaid()) then
 						--check is the mob is tanked by another tank in the raid
-						local unitTarget = UnitName (self.displayedUnit .. "target")
+						local unitTarget = UnitName (self.targetUnitID)
 						if (TANK_CACHE [unitTarget]) then
 							--nï¿½o hï¿½ aggro neste mob mas ele esta participando do combate
 							Plater.ChangeHealthBarColor_Internal (self.healthBar, unpack (DB_AGGRO_TANK_COLORS.anothertank))
@@ -4404,16 +4423,37 @@ end
 						
 					elseif (threatStatus == 2) then --esta tankando com pouco aggro
 						set_aggro_color (self.healthBar, unpack (DB_AGGRO_DPS_COLORS.aggro))
-						
 						self.PlateFrame.playerHasAggro = true
+						
 					elseif (threatStatus == 1) then --esta quase puxando o aggro
-						set_aggro_color (self.healthBar, unpack (DB_AGGRO_DPS_COLORS.pulling))
+					
+						if (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid") then
+							local unitTarget = UnitName (self.targetUnitID)
+							if (not TANK_CACHE [unitTarget]) then
+								set_aggro_color (self.healthBar, unpack (DB_AGGRO_DPS_COLORS.notontank))
+							else
+								set_aggro_color (self.healthBar, unpack (DB_AGGRO_DPS_COLORS.pulling))
+							end
+						else
+							set_aggro_color (self.healthBar, unpack (DB_AGGRO_DPS_COLORS.pulling))
+						end
 						
 						self.PlateFrame.playerHasAggro = false
 						self.aggroGlowUpper:Show()
 						self.aggroGlowLower:Show()
-					elseif (threatStatus == 0) then --nï¿½o esta tankando
-						set_aggro_color (self.healthBar, unpack (DB_AGGRO_DPS_COLORS.noaggro))
+						
+					elseif (threatStatus == 0) then --não esta tankando
+						if (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid") then
+							local unitTarget = UnitName (self.targetUnitID)
+							if (not TANK_CACHE [unitTarget]) then
+								set_aggro_color (self.healthBar, unpack (DB_AGGRO_DPS_COLORS.notontank))
+							else
+								set_aggro_color (self.healthBar, unpack (DB_AGGRO_DPS_COLORS.noaggro))
+							end
+						else
+							set_aggro_color (self.healthBar, unpack (DB_AGGRO_DPS_COLORS.noaggro))
+						end
+						
 						self.PlateFrame.playerHasAggro = false
 						
 					end
@@ -6517,6 +6557,7 @@ end
 			local text = ScanQuestTextCache [i]:GetText()
 			if (Plater.QuestCache [text]) then
 				--este npc percente a uma quest
+				local amount1, amount2 = 0, 0
 				if (not IsInGroup() and i < 8) then
 					--verifica se jï¿½ fechou a quantidade necessï¿½ria pra esse npc
 					local nextLineText = ScanQuestTextCache [i+1]:GetText()
@@ -6531,10 +6572,19 @@ end
 						if (p1 and p2 and p1 == p2) then
 							return
 						end
+						
+						amount1, amount2 = p1, p2
 					end
 				end
 
 				plateFrame [MEMBER_QUEST] = true
+				plateFrame.QuestAmountCurrent = amount1
+				plateFrame.QuestAmountTotal = amount2
+				
+				--expose to scripts
+				plateFrame.unitFrame.QuestAmountCurrent = amount1
+				plateFrame.unitFrame.QuestAmountTotal = amount2
+				
 				return true
 			end
 		end

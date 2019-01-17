@@ -1,5 +1,5 @@
 
-local dversion = 128
+local dversion = 130
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
 
@@ -1523,6 +1523,10 @@ function DF:SetHook (hookType, func)
 			error ("Details! Framework: unknown hook type for widget " .. self.WidgetType .. ": '" .. hookType .. "'.")
 		end
 	end
+end
+
+function DF:Error (errortext)
+	print ("|cFFFF2222Details! Framework Error|r:", errortext, self.GetName and self:GetName(), self.WidgetType, debugstack (2, 3, 0))
 end
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

@@ -895,6 +895,15 @@ local ButtonMetaFunctions = _G [DF.GlobalWidgetControlNames ["button"]]
 
 function ButtonMetaFunctions:SetTemplate (template)
 	
+	if (type (template) == "string") then
+		template = DF:GetTemplate ("button", template)
+	end
+	
+	if (not template) then
+		DF:Error ("template not found")
+		return
+	end
+	
 	if (template.width) then
 		self:SetWidth (template.width)
 	end

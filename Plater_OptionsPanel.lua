@@ -8043,7 +8043,7 @@ local relevance_options = {
 
 		{type = "blank"},
 	
-		{type = "label", get = function() return "Plate Color by Aggro:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return "Color When Playing as TANK:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "color",
 			get = function()
@@ -8054,7 +8054,7 @@ local relevance_options = {
 				local color = Plater.db.profile.tank.colors.aggro
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
-			name = "[tank] Aggro on You",
+			name = "Aggro on You",
 			desc = "When you are tanking with solid aggro.",
 		},
 		{
@@ -8067,7 +8067,7 @@ local relevance_options = {
 				local color = Plater.db.profile.tank.colors.anothertank
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
-			name = "[tank] Aggro on Another Tank",
+			name = "Aggro on Another Tank",
 			desc = "The enemy is being tanked by another tank in the raid.",
 		},
 		{
@@ -8080,7 +8080,7 @@ local relevance_options = {
 				local color = Plater.db.profile.tank.colors.pulling
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
-			name = "[tank] Aggro on You Warning",
+			name = "Aggro on You But is Low",
 			desc = "When you are tanking but others are close to pull the aggro from you.",
 		},
 		{
@@ -8093,7 +8093,7 @@ local relevance_options = {
 				local color = Plater.db.profile.tank.colors.noaggro
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
-			name = "[tank] No Aggro",
+			name = "No Aggro",
 			desc = "The enemy is attacking a player that isn't a tank!.",
 		},
 		{
@@ -8106,11 +8106,13 @@ local relevance_options = {
 				local color = Plater.db.profile.tank.colors.nocombat
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
-			name = "[tank] Not in Combat",
+			name = "Unit Not in Combat",
 			desc = "When you are in combat and the enemy isn't in combat with you or with a member of your group.",
 		},
 			
 		{type = "blank"},
+		{type = "label", get = function() return "Color When Playing as DPS or HEALER:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		
 --		{type = "label", get = function() return "Plate Color As a Dps:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "color",
@@ -8122,35 +8124,49 @@ local relevance_options = {
 				local color = Plater.db.profile.dps.colors.aggro
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
-			name = "[dps] Aggro",
+			name = "Aggro",
 			desc = "The name plate is painted with this color when you are a Dps (or healer) and have aggro.",
 		},
 		{
 			type = "color",
 			get = function()
-				local color = Plater.db.profile.dps.colors.noaggro
+				local color = Plater.db.profile.dps.colors.pulling
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = Plater.db.profile.dps.colors.noaggro
+				local color = Plater.db.profile.dps.colors.pulling
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
-			name = "[dps] No Aggro",
-			desc = "When you are a dps (or healer) and the mob isn't attacking you.",
+			name = "High Threat",
+			desc = "When you are neat to pull the aggro.",
 		},
 		{
 			type = "color",
 			get = function()
-				local color = Plater.db.profile.dps.colors.pulling
+				local color = Plater.db.profile.dps.colors.notontank
 				return {color[1], color[2], color[3], color[4]}
 			end,
 			set = function (self, r, g, b, a) 
-				local color = Plater.db.profile.dps.colors.pulling
+				local color = Plater.db.profile.dps.colors.notontank
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
-			name = "[dps] High Threat",
-			desc = "When you are neat to pull the aggro.",
+			name = "No Tank Aggro",
+			desc = "When another healer or dps has aggro.",
+		},		
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.dps.colors.noaggro
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.dps.colors.noaggro
+				color[1], color[2], color[3], color[4] = r, g, b, a
+			end,
+			name = "No Aggro",
+			desc = "When the mob is not attacking you.",
 		},
+
 		
 		{type = "blank"},
 		

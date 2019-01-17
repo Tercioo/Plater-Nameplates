@@ -7446,7 +7446,8 @@ DF.CastFrameFunctions = {
 				--> setup animtions
 				self:CancelScheduleToHide()
 
-				self:PLAYER_ENTERING_WORLD (unit, unit)
+				--self:PLAYER_ENTERING_WORLD (unit, unit)
+				self:OnEvent ("PLAYER_ENTERING_WORLD", unit, unit)
 				
 			else
 				for _, eventTable in ipairs (self.CastBarEvents) do
