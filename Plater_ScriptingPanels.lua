@@ -52,20 +52,30 @@ local options_slider_template = DF:GetTemplate ("slider", "OPTIONS_SLIDER_TEMPLA
 local options_button_template = DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE")
 
 Plater.APIList = {
-	{Name = "RefreshNameplateColor", 		Signature = "Plater.RefreshNameplateColor (unitFrame)", 				Desc = "Check which color the nameplate should have and set it."},
-	{Name = "SetNameplateColor", 		Signature = "Plater.SetNameplateColor (unitFrame, color)", 				Desc = "Set the color of the nameplate.\n\nColor formats are:\n|cFFFFFF00Just Values|r: r, g, b\n|cFFFFFF00Index Table|r: {r, g, b}\n|cFFFFFF00Hash Table|r: {r = 1, g = 1, b = 1}\n|cFFFFFF00Hex|r: '#FFFF0000' or '#FF0000'\n|cFFFFFF00Name|r: 'yellow' 'white'"},
-	{Name = "SetCastBarBorderColor", 		Signature = "Plater.SetCastBarBorderColor (castBar, color)", 			Desc = "Set the color of the castbar.\n\nColor formats are:\n|cFFFFFF00Just Values|r: r, g, b, a\n|cFFFFFF00Index Table|r: {r, g, b}\n|cFFFFFF00Hash Table|r: {r = 1, g = 1, b = 1}\n|cFFFFFF00Hex|r: '#FFFF0000' or '#FF0000'\n|cFFFFFF00Name|r: 'yellow' 'white'"},
+	{Name = "SetNameplateColor", 		Signature = "Plater.SetNameplateColor (unitFrame, color)", 				Desc = "Set the color of the nameplate.\n\nColor formats are:\n|cFFFFFF00Just Values|r: r, g, b\n|cFFFFFF00Index Table|r: {r, g, b}\n|cFFFFFF00Hash Table|r: {r = 1, g = 1, b = 1}\n|cFFFFFF00Hex|r: '#FFFF0000' or '#FF0000'\n|cFFFFFF00Name|r: 'yellow' 'white'\n\nCalling without passing width and height reset the size to default."},
+	{Name = "SetNameplateSize", 		Signature = "Plater.SetNameplateSize (unitFrame, width, height)",		Desc = "Adjust the nameplate size.\n\nCalling without passing width and height reset the size to default."},
+	{Name = "SetBorderColor", 			Signature = "Plater.SetBorderColor (self, r, g, b, a)",					Desc = "Set the border color.\n\nCalling without passing any color reset the color to default."},
+	
+	{Name = "SetCastBarSize", 			Signature = "Plater.SetCastBarSize (unitFrame, width, height)", 			Desc = "Adjust the cast bar size.\n\nCalling without passing width and height reset the size to default."},
+	{Name = "SetCastBarBorderColor", 		Signature = "Plater.SetCastBarBorderColor (castBar, color)", 			Desc = "Set the color of the castbar.\n\nColor formats are:\n|cFFFFFF00Just Values|r: r, g, b, a\n|cFFFFFF00Index Table|r: {r, g, b}\n|cFFFFFF00Hash Table|r: {r = 1, g = 1, b = 1}\n|cFFFFFF00Hex|r: '#FFFF0000' or '#FF0000'\n|cFFFFFF00Name|r: 'yellow' 'white'\n\nCalling without passing any color reset the color to default."},
+	
 	{Name = "FlashNameplateBorder", 		Signature = "Plater.FlashNameplateBorder (unitFrame [, duration])", 		Desc = "Do a quick flash in the nameplate border, duration is optional."},
 	{Name = "FlashNameplateBody", 		Signature = "Plater.FlashNameplateBody (unitFrame [, text [, duration]])", 	Desc = "Flash the healthbar portion of the nameplate, text and duration are optionals."},
-	{Name = "UpdateNameplateThread", 	Signature = "Plater.UpdateNameplateThread (unitFrame)", 				Desc = "Perform an Aggro update on the nameplate changing color to the current thread situation."},
-	{Name = "GetNpcIDFromGUID", 		Signature = "Plater.GetNpcIDFromGUID (GUID)", 					Desc = "Extract the npcID from a GUID, guarantee to always return a number."},
+	
+	{Name = "NameplateHasAura", 		Signature = "Plater.NameplateHasAura (unitFrame, aura)",				Desc = "Return true if the aura is shown on nameplate.\n\nAura can be the buff name, debuff name or spellID."},	
 	{Name = "NameplateInRange", 		Signature = "Plater.NameplateInRange (unitFrame)", 					Desc = "Return true if the nameplate is in range of the selected spell for range check.\n\nIt also updates the range flag for unitFrame.namePlateInRange."},
+	
+	{Name = "GetNpcIDFromGUID", 		Signature = "Plater.GetNpcIDFromGUID (GUID)", 					Desc = "Extract the npcID from a GUID, guarantee to always return a number."},
 	{Name = "GetRaidMark", 			Signature = "Plater.GetRaidMark (unitFrame)", 						Desc = "Return which raid mark the nameplate has. Always return false if the nameplate is the personal health bar."},
+	
 	{Name = "IsInCombat", 			Signature = "Plater.IsInCombat()", 								Desc = "Return 'true' if the player is in combat."},
 	{Name = "IsPlayerTank", 			Signature = "Plater.IsPlayerTank()", 							Desc = "Return 'true' if the player is in the tank role."},
 	
 	{Name = "DisableHighlight", 			Signature = "Plater.DisableHighlight (unitFrame)", 					Desc = "The nameplate won't highlight when the mouse passes over it."},
 	{Name = "EnableHighlight", 			Signature = "Plater.EnableHighlight (unitFrame)", 					Desc = "Enable the mouse over highlight."},
+	
+	{Name = "RefreshNameplateColor", 		Signature = "Plater.RefreshNameplateColor (unitFrame)", 				Desc = "Check which color the nameplate should have and set it."},
+	{Name = "UpdateNameplateThread", 	Signature = "Plater.UpdateNameplateThread (unitFrame)", 				Desc = "Perform an Aggro update on the nameplate changing color to the current thread situation."},	
 }
 
 Plater.FrameworkList = {

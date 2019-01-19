@@ -2968,6 +2968,20 @@ do
 				name = "Height",
 				desc = "Height of the cast bar.",
 			},
+			--y offset
+			{
+				type = "range",
+				get = function() return Plater.db.profile.plate_config.player.castbar_offset end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.plate_config.player.castbar_offset = value
+					Plater.UpdateAllPlates()
+				end,
+				min = -128,
+				max = 128,
+				step = 1,
+				name = "Y Offset",
+				desc = "Adjusts the cast bar position on the Y axis.",
+			},			
 			
 			{type = "blank"},
 			
@@ -4368,7 +4382,7 @@ local relevance_options = {
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.indicator_extra_raidmark = value
 				Plater.UpdateAllPlates()
-				Plater.UpdateRaidMarker()
+				Plater.UpdateRaidMarkersOnAllNameplates()
 			end,
 			name = "Extra Raid Mark",
 			desc = "Places an extra raid mark icon inside the health bar.",
@@ -5314,7 +5328,7 @@ local relevance_options = {
 			max = 128,
 			step = 1,
 			name = "Y Offset",
-			desc = "Adjusts the position on the Y axis when using the order Cast Bar > Health Bar > Debuffs.",
+			desc = "Adjusts the cast bar position on the Y axis.",
 		},			
 		
 		{type = "breakline"},
@@ -7031,7 +7045,7 @@ local relevance_options = {
 				max = 128,
 				step = 1,
 				name = "Y Offset",
-				desc = "Adjusts the position on the Y axis when using the order Cast Bar > Health Bar > Debuffs.",
+				desc = "Adjusts the cast bar position on the Y axis.",
 			},				
 			
 			{type = "blank"},

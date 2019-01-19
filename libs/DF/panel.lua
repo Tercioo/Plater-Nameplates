@@ -6615,6 +6615,55 @@ DF.StatusBarFunctions = {
 	healthBar:SetTexture (texture)
 --]=]
 
+local debugPerformance = {
+	eventCall = {},
+	unitCall = {},
+	functionCall = {},
+	CPUUsageByFunction = {},
+}
+
+local function CalcPerformance (type, data)
+	if (type == "event") then
+		debugPerformance.eventCall [data] = (debugPerformance.eventCall [data] or 0) + 1
+		
+	elseif (type == "unit") then
+		debugPerformance.unitCall [data] = (debugPerformance.unitCall [data] or 0) + 1
+	
+	elseif (type == "call") then
+		debugPerformance.functionCall [data] = (debugPerformance.functionCall [data] or 0) + 1
+		
+	end
+end
+
+function DF_CalcCpuUsage (name)
+	local cpu = debugPerformance.CPUUsageByFunction [name] or {usage = 0, last = 0, active = false}
+	debugPerformance.CPUUsageByFunction [name] = cpu
+	
+	if (cpu.active) then
+		cpu.active = false
+		local diff = debugprofilestop() - cpu.last
+		cpu.usage = cpu.usage + diff
+	else
+		cpu.active = true
+		cpu.last = debugprofilestop()
+	end
+end
+
+function UnitFrameStats()
+	for functionName, functionTable in pairs (debugPerformance.CPUUsageByFunction) do
+		debugPerformance.CPUUsageByFunction [functionName] = floor (functionTable.usage)
+	end
+
+	Details:Dump (debugPerformance)
+	
+	for functionName, functionTable in pairs (debugPerformance.CPUUsageByFunction) do
+		debugPerformance.CPUUsageByFunction [functionName] = {usage = 0, last = 0, active = false}
+	end
+end
+
+
+--CalcPerformance ("unit", data)
+
 DF.HealthFrameFunctions = {
 
 	WidgetType = "healthBar",
@@ -6645,7 +6694,7 @@ DF.HealthFrameFunctions = {
 	
 	HealthBarEvents = {
 		{"PLAYER_ENTERING_WORLD"},
-		{"UNIT_HEALTH", true},
+		--{"UNIT_HEALTH", true},
 		{"UNIT_MAXHEALTH", true},
 		{"UNIT_HEALTH_FREQUENT", true},
 		{"UNIT_HEAL_PREDICTION", true},
@@ -6656,6 +6705,9 @@ DF.HealthFrameFunctions = {
 	--> setup the castbar to be used by another unit
 	SetUnit = function (self, unit, displayedUnit)
 		if (self.unit ~= unit or self.displayedUnit ~= displayedUnit or unit == nil) then
+		
+			CalcPerformance ("call", "SetUnit")
+		
 			self.unit = unit
 			self.displayedUnit = displayedUnit or unit
 
@@ -6663,7 +6715,7 @@ DF.HealthFrameFunctions = {
 			if (unit) then
 				self.currentHealth = UnitHealth (unit) or 0
 				self.currentHealthMax = UnitHealthMax (unit) or 0
-			
+				
 				for _, eventTable in ipairs (self.HealthBarEvents) do
 					local event = eventTable [1]
 					local isUnitEvent = eventTable [2]
@@ -6676,13 +6728,13 @@ DF.HealthFrameFunctions = {
 				
 				--> check for settings and update some events
 				if (not self.Settings.ShowHealingPrediction) then
-					self:UnregisterEvent (UNIT_HEAL_PREDICTION)
-					self:UnregisterEvent (UNIT_HEAL_ABSORB_AMOUNT_CHANGED)
+					self:UnregisterEvent ("UNIT_HEAL_PREDICTION")
+					self:UnregisterEvent ("UNIT_HEAL_ABSORB_AMOUNT_CHANGED")
 					self.incomingHealIndicator:Hide()
 					self.healAbsorbIndicator:Hide()
 				end
 				if (not self.Settings.ShowShields) then
-					self:UnregisterEvent (UNIT_ABSORB_AMOUNT_CHANGED)
+					self:UnregisterEvent ("UNIT_ABSORB_AMOUNT_CHANGED")
 					self.shieldAbsorbIndicator:Hide()
 					self.shieldAbsorbGlow:Hide()
 				end
@@ -6733,6 +6785,8 @@ DF.HealthFrameFunctions = {
 		self.shieldAbsorbGlow:Hide()
 		
 		self:SetUnit (nil)
+		
+		CalcPerformance ("call", "HealthBar-Initialize")
 	end,
 	
 	--> call every tick
@@ -6740,34 +6794,52 @@ DF.HealthFrameFunctions = {
 
 	--> when an event happen for this unit, send it to the apropriate function
 	OnEvent = function (self, event, ...)
+		CalcPerformance ("unit", self.unit)
+		CalcPerformance ("event", event)
+		CalcPerformance ("call", "HealthBar-OnEvent")
+	
+		DF_CalcCpuUsage ("healthBar-OnEvent")
 		local eventFunc = self [event]
 		if (eventFunc) then
 			--the function doesn't receive which event was, only 'self' and the parameters
 			eventFunc (self, ...)
 		end
+		DF_CalcCpuUsage ("healthBar-OnEvent")
 	end,
 
 	--colocar mais coisas aqui, um member dizendo quanto de health e o health max da unit
 	UpdateMaxHealth = function (self)
-		local maxHealth = UnitHealthMax (self.displayedUnit)
-		self:SetMinMaxValues (0, maxHealth)
-		self.currentHealthMax = maxHealth
-		self:UpdateHealPrediction()
+		DF_CalcCpuUsage ("HealthBar-UpdateMaxHealth")
+			local maxHealth = UnitHealthMax (self.displayedUnit)
+			self:SetMinMaxValues (0, maxHealth)
+			self.currentHealthMax = maxHealth
+		DF_CalcCpuUsage ("HealthBar-UpdateMaxHealth")
+
+		CalcPerformance ("call", "HealthBar-UpdateMaxHealth")
 	end,
 
 	UpdateHealth = function (self)
-		local health = UnitHealth (self.displayedUnit)
-		self.currentHealth = health
-		PixelUtil.SetStatusBarValue (self, health)
+		DF_CalcCpuUsage ("HealthBar-UpdateHealth")
+			local health = UnitHealth (self.displayedUnit)
+			self.currentHealth = health
+			PixelUtil.SetStatusBarValue (self, health)
+		DF_CalcCpuUsage ("HealthBar-UpdateHealth")
+		
+		CalcPerformance ("call", "HealthBar-UpdateHealth")
 	end,
 	
 	--isso aqui vai ser complicado!
 	UpdateHealPrediction = function (self)
+		CalcPerformance ("call", "HealthBar-UpdateHealPrediction")
+		
+		DF_CalcCpuUsage ("HealthBar-UpdateHealPrediction")
+		
 		local currentHealth = self.currentHealth
 		local currentHealthMax = self.currentHealthMax
 		local healthPercent = currentHealth / currentHealthMax
 		
 		if (not currentHealthMax or currentHealthMax <= 0) then
+			DF_CalcCpuUsage ("HealthBar-UpdateHealPrediction")
 			return
 		end
 		
@@ -6790,7 +6862,7 @@ DF.HealthFrameFunctions = {
 			else
 				self.incomingHealIndicator:Hide()
 			end
-			self.incomingHealIndicator:Hide()
+			
 			if (unitHealAbsorb > 0) then
 				local healAbsorbPercent = unitHealAbsorb / currentHealthMax
 				self.healAbsorbIndicator:Show()
@@ -6829,6 +6901,8 @@ DF.HealthFrameFunctions = {
 			self.shieldAbsorbIndicator:Hide()
 			self.shieldAbsorbGlow:Hide()
 		end
+		
+		DF_CalcCpuUsage ("HealthBar-UpdateHealPrediction")
 	end,
 
 	PLAYER_ENTERING_WORLD = function (self, ...) 
@@ -6841,6 +6915,9 @@ DF.HealthFrameFunctions = {
 	UNIT_HEALTH = function (self, ...) 
 		self:UpdateHealth()
 		self:UpdateHealPrediction()
+		
+		local unitName = UnitName (self.unit)
+		CalcPerformance ("call", "HealthBar-UNIT_HEALTH-" .. unitName)
 	end,
 	UNIT_HEALTH_FREQUENT = function (self, ...)
 		self:UpdateHealth()
@@ -7037,11 +7114,13 @@ DF.PowerFrameFunctions = {
 
 	--> when an event happen for this unit, send it to the apropriate function
 	OnEvent = function (self, event, ...)
+		DF_CalcCpuUsage ("Powerbar-OnEvent")
 		local eventFunc = self [event]
 		if (eventFunc) then
 			--the function doesn't receive which event was, only 'self' and the parameters
 			eventFunc (self, ...)
 		end
+		DF_CalcCpuUsage ("Powerbar-OnEvent")
 	end,
 	
 	UpdatePowerBar = function (self)
@@ -7061,27 +7140,32 @@ DF.PowerFrameFunctions = {
 		end
 	end,
 	UpdatePower = function (self)
+		DF_CalcCpuUsage ("Powerbar-UpdatePower")
 		self.currentPower = UnitPower (self.displayedUnit, self.powerType)
 		PixelUtil.SetStatusBarValue (self, self.currentPower)
 		
 		if (self.Settings.ShowPercentText) then
 			self.percentText:SetText (floor (self.currentPower / self.currentPowerMax * 100) .. "%")
 		end
+		DF_CalcCpuUsage ("Powerbar-UpdatePower")
 	end,
 	
 	--> when a event different from unit_power_update is triggered, update which type of power the unit should show
 	UpdatePowerInfo = function (self)
+		DF_CalcCpuUsage ("Powerbar-UpdatePowerInfo")
 		if (self.Settings.ShowAlternatePower) then
 			local _, minPower, _, _, _, _, showOnRaid = UnitAlternatePowerInfo (self.displayedUnit)
 			if (showOnRaid and IsInGroup()) then
 				self.powerType = ALTERNATE_POWER_INDEX
 				self.minPower = minPower
+				DF_CalcCpuUsage ("Powerbar-UpdatePowerInfo")
 				return
 			end
 		end
 		
 		self.powerType = UnitPowerType (self.displayedUnit)
 		self.minPower = 0
+		DF_CalcCpuUsage ("Powerbar-UpdatePowerInfo")
 	end,
 	
 	--> tint the bar with the color of the power, e.g. blue for a mana bar
@@ -7139,15 +7223,6 @@ DF.PowerFrameFunctions = {
 		self:UpdatePower()
 	end,
 }
-
-hooksecurefunc ("CompactUnitFrame_OnEvent", function (self, event, ...)
---	print (self, event, ...)
---	print (self.unit, UnitName (self.unit))
-end)
-
-hooksecurefunc ("CompactUnitFrame_UpdatePower", function (frame)
-	--print (GetTime())
-end)
 
 -- ~powerbar
 function DF:CreatePowerBar (parent, name, settingsOverride)
@@ -7539,6 +7614,11 @@ DF.CastFrameFunctions = {
 	end,
 	
 	OnEvent = function (self, event, ...)
+		CalcPerformance ("event", event)
+		CalcPerformance ("call", "CastBar-OnEvent")	
+	
+		DF_CalcCpuUsage ("CastBar-OnEvent")
+		
 		local arg1 = ...
 		local unit = self.unit
 
@@ -7546,10 +7626,12 @@ DF.CastFrameFunctions = {
 			local newEvent = self.PLAYER_ENTERING_WORLD (self, unit, ...)
 			if (newEvent) then
 				self.OnEvent (self, newEvent, unit)
+				DF_CalcCpuUsage ("CastBar-OnEvent")
 				return
 			end
 			
 		elseif (arg1 ~= unit) then
+			DF_CalcCpuUsage ("CastBar-OnEvent")
 			return
 		end
 		
@@ -7557,6 +7639,7 @@ DF.CastFrameFunctions = {
 		if (eventFunc) then
 			eventFunc (self, unit, ...)
 		end
+		DF_CalcCpuUsage ("CastBar-OnEvent")
 	end,
 	
 	OnTick_LazyTick = function (self)
@@ -7621,8 +7704,10 @@ DF.CastFrameFunctions = {
 	end,
 	
 	OnTick = function (self, deltaTime)
+		DF_CalcCpuUsage ("CastBar-OnTick")
 		if (self.casting) then
 			if (not self:OnTick_Casting (deltaTime)) then
+				DF_CalcCpuUsage ("CastBar-OnTick")
 				return
 			end
 
@@ -7635,6 +7720,7 @@ DF.CastFrameFunctions = {
 			
 		elseif (self.channeling) then
 			if (not self:OnTick_Channeling (deltaTime)) then
+				DF_CalcCpuUsage ("CastBar-OnTick")
 				return
 			end
 			
@@ -7645,6 +7731,7 @@ DF.CastFrameFunctions = {
 				self.lazyUpdateCooldown = self.Settings.LazyUpdateCooldown
 			end
 		end
+		DF_CalcCpuUsage ("CastBar-OnTick")
 	end,
 	
 	--> animation start script
@@ -8304,6 +8391,7 @@ end
 		--> when an event happen for this unit, send it to the apropriate function
 		OnEvent = function (self, event, ...)
 			--> run the function for this event
+			DF_CalcCpuUsage ("unitFrame-OnEvent")
 			local eventFunc = self [event]
 			if (eventFunc) then
 				--> is this event an unit event?
@@ -8317,6 +8405,7 @@ end
 					eventFunc (self, ...)
 				end
 			end
+			DF_CalcCpuUsage ("unitFrame-OnEvent")
 		end,
 		
 		OnHide = function (self)
