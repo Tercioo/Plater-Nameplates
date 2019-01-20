@@ -1029,7 +1029,7 @@ function Plater.CreateHookingPanel()
 		Plater.FullRefreshAllPlates()
 	end
 	
-	--hot reload the script by compiling it and applying it to the nameplates without saving
+	--hot reload the script by compiling it and applying it to the nameplates
 	function hookFrame.ApplyScript()
 		Plater.WipeAndRecompileAllScripts ("hook")
 	end
@@ -1231,7 +1231,7 @@ function Plater.CreateHookingPanel()
 	--start editing a script
 	function hookFrame.EditScript (script_id)
 		local scriptObject
-	
+
 		--> check if passed a script object
 		if (type (script_id) == "table") then
 			scriptObject = script_id
@@ -1248,6 +1248,10 @@ function Plater.CreateHookingPanel()
 		
 		--set the new editing script
 		currentEditingScript = scriptObject
+		
+		if (scriptObject.Hooks ["Constructor"]) then
+			scriptObject.LastHookEdited = "Constructor"
+		end
 		
 		--load the values in the frame
 		hookFrame.UpdateEditingPanel()
@@ -2082,7 +2086,7 @@ function Plater.CreateScriptingPanel()
 	function scriptingFrame.KillRunningScriptsForObject (scriptObject)
 		--kill scripts running for this script object
 		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-			local unitFrame = plateFrame.UnitFrame
+			local unitFrame = plateFrame.unitFrame
 
 			if (scriptObject.ScriptType == 1) then
 				--buff and debuffs

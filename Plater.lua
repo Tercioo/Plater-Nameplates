@@ -70,6 +70,12 @@ local Plater = DF:CreateAddOn ("Plater", "PlaterDB", PLATER_DEFAULT_SETTINGS, { 
 	}
 })
 
+--> when a hook script is compiled, it increases the build version, so the handler for running scripts will notice in the change and update the script in real time
+local PLATER_HOOK_BUILD = 1
+function Plater.IncreaseHookBuildID()
+	PLATER_HOOK_BUILD = PLATER_HOOK_BUILD + 1
+end
+
 --> if a widget has a RefreshID lower than the addon, it triggers a refresh on it
 local PLATER_REFRESH_ID = 1
 function Plater.IncreaseRefreshID()
@@ -825,7 +831,7 @@ Plater.DefaultSpellRangeList = {
 		end
 		return default_level_color
 	end
-
+	
 	--run a scheduled update for a nameplate, functions can create schedules when some events are triggered when the client doesn't have the data yet
 	function Plater.RunScheduledUpdate (timerObject)
 		local plateFrame = timerObject.plateFrame
@@ -1526,6 +1532,20 @@ Plater.DefaultSpellRangeList = {
 		
 		PLAYER_LOGOUT = function()
 			
+		end,
+		
+		DISPLAY_SIZE_CHANGED = function()
+			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+				plateFrame.UnitFrame:Hide()
+			end
+			Plater.UpdateAllPlates (true)
+		end,
+		
+		UI_SCALE_CHANGED = function()
+			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+				plateFrame.UnitFrame:Hide()
+			end
+			Plater.UpdateAllPlates (true)
 		end,
 		
 		--~created ~events
@@ -2402,6 +2422,9 @@ function Plater.OnInit()
 		Plater.EventHandlerFrame:RegisterEvent ("UNIT_FLAGS")
 		Plater.EventHandlerFrame:RegisterEvent ("UNIT_FACTION")
 		
+		Plater.EventHandlerFrame:RegisterEvent ("DISPLAY_SIZE_CHANGED")
+		Plater.EventHandlerFrame:RegisterEvent ("UI_SCALE_CHANGED")
+		
 		--many times at saved variables load the spell database isn't loaded yet
 		function Plater:PLAYER_LOGIN()
 			C_Timer.After (0.1, Plater.UpdatePlateClickSpace)
@@ -2915,7 +2938,7 @@ function Plater.OnInit()
 					--get the script object of the aura which will be showing in this icon frame
 					local globalScriptObject = SCRIPT_CASTBAR [self.SpellName]
 					
-					if (self.unit and Plater.db.profile.castbar_target_show) then
+					if (self.unit and Plater.db.profile.castbar_target_show and not UnitIsUnit (self.unit, "player")) then
 						local targetName = UnitName (self.unit .. "target")
 						if (targetName) then
 							local _, class = UnitClass (self.unit .. "target")
@@ -3464,6 +3487,7 @@ end
 		--> spell name must be update here and cannot be cached due to scripts
 		auraIconFrame.SpellName = spellName
 		auraIconFrame.InUse = true
+		auraIconFrame.RemainingTime = max (expirationTime - GetTime(), 0)
 		auraIconFrame:Show()
 		
 		--get the script object of the aura which will be showing in this icon frame
@@ -3935,7 +3959,9 @@ end
 	
 	function Plater.FullRefreshAllPlates()
 		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-			Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_ADDED", plateFrame [MEMBER_UNITID])
+			--hack to call the update without overriding user settings from scripts
+			Plater.RunScheduledUpdate ({plateFrame = plateFrame, GUID = plateFrame [MEMBER_GUID]})
+			--Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_ADDED", plateFrame [MEMBER_UNITID])
 		end
 	end
 
@@ -4252,9 +4278,9 @@ end
 			if (HOOK_NAMEPLATE_UPDATED.ScriptAmount > 0) then
 				for i = 1, HOOK_NAMEPLATE_UPDATED.ScriptAmount do
 					local globalScriptObject = HOOK_NAMEPLATE_UPDATED [i]
+
 					local scriptContainer = unitFrame:ScriptGetContainer()
 					local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Nameplate Updated")
-					
 					local scriptEnv = scriptInfo.Env
 					scriptEnv._HealthPercent = healthBar.CurrentHealth / healthBar.CurrentHealthMax * 100
 					
@@ -7227,8 +7253,7 @@ end
 			
 			--using the memory address of the original scriptObject from db.profile as the map key
 			local scriptInfo = widgetScriptContainer [globalScriptObject.DBScriptObject]
-			if (not scriptInfo or scriptInfo.GlobalScriptObject.NeedHotReload) then
-			
+			if (not scriptInfo or scriptInfo.GlobalScriptObject.NeedHotReload or scriptInfo.GlobalScriptObject.Build < PLATER_HOOK_BUILD) then
 				local forceHotReload = scriptInfo and scriptInfo.GlobalScriptObject.NeedHotReload
 			
 				scriptInfo = {
@@ -7415,6 +7440,7 @@ end
 				end
 			end
 		elseif (scriptType == "hook") then
+			--get all hook scripts from the profile database
 			for scriptId, scriptObject in ipairs (Plater.GetAllScripts ("hook")) do
 				Plater.CompileHook (scriptObject)
 			end
@@ -7458,6 +7484,8 @@ end
 	}
 
 	function Plater.WipeHookContainers (noHotReload)
+		Plater.IncreaseHookBuildID()
+		
 		for _, container in ipairs (Plater.AllHookGlobalContainers) do
 			if (not noHotReload) then
 				for _, globalScriptObject in ipairs (container) do
@@ -7579,6 +7607,7 @@ end
 		local globalScriptObject = {
 			HotReload = -1,
 			DBScriptObject = scriptObject,
+			Build = PLATER_HOOK_BUILD,
 		}
 		
 		--compile
@@ -7590,7 +7619,7 @@ end
 				if (hookName == "Destructor") then
 					Plater.DestructorScriptHooks [scriptObject] = globalScriptObject
 				else
-					--store the function to execute
+					--store the function to execute inside the global script object
 					globalScriptObject [hookName] = compiledScript()
 					
 					--insert the script in the global script container, no need to check if already exists, hook containers cache are cleaned before script compile

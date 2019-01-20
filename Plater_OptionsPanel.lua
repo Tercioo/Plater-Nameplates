@@ -2353,19 +2353,19 @@ Plater.CreateAuraTesting()
 			fff:SetScript ("OnUpdate", function()
 				
 				for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-					plateFrame.UnitFrame.ExtraIconFrame:ClearIcons()
-					plateFrame.UnitFrame.ExtraIconFrame:SetIcon (248441, false, GetTime() - 2, 8)
-					plateFrame.UnitFrame.ExtraIconFrame:SetIcon (273769, false, GetTime() - 3, 12)
-					plateFrame.UnitFrame.ExtraIconFrame:SetIcon (206589, false, GetTime() - 6, 16)
-					plateFrame.UnitFrame.ExtraIconFrame:SetIcon (279565, false, GetTime() - 180, 360)
+					plateFrame.unitFrame.ExtraIconFrame:ClearIcons()
+					plateFrame.unitFrame.ExtraIconFrame:SetIcon (248441, false, GetTime() - 2, 8)
+					plateFrame.unitFrame.ExtraIconFrame:SetIcon (273769, false, GetTime() - 3, 12)
+					plateFrame.unitFrame.ExtraIconFrame:SetIcon (206589, false, GetTime() - 6, 16)
+					plateFrame.unitFrame.ExtraIconFrame:SetIcon (279565, false, GetTime() - 180, 360)
 
 					local spellName, _, spellIcon = GetSpellInfo (248441)
-					local auraIconFrame = Plater.GetAuraIcon (plateFrame.UnitFrame.BuffFrame, 1)
+					local auraIconFrame = Plater.GetAuraIcon (plateFrame.unitFrame.BuffFrame, 1)
 					Plater.AddAura (auraIconFrame, 1, spellName, spellIcon, 1, "BUFF", 8, GetTime()+5, "player", false, false, 248441, false, false, false, false)
 					auraIconFrame.InUse = true
 					
 					local spellName, _, spellIcon = GetSpellInfo (273769)
-					local auraIconFrame = Plater.GetAuraIcon (plateFrame.UnitFrame.BuffFrame, 1)
+					local auraIconFrame = Plater.GetAuraIcon (plateFrame.unitFrame.BuffFrame, 1)
 					Plater.AddAura (auraIconFrame, 2, spellName, spellIcon, 1, "BUFF", 12, GetTime()+2, "player", false, false, 273769, false, false, false, false)
 					auraIconFrame.InUse = true
 				end
@@ -2379,8 +2379,8 @@ Plater.CreateAuraTesting()
 			
 			
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-				plateFrame.UnitFrame.ExtraIconFrame:ClearIcons()
-				hide_non_used_auraFrames (plateFrame.UnitFrame.BuffFrame, 1)
+				plateFrame.unitFrame.ExtraIconFrame:ClearIcons()
+				hide_non_used_auraFrames (plateFrame.unitFrame.BuffFrame, 1)
 			end
 			--]=]
 			
@@ -8024,9 +8024,7 @@ local relevance_options = {
 				Plater.RefreshDBUpvalues()
 				Plater.UpdateAllPlates()
 				if (not value) then
-					for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-						CompactUnitFrame_UpdateHealthColor (plateFrame.UnitFrame)
-					end
+					Plater.UpdateAllNameplateColors()
 				end
 			end,
 			name = "Health Bar Color",
