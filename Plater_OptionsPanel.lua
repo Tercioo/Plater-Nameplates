@@ -554,7 +554,17 @@ function Plater.OpenOptionsPanel()
 	for index, texturePath in ipairs (Plater.TargetHighlights) do
 		target_selection_texture_selected_options [#target_selection_texture_selected_options + 1] = {value = texturePath, label = "Highlight " .. index, statusbar = texturePath, onclick = target_selection_texture_selected}
 	end
-
+	--
+	local cooldown_edge_texture_selected = function (self, capsule, value)
+		Plater.db.profile.aura_cooldown_edge_texture = value
+		Plater.UpdateAllPlates()
+	end
+	local cooldown_edge_texture_selected_options = {}
+	for index, texturePath in ipairs (Plater.CooldownEdgeTextures) do
+		cooldown_edge_texture_selected_options [#cooldown_edge_texture_selected_options + 1] = {value = texturePath, label = "Texture " .. index, statusbar = texturePath, onclick = cooldown_edge_texture_selected}
+	end
+	--
+	
 -------------------------------------------------------------------------------
 --op��es do painel de interface da blizzard
 
@@ -1335,6 +1345,37 @@ local debuff_options = {
 		name = "Buffs Border Color",
 		desc = "Buffs Border Color",
 	},	
+	
+	{type = "blank"},
+	{type = "label", get = function() return "Swipe Animation:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+	{
+		type = "select",
+		get = function() return Plater.db.profile.aura_cooldown_edge_texture end,
+		values = function() return cooldown_edge_texture_selected_options end,
+		name = "Swipe Texture",
+		desc = "Texture in the form of a line which rotates within the aura icon following the aura remaining time.",
+	},
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_cooldown_show_swipe end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_cooldown_show_swipe = value
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Swipe Closure Texture",
+		desc = "Show a layer with a dark texture above the icon. This layer is applied or removed as the swipe moves.",
+	},
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_cooldown_reverse end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_cooldown_reverse = value
+			Plater.UpdateAllPlates()
+		end,
+		name = "Swipe Closure Inverted",
+		desc = "If enabled the swipe closure texture is applied as the swipe moves instead.",
+	},
+
 
 }
 
@@ -2532,7 +2573,7 @@ do
 			},
 
 			{type = "blank"},
-			{type = "label", get = function() return "Aura Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{type = "label", get = function() return "Aura Frame:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			{
 				type = "toggle",
 				get = function() return Plater.db.profile.aura_show_buffs_personal end,
@@ -2586,12 +2627,39 @@ do
 				step = 1,
 				name = "Height",
 				desc = "Debuff's icon height.",
-			},			
+			},
+			
+			--y offset
+			{
+				type = "range",
+				get = function() return Plater.db.profile.plate_config.player.buff_frame_y_offset end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.plate_config.player.buff_frame_y_offset = value
+					Plater.UpdateAllPlates()
+				end,
+				min = -100,
+				max = 100,
+				step = 1,
+				name = "Y Offset",
+				desc = "Adjusts the position on the Y axis.",
+			},
 			
 			{type = "blank"},
 		
 			{type = "label", get = function() return "Personal Bar Constrain:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			
+			{
+				type = "execute",
+				func = function() 
+					SetCVar ("nameplateSelfTopInset", 0.50)
+					SetCVar ("nameplateSelfBottomInset", 0.20)
+				end,
+				desc = "When using a fixed position and want to go back to Blizzard default." .. CVarDesc,
+				name = "Reset to Automatic Position" .. CVarIcon,
+				nocombat = true,
+			},
+			
+			--[=[ --removed top and bottom constrain options
 			{
 				type = "range",
 				get = function() return tonumber (GetCVar ("nameplateSelfTopInset")*100) end,
@@ -2723,7 +2791,8 @@ do
 				name = "Bottom Constrain" .. CVarIcon,
 				desc = "Adjust the bottom constrain position where the personal bar cannot pass.\n\n|cFFFFFFFFDefault: 20|r" .. CVarDesc,
 			},
-
+			--]=] --end of top and bottom constrain
+			
 			{
 				type = "range",
 				get = function() return tonumber (GetCVar ("nameplateSelfBottomInset")*100) end,
@@ -2789,7 +2858,7 @@ do
 				step = 1,
 				nocombat = true,
 				name = "Fixed Position" .. CVarIcon,
-				desc = "Set a fixed position, the personal bar won't move." .. CVarDesc,
+				desc = "With a fixed position, personal bar won't move.\n\nTo revert this, click the button above." .. CVarDesc,
 			},
 
 			--class resources
@@ -2981,7 +3050,17 @@ do
 				step = 1,
 				name = "Y Offset",
 				desc = "Adjusts the cast bar position on the Y axis.",
-			},			
+			},
+			--hide castbar from blizzard
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.hide_blizzard_castbar end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.hide_blizzard_castbar = value
+				end,
+				name = "Hide Blizzard Cast Bar",
+				desc = "Hide Blizzard Cast Bar",
+			},
 			
 			{type = "blank"},
 			
@@ -8742,7 +8821,6 @@ local relevance_options = {
 			usedecimals = true,
 		},
 		
-	
 		{type = "breakline"},
 		{type = "label", get = function() return "Misc:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		

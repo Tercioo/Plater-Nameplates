@@ -528,6 +528,12 @@ PLATER_DEFAULT_SETTINGS = {
 		healthbar_framelevel = 0,
 		castbar_framelevel = 0,
 		
+		hide_blizzard_castbar = false,
+		
+		aura_cooldown_reverse = true,
+		aura_cooldown_show_swipe = true,
+		aura_cooldown_edge_texture = [[Interface\AddOns\Plater\images\cooldown_edge_2]],
+		
 		aura_enabled = true,
 		aura_show_tooltip = false,
 		aura_width = 26,

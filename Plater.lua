@@ -179,6 +179,13 @@ Plater.MaxCastBarTextLength = 200
 Plater.AurasHorizontalPadding = 1 --constant
 Plater.MaxAurasPerRow = 10 --can change during runtime
 
+Plater.CooldownEdgeTextures = {
+	[[Interface\AddOns\Plater\images\cooldown_edge_1]],
+	[[Interface\AddOns\Plater\images\cooldown_edge_2]],
+	"Interface\\Cooldown\\edge",
+	"Interface\\Cooldown\\edge-LoC",
+}
+
 --
 Plater.TargetHighlights = {
 	[[Interface\AddOns\Plater\images\selection_indicator1]],
@@ -3140,6 +3147,14 @@ function Plater.OnInit()
 		for i = 1, 3 do
 			C_Timer.After (i, Plater.RefreshDBUpvalues)
 		end
+		
+	CastingBarFrame:HookScript ("OnShow", function (self)
+		if (Plater.db.profile.hide_blizzard_castbar) then
+			self:Hide()
+		end
+	end)
+	
+	
 end
 
 
@@ -3210,6 +3225,13 @@ end
 		newIcon.Cooldown:SetAllPoints()
 		newIcon.Cooldown:SetHideCountdownNumbers (true)
 		newIcon.Cooldown:Hide()
+		
+		--newIcon.Cooldown:SetSwipeColor (0, 0, 0) --not working
+		--newIcon.Cooldown:SetDrawSwipe (false)
+		--newIcon.Cooldown:SetSwipeTexture ("Interface\\Garrison\\Garr_TimerFill")
+		--newIcon.Cooldown:SetEdgeTexture ("Interface\\Cooldown\\edge-LoC");
+		--newIcon.Cooldown:SetReverse (true)
+		--newIcon.Cooldown:SetCooldownUNIX (startTime, buildDuration);
 		
 		newIcon.CountFrame = CreateFrame ("frame", "$parentCountFrame", newIcon)
 		newIcon.CountFrame:SetAllPoints()
@@ -3411,6 +3433,11 @@ end
 				auraIconFrame:SetSize (auraWidth, auraHeight)
 				auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 			end
+			
+			auraIconFrame.Cooldown:SetEdgeTexture (profile.aura_cooldown_edge_texture)
+			auraIconFrame.Cooldown:SetReverse (profile.aura_cooldown_reverse)
+			auraIconFrame.Cooldown:SetDrawSwipe (profile.aura_cooldown_show_swipe)
+			
 			
 			Plater.UpdateIconAspecRatio (auraIconFrame)
 		end
@@ -4015,21 +4042,14 @@ end
 		local castBarWidth, castBarHeight = unitFrame.customCastBarWidth or plateConfigs [castBarConfigKey][1], unitFrame.customCastBarHeight or plateConfigs [castBarConfigKey][2]
 		local powerBarWidth, powerBarHeight = unitFrame.customPowerBarHeight or plateConfigs [manaConfigKey][1], unitFrame.customPowerBarHeight or plateConfigs [manaConfigKey][2]
 		
-		local namePlateOffSetX = 0
-		local namePlateOffSetY = 0
-		
-		local castBarOffSetX = 0
+		local castBarOffSetX = (healthBarWidth - castBarWidth) / 2
 		local castBarOffSetY = plateConfigs.castbar_offset
 		
-		local powerBarOffSetX = 0
+		local powerBarOffSetX = (healthBarWidth - powerBarWidth) / 2
 		local powerBarOffSetY = 0
 
+		--calculate the size deviation for pets
 		local unitType = Plater.GetUnitType (plateFrame)
-		
-		--print (unitType, UnitName (unitFrame.unit))
-		
-		--todo: add minor and pet scale
-		
 		if (unitType == "pet") then
 			healthBarHeight = healthBarHeight * Plater.db.profile.pet_height_scale
 			healthBarWidth = healthBarWidth * Plater.db.profile.pet_width_scale
@@ -4047,9 +4067,7 @@ end
 			--this calculates the health bar anchor points
 			--it will always be placed in the center of the nameplate main frame attached with two anchor points
 			local xOffSet = (plateFrame:GetWidth() - healthBarWidth) / 2
-			xOffSet = xOffSet + namePlateOffSetX
 			local yOffSet = (plateFrame:GetHeight() - healthBarHeight) / 2
-			yOffSet = yOffSet + namePlateOffSetY
 			
 			healthBar:ClearAllPoints()
 			PixelUtil.SetPoint (healthBar, "topleft", unitFrame, "topleft", xOffSet + profile.global_offset_x, -yOffSet + profile.global_offset_y)
@@ -4058,7 +4076,7 @@ end
 		--cast bar - is set by default below the healthbar
 			castBar:ClearAllPoints()
 			PixelUtil.SetPoint (castBar, "topleft", healthBar, "bottomleft", castBarOffSetX, castBarOffSetY)
-			PixelUtil.SetPoint (castBar, "topright", healthBar, "bottomright", castBarOffSetX, castBarOffSetY)
+			PixelUtil.SetPoint (castBar, "topright", healthBar, "bottomright", -castBarOffSetX, castBarOffSetY)
 			PixelUtil.SetSize (castBar, castBarWidth, castBarHeight)
 			PixelUtil.SetSize (castBar.Icon, castBarHeight, castBarHeight)
 			PixelUtil.SetSize (castBar.BorderShield, castBarHeight * 1.4, castBarHeight * 1.4)
@@ -4066,7 +4084,7 @@ end
 		--power bar
 			powerBar:ClearAllPoints()
 			PixelUtil.SetPoint (powerBar, "topleft", healthBar, "bottomleft", powerBarOffSetX, powerBarOffSetY)
-			PixelUtil.SetPoint (powerBar, "topright", healthBar, "bottomright", powerBarOffSetX, powerBarOffSetY)
+			PixelUtil.SetPoint (powerBar, "topright", healthBar, "bottomright", -powerBarOffSetX, powerBarOffSetY)
 			PixelUtil.SetSize (powerBar, powerBarWidth, powerBarHeight)
 			
 			--power bar are hidden by default, show it if there's a custom size for it
@@ -4169,8 +4187,8 @@ end
 			--perform a range check
 			Plater.CheckRange (tickFrame.PlateFrame)
 			
-			--health cutoff (execute range)
-			if (DB_USE_HEALTHCUTOFF) then
+			--health cutoff (execute range) - don't show if the nameplate is the personal bar
+			if (DB_USE_HEALTHCUTOFF and not unitFrame.IsSelf) then
 				local healthPercent = UnitHealth (tickFrame.unit) / UnitHealthMax (tickFrame.unit)
 				if (healthPercent < DB_HEALTHCUTOFF_AT) then
 					if (not healthBar.healthCutOff:IsShown()) then
@@ -5197,6 +5215,7 @@ end
 			end
 		end	
 	end
+
 
 	function Plater.AddGuildNameToPlayerName (plateFrame)
 		local currentText = plateFrame.CurrentUnitNameString:GetText()
@@ -6875,6 +6894,25 @@ end
 		return GetRaidTargetIndex (unitFrame.unit)
 	end
 
+	--limit the text size of a font string
+	function Plater.LimitTextSize (fontString, maxWidth)
+		if (not fontString) then
+			Plater:Msg ("Plater.LimitTextSize() with not fontString")
+			return
+		end
+		
+		maxWidth = max (maxWidth or 0, 10)
+		local text = fontString:GetText()
+		
+		while (fontString:GetStringWidth() > maxWidth) do
+			text = strsub (text, 1, #text - 1)
+			fontString:SetText (text)
+			if (string.len (text) <= 1) then
+				break
+			end
+		end	
+	end
+	
 	--return the health bar and the unitname text
 	function Plater.GetHealthBar (unitFrame)
 		--check if the plateFrame has been passed instead
