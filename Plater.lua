@@ -508,7 +508,7 @@ Plater.DefaultSpellRangeList = {
 	local AUTO_TRACKING_EXTRA_BUFFS = {}
 	local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 	
-	--if automatic aura tracking and there's auras to manually track
+	--if automatic aura tracking and there's auras to manually track (user added into the buff tracking tab)
 	local CAN_TRACK_EXTRA_BUFFS = false
 	local CAN_TRACK_EXTRA_DEBUFFS = false
 	
@@ -528,10 +528,13 @@ Plater.DefaultSpellRangeList = {
 	local HOOK_PLAYER_POWER_UPDATE = {ScriptAmount = 0}
 	local HOOK_PLAYER_TALENT_UPDATE = {ScriptAmount = 0}
 
-	local SPECIAL_AURA_NAMES_AUTO = {} --store auto special auras
-	local SPECIAL_AURA_NAMES = {}
-	local SPECIAL_AURA_NAMES_MINE = {}
-	local CROWDCONTROL_AURA_NAMES = {}
+	--list of auras the user added into the track list for special auras
+	local SPECIAL_AURAS_USER_LIST = {}
+	local SPECIAL_AURAS_USER_LIST_MINE = {}
+	--list of auras Plater added automatically to special auras
+	local SPECIAL_AURAS_AUTO_ADDED = {}
+	--used to know the border color in the special auras
+	local CROWDCONTROL_AURA_NAMES = {} 
 	
 	--spell animations - store a table with information about animation for spells
 	local SPELL_WITH_ANIMATIONS = {}
@@ -1120,10 +1123,15 @@ Plater.DefaultSpellRangeList = {
 				SPELL_WITH_ANIMATIONS [spellName] = frameAnimations
 			end
 		end
+
+		--list of auras the user added into the track list for special auras
+		wipe (SPECIAL_AURAS_USER_LIST)
+		wipe (SPECIAL_AURAS_USER_LIST_MINE)
 		
-		wipe (SPECIAL_AURA_NAMES)
-		wipe (SPECIAL_AURA_NAMES_MINE)
-		wipe (SPECIAL_AURA_NAMES_AUTO)
+		--list of auras Plater added automatically to special auras
+		wipe (SPECIAL_AURAS_AUTO_ADDED)
+		
+		--crown control spells for the border in the special auras
 		wipe (CROWDCONTROL_AURA_NAMES)
 		
 		IS_USING_DETAILS_INTEGRATION = false
@@ -1145,7 +1153,7 @@ Plater.DefaultSpellRangeList = {
 			for spellId, _ in pairs (DF.CrowdControlSpells) do
 				local spellName = GetSpellInfo (spellId)
 				if (spellName) then
-					SPECIAL_AURA_NAMES [spellName] = true
+					SPECIAL_AURAS_AUTO_ADDED [spellName] = true
 					CROWDCONTROL_AURA_NAMES [spellName] = true
 				end
 			end
@@ -1155,7 +1163,7 @@ Plater.DefaultSpellRangeList = {
 		for index, spellId in ipairs (profile.extra_icon_auras) do
 			local spellName = GetSpellInfo (spellId)
 			if (spellName) then
-				SPECIAL_AURA_NAMES [spellName] = true
+				SPECIAL_AURAS_USER_LIST [spellName] = true
 			end
 		end
 		
@@ -1163,7 +1171,7 @@ Plater.DefaultSpellRangeList = {
 			if (state) then
 				local spellName = GetSpellInfo (spellId)
 				if (spellName) then
-					SPECIAL_AURA_NAMES_MINE [spellName] = true
+					SPECIAL_AURAS_USER_LIST_MINE [spellName] = true
 				end
 			end
 		end
@@ -3215,10 +3223,11 @@ end
 		local newIcon = CreateFrame ("frame", name, parent)
 		newIcon:Hide()
 		newIcon:SetSize (20, 16)
-		newIcon:EnableMouse (true)
-		newIcon:SetMouseClickEnabled (false)
+		
 		newIcon:SetScript ("OnEnter", Plater.OnEnterAura)
 		newIcon:SetScript ("OnLeave", Plater.OnLeaveAura)
+		
+		newIcon:SetMouseClickEnabled (false)
 		
 		newIcon.Border = newIcon:CreateTexture (nil, "background")
 		newIcon.Border:SetAllPoints()
@@ -3232,6 +3241,7 @@ end
 		newIcon.Cooldown = CreateFrame ("cooldown", "$parentCooldown", newIcon, "CooldownFrameTemplate")
 		newIcon.Cooldown:SetPoint ("center", 0, -1)
 		newIcon.Cooldown:SetAllPoints()
+		newIcon.Cooldown:EnableMouse (false)
 		newIcon.Cooldown:SetHideCountdownNumbers (true)
 		newIcon.Cooldown:Hide()
 		
@@ -3244,6 +3254,7 @@ end
 		
 		newIcon.CountFrame = CreateFrame ("frame", "$parentCountFrame", newIcon)
 		newIcon.CountFrame:SetAllPoints()
+		newIcon.CountFrame:EnableMouse (false)
 		newIcon.CountFrame.Count = newIcon.CountFrame:CreateFontString (nil, "artwork", "NumberFontNormalSmall")
 		newIcon.CountFrame.Count:SetJustifyH ("right")
 		newIcon.CountFrame.Count:SetPoint ("bottomright", 3, -2)
@@ -3403,9 +3414,6 @@ end
 		
 		--> check if a full refresh is required
 		if (auraIconFrame.RefreshID < PLATER_REFRESH_ID) then
-			--if tooltip enabled
-			auraIconFrame:EnableMouse (profile.aura_show_tooltip)
-			
 			--stack counter
 			local stackLabel = auraIconFrame.CountFrame.Count
 			DF:SetFontSize (stackLabel, profile.aura_stack_size)
@@ -3446,9 +3454,12 @@ end
 			auraIconFrame.Cooldown:SetEdgeTexture (profile.aura_cooldown_edge_texture)
 			auraIconFrame.Cooldown:SetReverse (profile.aura_cooldown_reverse)
 			auraIconFrame.Cooldown:SetDrawSwipe (profile.aura_cooldown_show_swipe)
-			
-			
+
 			Plater.UpdateIconAspecRatio (auraIconFrame)
+			
+			--if tooltip enabled
+			auraIconFrame:EnableMouse (profile.aura_show_tooltip)
+			auraIconFrame:SetMouseClickEnabled (false)
 		end
 
 		--icon size repeated due to:
@@ -3565,7 +3576,8 @@ end
 		return true
 	end
 
-	local hide_non_used_auraFrames = function (self)
+	--> check both buff frames for aura icons which aren't in use and hide them
+	Plater.HideNonUsedAuraIcons = function (self)
 		--> regular buff frame
 		local nextAuraIndex = self.NextAuraIcon
 		for i = nextAuraIndex, #self.PlaterBuffList do
@@ -3602,8 +3614,8 @@ end
 		--move up the resource frame if shown
 		Plater.UpdateResourceFrameAnchor (self)
 	end
-	Plater.HideNonUsedAuraFrames = hide_non_used_auraFrames
 
+	
 	--~special ~auraspecial
 	function Plater.AddExtraIcon (self, spellName, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 		local _, casterClass = UnitClass (caster or "")
@@ -3651,8 +3663,33 @@ end
 			iconFrame.Masqued = true
 		end
 	end
+	
+	--> reset both buff frames to make them ready to receive an aura update
+	function Plater.ResetAuraContainer (self)
+		--> reset the extra icon frame
+		self.ExtraIconFrame:ClearIcons()
 
+		--> reset next aura icon to use
+		self.NextAuraIcon = 1
+		self.BuffFrame2.NextAuraIcon = 1
+		
+		--> reset auras
+		self.HasBuff = false
+		self.HasDebuff = false
+		
+		--> second buff anchor
+		self.BuffFrame2.HasBuff = false 
+		self.BuffFrame2.HasDebuff = false
+		
+		--> wipe the cache
+		wipe (self.AuraCache)
+		wipe (self.BuffFrame2.AuraCache)
+	end
+
+	
 	-- ~auras ãura
+	--receives a hash table with spell names keys and true as the value
+	--used when the user selects manual aura tracking
 	function Plater.TrackSpecificAuras (self, unit, isBuff, aurasToCheck, isPersonal, noSpecial)
 
 		if (isBuff) then
@@ -3663,15 +3700,23 @@ end
 					break
 				else
 					debuffType = "BUFF"
+					--verify is this aura is in the table passed
 					if (aurasToCheck [name]) then
 						local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
 						Plater.AddAura (buffFrame, auraIconFrame, i, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, true, false, false, isPersonal)
 					end
 					
 					--> check if is a special aura
-					if (not SPECIAL_AURA_NAMES_MINE [name] or (caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
-						if (not noSpecial and (SPECIAL_AURA_NAMES [name] or DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge)) then
+					if (not noSpecial) then
+						--> check for special auras auto added by setting like 'show crowd control' or 'show dispellable'
+						--> SPECIAL_AURAS_AUTO_ADDED has a list of crowd control not do not have a list of dispellable, so check if canStealOrPurge
+						if (SPECIAL_AURAS_AUTO_ADDED [name] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge)) then
 							Plater.AddExtraIcon (self, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
+						
+						--> check for special auras added by the user it self
+						elseif (SPECIAL_AURAS_USER_LIST [name] or (SPECIAL_AURAS_USER_LIST_MINE [name] and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
+							Plater.AddExtraIcon (self, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
+							
 						end
 					end
 				end
@@ -3695,9 +3740,16 @@ end
 					end
 					
 					--> check if is a special aura
-					if (not SPECIAL_AURA_NAMES_MINE [name] or (caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
-						if (not noSpecial and (SPECIAL_AURA_NAMES [name] or DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge)) then
+					if (not noSpecial) then
+						--> check for special auras auto added by setting like 'show crowd control' or 'show dispellable'
+						--> SPECIAL_AURAS_AUTO_ADDED has a list of crowd control not do not have a list of dispellable, so check if canStealOrPurge
+						if (SPECIAL_AURAS_AUTO_ADDED [name] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge)) then
 							Plater.AddExtraIcon (self, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
+						
+						--> check for special auras added by the user it self
+						elseif (SPECIAL_AURAS_USER_LIST [name] or (SPECIAL_AURAS_USER_LIST_MINE [name] and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
+							Plater.AddExtraIcon (self, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
+							
 						end
 					end
 				end
@@ -3707,27 +3759,6 @@ end
 		return true
 	end
 	
-	function Plater.ResetAuraContainer (self)
-		--> reset the extra icon frame
-		self.ExtraIconFrame:ClearIcons()
-
-		--> reset next aura icon to use
-		self.NextAuraIcon = 1
-		self.BuffFrame2.NextAuraIcon = 1
-		
-		--> reset auras
-		self.HasBuff = false
-		self.HasDebuff = false
-		
-		--> second buff anchor
-		self.BuffFrame2.HasBuff = false 
-		self.BuffFrame2.HasDebuff = false
-		
-		--> wipe the cache
-		wipe (self.AuraCache)
-		wipe (self.BuffFrame2.AuraCache)
-	end
-
 	function Plater.UpdateAuras_Manual (self, unit, isPersonal)
 		Plater.ResetAuraContainer (self)
 		
@@ -3735,48 +3766,58 @@ end
 		Plater.TrackSpecificAuras (self, unit, true, MANUAL_TRACKING_BUFFS, isPersonal)
 
 		--> hide not used aura frames
-		hide_non_used_auraFrames (self)
+		Plater.HideNonUsedAuraIcons (self)
 	end
 
+	--> track auras automatically when the user has automatic aura tracking selected in the options panel
 	function Plater.UpdateAuras_Automatic (self, unit)
 		Plater.ResetAuraContainer (self)
 		
 		--> debuffs
 			for i = 1, BUFF_MAX_DISPLAY do
 			
-				local spellName, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll = UnitDebuff (unit, i)
+				--todo: fix the variable name inconsistence, here the buff name is called "spellName" in the other loop below is called "name"
+				local name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll = UnitDebuff (unit, i)
 				--start as false, during the checks can be changed to true, if is true this debuff is added on the nameplate
 				local can_show_this_debuff
 				debuffType = "DEBUFF"
 				
-				if (not spellName) then
+				if (not name) then
 					break
 				
 				--check if the debuff isn't filtered out
-				elseif (not DB_DEBUFF_BANNED [spellName]) then
+				elseif (not DB_DEBUFF_BANNED [name]) then
 			
-					--> important aura' 
+					--> important aura
 					if (DB_AURA_SHOW_IMPORTANT and (nameplateShowAll or isBossDebuff)) then
 						can_show_this_debuff = true
 					
 					--> is casted by the player
 					elseif (DB_AURA_SHOW_BYPLAYER and caster and UnitIsUnit (caster, "player")) then
 						can_show_this_debuff = true
+						
+					--> user added this buff to track in the buff tracking tab
+					elseif (AUTO_TRACKING_EXTRA_DEBUFFS [name]) then
+						can_show_this_debuff = true
 					end
 					
-					if (not SPECIAL_AURA_NAMES_MINE [spellName] or (caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
-						if (SPECIAL_AURA_NAMES [spellName] or DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge) then
-							Plater.AddExtraIcon (self, spellName, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
-						end
+					--> check for special auras auto added by setting like 'show crowd control' or 'show dispellable'
+					--> SPECIAL_AURAS_AUTO_ADDED has a list of crowd control not do not have a list of dispellable, so check if canStealOrPurge
+					if (SPECIAL_AURAS_AUTO_ADDED [name] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge)) then
+						Plater.AddExtraIcon (self, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 					end
+				end
+				
+				--> check for special auras added by the user it self
+				if (SPECIAL_AURAS_USER_LIST [name] or (SPECIAL_AURAS_USER_LIST_MINE [name] and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
+					Plater.AddExtraIcon (self, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 				end
 				
 				if (can_show_this_debuff) then
 					--get the icon to be used by this aura
 					local auraIconFrame, buffFrame = Plater.GetAuraIcon (self)
-					Plater.AddAura (buffFrame, auraIconFrame, i, spellName, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
+					Plater.AddAura (buffFrame, auraIconFrame, i, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 				end
-				
 			end
 		
 		--> buffs
@@ -3809,29 +3850,29 @@ end
 						local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
 						Plater.AddAura (buffFrame, auraIconFrame, i, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, true)
 					
+					--> user added this buff to track in the buff tracking tab
+					elseif (AUTO_TRACKING_EXTRA_BUFFS [name]) then
+						local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
+						Plater.AddAura (buffFrame, auraIconFrame, i, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, true)
+						
 					end
 					
-					--> is a special aura?
-					--Details:DumpTable (SPECIAL_AURA_NAMES_MINE)
-					if (not SPECIAL_AURA_NAMES_MINE [name] or (caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
-						if (SPECIAL_AURA_NAMES [name] or DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge) then
-							Plater.AddExtraIcon (self, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
-						end
+					--> this special aura check is inside the 'buff banned' prevented because they are automatic added
+					--> check for special auras auto added by setting like 'show crowd control' or 'show dispellable'
+					--> SPECIAL_AURAS_AUTO_ADDED has a list of crowd control not do not have a list of dispellable, so check if canStealOrPurge
+					if (SPECIAL_AURAS_AUTO_ADDED [name] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge)) then
+						Plater.AddExtraIcon (self, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 					end
 				end
-			end
 
-		--track extra auras
-			if (CAN_TRACK_EXTRA_BUFFS) then
-				Plater.TrackSpecificAuras (self, unit, true, AUTO_TRACKING_EXTRA_BUFFS, false, true)
-			end
-			
-			if (CAN_TRACK_EXTRA_DEBUFFS) then
-				Plater.TrackSpecificAuras (self, unit, false, AUTO_TRACKING_EXTRA_DEBUFFS, false, true)
+				--> check for special auras added by the user it self
+				if (SPECIAL_AURAS_USER_LIST [name] or (SPECIAL_AURAS_USER_LIST_MINE [name] and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
+					Plater.AddExtraIcon (self, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
+				end
 			end
 		
 		--hide non used icons
-			hide_non_used_auraFrames (self)
+			Plater.HideNonUsedAuraIcons (self)
 	end
 
 	function Plater.UpdateAuras_Self_Automatic (self)
@@ -3850,12 +3891,18 @@ end
 					local auraIconFrame, buffFrame = Plater.GetAuraIcon (self)
 					Plater.AddAura (buffFrame, auraIconFrame, i, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, false, false, true, true)
 					
-					if (not SPECIAL_AURA_NAMES_MINE [name] or (caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
-						if (SPECIAL_AURA_NAMES [name] or DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge) then
-							Plater.AddExtraIcon (self, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
-						end
+					--> check for special auras auto added by setting like 'show crowd control' or 'show dispellable'
+					--> SPECIAL_AURAS_AUTO_ADDED has a list of crowd control not do not have a list of dispellable, so check if canStealOrPurge
+					if (SPECIAL_AURAS_AUTO_ADDED [name] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge)) then
+						Plater.AddExtraIcon (self, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 					end
 				end
+				
+				--> check for special auras added by the user it self
+				if (SPECIAL_AURAS_USER_LIST [name] or (SPECIAL_AURAS_USER_LIST_MINE [name] and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
+					Plater.AddExtraIcon (self, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
+				end
+				
 			end
 		end
 		
@@ -3868,15 +3915,19 @@ end
 				if (not name) then
 					break
 					
-				elseif (not DB_BUFF_BANNED [name] and (duration and (duration > 0 and duration < 91)) and (caster and UnitIsUnit (caster, "player"))) then
+				--> only show buffs casted by the player it self and less than 1 minute in duration
+				elseif (not DB_BUFF_BANNED [name] and (duration and (duration > 0 and duration < 60)) and (caster and UnitIsUnit (caster, "player"))) then
 					local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
 					Plater.AddAura (buffFrame, auraIconFrame, i, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, false, false, false, true)
+
 				end
+				
+				--> there is no special auras for buffs in the personal bar
 			end
 		end	
 		
 		--> hide not used aura frames
-		hide_non_used_auraFrames (self)
+		Plater.HideNonUsedAuraIcons (self)
 	end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -4444,10 +4495,10 @@ end
 				else
 					--if isn't a quest mob
 					if (not self.PlateFrame [MEMBER_QUEST]) then
-						--nï¿½o ha aggro e ele nï¿½o esta participando do combate
+						--there's no aggro, isn't in combat, isn't a quest mob
 						if (self [MEMBER_REACTION] == 4) then
-							--o mob ï¿½ um npc neutro, apenas colorir com a cor neutra
-							set_aggro_color (self, 1, 1, 0) --ticket #185
+							--do nothing if the mob is neutral
+							--set_aggro_color (self, 1, 1, 0) --ticket #185
 						else
 							set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.nocombat))
 						end
@@ -4498,6 +4549,7 @@ end
 				if (threatStatus == nil) then
 					self.PlateFrame.playerHasAggro = false
 					
+					--> unit is in combat?
 					if (UnitAffectingCombat (self.displayedUnit)) then
 						set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.noaggro))
 						self.PlateFrame.playerHasAggro = false
@@ -4509,10 +4561,10 @@ end
 					else
 						--if isn't a quest mob
 						if (not self.PlateFrame [MEMBER_QUEST]) then
-							--nï¿½o ha aggro e ele nï¿½o esta participando do combate
+							--there's no aggro, isn't in combat, isn't a quest mob
 							if (self [MEMBER_REACTION] == 4) then --ticket #185
-								--o mob ï¿½ um npc neutro, apenas colorir com a cor neutra
-								set_aggro_color (self, 1, 1, 0)
+								--do nothing if the mob is neutral
+								--set_aggro_color (self, 1, 1, 0)
 							else
 								set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.nocombat))
 							end
@@ -6856,7 +6908,7 @@ end
 						end
 					end
 					
-					Plater.HideNonUsedAuraFrames (buffFrame)
+					Plater.HideNonUsedAuraIcons (buffFrame)
 					buffFrame:Layout()
 				
 				end
@@ -6920,6 +6972,26 @@ end
 				break
 			end
 		end	
+	end
+	
+	--create a custom aura checking, this reset the currently shown auras and only check for auras the script passed
+	--@buffList: a table with aura names as keys and true as the value, example: ["aura name"] = true
+	--@debuffList: same as above
+	--@noSpecialAuras: won't check special auras
+	function Plater.CheckAuras (self, buffList, debuffList, noSpecialAuras)
+		local buffFrame = self.BuffFrame
+		
+		Plater.ResetAuraContainer (buffFrame)
+		
+		Plater.TrackSpecificAuras (buffFrame, self.unit, true, buffList, self.IsSelf, noSpecialAuras)
+		Plater.TrackSpecificAuras (buffFrame, self.unit, false, debuffList, self.IsSelf, noSpecialAuras)
+		
+		Plater.HideNonUsedAuraIcons (buffFrame)
+		
+		--update the buff layout and alpha
+		buffFrame.unit = self.unit
+		buffFrame:Layout()
+		buffFrame:SetAlpha (DB_AURA_ALPHA)
 	end
 	
 	--return the health bar and the unitname text
