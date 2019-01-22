@@ -528,6 +528,7 @@ Plater.DefaultSpellRangeList = {
 	local HOOK_PLAYER_POWER_UPDATE = {ScriptAmount = 0}
 	local HOOK_PLAYER_TALENT_UPDATE = {ScriptAmount = 0}
 
+	local SPECIAL_AURA_NAMES_AUTO = {} --store auto special auras
 	local SPECIAL_AURA_NAMES = {}
 	local SPECIAL_AURA_NAMES_MINE = {}
 	local CROWDCONTROL_AURA_NAMES = {}
@@ -1122,6 +1123,7 @@ Plater.DefaultSpellRangeList = {
 		
 		wipe (SPECIAL_AURA_NAMES)
 		wipe (SPECIAL_AURA_NAMES_MINE)
+		wipe (SPECIAL_AURA_NAMES_AUTO)
 		wipe (CROWDCONTROL_AURA_NAMES)
 		
 		IS_USING_DETAILS_INTEGRATION = false
@@ -1970,14 +1972,13 @@ Plater.DefaultSpellRangeList = {
 
 		-- ~added ãdded
 		NAME_PLATE_UNIT_ADDED = function (event, unitBarId)
-			--pega a nameplate deste jogador
-			
+		
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId)
 			if (not plateFrame) then
 				return
 			end
 			
-			local unitID = plateFrame [MEMBER_UNITID]
+			local unitID = unitBarId
 			
 			--hide blizzard namepaltes
 			plateFrame.UnitFrame:Hide()
@@ -1995,12 +1996,15 @@ Plater.DefaultSpellRangeList = {
 			--powerbar are disabled by default in the settings table, called SetUnit will make the framework hide the power bar
 			--SetPowerBarSize() will show the power bar or the personal resource bar update also will show it
 			unitFrame:SetUnit (unitID)
-
+			
 			--set the unitID in the unitFrame, several script and external addons read this member, adding different variations to be compatible with all
 			unitFrame.unit = unitID
 			unitFrame.namePlateUnitToken = unitID
 			unitFrame.displayedUnit = unitID
-			plateFrame [MEMBER_UNITID] = unitID
+			
+			--was causing taints because MEMBER_UNITID is an actually member from the default blizzard nameplate
+			--so when this nameplate is reclycled to be in a proteecteed nameplate, it was causing taints
+			--plateFrame [MEMBER_UNITID] = unitID --causing taints
 			
 			plateFrame.QuestAmountCurrent = nil
 			plateFrame.QuestAmountTotal = nil
@@ -2610,8 +2614,13 @@ function Plater.OnInit()
 			end
 
 			--show Plater power bar for the player personal nameplate
-			local plateFrame = C_NamePlate.GetNamePlateForUnit ("player", issecure())
+			local plateFrame = C_NamePlate.GetNamePlateForUnit ("player")
 			if (plateFrame) then
+			
+				if (not plateFrame.Plater) then
+					return
+				end
+			
 				if (NamePlateDriverFrame.classNamePlatePowerBar and NamePlateDriverFrame.classNamePlatePowerBar:IsShown()) then
 					--hide the power bar from default ui
 					NamePlateDriverFrame.classNamePlatePowerBar:Hide()
@@ -8507,7 +8516,10 @@ function SlashCmdList.PLATER (msg, editbox)
 		end
 		
 		return
-
+	
+	elseif (msg == "color" or msg == "colors") then
+		Plater.OpenColorFrame()
+		return
 	end
 	
 	Plater.OpenOptionsPanel()
@@ -8585,5 +8597,88 @@ end
 		Plater:Msg ("is now animating nameplates in your screen for test purposes.")
 	end	
 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--> color frame
+function Plater.OpenColorFrame()
+	if (PlaterColorPreview) then
+		PlaterColorPreview:Show()
+		return
+	end
+	
+	local function hex (num)
+		local hexstr = '0123456789abcdef'
+		local s = ''
+		while num > 0 do
+			local mod = math.fmod(num, 16)
+			s = string.sub(hexstr, mod+1, mod+1) .. s
+			num = math.floor(num / 16)
+		end
+		if s == '' then s = '00' end
+		if (string.len (s) == 1) then
+			s = "0"..s
+		end
+		return s
+	end
+	
+	local a = CreateFrame ("frame", "PlaterColorPreview", UIParent)
+	a:SetSize (1400, 910)
+	a:SetPoint ("topleft", UIParent, "topleft")
+	
+	--close button
+	local closeButton = DF:CreateButton (a, function() a:Hide() end, 160, 20, "", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
+	closeButton:SetPoint ("topright", a, "topright", -1, 0)
+	closeButton:SetText ("Close Color Palette")
+	
+	DF:ApplyStandardBackdrop (a)
+	
+	local onFocusGained = function (self)
+		self:HighlightText (0)
+	end
+	local onFocusLost = function (self)
+		self:HighlightText (0, 0)
+	end
+	
+	local allColors = {}
+	for colorName, colorTable in pairs (DF.alias_text_colors) do
+		tinsert (allColors, {colorTable, colorName, hex (colorTable[1]*255) .. hex (colorTable[2]*255) .. hex (colorTable[3]*255)})
+	end
+	
+	table.sort (allColors, function (t1, t2)
+		return t1[1][3] > t2[1][3]
+	end)
+	
+	local x = 5
+	local y = -20
+	local totalWidth = 105
+	
+	--for colorname, colortable in pairs (DF.alias_text_colors) do
+	
+	for index, colorTable in ipairs (allColors) do
+		local colortable = colorTable [1]
+		local colorname = colorTable [2]
+	
+		local backgroundTexture = a:CreateTexture (nil, "overlay")
+		backgroundTexture:SetColorTexture (unpack (colortable))
+		backgroundTexture:SetSize (100, 20)
+		backgroundTexture:SetPoint ("topleft", a, "topleft", x, y)
+		
+		local textEntry = DF:CreateTextEntry (a, function()end, 100, 20)
+		textEntry:SetBackdrop (nil)
+		textEntry:SetPoint ("topleft", backgroundTexture, "topleft", 0, 0)
+		textEntry:SetPoint ("bottomright", backgroundTexture, "bottomright", 0, 0)
+		textEntry:SetText (colorname)
+		textEntry:SetHook ("OnEditFocusGained", onFocusGained)
+		textEntry:SetHook ("OnEditFocusLost", onFocusLost)
+		
+		y = y - 20
+		if (y < -880) then
+			y = -20
+			x = x + 105
+			totalWidth = totalWidth + 105
+		end
+	end
+	
+	a:SetWidth (totalWidth)
+end
 
 --functiona enda
