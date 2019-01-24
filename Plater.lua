@@ -1171,7 +1171,12 @@ Plater.DefaultSpellRangeList = {
 			if (state) then
 				local spellName = GetSpellInfo (spellId)
 				if (spellName) then
-					SPECIAL_AURAS_USER_LIST_MINE [spellName] = true
+					--> mine list only store if the user checked the 'only mine' box
+					--> if the user remove the spell, that spell isn't removed from the 'only mine' list
+					--> so need to check if the spell on 'only mine' list is included in the special aura list
+					if (SPECIAL_AURAS_USER_LIST [spellName]) then
+						SPECIAL_AURAS_USER_LIST_MINE [spellName] = true
+					end
 				end
 			end
 		end
@@ -2457,24 +2462,24 @@ function Plater.OnInit()
 
 		--power update for hooking scripts
 		local hookPowerEventFrame = CreateFrame ("frame")
-		hookPowerEventFrame:RegisterUnitEvent ("UNIT_POWER_UPDATE", "player")
-		hookPowerEventFrame:RegisterUnitEvent ("UNIT_DISPLAYPOWER", "player")
+		--hookPowerEventFrame:RegisterUnitEvent ("UNIT_POWER_UPDATE", "player")
 		hookPowerEventFrame:RegisterUnitEvent ("UNIT_POWER_FREQUENT", "player")
 		hookPowerEventFrame:RegisterUnitEvent ("UNIT_MAXPOWER", "player")
-		hookPowerEventFrame:RegisterUnitEvent ("UNIT_MAXPOWER", "player")
-		hookPowerEventFrame:RegisterUnitEvent ("UNIT_POWER_BAR_HIDE", "player")
+		--hookPowerEventFrame:RegisterUnitEvent ("UNIT_DISPLAYPOWER", "player")
+		--hookPowerEventFrame:RegisterUnitEvent ("UNIT_POWER_BAR_HIDE", "player")
 
 		hookPowerEventFrame:SetScript ("OnEvent", function()
 			if (HOOK_PLAYER_POWER_UPDATE.ScriptAmount > 0) then
-				local plateFrame = C_NamePlate.GetNamePlateForUnit ("target", issecure())
-				if (plateFrame) then
-					for i = 1, HOOK_PLAYER_POWER_UPDATE.ScriptAmount do
-						local globalScriptObject = HOOK_PLAYER_POWER_UPDATE [i]
-						local unitFrame = plateFrame.unitFrame
-						local scriptContainer = unitFrame:ScriptGetContainer()
-						local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Player Power Update")
-						--run
-						unitFrame:ScriptRunHook (scriptInfo, "Player Power Update")
+				for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+					if (plateFrame) then
+						for i = 1, HOOK_PLAYER_POWER_UPDATE.ScriptAmount do
+							local globalScriptObject = HOOK_PLAYER_POWER_UPDATE [i]
+							local unitFrame = plateFrame.unitFrame
+							local scriptContainer = unitFrame:ScriptGetContainer()
+							local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Player Power Update")
+							--run
+							unitFrame:ScriptRunHook (scriptInfo, "Player Power Update")
+						end
 					end
 				end
 			end
