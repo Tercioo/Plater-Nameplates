@@ -187,6 +187,18 @@ Plater.CooldownEdgeTextures = {
 }
 
 --
+Plater.SparkTextures = {
+	[[Interface\AddOns\Plater\images\spark1]],
+	[[Interface\AddOns\Plater\images\spark2]],
+	[[Interface\AddOns\Plater\images\spark3]],
+	[[Interface\AddOns\Plater\images\spark4]],
+	[[Interface\AddOns\Plater\images\spark5]],
+	[[Interface\AddOns\Plater\images\spark6]],
+	[[Interface\AddOns\Plater\images\spark7]],
+	[[Interface\AddOns\Plater\images\spark8]],
+}
+
+--
 Plater.TargetHighlights = {
 	[[Interface\AddOns\Plater\images\selection_indicator1]],
 	[[Interface\AddOns\Plater\images\selection_indicator2]],
@@ -1570,7 +1582,7 @@ Plater.DefaultSpellRangeList = {
 			Plater.UpdateAllPlates (true)
 		end,
 		
-		--~created ~events
+		--~created ~events õncreated ~oncreated
 		NAME_PLATE_CREATED = function (event, plateFrame)
 			
 			--> create the unitframe
@@ -1588,7 +1600,7 @@ Plater.DefaultSpellRangeList = {
 				
 				local castBarOptions = {
 					FadeInTime = 0.02,
-					FadeOutTime = 0.3,
+					FadeOutTime = 0.66,
 					SparkHeight = 20,
 					LazyUpdateCooldown = 0.1,
 				}
@@ -1621,6 +1633,8 @@ Plater.DefaultSpellRangeList = {
 			
 			--register details framework hooks
 			newUnitFrame.castBar:SetHook ("OnShow", Plater.CastBarOnShow_Hook)
+			hooksecurefunc (DF.CastFrameFunctions, "OnEvent", Plater.CastBarOnEvent_Hook)
+			hooksecurefunc (DF.CastFrameFunctions, "OnTick", Plater.CastBarOnTick_Hook)
 			
 			plateFrame.unitFrame.RefreshID = 0
 			
@@ -2746,6 +2760,66 @@ function Plater.OnInit()
 		end)
 
 	--> cast frame ~castbar
+	
+		Plater.CastBarTestFrame = CreateFrame ("frame", nil, UIParent)
+
+		function Plater.StartCastBarTest()
+			Plater.IsShowingCastBarTest = true
+			Plater.DoCastBarTest()
+		end
+		
+		function Plater.DoCastBarTest (castNoInterrupt)
+
+			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+				local castBar = plateFrame.unitFrame.castBar
+				
+				castBar.Text:SetText ("Test Cast")
+				castBar.Icon:SetTexture ("Interface\\Icons\\Ability_Druid_Eclipse")
+				castBar.Icon:Show()
+				castBar.percentText:Show()
+				castBar:SetMinMaxValues (0, 3)
+				castBar:SetValue (0)
+				castBar.Spark:Show()
+				castBar.casting = true
+				castBar.finished = false
+				castBar.value = 0
+				castBar.maxValue = 3
+				castBar.canInterrupt = not castNoInterrupt
+				castBar:UpdateCastColor()
+				
+				castBar.flashTexture:Hide()
+				castBar:Animation_StopAllAnimations()
+				
+				if (not castBar:IsShown()) then
+					castBar:Animation_FadeIn()
+					castBar:Show()
+				end
+			end
+			
+			local totalTime = 0
+			local forward = true
+
+			Plater.CastBarTestFrame:SetScript ("OnUpdate", function (self, deltaTime)
+				if (totalTime >= 3.7) then
+					if (Plater.IsShowingCastBarTest) then
+						Plater.StartCastBarTest()
+					end
+				else
+					totalTime = totalTime + deltaTime
+				end
+				
+				if (not Plater.IsShowingCastBarTest) then
+					Plater.CastBarTestFrame:SetScript ("OnUpdate", nil)
+				end
+			end)
+		end
+		
+		function Plater.StopCastBarTest()
+			Plater.IsShowingCastBarTest = false
+			
+		end
+	
+		--> when the option to show the target of the cast is enabled, this function update the text settings but not the target name
 		function Plater.UpdateCastbarTargetText (castBar)
 			local profile = Plater.db.profile
 			
@@ -2756,7 +2830,6 @@ function Plater.OnInit()
 				DF:SetFontSize (textString, profile.castbar_target_text_size)
 				DF:SetFontOutline (textString, profile.castbar_target_shadow)
 				
-				--Plater.SetFontOutlineAndShadow (textString, profile._outline, profile._shadow_color, profile._shadow_color_offset[1], profile._shadow_color_offset[2])
 				Plater.SetFontOutlineAndShadow (textString, profile.castbar_target_outline, profile.castbar_target_shadow_color, profile.castbar_target_shadow_color_offset[1], profile.castbar_target_shadow_color_offset[2])
 				
 				DF:SetFontColor (textString, profile.castbar_target_color)
@@ -2769,13 +2842,15 @@ function Plater.OnInit()
 		end
 		
 		--> self is the castBar object from the details! framework unit frame widget
+		--> this hook is set inside the nameplate created event
 		function Plater.CastBarOnShow_Hook (self, unit)
 			--> this cast bar is a nameplate widget?
 			if (self.isNamePlate) then
 				if (self.IsSelf) then
 					self.extraBackground:Show()
 				else
-					if (self.PlateFrame:GetAlpha() < 0.55) then
+					--in case the unit is out of range, add some background color for the cast
+					if (self:GetAlpha() < 0.65) then
 						self.extraBackground:Show()
 						self.extraBackground:SetVertexColor (0, 0, 0, 0.8)
 					else
@@ -2785,6 +2860,7 @@ function Plater.OnInit()
 			end
 		end
 		
+		--hook for all castbar events
 		function Plater.CastBarOnEvent_Hook (self, event, unit, ...)
 
 			if (event == "PLAYER_ENTERING_WORLD") then
@@ -2794,11 +2870,13 @@ function Plater.OnInit()
 				
 				unit = self.unit
 				
-				local castname = UnitCastingInfo (unit)
-				local channelname = UnitChannelInfo (unit)
-				if (castname) then
+				--local castname = UnitCastingInfo (unit)
+				--local channelname = UnitChannelInfo (unit)
+				
+				if (self.casting) then
 					event = "UNIT_SPELLCAST_START"
-				elseif (channelname) then
+					
+				elseif (self.channeling) then
 					event = "UNIT_SPELLCAST_CHANNEL_START"
 				else
 					return
@@ -2808,45 +2886,48 @@ function Plater.OnInit()
 			if (self.isNamePlate) then
 				local shouldRunCastStartHook = false
 				
-				if (event == "UNIT_SPELLCAST_START") then
+				if (event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_CHANNEL_START") then
 					local unitCast = unit
 					if (unitCast ~= self.unit) then
 						return
 					end
 					
-					local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, spellId = UnitCastingInfo (unitCast)
-					self.SpellName = name
-					self.SpellID = spellId
-					self.SpellTexture = texture
-					self.SpellStartTime = startTime/1000
-					self.SpellEndTime = endTime/1000
+					--local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, spellId = UnitCastingInfo (unitCast)
+					self.SpellName = 		self.spellName
+					self.SpellID = 		self.spellID
+					self.SpellTexture = 	self.spellTexture
+					self.SpellStartTime = 	self.spellStartTime
+					self.SpellEndTime = 	self.spellEndTime
+					
+					local notInterruptible = not self.canInterrupt
 					
 					self.IsInterrupted = false
+					self.ReUpdateNextTick = true
+					self.ThrottleUpdate = -1
 					
+					--> set border shield
 					self.Icon:SetDrawLayer ("OVERLAY", 5)
+					self.BorderShield:SetDrawLayer ("OVERLAY", 6)
 					
 					if (notInterruptible) then
 						self.BorderShield:ClearAllPoints()
 						self.BorderShield:SetPoint ("center", self.Icon, "center")
-						self.BorderShield:SetDrawLayer ("OVERLAY", 6)
 						self.BorderShield:Show()
 					else
 						self.BorderShield:Hide()
 					end
 
 					if (notInterruptible) then
-						self:SetStatusBarColor (unpack (Plater.db.profile.cast_statusbar_color_nointerrupt))
+						--self:SetStatusBarColor (unpack (Plater.db.profile.cast_statusbar_color_nointerrupt)) --framework handles cast color
 						self.CanInterrupt = false
 					else
-						self:SetStatusBarColor (unpack (Plater.db.profile.cast_statusbar_color))
+						--self:SetStatusBarColor (unpack (Plater.db.profile.cast_statusbar_color))
 						self.CanInterrupt = true
 					end
 					
-					self.ReUpdateNextTick = true
-					self.ThrottleUpdate = -1
-					
 					self.FrameOverlay:SetBackdropBorderColor (0, 0, 0, 0)
 					
+					--cut the spell name text to fit within the castbar
 					local textLenght = self.Text:GetStringWidth()
 					if (textLenght > Plater.MaxCastBarTextLength) then
 						Plater.UpdateSpellNameSize (self.Text)
@@ -2854,53 +2935,7 @@ function Plater.OnInit()
 
 					Plater.UpdateCastbarTargetText (self)
 					shouldRunCastStartHook = true
-					
-				elseif (event == "UNIT_SPELLCAST_CHANNEL_START") then
-					local unitCast = unit
-					if (unitCast ~= self.unit) then
-						return
-					end
-					
-					local name, text, texture, startTime, endTime, isTradeSkill, notInterruptible, spellId = UnitChannelInfo (unitCast) --nameSubtext, 
-					self.SpellName = name
-					self.SpellID = spellId
-					self.SpellTexture = texture
-					self.SpellStartTime = startTime/1000
-					self.SpellEndTime = endTime/1000
-					
-					self.IsInterrupted = false
-					
-					self.Icon:SetDrawLayer ("OVERLAY", 5)
-					if (notInterruptible) then
-						self.BorderShield:ClearAllPoints()
-						self.BorderShield:SetPoint ("center", self.Icon, "center")
-						self.BorderShield:SetDrawLayer ("OVERLAY", 6)
-						self.BorderShield:Show()
-					else
-						self.BorderShield:Hide()
-					end
-					
-					if (notInterruptible) then
-						self:SetStatusBarColor (unpack (Plater.db.profile.cast_statusbar_color_nointerrupt))
-						self.CanInterrupt = false
-					else
-						self:SetStatusBarColor (unpack (Plater.db.profile.cast_statusbar_color))
-						self.CanInterrupt = true
-					end
-					
-					self.ReUpdateNextTick = true
-					self.ThrottleUpdate = -1
-					
-					self.FrameOverlay:SetBackdropBorderColor (0, 0, 0, 0)
-					
-					local textLenght = self.Text:GetStringWidth()
-					if (textLenght > Plater.MaxCastBarTextLength) then
-						Plater.UpdateSpellNameSize (self.Text)
-					end
-					
-					Plater.UpdateCastbarTargetText (self)
-					shouldRunCastStartHook = true
-				
+
 				elseif (event == "UNIT_SPELLCAST_INTERRUPTED") then
 					local unitCast = unit
 					if (unitCast ~= self.unit) then
@@ -2910,7 +2945,7 @@ function Plater.OnInit()
 					self:OnHideWidget()
 					self.IsInterrupted = true
 
-				elseif (event == "UNIT_SPELLCAST_STOP") then
+				elseif (event == "UNIT_SPELLCAST_STOP" or event == "UNIT_SPELLCAST_CHANNEL_STOP") then
 					local unitCast = unit
 					if (unitCast ~= self.unit) then
 						return
@@ -2929,6 +2964,7 @@ function Plater.OnInit()
 							local unitFrame = self:GetParent()
 							local scriptContainer = unitFrame:ScriptGetContainer()
 							local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Cast Start")
+							
 							--update envTable
 							local scriptEnv = scriptInfo.Env
 							scriptEnv._SpellID = self.SpellID
@@ -2941,6 +2977,7 @@ function Plater.OnInit()
 							scriptEnv._CanInterrupt = self.CanInterrupt
 							scriptEnv._EndTime = self.SpellEndTime
 							scriptEnv._RemainingTime = max (self.SpellEndTime - GetTime(), 0)
+							
 							--run
 							unitFrame:ScriptRunHook (scriptInfo, "Cast Start", self)
 						end
@@ -2949,8 +2986,6 @@ function Plater.OnInit()
 				
 			end
 		end
-		
-		hooksecurefunc (DF.CastFrameFunctions, "OnEvent", Plater.CastBarOnEvent_Hook)
 		
 		Plater.CastBarOnTick_Hook = function (self, deltaTime)
 			if (self.percentText) then --é uma castbar do plater?
@@ -2985,8 +3020,6 @@ function Plater.OnInit()
 						self.FrameOverlay.TargetName:SetText ("")
 					end
 					
-					--plateFrame.unitFrame.castBar.FrameOverlay.TargetName
-					
 					self.ThrottleUpdate = DB_TICK_THROTTLE
 
 					--check if this aura has a custom script
@@ -3010,6 +3043,7 @@ function Plater.OnInit()
 						
 						if (self.casting) then
 							scriptEnv._CastPercent = self.value / self.maxValue * 100
+							
 						elseif (self.channeling) then
 							scriptEnv._CastPercent = abs (self.value - self.maxValue) / self.maxValue * 100
 						end
@@ -3048,8 +3082,6 @@ function Plater.OnInit()
 			end
 		end
 		
-		--hooking our own framework
-		hooksecurefunc (DF.CastFrameFunctions, "OnTick", Plater.CastBarOnTick_Hook)
 
 	--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	--> health frame
@@ -4145,7 +4177,8 @@ end
 			PixelUtil.SetSize (castBar, castBarWidth, castBarHeight)
 			PixelUtil.SetSize (castBar.Icon, castBarHeight, castBarHeight)
 			PixelUtil.SetSize (castBar.BorderShield, castBarHeight * 1.4, castBarHeight * 1.4)
-		
+			PixelUtil.SetSize (castBar.Spark, profile.cast_statusbar_spark_width, castBarHeight)
+
 		--power bar
 			powerBar:ClearAllPoints()
 			PixelUtil.SetPoint (powerBar, "topleft", healthBar, "bottomleft", powerBarOffSetX, powerBarOffSetY)
@@ -5497,13 +5530,15 @@ end
 		if (unitFrame.RefreshID < PLATER_REFRESH_ID) then
 			unitFrame.RefreshID = PLATER_REFRESH_ID
 
+			local profile = Plater.db.profile
+			
 			--update highlight texture
 			unitFrame.HighlightFrame.HighlightTexture:SetTexture (DB_TEXTURE_HEALTHBAR)
 			unitFrame.HighlightFrame.HighlightTexture:SetBlendMode ("ADD")
-			unitFrame.HighlightFrame.HighlightTexture:SetAlpha (Plater.db.profile.hover_highlight_alpha)
+			unitFrame.HighlightFrame.HighlightTexture:SetAlpha (profile.hover_highlight_alpha)
 			
 			--click area is shown?
-			if (Plater.db.profile.click_space_always_show) then
+			if (profile.click_space_always_show) then
 				Plater.SetPlateBackground (plateFrame)
 			else
 				plateFrame:SetBackdrop (nil)
@@ -5511,9 +5546,33 @@ end
 			
 			--setup cast bar
 			castBar.background:SetTexture (DB_TEXTURE_CASTBAR_BG)
-			castBar.background:SetVertexColor (unpack (Plater.db.profile.cast_statusbar_bgcolor))
+			castBar.background:SetVertexColor (unpack (profile.cast_statusbar_bgcolor))
 			castBar.flashTexture:SetTexture (DB_TEXTURE_CASTBAR)
 			castBar.Icon:SetTexCoord (0.078125, 0.921875, 0.078125, 0.921875)
+			
+			local colors = castBar.Settings.Colors
+			colors.Casting:SetColor (profile.cast_statusbar_color)
+			colors.NonInterruptible:SetColor (profile.cast_statusbar_color_nointerrupt)
+			colors.Interrupted:SetColor (profile.cast_statusbar_color_interrupted)
+			colors.Finished:SetColor (profile.cast_statusbar_color_finished)
+			
+			castBar.Settings.FadeInTime = profile.cast_statusbar_fadein_time
+			castBar.Settings.FadeOutTime = profile.cast_statusbar_fadeout_time
+			castBar.fadeOutAnimation.alpha1:SetDuration (castBar.Settings.FadeOutTime)
+			castBar.fadeInAnimation.alpha1:SetDuration (castBar.Settings.FadeInTime)
+			castBar.Settings.NoFadeEffects = not profile.cast_statusbar_use_fade_effects
+			castBar.Settings.SparkTexture = profile.cast_statusbar_spark_texture
+			castBar.Spark:SetTexture (castBar.Settings.SparkTexture)
+			castBar.Spark:SetVertexColor (unpack (profile.cast_statusbar_spark_color))
+			castBar.Spark:SetAlpha (profile.cast_statusbar_spark_alpha)
+			
+			if (profile.cast_statusbar_spark_half) then
+				castBar.Spark:SetTexCoord (0, 0.5, 0, 1)
+			else
+				castBar.Spark:SetTexCoord (0, 1, 0, 1)
+			end
+			
+			castBar.Settings.SparkOffset = profile.cast_statusbar_spark_offset
 			
 			--setup power bar
 			unitFrame.powerBar:SetTexture (DB_TEXTURE_HEALTHBAR)
@@ -5521,15 +5580,15 @@ end
 			--setup health bar
 			healthBar:SetTexture (DB_TEXTURE_HEALTHBAR)
 			healthBar.background:SetTexture (DB_TEXTURE_HEALTHBAR_BG)
-			healthBar.background:SetVertexColor (unpack (Plater.db.profile.health_statusbar_bgcolor))
+			healthBar.background:SetVertexColor (unpack (profile.health_statusbar_bgcolor))
 			
 			--update border
 			Plater.UpdatePlateBorders (plateFrame)
 			
 			--target overlay texture
-			local targetedOverlayTexture = LibSharedMedia:Fetch ("statusbar", Plater.db.profile.health_selection_overlay)
+			local targetedOverlayTexture = LibSharedMedia:Fetch ("statusbar", profile.health_selection_overlay)
 			unitFrame.targetOverlayTexture:SetTexture (targetedOverlayTexture)
-			unitFrame.targetOverlayTexture:SetAlpha (Plater.db.profile.health_selection_overlay_alpha)
+			unitFrame.targetOverlayTexture:SetAlpha (profile.health_selection_overlay_alpha)
 		end
 		
 		--update the plate size for this unit

@@ -432,7 +432,7 @@ function Plater.OpenOptionsPanel()
 			profilesFrame.NewProfileTextEntry:Hide()
 	end
 -------------------------
--- fun��es gerais dos dropdowns
+-- fun��es gerais dos dropdowns ~dropdowns
 	local textures = LibSharedMedia:HashTable ("statusbar")
 
 	--outline table
@@ -564,6 +564,15 @@ function Plater.OpenOptionsPanel()
 		cooldown_edge_texture_selected_options [#cooldown_edge_texture_selected_options + 1] = {value = texturePath, label = "Texture " .. index, statusbar = texturePath, onclick = cooldown_edge_texture_selected}
 	end
 	--
+	local cast_spark_texture_selected = function (self, capsule, value)
+		Plater.db.profile.cast_statusbar_spark_texture = value
+		Plater.UpdateAllPlates()
+	end
+	local cast_spark_texture_selected_options = {}
+	for index, texturePath in ipairs (Plater.SparkTextures) do
+		cast_spark_texture_selected_options [#cast_spark_texture_selected_options + 1] = {value = texturePath, label = "Texture " .. index, statusbar = texturePath, onclick = cast_spark_texture_selected}
+	end
+	
 	
 -------------------------------------------------------------------------------
 --op��es do painel de interface da blizzard
@@ -4132,33 +4141,203 @@ local relevance_options = {
 			desc = "Texture used on the cast bar background.",
 		},
 		
+		{type = "blank"},
+		
 		{
-			type = "color",
-			get = function()
-				local color = Plater.db.profile.cast_statusbar_color
-				return {color[1], color[2], color[3], color[4]}
-			end,
-			set = function (self, r, g, b, a) 
-				local color = Plater.db.profile.cast_statusbar_color
-				color[1], color[2], color[3], color[4] = r, g, b, a
-			end,
-			name = "Cast Bar Color",
-			desc = "Cast Bar Color",
+			type = "select",
+			get = function() return Plater.db.profile.cast_statusbar_spark_texture end,
+			values = function() return cast_spark_texture_selected_options end,
+			name = "Spark Texture",
+			desc = "Spark Texture",
 		},
 		{
-			type = "color",
-			get = function()
-				local color = Plater.db.profile.cast_statusbar_color_nointerrupt
-				return {color[1], color[2], color[3], color[4]}
+			type = "range",
+			get = function() return Plater.db.profile.cast_statusbar_spark_width end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.cast_statusbar_spark_width = value
+				Plater.UpdateAllPlates()
 			end,
-			set = function (self, r, g, b, a) 
-				local color = Plater.db.profile.cast_statusbar_color_nointerrupt
-				color[1], color[2], color[3], color[4] = r, g, b, a
+			min = 4,
+			max = 32,
+			step = 1,
+			name = "Spark Width",
+			desc = "Spark Width",
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.cast_statusbar_spark_offset end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.cast_statusbar_spark_offset = value
+				Plater.UpdateAllPlates()
 			end,
-			name = "Cast Bar Color No Interrupt",
-			desc = "Cast Bar Color No Interrupt",
+			min = -32,
+			max = 32,
+			step = 1,
+			name = "Spark Offset",
+			desc = "Spark Offset",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.cast_statusbar_spark_half end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.cast_statusbar_spark_half = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Spark Half",
+			desc = "Show only half of the spark texture.",
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.cast_statusbar_spark_alpha end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.cast_statusbar_spark_alpha = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			usedecimals = true,
+			name = "Spark Alpha",
+			desc = "Spark Alpha",
 		},
 		
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.cast_statusbar_spark_color
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.cast_statusbar_spark_color
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllPlates()
+			end,
+			name = "Spark Color",
+			desc = "Spark Color",
+		},
+		
+		{type = "blank"},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.cast_statusbar_use_fade_effects end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.cast_statusbar_use_fade_effects = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Use Fade Animations",
+			desc = "Show a fade in and fade out animations when the cast starts and end.",
+		},
+		
+		{
+			type = "range",
+			get = function() return Plater.db.profile.cast_statusbar_fadein_time end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.cast_statusbar_fadein_time = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 0.01,
+			max = 1,
+			step = 0.01,
+			usedecimals = true,
+			name = "Fade In Time",
+			desc = "When a cast starts, this is the amount of time the cast bar takes to go from zero transparency to full opaque.",
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.cast_statusbar_fadeout_time end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.cast_statusbar_fadeout_time = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 0.01,
+			max = 2,
+			step = 0.01,
+			usedecimals = true,
+			name = "Fade Out Time",
+			desc = "When a cast ends, this is the amount of time the cast bar takes to go from 100% transparency to not be visible at all.",
+		},
+		
+		{type = "blank"},
+		
+		{
+			type = "execute",
+			func = function() 
+				if (Plater.IsShowingCastBarTest) then
+					Plater.StopCastBarTest()
+					Plater:Msg ("Test loop for cast bar stopped.")
+				else
+					Plater.StartCastBarTest()
+				end
+			end,
+			desc = "Start cast bar test, press again to stop.",
+			name = "Toggle Cast Bar Test",
+		},
+			
+		{type = "breakline"},
+		
+		{type = "label", get = function() return "Cast Bar Colors:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.cast_statusbar_color
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.cast_statusbar_color
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllPlates()
+				Plater.DoCastBarTest()
+			end,
+			name = "Regular Cast",
+			desc = "Regular Cast",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.cast_statusbar_color_nointerrupt
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.cast_statusbar_color_nointerrupt
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllPlates()
+				Plater.DoCastBarTest (true)
+			end,
+			name = "Can't Interrupt Cast",
+			desc = "Can't Interrupt Cast",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.cast_statusbar_color_interrupted
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.cast_statusbar_color_interrupted
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllPlates()
+				Plater.DoCastBarTest()
+			end,
+			name = "Interrupted Cast",
+			desc = "When the cast is interrupted, tint the castbar with this color.",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.cast_statusbar_color_finished
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.cast_statusbar_color_finished
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllPlates()
+				Plater.DoCastBarTest()
+			end,
+			name = "Success Cast",
+			desc = "When the cast is successfully completed.",
+		},
+
 		{
 			type = "color",
 			get = function()
@@ -4169,8 +4348,9 @@ local relevance_options = {
 				local color = Plater.db.profile.cast_statusbar_bgcolor
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
+				Plater.DoCastBarTest()
 			end,
-			name = "Cast Bar Background Color",
+			name = "Background Color",
 			desc = "Color used to paint the cast bar background.",
 		},
 		
