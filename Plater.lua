@@ -7320,8 +7320,12 @@ end
 	end
 	
 	--forces a range check regardless of the user options and only changes the member_range flag, no alpha changes
-	function Plater.NameplateInRange (unitFrame)
-		if (Plater.SpellBookForRangeCheck) then
+	--if the spell name is passed, it just return the result without modifying the nameplate attributes
+	function Plater.NameplateInRange (unitFrame, spellName)
+		if (spellName) then
+			return IsSpellInRange (spellName, unitFrame [MEMBER_UNITID]) == 1
+			
+		elseif (Plater.SpellBookForRangeCheck) then
 			if (IsSpellInRange (Plater.SpellForRangeCheck, Plater.SpellBookForRangeCheck, unitFrame [MEMBER_UNITID]) == 1) then
 				unitFrame [MEMBER_RANGE] = true
 				return true
