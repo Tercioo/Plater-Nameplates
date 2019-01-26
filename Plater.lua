@@ -3751,7 +3751,7 @@ end
 							Plater.AddExtraIcon (self, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 						
 						--> check for special auras added by the user it self
-						elseif (SPECIAL_AURAS_USER_LIST [name] or (SPECIAL_AURAS_USER_LIST_MINE [name] and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
+						elseif ((SPECIAL_AURAS_USER_LIST [name] and not SPECIAL_AURAS_USER_LIST_MINE [name]) or (SPECIAL_AURAS_USER_LIST_MINE [name] and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
 							Plater.AddExtraIcon (self, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 							
 						end
@@ -3784,7 +3784,7 @@ end
 							Plater.AddExtraIcon (self, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 						
 						--> check for special auras added by the user it self
-						elseif (SPECIAL_AURAS_USER_LIST [name] or (SPECIAL_AURAS_USER_LIST_MINE [name] and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
+						elseif ((SPECIAL_AURAS_USER_LIST [name] and not SPECIAL_AURAS_USER_LIST_MINE [name]) or (SPECIAL_AURAS_USER_LIST_MINE [name] and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
 							Plater.AddExtraIcon (self, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 							
 						end
@@ -3830,7 +3830,7 @@ end
 						can_show_this_debuff = true
 					
 					--> is casted by the player
-					elseif (DB_AURA_SHOW_BYPLAYER and caster and UnitIsUnit (caster, "player")) then
+					elseif (DB_AURA_SHOW_BYPLAYER and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet"))) then
 						can_show_this_debuff = true
 						
 					--> user added this buff to track in the buff tracking tab
@@ -3846,7 +3846,7 @@ end
 				end
 				
 				--> check for special auras added by the user it self
-				if (SPECIAL_AURAS_USER_LIST [name] or (SPECIAL_AURAS_USER_LIST_MINE [name] and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
+				if ((SPECIAL_AURAS_USER_LIST [name] and not SPECIAL_AURAS_USER_LIST_MINE [name]) or (SPECIAL_AURAS_USER_LIST_MINE [name] and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
 					Plater.AddExtraIcon (self, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 				end
 				
@@ -3903,7 +3903,7 @@ end
 				end
 
 				--> check for special auras added by the user it self
-				if (SPECIAL_AURAS_USER_LIST [name] or (SPECIAL_AURAS_USER_LIST_MINE [name] and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
+				if ((SPECIAL_AURAS_USER_LIST [name] and not SPECIAL_AURAS_USER_LIST_MINE [name]) or (SPECIAL_AURAS_USER_LIST_MINE [name] and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
 					Plater.AddExtraIcon (self, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 				end
 			end
@@ -3936,7 +3936,7 @@ end
 				end
 				
 				--> check for special auras added by the user it self
-				if (SPECIAL_AURAS_USER_LIST [name] or (SPECIAL_AURAS_USER_LIST_MINE [name] and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
+				if ((SPECIAL_AURAS_USER_LIST [name] and not SPECIAL_AURAS_USER_LIST_MINE [name]) or (SPECIAL_AURAS_USER_LIST_MINE [name] and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
 					Plater.AddExtraIcon (self, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 				end
 				
@@ -4059,16 +4059,21 @@ end
 	
 	--get a unit and a text and color the text with the class color of the unit
 	function Plater.SetTextColorByClass (unit, text)
-		local _, class = UnitClass (unit)
-		if (class) then
-			local color = RAID_CLASS_COLORS [class]
-			if (color) then
-				text = "|c" .. color.colorStr .. DF:RemoveRealName (text) .. "|r"
+		--checking if the unit exists because this can be called from the cleu parser
+		if (unit) then
+			local _, class = UnitClass (unit)
+			if (class) then
+				local color = RAID_CLASS_COLORS [class]
+				if (color) then
+					text = "|c" .. color.colorStr .. DF:RemoveRealName (text) .. "|r"
+				end
+			else
+				text = DF:RemoveRealName (text)
 			end
+			return text
 		else
-			text = DF:RemoveRealName (text)
+			return text
 		end
-		return text
 	end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
