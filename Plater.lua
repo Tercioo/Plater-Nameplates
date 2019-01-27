@@ -2328,6 +2328,10 @@ Plater.DefaultSpellRangeList = {
 	--it'll hide the retail nameplate when it shown
 	function Plater.OnRetailNamePlateShow (self)
 		self:Hide()
+		self:UnregisterAllEvents()
+		if (CompactUnitFrame_UnregisterEvents) then
+			CompactUnitFrame_UnregisterEvents (self)
+		end
 	end
 	
 	

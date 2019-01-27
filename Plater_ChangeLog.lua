@@ -7,6 +7,20 @@ local _
 function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
+		
+			{1548612692,  "New Feature", "January 27, 2019", "Added an option to test cast bars."},
+			{1548612692,  "New Feature", "January 27, 2019", "Added options to customize the cast bar Spark."},
+			{1548612692,  "New Feature", "January 27, 2019", "Added options to show the unit heal prediction and shield absorbs."},
+			{1548612692,  "New Feature", "January 27, 2019", "Added options for cast bar fade animations."},
+			{1548612692,  "New Feature", "January 27, 2019", "Added options to adjust the cast bar color when the cast is interrupted or successful."},
+			{1548612692,  "Scripting", "January 27, 2019", "Update for Player Targeting Amount and Combo Points hook scripts."},
+			{1548612692,  "Bug Fix", "January 27, 2019", "Fixed target indicator 'Ornament' which was a dew pixels inside the nameplate."},
+			{1548612692,  "Bug Fix", "January 27, 2019", "Fixed the unit name which sometimes was 10 pixels below where it should be."},
+			{1548612692,  "Bug Fix", "January 27, 2019", "Fixed the unit name showing ... instead when the option to show guild names enabled."},
+			{1548612692,  "Bug Fix", "January 27, 2019", "Fixed the personal bar sometimes showing the player name."},
+			{1548612692,  "Bug Fix", "January 27, 2019", "Fixed special auras still being tracked after deleting an aura from the track list."},
+			{1548612692,  "Bug Fix", "January 27, 2019", "Fixed special auras not being tracked if the aura is in the regular debuff blacklist."},
+		
 			{1548117317, "Scripting", "January 21, 2019", "Added new hooking scripts for Jaina and Blockade encounters on Battle of Dazar'alor."},
 			{1548006299, "Scripting", "January 20, 2019", "Added new hooking script: Aura Reorder. Added a new script for Blink by Time Left."},
 			{1548006299, "Settings", "January 20, 2019", "Cast bar now have an offset settings for most of the nameplate types."},
