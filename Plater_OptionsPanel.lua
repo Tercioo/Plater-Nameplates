@@ -9060,6 +9060,24 @@ local relevance_options = {
 		},
 		{
 			type = "toggle",
+			get = function() return Plater.db.profile.show_health_prediction end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.show_health_prediction = value
+			end,
+			name = "Show Health Prediction",
+			desc = "Show an extra bar for health prediction and heal absorption.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.show_shield_prediction end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.show_shield_prediction = value
+			end,
+			name = "Show Shield Prediction",
+			desc = "Show an extra bar for shields (e.g. Power Word: Shield from priests) absorption.",
+		},
+		{
+			type = "toggle",
 			get = function() return Plater.db.profile.health_cutoff_extra_glow end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.health_cutoff_extra_glow = value

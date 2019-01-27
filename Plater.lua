@@ -227,8 +227,8 @@ Plater.TargetIndicators = {
 		desaturated = false,
 		width = 8,
 		height = 10,
-		x = 1,
-		y = 1,
+		x = 2,
+		y = 2,
 	},
 	
 	["Gray Bold"] = {
@@ -275,7 +275,7 @@ Plater.TargetIndicators = {
 		desaturated = false,
 		width = 18,
 		height = 12,
-		x = 12,
+		x = 18,
 		y = 0,
 	},
 	
@@ -805,7 +805,7 @@ Plater.DefaultSpellRangeList = {
 	
 	--return an iterator with all namepaltes on the screen
 	function Plater.GetAllShownPlates()
-		return C_NamePlate.GetNamePlates (issecure())
+		return C_NamePlate.GetNamePlates()
 	end
 
 	--returns if the unit is tapped (gray health color when another player hit the unit first) 
@@ -903,6 +903,7 @@ Plater.DefaultSpellRangeList = {
 				end
 		end
 	end
+	
 	function Plater.ScheduleUpdateForNameplate (plateFrame)
 		--check if there's already an update scheduled for this unit
 		if (plateFrame.HasUpdateScheduled and not plateFrame.HasUpdateScheduled._cancelled) then
@@ -1611,6 +1612,9 @@ Plater.DefaultSpellRangeList = {
 				plateFrame.unitFrame = newUnitFrame
 				plateFrame.unitFrame:EnableMouse (false)
 				
+				--backup the unit frame address so we can restore it in case a script messes up and override the unit frame
+				plateFrame.unitFramePlater = newUnitFrame
+				
 				--set proprieties
 				plateFrame.Plater = true
 				plateFrame.unitFrame.Plater = true
@@ -2005,6 +2009,11 @@ Plater.DefaultSpellRangeList = {
 				return
 			end
 			
+			--> check the unit frame integrity, several times some weakaura or script mess with the unit frame
+			if (not plateFrame.unitFrame or not plateFrame.unitFrame.SetUnit) then
+				plateFrame.unitFrame = plateFrame.unitFramePlater
+			end
+			
 			local unitID = unitBarId
 			
 			--hide blizzard namepaltes
@@ -2019,6 +2028,9 @@ Plater.DefaultSpellRangeList = {
 			local unitFrame = plateFrame.unitFrame
 			local castBar = unitFrame.castBar
 			local healthBar = unitFrame.healthBar
+			
+			--allow the framework to set the unit name
+			unitFrame.Settings.ShowUnitName = true
 			
 			--powerbar are disabled by default in the settings table, called SetUnit will make the framework hide the power bar
 			--SetPowerBarSize() will show the power bar or the personal resource bar update also will show it
@@ -2130,9 +2142,15 @@ Plater.DefaultSpellRangeList = {
 					castBar.IsSelf = true --this is the value exposed to scripts
 					actorType = ACTORTYPE_PLAYER
 					plateFrame.NameAnchor = 0
+					
+					--do not allow the framework to show the unit name
+					unitFrame.Settings.ShowUnitName = false
+					unitFrame.unitName:Hide()
+					
 					plateFrame.PlateConfig = DB_PLATE_CONFIG.player
 					Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_PLAYER, nil, true)
 					Plater.HookOnUpdateHealth (healthBar)
+					
 				else
 					--> regular nameplate
 					if (UnitIsPlayer (unitID)) then
@@ -2773,8 +2791,9 @@ function Plater.OnInit()
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 				local castBar = plateFrame.unitFrame.castBar
 				
-				castBar.Text:SetText ("Test Cast")
-				castBar.Icon:SetTexture ("Interface\\Icons\\Ability_Druid_Eclipse")
+				castBar.Text:SetText ("Getting Bald")
+				castBar.Icon:SetTexture ([[Interface\AddOns\Plater\images\icon_bald_guy]])
+				castBar.Icon:SetAlpha (1)
 				castBar.Icon:Show()
 				castBar.percentText:Show()
 				castBar:SetMinMaxValues (0, 3)
@@ -5099,11 +5118,10 @@ end
 			DF:SetFontSize (nameString, plateConfigs.actorname_text_size)
 			DF:SetFontFace (nameString, plateConfigs.actorname_text_font)
 			
-			--DF:SetFontOutline (nameString, plateConfigs.actorname_text_shadow)
 			Plater.SetFontOutlineAndShadow (nameString, plateConfigs.actorname_text_outline, plateConfigs.actorname_text_shadow_color, plateConfigs.actorname_text_shadow_color_offset[1], plateConfigs.actorname_text_shadow_color_offset[2])
 
 			Plater.SetAnchor (nameString, plateConfigs.actorname_text_anchor)
-			PixelUtil.SetHeight (nameString, nameString:GetLineHeight())
+			--PixelUtil.SetHeight (nameString, nameString:GetLineHeight())
 		end
 		
 		if (plateFrame.playerGuildName) then
@@ -5594,6 +5612,11 @@ end
 			local targetedOverlayTexture = LibSharedMedia:Fetch ("statusbar", profile.health_selection_overlay)
 			unitFrame.targetOverlayTexture:SetTexture (targetedOverlayTexture)
 			unitFrame.targetOverlayTexture:SetAlpha (profile.health_selection_overlay_alpha)
+			
+			--heal prediction
+			unitFrame.healthBar.Settings.ShowHealingPrediction = Plater.db.profile.show_health_prediction
+			unitFrame.healthBar.Settings.ShowShields = Plater.db.profile.show_shield_prediction
+			unitFrame.healthBar:UNIT_HEALTH()
 		end
 		
 		--update the plate size for this unit
@@ -6741,8 +6764,6 @@ function Plater.SetCVarsOnFirstRun()
 	SetCVar ("nameplateShowFriendlyNPCs", 0)
 	--> make the personal bar hide very fast
 	SetCVar ("nameplatePersonalHideDelaySeconds", 0.2)
-	
-
 
 	--> view distance
 	SetCVar ("nameplateMaxDistance", 100)

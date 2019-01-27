@@ -473,6 +473,9 @@ PLATER_DEFAULT_SETTINGS = {
 		last_news_time = 0,
 		disable_omnicc_on_auras = false,
 		
+		show_health_prediction = false,
+		show_shield_prediction = false,
+		
 		resources = {
 			scale = 0.8,
 			y_offset = 0,
