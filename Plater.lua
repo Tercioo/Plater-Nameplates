@@ -1606,11 +1606,23 @@ Plater.DefaultSpellRangeList = {
 					LazyUpdateCooldown = 0.1,
 				}
 				
-				plateFrame.UnitFrame:HookScript ("OnShow", Plater.OnRetailNamePlateShow)
-				
 				local newUnitFrame = DF:CreateUnitFrame (plateFrame, plateFrame:GetName() .. "PlaterUnitFrame", unitFrameOptions, healthBarOptions, castBarOptions)
 				plateFrame.unitFrame = newUnitFrame
 				plateFrame.unitFrame:EnableMouse (false)
+				
+				--mix plater functions (most are for scripting support) into the unit frame
+				DF:Mixin (newUnitFrame, Plater.ScriptMetaFunctions)
+
+				--hook the retail nameplate
+				plateFrame.UnitFrame:HookScript ("OnShow", Plater.OnRetailNamePlateShow)
+				
+				--OnHide handler
+				newUnitFrame:HookScript ("OnHide", newUnitFrame.OnHideWidget)
+				
+				--register details framework hooks
+				newUnitFrame.castBar:SetHook ("OnShow", Plater.CastBarOnShow_Hook)
+				
+				newUnitFrame.HasHooksRegistered = true
 				
 				--backup the unit frame address so we can restore it in case a script messes up and override the unit frame
 				plateFrame.unitFramePlater = newUnitFrame
@@ -1629,16 +1641,6 @@ Plater.DefaultSpellRangeList = {
 				plateFrame.unitFrame.healthBar.isNamePlate = true
 				plateFrame.unitFrame.healthBar.DefaultFrameLevel = plateFrame.unitFrame.healthBar:GetFrameLevel()
 				plateFrame.unitFrame.castBar.DefaultFrameLevel = plateFrame.unitFrame.castBar:GetFrameLevel()
-			
-			--mix plater functions (most are for scripting support) into the unit frame
-			DF:Mixin (plateFrame.unitFrame, Plater.ScriptMetaFunctions)
-			--OnHide handler
-			plateFrame.unitFrame:HookScript ("OnHide", plateFrame.unitFrame.OnHideWidget)
-			
-			--register details framework hooks
-			newUnitFrame.castBar:SetHook ("OnShow", Plater.CastBarOnShow_Hook)
-			hooksecurefunc (DF.CastFrameFunctions, "OnEvent", Plater.CastBarOnEvent_Hook)
-			hooksecurefunc (DF.CastFrameFunctions, "OnTick", Plater.CastBarOnTick_Hook)
 			
 			plateFrame.unitFrame.RefreshID = 0
 			
@@ -2028,6 +2030,19 @@ Plater.DefaultSpellRangeList = {
 			local unitFrame = plateFrame.unitFrame
 			local castBar = unitFrame.castBar
 			local healthBar = unitFrame.healthBar
+			
+			if (not unitFrame.HasHooksRegistered) then
+				--hook the retail nameplate
+				plateFrame.UnitFrame:HookScript ("OnShow", Plater.OnRetailNamePlateShow)
+				
+				--onHide for unitFrame
+				plateFrame.unitFrame:HookScript ("OnHide", unitFrame.OnHideWidget)
+				--onShow for castbar
+				castBar:SetHook ("OnShow", Plater.CastBarOnShow_Hook)
+			
+				unitFrame.HasHooksRegistered = true
+			end
+			
 			
 			--allow the framework to set the unit name
 			unitFrame.Settings.ShowUnitName = true
@@ -2893,9 +2908,6 @@ function Plater.OnInit()
 				
 				unit = self.unit
 				
-				--local castname = UnitCastingInfo (unit)
-				--local channelname = UnitChannelInfo (unit)
-				
 				if (self.casting) then
 					event = "UNIT_SPELLCAST_START"
 					
@@ -3006,7 +3018,6 @@ function Plater.OnInit()
 						end
 					end
 				end
-				
 			end
 		end
 		
@@ -3105,7 +3116,10 @@ function Plater.OnInit()
 			end
 		end
 		
-
+	--register hooks
+		hooksecurefunc (DF.CastFrameFunctions, "OnEvent", Plater.CastBarOnEvent_Hook)
+		hooksecurefunc (DF.CastFrameFunctions, "OnTick", Plater.CastBarOnTick_Hook)
+		
 	--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	--> health frame
 
@@ -3129,6 +3143,7 @@ function Plater.OnInit()
 		local currentHealth = self.currentHealth
 		local currentHealthMax = self.currentHealthMax
 		local unitFrame = self:GetParent()
+		local oldHealth = self.CurrentHealth
 		
 		--> exposed values to scripts
 		self.CurrentHealth = currentHealth
@@ -3163,10 +3178,14 @@ function Plater.OnInit()
 		else
 			if (DB_DO_ANIMATIONS) then
 				--do healthbar animation ~animation ~healthbar ~health
+				oldHealth = oldHealth or self.CurrentHealth
+				
 				self.CurrentHealthMax = currentHealthMax
-				self.AnimationStart = self.CurrentHealth
+				self.AnimationStart = oldHealth
 				self.AnimationEnd = currentHealth
-				self:SetValue (self.CurrentHealth)
+
+				self:SetValue (oldHealth)
+				
 				self.IsAnimating = true
 				
 				if (self.AnimationEnd > self.AnimationStart) then
@@ -4523,26 +4542,25 @@ end
 		local isTanking, threatStatus, threatpct = UnitDetailedThreatSituation ("player", self.displayedUnit)
 		self.namePlateThreatPercent = threatpct or 0
 		-- (3 = securely tanking, 2 = insecurely tanking, 1 = not tanking but higher threat than tank, 0 = not tanking and lower threat than tank)
-
+		
 		self.aggroGlowUpper:Hide()
 		self.aggroGlowLower:Hide()
 		
+		--player is a tank
 		if (Plater.PlayerIsTank) then
-			--se o jogador � TANK
-
+			--and isn't tanking the unit
 			if (not isTanking) then
 			
 				if (UnitAffectingCombat (self.displayedUnit)) then
-				
 					if (IsInRaid()) then
 						--check is the mob is tanked by another tank in the raid
 						local unitTarget = UnitName (self.targetUnitID)
 						if (TANK_CACHE [unitTarget]) then
-							--n�o h� aggro neste mob mas ele esta participando do combate
-							Plater.ChangeHealthBarColor_Internal (self.healthBar, unpack (DB_AGGRO_TANK_COLORS.anothertank))
+							--another tank is tanking the unit
+							set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.anothertank))
 						else
-							--n�o h� aggro neste mob mas ele esta participando do combate
-							Plater.ChangeHealthBarColor_Internal (self.healthBar, unpack (DB_AGGRO_TANK_COLORS.noaggro))
+							--player isn't taking this unit
+							set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.noaggro))
 						end
 						
 						if (self.PlateFrame [MEMBER_NOCOMBAT]) then
@@ -4550,8 +4568,8 @@ end
 							Plater.CheckRange (self.PlateFrame, true)
 						end
 					else
-						--n�o h� aggro neste mob mas ele esta participando do combate
-						Plater.ChangeHealthBarColor_Internal (self.healthBar, unpack (DB_AGGRO_TANK_COLORS.noaggro))
+						--player isn't tanking this unit
+						set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.noaggro))
 						
 						if (self.PlateFrame [MEMBER_NOCOMBAT]) then
 							self.PlateFrame [MEMBER_NOCOMBAT] = nil
@@ -7651,7 +7669,7 @@ end
 			return Plater.db.profile.hook_data
 		end
 	end
-	 
+	
 	--compile all scripts
 	function Plater.CompileAllScripts (scriptType)
 		if (scriptType == "script") then
@@ -7673,6 +7691,98 @@ end
 	-- ~scripts
 
 	Plater.CoreVersion = 1
+
+	--from weakauras
+	--source https://github.com/WeakAuras/WeakAuras2/blob/520951a4b49b64cb49d88c1a8542d02bbcdbe412/WeakAuras/AuraEnvironment.lua#L66
+	local blockedFunctions = {
+		-- Lua functions that may allow breaking out of the environment
+		getfenv = true,
+		getfenv = true,
+		loadstring = true,
+		pcall = true,
+		xpcall = true,
+		getglobal = true,
+		
+		-- blocked WoW API
+		SendMail = true,
+		SetTradeMoney = true,
+		AddTradeMoney = true,
+		PickupTradeMoney = true,
+		PickupPlayerMoney = true,
+		TradeFrame = true,
+		MailFrame = true,
+		EnumerateFrames = true,
+		RunScript = true,
+		AcceptTrade = true,
+		SetSendMailMoney = true,
+		EditMacro = true,
+		SlashCmdList = true,
+		DevTools_DumpCommand = true,
+		hash_SlashCmdList = true,
+		CreateMacro = true,
+		SetBindingMacro = true,
+		GuildDisband = true,
+		GuildUninvite = true,
+		securecall = true,
+	}
+	
+	--functions from Plater that scripts cannot touch
+	local privateFunctions = {
+		CompileAllScripts = true,
+		GetAllScripts = true,
+		ScriptMetaFunctions = true,
+		DecompressData = true,
+		CompressData = true,
+		ExportProfileToString = true,
+		WipeAndRecompileAllScripts = true,
+		AllHookGlobalContainers = true,
+		WipeHookContainers = true,
+		GetContainerForHook = true,
+		CurrentlyLoadedHooks = true,
+		DestructorScriptHooks = true,
+		RunDestructorForHook = true,
+		CompileHook = true,
+		CompileScript = true,
+		CheckScriptTriggerOverlap = true,
+		GetScriptObject = true,
+		GetScriptDB = true,
+		GetScriptType = true,
+		GetDecodedScriptType = true,
+		ImportScriptsFromLibrary = true,
+		ImportScriptString = true,
+		AddScript = true,
+		BuildScriptObjectFromIndexTable = true,
+		DecodeImportedString = true,
+		PrepareTableToExport = true,
+		ScriptReceivedFromGroup = true,
+		ExportScriptToGroup = true,
+		ShowImportScriptConfirmation = true,
+		DispatchTalentUpdateHookEvent  = true,
+		ScheduleHookForCombat = true,
+		ScheduleRunFunctionForEvent = true,
+		RunFunctionForEvent = true,
+		EventHandler = true,
+		RegisterRefreshDBCallback = true,
+		FireRefreshDBCallback = true,
+		RefreshDBUpvalues = true,
+		RefreshDBLists = true,
+		UpdateAuraCache = true,
+		ApplyPatches = true,
+		RefreshConfig = true,
+		SaveConsoleVariables = true,
+	}
+	
+	local functionFilter = setmetatable ({}, {__index = function (env, key)
+		if (key == "_G") then
+			return env
+			
+		elseif (blockedFunctions [key] or privateFunctions [key]) then
+			return nil
+			
+		else	
+			return _G [key]
+		end
+	end})	
 
 	function Plater.WipeAndRecompileAllScripts (scriptType, noHotReload)
 		if (scriptType == "script") then
@@ -7767,6 +7877,7 @@ end
 				Plater:Msg ("failed to compile destructor for script " .. scriptObject.Name .. ": " .. errortext)
 			else
 				--store the function to execute
+				setfenv (compiledScript, functionFilter)
 				local func = compiledScript()
 				
 				--iterate among all nameplates
@@ -7787,7 +7898,7 @@ end
 			end		
 		end
 	end
-
+	
 	--compile scripts from the Hooking tab
 	function Plater.CompileHook (scriptObject)
 		
@@ -7841,6 +7952,7 @@ end
 					Plater.DestructorScriptHooks [scriptObject] = globalScriptObject
 				else
 					--store the function to execute inside the global script object
+					setfenv (compiledScript, functionFilter)
 					globalScriptObject [hookName] = compiledScript()
 					
 					--insert the script in the global script container, no need to check if already exists, hook containers cache are cleaned before script compile
@@ -7890,6 +8002,7 @@ end
 				Plater:Msg ("failed to compile " .. scriptType .. " for script " .. scriptObject.Name .. ": " .. errortext)
 			else
 				--get the function to execute
+				setfenv (compiledScript, functionFilter)
 				scriptFunctions [scriptType] = compiledScript()
 			end
 		end
@@ -8566,7 +8679,7 @@ end
 		end
 		
 	end	
-	
+
 	function Plater.DispatchTalentUpdateHookEvent()
 		if (HOOK_PLAYER_TALENT_UPDATE.ScriptAmount > 0) then
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do

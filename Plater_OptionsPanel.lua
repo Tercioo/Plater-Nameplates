@@ -3789,7 +3789,7 @@ local targetOptions = {
 			thumbscale = 1.7,
 			usedecimals = true,
 			name = "Lock to Screen (Top Side)" .. CVarIcon,
-			desc = "Min space between the nameplate and the top of the screen. Increase this if some part of the nameplate are going out of the screen.\n\n|cFFFFFFFFDefault: 0.065|r\n\n|cFFFFFF00Important|r: setting to 0 disables this feature." .. CVarDesc,
+			desc = "Min space between the nameplate and the top of the screen. Increase this if some part of the nameplate are going out of the screen.\n\n|cFFFFFFFFDefault: 0.065|r\n\n|cFFFFFF00Important|r: if you're having issue, manually set using these macros:\n/run SetCVar ('nameplateOtherTopInset', '0.065')\n/run SetCVar ('nameplateLargeTopInset', '0.065')\n\n|cFFFFFF00Important|r: setting to 0 disables this feature." .. CVarDesc,
 			nocombat = true,
 		},
 		
@@ -8570,7 +8570,7 @@ local relevance_options = {
 			thumbscale = 1.7,
 			usedecimals = true,
 			name = "Lock to Screen (Top Side)" .. CVarIcon,
-			desc = "Min space between the nameplate and the top of the screen. Increase this if some part of the nameplate are going out of the screen.\n\n|cFFFFFFFFDefault: 0.065|r\n\n|cFFFFFF00Important|r: setting to 0 disables this feature." .. CVarDesc,
+			desc = "Min space between the nameplate and the top of the screen. Increase this if some part of the nameplate are going out of the screen.\n\n|cFFFFFFFFDefault: 0.065|r\n\n|cFFFFFF00Important|r: if you're having issue, manually set using these macros:\n/run SetCVar ('nameplateOtherTopInset', '0.065')\n/run SetCVar ('nameplateLargeTopInset', '0.065')\n\n|cFFFFFF00Important|r: setting to 0 disables this feature." .. CVarDesc,
 			nocombat = true,
 		},
 		
