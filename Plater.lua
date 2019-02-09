@@ -573,7 +573,34 @@ Plater.DefaultSpellRangeList = {
 	
 	--store quests the player is in
 	Plater.QuestCache = {}
+	
+	--cache the profile settings for each actor type on this table, so scripts can have access to profile
+	Plater.ActorTypeSettingsCache = {
+		RefreshID = -1,
+		--plate holder tables, they will be overriden when updating the cache
+		[ACTORTYPE_FRIENDLY_PLAYER] = {},
+		[ACTORTYPE_FRIENDLY_NPC] = {},
+		[ACTORTYPE_ENEMY_PLAYER] = {},
+		[ACTORTYPE_ENEMY_NPC] = {},
+		[ACTORTYPE_PLAYER] = {},
+	}
 
+	--update the settings cache for scritps
+	--this is a table with a copy of the settings from the profile so can be safelly accessed by scripts
+	function Plater.UpdateSettingsCache()
+		if (Plater.ActorTypeSettingsCache.RefreshID >= PLATER_REFRESH_ID) then
+			return
+		end
+		
+		local namePlateConfig = Plater.db.profile.plate_config
+		Plater.ActorTypeSettingsCache [ACTORTYPE_FRIENDLY_PLAYER] = DF.table.copy ({}, namePlateConfig [ACTORTYPE_FRIENDLY_PLAYER])
+		Plater.ActorTypeSettingsCache [ACTORTYPE_FRIENDLY_NPC] = DF.table.copy ({}, namePlateConfig [ACTORTYPE_FRIENDLY_NPC])
+		Plater.ActorTypeSettingsCache [ACTORTYPE_ENEMY_PLAYER] = DF.table.copy ({}, namePlateConfig [ACTORTYPE_ENEMY_PLAYER])
+		Plater.ActorTypeSettingsCache [ACTORTYPE_ENEMY_NPC] = DF.table.copy ({}, namePlateConfig [ACTORTYPE_ENEMY_NPC])
+		Plater.ActorTypeSettingsCache [ACTORTYPE_PLAYER] = DF.table.copy ({}, namePlateConfig [ACTORTYPE_PLAYER])
+		
+		Plater.ActorTypeSettingsCache.RefreshID = PLATER_REFRESH_ID
+	end
 	
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> character specific abilities and spells ~spells
@@ -929,6 +956,8 @@ Plater.DefaultSpellRangeList = {
 		if (PlaterOptionsPanelFrame) then
 			PlaterOptionsPanelFrame.RefreshOptionsFrame()
 		end
+		
+		Plater.UpdateSettingsCache()
 	end
 
 	function Plater.SaveConsoleVariables()
@@ -2455,6 +2484,9 @@ function Plater.OnInit()
 			check_first_run()
 		end
 		Plater.CheckFirstRun()
+		
+	--load a table with a copy of the plateConfigs table to be accessed by scripts
+		Plater.UpdateSettingsCache()
 	
 	--events
 		Plater.EventHandlerFrame:RegisterEvent ("NAME_PLATE_CREATED")
@@ -2672,8 +2704,11 @@ function Plater.OnInit()
 		--self if the nameplate driver frame: _G.NamePlateDriverFrame
 		--at the moment self isn't being used ~personal
 		function Plater.UpdatePersonalBar (self)
-			local showSelf = GetCVar ("nameplateShowSelf")
-			if (showSelf == "0") then
+			local showSelf = GetCVarBool ("nameplateShowSelf")
+			if (not showSelf) then
+				if (GetCVarBool ("nameplateResourceOnTarget")) then
+					Plater.UpdateResourceFrame()
+				end
 				return
 			end
 
@@ -2749,8 +2784,13 @@ function Plater.OnInit()
 			Plater.CurrentTargetResourceFrame = nil
 		
 			local showSelf = GetCVarBool ("nameplateShowSelf")
+			local onCurrentTarget
+			
 			if (not showSelf) then
-				return
+				onCurrentTarget = GetCVarBool ("nameplateResourceOnTarget")
+				if (not onCurrentTarget) then
+					return
+				end
 			end
 			
 			local resourceFrame = NamePlateDriverFrame.classNamePlateMechanicFrame
@@ -2762,10 +2802,10 @@ function Plater.OnInit()
 			resourceFrame:SetScale (Plater.db.profile.resources.scale)
 			
 			--check if resources are placed on the current target
-			local onCurrentTarget = GetCVarBool ("nameplateResourceOnTarget")
+			onCurrentTarget = GetCVarBool ("nameplateResourceOnTarget")
 			if (onCurrentTarget) then
 				--resource bar are placed on the current target nameplate
-				local targetPlateFrame = C_NamePlate.GetNamePlateForUnit ("target", issecure())
+				local targetPlateFrame = C_NamePlate.GetNamePlateForUnit ("target")
 				if (targetPlateFrame) then
 					resourceFrame:SetParent (targetPlateFrame)
 					resourceFrame:ClearAllPoints()
@@ -4015,9 +4055,9 @@ end
 	--override colors
 	--this function will set the color of the nameplate by the reaction of the unit shown
 	--it can only run if color override is enabled and when not in combat or when in combat but color by aggro is disabled
-	function Plater.ColorOverrider (unitFrame)
+	function Plater.ColorOverrider (unitFrame, forceRefresh)
 		--not in combat or aggro isn't changing the healthbar color
-		if (not InCombatLockdown() or not DB_AGGRO_CHANGE_HEALTHBAR_COLOR) then
+		if (forceRefresh or not InCombatLockdown() or not DB_AGGRO_CHANGE_HEALTHBAR_COLOR) then
 			--isn't a quest
 			if (not unitFrame:GetParent() [MEMBER_QUEST]) then
 				local reaction = unitFrame [MEMBER_REACTION]
@@ -4053,7 +4093,8 @@ end
 	end
 
 	--do several checkes to determine which are the color of this nameplate
-	function Plater.FindAndSetNameplateColor (unitFrame)
+	--if force refresh is true, it'll ignore aggro and incombat checks in the ColorOverrider function
+	function Plater.FindAndSetNameplateColor (unitFrame, forceRefresh)
 		local r, g, b = 1, 1, 1
 		local unitID = unitFrame.unit
 		
@@ -4075,7 +4116,7 @@ end
 
 			else
 				if (Plater.CanOverrideColor) then
-					Plater.ColorOverrider (unitFrame)
+					Plater.ColorOverrider (unitFrame, forceRefresh)
 					return
 				end
 
@@ -4758,6 +4799,7 @@ end
 				plateFrame.unitFrame.targetOverlayTexture:Show()
 			end
 			
+			Plater.UpdateResourceFrame()
 		else
 			plateFrame.TargetNeonUp:Hide()
 			plateFrame.TargetNeonDown:Hide()
@@ -5222,21 +5264,10 @@ end
 
 		--update health amount text
 		if (plateConfigs.percent_text_enabled) then
-			lifeString:Show()
-			
-			--apenas mostrar durante o combate
-			if (PLAYER_IN_COMBAT or plateConfigs.percent_text_ooc) then
-				lifeString:Show()
-			else
-				lifeString:Hide()
-			end
-			
-			
 			if (needReset) then
 				DF:SetFontSize (lifeString, plateConfigs.percent_text_size)
 				DF:SetFontFace (lifeString, plateConfigs.percent_text_font)
-				
-				--DF:SetFontOutline (lifeString, plateConfigs.percent_text_shadow)
+
 				Plater.SetFontOutlineAndShadow (lifeString, plateConfigs.percent_text_outline, plateConfigs.percent_text_shadow_color, plateConfigs.percent_text_shadow_color_offset[1], plateConfigs.percent_text_shadow_color_offset[2])
 				
 				DF:SetFontColor (lifeString, plateConfigs.percent_text_color)
@@ -5259,7 +5290,31 @@ end
 		
 		return true
 	end
+	
+	--check if the life percent should be showing for this nameplate
+	--self is plateFrame
+	function Plater.UpdateLifePercentVisibility (self)
+		local plateConfigs = Plater.GetSettings (self)
+		
+		if (plateConfigs.percent_text_enabled) then
+			--can show out of combat? or if the player is in combat
+			if (PLAYER_IN_COMBAT or plateConfigs.percent_text_ooc) then
+				self.unitFrame.healthBar.lifePercent:Show()
+			else
+				self.unitFrame.healthBar.lifePercent:Hide()
+			end
+		else
+			self.unitFrame.healthBar.lifePercent:Hide()
+		end
+	end
 
+	--return the nameplate config directly from the profile
+	--this is the actual table from the db, any changes will affect the profile
+	--self is plateFrame
+	function Plater.GetSettings (self)
+		return self.PlateConfig
+	end
+	
 	function Plater.UpdateLifePercentText (healthBar, unitId, showHealthAmount, showPercentAmount, showDecimals)
 		--get the cached health amount for performance
 		local currentHealth, maxHealth = healthBar.CurrentHealth, healthBar.CurrentHealthMax
@@ -5314,13 +5369,13 @@ end
 		if (PLAYER_IN_COMBAT) then
 			if (actorTypeDBConfig.percent_text_enabled) then
 				Plater.UpdateLifePercentText (unitFrame.healthBar, unitFrame.unit, actorTypeDBConfig.percent_show_health, actorTypeDBConfig.percent_show_percent, actorTypeDBConfig.percent_text_show_decimals)
-				unitFrame.healthBar.lifePercent:Show()
+				--unitFrame.healthBar.lifePercent:Show()
 			end
 		else
 			--if not in combat, check if can show the percent health out of combat
 			if (actorTypeDBConfig.percent_text_enabled and actorTypeDBConfig.percent_text_ooc) then
 				Plater.UpdateLifePercentText (unitFrame.healthBar, unitFrame.unit, actorTypeDBConfig.percent_show_health, actorTypeDBConfig.percent_show_percent, actorTypeDBConfig.percent_text_show_decimals)
-				unitFrame.healthBar.lifePercent:Show()
+				--unitFrame.healthBar.lifePercent:Show()
 			end
 		end
 	end
@@ -5429,7 +5484,7 @@ end
 		Plater.UpdateLevelColor (levelString, unitId)
 	end	
 
-	-- ~updateplate ~update
+	-- ~updateplate ~update ~updatenameplate
 	function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate, justAdded)
 		actorType = actorType or plateFrame.actorType
 		
@@ -5597,6 +5652,7 @@ end
 			
 			local colors = castBar.Settings.Colors
 			colors.Casting:SetColor (profile.cast_statusbar_color)
+			colors.Channeling:SetColor (profile.cast_statusbar_color) --for channeling color, use the same color as the regular cast
 			colors.NonInterruptible:SetColor (profile.cast_statusbar_color_nointerrupt)
 			colors.Interrupted:SetColor (profile.cast_statusbar_color_interrupted)
 			colors.Finished:SetColor (profile.cast_statusbar_color_finished)
@@ -5650,7 +5706,9 @@ end
 		--indicators for the unit
 		Plater.UpdateIndicators (plateFrame, actorType)
 		
-		--update health
+		--update the visibility of the health text
+		Plater.UpdateLifePercentVisibility (plateFrame)
+		--update the health text
 		Plater.CheckLifePercentText (unitFrame)
 		
 		--target indicator
@@ -6638,14 +6696,14 @@ end
 		SPELL_INTERRUPT = function (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical)
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 				if (plateFrame.unitFrame.castBar:IsShown()) then
-					if (plateFrame.unitFrame.castBar.Text:GetText() == INTERRUPTED) then
+					--if (plateFrame.unitFrame.castBar.Text:GetText() == INTERRUPTED) then
 						if (plateFrame [MEMBER_GUID] == targetGUID) then
 							plateFrame.unitFrame.castBar.Text:SetText (INTERRUPTED .. " [" .. Plater.SetTextColorByClass (sourceName, sourceName) .. "]")
 							plateFrame.unitFrame.castBar.IsInterrupted = true
 							--> check and stop the casting script if any
 							plateFrame.unitFrame.castBar:OnHideWidget()
 						end
-					end
+					--end
 				end
 			end
 		end,
@@ -7054,6 +7112,12 @@ end
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> API ~API ãpi
 
+	--similar to Plater.GetSettings, but can be called from scripts
+	--is is also safe because it passes a read-only table with copied values
+	function Plater.GetConfig (unitFrame)
+		return Plater.ActorTypeSettingsCache [unitFrame.ActorType]
+	end
+
 	--return if the nameplate is showing an aura
 	function Plater.NameplateHasAura (unitFrame, aura)
 		return unitFrame.BuffFrame.AuraCache [aura] or unitFrame.BuffFrame2.AuraCache [aura]
@@ -7232,10 +7296,15 @@ end
 				Plater.ChangeHealthBarColor_Internal (unitFrame.healthBar, unpack (Plater.db.profile.tap_denied_color))
 			else
 				if (InCombatLockdown()) then
-					if (unitFrame:GetParent() [MEMBER_REACTION] <= 4 and DB_AGGRO_CHANGE_HEALTHBAR_COLOR) then
-						Plater.UpdateNameplateThread (unitFrame)
+					local unitReaction = unitFrame:GetParent() [MEMBER_REACTION]
+					if (unitReaction == 4 and not UnitAffectingCombat (unitFrame.unit)) then
+						Plater.FindAndSetNameplateColor (unitFrame, true)
 					else
-						Plater.FindAndSetNameplateColor (unitFrame)
+						if (unitReaction <= 4 and DB_AGGRO_CHANGE_HEALTHBAR_COLOR) then
+							Plater.UpdateNameplateThread (unitFrame)
+						else
+							Plater.FindAndSetNameplateColor (unitFrame)
+						end
 					end
 				else
 					Plater.FindAndSetNameplateColor (unitFrame)
@@ -7724,6 +7793,9 @@ end
 		GuildDisband = true,
 		GuildUninvite = true,
 		securecall = true,
+		
+		--additional
+		setmetatable = true,
 	}
 	
 	--functions from Plater that scripts cannot touch
@@ -7770,6 +7842,7 @@ end
 		ApplyPatches = true,
 		RefreshConfig = true,
 		SaveConsoleVariables = true,
+		GetSettings = true,
 	}
 	
 	local functionFilter = setmetatable ({}, {__index = function (env, key)

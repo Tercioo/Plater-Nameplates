@@ -2870,56 +2870,6 @@ do
 				desc = "With a fixed position, personal bar won't move.\n\nTo revert this, click the button above." .. CVarDesc,
 			},
 
-			--class resources
-			{type = "blank"},
-			{type = "label", get = function() return "Resources:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-
-			{
-				type = "range",
-				get = function() return Plater.db.profile.resources.scale end,
-				set = function (self, fixedparam, value) 
-					Plater.db.profile.resources.scale = value
-					Plater.UpdateAllPlates()
-				end,
-				min = 0.65,
-				max = 3,
-				step = 0.01,
-				usedecimals = true,
-				nocombat = true,
-				name = "Resource Scale",
-				desc = "Resource Scale",
-			},
-			
-			{
-				type = "range",
-				get = function() return Plater.db.profile.resources.y_offset end,
-				set = function (self, fixedparam, value) 
-					Plater.db.profile.resources.y_offset = value
-					Plater.UpdateAllPlates()
-				end,
-				min = -100,
-				max = 100,
-				step = 1,
-				nocombat = true,
-				name = "Y OffSet",
-				desc = "Y Offset when resource bar are anchored to your personal bar",
-			},
-			
-			{
-				type = "range",
-				get = function() return Plater.db.profile.resources.y_offset_target end,
-				set = function (self, fixedparam, value) 
-					Plater.db.profile.resources.y_offset_target = value
-					Plater.UpdateAllPlates()
-				end,
-				min = -100,
-				max = 100,
-				step = 1,
-				nocombat = true,
-				name = "Y OffSet on Target",
-				desc = "Y Offset when the resource are anchored on your current target",
-			},	
-			
 			{type = "breakline"},
 			
 			--life size
@@ -3599,6 +3549,71 @@ do
 				name = "Y Offset",
 				desc = "Slightly move the text vertically.",
 			},
+			
+			--class resources
+			{type = "blank"},
+			{type = "label", get = function() return "Resources:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+
+			{
+				type = "range",
+				get = function() return Plater.db.profile.resources.scale end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.resources.scale = value
+					Plater.UpdateAllPlates()
+				end,
+				min = 0.65,
+				max = 3,
+				step = 0.01,
+				usedecimals = true,
+				nocombat = true,
+				name = "Resource Scale",
+				desc = "Resource Scale",
+			},
+			
+			{
+				type = "range",
+				get = function() return Plater.db.profile.resources.y_offset end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.resources.y_offset = value
+					Plater.UpdateAllPlates()
+				end,
+				min = -100,
+				max = 100,
+				step = 1,
+				nocombat = true,
+				name = "Y OffSet",
+				desc = "Y Offset when resource bar are anchored to your personal bar",
+			},
+			
+			{
+				type = "range",
+				get = function() return Plater.db.profile.resources.y_offset_target end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.resources.y_offset_target = value
+					Plater.UpdateAllPlates()
+				end,
+				min = -100,
+				max = 100,
+				step = 1,
+				nocombat = true,
+				name = "Y OffSet on Target",
+				desc = "Y Offset when the resource are anchored on your current target",
+			},	
+			
+			{
+				type = "range",
+				get = function() return Plater.db.profile.resources.y_offset_target_withauras end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.resources.y_offset_target_withauras = value
+					Plater.UpdateAllPlates()
+				end,
+				min = -100,
+				max = 100,
+				step = 1,
+				nocombat = true,
+				name = "Offset if Buff is Shown",
+				desc = "Add this to 'Y OffSet on Target' if there is buffs or debuffs shown in the nameplate",
+			},			
 			
 	}
 
@@ -8589,8 +8604,8 @@ local relevance_options = {
 			step = 0.05,
 			thumbscale = 1.7,
 			usedecimals = true,
-			name = "Nameplate Vertical Distance" .. CVarIcon,
-			desc = "Min distance between each nameplate (when stacking is enabled).\n\n|cFFFFFFFFDefault: 1.10|r" .. CVarDesc .. "\n\n|cFFFFFF00Important|r: if you find issues with this setting, use:\n|cFFFFFFFF/run SetCVar ('nameplateOverlapV', '1.6')|r",
+			name = "Space Between Nameplates" .. CVarIcon,
+			desc = "The space between each nameplate vertically when stacking is enabled.\n\n|cFFFFFFFFDefault: 1.10|r" .. CVarDesc .. "\n\n|cFFFFFF00Important|r: if you find issues with this setting, use:\n|cFFFFFFFF/run SetCVar ('nameplateOverlapV', '1.6')|r",
 			nocombat = true,
 		},
 		
@@ -9064,7 +9079,7 @@ local relevance_options = {
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.show_health_prediction = value
 			end,
-			name = "Show Health Prediction",
+			name = "Show Health Prediction/Absorption",
 			desc = "Show an extra bar for health prediction and heal absorption.",
 		},
 		{

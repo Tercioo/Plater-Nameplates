@@ -484,10 +484,10 @@ PLATER_DEFAULT_SETTINGS = {
 		},
 		
 		--> special unit
-		pet_width_scale = 0.8,
-		pet_height_scale = 0.9,
-		minor_width_scale = 0.8,
-		minor_height_scale = 0.9,
+		pet_width_scale = 0.9,
+		pet_height_scale = 0.95,
+		minor_width_scale = 0.9,
+		minor_height_scale = 0.95,
 		
 		castbar_target_show = false,
 		castbar_target_anchor = {side = 5, x = 0, y = 0},
