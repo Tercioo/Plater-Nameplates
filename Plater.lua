@@ -4546,7 +4546,7 @@ end
 			--smooth color transition ~lerpcolor
 			if (DB_LERP_COLOR) then
 				local currentR, currentG, currentB = healthBar.barTexture:GetVertexColor()
-				local r, g, b = DF:LerpLinearColor (deltaTime, DB_LERP_COLOR_SPEED, currentR, currentG, currentB, healthBar.R, healthBar.G, healthBar.B)
+				local r, g, b = DF:LerpLinearColor (deltaTime, DB_LERP_COLOR_SPEED, currentR, currentG, currentB, healthBar.R or currentR, healthBar.G or currentG, healthBar.B or currentB)
 				healthBar.barTexture:SetVertexColor (r, g, b)
 			end
 			
