@@ -2162,7 +2162,8 @@ Plater.DefaultSpellRangeList = {
 			unitFrame.BuffFrame.unit = unitID
 			unitFrame.BuffFrame2.unit = unitID
 			
-			Plater.FindAndSetNameplateColor (unitFrame)
+			--> sending true to force the color update when the color overrider is enabled
+			Plater.FindAndSetNameplateColor (unitFrame, true)
 			
 			--health amount
 			Plater.QuickHealthUpdate (unitFrame)
