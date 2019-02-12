@@ -2143,6 +2143,8 @@ Plater.DefaultSpellRangeList = {
 			plateFrame [MEMBER_NAMELOWER] = lower (plateFrame [MEMBER_NAME])
 			plateFrame [MEMBER_CLASSIFICATION] = UnitClassification (unitID)
 			
+			unitFrame.InCombat = UnitAffectingCombat (unitID)
+			
 			--cache values into the unitFrame as well to reduce the overhead on scripts and hooks
 			unitFrame [MEMBER_NAME] = plateFrame [MEMBER_NAME]
 			unitFrame [MEMBER_NAMELOWER] = plateFrame [MEMBER_NAMELOWER]
@@ -4415,12 +4417,15 @@ end
 				end
 			end
 			
+			unitFrame.InCombat = UnitAffectingCombat (tickFrame.unit)
+			
 			--if the unit tapped? (gray color)
 			if (IsTapDenied (tickFrame.unit)) then
 				Plater.ChangeHealthBarColor_Internal (healthBar, unpack (Plater.db.profile.tap_denied_color))
 			
 			--check aggro if is in combat
 			elseif (PLAYER_IN_COMBAT) then
+
 				if (unitFrame.CanCheckAggro) then
 					Plater.UpdateNameplateThread (unitFrame)
 				end
@@ -4592,8 +4597,7 @@ end
 		if (Plater.PlayerIsTank) then
 			--and isn't tanking the unit
 			if (not isTanking) then
-			
-				if (UnitAffectingCombat (self.displayedUnit)) then
+				if (self.InCombat) then
 					if (IsInRaid()) then
 						--check is the mob is tanked by another tank in the raid
 						local unitTarget = UnitName (self.targetUnitID)
@@ -4676,7 +4680,7 @@ end
 					self.PlateFrame.playerHasAggro = false
 					
 					--> unit is in combat?
-					if (UnitAffectingCombat (self.displayedUnit)) then
+					if (self.InCombat) then
 						set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.noaggro))
 						self.PlateFrame.playerHasAggro = false
 						
