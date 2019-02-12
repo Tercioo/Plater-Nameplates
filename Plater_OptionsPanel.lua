@@ -779,6 +779,10 @@ function frontPageFrame.OpenNewsWindow()
 				line.backdrop_color = {.4, .4, .4, .6}
 				line.backdrop_color_highlight = {.5, .5, .5, .8}
 				line:SetBackdropColor (.4, .4, .4, .6)
+			else
+				line.backdrop_color = {0, 0, 0, 0.2}
+				line.backdrop_color_highlight = {.2, .2, .2, 0.4}
+				line:SetBackdropColor (0, 0, 0, 0.2)
 			end
 		end
 	end

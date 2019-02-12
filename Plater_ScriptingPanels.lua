@@ -69,6 +69,7 @@ Plater.APIList = {
 	{Name = "GetRaidMark", 			Signature = "Plater.GetRaidMark (unitFrame)", 						Desc = "Return which raid mark the nameplate has. Always return false if the nameplate is the personal health bar."},
 	{Name = "GetConfig", 				Signature = "Plater.GetConfig (unitFrame)", 						Desc = "Return a table with the settings chosen for the nameplate in the options panel. Use it to restore values is needed."},
 	{Name = "GetPlayerRole", 			Signature = "Plater:GetPlayerRole()", 							Desc = "Return TANK DAMAGER HEALER or NONE."},
+	{Name = "SetExecuteRange", 		Signature = "Plater.SetExecuteRange (isExecuteEnabled, healthAmount)", 	Desc = "Set if Plater should check for execute range and in what percent of health the execute range starts\n\nhealthAmount is in a range of zero to one, example: 25% is 0.25"},
 	
 	{Name = "IsInCombat", 			Signature = "Plater.IsInCombat()", 								Desc = "Return 'true' if the player is in combat."},
 	{Name = "IsPlayerTank", 			Signature = "Plater.IsPlayerTank()", 							Desc = "Return 'true' if the player is in the tank role."},

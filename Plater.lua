@@ -1,10 +1,10 @@
 
--- todo check code with review tag --review
 
---everything is reviwed and cleaned, need now to make something with the:
-	--power bar in the personal healthbar
-	--resources attached to personal and target
-	--
+--Plater main software file
+
+--Calls with : are functions imported from the framework
+--whenever a variable or function has a --private comment attached to it, means scripts cannot access it (read, write, override), anything else can be overriden with scripts
+--with that, you can make your own version of Plater by modifying and overriding functions entirelly using a hooking script, them you can export the script and upload to wago.io (have fun :)
 
  if (true) then
 	--return
@@ -22,17 +22,17 @@ if (UIErrorsFrame) then
 	UIErrorsFrame:EnableMouse (false)
 end
 
---details! framework
+--> details! framework
 local DF = _G ["DetailsFramework"]
 if (not DF) then
 	print ("|cFFFFAA00Plater: framework not found, if you just installed or updated the addon, please restart your client.|r")
 	return
 end
 
---blend nameplates with the worldframe
+--> blend nameplates with the worldframe
 local AlphaBlending = ALPHA_BLEND_AMOUNT + 0.0654785
 
---locals
+--> locals
 local unpack = unpack
 local ipairs = ipairs
 local pairs = pairs
@@ -72,18 +72,18 @@ local Plater = DF:CreateAddOn ("Plater", "PlaterDB", PLATER_DEFAULT_SETTINGS, { 
 
 --> when a hook script is compiled, it increases the build version, so the handler for running scripts will notice in the change and update the script in real time
 local PLATER_HOOK_BUILD = 1
-function Plater.IncreaseHookBuildID()
+function Plater.IncreaseHookBuildID() --private
 	PLATER_HOOK_BUILD = PLATER_HOOK_BUILD + 1
 end
 
---> if a widget has a RefreshID lower than the addon, it triggers a refresh on it
+--> if a widget has a RefreshID lower than the addon, it needs to be updated
 local PLATER_REFRESH_ID = 1
-function Plater.IncreaseRefreshID()
+function Plater.IncreaseRefreshID() --private
 	PLATER_REFRESH_ID = PLATER_REFRESH_ID + 1
 end
 
---this file are using this names at will to reduce overhead and amount of local variables
-Plater.CodeTypeNames = {
+--> types of codes for each script in the Scripting tab (do not change these inside scripts)
+Plater.CodeTypeNames = { --private
 	[1] = "UpdateCode",
 	[2] = "ConstructorCode",
 	[3] = "OnHideCode",
@@ -91,8 +91,8 @@ Plater.CodeTypeNames = {
 }
 
 --hook options
---this file are using this names at will to reduce overhead and amount of local variables
-Plater.HookScripts = {
+--> types of codes available to add in a script in the Hooking tab
+Plater.HookScripts = { --private
 	"Constructor",
 	"Destructor",
 	"Nameplate Created",
@@ -110,7 +110,7 @@ Plater.HookScripts = {
 	"Player Talent Update",
 }
 
-Plater.HookScriptsDesc = {
+Plater.HookScriptsDesc = { --private
 	["Constructor"] = "Executed once when the nameplate run the hook for the first time.\n\nUse to initialize configs in the environment.\n\nAlways receive unitFrame in 'self' parameter.",
 	["Destructor"] = "Run when the hook is Disabled or unloaded due to Load Conditions.\n\nUse to hide all frames created.\n\n|cFF44FF44Run on all nameplates shown in the screen|r.",
 	["Nameplate Created"] = "Executed when a nameplate is created.\n\nRequires a |cFFFFFF22/reload|r after changing the code.",
@@ -131,15 +131,15 @@ Plater.HookScriptsDesc = {
 	["Player Talent Update"] = "When the player changes a talent or specialization.\n\n|cFF44FF44Run on all nameplates shown in the screen|r.",
 }
 
---comm
+--> addon comm
 local COMM_PLATER_PREFIX = "PLT"
 local COMM_SCRIPT_GROUP_EXPORTED = "GE"
 
---const
+--> consts
 local BUFF_MAX_DISPLAY = BUFF_MAX_DISPLAY
 local CooldownFrame_Set = CooldownFrame_Set
 
- --cvars
+ --> cvars just to make them easier to read
 local CVAR_ENABLED = "1"
 local CVAR_DISABLED = "0"
 
@@ -148,7 +148,7 @@ local UNITREACTION_HOSTILE = 3
 local UNITREACTION_NEUTRAL = 4
 local UNITREACTION_FRIENDLY = 5
 
---members
+--> cache some common used member strings for better reading
 local MEMBER_UNITID = "namePlateUnitToken"
 local MEMBER_GUID = "namePlateUnitGUID"
 local MEMBER_NPCID = "namePlateNpcId"
@@ -162,23 +162,25 @@ local MEMBER_NAMELOWER = "namePlateUnitNameLower"
 local MEMBER_TARGET = "namePlateIsTarget"
 local MEMBER_CLASSIFICATION = "namePlateClassification"
 
+--> cache nameplate types for better reading the code
 local ACTORTYPE_FRIENDLY_PLAYER = "friendlyplayer"
 local ACTORTYPE_FRIENDLY_NPC = "friendlynpc"
 local ACTORTYPE_ENEMY_PLAYER = "enemyplayer"
 local ACTORTYPE_ENEMY_NPC = "enemynpc"
 local ACTORTYPE_PLAYER = "player"
 
---icon texcoords
-Plater.WideIconCoords = {.1, .9, .1, .6} --used in extra icons frame
-Plater.BorderLessIconCoords = {.1, .9, .1, .9} --used in extra icons frame
+--> icon texcoords
+Plater.WideIconCoords = {.1, .9, .1, .6} --used in extra icons frame, constant,  can be changed with scripts
+Plater.BorderLessIconCoords = {.1, .9, .1, .9} --used in extra icons frame,constant, can be changed with scripts
 --note: regular icons has their texcoords automatically adjusted
 
---limit the cast bar text to this
+--> limit the cast bar text to this (this is dynamically adjusted at run time)
 Plater.MaxCastBarTextLength = 200
-
-Plater.AurasHorizontalPadding = 1 --constant
+--> auras 
+Plater.AurasHorizontalPadding = 1 --constant, can be changed with scripts
 Plater.MaxAurasPerRow = 10 --can change during runtime
 
+--> textures used in the cooldown animation, scripts can add more values to it, profile holds only the path to it
 Plater.CooldownEdgeTextures = {
 	[[Interface\AddOns\Plater\images\cooldown_edge_1]],
 	[[Interface\AddOns\Plater\images\cooldown_edge_2]],
@@ -186,7 +188,8 @@ Plater.CooldownEdgeTextures = {
 	"Interface\\Cooldown\\edge-LoC",
 }
 
---
+
+--> textures used in the castbar, scripts can add more values to it, profile holds only the path to it
 Plater.SparkTextures = {
 	[[Interface\AddOns\Plater\images\spark1]],
 	[[Interface\AddOns\Plater\images\spark2]],
@@ -198,7 +201,7 @@ Plater.SparkTextures = {
 	[[Interface\AddOns\Plater\images\spark8]],
 }
 
---
+--> textures used to indicate which nameplate is the current target, scripts can add more values to it, profile holds only the path to it
 Plater.TargetHighlights = {
 	[[Interface\AddOns\Plater\images\selection_indicator1]],
 	[[Interface\AddOns\Plater\images\selection_indicator2]],
@@ -208,8 +211,7 @@ Plater.TargetHighlights = {
 	[[Interface\AddOns\Plater\images\selection_indicator6]],
 }
 
---these are the images shown in the nameplate of the current target
---they are placed in the left and right side of the health bar
+--> these are the images shown in the nameplate of the current target, they are placed in the left and right side of the health bar, scripts can add more options
 Plater.TargetIndicators = {
 	["NONE"] = {
 		path = [[Interface\ACHIEVEMENTFRAME\UI-Achievement-WoodBorder-Corner]],
@@ -322,7 +324,7 @@ Plater.TargetIndicators = {
 	},
 }
 
-Plater.SpecList = {
+Plater.SpecList = { --private
 	["DEMONHUNTER"] = {
 		[577] = true, 
 		[581] = true,
@@ -385,6 +387,7 @@ Plater.SpecList = {
 	},
 }
 
+--> default spells to use in the range check proccess, player can select a different spell in the options panel
 Plater.DefaultSpellRangeList = {
 	-- 185245 spellID for Torment, it is always failing to check range with IsSpellInRange()
 	[577] = 278326, --> havoc demon hunter - Consume Magic
@@ -439,6 +442,8 @@ Plater.DefaultSpellRangeList = {
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> cached value ~cache
+--Plater allocate several values in memory to save performance (cpu), this may increase memory usage
+--example: intead of querying Plater.db.profile.tank it just hold a pointer to that table in the variable DB_AGGRO_TANK_COLORS, and this pointer is updated when the user changes something in the options panel
 
 	local DB_TICK_THROTTLE
 	local DB_LERP_COLOR
@@ -575,7 +580,7 @@ Plater.DefaultSpellRangeList = {
 	Plater.QuestCache = {}
 	
 	--cache the profile settings for each actor type on this table, so scripts can have access to profile
-	Plater.ActorTypeSettingsCache = {
+	Plater.ActorTypeSettingsCache = { --private
 		RefreshID = -1,
 		--plate holder tables, they will be overriden when updating the cache
 		[ACTORTYPE_FRIENDLY_PLAYER] = {},
@@ -587,7 +592,7 @@ Plater.DefaultSpellRangeList = {
 
 	--update the settings cache for scritps
 	--this is a table with a copy of the settings from the profile so can be safelly accessed by scripts
-	function Plater.UpdateSettingsCache()
+	function Plater.UpdateSettingsCache() --private
 		if (Plater.ActorTypeSettingsCache.RefreshID >= PLATER_REFRESH_ID) then
 			return
 		end
@@ -606,10 +611,10 @@ Plater.DefaultSpellRangeList = {
 --> character specific abilities and spells ~spells
 
 	-- ~execute
-	--update if can use execute indicators - this function needs to be updated when a new execute spell is added, removed, modified
+	--> update if can use execute indicators - this function needs to be updated when a new execute spell is added, removed, modified
+	--> in scripts you can use Plater.SetExecuteRange or override this function completelly
 	function Plater.GetHealthCutoffValue()
-
-		DB_USE_HEALTHCUTOFF = false
+		Plater.SetExecuteRange (false)
 		
 		if (not Plater.db.profile.health_cutoff) then
 			return
@@ -626,8 +631,7 @@ Plater.DefaultSpellRangeList = {
 					if (specID == 258) then --shadow
 						local _, _, _, using_SWDeath = GetTalentInfo (5, 2, 1)
 						if (using_SWDeath) then
-							DB_USE_HEALTHCUTOFF = true
-							DB_HEALTHCUTOFF_AT = 0.20
+							Plater.SetExecuteRange (true, 0.20)
 						end
 					end
 				end
@@ -639,8 +643,7 @@ Plater.DefaultSpellRangeList = {
 					if (specID == 63) then --fire
 						local _, _, _, using_SearingTouch = GetTalentInfo (1, 3, 1)
 						if (using_SearingTouch) then
-							DB_USE_HEALTHCUTOFF = true
-							DB_HEALTHCUTOFF_AT = 0.30
+							Plater.SetExecuteRange (true, 0.30)
 						end
 					end
 				end
@@ -651,14 +654,13 @@ Plater.DefaultSpellRangeList = {
 				local specID = GetSpecializationInfo (spec)
 				if (specID and specID ~= 0) then
 					if (specID == 71 or specID == 72) then --arms or fury
-						DB_USE_HEALTHCUTOFF = true
-						DB_HEALTHCUTOFF_AT = 0.20
+						Plater.SetExecuteRange (true, 0.20)
 						
 						if (specID == 71) then --arms
 							local _, _, _, using_Massacre = GetTalentInfo (3, 1, 1)
 							if (using_Massacre) then
 								--if using massacre, execute can be used at 35% health in Arms spec
-								DB_HEALTHCUTOFF_AT = 0.35
+								Plater.SetExecuteRange (true, 0.35)
 							end
 						end
 					end
@@ -671,8 +673,7 @@ Plater.DefaultSpellRangeList = {
 						--> is using killer instinct?
 						local _, _, _, using_KillerInstinct = GetTalentInfo (1, 1, 1)
 						if (using_KillerInstinct) then
-							DB_USE_HEALTHCUTOFF = true
-							DB_HEALTHCUTOFF_AT = 0.35
+							Plater.SetExecuteRange (true, 0.35)
 						end
 					end
 				end
@@ -680,7 +681,7 @@ Plater.DefaultSpellRangeList = {
 		end
 	end	
 
-	--range check ~range
+	--> range check ~range
 	function Plater.CheckRange (plateFrame, onAdded)
 
 		if (plateFrame [MEMBER_NOCOMBAT]) then
@@ -696,13 +697,6 @@ Plater.DefaultSpellRangeList = {
 		
 		if (onAdded) then
 			--range check when the nameplate is added
-		
-			--debug
-			--demon hunter Torment isn't working for range check
-			--print (Plater.SpellForRangeCheck, IsSpellInRange (Plater.SpellForRangeCheck, plateFrame [MEMBER_UNITID]), plateFrame [MEMBER_UNITID])
-			--IsSpellInRange (FindSpellBookSlotBySpellID (185245), "spell", plateFrame [MEMBER_UNITID]) 
-			--if (IsSpellInRange (FindSpellBookSlotBySpellID (185245), "spell", plateFrame [MEMBER_UNITID]) == 1) then
-			
 			if (Plater.SpellBookForRangeCheck) then
 				if (IsSpellInRange (Plater.SpellForRangeCheck, Plater.SpellBookForRangeCheck, plateFrame [MEMBER_UNITID]) == 1) then
 					plateFrame.FadedIn = true
@@ -737,10 +731,6 @@ Plater.DefaultSpellRangeList = {
 				end
 			end
 		else
-			--test performance with druid guardian
-			--/run local f=CreateFrame("frame") f.Run=1 f:SetScript("OnUpdate", function(_,t) if (f.Run) then for i = 1, 1000000 do IsSpellInRange(25,"SPELL","target") end f.Run=nil else f:SetScript("OnUpdate",nil);print(t) end end)
-			--/run local f=CreateFrame("frame") f.Run=1 f:SetScript("OnUpdate", function(_,t) if (f.Run) then for i = 1, 1000000 do IsSpellInRange("Growl","target") end f.Run=nil else f:SetScript("OnUpdate",nil);print(t) end end)
-
 			--regular range check during throttled tick
 			if (Plater.SpellBookForRangeCheck) then
 				if (IsSpellInRange (Plater.SpellForRangeCheck, Plater.SpellBookForRangeCheck, plateFrame [MEMBER_UNITID]) == 1) then
@@ -770,19 +760,21 @@ Plater.DefaultSpellRangeList = {
 		Plater.GetSpellForRangeCheck()
 	end
 
+	--> execute after player logon or when the player changes its spec
 	function Plater.GetSpellForRangeCheck()
-
 		Plater.SpellBookForRangeCheck = nil
 
 		local specIndex = GetSpecialization()
 		if (specIndex) then
 			local specID = GetSpecializationInfo (specIndex)
 			if (specID and specID ~= 0) then
+				--the local character saved variable hold the spell name used for the range check
 				Plater.SpellForRangeCheck = PlaterDBChr.spellRangeCheck [specID]
 				
 				--getting the spell slot from the spellbook doesn't fix the problem with the demonhunter taunt ability
-				if true then return end
-				
+				--the rest of the code of this function is disabled, maybe in the future I'll revisit it
+
+				--[=[
 				--attempt ot get the spellbook slot for this spell
 				for i = 1, GetNumSpellTabs() do
 					local name, texture, offset, numEntries, isGuild, offspecID = GetSpellTabInfo (i)
@@ -802,6 +794,7 @@ Plater.DefaultSpellRangeList = {
 						end
 					end
 				end
+				--]=]
 			else
 				C_Timer.After (5, re_GetSpellForRangeCheck)
 			end
@@ -811,7 +804,7 @@ Plater.DefaultSpellRangeList = {
 
 	end	
 
-	-- ~tank
+	-- ~tank --todo: make these functions be inside the Plater object
 	--true if the 'player' unit is a tank
 	local function IsPlayerEffectivelyTank()
 		local assignedRole = UnitGroupRolesAssigned ("player")
@@ -830,17 +823,18 @@ Plater.DefaultSpellRangeList = {
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> general unit functions
 	
-	--return an iterator with all namepaltes on the screen
+	--> return an iterator with all namepaltes on the screen
 	function Plater.GetAllShownPlates()
 		return C_NamePlate.GetNamePlates()
 	end
 
-	--returns if the unit is tapped (gray health color when another player hit the unit first) 
+	--> returns if the unit is tapped (gray health color when another player hit the unit first) 
+	--todo: make this functions be inside the Plater object
 	local function IsTapDenied (unit)
 		return unit and not UnitPlayerControlled (unit) and UnitIsTapDenied (unit)
 	end
 
-	--returns what member from the profile need to be used, since there's entries for in combat and out of combat
+	--> returns what member from the profile need to be used, since there's entries for in combat and out of combat
 	function Plater.GetHashKey (inCombat)
 		if (PLAYER_IN_COMBAT or inCombat) then
 			return "cast_incombat", "health_incombat", "mana_incombat"
@@ -849,22 +843,22 @@ Plater.DefaultSpellRangeList = {
 		end
 	end
 
-	--return true if the resource bar should shown above the nameplate in the current target nameplate
+	--> return true if the resource bar should shown above the nameplate in the current target nameplate
 	function Plater.IsShowingResourcesOnTarget()
 		return GetCVar ("nameplateShowSelf") == CVAR_ENABLED and GetCVar ("nameplateResourceOnTarget") == CVAR_ENABLED
 	end
 	
-	--when the player left a zone but is in combat, wait 1 second and trigger the zone changed again
+	--> when the player left a zone but is in combat, wait 1 second and trigger the zone changed again
 	local wait_for_leave_combat = function()
 		Plater.RunFunctionForEvent ("ZONE_CHANGED_NEW_AREA")
 	end
 
-	--when the auto toggle function is called but the player is in combat
+	--> when the auto toggle function is called but the player is in combat
 	local re_RefreshAutoToggle = function()
 		return Plater.RefreshAutoToggle()
 	end
 	
-	--when the player enter in the world, wait a few seconds to get the guild name data
+	--> when the player enter in the world, wait a few seconds to get the guild name data
 	local delayed_guildname_check = function()
 		Plater.PlayerGuildName = GetGuildInfo ("player")
 		if (not Plater.PlayerGuildName or Plater.PlayerGuildName == "") then
@@ -873,6 +867,7 @@ Plater.DefaultSpellRangeList = {
 	end
 	
 	local default_level_color = {r = 1.0, g = 0.82, b = 0.0}
+	--todo: move to Plater object
 	local get_level_color = function (unitId, unitLevel)
 		if (UnitCanAttack ("player", unitId)) then
 			local playerLevel = UnitLevel ("player")
@@ -882,8 +877,8 @@ Plater.DefaultSpellRangeList = {
 		return default_level_color
 	end
 	
-	--run a scheduled update for a nameplate, functions can create schedules when some events are triggered when the client doesn't have the data yet
-	function Plater.RunScheduledUpdate (timerObject)
+	--> run a scheduled update for a nameplate, functions can create schedules when some events are triggered when the client doesn't have the data yet
+	function Plater.RunScheduledUpdate (timerObject) --private
 		local plateFrame = timerObject.plateFrame
 		local unitGUID = timerObject.GUID
 		
@@ -931,7 +926,7 @@ Plater.DefaultSpellRangeList = {
 		end
 	end
 	
-	function Plater.ScheduleUpdateForNameplate (plateFrame)
+	function Plater.ScheduleUpdateForNameplate (plateFrame) --private
 		--check if there's already an update scheduled for this unit
 		if (plateFrame.HasUpdateScheduled and not plateFrame.HasUpdateScheduled._cancelled) then
 			return
@@ -946,7 +941,7 @@ Plater.DefaultSpellRangeList = {
 --> settings functions
 
 	-- ~profile
-	function Plater:RefreshConfig()
+	function Plater:RefreshConfig() --private
 		Plater.IncreaseRefreshID()
 
 		Plater.RefreshDBUpvalues()
@@ -960,7 +955,7 @@ Plater.DefaultSpellRangeList = {
 		Plater.UpdateSettingsCache()
 	end
 
-	function Plater.SaveConsoleVariables()
+	function Plater.SaveConsoleVariables() --private
 		local cvarTable = Plater.db.profile.saved_cvars
 		
 		if (not cvarTable) then
@@ -1027,16 +1022,17 @@ Plater.DefaultSpellRangeList = {
 
 	--refresh call back will run all functions in its table when Plater refreshes the dynamic upvales for the file
 	Plater.DBRefreshCallback = {}
-	function Plater.RegisterRefreshDBCallback (func)
+	function Plater.RegisterRefreshDBCallback (func) --private
 		DF.table.addunique (Plater.DBRefreshCallback, func)
 	end
-	function Plater.FireRefreshDBCallback()
+	function Plater.FireRefreshDBCallback() --private
 		for _, func in ipairs (Plater.DBRefreshCallback) do
 			DF:Dispatch (func)
 		end
 	end
 
-	--place most used data into local upvalues to save process time
+	--> place most used data into local upvalues to save process time
+	--> scripts need to call this function if they change something in the profile
 	function Plater.RefreshDBUpvalues()
 		local profile = Plater.db.profile
 
@@ -1288,7 +1284,7 @@ Plater.DefaultSpellRangeList = {
 
 	end	
 
-	function Plater.ApplyPatches()
+	function Plater.ApplyPatches() --private
 		if (PlaterPatchLibrary) then
 			local currentPatch = Plater.db.profile.patch_version
 			for i = currentPatch+1, #PlaterPatchLibrary do
@@ -1315,7 +1311,7 @@ Plater.DefaultSpellRangeList = {
 --> event handler
 
 	--frame which will receive events
-	Plater.EventHandlerFrame = CreateFrame ("frame")
+	Plater.EventHandlerFrame = CreateFrame ("frame") --private
 
 	--store all functions for all events that will be registered inside OnInit
 	local eventFunctions = {
@@ -2343,7 +2339,7 @@ Plater.DefaultSpellRangeList = {
 		end,
 	}
 
-	function Plater.EventHandler (_, event, ...)
+	function Plater.EventHandler (_, event, ...) --private
 		local func = eventFunctions [event]
 		if (func) then
 			func (event, ...)
@@ -2355,7 +2351,7 @@ Plater.DefaultSpellRangeList = {
 	Plater.EventHandlerFrame:SetScript ("OnEvent", Plater.EventHandler)
 	Plater.EventHandlerFrame:RegisterEvent ("PLAYER_ENTERING_WORLD")
 	
-	function Plater.RunFunctionForEvent (event, ...)
+	function Plater.RunFunctionForEvent (event, ...) --private
 		Plater.EventHandler (nil, event, ...)
 	end
 	
@@ -2365,7 +2361,7 @@ Plater.DefaultSpellRangeList = {
 		Plater.RunFunctionForEvent (event, unpack (args))
 	end
 	
-	function Plater.ScheduleRunFunctionForEvent (delay, event, ...)
+	function Plater.ScheduleRunFunctionForEvent (delay, event, ...) --private
 		local timer = C_Timer.NewTimer (delay, run_scheduled_event_function)
 		timer.event = event
 		timer.args = {...}
@@ -7122,6 +7118,13 @@ end
 	function Plater.GetConfig (unitFrame)
 		return Plater.ActorTypeSettingsCache [unitFrame.ActorType]
 	end
+	
+	--set if Plater will check for the execute range and what percent of life is require to enter in the execute range
+	--healthAmount is a floor com zero to one, example: 25% is 0.25
+	function Plater.SetExecuteRange (isExecuteEnabled, healthAmount)
+		DB_USE_HEALTHCUTOFF = isExecuteEnabled
+		DB_HEALTHCUTOFF_AT = type (healthAmount) == "number" and healthAmount or 0
+	end
 
 	--return if the nameplate is showing an aura
 	function Plater.NameplateHasAura (unitFrame, aura)
@@ -7841,13 +7844,27 @@ end
 		EventHandler = true,
 		RegisterRefreshDBCallback = true,
 		FireRefreshDBCallback = true,
-		RefreshDBUpvalues = true,
-		RefreshDBLists = true,
-		UpdateAuraCache = true,
+		--RefreshDBUpvalues = true,
+		--RefreshDBLists = true,
+		--UpdateAuraCache = true,
 		ApplyPatches = true,
 		RefreshConfig = true,
 		SaveConsoleVariables = true,
 		GetSettings = true,
+		CodeTypeNames = true,
+		HookScripts = true,
+		HookScriptsDesc = true,
+		IncreaseHookBuildID = true,
+		IncreaseRefreshID = true,
+		SpecList = true,
+		UpdateSettingsCache = true,
+		ActorTypeSettingsCache = true,
+		RunScheduledUpdate = true,
+		ScheduleUpdateForNameplate = true,
+		EventHandlerFrame = true,
+		
+		
+		
 	}
 	
 	local functionFilter = setmetatable ({}, {__index = function (env, key)

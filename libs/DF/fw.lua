@@ -1,5 +1,5 @@
 
-local dversion = 137
+local dversion = 138
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
 
@@ -2778,6 +2778,22 @@ function DF:GetCLEncounterIDs()
 	return DF.CLEncounterID
 end
 
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--> delta seconds reader
+
+if (not DetailsFrameworkDeltaTimeFrame) then
+	CreateFrame ("frame", "DetailsFrameworkDeltaTimeFrame", UIParent)
+end
+
+local deltaTimeFrame = DetailsFrameworkDeltaTimeFrame
+deltaTimeFrame:SetScript ("OnUpdate", function (self, deltaTime)
+	self.deltaTime = deltaTime
+end)
+
+function GetWorldDeltaSeconds()
+	return deltaTimeFrame.deltaTime
+end
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> debug

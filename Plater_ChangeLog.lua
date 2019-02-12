@@ -7,6 +7,19 @@ local _
 function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
+			{1550006686,  "Buf Fix", "February 12, 2019", "Fixed cast bar border sometimes showing as white color above the spell name cast."},
+			{1550006686,  "Buf Fix", "February 12, 2019", "Fixed border color by aggro reported to not be working correctly as it should."},
+			{1550006686,  "Buf Fix", "February 12, 2019", "Fixed health animation and color transition animations."},
+			{1550006686,  "Buf Fix", "February 12, 2019", "Fixed health percent text calling :Show() every time the health gets an update."},
+			{1550006686,  "Buf Fix", "February 12, 2019", "Fixed resource anchor not correctly adjusting its offset when the personal health bar isn't shown."},
+			{1550006686,  "Buf Fix", "February 12, 2019", "Fixed the neutral nameplate color."},
+			{1550006686,  "Buf Fix", "February 12, 2019", "Fixed the channeling color sometimes using the finished cast color."},
+			{1550006686,  "Buf Fix", "February 12, 2019", "Fixed hook script load conditions not showing reaping affix."},
+			{1550006686,  "Scripting", "February 12, 2019", "Added Plater.GetConfig (unitFrame) for scripts to have access to the nameplate settings."},
+			{1550006686,  "Scripting", "February 12, 2019", "Added Plater:GetPlayerRole() which returns the name of the current role the player is in (TANK DAMAGER, HEALER, NONE)."},
+			{1550006686,  "Scripting", "February 12, 2019", "Added option 'Offset if Buff is Shown' for resource at the Personal Bar tab."},
+			{1550006686,  "Scripting", "February 12, 2019", "Added 'M+ Bwonsamdi Reaping' hook script for the mobs from the affix without aggro tables."},
+			{1550006686,  "Scripting", "February 12, 2019", "Added 'Dont Have Aura' hook script."},
 		
 			{1548612692,  "New Feature", "January 27, 2019", "Added an option to test cast bars."},
 			{1548612692,  "New Feature", "January 27, 2019", "Added options to customize the cast bar Spark."},
