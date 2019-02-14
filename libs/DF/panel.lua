@@ -8465,6 +8465,10 @@ end
 					else
 						self.border:Hide()
 					end
+					
+					if (not self.Settings.ShowUnitName) then
+						self.unitName:Hide()
+					end
 				else
 					self:UnregisterEvents()
 					self.healthBar:SetUnit (nil)
@@ -8605,7 +8609,6 @@ end
 		--> misc
 		UpdateName = function (self)
 			if (not self.Settings.ShowUnitName) then
-				self.unitName:Hide()
 				return
 			end
 			

@@ -894,6 +894,19 @@ Plater.TriggerDefaultMembers = {
 			--
 		end)
 		
+		code_editor.editbox:HookScript ("OnEnterPressed", function()
+			if (IsShiftKeyDown()) then
+				mainFrame.SaveScript()
+				code_editor.editbox:SetFocus (true)
+				
+			--elseif (IsControlKeyDown()) then
+			--	RuntimeEditor.SaveCode()
+				
+			else
+				code_editor.editbox:Insert ("\n")
+			end
+		end)		
+		
 		--apply button
 		local apply_script_button = DF:CreateButton (code_editor, mainFrame.ApplyScript, buttons_size[1], buttons_size[2], "Apply", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 		apply_script_button:SetIcon ([[Interface\BUTTONS\UI-Panel-BiggerButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})

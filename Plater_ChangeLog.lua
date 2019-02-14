@@ -15,6 +15,7 @@ function Plater.GetChangelogTable()
 			{1550006686,  "Buf Fix", "February 12, 2019", "Fixed the neutral nameplate color."},
 			{1550006686,  "Buf Fix", "February 12, 2019", "Fixed the channeling color sometimes using the finished cast color."},
 			{1550006686,  "Buf Fix", "February 12, 2019", "Fixed hook script load conditions not showing reaping affix."},
+			{1550006686,  "Options Changes", "February 12, 2019", "Added options to change the spell name anchor."},
 			{1550006686,  "Scripting", "February 12, 2019", "Added Plater.GetConfig (unitFrame) for scripts to have access to the nameplate settings."},
 			{1550006686,  "Scripting", "February 12, 2019", "Added Plater:GetPlayerRole() which returns the name of the current role the player is in (TANK DAMAGER, HEALER, NONE)."},
 			{1550006686,  "Scripting", "February 12, 2019", "Added option 'Offset if Buff is Shown' for resource at the Personal Bar tab."},

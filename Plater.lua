@@ -1617,6 +1617,7 @@ Plater.DefaultSpellRangeList = {
 					ShowBorder = false, 
 					CanModifyHealhBarColor = false,
 					ShowTargetOverlay = false,
+					ShowUnitName = false, --let Plater control the unit name
 				}
 				
 				local healthBarOptions = {
@@ -2068,13 +2069,12 @@ Plater.DefaultSpellRangeList = {
 				unitFrame.HasHooksRegistered = true
 			end
 			
-			
-			--allow the framework to set the unit name
-			unitFrame.Settings.ShowUnitName = true
-			
 			--powerbar are disabled by default in the settings table, called SetUnit will make the framework hide the power bar
 			--SetPowerBarSize() will show the power bar or the personal resource bar update also will show it
 			unitFrame:SetUnit (unitID)
+			
+			--show unit name, the frame work will hide it due to ShowUnitName is set to false
+			unitFrame.unitName:Show()
 			
 			--set the unitID in the unitFrame, several script and external addons read this member, adding different variations to be compatible with all
 			unitFrame.unit = unitID
@@ -3379,7 +3379,11 @@ end
 		
 		--expose to scripts
 		newIcon.StackText = newIcon.CountFrame.Count
+			
+		newIcon.Cooldown.Timer = newIcon.Cooldown:CreateFontString (nil, "overlay", "NumberFontNormal")
+		newIcon.Cooldown.Timer:SetPoint ("center")
 		newIcon.TimerText = newIcon.Cooldown.Timer
+
 		return newIcon
 	end
 
@@ -3405,11 +3409,7 @@ end
 			self.PlaterBuffList[i] = newFrameIcon
 			
 			newFrameIcon:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
-			
-			local timer = newFrameIcon.Cooldown:CreateFontString (nil, "overlay", "NumberFontNormal")
-			newFrameIcon.Cooldown.Timer = timer
-			timer:SetPoint ("center")
-			
+		
 			local auraWidth = Plater.db.profile.aura_width
 			local auraHeight = Plater.db.profile.aura_height
 			newFrameIcon:SetSize (auraWidth, auraHeight)

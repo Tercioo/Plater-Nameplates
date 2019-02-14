@@ -2910,7 +2910,7 @@ do
 			},
 			
 			--energy bar settings
-			{type = "blank"},
+			--{type = "blank"},
 			{type = "label", get = function() return "Power Bar:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			
 			{
@@ -2956,7 +2956,7 @@ do
 			},
 			
 			--cast bar settings
-			{type = "blank"},
+			--{type = "blank"},
 			{type = "label", get = function() return "Cast Bar:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			
 			{
@@ -3089,6 +3089,43 @@ do
 				end,
 				name = "Shadow Color",
 				desc = "|cFFFFFF00Important|r: hide and show nameplates to see changes.",
+			},
+			
+			--spell name text anchor
+			{
+				type = "select",
+				get = function() return Plater.db.profile.plate_config.player.spellname_text_anchor.side end,
+				values = function() return build_anchor_side_table ("player", "spellname_text_anchor") end,
+				name = "Anchor",
+				desc = "Which side of the nameplate this widget is attach to.",
+			},
+			--spell name text anchor x offset
+			{
+				type = "range",
+				get = function() return Plater.db.profile.plate_config.player.spellname_text_anchor.x end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.plate_config.player.spellname_text_anchor.x = value
+					Plater.UpdateAllPlates()
+				end,
+				min = -100,
+				max = 100,
+				step = 1,
+				name = "X Offset",
+				desc = "Slightly move the text horizontally.",
+			},
+			--spell name text anchor x offset
+			{
+				type = "range",
+				get = function() return Plater.db.profile.plate_config.player.spellname_text_anchor.y end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.plate_config.player.spellname_text_anchor.y = value
+					Plater.UpdateAllPlates()
+				end,
+				min = -100,
+				max = 100,
+				step = 1,
+				name = "Y Offset",
+				desc = "Slightly move the text vertically.",
 			},
 			
 			{type = "breakline"},
@@ -5089,6 +5126,44 @@ local relevance_options = {
 			name = "Shadow Color",
 			desc = "|cFFFFFF00Important|r: hide and show nameplates to see changes.",
 		},
+
+		--spell name text anchor
+		{
+			type = "select",
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.spellname_text_anchor.side end,
+			values = function() return build_anchor_side_table ("friendlyplayer", "spellname_text_anchor") end,
+			name = "Anchor",
+			desc = "Which side of the nameplate this widget is attach to.",
+		},
+		--spell name text anchor x offset
+		{
+			type = "range",
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.spellname_text_anchor.x end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.friendlyplayer.spellname_text_anchor.x = value
+				Plater.UpdateAllPlates()
+			end,
+			min = -100,
+			max = 100,
+			step = 1,
+			name = "X Offset",
+			desc = "Slightly move the text horizontally.",
+		},
+		--spell name text anchor x offset
+		{
+			type = "range",
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.spellname_text_anchor.y end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.friendlyplayer.spellname_text_anchor.y = value
+				Plater.UpdateAllPlates()
+			end,
+			min = -100,
+			max = 100,
+			step = 1,
+			name = "Y Offset",
+			desc = "Slightly move the text vertically.",
+		},
+		
 		
 		{type = "blank"},
 		{type = "label", get = function() return "Spell Cast Time Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
@@ -5898,6 +5973,42 @@ local relevance_options = {
 			desc = "|cFFFFFF00Important|r: hide and show nameplates to see changes.",
 		},
 		
+		--spell name text anchor
+		{
+			type = "select",
+			get = function() return Plater.db.profile.plate_config.enemyplayer.spellname_text_anchor.side end,
+			values = function() return build_anchor_side_table ("enemyplayer", "spellname_text_anchor") end,
+			name = "Anchor",
+			desc = "Which side of the nameplate this widget is attach to.",
+		},
+		--spell name text anchor x offset
+		{
+			type = "range",
+			get = function() return Plater.db.profile.plate_config.enemyplayer.spellname_text_anchor.x end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.enemyplayer.spellname_text_anchor.x = value
+				Plater.UpdateAllPlates()
+			end,
+			min = -100,
+			max = 100,
+			step = 1,
+			name = "X Offset",
+			desc = "Slightly move the text horizontally.",
+		},
+		--spell name text anchor x offset
+		{
+			type = "range",
+			get = function() return Plater.db.profile.plate_config.enemyplayer.spellname_text_anchor.y end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.enemyplayer.spellname_text_anchor.y = value
+				Plater.UpdateAllPlates()
+			end,
+			min = -100,
+			max = 100,
+			step = 1,
+			name = "Y Offset",
+			desc = "Slightly move the text vertically.",
+		},
 		
 		--level text settings
 		{type = "blank"},
@@ -6796,9 +6907,45 @@ local relevance_options = {
 			name = "Shadow Color",
 			desc = "|cFFFFFF00Important|r: hide and show nameplates to see changes.",
 		},
-		
-		{type = "blank"},
+	
+		--spell name text anchor
+		{
+			type = "select",
+			get = function() return Plater.db.profile.plate_config.friendlynpc.spellname_text_anchor.side end,
+			values = function() return build_anchor_side_table ("friendlynpc", "spellname_text_anchor") end,
+			name = "Anchor",
+			desc = "Which side of the nameplate this widget is attach to.",
+		},
+		--spell name text anchor x offset
+		{
+			type = "range",
+			get = function() return Plater.db.profile.plate_config.friendlynpc.spellname_text_anchor.x end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.friendlynpc.spellname_text_anchor.x = value
+				Plater.UpdateAllPlates()
+			end,
+			min = -100,
+			max = 100,
+			step = 1,
+			name = "X Offset",
+			desc = "Slightly move the text horizontally.",
+		},
+		--spell name text anchor x offset
+		{
+			type = "range",
+			get = function() return Plater.db.profile.plate_config.friendlynpc.spellname_text_anchor.y end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.friendlynpc.spellname_text_anchor.y = value
+				Plater.UpdateAllPlates()
+			end,
+			min = -100,
+			max = 100,
+			step = 1,
+			name = "Y Offset",
+			desc = "Slightly move the text vertically.",
+		},
 
+		{type = "blank"},
 		{type = "label", get = function() return "Spell Cast Time Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
@@ -7697,9 +7844,44 @@ local relevance_options = {
 				desc = "|cFFFFFF00Important|r: hide and show nameplates to see changes.",
 			},
 			
+			--spell name text anchor
+			{
+				type = "select",
+				get = function() return Plater.db.profile.plate_config.enemynpc.spellname_text_anchor.side end,
+				values = function() return build_anchor_side_table ("enemynpc", "spellname_text_anchor") end,
+				name = "Anchor",
+				desc = "Which side of the nameplate this widget is attach to.",
+			},
+			--spell name text anchor x offset
+			{
+				type = "range",
+				get = function() return Plater.db.profile.plate_config.enemynpc.spellname_text_anchor.x end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.plate_config.enemynpc.spellname_text_anchor.x = value
+					Plater.UpdateAllPlates()
+				end,
+				min = -100,
+				max = 100,
+				step = 1,
+				name = "X Offset",
+				desc = "Slightly move the text horizontally.",
+			},
+			--spell name text anchor x offset
+			{
+				type = "range",
+				get = function() return Plater.db.profile.plate_config.enemynpc.spellname_text_anchor.y end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.plate_config.enemynpc.spellname_text_anchor.y = value
+					Plater.UpdateAllPlates()
+				end,
+				min = -100,
+				max = 100,
+				step = 1,
+				name = "Y Offset",
+				desc = "Slightly move the text vertically.",
+			},
 			
 			{type = "blank"},
-			
 			{type = "label", get = function() return "Spell Cast Time Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			{
 				type = "toggle",
