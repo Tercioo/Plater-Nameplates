@@ -105,7 +105,8 @@ function Plater.OpenOptionsPanel()
 	Plater.db.profile.OptionsPanelDB = Plater.db.profile.OptionsPanelDB or {}
 	
 	--controi o menu principal
-	local f = DF:CreateSimplePanel (UIParent, optionsWidth, optionsHeight, "Plater Options", "PlaterOptionsPanelFrame", {UseScaleBar = true}, Plater.db.profile.OptionsPanelDB)
+	local f = DF:CreateSimplePanel (UIParent, optionsWidth, optionsHeight, "Plater: professional nameplate addon for hardcore gamers", "PlaterOptionsPanelFrame", {UseScaleBar = true}, Plater.db.profile.OptionsPanelDB)
+	f.Title:SetAlpha (.5)
 	f:SetFrameStrata ("MEDIUM")
 	DF:ApplyStandardBackdrop (f)
 	f:ClearAllPoints()
@@ -1273,7 +1274,7 @@ local debuff_options = {
 		name = "Show Auras Casted by You",
 		desc = "Show Auras Casted by You.",
 	},
-	
+
 	{type = "blank"},
 	
 	{
@@ -2518,6 +2519,7 @@ do
 				name = "Always Show" .. CVarIcon,
 				desc = "If enabled, the personal health bar is always shown.\n\n|cFFFFFF00Important|r: 'Personal Health and Mana Bars' (in the Main Menu tab) must be enabled." .. CVarDesc,
 			},
+
 			{
 				type = "toggle",
 				get = function() return GetCVarBool ("nameplatePersonalShowWithTarget") end,
@@ -9286,6 +9288,17 @@ local relevance_options = {
 			end,
 			name = "Add Extra Glow to Execute Range",
 			desc = "Add Extra Glow to Execute Range",
+		},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.enable_masque_support end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.enable_masque_support = value
+				Plater:Msg ("this setting require a /reload to take effect.")
+			end,
+			name = "Masque Support",
+			desc = "If the Masque addon is installed, enabling this will make Plater to use Masque borders.\n\n|cFFFFFF00Important|r: require /reload after changing this setting.",
 		},
 		
 		{type = "blank"},

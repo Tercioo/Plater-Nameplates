@@ -803,13 +803,13 @@ Plater.TriggerDefaultMembers = {
 				local cursorPosition = code_editor.editbox:GetCursorPosition()
 				
 				--insert the text
-				local textToInsert = "envTable." .. text .. " = envTable." .. text .. " or " .. frameworkSelected.Signature
+				local textToInsert = "unitFrame." .. text .. " = unitFrame." .. text .. " or " .. frameworkSelected.Signature
 				code_editor.editbox:Insert (textToInsert)
 				
 				if (frameworkSelected.AddCall) then
 					code_editor.editbox:Insert ("\n")
 					local addCallString = frameworkSelected.AddCall
-					addCallString = addCallString:gsub ("@ENV@", "envTable." .. text)
+					addCallString = addCallString:gsub ("@ENV@", "unitFrame." .. text)
 					code_editor.editbox:Insert (addCallString)
 					code_editor.editbox:Insert ("\n")
 				end
