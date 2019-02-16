@@ -69,10 +69,17 @@ Plater.APIList = {
 	{Name = "GetRaidMark", 			Signature = "Plater.GetRaidMark (unitFrame)", 						Desc = "Return which raid mark the nameplate has. Always return false if the nameplate is the personal health bar."},
 	{Name = "GetConfig", 				Signature = "Plater.GetConfig (unitFrame)", 						Desc = "Return a table with the settings chosen for the nameplate in the options panel. Use it to restore values is needed."},
 	{Name = "GetPlayerRole", 			Signature = "Plater:GetPlayerRole()", 							Desc = "Return TANK DAMAGER HEALER or NONE."},
+	{Name = "GetUnitGuildName", 		Signature = "Plater.GetUnitGuildName (unitFrame)", 					Desc = "Return the name unit's guild name if any, always return nil for npcs."},
 	{Name = "SetExecuteRange", 		Signature = "Plater.SetExecuteRange (isExecuteEnabled, healthAmount)", 	Desc = "Set if Plater should check for execute range and in what percent of health the execute range starts\n\nhealthAmount is in a range of zero to one, example: 25% is 0.25"},
 	
+	
+	{Name = "IsUnitInFriendsList", 		Signature = "Plater.IsUnitInFriendsList (unitFrame)", 					Desc = "Return 'true' if the unit is in the player's friends list."},
+	{Name = "IsUnitTank", 				Signature = "Plater.IsUnitTank (unitFrame)", 						Desc = "Return 'true' if the unit is in tank role."},
+	{Name = "IsUnitTapped", 			Signature = "Plater.IsUnitTapped (unitFrame)", 						Desc = "Return 'true' if the unit is tapped and the player does not receives credits to kill it. Usually units tapped are shown with a gray color."},
 	{Name = "IsInCombat", 			Signature = "Plater.IsInCombat()", 								Desc = "Return 'true' if the player is in combat."},
+	{Name = "IsInOpenWorld", 			Signature = "Plater.IsInOpenWorld()", 							Desc = "Return 'true' if the player is in open world (not inside raids, dungeons, etc)."},
 	{Name = "IsPlayerTank", 			Signature = "Plater.IsPlayerTank()", 							Desc = "Return 'true' if the player is in the tank role."},
+	{Name = "GetTanks", 				Signature = "Plater.GetTanks()", 								Desc = "Return a table with all tanks in the group, use Plater.GetTanks()[unitName] to know if the unit is a tank."},
 	
 	{Name = "DisableHighlight", 			Signature = "Plater.DisableHighlight (unitFrame)", 					Desc = "The nameplate won't highlight when the mouse passes over it."},
 	{Name = "EnableHighlight", 			Signature = "Plater.EnableHighlight (unitFrame)", 					Desc = "Enable the mouse over highlight."},

@@ -404,8 +404,8 @@ PLATER_DEFAULT_SETTINGS = {
 				castbar_offset = 0, --not used?
 				
 				castbar_enabled = true,
-				cast = {140, 10},
-				cast_incombat = {140, 10},
+				cast = {150, 10},
+				cast_incombat = {150, 10},
 				
 				actorname_text_spacing = 10,
 				actorname_text_size = 10,
@@ -2297,7 +2297,7 @@ PLATER_DEFAULT_SETTINGS = {
 		
 		indicator_extra_raidmark = true,
 		indicator_raidmark_scale = 1,
-		indicator_raidmark_anchor = {side = 2, x = -1, y = 4},
+		indicator_raidmark_anchor = {side = 2, x = -1, y = 0},
 		
 		target_indicator = "Silver",
 		

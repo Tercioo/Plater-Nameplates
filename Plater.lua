@@ -5,21 +5,17 @@
 --Calls with : are functions imported from the framework
 --whenever a variable or function has a --private comment attached to it, means scripts cannot access it (read, write, override), anything else can be overriden with scripts
 --with that, you can make your own version of Plater by modifying and overriding functions entirelly using a hooking script, them you can export the script and upload to wago.io (have fun :)
+--check the list of available functions and members to override at 'Plater.CanOverride_Functions' and 'Plater.CanOverride_Members'
+
+--Weakauras Scripters: if you need to attach something to Plater nameplates:
+-- local namePlate = C_NamePlate.GetNamePlateForUnit (unitID)
+-- local unitFrame = namePlate.unitFrame --unitFrame is the main frame where all things is attached, it has SetAllPoints() on the namePlate frame.
+-- local healthBar = unitFrame.healthBar
+-- local castBar = unitFrame.castBar
 
  if (true) then
 	--return
 	--but not today
-end
-
---/run UIErrorsFrame:HookScript ("OnEnter", function() UIErrorsFrame:EnableMouse (false);Plater:Msg("UIErrorsFrame had MouseEnabled, its disabled now.") end)
---some WA or addon are enabling the mouse on the error frame making nameplates unclickable
-if (UIErrorsFrame) then
-	UIErrorsFrame:HookScript ("OnEnter", function()
-		--safe disable the mouse on error frame avoiding mouse interactions and warn the user
-		UIErrorsFrame:EnableMouse (false)
-		Plater:Msg ("something enabled the mouse on UIErrorsFrame, Plater disabled.")
-	end)
-	UIErrorsFrame:EnableMouse (false)
 end
 
 --> details! framework
@@ -27,6 +23,17 @@ local DF = _G ["DetailsFramework"]
 if (not DF) then
 	print ("|cFFFFAA00Plater: framework not found, if you just installed or updated the addon, please restart your client.|r")
 	return
+end
+
+--/run UIErrorsFrame:HookScript ("OnEnter", function() UIErrorsFrame:EnableMouse (false);Plater:Msg("UIErrorsFrame had MouseEnabled, its disabled now.") end)
+--> some WA or addon are enabling the mouse on the error frame making nameplates unclickable
+if (UIErrorsFrame) then
+	UIErrorsFrame:HookScript ("OnEnter", function()
+		--safe disable the mouse on error frame avoiding mouse interactions and warn the user
+		UIErrorsFrame:EnableMouse (false)
+		Plater:Msg ("something enabled the mouse on UIErrorsFrame, Plater disabled.")
+	end)
+	UIErrorsFrame:EnableMouse (false)
 end
 
 --> blend nameplates with the worldframe
@@ -95,6 +102,7 @@ Plater.CanOverride_Functions = {
 	RefreshDBLists = true, --refresh cache
 	UpdateAuraCache = true, --refresh cache
 	
+	CreateShowAuraIconAnimation = true, --creates the animation for aura icons played when they are shown
 	GetHealthCutoffValue = true, --check if the character has a execute range and enable or disable the health cut off indicators
 	CheckRange = true, --check if the player is in range of the unit
 	GetSpellForRangeCheck = true, --get a spell to be used in the range check
@@ -205,6 +213,7 @@ Plater.HookScripts = { --private
 	"Leave Combat",
 	"Player Power Update",
 	"Player Talent Update",
+	"Health Update",
 }
 
 Plater.HookScriptsDesc = { --private
@@ -226,6 +235,8 @@ Plater.HookScriptsDesc = { --private
 	
 	["Player Power Update"] = "Run when the player power, such as combo points, gets an update.\n\n|cFF44FF44Run only on the nameplate of your current target|r.",
 	["Player Talent Update"] = "When the player changes a talent or specialization.\n\n|cFF44FF44Run on all nameplates shown in the screen|r.",
+	
+	["Health Update"] = "When the health of the unit changes.",
 }
 
 --> addon comm
@@ -285,7 +296,6 @@ Plater.CooldownEdgeTextures = {
 	"Interface\\Cooldown\\edge-LoC",
 }
 
-
 --> textures used in the castbar, scripts can add more values to it, profile holds only the path to it
 Plater.SparkTextures = {
 	[[Interface\AddOns\Plater\images\spark1]],
@@ -309,15 +319,17 @@ Plater.TargetHighlights = {
 }
 
 --> these are the images shown in the nameplate of the current target, they are placed in the left and right side of the health bar, scripts can add more options
+--> if the coords has 2 tables, it uses two textures attach in the left and right sides of the health bar
+--> if the coords has 4 tables, it uses 4 textures attached in top left, bottom left, top right and bottom right corners
 Plater.TargetIndicators = {
 	["NONE"] = {
 		path = [[Interface\ACHIEVEMENTFRAME\UI-Achievement-WoodBorder-Corner]],
-		coords = {{.9, 1, .9, 1}, {.9, 1, .9, 1}, {.9, 1, .9, 1}, {.9, 1, .9, 1}},
+		coords = {{.9, 1, .9, 1}, {.9, 1, .9, 1}, {.9, 1, .9, 1}, {.9, 1, .9, 1}}, --texcoords, support 4 or 8 coords method
 		desaturated = false,
 		width = 10,
 		height = 10,
-		x = 1,
-		y = 1,
+		x = 1, --offset
+		y = 1, --offset
 	},
 	
 	["Magneto"] = {
@@ -421,6 +433,7 @@ Plater.TargetIndicators = {
 	},
 }
 
+--> which specs each class has available
 Plater.SpecList = { --private
 	["DEMONHUNTER"] = {
 		[577] = true, 
@@ -626,7 +639,7 @@ Plater.DefaultSpellRangeList = {
 	local CAN_TRACK_EXTRA_BUFFS = false
 	local CAN_TRACK_EXTRA_DEBUFFS = false
 	
-	-- ~hook
+	-- ~hook (hook scripts are cached in the indexed part of these tales, for performance the member ScriptAmount caches the amount of scripts inside the indexed table)
 	local HOOK_NAMEPLATE_ADDED = {ScriptAmount = 0}
 	local HOOK_NAMEPLATE_CREATED = {ScriptAmount = 0}
 	local HOOK_NAMEPLATE_REMOVED = {ScriptAmount = 0}
@@ -641,13 +654,14 @@ Plater.DefaultSpellRangeList = {
 	local HOOK_NAMEPLATE_CONSTRUCTOR = {ScriptAmount = 0}
 	local HOOK_PLAYER_POWER_UPDATE = {ScriptAmount = 0}
 	local HOOK_PLAYER_TALENT_UPDATE = {ScriptAmount = 0}
+	local HOOK_HEALTH_UPDATE = {ScriptAmount = 0}
 
-	--list of auras the user added into the track list for special auras
+	--list of auras the user added into the track list for special auras, _MINE caches the auras where the user checked the 'Only Mine' checkbox
 	local SPECIAL_AURAS_USER_LIST = {}
 	local SPECIAL_AURAS_USER_LIST_MINE = {}
-	--list of auras Plater added automatically to special auras
+	--list of auras Plater added automatically to special auras, automatic added auras passes throught black list filters while auras manually added by the user do no
 	local SPECIAL_AURAS_AUTO_ADDED = {}
-	--used to know the border color in the special auras
+	--caches aura names for crowd control to determine the border color for special auras, if the aura is in this table, the border will be colored with crowd control color
 	local CROWDCONTROL_AURA_NAMES = {} 
 	
 	--spell animations - store a table with information about animation for spells
@@ -658,7 +672,7 @@ Plater.DefaultSpellRangeList = {
 	--store players which have the tank role in the group
 	local TANK_CACHE = {}
 
-	--store pets
+	--store pet GUIDs
 	local PET_CACHE = {}
 
 	--store if the player is in combat (not reliable, toggled at regen switch)
@@ -781,9 +795,11 @@ Plater.DefaultSpellRangeList = {
 	--> range check ~range
 	function Plater.CheckRange (plateFrame, onAdded)
 
+		--if is using the no combat alpha and the unit isn't in combat, ignore the range check, no combat alpha is disabled by default
 		if (plateFrame [MEMBER_NOCOMBAT]) then
 			return
-			
+		
+		--if the range check is disabled of the unit is friendly
 		elseif (not DB_USE_RANGE_CHECK or plateFrame [MEMBER_REACTION] >= 5) then
 			plateFrame.unitFrame:SetAlpha (AlphaBlending)
 			plateFrame [MEMBER_ALPHA] = AlphaBlending
@@ -792,6 +808,7 @@ Plater.DefaultSpellRangeList = {
 			return
 		end
 		
+		--check when the unit just has been added to the screen
 		if (onAdded) then
 			--range check when the nameplate is added
 			if (Plater.SpellBookForRangeCheck) then
@@ -830,6 +847,7 @@ Plater.DefaultSpellRangeList = {
 		else
 			--regular range check during throttled tick
 			if (Plater.SpellBookForRangeCheck) then
+				--using a spell book spell index for the range check, this is disabled at the moment in the function below
 				if (IsSpellInRange (Plater.SpellForRangeCheck, Plater.SpellBookForRangeCheck, plateFrame [MEMBER_UNITID]) == 1) then
 					if (not plateFrame.FadedIn and not plateFrame.unitFrame.FadeIn.playing) then
 						plateFrame:RangeFadeIn()
@@ -840,6 +858,7 @@ Plater.DefaultSpellRangeList = {
 					end
 				end
 			else
+				--using a spell name for the range check
 				if (IsSpellInRange (Plater.SpellForRangeCheck, plateFrame [MEMBER_UNITID]) == 1) then
 					if (not plateFrame.FadedIn and not plateFrame.unitFrame.FadeIn.playing) then
 						plateFrame:RangeFadeIn()
@@ -919,16 +938,15 @@ Plater.DefaultSpellRangeList = {
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> general unit functions
-	
+
 	--> return an iterator with all namepaltes on the screen
 	function Plater.GetAllShownPlates() --private
 		return C_NamePlate.GetNamePlates()
 	end
 
 	--> returns if the unit is tapped (gray health color when another player hit the unit first) 
-	--todo: make this functions be inside the Plater object
-	local function IsTapDenied (unit)
-		return unit and not UnitPlayerControlled (unit) and UnitIsTapDenied (unit)
+	function Plater.IsUnitTapDenied (unitID)
+		return not UnitPlayerControlled (unitID) and UnitIsTapDenied (unitID)
 	end
 
 	--> returns what member from the profile need to be used, since there's entries for in combat and out of combat
@@ -2408,6 +2426,7 @@ Plater.DefaultSpellRangeList = {
 			plateFrame.unitFrame.HighlightFrame:SetScript ("OnUpdate", nil)
 			
 			plateFrame [MEMBER_QUEST] = false
+			plateFrame.unitFrame [MEMBER_QUEST] = false
 			plateFrame [MEMBER_TARGET] = nil
 			
 			local healthBar = plateFrame.unitFrame.healthBar
@@ -3304,6 +3323,16 @@ function Plater.OnInit() --private
 		unitFrame.healthBar.CurrentHealthMax = unitHealthMax
 	end
 	
+	local run_on_health_change_hook = function (unitFrame)
+		for i = 1, HOOK_HEALTH_UPDATE.ScriptAmount do
+			local globalScriptObject = HOOK_HEALTH_UPDATE [i]
+			local scriptContainer = unitFrame:ScriptGetContainer()
+			local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Health Update")
+			--run
+			unitFrame:ScriptRunHook (scriptInfo, "Health Update")
+		end
+	end
+	
 	function Plater.OnUpdateHealth (self)
 		if (not self.isNamePlate) then
 			--this is not a nameplate, perhaps another frame from the framework
@@ -3379,7 +3408,12 @@ function Plater.OnInit() --private
 	end
 	
 	local on_health_change = function (self)
-		return Plater.OnUpdateHealth (self)
+		Plater.OnUpdateHealth (self)
+		
+		--> run on health changed hook
+		if (HOOK_HEALTH_UPDATE.ScriptAmount > 0) then
+			run_on_health_change_hook (self:GetParent())
+		end
 	end
 	hooksecurefunc (DF.HealthFrameFunctions, "UpdateHealth", on_health_change)
 	
@@ -3391,7 +3425,12 @@ function Plater.OnInit() --private
 	end
 	
 	local on_healthmax_change = function (self)
-		return Plater.OnUpdateHealthMax (self)
+		Plater.OnUpdateHealthMax (self)
+		
+		--> run on health changed hook
+		if (HOOK_HEALTH_UPDATE.ScriptAmount > 0) then
+			run_on_health_change_hook (self:GetParent())
+		end
 	end
 	hooksecurefunc (DF.HealthFrameFunctions, "UpdateMaxHealth", on_healthmax_change)
 	
@@ -3513,7 +3552,15 @@ end
 
 		return newIcon
 	end
-
+	
+	--create the animation when the icon is shown above the nameplate
+	function Plater.CreateShowAuraIconAnimation (iconFrame)
+		local iconShowInAnimation = DF:CreateAnimationHub (iconFrame)
+		DF:CreateAnimation (iconShowInAnimation, "Scale", 1, .05, .7, .7, 1.1, 1.1)
+		DF:CreateAnimation (iconShowInAnimation, "Scale", 2, .05, 1.1, 1.1, 1, 1)
+		iconFrame.ShowAnimation = iconShowInAnimation
+	end
+	
 	--an aura is about to be added in the nameplate, need to get an icon for it ~geticonaura
 	function Plater.GetAuraIcon (self, isBuff)
 		--self parent = NamePlate_X_UnitFrame
@@ -3547,10 +3594,8 @@ end
 			newFrameIcon.IsAuraIcon = true
 			newFrameIcon:HookScript ("OnHide", newFrameIcon.OnHideWidget)
 			
-			local iconShowInAnimation = DF:CreateAnimationHub (newFrameIcon)
-			DF:CreateAnimation (iconShowInAnimation, "Scale", 1, .05, .7, .7, 1.1, 1.1)
-			DF:CreateAnimation (iconShowInAnimation, "Scale", 2, .05, 1.1, 1.1, 1, 1)
-			newFrameIcon.ShowAnimation = iconShowInAnimation
+			--create the animation for when the icon is shown
+			Plater.CreateShowAuraIconAnimation (newFrameIcon)
 			
 			--masque support
 			if (Plater.Masque) then
@@ -4245,7 +4290,7 @@ end
 				end
 				
 			--check if is tapped
-			elseif (IsTapDenied (unitID)) then
+			elseif (Plater.IsUnitTapDenied (unitID)) then
 				r, g, b = unpack (Plater.db.profile.tap_denied_color)
 
 			else
@@ -4562,7 +4607,7 @@ end
 			unitFrame.InCombat = UnitAffectingCombat (tickFrame.unit)
 			
 			--if the unit tapped? (gray color)
-			if (IsTapDenied (tickFrame.unit)) then
+			if (Plater.IsUnitTapDenied (tickFrame.unit)) then
 				Plater.ChangeHealthBarColor_Internal (healthBar, unpack (Plater.db.profile.tap_denied_color))
 			
 			--check aggro if is in combat
@@ -5658,6 +5703,7 @@ end
 		
 		local wasQuestPlate = plateFrame [MEMBER_QUEST]
 		plateFrame [MEMBER_QUEST] = false
+		unitFrame [MEMBER_QUEST] = false
 		
 		plateFrame.ActorNameSpecial:Hide()
 		plateFrame.ActorTitleSpecial:Hide()
@@ -5671,13 +5717,16 @@ end
 		--check for quest color
 		if (IS_IN_OPEN_WORLD and actorType == ACTORTYPE_ENEMY_NPC and DB_PLATE_CONFIG [actorType].quest_enabled) then --actorType == ACTORTYPE_FRIENDLY_NPC or 
 			local isQuestMob = Plater.IsQuestObjective (plateFrame)
-			if (isQuestMob and not IsTapDenied (plateFrame.unitFrame.unit)) then
+			if (isQuestMob and not Plater.IsUnitTapDenied (plateFrame.unitFrame.unit)) then
 				if (plateFrame [MEMBER_REACTION] == UNITREACTION_NEUTRAL) then
 					Plater.ChangeHealthBarColor_Internal (healthBar, unpack (DB_PLATE_CONFIG [actorType].quest_color_neutral))
 					plateFrame [MEMBER_QUEST] = true
+					unitFrame [MEMBER_QUEST] = true
+					
 				else
 					Plater.ChangeHealthBarColor_Internal (healthBar, unpack (DB_PLATE_CONFIG [actorType].quest_color_enemy))
 					plateFrame [MEMBER_QUEST] = true
+					unitFrame [MEMBER_QUEST] = true
 				end
 			else
 				if (wasQuestPlate) then
@@ -5701,6 +5750,7 @@ end
 				nameFrame:Show()
 				
 				plateFrame [MEMBER_QUEST] = true
+				unitFrame [MEMBER_QUEST] = true
 			
 			elseif (DB_PLATE_CONFIG [actorType].only_names or DB_PLATE_CONFIG [actorType].all_names) then
 				--show only the npc name without the health bar
@@ -7070,6 +7120,7 @@ end
 				end
 
 				plateFrame [MEMBER_QUEST] = true
+				plateFrame.unitFrame [MEMBER_QUEST] = true
 				plateFrame.QuestAmountCurrent = amount1
 				plateFrame.QuestAmountTotal = amount2
 				
@@ -7264,10 +7315,19 @@ end
 		return Plater.ActorTypeSettingsCache [unitFrame.ActorType]
 	end
 	
-	--return the table where tanks is stored
-	--has the unit name as the key and true as value
-	function Plater.GetTankCache()
-		return TANK_CACHE
+	--return true if the player is in open world (not inside dungeons, etc)
+	function Plater.IsInOpenWorld()
+		return IS_IN_OPEN_WORLD
+	end
+	
+	--return if the unit is in the friends list
+	function Plater.IsUnitInFriendsList (unitFrame)
+		return Plater.FriendsCache [unitFrame [MEMBER_NAME]] or Plater.FriendsCache [unitFrame [MEMBER_NAMELOWER]]
+	end
+	
+	--> api version of the tap denied function
+	function Plater.IsUnitTapped (unitFrame)
+		return Plater.IsUnitTapDenied (unitFrame.unit)
 	end
 	
 	--set if Plater will check for the execute range and what percent of life is require to enter in the execute range
@@ -7275,6 +7335,11 @@ end
 	function Plater.SetExecuteRange (isExecuteEnabled, healthAmount)
 		DB_USE_HEALTHCUTOFF = isExecuteEnabled
 		DB_HEALTHCUTOFF_AT = type (healthAmount) == "number" and healthAmount or 0
+	end
+	
+	--return the name of the unit guild
+	function Plater.GetUnitGuildName (unitFrame)
+		return unitFrame:GetParent().playerGuildName
 	end
 
 	--return if the nameplate is showing an aura
@@ -7451,7 +7516,7 @@ end
 	--called to undo a color modification
 	function Plater.RefreshNameplateColor (unitFrame)
 		if (unitFrame.unit) then
-			if (IsTapDenied (unitFrame.unit)) then
+			if (Plater.IsUnitTapDenied (unitFrame.unit)) then
 				Plater.ChangeHealthBarColor_Internal (unitFrame.healthBar, unpack (Plater.db.profile.tap_denied_color))
 			else
 				if (InCombatLockdown()) then
@@ -7543,9 +7608,20 @@ end
 		return InCombatLockdown() or PLAYER_IN_COMBAT
 	end
 
+	--return true if the unit is in the tank role
+	function Plater.IsUnitTank (unitFrame)
+		return TANK_CACHE [unitFrame [MEMBER_NAME]] or TANK_CACHE [unitFrame [MEMBER_NAMELOWER]]
+	end
+	
 	--check the role and the role of the specialization to return if the player is in a tank role
 	function Plater.IsPlayerTank()
 		return IsPlayerEffectivelyTank()
+	end
+	
+	--return the table where tanks is stored
+	--has the unit name as the key and true as value
+	function Plater.GetTanks()
+		return TANK_CACHE
 	end
 
 	--change the color of the cast bar
@@ -8108,6 +8184,7 @@ end
 		HOOK_NAMEPLATE_CONSTRUCTOR,
 		HOOK_PLAYER_POWER_UPDATE,
 		HOOK_PLAYER_TALENT_UPDATE,
+		HOOK_HEALTH_UPDATE,
 	}
 
 	function Plater.WipeHookContainers (noHotReload)
@@ -8153,6 +8230,8 @@ end
 			return HOOK_PLAYER_POWER_UPDATE	
 		elseif (hookName == "Player Talent Update") then
 			return HOOK_PLAYER_TALENT_UPDATE
+		elseif (hookName == "Health Update") then
+			return HOOK_HEALTH_UPDATE
 		else
 			Plater:Msg ("Unknown hook: " .. (hookName or "Invalid Hook Name"))
 		end
