@@ -946,7 +946,7 @@ Plater.DefaultSpellRangeList = {
 
 	--> returns if the unit is tapped (gray health color when another player hit the unit first) 
 	function Plater.IsUnitTapDenied (unitID)
-		return not UnitPlayerControlled (unitID) and UnitIsTapDenied (unitID)
+		return unitID and not UnitPlayerControlled (unitID) and UnitIsTapDenied (unitID)
 	end
 
 	--> returns what member from the profile need to be used, since there's entries for in combat and out of combat
@@ -2990,7 +2990,8 @@ function Plater.OnInit() --private
 				castBar.finished = false
 				castBar.value = 0
 				castBar.maxValue = 3
-				castBar.canInterrupt = not castNoInterrupt
+				castBar.canInterrupt = math.random (1, 2) == 1
+				castBar.canInterrupt = true
 				castBar:UpdateCastColor()
 				
 				castBar.spellName = 		"Getting Bald"
