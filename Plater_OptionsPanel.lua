@@ -200,6 +200,12 @@ function Plater.OpenOptionsPanel()
 	
 	DF:BuildStatusbarAuthorInfo (statusBar)
 	
+	--wago.io support
+	local wagoDesc = DF:CreateLabel (statusBar, "BREAKING NEWS: scripts and profiles for Plater will be available at |cFFFFFF00WAGO.IO|r in the following weeks!")
+	wagoDesc.textcolor = "orangered"
+	wagoDesc:SetPoint ("left", statusBar.DiscordTextBox, "right", 50, 0)
+	
+	
 	f.AllMenuFrames = {}
 	for _, frame in ipairs (mainFrame.AllFrames) do
 		tinsert (f.AllMenuFrames, frame)
