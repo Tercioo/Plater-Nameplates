@@ -4242,8 +4242,12 @@ end
 				if (actorType) then
 					if (plateFrame [MEMBER_REACTION] == UNITREACTION_NEUTRAL) then
 						Plater.ChangeHealthBarColor_Internal (unitFrame.healthBar, unpack (DB_PLATE_CONFIG [actorType].quest_color_neutral))
-					else
+						
+					elseif (plateFrame [MEMBER_REACTION] < UNITREACTION_NEUTRAL) then
 						Plater.ChangeHealthBarColor_Internal (unitFrame.healthBar, unpack (DB_PLATE_CONFIG [actorType].quest_color_enemy))
+						
+					else
+						Plater.ChangeHealthBarColor_Internal (unitFrame.healthBar, unpack (DB_PLATE_CONFIG [actorType].quest_color))
 					end
 				end
 			end
