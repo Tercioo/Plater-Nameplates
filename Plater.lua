@@ -7558,6 +7558,19 @@ end
 		Plater.UpdatePlateSize (unitFrame.PlateFrame)
 	end
 
+	--modify the color of the cast bar
+	function Plater.SetCastBarColor (unitFrame, r, g, b)
+		if (unitFrame.unit) then
+			if (not r) then
+				--refresh the castbar color (the framework adjust the cast bar color)
+				unitFrame.castBar:UpdateCastColor()
+			else
+				--framework accepts SetColor, it does parse the color within the call
+				return unitFrame.castBar:SetColor (r, g, b)
+			end
+		end
+	end
+	
 	--set a temporarly size for the castbar
 	--this value is reset when the nameplate is added to the screen
 	function Plater.SetCastBarSize (unitFrame, width, height)

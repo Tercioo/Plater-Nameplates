@@ -147,7 +147,7 @@ function Plater.OpenOptionsPanel()
 		{name = "DebuffSpecialContainer", title = "Buff Special"},
 		{name = "DebuffLastEvent", title = "Buff Ease"},
 		{name = "Scripting", title = "Scripting"},
-		{name = "AutoRunCode", title = "Hooking"},
+		{name = "AutoRunCode", title = "Modding"},
 		{name = "AnimationPanel", title = "Animations"},
 		{name = "AdvancedConfig", title = "Advanced"},
 		
@@ -1610,7 +1610,7 @@ Plater.CreateAuraTesting()
 		end
 		
 		local line_onclick_trigger_dropdown = function (self, fixedValue, scriptID)
-			local scriptObject = Plater.GetScriptObject (scriptID)
+			local scriptObject = Plater.GetScriptObject (scriptID, "script")
 			local spellName = GetSpellInfo (self.SpellID)
 			
 			if (scriptObject and spellName) then
