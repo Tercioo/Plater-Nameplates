@@ -2854,6 +2854,12 @@ function Plater.OnInit() --private
 				--setup the power bar and cast bar from the details! framework unit frame
 				local powerBar = unitFrame.powerBar
 				local castBar = unitFrame.castBar
+				local healthBar = unitFrame.healthBar
+				
+				if (not DB_PLATE_CONFIG.player.healthbar_enabled) then
+					--the health bar is set when the nameplate is shown
+					healthBar:SetUnit (nil)
+				end
 				
 				if (DB_PLATE_CONFIG.player.power_enabled) then
 					powerBar:SetUnit (unitFrame.unit)
@@ -2927,6 +2933,7 @@ function Plater.OnInit() --private
 			
 			--> set scale based on Plater user settings
 			resourceFrame:SetScale (Plater.db.profile.resources.scale)
+			resourceFrame:SetAlpha (Plater.db.profile.resources.alpha)
 			
 			--check if resources are placed on the current target
 			onCurrentTarget = GetCVarBool ("nameplateResourceOnTarget")
@@ -4221,6 +4228,21 @@ end
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> color stuff ~color
 
+	function Plater.SetQuestColorByReaction (unitFrame)
+		--unit is a quest mob, reset the color to quest color
+		if (unitFrame.ActorType) then
+			if (unitFrame [MEMBER_REACTION] == UNITREACTION_NEUTRAL) then
+				Plater.ChangeHealthBarColor_Internal (unitFrame.healthBar, unpack (DB_PLATE_CONFIG [unitFrame.ActorType].quest_color_neutral))
+				
+			elseif (unitFrame [MEMBER_REACTION] < UNITREACTION_NEUTRAL) then
+				Plater.ChangeHealthBarColor_Internal (unitFrame.healthBar, unpack (DB_PLATE_CONFIG [unitFrame.ActorType].quest_color_enemy))
+				
+			else
+				Plater.ChangeHealthBarColor_Internal (unitFrame.healthBar, unpack (DB_PLATE_CONFIG [unitFrame.ActorType].quest_color))
+			end
+		end
+	end
+
 	--override colors
 	--this function will set the color of the nameplate by the reaction of the unit shown
 	--it can only run if color override is enabled and when not in combat or when in combat but color by aggro is disabled
@@ -4228,7 +4250,7 @@ end
 		--not in combat or aggro isn't changing the healthbar color
 		if (forceRefresh or not InCombatLockdown() or not DB_AGGRO_CHANGE_HEALTHBAR_COLOR) then
 			--isn't a quest
-			if (not unitFrame:GetParent() [MEMBER_QUEST]) then
+			if (not unitFrame [MEMBER_QUEST]) then
 				local reaction = unitFrame [MEMBER_REACTION]
 				--has a valid reaction
 				if (reaction) then
@@ -4237,19 +4259,7 @@ end
 				end
 			else
 				--unit is a quest mob, reset the color to quest color
-				local plateFrame = unitFrame:GetParent()
-				local actorType = plateFrame.actorType
-				if (actorType) then
-					if (plateFrame [MEMBER_REACTION] == UNITREACTION_NEUTRAL) then
-						Plater.ChangeHealthBarColor_Internal (unitFrame.healthBar, unpack (DB_PLATE_CONFIG [actorType].quest_color_neutral))
-						
-					elseif (plateFrame [MEMBER_REACTION] < UNITREACTION_NEUTRAL) then
-						Plater.ChangeHealthBarColor_Internal (unitFrame.healthBar, unpack (DB_PLATE_CONFIG [actorType].quest_color_enemy))
-						
-					else
-						Plater.ChangeHealthBarColor_Internal (unitFrame.healthBar, unpack (DB_PLATE_CONFIG [actorType].quest_color))
-					end
-				end
+				Plater.SetQuestColorByReaction (unitFrame)
 			end
 		end
 	end
@@ -4304,6 +4314,12 @@ end
 					return
 				end
 
+				--check if the mob is a quest mob
+				if (unitFrame [MEMBER_QUEST]) then
+					Plater.SetQuestColorByReaction (unitFrame)
+					return
+				end
+				
 				--get the color from the client
 				r, g, b = UnitSelectionColor (unitID)
 			end
@@ -5893,7 +5909,9 @@ end
 			--heal prediction
 			unitFrame.healthBar.Settings.ShowHealingPrediction = Plater.db.profile.show_health_prediction
 			unitFrame.healthBar.Settings.ShowShields = Plater.db.profile.show_shield_prediction
-			unitFrame.healthBar:UNIT_HEALTH()
+			if (unitFrame.healthBar.unit) then
+				unitFrame.healthBar:UNIT_HEALTH()
+			end
 		end
 		
 		--update the plate size for this unit

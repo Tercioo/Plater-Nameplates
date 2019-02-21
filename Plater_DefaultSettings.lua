@@ -399,6 +399,7 @@ PLATER_DEFAULT_SETTINGS = {
 				buff_frame_y_offset = 0,
 				y_position_offset = -50, --deprecated
 				pvp_always_incombat = true,
+				healthbar_enabled = true,
 				healthbar_color = {0.564706, 0.933333, 0.564706, 1},
 				healthbar_color_by_hp = false,
 				castbar_offset = 0, --not used?
@@ -479,6 +480,7 @@ PLATER_DEFAULT_SETTINGS = {
 		show_shield_prediction = false,
 		
 		resources = {
+			alpha = 1,
 			scale = 0.8,
 			y_offset = 0,
 			y_offset_target = 8,

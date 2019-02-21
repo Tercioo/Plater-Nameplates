@@ -2887,6 +2887,17 @@ do
 			--life size
 			{type = "label", get = function() return "Health Bar:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			{
+				type = "toggle",
+				get = function() return Plater.db.profile.plate_config.player.healthbar_enabled end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.plate_config.player.healthbar_enabled = value
+					Plater.RefreshDBUpvalues()
+					Plater.UpdateAllPlates()
+				end,
+				name = "Enabled",
+				desc = "Show health bar",
+			},
+			{
 				type = "range",
 				get = function() return Plater.db.profile.plate_config.player.health[1] end,
 				set = function (self, fixedparam, value) 
@@ -3602,7 +3613,22 @@ do
 			--class resources
 			{type = "blank"},
 			{type = "label", get = function() return "Resources:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-
+			
+			{
+				type = "range",
+				get = function() return Plater.db.profile.resources.alpha end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.resources.alpha = value
+					Plater.UpdateAllPlates()
+				end,
+				min = 0,
+				max = 1,
+				step = 0.01,
+				usedecimals = true,
+				name = "Alpha",
+				desc = "Resource Alpha",
+			},
+			
 			{
 				type = "range",
 				get = function() return Plater.db.profile.resources.scale end,
