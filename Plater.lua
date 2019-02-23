@@ -3096,9 +3096,10 @@ function Plater.OnInit() --private
 			end
 		end
 		
+		--~cast
 		--hook for all castbar events
 		function Plater.CastBarOnEvent_Hook (self, event, unit, ...) --private
-
+	
 			if (event == "PLAYER_ENTERING_WORLD") then
 				if (not self.isNamePlate) then
 					return
@@ -3151,10 +3152,8 @@ function Plater.OnInit() --private
 					end
 
 					if (notInterruptible) then
-						--self:SetStatusBarColor (unpack (Plater.db.profile.cast_statusbar_color_nointerrupt)) --framework handles cast color
 						self.CanInterrupt = false
 					else
-						--self:SetStatusBarColor (unpack (Plater.db.profile.cast_statusbar_color))
 						self.CanInterrupt = true
 					end
 					
@@ -3225,6 +3224,10 @@ function Plater.OnInit() --private
 				self.ThrottleUpdate = self.ThrottleUpdate - deltaTime
 				
 				if (self.ThrottleUpdate < 0) then
+
+					self.SpellStartTime = self.spellStartTime
+					self.SpellEndTime = self.spellEndTime
+				
 					if (self.ReUpdateNextTick) then
 						self.BorderShield:ClearAllPoints()
 						self.BorderShield:SetPoint ("center", self.Icon, "center")
@@ -3262,6 +3265,7 @@ function Plater.OnInit() --private
 						local scriptInfo = self:ScriptGetInfo (globalScriptObject, scriptContainer)
 						
 						local scriptEnv = scriptInfo.Env
+						
 						scriptEnv._SpellID = self.SpellID
 						scriptEnv._UnitID = self.unit
 						scriptEnv._SpellName = self.SpellName
@@ -4915,18 +4919,18 @@ end
 						
 					end
 				else
-					if (threatStatus == 3) then --o jogador esta tankando como dps
+					if (threatStatus == 3) then --player is tanking the mob as dps
 						set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.aggro))
 						if (not self.PlateFrame.playerHasAggro) then
 							self.PlateFrame.PlayBodyFlash ("-AGGRO-")
 						end
 						self.PlateFrame.playerHasAggro = true
 						
-					elseif (threatStatus == 2) then --esta tankando com pouco aggro
+					elseif (threatStatus == 2) then --player is tanking the mob with low aggro
 						set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.aggro))
 						self.PlateFrame.playerHasAggro = true
 						
-					elseif (threatStatus == 1) then --esta quase puxando o aggro
+					elseif (threatStatus == 1) then --player is almost aggroing the mob
 					
 						if (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid") then
 							local unitTarget = UnitName (self.targetUnitID)
@@ -4943,7 +4947,7 @@ end
 						self.aggroGlowUpper:Show()
 						self.aggroGlowLower:Show()
 						
-					elseif (threatStatus == 0) then --não esta tankando
+					elseif (threatStatus == 0) then --player doesnt have aggro
 						if (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid") then
 							local unitTarget = UnitName (self.targetUnitID)
 							if (not TANK_CACHE [unitTarget]) then

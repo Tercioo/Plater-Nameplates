@@ -155,6 +155,7 @@ Plater.NameplateComponents = {
 		"PlayerCannotAttack",
 		"InExecuteRange",
 		"InCombat",
+		"targetUnitID",
 	},
 	
 	["unitFrame - Frames"] = {
