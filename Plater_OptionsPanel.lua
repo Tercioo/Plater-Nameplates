@@ -70,6 +70,7 @@ local lower = string.lower
 
 --db upvalues
 local DB_CAPTURED_SPELLS
+local DB_NPCID_CACHE
 local DB_AURA_ALPHA
 local DB_AURA_ENABLED
 local DB_AURA_SEPARATE_BUFFS
@@ -77,6 +78,7 @@ local DB_AURA_SEPARATE_BUFFS
 local on_refresh_db = function()
 	local profile = Plater.db.profile
 	DB_CAPTURED_SPELLS = profile.captured_spells
+	DB_NPCID_CACHE = profile.npc_cache
 	DB_AURA_ALPHA = profile.aura_alpha
 	DB_AURA_ENABLED = profile.aura_enabled
 	DB_AURA_SEPARATE_BUFFS = Plater.db.profile.buffs_on_aura2
@@ -153,6 +155,8 @@ function Plater.OpenOptionsPanel()
 		
 		{name = "Automation", title = "Auto"},
 		{name = "ProfileManagement", title = "Profiles"},
+		{name = "ColorManagement", title = "Colors"},
+		
 	}, 
 	frame_options)
 	
@@ -186,7 +190,17 @@ function Plater.OpenOptionsPanel()
 	--3rd row
 	local autoFrame = mainFrame.AllFrames [17]
 	local profilesFrame = mainFrame.AllFrames [18]
+	local colorsFrame = mainFrame.AllFrames [19]
 
+--[=[	
+
+	[Add Color Button] [Dropdown Zone Name?] [Search by Name]
+
+	[ ] enabled check box | [] bypass threat color | [      ] npc ID text field | [     ] npcName Upper | [     ] npcName Lower | Color selector by Name 
+
+	
+	
+--]=]
 	local generalOptionsAnchor = CreateFrame ("frame", "$parentOptionsAnchor", frontPageFrame)
 	generalOptionsAnchor:SetSize (1, 1)
 	generalOptionsAnchor:SetPoint ("topleft", frontPageFrame, "topleft", 10, -230)
@@ -1485,6 +1499,346 @@ Plater.CreateAuraTesting()
 	end
 
 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+--> unit color ~color
+
+	do
+		if (false) then
+			--options
+			local scroll_width = 1050
+			local scroll_height = 442
+			local scroll_lines = 21
+			local scroll_line_height = 20
+			local backdrop_color = {.2, .2, .2, 0.2}
+			local backdrop_color_on_enter = {.8, .8, .8, 0.4}
+			local y = startY
+			local headerY = y - 20
+			local scrollY = headerY - 20
+		
+		--[Add Color Button] [Dropdown Zone Name?] [Search by Name]
+		--[ ] enabled check box | [] bypass threat color | [      ] npc ID text field | [     ] npcName Upper | Color selector by Name 		
+		
+			--header
+			local headerTable = {
+				{text = "Enabled", width = 32},
+				{text = "ByPass Threat", width = 32},
+				{text = "Npc ID", width = 74},
+				{text = "Npc Name", width = 162},
+				{text = "Zone Name", width = 162},
+				{text = "Color", width = 130},
+			}
+			local headerOptions = {
+				padding = 2,
+			}
+			
+			colorsFrame.Header = DF:CreateHeader (colorsFrame, headerTable, headerOptions)
+			colorsFrame.Header:SetPoint ("topleft", colorsFrame, "topleft", 10, headerY)
+			
+			--line scripts
+			local line_onenter = function (self)
+				self:SetBackdropColor (unpack (backdrop_color_on_enter))
+				if (self.SpellID) then
+					GameTooltip:SetOwner (self, "ANCHOR_TOPLEFT")
+					--show model here
+					
+					GameTooltip:Show()
+				end
+			end
+			local line_onleave = function (self)
+				self:SetBackdropColor (unpack (backdrop_color))
+				GameTooltip:Hide()
+			end
+			
+			local widget_onenter = function (self)
+				local line = self:GetParent()
+				line:GetScript ("OnEnter")(line)
+			end
+			local widget_onleave = function (self)
+				local line = self:GetParent()
+				line:GetScript ("OnLeave")(line)
+			end
+			
+			local oneditfocusgained_spellid = function (self, capsule)
+				self:HighlightText (0)
+			end
+			
+			local onToggleEnabled = function (self, npcID, state)
+				
+			end
+			
+			local onToggleByPass = function (self, npcID, state)
+				
+			end
+			
+			local line_select_color_dropdown = function (self, fixedValue, npcID)
+				
+				
+				
+			end
+			
+			local line_refresh_color_dropdown = function (self)
+				if (not self.NpcID) then
+					return {}
+				end
+				
+				local t = {}
+
+				local function hex (num)
+					local hexstr = '0123456789abcdef'
+					local s = ''
+					while num > 0 do
+						local mod = math.fmod(num, 16)
+						s = string.sub(hexstr, mod+1, mod+1) .. s
+						num = math.floor(num / 16)
+					end
+					if s == '' then s = '00' end
+					if (string.len (s) == 1) then
+						s = "0"..s
+					end
+					return s
+				end
+				
+				local allColors = {}
+				for colorName, colorTable in pairs (DF:GetDefaultColorList()) do
+					tinsert (allColors, {colorTable, colorName, hex (colorTable[1]*255) .. hex (colorTable[2]*255) .. hex (colorTable[3]*255)})
+				end
+				table.sort (allColors, function (t1, t2)
+					return t1[1][3] > t2[1][3]
+				end)
+				
+				for index, colorTable in ipairs (allColors) do
+					local colortable = colorTable [1]
+					local colorname = colorTable [2]
+					tinsert (t, {label = colorname, value = colorname, color = colortable, onclick = line_select_color_dropdown})
+				end
+				
+				return t
+			end
+			
+			--line
+			local scroll_createline = function (self, index)
+			
+				local line = CreateFrame ("button", "$parentLine" .. index, self)
+				line:SetPoint ("topleft", self, "topleft", 1, -((index-1)*(scroll_line_height+1)) - 1)
+				line:SetSize (scroll_width - 2, scroll_line_height)
+				line:SetScript ("OnEnter", line_onenter)
+				line:SetScript ("OnLeave", line_onleave)
+				
+				line:SetBackdrop ({bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
+				line:SetBackdropColor (unpack (backdrop_color))
+				
+				DF:Mixin (line, DF.HeaderFunctions)
+				
+				--enabled check box
+				local enabledCheckBox = DF:CreateSwitch (line, onToggleEnabled, true, _, _, _, _, "EnabledCheckbox", "$parentEnabledToggle" .. index, _, _, _, nil, DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"))
+				enabledCheckBox:SetAsCheckBox()
+				
+				--bypass checkbox
+				local byPassCheckBox = DF:CreateSwitch (line, onToggleByPass, true, _, _, _, _, "ByPassCheckbox", "$parentByPassToggle" .. index, _, _, _, nil, DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"))
+				byPassCheckBox:SetAsCheckBox()
+				
+				--npc ID
+				local npcIDEntry= DF:CreateTextEntry (line, function()end, headerTable[3].width, 20, "NpcIDEntry", nil, nil, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+				npcIDEntry:SetHook ("OnEditFocusGained", oneditfocusgained_spellid)			
+				
+				--npc Name
+				local npcNameEntry = DF:CreateTextEntry (line, function()end, headerTable[4].width, 20, "NpcNameEntry", nil, nil, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+				npcNameEntry:SetHook ("OnEditFocusGained", oneditfocusgained_spellid)
+				
+				--zone name
+				local zoneNameLabel = DF:CreateLabel (line, "", 10, "white", nil, "ZoneNameLabel")
+				
+				--color
+				local colorDropdown = DF:CreateDropDown (line, line_refresh_color_dropdown, 1, headerTable[6].width, 20, nil, nil, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+				
+				line:AddFrameToHeaderAlignment (enabledCheckBox)
+				line:AddFrameToHeaderAlignment (byPassCheckBox)
+				line:AddFrameToHeaderAlignment (npcIDEntry)
+				line:AddFrameToHeaderAlignment (npcNameEntry)
+				line:AddFrameToHeaderAlignment (zoneNameLabel)
+				line:AddFrameToHeaderAlignment (colorDropdown)
+				
+				line:AlignWithHeader (colorsFrame.Header, "left")
+				
+				return line
+			end
+			
+			--refresh scroll
+			local IsSearchingFor
+			local scroll_refresh = function (self, data, offset, total_lines)
+			
+				local dataInOrder = {}
+				
+				if (IsSearchingFor and IsSearchingFor ~= "") then
+					if (self.SearchCachedTable and IsSearchingFor == self.SearchCachedTable.SearchTerm) then
+						dataInOrder = self.SearchCachedTable
+					else
+						for i = 1, #data do
+							local spellID = data[i] [1]
+							local spellName, _, spellIcon = GetSpellInfo (spellID)
+							if (spellName) then
+								if (spellName:lower():find (IsSearchingFor)) then
+									dataInOrder [#dataInOrder+1] = {i, data[i], spellName}
+								end
+							end
+						end
+
+						self.SearchCachedTable = dataInOrder
+						self.SearchCachedTable.SearchTerm = IsSearchingFor
+					end
+				else
+					if (not self.CachedTable) then
+						for i = 1, #data do
+							local spellID = data[i] [1]
+							local spellName, _, spellIcon = GetSpellInfo (spellID)
+							if (spellName) then
+								dataInOrder [#dataInOrder+1] = {i, data[i], spellName}
+							end
+						end
+						self.CachedTable = dataInOrder
+					end
+					
+					dataInOrder = self.CachedTable
+				end
+
+				table.sort (dataInOrder, DF.SortOrder3R)
+				data = dataInOrder
+			
+				for i = 1, total_lines do
+					local index = i + offset
+					local spellTable = data [index] and data [index] [2]
+					
+					if (spellTable) then
+						local line = self:GetLine (i)
+						local spellID = spellTable [1]
+						local spellData = spellTable [2]
+						
+						local spellName, _, spellIcon = GetSpellInfo (spellID)
+						
+						line.value = spellTable
+						
+						if (spellName) then
+							line.Icon:SetTexture (spellIcon)
+							line.Icon:SetTexCoord (.1, .9, .1, .9)
+							
+							line.SpellName:SetTextTruncated (spellName, headerTable [3].width)
+							line.SourceName:SetTextTruncated (spellData.source, headerTable [4].width)
+							
+							if (spellData.type == "BUFF") then
+								line.SpellType.color = "PLATER_BUFF"
+								
+							elseif (spellData.type == "DEBUFF") then
+								line.SpellType.color = "PLATER_DEBUFF"
+								
+							elseif (spellData.event == "SPELL_CAST_START") then
+								line.SpellType.color = "PLATER_CAST"
+								
+							end
+							
+							line.SpellID = spellID
+							
+							line.SpellIDEntry:SetText (spellID)
+
+							--{event = token, source = sourceName, type = auraType, npcID = Plater:GetNpcIdFromGuid (sourceGUID or "")}
+
+							line.SpellType:SetText (spellData.event == "SPELL_CAST_START" and "Spell Cast" or spellData.event == "SPELL_AURA_APPLIED" and spellData.type)
+							
+							line.AddTrackList.SpellID = spellID
+							line.AddTrackList.AuraType = spellData.type
+							line.AddTrackList.EncounterID = spellData.encounterID
+							
+							line.AddIgnoreList.SpellID = spellID
+							line.AddIgnoreList.AuraType = spellData.type
+							line.AddIgnoreList.EncounterID = spellData.encounterID
+							
+							line.AddSpecial.SpellID = spellID
+							line.AddSpecial.AuraType = spellData.type
+							line.AddSpecial.EncounterID = spellData.encounterID
+							
+							line.CreateAura.SpellID = spellID
+							line.CreateAura.AuraType = spellData.type
+							line.CreateAura.IsCast = spellData.event == "SPELL_CAST_START"
+							line.CreateAura.EncounterID = spellData.encounterID
+							
+							line.AddTrigger.SpellID = spellID
+							line.AddTrigger:Refresh()
+							
+							--manual tracking doesn't have a black list
+							if (Plater.db.profile.aura_tracker.track_method == 0x1) then
+								line.AddIgnoreList:Enable()
+								
+							elseif (Plater.db.profile.aura_tracker.track_method == 0x2) then
+								line.AddIgnoreList:Disable()
+								
+							end
+							
+						else
+							line:Hide()
+						end
+					end
+				end
+			end
+			
+			--create scroll
+			local spells_scroll = DF:CreateScrollBox (colorsFrame, "$parentColorsScroll", scroll_refresh, {}, scroll_width, scroll_height, scroll_lines, scroll_line_height)
+			DF:ReskinSlider (spells_scroll)
+			spells_scroll:SetPoint ("topleft", colorsFrame, "topleft", 10, scrollY)
+			
+			spells_scroll:SetScript ("OnShow", function (self)
+				if (self.LastRefresh and self.LastRefresh+0.5 > GetTime()) then
+					return
+				end
+				self.LastRefresh = GetTime()
+			
+				local newData = {}
+				
+				for npcID, npcIDTable in pairs (DB_NPCID_CACHE) do
+					tinsert (newData, {
+						npcID, 
+						npcIDTable [1], --name
+						npcIDTable [2], --zone
+					})
+				end
+				
+				self.CachedTable = nil
+				self.SearchCachedTable = nil
+				
+				self:SetData (newData)
+				self:Refresh()
+			end)
+			
+			--create lines
+			for i = 1, scroll_lines do 
+				spells_scroll:CreateLine (scroll_createline)
+			end
+			
+			--create search box
+				function colorsFrame.OnSearchBoxTextChanged()
+					local text = colorsFrame.AuraSearchTextEntry:GetText()
+					if (text and string.len (text) > 0) then
+						IsSearchingFor = text:lower()
+					else
+						IsSearchingFor = nil
+					end
+					spells_scroll:Refresh()
+				end
+
+				local aura_search_textentry = DF:CreateTextEntry (colorsFrame, function()end, 160, 20, "AuraSearchTextEntry", _, _, options_dropdown_template)
+				aura_search_textentry:SetPoint ("right", clear_list_button, "left", -6, 0)
+				aura_search_textentry:SetHook ("OnChar",		colorsFrame.OnSearchBoxTextChanged)
+				aura_search_textentry:SetHook ("OnTextChanged", 	colorsFrame.OnSearchBoxTextChanged)
+				aura_search_label = DF:CreateLabel (colorsFrame, "Search:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
+				aura_search_label:SetPoint ("right", aura_search_textentry, "left", -2, 0)
+			
+			--create the title
+			colorsFrame.TitleDescText = Plater:CreateLabel (colorsFrame, "Quick way to manage npc colors", 10, "silver")
+			colorsFrame.TitleDescText:SetPoint ("bottomleft", spells_scroll, "topleft", 0, 26)
+			colorsFrame.TitleText = Plater:CreateLabel (colorsFrame, "Npc Color", 14, "orange")
+			colorsFrame.TitleText:SetPoint ("bottomleft", colorsFrame.TitleDescText, "topleft", 0, 2)
+		end
+	
+	end	
+	
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> last event auras
 

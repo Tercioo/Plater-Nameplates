@@ -214,6 +214,7 @@ Plater.HookScripts = { --private
 	"Player Power Update",
 	"Player Talent Update",
 	"Health Update",
+	"Zone Changed",
 }
 
 Plater.HookScriptsDesc = { --private
@@ -237,6 +238,7 @@ Plater.HookScriptsDesc = { --private
 	["Player Talent Update"] = "When the player changes a talent or specialization.\n\n|cFF44FF44Run on all nameplates shown in the screen|r.",
 	
 	["Health Update"] = "When the health of the unit changes.",
+	["Zone Changed"] = "Run when the moves to a different map map.",
 }
 
 --> addon comm
@@ -624,6 +626,9 @@ Plater.DefaultSpellRangeList = {
 	
 	local DB_USE_HEALTHCUTOFF = false
 	local DB_HEALTHCUTOFF_AT = 20
+	
+	--store the npc id cache
+	local DB_NPCIDS_CACHE = {}
 
 	local SCRIPT_AURA = {}
 	local SCRIPT_CASTBAR = {}
@@ -655,6 +660,7 @@ Plater.DefaultSpellRangeList = {
 	local HOOK_PLAYER_POWER_UPDATE = {ScriptAmount = 0}
 	local HOOK_PLAYER_TALENT_UPDATE = {ScriptAmount = 0}
 	local HOOK_HEALTH_UPDATE = {ScriptAmount = 0}
+	local HOOK_ZONE_CHANGED = {ScriptAmount = 0}
 
 	--list of auras the user added into the track list for special auras, _MINE caches the auras where the user checked the 'Only Mine' checkbox
 	local SPECIAL_AURAS_USER_LIST = {}
@@ -1162,6 +1168,8 @@ Plater.DefaultSpellRangeList = {
 		
 		DB_HOVER_HIGHLIGHT = profile.hover_highlight
 		DB_USE_RANGE_CHECK = profile.range_check_enabled
+		
+		DB_NPCIDS_CACHE = Plater.db.profile.npc_cache
 		
 		--> load spells filtered out, use the spellname instead of the spellId
 			if (not DB_BUFF_BANNED) then
@@ -1671,11 +1679,26 @@ Plater.DefaultSpellRangeList = {
 				table.wipe (DB_CAPTURED_SPELLS)
 			end
 			Plater.ZoneInstanceType = instanceType
+			Plater.ZoneName = name
 			
 			IS_IN_OPEN_WORLD = Plater.ZoneInstanceType == "none"
 			
 			Plater.UpdateAllPlates()
 			Plater.RefreshAutoToggle()
+			
+			--hook
+			if (HOOK_ZONE_CHANGED.ScriptAmount > 0) then
+				for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+					for i = 1, HOOK_ZONE_CHANGED.ScriptAmount do
+						local globalScriptObject = HOOK_ZONE_CHANGED [i]
+						local unitFrame = plateFrame.unitFrame
+						local scriptContainer = unitFrame:ScriptGetContainer()
+						local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Zone Changed")
+						--run
+						unitFrame:ScriptRunHook (scriptInfo, "Zone Changed")
+					end
+				end
+			end
 		end,
 
 		ZONE_CHANGED_INDOORS = function()
@@ -2348,6 +2371,13 @@ Plater.DefaultSpellRangeList = {
 							--includes neutral npcs
 							plateFrame.PlayerCannotAttack = not UnitCanAttack ("player", unitID)
 							unitFrame.PlayerCannotAttack = plateFrame.PlayerCannotAttack --expose to scripts
+							
+							--add the npc in the npcid cache
+							if (not DB_NPCIDS_CACHE [plateFrame [MEMBER_NPCID]] and not IS_IN_OPEN_WORLD and not Plater.ZonePvpType and plateFrame [MEMBER_NPCID]) then
+								if (UNKNOWN ~= plateFrame [MEMBER_NAME]) then
+									DB_NPCIDS_CACHE [plateFrame [MEMBER_NPCID]] = {plateFrame [MEMBER_NAME], Plater.ZoneName}
+								end
+							end
 							
 							plateFrame.NameAnchor = DB_NAME_NPCENEMY_ANCHOR
 							plateFrame.PlateConfig = DB_PLATE_CONFIG.enemynpc
@@ -4449,8 +4479,15 @@ end
 		end
 		
 		--unit frame - is set to be the same size as the plateFrame
+		if (unitFrame:GetParent() == unitFrame.PlateFrame) then
 			unitFrame:ClearAllPoints()
 			unitFrame:SetAllPoints()
+		else
+			--the unit frame is attached into some other frame
+			unitFrame:ClearAllPoints()
+			unitFrame:SetPoint ("topleft", unitFrame.PlateFrame, "topleft", 0, 0)
+			unitFrame:SetPoint ("bottomright", unitFrame.PlateFrame, "bottomright", 0, 0)  
+		end
 		
 		--health bar
 			--this calculates the health bar anchor points
@@ -7366,7 +7403,7 @@ end
 	
 	--return the name of the unit guild
 	function Plater.GetUnitGuildName (unitFrame)
-		return unitFrame:GetParent().playerGuildName
+		return unitFrame.PlateFrame.playerGuildName
 	end
 
 	--return if the nameplate is showing an aura
@@ -7547,7 +7584,7 @@ end
 				Plater.ChangeHealthBarColor_Internal (unitFrame.healthBar, unpack (Plater.db.profile.tap_denied_color))
 			else
 				if (InCombatLockdown()) then
-					local unitReaction = unitFrame:GetParent() [MEMBER_REACTION]
+					local unitReaction = unitFrame.PlateFrame [MEMBER_REACTION]
 					if (unitReaction == 4 and not UnitAffectingCombat (unitFrame.unit)) then
 						Plater.FindAndSetNameplateColor (unitFrame, true)
 					else
@@ -7631,7 +7668,7 @@ end
 	--flashes on the health bar border
 	function Plater.FlashNameplateBorder (unitFrame, duration)
 		if (not unitFrame.healthBar.PlayHealthFlash) then
-			Plater.CreateHealthFlashFrame (unitFrame:GetParent())
+			Plater.CreateHealthFlashFrame (unitFrame.PlateFrame)
 		end
 		unitFrame.healthBar.canHealthFlash = true
 		unitFrame.healthBar.PlayHealthFlash (duration)
@@ -7640,7 +7677,7 @@ end
 	--flashes the unitFrame body
 	function Plater.FlashNameplateBody (unitFrame, text, duration)
 		--> sending true to ignore cooldown
-		unitFrame:GetParent().PlayBodyFlash (text, duration, true)
+		unitFrame.PlateFrame.PlayBodyFlash (text, duration, true)
 	end
 
 	--return if the player is in combat
@@ -7687,7 +7724,7 @@ end
 		unitFrame.BuffFrame2:Show()
 		unitFrame.healthBar.unitName:Show()
 		
-		unitFrame:GetParent().IsFriendlyPlayerWithoutHealthBar = false
+		unitFrame.PlateFrame.IsFriendlyPlayerWithoutHealthBar = false
 		
 		unitFrame.ActorNameSpecial:Hide()
 		unitFrame.ActorTitleSpecial:Hide()
@@ -7700,14 +7737,14 @@ end
 		unitFrame.BuffFrame2:Hide()
 		unitFrame.healthBar.unitName:Hide()
 		
-		unitFrame:GetParent().IsFriendlyPlayerWithoutHealthBar = showPlayerName
-		unitFrame:GetParent().IsNpcWithoutHealthBar = showNameNpc
+		unitFrame.PlateFrame.IsFriendlyPlayerWithoutHealthBar = showPlayerName
+		unitFrame.PlateFrame.IsNpcWithoutHealthBar = showNameNpc
 		
 		if (showPlayerName) then
-			Plater.UpdatePlateText (unitFrame:GetParent(), DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER], false)
+			Plater.UpdatePlateText (unitFrame.PlateFrame, DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER], false)
 			
 		elseif (showNameNpc) then
-			Plater.UpdatePlateText (unitFrame:GetParent(), DB_PLATE_CONFIG [ACTORTYPE_ENEMY_NPC], false)
+			Plater.UpdatePlateText (unitFrame.PlateFrame, DB_PLATE_CONFIG [ACTORTYPE_ENEMY_NPC], false)
 		end
 	end
 	
@@ -7869,7 +7906,7 @@ end
 
 				--dispatch the constructor
 				local unitFrame = self.unitFrame or self
-				local okay, errortext = pcall (scriptInfo.GlobalScriptObject ["ConstructorCode"], self, unitFrame.displayedUnit or unitFrame.unit or unitFrame:GetParent()[MEMBER_UNITID], unitFrame, scriptInfo.Env)
+				local okay, errortext = pcall (scriptInfo.GlobalScriptObject ["ConstructorCode"], self, unitFrame.displayedUnit or unitFrame.unit or unitFrame.PlateFrame[MEMBER_UNITID], unitFrame, scriptInfo.Env)
 				if (not okay) then
 					Plater:Msg ("Script |cFFAAAA22" .. scriptInfo.GlobalScriptObject.DBScriptObject.Name .. "|r Constructor error: " .. errortext)
 				end
@@ -7887,7 +7924,7 @@ end
 			
 			--dispatch the runtime script
 			local unitFrame = self.unitFrame or self
-			local okay, errortext = pcall (scriptInfo.GlobalScriptObject ["UpdateCode"], self, unitFrame.displayedUnit or unitFrame.unit or unitFrame:GetParent()[MEMBER_UNITID], unitFrame, scriptInfo.Env)
+			local okay, errortext = pcall (scriptInfo.GlobalScriptObject ["UpdateCode"], self, unitFrame.displayedUnit or unitFrame.unit or unitFrame.PlateFrame[MEMBER_UNITID], unitFrame, scriptInfo.Env)
 			if (not okay) then
 				Plater:Msg ("Script |cFFAAAA22" .. scriptInfo.GlobalScriptObject.DBScriptObject.Name .. "|r OnUpdate error: " .. errortext)
 			end
@@ -7897,7 +7934,7 @@ end
 		ScriptRunOnShow = function (self, scriptInfo)
 			--dispatch the on show script
 			local unitFrame = self.unitFrame or self
-			local okay, errortext = pcall (scriptInfo.GlobalScriptObject ["OnShowCode"], self, unitFrame.displayedUnit or unitFrame.unit or unitFrame:GetParent()[MEMBER_UNITID], unitFrame, scriptInfo.Env)
+			local okay, errortext = pcall (scriptInfo.GlobalScriptObject ["OnShowCode"], self, unitFrame.displayedUnit or unitFrame.unit or unitFrame.PlateFrame[MEMBER_UNITID], unitFrame, scriptInfo.Env)
 			if (not okay) then
 				Plater:Msg ("Script |cFFAAAA22" .. scriptInfo.GlobalScriptObject.DBScriptObject.Name .. "|r OnShow error: " .. errortext)
 			end
@@ -7910,7 +7947,7 @@ end
 		ScriptRunOnHide = function (self, scriptInfo)
 			--dispatch the on hide script
 			local unitFrame = self.unitFrame or self
-			local okay, errortext = pcall (scriptInfo.GlobalScriptObject ["OnHideCode"], self, unitFrame.displayedUnit or unitFrame.unit or unitFrame:GetParent()[MEMBER_UNITID], unitFrame, scriptInfo.Env)
+			local okay, errortext = pcall (scriptInfo.GlobalScriptObject ["OnHideCode"], self, unitFrame.displayedUnit or unitFrame.unit or unitFrame.PlateFrame[MEMBER_UNITID], unitFrame, scriptInfo.Env)
 			if (not okay) then
 				Plater:Msg ("Script |cFFAAAA22" .. scriptInfo.GlobalScriptObject.DBScriptObject.Name .. "|r OnHide error: " .. errortext)
 			end
@@ -8225,6 +8262,7 @@ end
 		HOOK_PLAYER_POWER_UPDATE,
 		HOOK_PLAYER_TALENT_UPDATE,
 		HOOK_HEALTH_UPDATE,
+		HOOK_ZONE_CHANGED,
 	}
 
 	function Plater.WipeHookContainers (noHotReload)
@@ -8272,6 +8310,8 @@ end
 			return HOOK_PLAYER_TALENT_UPDATE
 		elseif (hookName == "Health Update") then
 			return HOOK_HEALTH_UPDATE
+		elseif (hookName == "Zone Changed") then
+			return HOOK_ZONE_CHANGED
 		else
 			Plater:Msg ("Unknown hook: " .. (hookName or "Invalid Hook Name"))
 		end
@@ -9217,6 +9257,12 @@ function SlashCmdList.PLATER (msg, editbox)
 	
 	elseif (msg == "color" or msg == "colors") then
 		Plater.OpenColorFrame()
+		return
+	
+	elseif (msg == "npcs" or msg == "ids") then
+		
+		
+		
 		return
 	end
 	

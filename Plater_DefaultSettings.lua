@@ -59,8 +59,12 @@ PLATER_DEFAULT_SETTINGS = {
 	
 		--> save some cvars values so it can restore when a new character login using Plater
 		saved_cvars = {},
-	
 		keybinds = {},
+		
+		--store npcs found in raids and dungeons
+		npc_cache = {},
+		--store colors selected by the player in the options panel
+		npc_colors = {},
 	
 		click_space = {140, 28},
 		click_space_friendly = {140, 28},
