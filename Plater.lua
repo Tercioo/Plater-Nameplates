@@ -568,6 +568,9 @@ Plater.DefaultSpellRangeList = {
 	local DB_AURA_ALPHA
 	local DB_AURA_X_OFFSET
 	local DB_AURA_Y_OFFSET
+	
+	local DB_UNITCOLOR_CACHE = {}
+	local DB_UNITCOLOR_SCRIPT_CACHE = {}
 
 	local DB_AURA_SEPARATE_BUFFS
 
@@ -1342,6 +1345,26 @@ Plater.DefaultSpellRangeList = {
 			end
 		end
 		
+		--> build the list of npcs with special colors
+		wipe (DB_UNITCOLOR_CACHE) --regular color overrides the threat color
+		wipe (DB_UNITCOLOR_SCRIPT_CACHE) --color only used for scripts, plater does not use them 
+		
+		for npcID, infoTable in pairs (Plater.db.profile.npc_colors) do
+			local enabled1 = infoTable [1] --this is the overall enabled
+			local enabled2 = infoTable [2] --if this is true, this color is only used for scripts
+			local colorID = infoTable [3] --the color
+			
+			if (enabled1 and not enabled2) then
+				local r, g, b = DF:ParseColors (colorID)
+				DB_UNITCOLOR_CACHE [npcID] = {r, g, b, 1}
+				
+			elseif (enabled1 and enabled2) then
+				local r, g, b = DF:ParseColors (colorID)
+				DB_UNITCOLOR_SCRIPT_CACHE [npcID] = {r, g, b, 1}
+				
+			end
+		end
+		
 		Plater.UpdateAuraCache()
 		Plater.IncreaseRefreshID()
 		
@@ -1843,6 +1866,10 @@ Plater.DefaultSpellRangeList = {
 			plateFrame.unitFrame.BuffFrame2.BuffFrame1 = plateFrame.unitFrame.BuffFrame
 			
 			local healthBar = plateFrame.unitFrame.healthBar
+			
+			--cache the unit frame within the health and cast bars, this avoid GetParent() calls
+			healthBar.unitFrame = plateFrame.unitFrame
+			plateFrame.unitFrame.castBar.unitFrame = plateFrame.unitFrame
 			
 			--> pre create the scale animation used on animations for spell hits
 			Plater.CreateScaleAnimation (plateFrame)
@@ -2402,7 +2429,6 @@ Plater.DefaultSpellRangeList = {
 			unitFrame.aggroGlowLower:Hide()
 			
 			--can check aggro
-			-- or PET_CACHE [self:GetParent() [MEMBER_GUID]] or self.displayedUnit:match ("pet%d$")
 			unitFrame.CanCheckAggro = unitFrame.displayedUnit == unitID and actorType == ACTORTYPE_ENEMY_NPC
 			
 			--tick
@@ -3223,7 +3249,7 @@ function Plater.OnInit() --private
 					if (HOOK_CAST_START.ScriptAmount > 0) then
 						for i = 1, HOOK_CAST_START.ScriptAmount do
 							local globalScriptObject = HOOK_CAST_START [i]
-							local unitFrame = self:GetParent()
+							local unitFrame = self.unitFrame
 							local scriptContainer = unitFrame:ScriptGetContainer()
 							local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Cast Start")
 							
@@ -3322,7 +3348,7 @@ function Plater.OnInit() --private
 					if (HOOK_CAST_UPDATE.ScriptAmount > 0) then
 						for i = 1, HOOK_CAST_UPDATE.ScriptAmount do
 							local globalScriptObject = HOOK_CAST_UPDATE [i]
-							local unitFrame = self:GetParent()
+							local unitFrame = self.unitFrame
 							local scriptContainer = unitFrame:ScriptGetContainer()
 							local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Cast Update")
 							
@@ -3384,7 +3410,7 @@ function Plater.OnInit() --private
 		local plateFrame = self.PlateFrame
 		local currentHealth = self.currentHealth
 		local currentHealthMax = self.currentHealthMax
-		local unitFrame = self:GetParent()
+		local unitFrame = self.unitFrame
 		local oldHealth = self.CurrentHealth
 		
 		--> exposed values to scripts
@@ -3454,7 +3480,7 @@ function Plater.OnInit() --private
 		
 		--> run on health changed hook
 		if (HOOK_HEALTH_UPDATE.ScriptAmount > 0) then
-			run_on_health_change_hook (self:GetParent())
+			run_on_health_change_hook (self.unitFrame)
 		end
 	end
 	hooksecurefunc (DF.HealthFrameFunctions, "UpdateHealth", on_health_change)
@@ -3463,7 +3489,7 @@ function Plater.OnInit() --private
 	function Plater.OnUpdateHealthMax (self)
 		--the framework already set the min max values
 		self.CurrentHealthMax = self.currentHealthMax
-		Plater.CheckLifePercentText (self:GetParent())
+		Plater.CheckLifePercentText (self.unitFrame)
 	end
 	
 	local on_healthmax_change = function (self)
@@ -3471,7 +3497,7 @@ function Plater.OnInit() --private
 		
 		--> run on health changed hook
 		if (HOOK_HEALTH_UPDATE.ScriptAmount > 0) then
-			run_on_health_change_hook (self:GetParent())
+			run_on_health_change_hook (self.unitFrame)
 		end
 	end
 	hooksecurefunc (DF.HealthFrameFunctions, "UpdateMaxHealth", on_healthmax_change)
@@ -3615,8 +3641,8 @@ end
 		local i = self.NextAuraIcon
 		
 		if (not self.PlaterBuffList[i]) then
-			local newFrameIcon = Plater.CreateAuraIcon (self, self:GetParent():GetName() .. "Plater" .. self.Name .. "AuraIcon" .. i)
-			newFrameIcon.unitFrame = self:GetParent()
+			local newFrameIcon = Plater.CreateAuraIcon (self, self.unitFrame:GetName() .. "Plater" .. self.Name .. "AuraIcon" .. i)
+			newFrameIcon.unitFrame = self.unitFrame
 			newFrameIcon.spellId = 0
 			newFrameIcon.ID = i
 			newFrameIcon.RefreshID = 0
@@ -4478,15 +4504,27 @@ end
 			healthBarWidth = healthBarWidth * Plater.db.profile.minor_width_scale
 		end
 		
-		--unit frame - is set to be the same size as the plateFrame
+		--if the unitFrame parent isn't the PlateFrame (NamePlateX) from Blizzard, the unitFrame might need to be scaled with the UIParent scale
+		local scaleFactor
 		if (unitFrame:GetParent() == unitFrame.PlateFrame) then
+			--unit frame - is set to be the same size as the plateFrame
 			unitFrame:ClearAllPoints()
 			unitFrame:SetAllPoints()
+			scaleFactor = unitFrame.PlateFrame:GetScale()
 		else
-			--the unit frame is attached into some other frame
+		
+			--the unit frame is attached into some other frame, assuming UIParent
 			unitFrame:ClearAllPoints()
 			unitFrame:SetPoint ("topleft", unitFrame.PlateFrame, "topleft", 0, 0)
 			unitFrame:SetPoint ("bottomright", unitFrame.PlateFrame, "bottomright", 0, 0)  
+			
+			--as the user set all settings using the scale from the world frame, the unit frame need to be re-scaled to uiparent scale 
+			scaleFactor = unitFrame.PlateFrame:GetScale() / UIParent:GetScale()
+			--set the new scale
+			unitFrame:SetScale (scaleFactor)
+			
+			--testing
+			scaleFactor = 1
 		end
 		
 		--health bar
@@ -4496,8 +4534,8 @@ end
 			local yOffSet = (plateFrame:GetHeight() - healthBarHeight) / 2
 			
 			healthBar:ClearAllPoints()
-			PixelUtil.SetPoint (healthBar, "topleft", unitFrame, "topleft", xOffSet + profile.global_offset_x, -yOffSet + profile.global_offset_y)
-			PixelUtil.SetPoint (healthBar, "bottomright", unitFrame, "bottomright", -xOffSet + profile.global_offset_x, yOffSet + profile.global_offset_y)
+			PixelUtil.SetPoint (healthBar, "topleft", unitFrame, "topleft", (xOffSet + profile.global_offset_x) / scaleFactor, (-yOffSet + profile.global_offset_y) / scaleFactor)
+			PixelUtil.SetPoint (healthBar, "bottomright", unitFrame, "bottomright", (-xOffSet + profile.global_offset_x) / scaleFactor, (yOffSet + profile.global_offset_y) / scaleFactor)
 		
 		--cast bar - is set by default below the healthbar
 			castBar:ClearAllPoints()
@@ -4610,6 +4648,12 @@ end
 		end
 	end
 	
+	function Plater.ForceTickOnAllNameplates() --private
+		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+			Plater.NameplateTick (plateFrame.OnTickFrame, 1) --GetWorldDeltaSeconds()
+		end
+	end
+	
 	-- ~ontick ~onupdate ~tick õnupdate õntick 
 	function Plater.NameplateTick (tickFrame, deltaTime) --private
 
@@ -4690,6 +4734,11 @@ end
 				end
 			end
 
+			--the color overrider for unitIDs goes after the threat check and before the aura, since auras can run scripts and scripts have priority on setting colors
+			if (DB_UNITCOLOR_CACHE [unitFrame [MEMBER_NPCID]]) then
+				Plater.ChangeHealthBarColor_Internal (healthBar, unpack (DB_UNITCOLOR_CACHE [unitFrame [MEMBER_NPCID]]))
+			end
+			
 			--update buffs and debuffs
 			if (DB_AURA_ENABLED) then
 				if (DB_TRACK_METHOD == 0x1) then --automatic
@@ -4714,7 +4763,7 @@ end
 			tickFrame.ThrottleUpdate = DB_TICK_THROTTLE
 
 			--check if the unit name or unit npcID has a script
-			local globalScriptObject = SCRIPT_UNIT [tickFrame.PlateFrame [MEMBER_NAMELOWER]] or SCRIPT_UNIT [tickFrame.PlateFrame [MEMBER_NPCID]]
+			local globalScriptObject = SCRIPT_UNIT [tickFrame.PlateFrame [MEMBER_NAMELOWER]] or SCRIPT_UNIT [unitFrame [MEMBER_NPCID]]
 			--check if this aura has a custom script
 			if (globalScriptObject) then
 				--stored information about scripts
@@ -5811,6 +5860,9 @@ end
 				buffFrame:Show()
 				nameFrame:Show()
 				
+				--these twoseettings make the healthing dummy show the healthbar
+--				Plater.db.profile.plate_config.friendlynpc.only_names = false
+--				Plater.db.profile.plate_config.friendlynpc.all_names = false
 				plateFrame [MEMBER_QUEST] = true
 				unitFrame [MEMBER_QUEST] = true
 			
@@ -7410,6 +7462,11 @@ end
 	function Plater.NameplateHasAura (unitFrame, aura)
 		return unitFrame.BuffFrame.AuraCache [aura] or unitFrame.BuffFrame2.AuraCache [aura]
 	end
+	
+	--get npc color set in the colors tab
+	function Plater.GetNpcColor (unitFrame)
+		return DB_UNITCOLOR_SCRIPT_CACHE [unitFrame [MEMBER_NPCID]]
+	end
 
 	--return which raid mark the namepalte has
 	function Plater.GetRaidMark (unitFrame)
@@ -8000,7 +8057,7 @@ end
 				if (HOOK_CAST_STOP.ScriptAmount > 0) then
 					for i = 1, HOOK_CAST_STOP.ScriptAmount do
 						local globalScriptObject = HOOK_CAST_STOP [i]
-						local unitFrame = self:GetParent()
+						local unitFrame = self.unitFrame
 						local scriptContainer = unitFrame:ScriptGetContainer()
 						local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Cast Stop")
 						--run
@@ -8218,7 +8275,7 @@ end
 		QuestLogUpdated = true,
 		GetNpcIDFromGUID = true,
 		GetNpcID = true,
-		
+		ForceTickOnAllNameplates = true,
 	}
 	
 	local functionFilter = setmetatable ({}, {__index = function (env, key)

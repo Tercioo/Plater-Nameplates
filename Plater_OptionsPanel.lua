@@ -71,6 +71,7 @@ local lower = string.lower
 --db upvalues
 local DB_CAPTURED_SPELLS
 local DB_NPCID_CACHE
+local DB_NPCID_COLORS
 local DB_AURA_ALPHA
 local DB_AURA_ENABLED
 local DB_AURA_SEPARATE_BUFFS
@@ -79,6 +80,7 @@ local on_refresh_db = function()
 	local profile = Plater.db.profile
 	DB_CAPTURED_SPELLS = profile.captured_spells
 	DB_NPCID_CACHE = profile.npc_cache
+	DB_NPCID_COLORS = profile.npc_colors
 	DB_AURA_ALPHA = profile.aura_alpha
 	DB_AURA_ENABLED = profile.aura_enabled
 	DB_AURA_SEPARATE_BUFFS = Plater.db.profile.buffs_on_aura2
@@ -147,15 +149,15 @@ function Plater.OpenOptionsPanel()
 		{name = "DebuffConfig", title = "Buff Settings"},
 		{name = "DebuffBlacklist", title = "Buff Tracking"},
 		{name = "DebuffSpecialContainer", title = "Buff Special"},
-		{name = "DebuffLastEvent", title = "Buff Ease"},
+		{name = "DebuffLastEvent", title = "Buff List"},
 		{name = "Scripting", title = "Scripting"},
 		{name = "AutoRunCode", title = "Modding"},
 		{name = "AnimationPanel", title = "Animations"},
 		{name = "AdvancedConfig", title = "Advanced"},
 		
+		{name = "ColorManagement", title = "Npc Colors"},
 		{name = "Automation", title = "Auto"},
 		{name = "ProfileManagement", title = "Profiles"},
-		{name = "ColorManagement", title = "Colors"},
 		
 	}, 
 	frame_options)
@@ -188,9 +190,10 @@ function Plater.OpenOptionsPanel()
 	local advancedFrame = mainFrame.AllFrames [16]
 	
 	--3rd row
-	local autoFrame = mainFrame.AllFrames [17]
-	local profilesFrame = mainFrame.AllFrames [18]
-	local colorsFrame = mainFrame.AllFrames [19]
+	local colorsFrame = mainFrame.AllFrames [17]
+	local autoFrame = mainFrame.AllFrames [18]
+	local profilesFrame = mainFrame.AllFrames [19]
+	
 
 --[=[	
 
@@ -1503,7 +1506,7 @@ Plater.CreateAuraTesting()
 --> unit color ~color
 
 	do
-		if (false) then
+		if (true) then
 			--options
 			local scroll_width = 1050
 			local scroll_height = 442
@@ -1515,17 +1518,15 @@ Plater.CreateAuraTesting()
 			local headerY = y - 20
 			local scrollY = headerY - 20
 		
-		--[Add Color Button] [Dropdown Zone Name?] [Search by Name]
-		--[ ] enabled check box | [] bypass threat color | [      ] npc ID text field | [     ] npcName Upper | Color selector by Name 		
-		
 			--header
 			local headerTable = {
-				{text = "Enabled", width = 32},
-				{text = "ByPass Threat", width = 32},
+				{text = "Enabled", width = 80},
+				{text = "Scripts Only", width = 80},
 				{text = "Npc ID", width = 74},
 				{text = "Npc Name", width = 162},
 				{text = "Zone Name", width = 162},
 				{text = "Color", width = 130},
+				{text = "", width = 349}, --filler
 			}
 			local headerOptions = {
 				padding = 2,
@@ -1534,18 +1535,28 @@ Plater.CreateAuraTesting()
 			colorsFrame.Header = DF:CreateHeader (colorsFrame, headerTable, headerOptions)
 			colorsFrame.Header:SetPoint ("topleft", colorsFrame, "topleft", 10, headerY)
 			
+			colorsFrame.ModelFrame = CreateFrame ("PlayerModel", nil, colorsFrame, "ModelWithControlsTemplate")
+			colorsFrame.ModelFrame:SetSize (339, 440)
+			colorsFrame.ModelFrame:EnableMouse (true)
+			colorsFrame.ModelFrame:SetPoint ("topleft", colorsFrame.Header, "topright", -341, -scroll_line_height - 1)
+			colorsFrame.ModelFrame:SetBackdrop ({bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
+			colorsFrame.ModelFrame:SetBackdropColor (.4, .4, .4, 1)
+
+			colorsFrame.ModelFrame:SetScript ("OnEnter", nil)
+			
+			--store npcID = checkbox object
+			--this is used when selecting the color from the dropdown, it'll automatically enable the color and need to set the checkbox to checked for feedback
+			colorsFrame.CheckBoxCache = {}
+			
 			--line scripts
 			local line_onenter = function (self)
 				self:SetBackdropColor (unpack (backdrop_color_on_enter))
-				if (self.SpellID) then
-					GameTooltip:SetOwner (self, "ANCHOR_TOPLEFT")
-					--show model here
-					
-					GameTooltip:Show()
+				if (self.npcID) then
+					colorsFrame.ModelFrame:SetCreature (self.npcID)
 				end
 			end
 			local line_onleave = function (self)
-				self:SetBackdropColor (unpack (backdrop_color))
+				self:SetBackdropColor (unpack (self.backdrop_color))
 				GameTooltip:Hide()
 			end
 			
@@ -1562,22 +1573,87 @@ Plater.CreateAuraTesting()
 				self:HighlightText (0)
 			end
 			
+			local refresh_line_color = function (self, color)
+				color = color or backdrop_color
+				local r, g, b = DF:ParseColors (color)
+				local a = 0.2
+				self:SetBackdropColor (r, g, b, a)
+				self.backdrop_color = {r, g, b, a}
+			end
+			
 			local onToggleEnabled = function (self, npcID, state)
+				if (not DB_NPCID_COLORS [npcID]) then
+					DB_NPCID_COLORS [npcID] = {false, false, "blue"}
+				end
+				DB_NPCID_COLORS [npcID][1] = state
 				
+				if (state) then
+					self:GetParent():RefreshColor (DB_NPCID_COLORS [npcID][3])
+				else
+					self:GetParent():RefreshColor()
+					--disable only for scripts
+					DB_NPCID_COLORS [npcID][2] = false
+					self:GetParent().ForScriptsCheckbox:SetValue (false)
+				end
+				
+				Plater.RefreshDBLists()
+				Plater.UpdateAllNameplateColors()
+				Plater.ForceTickOnAllNameplates()
+				
+				colorsFrame.RefreshDropdowns()
 			end
 			
-			local onToggleByPass = function (self, npcID, state)
+			local onToggleForScripts = function (self, npcID, state)
+				if (not DB_NPCID_COLORS [npcID]) then
+					DB_NPCID_COLORS [npcID] = {true, false, "blue"}
+				end
 				
+				DB_NPCID_COLORS [npcID][2] = state
+				
+				if (state) then
+					local checkBox = colorsFrame.CheckBoxCache [npcID]
+					if (checkBox) then
+						checkBox:SetValue (true)
+					end
+					
+					DB_NPCID_COLORS [npcID][1] = true
+					self:GetParent():RefreshColor (DB_NPCID_COLORS [npcID][3])
+				end
+				
+				if (not DB_NPCID_COLORS [npcID][1]) then
+					self:GetParent():RefreshColor()
+				end
+				
+				Plater.RefreshDBLists()
+				Plater.UpdateAllNameplateColors()
+				Plater.ForceTickOnAllNameplates()
+				
+				colorsFrame.RefreshDropdowns()
 			end
 			
-			local line_select_color_dropdown = function (self, fixedValue, npcID)
+			local line_select_color_dropdown = function (self, npcID, color)
+				if (not DB_NPCID_COLORS [npcID]) then
+					DB_NPCID_COLORS [npcID] = {true, false, "blue"}
+				end
 				
+				DB_NPCID_COLORS [npcID][1] = true
+				DB_NPCID_COLORS [npcID][3] = color
 				
+				local checkBox = colorsFrame.CheckBoxCache [npcID]
+				if (checkBox) then
+					checkBox:SetValue (true)
+				end
 				
+				self:GetParent():RefreshColor (color)
+				
+				Plater.RefreshDBLists()
+				Plater.ForceTickOnAllNameplates()
+				
+				colorsFrame.RefreshDropdowns()
 			end
 			
 			local line_refresh_color_dropdown = function (self)
-				if (not self.NpcID) then
+				if (not self.npcID) then
 					return {}
 				end
 				
@@ -1624,6 +1700,8 @@ Plater.CreateAuraTesting()
 				line:SetScript ("OnEnter", line_onenter)
 				line:SetScript ("OnLeave", line_onleave)
 				
+				line.RefreshColor = refresh_line_color
+				
 				line:SetBackdrop ({bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
 				line:SetBackdropColor (unpack (backdrop_color))
 				
@@ -1634,11 +1712,11 @@ Plater.CreateAuraTesting()
 				enabledCheckBox:SetAsCheckBox()
 				
 				--bypass checkbox
-				local byPassCheckBox = DF:CreateSwitch (line, onToggleByPass, true, _, _, _, _, "ByPassCheckbox", "$parentByPassToggle" .. index, _, _, _, nil, DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"))
-				byPassCheckBox:SetAsCheckBox()
+				local forScriptCheckBox = DF:CreateSwitch (line, onToggleForScripts, true, _, _, _, _, "ForScriptsCheckbox", "$parentForScriptsToggle" .. index, _, _, _, nil, DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"))
+				forScriptCheckBox:SetAsCheckBox()
 				
 				--npc ID
-				local npcIDEntry= DF:CreateTextEntry (line, function()end, headerTable[3].width, 20, "NpcIDEntry", nil, nil, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+				local npcIDEntry = DF:CreateTextEntry (line, function()end, headerTable[3].width, 20, "NpcIDEntry", nil, nil, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
 				npcIDEntry:SetHook ("OnEditFocusGained", oneditfocusgained_spellid)			
 				
 				--npc Name
@@ -1649,10 +1727,21 @@ Plater.CreateAuraTesting()
 				local zoneNameLabel = DF:CreateLabel (line, "", 10, "white", nil, "ZoneNameLabel")
 				
 				--color
-				local colorDropdown = DF:CreateDropDown (line, line_refresh_color_dropdown, 1, headerTable[6].width, 20, nil, nil, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+				local colorDropdown = DF:CreateDropDown (line, line_refresh_color_dropdown, 1, headerTable[6].width, 20, "ColorDropdown", nil, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+				
+				enabledCheckBox:SetHook ("OnEnter", widget_onenter)
+				enabledCheckBox:SetHook ("OnLeave", widget_onleave)
+				forScriptCheckBox:SetHook ("OnEnter", widget_onenter)
+				forScriptCheckBox:SetHook ("OnLeave", widget_onleave)
+				npcIDEntry:SetHook ("OnEnter", widget_onenter)
+				npcIDEntry:SetHook ("OnLeave", widget_onleave)
+				npcNameEntry:SetHook ("OnEnter", widget_onenter)
+				npcNameEntry:SetHook ("OnLeave", widget_onleave)
+				colorDropdown:SetHook ("OnEnter", widget_onenter)
+				colorDropdown:SetHook ("OnLeave", widget_onleave)
 				
 				line:AddFrameToHeaderAlignment (enabledCheckBox)
-				line:AddFrameToHeaderAlignment (byPassCheckBox)
+				line:AddFrameToHeaderAlignment (forScriptCheckBox)
 				line:AddFrameToHeaderAlignment (npcIDEntry)
 				line:AddFrameToHeaderAlignment (npcNameEntry)
 				line:AddFrameToHeaderAlignment (zoneNameLabel)
@@ -1663,9 +1752,23 @@ Plater.CreateAuraTesting()
 				return line
 			end
 			
+			local sort_enabled_colors = function (t1, t2)
+				if (t1[2] < t2[2]) then --color
+					return true
+					
+				elseif (t1[2] > t2[2]) then --color
+					return false
+					
+				else
+					return t1[3] < t2[3] --alphabetical
+				end
+			end
+			
 			--refresh scroll
 			local IsSearchingFor
 			local scroll_refresh = function (self, data, offset, total_lines)
+			
+				--data has all npcIDs from dungeons
 			
 				local dataInOrder = {}
 				
@@ -1673,105 +1776,119 @@ Plater.CreateAuraTesting()
 					if (self.SearchCachedTable and IsSearchingFor == self.SearchCachedTable.SearchTerm) then
 						dataInOrder = self.SearchCachedTable
 					else
+					
+						local enabledTable = {}
+					
 						for i = 1, #data do
-							local spellID = data[i] [1]
-							local spellName, _, spellIcon = GetSpellInfo (spellID)
-							if (spellName) then
-								if (spellName:lower():find (IsSearchingFor)) then
-									dataInOrder [#dataInOrder+1] = {i, data[i], spellName}
+							local npcID = data [i][1]
+							local npcName = data [i][2]
+							local zoneName = data [i][3]
+							local color = DB_NPCID_COLORS [npcID] and DB_NPCID_COLORS [npcID][1] and DB_NPCID_COLORS [npcID][3] or "white" --has | is enabled | color
+						
+							if (npcName:lower():find (IsSearchingFor) or zoneName:lower():find (IsSearchingFor)) then
+								if (DB_NPCID_COLORS [npcID] and DB_NPCID_COLORS [npcID][1]) then
+									enabledTable [#enabledTable+1] = {1, color, npcName, zoneName, npcID}
+								else
+									dataInOrder [#dataInOrder+1] = {0, color, npcName, zoneName, npcID}
 								end
 							end
 						end
 
+						table.sort (enabledTable, sort_enabled_colors)
+						table.sort (dataInOrder, DF.SortOrder3R) --npc name
+						
+						for i = #enabledTable, 1, -1 do
+							tinsert (dataInOrder, 1, enabledTable[i])
+						end
+						
 						self.SearchCachedTable = dataInOrder
 						self.SearchCachedTable.SearchTerm = IsSearchingFor
 					end
 				else
 					if (not self.CachedTable) then
+					
+						local enabledTable = {}
+					
 						for i = 1, #data do
-							local spellID = data[i] [1]
-							local spellName, _, spellIcon = GetSpellInfo (spellID)
-							if (spellName) then
-								dataInOrder [#dataInOrder+1] = {i, data[i], spellName}
+							local npcID = data [i][1]
+							local npcName = data [i][2]
+							local zoneName = data [i][3]
+							local color = DB_NPCID_COLORS [npcID] and DB_NPCID_COLORS [npcID][1] and DB_NPCID_COLORS [npcID][3] or "white" --has | is enabled | color
+							
+							if (DB_NPCID_COLORS [npcID] and DB_NPCID_COLORS [npcID][1]) then
+								enabledTable [#enabledTable+1] = {1, color, npcName, zoneName, npcID}
+							else
+								dataInOrder [#dataInOrder+1] = {0, color, npcName, zoneName, npcID}
 							end
 						end
+						
 						self.CachedTable = dataInOrder
+						
+						table.sort (enabledTable, sort_enabled_colors)
+						table.sort (dataInOrder, DF.SortOrder3R) --npc name
+						
+						for i = #enabledTable, 1, -1 do
+							tinsert (dataInOrder, 1, enabledTable[i])
+						end
 					end
 					
 					dataInOrder = self.CachedTable
-				end
 
-				table.sort (dataInOrder, DF.SortOrder3R)
+				end
+				
+
+				--
+				
 				data = dataInOrder
-			
+				
 				for i = 1, total_lines do
 					local index = i + offset
-					local spellTable = data [index] and data [index] [2]
+					local npcTable = data [index]
 					
-					if (spellTable) then
+					if (npcTable) then
 						local line = self:GetLine (i)
-						local spellID = spellTable [1]
-						local spellData = spellTable [2]
+						local npcID = npcTable [5]
+						local npcName = npcTable [3]
+						local zoneName = npcTable [4]
 						
-						local spellName, _, spellIcon = GetSpellInfo (spellID)
+						line.value = npcTable
+						line.npcID = nil
 						
-						line.value = spellTable
+						if (npcName) then
+							local colorOption = DB_NPCID_COLORS [npcID]
 						
-						if (spellName) then
-							line.Icon:SetTexture (spellIcon)
-							line.Icon:SetTexCoord (.1, .9, .1, .9)
+							line.npcID = npcID
+						
+							line.ColorDropdown.npcID = npcID
+							line.ColorDropdown:SetFixedParameter (npcID)
+						
+							line.NpcIDEntry:SetText (npcID)
+							line.NpcNameEntry:SetText (npcName)
+							line.ZoneNameLabel:SetText (zoneName)
 							
-							line.SpellName:SetTextTruncated (spellName, headerTable [3].width)
-							line.SourceName:SetTextTruncated (spellData.source, headerTable [4].width)
+							colorsFrame.CheckBoxCache [npcID] = line.EnabledCheckbox
 							
-							if (spellData.type == "BUFF") then
-								line.SpellType.color = "PLATER_BUFF"
+							if (colorOption) then
+								line.EnabledCheckbox:SetValue (colorOption [1])
+								line.ForScriptsCheckbox:SetValue (colorOption [2])
+								line.ColorDropdown:Select (colorOption [3])
 								
-							elseif (spellData.type == "DEBUFF") then
-								line.SpellType.color = "PLATER_DEBUFF"
+								if (colorOption [1]) then
+									line:RefreshColor (colorOption [3])
+								else
+									line:RefreshColor()
+								end
+							else
+								line.EnabledCheckbox:SetValue (false)
+								line.ForScriptsCheckbox:SetValue (false)
+								line.ColorDropdown:Select ("white")
 								
-							elseif (spellData.event == "SPELL_CAST_START") then
-								line.SpellType.color = "PLATER_CAST"
-								
+								line:RefreshColor()
 							end
 							
-							line.SpellID = spellID
-							
-							line.SpellIDEntry:SetText (spellID)
+							line.EnabledCheckbox:SetFixedParameter (npcID)
+							line.ForScriptsCheckbox:SetFixedParameter (npcID)
 
-							--{event = token, source = sourceName, type = auraType, npcID = Plater:GetNpcIdFromGuid (sourceGUID or "")}
-
-							line.SpellType:SetText (spellData.event == "SPELL_CAST_START" and "Spell Cast" or spellData.event == "SPELL_AURA_APPLIED" and spellData.type)
-							
-							line.AddTrackList.SpellID = spellID
-							line.AddTrackList.AuraType = spellData.type
-							line.AddTrackList.EncounterID = spellData.encounterID
-							
-							line.AddIgnoreList.SpellID = spellID
-							line.AddIgnoreList.AuraType = spellData.type
-							line.AddIgnoreList.EncounterID = spellData.encounterID
-							
-							line.AddSpecial.SpellID = spellID
-							line.AddSpecial.AuraType = spellData.type
-							line.AddSpecial.EncounterID = spellData.encounterID
-							
-							line.CreateAura.SpellID = spellID
-							line.CreateAura.AuraType = spellData.type
-							line.CreateAura.IsCast = spellData.event == "SPELL_CAST_START"
-							line.CreateAura.EncounterID = spellData.encounterID
-							
-							line.AddTrigger.SpellID = spellID
-							line.AddTrigger:Refresh()
-							
-							--manual tracking doesn't have a black list
-							if (Plater.db.profile.aura_tracker.track_method == 0x1) then
-								line.AddIgnoreList:Enable()
-								
-							elseif (Plater.db.profile.aura_tracker.track_method == 0x2) then
-								line.AddIgnoreList:Disable()
-								
-							end
-							
 						else
 							line:Hide()
 						end
@@ -1783,6 +1900,8 @@ Plater.CreateAuraTesting()
 			local spells_scroll = DF:CreateScrollBox (colorsFrame, "$parentColorsScroll", scroll_refresh, {}, scroll_width, scroll_height, scroll_lines, scroll_line_height)
 			DF:ReskinSlider (spells_scroll)
 			spells_scroll:SetPoint ("topleft", colorsFrame, "topleft", 10, scrollY)
+			
+			colorsFrame.ModelFrame:SetFrameLevel (spells_scroll:GetFrameLevel() + 20)
 			
 			spells_scroll:SetScript ("OnShow", function (self)
 				if (self.LastRefresh and self.LastRefresh+0.5 > GetTime()) then
@@ -1823,18 +1942,243 @@ Plater.CreateAuraTesting()
 					spells_scroll:Refresh()
 				end
 
-				local aura_search_textentry = DF:CreateTextEntry (colorsFrame, function()end, 160, 20, "AuraSearchTextEntry", _, _, options_dropdown_template)
-				aura_search_textentry:SetPoint ("right", clear_list_button, "left", -6, 0)
+				local aura_search_textentry = DF:CreateTextEntry (colorsFrame, function()end, 150, 20, "AuraSearchTextEntry", _, _, options_dropdown_template)
+				aura_search_textentry:SetPoint ("bottomright", colorsFrame.ModelFrame, "topright", 0, 1)
 				aura_search_textentry:SetHook ("OnChar",		colorsFrame.OnSearchBoxTextChanged)
 				aura_search_textentry:SetHook ("OnTextChanged", 	colorsFrame.OnSearchBoxTextChanged)
-				aura_search_label = DF:CreateLabel (colorsFrame, "Search:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
+				aura_search_label = DF:CreateLabel (aura_search_textentry, "Search:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
 				aura_search_label:SetPoint ("right", aura_search_textentry, "left", -2, 0)
+				aura_search_textentry.tooltip = "|cFFFFFF00Npc Name|r or |cFFFFFF00Zone Name|r"
+				aura_search_textentry:SetFrameLevel (colorsFrame.Header:GetFrameLevel() + 20)
+				
+				--clear search button
+				local clear_search_button = DF:CreateButton (colorsFrame, function() aura_search_textentry:SetText(""); aura_search_textentry:ClearFocus() end, 20, 20, "", -1)
+				clear_search_button:SetPoint ("right", aura_search_textentry, "right", 5, 0)
+				clear_search_button:SetAlpha (.7)
+				clear_search_button:SetIcon ([[Interface\Glues\LOGIN\Glues-CheckBox-Check]])
+				clear_search_button.icon:SetDesaturated (true)
+				clear_search_button:SetFrameLevel (colorsFrame.Header:GetFrameLevel() + 21)
 			
+				function colorsFrame.RefreshScroll (refreshSpeed)
+					spells_scroll:Hide() 
+					C_Timer.After (refreshSpeed or .01, function() spells_scroll:Show() end)
+				end
+			
+			--reefresh button
+				local refresh_button = DF:CreateButton (colorsFrame, function() colorsFrame.RefreshScroll() end, 70, 20, "refresh", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				refresh_button:SetPoint ("bottomleft", colorsFrame.ModelFrame, "topleft", -1, 0)
+				refresh_button.tooltip = "refresh the list the npcs"
+				refresh_button:SetFrameLevel (colorsFrame.Header:GetFrameLevel() + 20)
+				
+			--help button
+				local help_button = DF:CreateButton (colorsFrame, function()end, 70, 20, "help", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				help_button:SetPoint ("left", refresh_button, "right", 2, 0)
+				help_button.tooltip = "|cFFFFFF00Help:|r\n\n- Run dungeons and raids to fill the npc list.\n\n- |cFFFFEE00Scripts Only|r aren't automatically applied, scripts can import the color set here using |cFFFFEE00local colorTable = Plater.GetNpcColor (unitFrame)|r.\n\n- Colors set here override threat colors.\n\n-Colors set in scripts override colors set here."
+				help_button:SetFrameLevel (colorsFrame.Header:GetFrameLevel() + 20)
+			 
 			--create the title
-			colorsFrame.TitleDescText = Plater:CreateLabel (colorsFrame, "Quick way to manage npc colors", 10, "silver")
+			colorsFrame.TitleDescText = Plater:CreateLabel (colorsFrame, "For raid and dungeon npcs, they are added into the list after you see them for the first time", 10, "silver")
 			colorsFrame.TitleDescText:SetPoint ("bottomleft", spells_scroll, "topleft", 0, 26)
 			colorsFrame.TitleText = Plater:CreateLabel (colorsFrame, "Npc Color", 14, "orange")
 			colorsFrame.TitleText:SetPoint ("bottomleft", colorsFrame.TitleDescText, "topleft", 0, 2)
+			
+			colorsFrame:SetScript ("OnShow", function()
+				
+				local refresh_all_dropdowns = function()
+					for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+						if (plateFrame.unitFrame.colorSelectionDropdown) then
+							if (Plater.ZoneInstanceType ~= "party" and Plater.ZoneInstanceType ~= "raid") then
+								plateFrame.unitFrame.colorSelectionDropdown:Hide()
+							else
+								local npcID = plateFrame.unitFrame.colorSelectionDropdown:GetParent() [MEMBER_NPCID]
+								plateFrame.unitFrame.colorSelectionDropdown:Select (DB_NPCID_COLORS [npcID] and DB_NPCID_COLORS [npcID][1] and DB_NPCID_COLORS [npcID][3] or "white")
+								plateFrame.unitFrame.colorSelectionDropdown:Show()
+							end
+						end
+					end
+				end
+				
+				colorsFrame.RefreshDropdowns = refresh_all_dropdowns
+				
+				local make_dropdown = function (plateFrame)
+					local line_select_color_dropdown = function (self, npcID, color)
+					
+						local unitFrame = self:GetParent()
+						local npcID = unitFrame [MEMBER_NPCID]
+						
+						if (npcID) then
+							if (not DB_NPCID_COLORS [npcID]) then
+								DB_NPCID_COLORS [npcID] = {true, false, "blue"}
+							end
+							
+							DB_NPCID_COLORS [npcID][1] = true
+							DB_NPCID_COLORS [npcID][3] = color
+							
+							local checkBox = colorsFrame.CheckBoxCache [npcID]
+							if (checkBox) then
+								checkBox:SetValue (true)
+								checkBox:GetParent():RefreshColor (color)
+							end
+							
+							Plater.RefreshDBLists()
+							Plater.ForceTickOnAllNameplates()
+							
+							refresh_all_dropdowns()
+							
+							colorsFrame.RefreshScroll()
+						end
+					end
+					
+					local line_refresh_color_dropdown = function (self)
+						if (not self:GetParent() [MEMBER_NPCID]) then
+							return {}
+						end
+						
+						local t = {}
+
+						local function hex (num)
+							local hexstr = '0123456789abcdef'
+							local s = ''
+							while num > 0 do
+								local mod = math.fmod(num, 16)
+								s = string.sub(hexstr, mod+1, mod+1) .. s
+								num = math.floor(num / 16)
+							end
+							if s == '' then s = '00' end
+							if (string.len (s) == 1) then
+								s = "0"..s
+							end
+							return s
+						end
+						
+						local allColors = {}
+						for colorName, colorTable in pairs (DF:GetDefaultColorList()) do
+							tinsert (allColors, {colorTable, colorName, hex (colorTable[1]*255) .. hex (colorTable[2]*255) .. hex (colorTable[3]*255)})
+						end
+						table.sort (allColors, function (t1, t2)
+							return t1[1][3] > t2[1][3]
+						end)
+						
+						for index, colorTable in ipairs (allColors) do
+							local colortable = colorTable [1]
+							local colorname = colorTable [2]
+							tinsert (t, {label = colorname, value = colorname, color = colortable, onclick = line_select_color_dropdown})
+						end
+						
+						return t
+					end
+					
+					local dropdown = DF:CreateDropDown (plateFrame.unitFrame, line_refresh_color_dropdown, 1, headerTable[6].width, 20, nil, nil, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+					dropdown:SetHeight (14)
+					dropdown.widget.arrowTexture:SetSize (22, 22)
+					dropdown.widget.arrowTexture2:Hide()
+					
+					plateFrame.unitFrame.colorSelectionDropdown = dropdown
+					
+					dropdown:SetPoint ("topleft", plateFrame.unitFrame, "bottomleft", 0, 0)
+					dropdown:SetPoint ("topright", plateFrame.unitFrame, "bottomright", 0, 0)
+					
+					dropdown:SetHook ("OnShow", function()
+						C_Timer.After (0.1, function()
+							local npcID = dropdown:GetParent() [MEMBER_NPCID]
+							dropdown:Select (DB_NPCID_COLORS [npcID] and DB_NPCID_COLORS [npcID][1] and DB_NPCID_COLORS [npcID][3] or "white")
+						end)
+					end)
+					
+					local npcID = dropdown:GetParent() [MEMBER_NPCID]
+					dropdown:Select (DB_NPCID_COLORS [npcID] and DB_NPCID_COLORS [npcID][1] and DB_NPCID_COLORS [npcID][3] or "white")
+					
+					if (Plater.ZoneInstanceType ~= "party" and Plater.ZoneInstanceType ~= "raid") then
+						dropdown:Hide()
+					end
+					
+					--reset button
+					local reset = function()
+						local npcID = dropdown:GetParent()[MEMBER_NPCID]
+						if (DB_NPCID_COLORS [npcID]) then
+							
+							local checkBox = colorsFrame.CheckBoxCache [npcID]
+							if (checkBox) then
+								checkBox:SetValue (false)
+								checkBox:GetParent().ForScriptsCheckbox:SetValue (false)
+								checkBox:GetParent():RefreshColor()
+							end
+							
+							DB_NPCID_COLORS [npcID] [1] = false
+							DB_NPCID_COLORS [npcID] [2] = false
+							
+							Plater.RefreshDBLists()
+							Plater.ForceTickOnAllNameplates()
+							Plater.UpdateAllNameplateColors()
+							
+							refresh_all_dropdowns()
+							
+							dropdown:Select ("white")
+							
+							colorsFrame.RefreshScroll()
+						end
+					end
+					
+					local clear_color_button = DF:CreateButton (dropdown, function() reset() end, 20, 20, "", -1)
+					clear_color_button:SetPoint ("left", dropdown, "right", 0, 0)
+					clear_color_button:SetAlpha (.8)
+					clear_color_button:SetIcon ([[Interface\Glues\LOGIN\Glues-CheckBox-Check]])
+				end
+				
+				for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+					if (not plateFrame.unitFrame.colorSelectionDropdown) then
+						make_dropdown (plateFrame)
+					end
+				end
+				
+				refresh_all_dropdowns()
+				
+				colorsFrame:SetScript ("OnEvent", function (self, event, unitBarId)
+					local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId)
+					if (not plateFrame) then
+						return
+					end
+				
+					if (event == "NAME_PLATE_UNIT_REMOVED") then
+						if (plateFrame.unitFrame.colorSelectionDropdown) then
+							plateFrame.unitFrame.colorSelectionDropdown:Hide()
+						end
+					
+					elseif (event == "NAME_PLATE_UNIT_ADDED") then
+					
+						if (Plater.ZoneInstanceType ~= "party" and Plater.ZoneInstanceType ~= "raid") then
+							return
+						end
+					
+						local dropdown = plateFrame.unitFrame.colorSelectionDropdown
+						if (not dropdown) then
+							make_dropdown (plateFrame)
+							dropdown = plateFrame.unitFrame.colorSelectionDropdown
+						end
+						
+						C_Timer.After (0.1, function()
+							local npcID = dropdown:GetParent() [MEMBER_NPCID]
+							dropdown:Select (DB_NPCID_COLORS [npcID] and DB_NPCID_COLORS [npcID][1] and DB_NPCID_COLORS [npcID][3] or "white")
+						end)
+						
+						dropdown:Show()
+					end
+				end)
+				
+				colorsFrame:RegisterEvent ("NAME_PLATE_UNIT_ADDED")
+				colorsFrame:RegisterEvent ("NAME_PLATE_UNIT_REMOVED")
+			end)
+			
+			colorsFrame:SetScript ("OnHide", function()
+				colorsFrame:UnregisterEvent ("NAME_PLATE_UNIT_ADDED")
+				colorsFrame:UnregisterEvent ("NAME_PLATE_UNIT_REMOVED")
+				
+				for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+					if (plateFrame.unitFrame.colorSelectionDropdown) then
+						plateFrame.unitFrame.colorSelectionDropdown:Hide()
+					end
+				end
+			end)
 		end
 	
 	end	

@@ -64,6 +64,8 @@ PLATER_DEFAULT_SETTINGS = {
 		--store npcs found in raids and dungeons
 		npc_cache = {},
 		--store colors selected by the player in the options panel
+		--store as [NpcID] = {enabled1, enabled2, colorID}
+		--enabled1 is if the color is enabled overall, enabled2 is if the color is only for scripts
 		npc_colors = {},
 	
 		click_space = {140, 28},

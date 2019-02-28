@@ -71,6 +71,7 @@ Plater.APIList = {
 	{Name = "GetConfig", 				Signature = "Plater.GetConfig (unitFrame)", 						Desc = "Return a table with the settings chosen for the nameplate in the options panel. Use it to restore values is needed."},
 	{Name = "GetPlayerRole", 			Signature = "Plater:GetPlayerRole()", 							Desc = "Return TANK DAMAGER HEALER or NONE."},
 	{Name = "GetUnitGuildName", 		Signature = "Plater.GetUnitGuildName (unitFrame)", 					Desc = "Return the name unit's guild name if any, always return nil for npcs."},
+	{Name = "GetNpcColor", 			Signature = "Plater.GetNpcColor (unitFrame)", 						Desc = "Return a table with the color selected in the Npc Colors tab.\n\nThe color set there must have the 'Only Scripts' checked."},
 	{Name = "SetExecuteRange", 		Signature = "Plater.SetExecuteRange (isExecuteEnabled, healthAmount)", 	Desc = "Set if Plater should check for execute range and in what percent of health the execute range starts\n\nhealthAmount is in a range of zero to one, example: 25% is 0.25"},
 	
 	
