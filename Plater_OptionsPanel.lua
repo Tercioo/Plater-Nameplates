@@ -138,7 +138,7 @@ function Plater.OpenOptionsPanel()
 	{
 		--when chaging these indexes also need to change the function f.CopySettings
 		{name = "FrontPage", title = "General Settings"},
-		{name = "ThreatConfig", title = "Threat / Colors"},
+		{name = "ThreatConfig", title = "Threat / Aggro"},
 		{name = "TargetConfig", title = "Target"},
 		{name = "PersonalBar", title = "Personal Bar"},
 		{name = "EnemyNpc", title = "Enemy Npc"},
@@ -218,9 +218,9 @@ function Plater.OpenOptionsPanel()
 	DF:BuildStatusbarAuthorInfo (statusBar)
 	
 	--wago.io support
-	local wagoDesc = DF:CreateLabel (statusBar, "BREAKING NEWS: scripts and profiles for Plater will be available at |cFFFFFF00WAGO.IO|r in the following weeks!")
+	local wagoDesc = DF:CreateLabel (statusBar, "BREAKING NEWS: |cFFFFFF00WAGO.IO|r released their support for Plater! You can upload your profile and scripts right now!")
 	wagoDesc.textcolor = "orangered"
-	wagoDesc:SetPoint ("left", statusBar.DiscordTextBox, "right", 50, 0)
+	wagoDesc:SetPoint ("left", statusBar.DiscordTextBox, "right", 10, 0)
 	
 	
 	f.AllMenuFrames = {}
@@ -1836,7 +1836,9 @@ Plater.CreateAuraTesting()
 
 				end
 				
-
+				if (#dataInOrder > 6) then
+					colorsFrame.EmptyText:Hide()
+				end
 				--
 				
 				data = dataInOrder
@@ -1975,6 +1977,13 @@ Plater.CreateAuraTesting()
 				help_button:SetPoint ("left", refresh_button, "right", 2, 0)
 				help_button.tooltip = "|cFFFFFF00Help:|r\n\n- Run dungeons and raids to fill the npc list.\n\n- |cFFFFEE00Scripts Only|r aren't automatically applied, scripts can import the color set here using |cFFFFEE00local colorTable = Plater.GetNpcColor (unitFrame)|r.\n\n- Colors set here override threat colors.\n\n-Colors set in scripts override colors set here."
 				help_button:SetFrameLevel (colorsFrame.Header:GetFrameLevel() + 20)
+			 
+			--empty label
+				local empty_text = DF:CreateLabel (colorsFrame, "this list is automatically filled when\nyou see enemies inside a dungeon or raid\n\nthen you may select colors here or directly\nin the dropdown below the nameplate")
+				empty_text.fontsize = 24
+				empty_text.align = "|"
+				empty_text:SetPoint ("center", spells_scroll, "center", -colorsFrame.ModelFrame:GetWidth() / 2, 0)
+				colorsFrame.EmptyText = empty_text
 			 
 			--create the title
 			colorsFrame.TitleDescText = Plater:CreateLabel (colorsFrame, "For raid and dungeon npcs, they are added into the list after you see them for the first time", 10, "silver")
