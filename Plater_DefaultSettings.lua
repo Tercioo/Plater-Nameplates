@@ -499,6 +499,8 @@ PLATER_DEFAULT_SETTINGS = {
 		minor_width_scale = 0.9,
 		minor_height_scale = 0.95,
 		
+		no_spellname_length_limit = false,
+		
 		castbar_target_show = false,
 		castbar_target_anchor = {side = 5, x = 0, y = 0},
 		castbar_target_text_size = 10,

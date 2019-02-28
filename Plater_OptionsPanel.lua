@@ -4937,6 +4937,17 @@ local relevance_options = {
 			name = "Cast Bar Background Texture",
 			desc = "Texture used on the cast bar background.",
 		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.no_spellname_length_limit end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.no_spellname_length_limit = value
+				Plater.UpdateMaxCastbarTextLength()
+				Plater.UpdateAllPlates()
+			end,
+			name = "No Spell Name Length Limitation",
+			desc = "Spell name text won't be cut to fit within the cast bar width.",
+		},
 		
 		{type = "blank"},
 		

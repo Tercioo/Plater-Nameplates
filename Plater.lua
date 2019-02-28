@@ -3063,6 +3063,9 @@ function Plater.OnInit() --private
 				castBar.spellStartTime = 	GetTime()
 				castBar.spellEndTime = 	GetTime() + 3
 				
+				castBar.SpellStartTime = 	GetTime()
+				castBar.SpellEndTime = 	GetTime() + 3
+				
 				castBar.playedFinishedTest = nil
 				
 				castBar.flashTexture:Hide()
@@ -3186,8 +3189,8 @@ function Plater.OnInit() --private
 					self.SpellName = 		self.spellName
 					self.SpellID = 		self.spellID
 					self.SpellTexture = 	self.spellTexture
-					self.SpellStartTime = 	self.spellStartTime
-					self.SpellEndTime = 	self.spellEndTime
+					self.SpellStartTime = 	self.spellStartTime or GetTime()
+					self.SpellEndTime = 	self.spellEndTime or GetTime()
 					
 					local notInterruptible = not self.canInterrupt
 					
@@ -3281,8 +3284,8 @@ function Plater.OnInit() --private
 				
 				if (self.ThrottleUpdate < 0) then
 
-					self.SpellStartTime = self.spellStartTime
-					self.SpellEndTime = self.spellEndTime
+					self.SpellStartTime = self.spellStartTime or GetTime()
+					self.SpellEndTime = self.spellEndTime or GetTime()
 				
 					if (self.ReUpdateNextTick) then
 						self.BorderShield:ClearAllPoints()
@@ -6843,8 +6846,12 @@ end
 	end
 	
 	function Plater.UpdateMaxCastbarTextLength()
-		local barWidth = Plater.db.profile.plate_config.enemynpc.cast_incombat
-		Plater.MaxCastBarTextLength = Plater.db.profile.plate_config.enemynpc.cast_incombat[1] - 40
+		if (Plater.db.profile.no_spellname_length_limit) then
+			Plater.MaxCastBarTextLength = 500
+		else
+			local barWidth = Plater.db.profile.plate_config.enemynpc.cast_incombat
+			Plater.MaxCastBarTextLength = Plater.db.profile.plate_config.enemynpc.cast_incombat[1] - 40
+		end
 	end
 
 	function Plater.GetNpcIDFromGUID (guid) --private
