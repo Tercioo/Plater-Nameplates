@@ -4508,14 +4508,14 @@ end
 		end
 		
 		--if the unitFrame parent isn't the PlateFrame (NamePlateX) from Blizzard, the unitFrame might need to be scaled with the UIParent scale
-		local scaleFactor
+		local scaleFactor = 1
 		if (unitFrame:GetParent() == unitFrame.PlateFrame) then
 			--unit frame - is set to be the same size as the plateFrame
 			unitFrame:ClearAllPoints()
 			unitFrame:SetAllPoints()
-			scaleFactor = unitFrame.PlateFrame:GetScale()
+			--scaleFactor = unitFrame.PlateFrame:GetScale()
 		else
-		
+			--[=[
 			--the unit frame is attached into some other frame, assuming UIParent
 			unitFrame:ClearAllPoints()
 			unitFrame:SetPoint ("topleft", unitFrame.PlateFrame, "topleft", 0, 0)
@@ -4528,6 +4528,7 @@ end
 			
 			--testing
 			scaleFactor = 1
+			--]=]
 		end
 		
 		--health bar

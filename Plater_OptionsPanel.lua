@@ -1520,13 +1520,13 @@ Plater.CreateAuraTesting()
 		
 			--header
 			local headerTable = {
-				{text = "Enabled", width = 80},
+				{text = "Enabled", width = 70},
 				{text = "Scripts Only", width = 80},
-				{text = "Npc ID", width = 74},
+				{text = "Npc ID", width = 64},
 				{text = "Npc Name", width = 162},
-				{text = "Zone Name", width = 162},
-				{text = "Color", width = 130},
-				{text = "", width = 349}, --filler
+				{text = "Zone Name", width = 142},
+				{text = "Color", width = 110},
+				{text = "", width = 410}, --filler
 			}
 			local headerOptions = {
 				padding = 2,
@@ -1538,7 +1538,7 @@ Plater.CreateAuraTesting()
 			colorsFrame.ModelFrame = CreateFrame ("PlayerModel", nil, colorsFrame, "ModelWithControlsTemplate")
 			colorsFrame.ModelFrame:SetSize (339, 440)
 			colorsFrame.ModelFrame:EnableMouse (true)
-			colorsFrame.ModelFrame:SetPoint ("topleft", colorsFrame.Header, "topright", -341, -scroll_line_height - 1)
+			colorsFrame.ModelFrame:SetPoint ("topleft", colorsFrame.Header, "topright", -342, -scroll_line_height - 1)
 			colorsFrame.ModelFrame:SetBackdrop ({bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
 			colorsFrame.ModelFrame:SetBackdropColor (.4, .4, .4, 1)
 
@@ -1558,6 +1558,7 @@ Plater.CreateAuraTesting()
 			local line_onleave = function (self)
 				self:SetBackdropColor (unpack (self.backdrop_color))
 				GameTooltip:Hide()
+				colorsFrame.ModelFrame:SetCreature (1)
 			end
 			
 			local widget_onenter = function (self)
@@ -1579,6 +1580,8 @@ Plater.CreateAuraTesting()
 				local a = 0.2
 				self:SetBackdropColor (r, g, b, a)
 				self.backdrop_color = {r, g, b, a}
+				
+				self.ColorDropdown:Select (color)
 			end
 			
 			local onToggleEnabled = function (self, npcID, state)
@@ -1696,7 +1699,7 @@ Plater.CreateAuraTesting()
 			
 				local line = CreateFrame ("button", "$parentLine" .. index, self)
 				line:SetPoint ("topleft", self, "topleft", 1, -((index-1)*(scroll_line_height+1)) - 1)
-				line:SetSize (scroll_width - 2, scroll_line_height)
+				line:SetSize (scroll_width - 3 - colorsFrame.ModelFrame:GetWidth(), scroll_line_height)
 				line:SetScript ("OnEnter", line_onenter)
 				line:SetScript ("OnLeave", line_onleave)
 				
@@ -1727,7 +1730,7 @@ Plater.CreateAuraTesting()
 				local zoneNameLabel = DF:CreateLabel (line, "", 10, "white", nil, "ZoneNameLabel")
 				
 				--color
-				local colorDropdown = DF:CreateDropDown (line, line_refresh_color_dropdown, 1, headerTable[6].width, 20, "ColorDropdown", nil, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+				local colorDropdown = DF:CreateDropDown (line, line_refresh_color_dropdown, 1, headerTable[6].width + 68, 20, "ColorDropdown", nil, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
 				
 				enabledCheckBox:SetHook ("OnEnter", widget_onenter)
 				enabledCheckBox:SetHook ("OnLeave", widget_onleave)
@@ -1948,8 +1951,10 @@ Plater.CreateAuraTesting()
 				aura_search_textentry:SetPoint ("bottomright", colorsFrame.ModelFrame, "topright", 0, 1)
 				aura_search_textentry:SetHook ("OnChar",		colorsFrame.OnSearchBoxTextChanged)
 				aura_search_textentry:SetHook ("OnTextChanged", 	colorsFrame.OnSearchBoxTextChanged)
-				aura_search_label = DF:CreateLabel (aura_search_textentry, "Search:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
-				aura_search_label:SetPoint ("right", aura_search_textentry, "left", -2, 0)
+				aura_search_label = DF:CreateLabel (aura_search_textentry, "search", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
+				aura_search_label:SetPoint ("left", aura_search_textentry, "left", 4, 0)
+				aura_search_label.fontcolor = "gray"
+				aura_search_label.color = {.5, .5, .5, .3}
 				aura_search_textentry.tooltip = "|cFFFFFF00Npc Name|r or |cFFFFFF00Zone Name|r"
 				aura_search_textentry:SetFrameLevel (colorsFrame.Header:GetFrameLevel() + 20)
 				
@@ -1965,19 +1970,238 @@ Plater.CreateAuraTesting()
 					spells_scroll:Hide() 
 					C_Timer.After (refreshSpeed or .01, function() spells_scroll:Show() end)
 				end
-			
-			--reefresh button
-				local refresh_button = DF:CreateButton (colorsFrame, function() colorsFrame.RefreshScroll() end, 70, 20, "refresh", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
-				refresh_button:SetPoint ("bottomleft", colorsFrame.ModelFrame, "topleft", -1, 0)
-				refresh_button.tooltip = "refresh the list the npcs"
-				refresh_button:SetFrameLevel (colorsFrame.Header:GetFrameLevel() + 20)
-				
+
 			--help button
 				local help_button = DF:CreateButton (colorsFrame, function()end, 70, 20, "help", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
-				help_button:SetPoint ("left", refresh_button, "right", 2, 0)
+				help_button:SetPoint ("right", aura_search_textentry, "left", -2, 0)
 				help_button.tooltip = "|cFFFFFF00Help:|r\n\n- Run dungeons and raids to fill the npc list.\n\n- |cFFFFEE00Scripts Only|r aren't automatically applied, scripts can import the color set here using |cFFFFEE00local colorTable = Plater.GetNpcColor (unitFrame)|r.\n\n- Colors set here override threat colors.\n\n-Colors set in scripts override colors set here."
 				help_button:SetFrameLevel (colorsFrame.Header:GetFrameLevel() + 20)
+				
+			--reefresh button
+				local refresh_button = DF:CreateButton (colorsFrame, function() colorsFrame.RefreshScroll() end, 70, 20, "refresh", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				refresh_button:SetPoint ("right", help_button, "left", -2, 0)
+				refresh_button.tooltip = "refresh the list the npcs"
+				refresh_button:SetFrameLevel (colorsFrame.Header:GetFrameLevel() + 20)
 			 
+				local create_import_box = function (parent, mainFrame)
+					--import and export string text editor
+					
+					local edit_script_size = {620, 431}
+					--text editor
+					local luaeditor_backdrop_color = {.2, .2, .2, .5}
+					local luaeditor_border_color = {0, 0, 0, 1}
+					local edit_script_size = {620, 431}
+					local buttons_size = {120, 20}
+
+					local import_text_editor = DF:NewSpecialLuaEditorEntry (parent, edit_script_size[1], edit_script_size[2], "ImportEditor", "$parentImportEditor", true)
+					import_text_editor:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
+					import_text_editor:SetBackdropBorderColor (unpack (luaeditor_border_color))
+					import_text_editor:SetBackdropColor (.3, .3, .3, 1)
+					import_text_editor:Hide()
+					import_text_editor:SetFrameLevel (parent:GetFrameLevel()+100)
+					DF:ReskinSlider (import_text_editor.scroll)
+					
+					local bg = import_text_editor:CreateTexture (nil, "background")
+					bg:SetColorTexture (0.1, 0.1, 0.1, .9)
+					bg:SetAllPoints()
+					
+					local block_mouse_frame = CreateFrame ("frame", nil, import_text_editor)
+					block_mouse_frame:SetFrameLevel (block_mouse_frame:GetFrameLevel()-5)
+					block_mouse_frame:SetAllPoints()
+					block_mouse_frame:SetScript ("OnMouseDown", function()
+						import_text_editor:SetFocus (true)
+					end)
+					
+					--hide the code editor when the import text editor is shown
+					import_text_editor:SetScript ("OnShow", function()
+						--mainFrame.CodeEditorLuaEntry:Hide()
+					end)
+					
+					--show the code editor when the import text editor is hide
+					import_text_editor:SetScript ("OnHide", function()
+						--mainFrame.CodeEditorLuaEntry:Show()
+					end)
+					
+					mainFrame.ImportTextEditor = import_text_editor
+					
+					--import info
+					local info_import_label = DF:CreateLabel (import_text_editor, "", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
+					info_import_label:SetPoint ("bottomleft", import_text_editor, "topleft", 0, 2)
+					mainFrame.ImportTextEditor.TextInfo = info_import_label
+					
+					--import button
+					local okay_import_button = DF:CreateButton (import_text_editor, mainFrame.ImportColors, buttons_size[1], buttons_size[2], "Okay", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+					okay_import_button:SetIcon ([[Interface\BUTTONS\UI-Panel-BiggerButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
+					okay_import_button:SetPoint ("topright", import_text_editor, "bottomright", 0, 1)
+					
+					--cancel button
+					local cancel_import_button = DF:CreateButton (import_text_editor, function() mainFrame.ImportTextEditor:Hide() end, buttons_size[1], buttons_size[2], "Cancel", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+					cancel_import_button:SetIcon ([[Interface\BUTTONS\UI-Panel-MinimizeButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
+					cancel_import_button:SetPoint ("right", okay_import_button, "left", -2, 0)
+					
+					import_text_editor.OkayButton = okay_import_button
+					import_text_editor.CancelButton = cancel_import_button
+				end			 
+				
+				function colorsFrame.ImportColors()
+					--get the colors from the text field and code it to import
+
+					if (colorsFrame.IsImporting) then
+						local text = colorsFrame.ImportEditor:GetText()
+						text = DF:Trim (text)
+						local colorData = Plater.DecompressData (text, "print")
+					
+						--exported npc colors has this member to identify the exported data
+						if (colorData and colorData.NpcColor) then
+							--store which npcs has a color enabled
+							local dbColors = Plater.db.profile.npc_colors
+							--table storing all npcs already detected inside dungeons and raids
+							local allNpcsDetectedTable = Plater.db.profile.npc_cache
+
+							--the uncompressed table is a numeric table of tables
+							for i, colorTable in ipairs (colorData) do
+								--check integrity
+								if (type (colorTable) == "table") then
+									local npcID, scriptOnly, colorID, npcName, zoneName = unpack (colorTable)
+									if (npcID and scriptOnly and colorID and npcName and zoneName) then
+										if (type (colorID) == "string" and type (npcName) == "string" and type (zoneName) == "string") then
+											if (type (npcID) == "number" and type (scriptOnly) == "boolean") then
+												dbColors [npcID] = dbColors [npcID] or {}
+												dbColors [npcID] [1] = true --the color for the npc is enabled
+												dbColors [npcID] [2] = scriptOnly --the color is only used in scripts
+												dbColors [npcID] [3] = colorID --string with the color name
+												
+												--add this npcs in the npcs detected table as well
+												allNpcsDetectedTable [npcID] = allNpcsDetectedTable [npcID] or {}
+												allNpcsDetectedTable [npcID] [1] = npcName
+												allNpcsDetectedTable [npcID] [2] = zoneName
+											end
+										end
+									end
+								end
+							end
+							
+							colorsFrame.RefreshScroll()
+							Plater:Msg ("npc colors imported.")
+						else
+							Plater:Msg ("failed to import color data table.")
+						end
+					end
+					
+					colorsFrame.ImportEditor:Hide()
+					
+				end
+			 
+			--import and export buttons
+				local import_func = function()
+					if (not colorsFrame.ImportEditor) then
+						create_import_box (colorsFrame, colorsFrame)
+					end
+					
+					colorsFrame.IsExporting = nil
+					colorsFrame.IsImporting = true
+					
+					colorsFrame.ImportEditor:Show()
+					colorsFrame.ImportEditor:SetPoint ("topleft", colorsFrame.Header, "topleft")
+					colorsFrame.ImportEditor:SetPoint ("bottomright", colorsFrame, "bottomright", -17, 37)
+					
+					colorsFrame.ImportEditor:SetText ("")
+					C_Timer.After (.1, function()
+						colorsFrame.ImportEditor.editbox:HighlightText()
+						colorsFrame.ImportEditor.editbox:SetFocus (true)
+					end)
+				end
+				local import_button = DF:CreateButton (colorsFrame, import_func, 70, 20, "import", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				import_button:SetPoint ("right", refresh_button, "left", -2, 0)
+				import_button:SetFrameLevel (colorsFrame.Header:GetFrameLevel() + 20)
+				
+				local export_func = function()
+					if (not colorsFrame.ImportEditor) then
+						create_import_box (colorsFrame, colorsFrame)
+					end
+					
+					--build the list of colors to be exported
+					--~exportcolor ~export color table to string
+					--this is the table which will be compress with libdeflate
+					local exportedTable = {
+						NpcColor = true, --identify this table as a npc color table
+					}
+					
+					if (IsSearchingFor and IsSearchingFor ~= "" and spells_scroll.SearchCachedTable) then
+						--the user is searching npcs, build the export table only using the npcs shown in the result
+						--Details:Dump (spells_scroll.SearchCachedTable)
+						--[=[
+						   ["1"] = 0
+						   ["2"] = 'white'
+						   ["3"] = 'Addled Thug'
+						   ["4"] = 'The MOTHERLODE!!'
+						   ["5"] = 130435
+						--]=]
+
+						local dbColors = Plater.db.profile.npc_colors
+						
+						for i, searchResult in ipairs (spells_scroll.SearchCachedTable) do
+						
+							local _, _, npcName, zoneName, npcID = unpack (searchResult)
+							local infoTable = dbColors [npcID]
+
+							if (infoTable) then
+								local enabled1 = infoTable [1] --boolean, this is the overall enabled
+								local enabled2 = infoTable [2] --boolean, if this is true, this color is only used for scripts
+								local colorID = infoTable [3] --string, the color name
+
+								if (enabled1) then
+												       --number   | boolean     | string   | string      | string
+									tinsert (exportedTable, {npcID, enabled2, colorID, npcName, zoneName})
+								end
+							end
+						end
+					
+					else
+						--table storing all npcs already detected inside dungeons and raids, need it to get the zone name
+						local allNpcsDetectedTable = Plater.db.profile.npc_cache
+						
+						--make the list
+						for npcID, infoTable in pairs (Plater.db.profile.npc_colors) do
+							local enabled1 = infoTable [1] --boolean, this is the overall enabled
+							local enabled2 = infoTable [2] --boolean, if this is true, this color is only used for scripts
+							local colorID = infoTable [3] --string, the color name
+							
+							local npcName = allNpcsDetectedTable [npcID] and allNpcsDetectedTable [npcID] [1]
+							local zoneName = allNpcsDetectedTable [npcID] and allNpcsDetectedTable [npcID] [2]
+
+							if (enabled1 and npcName and zoneName) then
+											       --number   | boolean     | string   | string      | string
+								tinsert (exportedTable, {npcID, enabled2, colorID, npcName, zoneName})
+							end
+						end
+					end
+					
+					if (#exportedTable < 1) then
+						Plater:Msg ("There's nothing to export.")
+						return
+					end
+					
+					colorsFrame.IsExporting = true
+					colorsFrame.IsImporting = nil
+					
+					colorsFrame.ImportEditor:Show()
+					colorsFrame.ImportEditor:SetPoint ("topleft", colorsFrame.Header, "topleft")
+					colorsFrame.ImportEditor:SetPoint ("bottomright", colorsFrame, "bottomright", -17, 37)
+					
+					local data = Plater.CompressData (exportedTable, "print")
+					colorsFrame.ImportEditor:SetText (data or "failed to export color table")
+					
+					C_Timer.After (.1, function()
+						colorsFrame.ImportEditor.editbox:HighlightText()
+						colorsFrame.ImportEditor.editbox:SetFocus (true)
+					end)
+				end
+				
+				local export_button = DF:CreateButton (colorsFrame, export_func, 70, 20, "export", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				export_button:SetPoint ("right", import_button, "left", -2, 0)
+				export_button:SetFrameLevel (colorsFrame.Header:GetFrameLevel() + 20)
+			
 			--empty label
 				local empty_text = DF:CreateLabel (colorsFrame, "this list is automatically filled when\nyou see enemies inside a dungeon or raid\n\nthen you may select colors here or directly\nin the dropdown below the nameplate")
 				empty_text.fontsize = 24
@@ -2181,6 +2405,12 @@ Plater.CreateAuraTesting()
 			colorsFrame:SetScript ("OnHide", function()
 				colorsFrame:UnregisterEvent ("NAME_PLATE_UNIT_ADDED")
 				colorsFrame:UnregisterEvent ("NAME_PLATE_UNIT_REMOVED")
+				
+				if (colorsFrame.ImportEditor) then
+					colorsFrame.ImportEditor:Hide()
+					colorsFrame.ImportEditor.IsExporting = nil
+					colorsFrame.ImportEditor.IsImporting = nil
+				end
 				
 				for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 					if (plateFrame.unitFrame.colorSelectionDropdown) then
