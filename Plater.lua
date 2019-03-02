@@ -320,6 +320,34 @@ Plater.TargetHighlights = {
 	[[Interface\AddOns\Plater\images\selection_indicator6]],
 }
 
+Plater.Media = {
+	Icons = {
+		[[Interface\AddOns\Plater\media\arrow_apple_64]],
+		[[Interface\AddOns\Plater\media\arrow_double_right_64]],
+		[[Interface\AddOns\Plater\media\arrow_right_64]],
+		[[Interface\AddOns\Plater\media\arrow_simple_right_64]],
+		[[Interface\AddOns\Plater\media\arrow_single_right_64]],
+		[[Interface\AddOns\Plater\media\arrow_thin_right_64]],
+		[[Interface\AddOns\Plater\media\blocked_center_64]],
+		[[Interface\AddOns\Plater\media\crown_64]],
+		[[Interface\AddOns\Plater\media\drop_64]],
+		[[Interface\AddOns\Plater\media\duck_64]],
+		[[Interface\AddOns\Plater\media\exclamation_64]],
+		[[Interface\AddOns\Plater\media\fire_64]],
+		[[Interface\AddOns\Plater\media\glasses_64]],
+		[[Interface\AddOns\Plater\media\glow_horizontal_256]],
+		[[Interface\AddOns\Plater\media\glow_radial_128]],
+		[[Interface\AddOns\Plater\media\glow_square_64]],
+		[[Interface\AddOns\Plater\media\hat_64]],
+		[[Interface\AddOns\Plater\media\heart_center_64]],
+		[[Interface\AddOns\Plater\media\line_horizontal_256]],
+		[[Interface\AddOns\Plater\media\line_vertical_256]],
+		[[Interface\AddOns\Plater\media\radio_64]],
+		[[Interface\AddOns\Plater\media\skullbones_64]],
+		[[Interface\AddOns\Plater\media\stop_64]],
+	},
+}
+
 --> these are the images shown in the nameplate of the current target, they are placed in the left and right side of the health bar, scripts can add more options
 --> if the coords has 2 tables, it uses two textures attach in the left and right sides of the health bar
 --> if the coords has 4 tables, it uses 4 textures attached in top left, bottom left, top right and bottom right corners
@@ -4507,6 +4535,21 @@ end
 			healthBarWidth = healthBarWidth * Plater.db.profile.minor_width_scale
 		end
 		
+		--unit frame - is set to be the same size as the plateFrame
+			unitFrame:ClearAllPoints()
+			unitFrame:SetAllPoints()
+		
+		--health bar
+			--this calculates the health bar anchor points
+			--it will always be placed in the center of the nameplate main frame attached with two anchor points
+			local xOffSet = (plateFrame:GetWidth() - healthBarWidth) / 2
+			local yOffSet = (plateFrame:GetHeight() - healthBarHeight) / 2
+			
+			healthBar:ClearAllPoints()
+			PixelUtil.SetPoint (healthBar, "topleft", unitFrame, "topleft", xOffSet + profile.global_offset_x, -yOffSet + profile.global_offset_y)
+			PixelUtil.SetPoint (healthBar, "bottomright", unitFrame, "bottomright", -xOffSet + profile.global_offset_x, yOffSet + profile.global_offset_y)
+			
+		--[=[ --removing the experiment part for public release version
 		--if the unitFrame parent isn't the PlateFrame (NamePlateX) from Blizzard, the unitFrame might need to be scaled with the UIParent scale
 		local scaleFactor = 1
 		if (unitFrame:GetParent() == unitFrame.PlateFrame) then
@@ -4515,7 +4558,6 @@ end
 			unitFrame:SetAllPoints()
 			--scaleFactor = unitFrame.PlateFrame:GetScale()
 		else
-			--[=[
 			--the unit frame is attached into some other frame, assuming UIParent
 			unitFrame:ClearAllPoints()
 			unitFrame:SetPoint ("topleft", unitFrame.PlateFrame, "topleft", 0, 0)
@@ -4528,7 +4570,7 @@ end
 			
 			--testing
 			scaleFactor = 1
-			--]=]
+			
 		end
 		
 		--health bar
@@ -4540,6 +4582,7 @@ end
 			healthBar:ClearAllPoints()
 			PixelUtil.SetPoint (healthBar, "topleft", unitFrame, "topleft", (xOffSet + profile.global_offset_x) / scaleFactor, (-yOffSet + profile.global_offset_y) / scaleFactor)
 			PixelUtil.SetPoint (healthBar, "bottomright", unitFrame, "bottomright", (-xOffSet + profile.global_offset_x) / scaleFactor, (yOffSet + profile.global_offset_y) / scaleFactor)
+		--]=]
 		
 		--cast bar - is set by default below the healthbar
 			castBar:ClearAllPoints()

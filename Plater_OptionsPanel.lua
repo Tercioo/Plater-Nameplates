@@ -218,10 +218,15 @@ function Plater.OpenOptionsPanel()
 	DF:BuildStatusbarAuthorInfo (statusBar)
 	
 	--wago.io support
-	local wagoDesc = DF:CreateLabel (statusBar, "BREAKING NEWS: |cFFFFFF00WAGO.IO|r released their support for Plater! You can upload your profile and scripts right now!")
-	wagoDesc.textcolor = "orangered"
+	local wagoDesc = DF:CreateLabel (statusBar, "BREAKING NEWS: |cFFFFFF00WAGO.IO|r released support for Plater! You can get and share profiles and scripts right now!")
+	wagoDesc.textcolor = "white"
 	wagoDesc:SetPoint ("left", statusBar.DiscordTextBox, "right", 10, 0)
 	
+	wagoDesc.Anim = DF:CreateAnimationHub (wagoDesc)
+	wagoDesc.Anim:SetLooping ("repeat")
+	DF:CreateAnimation (wagoDesc.Anim, "alpha", 1, 1, .3, .7)
+	DF:CreateAnimation (wagoDesc.Anim, "alpha", 2, 1, 1, .3)
+	wagoDesc.Anim:Play()
 	
 	f.AllMenuFrames = {}
 	for _, frame in ipairs (mainFrame.AllFrames) do
@@ -671,7 +676,7 @@ local interface_options = {
 		
 		{
 			type = "toggle",
-			get = function() return Plater.db.profile.stacking_nameplates_enabled end, --GetCVar (CVAR_PLATEMOTION) == CVAR_ENABLED
+			get = function() return GetCVarBool (CVAR_PLATEMOTION) end, --GetCVar (CVAR_PLATEMOTION) == CVAR_ENABLED
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
 					SetCVar (CVAR_PLATEMOTION, value and "1" or "0")
@@ -1503,7 +1508,8 @@ Plater.CreateAuraTesting()
 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
---> unit color ~color
+--> unit color ~color ñpccolor ~npccolor ~npc ñpc
+--for import and export functions see ~importcolor ~exportcolor
 
 	do
 		if (true) then
@@ -1579,7 +1585,11 @@ Plater.CreateAuraTesting()
 				local r, g, b = DF:ParseColors (color)
 				local a = 0.2
 				self:SetBackdropColor (r, g, b, a)
-				self.backdrop_color = {r, g, b, a}
+				self.backdrop_color = self.backdrop_color or {}
+				self.backdrop_color[1] = r
+				self.backdrop_color[2] = g
+				self.backdrop_color[3] = b
+				self.backdrop_color[4] = a
 				
 				self.ColorDropdown:Select (color)
 			end
@@ -1655,43 +1665,51 @@ Plater.CreateAuraTesting()
 				colorsFrame.RefreshDropdowns()
 			end
 			
+			local function hex (num)
+				local hexstr = '0123456789abcdef'
+				local s = ''
+				while num > 0 do
+					local mod = math.fmod(num, 16)
+					s = string.sub(hexstr, mod+1, mod+1) .. s
+					num = math.floor(num / 16)
+				end
+				if s == '' then s = '00' end
+				if (string.len (s) == 1) then
+					s = "0"..s
+				end
+				return s
+			end
+			
+			local function sort_color (t1, t2)
+				return t1[1][3] > t2[1][3]
+			end
+			
+			local cachedColorTable
+			
 			local line_refresh_color_dropdown = function (self)
 				if (not self.npcID) then
 					return {}
 				end
 				
-				local t = {}
+				if (not cachedColorTable) then
+					local allColors = {}
+					for colorName, colorTable in pairs (DF:GetDefaultColorList()) do
+						tinsert (allColors, {colorTable, colorName, hex (colorTable[1]*255) .. hex (colorTable[2]*255) .. hex (colorTable[3]*255)})
+					end
+					table.sort (allColors, sort_color)
 
-				local function hex (num)
-					local hexstr = '0123456789abcdef'
-					local s = ''
-					while num > 0 do
-						local mod = math.fmod(num, 16)
-						s = string.sub(hexstr, mod+1, mod+1) .. s
-						num = math.floor(num / 16)
+					local t = {}
+					for index, colorTable in ipairs (allColors) do
+						local colortable = colorTable [1]
+						local colorname = colorTable [2]
+						tinsert (t, {label = colorname, value = colorname, color = colortable, onclick = line_select_color_dropdown})
 					end
-					if s == '' then s = '00' end
-					if (string.len (s) == 1) then
-						s = "0"..s
-					end
-					return s
+					
+					cachedColorTable = t
+					return t
+				else
+					return cachedColorTable
 				end
-				
-				local allColors = {}
-				for colorName, colorTable in pairs (DF:GetDefaultColorList()) do
-					tinsert (allColors, {colorTable, colorName, hex (colorTable[1]*255) .. hex (colorTable[2]*255) .. hex (colorTable[3]*255)})
-				end
-				table.sort (allColors, function (t1, t2)
-					return t1[1][3] > t2[1][3]
-				end)
-				
-				for index, colorTable in ipairs (allColors) do
-					local colortable = colorTable [1]
-					local colorname = colorTable [2]
-					tinsert (t, {label = colorname, value = colorname, color = colortable, onclick = line_select_color_dropdown})
-				end
-				
-				return t
 			end
 			
 			--line
@@ -1809,7 +1827,6 @@ Plater.CreateAuraTesting()
 					end
 				else
 					if (not self.CachedTable) then
-					
 						local enabledTable = {}
 					
 						for i = 1, #data do
@@ -1845,7 +1862,7 @@ Plater.CreateAuraTesting()
 				--
 				
 				data = dataInOrder
-				
+
 				for i = 1, total_lines do
 					local index = i + offset
 					local npcTable = data [index]
@@ -1872,8 +1889,10 @@ Plater.CreateAuraTesting()
 							line.ZoneNameLabel:SetText (zoneName)
 							
 							colorsFrame.CheckBoxCache [npcID] = line.EnabledCheckbox
-							
+					
 							if (colorOption) then
+								--causing lag in the scroll - might be an issue with dropdown:Select
+								--Select: is calling a dispatch making it to rebuild the entire color table, may be caching the color table might save performance
 								line.EnabledCheckbox:SetValue (colorOption [1])
 								line.ForScriptsCheckbox:SetValue (colorOption [2])
 								line.ColorDropdown:Select (colorOption [3])
@@ -2043,6 +2062,7 @@ Plater.CreateAuraTesting()
 					import_text_editor.CancelButton = cancel_import_button
 				end			 
 				
+				-- ~importcolor
 				function colorsFrame.ImportColors()
 					--get the colors from the text field and code it to import
 
@@ -2127,17 +2147,8 @@ Plater.CreateAuraTesting()
 						NpcColor = true, --identify this table as a npc color table
 					}
 					
+					--check if the user is searching npcs, build the export table only using the npcs shown in the result
 					if (IsSearchingFor and IsSearchingFor ~= "" and spells_scroll.SearchCachedTable) then
-						--the user is searching npcs, build the export table only using the npcs shown in the result
-						--Details:Dump (spells_scroll.SearchCachedTable)
-						--[=[
-						   ["1"] = 0
-						   ["2"] = 'white'
-						   ["3"] = 'Addled Thug'
-						   ["4"] = 'The MOTHERLODE!!'
-						   ["5"] = 130435
-						--]=]
-
 						local dbColors = Plater.db.profile.npc_colors
 						
 						for i, searchResult in ipairs (spells_scroll.SearchCachedTable) do
@@ -2150,6 +2161,8 @@ Plater.CreateAuraTesting()
 								local enabled2 = infoTable [2] --boolean, if this is true, this color is only used for scripts
 								local colorID = infoTable [3] --string, the color name
 
+								--build a table to store one the npc and insert the table inside the main table which will be compressed
+								--only add the npc if it is enabled in the color panel
 								if (enabled1) then
 												       --number   | boolean     | string   | string      | string
 									tinsert (exportedTable, {npcID, enabled2, colorID, npcName, zoneName})
@@ -2170,6 +2183,8 @@ Plater.CreateAuraTesting()
 							local npcName = allNpcsDetectedTable [npcID] and allNpcsDetectedTable [npcID] [1]
 							local zoneName = allNpcsDetectedTable [npcID] and allNpcsDetectedTable [npcID] [2]
 
+							--build a table to store one the npc and insert the table inside the main table which will be compressed
+							--only add the npc if it is enabled in the color panel
 							if (enabled1 and npcName and zoneName) then
 											       --number   | boolean     | string   | string      | string
 								tinsert (exportedTable, {npcID, enabled2, colorID, npcName, zoneName})
@@ -2177,6 +2192,7 @@ Plater.CreateAuraTesting()
 						end
 					end
 					
+					--check if there's at least 1 npc
 					if (#exportedTable < 1) then
 						Plater:Msg ("There's nothing to export.")
 						return
@@ -2189,6 +2205,7 @@ Plater.CreateAuraTesting()
 					colorsFrame.ImportEditor:SetPoint ("topleft", colorsFrame.Header, "topleft")
 					colorsFrame.ImportEditor:SetPoint ("bottomright", colorsFrame, "bottomright", -17, 37)
 					
+					--compress data and show it in the text editor
 					local data = Plater.CompressData (exportedTable, "print")
 					colorsFrame.ImportEditor:SetText (data or "failed to export color table")
 					
@@ -2233,6 +2250,27 @@ Plater.CreateAuraTesting()
 				
 				colorsFrame.RefreshDropdowns = refresh_all_dropdowns
 				
+				local function hex (num)
+					local hexstr = '0123456789abcdef'
+					local s = ''
+					while num > 0 do
+						local mod = math.fmod(num, 16)
+						s = string.sub(hexstr, mod+1, mod+1) .. s
+						num = math.floor(num / 16)
+					end
+					if s == '' then s = '00' end
+					if (string.len (s) == 1) then
+						s = "0"..s
+					end
+					return s
+				end
+				
+				local function sort_color (t1, t2)
+					return t1[1][3] > t2[1][3]
+				end
+				
+				local cachedColorTable
+				
 				local make_dropdown = function (plateFrame)
 					local line_select_color_dropdown = function (self, npcID, color)
 					
@@ -2261,46 +2299,35 @@ Plater.CreateAuraTesting()
 							colorsFrame.RefreshScroll()
 						end
 					end
-					
+
 					local line_refresh_color_dropdown = function (self)
 						if (not self:GetParent() [MEMBER_NPCID]) then
 							return {}
 						end
 						
-						local t = {}
+						if (not cachedColorTable) then
+							local allColors = {}
+							
+							for colorName, colorTable in pairs (DF:GetDefaultColorList()) do
+								tinsert (allColors, {colorTable, colorName, hex (colorTable[1]*255) .. hex (colorTable[2]*255) .. hex (colorTable[3]*255)})
+							end
+							table.sort (allColors, sort_color)
+							
+							local t = {}
+							for index, colorTable in ipairs (allColors) do
+								local colortable = colorTable [1]
+								local colorname = colorTable [2]
+								tinsert (t, {label = colorname, value = colorname, color = colortable, onclick = line_select_color_dropdown})
+							end
+							
+							cachedColorTable = t
+							return t
+						else
+							return cachedColorTable
+						end
 
-						local function hex (num)
-							local hexstr = '0123456789abcdef'
-							local s = ''
-							while num > 0 do
-								local mod = math.fmod(num, 16)
-								s = string.sub(hexstr, mod+1, mod+1) .. s
-								num = math.floor(num / 16)
-							end
-							if s == '' then s = '00' end
-							if (string.len (s) == 1) then
-								s = "0"..s
-							end
-							return s
-						end
-						
-						local allColors = {}
-						for colorName, colorTable in pairs (DF:GetDefaultColorList()) do
-							tinsert (allColors, {colorTable, colorName, hex (colorTable[1]*255) .. hex (colorTable[2]*255) .. hex (colorTable[3]*255)})
-						end
-						table.sort (allColors, function (t1, t2)
-							return t1[1][3] > t2[1][3]
-						end)
-						
-						for index, colorTable in ipairs (allColors) do
-							local colortable = colorTable [1]
-							local colorname = colorTable [2]
-							tinsert (t, {label = colorname, value = colorname, color = colortable, onclick = line_select_color_dropdown})
-						end
-						
-						return t
 					end
-					
+
 					local dropdown = DF:CreateDropDown (plateFrame.unitFrame, line_refresh_color_dropdown, 1, headerTable[6].width, 20, nil, nil, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
 					dropdown:SetHeight (14)
 					dropdown.widget.arrowTexture:SetSize (22, 22)
