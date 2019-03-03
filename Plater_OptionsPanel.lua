@@ -2083,7 +2083,7 @@ Plater.CreateAuraTesting()
 								--check integrity
 								if (type (colorTable) == "table") then
 									local npcID, scriptOnly, colorID, npcName, zoneName = unpack (colorTable)
-									if (npcID and scriptOnly and colorID and npcName and zoneName) then
+									if (npcID and colorID and npcName and zoneName) then
 										if (type (colorID) == "string" and type (npcName) == "string" and type (zoneName) == "string") then
 											if (type (npcID) == "number" and type (scriptOnly) == "boolean") then
 												dbColors [npcID] = dbColors [npcID] or {}
