@@ -345,6 +345,10 @@ Plater.Media = {
 		[[Interface\AddOns\Plater\media\radio_64]],
 		[[Interface\AddOns\Plater\media\skullbones_64]],
 		[[Interface\AddOns\Plater\media\stop_64]],
+		[[Interface\AddOns\Plater\media\star_empty_64]],
+		[[Interface\AddOns\Plater\media\star_full_64]],
+		[[Interface\AddOns\Plater\media\x_64]],
+		[[Interface\AddOns\Plater\media\checked_64]],
 	},
 }
 

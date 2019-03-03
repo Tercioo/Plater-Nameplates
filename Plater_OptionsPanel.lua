@@ -1662,6 +1662,8 @@ Plater.CreateAuraTesting()
 				Plater.RefreshDBLists()
 				Plater.ForceTickOnAllNameplates()
 				
+				colorsFrame.cachedColorTable = nil
+				colorsFrame.cachedColorTableNameplate = nil
 				colorsFrame.RefreshDropdowns()
 			end
 			
@@ -1684,31 +1686,57 @@ Plater.CreateAuraTesting()
 				return t1[1][3] > t2[1][3]
 			end
 			
-			local cachedColorTable
-			
 			local line_refresh_color_dropdown = function (self)
 				if (not self.npcID) then
 					return {}
 				end
 				
-				if (not cachedColorTable) then
+				if (not colorsFrame.cachedColorTable) then
+					local colorsAdded = {}
+					local colorsAddedT = {}
+					local t = {}
+					
+					--add colors already in use first
+					--get colors that are already in use and pull them to be the first colors in the dropdown
+					for npcID, npcColorTable in pairs (DB_NPCID_COLORS) do
+						local color = npcColorTable [3]
+						if (not colorsAdded [color]) then
+							colorsAdded [color] = true
+							local r, g, b = DF:ParseColors (color)
+							tinsert (colorsAddedT, {{r, g, b}, color, hex (r * 255) .. hex (g * 255) .. hex (b * 255)})
+						end
+					end
+					table.sort (colorsAddedT, sort_color)
+					
+					for index, colorTable in ipairs (colorsAddedT) do
+						local colortable = colorTable [1]
+						local colorname = colorTable [2]
+						tinsert (t, {label = " " .. colorname, value = colorname, color = colortable, onclick = line_select_color_dropdown, 
+						statusbar = [[Interface\AddOns\Plater\images\bar_semi_dark]],
+						icon = [[Interface\AddOns\Plater\media\star_empty_64]],
+						iconcolor = {1, 1, 1, .6},
+						})
+					end
+				
+					--all colors
 					local allColors = {}
 					for colorName, colorTable in pairs (DF:GetDefaultColorList()) do
-						tinsert (allColors, {colorTable, colorName, hex (colorTable[1]*255) .. hex (colorTable[2]*255) .. hex (colorTable[3]*255)})
+						if (not colorsAdded [colorName]) then
+							tinsert (allColors, {colorTable, colorName, hex (colorTable[1]*255) .. hex (colorTable[2]*255) .. hex (colorTable[3]*255)})
+						end
 					end
 					table.sort (allColors, sort_color)
-
-					local t = {}
+					
 					for index, colorTable in ipairs (allColors) do
 						local colortable = colorTable [1]
 						local colorname = colorTable [2]
 						tinsert (t, {label = colorname, value = colorname, color = colortable, onclick = line_select_color_dropdown})
 					end
 					
-					cachedColorTable = t
+					colorsFrame.cachedColorTable = t
 					return t
 				else
-					return cachedColorTable
+					return colorsFrame.cachedColorTable
 				end
 			end
 			
@@ -1993,7 +2021,7 @@ Plater.CreateAuraTesting()
 			--help button
 				local help_button = DF:CreateButton (colorsFrame, function()end, 70, 20, "help", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 				help_button:SetPoint ("right", aura_search_textentry, "left", -2, 0)
-				help_button.tooltip = "|cFFFFFF00Help:|r\n\n- Run dungeons and raids to fill the npc list.\n\n- |cFFFFEE00Scripts Only|r aren't automatically applied, scripts can import the color set here using |cFFFFEE00local colorTable = Plater.GetNpcColor (unitFrame)|r.\n\n- Colors set here override threat colors.\n\n-Colors set in scripts override colors set here."
+				help_button.tooltip = "|cFFFFFF00Help:|r\n\n- Run dungeons and raids to fill the npc list.\n\n- |cFFFFEE00Scripts Only|r aren't automatically applied, scripts can import the color set here using |cFFFFEE00local colorTable = Plater.GetNpcColor (unitFrame)|r.\n\n- Colors set here override threat colors.\n\n- Colors set in scripts override colors set here.\n\n- |TInterface\\AddOns\\Plater\\media\\star_empty_64:16:16|t icon indicates the color is favorite, so you can use it across dungeons to keep color consistency."                                               
 				help_button:SetFrameLevel (colorsFrame.Header:GetFrameLevel() + 20)
 				
 			--reefresh button
@@ -2235,6 +2263,10 @@ Plater.CreateAuraTesting()
 			colorsFrame:SetScript ("OnShow", function()
 				
 				local refresh_all_dropdowns = function()
+				
+					colorsFrame.cachedColorTable = nil
+					colorsFrame.cachedColorTableNameplate = nil
+				
 					for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 						if (plateFrame.unitFrame.colorSelectionDropdown) then
 							if (Plater.ZoneInstanceType ~= "party" and Plater.ZoneInstanceType ~= "raid") then
@@ -2268,8 +2300,6 @@ Plater.CreateAuraTesting()
 				local function sort_color (t1, t2)
 					return t1[1][3] > t2[1][3]
 				end
-				
-				local cachedColorTable
 				
 				local make_dropdown = function (plateFrame)
 					local line_select_color_dropdown = function (self, npcID, color)
@@ -2305,25 +2335,52 @@ Plater.CreateAuraTesting()
 							return {}
 						end
 						
-						if (not cachedColorTable) then
-							local allColors = {}
+						if (not colorsFrame.cachedColorTableNameplate) then
+							local colorsAdded = {}
+							local colorsAddedT = {}
+							local t = {}
 							
+							--add colors already in use first
+							--get colors that are already in use and pull them to be the first colors in the dropdown
+							for npcID, npcColorTable in pairs (DB_NPCID_COLORS) do
+								local color = npcColorTable [3]
+								if (not colorsAdded [color]) then
+									colorsAdded [color] = true
+									local r, g, b = DF:ParseColors (color)
+									tinsert (colorsAddedT, {{r, g, b}, color, hex (r * 255) .. hex (g * 255) .. hex (b * 255)})
+								end
+							end
+							table.sort (colorsAddedT, sort_color)
+							
+							for index, colorTable in ipairs (colorsAddedT) do
+								local colortable = colorTable [1]
+								local colorname = colorTable [2]
+								tinsert (t, {label = " " .. colorname, value = colorname, color = colortable, onclick = line_select_color_dropdown, 
+								statusbar = [[Interface\AddOns\Plater\images\bar_semi_dark]],
+								icon = [[Interface\AddOns\Plater\media\star_empty_64]],
+								iconcolor = {1, 1, 1, .6},
+								})
+							end
+						
+							--all colors
+							local allColors = {}
 							for colorName, colorTable in pairs (DF:GetDefaultColorList()) do
-								tinsert (allColors, {colorTable, colorName, hex (colorTable[1]*255) .. hex (colorTable[2]*255) .. hex (colorTable[3]*255)})
+								if (not colorsAdded [colorName]) then
+									tinsert (allColors, {colorTable, colorName, hex (colorTable[1]*255) .. hex (colorTable[2]*255) .. hex (colorTable[3]*255)})
+								end
 							end
 							table.sort (allColors, sort_color)
 							
-							local t = {}
 							for index, colorTable in ipairs (allColors) do
 								local colortable = colorTable [1]
 								local colorname = colorTable [2]
 								tinsert (t, {label = colorname, value = colorname, color = colortable, onclick = line_select_color_dropdown})
 							end
 							
-							cachedColorTable = t
+							colorsFrame.cachedColorTableNameplate = t
 							return t
 						else
-							return cachedColorTable
+							return colorsFrame.cachedColorTableNameplate
 						end
 
 					end
