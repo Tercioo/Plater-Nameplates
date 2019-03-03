@@ -194,7 +194,19 @@ function Plater.OpenOptionsPanel()
 	local autoFrame = mainFrame.AllFrames [18]
 	local profilesFrame = mainFrame.AllFrames [19]
 	
-
+	local colorNpcsButton = mainFrame.AllButtons [17]
+	local colorNpcsButtonNew = colorNpcsButton:CreateTexture (nil, "overlay")
+	colorNpcsButtonNew:SetPoint ("bottomleft", colorNpcsButton.widget, "bottomleft", -4, 0)
+	colorNpcsButtonNew:SetPoint ("bottomright", colorNpcsButton.widget, "bottomright", 4, 0)
+	colorNpcsButtonNew:SetTexture ([[Interface\AddOns\Plater\media\glow_horizontal_256]])
+	colorNpcsButtonNew:SetHeight (16)
+	colorNpcsButtonNew:SetVertexColor (.5, .9, 1, .7)
+	colorNpcsButtonNew.Anim = DF:CreateAnimationHub (colorNpcsButtonNew)
+	DF:CreateAnimation (colorNpcsButtonNew.Anim, "alpha", 1, 3, 0, .5)
+	DF:CreateAnimation (colorNpcsButtonNew.Anim, "alpha", 2, 3, .6, 0)
+	colorNpcsButtonNew.Anim:SetLooping ("repeat")
+	colorNpcsButtonNew.Anim:Play()
+	
 --[=[	
 
 	[Add Color Button] [Dropdown Zone Name?] [Search by Name]
