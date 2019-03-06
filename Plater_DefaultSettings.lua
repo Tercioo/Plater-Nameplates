@@ -492,6 +492,7 @@ PLATER_DEFAULT_SETTINGS = {
 		ui_parent_cast_strata = "TOOLTIP", --testing, the castbar should be in front of everythings
 		ui_parent_buff_level = 10,
 		ui_parent_cast_level = 10,
+		ui_parent_scale_tune = 0, --testing, a slider to change the unit frame scale / goal is to have a fine tune knob to adjust the overall size when using this feature
 		
 		resources = {
 			alpha = 1,

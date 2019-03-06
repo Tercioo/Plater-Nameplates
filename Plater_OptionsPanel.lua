@@ -9506,8 +9506,24 @@ local relevance_options = {
 			min = 1,
 			max = 5000,
 			step = 1,
-			name = "Casr Bar Level",
+			name = "Cast Bar Level",
 			desc = "Level of the Aura frames, affect frames within the same frame strata.",
+		},
+		
+		{
+			type = "range",
+			get = function() return Plater.db.profile.ui_parent_scale_tune end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.ui_parent_scale_tune = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end,
+			min = -0.5,
+			max = 0.5,
+			step = 0.01,
+			usedecimals = true,
+			name = "Fine Tune Scale",
+			desc = "Slightly adjust the scale of the unit frame.",
 		},
 	}
 

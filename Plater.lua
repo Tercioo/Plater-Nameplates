@@ -1834,15 +1834,27 @@ Plater.DefaultSpellRangeList = {
 				--March 3rd, 2019
 				local newUnitFrame
 				if (Plater.db.profile.use_ui_parent) then
+					--when using UIParent as the unit frame parent, adjust the unitFrame scale to be equal to blizzard plateFrame
+					--todo: move this function to outside the scope
+					function Plater.UpdateUIParentScale (self, w, h)--private --self is plateFrame, w, h aren't reliable, this function is also called from ~updatesize
+						if self.unitFrame then
+							local defaultScale = self:GetEffectiveScale()
+							if (defaultScale < 0.4) then
+								--assuming the nameplate is in process of being removed from the screen if the scale if lower than .4
+								self.unitFrame:SetScale(defaultScale)
+							else							
+								--scale (adding a fine tune knob)
+								local scaleFineTune = Plater.db.profile.ui_parent_scale_tune
+								self.unitFrame:SetScale(Clamp (defaultScale + scaleFineTune, 0.01, 5))
+							end
+						end
+					end
+				
 					newUnitFrame = DF:CreateUnitFrame (UIParent, plateFrame:GetName() .. "PlaterUnitFrame", unitFrameOptions, healthBarOptions, castBarOptions)
 					newUnitFrame:SetAllPoints(parent)
 					newUnitFrame:SetFrameStrata("BACKGROUND")
 
-					plateFrame:HookScript("OnSizeChanged", function(self, w, h)
-						if self.unitFrame then
-							self.unitFrame:SetScale(self:GetEffectiveScale())
-						end
-					end)
+					plateFrame:HookScript("OnSizeChanged", Plater.UpdateUIParentScale)
 					--end of patch
 					
 					newUnitFrame.IsUIParent = true --expose to scripts the unitFrame is a UIParent child
@@ -2716,7 +2728,8 @@ function Plater.OnInit() --private
 				--do not run cvars for individual characters
 				C_Timer.After (15, Plater.SetCVarsOnFirstRun)
 			else
-				Plater.ShutdownInterfaceOptionsPanel()
+				--don't hide blizzard options, March 06, 2019
+				--Plater.ShutdownInterfaceOptionsPanel()
 			end
 		end
 		
@@ -4603,6 +4616,8 @@ end
 			castBar:SetFrameLevel (profile.ui_parent_cast_level)
 			buffFrame1:SetFrameLevel (profile.ui_parent_buff_level)
 			buffFrame2:SetFrameLevel (profile.ui_parent_buff_level)
+			--update scale
+			Plater.UpdateUIParentScale (plateFrame)
 		else
 			--unit frame - is set to be the same size as the plateFrame
 				unitFrame:ClearAllPoints()
@@ -8367,6 +8382,7 @@ end
 		GetNpcIDFromGUID = true,
 		GetNpcID = true,
 		ForceTickOnAllNameplates = true,
+		UpdateUIParentScale = true,
 	}
 	
 	local functionFilter = setmetatable ({}, {__index = function (env, key)
