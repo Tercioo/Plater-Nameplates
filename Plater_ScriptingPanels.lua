@@ -157,6 +157,7 @@ Plater.NameplateComponents = {
 		"InExecuteRange",
 		"InCombat",
 		"targetUnitID",
+		"UsingCustomColor",
 	},
 	
 	["unitFrame - Frames"] = {

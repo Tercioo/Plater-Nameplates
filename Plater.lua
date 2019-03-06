@@ -296,6 +296,7 @@ Plater.CooldownEdgeTextures = {
 	[[Interface\AddOns\Plater\images\cooldown_edge_2]],
 	"Interface\\Cooldown\\edge",
 	"Interface\\Cooldown\\edge-LoC",
+	"Interface\\GLUES\\loadingOld",
 }
 
 --> textures used in the castbar, scripts can add more values to it, profile holds only the path to it
@@ -333,6 +334,7 @@ Plater.Media = {
 		[[Interface\AddOns\Plater\media\drop_64]],
 		[[Interface\AddOns\Plater\media\duck_64]],
 		[[Interface\AddOns\Plater\media\exclamation_64]],
+		[[Interface\AddOns\Plater\media\exclamation2_64]],
 		[[Interface\AddOns\Plater\media\fire_64]],
 		[[Interface\AddOns\Plater\media\glasses_64]],
 		[[Interface\AddOns\Plater\media\glow_horizontal_256]],
@@ -349,6 +351,8 @@ Plater.Media = {
 		[[Interface\AddOns\Plater\media\star_full_64]],
 		[[Interface\AddOns\Plater\media\x_64]],
 		[[Interface\AddOns\Plater\media\checked_64]],
+		[[Interface\AddOns\Plater\media\sphere_full_64]],
+		[[Interface\AddOns\Plater\media\eye_64]],
 	},
 }
 
@@ -1825,7 +1829,27 @@ Plater.DefaultSpellRangeList = {
 					LazyUpdateCooldown = 0.1,
 				}
 				
-				local newUnitFrame = DF:CreateUnitFrame (plateFrame, plateFrame:GetName() .. "PlaterUnitFrame", unitFrameOptions, healthBarOptions, castBarOptions)
+				--community patch by Ariani#0960 (discord)
+				--make the unitFrame be parented to UIParent allowing frames to be moved between strata levels
+				--March 3rd, 2019
+				local newUnitFrame
+				if (Plater.db.profile.use_ui_parent) then
+					newUnitFrame = DF:CreateUnitFrame (UIParent, plateFrame:GetName() .. "PlaterUnitFrame", unitFrameOptions, healthBarOptions, castBarOptions)
+					newUnitFrame:SetAllPoints(parent)
+					newUnitFrame:SetFrameStrata("BACKGROUND")
+
+					plateFrame:HookScript("OnSizeChanged", function(self, w, h)
+						if self.unitFrame then
+							self.unitFrame:SetScale(self:GetEffectiveScale())
+						end
+					end)
+					--end of patch
+					
+					newUnitFrame.IsUIParent = true --expose to scripts the unitFrame is a UIParent child
+				else
+					newUnitFrame = DF:CreateUnitFrame (plateFrame, plateFrame:GetName() .. "PlaterUnitFrame", unitFrameOptions, healthBarOptions, castBarOptions)
+				end
+				
 				plateFrame.unitFrame = newUnitFrame
 				plateFrame.unitFrame:EnableMouse (false)
 				
@@ -2320,6 +2344,9 @@ Plater.DefaultSpellRangeList = {
 			unitFrame.customBorderColor = nil
 			Plater.UpdateBorderColor (unitFrame)
 
+			--reset custom color flag
+			unitFrame.UsingCustomColor = nil
+			
 			unitFrame.InExecuteRange = false
 			
 			--check if this nameplate has an update scheduled
@@ -2540,6 +2567,16 @@ Plater.DefaultSpellRangeList = {
 			end
 			
 			plateFrame.unitFrame.PlaterOnScreen = nil
+			
+			--community patch by Ariani#0960 (discord)
+			--make the unitFrame be parented to UIParent allowing frames to be moved between strata levels
+			--March 3rd, 2019
+			if (Plater.db.profile.use_ui_parent) then
+				-- need to explicitly hide the frame now, as it is not tethered to the blizz nameplate
+				plateFrame.unitFrame:Hide()
+			end
+			--end of patch
+			
 		end,
 	}
 
@@ -4539,54 +4576,48 @@ end
 			healthBarWidth = healthBarWidth * Plater.db.profile.minor_width_scale
 		end
 		
-		--unit frame - is set to be the same size as the plateFrame
-			unitFrame:ClearAllPoints()
-			unitFrame:SetAllPoints()
-		
-		--health bar
-			--this calculates the health bar anchor points
-			--it will always be placed in the center of the nameplate main frame attached with two anchor points
-			local xOffSet = (plateFrame:GetWidth() - healthBarWidth) / 2
-			local yOffSet = (plateFrame:GetHeight() - healthBarHeight) / 2
-			
-			healthBar:ClearAllPoints()
-			PixelUtil.SetPoint (healthBar, "topleft", unitFrame, "topleft", xOffSet + profile.global_offset_x, -yOffSet + profile.global_offset_y)
-			PixelUtil.SetPoint (healthBar, "bottomright", unitFrame, "bottomright", -xOffSet + profile.global_offset_x, yOffSet + profile.global_offset_y)
-			
-		--[=[ --removing the experiment part for public release version
-		--if the unitFrame parent isn't the PlateFrame (NamePlateX) from Blizzard, the unitFrame might need to be scaled with the UIParent scale
-		local scaleFactor = 1
-		if (unitFrame:GetParent() == unitFrame.PlateFrame) then
+		--community patch by Ariani#0960 (discord)
+		--make the unitFrame be parented to UIParent allowing frames to be moved between strata levels
+		--March 3rd, 2019
+		if (Plater.db.profile.use_ui_parent) then
 			--unit frame - is set to be the same size as the plateFrame
-			unitFrame:ClearAllPoints()
-			unitFrame:SetAllPoints()
-			--scaleFactor = unitFrame.PlateFrame:GetScale()
+				unitFrame:ClearAllPoints()
+				unitFrame:SetPoint ("topleft", unitFrame.PlateFrame, "topleft", 0, 0)
+				unitFrame:SetPoint ("bottomright", unitFrame.PlateFrame, "bottomright", 0, 0) 
+				
+			--health bar
+				-- ensure that we are using the configured size, as it will be automatically scaled
+				healthBar:ClearAllPoints()
+				PixelUtil.SetPoint (healthBar, "center", unitFrame, "center", 0, 0)
+				PixelUtil.SetSize (healthBar, healthBarWidth, healthBarHeight)
+		--end of patch
+			
+			--setup frame strata and levels
+			local profile = Plater.db.profile
+			--strata
+			unitFrame:SetFrameStrata (profile.ui_parent_base_strata)
+			castBar:SetFrameStrata (profile.ui_parent_cast_strata)
+			buffFrame1:SetFrameStrata (profile.ui_parent_buff_strata)
+			buffFrame2:SetFrameStrata (profile.ui_parent_buff_strata)
+			--level
+			castBar:SetFrameLevel (profile.ui_parent_cast_level)
+			buffFrame1:SetFrameLevel (profile.ui_parent_buff_level)
+			buffFrame2:SetFrameLevel (profile.ui_parent_buff_level)
 		else
-			--the unit frame is attached into some other frame, assuming UIParent
-			unitFrame:ClearAllPoints()
-			unitFrame:SetPoint ("topleft", unitFrame.PlateFrame, "topleft", 0, 0)
-			unitFrame:SetPoint ("bottomright", unitFrame.PlateFrame, "bottomright", 0, 0)  
+			--unit frame - is set to be the same size as the plateFrame
+				unitFrame:ClearAllPoints()
+				unitFrame:SetAllPoints()
 			
-			--as the user set all settings using the scale from the world frame, the unit frame need to be re-scaled to uiparent scale 
-			scaleFactor = unitFrame.PlateFrame:GetScale() / UIParent:GetScale()
-			--set the new scale
-			unitFrame:SetScale (scaleFactor)
-			
-			--testing
-			scaleFactor = 1
-			
+			--health bar
+				--this calculates the health bar anchor points
+				--it will always be placed in the center of the nameplate main frame attached with two anchor points
+				local xOffSet = (plateFrame:GetWidth() - healthBarWidth) / 2
+				local yOffSet = (plateFrame:GetHeight() - healthBarHeight) / 2
+				
+				healthBar:ClearAllPoints()
+				PixelUtil.SetPoint (healthBar, "topleft", unitFrame, "topleft", xOffSet + profile.global_offset_x, -yOffSet + profile.global_offset_y)
+				PixelUtil.SetPoint (healthBar, "bottomright", unitFrame, "bottomright", -xOffSet + profile.global_offset_x, yOffSet + profile.global_offset_y)
 		end
-		
-		--health bar
-			--this calculates the health bar anchor points
-			--it will always be placed in the center of the nameplate main frame attached with two anchor points
-			local xOffSet = (plateFrame:GetWidth() - healthBarWidth) / 2
-			local yOffSet = (plateFrame:GetHeight() - healthBarHeight) / 2
-			
-			healthBar:ClearAllPoints()
-			PixelUtil.SetPoint (healthBar, "topleft", unitFrame, "topleft", (xOffSet + profile.global_offset_x) / scaleFactor, (-yOffSet + profile.global_offset_y) / scaleFactor)
-			PixelUtil.SetPoint (healthBar, "bottomright", unitFrame, "bottomright", (-xOffSet + profile.global_offset_x) / scaleFactor, (yOffSet + profile.global_offset_y) / scaleFactor)
-		--]=]
 		
 		--cast bar - is set by default below the healthbar
 			castBar:ClearAllPoints()
@@ -4788,6 +4819,7 @@ end
 			--the color overrider for unitIDs goes after the threat check and before the aura, since auras can run scripts and scripts have priority on setting colors
 			if (DB_UNITCOLOR_CACHE [unitFrame [MEMBER_NPCID]]) then
 				Plater.ChangeHealthBarColor_Internal (healthBar, unpack (DB_UNITCOLOR_CACHE [unitFrame [MEMBER_NPCID]]))
+				unitFrame.UsingCustomColor = true --exposed to scripts
 			end
 			
 			--update buffs and debuffs
@@ -4927,7 +4959,7 @@ end
 		end
 	end
 
-	--aggro threat ~aggro ãggro
+	--aggro threat ~aggro ãggro ~threat
 	function Plater.UpdateNameplateThread (self) --self = unitFrame
 
 		--make sure there's a unitID in the unit frame
@@ -5246,6 +5278,10 @@ end
 		end
 
 		local preset = Plater.TargetIndicators [Plater.db.profile.target_indicator]
+		if (not preset) then
+			--use default indicator is the indicator isn't found
+			preset = Plater.TargetIndicators ["Silver"]
+		end
 		
 		local width, height = preset.width, preset.height
 		local x, y = preset.x, preset.y

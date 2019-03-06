@@ -485,6 +485,14 @@ PLATER_DEFAULT_SETTINGS = {
 		show_health_prediction = false,
 		show_shield_prediction = false,
 		
+		--experimental settings for the UIParent parenting
+		use_ui_parent = false,
+		ui_parent_base_strata = "BACKGROUND",
+		ui_parent_buff_strata = "LOW", --testing, buffs should be in front of the health bar
+		ui_parent_cast_strata = "TOOLTIP", --testing, the castbar should be in front of everythings
+		ui_parent_buff_level = 10,
+		ui_parent_cast_level = 10,
+		
 		resources = {
 			alpha = 1,
 			scale = 0.8,

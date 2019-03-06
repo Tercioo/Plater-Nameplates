@@ -159,6 +159,9 @@ function Plater.OpenOptionsPanel()
 		{name = "Automation", title = "Auto"},
 		{name = "ProfileManagement", title = "Profiles"},
 		
+		{name = "ExperimentalFeatures", title = "Experimental"},
+		{name = "CreditsFrame", title = "Credits"},
+		
 	}, 
 	frame_options)
 	
@@ -193,6 +196,8 @@ function Plater.OpenOptionsPanel()
 	local colorsFrame = mainFrame.AllFrames [17]
 	local autoFrame = mainFrame.AllFrames [18]
 	local profilesFrame = mainFrame.AllFrames [19]
+	local experimentalFrame = mainFrame.AllFrames [20]
+	local creditsFrame = mainFrame.AllFrames [21]
 	
 	local colorNpcsButton = mainFrame.AllButtons [17]
 	local colorNpcsButtonNew = colorNpcsButton:CreateTexture (nil, "overlay")
@@ -9400,6 +9405,116 @@ local relevance_options = {
 	Plater.CreateHookingPanel()
 	Plater.CreateSpellAnimationPanel()
 	
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--> experimental frame ~experimental
+
+	local on_select_strata_level = function (self, fixedParameter, value)
+		Plater.db.profile.ui_parent_base_strata = value
+		Plater.RefreshDBUpvalues()
+		Plater.UpdateAllPlates()
+	end
+
+	local strataTable = {
+		{value = "BACKGROUND", label = "Background", onclick = onStrataSelect, icon = [[Interface\Buttons\UI-MicroStream-Green]], iconcolor = {0, .5, 0, .8}, texcoord = nil}, --Interface\Buttons\UI-MicroStream-Green UI-MicroStream-Red UI-MicroStream-Yellow
+		{value = "LOW", label = "Low", onclick = onStrataSelect, icon = [[Interface\Buttons\UI-MicroStream-Green]] , texcoord = nil}, --Interface\Buttons\UI-MicroStream-Green UI-MicroStream-Red UI-MicroStream-Yellow
+		{value = "MEDIUM", label = "Medium", onclick = onStrataSelect, icon = [[Interface\Buttons\UI-MicroStream-Yellow]] , texcoord = nil}, --Interface\Buttons\UI-MicroStream-Green UI-MicroStream-Red UI-MicroStream-Yellow
+		{value = "HIGH", label = "High", onclick = onStrataSelect, icon = [[Interface\Buttons\UI-MicroStream-Yellow]] , iconcolor = {1, .7, 0, 1}, texcoord = nil}, --Interface\Buttons\UI-MicroStream-Green UI-MicroStream-Red UI-MicroStream-Yellow
+		{value = "DIALOG", label = "Dialog", onclick = onStrataSelect, icon = [[Interface\Buttons\UI-MicroStream-Red]] , iconcolor = {1, 0, 0, 1},  texcoord = nil}, --Interface\Buttons\UI-MicroStream-Green UI-MicroStream-Red UI-MicroStream-Yellow
+	}
+	
+	--anchor table
+	local frame_levels = {"BACKGROUND", "LOW", "MEDIUM", "HIGH", "DIALOG"}
+	local build_framelevel_table = function (frame)
+		local t = {}
+		for i = 1, #frame_levels do
+			tinsert (t, {
+				label = frame_levels[i],
+				value = frame_levels[i],
+				onclick = function (_, _, value)
+					Plater.db.profile [frame] = value
+					Plater.RefreshDBUpvalues()
+					Plater.UpdateAllPlates()
+				end
+			})
+		end
+		return t
+	end
+	
+	
+
+	local experimental_options = {
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.use_ui_parent end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.use_ui_parent = value
+				
+				Plater:Msg ("this setting require a /reload to take effect.")
+			end,
+			name = "Parent to UIParent",
+			desc = "Nameplates anchor into the UIParent instead of the 3D World Frame.\n\nThis allow having cast bars and debuffs in front of other frames.\n\n|cFFFFFF00Important|r: require /reload after changing this setting.",
+		},
+		
+		{
+			type = "select",
+			get = function() return Plater.db.profile.ui_parent_base_strata end,
+			values = function() return build_framelevel_table ("ui_parent_base_strata") end,
+			name = "Base Strata",
+			desc = "Which strata the unit frame will be placed in.",
+		},
+
+		{
+			type = "select",
+			get = function() return Plater.db.profile.ui_parent_cast_strata end,
+			values = function() return build_framelevel_table ("ui_parent_cast_strata") end,
+			name = "Cast Bar Strata",
+			desc = "Which strata the cast bar will be placed in.",
+		},
+		
+		{
+			type = "select",
+			get = function() return Plater.db.profile.ui_parent_buff_strata end,
+			values = function() return build_framelevel_table ("ui_parent_buff_strata") end,
+			name = "Aura Frames Strata",
+			desc = "Which strata aura frames will be placed in.",
+		},
+		
+		{
+			type = "range",
+			get = function() return Plater.db.profile.ui_parent_buff_level end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.ui_parent_buff_level = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end,
+			min = 1,
+			max = 5000,
+			step = 1,
+			name = "Aura Level",
+			desc = "Level of the Aura frames, affect frames within the same frame strata.",
+		},
+	
+		{
+			type = "range",
+			get = function() return Plater.db.profile.ui_parent_cast_level end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.ui_parent_cast_level = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end,
+			min = 1,
+			max = 5000,
+			step = 1,
+			name = "Casr Bar Level",
+			desc = "Level of the Aura frames, affect frames within the same frame strata.",
+		},
+	}
+
+	
+	DF:BuildMenu (experimentalFrame, experimental_options, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)	
+	
+
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> ~auto ~�uto
 
