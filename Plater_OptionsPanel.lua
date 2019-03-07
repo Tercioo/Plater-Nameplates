@@ -5243,12 +5243,13 @@ local relevance_options = {
 				Plater.RefreshDBUpvalues()
 				Plater.UpdatePlateBorderThickness()
 			end,
-			min = 1,
+			min = 0.1,
 			max = 3,
-			step = 1,
+			step = 0.1,
+			usedecimals = true,
 			name = "Border Thickness",
-			desc = "How thick the border should be.",
-		},	
+			desc = "How thick the border should be.\n\n|cFFFFFF00Important|r: right click the slider to manually type the value.",
+		},
 	
 		--cast bar options
 		{type = "breakline"},
@@ -10448,7 +10449,7 @@ local relevance_options = {
 				Plater.RefreshDBUpvalues()
 				Plater.UpdateAllPlates()
 			end,
-			min = -5,
+			min = 0,
 			max = 75,
 			step = 1,
 			name = "HealthBar Frame Level",
@@ -10462,7 +10463,7 @@ local relevance_options = {
 				Plater.RefreshDBUpvalues()
 				Plater.UpdateAllPlates()
 			end,
-			min = -5,
+			min = 0,
 			max = 75,
 			step = 1,
 			name = "CastBar Frame Level",
