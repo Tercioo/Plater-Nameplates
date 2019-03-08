@@ -704,9 +704,30 @@ local interface_options = {
 				end
 			end,
 			name = "Stacking Nameplates" .. CVarIcon,
-			desc = "If enabled, nameplates won't overlap each other." .. CVarDesc .. "\n\n|cFFFFFF00Important|r: to set the amount of space between each nameplate see '|cFFFFFFFFNameplate Vertical Padding|r' under Advanced tab.",
+			desc = "If enabled, nameplates won't overlap each other." .. CVarDesc .. "\n\n|cFFFFFF00Important|r: to set the amount of space between each nameplate see '|cFFFFFFFFNameplate Vertical Padding|r' option below.",
 			nocombat = true,
 		},
+		
+		{
+			type = "range",
+			get = function() return tonumber (GetCVar ("nameplateOverlapV")) end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateOverlapV", value)
+				else
+					Plater:Msg ("you are in combat.")
+				end
+			end,
+			min = 0.2,
+			max = 1.6,
+			step = 0.05,
+			thumbscale = 1.7,
+			usedecimals = true,
+			name = "Space Between Nameplates" .. CVarIcon,
+			desc = "The space between each nameplate vertically when stacking is enabled.\n\n|cFFFFFFFFDefault: 1.10|r" .. CVarDesc .. "\n\n|cFFFFFF00Important|r: if you find issues with this setting, use:\n|cFFFFFFFF/run SetCVar ('nameplateOverlapV', '1.6')|r",
+			nocombat = true,
+		},
+		
 		{
 			type = "range",
 			get = function() return tonumber (GetCVar (CVAR_CULLINGDISTANCE)) end,
@@ -724,6 +745,9 @@ local interface_options = {
 			desc = "How far you can see nameplates (in yards).\n\n|cFFFFFFFFDefault: 40|r" .. CVarDesc,
 			nocombat = true,
 		},
+	
+		{type = "breakline"},
+		
 		{
 			type = "toggle",
 			get = function() return GetCVar (CVAR_ENEMY_MINIONS) == CVAR_ENABLED end,
@@ -739,8 +763,6 @@ local interface_options = {
 			desc = "Show nameplate for enemy pets, totems and guardians." .. CVarDesc,
 			nocombat = true,
 		},
-		
-		{type = "breakline"},
 		
 		{
 			type = "toggle",

@@ -725,6 +725,8 @@ Plater.DefaultSpellRangeList = {
 
 	--store if the player is not inside an instance
 	local IS_IN_OPEN_WORLD = true
+	--store if the player is inside a instance (raid or dungeon)
+	local IS_IN_INSTANCE = false
 
 	--if true, the animation will update its settings before play
 	local IS_EDITING_SPELL_ANIMATIONS = false
@@ -1741,6 +1743,7 @@ Plater.DefaultSpellRangeList = {
 			Plater.ZoneName = name
 			
 			IS_IN_OPEN_WORLD = Plater.ZoneInstanceType == "none"
+			IS_IN_INSTANCE = Plater.ZoneInstanceType == "raid" or Plater.ZoneInstanceType == "party"
 			
 			Plater.UpdateAllPlates()
 			Plater.RefreshAutoToggle()
@@ -5061,9 +5064,8 @@ end
 			if (isTanking) then
 				--o jogador esta tankando como dps
 				set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.aggro))
-				if (not self.PlateFrame.playerHasAggro) then
+				if (not self.PlateFrame.playerHasAggro and IS_IN_INSTANCE) then
 					self.PlateFrame.PlayBodyFlash ("-AGGRO-")
-					
 				end
 				self.PlateFrame.playerHasAggro = true
 				
@@ -5105,7 +5107,7 @@ end
 				else
 					if (threatStatus == 3) then --player is tanking the mob as dps
 						set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.aggro))
-						if (not self.PlateFrame.playerHasAggro) then
+						if (not self.PlateFrame.playerHasAggro and IS_IN_INSTANCE) then
 							self.PlateFrame.PlayBodyFlash ("-AGGRO-")
 						end
 						self.PlateFrame.playerHasAggro = true
@@ -6210,8 +6212,10 @@ end
 		--set the border color
 		if (not self.customBorderColor) then
 			self.healthBar.border:SetVertexColor (DB_BORDER_COLOR_R, DB_BORDER_COLOR_G, DB_BORDER_COLOR_B, DB_BORDER_COLOR_A)
+			self.powerBar.border:SetVertexColor (DB_BORDER_COLOR_R, DB_BORDER_COLOR_G, DB_BORDER_COLOR_B, DB_BORDER_COLOR_A)
 		else
 			self.healthBar.border:SetVertexColor (unpack (self.customBorderColor))
+			self.powerBar.border:SetVertexColor (unpack (self.customBorderColor))
 		end
 	end
 
@@ -6244,6 +6248,9 @@ end
 		
 		plateFrame.unitFrame.healthBar.border:SetBorderSizes (DB_BORDER_THICKNESS, DB_BORDER_THICKNESS, DB_BORDER_THICKNESS, DB_BORDER_THICKNESS)
 		plateFrame.unitFrame.healthBar.border:UpdateSizes()
+		
+		plateFrame.unitFrame.powerBar.border:SetBorderSizes (DB_BORDER_THICKNESS, DB_BORDER_THICKNESS, DB_BORDER_THICKNESS, DB_BORDER_THICKNESS)
+		plateFrame.unitFrame.powerBar.border:UpdateSizes()
 	end
 
 	-- ~raidmarker ~raidtarget
@@ -7225,13 +7232,21 @@ function Plater.SetCVarsOnFirstRun()
 	--	SetCVar ("nameplateSelfTopInset", abs (20 - 99) / 100)
 	
 	--> set the stacking to true
-	SetCVar ("nameplateMotion", CVAR_ENABLED)
+	--SetCVar ("nameplateMotion", CVAR_ENABLED) --March 08, 2019 don't change the stacking type when installing plater
+	--> distance between each nameplate when using stacking
+	--SetCVar ("nameplateOverlapV", 1.25)
 	
 	--> make nameplates always shown and down't show minions
 	SetCVar ("nameplateShowAll", CVAR_ENABLED)
-	SetCVar ("ShowNamePlateLoseAggroFlash", CVAR_ENABLED)
+	SetCVar ("ShowNamePlateLoseAggroFlash", CVAR_ENABLED) --blizzard flash
+	
+	--enable enemy minus nameplates
 	SetCVar ("nameplateShowEnemyMinions", CVAR_ENABLED)
 	SetCVar ("nameplateShowEnemyMinus", CVAR_ENABLED)
+	
+	--don't show friendly npcs
+	SetCVar ("nameplateShowFriendlyNPCs", 0)
+	--disable friendly minius nameplates
 	SetCVar ("nameplateShowFriendlyGuardians", CVAR_DISABLED)
 	SetCVar ("nameplateShowFriendlyPets", CVAR_DISABLED)
 	SetCVar ("nameplateShowFriendlyTotems", CVAR_DISABLED)
@@ -7240,8 +7255,11 @@ function Plater.SetCVarsOnFirstRun()
 	--> make it show the class color of players
 	SetCVar ("ShowClassColorInNameplate", CVAR_ENABLED)
 	
-	--> just reset to default the clamp from the top side
-	SetCVar ("nameplateOtherTopInset", 0.075)
+	--> lock nameplates to screen
+	SetCVar ("nameplateOtherTopInset", "0.085")
+	SetCVar ("nameplateLargeTopInset", "0.085")
+	SetCVar ("nameplateTargetRadialPosition", "1")
+	SetCVar ("nameplateTargetBehindMaxDistance", "30")
 
 	--> reset the horizontal and vertical scale
 	SetCVar ("NamePlateHorizontalScale", CVAR_ENABLED)
@@ -7250,15 +7268,10 @@ function Plater.SetCVarsOnFirstRun()
 	--> make the selection be a little bigger
 	SetCVar ("nameplateSelectedScale", 1.15)
 	
-	--> distance between each nameplate when using stacking
-	SetCVar ("nameplateOverlapV", 1.25)
-	
 	--> movement speed of nameplates when using stacking, going above this isn't recommended
 	SetCVar ("nameplateMotionSpeed", 0.05)
 	--> this must be 1 for bug reasons on the game client
 	SetCVar ("nameplateOccludedAlphaMult", 1)
-	--> don't show friendly npcs
-	SetCVar ("nameplateShowFriendlyNPCs", 0)
 	--> make the personal bar hide very fast
 	SetCVar ("nameplatePersonalHideDelaySeconds", 0.2)
 
