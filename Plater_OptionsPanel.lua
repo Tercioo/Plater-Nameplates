@@ -986,8 +986,8 @@ local debuff_options = {
 			Plater.RefreshAuras()
 			Plater.UpdateAllPlates()
 		end,
-		min = 8,
-		max = 40,
+		min = 4,
+		max = 80,
 		step = 1,
 		name = "Width",
 		desc = "Debuff's icon width.",
@@ -1001,8 +1001,8 @@ local debuff_options = {
 			Plater.RefreshAuras()
 			Plater.UpdateAllPlates()
 		end,
-		min = 8,
-		max = 40,
+		min = 4,
+		max = 80,
 		step = 1,
 		name = "Height",
 		desc = "Debuff's icon height.",
@@ -1029,8 +1029,8 @@ local debuff_options = {
 			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
-		min = -100,
-		max = 100,
+		min = -200,
+		max = 200,
 		step = 1,
 		name = "X Offset",
 		desc = "X Offset",
@@ -1043,8 +1043,8 @@ local debuff_options = {
 			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
-		min = -100,
-		max = 100,
+		min = -200,
+		max = 200,
 		step = 1,
 		name = "Y Offset",
 		desc = "Y Offset",
@@ -1081,8 +1081,8 @@ local debuff_options = {
 			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
-		min = -100,
-		max = 100,
+		min = -200,
+		max = 200,
 		step = 1,
 		name = "X Offset",
 		desc = "X Offset",
@@ -1095,8 +1095,8 @@ local debuff_options = {
 			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
-		min = -100,
-		max = 100,
+		min = -200,
+		max = 200,
 		step = 1,
 		name = "Y Offset",
 		desc = "Y Offset",
@@ -3689,8 +3689,8 @@ do
 					Plater.RefreshAuras()
 					Plater.UpdateAllPlates()
 				end,
-				min = 8,
-				max = 40,
+				min = 4,
+				max = 80,
 				step = 1,
 				name = "Width",
 				desc = "Debuff's icon width.",
@@ -3703,8 +3703,8 @@ do
 					Plater.RefreshAuras()
 					Plater.UpdateAllPlates()
 				end,
-				min = 8,
-				max = 40,
+				min = 4,
+				max = 80,
 				step = 1,
 				name = "Height",
 				desc = "Debuff's icon height.",
@@ -10436,8 +10436,7 @@ local relevance_options = {
 		
 		{type = "breakline"},
 		{type = "label", get = function() return "Misc:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-		
-		--[=
+
 		{
 			type = "toggle",
 			get = function() return Plater.db.profile.hide_enemy_castbars end,
@@ -10458,39 +10457,7 @@ local relevance_options = {
 			name = "Hide Friendly Cast Bar",
 			desc = "Hide Friendly Cast Bar",
 		},
-		--]=]
-		
-		--[=
-		--{type = "label", get = function() return "Border Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-		
-		{
-			type = "range",
-			get = function() return Plater.db.profile.healthbar_framelevel end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.healthbar_framelevel = value
-				Plater.RefreshDBUpvalues()
-				Plater.UpdateAllPlates()
-			end,
-			min = 0,
-			max = 75,
-			step = 1,
-			name = "HealthBar Frame Level",
-			desc = "Add this to the default frame level of the healthbar",
-		},
-		{
-			type = "range",
-			get = function() return Plater.db.profile.castbar_framelevel end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.castbar_framelevel = value
-				Plater.RefreshDBUpvalues()
-				Plater.UpdateAllPlates()
-			end,
-			min = 0,
-			max = 75,
-			step = 1,
-			name = "CastBar Frame Level",
-			desc = "Add this to the default frame level of the castbar",
-		},
+
 		{
 			type = "toggle",
 			get = function() return Plater.db.profile.show_health_prediction end,

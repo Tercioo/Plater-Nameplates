@@ -619,7 +619,6 @@ Plater.DefaultSpellRangeList = {
 	local DB_AURA_GROW_DIRECTION2 --> secondary aura frame is adding buffs in a different frame
 
 	local IS_USING_DETAILS_INTEGRATION
-	local DB_UPDATE_FRAMELEVEL
 
 	local DB_TRACK_METHOD
 	local DB_BORDER_COLOR_R
@@ -1285,12 +1284,6 @@ Plater.DefaultSpellRangeList = {
 		
 		DB_SHOW_PURGE_IN_EXTRA_ICONS = profile.extra_icon_show_purge
 		
-		if (Plater.db.profile.healthbar_framelevel ~= 0 or profile.castbar_framelevel ~= 0) then
-			DB_UPDATE_FRAMELEVEL = true
-		else
-			DB_UPDATE_FRAMELEVEL = false
-		end
-		
 		Plater.MaxAurasPerRow = floor (profile.plate_config.enemynpc.health_incombat[1] / (profile.aura_width + Plater.AurasHorizontalPadding))
 		
 		--refresh cast bar text max size
@@ -1490,6 +1483,23 @@ Plater.DefaultSpellRangeList = {
 		end
 	end
 	
+	--self is plateFrame, w, h aren't reliable
+	--when using UIParent as the parent for the unitFrame, this function is hooked in the plateFrame OnSizeChanged script
+	--the goal is to adjust the the unitFrame scale when the plateFrame scale changes
+	--this approach also solves the issue to the unitFrame not playing correctly the animation when the nameplate is removed from the screen
+	function Plater.UpdateUIParentScale (self, w, h) --private 
+		if (self.unitFrame) then
+			local defaultScale = self:GetEffectiveScale()
+			if (defaultScale < 0.4) then
+				--assuming the nameplate is in process of being removed from the screen if the scale if lower than .4
+				self.unitFrame:SetScale (defaultScale)
+			else
+				--scale (adding a fine tune knob)
+				local scaleFineTune = Plater.db.profile.ui_parent_scale_tune
+				self.unitFrame:SetScale (Clamp (defaultScale + scaleFineTune, 0.01, 5))
+			end
+		end
+	end
 	
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> event handler
@@ -1838,24 +1848,9 @@ Plater.DefaultSpellRangeList = {
 				local newUnitFrame
 				if (Plater.db.profile.use_ui_parent) then
 					--when using UIParent as the unit frame parent, adjust the unitFrame scale to be equal to blizzard plateFrame
-					--todo: move this function to outside the scope
-					function Plater.UpdateUIParentScale (self, w, h)--private --self is plateFrame, w, h aren't reliable, this function is also called from ~updatesize
-						if self.unitFrame then
-							local defaultScale = self:GetEffectiveScale()
-							if (defaultScale < 0.4) then
-								--assuming the nameplate is in process of being removed from the screen if the scale if lower than .4
-								self.unitFrame:SetScale(defaultScale)
-							else							
-								--scale (adding a fine tune knob)
-								local scaleFineTune = Plater.db.profile.ui_parent_scale_tune
-								self.unitFrame:SetScale(Clamp (defaultScale + scaleFineTune, 0.01, 5))
-							end
-						end
-					end
-				
 					newUnitFrame = DF:CreateUnitFrame (UIParent, plateFrame:GetName() .. "PlaterUnitFrame", unitFrameOptions, healthBarOptions, castBarOptions)
-					newUnitFrame:SetAllPoints(parent)
-					newUnitFrame:SetFrameStrata("BACKGROUND")
+					newUnitFrame:SetAllPoints (parent)
+					newUnitFrame:SetFrameStrata ("BACKGROUND")
 
 					plateFrame:HookScript("OnSizeChanged", Plater.UpdateUIParentScale)
 					--end of patch
@@ -1897,8 +1892,6 @@ Plater.DefaultSpellRangeList = {
 				plateFrame.NameAnchor = 0
 				plateFrame [MEMBER_ALPHA] = 1
 				plateFrame.unitFrame.healthBar.isNamePlate = true
-				plateFrame.unitFrame.healthBar.DefaultFrameLevel = plateFrame.unitFrame.healthBar:GetFrameLevel()
-				plateFrame.unitFrame.castBar.DefaultFrameLevel = plateFrame.unitFrame.castBar:GetFrameLevel()
 			
 			plateFrame.unitFrame.RefreshID = 0
 			
@@ -6136,16 +6129,6 @@ end
 			end
 		end
 		
-		--update the frame level
-		if (DB_UPDATE_FRAMELEVEL) then
-			if (Plater.db.profile.healthbar_framelevel ~= 0) then
-				healthBar:SetFrameLevel (healthBar.DefaultFrameLevel + Plater.db.profile.healthbar_framelevel)
-			end
-			if (Plater.db.profile.castbar_framelevel ~= 0) then
-				castBar:SetFrameLevel (castBar.DefaultFrameLevel + Plater.db.profile.castbar_framelevel)
-			end
-		end
-		
 		--update options in the extra icons row frame
 		if (unitFrame.ExtraIconFrame.RefreshID < PLATER_REFRESH_ID) then
 			Plater.SetAnchor (unitFrame.ExtraIconFrame, Plater.db.profile.extra_icon_anchor)
@@ -6617,16 +6600,17 @@ end
 	end
 	local on_fade_in_finished = function (animation)
 		animation.playing = nil
-		animation:GetParent():GetParent().FadedIn = true
+		animation:GetParent().PlateFrame.FadedIn = true
 		animation:GetParent():SetAlpha (AlphaBlending)
-		animation:GetParent():GetParent() [MEMBER_ALPHA] = AlphaBlending
+		animation:GetParent().PlateFrame [MEMBER_ALPHA] = AlphaBlending
+		
 	end
 	local on_fade_out_finished = function (animation)
 		animation.playing = nil
-		animation:GetParent():GetParent().FadedIn = false
+		animation:GetParent().PlateFrame.FadedIn = false
 		local alpha = Plater.db.profile.range_check_alpha
 		animation:GetParent():SetAlpha (alpha)
-		animation:GetParent():GetParent() [MEMBER_ALPHA] = alpha
+		animation:GetParent().PlateFrame [MEMBER_ALPHA] = alpha
 	end
 	local plate_fade_in = function (plateFrame)
 		plateFrame.unitFrame.FadeIn.Animation:SetFromAlpha (plateFrame.unitFrame:GetAlpha())
@@ -7543,6 +7527,46 @@ end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> API ~API ãpi
+
+	--attempt to get the role of the unit shown in the nameplate
+	function Plater.GetUnitRole (unitFrame)
+		local assignedRole = UnitGroupRolesAssigned (unitFrame.unit)
+		if (assignedRole and assignedRole ~= "NONE") then
+			return assignedRole
+		end
+		
+		if (Plater.ZoneInstanceType == "arena") then
+			local oponentes = GetNumArenaOpponentSpecs()
+			for i = 1, oponentes do
+				local unitGUID = UnitGUID ("arena" .. i)
+				if (unitGUID == unitFrame [MEMBER_GUID]) then
+					local spec = GetArenaOpponentSpec (i)
+					if (spec) then
+						local id, name, description, icon, role, class = GetSpecializationInfoByID (spec)
+						if (role and role ~= "NONE") then
+							return role
+						end
+					end
+				end
+			end
+			
+		elseif (Plater.ZoneInstanceType == "pvp") then
+			if (Details) then
+				local actor = Details:GetActor ("current", DETAILS_ATTRIBUTE_DAMAGE, GetUnitName (unitFrame.unit, true))
+				if (actor) then
+					local spec = actor.spec
+					if (spec) then
+						local id, name, description, icon, role, class = GetSpecializationInfoByID (spec)
+						if (role and role ~= "NONE") then
+							return role
+						end
+					end
+				end
+			end
+		end
+		
+		return assignedRole
+	end
 
 	--similar to Plater.GetSettings, but can be called from scripts
 	--is is also safe because it passes a read-only table with copied values

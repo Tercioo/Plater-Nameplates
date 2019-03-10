@@ -549,8 +549,11 @@ PLATER_DEFAULT_SETTINGS = {
 		use_color_lerp = false,
 		color_lerp_speed = 12,
 		
-		healthbar_framelevel = 0,
-		castbar_framelevel = 0,
+		--removed on march 10, 2019, can be cleaned up:
+		--options for this feature also got removed from the options panel
+		--plater.lua got full cleanup on this feature as well
+		--healthbar_framelevel = 0,
+		--castbar_framelevel = 0,
 		
 		hide_blizzard_castbar = false,
 		
