@@ -13,6 +13,8 @@
 -- local healthBar = unitFrame.healthBar
 -- local castBar = unitFrame.castBar
 
+-- navigate within the code using search tags: ~created ~added ~color ~border, etc...
+
  if (true) then
 	--return
 	--but not today
@@ -1483,10 +1485,10 @@ Plater.DefaultSpellRangeList = {
 		end
 	end
 	
-	--self is plateFrame, w, h aren't reliable
 	--when using UIParent as the parent for the unitFrame, this function is hooked in the plateFrame OnSizeChanged script
 	--the goal is to adjust the the unitFrame scale when the plateFrame scale changes
 	--this approach also solves the issue to the unitFrame not playing correctly the animation when the nameplate is removed from the screen
+	--self is plateFrame, w, h aren't reliable
 	function Plater.UpdateUIParentScale (self, w, h) --private 
 		if (self.unitFrame) then
 			local defaultScale = self:GetEffectiveScale()
@@ -1853,6 +1855,12 @@ Plater.DefaultSpellRangeList = {
 					newUnitFrame:SetFrameStrata ("BACKGROUND")
 
 					plateFrame:HookScript("OnSizeChanged", Plater.UpdateUIParentScale)
+					
+					--create a 33ms show animation played when the nameplate is added in the screen
+					newUnitFrame.ShowUIParentAnimation = DF:CreateAnimationHub (newUnitFrame, nil, function(self) Plater.UpdateUIParentScale (self:GetParent().PlateFrame) end)
+					DF:CreateAnimation (newUnitFrame.ShowUIParentAnimation, "scale", 1, 0.033, .5, .5, 1, 1)
+					DF:CreateAnimation (newUnitFrame.ShowUIParentAnimation, "alpha", 1, 0.033, .5, 1)
+					
 					--end of patch
 					
 					newUnitFrame.IsUIParent = true --expose to scripts the unitFrame is a UIParent child
@@ -2285,6 +2293,10 @@ Plater.DefaultSpellRangeList = {
 			local unitFrame = plateFrame.unitFrame
 			local castBar = unitFrame.castBar
 			local healthBar = unitFrame.healthBar
+			
+			if (unitFrame.ShowUIParentAnimation) then
+				unitFrame.ShowUIParentAnimation:Play()
+			end
 			
 			if (not unitFrame.HasHooksRegistered) then
 				--hook the retail nameplate

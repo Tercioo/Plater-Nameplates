@@ -5302,6 +5302,43 @@ local relevance_options = {
 			name = "No Spell Name Length Limitation",
 			desc = "Spell name text won't be cut to fit within the cast bar width.",
 		},
+
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.hide_enemy_castbars end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.hide_enemy_castbars = value
+				Plater.RefreshDBUpvalues()
+			end,
+			name = "Hide Enemy Cast Bar",
+			desc = "Hide Enemy Cast Bar",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.hide_friendly_castbars end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.hide_friendly_castbars = value
+				Plater.RefreshDBUpvalues()
+			end,
+			name = "Hide Friendly Cast Bar",
+			desc = "Hide Friendly Cast Bar",
+		},		
+
+		{type = "blank"},
+		
+		{
+			type = "execute",
+			func = function() 
+				if (Plater.IsShowingCastBarTest) then
+					Plater.StopCastBarTest()
+					Plater:Msg ("Test loop for cast bar stopped.")
+				else
+					Plater.StartCastBarTest()
+				end
+			end,
+			desc = "Start cast bar test, press again to stop.",
+			name = "Toggle Cast Bar Test",
+		},
 		
 		{type = "blank"},
 		
@@ -5418,23 +5455,7 @@ local relevance_options = {
 			name = "Fade Out Time",
 			desc = "When a cast ends, this is the amount of time the cast bar takes to go from 100% transparency to not be visible at all.",
 		},
-		
-		{type = "blank"},
-		
-		{
-			type = "execute",
-			func = function() 
-				if (Plater.IsShowingCastBarTest) then
-					Plater.StopCastBarTest()
-					Plater:Msg ("Test loop for cast bar stopped.")
-				else
-					Plater.StartCastBarTest()
-				end
-			end,
-			desc = "Start cast bar test, press again to stop.",
-			name = "Toggle Cast Bar Test",
-		},
-			
+
 		{type = "breakline"},
 		
 		{type = "label", get = function() return "Cast Bar Colors:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
@@ -10436,28 +10457,7 @@ local relevance_options = {
 		
 		{type = "breakline"},
 		{type = "label", get = function() return "Misc:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.hide_enemy_castbars end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.hide_enemy_castbars = value
-				Plater.RefreshDBUpvalues()
-			end,
-			name = "Hide Enemy Cast Bar",
-			desc = "Hide Enemy Cast Bar",
-		},
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.hide_friendly_castbars end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.hide_friendly_castbars = value
-				Plater.RefreshDBUpvalues()
-			end,
-			name = "Hide Friendly Cast Bar",
-			desc = "Hide Friendly Cast Bar",
-		},
-
+		
 		{
 			type = "toggle",
 			get = function() return Plater.db.profile.show_health_prediction end,
