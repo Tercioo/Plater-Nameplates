@@ -1857,9 +1857,12 @@ Plater.DefaultSpellRangeList = {
 					plateFrame:HookScript("OnSizeChanged", Plater.UpdateUIParentScale)
 					
 					--create a 33ms show animation played when the nameplate is added in the screen
-					newUnitFrame.ShowUIParentAnimation = DF:CreateAnimationHub (newUnitFrame, nil, function(self) Plater.UpdateUIParentScale (self:GetParent().PlateFrame) end)
-					DF:CreateAnimation (newUnitFrame.ShowUIParentAnimation, "scale", 1, 0.033, .5, .5, 1, 1)
-					DF:CreateAnimation (newUnitFrame.ShowUIParentAnimation, "alpha", 1, 0.033, .5, 1)
+					--nevermind, unitFrame childs are kepping the last alpha value of the animation instead of reseting to their defaults
+					--i'm considering this a bug in the animation API from the game client
+					--at the moment this cannot be used
+					--newUnitFrame.ShowUIParentAnimation = DF:CreateAnimationHub (newUnitFrame, nil, function(self) Plater.UpdateUIParentScale (self:GetParent().PlateFrame) end)
+					--DF:CreateAnimation (newUnitFrame.ShowUIParentAnimation, "scale", 1, 0.033, .5, .5, 1, 1)
+					--DF:CreateAnimation (newUnitFrame.ShowUIParentAnimation, "alpha", 1, 0.033, .5, 1)
 					
 					--end of patch
 					
@@ -2120,6 +2123,7 @@ Plater.DefaultSpellRangeList = {
 				healthBar.PlateFrame = plateFrame
 				plateFrame.unitName = plateFrame.unitFrame.unitName
 				plateFrame.CurrentUnitNameString = plateFrame.unitFrame.unitName
+				healthBar.unitName:SetDrawLayer ("overlay", 7)
 				
 				--special name and title
 				local ActorNameSpecial = plateFrame:CreateFontString (nil, "artwork", "GameFontNormal")
@@ -4991,6 +4995,7 @@ end
 		end
 		
 		local isTanking, threatStatus, threatpct = UnitDetailedThreatSituation ("player", self.displayedUnit)
+		
 		self.namePlateThreatPercent = threatpct or 0
 		-- (3 = securely tanking, 2 = insecurely tanking, 1 = not tanking but higher threat than tank, 0 = not tanking and lower threat than tank)
 		
@@ -6095,7 +6100,7 @@ end
 			--setup power bar
 			unitFrame.powerBar:SetTexture (DB_TEXTURE_HEALTHBAR)
 			
-			--setup health bar
+			--setup health bar~
 			healthBar:SetTexture (DB_TEXTURE_HEALTHBAR)
 			healthBar.background:SetTexture (DB_TEXTURE_HEALTHBAR_BG)
 			healthBar.background:SetVertexColor (unpack (profile.health_statusbar_bgcolor))
