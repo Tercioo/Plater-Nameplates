@@ -380,6 +380,7 @@ function Plater.OpenOptionsPanel()
 				profilesFrame.NewProfileTextEntry:Hide()
 			end
 			
+			--importing a profile in the profiles tab
 			function profilesFrame.ConfirmImportScript()
 				if (profilesFrame.IsExporting) then
 					profilesFrame.HideStringField()
@@ -391,7 +392,19 @@ function Plater.OpenOptionsPanel()
 
 				profilesFrame.HideStringField()
 				
-				if (profile) then
+				if (profile and type (profile == "table")) then
+				
+					--decompress success, need to see if this is a real profile and not a script
+					if (not profile.plate_config) then
+						local scriptType = Plater.GetDecodedScriptType (profile)
+						if (scriptType == "hook" or scriptType == "script") then
+							DF:ShowErrorMessage ("Invalid profile file.\n\nImport scripts or mods at the scripting tab.", "Plater Nameplates")
+						else
+							DF:ShowErrorMessage ("Invalid profile file.", "Plater Nameplates")
+						end
+						return
+					end
+				
 					local profileName = profilesFrame.NewProfileTextEntry:GetText()
 					if (profileName == "") then
 						Plater:Msg ("Invalid profile name")

@@ -1240,6 +1240,10 @@ function Plater.CreateHookingPanel()
 					--refresh the script selection scrollbox
 					hookFrame.ScriptSelectionScrollBox:Refresh()
 				else
+					--check if the user in importing a profile in the scripting tab
+					if (indexScriptTable.plate_config) then
+						DF:ShowErrorMessage ("Invalid Script or Mod.\n\nImport profiles at the Profiles tab.")
+					end
 					Plater:Msg ("Cannot import: data imported is invalid")
 				end
 			else
