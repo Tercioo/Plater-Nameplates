@@ -561,8 +561,24 @@ Plater.TriggerDefaultMembers = {
 			mainFrame.CreateNewScript()
 		end
 		
+		--localization
+		local buttonText = "" --text on the create new button
+		local importTooltipText = "" --text when hover over the import button
+		
+		if (scriptDB == "script") then
+			buttonText = "New Script"
+			importTooltipText = "Import Script"
+			
+		elseif (scriptDB == "hook") then
+			buttonText = "New Mod"
+			importTooltipText = "Import Mod"
+		end
+		
+		
+		
+		
 		--create new script script button, it does use the width of the scrollbox to select a created script	
-		local create_new_script_button = DF:CreateButton (mainFrame, onclick_create_new_script_button, scrollbox_size[1] - (28*3), buttons_size[2], "New Script", -1, nil, nil, "CreateButton", nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+		local create_new_script_button = DF:CreateButton (mainFrame, onclick_create_new_script_button, scrollbox_size[1] - (28*3), buttons_size[2], buttonText, -1, nil, nil, "CreateButton", nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 		create_new_script_button:SetPoint ("topleft", mainFrame, "topleft", 10, start_y)
 		create_new_script_button:SetIcon ([[Interface\BUTTONS\UI-PlusButton-Up]], 20, 20, "overlay", {0, 1, 0, 1})
 		
@@ -633,8 +649,8 @@ Plater.TriggerDefaultMembers = {
 			GameCooltip:SetOption ("FixedWidth", 200)
 			GameCooltip:SetOwner  (import_script_button.widget)
 			
-			GameCooltip:AddLine ("Import Script", "", 1, "yellow", "yellow", 12, nil, "OUTLINE")
-			GameCooltip:AddLine ("Add a new script from a previous exported string.\n\nYou can export to string by right clicking a script in the menu below.")
+			GameCooltip:AddLine (importTooltipText, "", 1, "yellow", "yellow", 12, nil, "OUTLINE")
+			GameCooltip:AddLine ("Visit http://wago.io for more scripts, mods and profiles.")
 			
 			GameCooltip:Show()
 		end)	
@@ -1363,7 +1379,7 @@ function Plater.CreateHookingPanel()
 		--build the table of the new script
 		local newScriptObject = {
 			Enabled = true,
-			Name = "New Script",
+			Name = "New Mod",
 			Icon = "",
 			Desc = "",
 			Author = UnitName ("Player") .. "-" .. GetRealmName(),

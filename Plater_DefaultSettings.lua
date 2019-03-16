@@ -485,6 +485,8 @@ PLATER_DEFAULT_SETTINGS = {
 		show_health_prediction = false,
 		show_shield_prediction = false,
 		
+		show_interrupt_author = true,
+		
 		--experimental settings for the UIParent parenting
 		use_ui_parent = false,
 		use_ui_parent_just_enabled = false,

@@ -5999,7 +5999,7 @@ end
 			end
 		end
 		
-		--se a plate for de npc amigo
+		--if the nameplate is for a friendly npc
 		if (actorType == ACTORTYPE_FRIENDLY_NPC) then
 		
 			if (IS_IN_OPEN_WORLD and DB_PLATE_CONFIG [actorType].quest_enabled and Plater.IsQuestObjective (plateFrame)) then
@@ -7154,16 +7154,18 @@ end
 		end,
 		
 		SPELL_INTERRUPT = function (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical)
+			if (not Plater.db.profile.show_interrupt_author) then
+				return
+			end
+			
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 				if (plateFrame.unitFrame.castBar:IsShown()) then
-					--if (plateFrame.unitFrame.castBar.Text:GetText() == INTERRUPTED) then
-						if (plateFrame [MEMBER_GUID] == targetGUID) then
-							plateFrame.unitFrame.castBar.Text:SetText (INTERRUPTED .. " [" .. Plater.SetTextColorByClass (sourceName, sourceName) .. "]")
-							plateFrame.unitFrame.castBar.IsInterrupted = true
-							--> check and stop the casting script if any
-							plateFrame.unitFrame.castBar:OnHideWidget()
-						end
-					--end
+					if (plateFrame [MEMBER_GUID] == targetGUID) then
+						plateFrame.unitFrame.castBar.Text:SetText (INTERRUPTED .. " [" .. Plater.SetTextColorByClass (sourceName, sourceName) .. "]")
+						plateFrame.unitFrame.castBar.IsInterrupted = true
+						--> check and stop the casting script if any
+						plateFrame.unitFrame.castBar:OnHideWidget()
+					end
 				end
 			end
 		end,
@@ -7396,16 +7398,18 @@ end
 					end
 				end
 
-				plateFrame [MEMBER_QUEST] = true
-				plateFrame.unitFrame [MEMBER_QUEST] = true
-				plateFrame.QuestAmountCurrent = amount1
-				plateFrame.QuestAmountTotal = amount2
-				
-				--expose to scripts
-				plateFrame.unitFrame.QuestAmountCurrent = amount1
-				plateFrame.unitFrame.QuestAmountTotal = amount2
-				
-				return true
+				if (amount1 ~= amount2) then
+					plateFrame [MEMBER_QUEST] = true
+					plateFrame.unitFrame [MEMBER_QUEST] = true
+					plateFrame.QuestAmountCurrent = amount1
+					plateFrame.QuestAmountTotal = amount2
+					
+					--expose to scripts
+					plateFrame.unitFrame.QuestAmountCurrent = amount1
+					plateFrame.unitFrame.QuestAmountTotal = amount2
+					
+					return true
+				end
 			end
 		end
 	end

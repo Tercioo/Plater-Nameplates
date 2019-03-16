@@ -452,6 +452,20 @@ function Plater.OpenOptionsPanel()
 			local openManagementProfileButton = DF:CreateButton (profilesFrame, profilesFrame.OpenProfileManagement, 160, 20, "Open Profile Settings", -1, nil, nil, "ProfileSettingsButton", nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 			openManagementProfileButton:SetPoint ("topleft", importProfileButton, "bottomleft", 0, -10)
 			
+			local moreProfilesLabel = DF:CreateLabel (profilesFrame, "Get more profiles at Wago.io:", DF:GetTemplate ("font", "PLATER_BUTTON"))
+			moreProfilesLabel:SetPoint ("topleft", openManagementProfileButton, "bottomleft", 0, -20)
+			
+			local moreProfilesTextEntry = DF:CreateTextEntry (profilesFrame, function()end, 160, 20, "moreProfilesTextEntry", _, _, options_dropdown_template)
+			moreProfilesTextEntry:SetPoint ("topleft", moreProfilesLabel, "bottomleft", 0, -2)
+			moreProfilesTextEntry:SetText ("https://wago.io/plater")
+			
+			moreProfilesTextEntry:SetHook ("OnEditFocusGained", function()
+				moreProfilesTextEntry:HighlightText()
+			end)
+			
+			profilesFrame.moreProfilesLabel = moreProfilesLabel
+			profilesFrame.moreProfilesTextEntry = moreProfilesTextEntry
+			
 			--text editor
 			local luaeditor_backdrop_color = {.2, .2, .2, .5}
 			local luaeditor_border_color = {0, 0, 0, 1}
@@ -490,6 +504,10 @@ function Plater.OpenOptionsPanel()
 			profilesFrame.NewProfileTextEntry = newProfileNameTextEntry
 			profilesFrame.NewProfileLabel:Hide()
 			profilesFrame.NewProfileTextEntry:Hide()
+			
+			
+			
+			
 	end
 -------------------------
 -- fun��es gerais dos dropdowns ~dropdowns
@@ -5342,13 +5360,13 @@ local relevance_options = {
 
 		{
 			type = "toggle",
-			get = function() return Plater.db.profile.hide_enemy_castbars end,
+			get = function() return Plater.db.profile.show_interrupt_author end,
 			set = function (self, fixedparam, value) 
-				Plater.db.profile.hide_enemy_castbars = value
+				Plater.db.profile.show_interrupt_author = value
 				Plater.RefreshDBUpvalues()
 			end,
-			name = "Hide Enemy Cast Bar",
-			desc = "Hide Enemy Cast Bar",
+			name = "Show Interrupt Author",
+			desc = "Show Interrupt Author",
 		},
 		{
 			type = "toggle",
