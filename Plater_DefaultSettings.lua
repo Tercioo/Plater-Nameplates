@@ -487,9 +487,11 @@ PLATER_DEFAULT_SETTINGS = {
 		
 		--experimental settings for the UIParent parenting
 		use_ui_parent = false,
+		use_ui_parent_just_enabled = false,
 		ui_parent_base_strata = "BACKGROUND",
-		ui_parent_buff_strata = "LOW", --testing, buffs should be in front of the health bar
-		ui_parent_cast_strata = "TOOLTIP", --testing, the castbar should be in front of everythings
+		ui_parent_buff_strata = "BACKGROUND", --testing, buffs should be in front of the health bar
+		ui_parent_cast_strata = "BACKGROUND", --testing, the castbar should be in front of everythings
+		ui_parent_target_strata = "LOW", --testing, the current target nameplate should be in this strata
 		ui_parent_buff_level = 10,
 		ui_parent_cast_level = 10,
 		ui_parent_scale_tune = 0, --testing, a slider to change the unit frame scale / goal is to have a fine tune knob to adjust the overall size when using this feature
@@ -503,7 +505,7 @@ PLATER_DEFAULT_SETTINGS = {
 		},
 		
 		--> special unit
-		pet_width_scale = 0.9,
+		pet_width_scale = 0.95,
 		pet_height_scale = 0.95,
 		minor_width_scale = 0.9,
 		minor_height_scale = 0.95,

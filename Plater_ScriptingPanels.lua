@@ -88,6 +88,7 @@ Plater.APIList = {
 	
 	{Name = "CheckAuras", 			Signature = "Plater.CheckAuras (self, buffList, debuffList, noSpecialAuras)", 	Desc = "Perform a custom aura check overriding the default from Plater.\n\nbuffList and debuffList receive tables with the aura name as key and true as value, example: \n{\n    ['Arcane Intellect'] = true,\n}\n"},
 	{Name = "RefreshNameplateColor", 		Signature = "Plater.RefreshNameplateColor (unitFrame)", 				Desc = "Check which color the nameplate should have and set it."},
+	{Name = "RefreshNameplateStrata", 	Signature = "Plater.RefreshNameplateStrata (unitFrame)", 				Desc = "Reset the frame strata and frame levels to default."},
 	{Name = "UpdateNameplateThread", 	Signature = "Plater.UpdateNameplateThread (unitFrame)", 				Desc = "Perform an Aggro update on the nameplate changing color to the current thread situation."},	
 }
 

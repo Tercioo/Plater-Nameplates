@@ -13,7 +13,7 @@
 -- local healthBar = unitFrame.healthBar
 -- local castBar = unitFrame.castBar
 
--- navigate within the code using search tags: ~created ~added ~color ~border, etc...
+-- navigate within the code using search tags: ~color ~border, etc...
 
  if (true) then
 	--return
@@ -1503,6 +1503,29 @@ Plater.DefaultSpellRangeList = {
 		end
 	end
 	
+	--this reset the UIParent levels to user default set on the UIParent tab
+	--there's an api that calls this function called Plater.RefreshNameplateStrata()
+	function Plater.UpdateUIParentLevels (unitFrame) --private
+		if (Plater.db.profile.use_ui_parent) then
+			--setup frame strata and levels
+			local profile = Plater.db.profile
+			local castBar = unitFrame.castBar
+			local buffFrame1 = unitFrame.BuffFrame
+			local buffFrame2 = unitFrame.BuffFrame2
+			--strata
+			unitFrame:SetFrameStrata (profile.ui_parent_base_strata)
+			castBar:SetFrameStrata (profile.ui_parent_cast_strata)
+			buffFrame1:SetFrameStrata (profile.ui_parent_buff_strata)
+			buffFrame2:SetFrameStrata (profile.ui_parent_buff_strata)
+			--level
+			castBar:SetFrameLevel (profile.ui_parent_cast_level)
+			buffFrame1:SetFrameLevel (profile.ui_parent_buff_level)
+			buffFrame2:SetFrameLevel (profile.ui_parent_buff_level)
+		end
+	end	
+	
+
+	
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> event handler
 
@@ -1820,7 +1843,7 @@ Plater.DefaultSpellRangeList = {
 			Plater.UpdateAllPlates (true)
 		end,
 		
-		--~created ~events ıncreated ~oncreated
+		--~created ~events ùncreated ~oncreated 
 		NAME_PLATE_CREATED = function (event, plateFrame)
 			
 			--> create the unitframe
@@ -2214,6 +2237,8 @@ Plater.DefaultSpellRangeList = {
 				--this is ideal for adding borders and other overlays
 				plateFrame.unitFrame.castBar.FrameOverlay = CreateFrame ("frame", "$parentOverlayFrame", plateFrame.unitFrame.castBar)
 				plateFrame.unitFrame.castBar.FrameOverlay:SetAllPoints()
+				--pushing the spell name up
+				plateFrame.unitFrame.castBar.Text:SetParent (plateFrame.unitFrame.castBar.FrameOverlay)
 				--does have a border but its alpha is zero by default
 				plateFrame.unitFrame.castBar.FrameOverlay:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
 				plateFrame.unitFrame.castBar.FrameOverlay:SetBackdropBorderColor (1, 1, 1, 0)
@@ -2270,7 +2295,7 @@ Plater.DefaultSpellRangeList = {
 				end
 		end,
 
-		-- ~added „dded
+		-- ~added „ùdded
 		NAME_PLATE_UNIT_ADDED = function (event, unitBarId)
 		
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId)
@@ -2423,6 +2448,10 @@ Plater.DefaultSpellRangeList = {
 			end
 			
 			local actorType
+			
+			--reset the frame level and strata if using UIParent as the parent of the unitFrame
+			--the function checks if the option is enabled, no need to check here
+			Plater.UpdateUIParentLevels (unitFrame)
 			
 			if (unitFrame.unit) then
 				
@@ -2657,8 +2686,8 @@ function Plater.OnInit() --private
 	end
 	
 	--character settings
-		PlaterDBChr = PlaterDBChr or {first_run2 = {}}
-		PlaterDBChr.first_run2 = PlaterDBChr.first_run2 or {}
+		PlaterDBChr = PlaterDBChr or {first_run3 = {}}
+		PlaterDBChr.first_run3 = PlaterDBChr.first_run3 or {}
 		PlaterDBChr.debuffsBanned = PlaterDBChr.debuffsBanned or {}
 		PlaterDBChr.buffsBanned = PlaterDBChr.buffsBanned or {}
 		PlaterDBChr.spellRangeCheck = PlaterDBChr.spellRangeCheck or {}
@@ -2733,10 +2762,10 @@ function Plater.OnInit() --private
 				return
 			end
 			
-			if (not Plater.db.profile.first_run2) then
+			if (not Plater.db.profile.first_run3) then
 				C_Timer.After (15, Plater.SetCVarsOnFirstRun)
 				
-			elseif (not PlaterDBChr.first_run2 [UnitGUID ("player")]) then
+			elseif (not PlaterDBChr.first_run3 [UnitGUID ("player")]) then
 				--do not run cvars for individual characters
 				C_Timer.After (15, Plater.SetCVarsOnFirstRun)
 			else
@@ -2805,6 +2834,16 @@ function Plater.OnInit() --private
 			
 			--wait more time for the talents information be received from the server
 			C_Timer.After (4, Plater.GetHealthCutoffValue)
+			
+			--if the user just used a /reload to enable ui parenting, auto adjust the fine tune scale
+			if (Plater.db.profile.use_ui_parent_just_enabled) then
+				Plater.db.profile.use_ui_parent_just_enabled = false
+				if (Plater.db.profile.ui_parent_scale_tune == 0) then
+					if (UIParent:GetEffectiveScale() < 1) then
+						Plater.db.profile.ui_parent_scale_tune = 1 - UIParent:GetEffectiveScale()
+					end
+				end
+			end
 		end
 		Plater:RegisterEvent ("PLAYER_LOGIN")
 
@@ -3640,7 +3679,7 @@ end
 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
---> aura buffs and debuffs b ~aura ~buffs ~debuffs „uras
+--> aura buffs and debuffs b ~aura ~buffs ~debuffs ùuras
 
 	--> show the tooltip in the aura icon
 	function Plater.OnEnterAura (iconFrame) --private
@@ -4139,7 +4178,7 @@ end
 	end
 
 	
-	-- ~auras „ura
+	-- ~auras ùura
 	--receives a hash table with spell names keys and true as the value
 	--used when the user selects manual aura tracking
 	function Plater.TrackSpecificAuras (self, unit, isBuff, aurasToCheck, isPersonal, noSpecial)
@@ -4616,18 +4655,6 @@ end
 				PixelUtil.SetPoint (healthBar, "center", unitFrame, "center", 0, 0)
 				PixelUtil.SetSize (healthBar, healthBarWidth, healthBarHeight)
 		--end of patch
-			
-			--setup frame strata and levels
-			local profile = Plater.db.profile
-			--strata
-			unitFrame:SetFrameStrata (profile.ui_parent_base_strata)
-			castBar:SetFrameStrata (profile.ui_parent_cast_strata)
-			buffFrame1:SetFrameStrata (profile.ui_parent_buff_strata)
-			buffFrame2:SetFrameStrata (profile.ui_parent_buff_strata)
-			--level
-			castBar:SetFrameLevel (profile.ui_parent_cast_level)
-			buffFrame1:SetFrameLevel (profile.ui_parent_buff_level)
-			buffFrame2:SetFrameLevel (profile.ui_parent_buff_level)
 			--update scale
 			Plater.UpdateUIParentScale (plateFrame)
 		else
@@ -4763,7 +4790,7 @@ end
 		end
 	end
 	
-	-- ~ontick ~onupdate ~tick ınupdate ıntick 
+	-- ~ontick ~onupdate ~tick ùnupdate ùntick 
 	function Plater.NameplateTick (tickFrame, deltaTime) --private
 
 		tickFrame.ThrottleUpdate = tickFrame.ThrottleUpdate - deltaTime
@@ -4986,7 +5013,7 @@ end
 		end
 	end
 
-	--aggro threat ~aggro „ggro ~threat
+	--aggro threat ~aggro ùggro ~threat
 	function Plater.UpdateNameplateThread (self) --self = unitFrame
 
 		--make sure there's a unitID in the unit frame
@@ -5050,15 +5077,15 @@ end
 				end
 			else
 				--o jogador esta tankando e:
-				if (threatStatus == 3) then --esta tankando com seguranÔøΩa
+				if (threatStatus == 3) then --esta tankando com seguranùa
 					set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.aggro))
 					
-				elseif (threatStatus == 2) then --esta tankando sem seguranÔøΩa
+				elseif (threatStatus == 2) then --esta tankando sem seguranùa
 					set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.pulling))
 					self.aggroGlowUpper:Show()
 					self.aggroGlowLower:Show()
 					
-				else --nÔøΩo esta tankando
+				else --nùo esta tankando
 					set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.noaggro))
 
 				end
@@ -5212,6 +5239,10 @@ end
 				plateFrame.unitFrame.targetOverlayTexture:Show()
 			end
 			
+			if (Plater.db.profile.use_ui_parent) then
+				plateFrame.unitFrame:SetFrameStrata (Plater.db.profile.ui_parent_target_strata)
+			end
+			
 			Plater.UpdateResourceFrame()
 		else
 			plateFrame.TargetNeonUp:Hide()
@@ -5237,6 +5268,10 @@ end
 				plateFrame.Obscured:SetAlpha (DB_TARGET_SHADY_ALPHA)
 			else
 				plateFrame.Obscured:Hide()
+			end
+			
+			if (Plater.db.profile.use_ui_parent) then
+				plateFrame.unitFrame:SetFrameStrata (Plater.db.profile.ui_parent_base_strata)
 			end
 		end
 		
@@ -7241,6 +7276,11 @@ function Plater.SetCVarsOnFirstRun()
 	SetCVar ("nameplateShowAll", CVAR_ENABLED)
 	SetCVar ("ShowNamePlateLoseAggroFlash", CVAR_ENABLED) --blizzard flash
 	
+	--scale when it is too far away from the camera
+	SetCVar ("nameplateMinScale", 1)
+	--scale of the nameplate for important units, default is 1.2 which makes the nameplate be too big with the 1.15 target scale
+	SetCVar ("nameplateLargerScale", 1.10)
+	
 	--enable enemy minus nameplates
 	SetCVar ("nameplateShowEnemyMinions", CVAR_ENABLED)
 	SetCVar ("nameplateShowEnemyMinus", CVAR_ENABLED)
@@ -7267,10 +7307,10 @@ function Plater.SetCVarsOnFirstRun()
 	SetCVar ("NamePlateVerticalScale", CVAR_ENABLED)
 	
 	--> make the selection be a little bigger
-	SetCVar ("nameplateSelectedScale", 1.15)
-	
+	SetCVar ("nameplateSelectedScale", "1.15")
+
 	--> movement speed of nameplates when using stacking, going above this isn't recommended
-	SetCVar ("nameplateMotionSpeed", 0.05)
+	SetCVar ("nameplateMotionSpeed", "0.05")
 	--> this must be 1 for bug reasons on the game client
 	SetCVar ("nameplateOccludedAlphaMult", 1)
 	--> make the personal bar hide very fast
@@ -7279,6 +7319,17 @@ function Plater.SetCVarsOnFirstRun()
 	--> view distance
 	SetCVar ("nameplateMaxDistance", 100)
 	
+	PlaterDBChr.first_run3 [UnitGUID ("player")] = true
+	Plater.db.profile.first_run3 = true
+	
+	Plater.RunFunctionForEvent ("ZONE_CHANGED_NEW_AREA")
+	
+	--InterfaceOptionsNamesPanelUnitNameplatesMakeLarger:Click() --this isn't required anymore since we use our own unitframe now
+	--InterfaceOptionsNamesPanelUnitNameplatesPersonalResource:Click() --removing this since I don't have documentation on why this was added
+	--InterfaceOptionsNamesPanelUnitNameplatesPersonalResource:Click()
+	--Plater.ShutdownInterfaceOptionsPanel() --we do not disable the interface panel anymore
+	
+	--[=[
 	--> try to restore cvars from the profile
 	local savedCVars = Plater.db and Plater.db.profile and Plater.db.profile.saved_cvars
 	if (savedCVars) then
@@ -7289,21 +7340,11 @@ function Plater.SetCVarsOnFirstRun()
 			PlaterOptionsPanelFrame.RefreshOptionsFrame()
 		end
 	end
+	--]=]
 	
-	PlaterDBChr.first_run2 [UnitGUID ("player")] = true
-	Plater.db.profile.first_run2 = true
-	
-	Plater.RunFunctionForEvent ("ZONE_CHANGED_NEW_AREA")
-	
-	InterfaceOptionsNamesPanelUnitNameplatesMakeLarger:Click()
-	InterfaceOptionsNamesPanelUnitNameplatesPersonalResource:Click()
-	InterfaceOptionsNamesPanelUnitNameplatesPersonalResource:Click()
-	Plater.ShutdownInterfaceOptionsPanel()
+	--Plater:Msg ("Plater has been successfully installed on this character.")
+
 end
-
-
-
-
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> quest log stuff ~quest
@@ -7337,7 +7378,7 @@ end
 				--este npc percente a uma quest
 				local amount1, amount2 = 0, 0
 				if (not IsInGroup() and i < 8) then
-					--verifica se jÔøΩ fechou a quantidade necessÔøΩria pra esse npc
+					--verifica se jù fechou a quantidade necessùria pra esse npc
 					local nextLineText = ScanQuestTextCache [i+1]:GetText()
 					if (nextLineText) then
 						local p1, p2 = nextLineText:match ("(%d%d)/(%d%d)") --^ - 
@@ -7543,7 +7584,7 @@ end
 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
---> API ~API „pi
+--> API ~API „ùpi
 
 	--attempt to get the role of the unit shown in the nameplate
 	function Plater.GetUnitRole (unitFrame)
@@ -7584,7 +7625,7 @@ end
 		
 		return assignedRole
 	end
-
+	
 	--similar to Plater.GetSettings, but can be called from scripts
 	--is is also safe because it passes a read-only table with copied values
 	function Plater.GetConfig (unitFrame)
@@ -7594,6 +7635,11 @@ end
 	--return true if the player is in open world (not inside dungeons, etc)
 	function Plater.IsInOpenWorld()
 		return IS_IN_OPEN_WORLD
+	end
+	
+	--refresh the frame strata and frame level when using UIParent as the parent
+	function Plater.RefreshNameplateStrata (unitFrame)
+		return Plater.UpdateUIParentLevels (unitFrame)
 	end
 	
 	--return if the unit is in the friends list
@@ -8178,7 +8224,7 @@ end
 			--at the moment, self is always the unit frame
 			local okay, errortext = pcall (scriptInfo.GlobalScriptObject [hookName], frame or self, self.displayedUnit, self, scriptInfo.Env)
 			if (not okay) then
-				Plater:Msg ("Hook |cFFAAAA22" .. scriptInfo.GlobalScriptObject.DBScriptObject.Name .. "|r " .. hookName .. " error: " .. errortext)
+				Plater:Msg ("Mod |cFFAAAA22" .. scriptInfo.GlobalScriptObject.DBScriptObject.Name .. "|r code for |cFFBB8800" .. hookName .. "|r error: " .. errortext)
 			end
 		end,
 		
@@ -8437,6 +8483,7 @@ end
 		GetNpcID = true,
 		ForceTickOnAllNameplates = true,
 		UpdateUIParentScale = true,
+		UpdateUIParentLevels = true,
 	}
 	
 	local functionFilter = setmetatable ({}, {__index = function (env, key)
@@ -8564,7 +8611,7 @@ end
 
 						local okay, errortext = pcall (func, unitFrame, unitFrame.displayedUnit, unitFrame, scriptInfo.Env)
 						if (not okay) then
-							Plater:Msg ("Hook |cFFAAAA22" .. scriptInfo.GlobalScriptObject.DBScriptObject.Name .. "|r " .. scriptObject.Name .. " error: " .. errortext)
+							Plater:Msg ("Mod: |cFFAAAA22" .. scriptInfo.GlobalScriptObject.DBScriptObject.Name .. "|r " .. scriptObject.Name .. " error: " .. errortext)
 						end
 					end
 				end
