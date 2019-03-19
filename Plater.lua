@@ -50,6 +50,8 @@ local UnitIsPlayer = UnitIsPlayer
 local UnitClassification = UnitClassification
 local UnitDetailedThreatSituation = UnitDetailedThreatSituation
 local UnitAura = UnitAura
+local UnitBuff = UnitBuff
+local UnitDebuff = UnitDebuff
 local UnitCanAttack = UnitCanAttack
 local IsSpellInRange = IsSpellInRange
 local abs = math.abs
@@ -589,12 +591,12 @@ Plater.DefaultSpellRangeList = {
 	[73] = 355, --> warrior protect - Taunt
 }
 
-
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> cached value ~cache
 --Plater allocate several values in memory to save performance (cpu), this may increase memory usage
 --example: intead of querying Plater.db.profile.tank it just hold a pointer to that table in the variable DB_AGGRO_TANK_COLORS, and this pointer is updated when the user changes something in the options panel
 
+	local DB_NUMBER_REGION_EAST_ASIA
 	local DB_TICK_THROTTLE
 	local DB_LERP_COLOR
 	local DB_LERP_COLOR_SPEED
@@ -1199,6 +1201,8 @@ Plater.DefaultSpellRangeList = {
 	function Plater.RefreshDBUpvalues()
 		local profile = Plater.db.profile
 
+		DB_NUMBER_REGION_EAST_ASIA = Plater.db.profile.number_region == "eastasia"
+		
 		DB_TICK_THROTTLE = profile.update_throttle
 		DB_LERP_COLOR = profile.use_color_lerp
 		DB_LERP_COLOR_SPEED = profile.color_lerp_speed
@@ -1497,8 +1501,13 @@ Plater.DefaultSpellRangeList = {
 				self.unitFrame:SetScale (defaultScale)
 			else
 				--scale (adding a fine tune knob)
-				local scaleFineTune = Plater.db.profile.ui_parent_scale_tune
-				self.unitFrame:SetScale (Clamp (defaultScale + scaleFineTune, 0.01, 5))
+				local scaleFineTune = max (Plater.db.profile.ui_parent_scale_tune, 0.3)
+				
+				--@Ariani - March, 9
+				self.unitFrame:SetScale (defaultScale * scaleFineTune)
+				
+				--@Tercio
+				--self.unitFrame:SetScale (Clamp (defaultScale + scaleFineTune, 0.01, 5))
 			end
 		end
 	end
@@ -1523,6 +1532,63 @@ Plater.DefaultSpellRangeList = {
 			buffFrame2:SetFrameLevel (profile.ui_parent_buff_level)
 		end
 	end	
+	
+	--> regional format numbers
+	do
+		local eastAsiaMyriads_1k, eastAsiaMyriads_10k, eastAsiaMyriads_1B
+		if (GetLocale() == "koKR") then
+			eastAsiaMyriads_1k, eastAsiaMyriads_10k, eastAsiaMyriads_1B = "천", "만", "억"
+			
+		elseif (GetLocale() == "zhCN") then
+			eastAsiaMyriads_1k, eastAsiaMyriads_10k, eastAsiaMyriads_1B = "千", "万", "亿"
+			
+		elseif (GetLocale() == "zhTW") then
+			eastAsiaMyriads_1k, eastAsiaMyriads_10k, eastAsiaMyriads_1B = "千", "萬", "億"
+			
+		else
+			eastAsiaMyriads_1k, eastAsiaMyriads_10k, eastAsiaMyriads_1B = "천", "만", "억"
+		end
+
+		function Plater.FormatNumber (number)
+			if (DB_NUMBER_REGION_EAST_ASIA) then
+				if (number > 99999999) then
+					return format ("%.2f", number/100000000) .. eastAsiaMyriads_1B
+					
+				elseif (number > 999999) then
+					return format ("%.2f", number/10000) .. eastAsiaMyriads_10k
+					
+				elseif (number > 99999) then
+					return floor (number/10000) .. eastAsiaMyriads_10k
+					
+				elseif (number > 9999) then
+					return format ("%.1f", (number/10000)) .. eastAsiaMyriads_10k
+					
+				elseif (number > 999) then
+					return format ("%.1f", (number/1000)) .. eastAsiaMyriads_1k
+					
+				end
+				
+				return format ("%.1f", number)
+			else
+				if (number > 999999999) then
+					return format ("%.2f", number/1000000000) .. "B"
+					
+				elseif (number > 999999) then
+					return format ("%.2f", number/1000000) .. "M"
+					
+				elseif (number > 99999) then
+					return floor (number/1000) .. "K"
+					
+				elseif (number > 999) then
+					return format ("%.1f", (number/1000)) .. "K"
+					
+				end
+				
+				return floor (number)			
+			end
+		end
+
+	end
 	
 
 	
@@ -2836,13 +2902,40 @@ function Plater.OnInit() --private
 			C_Timer.After (4, Plater.GetHealthCutoffValue)
 			
 			--if the user just used a /reload to enable ui parenting, auto adjust the fine tune scale
+			--the uiparent fine tune scale initially: after testing and playing around with it, I think it should be 1 / UIParent:GetEffectiveScale() and scaling should be done by multiplying defaultScale * scaleFineTune
 			if (Plater.db.profile.use_ui_parent_just_enabled) then
 				Plater.db.profile.use_ui_parent_just_enabled = false
 				if (Plater.db.profile.ui_parent_scale_tune == 0) then
-					if (UIParent:GetEffectiveScale() < 1) then
-						Plater.db.profile.ui_parent_scale_tune = 1 - UIParent:GetEffectiveScale()
-					end
+					--@Ariani - march 9
+					Plater.db.profile.ui_parent_scale_tune = 1 / UIParent:GetEffectiveScale()
+					
+					--@Tercio:
+					--if (UIParent:GetEffectiveScale() < 1) then
+					--	Plater.db.profile.ui_parent_scale_tune = 1 - UIParent:GetEffectiveScale()
+					--end
 				end
+			end
+			
+			if (not Plater.db.profile.number_region_first_run) then
+				if (GetLocale() == "koKR") then
+					Plater.db.profile.number_region = "eastasia"
+				elseif (GetLocale() == "zhCN") then
+					Plater.db.profile.number_region = "eastasia"
+				elseif (GetLocale() == "zhTW") then
+					Plater.db.profile.number_region = "eastasia"
+				else
+					Plater.db.profile.number_region = "western"
+				end
+				
+				Plater.db.profile.number_region_first_run = true
+			end
+			
+			if (Plater.db.profile.reopoen_options_panel_on_tab) then
+				C_Timer.After (2, function()
+					Plater.OpenOptionsPanel()
+					PlaterOptionsPanelContainer:SelectIndex (Plater, Plater.db.profile.reopoen_options_panel_on_tab)
+					Plater.db.profile.reopoen_options_panel_on_tab = false
+				end)
 			end
 		end
 		Plater:RegisterEvent ("PLAYER_LOGIN")
@@ -4945,7 +5038,7 @@ end
 						local damage = unitDamageTable.CurrentDamage or 0
 						
 						local textString = healthBar.DetailsRealTime
-						textString:SetText (DF.FormatNumber (damage / PLATER_DPS_SAMPLE_SIZE))
+						textString:SetText (Plater.FormatNumber (damage / PLATER_DPS_SAMPLE_SIZE))
 					else
 						local textString = healthBar.DetailsRealTime
 						textString:SetText ("")
@@ -4958,7 +5051,7 @@ end
 						local damage = unitDamageTable.CurrentDamageFromPlayer or 0
 						
 						local textString = healthBar.DetailsRealTimeFromPlayer
-						textString:SetText (DF.FormatNumber (damage / PLATER_DPS_SAMPLE_SIZE))
+						textString:SetText (Plater.FormatNumber (damage / PLATER_DPS_SAMPLE_SIZE))
 					else
 						local textString = healthBar.DetailsRealTimeFromPlayer
 						textString:SetText ("")
@@ -4972,7 +5065,7 @@ end
 						local damage = unitDamageTable.TotalDamageTaken or 0
 						
 						local textString = healthBar.DetailsDamageTaken
-						textString:SetText (DF.FormatNumber (damage))
+						textString:SetText (Plater.FormatNumber (damage))
 					else
 						local textString = healthBar.DetailsDamageTaken
 						textString:SetText ("")
@@ -5776,19 +5869,19 @@ end
 			
 			if (showDecimals) then
 				if (percent < 10) then
-					healthBar.lifePercent:SetText (DF.FormatNumber (currentHealth) .. " (" .. format ("%.2f", percent) .. "%)")
+					healthBar.lifePercent:SetText (Plater.FormatNumber (currentHealth) .. " (" .. format ("%.2f", percent) .. "%)")
 					
 				elseif (percent < 99.9) then
-					healthBar.lifePercent:SetText (DF.FormatNumber (currentHealth) .. " (" .. format ("%.1f", percent) .. "%)")
+					healthBar.lifePercent:SetText (Plater.FormatNumber (currentHealth) .. " (" .. format ("%.1f", percent) .. "%)")
 				else
-					healthBar.lifePercent:SetText (DF.FormatNumber (currentHealth) .. " (100%)")
+					healthBar.lifePercent:SetText (Plater.FormatNumber (currentHealth) .. " (100%)")
 				end
 			else
-				healthBar.lifePercent:SetText (DF.FormatNumber (currentHealth) .. " (" .. floor (percent) .. "%)")
+				healthBar.lifePercent:SetText (Plater.FormatNumber (currentHealth) .. " (" .. floor (percent) .. "%)")
 			end
 			
 		elseif (showHealthAmount) then
-			healthBar.lifePercent:SetText (DF.FormatNumber (currentHealth))
+			healthBar.lifePercent:SetText (Plater.FormatNumber (currentHealth))
 		
 		elseif (showPercentAmount) then
 			local percent = currentHealth / maxHealth * 100
@@ -7368,19 +7461,20 @@ end
 	end
 
 	function Plater.IsQuestObjective (plateFrame)
-		if (not plateFrame [MEMBER_GUID]) then
+		if (not plateFrame [MEMBER_GUID]) then --platerFrame.actorType == "friendlynpc"
 			return
 		end
+		
 		GameTooltipScanQuest:SetOwner (WorldFrame, "ANCHOR_NONE")
 		GameTooltipScanQuest:SetHyperlink ("unit:" .. plateFrame [MEMBER_GUID])
 		
 		for i = 1, 8 do
 			local text = ScanQuestTextCache [i]:GetText()
 			if (Plater.QuestCache [text]) then
-				--este npc percente a uma quest
+				--unit belongs to a quest
 				local amount1, amount2 = 0, 0
 				if (not IsInGroup() and i < 8) then
-					--verifica se j� fechou a quantidade necess�ria pra esse npc
+					--check if the unit objective isn't already done
 					local nextLineText = ScanQuestTextCache [i+1]:GetText()
 					if (nextLineText) then
 						local p1, p2 = nextLineText:match ("(%d%d)/(%d%d)") --^ - 
@@ -7398,18 +7492,16 @@ end
 					end
 				end
 
-				if (amount1 ~= amount2) then
-					plateFrame [MEMBER_QUEST] = true
-					plateFrame.unitFrame [MEMBER_QUEST] = true
-					plateFrame.QuestAmountCurrent = amount1
-					plateFrame.QuestAmountTotal = amount2
-					
-					--expose to scripts
-					plateFrame.unitFrame.QuestAmountCurrent = amount1
-					plateFrame.unitFrame.QuestAmountTotal = amount2
-					
-					return true
-				end
+				plateFrame [MEMBER_QUEST] = true
+				plateFrame.unitFrame [MEMBER_QUEST] = true
+				plateFrame.QuestAmountCurrent = amount1
+				plateFrame.QuestAmountTotal = amount2
+				
+				--expose to scripts
+				plateFrame.unitFrame.QuestAmountCurrent = amount1
+				plateFrame.unitFrame.QuestAmountTotal = amount2
+				
+				return true
 			end
 		end
 	end

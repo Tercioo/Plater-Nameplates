@@ -78,6 +78,12 @@ PLATER_DEFAULT_SETTINGS = {
 		global_offset_y = 0,
 		global_offset_x = 0,
 		
+		--> number format, auto detect the region when logging for the first time in the profile
+		number_region = "western",
+		number_region_first_run = false,
+		
+		reopoen_options_panel_on_tab = false,
+		
 		plate_config  = {
 			friendlyplayer = {
 				enabled = true,

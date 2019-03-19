@@ -97,6 +97,8 @@ function Plater.CheckOptionsTab()
 	end
 end
 
+local TAB_INDEX_UIPARENTING = 20
+
 -- ~options �ptions
 function Plater.OpenOptionsPanel()
 	
@@ -907,6 +909,37 @@ end
 
 -------------------------------------------------------------------------------
 -- painel para configurar debuffs e buffs
+
+
+local build_number_format_options = function()
+	local number_format_options = {"Western (1K - 1KK)"}
+	local number_format_options_config = {"western", "eastasia"}
+
+	local eastAsiaMyriads_1k, eastAsiaMyriads_10k, eastAsiaMyriads_1B
+	if (GetLocale() == "koKR") then
+		tinsert (number_format_options, "East Asia (1천 - 1만)")
+	elseif (GetLocale() == "zhCN") then
+		tinsert (number_format_options, "East Asia (1千 - 1万)")
+	elseif (GetLocale() == "zhTW") then
+		tinsert (number_format_options, "East Asia (1千 - 1萬)")
+	else
+		tinsert (number_format_options, "East Asia (1천 - 1만)")
+	end
+
+	local t = {}
+	for i = 1, #number_format_options do
+		tinsert (t, {
+			label = number_format_options [i], 
+			value = number_format_options_config [i],
+			onclick = function (_, _, value)
+				Plater.db.profile.number_region = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end
+		})
+	end
+	return t
+end
 
 local grow_direction_names = {"Left", "Center", "Right"}
 local build_grow_direction_options = function (memberName)
@@ -9599,18 +9632,28 @@ local relevance_options = {
 			type = "toggle",
 			get = function() return Plater.db.profile.use_ui_parent end,
 			set = function (self, fixedparam, value) 
-				Plater.db.profile.use_ui_parent = value
-
+			
 				if (value) then
+					--user is enabling the feature
+					DF:ShowPromptPanel ("Click okay to confirm using this feature (will force a /reload)", function()
+					Plater.db.profile.use_ui_parent = true
 					Plater.db.profile.use_ui_parent_just_enabled = true
+					Plater.db.profile.reopoen_options_panel_on_tab = TAB_INDEX_UIPARENTING
+					ReloadUI()
+					end, function()
+						PlaterOptionsPanelFrame.RefreshOptionsFrame()
+					end)
 				else
+					Plater.db.profile.use_ui_parent = false
 					Plater.db.profile.use_ui_parent_just_enabled = false
+					Plater.db.profile.reopoen_options_panel_on_tab = TAB_INDEX_UIPARENTING
+					ReloadUI()
 				end
 
 				Plater:Msg ("this setting require a /reload to take effect.")
 			end,
 			name = "Parent to UIParent",
-			desc = "Nameplates anchor into the UIParent instead of the 3D World Frame.\n\nThis allow having cast bars and debuffs in front of other frames.\n\n|cFFFFFF00Important|r: require /reload after changing this setting.",
+			desc = "Nameplates anchor into the UIParent instead of the 3D World Frame.\n\nThis allow having cast bars and debuffs in front of other frames.\n\n|cFFFFFF00Important|r: a /reload will be triggered on changing this setting.",
 		},
 		
 		{type = "blank"},
@@ -9687,8 +9730,8 @@ local relevance_options = {
 				Plater.RefreshDBUpvalues()
 				Plater.UpdateAllPlates()
 			end,
-			min = -0.5,
-			max = 0.5,
+			min = -2.5,
+			max = 2.5,
 			step = 0.01,
 			usedecimals = true,
 			name = "Fine Tune Scale",
@@ -10683,9 +10726,19 @@ local relevance_options = {
 			thumbscale = 1.7,
 			name = "Smooth Health Transition Speed",
 			desc = "How fast is the transition animation.",
-		},		
+		},	
+
+		{type = "blank"},
+		{type = "label", get = function() return "Region:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
-		--]=]		
+		{
+			type = "select",
+			get = function() return Plater.db.profile.number_region end,
+			values = function() return build_number_format_options() end,
+			name = "Number Format",
+			desc = "Number format",
+		},
+		
 	}
 	
 	DF:BuildMenu (advancedFrame, advanced_options, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
