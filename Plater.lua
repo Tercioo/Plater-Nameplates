@@ -1,6 +1,4 @@
-
-
---Plater main software file
+ --Plater main software file
 
 --Calls with : are functions imported from the framework
 --whenever a variable or function has a --private comment attached to it, means scripts cannot access it (read, write, override), anything else can be overriden with scripts
