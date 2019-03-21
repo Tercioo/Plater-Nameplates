@@ -5813,6 +5813,22 @@ local relevance_options = {
 			name = "Enemy Spec",
 			desc = "Enemy player spec icon.\n\n|cFFFFFF00Important|r: must have Details! Damage Meter installed.",
 		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.indicator_scale end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_scale = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 0.2,
+			max = 3,
+			step = 0.01,
+			usedecimals = true,
+			name = "Scale",
+			desc = "Scale",
+		},
+		
+		
 		--
 
 		--indicator icon anchor

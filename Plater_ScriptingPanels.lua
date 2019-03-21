@@ -74,7 +74,6 @@ Plater.APIList = {
 	{Name = "GetNpcColor", 			Signature = "Plater.GetNpcColor (unitFrame)", 						Desc = "Return a table with the color selected in the Npc Colors tab.\n\nThe color set there must have the 'Only Scripts' checked."},
 	{Name = "SetExecuteRange", 		Signature = "Plater.SetExecuteRange (isExecuteEnabled, healthAmount)", 	Desc = "Set if Plater should check for execute range and in what percent of health the execute range starts\n\nhealthAmount is in a range of zero to one, example: 25% is 0.25"},
 	
-	
 	{Name = "IsUnitInFriendsList", 		Signature = "Plater.IsUnitInFriendsList (unitFrame)", 					Desc = "Return 'true' if the unit is in the player's friends list."},
 	{Name = "IsUnitTank", 				Signature = "Plater.IsUnitTank (unitFrame)", 						Desc = "Return 'true' if the unit is in tank role."},
 	{Name = "IsUnitTapped", 			Signature = "Plater.IsUnitTapped (unitFrame)", 						Desc = "Return 'true' if the unit is tapped and the player does not receives credits to kill it. Usually units tapped are shown with a gray color."},
@@ -82,6 +81,7 @@ Plater.APIList = {
 	{Name = "IsInOpenWorld", 			Signature = "Plater.IsInOpenWorld()", 							Desc = "Return 'true' if the player is in open world (not inside raids, dungeons, etc)."},
 	{Name = "IsPlayerTank", 			Signature = "Plater.IsPlayerTank()", 							Desc = "Return 'true' if the player is in the tank role."},
 	{Name = "GetTanks", 				Signature = "Plater.GetTanks()", 								Desc = "Return a table with all tanks in the group, use Plater.GetTanks()[unitName] to know if the unit is a tank."},
+	{Name = "ShowIndicator", 			Signature = "Plater.ShowIndicator (unitFrame, texture, width, height, color, L, R, T, B)",	Desc = "Adds an indicator within the default indicators row.\n\nL, R, T, B: texcoordinates (optional)."},
 	
 	{Name = "DisableHighlight", 			Signature = "Plater.DisableHighlight (unitFrame)", 					Desc = "The nameplate won't highlight when the mouse passes over it."},
 	{Name = "EnableHighlight", 			Signature = "Plater.EnableHighlight (unitFrame)", 					Desc = "Enable the mouse over highlight."},
@@ -90,6 +90,9 @@ Plater.APIList = {
 	{Name = "RefreshNameplateColor", 		Signature = "Plater.RefreshNameplateColor (unitFrame)", 				Desc = "Check which color the nameplate should have and set it."},
 	{Name = "RefreshNameplateStrata", 	Signature = "Plater.RefreshNameplateStrata (unitFrame)", 				Desc = "Reset the frame strata and frame levels to default."},
 	{Name = "UpdateNameplateThread", 	Signature = "Plater.UpdateNameplateThread (unitFrame)", 				Desc = "Perform an Aggro update on the nameplate changing color to the current thread situation."},	
+	
+	{Name = "SafeSetCVar", 			Signature = "Plater.SafeSetCVar (variableName, value)", 				Desc = "Change the value of a CVar, if called during combat, it'll be applied when the player leaves combat.\n\nOriginal value is stored until Plater.RestoreCVar (variableName) is called."},	
+	{Name = "RestoreCVar", 			Signature = "Plater.RestoreCVar (variableName)", 					Desc = "Restore the value a CVar had before Plater.SafeSetCVar() was called."},
 }
 
 Plater.FrameworkList = {

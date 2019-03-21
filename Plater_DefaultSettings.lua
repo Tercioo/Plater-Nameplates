@@ -493,6 +493,9 @@ PLATER_DEFAULT_SETTINGS = {
 		
 		show_interrupt_author = true,
 		
+		--allow scripts to store default values of cvars when they perform automatically changes
+		cvar_default_cache = {},
+		
 		--experimental settings for the UIParent parenting
 		use_ui_parent = false,
 		use_ui_parent_just_enabled = false,
@@ -2326,6 +2329,7 @@ PLATER_DEFAULT_SETTINGS = {
 		indicator_quest = true,
 		indicator_enemyclass = false,
 		indicator_anchor = {side = 2, x = -2, y = 0},
+		indicator_scale = 1,
 		
 		indicator_extra_raidmark = true,
 		indicator_raidmark_scale = 1,
