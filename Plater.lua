@@ -2514,6 +2514,8 @@ Plater.DefaultSpellRangeList = {
 			unitFrame [MEMBER_CLASSIFICATION] = plateFrame [MEMBER_CLASSIFICATION]
 			unitFrame [MEMBER_UNITID] = unitID
 			unitFrame.namePlateThreatPercent = 0
+			unitFrame.namePlateThreatIsTanking = nil
+			unitFrame.namePlateThreatStatus = nil
 			
 			--get and format the reaction to always be the value of the constants, then cache the reaction in some widgets for performance
 			local reaction = UnitReaction (unitID, "player") or 1
@@ -2621,6 +2623,12 @@ Plater.DefaultSpellRangeList = {
 							if (DB_CASTBAR_HIDE_ENEMIES) then
 								CastingBarFrame_SetUnit (castBar, nil, nil, nil)
 							end
+							
+							--get threat situation to expose it to scripts already in the nameplate added hook
+							local isTanking, threatStatus, threatpct = UnitDetailedThreatSituation ("player", unitID)
+							unitFrame.namePlateThreatIsTanking = isTanking
+							unitFrame.namePlateThreatStatus = threatStatus
+							unitFrame.namePlateThreatPercent = threatpct or 0
 						end
 					end
 				end
@@ -5148,6 +5156,9 @@ end
 		
 		local isTanking, threatStatus, threatpct = UnitDetailedThreatSituation ("player", self.displayedUnit)
 		
+		--expose all threat situation to scripts
+		self.namePlateThreatIsTanking = isTanking
+		self.namePlateThreatStatus = threatStatus
 		self.namePlateThreatPercent = threatpct or 0
 		-- (3 = securely tanking, 2 = insecurely tanking, 1 = not tanking but higher threat than tank, 0 = not tanking and lower threat than tank)
 		

@@ -784,53 +784,52 @@ local interface_options = {
 		
 		{
 			type = "toggle",
-			get = function() return GetCVar (CVAR_ENEMY_MINIONS) == CVAR_ENABLED end,
+			get = function() return GetCVarBool ("nameplateShowEnemies") end,
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
-					SetCVar (CVAR_ENEMY_MINIONS, math.abs (tonumber (GetCVar (CVAR_ENEMY_MINIONS))-1))
+					SetCVar ("nameplateShowEnemies", value and "1" or "0")
 				else
 					Plater:Msg ("you are in combat.")
-					self:SetValue (GetCVar (CVAR_ENEMY_MINIONS) == CVAR_ENABLED)
+					self:SetValue (GetCVarBool ("nameplateShowEnemies"))
 				end
 			end,
-			name = "Enemy Units (" .. (GetBindingKey ("NAMEPLATES") or "") .. "): Minions" .. CVarIcon,
-			desc = "Show nameplate for enemy pets, totems and guardians." .. CVarDesc,
+			name = "Show Enemy Nameplates" .. CVarIcon,
+			desc = "Show nameplate for enemy and neutral units." .. CVarDesc,
 			nocombat = true,
 		},
 		
 		{
 			type = "toggle",
-			get = function() return GetCVar (CVAR_ENEMY_MINUS) == CVAR_ENABLED end,
+			get = function() return GetCVarBool ("nameplateShowFriends") end,
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
-					SetCVar (CVAR_ENEMY_MINUS, math.abs (tonumber (GetCVar (CVAR_ENEMY_MINUS))-1))
+					SetCVar ("nameplateShowFriends", value and "1" or "0")
 				else
 					Plater:Msg ("you are in combat.")
-					self:SetValue (GetCVar (CVAR_ENEMY_MINUS) == CVAR_ENABLED)
+					self:SetValue (GetCVarBool ("nameplateShowFriends"))
 				end
 			end,
-			name = "Enemy Units (V): Minor" .. CVarIcon,
-			desc = "Show nameplate for minor enemies." .. CVarDesc,
+			name = "Show Friendly Nameplates" .. CVarIcon,
+			desc = "Show nameplate for friendly players." .. CVarDesc,
 			nocombat = true,
 		},
+		
 		{
 			type = "toggle",
-			get = function() return GetCVar (CVAR_FRIENDLY_GUARDIAN) == CVAR_ENABLED end,
+			get = function() return GetCVarBool ("nameplateShowOnlyNames") end,
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
-					SetCVar (CVAR_FRIENDLY_GUARDIAN, math.abs (tonumber (GetCVar (CVAR_FRIENDLY_GUARDIAN))-1))
-					SetCVar (CVAR_FRIENDLY_PETS, 	GetCVar (CVAR_FRIENDLY_GUARDIAN))
-					SetCVar (CVAR_FRIENDLY_TOTEMS, GetCVar (CVAR_FRIENDLY_GUARDIAN))
-					SetCVar (CVAR_FRIENDLY_MINIONS, GetCVar (CVAR_FRIENDLY_GUARDIAN))
+					SetCVar ("nameplateShowOnlyNames", value and "1" or "0")
 				else
 					Plater:Msg ("you are in combat.")
-					self:SetValue (GetCVar (CVAR_FRIENDLY_GUARDIAN) == CVAR_ENABLED)
+					self:SetValue (GetCVarBool ("nameplateShowOnlyNames"))
 				end
 			end,
-			name = "Friendly Units (" .. (GetBindingKey ("FRIENDNAMEPLATES") or "") .. "): Minions" .. CVarIcon,
-			desc = "Show nameplate for friendly pets, totems and guardians.\n\nAlso check the Enabled box below Friendly Npc Config." .. CVarDesc,
+			name = "Hide Friendly Health Bar in Dungeons" .. CVarIcon,
+			desc = "While in dungeons or raids, if friendly nameplates are enabled it'll show only the player name." .. CVarDesc,
 			nocombat = true,
 		},
+
 }
 
 local interface_title = Plater:CreateLabel (frontPageFrame, "Interface Options (from the client):", Plater:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))

@@ -157,6 +157,8 @@ Plater.NameplateComponents = {
 		"namePlateUnitNameLower",
 		"namePlateIsTarget",
 		"namePlateThreatPercent",
+		"namePlateThreatStatus",
+		"namePlateThreatIsTanking",
 		"PlayerCannotAttack",
 		"InExecuteRange",
 		"InCombat",
