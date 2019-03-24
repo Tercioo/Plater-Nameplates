@@ -237,7 +237,7 @@ function Plater.OpenOptionsPanel()
 	DF:BuildStatusbarAuthorInfo (statusBar)
 	
 	--wago.io support
-	local wagoDesc = DF:CreateLabel (statusBar, "Important: unexpected issues may occur due to several bugs on the client itself introduced on 8.1.5")
+	local wagoDesc = DF:CreateLabel (statusBar, "You can now import profiles, mods, scripts, animations and color tables from |cFFFFAA00http://wago.io|r")
 	wagoDesc.textcolor = "white"
 	wagoDesc.textsize = 11
 	wagoDesc:SetPoint ("left", statusBar.DiscordTextBox, "right", 10, 0)
@@ -246,7 +246,7 @@ function Plater.OpenOptionsPanel()
 	wagoDesc.Anim:SetLooping ("repeat")
 	DF:CreateAnimation (wagoDesc.Anim, "alpha", 1, 1, .3, .7)
 	DF:CreateAnimation (wagoDesc.Anim, "alpha", 2, 1, 1, .3)
-	wagoDesc.Anim:Play()
+	--wagoDesc.Anim:Play()
 	
 	f.AllMenuFrames = {}
 	for _, frame in ipairs (mainFrame.AllFrames) do
@@ -2972,6 +2972,16 @@ Plater.CreateAuraTesting()
 						line.AddSpecial.AuraType = spellData.type
 						line.AddSpecial.EncounterID = spellData.encounterID
 						
+						if (spellData.type) then
+							line.AddTrackList:Enable()
+							line.AddIgnoreList:Enable()
+							line.AddSpecial:Enable()
+						else
+							line.AddTrackList:Disable()
+							line.AddIgnoreList:Disable()
+							line.AddSpecial:Disable()
+						end
+						
 						line.CreateAura.SpellID = spellID
 						line.CreateAura.AuraType = spellData.type
 						line.CreateAura.IsCast = spellData.event == "SPELL_CAST_START"
@@ -2982,7 +2992,9 @@ Plater.CreateAuraTesting()
 						
 						--manual tracking doesn't have a black list
 						if (Plater.db.profile.aura_tracker.track_method == 0x1) then
-							line.AddIgnoreList:Enable()
+							if (spellData.type) then
+								line.AddIgnoreList:Enable()
+							end
 							
 						elseif (Plater.db.profile.aura_tracker.track_method == 0x2) then
 							line.AddIgnoreList:Disable()

@@ -1,4 +1,4 @@
- --Plater main software file
+--Plater main software file
 
 --Calls with : are functions imported from the framework
 --whenever a variable or function has a --private comment attached to it, means scripts cannot access it (read, write, override), anything else can be overriden with scripts
@@ -4412,6 +4412,13 @@ end
 				--check if the debuff isn't filtered out
 				elseif (not DB_DEBUFF_BANNED [name]) then
 			
+					--> if true it'll show all auras - this can be called from scripts to debug aura things
+					if (Plater.DebugAuras) then
+						if (duration and duration < 60) then
+							can_show_this_debuff = true
+						end
+					end
+			
 					--> important aura
 					if (DB_AURA_SHOW_IMPORTANT and (nameplateShowAll or isBossDebuff)) then
 						can_show_this_debuff = true
@@ -4453,7 +4460,15 @@ end
 					break
 				
 				elseif (not DB_BUFF_BANNED [name]) then
-
+				
+					--> if true it'll show all auras - this can be called from scripts to debug aura things
+					if (Plater.DebugAuras) then
+						if (duration and duration < 60) then
+							local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
+							Plater.AddAura (buffFrame, auraIconFrame, i, name, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, true)
+						end
+					end
+				
 					--> important aura
 					if (DB_AURA_SHOW_IMPORTANT and (nameplateShowAll or isBossDebuff)) then
 						local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)

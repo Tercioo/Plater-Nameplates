@@ -654,7 +654,7 @@ PLATER_DEFAULT_SETTINGS = {
 			},
 			["banner of the alliance"] = {
 				61573,
-			},		
+			},
 		},		
 		
 		aura_tracker = {
