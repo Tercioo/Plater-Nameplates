@@ -217,6 +217,8 @@ Plater.HookScripts = { --private
 	"Player Talent Update",
 	"Health Update",
 	"Zone Changed",
+	"Load Screen",
+	"Player Logon",
 }
 
 Plater.HookScriptsDesc = { --private
@@ -241,7 +243,29 @@ Plater.HookScriptsDesc = { --private
 	
 	["Health Update"] = "When the health of the unit changes.",
 	["Zone Changed"] = "Run when the player enter into a new zone.\n\n|cFF44FF44Run on all nameplates already created, on screen or not|r.",
+	["Load Screen"] = "Run when a load screen finishes.\n\nUse to change settings for a specific area or map.\n\n|cFF44FF44Do not run on nameplates|r.",
+	["Player Logon"] = "Run when the player login into the game.\n\nUse to register textures, indicators, etc.\n\n|cFF44FF44Do not run on nameplates,\nrun only once after login\nor /reload|r.",
 }
+
+-- ~hook (hook scripts are cached in the indexed part of these tales, for performance the member ScriptAmount caches the amount of scripts inside the indexed table)
+local HOOK_NAMEPLATE_ADDED = {ScriptAmount = 0}
+local HOOK_NAMEPLATE_CREATED = {ScriptAmount = 0}
+local HOOK_NAMEPLATE_REMOVED = {ScriptAmount = 0}
+local HOOK_NAMEPLATE_UPDATED = {ScriptAmount = 0}
+local HOOK_TARGET_CHANGED = {ScriptAmount = 0}
+local HOOK_CAST_START = {ScriptAmount = 0}
+local HOOK_CAST_UPDATE = {ScriptAmount = 0}
+local HOOK_CAST_STOP = {ScriptAmount = 0}
+local HOOK_RAID_TARGET = {ScriptAmount = 0}
+local HOOK_COMBAT_ENTER = {ScriptAmount = 0}
+local HOOK_COMBAT_LEAVE = {ScriptAmount = 0}
+local HOOK_NAMEPLATE_CONSTRUCTOR = {ScriptAmount = 0}
+local HOOK_PLAYER_POWER_UPDATE = {ScriptAmount = 0}
+local HOOK_PLAYER_TALENT_UPDATE = {ScriptAmount = 0}
+local HOOK_HEALTH_UPDATE = {ScriptAmount = 0}
+local HOOK_ZONE_CHANGED = {ScriptAmount = 0}
+local HOOK_LOAD_SCREEN = {ScriptAmount = 0}
+local HOOK_PLAYER_LOGON = {ScriptAmount = 0}
 
 --> addon comm
 local COMM_PLATER_PREFIX = "PLT"
@@ -685,23 +709,6 @@ Plater.DefaultSpellRangeList = {
 	local CAN_TRACK_EXTRA_BUFFS = false
 	local CAN_TRACK_EXTRA_DEBUFFS = false
 	
-	-- ~hook (hook scripts are cached in the indexed part of these tales, for performance the member ScriptAmount caches the amount of scripts inside the indexed table)
-	local HOOK_NAMEPLATE_ADDED = {ScriptAmount = 0}
-	local HOOK_NAMEPLATE_CREATED = {ScriptAmount = 0}
-	local HOOK_NAMEPLATE_REMOVED = {ScriptAmount = 0}
-	local HOOK_NAMEPLATE_UPDATED = {ScriptAmount = 0}
-	local HOOK_TARGET_CHANGED = {ScriptAmount = 0}
-	local HOOK_CAST_START = {ScriptAmount = 0}
-	local HOOK_CAST_UPDATE = {ScriptAmount = 0}
-	local HOOK_CAST_STOP = {ScriptAmount = 0}
-	local HOOK_RAID_TARGET = {ScriptAmount = 0}
-	local HOOK_COMBAT_ENTER = {ScriptAmount = 0}
-	local HOOK_COMBAT_LEAVE = {ScriptAmount = 0}
-	local HOOK_NAMEPLATE_CONSTRUCTOR = {ScriptAmount = 0}
-	local HOOK_PLAYER_POWER_UPDATE = {ScriptAmount = 0}
-	local HOOK_PLAYER_TALENT_UPDATE = {ScriptAmount = 0}
-	local HOOK_HEALTH_UPDATE = {ScriptAmount = 0}
-	local HOOK_ZONE_CHANGED = {ScriptAmount = 0}
 
 	--list of auras the user added into the track list for special auras, _MINE caches the auras where the user checked the 'Only Mine' checkbox
 	local SPECIAL_AURAS_USER_LIST = {}
@@ -1627,8 +1634,16 @@ Plater.DefaultSpellRangeList = {
 		Plater.ScheduledZoneChangeTriggerHook = C_Timer.NewTimer (2, run_zonechanged_hook)
 	end
 	
+	local run_loadscreen_hook = function()
+		for i = 1, HOOK_LOAD_SCREEN.ScriptAmount do
+			local hookInfo = HOOK_LOAD_SCREEN [i]
+			Plater.ScriptMetaFunctions.ScriptRunNoAttach (hookInfo, "Load Screen")
+		end
+	end
+	
 	--store all functions for all events that will be registered inside OnInit
 	local eventFunctions = {
+
 		--when a unit from unatackable change its state, this event triggers several times, a schedule is used to only update once
 		UNIT_FLAGS = function (_, unit)
 			if (unit == "player") then
@@ -1878,8 +1893,13 @@ Plater.DefaultSpellRangeList = {
 			Plater.UpdateAllPlates()
 			Plater.RefreshAutoToggle()
 			
-			--hook
+			--hooks
 			Plater.ScheduleZoneChangeHook()
+			
+			if (Plater.PlayerEnteringWorld) then
+				Plater.PlayerEnteringWorld = false
+				C_Timer.After (1, run_loadscreen_hook)
+			end
 		end,
 
 		ZONE_CHANGED_INDOORS = function()
@@ -1907,8 +1927,13 @@ Plater.DefaultSpellRangeList = {
 			
 			local name, instanceType, difficultyID, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, instanceMapID, instanceGroupSize = GetInstanceInfo()
 			Plater.ZoneInstanceType = instanceType
+			
+			--run hooks on load screen
+			if (HOOK_LOAD_SCREEN.ScriptAmount > 0) then
+				Plater.PlayerEnteringWorld = true
+			end
 		end,
-		
+
 		PLAYER_LOGOUT = function()
 			
 		end,
@@ -2977,6 +3002,17 @@ function Plater.OnInit() --private
 					Plater.db.profile.reopoen_options_panel_on_tab = false
 				end)
 			end
+			
+			--run hooks on player logon
+			if (HOOK_PLAYER_LOGON.ScriptAmount > 0) then
+				C_Timer.After (1, function()
+					for i = 1, HOOK_PLAYER_LOGON.ScriptAmount do
+						local hookInfo = HOOK_PLAYER_LOGON [i]
+						Plater.ScriptMetaFunctions.ScriptRunNoAttach (hookInfo, "Player Logon")
+					end
+				end)
+			end
+
 		end
 		Plater:RegisterEvent ("PLAYER_LOGIN")
 
@@ -8481,6 +8517,15 @@ end
 			end
 		end,
 		
+		--run only once without attach to the script or hook
+		ScriptRunNoAttach = function (hookInfo, hookName)
+			local func = hookInfo [hookName]
+			local okay, errortext = pcall (func)
+			if (not okay) then
+				Plater:Msg ("Mod |cFFAAAA22" .. hookInfo.DBScriptObject.Name .. "|r code for |cFFBB8800" .. hookName .. "|r error: " .. errortext)
+			end
+		end,
+		
 		--run when the widget hides
 		OnHideWidget = function (self)
 			--> check if can quickly quit (if there's no script container for the nameplate)
@@ -8781,6 +8826,8 @@ end
 		HOOK_PLAYER_TALENT_UPDATE,
 		HOOK_HEALTH_UPDATE,
 		HOOK_ZONE_CHANGED,
+		HOOK_LOAD_SCREEN,
+		HOOK_PLAYER_LOGON,
 	}
 
 	function Plater.WipeHookContainers (noHotReload)
@@ -8829,7 +8876,11 @@ end
 		elseif (hookName == "Health Update") then
 			return HOOK_HEALTH_UPDATE
 		elseif (hookName == "Zone Changed") then
-			return HOOK_ZONE_CHANGED
+			return HOOK_ZONE_CHANGED	
+		elseif (hookName == "Load Screen") then
+			return HOOK_LOAD_SCREEN	
+		elseif (hookName == "Player Logon") then
+			return HOOK_PLAYER_LOGON
 		else
 			Plater:Msg ("Unknown hook: " .. (hookName or "Invalid Hook Name"))
 		end
@@ -8888,6 +8939,39 @@ end
 			return
 		end
 		
+		do --check integrity
+			if (not scriptObject.Name) then
+				Plater:Msg ("fail to load mod: " .. (scriptObject.Name or "") .. ".")
+				return
+			end
+
+			if (not scriptObject.LoadConditions) then
+				Plater:Msg ("fail to load mod: " .. (scriptObject.Name or "") .. ".")
+				return
+			end
+			
+			if (
+				not scriptObject.LoadConditions.class or
+				not scriptObject.LoadConditions.spec or
+				not scriptObject.LoadConditions.race or
+				not scriptObject.LoadConditions.talent or
+				not scriptObject.LoadConditions.pvptalent or
+				not scriptObject.LoadConditions.group or
+				not scriptObject.LoadConditions.role or
+				not scriptObject.LoadConditions.affix or
+				not scriptObject.LoadConditions.encounter_ids or
+				not scriptObject.LoadConditions.map_ids
+			) then
+				Plater:Msg ("fail to load mod: " .. (scriptObject.Name or "") .. ".")
+				return
+			end
+
+			if (not scriptObject.Hooks) then
+				Plater:Msg ("fail to load mod: " .. (scriptObject.Name or "") .. ".")
+				return
+			end
+		end
+		
 		--check if can load this hook
 		if (not DF:PassLoadFilters (scriptObject.LoadConditions, Plater.EncounterID)) then
 			--check if this hook is currently loaded
@@ -8917,6 +9001,12 @@ end
 		
 		--compile
 		for hookName, code in pairs (scriptCode) do
+			
+			if (type (code) ~= "string") then
+				Plater:Msg ("fail to load mod: " .. (scriptObject.Name or "") .. ".")
+				return
+			end
+			
 			local compiledScript, errortext = loadstring (code, "" .. hookName .. " for " .. scriptObject.Name)
 			if (not compiledScript) then
 				Plater:Msg ("failed to compile " .. hookName .. " for script " .. scriptObject.Name .. ": " .. errortext)

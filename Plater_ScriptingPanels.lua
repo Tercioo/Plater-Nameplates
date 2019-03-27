@@ -1374,9 +1374,17 @@ function Plater.CreateHookingPanel()
 	
 	hookFrame.DefaultScript = [=[
 		function (self, unitId, unitFrame, envTable)
+			--insert code here
 			
 		end
 	]=]
+	
+	hookFrame.DefaultScriptNoNameplate = [=[
+		function()
+			--insert code here
+			
+		end
+	]=]	
 	
 	--a new script has been created
 	function hookFrame.CreateNewScript()
@@ -1444,9 +1452,15 @@ function Plater.CreateHookingPanel()
 		
 		--add the hook to the script object
 		if (not scriptObject.Hooks [hookName]) then
+			local defaultScript
+			if (hookName == "Load Screen" or hookName == "Player Logon") then
+				defaultScript = hookFrame.DefaultScriptNoNameplate
+			else
+				defaultScript = hookFrame.DefaultScript
+			end
 			--try to restore code from the temp table
-			scriptObject.Hooks [hookName] = scriptObject.HooksTemp [hookName] or hookFrame.DefaultScript
-			scriptObject.HooksTemp [hookName] = hookFrame.DefaultScript
+			scriptObject.Hooks [hookName] = scriptObject.HooksTemp [hookName] or defaultScript
+			scriptObject.HooksTemp [hookName] = defaultScript
 		end
 		
 		--when adding, it start to edit the code for the hook added, check if there's a code being edited and save it
@@ -2054,6 +2068,7 @@ function Plater.CreateScriptingPanel()
 	
 	scriptingFrame.DefaultScript = [=[
 		function (self, unitId, unitFrame, envTable)
+			--insert code here
 			
 		end
 	]=]
