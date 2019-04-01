@@ -217,6 +217,7 @@ Plater.HookScripts = { --private
 	"Player Talent Update",
 	"Health Update",
 	"Zone Changed",
+	"Name Updated",
 	"Load Screen",
 	"Player Logon",
 }
@@ -243,6 +244,7 @@ Plater.HookScriptsDesc = { --private
 	
 	["Health Update"] = "When the health of the unit changes.",
 	["Zone Changed"] = "Run when the player enter into a new zone.\n\n|cFF44FF44Run on all nameplates already created, on screen or not|r.",
+	["Name Updated"] = "Executed when the name of the unit shown in the nameplate receives an update.",
 	["Load Screen"] = "Run when a load screen finishes.\n\nUse to change settings for a specific area or map.\n\n|cFF44FF44Do not run on nameplates|r.",
 	["Player Logon"] = "Run when the player login into the game.\n\nUse to register textures, indicators, etc.\n\n|cFF44FF44Do not run on nameplates,\nrun only once after login\nor /reload|r.",
 }
@@ -264,6 +266,7 @@ local HOOK_PLAYER_POWER_UPDATE = {ScriptAmount = 0}
 local HOOK_PLAYER_TALENT_UPDATE = {ScriptAmount = 0}
 local HOOK_HEALTH_UPDATE = {ScriptAmount = 0}
 local HOOK_ZONE_CHANGED = {ScriptAmount = 0}
+local HOOK_UNITNAME_UPDATE = {ScriptAmount = 0}
 local HOOK_LOAD_SCREEN = {ScriptAmount = 0}
 local HOOK_PLAYER_LOGON = {ScriptAmount = 0}
 
@@ -919,10 +922,14 @@ Plater.DefaultSpellRangeList = {
 					if (not plateFrame.FadedIn and not plateFrame.unitFrame.FadeIn.playing) then
 						plateFrame:RangeFadeIn()
 					end
+					plateFrame [MEMBER_RANGE] = true
+					plateFrame.unitFrame [MEMBER_RANGE] = true
 				else
 					if (plateFrame.FadedIn and not plateFrame.unitFrame.FadeOut.playing) then
 						plateFrame:RangeFadeOut()
 					end
+					plateFrame [MEMBER_RANGE] = false
+					plateFrame.unitFrame [MEMBER_RANGE] = false
 				end
 			end
 		end
@@ -1126,6 +1133,7 @@ Plater.DefaultSpellRangeList = {
 		Plater.UpdateSettingsCache()
 	end
 
+	--~save ~cvar
 	function Plater.SaveConsoleVariables() --private
 		local cvarTable = Plater.db.profile.saved_cvars
 		
@@ -1825,12 +1833,13 @@ Plater.DefaultSpellRangeList = {
 			Plater.RefreshAutoToggle()
 		end,
 
-		--seta o nome do jogador na barra dele --ajuda a evitar os 'desconhecidos' pelo cliente do jogo (frame da unidade)
+		--update the unit name, triggered when the client receives the rest of the information about an unit
 		UNIT_NAME_UPDATE = function (_, unitID)
 			if (unitID) then
 				local plateFrame = C_NamePlate.GetNamePlateForUnit (unitID)
 				if (plateFrame) then
 					plateFrame [MEMBER_NAME] = UnitName (unitID)
+					plateFrame [MEMBER_NAMELOWER] = lower (plateFrame [MEMBER_NAME])
 					local unitFrame = plateFrame.unitFrame
 					
 					if (plateFrame.isSelf) then
@@ -1839,12 +1848,8 @@ Plater.DefaultSpellRangeList = {
 						return
 					end
 					
-					if (plateFrame.actorType == ACTORTYPE_FRIENDLY_PLAYER) then
-						plateFrame.playerGuildName = GetGuildInfo (unitID)
-						Plater.UpdatePlateText (plateFrame, DB_PLATE_CONFIG [plateFrame.actorType], false)
-					end
-					
-					Plater.UpdateUnitName (plateFrame)
+					--schedule an name update on this nameplate
+					unitFrame.ScheduleNameUpdate = true
 				end
 			end
 		end,
@@ -2529,6 +2534,9 @@ Plater.DefaultSpellRangeList = {
 			plateFrame [MEMBER_NAME] = UnitName (unitID) or ""
 			plateFrame [MEMBER_NAMELOWER] = lower (plateFrame [MEMBER_NAME])
 			plateFrame [MEMBER_CLASSIFICATION] = UnitClassification (unitID)
+			
+			--clear name schedules
+			unitFrame.ScheduleNameUpdate = nil
 			
 			unitFrame.InCombat = UnitAffectingCombat (unitID)
 			
@@ -5105,6 +5113,28 @@ end
 				unitFrame:ScriptRunOnUpdate (scriptInfo)
 			end
 			
+			--scheduled name update
+			if (unitFrame.ScheduleNameUpdate) then
+				if (unitFrame.ActorType == ACTORTYPE_FRIENDLY_PLAYER) then
+					tickFrame.PlateFrame.playerGuildName = GetGuildInfo (tickFrame.unit)
+					Plater.UpdatePlateText (tickFrame.PlateFrame, DB_PLATE_CONFIG [unitFrame.ActorType], false)
+				end
+				
+				Plater.UpdateUnitName (tickFrame.PlateFrame)
+				unitFrame.ScheduleNameUpdate = nil
+				
+				--run hook
+				if (HOOK_UNITNAME_UPDATE.ScriptAmount > 0) then
+					for i = 1, HOOK_UNITNAME_UPDATE.ScriptAmount do
+						local globalScriptObject = HOOK_UNITNAME_UPDATE [i]
+						local scriptContainer = unitFrame:ScriptGetContainer()
+						local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Name Updated")
+						--run
+						unitFrame:ScriptRunHook (scriptInfo, "Name Updated")
+					end
+				end
+			end
+			
 			--hooks
 			if (HOOK_NAMEPLATE_UPDATED.ScriptAmount > 0) then
 				for i = 1, HOOK_NAMEPLATE_UPDATED.ScriptAmount do
@@ -7063,10 +7093,18 @@ end
 		self:SetValue (self.AnimationStart)
 		self.CurrentHealth = self.AnimationStart
 		
+		if (self.Spark) then
+			self.Spark:SetPoint ("center", self, "left", self.AnimationStart / self.CurrentHealthMax * self:GetWidth(), 0)
+			self.Spark:Show()
+		end
+		
 		if (self.AnimationStart-1 <= self.AnimationEnd) then
 			self:SetValue (self.AnimationEnd)
 			self.CurrentHealth = self.AnimationEnd
 			self.IsAnimating = false
+			if (self.Spark) then
+				self.Spark:Hide()
+			end
 		end
 	end
 
@@ -8826,6 +8864,7 @@ end
 		HOOK_PLAYER_TALENT_UPDATE,
 		HOOK_HEALTH_UPDATE,
 		HOOK_ZONE_CHANGED,
+		HOOK_UNITNAME_UPDATE,
 		HOOK_LOAD_SCREEN,
 		HOOK_PLAYER_LOGON,
 	}
@@ -8877,6 +8916,8 @@ end
 			return HOOK_HEALTH_UPDATE
 		elseif (hookName == "Zone Changed") then
 			return HOOK_ZONE_CHANGED	
+		elseif (hookName == "Name Updated") then	
+			return HOOK_UNITNAME_UPDATE
 		elseif (hookName == "Load Screen") then
 			return HOOK_LOAD_SCREEN	
 		elseif (hookName == "Player Logon") then

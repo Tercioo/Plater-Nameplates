@@ -130,7 +130,7 @@ Plater.UnitFrameMembers = {
 	"unitFrame.castBar.percentText",
 	--"unitFrame.castBar.extraBackground",
 	"unitFrame.healthBar",
-	"unitFrame.healthBar.actorName",
+	"unitFrame.healthBar.unitName",
 	--"unitFrame.healthBar.actorLevel",
 	"unitFrame.healthBar.lifePercent",
 	"unitFrame.healthBar.border",
@@ -189,7 +189,7 @@ Plater.NameplateComponents = {
 	},
 	
 	["healthBar - Frames"] = {
-		"actorName",
+		"unitName",
 		"actorLevel",
 		"lifePercent",
 		"ExecuteRangeHealthCutOff",

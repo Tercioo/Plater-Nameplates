@@ -5,6 +5,17 @@ local DF = DetailsFramework
 local LibSharedMedia = LibStub:GetLibrary ("LibSharedMedia-3.0")
 local _
 
+--lkocalization
+local L = LibStub ("AceLocale-3.0"):GetLocale ("PlaterNameplates", true)
+
+--credits text -- ~todo - take colaborators character names?
+local creditsText = [=[
+Plater Nameplates Credits
+
+
+
+]=]
+
 --templates
 local options_text_template = DF:GetTemplate ("font", "OPTIONS_FONT_TEMPLATE")
 local options_dropdown_template = DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE")
@@ -139,34 +150,33 @@ function Plater.OpenOptionsPanel()
 	local mainFrame = DF:CreateTabContainer (f, "Plater Options", "PlaterOptionsPanelContainer", 
 	{
 		--when chaging these indexes also need to change the function f.CopySettings
-		{name = "FrontPage", title = "General Settings"},
-		{name = "ThreatConfig", title = "Threat / Aggro"},
-		{name = "TargetConfig", title = "Target"},
-		{name = "PersonalBar", title = "Personal Bar"},
-		{name = "EnemyNpc", title = "Enemy Npc"},
-		{name = "EnemyPlayer", title = "Enemy Player"},
-		{name = "FriendlyNpc", title = "Friendly Npc"},
-		{name = "FriendlyPlayer", title = "Friendly Player"},
+		{name = "FrontPage", title = L["OPTIONS_TABNAME_GENERALSETTINGS"]},
+		{name = "ThreatConfig", title = L["OPTIONS_TABNAME_THREAT"]},
+		{name = "TargetConfig", title = L["OPTIONS_TABNAME_TARGET"]},
+		{name = "PersonalBar", title = L["OPTIONS_TABNAME_PERSONAL"]},
+		{name = "EnemyNpc", title = L["OPTIONS_TABNAME_NPCENEMY"]},
+		{name = "EnemyPlayer", title = L["OPTIONS_TABNAME_PLAYERENEMY"]},
+		{name = "FriendlyNpc", title = L["OPTIONS_TABNAME_NPCFRIENDLY"]},
+		{name = "FriendlyPlayer", title = L["OPTIONS_TABNAME_PLAYERFRIENDLY"]},
 		
-		{name = "DebuffConfig", title = "Buff Settings"},
-		{name = "DebuffBlacklist", title = "Buff Tracking"},
-		{name = "DebuffSpecialContainer", title = "Buff Special"},
-		{name = "DebuffLastEvent", title = "Buff List"},
-		{name = "Scripting", title = "Scripting"},
-		{name = "AutoRunCode", title = "Modding"},
-		{name = "AnimationPanel", title = "Animations"},
-		{name = "AdvancedConfig", title = "Advanced"},
+		{name = "DebuffConfig", title = L["OPTIONS_TABNAME_BUFF_SETTINGS"]},
+		{name = "DebuffBlacklist", title = L["OPTIONS_TABNAME_BUFF_TRACKING"]},
+		{name = "DebuffSpecialContainer", title = L["OPTIONS_TABNAME_BUFF_SPECIAL"]},
+		{name = "DebuffLastEvent", title = L["OPTIONS_TABNAME_BUFF_LIST"]},
+		{name = "Scripting", title = L["OPTIONS_TABNAME_SCRIPTING"]},
+		{name = "AutoRunCode", title = L["OPTIONS_TABNAME_MODDING"]},
+		{name = "AnimationPanel", title = L["OPTIONS_TABNAME_ANIMATIONS"]},
+		{name = "AdvancedConfig", title = L["OPTIONS_TABNAME_ADVANCED"]},
 		
-		{name = "ColorManagement", title = "Npc Colors"},
-		{name = "Automation", title = "Auto"},
-		{name = "ProfileManagement", title = "Profiles"},
+		{name = "ColorManagement", title = L["OPTIONS_TABNAME_COLORSNPC"]},
+		{name = "Automation", title = L["OPTIONS_TABNAME_AUTO"]},
+		{name = "ProfileManagement", title = L["OPTIONS_TABNAME_PROFILES"]},
 		
 		{name = "ExperimentalFeatures", title = "Experimental"},
-		{name = "CreditsFrame", title = "Credits"},
-		
+		{name = "CreditsFrame", title = L["OPTIONS_TABNAME_CREDITS"]},
 	}, 
 	frame_options)
-	
+
 	--> when any setting is changed, call this function
 	local globalCallback = function()
 		Plater.IncreaseRefreshID()
@@ -1627,7 +1637,7 @@ Plater.CreateAuraTesting()
 			--options
 			local scroll_width = 1050
 			local scroll_height = 442
-			local scroll_lines = 21
+			local scroll_lines = 20
 			local scroll_line_height = 20
 			local backdrop_color = {.2, .2, .2, 0.2}
 			local backdrop_color_on_enter = {.8, .8, .8, 0.4}
@@ -2135,7 +2145,7 @@ Plater.CreateAuraTesting()
 				help_button.tooltip = "|cFFFFFF00Help:|r\n\n- Run dungeons and raids to fill the npc list.\n\n- |cFFFFEE00Scripts Only|r aren't automatically applied, scripts can import the color set here using |cFFFFEE00local colorTable = Plater.GetNpcColor (unitFrame)|r.\n\n- Colors set here override threat colors.\n\n- Colors set in scripts override colors set here.\n\n- |TInterface\\AddOns\\Plater\\media\\star_empty_64:16:16|t icon indicates the color is favorite, so you can use it across dungeons to keep color consistency."                                               
 				help_button:SetFrameLevel (colorsFrame.Header:GetFrameLevel() + 20)
 				
-			--reefresh button
+			--refresh button
 				local refresh_button = DF:CreateButton (colorsFrame, function() colorsFrame.RefreshScroll() end, 70, 20, "refresh", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 				refresh_button:SetPoint ("right", help_button, "left", -2, 0)
 				refresh_button.tooltip = "refresh the list the npcs"
@@ -2357,6 +2367,41 @@ Plater.CreateAuraTesting()
 				local export_button = DF:CreateButton (colorsFrame, export_func, 70, 20, "export", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 				export_button:SetPoint ("right", import_button, "left", -2, 0)
 				export_button:SetFrameLevel (colorsFrame.Header:GetFrameLevel() + 20)
+			
+			--disable all button
+				local disableAllColors = function()
+					for npcId, colorTable in pairs (Plater.db.profile.npc_colors) do
+						colorTable[1] = false
+						colorTable[2] = false
+					end
+					colorsFrame.RefreshScroll()
+				end
+				local disableall_button = DF:CreateButton (colorsFrame, disableAllColors, 140, 20, "Disable All Colors", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				disableall_button:SetPoint ("bottomleft", spells_scroll, "bottomleft", 1, 0)
+				disableall_button:SetFrameLevel (colorsFrame.Header:GetFrameLevel() + 20)
+			
+			--set all scripts only
+				local setAllAsScriptOnly = function()
+					for npcId, colorTable in pairs (Plater.db.profile.npc_colors) do
+						if (colorTable[1]) then
+							colorTable[2] = true
+						end
+					end
+					colorsFrame.RefreshScroll()
+				end
+				local scriptsall_button = DF:CreateButton (colorsFrame, setAllAsScriptOnly, 200, 20, "Set All Enabled as 'Scripts Only'", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				scriptsall_button:SetPoint ("left", disableall_button, "right", 0, 0)
+				scriptsall_button:SetFrameLevel (colorsFrame.Header:GetFrameLevel() + 20)
+			
+			-- buttons backdrop
+				local backdropFoot = CreateFrame ("frame", nil, spells_scroll)
+				backdropFoot:SetHeight (20)
+				backdropFoot:SetPoint ("bottomleft", spells_scroll, "bottomleft", 0, 0)
+				backdropFoot:SetPoint ("bottomright", colorsFrame.ModelFrame, "bottomleft", -3, 0)
+				backdropFoot:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
+				backdropFoot:SetBackdropColor (.52, .52, .52, .7)
+				backdropFoot:SetBackdropBorderColor (0, 0, 0, 1)
+				backdropFoot:SetFrameLevel (colorsFrame.Header:GetFrameLevel() + 19)
 			
 			--empty label
 				local empty_text = DF:CreateLabel (colorsFrame, "this list is automatically filled when\nyou see enemies inside a dungeon or raid\n\nthen you may select colors here or directly\nin the dropdown below the nameplate")
@@ -9916,6 +9961,29 @@ local relevance_options = {
 	
 	DF:BuildMenu (autoFrame, auto_options, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)	
 	
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--> credits
+
+	local creditsTextEditor = DF:NewSpecialLuaEditorEntry (creditsFrame, 100, 100, "CreditsTextEditor", "$parentCreditsEditor", true)
+	creditsTextEditor:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
+	
+	local luaeditor_backdrop_color = {.2, .2, .2, .5}
+	local luaeditor_border_color = {0, 0, 0, 1}
+	local edit_script_size = {620, 431}
+	local buttons_size = {120, 20}
+	
+	creditsTextEditor:SetBackdropBorderColor (unpack (luaeditor_border_color))
+	creditsTextEditor:SetBackdropColor (unpack (luaeditor_backdrop_color))
+	creditsTextEditor.editbox:SetJustifyH ("center")
+	creditsFrame.creditsStringField = creditsTextEditor
+	DF:ReskinSlider (creditsTextEditor.scroll)
+	
+	creditsTextEditor:SetPoint ("topleft", creditsFrame, "topleft", 0, 0 + startY)
+	creditsTextEditor:SetPoint ("bottomright", creditsFrame, "bottomright", 0, 20)
+	
+	creditsTextEditor:SetText (creditsText)
+
+
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> ~threat �ggro ~aggro
 	
