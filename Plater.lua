@@ -6591,7 +6591,9 @@ end
 		
 			--is a pet
 			if (PET_CACHE [plateFrame [MEMBER_GUID]]) then
-				Plater.AddIndicator (plateFrame, "pet")
+				if (config.indicator_pet) then
+					Plater.AddIndicator (plateFrame, "pet")
+				end
 			end
 
 			--classification

@@ -5253,20 +5253,20 @@ local relevance_options = {
 	--menu 1 ~general ~geral
 	local options_table1 = {
 	
-		{type = "label", get = function() return "Health Bar Appearance:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return L["OPTIONS_GENERALSETTINGS_HEALTHBAR_ANCHOR_TITLE"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "select",
 			get = function() return Plater.db.profile.health_statusbar_texture end,
 			values = function() return health_bar_texture_options end,
-			name = "Health Bar Texture",
-			desc = "Texture used on the health bar",
+			name = L["OPTIONS_GENERALSETTINGS_HEALTHBAR_TEXTURE"],
+			desc = L["OPTIONS_GENERALSETTINGS_HEALTHBAR_TEXTURE"],
 		},
 		{
 			type = "select",
 			get = function() return Plater.db.profile.health_statusbar_bgtexture end,
 			values = function() return health_bar_bgtexture_options end,
-			name = "Health Bar Background Texture",
-			desc = "Texture used on the health bar background",
+			name = L["OPTIONS_GENERALSETTINGS_HEALTHBAR_BGTEXTURE"],
+			desc = L["OPTIONS_GENERALSETTINGS_HEALTHBAR_BGTEXTURE"],
 		},
 		{
 			type = "color",
@@ -5279,14 +5279,14 @@ local relevance_options = {
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
-			name = "Health Bar Background Color and Alpha",
-			desc = "Color used to paint the health bar background.",
+			name = L["OPTIONS_GENERALSETTINGS_HEALTHBAR_BGCOLOR"],
+			desc = L["OPTIONS_GENERALSETTINGS_HEALTHBAR_BGCOLOR"],
 		},
 		
 		{type = "blank"},
 		
 		--alpha and range check
-		{type = "label", get = function() return "Alpha Control:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_ANCHOR_TITLE"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 
 		{
 			type = "toggle",
@@ -5296,8 +5296,8 @@ local relevance_options = {
 				Plater.RefreshDBUpvalues()
 				Plater.UpdateAllPlates()
 			end,
-			name = "Use Range Check",
-			desc = "Units that are out of range has their nameplates more transparent (adjust the amount in the slider below).\n\n|cFFFFFF00Important|r: check which spell you want to use to check the range.",
+			name = L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK_ENABLED"],
+			desc = L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK_ENABLED_DESC"],
 		},
 		{
 			type = "range",
@@ -5310,8 +5310,8 @@ local relevance_options = {
 			min = 0,
 			max = 1,
 			step = 0.1,
-			name = "Out of Range Alpha",
-			desc = "Amount of alpha to apply when the unit is out of range.\n\n|cFFFFFF001.0|r: full opaque.\n|cFFFFFF00Zero|r: full transparent.",
+			name = L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK_ALPHA"],
+			desc = L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK_ALPHA"],
 			usedecimals = true,
 		},
 	}
@@ -5349,8 +5349,8 @@ local relevance_options = {
 				end
 				return t
 			end,
-			name = "|T" .. spec_icon .. ":16:16|t Range Check",
-			desc = "Spell to range check on this specializartion.",
+			name = "|T" .. spec_icon .. ":16:16|t " .. L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK"],
+			desc = L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK_SPEC_DESC"],
 		})
 		i = i + 1
 	end	
@@ -5804,6 +5804,17 @@ local relevance_options = {
 			end,
 			name = "Enemy Faction Icon",
 			desc = "Show horde or alliance icon.",
+		},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.indicator_pet end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_pet = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Pet Icon",
+			desc = "Pet Icon",
 		},
 		
 		{

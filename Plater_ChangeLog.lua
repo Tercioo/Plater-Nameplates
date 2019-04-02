@@ -8,6 +8,9 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1554222484,  "New Feature", "April 2, 2019", "Language localization has been started: https://wow.curseforge.com/projects/plater-nameplates/localization."},
+			{1554222484,  "New Feature", "April 2, 2019", "Added Pet Indicator."},
+			
 			{1553180406,  "New Feature", "March 21, 2019", "Added Indicator Scale."},
 			
 			{1553016092,  "New Feature", "March 19, 2019", "Added Number System selector (western/east asia) at the Advanced tab."},

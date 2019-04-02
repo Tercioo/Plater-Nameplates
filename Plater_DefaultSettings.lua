@@ -2327,6 +2327,7 @@ PLATER_DEFAULT_SETTINGS = {
 		indicator_elite = true,
 		indicator_rare = true,
 		indicator_quest = true,
+		indicator_pet = true,
 		indicator_enemyclass = false,
 		indicator_anchor = {side = 2, x = -2, y = 0},
 		indicator_scale = 1,
