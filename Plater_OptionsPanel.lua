@@ -306,11 +306,11 @@ function Plater.OpenOptionsPanel()
 	end
 	
 	local copy_settings_options = {
-		{label = "Personal Bar", value = "player", onclick = f.CopySettings},
-		{label = "Enemy Npc", value = "enemynpc", onclick = f.CopySettings},
-		{label = "Enemy Player", value = "enemyplayer", onclick = f.CopySettings},
-		{label = "Friendly Npc", value = "friendlynpc", onclick = f.CopySettings},
-		{label = "Friendly Player", value = "friendlyplayer", onclick = f.CopySettings},
+		{label = L["OPTIONS_TABNAME_PERSONAL"], value = "player", onclick = f.CopySettings},
+		{label = L["OPTIONS_TABNAME_NPCENEMY"], value = "enemynpc", onclick = f.CopySettings},
+		{label = L["OPTIONS_TABNAME_PLAYERENEMY"], value = "enemyplayer", onclick = f.CopySettings},
+		{label = L["OPTIONS_TABNAME_NPCFRIENDLY"], value = "friendlynpc", onclick = f.CopySettings},
+		{label = L["OPTIONS_TABNAME_PLAYERFRIENDLY"], value = "friendlyplayer", onclick = f.CopySettings},
 	}
 	
 ------------------------------------------------------------------------------------------------------------
