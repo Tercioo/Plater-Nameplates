@@ -2313,6 +2313,7 @@ Plater.DefaultSpellRangeList = {
 				plateFrame.unitFrame.ExtraIconFrame = DF:CreateIconRow (plateFrame.unitFrame, "$parentExtraIconRow", options)
 				plateFrame.unitFrame.ExtraIconFrame:ClearIcons()
 				plateFrame.unitFrame.ExtraIconFrame.RefreshID = 0
+				plateFrame.unitFrame.ExtraIconFrame.AuraCache = {}
 				--> cache the extra icon frame inside the buff frame for speed
 				plateFrame.unitFrame.BuffFrame.ExtraIconFrame = plateFrame.unitFrame.ExtraIconFrame
 			
@@ -4307,6 +4308,11 @@ end
 		
 		--spellId, borderColor, startTime, duration, forceTexture, descText
 		local iconFrame = self.ExtraIconFrame:SetIcon (spellId, borderColor, expirationTime - duration, duration, false, casterName and {text = casterName, text_color = casterClass} or false)
+		--add the spell into the cache
+		self.ExtraIconFrame.AuraCache [spellId] = true
+		self.ExtraIconFrame.AuraCache [spellName] = true
+		
+		--check if Masque is enabled on Plater and reskin the aura icon
 		if (Plater.Masque and not iconFrame.Masqued) then
 			local t = {
 				FloatingBG = false,
@@ -4352,6 +4358,8 @@ end
 		--> wipe the cache
 		wipe (self.AuraCache)
 		wipe (self.BuffFrame2.AuraCache)
+		wipe (self.ExtraIconFrame.AuraCache)
+		
 	end
 
 	
@@ -7992,10 +8000,10 @@ end
 	function Plater.GetUnitGuildName (unitFrame)
 		return unitFrame.PlateFrame.playerGuildName
 	end
-
+	
 	--return if the nameplate is showing an aura
 	function Plater.NameplateHasAura (unitFrame, aura)
-		return unitFrame.BuffFrame.AuraCache [aura] or unitFrame.BuffFrame2.AuraCache [aura]
+		return unitFrame.BuffFrame.AuraCache [aura] or unitFrame.BuffFrame2.AuraCache [aura] or unitFrame.ExtraIconFrame.AuraCache [aura]
 	end
 	
 	--get npc color set in the colors tab
