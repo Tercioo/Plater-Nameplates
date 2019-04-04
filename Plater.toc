@@ -1,6 +1,6 @@
 ## Interface: 80100
 ## Title: Plater
-## Notes: Config the new name plates
+## Notes: Nameplate addon designed for advanced users.
 ## SavedVariables: PlaterDB
 ## SavedVariablesPerCharacter: PlaterDBChr
 

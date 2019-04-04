@@ -12,7 +12,20 @@ local L = LibStub ("AceLocale-3.0"):GetLocale ("PlaterNameplates", true)
 local creditsText = [=[
 Plater Nameplates Credits
 
+--todo: build brackets
+--bracket Plater Core Programmers and Contributors
 
+--bracket Plater Community Constributors
+
+--bracket Script Contributors
+
+--bracket Discord Moderators
+
+--bracket Discord Assistants
+
+--bracket World Wide Localization 
+
+--bracket Special Thanks
 
 ]=]
 
@@ -331,8 +344,8 @@ function Plater.OpenOptionsPanel()
 					DF:ApplyStandardBackdrop (profilesFrame.ImportingProfileAlert)
 					profilesFrame.ImportingProfileAlert:SetBackdropBorderColor (1, 0.8, 0.1)
 					
-					profilesFrame.ImportingProfileAlert.IsLoadingLabel1 = DF:CreateLabel (profilesFrame.ImportingProfileAlert, "Plater is exporting the current profile")
-					profilesFrame.ImportingProfileAlert.IsLoadingLabel2 = DF:CreateLabel (profilesFrame.ImportingProfileAlert, "This may take only a few seconds")
+					profilesFrame.ImportingProfileAlert.IsLoadingLabel1 = DF:CreateLabel (profilesFrame.ImportingProfileAlert, L["OPTIONS_PROFILE_CONFIG_EXPORTINGTASK"])
+					profilesFrame.ImportingProfileAlert.IsLoadingLabel2 = DF:CreateLabel (profilesFrame.ImportingProfileAlert, L["OPTIONS_PLEASEWAIT"])
 					profilesFrame.ImportingProfileAlert.IsLoadingImage1 = DF:CreateImage (profilesFrame.ImportingProfileAlert, [[Interface\DialogFrame\UI-Dialog-Icon-AlertOther]], 32, 32)
 					profilesFrame.ImportingProfileAlert.IsLoadingLabel1.align = "center"
 					profilesFrame.ImportingProfileAlert.IsLoadingLabel2.align = "center"
@@ -356,7 +369,7 @@ function Plater.OpenOptionsPanel()
 					Plater.db.profile.aura_cache_by_name = {}
 					
 					--export to string
-					profilesFrame.ImportStringField:SetText (Plater.ExportProfileToString() or "failed to export")
+					profilesFrame.ImportStringField:SetText (Plater.ExportProfileToString() or L["OPTIONS_ERROR_EXPORTSTRINGERROR"])
 					
 					--set back again the cache data
 					Plater.db.profile.captured_spells = captured_spells
@@ -411,16 +424,16 @@ function Plater.OpenOptionsPanel()
 					if (not profile.plate_config) then
 						local scriptType = Plater.GetDecodedScriptType (profile)
 						if (scriptType == "hook" or scriptType == "script") then
-							DF:ShowErrorMessage ("Invalid profile file.\n\nImport scripts or mods at the scripting tab.", "Plater Nameplates")
+							DF:ShowErrorMessage (L["OPTIONS_PROFILE_ERROR_WRONGTAB"], "Plater Nameplates")
 						else
-							DF:ShowErrorMessage ("Invalid profile file.", "Plater Nameplates")
+							DF:ShowErrorMessage (L["OPTIONS_PROFILE_ERROR_STRINGINVALID"], "Plater Nameplates")
 						end
 						return
 					end
 				
 					local profileName = profilesFrame.NewProfileTextEntry:GetText()
 					if (profileName == "") then
-						Plater:Msg ("Invalid profile name")
+						Plater:Msg (L["OPTIONS_PROFILE_ERROR_PROFILENAME"])
 						return
 					end
 					
@@ -453,18 +466,18 @@ function Plater.OpenOptionsPanel()
 		
 		--frames
 			--export profile button
-			local exportProfileButton = DF:CreateButton (profilesFrame, profilesFrame.ExportCurrentProfile, 160, 20, "Export Profile", -1, nil, nil, "ExportButton", nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+			local exportProfileButton = DF:CreateButton (profilesFrame, profilesFrame.ExportCurrentProfile, 160, 20, L["OPTIONS_PROFILE_CONFIG_EXPORTPROFILE"], -1, nil, nil, "ExportButton", nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 			exportProfileButton:SetPoint ("topleft", profilesFrame, "topleft", 10, startY)
 			
 			--import profile button
-			local importProfileButton = DF:CreateButton (profilesFrame, profilesFrame.ImportProfile, 160, 20, "Import Profile", -1, nil, nil, "ImportButton", nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+			local importProfileButton = DF:CreateButton (profilesFrame, profilesFrame.ImportProfile, 160, 20, L["OPTIONS_PROFILE_CONFIG_IMPORTPROFILE"], -1, nil, nil, "ImportButton", nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 			importProfileButton:SetPoint ("topleft", exportProfileButton, "bottomleft", 0, -2)
 			
 			--import profile button
-			local openManagementProfileButton = DF:CreateButton (profilesFrame, profilesFrame.OpenProfileManagement, 160, 20, "Open Profile Settings", -1, nil, nil, "ProfileSettingsButton", nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+			local openManagementProfileButton = DF:CreateButton (profilesFrame, profilesFrame.OpenProfileManagement, 160, 20, L["OPTIONS_PROFILE_CONFIG_OPENSETTINGS"], -1, nil, nil, "ProfileSettingsButton", nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 			openManagementProfileButton:SetPoint ("topleft", importProfileButton, "bottomleft", 0, -10)
 			
-			local moreProfilesLabel = DF:CreateLabel (profilesFrame, "Get more profiles at Wago.io:", DF:GetTemplate ("font", "PLATER_BUTTON"))
+			local moreProfilesLabel = DF:CreateLabel (profilesFrame, L["OPTIONS_PROFILE_CONFIG_MOREPROFILES"] .. ":", DF:GetTemplate ("font", "PLATER_BUTTON"))
 			moreProfilesLabel:SetPoint ("topleft", openManagementProfileButton, "bottomleft", 0, -20)
 			
 			local moreProfilesTextEntry = DF:CreateTextEntry (profilesFrame, function()end, 160, 20, "moreProfilesTextEntry", _, _, options_dropdown_template)
@@ -493,11 +506,11 @@ function Plater.OpenOptionsPanel()
 			DF:ReskinSlider (importStringField.scroll)
 			
 			--import button
-			local okayButton = DF:CreateButton (importStringField, profilesFrame.ConfirmImportScript, buttons_size[1], buttons_size[2], "Okay", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+			local okayButton = DF:CreateButton (importStringField, profilesFrame.ConfirmImportScript, buttons_size[1], buttons_size[2], L["OPTIONS_OKAY"], -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 			okayButton:SetIcon ([[Interface\BUTTONS\UI-Panel-BiggerButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
 			
 			--cancel button
-			local cancelButton = DF:CreateButton (importStringField, profilesFrame.HideStringField, buttons_size[1], buttons_size[2], "Cancel", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+			local cancelButton = DF:CreateButton (importStringField, profilesFrame.HideStringField, buttons_size[1], buttons_size[2], L["OPTIONS_CANCEL"], -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 			cancelButton:SetIcon ([[Interface\BUTTONS\UI-Panel-MinimizeButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
 			
 			importStringField:SetPoint ("topleft", profilesFrame, "topleft", 220, startY)
@@ -505,10 +518,10 @@ function Plater.OpenOptionsPanel()
 			cancelButton:SetPoint ("right", okayButton, "left", -20, 0)
 			
 			--new profile name
-			local newProfileNameLabel = DF:CreateLabel (profilesFrame, "New Profile Name:", DF:GetTemplate ("font", "OPTIONS_FONT_TEMPLATE"))
+			local newProfileNameLabel = DF:CreateLabel (profilesFrame, L["OPTIONS_PROFILE_CONFIG_PROFILENAME"] .. ":", DF:GetTemplate ("font", "OPTIONS_FONT_TEMPLATE"))
 			local newProfileNameTextEntry = DF:CreateTextEntry (profilesFrame, function()end, 160, 20, "ProfileNameTextEntry", _, _, options_dropdown_template)
 			newProfileNameTextEntry:SetText ("MyNewProfile")
-			newProfileNameTextEntry.tooltip = "A new profile is created with the imported string.\n\nInserting the name of a profile that already exists will overwrite it."
+			newProfileNameTextEntry.tooltip = L["OPTIONS_PROFILE_CONFIG_PROFILENAME_DESC"]
 			newProfileNameLabel:SetPoint ("topleft", importStringField, "bottomleft", 0, -16)
 			newProfileNameTextEntry:SetPoint ("left", newProfileNameLabel, "right", 2, 0)
 			
