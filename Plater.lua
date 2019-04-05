@@ -3294,7 +3294,7 @@ function Plater.OnInit() --private
 			end
 			
 			local resourceFrame = NamePlateDriverFrame.classNamePlateMechanicFrame
-			if (not resourceFrame or not resourceFrame:IsShown()) then
+			if (not resourceFrame or resourceFrame:IsForbidden() or not resourceFrame:IsShown()) then
 				return
 			end
 			
