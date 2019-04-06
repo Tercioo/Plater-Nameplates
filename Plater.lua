@@ -6260,7 +6260,7 @@ end
 			Plater.ParseHealthSettingForPlayer (plateFrame)
 			
 			if (not plateFrame.IsFriendlyPlayerWithoutHealthBar) then
-				--change the player health bar color (no class color uses hardcoded white color)
+				--change the player health bar color to either class color or users choice
 				if (not Plater.db.profile.use_playerclass_color) then
 					Plater.ChangeHealthBarColor_Internal (healthBar, unpack(DB_PLATE_CONFIG [actorType].fixed_class_color))
 				else
