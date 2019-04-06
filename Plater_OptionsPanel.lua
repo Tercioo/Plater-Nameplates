@@ -6091,7 +6091,6 @@ local relevance_options = {
 			get = function() return Plater.db.profile.use_playerclass_color end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.use_playerclass_color = value
-				Plater.UpdateUseClassColors()
 				Plater.UpdateAllPlates()
 			end,
 			name = "Use Class Colors",
