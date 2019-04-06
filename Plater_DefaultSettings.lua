@@ -92,6 +92,8 @@ PLATER_DEFAULT_SETTINGS = {
 				click_through = true,
 				show_guild_name = false,
 				
+				fixed_class_color = {0, 1, 0},
+				
 				health = {70, 2},
 				health_incombat = {70, 2},
 				cast = {80, 8},
