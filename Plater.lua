@@ -847,6 +847,17 @@ Plater.DefaultSpellRangeList = {
 						end
 					end
 				end
+			elseif (class == "PALADIN") then
+				local specID = GetSpecializationInfo (spec)
+				if (specID and specID ~= 0) then
+					if (specID == 70) then --retribution paladin
+						--> is using hammer of wrath?
+						local _, _, _, using_HammerOfWrath = GetTalentInfo (2, 3, 1)
+						if (using_HammerOfWrath) then
+							Plater.SetExecuteRange (true, 0.2)
+						end
+					end
+				end
 			end
 		end
 	end	
