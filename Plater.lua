@@ -1957,7 +1957,7 @@ Plater.DefaultSpellRangeList = {
 			Plater.UpdateAllPlates (true)
 		end,
 		
-		--~created ~events ncreated ~oncreated 
+		--~created ~events ~oncreated 
 		NAME_PLATE_CREATED = function (event, plateFrame)
 			
 			--> create the unitframe
@@ -2419,7 +2419,7 @@ Plater.DefaultSpellRangeList = {
 				end
 		end,
 
-		-- ~added ~ãdded
+		-- ~added
 		NAME_PLATE_UNIT_ADDED = function (event, unitBarId)
 		
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId)
@@ -3857,7 +3857,7 @@ end
 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
---> aura buffs and debuffs b ~aura ~buffs ~debuffs uras
+--> aura buffs and debuffs ~aura ~buffs ~debuffs ~auras
 
 	--> show the tooltip in the aura icon
 	function Plater.OnEnterAura (iconFrame) --private
@@ -4363,7 +4363,7 @@ end
 	end
 
 	
-	-- ~auras ura
+	-- ~auras ~aura
 	--receives a hash table with spell names keys and true as the value
 	--used when the user selects manual aura tracking
 	function Plater.TrackSpecificAuras (self, unit, isBuff, aurasToCheck, isPersonal, noSpecial)
@@ -4992,7 +4992,7 @@ end
 		end
 	end
 	
-	-- ~ontick ~onupdate ~tick nupdate ntick 
+	-- ~ontick ~onupdate ~tick
 	function Plater.NameplateTick (tickFrame, deltaTime) --private
 
 		tickFrame.ThrottleUpdate = tickFrame.ThrottleUpdate - deltaTime
@@ -5237,7 +5237,7 @@ end
 		end
 	end
 
-	--aggro threat ~aggro ggro ~threat
+	--aggro threat ~aggro ~threat
 	function Plater.UpdateNameplateThread (self) --self = unitFrame
 
 		--make sure there's a unitID in the unit frame
@@ -5303,16 +5303,16 @@ end
 					end
 				end
 			else
-				--o jogador esta tankando e:
-				if (threatStatus == 3) then --esta tankando com segurana
+				--The player is tanking and:
+				if (threatStatus == 3) then --is tanking safely
 					set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.aggro))
 					
-				elseif (threatStatus == 2) then --esta tankando sem segurana
+				elseif (threatStatus == 2) then --is tanking with risk of aggro loss
 					set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.pulling))
 					self.aggroGlowUpper:Show()
 					self.aggroGlowLower:Show()
 					
-				else --no esta tankando
+				else --not tanking
 					set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.noaggro))
 
 				end
@@ -5326,7 +5326,7 @@ end
 
 			--dps
 			if (isTanking) then
-				--o jogador esta tankando como dps
+				--the player is tanking as dps
 				set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.aggro))
 				if (not self.PlateFrame.playerHasAggro and IS_IN_INSTANCE) then
 					self.PlateFrame.PlayBodyFlash ("-AGGRO-")
@@ -7837,7 +7837,7 @@ end
 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
---> API ~API ~ãpi
+--> API ~API
 
 	--attempt to get the role of the unit shown in the nameplate
 	function Plater.GetUnitRole (unitFrame)
