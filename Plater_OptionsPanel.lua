@@ -6091,11 +6091,24 @@ local relevance_options = {
 			get = function() return Plater.db.profile.use_playerclass_color end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.use_playerclass_color = value
-				Plater.UpdateUseClassColors()
 				Plater.UpdateAllPlates()
 			end,
 			name = "Use Class Colors",
 			desc = "Player name plates uses the player class color",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].fixed_class_color
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].fixed_class_color
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllPlates()
+			end,
+			name = "Fixed Color",
+			desc = "Use this color when not using class colors.",
 		},
 		{
 			type = "toggle",
