@@ -350,6 +350,7 @@ Plater.TargetHighlights = {
 	[[Interface\AddOns\Plater\images\selection_indicator6]],
 }
 
+--> icons available for any purpose
 Plater.Media = {
 	Icons = {
 		[[Interface\AddOns\Plater\media\arrow_apple_64]],
@@ -1073,7 +1074,7 @@ Plater.DefaultSpellRangeList = {
 		
 		--checking the serial of the unit is the same in case this nameplate is being used on another unit
 		if (plateFrame:IsShown() and unitGUID == plateFrame [MEMBER_GUID]) then
-			--save user input data
+			--save user input data (usualy set from scripts) before call the unit added event
 				local unitFrame = plateFrame.unitFrame
 				local customHealthBarWidth = unitFrame.customHealthBarWidth
 				local customHealthBarHeight = unitFrame.customHealthBarHeight
@@ -1085,7 +1086,8 @@ Plater.DefaultSpellRangeList = {
 				local customPowerBarHeight = unitFrame.customPowerBarHeight
 				
 				local customBorderColor = unitFrame.customBorderColor
-				
+			
+			--full refresh the nameplate, this will override user data from scripts
 			Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_ADDED", plateFrame [MEMBER_UNITID])
 			
 			--restore user input data
@@ -1115,6 +1117,8 @@ Plater.DefaultSpellRangeList = {
 		end
 	end
 	
+	--run a delayed update on the namepalte, this is used when the client receives an information from the server but does not update the state immediately
+	--this usualy happens with faction and flag changes
 	function Plater.ScheduleUpdateForNameplate (plateFrame) --private
 		--check if there's already an update scheduled for this unit
 		if (plateFrame.HasUpdateScheduled and not plateFrame.HasUpdateScheduled._cancelled) then
@@ -1130,6 +1134,7 @@ Plater.DefaultSpellRangeList = {
 --> settings functions
 
 	-- ~profile
+	--refreshes the values for the profile when the profile is loaded or changed
 	function Plater:RefreshConfig() --private
 		Plater.IncreaseRefreshID()
 
@@ -1145,6 +1150,7 @@ Plater.DefaultSpellRangeList = {
 	end
 
 	--~save ~cvar
+	--on logout or on profile change, save some important cvars inside the profile
 	function Plater.SaveConsoleVariables() --private
 		local cvarTable = Plater.db.profile.saved_cvars
 		
@@ -1332,7 +1338,6 @@ Plater.DefaultSpellRangeList = {
 		wipe (SPELL_WITH_ANIMATIONS)
 		
 		if (profile.spell_animations) then
-			--for spellId, spellOptions in pairs (profile.spell_animation_list) do
 			for spellId, animations in pairs (profile.spell_animation_list) do
 				local frameAnimations = {}
 				local spellName = GetSpellInfo (spellId)
@@ -1492,6 +1497,8 @@ Plater.DefaultSpellRangeList = {
 
 	end	
 
+	--a patch is a function stored in the Plater_ScriptLibrary file and are executed only once to change a profile setting, remove or add an aura into the tracker or modify a script
+	--patch versions are stored within the profile, so importing or creating a new profile will apply all patches that wasn't applyed into it yet
 	function Plater.ApplyPatches() --private
 		if (PlaterPatchLibrary) then
 			local currentPatch = Plater.db.profile.patch_version
