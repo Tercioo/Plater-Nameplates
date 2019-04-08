@@ -88,7 +88,7 @@ PLATER_DEFAULT_SETTINGS = {
 			friendlyplayer = {
 				enabled = true,
 				only_damaged = true,
-				only_thename = true,
+				only_thename = false,
 				click_through = true,
 				show_guild_name = false,
 				
