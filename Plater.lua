@@ -6869,7 +6869,11 @@ end
 	function Plater.ParseHealthSettingForPlayer (plateFrame) --private
 		plateFrame.IsFriendlyPlayerWithoutHealthBar = false
 
-		if (DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_damaged) then
+		if (DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_thename) then
+			Plater.HideHealthBar (plateFrame.unitFrame)
+			plateFrame.IsFriendlyPlayerWithoutHealthBar = true
+			
+		elseif (DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_damaged) then
 			if (UnitHealth (plateFrame [MEMBER_UNITID]) < UnitHealthMax (plateFrame [MEMBER_UNITID])) then
 				Plater.ShowHealthBar (plateFrame.unitFrame)
 			else
@@ -6879,10 +6883,6 @@ end
 					plateFrame.IsFriendlyPlayerWithoutHealthBar = true
 				end
 			end
-			
-		elseif (DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_thename) then
-			Plater.HideHealthBar (plateFrame.unitFrame)
-			plateFrame.IsFriendlyPlayerWithoutHealthBar = true
 			
 		else
 			Plater.ShowHealthBar (plateFrame.unitFrame)
