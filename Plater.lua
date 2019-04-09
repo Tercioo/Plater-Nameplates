@@ -4091,6 +4091,7 @@ end
 			auraIconFrame.spellId = spellId
 			auraIconFrame.layoutIndex = auraIconFrame.ID
 			auraIconFrame.IsShowingBuff = false
+			auraIconFrame.CanStealOrPurge = false
 
 			if (debuffType == "DEBUFF") then
 				auraIconFrame.filter = "HARMFUL"
@@ -4193,6 +4194,7 @@ end
 		--border colors
 		if (canStealOrPurge) then
 			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.steal_or_purge))
+			auraIconFrame.CanStealOrPurge = true
 		
 		elseif (isBuff) then
 			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.is_buff))
