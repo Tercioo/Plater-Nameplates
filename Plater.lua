@@ -4996,10 +4996,12 @@ end
 		
 		if (isDebug and not Plater.db.profile.click_space_always_show) then
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-				Plater.ShowClickSpace (plateFrame)
-				
-				if (Plater.PlateSizeDebugTimer and not Plater.PlateSizeDebugTimer._cancelled) then
-					Plater.PlateSizeDebugTimer:Cancel()
+				if not plateFrame.isSelf then
+					Plater.ShowClickSpace (plateFrame)
+					
+					if (Plater.PlateSizeDebugTimer and not Plater.PlateSizeDebugTimer._cancelled) then
+						Plater.PlateSizeDebugTimer:Cancel()
+					end
 				end
 			end
 			if (not Plater.PlateSizeDebugTimer) then
