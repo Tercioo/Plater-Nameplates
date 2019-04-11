@@ -236,16 +236,7 @@ function Plater.OpenOptionsPanel()
 	DF:CreateAnimation (colorNpcsButtonNew.Anim, "alpha", 2, 3, .6, 0)
 	colorNpcsButtonNew.Anim:SetLooping ("repeat")
 	colorNpcsButtonNew.Anim:Play()
-	
---[=[	
 
-	[Add Color Button] [Dropdown Zone Name?] [Search by Name]
-
-	[ ] enabled check box | [] bypass threat color | [      ] npc ID text field | [     ] npcName Upper | [     ] npcName Lower | Color selector by Name 
-
-	
-	
---]=]
 	local generalOptionsAnchor = CreateFrame ("frame", "$parentOptionsAnchor", frontPageFrame)
 	generalOptionsAnchor:SetSize (1, 1)
 	generalOptionsAnchor:SetPoint ("topleft", frontPageFrame, "topleft", 10, -230)
@@ -10022,12 +10013,12 @@ local relevance_options = {
 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
---> ~threat �ggro ~aggro
+--> ~threat ~aggro
 	
 
 	local thread_options = {
 	
-		{type = "label", get = function() return "Threat Modifies:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return L["OPTIONS_THREAT_MODIFIERS_ANCHOR_TITLE"] .. ":" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	
 		{
 			type = "toggle",
@@ -10040,8 +10031,8 @@ local relevance_options = {
 					Plater.UpdateAllNameplateColors()
 				end
 			end,
-			name = "Health Bar Color",
-			desc = "Health Bar Color",
+			name = L["OPTIONS_THREAT_MODIFIERS_HEALTHBARCOLOR"],
+			desc = L["OPTIONS_THREAT_MODIFIERS_HEALTHBARCOLOR"],
 		},
 		{
 			type = "toggle",
@@ -10051,8 +10042,8 @@ local relevance_options = {
 				Plater.RefreshDBUpvalues()
 				Plater.UpdateAllPlates()
 			end,
-			name = "Border Color",
-			desc = "Border Color",
+			name = L["OPTIONS_THREAT_MODIFIERS_BORDERCOLOR"],
+			desc = L["OPTIONS_THREAT_MODIFIERS_BORDERCOLOR"],
 		},
 		{
 			type = "toggle",
@@ -10062,13 +10053,13 @@ local relevance_options = {
 				Plater.RefreshDBUpvalues()
 				Plater.UpdateAllPlates()
 			end,
-			name = "Name Color",
-			desc = "Name Color",
+			name = L["OPTIONS_THREAT_MODIFIERS_NAMECOLOR"],
+			desc = L["OPTIONS_THREAT_MODIFIERS_NAMECOLOR"],
 		},
 
 		{type = "blank"},
 	
-		{type = "label", get = function() return "Color When Playing as TANK:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return L["OPTIONS_THREAT_COLOR_TANK_ANCHOR_TITLE"] .. ":" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "color",
 			get = function()
@@ -10079,8 +10070,8 @@ local relevance_options = {
 				local color = Plater.db.profile.tank.colors.aggro
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
-			name = "Aggro on You",
-			desc = "When you are tanking with solid aggro.",
+			name = L["OPTIONS_THREAT_AGGROSTATE_ONYOU_SOLID"],
+			desc =  L["OPTIONS_THREAT_COLOR_TANK_ONYOU_SOLID_DESC"],
 		},
 		{
 			type = "color",
@@ -10092,8 +10083,8 @@ local relevance_options = {
 				local color = Plater.db.profile.tank.colors.anothertank
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
-			name = "Aggro on Another Tank",
-			desc = "The enemy is being tanked by another tank in the raid.",
+			name = L["OPTIONS_THREAT_AGGROSTATE_ANOTHERTANK"],
+			desc =  L["OPTIONS_THREAT_COLOR_TANK_ANOTHERTANK_DESC"],
 		},
 		{
 			type = "color",
@@ -10105,8 +10096,8 @@ local relevance_options = {
 				local color = Plater.db.profile.tank.colors.pulling
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
-			name = "Aggro on You But is Low",
-			desc = "When you are tanking but others are close to pull the aggro from you.",
+			name = L["OPTIONS_THREAT_AGGROSTATE_ONYOU_LOWAGGRO"],
+			desc = L["OPTIONS_THREAT_AGGROSTATE_ONYOU_LOWAGGRO_DESC"],
 		},
 		{
 			type = "color",
@@ -10118,8 +10109,8 @@ local relevance_options = {
 				local color = Plater.db.profile.tank.colors.noaggro
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
-			name = "No Aggro",
-			desc = "The enemy is attacking a player that isn't a tank!.",
+			name = L["OPTIONS_THREAT_AGGROSTATE_NOAGGRO"],
+			desc = L["OPTIONS_THREAT_COLOR_TANK_NOAGGRO_DESC"],
 		},
 		{
 			type = "color",
@@ -10131,14 +10122,13 @@ local relevance_options = {
 				local color = Plater.db.profile.tank.colors.nocombat
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
-			name = "Unit Not in Combat",
-			desc = "When you are in combat and the enemy isn't in combat with you or with a member of your group.",
+			name = L["OPTIONS_THREAT_AGGROSTATE_NOTINCOMBAT"],
+			desc = L["OPTIONS_THREAT_COLOR_TANK_NOTINCOMBAT_DESC"],
 		},
 			
 		{type = "blank"},
-		{type = "label", get = function() return "Color When Playing as DPS or HEALER:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-		
---		{type = "label", get = function() return "Plate Color As a Dps:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return L["OPTIONS_THREAT_COLOR_DPS_ANCHOR_TITLE"] .. ":" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+
 		{
 			type = "color",
 			get = function()
@@ -10149,8 +10139,8 @@ local relevance_options = {
 				local color = Plater.db.profile.dps.colors.aggro
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
-			name = "Aggro",
-			desc = "The name plate is painted with this color when you are a Dps (or healer) and have aggro.",
+			name = L["OPTIONS_THREAT_AGGROSTATE_ONYOU_SOLID"],
+			desc = L["OPTIONS_THREAT_COLOR_DPS_ONYOU_SOLID_DESC"],
 		},
 		{
 			type = "color",
@@ -10162,8 +10152,8 @@ local relevance_options = {
 				local color = Plater.db.profile.dps.colors.pulling
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
-			name = "High Threat",
-			desc = "When you are neat to pull the aggro.",
+			name = L["OPTIONS_THREAT_AGGROSTATE_HIGHTHREAT"],
+			desc = L["OPTIONS_THREAT_COLOR_DPS_HIGHTHREAT_DESC"],
 		},
 		{
 			type = "color",
@@ -10175,8 +10165,8 @@ local relevance_options = {
 				local color = Plater.db.profile.dps.colors.notontank
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
-			name = "No Tank Aggro",
-			desc = "When another healer or dps has aggro.",
+			name = L["OPTIONS_THREAT_AGGROSTATE_NOTANK"],
+			desc = L["OPTIONS_THREAT_COLOR_DPS_NOTANK_DESC"],
 		},		
 		{
 			type = "color",
@@ -10188,8 +10178,8 @@ local relevance_options = {
 				local color = Plater.db.profile.dps.colors.noaggro
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
-			name = "No Aggro",
-			desc = "When the mob is not attacking you.",
+			name = L["OPTIONS_THREAT_AGGROSTATE_NOAGGRO"],
+			desc = L["OPTIONS_THREAT_COLOR_DPS_NOAGGRO_DESC"],
 		},
 
 		
@@ -10205,13 +10195,13 @@ local relevance_options = {
 				local color = Plater.db.profile.tap_denied_color
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
-			name = "Unit Tapped",
-			desc = "When someone else has claimed the unit (when you don't receive experience or loot for killing it).",
+			name = L["OPTIONS_THREAT_AGGROSTATE_TAPPED"],
+			desc = L["OPTIONS_THREAT_COLOR_TAPPED_DESC"],
 		},
 		
 		{type = "breakline"},
 		
-		{type = "label", get = function() return "Color Overriding:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return L["OPTIONS_THREAT_COLOR_OVERRIDE_ANCHOR_TITLE"] .. ":" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "toggle",
@@ -10220,8 +10210,8 @@ local relevance_options = {
 				Plater.db.profile.color_override = value
 				Plater.RefreshColorOverride()
 			end,
-			name = "Override Default Colors",
-			desc = "Override Default Colors.\n\n|cFFFFFF00Important|r: override colors when out of combat and in combat when threat color are not set to modify the health bar color.",
+			name = L["OPTIONS_ENABLED"],
+			desc = L["OPTIONS_THREAT_COLOR_OVERRIDE_DESC"],
 		},
 		
 		{
@@ -10235,10 +10225,9 @@ local relevance_options = {
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllNameplateColors()
 			end,
-			name = "Hostile",
-			desc = "Hostile",
+			name = L["OPTIONS_HOSTILE"],
+			desc = L["OPTIONS_HOSTILE"],
 		},
-		
 		{
 			type = "color",
 			get = function()
@@ -10250,10 +10239,9 @@ local relevance_options = {
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllNameplateColors()
 			end,
-			name = "Neutral",
-			desc = "Neutral",
+			name = L["OPTIONS_NEUTRAL"],
+			desc = L["OPTIONS_NEUTRAL"],
 		},
-		
 		{
 			type = "color",
 			get = function()
@@ -10265,8 +10253,8 @@ local relevance_options = {
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllNameplateColors()
 			end,
-			name = "Friendly",
-			desc = "Friendly",
+			name = L["OPTIONS_FRIENDLY"],
+			desc = L["OPTIONS_FRIENDLY"],
 		},
 		
 	}
