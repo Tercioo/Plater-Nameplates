@@ -1571,6 +1571,14 @@ auraOptionsFrame.AuraTesting = {
 			Duration = 5,
 			SpellID = 15407,
 		},
+		{
+			SpellName = "Enrage",
+			SpellTexture = 132345,
+			Count = 1,
+			Duration = 0,
+			SpellID = 228318,
+			Type = "",
+		},
 	},
 	
 	BUFF = {
