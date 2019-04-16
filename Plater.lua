@@ -3811,7 +3811,8 @@ function Plater.OnInit() --private
 			
 			if (plateFrame.actorType == ACTORTYPE_FRIENDLY_PLAYER) then
 				Plater.ParseHealthSettingForPlayer (plateFrame)
-				Plater.UpdatePlateText (plateFrame, DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER], false)
+				self.ScheduleNameUpdate = true
+				--Plater.UpdatePlateText (plateFrame, DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER], false)
 			end
 			
 			Plater.CheckLifePercentText (unitFrame)
