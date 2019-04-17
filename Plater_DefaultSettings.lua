@@ -2362,6 +2362,8 @@ PLATER_DEFAULT_SETTINGS = {
 			actor_name_color = false,
 		},
 		
+		aggro_can_check_notank = false,
+		
 		tank = {
 			colors = {
 				aggro = {.5, .5, 1},

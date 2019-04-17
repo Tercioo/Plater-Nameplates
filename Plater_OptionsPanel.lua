@@ -10158,19 +10158,6 @@ local relevance_options = {
 		{
 			type = "color",
 			get = function()
-				local color = Plater.db.profile.dps.colors.notontank
-				return {color[1], color[2], color[3], color[4]}
-			end,
-			set = function (self, r, g, b, a) 
-				local color = Plater.db.profile.dps.colors.notontank
-				color[1], color[2], color[3], color[4] = r, g, b, a
-			end,
-			name = L["OPTIONS_THREAT_AGGROSTATE_NOTANK"],
-			desc = L["OPTIONS_THREAT_COLOR_DPS_NOTANK_DESC"],
-		},		
-		{
-			type = "color",
-			get = function()
 				local color = Plater.db.profile.dps.colors.noaggro
 				return {color[1], color[2], color[3], color[4]}
 			end,
@@ -10181,6 +10168,31 @@ local relevance_options = {
 			name = L["OPTIONS_THREAT_AGGROSTATE_NOAGGRO"],
 			desc = L["OPTIONS_THREAT_COLOR_DPS_NOAGGRO_DESC"],
 		},
+		
+		{type = "blank"},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.aggro_can_check_notank end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.aggro_can_check_notank = value
+			end,
+			name = L["OPTIONS_THREAT_DPS_CANCHECKNOTANK"],
+			desc = L["OPTIONS_THREAT_DPS_CANCHECKNOTANK_DESC"],
+		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.dps.colors.notontank
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.dps.colors.notontank
+				color[1], color[2], color[3], color[4] = r, g, b, a
+			end,
+			name = L["OPTIONS_THREAT_AGGROSTATE_NOTANK"],
+			desc = L["OPTIONS_THREAT_COLOR_DPS_NOTANK_DESC"],
+		},		
+
 
 		
 		{type = "blank"},

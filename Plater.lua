@@ -660,6 +660,7 @@ Plater.DefaultSpellRangeList = {
 	local DB_AGGRO_CHANGE_HEALTHBAR_COLOR
 	local DB_AGGRO_CHANGE_NAME_COLOR
 	local DB_AGGRO_CHANGE_BORDER_COLOR
+	local DB_AGGRO_CAN_CHECK_NOTANKAGGRO
 	local DB_TARGET_SHADY_ENABLED
 	local DB_TARGET_SHADY_ALPHA
 	local DB_TARGET_SHADY_COMBATONLY
@@ -1294,6 +1295,7 @@ Plater.DefaultSpellRangeList = {
 		DB_AGGRO_CHANGE_HEALTHBAR_COLOR = profile.aggro_modifies.health_bar_color
 		DB_AGGRO_CHANGE_BORDER_COLOR = profile.aggro_modifies.border_color
 		DB_AGGRO_CHANGE_NAME_COLOR = profile.aggro_modifies.actor_name_color
+		DB_AGGRO_CAN_CHECK_NOTANKAGGRO = profile.aggro_can_check_notank
 		
 		DB_AGGRO_TANK_COLORS = profile.tank.colors
 		DB_AGGRO_DPS_COLORS = profile.dps.colors
@@ -5433,18 +5435,38 @@ end
 						
 					elseif (threatStatus == 0) then --player doesnt have aggro
 						if (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid") then
-							local unitTarget = UnitName (self.targetUnitID)
-							if (not TANK_CACHE [unitTarget]) then
-								set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.notontank))
-							else
-								set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.noaggro))
+							--check if can check for no tank aggro
+							if (DB_AGGRO_CAN_CHECK_NOTANKAGGRO) then
+								local unitTarget = UnitName (self.targetUnitID)
+								--check if the unit isn't attacking a tank comparing the target name with tank names
+								if (not TANK_CACHE [unitTarget]) then
+								
+									--check if this isn't a false positive where the mob target another unit to cast a spell
+									local hasTankAggro = false
+									for tankName, _ in pairs (TANK_CACHE) do
+										local threatStatus = UnitThreatSituation (tankName, self.displayedUnit)
+										if (threatStatus and threatStatus >= 2) then
+											--a tank has aggro on this unit, it is a false positive
+											hasTankAggro = true
+											break
+										end
+									end
+									
+									if (not hasTankAggro) then
+										set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.notontank))
+									else
+										set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.noaggro))
+									end
+								else
+									set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.noaggro))
+								end
 							end
+							
 						else
 							set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.noaggro))
 						end
 						
 						self.PlateFrame.playerHasAggro = false
-						
 					end
 					
 					if (self.PlateFrame [MEMBER_NOCOMBAT]) then
