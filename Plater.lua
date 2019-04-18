@@ -5416,24 +5416,22 @@ end
 						set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.aggro))
 						self.PlateFrame.playerHasAggro = true
 						
-					elseif (threatStatus == 1) then --player is almost aggroing the mob
+					else --the unit isn't attacking the player based on the threat situation
 					
-						if (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid") then
-							local unitTarget = UnitName (self.targetUnitID)
-							if (not TANK_CACHE [unitTarget]) then
-								set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.notontank))
-							else
-								set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.pulling))
-							end
-						else
-							set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.pulling))
+						--which color the use in the nameplate based on the threat status
+						--this color can be overritten by the 'no tank aggro' check
+						local colorToUse
+						if (threatStatus == 1) then --player is almost aggroing the mob
+							--show aggro warning indicators
+							self.aggroGlowUpper:Show()
+							self.aggroGlowLower:Show()
+							colorToUse = DB_AGGRO_DS_COLORS.pulling
+							
+						elseif (threatStatus == 0) then
+							colorToUse = DB_AGGRO_DPS_COLORS.noaggro
+							
 						end
-						
-						self.PlateFrame.playerHasAggro = false
-						self.aggroGlowUpper:Show()
-						self.aggroGlowLower:Show()
-						
-					elseif (threatStatus == 0) then --player doesnt have aggro
+					
 						if (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid") then
 							--check if can check for no tank aggro
 							if (DB_AGGRO_CAN_CHECK_NOTANKAGGRO) then
@@ -5453,17 +5451,23 @@ end
 									end
 									
 									if (not hasTankAggro) then
+										--the unit isn't targeting a tank and no tank in the group has threat status of 2 or more, the unit might be attacking a dps or healer
 										set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.notontank))
 									else
-										set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.noaggro))
+										--the unit isn't targeting a tank but a tank in the group has aggro on this unit
+										set_aggro_color (self, unpack (colorToUse))
 									end
 								else
-									set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.noaggro))
+									--the unit is targeting a tank
+									set_aggro_color (self, unpack (colorToUse))
 								end
+							else
+								--isn't checking for 'no tank aggro'
+								set_aggro_color (self, unpack (colorToUse))
 							end
-							
 						else
-							set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.noaggro))
+							--player isn't inside a dungeon or raid
+							set_aggro_color (self, unpack (colorToUse))
 						end
 						
 						self.PlateFrame.playerHasAggro = false
