@@ -3790,7 +3790,7 @@ function Plater.OnInit() --private
 			
 		else
 			if (DB_DO_ANIMATIONS) then
-				--do healthbar animation ~animation ~healthbar ~health
+				--do healthbar animation ~animation ~healthbar
 				oldHealth = oldHealth or self.CurrentHealth
 				
 				self.CurrentHealthMax = currentHealthMax
@@ -6054,7 +6054,8 @@ end
 		return self.PlateConfig
 	end
 	
-	function Plater.UpdateLifePercentText (healthBar, unitId, showHealthAmount, showPercentAmount, showDecimals)
+	function Plater.UpdateLifePercentText (healthBar, unitId, showHealthAmount, showPercentAmount, showDecimals) -- ~health
+	
 		--get the cached health amount for performance
 		local currentHealth, maxHealth = healthBar.CurrentHealth, healthBar.CurrentHealthMax
 		
@@ -6514,6 +6515,10 @@ end
 			healthBar.DetailsRealTime:SetText ("")
 			healthBar.DetailsRealTimeFromPlayer:SetText ("")
 			healthBar.DetailsDamageTaken:SetText ("")
+		end
+		
+		if (plateFrame.OnTickFrame.actorType == actorType and plateFrame.OnTickFrame.unit == plateFrame [MEMBER_UNITID]) then
+			Plater.NameplateTick (plateFrame.OnTickFrame, 10)
 		end
 	end
 
