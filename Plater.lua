@@ -5425,7 +5425,7 @@ end
 							--show aggro warning indicators
 							self.aggroGlowUpper:Show()
 							self.aggroGlowLower:Show()
-							colorToUse = DB_AGGRO_DS_COLORS.pulling
+							colorToUse = DB_AGGRO_DPS_COLORS.pulling
 							
 						elseif (threatStatus == 0) then
 							colorToUse = DB_AGGRO_DPS_COLORS.noaggro
