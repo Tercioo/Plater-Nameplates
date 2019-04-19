@@ -1987,6 +1987,7 @@ Plater.DefaultSpellRangeList = {
 					CanModifyHealhBarColor = false,
 					ShowTargetOverlay = false,
 					ShowUnitName = false, --let Plater control the unit name
+					ClearUnitOnHide = false, --let Plater control when the cleanup is execute on the unit frame
 				}
 				
 				local healthBarOptions = {
@@ -2778,6 +2779,9 @@ Plater.DefaultSpellRangeList = {
 			end
 			
 			plateFrame.unitFrame.PlaterOnScreen = nil
+			
+			--tell the framework to execute a cleanup on the unit frame, this is required since Plater set .ClearUnitOnHide to false
+			plateFrame.unitFrame:SetUnit (nil)
 			
 			--community patch by Ariani#0960 (discord)
 			--make the unitFrame be parented to UIParent allowing frames to be moved between strata levels
