@@ -94,8 +94,6 @@ PLATER_DEFAULT_SETTINGS = {
 				show_guild_name = false,
 				
 				fixed_class_color = {0, 1, 0},
-				friend_color = {.71, 1, 1, 1},
-				guild_color = {0.498039, 1, .2, 1},
 				
 				health = {70, 2},
 				health_incombat = {70, 2},
@@ -109,7 +107,12 @@ PLATER_DEFAULT_SETTINGS = {
 				actorname_text_spacing = 10,
 				actorname_text_size = 10,
 				actorname_text_font = "Arial Narrow",
+				actorname_use_class_color = false,
 				actorname_text_color = {1, 1, 1, 1},
+				actorname_friend_color = {.71, 1, 1, 1},
+				actorname_use_friends_color = true,
+				actorname_guild_color = {0.498039, 1, .2, 1},
+				actorname_use_guild_color = true,
 				actorname_text_outline = "OUTLINE",
 				actorname_text_shadow_color = {0, 0, 0, 1},
 				actorname_text_shadow_color_offset = {1, -1},
@@ -560,8 +563,6 @@ PLATER_DEFAULT_SETTINGS = {
 		update_throttle = 0.25,
 		culling_distance = 100,
 		use_playerclass_color = true, --friendly player
-		use_friends_color = true, -- on your friend list coloring
-		use_guild_color = true, -- in your guild coloring
 		
 		use_health_animation = false,
 		health_animation_time_dilatation = 2.615321,

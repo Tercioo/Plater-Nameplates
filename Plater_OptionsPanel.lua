@@ -6103,54 +6103,6 @@ local relevance_options = {
 		},
 		{
 			type = "toggle",
-			get = function() return Plater.db.profile.use_friends_color end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.use_friends_color = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Use Friends Colors",
-			desc = "Player name/guild text uses the selected friend color, if the player is on your friend list.\n(Overwriting class colors)",
-		},
-		{
-			type = "color",
-			get = function()
-				local color = Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].friend_color
-				return {color[1], color[2], color[3], color[4]}
-			end,
-			set = function (self, r, g, b, a) 
-				local color = Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].friend_color
-				color[1], color[2], color[3], color[4] = r, g, b, a
-				Plater.UpdateAllPlates()
-			end,
-			name = "Friend Color",
-			desc = "Use this color for name/guild texts if the player is your friend.",
-		},
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.use_guild_color end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.use_guild_color = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Use Guild Colors",
-			desc = "Player name/guild text uses the selected guild color, if it is a guild mate.\n(Overwriting class colors)",
-		},
-		{
-			type = "color",
-			get = function()
-				local color = Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].guild_color
-				return {color[1], color[2], color[3], color[4]}
-			end,
-			set = function (self, r, g, b, a) 
-				local color = Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].guild_color
-				color[1], color[2], color[3], color[4] = r, g, b, a
-				Plater.UpdateAllPlates()
-			end,
-			name = "Guild Color",
-			desc = "Use this color for name/guild texts if the player is in your guild.",
-		},
-		{
-			type = "toggle",
 			get = function() return Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].only_damaged end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].only_damaged = value
@@ -6206,6 +6158,82 @@ local relevance_options = {
 			usedecimals = true,
 			name = L["OPTIONS_YOFFSET"],
 			desc = "Adjust the position on the Y axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
+		},
+		
+		{type = "blank"},
+		{type = "label", get = function() return "Player Name Text Colors" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		--player name color
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_class_color end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_class_color = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Use Class Colors",
+			desc = "Player name/guild text uses the class color instead of the selected color. Guild or Friend colors will overwrite this, if used.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_friends_color end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_friends_color = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Use Friends Colors",
+			desc = "Player name/guild text uses the selected friend color, if the player is on your friend list.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_guild_color end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_guild_color = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Use Guild Colors",
+			desc = "Player name/guild text uses the selected guild color, if it is a guild mate.",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.plate_config.friendlyplayer.actorname_text_color
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.plate_config.friendlyplayer.actorname_text_color
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllPlates()
+			end,
+			name = L["OPTIONS_COLOR"],
+			desc = "The color of the text, if neither class, friend or guild colors are used.",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_friend_color
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_friend_color
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllPlates()
+			end,
+			name = "Friend Color",
+			desc = "Use this color for name/guild texts if the player is your friend.",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_guild_color
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_guild_color
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllPlates()
+			end,
+			name = "Guild Color",
+			desc = "Use this color for name/guild texts if the player is in your guild.",
 		},
 		
 		{type = "breakline"},
@@ -6351,21 +6379,6 @@ local relevance_options = {
 			values = function() return DF:BuildDropDownFontList (on_select_friendly_playername_font) end,
 			name = L["OPTIONS_FONT"],
 			desc = "Font of the text.",
-		},
-		--player name color
-		{
-			type = "color",
-			get = function()
-				local color = Plater.db.profile.plate_config.friendlyplayer.actorname_text_color
-				return {color[1], color[2], color[3], color[4]}
-			end,
-			set = function (self, r, g, b, a) 
-				local color = Plater.db.profile.plate_config.friendlyplayer.actorname_text_color
-				color[1], color[2], color[3], color[4] = r, g, b, a
-				Plater.UpdateAllPlates()
-			end,
-			name = L["OPTIONS_COLOR"],
-			desc = "The color of the text.",
 		},
 		
 		--text outline options
