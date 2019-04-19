@@ -6099,7 +6099,55 @@ local relevance_options = {
 				Plater.UpdateAllPlates()
 			end,
 			name = "Fixed Color",
-			desc = "Use this color when not using class colors.",
+			desc = "Use this color for health-bars and guild/friend text when not using class colors.\nGuild and friend colors for the name/guild texts can be overwritten with their respective color settings below.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.use_friends_color end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.use_friends_color = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Use Friends Colors",
+			desc = "Player name/guild text uses the selected friend color, if the player is on your friend list.\n(Overwriting class colors)",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].friend_color
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].friend_color
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllPlates()
+			end,
+			name = "Friend Color",
+			desc = "Use this color for name/guild texts if the player is your friend.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.use_guild_color end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.use_guild_color = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Use Guild Colors",
+			desc = "Player name/guild text uses the selected guild color, if it is a guild mate.\n(Overwriting class colors)",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].guild_color
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].guild_color
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllPlates()
+			end,
+			name = "Guild Color",
+			desc = "Use this color for name/guild texts if the player is in your guild.",
 		},
 		{
 			type = "toggle",

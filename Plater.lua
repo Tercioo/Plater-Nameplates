@@ -5741,14 +5741,14 @@ end
 			PixelUtil.SetPoint (plateFrame.ActorNameSpecial, "center", plateFrame, "center", 0, 10)
 			
 			--format the color if is the same guild, a friend from friends list or color by player class
-			if (plateFrame.playerGuildName == Plater.PlayerGuildName) then
+			if (Plater.db.profile.use_guild_color and plateFrame.playerGuildName == Plater.PlayerGuildName) then
 				--is a guild friend?
-				DF:SetFontColor (nameFontString, "PLATER_GUILD")
+				DF:SetFontColor (nameFontString, unpack(Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].guild_color))
 				plateFrame.isFriend = true
 				
-			elseif (Plater.FriendsCache [plateFrame [MEMBER_NAME]]) then
+			elseif (Plater.db.profile.use_friends_color and Plater.FriendsCache [plateFrame [MEMBER_NAME]]) then
 				--is regular friend
-				DF:SetFontColor (nameFontString, "PLATER_FRIEND")
+				DF:SetFontColor (nameFontString, unpack(Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].friend_color))
 				--DF:SetFontOutline (nameFontString, plateConfigs.actorname_text_shadow)
 				Plater.SetFontOutlineAndShadow (nameFontString, plateConfigs.actorname_text_outline, plateConfigs.actorname_text_shadow_color, plateConfigs.actorname_text_shadow_color_offset[1], plateConfigs.actorname_text_shadow_color_offset[2])
 				plateFrame.isFriend = true
@@ -5933,16 +5933,16 @@ end
 			end
 		end
 		
-		if (plateFrame.playerGuildName == Plater.PlayerGuildName) then
+		if (Plater.db.profile.use_guild_color and plateFrame.playerGuildName == Plater.PlayerGuildName) then
 			--is a guild friend?
-			DF:SetFontColor (nameString, "PLATER_GUILD")
-			DF:SetFontColor (guildString, "PLATER_GUILD")
+			DF:SetFontColor (nameString, unpack(Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].guild_color))
+			DF:SetFontColor (guildString, unpack(Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].guild_color))
 			plateFrame.isFriend = true
 		
-		elseif (Plater.FriendsCache [plateFrame [MEMBER_NAME]]) then
+		elseif (Plater.db.profile.use_friends_color and Plater.FriendsCache [plateFrame [MEMBER_NAME]]) then
 			--is regular friend
-			DF:SetFontColor (nameString, "PLATER_FRIEND")
-			DF:SetFontColor (guildString, "PLATER_FRIEND")
+			DF:SetFontColor (nameString, unpack(Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].friend_color))
+			DF:SetFontColor (guildString, unpack(Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].friend_color))
 			plateFrame.isFriend = true		
 
 		else
