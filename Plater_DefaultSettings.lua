@@ -41,6 +41,7 @@ DF:InstallTemplate ("font", "PLATER_BUTTON_DISABLED", {color = {1/3, .8/3, .2/3}
 --button templates
 DF:InstallTemplate ("button", "PLATER_BUTTON_DISABLED", {backdropcolor = {.4, .4, .4, .3}, backdropbordercolor = {0, 0, 0, .5}}, "OPTIONS_BUTTON_TEMPLATE")
 
+-- those two may be removed, as they are covered by settings now
 DF:NewColor ("PLATER_FRIEND", .71, 1, 1, 1)
 DF:NewColor ("PLATER_GUILD", 0.498039, 1, .2, 1)
 
@@ -106,7 +107,12 @@ PLATER_DEFAULT_SETTINGS = {
 				actorname_text_spacing = 10,
 				actorname_text_size = 10,
 				actorname_text_font = "Arial Narrow",
+				actorname_use_class_color = false,
 				actorname_text_color = {1, 1, 1, 1},
+				actorname_friend_color = {.71, 1, 1, 1},
+				actorname_use_friends_color = true,
+				actorname_guild_color = {0.498039, 1, .2, 1},
+				actorname_use_guild_color = true,
 				actorname_text_outline = "OUTLINE",
 				actorname_text_shadow_color = {0, 0, 0, 1},
 				actorname_text_shadow_color_offset = {1, -1},
@@ -2361,6 +2367,8 @@ PLATER_DEFAULT_SETTINGS = {
 			border_color = false,
 			actor_name_color = false,
 		},
+		
+		aggro_can_check_notank = false,
 		
 		tank = {
 			colors = {

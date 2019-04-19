@@ -660,6 +660,7 @@ Plater.DefaultSpellRangeList = {
 	local DB_AGGRO_CHANGE_HEALTHBAR_COLOR
 	local DB_AGGRO_CHANGE_NAME_COLOR
 	local DB_AGGRO_CHANGE_BORDER_COLOR
+	local DB_AGGRO_CAN_CHECK_NOTANKAGGRO
 	local DB_TARGET_SHADY_ENABLED
 	local DB_TARGET_SHADY_ALPHA
 	local DB_TARGET_SHADY_COMBATONLY
@@ -1294,6 +1295,7 @@ Plater.DefaultSpellRangeList = {
 		DB_AGGRO_CHANGE_HEALTHBAR_COLOR = profile.aggro_modifies.health_bar_color
 		DB_AGGRO_CHANGE_BORDER_COLOR = profile.aggro_modifies.border_color
 		DB_AGGRO_CHANGE_NAME_COLOR = profile.aggro_modifies.actor_name_color
+		DB_AGGRO_CAN_CHECK_NOTANKAGGRO = profile.aggro_can_check_notank
 		
 		DB_AGGRO_TANK_COLORS = profile.tank.colors
 		DB_AGGRO_DPS_COLORS = profile.dps.colors
@@ -1985,6 +1987,7 @@ Plater.DefaultSpellRangeList = {
 					CanModifyHealhBarColor = false,
 					ShowTargetOverlay = false,
 					ShowUnitName = false, --let Plater control the unit name
+					ClearUnitOnHide = false, --let Plater control when the cleanup is execute on the unit frame
 				}
 				
 				local healthBarOptions = {
@@ -2776,6 +2779,9 @@ Plater.DefaultSpellRangeList = {
 			end
 			
 			plateFrame.unitFrame.PlaterOnScreen = nil
+			
+			--tell the framework to execute a cleanup on the unit frame, this is required since Plater set .ClearUnitOnHide to false
+			plateFrame.unitFrame:SetUnit (nil)
 			
 			--community patch by Ariani#0960 (discord)
 			--make the unitFrame be parented to UIParent allowing frames to be moved between strata levels
@@ -3788,7 +3794,7 @@ function Plater.OnInit() --private
 			
 		else
 			if (DB_DO_ANIMATIONS) then
-				--do healthbar animation ~animation ~healthbar ~health
+				--do healthbar animation ~animation ~healthbar
 				oldHealth = oldHealth or self.CurrentHealth
 				
 				self.CurrentHealthMax = currentHealthMax
@@ -3811,7 +3817,8 @@ function Plater.OnInit() --private
 			
 			if (plateFrame.actorType == ACTORTYPE_FRIENDLY_PLAYER) then
 				Plater.ParseHealthSettingForPlayer (plateFrame)
-				Plater.UpdatePlateText (plateFrame, DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER], false)
+				self.ScheduleNameUpdate = true
+				--Plater.UpdatePlateText (plateFrame, DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER], false)
 			end
 			
 			Plater.CheckLifePercentText (unitFrame)
@@ -5420,37 +5427,61 @@ end
 						set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.aggro))
 						self.PlateFrame.playerHasAggro = true
 						
-					elseif (threatStatus == 1) then --player is almost aggroing the mob
+					else --the unit isn't attacking the player based on the threat situation
+					
+						--which color the use in the nameplate based on the threat status
+						--this color can be overritten by the 'no tank aggro' check
+						local colorToUse
+						if (threatStatus == 1) then --player is almost aggroing the mob
+							--show aggro warning indicators
+							self.aggroGlowUpper:Show()
+							self.aggroGlowLower:Show()
+							colorToUse = DB_AGGRO_DPS_COLORS.pulling
+							
+						elseif (threatStatus == 0) then
+							colorToUse = DB_AGGRO_DPS_COLORS.noaggro
+							
+						end
 					
 						if (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid") then
-							local unitTarget = UnitName (self.targetUnitID)
-							if (not TANK_CACHE [unitTarget]) then
-								set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.notontank))
+							--check if can check for no tank aggro
+							if (DB_AGGRO_CAN_CHECK_NOTANKAGGRO) then
+								local unitTarget = UnitName (self.targetUnitID)
+								--check if the unit isn't attacking a tank comparing the target name with tank names
+								if (not TANK_CACHE [unitTarget]) then
+								
+									--check if this isn't a false positive where the mob target another unit to cast a spell
+									local hasTankAggro = false
+									for tankName, _ in pairs (TANK_CACHE) do
+										local threatStatus = UnitThreatSituation (tankName, self.displayedUnit)
+										if (threatStatus and threatStatus >= 2) then
+											--a tank has aggro on this unit, it is a false positive
+											hasTankAggro = true
+											break
+										end
+									end
+									
+									if (not hasTankAggro) then
+										--the unit isn't targeting a tank and no tank in the group has threat status of 2 or more, the unit might be attacking a dps or healer
+										set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.notontank))
+									else
+										--the unit isn't targeting a tank but a tank in the group has aggro on this unit
+										set_aggro_color (self, unpack (colorToUse))
+									end
+								else
+									--the unit is targeting a tank
+									set_aggro_color (self, unpack (colorToUse))
+								end
 							else
-								set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.pulling))
+								--isn't checking for 'no tank aggro'
+								set_aggro_color (self, unpack (colorToUse))
 							end
 						else
-							set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.pulling))
+							--player isn't inside a dungeon or raid
+							set_aggro_color (self, unpack (colorToUse))
 						end
 						
 						self.PlateFrame.playerHasAggro = false
-						self.aggroGlowUpper:Show()
-						self.aggroGlowLower:Show()
-						
-					elseif (threatStatus == 0) then --player doesnt have aggro
-						if (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid") then
-							local unitTarget = UnitName (self.targetUnitID)
-							if (not TANK_CACHE [unitTarget]) then
-								set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.notontank))
-							else
-								set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.noaggro))
-							end
-						else
-							set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.noaggro))
-						end
-						
-						self.PlateFrame.playerHasAggro = false
-						
 					end
 					
 					if (self.PlateFrame [MEMBER_NOCOMBAT]) then
@@ -5721,21 +5752,21 @@ end
 			PixelUtil.SetPoint (plateFrame.ActorNameSpecial, "center", plateFrame, "center", 0, 10)
 			
 			--format the color if is the same guild, a friend from friends list or color by player class
-			if (plateFrame.playerGuildName == Plater.PlayerGuildName) then
+			if (Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_guild_color and plateFrame.playerGuildName == Plater.PlayerGuildName) then
 				--is a guild friend?
-				DF:SetFontColor (nameFontString, "PLATER_GUILD")
+				DF:SetFontColor (nameFontString, unpack(Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_guild_color))
 				plateFrame.isFriend = true
 				
-			elseif (Plater.FriendsCache [plateFrame [MEMBER_NAME]]) then
+			elseif (Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_friends_color and Plater.FriendsCache [plateFrame [MEMBER_NAME]]) then
 				--is regular friend
-				DF:SetFontColor (nameFontString, "PLATER_FRIEND")
+				DF:SetFontColor (nameFontString, unpack(Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_friend_color))
 				--DF:SetFontOutline (nameFontString, plateConfigs.actorname_text_shadow)
 				Plater.SetFontOutlineAndShadow (nameFontString, plateConfigs.actorname_text_outline, plateConfigs.actorname_text_shadow_color, plateConfigs.actorname_text_shadow_color_offset[1], plateConfigs.actorname_text_shadow_color_offset[2])
 				plateFrame.isFriend = true
 				
 			else
 				--isn't friend, check if is showing only the name and if is showing class colors
-				if (Plater.db.profile.use_playerclass_color) then
+				if (Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_class_color) then
 					local _, unitClass = UnitClass (plateFrame [MEMBER_UNITID])
 					if (unitClass) then
 						local color = RAID_CLASS_COLORS [unitClass]
@@ -5913,20 +5944,35 @@ end
 			end
 		end
 		
-		if (plateFrame.playerGuildName == Plater.PlayerGuildName) then
+		if (Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_guild_color and plateFrame.playerGuildName == Plater.PlayerGuildName) then
 			--is a guild friend?
-			DF:SetFontColor (nameString, "PLATER_GUILD")
-			DF:SetFontColor (guildString, "PLATER_GUILD")
+			DF:SetFontColor (nameString, unpack(Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_guild_color))
+			DF:SetFontColor (guildString, unpack(Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_guild_color))
 			plateFrame.isFriend = true
 		
-		elseif (Plater.FriendsCache [plateFrame [MEMBER_NAME]]) then
+		elseif (Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_friends_color and Plater.FriendsCache [plateFrame [MEMBER_NAME]]) then
 			--is regular friend
-			DF:SetFontColor (nameString, "PLATER_FRIEND")
-			DF:SetFontColor (guildString, "PLATER_FRIEND")
+			DF:SetFontColor (nameString, unpack(Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_friend_color))
+			DF:SetFontColor (guildString, unpack(Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_friend_color))
 			plateFrame.isFriend = true		
 
+		elseif (Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_class_color) then
+			--class colors should be used, if possible, because this is enabled
+			plateFrame.isFriend = nil
+			
+			local _, unitClass = UnitClass (plateFrame [MEMBER_UNITID])
+			if (unitClass) then
+				local color = RAID_CLASS_COLORS [unitClass]
+				DF:SetFontColor (nameString, color.r, color.g, color.b)
+				DF:SetFontColor (guildString, color.r, color.g, color.b)
+			else
+				DF:SetFontColor (nameString, plateConfigs.actorname_text_color)
+				DF:SetFontColor (guildString, plateConfigs.actorname_text_color)
+			end
+		
 		else
 			DF:SetFontColor (nameString, plateConfigs.actorname_text_color)
+			DF:SetFontColor (guildString, plateConfigs.actorname_text_color)
 			plateFrame.isFriend = nil
 		end
 
@@ -6034,7 +6080,8 @@ end
 		return self.PlateConfig
 	end
 	
-	function Plater.UpdateLifePercentText (healthBar, unitId, showHealthAmount, showPercentAmount, showDecimals)
+	function Plater.UpdateLifePercentText (healthBar, unitId, showHealthAmount, showPercentAmount, showDecimals) -- ~health
+	
 		--get the cached health amount for performance
 		local currentHealth, maxHealth = healthBar.CurrentHealth, healthBar.CurrentHealthMax
 		
@@ -6494,6 +6541,10 @@ end
 			healthBar.DetailsRealTime:SetText ("")
 			healthBar.DetailsRealTimeFromPlayer:SetText ("")
 			healthBar.DetailsDamageTaken:SetText ("")
+		end
+		
+		if (plateFrame.OnTickFrame.actorType == actorType and plateFrame.OnTickFrame.unit == plateFrame [MEMBER_UNITID]) then
+			Plater.NameplateTick (plateFrame.OnTickFrame, 10)
 		end
 	end
 
