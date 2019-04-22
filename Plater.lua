@@ -3635,6 +3635,8 @@ function Plater.OnInit() --private
 							scriptEnv._CanInterrupt = self.CanInterrupt
 							scriptEnv._EndTime = self.SpellEndTime
 							scriptEnv._RemainingTime = max (self.SpellEndTime - GetTime(), 0)
+							scriptEnv._CanStealOrPurge = self.CanStealOrPurge
+							scriptEnv._AuraType = self.AuraType
 							
 							--run
 							unitFrame:ScriptRunHook (scriptInfo, "Cast Start", self)
@@ -3702,6 +3704,8 @@ function Plater.OnInit() --private
 						scriptEnv._CanInterrupt = self.CanInterrupt
 						scriptEnv._EndTime = self.SpellEndTime
 						scriptEnv._RemainingTime = max (self.SpellEndTime - GetTime(), 0)
+						scriptEnv._CanStealOrPurge = self.CanStealOrPurge
+						scriptEnv._AuraType = self.AuraType
 						
 						if (self.casting) then
 							scriptEnv._CastPercent = self.value / self.maxValue * 100
@@ -3734,6 +3738,8 @@ function Plater.OnInit() --private
 							scriptEnv._CanInterrupt = self.CanInterrupt
 							scriptEnv._EndTime = self.SpellEndTime
 							scriptEnv._RemainingTime = max (self.SpellEndTime - GetTime(), 0)
+							scriptEnv._CanStealOrPurge = self.CanStealOrPurge
+							scriptEnv._AuraType = self.AuraType
 							
 							--run
 							unitFrame:ScriptRunHook (scriptInfo, "Cast Update", self)
@@ -4121,7 +4127,7 @@ end
 			auraIconFrame.layoutIndex = auraIconFrame.ID
 			auraIconFrame.IsShowingBuff = false
 			auraIconFrame.CanStealOrPurge = false
-			auraIconFrame.AuraType = actualAuraType
+			auraIconFrame.AuraType = AURA_TYPES[actualAuraType] or "NONE"
 
 			if (auraType == "DEBUFF") then
 				auraIconFrame.filter = "HARMFUL"
@@ -4297,6 +4303,8 @@ end
 			scriptEnv._StartTime = expirationTime - duration
 			scriptEnv._EndTime = expirationTime
 			scriptEnv._RemainingTime = max (expirationTime - GetTime(), 0)
+			scriptEnv._CanStealOrPurge = canStealOrPurge
+			scriptEnv._AuraType = AURA_TYPES[actualAuraType] or "NONE"
 			
 			--run onupdate script
 			auraIconFrame:ScriptRunOnUpdate (scriptInfo)
