@@ -1485,6 +1485,34 @@ local debuff_options = {
 	},
 	
 	{type = "blank"},
+	
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_show_enrage end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_enrage = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Enrage Buffs",
+		desc = "Show auras which are in the enrage category.",
+	},
+	{
+		type = "color",
+		get = function()
+			local color = Plater.db.profile.aura_border_colors.enrage
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_border_colors.enrage
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = "Enrage Buffs Border Color",
+		desc = "Enrage Buffs Border Color",
+	},
+	
+	{type = "blank"},
 
 	{
 		type = "toggle",
@@ -3587,6 +3615,36 @@ Plater.CreateAuraTesting()
 				end,
 				name = "Dispellable Border Color",
 				desc = "Dispellable Border Color",
+			},
+			
+			{type = "blank"},
+			
+			--show enrages
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.extra_icon_show_enrage end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.extra_icon_show_enrage = value
+					Plater.RefreshDBUpvalues()
+					Plater.UpdateAllPlates()
+				end,
+				name = "Enrage",
+				desc = "When the unit has an enrage effect on it, show it.",
+			},
+			--purge border color
+			{
+				type = "color",
+				get = function()
+					local color = Plater.db.profile.extra_icon_show_enrage_border
+					return {color[1], color[2], color[3], color[4]}
+				end,
+				set = function (self, r, g, b, a) 
+					local color = Plater.db.profile.extra_icon_show_enrage_border
+					color[1], color[2], color[3], color[4] = r, g, b, a
+					Plater.UpdateAllPlates()
+				end,
+				name = "Enrage Border Color",
+				desc = "Enrage Border Color",
 			},
 		
 		}

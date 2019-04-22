@@ -643,6 +643,7 @@ Plater.DefaultSpellRangeList = {
 
 	local DB_AURA_SHOW_IMPORTANT
 	local DB_AURA_SHOW_DISPELLABLE
+	local DB_AURA_SHOW_ENRAGE
 	local DB_AURA_SHOW_BYPLAYER
 	local DB_AURA_SHOW_BYUNIT
 
@@ -686,6 +687,7 @@ Plater.DefaultSpellRangeList = {
 	local DB_CAPTURED_SPELLS = {}
 
 	local DB_SHOW_PURGE_IN_EXTRA_ICONS
+	local DB_SHOW_ENRAGE_IN_EXTRA_ICONS
 
 	--store the aggro color table for tanks and dps
 	local DB_AGGRO_TANK_COLORS
@@ -1281,6 +1283,7 @@ Plater.DefaultSpellRangeList = {
 
 		DB_AURA_SHOW_IMPORTANT = profile.aura_show_important
 		DB_AURA_SHOW_DISPELLABLE = profile.aura_show_dispellable
+		DB_AURA_SHOW_ENRAGE = profile.aura_show_enrage
 		DB_AURA_SHOW_BYPLAYER = profile.aura_show_aura_by_the_player
 		DB_AURA_SHOW_BYUNIT = profile.aura_show_buff_by_the_unit
 
@@ -1322,6 +1325,7 @@ Plater.DefaultSpellRangeList = {
 		DB_CAPTURED_SPELLS = profile.captured_spells
 		
 		DB_SHOW_PURGE_IN_EXTRA_ICONS = profile.extra_icon_show_purge
+		DB_SHOW_ENRAGE_IN_EXTRA_ICONS = profile.extra_icon_show_enrage
 		
 		Plater.MaxAurasPerRow = floor (profile.plate_config.enemynpc.health_incombat[1] / (profile.aura_width + Plater.AurasHorizontalPadding))
 		
@@ -4217,7 +4221,7 @@ end
 			auraIconFrame:SetBackdropBorderColor (1, 0, 0, 1)
 		
 		elseif (actualAuraType == "") then -- enrage
-			auraIconFrame:SetBackdropBorderColor (0.85, 0.2, 0.1, 1)
+			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.enrage))
 			
 		else	
 			auraIconFrame:SetBackdropBorderColor (0, 0, 0, 0)
@@ -4347,6 +4351,9 @@ end
 		elseif (CROWDCONTROL_AURA_NAMES [spellName]) then
 			borderColor = Plater.db.profile.debuff_show_cc_border
 		
+		elseif (debuffType == "") then -- enrage effect
+			borderColor = Plater.db.profile.extra_icon_show_enrage_border
+		
 		else
 			borderColor = Plater.db.profile.extra_icon_border_color
 		end
@@ -4431,12 +4438,12 @@ end
 					if (not noSpecial) then
 						--> check for special auras auto added by setting like 'show crowd control' or 'show dispellable'
 						--> SPECIAL_AURAS_AUTO_ADDED has a list of crowd control not do not have a list of dispellable, so check if canStealOrPurge
-						if (SPECIAL_AURAS_AUTO_ADDED [name] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge)) then
-							Plater.AddExtraIcon (self, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
+						if (SPECIAL_AURAS_AUTO_ADDED [name] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge) or (DB_SHOW_ENRAGE_IN_EXTRA_ICONS and actualAuraType == "")) then
+							Plater.AddExtraIcon (self, name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 						
 						--> check for special auras added by the user it self
 						elseif ((SPECIAL_AURAS_USER_LIST [name] and not SPECIAL_AURAS_USER_LIST_MINE [name]) or (SPECIAL_AURAS_USER_LIST_MINE [name] and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
-							Plater.AddExtraIcon (self, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
+							Plater.AddExtraIcon (self, name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 							
 						end
 					end
@@ -4464,12 +4471,12 @@ end
 					if (not noSpecial) then
 						--> check for special auras auto added by setting like 'show crowd control' or 'show dispellable'
 						--> SPECIAL_AURAS_AUTO_ADDED has a list of crowd control not do not have a list of dispellable, so check if canStealOrPurge
-						if (SPECIAL_AURAS_AUTO_ADDED [name] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge)) then
-							Plater.AddExtraIcon (self, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
+						if (SPECIAL_AURAS_AUTO_ADDED [name] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge) or (DB_SHOW_ENRAGE_IN_EXTRA_ICONS and actualAuraType == "")) then
+							Plater.AddExtraIcon (self, name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 						
 						--> check for special auras added by the user it self
 						elseif ((SPECIAL_AURAS_USER_LIST [name] and not SPECIAL_AURAS_USER_LIST_MINE [name]) or (SPECIAL_AURAS_USER_LIST_MINE [name] and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
-							Plater.AddExtraIcon (self, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
+							Plater.AddExtraIcon (self, name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 							
 						end
 					end
@@ -4531,15 +4538,15 @@ end
 					
 					--> check for special auras auto added by setting like 'show crowd control' or 'show dispellable'
 					--> SPECIAL_AURAS_AUTO_ADDED has a list of crowd control not do not have a list of dispellable, so check if canStealOrPurge
-					if (SPECIAL_AURAS_AUTO_ADDED [name] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge)) then
-						Plater.AddExtraIcon (self, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
+					if (SPECIAL_AURAS_AUTO_ADDED [name] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge) or (DB_SHOW_ENRAGE_IN_EXTRA_ICONS and actualAuraType == "")) then
+						Plater.AddExtraIcon (self, name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 						can_show_this_debuff = false
 					end
 				end
 				
 				--> check for special auras added by the user it self
 				if ((SPECIAL_AURAS_USER_LIST [name] and not SPECIAL_AURAS_USER_LIST_MINE [name]) or (SPECIAL_AURAS_USER_LIST_MINE [name] and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
-					Plater.AddExtraIcon (self, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
+					Plater.AddExtraIcon (self, name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 					can_show_this_debuff = false
 				end
 				
@@ -4561,7 +4568,7 @@ end
 				
 				--> check for special auras added by the user it self
 				if ((SPECIAL_AURAS_USER_LIST [name] and not SPECIAL_AURAS_USER_LIST_MINE [name]) or (SPECIAL_AURAS_USER_LIST_MINE [name] and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
-					Plater.AddExtraIcon (self, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
+					Plater.AddExtraIcon (self, name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 					
 				elseif (not DB_BUFF_BANNED [name]) then
 					--> if true it'll show all auras - this can be called from scripts to debug aura things
@@ -4575,8 +4582,8 @@ end
 					--> this special aura check is inside the 'buff banned' prevented because they are automatic added
 					--> check for special auras auto added by setting like 'show crowd control' or 'show dispellable'
 					--> SPECIAL_AURAS_AUTO_ADDED has a list of crowd control not do not have a list of dispellable, so check if canStealOrPurge
-					if (SPECIAL_AURAS_AUTO_ADDED [name] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge)) then
-						Plater.AddExtraIcon (self, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
+					if (SPECIAL_AURAS_AUTO_ADDED [name] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge) or (DB_SHOW_ENRAGE_IN_EXTRA_ICONS and actualAuraType == "")) then
+						Plater.AddExtraIcon (self, name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 					else
 						--> important aura
 						if (DB_AURA_SHOW_IMPORTANT and (nameplateShowAll or isBossDebuff)) then
@@ -4585,6 +4592,11 @@ end
 						
 						--> is dispellable or can be steal
 						elseif (DB_AURA_SHOW_DISPELLABLE and canStealOrPurge) then
+							local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
+							Plater.AddAura (buffFrame, auraIconFrame, i, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, nil, nil, nil, nil, actualAuraType)
+						
+						--> is enrage
+						elseif (DB_AURA_SHOW_ENRAGE and actualAuraType == "") then
 							local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
 							Plater.AddAura (buffFrame, auraIconFrame, i, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, nil, nil, nil, nil, actualAuraType)
 						
@@ -4631,14 +4643,14 @@ end
 					
 					--> check for special auras auto added by setting like 'show crowd control' or 'show dispellable'
 					--> SPECIAL_AURAS_AUTO_ADDED has a list of crowd control not do not have a list of dispellable, so check if canStealOrPurge
-					if (SPECIAL_AURAS_AUTO_ADDED [name] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge)) then
-						Plater.AddExtraIcon (self, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
+					if (SPECIAL_AURAS_AUTO_ADDED [name] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge) or (DB_SHOW_ENRAGE_IN_EXTRA_ICONS and actualAuraType == "")) then
+						Plater.AddExtraIcon (self, name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 					end
 				end
 				
 				--> check for special auras added by the user it self
 				if ((SPECIAL_AURAS_USER_LIST [name] and not SPECIAL_AURAS_USER_LIST_MINE [name]) or (SPECIAL_AURAS_USER_LIST_MINE [name] and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
-					Plater.AddExtraIcon (self, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
+					Plater.AddExtraIcon (self, name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 				end
 				
 			end
