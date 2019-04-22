@@ -4104,7 +4104,7 @@ end
 			auraIconFrame.layoutIndex = auraIconFrame.ID
 			auraIconFrame.IsShowingBuff = false
 			auraIconFrame.CanStealOrPurge = false
-			auraIconFrame.auraType = actualAuraType
+			auraIconFrame.AuraType = actualAuraType
 
 			if (auraType == "DEBUFF") then
 				auraIconFrame.filter = "HARMFUL"
