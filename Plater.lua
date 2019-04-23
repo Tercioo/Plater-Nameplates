@@ -318,11 +318,11 @@ local AURA_TYPE_UNKNOWN = nil
 
 --> As accessible translator map (where nil needs to resemble "NONE") for modding/scripting to be published in .AuraType:
 local AURA_TYPES = {
-	[""] = "ENRAGE",
-	["Macig"] = "MAGIC",
-	["Poison"] = "POISON",
-	["Curse"] = "CURSE",
-	["nil"] = "NONE",
+	[""] = "enrage",
+	["Magic"] = "magic",
+	["Poison"] = "poison",
+	["Curse"] = "curse",
+	["nil"] = "none",
 }
 
 --> icon texcoords
@@ -4127,7 +4127,7 @@ end
 			auraIconFrame.layoutIndex = auraIconFrame.ID
 			auraIconFrame.IsShowingBuff = false
 			auraIconFrame.CanStealOrPurge = false
-			auraIconFrame.AuraType = AURA_TYPES[actualAuraType] or "NONE"
+			auraIconFrame.AuraType = AURA_TYPES[actualAuraType] or "none"
 
 			if (auraType == "DEBUFF") then
 				auraIconFrame.filter = "HARMFUL"
@@ -4304,7 +4304,7 @@ end
 			scriptEnv._EndTime = expirationTime
 			scriptEnv._RemainingTime = max (expirationTime - GetTime(), 0)
 			scriptEnv._CanStealOrPurge = canStealOrPurge
-			scriptEnv._AuraType = AURA_TYPES[actualAuraType] or "NONE"
+			scriptEnv._AuraType = AURA_TYPES[actualAuraType] or "none"
 			
 			--run onupdate script
 			auraIconFrame:ScriptRunOnUpdate (scriptInfo)
