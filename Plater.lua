@@ -3885,7 +3885,8 @@ function Plater.OnInit() --private
 		end
 	end)
 	
-	
+	-- hook to the InterfaceOptionsFrame and update the nameplate sizes, as blizzard somehow messes things up there on hide...
+	InterfaceOptionsFrame:HookScript('OnHide',Plater.UpdatePlateClickSpace)
 end
 
 
