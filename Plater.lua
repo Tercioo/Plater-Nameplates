@@ -663,6 +663,7 @@ Plater.DefaultSpellRangeList = {
 	local DB_AURA_SHOW_ENRAGE
 	local DB_AURA_SHOW_BYPLAYER
 	local DB_AURA_SHOW_BYUNIT
+	local DB_AURA_PADDING
 
 	local DB_AURA_GROW_DIRECTION --> main aura frame
 	local DB_AURA_GROW_DIRECTION2 --> secondary aura frame is adding buffs in a different frame
@@ -1303,6 +1304,7 @@ Plater.DefaultSpellRangeList = {
 		DB_AURA_SHOW_ENRAGE = profile.aura_show_enrage
 		DB_AURA_SHOW_BYPLAYER = profile.aura_show_aura_by_the_player
 		DB_AURA_SHOW_BYUNIT = profile.aura_show_buff_by_the_unit
+		DB_AURA_PADDING = profile.aura_padding
 
 		DB_AURA_GROW_DIRECTION = profile.aura_grow_direction
 		DB_AURA_GROW_DIRECTION2 = profile.aura2_grow_direction
@@ -3155,7 +3157,7 @@ function Plater.OnInit() --private
 			return Plater.BuffContainerLayoutHook (self)
 		end
 		hooksecurefunc (LayoutMixin, "Layout", on_buff_layout_update)
-		
+
 		--after Plater updates the auras, it calls :Layout which will trigger which hook
 		--since Layout() arranges the icons in the center, this will override and arrange from left to right or right to left depending what is set on Plater
 		--if Plater is using the default center aligment, nothing changes
@@ -3211,6 +3213,46 @@ function Plater.OnInit() --private
 							end
 						end
 					end
+				
+				else 
+
+					--if true then return end
+				
+					--grow from center
+					local iconAmount = 0
+					local horizontalLength = 0
+					local firstIcon
+					local previousIcon
+
+					--iterate among all icons in the aura frame
+					--set the point of the first icon in the bottom left of the buff frame
+					--set the point of all other icons to the right of the previous icon and update the size of the buff frame
+					for i = 1, #self.PlaterBuffList do
+						local iconFrame = self.PlaterBuffList [i]
+						if (iconFrame:IsShown()) then
+							iconAmount = iconAmount + 1
+							horizontalLength = horizontalLength + iconFrame:GetWidth() + DB_AURA_PADDING
+							iconFrame:ClearAllPoints()
+							
+							if (not firstIcon) then
+								firstIcon = iconFrame
+								firstIcon:SetPoint ("bottomleft", self, "bottomleft", 0, 0)
+								previousIcon = firstIcon
+							else
+								iconFrame:SetPoint ("bottomleft", previousIcon, "bottomright", DB_AURA_PADDING, 0)
+								previousIcon = iconFrame
+							end
+						end
+					end
+					
+					if (not firstIcon) then
+						return
+					end
+					
+					--remove 1 icon padding value
+					horizontalLength = horizontalLength - DB_AURA_PADDING
+					--set the size of the buff frame
+					self:SetWidth (horizontalLength)
 				end
 			end
 		end
@@ -8079,7 +8121,7 @@ end
 	end
 	
 	Plater.PostponeRestoreCVar = {}
-	local postpone_restore_cvar = function (timerObject)
+	function Plater.PostponeCVarRestauration (timerObject)
 		local variableName = timerObject.variableName
 		Plater.PostponeRestoreCVar [variableName] = nil
 		Plater.RestoreCVar (variableName)
@@ -8100,7 +8142,7 @@ end
 		
 		--check if is in combat, if is, schedule to change this cvar after the lockdown drop
 		if (InCombatLockdown()) then
-			local timerObject = C_Timer.NewTimer (0.5, postpone_restore_cvar)
+			local timerObject = C_Timer.NewTimer (0.5, Plater.PostponeCVarRestauration)
 			timerObject.variableName = variableName
 			Plater.PostponeRestoreCVar [variableName] = timerObject
 			return true

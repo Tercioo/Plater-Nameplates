@@ -599,6 +599,8 @@ PLATER_DEFAULT_SETTINGS = {
 		aura2_y_offset = 0,
 		aura2_grow_direction = 2, --> center
 		
+		aura_padding = 1, --space between each icon
+		
 		aura_alpha = 0.85,
 		aura_custom = {},
 		

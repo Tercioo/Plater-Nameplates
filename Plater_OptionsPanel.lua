@@ -1053,6 +1053,22 @@ local debuff_options = {
 		desc = "Alpha",
 	},
 	
+	{
+		type = "range",
+		get = function() return Plater.db.profile.aura_padding end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_padding = value
+			Plater.RefreshDBUpvalues()
+		end,
+		min = 0,
+		max = 10,
+		step = 0.01,
+		usedecimals = true,
+		thumbscale = 1.8,
+		name = "Icon Spacing",
+		desc = "Icon Spacing",
+	},
+	
 	{type = "blank"},
 	{type = "label", get = function() return "Aura Size:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	
