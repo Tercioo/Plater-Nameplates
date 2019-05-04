@@ -108,8 +108,6 @@ Plater.CanOverride_Functions = {
 	GetHealthCutoffValue = true, --check if the character has a execute range and enable or disable the health cut off indicators
 	CheckRange = true, --check if the player is in range of the unit
 	GetSpellForRangeCheck = true, --get a spell to be used in the range check
-	BuffContainerLayoutHook = true, --when the buff container receives an update on its layout
-	BuffContainerLayoutChildrenHook = true, --when the buffs get alignment in a row
 	SetFontOutlineAndShadow = true, --apply the outline and shadow of a text
 	UpdatePersonalBar = true, --update the personal bar
 	UpdateResourceFrame = true, --anchors the resource frame (soul shards, combo points, etc)
@@ -333,7 +331,6 @@ Plater.BorderLessIconCoords = {.1, .9, .1, .9} --used in extra icons frame,const
 --> limit the cast bar text to this (this is dynamically adjusted at run time)
 Plater.MaxCastBarTextLength = 200
 --> auras 
-Plater.AurasHorizontalPadding = 1 --constant, can be changed with scripts
 Plater.MaxAurasPerRow = 10 --can change during runtime
 
 --> textures used in the cooldown animation, scripts can add more values to it, profile holds only the path to it
@@ -1346,7 +1343,7 @@ Plater.DefaultSpellRangeList = {
 		DB_SHOW_PURGE_IN_EXTRA_ICONS = profile.extra_icon_show_purge
 		DB_SHOW_ENRAGE_IN_EXTRA_ICONS = profile.extra_icon_show_enrage
 		
-		Plater.MaxAurasPerRow = floor (profile.plate_config.enemynpc.health_incombat[1] / (profile.aura_width + Plater.AurasHorizontalPadding))
+		Plater.MaxAurasPerRow = floor (profile.plate_config.enemynpc.health_incombat[1] / (profile.aura_width + DB_AURA_PADDING))
 		
 		--refresh cast bar text max size
 		Plater.UpdateMaxCastbarTextLength()
@@ -2092,9 +2089,7 @@ Plater.DefaultSpellRangeList = {
 
 			--> buff frames
 				--main buff frame
-				plateFrame.unitFrame.BuffFrame = CreateFrame ("frame", plateFrame.unitFrame:GetName() .. "BuffFrame1", plateFrame.unitFrame, "HorizontalLayoutFrame")
-				plateFrame.unitFrame.BuffFrame.spacing = 4
-				plateFrame.unitFrame.BuffFrame.fixedHeight = 14
+				plateFrame.unitFrame.BuffFrame = CreateFrame ("frame", plateFrame.unitFrame:GetName() .. "BuffFrame1", plateFrame.unitFrame)
 				plateFrame.unitFrame.BuffFrame.amountAurasShown = 0
 				plateFrame.unitFrame.BuffFrame.PlaterBuffList = {}
 				plateFrame.unitFrame.BuffFrame.isNameplate = true
@@ -2103,9 +2098,7 @@ Plater.DefaultSpellRangeList = {
 				plateFrame.unitFrame.BuffFrame.AuraCache = {}
 				
 				--secondary buff frame
-				plateFrame.unitFrame.BuffFrame2 = CreateFrame ("frame", plateFrame.unitFrame:GetName() .. "BuffFrame2", plateFrame.unitFrame, "HorizontalLayoutFrame")
-				plateFrame.unitFrame.BuffFrame2.spacing = 4
-				plateFrame.unitFrame.BuffFrame2.fixedHeight = 14
+				plateFrame.unitFrame.BuffFrame2 = CreateFrame ("frame", plateFrame.unitFrame:GetName() .. "BuffFrame2", plateFrame.unitFrame)
 				plateFrame.unitFrame.BuffFrame2.amountAurasShown = 0
 				plateFrame.unitFrame.BuffFrame2.PlaterBuffList = {}
 				plateFrame.unitFrame.BuffFrame2.isNameplate = true
@@ -2113,9 +2106,9 @@ Plater.DefaultSpellRangeList = {
 				plateFrame.unitFrame.BuffFrame2.healthBar = plateFrame.unitFrame.healthBar
 				plateFrame.unitFrame.BuffFrame2.AuraCache = {}
 			
-			--> buff frame doesn't has a name, make a name here to know which frame is being updated on :Layout() and to give names for icon frames
-				plateFrame.unitFrame.BuffFrame.Name = "Main"
-				plateFrame.unitFrame.BuffFrame2.Name = "Secondary"
+			--> identify aura containers
+				plateFrame.unitFrame.BuffFrame.Name = "Main" --aura frame 1
+				plateFrame.unitFrame.BuffFrame2.Name = "Secondary" --aura frame 2
 				
 			--> store the secondary anchor inside the regular buff container for speed
 			plateFrame.unitFrame.BuffFrame.BuffFrame2 = plateFrame.unitFrame.BuffFrame2
@@ -3130,95 +3123,74 @@ function Plater.OnInit() --private
 		Plater:RegisterComm (COMM_PLATER_PREFIX, "CommReceived")
 	
 	--> general functions for the buff container
-		--after Plater updates the auras, it calls :Layout() which will trigger this hook
-		--since Layout() does change the size of the frame, it's okay to run this to make sure it stay in the proper size
-		function Plater.BuffContainerLayoutHook (self)
-			--> grow directions are: 2 Center 1 Left 3 Right
-			if (self.isNameplate) then
-				--> main buff container
-				if (self.Name == "Main") then
-					if (DB_AURA_GROW_DIRECTION ~= 2) then
-						--> format the buffFrame size to 1, 1 so the custom grow direction can be effective
-						self:SetSize (1, 1)
-					end
-				
-				--> secondary buff container in case buffs are placed in a separated frame
-				elseif (self.Name == "Secondary") then
-					if (DB_AURA_GROW_DIRECTION2 ~= 2) then
-						--> format the buffFrame size to 1, 1 so the custom grow direction can be effective
-						self:SetSize (1, 1)
-					end
-				end
-			end
-		end
-		
-		--> allow BuffContainerLayoutHook to be overridden by scripts
-		local on_buff_layout_update = function (self)
-			return Plater.BuffContainerLayoutHook (self)
-		end
-		hooksecurefunc (LayoutMixin, "Layout", on_buff_layout_update)
-
-		--after Plater updates the auras, it calls :Layout which will trigger which hook
-		--since Layout() arranges the icons in the center, this will override and arrange from left to right or right to left depending what is set on Plater
-		--if Plater is using the default center aligment, nothing changes
-		--this would not be required if Plater do not use the BuffContainers from the retail game, may be this changes in the future
-		function Plater.BuffContainerLayoutChildrenHook (self, children, ignored, expandToHeight)
+		--align the aura frame icons currently shown in buff container
+		--self is the buff container
+		function Plater.AlignAuraFrames (self)
 			if (self.isNameplate) then
 				local growDirection
-				
+
 				--> get the grow direction for the buff frame
 				if (self.Name == "Main") then
 					growDirection = DB_AURA_GROW_DIRECTION
+					
 				elseif (self.Name == "Secondary") then
 					growDirection = DB_AURA_GROW_DIRECTION2
 				end
 				
-				if (growDirection ~= 2) then --different than center alignment
-					local padding = Plater.AurasHorizontalPadding
-					local firstChild = children[1]
-					local anchorPoint = firstChild and firstChild:GetParent() --> get the buffContainer
+				--get the table where all icon frames are stored in
+				local iconFrameContainer = self.PlaterBuffList
+				
+				if (growDirection ~= 2) then --it's growing to left or right
+				
 					local framersPerRow = Plater.MaxAurasPerRow + 1
+					local firstChild = iconFrameContainer[1]
 					
-					if (anchorPoint) then
-						--> set the point of the first child (the other children will follow the position)
-						firstChild:ClearAllPoints()
-						firstChild:SetPoint ("center", anchorPoint, "center", 0, 5)
+					--check if there's one icon and if the icon is shown
+					if (not firstChild or not firstChild:IsShown()) then
+						return
+					end
 					
-						--> left to right
-						if (growDirection == 3) then
-							--> iterate among all children
-							for i = 2, #children do
-								local child = children [i]
+					self:SetSize (1, 1)
+
+					--> set the point of the first icon
+					firstChild:ClearAllPoints()
+					firstChild:SetPoint ("center", self, "center", 0, 5)
+				
+					--> left to right
+					if (growDirection == 3) then
+						--> iterate among all icon frames
+						for i = 2, #iconFrameContainer do
+							local child = iconFrameContainer [i]
+							if (child:IsShown()) then
 								child:ClearAllPoints()
 								if (i == framersPerRow) then
 									child:SetPoint ("bottomleft", firstChild, "topleft", 0, Plater.db.profile.aura_breakline_space)
 									framersPerRow = framersPerRow + framersPerRow
 								else
-									child:SetPoint ("topleft", children [i-1], "topright", padding, 0)
+									child:SetPoint ("topleft", iconFrameContainer [i-1], "topright", DB_AURA_PADDING, 0)
 								end
 							end
+						end
 
-						--> right to left
-						elseif (growDirection == 1) then
-							--> iterate among all children
-							for i = 2, #children do
-								local child = children [i]
+					-- <-- right to left
+					elseif (growDirection == 1) then
+						--> iterate among all icon frames
+						for i = 2, #iconFrameContainer do
+							local child = iconFrameContainer [i]
+							if (child:IsShown()) then
 								child:ClearAllPoints()
 								if (i == framersPerRow) then
 									child:SetPoint ("bottomright", firstChild, "topright", 0, Plater.db.profile.aura_breakline_space)
 									framersPerRow = framersPerRow + framersPerRow
 								else
-									child:SetPoint ("topright", children [i-1], "topleft", -padding, 0)
+									child:SetPoint ("topright", iconFrameContainer [i-1], "topleft", -DB_AURA_PADDING, 0)
 								end
 							end
 						end
 					end
-				
-				else 
-
-					--if true then return end
-				
-					--grow from center
+					
+				else --it's growing from center
+					
 					local iconAmount = 0
 					local horizontalLength = 0
 					local firstIcon
@@ -3227,8 +3199,8 @@ function Plater.OnInit() --private
 					--iterate among all icons in the aura frame
 					--set the point of the first icon in the bottom left of the buff frame
 					--set the point of all other icons to the right of the previous icon and update the size of the buff frame
-					for i = 1, #self.PlaterBuffList do
-						local iconFrame = self.PlaterBuffList [i]
+					for i = 1, #iconFrameContainer do
+						local iconFrame = iconFrameContainer [i]
 						if (iconFrame:IsShown()) then
 							iconAmount = iconAmount + 1
 							horizontalLength = horizontalLength + iconFrame:GetWidth() + DB_AURA_PADDING
@@ -3251,16 +3223,13 @@ function Plater.OnInit() --private
 					
 					--remove 1 icon padding value
 					horizontalLength = horizontalLength - DB_AURA_PADDING
+					
 					--set the size of the buff frame
 					self:SetWidth (horizontalLength)
+					self:SetHeight (firstIcon:GetHeight())
 				end
 			end
 		end
-		
-		local on_buff_layout_children_update = function (self, children, ignored, expandToHeight)
-			return Plater.BuffContainerLayoutChildrenHook (self, children, ignored, expandToHeight)
-		end
-		hooksecurefunc (HorizontalLayoutMixin, "LayoutChildren", on_buff_layout_children_update)
 	
 		--this should pull the resources bar up and down based on if the target has debuffs shown on it or not
 		function Plater.UpdateResourceFrameAnchor (buffFrame)
@@ -4393,9 +4362,8 @@ end
 				end
 			end
 
-			--> weird adding the Layout() call inside the hide function, but saves on performance
 			--> update icon anchors
-			buffFrame2:Layout()
+			Plater.AlignAuraFrames (buffFrame2)
 		end
 		
 		--move up the resource frame if shown
@@ -5228,7 +5196,7 @@ end
 				
 				--update the buff layout and alpha
 				tickFrame.BuffFrame.unit = tickFrame.unit
-				tickFrame.BuffFrame:Layout()
+				Plater.AlignAuraFrames (tickFrame.BuffFrame)
 				tickFrame.BuffFrame:SetAlpha (DB_AURA_ALPHA)
 			end
 			
@@ -7984,7 +7952,7 @@ end
 					end
 					
 					Plater.HideNonUsedAuraIcons (buffFrame)
-					buffFrame:Layout()
+					Plater.AlignAuraFrames (buffFrame)
 				
 				end
 				
@@ -8232,7 +8200,7 @@ end
 		
 		--update the buff layout and alpha
 		buffFrame.unit = self.unit
-		buffFrame:Layout()
+		Plater.AlignAuraFrames (buffFrame)
 		buffFrame:SetAlpha (DB_AURA_ALPHA)
 	end
 	
