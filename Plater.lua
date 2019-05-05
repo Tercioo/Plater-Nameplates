@@ -7827,16 +7827,18 @@ end
 					end
 				end
 
-				plateFrame [MEMBER_QUEST] = true
-				plateFrame.unitFrame [MEMBER_QUEST] = true
-				plateFrame.QuestAmountCurrent = amount1
-				plateFrame.QuestAmountTotal = amount2
-				
-				--expose to scripts
-				plateFrame.unitFrame.QuestAmountCurrent = amount1
-				plateFrame.unitFrame.QuestAmountTotal = amount2
-				
-				return true
+				if (amount1 and amount2) then
+					plateFrame [MEMBER_QUEST] = true
+					plateFrame.unitFrame [MEMBER_QUEST] = true
+					plateFrame.QuestAmountCurrent = amount1
+					plateFrame.QuestAmountTotal = amount2
+					
+					--expose to scripts
+					plateFrame.unitFrame.QuestAmountCurrent = amount1
+					plateFrame.unitFrame.QuestAmountTotal = amount2
+					
+					return true
+				end
 			end
 		end
 	end
