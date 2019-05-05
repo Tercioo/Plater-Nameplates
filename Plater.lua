@@ -7842,13 +7842,21 @@ end
 			return
 		end
 		
+		-- reset quest amount
+		plateFrame.QuestAmountCurrent = nil
+		plateFrame.QuestAmountTotal = nil
+		plateFrame.unitFrame.QuestAmountCurrent = nil
+		plateFrame.unitFrame.QuestAmountTotal = nil
+		
 		GameTooltipScanQuest:SetOwner (WorldFrame, "ANCHOR_NONE")
 		GameTooltipScanQuest:SetHyperlink ("unit:" .. plateFrame [MEMBER_GUID])
-		
+
+		local isQuestUnit = false
 		for i = 1, 8 do
 			local text = ScanQuestTextCache [i]:GetText()
 			if (Plater.QuestCache [text]) then
 				--unit belongs to a quest
+				isQuestUnit = true
 				local amount1, amount2 = 0, 0
 				if (not IsInGroup() and i < 8) then
 					--check if the unit objective isn't already done
@@ -7859,6 +7867,14 @@ end
 							p1, p2 = nextLineText:match ("(%d)/(%d%d)")
 							if (not p1) then
 								p1, p2 = nextLineText:match ("(%d)/(%d)")
+								if (not p1) then
+									-- check for % based quests
+									p1 = nextLineText:match ("(%d%%)")
+									if p1 then
+										-- remove the % sign for consistency
+										p1 = string.gsub(p1,"%%", '')
+									end
+								end
 							end
 						end
 						if (p1 and p2 and p1 == p2) then
@@ -7869,18 +7885,25 @@ end
 					end
 				end
 
-				plateFrame [MEMBER_QUEST] = true
-				plateFrame.unitFrame [MEMBER_QUEST] = true
-				plateFrame.QuestAmountCurrent = amount1
-				plateFrame.QuestAmountTotal = amount2
-				
-				--expose to scripts
-				plateFrame.unitFrame.QuestAmountCurrent = amount1
-				plateFrame.unitFrame.QuestAmountTotal = amount2
-				
-				return true
+				if (amount1) then
+					plateFrame.QuestAmountCurrent = amount1
+					plateFrame.QuestAmountTotal = amount2
+					
+					--expose to scripts
+					plateFrame.unitFrame.QuestAmountCurrent = amount1
+					plateFrame.unitFrame.QuestAmountTotal = amount2
+					
+					break
+				end
 			end
 		end
+		
+		if isQuestUnit then
+			plateFrame [MEMBER_QUEST] = true
+			plateFrame.unitFrame [MEMBER_QUEST] = true
+			return true
+		end
+		
 	end
 
 	local update_quest_cache = function()
