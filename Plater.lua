@@ -3843,6 +3843,60 @@ end
 		end
 	end
 	
+	--stack auras with the same name and change the stack text above the icon to indicate how many auras with the same name the unit has
+	--self is BuffFrame
+	function Plater.ConsolidateAuraIcons (self)
+		--get the table where all icon frames are stored in
+		local iconFrameContainer = self.PlaterBuffList
+		
+		--get the amount of auras shown in the frame, this variable should be always reliable
+		local amountFramesShown = self.amountAurasShown
+		--store icon frames with the same name
+		local aurasDuplicated = {}
+		
+		for i = 1, amountFramesShown do
+			local iconFrame = iconFrameContainer [i]
+			local auraName = iconFrame.SpellName
+			
+			if (aurasDuplicated [auraName]) then
+				tinsert (aurasDuplicated [auraName], {iconFrame, iconFrame.RemainingTime})
+			else
+				aurasDuplicated [auraName] = {
+					{iconFrame, iconFrame.RemainingTime}
+				}
+			end
+		end
+
+		for auraName, iconFramesTable in pairs (aurasDuplicated) do
+			--how many auras with the same name the unit has
+			local amountOfSimilarAuras = #iconFramesTable
+			
+			if (amountOfSimilarAuras > 1) then
+				--reverse order: the aura with the less time left is shown
+				if (Plater.db.profile.aura_consolidate_timeleft_lower) then
+					table.sort (iconFramesTable, DF.SortOrder2R)
+				else
+					table.sort (iconFramesTable, DF.SortOrder2)
+				end
+				
+				--hide all auras except for the first occurrence of this aura
+				for i = 2, amountOfSimilarAuras do
+					local iconFrame = iconFramesTable [i][1]
+					iconFrame:Hide()
+					iconFrame.InUse = false
+					
+					--decrease the amount of auras shown on the buff frame
+					self.amountAurasShown = self.amountAurasShown - 1
+				end
+				
+				--set the stack amount number to indicate how many auras similar to this the unit has
+				local stackLabel = iconFramesTable [1][1].StackText
+				stackLabel:SetText (amountOfSimilarAuras)
+				stackLabel:Show()
+			end
+		end
+	end
+	
 	--align the aura frame icons currently shown in buff container
 	--this function is called after Plater complete the aura update loop
 	--at this point, icons shown are reliable icons that has auras that are shown above the nameplate
@@ -3851,6 +3905,11 @@ end
 	--~align
 	function Plater.AlignAuraFrames (self)
 		if (self.isNameplate) then
+		
+			if (Plater.db.profile.aura_consolidate) then
+				Plater.ConsolidateAuraIcons (self)
+			end
+		
 			local growDirection
 
 			--> get the grow direction for the buff frame
@@ -3866,7 +3925,7 @@ end
 			
 			--get the amount of auras shown in the frame, this variable should be always reliable
 			local amountFramesShown = self.amountAurasShown
-			
+
 			if (growDirection ~= 2) then --it's growing to left or right
 			
 				local framersPerRow = Plater.MaxAurasPerRow + 1
@@ -4008,7 +4067,7 @@ end
 		
 		--expose to scripts
 		newIcon.StackText = newIcon.CountFrame.Count
-			
+		
 		newIcon.Cooldown.Timer = newIcon.Cooldown:CreateFontString (nil, "overlay", "NumberFontNormal")
 		newIcon.Cooldown.Timer:SetPoint ("center")
 		newIcon.TimerText = newIcon.Cooldown.Timer

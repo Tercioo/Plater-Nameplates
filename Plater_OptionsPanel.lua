@@ -1069,6 +1069,17 @@ local debuff_options = {
 		desc = "Icon Spacing",
 	},
 	
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_consolidate end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_consolidate = value
+			Plater.UpdateAllPlates()
+		end,
+		name = "Stack Similar Auras",
+		desc = "Auras with the same name (e.g. warlock's unstable affliction debuff) get stacked together.",
+	},
+	
 	{type = "blank"},
 	{type = "label", get = function() return "Aura Size:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	
