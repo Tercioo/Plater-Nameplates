@@ -5455,7 +5455,7 @@ end
 							--another tank is tanking the unit
 							set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.anothertank))
 						else
-							--player isn't taking this unit
+							--no tank is tanking this unit
 							set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.noaggro))
 						end
 						
