@@ -7817,6 +7817,10 @@ end
 							p1, p2 = nextLineText:match ("(%d)/(%d%d)")
 							if (not p1) then
 								p1, p2 = nextLineText:match ("(%d)/(%d)")
+								if (not p1) then
+								-- check for % based quests
+									p1, p2 = nextLineText:match ("(%d%%)")
+								end
 							end
 						end
 						if (p1 and p2 and p1 == p2) then
@@ -7827,7 +7831,7 @@ end
 					end
 				end
 
-				if (amount1 and amount2) then
+				if (amount1) then
 					plateFrame [MEMBER_QUEST] = true
 					plateFrame.unitFrame [MEMBER_QUEST] = true
 					plateFrame.QuestAmountCurrent = amount1
