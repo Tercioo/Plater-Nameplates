@@ -5438,9 +5438,20 @@ end
 			if (not isTanking) then
 				if (self.InCombat) then
 					if (IsInRaid()) then
-						--check is the mob is tanked by another tank in the raid
-						local unitTarget = UnitName (self.targetUnitID)
-						if (TANK_CACHE [unitTarget]) then
+						--check if another tank is effectively tanking
+						--as the other tankmay not be targeted due to spell-casts, we need to check the threat situation for tanks
+						local unitOffTank = nil
+						for tank, _ in pairs(TANK_CACHE) do
+							if not UnitIsUnit("player", tank) then
+								local otherIsTanking, otherThreatStatus, otherThreatpct = UnitDetailedThreatSituation (tank, self.displayedUnit)
+								if otherIsTanking then
+									unitOffTank = tank
+									break
+								end
+							end
+						end
+
+						if (unitOffTank) then
 							--another tank is tanking the unit
 							set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.anothertank))
 						else
