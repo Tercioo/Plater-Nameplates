@@ -3122,115 +3122,6 @@ function Plater.OnInit() --private
 		end
 		Plater:RegisterComm (COMM_PLATER_PREFIX, "CommReceived")
 	
-	--> general functions for the buff container
-		--align the aura frame icons currently shown in buff container
-		--self is the buff container
-		function Plater.AlignAuraFrames (self)
-			if (self.isNameplate) then
-				local growDirection
-
-				--> get the grow direction for the buff frame
-				if (self.Name == "Main") then
-					growDirection = DB_AURA_GROW_DIRECTION
-					
-				elseif (self.Name == "Secondary") then
-					growDirection = DB_AURA_GROW_DIRECTION2
-				end
-				
-				--get the table where all icon frames are stored in
-				local iconFrameContainer = self.PlaterBuffList
-				
-				if (growDirection ~= 2) then --it's growing to left or right
-				
-					local framersPerRow = Plater.MaxAurasPerRow + 1
-					local firstChild = iconFrameContainer[1]
-					
-					--check if there's one icon and if the icon is shown
-					if (not firstChild or not firstChild:IsShown()) then
-						return
-					end
-					
-					self:SetSize (1, 1)
-
-					--> set the point of the first icon
-					firstChild:ClearAllPoints()
-					firstChild:SetPoint ("center", self, "center", 0, 5)
-				
-					--> left to right
-					if (growDirection == 3) then
-						--> iterate among all icon frames
-						for i = 2, #iconFrameContainer do
-							local child = iconFrameContainer [i]
-							if (child:IsShown()) then
-								child:ClearAllPoints()
-								if (i == framersPerRow) then
-									child:SetPoint ("bottomleft", firstChild, "topleft", 0, Plater.db.profile.aura_breakline_space)
-									framersPerRow = framersPerRow + framersPerRow
-								else
-									child:SetPoint ("topleft", iconFrameContainer [i-1], "topright", DB_AURA_PADDING, 0)
-								end
-							end
-						end
-
-					-- <-- right to left
-					elseif (growDirection == 1) then
-						--> iterate among all icon frames
-						for i = 2, #iconFrameContainer do
-							local child = iconFrameContainer [i]
-							if (child:IsShown()) then
-								child:ClearAllPoints()
-								if (i == framersPerRow) then
-									child:SetPoint ("bottomright", firstChild, "topright", 0, Plater.db.profile.aura_breakline_space)
-									framersPerRow = framersPerRow + framersPerRow
-								else
-									child:SetPoint ("topright", iconFrameContainer [i-1], "topleft", -DB_AURA_PADDING, 0)
-								end
-							end
-						end
-					end
-					
-				else --it's growing from center
-					
-					local iconAmount = 0
-					local horizontalLength = 0
-					local firstIcon
-					local previousIcon
-
-					--iterate among all icons in the aura frame
-					--set the point of the first icon in the bottom left of the buff frame
-					--set the point of all other icons to the right of the previous icon and update the size of the buff frame
-					for i = 1, #iconFrameContainer do
-						local iconFrame = iconFrameContainer [i]
-						if (iconFrame:IsShown()) then
-							iconAmount = iconAmount + 1
-							horizontalLength = horizontalLength + iconFrame:GetWidth() + DB_AURA_PADDING
-							iconFrame:ClearAllPoints()
-							
-							if (not firstIcon) then
-								firstIcon = iconFrame
-								firstIcon:SetPoint ("bottomleft", self, "bottomleft", 0, 0)
-								previousIcon = firstIcon
-							else
-								iconFrame:SetPoint ("bottomleft", previousIcon, "bottomright", DB_AURA_PADDING, 0)
-								previousIcon = iconFrame
-							end
-						end
-					end
-					
-					if (not firstIcon) then
-						return
-					end
-					
-					--remove 1 icon padding value
-					horizontalLength = horizontalLength - DB_AURA_PADDING
-					
-					--set the size of the buff frame
-					self:SetWidth (horizontalLength)
-					self:SetHeight (firstIcon:GetHeight())
-				end
-			end
-		end
-	
 		--this should pull the resources bar up and down based on if the target has debuffs shown on it or not
 		function Plater.UpdateResourceFrameAnchor (buffFrame)
 			if (Plater.CurrentTargetResourceFrame) then
@@ -3951,6 +3842,121 @@ end
 			Plater.NameplateTick (plateFrame.OnTickFrame, 1)
 		end
 	end
+	
+	--align the aura frame icons currently shown in buff container
+	--this function is called after Plater complete the aura update loop
+	--at this point, icons shown are reliable icons that has auras that are shown above the nameplate
+	--hidden icons aren't in use and should be ignored
+	--self is the buff container
+	--~align
+	function Plater.AlignAuraFrames (self)
+		if (self.isNameplate) then
+			local growDirection
+
+			--> get the grow direction for the buff frame
+			if (self.Name == "Main") then
+				growDirection = DB_AURA_GROW_DIRECTION
+				
+			elseif (self.Name == "Secondary") then
+				growDirection = DB_AURA_GROW_DIRECTION2
+			end
+			
+			--get the table where all icon frames are stored in
+			local iconFrameContainer = self.PlaterBuffList
+			
+			--get the amount of auras shown in the frame, this variable should be always reliable
+			local amountFramesShown = self.amountAurasShown
+			
+			if (growDirection ~= 2) then --it's growing to left or right
+			
+				local framersPerRow = Plater.MaxAurasPerRow + 1
+				local firstIcon = iconFrameContainer[1]
+				
+				--check if there's one icon and if the icon is shown
+				if (not firstIcon or not firstIcon:IsShown()) then
+					return
+				end
+				
+				self:SetSize (1, 1)
+
+				--set the point of the first icon
+				firstIcon:ClearAllPoints()
+				firstIcon:SetPoint ("center", self, "center", 0, 5)
+			
+				--left to right
+				if (growDirection == 3) then
+					--iterate among all icon frames
+					for i = 2, #iconFrameContainer do
+						local iconFrame = iconFrameContainer [i]
+						if (iconFrame:IsShown()) then
+							iconFrame:ClearAllPoints()
+							if (i == framersPerRow) then
+								iconFrame:SetPoint ("bottomleft", firstIcon, "topleft", 0, Plater.db.profile.aura_breakline_space)
+								framersPerRow = framersPerRow + framersPerRow
+							else
+								iconFrame:SetPoint ("topleft", iconFrameContainer [i-1], "topright", DB_AURA_PADDING, 0)
+							end
+						end
+					end
+
+				-- <-- right to left
+				elseif (growDirection == 1) then
+					--> iterate among all icon frames
+					for i = 2, #iconFrameContainer do
+						local iconFrame = iconFrameContainer [i]
+						if (iconFrame:IsShown()) then
+							iconFrame:ClearAllPoints()
+							if (i == framersPerRow) then
+								iconFrame:SetPoint ("bottomright", firstIcon, "topright", 0, Plater.db.profile.aura_breakline_space)
+								framersPerRow = framersPerRow + framersPerRow
+							else
+								iconFrame:SetPoint ("topright", iconFrameContainer [i-1], "topleft", -DB_AURA_PADDING, 0)
+							end
+						end
+					end
+				end
+				
+			else --it's growing from center
+				
+				local iconAmount = 0
+				local horizontalLength = 0
+				local firstIcon
+				local previousIcon
+
+				--iterate among all icons in the aura frame
+				--set the point of the first icon in the bottom left of the buff frame
+				--set the point of all other icons to the right of the previous icon and update the size of the buff frame
+				for i = 1, #iconFrameContainer do
+					local iconFrame = iconFrameContainer [i]
+					if (iconFrame:IsShown()) then
+						iconAmount = iconAmount + 1
+						horizontalLength = horizontalLength + iconFrame:GetWidth() + DB_AURA_PADDING
+						iconFrame:ClearAllPoints()
+						
+						if (not firstIcon) then
+							firstIcon = iconFrame
+							firstIcon:SetPoint ("bottomleft", self, "bottomleft", 0, 0)
+							previousIcon = firstIcon
+						else
+							iconFrame:SetPoint ("bottomleft", previousIcon, "bottomright", DB_AURA_PADDING, 0)
+							previousIcon = iconFrame
+						end
+					end
+				end
+				
+				if (not firstIcon) then
+					return
+				end
+				
+				--remove 1 icon padding value
+				horizontalLength = horizontalLength - DB_AURA_PADDING
+				
+				--set the size of the buff frame
+				self:SetWidth (horizontalLength)
+				self:SetHeight (firstIcon:GetHeight())
+			end
+		end
+	end
 
 	--adjust the texcoord of the texture by the size of the icon
 	--if the icon is more of a retangular shape, it'll cut the top and bottom sides of the texture giving a wide view
@@ -4334,7 +4340,8 @@ end
 
 	--> check both buff frames for aura icons which aren't in use and hide them
 	Plater.HideNonUsedAuraIcons = function (self)
-		--> regular buff frame
+	
+		--aura frame 1
 		local nextAuraIndex = self.NextAuraIcon
 		for i = nextAuraIndex, #self.PlaterBuffList do
 			local icon = self.PlaterBuffList [i]
@@ -4344,15 +4351,16 @@ end
 			end
 		end
 		
-		--> save the amount of auras shown so it can move up the resource frame when it is shown on current target
+		--save the amount of auras shown
+		--used to move up the resource frame when it is shown on current target
+		--also used on the aura align function
 		self.amountAurasShown = self.NextAuraIcon - 1
 		
-		--> if using a second buff frame to separate buffs, update it
+		--aura frame 2
 		if (DB_AURA_SEPARATE_BUFFS) then
-			--> secondary buff frame
+			--secondary buff frame
 			local buffFrame2 = self.BuffFrame2
-			buffFrame2.amountAurasShown = buffFrame2.NextAuraIcon - 1
-			
+
 			local nextAuraIndex = buffFrame2.NextAuraIcon
 			for i = nextAuraIndex, #buffFrame2.PlaterBuffList do
 				local icon = buffFrame2.PlaterBuffList [i]
@@ -4361,9 +4369,9 @@ end
 					icon.InUse = false
 				end
 			end
-
-			--> update icon anchors
-			Plater.AlignAuraFrames (buffFrame2)
+			
+			--save the amount of auras shown
+			buffFrame2.amountAurasShown = buffFrame2.NextAuraIcon - 1
 		end
 		
 		--move up the resource frame if shown
@@ -5196,7 +5204,14 @@ end
 				
 				--update the buff layout and alpha
 				tickFrame.BuffFrame.unit = tickFrame.unit
+				
+				--align icons in the aura frame
 				Plater.AlignAuraFrames (tickFrame.BuffFrame)
+				--update the alignment on the second aura frame as well if enabled
+				if (DB_AURA_SEPARATE_BUFFS) then
+					Plater.AlignAuraFrames (tickFrame.BuffFrame.BuffFrame2)
+				end
+				
 				tickFrame.BuffFrame:SetAlpha (DB_AURA_ALPHA)
 			end
 			
