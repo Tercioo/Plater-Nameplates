@@ -5449,13 +5449,24 @@ end
 			if (not isTanking) then
 				if (self.InCombat) then
 					if (IsInRaid()) then
-						--check is the mob is tanked by another tank in the raid
-						local unitTarget = UnitName (self.targetUnitID)
-						if (TANK_CACHE [unitTarget]) then
+						--check if another tank is effectively tanking
+						--as the other tankmay not be targeted due to spell-casts, we need to check the threat situation for tanks
+						local unitOffTank = nil
+						for tank, _ in pairs(TANK_CACHE) do
+							if not UnitIsUnit("player", tank) then
+								local otherIsTanking, otherThreatStatus, otherThreatpct = UnitDetailedThreatSituation (tank, self.displayedUnit)
+								if otherIsTanking then
+									unitOffTank = tank
+									break
+								end
+							end
+						end
+
+						if (unitOffTank) then
 							--another tank is tanking the unit
 							set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.anothertank))
 						else
-							--player isn't taking this unit
+							--no tank is tanking this unit
 							set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.noaggro))
 						end
 						
@@ -7853,13 +7864,21 @@ end
 			return
 		end
 		
+		-- reset quest amount
+		plateFrame.QuestAmountCurrent = nil
+		plateFrame.QuestAmountTotal = nil
+		plateFrame.unitFrame.QuestAmountCurrent = nil
+		plateFrame.unitFrame.QuestAmountTotal = nil
+		
 		GameTooltipScanQuest:SetOwner (WorldFrame, "ANCHOR_NONE")
 		GameTooltipScanQuest:SetHyperlink ("unit:" .. plateFrame [MEMBER_GUID])
-		
+
+		local isQuestUnit = false
 		for i = 1, 8 do
 			local text = ScanQuestTextCache [i]:GetText()
 			if (Plater.QuestCache [text]) then
 				--unit belongs to a quest
+				isQuestUnit = true
 				local amount1, amount2 = 0, 0
 				if (not IsInGroup() and i < 8) then
 					--check if the unit objective isn't already done
@@ -7870,6 +7889,14 @@ end
 							p1, p2 = nextLineText:match ("(%d)/(%d%d)")
 							if (not p1) then
 								p1, p2 = nextLineText:match ("(%d)/(%d)")
+								if (not p1) then
+									-- check for % based quests
+									p1 = nextLineText:match ("(%d%%)")
+									if p1 then
+										-- remove the % sign for consistency
+										p1 = string.gsub(p1,"%%", '')
+									end
+								end
 							end
 						end
 						if (p1 and p2 and p1 == p2) then
@@ -7880,18 +7907,25 @@ end
 					end
 				end
 
-				plateFrame [MEMBER_QUEST] = true
-				plateFrame.unitFrame [MEMBER_QUEST] = true
-				plateFrame.QuestAmountCurrent = amount1
-				plateFrame.QuestAmountTotal = amount2
-				
-				--expose to scripts
-				plateFrame.unitFrame.QuestAmountCurrent = amount1
-				plateFrame.unitFrame.QuestAmountTotal = amount2
-				
-				return true
+				if (amount1) then
+					plateFrame.QuestAmountCurrent = amount1
+					plateFrame.QuestAmountTotal = amount2
+					
+					--expose to scripts
+					plateFrame.unitFrame.QuestAmountCurrent = amount1
+					plateFrame.unitFrame.QuestAmountTotal = amount2
+					
+					break
+				end
 			end
 		end
+		
+		if isQuestUnit then
+			plateFrame [MEMBER_QUEST] = true
+			plateFrame.unitFrame [MEMBER_QUEST] = true
+			return true
+		end
+		
 	end
 
 	local update_quest_cache = function()
