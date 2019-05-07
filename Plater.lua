@@ -297,7 +297,6 @@ local MEMBER_NOCOMBAT = "namePlateNoCombat"
 local MEMBER_NAME = "namePlateUnitName"
 local MEMBER_NAMELOWER = "namePlateUnitNameLower"
 local MEMBER_TARGET = "namePlateIsTarget"
-local MEMBER_CLASSIFICATION = "namePlateClassification"
 
 --> cache nameplate types for better reading the code
 local ACTORTYPE_FRIENDLY_PLAYER = "friendlyplayer"
@@ -690,6 +689,7 @@ Plater.DefaultSpellRangeList = {
 	local DB_ANIMATION_TIME_DILATATION
 
 	local DB_USE_RANGE_CHECK
+	local DB_USE_QUICK_HIDE
 
 	local DB_TEXTURE_CASTBAR
 	local DB_TEXTURE_CASTBAR_BG
@@ -1263,6 +1263,7 @@ Plater.DefaultSpellRangeList = {
 		
 		DB_HOVER_HIGHLIGHT = profile.hover_highlight
 		DB_USE_RANGE_CHECK = profile.range_check_enabled
+		DB_USE_QUICK_HIDE = profile.quick_hide
 		
 		DB_NPCIDS_CACHE = Plater.db.profile.npc_cache
 		
@@ -2571,7 +2572,7 @@ Plater.DefaultSpellRangeList = {
 			plateFrame [MEMBER_GUID] = UnitGUID (unitID) or ""
 			plateFrame [MEMBER_NAME] = UnitName (unitID) or ""
 			plateFrame [MEMBER_NAMELOWER] = lower (plateFrame [MEMBER_NAME])
-			plateFrame [MEMBER_CLASSIFICATION] = UnitClassification (unitID)
+			plateFrame ["namePlateClassification"] = UnitClassification (unitID)
 			
 			--clear name schedules
 			unitFrame.ScheduleNameUpdate = nil
@@ -2582,7 +2583,7 @@ Plater.DefaultSpellRangeList = {
 			unitFrame [MEMBER_NAME] = plateFrame [MEMBER_NAME]
 			unitFrame [MEMBER_NAMELOWER] = plateFrame [MEMBER_NAMELOWER]
 			unitFrame [MEMBER_GUID] = plateFrame [MEMBER_GUID]
-			unitFrame [MEMBER_CLASSIFICATION] = plateFrame [MEMBER_CLASSIFICATION]
+			unitFrame ["namePlateClassification"] = plateFrame ["namePlateClassification"]
 			unitFrame [MEMBER_UNITID] = unitID
 			unitFrame.namePlateThreatPercent = 0
 			unitFrame.namePlateThreatIsTanking = nil
@@ -3722,6 +3723,16 @@ function Plater.OnInit() --private
 			Plater.CheckLifePercentText (unitFrame)
 			
 		else
+
+			--quick hide the nameplate if the unit doesn't exists or if the unit died
+			if (DB_USE_QUICK_HIDE) then
+				if (not UnitExists (unitFrame.unit) or self.CurrentHealth < 1) then
+					--the unit died!
+					unitFrame:Hide()
+					return
+				end
+			end
+			
 			if (DB_DO_ANIMATIONS) then
 				--do healthbar animation ~animation ~healthbar
 				oldHealth = oldHealth or self.CurrentHealth
@@ -7498,7 +7509,7 @@ end
 		if (PET_CACHE [plateFrame [MEMBER_GUID]]) then
 			return "pet"
 			
-		elseif (plateFrame [MEMBER_CLASSIFICATION] == "minus") then
+		elseif (plateFrame ["namePlateClassification"] == "minus") then
 			return "minus"
 		end
 		

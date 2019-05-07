@@ -225,6 +225,8 @@ function Plater.OpenOptionsPanel()
 	local creditsFrame = mainFrame.AllFrames [21]
 	
 	local colorNpcsButton = mainFrame.AllButtons [17]
+	
+	--[=[
 	local colorNpcsButtonNew = colorNpcsButton:CreateTexture (nil, "overlay")
 	colorNpcsButtonNew:SetPoint ("bottomleft", colorNpcsButton.widget, "bottomleft", -4, 0)
 	colorNpcsButtonNew:SetPoint ("bottomright", colorNpcsButton.widget, "bottomright", 4, 0)
@@ -236,7 +238,8 @@ function Plater.OpenOptionsPanel()
 	DF:CreateAnimation (colorNpcsButtonNew.Anim, "alpha", 2, 3, .6, 0)
 	colorNpcsButtonNew.Anim:SetLooping ("repeat")
 	colorNpcsButtonNew.Anim:Play()
-
+	--]=]
+	
 	local generalOptionsAnchor = CreateFrame ("frame", "$parentOptionsAnchor", frontPageFrame)
 	generalOptionsAnchor:SetSize (1, 1)
 	generalOptionsAnchor:SetPoint ("topleft", frontPageFrame, "topleft", 10, -230)
@@ -10450,6 +10453,17 @@ local relevance_options = {
 			name = "Update Interval",
 			usedecimals = true,
 			desc = "Time interval in seconds between each update on the nameplate.\n\n|cFFFFFFFFDefault: 0.25|r (4 updates every second).",
+		},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.quick_hide end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.quick_hide = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Quick Hide on Death",
+			desc = "When the unit dies, immediately hide the nameplates without playing the shrink animation.",
 		},
 		
 		{type = "blank"},
