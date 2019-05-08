@@ -5,7 +5,7 @@ local DF = DetailsFramework
 local LibSharedMedia = LibStub:GetLibrary ("LibSharedMedia-3.0")
 local _
 
---lkocalization
+--localization
 local L = LibStub ("AceLocale-3.0"):GetLocale ("PlaterNameplates", true)
 
 --credits text -- ~todo - take colaborators character names?
@@ -122,6 +122,7 @@ function Plater.CheckOptionsTab()
 end
 
 local TAB_INDEX_UIPARENTING = 20
+local TAB_INDEX_PROFILES = 19
 
 -- ~options õptions
 function Plater.OpenOptionsPanel()
@@ -401,7 +402,7 @@ function Plater.OpenOptionsPanel()
 			end
 			
 			--importing a profile in the profiles tab
-			function profilesFrame.ConfirmImportScript()
+			function profilesFrame.ConfirmImportProfile()
 				if (profilesFrame.IsExporting) then
 					profilesFrame.HideStringField()
 					return
@@ -442,6 +443,12 @@ function Plater.OpenOptionsPanel()
 					C_Timer.After (.2, function()
 						Plater:RefreshConfig()
 					end)
+					
+					--make the option reopen after the reload
+					Plater.db.profile.reopoen_options_panel_on_tab = TAB_INDEX_PROFILES
+					
+					--reload the UI
+					ReloadUI()
 				end
 			end
 			
@@ -500,7 +507,7 @@ function Plater.OpenOptionsPanel()
 			DF:ReskinSlider (importStringField.scroll)
 			
 			--import button
-			local okayButton = DF:CreateButton (importStringField, profilesFrame.ConfirmImportScript, buttons_size[1], buttons_size[2], L["OPTIONS_OKAY"], -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+			local okayButton = DF:CreateButton (importStringField, profilesFrame.ConfirmImportProfile, buttons_size[1], buttons_size[2], L["OPTIONS_OKAY"], -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 			okayButton:SetIcon ([[Interface\BUTTONS\UI-Panel-BiggerButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
 			
 			--cancel button
