@@ -2944,6 +2944,12 @@ function Plater.OnInit() --private
 			if (not Plater.db.profile.first_run3) then
 				C_Timer.After (15, Plater.SetCVarsOnFirstRun)
 				
+				--enable UIParent nameplates for new installs of Plater
+				--this setting is disabled by default and will be enabled for new people
+				Plater.db.profile.use_ui_parent = true
+				--adjust the fine tune to player's screen scale
+				Plater.db.profile.ui_parent_scale_tune = 1 / UIParent:GetEffectiveScale()
+				
 			elseif (not PlaterDBChr.first_run3 [UnitGUID ("player")]) then
 				--do not run cvars for individual characters
 				C_Timer.After (15, Plater.SetCVarsOnFirstRun)

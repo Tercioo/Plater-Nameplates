@@ -121,8 +121,8 @@ function Plater.CheckOptionsTab()
 	end
 end
 
-local TAB_INDEX_UIPARENTING = 20
-local TAB_INDEX_PROFILES = 19
+local TAB_INDEX_UIPARENTING = 4
+local TAB_INDEX_PROFILES = 20
 
 -- ~options õptions
 function Plater.OpenOptionsPanel()
@@ -167,26 +167,25 @@ function Plater.OpenOptionsPanel()
 		{name = "FrontPage", title = L["OPTIONS_TABNAME_GENERALSETTINGS"]},
 		{name = "ThreatConfig", title = L["OPTIONS_TABNAME_THREAT"]},
 		{name = "TargetConfig", title = L["OPTIONS_TABNAME_TARGET"]},
+		{name = "LevelStrataConfig", title = "Level & Strata"},
+		{name = "Scripting", title = L["OPTIONS_TABNAME_SCRIPTING"]},
+		{name = "AutoRunCode", title = L["OPTIONS_TABNAME_MODDING"]},
 		{name = "PersonalBar", title = L["OPTIONS_TABNAME_PERSONAL"]},
-		{name = "EnemyNpc", title = L["OPTIONS_TABNAME_NPCENEMY"]},
-		{name = "EnemyPlayer", title = L["OPTIONS_TABNAME_PLAYERENEMY"]},
-		{name = "FriendlyNpc", title = L["OPTIONS_TABNAME_NPCFRIENDLY"]},
-		{name = "FriendlyPlayer", title = L["OPTIONS_TABNAME_PLAYERFRIENDLY"]},
+		{name = "AdvancedConfig", title = L["OPTIONS_TABNAME_ADVANCED"]},
 		
 		{name = "DebuffConfig", title = L["OPTIONS_TABNAME_BUFF_SETTINGS"]},
 		{name = "DebuffBlacklist", title = L["OPTIONS_TABNAME_BUFF_TRACKING"]},
 		{name = "DebuffSpecialContainer", title = L["OPTIONS_TABNAME_BUFF_SPECIAL"]},
 		{name = "DebuffLastEvent", title = L["OPTIONS_TABNAME_BUFF_LIST"]},
-		{name = "Scripting", title = L["OPTIONS_TABNAME_SCRIPTING"]},
-		{name = "AutoRunCode", title = L["OPTIONS_TABNAME_MODDING"]},
-		{name = "AnimationPanel", title = L["OPTIONS_TABNAME_ANIMATIONS"]},
-		{name = "AdvancedConfig", title = L["OPTIONS_TABNAME_ADVANCED"]},
-		
+		{name = "EnemyNpc", title = L["OPTIONS_TABNAME_NPCENEMY"]},
+		{name = "EnemyPlayer", title = L["OPTIONS_TABNAME_PLAYERENEMY"]},
+		{name = "FriendlyNpc", title = L["OPTIONS_TABNAME_NPCFRIENDLY"]},
+		{name = "FriendlyPlayer", title = L["OPTIONS_TABNAME_PLAYERFRIENDLY"]},
+
 		{name = "ColorManagement", title = L["OPTIONS_TABNAME_COLORSNPC"]},
+		{name = "AnimationPanel", title = L["OPTIONS_TABNAME_ANIMATIONS"]},
 		{name = "Automation", title = L["OPTIONS_TABNAME_AUTO"]},
 		{name = "ProfileManagement", title = L["OPTIONS_TABNAME_PROFILES"]},
-		
-		{name = "ExperimentalFeatures", title = "Experimental"},
 		{name = "CreditsFrame", title = L["OPTIONS_TABNAME_CREDITS"]},
 	}, 
 	frame_options)
@@ -202,32 +201,33 @@ function Plater.OpenOptionsPanel()
 	local frontPageFrame = mainFrame.AllFrames [1]
 	local threatFrame = mainFrame.AllFrames [2]
 	local targetFrame = mainFrame.AllFrames [3]
-	local personalPlayerFrame = mainFrame.AllFrames [4]
-	local enemyNPCsFrame = mainFrame.AllFrames [5]
-	local enemyPCsFrame = mainFrame.AllFrames [6]
-	local friendlyNPCsFrame = mainFrame.AllFrames [7]
-	local friendlyPCsFrame = mainFrame.AllFrames [8]
-
+	local uiParentFeatureFrame = mainFrame.AllFrames [4]
+	local scriptingFrame = mainFrame.AllFrames [5]
+	local runCodeFrame = mainFrame.AllFrames [6]
+	local personalPlayerFrame = mainFrame.AllFrames [7]
+	local advancedFrame = mainFrame.AllFrames [8]
+	
 	--2nd row
 	local auraOptionsFrame = mainFrame.AllFrames [9]
 	local auraFilterFrame = mainFrame.AllFrames [10]
 	local auraSpecialFrame = mainFrame.AllFrames [11]
 	local auraLastEventFrame = mainFrame.AllFrames [12]
-	local scriptingFrame = mainFrame.AllFrames [13]
-	local runCodeFrame = mainFrame.AllFrames [14]
-	local animationFrame = mainFrame.AllFrames [15]
-	local advancedFrame = mainFrame.AllFrames [16]
+	local enemyNPCsFrame = mainFrame.AllFrames [13]
+	local enemyPCsFrame = mainFrame.AllFrames [14]
+	local friendlyNPCsFrame = mainFrame.AllFrames [15]
+	local friendlyPCsFrame = mainFrame.AllFrames [16]
 	
 	--3rd row
 	local colorsFrame = mainFrame.AllFrames [17]
-	local autoFrame = mainFrame.AllFrames [18]
-	local profilesFrame = mainFrame.AllFrames [19]
-	local experimentalFrame = mainFrame.AllFrames [20]
+	local animationFrame = mainFrame.AllFrames [18]
+	local autoFrame = mainFrame.AllFrames [19]
+	local profilesFrame = mainFrame.AllFrames [20]
 	local creditsFrame = mainFrame.AllFrames [21]
 	
+	--
 	local colorNpcsButton = mainFrame.AllButtons [17]
 	
-	--[=[
+	--[=[ --tab highlight
 	local colorNpcsButtonNew = colorNpcsButton:CreateTexture (nil, "overlay")
 	colorNpcsButtonNew:SetPoint ("bottomleft", colorNpcsButton.widget, "bottomleft", -4, 0)
 	colorNpcsButtonNew:SetPoint ("bottomright", colorNpcsButton.widget, "bottomright", 4, 0)
@@ -2742,7 +2742,6 @@ Plater.CreateAuraTesting()
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> last event auras
 
-	--local auraLastEventFrame = mainFrame.AllFrames [8]
 	do
 		--options
 		local scroll_width = 1050
@@ -9856,6 +9855,19 @@ local relevance_options = {
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> experimental frame ~experimental
 
+	--overlay frame to indicate the feature is disabled
+	uiParentFeatureFrame.disabledOverlayFrame = CreateFrame ("frame", nil, uiParentFeatureFrame)
+	uiParentFeatureFrame.disabledOverlayFrame:SetPoint ("topleft", uiParentFeatureFrame, "topleft", 1, -155)
+	uiParentFeatureFrame.disabledOverlayFrame:SetPoint ("bottomright", uiParentFeatureFrame, "bottomright", -1, 21)
+	uiParentFeatureFrame.disabledOverlayFrame:SetBackdrop ({bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
+	uiParentFeatureFrame.disabledOverlayFrame:SetFrameLevel (uiParentFeatureFrame:GetFrameLevel() + 100)
+	uiParentFeatureFrame.disabledOverlayFrame:SetBackdropColor (.1, .1, .1, 1)
+	uiParentFeatureFrame.disabledOverlayFrame:EnableMouse (true)
+	
+	if (Plater.db.profile.use_ui_parent) then
+		uiParentFeatureFrame.disabledOverlayFrame:Hide()
+	end
+
 	local on_select_strata_level = function (self, fixedParameter, value)
 		Plater.db.profile.ui_parent_base_strata = value
 		Plater.RefreshDBUpvalues()
@@ -9887,8 +9899,6 @@ local relevance_options = {
 		end
 		return t
 	end
-	
-	
 
 	local experimental_options = {
 		
@@ -9911,6 +9921,8 @@ local relevance_options = {
 					Plater.db.profile.use_ui_parent = false
 					Plater.db.profile.use_ui_parent_just_enabled = false
 					Plater.db.profile.reopoen_options_panel_on_tab = TAB_INDEX_UIPARENTING
+					--reset the scale fine tune, so next time the ui parent feature is enabled it can be recalculated
+					Plater.db.profile.ui_parent_scale_tune = 0
 					ReloadUI()
 				end
 
@@ -10004,9 +10016,9 @@ local relevance_options = {
 	}
 
 	
-	DF:BuildMenu (experimentalFrame, experimental_options, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)	
-	
+	DF:BuildMenu (uiParentFeatureFrame, experimental_options, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)	
 
+	
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> ~auto ~ï¿½uto
 

@@ -23,11 +23,13 @@ local luaeditor_border_color = {0, 0, 0, 1}
 
 local debugmode = false
 
+local PLATER_OPTIONS_ANIMATION_TAB = 18
+
 function Plater.CreateSpellAnimationPanel()
 
 	local f = PlaterOptionsPanelFrame
 	local mainFrame = PlaterOptionsPanelContainer
-	local animationFrame = mainFrame.AllFrames [15]
+	local animationFrame = mainFrame.AllFrames [PLATER_OPTIONS_ANIMATION_TAB]
 	
 	--store which animation is being edited
 	local currentAnimation

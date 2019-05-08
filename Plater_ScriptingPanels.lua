@@ -19,8 +19,8 @@ function Plater.SortScripts (t1, t2)
 end
 
 --tab indexes
-local PLATER_OPTIONS_SCRIPTING_TAB = 13
-local PLATER_OPTIONS_HOOKING_TAB = 14
+local PLATER_OPTIONS_SCRIPTING_TAB = 5
+local PLATER_OPTIONS_HOOKING_TAB = 6
 
 --options
 local start_y = -130
@@ -1012,7 +1012,7 @@ function Plater.CreateHookingPanel()
 		hook_banned_user = {}, --players banned from sending scripts to this player
 	--]=]
 
-	local hookFrame = mainFrame.AllFrames [14]
+	local hookFrame = mainFrame.AllFrames [PLATER_OPTIONS_HOOKING_TAB]
 	
 	--holds the current text to search
 	hookFrame.SearchString = ""
@@ -1998,7 +1998,7 @@ function Plater.CreateScriptingPanel()
 	
 	local profile = Plater.db.profile
 	
-	local scriptingFrame = mainFrame.AllFrames [13]
+	local scriptingFrame = mainFrame.AllFrames [PLATER_OPTIONS_SCRIPTING_TAB]
 	scriptingFrame.ScriptType = "script"
 	
 	local currentEditingScript = nil
