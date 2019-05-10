@@ -491,7 +491,7 @@ PLATER_DEFAULT_SETTINGS = {
 			},
 		},
 		
-		quick_hide = false, --hide the nameplate when the unit hits 0 health points
+		quick_hide = true, --hide the nameplate when the unit hits 0 health points
 		
 		enable_masque_support = false,
 		

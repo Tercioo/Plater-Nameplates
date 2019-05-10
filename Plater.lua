@@ -649,6 +649,8 @@ Plater.DefaultSpellRangeList = {
 	local DB_AURA_X_OFFSET
 	local DB_AURA_Y_OFFSET
 	
+	local DB_USE_UIPARENT
+	
 	local DB_UNITCOLOR_CACHE = {}
 	local DB_UNITCOLOR_SCRIPT_CACHE = {}
 
@@ -1267,6 +1269,57 @@ Plater.DefaultSpellRangeList = {
 		
 		DB_NPCIDS_CACHE = Plater.db.profile.npc_cache
 		
+		DB_USE_UIPARENT = profile.use_ui_parent
+		
+		DB_BORDER_COLOR_R = profile.border_color [1]
+		DB_BORDER_COLOR_G = profile.border_color [2]
+		DB_BORDER_COLOR_B = profile.border_color [3]
+		DB_BORDER_COLOR_A = profile.border_color [4]
+		DB_BORDER_THICKNESS = profile.border_thickness
+		DB_AGGRO_CHANGE_HEALTHBAR_COLOR = profile.aggro_modifies.health_bar_color
+		DB_AGGRO_CHANGE_BORDER_COLOR = profile.aggro_modifies.border_color
+		DB_AGGRO_CHANGE_NAME_COLOR = profile.aggro_modifies.actor_name_color
+		DB_AGGRO_CAN_CHECK_NOTANKAGGRO = profile.aggro_can_check_notank
+		
+		DB_AGGRO_TANK_COLORS = profile.tank.colors
+		DB_AGGRO_DPS_COLORS = profile.dps.colors
+		
+		DB_NOT_COMBAT_ALPHA_ENABLED = profile.not_affecting_combat_enabled
+		
+		DB_TARGET_SHADY_ENABLED = profile.target_shady_enabled
+		DB_TARGET_SHADY_ALPHA = profile.target_shady_alpha
+		DB_TARGET_SHADY_COMBATONLY = profile.target_shady_combat_only
+		
+		DB_NAME_NPCENEMY_ANCHOR = profile.plate_config.enemynpc.actorname_text_anchor.side
+		DB_NAME_NPCFRIENDLY_ANCHOR = profile.plate_config.friendlynpc.actorname_text_anchor.side
+		DB_NAME_PLAYERENEMY_ANCHOR = profile.plate_config.enemyplayer.actorname_text_anchor.side
+		DB_NAME_PLAYERFRIENDLY_ANCHOR = profile.plate_config.friendlyplayer.actorname_text_anchor.side
+		
+		DB_TEXTURE_CASTBAR = LibSharedMedia:Fetch ("statusbar", profile.cast_statusbar_texture)
+		DB_TEXTURE_CASTBAR_BG = LibSharedMedia:Fetch ("statusbar", profile.cast_statusbar_bgtexture)
+		DB_TEXTURE_HEALTHBAR = LibSharedMedia:Fetch ("statusbar", profile.health_statusbar_texture)
+		DB_TEXTURE_HEALTHBAR_BG = LibSharedMedia:Fetch ("statusbar", profile.health_statusbar_bgtexture)	
+		
+		DB_CASTBAR_HIDE_ENEMIES = profile.hide_enemy_castbars
+		DB_CASTBAR_HIDE_FRIENDLY = profile.hide_friendly_castbars
+		
+		DB_CAPTURED_SPELLS = profile.captured_spells
+		
+		DB_SHOW_PURGE_IN_EXTRA_ICONS = profile.extra_icon_show_purge
+		DB_SHOW_ENRAGE_IN_EXTRA_ICONS = profile.extra_icon_show_enrage
+		
+		--refresh cast bar text max size
+		Plater.UpdateMaxCastbarTextLength()
+		
+		--refresh lists
+		Plater.RefreshDBLists()
+		Plater.RefreshAuraCache()
+	end
+
+	-- ~db
+	function Plater.RefreshAuraCache()
+		local profile = Plater.db.profile
+		
 		--> load spells filtered out, use the spellname instead of the spellId
 			if (not DB_BUFF_BANNED) then
 				DB_BUFF_BANNED = {}
@@ -1307,53 +1360,9 @@ Plater.DefaultSpellRangeList = {
 		DB_AURA_GROW_DIRECTION = profile.aura_grow_direction
 		DB_AURA_GROW_DIRECTION2 = profile.aura2_grow_direction
 		
-		DB_BORDER_COLOR_R = profile.border_color [1]
-		DB_BORDER_COLOR_G = profile.border_color [2]
-		DB_BORDER_COLOR_B = profile.border_color [3]
-		DB_BORDER_COLOR_A = profile.border_color [4]
-		DB_BORDER_THICKNESS = profile.border_thickness
-		DB_AGGRO_CHANGE_HEALTHBAR_COLOR = profile.aggro_modifies.health_bar_color
-		DB_AGGRO_CHANGE_BORDER_COLOR = profile.aggro_modifies.border_color
-		DB_AGGRO_CHANGE_NAME_COLOR = profile.aggro_modifies.actor_name_color
-		DB_AGGRO_CAN_CHECK_NOTANKAGGRO = profile.aggro_can_check_notank
-		
-		DB_AGGRO_TANK_COLORS = profile.tank.colors
-		DB_AGGRO_DPS_COLORS = profile.dps.colors
-		
-		DB_NOT_COMBAT_ALPHA_ENABLED = profile.not_affecting_combat_enabled
-		
-		DB_TARGET_SHADY_ENABLED = profile.target_shady_enabled
-		DB_TARGET_SHADY_ALPHA = profile.target_shady_alpha
-		DB_TARGET_SHADY_COMBATONLY = profile.target_shady_combat_only
-		
-		DB_NAME_NPCENEMY_ANCHOR = profile.plate_config.enemynpc.actorname_text_anchor.side
-		DB_NAME_NPCFRIENDLY_ANCHOR = profile.plate_config.friendlynpc.actorname_text_anchor.side
-		DB_NAME_PLAYERENEMY_ANCHOR = profile.plate_config.enemyplayer.actorname_text_anchor.side
-		DB_NAME_PLAYERFRIENDLY_ANCHOR = profile.plate_config.friendlyplayer.actorname_text_anchor.side
-		
-		DB_TEXTURE_CASTBAR = LibSharedMedia:Fetch ("statusbar", profile.cast_statusbar_texture)
-		DB_TEXTURE_CASTBAR_BG = LibSharedMedia:Fetch ("statusbar", profile.cast_statusbar_bgtexture)
-		DB_TEXTURE_HEALTHBAR = LibSharedMedia:Fetch ("statusbar", profile.health_statusbar_texture)
-		DB_TEXTURE_HEALTHBAR_BG = LibSharedMedia:Fetch ("statusbar", profile.health_statusbar_bgtexture)	
-		
-		DB_CASTBAR_HIDE_ENEMIES = profile.hide_enemy_castbars
-		DB_CASTBAR_HIDE_FRIENDLY = profile.hide_friendly_castbars
-		
-		DB_CAPTURED_SPELLS = profile.captured_spells
-		
-		DB_SHOW_PURGE_IN_EXTRA_ICONS = profile.extra_icon_show_purge
-		DB_SHOW_ENRAGE_IN_EXTRA_ICONS = profile.extra_icon_show_enrage
-		
 		Plater.MaxAurasPerRow = floor (profile.plate_config.enemynpc.health_incombat[1] / (profile.aura_width + DB_AURA_PADDING))
-		
-		--refresh cast bar text max size
-		Plater.UpdateMaxCastbarTextLength()
-		
-		--refresh lists
-		Plater.RefreshDBLists()
 	end
-
-	-- ~db
+	
 	function Plater.RefreshDBLists()
 
 		local profile = Plater.db.profile
@@ -1570,7 +1579,7 @@ Plater.DefaultSpellRangeList = {
 	--this reset the UIParent levels to user default set on the UIParent tab
 	--there's an api that calls this function called Plater.RefreshNameplateStrata()
 	function Plater.UpdateUIParentLevels (unitFrame) --private
-		if (Plater.db.profile.use_ui_parent) then
+		if (DB_USE_UIPARENT) then
 			--setup frame strata and levels
 			local profile = Plater.db.profile
 			local castBar = unitFrame.castBar
@@ -1587,6 +1596,19 @@ Plater.DefaultSpellRangeList = {
 			buffFrame2:SetFrameLevel (profile.ui_parent_buff_level)
 		end
 	end	
+	
+	--move the target nameplate to its strata
+	--also need to move other frame components of this nameplate as well so the entire nameplate is up front
+	function Plater.UpdateUIParentTargetLevels (unitFrame) --private
+		if (DB_USE_UIPARENT) then
+			--move all frames to target strata
+			local targetStrata = Plater.db.profile.ui_parent_target_strata
+			unitFrame:SetFrameStrata (targetStrata)
+			unitFrame.castBar:SetFrameStrata (targetStrata)
+			unitFrame.BuffFrame:SetFrameStrata (targetStrata)
+			unitFrame.BuffFrame2:SetFrameStrata (targetStrata)
+		end
+	end
 	
 	--> regional format numbers
 	do
@@ -1683,7 +1705,7 @@ Plater.DefaultSpellRangeList = {
 		Plater.ScheduledZoneChangeTriggerHook = C_Timer.NewTimer (2, run_zonechanged_hook)
 	end
 	
-	local run_loadscreen_hook = function()
+	function Plater.RunLoadScreenHook()
 		for i = 1, HOOK_LOAD_SCREEN.ScriptAmount do
 			local hookInfo = HOOK_LOAD_SCREEN [i]
 			Plater.ScriptMetaFunctions.ScriptRunNoAttach (hookInfo, "Load Screen")
@@ -1944,7 +1966,7 @@ Plater.DefaultSpellRangeList = {
 			
 			if (Plater.PlayerEnteringWorld) then
 				Plater.PlayerEnteringWorld = false
-				C_Timer.After (1, run_loadscreen_hook)
+				C_Timer.After (1, Plater.RunLoadScreenHook)
 			end
 		end,
 
@@ -2027,7 +2049,7 @@ Plater.DefaultSpellRangeList = {
 				--make the unitFrame be parented to UIParent allowing frames to be moved between strata levels
 				--March 3rd, 2019
 				local newUnitFrame
-				if (Plater.db.profile.use_ui_parent) then
+				if (DB_USE_UIPARENT) then
 					--when using UIParent as the unit frame parent, adjust the unitFrame scale to be equal to blizzard plateFrame
 					newUnitFrame = DF:CreateUnitFrame (UIParent, plateFrame:GetName() .. "PlaterUnitFrame", unitFrameOptions, healthBarOptions, castBarOptions)
 					newUnitFrame:SetAllPoints (parent)
@@ -2803,7 +2825,7 @@ Plater.DefaultSpellRangeList = {
 			--community patch by Ariani#0960 (discord)
 			--make the unitFrame be parented to UIParent allowing frames to be moved between strata levels
 			--March 3rd, 2019
-			if (Plater.db.profile.use_ui_parent) then
+			if (DB_USE_UIPARENT) then
 				-- need to explicitly hide the frame now, as it is not tethered to the blizz nameplate
 				plateFrame.unitFrame:Hide()
 			end
@@ -5029,7 +5051,7 @@ end
 		--community patch by Ariani#0960 (discord)
 		--make the unitFrame be parented to UIParent allowing frames to be moved between strata levels
 		--March 3rd, 2019
-		if (Plater.db.profile.use_ui_parent) then
+		if (DB_USE_UIPARENT) then
 			--unit frame - is set to be the same size as the plateFrame
 				unitFrame:ClearAllPoints()
 				unitFrame:SetPoint ("topleft", unitFrame.PlateFrame, "topleft", 0, 0)
@@ -5694,8 +5716,8 @@ end
 				plateFrame.unitFrame.targetOverlayTexture:Show()
 			end
 			
-			if (Plater.db.profile.use_ui_parent) then
-				plateFrame.unitFrame:SetFrameStrata (Plater.db.profile.ui_parent_target_strata)
+			if (DB_USE_UIPARENT) then
+				Plater.UpdateUIParentTargetLevels (plateFrame.unitFrame)
 			end
 			
 			Plater.UpdateResourceFrame()
@@ -5725,8 +5747,8 @@ end
 				plateFrame.Obscured:Hide()
 			end
 			
-			if (Plater.db.profile.use_ui_parent) then
-				plateFrame.unitFrame:SetFrameStrata (Plater.db.profile.ui_parent_base_strata)
+			if (DB_USE_UIPARENT) then
+				Plater.UpdateUIParentLevels (plateFrame.unitFrame)
 			end
 		end
 		
@@ -9101,6 +9123,7 @@ end
 		ForceTickOnAllNameplates = true,
 		UpdateUIParentScale = true,
 		UpdateUIParentLevels = true,
+		UpdateUIParentTargetLevels = true,
 	}
 	
 	local functionFilter = setmetatable ({}, {__index = function (env, key)

@@ -3223,8 +3223,8 @@ Plater.CreateAuraTesting()
 		--DF:ApplyStandardBackdrop (specialAuraFrame, false, 0.6)
 		
 		local scroll_width = 280
-		local scroll_height = 440
-		local scroll_lines = 15
+		local scroll_height = 442
+		local scroll_lines = 21
 		local scroll_line_height = 20
 		local backdrop_color = {.8, .8, .8, 0.2}
 		local backdrop_color_on_enter = {.8, .8, .8, 0.4}
@@ -9928,17 +9928,26 @@ local relevance_options = {
 
 				Plater:Msg ("this setting require a /reload to take effect.")
 			end,
-			name = "Parent to UIParent",
-			desc = "Nameplates anchor into the UIParent instead of the 3D World Frame.\n\nThis allow having cast bars and debuffs in front of other frames.\n\n|cFFFFFF00Important|r: a /reload will be triggered on changing this setting.",
+			name = "Use Custom Strata Channels",
+			desc = "Allow nameplates to be placed in custom frame strata channels.\n\n|cFFFFFF00Important|r: a /reload will be triggered on changing this setting.",
 		},
 		
 		{type = "blank"},
+		{type = "label", get = function() return "Strata Channels:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		
+		{
+			type = "select",
+			get = function() return Plater.db.profile.ui_parent_target_strata end,
+			values = function() return build_framelevel_table ("ui_parent_target_strata") end,
+			name = "Current Target",
+			desc = "Which strata the nameplate of the current target is placed in.",
+		},
 		
 		{
 			type = "select",
 			get = function() return Plater.db.profile.ui_parent_base_strata end,
 			values = function() return build_framelevel_table ("ui_parent_base_strata") end,
-			name = "Base Strata",
+			name = "Health Bar",
 			desc = "Which strata the unit frame will be placed in.",
 		},
 		
@@ -9946,7 +9955,7 @@ local relevance_options = {
 			type = "select",
 			get = function() return Plater.db.profile.ui_parent_cast_strata end,
 			values = function() return build_framelevel_table ("ui_parent_cast_strata") end,
-			name = "Cast Bar Strata",
+			name = "Cast Bar",
 			desc = "Which strata the cast bar will be placed in.",
 		},
 		
@@ -9954,19 +9963,27 @@ local relevance_options = {
 			type = "select",
 			get = function() return Plater.db.profile.ui_parent_buff_strata end,
 			values = function() return build_framelevel_table ("ui_parent_buff_strata") end,
-			name = "Aura Frames Strata",
+			name = "Aura Frames",
 			desc = "Which strata aura frames will be placed in.",
 		},
 		
-		{
-			type = "select",
-			get = function() return Plater.db.profile.ui_parent_target_strata end,
-			values = function() return build_framelevel_table ("ui_parent_target_strata") end,
-			name = "Current Target Strata",
-			desc = "Which strata the nameplate of the current target is placed in.",
-		},
-
 		{type = "blank"},
+		{type = "label", get = function() return "Frame Levels:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		
+		{
+			type = "range",
+			get = function() return Plater.db.profile.ui_parent_cast_level end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.ui_parent_cast_level = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end,
+			min = 1,
+			max = 5000,
+			step = 1,
+			name = "Cast Bar",
+			desc = "Move frames up or down within the strata channel.",
+		},
 		
 		{
 			type = "range",
@@ -9979,24 +9996,12 @@ local relevance_options = {
 			min = 1,
 			max = 5000,
 			step = 1,
-			name = "Aura Level",
-			desc = "Level of the Aura frames, affect frames within the same frame strata.",
+			name = "Aura Frames",
+			desc = "Move frames up or down within the strata channel.",
 		},
-	
-		{
-			type = "range",
-			get = function() return Plater.db.profile.ui_parent_cast_level end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.ui_parent_cast_level = value
-				Plater.RefreshDBUpvalues()
-				Plater.UpdateAllPlates()
-			end,
-			min = 1,
-			max = 5000,
-			step = 1,
-			name = "Cast Bar Level",
-			desc = "Level of the Aura frames, affect frames within the same frame strata.",
-		},
+		
+		{type = "blank"},
+		{type = "label", get = function() return "Scaling:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "range",
