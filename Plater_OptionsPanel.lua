@@ -440,14 +440,17 @@ function Plater.OpenOptionsPanel()
 					Plater.db:SetProfile (profileName)
 					DF.table.copy (Plater.db.profile, profile)
 					
-					C_Timer.After (.2, function()
-						Plater:RefreshConfig()
-					end)
-					
 					--make the option reopen after the reload
 					Plater.db.profile.reopoen_options_panel_on_tab = TAB_INDEX_PROFILES
 					
-					--reload the UI
+					--check if parent to UIParent is enabled and calculate the new scale
+					if (Plater.db.profile.use_ui_parent) then
+						Plater.db.profile.ui_parent_scale_tune = 1 / UIParent:GetEffectiveScale()
+					else
+						Plater.db.profile.ui_parent_scale_tune = 0
+					end
+					
+					--automatically reload the user UI
 					ReloadUI()
 				end
 			end

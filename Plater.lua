@@ -1168,7 +1168,14 @@ Plater.DefaultSpellRangeList = {
 		
 		Plater.UpdateSettingsCache()
 	end
-
+	
+	function Plater:RefreshConfigProfileChanged() --private
+		Plater:RefreshConfig()
+		
+		--call the user to /reload his UI
+		DF:ShowPromptPanel ("Plater profile changed, do you want /reload now (recommended)?", function() ReloadUI() end, function() end, true, 500)
+	end
+	
 	--~save ~cvar
 	--on logout or on profile change, save some important cvars inside the profile
 	function Plater.SaveConsoleVariables() --private
@@ -3821,18 +3828,31 @@ function Plater.OnInit() --private
 	hooksecurefunc (DF.HealthFrameFunctions, "UpdateMaxHealth", on_healthmax_change)
 	
 	--> profile changes and refreshes ~db
-		Plater.db.RegisterCallback (Plater, "OnProfileChanged", "RefreshConfig")
+		Plater.db.RegisterCallback (Plater, "OnProfileChanged", "RefreshConfigProfileChanged")
 		Plater.db.RegisterCallback (Plater, "OnProfileCopied", "RefreshConfig")
 		Plater.db.RegisterCallback (Plater, "OnProfileReset", "RefreshConfig")
 		Plater.db.RegisterCallback (Plater, "OnDatabaseShutdown", "SaveConsoleVariables")
 		
 		function Plater.OnProfileCreated()
-			C_Timer.After (1, function()
+			C_Timer.After (.5, function()
 				Plater:Msg ("new profile created, applying patches and adding default scripts.")
 				Plater.ImportScriptsFromLibrary()
 				Plater.ApplyPatches()
 				Plater.CompileAllScripts ("script")
 				Plater.CompileAllScripts ("hook")
+				
+				--enable UIParent nameplates for new installs of Plater
+				--this setting is disabled by default and will be enabled for new users and new profiles
+				Plater.db.profile.use_ui_parent = true
+				--adjust the fine tune to player's screen scale
+				Plater.db.profile.ui_parent_scale_tune = 1 / UIParent:GetEffectiveScale()
+				
+				--call major refresh
+				Plater:RefreshConfig()
+				Plater.UpdatePlateClickSpace()
+				
+				--call the user to /reload UI
+				DF:ShowPromptPanel ("Plater profile created, do you want /reload now (recommended)?", function() ReloadUI() end, function() end, true, 500)
 			end)
 		end
 		
@@ -9054,6 +9074,8 @@ end
 		--RefreshDBLists = true,
 		--UpdateAuraCache = true,
 		ApplyPatches = true,
+		RefreshConfig = true,
+		RefreshConfigProfileChanged = true,
 		RefreshConfig = true,
 		SaveConsoleVariables = true,
 		GetSettings = true,
