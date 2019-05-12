@@ -7,7 +7,15 @@ local _
 function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
-		
+
+			{1557674970,  "New Feature", "May 12, 2019", "Added an option to stack auras with the same name."},
+			{1557674970,  "New Feature", "May 12, 2019", "Added an option to change the space between each aura icon."},
+			{1557674970,  "New Feature", "May 12, 2019", "Added an option to hide the nameplate when the unit dies."},
+			{1557674970,  "New Feature", "May 12, 2019", "Added an option to automatically track enrage effects."},
+			{1557674970,  "New Feature", "May 12, 2019", "Experimental tab got renamed to 'Level and Statra'."},
+			
+			
+			
 			{1554737982,  "Buf Fix", "April 8, 2019", "Fixed 'Only Show Player Name' not overriding the 'Only Damaged Players' setting."},
 			{1554737982,  "Buf Fix", "April 8, 2019", "Fixed Paladin's Hammer of Wrath execute range."},
 			{1554222484,  "Buf Fix", "April 4, 2019", "Fixed an issue with NameplateHasAura() API not checking Special Auras."},
