@@ -7939,7 +7939,7 @@ end
 								p1, p2 = nextLineText:match ("(%d)/(%d)")
 								if (not p1) then
 									-- check for % based quests
-									p1 = nextLineText:match ("(%d%%)")
+									p1 = nextLineText:match ("(%d%d%%)") or nextLineText:match ("(%d%%)")
 									if p1 then
 										-- remove the % sign for consistency
 										p1 = string.gsub(p1,"%%", '')
