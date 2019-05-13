@@ -2052,13 +2052,17 @@ Plater.DefaultSpellRangeList = {
 					LazyUpdateCooldown = 0.1,
 				}
 				
+				local powerBarOptions = {
+					ShowAlternatePower = false,
+				}
+				
 				--community patch by Ariani#0960 (discord)
 				--make the unitFrame be parented to UIParent allowing frames to be moved between strata levels
 				--March 3rd, 2019
 				local newUnitFrame
 				if (DB_USE_UIPARENT) then
 					--when using UIParent as the unit frame parent, adjust the unitFrame scale to be equal to blizzard plateFrame
-					newUnitFrame = DF:CreateUnitFrame (UIParent, plateFrame:GetName() .. "PlaterUnitFrame", unitFrameOptions, healthBarOptions, castBarOptions)
+					newUnitFrame = DF:CreateUnitFrame (UIParent, plateFrame:GetName() .. "PlaterUnitFrame", unitFrameOptions, healthBarOptions, castBarOptions, powerBarOptions)
 					newUnitFrame:SetAllPoints (parent)
 					newUnitFrame:SetFrameStrata ("BACKGROUND")
 
