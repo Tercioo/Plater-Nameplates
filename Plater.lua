@@ -5364,7 +5364,7 @@ end
 			if (unitFrame.ScheduleNameUpdate) then
 				if (unitFrame.ActorType == ACTORTYPE_FRIENDLY_PLAYER) then
 					tickFrame.PlateFrame.playerGuildName = GetGuildInfo (tickFrame.unit)
-					Plater.UpdatePlateText (tickFrame.PlateFrame, DB_PLATE_CONFIG [unitFrame.ActorType], true)
+					Plater.UpdatePlateText (tickFrame.PlateFrame, DB_PLATE_CONFIG [unitFrame.ActorType], false)
 				end
 				
 				Plater.UpdateUnitName (tickFrame.PlateFrame)
@@ -7153,7 +7153,7 @@ end
 		plateFrame.IsFriendlyPlayerWithoutHealthBar = false
 
 		if (DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_thename and not DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_damaged) then
-			Plater.HideHealthBar (plateFrame.unitFrame)
+			Plater.HideHealthBar (plateFrame.unitFrame, true)
 			plateFrame.IsFriendlyPlayerWithoutHealthBar = true
 			
 		elseif (DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_damaged) then
@@ -8639,12 +8639,15 @@ end
 		unitFrame.healthBar:Show()
 		unitFrame.BuffFrame:Show()
 		unitFrame.BuffFrame2:Show()
+		unitFrame.ExtraIconFrame:Show()
 		unitFrame.healthBar.unitName:Show()
 		
 		unitFrame.PlateFrame.IsFriendlyPlayerWithoutHealthBar = false
 		
 		unitFrame.ActorNameSpecial:Hide()
 		unitFrame.ActorTitleSpecial:Hide()
+		
+		Plater.UpdatePlateText (unitFrame.PlateFrame, DB_PLATE_CONFIG [unitFrame.ActorType], true)
 	end
 
 	--hide the health bar and show the secondary unit name and title text strings
@@ -8652,16 +8655,17 @@ end
 		unitFrame.healthBar:Hide()
 		unitFrame.BuffFrame:Hide()
 		unitFrame.BuffFrame2:Hide()
+		unitFrame.ExtraIconFrame:Hide()
 		unitFrame.healthBar.unitName:Hide()
 		
 		unitFrame.PlateFrame.IsFriendlyPlayerWithoutHealthBar = showPlayerName
 		unitFrame.PlateFrame.IsNpcWithoutHealthBar = showNameNpc
 		
 		if (showPlayerName) then
-			Plater.UpdatePlateText (unitFrame.PlateFrame, DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER], false)
+			Plater.UpdatePlateText (unitFrame.PlateFrame, DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER], true)
 			
 		elseif (showNameNpc) then
-			Plater.UpdatePlateText (unitFrame.PlateFrame, DB_PLATE_CONFIG [ACTORTYPE_ENEMY_NPC], false)
+			Plater.UpdatePlateText (unitFrame.PlateFrame, DB_PLATE_CONFIG [ACTORTYPE_ENEMY_NPC], true)
 		end
 	end
 	
