@@ -8639,6 +8639,7 @@ end
 		unitFrame.healthBar:Show()
 		unitFrame.BuffFrame:Show()
 		unitFrame.BuffFrame2:Show()
+		unitFrame.ExtraIconFrame:Show()
 		unitFrame.healthBar.unitName:Show()
 		
 		unitFrame.PlateFrame.IsFriendlyPlayerWithoutHealthBar = false
@@ -8654,6 +8655,7 @@ end
 		unitFrame.healthBar:Hide()
 		unitFrame.BuffFrame:Hide()
 		unitFrame.BuffFrame2:Hide()
+		unitFrame.ExtraIconFrame:Hide()
 		unitFrame.healthBar.unitName:Hide()
 		
 		unitFrame.PlateFrame.IsFriendlyPlayerWithoutHealthBar = showPlayerName
