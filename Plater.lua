@@ -5364,7 +5364,7 @@ end
 			if (unitFrame.ScheduleNameUpdate) then
 				if (unitFrame.ActorType == ACTORTYPE_FRIENDLY_PLAYER) then
 					tickFrame.PlateFrame.playerGuildName = GetGuildInfo (tickFrame.unit)
-					Plater.UpdatePlateText (tickFrame.PlateFrame, DB_PLATE_CONFIG [unitFrame.ActorType], false)
+					Plater.UpdatePlateText (tickFrame.PlateFrame, DB_PLATE_CONFIG [unitFrame.ActorType], true)
 				end
 				
 				Plater.UpdateUnitName (tickFrame.PlateFrame)
@@ -7160,7 +7160,7 @@ end
 			if (UnitHealth (plateFrame [MEMBER_UNITID]) < UnitHealthMax (plateFrame [MEMBER_UNITID])) then
 				Plater.ShowHealthBar (plateFrame.unitFrame)
 			else
-				Plater.HideHealthBar (plateFrame.unitFrame)
+				Plater.HideHealthBar (plateFrame.unitFrame, true)
 				
 				if (DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_thename) then
 					plateFrame.IsFriendlyPlayerWithoutHealthBar = true
