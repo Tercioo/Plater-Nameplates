@@ -5364,7 +5364,7 @@ end
 			if (unitFrame.ScheduleNameUpdate) then
 				if (unitFrame.ActorType == ACTORTYPE_FRIENDLY_PLAYER) then
 					tickFrame.PlateFrame.playerGuildName = GetGuildInfo (tickFrame.unit)
-					Plater.UpdatePlateText (tickFrame.PlateFrame, DB_PLATE_CONFIG [unitFrame.ActorType], true)
+					Plater.UpdatePlateText (tickFrame.PlateFrame, DB_PLATE_CONFIG [unitFrame.ActorType], false)
 				end
 				
 				Plater.UpdateUnitName (tickFrame.PlateFrame)
@@ -7153,7 +7153,7 @@ end
 		plateFrame.IsFriendlyPlayerWithoutHealthBar = false
 
 		if (DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_thename and not DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_damaged) then
-			Plater.HideHealthBar (plateFrame.unitFrame)
+			Plater.HideHealthBar (plateFrame.unitFrame, true)
 			plateFrame.IsFriendlyPlayerWithoutHealthBar = true
 			
 		elseif (DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_damaged) then
@@ -8645,6 +8645,8 @@ end
 		
 		unitFrame.ActorNameSpecial:Hide()
 		unitFrame.ActorTitleSpecial:Hide()
+		
+		Plater.UpdatePlateText (unitFrame.PlateFrame, DB_PLATE_CONFIG [unitFrame.ActorType], false)
 	end
 
 	--hide the health bar and show the secondary unit name and title text strings
