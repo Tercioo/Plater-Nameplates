@@ -8646,7 +8646,7 @@ end
 		unitFrame.ActorNameSpecial:Hide()
 		unitFrame.ActorTitleSpecial:Hide()
 		
-		Plater.UpdatePlateText (unitFrame.PlateFrame, DB_PLATE_CONFIG [unitFrame.ActorType], false)
+		Plater.UpdatePlateText (unitFrame.PlateFrame, DB_PLATE_CONFIG [unitFrame.ActorType], true)
 	end
 
 	--hide the health bar and show the secondary unit name and title text strings
@@ -8660,10 +8660,10 @@ end
 		unitFrame.PlateFrame.IsNpcWithoutHealthBar = showNameNpc
 		
 		if (showPlayerName) then
-			Plater.UpdatePlateText (unitFrame.PlateFrame, DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER], false)
+			Plater.UpdatePlateText (unitFrame.PlateFrame, DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER], true)
 			
 		elseif (showNameNpc) then
-			Plater.UpdatePlateText (unitFrame.PlateFrame, DB_PLATE_CONFIG [ACTORTYPE_ENEMY_NPC], false)
+			Plater.UpdatePlateText (unitFrame.PlateFrame, DB_PLATE_CONFIG [ACTORTYPE_ENEMY_NPC], true)
 		end
 	end
 	
