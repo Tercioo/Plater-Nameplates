@@ -2776,9 +2776,6 @@ Plater.DefaultSpellRangeList = {
 		NAME_PLATE_UNIT_REMOVED = function (event, unitBarId)
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId)
 			
-			--setting the namePlateUnitToken again into the nameplate, this might be removed by Blizzard or any other addon
-			plateFrame.namePlateUnitToken = plateFrame.unitFrame.unit
-			
 			--hooks
 			if (HOOK_NAMEPLATE_REMOVED.ScriptAmount > 0) then
 				for i = 1, HOOK_NAMEPLATE_REMOVED.ScriptAmount do
@@ -6113,7 +6110,8 @@ end
 			return
 		end
 		
-		--Plater.SetFontOutlineAndShadow (nameFontString, plateConfigs._outline, plateConfigs._shadow_color, plateConfigs._shadow_color_offset[1], plateConfigs._shadow_color_offset[2])
+		--get the unitId shown on this nameplate
+		local unitId = plateFrame.unitFrame.unit
 		
 		--critical code
 		--the nameplate is showing the health bar
@@ -6219,10 +6217,10 @@ end
 				Plater.SetFontOutlineAndShadow (levelString, plateConfigs.level_text_outline, plateConfigs.level_text_shadow_color, plateConfigs.level_text_shadow_color_offset[1], plateConfigs.level_text_shadow_color_offset[2])
 				
 				Plater.SetAnchor (levelString, plateConfigs.level_text_anchor)
-				Plater.UpdateLevelTextAndColor (levelString, plateFrame.namePlateUnitToken)
+				Plater.UpdateLevelTextAndColor (levelString, unitId)
 				levelString:SetAlpha (plateConfigs.level_text_alpha)
 			else
-				Plater.UpdateLevelTextAndColor (levelString, plateFrame.namePlateUnitToken)
+				Plater.UpdateLevelTextAndColor (levelString, unitId)
 				levelString:SetAlpha (plateConfigs.level_text_alpha)
 			end
 		else
@@ -6245,7 +6243,7 @@ end
 				lifeString:SetAlpha (plateConfigs.percent_text_alpha)
 			end
 			
-			Plater.UpdateLifePercentText (plateFrame.unitFrame.healthBar, plateFrame.namePlateUnitToken, plateConfigs.percent_show_health, plateConfigs.percent_show_percent, plateConfigs.percent_text_show_decimals)
+			Plater.UpdateLifePercentText (plateFrame.unitFrame.healthBar, unitId, plateConfigs.percent_show_health, plateConfigs.percent_show_percent, plateConfigs.percent_text_show_decimals)
 		else
 			lifeString:Hide()
 		end
