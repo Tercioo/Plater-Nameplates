@@ -142,8 +142,6 @@ Plater.CanOverride_Functions = {
 	AddGuildNameToPlayerName = true, --adds the guild name into the player name
 	UpdateUnitName = true, --update the unit name
 	UpdateUnitNameTextSize = true, --controls the length of the unit name text
-	UpdateLevelText = true, --update the text showing the unit level
-	UpdateLevelColor = true, --update the color of the level text
 	UpdateBorderColor = true, --update the color of the border
 	UpdatePlateBorderThickness = true, --adjust how thick is the border around the health bar
 	UpdatePlateRaidMarker = true, --update the raid marker in the nameplate
@@ -752,6 +750,8 @@ Plater.DefaultSpellRangeList = {
 
 	--store pet GUIDs
 	local PET_CACHE = {}
+	--store pets summoned by the player it self
+	Plater.PlayerPetCache = {}
 
 	--store if the player is in combat (not reliable, toggled at regen switch)
 	local PLAYER_IN_COMBAT
@@ -1074,17 +1074,6 @@ Plater.DefaultSpellRangeList = {
 		if (not Plater.PlayerGuildName or Plater.PlayerGuildName == "") then
 			Plater.PlayerGuildName = "ThePlayerHasNoGuildName/30Char"
 		end
-	end
-	
-	local default_level_color = {r = 1.0, g = 0.82, b = 0.0}
-	--todo: move to Plater object
-	local get_level_color = function (unitId, unitLevel)
-		if (UnitCanAttack ("player", unitId)) then
-			local playerLevel = UnitLevel ("player")
-			local color = GetRelativeDifficultyColor (playerLevel, unitLevel)
-			return color
-		end
-		return default_level_color
 	end
 	
 	--> run a scheduled update for a nameplate, functions can create schedules when some events are triggered when the client doesn't have the data yet
@@ -2787,6 +2776,9 @@ Plater.DefaultSpellRangeList = {
 		NAME_PLATE_UNIT_REMOVED = function (event, unitBarId)
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId)
 			
+			--setting the namePlateUnitToken again into the nameplate, this might be removed by Blizzard or any other addon
+			plateFrame.namePlateUnitToken = plateFrame.unitFrame.unit
+			
 			--hooks
 			if (HOOK_NAMEPLATE_REMOVED.ScriptAmount > 0) then
 				for i = 1, HOOK_NAMEPLATE_REMOVED.ScriptAmount do
@@ -3054,6 +3046,13 @@ function Plater.OnInit() --private
 			C_Timer.After (4, Plater.GetHealthCutoffValue)
 			
 			C_Timer.After (2, Plater.ScheduleZoneChangeHook)
+			
+			C_Timer.After (5, function()
+				local petGUID = UnitGUID ("playerpet")
+				if (petGUID) then
+					Plater.PlayerPetCache [petGUID] = time()
+				end
+			end)
 			
 			--if the user just used a /reload to enable ui parenting, auto adjust the fine tune scale
 			--the uiparent fine tune scale initially: after testing and playing around with it, I think it should be 1 / UIParent:GetEffectiveScale() and scaling should be done by multiplying defaultScale * scaleFineTune
@@ -6216,15 +6215,15 @@ end
 			if (needReset) then
 				DF:SetFontSize (levelString, plateConfigs.level_text_size)
 				DF:SetFontFace (levelString, plateConfigs.level_text_font)
-				
-				--DF:SetFontOutline (levelString, plateConfigs.level_text_shadow)
+
 				Plater.SetFontOutlineAndShadow (levelString, plateConfigs.level_text_outline, plateConfigs.level_text_shadow_color, plateConfigs.level_text_shadow_color_offset[1], plateConfigs.level_text_shadow_color_offset[2])
 				
 				Plater.SetAnchor (levelString, plateConfigs.level_text_anchor)
 				Plater.UpdateLevelTextAndColor (levelString, plateFrame.namePlateUnitToken)
 				levelString:SetAlpha (plateConfigs.level_text_alpha)
 			else
-				Plater.UpdateLevelText (levelString, plateFrame.namePlateUnitToken)
+				Plater.UpdateLevelTextAndColor (levelString, plateFrame.namePlateUnitToken)
+				levelString:SetAlpha (plateConfigs.level_text_alpha)
 			end
 		else
 			levelString:Hide()
@@ -6424,30 +6423,25 @@ end
 				break
 			end
 		end
-	end	
-	
-	--only update the level text
-	function Plater.UpdateLevelText (levelString, unitId)
-		local level = UnitLevel (unitId)
-		if (not level) then
-			levelString:SetText ("")
-		elseif (level == -1) then
-			levelString:SetText ("??")
-		else
-			levelString:SetText (level)
-		end
-	end
-
-	function Plater.UpdateLevelColor (levelString, unitId)
-		local level = UnitLevel (unitId)
-		local color = get_level_color (unitId, level) --todo: move this into a function inside plater object
-		levelString:SetTextColor (color.r, color.g, color.b)
 	end
 
 	--updates the level text and the color
 	function Plater.UpdateLevelTextAndColor (levelString, unitId) --private
-		Plater.UpdateLevelText (levelString, unitId)
-		Plater.UpdateLevelColor (levelString, unitId)
+		--level text
+		local level = UnitLevel (unitId)
+		if (not level) then
+			levelString:SetText ("")
+			
+		elseif (level == -1) then
+			levelString:SetText ("??")
+			
+		else
+			levelString:SetText (level)
+		end
+		
+		--level color
+		local color = GetRelativeDifficultyColor (UnitLevel ("player") or 120, UnitLevel (unitId) or 120) or Plater.DefaultLevelColor
+		levelString:SetTextColor (color.r, color.g, color.b, Plater.db.profile.level_text_alpha)
 	end	
 
 	-- ~updateplate ~update ~updatenameplate
@@ -6532,7 +6526,8 @@ end
 				plateFrame [MEMBER_QUEST] = true
 				unitFrame [MEMBER_QUEST] = true
 			
-			elseif (DB_PLATE_CONFIG [actorType].only_names or DB_PLATE_CONFIG [actorType].all_names) then
+			--this line is always returning true, making friendly nameplates always be name only
+			elseif (not Plater.PlayerPetCache [unitFrame [MEMBER_GUID]] and (DB_PLATE_CONFIG [actorType].only_names or DB_PLATE_CONFIG [actorType].all_names)) then
 				--show only the npc name without the health bar
 
 				healthBar:Hide()
@@ -7693,8 +7688,12 @@ end
 				PET_CACHE [targetGUID] = time
 			end
 		--]=]
-		
+
 			PET_CACHE [targetGUID] = time
+			
+			if (sourceGUID == Plater.PlayerGUID) then
+				Plater.PlayerPetCache [targetGUID] = time
+			end
 		end,
 		
 		SPELL_INTERRUPT = function (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical)
@@ -7744,6 +7743,12 @@ end
 		for guid, time in pairs (PET_CACHE) do
 			if (time+180 < now) then
 				PET_CACHE [guid] = nil
+			end
+		end
+		
+		for guid, time in pairs (Plater.PlayerPetCache) do
+			if (time + 3600 < now) then
+				Plater.PlayerPetCache [guid] = nil
 			end
 		end
 	end)
