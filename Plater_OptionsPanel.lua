@@ -9966,9 +9966,17 @@ local relevance_options = {
 			type = "select",
 			get = function() return Plater.db.profile.ui_parent_buff_strata end,
 			values = function() return build_framelevel_table ("ui_parent_buff_strata") end,
-			name = "Aura Frames",
-			desc = "Which strata aura frames will be placed in.",
+			name = "Aura Frame 1",
+			desc = "Which strata aura frame 1 will be placed in.",
 		},
+		
+		{
+			type = "select",
+			get = function() return Plater.db.profile.ui_parent_buff2_strata end,
+			values = function() return build_framelevel_table ("ui_parent_buff2_strata") end,
+			name = "Aura Frame 2",
+			desc = "Which strata aura frame 2 will be placed in.",
+		},		
 		
 		{type = "blank"},
 		{type = "label", get = function() return "Frame Levels:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
@@ -9999,7 +10007,22 @@ local relevance_options = {
 			min = 1,
 			max = 5000,
 			step = 1,
-			name = "Aura Frames",
+			name = "Aura Frame 1",
+			desc = "Move frames up or down within the strata channel.",
+		},
+		
+		{
+			type = "range",
+			get = function() return Plater.db.profile.ui_parent_buff2_level end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.ui_parent_buff2_level = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end,
+			min = 1,
+			max = 5000,
+			step = 1,
+			name = "Aura Frame 2",
 			desc = "Move frames up or down within the strata channel.",
 		},
 		

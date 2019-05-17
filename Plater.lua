@@ -1585,11 +1585,11 @@ Plater.DefaultSpellRangeList = {
 			unitFrame:SetFrameStrata (profile.ui_parent_base_strata)
 			castBar:SetFrameStrata (profile.ui_parent_cast_strata)
 			buffFrame1:SetFrameStrata (profile.ui_parent_buff_strata)
-			buffFrame2:SetFrameStrata (profile.ui_parent_buff_strata)
+			buffFrame2:SetFrameStrata (profile.ui_parent_buff2_strata)
 			--level
 			castBar:SetFrameLevel (profile.ui_parent_cast_level)
 			buffFrame1:SetFrameLevel (profile.ui_parent_buff_level)
-			buffFrame2:SetFrameLevel (profile.ui_parent_buff_level)
+			buffFrame2:SetFrameLevel (profile.ui_parent_buff2_level)
 		end
 	end	
 	
