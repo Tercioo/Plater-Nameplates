@@ -292,15 +292,15 @@ function Plater.OpenOptionsPanel()
 	function f.CopySettings (_, _, from)
 		local currentTab = mainFrame.CurrentIndex
 		local settingsTo
-		if (currentTab == 4) then
+		if (currentTab == 7) then
 			settingsTo = "player"
-		elseif (currentTab == 5) then
+		elseif (currentTab == 13) then
 			settingsTo = "enemynpc"
-		elseif (currentTab == 6) then
+		elseif (currentTab == 14) then
 			settingsTo = "enemyplayer"
-		elseif (currentTab == 7) then
+		elseif (currentTab == 15) then
 			settingsTo = "friendlynpc"
-		elseif (currentTab == 8) then
+		elseif (currentTab == 16) then
 			settingsTo = "friendlyplayer"
 		end
 		
