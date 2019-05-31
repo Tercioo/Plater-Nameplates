@@ -3932,11 +3932,12 @@ end
 			
 			if (amountOfSimilarAuras > 1) then
 				--reverse order: the aura with the less time left is shown
-				if (Plater.db.profile.aura_consolidate_timeleft_lower) then
-					table.sort (iconFramesTable, DF.SortOrder2R)
-				else
-					table.sort (iconFramesTable, DF.SortOrder2)
-				end
+				--if the aura with less time isn't the first occurence of this aura, it'll create some empty gaps
+			--	if (Plater.db.profile.aura_consolidate_timeleft_lower) then
+			--		table.sort (iconFramesTable, DF.SortOrder2R)
+			--	else
+			--		table.sort (iconFramesTable, DF.SortOrder2)
+			--	end
 				
 				--hide all auras except for the first occurrence of this aura
 				for i = 2, amountOfSimilarAuras do
@@ -4000,20 +4001,35 @@ end
 				--set the point of the first icon
 				firstIcon:ClearAllPoints()
 				firstIcon:SetPoint ("center", self, "center", 0, 5)
-			
+				
+				--which slot index is being manipulated within the icon loop
+				--is an icon is hidden it won't be used and the slot won't increase
+				--the slot 1 is guaranteed to always be in use
+				local slotId = 2
+				
+				--which was the last shown and valid icon attached into the visible icon row
+				local lastIconUsed = firstIcon
+				
 				--left to right
 				if (growDirection == 3) then
 					--iterate among all icon frames
 					for i = 2, #iconFrameContainer do
+						--get the icon id from the icon frame container
 						local iconFrame = iconFrameContainer [i]
 						if (iconFrame:IsShown()) then
 							iconFrame:ClearAllPoints()
-							if (i == framersPerRow) then
+							
+							if (slotId == framersPerRow) then
 								iconFrame:SetPoint ("bottomleft", firstIcon, "topleft", 0, Plater.db.profile.aura_breakline_space)
 								framersPerRow = framersPerRow + framersPerRow
+								--update the first icon to be the first icon in the second row
+								firstIcon = iconFrame
 							else
-								iconFrame:SetPoint ("topleft", iconFrameContainer [i-1], "topright", DB_AURA_PADDING, 0)
+								iconFrame:SetPoint ("topleft", lastIconUsed, "topright", DB_AURA_PADDING, 0)
 							end
+							
+							lastIconUsed = iconFrame
+							slotId = slotId + 1
 						end
 					end
 
@@ -4021,15 +4037,22 @@ end
 				elseif (growDirection == 1) then
 					--> iterate among all icon frames
 					for i = 2, #iconFrameContainer do
+						--get the icon id from the icon frame container
 						local iconFrame = iconFrameContainer [i]
 						if (iconFrame:IsShown()) then
 							iconFrame:ClearAllPoints()
-							if (i == framersPerRow) then
+							
+							if (slotId == framersPerRow) then
 								iconFrame:SetPoint ("bottomright", firstIcon, "topright", 0, Plater.db.profile.aura_breakline_space)
 								framersPerRow = framersPerRow + framersPerRow
+								--update the first icon to be the first icon in the second row
+								firstIcon = iconFrame
 							else
-								iconFrame:SetPoint ("topright", iconFrameContainer [i-1], "topleft", -DB_AURA_PADDING, 0)
+								iconFrame:SetPoint ("topright", lastIconUsed, "topleft", -DB_AURA_PADDING, 0)
 							end
+							
+							lastIconUsed = iconFrame
+							slotId = slotId + 1
 						end
 					end
 				end
