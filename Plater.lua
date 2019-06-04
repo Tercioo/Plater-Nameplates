@@ -1030,6 +1030,43 @@ Plater.DefaultSpellRangeList = {
 	local function IsUnitEffectivelyTank (unit)
 		return UnitGroupRolesAssigned (unit) == "TANK"
 	end
+	
+	--iterate among group members and store the names of all tanks in the group
+	--this is called when the player enter, leave or when the group roster is changed
+	--tank cache is used mostly in the aggro check to know if the player is a tank
+	function Plater.RefreshTankCache() --private
+		Plater.PlayerIsTank = false
+	
+		wipe (TANK_CACHE)
+		
+		--add the player to the tank pool if the player is a tank
+		if (IsPlayerEffectivelyTank()) then
+			TANK_CACHE [UnitName ("player")] = true
+			Plater.PlayerIsTank = true
+		end
+		
+		--search for tanks in the raid
+		if (IsInRaid()) then
+			for i = 1, GetNumGroupMembers() do
+				if (IsUnitEffectivelyTank ("raid" .. i)) then
+					if (not UnitIsUnit ("raid" .. i, "player")) then
+						TANK_CACHE [UnitName ("raid" .. i)] = true
+					end
+				end
+			end
+		
+		--is in group and is inside a dungeon
+		--there's only one tank on dungeon but dps may see if a unit is not in the tank aggro
+		elseif (IsInGroup() and Plater.ZoneInstanceType == "party") then
+			for i = 1, GetNumGroupMembers() -1 do
+				if (IsUnitEffectivelyTank ("party" .. i)) then
+					if (not UnitIsUnit ("party" .. i, "player")) then
+						TANK_CACHE [UnitName ("party" .. i)] = true
+					end
+				end
+			end
+		end
+	end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> general unit functions
@@ -1756,42 +1793,15 @@ Plater.DefaultSpellRangeList = {
 			C_Timer.After (2, Plater.GetHealthCutoffValue)
 			C_Timer.After (1, Plater.DispatchTalentUpdateHookEvent)
 		end,
+		
+		GROUP_ROSTER_UPDATE = function()
+			Plater.RefreshTankCache()
+		end,
 
 		PLAYER_REGEN_DISABLED = function()
 			PLAYER_IN_COMBAT = true
 
-			--> refresh tank cache
-				Plater.PlayerIsTank = false
-			
-				wipe (TANK_CACHE)
-				
-				--add the player to the tank pool if the player is a tank
-				if (IsPlayerEffectivelyTank()) then
-					TANK_CACHE [UnitName ("player")] = true
-					Plater.PlayerIsTank = true
-				end
-				
-				--search for tanks in the raid
-				if (IsInRaid()) then
-					for i = 1, GetNumGroupMembers() do
-						if (IsUnitEffectivelyTank ("raid" .. i)) then
-							if (not UnitIsUnit ("raid" .. i, "player")) then
-								TANK_CACHE [UnitName ("raid" .. i)] = true
-							end
-						end
-					end
-				
-				--is in group and is inside a dungeon
-				--there's only one tank on dungeon but dps may see if a unit is not in the tank aggro
-				elseif (IsInGroup() and Plater.ZoneInstanceType == "party") then
-					for i = 1, GetNumGroupMembers() -1 do
-						if (IsUnitEffectivelyTank ("party" .. i)) then
-							if (not UnitIsUnit ("party" .. i, "player")) then
-								TANK_CACHE [UnitName ("party" .. i)] = true
-							end
-						end
-					end
-				end
+			Plater.RefreshTankCache()
 			
 			Plater.UpdateAuraCache()
 			Plater.UpdateAllPlates()
@@ -1818,6 +1828,8 @@ Plater.DefaultSpellRangeList = {
 				local hookTimer = C_Timer.NewTimer (0.1, Plater.ScheduleHookForCombat)
 				hookTimer.Event = "Leave Combat"
 			end
+			
+			Plater.RefreshTankCache()
 			
 			Plater.UpdateAllNameplateColors()
 			Plater.UpdateAllPlates()
@@ -2482,6 +2494,10 @@ Plater.DefaultSpellRangeList = {
 		-- ~added
 		NAME_PLATE_UNIT_ADDED = function (event, unitBarId)
 		
+			if (select (2, UnitClass (unitBarId)) == "HUNTER") then
+				print ("nameplate added", UnitName (unitBarId))
+			end
+		
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId)
 			if (not plateFrame) then
 				return
@@ -2776,6 +2792,10 @@ Plater.DefaultSpellRangeList = {
 		NAME_PLATE_UNIT_REMOVED = function (event, unitBarId)
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId)
 			
+			if (select (2, UnitClass (unitBarId)) == "HUNTER") then
+				print ("nameplate removed", UnitName (unitBarId))
+			end
+			
 			--hooks
 			if (HOOK_NAMEPLATE_REMOVED.ScriptAmount > 0) then
 				for i = 1, HOOK_NAMEPLATE_REMOVED.ScriptAmount do
@@ -3032,6 +3052,8 @@ function Plater.OnInit() --private
 		
 		Plater.EventHandlerFrame:RegisterEvent ("DISPLAY_SIZE_CHANGED")
 		Plater.EventHandlerFrame:RegisterEvent ("UI_SCALE_CHANGED")
+		
+		Plater.EventHandlerFrame:RegisterEvent ("GROUP_ROSTER_UPDATE")
 		
 		--many times at saved variables load the spell database isn't loaded yet
 		function Plater:PLAYER_LOGIN()
@@ -9180,6 +9202,7 @@ end
 		UpdateUIParentScale = true,
 		UpdateUIParentLevels = true,
 		UpdateUIParentTargetLevels = true,
+		RefreshTankCache = true,
 	}
 	
 	local functionFilter = setmetatable ({}, {__index = function (env, key)
