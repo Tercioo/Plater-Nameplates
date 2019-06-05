@@ -3981,140 +3981,6 @@ do
 				nocombat = true,
 			},
 			
-			--[=[ --removed top and bottom constrain options
-			{
-				type = "range",
-				get = function() return tonumber (GetCVar ("nameplateSelfTopInset")*100) end,
-				set = function (self, fixedparam, value) 
-					--Plater.db.profile.plate_config.player.y_position_offset = value
-
-					if (InCombatLockdown()) then
-						Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
-						self:SetValue (tonumber (GetCVar ("nameplateSelfTopInset")*100))
-						return
-					end
-
-					--SetCVar ("nameplateSelfBottomInset", value / 100)
-					SetCVar ("nameplateSelfTopInset", abs (value - 99) / 100)
-					
-					if (not Plater.PersonalAdjustLocationTop) then
-						Plater.PersonalAdjustLocationTop = CreateFrame ("frame", "PlaterPersonalBarLocation", UIParent)
-						local frame = Plater.PersonalAdjustLocationTop
-						frame:SetWidth (GetScreenWidth())
-						frame:SetHeight (20)
-						frame.Texture = frame:CreateTexture (nil, "background")
-						frame.Texture:SetTexture ([[Interface\AddOns\Plater\images\bar4_vidro]], true)
-						frame.Texture:SetAllPoints()
-						frame.Shadow = frame:CreateTexture (nil, "border")
-						frame.Shadow:SetTexture ([[Interface\ACHIEVEMENTFRAME\UI-Achievement-RecentHeader]], true)
-						frame.Shadow:SetPoint ("center")
-						frame.Shadow:SetSize (256, 18)
-						frame.Shadow:SetTexCoord (0, 1, 0, 22/32)
-						frame.Shadow:SetVertexColor (0, 0, 0, 1)
-						frame.Text = frame:CreateFontString (nil, "artwork", "GameFontNormal")
-						frame.Text:SetText ("Plater: Top Constraint")
-						frame.Text:SetPoint ("center")
-						
-						frame.HideAnimation = DF:CreateAnimationHub (frame, nil, function() frame:Hide() end)
-						DF:CreateAnimation (frame.HideAnimation, "Alpha", 1, 1, 1, 0)
-						
-						frame.CancelFunction = function()
-							frame.HideAnimation:Play()
-						end
-					end
-					
-					if (Plater.PersonalAdjustLocationTop.HideAnimation:IsPlaying()) then
-						Plater.PersonalAdjustLocationTop.HideAnimation:Stop()
-						Plater.PersonalAdjustLocationTop:SetAlpha (1)
-					end
-					Plater.PersonalAdjustLocationTop:Show()
-					
-					local percentValue = GetScreenHeight()/100
-					Plater.PersonalAdjustLocationTop:SetPoint ("bottom", UIParent, "bottom", 0, percentValue * value)
-					
-					if (Plater.PersonalAdjustLocationTop.Timer) then
-						Plater.PersonalAdjustLocationTop.Timer:Cancel()
-					end
-					Plater.PersonalAdjustLocationTop.Timer = C_Timer.NewTimer (10, Plater.PersonalAdjustLocationTop.CancelFunction)
-					
-					Plater.UpdateAllPlates()
-					Plater.UpdateSelfPlate()
-				end,
-				min = 2,
-				max = 51,
-				step = 1,
-				nocombat = true,
-				name = "Top Constrain" .. CVarIcon,
-				desc = "Adjust the top constrain position where the personal bar cannot pass.\n\n|cFFFFFFFFDefault: 50|r" .. CVarDesc,
-			},
-			
-			{
-				type = "range",
-				get = function() return tonumber (GetCVar ("nameplateSelfBottomInset")*100) end,
-				set = function (self, fixedparam, value) 
-					--Plater.db.profile.plate_config.player.y_position_offset = value
-
-					if (InCombatLockdown()) then
-						Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
-						self:SetValue (tonumber (GetCVar ("nameplateSelfBottomInset")*100))
-						return
-					end
-
-					SetCVar ("nameplateSelfBottomInset", value / 100)
-					--SetCVar ("nameplateSelfTopInset", value / 100)
-					
-					if (not Plater.PersonalAdjustLocationBottom) then
-						Plater.PersonalAdjustLocationBottom = CreateFrame ("frame", "PlaterPersonalBarLocation", UIParent)
-						local frame = Plater.PersonalAdjustLocationBottom
-						frame:SetWidth (GetScreenWidth())
-						frame:SetHeight (20)
-						frame.Texture = frame:CreateTexture (nil, "background")
-						frame.Texture:SetTexture ([[Interface\AddOns\Plater\images\bar4_vidro]], true)
-						frame.Texture:SetAllPoints()
-						frame.Shadow = frame:CreateTexture (nil, "border")
-						frame.Shadow:SetTexture ([[Interface\ACHIEVEMENTFRAME\UI-Achievement-RecentHeader]], true)
-						frame.Shadow:SetPoint ("center")
-						frame.Shadow:SetSize (256, 18)
-						frame.Shadow:SetTexCoord (0, 1, 0, 22/32)
-						frame.Shadow:SetVertexColor (0, 0, 0, 1)
-						frame.Text = frame:CreateFontString (nil, "artwork", "GameFontNormal")
-						frame.Text:SetText ("Plater: Bottom Constraint")
-						frame.Text:SetPoint ("center")
-						
-						frame.HideAnimation = DF:CreateAnimationHub (frame, nil, function() frame:Hide() end)
-						DF:CreateAnimation (frame.HideAnimation, "Alpha", 1, 1, 1, 0)
-						
-						frame.CancelFunction = function()
-							frame.HideAnimation:Play()
-						end
-					end
-					
-					if (Plater.PersonalAdjustLocationBottom.HideAnimation:IsPlaying()) then
-						Plater.PersonalAdjustLocationBottom.HideAnimation:Stop()
-						Plater.PersonalAdjustLocationBottom:SetAlpha (1)
-					end
-					Plater.PersonalAdjustLocationBottom:Show()
-					
-					local percentValue = GetScreenHeight()/100
-					Plater.PersonalAdjustLocationBottom:SetPoint ("bottom", UIParent, "bottom", 0, percentValue * value)
-					
-					if (Plater.PersonalAdjustLocationBottom.Timer) then
-						Plater.PersonalAdjustLocationBottom.Timer:Cancel()
-					end
-					Plater.PersonalAdjustLocationBottom.Timer = C_Timer.NewTimer (10, Plater.PersonalAdjustLocationBottom.CancelFunction)
-					
-					Plater.UpdateAllPlates()
-					Plater.UpdateSelfPlate()
-				end,
-				min = 2,
-				max = 51,
-				step = 1,
-				nocombat = true,
-				name = "Bottom Constrain" .. CVarIcon,
-				desc = "Adjust the bottom constrain position where the personal bar cannot pass.\n\n|cFFFFFFFFDefault: 20|r" .. CVarDesc,
-			},
-			--]=] --end of top and bottom constrain
-			
 			{
 				type = "range",
 				get = function() return tonumber (GetCVar ("nameplateSelfBottomInset")*100) end,
@@ -11017,6 +10883,143 @@ local relevance_options = {
 			name = "Masque Support",
 			desc = "If the Masque addon is installed, enabling this will make Plater to use Masque borders.\n\n|cFFFFFF00Important|r: require /reload after changing this setting.",
 		},
+		
+			--=[ --removed top and bottom constrain options
+			--added back for debug
+			{type = "blank"},
+			{type = "label", get = function() return "Personal Bar Custom Position:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{
+				type = "range",
+				get = function() return tonumber (GetCVar ("nameplateSelfTopInset")*100) end,
+				set = function (self, fixedparam, value) 
+					--Plater.db.profile.plate_config.player.y_position_offset = value
+
+					if (InCombatLockdown()) then
+						Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+						self:SetValue (tonumber (GetCVar ("nameplateSelfTopInset")*100))
+						return
+					end
+
+					--SetCVar ("nameplateSelfBottomInset", value / 100)
+					SetCVar ("nameplateSelfTopInset", abs (value - 99) / 100)
+					
+					if (not Plater.PersonalAdjustLocationTop) then
+						Plater.PersonalAdjustLocationTop = CreateFrame ("frame", "PlaterPersonalBarLocation", UIParent)
+						local frame = Plater.PersonalAdjustLocationTop
+						frame:SetWidth (GetScreenWidth())
+						frame:SetHeight (20)
+						frame.Texture = frame:CreateTexture (nil, "background")
+						frame.Texture:SetTexture ([[Interface\AddOns\Plater\images\bar4_vidro]], true)
+						frame.Texture:SetAllPoints()
+						frame.Shadow = frame:CreateTexture (nil, "border")
+						frame.Shadow:SetTexture ([[Interface\ACHIEVEMENTFRAME\UI-Achievement-RecentHeader]], true)
+						frame.Shadow:SetPoint ("center")
+						frame.Shadow:SetSize (256, 18)
+						frame.Shadow:SetTexCoord (0, 1, 0, 22/32)
+						frame.Shadow:SetVertexColor (0, 0, 0, 1)
+						frame.Text = frame:CreateFontString (nil, "artwork", "GameFontNormal")
+						frame.Text:SetText ("Plater: Top Constraint")
+						frame.Text:SetPoint ("center")
+						
+						frame.HideAnimation = DF:CreateAnimationHub (frame, nil, function() frame:Hide() end)
+						DF:CreateAnimation (frame.HideAnimation, "Alpha", 1, 1, 1, 0)
+						
+						frame.CancelFunction = function()
+							frame.HideAnimation:Play()
+						end
+					end
+					
+					if (Plater.PersonalAdjustLocationTop.HideAnimation:IsPlaying()) then
+						Plater.PersonalAdjustLocationTop.HideAnimation:Stop()
+						Plater.PersonalAdjustLocationTop:SetAlpha (1)
+					end
+					Plater.PersonalAdjustLocationTop:Show()
+					
+					local percentValue = GetScreenHeight()/100
+					Plater.PersonalAdjustLocationTop:SetPoint ("bottom", UIParent, "bottom", 0, percentValue * value)
+					
+					if (Plater.PersonalAdjustLocationTop.Timer) then
+						Plater.PersonalAdjustLocationTop.Timer:Cancel()
+					end
+					Plater.PersonalAdjustLocationTop.Timer = C_Timer.NewTimer (10, Plater.PersonalAdjustLocationTop.CancelFunction)
+					
+					Plater.UpdateAllPlates()
+					Plater.UpdateSelfPlate()
+				end,
+				min = 2,
+				max = 51,
+				step = 1,
+				nocombat = true,
+				name = "Top Constrain" .. CVarIcon,
+				desc = "Adjust the top constrain position where the personal bar cannot pass.\n\n|cFFFFFFFFDefault: 50|r" .. CVarDesc,
+			},
+			
+			{
+				type = "range",
+				get = function() return tonumber (GetCVar ("nameplateSelfBottomInset")*100) end,
+				set = function (self, fixedparam, value) 
+					--Plater.db.profile.plate_config.player.y_position_offset = value
+
+					if (InCombatLockdown()) then
+						Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+						self:SetValue (tonumber (GetCVar ("nameplateSelfBottomInset")*100))
+						return
+					end
+
+					SetCVar ("nameplateSelfBottomInset", value / 100)
+					--SetCVar ("nameplateSelfTopInset", value / 100)
+					
+					if (not Plater.PersonalAdjustLocationBottom) then
+						Plater.PersonalAdjustLocationBottom = CreateFrame ("frame", "PlaterPersonalBarLocation", UIParent)
+						local frame = Plater.PersonalAdjustLocationBottom
+						frame:SetWidth (GetScreenWidth())
+						frame:SetHeight (20)
+						frame.Texture = frame:CreateTexture (nil, "background")
+						frame.Texture:SetTexture ([[Interface\AddOns\Plater\images\bar4_vidro]], true)
+						frame.Texture:SetAllPoints()
+						frame.Shadow = frame:CreateTexture (nil, "border")
+						frame.Shadow:SetTexture ([[Interface\ACHIEVEMENTFRAME\UI-Achievement-RecentHeader]], true)
+						frame.Shadow:SetPoint ("center")
+						frame.Shadow:SetSize (256, 18)
+						frame.Shadow:SetTexCoord (0, 1, 0, 22/32)
+						frame.Shadow:SetVertexColor (0, 0, 0, 1)
+						frame.Text = frame:CreateFontString (nil, "artwork", "GameFontNormal")
+						frame.Text:SetText ("Plater: Bottom Constraint")
+						frame.Text:SetPoint ("center")
+						
+						frame.HideAnimation = DF:CreateAnimationHub (frame, nil, function() frame:Hide() end)
+						DF:CreateAnimation (frame.HideAnimation, "Alpha", 1, 1, 1, 0)
+						
+						frame.CancelFunction = function()
+							frame.HideAnimation:Play()
+						end
+					end
+					
+					if (Plater.PersonalAdjustLocationBottom.HideAnimation:IsPlaying()) then
+						Plater.PersonalAdjustLocationBottom.HideAnimation:Stop()
+						Plater.PersonalAdjustLocationBottom:SetAlpha (1)
+					end
+					Plater.PersonalAdjustLocationBottom:Show()
+					
+					local percentValue = GetScreenHeight()/100
+					Plater.PersonalAdjustLocationBottom:SetPoint ("bottom", UIParent, "bottom", 0, percentValue * value)
+					
+					if (Plater.PersonalAdjustLocationBottom.Timer) then
+						Plater.PersonalAdjustLocationBottom.Timer:Cancel()
+					end
+					Plater.PersonalAdjustLocationBottom.Timer = C_Timer.NewTimer (10, Plater.PersonalAdjustLocationBottom.CancelFunction)
+					
+					Plater.UpdateAllPlates()
+					Plater.UpdateSelfPlate()
+				end,
+				min = 2,
+				max = 51,
+				step = 1,
+				nocombat = true,
+				name = "Bottom Constrain" .. CVarIcon,
+				desc = "Adjust the bottom constrain position where the personal bar cannot pass.\n\n|cFFFFFFFFDefault: 20|r" .. CVarDesc,
+			},
+			--]= --end of top and bottom constrain		
 		
 		{type = "blank"},
 		{type = "label", get = function() return "Animation Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},

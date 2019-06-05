@@ -2494,9 +2494,10 @@ Plater.DefaultSpellRangeList = {
 		-- ~added
 		NAME_PLATE_UNIT_ADDED = function (event, unitBarId)
 		
-			if (select (2, UnitClass (unitBarId)) == "HUNTER") then
-				print ("nameplate added", UnitName (unitBarId))
-			end
+			--debug for hunter faith death
+--			if (select (2, UnitClass (unitBarId)) == "HUNTER") then
+--				print ("nameplate added", UnitName (unitBarId))
+--			end
 		
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId)
 			if (not plateFrame) then
@@ -2792,9 +2793,10 @@ Plater.DefaultSpellRangeList = {
 		NAME_PLATE_UNIT_REMOVED = function (event, unitBarId)
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId)
 			
-			if (select (2, UnitClass (unitBarId)) == "HUNTER") then
-				print ("nameplate removed", UnitName (unitBarId))
-			end
+			--debug for hunter faith death
+			--if (select (2, UnitClass (unitBarId)) == "HUNTER") then
+			--	print ("nameplate removed", UnitName (unitBarId))
+			--end
 			
 			--hooks
 			if (HOOK_NAMEPLATE_REMOVED.ScriptAmount > 0) then
