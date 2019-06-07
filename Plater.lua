@@ -4384,9 +4384,9 @@ end
 			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.enrage))
 			
 		else	
-			auraIconFrame:SetBackdropBorderColor (0, 0, 0, 0)
-			-- could use Blizzards color global 'DebuffTypeColor' for the actual color, e.g.:
-			-- auraIconFrame:SetBackdropBorderColor (unpack(DebuffTypeColor[actualAuraType or "none"]))
+			-- use Blizzards color global 'DebuffTypeColor' for the actual color:
+			local color = DebuffTypeColor[actualAuraType or "none"] or {r=0,b=0,g=0, a=0}
+			auraIconFrame:SetBackdropBorderColor (color.r, color.g, color.b, color.a or 1)
 		end
 		
 		CooldownFrame_Set (auraIconFrame.Cooldown, expirationTime - duration, duration, duration > 0, true)
@@ -4511,6 +4511,11 @@ end
 		if (canStealOrPurge) then
 			borderColor = Plater.db.profile.extra_icon_show_purge_border
 			
+		elseif (Plater.db.profile.extra_icon_use_blizzard_border_color)
+			-- use blizzard border colors
+			local color = DebuffTypeColor[actualAuraType or "none"] or {r=0,b=0,g=0, a=0}
+			borderColor = {color.r, color.g, color.b, color.a or 1}
+			
 		elseif (CROWDCONTROL_AURA_NAMES [spellName]) then
 			borderColor = Plater.db.profile.debuff_show_cc_border
 		
@@ -4520,6 +4525,7 @@ end
 		
 		else
 			borderColor = Plater.db.profile.extra_icon_border_color
+			
 		end
 		
 		--spellId, borderColor, startTime, duration, forceTexture, descText

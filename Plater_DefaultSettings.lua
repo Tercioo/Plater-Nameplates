@@ -632,6 +632,7 @@ PLATER_DEFAULT_SETTINGS = {
 		extra_icon_width = 30,
 		extra_icon_height = 18,
 		extra_icon_wide_icon = true,
+		extra_icon_use_blizzard_border_color = true,
 		extra_icon_caster_name = true,
 		extra_icon_backdrop_color = {0, 0, 0, 0.612853},
 		extra_icon_border_color = {0, 0, 0, 1},
