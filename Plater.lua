@@ -7981,24 +7981,18 @@ end
 			if (Plater.QuestCache [text]) then
 				--unit belongs to a quest
 				isQuestUnit = true
-				local amount1, amount2 = 0, 0
-				if (not IsInGroup() and i < 8) then
+				local amount1, amount2 = nil, nil
+				if (i < 8) then
 					--check if the unit objective isn't already done
 					local nextLineText = ScanQuestTextCache [i+1]:GetText()
 					if (nextLineText) then
-						local p1, p2 = nextLineText:match ("(%d%d)/(%d%d)") --^ - 
+						local p1, p2 = nextLineText:match ("(%d+)/(%d+)") 
 						if (not p1) then
-							p1, p2 = nextLineText:match ("(%d)/(%d%d)")
-							if (not p1) then
-								p1, p2 = nextLineText:match ("(%d)/(%d)")
-								if (not p1) then
-									-- check for % based quests
-									p1 = nextLineText:match ("(%d%d%%)") or nextLineText:match ("(%d%%)")
-									if p1 then
-										-- remove the % sign for consistency
-										p1 = string.gsub(p1,"%%", '')
-									end
-								end
+							-- check for % based quests
+							p1 = nextLineText:match ("(%d+%%)")
+							if p1 then
+								-- remove the % sign for consistency
+								p1 = string.gsub(p1,"%%", '')
 							end
 						end
 						if (p1 and p2 and p1 == p2) then
