@@ -4368,13 +4368,15 @@ end
 			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.steal_or_purge))
 			auraIconFrame.CanStealOrPurge = true
 		
+		elseif (Plater.db.profile.aura_border_colors_by_type) then
+			-- use Blizzards color global 'DebuffTypeColor' for the actual color:
+			local color = DebuffTypeColor[actualAuraType or "none"] or {r=0,b=0,g=0, a=0}
+			auraIconFrame:SetBackdropBorderColor (color.r, color.g, color.b, color.a or 1)
+		
 		elseif (isBuff) then
 			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.is_buff))
 			auraIconFrame.IsShowingBuff = true
 		
-		elseif (isShowAll) then
-			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.is_show_all))
-			
 		elseif (isDebuff) then
 			--> for debuffs on the player for the personal bar
 			auraIconFrame:SetBackdropBorderColor (1, 0, 0, 1)
@@ -4382,11 +4384,13 @@ end
 		elseif (actualAuraType == AURA_TYPE_ENRAGE) then 
 			--> enrage effects
 			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.enrage))
+		
+		elseif (isShowAll) then
+			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.is_show_all))
+				
+		else
+			auraIconFrame:SetBackdropBorderColor (0, 0, 0, 0)
 			
-		else	
-			-- use Blizzards color global 'DebuffTypeColor' for the actual color:
-			local color = DebuffTypeColor[actualAuraType or "none"] or {r=0,b=0,g=0, a=0}
-			auraIconFrame:SetBackdropBorderColor (color.r, color.g, color.b, color.a or 1)
 		end
 		
 		CooldownFrame_Set (auraIconFrame.Cooldown, expirationTime - duration, duration, duration > 0, true)
@@ -4511,7 +4515,7 @@ end
 		if (canStealOrPurge) then
 			borderColor = Plater.db.profile.extra_icon_show_purge_border
 			
-		elseif (Plater.db.profile.extra_icon_use_blizzard_border_color)
+		elseif (Plater.db.profile.extra_icon_use_blizzard_border_color) then
 			-- use blizzard border colors
 			local color = DebuffTypeColor[actualAuraType or "none"] or {r=0,b=0,g=0, a=0}
 			borderColor = {color.r, color.g, color.b, color.a or 1}

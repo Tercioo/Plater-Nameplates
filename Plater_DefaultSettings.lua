@@ -657,6 +657,7 @@ PLATER_DEFAULT_SETTINGS = {
 		aura_show_enrage = false,
 		aura_show_aura_by_the_player = true,
 		aura_show_buff_by_the_unit = true,
+		aura_border_colors_by_type = false,
 		
 		aura_border_colors = {
 			steal_or_purge = {0, .5, .98, 1},
