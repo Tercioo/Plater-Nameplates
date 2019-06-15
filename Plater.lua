@@ -5542,14 +5542,18 @@ end
 		if (Plater.PlayerIsTank) then
 			--and isn't tanking the unit
 			if (not isTanking) then
+				--is the player in combat?
 				if (self.InCombat) then
+					--is the player in a raid group?
 					if (IsInRaid()) then
 						--check if another tank is effectively tanking
-						--as the other tankmay not be targeted due to spell-casts, we need to check the threat situation for tanks
+						--as the other tank may not be targeted due to spell-casts, we need to check the threat situation for tanks
 						local unitOffTank = nil
+						local otherIsTanking, otherThreatStatus, otherThreatpct
+						--loop on all tanks in the group (tank_cache is updated on entering combat or when group roster is updated) 
 						for tank, _ in pairs(TANK_CACHE) do
 							if not UnitIsUnit("player", tank) then
-								local otherIsTanking, otherThreatStatus, otherThreatpct = UnitDetailedThreatSituation (tank, self.displayedUnit)
+								otherIsTanking, otherThreatStatus, otherThreatpct = UnitDetailedThreatSituation (tank, self.displayedUnit)
 								if otherIsTanking then
 									unitOffTank = tank
 									break
@@ -5557,9 +5561,20 @@ end
 							end
 						end
 
+						--another tank is tanking the unit
 						if (unitOffTank) then
-							--another tank is tanking the unit
-							set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.anothertank))
+							--as the unit is being tanked by the off-tank, check if the player it self which is the other tank is about to accidently pull aggro just by hitting the mob
+							if (threatpct and otherThreatpct) then
+								--threatpct = player threat on the mob
+								--otherThreatpct = the aggro on the tank tanking the unit
+								if ((threatpct + 10) - otherThreatpct > 0) then
+									set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.pulling_from_tank))
+								else
+									set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.anothertank))
+								end
+							else
+								set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.anothertank))
+							end
 						else
 							--no tank is tanking this unit
 							set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.noaggro))

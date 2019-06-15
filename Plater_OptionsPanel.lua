@@ -10198,7 +10198,21 @@ local relevance_options = {
 			name = L["OPTIONS_THREAT_AGGROSTATE_NOTINCOMBAT"],
 			desc = L["OPTIONS_THREAT_COLOR_TANK_NOTINCOMBAT_DESC"],
 		},
-			
+		
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.tank.colors.pulling_from_tank
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.tank.colors.pulling_from_tank
+				color[1], color[2], color[3], color[4] = r, g, b, a
+			end,
+			name = "Pulling From Another Tank",
+			desc = "The unit has aggro on another tank and you're about to pull it.",
+		},
+		
 		{type = "blank"},
 		{type = "label", get = function() return L["OPTIONS_THREAT_COLOR_DPS_ANCHOR_TITLE"] .. ":" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 

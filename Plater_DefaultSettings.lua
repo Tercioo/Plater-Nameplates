@@ -2389,6 +2389,7 @@ PLATER_DEFAULT_SETTINGS = {
 				pulling = {1, 1, 0},
 				nocombat = {0.505, 0.003, 0},
 				anothertank = {0.729, 0.917, 1},
+				pulling_from_tank = {1, .7, 0}, --color when a tank is pulling the aggro from another tank
 			},
 		},
 		
