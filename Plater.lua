@@ -7974,9 +7974,9 @@ end
 
 	local GameTooltipScanQuest = CreateFrame ("GameTooltip", "PlaterScanQuestTooltip", nil, "GameTooltipTemplate")
 	local ScanQuestTextCache = {}
-	for i = 1, 8 do
-		ScanQuestTextCache [i] = _G ["PlaterScanQuestTooltipTextLeft" .. i]
-	end
+	--for i = 1, 8 do
+	--	ScanQuestTextCache [i] = _G ["PlaterScanQuestTooltipTextLeft" .. i]
+	--end
 
 	function Plater.IsQuestObjective (plateFrame)
 		if (not plateFrame [MEMBER_GUID]) then --platerFrame.actorType == "friendlynpc"
@@ -7992,8 +7992,13 @@ end
 		GameTooltipScanQuest:SetOwner (WorldFrame, "ANCHOR_NONE")
 		GameTooltipScanQuest:SetHyperlink ("unit:" .. plateFrame [MEMBER_GUID])
 
+		--8.2 tooltip changes fix by GentMerc#9560 on Discord
+		for i = 1, GameTooltipScanQuest:NumLines() do
+			ScanQuestTextCache [i] = _G ["PlaterScanQuestTooltipTextLeft" .. i]
+		end
+		
 		local isQuestUnit = false
-		for i = 1, 8 do
+		for i = 1, #ScanQuestTextCache do
 			local text = ScanQuestTextCache [i]:GetText()
 			if (Plater.QuestCache [text]) then
 				--unit belongs to a quest
