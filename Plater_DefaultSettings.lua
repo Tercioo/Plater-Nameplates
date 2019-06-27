@@ -632,6 +632,7 @@ PLATER_DEFAULT_SETTINGS = {
 		extra_icon_width = 30,
 		extra_icon_height = 18,
 		extra_icon_wide_icon = true,
+		extra_icon_use_blizzard_border_color = true,
 		extra_icon_caster_name = true,
 		extra_icon_backdrop_color = {0, 0, 0, 0.612853},
 		extra_icon_border_color = {0, 0, 0, 1},
@@ -656,6 +657,7 @@ PLATER_DEFAULT_SETTINGS = {
 		aura_show_enrage = false,
 		aura_show_aura_by_the_player = true,
 		aura_show_buff_by_the_unit = true,
+		aura_border_colors_by_type = false,
 		
 		aura_border_colors = {
 			steal_or_purge = {0, .5, .98, 1},

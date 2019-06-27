@@ -1582,6 +1582,20 @@ local debuff_options = {
 	},	
 	
 	{type = "blank"},
+
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_border_colors_by_type end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_border_colors_by_type = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Use type based aura border colors",
+		desc = "Use the Blizzard debuff type colors for borders",
+	},
+	
+	{type = "blank"},
 	{type = "label", get = function() return "Swipe Animation:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	{
 		type = "select",
@@ -1624,6 +1638,7 @@ auraOptionsFrame.AuraTesting = {
 			Count = 1,
 			Duration = 7,
 			SpellID = 589,
+			Type = "Magic",
 		},
 		{
 			SpellName = "Vampiric Touch",
@@ -1631,6 +1646,7 @@ auraOptionsFrame.AuraTesting = {
 			Count = 1,
 			Duration = 5,
 			SpellID = 34914,
+			Type = "Magic",
 		},
 		{
 			SpellName = "Mind Flay",
@@ -1638,6 +1654,7 @@ auraOptionsFrame.AuraTesting = {
 			Count = 3,
 			Duration = 5,
 			SpellID = 15407,
+			Type = "Magic",
 		},
 		{
 			SpellName = "Enrage",
@@ -3577,6 +3594,17 @@ Plater.CreateAuraTesting()
 				end,
 				name = "Wide Icons",
 				desc = "Wide Icons",
+			},
+			--use blizzard border colors
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.extra_icon_use_blizzard_border_color end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.extra_icon_use_blizzard_border_color = value
+					Plater.UpdateAllPlates()
+				end,
+				name = "Use Blizzard border colors",
+				desc = "Use Blizzard border colors if enabled or the below defined default border color if disabled.",
 			},
 			--border color
 			{
