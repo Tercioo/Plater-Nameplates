@@ -5229,7 +5229,11 @@ DF:BuildMenu (targetFrame, targetOptions, startX, startY, heightSize, true, opti
 --OP��ES NO PAINEL PRINCIPAL
 
 function Plater.ChangeNpcRelavance (_, _, value)
-	if (value == 3) then
+	if (value == 2) then
+		Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].only_names = false
+		Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].all_names = false
+		
+	elseif (value == 3) then
 		Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].only_names = true
 		Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].all_names = false
 		
@@ -5243,6 +5247,7 @@ function Plater.ChangeNpcRelavance (_, _, value)
 	Plater.UpdateAllPlates()
 end
 local relevance_options = {
+	{label = "All with Healthbars", value = 2, onclick = Plater.ChangeNpcRelavance},
 	{label = "All Professions", value = 3, onclick = Plater.ChangeNpcRelavance},
 	{label = "All Npcs", value = 4, onclick = Plater.ChangeNpcRelavance},
 }
