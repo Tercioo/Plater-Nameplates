@@ -8008,11 +8008,13 @@ end
 		end
 		
 		local isQuestUnit = false
+		local atLeastOneQuestUnfinished = false
 		for i = 1, #ScanQuestTextCache do
 			local text = ScanQuestTextCache [i]:GetText()
 			if (Plater.QuestCache [text]) then
 				--unit belongs to a quest
 				isQuestUnit = true
+				local questFinished = false
 				local amount1, amount2 = nil, nil
 				if (i < 8) then
 					--check if the unit objective isn't already done
@@ -8027,28 +8029,28 @@ end
 								p1 = string.gsub(p1,"%%", '')
 							end
 						end
-						if (p1 and p2 and p1 == p2) then
-							return
+						if (p1 and p2 and p1 == p2) or (not p2 and p1 == "100") then
+							questFinished = true
+						else
+							atLeastOneQuestUnfinished = true
 						end
 						
 						amount1, amount2 = p1, p2
 					end
 				end
 
-				if (amount1) then
+				if (amount1 and not questFinished) then
 					plateFrame.QuestAmountCurrent = amount1
 					plateFrame.QuestAmountTotal = amount2
 					
 					--expose to scripts
 					plateFrame.unitFrame.QuestAmountCurrent = amount1
 					plateFrame.unitFrame.QuestAmountTotal = amount2
-					
-					break
 				end
 			end
 		end
 		
-		if isQuestUnit then
+		if isQuestUnit and atLeastOneQuestUnfinished then
 			plateFrame [MEMBER_QUEST] = true
 			plateFrame.unitFrame [MEMBER_QUEST] = true
 			return true
