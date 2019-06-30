@@ -1071,6 +1071,16 @@ Plater.DefaultSpellRangeList = {
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> general unit functions
 
+	--> return a table with points on where the unitFrame is attached
+	--these points are hardcoded in the UpdatePlateSize() function
+	function Plater.GetPoints (unitFrame)
+		local points = {
+			{"topleft", unitFrame.PlateFrame, "topleft", 0, 0},
+			{"bottomright", unitFrame.PlateFrame, "bottomright", 0, 0},
+		}
+		return points
+	end
+
 	--> return an iterator with all namepaltes on the screen
 	function Plater.GetAllShownPlates() --private
 		return C_NamePlate.GetNamePlates()
@@ -2064,7 +2074,7 @@ Plater.DefaultSpellRangeList = {
 				if (DB_USE_UIPARENT) then
 					--when using UIParent as the unit frame parent, adjust the unitFrame scale to be equal to blizzard plateFrame
 					newUnitFrame = DF:CreateUnitFrame (UIParent, plateFrame:GetName() .. "PlaterUnitFrame", unitFrameOptions, healthBarOptions, castBarOptions, powerBarOptions)
-					newUnitFrame:SetAllPoints (parent)
+					newUnitFrame:SetAllPoints()
 					newUnitFrame:SetFrameStrata ("BACKGROUND")
 
 					plateFrame:HookScript("OnSizeChanged", Plater.UpdateUIParentScale)
@@ -5132,7 +5142,7 @@ end
 			--unit frame - is set to be the same size as the plateFrame
 				unitFrame:ClearAllPoints()
 				unitFrame:SetPoint ("topleft", unitFrame.PlateFrame, "topleft", 0, 0)
-				unitFrame:SetPoint ("bottomright", unitFrame.PlateFrame, "bottomright", 0, 0) 
+				unitFrame:SetPoint ("bottomright", unitFrame.PlateFrame, "bottomright", 0, 0)
 				
 			--health bar
 				-- ensure that we are using the configured size, as it will be automatically scaled
@@ -5145,7 +5155,10 @@ end
 		else
 			--unit frame - is set to be the same size as the plateFrame
 				unitFrame:ClearAllPoints()
-				unitFrame:SetAllPoints()
+				--unitFrame:SetAllPoints()
+				--using the same setpoint pattern on both nameplate parent types to make easy the frameshake to handle the points
+				unitFrame:SetPoint ("topleft", unitFrame.PlateFrame, "topleft", 0, 0)
+				unitFrame:SetPoint ("bottomright", unitFrame.PlateFrame, "bottomright", 0, 0)
 			
 			--health bar
 				--this calculates the health bar anchor points
@@ -7537,13 +7550,16 @@ end
 					local shakeTargetFrame = plateFrame.unitFrame
 					
 					if (not frameShake) then
-						local points = {}
 			
-						for i = 1, shakeTargetFrame:GetNumPoints() do
+						--[=[ 8.2 GetPoint isn't more possible in nameplate childs
+						for i = 1, shakeTargetFrame:GetNumPoints() do --shakeTargetFrame = unitFrame from Plater
 							local p1, p2, p3, p4, p5 = shakeTargetFrame:GetPoint (i)
 							points [#points+1] = {p1, p2, p3, p4, p5}
 						end
-					
+						--]=]
+						
+						local points = Plater.GetPoints (plateFrame.unitFrame)
+						
 						frameShake = DF:CreateFrameShake (shakeTargetFrame, animationTable.duration, animationTable.amplitude, animationTable.frequency, animationTable.absolute_sineX, animationTable.absolute_sineY, animationTable.scaleX, animationTable.scaleY, animationTable.fade_in, animationTable.fade_out, points)
 						plateFrame.SpellAnimations ["frameshake" .. spellName] = frameShake
 					end
@@ -7741,7 +7757,9 @@ end
 					if (plateFrame [MEMBER_GUID] == targetGUID) then
 						--disabled for patch 8.2
 						--need a workaround for GetPoints() not being available on this patch
-						--Plater.DoNameplateAnimation (plateFrame, SPELL_WITH_ANIMATIONS [spellName], spellName, isCritical)
+						
+						--testing new fix
+						Plater.DoNameplateAnimation (plateFrame, SPELL_WITH_ANIMATIONS [spellName], spellName, isCritical)
 					end
 				end
 			end
