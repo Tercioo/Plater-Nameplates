@@ -2193,7 +2193,7 @@ Plater.DefaultSpellRangeList = {
 				plateFrame.playerHasAggro = false
 			
 			--> target indicators
-				--left and right indicators
+				--left and right target indicators
 				plateFrame.unitFrame.TargetTextures2Sides = {}
 				plateFrame.unitFrame.TargetTextures4Sides = {}
 				for i = 1, 2 do
@@ -2207,7 +2207,7 @@ Plater.DefaultSpellRangeList = {
 					tinsert (plateFrame.unitFrame.TargetTextures4Sides, targetTexture)
 				end
 				
-				--two extra target glow placed outside the healthbar
+				--two extra target glow placed outside the healthbar, one above and another below the health bar
 				local TargetNeonUp = plateFrame.unitFrame:CreateTexture (nil, "overlay")
 				TargetNeonUp:SetDrawLayer ("overlay", 7)
 				TargetNeonUp:SetBlendMode ("ADD")
@@ -2223,7 +2223,7 @@ Plater.DefaultSpellRangeList = {
 				plateFrame.TargetNeonDown = TargetNeonDown
 				plateFrame.unitFrame.TargetNeonDown = TargetNeonDown
 				
-			--> target overlay
+			--> target overlay (the texture added above the nameplate when the unit is selected)
 				plateFrame.unitFrame.targetOverlayTexture = healthBar:CreateTexture (nil, "artwork")
 				plateFrame.unitFrame.targetOverlayTexture:SetDrawLayer ("artwork", 2)
 				plateFrame.unitFrame.targetOverlayTexture:SetBlendMode ("ADD")
@@ -7330,15 +7330,18 @@ end
 			self.HighlightTexture:Hide()
 		end
 	end
-
+	
+	--create a new frame for the highlight (when the mouse passes over the nameplate)
 	function Plater.CreateHighlightNameplate (plateFrame) --private
-		local highlightOverlay = CreateFrame ("frame", "$parentHighlightOverlay", UIParent)
+	
+		local highlightOverlay = CreateFrame ("frame", "$parentHighlightOverlay", plateFrame.unitFrame.healthBar) --why this was parented to UIParent (question mark)
 		highlightOverlay:EnableMouse (false)
-		highlightOverlay:SetFrameStrata ("TOOLTIP")
-		highlightOverlay:SetAllPoints (plateFrame.unitFrame.healthBar)
+		highlightOverlay:SetAllPoints()
 		highlightOverlay:SetScript ("OnUpdate", Plater.CheckHighlight)
 		
-		highlightOverlay.HighlightTexture = highlightOverlay:CreateTexture (nil, "overlay")
+		--highlightOverlay:SetFrameStrata ("TOOLTIP") --it'll use the same strata as the health bar now
+
+		highlightOverlay.HighlightTexture = plateFrame.unitFrame.healthBar:CreateTexture (nil, "artwork")
 		highlightOverlay.HighlightTexture:SetAllPoints()
 		highlightOverlay.HighlightTexture:SetColorTexture (1, 1, 1, 1)
 		highlightOverlay.HighlightTexture:SetAlpha (1)
