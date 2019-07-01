@@ -2154,7 +2154,7 @@ Plater.DefaultSpellRangeList = {
 			--> identify aura containers
 				plateFrame.unitFrame.BuffFrame.Name = "Main" --aura frame 1
 				plateFrame.unitFrame.BuffFrame2.Name = "Secondary" --aura frame 2
-				
+			
 			--> store the secondary anchor inside the regular buff container for speed
 			plateFrame.unitFrame.BuffFrame.BuffFrame2 = plateFrame.unitFrame.BuffFrame2
 			plateFrame.unitFrame.BuffFrame2.BuffFrame1 = plateFrame.unitFrame.BuffFrame
@@ -3998,6 +3998,7 @@ end
 	--self is the buff container
 	--~align
 	function Plater.AlignAuraFrames (self)
+
 		if (self.isNameplate) then
 		
 			if (Plater.db.profile.aura_consolidate) then
@@ -4019,8 +4020,15 @@ end
 			
 			--get the amount of auras shown in the frame, this variable should be always reliable
 			local amountFramesShown = self.amountAurasShown
-
+			
 			if (growDirection ~= 2) then --it's growing to left or right
+			
+				self:SetSize (1, 1)
+				
+				--debug where the buffFrame anchors are
+				--self:SetSize (5, 5)
+				--self:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
+				--self:SetBackdropBorderColor (1, 0, 0, 1)
 			
 				local framersPerRow = Plater.MaxAurasPerRow + 1
 				local firstIcon = iconFrameContainer[1]
@@ -4029,8 +4037,6 @@ end
 				if (not firstIcon or not firstIcon:IsShown()) then
 					return
 				end
-				
-				self:SetSize (1, 1)
 
 				--set the point of the first icon
 				firstIcon:ClearAllPoints()
@@ -4303,6 +4309,7 @@ end
 	
 	--update the aura icon, this icon is getted with GetAuraIcon -
 	--actualAuraType is the UnitAura return value for the auraType ("" is enrage, nil/"none" for unspecified and "Disease", "Poison", "Curse", "Magic" for other types. -Continuity/Ariani
+	            
 	function Plater.AddAura (self, auraIconFrame, i, spellName, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, isBuff, isShowAll, isDebuff, isPersonal, actualAuraType)
 		auraIconFrame:SetID (i)
 
@@ -4311,7 +4318,7 @@ end
 			if (not isBuff and not auraIconFrame:IsShown() or auraIconFrame.IsShowingBuff) then
 				auraIconFrame.ShowAnimation:Play()
 			end
-
+			
 			--> update the texture
 			auraIconFrame.Icon:SetTexture (texture)
 			
@@ -4513,7 +4520,9 @@ end
 		--auraIconFrame.Cooldown:SetBackdrop (nil)
 		--print (auraIconFrame.Border:GetObjectType())
 		--print (auraIconFrame.Icon:GetAlpha())
-
+		
+		--print (self:GetName(), self:GetSize(), self:IsShown())
+		
 		return true
 	end
 
@@ -5192,9 +5201,9 @@ end
 			end
 			
 		--aura frame
-			buffFrame1:ClearAllPoints()
 			--DB_AURA_Y_OFFSET = profile.aura_y_offset is from the buff Settings tab
 			--plateConfigs.buff_frame_y_offset is the offset from the actor type, e.g. enemy npc
+			buffFrame1:ClearAllPoints()
 			PixelUtil.SetPoint (buffFrame1, "bottom", unitFrame, "top", DB_AURA_X_OFFSET,  plateConfigs.buff_frame_y_offset + DB_AURA_Y_OFFSET)
 			
 			buffFrame2:ClearAllPoints()
@@ -8177,7 +8186,7 @@ end
 							
 							Plater.UpdateIconAspecRatio (auraIconFrame)
 						end
-			
+						
 						--hide icons on the second buff frame
 						for i = 1, #buffFrame2.PlaterBuffList do
 							local icon = buffFrame2.PlaterBuffList [i]
@@ -8187,8 +8196,9 @@ end
 							end
 						end
 					end
-				
+					
 					if (DB_AURA_SEPARATE_BUFFS) then
+
 						for index, auraTable in ipairs (auraOptionsFrame.AuraTesting.DEBUFF) do
 							local auraIconFrame = Plater.GetAuraIcon (buffFrame)
 							if (not auraTable.ApplyTime or auraTable.ApplyTime+auraTable.Duration < GetTime()) then
@@ -8201,7 +8211,7 @@ end
 								Plater.AddAura (buffFrame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, false, false, true, true, auraTable.Type)
 							end
 						end
-					
+						
 						for index, auraTable in ipairs (auraOptionsFrame.AuraTesting.BUFF) do
 							local auraIconFrame, frame = Plater.GetAuraIcon (buffFrame, true)
 							if (not auraTable.ApplyTime or auraTable.ApplyTime+auraTable.Duration < GetTime()) then
@@ -8211,13 +8221,18 @@ end
 							if (not UnitIsUnit (plateFrame [MEMBER_UNITID], "player")) then
 								Plater.AddAura (frame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "BUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, true, nil, nil, nil, auraTable.Type)
 							else
-								Plater.AddAura (frame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "BUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, false, false, false, true, auraTable.Type)
+								Plater.AddAura (frame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "BUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, true, false, false, false, auraTable.Type)
+								--Plater.AddAura (frame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "BUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, false, false, false, true, auraTable.Type)
 							end
 						end
 					end
 					
 					Plater.HideNonUsedAuraIcons (buffFrame)
 					Plater.AlignAuraFrames (buffFrame)
+					
+					if (DB_AURA_SEPARATE_BUFFS) then
+						Plater.AlignAuraFrames (buffFrame.BuffFrame2)
+					end
 				
 				end
 				
