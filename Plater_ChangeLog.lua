@@ -8,8 +8,11 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
-			{1561928271,  "Bug Fix", "June 30, 2019", "Fixed spell animations."},
-			{1561928271,  "Bug Fix", "June 30, 2019", "Fixed script errors which was spamming in the chat."},
+			{1562097297,  "Bug Fix", "July 2nd, 2019", "Fixed spell animations."},
+			{1562097297,  "Bug Fix", "July 2nd, 2019", "Fixed script errors which was spamming in the chat."},
+			{1562097297,  "Bug Fix", "July 2nd, 2019", "Fixed buffs sometimes not showing in the aura frame 2."},
+			{1562097297,  "Bug Fix", "July 2nd, 2019", "Fixed more bugs with quest mobs detection."},
+			{1562097297,  "Bug Fix", "July 2nd, 2019", "Unit Highlight is now placed below the unit name and unit health."},
 			
 			{1557674970,  "New Feature", "May 12, 2019", "Added an option to stack auras with the same name."},
 			{1557674970,  "New Feature", "May 12, 2019", "Added an option to change the space between each aura icon."},
