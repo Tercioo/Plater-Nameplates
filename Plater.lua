@@ -6582,6 +6582,13 @@ end
 		
 		--if the nameplate is for a friendly npc
 		if (actorType == ACTORTYPE_FRIENDLY_NPC) then
+			local subTitleExists = false
+			local subTitle = Plater.GetActorSubName (plateFrame)
+			if (subTitle and subTitle ~= "" and not Plater.IsNpcInIgnoreList (plateFrame, true)) then
+				if (not subTitle:match ("%d")) then --isn't level
+					subTitleExists = true
+				end
+			end
 		
 			if (IS_IN_OPEN_WORLD and DB_PLATE_CONFIG [actorType].quest_enabled and Plater.IsQuestObjective (plateFrame)) then
 				Plater.ChangeHealthBarColor_Internal (healthBar, unpack (DB_PLATE_CONFIG [actorType].quest_color))
@@ -6597,7 +6604,7 @@ end
 				unitFrame [MEMBER_QUEST] = true
 			
 			--this line is always returning true, making friendly nameplates always be name only
-			elseif (not Plater.PlayerPetCache [unitFrame [MEMBER_GUID]] and (DB_PLATE_CONFIG [actorType].only_names or DB_PLATE_CONFIG [actorType].all_names)) then
+			elseif (not Plater.PlayerPetCache [unitFrame [MEMBER_GUID]] and DB_PLATE_CONFIG [actorType].only_names) then
 				--show only the npc name without the health bar
 
 				healthBar:Hide()
@@ -6605,6 +6612,13 @@ end
 				nameFrame:Hide()
 				plateFrame.IsNpcWithoutHealthBar = true
 				
+			elseif (not Plater.PlayerPetCache [unitFrame [MEMBER_GUID]] and not subTitleExists and not DB_PLATE_CONFIG [actorType].all_names) then
+				-- show only if a title is present
+				healthBar:Hide()
+				buffFrame:Hide()
+				nameFrame:Hide()
+				plateFrame.IsNpcWithoutHealthBar = true
+			
 			else
 				healthBar:Show()
 				buffFrame:Show()
