@@ -2776,7 +2776,7 @@ Plater.DefaultSpellRangeList = {
 			Plater.NameplateTick (plateFrame.OnTickFrame, 10)
 
 			--highlight check
-			if (DB_HOVER_HIGHLIGHT and not plateFrame.PlayerCannotAttack and (actorType ~= ACTORTYPE_FRIENDLY_PLAYER and actorType ~= ACTORTYPE_FRIENDLY_NPC and not plateFrame.isSelf)) then
+			if (DB_HOVER_HIGHLIGHT and not plateFrame.PlayerCannotAttack and (actorType ~= ACTORTYPE_FRIENDLY_PLAYER and actorType ~= ACTORTYPE_FRIENDLY_NPC and actorType ~= ACTORTYPE_PLAYER)) then
 				Plater.EnableHighlight (unitFrame)
 			else
 				Plater.DisableHighlight (unitFrame)
@@ -6560,6 +6560,7 @@ end
 			shouldForceRefresh = true
 			plateFrame.IsNpcWithoutHealthBar = false
 			plateFrame.IsFriendlyPlayerWithoutHealthBar = false
+			
 		end
 
 		healthBar.BorderIsAggroIndicator = nil
@@ -6605,6 +6606,8 @@ end
 		--if the nameplate is for a friendly npc
 		if (actorType == ACTORTYPE_FRIENDLY_NPC) then
 		
+			Plater.ForceFindPetOwner (plateFrame [MEMBER_GUID])
+		
 			if (IS_IN_OPEN_WORLD and DB_PLATE_CONFIG [actorType].quest_enabled and Plater.IsQuestObjective (plateFrame)) then
 				Plater.ChangeHealthBarColor_Internal (healthBar, unpack (DB_PLATE_CONFIG [actorType].quest_color))
 
@@ -6626,6 +6629,7 @@ end
 				buffFrame:Hide()
 				nameFrame:Hide()
 				plateFrame.IsNpcWithoutHealthBar = true
+				--najatar guardian showing the name
 				
 			else
 				healthBar:Show()
@@ -7333,14 +7337,13 @@ end
 	
 	--create a new frame for the highlight (when the mouse passes over the nameplate)
 	function Plater.CreateHighlightNameplate (plateFrame) --private
-	
 		local highlightOverlay = CreateFrame ("frame", "$parentHighlightOverlay", plateFrame.unitFrame.healthBar) --why this was parented to UIParent (question mark)
 		highlightOverlay:EnableMouse (false)
 		highlightOverlay:SetAllPoints()
 		highlightOverlay:SetScript ("OnUpdate", Plater.CheckHighlight)
-		
+		highlightOverlay:Hide()
 		--highlightOverlay:SetFrameStrata ("TOOLTIP") --it'll use the same strata as the health bar now
-
+		
 		highlightOverlay.HighlightTexture = plateFrame.unitFrame.healthBar:CreateTexture (nil, "artwork")
 		highlightOverlay.HighlightTexture:SetAllPoints()
 		highlightOverlay.HighlightTexture:SetColorTexture (1, 1, 1, 1)
@@ -7352,13 +7355,16 @@ end
 	
 	function Plater.EnableHighlight (unitFrame)
 		unitFrame.HighlightFrame:Show()
+		unitFrame.HighlightFrame.HighlightTexture:Show()
+
 		unitFrame.HighlightFrame.unit = unitFrame [MEMBER_UNITID]
 		unitFrame.HighlightFrame:SetScript ("OnUpdate", Plater.CheckHighlight)
 	end
-
+	
 	function Plater.DisableHighlight (unitFrame)
 		unitFrame.HighlightFrame:SetScript ("OnUpdate", nil)
 		unitFrame.HighlightFrame:Hide()
+		unitFrame.HighlightFrame.HighlightTexture:Hide()
 	end
 	
 	function Plater.CreateHealthFlashFrame (plateFrame) --private
@@ -7757,7 +7763,7 @@ end
 	end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
---> combat log reader ~cleu ~combatlog
+--> combat log reader  ~combatlog
 
 
 	local PlaterCLEUParser = CreateFrame ("frame", "PlaterCLEUParserFrame", UIParent)
@@ -7855,6 +7861,45 @@ end
 		end
 	end)
 
+	Plater.NpcBlackList = {} 
+	function Plater.ForceFindPetOwner (serial) --private
+		local tooltipFrame = PlaterPetOwnerFinder or CreateFrame ("GameTooltip", "PlaterPetOwnerFinder", nil, "GameTooltipTemplate")
+		
+		tooltipFrame:SetOwner (WorldFrame, "ANCHOR_NONE")
+		tooltipFrame:SetHyperlink ("unit:" .. serial or "")
+		
+		local isPlayerPet = false
+		
+		local line1 = _G ["PlaterPetOwnerFinderTextLeft2"]
+		local text1 = line1 and line1:GetText()
+		if (text1 and text1 ~= "") then
+			local pName = GetUnitName ("player", true)
+			local playerName = pName:gsub ("%-.*", "") --remove realm name
+			if (text1:find (playerName)) then
+				isPlayerPet = true
+			end
+		end
+		
+		if (not isPlayerPet) then
+			local line2 = _G ["PlaterPetOwnerFinderTextLeft3"]
+			local text2 = line2 and line2:GetText()
+			if (text2 and text2 ~= "") then
+				local pName = GetUnitName ("player", true)
+				local playerName = pName:gsub ("%-.*", "") --remove realm name
+				if (text2:find (playerName)) then
+					isPlayerPet = true
+				end
+			end
+		end
+		
+		if (not isPlayerPet) then
+			Plater.NpcBlackList [serial] = true
+		else
+			PET_CACHE [serial] = time()
+			Plater.PlayerPetCache [serial] = time()
+		end
+	end
+	
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> cvars - ~cvars
 	
@@ -9269,6 +9314,7 @@ end
 		UpdateUIParentLevels = true,
 		UpdateUIParentTargetLevels = true,
 		RefreshTankCache = true,
+		ForceFindPetOwner = true,
 	}
 	
 	local functionFilter = setmetatable ({}, {__index = function (env, key)

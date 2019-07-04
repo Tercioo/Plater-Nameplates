@@ -14,6 +14,8 @@ local _type = type --> lua local
 local _math_floor = math.floor --> lua local
 local loadstring = loadstring --> lua local
 
+local UnitGroupRolesAssigned = DetailsFramework.UnitGroupRolesAssigned
+
 local cleanfunction = function() end
 local APIFrameFunctions
 
@@ -2227,9 +2229,7 @@ function DF:ShowPromptPanel (message, func_true, func_false, no_repeated, width)
 	end
 	
 	assert (type (func_true) == "function" and type (func_false) == "function", "ShowPromptPanel expects two functions.")
-	
-	print ("running", no_repeated, width, "|", DF.promtp_panel:IsShown())
-	
+
 	if (no_repeated) then
 		if (DF.promtp_panel:IsShown()) then
 			return
@@ -4461,7 +4461,7 @@ function DF:CreateKeybindBox (parent, name, data, callback, width, height, line_
 	
 	for index, specId in ipairs (specIds) do
 		local button = new_keybind_frame ["SpecButton" .. index]
-		local spec_id, spec_name, spec_description, spec_icon, spec_background, spec_role, spec_class = GetSpecializationInfoByID (specId)
+		local spec_id, spec_name, spec_description, spec_icon, spec_background, spec_role, spec_class = DetailsFramework.GetSpecializationInfoByID (specId)
 		button.text = spec_name
 		button:SetClickFunction (switch_spec, specId)
 		button:SetIcon (spec_icon)
@@ -4586,9 +4586,9 @@ function DF:CreateKeybindBox (parent, name, data, callback, width, height, line_
 		if (type (dispel) == "table") then
 			local dispelString = "\n"
 			for specID, spellid in pairs (dispel) do
-				local specid, specName = GetSpecializationInfoByID (specID)
+				local specid, specName = DetailsFramework.GetSpecializationInfoByID (specID)
 				local spellName = GetSpellInfo (spellid)
-				dispelString = dispelString .. "|cFFE5E5E5" .. specName .. "|r: |cFFFFFFFF" .. spellName .. "\n"
+				dispelString = dispelString .. "|cFFE5E5E5" .. (specName or "") .. "|r: |cFFFFFFFF" .. spellName .. "\n"
 			end
 			dispel = dispelString
 		else
@@ -4610,9 +4610,9 @@ function DF:CreateKeybindBox (parent, name, data, callback, width, height, line_
 		for specID, t in pairs (new_keybind_frame.Data) do
 			if (specID ~= new_keybind_frame.EditingSpec) then
 				local key = CopyTable (keybind)
-				local specid, specName = GetSpecializationInfoByID (specID)
+				local specid, specName = DetailsFramework.GetSpecializationInfoByID (specID)
 				tinsert (new_keybind_frame.Data [specID], key)
-				DF:Msg ("Keybind copied to " .. specName)
+				DF:Msg ("Keybind copied to " .. (specName or ""))
 			end
 		end
 		DF:QuickDispatch (callback)
@@ -5226,7 +5226,16 @@ DF.HeaderFunctions = {
 			frame:ClearAllPoints()
 			
 			local headerFrame = headerFrames [i]
-			frame:SetPoint (anchor, self, anchor, headerFrame.XPosition, 0)
+			local offset = 0
+			
+			if (headerFrame.columnAlign == "right") then
+				offset = headerFrame:GetWidth()
+				if (frame:GetObjectType() == "FontString") then
+					frame:SetJustifyH ("right")
+				end
+			end
+			
+			frame:SetPoint (headerFrame.columnAlign, self, anchor, headerFrame.XPosition + headerFrame.columnOffset + offset, 0)
 		end
 	end,
 }
@@ -5266,13 +5275,51 @@ DF.HeaderCoreFunctions = {
 			--> grow direction
 			if (not previousHeaderFrame) then
 				headerFrame:SetPoint ("topleft", self, "topleft", 0, 0)
+				
+				if (growDirection == "right") then
+					if (self.options.use_line_separators) then
+						headerFrame.Separator:Show()
+						headerFrame.Separator:SetWidth (self.options.line_separator_width)
+						headerFrame.Separator:SetColorTexture (unpack (self.options.line_separator_color))
+						
+						headerFrame.Separator:ClearAllPoints()
+						if (self.options.line_separator_gap_align) then
+							headerFrame.Separator:SetPoint ("topleft", headerFrame, "topright", 0, 0)
+						else
+							headerFrame.Separator:SetPoint ("topright", headerFrame, "topright", 0, 0)
+						end
+						headerFrame.Separator:SetHeight (self.options.line_separator_height)
+					end
+				end
+				
 			else
 				if (growDirection == "right") then
 					headerFrame:SetPoint ("topleft", previousHeaderFrame, "topright", self.options.padding, 0)
+
+					if (self.options.use_line_separators) then
+						headerFrame.Separator:Show()
+						headerFrame.Separator:SetWidth (self.options.line_separator_width)
+						headerFrame.Separator:SetColorTexture (unpack (self.options.line_separator_color))
+						
+						headerFrame.Separator:ClearAllPoints()
+						if (self.options.line_separator_gap_align) then
+							headerFrame.Separator:SetPoint ("topleft", headerFrame, "topright", 0, 0)
+						else
+							headerFrame.Separator:SetPoint ("topleft", headerFrame, "topright", 0, 0)
+						end
+						headerFrame.Separator:SetHeight (self.options.line_separator_height)
+						
+						if (headerSize == i) then
+							headerFrame.Separator:Hide()
+						end
+					end
+					
 				elseif (growDirection == "left") then
 					headerFrame:SetPoint ("topright", previousHeaderFrame, "topleft", -self.options.padding, 0)
+					
 				elseif (growDirection == "bottom") then
 					headerFrame:SetPoint ("topleft", previousHeaderFrame, "bottomleft", 0, -self.options.padding)
+					
 				elseif (growDirection == "top") then
 					headerFrame:SetPoint ("bottomleft", previousHeaderFrame, "topleft", 0, self.options.padding)
 				end
@@ -5330,6 +5377,9 @@ DF.HeaderCoreFunctions = {
 		headerFrame.XPosition = self.HeaderWidth-- + self.options.padding
 		headerFrame.YPosition = self.HeaderHeight-- + self.options.padding
 		
+		headerFrame.columnAlign = headerData.align or "left"
+		headerFrame.columnOffset = headerData.offset or 0
+		
 		--> add the header piece size to the total header size
 		local growDirection = string.lower (self.options.grow_direction)
 		
@@ -5368,7 +5418,10 @@ DF.HeaderCoreFunctions = {
 			local newHeader = CreateFrame ("frame", "$parentHeaderIndex" .. nextHeader, self)
 			
 			DF:CreateImage (newHeader, "", self.options.header_height, self.options.header_height, "ARTWORK", nil, "Icon", "$parentIcon")
+			DF:CreateImage (newHeader, "", 1, 1, "ARTWORK", nil, "Separator", "$parentSeparator")
 			DF:CreateLabel (newHeader, "", self.options.text_size, self.options.text_color, "GameFontNormal", "Text", "$parentText", "ARTWORK")
+			
+			newHeader.Separator:Hide()
 			
 			tinsert (self.HeadersCreated, newHeader)
 			headerFrame = newHeader
@@ -5401,7 +5454,12 @@ local default_header_options = {
 	header_backdrop_border_color = {0, 0, 0, 0},
 	header_width = 120,
 	header_height = 20,
-
+	
+	use_line_separators = false,
+	line_separator_color = {.1, .1, .1, .6},
+	line_separator_width = 1,
+	line_separator_height = 200,
+	line_separator_gap_align = false,
 }
 
 function DF:CreateHeader (parent, headerTable, options)
@@ -5655,9 +5713,9 @@ function DF:CreateLoadFilterParser (callback)
 		elseif (event == "PLAYER_ROLES_ASSIGNED") then
 			local assignedRole = UnitGroupRolesAssigned ("player")
 			if (assignedRole == "NONE") then
-				local spec = GetSpecialization()
+				local spec = DetailsFramework.GetSpecialization()
 				if (spec) then
-					assignedRole = GetSpecializationRole (spec)
+					assignedRole = DetailsFramework.GetSpecializationRole (spec)
 				end
 			end
 			
@@ -5707,9 +5765,9 @@ function DF:PassLoadFilters (loadTable, encounterID)
 		end
 		
 		if (canCheckTalents) then
-			local specIndex = GetSpecialization()
+			local specIndex = DetailsFramework.GetSpecialization()
 			if (specIndex) then
-				local specID = GetSpecializationInfo (specIndex)
+				local specID = DetailsFramework.GetSpecializationInfo (specIndex)
 				if (not loadTable.spec [specID]) then
 					return false
 				end
@@ -5769,9 +5827,9 @@ function DF:PassLoadFilters (loadTable, encounterID)
 	if (loadTable.role.Enabled) then
 		local assignedRole = UnitGroupRolesAssigned ("player")
 		if (assignedRole == "NONE") then
-			local spec = GetSpecialization()
+			local spec = DetailsFramework.GetSpecialization()
 			if (spec) then
-				assignedRole = GetSpecializationRole (spec)
+				assignedRole = DetailsFramework.GetSpecializationRole (spec)
 			end
 		end
 		if (not loadTable.role [assignedRole]) then
@@ -5929,7 +5987,7 @@ function DF:OpenLoadConditionsPanel (optionsTable, callback, frameOptions)
 		--create the radio group for character spec
 			local specs = {}
 			for _, specID in ipairs (DF:GetClassSpecIDs (select (2, UnitClass ("player")))) do
-				local specID, specName, specDescription, specIcon, specBackground, specRole, specClass = GetSpecializationInfoByID (specID)
+				local specID, specName, specDescription, specIcon, specBackground, specRole, specClass = DetailsFramework.GetSpecializationInfoByID (specID)
 				tinsert (specs, {
 					name = specName,
 					set = f.OnRadioCheckboxClick,
