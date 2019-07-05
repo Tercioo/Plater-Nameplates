@@ -1071,6 +1071,16 @@ Plater.DefaultSpellRangeList = {
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> general unit functions
 
+	--> return a table with points on where the unitFrame is attached
+	--these points are hardcoded in the UpdatePlateSize() function
+	function Plater.GetPoints (unitFrame)
+		local points = {
+			{"topleft", unitFrame.PlateFrame, "topleft", 0, 0},
+			{"bottomright", unitFrame.PlateFrame, "bottomright", 0, 0},
+		}
+		return points
+	end
+
 	--> return an iterator with all namepaltes on the screen
 	function Plater.GetAllShownPlates() --private
 		return C_NamePlate.GetNamePlates()
@@ -2064,7 +2074,7 @@ Plater.DefaultSpellRangeList = {
 				if (DB_USE_UIPARENT) then
 					--when using UIParent as the unit frame parent, adjust the unitFrame scale to be equal to blizzard plateFrame
 					newUnitFrame = DF:CreateUnitFrame (UIParent, plateFrame:GetName() .. "PlaterUnitFrame", unitFrameOptions, healthBarOptions, castBarOptions, powerBarOptions)
-					newUnitFrame:SetAllPoints (parent)
+					newUnitFrame:SetAllPoints()
 					newUnitFrame:SetFrameStrata ("BACKGROUND")
 
 					plateFrame:HookScript("OnSizeChanged", Plater.UpdateUIParentScale)
@@ -2144,7 +2154,7 @@ Plater.DefaultSpellRangeList = {
 			--> identify aura containers
 				plateFrame.unitFrame.BuffFrame.Name = "Main" --aura frame 1
 				plateFrame.unitFrame.BuffFrame2.Name = "Secondary" --aura frame 2
-				
+			
 			--> store the secondary anchor inside the regular buff container for speed
 			plateFrame.unitFrame.BuffFrame.BuffFrame2 = plateFrame.unitFrame.BuffFrame2
 			plateFrame.unitFrame.BuffFrame2.BuffFrame1 = plateFrame.unitFrame.BuffFrame
@@ -2183,7 +2193,7 @@ Plater.DefaultSpellRangeList = {
 				plateFrame.playerHasAggro = false
 			
 			--> target indicators
-				--left and right indicators
+				--left and right target indicators
 				plateFrame.unitFrame.TargetTextures2Sides = {}
 				plateFrame.unitFrame.TargetTextures4Sides = {}
 				for i = 1, 2 do
@@ -2197,7 +2207,7 @@ Plater.DefaultSpellRangeList = {
 					tinsert (plateFrame.unitFrame.TargetTextures4Sides, targetTexture)
 				end
 				
-				--two extra target glow placed outside the healthbar
+				--two extra target glow placed outside the healthbar, one above and another below the health bar
 				local TargetNeonUp = plateFrame.unitFrame:CreateTexture (nil, "overlay")
 				TargetNeonUp:SetDrawLayer ("overlay", 7)
 				TargetNeonUp:SetBlendMode ("ADD")
@@ -2213,7 +2223,7 @@ Plater.DefaultSpellRangeList = {
 				plateFrame.TargetNeonDown = TargetNeonDown
 				plateFrame.unitFrame.TargetNeonDown = TargetNeonDown
 				
-			--> target overlay
+			--> target overlay (the texture added above the nameplate when the unit is selected)
 				plateFrame.unitFrame.targetOverlayTexture = healthBar:CreateTexture (nil, "artwork")
 				plateFrame.unitFrame.targetOverlayTexture:SetDrawLayer ("artwork", 2)
 				plateFrame.unitFrame.targetOverlayTexture:SetBlendMode ("ADD")
@@ -2766,7 +2776,7 @@ Plater.DefaultSpellRangeList = {
 			Plater.NameplateTick (plateFrame.OnTickFrame, 10)
 
 			--highlight check
-			if (DB_HOVER_HIGHLIGHT and not plateFrame.PlayerCannotAttack and (actorType ~= ACTORTYPE_FRIENDLY_PLAYER and actorType ~= ACTORTYPE_FRIENDLY_NPC and not plateFrame.isSelf)) then
+			if (DB_HOVER_HIGHLIGHT and not plateFrame.PlayerCannotAttack and (actorType ~= ACTORTYPE_FRIENDLY_PLAYER and actorType ~= ACTORTYPE_FRIENDLY_NPC and actorType ~= ACTORTYPE_PLAYER)) then
 				Plater.EnableHighlight (unitFrame)
 			else
 				Plater.DisableHighlight (unitFrame)
@@ -3988,6 +3998,7 @@ end
 	--self is the buff container
 	--~align
 	function Plater.AlignAuraFrames (self)
+
 		if (self.isNameplate) then
 		
 			if (Plater.db.profile.aura_consolidate) then
@@ -4009,8 +4020,15 @@ end
 			
 			--get the amount of auras shown in the frame, this variable should be always reliable
 			local amountFramesShown = self.amountAurasShown
-
+			
 			if (growDirection ~= 2) then --it's growing to left or right
+			
+				self:SetSize (1, 1)
+				
+				--debug where the buffFrame anchors are
+				--self:SetSize (5, 5)
+				--self:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
+				--self:SetBackdropBorderColor (1, 0, 0, 1)
 			
 				local framersPerRow = Plater.MaxAurasPerRow + 1
 				local firstIcon = iconFrameContainer[1]
@@ -4019,8 +4037,6 @@ end
 				if (not firstIcon or not firstIcon:IsShown()) then
 					return
 				end
-				
-				self:SetSize (1, 1)
 
 				--set the point of the first icon
 				firstIcon:ClearAllPoints()
@@ -4293,6 +4309,7 @@ end
 	
 	--update the aura icon, this icon is getted with GetAuraIcon -
 	--actualAuraType is the UnitAura return value for the auraType ("" is enrage, nil/"none" for unspecified and "Disease", "Poison", "Curse", "Magic" for other types. -Continuity/Ariani
+	            
 	function Plater.AddAura (self, auraIconFrame, i, spellName, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, isBuff, isShowAll, isDebuff, isPersonal, actualAuraType)
 		auraIconFrame:SetID (i)
 
@@ -4301,7 +4318,7 @@ end
 			if (not isBuff and not auraIconFrame:IsShown() or auraIconFrame.IsShowingBuff) then
 				auraIconFrame.ShowAnimation:Play()
 			end
-
+			
 			--> update the texture
 			auraIconFrame.Icon:SetTexture (texture)
 			
@@ -4503,7 +4520,9 @@ end
 		--auraIconFrame.Cooldown:SetBackdrop (nil)
 		--print (auraIconFrame.Border:GetObjectType())
 		--print (auraIconFrame.Icon:GetAlpha())
-
+		
+		--print (self:GetName(), self:GetSize(), self:IsShown())
+		
 		return true
 	end
 
@@ -5132,7 +5151,7 @@ end
 			--unit frame - is set to be the same size as the plateFrame
 				unitFrame:ClearAllPoints()
 				unitFrame:SetPoint ("topleft", unitFrame.PlateFrame, "topleft", 0, 0)
-				unitFrame:SetPoint ("bottomright", unitFrame.PlateFrame, "bottomright", 0, 0) 
+				unitFrame:SetPoint ("bottomright", unitFrame.PlateFrame, "bottomright", 0, 0)
 				
 			--health bar
 				-- ensure that we are using the configured size, as it will be automatically scaled
@@ -5145,7 +5164,10 @@ end
 		else
 			--unit frame - is set to be the same size as the plateFrame
 				unitFrame:ClearAllPoints()
-				unitFrame:SetAllPoints()
+				--unitFrame:SetAllPoints()
+				--using the same setpoint pattern on both nameplate parent types to make easy the frameshake to handle the points
+				unitFrame:SetPoint ("topleft", unitFrame.PlateFrame, "topleft", 0, 0)
+				unitFrame:SetPoint ("bottomright", unitFrame.PlateFrame, "bottomright", 0, 0)
 			
 			--health bar
 				--this calculates the health bar anchor points
@@ -5179,9 +5201,9 @@ end
 			end
 			
 		--aura frame
-			buffFrame1:ClearAllPoints()
 			--DB_AURA_Y_OFFSET = profile.aura_y_offset is from the buff Settings tab
 			--plateConfigs.buff_frame_y_offset is the offset from the actor type, e.g. enemy npc
+			buffFrame1:ClearAllPoints()
 			PixelUtil.SetPoint (buffFrame1, "bottom", unitFrame, "top", DB_AURA_X_OFFSET,  plateConfigs.buff_frame_y_offset + DB_AURA_Y_OFFSET)
 			
 			buffFrame2:ClearAllPoints()
@@ -6538,6 +6560,7 @@ end
 			shouldForceRefresh = true
 			plateFrame.IsNpcWithoutHealthBar = false
 			plateFrame.IsFriendlyPlayerWithoutHealthBar = false
+			
 		end
 
 		healthBar.BorderIsAggroIndicator = nil
@@ -6590,6 +6613,8 @@ end
 				end
 			end
 		
+			Plater.ForceFindPetOwner (plateFrame [MEMBER_GUID])
+		
 			if (IS_IN_OPEN_WORLD and DB_PLATE_CONFIG [actorType].quest_enabled and Plater.IsQuestObjective (plateFrame)) then
 				Plater.ChangeHealthBarColor_Internal (healthBar, unpack (DB_PLATE_CONFIG [actorType].quest_color))
 
@@ -6611,6 +6636,7 @@ end
 				buffFrame:Hide()
 				nameFrame:Hide()
 				plateFrame.IsNpcWithoutHealthBar = true
+				--najatar guardian showing the name
 				
 			elseif (not Plater.PlayerPetCache [unitFrame [MEMBER_GUID]] and not subTitleExists and not DB_PLATE_CONFIG [actorType].all_names) then
 				-- show only if a title is present
@@ -7322,15 +7348,17 @@ end
 			self.HighlightTexture:Hide()
 		end
 	end
-
+	
+	--create a new frame for the highlight (when the mouse passes over the nameplate)
 	function Plater.CreateHighlightNameplate (plateFrame) --private
-		local highlightOverlay = CreateFrame ("frame", "$parentHighlightOverlay", UIParent)
+		local highlightOverlay = CreateFrame ("frame", "$parentHighlightOverlay", plateFrame.unitFrame.healthBar) --why this was parented to UIParent (question mark)
 		highlightOverlay:EnableMouse (false)
-		highlightOverlay:SetFrameStrata ("TOOLTIP")
-		highlightOverlay:SetAllPoints (plateFrame.unitFrame.healthBar)
+		highlightOverlay:SetAllPoints()
 		highlightOverlay:SetScript ("OnUpdate", Plater.CheckHighlight)
+		highlightOverlay:Hide()
+		--highlightOverlay:SetFrameStrata ("TOOLTIP") --it'll use the same strata as the health bar now
 		
-		highlightOverlay.HighlightTexture = highlightOverlay:CreateTexture (nil, "overlay")
+		highlightOverlay.HighlightTexture = plateFrame.unitFrame.healthBar:CreateTexture (nil, "artwork")
 		highlightOverlay.HighlightTexture:SetAllPoints()
 		highlightOverlay.HighlightTexture:SetColorTexture (1, 1, 1, 1)
 		highlightOverlay.HighlightTexture:SetAlpha (1)
@@ -7341,13 +7369,16 @@ end
 	
 	function Plater.EnableHighlight (unitFrame)
 		unitFrame.HighlightFrame:Show()
+		unitFrame.HighlightFrame.HighlightTexture:Show()
+
 		unitFrame.HighlightFrame.unit = unitFrame [MEMBER_UNITID]
 		unitFrame.HighlightFrame:SetScript ("OnUpdate", Plater.CheckHighlight)
 	end
-
+	
 	function Plater.DisableHighlight (unitFrame)
 		unitFrame.HighlightFrame:SetScript ("OnUpdate", nil)
 		unitFrame.HighlightFrame:Hide()
+		unitFrame.HighlightFrame.HighlightTexture:Hide()
 	end
 	
 	function Plater.CreateHealthFlashFrame (plateFrame) --private
@@ -7551,13 +7582,16 @@ end
 					local shakeTargetFrame = plateFrame.unitFrame
 					
 					if (not frameShake) then
-						local points = {}
 			
-						for i = 1, shakeTargetFrame:GetNumPoints() do
+						--[=[ 8.2 GetPoint isn't more possible in nameplate childs
+						for i = 1, shakeTargetFrame:GetNumPoints() do --shakeTargetFrame = unitFrame from Plater
 							local p1, p2, p3, p4, p5 = shakeTargetFrame:GetPoint (i)
 							points [#points+1] = {p1, p2, p3, p4, p5}
 						end
-					
+						--]=]
+						
+						local points = Plater.GetPoints (plateFrame.unitFrame)
+						
 						frameShake = DF:CreateFrameShake (shakeTargetFrame, animationTable.duration, animationTable.amplitude, animationTable.frequency, animationTable.absolute_sineX, animationTable.absolute_sineY, animationTable.scaleX, animationTable.scaleY, animationTable.fade_in, animationTable.fade_out, points)
 						plateFrame.SpellAnimations ["frameshake" .. spellName] = frameShake
 					end
@@ -7743,7 +7777,7 @@ end
 	end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
---> combat log reader ~cleu ~combatlog
+--> combat log reader  ~combatlog
 
 
 	local PlaterCLEUParser = CreateFrame ("frame", "PlaterCLEUParserFrame", UIParent)
@@ -7755,7 +7789,9 @@ end
 					if (plateFrame [MEMBER_GUID] == targetGUID) then
 						--disabled for patch 8.2
 						--need a workaround for GetPoints() not being available on this patch
-						--Plater.DoNameplateAnimation (plateFrame, SPELL_WITH_ANIMATIONS [spellName], spellName, isCritical)
+						
+						--testing new fix
+						Plater.DoNameplateAnimation (plateFrame, SPELL_WITH_ANIMATIONS [spellName], spellName, isCritical)
 					end
 				end
 			end
@@ -7839,6 +7875,45 @@ end
 		end
 	end)
 
+	Plater.NpcBlackList = {} 
+	function Plater.ForceFindPetOwner (serial) --private
+		local tooltipFrame = PlaterPetOwnerFinder or CreateFrame ("GameTooltip", "PlaterPetOwnerFinder", nil, "GameTooltipTemplate")
+		
+		tooltipFrame:SetOwner (WorldFrame, "ANCHOR_NONE")
+		tooltipFrame:SetHyperlink ("unit:" .. serial or "")
+		
+		local isPlayerPet = false
+		
+		local line1 = _G ["PlaterPetOwnerFinderTextLeft2"]
+		local text1 = line1 and line1:GetText()
+		if (text1 and text1 ~= "") then
+			local pName = GetUnitName ("player", true)
+			local playerName = pName:gsub ("%-.*", "") --remove realm name
+			if (text1:find (playerName)) then
+				isPlayerPet = true
+			end
+		end
+		
+		if (not isPlayerPet) then
+			local line2 = _G ["PlaterPetOwnerFinderTextLeft3"]
+			local text2 = line2 and line2:GetText()
+			if (text2 and text2 ~= "") then
+				local pName = GetUnitName ("player", true)
+				local playerName = pName:gsub ("%-.*", "") --remove realm name
+				if (text2:find (playerName)) then
+					isPlayerPet = true
+				end
+			end
+		end
+		
+		if (not isPlayerPet) then
+			Plater.NpcBlackList [serial] = true
+		else
+			PET_CACHE [serial] = time()
+			Plater.PlayerPetCache [serial] = time()
+		end
+	end
+	
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> cvars - ~cvars
 	
@@ -8022,11 +8097,13 @@ end
 		end
 		
 		local isQuestUnit = false
+		local atLeastOneQuestUnfinished = false
 		for i = 1, #ScanQuestTextCache do
 			local text = ScanQuestTextCache [i]:GetText()
 			if (Plater.QuestCache [text]) then
 				--unit belongs to a quest
 				isQuestUnit = true
+				local questFinished = false
 				local amount1, amount2 = nil, nil
 				if (i < 8) then
 					--check if the unit objective isn't already done
@@ -8041,28 +8118,28 @@ end
 								p1 = string.gsub(p1,"%%", '')
 							end
 						end
-						if (p1 and p2 and p1 == p2) then
-							return
+						if (p1 and p2 and p1 == p2) or (not p2 and p1 == "100") then
+							questFinished = true
+						else
+							atLeastOneQuestUnfinished = true
 						end
 						
 						amount1, amount2 = p1, p2
 					end
 				end
 
-				if (amount1) then
+				if (amount1 and not questFinished) then
 					plateFrame.QuestAmountCurrent = amount1
 					plateFrame.QuestAmountTotal = amount2
 					
 					--expose to scripts
 					plateFrame.unitFrame.QuestAmountCurrent = amount1
 					plateFrame.unitFrame.QuestAmountTotal = amount2
-					
-					break
 				end
 			end
 		end
 		
-		if isQuestUnit then
+		if isQuestUnit and atLeastOneQuestUnfinished then
 			plateFrame [MEMBER_QUEST] = true
 			plateFrame.unitFrame [MEMBER_QUEST] = true
 			return true
@@ -8173,7 +8250,7 @@ end
 							
 							Plater.UpdateIconAspecRatio (auraIconFrame)
 						end
-			
+						
 						--hide icons on the second buff frame
 						for i = 1, #buffFrame2.PlaterBuffList do
 							local icon = buffFrame2.PlaterBuffList [i]
@@ -8183,8 +8260,9 @@ end
 							end
 						end
 					end
-				
+					
 					if (DB_AURA_SEPARATE_BUFFS) then
+
 						for index, auraTable in ipairs (auraOptionsFrame.AuraTesting.DEBUFF) do
 							local auraIconFrame = Plater.GetAuraIcon (buffFrame)
 							if (not auraTable.ApplyTime or auraTable.ApplyTime+auraTable.Duration < GetTime()) then
@@ -8197,7 +8275,7 @@ end
 								Plater.AddAura (buffFrame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, false, false, true, true, auraTable.Type)
 							end
 						end
-					
+						
 						for index, auraTable in ipairs (auraOptionsFrame.AuraTesting.BUFF) do
 							local auraIconFrame, frame = Plater.GetAuraIcon (buffFrame, true)
 							if (not auraTable.ApplyTime or auraTable.ApplyTime+auraTable.Duration < GetTime()) then
@@ -8207,13 +8285,18 @@ end
 							if (not UnitIsUnit (plateFrame [MEMBER_UNITID], "player")) then
 								Plater.AddAura (frame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "BUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, true, nil, nil, nil, auraTable.Type)
 							else
-								Plater.AddAura (frame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "BUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, false, false, false, true, auraTable.Type)
+								Plater.AddAura (frame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "BUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, true, false, false, false, auraTable.Type)
+								--Plater.AddAura (frame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "BUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, false, false, false, true, auraTable.Type)
 							end
 						end
 					end
 					
 					Plater.HideNonUsedAuraIcons (buffFrame)
 					Plater.AlignAuraFrames (buffFrame)
+					
+					if (DB_AURA_SEPARATE_BUFFS) then
+						Plater.AlignAuraFrames (buffFrame.BuffFrame2)
+					end
 				
 				end
 				
@@ -9245,6 +9328,7 @@ end
 		UpdateUIParentLevels = true,
 		UpdateUIParentTargetLevels = true,
 		RefreshTankCache = true,
+		ForceFindPetOwner = true,
 	}
 	
 	local functionFilter = setmetatable ({}, {__index = function (env, key)
