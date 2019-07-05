@@ -6615,7 +6615,21 @@ end
 		
 			Plater.ForceFindPetOwner (plateFrame [MEMBER_GUID])
 		
-			if (IS_IN_OPEN_WORLD and DB_PLATE_CONFIG [actorType].quest_enabled and Plater.IsQuestObjective (plateFrame)) then
+			-- handle own pets separately, including nazjatar guardians
+			if (Plater.PlayerPetCache [unitFrame [MEMBER_GUID]]) then
+				if (DB_PLATE_CONFIG [actorType].only_names) then
+					healthBar:Hide()
+					buffFrame:Hide()
+					nameFrame:Hide()
+					plateFrame.IsNpcWithoutHealthBar = true
+				
+				else
+					healthBar:Show()
+					buffFrame:Show()
+					nameFrame:Show()
+				end
+			
+			elseif (IS_IN_OPEN_WORLD and DB_PLATE_CONFIG [actorType].quest_enabled and Plater.IsQuestObjective (plateFrame)) then
 				Plater.ChangeHealthBarColor_Internal (healthBar, unpack (DB_PLATE_CONFIG [actorType].quest_color))
 
 				healthBar:Show()
@@ -6628,17 +6642,15 @@ end
 				plateFrame [MEMBER_QUEST] = true
 				unitFrame [MEMBER_QUEST] = true
 			
-			--this line is always returning true, making friendly nameplates always be name only
-			elseif (not Plater.PlayerPetCache [unitFrame [MEMBER_GUID]] and DB_PLATE_CONFIG [actorType].only_names) then
+			elseif (DB_PLATE_CONFIG [actorType].only_names) then
 				--show only the npc name without the health bar
 
 				healthBar:Hide()
 				buffFrame:Hide()
 				nameFrame:Hide()
 				plateFrame.IsNpcWithoutHealthBar = true
-				--najatar guardian showing the name
 				
-			elseif (not Plater.PlayerPetCache [unitFrame [MEMBER_GUID]] and not subTitleExists and not DB_PLATE_CONFIG [actorType].all_names) then
+			elseif (not subTitleExists and not DB_PLATE_CONFIG [actorType].all_names) then
 				-- show only if a title is present
 				healthBar:Hide()
 				buffFrame:Hide()
