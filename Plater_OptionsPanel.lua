@@ -3286,7 +3286,9 @@ Plater.CreateAuraTesting()
 				GameTooltip:AddLine (" ")
 				GameTooltip:Show()
 				
-				showSpellWithSameName (self, spellid)
+				if not tonumber (self.value) then
+					showSpellWithSameName (self, spellid)
+				end
 			end
 		end
 		
@@ -3441,13 +3443,13 @@ Plater.CreateAuraTesting()
 			end
 			
 			--get the spell ID from the spell name
-			text = lower (text)
-			local spellID = new_buff_entry.SpellHashTable [text]
+			local lowertext = lower (text)
+			local spellID = new_buff_entry.SpellHashTable [lowertext]
 			if (not spellID) then
 				return
 			end
 			
-			return spellID
+			return text
 		end		
 		
 		--> add aura button
