@@ -242,7 +242,7 @@ PLATER_DEFAULT_SETTINGS = {
 			},
 
 			friendlynpc = {
-				only_names = false,
+				only_names = true,
 				all_names = true,
 				relevance_state = 4,
 				enabled = true,
