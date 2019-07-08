@@ -4938,7 +4938,10 @@ end
 				Plater.ChangeHealthBarColor_Internal (unitFrame.healthBar, unpack (DB_PLATE_CONFIG [unitFrame.ActorType].quest_color_enemy))
 				
 			else
-				Plater.ChangeHealthBarColor_Internal (unitFrame.healthBar, unpack (DB_PLATE_CONFIG [unitFrame.ActorType].quest_color))
+				--there's a bug here where quest_color is nil for a friendly npc
+				--this is happening when an enemy quest npc turns friendly and (probably) the actorType doesn't change
+				--so in the enemy npc settings table does not have 'quest_color' input
+				Plater.ChangeHealthBarColor_Internal (unitFrame.healthBar, unpack (DB_PLATE_CONFIG [unitFrame.ActorType].quest_color or {.5, 1, 0}))
 			end
 		end
 	end
