@@ -2732,7 +2732,7 @@ Plater.DefaultSpellRangeList = {
 							
 							--add the npc in the npcid cache
 							if (not DB_NPCIDS_CACHE [plateFrame [MEMBER_NPCID]] and not IS_IN_OPEN_WORLD and not Plater.ZonePvpType and plateFrame [MEMBER_NPCID]) then
-								if (UNKNOWN ~= plateFrame [MEMBER_NAME]) then
+								if (UNKNOWN ~= plateFrame [MEMBER_NAME]) then --UNKNOWN is the global string from blizzard
 									DB_NPCIDS_CACHE [plateFrame [MEMBER_NPCID]] = {plateFrame [MEMBER_NAME], Plater.ZoneName}
 								end
 							end
@@ -10413,7 +10413,7 @@ function SlashCmdList.PLATER (msg, editbox)
 		end
 		
 		print ("|cFFC0C0C0Alpha|r", "->", alphaPlateFrame, "-", alphaUnitFrame, "-", alphaHealthFrame)
-		
+	
 		if (testPlate) then
 			local w, h = testPlate:GetSize()
 			print ("|cFFC0C0C0Size|r", "->", w, h, "-", testPlate.unitFrame.healthBar:GetSize())
@@ -10430,7 +10430,7 @@ function SlashCmdList.PLATER (msg, editbox)
 			print ("|cFFC0C0C0Point|r", "-> there's no nameplate in the screen")
 			print ("|cFFC0C0C0ShownStatus|r", "-> there's no nameplate in the screen")
 		end
-		
+	
 		return
 	
 	elseif (msg == "color" or msg == "colors") then
@@ -10439,8 +10439,37 @@ function SlashCmdList.PLATER (msg, editbox)
 	
 	elseif (msg == "npcs" or msg == "ids") then
 		
+
 		
+	elseif (msg == "add" or msg == "addnpc") then
 		
+		local plateFrame = C_NamePlate.GetNamePlateForUnit ("target")
+		
+		if (plateFrame) then
+			local npcId = plateFrame [MEMBER_NPCID]
+			if (npcId) then
+				local colorDB = Plater.db.profile.npc_colors
+				if (not colorDB [npcId]) then
+					Plater.db.profile.npc_cache [npcId] = {plateFrame [MEMBER_NAME], Plater.ZoneName}
+					Plater:Msg ("Unit added.")
+					
+					if (PlaterOptionsPanelFrame and PlaterOptionsPanelFrame:IsShown()) then
+						PlaterOptionsPanelContainerColorManagementColorsScroll:Hide()
+						C_Timer.After (.2, function()
+							PlaterOptionsPanelContainerColorManagementColorsScroll:Show()
+						end)
+					end
+					
+				else
+					Plater:Msg ("Unit already added.")
+				end
+			else
+				Plater:Msg ("Invalid npc nameplate.")
+			end
+		else
+			Plater:Msg ("you need to target a npc or the npc nameplate couldn't be found.")
+		end
+	
 		return
 	end
 	

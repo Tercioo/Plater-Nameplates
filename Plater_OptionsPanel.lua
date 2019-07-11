@@ -2489,6 +2489,11 @@ Plater.CreateAuraTesting()
 				local scriptsall_button = DF:CreateButton (colorsFrame, setAllAsScriptOnly, 200, 20, "Set All Enabled as 'Scripts Only'", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 				scriptsall_button:SetPoint ("left", disableall_button, "right", 0, 0)
 				scriptsall_button:SetFrameLevel (colorsFrame.Header:GetFrameLevel() + 20)
+				
+				local addnpc_text = DF:CreateLabel (scriptsall_button, "Use '/plater addnpc' to add a npc in open world.")
+				addnpc_text.fontsize = 12
+				addnpc_text.fontcolor = "gray"
+				addnpc_text:SetPoint ("left", scriptsall_button, "right", 10, 0)
 			
 			-- buttons backdrop
 				local backdropFoot = CreateFrame ("frame", nil, spells_scroll)
@@ -5229,20 +5234,12 @@ DF:BuildMenu (targetFrame, targetOptions, startX, startY, heightSize, true, opti
 --OP��ES NO PAINEL PRINCIPAL
 
 function Plater.ChangeNpcRelavance (_, _, value)
-	if (value == 1) then
-		Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].only_names = false
-		Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].all_names = false
-		
-	elseif (value == 2) then
-		Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].only_names = false
-		Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].all_names = true
-		
-	elseif (value == 3) then
+	if (value == 3) then
 		Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].only_names = true
 		Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].all_names = false
 		
 	elseif (value == 4) then
-		Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].only_names = true
+		Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].only_names = false
 		Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].all_names = true
 	end
 	
@@ -5251,10 +5248,8 @@ function Plater.ChangeNpcRelavance (_, _, value)
 	Plater.UpdateAllPlates()
 end
 local relevance_options = {
-	{label = "All Professions (Healthbars)", value = 1, onclick = Plater.ChangeNpcRelavance},
-	{label = "All Npcs (Healthbars)", value = 2, onclick = Plater.ChangeNpcRelavance},
-	{label = "All Professions (Name)", value = 3, onclick = Plater.ChangeNpcRelavance},
-	{label = "All Npcs (Name)", value = 4, onclick = Plater.ChangeNpcRelavance},
+	{label = "All Professions", value = 3, onclick = Plater.ChangeNpcRelavance},
+	{label = "All Npcs", value = 4, onclick = Plater.ChangeNpcRelavance},
 }
 
 --
