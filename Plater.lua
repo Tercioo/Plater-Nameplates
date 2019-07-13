@@ -1469,7 +1469,7 @@ Plater.DefaultSpellRangeList = {
 		for index, spellId in ipairs (profile.extra_icon_auras) do
 			local spellName = GetSpellInfo (spellId)
 			if (spellName) then
-				SPECIAL_AURAS_USER_LIST [spellName] = true
+				SPECIAL_AURAS_USER_LIST [spellId] = true
 			end
 		end
 		
@@ -1480,8 +1480,8 @@ Plater.DefaultSpellRangeList = {
 					--> mine list only store if the user checked the 'only mine' box
 					--> if the user remove the spell, that spell isn't removed from the 'only mine' list
 					--> so need to check if the spell on 'only mine' list is included in the special aura list
-					if (SPECIAL_AURAS_USER_LIST [spellName]) then
-						SPECIAL_AURAS_USER_LIST_MINE [spellName] = true
+					if (SPECIAL_AURAS_USER_LIST [spellId]) then
+						SPECIAL_AURAS_USER_LIST_MINE [spellId] = true
 					end
 				end
 			end
@@ -4683,7 +4683,7 @@ end
 							Plater.AddExtraIcon (self, name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 						
 						--> check for special auras added by the user it self
-						elseif ((SPECIAL_AURAS_USER_LIST [name] and not SPECIAL_AURAS_USER_LIST_MINE [name]) or (SPECIAL_AURAS_USER_LIST_MINE [name] and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
+						elseif (((SPECIAL_AURAS_USER_LIST [name] or SPECIAL_AURAS_USER_LIST [spellId]) and not (SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId])) or ((SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId]) and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
 							Plater.AddExtraIcon (self, name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 							
 						end
@@ -4717,7 +4717,7 @@ end
 							Plater.AddExtraIcon (self, name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 						
 						--> check for special auras added by the user it self
-						elseif ((SPECIAL_AURAS_USER_LIST [name] and not SPECIAL_AURAS_USER_LIST_MINE [name]) or (SPECIAL_AURAS_USER_LIST_MINE [name] and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
+						elseif (((SPECIAL_AURAS_USER_LIST [name] or SPECIAL_AURAS_USER_LIST [spellId]) and not (SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId])) or ((SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId]) and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
 							Plater.AddExtraIcon (self, name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 							
 						end
@@ -4788,7 +4788,7 @@ end
 				end
 				
 				--> check for special auras added by the user it self
-				if ((SPECIAL_AURAS_USER_LIST [name] and not SPECIAL_AURAS_USER_LIST_MINE [name]) or (SPECIAL_AURAS_USER_LIST_MINE [name] and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
+				if (((SPECIAL_AURAS_USER_LIST [name] or SPECIAL_AURAS_USER_LIST [spellId]) and not (SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId])) or ((SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId]) and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
 					Plater.AddExtraIcon (self, name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 					can_show_this_debuff = false
 				end
@@ -4810,7 +4810,7 @@ end
 				end
 				
 				--> check for special auras added by the user it self
-				if ((SPECIAL_AURAS_USER_LIST [name] and not SPECIAL_AURAS_USER_LIST_MINE [name]) or (SPECIAL_AURAS_USER_LIST_MINE [name] and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
+				if (((SPECIAL_AURAS_USER_LIST [name] or SPECIAL_AURAS_USER_LIST [spellId]) and not (SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId])) or ((SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId]) and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
 					Plater.AddExtraIcon (self, name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 					
 				elseif (not DB_BUFF_BANNED [name]) then
@@ -4894,7 +4894,7 @@ end
 				end
 				
 				--> check for special auras added by the user it self
-				if ((SPECIAL_AURAS_USER_LIST [name] and not SPECIAL_AURAS_USER_LIST_MINE [name]) or (SPECIAL_AURAS_USER_LIST_MINE [name] and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
+				if (((SPECIAL_AURAS_USER_LIST [name] or SPECIAL_AURAS_USER_LIST [spellId]) and not (SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId])) or ((SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId]) and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
 					Plater.AddExtraIcon (self, name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 				end
 				
