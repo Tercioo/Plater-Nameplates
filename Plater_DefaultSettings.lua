@@ -491,7 +491,7 @@ PLATER_DEFAULT_SETTINGS = {
 			},
 		},
 		
-		quick_hide = true, --hide the nameplate when the unit hits 0 health points
+		quick_hide = false, --hide the nameplate when the unit hits 0 health points | making disabled by default, this maybe is bugging hunters FD
 		
 		enable_masque_support = false,
 		
