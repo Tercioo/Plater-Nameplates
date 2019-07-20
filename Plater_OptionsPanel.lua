@@ -167,7 +167,7 @@ function Plater.OpenOptionsPanel()
 		{name = "FrontPage", title = L["OPTIONS_TABNAME_GENERALSETTINGS"]},
 		{name = "ThreatConfig", title = L["OPTIONS_TABNAME_THREAT"]},
 		{name = "TargetConfig", title = L["OPTIONS_TABNAME_TARGET"]},
-		{name = "LevelStrataConfig", title = "Level & Strata"},
+		{name = "LevelStrataConfig", title = L["OPTIONS_TABNAME_STRATA"]},
 		{name = "Scripting", title = L["OPTIONS_TABNAME_SCRIPTING"]},
 		{name = "AutoRunCode", title = L["OPTIONS_TABNAME_MODDING"]},
 		{name = "PersonalBar", title = L["OPTIONS_TABNAME_PERSONAL"]},
@@ -255,7 +255,7 @@ function Plater.OpenOptionsPanel()
 	DF:BuildStatusbarAuthorInfo (statusBar)
 	
 	--wago.io support
-	local wagoDesc = DF:CreateLabel (statusBar, "You can now import profiles, mods, scripts, animations and color tables from |cFFFFAA00http://wago.io|r")
+	local wagoDesc = DF:CreateLabel (statusBar, L["OPTIONS_STATUSBAR_TEXT"])
 	wagoDesc.textcolor = "white"
 	wagoDesc.textsize = 11
 	wagoDesc:SetPoint ("left", statusBar.DiscordTextBox, "right", 10, 0)
@@ -285,7 +285,7 @@ function Plater.OpenOptionsPanel()
 	function f.CopySettingsConfirmed()
 		DF.table.copy (Plater.db.profile.plate_config [f.CopyingTo], Plater.db.profile.plate_config [f.CopyingFrom])
 		PlaterOptionsPanelFrame.RefreshOptionsFrame()
-		Plater:Msg ("settings copied.")
+		Plater:Msg (L["OPTIONS_SETTINGS_COPIED"])
 	end
 	
 	--> copy settings from one actor type to another
@@ -309,7 +309,7 @@ function Plater.OpenOptionsPanel()
 			f.CopyingTo = settingsTo
 			DF:ShowPromptPanel ("Copy setting from '" .. from .. "' to '" .. settingsTo .. "' ?", f.CopySettingsConfirmed, function() f.CopyingFrom = nil; f.CopyingTo = nil; end)
 		else
-			Plater:Msg ("failed to get the settings for the current selected tab.")
+			Plater:Msg (L["OPTIONS_SETTINGS_FAIL_COPIED"])
 		end
 	end
 	
@@ -573,7 +573,22 @@ function Plater.OpenOptionsPanel()
 	end	
 	
 	--anchor table
-	local anchor_names = {"Top Left", "Left", "Bottom Left", "Bottom", "Bottom Right", "Right", "Top Right", "Top", "Center", "Inner Left", "Inner Right", "Inner Top", "Inner Bottom"}
+	local anchor_names = {
+		L["OPTIONS_ANCHOR_TOPLEFT"],
+		L["OPTIONS_ANCHOR_LEFT"],
+		L["OPTIONS_ANCHOR_BOTTOMLEFT"],
+		L["OPTIONS_ANCHOR_BOTTOM"],
+		L["OPTIONS_ANCHOR_BOTTOMRIGHT"],
+		L["OPTIONS_ANCHOR_RIGHT"],
+		L["OPTIONS_ANCHOR_TOPRIGHT"],
+		L["OPTIONS_ANCHOR_TOP"],
+		L["OPTIONS_ANCHOR_CENTER"],
+		L["OPTIONS_ANCHOR_INNERLEFT"],
+		L["OPTIONS_ANCHOR_INNERRIGHT"],
+		L["OPTIONS_ANCHOR_INNERTOP"],
+		L["OPTIONS_ANCHOR_INNERBOTTOM"],
+	}
+	
 	local build_anchor_side_table = function (actorType, member)
 		local t = {}
 		for i = 1, 13 do
