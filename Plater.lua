@@ -8120,7 +8120,7 @@ end
 				isQuestUnit = true
 				local questFinished = false
 				local amount1, amount2 = nil, nil
-				if (i < 8) then
+				if (i < 8 and ScanQuestTextCache [i+1]) then
 					--check if the unit objective isn't already done
 					local nextLineText = ScanQuestTextCache [i+1]:GetText()
 					if (nextLineText) then
