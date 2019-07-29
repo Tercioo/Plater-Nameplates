@@ -8118,32 +8118,43 @@ end
 			if (Plater.QuestCache [text]) then
 				--unit belongs to a quest
 				isQuestUnit = true
-				local questFinished = false
 				local amount1, amount2 = nil, nil
-				if (i < 8 and ScanQuestTextCache [i+1]) then
+				local questObjectives = 0
+				local questObjectivesFinished = 0
+				local j = i
+				while (ScanQuestTextCache [j+1]) do
 					--check if the unit objective isn't already done
-					local nextLineText = ScanQuestTextCache [i+1]:GetText()
+					local nextLineText = ScanQuestTextCache [j+1]:GetText()
 					if (nextLineText) then
-						local p1, p2 = nextLineText:match ("(%d+)/(%d+)") 
-						if (not p1) then
-							-- check for % based quests
-							p1 = nextLineText:match ("(%d+%%)")
-							if p1 then
-								-- remove the % sign for consistency
-								p1 = string.gsub(p1,"%%", '')
+						if not nextLineText:match(THREAT_TOOLTIP) then
+							local p1, p2 = nextLineText:match ("(%d+)/(%d+)") 
+							if (not p1) then
+								-- check for % based quests
+								p1 = nextLineText:match ("(%d+%%)")
+								if p1 then
+									-- remove the % sign for consistency
+									p1 = string.gsub(p1,"%%", '')
+								end
 							end
-						end
-						if (p1 and p2 and p1 == p2) or (not p2 and p1 == "100") then
-							questFinished = true
+							
+							if (p1) then
+								questObjectives = questObjectives + 1
+							end
+							
+							if (p1 and p2 and p1 == p2) or (not p2 and p1 == "100") then
+								questObjectivesFinished = questObjectivesFinished + 1
+							else
+								atLeastOneQuestUnfinished = true
+								amount1, amount2 = p1, p2
+							end
 						else
-							atLeastOneQuestUnfinished = true
+							j = 99 --safely break here, as we saw threat% -> quest text is done
 						end
-						
-						amount1, amount2 = p1, p2
 					end
+					j = j + 1
 				end
 
-				if (amount1 and not questFinished) then
+				if (amount1 and not (questObjectivesFinished == questObjectives)) then
 					plateFrame.QuestAmountCurrent = amount1
 					plateFrame.QuestAmountTotal = amount2
 					
