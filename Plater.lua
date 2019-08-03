@@ -8954,12 +8954,22 @@ end
 
 	function Plater.ExportProfileToString()
 		local profile = Plater.db.profile
+		
+		--temp store the animations on another table
+		local spellAnimations = profile.spell_animation_list
+		--remove the animation list from the profile
+		profile.spell_animation_list = nil
+		
+		--convert the profile to string
 		local data = Plater.CompressData (profile, "print")
-		if (data) then
-			return data
-		else
+		if (not data) then
 			Plater:Msg ("failed to compress the profile")
 		end
+		
+		--restore the profile animations
+		profile.spell_animation_list = spellAnimations
+		
+		return data
 	end
 
 	--scripts mixin - these functions are mixed in with castbar, unitframe and aura icons

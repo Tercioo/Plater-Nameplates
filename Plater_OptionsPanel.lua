@@ -322,11 +322,12 @@ function Plater.OpenOptionsPanel()
 	}
 	
 ------------------------------------------------------------------------------------------------------------
---> profile frame
+--> profile frame ~profile
 	
 	do
 	
 		--logic
+			--when the user click to export the current profile
 			function profilesFrame.ExportCurrentProfile()
 				profilesFrame.IsExporting = true
 				profilesFrame.IsImporting = nil
@@ -402,6 +403,7 @@ function Plater.OpenOptionsPanel()
 			end
 			
 			--importing a profile in the profiles tab
+			--this is called when the user pressess the okay button to confirm the profile import
 			function profilesFrame.ConfirmImportProfile()
 				if (profilesFrame.IsExporting) then
 					profilesFrame.HideStringField()
@@ -425,11 +427,15 @@ function Plater.OpenOptionsPanel()
 						end
 						return
 					end
-				
+					
 					local profileName = profilesFrame.NewProfileTextEntry:GetText()
 					if (profileName == "") then
 						Plater:Msg (L["OPTIONS_PROFILE_ERROR_PROFILENAME"])
 						return
+					end
+					
+					if (not profile.spell_animation_list) then
+						profile.spell_animation_list = DF.table.copy ({}, PLATER_DEFAULT_SETTINGS.profile.spell_animation_list)
 					end
 					
 					--if true then  --debug: dump the uncompressed table
@@ -534,8 +540,11 @@ function Plater.OpenOptionsPanel()
 			profilesFrame.NewProfileLabel:Hide()
 			profilesFrame.NewProfileTextEntry:Hide()
 			
+			profilesFrame.ImportStringField.editbox:SetMaxBytes (1024000*2)
+			profilesFrame.ImportStringField.editbox:SetMaxLetters (128000*2)
 			
-			
+			--print (profilesFrame.ImportStringField.editbox:GetMaxBytes())
+			--print (profilesFrame.ImportStringField.editbox:GetMaxLetters())
 			
 	end
 -------------------------
