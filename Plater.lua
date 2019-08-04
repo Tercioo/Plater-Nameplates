@@ -67,6 +67,7 @@ local max = math.max
 local min = math.min
 
 local LibSharedMedia = LibStub:GetLibrary ("LibSharedMedia-3.0")
+local LCG = LibStub:GetLibrary("LibCustomGlow-1.0")
 local _
 
 local Plater = DF:CreateAddOn ("Plater", "PlaterDB", PLATER_DEFAULT_SETTINGS, { --options table
@@ -8582,6 +8583,181 @@ end
 			unitFrame = unitFrame.unitFrame
 		end
 		return unitFrame.castBar, unitFrame.castBar.Text
+	end
+	
+	--create a glow around the frame using LibCustomGlow - defaults to "button" glow
+	--[[ options can be used to create different glow types, see https://www.curseforge.com/wow/addons/libcustomglow
+		--type "pixel"
+		options = {
+			glowType = "pixel",
+			color = "white", -- all plater color types accepted, from lib: {r,g,b,a}, color of lines and opacity, from 0 to 1. Defaul value is {0.95, 0.95, 0.32, 1}
+			N = 8, -- number of lines. Defaul value is 8;
+			frequency = 0.25, -- frequency, set to negative to inverse direction of rotation. Default value is 0.25;
+			length = 4, -- length of lines. Default value depends on region size and number of lines;
+			th = 2, -- thickness of lines. Default value is 2;
+			xOffset = 0,
+			yOffset = 0, -- offset of glow relative to region border;
+			border = false, -- set to true to create border under lines;
+			key = "", -- key of glow, allows for multiple glows on one frame;
+		}
+		
+		-- type "ants"
+		options = {
+			glowType = "ants",
+			color = "white", -- all plater color types accepted, from lib: {r,g,b,a}, color of lines and opacity, from 0 to 1. Defaul value is {0.95, 0.95, 0.32, 1}
+			N = 4, -- number of particle groups. Each group contains 4 particles. Defaul value is 4;
+			frequency = 0.125, -- frequency, set to negative to inverse direction of rotation. Default value is 0.125;
+			scale = 1, -- scale of particles
+			xOffset = 0,
+			yOffset = 0, -- offset of glow relative to region border;
+			key = "", -- key of glow, allows for multiple glows on one frame;
+		}
+		
+		-- type "button"
+		options = {
+			glowType = "button",
+			color = "white", -- all plater color types accepted, from lib: {r,g,b,a}, color of lines and opacity, from 0 to 1. Defaul value is {0.95, 0.95, 0.32, 1}
+			frequency = 0.125, -- frequency, set to negative to inverse direction of rotation. Default value is 0.125;
+		}
+	--]]
+	function Plater.StartGlow(frame, color, options, key)
+		if not frame then return end
+		
+		if not color and (options and options.color) then
+			color = options.color
+		end
+		if color then
+			local r, g, b, a = DF:ParseColors (color)
+			color = {r, g, b, a}
+			options.color = color
+		end
+		
+		if not options then
+			options = {
+				glowType = "button",
+				color = color,
+				key = key or "",
+			}
+		end
+		
+		if not options.glowType then
+			options.glowType = "button"
+		end
+		
+		if key then
+			options.key = key
+		end
+		
+		if (not frame.__PlaterGlowFrame) then
+			frame.__PlaterGlowFrame = CreateFrame("Frame", nil, frame);
+			frame.__PlaterGlowFrame:SetAllPoints(frame);
+			frame.__PlaterGlowFrame:SetSize(frame:GetSize());
+		end
+		
+		if options.glowType == "button" then
+			LCG.ButtonGlow_Start(frame.__PlaterGlowFrame, options.color, options.frequency)
+		elseif options.glowType == "pixel" then
+			if not options.border then options.border = false end
+			LCG.PixelGlow_Start(frame.__PlaterGlowFrame, options.color, options.N, options.frequency, options.length, options.th, options.xOffset, options.yOffset, options.border, options.key or "")
+		elseif options.glowType == "ants" then
+			LCG.AutoCastGlow_Start(frame.__PlaterGlowFrame, options.color, options.N, options.frequency, options.scale, options.xOffset, options.yOffset, options.key or "")
+		end
+	end
+	
+	-- creates a button glow effect
+	function Plater.StartButtonGlow(frame, color, options)
+		-- type "button"
+		if not options then
+			options = {
+				glowType = "button",
+				color = color, -- all plater color types accepted, from lib: {r,g,b,a}, color of lines and opacity, from 0 to 1. Defaul value is {0.95, 0.95, 0.32, 1}
+				frequency = 0.125, -- frequency, set to negative to inverse direction of rotation. Default value is 0.125;
+			}
+		else
+			options.glowType = "button"
+		end
+		
+		Plater.StartGlow(frame, color, options)
+	end
+	
+	-- creates an ants glow effect
+	function Plater.StartAntsGlow(frame, color, options, key)
+		-- type "ants"
+		if not options then
+			options = {
+				glowType = "ants",
+				color = color,
+				N = 4, -- number of particle groups. Each group contains 4 particles. Defaul value is 4;
+				frequency = 0.125, -- frequency, set to negative to inverse direction of rotation. Default value is 0.125;
+				scale = 1, -- scale of particles
+				xOffset = 0,
+				yOffset = 0, -- offset of glow relative to region border;
+				key = key or "", -- key of glow, allows for multiple glows on one frame;
+			}
+		else
+			options.glowType = "ants"
+		end
+		
+		Plater.StartGlow(frame, color, options, key)
+	end
+	
+	-- creates a pixel glow effect
+	function Plater.StartPixelGlow(frame, color, options, key)
+		-- type "pixel"
+		if not options then
+			options = {
+				glowType = "pixel",
+				color = color, -- all plater color types accepted, from lib: {r,g,b,a}, color of lines and opacity, from 0 to 1. Defaul value is {0.95, 0.95, 0.32, 1}
+				N = 8, -- number of lines. Defaul value is 8;
+				frequency = 0.25, -- frequency, set to negative to inverse direction of rotation. Default value is 0.25;
+				--length = 4, -- length of lines. Default value depends on region size and number of lines;
+				th = 2, -- thickness of lines. Default value is 2;
+				xOffset = 0,
+				yOffset = 0, -- offset of glow relative to region border;
+				border = false, -- set to true to create border under lines;
+				key = key or "", -- key of glow, allows for multiple glows on one frame;
+			}
+		else
+			options.glowType = "pixel"
+		end
+		
+		Plater.StartGlow(frame, color, options, key)
+	end
+	
+	-- stop LibCustomGlow effects on the frame, if existing
+	-- if glowType (and key) are given, stop one glow. if not, stop all.
+	function Plater.StopGlow(frame, glowType, key)
+		if not frame then return end
+		if not frame.__PlaterGlowFrame then return end
+		
+		if glowType then		
+			if glowType == "button" then
+				LCG.ButtonGlow_Stop(frame.__PlaterGlowFrame, key or "")
+			elseif glowType == "pixel" then
+				LCG.PixelGlow_Stop(frame.__PlaterGlowFrame, key or "")
+			elseif glowType == "ants" then
+				LCG.AutoCastGlow_Stop(frame.__PlaterGlowFrame, key or "")
+			end
+		else
+			LCG.ButtonGlow_Stop(frame.__PlaterGlowFrame, key or "")
+			LCG.PixelGlow_Stop(frame.__PlaterGlowFrame, key or "")
+			LCG.AutoCastGlow_Stop(frame.__PlaterGlowFrame, key or "")
+		end
+	end
+	
+	-- stop a button glow
+	function Plater.StopButtonGlow(frame, key)
+		Plater.StopGlow(frame, "button", key)
+	end
+	
+	-- stop a button glow
+	function Plater.StopPixelGlow(frame, key)
+		Plater.StopGlow(frame, "pixel", key)
+	end
+	
+	-- stop an ants glow
+	function Plater.StopAntsGlow(frame, key)
+		Plater.StopGlow(frame, "ants", key)
 	end
 
 	--create a glow around an icon

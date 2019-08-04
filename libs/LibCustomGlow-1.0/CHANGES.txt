@@ -1,0 +1,16 @@
+tag b1ff2a53194668ff943328a9c6e9b1ac2ca488e8 1.0.1
+Author:	Benjamin Staneck <staneck@gmail.com>
+Date:	Fri Feb 1 21:43:59 2019 +0100
+
+commit 409960e5730f8490facec60cdee993e5b8af9b74
+Author: Benjamin Staneck <staneck@gmail.com>
+Date:   Fri Dec 14 04:05:29 2018 +0100
+
+    Update TOC for Patch 8.1
+
+commit 46a3d5879f9ac5e11d8d69e74d750d795bb8e7e4
+Author: deezo <dooezzz@gmail.com>
+Date:   Sun Jan 27 19:02:36 2019 +0300
+
+    Reapplying blizzard glow to the frame now updates glow size
+
