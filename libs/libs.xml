@@ -16,6 +16,7 @@
 	<Include file="AceSerializer-3.0\AceSerializer-3.0.xml"/>
 	<Include file="LibCompress\lib.xml"/>
 	<Include file="LibDeflate\lib.xml"/>
+	<Include file="LibCustomGlow-1.0\LibCustomGlow-1.0.xml"/>
 	<Script file="LibDataBroker-1.1\LibDataBroker-1.1.lua"/>
 	<Script file="LibDBIcon-1.0\LibDBIcon-1.0.lua"/>
 	<Script file="indent.lua"/>
