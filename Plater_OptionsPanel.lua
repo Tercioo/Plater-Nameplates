@@ -1107,6 +1107,22 @@ local debuff_options = {
 	},
 	
 	{
+		type = "range",
+		get = function() return Plater.db.profile.aura_breakline_space end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_breakline_space = value
+			Plater.RefreshDBUpvalues()
+		end,
+		min = 1,
+		max = 15,
+		step = 0.01,
+		usedecimals = true,
+		thumbscale = 1.8,
+		name = "Icon Row Spacing",
+		desc = "Icon Row Spacing",
+	},
+	
+	{
 		type = "toggle",
 		get = function() return Plater.db.profile.aura_consolidate end,
 		set = function (self, fixedparam, value) 
@@ -1150,7 +1166,7 @@ local debuff_options = {
 		desc = "Debuff's icon height.",
 	},
 	
-	{type = "blank"},
+	{type = "breakline"},
 	{type = "label", get = function() return "Aura Frame 1:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	
 	--> grow direction
