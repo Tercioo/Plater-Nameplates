@@ -9136,14 +9136,23 @@ end
 		--remove the animation list from the profile
 		profile.spell_animation_list = nil
 		
+		--temp store trashcans
+		local trashcanScripts = profile.script_data_trash
+		local trashcanHooks = profile.hook_data_trash
+		--clear the trash can
+		profile.script_data_trash = nil
+		profile.hook_data_trash = nil
+		
 		--convert the profile to string
 		local data = Plater.CompressData (profile, "print")
 		if (not data) then
 			Plater:Msg ("failed to compress the profile")
 		end
 		
-		--restore the profile animations
+		--restore the profile animations and trashcan
 		profile.spell_animation_list = spellAnimations
+		profile.script_data_trash = trashcanScripts
+		profile.hook_data_trash = trashcanHooks
 		
 		return data
 	end
