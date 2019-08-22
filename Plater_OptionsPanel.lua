@@ -3287,6 +3287,17 @@ Plater.CreateAuraTesting()
 		specialAuraFrame:SetPoint ("topright", auraSpecialFrame, "topright", -10, startY)
 		--DF:ApplyStandardBackdrop (specialAuraFrame, false, 0.6)
 		
+		specialAuraFrame.SpellHashTable = {}
+		specialAuraFrame.SpellIndexTable = {}
+		
+		function specialAuraFrame.LoadGameSpells()
+			if (not next (specialAuraFrame.SpellHashTable)) then
+				--load all spells in the game
+				DF:LoadAllSpells (specialAuraFrame.SpellHashTable, specialAuraFrame.SpellIndexTable)
+				return true
+			end
+		end
+		
 		local scroll_width = 280
 		local scroll_height = 442
 		local scroll_lines = 21
@@ -3325,6 +3336,12 @@ Plater.CreateAuraTesting()
 		local line_onenter = function (self)
 			self:SetBackdropColor (unpack (backdrop_color_on_enter))
 			local spellid = select (7, GetSpellInfo (self.value))
+			
+			if  not spellid then
+				-- if the player class does not know the spell, try checking the cache
+				spellid = specialAuraFrame.SpellHashTable[self.value]
+			end
+			
 			if (spellid) then
 				GameTooltip:SetOwner (self, "ANCHOR_TOPLEFT");
 				GameTooltip:SetSpellByID (spellid)
@@ -3414,6 +3431,17 @@ Plater.CreateAuraTesting()
 					local name, _, icon = GetSpellInfo (aura)
 					line.value = aura
 					
+					if not name then
+						-- if the player class does not know the spell, try checking the cache
+						-- avoids "unknown spell" in this case
+						if (not next (specialAuraFrame.SpellHashTable)) then
+							specialAuraFrame.LoadGameSpells()
+							C_Timer.After (0.2, function() self:Refresh() end)
+						end
+						local id = specialAuraFrame.SpellHashTable[lower(aura)]
+						name, _, icon = GetSpellInfo (id)
+					end
+					
 					if (name) then
 						line.name:SetText (name)
 						line.icon:SetTexture (icon)
@@ -3458,20 +3486,9 @@ Plater.CreateAuraTesting()
 		new_buff_entry.tooltip = "Enter the aura name using lower case letters.\n\nYou can add several spells at once using |cFFFFFF00;|r to separate each spell name."
 		new_buff_entry:SetJustifyH ("left")
 		
-		new_buff_entry.SpellHashTable = {}
-		new_buff_entry.SpellIndexTable = {}
-		
-		function new_buff_entry.LoadGameSpells()
-			if (not next (new_buff_entry.SpellHashTable)) then
-				--load all spells in the game
-				DF:LoadAllSpells (new_buff_entry.SpellHashTable, new_buff_entry.SpellIndexTable)
-				return true
-			end
-		end
-		
 		new_buff_entry:SetHook ("OnEditFocusGained", function (self, capsule)
-			new_buff_entry.LoadGameSpells()
-			new_buff_entry.SpellAutoCompleteList = new_buff_entry.SpellIndexTable
+			specialAuraFrame.LoadGameSpells()
+			new_buff_entry.SpellAutoCompleteList = specialAuraFrame.SpellIndexTable
 			new_buff_entry:SetAsAutoComplete ("SpellAutoCompleteList", nil, true)
 		end)
 		
@@ -3489,7 +3506,7 @@ Plater.CreateAuraTesting()
 			
 			--get the spell ID from the spell name
 			local lowertext = lower (text)
-			local spellID = new_buff_entry.SpellHashTable [lowertext]
+			local spellID = specialAuraFrame.SpellHashTable [lowertext]
 			if (not spellID) then
 				return
 			end
