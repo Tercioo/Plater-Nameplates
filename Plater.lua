@@ -9357,7 +9357,18 @@ end
 					end
 				end
 			end
-		end
+		end,
+		
+		IsProtected = function (self)
+		-- assume that nameplates are always protected since 8.2
+			if self then
+				if self.PlateFrame then
+					return self.PlateFrame:IsProtected()
+				end
+			end
+			
+			return false
+		end,
 	}
 	 
 	function Plater.GetAllScripts (scriptType)
