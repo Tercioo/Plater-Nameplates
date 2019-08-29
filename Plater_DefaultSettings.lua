@@ -2398,10 +2398,12 @@ PLATER_DEFAULT_SETTINGS = {
 		dps = {
 			colors = {
 				aggro = {1, 0.109803, 0},
+				solo = {.5, .5, 1},
 				noaggro = {.5, .5, 1},
 				pulling = {1, .8, 0},
 				notontank = {.5, .5, 1}, --color inside dungeon when the mob is not in the tank aggro and not on the player
 			},
+			use_aggro_solo = false,
 		},
 		
 		news_frame = {},
