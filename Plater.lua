@@ -5671,7 +5671,11 @@ end
 			--dps
 			if (isTanking) then
 				--the player is tanking as dps
-				set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.aggro))
+				if Plater.db.profile.dps.use_aggro_solo and not IsInGroup() then
+					set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.solo))
+				else
+					set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.aggro))
+				end
 				if (not self.PlateFrame.playerHasAggro and IS_IN_INSTANCE) then
 					self.PlateFrame.PlayBodyFlash ("-AGGRO-")
 				end
@@ -5714,14 +5718,22 @@ end
 					end
 				else
 					if (threatStatus == 3) then --player is tanking the mob as dps
-						set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.aggro))
+						if Plater.db.profile.dps.use_aggro_solo and not IsInGroup() then
+							set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.solo))
+						else
+							set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.aggro))
+						end
 						if (not self.PlateFrame.playerHasAggro and IS_IN_INSTANCE) then
 							self.PlateFrame.PlayBodyFlash ("-AGGRO-")
 						end
 						self.PlateFrame.playerHasAggro = true
 						
 					elseif (threatStatus == 2) then --player is tanking the mob with low aggro
-						set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.aggro))
+						if Plater.db.profile.dps.use_aggro_solo and not IsInGroup() then
+							set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.solo))
+						else
+							set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.aggro))
+						end
 						self.PlateFrame.playerHasAggro = true
 						
 					else --the unit isn't attacking the player based on the threat situation
@@ -5733,7 +5745,11 @@ end
 							--show aggro warning indicators
 							self.aggroGlowUpper:Show()
 							self.aggroGlowLower:Show()
-							colorToUse = DB_AGGRO_DPS_COLORS.pulling
+							if Plater.db.profile.dps.use_aggro_solo and not IsInGroup() then
+								colorToUse = DB_AGGRO_DPS_COLORS.solo
+							else
+								colorToUse = DB_AGGRO_DPS_COLORS.pulling
+							end
 							
 						elseif (threatStatus == 0) then
 							colorToUse = DB_AGGRO_DPS_COLORS.noaggro

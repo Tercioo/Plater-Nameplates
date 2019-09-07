@@ -10358,6 +10358,30 @@ local relevance_options = {
 			desc = L["OPTIONS_THREAT_COLOR_DPS_NOAGGRO_DESC"],
 		},
 		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.dps.use_aggro_solo end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.dps.use_aggro_solo = value
+			end,
+			name = "Use 'Solo' color",
+			desc = "Use the 'Solo' color when not in a group.",
+		},
+		
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.dps.colors.solo
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.dps.colors.solo
+				color[1], color[2], color[3], color[4] = r, g, b, a
+			end,
+			name = "Solo",
+			desc = "If enabled, always use this color when not in a group.",
+		},
+		
 		{type = "blank"},
 		{
 			type = "toggle",
