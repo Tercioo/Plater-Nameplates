@@ -124,7 +124,7 @@ end
 local TAB_INDEX_UIPARENTING = 4
 local TAB_INDEX_PROFILES = 20
 
--- ~options õptions
+-- ~options ï¿½ptions
 function Plater.OpenOptionsPanel()
 	
 	if (PlaterOptionsPanelFrame) then
@@ -451,7 +451,8 @@ function Plater.OpenOptionsPanel()
 					end
 					
 					if profileExists then
-						DF:ShowPromptPanel ("Warning!\nA Plater profile with the name \"" .. profileName.. "\" already exists. Are you sure you want to overwrite it?\nIf not: please specify a new name for the profile.\nOverwriting an existing profile cannot be undone!", function() profilesFrame.DoProfileImport(profileName, profile) end, function() end, true, 500)
+						--DF:ShowPromptPanel ("Warning!\nA Plater profile with the name \"" .. profileName.. "\" already exists. Are you sure you want to overwrite it?\nIf not: please specify a new name for the profile.\nOverwriting an existing profile cannot be undone!", function() profilesFrame.DoProfileImport(profileName, profile) end, function() end, true, 500)
+						DF:ShowPromptPanel (format (L["OPTIONS_PROFILE_IMPORT_OVERWRITE"], profileName), function() profilesFrame.DoProfileImport(profileName, profile) end, function() end, true, 500)
 					else
 						profilesFrame.DoProfileImport(profileName, profile)
 					end
@@ -1790,7 +1791,7 @@ Plater.CreateAuraTesting()
 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
---> unit color ~color ñpccolor ~npccolor ~npc ñpc
+--> unit color ~color ï¿½pccolor ~npccolor ~npc ï¿½pc
 --for import and export functions see ~importcolor ~exportcolor
 
 	do
@@ -9842,7 +9843,7 @@ local relevance_options = {
 	--]=]
 	
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
---> ~scripts ~scripting ~code ãnimations ~animations
+--> ~scripts ~scripting ~code ï¿½nimations ~animations
 	Plater.CreateScriptingPanel()
 	Plater.CreateHookingPanel()
 	Plater.CreateSpellAnimationPanel()
