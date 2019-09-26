@@ -412,8 +412,6 @@ function Plater.OpenOptionsPanel()
 
 				local text = profilesFrame.ImportStringField:GetText()
 				local profile = Plater.DecompressData (text, "print")
-
-				profilesFrame.HideStringField()
 				
 				if (profile and type (profile == "table")) then
 				
@@ -443,22 +441,48 @@ function Plater.OpenOptionsPanel()
 					--	return
 					--end
 					
-					Plater.db:SetProfile (profileName)
-					DF.table.copy (Plater.db.profile, profile)
-					
-					--make the option reopen after the reload
-					Plater.db.profile.reopoen_options_panel_on_tab = TAB_INDEX_PROFILES
-					
-					--check if parent to UIParent is enabled and calculate the new scale
-					if (Plater.db.profile.use_ui_parent) then
-						Plater.db.profile.ui_parent_scale_tune = 1 / UIParent:GetEffectiveScale()
-					else
-						Plater.db.profile.ui_parent_scale_tune = 0
+					local profiles = Plater.db:GetProfiles()
+					local profileExists = false
+					for i, existingProfName in ipairs(profiles) do
+						if existingProfName == profileName then
+							profileExists = true
+							break
+						end
 					end
 					
-					--automatically reload the user UI
-					ReloadUI()
+					if profileExists then
+						DF:ShowPromptPanel ("Warning!\nA Plater profile with the name \"" .. profileName.. "\" already exists. Are you sure you want to overwrite it?\nIf not: please specify a new name for the profile.\nOverwriting an existing profile cannot be undone!", function() profilesFrame.DoProfileImport(profileName, profile) end, function() end, true, 500)
+					else
+						profilesFrame.DoProfileImport(profileName, profile)
+					end
+					
 				end
+			end
+			
+			function profilesFrame.DoProfileImport(profileName, profile)
+				profilesFrame.HideStringField()
+				
+				-- switch to profile
+				Plater.db:SetProfile (profileName)
+				
+				-- cleanup profile -> reset to defaults
+				Plater.db:ResetProfile(false, true)
+				
+				-- import new profile settings
+				DF.table.copy (Plater.db.profile, profile)
+				
+				--make the option reopen after the reload
+				Plater.db.profile.reopoen_options_panel_on_tab = TAB_INDEX_PROFILES
+				
+				--check if parent to UIParent is enabled and calculate the new scale
+				if (Plater.db.profile.use_ui_parent) then
+					Plater.db.profile.ui_parent_scale_tune = 1 / UIParent:GetEffectiveScale()
+				else
+					Plater.db.profile.ui_parent_scale_tune = 0
+				end
+				
+				--automatically reload the user UI
+				ReloadUI()
 			end
 			
 			function profilesFrame.OpenProfileManagement()
