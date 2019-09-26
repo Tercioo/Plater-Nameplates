@@ -1,4 +1,130 @@
 local L = LibStub("AceLocale-3.0"):NewLocale("PlaterNameplates", "zhTW") 
 if not L then return end 
 
-@localization(locale="zhTW", format="lua_additive_table")@
+L["OPTIONS_ALPHA"] = "透明度"
+L["OPTIONS_ANCHOR"] = "錨點"
+--[[Translation missing --]]
+--[[ L["OPTIONS_ANCHOR_BOTTOM"] = ""--]] 
+--[[Translation missing --]]
+--[[ L["OPTIONS_ANCHOR_BOTTOMLEFT"] = ""--]] 
+--[[Translation missing --]]
+--[[ L["OPTIONS_ANCHOR_BOTTOMRIGHT"] = ""--]] 
+--[[Translation missing --]]
+--[[ L["OPTIONS_ANCHOR_CENTER"] = ""--]] 
+--[[Translation missing --]]
+--[[ L["OPTIONS_ANCHOR_INNERBOTTOM"] = ""--]] 
+--[[Translation missing --]]
+--[[ L["OPTIONS_ANCHOR_INNERLEFT"] = ""--]] 
+--[[Translation missing --]]
+--[[ L["OPTIONS_ANCHOR_INNERRIGHT"] = ""--]] 
+--[[Translation missing --]]
+--[[ L["OPTIONS_ANCHOR_INNERTOP"] = ""--]] 
+--[[Translation missing --]]
+--[[ L["OPTIONS_ANCHOR_LEFT"] = ""--]] 
+--[[Translation missing --]]
+--[[ L["OPTIONS_ANCHOR_RIGHT"] = ""--]] 
+--[[Translation missing --]]
+--[[ L["OPTIONS_ANCHOR_TOP"] = ""--]] 
+--[[Translation missing --]]
+--[[ L["OPTIONS_ANCHOR_TOPLEFT"] = ""--]] 
+--[[Translation missing --]]
+--[[ L["OPTIONS_ANCHOR_TOPRIGHT"] = ""--]] 
+L["OPTIONS_CANCEL"] = "取消"
+L["OPTIONS_COLOR"] = "顏色"
+L["OPTIONS_ENABLED"] = "啟用"
+L["OPTIONS_ERROR_CVARMODIFY"] = "在戰鬥狀態時不能改變 cvars"
+L["OPTIONS_ERROR_EXPORTSTRINGERROR"] = "導出失敗"
+L["OPTIONS_FONT"] = "字體"
+L["OPTIONS_FRIENDLY"] = "友方"
+L["OPTIONS_GENERALSETTINGS_HEALTHBAR_ANCHOR_TITLE"] = "血條外觀"
+L["OPTIONS_GENERALSETTINGS_HEALTHBAR_BGCOLOR"] = "血條的背景顏色及透明度"
+L["OPTIONS_GENERALSETTINGS_HEALTHBAR_BGTEXTURE"] = "血條背景材質"
+L["OPTIONS_GENERALSETTINGS_HEALTHBAR_TEXTURE"] = "血條材質"
+L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_ANCHOR_TITLE"] = "透明度控制"
+L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK"] = "範圍檢測"
+L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK_ALPHA"] = "範圍透明度"
+L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK_ENABLED"] = "使用範圍檢測"
+L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK_ENABLED_DESC"] = [=[範圍外單位的名條變得更加透明
+|cFFFFFF00Important|r: 選擇你要用於範圍檢測的法術]=]
+L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK_SPEC_DESC"] = "此職業專精的範圍檢測法術"
+L["OPTIONS_HOSTILE"] = "敵對"
+L["OPTIONS_NEUTRAL"] = "中立"
+L["OPTIONS_OKAY"] = "確定"
+L["OPTIONS_OUTLINE"] = "輪廓"
+L["OPTIONS_PLEASEWAIT"] = "這可能需要花費幾秒鐘"
+L["OPTIONS_PROFILE_CONFIG_EXPORTINGTASK"] = "Plater 正在導出當前的設定檔"
+L["OPTIONS_PROFILE_CONFIG_EXPORTPROFILE"] = "導出設定檔"
+L["OPTIONS_PROFILE_CONFIG_IMPORTPROFILE"] = "導入設定檔"
+L["OPTIONS_PROFILE_CONFIG_MOREPROFILES"] = "在Wago.io網站上取得更多設定檔"
+L["OPTIONS_PROFILE_CONFIG_OPENSETTINGS"] = "開啟設定檔的設置"
+L["OPTIONS_PROFILE_CONFIG_PROFILENAME"] = "新設定檔名稱"
+L["OPTIONS_PROFILE_CONFIG_PROFILENAME_DESC"] = [=[導入字串來創建一個新的設定檔
+相同名稱的設定檔將會被覆蓋]=]
+L["OPTIONS_PROFILE_ERROR_PROFILENAME"] = "無效的設定檔名稱"
+L["OPTIONS_PROFILE_ERROR_STRINGINVALID"] = "無效的設定檔"
+L["OPTIONS_PROFILE_ERROR_WRONGTAB"] = [=[無效的設定檔
+在腳本或模組的選項頁面導入腳本或模組的字串]=]
+--[[Translation missing --]]
+--[[ L["OPTIONS_SETTINGS_COPIED"] = ""--]] 
+--[[Translation missing --]]
+--[[ L["OPTIONS_SETTINGS_FAIL_COPIED"] = ""--]] 
+L["OPTIONS_SHADOWCOLOR"] = "陰影顏色"
+L["OPTIONS_SIZE"] = "大小"
+--[[Translation missing --]]
+--[[ L["OPTIONS_STATUSBAR_TEXT"] = ""--]] 
+L["OPTIONS_TABNAME_ADVANCED"] = "進階設定"
+L["OPTIONS_TABNAME_ANIMATIONS"] = "動畫設定"
+L["OPTIONS_TABNAME_AUTO"] = "自動選項"
+L["OPTIONS_TABNAME_BUFF_LIST"] = "增益列表"
+L["OPTIONS_TABNAME_BUFF_SETTINGS"] = "增益設定"
+L["OPTIONS_TABNAME_BUFF_SPECIAL"] = "特殊增益監控"
+L["OPTIONS_TABNAME_BUFF_TRACKING"] = "增益監控"
+L["OPTIONS_TABNAME_COLORSNPC"] = "Npc 顏色"
+L["OPTIONS_TABNAME_CREDITS"] = "開發人員名單"
+L["OPTIONS_TABNAME_GENERALSETTINGS"] = "常規設定"
+L["OPTIONS_TABNAME_MODDING"] = "模組"
+L["OPTIONS_TABNAME_NPCENEMY"] = "敵對 Npc"
+L["OPTIONS_TABNAME_NPCFRIENDLY"] = "友方 Npc"
+L["OPTIONS_TABNAME_PERSONAL"] = "個人名條"
+L["OPTIONS_TABNAME_PLAYERENEMY"] = "敵對玩家"
+L["OPTIONS_TABNAME_PLAYERFRIENDLY"] = "友方玩家"
+L["OPTIONS_TABNAME_PROFILES"] = "設定檔"
+L["OPTIONS_TABNAME_SCRIPTING"] = "腳本編寫"
+--[[Translation missing --]]
+--[[ L["OPTIONS_TABNAME_STRATA"] = ""--]] 
+L["OPTIONS_TABNAME_TARGET"] = "目標"
+L["OPTIONS_TABNAME_THREAT"] = "威脅 / 仇恨"
+L["OPTIONS_TEXTURE"] = "材質"
+L["OPTIONS_THREAT_AGGROSTATE_ANOTHERTANK"] = "仇恨在另一個坦克身上"
+L["OPTIONS_THREAT_AGGROSTATE_HIGHTHREAT"] = "高仇恨值"
+L["OPTIONS_THREAT_AGGROSTATE_NOAGGRO"] = "沒有仇恨"
+L["OPTIONS_THREAT_AGGROSTATE_NOTANK"] = "沒有坦克仇恨"
+L["OPTIONS_THREAT_AGGROSTATE_NOTINCOMBAT"] = "不在戰鬥中"
+L["OPTIONS_THREAT_AGGROSTATE_ONYOU_LOWAGGRO"] = "仇恨在你身上但數值不高"
+L["OPTIONS_THREAT_AGGROSTATE_ONYOU_LOWAGGRO_DESC"] = "單位正在攻擊你但其他玩家的仇恨值快要高過你"
+L["OPTIONS_THREAT_AGGROSTATE_ONYOU_SOLID"] = "仇恨在你身上"
+L["OPTIONS_THREAT_AGGROSTATE_TAPPED"] = "被其他玩家接觸過"
+L["OPTIONS_THREAT_COLOR_DPS_ANCHOR_TITLE"] = "輸出或者治療時的仇恨顏色"
+L["OPTIONS_THREAT_COLOR_DPS_HIGHTHREAT_DESC"] = "此單位正要開始攻擊你"
+L["OPTIONS_THREAT_COLOR_DPS_NOAGGRO_DESC"] = "此單位不是攻擊你"
+L["OPTIONS_THREAT_COLOR_DPS_NOTANK_DESC"] = "此單位不是攻擊你或坦克，很大機會正在攻擊隊伍或團隊中的治療或者輸出"
+L["OPTIONS_THREAT_COLOR_DPS_ONYOU_SOLID_DESC"] = "此單位正在攻擊你"
+L["OPTIONS_THREAT_COLOR_OVERRIDE_ANCHOR_TITLE"] = "覆蓋預設顏色"
+L["OPTIONS_THREAT_COLOR_OVERRIDE_DESC"] = [=[修改預設的中立，敵對和友方的顏色
+
+戰鬥中，如果啟用仇恨著色，這些顏色將被覆蓋成你設定的仇恨顏色]=]
+L["OPTIONS_THREAT_COLOR_TANK_ANCHOR_TITLE"] = "坦克專精的仇恨著色"
+L["OPTIONS_THREAT_COLOR_TANK_ANOTHERTANK_DESC"] = "此單位正由團隊中另一名坦克拉住"
+L["OPTIONS_THREAT_COLOR_TANK_NOAGGRO_DESC"] = "此單位對你沒有仇恨"
+L["OPTIONS_THREAT_COLOR_TANK_NOTINCOMBAT_DESC"] = "此單位不在戰鬥中"
+L["OPTIONS_THREAT_COLOR_TANK_ONYOU_SOLID_DESC"] = "此單位直攻擊你而且仇恨穩固"
+L["OPTIONS_THREAT_COLOR_TAPPED_DESC"] = "當其他人獲得該單位拾取權 (即使你參與擊殺該單位亦不會獲得任何經驗值或者物品)"
+L["OPTIONS_THREAT_DPS_CANCHECKNOTANK"] = "沒有坦克仇恨時的檢測"
+L["OPTIONS_THREAT_DPS_CANCHECKNOTANK_DESC"] = "身為輸出或治療並且沒有仇恨時，檢測敵人是否攻擊團隊或隊伍中其他非坦克的角色"
+L["OPTIONS_THREAT_MODIFIERS_ANCHOR_TITLE"] = "仇恨顏色修改"
+L["OPTIONS_THREAT_MODIFIERS_BORDERCOLOR"] = "邊框顏色"
+L["OPTIONS_THREAT_MODIFIERS_HEALTHBARCOLOR"] = "血條顏色"
+L["OPTIONS_THREAT_MODIFIERS_NAMECOLOR"] = "名字顏色"
+L["OPTIONS_XOFFSET"] = "X軸偏移"
+L["OPTIONS_YOFFSET"] = "Y軸偏移"
+
