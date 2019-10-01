@@ -2925,6 +2925,11 @@ function Plater.OnInit() --private
 		PlaterDBChr.debuffsBanned = PlaterDBChr.debuffsBanned or {}
 		PlaterDBChr.buffsBanned = PlaterDBChr.buffsBanned or {}
 		PlaterDBChr.spellRangeCheck = PlaterDBChr.spellRangeCheck or {}
+
+	--to fix: attempt to index field 'spellRangeCheck' (a string value)
+		if (type (PlaterDBChr.spellRangeCheck) ~= "table") then
+			PlaterDBChr.spellRangeCheck = {}
+		end
 	
 	--range check spells
 		for specID, _ in pairs (Plater.SpecList [select (2, UnitClass ("player"))]) do
