@@ -1425,9 +1425,10 @@ Plater.DefaultSpellRangeList = {
 							tinsert (frameAnimations, data)
 						end
 					end
+					
+					SPELL_WITH_ANIMATIONS [spellName] = frameAnimations
 				end
 				
-				SPELL_WITH_ANIMATIONS [spellName] = frameAnimations
 			end
 		end
 
