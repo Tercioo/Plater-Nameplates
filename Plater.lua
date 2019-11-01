@@ -2095,7 +2095,7 @@ Plater.DefaultSpellRangeList = {
 				else
 					newUnitFrame = DF:CreateUnitFrame (plateFrame, plateFrame:GetName() .. "PlaterUnitFrame", unitFrameOptions, healthBarOptions, castBarOptions)
 				end
-				
+
 				plateFrame.unitFrame = newUnitFrame
 				plateFrame.unitFrame:EnableMouse (false)
 				
@@ -2107,6 +2107,10 @@ Plater.DefaultSpellRangeList = {
 				
 				--OnHide handler
 				newUnitFrame:HookScript ("OnHide", newUnitFrame.OnHideWidget)
+
+				--OnHealthUpdate
+				newUnitFrame.healthBar:SetHook ("OnHealthChange", Plater.OnHealthChange)
+				newUnitFrame.healthBar:SetHook ("OnHealthMaxChange", Plater.OnHealthMaxChange)
 				
 				--register details framework hooks
 				newUnitFrame.castBar:SetHook ("OnShow", Plater.CastBarOnShow_Hook)
@@ -2348,7 +2352,7 @@ Plater.DefaultSpellRangeList = {
 			
 			--> unit name
 				--regular name
-				plateFrame.unitFrame.unitName:SetParent (healthBar) --the name is parented to unitFrame in the framework
+				plateFrame.unitFrame.unitName:SetParent (healthBar) --the name is parented to unitFrame in the framework, parent it to health bar
 				healthBar.unitName = plateFrame.unitFrame.unitName
 				healthBar.PlateFrame = plateFrame
 				plateFrame.unitName = plateFrame.unitFrame.unitName
@@ -3840,33 +3844,31 @@ function Plater.OnInit() --private
 			Plater.CheckLifePercentText (unitFrame)
 		end
 	end
-	
-	local on_health_change = function (self)
+
+	--self is the healthBar (it's parent is the unitFrame)
+	function Plater.OnUpdateHealthMax (self)
+		--the framework already set the min max values
+		self.CurrentHealthMax = self.currentHealthMax -- o.0 hãããnnn
+		Plater.CheckLifePercentText (self.unitFrame)
+	end
+
+	function Plater.OnHealthChange (self, unitId)
 		Plater.OnUpdateHealth (self)
 		
 		--> run on health changed hook
 		if (HOOK_HEALTH_UPDATE.ScriptAmount > 0) then
-			run_on_health_change_hook (self.unitFrame)
+			return run_on_health_change_hook (self.unitFrame)
 		end
 	end
-	hooksecurefunc (DF.HealthFrameFunctions, "UpdateHealth", on_health_change)
 	
-	--self is the healthBar (it's parent is the unitFrame)
-	function Plater.OnUpdateHealthMax (self)
-		--the framework already set the min max values
-		self.CurrentHealthMax = self.currentHealthMax
-		Plater.CheckLifePercentText (self.unitFrame)
-	end
-	
-	local on_healthmax_change = function (self)
+	function Plater.OnHealthMaxChange (self, unitId)
 		Plater.OnUpdateHealthMax (self)
 		
 		--> run on health changed hook
 		if (HOOK_HEALTH_UPDATE.ScriptAmount > 0) then
-			run_on_health_change_hook (self.unitFrame)
+			return run_on_health_change_hook (self.unitFrame)
 		end
 	end
-	hooksecurefunc (DF.HealthFrameFunctions, "UpdateMaxHealth", on_healthmax_change)
 	
 	--> profile changes and refreshes ~db
 		Plater.db.RegisterCallback (Plater, "OnProfileChanged", "RefreshConfigProfileChanged")
@@ -6401,7 +6403,7 @@ end
 	end
 	
 	function Plater.UpdateLifePercentText (healthBar, unitId, showHealthAmount, showPercentAmount, showDecimals) -- ~health
-	
+		
 		--get the cached health amount for performance
 		local currentHealth, maxHealth = healthBar.CurrentHealth, healthBar.CurrentHealthMax
 		
