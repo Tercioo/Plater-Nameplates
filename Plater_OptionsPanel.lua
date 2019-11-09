@@ -252,7 +252,7 @@ function Plater.OpenOptionsPanel()
 	DF:ApplyStandardBackdrop (statusBar)
 	statusBar:SetAlpha (0.8)
 	
-	DF:BuildStatusbarAuthorInfo (statusBar)
+	DF:BuildStatusbarAuthorInfo (statusBar, "Plater is Maintained by ", "Ariani | Terciob")
 	
 	--wago.io support
 	local wagoDesc = DF:CreateLabel (statusBar, L["OPTIONS_STATUSBAR_TEXT"])
