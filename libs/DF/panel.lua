@@ -6771,9 +6771,18 @@ end
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> statusbar info
 
-function DF:BuildStatusbarAuthorInfo (f)
-	
-	local authorName = DF:CreateLabel (f, "An addon by |cFFFFFFFFTercioo|r")
+--[[
+	authorTable = {
+		{
+			authorName = "author name 1",
+			link = "twitter.com/author1Handle",
+		}
+	}
+]]
+
+function DF:BuildStatusbarAuthorInfo (f, addonBy, authorsNameString)
+
+	local authorName = DF:CreateLabel (f, "" .. (addonBy or "An addon by") .. "|cFFFFFFFF" .. (authorsNameString or "Terciob") .. "|r")
 	authorName.textcolor = "silver"
 	local discordLabel = DF:CreateLabel (f, "Discord: ")
 	discordLabel.textcolor = "silver"
@@ -6796,6 +6805,7 @@ function DF:BuildStatusbarAuthorInfo (f)
 	discordTextEntry:SetHook ("OnEditFocusGained", function()
 		discordTextEntry:HighlightText()
 	end)
+
 end
 
 
