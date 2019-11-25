@@ -4779,7 +4779,7 @@ end
 						can_show_this_debuff = true
 					
 					--> is casted by the player
-					elseif (DB_AURA_SHOW_BYPLAYER and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet"))) then
+					elseif (DB_AURA_SHOW_BYPLAYER and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet") or Plater.PlayerPetCache[UnitGUID(caster)])) then
 						can_show_this_debuff = true
 						
 					--> user added this buff to track in the buff tracking tab
