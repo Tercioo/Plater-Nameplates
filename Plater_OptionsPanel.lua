@@ -1772,8 +1772,8 @@ Plater.CreateAuraTesting()
 		BUFFS_IGNORED = "Buffs on the blacklist (filtered out)",
 		DEBUFFS_AVAILABLE = "Click to add debuffs to blacklist",
 		DEBUFFS_IGNORED = "Debuffs on the blacklist (filtered out)",
-		BUFFS_TRACKED = "Aditional buffs to track",
-		DEBUFFS_TRACKED = "Aditional debuffs to track",
+		BUFFS_TRACKED = "Additional buffs to track",
+		DEBUFFS_TRACKED = "Additional debuffs to track",
 		MANUAL_DESC = "Auras are being tracked manually, the addon only check for auras you entered below.\nShow debuffs only casted by you, buffs from any source.\nYou may use the 'Buff Special' tab to add debuffs from any source.",
 	}
 	
