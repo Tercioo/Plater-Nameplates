@@ -1103,7 +1103,7 @@ Plater.DefaultSpellRangeList = {
 
 	--> return true if the resource bar should shown above the nameplate in the current target nameplate
 	function Plater.IsShowingResourcesOnTarget() --private
-		return GetCVar ("nameplateShowSelf") == CVAR_ENABLED and GetCVar ("nameplateResourceOnTarget") == CVAR_ENABLED
+		return PlaterDBChr.resources_on_target
 	end
 	
 	--> when the player left a zone but is in combat, wait 1 second and trigger the zone changed again
@@ -2019,6 +2019,15 @@ Plater.DefaultSpellRangeList = {
 			--run hooks on load screen
 			if (HOOK_LOAD_SCREEN.ScriptAmount > 0) then
 				Plater.PlayerEnteringWorld = true
+			end
+			
+			--> ensure resource on target consistency after login:
+			local resourcesOnTarget = GetCVar ("nameplateResourceOnTarget") == CVAR_ENABLED
+			if resourcesOnTarget then
+				PlaterDBChr.resources_on_target = true
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateResourceOnTarget", CVAR_DISABLED) -- reset this to false always, as it conflicts
+				end
 			end
 		end,
 
@@ -3236,7 +3245,7 @@ function Plater.OnInit() --private
 		function Plater.UpdatePersonalBar (self)
 			local showSelf = GetCVarBool ("nameplateShowSelf")
 			if (not showSelf) then
-				if (GetCVarBool ("nameplateResourceOnTarget")) then
+				if PlaterDBChr.resources_on_target then
 					Plater.UpdateResourceFrame()
 				end
 				return
@@ -3323,17 +3332,16 @@ function Plater.OnInit() --private
 			Plater.CurrentTargetResourceFrame = nil
 		
 			local showSelf = GetCVarBool ("nameplateShowSelf")
-			local onCurrentTarget
+			local onCurrentTarget = PlaterDBChr.resources_on_target
 			
 			if (not showSelf) then
-				onCurrentTarget = GetCVarBool ("nameplateResourceOnTarget")
 				if (not onCurrentTarget) then
 					return
 				end
 			end
 			
 			local resourceFrame = NamePlateDriverFrame.classNamePlateMechanicFrame
-			if (not resourceFrame or resourceFrame:IsForbidden() or not resourceFrame:IsShown()) then
+			if (not resourceFrame or resourceFrame:IsForbidden()) then
 				return
 			end
 			
@@ -3342,22 +3350,25 @@ function Plater.OnInit() --private
 			resourceFrame:SetAlpha (Plater.db.profile.resources.alpha)
 			
 			--check if resources are placed on the current target
-			onCurrentTarget = GetCVarBool ("nameplateResourceOnTarget")
 			if (onCurrentTarget) then
 				--resource bar are placed on the current target nameplate
-				local targetPlateFrame = C_NamePlate.GetNamePlateForUnit ("target")
+				local targetPlateFrame = C_NamePlate.GetNamePlateForUnit ("target", false) -- don't attach to secure frames to avoid tainting!
 				if (targetPlateFrame) then
+					resourceFrame:Show()
 					resourceFrame:SetParent (targetPlateFrame)
 					resourceFrame:ClearAllPoints()
 					resourceFrame:SetPoint ("bottom", targetPlateFrame.unitFrame.healthBar, "top", 0, Plater.db.profile.resources.y_offset_target)
 					Plater.CurrentTargetResourceFrame = resourceFrame
 					
 					Plater.UpdateResourceFrameAnchor (targetPlateFrame.unitFrame.BuffFrame)
+				else
+					resourceFrame:Hide()
 				end
 			else
 				--resource bar are placed below the mana bar at the personal bar
 				local personalPlateFrame = C_NamePlate.GetNamePlateForUnit ("player", issecure())
 				if (personalPlateFrame) then
+					resourceFrame:Show()
 					resourceFrame:SetParent (personalPlateFrame)
 					resourceFrame:ClearAllPoints()
 					
@@ -3367,6 +3378,8 @@ function Plater.OnInit() --private
 					else
 						resourceFrame:SetPoint ("top", personalPlateFrame.unitFrame.healthBar, "bottom", 0, -3 + Plater.db.profile.resources.y_offset)
 					end
+				else
+					resourceFrame:Hide()
 				end
 			end
 		end
@@ -8013,7 +8026,6 @@ function Plater.SetCVarsOnFirstRun()
 	
 	--disabled:
 		--SetCVar ("nameplateShowSelf", CVAR_DISABLED)
-		--SetCVar ("nameplateResourceOnTarget", CVAR_DISABLED)
 		--SetCVar ("nameplateShowFriends", CVAR_ENABLED)
 	--> location of the personal bar
 	--	SetCVar ("nameplateSelfBottomInset", 20 / 100)
@@ -8070,6 +8082,10 @@ function Plater.SetCVarsOnFirstRun()
 
 	--> view distance
 	SetCVar ("nameplateMaxDistance", 100)
+	
+	--> ensure resource on target consistency:
+	PlaterDBChr.resources_on_target = GetCVar ("nameplateResourceOnTarget") == CVAR_ENABLED
+	SetCVar ("nameplateResourceOnTarget", CVAR_DISABLED)
 	
 	PlaterDBChr.first_run3 [UnitGUID ("player")] = true
 	Plater.db.profile.first_run3 = true

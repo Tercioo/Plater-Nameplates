@@ -770,17 +770,15 @@ local interface_options = {
 		},
 		{
 			type = "toggle",
-			get = function() return GetCVar (CVAR_RESOURCEONTARGET) == CVAR_ENABLED end,
+			get = function() return PlaterDBChr.resources_on_target end,
 			set = function (self, fixedparam, value) 
+				PlaterDBChr.resources_on_target = value
 				if (not InCombatLockdown()) then
-					SetCVar (CVAR_RESOURCEONTARGET, math.abs (tonumber (GetCVar (CVAR_RESOURCEONTARGET))-1))
-				else
-					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
-					self:SetValue (GetCVar (CVAR_RESOURCEONTARGET) == CVAR_ENABLED)
+					SetCVar (CVAR_RESOURCEONTARGET, CVAR_DISABLED) -- reset this to false always, as it conflicts
 				end
 			end,
-			name = "Show Resources on Target" .. CVarIcon,
-			desc = "Shows your resource such as combo points above your current target.\n\n'Personal Health and Mana Bars' has to be enabled" .. CVarDesc,
+			name = "Show Resources on Target",
+			desc = "Shows your resource such as combo points above your current target.\n\nCharacter specific setting!",
 			nocombat = true,
 		},
 		{
