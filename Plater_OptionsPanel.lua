@@ -770,17 +770,15 @@ local interface_options = {
 		},
 		{
 			type = "toggle",
-			get = function() return GetCVar (CVAR_RESOURCEONTARGET) == CVAR_ENABLED end,
+			get = function() return PlaterDBChr.resources_on_target end,
 			set = function (self, fixedparam, value) 
+				PlaterDBChr.resources_on_target = value
 				if (not InCombatLockdown()) then
-					SetCVar (CVAR_RESOURCEONTARGET, math.abs (tonumber (GetCVar (CVAR_RESOURCEONTARGET))-1))
-				else
-					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
-					self:SetValue (GetCVar (CVAR_RESOURCEONTARGET) == CVAR_ENABLED)
+					SetCVar (CVAR_RESOURCEONTARGET, CVAR_DISABLED) -- reset this to false always, as it conflicts
 				end
 			end,
-			name = "Show Resources on Target" .. CVarIcon,
-			desc = "Shows your resource such as combo points above your current target.\n\n'Personal Health and Mana Bars' has to be enabled" .. CVarDesc,
+			name = "Show Resources on Target",
+			desc = "Shows your resource such as combo points above your current target.\n\nCharacter specific setting!",
 			nocombat = true,
 		},
 		{
@@ -1772,8 +1770,8 @@ Plater.CreateAuraTesting()
 		BUFFS_IGNORED = "Buffs on the blacklist (filtered out)",
 		DEBUFFS_AVAILABLE = "Click to add debuffs to blacklist",
 		DEBUFFS_IGNORED = "Debuffs on the blacklist (filtered out)",
-		BUFFS_TRACKED = "Aditional buffs to track",
-		DEBUFFS_TRACKED = "Aditional debuffs to track",
+		BUFFS_TRACKED = "Additional buffs to track",
+		DEBUFFS_TRACKED = "Additional debuffs to track",
 		MANUAL_DESC = "Auras are being tracked manually, the addon only check for auras you entered below.\nShow debuffs only casted by you, buffs from any source.\nYou may use the 'Buff Special' tab to add debuffs from any source.",
 	}
 	
