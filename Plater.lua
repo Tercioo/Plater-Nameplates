@@ -621,7 +621,7 @@ Plater.DefaultSpellRangeList = {
 	[263] = 187837, --> shaman enhancement - Lightning Bolt (instance cast)
 	[264] = 403, --> shaman resto - Lightning Bolt
 
-	[265] = 980, --> warlock aff - Agony
+	[265] = 686, --> warlock aff - Shadow Bolt
 	[266] = 686, --> warlock demo - Shadow Bolt
 	[267] = 116858, --> warlock destro - Chaos Bolt
 	
