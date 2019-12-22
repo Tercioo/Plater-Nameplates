@@ -5566,7 +5566,17 @@ local relevance_options = {
 			end,
 			name = "Hide Friendly Cast Bar",
 			desc = "Hide Friendly Cast Bar",
-		},		
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.hide_enemy_castbars end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.hide_enemy_castbars = value
+				Plater.RefreshDBUpvalues()
+			end,
+			name = "Hide Enemy Cast Bar",
+			desc = "Hide Enemy Cast Bar",
+		},
 
 		{type = "blank"},
 		
