@@ -5022,11 +5022,27 @@ end
 			
 		else
 			--check if is a player
-			if (UnitIsPlayer (unitID) and (unitFrame.ActorType == ACTORTYPE_FRIENDLY_PLAYER or unitFrame.ActorType == ACTORTYPE_ENEMY_PLAYER)) then
-				local _, class = UnitClass (unitID)
-				local classColor = RAID_CLASS_COLORS [class]
-				if (classColor) then -- and unitFrame.optionTable.useClassColors
-					r, g, b = classColor.r, classColor.g, classColor.b
+			if UnitIsPlayer (unitID) then
+				if (unitFrame.ActorType == ACTORTYPE_FRIENDLY_PLAYER) then
+					if (Plater.db.profile.use_playerclass_color) then
+						local _, class = UnitClass (unitID)
+						local classColor = RAID_CLASS_COLORS [class]
+						if (classColor) then -- and unitFrame.optionTable.useClassColors
+							r, g, b = classColor.r, classColor.g, classColor.b
+						end
+					else
+						r, g, b = unpack(Plater.db.profile.plate_config.friendlyplayer.fixed_class_color)
+					end
+				elseif (unitFrame.ActorType == ACTORTYPE_ENEMY_PLAYER) then
+					if (Plater.db.profile.plate_config.enemyplayer.use_playerclass_color) then
+						local _, class = UnitClass (unitID)
+						local classColor = RAID_CLASS_COLORS [class]
+						if (classColor) then -- and unitFrame.optionTable.useClassColors
+							r, g, b = classColor.r, classColor.g, classColor.b
+						end
+					else
+						r, g, b = unpack(Plater.db.profile.plate_config.enemyplayer.fixed_class_color)
+					end
 				end
 				
 			--check if is tapped
@@ -5209,6 +5225,7 @@ end
 			castBar:ClearAllPoints()
 			PixelUtil.SetPoint (castBar, "topleft", healthBar, "bottomleft", castBarOffSetX, castBarOffSetY)
 			PixelUtil.SetPoint (castBar, "topright", healthBar, "bottomright", -castBarOffSetX, castBarOffSetY)
+			PixelUtil.SetWidth (castBar, castBarWidth)
 			PixelUtil.SetHeight (castBar, castBarHeight)
 			PixelUtil.SetSize (castBar.Icon, castBarHeight, castBarHeight)
 			PixelUtil.SetSize (castBar.BorderShield, castBarHeight * 1.4, castBarHeight * 1.4)
@@ -6052,7 +6069,43 @@ end
 	-- update all texts in the nameplate, settings can variate from different unit types
 	-- needReset is true when the previous unit type shown on this place is different from the current unit
 	function Plater.UpdatePlateText (plateFrame, plateConfigs, needReset) --private
+	
+		-- ensure castBar updates are done, as this needs to be done for all types of plates...
+		local spellnameString = plateFrame.unitFrame.castBar.Text
+		local spellPercentString = plateFrame.unitFrame.castBar.percentText
+		--update spell name text
+		if (needReset) then
+			DF:SetFontColor (spellnameString, plateConfigs.spellname_text_color)
+			
+			--DF:SetFontOutline (spellnameString, plateConfigs.spellname_text_shadow)
+			Plater.SetFontOutlineAndShadow (spellnameString, plateConfigs.spellname_text_outline, plateConfigs.spellname_text_shadow_color, plateConfigs.spellname_text_shadow_color_offset[1], plateConfigs.spellname_text_shadow_color_offset[2])
+			
+			DF:SetFontFace (spellnameString, plateConfigs.spellname_text_font)
+			DF:SetFontSize (spellnameString, plateConfigs.spellname_text_size)
+			Plater.SetAnchor (spellnameString, plateConfigs.spellname_text_anchor)
+		end
+
+		--update spell cast time
+		if (plateConfigs.spellpercent_text_enabled) then
+			spellPercentString:Show()
+			plateFrame.unitFrame.castBar.Settings.ShowCastTime = true
+			if (needReset) then
+				DF:SetFontColor (spellPercentString, plateConfigs.spellpercent_text_color)
+				DF:SetFontSize (spellPercentString, plateConfigs.spellpercent_text_size)
+				
+				--DF:SetFontOutline (spellPercentString, plateConfigs.spellpercent_text_shadow)
+				Plater.SetFontOutlineAndShadow (spellPercentString, plateConfigs.spellpercent_text_outline, plateConfigs.spellpercent_text_shadow_color, plateConfigs.spellpercent_text_shadow_color_offset[1], plateConfigs.spellpercent_text_shadow_color_offset[2])
+				
+				DF:SetFontFace (spellPercentString, plateConfigs.spellpercent_text_font)
+				Plater.SetAnchor (spellPercentString, plateConfigs.spellpercent_text_anchor)
+			end
+		else
+			plateFrame.unitFrame.castBar.Settings.ShowCastTime = false
+			spellPercentString:Hide()
+		end
 		
+	
+		-- updates for special frames
 		if (plateFrame.isSelf) then
 		
 			--return
@@ -6251,8 +6304,6 @@ end
 		--critical code
 		--the nameplate is showing the health bar
 		--cache the strings for performance
-		local spellnameString = plateFrame.unitFrame.castBar.Text
-		local spellPercentString = plateFrame.unitFrame.castBar.percentText
 		local nameString = plateFrame.unitFrame.healthBar.unitName	
 		local guildString = plateFrame.ActorTitleSpecial
 		local levelString = plateFrame.unitFrame.healthBar.actorLevel
@@ -6309,37 +6360,6 @@ end
 			DF:SetFontColor (nameString, plateConfigs.actorname_text_color)
 			DF:SetFontColor (guildString, plateConfigs.actorname_text_color)
 			plateFrame.isFriend = nil
-		end
-
-		--update spell name text
-		if (needReset) then
-			DF:SetFontColor (spellnameString, plateConfigs.spellname_text_color)
-			
-			--DF:SetFontOutline (spellnameString, plateConfigs.spellname_text_shadow)
-			Plater.SetFontOutlineAndShadow (spellnameString, plateConfigs.spellname_text_outline, plateConfigs.spellname_text_shadow_color, plateConfigs.spellname_text_shadow_color_offset[1], plateConfigs.spellname_text_shadow_color_offset[2])
-			
-			DF:SetFontFace (spellnameString, plateConfigs.spellname_text_font)
-			DF:SetFontSize (spellnameString, plateConfigs.spellname_text_size)
-			Plater.SetAnchor (spellnameString, plateConfigs.spellname_text_anchor)
-		end
-
-		--update spell cast time
-		if (plateConfigs.spellpercent_text_enabled) then
-			spellPercentString:Show()
-			plateFrame.unitFrame.castBar.Settings.ShowCastTime = true
-			if (needReset) then
-				DF:SetFontColor (spellPercentString, plateConfigs.spellpercent_text_color)
-				DF:SetFontSize (spellPercentString, plateConfigs.spellpercent_text_size)
-				
-				--DF:SetFontOutline (spellPercentString, plateConfigs.spellpercent_text_shadow)
-				Plater.SetFontOutlineAndShadow (spellPercentString, plateConfigs.spellpercent_text_outline, plateConfigs.spellpercent_text_shadow_color, plateConfigs.spellpercent_text_shadow_color_offset[1], plateConfigs.spellpercent_text_shadow_color_offset[2])
-				
-				DF:SetFontFace (spellPercentString, plateConfigs.spellpercent_text_font)
-				Plater.SetAnchor (spellPercentString, plateConfigs.spellpercent_text_anchor)
-			end
-		else
-			plateFrame.unitFrame.castBar.Settings.ShowCastTime = false
-			spellPercentString:Hide()
 		end
 		
 		--update unit level text
@@ -6707,18 +6727,16 @@ end
 		elseif (actorType == ACTORTYPE_FRIENDLY_PLAYER) then
 			Plater.ParseHealthSettingForPlayer (plateFrame)
 			
-			if (not plateFrame.IsFriendlyPlayerWithoutHealthBar) then
 				--change the player health bar color to either class color or users choice
-				if (not Plater.db.profile.use_playerclass_color) then
-					Plater.ChangeHealthBarColor_Internal (healthBar, unpack(DB_PLATE_CONFIG [actorType].fixed_class_color))
+			if (not Plater.db.profile.use_playerclass_color) then
+				Plater.ChangeHealthBarColor_Internal (healthBar, unpack(DB_PLATE_CONFIG [actorType].fixed_class_color))
+			else
+				local _, class = UnitClass (plateFrame [MEMBER_UNITID])
+				if (class) then		
+					local color = RAID_CLASS_COLORS [class]
+					Plater.ChangeHealthBarColor_Internal (healthBar, color.r, color.g, color.b)
 				else
-					local _, class = UnitClass (plateFrame [MEMBER_UNITID])
-					if (class) then		
-						local color = RAID_CLASS_COLORS [class]
-						Plater.ChangeHealthBarColor_Internal (healthBar, color.r, color.g, color.b)
-					else
-						Plater.ChangeHealthBarColor_Internal (healthBar, 1, 1, 1)
-					end
+					Plater.ChangeHealthBarColor_Internal (healthBar, 1, 1, 1)
 				end
 			end
 			
@@ -6759,7 +6777,7 @@ end
 		--update all texts in the nameplate
 		Plater.UpdatePlateText (plateFrame, DB_PLATE_CONFIG [actorType], shouldForceRefresh or plateFrame.PreviousUnitType ~= actorType or unitFrame.RefreshID < PLATER_REFRESH_ID)
 
-		if (unitFrame.RefreshID < PLATER_REFRESH_ID) then
+		if (unitFrame.RefreshID < PLATER_REFRESH_ID or shouldForceRefresh) then
 			unitFrame.RefreshID = PLATER_REFRESH_ID
 
 			local profile = Plater.db.profile
