@@ -1639,6 +1639,10 @@ Plater.DefaultSpellRangeList = {
 			castBar:SetFrameLevel (profile.ui_parent_cast_level)
 			buffFrame1:SetFrameLevel (profile.ui_parent_buff_level)
 			buffFrame2:SetFrameLevel (profile.ui_parent_buff2_level)
+			
+			--raid-target marker adjust:
+			unitFrame.PlaterRaidTargetFrame:SetFrameStrata(unitFrame.healthBar:GetFrameStrata())
+			unitFrame.PlaterRaidTargetFrame:SetFrameLevel(unitFrame.healthBar:GetFrameLevel() + 1 )
 		end
 	end	
 	
@@ -7003,6 +7007,10 @@ end
 			--adjust scale and anchor
 			plateFrame.unitFrame.PlaterRaidTargetFrame:SetScale (Plater.db.profile.indicator_raidmark_scale)
 			Plater.SetAnchor (plateFrame.unitFrame.PlaterRaidTargetFrame, Plater.db.profile.indicator_raidmark_anchor)
+			
+			--adjust frame level:
+			unitFrame.PlaterRaidTargetFrame:SetFrameStrata(unitFrame.healthBar:GetFrameStrata())
+			unitFrame.PlaterRaidTargetFrame:SetFrameLevel(unitFrame.healthBar:GetFrameLevel() + 1)
 			
 			--mini mark inside the nameplate
 			if (Plater.db.profile.indicator_extra_raidmark) then
