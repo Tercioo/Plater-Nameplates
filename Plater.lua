@@ -7017,8 +7017,8 @@ end
 			Plater.SetAnchor (plateFrame.unitFrame.PlaterRaidTargetFrame, Plater.db.profile.indicator_raidmark_anchor)
 			
 			--adjust frame level:
-			unitFrame.PlaterRaidTargetFrame:SetFrameStrata(unitFrame.healthBar:GetFrameStrata())
-			unitFrame.PlaterRaidTargetFrame:SetFrameLevel(unitFrame.healthBar:GetFrameLevel() + 25)
+			plateFrame.unitFrame.PlaterRaidTargetFrame:SetFrameStrata(plateFrame.unitFrame.healthBar:GetFrameStrata())
+			plateFrame.unitFrame.PlaterRaidTargetFrame:SetFrameLevel(plateFrame.unitFrame.healthBar:GetFrameLevel() + 25)
 			
 			--mini mark inside the nameplate
 			if (Plater.db.profile.indicator_extra_raidmark) then
