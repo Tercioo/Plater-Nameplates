@@ -3359,9 +3359,11 @@ function Plater.OnInit() --private
 				local targetPlateFrame = C_NamePlate.GetNamePlateForUnit ("target", false) -- don't attach to secure frames to avoid tainting!
 				if (targetPlateFrame) then
 					resourceFrame:Show()
-					resourceFrame:SetParent (targetPlateFrame)
+					resourceFrame:SetParent (targetPlateFrame.unitFrame)
 					resourceFrame:ClearAllPoints()
 					resourceFrame:SetPoint ("bottom", targetPlateFrame.unitFrame.healthBar, "top", 0, Plater.db.profile.resources.y_offset_target)
+					resourceFrame:SetFrameStrata(targetPlateFrame.unitFrame.healthBar:GetFrameStrata())
+					resourceFrame:SetFrameLevel(targetPlateFrame.unitFrame.healthBar:GetFrameLevel() + 25)
 					Plater.CurrentTargetResourceFrame = resourceFrame
 					
 					Plater.UpdateResourceFrameAnchor (targetPlateFrame.unitFrame.BuffFrame)
@@ -3373,7 +3375,7 @@ function Plater.OnInit() --private
 				local personalPlateFrame = C_NamePlate.GetNamePlateForUnit ("player", issecure())
 				if (personalPlateFrame) then
 					resourceFrame:Show()
-					resourceFrame:SetParent (personalPlateFrame)
+					resourceFrame:SetParent (personalPlateFrame.unitFrame)
 					resourceFrame:ClearAllPoints()
 					
 					--> attach to powerbar if shown
@@ -3382,6 +3384,9 @@ function Plater.OnInit() --private
 					else
 						resourceFrame:SetPoint ("top", personalPlateFrame.unitFrame.healthBar, "bottom", 0, -3 + Plater.db.profile.resources.y_offset)
 					end
+					
+					resourceFrame:SetFrameStrata(personalPlateFrame.unitFrame.healthBar:GetFrameStrata())
+					resourceFrame:SetFrameLevel(personalPlateFrame.unitFrame.healthBar:GetFrameLevel() + 25)
 				else
 					resourceFrame:Hide()
 				end
