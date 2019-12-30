@@ -7802,57 +7802,28 @@ end
 				--check if the settings exists
 				if (OmniCCGroupSettings and OmniCCAllGroups) then
 					--attempt to get the plater group
-					local platerGroup
-					for groupIndex, groupTable in ipairs (OmniCCAllGroups) do
-						if (groupTable.id == platerGroupName) then
-							platerGroup = groupTable
-							break
-						end
-					end
+					local platerGroupID = OmniCC:GetGroupIndex(platerGroupName)
 					
 					--check if the plater group exists, this doesn't but the call is from Initialization or Profile Refresh, just quit
-					if (not platerGroup and fromInit) then
+					if (not platerGroupID and fromInit) then
 						return
 					end
 					
-					--if doesn't exists and isn't from init (the call came from the options panel by the user clicking in the checkbox)
-					if (not platerGroup) then
-						platerGroup = {
-							id = platerGroupName,
-							rules = {},
-							enabled = true,
-						}
-						tinsert (OmniCCAllGroups, platerGroup)
+					local platerGroupSettings = OmniCC:GetGroupSettings(platerGroupName)
+					-- cleanup old, unclean instances...
+					if platerGroupSettings and not platerGroupSettings.xOff then
+						OmniCC:RemoveGroup(platerGroupName)
+						platerGroupID = nil
 					end
 					
-					--get the plater settings table
-					local settingsGroup = OmniCCGroupSettings [platerGroupName]
-					if (not settingsGroup) then
-						settingsGroup = {
-							enabled = false,
-							minDuration = 2,
-							styles = {
-								minutes = {
-								},
-								soon = {
-								},
-								seconds = {
-								},
-								hours = {
-								},
-								charging = {
-								},
-								controlled = {
-								},
-							},
-							tenthsDuration = 0,
-							minSize = 0.5,
-							minEffectDuration = 30,
-							enabled = true,
-							mmSSDuration = 0,
-						}
-						OmniCCGroupSettings [platerGroupName] = settingsGroup
+					--if doesn't exists and isn't from init (the call came from the options panel by the user clicking in the checkbox)
+					if (not platerGroupID) then
+						OmniCC:AddGroup(platerGroupName)
 					end
+					local platerGroup = OmniCCAllGroups[OmniCC:GetGroupIndex(platerGroupName)]
+					
+					--get the plater settings table
+					local settingsGroup = OmniCC:GetGroupSettings(platerGroupName)
 					
 					if (Plater.db.profile.disable_omnicc_on_auras) then
 						DF.table.addunique (platerGroup.rules, "PlaterMainAuraIcon")
@@ -7863,6 +7834,8 @@ end
 						wipe (platerGroup.rules)
 						settingsGroup.enabled = false
 					end
+					
+					OmniCC:UpdateGroups()
 				end
 			end
 		end
