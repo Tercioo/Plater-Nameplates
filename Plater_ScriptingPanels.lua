@@ -18,6 +18,12 @@ function Plater.SortScripts (t1, t2)
 	end
 end
 
+-- simple rounding to full numbers
+local function round(x)
+	if not x then return nil end
+	return (x + 0.5 - (x + 0.5) % 1)
+end
+
 --tab indexes
 local PLATER_OPTIONS_SCRIPTING_TAB = 5
 local PLATER_OPTIONS_HOOKING_TAB = 6
@@ -29,10 +35,10 @@ local edit_script_size = {620, 431}
 
 local scrollbox_size = {200, 405}
 local scrollbox_lines = 13
-local hook_scrollbox_lines = 14
+local hook_scrollbox_lines = 13
 local scrollbox_line_height = 30
 
-local triggerbox_size = {180, 288}
+local triggerbox_size = {180, 258}
 local triggerbox_lines = 11
 local triggerbox_line_height = 25
 
@@ -433,16 +439,7 @@ Plater.TriggerDefaultMembers = {
 		local scriptObject = Plater.GetScriptObject (scriptId, self.ScriptType)
 		if (scriptObject) then
 			scriptObject.Enabled = value
-			if (not value) then
-				Plater.WipeAndRecompileAllScripts (mainFrame.ScriptType)
-			else
-				if (mainFrame.ScriptType == "script") then
-					Plater.CompileScript (scriptObject)
-					
-				elseif (mainFrame.ScriptType == "hook") then
-					Plater.CompileHook (scriptObject)
-				end
-			end
+			Plater.WipeAndRecompileAllScripts (mainFrame.ScriptType)
 		end
 		
 		mainFrame.ScriptSelectionScrollBox:Refresh()
@@ -730,9 +727,16 @@ Plater.TriggerDefaultMembers = {
 		script_desc_textentry:SetPoint ("topleft", script_desc_label, "bottomleft", 0, -2)
 		mainFrame.ScriptDescTextEntry = script_desc_textentry
 		
+		--priority
+		local script_prio_label = DF:CreateLabel (parent, "Priority:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
+		local script_prio_entry = DF:CreateSlider (parent, 156, 10, 1, 99, 1, 99, false, "ScriptPrioritySlider", _, _, options_slider_template, _)
+		script_prio_entry:SetPoint ("topleft", script_prio_label, "bottomleft", 0, -2)
+		mainFrame.ScriptPrioSlideEntry = script_prio_entry
+		
 		parent.ScriptNameLabel = script_name_label
 		parent.ScriptIconLabel = script_icon_label
 		parent.ScriptDescLabel = script_desc_label
+		parent.ScriptPrioLabel = script_prio_label
 	end
 	
 	local create_import_box = function (parent, mainFrame)
@@ -1071,6 +1075,9 @@ function Plater.CreateHookingPanel()
 		scriptObject.Icon = hookFrame.ScriptIconButton:GetIconTexture()
 		--script description
 		scriptObject.Desc = hookFrame.ScriptDescTextEntry.text
+		--script priority
+		local scriptPrioChanged = not (round(scriptObject.Prio) == round(hookFrame.ScriptPrioSlideEntry.value))
+		scriptObject.Prio = round(hookFrame.ScriptPrioSlideEntry.value)
 		--time and revision
 		scriptObject.Time = time()
 		scriptObject.Revision = scriptObject.Revision + 1
@@ -1082,11 +1089,12 @@ function Plater.CreateHookingPanel()
 		hookFrame.CodeEditorLuaEntry:ClearFocus()
 		hookFrame.ScriptNameTextEntry:ClearFocus()
 		hookFrame.ScriptDescTextEntry:ClearFocus()
+		hookFrame.ScriptPrioSlideEntry:ClearFocus()
 		
 		--transfer code from temp table to hook table
 		--check if has any script changes before wipe and recompile all scripts
 		
-		local haveChanges = false
+		local haveChanges = scriptPrioChanged
 		
 		for hookName, _ in pairs (scriptObject.Hooks) do
 			if (scriptObject.Hooks [hookName] ~= scriptObject.HooksTemp [hookName]) then
@@ -1289,6 +1297,8 @@ function Plater.CreateHookingPanel()
 		hookFrame.ScriptIconButton:SetIcon (scriptObject.Icon)
 		hookFrame.ScriptDescTextEntry.text = scriptObject.Desc or ""
 		hookFrame.ScriptDescTextEntry:ClearFocus()
+		hookFrame.ScriptPrioSlideEntry.value = round(scriptObject.Prio or 99)
+		hookFrame.ScriptPrioSlideEntry:ClearFocus()
 		
 		hookFrame.HookScrollBox:Refresh()
 		hookFrame.HookTypeDropdown:Refresh()
@@ -1526,6 +1536,7 @@ function Plater.CreateHookingPanel()
 		hookFrame.ScriptNameTextEntry:Enable()
 		hookFrame.ScriptIconButton:Enable()
 		hookFrame.ScriptDescTextEntry:Enable()
+		hookFrame.ScriptPrioSlideEntry:Enable()
 
 		hookFrame.AddAPIDropdown:Enable()
 		hookFrame.AddFWDropdown:Enable()
@@ -1546,6 +1557,8 @@ function Plater.CreateHookingPanel()
 		hookFrame.ScriptIconButton:Disable()
 		hookFrame.ScriptDescTextEntry:SetText ("")
 		hookFrame.ScriptDescTextEntry:Disable()
+		hookFrame.ScriptPrioSlideEntry:SetValue (99)
+		hookFrame.ScriptPrioSlideEntry:Disable()
 
 		hookFrame.AddAPIDropdown:Disable()
 		hookFrame.AddFWDropdown:Disable()
@@ -1965,8 +1978,9 @@ function Plater.CreateHookingPanel()
 	edit_script_frame.ScriptNameLabel:SetPoint ("topleft", edit_script_frame, "topleft", 10, 2)
 	edit_script_frame.ScriptIconLabel:SetPoint ("topleft", edit_script_frame, "topleft", 170, 0)
 	edit_script_frame.ScriptDescLabel:SetPoint ("topleft", edit_script_frame, "topleft", 10, -40)
+	edit_script_frame.ScriptPrioLabel:SetPoint ("topleft", edit_script_frame, "topleft", 10, -80)
 	
-	hookLabel:SetPoint ("topleft", edit_script_frame, "topleft", 10, -80)
+	hookLabel:SetPoint ("topleft", edit_script_frame, "topleft", 10, -110)
 
 	--lua code editor
 	hookFrame.CodeEditorLuaEntry:SetPoint ("topleft", edit_script_frame, "topleft", 230, -20)
@@ -2170,6 +2184,8 @@ function Plater.CreateScriptingPanel()
 		scriptObject.Icon = scriptingFrame.ScriptIconButton:GetIconTexture()
 		--script description
 		scriptObject.Desc = scriptingFrame.ScriptDescTextEntry.text
+		--script prio
+		scriptObject.Prio = round(scriptingFrame.ScriptPrioSlideEntry.value)
 		--script type
 		scriptObject.ScriptType = scriptingFrame.ScriptTypeDropdown.value
 		
@@ -2202,6 +2218,7 @@ function Plater.CreateScriptingPanel()
 		--remove focus of everything
 		scriptingFrame.ScriptNameTextEntry:ClearFocus()
 		scriptingFrame.ScriptDescTextEntry:ClearFocus()
+		scriptingFrame.ScriptPrioSlideEntry:ClearFocus()
 		scriptingFrame.TriggerTextEntry:ClearFocus()
 	end
 	
@@ -2244,7 +2261,11 @@ function Plater.CreateScriptingPanel()
 				local memberName = Plater.CodeTypeNames [i]
 				tinsert (t, code [memberName])
 			end
-			Plater.CompileScript (scriptObject, unpack (t))
+			if on_save then
+				Plater.WipeAndRecompileAllScripts ("script")
+			else
+				Plater.CompileScript (scriptObject, unpack (t))
+			end
 		end
 		
 		--remove the focus so the user can cast spells etc
@@ -2486,6 +2507,8 @@ function Plater.CreateScriptingPanel()
 			scriptingFrame.ScriptIconButton:SetIcon (scriptObject.Icon)
 			scriptingFrame.ScriptDescTextEntry.text = scriptObject.Desc or ""
 			scriptingFrame.ScriptDescTextEntry:ClearFocus()
+			scriptingFrame.ScriptPrioSlideEntry.value = round(scriptObject.Prio or 99)
+			scriptingFrame.ScriptPrioSlideEntry:ClearFocus()
 			scriptingFrame.ScriptTypeDropdown:Select (scriptObject.ScriptType, true)
 			scriptingFrame.TriggerTextEntry.text = ""
 			scriptingFrame.TriggerTextEntry:ClearFocus()
@@ -2652,6 +2675,7 @@ function Plater.CreateScriptingPanel()
 		scriptingFrame.ScriptNameTextEntry:Enable()
 		scriptingFrame.ScriptIconButton:Enable()
 		scriptingFrame.ScriptDescTextEntry:Enable()
+		scriptingFrame.ScriptPrioSlideEntry:Enable()
 		scriptingFrame.ScriptTypeDropdown:Enable()
 		scriptingFrame.TriggerTextEntry:Enable()
 		scriptingFrame.AddTriggerButton:Enable()
@@ -2673,6 +2697,8 @@ function Plater.CreateScriptingPanel()
 		scriptingFrame.ScriptIconButton:Disable()
 		scriptingFrame.ScriptDescTextEntry:SetText ("")
 		scriptingFrame.ScriptDescTextEntry:Disable()
+		scriptingFrame.ScriptPrioSlideEntry:SetValue (99)
+		scriptingFrame.ScriptPrioSlideEntry:Disable()
 		scriptingFrame.ScriptTypeDropdown:Disable()
 		scriptingFrame.TriggerTextEntry:SetText ("")
 		scriptingFrame.TriggerTextEntry:Disable()
@@ -3442,11 +3468,12 @@ function Plater.CreateScriptingPanel()
 		edit_script_frame.ScriptNameLabel:SetPoint ("topleft", edit_script_frame, "topleft", 10, 2)
 		edit_script_frame.ScriptIconLabel:SetPoint ("topleft", edit_script_frame, "topleft", 170, 0)
 		edit_script_frame.ScriptDescLabel:SetPoint ("topleft", edit_script_frame, "topleft", 10, -40)
+		edit_script_frame.ScriptPrioLabel:SetPoint ("topleft", edit_script_frame, "topleft", 10, -80)
 		
-		script_type_label:SetPoint ("topleft", edit_script_frame, "topleft", 10, -80)
+		script_type_label:SetPoint ("topleft", edit_script_frame, "topleft", 10, -110)
 		
-		add_trigger_label:SetPoint ("topleft", edit_script_frame, "topleft", 10, -120)
-		trigger_scrollbox_label:SetPoint ("topleft", edit_script_frame, "topleft", 10, -160)
+		add_trigger_label:SetPoint ("topleft", edit_script_frame, "topleft", 10, -150)
+		trigger_scrollbox_label:SetPoint ("topleft", edit_script_frame, "topleft", 10, -190)
 		
 		--lua code editor
 		scriptingFrame.CodeEditorLuaEntry:SetPoint ("topleft", edit_script_frame, "topleft", 230, -20)

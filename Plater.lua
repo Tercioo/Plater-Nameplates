@@ -9431,17 +9431,46 @@ end
 		end
 	end
 	
+	function Plater.GetAllScriptsAsPrioSortedCopy (scriptType)
+		local scripts
+		if (scriptType == "script") then
+			scripts = DF.table.copy({}, Plater.db.profile.script_data)
+		elseif (scriptType == "hook") then
+			scripts = DF.table.copy({}, Plater.db.profile.hook_data)
+		end
+		
+		local function round(x)
+			if not x then return nil end
+			return (x + 0.5 - (x + 0.5) % 1)
+		end
+		
+		if scripts then
+			table.sort(scripts, function(a,b)
+				if a and not b then
+					return false
+				elseif not a and b then
+					return true
+				else
+					return round(a.Prio or 99) > round(b.Prio or 99)
+				end
+				return false
+			end)
+		end
+		table.foreach(scripts, function(index, self) if self then print(self.Prio, self.Name) else print("not self") end end)
+		return scripts
+	end
+	
 	--compile all scripts
 	function Plater.CompileAllScripts (scriptType)
 		if (scriptType == "script") then
-			for scriptId, scriptObject in ipairs (Plater.GetAllScripts ("script")) do
+			for scriptId, scriptObject in ipairs (Plater.GetAllScriptsAsPrioSortedCopy ("script")) do
 				if (scriptObject.Enabled) then
 					Plater.CompileScript (scriptObject)
 				end
 			end
 		elseif (scriptType == "hook") then
 			--get all hook scripts from the profile database
-			for scriptId, scriptObject in ipairs (Plater.GetAllScripts ("hook")) do
+			for scriptId, scriptObject in ipairs (Plater.GetAllScriptsAsPrioSortedCopy ("hook")) do
 				Plater.CompileHook (scriptObject)
 			end
 		end
