@@ -9456,7 +9456,7 @@ end
 				return false
 			end)
 		end
-		table.foreach(scripts, function(index, self) if self then print(self.Prio, self.Name) else print("not self") end end)
+		--table.foreach(scripts, function(index, self) if self then print(self.Prio, self.Name) else print("not self") end end)
 		return scripts
 	end
 	
