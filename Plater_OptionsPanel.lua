@@ -3583,7 +3583,7 @@ Plater.CreateAuraTesting()
 		
 		--
 		local especial_aura_settings = {
-			{type = "label", get = function() return "Anchor Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{type = "label", get = function() return "Icon Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			--anchor
 			{
 				type = "select",
@@ -3622,29 +3622,6 @@ Plater.CreateAuraTesting()
 				name = L["OPTIONS_YOFFSET"],
 				desc = "Slightly move vertically.",
 			},
-			--show timer
-			{
-				type = "toggle",
-				get = function() return Plater.db.profile.extra_icon_show_timer end,
-				set = function (self, fixedparam, value) 
-					Plater.db.profile.extra_icon_show_timer = value
-					Plater.UpdateAllPlates()
-				end,
-				name = "Show Timer",
-				desc = "Show Timer",
-			},
-			--show caster name
-			{
-				type = "toggle",
-				get = function() return Plater.db.profile.extra_icon_caster_name end,
-				set = function (self, fixedparam, value) 
-					Plater.db.profile.extra_icon_caster_name = value
-					Plater.UpdateAllPlates()
-				end,
-				name = "Show Caster Name",
-				desc = "Show Caster Name (if player)",
-			},
-			
 			--width
 			{
 				type = "range",
@@ -3709,6 +3686,42 @@ Plater.CreateAuraTesting()
 				end,
 				name = "Default Border Color",
 				desc = "Default Border Color",
+			},
+			
+			{type = "blank"},
+			{type = "label", get = function() return "Text Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			--show timer
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.extra_icon_show_timer end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.extra_icon_show_timer = value
+					Plater.UpdateAllPlates()
+				end,
+				name = "Show Timer",
+				desc = "Show Timer",
+			},
+			--show caster name
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.extra_icon_caster_name end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.extra_icon_caster_name = value
+					Plater.UpdateAllPlates()
+				end,
+				name = "Show Caster Name",
+				desc = "Show Caster Name (if player)",
+			},
+			--show stacks
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.extra_icon_show_stacks end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.extra_icon_show_stacks = value
+					Plater.UpdateAllPlates()
+				end,
+				name = "Show Stacks",
+				desc = "Show Stacks",
 			},
 			
 			{type = "breakline"},
