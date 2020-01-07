@@ -6698,12 +6698,14 @@ end
 				if (DB_PLATE_CONFIG [actorType].only_names) then
 					healthBar:Hide()
 					buffFrame:Hide()
+					buffFrame2:Hide()
 					nameFrame:Hide()
 					plateFrame.IsNpcWithoutHealthBar = true
 				
 				else
 					healthBar:Show()
 					buffFrame:Show()
+					buffFrame2:Show()
 					nameFrame:Show()
 				end
 			
@@ -6712,6 +6714,7 @@ end
 
 				healthBar:Show()
 				buffFrame:Show()
+				buffFrame2:Show()
 				nameFrame:Show()
 				
 				--these twoseettings make the healthing dummy show the healthbar
@@ -6725,6 +6728,7 @@ end
 
 				healthBar:Hide()
 				buffFrame:Hide()
+				buffFrame2:Hide()
 				nameFrame:Hide()
 				plateFrame.IsNpcWithoutHealthBar = true
 				
@@ -6732,12 +6736,14 @@ end
 				-- show only if a title is present
 				healthBar:Hide()
 				buffFrame:Hide()
+				buffFrame:Hide()
 				nameFrame:Hide()
 				plateFrame.IsNpcWithoutHealthBar = true
 			
 			else
 				healthBar:Show()
 				buffFrame:Show()
+				buffFrame2:Show()
 				nameFrame:Show()
 			end
 
@@ -6763,12 +6769,14 @@ end
 			if (plateFrame.PlayerCannotAttack) then
 				healthBar:Hide()
 				buffFrame:Hide()
+				buffFrame2:Hide()
 				nameFrame:Hide()
 				plateFrame.IsNpcWithoutHealthBar = true
 				
 			else
 				healthBar:Show()
 				buffFrame:Show()
+				buffFrame2:Show()
 				nameFrame:Show()
 				
 				--> check for enemy player class color
