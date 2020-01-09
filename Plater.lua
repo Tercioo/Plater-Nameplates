@@ -2479,6 +2479,13 @@ Plater.DefaultSpellRangeList = {
 				local powerBarBorder = CreateFrame ("frame", nil, plateFrame.unitFrame.powerBar, "NamePlateFullBorderTemplate")
 				plateFrame.unitFrame.powerBar.border = powerBarBorder
 				powerBarBorder:SetVertexColor (0, 0, 0, 1)
+
+				--create custom border frame for modeling
+				if (Plater.CreateCustomDesignBorder) then
+					Plater.CreateCustomDesignBorder(healthBar)
+				else
+					print("you may want to restart your game client to update addons!")
+				end
 			
 			--> focus indicator
 				local focusIndicator = healthBar:CreateTexture (nil, "overlay")
@@ -6891,6 +6898,10 @@ end
 			end
 		end
 		
+		if (Plater.db.profile.customdesign.enabled) then
+			Plater.UpdateCustomDesign (unitFrame)
+		end
+
 		--update options in the extra icons row frame
 		if (unitFrame.ExtraIconFrame.RefreshID < PLATER_REFRESH_ID) then
 			Plater.SetAnchor (unitFrame.ExtraIconFrame, Plater.db.profile.extra_icon_anchor)

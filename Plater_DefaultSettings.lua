@@ -502,6 +502,14 @@ PLATER_DEFAULT_SETTINGS = {
 		show_shield_prediction = false,
 		
 		show_interrupt_author = true,
+
+		customdesign = {
+			enabled = false,
+			healthbar_file = "interface\\addons\\plater\\images\\healthbar\\round_base",
+			border_file = "interface\\addons\\plater\\images\\healthbar\\round_border_3px",
+			border_distance = 1,
+			border_color = "silver",
+		},
 		
 		--allow scripts to store default values of cvars when they perform automatically changes
 		cvar_default_cache = {},
