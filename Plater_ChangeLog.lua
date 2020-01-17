@@ -9,6 +9,7 @@ function Plater.GetChangelogTable()
 		Plater.ChangeLogTable = {
 
 			{1579261831,  "Bug Fix", "Jan 17th, 2020", "Updating OmniCC integration for 8.3 changes in OmniCC."},
+			{1579261831,  "Options Changes", "Jan 17th, 2020", "Adding native support to 'Non Target Alpha' called 'Untargeted Unit' in the General Settings Page."},
 			{1579261831,  "New Feature", "Jan 9th, 2020", "Introducing 'Nameplate Designer' to easily customize nameplate looks."},
 			{1579261831,  "Bug Fix", "Jan 7th, 2020", "Ensuring BuffFrame2 is shown/hidden properly."},
 			{1579261831,  "Backend Changes", "Jan 4th, 2020", "Buff-Special enhancement: Adding Stack info and more public information for modding / scripting."},
