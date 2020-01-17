@@ -3147,6 +3147,9 @@ function Plater.OnInit() --private
 			C_Timer.After (0.2, Plater.GetSpellForRangeCheck)
 			C_Timer.After (0.4, Plater.ForceCVars)
 			
+			-- ensure OmniCC settings are up to date
+			C_Timer.After (1, Plater.RefreshOmniCCGroup)
+			
 			--wait more time for the talents information be received from the server
 			C_Timer.After (4, Plater.GetHealthCutoffValue)
 			
@@ -7876,7 +7879,7 @@ end
 			--attempt to get the plater theme
 			local platerTheme = OmniCC:GetTheme(platerThemeName)
 			
-			--check if the plater group exists, this doesn't but the call is from Initialization or Profile Refresh, just quit
+			--check if the plater theme exists, if it doesn't but the call is from Initialization or Profile Refresh, just quit
 			if (not platerTheme and fromInit) then
 				return
 			end
