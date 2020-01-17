@@ -8,6 +8,13 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1579261831,  "Bug Fix", "Jan 17th, 2020", "Updating OmniCC integration for 8.3 changes in OmniCC."},
+			{1579261831,  "New Feature", "Jan 9th, 2020", "Introducing 'Nameplate Designer' to easily customize nameplate looks."},
+			{1579261831,  "Bug Fix", "Jan 7th, 2020", "Ensuring BuffFrame2 is shown/hidden properly."},
+			{1579261831,  "Backend Changes", "Jan 4th, 2020", "Buff-Special enhancement: Adding Stack info and more public information for modding / scripting."},
+			{1579261831,  "New Feature", "Dec 31st, 2019", "Introducing run priority for mods and scripts."},
+			
+			
 			{1577547573,  "Bug Fix", "Dec 28th, 2019", "Ensuring personal resources on target use the correct draw layer."},
 			{1577547573,  "Bug Fix", "Dec 28th, 2019", "Fixing error with Raid Marks."},
 			{1577547573,  "Backend Changes", "Dec 28th, 2019", "Updating Masque integration."},
