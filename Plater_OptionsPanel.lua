@@ -565,8 +565,8 @@ function Plater.OpenOptionsPanel()
 			profilesFrame.NewProfileLabel:Hide()
 			profilesFrame.NewProfileTextEntry:Hide()
 			
-			profilesFrame.ImportStringField.editbox:SetMaxBytes (1024000*2)
-			profilesFrame.ImportStringField.editbox:SetMaxLetters (128000*2)
+			profilesFrame.ImportStringField.editbox:SetMaxBytes (1024000*4)
+			profilesFrame.ImportStringField.editbox:SetMaxLetters (128000*4)
 			
 			--print (profilesFrame.ImportStringField.editbox:GetMaxBytes())
 			--print (profilesFrame.ImportStringField.editbox:GetMaxLetters())
