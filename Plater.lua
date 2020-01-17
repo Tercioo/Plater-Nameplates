@@ -690,6 +690,7 @@ Plater.DefaultSpellRangeList = {
 	local DB_ANIMATION_TIME_DILATATION
 
 	local DB_USE_RANGE_CHECK
+	local DB_USE_NON_TARGETS_ALPHA
 	local DB_USE_QUICK_HIDE
 
 	local DB_TEXTURE_CASTBAR
@@ -891,79 +892,103 @@ Plater.DefaultSpellRangeList = {
 		if (plateFrame [MEMBER_NOCOMBAT]) then
 			return
 		
-		--if the range check is disabled of the unit is friendly
-		elseif (not DB_USE_RANGE_CHECK or plateFrame [MEMBER_REACTION] >= 5) then
+		--the unit is friendly or not using range check and non targets alpha
+		elseif (plateFrame [MEMBER_REACTION] >= 5 or (not DB_USE_RANGE_CHECK and not DB_USE_NON_TARGETS_ALPHA)) then
 			plateFrame.unitFrame:SetAlpha (AlphaBlending)
 			plateFrame [MEMBER_ALPHA] = AlphaBlending
 			plateFrame [MEMBER_RANGE] = true
 			plateFrame.unitFrame [MEMBER_RANGE] = true
 			return
 		end
-		
-		--check when the unit just has been added to the screen
-		if (onAdded) then
-			--range check when the nameplate is added
-			if (Plater.SpellBookForRangeCheck) then
-				if (IsSpellInRange (Plater.SpellForRangeCheck, Plater.SpellBookForRangeCheck, plateFrame [MEMBER_UNITID]) == 1) then
-					plateFrame.FadedIn = true
-					local alpha = Plater.GetPlateAlpha (plateFrame)
-					plateFrame.unitFrame:SetAlpha (alpha)
-					plateFrame [MEMBER_ALPHA] = alpha
-					plateFrame [MEMBER_RANGE] = true
-					plateFrame.unitFrame [MEMBER_RANGE] = true
-				else
-					plateFrame.FadedIn = nil
-					local alpha = Plater.db.profile.range_check_alpha
-					plateFrame.unitFrame:SetAlpha (alpha)
-					plateFrame [MEMBER_ALPHA] = alpha
-					plateFrame [MEMBER_RANGE] = false
-					plateFrame.unitFrame [MEMBER_RANGE] = false
-				end
+
+		--this unit is target
+		local unitIsTarget
+		--alpha value to set into this nameplate
+		local alphaMultiplier = 1
+
+		--if no target alpha is enabled and the player is targetting something else than the player it self
+		if (DB_USE_NON_TARGETS_ALPHA and Plater.PlayerHasTargetNonSelf) then
+			if (plateFrame [MEMBER_TARGET]) then
+				unitIsTarget = true
 			else
-				if (IsSpellInRange (Plater.SpellForRangeCheck, plateFrame [MEMBER_UNITID]) == 1) then
-					plateFrame.FadedIn = true
-					local alpha = Plater.GetPlateAlpha (plateFrame)
-					plateFrame.unitFrame:SetAlpha (alpha)
-					plateFrame [MEMBER_ALPHA] = alpha
-					plateFrame [MEMBER_RANGE] = true
-					plateFrame.unitFrame [MEMBER_RANGE] = true
-				else
-					plateFrame.FadedIn = nil
-					local alpha = Plater.db.profile.range_check_alpha
-					plateFrame.unitFrame:SetAlpha (alpha)
-					plateFrame [MEMBER_ALPHA] = alpha
-					plateFrame [MEMBER_RANGE] = false
-					plateFrame.unitFrame [MEMBER_RANGE] = false
-				end
+				--range_check_alpha is used as alpha for nameplates out of range
+				--but the non targets alpha also use it to its alpha value
+				alphaMultiplier = Plater.db.profile.range_check_alpha
 			end
-		else
-			--regular range check during throttled tick
-			if (Plater.SpellBookForRangeCheck) then
-				--using a spell book spell index for the range check, this is disabled at the moment in the function below
-				if (IsSpellInRange (Plater.SpellForRangeCheck, Plater.SpellBookForRangeCheck, plateFrame [MEMBER_UNITID]) == 1) then
-					if (not plateFrame.FadedIn and not plateFrame.unitFrame.FadeIn.playing) then
-						plateFrame:RangeFadeIn()
-					end
-				else
-					if (plateFrame.FadedIn and not plateFrame.unitFrame.FadeOut.playing) then
-						plateFrame:RangeFadeOut()
-					end
-				end
-			else
-				--using a spell name for the range check
+		end
+
+		--if the unit is target return 1 or AlphaBlending * the alpha multiplier from above
+		local alphaTarget = ceil(Plater.GetPlateAlpha (plateFrame) * alphaMultiplier * 20) / 20
+
+		--is using the range check by ability
+		if (DB_USE_RANGE_CHECK) then
+			--check when the unit just has been added to the screen
+			if (onAdded or true) then
+				--range check when the nameplate is added
 				if (IsSpellInRange (Plater.SpellForRangeCheck, plateFrame [MEMBER_UNITID]) == 1) then
-					if (not plateFrame.FadedIn and not plateFrame.unitFrame.FadeIn.playing) then
-						plateFrame:RangeFadeIn()
+					--unit is in rage
+					plateFrame.FadedIn = true
+					plateFrame.unitFrame:SetAlpha (alphaTarget)
+
+					plateFrame [MEMBER_ALPHA] = alphaTarget
+					plateFrame [MEMBER_RANGE] = true
+					plateFrame.unitFrame [MEMBER_RANGE] = true
+
+				else
+					--unit out of range
+					plateFrame.FadedIn = nil
+					local alpha = ceil(alphaTarget * Plater.db.profile.range_check_alpha * 20) / 20
+					plateFrame.unitFrame:SetAlpha (alpha)
+
+					plateFrame [MEMBER_ALPHA] = alpha
+					plateFrame [MEMBER_RANGE] = false
+					plateFrame.unitFrame [MEMBER_RANGE] = false
+				end
+
+			else
+				if (IsSpellInRange (Plater.SpellForRangeCheck, plateFrame [MEMBER_UNITID]) == 1) then
+					--unit is in rage
+					print (plateFrame [MEMBER_ALPHA] , alphaTarget)
+					if (plateFrame [MEMBER_ALPHA] ~= alphaTarget) then
+						plateFrame:RangeFadeIn(alphaTarget)
 					end
 					plateFrame [MEMBER_RANGE] = true
 					plateFrame.unitFrame [MEMBER_RANGE] = true
+
 				else
-					if (plateFrame.FadedIn and not plateFrame.unitFrame.FadeOut.playing) then
-						plateFrame:RangeFadeOut()
+					--unit out of range
+					local alpha = ceil(alphaTarget * Plater.db.profile.range_check_alpha * 20) / 20
+					
+					print (plateFrame [MEMBER_ALPHA] , alpha)
+					if (plateFrame [MEMBER_ALPHA] ~= alpha) then
+						plateFrame:RangeFadeOut(alpha)						
 					end
 					plateFrame [MEMBER_RANGE] = false
 					plateFrame.unitFrame [MEMBER_RANGE] = false
 				end
+
+			end
+
+		elseif (DB_USE_NON_TARGETS_ALPHA) then
+			--unit isn't the player's target
+			if (Plater.PlayerHasTargetNonSelf) then
+				if (unitIsTarget) then
+					plateFrame.FadedIn = true
+					plateFrame.unitFrame:SetAlpha (AlphaBlending)
+					plateFrame [MEMBER_ALPHA] = AlphaBlending
+				else
+
+					--player does have a target
+					plateFrame.FadedIn = nil
+					local alpha = Plater.db.profile.range_check_alpha
+					plateFrame.unitFrame:SetAlpha (alpha)
+					plateFrame [MEMBER_ALPHA] = alpha
+				end
+			else
+				--player does not have a target, so just set to regular alpha
+				plateFrame.FadedIn = true
+				plateFrame.unitFrame:SetAlpha (AlphaBlending)
+				plateFrame [MEMBER_ALPHA] = AlphaBlending
 			end
 		end
 	end	
@@ -1309,6 +1334,7 @@ Plater.DefaultSpellRangeList = {
 		
 		DB_HOVER_HIGHLIGHT = profile.hover_highlight
 		DB_USE_RANGE_CHECK = profile.range_check_enabled
+		DB_USE_NON_TARGETS_ALPHA = profile.non_targeted_alpha_enabled
 		DB_USE_QUICK_HIDE = profile.quick_hide
 		
 		DB_NPCIDS_CACHE = Plater.db.profile.npc_cache
@@ -2471,6 +2497,14 @@ Plater.DefaultSpellRangeList = {
 				plateFrame.unitFrame.castBar.FrameOverlay.TargetName = plateFrame.unitFrame.castBar.FrameOverlay:CreateFontString (nil, "overlay", "GameFontNormal")
 				plateFrame.unitFrame.castBar.TargetName = plateFrame.unitFrame.castBar.FrameOverlay.TargetName --alias for scripts
 			
+				--create custom border frame for modeling
+				if (Plater.CreateCustomDesignBorder) then
+					Plater.CreateCustomDesignBorder(plateFrame.unitFrame.castBar)
+				else
+					--this msg can be removed after january 2020
+					print("you may want to restart your game client to update addons!")
+				end
+
 			--> border
 				--create a border using default borders from the retail game
 				local healthBarBorder = CreateFrame ("frame", nil, plateFrame.unitFrame.healthBar, "NamePlateFullBorderTemplate")
@@ -2484,6 +2518,15 @@ Plater.DefaultSpellRangeList = {
 				if (Plater.CreateCustomDesignBorder) then
 					Plater.CreateCustomDesignBorder(healthBar)
 				else
+					--this msg can be removed after january 2020
+					print("you may want to restart your game client to update addons!")
+				end
+
+				--create custom border frame for modeling
+				if (Plater.CreateCustomDesignBorder) then
+					Plater.CreateCustomDesignBorder(plateFrame.unitFrame.powerBar)
+				else
+					--this msg can be removed after january 2020
 					print("you may want to restart your game client to update addons!")
 				end
 			
@@ -5884,7 +5927,7 @@ end
 		if (UnitIsUnit (plateFrame [MEMBER_UNITID], "target")) then
 			plateFrame [MEMBER_TARGET] = true
 			plateFrame.unitFrame [MEMBER_TARGET] = true
-		
+			
 			--hide obscured texture
 			plateFrame.Obscured:Hide()
 			
@@ -5917,6 +5960,7 @@ end
 			end
 			
 			Plater.UpdateResourceFrame()
+			
 		else
 			plateFrame.TargetNeonUp:Hide()
 			plateFrame.TargetNeonDown:Hide()
@@ -5947,13 +5991,16 @@ end
 				Plater.UpdateUIParentLevels (plateFrame.unitFrame)
 			end
 		end
-		
-		--Plater.CheckRange (plateFrame, true) --disabled on 09-10-2018
+
+		Plater.CheckRange (plateFrame, true) --disabled on 2018-10-09 | enabled back on 2020-1-16
+
 	end
 
 	--called when the player targets a new unit, when focus changed or when a unit isn't in the screen any more
 	function Plater.OnPlayerTargetChanged() --private
 		Plater.PlayerCurrentTargetGUID = UnitGUID ("target")
+		Plater.PlayerHasTarget = Plater.PlayerCurrentTargetGUID and true
+		Plater.PlayerHasTargetNonSelf = Plater.PlayerHasTarget and Plater.PlayerCurrentTargetGUID ~= Plater.PlayerGUID and true
 		
 		for index, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 			Plater.UpdateTarget (plateFrame)
@@ -6906,9 +6953,7 @@ end
 			end
 		end
 		
-		if (Plater.db.profile.customdesign.enabled) then
-			Plater.UpdateCustomDesign (unitFrame)
-		end
+		Plater.UpdateCustomDesign (unitFrame)
 
 		--update options in the extra icons row frame
 		if (unitFrame.ExtraIconFrame.RefreshID < PLATER_REFRESH_ID) then
@@ -7400,39 +7445,50 @@ end
 	local on_fade_in_play = function (animation)
 		animation.playing = true
 	end
+
 	local on_fade_out_play = function (animation)
 		animation.playing = true
 	end
+
 	local on_fade_in_finished = function (animation)
+		local plateFrame = animation:GetParent().PlateFrame
 		animation.playing = nil
-		animation:GetParent().PlateFrame.FadedIn = true
-		animation:GetParent():SetAlpha (AlphaBlending)
-		animation:GetParent().PlateFrame [MEMBER_ALPHA] = AlphaBlending
-		
+		plateFrame.FadedIn = true
+		plateFrame [MEMBER_ALPHA] = ceil(plateFrame.unitFrame:GetAlpha()*20)/20
 	end
+
 	local on_fade_out_finished = function (animation)
+		local plateFrame = animation:GetParent().PlateFrame
 		animation.playing = nil
-		animation:GetParent().PlateFrame.FadedIn = false
-		local alpha = Plater.db.profile.range_check_alpha
-		animation:GetParent():SetAlpha (alpha)
-		animation:GetParent().PlateFrame [MEMBER_ALPHA] = alpha
+		plateFrame.FadedIn = false
+		plateFrame [MEMBER_ALPHA] = ceil(plateFrame.unitFrame:GetAlpha()*20)/20
+		--print ("fade out finished: ", plateFrame [MEMBER_ALPHA])
 	end
-	local plate_fade_in = function (plateFrame)
+
+	local plate_fade_in = function (plateFrame, value)
+		if (plateFrame.unitFrame.FadeOut:IsPlaying()) then
+			plateFrame.unitFrame.FadeOut:Stop()
+		end
 		plateFrame.unitFrame.FadeIn.Animation:SetFromAlpha (plateFrame.unitFrame:GetAlpha())
-		plateFrame.unitFrame.FadeIn.Animation:SetToAlpha (AlphaBlending)
+		plateFrame.unitFrame.FadeIn.Animation:SetToAlpha (value)
 		plateFrame.unitFrame.FadeIn:Play()
 	end
-	local plate_fade_out = function (plateFrame)
+
+	local plate_fade_out = function (plateFrame, value)
+		if (plateFrame.unitFrame.FadeIn:IsPlaying()) then
+			plateFrame.unitFrame.FadeIn:Stop()
+		end
 		plateFrame.unitFrame.FadeOut.Animation:SetFromAlpha (plateFrame.unitFrame:GetAlpha())
-		plateFrame.unitFrame.FadeOut.Animation:SetToAlpha (Plater.db.profile.range_check_alpha)
+		plateFrame.unitFrame.FadeOut.Animation:SetToAlpha (value)
 		plateFrame.unitFrame.FadeOut:Play()
+		--print ("fade start:", plateFrame.unitFrame:GetAlpha(), "fade end:", value)
 	end
 
 	Plater.CreateAlphaAnimation = function (plateFrame)
 		local unitFrame = plateFrame.unitFrame
 		
-		unitFrame.FadeIn = plateFrame.unitFrame:CreateAnimationGroup()
-		unitFrame.FadeOut = plateFrame.unitFrame:CreateAnimationGroup()
+		unitFrame.FadeIn = unitFrame:CreateAnimationGroup()
+		unitFrame.FadeOut = unitFrame:CreateAnimationGroup()
 		
 		unitFrame.FadeIn:SetScript ("OnPlay", on_fade_in_play)
 		unitFrame.FadeOut:SetScript ("OnPlay", on_fade_out_play)

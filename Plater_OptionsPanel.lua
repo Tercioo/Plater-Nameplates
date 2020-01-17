@@ -972,13 +972,177 @@ function frontPageFrame.OpenNewsWindow()
 end
 
 local openNewsButton = DF:CreateButton (frontPageFrame, frontPageFrame.OpenNewsWindow, 160, 20, "Open Change Log", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
-openNewsButton:SetPoint ("topright", frontPageFrame, "topright", -49, -120)
+openNewsButton:SetPoint ("topright", frontPageFrame, "topright", -49, -78)
 frontPageFrame.NewsButton = openNewsButton
 
 local numNews = DF:GetNumNews (Plater.GetChangelogTable(), Plater.db.profile.last_news_time)
 if (numNews > 0) then
 	frontPageFrame.NewsButton:SetText ("Open Change Log (|cFFFFFF00" .. numNews .."|r)")
 end
+
+
+--~alphasettings
+--major alpha setting
+local interfaceOptionsDivisor = DF:CreateImage(frontPageFrame, {1, 1, 1, 1}, 5, 100)
+interfaceOptionsDivisor:SetPoint("topright", frontPageFrame, "topright", -295, -110)
+
+local smallFrameForAlphaMajorOptions = CreateFrame ("frame", frontPageFrame:GetName() .. "AlphaMajors", frontPageFrame)
+smallFrameForAlphaMajorOptions:SetAllPoints()
+
+local alpha_major_options = {
+	--{type = "label", get = function() return "Interface Options:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.transparency_behavior == 0x1 end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.transparency_behavior = 0x1
+			Plater.db.profile.range_check_enabled = true
+			Plater.db.profile.non_targeted_alpha_enabled = false
+
+			local checkBoxNonTargets = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_nontargets")
+			checkBoxNonTargets:SetValue(false)
+			local checkBoxAll = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_both")
+			checkBoxAll:SetValue(false)				
+		end,
+		name = "Range Check",
+		desc = "When a nameplate is out of range, alpha is reduced.",
+		boxfirst = true,
+		id = "transparency_rangecheck",
+	},
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.transparency_behavior == 0x2 end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.transparency_behavior = 0x2
+			Plater.db.profile.range_check_enabled = false
+			Plater.db.profile.non_targeted_alpha_enabled = true
+
+			local checkBoxRangeCheck = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_rangecheck")
+			checkBoxRangeCheck:SetValue(false)
+			local checkBoxAll = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_both")
+			checkBoxAll:SetValue(false)				
+		end,
+		name = "Untargeted Units",
+		desc = "When a nameplate isn't your current target, alpha is reduced.",
+		boxfirst = true,
+		id = "transparency_nontargets",
+	},
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.transparency_behavior == 0x3 end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.transparency_behavior = 0x3
+			Plater.db.profile.range_check_enabled = true
+			Plater.db.profile.non_targeted_alpha_enabled = true
+
+			local checkBoxRangeCheck = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_rangecheck")
+			checkBoxRangeCheck:SetValue(false)
+			local checkBoxNonTargets = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_nontargets")
+			checkBoxNonTargets:SetValue(false)
+		end,
+		name = "Range Check + Untargeted Units",
+		desc = "Reduces the alpha of units which isn't your target.\nReduces even more if the unit is out of range.",
+		boxfirst = true,
+		id = "transparency_both",
+	},	
+
+	{type = "blank"},
+	{
+		type = "range",
+		get = function() return Plater.db.profile.range_check_alpha end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.range_check_alpha = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		min = 0,
+		max = 1,
+		step = 0.1,
+		name = L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK_ALPHA"],
+		desc = L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK_ALPHA"],
+		usedecimals = true,
+	},
+
+	{type = "blank"},
+}
+
+	local spells = {}
+	local offset
+	for i = 2, GetNumSpellTabs() do
+		local name, texture, offset, numEntries, isGuild, offspecID = GetSpellTabInfo (i)
+		local tabEnd = offset + numEntries
+		offset = offset + 1
+		for j = offset, tabEnd - 1 do
+			local spellType, spellID = GetSpellBookItemInfo (j, "player")
+			if (spellType == "SPELL") then
+				tinsert (spells, spellID)
+			end
+		end
+	end
+
+	local playerSpecs = Plater.SpecList [select (2, UnitClass ("player"))]
+	local i = 1
+	for specID, _ in pairs (playerSpecs) do
+		local spec_id, spec_name, spec_description, spec_icon, spec_background, spec_role, spec_class = GetSpecializationInfoByID (specID)
+		tinsert (alpha_major_options, {
+			type = "select",
+			get = function() return PlaterDBChr.spellRangeCheck [specID] end,
+			values = function() 
+				local onSelectFunc = function (_, _, spellName)
+					PlaterDBChr.spellRangeCheck [specID] = spellName
+					Plater.GetSpellForRangeCheck()
+				end
+				local t = {}
+				for _, spellID in ipairs (spells) do
+					local spellName, _, spellIcon = GetSpellInfo (spellID)
+					tinsert (t, {label = spellName, icon = spellIcon, onclick = onSelectFunc, value = spellName})
+				end
+				return t
+			end,
+			name = "|T" .. spec_icon .. ":16:16|t " .. L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK"],
+			desc = L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK_SPEC_DESC"],
+		})
+		i = i + 1
+	end	
+
+	local alpha_major_options_continue = {
+		{type = "blank"},
+		--no combat alpha
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.not_affecting_combat_enabled end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.not_affecting_combat_enabled = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Use No Combat Alpha",
+			desc = "Changes the nameplate alpha when you are in combat and the unit isn't.\n\n|cFFFFFF00Important|r: If the unit isn't in combat, it overrides the alpha from the range check.",
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.not_affecting_combat_alpha end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.not_affecting_combat_alpha = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			name = "No Combat Alpha",
+			desc = "Amount of transparency to apply for 'No Combat' feature.",
+			usedecimals = true,
+		}
+	}
+
+	for _, t in ipairs (alpha_major_options_continue) do
+		tinsert (alpha_major_options, t)
+	end
+
+local alpha_major_title = Plater:CreateLabel (smallFrameForAlphaMajorOptions, L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_ANCHOR_TITLE"], Plater:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
+alpha_major_title:SetPoint (startX + 838, startY)
+
+DF:BuildMenu (smallFrameForAlphaMajorOptions, alpha_major_options, startX + 838, startY-20, 760, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
+
 
 -------------------------------------------------------------------------------
 -- painel para configurar debuffs e buffs
@@ -5397,110 +5561,7 @@ local relevance_options = {
 			name = L["OPTIONS_GENERALSETTINGS_HEALTHBAR_BGCOLOR"],
 			desc = L["OPTIONS_GENERALSETTINGS_HEALTHBAR_BGCOLOR"],
 		},
-		
-		{type = "blank"},
-		
-		--alpha and range check
-		{type = "label", get = function() return L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_ANCHOR_TITLE"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.range_check_enabled end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.range_check_enabled = value
-				Plater.RefreshDBUpvalues()
-				Plater.UpdateAllPlates()
-			end,
-			name = L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK_ENABLED"],
-			desc = L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK_ENABLED_DESC"],
-		},
-		{
-			type = "range",
-			get = function() return Plater.db.profile.range_check_alpha end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.range_check_alpha = value
-				Plater.RefreshDBUpvalues()
-				Plater.UpdateAllPlates()
-			end,
-			min = 0,
-			max = 1,
-			step = 0.1,
-			name = L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK_ALPHA"],
-			desc = L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK_ALPHA"],
-			usedecimals = true,
-		},
-	}
-	
-	local spells = {}
-	local offset
-	for i = 2, GetNumSpellTabs() do
-		local name, texture, offset, numEntries, isGuild, offspecID = GetSpellTabInfo (i)
-		local tabEnd = offset + numEntries
-		offset = offset + 1
-		for j = offset, tabEnd - 1 do
-			local spellType, spellID = GetSpellBookItemInfo (j, "player")
-			if (spellType == "SPELL") then
-				tinsert (spells, spellID)
-			end
-		end
-	end
-	
-	local playerSpecs = Plater.SpecList [select (2, UnitClass ("player"))]
-	local i = 1
-	for specID, _ in pairs (playerSpecs) do
-		local spec_id, spec_name, spec_description, spec_icon, spec_background, spec_role, spec_class = GetSpecializationInfoByID (specID)
-		tinsert (options_table1, {
-			type = "select",
-			get = function() return PlaterDBChr.spellRangeCheck [specID] end,
-			values = function() 
-				local onSelectFunc = function (_, _, spellName)
-					PlaterDBChr.spellRangeCheck [specID] = spellName
-					Plater.GetSpellForRangeCheck()
-				end
-				local t = {}
-				for _, spellID in ipairs (spells) do
-					local spellName, _, spellIcon = GetSpellInfo (spellID)
-					tinsert (t, {label = spellName, icon = spellIcon, onclick = onSelectFunc, value = spellName})
-				end
-				return t
-			end,
-			name = "|T" .. spec_icon .. ":16:16|t " .. L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK"],
-			desc = L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK_SPEC_DESC"],
-		})
-		i = i + 1
-	end	
-
-	local options_table1_continue = {
-	
-		{type = "blank"},
-		--no combat alpha
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.not_affecting_combat_enabled end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.not_affecting_combat_enabled = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Use No Combat Alpha",
-			desc = "Changes the nameplate alpha when you are in combat and the unit isn't.\n\n|cFFFFFF00Important|r: If the unit isn't in combat, it overrides the alpha from the range check.",
-		},
-		{
-			type = "range",
-			get = function() return Plater.db.profile.not_affecting_combat_alpha end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.not_affecting_combat_alpha = value
-				Plater.UpdateAllPlates()
-			end,
-			min = 0,
-			max = 1,
-			step = 0.1,
-			name = "No Combat Alpha",
-			desc = "Amount of transparency to apply for 'No Combat' feature.",
-			usedecimals = true,
-		},
-	
-		{type = "blank"},
-		{type = "label", get = function() return "Border:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "color",
 			get = function()
@@ -5531,6 +5592,147 @@ local relevance_options = {
 			name = "Border Thickness",
 			desc = "How thick the border should be.\n\n|cFFFFFF00Important|r: right click the slider to manually type the value.",
 		},
+
+		{type = "blank"},
+		{type = "label", get = function() return "Indicators:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.indicator_faction end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_faction = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Enemy Faction Icon",
+			desc = "Show horde or alliance icon.",
+		},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.indicator_pet end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_pet = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Pet Icon",
+			desc = "Pet Icon",
+		},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.health_cutoff end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.health_cutoff = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Execute Range",
+			desc = "Show an indicator when the unit is in execute range.\n\nPlater auto detects execute range for:\n\n|cFFFFFF00Hunter|r: Beast Master spec with Killer Instinct talent.\n\n|cFFFFFF00Warrior|r: Arms and Fury specs.\n\n|cFFFFFF00Priest|r: Shadow spec with Shadow Word: Death talent.\n\n|cFFFFFF00Mage|r: Fire spec with Searing Touch talent.",
+		},
+
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.indicator_elite end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_elite = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Elite Icon",
+			desc = "Show when the actor is elite.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.indicator_rare end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_rare = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Rare Icon",
+			desc = "Show when the actor is rare.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.indicator_quest end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_quest = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Quest Icon",
+			desc = "Show when the actor is a boss for a quest.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.indicator_enemyclass end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_enemyclass = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Enemy Class",
+			desc = "Enemy player class icon.",
+		},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.indicator_spec end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_spec = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Enemy Spec",
+			desc = "Enemy player spec icon.\n\n|cFFFFFF00Important|r: must have Details! Damage Meter installed.",
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.indicator_scale end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_scale = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 0.2,
+			max = 3,
+			step = 0.01,
+			usedecimals = true,
+			name = "Scale",
+			desc = "Scale",
+		},
+
+		--indicator icon anchor
+		{
+			type = "select",
+			get = function() return Plater.db.profile.indicator_anchor.side end,
+			values = function() return build_anchor_side_table (nil, "indicator_anchor") end,
+			name = L["OPTIONS_ANCHOR"],
+			desc = "Which side of the nameplate this widget is attach to.",
+		},
+		--indicator icon anchor x offset
+		{
+			type = "range",
+			get = function() return Plater.db.profile.indicator_anchor.x end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_anchor.x = value
+				Plater.UpdateAllPlates()
+			end,
+			min = -100,
+			max = 100,
+			step = 1,
+			usedecimals = true,
+			name = L["OPTIONS_XOFFSET"],
+			desc = "Slightly move horizontally.",
+		},
+		--indicator icon anchor y offset
+		{
+			type = "range",
+			get = function() return Plater.db.profile.indicator_anchor.y end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_anchor.y = value
+				Plater.UpdateAllPlates()
+			end,
+			min = -100,
+			max = 100,
+			step = 1,
+			usedecimals = true,
+			name = L["OPTIONS_YOFFSET"],
+			desc = "Slightly move vertically.",
+		},		
 	
 		--cast bar options
 		{type = "breakline"},
@@ -5918,150 +6120,7 @@ local relevance_options = {
 		},
 
 		{type = "breakline"},
-		{type = "label", get = function() return "Indicators:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-		
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.indicator_faction end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.indicator_faction = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Enemy Faction Icon",
-			desc = "Show horde or alliance icon.",
-		},
-		
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.indicator_pet end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.indicator_pet = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Pet Icon",
-			desc = "Pet Icon",
-		},
-		
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.health_cutoff end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.health_cutoff = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Execute Range",
-			desc = "Show an indicator when the unit is in execute range.\n\nPlater auto detects execute range for:\n\n|cFFFFFF00Hunter|r: Beast Master spec with Killer Instinct talent.\n\n|cFFFFFF00Warrior|r: Arms and Fury specs.\n\n|cFFFFFF00Priest|r: Shadow spec with Shadow Word: Death talent.\n\n|cFFFFFF00Mage|r: Fire spec with Searing Touch talent.",
-		},
-
-		
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.indicator_elite end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.indicator_elite = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Elite Icon",
-			desc = "Show when the actor is elite.",
-		},
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.indicator_rare end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.indicator_rare = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Rare Icon",
-			desc = "Show when the actor is rare.",
-		},
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.indicator_quest end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.indicator_quest = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Quest Icon",
-			desc = "Show when the actor is a boss for a quest.",
-		},
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.indicator_enemyclass end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.indicator_enemyclass = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Enemy Class",
-			desc = "Enemy player class icon.",
-		},
-		
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.indicator_spec end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.indicator_spec = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Enemy Spec",
-			desc = "Enemy player spec icon.\n\n|cFFFFFF00Important|r: must have Details! Damage Meter installed.",
-		},
-		{
-			type = "range",
-			get = function() return Plater.db.profile.indicator_scale end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.indicator_scale = value
-				Plater.UpdateAllPlates()
-			end,
-			min = 0.2,
-			max = 3,
-			step = 0.01,
-			usedecimals = true,
-			name = "Scale",
-			desc = "Scale",
-		},
-		
-		
-		--
-
-		--indicator icon anchor
-		{
-			type = "select",
-			get = function() return Plater.db.profile.indicator_anchor.side end,
-			values = function() return build_anchor_side_table (nil, "indicator_anchor") end,
-			name = L["OPTIONS_ANCHOR"],
-			desc = "Which side of the nameplate this widget is attach to.",
-		},
-		--indicator icon anchor x offset
-		{
-			type = "range",
-			get = function() return Plater.db.profile.indicator_anchor.x end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.indicator_anchor.x = value
-				Plater.UpdateAllPlates()
-			end,
-			min = -100,
-			max = 100,
-			step = 1,
-			usedecimals = true,
-			name = L["OPTIONS_XOFFSET"],
-			desc = "Slightly move horizontally.",
-		},
-		--indicator icon anchor y offset
-		{
-			type = "range",
-			get = function() return Plater.db.profile.indicator_anchor.y end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.indicator_anchor.y = value
-				Plater.UpdateAllPlates()
-			end,
-			min = -100,
-			max = 100,
-			step = 1,
-			usedecimals = true,
-			name = L["OPTIONS_YOFFSET"],
-			desc = "Slightly move vertically.",
-		},
-		
+		{type = "blank"},{type = "blank"},{type = "blank"},{type = "blank"},{type = "blank"},{type = "blank"},{type = "blank"},{type = "blank"},
 		{type = "blank"},
 		
 		{type = "label", get = function() return "Raid Mark:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
@@ -6134,10 +6193,6 @@ local relevance_options = {
 		
 		{type = "breakline"},
 	}
-
-	for _, t in ipairs (options_table1_continue) do
-		tinsert (options_table1, t)
-	end
 	
 	DF:BuildMenu (generalOptionsAnchor, options_table1, 0, 0, mainHeightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 	

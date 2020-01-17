@@ -101,12 +101,14 @@ do
 
 	
 	--hooks
+	--[=[ deprecated
 	PlaterScriptLibrary ["Targetting Alpha"] = {
 		Revision = 3,
 		ScriptType = "hook",
 		String = "Tx1xRTnmq8VlfgjbwmXPPnzf2dDzSI3dMYC6dJX0KITsSOYsgj50L(G(SVtw2lEK6Lr3EzqrG9Pl397(B8puiAfkoeLelT4ve1wQXIVMxMtS4VClNyOQVIINcMC(0W5ZrXNJswMteBPwSj39qre6sIIks3BXYnwSGuqlDEQDMqa8yAXa41EzLcuvhKal(ZYklUGTnh(Phic4PbYHmMMSMdap4on88t(qTmNME)aajrtyVHkOkc3ItOgdtS1flYAaOCkysLgu5SKb6ZLY7dqXZqjrpYkKz0Xx)i4QuGIVaQRlMnD2IWlxa14LW1jHO45Uos8cOZKyiCQWasguYwLSQ0lMYjATxSGu(nwwZffjL6Lk3v21xDjn1lr2SH9DVi0ZKvcOf3baj3dGbf)gxce32nHXswgndLSPsKAysOmhQP8nVgkxbZeL1i8bf4bitf7w56KJSF0I9hgmDg(tBcI0jG)JQ7OIdw1EoyyoLWn5VJOUc62nlhdBXpOwXTuLwkiCWOobKYHz4raxNgcjmW9lybWR9u1YkfSfz8lH3Cx077nZEwzOh3rhJ2tNK90ZCl31zDKUfWtKK)Bt2)SK(zfZiDS0C6alYEIwyxL1x8AGdkP9Rk(pB8FXcCleVSi)YIC7ICFhGpuk0gvvQrQ(BwUhpoQOuQmav4v1KL)o2XZoID8StYog0PE7evTPQSXpsHJpYtJ)Re7Dj1FGXbOZj7Ox1Tz1ZiWIFRfpjyMluZM8Q(8OJXHbtCghoPFR78V1JCbp0TQxxpIdKNmDJUYgxT411CvhnGRjFr)4",
 		Enabled = false,
 	}
+	--]=]
 	
 	PlaterScriptLibrary ["Aura Reorder"] = {
 		Revision = 1,
@@ -348,6 +350,31 @@ do
 			end
 		end
 	})
+
+	--#8 dummy patch, due to some patch deleted
+	tinsert (PlaterPatchLibrary, {
+		Notes = {""},
+		Func = function()end
+	})
+
+	-- #9 (replace parts of a script)
+	tinsert (PlaterPatchLibrary, {
+		Notes = {
+			"- Removing deprecated mod 'No Target Alpha [Plater]', please use 'Untargeted Units' in the General Settings tab.",
+		},
+		Func = function()
+			--aura reorder fix
+			local hookData = Plater.db.profile.hook_data
+			for i = 1, #hookData do
+				local hook = hookData [i]
+				if (hook.Name == "No Target Alpha [Plater]") then
+					tremove (Plater.db.profile.hook_data, i)
+					break
+				end
+			end
+		end
+	})
+
 	
 	
 end
