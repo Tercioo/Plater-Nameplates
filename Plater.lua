@@ -7810,54 +7810,51 @@ end
 	
 	function Plater.RefreshOmniCCGroup (fromInit) --private
 		if (OmniCC) then
-			local OmniCCDB = OmniCC4Config
-			if (OmniCCDB) then
+			local platerThemeName = "Plater Nameplates Theme"
+			local platerRuleName = "Plater Nameplates Rule"
 			
-				--being extra careful
-				local OmniCCGroupSettings = OmniCCDB.groupSettings
-				local OmniCCAllGroups = OmniCCDB.groups
-				
-				local platerGroupName = "PlaterNameplates Blacklist"
-				
-				--check if the settings exists
-				if (OmniCCGroupSettings and OmniCCAllGroups) then
-					--attempt to get the plater group
-					local platerGroupID = OmniCC:GetGroupIndex(platerGroupName)
-					
-					--check if the plater group exists, this doesn't but the call is from Initialization or Profile Refresh, just quit
-					if (not platerGroupID and fromInit) then
-						return
+			--cleanup old data...
+			OmniCC:RemoveRule("PlaterNameplates Blacklist")
+			OmniCC:RemoveTheme("PlaterNameplates Blacklist")
+			
+			--attempt to get the plater theme
+			local platerTheme = OmniCC:GetTheme(platerThemeName)
+			
+			--check if the plater group exists, this doesn't but the call is from Initialization or Profile Refresh, just quit
+			if (not platerTheme and fromInit) then
+				return
+			end
+			
+			--if doesn't exists and isn't from init (the call came from the options panel by the user clicking in the checkbox)
+			if (not platerTheme) then
+				platerTheme = OmniCC:AddTheme(platerThemeName)
+				platerTheme.enableText = false
+			end
+			
+			local platerRules = OmniCC:AddRule(platerRuleName, platerThemeName)
+			if not platerRules then
+				-- rule already exists, get it properly...
+				for _, rule in OmniCC:GetActiveRulesets() do
+					if rule.id == platerRuleName then
+						platerRules = rule
+						break
 					end
-					
-					local platerGroupSettings = OmniCC:GetGroupSettings(platerGroupName)
-					-- cleanup old, unclean instances...
-					if platerGroupSettings and not platerGroupSettings.xOff then
-						OmniCC:RemoveGroup(platerGroupName)
-						platerGroupID = nil
-					end
-					
-					--if doesn't exists and isn't from init (the call came from the options panel by the user clicking in the checkbox)
-					if (not platerGroupID) then
-						OmniCC:AddGroup(platerGroupName)
-					end
-					local platerGroup = OmniCCAllGroups[OmniCC:GetGroupIndex(platerGroupName)]
-					
-					--get the plater settings table
-					local settingsGroup = OmniCC:GetGroupSettings(platerGroupName)
-					
-					if (Plater.db.profile.disable_omnicc_on_auras) then
-						DF.table.addunique (platerGroup.rules, "PlaterMainAuraIcon")
-						DF.table.addunique (platerGroup.rules, "PlaterSecondaryAuraIcon")
-						DF.table.addunique (platerGroup.rules, "ExtraIconRowIcon")
-						settingsGroup.enabled = false
-					else
-						wipe (platerGroup.rules)
-						settingsGroup.enabled = false
-					end
-					
-					OmniCC:UpdateGroups()
 				end
 			end
+			
+			DF.table.addunique (platerRules.patterns, "PlaterMainAuraIcon")
+			DF.table.addunique (platerRules.patterns, "PlaterSecondaryAuraIcon")
+			DF.table.addunique (platerRules.patterns, "ExtraIconRowIcon")
+			
+			if (Plater.db.profile.disable_omnicc_on_auras) then
+				platerTheme.enableText = false
+			else
+				--wipe (platerRules.patterns)
+				platerTheme.enableText = true
+			end
+			
+			OmniCC:OnProfileChanged()
+			OmniCC.Cooldown:ForAll("Refresh", true)
 		end
 	end
 
