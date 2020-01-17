@@ -983,7 +983,7 @@ end
 
 --~alphasettings
 --major alpha setting
-local interfaceOptionsDivisor = DF:CreateImage(frontPageFrame, {1, 1, 1, 1}, 5, 100)
+local interfaceOptionsDivisor = DF:CreateImage(frontPageFrame, "", 5, 100)
 interfaceOptionsDivisor:SetPoint("topright", frontPageFrame, "topright", -295, -110)
 
 local smallFrameForAlphaMajorOptions = CreateFrame ("frame", frontPageFrame:GetName() .. "AlphaMajors", frontPageFrame)
@@ -1004,7 +1004,7 @@ local alpha_major_options = {
 			local checkBoxAll = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_both")
 			checkBoxAll:SetValue(false)				
 		end,
-		name = "Range Check",
+		name = "Units Out of Your Range",
 		desc = "When a nameplate is out of range, alpha is reduced.",
 		boxfirst = true,
 		id = "transparency_rangecheck",
@@ -1022,7 +1022,7 @@ local alpha_major_options = {
 			local checkBoxAll = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_both")
 			checkBoxAll:SetValue(false)				
 		end,
-		name = "Untargeted Units",
+		name = "Units Which Isn't Your Target",
 		desc = "When a nameplate isn't your current target, alpha is reduced.",
 		boxfirst = true,
 		id = "transparency_nontargets",
@@ -1040,7 +1040,7 @@ local alpha_major_options = {
 			local checkBoxNonTargets = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_nontargets")
 			checkBoxNonTargets:SetValue(false)
 		end,
-		name = "Range Check + Untargeted Units",
+		name = "Out of Range + Isn't Your Target",
 		desc = "Reduces the alpha of units which isn't your target.\nReduces even more if the unit is out of range.",
 		boxfirst = true,
 		id = "transparency_both",
@@ -1141,7 +1141,7 @@ local alpha_major_options = {
 local alpha_major_title = Plater:CreateLabel (smallFrameForAlphaMajorOptions, L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_ANCHOR_TITLE"], Plater:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
 alpha_major_title:SetPoint (startX + 838, startY)
 
-DF:BuildMenu (smallFrameForAlphaMajorOptions, alpha_major_options, startX + 838, startY-20, 760, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
+DF:BuildMenu (smallFrameForAlphaMajorOptions, alpha_major_options, startX + 835, startY-20, 760, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 
 
 -------------------------------------------------------------------------------

@@ -3365,7 +3365,6 @@ function Plater.OnInit() --private
 				--setup the cast bar from details! framework unit frame
 				if (DB_PLATE_CONFIG.player.castbar_enabled) then
 					castBar:SetUnit (unitFrame.unit)
-					castBar.extraBackground:SetVertexColor (0, 0, 0, 0.8)
 					castBar.extraBackground:Show()
 				else
 					castBar:SetUnit (nil)
@@ -3570,9 +3569,8 @@ function Plater.OnInit() --private
 					self.extraBackground:Show()
 				else
 					--in case the unit is out of range, add some background color for the cast
-					if (self:GetAlpha() < 0.65) then
+					if (self:GetAlpha() < 0.4) then
 						self.extraBackground:Show()
-						self.extraBackground:SetVertexColor (0, 0, 0, 0.8)
 					else
 						self.extraBackground:Hide()
 					end
@@ -6878,7 +6876,9 @@ end
 			
 			--setup cast bar
 			castBar.background:SetTexture (DB_TEXTURE_CASTBAR_BG)
+			castBar.extraBackground:SetTexture (DB_TEXTURE_CASTBAR_BG)
 			castBar.background:SetVertexColor (unpack (profile.cast_statusbar_bgcolor))
+			castBar.extraBackground:SetVertexColor (unpack (profile.cast_statusbar_bgcolor))
 			castBar.flashTexture:SetTexture (DB_TEXTURE_CASTBAR)
 			castBar.Icon:SetTexCoord (0.078125, 0.921875, 0.078125, 0.921875)
 			
