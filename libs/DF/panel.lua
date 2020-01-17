@@ -9319,7 +9319,7 @@ DF.TimeLineBlockFunctions = {
 				if (isAura) then
 					block.auraLength:Show()
 					block.auraLength:SetWidth (pixelPerSecond * isAura)
-					block:SetWidth (pixelPerSecond * isAura)
+					block:SetWidth (max (pixelPerSecond * isAura, 16))
 				else
 					block.auraLength:Hide()
 				end
@@ -9327,7 +9327,7 @@ DF.TimeLineBlockFunctions = {
 				block.background:SetVertexColor (0, 0, 0, 0)
 			else
 				block.background:SetVertexColor (unpack (color))
-				PixelUtil.SetSize (block, width, self:GetHeight())
+				PixelUtil.SetSize (block, max (width, 16), self:GetHeight())
 				block.auraLength:Hide()
 			end
 		end
@@ -9564,7 +9564,12 @@ function DF:CreateTimeLineFrame (parent, name, options, timelineOptions)
 		horizontalSlider:SetMinMaxValues (0, scrollWidth)
 		horizontalSlider:SetValue (0)
 		horizontalSlider:SetScript ("OnValueChanged", function (self)
-			frameCanvas:SetHorizontalScroll (self:GetValue())
+			local _, maxValue = horizontalSlider:GetMinMaxValues()
+			local stepValue = ceil (ceil(self:GetValue() * maxValue)/maxValue)
+			if (stepValue ~= horizontalSlider.currentValue) then
+				horizontalSlider.currentValue = stepValue
+				frameCanvas:SetHorizontalScroll (stepValue)
+			end
 		end)
 		
 		frameCanvas.horizontalSlider = horizontalSlider
@@ -9595,9 +9600,12 @@ function DF:CreateTimeLineFrame (parent, name, options, timelineOptions)
 		scaleSlider:SetValue (DF:GetRangeValue (frameCanvas.options.scale_min, frameCanvas.options.scale_max, 0.5))
 
 		scaleSlider:SetScript ("OnValueChanged", function (self)
-			local current = scaleSlider:GetValue()
-			frameCanvas.currentScale = current
-			frameCanvas:RefreshTimeLine()
+			local stepValue = ceil(self:GetValue() * 100)/100
+			if (stepValue ~= frameCanvas.currentScale) then
+				local current = stepValue
+				frameCanvas.currentScale = stepValue
+				frameCanvas:RefreshTimeLine()
+			end
 		end)
 
 	--create vertical slider
@@ -9777,6 +9785,38 @@ function DF:ShowErrorMessage (errorMessage, titleText)
 	DF.ErrorMessagePanel.FlashAnimation:Play()
 end
 
+--[[
+	DF:SetPointOffsets(frame, xOffset, yOffset)
 
+	Set an offset into the already existing offset of the frame
+	If passed xOffset:1 and yOffset:1 and the frame has 1 -1,  the new offset will be 2 -2
+	This function is great to create a 1 knob for distance
 
---functionn falsee truee breakk elsea endz 
+	@frame: a frame to have the offsets changed
+	@xOffset: the amount to apply into the x offset
+	@yOffset: the amount to apply into the y offset
+--]]
+function DF:SetPointOffsets(frame, xOffset, yOffset)
+	for i = 1, frame:GetNumPoints() do
+		local anchor1, anchorTo, anchor2, x, y = frame:GetPoint(i)
+		x = x or 0
+		y = y or 0
+
+		if (x >= 0) then
+			xOffset = x + xOffset
+
+		elseif (x < 0) then
+			xOffset = x - xOffset
+		end
+
+		if (y >= 0) then
+			yOffset = y + yOffset
+		
+		elseif (y < 0) then
+			yOffset = y - yOffset
+		end
+
+		frame:SetPoint(anchor1, anchorTo, anchor2, xOffset, yOffset)
+	end
+end
+

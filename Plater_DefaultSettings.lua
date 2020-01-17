@@ -490,6 +490,9 @@ PLATER_DEFAULT_SETTINGS = {
 
 			},
 		},
+
+		transparency_behavior = 0x1,
+		non_targeted_alpha_enabled = false,
 		
 		quick_hide = false, --hide the nameplate when the unit hits 0 health points | making disabled by default, this maybe is bugging hunters FD
 		
@@ -504,11 +507,23 @@ PLATER_DEFAULT_SETTINGS = {
 		show_interrupt_author = true,
 
 		customdesign = {
-			enabled = false,
+			healthbar_enabled = false,
 			healthbar_file = "interface\\addons\\plater\\images\\healthbar\\round_base",
-			border_file = "interface\\addons\\plater\\images\\healthbar\\round_border_3px",
-			border_distance = 1,
-			border_color = "silver",
+			healthbar_border_file = "interface\\addons\\plater\\images\\healthbar\\round_border_2px",
+			healthbar_border_distance = 0,
+			healthbar_border_color = "silver",
+
+			castbar_enabled = false,
+			castbar_file = "interface\\addons\\plater\\images\\healthbar\\round_base",
+			castbar_border_file = "interface\\addons\\plater\\images\\healthbar\\round_border_2px",
+			castbar_border_distance = 0,
+			castbar_border_color = "silver",
+
+			powerbar_enabled = false,
+			powerbar_file = "interface\\addons\\plater\\images\\healthbar\\round_base",
+			powerbar_border_file = "interface\\addons\\plater\\images\\healthbar\\round_border_2px",
+			powerbar_border_distance = 0,
+			powerbar_border_color = "silver",
 		},
 		
 		--allow scripts to store default values of cvars when they perform automatically changes
