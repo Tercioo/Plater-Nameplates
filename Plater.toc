@@ -1,4 +1,4 @@
-## Interface: 80205
+## Interface: 80300
 ## Title: Plater
 ## Notes: Nameplate addon designed for advanced users.
 ## SavedVariables: PlaterDB
