@@ -2029,6 +2029,9 @@ Plater.DefaultSpellRangeList = {
 		end,
 		
 		PLAYER_ENTERING_WORLD = function()
+
+			Plater.db.profile.login_counter = Plater.db.profile.login_counter + 1
+
 			Plater.ScheduleRunFunctionForEvent (1, "ZONE_CHANGED_NEW_AREA")
 			Plater.ScheduleRunFunctionForEvent (1, "FRIENDLIST_UPDATE")
 
