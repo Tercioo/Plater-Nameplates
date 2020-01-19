@@ -1143,6 +1143,44 @@ alpha_major_title:SetPoint (startX + 838, startY)
 
 DF:BuildMenu (smallFrameForAlphaMajorOptions, alpha_major_options, startX + 835, startY-20, 760, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 
+function Plater.CreateGoToTabFrame(parent, text, index)
+	local goToTab = CreateFrame("frame", nil, parent)
+	goToTab:SetSize (230, 55)
+	DF:ApplyStandardBackdrop (goToTab, false, 0.6)
+	
+	local labelgoToTab = DF:CreateLabel(goToTab, text, 12, "orange")
+	labelgoToTab.width = 230
+	labelgoToTab.height = 50
+	labelgoToTab.valign = "center"
+	labelgoToTab.align = "center"
+	labelgoToTab:SetPoint("topleft", goToTab, "topleft", 3, -3)
+
+	local goTo = function()
+		PlaterOptionsPanelContainer:SelectIndex (Plater, index)
+	end
+
+	local buttonGo = DF:CreateButton (parent, goTo, 20, 1, "", false, false, "", false, false, false, options_button_template)
+	buttonGo:SetPoint("topleft", goToTab, "topright", 1, 0)
+	buttonGo:SetPoint("bottomleft", goToTab, "bottomright", 1, 0)
+	DF:ApplyStandardBackdrop (buttonGo, false, 0.8)
+
+	local arrowTexture = DF:CreateImage (buttonGo, "Interface\\CHATFRAME\\ChatFrameExpandArrow", 18, 18, "overlay")
+	arrowTexture:SetPoint("center", buttonGo, "center")
+
+	return goToTab
+end
+
+local goToTabFrame1 = Plater.CreateGoToTabFrame(frontPageFrame, "Go to 'Enemy Npc' tab to setup health and castbar size.", 13)
+goToTabFrame1:SetPoint("bottomright", frontPageFrame, "bottomright", -24, 22)
+
+local goToTabFrame2 = Plater.CreateGoToTabFrame(enemyNPCsFrame, "Go to 'Threat / Aggro' tab to setup colors.", 2)
+goToTabFrame2:SetPoint("bottomright", enemyNPCsFrame, "bottomright", -24, 22)
+
+local goToTabFrame3 = Plater.CreateGoToTabFrame(threatFrame, "Go to 'Target' tab to choose how the nameplate looks like when the unit is your target.", 3)
+goToTabFrame3:SetPoint("bottomright", threatFrame, "bottomright", -24, 22)
+
+local goToTabFrame4 = Plater.CreateGoToTabFrame(targetFrame, "Go to 'Buff Settings' tab to setup the auras above the nameplate.", 9)
+goToTabFrame4:SetPoint("bottomright", targetFrame, "bottomright", -24, 22)
 
 -------------------------------------------------------------------------------
 -- painel para configurar debuffs e buffs
