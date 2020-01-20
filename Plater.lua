@@ -9271,6 +9271,12 @@ end
 		profile.script_data_trash = nil
 		profile.hook_data_trash = nil
 		
+		--cleanup mods HooksTemp (for good)
+		for i = #Plater.db.profile.hook_data, 1, -1 do
+			local scriptObject = Plater.db.profile.hook_data [i]
+			scriptObject.HooksTemp = {}
+		end
+		
 		--convert the profile to string
 		local data = Plater.CompressData (profile, "print")
 		if (not data) then

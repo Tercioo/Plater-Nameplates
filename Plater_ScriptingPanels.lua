@@ -1164,6 +1164,9 @@ function Plater.CreateHookingPanel()
 		local scriptToBeCopied = hookFrame.GetScriptObject (scriptId)
 		local newScript = DF.table.copy ({}, scriptToBeCopied)
 		
+		--cleanup:
+		newScript.HooksTemp  = {}
+		
 		tinsert (Plater.db.profile.hook_data, newScript)
 		hookFrame.ScriptSelectionScrollBox:Refresh()
 		
@@ -1173,6 +1176,9 @@ function Plater.CreateHookingPanel()
 	--called from the context menu when right click an option in the script menu
 	function hookFrame.ExportScript (scriptId)
 		local scriptToBeExported = hookFrame.GetScriptObject (scriptId)
+		
+		--cleanup:
+		scriptToBeExported.HooksTemp  = {}
 		
 		--convert the script table into a index table for smaller size
 		local tableToExport = Plater.PrepareTableToExport (scriptToBeExported)
