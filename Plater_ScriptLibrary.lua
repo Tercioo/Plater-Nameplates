@@ -360,7 +360,7 @@ do
 	-- #9 (replace parts of a script)
 	tinsert (PlaterPatchLibrary, {
 		Notes = {
-			"- Removing deprecated mod 'No Target Alpha [Plater]', please use 'Untargeted Units' in the General Settings tab.",
+			"- Removing deprecated mod 'No Target Alpha [Plater]', please use 'Units which isn't your target' in the General Settings tab.",
 		},
 		Func = function()
 			--aura reorder fix

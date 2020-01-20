@@ -493,6 +493,8 @@ PLATER_DEFAULT_SETTINGS = {
 			},
 		},
 
+		login_counter = 0,
+
 		transparency_behavior = 0x1,
 		non_targeted_alpha_enabled = false,
 		
@@ -503,7 +505,7 @@ PLATER_DEFAULT_SETTINGS = {
 		last_news_time = 0,
 		disable_omnicc_on_auras = false,
 		
-		show_health_prediction = false,
+		show_health_prediction = true,
 		show_shield_prediction = true,
 		
 		show_interrupt_author = true,
