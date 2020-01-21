@@ -496,6 +496,7 @@ PLATER_DEFAULT_SETTINGS = {
 		login_counter = 0,
 
 		transparency_behavior = 0x1,
+		transparency_behavior_use_division = false,
 		non_targeted_alpha_enabled = false,
 		
 		quick_hide = false, --hide the nameplate when the unit hits 0 health points | making disabled by default, this maybe is bugging hunters FD
@@ -727,9 +728,14 @@ PLATER_DEFAULT_SETTINGS = {
 		},
 		
 		not_affecting_combat_enabled = false,
-		not_affecting_combat_alpha = 0.799999,
+		not_affecting_combat_alpha = 0.6,
+
 		range_check_enabled = true,
-		range_check_alpha = 0.65,
+		range_check_alpha = 1, --overall as it set in the unitFrame
+		range_check_health_bar_alpha = 0.65,
+		range_check_cast_bar_alpha = 0.85,
+		range_check_buffs_alpha = 0.85,
+		range_check_power_bar_alpha = 0.85,
 		
 		target_highlight = true,
 		target_highlight_alpha = 0.75,

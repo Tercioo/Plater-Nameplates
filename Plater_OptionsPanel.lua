@@ -995,6 +995,13 @@ local alpha_major_options = {
 		type = "toggle",
 		get = function() return Plater.db.profile.transparency_behavior == 0x1 end,
 		set = function (self, fixedparam, value) 
+
+			if (not value) then
+				local checkBoxRangeCheck = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_rangecheck")
+				checkBoxRangeCheck:SetValue(true)
+				return
+			end
+
 			Plater.db.profile.transparency_behavior = 0x1
 			Plater.db.profile.range_check_enabled = true
 			Plater.db.profile.non_targeted_alpha_enabled = false
@@ -1002,7 +1009,11 @@ local alpha_major_options = {
 			local checkBoxNonTargets = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_nontargets")
 			checkBoxNonTargets:SetValue(false)
 			local checkBoxAll = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_both")
-			checkBoxAll:SetValue(false)				
+			checkBoxAll:SetValue(false)		
+			local checkBoxNone = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_none")
+			checkBoxNone:SetValue(false)	
+			local checkBoxDivisionByTwo = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_division")
+			checkBoxDivisionByTwo:Disable()							
 		end,
 		name = "Units Out of Your Range",
 		desc = "When a nameplate is out of range, alpha is reduced.",
@@ -1013,6 +1024,13 @@ local alpha_major_options = {
 		type = "toggle",
 		get = function() return Plater.db.profile.transparency_behavior == 0x2 end,
 		set = function (self, fixedparam, value) 
+
+			if (not value) then
+				local checkBoxNonTargets = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_nontargets")
+				checkBoxNonTargets:SetValue(true)
+				return
+			end
+
 			Plater.db.profile.transparency_behavior = 0x2
 			Plater.db.profile.range_check_enabled = false
 			Plater.db.profile.non_targeted_alpha_enabled = true
@@ -1021,6 +1039,10 @@ local alpha_major_options = {
 			checkBoxRangeCheck:SetValue(false)
 			local checkBoxAll = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_both")
 			checkBoxAll:SetValue(false)				
+			local checkBoxNone = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_none")
+			checkBoxNone:SetValue(false)	
+			local checkBoxDivisionByTwo = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_division")
+			checkBoxDivisionByTwo:Disable()					
 		end,
 		name = "Units Which Isn't Your Target",
 		desc = "When a nameplate isn't your current target, alpha is reduced.",
@@ -1031,6 +1053,13 @@ local alpha_major_options = {
 		type = "toggle",
 		get = function() return Plater.db.profile.transparency_behavior == 0x3 end,
 		set = function (self, fixedparam, value) 
+
+			if (not value) then
+				local checkBoxAll = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_both")
+				checkBoxAll:SetValue(true)	
+				return
+			end
+
 			Plater.db.profile.transparency_behavior = 0x3
 			Plater.db.profile.range_check_enabled = true
 			Plater.db.profile.non_targeted_alpha_enabled = true
@@ -1039,14 +1068,61 @@ local alpha_major_options = {
 			checkBoxRangeCheck:SetValue(false)
 			local checkBoxNonTargets = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_nontargets")
 			checkBoxNonTargets:SetValue(false)
+			local checkBoxNone = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_none")
+			checkBoxNone:SetValue(false)
+			local checkBoxDivisionByTwo = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_division")
+			checkBoxDivisionByTwo:Enable()
 		end,
 		name = "Out of Range + Isn't Your Target",
 		desc = "Reduces the alpha of units which isn't your target.\nReduces even more if the unit is out of range.",
 		boxfirst = true,
 		id = "transparency_both",
 	},	
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.transparency_behavior == 0x4 end,
+		set = function (self, fixedparam, value) 
+
+			if (not value) then
+				local checkBoxNone = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_none")
+				checkBoxNone:SetValue(true)
+			end
+
+			Plater.db.profile.transparency_behavior = 0x4
+			Plater.db.profile.range_check_enabled = false
+			Plater.db.profile.non_targeted_alpha_enabled = false
+
+			local checkBoxRangeCheck = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_rangecheck")
+			checkBoxRangeCheck:SetValue(false)
+			local checkBoxNonTargets = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_nontargets")
+			checkBoxNonTargets:SetValue(false)
+			local checkBoxAll = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_both")
+			checkBoxAll:SetValue(false)	
+			local checkBoxDivisionByTwo = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_division")
+			checkBoxDivisionByTwo:Disable()
+		end,
+		name = "Nothing",
+		desc = "No alpha modifications is applyed.",
+		boxfirst = true,
+		id = "transparency_none",
+	},	
 
 	{type = "blank"},
+
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.transparency_behavior_use_division end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.transparency_behavior_use_division = value
+		end,
+		name = "Extra Contrast",
+		desc = "When the unit is out of range and isn't your target, alpha is greatly reduced.",
+		id = "transparency_division",
+	},	
+	--Plater.db.profile.transparency_behavior_use_division
+
+	{type = "blank"},
+	{type = "label", get = function() return "Alpha Amount by Frame" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	{
 		type = "range",
 		get = function() return Plater.db.profile.range_check_alpha end,
@@ -1058,8 +1134,68 @@ local alpha_major_options = {
 		min = 0,
 		max = 1,
 		step = 0.1,
-		name = L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK_ALPHA"],
-		desc = L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK_ALPHA"],
+		name = "Overall",
+		desc = "Overall",
+		usedecimals = true,
+	},
+	{
+		type = "range",
+		get = function() return Plater.db.profile.range_check_health_bar_alpha end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.range_check_health_bar_alpha = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		min = 0,
+		max = 1,
+		step = 0.1,
+		name = "Health Bar",
+		desc = "Health Bar",
+		usedecimals = true,
+	},
+	{
+		type = "range",
+		get = function() return Plater.db.profile.range_check_cast_bar_alpha end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.range_check_cast_bar_alpha = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		min = 0,
+		max = 1,
+		step = 0.1,
+		name = "Cast Bar",
+		desc = "Cast Bar",
+		usedecimals = true,
+	},
+	{
+		type = "range",
+		get = function() return Plater.db.profile.range_check_power_bar_alpha end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.range_check_power_bar_alpha = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		min = 0,
+		max = 1,
+		step = 0.1,
+		name = "Power Bar",
+		desc = "Power Bar",
+		usedecimals = true,
+	},
+	{
+		type = "range",
+		get = function() return Plater.db.profile.range_check_buffs_alpha end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.range_check_buffs_alpha = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		min = 0,
+		max = 1,
+		step = 0.1,
+		name = "Buff Frames",
+		desc = "Buff Frames",
 		usedecimals = true,
 	},
 
@@ -1142,6 +1278,17 @@ local alpha_major_title = Plater:CreateLabel (smallFrameForAlphaMajorOptions, L[
 alpha_major_title:SetPoint (startX + 838, startY)
 
 DF:BuildMenu (smallFrameForAlphaMajorOptions, alpha_major_options, startX + 835, startY-20, 760, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
+
+local checkBoxDivisionByTwo = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_division")
+if (Plater.db.profile.transparency_behavior == 0x3) then
+	checkBoxDivisionByTwo:Enable()
+else
+	checkBoxDivisionByTwo:Disable()
+end
+
+
+
+--go to frames
 
 function Plater.CreateGoToTabFrame(parent, text, index)
 	local goToTab = CreateFrame("frame", nil, parent)
@@ -5523,6 +5670,76 @@ local targetOptions = {
 			name = L["OPTIONS_TEXTURE"],
 			desc = "Focus Texture",
 		},
+
+		{type = "blank"},
+		{type = "label", get = function() return "Raid Mark:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		
+		{
+			type = "range",
+			get = function() return Plater.db.profile.indicator_raidmark_scale end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_raidmark_scale = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 0.2,
+			max = 2,
+			step = 0.1,
+			usedecimals = true,
+			name = "Scale",
+			desc = "Scale",
+		},
+		
+		--indicator icon anchor
+		{
+			type = "select",
+			get = function() return Plater.db.profile.indicator_raidmark_anchor.side end,
+			values = function() return build_anchor_side_table (nil, "indicator_raidmark_anchor") end,
+			name = L["OPTIONS_ANCHOR"],
+			desc = "Which side of the nameplate this widget is attach to.",
+		},
+		--indicator icon anchor x offset
+		{
+			type = "range",
+			get = function() return Plater.db.profile.indicator_raidmark_anchor.x end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_raidmark_anchor.x = value
+				Plater.UpdateAllPlates()
+			end,
+			min = -100,
+			max = 100,
+			step = 1,
+			usedecimals = true,
+			name = L["OPTIONS_XOFFSET"],
+			desc = "Slightly move horizontally.",
+		},
+		--indicator icon anchor y offset
+		{
+			type = "range",
+			get = function() return Plater.db.profile.indicator_raidmark_anchor.y end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_raidmark_anchor.y = value
+				Plater.UpdateAllPlates()
+			end,
+			min = -100,
+			max = 100,
+			step = 1,
+			usedecimals = true,
+			name = L["OPTIONS_YOFFSET"],
+			desc = "Slightly move vertically.",
+		},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.indicator_extra_raidmark end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_extra_raidmark = value
+				Plater.UpdateAllPlates()
+				Plater.UpdateRaidMarkersOnAllNameplates()
+			end,
+			name = "Extra Raid Mark",
+			desc = "Places an extra raid mark icon inside the health bar.",
+		},
+
 }
 
 DF:BuildMenu (targetFrame, targetOptions, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
@@ -6156,80 +6373,6 @@ local relevance_options = {
 			name = L["OPTIONS_YOFFSET"],
 			desc = "Y Offset",
 		},
-
-		{type = "breakline"},
-		{type = "blank"},{type = "blank"},{type = "blank"},{type = "blank"},{type = "blank"},{type = "blank"},{type = "blank"},{type = "blank"},
-		{type = "blank"},
-		
-		{type = "label", get = function() return "Raid Mark:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-		
-		{
-			type = "range",
-			get = function() return Plater.db.profile.indicator_raidmark_scale end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.indicator_raidmark_scale = value
-				Plater.UpdateAllPlates()
-			end,
-			min = 0.2,
-			max = 2,
-			step = 0.1,
-			usedecimals = true,
-			name = "Scale",
-			desc = "Scale",
-		},
-		
-		--indicator icon anchor
-		{
-			type = "select",
-			get = function() return Plater.db.profile.indicator_raidmark_anchor.side end,
-			values = function() return build_anchor_side_table (nil, "indicator_raidmark_anchor") end,
-			name = L["OPTIONS_ANCHOR"],
-			desc = "Which side of the nameplate this widget is attach to.",
-		},
-		--indicator icon anchor x offset
-		{
-			type = "range",
-			get = function() return Plater.db.profile.indicator_raidmark_anchor.x end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.indicator_raidmark_anchor.x = value
-				Plater.UpdateAllPlates()
-			end,
-			min = -100,
-			max = 100,
-			step = 1,
-			usedecimals = true,
-			name = L["OPTIONS_XOFFSET"],
-			desc = "Slightly move horizontally.",
-		},
-		--indicator icon anchor y offset
-		{
-			type = "range",
-			get = function() return Plater.db.profile.indicator_raidmark_anchor.y end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.indicator_raidmark_anchor.y = value
-				Plater.UpdateAllPlates()
-			end,
-			min = -100,
-			max = 100,
-			step = 1,
-			usedecimals = true,
-			name = L["OPTIONS_YOFFSET"],
-			desc = "Slightly move vertically.",
-		},
-		
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.indicator_extra_raidmark end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.indicator_extra_raidmark = value
-				Plater.UpdateAllPlates()
-				Plater.UpdateRaidMarkersOnAllNameplates()
-			end,
-			name = "Extra Raid Mark",
-			desc = "Places an extra raid mark icon inside the health bar.",
-		},
-		
-		{type = "breakline"},
 	}
 	
 	DF:BuildMenu (generalOptionsAnchor, options_table1, 0, 0, mainHeightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
