@@ -934,7 +934,7 @@ Plater.DefaultSpellRangeList = {
 
 		--value when the unit is in range
 		local inRangeAlpha = AlphaBlending
-
+ 
 		--is using the range check by ability
 		if (DB_USE_RANGE_CHECK) then
 			--check when the unit just has been added to the screen
