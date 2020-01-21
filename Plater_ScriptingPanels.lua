@@ -1177,9 +1177,6 @@ function Plater.CreateHookingPanel()
 	function hookFrame.ExportScript (scriptId)
 		local scriptToBeExported = hookFrame.GetScriptObject (scriptId)
 		
-		--cleanup:
-		scriptToBeExported.HooksTemp  = {}
-		
 		--convert the script table into a index table for smaller size
 		local tableToExport = Plater.PrepareTableToExport (scriptToBeExported)
 		--compress the index table
