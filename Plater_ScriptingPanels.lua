@@ -1164,6 +1164,9 @@ function Plater.CreateHookingPanel()
 		local scriptToBeCopied = hookFrame.GetScriptObject (scriptId)
 		local newScript = DF.table.copy ({}, scriptToBeCopied)
 		
+		--cleanup:
+		newScript.HooksTemp  = {}
+		
 		tinsert (Plater.db.profile.hook_data, newScript)
 		hookFrame.ScriptSelectionScrollBox:Refresh()
 		
