@@ -1049,7 +1049,21 @@ Plater.DefaultSpellRangeList = {
 				--player does not have a target, so just set to regular alpha
 				plateFrame.FadedIn = true
 				plateFrame.unitFrame:SetAlpha (AlphaBlending)
+				healthBar:SetAlpha (1)
+				castBar:SetAlpha (1)
+				powerBar:SetAlpha (1)
+				buffFrame1:SetAlpha (1)
+				buffFrame2:SetAlpha (1)
 			end
+		else
+			-- no alpha settings, so just go to default
+			plateFrame.FadedIn = true
+			unitFrame:SetAlpha (AlphaBlending)
+			healthBar:SetAlpha (1)
+			castBar:SetAlpha (1)
+			powerBar:SetAlpha (1)
+			buffFrame1:SetAlpha (1)
+			buffFrame2:SetAlpha (1)
 		end
 	end	
 	
