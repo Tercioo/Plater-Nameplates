@@ -7941,7 +7941,7 @@ end
 			local platerRules = OmniCC:AddRule(platerRuleName, platerThemeName)
 			if not platerRules then
 				-- rule already exists, get it properly...
-				for _, rule in OmniCC:GetActiveRulesets() do
+				for _, rule in OmniCC:GetRulesets() do
 					if rule.id == platerRuleName then
 						platerRules = rule
 						break
@@ -7955,8 +7955,8 @@ end
 			
 			if (Plater.db.profile.disable_omnicc_on_auras) then
 				platerTheme.enableText = false
+				platerRules.enabled = true
 			else
-				--wipe (platerRules.patterns)
 				platerTheme.enableText = true
 			end
 			
