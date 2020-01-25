@@ -7,11 +7,10 @@ local _
 function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
-			{1579261831,  "New Feature", "Jan 21st, 2020", "Alpha for range check can now be set individualy to health, cast, power, buff bars."},
-			{1579261831,  "Backend Changes", "Jan 21st, 2020", "Entry for scripts 'namePlateAlpha' has been removed."},
-
-			{1579261831,  "Bug Fix", "Jan 17th, 2020", "Updating OmniCC integration for 8.3 changes in OmniCC."},
 			{1579261831,  "Options Changes", "Jan 17th, 2020", "Adding native support to 'Non Target Alpha' called now 'Units Which Isn't Your Target' in the General Settings Page."},
+			{1579261831,  "New Feature", "Jan 21st, 2020", "Alpha for range check and non target units can now be set individualy for each frame: health, cast, power, buff bars."},
+			{1579261831,  "Backend Changes", "Jan 21st, 2020", "Entry for scripts 'namePlateAlpha' has been removed."},
+			{1579261831,  "Bug Fix", "Jan 17th, 2020", "Updating OmniCC integration for 8.3 changes in OmniCC."},
 			{1579261831,  "Bug Fix", "Jan 7th, 2020", "Ensuring BuffFrame2 is shown/hidden properly."},
 			{1579261831,  "Backend Changes", "Jan 4th, 2020", "Buff-Special enhancement: Adding Stack info and more public information for modding / scripting."},
 			{1579261831,  "New Feature", "Dec 31st, 2019", "Introducing run priority for mods and scripts."},
