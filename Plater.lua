@@ -3158,8 +3158,7 @@ function Plater.OnInit() --private
 				--do not run cvars for individual characters
 				C_Timer.After (15, Plater.SetCVarsOnFirstRun)
 			else
-				--don't hide blizzard options, March 06, 2019
-				--Plater.ShutdownInterfaceOptionsPanel()
+				Plater.CreatePlaterButtonAtInterfaceOptions()
 			end
 		end
 		
@@ -8106,45 +8105,20 @@ end
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> cvars - ~cvars
 	
-function Plater.ShutdownInterfaceOptionsPanel()
-	local frames = {
-		InterfaceOptionsNamesPanelUnitNameplates,
-		InterfaceOptionsNamesPanelUnitNameplatesFriendsText,
-		InterfaceOptionsNamesPanelUnitNameplatesEnemies,
-		InterfaceOptionsNamesPanelUnitNameplatesPersonalResource,
-		InterfaceOptionsNamesPanelUnitNameplatesPersonalResourceOnEnemy,
-		InterfaceOptionsNamesPanelUnitNameplatesMakeLarger,
-		InterfaceOptionsNamesPanelUnitNameplatesShowAll,
-		InterfaceOptionsNamesPanelUnitNameplatesAggroFlash,
-		InterfaceOptionsNamesPanelUnitNameplatesFriendlyMinions,
-		InterfaceOptionsNamesPanelUnitNameplatesEnemyMinions,
-		InterfaceOptionsNamesPanelUnitNameplatesEnemyMinus,
-		InterfaceOptionsNamesPanelUnitNameplatesMotionDropDown,
-	}
-
-	for _, frame in ipairs (frames) do
-		frame:Hide()
-	end
-	
-	InterfaceOptionsNamesPanelUnitNameplatesMakeLarger.setFunc = function() end
-	
+function Plater.CreatePlaterButtonAtInterfaceOptions()
 	local f = CreateFrame ("frame", nil, InterfaceOptionsNamesPanel)
 	f:SetSize (300, 200)
-	f:SetPoint ("topleft", InterfaceOptionsNamesPanel, "topleft", 10, -240)
+	f:SetPoint ("topleft", InterfaceOptionsNamesPanel, "topleft", 10, -440)
 	
 	local open_options = function()
 		InterfaceOptionsFrame:Hide()
-		--GameMenuFrame:Hide()
 		Plater.OpenOptionsPanel()
 	end
 	
-	local Button = DF:CreateButton (f, open_options, 100, 20, "", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
+	local Button = DF:CreateButton (f, open_options, 100, 22, "", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
 	Button:SetPoint ("topleft", f, "topleft", 10, 0)
-	Button:SetText ("Open Plater Options")
+	Button:SetText ("Advanced Nameplate Options")
 	Button:SetIcon ([[Interface\BUTTONS\UI-OptionsButton]], 18, 18, "overlay", {0, 1, 0, 1})
-	
-	local Label = DF:CreateLabel (f, "Where are the Nameplate options?\n- Open Plater options, they are at the top left.")
-	Label:SetPoint ("bottomleft", Button, "topleft", 0, 2)
 end
 
 --elseof
@@ -8231,7 +8205,7 @@ function Plater.SetCVarsOnFirstRun()
 	--InterfaceOptionsNamesPanelUnitNameplatesMakeLarger:Click() --this isn't required anymore since we use our own unitframe now
 	--InterfaceOptionsNamesPanelUnitNameplatesPersonalResource:Click() --removing this since I don't have documentation on why this was added
 	--InterfaceOptionsNamesPanelUnitNameplatesPersonalResource:Click()
-	--Plater.ShutdownInterfaceOptionsPanel() --we do not disable the interface panel anymore
+	Plater.CreatePlaterButtonAtInterfaceOptions()
 	
 	--[=[
 	--> try to restore cvars from the profile
@@ -9754,7 +9728,7 @@ end
 		IsNpcInIgnoreList = true,
 		CanChangePlateSize = true,
 		RefreshOmniCCGroup = true,
-		ShutdownInterfaceOptionsPanel = true,
+		CreatePlaterButtonAtInterfaceOptions = true,
 		SetCVarsOnFirstRun = true,
 		GetActorSubName = true,
 		QuestLogUpdated = true,
