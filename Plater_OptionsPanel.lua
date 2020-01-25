@@ -1013,7 +1013,9 @@ local alpha_major_options = {
 			local checkBoxNone = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_none")
 			checkBoxNone:SetValue(false)	
 			local checkBoxDivisionByTwo = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_division")
-			checkBoxDivisionByTwo:Disable()							
+			checkBoxDivisionByTwo:Disable()
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
 		end,
 		name = "Units Out of Your Range",
 		desc = "When a nameplate is out of range, alpha is reduced.",
@@ -1042,7 +1044,9 @@ local alpha_major_options = {
 			local checkBoxNone = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_none")
 			checkBoxNone:SetValue(false)	
 			local checkBoxDivisionByTwo = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_division")
-			checkBoxDivisionByTwo:Disable()					
+			checkBoxDivisionByTwo:Disable()
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
 		end,
 		name = "Units Which Isn't Your Target",
 		desc = "When a nameplate isn't your current target, alpha is reduced.",
@@ -1072,6 +1076,8 @@ local alpha_major_options = {
 			checkBoxNone:SetValue(false)
 			local checkBoxDivisionByTwo = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_division")
 			checkBoxDivisionByTwo:Enable()
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
 		end,
 		name = "Out of Range + Isn't Your Target",
 		desc = "Reduces the alpha of units which isn't your target.\nReduces even more if the unit is out of range.",
@@ -1100,6 +1106,8 @@ local alpha_major_options = {
 			checkBoxAll:SetValue(false)	
 			local checkBoxDivisionByTwo = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_division")
 			checkBoxDivisionByTwo:Disable()
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
 		end,
 		name = "Nothing",
 		desc = "No alpha modifications is applyed.",
@@ -1114,6 +1122,7 @@ local alpha_major_options = {
 		get = function() return Plater.db.profile.transparency_behavior_use_division end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.transparency_behavior_use_division = value
+			Plater.UpdateAllPlates()
 		end,
 		name = "Extra Contrast",
 		desc = "When the unit is out of range and isn't your target, alpha is greatly reduced.",
@@ -1135,7 +1144,7 @@ local alpha_major_options = {
 		max = 1,
 		step = 0.1,
 		name = "Overall",
-		desc = "Overall",
+		desc = "Overall frame alpha.",
 		usedecimals = true,
 	},
 	{
@@ -1196,6 +1205,21 @@ local alpha_major_options = {
 		step = 0.1,
 		name = "Buff Frames",
 		desc = "Buff Frames",
+		usedecimals = true,
+	},
+	{
+		type = "range",
+		get = function() return Plater.db.profile.range_check_in_range_or_target_alpha end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.range_check_alpha = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		min = 0,
+		max = 1,
+		step = 0.1,
+		name = "In-Range/Target alpha",
+		desc = "Frame alpha for targets or in-range units.",
 		usedecimals = true,
 	},
 

@@ -736,6 +736,7 @@ PLATER_DEFAULT_SETTINGS = {
 		range_check_cast_bar_alpha = 0.85,
 		range_check_buffs_alpha = 0.85,
 		range_check_power_bar_alpha = 0.85,
+		range_check_in_range_or_target_alpha = 0.9, 
 		
 		target_highlight = true,
 		target_highlight_alpha = 0.75,

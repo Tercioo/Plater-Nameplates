@@ -887,13 +887,16 @@ Plater.DefaultSpellRangeList = {
 	--> range check ~range
 	function Plater.CheckRange (plateFrame, onAdded)
 
+		--value when the unit is in range
+		local inRangeAlpha = Plater.db.profile.range_check_in_range_or_target_alpha
+
 		--if is using the no combat alpha and the unit isn't in combat, ignore the range check, no combat alpha is disabled by default
 		if (plateFrame [MEMBER_NOCOMBAT]) then
 			return
 		
 		--the unit is friendly or not using range check and non targets alpha
 		elseif (plateFrame [MEMBER_REACTION] >= 5 or (not DB_USE_RANGE_CHECK and not DB_USE_NON_TARGETS_ALPHA)) then
-			plateFrame.unitFrame:SetAlpha (AlphaBlending)
+			plateFrame.unitFrame:SetAlpha (inRangeAlpha)
 			plateFrame [MEMBER_RANGE] = true
 			plateFrame.unitFrame [MEMBER_RANGE] = true
 			return
@@ -931,9 +934,6 @@ Plater.DefaultSpellRangeList = {
 				alphaMultiplier = 0.5
 			end
 		end
-
-		--value when the unit is in range
-		local inRangeAlpha = AlphaBlending
  
 		--is using the range check by ability
 		if (DB_USE_RANGE_CHECK) then
@@ -1048,7 +1048,7 @@ Plater.DefaultSpellRangeList = {
 			else
 				--player does not have a target, so just set to regular alpha
 				plateFrame.FadedIn = true
-				plateFrame.unitFrame:SetAlpha (AlphaBlending)
+				plateFrame.unitFrame:SetAlpha (inRangeAlpha)
 				healthBar:SetAlpha (1)
 				castBar:SetAlpha (1)
 				powerBar:SetAlpha (1)
@@ -1058,7 +1058,7 @@ Plater.DefaultSpellRangeList = {
 		else
 			-- no alpha settings, so just go to default
 			plateFrame.FadedIn = true
-			unitFrame:SetAlpha (AlphaBlending)
+			unitFrame:SetAlpha (inRangeAlpha)
 			healthBar:SetAlpha (1)
 			castBar:SetAlpha (1)
 			powerBar:SetAlpha (1)
