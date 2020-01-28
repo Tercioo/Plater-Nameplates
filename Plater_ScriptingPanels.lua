@@ -1418,6 +1418,8 @@ function Plater.CreateHookingPanel()
 			HooksTemp = {},
 			LastHookEdited = "",
 			LoadConditions = DF:UpdateLoadConditionsTable ({}),
+			--ModEnvStart = "", --run once when the mod starts
+			--ModEnvTable = {}, --store data that is shared among all nameplates running this script
 		}
 		
 		--add it to the database

@@ -6853,6 +6853,33 @@ function DF:BuildStatusbarAuthorInfo (f, addonBy, authorsNameString)
 
 end
 
+local statusbar_default_options = {
+	attach = "bottom", --bottomleft from statusbar attach to bottomleft of the frame | other option is "top": topleft attach to bottomleft
+}
+
+function DF:CreateStatusBar(f, options)
+	local statusBar = CreateFrame ("frame", nil, f)
+	
+	DF:Mixin (statusBar, DF.OptionsFunctions)
+	DF:Mixin (statusBar, DF.LayoutFrame)
+
+	statusBar:BuildOptionsTable (statusbar_default_options, options)
+
+	if (statusBar.options.attach == "bottom") then
+		statusBar:SetPoint ("bottomleft", f, "bottomleft")
+		statusBar:SetPoint ("bottomright", f, "bottomright")
+
+	else
+		statusBar:SetPoint ("topleft", f, "bottomleft")
+		statusBar:SetPoint ("topright", f, "bottomright")
+	end
+
+	statusBar:SetHeight (20)
+	DF:ApplyStandardBackdrop (statusBar)
+	statusBar:SetAlpha (0.8)
+
+	return statusBar
+end
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
