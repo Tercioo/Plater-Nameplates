@@ -1211,7 +1211,7 @@ local alpha_major_options = {
 		type = "range",
 		get = function() return Plater.db.profile.range_check_in_range_or_target_alpha end,
 		set = function (self, fixedparam, value) 
-			Plater.db.profile.range_check_alpha = value
+			Plater.db.profile.range_check_in_range_or_target_alpha = value
 			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
