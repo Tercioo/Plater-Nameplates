@@ -1458,6 +1458,7 @@ Plater.DefaultSpellRangeList = {
 		--refresh lists
 		Plater.RefreshDBLists()
 		Plater.RefreshAuraCache()
+		--Plater.RefreshResourcesDBUpvalues() ~resources
 	end
 
 	-- ~db
@@ -1899,6 +1900,7 @@ Plater.DefaultSpellRangeList = {
 		end,
 
 		PLAYER_SPECIALIZATION_CHANGED = function()
+			--C_Timer.After (1.5, Plater.CanUsePlaterResourceBar) --~resource
 			C_Timer.After (2, Plater.GetSpellForRangeCheck)
 			C_Timer.After (2, Plater.GetHealthCutoffValue)
 			C_Timer.After (1, Plater.DispatchTalentUpdateHookEvent)
@@ -2136,6 +2138,9 @@ Plater.DefaultSpellRangeList = {
 					SetCVar ("nameplateResourceOnTarget", CVAR_DISABLED) -- reset this to false always, as it conflicts
 				end
 			end
+
+			--create the frame to hold the plater resoruce bar
+			--Plater.CreatePlaterResourceBar() ~resource
 		end,
 
 		PLAYER_LOGOUT = function()
