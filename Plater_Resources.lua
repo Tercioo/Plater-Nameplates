@@ -357,8 +357,6 @@ local DB_PLATER_RESOURCE_PADDING
 
         --main resource frame
         local platerResourceFrame = _G.PlaterNameplatesResourceFrame
-        --resource bar
-        resourceBar = resourceBar
         
         --hide all resourcebar widgets
         for i = 1, #resourceBar.widgets do
@@ -399,13 +397,15 @@ local DB_PLATER_RESOURCE_PADDING
 
             for i = 1, totalWidgetsShown do
                 local thisResourceWidget = widgetTable[i]
+                local lastResourceWidget = widgetTable[i - 1]
+
                 thisResourceWidget:Show()
                 thisResourceWidget:SetSize (widgetWidth, widgetHeight)
-                thisResourceWidget:ClearAllPoints()
-                print (thisResourceWidget:GetName())
+
                 if (i ~= 1) then
+                    thisResourceWidget:ClearAllPoints()
                     --anchor into the latest widget
-                    thisResourceWidget:SetPoint("left", widgetTable [i - 1], "left", DB_PLATER_RESOURCE_PADDING, 0)
+                    thisResourceWidget:SetPoint("left", lastResourceWidget, "right", DB_PLATER_RESOURCE_PADDING, 0)
                     --add the spacing into the total width occupied
                     totalWidth = totalWidth + DB_PLATER_RESOURCE_PADDING
                 end
@@ -418,14 +418,9 @@ local DB_PLATER_RESOURCE_PADDING
             end
 
             resourceBar:SetWidth(totalWidth)
-            resourceBar:SetPoint("center")
+            resourceBar:SetPoint("center", platerResourceFrame, "center", 0, 0)
 
         end
-
-        --print ("resource FRAME", platerResourceFrame:GetSize())
-        --print ("resource BAR", resourceBar:GetSize())
-        --print ("parent:", platerResourceFrame:GetParent():GetName())
-        --print ("parent:", resourceBar:GetParent():GetName())
     end
 
 
