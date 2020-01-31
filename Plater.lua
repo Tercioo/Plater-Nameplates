@@ -1458,7 +1458,7 @@ Plater.DefaultSpellRangeList = {
 		--refresh lists
 		Plater.RefreshDBLists()
 		Plater.RefreshAuraCache()
-		--Plater.RefreshResourcesDBUpvalues() ~resources
+		Plater.RefreshResourcesDBUpvalues() --~resources
 	end
 
 	-- ~db
@@ -1900,7 +1900,7 @@ Plater.DefaultSpellRangeList = {
 		end,
 
 		PLAYER_SPECIALIZATION_CHANGED = function()
-			--C_Timer.After (1.5, Plater.CanUsePlaterResourceBar) --~resource
+			C_Timer.After (1.5, Plater.CanUsePlaterResourceFrame) --~resource
 			C_Timer.After (2, Plater.GetSpellForRangeCheck)
 			C_Timer.After (2, Plater.GetHealthCutoffValue)
 			C_Timer.After (1, Plater.DispatchTalentUpdateHookEvent)
@@ -2140,7 +2140,7 @@ Plater.DefaultSpellRangeList = {
 			end
 
 			--create the frame to hold the plater resoruce bar
-			--Plater.CreatePlaterResourceBar() ~resource
+			Plater.CreatePlaterResourceFrame() --~resource
 		end,
 
 		PLAYER_LOGOUT = function()
@@ -6042,6 +6042,9 @@ end
 			end
 			
 			Plater.UpdateResourceFrame()
+			
+			--plater resource bar
+			Plater.CanUsePlaterResourceFrame() --~resource
 			
 		else
 			plateFrame.TargetNeonUp:Hide()

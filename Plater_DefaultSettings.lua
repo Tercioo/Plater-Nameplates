@@ -498,6 +498,10 @@ PLATER_DEFAULT_SETTINGS = {
 		--plater resources bar
 		plater_resources_show = false, --if the resource bar from plater is enabled
 		plater_resources_personal_bar = false, --if the resource bar shows in the personal bar intead of the current target
+		plater_resources_anchor = {side = 4, x = 0, y = 0},
+		--plater_resources_height = 20, --it'll take the width from the nameplate
+		plater_resources_scale = 1.0,
+		plater_resources_padding = 2,
 
 		--transparency control
 		transparency_behavior = 0x1,
