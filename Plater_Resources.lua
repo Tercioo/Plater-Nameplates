@@ -125,9 +125,14 @@ local DB_PLATER_RESOURCE_PADDING
         DB_PLATER_RESOURCE_BAR_SCALE = profile.plater_resources_scale
         DB_PLATER_RESOURCE_PADDING = profile.plater_resources_padding
 
+        --check if the frame exists if the player opt-in to use plater resources
+        if (DB_USE_PLATER_RESOURCE_BAR) then
+            if (not PlaterNameplatesResourceFrame) then
+                Plater.CreatePlaterResourceFrame()
+            end
+        end
     end
 
-    
 --base frame for the class or spec resource bar, it's a child of the main frame called 'PlaterNameplatesResourceFrame'
 --the function passed is responsible to build textures and animations
     local create_resource_bar = function (parent, frameName, func)
@@ -214,6 +219,10 @@ local DB_PLATER_RESOURCE_PADDING
 
 --this funtion is called once at the logon, it'll create the resource frames for the class
     function Plater.CreatePlaterResourceFrame()
+
+        if (not DB_USE_PLATER_RESOURCE_BAR) then
+            return
+        end
 
         --create a frame attached to UIParent, this frame is the fondation for the resource bar
         local platerResourceFrame = CreateFrame("frame", "PlaterNameplatesResourceFrame")
