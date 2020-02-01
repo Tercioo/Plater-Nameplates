@@ -263,7 +263,9 @@ local DB_PLATER_RESOURCE_PADDING
 --called when use plater resource bar is disabled or when no match on rules to show it
 --only called from inside this file
     function Plater.HidePlaterResourceFrame()
-        return PlaterNameplatesResourceFrame:Hide()
+        if (PlaterNameplatesResourceFrame) then
+            return PlaterNameplatesResourceFrame:Hide()
+        end
     end
 
 
