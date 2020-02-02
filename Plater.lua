@@ -192,11 +192,13 @@ Plater.CodeTypeNames = { --private
 	[2] = "ConstructorCode",
 	[3] = "OnHideCode",
 	[4] = "OnShowCode",
+	[5] = "Initialization",
 }
 
 --hook options
 --> types of codes available to add in a script in the Hooking tab
 Plater.HookScripts = { --private
+	"Initialization",
 	"Constructor",
 	"Destructor",
 	"Nameplate Created",
@@ -220,6 +222,7 @@ Plater.HookScripts = { --private
 }
 
 Plater.HookScriptsDesc = { --private
+	["Initialization"] = "Executed once for the mod when it is compiled. Used to initialize the global mod environment 'modTable'.",
 	["Constructor"] = "Executed once when the nameplate run the hook for the first time.\n\nUse to initialize configs in the environment.\n\nAlways receive unitFrame in 'self' parameter.",
 	["Destructor"] = "Run when the hook is Disabled or unloaded due to Load Conditions.\n\nUse to hide all frames created.\n\n|cFF44FF44Run on all nameplates shown in the screen|r.",
 	["Nameplate Created"] = "Executed when a nameplate is created.\n\nRequires a |cFFFFFF22/reload|r after changing the code.",
@@ -266,6 +269,10 @@ local HOOK_ZONE_CHANGED = {ScriptAmount = 0}
 local HOOK_UNITNAME_UPDATE = {ScriptAmount = 0}
 local HOOK_LOAD_SCREEN = {ScriptAmount = 0}
 local HOOK_PLAYER_LOGON = {ScriptAmount = 0}
+local HOOK_MOD_INITIALIZATION = {ScriptAmount = 0}
+
+local PLATER_GLOBAL_MOD_ENV = {}  -- contains modEnv for each mod, identified by "<mod name>"
+local PLATER_GLOBAL_SCRIPT_ENV = {} -- contains modEnv for each script, identified by "<script name>"
 
 --> addon comm
 local COMM_PLATER_PREFIX = "PLT"
@@ -9300,8 +9307,8 @@ end
 		local trashcanScripts = profile.script_data_trash
 		local trashcanHooks = profile.hook_data_trash
 		--clear the trash can
-		profile.script_data_trash = nil
-		profile.hook_data_trash = nil
+		profile.script_data_trash = {}
+		profile.hook_data_trash = {}
 		
 		--cleanup mods HooksTemp (for good)
 		for i = #Plater.db.profile.hook_data, 1, -1 do
@@ -9358,7 +9365,7 @@ end
 				}
 
 				if (globalScriptObject.HasConstructor and (not scriptInfo.Initialized or (isHookScript and forceHotReload))) then
-					local okay, errortext = pcall (globalScriptObject.Constructor, self, self.displayedUnit or self.unit or self:GetParent()[MEMBER_UNITID], self, scriptInfo.Env)
+					local okay, errortext = pcall (globalScriptObject.Constructor, self, self.displayedUnit or self.unit or self:GetParent()[MEMBER_UNITID], self, scriptInfo.Env, PLATER_GLOBAL_MOD_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.Name])
 					if (not okay) then
 						Plater:Msg ("Script |cFFAAAA22" .. scriptInfo.GlobalScriptObject.DBScriptObject.Name .. "|r Constructor error: " .. errortext)
 					end
@@ -9380,7 +9387,7 @@ end
 
 				--dispatch the constructor
 				local unitFrame = self.unitFrame or self
-				local okay, errortext = pcall (scriptInfo.GlobalScriptObject ["ConstructorCode"], self, unitFrame.displayedUnit or unitFrame.unit or unitFrame.PlateFrame[MEMBER_UNITID], unitFrame, scriptInfo.Env)
+				local okay, errortext = pcall (scriptInfo.GlobalScriptObject ["ConstructorCode"], self, unitFrame.displayedUnit or unitFrame.unit or unitFrame.PlateFrame[MEMBER_UNITID], unitFrame, scriptInfo.Env, PLATER_GLOBAL_SCRIPT_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.Name])
 				if (not okay) then
 					Plater:Msg ("Script |cFFAAAA22" .. scriptInfo.GlobalScriptObject.DBScriptObject.Name .. "|r Constructor error: " .. errortext)
 				end
@@ -9398,7 +9405,7 @@ end
 			
 			--dispatch the runtime script
 			local unitFrame = self.unitFrame or self
-			local okay, errortext = pcall (scriptInfo.GlobalScriptObject ["UpdateCode"], self, unitFrame.displayedUnit or unitFrame.unit or unitFrame.PlateFrame[MEMBER_UNITID], unitFrame, scriptInfo.Env)
+			local okay, errortext = pcall (scriptInfo.GlobalScriptObject ["UpdateCode"], self, unitFrame.displayedUnit or unitFrame.unit or unitFrame.PlateFrame[MEMBER_UNITID], unitFrame, scriptInfo.Env, PLATER_GLOBAL_SCRIPT_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.Name])
 			if (not okay) then
 				Plater:Msg ("Script |cFFAAAA22" .. scriptInfo.GlobalScriptObject.DBScriptObject.Name .. "|r OnUpdate error: " .. errortext)
 			end
@@ -9408,7 +9415,7 @@ end
 		ScriptRunOnShow = function (self, scriptInfo)
 			--dispatch the on show script
 			local unitFrame = self.unitFrame or self
-			local okay, errortext = pcall (scriptInfo.GlobalScriptObject ["OnShowCode"], self, unitFrame.displayedUnit or unitFrame.unit or unitFrame.PlateFrame[MEMBER_UNITID], unitFrame, scriptInfo.Env)
+			local okay, errortext = pcall (scriptInfo.GlobalScriptObject ["OnShowCode"], self, unitFrame.displayedUnit or unitFrame.unit or unitFrame.PlateFrame[MEMBER_UNITID], unitFrame, scriptInfo.Env, PLATER_GLOBAL_SCRIPT_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.Name])
 			if (not okay) then
 				Plater:Msg ("Script |cFFAAAA22" .. scriptInfo.GlobalScriptObject.DBScriptObject.Name .. "|r OnShow error: " .. errortext)
 			end
@@ -9421,7 +9428,7 @@ end
 		ScriptRunOnHide = function (self, scriptInfo)
 			--dispatch the on hide script
 			local unitFrame = self.unitFrame or self
-			local okay, errortext = pcall (scriptInfo.GlobalScriptObject ["OnHideCode"], self, unitFrame.displayedUnit or unitFrame.unit or unitFrame.PlateFrame[MEMBER_UNITID], unitFrame, scriptInfo.Env)
+			local okay, errortext = pcall (scriptInfo.GlobalScriptObject ["OnHideCode"], self, unitFrame.displayedUnit or unitFrame.unit or unitFrame.PlateFrame[MEMBER_UNITID], unitFrame, scriptInfo.Env, PLATER_GLOBAL_SCRIPT_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.Name])
 			if (not okay) then
 				Plater:Msg ("Script |cFFAAAA22" .. scriptInfo.GlobalScriptObject.DBScriptObject.Name .. "|r OnHide error: " .. errortext)
 			end
@@ -9430,10 +9437,19 @@ end
 			self.ScriptKey = nil
 		end,
 		
+		--run the Initialization script, called during compile time
+		ScriptRunInitialization = function (globalScriptObject)
+			--dispatch the init script
+			local okay, errortext = pcall (globalScriptObject ["Initialization"], PLATER_GLOBAL_SCRIPT_ENV [globalScriptObject.DBScriptObject.Name])
+			if (not okay) then
+				Plater:Msg ("Script |cFFAAAA22" .. globalScriptObject.DBScriptObject.Name .. "|r Initialization error: " .. errortext)
+			end
+		end,
+		
 		ScriptRunHook = function (self, scriptInfo, hookName, frame)
 			--dispatch a hook for the script
 			--at the moment, self is always the unit frame
-			local okay, errortext = pcall (scriptInfo.GlobalScriptObject [hookName], frame or self, self.displayedUnit, self, scriptInfo.Env)
+			local okay, errortext = pcall (scriptInfo.GlobalScriptObject [hookName], frame or self, self.displayedUnit, self, scriptInfo.Env, PLATER_GLOBAL_MOD_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.Name])
 			if (not okay) then
 				Plater:Msg ("Mod |cFFAAAA22" .. scriptInfo.GlobalScriptObject.DBScriptObject.Name .. "|r code for |cFFBB8800" .. hookName .. "|r error: " .. errortext)
 			end
@@ -9442,7 +9458,7 @@ end
 		--run only once without attach to the script or hook
 		ScriptRunNoAttach = function (hookInfo, hookName)
 			local func = hookInfo [hookName]
-			local okay, errortext = pcall (func)
+			local okay, errortext = pcall (func, PLATER_GLOBAL_MOD_ENV [hookInfo.DBScriptObject.Name])
 			if (not okay) then
 				Plater:Msg ("Mod |cFFAAAA22" .. hookInfo.DBScriptObject.Name .. "|r code for |cFFBB8800" .. hookName .. "|r error: " .. errortext)
 			end
@@ -9796,6 +9812,7 @@ end
 		HOOK_UNITNAME_UPDATE,
 		HOOK_LOAD_SCREEN,
 		HOOK_PLAYER_LOGON,
+		HOOK_MOD_INITIALIZATION
 	}
 
 	function Plater.WipeHookContainers (noHotReload)
@@ -9813,7 +9830,9 @@ end
 	end
 
 	function Plater.GetContainerForHook (hookName)
-		if (hookName == "Constructor") then
+		if (hookName == "Initialization") then
+			return HOOK_MOD_INITIALIZATION	
+		elseif (hookName == "Constructor") then
 			return HOOK_NAMEPLATE_CONSTRUCTOR	
 		elseif (hookName == "Nameplate Created") then
 			return HOOK_NAMEPLATE_CREATED
@@ -9969,6 +9988,9 @@ end
 			Build = PLATER_HOOK_BUILD,
 		}
 		
+		--clean/init modEnv
+		PLATER_GLOBAL_MOD_ENV [scriptObject.Name] = {}
+		
 		--compile
 		for hookName, code in pairs (scriptCode) do
 			
@@ -9995,6 +10017,8 @@ end
 					
 					if (hookName == "Constructor") then
 						globalScriptObject.HasConstructor = true
+					elseif (hookName == "Initialization") then
+						Plater.ScriptMetaFunctions.ScriptRunNoAttach (globalScriptObject, "Initialization")
 					end
 				end
 			end
@@ -10023,10 +10047,22 @@ end
 		--get scripts which wasn't passed
 		for i = 1, #Plater.CodeTypeNames do
 			local scriptType = Plater.CodeTypeNames [i]
+			-- ensure init is filled always
+			if (not scriptObject [scriptType] and i == 5) then
+				scriptObject [scriptType] = [=[
+					function (scriptTable)
+						--insert code here
+						
+					end
+				]=]	
+			end
 			if (not scriptCode [scriptType]) then
 				scriptCode [scriptType] = "return " .. scriptObject [scriptType]
 			end
 		end
+		
+		--clean/init modEnv
+		PLATER_GLOBAL_SCRIPT_ENV [scriptObject.Name] = {}
 
 		--compile
 		for scriptType, code in pairs (scriptCode) do
@@ -10049,6 +10085,8 @@ end
 			triggerContainer = "NpcNames"
 		end
 		
+		
+		local initRun = false
 		for i = 1, #scriptObject [triggerContainer] do
 			local triggerId = scriptObject [triggerContainer] [i]
 			
@@ -10106,6 +10144,12 @@ end
 				--add the script functions to the global object table
 				for scriptType, func in pairs (scriptFunctions) do
 					globalScriptObject [scriptType] = func
+				end
+				
+				--run initialization (once)
+				if not initRun then
+					Plater.ScriptMetaFunctions.ScriptRunInitialization(globalScriptObject)
+					initRun = true
 				end
 			end
 		end
