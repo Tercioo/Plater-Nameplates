@@ -1,5 +1,5 @@
 
-local dversion = 168
+local dversion = 170
 
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
@@ -2632,11 +2632,16 @@ function DF:ReskinSlider (slider, heightOffset)
 			--slider.ScrollBar.ScrollDownButton:SetPoint ("top", slider.ScrollBar, "bottom", 0, 0)
 		end
 		
-		--
-		
-		slider.ScrollBar:SetPoint ("TOPLEFT", slider, "TOPRIGHT", 12 + offset, -6)
-		slider.ScrollBar:SetPoint ("BOTTOMLEFT", slider, "BOTTOMRIGHT", 12 + offset, 6 + (heightOffset and heightOffset*-1 or 0))
-		
+		--if the parent has a editbox, this is a code editor
+		if (slider:GetParent().editbox) then
+			slider.ScrollBar:SetPoint ("TOPLEFT", slider, "TOPRIGHT", 12 + offset, -6)
+			slider.ScrollBar:SetPoint ("BOTTOMLEFT", slider, "BOTTOMRIGHT", 12 + offset, 6 + (heightOffset and heightOffset*-1 or 0))
+
+		else
+			slider.ScrollBar:SetPoint ("TOPLEFT", slider, "TOPRIGHT", 6, -16)
+			slider.ScrollBar:SetPoint ("BOTTOMLEFT", slider, "BOTTOMRIGHT", 6, 16 + (heightOffset and heightOffset*-1 or 0))
+		end
+
 		slider.ScrollBar.ThumbTexture:SetColorTexture (.5, .5, .5, .3)
 		slider.ScrollBar.ThumbTexture:SetSize (12, 8)
 		
