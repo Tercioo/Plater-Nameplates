@@ -127,8 +127,8 @@ local DB_PLATER_RESOURCE_PADDING
 
         --check if the frame exists if the player opt-in to use plater resources
         if (DB_USE_PLATER_RESOURCE_BAR) then
-            if (not PlaterNameplatesResourceFrame) then
-                Plater.CreatePlaterResourceFrame()
+            if (not _G.PlaterNameplatesResourceFrame) then
+                C_Timer.After (2, Plater.CreatePlaterResourceFrame)
             end
         end
     end
@@ -165,6 +165,7 @@ local DB_PLATER_RESOURCE_PADDING
         platerResourceFrame.resourceBars [269] = newResourceBar
         tinsert (platerResourceFrame.allResourceBars, newResourceBar)
         newResourceBar.resourceId = SPELL_POWER_CHI
+        newResourceBar.updateResourceFunc = animationFunctions.OnMonkComboPointsChanged
     end
 
 --each function create a resource frame for its class or spec
@@ -173,6 +174,7 @@ local DB_PLATER_RESOURCE_PADDING
         platerResourceFrame.resourceBars [62] = newResourceBar
         tinsert (platerResourceFrame.allResourceBars, newResourceBar)
         newResourceBar.resourceId = SPELL_POWER_ARCANE_CHARGES
+        newResourceBar.updateResourceFunc = false
     end
 
     local resource_rogue_druid_cpoints = function(platerResourceFrame)
@@ -184,11 +186,13 @@ local DB_PLATER_RESOURCE_PADDING
         if (Plater.PlayerClass == "DRUID") then
             platerResourceFrame.resourceBars ["ROGUE"] = newResourceBar
             newResourceBar.classId = "ROGUE"
+            newResourceBar.updateResourceFunc = false
         
         --druid
         elseif (Plater.PlayerClass == "DRUID") then
             platerResourceFrame.resourceBars [103] = newResourceBar
             newResourceBar.classId = "DRUID"
+            newResourceBar.updateResourceFunc = false
         end
     end
 
@@ -197,6 +201,7 @@ local DB_PLATER_RESOURCE_PADDING
         platerResourceFrame.resourceBars ["WARLOCK"] = newResourceBar
         tinsert (platerResourceFrame.allResourceBars, newResourceBar)
         newResourceBar.resourceId = SPELL_POWER_SOUL_SHARDS
+        newResourceBar.updateResourceFunc = false
         newResourceBar.classId = "WARLOCK"
     end
 
@@ -205,6 +210,7 @@ local DB_PLATER_RESOURCE_PADDING
         platerResourceFrame.resourceBars [70] = newResourceBar
         tinsert (platerResourceFrame.allResourceBars, newResourceBar)
         newResourceBar.resourceId = SPELL_POWER_HOLY_POWER
+        newResourceBar.updateResourceFunc = false
         newResourceBar.classId = "PALADIN"
     end
 
@@ -213,6 +219,7 @@ local DB_PLATER_RESOURCE_PADDING
         platerResourceFrame.resourceBars ["DEATHKNIGHT"] = newResourceBar
         tinsert (platerResourceFrame.allResourceBars, newResourceBar)
         newResourceBar.resourceId = SPELL_POWER_RUNES
+        newResourceBar.updateResourceFunc = false
         newResourceBar.classId = "DEATHKNIGHT"
     end
 
@@ -221,6 +228,10 @@ local DB_PLATER_RESOURCE_PADDING
     function Plater.CreatePlaterResourceFrame()
 
         if (not DB_USE_PLATER_RESOURCE_BAR) then
+            return
+        end
+
+        if (PlaterNameplatesResourceFrame) then
             return
         end
 
@@ -257,6 +268,24 @@ local DB_PLATER_RESOURCE_PADDING
                 resource_monk(platerResourceFrame)
             end
         end
+
+        --run the function to update the 
+        platerResourceFrame:SetScript ("OnEvent", function(self, event, ...)
+            self.currentBarShown.updateResourceFunc(self, self.currentBarShown)
+        end)
+
+    end
+
+    function Plater.ResourceFrame_EnableEvents()
+        local platerResourceFrame = _G.PlaterNameplatesResourceFrame
+		platerResourceFrame:RegisterUnitEvent ("UNIT_POWER_FREQUENT", "player")
+        platerResourceFrame:RegisterUnitEvent ("UNIT_MAXPOWER", "player")
+    end
+
+    function Plater.ResourceFrame_DisableEvents()
+        local platerResourceFrame = _G.PlaterNameplatesResourceFrame
+		platerResourceFrame:UnregisterEvent ("UNIT_POWER_FREQUENT")
+        platerResourceFrame:UnregisterEvent ("UNIT_MAXPOWER")
     end
 
 
@@ -264,6 +293,7 @@ local DB_PLATER_RESOURCE_PADDING
 --only called from inside this file
     function Plater.HidePlaterResourceFrame()
         if (PlaterNameplatesResourceFrame) then
+            Plater.ResourceFrame_DisableEvents()
             return PlaterNameplatesResourceFrame:Hide()
         end
     end
@@ -312,6 +342,7 @@ local DB_PLATER_RESOURCE_PADDING
                     resourceBarByClass.resourceClass = playerClass
                     resourceBarByClass.resourceSpec = false
 
+                    Plater.ResourceFrame_EnableEvents()
                     Plater.UpdatePlaterResourceFrame(nameplateAnchor)
                     return Plater.UpdatePlaterResourceBar(nameplateAnchor, resourceBarByClass)
                 end
@@ -322,6 +353,7 @@ local DB_PLATER_RESOURCE_PADDING
                     resourceBarBySpec.resourceClass = false
                     resourceBarBySpec.resourceSpec = specIndex
 
+                    Plater.ResourceFrame_EnableEvents()
                     Plater.UpdatePlaterResourceFrame(nameplateAnchor)
                     return Plater.UpdatePlaterResourceBar(nameplateAnchor, resourceBarBySpec)
                 end
@@ -330,6 +362,7 @@ local DB_PLATER_RESOURCE_PADDING
                 if (UnitLevel("player") < 10) then
                     --should get by class?
                     if (playerClass == "ROGUE") then
+                        Plater.ResourceFrame_EnableEvents()
                         Plater.UpdatePlaterResourceFrame(nameplateAnchor)
                         return Plater.UpdatePlaterResourceBar(nameplateAnchor, _G.PlaterNameplatesResourceFrame.resourceBars ["ROGUE"])
                     end
@@ -397,6 +430,10 @@ local DB_PLATER_RESOURCE_PADDING
 
             --get the total of widgets to show
             local totalWidgetsShown = UnitPowerMax("player", resourceBar.resourceId)
+            --store the amount of widgets currently in use
+            resourceBar.widgetsInUseAmount = totalWidgetsShown
+            --set the amount of resources the player has
+            resourceBar.lastResourceAmount = 0
 
             --calculate the size of each widget
             local widgetWidth = 20
@@ -410,7 +447,7 @@ local DB_PLATER_RESOURCE_PADDING
                 local thisResourceWidget = widgetTable[i]
                 local lastResourceWidget = widgetTable[i - 1]
 
-                thisResourceWidget:Show()
+                thisResourceWidget:Hide()
                 thisResourceWidget:SetSize (widgetWidth, widgetHeight)
 
                 if (i ~= 1) then
@@ -431,7 +468,41 @@ local DB_PLATER_RESOURCE_PADDING
             resourceBar:SetWidth(totalWidth)
             resourceBar:SetPoint("center", platerResourceFrame, "center", 0, 0)
 
+            platerResourceFrame.currentBarShown.updateResourceFunc(platerResourceFrame, platerResourceFrame.currentBarShown, true)
         end
+    end
+
+
+    function animationFunctions.OnMonkComboPointsChanged(platerResourceFrame, resourceBar, forcedRefresh)
+        --amount of resources the player has now
+        local currentResouces = UnitPower("player", resourceBar.resourceId)
+        --resources amount got updated?
+        if (currentResouces == resourceBar.lastResourceAmount and not forcedRefresh) then
+            return
+        end
+
+        --how many widgets is in use at the moment (amount from the max resources)
+        local maxResources = resourceBar.widgetsInUseAmount
+    
+        --calculate how many widgets need to be shown or need to be hide
+        if (currentResouces < resourceBar.lastResourceAmount) then
+            --local lost = resourceBar.lastResourceAmount - currentResouces
+            for i = resourceBar.lastResourceAmount, currentResouces+1, -1 do
+                --resourceBar.widgets[ i ].ShowAnimation:Play()
+                resourceBar.widgets[ i ]:Hide()
+            end
+        
+        elseif (currentResouces > resourceBar.lastResourceAmount) then
+            --local gain = currentResouces - resourceBar.lastResourceAmount
+            for i = resourceBar.lastResourceAmount + 1, currentResouces do
+                resourceBar.widgets[ i ]:Show()
+                resourceBar.widgets[ i ].ShowAnimation:Play()
+            end
+        end
+    
+    
+        --save the amount of resources
+        resourceBar.lastResourceAmount = currentResouces
     end
 
 
@@ -587,5 +658,8 @@ animationFunctions.CreateMonkComboPoints = function(parent, frameName)
     --> test the animation
     --MainAnimationGroup:Play()
 
+    MonkWWComboPoint.ShowAnimation = MainAnimationGroup
     return MonkWWComboPoint
 end
+
+
