@@ -9591,16 +9591,22 @@ end
 	end
 	
 	--compile all scripts
-	function Plater.CompileAllScripts (scriptType)
+	function Plater.CompileAllScripts (scriptType, noHotReload)
 		if (scriptType == "script") then
 			for scriptId, scriptObject in ipairs (Plater.GetAllScriptsAsPrioSortedCopy ("script")) do
 				if (scriptObject.Enabled) then
+					if not noHotReload then
+						PLATER_GLOBAL_MOD_ENV [scriptObject.Name] = nil
+					end
 					Plater.CompileScript (scriptObject)
 				end
 			end
 		elseif (scriptType == "hook") then
 			--get all hook scripts from the profile database
 			for scriptId, scriptObject in ipairs (Plater.GetAllScriptsAsPrioSortedCopy ("hook")) do
+				if not noHotReload then
+					PLATER_GLOBAL_MOD_ENV [scriptObject.Name] = nil
+				end
 				Plater.CompileHook (scriptObject)
 			end
 		end
@@ -9784,11 +9790,11 @@ end
 			table.wipe (SCRIPT_AURA)
 			table.wipe (SCRIPT_CASTBAR)
 			table.wipe (SCRIPT_UNIT)
-			Plater.CompileAllScripts (scriptType)
+			Plater.CompileAllScripts (scriptType, noHotReload)
 			
 		elseif (scriptType == "hook") then
 			Plater.WipeHookContainers (noHotReload)
-			Plater.CompileAllScripts (scriptType)
+			Plater.CompileAllScripts (scriptType, noHotReload)
 		end
 	end
 
@@ -9988,8 +9994,12 @@ end
 			Build = PLATER_HOOK_BUILD,
 		}
 		
-		--clean/init modEnv
-		PLATER_GLOBAL_MOD_ENV [scriptObject.Name] = {}
+		--init modEnv if necessary
+		local needsInitCall = false
+		if not PLATER_GLOBAL_MOD_ENV [scriptObject.Name] then
+			needsInitCall = true
+			PLATER_GLOBAL_MOD_ENV [scriptObject.Name] = {}
+		end
 		
 		--compile
 		for hookName, code in pairs (scriptCode) do
@@ -10017,7 +10027,7 @@ end
 					
 					if (hookName == "Constructor") then
 						globalScriptObject.HasConstructor = true
-					elseif (hookName == "Initialization") then
+					elseif (hookName == "Initialization") and needsInitCall then
 						Plater.ScriptMetaFunctions.ScriptRunNoAttach (globalScriptObject, "Initialization")
 					end
 				end
@@ -10061,8 +10071,12 @@ end
 			end
 		end
 		
-		--clean/init modEnv
-		PLATER_GLOBAL_SCRIPT_ENV [scriptObject.Name] = {}
+		--init modEnv if necessary
+		local needsInitCall = false
+		if not PLATER_GLOBAL_MOD_ENV [scriptObject.Name] then
+			needsInitCall = true
+			PLATER_GLOBAL_MOD_ENV [scriptObject.Name] = {}
+		end
 
 		--compile
 		for scriptType, code in pairs (scriptCode) do
@@ -10086,7 +10100,6 @@ end
 		end
 		
 		
-		local initRun = false
 		for i = 1, #scriptObject [triggerContainer] do
 			local triggerId = scriptObject [triggerContainer] [i]
 			
@@ -10147,9 +10160,9 @@ end
 				end
 				
 				--run initialization (once)
-				if not initRun then
+				if needsInitCall then
 					Plater.ScriptMetaFunctions.ScriptRunInitialization(globalScriptObject)
-					initRun = true
+					needsInitCall = false
 				end
 			end
 		end
