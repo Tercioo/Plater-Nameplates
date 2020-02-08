@@ -143,6 +143,8 @@ local DB_PLATER_RESOURCE_PADDING
 
         --store all widgets
         resourceBar.widgets = {}
+        --store all background textures
+        resourceBar.widgetsBackground = {}
 
         --create widgets which are frames holding textures and animations
         for i = 1, CONST_NUM_COMBO_POINTS do
@@ -440,17 +442,24 @@ local DB_PLATER_RESOURCE_PADDING
             local widgetHeight = 20
 
             local totalWidth = 0
+
             local firstWidget = widgetTable[1]
             firstWidget:SetPoint("left", resourceBar, "left", 0, 0)
+            resourceBar.widgetsBackground[ 1 ]:Show()
+            resourceBar.widgetsBackground[ 1 ]:ClearAllPoints()
+            resourceBar.widgetsBackground[ 1 ]:SetPoint("left", resourceBar, "left", 0, 0)
 
             for i = 1, totalWidgetsShown do
                 local thisResourceWidget = widgetTable[i]
                 local lastResourceWidget = widgetTable[i - 1]
 
-                thisResourceWidget:Hide()
                 thisResourceWidget:SetSize (widgetWidth, widgetHeight)
 
                 if (i ~= 1) then
+                    resourceBar.widgetsBackground[ i ]:Show()
+                    resourceBar.widgetsBackground[ i ]:ClearAllPoints()
+                    resourceBar.widgetsBackground[ i ]:SetPoint("left", lastResourceWidget, "right", DB_PLATER_RESOURCE_PADDING, 0)
+
                     thisResourceWidget:ClearAllPoints()
                     --anchor into the latest widget
                     thisResourceWidget:SetPoint("left", lastResourceWidget, "right", DB_PLATER_RESOURCE_PADDING, 0)
@@ -512,24 +521,21 @@ animationFunctions.CreateMonkComboPoints = function(parent, frameName)
     --> create the main frame
     local MonkWWComboPoint = CreateFrame ("frame", frameName, parent)
 
-    --> single animation group
-    local MainAnimationGroup = MonkWWComboPoint:CreateAnimationGroup()
-    MainAnimationGroup:SetLooping ("NONE")
-
-    --> widgets:
-
-    ----------------------------------------------
-
-    local Background  = MonkWWComboPoint:CreateTexture (nil, "BORDER")
+    --create background
+    local Background  = parent:CreateTexture (nil, "BORDER")
     Background:SetTexture ([[Interface\PLAYERFRAME\MonkUIAtlas]])
     Background:SetDrawLayer ("BORDER", 1)
     Background:SetPoint ("center", MonkWWComboPoint, "center", 0, 0)
     Background:SetSize (CONST_WIDGET_WIDTH, CONST_WIDGET_HEIGHT)
     Background:SetVertexColor (0.98431158065796, 0.99215465784073, 0.99999779462814, 0.99999779462814)
     Background:SetTexCoord (0.54899997711182, 0.62299999237061, 0.023999998569489, 0.17200000762939)
+    parent.widgetsBackground [ #parent.widgetsBackground + 1 ] = Background
 
-    --> animations for Background
+    --> single animation group
+    local MainAnimationGroup = MonkWWComboPoint:CreateAnimationGroup()
+    MainAnimationGroup:SetLooping ("NONE")
 
+    --> widgets:
 
     ----------------------------------------------
 
