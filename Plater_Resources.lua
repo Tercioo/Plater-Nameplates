@@ -3,6 +3,14 @@ local Plater = _G.Plater
 local GameCooltip = GameCooltip2
 local DF = DetailsFramework
 local _
+local UnitPower = _G.UnitPower
+local UnitPowerMax = _G.UnitPowerMax
+local abs = _G.abs
+
+--when 'runOnNextFrame' is used instead of 'C_Timer.After', it's to indicate the func will skip the current frame and run on the next one
+local runOnNextFrame = function (func)
+    _G.C_Timer.After(0, func)
+end
 
 --[=[
     resource frame: the frame which is anchored into the health bar, controls the size, scale and position
@@ -108,9 +116,14 @@ local resourcePowerType = {
 local DB_USE_PLATER_RESOURCE_BAR = false
 local DB_PLATER_RESOURCE_BAR_ON_PERSONAL = false
 local DB_PLATER_RESOURCE_BAR_ANCHOR
+
 --local DB_PLATER_RESOURCE_BAR_HEIGHT
 local DB_PLATER_RESOURCE_BAR_SCALE
 local DB_PLATER_RESOURCE_PADDING
+local DB_PLATER_RESOURCE_GROW_DIRECTON
+local DB_PLATER_RESOURCE_SHOW_DEPLATED
+local DB_PLATER_RESOURCE_SHOW_NUMBER
+
 
 
 --when plater in the main file refreshes its upvalues, this function is also called
@@ -124,6 +137,9 @@ local DB_PLATER_RESOURCE_PADDING
         --DB_PLATER_RESOURCE_BAR_HEIGHT = profile.plater_resource_width
         DB_PLATER_RESOURCE_BAR_SCALE = profile.plater_resources_scale
         DB_PLATER_RESOURCE_PADDING = profile.plater_resources_padding
+        DB_PLATER_RESOURCE_GROW_DIRECTON = profile.plater_resources_grow_direction
+        DB_PLATER_RESOURCE_SHOW_DEPLATED = profile.plater_resources_show_depleted
+        DB_PLATER_RESOURCE_SHOW_NUMBER = profile.plater_resources_show_number
 
         --check if the frame exists if the player opt-in to use plater resources
         if (DB_USE_PLATER_RESOURCE_BAR) then
@@ -154,6 +170,11 @@ local DB_PLATER_RESOURCE_PADDING
             newWidget:EnableMouseWheel(false)
             newWidget:SetSize(20, 20)
             newWidget:Hide()
+
+            local CPOID = DF:CreateLabel(newWidget, i, 12, "white", nil, nil, nil, "overlay")
+            CPOID:SetPoint("bottom", newWidget, "top", 0, 5)
+            CPOID:Hide()
+            newWidget.numberId = CPOID
         end
 
         return resourceBar
@@ -167,7 +188,7 @@ local DB_PLATER_RESOURCE_PADDING
         platerResourceFrame.resourceBars [269] = newResourceBar
         tinsert (platerResourceFrame.allResourceBars, newResourceBar)
         newResourceBar.resourceId = SPELL_POWER_CHI
-        newResourceBar.updateResourceFunc = animationFunctions.OnMonkComboPointsChanged
+        newResourceBar.updateResourceFunc = animationFunctions.OnComboPointsChanged
     end
 
 --each function create a resource frame for its class or spec
@@ -301,11 +322,7 @@ local DB_PLATER_RESOURCE_PADDING
     end
 
 
---currently is called from:
---player spec change (PLAYER_SPECIALIZATION_CHANGED)
---decides if the resource is shown or not
-    function Plater.CanUsePlaterResourceFrame()
-        
+    local canUsePlaterResourceFrame = function()
         --nameplate which will have the resource bar
         local nameplateAnchor
 
@@ -376,6 +393,15 @@ local DB_PLATER_RESOURCE_PADDING
     end
 
 
+--currently is called from:
+--player spec change (PLAYER_SPECIALIZATION_CHANGED)
+--player target has changed
+--decides if the resource is shown or not
+    function Plater.CanUsePlaterResourceFrame()
+        return runOnNextFrame(canUsePlaterResourceFrame)
+    end
+
+
 --called when 'CanUsePlaterResourceFrame' gives green flag to show the resource bar
 --this function receives the nameplate where the resource bar will be attached
     function Plater.UpdatePlaterResourceFrame(plateFrame)
@@ -407,6 +433,7 @@ local DB_PLATER_RESOURCE_PADDING
         --hide all resourcebar widgets
         for i = 1, #resourceBar.widgets do
             resourceBar.widgets[i]:Hide()
+            resourceBar.widgets[i].numberId:SetShown(DB_PLATER_RESOURCE_SHOW_NUMBER)
         end
         
         --check if the bar already shown isn't the bar asking to be shown
@@ -418,6 +445,10 @@ local DB_PLATER_RESOURCE_PADDING
 
         platerResourceFrame.currentBarShown = resourceBar
 
+        if (DB_PLATER_RESOURCE_SHOW_NUMBER) then
+
+        end
+
         --show the resource bar
         resourceBar:Show()
         resourceBar:SetHeight(1)
@@ -427,92 +458,187 @@ local DB_PLATER_RESOURCE_PADDING
 
 
         else
-            --get the table with the widgets created to represent monk wind walker chi
-            local widgetTable = resourceBar.widgets
-
-            --get the total of widgets to show
-            local totalWidgetsShown = UnitPowerMax("player", resourceBar.resourceId)
-            --store the amount of widgets currently in use
-            resourceBar.widgetsInUseAmount = totalWidgetsShown
-            --set the amount of resources the player has
-            resourceBar.lastResourceAmount = 0
-
-            --calculate the size of each widget
-            local widgetWidth = 20
-            local widgetHeight = 20
-
-            local totalWidth = 0
-
-            local firstWidget = widgetTable[1]
-            firstWidget:SetPoint("left", resourceBar, "left", 0, 0)
-            resourceBar.widgetsBackground[ 1 ]:Show()
-            resourceBar.widgetsBackground[ 1 ]:ClearAllPoints()
-            resourceBar.widgetsBackground[ 1 ]:SetPoint("left", resourceBar, "left", 0, 0)
-
-            for i = 1, totalWidgetsShown do
-                local thisResourceWidget = widgetTable[i]
-                local lastResourceWidget = widgetTable[i - 1]
-
-                thisResourceWidget:SetSize (widgetWidth, widgetHeight)
-
-                if (i ~= 1) then
-                    resourceBar.widgetsBackground[ i ]:Show()
-                    resourceBar.widgetsBackground[ i ]:ClearAllPoints()
-                    resourceBar.widgetsBackground[ i ]:SetPoint("left", lastResourceWidget, "right", DB_PLATER_RESOURCE_PADDING, 0)
-
-                    thisResourceWidget:ClearAllPoints()
-                    --anchor into the latest widget
-                    thisResourceWidget:SetPoint("left", lastResourceWidget, "right", DB_PLATER_RESOURCE_PADDING, 0)
-                    --add the spacing into the total width occupied
-                    totalWidth = totalWidth + DB_PLATER_RESOURCE_PADDING
-                end
-                totalWidth = totalWidth + widgetWidth
+            if (DB_PLATER_RESOURCE_SHOW_DEPLATED) then
+                Plater.UpdateResourcesFor_ShowDepleted(platerResourceFrame, resourceBar)
             end
-
-            for i = totalWidgetsShown+1, CONST_NUM_COMBO_POINTS do
-                local thisResourceWidget = widgetTable[i]
-                thisResourceWidget:Hide()
-            end
-
-            resourceBar:SetWidth(totalWidth)
-            resourceBar:SetPoint("center", platerResourceFrame, "center", 0, 0)
-
-            platerResourceFrame.currentBarShown.updateResourceFunc(platerResourceFrame, platerResourceFrame.currentBarShown, true)
         end
     end
 
+--update the resources widgets when using the resources showing the background of depleted
+--on this type, the location of each resource icon is precomputed
+    function Plater.UpdateResourcesFor_ShowDepleted(platerResourceFrame, resourceBar)
+        --get the table with the widgets created to represent monk wind walker chi
+        local widgetTable = resourceBar.widgets
 
-    function animationFunctions.OnMonkComboPointsChanged(platerResourceFrame, resourceBar, forcedRefresh)
-        --amount of resources the player has now
-        local currentResouces = UnitPower("player", resourceBar.resourceId)
-        --resources amount got updated?
-        if (currentResouces == resourceBar.lastResourceAmount and not forcedRefresh) then
-            return
+        --get the total of widgets to show
+        local totalWidgetsShown = UnitPowerMax("player", resourceBar.resourceId)
+        --store the amount of widgets currently in use
+        resourceBar.widgetsInUseAmount = totalWidgetsShown
+        --set the amount of resources the player has
+        resourceBar.lastResourceAmount = 0
+
+        --get the default size of each widget
+        local widgetWidth = CONST_WIDGET_WIDTH
+        local widgetHeight = CONST_WIDGET_HEIGHT
+        --sum of the width of all resources shown
+        local totalWidth = 0
+
+        local isGrowingToLeft = DB_PLATER_RESOURCE_GROW_DIRECTON == "left"
+
+        local firstWidgetIndex = isGrowingToLeft and totalWidgetsShown or 1
+        local firstWidgetIndex = 1
+        local firstWindowPoint = isGrowingToLeft and "right" or "left"
+
+        local firstWidget = widgetTable[firstWidgetIndex]
+        firstWidget:SetPoint(firstWindowPoint, resourceBar, firstWindowPoint, 0, 0)
+        resourceBar.widgetsBackground[ firstWidgetIndex ]:Show()
+        resourceBar.widgetsBackground[ firstWidgetIndex ]:ClearAllPoints()
+        resourceBar.widgetsBackground[ firstWidgetIndex ]:SetPoint(firstWindowPoint, resourceBar, firstWindowPoint, 0, 0)
+
+        for i = 1, totalWidgetsShown do
+            local thisResourceWidget
+            local lastResourceWidget
+
+            if (isGrowingToLeft and false) then
+                i = abs(i-(totalWidgetsShown+1))
+                thisResourceWidget = widgetTable[i]
+                lastResourceWidget = widgetTable[i + 1]
+            else
+                thisResourceWidget = widgetTable[i]
+                lastResourceWidget = widgetTable[i - 1]
+            end
+
+            thisResourceWidget:SetSize (widgetWidth, widgetHeight)
+
+            if (i ~= firstWidgetIndex) then
+                resourceBar.widgetsBackground[ i ]:Show()
+                resourceBar.widgetsBackground[ i ]:ClearAllPoints()
+                thisResourceWidget:ClearAllPoints()
+
+                if (isGrowingToLeft) then
+                    resourceBar.widgetsBackground[ i ]:SetPoint("right", lastResourceWidget, "left", -DB_PLATER_RESOURCE_PADDING, 0)
+                    thisResourceWidget:SetPoint("right", lastResourceWidget, "left", -DB_PLATER_RESOURCE_PADDING, 0)
+                else
+                    resourceBar.widgetsBackground[ i ]:SetPoint("left", lastResourceWidget, "right", DB_PLATER_RESOURCE_PADDING, 0)
+                    thisResourceWidget:SetPoint("left", lastResourceWidget, "right", DB_PLATER_RESOURCE_PADDING, 0)
+                end
+
+                --add the spacing into the total width occupied
+                totalWidth = totalWidth + DB_PLATER_RESOURCE_PADDING
+            end
+
+            totalWidth = totalWidth + widgetWidth
         end
 
-        --how many widgets is in use at the moment (amount from the max resources)
-        local maxResources = resourceBar.widgetsInUseAmount
-    
+        for i = totalWidgetsShown+1, CONST_NUM_COMBO_POINTS do
+            local thisResourceWidget = widgetTable[i]
+            thisResourceWidget:Hide()
+        end
+
+        resourceBar:SetWidth(totalWidth)
+        resourceBar:SetPoint("center", platerResourceFrame, "center", 0, 0)
+
+        platerResourceFrame.currentBarShown.updateResourceFunc(platerResourceFrame, platerResourceFrame.currentBarShown, true)
+    end
+
+
+--realign the combat points after the amount of available combo points change
+--this amount isn't the max amount of combo points but the current resources deom UnitPower
+    local updateResources_noDepleted = function(resourceBar, currentResources)
+
+        --main resource frame
+        local platerResourceFrame = _G.PlaterNameplatesResourceFrame
+
+        --get the table with the widgets created to represent monk wind walker chi
+        local widgetTable = resourceBar.widgets
+
+        --get the default size of each widget
+        local widgetWidth = CONST_WIDGET_WIDTH
+        local widgetHeight = CONST_WIDGET_HEIGHT
+        --sum of the width of all resources shown
+        local totalWidth = 0
+
+        for i = 1, currentResources do
+            local thisResourceWidget = widgetTable[i]
+            local lastResourceWidget = widgetTable[i - 1]
+            local thisResouceBackground = resourceBar.widgetsBackground[ i ]
+
+            if (not thisResourceWidget.inUse) then
+                thisResourceWidget:Show()
+                thisResouceBackground:Show()
+
+                thisResourceWidget.inUse = true
+                thisResourceWidget.ShowAnimation:Play()
+                thisResourceWidget:SetSize (widgetWidth, widgetHeight)
+            end
+            
+            thisResourceWidget:ClearAllPoints()
+            resourceBar.widgetsBackground[ i ]:ClearAllPoints()
+
+            if (not lastResourceWidget) then --this is the first widget, anchor it into the left side of the frame
+                resourceBar.widgetsBackground[ i ]:SetPoint("left", resourceBar, "left", 0, 0)
+                thisResourceWidget:SetPoint("left", resourceBar, "left", 0, 0)
+
+            else --no the first anchor into the latest widget
+                resourceBar.widgetsBackground[ i ]:SetPoint("left", lastResourceWidget, "right", DB_PLATER_RESOURCE_PADDING, 0)
+                thisResourceWidget:SetPoint("left", lastResourceWidget, "right", DB_PLATER_RESOURCE_PADDING, 0)
+                totalWidth = totalWidth + DB_PLATER_RESOURCE_PADDING --add the gap into the total width size
+            end
+
+            lastResourceWidget = thisResourceWidget
+            totalWidth = totalWidth + widgetWidth
+        end
+
+        --hide non used widgets
+        for i = currentResources+1, CONST_NUM_COMBO_POINTS do
+            local thisResourceWidget = widgetTable[i]
+            thisResourceWidget.inUse = false
+            thisResourceWidget:Hide()
+            resourceBar.widgetsBackground[ i ]:Hide()
+        end
+
+        resourceBar:SetWidth(totalWidth)
+        resourceBar:SetPoint(DB_PLATER_RESOURCE_GROW_DIRECTON, platerResourceFrame, DB_PLATER_RESOURCE_GROW_DIRECTON, 0, 0)
+
+        --save the amount of resources
+        resourceBar.lastResourceAmount = currentResources
+    end
+
+
+    local updateResources_withDepleted = function(resourceBar, currentResources)
         --calculate how many widgets need to be shown or need to be hide
-        if (currentResouces < resourceBar.lastResourceAmount) then
-            --local lost = resourceBar.lastResourceAmount - currentResouces
-            for i = resourceBar.lastResourceAmount, currentResouces+1, -1 do
-                --resourceBar.widgets[ i ].ShowAnimation:Play()
+        if (currentResources < resourceBar.lastResourceAmount) then --hide widgets
+            for i = resourceBar.lastResourceAmount, currentResources+1, -1 do
                 resourceBar.widgets[ i ]:Hide()
             end
         
-        elseif (currentResouces > resourceBar.lastResourceAmount) then
-            --local gain = currentResouces - resourceBar.lastResourceAmount
-            for i = resourceBar.lastResourceAmount + 1, currentResouces do
+        elseif (currentResources > resourceBar.lastResourceAmount) then --show widgets
+            for i = resourceBar.lastResourceAmount + 1, currentResources do
                 resourceBar.widgets[ i ]:Show()
                 resourceBar.widgets[ i ].ShowAnimation:Play()
             end
         end
-    
-    
+
         --save the amount of resources
-        resourceBar.lastResourceAmount = currentResouces
+        resourceBar.lastResourceAmount = currentResources
     end
+
+
+    function animationFunctions.OnComboPointsChanged(platerResourceFrame, resourceBar, forcedRefresh)
+        --amount of resources the player has now
+        local currentResources = UnitPower("player", resourceBar.resourceId)
+        --resources amount got updated?
+        if (currentResources == resourceBar.lastResourceAmount and not forcedRefresh) then
+            return
+        end
+
+        --which update method to use
+        if (DB_PLATER_RESOURCE_SHOW_DEPLATED) then
+            return updateResources_withDepleted(resourceBar, currentResources)
+        else
+            return updateResources_noDepleted(resourceBar, currentResources)
+        end
+     end
 
 
 --functions to create the class or spec resources widgets
@@ -528,12 +654,13 @@ animationFunctions.CreateMonkComboPoints = function(parent, frameName)
     Background:SetPoint ("center", MonkWWComboPoint, "center", 0, 0)
     Background:SetSize (CONST_WIDGET_WIDTH, CONST_WIDGET_HEIGHT)
     Background:SetVertexColor (0.98431158065796, 0.99215465784073, 0.99999779462814, 0.99999779462814)
-    Background:SetTexCoord (0.54899997711182, 0.62299999237061, 0.023999998569489, 0.17200000762939)
+    Background:SetTexCoord (0.5513224029541, 0.61600479125977, 0.025, 0.1610000038147)
     parent.widgetsBackground [ #parent.widgetsBackground + 1 ] = Background
 
     --> single animation group
     local MainAnimationGroup = MonkWWComboPoint:CreateAnimationGroup()
     MainAnimationGroup:SetLooping ("NONE")
+    MainAnimationGroup:SetToFinalAlpha(true)
 
     --> widgets:
 
@@ -542,8 +669,8 @@ animationFunctions.CreateMonkComboPoints = function(parent, frameName)
     local BallTexture  = MonkWWComboPoint:CreateTexture (nil, "ARTWORK")
     BallTexture:SetTexture ([[Interface\PLAYERFRAME\MonkUIAtlas]])
     BallTexture:SetDrawLayer ("ARTWORK", 0)
-    BallTexture:SetPoint ("center", MonkWWComboPoint, "center", -1, 2)
-    BallTexture:SetSize (CONST_WIDGET_WIDTH * 0.7, CONST_WIDGET_HEIGHT * 0.7)
+    BallTexture:SetPoint ("center", MonkWWComboPoint, "center", 0, 0)
+    BallTexture:SetSize (CONST_WIDGET_WIDTH * 0.90, CONST_WIDGET_HEIGHT * 0.90)
     BallTexture:SetTexCoord (0.6427360534668, 0.70684181213379, 0.02872227191925, 0.15893713951111)
 
     --> animations for BallTexture
@@ -667,5 +794,3 @@ animationFunctions.CreateMonkComboPoints = function(parent, frameName)
     MonkWWComboPoint.ShowAnimation = MainAnimationGroup
     return MonkWWComboPoint
 end
-
-
