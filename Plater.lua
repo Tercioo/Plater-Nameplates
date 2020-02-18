@@ -6050,9 +6050,6 @@ end
 			
 			Plater.UpdateResourceFrame()
 			
-			--plater resource bar
-			Plater.CanUsePlaterResourceFrame() --~resource
-			
 		else
 			plateFrame.TargetNeonUp:Hide()
 			plateFrame.TargetNeonDown:Hide()
@@ -6109,6 +6106,8 @@ end
 				end
 			end
 		end
+
+		Plater.CanUsePlaterResourceFrame() --~resource
 	end
 
 	function Plater.UpdateTargetHighlight (plateFrame)
