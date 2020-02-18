@@ -6541,6 +6541,23 @@ local relevance_options = {
 			desc = "Adjust the position on the Y axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
 		},
 		
+		{type = "label", get = function() return "Cast Bar:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			--y offset
+			{
+				type = "range",
+				get = function() return Plater.db.profile.plate_config.friendlyplayer.castbar_offset end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.plate_config.friendlyplayer.castbar_offset = value
+					Plater.UpdateAllPlates()
+				end,
+				min = -128,
+				max = 128,
+				step = 1,
+				usedecimals = true,
+				name = L["OPTIONS_YOFFSET"],
+				desc = "Adjust the position on the Y axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
+			},
+		
 		{type = "blank"},
 		{type = "label", get = function() return "Player Name Text Colors" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--player name color
@@ -7441,8 +7458,6 @@ local relevance_options = {
 			desc = "Adjust the position on the Y axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
 		},		
 		
-		{type = "blank"},
-		
 		{type = "label", get = function() return "Cast Bar:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--y offset
 		{
@@ -8325,6 +8340,23 @@ local relevance_options = {
 			name = L["OPTIONS_YOFFSET"],
 			desc = "Adjust the position on the Y axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
 		},
+		
+		{type = "label", get = function() return "Cast Bar:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			--y offset
+			{
+				type = "range",
+				get = function() return Plater.db.profile.plate_config.friendlynpc.castbar_offset end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.plate_config.friendlynpc.castbar_offset = value
+					Plater.UpdateAllPlates()
+				end,
+				min = -128,
+				max = 128,
+				step = 1,
+				usedecimals = true,
+				name = L["OPTIONS_YOFFSET"],
+				desc = "Adjust the position on the Y axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
+			},
 		
 		{type = "blank"},
 		
@@ -9304,8 +9336,6 @@ local relevance_options = {
 				name = L["OPTIONS_YOFFSET"],
 				desc = "Adjust the position on the Y axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
 			},
-
-			{type = "blank"},
 			
 			{type = "label", get = function() return "Cast Bar:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			--y offset
