@@ -9595,7 +9595,7 @@ end
 			for scriptId, scriptObject in ipairs (Plater.GetAllScriptsAsPrioSortedCopy ("script")) do
 				if (scriptObject.Enabled) then
 					if not noHotReload then
-						PLATER_GLOBAL_MOD_ENV [scriptObject.Name] = nil
+						PLATER_GLOBAL_SCRIPT_ENV [scriptObject.Name] = nil
 					end
 					Plater.CompileScript (scriptObject)
 				end
@@ -10072,9 +10072,9 @@ end
 		
 		--init modEnv if necessary
 		local needsInitCall = false
-		if not PLATER_GLOBAL_MOD_ENV [scriptObject.Name] then
+		if not PLATER_GLOBAL_SCRIPT_ENV [scriptObject.Name] then
 			needsInitCall = true
-			PLATER_GLOBAL_MOD_ENV [scriptObject.Name] = {}
+			PLATER_GLOBAL_SCRIPT_ENV [scriptObject.Name] = {}
 		end
 
 		--compile
