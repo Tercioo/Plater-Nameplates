@@ -778,6 +778,7 @@ Plater.TriggerDefaultMembers = {
 	
 	local create_code_editor = function (parent, mainFrame)
 		local code_editor = DF:NewSpecialLuaEditorEntry (parent, edit_script_size[1], edit_script_size[2], "CodeEditor", "$parentCodeEditor", false, true)
+		--need to make the scroll of line numbers be mouse off (enablemouse(false))
 		
 		code_editor.scroll:SetBackdrop (nil)
 		code_editor.editbox:SetBackdrop (nil)
