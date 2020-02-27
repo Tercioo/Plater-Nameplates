@@ -3956,6 +3956,17 @@ Plater.CreateAuraTesting()
 		
 		--
 		local especial_aura_settings = {
+			{type = "blank"},
+			{type = "blank"},
+			{type = "blank"},
+			{type = "blank"},
+			{type = "blank"},
+			{type = "blank"},
+			{type = "blank"},
+			{type = "blank"},
+			{type = "blank"},
+			{type = "blank"},
+			{type = "blank"},
 			{type = "label", get = function() return "Icon Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			--anchor
 			{
@@ -4061,7 +4072,8 @@ Plater.CreateAuraTesting()
 				desc = "Default Border Color",
 			},
 			
-			{type = "blank"},
+			--{type = "blank"},
+			{type = "breakline"},
 			{type = "label", get = function() return "Text Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			--show timer
 			{
@@ -4097,7 +4109,9 @@ Plater.CreateAuraTesting()
 				desc = "Show Stacks",
 			},
 			
-			{type = "breakline"},
+			--{type = "breakline"},
+			{type = "blank"},
+			{type = "blank"},
 			
 			{type = "label", get = function() return "Auto Add These Types of Auras:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			
@@ -4189,6 +4203,115 @@ Plater.CreateAuraTesting()
 				desc = "Enrage Border Color",
 			},
 		
+		
+			{type = "breakline"},
+			{type = "label", get = function() return "DBM / BigWigs Icon-Support:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.bossmod_support_enabled end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.bossmod_support_enabled = value
+					Plater.UpdateAllPlates()
+				end,
+				name = L["OPTIONS_ENABLED"],
+				desc = "Enable the boss mod icon support for BigWigs and DBM.",
+			},
+			
+			{type = "blank"},
+			
+			{type = "label", get = function() return "Icon Size:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			
+			--width
+			{
+				type = "range",
+				get = function() return Plater.db.profile.bossmod_aura_width end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.bossmod_aura_width = value
+					Plater.UpdateAllPlates()
+				end,
+				min = 8,
+				max = 64,
+				step = 1,
+				name = "Width",
+				desc = "Width",
+			},
+			--height
+			{
+				type = "range",
+				get = function() return Plater.db.profile.bossmod_aura_height end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.bossmod_aura_height = value
+					Plater.UpdateAllPlates()
+				end,
+				min = 8,
+				max = 64,
+				step = 1,
+				name = "Height",
+				desc = "Height",
+			},
+			
+			{type = "blank"},
+		
+			{type = "label", get = function() return "Icon Anchor:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			
+			--anchor
+			{
+			type = "select",
+			get = function() return Plater.db.profile.bossmod_icons_anchor.side end,
+			values = function() return build_anchor_side_table (nil, "bossmod_icons_anchor") end,
+			name = L["OPTIONS_ANCHOR"],
+			desc = "Which side of the nameplate the icons should attach to.",
+			},
+			--x offset
+			{
+				type = "range",
+				get = function() return Plater.db.profile.bossmod_icons_anchor.x end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.bossmod_icons_anchor.x = value
+					Plater.UpdateAllPlates()
+				end,
+				min = -40,
+				max = 40,
+				step = 1,
+				usedecimals = true,
+				name = L["OPTIONS_XOFFSET"],
+				desc = "Adjust the position on the X axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
+			},
+			--y offset
+			{
+				type = "range",
+				get = function() return Plater.db.profile.bossmod_icons_anchor.y end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.bossmod_icons_anchor.y = value
+					Plater.UpdateAllPlates()
+				end,
+				min = -60,
+				max = 60,
+				step = 1,
+				usedecimals = true,
+				name = L["OPTIONS_YOFFSET"],
+				desc = "Adjust the position on the Y axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
+			},
+			
+			{type = "blank"},
+			
+			{type = "label", get = function() return "Cooldown Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			--cd text size
+			{
+				type = "range",
+				get = function() return Plater.db.profile.bossmod_cooldown_text_size end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.bossmod_cooldown_text_size = value
+					Plater.RefreshAuras()
+					Plater.UpdateAllPlates()
+				end,
+				min = 6,
+				max = 32,
+				step = 1,
+				name = L["OPTIONS_SIZE"],
+				desc = "Size",
+			},
 		}
 		
 		auraSpecialFrame.ExampleImageDesc = DF:CreateLabel (auraSpecialFrame, "Special auras look like this:", 14)
@@ -4199,7 +4322,7 @@ Plater.CreateAuraTesting()
 		
 		local fff = CreateFrame ("frame", "$parentExtraIconsSettings", auraSpecialFrame)
 		fff:SetAllPoints()
-		DF:BuildMenu (fff, especial_aura_settings, 570, startY - 27, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
+		DF:BuildMenu (fff, especial_aura_settings, 330, startY - 27, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 
 		--when the profile has changed
 		function auraSpecialFrame:RefreshOptions()
