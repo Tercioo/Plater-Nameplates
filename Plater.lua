@@ -2242,8 +2242,8 @@ Plater.DefaultSpellRangeList = {
 				
 				--register details framework hooks
 				newUnitFrame.castBar:SetHook ("OnShow", Plater.CastBarOnShow_Hook)
-				newUnitFrame.castBar:SetHook ("OnEvent", Plater.CastBarOnEvent_Hook)
-				newUnitFrame.castBar:SetHook ("OnTick", Plater.CastBarOnTick_Hook)
+				hooksecurefunc (newUnitFrame.castBar, "OnEvent", Plater.CastBarOnEvent_Hook)
+				hooksecurefunc (newUnitFrame.castBar, "OnTick", Plater.CastBarOnTick_Hook)
 				
 				newUnitFrame.HasHooksRegistered = true
 				
