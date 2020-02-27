@@ -739,6 +739,12 @@ PLATER_DEFAULT_SETTINGS = {
 			debuff_tracked = {},
 		},
 		
+		bossmod_support_enabled = true,
+		bossmod_aura_height = 32,
+		bossmod_aura_width = 32,
+		bossmod_cooldown_text_size = 16,
+		bossmod_icons_anchor = {side = 8, x = 0, y = 30},
+		
 		not_affecting_combat_enabled = false,
 		not_affecting_combat_alpha = 0.6,
 

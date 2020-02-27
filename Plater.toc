@@ -31,3 +31,4 @@ Plater_AnimationEditor.lua
 Plater_Designer.lua
 Plater_ChangeLog.lua
 Plater_Docs.lua
+Plater_BossModsSupport.lua
