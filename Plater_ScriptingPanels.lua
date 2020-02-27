@@ -777,7 +777,7 @@ Plater.TriggerDefaultMembers = {
 	end
 	
 	local create_code_editor = function (parent, mainFrame)
-		local code_editor = DF:NewSpecialLuaEditorEntry (parent, edit_script_size[1], edit_script_size[2], "CodeEditor", "$parentCodeEditor")
+		local code_editor = DF:NewSpecialLuaEditorEntry (parent, edit_script_size[1], edit_script_size[2], "CodeEditor", "$parentCodeEditor", false, true)
 		
 		code_editor.scroll:SetBackdrop (nil)
 		code_editor.editbox:SetBackdrop (nil)
