@@ -1895,7 +1895,7 @@ Plater.DefaultSpellRangeList = {
 		end,
 		
 		UNIT_FACTION = function (_, unit)
-			if (unit == "player" or not UnitIsPlayer (unit)) then
+			if (unit == "player") then
 				return
 			end
 			
@@ -2854,6 +2854,10 @@ Plater.DefaultSpellRangeList = {
 					
 				else
 					--> regular nameplate
+					
+					plateFrame.PlayerCannotAttack = not UnitCanAttack ("player", unitID)
+					unitFrame.PlayerCannotAttack = plateFrame.PlayerCannotAttack --expose to scripts
+					
 					if (UnitIsPlayer (unitID)) then
 						--unit is a player
 						plateFrame.playerGuildName = GetGuildInfo (unitID)
@@ -2889,8 +2893,6 @@ Plater.DefaultSpellRangeList = {
 							end
 						else
 							--includes neutral npcs
-							plateFrame.PlayerCannotAttack = not UnitCanAttack ("player", unitID)
-							unitFrame.PlayerCannotAttack = plateFrame.PlayerCannotAttack --expose to scripts
 							
 							--add the npc in the npcid cache
 							if (not DB_NPCIDS_CACHE [plateFrame [MEMBER_NPCID]] and not IS_IN_OPEN_WORLD and not Plater.ZonePvpType and plateFrame [MEMBER_NPCID]) then
