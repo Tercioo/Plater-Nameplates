@@ -1,5 +1,5 @@
 
-local dversion = 171
+local dversion = 173
 
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
@@ -973,9 +973,11 @@ end
 				dropdown.tooltip = widget_table.desc
 				dropdown._get = widget_table.get
 				dropdown.widget_type = "select"
+
 				local label = DF:NewLabel (parent, nil, "$parentLabel" .. index, nil, widget_table.name .. (use_two_points and ": " or ""), "GameFontNormal", widget_table.text_template or text_template or 12)
 				dropdown:SetPoint ("left", label, "right", 2)
 				label:SetPoint (cur_x, cur_y)
+				dropdown.hasLabel = label
 				
 				--> global callback
 				if (value_change_hook) then
@@ -1032,6 +1034,7 @@ end
 					label:SetPoint (cur_x, cur_y)
 					switch:SetPoint ("left", label, "right", 2)
 				end
+				switch.hasLabel = label
 
 				if (widget_table.id) then
 					parent.widgetids [widget_table.id] = switch
@@ -1074,6 +1077,7 @@ end
 				local label = DF:NewLabel (parent, nil, "$parentLabel" .. index, nil, widget_table.name .. (use_two_points and ": " or ""), "GameFontNormal", widget_table.text_template or text_template or 12)
 				slider:SetPoint ("left", label, "right", 2)
 				label:SetPoint (cur_x, cur_y)
+				slider.hasLabel = label
 				
 				if (widget_table.id) then
 					parent.widgetids [widget_table.id] = slider
@@ -1115,6 +1119,7 @@ end
 				local label = DF:NewLabel (parent, nil, "$parentLabel" .. index, nil, widget_table.name .. (use_two_points and ": " or ""), "GameFontNormal", widget_table.text_template or text_template or 12)
 				colorpick:SetPoint ("left", label, "right", 2)
 				label:SetPoint (cur_x, cur_y)
+				colorpick.hasLabel = label
 				
 				if (widget_table.id) then
 					parent.widgetids [widget_table.id] = colorpick
@@ -1174,6 +1179,7 @@ end
 				local label = DF:NewLabel (parent, nil, "$parentLabel" .. index, nil, widget_table.name .. (use_two_points and ": " or ""), "GameFontNormal", widget_table.text_template or text_template or 12)
 				textentry:SetPoint ("left", label, "right", 2)
 				label:SetPoint (cur_x, cur_y)
+				textentry.hasLabel = label
 
 				--> text entry doesn't trigger global callback
 				
