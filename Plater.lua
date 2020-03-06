@@ -4128,18 +4128,18 @@ end
 		
 		for i = 1, amountFramesShown do
 			local iconFrame = iconFrameContainer [i]
-			local auraName = iconFrame.SpellName
+			local spellId = iconFrame.spellId
 			
-			if (aurasDuplicated [auraName]) then
-				tinsert (aurasDuplicated [auraName], {iconFrame, iconFrame.RemainingTime})
+			if (aurasDuplicated [spellId]) then
+				tinsert (aurasDuplicated [spellId], {iconFrame, iconFrame.RemainingTime})
 			else
-				aurasDuplicated [auraName] = {
+				aurasDuplicated [spellId] = {
 					{iconFrame, iconFrame.RemainingTime}
 				}
 			end
 		end
 
-		for auraName, iconFramesTable in pairs (aurasDuplicated) do
+		for spellId, iconFramesTable in pairs (aurasDuplicated) do
 			--how many auras with the same name the unit has
 			local amountOfSimilarAuras = #iconFramesTable
 			
