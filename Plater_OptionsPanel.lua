@@ -187,6 +187,8 @@ function Plater.OpenOptionsPanel()
 		{name = "Automation", title = L["OPTIONS_TABNAME_AUTO"]},
 		{name = "ProfileManagement", title = L["OPTIONS_TABNAME_PROFILES"]},
 		{name = "CreditsFrame", title = L["OPTIONS_TABNAME_CREDITS"]},
+
+		{name = "SearchFrame", title = "Search"},
 	}, 
 	frame_options)
 
@@ -223,6 +225,8 @@ function Plater.OpenOptionsPanel()
 	local autoFrame = mainFrame.AllFrames [19]
 	local profilesFrame = mainFrame.AllFrames [20]
 	local creditsFrame = mainFrame.AllFrames [21]
+
+	local searchFrame = mainFrame.AllFrames [22]
 	
 	--
 	local colorNpcsButton = mainFrame.AllButtons [17]
@@ -3677,6 +3681,7 @@ Plater.CreateAuraTesting()
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> special auras
 --> special aura container
+	local especial_aura_settings
 	do 
 		--> scroll with auras added to the special aura container
 		local specialAuraFrame = CreateFrame ("frame", nil, auraSpecialFrame)
@@ -3955,7 +3960,7 @@ Plater.CreateAuraTesting()
 		add_buff_button.tooltip = "Add the aura to be tracked."
 		
 		--
-		local especial_aura_settings = {
+		especial_aura_settings = {
 			{type = "blank"},
 			{type = "blank"},
 			{type = "blank"},
@@ -4384,6 +4389,8 @@ Plater.CreateAuraTesting()
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- personal player ~player
+local options_personal
+
 do
 		local on_select_player_percent_text_font = function (_, _, value)
 			Plater.db.profile.plate_config.player.percent_text_font = value
@@ -4415,7 +4422,7 @@ do
 		
 		local locClass = UnitClass ("player")
 		
-		local options_personal = {
+		options_personal = {
 
 			{type = "label", get = function() return "General Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			
@@ -9359,7 +9366,8 @@ local relevance_options = {
 
 -----------------------------------------------	
 --Enemy NPC painel de op��es ~enemy
-
+	local options_table2
+	
 	do
 
 		local on_select_enemy_npcname_font = function (_, _, value)
@@ -9391,7 +9399,7 @@ local relevance_options = {
 		end
 		
 		--menu 2 --enemy npc
-		local options_table2 = {
+		options_table2 = {
 		
 			{type = "label", get = function() return "General Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			
@@ -11748,7 +11756,84 @@ local relevance_options = {
 	}
 	
 	DF:BuildMenu (advancedFrame, advanced_options, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
-		
+	
+
+
+	--~search panel
+	local searchLabel = DF:CreateLabel(searchFrame, "Search:")
+	local searchBox = DF:CreateTextEntry (searchFrame, function()end, 156, 20, "serachTextEntry", _, _, options_dropdown_template)
+	
+	searchLabel:SetPoint(10, -120)
+	searchBox:SetPoint(10, -130)
+
+	local optionsWildCardFrame = CreateFrame("frame", "$parentWildCardOptionsFrame", searchFrame)
+	optionsWildCardFrame:SetAllPoints()
+	
+	--all settings tables
+	local allTabSettings = {
+		interface_options,
+		alpha_major_options,
+		debuff_options,
+		especial_aura_settings,
+		options_personal,
+		targetOptions,
+		options_table1,
+		options_table3,
+		options_table4,
+		friendly_npc_options_table,
+		options_table2,
+		experimental_options,
+		auto_options,
+		thread_options,
+		advanced_options
+	}
+
+	--this table will hold all options
+	local allOptions = {}
+	--start the fill process filling 'allOptions' with each individual option from each tab
+	for i = 1, #allTabSettings do
+		local tabSettings = allTabSettings[i]
+		for k, setting in pairs(tabSettings) do 
+			if (setting.name) then
+				allOptions[#allOptions+1] = setting
+			end
+		end
+	end
+
+	searchBox:SetHook("OnEnterPressed", function(self)
+		local options = {}
+
+		local searchingText = string.lower(searchBox.text)
+		searchBox:SetFocus(false)
+
+		for i = 1, #allOptions do
+			local optionName = string.lower(allOptions[i].name)
+			if (optionName:find(searchingText)) then
+				options[#options+1] = allOptions[i]
+			end
+		end
+
+		if (searchFrame.widget_list) then
+			for i = 1, #searchFrame.widget_list do
+				searchFrame.widget_list[i]:Hide()
+				if (searchFrame.widget_list[i].hasLabel) then
+					searchFrame.widget_list[i].hasLabel:Hide()
+				end
+			end
+			wipe(searchFrame.widget_list)
+			searchFrame.widget_list = nil
+		end
+
+		if (searchFrame.widgetids) then
+			wipe(searchFrame.widgetids)
+			searchFrame.widgetids = nil
+		end
+
+		DF:BuildMenu (searchFrame, options, startX, startY-30, heightSize+40, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
+	end)
+
+
+
 	--
 	Plater.CheckOptionsTab()
 end
