@@ -2601,9 +2601,11 @@ Plater.DefaultSpellRangeList = {
 			--> border
 				--create a border using default borders from the retail game
 				local healthBarBorder = CreateFrame ("frame", nil, plateFrame.unitFrame.healthBar, "NamePlateFullBorderTemplate")
+				healthBarBorder:SetIgnoreParentScale(false) -- ensure scaling behaves well...
 				plateFrame.unitFrame.healthBar.border = healthBarBorder
 				
 				local powerBarBorder = CreateFrame ("frame", nil, plateFrame.unitFrame.powerBar, "NamePlateFullBorderTemplate")
+				powerBarBorder:SetIgnoreParentScale(false) -- ensure scaling behaves well...
 				plateFrame.unitFrame.powerBar.border = powerBarBorder
 				powerBarBorder:SetVertexColor (0, 0, 0, 1)
 
