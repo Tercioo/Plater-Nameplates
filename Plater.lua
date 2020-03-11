@@ -2294,6 +2294,9 @@ Plater.DefaultSpellRangeList = {
 			plateFrame.unitFrame.BuffFrame.BuffFrame2 = plateFrame.unitFrame.BuffFrame2
 			plateFrame.unitFrame.BuffFrame2.BuffFrame1 = plateFrame.unitFrame.BuffFrame
 			
+			--> unit aura cache
+			plateFrame.unitFrame.AuraCache = {}
+			
 			local healthBar = plateFrame.unitFrame.healthBar
 			
 			--cache the unit frame within the health and cast bars, this avoid GetParent() calls
@@ -2601,9 +2604,11 @@ Plater.DefaultSpellRangeList = {
 			--> border
 				--create a border using default borders from the retail game
 				local healthBarBorder = CreateFrame ("frame", nil, plateFrame.unitFrame.healthBar, "NamePlateFullBorderTemplate")
+				healthBarBorder:SetIgnoreParentScale(false) -- ensure scaling behaves well...
 				plateFrame.unitFrame.healthBar.border = healthBarBorder
 				
 				local powerBarBorder = CreateFrame ("frame", nil, plateFrame.unitFrame.powerBar, "NamePlateFullBorderTemplate")
+				powerBarBorder:SetIgnoreParentScale(false) -- ensure scaling behaves well...
 				plateFrame.unitFrame.powerBar.border = powerBarBorder
 				powerBarBorder:SetVertexColor (0, 0, 0, 1)
 
@@ -4833,6 +4838,7 @@ end
 		wipe (self.AuraCache)
 		wipe (self.BuffFrame2.AuraCache)
 		wipe (self.ExtraIconFrame.AuraCache)
+		wipe (self.unitFrame.AuraCache)
 		
 	end
 
@@ -4842,6 +4848,8 @@ end
 	--used when the user selects manual aura tracking
 	function Plater.TrackSpecificAuras (self, unit, isBuff, aurasToCheck, isPersonal, noSpecial)
 
+		local unitAuraCache = self.unitFrame.AuraCache
+
 		if (isBuff) then
 			--> buffs
 			for i = 1, BUFF_MAX_DISPLAY do
@@ -4849,6 +4857,11 @@ end
 				if (not name) then
 					break
 				else
+					unitAuraCache[name] = true
+					unitAuraCache[spellId] = true
+					unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or canStealOrPurge
+					unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
+					
 					local auraType = "BUFF"
 					--verify is this aura is in the table passed
 					if (aurasToCheck [name]) then
@@ -4881,6 +4894,11 @@ end
 				if (not name) then
 					break
 				else
+					unitAuraCache[name] = true
+					unitAuraCache[spellId] = true
+					unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or canStealOrPurge
+					unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
+					
 					local auraType = "DEBUFF"
 					--checking here if the debuff is placed by the player
 					--if (caster and aurasToCheck [name] and UnitIsUnit (caster, "player")) then --this doesn't track the pet, so auras like freeze from mage frost elemental won't show
@@ -4924,6 +4942,7 @@ end
 	--> track auras automatically when the user has automatic aura tracking selected in the options panel
 	function Plater.UpdateAuras_Automatic (self, unit)
 		Plater.ResetAuraContainer (self)
+		local unitAuraCache = self.unitFrame.AuraCache
 		
 		--> debuffs
 			for i = 1, BUFF_MAX_DISPLAY do
@@ -4936,9 +4955,15 @@ end
 				
 				if (not name) then
 					break
+				end
+				
+				unitAuraCache[name] = true
+				unitAuraCache[spellId] = true
+				unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or canStealOrPurge
+				unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
 				
 				--check if the debuff isn't filtered out
-				elseif (not DB_DEBUFF_BANNED [name]) then
+				if (not DB_DEBUFF_BANNED [name]) then
 			
 					--> if true it'll show all auras - this can be called from scripts to debug aura things
 					if (Plater.DebugAuras) then
@@ -4990,6 +5015,11 @@ end
 				if (not name) then
 					break
 				end
+				
+				unitAuraCache[name] = true
+				unitAuraCache[spellId] = true
+				unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or canStealOrPurge
+				unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
 				
 				--> check for special auras added by the user it self
 				if (((SPECIAL_AURAS_USER_LIST [name] or SPECIAL_AURAS_USER_LIST [spellId]) and not (SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId])) or ((SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId]) and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
@@ -5053,6 +5083,7 @@ end
 
 	function Plater.UpdateAuras_Self_Automatic (self)
 		Plater.ResetAuraContainer (self)
+		local unitAuraCache = self.unitFrame.AuraCache
 		
 		--> debuffs
 		if (Plater.db.profile.aura_show_debuffs_personal) then
@@ -5062,8 +5093,14 @@ end
 				
 				if (not name) then
 					break
+				end
+				
+				unitAuraCache[name] = true
+				unitAuraCache[spellId] = true
+				unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or canStealOrPurge
+				unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
 					
-				elseif (not DB_DEBUFF_BANNED [name]) then
+				if (not DB_DEBUFF_BANNED [name]) then
 					local auraIconFrame, buffFrame = Plater.GetAuraIcon (self)
 					Plater.AddAura (buffFrame, auraIconFrame, i, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, false, false, true, true, actualAuraType)
 					
@@ -5091,9 +5128,15 @@ end
 				
 				if (not name) then
 					break
-					
+				end
+
+				unitAuraCache[name] = true
+				unitAuraCache[spellId] = true
+				unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or canStealOrPurge
+				unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
+				
 				--> only show buffs casted by the player it self and less than 1 minute in duration
-				elseif (not DB_BUFF_BANNED [name] and (duration and (duration > 0 and duration < 60)) and (caster and UnitIsUnit (caster, "player"))) then
+				if (not DB_BUFF_BANNED [name] and (duration and (duration > 0 and duration < 60)) and (caster and UnitIsUnit (caster, "player"))) then
 					local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
 					Plater.AddAura (buffFrame, auraIconFrame, i, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, false, false, false, true, actualAuraType)
 
@@ -8407,6 +8450,7 @@ end
 
 					local buffFrame = plateFrame.unitFrame.BuffFrame
 					local buffFrame2 = plateFrame.unitFrame.BuffFrame2
+					local unitAuraCache = plateFrame.unitFrame.AuraCache
 					
 					buffFrame:SetAlpha (DB_AURA_ALPHA)
 					buffFrame2:SetAlpha (DB_AURA_ALPHA)
@@ -8428,6 +8472,9 @@ end
 								Plater.AddAura (buffFrame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, false, false, true, true, auraTable.Type)
 							end
 							
+							unitAuraCache[auraTable.SpellName] = true
+							unitAuraCache[auraTable.SpellID] = true
+							
 							Plater.UpdateIconAspecRatio (auraIconFrame)
 						end
 						
@@ -8442,6 +8489,9 @@ end
 							else
 								Plater.AddAura (buffFrame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, false, false, false, true, auraTable.Type)
 							end
+							
+							unitAuraCache[auraTable.SpellName] = true
+							unitAuraCache[auraTable.SpellID] = true
 							
 							Plater.UpdateIconAspecRatio (auraIconFrame)
 						end
@@ -8469,6 +8519,10 @@ end
 							else
 								Plater.AddAura (buffFrame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, false, false, true, true, auraTable.Type)
 							end
+							
+							unitAuraCache[auraTable.SpellName] = true
+							unitAuraCache[auraTable.SpellID] = true
+							unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or auraTable.Type == AURA_TYPE_ENRAGE
 						end
 						
 						for index, auraTable in ipairs (auraOptionsFrame.AuraTesting.BUFF) do
@@ -8483,6 +8537,10 @@ end
 								Plater.AddAura (frame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "BUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, true, false, false, false, auraTable.Type)
 								--Plater.AddAura (frame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "BUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, false, false, false, true, auraTable.Type)
 							end
+							
+							unitAuraCache[auraTable.SpellName] = true
+							unitAuraCache[auraTable.SpellID] = true
+							unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or auraTable.Type == AURA_TYPE_ENRAGE
 						end
 					end
 					
@@ -8689,6 +8747,21 @@ end
 	--return if the nameplate is showing an aura
 	function Plater.NameplateHasAura (unitFrame, aura)
 		return unitFrame.BuffFrame.AuraCache [aura] or unitFrame.BuffFrame2.AuraCache [aura] or unitFrame.ExtraIconFrame.AuraCache [aura]
+	end
+	
+	--return if the unit has a specific aura
+	function Plater.UnitHasAura (unitFrame, aura)
+		return unitFrame and unitFrame.AuraCache and aura and unitFrame.AuraCache [aura]
+	end
+	
+	--return if the unit has an enrage effect
+	function Plater.UnitHasEnrage (unitFrame)
+		return unitFrame and unitFrame.AuraCache and unitFrame.AuraCache.hasEnrage
+	end
+	
+	--return if the unit has a dispellable effect
+	function Plater.UnitHasDispellable (unitFrame)
+		return unitFrame and unitFrame.AuraCache and  unitFrame.AuraCache.canStealOrPurge
 	end
 	
 	--get npc color set in the colors tab

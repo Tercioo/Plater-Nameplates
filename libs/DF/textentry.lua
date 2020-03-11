@@ -1109,6 +1109,7 @@ function DF:NewSpecialLuaEditorEntry (parent, w, h, member, name, nointent, show
 		scrollframeNumberLines.editbox = CreateFrame ("editbox", "$parentLineNumbers", scrollframeNumberLines)
 		scrollframeNumberLines.editbox:SetMultiLine (true)
 		scrollframeNumberLines.editbox:SetAutoFocus (false)
+		scrollframeNumberLines.editbox:SetEnabled (false)
 		scrollframeNumberLines.editbox:SetFontObject ("GameFontHighlightSmall")
 		scrollframeNumberLines.editbox:SetJustifyH ("left")
 		scrollframeNumberLines.editbox:SetJustifyV ("top")
