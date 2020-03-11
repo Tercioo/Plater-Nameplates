@@ -8472,8 +8472,8 @@ end
 								Plater.AddAura (buffFrame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, false, false, true, true, auraTable.Type)
 							end
 							
-							unitAuraCache[name] = true
-							unitAuraCache[spellId] = true
+							unitAuraCache[auraTable.SpellName] = true
+							unitAuraCache[auraTable.SpellID] = true
 							
 							Plater.UpdateIconAspecRatio (auraIconFrame)
 						end
@@ -8490,8 +8490,8 @@ end
 								Plater.AddAura (buffFrame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, false, false, false, true, auraTable.Type)
 							end
 							
-							unitAuraCache[name] = true
-							unitAuraCache[spellId] = true
+							unitAuraCache[auraTable.SpellName] = true
+							unitAuraCache[auraTable.SpellID] = true
 							
 							Plater.UpdateIconAspecRatio (auraIconFrame)
 						end
@@ -8520,8 +8520,8 @@ end
 								Plater.AddAura (buffFrame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, false, false, true, true, auraTable.Type)
 							end
 							
-							unitAuraCache[name] = true
-							unitAuraCache[spellId] = true
+							unitAuraCache[auraTable.SpellName] = true
+							unitAuraCache[auraTable.SpellID] = true
 							unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or auraTable.Type == AURA_TYPE_ENRAGE
 						end
 						
@@ -8538,8 +8538,8 @@ end
 								--Plater.AddAura (frame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "BUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, false, false, false, true, auraTable.Type)
 							end
 							
-							unitAuraCache[name] = true
-							unitAuraCache[spellId] = true
+							unitAuraCache[auraTable.SpellName] = true
+							unitAuraCache[auraTable.SpellID] = true
 							unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or auraTable.Type == AURA_TYPE_ENRAGE
 						end
 					end
