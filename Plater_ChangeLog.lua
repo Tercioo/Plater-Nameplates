@@ -8,7 +8,6 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 			{1583878613,  "New Feature", "Mar 10th, 2020", "Adding unit aura caching which covers all auras on the unit, even if they are not visible. -> Plater.UnitHasAura(unitFrame)"},
-			{1583878613,  "Bug Fix", "Mar 10th, 2020", "Ensure health- and power-bar borders scale well."},
 			{1583878613,  "Bug Fix", "Mar 6th, 2020", "Consolidate auras by spellId instead of name."},
 			{1583878613,  "New Feature", "Mar 6th, 2020", "Adding a search tab to the options menu to lookup settings."},
 			{1583878613,  "Bug Fix", "Mar 1st, 2020", "Ensure nameplates are updated properly when a unit becomes hostile."},
