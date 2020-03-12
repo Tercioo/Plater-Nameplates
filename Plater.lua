@@ -6051,21 +6051,12 @@ end
 	end	
 	
 	-- ARP
-	function Plater.SetFocusTexture(unitId)
-		if (not unitId) then
-			return
-		end
-
-		local plateFrame = C_NamePlate.GetNamePlateForUnit(unitId)
-		if (not plateFrame) then
-			return
-		end
-
+	function Plater.SetFocusTexture(unitFrame)
 		local profile = Plater.db.profile
 		local texture = LibSharedMedia:Fetch ("statusbar", profile.health_selection_overlay)
-		plateFrame.unitFrame.targetOverlayTexture:SetTexture (texture)
-		plateFrame.unitFrame.targetOverlayTexture:SetAlpha (0.5)
-		plateFrame.unitFrame.targetOverlayTexture:Show()
+		unitFrame.targetOverlayTexture:SetTexture (texture)
+		unitFrame.targetOverlayTexture:SetAlpha (0.5)
+		unitFrame.targetOverlayTexture:Show()
 	end
 
 	-- ~target
@@ -6400,7 +6391,7 @@ end
 			
 			return
 		
-		elseif (plateFrame.IsNpcWithoutHealthBar) then --not critical code
+		elseif (plateFrame.IsNpcWithoutHealthBar and not Plater.IsNpcInIgnoreList (plateFrame, true)) then --not critical code
 			local textAlpha = 0.6
 
 			--reset points for special units
@@ -6513,7 +6504,7 @@ end
 				end
 				--scan tooltip to check if there's an title for this npc
 				local subTitle = Plater.GetActorSubName (plateFrame)
-				if (subTitle and subTitle ~= "" and not Plater.IsNpcInIgnoreList (plateFrame, true)) then
+				if (subTitle and subTitle ~= "") then
 					if (not subTitle:match ("%d")) then --isn't level
 
 						plateFrame.ActorTitleSpecial:Show()
@@ -7961,6 +7952,8 @@ end
 		[62821] = true, --mystic birdhat
 		[32638] = true, --Hakmud of Argus
 		[32639] = true, --Gnimo
+		[35642] = true, --Jeeves
+		[101527] = true, --Blingtron 6000
 	}
 
 	function Plater.IsNpcInIgnoreList (plateFrame, onlyProfession) --private
