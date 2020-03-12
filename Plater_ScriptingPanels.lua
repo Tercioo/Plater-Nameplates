@@ -263,6 +263,42 @@ Plater.TriggerDefaultMembers = {
 	},
 }
 
+local openURL = function(url)
+	if (PlaterURLFrameHelper) then
+		PlaterURLFrameHelper.linkBox:SetText(url)
+		PlaterURLFrameHelper:Show()
+
+		C_Timer.After (.1, function()
+			PlaterURLFrameHelper.linkBox:SetFocus (true)
+			PlaterURLFrameHelper.linkBox:HighlightText()
+		end)
+
+		return
+	end
+	
+	local f = DF:CreateSimplePanel (UIParent, 460, 90, "URL", "PlaterURLFrameHelper")
+	f:SetFrameStrata ("TOOLTIP")
+	f:SetPoint ("center", UIParent, "center")
+	
+	DF:CreateBorder (f)
+	
+	local LinkBox = DF:CreateTextEntry (f, function()end, 380, 20, "ExportLinkBox", _, _, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+	LinkBox:SetPoint ("center", f, "center", 0, -10)
+	PlaterURLFrameHelper.linkBox = LinkBox
+	
+	f:SetScript ("OnShow", function()
+		LinkBox:SetText (url)
+		C_Timer.After (.1, function()
+			LinkBox:SetFocus (true)
+			LinkBox:HighlightText()
+		end)
+	end)
+	
+	f:Hide()
+	f:Show()
+end
+
+
 --shared functions between all script tabs
 
 	local onclick_menu_scroll_line = function (self, scriptId, option, mainFrame)
@@ -277,6 +313,10 @@ Plater.TriggerDefaultMembers = {
 			
 		elseif (option == "export") then
 			mainFrame.ExportScript (scriptId)
+
+		elseif (option == "url") then
+			local url = mainFrame
+			openURL(url)
 		
 		elseif (option == "sendtogroup") then
 			if (not IsInGroup()) then
@@ -370,6 +410,19 @@ Plater.TriggerDefaultMembers = {
 			GameCooltip:AddMenu (1, onclick_menu_scroll_line, "remove", mainFrame)
 			GameCooltip:AddIcon ([[Interface\AddOns\Plater\images\icons]], 1, 1, 16, 16, 3/512, 21/512, 235/512, 257/512)
 			
+			local scriptObject = mainFrame.GetScriptObject (self.ScriptId)
+
+			GameCooltip:AddLine ("$div")
+
+			if (scriptObject.Url) then
+				GameCooltip:AddLine ("Copy Wago.io URL")
+				GameCooltip:AddMenu (1, onclick_menu_scroll_line, "url", scriptObject.Url)
+				GameCooltip:AddIcon ([[Interface\AddOns\Plater\images\wagologo.tga]], 1, 1, 16, 10)
+				
+			else
+				GameCooltip:AddLine ("url found", "", 1, "gray")
+			end
+
 			GameCooltip:Show()
 		end
 	end
@@ -417,6 +470,12 @@ Plater.TriggerDefaultMembers = {
 		GameCooltip:AddLine ("Trigger Type:", scriptTypeName)
 		
 		GameCooltip:AddLine ("Author:", scriptObject.Author or "--x--x--")
+
+		if (scriptObject.Url) then
+			GameCooltip:AddLine (scriptObject.Url, "", 1, "gold")
+		else
+			GameCooltip:AddLine ("no wago.io url found", "", 1, "gray")
+		end
 		
 		if (scriptObject.Desc and scriptObject.Desc ~= "") then
 			GameCooltip:AddLine (scriptObject.Desc, "", 1, "gray")
@@ -1459,7 +1518,7 @@ function Plater.CreateHookingPanel()
 		f:Hide()
 		f:Show()
 	end
-	
+
 	function hookFrame.AddHookToScript (hookName)
 		local scriptObject = hookFrame.GetCurrentScriptObject()
 		if (not scriptObject) then

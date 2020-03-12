@@ -24,3 +24,4 @@ locales/zhCN.lua
 locales/zhTW.lua
 *.psd
 *.afdesign
+*.json

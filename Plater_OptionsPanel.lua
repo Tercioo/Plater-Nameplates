@@ -2658,7 +2658,7 @@ Plater.CreateAuraTesting()
 				aura_search_textentry:SetPoint ("bottomright", colorsFrame.ModelFrame, "topright", 0, 1)
 				aura_search_textentry:SetHook ("OnChar",		colorsFrame.OnSearchBoxTextChanged)
 				aura_search_textentry:SetHook ("OnTextChanged", 	colorsFrame.OnSearchBoxTextChanged)
-				aura_search_label = DF:CreateLabel (aura_search_textentry, "search", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
+				local aura_search_label = DF:CreateLabel (aura_search_textentry, "search", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
 				aura_search_label:SetPoint ("left", aura_search_textentry, "left", 4, 0)
 				aura_search_label.fontcolor = "gray"
 				aura_search_label.color = {.5, .5, .5, .3}

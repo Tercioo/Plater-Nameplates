@@ -10546,6 +10546,8 @@ end
 			for hookName, hookCode in pairs (indexTable [9]) do
 				scriptObject.Hooks [hookName] = hookCode
 			end
+
+			scriptObject.Url  		= indexTable.url or ""
 			
 			return scriptObject
 			
@@ -10563,6 +10565,7 @@ end
 			scriptObject.Time  		= indexTable [8]
 			scriptObject.Revision  		= indexTable [9]
 			scriptObject.PlaterCore  	= indexTable [10]
+			scriptObject.Url  		= indexTable.url or ""
 			
 			for i = 1, #Plater.CodeTypeNames do
 				local memberName = Plater.CodeTypeNames [i]
