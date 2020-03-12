@@ -25,3 +25,4 @@ locales/zhTW.lua
 *.psd
 *.afdesign
 *.json
+*.pdn
