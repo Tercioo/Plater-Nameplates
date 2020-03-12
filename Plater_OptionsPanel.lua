@@ -2372,7 +2372,7 @@ Plater.CreateAuraTesting()
 						local colortable = colorTable [1]
 						local colorname = colorTable [2]
 						tinsert (t, {label = " " .. colorname, value = colorname, color = colortable, onclick = line_select_color_dropdown, 
-						statusbar = [[Interface\AddOns\Plater\images\bar_semi_dark]],
+						statusbar = [[Interface\Tooltips\UI-Tooltip-Background]],
 						icon = [[Interface\AddOns\Plater\media\star_empty_64]],
 						iconcolor = {1, 1, 1, .6},
 						})
@@ -3056,7 +3056,7 @@ Plater.CreateAuraTesting()
 								local colortable = colorTable [1]
 								local colorname = colorTable [2]
 								tinsert (t, {label = " " .. colorname, value = colorname, color = colortable, onclick = line_select_color_dropdown, 
-								statusbar = [[Interface\AddOns\Plater\images\bar_semi_dark]],
+								statusbar = [[Interface\Tooltips\UI-Tooltip-Background]],
 								icon = [[Interface\AddOns\Plater\media\star_empty_64]],
 								iconcolor = {1, 1, 1, .6},
 								})
