@@ -7,6 +7,22 @@ local _
 function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
+			{1583878613,  "New Feature", "Mar 10th, 2020", "Adding unit aura caching which covers all auras on the unit, even if they are not visible. -> Plater.UnitHasAura(unitFrame)"},
+			{1583878613,  "Bug Fix", "Mar 6th, 2020", "Consolidate auras by spellId instead of name."},
+			{1583878613,  "New Feature", "Mar 6th, 2020", "Adding a search tab to the options menu to lookup settings."},
+			{1583878613,  "Bug Fix", "Mar 1st, 2020", "Ensure nameplates are updated properly when a unit becomes hostile."},
+			{1583878613,  "Bug Fix", "Feb 27th, 2020", "Fixing an issue with cast bars not updating properly with different versions of DF library."},
+			{1583878613,  "New Feature", "Feb 27th, 2020", "Adding support for DBM and BigWigs Nameplate Icon feature. Settings are on the Buff Special tab."},
+			{1583878613,  "New Feature", "Feb 24th, 2020", "Adding line numbering to scripting frames."},
+			{1583878613,  "Bug Fix", "Feb 21st, 2020", "Ensure nameplates are updated fully when being added to screen."},
+			{1583878613,  "Options Changes", "Feb 18th, 2020", "Adding Cast-Bar offset setting to friendly units."},
+			{1583878613,  "New Feature", "Feb 3rd, 2020", "Mods now have 'modTable' as a mod-global table shared about all nameplates the mod runs on. Same for scripts with 'scriptTable'. The new 'Initialization' function for mods and scripts can be used to initialize the global env table."},
+			{1583878613,  "", "Jan 20th, 2020", "Added cooldown text size setting for Buff Especial."},
+			{1583878613,  "Bug Fix", "Jan 20th, 2020", "Fixing rare nil-error with UNITIDs."},
+			{1583878613,  "Options Changes", "Jan 17th, 2020", "Added options to set alpha for each frame individually on transparency settings."},
+			{1583878613,  "New Feature", "Jan 19th, 2020", "Added some GoTo buttons in the options frame to help new users find the basic tabs to setup."},
+			{1583878613,  "Options Changes", "Jan 18th, 2020", "Many default textures has changed plus health and shield prediction are enabled by default."},
+			
 			{1579261831,  "Options Changes", "Jan 17th, 2020", "Adding native support to 'Non Target Alpha' called now 'Units Which Isn't Your Target' in the General Settings Page."},
 			{1579261831,  "New Feature", "Jan 21st, 2020", "Alpha for range check and non target units can now be set individualy for each frame: health, cast, power, buff bars."},
 			{1579261831,  "Backend Changes", "Jan 21st, 2020", "Entry for scripts 'namePlateAlpha' has been removed."},

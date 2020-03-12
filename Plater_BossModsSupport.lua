@@ -104,7 +104,7 @@ function Plater.UpdateBossModAuras(unitFrame)
 	-- maybe find a better way with iconFrame:RemoveIcon(...) ? (not yet implemented, but worth a thought)
 	if UNIT_BOSS_MOD_AURAS_TO_BE_REMOVED [guid] then
 		for removeIndex, removeTexture in pairs(UNIT_BOSS_MOD_AURAS_TO_BE_REMOVED [guid]) do
-			for activeIndex, activeData in pairs(UNIT_BOSS_MOD_AURAS_ACTIVE [guid]) do
+			for activeIndex, activeData in pairs(UNIT_BOSS_MOD_AURAS_ACTIVE [guid] or {}) do
 				if removeTexture == activeData.texture then
 					tremove(UNIT_BOSS_MOD_AURAS_ACTIVE [guid], activeIndex)
 				end
