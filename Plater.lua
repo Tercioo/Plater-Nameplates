@@ -6050,6 +6050,24 @@ end
 		end
 	end	
 	
+	-- ARP
+	function Plater.SetFocusTexture(unitId)
+		if (not unitId) then
+			return
+		end
+
+		local plateFrame = C_NamePlate.GetNamePlateForUnit(unitId)
+		if (not plateFrame) then
+			return
+		end
+
+		local profile = Plater.db.profile
+		local texture = LibSharedMedia:Fetch ("statusbar", profile.health_selection_overlay)
+		plateFrame.unitFrame.targetOverlayTexture:SetTexture (texture)
+		plateFrame.unitFrame.targetOverlayTexture:SetAlpha (0.5)
+		plateFrame.unitFrame.targetOverlayTexture:Show()
+	end
+
 	-- ~target
 	function Plater.UpdateTarget (plateFrame) --private
 
@@ -6327,7 +6345,7 @@ end
 			--when the option to show only the player name is enabled
 			--special string to show the player name
 			local nameFontString = plateFrame.ActorNameSpecial
-			nameFontString:Show()
+			--nameFontString:Show()
 			
 			--set the name in the string
 			plateFrame.CurrentUnitNameString = nameFontString
@@ -6383,7 +6401,8 @@ end
 			return
 		
 		elseif (plateFrame.IsNpcWithoutHealthBar) then --not critical code
-		
+			local textAlpha = 0.6
+
 			--reset points for special units
 			plateFrame.ActorNameSpecial:ClearAllPoints()
 			plateFrame.ActorTitleSpecial:ClearAllPoints()
@@ -6420,6 +6439,7 @@ end
 					end
 					
 					plateFrame.ActorNameSpecial:SetTextColor (r, g, b, a)
+					plateFrame.ActorNameSpecial:SetAlpha(textAlpha)
 					DF:SetFontSize (plateFrame.ActorNameSpecial, plateConfigs.big_actorname_text_size)
 					DF:SetFontFace (plateFrame.ActorNameSpecial, plateConfigs.big_actorname_text_font)
 					
@@ -6436,6 +6456,7 @@ end
 						PixelUtil.SetPoint (plateFrame.ActorTitleSpecial, "top", plateFrame.ActorNameSpecial, "bottom", 0, -2)
 						
 						plateFrame.ActorTitleSpecial:SetTextColor (r, g, b, a)
+						plateFrame.ActorTitleSpecial:SetAlpha(textAlpha)
 						DF:SetFontSize (plateFrame.ActorTitleSpecial, plateConfigs.big_actortitle_text_size)
 						DF:SetFontFace (plateFrame.ActorTitleSpecial, plateConfigs.big_actortitle_text_font)
 						
@@ -6448,6 +6469,7 @@ end
 				else
 					--it's a friendly npc
 					plateFrame.ActorNameSpecial:SetTextColor (unpack (plateConfigs.big_actorname_text_color))
+					plateFrame.ActorNameSpecial:SetAlpha(textAlpha)
 					DF:SetFontSize (plateFrame.ActorNameSpecial, plateConfigs.big_actorname_text_size)
 					DF:SetFontFace (plateFrame.ActorNameSpecial, plateConfigs.big_actorname_text_font)
 					
@@ -6464,6 +6486,7 @@ end
 						PixelUtil.SetPoint (plateFrame.ActorTitleSpecial, "top", plateFrame.ActorNameSpecial, "bottom", 0, -2)
 						
 						plateFrame.ActorTitleSpecial:SetTextColor (unpack (plateConfigs.big_actortitle_text_color))
+						plateFrame.ActorTitleSpecial:SetAlpha(textAlpha)
 						DF:SetFontSize (plateFrame.ActorTitleSpecial, plateConfigs.big_actortitle_text_size)
 						DF:SetFontFace (plateFrame.ActorTitleSpecial, plateConfigs.big_actortitle_text_font)
 						
@@ -6472,6 +6495,22 @@ end
 					end
 				end
 			else
+				if (Plater.IsQuestObjective (plateFrame)) then
+					plateFrame.ActorNameSpecial:SetTextColor (unpack (plateConfigs.big_actorname_text_color))
+					plateFrame.ActorNameSpecial:SetAlpha(textAlpha)
+					
+					--npc name
+					plateFrame.ActorNameSpecial:Show()
+
+					plateFrame.CurrentUnitNameString = plateFrame.ActorNameSpecial
+					Plater.UpdateUnitName (plateFrame)
+
+					DF:SetFontSize (plateFrame.ActorNameSpecial, plateConfigs.big_actorname_text_size)
+					DF:SetFontFace (plateFrame.ActorNameSpecial, plateConfigs.big_actorname_text_font)
+					
+					--DF:SetFontOutline (plateFrame.ActorNameSpecial, plateConfigs.big_actorname_text_shadow)
+					Plater.SetFontOutlineAndShadow (plateFrame.ActorNameSpecial, plateConfigs.big_actorname_text_outline, plateConfigs.big_actorname_text_shadow_color, plateConfigs.big_actorname_text_shadow_color_offset[1], plateConfigs.big_actorname_text_shadow_color_offset[2])
+				end
 				--scan tooltip to check if there's an title for this npc
 				local subTitle = Plater.GetActorSubName (plateFrame)
 				if (subTitle and subTitle ~= "" and not Plater.IsNpcInIgnoreList (plateFrame, true)) then
@@ -6485,7 +6524,8 @@ end
 						
 						plateFrame.ActorTitleSpecial:SetTextColor (unpack (plateConfigs.big_actortitle_text_color))
 						plateFrame.ActorNameSpecial:SetTextColor (unpack (plateConfigs.big_actorname_text_color))
-						
+						plateFrame.ActorTitleSpecial:SetAlpha(textAlpha)
+						plateFrame.ActorNameSpecial:SetAlpha(textAlpha)
 						DF:SetFontSize (plateFrame.ActorTitleSpecial, plateConfigs.big_actortitle_text_size)
 						DF:SetFontFace (plateFrame.ActorTitleSpecial, plateConfigs.big_actortitle_text_font)
 						
@@ -6506,7 +6546,6 @@ end
 					end
 				end
 			end
-			
 			return
 		end
 		
@@ -6905,19 +6944,20 @@ end
 				end
 			
 			elseif (IS_IN_OPEN_WORLD and DB_PLATE_CONFIG [actorType].quest_enabled and Plater.IsQuestObjective (plateFrame)) then
-				Plater.ChangeHealthBarColor_Internal (healthBar, unpack (DB_PLATE_CONFIG [actorType].quest_color))
+--				Plater.ChangeHealthBarColor_Internal (healthBar, unpack (DB_PLATE_CONFIG [actorType].quest_color))
 
-				healthBar:Show()
-				buffFrame:Show()
-				buffFrame2:Show()
+				healthBar:Hide()
+				buffFrame:Hide()
+				buffFrame2:Hide()
 				nameFrame:Show()
 				
 				--these twoseettings make the healthing dummy show the healthbar
 --				Plater.db.profile.plate_config.friendlynpc.only_names = false
 --				Plater.db.profile.plate_config.friendlynpc.all_names = false
-				plateFrame [MEMBER_QUEST] = true
-				unitFrame [MEMBER_QUEST] = true
-			
+--				plateFrame [MEMBER_QUEST] = true
+--				unitFrame [MEMBER_QUEST] = true
+				plateFrame.IsNpcWithoutHealthBar = true
+
 			elseif (DB_PLATE_CONFIG [actorType].only_names) then
 				--show only the npc name without the health bar
 
@@ -7914,7 +7954,13 @@ end
 		[107622] = true, --glutonia - Dalaran
 		[106263] = 1, --earthen ring shaman - Dalaran
 		[106262] = 1, --earthen ring shaman - Dalaran
+		[135671] = 1, --earthen ring shaman 
+		[135668] = 1, --Cenarian ciurcle druid
 		[97141] = true, --koraud - Dalaran
+		[62822] = true, --cousin slowhands
+		[62821] = true, --mystic birdhat
+		[32638] = true, --Hakmud of Argus
+		[32639] = true, --Gnimo
 	}
 
 	function Plater.IsNpcInIgnoreList (plateFrame, onlyProfession) --private
