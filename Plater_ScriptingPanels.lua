@@ -423,6 +423,7 @@ end
 				GameCooltip:AddLine ("url found", "", 1, "gray")
 			end
 
+			GameCooltip:SetOption("SubFollowButton", true)
 			GameCooltip:Show()
 		end
 	end
