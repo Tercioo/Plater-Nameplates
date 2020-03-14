@@ -2792,6 +2792,13 @@ Plater.CreateAuraTesting()
 							colorsFrame.RefreshScroll()
 							Plater:Msg ("npc colors imported.")
 						else
+							if (colorData.NpcNames) then
+								Plater:Msg ("this import look like Script, try importing in the Scripting tab.")
+							
+							elseif (colorData.LoadConditions) then
+								Plater:Msg ("this import look like a Mod, try importing in the Modding tab.")
+							end
+
 							Plater:Msg ("failed to import color data table.")
 						end
 					end
