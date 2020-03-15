@@ -21,6 +21,8 @@ do
 	local metaPrototype = {
 		WidgetType = "dropdown",
 		SetHook = DF.SetHook,
+		HasHook = DF.HasHook,
+		ClearHooks = DF.ClearHooks,
 		RunHooksForWidget = DF.RunHooksForWidget,
 	}
 
