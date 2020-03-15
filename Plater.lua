@@ -10423,7 +10423,7 @@ end
 	--import a string from any source with more options than the convencional importer
 	--this is used when importing scripts from the library and when the user inserted the wrong script type in the import box at hook or script, e.g. imported a hook in the script import box
 	--guarantee to always receive a 'print' type of encode
-	function Plater.ImportScriptString (text, ignoreRevision, overrideTriggers, showDebug)
+	function Plater.ImportScriptString (text, ignoreRevision, overrideTriggers, showDebug, keepExisting)
 		if (not text or type (text) ~= "string") then
 			return
 		end
@@ -10444,48 +10444,52 @@ end
 					local alreadyExists = false
 					local scriptDB = Plater.GetScriptDB (scriptType)
 					
-					for i = 1, #Plater.db.profile.script_data do
-						local scriptObject = scriptDB [i]
-						if (scriptObject.Name == scriptName) then
-							--the script already exists
-							if (not ignoreRevision) then
-								if (scriptObject.Revision >= newScript.Revision) then
-									if (showDebug) then
-										Plater:Msg ("Your version of this script is newer or is the same version.")
-										return false
+					if not keepExisting then
+						for i = 1, #scriptDB do
+							local scriptObject = scriptDB [i]
+							if (scriptObject.Name == scriptName) then
+								--the script already exists
+								if (not ignoreRevision) then
+									if (scriptObject.Revision >= newScript.Revision) then
+										if (showDebug) then
+											Plater:Msg ("Your version of this script is newer or is the same version.")
+											return false
+										end
 									end
 								end
-							end
-							
-							--add to the new script object, triggers that the current script has, since the user might have added some
-							if (not overrideTriggers) then
-								if (newScript.ScriptType == 0x1 or newScript.ScriptType == 0x2) then
-									--aura or cast trigger
-									for index, trigger in ipairs (scriptObject.SpellIds) do
-										DF.table.addunique (newScript.SpellIds, trigger)
-									end
-								else
-									--npc trigger
-									for index, trigger in ipairs (scriptObject.NpcNames) do
-										DF.table.addunique (newScript.SpellIds, trigger)
+								
+								--copy triggers that the current script has to the new script object since the user might have modified the list
+								if (not overrideTriggers) then
+									if (newScript.ScriptType == 0x1 or newScript.ScriptType == 0x2) then
+										--aura or cast trigger
+										newScript.SpellIds = {}
+										for index, trigger in ipairs (scriptObject.SpellIds) do
+											DF.table.addunique (newScript.SpellIds, trigger)
+										end
+									else
+										--npc trigger
+										newScript.NpcNames = {}
+										for index, trigger in ipairs (scriptObject.NpcNames) do
+											DF.table.addunique (newScript.NpcNames, trigger)
+										end
 									end
 								end
+								
+								--keep the enabled state
+								newScript.Enabled = scriptObject.Enabled
+								
+								--replace the old script with the new one
+								tremove (scriptDB, i)
+								tinsert (scriptDB, i, newScript)
+								objectAdded = newScript
+								
+								if (showDebug) then
+									Plater:Msg ("Script replaced by a newer version.")
+								end
+								
+								alreadyExists = true
+								break
 							end
-							
-							--keep the enabled state
-							newScript.Enabled = scriptObject.Enabled
-							
-							--replace the old script with the new one
-							tremove (scriptDB, i)
-							tinsert (scriptDB, i, newScript)
-							objectAdded = newScript
-							
-							if (showDebug) then
-								Plater:Msg ("Script replaced by a newer one.")
-							end
-							
-							alreadyExists = true
-							break
 						end
 					end
 					
@@ -10503,33 +10507,35 @@ end
 					local alreadyExists = false
 					local scriptDB = Plater.GetScriptDB (scriptType)
 					
-					for i = 1, #Plater.db.profile.hook_data do
-						local scriptObject = scriptDB [i]
-						if (scriptObject.Name == scriptName) then
-							--the script already exists
-							if (not ignoreRevision) then
-								if (scriptObject.Revision >= newScript.Revision) then
-									if (showDebug) then
-										Plater:Msg ("Your version of this script is newer or is the same version.")
-										return false
+					if not keepExisting then
+						for i = 1, #scriptDB do
+							local scriptObject = scriptDB [i]
+							if (scriptObject.Name == scriptName) then
+								--the script already exists
+								if (not ignoreRevision) then
+									if (scriptObject.Revision >= newScript.Revision) then
+										if (showDebug) then
+											Plater:Msg ("Your version of this script is newer or is the same version.")
+											return false
+										end
 									end
 								end
+								
+								--keep the enabled state
+								newScript.Enabled = scriptObject.Enabled
+								
+								--replace the old script with the new one
+								tremove (scriptDB, i)
+								tinsert (scriptDB, i, newScript)
+								objectAdded = newScript
+								
+								if (showDebug) then
+									Plater:Msg ("Mod replaced by a newer version.")
+								end
+								
+								alreadyExists = true
+								break
 							end
-							
-							--keep the enabled state
-							newScript.Enabled = scriptObject.Enabled
-							
-							--replace the old script with the new one
-							tremove (scriptDB, i)
-							tinsert (scriptDB, i, newScript)
-							objectAdded = newScript
-							
-							if (showDebug) then
-								Plater:Msg ("Script replaced by a newer one.")
-							end
-							
-							alreadyExists = true
-							break
 						end
 					end
 					
