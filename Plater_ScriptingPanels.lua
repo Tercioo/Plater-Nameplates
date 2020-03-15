@@ -486,7 +486,7 @@ end
 				GameCooltip:AddIcon ([[Interface\AddOns\Plater\images\wagologo.tga]], 1, 1, 16, 10)
 				
 			else
-				GameCooltip:AddLine ("url found", "", 1, "gray")
+				GameCooltip:AddLine ("no wago.io url found", "", 1, "gray")
 			end
 
 			GameCooltip:SetOption("SubFollowButton", true)
@@ -538,8 +538,14 @@ end
 		
 		GameCooltip:AddLine ("Author:", scriptObject.Author or "--x--x--")
 
-		if (scriptObject.Url) then
+		if (scriptObject.Url and scriptObject.Url ~= "") then
 			GameCooltip:AddLine (scriptObject.Url, "", 1, "gold")
+			if (scriptObject.wagoSemver and scriptObject.wagoSemver ~= "") then
+				GameCooltip:AddLine ("Wago-Version", scriptObject.wagoSemver, 1, "gold")
+			end
+			if (scriptObject.wagoVersion and scriptObject.wagoVersion > 0) then
+				GameCooltip:AddLine ("Wago-Revision", scriptObject.wagoVersion, 1, "gold")
+			end
 		else
 			GameCooltip:AddLine ("no wago.io url found", "", 1, "gray")
 		end

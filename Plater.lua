@@ -10683,7 +10683,9 @@ end
 				scriptObject.Hooks [hookName] = hookCode
 			end
 
-			scriptObject.Url  		= indexTable.url or ""
+			scriptObject.Url         = indexTable.url or ""
+			scriptObject.wagoVersion = indexTable.version or -1
+			scriptObject.wagoSemver  = indexTable.semver or ""
 			
 			return scriptObject
 			
@@ -10702,6 +10704,8 @@ end
 			scriptObject.Revision  		= indexTable [9]
 			scriptObject.PlaterCore  	= indexTable [10]
 			scriptObject.Url  		= indexTable.url or ""
+			scriptObject.wagoVersion = indexTable.version or -1
+			scriptObject.wagoSemver	= indexTable.semver or ""
 			
 			for i = 1, #Plater.CodeTypeNames do
 				local memberName = Plater.CodeTypeNames [i]
