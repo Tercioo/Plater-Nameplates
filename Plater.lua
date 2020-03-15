@@ -10378,6 +10378,63 @@ end
 			return "script"
 		end
 	end
+	
+	-- workaround for empty icon indexes... dirty, dirty, dirty...
+	function Plater.CleanupImportForEmptyIcon (indexScriptTable)
+		local keys, len, tmpTable = {}, 0, {}
+		
+		-- generate a keys list and a tmpTable with all string keys
+		for k,v in pairs(indexScriptTable) do
+			len = len + 1
+			keys[len] = (k or "") .. ""
+			tmpTable[(k or "") .. ""] = v
+		end
+		
+		-- if index 2 or 5 are empty, fill them and add the key
+		if not tmpTable["2"] then
+			tmpTable["2"] = 134400
+			keys[#keys + 1] = "2"
+		end
+		if not tmpTable["5"] then
+			tmpTable["5"] = 134400
+			keys[#keys + 1] = "5"
+		end
+		
+		-- sort the keys
+		table.sort(keys, function (op1, op2) 
+			local type1, type2 = type(op1), type(op2)
+			if type1 ~= type2 then --cmp by type
+				return type1 < type2
+			elseif type1 == "number" or type1 == "string" then --type2 is equal to type1
+				local num1, num2 = tonumber(op1), tonumber(op2)
+				if num1 and num2 then
+					return num1 < num2
+				else
+					return op1 < op2 --comp by default
+				end
+			elseif type1 == "boolean" then
+				return op1 == true
+			else
+				return tostring(op1) < tostring(op2) --cmp by address
+			end
+		end)
+		--print(DF.table.dump(keys))
+		
+		-- re-build the table according to the sorted keys
+		local newindexScriptTable = {}
+		for k,v in ipairs(keys) do
+			--print(k, v, keys[k], tmpTable[v])
+			--ensure handling of numeric and non-numeric indexes, even if they are cast to string before
+			if not tonumber(v) then
+				newindexScriptTable[v] = tmpTable[v]
+			else
+				newindexScriptTable[k] = tmpTable[v]
+			end
+		end
+		
+		--print(DF.table.dump(newindexScriptTable))
+		return newindexScriptTable
+	end
 
 	--import scripts from the library
 	--autoImportScript is a table holding the revision number, the string to import and the type of script
@@ -10432,6 +10489,8 @@ end
 		
 		local indexScriptTable = Plater.DecompressData (text, "print")
 		if (indexScriptTable and type (indexScriptTable) == "table") then
+		
+			indexScriptTable = Plater.CleanupImportForEmptyIcon (indexScriptTable)
 
 			--get the script type, if is a hook or regular script
 			local scriptType = Plater.GetDecodedScriptType (indexScriptTable)

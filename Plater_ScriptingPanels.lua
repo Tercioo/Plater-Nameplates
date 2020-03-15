@@ -341,6 +341,7 @@ end
 			
 			if (indexScriptTable and type (indexScriptTable) == "table") then
 				
+				indexScriptTable = Plater.CleanupImportForEmptyIcon (indexScriptTable)
 				--print(DF.table.dump(indexScriptTable))
 			
 				local scriptType = Plater.GetDecodedScriptType (indexScriptTable)
@@ -1363,7 +1364,6 @@ function Plater.CreateHookingPanel()
 	
 		local text = hookFrame.ImportTextEditor:GetText()
 
-		--cleanup the text removing extra spaces and break lines
 		import_mod_or_script (text)
 		
 		hookFrame.ImportTextEditor.IsImporting = nil
