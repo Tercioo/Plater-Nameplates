@@ -2851,6 +2851,9 @@ Plater.DefaultSpellRangeList = {
 					unitFrame.Settings.ShowUnitName = false
 					unitFrame.unitName:Hide()
 					
+					--setup castbar
+					unitFrame.Settings.ShowCastBar = DB_PLATE_CONFIG.player.castbar_enabled
+					
 					plateFrame.PlateConfig = DB_PLATE_CONFIG.player
 					Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_PLAYER, nil, true)
 					Plater.OnUpdateHealth (healthBar)
@@ -2870,6 +2873,7 @@ Plater.DefaultSpellRangeList = {
 							plateFrame.PlateConfig = DB_PLATE_CONFIG.friendlyplayer
 							Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_FRIENDLY_PLAYER, nil, true)
 							actorType = ACTORTYPE_FRIENDLY_PLAYER
+							unitFrame.Settings.ShowCastBar = not DB_CASTBAR_HIDE_FRIENDLY
 							if (DB_CASTBAR_HIDE_FRIENDLY) then
 								CastingBarFrame_SetUnit (castBar, nil, nil, nil)
 							end
@@ -2878,6 +2882,7 @@ Plater.DefaultSpellRangeList = {
 							plateFrame.PlateConfig = DB_PLATE_CONFIG.enemyplayer
 							Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_ENEMY_PLAYER, nil, true)
 							actorType = ACTORTYPE_ENEMY_PLAYER
+							unitFrame.Settings.ShowCastBar = not DB_CASTBAR_HIDE_ENEMIES
 							if (DB_CASTBAR_HIDE_ENEMIES) then
 								CastingBarFrame_SetUnit (castBar, nil, nil, nil)
 							end
