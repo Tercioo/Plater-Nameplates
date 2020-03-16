@@ -1025,6 +1025,7 @@ local alpha_major_options = {
 		desc = "When a nameplate is out of range, alpha is reduced.",
 		boxfirst = true,
 		id = "transparency_rangecheck",
+		novolatile = true,
 	},
 	{
 		type = "toggle",
@@ -1056,6 +1057,7 @@ local alpha_major_options = {
 		desc = "When a nameplate isn't your current target, alpha is reduced.",
 		boxfirst = true,
 		id = "transparency_nontargets",
+		novolatile = true,
 	},
 	{
 		type = "toggle",
@@ -1087,6 +1089,7 @@ local alpha_major_options = {
 		desc = "Reduces the alpha of units which isn't your target.\nReduces even more if the unit is out of range.",
 		boxfirst = true,
 		id = "transparency_both",
+		novolatile = true,
 	},	
 	{
 		type = "toggle",
@@ -1117,6 +1120,7 @@ local alpha_major_options = {
 		desc = "No alpha modifications is applyed.",
 		boxfirst = true,
 		id = "transparency_none",
+		novolatile = true,
 	},	
 
 	{type = "blank"},
@@ -11820,6 +11824,9 @@ local relevance_options = {
 			end
 		end
 
+		DF:BuildMenuVolatile (searchFrame, options, startX, startY-30, heightSize+40, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
+
+		--[=[
 		if (searchFrame.widget_list) then
 			for i = 1, #searchFrame.widget_list do
 				searchFrame.widget_list[i]:Hide()
@@ -11837,6 +11844,7 @@ local relevance_options = {
 		end
 
 		DF:BuildMenu (searchFrame, options, startX, startY-30, heightSize+40, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
+		--]=]
 	end)
 
 
