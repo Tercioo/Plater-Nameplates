@@ -341,7 +341,7 @@ end
 			
 			if (indexScriptTable and type (indexScriptTable) == "table") then
 				
-				indexScriptTable = Plater.CleanupImportForEmptyIcon (indexScriptTable)
+				indexScriptTable = Plater.MigrateScriptModImport (indexScriptTable)
 				--print(DF.table.dump(indexScriptTable))
 			
 				local scriptType = Plater.GetDecodedScriptType (indexScriptTable)
