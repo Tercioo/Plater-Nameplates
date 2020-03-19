@@ -30,6 +30,13 @@ local function ShowNameplateAura(guid, texture, duration, desaturate)
 	}
 	
 	UNIT_BOSS_MOD_AURAS_ACTIVE [guid] = UNIT_BOSS_MOD_AURAS_ACTIVE [guid] or {}
+	
+	for index, value in pairs (UNIT_BOSS_MOD_AURAS_ACTIVE [guid]) do
+		if value.texture == values.texture and value.starttime == values.starttime and value.duration == values.duration then
+			return
+		end
+	end
+	
 	tinsert(UNIT_BOSS_MOD_AURAS_ACTIVE [guid], values)
 end
 
