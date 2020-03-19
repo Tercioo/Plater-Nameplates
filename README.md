@@ -2,7 +2,10 @@
 Source code for World of Warcraft addon Plater Nameplates.
 
 General Frequent Asked Questions:
-https://wow.curseforge.com/projects/plater-nameplates/pages/faq
+https://www.curseforge.com/wow/addons/plater-nameplates/pages/faq
 
 General Scripting Guide:
-https://wow.curseforge.com/projects/plater-nameplates/pages/scripts
+https://www.curseforge.com/wow/addons/plater-nameplates/pages/scripts
+
+
+The Wago.io logo was graciously provided for use within Plater by the owner and creator of Wago.io (Oratory).
