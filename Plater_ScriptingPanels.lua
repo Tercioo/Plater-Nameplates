@@ -357,13 +357,55 @@ end
 				end
 				
 				if promptToOverwrite then
-					DF:ShowPromptPanel ("This Mod/Script already exists. Do you want to overwrite it?\\nClicking 'No' will create a copy instead. To cancel close this window wiht the 'x'.", function() do_script_or_hook_import (text, scriptType, false) end, function() do_script_or_hook_import (text, scriptType, true) end, true, 500)
+					DF:ShowPromptPanel ("This Mod/Script already exists. Do you want to overwrite it?\nClicking 'No' will create a copy instead.\nTo cancel close this window wiht the 'x'.", function() do_script_or_hook_import (text, scriptType, false) end, function() do_script_or_hook_import (text, scriptType, true) end, true, 550)
 				else
 					do_script_or_hook_import (text, scriptType, true)
 				end
 			else
 				Plater:Msg ("Cannot import: data imported is invalid")
 			end
+		end
+	end
+	
+	local has_wago_update = function (scriptObject)
+		if WeakAurasCompanion and WeakAurasCompanion.Plater and WeakAurasCompanion.Plater.slugs and scriptObject and scriptObject.url then
+			local url = scriptObject.url
+			local id = url:match("wago.io/([^/]+)/([0-9]+)") or url:match("wago.io/([^/]+)$")
+			if id and WeakAurasCompanion.Plater.slugs[id] then
+				local update = WeakAurasCompanion.Plater.slugs[id]
+				local companionVersion = tonumber(update.wagoVersion)
+				return companionVersion > (scriptObject.version or 0)
+			end
+		end
+	
+		return false
+	end
+	
+	local update_from_wago = function (scriptObject)
+		if not has_wago_update(scriptObject) then return end
+		
+		local url = scriptObject.url
+		local id = url:match("wago.io/([^/]+)/([0-9]+)") or url:match("wago.io/([^/]+)$")
+		if id and WeakAurasCompanion.Plater.slugs[id] then
+			local update = WeakAurasCompanion.Plater.slugs[id]
+			import_mod_or_script(update.encoded)
+		end
+		
+	end
+	
+	function Plater.CheckWagoUpdates()
+		local countScripts = 0
+		for _, scriptObject in pairs(Plater.db.profile.script_data) do
+			countScripts = countScripts + (has_wago_update(scriptObject) and 1 or 0)
+		end
+		
+		local countMods = 0
+		for _, scriptObject in pairs(Plater.db.profile.hook_data) do
+			countMods = countMods + (has_wago_update(scriptObject) and 1 or 0)
+		end
+		
+		if countMods > 0 or countScripts > 0 then
+			Plater:Msg ("There are " .. countMods .. " new mod and " .. countScripts .. " new script updates available from wago.io.")
 		end
 	end
 
@@ -390,6 +432,9 @@ end
 				return
 			end
 			Plater.ExportScriptToGroup (scriptId, mainFrame.ScriptType)
+		elseif (option == "wago_update") then
+			local scriptObject = mainFrame
+			update_from_wago(scriptObject)
 		end
 		
 		GameCooltip:Hide()
@@ -479,10 +524,16 @@ end
 			local scriptObject = mainFrame.GetScriptObject (self.ScriptId)
 
 			GameCooltip:AddLine ("$div")
+			
+			if (has_wago_update(scriptObject)) then
+				GameCooltip:AddLine ("Update from Wago.io")
+				GameCooltip:AddMenu (1, onclick_menu_scroll_line, "wago_update", scriptObject)
+				GameCooltip:AddIcon ([[Interface\AddOns\Plater\images\wagologo.tga]], 1, 1, 16, 10)
+			end
 
-			if (scriptObject.Url) then
+			if (scriptObject.url) then
 				GameCooltip:AddLine ("Copy Wago.io URL")
-				GameCooltip:AddMenu (1, onclick_menu_scroll_line, "url", scriptObject.Url)
+				GameCooltip:AddMenu (1, onclick_menu_scroll_line, "url", scriptObject.url)
 				GameCooltip:AddIcon ([[Interface\AddOns\Plater\images\wagologo.tga]], 1, 1, 16, 10)
 				
 			else
@@ -507,7 +558,14 @@ end
 		self.ScriptType:SetText (scriptTypeName)
 		
 		self.EnabledCheckbox:SetValue (data.Enabled)
+
 		self.EnabledCheckbox:SetFixedParameter (script_id)
+		
+		if has_wago_update(data) then
+			self.UpdateIcon:Show()
+		else
+			self.UpdateIcon:Hide()
+		end
 	end
 	
 	local onclick_remove_script = function (self)
@@ -538,13 +596,13 @@ end
 		
 		GameCooltip:AddLine ("Author:", scriptObject.Author or "--x--x--")
 
-		if (scriptObject.Url and scriptObject.Url ~= "") then
-			GameCooltip:AddLine (scriptObject.Url, "", 1, "gold")
-			if (scriptObject.wagoSemver and scriptObject.wagoSemver ~= "") then
-				GameCooltip:AddLine ("Wago-Version", scriptObject.wagoSemver, 1, "gold")
+		if (scriptObject.url and scriptObject.url ~= "") then
+			GameCooltip:AddLine (scriptObject.url, "", 1, "gold")
+			if (scriptObject.semver and scriptObject.semver ~= "") then
+				GameCooltip:AddLine ("Wago-Version", scriptObject.semver, 1, "gold")
 			end
-			if (scriptObject.wagoVersion and scriptObject.wagoVersion > 0) then
-				GameCooltip:AddLine ("Wago-Revision", scriptObject.wagoVersion, 1, "gold")
+			if (scriptObject.version and scriptObject.version > 0) then
+				GameCooltip:AddLine ("Wago-Revision", scriptObject.version, 1, "gold")
 			end
 		else
 			GameCooltip:AddLine ("no wago.io url found", "", 1, "gray")
@@ -603,6 +661,10 @@ end
 		local icon = line:CreateTexture ("$parentIcon", "overlay")
 		icon:SetSize (scrollbox_line_height-4, scrollbox_line_height-4)
 		
+		local updateIcon = line:CreateTexture ("$parentIcon", "overlay")
+		updateIcon:SetSize (16, 10)
+		updateIcon:SetTexture([[Interface\AddOns\Plater\images\wagologo.tga]])
+		
 		local script_name = DF:CreateLabel (line, "", DF:GetTemplate ("font", "PLATER_SCRIPTS_NAME"))
 		local script_type = DF:CreateLabel (line, "", DF:GetTemplate ("font", "PLATER_SCRIPTS_TYPE"))
 		
@@ -628,8 +690,10 @@ end
 		script_name:SetPoint ("topleft", icon, "topright", 2, -2)
 		script_type:SetPoint ("topleft", script_name, "bottomleft", 0, 0)
 		enabled_checkbox:SetPoint ("right", line, "right", -2, 0)
+		updateIcon:SetPoint ("bottomright", line, "bottomright", -enabled_checkbox:GetWidth()-6, 2)
 		
 		line.Icon = icon
+		line.UpdateIcon = updateIcon
 		line.ScriptName = script_name
 		line.ScriptType = script_type
 		line.EnabledCheckbox = enabled_checkbox
