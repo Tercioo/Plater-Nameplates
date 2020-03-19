@@ -2896,6 +2896,7 @@ Plater.DefaultSpellRangeList = {
 							plateFrame.PlateConfig = DB_PLATE_CONFIG.friendlynpc
 							Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_FRIENDLY_NPC, nil, true)
 							actorType = ACTORTYPE_FRIENDLY_NPC
+							unitFrame.Settings.ShowCastBar = not DB_CASTBAR_HIDE_FRIENDLY
 							if (DB_CASTBAR_HIDE_FRIENDLY) then
 								CastingBarFrame_SetUnit (castBar, nil, nil, nil)
 							end
@@ -2913,6 +2914,7 @@ Plater.DefaultSpellRangeList = {
 							plateFrame.PlateConfig = DB_PLATE_CONFIG.enemynpc
 							Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_ENEMY_NPC, nil, true)
 							actorType = ACTORTYPE_ENEMY_NPC
+							unitFrame.Settings.ShowCastBar = not DB_CASTBAR_HIDE_ENEMIES
 							if (DB_CASTBAR_HIDE_ENEMIES) then
 								CastingBarFrame_SetUnit (castBar, nil, nil, nil)
 							end
