@@ -10784,6 +10784,8 @@ end
 				t ["9"] [hookName] = hookCode
 			end
 			
+			t["options"] = scriptObject.Options or {}
+			
 			t ["type"] = "hook"
 			
 			return t
@@ -10806,6 +10808,8 @@ end
 				local memberName = Plater.CodeTypeNames [i]
 				t [(10 + i)..""] = scriptObject [memberName]
 			end
+			
+			t["options"] = scriptObject.Options or {}
 			
 			t ["type"] = "script"
 			
