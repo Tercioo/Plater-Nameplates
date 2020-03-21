@@ -2717,6 +2717,7 @@ Plater.DefaultSpellRangeList = {
 			
 			--powerbar are disabled by default in the settings table, called SetUnit will make the framework hide the power bar
 			--SetPowerBarSize() will show the power bar or the personal resource bar update also will show it
+			unitFrame.Settings.ShowCastBar = true -- reset to default, clearing later.
 			unitFrame:SetUnit (unitID)
 			
 			--show unit name, the frame work will hide it due to ShowUnitName is set to false
@@ -2853,6 +2854,9 @@ Plater.DefaultSpellRangeList = {
 					
 					--setup castbar
 					unitFrame.Settings.ShowCastBar = DB_PLATE_CONFIG.player.castbar_enabled
+					if (not DB_PLATE_CONFIG.player.castbar_enabled) then
+						CastingBarFrame_SetUnit (castBar, nil, nil, nil)
+					end
 					
 					plateFrame.PlateConfig = DB_PLATE_CONFIG.player
 					Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_PLAYER, nil, true)
