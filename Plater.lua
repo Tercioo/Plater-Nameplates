@@ -2654,6 +2654,12 @@ Plater.DefaultSpellRangeList = {
 				plateFrame.unitFrame.aggroGlowLower:SetBlendMode ("ADD")
 				plateFrame.unitFrame.aggroGlowLower:SetHeight (4)
 				plateFrame.unitFrame.aggroGlowLower:Hide()
+				
+			--> widget container
+				plateFrame.unitFrame.WidgetContainer = CreateFrame("frame", nil, plateFrame.unitFrame, "UIWidgetContainerTemplate")
+				plateFrame.unitFrame.WidgetContainer:SetPoint("TOP", plateFrame.unitFrame, "BOTTOM", 0, 0)
+				plateFrame.unitFrame.WidgetContainer:SetScale(plateFrame.unitFrame:GetEffectiveScale())
+				plateFrame.unitFrame.WidgetContainer:UnregisterForWidgetSet()
 			
 			--> name plate created hook
 				if (HOOK_NAMEPLATE_CREATED.ScriptAmount > 0) then
@@ -2942,6 +2948,15 @@ Plater.DefaultSpellRangeList = {
 			--esconde os glow de aggro
 			unitFrame.aggroGlowUpper:Hide()
 			unitFrame.aggroGlowLower:Hide()
+			
+			--widget container update
+			unitFrame.WidgetContainer:SetScale(unitFrame:GetEffectiveScale())
+			unitFrame.WidgetContainer:UnregisterForWidgetSet()
+			local widgetSetId = UnitWidgetSet(unitID)
+		    if widgetSetId then
+				unitFrame.WidgetContainer:RegisterForWidgetSet(widgetSetId)
+				unitFrame.WidgetContainer:ProcessAllWidgets()
+			end
 			
 			--can check aggro
 			unitFrame.CanCheckAggro = unitFrame.displayedUnit == unitID and actorType == ACTORTYPE_ENEMY_NPC
