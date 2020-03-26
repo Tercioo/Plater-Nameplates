@@ -10404,11 +10404,15 @@ end
 			return "hook"
 		elseif indexScriptTable.type == "script" then
 			return "script"
+		elseif indexScriptTable.type == "npc_colors" then
+			return "npc_colors"
 		end
 	
 		-- fallback for old versions
 		indexScriptTable = Plater.MigrateScriptModImport (indexScriptTable) -- just to make sure this works as intended...
-		if (type (indexScriptTable ["9"]) == "table") then --hook
+		if (indexScriptTable.NpcColor) then
+			return "npc_colors"
+		elseif (type (indexScriptTable ["9"]) == "table") then --hook
 			return "hook"
 		elseif (type (indexScriptTable ["9"]) == "number") then --script
 			return "script"
@@ -10615,6 +10619,8 @@ end
 				--check if the user in importing a profile in the scripting tab
 				if (indexScriptTable.plate_config) then
 					DF:ShowErrorMessage ("Invalid Script or Mod.\n\nImport profiles at the Profiles tab.")
+				elseif (indexScriptTable.NpcColor) then
+					DF:ShowErrorMessage ("Invalid Script or Mod.\n\nImport NpcColors at the Npc Colors tab.")
 				end
 				errortext = "Cannot import: data imported is invalid"
 			end
