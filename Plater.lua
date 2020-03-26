@@ -2221,7 +2221,7 @@ Plater.DefaultSpellRangeList = {
 					
 					newUnitFrame.IsUIParent = true --expose to scripts the unitFrame is a UIParent child
 				else
-					newUnitFrame = DF:CreateUnitFrame (plateFrame, plateFrame:GetName() .. "PlaterUnitFrame", unitFrameOptions, healthBarOptions, castBarOptions)
+					newUnitFrame = DF:CreateUnitFrame (plateFrame, plateFrame:GetName() .. "PlaterUnitFrame", unitFrameOptions, healthBarOptions, castBarOptions, powerBarOptions)
 				end
 
 				plateFrame.unitFrame = newUnitFrame
