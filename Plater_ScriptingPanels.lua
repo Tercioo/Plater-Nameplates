@@ -322,10 +322,6 @@ end
 				scriptingFrame.ScriptSelectionScrollBox:Refresh()
 			end
 		else
-			--check if the user in importing a profile in the scripting tab
-			if (indexScriptTable.plate_config) then
-				DF:ShowErrorMessage ("Invalid Script or Mod.\n\nImport profiles at the Profiles tab.")
-			end
 			Plater:Msg ("Cannot import: data imported is invalid")
 		end
 	end
@@ -343,12 +339,21 @@ end
 				
 				indexScriptTable = Plater.MigrateScriptModImport (indexScriptTable)
 				--print(DF.table.dump(indexScriptTable))
+				
+				--check if the user in importing a profile in the scripting tab
+				if (indexScriptTable.plate_config) then
+					DF:ShowErrorMessage ("Invalid Script or Mod.\n\nImport profiles at the Profiles tab.")
+					return
+				elseif (indexScriptTable.NpcColor) then
+					DF:ShowErrorMessage ("Invalid Script or Mod.\n\nImport NpcColors at the Npc Colors tab.")
+					return
+				end
 			
 				local scriptType = Plater.GetDecodedScriptType (indexScriptTable)
 				
 				local promptToOverwrite = false
-				local scriptDB = Plater.GetScriptDB (scriptType)
-				local newScript = Plater.BuildScriptObjectFromIndexTable (indexScriptTable, scriptType)
+				local scriptDB = Plater.GetScriptDB (scriptType) or {}
+				local newScript = Plater.BuildScriptObjectFromIndexTable (indexScriptTable, scriptType) or {}
 				for i = 1, #scriptDB do
 					local scriptObject = scriptDB [i]
 					if (scriptObject.Name == newScript.Name) then
