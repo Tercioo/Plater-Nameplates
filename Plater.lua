@@ -1575,6 +1575,26 @@ Plater.DefaultSpellRangeList = {
 			end
 		end
 		
+		--build the offensive cd list
+		if (profile.extra_icon_show_offensive) then
+			for spellId, _ in pairs (DF.CooldownsAttack) do
+				local spellName = GetSpellInfo (spellId)
+				if (spellName) then
+					SPECIAL_AURAS_AUTO_ADDED [spellName] = true
+				end
+			end
+		end
+		
+		--build the defensive cd list
+		if (profile.extra_icon_show_defensive) then
+			for spellId, _ in pairs (DF.CooldownsAllDeffensive) do
+				local spellName = GetSpellInfo (spellId)
+				if (spellName) then
+					SPECIAL_AURAS_AUTO_ADDED [spellName] = true
+				end
+			end
+		end
+		
 		--> add auras added by the player into the special aura container
 		for index, spellId in ipairs (profile.extra_icon_auras) do
 			local spellName = GetSpellInfo (spellId)
@@ -1677,6 +1697,39 @@ Plater.DefaultSpellRangeList = {
 				if (spellName) then
 					AUTO_TRACKING_EXTRA_DEBUFFS [spellName] = true
 					CAN_TRACK_EXTRA_DEBUFFS = true
+				end
+			end
+			
+			if (Plater.db.profile.aura_show_crowdcontrol and DF.CrowdControlSpells) then
+				for spellId, _ in pairs (DF.CrowdControlSpells) do
+					local spellName = GetSpellInfo (spellId)
+					if (spellName) then
+						AUTO_TRACKING_EXTRA_BUFFS [spellName] = true
+						--AUTO_TRACKING_EXTRA_BUFFS [spellId] = true
+						CAN_TRACK_EXTRA_BUFFS = true
+					end
+				end
+			end
+			
+			if (Plater.db.profile.aura_show_offensive_cd and DF.CooldownsAttack) then
+				for spellId, _ in pairs (DF.CooldownsAttack) do
+					local spellName = GetSpellInfo (spellId)
+					if (spellName) then
+						AUTO_TRACKING_EXTRA_BUFFS [spellName] = true
+						--AUTO_TRACKING_EXTRA_BUFFS [spellId] = true
+						CAN_TRACK_EXTRA_BUFFS = true
+					end
+				end
+			end
+			
+			if (Plater.db.profile.aura_show_defensive_cd and DF.CooldownsAllDeffensive) then
+				for spellId, _ in pairs (DF.CooldownsAllDeffensive) do
+					local spellName = GetSpellInfo (spellId)
+					if (spellName) then
+						AUTO_TRACKING_EXTRA_BUFFS [spellName] = true
+						--AUTO_TRACKING_EXTRA_BUFFS [spellId] = true
+						CAN_TRACK_EXTRA_BUFFS = true
+					end
 				end
 			end
 
@@ -4659,6 +4712,18 @@ end
 			--> enrage effects
 			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.enrage))
 		
+		elseif (DF.CrowdControlSpells and DF.CrowdControlSpells [spellId]) then 
+			--> CC effects
+			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.crowdcontrol))
+		
+		elseif (DF.CooldownsAttack and DF.CooldownsAttack [spellId]) then 
+			--> offensive CDs
+			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.offensive))
+		
+		elseif (DF.CooldownsAllDeffensive and DF.CooldownsAllDeffensive [spellId]) then 
+			--> defensive CDs
+			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.defensive))
+		
 		elseif (isShowAll) then
 			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.is_show_all))
 				
@@ -4802,6 +4867,14 @@ end
 		elseif (debuffType == AURA_TYPE_ENRAGE) then 
 			--> enrage effects
 			borderColor = Plater.db.profile.extra_icon_show_enrage_border
+		
+		elseif (DF.CooldownsAllDeffensive and DF.CooldownsAllDeffensive[spellName]) then 
+			--> defensive effects
+			borderColor = Plater.db.profile.extra_icon_show_defensive_border
+		
+		elseif (DF.CooldownsAttack and DF.CooldownsAttack[spellName]) then 
+			--> offensive effects
+			borderColor = Plater.db.profile.extra_icon_show_offensive_border
 		
 		else
 			borderColor = Plater.db.profile.extra_icon_border_color

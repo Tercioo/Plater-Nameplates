@@ -684,6 +684,10 @@ PLATER_DEFAULT_SETTINGS = {
 		extra_icon_show_purge_border = {0, .925, 1, 1},
 		extra_icon_show_enrage = false, --extra frame show purge
 		extra_icon_show_enrage_border = {0.85, 0.2, 0.1, 1},
+		extra_icon_show_offensive = false,
+		extra_icon_show_offensive_border = {0, .65, .1, 1},
+		extra_icon_show_defensive = false,
+		extra_icon_show_defensive_border = {.85, .45, .1, 1},
 		
 		extra_icon_auras = {}, --auras for buff special tab
 		extra_icon_auras_mine = {}, --auras in the buff special that are only cast by the player
@@ -699,12 +703,18 @@ PLATER_DEFAULT_SETTINGS = {
 		aura_show_aura_by_the_player = true,
 		aura_show_buff_by_the_unit = true,
 		aura_border_colors_by_type = false,
+		aura_show_crowdcontrol = false,
+		aura_show_offensive_cd = false,
+		aura_show_defensive_cd = false,
 		
 		aura_border_colors = {
 			steal_or_purge = {0, .5, .98, 1},
 			enrage = {0.85, 0.2, 0.1, 1},
 			is_buff = {0, .65, .1, 1},
 			is_show_all = {.7, .1, .1, 1},
+			defensive = {.85, .45, .1, 1},
+			offensive = {0, .65, .1, 1},
+			crowdcontrol = {.3, .2, .2, 1},
 		},
 		
 		--store a table with spell name keys and with a value of a table with all spell IDs that has that exact name

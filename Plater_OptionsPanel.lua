@@ -1669,6 +1669,108 @@ local debuff_options = {
 		desc = "Y Offset",
 	},
 	
+	{type = "blank"},
+
+	{type = "label", get = function() return "Stack Counter:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+
+	{
+		type = "select",
+		get = function() return Plater.db.profile.aura_stack_font end,
+		values = function() return DF:BuildDropDownFontList (on_select_stack_text_font) end,
+		name = L["OPTIONS_FONT"],
+		desc = "Font of the text.",
+	},
+
+	{
+		type = "range",
+		get = function() return Plater.db.profile.aura_stack_size end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_stack_size = value
+			Plater.UpdateAllPlates()
+		end,
+		min = 6,
+		max = 24,
+		step = 1,
+		name = L["OPTIONS_SIZE"],
+		desc = "Size",
+	},
+	
+	--text outline options
+	{
+		type = "select",
+		get = function() return Plater.db.profile.aura_stack_outline end,
+		values = function() return build_outline_modes_table (nil, "aura_stack_outline") end,
+		name = L["OPTIONS_OUTLINE"],
+		desc = "Outline",
+	},
+	
+	--text shadow color
+	{
+		type = "color",
+		get = function()
+			local color = Plater.db.profile.aura_stack_shadow_color
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_stack_shadow_color
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = L["OPTIONS_SHADOWCOLOR"],
+		desc = "|cFFFFFF00Important|r: hide and show nameplates to see changes.",
+	},
+
+	{
+		type = "color",
+		get = function()
+			local color = Plater.db.profile.aura_stack_color
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_stack_color
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = L["OPTIONS_COLOR"],
+		desc = "Color",
+	},
+	{
+		type = "select",
+		get = function() return Plater.db.profile.aura_stack_anchor.side end,
+		values = function() return build_anchor_side_table (nil, "aura_stack_anchor") end,
+		name = L["OPTIONS_ANCHOR"],
+		desc = "Which side of the buff icon the stack counter should attach to.",
+	},
+	{
+		type = "range",
+		get = function() return Plater.db.profile.aura_stack_anchor.x end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_stack_anchor.x = value
+			Plater.UpdateAllPlates()
+		end,
+		min = -20,
+		max = 20,
+		step = 1,
+		usedecimals = true,
+		name = L["OPTIONS_XOFFSET"],
+		desc = "Adjust the position on the X axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
+	},
+	--y offset
+	{
+		type = "range",
+		get = function() return Plater.db.profile.aura_stack_anchor.y end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_stack_anchor.y = value
+			Plater.UpdateAllPlates()
+		end,
+		min = -20,
+		max = 20,
+		step = 1,
+		usedecimals = true,
+		name = L["OPTIONS_YOFFSET"],
+		desc = "Adjust the position on the Y axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
+	},
+	
 	{type = "breakline"},
 	
 	{type = "label", get = function() return "Aura Timer:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
@@ -1796,105 +1898,33 @@ local debuff_options = {
 	},
 	
 	{type = "blank"},
-
-	{type = "label", get = function() return "Stack Counter:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-
+	{type = "label", get = function() return "Swipe Animation:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	{
 		type = "select",
-		get = function() return Plater.db.profile.aura_stack_font end,
-		values = function() return DF:BuildDropDownFontList (on_select_stack_text_font) end,
-		name = L["OPTIONS_FONT"],
-		desc = "Font of the text.",
+		get = function() return Plater.db.profile.aura_cooldown_edge_texture end,
+		values = function() return cooldown_edge_texture_selected_options end,
+		name = "Swipe Texture",
+		desc = "Texture in the form of a line which rotates within the aura icon following the aura remaining time.",
 	},
-
 	{
-		type = "range",
-		get = function() return Plater.db.profile.aura_stack_size end,
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_cooldown_show_swipe end,
 		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_stack_size = value
+			Plater.db.profile.aura_cooldown_show_swipe = value
 			Plater.UpdateAllPlates()
 		end,
-		min = 6,
-		max = 24,
-		step = 1,
-		name = L["OPTIONS_SIZE"],
-		desc = "Size",
-	},
-	
-	--text outline options
-	{
-		type = "select",
-		get = function() return Plater.db.profile.aura_stack_outline end,
-		values = function() return build_outline_modes_table (nil, "aura_stack_outline") end,
-		name = L["OPTIONS_OUTLINE"],
-		desc = "Outline",
-	},
-	
-	--text shadow color
-	{
-		type = "color",
-		get = function()
-			local color = Plater.db.profile.aura_stack_shadow_color
-			return {color[1], color[2], color[3], color[4]}
-		end,
-		set = function (self, r, g, b, a) 
-			local color = Plater.db.profile.aura_stack_shadow_color
-			color[1], color[2], color[3], color[4] = r, g, b, a
-			Plater.UpdateAllPlates()
-		end,
-		name = L["OPTIONS_SHADOWCOLOR"],
-		desc = "|cFFFFFF00Important|r: hide and show nameplates to see changes.",
-	},
-
-	{
-		type = "color",
-		get = function()
-			local color = Plater.db.profile.aura_stack_color
-			return {color[1], color[2], color[3], color[4]}
-		end,
-		set = function (self, r, g, b, a) 
-			local color = Plater.db.profile.aura_stack_color
-			color[1], color[2], color[3], color[4] = r, g, b, a
-			Plater.UpdateAllPlates()
-		end,
-		name = L["OPTIONS_COLOR"],
-		desc = "Color",
+		name = "Show Swipe Closure Texture",
+		desc = "Show a layer with a dark texture above the icon. This layer is applied or removed as the swipe moves.",
 	},
 	{
-		type = "select",
-		get = function() return Plater.db.profile.aura_stack_anchor.side end,
-		values = function() return build_anchor_side_table (nil, "aura_stack_anchor") end,
-		name = L["OPTIONS_ANCHOR"],
-		desc = "Which side of the buff icon the stack counter should attach to.",
-	},
-	{
-		type = "range",
-		get = function() return Plater.db.profile.aura_stack_anchor.x end,
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_cooldown_reverse end,
 		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_stack_anchor.x = value
+			Plater.db.profile.aura_cooldown_reverse = value
 			Plater.UpdateAllPlates()
 		end,
-		min = -20,
-		max = 20,
-		step = 1,
-		usedecimals = true,
-		name = L["OPTIONS_XOFFSET"],
-		desc = "Adjust the position on the X axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
-	},
-	--y offset
-	{
-		type = "range",
-		get = function() return Plater.db.profile.aura_stack_anchor.y end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_stack_anchor.y = value
-			Plater.UpdateAllPlates()
-		end,
-		min = -20,
-		max = 20,
-		step = 1,
-		usedecimals = true,
-		name = L["OPTIONS_YOFFSET"],
-		desc = "Adjust the position on the Y axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
+		name = "Swipe Closure Inverted",
+		desc = "If enabled the swipe closure texture is applied as the swipe moves instead.",
 	},
 	
 	{type = "breakline"},
@@ -2024,7 +2054,94 @@ local debuff_options = {
 		end,
 		name = "Buffs Border Color",
 		desc = "Buffs Border Color",
-	},	
+	},
+	
+	{type = "blank"},
+
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_show_crowdcontrol end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_crowdcontrol = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Crowd Control",
+		desc = "Show crowd control effects.",
+	},
+	--border color is offensive
+	{
+		type = "color",
+		get = function()
+			local color = Plater.db.profile.aura_border_colors.crowdcontrol
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_border_colors.crowdcontrol
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = "Crowd Control Border Color",
+		desc = "Crowd Control Border Color",
+	},
+	
+	{type = "blank"},
+
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_show_offensive_cd end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_offensive_cd = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show offensive player CDs",
+		desc = "Show offensive CDs on enemy/friendly players.",
+	},
+	--border color is offensive
+	{
+		type = "color",
+		get = function()
+			local color = Plater.db.profile.aura_border_colors.offensive
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_border_colors.offensive
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = "Offensive CD Border Color",
+		desc = "Offensive CD Border Color",
+	},
+	
+	{type = "blank"},
+
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_show_defensive_cd end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_defensive_cd = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show defensive player CDs",
+		desc = "Show defensive CDs on enemy/friendly players.",
+	},
+	--border color is offensive
+	{
+		type = "color",
+		get = function()
+			local color = Plater.db.profile.aura_border_colors.defensive
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_border_colors.defensive
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = "Defensive CD Border Color",
+		desc = "Defensive CD Border Color",
+	},
 	
 	{type = "blank"},
 
@@ -2039,36 +2156,6 @@ local debuff_options = {
 		end,
 		name = "Use type based aura border colors",
 		desc = "Use the Blizzard debuff type colors for borders",
-	},
-	
-	{type = "blank"},
-	{type = "label", get = function() return "Swipe Animation:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-	{
-		type = "select",
-		get = function() return Plater.db.profile.aura_cooldown_edge_texture end,
-		values = function() return cooldown_edge_texture_selected_options end,
-		name = "Swipe Texture",
-		desc = "Texture in the form of a line which rotates within the aura icon following the aura remaining time.",
-	},
-	{
-		type = "toggle",
-		get = function() return Plater.db.profile.aura_cooldown_show_swipe end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_cooldown_show_swipe = value
-			Plater.UpdateAllPlates()
-		end,
-		name = "Show Swipe Closure Texture",
-		desc = "Show a layer with a dark texture above the icon. This layer is applied or removed as the swipe moves.",
-	},
-	{
-		type = "toggle",
-		get = function() return Plater.db.profile.aura_cooldown_reverse end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_cooldown_reverse = value
-			Plater.UpdateAllPlates()
-		end,
-		name = "Swipe Closure Inverted",
-		desc = "If enabled the swipe closure texture is applied as the swipe moves instead.",
 	},
 
 
@@ -4203,7 +4290,7 @@ Plater.CreateAuraTesting()
 				name = "Enrage",
 				desc = "When the unit has an enrage effect on it, show it.",
 			},
-			--purge border color
+			--enrage border color
 			{
 				type = "color",
 				get = function()
@@ -4212,6 +4299,66 @@ Plater.CreateAuraTesting()
 				end,
 				set = function (self, r, g, b, a) 
 					local color = Plater.db.profile.extra_icon_show_enrage_border
+					color[1], color[2], color[3], color[4] = r, g, b, a
+					Plater.UpdateAllPlates()
+				end,
+				name = "Enrage Border Color",
+				desc = "Enrage Border Color",
+			},
+			
+			{type = "blank"},
+			
+			--show offensive CDs
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.extra_icon_show_offensive end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.extra_icon_show_offensive = value
+					Plater.RefreshDBUpvalues()
+					Plater.UpdateAllPlates()
+				end,
+				name = "Offensive player CDs",
+				desc = "When the unit has an offensive effect on it, show it.",
+			},
+			--offensive border color
+			{
+				type = "color",
+				get = function()
+					local color = Plater.db.profile.extra_icon_show_offensive_border
+					return {color[1], color[2], color[3], color[4]}
+				end,
+				set = function (self, r, g, b, a) 
+					local color = Plater.db.profile.extra_icon_show_offensive_border
+					color[1], color[2], color[3], color[4] = r, g, b, a
+					Plater.UpdateAllPlates()
+				end,
+				name = "Enrage Border Color",
+				desc = "Enrage Border Color",
+			},
+			
+			{type = "blank"},
+			
+			--show defensive CDs
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.extra_icon_show_defensive end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.extra_icon_show_defensive = value
+					Plater.RefreshDBUpvalues()
+					Plater.UpdateAllPlates()
+				end,
+				name = "Defensive player CDs",
+				desc = "When the unit has a defensive effect on it, show it.",
+			},
+			--defensive border color
+			{
+				type = "color",
+				get = function()
+					local color = Plater.db.profile.extra_icon_show_defensive_border
+					return {color[1], color[2], color[3], color[4]}
+				end,
+				set = function (self, r, g, b, a) 
+					local color = Plater.db.profile.extra_icon_show_defensive_border
 					color[1], color[2], color[3], color[4] = r, g, b, a
 					Plater.UpdateAllPlates()
 				end,
