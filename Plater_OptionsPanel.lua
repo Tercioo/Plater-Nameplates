@@ -11911,6 +11911,61 @@ local relevance_options = {
 			desc = "Number format",
 		},
 		
+		{type = "breakline"},
+
+		{type = "label", get = function() return "Unit Widget Bars:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+	
+		{
+			type = "range",
+			get = function() return Plater.db.profile.widget_bar_scale end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.widget_bar_scale = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 0.2,
+			max = 2,
+			step = 0.1,
+			name = "Scale",
+			desc = "Slightly adjust the size of widget bars.",
+			usedecimals = true,
+		},
+		{
+			type = "select",
+			get = function() return Plater.db.profile.widget_bar_anchor.side end,
+			values = function() return build_anchor_side_table (nil, "widget_bar_anchor") end,
+			name = L["OPTIONS_ANCHOR"],
+			desc = "Which side of the nameplate the widget bar should attach to.",
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.widget_bar_anchor.x end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.widget_bar_anchor.x = value
+				Plater.UpdateAllPlates()
+			end,
+			min = -20,
+			max = 20,
+			step = 1,
+			usedecimals = true,
+			name = L["OPTIONS_XOFFSET"],
+			desc = "Adjust the position on the X axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
+		},
+		--y offset
+		{
+			type = "range",
+			get = function() return Plater.db.profile.widget_bar_anchor.y end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.widget_bar_anchor.y = value
+				Plater.UpdateAllPlates()
+			end,
+			min = -20,
+			max = 20,
+			step = 1,
+			usedecimals = true,
+			name = L["OPTIONS_YOFFSET"],
+			desc = "Adjust the position on the Y axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
+		},
+		
 	}
 	
 	DF:BuildMenu (advancedFrame, advanced_options, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)

@@ -2710,8 +2710,8 @@ Plater.DefaultSpellRangeList = {
 				
 			--> widget container
 				plateFrame.unitFrame.WidgetContainer = CreateFrame("frame", nil, plateFrame.unitFrame, "UIWidgetContainerTemplate")
-				plateFrame.unitFrame.WidgetContainer:SetPoint("TOP", plateFrame.unitFrame, "BOTTOM", 0, 0)
-				plateFrame.unitFrame.WidgetContainer:SetScale(plateFrame.unitFrame:GetEffectiveScale())
+				Plater.SetAnchor (plateFrame.unitFrame.WidgetContainer, Plater.db.profile.widget_bar_anchor, plateFrame.unitFrame)
+				plateFrame.unitFrame.WidgetContainer:SetScale(Plater.db.profile.widget_bar_scale)
 				plateFrame.unitFrame.WidgetContainer:UnregisterForWidgetSet()
 			
 			--> name plate created hook
@@ -3003,7 +3003,8 @@ Plater.DefaultSpellRangeList = {
 			unitFrame.aggroGlowLower:Hide()
 			
 			--widget container update
-			unitFrame.WidgetContainer:SetScale(unitFrame:GetEffectiveScale())
+			Plater.SetAnchor (unitFrame.WidgetContainer, Plater.db.profile.widget_bar_anchor, unitFrame)
+			plateFrame.unitFrame.WidgetContainer:SetScale(Plater.db.profile.widget_bar_scale)
 			unitFrame.WidgetContainer:UnregisterForWidgetSet()
 			local widgetSetId = UnitWidgetSet(unitID)
 		    if widgetSetId then
@@ -6159,6 +6160,8 @@ end
 		else
 			plateFrame.FocusIndicator:Hide()
 		end
+		
+		plateFrame.unitFrame.WidgetContainer:UnregisterForWidgetSet()
 
 		if (UnitIsUnit (plateFrame.unitFrame [MEMBER_UNITID], "target")) then
 			plateFrame [MEMBER_TARGET] = true
@@ -6196,6 +6199,12 @@ end
 			end
 			
 			Plater.UpdateResourceFrame()
+			
+			local widgetSetId = UnitWidgetSet(plateFrame.unitFrame [MEMBER_UNITID])
+		    if widgetSetId then
+				plateFrame.unitFrame.WidgetContainer:RegisterForWidgetSet(widgetSetId)
+				plateFrame.unitFrame.WidgetContainer:ProcessAllWidgets()
+			end
 			
 		else
 			plateFrame.TargetNeonUp:Hide()
@@ -7166,6 +7175,9 @@ end
 			if (unitFrame.healthBar.unit) then
 				unitFrame.healthBar:UNIT_HEALTH()
 			end
+			
+			Plater.SetAnchor (unitFrame.WidgetContainer, profile.widget_bar_anchor, unitFrame)
+			plateFrame.unitFrame.WidgetContainer:SetScale(Plater.db.profile.widget_bar_scale)
 		end
 		
 		--update the plate size for this unit
