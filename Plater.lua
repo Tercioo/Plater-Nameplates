@@ -6539,7 +6539,7 @@ end
 					local subTitle = Plater.GetActorSubName (plateFrame)
 					if (subTitle and subTitle ~= "" and not subTitle:match ("%d")) then
 						plateFrame.ActorTitleSpecial:Show()
-						subTitle = DF:RemoveRealmName (subTitle)
+						--subTitle = DF:RemoveRealmName (subTitle) -- why are removing real names on npc titles? e.g. <T-Shirt Scalper> Skin-Me-Own-Coat-Dibblefur gets broken to <T>.
 						plateFrame.ActorTitleSpecial:SetText ("<" .. subTitle .. ">")
 						plateFrame.ActorTitleSpecial:ClearAllPoints()
 						PixelUtil.SetPoint (plateFrame.ActorTitleSpecial, "top", plateFrame.ActorNameSpecial, "bottom", 0, -2)
