@@ -1956,6 +1956,83 @@ local debuff_options = {
 		name = "Show Important Auras",
 		desc = "Show buffs and debuffs which the game tag as important.",
 	},
+	
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_show_dispellable end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_dispellable = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Dispellable Buffs",
+		desc = "Show auras which can be dispelled or stealed.",
+	},
+	
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_show_enrage end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_enrage = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Enrage Buffs",
+		desc = "Show auras which are in the enrage category.",
+	},
+	
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_show_crowdcontrol end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_crowdcontrol = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Crowd Control",
+		desc = "Show crowd control effects.",
+	},
+	
+	{type = "blank"},
+	
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_show_buff_by_the_unit end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_buff_by_the_unit = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Buffs Casted by the Unit",
+		desc = "Show Buffs Casted by the Unit it self",
+	},
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_show_offensive_cd end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_offensive_cd = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show offensive player CDs",
+		desc = "Show offensive CDs on enemy/friendly players.",
+	},
+	
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_show_defensive_cd end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_defensive_cd = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show defensive player CDs",
+		desc = "Show defensive CDs on enemy/friendly players.",
+	},
+	
+	{type = "blank"},
+
+	{type = "label", get = function() return "Aura Border Colors:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	{
 		type = "color",
 		get = function()
@@ -1969,20 +2046,6 @@ local debuff_options = {
 		end,
 		name = "Important Auras Border Color",
 		desc = "Important Auras Border Color",
-	},
-	
-	{type = "blank"},
-	
-	{
-		type = "toggle",
-		get = function() return Plater.db.profile.aura_show_dispellable end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_show_dispellable = value
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Show Dispellable Buffs",
-		desc = "Show auras which can be dispelled or stealed.",
 	},
 	{
 		type = "color",
@@ -1998,20 +2061,6 @@ local debuff_options = {
 		name = "Dispellable Buffs Border Color",
 		desc = "Dispellable Buffs Border Color",
 	},
-	
-	{type = "blank"},
-	
-	{
-		type = "toggle",
-		get = function() return Plater.db.profile.aura_show_enrage end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_show_enrage = value
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Show Enrage Buffs",
-		desc = "Show auras which are in the enrage category.",
-	},
 	{
 		type = "color",
 		get = function()
@@ -2025,20 +2074,6 @@ local debuff_options = {
 		end,
 		name = "Enrage Buffs Border Color",
 		desc = "Enrage Buffs Border Color",
-	},
-	
-	{type = "blank"},
-
-	{
-		type = "toggle",
-		get = function() return Plater.db.profile.aura_show_buff_by_the_unit end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_show_buff_by_the_unit = value
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Show Buffs Casted by the Unit",
-		desc = "Show Buffs Casted by the Unit it self",
 	},
 	--border color is buff
 	{
@@ -2055,20 +2090,6 @@ local debuff_options = {
 		name = "Buffs Border Color",
 		desc = "Buffs Border Color",
 	},
-	
-	{type = "blank"},
-
-	{
-		type = "toggle",
-		get = function() return Plater.db.profile.aura_show_crowdcontrol end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_show_crowdcontrol = value
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Show Crowd Control",
-		desc = "Show crowd control effects.",
-	},
 	--border color is offensive
 	{
 		type = "color",
@@ -2084,20 +2105,6 @@ local debuff_options = {
 		name = "Crowd Control Border Color",
 		desc = "Crowd Control Border Color",
 	},
-	
-	{type = "blank"},
-
-	{
-		type = "toggle",
-		get = function() return Plater.db.profile.aura_show_offensive_cd end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_show_offensive_cd = value
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Show offensive player CDs",
-		desc = "Show offensive CDs on enemy/friendly players.",
-	},
 	--border color is offensive
 	{
 		type = "color",
@@ -2112,20 +2119,6 @@ local debuff_options = {
 		end,
 		name = "Offensive CD Border Color",
 		desc = "Offensive CD Border Color",
-	},
-	
-	{type = "blank"},
-
-	{
-		type = "toggle",
-		get = function() return Plater.db.profile.aura_show_defensive_cd end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_show_defensive_cd = value
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Show defensive player CDs",
-		desc = "Show defensive CDs on enemy/friendly players.",
 	},
 	--border color is offensive
 	{
@@ -2144,7 +2137,7 @@ local debuff_options = {
 	},
 	
 	{type = "blank"},
-
+	
 	{
 		type = "toggle",
 		get = function() return Plater.db.profile.aura_border_colors_by_type end,
@@ -2157,7 +2150,6 @@ local debuff_options = {
 		name = "Use type based aura border colors",
 		desc = "Use the Blizzard debuff type colors for borders",
 	},
-
 
 }
 
