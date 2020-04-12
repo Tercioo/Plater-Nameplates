@@ -10961,20 +10961,6 @@ local relevance_options = {
 		{
 			type = "color",
 			get = function()
-				local color = Plater.db.profile.tank.colors.nocombat
-				return {color[1], color[2], color[3], color[4]}
-			end,
-			set = function (self, r, g, b, a) 
-				local color = Plater.db.profile.tank.colors.nocombat
-				color[1], color[2], color[3], color[4] = r, g, b, a
-			end,
-			name = L["OPTIONS_THREAT_AGGROSTATE_NOTINCOMBAT"],
-			desc = L["OPTIONS_THREAT_COLOR_TANK_NOTINCOMBAT_DESC"],
-		},
-		
-		{
-			type = "color",
-			get = function()
 				local color = Plater.db.profile.tank.colors.pulling_from_tank
 				return {color[1], color[2], color[3], color[4]}
 			end,
@@ -11081,6 +11067,19 @@ local relevance_options = {
 		
 		{type = "blank"},
 		
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.tank.colors.nocombat
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.tank.colors.nocombat
+				color[1], color[2], color[3], color[4] = r, g, b, a
+			end,
+			name = L["OPTIONS_THREAT_AGGROSTATE_NOTINCOMBAT"],
+			desc = L["OPTIONS_THREAT_COLOR_TANK_NOTINCOMBAT_DESC"],
+		},
 		{
 			type = "color",
 			get = function()
