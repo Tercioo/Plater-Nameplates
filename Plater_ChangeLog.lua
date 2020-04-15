@@ -7,7 +7,19 @@ local _
 function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
-			{1584051575,  "New Feature", "Mar 12th, 2020", "New scripts/mods imported from wago.io now show the URL, Version and Revision. Plus you can copy the url through the right mouse button menu."},
+			
+			{1586982107,  "Bug Fix", "Apr 7th, 2020", "Do not clean up NPC titles."},
+			{1586982107,  "Backend Changes", "Mar 29th, 2020", "'Consolidate Auras' now uses the icon instead of the name for uniqueness."},
+			{1586982107,  "Backend Changes", "Mar 29th, 2020", "Pets and Minions should now be recognized better."},
+			{1586982107,  "New Feature", "Mar 27th, 2020", "Adding options to track offensive and defensive player CDs in Buffs and Buff Special."},
+			{1586982107,  "Bug Fix", "Mar 27th, 2020", "Alternate Power should now show properly on the personal bar if using UIParent."},
+			{1586982107,  "Backend Changes", "Mar 27th, 2020", "Failsafe for NPC-Colors imports: warning messages are shown if used on the wrong tab."},
+			{1586982107,  "New Feature", "Mar 25th, 2020", "Adding Blizzard default nameplate widgets (e.g. nameplate xp bars)."},
+			{1586982107,  "Bug Fix", "Mar 16th, 2020", "Ensure Boss Mod Icons are unique and not duplicated."},
+			{1586982107,  "Bug Fix", "Mar 16th, 2020", "Ensure cast bars stay hidden according to settings for friendly / enemy units with both enabled."},
+			{1586982107,  "New Feature", "Mar 16th, 2020", "New scripts/mods imported from wago.io now show the URL, Version and Revision. Plus you can copy the url through the right mouse button menu."},
+			{1586982107,  "Backend Changes", "Mar 16th, 2020", "Imports for Mods/Scripts now prompt to overwrite if one with the same name already exist."},
+			{1586982107,  "Backend Changes", "Mar 14th, 2020", "Imports on wrong tabs are now handled better and show propper error messages."},
 
 			{1583878613,  "New Feature", "Mar 10th, 2020", "Adding unit aura caching which covers all auras on the unit, even if they are not visible. -> Plater.UnitHasAura(unitFrame)"},
 			{1583878613,  "Bug Fix", "Mar 6th, 2020", "Consolidate auras by spellId instead of name."},
