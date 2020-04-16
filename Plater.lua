@@ -896,16 +896,33 @@ Plater.DefaultSpellRangeList = {
 
 		--value when the unit is in range
 		local inRangeAlpha = Plater.db.profile.range_check_in_range_or_target_alpha
+		local unitFrame = plateFrame.unitFrame
 
 		--if is using the no combat alpha and the unit isn't in combat, ignore the range check, no combat alpha is disabled by default
 		if (plateFrame [MEMBER_NOCOMBAT]) then
+			-- setting default values
+			unitFrame.plateFrame.FadedIn = true
+			unitFrame:SetAlpha (inRangeAlpha)
+			unitFrame.healthBar:SetAlpha (1)
+			unitFrame.castBar:SetAlpha (1)
+			unitFrame.powerBar:SetAlpha (1)
+			unitFrame.buffFrame1:SetAlpha (1)
+			unitFrame.buffFrame2:SetAlpha (1)
+			
 			return
 		
 		--the unit is friendly or not using range check and non targets alpha
 		elseif (plateFrame [MEMBER_REACTION] >= 5 or (not DB_USE_RANGE_CHECK and not DB_USE_NON_TARGETS_ALPHA)) then
-			plateFrame.unitFrame:SetAlpha (inRangeAlpha)
+			unitFrame.plateFrame.FadedIn = true
+			unitFrame:SetAlpha (inRangeAlpha)
+			unitFrame.healthBar:SetAlpha (1)
+			unitFrame.castBar:SetAlpha (1)
+			unitFrame.powerBar:SetAlpha (1)
+			unitFrame.buffFrame1:SetAlpha (1)
+			unitFrame.buffFrame2:SetAlpha (1)
+			
 			plateFrame [MEMBER_RANGE] = true
-			plateFrame.unitFrame [MEMBER_RANGE] = true
+			unitFrame [MEMBER_RANGE] = true
 			return
 		end
 
@@ -922,7 +939,6 @@ Plater.DefaultSpellRangeList = {
 		local buffFrames_rangeCheckAlpha = Plater.db.profile.range_check_buffs_alpha
 		local powerBar_rangeCheckAlpha = Plater.db.profile.range_check_power_bar_alpha
 
-		local unitFrame = plateFrame.unitFrame
 		local healthBar = unitFrame.healthBar
 		local castBar = unitFrame.castBar
 		local powerBar = unitFrame.powerBar
