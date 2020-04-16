@@ -906,8 +906,8 @@ Plater.DefaultSpellRangeList = {
 			unitFrame.healthBar:SetAlpha (1)
 			unitFrame.castBar:SetAlpha (1)
 			unitFrame.powerBar:SetAlpha (1)
-			unitFrame.buffFrame1:SetAlpha (1)
-			unitFrame.buffFrame2:SetAlpha (1)
+			unitFrame.BuffFrame:SetAlpha (1)
+			unitFrame.BuffFrame2:SetAlpha (1)
 			
 			return
 		
@@ -918,8 +918,8 @@ Plater.DefaultSpellRangeList = {
 			unitFrame.healthBar:SetAlpha (1)
 			unitFrame.castBar:SetAlpha (1)
 			unitFrame.powerBar:SetAlpha (1)
-			unitFrame.buffFrame1:SetAlpha (1)
-			unitFrame.buffFrame2:SetAlpha (1)
+			unitFrame.BuffFrame:SetAlpha (1)
+			unitFrame.BuffFrame2:SetAlpha (1)
 			
 			plateFrame [MEMBER_RANGE] = true
 			unitFrame [MEMBER_RANGE] = true
