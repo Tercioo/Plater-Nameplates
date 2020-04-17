@@ -901,25 +901,29 @@ Plater.DefaultSpellRangeList = {
 		--if is using the no combat alpha and the unit isn't in combat, ignore the range check, no combat alpha is disabled by default
 		if (plateFrame [MEMBER_NOCOMBAT]) then
 			-- setting default values
-			plateFrame.FadedIn = true
-			unitFrame:SetAlpha (inRangeAlpha)
-			unitFrame.healthBar:SetAlpha (1)
-			unitFrame.castBar:SetAlpha (1)
-			unitFrame.powerBar:SetAlpha (1)
-			unitFrame.BuffFrame:SetAlpha (1)
-			unitFrame.BuffFrame2:SetAlpha (1)
+			if not plateFrame.FadedIn then
+				plateFrame.FadedIn = true
+				unitFrame:SetAlpha (inRangeAlpha)
+				unitFrame.healthBar:SetAlpha (1)
+				unitFrame.castBar:SetAlpha (1)
+				unitFrame.powerBar:SetAlpha (1)
+				unitFrame.BuffFrame:SetAlpha (1)
+				unitFrame.BuffFrame2:SetAlpha (1)
+			end
 			
 			return
 		
 		--the unit is friendly or not using range check and non targets alpha
 		elseif (plateFrame [MEMBER_REACTION] >= 5 or (not DB_USE_RANGE_CHECK and not DB_USE_NON_TARGETS_ALPHA)) then
-			plateFrame.FadedIn = true
-			unitFrame:SetAlpha (inRangeAlpha)
-			unitFrame.healthBar:SetAlpha (1)
-			unitFrame.castBar:SetAlpha (1)
-			unitFrame.powerBar:SetAlpha (1)
-			unitFrame.BuffFrame:SetAlpha (1)
-			unitFrame.BuffFrame2:SetAlpha (1)
+			if not plateFrame.FadedIn then
+				plateFrame.FadedIn = true
+				unitFrame:SetAlpha (inRangeAlpha)
+				unitFrame.healthBar:SetAlpha (1)
+				unitFrame.castBar:SetAlpha (1)
+				unitFrame.powerBar:SetAlpha (1)
+				unitFrame.BuffFrame:SetAlpha (1)
+				unitFrame.BuffFrame2:SetAlpha (1)
+			end
 			
 			plateFrame [MEMBER_RANGE] = true
 			unitFrame [MEMBER_RANGE] = true
