@@ -6587,7 +6587,7 @@ end
 					local subTitle = Plater.GetActorSubName (plateFrame)
 					if (subTitle and subTitle ~= "" and not subTitle:match ("%d")) then
 						plateFrame.ActorTitleSpecial:Show()
-						subTitle = DF:RemoveRealmName (subTitle)
+						--subTitle = DF:RemoveRealmName (subTitle)
 						plateFrame.ActorTitleSpecial:SetText ("<" .. subTitle .. ">")
 						plateFrame.ActorTitleSpecial:ClearAllPoints()
 						PixelUtil.SetPoint (plateFrame.ActorTitleSpecial, "top", plateFrame.ActorNameSpecial, "bottom", 0, -2)
@@ -6607,7 +6607,7 @@ end
 					if (not subTitle:match ("%d")) then --isn't level
 
 						plateFrame.ActorTitleSpecial:Show()
-						subTitle = DF:RemoveRealmName (subTitle)
+						--subTitle = DF:RemoveRealmName (subTitle)
 						plateFrame.ActorTitleSpecial:SetText ("<" .. subTitle .. ">")
 						plateFrame.ActorTitleSpecial:ClearAllPoints()
 						PixelUtil.SetPoint (plateFrame.ActorTitleSpecial, "top", plateFrame.ActorNameSpecial, "bottom", 0, -2)
