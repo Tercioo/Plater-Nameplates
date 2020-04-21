@@ -5917,7 +5917,7 @@ end
 	function Plater.UpdateNameplateThread (self) --self = unitFrame
 
 		--make sure there's a unitID in the unit frame
-		if (not self.displayedUnit) then
+		if (not self.displayedUnit or not self.CanCheckAggro) then
 			return
 		end
 		
@@ -9256,12 +9256,10 @@ end
 					local unitReaction = unitFrame.PlateFrame [MEMBER_REACTION]
 					if (unitReaction == 4 and not UnitAffectingCombat (unitFrame.unit)) then
 						Plater.FindAndSetNameplateColor (unitFrame, true)
+					elseif (DB_AGGRO_CHANGE_HEALTHBAR_COLOR and unitFrame.CanCheckAggro and unitReaction <= 4) then
+						Plater.UpdateNameplateThread (unitFrame)
 					else
-						if (unitReaction <= 4 and DB_AGGRO_CHANGE_HEALTHBAR_COLOR) then
-							Plater.UpdateNameplateThread (unitFrame)
-						else
-							Plater.FindAndSetNameplateColor (unitFrame)
-						end
+						Plater.FindAndSetNameplateColor (unitFrame)
 					end
 				else
 					Plater.FindAndSetNameplateColor (unitFrame)
