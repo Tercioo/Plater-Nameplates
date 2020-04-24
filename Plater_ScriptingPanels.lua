@@ -264,38 +264,31 @@ Plater.TriggerDefaultMembers = {
 }
 
 local openURL = function(url)
-	if (PlaterURLFrameHelper) then
-		PlaterURLFrameHelper.linkBox:SetText(url)
-		PlaterURLFrameHelper:Show()
 
-		C_Timer.After (.1, function()
-			PlaterURLFrameHelper.linkBox:SetFocus (true)
-			PlaterURLFrameHelper.linkBox:HighlightText()
+	if (not PlaterURLFrameHelper) then
+		local f = DF:CreateSimplePanel (UIParent, 460, 90, "URL", "PlaterURLFrameHelper")
+		f:SetFrameStrata ("TOOLTIP")
+		f:SetPoint ("center", UIParent, "center")
+		
+		DF:CreateBorder (f)
+		
+		local LinkBox = DF:CreateTextEntry (f, function()end, 380, 20, "ExportLinkBox", _, _, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+		LinkBox:SetPoint ("center", f, "center", 0, -10)
+		PlaterURLFrameHelper.linkBox = LinkBox
+		
+		f:SetScript ("OnShow", function()
+			C_Timer.After (.1, function()
+				LinkBox:SetFocus (true)
+				LinkBox:HighlightText()
+			end)
 		end)
-
-		return
+		
+		f:Hide()
 	end
+
+	PlaterURLFrameHelper.linkBox:SetText(url)
+	PlaterURLFrameHelper:Show()
 	
-	local f = DF:CreateSimplePanel (UIParent, 460, 90, "URL", "PlaterURLFrameHelper")
-	f:SetFrameStrata ("TOOLTIP")
-	f:SetPoint ("center", UIParent, "center")
-	
-	DF:CreateBorder (f)
-	
-	local LinkBox = DF:CreateTextEntry (f, function()end, 380, 20, "ExportLinkBox", _, _, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
-	LinkBox:SetPoint ("center", f, "center", 0, -10)
-	PlaterURLFrameHelper.linkBox = LinkBox
-	
-	f:SetScript ("OnShow", function()
-		LinkBox:SetText (url)
-		C_Timer.After (.1, function()
-			LinkBox:SetFocus (true)
-			LinkBox:HighlightText()
-		end)
-	end)
-	
-	f:Hide()
-	f:Show()
 end
 
 
