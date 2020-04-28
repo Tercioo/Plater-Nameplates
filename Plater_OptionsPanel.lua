@@ -605,29 +605,29 @@ function Plater.OpenOptionsPanel()
 				moreProfilesTextEntry:HighlightText()
 			end)
 			
-			local wagoInfoLabel = DF:CreateLabel (profilesFrame, "Wago-Profile-Info" .. ":", DF:GetTemplate ("font", "PLATER_BUTTON"))
-			wagoInfoLabel:SetPoint ("topleft", moreProfilesTextEntry, "bottomleft", 0, -20)
+			local profileInfoLabel = DF:CreateLabel (profilesFrame, "Profile Info" .. ":", DF:GetTemplate ("font", "PLATER_BUTTON"))
+			profileInfoLabel:SetPoint ("topleft", moreProfilesTextEntry, "bottomleft", 0, -30)
 			
 			local profileInfoText = "\n"
 			profileInfoText = profileInfoText .. "Profile-Revision: " .. (Plater.db.profile.version or "-") .. "\n"
 			profileInfoText = profileInfoText .. "Profile-Version: " .. (Plater.db.profile.semver or "-") .. "\n\n"
 			profileInfoText = profileInfoText .. (Plater.db.profile.url or "")
 			
-			local profileInfoLabel = DF:CreateLabel(profilesFrame, profileInfoText, 10, "orange")
-			profileInfoLabel.width = 160
-			profileInfoLabel.height = 60
-			profileInfoLabel.valign = "top"
-			profileInfoLabel.align = "left"
-			profileInfoLabel:SetPoint("topleft", wagoInfoLabel, "bottomleft", 0, -2)
+			local profileInfo = DF:CreateLabel(profilesFrame, profileInfoText, 10, "orange")
+			profileInfo.width = 160
+			profileInfo.height = 60
+			profileInfo.valign = "top"
+			profileInfo.align = "left"
+			profileInfo:SetPoint("topleft", profileInfoLabel, "bottomleft", 0, -2)
 			
 			local copyWagoURLButton = DF:CreateButton (profilesFrame, profilesFrame.CopyWagoUrl, 160, 20, "Copy Wago URL", -1, nil, nil, "CopyWagoUrlButton", nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
-			copyWagoURLButton:SetPoint ("topleft", profileInfoLabel, "bottomleft", 0, -2)
+			copyWagoURLButton:SetPoint ("topleft", profileInfo, "bottomleft", 0, -2)
 			if not Plater.db.profile.url then
 				copyWagoURLButton:Disable()
 			end
 			
 			local updateProfileLabel = DF:CreateLabel (profilesFrame, "Update from wago.io" .. ":", DF:GetTemplate ("font", "PLATER_BUTTON"))
-			updateProfileLabel:SetPoint ("topleft", copyWagoURLButton, "bottomleft", 0, -20)
+			updateProfileLabel:SetPoint ("topleft", copyWagoURLButton, "bottomleft", 0, -30)
 			
 			--import profile button
 			local updateProfileButton = DF:CreateButton (profilesFrame, profilesFrame.UpdateProfile, 160, 20, "Update Profile", -1, nil, nil, "WagoUpdateProfileButton", nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
@@ -649,6 +649,9 @@ function Plater.OpenOptionsPanel()
 					
 					local wagoProfile = Plater.DecompressData (update.encoded, "print")				
 					if (wagoProfile and type (wagoProfile == "table") and wagoProfile.plate_config) then
+						
+						local wagoInfoLabel = DF:CreateLabel (profilesFrame, "Wago ProfileInfo" .. ":", DF:GetTemplate ("font", "PLATER_BUTTON"))
+						wagoInfoLabel:SetPoint ("topleft", updateProfileButton, "bottomleft", 0, -20)
 				
 						local wagoInfoText = "\n"
 						wagoInfoText = wagoInfoText .. "Wago-Revision: " .. (wagoProfile.version or "-") .. "\n"
@@ -660,7 +663,7 @@ function Plater.OpenOptionsPanel()
 						wagoInfo.height = 60
 						wagoInfo.valign = "top"
 						wagoInfo.align = "left"
-						wagoInfo:SetPoint("topleft", updateProfileButton, "bottomleft", 0, -2)
+						wagoInfo:SetPoint("topleft", wagoInfoLabel, "bottomleft", 0, -2)
 					end
 				end
 			else
