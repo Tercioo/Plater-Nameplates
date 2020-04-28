@@ -1,5 +1,5 @@
 
-local dversion = 178
+local dversion = 180
 
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
@@ -3647,6 +3647,24 @@ function DF:GetRangeCheckSpellForSpec(specId)
 end
 
 
+--key is instanceId from GetInstanceInfo()
+-- /dump GetInstanceInfo()
+DF.BattlegroundSizes = {
+	[2245] = 15, --Deepwind Gorge
+	[2106] = 10, --Warsong Gulch
+	[2107] = 15, --Arathi Basin
+	[566] = 15, --Eye of the Storm
+	[30]  = 40,	--Alterac Valley
+	[628] = 40, --Isle of Conquest
+	[761] = 10, --The Battle for Gilneas
+	[726] = 10, --Twin Peaks
+	[727] = 10, --Silvershard Mines
+	[998] = 10, --Temple of Kotmogu
+	[2118] = 40, --Battle for Wintergrasp
+	[1191] = 25, --Ashran
+	[1803] = 10, --Seething Shore
+}
+
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> delta seconds reader
 
@@ -3762,4 +3780,90 @@ function DF:IsUnitTapDenied (unitId)
 	return unitId and not UnitPlayerControlled (unitId) and UnitIsTapDenied (unitId)
 end
 
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+--> pool
+
+do    
+    local get = function(self)
+        local object = tremove(self.notUse, #self.notUse)
+        if (object) then
+            tinsert(self.inUse, object)
+			return object, false
+			
+        else
+            --need to create the new object
+            local newObject = self.newObjectFunc(self, unpack(self.payload))
+            if (newObject) then
+				tinsert(self.inUse, newObject)
+				return object, true
+            end
+        end
+    end
+    
+    local release = function(self, object)
+        for i = #self.inUse, 1, -1 do
+            if (self.inUse[i] == object) then
+                tremove(self.inUse, i)
+                tinsert(self.notUse, object)
+                break
+            end
+        end        
+    end
+    
+    local reset = function(self)
+        for i = #self.inUse, 1, -1 do
+            local object = tremove(self.inUse, i)
+            tinsert(self.notUse, object)
+        end        
+	end
+	
+	--only hide objects in use, do not disable them
+		local hide = function(self)
+			for i = #self.inUse, 1, -1 do
+				self.inUse[i]:Hide()
+			end 
+		end
+
+	--only show objects in use, do not enable them
+		local show = function(self)
+			for i = #self.inUse, 1, -1 do
+				self.inUse[i]:Show()
+			end 
+		end	
+
+	--return the amount of objects 
+		local getamount = function(self)
+			return #self.notUse + #self.inUse
+		end
+    
+    local poolMixin = {
+        Get = get,
+        Acquire = get,
+        Release = release,
+        Reset = reset,
+        ReleaseAll = reset,
+		Hide = hide,
+		Show = show,
+		GetAmount = getamount,
+    }
+    
+    function DF:CreatePool(func, ...)
+        local t = {}
+        DetailsFramework:Mixin(t, poolMixin)
+        
+        t.inUse = {}
+        t.notUse = {}
+        t.newObjectFunc = func
+        t.payload = {...}
+        
+        return t
+	end
+	
+	--alias
+	function DF:CreateObjectPool(func, ...)
+		return DF:CreatePool(func, ...)
+	end
+    
+end
 
