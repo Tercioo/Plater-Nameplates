@@ -290,6 +290,7 @@ local openURL = function(url)
 	PlaterURLFrameHelper:Show()
 	
 end
+Plater.OpenCopyUrlDialog = openURL
 
 
 --shared functions between all script tabs
@@ -317,6 +318,7 @@ end
 		else
 			Plater:Msg ("Cannot import: data imported is invalid")
 		end
+		Plater.UpdateOptionsTabUpdateState()
 	end
 
 	local import_mod_or_script = function (text)
@@ -378,6 +380,7 @@ end
 	
 		return false
 	end
+	Plater.HasWagoUpdate = has_wago_update
 	
 	local update_from_wago = function (scriptObject)
 		if not has_wago_update(scriptObject) then return end
@@ -391,7 +394,7 @@ end
 		
 	end
 	
-	function Plater.CheckWagoUpdates()
+	function Plater.CheckWagoUpdates(silent)
 		local countScripts = 0
 		for _, scriptObject in pairs(Plater.db.profile.script_data) do
 			countScripts = countScripts + (has_wago_update(scriptObject) and 1 or 0)
@@ -402,9 +405,19 @@ end
 			countMods = countMods + (has_wago_update(scriptObject) and 1 or 0)
 		end
 		
-		if countMods > 0 or countScripts > 0 then
+		if not silent and (countMods > 0 or countScripts > 0) then
 			Plater:Msg ("There are " .. countMods .. " new mod and " .. countScripts .. " new script updates available from wago.io.")
 		end
+		
+		local hasProfileUpdate = false
+		if has_wago_update(Plater.db.profile) then
+			hasProfileUpdate = true
+			if not silent then
+				Plater:Msg ("Your current profile has an update available from wago.io.")
+			end
+		end
+		
+		return countMods, countScripts, hasProfileUpdate
 	end
 
 	local onclick_menu_scroll_line = function (self, scriptId, option, mainFrame)

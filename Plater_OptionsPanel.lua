@@ -112,6 +112,33 @@ end
 
 Plater.RegisterRefreshDBCallback (on_refresh_db)
 
+local update_wago_update_icons = function()
+	local countMods, countScripts, hasProfileUpdate = Plater.CheckWagoUpdates(true)
+	local mainFrame = PlaterOptionsPanelContainer
+	local scriptButton = mainFrame.AllButtons [5]
+	local modButton = mainFrame.AllButtons [6]
+	local profileButton = mainFrame.AllButtons [20]
+	
+	if countMods > 0 then
+		modButton.updateIcon:Show()
+	else
+		modButton.updateIcon:Hide()
+	end
+	
+	if countScripts > 0 then
+		scriptButton.updateIcon:Show()
+	else
+		scriptButton.updateIcon:Hide()
+	end
+	
+	if hasProfileUpdate then
+		profileButton.updateIcon:Show()
+	else
+		profileButton.updateIcon:Hide()
+	end
+end
+Plater.UpdateOptionsTabUpdateState = update_wago_update_icons
+
 --check if a encounter has just ended and open the aura ease tab
 function Plater.CheckOptionsTab()
 	if (Plater.LatestEncounter) then
@@ -119,6 +146,7 @@ function Plater.CheckOptionsTab()
 			PlaterOptionsPanelContainer:SelectIndex (Plater, 12)
 		end
 	end
+	update_wago_update_icons()
 end
 
 local TAB_INDEX_UIPARENTING = 4
@@ -230,6 +258,9 @@ function Plater.OpenOptionsPanel()
 	
 	--
 	local colorNpcsButton = mainFrame.AllButtons [17]
+	local scriptButton = mainFrame.AllButtons [5]
+	local modButton = mainFrame.AllButtons [6]
+	local profileButton = mainFrame.AllButtons [20]
 	
 	--[=[ --tab highlight
 	local colorNpcsButtonNew = colorNpcsButton:CreateTexture (nil, "overlay")
@@ -269,6 +300,27 @@ function Plater.OpenOptionsPanel()
 	DF:CreateAnimation (wagoDesc.Anim, "alpha", 1, 1, .3, .7)
 	DF:CreateAnimation (wagoDesc.Anim, "alpha", 2, 1, 1, .3)
 	--wagoDesc.Anim:Play()
+	
+	local updateIconScripts = scriptButton.button:CreateTexture ("$parentIcon", "overlay")
+	updateIconScripts:SetSize (16, 10)
+	updateIconScripts:SetTexture([[Interface\AddOns\Plater\images\wagologo.tga]])
+	updateIconScripts:SetPoint("bottomright", scriptButton.button, "bottomright", -2, 2)
+	updateIconScripts:Hide()
+	scriptButton.updateIcon = updateIconScripts
+	
+	local updateIconMods = modButton.button:CreateTexture ("$parentIcon", "overlay")
+	updateIconMods:SetSize (16, 10)
+	updateIconMods:SetTexture([[Interface\AddOns\Plater\images\wagologo.tga]])
+	updateIconMods:SetPoint("bottomright", modButton.button, "bottomright", -2, 2)
+	updateIconMods:Hide()
+	modButton.updateIcon = updateIconMods
+	
+	local updateIconProfile = profileButton.button:CreateTexture ("$parentIcon", "overlay")
+	updateIconProfile:SetSize (16, 10)
+	updateIconProfile:SetTexture([[Interface\AddOns\Plater\images\wagologo.tga]])
+	updateIconProfile:SetPoint("bottomright", profileButton.button, "bottomright", -2, 2)
+	updateIconProfile:Hide()
+	profileButton.updateIcon = updateIconProfile
 	
 	f.AllMenuFrames = {}
 	for _, frame in ipairs (mainFrame.AllFrames) do
@@ -456,16 +508,18 @@ function Plater.OpenOptionsPanel()
 					
 					if profileExists then
 						--DF:ShowPromptPanel ("Warning!\nA Plater profile with the name \"" .. profileName.. "\" already exists. Are you sure you want to overwrite it?\nIf not: please specify a new name for the profile.\nOverwriting an existing profile cannot be undone!", function() profilesFrame.DoProfileImport(profileName, profile) end, function() end, true, 500)
-						DF:ShowPromptPanel (format (L["OPTIONS_PROFILE_IMPORT_OVERWRITE"], profileName), function() profilesFrame.DoProfileImport(profileName, profile) end, function() end, true, 500)
+						DF:ShowPromptPanel (format (L["OPTIONS_PROFILE_IMPORT_OVERWRITE"], profileName), function() profilesFrame.DoProfileImport(profileName, profile, true) end, function() end, true, 500)
 					else
-						profilesFrame.DoProfileImport(profileName, profile)
+						profilesFrame.DoProfileImport(profileName, profile, false)
 					end
 					
 				end
 			end
 			
-			function profilesFrame.DoProfileImport(profileName, profile)
+			function profilesFrame.DoProfileImport(profileName, profile, isUpdate)
 				profilesFrame.HideStringField()
+				
+				local wasUsingUIParent = Plater.db.profile.use_ui_parent
 				
 				-- switch to profile
 				Plater.db:SetProfile (profileName)
@@ -478,10 +532,12 @@ function Plater.OpenOptionsPanel()
 				
 				--make the option reopen after the reload
 				Plater.db.profile.reopoen_options_panel_on_tab = TAB_INDEX_PROFILES
-				
+								
 				--check if parent to UIParent is enabled and calculate the new scale
 				if (Plater.db.profile.use_ui_parent) then
-					Plater.db.profile.ui_parent_scale_tune = 1 / UIParent:GetEffectiveScale()
+					if not isUpdate or not wasUsingUIParent then -- only update if necessary
+						Plater.db.profile.ui_parent_scale_tune = 1 / UIParent:GetEffectiveScale()
+					end
 				else
 					Plater.db.profile.ui_parent_scale_tune = 0
 				end
@@ -499,6 +555,28 @@ function Plater.OpenOptionsPanel()
 				end)
 			end
 			
+			function profilesFrame.UpdateProfile()
+				if not Plater.HasWagoUpdate(Plater.db.profile) then return end
+		
+				local url = Plater.db.profile.url or ""
+				local id = url:match("wago.io/([^/]+)/([0-9]+)") or url:match("wago.io/([^/]+)$")
+				if id and WeakAurasCompanion.Plater.slugs[id] then
+					local update = WeakAurasCompanion.Plater.slugs[id]
+					
+					profilesFrame.IsExporting = nil
+					profilesFrame.IsImporting = true
+					
+					profilesFrame.NewProfileTextEntry:SetText(Plater.db:GetCurrentProfile())
+					profilesFrame.ImportStringField:SetText(update.encoded)
+					
+					profilesFrame.ConfirmImportProfile(true)
+				end
+			end
+			
+			function profilesFrame.CopyWagoUrl()
+				Plater.OpenCopyUrlDialog(Plater.db.profile.url)
+			end
+			
 			profilesFrame:SetScript ("OnShow", function()
 				profilesFrame.HideStringField()
 			end)
@@ -512,20 +590,82 @@ function Plater.OpenOptionsPanel()
 			local importProfileButton = DF:CreateButton (profilesFrame, profilesFrame.ImportProfile, 160, 20, L["OPTIONS_PROFILE_CONFIG_IMPORTPROFILE"], -1, nil, nil, "ImportButton", nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 			importProfileButton:SetPoint ("topleft", exportProfileButton, "bottomleft", 0, -2)
 			
-			--import profile button
+			--open profile management button
 			local openManagementProfileButton = DF:CreateButton (profilesFrame, profilesFrame.OpenProfileManagement, 160, 20, L["OPTIONS_PROFILE_CONFIG_OPENSETTINGS"], -1, nil, nil, "ProfileSettingsButton", nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 			openManagementProfileButton:SetPoint ("topleft", importProfileButton, "bottomleft", 0, -10)
 			
 			local moreProfilesLabel = DF:CreateLabel (profilesFrame, L["OPTIONS_PROFILE_CONFIG_MOREPROFILES"] .. ":", DF:GetTemplate ("font", "PLATER_BUTTON"))
 			moreProfilesLabel:SetPoint ("topleft", openManagementProfileButton, "bottomleft", 0, -20)
 			
-			local moreProfilesTextEntry = DF:CreateTextEntry (profilesFrame, function()end, 160, 20, "moreProfilesTextEntry", _, _, options_dropdown_template)
+			local moreProfilesTextEntry = DF:CreateTextEntry (profilesFrame, function()end, 160, 20, "moreProfilesTextEntry", nil, nil, options_dropdown_template)
 			moreProfilesTextEntry:SetPoint ("topleft", moreProfilesLabel, "bottomleft", 0, -2)
 			moreProfilesTextEntry:SetText ("https://wago.io/plater")
 			
 			moreProfilesTextEntry:SetHook ("OnEditFocusGained", function()
 				moreProfilesTextEntry:HighlightText()
 			end)
+			
+			local wagoInfoLabel = DF:CreateLabel (profilesFrame, "Wago-Profile-Info" .. ":", DF:GetTemplate ("font", "PLATER_BUTTON"))
+			wagoInfoLabel:SetPoint ("topleft", moreProfilesTextEntry, "bottomleft", 0, -20)
+			
+			local profileInfoText = "\n"
+			profileInfoText = profileInfoText .. "Profile-Revision: " .. (Plater.db.profile.version or "-") .. "\n"
+			profileInfoText = profileInfoText .. "Profile-Version: " .. (Plater.db.profile.semver or "-") .. "\n\n"
+			profileInfoText = profileInfoText .. (Plater.db.profile.url or "")
+			
+			local profileInfoLabel = DF:CreateLabel(profilesFrame, profileInfoText, 10, "orange")
+			profileInfoLabel.width = 160
+			profileInfoLabel.height = 60
+			profileInfoLabel.valign = "top"
+			profileInfoLabel.align = "left"
+			profileInfoLabel:SetPoint("topleft", wagoInfoLabel, "bottomleft", 0, -2)
+			
+			local copyWagoURLButton = DF:CreateButton (profilesFrame, profilesFrame.CopyWagoUrl, 160, 20, "Copy Wago URL", -1, nil, nil, "CopyWagoUrlButton", nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+			copyWagoURLButton:SetPoint ("topleft", profileInfoLabel, "bottomleft", 0, -2)
+			if not Plater.db.profile.url then
+				copyWagoURLButton:Disable()
+			end
+			
+			local updateProfileLabel = DF:CreateLabel (profilesFrame, "Update from wago.io" .. ":", DF:GetTemplate ("font", "PLATER_BUTTON"))
+			updateProfileLabel:SetPoint ("topleft", copyWagoURLButton, "bottomleft", 0, -20)
+			
+			--import profile button
+			local updateProfileButton = DF:CreateButton (profilesFrame, profilesFrame.UpdateProfile, 160, 20, "Update Profile", -1, nil, nil, "WagoUpdateProfileButton", nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+			updateProfileButton:SetPoint ("topleft", updateProfileLabel, "bottomleft", 0, -2)
+			
+			local updateIcon = updateProfileButton.button:CreateTexture ("$parentIcon", "overlay")
+			updateIcon:SetSize (16, 10)
+			updateIcon:SetTexture([[Interface\AddOns\Plater\images\wagologo.tga]])
+			updateIcon:SetPoint("bottomright", updateProfileButton.button, "bottomright", -2, 2)
+			updateProfileButton.updateIcon = updateIcon
+			
+			local hasProfileUpdate = select(3,Plater.CheckWagoUpdates(true))
+			if hasProfileUpdate then
+				
+				local url = Plater.db.profile.url or ""
+				local id = url:match("wago.io/([^/]+)/([0-9]+)") or url:match("wago.io/([^/]+)$")
+				if id and WeakAurasCompanion.Plater.slugs[id] then
+					local update = WeakAurasCompanion.Plater.slugs[id]
+					
+					local wagoProfile = Plater.DecompressData (update.encoded, "print")				
+					if (wagoProfile and type (wagoProfile == "table") and wagoProfile.plate_config) then
+				
+						local wagoInfoText = "\n"
+						wagoInfoText = wagoInfoText .. "Wago-Revision: " .. (wagoProfile.version or "-") .. "\n"
+						wagoInfoText = wagoInfoText .. "Wago-Version: " .. (wagoProfile.semver or "-") .. "\n\n"
+						wagoInfoText = wagoInfoText .. (wagoProfile.url or "")
+						
+						local wagoInfo = DF:CreateLabel(profilesFrame, wagoInfoText, 10, "orange")
+						wagoInfo.width = 160
+						wagoInfo.height = 60
+						wagoInfo.valign = "top"
+						wagoInfo.align = "left"
+						wagoInfo:SetPoint("topleft", updateProfileButton, "bottomleft", 0, -2)
+					end
+				end
+			else
+				updateProfileButton:Disable()
+			end
 			
 			profilesFrame.moreProfilesLabel = moreProfilesLabel
 			profilesFrame.moreProfilesTextEntry = moreProfilesTextEntry
