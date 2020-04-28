@@ -2218,6 +2218,10 @@ Plater.DefaultSpellRangeList = {
 					SetCVar ("nameplateResourceOnTarget", CVAR_DISABLED) -- reset this to false always, as it conflicts
 				end
 			end
+			
+			if Plater.db.profile.plate_config.friendlynpc.quest_enabled and not InCombatLockdown() then
+				SetCVar("showQuestTrackingTooltips", 1) -- ensure it is turned on...
+			end
 
 			--create the frame to hold the plater resoruce bar
 			Plater.CreatePlaterResourceFrame() --~resource
