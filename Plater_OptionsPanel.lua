@@ -605,17 +605,18 @@ function Plater.OpenOptionsPanel()
 				moreProfilesTextEntry:HighlightText()
 			end)
 			
-			local profileInfoLabel = DF:CreateLabel (profilesFrame, "Profile Info" .. ":", DF:GetTemplate ("font", "PLATER_BUTTON"))
+			local profileInfoLabel = DF:CreateLabel (profilesFrame, "Current Profile Info" .. ":", DF:GetTemplate ("font", "PLATER_BUTTON"))
 			profileInfoLabel:SetPoint ("topleft", moreProfilesTextEntry, "bottomleft", 0, -30)
 			
-			local profileInfoText = "\n"
+			local profileInfoText = ""
+			profileInfoText = profileInfoText .. "Name: " .. Plater.db:GetCurrentProfile() .. "\n\n"
 			profileInfoText = profileInfoText .. "Profile-Revision: " .. (Plater.db.profile.version or "-") .. "\n"
 			profileInfoText = profileInfoText .. "Profile-Version: " .. (Plater.db.profile.semver or "-") .. "\n\n"
 			profileInfoText = profileInfoText .. (Plater.db.profile.url or "")
 			
 			local profileInfo = DF:CreateLabel(profilesFrame, profileInfoText, 10, "orange")
 			profileInfo.width = 160
-			profileInfo.height = 60
+			profileInfo.height = 80
 			profileInfo.valign = "top"
 			profileInfo.align = "left"
 			profileInfo:SetPoint("topleft", profileInfoLabel, "bottomleft", 0, -2)
@@ -653,14 +654,15 @@ function Plater.OpenOptionsPanel()
 						local wagoInfoLabel = DF:CreateLabel (profilesFrame, "Wago ProfileInfo" .. ":", DF:GetTemplate ("font", "PLATER_BUTTON"))
 						wagoInfoLabel:SetPoint ("topleft", updateProfileButton, "bottomleft", 0, -20)
 				
-						local wagoInfoText = "\n"
+						local wagoInfoText = ""
+						wagoInfoText = wagoInfoText .. "Name: " .. update.name .. "\n\n"
 						wagoInfoText = wagoInfoText .. "Wago-Revision: " .. (wagoProfile.version or "-") .. "\n"
 						wagoInfoText = wagoInfoText .. "Wago-Version: " .. (wagoProfile.semver or "-") .. "\n\n"
 						wagoInfoText = wagoInfoText .. (wagoProfile.url or "")
 						
 						local wagoInfo = DF:CreateLabel(profilesFrame, wagoInfoText, 10, "orange")
 						wagoInfo.width = 160
-						wagoInfo.height = 60
+						wagoInfo.height = 80
 						wagoInfo.valign = "top"
 						wagoInfo.align = "left"
 						wagoInfo:SetPoint("topleft", wagoInfoLabel, "bottomleft", 0, -2)
