@@ -569,7 +569,7 @@ function Plater.OpenOptionsPanel()
 					profilesFrame.NewProfileTextEntry:SetText(Plater.db:GetCurrentProfile())
 					profilesFrame.ImportStringField:SetText(update.encoded)
 					
-					profilesFrame.ConfirmImportProfile(true)
+					profilesFrame.ConfirmImportProfile()
 				end
 			end
 			

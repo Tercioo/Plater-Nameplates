@@ -157,7 +157,6 @@ Plater.CanOverride_Functions = {
 	
 	AnimateLeftWithAccel = true, --move the health bar to left when health animation is enabled
 	AnimateRightWithAccel = true, --move the health bar to right when health animation is enabled
-	UpdateMaxCastbarTextLength = true, --update the length allowed for the spell name text in the cast bar
 	IsQuestObjective = true, --check if the npc from the nameplate is a quest mob
 
 }
@@ -333,7 +332,7 @@ Plater.BorderLessIconCoords = {.1, .9, .1, .9} --used in extra icons frame,const
 --note: regular icons has their texcoords automatically adjusted
 
 --> limit the cast bar text to this (this is dynamically adjusted at run time)
-Plater.MaxCastBarTextLength = 200
+Plater.MaxCastBarTextLength = nil -- global overwrite
 --> auras 
 Plater.MaxAurasPerRow = 10 --can change during runtime
 
@@ -1477,8 +1476,6 @@ Plater.DefaultSpellRangeList = {
 		DB_SHOW_PURGE_IN_EXTRA_ICONS = profile.extra_icon_show_purge
 		DB_SHOW_ENRAGE_IN_EXTRA_ICONS = profile.extra_icon_show_enrage
 		
-		--refresh cast bar text max size
-		Plater.UpdateMaxCastbarTextLength()
 		
 		--refresh lists
 		Plater.RefreshDBLists()
@@ -3258,8 +3255,6 @@ function Plater.OnInit() --private
 	
 	--refresh the color overrider
 		Plater.RefreshColorOverride()
-	--update how long the spell name text can be
-		Plater.UpdateMaxCastbarTextLength()
 	
 	--update the current zone
 		local _, zoneType = GetInstanceInfo()
@@ -3844,10 +3839,7 @@ function Plater.OnInit() --private
 					self.FrameOverlay:SetBackdropBorderColor (0, 0, 0, 0)
 					
 					--cut the spell name text to fit within the castbar
-					local textLenght = self.Text:GetStringWidth()
-					if (textLenght > Plater.MaxCastBarTextLength) then
-						Plater.UpdateSpellNameSize (self.Text)
-					end
+					Plater.UpdateSpellNameSize (self.Text, self.unitFrame.ActorType)
 
 					Plater.UpdateCastbarTargetText (self)
 					shouldRunCastStartHook = true
@@ -6869,10 +6861,20 @@ end
 		end
 	end
 
-	function Plater.UpdateSpellNameSize (nameString)
+	function Plater.UpdateSpellNameSize (nameString, actorType, cutOff)
 		local spellName = nameString:GetText()
+		local maxLength = Plater.MaxCastBarTextLength or 500
+		cutOff = cutOff or 40
+		actorType = actorType or "enemynpc"
 		
-		while (nameString:GetStringWidth() > Plater.MaxCastBarTextLength) do
+		if (not Plater.db.profile.no_spellname_length_limit) then
+			local castKey = Plater.GetHashKey()
+			if Plater.db.profile.plate_config[actorType][castKey] then
+				maxLength = Plater.db.profile.plate_config[actorType][castKey][1] - cutOff
+			end
+		end
+		
+		while (nameString:GetStringWidth() > maxLength) do
 			spellName = strsub (spellName, 1, #spellName - 1)
 			nameString:SetText (spellName)
 			if (string.len (spellName) <= 1) then
@@ -8070,13 +8072,8 @@ end
 		end
 	end
 	
-	function Plater.UpdateMaxCastbarTextLength()
-		if (Plater.db.profile.no_spellname_length_limit) then
-			Plater.MaxCastBarTextLength = 500
-		else
-			local barWidth = Plater.db.profile.plate_config.enemynpc.cast_incombat
-			Plater.MaxCastBarTextLength = Plater.db.profile.plate_config.enemynpc.cast_incombat[1] - 40
-		end
+	function Plater.UpdateMaxCastbarTextLength(newGlobalSize)
+		Plater.MaxCastBarTextLength = newGlobalSize
 	end
 
 	function Plater.GetNpcIDFromGUID (guid) --private
