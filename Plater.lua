@@ -77,6 +77,15 @@ local Plater = DF:CreateAddOn ("Plater", "PlaterDB", PLATER_DEFAULT_SETTINGS, { 
 		
 	}
 })
+Plater.versionString = GetAddOnMetadata("Plater", "Version") or GetAddOnMetadata("Plater_dev", "Version")
+Plater.fullVersionInfo = Plater.versionString .. " - DetailsFramework v" .. select(2,LibStub:GetLibrary("DetailsFramework-1.0"))
+function Plater.GetVersionInfo(printOut)
+	-- update, just in case...
+	Plater.versionString = GetAddOnMetadata("Plater", "Version") or GetAddOnMetadata("Plater_dev", "Version")
+	Plater.fullVersionInfo = Plater.versionString .. " - DetailsFramework v" .. select(2,LibStub:GetLibrary("DetailsFramework-1.0"))
+	if printOut then print("Plater version info:\n" .. Plater.fullVersionInfo) end
+	return Plater.fullVersionInfo
+end
 
 --> when a hook script is compiled, it increases the build version, so the handler for running scripts will notice in the change and update the script in real time
 local PLATER_HOOK_BUILD = 1
