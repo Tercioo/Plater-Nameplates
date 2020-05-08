@@ -2211,11 +2211,6 @@ Plater.DefaultSpellRangeList = {
 			local name, instanceType, difficultyID, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, instanceMapID, instanceGroupSize = GetInstanceInfo()
 			Plater.ZoneInstanceType = instanceType
 			
-			--run hooks on load screen
-			if (HOOK_LOAD_SCREEN.ScriptAmount > 0) then
-				Plater.PlayerEnteringWorld = true
-			end
-			
 			--> ensure resource on target consistency after login:
 			local resourcesOnTarget = GetCVar ("nameplateResourceOnTarget") == CVAR_ENABLED
 			if resourcesOnTarget then
@@ -2231,6 +2226,11 @@ Plater.DefaultSpellRangeList = {
 
 			--create the frame to hold the plater resoruce bar
 			Plater.CreatePlaterResourceFrame() --~resource
+			
+			--run hooks on load screen
+			if (HOOK_LOAD_SCREEN.ScriptAmount > 0) then
+				Plater.PlayerEnteringWorld = true
+			end
 		end,
 
 		PLAYER_LOGOUT = function()
