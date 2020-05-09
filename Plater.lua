@@ -5578,7 +5578,7 @@ end
 			buffFrame2:ClearAllPoints()
 			PixelUtil.SetPoint (buffFrame2, "bottom", unitFrame, "top", Plater.db.profile.aura2_x_offset,  plateConfigs.buff_frame_y_offset + Plater.db.profile.aura2_y_offset)
 			
-		if Plater.db.profile.show_health_prediction or Plater.db.profile.show_shield_prediction then
+		if (Plater.db.profile.show_health_prediction or Plater.db.profile.show_shield_prediction) and healthBar.displayedUnit then
 			healthBar:UpdateHealPrediction() -- ensure health prediction is updated properly
 		end
 	end
