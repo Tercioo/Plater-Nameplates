@@ -7167,9 +7167,9 @@ DF.StatusBarFunctions = {
 		
 		if (self.Settings.ShowHealingPrediction) then
 			--incoming heal on the unit from all sources
-			local unitHealIncoming = UnitGetIncomingHeals (self.displayedUnit) or 0
+			local unitHealIncoming = self.displayedUnit and UnitGetIncomingHeals (self.displayedUnit) or 0
 			--heal absorbs
-			local unitHealAbsorb = UnitGetTotalHealAbsorbs (self.displayedUnit) or 0
+			local unitHealAbsorb = self.displayedUnit and UnitGetTotalHealAbsorbs (self.displayedUnit) or 0
 		
 			if (unitHealIncoming > 0) then
 				--calculate what is the percent of health incoming based on the max health the player has
@@ -7195,7 +7195,7 @@ DF.StatusBarFunctions = {
 		
 		if (self.Settings.ShowShields) then
 			--damage absorbs
-			local unitDamageAbsorb = UnitGetTotalAbsorbs (self.displayedUnit) or 0
+			local unitDamageAbsorb = self.displayedUnit and UnitGetTotalAbsorbs (self.displayedUnit) or 0
 		
 			if (unitDamageAbsorb > 0) then
 				local damageAbsorbPercent = unitDamageAbsorb / currentHealthMax
