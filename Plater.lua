@@ -3037,7 +3037,8 @@ Plater.DefaultSpellRangeList = {
 			plateFrame.unitFrame.WidgetContainer:SetScale(Plater.db.profile.widget_bar_scale)
 			unitFrame.WidgetContainer:UnregisterForWidgetSet()
 			local widgetSetId = UnitWidgetSet(unitID)
-		    if widgetSetId and UnitPlayerControlled(unitID) and not UnitIsOwnerOrControllerOfUnit('player', unitID) then
+		    local playerControlled = UnitPlayerControlled(unitID)
+		    if widgetSetId and ((playerControlled and UnitIsOwnerOrControllerOfUnit('player', unitID)) or not playerControlled) then
 				unitFrame.WidgetContainer:RegisterForWidgetSet(widgetSetId)
 				unitFrame.WidgetContainer:ProcessAllWidgets()
 			end
@@ -6231,7 +6232,8 @@ end
 			Plater.UpdateResourceFrame()
 			
 			local widgetSetId = UnitWidgetSet(plateFrame.unitFrame [MEMBER_UNITID])
-		    if widgetSetId and UnitPlayerControlled(unitID) and not UnitIsOwnerOrControllerOfUnit('player', unitID) then
+			local playerControlled = UnitPlayerControlled(unitID)
+		    if widgetSetId and ((playerControlled and UnitIsOwnerOrControllerOfUnit('player', unitID)) or not playerControlled) then
 				plateFrame.unitFrame.WidgetContainer:RegisterForWidgetSet(widgetSetId)
 				plateFrame.unitFrame.WidgetContainer:ProcessAllWidgets()
 			end
