@@ -469,6 +469,15 @@ Plater.OpenCopyUrlDialog = openURL
 		end
 	end
 	
+	local onclick_wago_icon = function (self, button)
+		if (button == "LeftButton") then
+			local mainFrame = self.line.MainFrame
+			local scriptObject = mainFrame.GetScriptObject (self.line.ScriptId)
+			update_from_wago(scriptObject)
+		end
+		
+	end
+	
 	--when the user clicks on a scrollbox line
 	local onclick_scroll_line = function (self, button)
 		
@@ -672,9 +681,8 @@ Plater.OpenCopyUrlDialog = openURL
 		local icon = line:CreateTexture ("$parentIcon", "overlay")
 		icon:SetSize (scrollbox_line_height-4, scrollbox_line_height-4)
 		
-		local updateIcon = line:CreateTexture ("$parentIcon", "overlay")
-		updateIcon:SetSize (16, 10)
-		updateIcon:SetTexture([[Interface\AddOns\Plater\images\wagologo.tga]])
+		local updateIcon = DF:CreateButton (line, onclick_wago_icon, 16, 10, nil, param1, param2, [[Interface\AddOns\Plater\images\wagologo.tga]], nil, "$parentUpdateIconFrame")
+		updateIcon.button.line = line
 		
 		local script_name = DF:CreateLabel (line, "", DF:GetTemplate ("font", "PLATER_SCRIPTS_NAME"))
 		local script_type = DF:CreateLabel (line, "", DF:GetTemplate ("font", "PLATER_SCRIPTS_TYPE"))
