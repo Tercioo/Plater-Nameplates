@@ -10876,6 +10876,7 @@ end
 
 	--make an indexScriptTable for the script object using indexes instead of key to decrease the size of the string to be exported
 	function Plater.PrepareTableToExport (scriptObject)
+	--function Plater.PrepareTableToExport_OLD (scriptObject)
 		
 		if (scriptObject.Hooks) then
 			--script for hooks
@@ -10941,8 +10942,10 @@ end
 				t ["9"] [hookName] = hookCode
 			end
 			
-			t["options"] = scriptObject.Options or {}
+			t ["options"] = scriptObject.Options or {}
 			
+			t ["addon"] = "Plater"
+			t ["toc"] = select(4, GetBuildInfo()) -- provide export toc
 			t ["type"] = "hook"
 			
 			return t
@@ -10966,8 +10969,10 @@ end
 				t [(10 + i)..""] = scriptObject [memberName]
 			end
 			
-			t["options"] = scriptObject.Options or {}
+			t ["options"] = scriptObject.Options or {}
 			
+			t ["addon"] = "Plater"
+			t ["toc"] = select(4, GetBuildInfo()) -- provide export toc
 			t ["type"] = "script"
 			
 			return t
