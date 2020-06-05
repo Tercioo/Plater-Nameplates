@@ -394,11 +394,11 @@ Plater.OpenCopyUrlDialog = openURL
 	end
 	Plater.HasWagoUpdate = has_wago_update
 	
-	local get_update_from_companion = function (scriptObject)
-		--if not has_wago_update(scriptObject) then return end
+	local get_update_from_companion = function (object)
+		--if not has_wago_update(object) then return end
 		
-		if scriptObject and scriptObject.url then		
-			local url = scriptObject.url
+		if object and object.url then		
+			local url = object.url
 			local id = url:match("wago.io/([^/]+)/([0-9]+)") or url:match("wago.io/([^/]+)$")
 			if id and WeakAurasCompanion.Plater.slugs[id] then
 				local update = WeakAurasCompanion.Plater.slugs[id]
@@ -407,6 +407,7 @@ Plater.OpenCopyUrlDialog = openURL
 		end
 		return nil
 	end
+	Plater.GetWagoUpdateDataFromCompanion = get_update_from_companion
 	
 	local update_from_wago = function (scriptObject)
 		if not has_wago_update(scriptObject) then return end
