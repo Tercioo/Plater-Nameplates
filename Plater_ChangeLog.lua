@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1591436231,  "Bug Fix", "June 6th, 2020", "Fixing an issue with profiles not being editable without WA-Companion addon."},
+			
 			{1591387261,  "New Feature", "June 5th, 2020", "Adding options to skip or ignore profile updates."},
 			{1591387261,  "New Feature", "June 3rd, 2020", "Adding options to skip or ignore a mod/script updates."},
 			{1591387261,  "New Feature", "June 2nd, 2020", "Wago-Icons on Mods/Scripts are now clickable to update."},
