@@ -573,6 +573,53 @@ function Plater.OpenOptionsPanel()
 				end
 			end
 			
+			local function checkProfilesUpdateEnabled()
+				local hasProfileUpdate = Plater.HasWagoUpdate(Plater.db.profile)
+				local wago_update = Plater.GetWagoUpdateDataFromCompanion(Plater.db.profile)
+				local companionVersion = wago_update and tonumber(wago_update.wagoVersion) or nil
+				if (Plater.db.profile.skipWagoUpdate and wago_update) or hasProfileUpdate then
+					profilesFrame.skipProfileUpdateButton:Enable()
+				else
+					profilesFrame.skipProfileUpdateButton:Disable()
+				end
+				
+				if hasProfileUpdate then
+					profilesFrame.updateProfileButton:Enable()
+				else
+					profilesFrame.updateProfileButton:Disable()
+				end
+				update_wago_update_icons()
+			end
+			
+			function profilesFrame.IgnoreUpdateProfile()
+				if not Plater.db.profile.ignoreWagoUpdate then
+					profilesFrame.ignoreProfileUpdateButton.button.text:SetText ("Don't ignore Profile Update")
+					Plater.db.profile.ignoreWagoUpdate = true
+					checkProfilesUpdateEnabled()
+				else
+					profilesFrame.ignoreProfileUpdateButton.button.text:SetText ("Ignore Profile Update")
+					Plater.db.profile.ignoreWagoUpdate = nil
+					checkProfilesUpdateEnabled()
+				end
+			end
+			
+			function profilesFrame.SkipUpdateProfile()					
+				local hasProfileUpdate = Plater.HasWagoUpdate(Plater.db.profile)
+				local wago_update = Plater.GetWagoUpdateDataFromCompanion(Plater.db.profile)
+				local companionVersion = wago_update and tonumber(wago_update.wagoVersion) or nil
+				if (Plater.db.profile.skipWagoUpdate and wago_update) or hasProfileUpdate then
+					if Plater.db.profile.skipWagoUpdate or companionVersion and Plater.db.profile.skipWagoUpdate == companionVersion then
+						profilesFrame.skipProfileUpdateButton.button.text:SetText ("Skip this version")
+						Plater.db.profile.skipWagoUpdate = nil
+						checkProfilesUpdateEnabled()
+					else
+						profilesFrame.skipProfileUpdateButton.button.text:SetText ("Don't skip this version")
+						Plater.db.profile.skipWagoUpdate = companionVersion
+						checkProfilesUpdateEnabled()
+					end
+				end
+			end
+			
 			function profilesFrame.CopyWagoUrl()
 				Plater.OpenCopyUrlDialog(Plater.db.profile.url)
 			end
@@ -633,6 +680,7 @@ function Plater.OpenOptionsPanel()
 			--import profile button
 			local updateProfileButton = DF:CreateButton (profilesFrame, profilesFrame.UpdateProfile, 160, 20, "Update Profile", -1, nil, nil, "WagoUpdateProfileButton", nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 			updateProfileButton:SetPoint ("topleft", updateProfileLabel, "bottomleft", 0, -2)
+			profilesFrame.updateProfileButton = updateProfileButton
 			
 			local updateIcon = updateProfileButton.button:CreateTexture ("$parentIcon", "overlay")
 			updateIcon:SetSize (16, 10)
@@ -640,7 +688,27 @@ function Plater.OpenOptionsPanel()
 			updateIcon:SetPoint("bottomright", updateProfileButton.button, "bottomright", -2, 2)
 			updateProfileButton.updateIcon = updateIcon
 			
-			local hasProfileUpdate = select(3,Plater.CheckWagoUpdates(true))
+			--ignore profile update button
+			local ignoreProfileUpdateButton = DF:CreateButton (profilesFrame, profilesFrame.IgnoreUpdateProfile, 160, 20, "Ignore Profile Update", -1, nil, nil, "WagoIgnoreUpdateProfileButton", nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+			ignoreProfileUpdateButton:SetPoint ("topleft", updateProfileButton, "bottomleft", 0, -2)
+			profilesFrame.ignoreProfileUpdateButton = ignoreProfileUpdateButton
+			
+			--ignore profile update button
+			local skipProfileUpdateButton = DF:CreateButton (profilesFrame, profilesFrame.SkipUpdateProfile, 160, 20, "Skip this version", -1, nil, nil, "WagoSkipUpdateProfileButton", nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+			skipProfileUpdateButton:SetPoint ("topleft", ignoreProfileUpdateButton, "bottomleft", 0, -2)
+			profilesFrame.skipProfileUpdateButton = skipProfileUpdateButton
+			
+			local wagoInfoLabel = DF:CreateLabel (profilesFrame, "Wago ProfileInfo" .. ":", DF:GetTemplate ("font", "PLATER_BUTTON"))
+			wagoInfoLabel:SetPoint ("topleft", skipProfileUpdateButton, "bottomleft", 0, -10)
+			
+			local wagoInfo = DF:CreateLabel(profilesFrame, "", 10, "orange")
+			wagoInfo.width = 160
+			wagoInfo.height = 80
+			wagoInfo.valign = "top"
+			wagoInfo.align = "left"
+			wagoInfo:SetPoint("topleft", wagoInfoLabel, "bottomleft", 0, -2)
+			
+			local hasProfileUpdate = Plater.HasWagoUpdate(Plater.db.profile)
 			if hasProfileUpdate then
 				
 				local url = Plater.db.profile.url or ""
@@ -650,9 +718,6 @@ function Plater.OpenOptionsPanel()
 					
 					local wagoProfile = Plater.DecompressData (update.encoded, "print")				
 					if (wagoProfile and type (wagoProfile == "table") and wagoProfile.plate_config) then
-						
-						local wagoInfoLabel = DF:CreateLabel (profilesFrame, "Wago ProfileInfo" .. ":", DF:GetTemplate ("font", "PLATER_BUTTON"))
-						wagoInfoLabel:SetPoint ("topleft", updateProfileButton, "bottomleft", 0, -20)
 				
 						local wagoInfoText = ""
 						wagoInfoText = wagoInfoText .. "Name: " .. update.name .. "\n\n"
@@ -660,16 +725,30 @@ function Plater.OpenOptionsPanel()
 						wagoInfoText = wagoInfoText .. "Wago-Version: " .. (wagoProfile.semver or "-") .. "\n\n"
 						wagoInfoText = wagoInfoText .. (wagoProfile.url or "")
 						
-						local wagoInfo = DF:CreateLabel(profilesFrame, wagoInfoText, 10, "orange")
-						wagoInfo.width = 160
-						wagoInfo.height = 80
-						wagoInfo.valign = "top"
-						wagoInfo.align = "left"
-						wagoInfo:SetPoint("topleft", wagoInfoLabel, "bottomleft", 0, -2)
+						wagoInfo.label:SetText (wagoInfoText)
 					end
 				end
 			else
 				updateProfileButton:Disable()
+			end
+			
+			if (Plater.db.profile.url) then
+				if Plater.db.profile.ignoreWagoUpdate then
+					ignoreProfileUpdateButton.button.text:SetText ("Don't ignore Profile Update")
+				end
+				
+				local wago_update = Plater.GetWagoUpdateDataFromCompanion(Plater.db.profile)
+				local companionVersion = wago_update and tonumber(wago_update.wagoVersion) or nil
+				if (Plater.db.profile.skipWagoUpdate and wago_update) or hasProfileUpdate then
+					if Plater.db.profile.skipWagoUpdate or companionVersion and Plater.db.profile.skipWagoUpdate == companionVersion then
+						skipProfileUpdateButton.button.text:SetText ("Don't skip this version")
+					end
+				else
+					skipProfileUpdateButton:Disable()
+				end
+			else
+				ignoreProfileUpdateButton:Disable()
+				skipProfileUpdateButton:Disable()
 			end
 			
 			profilesFrame.moreProfilesLabel = moreProfilesLabel
