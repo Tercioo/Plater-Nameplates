@@ -4,6 +4,10 @@ local Plater = Plater
 local GameCooltip = GameCooltip2
 local DF = DetailsFramework
 local _
+local unpack = _G.unpack
+local tremove = _G.tremove
+local CreateFrame = _G.CreateFrame
+local tinsert = _G.tinsert
 
 --sort scripts
 function Plater.SortScripts (t1, t2)
@@ -35,12 +39,15 @@ local edit_script_size = {620, 431}
 
 local scrollbox_size = {200, 405}
 local scrollbox_lines = 13
-local hook_scrollbox_lines = 13
+local hook_scrollbox_lines = 12
 local scrollbox_line_height = 30
 
-local triggerbox_size = {180, 258}
-local triggerbox_lines = 11
-local triggerbox_line_height = 25
+local triggerbox_size = {180, 228}
+local triggerbox_lines = 9
+local triggerbox_line_height = 24
+
+local hookbox_size = {triggerbox_size[1], triggerbox_size[2] + 85}
+local hookbox_label_y = -145
 
 local scrollbox_line_backdrop_color = {0, 0, 0, 0.5}
 local scrollbox_line_backdrop_not_inuse = {0, 0, 0, 0.4}
@@ -292,6 +299,28 @@ local openURL = function(url)
 end
 Plater.OpenCopyUrlDialog = openURL
 
+--initialize the options panel for a script object
+function Plater.CreateOptionTableForScriptObject(scriptObject)
+	scriptObject.Options = scriptObject.Options or {}
+
+	tinsert(scriptObject.Options, {
+		Type = 5, --label
+		Name = "Options Intro",
+		Key = "",
+		Desc = "",
+		Icon = "Interface\\AddOns\\Plater\\images\\option_label",
+		Value = "Options For @scriptname"
+	});
+
+	tinsert(scriptObject.Options, {
+		Type = 6, --blank space
+		Name = "Blank Space",
+		Key = "",
+		Desc = "",
+		Icon = "Interface\\AddOns\\Plater\\images\\option_blank",
+		Value = ""
+	});
+end
 
 --shared functions between all script tabs
 	local do_script_or_hook_import = function (text, scriptType, keepExisting)
@@ -532,7 +561,7 @@ Plater.OpenCopyUrlDialog = openURL
 		
 	end
 	
-	--when the user clicks on a scrollbox line
+	--when the user clicks on a scrollbox line to select a script
 	local onclick_scroll_line = function (self, button)
 		
 		local mainFrame = self.MainFrame
@@ -556,10 +585,10 @@ Plater.OpenCopyUrlDialog = openURL
 			--refresh the script list to update the backdrop color of the selected script
 			mainFrame.ScriptSelectionScrollBox:Refresh()
 			
-			--check if the import/export text field is shown and hide it
-			if (mainFrame.ImportTextEditor:IsShown()) then
-				mainFrame.ImportTextEditor:Hide()
-			end
+			--open the user options
+			Plater.RefreshUserScriptOptions(mainFrame)
+			--Plater.RefreshAdminScriptOptions(mainFrame) --debug open the admin panel
+			
 			
 		elseif (button == "RightButton") then
 			--open menu
@@ -869,9 +898,6 @@ Plater.OpenCopyUrlDialog = openURL
 			importTooltipText = "Import Mod"
 		end
 		
-		
-		
-		
 		--create new script script button, it does use the width of the scrollbox to select a created script	
 		local create_new_script_button = DF:CreateButton (mainFrame, onclick_create_new_script_button, scrollbox_size[1] - (28*3), buttons_size[2], buttonText, -1, nil, nil, "CreateButton", nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 		create_new_script_button:SetPoint ("topleft", mainFrame, "topleft", 10, start_y)
@@ -1016,22 +1042,795 @@ Plater.OpenCopyUrlDialog = openURL
 	
 		--description
 		local script_desc_label = DF:CreateLabel (parent, "Description:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
-		local script_desc_textentry = DF:CreateTextEntry (parent, function()end, 156, 20, "ScriptDescriptionTextEntry", _, _, options_dropdown_template)
+		local script_desc_textentry = DF:CreateTextEntry (parent, function()end, 191, 20, "ScriptDescriptionTextEntry", _, _, options_dropdown_template)
 		script_desc_textentry:SetPoint ("topleft", script_desc_label, "bottomleft", 0, -2)
 		mainFrame.ScriptDescTextEntry = script_desc_textentry
 		
 		--priority
 		local script_prio_label = DF:CreateLabel (parent, "Priority:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
-		local script_prio_entry = DF:CreateSlider (parent, 156, 10, 1, 99, 1, 99, false, "ScriptPrioritySlider", _, _, options_slider_template, _)
+		local script_prio_entry = DF:CreateSlider (parent, 191, 20, 1, 99, 1, 99, false, "ScriptPrioritySlider", _, _, options_slider_template, _)
 		script_prio_entry:SetPoint ("topleft", script_prio_label, "bottomleft", 0, -2)
 		mainFrame.ScriptPrioSlideEntry = script_prio_entry
-		
+
+		--options button
+		local scriptOptionButton = DF:CreateButton (parent, function() Plater.RefreshUserScriptOptions(mainFrame) end, 170, 20, "Options", 0, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
+		local scriptOptionButtonAdmin = DF:CreateButton (parent, function() Plater.RefreshAdminScriptOptions(mainFrame) end, 20, 20, "", 0, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
+		scriptOptionButtonAdmin:SetIcon ([[Interface\BUTTONS\UI-OptionsButton]], 18, 18, "overlay", false, false, 0, -3, 0, false)
+		scriptOptionButton:SetPoint("topleft", script_prio_entry, "bottomleft", 0, -5) --position
+		scriptOptionButtonAdmin:SetPoint("left", scriptOptionButton, "right", 1, 0)
+		mainFrame.ScriptOptionButton = scriptOptionButton
+		mainFrame.ScriptOptionButtonAdmin = scriptOptionButtonAdmin
+
 		parent.ScriptNameLabel = script_name_label
 		parent.ScriptIconLabel = script_icon_label
 		parent.ScriptDescLabel = script_desc_label
 		parent.ScriptPrioLabel = script_prio_label
 	end
 	
+	local create_edit_options_box = function(parent, mainFrame)
+
+		local script_options_topleft_anchor = {235, -25}
+		local script_options_scroll_size = {170, 389}
+		local script_options_scrollbox_lines = 10
+		local script_options_line_height = 24
+		local script_options_background_size = {620, 453}
+		local options_frame_width = 407
+		local options_frame_shared_height = 100
+		local options_frame_widget_options_height = 284
+		
+		if (_G.PlaterOptionsPanelContainer.AllFrames[PLATER_OPTIONS_SCRIPTING_TAB] == mainFrame) then --scripting tab
+			script_options_background_size = {620, 413}
+			script_options_scroll_size = {170, 369}
+			options_frame_widget_options_height = 264
+			script_options_topleft_anchor = {230, -25}
+			options_frame_width = 420
+		end
+
+		local iconList = {
+			"Interface\\AddOns\\Plater\\images\\option_color",
+			"Interface\\AddOns\\Plater\\images\\option_number",
+			"Interface\\AddOns\\Plater\\images\\option_text",
+			"Interface\\AddOns\\Plater\\images\\option_bool",
+			"Interface\\AddOns\\Plater\\images\\option_label",
+			"Interface\\AddOns\\Plater\\images\\option_blank",
+			"Interface\\AddOns\\Plater\\images\\option_blank",
+		}
+
+		--> admin script options (this frame is used to configurate the options which the script has)
+		--> far below this code there's the code for user options frame
+			local adminFrame = CreateFrame("frame", "$parentEditScriptOptionsAdmin", parent)
+			adminFrame:SetSize(script_options_background_size[1], script_options_background_size[2])
+			adminFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
+			adminFrame:SetBackdropBorderColor (unpack (luaeditor_border_color))
+			adminFrame:SetBackdropColor (unpack (luaeditor_backdrop_color))
+			mainFrame.ScriptOptionsPanelAdmin = adminFrame
+			adminFrame:Hide()
+
+		--> user script options (this frame is where the end user adjust the script settings)
+			local userFrame = CreateFrame("frame", "$parentEditScriptOptionsUser", parent)
+			userFrame:SetSize(edit_script_size[1], edit_script_size[2])
+			userFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
+			userFrame:SetBackdropBorderColor (unpack (luaeditor_border_color))
+			userFrame:SetBackdropColor (unpack (luaeditor_backdrop_color))
+			mainFrame.ScriptOptionsPanelUser = userFrame
+			userFrame:Hide()
+
+			local createNewOptionButtonFunction = function(button, buttontype, param1, param2)
+				--get the current selected script
+				local scriptObject = mainFrame.GetCurrentScriptObject() --can be hook or script
+				if (scriptObject) then
+					--does the table exists? old scripts does not have them
+					local optionsTable = scriptObject.Options
+					local optionIndex = #scriptObject.Options + 1
+					local selectedOptionType = mainFrame.SelectScriptOptionTypeDropdown.value
+
+					local newOptionObject = {
+						Type = selectedOptionType,
+						Name = "Option " .. optionIndex,
+						Key = "option" .. optionIndex,
+						Desc = "",
+						Icon = "",
+					}
+
+					--> how to add more options:
+						--add belowa new type
+						--add its name into the local 'listOfAvailableOptions'
+						--goto ~options (search) add the frame for the option, can copy paste from an existing
+						--goto ~useroptions to add the option on the user options frame
+					
+					--add variables by option type
+					if (selectedOptionType == 1) then --color
+						newOptionObject.Value = {1, 1, 1, 1}
+						newOptionObject.Icon = iconList[selectedOptionType]
+
+					elseif (selectedOptionType == 2) then --number
+						newOptionObject.Value = 0.5
+						newOptionObject.Min = 0
+						newOptionObject.Max = 1
+						newOptionObject.Fraction = true
+						newOptionObject.Icon = iconList[selectedOptionType]
+
+					elseif (selectedOptionType == 3) then --text
+						newOptionObject.Value = ""
+						newOptionObject.Icon = iconList[selectedOptionType]
+
+					elseif (selectedOptionType == 4) then --toggle
+						newOptionObject.Value = false
+						newOptionObject.Icon = iconList[selectedOptionType]
+
+					elseif (selectedOptionType == 5) then --label (a text to name a section of options)
+						newOptionObject.Value = "New Section Name"
+						newOptionObject.Icon = iconList[selectedOptionType]
+
+					elseif (selectedOptionType == 6) then --black space
+						newOptionObject.Value = 0
+						newOptionObject.Icon = iconList[selectedOptionType]
+
+					elseif (selectedOptionType == 7) then --texture
+						newOptionObject.Value = ""
+						newOptionObject.Icon = iconList[selectedOptionType]
+					end
+
+					--add it
+					scriptObject.Options[optionIndex] = newOptionObject
+
+					--refresh script scroll
+					mainFrame.ScriptOptionsScrollBox:Refresh()
+					mainFrame.ScriptOptionsScrollBox:Show()
+					--select the new option created
+					mainFrame.selectScriptOptionToEdit(optionIndex)
+
+					--show the edit panel
+
+				end
+			end
+
+			--top left dropdown to create a new option
+			local listOfAvailableOptions = {
+				"Color", --just a simple color, can also represent a vector4
+				"Number", --scalar number
+				"Text", --any text, can be just a regular text, a texture path, etc
+				"Toggle", --just a yes or not
+				"Label", --a text to name a section in the options
+				"Blank Line", --an empty line to separate two sections
+				"Texture", --a path for an image
+			}
+			local getListOfAvailableOptions = function()
+				local t = {}
+				for i = 1, #listOfAvailableOptions do
+					local option = listOfAvailableOptions[i]
+					t [#t + 1] = {label = option, value = i, onclick = function()end, desc = "Select which option to add", tooltipwidth = 300, icon = iconList[i]}
+				end
+				return t
+			end
+
+			local createOptionLabel = DF:CreateLabel (adminFrame, "Create New Option:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
+			local createOptionDropdown = DF:CreateDropDown (adminFrame, getListOfAvailableOptions, 1, 130, 20, nil, nil, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+			createOptionLabel:SetPoint("topleft", parent, "topleft", unpack(script_options_topleft_anchor))
+			createOptionDropdown:SetPoint("topleft", createOptionLabel, "bottomleft", 0, -2)
+			mainFrame.SelectScriptOptionTypeDropdown = createOptionDropdown
+
+			--button to commit the creation at the right of the dropdown
+			local createOptionButton = DF:CreateButton (adminFrame, createNewOptionButtonFunction, 60, 20, "Add", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+			createOptionButton:SetPoint("left", createOptionDropdown, "right", 2, 0)
+			mainFrame.CreateOptionForScriptButton = createOptionButton
+
+			--left script box containing the created options for this script
+				local refreshScriptOptionsScrollBox = function (self, data, offset, totalLines)
+					for i = 1, totalLines do
+						local index = i + offset
+						local option = data[index]
+						if (option) then
+							local line = self:GetLine(i)
+							line.Icon:SetTexture(option.Icon)
+							line.OptionNameLabel:SetText(option.Name)
+							line.TypeLabel:SetText(listOfAvailableOptions[option.Type])
+							line.RemoveButton.optionIndex = index
+							line.optionIndex = index
+							line.GoDownButton.widget.optionIndex = index
+							line.GoUpButton.widget.optionIndex = index
+							line.DuplicateButton.widget.optionIndex = index
+
+							if (mainFrame.optionSelected == index) then
+								line:SetBackdropColor (1, .6, 0, 0.5)
+								line.IsEditing = true
+							else
+								line.IsEditing = false
+								line:SetBackdropColor (unpack (scrollbox_line_backdrop_color))
+							end
+						end
+					end
+				end
+
+				local onEnterScriptOptionButton = function(self)
+
+				end
+
+				local onLeaveScriptOptionButton = function(self)
+
+				end
+
+				local onMouseUpScriptOptionButton = function(self)
+					mainFrame.selectScriptOptionToEdit(self.optionIndex)
+				end
+
+				function mainFrame.selectScriptOptionToEdit(optionIndex)
+					mainFrame.optionSelected = optionIndex
+					mainFrame.ScriptOptionsScrollBox:Refresh()
+					mainFrame.SharedOptionsFrame:RefreshOptions()
+
+					local scriptObject = mainFrame.GetCurrentScriptObject()
+					local optionType
+					if (scriptObject) then
+						local scriptOption = scriptObject.Options[optionIndex]
+						optionType = scriptOption.Type
+					end
+
+					mainFrame.SharedOptionsFrame:Show()
+
+					--hide all frames holding options for specific types of options
+					for i = 1, #mainFrame.TypeFrames do
+						mainFrame.TypeFrames[i]:Hide()
+					end
+
+					--show the frame for this option type
+					mainFrame.TypeFrames[optionType]:Show()
+					mainFrame.TypeFrames[optionType]:RefreshOptions()
+				end
+
+				local onMouseUpDeleteOptionButton = function(self, button)
+					local optionIndex = self.optionIndex
+					mainFrame.deleteScriptOption(optionIndex)
+				end
+
+				function mainFrame.deleteScriptOption(optionIndex)
+					local scriptObject = mainFrame.GetCurrentScriptObject() --can be hook or script
+					if (scriptObject) then
+						local scriptOptions = scriptObject.Options
+						tremove(scriptOptions, optionIndex)
+						mainFrame.ScriptOptionsScrollBox:Refresh()
+					end
+				end
+
+				--make an option go up in the order
+				local onMouseUpGoUpOptionButton = function(self)
+					local optionIndex = self.optionIndex
+					local scriptObject = mainFrame.GetCurrentScriptObject()
+					if (scriptObject) then
+						--if this is already the first option
+						if (optionIndex == 1) then
+							return
+						end
+
+						local moveUp = scriptObject.Options[optionIndex]
+						local moveDown = scriptObject.Options[optionIndex-1]
+
+						if (moveUp and moveDown) then
+							tremove(scriptObject.Options, optionIndex)
+							tinsert(scriptObject.Options, optionIndex-1, moveUp)
+						end
+
+						mainFrame.ScriptOptionsScrollBox:Refresh()
+					end
+				end
+				--make an option go down in the order
+				local onMouseUpGoDownOptionButton = function(self)
+					local optionIndex = self.optionIndex
+					local scriptObject = mainFrame.GetCurrentScriptObject()
+					if (scriptObject) then
+						--if this is the last script
+						if (optionIndex == #scriptObject.Options) then
+							return
+						end
+
+						local moveDown = scriptObject.Options[optionIndex]
+						local moveUp = scriptObject.Options[optionIndex+1]
+
+						if (moveUp and moveDown) then
+							tremove(scriptObject.Options, optionIndex)
+							tinsert(scriptObject.Options, optionIndex+1, moveDown)
+						end
+
+						mainFrame.ScriptOptionsScrollBox:Refresh()
+					end
+				end
+				--duplicate the option
+				local onMouseUpDuplicateOptionButton = function(self)
+					local optionIndex = self.optionIndex
+					local scriptObject = mainFrame.GetCurrentScriptObject()
+					if (scriptObject) then
+						local toBeDuplicated = scriptObject.Options[optionIndex]
+						local newOption = DF.table.copy ({}, toBeDuplicated)
+						tinsert(scriptObject.Options, optionIndex+1, newOption)
+						mainFrame.ScriptOptionsScrollBox:Refresh()
+					end
+				end
+				
+				--create a new line within the scrollbox containing options created to edit
+				local optionsListCreateLine = function (self, index)
+					local line = CreateFrame ("button", "$parentLine" .. index, self)
+					
+					--set its parameters
+					line:SetPoint ("topleft", self, "topleft", 0, -((index-1) * (script_options_line_height+1)))
+					line:SetSize (script_options_scroll_size[1], script_options_line_height)
+
+					line:SetScript ("OnEnter", onEnterScriptOptionButton)
+					line:SetScript ("OnLeave", onLeaveScriptOptionButton)
+					line:SetScript ("OnMouseUp", onMouseUpScriptOptionButton)
+
+					line:SetBackdrop ({bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true, edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
+					line:SetBackdropColor (unpack (scrollbox_line_backdrop_color))
+					line:SetBackdropBorderColor (0, 0, 0, 0)
+					
+					local icon = line:CreateTexture("$parentIcon", "overlay")
+					icon:SetSize (script_options_line_height - 2, script_options_line_height - 2)
+					icon:SetTexture ([[Interface\ICONS\INV_Hand_1H_PirateHook_B_01]])
+					icon:SetTexCoord (.1, .9, .1, .9)
+					
+					local optionNameLabel = DF:CreateLabel(line, "", DF:GetTemplate ("font", "PLATER_SCRIPTS_NAME"))
+					local typeLabel = DF:CreateLabel (line, "", DF:GetTemplate ("font", "PLATER_SCRIPTS_TRIGGER_SPELLID"))
+					
+					local removeButton = CreateFrame("button", "$parentRemoveButton", line, "UIPanelCloseButton")
+					removeButton:SetSize (16, 16)
+					removeButton:SetScript ("OnClick", onMouseUpDeleteOptionButton)
+					removeButton:SetPoint ("right", line, "right")
+					removeButton:GetNormalTexture():SetDesaturated (true)
+					removeButton:SetAlpha(0.7)
+
+					local goButtonsIconSize = {12, 14}
+					local goButtonsIconAlpha = 0.6412
+					local goButtonsX = -3
+					local duplicateX = -17
+
+					local goUpButton = DF:CreateButton(line, onMouseUpGoUpOptionButton, 16, 16, "", -1, nil, nil, nil, nil, nil, {}, {})
+					goUpButton:SetIcon ([[Interface\BUTTONS\Arrow-Up-Up]], goButtonsIconSize[1], goButtonsIconSize[2], "overlay")
+					goUpButton:SetPoint ("topright", line, "topright", goButtonsX, 3)
+					goUpButton:SetAlpha(goButtonsIconAlpha)
+					--goUpButton.tooltip = "move this option up"
+
+					local goDownButton = DF:CreateButton(line, onMouseUpGoDownOptionButton, 16, 16, "", -1, nil, nil, nil, nil, nil, {}, {})
+					goDownButton:SetIcon ([[Interface\BUTTONS\Arrow-Down-Up]], goButtonsIconSize[1], goButtonsIconSize[2], "overlay")
+					goDownButton:SetPoint ("topright", line, "topright", goButtonsX, -13)
+					goDownButton:SetAlpha(goButtonsIconAlpha)
+					--goDownButton.tooltip = "move this option down"
+
+					local duplicateButton = DF:CreateButton(line, onMouseUpDuplicateOptionButton, 16, 16, "", -1, nil, nil, nil, nil, nil, {}, {})
+					duplicateButton:SetIcon ([[Interface\AddOns\Plater\images\icons]], goButtonsIconSize[1], goButtonsIconSize[2], "overlay", {3/512, 21/512, 215/512, 233/512})
+					duplicateButton:SetPoint ("right", line, "right", duplicateX, 0)
+					duplicateButton:SetAlpha(goButtonsIconAlpha)
+			
+					icon:SetPoint ("left", line, "left", 2, 0)
+					optionNameLabel:SetPoint ("topleft", icon, "topright", 4, -2)
+					typeLabel:SetPoint ("topleft", optionNameLabel, "bottomleft", 0, 0)
+					
+					line.Icon = icon
+					line.OptionNameLabel = optionNameLabel
+					line.TypeLabel = typeLabel
+					line.RemoveButton = removeButton
+					line.GoUpButton = goUpButton
+					line.GoDownButton = goDownButton
+					line.DuplicateButton = duplicateButton
+
+					line:Hide()
+					
+					return line
+				end
+				
+				--scroll showing all options of the script
+				local optionsLabel = DF:CreateLabel (adminFrame, "Options Created:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
+				local scriptOptionsScrollbox = DF:CreateScrollBox (adminFrame, "$parentScriptOptionsScrollBox", refreshScriptOptionsScrollBox, {} --[[empty values, to be filled when a script is selected]], script_options_scroll_size[1], script_options_scroll_size[2], script_options_scrollbox_lines, script_options_line_height)
+				optionsLabel:SetPoint("topleft", createOptionDropdown, "bottomleft", 0, -5)
+				scriptOptionsScrollbox:SetPoint ("topleft", optionsLabel.widget, "bottomleft", 0, -4)
+				scriptOptionsScrollbox:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
+				scriptOptionsScrollbox:SetBackdropColor (0, 0, 0, 0.2)
+				scriptOptionsScrollbox:SetBackdropBorderColor (0, 0, 0, 1)
+				mainFrame.ScriptOptionsScrollBox = scriptOptionsScrollbox -- hookFrame.ScriptOptionsScrollBox scriptFrame.ScriptOptionsScrollBox
+				DF:ReskinSlider (scriptOptionsScrollbox)
+				
+				--create the hook scrollbox lines
+				for i = 1, script_options_scrollbox_lines do
+					scriptOptionsScrollbox:CreateLine(optionsListCreateLine)
+				end
+			
+				--hold the frames for each type of option
+				mainFrame.TypeFrames = {}
+
+			--> shared options frame
+				local sharedOptionsFrame = CreateFrame("frame", "$parentSharedOptions", adminFrame)
+				sharedOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
+				sharedOptionsFrame:SetBackdropColor (0, 0, 0, 0.2)
+				sharedOptionsFrame:SetBackdropBorderColor (0, 0, 0, 1)
+				sharedOptionsFrame:SetPoint("topleft", scriptOptionsScrollbox, "topright", 30, 0)
+				sharedOptionsFrame:SetSize(options_frame_width, options_frame_shared_height)
+				adminFrame.SharedOptionsFrame = sharedOptionsFrame
+				mainFrame.SharedOptionsFrame = sharedOptionsFrame
+
+				--get a value from an option object
+				local getOptionValue = function(key, default)
+					local scriptObject = mainFrame.GetCurrentScriptObject()
+					if (scriptObject) then
+						local scriptOptions = scriptObject.Options
+						local currentOption = scriptOptions[mainFrame.optionSelected]
+						return currentOption[key]
+					else
+						return default
+					end
+				end
+
+				local setOptionValue = function(key, value, default)
+					local scriptObject = mainFrame.GetCurrentScriptObject()
+					if (scriptObject) then
+						local scriptOptions = scriptObject.Options
+						local currentOption = scriptOptions[mainFrame.optionSelected]
+
+						if (value ~= nil) then
+							currentOption[key] = value
+						else
+							currentOption[key] = default
+						end
+					end
+				end
+
+				--widgets
+				local sharedOptionsMenu = {
+					{type = "label", get = function() return "General Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+					--name
+					{
+						type = "textentry",
+						get = function() return getOptionValue("Name", "") end,
+						set = function (self, fixedparam, value) setOptionValue("Name", value, ""); mainFrame.ScriptOptionsScrollBox:Refresh() end,
+						name = "Name",
+						desc = "The name of this option.",
+					},
+					--key
+					{
+						type = "textentry",
+						get = function() return getOptionValue("Key", "") end,
+						set = function (self, fixedparam, value) setOptionValue("Key", value, "") end,
+						name = "Key",
+						desc = "Key to be used inside the code to insert the value.",
+					},
+					--desc
+					{
+						type = "textentry",
+						get = function() return getOptionValue("Desc", "") end,
+						set = function (self, fixedparam, value) setOptionValue("Desc", value, "") end,
+						name = "Description",
+						desc = "A short description of what this option controls.",
+					},
+				}
+
+				DF:BuildMenuVolatile(sharedOptionsFrame, sharedOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+
+			--create subframes to hold panels with specific options for:
+			-- ~options
+			--option: color
+				local colorOptionsFrame = CreateFrame("frame", "$parentColorOptions", adminFrame)
+				colorOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
+				colorOptionsFrame:SetBackdropColor (0, 0, 0, 0.2)
+				colorOptionsFrame:SetBackdropBorderColor (0, 0, 0, 1)
+				colorOptionsFrame:SetPoint("topleft", sharedOptionsFrame, "bottomleft", 0, -5)
+				colorOptionsFrame:SetSize(options_frame_width, options_frame_widget_options_height)
+				mainFrame.TypeFrames[#mainFrame.TypeFrames+1] = colorOptionsFrame
+				
+				local colorOptionsMenu = {
+					{type = "label", get = function() return "Settings for Color:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+					--value
+					{
+						type = "color",
+						get = function() return getOptionValue("Value", {1, 1, 1, 1}) end,
+						set = function (self, r, g, b, a) setOptionValue("Value", {r, g, b, a}, {1, 1, 1, 1}) end,
+						name = "Color",
+						desc = "A Color",
+					},
+				}
+
+				DF:BuildMenuVolatile(colorOptionsFrame, colorOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+
+			--option: number
+				local numberOptionsFrame = CreateFrame("frame", "$parentNumberOptions", adminFrame)
+				numberOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
+				numberOptionsFrame:SetBackdropColor (0, 0, 0, 0.2)
+				numberOptionsFrame:SetBackdropBorderColor (0, 0, 0, 1)
+				numberOptionsFrame:SetPoint("topleft", sharedOptionsFrame, "bottomleft", 0, -5)
+				numberOptionsFrame:SetSize(options_frame_width, options_frame_widget_options_height)
+				mainFrame.TypeFrames[#mainFrame.TypeFrames+1] = numberOptionsFrame
+
+				local numberOptionsMenu = {
+					{type = "label", get = function() return "Settings for Number:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+					--value
+					{
+						type = "textentry",
+						get = function() return getOptionValue("Value", 0) end,
+						set = function (self, fixedparam, value) setOptionValue("Value", tonumber(value), 0) end,
+						name = "Default Value",
+						desc = "The initial value shown for the player when showing the options.",
+					},
+					--min value
+					{
+						type = "textentry",
+						get = function() return getOptionValue("Min", 0) end,
+						set = function (self, fixedparam, value) setOptionValue("Min", tonumber(value), 0) end,
+						name = "Min Value",
+						desc = "The minimum value this option can go.",
+					},
+					--max value
+					{
+						type = "textentry",
+						get = function() return getOptionValue("Max", 1) end,
+						set = function (self, fixedparam, value) setOptionValue("Max", tonumber(value), 0) end,
+						name = "Max Value",
+						desc = "The maximum value this option can go.",
+					},
+					--allow fraction
+					{
+						type = "toggle",
+						get = function() return getOptionValue("Fraction", true) end,
+						set = function (self, fixedparam, value) setOptionValue("Fraction", value, true) end,
+						name = "Allow Fractions",
+						desc = "Allow fractions or only whole numbers if false.",
+					},
+				}
+
+				DF:BuildMenuVolatile(numberOptionsFrame, numberOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+
+			--option: text
+				local textOptionsFrame = CreateFrame("frame", "$parentTextOptions", adminFrame)
+				textOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
+				textOptionsFrame:SetBackdropColor (0, 0, 0, 0.2)
+				textOptionsFrame:SetBackdropBorderColor (0, 0, 0, 1)
+				textOptionsFrame:SetPoint("topleft", sharedOptionsFrame, "bottomleft", 0, -5)
+				textOptionsFrame:SetSize(options_frame_width, options_frame_widget_options_height)
+				mainFrame.TypeFrames[#mainFrame.TypeFrames+1] = textOptionsFrame
+
+				local textOptionsMenu = {
+					{type = "label", get = function() return "Settings for Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+					--value
+					{
+						type = "textentry",
+						get = function() return getOptionValue("Value", "") end,
+						set = function (self, fixedparam, value) setOptionValue("Value", value, "") end,
+						name = "Default Text",
+						desc = "Default text shown to the player.",
+					},
+				}
+
+				DF:BuildMenuVolatile(textOptionsFrame, textOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+
+			--option: boolean
+				local booleanOptionsFrame = CreateFrame("frame", "$parentBooleanOptions", adminFrame)
+				booleanOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
+				booleanOptionsFrame:SetBackdropColor (0, 0, 0, 0.2)
+				booleanOptionsFrame:SetBackdropBorderColor (0, 0, 0, 1)
+				booleanOptionsFrame:SetPoint("topleft", sharedOptionsFrame, "bottomleft", 0, -5)
+				booleanOptionsFrame:SetSize(options_frame_width, options_frame_widget_options_height)
+				mainFrame.TypeFrames[#mainFrame.TypeFrames+1] = booleanOptionsFrame
+				
+				local boolOptionsMenu = {
+					{type = "label", get = function() return "Settings for Boolean:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+					--value
+					{
+						type = "toggle",
+						get = function() return getOptionValue("Value", true) end,
+						set = function (self, fixedparam, value) setOptionValue("Value", value, true) end,
+						name = "Default Toggle State",
+						desc = "If the toggle is default pressed or not.",
+					},
+				}
+
+				DF:BuildMenuVolatile(booleanOptionsFrame, boolOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+			
+			--option: label
+				local labelOptionsFrame = CreateFrame("frame", "$parentLabelOptions", adminFrame)
+				labelOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
+				labelOptionsFrame:SetBackdropColor (0, 0, 0, 0.2)
+				labelOptionsFrame:SetBackdropBorderColor (0, 0, 0, 1)
+				labelOptionsFrame:SetPoint("topleft", sharedOptionsFrame, "bottomleft", 0, -5)
+				labelOptionsFrame:SetSize(options_frame_width, options_frame_widget_options_height)
+				mainFrame.TypeFrames[#mainFrame.TypeFrames+1] = labelOptionsFrame
+
+				local labelOptionsMenu = {
+					{type = "label", get = function() return "Settings for Label:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+					--value
+					{
+						type = "textentry",
+						get = function() return getOptionValue("Value", "") end,
+						set = function (self, fixedparam, value) setOptionValue("Value", value, "") end,
+						name = "Label Text",
+						desc = "Text shown as a header of a section.",
+					},
+				}
+
+				DF:BuildMenuVolatile(labelOptionsFrame, labelOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+
+			--option: blank space
+				local blackspaceOptionsFrame = CreateFrame("frame", "$parentBlankSpaceOptions", adminFrame)
+				blackspaceOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
+				blackspaceOptionsFrame:SetBackdropColor (0, 0, 0, 0.2)
+				blackspaceOptionsFrame:SetBackdropBorderColor (0, 0, 0, 1)
+				blackspaceOptionsFrame:SetPoint("topleft", sharedOptionsFrame, "bottomleft", 0, -5)
+				blackspaceOptionsFrame:SetSize(options_frame_width, options_frame_widget_options_height)
+				mainFrame.TypeFrames[#mainFrame.TypeFrames+1] = blackspaceOptionsFrame
+
+				local blankspaceOptionsMenu = {
+					{type = "label", get = function() return "There's no settings for blank space" end, text_template = DF:GetTemplate("font", "ORANGE_FONT_TEMPLATE")},
+				}
+
+				DF:BuildMenuVolatile(blackspaceOptionsFrame, blankspaceOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+
+			--option: texture
+				local textureOptionsFrame = CreateFrame("frame", "$parentTextureOptions", adminFrame)
+				textureOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
+				textureOptionsFrame:SetBackdropColor (0, 0, 0, 0.2)
+				textureOptionsFrame:SetBackdropBorderColor (0, 0, 0, 1)
+				textureOptionsFrame:SetPoint("topleft", sharedOptionsFrame, "bottomleft", 0, -5)
+				textureOptionsFrame:SetSize(options_frame_width, options_frame_widget_options_height)
+				mainFrame.TypeFrames[#mainFrame.TypeFrames+1] = textureOptionsFrame
+				
+				local textureOptionsMenu = {
+					{type = "label", get = function() return "Settings for Texture:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+					--value
+					{type = "label", get = function() return "under construction:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+				}
+				DF:BuildMenuVolatile(textureOptionsFrame, textureOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+
+
+			function Plater.RefreshUserScriptOptions(mainFrame)
+				mainFrame.ImportTextEditor:Hide()
+				mainFrame.CodeEditorLuaEntry:Hide()
+				mainFrame.ScriptOptionsPanelAdmin:Hide()
+
+				--show the user panel
+				mainFrame.ScriptOptionsPanelUser:Show()
+
+				--remove the selected border from the scripting buttons from scriptsFrame
+				if (mainFrame.UpdateScriptsButton) then
+					mainFrame.UpdateScriptsButton()
+				end
+
+				--global callback
+				local globaCallBack = function()
+					print("global callback")
+					local scriptObject = mainFrame.GetCurrentScriptObject()
+					print("script:", scriptObject)
+					if (scriptObject) then
+						Plater.RecompileScript(scriptObject)
+					end
+				end
+
+				local scriptObject = mainFrame.GetCurrentScriptObject() --can be hook or script
+				if (scriptObject) then
+					if (scriptObject.Name ~= mainFrame.lastEditedScript) then
+						mainFrame.lastEditedScript = scriptObject.Name
+						mainFrame.optionSelected = 1
+					end
+
+					--clear the last hook edited so the hook list won't show a selected hook
+					--check first if the key exists, this might be a script as well
+					if (scriptObject.LastHookEdited) then
+						scriptObject.LastHookEdited = ""
+						mainFrame.HookScrollBox:Refresh()
+					end
+
+					--does the table exists? old scripts does not have them
+					local optionsTable = scriptObject.Options
+					if (not optionsTable) then
+						optionsTable = {}
+						scriptObject.Options = optionsTable
+					end
+
+					--build the menu with options for the end user of the mod or script
+					local options = optionsTable
+					if (#options == 0) then
+						Plater.CreateOptionTableForScriptObject(scriptObject)
+					end
+
+					local menu = {}
+					for i = 1, #options do
+						local thisOption = options[i]
+						local newOption = {
+							name = thisOption.Name,
+							desc = thisOption.Desc,
+							get = function() return thisOption.Value end,
+							set = function (self, fixedparam, value)
+								thisOption.Value = value
+							end,
+						}
+
+						-- ~useroptions
+						if (thisOption.Type == 1) then --color
+							newOption.type = "color"
+							newOption.set = function (self, r, g, b, a)
+								thisOption.Value = {r, g, b, a}
+							end
+
+						elseif (thisOption.Type == 2) then --number
+							newOption.type = "range"
+							newOption.min = thisOption.Min
+							newOption.max = thisOption.Max
+							newOption.usedecimals = thisOption.Fraction
+							newOption.step = 1
+
+						elseif (thisOption.Type == 3) then --text
+							newOption.type = "textentry"
+
+						elseif (thisOption.Type == 4) then --toggle
+							newOption.type = "toggle"
+
+						elseif (thisOption.Type == 5) then --label
+							newOption.type = "label"
+							newOption.text_template = DF:GetTemplate("font", "ORANGE_FONT_TEMPLATE")
+
+							local text = thisOption.Value
+							text = text:gsub("@scriptname", scriptObject.Name)
+
+							newOption.get = function() return text end
+
+						elseif (thisOption.Type == 6) then --black space
+							newOption.type = "blank"
+
+						end
+
+						tinsert(menu, newOption)
+					end
+
+					DF:BuildMenuVolatile(mainFrame.ScriptOptionsPanelUser, menu, 5, -5, options_frame_widget_options_height + options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globaCallBack)
+				end
+			end
+
+			function Plater.RefreshAdminScriptOptions(mainFrame)
+				mainFrame.ImportTextEditor:Hide()
+				mainFrame.CodeEditorLuaEntry:Hide()
+				mainFrame.ScriptOptionsPanelAdmin:Show()
+				mainFrame.ScriptOptionsPanelUser:Hide()
+
+				--remove the selected border from the scripting buttons from scriptsFrame
+				if (mainFrame.UpdateScriptsButton) then
+					mainFrame.UpdateScriptsButton()
+				end
+
+				local scriptObject = mainFrame.GetCurrentScriptObject() --can be hook or script
+				if (scriptObject) then
+					if (scriptObject.Name ~= mainFrame.lastEditedScript) then
+						mainFrame.lastEditedScript = scriptObject.Name
+						mainFrame.optionSelected = 1
+					end
+
+					--clear the last hook edited so the hook list won't show a selected hook
+					--check first if the key exists, this might be a script as well
+					if (scriptObject.LastHookEdited) then
+						scriptObject.LastHookEdited = ""
+						mainFrame.HookScrollBox:Refresh()
+					end
+
+					--does the table exists? old scripts does not have them
+					local optionsTable = scriptObject.Options
+					if (not optionsTable) then
+						optionsTable = {}
+						scriptObject.Options = optionsTable
+					end
+
+					mainFrame.ScriptOptionsScrollBox:SetData(scriptObject.Options)
+					mainFrame.ScriptOptionsScrollBox:Refresh()
+
+					--select the first option
+					if (#optionsTable > 0) then
+						mainFrame.selectScriptOptionToEdit(1)
+						mainFrame.ScriptOptionsScrollBox:Show()
+					else
+						for i = 1, #mainFrame.TypeFrames do
+							mainFrame.TypeFrames[i]:Hide()
+						end
+						mainFrame.SharedOptionsFrame:Hide()
+					end
+				else
+					mainFrame.ScriptOptionsScrollBox:SetData({})
+					mainFrame.ScriptOptionsScrollBox:Refresh()
+					mainFrame.ScriptOptionsScrollBox:Hide()
+				end
+			end
+	end
+
 	local create_import_box = function (parent, mainFrame)
 		--import and export string text editor
 		local import_text_editor = DF:NewSpecialLuaEditorEntry (parent, edit_script_size[1], edit_script_size[2], "ImportEditor", "$parentImportEditor", true)
@@ -1182,7 +1981,7 @@ Plater.OpenCopyUrlDialog = openURL
 	
 		add_FW_dropdown:SetPoint ("right", add_API_label, "left", -10, 0)
 		add_FW_label:SetPoint ("right", add_FW_dropdown, "left", -2, 0)
-			
+		
 		--error text
 		local errortext_frame = CreateFrame ("frame", nil, code_editor)
 		errortext_frame:SetPoint ("bottomleft", code_editor, "bottomleft", 1, 1)
@@ -1190,11 +1989,16 @@ Plater.OpenCopyUrlDialog = openURL
 		errortext_frame:SetHeight (20)
 		errortext_frame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
 		errortext_frame:SetBackdropBorderColor (unpack (luaeditor_border_color))
-		errortext_frame:SetBackdropColor (0, 0, 0)
+		errortext_frame:SetBackdropColor (0, 0, 0, 1)
+		errortext_frame:SetFrameLevel(code_editor:GetFrameLevel()+10)
+		DF:ApplyStandardBackdrop(errortext_frame)
+
+		errortext_frame.bgTexture = errortext_frame:CreateTexture(nil, "artwork")
+		errortext_frame.bgTexture:SetVertexColor(.3, .3, .3, .95)
+		errortext_frame.bgTexture:SetAllPoints()
 		
 		local errortext_label = DF:CreateLabel (errortext_frame, "", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
 		errortext_label.textcolor = "red"
-		--errortext_label:SetPoint ("bottomright", code_editor, "topright", 0, 2)
 		errortext_label:SetPoint ("left", errortext_frame, "left", 3, 0)
 		
 		code_editor.NextCodeCheck = 0.33
@@ -1228,19 +2032,23 @@ Plater.OpenCopyUrlDialog = openURL
 		--apply button
 		local apply_script_button = DF:CreateButton (code_editor, mainFrame.ApplyScript, buttons_size[1], buttons_size[2], "Apply", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 		apply_script_button:SetIcon ([[Interface\BUTTONS\UI-Panel-BiggerButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
+		apply_script_button:SetFrameLevel(code_editor:GetFrameLevel()+11)
 		
 		--save button
 		local save_script_button = DF:CreateButton (code_editor, mainFrame.SaveScript, buttons_size[1], buttons_size[2], "Save", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 		save_script_button:SetIcon ([[Interface\BUTTONS\UI-Panel-ExpandButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
 		save_script_button.tooltip = "While editing, you may use:\n\n|cFFFFFF00SHIFT + Enter|r: save the script, apply the changes and don't lose the focus on the editor.\n\n|cFFFFFF00CTRL + Enter|r: save the script and apply the changes."
+		save_script_button:SetFrameLevel(code_editor:GetFrameLevel()+11)
 		
 		--cancel button
 		local cancel_script_button = DF:CreateButton (code_editor, mainFrame.CancelEditing, buttons_size[1], buttons_size[2], "Cancel", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 		cancel_script_button:SetIcon ([[Interface\BUTTONS\UI-Panel-MinimizeButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
-		
+		cancel_script_button:SetFrameLevel(code_editor:GetFrameLevel()+11)
+
 		--documentation icon
-		local docs_button = DF:CreateButton (code_editor, mainFrame.OpenDocs, buttons_size[1], buttons_size[2], "Documentation", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+		local docs_button = DF:CreateButton (code_editor, mainFrame.OpenDocs, buttons_size[1], buttons_size[2], "Docs", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 		docs_button:SetIcon ([[Interface\BUTTONS\UI-GuildButton-PublicNote-Up]], 16, 16, "overlay", {0, 1, 0, 1})		
+		docs_button:SetFrameLevel(code_editor:GetFrameLevel()+11)
 
 		local save_feedback_texture = save_script_button:CreateTexture (nil, "overlay")
 		save_feedback_texture:SetColorTexture (1, 1, 1)
@@ -1480,6 +2288,9 @@ function Plater.CreateHookingPanel()
 		hookFrame.ImportTextEditor.IsExporting = true
 		
 		hookFrame.ImportTextEditor:Show()
+		hookFrame.CodeEditorLuaEntry:Hide()
+		hookFrame.ScriptOptionsPanelAdmin:Hide()
+
 		hookFrame.ImportTextEditor:SetText (encodedString)
 		hookFrame.ImportTextEditor.TextInfo.text = "Exporting '" .. scriptToBeExported.Name .. "'"
 		
@@ -1668,7 +2479,10 @@ function Plater.CreateHookingPanel()
 			LoadConditions = DF:UpdateLoadConditionsTable ({}),
 			--ModEnvStart = "", --run once when the mod starts
 			--ModEnvTable = {}, --store data that is shared among all nameplates running this script
+			Options = {}, --store options where the end user can change aspects of the hook without messing with the code
 		}
+
+		Plater.CreateOptionTableForScriptObject(newScriptObject)
 		
 		--add it to the database
 		tinsert (Plater.db.profile.hook_data, newScriptObject)
@@ -1678,6 +2492,9 @@ function Plater.CreateHookingPanel()
 		
 		--refresh the scrollbox showing all scripts created
 		hookFrame.ScriptSelectionScrollBox:Refresh()
+
+		--refresh the options panel
+
 	end
 	
 	function hookFrame:OpenDocs()
@@ -1801,6 +2618,8 @@ function Plater.CreateHookingPanel()
 		hookFrame.LoadConditionsButton:Enable()
 		hookFrame.ComponentsButton:Enable()
 		
+		hookFrame.ScriptOptionButton:Enable()
+		hookFrame.ScriptOptionButtonAdmin:Enable()
 	end
 	
 	function edit_script_frame.LockFrame()
@@ -1826,6 +2645,11 @@ function Plater.CreateHookingPanel()
 		hookFrame.ComponentsButton:Disable()
 		
 		hookFrame.HookScrollBox:Refresh()
+
+		hookFrame.ScriptOptionButton:Disable()
+		hookFrame.ScriptOptionButtonAdmin:Disable()
+		hookFrame.ScriptOptionsPanelAdmin:Hide()
+		hookFrame.ScriptOptionsPanelUser:Hide()
 	end
 	
 	function hookFrame.HideEditPanel()
@@ -1942,6 +2766,7 @@ function Plater.CreateHookingPanel()
 				scriptObject.LastHookEdited = self.Hook
 				
 				--load the code
+				hookFrame.CodeEditorLuaEntry:Show()
 				hookFrame.CodeEditorLuaEntry:SetText (scriptObject.HooksTemp [self.Hook])
 				
 				--refresh the hook selection scroll
@@ -1949,6 +2774,10 @@ function Plater.CreateHookingPanel()
 				
 				--refresh the hook selection dropdown
 				hookFrame.HookTypeDropdown:Select (self.Hook)
+
+				--hide other frames using the code editor space
+				hookFrame.ScriptOptionsPanelAdmin:Hide()
+				hookFrame.ScriptOptionsPanelUser:Hide()
 			end
 			return
 		end
@@ -2057,9 +2886,9 @@ function Plater.CreateHookingPanel()
 		return line
 	end
 	
-	--scroll showing all triggers of the script
+	--scroll showing all hooks of the mod
 	local hookLabel = DF:CreateLabel (edit_script_frame, "Add Hooks:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
-	local hookScrollbox = DF:CreateScrollBox (edit_script_frame, "$parentHookScrollBox", refreshHookScrollBox, Plater.HookScripts, triggerbox_size[1], triggerbox_size[2]+75, hook_scrollbox_lines, triggerbox_line_height)
+	local hookScrollbox = DF:CreateScrollBox (edit_script_frame, "$parentHookScrollBox", refreshHookScrollBox, Plater.HookScripts, hookbox_size[1], hookbox_size[2], hook_scrollbox_lines, triggerbox_line_height)
 	hookScrollbox:SetPoint ("topleft", hookLabel.widget, "bottomleft", 0, -4)
 	hookScrollbox:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
 	hookScrollbox:SetBackdropColor (0, 0, 0, 0.2)
@@ -2067,7 +2896,7 @@ function Plater.CreateHookingPanel()
 	hookFrame.HookScrollBox = hookScrollbox
 	DF:ReskinSlider (hookScrollbox)
 	
-	--create the scrollbox lines
+	--create the hook scrollbox lines
 	for i = 1, hook_scrollbox_lines do 
 		hookScrollbox:CreateLine (hookListCreateLine)
 	end
@@ -2206,6 +3035,9 @@ function Plater.CreateHookingPanel()
 		end
 		return t
 	end
+
+	--create the options script box for hooks
+	create_edit_options_box(edit_script_frame, hookFrame)
 	
 	local hookTypeLabel = DF:CreateLabel (hookFrame.CodeEditorLuaEntry, "Edit Hook:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
 	local hookTypeDropdown = DF:CreateDropDown (hookFrame.CodeEditorLuaEntry, buildHookDropdownList, 1, 160, 20, "HookTypeDropdown", _, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
@@ -2232,8 +3064,8 @@ function Plater.CreateHookingPanel()
 	edit_script_frame.ScriptIconLabel:SetPoint ("topleft", edit_script_frame, "topleft", 170, 0)
 	edit_script_frame.ScriptDescLabel:SetPoint ("topleft", edit_script_frame, "topleft", 10, -40)
 	edit_script_frame.ScriptPrioLabel:SetPoint ("topleft", edit_script_frame, "topleft", 10, -80)
-	
-	hookLabel:SetPoint ("topleft", edit_script_frame, "topleft", 10, -110)
+
+	hookLabel:SetPoint ("topleft", edit_script_frame, "topleft", 10, hookbox_label_y)
 
 	--lua code editor
 	hookFrame.CodeEditorLuaEntry:SetPoint ("topleft", edit_script_frame, "topleft", 230, -20)
@@ -2254,6 +3086,10 @@ function Plater.CreateHookingPanel()
 	
 	hookFrame.EditScriptFrame:LockFrame()
 	hookFrame.EditScriptFrame:Show()
+
+	--code options panel
+	hookFrame.ScriptOptionsPanelAdmin:SetPoint("topleft", edit_script_frame, "topleft", 230, -20)
+	hookFrame.ScriptOptionsPanelUser:SetPoint("topleft", edit_script_frame, "topleft", 230, -20)
 	
 end
 
@@ -2364,7 +3200,10 @@ function Plater.CreateScriptingPanel()
 			Time = time(), --is set when the save button is pressed
 			Revision = 1, --increase everytime the save button is pressed
 			PlaterCore = Plater.CoreVersion, --store the version of plater required to run this script
+			Options = {}, --store options where the end user can change aspects of the script without messing with the code
 		}
+
+		Plater.CreateOptionTableForScriptObject(newScriptObject)
 		
 		--scripts
 		for i = 1, #Plater.CodeTypeNames do
@@ -2406,6 +3245,13 @@ function Plater.CreateScriptingPanel()
 	end
 	
 	function scriptingFrame.GetCurrentScriptObject()
+		--create the options table for old scripts
+		if (currentEditingScript) then
+			if (not currentEditingScript.Options) then
+				Plater.CreateOptionTableForScriptObject(currentEditingScript)
+			end
+		end
+
 		return currentEditingScript
 	end
 	
@@ -2466,7 +3312,7 @@ function Plater.CreateScriptingPanel()
 		end
 
 		--save the current code
-		scriptObject [Plater.CodeTypeNames [scriptingFrame.CodeTypeDropdown.CodeType]] = scriptingFrame.CodeEditorLuaEntry:GetText()
+		scriptObject [Plater.CodeTypeNames [scriptingFrame.currentScriptType]] = scriptingFrame.CodeEditorLuaEntry:GetText()
 
 		scriptObject.Time = time()
 		scriptObject.Revision = scriptObject.Revision + 1
@@ -2513,7 +3359,7 @@ function Plater.CreateScriptingPanel()
 				code [memberName] = scriptObject ["Temp_" .. memberName]
 			end
 			
-			code [Plater.CodeTypeNames [scriptingFrame.CodeTypeDropdown.CodeType]] = scriptingFrame.CodeEditorLuaEntry:GetText()
+			code [Plater.CodeTypeNames [scriptingFrame.currentScriptType]] = scriptingFrame.CodeEditorLuaEntry:GetText()
 		else
 			--is a save, get the code from the object
 			for i = 1, #Plater.CodeTypeNames do
@@ -2639,6 +3485,10 @@ function Plater.CreateScriptingPanel()
 		scriptingFrame.ImportTextEditor.IsExporting = true
 
 		scriptingFrame.ImportTextEditor:Show()
+		scriptingFrame.CodeEditorLuaEntry:Hide()
+		scriptingFrame.ScriptOptionsPanelAdmin:Hide()
+		scriptingFrame.ScriptOptionsPanelUser:Hide()
+
 		scriptingFrame.ImportTextEditor:SetText (encodedString)
 		scriptingFrame.ImportTextEditor.TextInfo.text = "Exporting '" .. scriptToBeExported.Name .. "'"
 		
@@ -2760,7 +3610,7 @@ function Plater.CreateScriptingPanel()
 			
 			--update the code type dropdown
 			scriptingFrame.CodeTypeDropdown:Select (2)
-			scriptingFrame.CodeTypeDropdown.CodeType = 2
+			scriptingFrame.SetCurrentEditingScript(2)
 	end
 	
 	--start editing a script
@@ -2780,7 +3630,6 @@ function Plater.CreateScriptingPanel()
 		end
 		
 		scriptingFrame.EditScriptFrame:UnlockFrame()
-		
 		scriptingFrame.EditScriptFrame:Show()
 		
 		--set the new editing script
@@ -2788,6 +3637,10 @@ function Plater.CreateScriptingPanel()
 		
 		--load the values in the frame
 		scriptingFrame.UpdateEditingPanel()
+
+		--hide other frames using the code editor space
+		scriptingFrame.ScriptOptionsPanelAdmin:Hide()
+		scriptingFrame.ScriptOptionsPanelUser:Hide()
 	end
 	
 	--add a trigger to the current editing script
@@ -2896,8 +3749,6 @@ function Plater.CreateScriptingPanel()
 	edit_script_frame:Hide()
 	scriptingFrame.EditScriptFrame = edit_script_frame
 
-	
-	
 	function edit_script_frame.UnlockFrame()
 		scriptingFrame.ScriptNameTextEntry:Enable()
 		scriptingFrame.ScriptIconButton:Enable()
@@ -2911,10 +3762,17 @@ function Plater.CreateScriptingPanel()
 		scriptingFrame.AddFWDropdown:Enable()
 		
 		scriptingFrame.CodeEditorLuaEntry:Enable()
-		scriptingFrame.CodeTypeDropdown:Enable()
+		--scriptingFrame.CodeTypeDropdown:Enable()
 		scriptingFrame.ApplyScriptButton:Enable()
 		scriptingFrame.SaveScriptButton:Enable()
 		scriptingFrame.CancelScriptButton:Enable()
+
+		scriptingFrame.ScriptOptionButton:Enable()
+		scriptingFrame.ScriptOptionButtonAdmin:Enable()		
+
+		for i = 1, #scriptingFrame.scriptButtons do
+			scriptingFrame.scriptButtons[i]:Enable()
+		end		
 	end
 	
 	function edit_script_frame.LockFrame()
@@ -2938,10 +3796,19 @@ function Plater.CreateScriptingPanel()
 		
 		scriptingFrame.CodeEditorLuaEntry:SetText ("")
 		scriptingFrame.CodeEditorLuaEntry:Disable()
-		scriptingFrame.CodeTypeDropdown:Disable()
+		--scriptingFrame.CodeTypeDropdown:Disable()
 		scriptingFrame.ApplyScriptButton:Disable()
 		scriptingFrame.SaveScriptButton:Disable()
 		scriptingFrame.CancelScriptButton:Disable()
+
+		scriptingFrame.ScriptOptionButton:Disable()
+		scriptingFrame.ScriptOptionButtonAdmin:Disable()
+		scriptingFrame.ScriptOptionsPanelAdmin:Hide()
+		scriptingFrame.ScriptOptionsPanelUser:Hide()
+
+		for i = 1, #scriptingFrame.scriptButtons do
+			scriptingFrame.scriptButtons[i]:Disable()
+		end
 	end
 	
 	function scriptingFrame.HideEditPanel()
@@ -3609,7 +4476,7 @@ function Plater.CreateScriptingPanel()
 					GameCooltip:AddLine ("envTable Members From Constructor Code:", "", 1, "yellow", "yellow", 12, nil, "OUTLINE")
 					
 					--> get the constructor code from the editor if the current editing is the constructor or get the temporarily saved script from the script object
-					local code = scriptingFrame.CodeTypeDropdown.CodeType == 2 and scriptingFrame.CodeEditorLuaEntry:GetText() or scriptObject ["Temp_" .. Plater.CodeTypeNames [2]]
+					local code = scriptingFrame.currentScriptType == 2 and scriptingFrame.CodeEditorLuaEntry:GetText() or scriptObject ["Temp_" .. Plater.CodeTypeNames [2]]
 					if (code) then
 						--> find all member names added to the envTable
 						--> add all members in the comments too
@@ -3642,20 +4509,29 @@ function Plater.CreateScriptingPanel()
 			local on_select_code_type =  function (self, fixed_parameter, value_selected)
 				--get the current editing script
 				local scriptObject = scriptingFrame.GetCurrentScriptObject()
+
+				local formerScriptType = scriptingFrame.currentScriptType
+				local newScriptType = value_selected
 				
 				--save the current code
-				scriptObject ["Temp_" .. Plater.CodeTypeNames [scriptingFrame.CodeTypeDropdown.CodeType]] = scriptingFrame.CodeEditorLuaEntry:GetText()
-				
+				scriptObject ["Temp_" .. Plater.CodeTypeNames [formerScriptType]] = scriptingFrame.CodeEditorLuaEntry:GetText()
+
 				--ensure consistency (!=nil) TODO: mod migration on login/import would make this redundant
-				if value_selected == 5 and scriptObject ["Temp_" .. Plater.CodeTypeNames [value_selected]] == nil then
-					scriptObject ["Temp_" .. Plater.CodeTypeNames [value_selected]] = scriptingFrame.DefaultScriptNoNameplate
+				if newScriptType == 5 and scriptObject ["Temp_" .. Plater.CodeTypeNames [newScriptType]] == nil then
+					scriptObject ["Temp_" .. Plater.CodeTypeNames [newScriptType]] = scriptingFrame.DefaultScriptNoNameplate
 				end
 				
 				--load the code
-				scriptingFrame.CodeEditorLuaEntry:SetText (scriptObject ["Temp_" .. Plater.CodeTypeNames [value_selected]])
+				scriptingFrame.CodeEditorLuaEntry:SetText (scriptObject ["Temp_" .. Plater.CodeTypeNames [newScriptType]])
 				
 				--update the code type
-				scriptingFrame.CodeTypeDropdown.CodeType = value_selected
+				scriptingFrame.SetCurrentEditingScript(newScriptType)
+
+				--show hide frames
+				scriptingFrame.ImportTextEditor:Hide()
+				scriptingFrame.CodeEditorLuaEntry:Show()
+				scriptingFrame.ScriptOptionsPanelAdmin:Hide()
+				scriptingFrame.ScriptOptionsPanelUser:Hide()
 			end
 			
 			local build_script_code_dropdown_options = function()
@@ -3667,12 +4543,57 @@ function Plater.CreateScriptingPanel()
 				return t
 			end
 			
-			local code_type_label = DF:CreateLabel (scriptingFrame.CodeEditorLuaEntry, "Code Type:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
-			local code_type_dropdown = DF:CreateDropDown (scriptingFrame.CodeEditorLuaEntry, build_script_code_dropdown_options, 1, 160, 20, "CodeTypeDropdown", _, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
-			code_type_dropdown:SetPoint ("left", code_type_label, "right", 2, 0)
+			local code_type_label = DF:CreateLabel (scriptingFrame, "Edit Script For:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
+			local code_type_dropdown = DF:CreateDropDown (scriptingFrame, build_script_code_dropdown_options, 1, 160, 20, "CodeTypeDropdown", _, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+			--code_type_dropdown:SetPoint ("left", code_type_label, "right", 2, 0)
 			code_type_dropdown.CodeType = 1
 			scriptingFrame.CodeTypeDropdown = code_type_dropdown
-	
+
+			function scriptingFrame.SetCurrentEditingScript(scriptId)
+				scriptingFrame.currentScriptType = scriptId
+				_G.C_Timer.After(0.05, scriptingFrame.UpdateScriptsButton)
+			end
+			scriptingFrame.currentScriptType = 1 --default value
+
+			--> script buttons
+				--constructor
+				local codeButtonSize = {100, 20}
+				scriptingFrame.scriptButtons = {}
+
+				local code_oninit_button = DF:CreateButton(scriptingFrame, on_select_code_type, codeButtonSize[1], codeButtonSize[2], "Initialization", 5, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				code_oninit_button:SetPoint("topleft", scriptingFrame.CodeEditorLuaEntry, "bottomleft", 0, -15)
+
+				local code_constructor_button = DF:CreateButton(scriptingFrame, on_select_code_type, codeButtonSize[1], codeButtonSize[2], "Constructor", 1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				code_constructor_button:SetPoint("left", code_oninit_button, "right", 2, 0)
+
+				local code_onshow_button = DF:CreateButton(scriptingFrame, on_select_code_type, codeButtonSize[1], codeButtonSize[2], "On Show", 2, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				code_onshow_button:SetPoint("left", code_constructor_button, "right", 2, 0)
+
+				local code_onupdate_button = DF:CreateButton(scriptingFrame, on_select_code_type, codeButtonSize[1], codeButtonSize[2], "On Update", 3, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				code_onupdate_button:SetPoint("left", code_onshow_button, "right", 2, 0)
+
+				local code_hide_button = DF:CreateButton(scriptingFrame, on_select_code_type, codeButtonSize[1], codeButtonSize[2], "On Hide", 4, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				code_hide_button:SetPoint("left", code_onupdate_button, "right", 2, 0)
+
+				tinsert(scriptingFrame.scriptButtons, code_constructor_button)
+				tinsert(scriptingFrame.scriptButtons, code_onshow_button)
+				tinsert(scriptingFrame.scriptButtons, code_onupdate_button)
+				tinsert(scriptingFrame.scriptButtons, code_hide_button)
+				tinsert(scriptingFrame.scriptButtons, code_oninit_button)
+
+			function scriptingFrame.UpdateScriptsButton()
+				local canShowSelection = scriptingFrame.CodeEditorLuaEntry:IsShown()
+				for i = 1, #scriptingFrame.scriptButtons do
+					local button = scriptingFrame.scriptButtons[i]
+
+					if (i == scriptingFrame.currentScriptType and canShowSelection) then
+						button:SetTemplate(DF:GetTemplate("button", "PLATER_BUTTON_SELECTED"))
+					else
+						button:SetTemplate(DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"))
+					end
+				end
+			end
+
 	--create the header
 	create_script_control_header (scriptingFrame, "script")
 
@@ -3684,6 +4605,9 @@ function Plater.CreateScriptingPanel()
 		scriptingFrame.ScriptSelectionScrollBox:SetData (Plater.db.profile.script_data)
 		scriptingFrame.ScriptSelectionScrollBox:Refresh()
 	end
+
+	--create the options script box for scripts
+	create_edit_options_box(edit_script_frame, scriptingFrame)
 	
 	--anchors
 		--scroll to select which script to edit
@@ -3702,28 +4626,34 @@ function Plater.CreateScriptingPanel()
 		edit_script_frame.ScriptDescLabel:SetPoint ("topleft", edit_script_frame, "topleft", 10, -40)
 		edit_script_frame.ScriptPrioLabel:SetPoint ("topleft", edit_script_frame, "topleft", 10, -80)
 		
-		script_type_label:SetPoint ("topleft", edit_script_frame, "topleft", 10, -110)
-		
-		add_trigger_label:SetPoint ("topleft", edit_script_frame, "topleft", 10, -150)
-		trigger_scrollbox_label:SetPoint ("topleft", edit_script_frame, "topleft", 10, -190)
+		script_type_label:SetPoint ("topleft", edit_script_frame, "topleft", 10, -140)
+		add_trigger_label:SetPoint ("topleft", edit_script_frame, "topleft", 10, -177)
+
+		trigger_scrollbox_label:SetPoint ("topleft", edit_script_frame, "topleft", 10, -216)
 		
 		--lua code editor
 		scriptingFrame.CodeEditorLuaEntry:SetPoint ("topleft", edit_script_frame, "topleft", 230, -20)
 		--import editor
 		scriptingFrame.ImportTextEditor:SetPoint ("topleft", edit_script_frame, "topleft", 230, -20)
 		
-		--scriptingFrame.ApplyScriptButton:SetPoint ("topright", scriptingFrame.CodeEditorLuaEntry, "bottomright", 0, -10)
-		scriptingFrame.SaveScriptButton:SetPoint ("topright", scriptingFrame.CodeEditorLuaEntry, "bottomright", 0, -10)
-		scriptingFrame.CancelScriptButton:SetPoint ("right", scriptingFrame.SaveScriptButton, "left", -20, 0)
-		scriptingFrame.DocsButton:SetPoint ("right", scriptingFrame.CancelScriptButton, "left", -20, 0)
+		--button on code editors
+		scriptingFrame.SaveScriptButton:SetPoint ("bottomright", scriptingFrame.CodeEditorLuaEntry, "bottomright", 0, 1)
+		scriptingFrame.CancelScriptButton:SetPoint ("right", scriptingFrame.SaveScriptButton, "left", -10, 0)
+		scriptingFrame.DocsButton:SetPoint ("right", scriptingFrame.CancelScriptButton, "left", -10, 0)
+
+		scriptingFrame.SaveScriptButton:SetSize(buttons_size[1]*0.7, buttons_size[2] - 1)
+		scriptingFrame.CancelScriptButton:SetSize(buttons_size[1]*0.7, buttons_size[2] - 1)
+		scriptingFrame.DocsButton:SetSize(buttons_size[1]*0.7, buttons_size[2] - 1)
 		
 		--import control buttons
 		scriptingFrame.ImportTextEditor.OkayButton:SetPoint ("topright", scriptingFrame.CodeEditorLuaEntry, "bottomright", 0, -10)
 		scriptingFrame.ImportTextEditor.CancelButton:SetPoint ("right", scriptingFrame.ImportTextEditor.OkayButton, "left", -20, 0)
 
 		--code type
-		code_type_label:SetPoint ("topleft", scriptingFrame.CodeEditorLuaEntry, "bottomleft", 0, -15)
+		code_type_label:SetPoint ("topleft", scriptingFrame.CodeEditorLuaEntry, "bottomleft", 0, -4)
 	
+		scriptingFrame.ScriptOptionsPanelAdmin:SetPoint("topleft", edit_script_frame, "topleft", 230, -20)
+		scriptingFrame.ScriptOptionsPanelUser:SetPoint("topleft", edit_script_frame, "topleft", 230, -20)
 	
 	scriptingFrame.EditScriptFrame:LockFrame()
 	scriptingFrame.EditScriptFrame:Show()

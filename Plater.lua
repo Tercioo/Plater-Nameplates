@@ -9848,6 +9848,21 @@ end
 		end
 	end
 
+	--recompile a single scriptObject deleting the global environment
+	function Plater.RecompileScript(scriptObject)
+		local scriptType = Plater.GetScriptType(scriptObject)
+		if (scriptType == "script") then
+			PLATER_GLOBAL_SCRIPT_ENV [scriptObject.Name] = nil
+			Plater.CompileScript(scriptObject)
+			print("recompiling script")
+
+		elseif (scriptType == "hook") then
+			PLATER_GLOBAL_MOD_ENV [scriptObject.Name] = nil
+			Plater.CompileHook(scriptObject)
+			print("recompiling hook")
+		end
+	end
+
 	--when a script object get disabled, need to clear all compiled scripts in the cache and recompile than again
 	--this other scripts that uses the same trigger name get activated
 	-- ~scripts
@@ -10234,7 +10249,21 @@ end
 		local needsInitCall = false
 		if not PLATER_GLOBAL_MOD_ENV [scriptObject.Name] then
 			needsInitCall = true
-			PLATER_GLOBAL_MOD_ENV [scriptObject.Name] = {}
+			PLATER_GLOBAL_MOD_ENV [scriptObject.Name] = {
+				config = {}
+			}
+		end
+
+		--copy options to global env
+		local scriptOptions = scriptObject.Options
+		if (not scriptOptions) then
+			Plater.CreateOptionTableForScriptObject(scriptObject)
+			scriptOptions = scriptObject.Options
+		end
+
+		for i = 1, #scriptOptions do
+			local thisOption = scriptOptions[i]
+			PLATER_GLOBAL_MOD_ENV [scriptObject.Name].config[thisOption.Key] = thisOption.Value
 		end
 		
 		--compile
@@ -10311,7 +10340,21 @@ end
 		local needsInitCall = false
 		if not PLATER_GLOBAL_SCRIPT_ENV [scriptObject.Name] then
 			needsInitCall = true
-			PLATER_GLOBAL_SCRIPT_ENV [scriptObject.Name] = {}
+			PLATER_GLOBAL_SCRIPT_ENV [scriptObject.Name] = {
+				config = {}
+			}
+		end
+
+		--copy options to global env
+		local scriptOptions = scriptObject.Options
+		if (not scriptOptions) then
+			Plater.CreateOptionTableForScriptObject(scriptObject)
+			scriptOptions = scriptObject.Options
+		end
+
+		for i = 1, #scriptOptions do
+			local thisOption = scriptOptions[i]
+			PLATER_GLOBAL_SCRIPT_ENV [scriptObject.Name].config[thisOption.Key] = thisOption.Value
 		end
 
 		--compile
