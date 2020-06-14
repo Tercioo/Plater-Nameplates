@@ -9854,12 +9854,10 @@ end
 		if (scriptType == "script") then
 			PLATER_GLOBAL_SCRIPT_ENV [scriptObject.Name] = nil
 			Plater.CompileScript(scriptObject)
-			print("recompiling script")
 
 		elseif (scriptType == "hook") then
 			PLATER_GLOBAL_MOD_ENV [scriptObject.Name] = nil
 			Plater.CompileHook(scriptObject)
-			print("recompiling hook")
 		end
 	end
 

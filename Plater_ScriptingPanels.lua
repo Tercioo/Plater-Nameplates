@@ -1692,9 +1692,7 @@ end
 
 				--global callback
 				local globaCallBack = function()
-					print("global callback")
 					local scriptObject = mainFrame.GetCurrentScriptObject()
-					print("script:", scriptObject)
 					if (scriptObject) then
 						Plater.RecompileScript(scriptObject)
 					end
