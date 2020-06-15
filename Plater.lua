@@ -10653,6 +10653,27 @@ end
 		--print(DF.table.dump(newindexScriptTable))
 		return newindexScriptTable
 	end
+	
+	--merge/clean up user options
+	local function update_user_options_for_import(scriptObjectNew, scriptObjectOld)
+		if not scriptObjectNew or not scriptObjectOld then return end
+		
+		--consistency/init:
+		scriptObjectNew.OptionsValues = scriptObjectNew.OptionsValues or {}
+		scriptObjectNew.Options = scriptObjectNew.Options or {}
+		scriptObjectOld.scriptObjectOld = scriptObjectOld.scriptObjectOld or {}
+		
+		local newUserOptions = scriptObjectNew.OptionsValues
+		local newOptions = scriptObjectNew.Options
+		local oldUserOptions = scriptObjectOld.OptionsValues
+		
+		for i=1, #newOptions do
+			local newOption = newOptions[i]
+			if newOption.Key and oldUserOptions[newOption.Key] then
+				newUserOptions[newOption.Key] = oldUserOptions[newOption.Key]
+			end
+		end
+	end
 
 	--import a string from any source with more options than the convencional importer
 	--this is used when importing scripts from the library and when the user inserted the wrong script type in the import box at hook or script, e.g. imported a hook in the script import box
@@ -10714,6 +10735,8 @@ end
 								--keep the enabled state
 								newScript.Enabled = scriptObject.Enabled
 								
+								update_user_options_for_import(newScript, scriptObject)
+								
 								--replace the old script with the new one
 								tremove (scriptDB, i)
 								tinsert (scriptDB, i, newScript)
@@ -10759,6 +10782,8 @@ end
 								
 								--keep the enabled state
 								newScript.Enabled = scriptObject.Enabled
+								
+								update_user_options_for_import(newScript, scriptObject)
 								
 								--replace the old script with the new one
 								tremove (scriptDB, i)
@@ -10811,6 +10836,7 @@ end
 	function Plater.AddScript (scriptObjectToAdd, noOverwrite)
 		if (scriptObjectToAdd) then
 			local indexToReplace
+			local existingScriptObject
 			local scriptType = Plater.GetScriptType (scriptObjectToAdd)
 			local scriptDB = Plater.GetScriptDB (scriptType)
 			
@@ -10823,6 +10849,7 @@ end
 						return
 					else
 						indexToReplace = i
+						existingScriptObject = scriptObject
 						break
 					end
 				end
@@ -10830,6 +10857,7 @@ end
 			
 			if (indexToReplace) then
 				--remove the old script and add the new one
+				update_user_options_for_import(scriptObjectToAdd, existingScriptObject)
 				tremove (scriptDB, indexToReplace)
 				tinsert (scriptDB, indexToReplace, scriptObjectToAdd)
 			else

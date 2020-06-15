@@ -2292,6 +2292,7 @@ function Plater.CreateHookingPanel()
 		hookFrame.ImportTextEditor:Show()
 		hookFrame.CodeEditorLuaEntry:Hide()
 		hookFrame.ScriptOptionsPanelAdmin:Hide()
+		hookFrame.ScriptOptionsPanelUser:Hide()
 
 		hookFrame.ImportTextEditor:SetText (encodedString)
 		hookFrame.ImportTextEditor.TextInfo.text = "Exporting '" .. scriptToBeExported.Name .. "'"
