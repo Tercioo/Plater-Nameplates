@@ -8,6 +8,10 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1592230039,  "New Feature", "June 15th, 2020", "Introducing 'Custom Options' for Mods and Scripts as per profile settings for the mod/script."},
+			{1592230039,  "New Feature", "June 15th, 2020", "Profile updates from wago.io through the companion app will now keep additionally imported mods/scripts which were not part of the profile."},
+			{1592230039,  "Bug Fix", "June 15th, 2020", "Fixing buff special tracking being case sensitive and auto-suggest being all lower-case."},
+			
 			{1591436231,  "Bug Fix", "June 6th, 2020", "Fixing an issue with profiles not being editable without WA-Companion addon."},
 			
 			{1591387261,  "New Feature", "June 5th, 2020", "Adding options to skip or ignore profile updates."},
