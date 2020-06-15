@@ -10167,6 +10167,17 @@ end
 		end
 	end
 	
+	-- which option types should be copied to modTable.config?
+	local options_for_config_table = {
+		[1] = true, -- Color
+		[2] = true, -- Number
+		[3] = true, -- Text
+		[4] = true, -- Toggle
+		[5] = false, -- Label
+		[6] = false, -- Blank Line
+		[7] = true -- Texture
+	}
+	
 	--compile scripts from the Hooking tab
 	function Plater.CompileHook (scriptObject)
 		
@@ -10260,7 +10271,9 @@ end
 
 		for i = 1, #scriptOptions do
 			local thisOption = scriptOptions[i]
-			PLATER_GLOBAL_MOD_ENV [scriptObject.Name].config[thisOption.Key] = scriptOptionsValues[thisOption.Key] or thisOption.Value
+			if options_for_config_table[thisOption.Type] then
+				PLATER_GLOBAL_MOD_ENV [scriptObject.Name].config[thisOption.Key] = scriptOptionsValues[thisOption.Key] or thisOption.Value
+			end
 		end
 		
 		--compile
@@ -10350,7 +10363,9 @@ end
 
 		for i = 1, #scriptOptions do
 			local thisOption = scriptOptions[i]
-			PLATER_GLOBAL_SCRIPT_ENV [scriptObject.Name].config[thisOption.Key] = scriptOptionsValues[thisOption.Key] or thisOption.Value
+			if options_for_config_table[thisOption.Type] then
+				PLATER_GLOBAL_SCRIPT_ENV [scriptObject.Name].config[thisOption.Key] = scriptOptionsValues[thisOption.Key] or thisOption.Value
+			end
 		end
 
 		--compile
