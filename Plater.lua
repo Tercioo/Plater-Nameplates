@@ -10670,7 +10670,7 @@ end
 	end
 	
 	--merge/clean up user options
-	local function update_user_options_for_import(scriptObjectNew, scriptObjectOld)
+	function Plater.UpdateOptionsForModScriptImport(scriptObjectNew, scriptObjectOld)
 		if not scriptObjectNew or not scriptObjectOld then return end
 		
 		--consistency/init:
@@ -10750,7 +10750,7 @@ end
 								--keep the enabled state
 								newScript.Enabled = scriptObject.Enabled
 								
-								update_user_options_for_import(newScript, scriptObject)
+								Plater.UpdateOptionsForModScriptImport(newScript, scriptObject)
 								
 								--replace the old script with the new one
 								tremove (scriptDB, i)
@@ -10798,7 +10798,7 @@ end
 								--keep the enabled state
 								newScript.Enabled = scriptObject.Enabled
 								
-								update_user_options_for_import(newScript, scriptObject)
+								Plater.UpdateOptionsForModScriptImport(newScript, scriptObject)
 								
 								--replace the old script with the new one
 								tremove (scriptDB, i)
@@ -10872,7 +10872,7 @@ end
 			
 			if (indexToReplace) then
 				--remove the old script and add the new one
-				update_user_options_for_import(scriptObjectToAdd, existingScriptObject)
+				Plater.UpdateOptionsForModScriptImport(scriptObjectToAdd, existingScriptObject)
 				tremove (scriptDB, indexToReplace)
 				tinsert (scriptDB, indexToReplace, scriptObjectToAdd)
 			else

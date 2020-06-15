@@ -521,8 +521,8 @@ function Plater.OpenOptionsPanel()
 				
 				local wasUsingUIParent = Plater.db.profile.use_ui_parent
 				
-				local script_data_backup = isUpdate and keepModsNotInUpdate and DF.table.copy ({}, Plater.db.profile.script_data) or {}
-				local hook_data_backup = isUpdate and keepModsNotInUpdate and DF.table.copy ({}, Plater.db.profile.hook_data) or {}
+				local script_data_backup = (isUpdate or keepModsNotInUpdate) and DF.table.copy ({}, Plater.db.profile.script_data) or {}
+				local hook_data_backup = (isUpdate or keepModsNotInUpdate) and DF.table.copy ({}, Plater.db.profile.hook_data) or {}
 				
 				-- switch to profile
 				Plater.db:SetProfile (profileName)
@@ -545,35 +545,41 @@ function Plater.OpenOptionsPanel()
 					Plater.db.profile.ui_parent_scale_tune = 0
 				end
 				
-				if isUpdate and keepModsNotInUpdate then
-					-- keep mods/scripts which are not part of the profile
-					for index, curScript in ipairs(script_data_backup) do
+				if isUpdate or keepModsNotInUpdate then
+					-- copy user settings for mods/scripts and keep mods/scripts which are not part of the profile
+					for index, oldScriptObject in ipairs(script_data_backup) do
 						local scriptDB = Plater.db.profile.script_data or {}
 						local found = false
 						for i = 1, #scriptDB do
 							local scriptObject = scriptDB [i]
-							if (scriptObject.Name == curScript.Name) then
+							if (scriptObject.Name == oldScriptObject.Name) then
+								if isUpdate then
+									Plater.UpdateOptionsForModScriptImport(scriptObject, oldScriptObject)
+								end
 								found = true
 								break
 							end
 						end
-						if not found then
-							tinsert (scriptDB, curScript)
+						if not found and keepModsNotInUpdate then
+							tinsert (scriptDB, oldScriptObject)
 						end
 					end
 					
-					for index, curScript in ipairs(hook_data_backup) do
+					for index, oldScriptObject in ipairs(hook_data_backup) do
 						local scriptDB = Plater.db.profile.hook_data or {}
 						local found = false
 						for i = 1, #scriptDB do
 							local scriptObject = scriptDB [i]
-							if (scriptObject.Name == curScript.Name) then
+							if (scriptObject.Name == oldScriptObject.Name) then
+								if isUpdate then
+									Plater.UpdateOptionsForModScriptImport(scriptObject, oldScriptObject)
+								end
 								found = true
 								break
 							end
 						end
-						if not found then
-							tinsert (scriptDB, curScript)
+						if not found and keepModsNotInUpdate then
+							tinsert (scriptDB, oldScriptObject)
 						end
 					end
 				end
