@@ -10253,15 +10253,14 @@ end
 		end
 
 		--copy options to global env
+		-- ensure options are valid:
+		Plater.CreateOptionTableForScriptObject(scriptObject)
 		local scriptOptions = scriptObject.Options
-		if (not scriptOptions) then
-			Plater.CreateOptionTableForScriptObject(scriptObject)
-			scriptOptions = scriptObject.Options
-		end
+		local scriptOptionsValues = scriptObject.OptionsValues
 
 		for i = 1, #scriptOptions do
 			local thisOption = scriptOptions[i]
-			PLATER_GLOBAL_MOD_ENV [scriptObject.Name].config[thisOption.Key] = thisOption.Value
+			PLATER_GLOBAL_MOD_ENV [scriptObject.Name].config[thisOption.Key] = scriptOptionsValues[thisOption.Key] or thisOption.Value
 		end
 		
 		--compile
@@ -10344,15 +10343,14 @@ end
 		end
 
 		--copy options to global env
+		-- ensure options are valid:
+		Plater.CreateOptionTableForScriptObject(scriptObject)
 		local scriptOptions = scriptObject.Options
-		if (not scriptOptions) then
-			Plater.CreateOptionTableForScriptObject(scriptObject)
-			scriptOptions = scriptObject.Options
-		end
+		local scriptOptionsValues = scriptObject.OptionsValues
 
 		for i = 1, #scriptOptions do
 			local thisOption = scriptOptions[i]
-			PLATER_GLOBAL_SCRIPT_ENV [scriptObject.Name].config[thisOption.Key] = thisOption.Value
+			PLATER_GLOBAL_SCRIPT_ENV [scriptObject.Name].config[thisOption.Key] = scriptOptionsValues[thisOption.Key] or thisOption.Value
 		end
 
 		--compile
@@ -10863,6 +10861,8 @@ end
 			for hookName, hookCode in pairs (indexTable ["9"]) do
 				scriptObject.Hooks [hookName] = hookCode
 			end
+			
+			scriptObject.Options = indexTable.options
 
 			scriptObject.url         = indexTable.url or ""
 			scriptObject.version = indexTable.version or -1
@@ -10884,6 +10884,7 @@ end
 			scriptObject.Time  		= indexTable ["8"]
 			scriptObject.Revision  		= indexTable ["9"]
 			scriptObject.PlaterCore  	= indexTable ["10"]
+			scriptObject.Options = indexTable.options
 			scriptObject.url  	 = indexTable.url or ""
 			scriptObject.version = indexTable.version or -1
 			scriptObject.semver  = indexTable.semver or ""
@@ -10986,7 +10987,7 @@ end
 			t ["options"] = scriptObject.Options or {}
 			
 			t ["addon"] = "Plater"
-			t ["toc"] = select(4, GetBuildInfo()) -- provide export toc
+			t ["tocversion"] = select(4, GetBuildInfo()) -- provide export toc
 			t ["type"] = "hook"
 			
 			return t
@@ -11013,7 +11014,7 @@ end
 			t ["options"] = scriptObject.Options or {}
 			
 			t ["addon"] = "Plater"
-			t ["toc"] = select(4, GetBuildInfo()) -- provide export toc
+			t ["tocversion"] = select(4, GetBuildInfo()) -- provide export toc
 			t ["type"] = "script"
 			
 			return t

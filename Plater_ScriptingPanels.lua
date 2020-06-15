@@ -302,8 +302,9 @@ Plater.OpenCopyUrlDialog = openURL
 --initialize the options panel for a script object
 function Plater.CreateOptionTableForScriptObject(scriptObject)
 	scriptObject.Options = scriptObject.Options or {}
-
-	tinsert(scriptObject.Options, {
+	scriptObject.OptionsValues = scriptObject.OptionsValues or {}
+	
+--[[	tinsert(scriptObject.Options, {
 		Type = 5, --label
 		Name = "Options Intro",
 		Key = "",
@@ -320,6 +321,7 @@ function Plater.CreateOptionTableForScriptObject(scriptObject)
 		Icon = "Interface\\AddOns\\Plater\\images\\option_blank",
 		Value = ""
 	});
+]]--
 end
 
 --shared functions between all script tabs
@@ -1712,18 +1714,11 @@ end
 						mainFrame.HookScrollBox:Refresh()
 					end
 
-					--does the table exists? old scripts does not have them
-					local optionsTable = scriptObject.Options
-					if (not optionsTable) then
-						optionsTable = {}
-						scriptObject.Options = optionsTable
-					end
+					--build the menu with options for the end user of the mod or script if it does not exist
+					Plater.CreateOptionTableForScriptObject(scriptObject)
 
-					--build the menu with options for the end user of the mod or script
-					local options = optionsTable
-					if (#options == 0) then
-						Plater.CreateOptionTableForScriptObject(scriptObject)
-					end
+					local options = scriptObject.Options
+					local thisOptionsValues = scriptObject.OptionsValues
 
 					local menu = {}
 					for i = 1, #options do
@@ -1731,9 +1726,12 @@ end
 						local newOption = {
 							name = thisOption.Name,
 							desc = thisOption.Desc,
-							get = function() return thisOption.Value end,
+							get = function()
+								return (thisOptionsValues[thisOption.Key] == nil and thisOption.Value) or thisOptionsValues[thisOption.Key]
+							end,
 							set = function (self, fixedparam, value)
-								thisOption.Value = value
+								thisOptionsValues[thisOption.Key] = value
+								--thisOption.Value = value
 							end,
 						}
 
@@ -1741,7 +1739,8 @@ end
 						if (thisOption.Type == 1) then --color
 							newOption.type = "color"
 							newOption.set = function (self, r, g, b, a)
-								thisOption.Value = {r, g, b, a}
+								thisOptionsValues[thisOption.Key] = {r, g, b, a}
+								--thisOption.Value = {r, g, b, a}
 							end
 
 						elseif (thisOption.Type == 2) then --number
@@ -1749,7 +1748,10 @@ end
 							newOption.min = thisOption.Min
 							newOption.max = thisOption.Max
 							newOption.usedecimals = thisOption.Fraction
-							newOption.step = 1
+							newOption.step = thisOption.Fraction and 0.01 or 1
+							newOption.set = function (self, fixedparam, value)
+								thisOptionsValues[thisOption.Key] = thisOption.Fraction and value or math.floor(value)
+							end
 
 						elseif (thisOption.Type == 3) then --text
 							newOption.type = "textentry"
