@@ -10960,8 +10960,8 @@ end
 	end
 
 	--make an indexScriptTable for the script object using indexes instead of key to decrease the size of the string to be exported
-	function Plater.PrepareTableToExport (scriptObject)
-	--function Plater.PrepareTableToExport_OLD (scriptObject)
+	--function Plater.PrepareTableToExport (scriptObject)
+	function Plater.PrepareTableToExport_OLD (scriptObject)
 		
 		if (scriptObject.Hooks) then
 			--script for hooks
@@ -11006,8 +11006,8 @@ end
 		end
 	end
 	
-	function Plater.PrepareTableToExportStringIndexes (scriptObject)
-	--function Plater.PrepareTableToExport (scriptObject)
+	--function Plater.PrepareTableToExportStringIndexes (scriptObject)
+	function Plater.PrepareTableToExport (scriptObject)
 		
 		if (scriptObject.Hooks) then
 			--script for hooks
