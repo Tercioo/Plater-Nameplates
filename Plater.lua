@@ -8455,9 +8455,18 @@ end
 	local GameTooltipFrameTextLeft2 = _G ["PlaterScanTooltipTextLeft2"]
 	
 	function Plater.GetActorSubName (plateFrame) --private
+		local cbMode = GetCVar("colorblindMode") == "1"
 		GameTooltipFrame:SetOwner (WorldFrame, "ANCHOR_NONE")
 		GameTooltipFrame:SetHyperlink ("unit:" .. (plateFrame [MEMBER_GUID] or ''))
-		return GameTooltipFrameTextLeft2:GetText()
+		--print(cbMode, GetCVar("colorblindMode"), GameTooltipFrameTextLeft3 and GameTooltipFrameTextLeft3:GetText(), PlaterScanTooltip:NumLines())
+		if cbMode then
+			local GameTooltipFrameTextLeft3 = GameTooltipFrameTextLeft3 or _G ["PlaterScanTooltipTextLeft3"]
+			return GameTooltipFrameTextLeft3 and GameTooltipFrameTextLeft3:GetText() or GameTooltipFrameTextLeft2:GetText()
+		else
+			return GameTooltipFrameTextLeft2:GetText()
+		end
+		
+		
 	end
 
 	local GameTooltipScanQuest = CreateFrame ("GameTooltip", "PlaterScanQuestTooltip", nil, "GameTooltipTemplate")
