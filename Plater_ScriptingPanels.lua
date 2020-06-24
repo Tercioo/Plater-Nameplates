@@ -1259,6 +1259,11 @@ end
 				end
 
 				function mainFrame.selectScriptOptionToEdit(optionIndex)
+					--hide all frames holding options for specific types of options
+					for i = 1, #mainFrame.TypeFrames do
+						mainFrame.TypeFrames[i]:Hide()
+					end
+					
 					mainFrame.optionSelected = optionIndex
 					mainFrame.ScriptOptionsScrollBox:Refresh()
 					mainFrame.SharedOptionsFrame:RefreshOptions()
@@ -1271,11 +1276,6 @@ end
 					end
 
 					mainFrame.SharedOptionsFrame:Show()
-
-					--hide all frames holding options for specific types of options
-					for i = 1, #mainFrame.TypeFrames do
-						mainFrame.TypeFrames[i]:Hide()
-					end
 
 					--show the frame for this option type
 					mainFrame.TypeFrames[optionType]:Show()
