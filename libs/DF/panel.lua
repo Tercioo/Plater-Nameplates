@@ -7115,13 +7115,13 @@ DF.StatusBarFunctions = {
 		if ( (not oldMetaPrototype.dversion) or (oldMetaPrototype.dversion < DF.dversion) ) then
 			--the version is older them the currently loading one
 			--copy the new values into the old metatable
-			for funcName, _ in pairs(metaPrototype) do
-				oldMetaPrototype[funcName] = metaPrototype[funcName]
+			for funcName, _ in pairs(healthBarMetaPrototype) do
+				oldMetaPrototype[funcName] = healthBarMetaPrototype[funcName]
 			end
 		end
 	else
 		--first time loading the framework
-		_G[DF.GlobalWidgetControlNames ["healthBar"]] = metaPrototype
+		_G[DF.GlobalWidgetControlNames ["healthBar"]] = healthBarMetaPrototype
 	end
 
 	local healthBarMetaFunctions = _G[DF.GlobalWidgetControlNames ["healthBar"]]
