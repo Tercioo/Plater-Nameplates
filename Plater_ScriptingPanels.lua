@@ -2270,6 +2270,9 @@ function Plater.CreateHookingPanel()
 		
 		--cleanup:
 		newScript.HooksTemp  = {}
+		newScript.url = nil
+		newScript.semver = nil
+		newScript.version = nil
 		
 		tinsert (Plater.db.profile.hook_data, newScript)
 		hookFrame.ScriptSelectionScrollBox:Refresh()
@@ -3465,6 +3468,11 @@ function Plater.CreateScriptingPanel()
 	function scriptingFrame.DuplicateScript (scriptId)
 		local scriptToBeCopied = scriptingFrame.GetScriptObject (scriptId)
 		local newScript = DF.table.copy ({}, scriptToBeCopied)
+		
+		--cleanup:
+		newScript.url = nil
+		newScript.semver = nil
+		newScript.version = nil
 		
 		tinsert (Plater.db.profile.script_data, newScript)
 		scriptingFrame.ScriptSelectionScrollBox:Refresh()
