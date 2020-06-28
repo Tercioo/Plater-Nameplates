@@ -1197,7 +1197,7 @@ end
 				"Toggle", --just a yes or not
 				"Label", --a text to name a section in the options
 				"Blank Line", --an empty line to separate two sections
-				"Texture", --a path for an image
+				-- not yet: "Texture", --a path for an image
 			}
 			local getListOfAvailableOptions = function()
 				local t = {}
