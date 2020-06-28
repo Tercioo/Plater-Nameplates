@@ -1197,7 +1197,7 @@ end
 				"Toggle", --just a yes or not
 				"Label", --a text to name a section in the options
 				"Blank Line", --an empty line to separate two sections
-				"Texture", --a path for an image
+				-- not yet: "Texture", --a path for an image
 			}
 			local getListOfAvailableOptions = function()
 				local t = {}
@@ -2270,6 +2270,9 @@ function Plater.CreateHookingPanel()
 		
 		--cleanup:
 		newScript.HooksTemp  = {}
+		newScript.url = nil
+		newScript.semver = nil
+		newScript.version = nil
 		
 		tinsert (Plater.db.profile.hook_data, newScript)
 		hookFrame.ScriptSelectionScrollBox:Refresh()
@@ -3465,6 +3468,11 @@ function Plater.CreateScriptingPanel()
 	function scriptingFrame.DuplicateScript (scriptId)
 		local scriptToBeCopied = scriptingFrame.GetScriptObject (scriptId)
 		local newScript = DF.table.copy ({}, scriptToBeCopied)
+		
+		--cleanup:
+		newScript.url = nil
+		newScript.semver = nil
+		newScript.version = nil
 		
 		tinsert (Plater.db.profile.script_data, newScript)
 		scriptingFrame.ScriptSelectionScrollBox:Refresh()
