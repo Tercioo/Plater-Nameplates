@@ -1075,7 +1075,7 @@ end
 
 		local script_options_topleft_anchor = {235, -25}
 		local script_options_scroll_size = {170, 389}
-		local script_options_scrollbox_lines = 10
+		local script_options_scrollbox_lines = 15
 		local script_options_line_height = 24
 		local script_options_background_size = {620, 453}
 		local options_frame_width = 407
