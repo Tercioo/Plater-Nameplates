@@ -73,8 +73,9 @@ function Plater.CreateBossModAuraFrame(unitFrame)
 		icon_width = Plater.db.profile.bossmod_aura_width or 32, 
 		icon_height = Plater.db.profile.bossmod_aura_height or 32, 
 		texcoord = {.1, .9, .1, .9},
-		show_text = true,
+		show_text = Plater.db.profile.bossmod_cooldown_text_enabled,
 		text_size = Plater.db.profile.bossmod_cooldown_text_size or 16,
+		surpress_tulla_omni_cc = Plater.db.profile.disable_omnicc_on_auras,
 	}
 	unitFrame.BossModIconFrame = DF:CreateIconRow (unitFrame.healthBar, "$parentBossModIconRow", options)
 	unitFrame.BossModIconFrame:ClearIcons()

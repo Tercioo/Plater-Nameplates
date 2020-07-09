@@ -2060,8 +2060,8 @@ local debuff_options = {
 			Plater.db.profile.disable_omnicc_on_auras = value
 			Plater.RefreshOmniCCGroup()
 		end,
-		name = "Hide OmniCC Timer",
-		desc = "OmniCC timers won't show in the aura.\n\n|cFFFFFF00Important|r: require /reload when toggling this feature.",
+		name = "Hide OmniCC/TullaCC Timer",
+		desc = "OmniCC/TullaCC timers won't show in the aura.\n\n|cFFFFFF00Important|r: require /reload when toggling this feature.",
 	},
 	
 	{
@@ -4721,6 +4721,16 @@ Plater.CreateAuraTesting()
 			{type = "blank"},
 			
 			{type = "label", get = function() return "Cooldown Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.bossmod_cooldown_text_enabled end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.bossmod_cooldown_text_enabled = value
+					Plater.UpdateAllPlates()
+				end,
+				name = L["OPTIONS_ENABLED"],
+				desc = "Enable Cooldown Text.",
+			},
 			--cd text size
 			{
 				type = "range",
