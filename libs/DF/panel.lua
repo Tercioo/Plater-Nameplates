@@ -8301,16 +8301,17 @@ DF.CastFrameFunctions = {
 			self.flashTexture:Hide()
 			self:Animation_StopAllAnimations()
 			
+			self:SetAlpha (1)
+			
+			--> set the statusbar color
+			self:UpdateCastColor()
+			
 			if (not self:IsShown()) then
 				self:Animation_FadeIn()
 			end
 			
 			self.Spark:Show()
-			self:SetAlpha (1)
 			self:Show()
-		
-		--> set the statusbar color
-		self:UpdateCastColor()
 		
 		--> update the interrupt cast border
 		self:UpdateInterruptState()
@@ -8357,16 +8358,17 @@ DF.CastFrameFunctions = {
 			self.flashTexture:Hide()
 			self:Animation_StopAllAnimations()
 			
+			self:SetAlpha (1)
+			
+			--> set the statusbar color
+			self:UpdateCastColor()
+			
 			if (not self:IsShown()) then
 				self:Animation_FadeIn()
 			end
 			
 			self.Spark:Show()
-			self:SetAlpha (1)
 			self:Show()
-			
-		--> set the statusbar color
-		self:UpdateCastColor()
 		
 		--> update the interrupt cast border
 		self:UpdateInterruptState()
