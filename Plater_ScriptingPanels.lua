@@ -4518,6 +4518,7 @@ function Plater.CreateScriptingPanel()
 
 		--change the script code type (when the user select from normal runtime code or constructor code)
 			local on_select_code_type =  function (self, fixed_parameter, value_selected)
+				print(fixed_parameter, value_selected)
 				--get the current editing script
 				local scriptObject = scriptingFrame.GetCurrentScriptObject()
 
@@ -4574,16 +4575,16 @@ function Plater.CreateScriptingPanel()
 				local code_oninit_button = DF:CreateButton(scriptingFrame, on_select_code_type, codeButtonSize[1], codeButtonSize[2], "Initialization", 5, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 				code_oninit_button:SetPoint("topleft", scriptingFrame.CodeEditorLuaEntry, "bottomleft", 0, -15)
 
-				local code_constructor_button = DF:CreateButton(scriptingFrame, on_select_code_type, codeButtonSize[1], codeButtonSize[2], "Constructor", 1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				local code_constructor_button = DF:CreateButton(scriptingFrame, on_select_code_type, codeButtonSize[1], codeButtonSize[2], "Constructor", 2, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 				code_constructor_button:SetPoint("left", code_oninit_button, "right", 2, 0)
 
-				local code_onshow_button = DF:CreateButton(scriptingFrame, on_select_code_type, codeButtonSize[1], codeButtonSize[2], "On Show", 2, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				local code_onshow_button = DF:CreateButton(scriptingFrame, on_select_code_type, codeButtonSize[1], codeButtonSize[2], "On Show", 4, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 				code_onshow_button:SetPoint("left", code_constructor_button, "right", 2, 0)
 
-				local code_onupdate_button = DF:CreateButton(scriptingFrame, on_select_code_type, codeButtonSize[1], codeButtonSize[2], "On Update", 3, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				local code_onupdate_button = DF:CreateButton(scriptingFrame, on_select_code_type, codeButtonSize[1], codeButtonSize[2], "On Update", 1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 				code_onupdate_button:SetPoint("left", code_onshow_button, "right", 2, 0)
 
-				local code_hide_button = DF:CreateButton(scriptingFrame, on_select_code_type, codeButtonSize[1], codeButtonSize[2], "On Hide", 4, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				local code_hide_button = DF:CreateButton(scriptingFrame, on_select_code_type, codeButtonSize[1], codeButtonSize[2], "On Hide", 3, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 				code_hide_button:SetPoint("left", code_onupdate_button, "right", 2, 0)
 
 				tinsert(scriptingFrame.scriptButtons, code_constructor_button)
