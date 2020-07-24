@@ -1809,7 +1809,8 @@ Plater.DefaultSpellRangeList = {
 	--self is plateFrame, w, h aren't reliable
 	function Plater.UpdateUIParentScale (self, w, h) --private 
 		if (self.unitFrame) then
-			local defaultScale = self:GetEffectiveScale()
+			--local defaultScale = self:GetEffectiveScale()
+			local defaultScale = UIParent:GetEffectiveScale()
 			if (defaultScale < 0.4) then
 				--assuming the nameplate is in process of being removed from the screen if the scale if lower than .4
 				self.unitFrame:SetScale (defaultScale)
@@ -2271,7 +2272,11 @@ Plater.DefaultSpellRangeList = {
 		
 		--~created ~events ~oncreated 
 		NAME_PLATE_CREATED = function (event, plateFrame)
-			
+			ViragDevTool_AddData({
+				ctime = GetTime(),
+				unit = plateFrame [MEMBER_UNITID] or "nil",
+				stack = debugstack(),
+			}, "NAME_PLATE_CREATED - " .. (plateFrame [MEMBER_UNITID] or "nil"))
 			--> create the unitframe
 				local unitFrameOptions = {
 					ShowPowerBar = false, 
@@ -2303,12 +2308,15 @@ Plater.DefaultSpellRangeList = {
 				--March 3rd, 2019
 				local newUnitFrame
 				if (DB_USE_UIPARENT) then
+					--TODO: why is it not showing properly when V / V hide / show but when leaving / entering scren??? -> plateFrame for now...
 					--when using UIParent as the unit frame parent, adjust the unitFrame scale to be equal to blizzard plateFrame
-					newUnitFrame = DF:CreateUnitFrame (UIParent, plateFrame:GetName() .. "PlaterUnitFrame", unitFrameOptions, healthBarOptions, castBarOptions, powerBarOptions)
+					--newUnitFrame = DF:CreateUnitFrame (UIParent, plateFrame:GetName() .. "PlaterUnitFrame", unitFrameOptions, healthBarOptions, castBarOptions, powerBarOptions)
+					newUnitFrame = DF:CreateUnitFrame (plateFrame, plateFrame:GetName() .. "PlaterUnitFrame", unitFrameOptions, healthBarOptions, castBarOptions, powerBarOptions)
+					--newUnitFrame:SetPoint("CENTER", plateFrame)
 					newUnitFrame:SetAllPoints()
 					newUnitFrame:SetFrameStrata ("BACKGROUND")
 
-					plateFrame:HookScript("OnSizeChanged", Plater.UpdateUIParentScale)
+					--plateFrame:HookScript("OnSizeChanged", Plater.UpdateUIParentScale)
 					
 					--create a 33ms show animation played when the nameplate is added in the screen
 					--nevermind, unitFrame childs are kepping the last alpha value of the animation instead of reseting to their defaults
@@ -2326,25 +2334,26 @@ Plater.DefaultSpellRangeList = {
 				end
 
 				plateFrame.unitFrame = newUnitFrame
-				plateFrame.unitFrame:EnableMouse (false)
+				--plateFrame.unitFrame:SetPoint("center", plateFrame)
+				plateFrame.unitFrame:EnableMouse(false)
 				
 				--mix plater functions (most are for scripting support) into the unit frame
-				DF:Mixin (newUnitFrame, Plater.ScriptMetaFunctions)
+				DF:Mixin(newUnitFrame, Plater.ScriptMetaFunctions)
 
 				--hook the retail nameplate
-				plateFrame.UnitFrame:HookScript ("OnShow", Plater.OnRetailNamePlateShow)
+				--plateFrame.UnitFrame:HookScript("OnShow", Plater.OnRetailNamePlateShow)
 				
 				--OnHide handler
-				newUnitFrame:HookScript ("OnHide", newUnitFrame.OnHideWidget)
+				newUnitFrame:HookScript("OnHide", newUnitFrame.OnHideWidget)
 
 				--OnHealthUpdate
-				newUnitFrame.healthBar:SetHook ("OnHealthChange", Plater.OnHealthChange)
-				newUnitFrame.healthBar:SetHook ("OnHealthMaxChange", Plater.OnHealthMaxChange)
+				newUnitFrame.healthBar:SetHook("OnHealthChange", Plater.OnHealthChange)
+				newUnitFrame.healthBar:SetHook("OnHealthMaxChange", Plater.OnHealthMaxChange)
 				
 				--register details framework hooks
-				newUnitFrame.castBar:SetHook ("OnShow", Plater.CastBarOnShow_Hook)
-				hooksecurefunc (newUnitFrame.castBar, "OnEvent", Plater.CastBarOnEvent_Hook)
-				hooksecurefunc (newUnitFrame.castBar, "OnTick", Plater.CastBarOnTick_Hook)
+				newUnitFrame.castBar:SetHook("OnShow", Plater.CastBarOnShow_Hook)
+				hooksecurefunc(newUnitFrame.castBar, "OnEvent", Plater.CastBarOnEvent_Hook)
+				hooksecurefunc(newUnitFrame.castBar, "OnTick", Plater.CastBarOnTick_Hook)
 				
 				newUnitFrame.HasHooksRegistered = true
 				
@@ -2370,7 +2379,7 @@ Plater.DefaultSpellRangeList = {
 
 			--> buff frames
 				--main buff frame
-				plateFrame.unitFrame.BuffFrame = CreateFrame ("frame", plateFrame.unitFrame:GetName() .. "BuffFrame1", plateFrame.unitFrame)
+				plateFrame.unitFrame.BuffFrame = CreateFrame ("frame", plateFrame.unitFrame:GetName() .. "BuffFrame1", plateFrame.unitFrame, BackdropTemplateMixin and "BackdropTemplate")
 				plateFrame.unitFrame.BuffFrame.amountAurasShown = 0
 				plateFrame.unitFrame.BuffFrame.PlaterBuffList = {}
 				plateFrame.unitFrame.BuffFrame.isNameplate = true
@@ -2379,7 +2388,7 @@ Plater.DefaultSpellRangeList = {
 				plateFrame.unitFrame.BuffFrame.AuraCache = {}
 				
 				--secondary buff frame
-				plateFrame.unitFrame.BuffFrame2 = CreateFrame ("frame", plateFrame.unitFrame:GetName() .. "BuffFrame2", plateFrame.unitFrame)
+				plateFrame.unitFrame.BuffFrame2 = CreateFrame ("frame", plateFrame.unitFrame:GetName() .. "BuffFrame2", plateFrame.unitFrame, BackdropTemplateMixin and "BackdropTemplate")
 				plateFrame.unitFrame.BuffFrame2.amountAurasShown = 0
 				plateFrame.unitFrame.BuffFrame2.PlaterBuffList = {}
 				plateFrame.unitFrame.BuffFrame2.isNameplate = true
@@ -2474,7 +2483,7 @@ Plater.DefaultSpellRangeList = {
 			--> health bar overlay
 				--> create an overlay frame that sits just above the health bar
 				--this is ideal for adding borders and other overlays
-				healthBar.FrameOverlay = CreateFrame ("frame", "$parentOverlayFrame", healthBar)
+				healthBar.FrameOverlay = CreateFrame ("frame", "$parentOverlayFrame", healthBar, BackdropTemplateMixin and "BackdropTemplate")
 				healthBar.FrameOverlay:SetAllPoints()
 			
 			--> execute range textures and animations
@@ -2552,7 +2561,7 @@ Plater.DefaultSpellRangeList = {
 				healthBar.ExtraRaidMark = raidTarget --alias for scripting
 
 				--raid target outside the health bar
-				plateFrame.unitFrame.PlaterRaidTargetFrame = CreateFrame ("frame", nil, plateFrame.unitFrame)
+				plateFrame.unitFrame.PlaterRaidTargetFrame = CreateFrame ("frame", nil, plateFrame.unitFrame, BackdropTemplateMixin and "BackdropTemplate")
 				local targetFrame = plateFrame.unitFrame.PlaterRaidTargetFrame
 				targetFrame:SetSize (22, 22)
 				PixelUtil.SetPoint (targetFrame, "right", healthBar, "left", -15, 0)
@@ -2574,7 +2583,7 @@ Plater.DefaultSpellRangeList = {
 				healthBar.DetailsDamageTaken = healthBar:CreateFontString (nil, "overlay", "GameFontNormal")
 			
 			--> tick frames (these frames are used for OnUpdate scripts)
-				local onTickFrame = CreateFrame ("frame", nil, plateFrame)
+				local onTickFrame = CreateFrame ("frame", nil, plateFrame, BackdropTemplateMixin and "BackdropTemplate")
 				plateFrame.OnTickFrame = onTickFrame
 				onTickFrame.unit = plateFrame [MEMBER_UNITID]
 				onTickFrame.HealthBar = healthBar
@@ -2702,7 +2711,7 @@ Plater.DefaultSpellRangeList = {
 				
 				--> create an overlay frame that sits just above the castbar
 				--this is ideal for adding borders and other overlays
-				plateFrame.unitFrame.castBar.FrameOverlay = CreateFrame ("frame", "$parentOverlayFrame", plateFrame.unitFrame.castBar)
+				plateFrame.unitFrame.castBar.FrameOverlay = CreateFrame ("frame", "$parentOverlayFrame", plateFrame.unitFrame.castBar, BackdropTemplateMixin and "BackdropTemplate")
 				plateFrame.unitFrame.castBar.FrameOverlay:SetAllPoints()
 				--pushing the spell name up
 				plateFrame.unitFrame.castBar.Text:SetParent (plateFrame.unitFrame.castBar.FrameOverlay)
@@ -2723,10 +2732,10 @@ Plater.DefaultSpellRangeList = {
 
 			--> border
 				--create a border using default borders from the retail game
-				local healthBarBorder = CreateFrame ("frame", nil, plateFrame.unitFrame.healthBar, "NamePlateFullBorderTemplate")
+				local healthBarBorder = CreateFrame("frame", nil, plateFrame.unitFrame.healthBar, "NamePlateFullBorderTemplate", BackdropTemplateMixin and "BackdropTemplate")
 				plateFrame.unitFrame.healthBar.border = healthBarBorder
 				
-				local powerBarBorder = CreateFrame ("frame", nil, plateFrame.unitFrame.powerBar, "NamePlateFullBorderTemplate")
+				local powerBarBorder = CreateFrame("frame", nil, plateFrame.unitFrame.powerBar, "NamePlateFullBorderTemplate", BackdropTemplateMixin and "BackdropTemplate")
 				plateFrame.unitFrame.powerBar.border = powerBarBorder
 				powerBarBorder:SetVertexColor (0, 0, 0, 1)
 
@@ -2747,10 +2756,10 @@ Plater.DefaultSpellRangeList = {
 				end
 			
 			--> focus indicator
-				local focusIndicator = healthBar:CreateTexture (nil, "overlay")
-				focusIndicator:SetDrawLayer ("overlay", 2)
-				PixelUtil.SetPoint (focusIndicator, "topleft", healthBar, "topleft", 0, 0)
-				PixelUtil.SetPoint (focusIndicator, "bottomright", healthBar, "bottomright", 0, 0)
+				local focusIndicator = healthBar:CreateTexture(nil, "overlay")
+				focusIndicator:SetDrawLayer("overlay", 2)
+				PixelUtil.SetPoint(focusIndicator, "topleft", healthBar, "topleft", 0, 0)
+				PixelUtil.SetPoint(focusIndicator, "bottomright", healthBar, "bottomright", 0, 0)
 				focusIndicator:Hide()
 				healthBar.FocusIndicator = focusIndicator
 				plateFrame.FocusIndicator = focusIndicator
@@ -2794,7 +2803,11 @@ Plater.DefaultSpellRangeList = {
 
 		-- ~added
 		NAME_PLATE_UNIT_ADDED = function (event, unitBarId)
-		
+			ViragDevTool_AddData({
+				ctime = GetTime(),
+				unit = unitBarId or "nil",
+				stack = debugstack(),
+			}, "NAME_PLATE_UNIT_ADDED - " .. (unitBarId or "nil"))
 			--debug for hunter faith death
 --			if (select (2, UnitClass (unitBarId)) == "HUNTER") then
 --				print ("nameplate added", UnitName (unitBarId))
@@ -2802,6 +2815,7 @@ Plater.DefaultSpellRangeList = {
 		
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId)
 			if (not plateFrame) then
+				print("no plateFrame!")
 				return
 			end
 			
@@ -2829,16 +2843,24 @@ Plater.DefaultSpellRangeList = {
 				unitFrame.ShowUIParentAnimation:Play()
 			end
 			
-			if (not unitFrame.HasHooksRegistered) then
-				--hook the retail nameplate
-				plateFrame.UnitFrame:HookScript ("OnShow", Plater.OnRetailNamePlateShow)
-				
+			--unitFrame:SetPoint("CENTER", plateFrame)
+			
+			if (not plateFrame.UnitFrame.HasPlaterHooksRegistered) then
+                --hook the retail nameplate
+                plateFrame.UnitFrame:HookScript("OnShow", Plater.OnRetailNamePlateShow)
+                plateFrame.UnitFrame.HasPlaterHooksRegistered = true
+            end
+			
+			plateFrame:HookScript("OnSizeChanged", Plater.UpdateUIParentScale)
+			
+			--check if the hide hook is registered on this Blizzard nameplate
+			if (not unitFrame.HasHideHookRegistered) then
 				--onHide for unitFrame
 				plateFrame.unitFrame:HookScript ("OnHide", unitFrame.OnHideWidget)
 				--onShow for castbar
 				castBar:SetHook ("OnShow", Plater.CastBarOnShow_Hook)
 			
-				unitFrame.HasHooksRegistered = true
+				unitFrame.HasHideHookRegistered = true
 			end
 			
 			--powerbar are disabled by default in the settings table, called SetUnit will make the framework hide the power bar
@@ -3116,6 +3138,11 @@ Plater.DefaultSpellRangeList = {
 
 		-- ~removed
 		NAME_PLATE_UNIT_REMOVED = function (event, unitBarId)
+			ViragDevTool_AddData({
+				ctime = GetTime(),
+				unit = unitBarId or "nil",
+				stack = debugstack(),
+			}, "NAME_PLATE_UNIT_REMOVED - " .. (unitBarId or "nil"))
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId)
 			
 			--debug for hunter faith death
@@ -3174,7 +3201,7 @@ Plater.DefaultSpellRangeList = {
 			--March 3rd, 2019
 			if (DB_USE_UIPARENT) then
 				-- need to explicitly hide the frame now, as it is not tethered to the blizz nameplate
-				plateFrame.unitFrame:Hide()
+				--plateFrame.unitFrame:Hide()
 			end
 			--end of patch
 			
@@ -3702,7 +3729,7 @@ function Plater.OnInit() --private ~oninit
 	--> cast frame ~castbar ~testcast
 	
 		--test castbar
-		Plater.CastBarTestFrame = CreateFrame ("frame", nil, UIParent)
+		Plater.CastBarTestFrame = CreateFrame ("frame", nil, UIParent, BackdropTemplateMixin and "BackdropTemplate")
 		
 		function Plater.StartCastBarTest()
 			Plater.IsShowingCastBarTest = true
@@ -4495,7 +4522,7 @@ end
 	end
 
 	function Plater.CreateAuraIcon (parent, name) --private
-		local newIcon = CreateFrame ("Button", name, parent)
+		local newIcon = CreateFrame ("Button", name, parent, BackdropTemplateMixin and "BackdropTemplate")
 		newIcon:Hide()
 		newIcon:SetSize (20, 16)
 		
@@ -4513,7 +4540,7 @@ end
 		newIcon.Icon:SetPoint ("center")
 		newIcon.Icon:SetTexCoord (.05, .95, .1, .6)
 		
-		newIcon.Cooldown = CreateFrame ("cooldown", "$parentCooldown", newIcon, "CooldownFrameTemplate")
+		newIcon.Cooldown = CreateFrame ("cooldown", "$parentCooldown", newIcon, "CooldownFrameTemplate, BackdropTemplate")
 		newIcon.Cooldown:SetPoint ("center", 0, -1)
 		newIcon.Cooldown:SetAllPoints()
 		newIcon.Cooldown:EnableMouse (false)
@@ -4529,7 +4556,7 @@ end
 		--newIcon.Cooldown:SetReverse (true)
 		--newIcon.Cooldown:SetCooldownUNIX (startTime, buildDuration);
 		
-		newIcon.CountFrame = CreateFrame ("frame", "$parentCountFrame", newIcon)
+		newIcon.CountFrame = CreateFrame ("frame", "$parentCountFrame", newIcon, BackdropTemplateMixin and "BackdropTemplate")
 		newIcon.CountFrame:SetAllPoints()
 		newIcon.CountFrame:EnableMouse (false)
 		newIcon.CountFrame.Count = newIcon.CountFrame:CreateFontString (nil, "artwork", "NumberFontNormalSmall")
@@ -5551,6 +5578,11 @@ end
 	-- ~size ~updatesize
 	--update thee nameplate size including healthbar, castbar, etc
 	function Plater.UpdatePlateSize (plateFrame)
+		ViragDevTool_AddData({
+				ctime = GetTime(),
+				unit = plateFrame [MEMBER_UNITID] or "nil",
+				stack = debugstack(),
+			}, "UpdatePlateSize - " .. (plateFrame [MEMBER_UNITID] or "nil"))
 		if (not plateFrame.actorType) then
 			return
 		end
@@ -5680,9 +5712,9 @@ end
 	
 	--show the background of the clickable aura, this is also shown when changing the clickable area
 	function Plater.SetPlateBackground (plateFrame)
-		plateFrame:SetBackdrop ({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", tile = true, tileSize = 16, edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
-		plateFrame:SetBackdropColor (0, 0, 0, 0.5)
-		plateFrame:SetBackdropBorderColor (0, 0, 0, 1)
+		plateFrame.unitFrame:SetBackdrop ({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", tile = true, tileSize = 16, edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
+		plateFrame.unitFrame:SetBackdropColor (0, 0, 0, 0.5)
+		plateFrame.unitFrame:SetBackdropBorderColor (0, 0, 0, 1)
 	end
 
 	local shutdown_platesize_debug = function (timer)
@@ -5693,7 +5725,7 @@ end
 			if (Plater.db.profile.click_space_always_show) then
 				Plater.SetPlateBackground (plateFrame)
 			else
-				plateFrame:SetBackdrop (nil)
+				plateFrame.unitFrame:SetBackdrop (nil)
 			end
 		end
 		
@@ -7248,7 +7280,7 @@ end
 			if (profile.click_space_always_show) then
 				Plater.SetPlateBackground (plateFrame)
 			else
-				plateFrame:SetBackdrop (nil)
+				plateFrame.unitFrame:SetBackdrop (nil)
 			end
 			
 			--setup cast bar
@@ -7883,7 +7915,7 @@ end
 	
 	--create a new frame for the highlight (when the mouse passes over the nameplate)
 	function Plater.CreateHighlightNameplate (plateFrame) --private
-		local highlightOverlay = CreateFrame ("frame", "$parentHighlightOverlay", plateFrame.unitFrame.healthBar) --why this was parented to UIParent (question mark)
+		local highlightOverlay = CreateFrame ("frame", "$parentHighlightOverlay", plateFrame.unitFrame.healthBar, BackdropTemplateMixin and "BackdropTemplate") --why this was parented to UIParent (question mark)
 		highlightOverlay:EnableMouse (false)
 		highlightOverlay:SetAllPoints()
 		highlightOverlay:SetScript ("OnUpdate", Plater.CheckHighlight)
@@ -7914,7 +7946,7 @@ end
 	end
 	
 	function Plater.CreateHealthFlashFrame (plateFrame) --private
-		local f_anim = CreateFrame ("frame", nil, plateFrame.unitFrame.healthBar)
+		local f_anim = CreateFrame ("frame", nil, plateFrame.unitFrame.healthBar, BackdropTemplateMixin and "BackdropTemplate")
 		f_anim:SetFrameLevel (plateFrame.unitFrame.healthBar:GetFrameLevel()-1)
 		f_anim:SetPoint ("topleft", plateFrame.unitFrame.healthBar, "topleft", -2, 2)
 		f_anim:SetPoint ("bottomright", plateFrame.unitFrame.healthBar, "bottomright", 2, -2)
@@ -7972,7 +8004,7 @@ end
 	function Plater.CreateAggroFlashFrame (plateFrame) --private
 
 		--local f_anim = CreateFrame ("frame", nil, plateFrame.unitFrame.healthBar)
-		local f_anim = CreateFrame ("frame", nil, plateFrame)
+		local f_anim = CreateFrame ("frame", nil, plateFrame, BackdropTemplateMixin and "BackdropTemplate")
 		f_anim:SetFrameLevel (plateFrame.unitFrame.healthBar:GetFrameLevel()+3)
 		f_anim:SetPoint ("topleft", plateFrame.unitFrame.healthBar, "topleft")
 		f_anim:SetPoint ("bottomright", plateFrame.unitFrame.healthBar, "bottomright")
@@ -8277,7 +8309,7 @@ end
 --> combat log reader  ~combatlog ~cleu
 
 
-	local PlaterCLEUParser = CreateFrame ("frame", "PlaterCLEUParserFrame", UIParent)
+	local PlaterCLEUParser = CreateFrame ("frame", "PlaterCLEUParserFrame", UIParent, BackdropTemplateMixin and "BackdropTemplate")
 
 	local parserFunctions = {
 		SPELL_DAMAGE = function (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical)
@@ -8422,7 +8454,7 @@ end
 --> cvars - ~cvars
 	
 function Plater.CreatePlaterButtonAtInterfaceOptions()
-	local f = CreateFrame ("frame", nil, InterfaceOptionsNamesPanel)
+	local f = CreateFrame ("frame", nil, InterfaceOptionsNamesPanel, BackdropTemplateMixin and "BackdropTemplate")
 	f:SetSize (300, 200)
 	f:SetPoint ("topleft", InterfaceOptionsNamesPanel, "topleft", 10, -440)
 	
@@ -8651,10 +8683,11 @@ end
 		end
 		
 		--update the quest cache
-		local numEntries, numQuests = GetNumQuestLogEntries()
+		local numEntries, numQuests = C_QuestLog.GetNumQuestLogEntries()
 		for questId = 1, numEntries do
-			local title, level, suggestedGroup, isHeader, isCollapsed, isComplete, frequency, questId, startEvent, displayQuestID, isOnMap, hasLocalPOI, isTask, isStory = GetQuestLogTitle (questId)
-			if (type (questId) == "number" and questId > 0) then -- and not isComplete
+			--local title, level, suggestedGroup, isHeader, isCollapsed, isComplete, frequency, questId, startEvent, displayQuestID, isOnMap, hasLocalPOI, isTask, isStory = C_QuestLog.GetQuestLogTitle(questId)
+			local title = C_QuestLog.GetTitleForQuestID(questId)
+			if (title and type (questId) == "number" and questId > 0) then -- and not isComplete
 				Plater.QuestCache [title] = true
 			end
 		end
@@ -8682,7 +8715,7 @@ end
 		if (Plater.UpdateQuestCacheThrottle and not Plater.UpdateQuestCacheThrottle._cancelled) then
 			Plater.UpdateQuestCacheThrottle:Cancel()
 		end
-		Plater.UpdateQuestCacheThrottle = C_Timer.NewTimer (2, update_quest_cache)
+		Plater.UpdateQuestCacheThrottle = C_Timer.NewTimer(2, update_quest_cache)
 	end
 
 
@@ -8691,7 +8724,7 @@ end
 
 	function Plater.CreateAuraTesting()
 
-		local auraOptionsFrame = PlaterOptionsPanelContainer.AllFrames [9]
+		local auraOptionsFrame = PlaterOptionsPanelContainer.AllFrames[9]
 
 		auraOptionsFrame.OnUpdateFunc = function (self, deltaTime)
 			
@@ -9153,7 +9186,7 @@ end
 		end
 		
 		if (not frame.__PlaterGlowFrame) then
-			frame.__PlaterGlowFrame = CreateFrame("Frame", nil, frame);
+			frame.__PlaterGlowFrame = CreateFrame("Frame", nil, frame, BackdropTemplateMixin and "BackdropTemplate");
 			frame.__PlaterGlowFrame:SetAllPoints(frame);
 			frame.__PlaterGlowFrame:SetSize(frame:GetSize());
 		end
@@ -9336,7 +9369,7 @@ end
 		end
 
 		--create the flash frame
-		local f = CreateFrame ("frame", "PlaterFlashAnimationFrame".. math.random (1, 100000000), frame)
+		local f = CreateFrame ("frame", "PlaterFlashAnimationFrame".. math.random (1, 100000000), frame, BackdropTemplateMixin and "BackdropTemplate")
 		f:SetFrameLevel (frame:GetFrameLevel()+1)
 		f:SetAllPoints()
 		f:Hide()
@@ -11579,7 +11612,7 @@ function Plater.OpenColorFrame()
 		return s
 	end
 	
-	local a = CreateFrame ("frame", "PlaterColorPreview", UIParent)
+	local a = CreateFrame ("frame", "PlaterColorPreview", UIParent, BackdropTemplateMixin and "BackdropTemplate")
 	a:SetSize (1400, 910)
 	a:SetPoint ("topleft", UIParent, "topleft")
 	

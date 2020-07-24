@@ -769,7 +769,7 @@ end
 	--create a line in the scroll box
 	local create_line_scrollbox = function (self, index)
 		--create a new line
-		local line = CreateFrame ("button", "$parentLine" .. index, self)
+		local line = CreateFrame ("button", "$parentLine" .. index, self, BackdropTemplateMixin and "BackdropTemplate")
 		--get the scripting frame and store in the line
 		line.MainFrame = self:GetParent()
 		
@@ -1104,7 +1104,7 @@ end
 
 		--> admin script options (this frame is used to configurate the options which the script has)
 		--> far below this code there's the code for user options frame
-			local adminFrame = CreateFrame("frame", "$parentEditScriptOptionsAdmin", parent)
+			local adminFrame = CreateFrame("frame", "$parentEditScriptOptionsAdmin", parent, BackdropTemplateMixin and "BackdropTemplate")
 			adminFrame:SetSize(script_options_background_size[1], script_options_background_size[2])
 			adminFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
 			adminFrame:SetBackdropBorderColor (unpack (luaeditor_border_color))
@@ -1113,7 +1113,7 @@ end
 			adminFrame:Hide()
 
 		--> user script options (this frame is where the end user adjust the script settings)
-			local userFrame = CreateFrame("frame", "$parentEditScriptOptionsUser", parent)
+			local userFrame = CreateFrame("frame", "$parentEditScriptOptionsUser", parent, BackdropTemplateMixin and "BackdropTemplate")
 			userFrame:SetSize(edit_script_size[1], edit_script_size[2])
 			userFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
 			userFrame:SetBackdropBorderColor (unpack (luaeditor_border_color))
@@ -1410,7 +1410,7 @@ end
 				
 				--create a new line within the scrollbox containing options created to edit
 				local optionsListCreateLine = function (self, index)
-					local line = CreateFrame ("button", "$parentLine" .. index, self)
+					local line = CreateFrame ("button", "$parentLine" .. index, self, BackdropTemplateMixin and "BackdropTemplate")
 					
 					--set its parameters
 					line:SetPoint ("topleft", self, "topleft", 0, -((index-1) * (script_options_line_height+1)))
@@ -1498,7 +1498,7 @@ end
 				mainFrame.TypeFrames = {}
 
 			--> shared options frame
-				local sharedOptionsFrame = CreateFrame("frame", "$parentSharedOptions", adminFrame)
+				local sharedOptionsFrame = CreateFrame("frame", "$parentSharedOptions", adminFrame, BackdropTemplateMixin and "BackdropTemplate")
 				sharedOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
 				sharedOptionsFrame:SetBackdropColor (0, 0, 0, 0.2)
 				sharedOptionsFrame:SetBackdropBorderColor (0, 0, 0, 1)
@@ -1568,7 +1568,7 @@ end
 			--create subframes to hold panels with specific options for:
 			-- ~options
 			--option: color
-				local colorOptionsFrame = CreateFrame("frame", "$parentColorOptions", adminFrame)
+				local colorOptionsFrame = CreateFrame("frame", "$parentColorOptions", adminFrame, BackdropTemplateMixin and "BackdropTemplate")
 				colorOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
 				colorOptionsFrame:SetBackdropColor (0, 0, 0, 0.2)
 				colorOptionsFrame:SetBackdropBorderColor (0, 0, 0, 1)
@@ -1591,7 +1591,7 @@ end
 				DF:BuildMenuVolatile(colorOptionsFrame, colorOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 
 			--option: number
-				local numberOptionsFrame = CreateFrame("frame", "$parentNumberOptions", adminFrame)
+				local numberOptionsFrame = CreateFrame("frame", "$parentNumberOptions", adminFrame, BackdropTemplateMixin and "BackdropTemplate")
 				numberOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
 				numberOptionsFrame:SetBackdropColor (0, 0, 0, 0.2)
 				numberOptionsFrame:SetBackdropBorderColor (0, 0, 0, 1)
@@ -1638,7 +1638,7 @@ end
 				DF:BuildMenuVolatile(numberOptionsFrame, numberOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 
 			--option: text
-				local textOptionsFrame = CreateFrame("frame", "$parentTextOptions", adminFrame)
+				local textOptionsFrame = CreateFrame("frame", "$parentTextOptions", adminFrame, BackdropTemplateMixin and "BackdropTemplate")
 				textOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
 				textOptionsFrame:SetBackdropColor (0, 0, 0, 0.2)
 				textOptionsFrame:SetBackdropBorderColor (0, 0, 0, 1)
@@ -1661,7 +1661,7 @@ end
 				DF:BuildMenuVolatile(textOptionsFrame, textOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 
 			--option: boolean
-				local booleanOptionsFrame = CreateFrame("frame", "$parentBooleanOptions", adminFrame)
+				local booleanOptionsFrame = CreateFrame("frame", "$parentBooleanOptions", adminFrame, BackdropTemplateMixin and "BackdropTemplate")
 				booleanOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
 				booleanOptionsFrame:SetBackdropColor (0, 0, 0, 0.2)
 				booleanOptionsFrame:SetBackdropBorderColor (0, 0, 0, 1)
@@ -1684,7 +1684,7 @@ end
 				DF:BuildMenuVolatile(booleanOptionsFrame, boolOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 			
 			--option: label
-				local labelOptionsFrame = CreateFrame("frame", "$parentLabelOptions", adminFrame)
+				local labelOptionsFrame = CreateFrame("frame", "$parentLabelOptions", adminFrame, BackdropTemplateMixin and "BackdropTemplate")
 				labelOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
 				labelOptionsFrame:SetBackdropColor (0, 0, 0, 0.2)
 				labelOptionsFrame:SetBackdropBorderColor (0, 0, 0, 1)
@@ -1707,7 +1707,7 @@ end
 				DF:BuildMenuVolatile(labelOptionsFrame, labelOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 
 			--option: blank space
-				local blackspaceOptionsFrame = CreateFrame("frame", "$parentBlankSpaceOptions", adminFrame)
+				local blackspaceOptionsFrame = CreateFrame("frame", "$parentBlankSpaceOptions", adminFrame, BackdropTemplateMixin and "BackdropTemplate")
 				blackspaceOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
 				blackspaceOptionsFrame:SetBackdropColor (0, 0, 0, 0.2)
 				blackspaceOptionsFrame:SetBackdropBorderColor (0, 0, 0, 1)
@@ -1722,7 +1722,7 @@ end
 				DF:BuildMenuVolatile(blackspaceOptionsFrame, blankspaceOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 
 			--option: texture
-				local textureOptionsFrame = CreateFrame("frame", "$parentTextureOptions", adminFrame)
+				local textureOptionsFrame = CreateFrame("frame", "$parentTextureOptions", adminFrame, BackdropTemplateMixin and "BackdropTemplate")
 				textureOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
 				textureOptionsFrame:SetBackdropColor (0, 0, 0, 0.2)
 				textureOptionsFrame:SetBackdropBorderColor (0, 0, 0, 1)
@@ -2046,7 +2046,7 @@ end
 		add_FW_label:SetPoint ("right", add_FW_dropdown, "left", -2, 0)
 		
 		--error text
-		local errortext_frame = CreateFrame ("frame", nil, code_editor)
+		local errortext_frame = CreateFrame ("frame", nil, code_editor, BackdropTemplateMixin and "BackdropTemplate")
 		errortext_frame:SetPoint ("bottomleft", code_editor, "bottomleft", 1, 1)
 		errortext_frame:SetPoint ("bottomright", code_editor, "bottomright", -1, 1)
 		errortext_frame:SetHeight (20)
@@ -2658,7 +2658,7 @@ function Plater.CreateHookingPanel()
 	end
 	
 	--create the frame which will hold the create panel
-	local edit_script_frame = CreateFrame ("frame", "$parentCreateScript", hookFrame)
+	local edit_script_frame = CreateFrame ("frame", "$parentCreateScript", hookFrame, BackdropTemplateMixin and "BackdropTemplate")
 	edit_script_frame:SetSize (unpack (main_frames_size))
 	edit_script_frame:SetScript ("OnShow", function()
 
@@ -2902,7 +2902,7 @@ function Plater.CreateHookingPanel()
 	
 	local hookListCreateLine = function (self, index)
 		--create a new line
-		local line = CreateFrame ("button", "$parentLine" .. index, self)
+		local line = CreateFrame ("button", "$parentLine" .. index, self, BackdropTemplateMixin and "BackdropTemplate")
 		
 		--set its parameters
 		line:SetPoint ("topleft", self, "topleft", 0, -((index-1) * (triggerbox_line_height+1)))
@@ -2928,7 +2928,7 @@ function Plater.CreateHookingPanel()
 		removeButton:SetPoint ("topright", line, "topright")
 		removeButton:GetNormalTexture():SetDesaturated (true)
 		
-		local addButton = CreateFrame ("button", "$parentRemoveButton", line)
+		local addButton = CreateFrame ("button", "$parentRemoveButton", line, BackdropTemplateMixin and "BackdropTemplate")
 		addButton:SetSize (16, 16)
 		addButton:SetScript ("OnClick", addHookToScriptObject)
 		addButton:SetPoint ("right", line, "right")
@@ -3810,7 +3810,7 @@ function Plater.CreateScriptingPanel()
 	end
 	
 	--create the frame which will hold the create panel
-	local edit_script_frame = CreateFrame ("frame", "$parentCreateScript", scriptingFrame)
+	local edit_script_frame = CreateFrame ("frame", "$parentCreateScript", scriptingFrame, BackdropTemplateMixin and "BackdropTemplate")
 	edit_script_frame:SetSize (unpack (main_frames_size))
 	edit_script_frame:SetScript ("OnShow", function()
 
@@ -4082,7 +4082,7 @@ function Plater.CreateScriptingPanel()
 			--create a line in the scroll box
 				local create_line_triggerbox = function (self, index)
 					--create a new line
-					local line = CreateFrame ("button", "$parentLine" .. index, self)
+					local line = CreateFrame ("button", "$parentLine" .. index, self, BackdropTemplateMixin and "BackdropTemplate")
 					--set its parameters
 					line:SetPoint ("topleft", self, "topleft", 0, -((index-1) * (triggerbox_line_height+1)))
 					line:SetSize (triggerbox_size[1], triggerbox_line_height)
@@ -4229,7 +4229,7 @@ function Plater.CreateScriptingPanel()
 					
 						function overlapFrame:CreateNewFrameTable()
 							local i = #overlapFrame.OverlappedScriptFrames + 1
-							local f = CreateFrame ("frame", "$parentTriggerCluster" .. i, overlapFrame)
+							local f = CreateFrame ("frame", "$parentTriggerCluster" .. i, overlapFrame, BackdropTemplateMixin and "BackdropTemplate")
 							f:SetSize (590, 20)
 							f.Reset = reset
 							DF:ApplyStandardBackdrop (f, true, 0.1)
@@ -4260,7 +4260,7 @@ function Plater.CreateScriptingPanel()
 						end
 						
 						function overlapFrame:CreateFrameForScript (f, i)
-							local ff = CreateFrame ("frame", "$parentLine" .. i, f)
+							local ff = CreateFrame ("frame", "$parentLine" .. i, f, BackdropTemplateMixin and "BackdropTemplate")
 							ff:SetSize (580, 22)
 							ff:SetPoint ("topleft", f, "topleft", 0, -24 - ((i - 1) * 23))
 							DF:ApplyStandardBackdrop (ff, true, 0.8)
@@ -4275,7 +4275,7 @@ function Plater.CreateScriptingPanel()
 							local removeTrigger = DF:CreateButton (ff, removeTriggerFromOverlapPanel, 120, 20, "Remove Trigger", nil, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 							
 							--> create a background below the script name to make an impression it's a button
-							local nameBackdrop = CreateFrame ("frame", nil, ff)
+							local nameBackdrop = CreateFrame ("frame", nil, ff, BackdropTemplateMixin and "BackdropTemplate")
 							nameBackdrop:SetSize (140, 20)
 							DF:ApplyStandardBackdrop (nameBackdrop)
 							nameBackdrop:SetPoint ("topleft", ff, "topleft", 3, 0)

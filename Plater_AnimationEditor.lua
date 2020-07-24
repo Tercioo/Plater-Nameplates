@@ -820,7 +820,7 @@ function Plater.CreateSpellAnimationPanel()
 
 	local createNewLineFunc = function (self, index)
 		--create a new line
-		local line = CreateFrame ("button", "$parentLine" .. index, self)
+		local line = CreateFrame ("button", "$parentLine" .. index, self, BackdropTemplateMixin and "BackdropTemplate")
 		
 		--set its parameters
 		line:SetPoint ("topleft", self, "topleft", 1, -((index-1) * (scrollbox_line_height+1)) - 1)
@@ -885,13 +885,13 @@ function Plater.CreateSpellAnimationPanel()
 		cancelButton:SetPoint ("right", okayButton, "left", -20, 0)
 		
 	--editing settings of the animation
-	local animationConfigFrame = CreateFrame ("frame", "$parentAnimationConfig", animationFrame)
+	local animationConfigFrame = CreateFrame ("frame", "$parentAnimationConfig", animationFrame, BackdropTemplateMixin and "BackdropTemplate")
 	DF:ApplyStandardBackdrop (animationConfigFrame)
 	animationConfigFrame:SetPoint ("topleft", animationSelectScrollBox, "topright", 45, 53 + 70)
 	animationConfigFrame:SetSize (825, scrollBoxHeight + 53 + 5)
 	animationFrame.AnimationConfigFrame = animationConfigFrame
 	
-	local animationPreviewFrame = CreateFrame ("frame", "$parentPreviewConfig", animationFrame)
+	local animationPreviewFrame = CreateFrame ("frame", "$parentPreviewConfig", animationFrame, BackdropTemplateMixin and "BackdropTemplate")
 	DF:ApplyStandardBackdrop (animationPreviewFrame)
 	animationPreviewFrame:SetPoint ("topleft", animationConfigFrame, "bottomleft", 0, -5)
 	animationPreviewFrame:SetPoint ("topright", animationConfigFrame, "bottomright", 0, -5)
@@ -917,10 +917,10 @@ function Plater.CreateSpellAnimationPanel()
 	animationFrame.AddScaleButton = addScaleButton	
 	
 	animationFrame.AllConfigFrames = {}
-	local scaleOptionsFrame = CreateFrame ("frame", "$parentScaleFrame", animationConfigFrame)
+	local scaleOptionsFrame = CreateFrame ("frame", "$parentScaleFrame", animationConfigFrame, BackdropTemplateMixin and "BackdropTemplate")
 	scaleOptionsFrame:Hide()
 	animationFrame.AllConfigFrames ["scale"] = scaleOptionsFrame
-	local shakeOptionsFrame = CreateFrame ("frame", "$parentShakeFrame", animationConfigFrame)
+	local shakeOptionsFrame = CreateFrame ("frame", "$parentShakeFrame", animationConfigFrame, BackdropTemplateMixin and "BackdropTemplate")
 	animationFrame.AllConfigFrames ["frameshake"] = shakeOptionsFrame
 	
 	function animationFrame.DisableOptions()

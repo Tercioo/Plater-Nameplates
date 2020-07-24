@@ -276,11 +276,11 @@ function Plater.OpenOptionsPanel()
 	colorNpcsButtonNew.Anim:Play()
 	--]=]
 	
-	local generalOptionsAnchor = CreateFrame ("frame", "$parentOptionsAnchor", frontPageFrame)
+	local generalOptionsAnchor = CreateFrame ("frame", "$parentOptionsAnchor", frontPageFrame, BackdropTemplateMixin and "BackdropTemplate")
 	generalOptionsAnchor:SetSize (1, 1)
 	generalOptionsAnchor:SetPoint ("topleft", frontPageFrame, "topleft", 10, -230)
 	
-	local statusBar = CreateFrame ("frame", nil, f)
+	local statusBar = CreateFrame ("frame", nil, f, BackdropTemplateMixin and "BackdropTemplate")
 	statusBar:SetPoint ("bottomleft", f, "bottomleft")
 	statusBar:SetPoint ("bottomright", f, "bottomright")
 	statusBar:SetHeight (20)
@@ -389,7 +389,7 @@ function Plater.OpenOptionsPanel()
 				profilesFrame.IsImporting = nil
 				
 				if (not profilesFrame.ImportingProfileAlert) then
-					profilesFrame.ImportingProfileAlert = CreateFrame ("frame", "PlaterExportingProfileAlert", UIParent)
+					profilesFrame.ImportingProfileAlert = CreateFrame ("frame", "PlaterExportingProfileAlert", UIParent, BackdropTemplateMixin and "BackdropTemplate")
 					profilesFrame.ImportingProfileAlert:SetSize (340, 75)
 					profilesFrame.ImportingProfileAlert:SetPoint ("center")
 					profilesFrame.ImportingProfileAlert:SetFrameStrata ("TOOLTIP")
@@ -1256,7 +1256,7 @@ end
 local interfaceOptionsDivisor = DF:CreateImage(frontPageFrame, "", 5, 100)
 interfaceOptionsDivisor:SetPoint("topright", frontPageFrame, "topright", -295, -110)
 
-local smallFrameForAlphaMajorOptions = CreateFrame ("frame", frontPageFrame:GetName() .. "AlphaMajors", frontPageFrame)
+local smallFrameForAlphaMajorOptions = CreateFrame ("frame", frontPageFrame:GetName() .. "AlphaMajors", frontPageFrame, BackdropTemplateMixin and "BackdropTemplate")
 smallFrameForAlphaMajorOptions:SetAllPoints()
 
 local alpha_major_options = {
@@ -1586,7 +1586,7 @@ end
 --go to frames
 
 function Plater.CreateGoToTabFrame(parent, text, index)
-	local goToTab = CreateFrame("frame", nil, parent)
+	local goToTab = CreateFrame("frame", nil, parent, BackdropTemplateMixin and "BackdropTemplate")
 	goToTab:SetSize (230, 55)
 	DF:ApplyStandardBackdrop (goToTab, false, 0.6)
 	
@@ -2598,7 +2598,7 @@ Plater.CreateAuraTesting()
 			colorsFrame.Header = DF:CreateHeader (colorsFrame, headerTable, headerOptions)
 			colorsFrame.Header:SetPoint ("topleft", colorsFrame, "topleft", 10, headerY)
 			
-			colorsFrame.ModelFrame = CreateFrame ("PlayerModel", nil, colorsFrame, "ModelWithControlsTemplate")
+			colorsFrame.ModelFrame = CreateFrame ("PlayerModel", nil, colorsFrame, "ModelWithControlsTemplate, BackdropTemplate")
 			colorsFrame.ModelFrame:SetSize (339, 440)
 			colorsFrame.ModelFrame:EnableMouse (true)
 			colorsFrame.ModelFrame:SetPoint ("topleft", colorsFrame.Header, "topright", -342, -scroll_line_height - 1)
@@ -2800,7 +2800,7 @@ Plater.CreateAuraTesting()
 			--line
 			local scroll_createline = function (self, index)
 			
-				local line = CreateFrame ("button", "$parentLine" .. index, self)
+				local line = CreateFrame ("button", "$parentLine" .. index, self, BackdropTemplateMixin and "BackdropTemplate")
 				line:SetPoint ("topleft", self, "topleft", 1, -((index-1)*(scroll_line_height+1)) - 1)
 				line:SetSize (scroll_width - 3 - colorsFrame.ModelFrame:GetWidth(), scroll_line_height)
 				line:SetScript ("OnEnter", line_onenter)
@@ -3109,7 +3109,7 @@ Plater.CreateAuraTesting()
 					bg:SetColorTexture (0.1, 0.1, 0.1, .9)
 					bg:SetAllPoints()
 					
-					local block_mouse_frame = CreateFrame ("frame", nil, import_text_editor)
+					local block_mouse_frame = CreateFrame ("frame", nil, import_text_editor, BackdropTemplateMixin and "BackdropTemplate")
 					block_mouse_frame:SetFrameLevel (block_mouse_frame:GetFrameLevel()-5)
 					block_mouse_frame:SetAllPoints()
 					block_mouse_frame:SetScript ("OnMouseDown", function()
@@ -3342,7 +3342,7 @@ Plater.CreateAuraTesting()
 				addnpc_text:SetPoint ("left", scriptsall_button, "right", 10, 0)
 			
 			-- buttons backdrop
-				local backdropFoot = CreateFrame ("frame", nil, spells_scroll)
+				local backdropFoot = CreateFrame ("frame", nil, spells_scroll, BackdropTemplateMixin and "BackdropTemplate")
 				backdropFoot:SetHeight (20)
 				backdropFoot:SetPoint ("bottomleft", spells_scroll, "bottomleft", 0, 0)
 				backdropFoot:SetPoint ("bottomright", colorsFrame.ModelFrame, "bottomleft", -3, 0)
@@ -3799,7 +3799,7 @@ Plater.CreateAuraTesting()
 		--line
 		local scroll_createline = function (self, index)
 		
-			local line = CreateFrame ("button", "$parentLine" .. index, self)
+			local line = CreateFrame ("button", "$parentLine" .. index, self, BackdropTemplateMixin and "BackdropTemplate")
 			line:SetPoint ("topleft", self, "topleft", 1, -((index-1)*(scroll_line_height+1)) - 1)
 			line:SetSize (scroll_width - 2, scroll_line_height)
 			line:SetScript ("OnEnter", line_onenter)
@@ -4094,7 +4094,7 @@ Plater.CreateAuraTesting()
 	local especial_aura_settings
 	do 
 		--> scroll with auras added to the special aura container
-		local specialAuraFrame = CreateFrame ("frame", nil, auraSpecialFrame)
+		local specialAuraFrame = CreateFrame ("frame", nil, auraSpecialFrame, BackdropTemplateMixin and "BackdropTemplate")
 		specialAuraFrame:SetHeight (480)
 		specialAuraFrame:SetPoint ("topleft", auraSpecialFrame, "topleft", startX, startY)
 		specialAuraFrame:SetPoint ("topright", auraSpecialFrame, "topright", -10, startY)
@@ -4194,7 +4194,7 @@ Plater.CreateAuraTesting()
 		end
 		
 		local scroll_createline = function (self, index)
-			local line = CreateFrame ("button", "$parentLine" .. index, self)
+			local line = CreateFrame ("button", "$parentLine" .. index, self, BackdropTemplateMixin and "BackdropTemplate")
 			line:SetPoint ("topleft", self, "topleft", 1, -((index-1)*(scroll_line_height+1)) - 1)
 			line:SetSize (scroll_width - 2, scroll_line_height)
 			line:SetScript ("OnEnter", line_onenter)
@@ -4208,7 +4208,7 @@ Plater.CreateAuraTesting()
 			
 			local name = line:CreateFontString ("$parentName", "overlay", "GameFontNormal")
 
-			local remove_button = CreateFrame ("button", "$parentRemoveButton", line, "UIPanelCloseButton")
+			local remove_button = CreateFrame ("button", "$parentRemoveButton", line, "UIPanelCloseButton, BackdropTemplate")
 			remove_button:SetSize (21, 21)
 			remove_button:SetScript ("OnClick", onclick_remove_button)
 			remove_button:SetPoint ("right", line, "right", -6, 0)
@@ -4808,7 +4808,7 @@ Plater.CreateAuraTesting()
 		auraSpecialFrame.ExampleImage:SetPoint (330, -234)
 		auraSpecialFrame.ExampleImage:SetAlpha (.834)
 		
-		local fff = CreateFrame ("frame", "$parentExtraIconsSettings", auraSpecialFrame)
+		local fff = CreateFrame ("frame", "$parentExtraIconsSettings", auraSpecialFrame, BackdropTemplateMixin and "BackdropTemplate")
 		fff:SetAllPoints()
 		DF:BuildMenu (fff, especial_aura_settings, 330, startY - 27, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 
@@ -5128,7 +5128,7 @@ do
 					SetCVar ("nameplateSelfTopInset", abs (value - 99) / 100)
 					
 					if (not Plater.PersonalAdjustLocation) then
-						Plater.PersonalAdjustLocation = CreateFrame ("frame", "PlaterPersonalBarLocation", UIParent)
+						Plater.PersonalAdjustLocation = CreateFrame ("frame", "PlaterPersonalBarLocation", UIParent, BackdropTemplateMixin and "BackdropTemplate")
 						local frame = Plater.PersonalAdjustLocation
 						frame:SetWidth (GetScreenWidth())
 						frame:SetHeight (20)
@@ -10920,7 +10920,7 @@ local relevance_options = {
 --> experimental frame ~experimental
 
 	--overlay frame to indicate the feature is disabled
-	uiParentFeatureFrame.disabledOverlayFrame = CreateFrame ("frame", nil, uiParentFeatureFrame)
+	uiParentFeatureFrame.disabledOverlayFrame = CreateFrame ("frame", nil, uiParentFeatureFrame, BackdropTemplateMixin and "BackdropTemplate")
 	uiParentFeatureFrame.disabledOverlayFrame:SetPoint ("topleft", uiParentFeatureFrame, "topleft", 1, -155)
 	uiParentFeatureFrame.disabledOverlayFrame:SetPoint ("bottomright", uiParentFeatureFrame, "bottomright", -1, 21)
 	uiParentFeatureFrame.disabledOverlayFrame:SetBackdrop ({bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
@@ -12136,7 +12136,7 @@ local relevance_options = {
 					SetCVar ("nameplateSelfTopInset", abs (value - 99) / 100)
 					
 					if (not Plater.PersonalAdjustLocationTop) then
-						Plater.PersonalAdjustLocationTop = CreateFrame ("frame", "PlaterPersonalBarLocation", UIParent)
+						Plater.PersonalAdjustLocationTop = CreateFrame ("frame", "PlaterPersonalBarLocation", UIParent, BackdropTemplateMixin and "BackdropTemplate")
 						local frame = Plater.PersonalAdjustLocationTop
 						frame:SetWidth (GetScreenWidth())
 						frame:SetHeight (20)
@@ -12202,7 +12202,7 @@ local relevance_options = {
 					--SetCVar ("nameplateSelfTopInset", value / 100)
 					
 					if (not Plater.PersonalAdjustLocationBottom) then
-						Plater.PersonalAdjustLocationBottom = CreateFrame ("frame", "PlaterPersonalBarLocation", UIParent)
+						Plater.PersonalAdjustLocationBottom = CreateFrame ("frame", "PlaterPersonalBarLocation", UIParent, BackdropTemplateMixin and "BackdropTemplate")
 						local frame = Plater.PersonalAdjustLocationBottom
 						frame:SetWidth (GetScreenWidth())
 						frame:SetHeight (20)
@@ -12392,7 +12392,7 @@ local relevance_options = {
 	searchLabel:SetPoint(10, -120)
 	searchBox:SetPoint(10, -130)
 
-	local optionsWildCardFrame = CreateFrame("frame", "$parentWildCardOptionsFrame", searchFrame)
+	local optionsWildCardFrame = CreateFrame("frame", "$parentWildCardOptionsFrame", searchFrame, BackdropTemplateMixin and "BackdropTemplate")
 	optionsWildCardFrame:SetAllPoints()
 	
 	--all settings tables
