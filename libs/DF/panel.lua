@@ -8843,12 +8843,6 @@ end
 		
 		--> run if the unit currently shown is different than the new one
 		SetUnit = function (self, unit)
-			ViragDevTool_AddData({
-				ctime = GetTime(),
-				unit = unit or "nil",
-				cunit = self.unit or "nil",
-				stack = debugstack(),
-			}, "SetUnit - " .. (unit or "nil"))
 			if (unit ~= self.unit or unit == nil) then
 				self.unit = unit --absolute unit
 				self.displayedUnit = unit --~todo rename to 'displayedUnit' for back compatibility with older scripts in Plater

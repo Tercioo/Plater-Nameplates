@@ -1807,10 +1807,11 @@ Plater.DefaultSpellRangeList = {
 	--the goal is to adjust the the unitFrame scale when the plateFrame scale changes
 	--this approach also solves the issue to the unitFrame not playing correctly the animation when the nameplate is removed from the screen
 	--self is plateFrame, w, h aren't reliable
-	function Plater.UpdateUIParentScale (self, w, h) --private 
+	function Plater.UpdateUIParentScale (self, w, h) --private
 		if (self.unitFrame) then
-			--local defaultScale = self:GetEffectiveScale()
-			local defaultScale = UIParent:GetEffectiveScale()
+			local defaultScale = self:GetEffectiveScale()
+			--local defaultScale = UIParent:GetEffectiveScale()
+			
 			if (defaultScale < 0.4) then
 				--assuming the nameplate is in process of being removed from the screen if the scale if lower than .4
 				self.unitFrame:SetScale (defaultScale)
@@ -2272,11 +2273,7 @@ Plater.DefaultSpellRangeList = {
 		
 		--~created ~events ~oncreated 
 		NAME_PLATE_CREATED = function (event, plateFrame)
-			ViragDevTool_AddData({
-				ctime = GetTime(),
-				unit = plateFrame [MEMBER_UNITID] or "nil",
-				stack = debugstack(),
-			}, "NAME_PLATE_CREATED - " .. (plateFrame [MEMBER_UNITID] or "nil"))
+			--ViragDevTool_AddData({ctime = GetTime(), unit = plateFrame [MEMBER_UNITID] or "nil", stack = debugstack()}, "NAME_PLATE_CREATED - " .. (plateFrame [MEMBER_UNITID] or "nil"))
 			--> create the unitframe
 				local unitFrameOptions = {
 					ShowPowerBar = false, 
@@ -2310,9 +2307,7 @@ Plater.DefaultSpellRangeList = {
 				if (DB_USE_UIPARENT) then
 					--TODO: why is it not showing properly when V / V hide / show but when leaving / entering scren??? -> plateFrame for now...
 					--when using UIParent as the unit frame parent, adjust the unitFrame scale to be equal to blizzard plateFrame
-					--newUnitFrame = DF:CreateUnitFrame (UIParent, plateFrame:GetName() .. "PlaterUnitFrame", unitFrameOptions, healthBarOptions, castBarOptions, powerBarOptions)
-					newUnitFrame = DF:CreateUnitFrame (plateFrame, plateFrame:GetName() .. "PlaterUnitFrame", unitFrameOptions, healthBarOptions, castBarOptions, powerBarOptions)
-					--newUnitFrame:SetPoint("CENTER", plateFrame)
+					newUnitFrame = DF:CreateUnitFrame (UIParent, plateFrame:GetName() .. "PlaterUnitFrame", unitFrameOptions, healthBarOptions, castBarOptions, powerBarOptions)
 					newUnitFrame:SetAllPoints()
 					newUnitFrame:SetFrameStrata ("BACKGROUND")
 
@@ -2803,11 +2798,7 @@ Plater.DefaultSpellRangeList = {
 
 		-- ~added
 		NAME_PLATE_UNIT_ADDED = function (event, unitBarId)
-			ViragDevTool_AddData({
-				ctime = GetTime(),
-				unit = unitBarId or "nil",
-				stack = debugstack(),
-			}, "NAME_PLATE_UNIT_ADDED - " .. (unitBarId or "nil"))
+			--ViragDevTool_AddData({ctime = GetTime(), unit = unitBarId or "nil", stack = debugstack()}, "NAME_PLATE_UNIT_ADDED - " .. (unitBarId or "nil"))
 			--debug for hunter faith death
 --			if (select (2, UnitClass (unitBarId)) == "HUNTER") then
 --				print ("nameplate added", UnitName (unitBarId))
@@ -2815,7 +2806,6 @@ Plater.DefaultSpellRangeList = {
 		
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId)
 			if (not plateFrame) then
-				print("no plateFrame!")
 				return
 			end
 			
@@ -2843,15 +2833,15 @@ Plater.DefaultSpellRangeList = {
 				unitFrame.ShowUIParentAnimation:Play()
 			end
 			
-			--unitFrame:SetPoint("CENTER", plateFrame)
-			
 			if (not plateFrame.UnitFrame.HasPlaterHooksRegistered) then
                 --hook the retail nameplate
                 plateFrame.UnitFrame:HookScript("OnShow", Plater.OnRetailNamePlateShow)
                 plateFrame.UnitFrame.HasPlaterHooksRegistered = true
+				
             end
 			
 			plateFrame:HookScript("OnSizeChanged", Plater.UpdateUIParentScale)
+			Plater.UpdateUIParentScale(plateFrame)
 			
 			--check if the hide hook is registered on this Blizzard nameplate
 			if (not unitFrame.HasHideHookRegistered) then
@@ -3138,11 +3128,8 @@ Plater.DefaultSpellRangeList = {
 
 		-- ~removed
 		NAME_PLATE_UNIT_REMOVED = function (event, unitBarId)
-			ViragDevTool_AddData({
-				ctime = GetTime(),
-				unit = unitBarId or "nil",
-				stack = debugstack(),
-			}, "NAME_PLATE_UNIT_REMOVED - " .. (unitBarId or "nil"))
+			--ViragDevTool_AddData({ctime = GetTime(), unit = unitBarId or "nil", stack = debugstack()}, "NAME_PLATE_UNIT_REMOVED - " .. (unitBarId or "nil"))
+			
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId)
 			
 			--debug for hunter faith death
@@ -5578,11 +5565,6 @@ end
 	-- ~size ~updatesize
 	--update thee nameplate size including healthbar, castbar, etc
 	function Plater.UpdatePlateSize (plateFrame)
-		ViragDevTool_AddData({
-				ctime = GetTime(),
-				unit = plateFrame [MEMBER_UNITID] or "nil",
-				stack = debugstack(),
-			}, "UpdatePlateSize - " .. (plateFrame [MEMBER_UNITID] or "nil"))
 		if (not plateFrame.actorType) then
 			return
 		end
