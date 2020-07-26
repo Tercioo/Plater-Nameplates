@@ -2842,8 +2842,10 @@ Plater.DefaultSpellRangeList = {
 				
             end
 			
-			plateFrame:HookScript("OnSizeChanged", Plater.UpdateUIParentScale)
-			Plater.UpdateUIParentScale(plateFrame)
+			if (DB_USE_UIPARENT) then
+				plateFrame:HookScript("OnSizeChanged", Plater.UpdateUIParentScale)
+				Plater.UpdateUIParentScale(plateFrame)
+			end
 			
 			--check if the hide hook is registered on this Blizzard nameplate
 			if (not unitFrame.HasHideHookRegistered) then
