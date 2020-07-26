@@ -959,18 +959,18 @@ Plater.DefaultSpellRangeList = {
 				unitIsTarget = true
 			else
 				notTheTarget = true
-				if (Plater.db.profile.transparency_behavior_use_division) then
-					alphaMultiplier = 0.5
-				end
+			end
+
+			if (Plater.db.profile.transparency_behavior_use_division) then
+				alphaMultiplier = 0.5
 			end
 		end
  
 		--is using the range check by ability
 		if (DB_USE_RANGE_CHECK) then
 			--check when the unit just has been added to the screen
-			local isInRange = IsSpellInRange (Plater.SpellForRangeCheck, plateFrame [MEMBER_UNITID]) == 1
 
-			if (isInRange) then
+			if (IsSpellInRange (Plater.SpellForRangeCheck, plateFrame [MEMBER_UNITID]) == 1) then
 				--unit is in rage
 				if (onAdded) then
 					--plateFrame.FadedIn = true
@@ -1012,12 +1012,12 @@ Plater.DefaultSpellRangeList = {
 --					buffFrame1:SetAlpha (buffFrames_rangeCheckAlpha * (notTheTarget and buffFrames_rangeCheckAlpha or 1))
 --					buffFrame2:SetAlpha (buffFrames_rangeCheckAlpha * (notTheTarget and buffFrames_rangeCheckAlpha or 1))
 
-					unitFrame:SetAlpha (unitIsTarget and inRangeAlpha or overallRangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
-					healthBar:SetAlpha (unitIsTarget and inRangeAlpha or healthBar_rangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
-					castBar:SetAlpha (unitIsTarget and inRangeAlpha or castBar_rangeCheckAlpha * (notTheTarget and alphaMultiplier  or 1))
-					powerBar:SetAlpha (unitIsTarget and inRangeAlpha or powerBar_rangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
-					buffFrame1:SetAlpha (unitIsTarget and inRangeAlpha or buffFrames_rangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
-					buffFrame2:SetAlpha (unitIsTarget and inRangeAlpha or buffFrames_rangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
+					unitFrame:SetAlpha (overallRangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
+					healthBar:SetAlpha (healthBar_rangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
+					castBar:SetAlpha (castBar_rangeCheckAlpha * (notTheTarget and alphaMultiplier  or 1))
+					powerBar:SetAlpha (powerBar_rangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
+					buffFrame1:SetAlpha (buffFrames_rangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
+					buffFrame2:SetAlpha (buffFrames_rangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
 
 					plateFrame [MEMBER_RANGE] = false
 					plateFrame.unitFrame [MEMBER_RANGE] = false
@@ -1034,12 +1034,12 @@ Plater.DefaultSpellRangeList = {
 --						buffFrame1:SetAlpha (buffFrames_rangeCheckAlpha * (notTheTarget and buffFrames_rangeCheckAlpha or 1))
 --						buffFrame2:SetAlpha (buffFrames_rangeCheckAlpha * (notTheTarget and buffFrames_rangeCheckAlpha or 1))
 						
-						unitFrame:SetAlpha (unitIsTarget and inRangeAlpha or overallRangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
-						healthBar:SetAlpha (unitIsTarget and inRangeAlpha or healthBar_rangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
-						castBar:SetAlpha (unitIsTarget and inRangeAlpha or castBar_rangeCheckAlpha * (notTheTarget and alphaMultiplier  or 1))
-						powerBar:SetAlpha (unitIsTarget and inRangeAlpha or powerBar_rangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
-						buffFrame1:SetAlpha (unitIsTarget and inRangeAlpha or buffFrames_rangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
-						buffFrame2:SetAlpha (unitIsTarget and inRangeAlpha or buffFrames_rangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
+						unitFrame:SetAlpha (overallRangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
+						healthBar:SetAlpha (healthBar_rangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
+						castBar:SetAlpha (castBar_rangeCheckAlpha * (notTheTarget and alphaMultiplier  or 1))
+						powerBar:SetAlpha (powerBar_rangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
+						buffFrame1:SetAlpha (buffFrames_rangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
+						buffFrame2:SetAlpha (buffFrames_rangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
 
 					end
 					plateFrame [MEMBER_RANGE] = false
@@ -1054,7 +1054,7 @@ Plater.DefaultSpellRangeList = {
 			if (Plater.PlayerHasTargetNonSelf) then
 				--is this unit is the current player target?
 				if (unitIsTarget) then
-					if (not DF:IsNearlyEqual (unitFrame:GetAlpha(), inRangeAlpha, 0.01)) then
+					if (not DF:IsNearlyEqual (healthBar:GetAlpha(), inRangeAlpha, 0.01)) then
 						unitFrame:SetAlpha (inRangeAlpha)
 						healthBar:SetAlpha (inRangeAlpha)
 						castBar:SetAlpha (inRangeAlpha)
@@ -1066,7 +1066,7 @@ Plater.DefaultSpellRangeList = {
 
 				else
 					--this unit isnt the current player target
-					if (not DF:IsNearlyEqual (unitFrame:GetAlpha(), inRangeAlpha * overallRangeCheckAlpha, 0.01)) then
+					if (not DF:IsNearlyEqual (healthBar:GetAlpha(), inRangeAlpha * healthBar_rangeCheckAlpha, 0.01)) then
 						unitFrame:SetAlpha (inRangeAlpha * overallRangeCheckAlpha)
 						healthBar:SetAlpha (inRangeAlpha * healthBar_rangeCheckAlpha)
 						castBar:SetAlpha (inRangeAlpha * castBar_rangeCheckAlpha)
@@ -1589,8 +1589,7 @@ Plater.DefaultSpellRangeList = {
 			for spellId, _ in pairs (DF.CrowdControlSpells) do
 				local spellName = GetSpellInfo (spellId)
 				if (spellName) then
-					--SPECIAL_AURAS_AUTO_ADDED [spellName] = true
-					SPECIAL_AURAS_AUTO_ADDED [spellId] = true
+					SPECIAL_AURAS_AUTO_ADDED [spellName] = true
 					CROWDCONTROL_AURA_NAMES [spellName] = true
 				end
 			end
@@ -1727,8 +1726,8 @@ Plater.DefaultSpellRangeList = {
 				for spellId, _ in pairs (DF.CrowdControlSpells) do
 					local spellName = GetSpellInfo (spellId)
 					if (spellName) then
-						--AUTO_TRACKING_EXTRA_DEBUFFS [spellName] = true
-						AUTO_TRACKING_EXTRA_DEBUFFS [spellId] = true
+						AUTO_TRACKING_EXTRA_BUFFS [spellName] = true
+						--AUTO_TRACKING_EXTRA_BUFFS [spellId] = true
 						CAN_TRACK_EXTRA_BUFFS = true
 					end
 				end
@@ -1779,27 +1778,6 @@ Plater.DefaultSpellRangeList = {
 			
 			--do not clear patch library, when creating a new profile it'll need to re-apply patches
 			--PlaterPatchLibrary = nil
-		end
-	end
-
-	--same thing as above but apply patches only to new profiles
-	--this doesn't count profiles imported from other users
-	function Plater.ApplyPatchesToNewProfile()
-		if (PlaterPatchLibraryForNewProfiles) then
-			local currentPatch = Plater.db.profile.patch_version_profile
-			for i = currentPatch+1, #PlaterPatchLibraryForNewProfiles do
-			
-				local patch = PlaterPatchLibraryForNewProfiles [i]
-				Plater:Msg ("Applied Patch for Profiles #" .. i .. ":")
-				
-				for o = 1, #patch.Notes do
-					print (patch.Notes [o])
-				end
-				
-				DF:Dispatch (patch.Func)
-				
-				Plater.db.profile.patch_version_profile = i
-			end
 		end
 	end
 	
@@ -1966,6 +1944,30 @@ Plater.DefaultSpellRangeList = {
 			local hookInfo = HOOK_LOAD_SCREEN [i]
 			Plater.ScriptMetaFunctions.ScriptRunNoAttach (hookInfo, "Load Screen")
 		end
+	end
+	
+	function Plater.PlaterDefaultWidgetLayout(widgetContainerFrame, sortedWidgets)
+		--ViragDevTool_AddData({ctime = GetTime(), unit = widgetContainerFrame:GetParent().unit or "nil", stack = debugstack(), wc = widgetContainerFrame, widgets = sortedWidgets, children = widgetContainerFrame:GetLayoutChildren(), wcp = widgetContainerFrame:GetParent()}, "WidgetContainer - " .. (widgetContainerFrame:GetParent().unit or "nil"))
+		local horizontalRowContainer = nil; 
+
+		widgetContainerFrame.horizontalRowContainerPool:ReleaseAll();
+
+		for index, widgetFrame in ipairs(sortedWidgets) do
+			widgetFrame:ClearAllPoints();
+
+			-- Default this to top-bottom until there is a better way...
+			if index == 1 then
+				-- This is the first widget in the set, so just anchor it to the widget container
+				widgetFrame:SetPoint("TOP", widgetContainerFrame);
+			else
+				-- This is not the first widget in the set, so anchor it to the previous widget
+				local relative = sortedWidgets[index - 1];
+				widgetFrame:SetPoint("TOP", relative, "BOTTOM", 0, widgetContainerFrame.verticalAnchorYOffset);
+			end
+
+			widgetFrame:SetParent(widgetContainerFrame);
+		end
+
 	end
 	
 	--store all functions for all events that will be registered inside OnInit
@@ -3087,8 +3089,9 @@ Plater.DefaultSpellRangeList = {
 			unitFrame.WidgetContainer:UnregisterForWidgetSet()
 			local widgetSetId = UnitWidgetSet(unitID)
 		    local playerControlled = UnitPlayerControlled(unitID)
-		    if widgetSetId and ((playerControlled and UnitIsOwnerOrControllerOfUnit('player', unitID)) or not playerControlled) then
-				unitFrame.WidgetContainer:RegisterForWidgetSet(widgetSetId)
+		    if widgetSetId and ((playerControlled and UnitIsOwnerOrControllerOfUnit('player', unitID)) or not playerControlled or not SpellCanTargetUnit(unitID)) then
+				--unitFrame.WidgetContainer:RegisterForWidgetSet(widgetSetId)
+				unitFrame.WidgetContainer:RegisterForWidgetSet(widgetSetId, Plater.PlaterDefaultWidgetLayout);
 				unitFrame.WidgetContainer:ProcessAllWidgets()
 			end
 			
@@ -3332,9 +3335,6 @@ function Plater.OnInit() --private ~oninit
 			
 			if (not Plater.db.profile.first_run3) then
 				C_Timer.After (15, Plater.SetCVarsOnFirstRun)
-
-				--run Patches to run only when the profile is new
-				Plater.ApplyPatchesToNewProfile()
 				
 				--enable UIParent nameplates for new installs of Plater
 				--this setting is disabled by default and will be enabled for new people
@@ -3438,6 +3438,75 @@ function Plater.OnInit() --private ~oninit
 					--	Plater.db.profile.ui_parent_scale_tune = 1 - UIParent:GetEffectiveScale()
 					--end
 				end
+			end
+			
+			--migrate buff frame sizes and anchors
+			if not Plater.db.profile.buff_frame_anchor_and_size_migrated then
+				--migrate BuffFrame2 sizes
+				Plater.db.profile.aura_width2 = Plater.db.profile.aura_width
+				Plater.db.profile.aura_height2 = Plater.db.profile.aura_height
+				
+				--migrate BuffFrame1 and BuffFrame2 anchors/offsets
+				local hasNonDefaultValues = Plater.db.profile.aura_x_offset or Plater.db.profile.aura_y_offset or Plater.db.profile.aura2_x_offset or Plater.db.profile.aura2_y_offset 
+				
+				local heightOffset = 5
+				if DB_USE_UIPARENT then
+					local clickHeight = Plater.db.profile.click_space[2] / UIParent:GetEffectiveScale()
+					local hbHeight = Plater.db.profile.plate_config.enemynpc.health_incombat[2]
+					heightOffset = ((clickHeight - hbHeight) / 2) - (Plater.db.profile.aura_height / 2) + 5
+					heightOffset = math.floor(heightOffset*10+0.5)/10
+				end
+				
+				if Plater.db.profile.aura_grow_direction == 3 and Plater.db.profile.aura_x_offset or 0 < -20 then -- left to right
+					if Plater.db.profile.aura_y_offset or 0 < -15 then
+						Plater.db.profile.aura_frame1_anchor.side = 3
+					else
+						Plater.db.profile.aura_frame1_anchor.side = 1
+					end
+					Plater.db.profile.aura_frame1_anchor.x = 0
+				elseif Plater.db.profile.aura_grow_direction == 1 and Plater.db.profile.aura_x_offset or 0 > 20 then -- right to left
+					if Plater.db.profile.aura_y_offset or 0 < -15 then
+						Plater.db.profile.aura_frame1_anchor.side = 5
+					else
+						Plater.db.profile.aura_frame1_anchor.side = 7
+					end
+					Plater.db.profile.aura_frame1_anchor.x = 0
+				else
+					Plater.db.profile.aura_frame1_anchor.side = 8
+					Plater.db.profile.aura_frame1_anchor.x = Plater.db.profile.aura_x_offset or 0
+				end
+				Plater.db.profile.aura_frame1_anchor.y = (Plater.db.profile.aura_y_offset or 0) + heightOffset
+				Plater.db.profile.aura_x_offset = Plater.db.profile.aura_frame1_anchor.x
+				Plater.db.profile.aura_y_offset = Plater.db.profile.aura_frame1_anchor.y
+				
+				
+				if Plater.db.profile.aura2_grow_direction == 3 and Plater.db.profile.aura2_x_offset or 0 < -20 then -- left to right
+					if Plater.db.profile.aura2_y_offset or 0 < -15 then
+						Plater.db.profile.aura_frame2_anchor.side = 3
+					else
+						Plater.db.profile.aura_frame2_anchor.side = 1
+					end
+					Plater.db.profile.aura_frame2_anchor.x = 0
+				elseif Plater.db.profile.aura2_grow_direction == 1 and Plater.db.profile.aura2_x_offset or 0 > 20 then -- right to left
+					if Plater.db.profile.aura2_y_offset or 0 < -15 then
+						Plater.db.profile.aura_frame2_anchor.side = 5
+					else
+						Plater.db.profile.aura_frame2_anchor.side = 7
+					end
+					Plater.db.profile.aura_frame2_anchor.x = 0
+				else
+					Plater.db.profile.aura_frame2_anchor.side = 8
+					Plater.db.profile.aura_frame2_anchor.x = Plater.db.profile.aura2_x_offset or 0
+				end
+				Plater.db.profile.aura_frame2_anchor.y = (Plater.db.profile.aura2_y_offset or 0) + heightOffset
+				Plater.db.profile.aura2_x_offset = Plater.db.profile.aura_frame2_anchor.x
+				Plater.db.profile.aura2_y_offset = Plater.db.profile.aura_frame2_anchor.y
+				
+				if hasNonDefaultValues then
+					C_Timer.After (10, function() DF:ShowErrorMessage ("Buff Settings have been changed to support anchoring of both Buff Frames and the offsets and anchors were migrated automatically.\nPlease check the Buff Settings tab and adjust your Buff Frame anchors and offsets if needed.", "ATTENTION: Important Plater Changes") end)
+				end
+				
+				Plater.db.profile.buff_frame_anchor_and_size_migrated = true
 			end
 			
 			if (not Plater.db.profile.number_region_first_run) then
@@ -3713,7 +3782,7 @@ function Plater.OnInit() --private ~oninit
 			Plater.UpdateSelfPlate()
 		end)
 
-	--> cast frame ~castbar ~testcast
+	--> cast frame ~castbar
 	
 		--test castbar
 		Plater.CastBarTestFrame = CreateFrame ("frame", nil, UIParent, BackdropTemplateMixin and "BackdropTemplate")
@@ -3741,7 +3810,7 @@ function Plater.OnInit() --private ~oninit
 				castBar.value = 0
 				castBar.maxValue = 3
 				castBar.canInterrupt = math.random (1, 2) == 1
-				--castBar.canInterrupt = true
+				castBar.canInterrupt = true
 				castBar:UpdateCastColor()
 				
 				castBar.spellName = 		"Getting Bald"
@@ -4344,9 +4413,7 @@ end
 	function Plater.AlignAuraFrames (self)
 
 		if (self.isNameplate) then
-			local horizontalLength = 1
-			local curRowLength = 0
-			local verticalHeight = 1
+			local horizontalLength = 0
 			local firstIcon
 		
 			if (Plater.db.profile.aura_consolidate) then
@@ -4371,6 +4438,8 @@ end
 			
 			if (growDirection ~= 2) then --it's growing to left or right
 			
+				self:SetSize (1, 1)
+				
 				--debug where the buffFrame anchors are
 				--self:SetSize (5, 5)
 				--self:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
@@ -4379,9 +4448,9 @@ end
 				local framersPerRow = Plater.MaxAurasPerRow + 1
 				
 				--which slot index is being manipulated within the icon loop
-				--if an icon is hidden it won't be used and the slot won't increase
+				--is an icon is hidden it won't be used and the slot won't increase
 				--the slot 1 is guaranteed to always be in use
-				local slotId = 1
+				local slotId = 2
 				
 				--which was the last shown and valid icon attached into the visible icon row
 				local lastIconUsed
@@ -4393,6 +4462,7 @@ end
 						--get the icon id from the icon frame container
 						local iconFrame = iconFrameContainer [i]
 						if (iconFrame:IsShown()) then
+							horizontalLength = horizontalLength + iconFrame:GetWidth() + DB_AURA_PADDING
 							iconFrame:ClearAllPoints()
 							
 							if not firstIcon then
@@ -4400,15 +4470,12 @@ end
 								iconFrame:ClearAllPoints()
 								iconFrame:SetPoint ("bottomleft", self, "bottomleft", 0, 0)
 								firstIcon = iconFrame
-								verticalHeight = firstIcon:GetHeight()
 							else
 								if (slotId == framersPerRow) then
 									iconFrame:SetPoint ("bottomleft", firstIcon, "topleft", 0, Plater.db.profile.aura_breakline_space)
-									framersPerRow = framersPerRow + Plater.MaxAurasPerRow
+									framersPerRow = framersPerRow + framersPerRow
 									--update the first icon to be the first icon in the second row
 									firstIcon = iconFrame
-									verticalHeight = verticalHeight + Plater.db.profile.aura_breakline_space + firstIcon:GetHeight()
-									
 								else
 									iconFrame:SetPoint ("topleft", lastIconUsed, "topright", DB_AURA_PADDING, 0)
 								end
@@ -4426,6 +4493,7 @@ end
 						--get the icon id from the icon frame container
 						local iconFrame = iconFrameContainer [i]
 						if (iconFrame:IsShown()) then
+							horizontalLength = horizontalLength + iconFrame:GetWidth() + DB_AURA_PADDING
 							iconFrame:ClearAllPoints()
 							
 							if not firstIcon then
@@ -4433,15 +4501,12 @@ end
 								iconFrame:ClearAllPoints()
 								iconFrame:SetPoint ("bottomright", self, "bottomright", 0, 0)
 								firstIcon = iconFrame
-								verticalHeight = firstIcon:GetHeight()
 							else
 								if (slotId == framersPerRow) then
 									iconFrame:SetPoint ("bottomright", firstIcon, "topright", 0, Plater.db.profile.aura_breakline_space)
-									framersPerRow = framersPerRow + Plater.MaxAurasPerRow
+									framersPerRow = framersPerRow + framersPerRow
 									--update the first icon to be the first icon in the second row
 									firstIcon = iconFrame
-									verticalHeight = verticalHeight + Plater.db.profile.aura_breakline_space + firstIcon:GetHeight()
-									
 								else
 									iconFrame:SetPoint ("topright", lastIconUsed, "topleft", -DB_AURA_PADDING, 0)
 								end
@@ -4453,10 +4518,9 @@ end
 					end
 				end
 				
-				horizontalLength = 1 + DB_AURA_PADDING
-				
 			else --it's growing from center
 				
+				local iconAmount = 0
 				local previousIcon
 
 				--iterate among all icons in the aura frame
@@ -4465,38 +4529,31 @@ end
 				for i = 1, #iconFrameContainer do
 					local iconFrame = iconFrameContainer [i]
 					if (iconFrame:IsShown()) then
-						curRowLength = curRowLength + iconFrame:GetWidth() + DB_AURA_PADDING
+						iconAmount = iconAmount + 1
+						horizontalLength = horizontalLength + iconFrame:GetWidth() + DB_AURA_PADDING
 						iconFrame:ClearAllPoints()
 						
 						if (not firstIcon) then
 							firstIcon = iconFrame
 							firstIcon:SetPoint ("bottomleft", self, "bottomleft", 0, 0)
 							previousIcon = firstIcon
-							verticalHeight = firstIcon:GetHeight()
-							horizontalLength = curRowLength
-							
 						else
 							iconFrame:SetPoint ("bottomleft", previousIcon, "bottomright", DB_AURA_PADDING, 0)
 							previousIcon = iconFrame
 						end
 					end
 				end
-				
 			end
 			
 			if (not firstIcon) then
 				return
 			end
 			
-			if curRowLength > horizontalLength then
-				horizontalLength = curRowLength
-			end
-			
 			--remove 1 icon padding value
 			horizontalLength = horizontalLength - DB_AURA_PADDING
 			--set the size of the buff frame
 			self:SetWidth (horizontalLength)
-			self:SetHeight (verticalHeight)
+			self:SetHeight (firstIcon:GetHeight())
 		end
 	end
 
@@ -5206,7 +5263,7 @@ end
 						can_show_this_debuff = true
 						
 					--> user added this buff to track in the buff tracking tab
-					elseif (AUTO_TRACKING_EXTRA_DEBUFFS [name] or AUTO_TRACKING_EXTRA_DEBUFFS [spellId]) then
+					elseif (AUTO_TRACKING_EXTRA_DEBUFFS [name]) then
 						can_show_this_debuff = true
 					end
 					
@@ -5672,11 +5729,15 @@ end
 			end
 			
 		--aura frame
+			--plateConfigs.buff_frame_y_offset is the offset from the actor type, e.g. enemy npc
+			--PixelUtil.SetPoint (buffFrame1, "bottom", unitFrame, "top", DB_AURA_X_OFFSET,  plateConfigs.buff_frame_y_offset + DB_AURA_Y_OFFSET)
 			local bf1Anchor = Plater.db.profile.aura_frame1_anchor
-			Plater.SetAnchor (buffFrame1, {side = bf1Anchor.side, x = bf1Anchor.x, y = bf1Anchor.y + plateConfigs.buff_frame_y_offset}, unitFrame.healthBar, (Plater.db.profile.aura_grow_direction or 2) == 2)
+			Plater.SetAnchor (buffFrame1, {side = bf1Anchor.side, x = bf1Anchor.x, y = bf1Anchor.y + plateConfigs.buff_frame_y_offset}, unitFrame.healthBar)
 			
+			
+			--PixelUtil.SetPoint (buffFrame2, "bottom", unitFrame, "top", Plater.db.profile.aura2_x_offset,  plateConfigs.buff_frame_y_offset + Plater.db.profile.aura2_y_offset)
 			local bf2Anchor = Plater.db.profile.aura_frame2_anchor
-			Plater.SetAnchor (buffFrame2, {side = bf2Anchor.side, x = bf2Anchor.x, y = bf2Anchor.y + plateConfigs.buff_frame_y_offset}, unitFrame.healthBar, (Plater.db.profile.aura2_grow_direction or 2) == 2)
+			Plater.SetAnchor (buffFrame2, {side = bf2Anchor.side, x = bf2Anchor.x, y = bf2Anchor.y + plateConfigs.buff_frame_y_offset}, unitFrame.healthBar)
 			
 		if (Plater.db.profile.show_health_prediction or Plater.db.profile.show_shield_prediction) and healthBar.displayedUnit then
 			healthBar:UpdateHealPrediction() -- ensure health prediction is updated properly
@@ -6280,19 +6341,17 @@ end
 	-- ~target
 	function Plater.UpdateTarget (plateFrame) --private
 
-		if UnitIsUnit (plateFrame.unitFrame [MEMBER_UNITID], "focus") then
-			if Plater.db.profile.focus_indicator_enabled then
-				--this is a rare call, no need to cache these values
-				local texture = LibSharedMedia:Fetch ("statusbar", Plater.db.profile.focus_texture)
-				plateFrame.FocusIndicator:SetTexture (texture)
-				plateFrame.FocusIndicator:SetVertexColor (unpack (Plater.db.profile.focus_color))
-				plateFrame.FocusIndicator:Show()
-			end
-			plateFrame.unitFrame.IsFocus = true
+		if (UnitIsUnit (plateFrame.unitFrame [MEMBER_UNITID], "focus") and Plater.db.profile.focus_indicator_enabled) then
+			--this is a rare call, no need to cache these values
+			local texture = LibSharedMedia:Fetch ("statusbar", Plater.db.profile.focus_texture)
+			plateFrame.FocusIndicator:SetTexture (texture)
+			plateFrame.FocusIndicator:SetVertexColor (unpack (Plater.db.profile.focus_color))
+			plateFrame.FocusIndicator:Show()
 		else
 			plateFrame.FocusIndicator:Hide()
-			plateFrame.unitFrame.IsFocus = false
 		end
+		
+		plateFrame.unitFrame.WidgetContainer:UnregisterForWidgetSet()
 
 		if (UnitIsUnit (plateFrame.unitFrame [MEMBER_UNITID], "target")) then
 			plateFrame [MEMBER_TARGET] = true
@@ -6361,11 +6420,11 @@ end
 			end
 		end
 
-		plateFrame.unitFrame.WidgetContainer:UnregisterForWidgetSet()
 		local widgetSetId = UnitWidgetSet(plateFrame.unitFrame [MEMBER_UNITID])
 		local playerControlled = UnitPlayerControlled(plateFrame.unitFrame [MEMBER_UNITID])
-		if widgetSetId and ((playerControlled and UnitIsOwnerOrControllerOfUnit('player', plateFrame.unitFrame [MEMBER_UNITID])) or not playerControlled) then
-			plateFrame.unitFrame.WidgetContainer:RegisterForWidgetSet(widgetSetId)
+		if widgetSetId and ((playerControlled and UnitIsOwnerOrControllerOfUnit('player', plateFrame.unitFrame [MEMBER_UNITID])) or not playerControlled or not SpellCanTargetUnit(plateFrame.unitFrame [MEMBER_UNITID])) then
+			--plateFrame.unitFrame.WidgetContainer:RegisterForWidgetSet(widgetSetId)
+			plateFrame.unitFrame.WidgetContainer:RegisterForWidgetSet(widgetSetId, Plater.PlaterDefaultWidgetLayout);
 			plateFrame.unitFrame.WidgetContainer:ProcessAllWidgets()
 		end
 
@@ -7751,70 +7810,64 @@ end
 	end
 
 	local anchor_functions = {
-		function (widget, config, attachTo, centered)--1
+		function (widget, config, attachTo)--1
 			widget:ClearAllPoints()
-			local widgetRelative = centered and "bottom" or "bottomleft"
-			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "topleft", config.x, config.y, 0, 0)
+			PixelUtil.SetPoint (widget, "bottomleft", attachTo, "topleft", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--2
+		function (widget, config, attachTo)--2
 			widget:ClearAllPoints()
-			local widgetRelative = centered and "center" or "right"
-			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "left", config.x, config.y, 0, 0)
+			PixelUtil.SetPoint (widget, "right", attachTo, "left", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--3
+		function (widget, config, attachTo)--3
 			widget:ClearAllPoints()
-			local widgetRelative = centered and "top" or "topleft"
-			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "bottomleft", config.x, config.y, 0, 0)
+			PixelUtil.SetPoint (widget, "topleft", attachTo, "bottomleft", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--4
+		function (widget, config, attachTo)--4
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "top", attachTo, "bottom", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--5
+		function (widget, config, attachTo)--5
 			widget:ClearAllPoints()
-			local widgetRelative = centered and "top" or "topright"
-			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "bottomright", config.x, config.y, 0, 0)
+			PixelUtil.SetPoint (widget, "topright", attachTo, "bottomright", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--6
+		function (widget, config, attachTo)--6
 			widget:ClearAllPoints()
-			local widgetRelative = centered and "center" or "left"
-			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "right", config.x, config.y, 0, 0)
+			PixelUtil.SetPoint (widget, "left", attachTo, "right", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--7
+		function (widget, config, attachTo)--7
 			widget:ClearAllPoints()
-			local widgetRelative = centered and "bottom" or "bottomright"
-			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "topright", config.x, config.y, 0, 0)
+			PixelUtil.SetPoint (widget, "bottomright", attachTo, "topright", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--8
+		function (widget, config, attachTo)--8
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "bottom", attachTo, "top", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--9
+		function (widget, config, attachTo)--9
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "center", attachTo, "center", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--10
+		function (widget, config, attachTo)--10
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "left", attachTo, "left", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--11
+		function (widget, config, attachTo)--11
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "right", attachTo, "right", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--12
+		function (widget, config, attachTo)--12
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "top", attachTo, "top", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--13
+		function (widget, config, attachTo)--13
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "bottom", attachTo, "bottom", config.x, config.y, 0, 0)
 		end
 	}
 
 	--auto set the point based on the table from the config, if attachTo isn't received, it'll use its parent
-	function Plater.SetAnchor (widget, config, attachTo, centered) --private
+	function Plater.SetAnchor (widget, config, attachTo) --private
 		attachTo = attachTo or widget:GetParent()
-		anchor_functions [config.side] (widget, config, attachTo, centered)
+		anchor_functions [config.side] (widget, config, attachTo)
 	end
 
 	--check the setting 'only_damaged' and 'only_thename' for player characters. not critical code, can run slow
@@ -8288,7 +8341,7 @@ end
 	end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
---> combat log reader  ~combatlog ~cleu
+--> combat log reader  ~combatlog
 
 
 	local PlaterCLEUParser = CreateFrame ("frame", "PlaterCLEUParserFrame", UIParent, BackdropTemplateMixin and "BackdropTemplate")
