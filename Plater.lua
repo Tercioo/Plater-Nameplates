@@ -3193,7 +3193,7 @@ Plater.DefaultSpellRangeList = {
 			--March 3rd, 2019
 			if (DB_USE_UIPARENT) then
 				-- need to explicitly hide the frame now, as it is not tethered to the blizz nameplate
-				--plateFrame.unitFrame:Hide()
+				plateFrame.unitFrame:Hide()
 			end
 			--end of patch
 			
