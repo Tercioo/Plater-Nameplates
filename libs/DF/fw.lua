@@ -1,12 +1,12 @@
 
-local dversion = 188
+local dversion = 196
 
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
 
 if (not DF) then
 	DetailsFrameworkCanLoad = false
-	return 
+	return
 end
 
 DetailsFrameworkCanLoad = true
@@ -26,6 +26,8 @@ local UnitIsTapDenied = UnitIsTapDenied
 
 SMALL_NUMBER = 0.000001
 ALPHA_BLEND_AMOUNT = 0.8400251
+
+DF.dversion = dversion
 
 DF.AuthorInfo = {
 	Name = "Terciob",
@@ -1214,15 +1216,15 @@ end
 					local slider = getMenuWidgetVolative(parent, "slider", widgetIndexes)
 					widget_created = slider
 
-					slider.slider:SetMinMaxValues (widget_table.min, widget_table.max)
-					slider.slider:SetValue (widget_table.get())
-					slider.ivalue = slider.slider:GetValue()
-
 					if (widget_table.usedecimals) then
 						slider.slider:SetValueStep (0.01)
 					else
 						slider.slider:SetValueStep (widget_table.step)
 					end
+
+					slider.slider:SetMinMaxValues (widget_table.min, widget_table.max)
+					slider.slider:SetValue (widget_table.get())
+					slider.ivalue = slider.slider:GetValue()
 
 					slider:SetTemplate(slider_template)
 
@@ -1639,14 +1641,19 @@ end
 				button.tooltip = widget_table.desc
 				button.widget_type = "execute"
 				
-				--> execute doesn't trigger global callback
+				--notice: execute doesn't trigger global callback
 				
-				--> hook list
+				--button icon
+				if (widget_table.icontexture) then
+					button:SetIcon(widget_table.icontexture, nil, nil, nil, widget_table.icontexcoords, nil, nil, 2)
+				end
+
+				--hook list
 				if (widget_table.hooks) then
 					for hookName, hookFunc in pairs (widget_table.hooks) do
 						button:SetHook (hookName, hookFunc)
 					end
-				end				
+				end
 
 				if (widget_table.id) then
 					parent.widgetids [widget_table.id] = button
@@ -3322,6 +3329,22 @@ function DF_CALC_PERFORMANCE()
 	end)
 end
 
+DF.ClassIndexToFileName = {
+	[6] = "DEATHKNIGHT",
+	[1] = "WARRIOR",
+	[4] = "ROGUE",
+	[8] = "MAGE",
+	[5] = "PRIEST",
+	[3] = "HUNTER",
+	[9] = "WARLOCK",
+	[12] = "DEMONHUNTER",
+	[7] = "SHAMAN",
+	[11] = "DRUID",
+	[10] = "MONK",
+	[2] = "PALADIN",
+}
+
+
 DF.ClassFileNameToIndex = {
 	["DEATHKNIGHT"] = 6,
 	["WARRIOR"] = 1,
@@ -3899,7 +3922,7 @@ do
             local newObject = self.newObjectFunc(self, unpack(self.payload))
             if (newObject) then
 				tinsert(self.inUse, newObject)
-				return object, true
+				return newObject, true
             end
         end
 	end
