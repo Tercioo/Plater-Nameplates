@@ -8818,6 +8818,11 @@ local relevance_options = {
 		Plater.UpdateAllPlates()
 	end	
 	
+	local on_select_enemynpc_bigtitletext_text_font = function (_, _, value)
+		Plater.db.profile.plate_config.enemynpc.big_actortitle_text_font = value
+		Plater.UpdateAllPlates()
+	end
+	
 	--menu 2
 	local friendly_npc_options_table = {
 	
@@ -10004,6 +10009,71 @@ local relevance_options = {
 				desc = "The color of the profession text below the npc name.",
 			},
 			--]=]
+			
+			{type = "label", get = function() return "Npc Title Text When no Health Bar Shown:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			--profession text size
+			{
+				type = "range",
+				get = function() return Plater.db.profile.plate_config.enemynpc.big_actortitle_text_size end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.plate_config.enemynpc.big_actortitle_text_size = value
+					Plater.UpdateAllPlates()
+				end,
+				min = 6,
+				max = 99,
+				step = 1,
+				name = L["OPTIONS_SIZE"],
+				desc = "Size of the text.",
+			},
+			--profession text font
+			{
+				type = "select",
+				get = function() return Plater.db.profile.plate_config.enemynpc.big_actortitle_text_font end,
+				values = function() return DF:BuildDropDownFontList (on_select_enemynpc_bigtitletext_text_font) end,
+				name = L["OPTIONS_FONT"],
+				desc = "Font of the text.",
+			},
+			
+			--profession text outline options
+			{
+				type = "select",
+				get = function() return Plater.db.profile.plate_config.enemynpc.big_actortitle_text_outline end,
+				values = function() return build_outline_modes_table ("enemynpc", "big_actortitle_text_outline") end,
+				name = L["OPTIONS_OUTLINE"],
+				desc = "Outline",
+			},
+			
+			--profession text shadow color
+			{
+				type = "color",
+				get = function()
+					local color = Plater.db.profile.plate_config.enemynpc.big_actortitle_text_shadow_color
+					return {color[1], color[2], color[3], color[4]}
+				end,
+				set = function (self, r, g, b, a) 
+					local color = Plater.db.profile.plate_config.enemynpc.big_actortitle_text_shadow_color
+					color[1], color[2], color[3], color[4] = r, g, b, a
+					Plater.UpdateAllPlates()
+				end,
+				name = L["OPTIONS_SHADOWCOLOR"],
+				desc = "|cFFFFFF00Important|r: hide and show nameplates to see changes.",
+			},
+			
+			--[[--profession text color
+			{
+				type = "color",
+				get = function()
+					local color = Plater.db.profile.plate_config.enemynpc.big_actortitle_text_color
+					return {color[1], color[2], color[3], color[4]}
+				end,
+				set = function (self, r, g, b, a) 
+					local color = Plater.db.profile.plate_config.enemynpc.big_actortitle_text_color
+					color[1], color[2], color[3], color[4] = r, g, b, a
+					Plater.UpdateAllPlates()
+				end,
+				name = "Profession Text Color",
+				desc = "The color of the profession text below the npc name.",
+			},]]--
 			
 			{type = "breakline"},
 		
