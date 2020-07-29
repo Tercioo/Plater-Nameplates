@@ -5211,6 +5211,7 @@ end
 	function Plater.UpdateAuras_Self_Automatic (self)
 		Plater.ResetAuraContainer (self)
 		local unitAuraCache = self.unitFrame.AuraCache
+		local noBuffDurationLimitation = Plater.db.profile.aura_show_all_duration_buffs_personal
 		
 		--> debuffs
 		if (Plater.db.profile.aura_show_debuffs_personal) then
@@ -5263,7 +5264,7 @@ end
 				unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
 				
 				--> only show buffs casted by the player it self and less than 1 minute in duration
-				if (not DB_BUFF_BANNED [name] and (duration and (duration > 0 and duration < 60)) and (caster and UnitIsUnit (caster, "player"))) then
+				if (not DB_BUFF_BANNED [name] and (noBuffDurationLimitation or (duration and (duration > 0 and duration < 60)) and (caster and UnitIsUnit (caster, "player")))) then
 					local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
 					Plater.AddAura (buffFrame, auraIconFrame, i, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, false, false, false, true, actualAuraType)
 

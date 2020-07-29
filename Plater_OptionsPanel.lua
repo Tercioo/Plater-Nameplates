@@ -4982,6 +4982,19 @@ do
 				name = "Show Debuffs",
 				desc = "Show debuffs on you on the Personal Bar.",
 			},
+			
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.aura_show_all_duration_buffs_personal end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.aura_show_all_duration_buffs_personal = value
+					Plater.RefreshDBUpvalues()
+					Plater.RefreshAuras()
+					Plater.UpdateAllPlates()
+				end,
+				name = "Don't filter Buffs by Duration",
+				desc = "Show debuffs on you on the Personal Bar regardless of duration (show no-duration and >60sec).",
+			},
 
 			{
 				type = "range",
