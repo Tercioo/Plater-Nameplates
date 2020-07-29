@@ -635,6 +635,8 @@ PLATER_DEFAULT_SETTINGS = {
 		aura_show_tooltip = false,
 		aura_width = 26,
 		aura_height = 16,
+		aura_width2 = 26,
+		aura_height2 = 16,
 		
 		--> aura frame 1
 		aura_x_offset = 0,

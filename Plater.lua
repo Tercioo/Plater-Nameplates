@@ -4500,8 +4500,10 @@ end
 		--self parent = NamePlate_X_UnitFrame
 		--self = BuffFrame
 		
+		local curBuffFrame = 1
 		if (isBuff and DB_AURA_SEPARATE_BUFFS) then
 			self = self.BuffFrame2
+			curBuffFrame = 2
 		end
 		
 		local i = self.NextAuraIcon
@@ -4518,8 +4520,15 @@ end
 			
 			newFrameIcon:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
 		
-			local auraWidth = Plater.db.profile.aura_width
-			local auraHeight = Plater.db.profile.aura_height
+			local auraWidth
+			local auraHeight
+			if curBuffFrame == 2 then
+				auraWidth = Plater.db.profile.aura_width2
+				auraHeight = Plater.db.profile.aura_height2
+			else
+				auraWidth = Plater.db.profile.aura_width
+			    auraHeight = Plater.db.profile.aura_height
+			end
 			newFrameIcon:SetSize (auraWidth, auraHeight)
 			newFrameIcon.Icon:SetSize (auraWidth-2, auraHeight-2)
 			
@@ -4604,6 +4613,7 @@ end
 	            
 	function Plater.AddAura (self, auraIconFrame, i, spellName, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, isBuff, isShowAll, isDebuff, isPersonal, actualAuraType)
 		auraIconFrame:SetID (i)
+		local curBuffFrame = self.Name == "Secondary" and 2 or 1
 
 		--> check if the icon is showing a different aura
 		if (auraIconFrame.spellId ~= spellId) then
@@ -4674,10 +4684,17 @@ end
 				auraIconFrame:SetSize (auraWidth, auraHeight)
 				auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 			else
-				local auraWidth = profile.aura_width
-				local auraHeight = profile.aura_height
-				auraIconFrame:SetSize (auraWidth, auraHeight)
-				auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
+				if curBuffFrame == 2 then
+					local auraWidth = profile.aura_width2
+					local auraHeight = profile.aura_height2
+					auraIconFrame:SetSize (auraWidth, auraHeight)
+					auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
+				else
+					local auraWidth = profile.aura_width
+					local auraHeight = profile.aura_height
+					auraIconFrame:SetSize (auraWidth, auraHeight)
+					auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
+				end
 			end
 			
 			auraIconFrame.Cooldown:SetEdgeTexture (profile.aura_cooldown_edge_texture)
@@ -4695,22 +4712,30 @@ end
 		--when the size is changed in the options it doesnt change the IsPersonal flag
 		--when it changes the isPersonal flag it change locally without increasing the refresh ID
 		--> update the icon size depending on where it is shown
-		if (auraIconFrame.IsPersonal ~= isPersonal) then
+		if (auraIconFrame.IsPersonal ~= isPersonal or auraIconFrame.BuffFrame ~= curBuffFrame) then
 			if (isPersonal) then
 				local auraWidth = profile.aura_width_personal
 				local auraHeight = profile.aura_height_personal
 				auraIconFrame:SetSize (auraWidth, auraHeight)
 				auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 			else
-				local auraWidth = profile.aura_width
-				local auraHeight = profile.aura_height
-				auraIconFrame:SetSize (auraWidth, auraHeight)
-				auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
+				if curBuffFrame == 2 then
+					local auraWidth = profile.aura_width2
+					local auraHeight = profile.aura_height2
+					auraIconFrame:SetSize (auraWidth, auraHeight)
+					auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
+				else
+					local auraWidth = profile.aura_width
+					local auraHeight = profile.aura_height
+					auraIconFrame:SetSize (auraWidth, auraHeight)
+					auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
+				end
 			end
 			
 			Plater.UpdateIconAspecRatio (auraIconFrame)
 		end
 		auraIconFrame.IsPersonal = isPersonal
+		auraIconFrame.BuffFrame = self.Name == "Secondary" and 2 or 1
 
 		if (count > 1) then
 			local stackLabel = auraIconFrame.CountFrame.Count

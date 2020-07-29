@@ -1804,7 +1804,7 @@ local debuff_options = {
 	},
 	
 	{type = "blank"},
-	{type = "label", get = function() return "Aura Size:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+	{type = "label", get = function() return "Aura Size (Frame 1):" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	
 	{
 		type = "range",
@@ -1826,6 +1826,40 @@ local debuff_options = {
 		get = function() return Plater.db.profile.aura_height end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_height = value
+			Plater.RefreshDBUpvalues()
+			Plater.RefreshAuras()
+			Plater.UpdateAllPlates()
+		end,
+		min = 4,
+		max = 80,
+		step = 1,
+		name = "Height",
+		desc = "Debuff's icon height.",
+	},
+	
+	{type = "blank"},
+	{type = "label", get = function() return "Aura Size (Frame 2):" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+	
+	{
+		type = "range",
+		get = function() return Plater.db.profile.aura_width2 end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_width2 = value
+			Plater.RefreshDBUpvalues()
+			Plater.RefreshAuras()
+			Plater.UpdateAllPlates()
+		end,
+		min = 4,
+		max = 80,
+		step = 1,
+		name = "Width",
+		desc = "Debuff's icon width.",
+	},
+	{
+		type = "range",
+		get = function() return Plater.db.profile.aura_height2 end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_height2 = value
 			Plater.RefreshDBUpvalues()
 			Plater.RefreshAuras()
 			Plater.UpdateAllPlates()
