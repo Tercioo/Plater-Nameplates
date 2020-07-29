@@ -6232,14 +6232,6 @@ end
 			end
 			
 			Plater.UpdateResourceFrame()
-			
-			local widgetSetId = UnitWidgetSet(plateFrame.unitFrame [MEMBER_UNITID])
-			local playerControlled = UnitPlayerControlled(unitID)
-		    if widgetSetId and ((playerControlled and UnitIsOwnerOrControllerOfUnit('player', unitID)) or not playerControlled) then
-				plateFrame.unitFrame.WidgetContainer:RegisterForWidgetSet(widgetSetId)
-				plateFrame.unitFrame.WidgetContainer:ProcessAllWidgets()
-			end
-			
 		else
 			plateFrame.TargetNeonUp:Hide()
 			plateFrame.TargetNeonDown:Hide()
@@ -6269,6 +6261,13 @@ end
 			if (DB_USE_UIPARENT) then
 				Plater.UpdateUIParentLevels (plateFrame.unitFrame)
 			end
+		end
+
+		local widgetSetId = UnitWidgetSet(plateFrame.unitFrame [MEMBER_UNITID])
+		local playerControlled = UnitPlayerControlled(unitID)
+		if widgetSetId and ((playerControlled and UnitIsOwnerOrControllerOfUnit('player', unitID)) or not playerControlled) then
+			plateFrame.unitFrame.WidgetContainer:RegisterForWidgetSet(widgetSetId)
+			plateFrame.unitFrame.WidgetContainer:ProcessAllWidgets()
 		end
 
 		Plater.CheckRange (plateFrame, true) --disabled on 2018-10-09 | enabled back on 2020-1-16
