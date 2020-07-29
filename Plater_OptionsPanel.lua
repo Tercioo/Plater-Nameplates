@@ -1883,12 +1883,19 @@ local debuff_options = {
 		desc = "To which side aura icons should grow.\n\n|cFFFFFF00Important|r: debuffs are added first, buffs after.",
 	},
 	
-	
+	{
+		type = "select",
+		get = function() return Plater.db.profile.aura_frame1_anchor.side end,
+		values = function() return build_anchor_side_table (nil, "aura_frame1_anchor") end,
+		name = L["OPTIONS_ANCHOR"],
+		desc = "Which side of the nameplate this aura frame is attached to.",
+	},
 	{
 		type = "range",
-		get = function() return Plater.db.profile.aura_x_offset end,
+		get = function() return Plater.db.profile.aura_frame1_anchor.x end,
 		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_x_offset = value
+			Plater.db.profile.aura_frame1_anchor.x = value
+			Plater.db.profile.aura_x_offset = value -- keep backwards compatibility
 			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
@@ -1901,9 +1908,10 @@ local debuff_options = {
 	},
 	{
 		type = "range",
-		get = function() return Plater.db.profile.aura_y_offset end,
+		get = function() return Plater.db.profile.aura_frame1_anchor.y end,
 		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_y_offset = value
+			Plater.db.profile.aura_frame1_anchor.y = value
+			Plater.db.profile.aura_y_offset = value -- keep backwards compatibility
 			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
@@ -1939,10 +1947,18 @@ local debuff_options = {
 	},
 	--> offset
 	{
+		type = "select",
+		get = function() return Plater.db.profile.aura_frame2_anchor.side end,
+		values = function() return build_anchor_side_table (nil, "aura_frame2_anchor") end,
+		name = L["OPTIONS_ANCHOR"],
+		desc = "Which side of the nameplate this aura frame is attached to.",
+	},
+	{
 		type = "range",
-		get = function() return Plater.db.profile.aura2_x_offset end,
+		get = function() return Plater.db.profile.aura_frame2_anchor.x end,
 		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura2_x_offset = value
+			Plater.db.profile.aura_frame2_anchor.x = value
+			Plater.db.profile.aura2_x_offset = value -- keep backwards compatibility
 			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
@@ -1955,9 +1971,10 @@ local debuff_options = {
 	},
 	{
 		type = "range",
-		get = function() return Plater.db.profile.aura2_y_offset end,
+		get = function() return Plater.db.profile.aura_frame2_anchor.y end,
 		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura2_y_offset = value
+			Plater.db.profile.aura_frame2_anchor.y = value
+			Plater.db.profile.aura2_y_offset = value -- keep backwards compatibility
 			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,

@@ -639,16 +639,18 @@ PLATER_DEFAULT_SETTINGS = {
 		aura_height2 = 16,
 		
 		--> aura frame 1
-		aura_x_offset = 0,
-		aura_y_offset = 0,
+		--aura_x_offset = 0,
+		--aura_y_offset = 5,
 		aura_grow_direction = 2, --> center
+		aura_frame1_anchor = {side = 8, x = 0, y = 5}, -- in sync with aura_x_offset and aura_y_offset to be compatible to scripts...
 		aura_breakline_space = 12, --space between the first and second line when the aura break line
 		
 		--> aura frame 2
 		buffs_on_aura2 = false,
-		aura2_x_offset = 0,
-		aura2_y_offset = 0,
+		--aura2_x_offset = 0,
+		--aura2_y_offset = 5,
 		aura2_grow_direction = 2, --> center
+		aura_frame2_anchor = {side = 8, x = 0, y = 5}, -- in sync with aura_x_offset and aura_y_offset to be compatible to scripts...
 		
 		aura_padding = 1, --space between each icon
 		aura_consolidate = false, --aura icons shown with the same name is stacked into only one

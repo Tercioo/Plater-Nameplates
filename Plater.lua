@@ -659,8 +659,6 @@ Plater.DefaultSpellRangeList = {
 	local DB_DEBUFF_BANNED
 	local DB_AURA_ENABLED
 	local DB_AURA_ALPHA
-	local DB_AURA_X_OFFSET
-	local DB_AURA_Y_OFFSET
 	
 	local DB_USE_UIPARENT
 	
@@ -1521,8 +1519,6 @@ Plater.DefaultSpellRangeList = {
 		
 		DB_AURA_ENABLED = profile.aura_enabled
 		DB_AURA_ALPHA = profile.aura_alpha
-		DB_AURA_X_OFFSET = profile.aura_x_offset
-		DB_AURA_Y_OFFSET = profile.aura_y_offset
 		
 		DB_AURA_SEPARATE_BUFFS = Plater.db.profile.buffs_on_aura2
 
@@ -3384,6 +3380,71 @@ function Plater.OnInit() --private
 				end
 			end
 			
+			--migrate buff frame sizes and anchors
+			if not Plater.db.profile.buff_frame_anchor_and_size_migrated then
+				--migrate BuffFrame2 sizes
+				Plater.db.profile.aura_width2 = Plater.db.profile.aura_width
+				Plater.db.profile.aura_height2 = Plater.db.profile.aura_height
+				
+				--migrate BuffFrame1 and BuffFrame2 anchors/offsets
+				local heightOffset = 5
+				if DB_USE_UIPARENT then
+					local clickHeight = Plater.db.profile.click_space[2] / UIParent:GetEffectiveScale()
+					local hbHeight = Plater.db.profile.plate_config.enemynpc.health_incombat[2]
+					heightOffset = ((clickHeight - hbHeight) / 2) - (Plater.db.profile.aura_height / 2) + 5
+					heightOffset = math.floor(heightOffset*10+0.5)/10
+				end
+				
+				if Plater.db.profile.aura_grow_direction == 3 and Plater.db.profile.aura_x_offset < -20 then -- left to right
+					if Plater.db.profile.aura_y_offset or 0 < -10 then
+						Plater.db.profile.aura_frame1_anchor.side = 5
+					else
+						Plater.db.profile.aura_frame1_anchor.side = 7
+					end
+					Plater.db.profile.aura_frame1_anchor.x = 0
+				elseif Plater.db.profile.aura_grow_direction == 1 and Plater.db.profile.aura_x_offset > 20 then -- right to left
+					if Plater.db.profile.aura_y_offset or 0 < -10 then
+						Plater.db.profile.aura_frame1_anchor.side = 5
+					else
+						Plater.db.profile.aura_frame1_anchor.side = 7
+					end
+					Plater.db.profile.aura_frame1_anchor.x = 0
+				else
+					Plater.db.profile.aura_frame1_anchor.side = 8
+					Plater.db.profile.aura_frame1_anchor.x = Plater.db.profile.aura_x_offset or 0
+				end
+				Plater.db.profile.aura_frame1_anchor.y = (Plater.db.profile.aura_y_offset or 0) + heightOffset
+				Plater.db.profile.aura_x_offset = Plater.db.profile.aura_frame1_anchor.x
+				Plater.db.profile.aura_y_offset = Plater.db.profile.aura_frame1_anchor.y
+				
+				
+				if Plater.db.profile.aura2_grow_direction == 3 and Plater.db.profile.aura2_x_offset < -20 then -- left to right
+					if Plater.db.profile.aura2_y_offset or 0 < -10 then
+						Plater.db.profile.aura_frame2_anchor.side = 3
+					else
+						Plater.db.profile.aura_frame2_anchor.side = 1
+					end
+					Plater.db.profile.aura_frame2_anchor.x = 0
+				elseif Plater.db.profile.aura2_grow_direction == 1 and Plater.db.profile.aura2_x_offset > 20 then -- right to left
+					if Plater.db.profile.aura2_y_offset or 0 < -10 then
+						Plater.db.profile.aura_frame2_anchor.side = 3
+					else
+						Plater.db.profile.aura_frame2_anchor.side = 1
+					end
+					Plater.db.profile.aura_frame2_anchor.x = 0
+				else
+					Plater.db.profile.aura_frame2_anchor.side = 8
+					Plater.db.profile.aura_frame2_anchor.x = Plater.db.profile.aura_x_offset or 0
+				end
+				Plater.db.profile.aura_frame2_anchor.y = (Plater.db.profile.aura2_y_offset or 0) + heightOffset
+				Plater.db.profile.aura2_x_offset = Plater.db.profile.aura_frame2_anchor.x
+				Plater.db.profile.aura2_y_offset = Plater.db.profile.aura_frame2_anchor.y
+				
+				C_Timer.After (10, function() DF:ShowErrorMessage ("Buff Settings have been changed to support anchoring of both Buff Frames and the offsets and anchors were migrated automatically.\nPlease check the Buff Settings tab and adjust your Buff Frame anchors and offsets if needed.", "ATTENTION: Important Plater Changes") end)
+				
+				Plater.db.profile.buff_frame_anchor_and_size_migrated = true
+			end
+			
 			if (not Plater.db.profile.number_region_first_run) then
 				if (GetLocale() == "koKR") then
 					Plater.db.profile.number_region = "eastasia"
@@ -4288,6 +4349,8 @@ end
 	function Plater.AlignAuraFrames (self)
 
 		if (self.isNameplate) then
+			local horizontalLength = 0
+			local firstIcon
 		
 			if (Plater.db.profile.aura_consolidate) then
 				Plater.ConsolidateAuraIcons (self)
@@ -4319,16 +4382,6 @@ end
 				--self:SetBackdropBorderColor (1, 0, 0, 1)
 			
 				local framersPerRow = Plater.MaxAurasPerRow + 1
-				local firstIcon = iconFrameContainer[1]
-				
-				--check if there's one icon and if the icon is shown
-				if (not firstIcon or not firstIcon:IsShown()) then
-					return
-				end
-
-				--set the point of the first icon
-				firstIcon:ClearAllPoints()
-				firstIcon:SetPoint ("center", self, "center", 0, 5)
 				
 				--which slot index is being manipulated within the icon loop
 				--is an icon is hidden it won't be used and the slot won't increase
@@ -4336,24 +4389,32 @@ end
 				local slotId = 2
 				
 				--which was the last shown and valid icon attached into the visible icon row
-				local lastIconUsed = firstIcon
+				local lastIconUsed
 				
 				--left to right
 				if (growDirection == 3) then
 					--iterate among all icon frames
-					for i = 2, #iconFrameContainer do
+					for i = 1, #iconFrameContainer do
 						--get the icon id from the icon frame container
 						local iconFrame = iconFrameContainer [i]
 						if (iconFrame:IsShown()) then
+							horizontalLength = horizontalLength + iconFrame:GetWidth() + DB_AURA_PADDING
 							iconFrame:ClearAllPoints()
 							
-							if (slotId == framersPerRow) then
-								iconFrame:SetPoint ("bottomleft", firstIcon, "topleft", 0, Plater.db.profile.aura_breakline_space)
-								framersPerRow = framersPerRow + framersPerRow
-								--update the first icon to be the first icon in the second row
+							if not firstIcon then
+								--set the point of the first icon
+								iconFrame:ClearAllPoints()
+								iconFrame:SetPoint ("bottomleft", self, "bottomleft", 0, 0)
 								firstIcon = iconFrame
 							else
-								iconFrame:SetPoint ("topleft", lastIconUsed, "topright", DB_AURA_PADDING, 0)
+								if (slotId == framersPerRow) then
+									iconFrame:SetPoint ("bottomleft", firstIcon, "topleft", 0, Plater.db.profile.aura_breakline_space)
+									framersPerRow = framersPerRow + framersPerRow
+									--update the first icon to be the first icon in the second row
+									firstIcon = iconFrame
+								else
+									iconFrame:SetPoint ("topleft", lastIconUsed, "topright", DB_AURA_PADDING, 0)
+								end
 							end
 							
 							lastIconUsed = iconFrame
@@ -4364,19 +4425,27 @@ end
 				-- <-- right to left
 				elseif (growDirection == 1) then
 					--> iterate among all icon frames
-					for i = 2, #iconFrameContainer do
+					for i = 1, #iconFrameContainer do
 						--get the icon id from the icon frame container
 						local iconFrame = iconFrameContainer [i]
 						if (iconFrame:IsShown()) then
+							horizontalLength = horizontalLength + iconFrame:GetWidth() + DB_AURA_PADDING
 							iconFrame:ClearAllPoints()
 							
-							if (slotId == framersPerRow) then
-								iconFrame:SetPoint ("bottomright", firstIcon, "topright", 0, Plater.db.profile.aura_breakline_space)
-								framersPerRow = framersPerRow + framersPerRow
-								--update the first icon to be the first icon in the second row
+							if not firstIcon then
+								--set the point of the first icon
+								iconFrame:ClearAllPoints()
+								iconFrame:SetPoint ("bottomright", self, "bottomright", 0, 0)
 								firstIcon = iconFrame
 							else
-								iconFrame:SetPoint ("topright", lastIconUsed, "topleft", -DB_AURA_PADDING, 0)
+								if (slotId == framersPerRow) then
+									iconFrame:SetPoint ("bottomright", firstIcon, "topright", 0, Plater.db.profile.aura_breakline_space)
+									framersPerRow = framersPerRow + framersPerRow
+									--update the first icon to be the first icon in the second row
+									firstIcon = iconFrame
+								else
+									iconFrame:SetPoint ("topright", lastIconUsed, "topleft", -DB_AURA_PADDING, 0)
+								end
 							end
 							
 							lastIconUsed = iconFrame
@@ -4388,8 +4457,6 @@ end
 			else --it's growing from center
 				
 				local iconAmount = 0
-				local horizontalLength = 0
-				local firstIcon
 				local previousIcon
 
 				--iterate among all icons in the aura frame
@@ -4412,18 +4479,17 @@ end
 						end
 					end
 				end
-				
-				if (not firstIcon) then
-					return
-				end
-				
-				--remove 1 icon padding value
-				horizontalLength = horizontalLength - DB_AURA_PADDING
-				
-				--set the size of the buff frame
-				self:SetWidth (horizontalLength)
-				self:SetHeight (firstIcon:GetHeight())
 			end
+			
+			if (not firstIcon) then
+				return
+			end
+			
+			--remove 1 icon padding value
+			horizontalLength = horizontalLength - DB_AURA_PADDING
+			--set the size of the buff frame
+			self:SetWidth (horizontalLength)
+			self:SetHeight (firstIcon:GetHeight())
 		end
 	end
 
@@ -5599,13 +5665,15 @@ end
 			end
 			
 		--aura frame
-			--DB_AURA_Y_OFFSET = profile.aura_y_offset is from the buff Settings tab
 			--plateConfigs.buff_frame_y_offset is the offset from the actor type, e.g. enemy npc
-			buffFrame1:ClearAllPoints()
-			PixelUtil.SetPoint (buffFrame1, "bottom", unitFrame, "top", DB_AURA_X_OFFSET,  plateConfigs.buff_frame_y_offset + DB_AURA_Y_OFFSET)
+			--PixelUtil.SetPoint (buffFrame1, "bottom", unitFrame, "top", DB_AURA_X_OFFSET,  plateConfigs.buff_frame_y_offset + DB_AURA_Y_OFFSET)
+			local bf1Anchor = Plater.db.profile.aura_frame1_anchor
+			Plater.SetAnchor (buffFrame1, {side = bf1Anchor.side, x = bf1Anchor.x, y = bf1Anchor.y + plateConfigs.buff_frame_y_offset}, unitFrame.healthBar)
 			
-			buffFrame2:ClearAllPoints()
-			PixelUtil.SetPoint (buffFrame2, "bottom", unitFrame, "top", Plater.db.profile.aura2_x_offset,  plateConfigs.buff_frame_y_offset + Plater.db.profile.aura2_y_offset)
+			
+			--PixelUtil.SetPoint (buffFrame2, "bottom", unitFrame, "top", Plater.db.profile.aura2_x_offset,  plateConfigs.buff_frame_y_offset + Plater.db.profile.aura2_y_offset)
+			local bf2Anchor = Plater.db.profile.aura_frame2_anchor
+			Plater.SetAnchor (buffFrame2, {side = bf2Anchor.side, x = bf2Anchor.x, y = bf2Anchor.y + plateConfigs.buff_frame_y_offset}, unitFrame.healthBar)
 			
 		if (Plater.db.profile.show_health_prediction or Plater.db.profile.show_shield_prediction) and healthBar.displayedUnit then
 			healthBar:UpdateHealPrediction() -- ensure health prediction is updated properly
@@ -5614,7 +5682,6 @@ end
 	
 	--debug function to print the size of the anchor for each aura container
 	function Plater.DebugAuraAnchor()
-		print ("DB_AURA_Y_OFFSET:", DB_AURA_Y_OFFSET)
 		local profile = Plater.db.profile
 		--get the config for this actor type
 		local plateConfigs = DB_PLATE_CONFIG ["enemynpc"]
