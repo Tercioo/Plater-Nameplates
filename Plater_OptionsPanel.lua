@@ -1390,21 +1390,6 @@ local alpha_major_options = {
 	},	
 
 	{type = "blank"},
-
-	{
-		type = "toggle",
-		get = function() return Plater.db.profile.transparency_behavior_use_division end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.transparency_behavior_use_division = value
-			Plater.UpdateAllPlates()
-		end,
-		name = "Extra Contrast",
-		desc = "When the unit is out of range and isn't your target, alpha is greatly reduced.",
-		id = "transparency_division",
-	},	
-	--Plater.db.profile.transparency_behavior_use_division
-
-	{type = "blank"},
 	{type = "label", get = function() return "Alpha Amount by Frame" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	{
 		type = "range",
@@ -1433,7 +1418,7 @@ local alpha_major_options = {
 		max = 1,
 		step = 0.1,
 		name = "Health Bar",
-		desc = "Health Bar",
+		desc = "Health Bar alpha multiplier.",
 		usedecimals = true,
 	},
 	{
@@ -1448,7 +1433,7 @@ local alpha_major_options = {
 		max = 1,
 		step = 0.1,
 		name = "Cast Bar",
-		desc = "Cast Bar",
+		desc = "Cast Bar alpha multiplier.",
 		usedecimals = true,
 	},
 	{
@@ -1463,7 +1448,7 @@ local alpha_major_options = {
 		max = 1,
 		step = 0.1,
 		name = "Power Bar",
-		desc = "Power Bar",
+		desc = "Power Bar alpha multiplier.",
 		usedecimals = true,
 	},
 	{
@@ -1478,7 +1463,7 @@ local alpha_major_options = {
 		max = 1,
 		step = 0.1,
 		name = "Buff Frames",
-		desc = "Buff Frames",
+		desc = "Buff Frames alpha multiplier.",
 		usedecimals = true,
 	},
 	{
@@ -1495,6 +1480,18 @@ local alpha_major_options = {
 		name = "In-Range/Target alpha",
 		desc = "Frame alpha for targets or in-range units.",
 		usedecimals = true,
+	},
+	
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.transparency_behavior_use_division end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.transparency_behavior_use_division = value
+			Plater.UpdateAllPlates()
+		end,
+		name = "Extra Contrast",
+		desc = "When the unit is out of range and isn't your target, alpha is greatly reduced.",
+		id = "transparency_division",
 	},
 
 	{type = "blank"},
