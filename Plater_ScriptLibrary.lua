@@ -375,6 +375,77 @@ do
 		end
 	})
 
+	-- #10 --migrate buff frame sizes and anchors 
+	tinsert (PlaterPatchLibrary, {
+		Notes = {
+			"- Buff Settings have been changed to support anchoring of both Buff Frames. The offsets and anchors were migrated automatically.",
+		},
+		Func = function()
+			--migrate BuffFrame2 sizes
+			Plater.db.profile.aura_width2 = Plater.db.profile.aura_width
+			Plater.db.profile.aura_height2 = Plater.db.profile.aura_height
+			
+			--migrate BuffFrame1 and BuffFrame2 anchors/offsets
+			local hasNonDefaultValues = Plater.db.profile.aura_x_offset or Plater.db.profile.aura_y_offset or Plater.db.profile.aura2_x_offset or Plater.db.profile.aura2_y_offset 
+			
+			local heightOffset = 5
+			if Plater.db.profile.use_ui_parent then
+				local clickHeight = Plater.db.profile.click_space[2] / UIParent:GetEffectiveScale()
+				local hbHeight = Plater.db.profile.plate_config.enemynpc.health_incombat[2]
+				heightOffset = ((clickHeight - hbHeight) / 2) - (Plater.db.profile.aura_height / 2) + 5
+				heightOffset = math.floor(heightOffset*10+0.5)/10
+			end
+			
+			if Plater.db.profile.aura_grow_direction == 3 and Plater.db.profile.aura_x_offset or 0 < -20 then -- left to right
+				if (Plater.db.profile.aura_y_offset or 0) < -15 then
+					Plater.db.profile.aura_frame1_anchor.side = 3
+				else
+					Plater.db.profile.aura_frame1_anchor.side = 1
+				end
+				Plater.db.profile.aura_frame1_anchor.x = 0
+			elseif Plater.db.profile.aura_grow_direction == 1 and Plater.db.profile.aura_x_offset or 0 > 20 then -- right to left
+				if (Plater.db.profile.aura_y_offset or 0) < -15 then
+					Plater.db.profile.aura_frame1_anchor.side = 5
+				else
+					Plater.db.profile.aura_frame1_anchor.side = 7
+				end
+				Plater.db.profile.aura_frame1_anchor.x = 0
+			else
+				Plater.db.profile.aura_frame1_anchor.side = 8
+				Plater.db.profile.aura_frame1_anchor.x = Plater.db.profile.aura_x_offset or 0
+			end
+			Plater.db.profile.aura_frame1_anchor.y = (Plater.db.profile.aura_y_offset or 0) + heightOffset
+			Plater.db.profile.aura_x_offset = Plater.db.profile.aura_frame1_anchor.x
+			Plater.db.profile.aura_y_offset = Plater.db.profile.aura_frame1_anchor.y
+			
+			
+			if Plater.db.profile.aura2_grow_direction == 3 and Plater.db.profile.aura2_x_offset or 0 < -20 then -- left to right
+				if (Plater.db.profile.aura2_y_offset or 0) < -15 then
+					Plater.db.profile.aura_frame2_anchor.side = 3
+				else
+					Plater.db.profile.aura_frame2_anchor.side = 1
+				end
+				Plater.db.profile.aura_frame2_anchor.x = 0
+			elseif Plater.db.profile.aura2_grow_direction == 1 and Plater.db.profile.aura2_x_offset or 0 > 20 then -- right to left
+				if (Plater.db.profile.aura2_y_offset or 0) < -15 then
+					Plater.db.profile.aura_frame2_anchor.side = 5
+				else
+					Plater.db.profile.aura_frame2_anchor.side = 7
+				end
+				Plater.db.profile.aura_frame2_anchor.x = 0
+			else
+				Plater.db.profile.aura_frame2_anchor.side = 8
+				Plater.db.profile.aura_frame2_anchor.x = Plater.db.profile.aura2_x_offset or 0
+			end
+			Plater.db.profile.aura_frame2_anchor.y = (Plater.db.profile.aura2_y_offset or 0) + heightOffset
+			Plater.db.profile.aura2_x_offset = Plater.db.profile.aura_frame2_anchor.x
+			Plater.db.profile.aura2_y_offset = Plater.db.profile.aura_frame2_anchor.y
+			
+			if hasNonDefaultValues then
+				C_Timer.After (10, function() DetailsFramework:ShowErrorMessage ("Buff Settings have been changed to support anchoring of both Buff Frames and the offsets and anchors were migrated automatically.\nPlease check the Buff Settings tab and adjust your Buff Frame anchors and offsets if needed.", "ATTENTION: Important Plater Changes") end)
+			end
+		end
+	})
 	
 	
 end
