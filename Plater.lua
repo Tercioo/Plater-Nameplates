@@ -3220,7 +3220,7 @@ Plater.DefaultSpellRangeList = {
 			unitFrame.WidgetContainer:UnregisterForWidgetSet()
 			local widgetSetId = UnitWidgetSet(unitID)
 		    local playerControlled = UnitPlayerControlled(unitID)
-		    if widgetSetId and ((playerControlled and UnitIsOwnerOrControllerOfUnit('player', unitID)) or not playerControlled or not SpellCanTargetUnit(unitID)) then
+		    if widgetSetId and ((playerControlled and UnitIsOwnerOrControllerOfUnit('player', unitID)) or not playerControlled) then
 				--unitFrame.WidgetContainer:RegisterForWidgetSet(widgetSetId)
 				unitFrame.WidgetContainer:RegisterForWidgetSet(widgetSetId, Plater.PlaterDefaultWidgetLayout, nil, unitID);
 				unitFrame.WidgetContainer:ProcessAllWidgets()
@@ -6553,9 +6553,9 @@ end
 		plateFrame.unitFrame.WidgetContainer:UnregisterForWidgetSet()
 		local widgetSetId = UnitWidgetSet(plateFrame.unitFrame [MEMBER_UNITID])
 		local playerControlled = UnitPlayerControlled(plateFrame.unitFrame [MEMBER_UNITID])
-		if widgetSetId and ((playerControlled and UnitIsOwnerOrControllerOfUnit('player', plateFrame.unitFrame [MEMBER_UNITID])) or not playerControlled or not SpellCanTargetUnit(plateFrame.unitFrame [MEMBER_UNITID])) then
+		if widgetSetId and ((playerControlled and UnitIsOwnerOrControllerOfUnit('player', plateFrame.unitFrame [MEMBER_UNITID])) or not playerControlled) then
 			--plateFrame.unitFrame.WidgetContainer:RegisterForWidgetSet(widgetSetId)
-			plateFrame.unitFrame.WidgetContainer:RegisterForWidgetSet(widgetSetId, Plater.PlaterDefaultWidgetLayout);
+			plateFrame.unitFrame.WidgetContainer:RegisterForWidgetSet(widgetSetId, Plater.PlaterDefaultWidgetLayout, nil, plateFrame.unitFrame [MEMBER_UNITID]);
 			plateFrame.unitFrame.WidgetContainer:ProcessAllWidgets()
 		end
 		]]--
