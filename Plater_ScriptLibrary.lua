@@ -442,7 +442,7 @@ do
 			Plater.db.profile.aura2_y_offset = Plater.db.profile.aura_frame2_anchor.y
 			
 			if hasNonDefaultValues then
-				C_Timer.After (10, function() DetailsFramework:ShowErrorMessage ("Buff Settings have been changed to support anchoring of both Buff Frames and the offsets and anchors were migrated automatically.\nPlease check the Buff Settings tab and adjust your Buff Frame anchors and offsets if needed.", "ATTENTION: Important Plater Changes") end)
+				C_Timer.After (10, function() DetailsFramework:ShowErrorMessage ("Buff Settings have been changed to support anchoring of both Buff Frames and the offsets and anchors were migrated automatically.\nPlease check the Buff Settings tab and adjust your Buff Frame anchors and offsets if needed.", "ATTENTION: Important Plater Profile Changes") end)
 			end
 		end
 	})
