@@ -2042,9 +2042,17 @@ Plater.DefaultSpellRangeList = {
 						horizontalRowWidth = 0;
 						horizontalRowContainer = nil;
 					end
+					
+					totalHeight = totalHeight + widgetContainerFrame.verticalAnchorYOffset
 				end
 
 				widgetFrame:SetParent(widgetContainerFrame);
+				
+				local width, height = widgetFrame:GetSize();
+				if width > totalWidth then
+					totalWidth = width
+				end
+				totalHeight = totalHeight + height
 			else
 				-- This widget uses horizontal layout
 
@@ -2071,6 +2079,8 @@ Plater.DefaultSpellRangeList = {
 						-- This is not the first widget in the set, so anchor it to the previous widget (or the horizontalRowContainer if that exists)
 						local relative = horizontalRowContainer or sortedWidgets[index - 1];
 						newHorizontalRowContainer:SetPoint(widgetContainerFrame.verticalAnchorPoint, relative, widgetContainerFrame.verticalRelativePoint, 0, widgetContainerFrame.verticalAnchorYOffset);
+						
+						totalHeight = totalHeight + widgetContainerFrame.verticalAnchorYOffset
 					end
 					widgetFrame:SetPoint("TOPLEFT", newHorizontalRowContainer);
 					widgetFrame:SetParent(newHorizontalRowContainer);
@@ -2090,7 +2100,7 @@ Plater.DefaultSpellRangeList = {
 				
 				local widgetHeight = widgetFrame:GetHeight();
 				if widgetHeight > horizontalRowHeight then
-					horizontalRowHeight = widgetFrame:GetHeight();
+					horizontalRowHeight = widgetHeight;
 				end
 			end
 		end
@@ -2103,7 +2113,8 @@ Plater.DefaultSpellRangeList = {
 			horizontalRowHeight = 0;
 			horizontalRowWidth = 0;
 		end 
-		--widgetContainerFrame:Layout(); 
+		--widgetContainerFrame:Layout();
+		ViragDevTool_AddData({ctime = GetTime(), totalWidth = totalWidth, totalHeight = totalHeight}, "WidgetContainerSize - " .. (widgetContainerFrame:GetParent().unit or "nil"))
 		widgetContainerFrame:SetSize(totalWidth, totalHeight)
 	end
 	
