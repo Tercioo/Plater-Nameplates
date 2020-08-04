@@ -1971,7 +1971,7 @@ Plater.DefaultSpellRangeList = {
 	end
 	
 	function Plater.PlaterDefaultWidgetLayout(widgetContainerFrame, sortedWidgets)
-		ViragDevTool_AddData({ctime = GetTime(), unit = widgetContainerFrame:GetParent().unit or "nil", stack = debugstack(), wc = widgetContainerFrame, widgets = sortedWidgets, children = widgetContainerFrame:GetLayoutChildren(), wcp = widgetContainerFrame:GetParent()}, "WidgetContainer - " .. (widgetContainerFrame:GetParent().unit or "nil"))
+		--ViragDevTool_AddData({ctime = GetTime(), unit = widgetContainerFrame:GetParent().unit or "nil", stack = debugstack(), wc = widgetContainerFrame, widgets = sortedWidgets, children = widgetContainerFrame:GetLayoutChildren(), wcp = widgetContainerFrame:GetParent()}, "WidgetContainer - " .. (widgetContainerFrame:GetParent().unit or "nil"))
 		local horizontalRowContainer = nil; 
 		local horizontalRowHeight = 0;
 		local horizontalRowWidth = 0;
@@ -2114,7 +2114,7 @@ Plater.DefaultSpellRangeList = {
 			horizontalRowWidth = 0;
 		end 
 		--widgetContainerFrame:Layout();
-		ViragDevTool_AddData({ctime = GetTime(), totalWidth = totalWidth, totalHeight = totalHeight}, "WidgetContainerSize - " .. (widgetContainerFrame:GetParent().unit or "nil"))
+		--ViragDevTool_AddData({ctime = GetTime(), totalWidth = totalWidth, totalHeight = totalHeight}, "WidgetContainerSize - " .. (widgetContainerFrame:GetParent().unit or "nil"))
 		widgetContainerFrame:SetSize(totalWidth, totalHeight)
 	end
 	
@@ -3222,7 +3222,7 @@ Plater.DefaultSpellRangeList = {
 		    local playerControlled = UnitPlayerControlled(unitID)
 		    if widgetSetId and ((playerControlled and UnitIsOwnerOrControllerOfUnit('player', unitID)) or not playerControlled or not SpellCanTargetUnit(unitID)) then
 				--unitFrame.WidgetContainer:RegisterForWidgetSet(widgetSetId)
-				unitFrame.WidgetContainer:RegisterForWidgetSet(widgetSetId, Plater.PlaterDefaultWidgetLayout);
+				unitFrame.WidgetContainer:RegisterForWidgetSet(widgetSetId, Plater.PlaterDefaultWidgetLayout, nil, unitID);
 				unitFrame.WidgetContainer:ProcessAllWidgets()
 			end
 			
@@ -6481,8 +6481,6 @@ end
 		else
 			plateFrame.FocusIndicator:Hide()
 		end
-		
-		plateFrame.unitFrame.WidgetContainer:UnregisterForWidgetSet()
 
 		if (UnitIsUnit (plateFrame.unitFrame [MEMBER_UNITID], "target")) then
 			plateFrame [MEMBER_TARGET] = true
@@ -6551,6 +6549,8 @@ end
 			end
 		end
 
+		--[[
+		plateFrame.unitFrame.WidgetContainer:UnregisterForWidgetSet()
 		local widgetSetId = UnitWidgetSet(plateFrame.unitFrame [MEMBER_UNITID])
 		local playerControlled = UnitPlayerControlled(plateFrame.unitFrame [MEMBER_UNITID])
 		if widgetSetId and ((playerControlled and UnitIsOwnerOrControllerOfUnit('player', plateFrame.unitFrame [MEMBER_UNITID])) or not playerControlled or not SpellCanTargetUnit(plateFrame.unitFrame [MEMBER_UNITID])) then
@@ -6558,6 +6558,7 @@ end
 			plateFrame.unitFrame.WidgetContainer:RegisterForWidgetSet(widgetSetId, Plater.PlaterDefaultWidgetLayout);
 			plateFrame.unitFrame.WidgetContainer:ProcessAllWidgets()
 		end
+		]]--
 
 		Plater.CheckRange (plateFrame, true) --disabled on 2018-10-09 | enabled back on 2020-1-16
 
