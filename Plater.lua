@@ -1589,7 +1589,8 @@ Plater.DefaultSpellRangeList = {
 			for spellId, _ in pairs (DF.CrowdControlSpells) do
 				local spellName = GetSpellInfo (spellId)
 				if (spellName) then
-					SPECIAL_AURAS_AUTO_ADDED [spellName] = true
+					--SPECIAL_AURAS_AUTO_ADDED [spellName] = true
+					SPECIAL_AURAS_AUTO_ADDED [spellId] = true
 					CROWDCONTROL_AURA_NAMES [spellName] = true
 				end
 			end
@@ -1726,8 +1727,8 @@ Plater.DefaultSpellRangeList = {
 				for spellId, _ in pairs (DF.CrowdControlSpells) do
 					local spellName = GetSpellInfo (spellId)
 					if (spellName) then
-						AUTO_TRACKING_EXTRA_BUFFS [spellName] = true
-						--AUTO_TRACKING_EXTRA_BUFFS [spellId] = true
+						--AUTO_TRACKING_EXTRA_DEBUFFS [spellName] = true
+						AUTO_TRACKING_EXTRA_DEBUFFS [spellId] = true
 						CAN_TRACK_EXTRA_BUFFS = true
 					end
 				end
@@ -3378,75 +3379,6 @@ function Plater.OnInit() --private
 					--	Plater.db.profile.ui_parent_scale_tune = 1 - UIParent:GetEffectiveScale()
 					--end
 				end
-			end
-			
-			--migrate buff frame sizes and anchors
-			if not Plater.db.profile.buff_frame_anchor_and_size_migrated then
-				--migrate BuffFrame2 sizes
-				Plater.db.profile.aura_width2 = Plater.db.profile.aura_width
-				Plater.db.profile.aura_height2 = Plater.db.profile.aura_height
-				
-				--migrate BuffFrame1 and BuffFrame2 anchors/offsets
-				local hasNonDefaultValues = Plater.db.profile.aura_x_offset or Plater.db.profile.aura_y_offset or Plater.db.profile.aura2_x_offset or Plater.db.profile.aura2_y_offset 
-				
-				local heightOffset = 5
-				if DB_USE_UIPARENT then
-					local clickHeight = Plater.db.profile.click_space[2] / UIParent:GetEffectiveScale()
-					local hbHeight = Plater.db.profile.plate_config.enemynpc.health_incombat[2]
-					heightOffset = ((clickHeight - hbHeight) / 2) - (Plater.db.profile.aura_height / 2) + 5
-					heightOffset = math.floor(heightOffset*10+0.5)/10
-				end
-				
-				if Plater.db.profile.aura_grow_direction == 3 and Plater.db.profile.aura_x_offset or 0 < -20 then -- left to right
-					if Plater.db.profile.aura_y_offset or 0 < -15 then
-						Plater.db.profile.aura_frame1_anchor.side = 3
-					else
-						Plater.db.profile.aura_frame1_anchor.side = 1
-					end
-					Plater.db.profile.aura_frame1_anchor.x = 0
-				elseif Plater.db.profile.aura_grow_direction == 1 and Plater.db.profile.aura_x_offset or 0 > 20 then -- right to left
-					if Plater.db.profile.aura_y_offset or 0 < -15 then
-						Plater.db.profile.aura_frame1_anchor.side = 5
-					else
-						Plater.db.profile.aura_frame1_anchor.side = 7
-					end
-					Plater.db.profile.aura_frame1_anchor.x = 0
-				else
-					Plater.db.profile.aura_frame1_anchor.side = 8
-					Plater.db.profile.aura_frame1_anchor.x = Plater.db.profile.aura_x_offset or 0
-				end
-				Plater.db.profile.aura_frame1_anchor.y = (Plater.db.profile.aura_y_offset or 0) + heightOffset
-				Plater.db.profile.aura_x_offset = Plater.db.profile.aura_frame1_anchor.x
-				Plater.db.profile.aura_y_offset = Plater.db.profile.aura_frame1_anchor.y
-				
-				
-				if Plater.db.profile.aura2_grow_direction == 3 and Plater.db.profile.aura2_x_offset or 0 < -20 then -- left to right
-					if Plater.db.profile.aura2_y_offset or 0 < -15 then
-						Plater.db.profile.aura_frame2_anchor.side = 3
-					else
-						Plater.db.profile.aura_frame2_anchor.side = 1
-					end
-					Plater.db.profile.aura_frame2_anchor.x = 0
-				elseif Plater.db.profile.aura2_grow_direction == 1 and Plater.db.profile.aura2_x_offset or 0 > 20 then -- right to left
-					if Plater.db.profile.aura2_y_offset or 0 < -15 then
-						Plater.db.profile.aura_frame2_anchor.side = 5
-					else
-						Plater.db.profile.aura_frame2_anchor.side = 7
-					end
-					Plater.db.profile.aura_frame2_anchor.x = 0
-				else
-					Plater.db.profile.aura_frame2_anchor.side = 8
-					Plater.db.profile.aura_frame2_anchor.x = Plater.db.profile.aura2_x_offset or 0
-				end
-				Plater.db.profile.aura_frame2_anchor.y = (Plater.db.profile.aura2_y_offset or 0) + heightOffset
-				Plater.db.profile.aura2_x_offset = Plater.db.profile.aura_frame2_anchor.x
-				Plater.db.profile.aura2_y_offset = Plater.db.profile.aura_frame2_anchor.y
-				
-				if hasNonDefaultValues then
-					C_Timer.After (10, function() DF:ShowErrorMessage ("Buff Settings have been changed to support anchoring of both Buff Frames and the offsets and anchors were migrated automatically.\nPlease check the Buff Settings tab and adjust your Buff Frame anchors and offsets if needed.", "ATTENTION: Important Plater Changes") end)
-				end
-				
-				Plater.db.profile.buff_frame_anchor_and_size_migrated = true
 			end
 			
 			if (not Plater.db.profile.number_region_first_run) then
@@ -5203,7 +5135,7 @@ end
 						can_show_this_debuff = true
 						
 					--> user added this buff to track in the buff tracking tab
-					elseif (AUTO_TRACKING_EXTRA_DEBUFFS [name]) then
+					elseif (AUTO_TRACKING_EXTRA_DEBUFFS [name] or AUTO_TRACKING_EXTRA_DEBUFFS [spellId]) then
 						can_show_this_debuff = true
 					end
 					
@@ -6281,17 +6213,19 @@ end
 	-- ~target
 	function Plater.UpdateTarget (plateFrame) --private
 
-		if (UnitIsUnit (plateFrame.unitFrame [MEMBER_UNITID], "focus") and Plater.db.profile.focus_indicator_enabled) then
-			--this is a rare call, no need to cache these values
-			local texture = LibSharedMedia:Fetch ("statusbar", Plater.db.profile.focus_texture)
-			plateFrame.FocusIndicator:SetTexture (texture)
-			plateFrame.FocusIndicator:SetVertexColor (unpack (Plater.db.profile.focus_color))
-			plateFrame.FocusIndicator:Show()
+		if UnitIsUnit (plateFrame.unitFrame [MEMBER_UNITID], "focus") then
+			if Plater.db.profile.focus_indicator_enabled then
+				--this is a rare call, no need to cache these values
+				local texture = LibSharedMedia:Fetch ("statusbar", Plater.db.profile.focus_texture)
+				plateFrame.FocusIndicator:SetTexture (texture)
+				plateFrame.FocusIndicator:SetVertexColor (unpack (Plater.db.profile.focus_color))
+				plateFrame.FocusIndicator:Show()
+			end
+			plateFrame.unitFrame.IsFocus = true
 		else
 			plateFrame.FocusIndicator:Hide()
+			plateFrame.unitFrame.IsFocus = false
 		end
-		
-		plateFrame.unitFrame.WidgetContainer:UnregisterForWidgetSet()
 
 		if (UnitIsUnit (plateFrame.unitFrame [MEMBER_UNITID], "target")) then
 			plateFrame [MEMBER_TARGET] = true
@@ -6360,9 +6294,10 @@ end
 			end
 		end
 
+		plateFrame.unitFrame.WidgetContainer:UnregisterForWidgetSet()
 		local widgetSetId = UnitWidgetSet(plateFrame.unitFrame [MEMBER_UNITID])
-		local playerControlled = UnitPlayerControlled(unitID)
-		if widgetSetId and ((playerControlled and UnitIsOwnerOrControllerOfUnit('player', unitID)) or not playerControlled) then
+		local playerControlled = UnitPlayerControlled(plateFrame.unitFrame [MEMBER_UNITID])
+		if widgetSetId and ((playerControlled and UnitIsOwnerOrControllerOfUnit('player', plateFrame.unitFrame [MEMBER_UNITID])) or not playerControlled) then
 			plateFrame.unitFrame.WidgetContainer:RegisterForWidgetSet(widgetSetId)
 			plateFrame.unitFrame.WidgetContainer:ProcessAllWidgets()
 		end
