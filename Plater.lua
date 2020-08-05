@@ -6225,8 +6225,6 @@ end
 			plateFrame.FocusIndicator:Hide()
 			plateFrame.unitFrame.IsFocus = false
 		end
-		
-		plateFrame.unitFrame.WidgetContainer:UnregisterForWidgetSet()
 
 		if (UnitIsUnit (plateFrame.unitFrame [MEMBER_UNITID], "target")) then
 			plateFrame [MEMBER_TARGET] = true
@@ -6295,9 +6293,10 @@ end
 			end
 		end
 
+		plateFrame.unitFrame.WidgetContainer:UnregisterForWidgetSet()
 		local widgetSetId = UnitWidgetSet(plateFrame.unitFrame [MEMBER_UNITID])
-		local playerControlled = UnitPlayerControlled(unitID)
-		if widgetSetId and ((playerControlled and UnitIsOwnerOrControllerOfUnit('player', unitID)) or not playerControlled) then
+		local playerControlled = UnitPlayerControlled(plateFrame.unitFrame [MEMBER_UNITID])
+		if widgetSetId and ((playerControlled and UnitIsOwnerOrControllerOfUnit('player', plateFrame.unitFrame [MEMBER_UNITID])) or not playerControlled) then
 			plateFrame.unitFrame.WidgetContainer:RegisterForWidgetSet(widgetSetId)
 			plateFrame.unitFrame.WidgetContainer:ProcessAllWidgets()
 		end
