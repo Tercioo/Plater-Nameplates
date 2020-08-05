@@ -1726,8 +1726,8 @@ Plater.DefaultSpellRangeList = {
 				for spellId, _ in pairs (DF.CrowdControlSpells) do
 					local spellName = GetSpellInfo (spellId)
 					if (spellName) then
-						AUTO_TRACKING_EXTRA_BUFFS [spellName] = true
-						--AUTO_TRACKING_EXTRA_BUFFS [spellId] = true
+						AUTO_TRACKING_EXTRA_DEBUFFS [spellName] = true
+						--AUTO_TRACKING_EXTRA_DEBUFFS [spellId] = true
 						CAN_TRACK_EXTRA_BUFFS = true
 					end
 				end
