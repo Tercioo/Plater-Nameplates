@@ -1589,7 +1589,8 @@ Plater.DefaultSpellRangeList = {
 			for spellId, _ in pairs (DF.CrowdControlSpells) do
 				local spellName = GetSpellInfo (spellId)
 				if (spellName) then
-					SPECIAL_AURAS_AUTO_ADDED [spellName] = true
+					--SPECIAL_AURAS_AUTO_ADDED [spellName] = true
+					SPECIAL_AURAS_AUTO_ADDED [spellId] = true
 					CROWDCONTROL_AURA_NAMES [spellName] = true
 				end
 			end
@@ -1726,8 +1727,8 @@ Plater.DefaultSpellRangeList = {
 				for spellId, _ in pairs (DF.CrowdControlSpells) do
 					local spellName = GetSpellInfo (spellId)
 					if (spellName) then
-						AUTO_TRACKING_EXTRA_DEBUFFS [spellName] = true
-						--AUTO_TRACKING_EXTRA_DEBUFFS [spellId] = true
+						--AUTO_TRACKING_EXTRA_DEBUFFS [spellName] = true
+						AUTO_TRACKING_EXTRA_DEBUFFS [spellId] = true
 						CAN_TRACK_EXTRA_BUFFS = true
 					end
 				end
@@ -5134,7 +5135,7 @@ end
 						can_show_this_debuff = true
 						
 					--> user added this buff to track in the buff tracking tab
-					elseif (AUTO_TRACKING_EXTRA_DEBUFFS [name]) then
+					elseif (AUTO_TRACKING_EXTRA_DEBUFFS [name] or AUTO_TRACKING_EXTRA_DEBUFFS [spellId]) then
 						can_show_this_debuff = true
 					end
 					
