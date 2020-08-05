@@ -3722,7 +3722,7 @@ function Plater.OnInit() --private
 			Plater.UpdateSelfPlate()
 		end)
 
-	--> cast frame ~castbar
+	--> cast frame ~castbar ~testcast
 	
 		--test castbar
 		Plater.CastBarTestFrame = CreateFrame ("frame", nil, UIParent)
@@ -3750,7 +3750,7 @@ function Plater.OnInit() --private
 				castBar.value = 0
 				castBar.maxValue = 3
 				castBar.canInterrupt = math.random (1, 2) == 1
-				castBar.canInterrupt = true
+				--castBar.canInterrupt = true
 				castBar:UpdateCastColor()
 				
 				castBar.spellName = 		"Getting Bald"
