@@ -265,12 +265,13 @@ do
 	})
 	
 	-- #5 (replace parts of a script)
-	tinsert (PlaterPatchLibrary, {
+	tinsert (PlaterPatchLibrary, { --deprecated
 		Notes = {
 			"- Replacing some parts of Aura Reorder mod.",
 		},
 		Func = function()
 			--aura reorder fix
+			--[[
 			local hookData = Plater.db.profile.hook_data
 			for i = 1, #hookData do
 				local hook = hookData [i]
@@ -281,6 +282,7 @@ do
 					end
 				end
 			end
+			]]--
 		end
 	})
 	
