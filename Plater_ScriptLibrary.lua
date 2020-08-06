@@ -375,22 +375,23 @@ do
 			local hasNonDefaultValues = Plater.db.profile.aura_x_offset or Plater.db.profile.aura_y_offset or Plater.db.profile.aura2_x_offset or Plater.db.profile.aura2_y_offset 
 			
 			local heightOffset = 5
+			local hbHeight = Plater.db.profile.plate_config.enemynpc.health_incombat[2] or 16
+			--local hbWidth = Plater.db.profile.plate_config.enemynpc.health_incombat[1] or 100
 			if Plater.db.profile.use_ui_parent then
 				local clickHeight = Plater.db.profile.click_space[2] / UIParent:GetEffectiveScale()
-				local hbHeight = Plater.db.profile.plate_config.enemynpc.health_incombat[2]
 				heightOffset = ((clickHeight - hbHeight) / 2) - (Plater.db.profile.aura_height / 2) + 5
 				heightOffset = math.floor(heightOffset*10+0.5)/10
 			end
 			
-			if Plater.db.profile.aura_grow_direction == 3 and (Plater.db.profile.aura_x_offset or 0) < -20 then -- left to right
-				if (Plater.db.profile.aura_y_offset or 0) < -15 then
+			if Plater.db.profile.aura_grow_direction ~= 2 and (Plater.db.profile.aura_x_offset or 0) < -20 then -- assume left anchor
+				if (Plater.db.profile.aura_y_offset or 0) < -hbHeight*2 then
 					Plater.db.profile.aura_frame1_anchor.side = 3
 				else
 					Plater.db.profile.aura_frame1_anchor.side = 1
 				end
 				Plater.db.profile.aura_frame1_anchor.x = 0
-			elseif Plater.db.profile.aura_grow_direction == 1 and (Plater.db.profile.aura_x_offset or 0) > 20 then -- right to left
-				if (Plater.db.profile.aura_y_offset or 0) < -15 then
+			elseif Plater.db.profile.aura_grow_direction ~= 2 and (Plater.db.profile.aura_x_offset or 0) > 20 then -- assume right anchor
+				if (Plater.db.profile.aura_y_offset or 0) < -hbHeight*2 then
 					Plater.db.profile.aura_frame1_anchor.side = 5
 				else
 					Plater.db.profile.aura_frame1_anchor.side = 7
@@ -405,15 +406,15 @@ do
 			Plater.db.profile.aura_y_offset = Plater.db.profile.aura_frame1_anchor.y
 			
 			
-			if Plater.db.profile.aura2_grow_direction == 3 and (Plater.db.profile.aura2_x_offset or 0) < -20 then -- left to right
-				if (Plater.db.profile.aura2_y_offset or 0) < -15 then
+			if Plater.db.profile.aura2_grow_direction ~= 2 and (Plater.db.profile.aura2_x_offset or 0) < -20 then -- assume left anchor
+				if (Plater.db.profile.aura2_y_offset or 0) < -hbHeight*2 then
 					Plater.db.profile.aura_frame2_anchor.side = 3
 				else
 					Plater.db.profile.aura_frame2_anchor.side = 1
 				end
 				Plater.db.profile.aura_frame2_anchor.x = 0
-			elseif Plater.db.profile.aura2_grow_direction == 1 and (Plater.db.profile.aura2_x_offset or 0) > 20 then -- right to left
-				if (Plater.db.profile.aura2_y_offset or 0) < -15 then
+			elseif Plater.db.profile.aura2_grow_direction ~= 2 and (Plater.db.profile.aura2_x_offset or 0) > 20 then -- assume right anchor
+				if (Plater.db.profile.aura2_y_offset or 0) < -hbHeight*2 then
 					Plater.db.profile.aura_frame2_anchor.side = 5
 				else
 					Plater.db.profile.aura_frame2_anchor.side = 7
