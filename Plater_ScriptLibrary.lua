@@ -186,8 +186,15 @@ do
 		String = "LA1xVTTnq8VlEpmhGyV4K42KcShksrqDFqyyo9PIQkAQtreHIuGKkoPfrF23DKYY02YiBlXi2NipE8397(NsNLExAYS0LFsR(DxB2NzpcTzFSXWAZ(2FjzoW890KZrvU4DNF27ttUiD5nLm19OwUs8lfRcQj9AZ4AP20MTUeuTzSD2kxdwCbnEdL(BWFwgEn4YwaxwO6wKRvwNPH7iBz5grTBAAYLPlx8trLohM8XFAysTknzoIQ5ZVC2fxD1LO87WvUon59K7KCf6wlDmjOCOKlD59gDtDqKlzwBqSIv)drE3dgTecs1pwhFwdJ3TbROq8uqeuCDJc5NTgWwdCVKln5AcajBzGVwNJ)MNUSOrXDcn6UJTGS402SgLWTiVt4wdEgugupEhBLeoP9lTzDF6LMmjx7PZsH6EK7k64o8UEgqAty9btIt56Qvm32Js6o2hicr3PlSlu34vA8jN4TJk6k7(yaxJrfdbqL)FbzKR9Vex9SW0na71G1Bfu7ZEokNuwSh4IWLDjU9Bhv8sG)Wo1c9Bk1CMKkwSHAX)SnRGjTWqgQGQuOZNesD(rGHRzcd6AJ3Kjn9omp(bKbilApHkkpe7EpTlZOp79ZBqX44m0n34XZA28j2lWsB44AUYaShoC7DyWJqNBtG6UUJcRo3Bj469WBcTUgpuf40D1kQGe2nGedK(dFR2WH)gkmGTCFd9k0whoh8WXy9KyA4Ou2bew7xWLXU5B73(wAonzYIQATXXuUpGPVcf1W36ygNVMBTWvszCn4PWFz2sAFMX3WVQcB1spsW0VMpowJhUntVPAnmly4kj)ieS8MkL1Djz(aXZ6Myt2y9OXvI5zUUjw2OHpLatsaDfZeZEVASCOu7i4TxhNdMgYuph5OfAPuV2duFxHtdTKwlKyhHvGVYgh8KVHv7gB6HHuy97ScqtedbAJWDGtPKYEIcBjG2NZubthyAsJW8BmrGZSasWkRWjEKs2O7zREl(0am1oTA8KZVomfDYKVnkrCFPBLKLdJ(EpjEkTxiAk8PfOLFIvvtPo9rW9W5qwF21ZVC(5)pTBSFDym9LHd0Rlf8Y(GX(VGegbdSm3)gu57mliCK(ablpNIJm7hgqlYM4gzJmq(i0Rg9mqPmJgq1s4jsXF72Bpd)ZRmktpnK2ok6H6)RzOINr))YPDp5x5LHCAFnwfdtHXjuAIkr8)hEF20xJDyoYavqJQfQhgTFlk69Ps)N",
 		Enabled = false,
 	}
-	
-	
+
+	PlaterScriptLibrary ["Cast Bar Icon Config"] = {
+		Revision = 1,
+		ScriptType = "hook",
+		String = "DN12UTnoq0)L8WUXa1g(EUa0hCs206TnogvjTpSEznTeDS2YikqsNl7d(BFNHuxOILD8LGIffQ1vsKC45mK8mJMsAqUH41G4DovPxm(mQCX4((IOfJ9yADy0DQfJ)RH)nXt)CmJ4nti(bXRfX7kXdSfJ1ZGFcnDxmn5rvmJZxm23ypTi5TC2u4rbyDz4DZGBvHbmNrfrVNfZPAwnIxtIx)intoL6Zg1li46i1OHyBYrH3tVJPgHgFcv(DCQjEDidA05KUDpQ(jTGX2M4DrOMgiKv79Vskh7YrqxiEDjdA2PoX7eKZwcFBCayyI305r(6qKihQy8PVBX45rH6(bj3CPeWhCpl6HBOt4Skl(ZfJtUYUlTXAwJIUXHcvyIzZmJZyXPQ2nZKcTMZSJAX43VyC1gU2NffapcxPG2ttL63gmN1XAOpfw(RDMqgWKEZcz8GtHnbxiPp(z6Zm5HhaZ6Jc5poOY(Wzh(SQlGNIiLwo3xlKBnpHBVxeSAkxTASm8baSNM)U8PyhiuYfx4tt24Bog9(s8URCu2drVpB41mhcxvVJeMdiY5X6BypPNlzfgR7s4Y2y53ecNcpm1NvdM4PH3vtnt8icIkMtOLGLSrdD60Z5mQShNpuegPvhwz1DFngQmyGw)6OpdYhEGIXRcM1AR5k2LZ5CVW)DZnubwchhmeeS9bArSrk7a3TH1MXOC9myraEl2fu3d7r1goBlD5gcMRNovX0v2dWmbuqe3xcEs2sGOX2NmavgygsdcanFO56BaAyCf7n3b6a4F1DFrbRUtBMV9NYU8ukV6n5zoUFgRsldNLwKYWZ)h2JVw8(lUZBT7WxxJVs0gGyFlmqpdiM55pW0FKH4(WkvETHcH1kl806xOnd9JqaOshA0(fLnleofmeeBxNhj3NgLfP)vpmVCwbRKTRBiS8CkknACsRdP6z7ILpxazNaMUEYwEZ)U1g6RmPgTfh)KIdBKyRgwBT1BQ2YCscykkaei9WGeiTXcTLZMlYn4goD7zGJnXPEbttd5kJmbM2)PdPsfZ0QQeuQT2X0(6ofUJN7lhXO24QXIrJOeLSKMTsgB3wVnpp3YbCMESpdBf1zDuGtLNxbGt)qKxr(T8zUhpEgD1(ktZBTUyjt1gPsAEa(HaFg7X4xJRPCWHa3bV4oPyES9wFovPS3Epn(7HbjpiP(m7DXpe7owvmZ3EhD60WNS3YI8fZrC6yab3Aa4ETW)bMubowYGJR3QEDyWbbyzdSvDG4jIr3oo0bM6LCdwmKbDiEdGZgeVIfmH49vkF(sV(uI3NypNAR22MF1kDy79350jmoXd0j8jEaMh0mhgTtHbk2BREtkeolzot)wUTBsNiezZP12Ms1Ku8L0Vz9ru3dwqX9u465GwLanRRa)7Nnfcc)wUxcYIFP3Ud1(tZGdGrngw1FgQO5wTQOc1Lclg17YknLaAr(yOIHSPDb2yaQtc2PCyskrVfoTm(SW7sxhEtiHdWNrvP1zZi9LvanB92mRlX85PDYMPo8wKkDYPstI3v0NmBHTZ3LHry98MhvSQEkdhVkeozu3zzkpL0uha2CHddg0L2NTXlen)(j4zoiUJPKmW(da7Dxd29IbBcCNPFKXIkGFtgvf9pj0PAhNPyIlnYyzsYU7g8DDgPgc4Xr58OBANoJtJ(b4YqASeqSMT7wUtcTORCXXLPALQCVyCI2DMY150OFhE9Y9OOiwN9ue7KvkI9ca5QJL10BYrlLz6G4I60CEnLS2ucBN9n(whYeCJvQtXQ21OEojALsISeOXKKZJhKb1rF4lxF7Wl)sVR(JrJUTFvZJvVQx)b30BWN6F(1dC2g6KV92rAKszKosbj3LWPyk(PttZ0et4UHonkznjJoo5P(YLMLtsDFxHMaH1XA8MTYeQSRxr4IaSyWP(WXMFddbfQTO3jSyJLqVj10uCBcLJ)PP53wMFBtUStN6DBF8jDA2Q1rnR3QjzA1oTXSemS0nj3TJF(2HKOyX4m)0vdFB(2zk5URgTww2d)V4WALEb)ZCLU4OaNbM0BIixJIW(B2MsuyAuFjpush2l56jgG3E7b(mt645iVe1zy9TaH(yYq2Db6mQNyke7D2EShNKzEAWLwVaOdZA)LHlZLkY6YBG7VKWLnwpd0sAKkMkHCLFopI)lWO5JeYxnkeKENGTRpYACT5I8Fd",
+		Enabled = true,
+	}
+
+
 --[=[
 	PlaterScriptLibrary [""] = {
 		Revision = 1,
@@ -208,7 +215,7 @@ do
 	PlaterPatchLibrary = {}
 	
 	-- #1
-	tinsert (PlaterPatchLibrary, {
+	tinsert (PlaterPatchLibrary, { --deprecated
 		Notes = {
 			--"- Added 'Soul Harvest' to buff track (Soulbound Goliath from Waycrest Manor).",
 		},
@@ -219,13 +226,13 @@ do
 	end})
 	
 	-- #2
-	tinsert (PlaterPatchLibrary, {
+	tinsert (PlaterPatchLibrary, { --deprecated
 		Notes = {
-			"- Added 'Symbiote of G'huun' to Special Auras.",
+			--"- Added 'Symbiote of G'huun' to Special Auras.",
 		},
 		Func = function()
 			--add symbiote of g'huun to extra icons
-			tinsert (Plater.db.profile.extra_icon_auras, 277242)
+			--tinsert (Plater.db.profile.extra_icon_auras, 277242)
 	end})
 	
 	-- #3
@@ -425,6 +432,23 @@ do
 			end
 		end
 	})
-	
-	
+
+	--#11 disable the Jaina, Stormwall, and M+ Bwonsamdi afix
+	tinsert (PlaterPatchLibrary, {
+		Notes = {"- Disabling 8.0 deprecated mods."},
+		Func = function()
+			local hookData = Plater.db.profile.hook_data
+			for i = 1, #hookData do
+				local hook = hookData [i]
+				if (hook.Name == "Jaina Encounter [Plater]") then
+					hook.Enabled = false
+				elseif (hook.Name == "M+ Bwonsamdi Reaping") then
+					hook.Enabled = false
+				elseif (hook.Name == "Stormwall Encounter [Plater]") then
+					hook.Enabled = false
+				end
+			end
+		end
+	})
+
 end
