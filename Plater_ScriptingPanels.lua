@@ -1059,6 +1059,8 @@ end
 		--options button
 		local scriptOptionButton = DF:CreateButton (parent, function() Plater.RefreshUserScriptOptions(mainFrame) end, 170, 20, "Options", 0, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
 		local scriptOptionButtonAdmin = DF:CreateButton (parent, function() Plater.RefreshAdminScriptOptions(mainFrame) end, 20, 20, "", 0, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
+		scriptOptionButton.tooltip = "Show options for this script or mod"
+		scriptOptionButtonAdmin.tooltip = "Build or edit the options panel for this script or mod"
 		scriptOptionButtonAdmin:SetIcon ([[Interface\BUTTONS\UI-OptionsButton]], 18, 18, "overlay", false, false, 0, -3, 0, false)
 		scriptOptionButton:SetPoint("topleft", script_prio_entry, "bottomleft", 0, -5) --position
 		scriptOptionButtonAdmin:SetPoint("left", scriptOptionButton, "right", 1, 0)
@@ -1119,6 +1121,62 @@ end
 			mainFrame.ScriptOptionsPanelUser = userFrame
 			userFrame:Hide()
 
+			--regular buttons admin frame
+			do
+				--save button
+				local save_script_button = DF:CreateButton (adminFrame, mainFrame.SaveScript, buttons_size[1], buttons_size[2], "Save", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				save_script_button:SetIcon ([[Interface\BUTTONS\UI-Panel-ExpandButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
+				save_script_button.tooltip = "While editing, you may use:\n\n|cFFFFFF00SHIFT + Enter|r: save the script, apply the changes and don't lose the focus on the editor.\n\n|cFFFFFF00CTRL + Enter|r: save the script and apply the changes."
+				save_script_button:SetFrameLevel(adminFrame:GetFrameLevel()+11)
+				
+				--cancel button
+				local cancel_script_button = DF:CreateButton (adminFrame, mainFrame.CancelEditing, buttons_size[1], buttons_size[2], "Cancel", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				cancel_script_button:SetIcon ([[Interface\BUTTONS\UI-Panel-MinimizeButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
+				cancel_script_button:SetFrameLevel(adminFrame:GetFrameLevel()+11)
+
+				--documentation icon
+				local docs_button = DF:CreateButton (adminFrame, mainFrame.OpenDocs, buttons_size[1], buttons_size[2], "Docs", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				docs_button:SetIcon ([[Interface\BUTTONS\UI-GuildButton-PublicNote-Up]], 16, 16, "overlay", {0, 1, 0, 1})
+				docs_button:SetFrameLevel(adminFrame:GetFrameLevel()+11)
+
+				if (mainFrame:GetName() == "PlaterOptionsPanelContainerScripting") then
+					save_script_button:SetPoint ("topright", mainFrame.CodeEditorLuaEntry, "bottomright", 0, 10)
+				else
+					save_script_button:SetPoint ("topright", mainFrame.CodeEditorLuaEntry, "bottomright", 0, -25)
+				end
+				
+				cancel_script_button:SetPoint ("right", save_script_button, "left", -20, 0)
+				docs_button:SetPoint ("right", cancel_script_button, "left", -20, 0)
+			end
+
+			--regular buttons user frame
+			do
+				--save button
+				local save_script_button = DF:CreateButton (userFrame, mainFrame.SaveScript, buttons_size[1], buttons_size[2], "Save", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				save_script_button:SetIcon ([[Interface\BUTTONS\UI-Panel-ExpandButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
+				save_script_button.tooltip = "While editing, you may use:\n\n|cFFFFFF00SHIFT + Enter|r: save the script, apply the changes and don't lose the focus on the editor.\n\n|cFFFFFF00CTRL + Enter|r: save the script and apply the changes."
+				save_script_button:SetFrameLevel(userFrame:GetFrameLevel()+11)
+				
+				--cancel button
+				local cancel_script_button = DF:CreateButton (userFrame, mainFrame.CancelEditing, buttons_size[1], buttons_size[2], "Cancel", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				cancel_script_button:SetIcon ([[Interface\BUTTONS\UI-Panel-MinimizeButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
+				cancel_script_button:SetFrameLevel(userFrame:GetFrameLevel()+11)
+
+				--documentation icon
+				local docs_button = DF:CreateButton (userFrame, mainFrame.OpenDocs, buttons_size[1], buttons_size[2], "Docs", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				docs_button:SetIcon ([[Interface\BUTTONS\UI-GuildButton-PublicNote-Up]], 16, 16, "overlay", {0, 1, 0, 1})
+				docs_button:SetFrameLevel(userFrame:GetFrameLevel()+11)
+
+				if (mainFrame:GetName() == "PlaterOptionsPanelContainerScripting") then
+					save_script_button:SetPoint ("topright", mainFrame.CodeEditorLuaEntry, "bottomright", 0, 10)
+				else
+					save_script_button:SetPoint ("topright", mainFrame.CodeEditorLuaEntry, "bottomright", 0, -25)
+				end
+
+				cancel_script_button:SetPoint ("right", save_script_button, "left", -20, 0)
+				docs_button:SetPoint ("right", cancel_script_button, "left", -20, 0)
+			end
+			
 			local createNewOptionButtonFunction = function(button, buttontype, param1, param2)
 				--get the current selected script
 				local scriptObject = mainFrame.GetCurrentScriptObject() --can be hook or script
@@ -1501,6 +1559,7 @@ end
 						set = function (self, fixedparam, value) setOptionValue("Desc", value, "") end,
 						name = "Description",
 						desc = "A short description of what this option controls.",
+						width = 300,
 					},
 				}
 
@@ -1749,12 +1808,14 @@ end
 							newOption.max = thisOption.Max
 							newOption.usedecimals = thisOption.Fraction
 							newOption.step = thisOption.Fraction and 0.01 or 1
+							newOption.thumbscale = 0.5
 							newOption.set = function (self, fixedparam, value)
 								thisOptionsValues[thisOption.Key] = thisOption.Fraction and value or math.floor(value)
 							end
 
 						elseif (thisOption.Type == 3) then --text
 							newOption.type = "textentry"
+							newOption.width = 300
 
 						elseif (thisOption.Type == 4) then --toggle
 							newOption.type = "toggle"
@@ -3078,11 +3139,11 @@ function Plater.CreateHookingPanel()
 	--import editor
 	hookFrame.ImportTextEditor:SetPoint ("topleft", edit_script_frame, "topleft", 230, -20)
 	
-	hookFrame.SaveScriptButton:SetPoint ("topright", hookFrame.CodeEditorLuaEntry, "bottomright", 0, -10)
+	hookFrame.SaveScriptButton:SetPoint ("topright", hookFrame.CodeEditorLuaEntry, "bottomright", 0, -25)
 	hookFrame.CancelScriptButton:SetPoint ("right", hookFrame.SaveScriptButton, "left", -20, 0)
 	hookFrame.DocsButton:SetPoint ("right", hookFrame.CancelScriptButton, "left", -20, 0)
 	
-	hookTypeLabel:SetPoint ("topleft", hookFrame.CodeEditorLuaEntry, "bottomleft", 0, -15)
+	hookTypeLabel:SetPoint ("topleft", hookFrame.CodeEditorLuaEntry, "bottomleft", 0, -30)
 	
 	--import control buttons
 	hookFrame.ImportTextEditor.OkayButton:SetPoint ("topright", hookFrame.CodeEditorLuaEntry, "bottomright", 0, -10)
