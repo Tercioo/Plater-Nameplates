@@ -382,14 +382,14 @@ do
 				heightOffset = math.floor(heightOffset*10+0.5)/10
 			end
 			
-			if Plater.db.profile.aura_grow_direction == 3 and Plater.db.profile.aura_x_offset or 0 < -20 then -- left to right
+			if Plater.db.profile.aura_grow_direction == 3 and (Plater.db.profile.aura_x_offset or 0) < -20 then -- left to right
 				if (Plater.db.profile.aura_y_offset or 0) < -15 then
 					Plater.db.profile.aura_frame1_anchor.side = 3
 				else
 					Plater.db.profile.aura_frame1_anchor.side = 1
 				end
 				Plater.db.profile.aura_frame1_anchor.x = 0
-			elseif Plater.db.profile.aura_grow_direction == 1 and Plater.db.profile.aura_x_offset or 0 > 20 then -- right to left
+			elseif Plater.db.profile.aura_grow_direction == 1 and (Plater.db.profile.aura_x_offset or 0) > 20 then -- right to left
 				if (Plater.db.profile.aura_y_offset or 0) < -15 then
 					Plater.db.profile.aura_frame1_anchor.side = 5
 				else
@@ -405,14 +405,14 @@ do
 			Plater.db.profile.aura_y_offset = Plater.db.profile.aura_frame1_anchor.y
 			
 			
-			if Plater.db.profile.aura2_grow_direction == 3 and Plater.db.profile.aura2_x_offset or 0 < -20 then -- left to right
+			if Plater.db.profile.aura2_grow_direction == 3 and (Plater.db.profile.aura2_x_offset or 0) < -20 then -- left to right
 				if (Plater.db.profile.aura2_y_offset or 0) < -15 then
 					Plater.db.profile.aura_frame2_anchor.side = 3
 				else
 					Plater.db.profile.aura_frame2_anchor.side = 1
 				end
 				Plater.db.profile.aura_frame2_anchor.x = 0
-			elseif Plater.db.profile.aura2_grow_direction == 1 and Plater.db.profile.aura2_x_offset or 0 > 20 then -- right to left
+			elseif Plater.db.profile.aura2_grow_direction == 1 and (Plater.db.profile.aura2_x_offset or 0) > 20 then -- right to left
 				if (Plater.db.profile.aura2_y_offset or 0) < -15 then
 					Plater.db.profile.aura_frame2_anchor.side = 5
 				else
