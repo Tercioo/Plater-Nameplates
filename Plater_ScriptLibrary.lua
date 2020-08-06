@@ -383,48 +383,75 @@ do
 				heightOffset = math.floor(heightOffset*10+0.5)/10
 			end
 			
+			
 			if Plater.db.profile.aura_grow_direction ~= 2 and (Plater.db.profile.aura_x_offset or 0) < -20 then -- assume left anchor
-				if (Plater.db.profile.aura_y_offset or 0) < -hbHeight*2 then
+				if (Plater.db.profile.aura_y_offset or 0) < -(hbHeight + Plater.db.profile.aura_height + heightOffset)  then
 					Plater.db.profile.aura_frame1_anchor.side = 3
+					Plater.db.profile.aura_frame1_anchor.y = (Plater.db.profile.aura_y_offset or 0) + heightOffset
+					Plater.db.profile.aura_frame1_anchor.x = 0
+				elseif (Plater.db.profile.aura_y_offset or 0) < -heightOffset then
+					Plater.db.profile.aura_frame1_anchor.side = 2
+					Plater.db.profile.aura_frame1_anchor.y = -5
+					Plater.db.profile.aura_frame1_anchor.x = -5
 				else
 					Plater.db.profile.aura_frame1_anchor.side = 1
+					Plater.db.profile.aura_frame1_anchor.y = (Plater.db.profile.aura_y_offset or 0) + heightOffset
+					Plater.db.profile.aura_frame1_anchor.x = 0
 				end
-				Plater.db.profile.aura_frame1_anchor.x = 0
 			elseif Plater.db.profile.aura_grow_direction ~= 2 and (Plater.db.profile.aura_x_offset or 0) > 20 then -- assume right anchor
-				if (Plater.db.profile.aura_y_offset or 0) < -hbHeight*2 then
+				if (Plater.db.profile.aura_y_offset or 0) < -(hbHeight + Plater.db.profile.aura_height + heightOffset)  then
 					Plater.db.profile.aura_frame1_anchor.side = 5
+					Plater.db.profile.aura_frame1_anchor.y = (Plater.db.profile.aura_y_offset or 0) + heightOffset
+					Plater.db.profile.aura_frame1_anchor.x = 0
+				elseif (Plater.db.profile.aura_y_offset or 0) < -heightOffset then
+					Plater.db.profile.aura_frame1_anchor.side = 6
+					Plater.db.profile.aura_frame1_anchor.y = -5
+					Plater.db.profile.aura_frame1_anchor.x = 5
 				else
 					Plater.db.profile.aura_frame1_anchor.side = 7
+					Plater.db.profile.aura_frame1_anchor.y = (Plater.db.profile.aura_y_offset or 0) + heightOffset
+					Plater.db.profile.aura_frame1_anchor.x = 0
 				end
-				Plater.db.profile.aura_frame1_anchor.x = 0
 			else
 				Plater.db.profile.aura_frame1_anchor.side = 8
 				Plater.db.profile.aura_frame1_anchor.x = Plater.db.profile.aura_x_offset or 0
 			end
-			Plater.db.profile.aura_frame1_anchor.y = (Plater.db.profile.aura_y_offset or 0) + heightOffset
 			Plater.db.profile.aura_x_offset = Plater.db.profile.aura_frame1_anchor.x
 			Plater.db.profile.aura_y_offset = Plater.db.profile.aura_frame1_anchor.y
 			
 			
 			if Plater.db.profile.aura2_grow_direction ~= 2 and (Plater.db.profile.aura2_x_offset or 0) < -20 then -- assume left anchor
-				if (Plater.db.profile.aura2_y_offset or 0) < -hbHeight*2 then
+				if (Plater.db.profile.aura2_y_offset or 0) < -(hbHeight + Plater.db.profile.aura_height + heightOffset)  then
 					Plater.db.profile.aura_frame2_anchor.side = 3
+					Plater.db.profile.aura_frame2_anchor.y = (Plater.db.profile.aura2_y_offset or 0) + heightOffset
+					Plater.db.profile.aura_frame2_anchor.x = 0
+				elseif (Plater.db.profile.aura2_y_offset or 0) < -heightOffset then
+					Plater.db.profile.aura_frame2_anchor.side = 2
+					Plater.db.profile.aura_frame2_anchor.y = -5
+					Plater.db.profile.aura_frame2_anchor.x = -5
 				else
 					Plater.db.profile.aura_frame2_anchor.side = 1
+					Plater.db.profile.aura_frame2_anchor.y = (Plater.db.profile.aura2_y_offset or 0) + heightOffset
+					Plater.db.profile.aura_frame2_anchor.x = 0
 				end
-				Plater.db.profile.aura_frame2_anchor.x = 0
 			elseif Plater.db.profile.aura2_grow_direction ~= 2 and (Plater.db.profile.aura2_x_offset or 0) > 20 then -- assume right anchor
-				if (Plater.db.profile.aura2_y_offset or 0) < -hbHeight*2 then
+				if (Plater.db.profile.aura2_y_offset or 0) < -(hbHeight + Plater.db.profile.aura_height + heightOffset)  then
 					Plater.db.profile.aura_frame2_anchor.side = 5
+					Plater.db.profile.aura_frame2_anchor.y = (Plater.db.profile.aura2_y_offset or 0) + heightOffset
+					Plater.db.profile.aura_frame2_anchor.x = 0
+				elseif (Plater.db.profile.aura2_y_offset or 0) < -heightOffset then
+					Plater.db.profile.aura_frame2_anchor.side = 6
+					Plater.db.profile.aura_frame2_anchor.y = -5
+					Plater.db.profile.aura_frame2_anchor.x = 5
 				else
 					Plater.db.profile.aura_frame2_anchor.side = 7
+					Plater.db.profile.aura_frame2_anchor.y = (Plater.db.profile.aura2_y_offset or 0) + heightOffset
+					Plater.db.profile.aura_frame2_anchor.x = 0
 				end
-				Plater.db.profile.aura_frame2_anchor.x = 0
 			else
 				Plater.db.profile.aura_frame2_anchor.side = 8
 				Plater.db.profile.aura_frame2_anchor.x = Plater.db.profile.aura2_x_offset or 0
 			end
-			Plater.db.profile.aura_frame2_anchor.y = (Plater.db.profile.aura2_y_offset or 0) + heightOffset
 			Plater.db.profile.aura2_x_offset = Plater.db.profile.aura_frame2_anchor.x
 			Plater.db.profile.aura2_y_offset = Plater.db.profile.aura_frame2_anchor.y
 			
