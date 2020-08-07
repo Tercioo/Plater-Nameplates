@@ -191,7 +191,7 @@ do
 		Revision = 1,
 		ScriptType = "hook",
 		String = "DN12UTnoq0)L8WUXa1g(EUa0hCs206TnogvjTpSEznTeDS2YikqsNl7d(BFNHuxOILD8LGIffQ1vsKC45mK8mJMsAqUH41G4DovPxm(mQCX4((IOfJ9yADy0DQfJ)RH)nXt)CmJ4nti(bXRfX7kXdSfJ1ZGFcnDxmn5rvmJZxm23ypTi5TC2u4rbyDz4DZGBvHbmNrfrVNfZPAwnIxtIx)intoL6Zg1li46i1OHyBYrH3tVJPgHgFcv(DCQjEDidA05KUDpQ(jTGX2M4DrOMgiKv79Vskh7YrqxiEDjdA2PoX7eKZwcFBCayyI305r(6qKihQy8PVBX45rH6(bj3CPeWhCpl6HBOt4Skl(ZfJtUYUlTXAwJIUXHcvyIzZmJZyXPQ2nZKcTMZSJAX43VyC1gU2NffapcxPG2ttL63gmN1XAOpfw(RDMqgWKEZcz8GtHnbxiPp(z6Zm5HhaZ6Jc5poOY(Wzh(SQlGNIiLwo3xlKBnpHBVxeSAkxTASm8baSNM)U8PyhiuYfx4tt24Bog9(s8URCu2drVpB41mhcxvVJeMdiY5X6BypPNlzfgR7s4Y2y53ecNcpm1NvdM4PH3vtnt8icIkMtOLGLSrdD60Z5mQShNpuegPvhwz1DFngQmyGw)6OpdYhEGIXRcM1AR5k2LZ5CVW)DZnubwchhmeeS9bArSrk7a3TH1MXOC9myraEl2fu3d7r1goBlD5gcMRNovX0v2dWmbuqe3xcEs2sGOX2NmavgygsdcanFO56BaAyCf7n3b6a4F1DFrbRUtBMV9NYU8ukV6n5zoUFgRsldNLwKYWZ)h2JVw8(lUZBT7WxxJVs0gGyFlmqpdiM55pW0FKH4(WkvETHcH1kl806xOnd9JqaOshA0(fLnleofmeeBxNhj3NgLfP)vpmVCwbRKTRBiS8CkknACsRdP6z7ILpxazNaMUEYwEZ)U1g6RmPgTfh)KIdBKyRgwBT1BQ2YCscykkaei9WGeiTXcTLZMlYn4goD7zGJnXPEbttd5kJmbM2)PdPsfZ0QQeuQT2X0(6ofUJN7lhXO24QXIrJOeLSKMTsgB3wVnpp3YbCMESpdBf1zDuGtLNxbGt)qKxr(T8zUhpEgD1(ktZBTUyjt1gPsAEa(HaFg7X4xJRPCWHa3bV4oPyES9wFovPS3Epn(7HbjpiP(m7DXpe7owvmZ3EhD60WNS3YI8fZrC6yab3Aa4ETW)bMubowYGJR3QEDyWbbyzdSvDG4jIr3oo0bM6LCdwmKbDiEdGZgeVIfmH49vkF(sV(uI3NypNAR22MF1kDy79350jmoXd0j8jEaMh0mhgTtHbk2BREtkeolzot)wUTBsNiezZP12Ms1Ku8L0Vz9ru3dwqX9u465GwLanRRa)7Nnfcc)wUxcYIFP3Ud1(tZGdGrngw1FgQO5wTQOc1Lclg17YknLaAr(yOIHSPDb2yaQtc2PCyskrVfoTm(SW7sxhEtiHdWNrvP1zZi9LvanB92mRlX85PDYMPo8wKkDYPstI3v0NmBHTZ3LHry98MhvSQEkdhVkeozu3zzkpL0uha2CHddg0L2NTXlen)(j4zoiUJPKmW(da7Dxd29IbBcCNPFKXIkGFtgvf9pj0PAhNPyIlnYyzsYU7g8DDgPgc4Xr58OBANoJtJ(b4YqASeqSMT7wUtcTORCXXLPALQCVyCI2DMY150OFhE9Y9OOiwN9ue7KvkI9ca5QJL10BYrlLz6G4I60CEnLS2ucBN9n(whYeCJvQtXQ21OEojALsISeOXKKZJhKb1rF4lxF7Wl)sVR(JrJUTFvZJvVQx)b30BWN6F(1dC2g6KV92rAKszKosbj3LWPyk(PttZ0et4UHonkznjJoo5P(YLMLtsDFxHMaH1XA8MTYeQSRxr4IaSyWP(WXMFddbfQTO3jSyJLqVj10uCBcLJ)PP53wMFBtUStN6DBF8jDA2Q1rnR3QjzA1oTXSemS0nj3TJF(2HKOyX4m)0vdFB(2zk5URgTww2d)V4WALEb)ZCLU4OaNbM0BIixJIW(B2MsuyAuFjpush2l56jgG3E7b(mt645iVe1zy9TaH(yYq2Db6mQNyke7D2EShNKzEAWLwVaOdZA)LHlZLkY6YBG7VKWLnwpd0sAKkMkHCLFopI)lWO5JeYxnkeKENGTRpYACT5I8Fd",
-		Enabled = true,
+		Enabled = false,
 	}
 
 
@@ -475,6 +475,20 @@ do
 				elseif (hook.Name == "M+ Bwonsamdi Reaping") then
 					hook.Enabled = false
 				elseif (hook.Name == "Stormwall Encounter [Plater]") then
+					hook.Enabled = false
+				end
+			end
+		end
+	})
+	
+	--#12 disable the "Cast Bar Icon Config" by default
+	tinsert (PlaterPatchLibrary, {
+		Notes = {"- Disabling 'Cast Bar Icon Config' by default."},
+		Func = function()
+			local hookData = Plater.db.profile.hook_data
+			for i = 1, #hookData do
+				local hook = hookData [i]
+				if (hook.Name == "Cast Bar Icon Settings [P]") then
 					hook.Enabled = false
 				end
 			end
