@@ -4641,8 +4641,8 @@ Plater.CreateAuraTesting()
 					color[1], color[2], color[3], color[4] = r, g, b, a
 					Plater.UpdateAllPlates()
 				end,
-				name = "Enrage Border Color",
-				desc = "Enrage Border Color",
+				name = "Offensive Border Color",
+				desc = "Offensive Border Color",
 			},
 			
 			{type = "blank"},
@@ -4671,8 +4671,8 @@ Plater.CreateAuraTesting()
 					color[1], color[2], color[3], color[4] = r, g, b, a
 					Plater.UpdateAllPlates()
 				end,
-				name = "Enrage Border Color",
-				desc = "Enrage Border Color",
+				name = "Defensive Border Color",
+				desc = "Defensive Border Color",
 			},
 		
 		
