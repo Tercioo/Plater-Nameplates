@@ -50,7 +50,7 @@ DF:NewColor ("PLATER_GUILD", 0.498039, 1, .2, 1)
 
 DF:NewColor ("PLATER_DEBUFF", 1, 0.7117, 0.7117, 1)
 DF:NewColor ("PLATER_BUFF", 0.7117, 1, 0.7509, 1)
-DF:NewColor ("PLATER_CAST", 0.7117, 0.7784, 1, 1)
+DF:NewColor ("PLATER_CAST", 0.4117, 0.4784, 1, 1)
 
 --defining reaction constants here isnce they are used within the profile
 local UNITREACTION_HOSTILE = 3
