@@ -7697,11 +7697,12 @@ end
 		end,
 		function (widget, config, attachTo, centered)--2
 			widget:ClearAllPoints()
-			PixelUtil.SetPoint (widget, "right", attachTo, "left", config.x, config.y, 0, 0)
+			local widgetRelative = centered and "center" or "right"
+			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "left", config.x, config.y, 0, 0)
 		end,
 		function (widget, config, attachTo, centered)--3
 			widget:ClearAllPoints()
-			local widgetRelative = centered and "top" or "bottomleft"
+			local widgetRelative = centered and "top" or "topleft"
 			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "bottomleft", config.x, config.y, 0, 0)
 		end,
 		function (widget, config, attachTo, centered)--4
@@ -7710,16 +7711,17 @@ end
 		end,
 		function (widget, config, attachTo, centered)--5
 			widget:ClearAllPoints()
-			local widgetRelative = centered and "top" or "bottomleft"
+			local widgetRelative = centered and "top" or "topright"
 			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "bottomright", config.x, config.y, 0, 0)
 		end,
 		function (widget, config, attachTo, centered)--6
 			widget:ClearAllPoints()
-			PixelUtil.SetPoint (widget, "left", attachTo, "right", config.x, config.y, 0, 0)
+			local widgetRelative = centered and "center" or "left"
+			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "right", config.x, config.y, 0, 0)
 		end,
 		function (widget, config, attachTo, centered)--7
 			widget:ClearAllPoints()
-			local widgetRelative = centered and "bottom" or "bottomleft"
+			local widgetRelative = centered and "bottom" or "bottomright"
 			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "topright", config.x, config.y, 0, 0)
 		end,
 		function (widget, config, attachTo, centered)--8
