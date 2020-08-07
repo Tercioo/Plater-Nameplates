@@ -1781,6 +1781,27 @@ Plater.DefaultSpellRangeList = {
 			--PlaterPatchLibrary = nil
 		end
 	end
+
+	--same thing as above but apply patches only to new profiles
+	--this doesn't count profiles imported from other users
+	function Plater.ApplyPatchesToNewProfile()
+		if (PlaterPatchLibraryForNewProfiles) then
+			local currentPatch = Plater.db.profile.patch_version_profile
+			for i = currentPatch+1, #PlaterPatchLibraryForNewProfiles do
+			
+				local patch = PlaterPatchLibraryForNewProfiles [i]
+				Plater:Msg ("Applied Patch for Profiles #" .. i .. ":")
+				
+				for o = 1, #patch.Notes do
+					print (patch.Notes [o])
+				end
+				
+				DF:Dispatch (patch.Func)
+				
+				Plater.db.profile.patch_version_profile = i
+			end
+		end
+	end
 	
 	--when using UIParent as the parent for the unitFrame, this function is hooked in the plateFrame OnSizeChanged script
 	--the goal is to adjust the the unitFrame scale when the plateFrame scale changes
@@ -3276,6 +3297,9 @@ function Plater.OnInit() --private
 			
 			if (not Plater.db.profile.first_run3) then
 				C_Timer.After (15, Plater.SetCVarsOnFirstRun)
+
+				--run Patches to run only when the profile is new
+				Plater.ApplyPatchesToNewProfile()
 				
 				--enable UIParent nameplates for new installs of Plater
 				--this setting is disabled by default and will be enabled for new people

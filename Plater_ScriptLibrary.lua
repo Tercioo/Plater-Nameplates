@@ -496,3 +496,26 @@ do
 	})
 
 end
+
+
+--Patches to apply only when the profiling is running for the first time
+do
+	PlaterPatchLibraryForNewProfiles = {}
+
+	-- #1 - enable the mod 'Cast Bar Icon Config' on new profiles
+	tinsert (PlaterPatchLibraryForNewProfiles, {
+		Notes = {
+			"- Enabling 'Cast Bar Icon Config' mod.",
+		},
+		Func = function()
+			local hookData = Plater.db.profile.hook_data
+			for i = 1, #hookData do
+				local hook = hookData [i]
+				if (hook.Name == "Cast Bar Icon Settings [P]") then
+					hook.Enabled = true
+					Plater.WipeAndRecompileAllScripts("hook")
+				end
+			end
+		end
+	})
+end

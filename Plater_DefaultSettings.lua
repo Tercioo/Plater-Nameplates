@@ -604,6 +604,7 @@ PLATER_DEFAULT_SETTINGS = {
 		hook_auto_imported = {}, --store the name and revision of scripts imported from the Plater script library
 		
 		patch_version = 0,
+		patch_version_profile = 0,
 		
 		health_cutoff = true,
 		health_cutoff_extra_glow = false,
