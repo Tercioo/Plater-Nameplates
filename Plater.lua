@@ -703,6 +703,8 @@ Plater.DefaultSpellRangeList = {
 
 	local DB_USE_RANGE_CHECK
 	local DB_USE_NON_TARGETS_ALPHA
+	local DB_USE_ALPHA_FRIENDLIES
+	local DB_USE_ALPHA_ENEMIES
 	local DB_USE_QUICK_HIDE
 
 	local DB_TEXTURE_CASTBAR
@@ -900,11 +902,8 @@ Plater.DefaultSpellRangeList = {
 	--> range check ~range
 	function Plater.CheckRange (plateFrame, onAdded)
 
-		--value when the unit is in range
-		local inRangeAlpha = Plater.db.profile.range_check_in_range_or_target_alpha
 		local unitFrame = plateFrame.unitFrame
-		local castBarFade = unitFrame.castBar.fadeOutAnimation:IsPlaying() --and Plater.db.profile.cast_statusbar_use_fade_effects
-
+		
 		--if is using the no combat alpha and the unit isn't in combat, ignore the range check, no combat alpha is disabled by default
 		if (plateFrame [MEMBER_NOCOMBAT]) then
 			--unitFrame:SetAlpha (Plater.db.profile.not_affecting_combat_alpha) -- already set if necessary
@@ -919,7 +918,7 @@ Plater.DefaultSpellRangeList = {
 			return
 		
 		--the unit is friendly or not using range check and non targets alpha
-		elseif (plateFrame [MEMBER_REACTION] >= 5 or (not DB_USE_RANGE_CHECK and not DB_USE_NON_TARGETS_ALPHA)) then
+		elseif ((not DB_USE_ALPHA_FRIENDLIES and plateFrame [MEMBER_REACTION] >= 5) or (not DB_USE_ALPHA_ENEMIES and plateFrame [MEMBER_REACTION] < 5) or (not DB_USE_RANGE_CHECK and not DB_USE_NON_TARGETS_ALPHA)) then
 			unitFrame:SetAlpha (1)
 			unitFrame.healthBar:SetAlpha (1)
 			if not castBarFade then
@@ -933,19 +932,41 @@ Plater.DefaultSpellRangeList = {
 			unitFrame [MEMBER_RANGE] = true
 			return
 		end
+		
+		local castBarFade = unitFrame.castBar.fadeOutAnimation:IsPlaying() --and Plater.db.profile.cast_statusbar_use_fade_effects
+		
+		--alpha values
+		local inRangeAlpha
+		local overallRangeCheckAlpha
+		local healthBar_rangeCheckAlpha
+		local castBar_rangeCheckAlpha
+		local buffFrames_rangeCheckAlpha
+		local powerBar_rangeCheckAlpha
+		
+		if plateFrame [MEMBER_REACTION] < 5 then
+			-- enemy
+			inRangeAlpha = Plater.db.profile.range_check_in_range_or_target_alpha
+			overallRangeCheckAlpha = Plater.db.profile.range_check_alpha
+			healthBar_rangeCheckAlpha = Plater.db.profile.range_check_health_bar_alpha
+			castBar_rangeCheckAlpha = Plater.db.profile.range_check_cast_bar_alpha
+			buffFrames_rangeCheckAlpha = Plater.db.profile.range_check_buffs_alpha
+			powerBar_rangeCheckAlpha = Plater.db.profile.range_check_power_bar_alpha
+			
+		else
+			-- friendly
+			inRangeAlpha = Plater.db.profile.range_check_in_range_or_target_alpha_friendlies
+			overallRangeCheckAlpha = Plater.db.profile.range_check_alpha_friendlies
+			healthBar_rangeCheckAlpha = Plater.db.profile.range_check_health_bar_alpha_friendlies
+			castBar_rangeCheckAlpha = Plater.db.profile.range_check_cast_bar_alpha_friendlies
+			buffFrames_rangeCheckAlpha = Plater.db.profile.range_check_buffs_alpha_friendlies
+			powerBar_rangeCheckAlpha = Plater.db.profile.range_check_power_bar_alpha_friendlies
+		end
 
 		--this unit is target
 		local unitIsTarget
 		local notTheTarget = false
 		--when the unit is out of range and isnt target, alpha is multiplied by this amount
 		local alphaMultiplier = 0.70
-
-		--values for when the unit is out of range
-		local overallRangeCheckAlpha = Plater.db.profile.range_check_alpha
-		local healthBar_rangeCheckAlpha = Plater.db.profile.range_check_health_bar_alpha
-		local castBar_rangeCheckAlpha = Plater.db.profile.range_check_cast_bar_alpha
-		local buffFrames_rangeCheckAlpha = Plater.db.profile.range_check_buffs_alpha
-		local powerBar_rangeCheckAlpha = Plater.db.profile.range_check_power_bar_alpha
 
 		local healthBar = unitFrame.healthBar
 		local castBar = unitFrame.castBar
@@ -1440,6 +1461,8 @@ Plater.DefaultSpellRangeList = {
 		DB_HOVER_HIGHLIGHT = profile.hover_highlight
 		DB_USE_RANGE_CHECK = profile.range_check_enabled
 		DB_USE_NON_TARGETS_ALPHA = profile.non_targeted_alpha_enabled
+		DB_USE_ALPHA_FRIENDLIES = profile.transparency_behavior_on_friendlies
+		DB_USE_ALPHA_ENEMIES = profile.transparency_behavior_on_enemies
 		DB_USE_QUICK_HIDE = profile.quick_hide
 		
 		DB_NPCIDS_CACHE = Plater.db.profile.npc_cache
@@ -2747,18 +2770,18 @@ Plater.DefaultSpellRangeList = {
 				healthBar.unitName:SetDrawLayer ("overlay", 7)
 				
 				--special name and title
-				local ActorNameSpecial = plateFrame:CreateFontString (nil, "artwork", "GameFontNormal")
+				local ActorNameSpecial = plateFrame.unitFrame:CreateFontString (nil, "artwork", "GameFontNormal")
+				plateFrame.unitFrame.ActorNameSpecial = ActorNameSpecial --alias for scripts
 				plateFrame.ActorNameSpecial = ActorNameSpecial
 				PixelUtil.SetPoint (plateFrame.ActorNameSpecial, "center", plateFrame, "center", 0, 0)
 				plateFrame.ActorNameSpecial:Hide()
 				
-				local ActorTitleSpecial = plateFrame:CreateFontString (nil, "artwork", "GameFontNormal")
+				local ActorTitleSpecial = plateFrame.unitFrame:CreateFontString (nil, "artwork", "GameFontNormal")
+				plateFrame.unitFrame.ActorTitleSpecial = ActorTitleSpecial --alias for scripts
 				plateFrame.ActorTitleSpecial = ActorTitleSpecial
 				PixelUtil.SetPoint (plateFrame.ActorTitleSpecial, "top", ActorNameSpecial, "bottom", 0, -2)
 				plateFrame.ActorTitleSpecial:Hide()
 				
-				plateFrame.unitFrame.ActorNameSpecial = ActorNameSpecial --alias for scripts
-				plateFrame.unitFrame.ActorTitleSpecial = ActorTitleSpecial --alias for scripts
 				
 			--> level text
 				local actorLevel = healthBar:CreateFontString (nil, "overlay", "GameFontNormal")
@@ -6372,7 +6395,7 @@ end
 								set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.nocombat))
 							end
 							
-							if (Plater.db.profile.not_affecting_combat_enabled) then --not self.PlateFrame [MEMBER_NOCOMBAT] and 
+							if (DB_NOT_COMBAT_ALPHA_ENABLED) then --not self.PlateFrame [MEMBER_NOCOMBAT] and 
 								self.PlateFrame [MEMBER_NOCOMBAT] = true
 								self:SetAlpha (Plater.db.profile.not_affecting_combat_alpha)
 							end
@@ -6777,7 +6800,7 @@ end
 			
 			--set the point of the name and guild texts
 			nameFontString:ClearAllPoints()
-			PixelUtil.SetPoint (plateFrame.ActorNameSpecial, "center", plateFrame, "center", 0, 10)
+			PixelUtil.SetPoint (plateFrame.ActorNameSpecial, "center", plateFrame.unitFrame, "center", 0, 10)
 			
 			--format the color if is the same guild, a friend from friends list or color by player class
 			if (Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_guild_color and plateFrame.playerGuildName == Plater.PlayerGuildName) then
@@ -6817,7 +6840,7 @@ end
 			plateFrame.ActorNameSpecial:ClearAllPoints()
 			plateFrame.ActorTitleSpecial:ClearAllPoints()
 			
-			PixelUtil.SetPoint (plateFrame.ActorNameSpecial, "center", plateFrame, "center", 0, 10)
+			PixelUtil.SetPoint (plateFrame.ActorNameSpecial, "center", plateFrame.unitFrame, "center", 0, 10)
 			PixelUtil.SetPoint (plateFrame.ActorTitleSpecial, "top", plateFrame.ActorNameSpecial, "bottom", 0, -2)
 
 			--there's two ways of showing this for friendly npcs (selected from the options panel): show all names or only npcs with profession names

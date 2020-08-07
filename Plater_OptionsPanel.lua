@@ -117,7 +117,7 @@ local update_wago_update_icons = function()
 	local mainFrame = PlaterOptionsPanelContainer
 	local scriptButton = mainFrame.AllButtons [5]
 	local modButton = mainFrame.AllButtons [6]
-	local profileButton = mainFrame.AllButtons [20]
+	local profileButton = mainFrame.AllButtons [21]
 	
 	if countMods > 0 then
 		modButton.updateIcon:Show()
@@ -210,6 +210,7 @@ function Plater.OpenOptionsPanel()
 		{name = "FriendlyNpc", title = L["OPTIONS_TABNAME_NPCFRIENDLY"]},
 		{name = "FriendlyPlayer", title = L["OPTIONS_TABNAME_PLAYERFRIENDLY"]},
 
+		{name = "AlphaManagemet", title = "Alpha"},
 		{name = "ColorManagement", title = L["OPTIONS_TABNAME_COLORSNPC"]},
 		{name = "AnimationPanel", title = L["OPTIONS_TABNAME_ANIMATIONS"]},
 		{name = "Automation", title = L["OPTIONS_TABNAME_AUTO"]},
@@ -248,19 +249,20 @@ function Plater.OpenOptionsPanel()
 	local friendlyPCsFrame = mainFrame.AllFrames [16]
 	
 	--3rd row
-	local colorsFrame = mainFrame.AllFrames [17]
-	local animationFrame = mainFrame.AllFrames [18]
-	local autoFrame = mainFrame.AllFrames [19]
-	local profilesFrame = mainFrame.AllFrames [20]
-	local creditsFrame = mainFrame.AllFrames [21]
+	local alphaFrame = mainFrame.AllFrames [17]
+	local colorsFrame = mainFrame.AllFrames [18]
+	local animationFrame = mainFrame.AllFrames [19]
+	local autoFrame = mainFrame.AllFrames [20]
+	local profilesFrame = mainFrame.AllFrames [21]
+	local creditsFrame = mainFrame.AllFrames [22]
 
-	local searchFrame = mainFrame.AllFrames [22]
+	local searchFrame = mainFrame.AllFrames [23]
 	
 	--
-	local colorNpcsButton = mainFrame.AllButtons [17]
+	local colorNpcsButton = mainFrame.AllButtons [18]
 	local scriptButton = mainFrame.AllButtons [5]
 	local modButton = mainFrame.AllButtons [6]
-	local profileButton = mainFrame.AllButtons [20]
+	local profileButton = mainFrame.AllButtons [21]
 	
 	--[=[ --tab highlight
 	local colorNpcsButtonNew = colorNpcsButton:CreateTexture (nil, "overlay")
@@ -1242,7 +1244,7 @@ function frontPageFrame.OpenNewsWindow()
 end
 
 local openNewsButton = DF:CreateButton (frontPageFrame, frontPageFrame.OpenNewsWindow, 160, 20, "Open Change Log", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
-openNewsButton:SetPoint ("topright", frontPageFrame, "topright", -49, -78)
+openNewsButton:SetPoint ("topleft", frontPageFrame, "topleft", 10, -80)
 frontPageFrame.NewsButton = openNewsButton
 
 local numNews = DF:GetNumNews (Plater.GetChangelogTable(), Plater.db.profile.last_news_time)
@@ -1253,333 +1255,8 @@ end
 
 --~alphasettings
 --major alpha setting
-local interfaceOptionsDivisor = DF:CreateImage(frontPageFrame, "", 5, 100)
-interfaceOptionsDivisor:SetPoint("topright", frontPageFrame, "topright", -295, -110)
-
-local smallFrameForAlphaMajorOptions = CreateFrame ("frame", frontPageFrame:GetName() .. "AlphaMajors", frontPageFrame, BackdropTemplateMixin and "BackdropTemplate")
-smallFrameForAlphaMajorOptions:SetAllPoints()
-
-local alpha_major_options = {
-	--{type = "label", get = function() return "Interface Options:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-	{
-		type = "toggle",
-		get = function() return Plater.db.profile.transparency_behavior == 0x1 end,
-		set = function (self, fixedparam, value) 
-
-			if (not value) then
-				local checkBoxRangeCheck = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_rangecheck")
-				checkBoxRangeCheck:SetValue(true)
-				return
-			end
-
-			Plater.db.profile.transparency_behavior = 0x1
-			Plater.db.profile.range_check_enabled = true
-			Plater.db.profile.non_targeted_alpha_enabled = false
-
-			local checkBoxNonTargets = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_nontargets")
-			checkBoxNonTargets:SetValue(false)
-			local checkBoxAll = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_both")
-			checkBoxAll:SetValue(false)		
-			local checkBoxNone = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_none")
-			checkBoxNone:SetValue(false)	
-			local checkBoxDivisionByTwo = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_division")
-			checkBoxDivisionByTwo:Disable()
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Units Out of Your Range",
-		desc = "When a nameplate is out of range, alpha is reduced.",
-		boxfirst = true,
-		id = "transparency_rangecheck",
-		novolatile = true,
-	},
-	{
-		type = "toggle",
-		get = function() return Plater.db.profile.transparency_behavior == 0x2 end,
-		set = function (self, fixedparam, value) 
-
-			if (not value) then
-				local checkBoxNonTargets = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_nontargets")
-				checkBoxNonTargets:SetValue(true)
-				return
-			end
-
-			Plater.db.profile.transparency_behavior = 0x2
-			Plater.db.profile.range_check_enabled = false
-			Plater.db.profile.non_targeted_alpha_enabled = true
-
-			local checkBoxRangeCheck = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_rangecheck")
-			checkBoxRangeCheck:SetValue(false)
-			local checkBoxAll = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_both")
-			checkBoxAll:SetValue(false)				
-			local checkBoxNone = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_none")
-			checkBoxNone:SetValue(false)	
-			local checkBoxDivisionByTwo = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_division")
-			checkBoxDivisionByTwo:Disable()
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Units Which Isn't Your Target",
-		desc = "When a nameplate isn't your current target, alpha is reduced.",
-		boxfirst = true,
-		id = "transparency_nontargets",
-		novolatile = true,
-	},
-	{
-		type = "toggle",
-		get = function() return Plater.db.profile.transparency_behavior == 0x3 end,
-		set = function (self, fixedparam, value) 
-
-			if (not value) then
-				local checkBoxAll = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_both")
-				checkBoxAll:SetValue(true)	
-				return
-			end
-
-			Plater.db.profile.transparency_behavior = 0x3
-			Plater.db.profile.range_check_enabled = true
-			Plater.db.profile.non_targeted_alpha_enabled = true
-
-			local checkBoxRangeCheck = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_rangecheck")
-			checkBoxRangeCheck:SetValue(false)
-			local checkBoxNonTargets = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_nontargets")
-			checkBoxNonTargets:SetValue(false)
-			local checkBoxNone = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_none")
-			checkBoxNone:SetValue(false)
-			local checkBoxDivisionByTwo = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_division")
-			checkBoxDivisionByTwo:Enable()
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Out of Range + Isn't Your Target",
-		desc = "Reduces the alpha of units which isn't your target.\nReduces even more if the unit is out of range.",
-		boxfirst = true,
-		id = "transparency_both",
-		novolatile = true,
-	},	
-	{
-		type = "toggle",
-		get = function() return Plater.db.profile.transparency_behavior == 0x4 end,
-		set = function (self, fixedparam, value) 
-
-			if (not value) then
-				local checkBoxNone = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_none")
-				checkBoxNone:SetValue(true)
-			end
-
-			Plater.db.profile.transparency_behavior = 0x4
-			Plater.db.profile.range_check_enabled = false
-			Plater.db.profile.non_targeted_alpha_enabled = false
-
-			local checkBoxRangeCheck = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_rangecheck")
-			checkBoxRangeCheck:SetValue(false)
-			local checkBoxNonTargets = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_nontargets")
-			checkBoxNonTargets:SetValue(false)
-			local checkBoxAll = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_both")
-			checkBoxAll:SetValue(false)	
-			local checkBoxDivisionByTwo = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_division")
-			checkBoxDivisionByTwo:Disable()
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Nothing",
-		desc = "No alpha modifications is applyed.",
-		boxfirst = true,
-		id = "transparency_none",
-		novolatile = true,
-	},
-
-	{type = "blank"},
-	{type = "label", get = function() return "Alpha Amount by Frame" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-	{
-		type = "range",
-		get = function() return Plater.db.profile.range_check_alpha end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.range_check_alpha = value
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		min = 0,
-		max = 1,
-		step = 0.1,
-		name = "Overall",
-		desc = "Overall frame alpha.",
-		usedecimals = true,
-	},
-	{
-		type = "range",
-		get = function() return Plater.db.profile.range_check_health_bar_alpha end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.range_check_health_bar_alpha = value
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		min = 0,
-		max = 1,
-		step = 0.1,
-		name = "Health Bar",
-		desc = "Health Bar alpha multiplier.",
-		usedecimals = true,
-	},
-	{
-		type = "range",
-		get = function() return Plater.db.profile.range_check_cast_bar_alpha end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.range_check_cast_bar_alpha = value
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		min = 0,
-		max = 1,
-		step = 0.1,
-		name = "Cast Bar",
-		desc = "Cast Bar alpha multiplier.",
-		usedecimals = true,
-	},
-	{
-		type = "range",
-		get = function() return Plater.db.profile.range_check_power_bar_alpha end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.range_check_power_bar_alpha = value
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		min = 0,
-		max = 1,
-		step = 0.1,
-		name = "Power Bar",
-		desc = "Power Bar alpha multiplier.",
-		usedecimals = true,
-	},
-	{
-		type = "range",
-		get = function() return Plater.db.profile.range_check_buffs_alpha end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.range_check_buffs_alpha = value
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		min = 0,
-		max = 1,
-		step = 0.1,
-		name = "Buff Frames",
-		desc = "Buff Frames alpha multiplier.",
-		usedecimals = true,
-	},
-	{
-		type = "range",
-		get = function() return Plater.db.profile.range_check_in_range_or_target_alpha end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.range_check_in_range_or_target_alpha = value
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		min = 0,
-		max = 1,
-		step = 0.1,
-		name = "In-Range/Target alpha",
-		desc = "Frame alpha for targets or in-range units.",
-		usedecimals = true,
-	},
-	
-	{
-		type = "toggle",
-		get = function() return Plater.db.profile.transparency_behavior_use_division end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.transparency_behavior_use_division = value
-			Plater.UpdateAllPlates()
-		end,
-		name = "Extra Contrast",
-		desc = "When the unit is out of range and isn't your target, alpha is greatly reduced.",
-		id = "transparency_division",
-	},
-
-	{type = "blank"},
-}
-
-	local spells = {}
-	local offset
-	for i = 2, GetNumSpellTabs() do
-		local name, texture, offset, numEntries, isGuild, offspecID = GetSpellTabInfo (i)
-		local tabEnd = offset + numEntries
-		offset = offset + 1
-		for j = offset, tabEnd - 1 do
-			local spellType, spellID = GetSpellBookItemInfo (j, "player")
-			if (spellType == "SPELL") then
-				tinsert (spells, spellID)
-			end
-		end
-	end
-
-	local playerSpecs = Plater.SpecList [select (2, UnitClass ("player"))]
-	local i = 1
-	for specID, _ in pairs (playerSpecs) do
-		local spec_id, spec_name, spec_description, spec_icon, spec_background, spec_role, spec_class = GetSpecializationInfoByID (specID)
-		tinsert (alpha_major_options, {
-			type = "select",
-			get = function() return PlaterDBChr.spellRangeCheck [specID] end,
-			values = function() 
-				local onSelectFunc = function (_, _, spellName)
-					PlaterDBChr.spellRangeCheck [specID] = spellName
-					Plater.GetSpellForRangeCheck()
-				end
-				local t = {}
-				for _, spellID in ipairs (spells) do
-					local spellName, _, spellIcon = GetSpellInfo (spellID)
-					tinsert (t, {label = spellName, icon = spellIcon, onclick = onSelectFunc, value = spellName})
-				end
-				return t
-			end,
-			name = "|T" .. spec_icon .. ":16:16|t " .. L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK"],
-			desc = L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK_SPEC_DESC"],
-		})
-		i = i + 1
-	end	
-
-	local alpha_major_options_continue = {
-		{type = "blank"},
-		--no combat alpha
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.not_affecting_combat_enabled end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.not_affecting_combat_enabled = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Use No Combat Alpha",
-			desc = "Changes the nameplate alpha when you are in combat and the unit isn't.\n\n|cFFFFFF00Important|r: If the unit isn't in combat, it overrides the alpha from the range check.",
-		},
-		{
-			type = "range",
-			get = function() return Plater.db.profile.not_affecting_combat_alpha end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.not_affecting_combat_alpha = value
-				Plater.UpdateAllPlates()
-			end,
-			min = 0,
-			max = 1,
-			step = 0.1,
-			name = "No Combat Alpha",
-			desc = "Amount of transparency to apply for 'No Combat' feature.",
-			usedecimals = true,
-		}
-	}
-
-	for _, t in ipairs (alpha_major_options_continue) do
-		tinsert (alpha_major_options, t)
-	end
-
-local alpha_major_title = Plater:CreateLabel (smallFrameForAlphaMajorOptions, L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_ANCHOR_TITLE"], Plater:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
-alpha_major_title:SetPoint (startX + 838, startY)
-
-DF:BuildMenu (smallFrameForAlphaMajorOptions, alpha_major_options, startX + 835, startY-20, 760, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
-
-local checkBoxDivisionByTwo = smallFrameForAlphaMajorOptions:GetWidgetById("transparency_division")
-if (Plater.db.profile.transparency_behavior == 0x3) then
-	checkBoxDivisionByTwo:Enable()
-else
-	checkBoxDivisionByTwo:Disable()
-end
+--local interfaceOptionsDivisor = DF:CreateImage(frontPageFrame, "", 5, 100)
+--interfaceOptionsDivisor:SetPoint("topright", frontPageFrame, "topright", -295, -110)
 
 
 
@@ -12377,8 +12054,461 @@ local relevance_options = {
 	
 	DF:BuildMenu (advancedFrame, advanced_options, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 	
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--> ~alpha
+
+local alpha_major_options = {
+	{type = "label", get = function() return L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_ANCHOR_TITLE"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.transparency_behavior == 0x1 end,
+		set = function (self, fixedparam, value) 
+
+			if (not value) then
+				local checkBoxRangeCheck = alphaFrame:GetWidgetById("transparency_rangecheck")
+				checkBoxRangeCheck:SetValue(true)
+				return
+			end
+
+			Plater.db.profile.transparency_behavior = 0x1
+			Plater.db.profile.range_check_enabled = true
+			Plater.db.profile.non_targeted_alpha_enabled = false
+
+			local checkBoxNonTargets = alphaFrame:GetWidgetById("transparency_nontargets")
+			checkBoxNonTargets:SetValue(false)
+			local checkBoxAll = alphaFrame:GetWidgetById("transparency_both")
+			checkBoxAll:SetValue(false)		
+			local checkBoxNone = alphaFrame:GetWidgetById("transparency_none")
+			checkBoxNone:SetValue(false)	
+			local checkBoxDivisionByTwo = alphaFrame:GetWidgetById("transparency_division")
+			checkBoxDivisionByTwo:Disable()
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Units Out of Your Range",
+		desc = "When a nameplate is out of range, alpha is reduced.",
+		boxfirst = true,
+		id = "transparency_rangecheck",
+		novolatile = true,
+	},
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.transparency_behavior == 0x2 end,
+		set = function (self, fixedparam, value) 
+
+			if (not value) then
+				local checkBoxNonTargets = alphaFrame:GetWidgetById("transparency_nontargets")
+				checkBoxNonTargets:SetValue(true)
+				return
+			end
+
+			Plater.db.profile.transparency_behavior = 0x2
+			Plater.db.profile.range_check_enabled = false
+			Plater.db.profile.non_targeted_alpha_enabled = true
+
+			local checkBoxRangeCheck = alphaFrame:GetWidgetById("transparency_rangecheck")
+			checkBoxRangeCheck:SetValue(false)
+			local checkBoxAll = alphaFrame:GetWidgetById("transparency_both")
+			checkBoxAll:SetValue(false)				
+			local checkBoxNone = alphaFrame:GetWidgetById("transparency_none")
+			checkBoxNone:SetValue(false)	
+			local checkBoxDivisionByTwo = alphaFrame:GetWidgetById("transparency_division")
+			checkBoxDivisionByTwo:Disable()
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Units Which Isn't Your Target",
+		desc = "When a nameplate isn't your current target, alpha is reduced.",
+		boxfirst = true,
+		id = "transparency_nontargets",
+		novolatile = true,
+	},
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.transparency_behavior == 0x3 end,
+		set = function (self, fixedparam, value) 
+
+			if (not value) then
+				local checkBoxAll = alphaFrame:GetWidgetById("transparency_both")
+				checkBoxAll:SetValue(true)	
+				return
+			end
+
+			Plater.db.profile.transparency_behavior = 0x3
+			Plater.db.profile.range_check_enabled = true
+			Plater.db.profile.non_targeted_alpha_enabled = true
+
+			local checkBoxRangeCheck = alphaFrame:GetWidgetById("transparency_rangecheck")
+			checkBoxRangeCheck:SetValue(false)
+			local checkBoxNonTargets = alphaFrame:GetWidgetById("transparency_nontargets")
+			checkBoxNonTargets:SetValue(false)
+			local checkBoxNone = alphaFrame:GetWidgetById("transparency_none")
+			checkBoxNone:SetValue(false)
+			local checkBoxDivisionByTwo = alphaFrame:GetWidgetById("transparency_division")
+			checkBoxDivisionByTwo:Enable()
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Out of Range + Isn't Your Target",
+		desc = "Reduces the alpha of units which isn't your target.\nReduces even more if the unit is out of range.",
+		boxfirst = true,
+		id = "transparency_both",
+		novolatile = true,
+	},	
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.transparency_behavior == 0x4 end,
+		set = function (self, fixedparam, value) 
+
+			if (not value) then
+				local checkBoxNone = alphaFrame:GetWidgetById("transparency_none")
+				checkBoxNone:SetValue(true)
+			end
+
+			Plater.db.profile.transparency_behavior = 0x4
+			Plater.db.profile.range_check_enabled = false
+			Plater.db.profile.non_targeted_alpha_enabled = false
+
+			local checkBoxRangeCheck = alphaFrame:GetWidgetById("transparency_rangecheck")
+			checkBoxRangeCheck:SetValue(false)
+			local checkBoxNonTargets = alphaFrame:GetWidgetById("transparency_nontargets")
+			checkBoxNonTargets:SetValue(false)
+			local checkBoxAll = alphaFrame:GetWidgetById("transparency_both")
+			checkBoxAll:SetValue(false)	
+			local checkBoxDivisionByTwo = alphaFrame:GetWidgetById("transparency_division")
+			checkBoxDivisionByTwo:Disable()
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Nothing",
+		desc = "No alpha modifications is applyed.",
+		boxfirst = true,
+		id = "transparency_none",
+		novolatile = true,
+	},
+
+	{type = "blank"},
+	{type = "label", get = function() return "General:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.transparency_behavior_use_division end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.transparency_behavior_use_division = value
+			Plater.UpdateAllPlates()
+		end,
+		name = "Extra Contrast",
+		desc = "When the unit is out of range and isn't your target, alpha is greatly reduced.",
+		id = "transparency_division",
+	},
+	
+	{type = "blank"},
+	
+	--no combat alpha
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.not_affecting_combat_enabled end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.not_affecting_combat_enabled = value
+			Plater.UpdateAllPlates()
+		end,
+		name = "Use No Combat Alpha",
+		desc = "Changes the nameplate alpha when you are in combat and the unit isn't.\n\n|cFFFFFF00Important|r: If the unit isn't in combat, it overrides the alpha from the range check.",
+	},
+	{
+		type = "range",
+		get = function() return Plater.db.profile.not_affecting_combat_alpha end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.not_affecting_combat_alpha = value
+			Plater.UpdateAllPlates()
+		end,
+		min = 0,
+		max = 1,
+		step = 0.1,
+		name = "No Combat Alpha",
+		desc = "Amount of transparency to apply for 'No Combat' feature.",
+		usedecimals = true,
+	},
+
+	{type = "blank"},
+	
+	{type = "label", get = function() return "Range Check Spells" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+}
+
+	local spells = {}
+	local offset
+	for i = 2, GetNumSpellTabs() do
+		local name, texture, offset, numEntries, isGuild, offspecID = GetSpellTabInfo (i)
+		local tabEnd = offset + numEntries
+		offset = offset + 1
+		for j = offset, tabEnd - 1 do
+			local spellType, spellID = GetSpellBookItemInfo (j, "player")
+			if (spellType == "SPELL") then
+				tinsert (spells, spellID)
+			end
+		end
+	end
+
+	local playerSpecs = Plater.SpecList [select (2, UnitClass ("player"))]
+	local i = 1
+	for specID, _ in pairs (playerSpecs) do
+		local spec_id, spec_name, spec_description, spec_icon, spec_background, spec_role, spec_class = GetSpecializationInfoByID (specID)
+		tinsert (alpha_major_options, {
+			type = "select",
+			get = function() return PlaterDBChr.spellRangeCheck [specID] end,
+			values = function() 
+				local onSelectFunc = function (_, _, spellName)
+					PlaterDBChr.spellRangeCheck [specID] = spellName
+					Plater.GetSpellForRangeCheck()
+				end
+				local t = {}
+				for _, spellID in ipairs (spells) do
+					local spellName, _, spellIcon = GetSpellInfo (spellID)
+					tinsert (t, {label = spellName, icon = spellIcon, onclick = onSelectFunc, value = spellName})
+				end
+				return t
+			end,
+			name = "|T" .. spec_icon .. ":16:16|t " .. L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK"],
+			desc = L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK_SPEC_DESC"],
+		})
+		i = i + 1
+	end	
+
+	local alpha_major_options_continue = {
+	
+		{type = "breakline"},
+		--enemies
+		
+		{type = "label", get = function() return "Alpha Amount by Frame - Enemy" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.transparency_behavior_on_enemies end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.transparency_behavior_on_enemies = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Enable for enemies",
+			desc = "Apply aplha settings to enemy units.",
+		},
+		
+		{type = "break"},
+		
+		{
+			type = "range",
+			get = function() return Plater.db.profile.range_check_alpha end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.range_check_alpha = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			name = "Overall",
+			desc = "Overall frame alpha.",
+			usedecimals = true,
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.range_check_health_bar_alpha end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.range_check_health_bar_alpha = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			name = "Health Bar",
+			desc = "Health Bar alpha multiplier.",
+			usedecimals = true,
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.range_check_cast_bar_alpha end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.range_check_cast_bar_alpha = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			name = "Cast Bar",
+			desc = "Cast Bar alpha multiplier.",
+			usedecimals = true,
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.range_check_power_bar_alpha end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.range_check_power_bar_alpha = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			name = "Power Bar",
+			desc = "Power Bar alpha multiplier.",
+			usedecimals = true,
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.range_check_buffs_alpha end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.range_check_buffs_alpha = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			name = "Buff Frames",
+			desc = "Buff Frames alpha multiplier.",
+			usedecimals = true,
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.range_check_in_range_or_target_alpha end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.range_check_in_range_or_target_alpha = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			name = "In-Range/Target alpha",
+			desc = "Frame alpha for targets or in-range units.",
+			usedecimals = true,
+		},
+		
+		{type = "breakline"},
+		--friendlies
+		
+		{type = "label", get = function() return "Alpha Amount by Frame - Friendly" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.transparency_behavior_on_friendlies end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.transparency_behavior_on_friendlies = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Enable for friendlies",
+			desc = "Apply aplha settings to friendly units.",
+		},
+		
+		{type = "break"},
+		
+		{
+			type = "range",
+			get = function() return Plater.db.profile.range_check_alpha_friendlies end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.range_check_alpha_friendlies = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			name = "Overall",
+			desc = "Overall frame alpha.",
+			usedecimals = true,
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.range_check_health_bar_alpha_friendlies end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.range_check_health_bar_alpha_friendlies = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			name = "Health Bar",
+			desc = "Health Bar alpha multiplier.",
+			usedecimals = true,
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.range_check_cast_bar_alpha_friendlies end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.range_check_cast_bar_alpha_friendlies = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			name = "Cast Bar",
+			desc = "Cast Bar alpha multiplier.",
+			usedecimals = true,
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.range_check_power_bar_alpha_friendlies end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.range_check_power_bar_alpha_friendlies = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			name = "Power Bar",
+			desc = "Power Bar alpha multiplier.",
+			usedecimals = true,
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.range_check_buffs_alpha_friendlies end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.range_check_buffs_alpha_friendlies = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			name = "Buff Frames",
+			desc = "Buff Frames alpha multiplier.",
+			usedecimals = true,
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.range_check_in_range_or_target_alpha_friendlies end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.range_check_in_range_or_target_alpha_friendlies = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			name = "In-Range/Target alpha",
+			desc = "Frame alpha for targets or in-range units.",
+			usedecimals = true,
+		},
+	}
+
+	for _, t in ipairs (alpha_major_options_continue) do
+		tinsert (alpha_major_options, t)
+	end
+
+DF:BuildMenu (alphaFrame, alpha_major_options, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
+
+local checkBoxDivisionByTwo = alphaFrame:GetWidgetById("transparency_division")
+if (Plater.db.profile.transparency_behavior == 0x3) then
+	checkBoxDivisionByTwo:Enable()
+else
+	checkBoxDivisionByTwo:Disable()
+end
 
 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	--~search panel
 	local searchLabel = DF:CreateLabel(searchFrame, "Search:")
 	local searchBox = DF:CreateTextEntry (searchFrame, function()end, 156, 20, "serachTextEntry", _, _, options_dropdown_template)
