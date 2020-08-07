@@ -1159,7 +1159,7 @@ function DF:NewSpecialLuaEditorEntry (parent, w, h, member, name, nointent, show
 
 		for i = 1, 1000 do
 			scrollframeNumberLines.editbox:Insert (i .. "\n")
-		end		
+		end
 
 		--place the lua code field 20 pixels to the right to make run to the lines scroll
 		scrollframe:SetPoint ("topleft", borderframe, "topleft", 30, -10)
@@ -1202,7 +1202,7 @@ function DF:NewSpecialLuaEditorEntry (parent, w, h, member, name, nointent, show
 		scrollframeNumberLines:SetPoint ("bottomright", borderframe, "bottomright", -10, 10)
 		scrollframeNumberLines:Hide()
 	end
---16:40 
+
 	borderframe.SetAsAutoComplete = TextEntryMetaFunctions.SetAsAutoComplete
 	
 	scrollframe:SetScript ("OnSizeChanged", function (self)
@@ -1272,7 +1272,7 @@ local function bit (x,b)
 end
 
 local function lor (x,y)
-	result = 0
+	local result = 0
 	for p=1,8 do result = result + (((bit(x,p) or bit(y,p)) == true) and 2^(p-1) or 0) end
 	return result
 end

@@ -1,5 +1,5 @@
 
-local dversion = 196
+local dversion = 198
 
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
@@ -1069,6 +1069,8 @@ end
 		local cur_y = y_offset
 		local max_x = 0
 
+		local latestInlineWidget
+
 		local widgetIndexes = {
 			label = 1,
 			dropdown = 1,
@@ -1083,6 +1085,14 @@ end
 		height = height*-1
 
 		for index, widget_table in ipairs(menu) do
+
+			local widget_created
+			if (latestInlineWidget) then
+				if (not widget_table.inline) then
+					latestInlineWidget = nil
+					cur_y = cur_y - 20
+				end
+			end
 
 			if (not widget_table.novolatile) then
 
@@ -1185,6 +1195,13 @@ end
 						for hookName, hookFunc in pairs (widget_table.hooks) do
 							switch:SetHook (hookName, hookFunc)
 						end
+					end
+
+					if (widget_table.width) then
+						switch:SetWidth(widget_table.width)
+					end
+					if (widget_table.height) then
+						switch:SetHeight(widget_table.height)
 					end
 
 					switch.hasLabel.text = widget_table.name .. (use_two_points and ": " or "")
@@ -1327,7 +1344,18 @@ end
 					button.textsize = textTemplate.size
 					button.text = widget_table.name
 
-					button:SetPoint (cur_x, cur_y)
+					if (widget_table.inline) then
+						if (latestInlineWidget) then
+							button:SetPoint ("left", latestInlineWidget, "right", 2, 0)
+							latestInlineWidget = button
+						else
+							button:SetPoint (cur_x, cur_y)
+							latestInlineWidget = button
+						end
+					else
+						button:SetPoint (cur_x, cur_y)
+					end
+
 					button.tooltip = widget_table.desc
 					button.widget_type = "execute"
 					
@@ -1338,6 +1366,13 @@ end
 						for hookName, hookFunc in pairs (widget_table.hooks) do
 							button:SetHook (hookName, hookFunc)
 						end
+					end
+
+					if (widget_table.width) then
+						button:SetWidth(widget_table.width)
+					end
+					if (widget_table.height) then
+						button:SetHeight(widget_table.height)
 					end
 
 					if (widget_table.id) then
@@ -1395,10 +1430,12 @@ end
 					tinsert (disable_on_combat, widget_created)
 				end
 			
-				if (widget_table.spacement) then
-					cur_y = cur_y - 30
-				else
-					cur_y = cur_y - 20
+				if (not widget_table.inline) then
+					if (widget_table.spacement) then
+						cur_y = cur_y - 30
+					else
+						cur_y = cur_y - 20
+					end
 				end
 				
 				if (widget_table.type == "breakline" or cur_y < height) then
@@ -1426,12 +1463,20 @@ end
 		local max_x = 0
 		local line_widgets_created = 0 --how many widgets has been created on this line loop pass
 		
+		local latestInlineWidget
+
 		height = abs ((height or parent:GetHeight()) - abs (y_offset) + 20)
 		height = height*-1
 		
-		for index, widget_table in ipairs (menu) do 
+		for index, widget_table in ipairs (menu) do
 		
 			local widget_created
+			if (latestInlineWidget) then
+				if (not widget_table.inline) then
+					latestInlineWidget = nil
+					cur_y = cur_y - 28
+				end
+			end
 		
 			if (widget_table.type == "blank" or widget_table.type == "space") then
 				-- do nothing
@@ -1512,7 +1557,14 @@ end
 						switch:SetHook (hookName, hookFunc)
 					end
 				end
-				
+
+				if (widget_table.width) then
+					switch:SetWidth(widget_table.width)
+				end
+				if (widget_table.height) then
+					switch:SetHeight(widget_table.height)
+				end
+
 				local label = DF:NewLabel (parent, nil, "$parentLabel" .. index, nil, widget_table.name .. (use_two_points and ": " or ""), "GameFontNormal", widget_table.text_template or text_template or 12)
 				if (widget_table.boxfirst) then
 					switch:SetPoint (cur_x, cur_y)
@@ -1637,7 +1689,18 @@ end
 					button:InstallCustomTexture()
 				end
 
-				button:SetPoint (cur_x, cur_y)
+				if (widget_table.inline) then
+					if (latestInlineWidget) then
+						button:SetPoint ("left", latestInlineWidget, "right", 2, 0)
+						latestInlineWidget = button
+					else
+						button:SetPoint (cur_x, cur_y)
+						latestInlineWidget = button
+					end
+				else
+					button:SetPoint (cur_x, cur_y)
+				end
+
 				button.tooltip = widget_table.desc
 				button.widget_type = "execute"
 				
@@ -1657,6 +1720,13 @@ end
 
 				if (widget_table.id) then
 					parent.widgetids [widget_table.id] = button
+				end
+
+				if (widget_table.width) then
+					button:SetWidth(widget_table.width)
+				end
+				if (widget_table.height) then
+					button:SetHeight(widget_table.height)
 				end
 				
 				local size = button:GetWidth() + 4
@@ -1716,10 +1786,12 @@ end
 				tinsert (disable_on_combat, widget_created)
 			end
 		
-			if (widget_table.spacement) then
-				cur_y = cur_y - 30
-			else
-				cur_y = cur_y - 20
+			if (not widget_table.inline) then
+				if (widget_table.spacement) then
+					cur_y = cur_y - 30
+				else
+					cur_y = cur_y - 20
+				end
 			end
 			
 			if (widget_table.type == "breakline" or cur_y < height) then
