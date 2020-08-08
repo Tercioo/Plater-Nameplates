@@ -246,6 +246,32 @@ function Plater.SetAltCastBar(plateFrame, configTable, timer)
 	local castBar = plateFrame.unitFrame.castBar2
 	
 	castBar.CastBarEvents = {}
+	
+	--> just update the current value since it wasn't running its tick function during the hide state
+	--> everything else should be in the correct state
+	castBar.OnShow = function (self)
+		self.flashTexture:Hide()
+		
+		if (self.unit) then
+			if (self.casting) then
+				self.value = GetTime() - self.spellStartTime
+				if self.value > self.maxValue then
+					self:Hide()
+					return
+				end
+				self:RunHooksForWidget ("OnShow", self, self.unit)
+				
+			elseif (self.channeling) then
+				self.value = self.spellEndTime - GetTime()
+				if self.value < 0 then
+					self:Hide()
+					return
+				end
+				self:RunHooksForWidget ("OnShow", self, self.unit)
+			end
+		end
+	end
+	
 	castBar:SetUnit(plateFrame.unitFrame.unit)
 
 	castBar.Text:SetText(configTable.text)
