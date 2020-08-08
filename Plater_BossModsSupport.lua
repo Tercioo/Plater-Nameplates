@@ -10,6 +10,7 @@ Plater.db.profile.bossmod_icons_anchor = {side = 8, x = 0, y = 40}
 ]]--
 
 local DF = _G ["DetailsFramework"]
+local Plater = _G.Plater
 
 local UNIT_BOSS_MOD_AURAS_ACTIVE = {} --contains for each [GUID] a list of {texture, duration, desaturate}
 local UNIT_BOSS_MOD_AURAS_TO_BE_REMOVED = {} --contains for each [GUID] a list of texture-ids to be removed
@@ -227,4 +228,134 @@ function Plater.RegisterBossModAuras()
 	end
 
 	IS_REGISTERED = true
+end
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--> spell prediction
+
+function Plater.SetAltCastBar(plateFrame, configTable, timer)
+
+	--check if the nameplate is valid
+	if (not plateFrame or not plateFrame.unitFrame) then
+		return
+	end
+
+	local castBar = plateFrame.unitFrame.castBar2
+
+	castBar.Text:SetText(configTable.text)
+
+	castBar.Icon:SetTexture(configTable.iconTexture or "")
+	if (configTable.iconTexcoord) then
+		castBar.Icon:SetTexCoord(unpack(configTable.iconTexcoord))
+	else
+		castBar.Icon:SetTexCoord(0.1, 0.9, 0.1, 0.9)
+	end
+
+	castBar.Icon:SetAlpha(configTable.iconAlpha or 1)
+	castBar.Icon:Show()
+
+	castBar.percentText:Show()
+	castBar:SetHeight(configTable.height or 12)
+	castBar.Icon:SetSize(castBar:GetHeight(), castBar:GetHeight())
+	castBar.Spark:Show()
+
+	local startTime = _G.GetTime()
+	local endTime = startTime + timer
+
+	if (configTable.isChanneling) then
+		castBar.casting = nil
+		castBar.channeling = true
+	else
+		castBar.casting = true
+		castBar.channeling = nil
+		castBar.spellStartTime = 	startTime
+		castBar.spellEndTime = 		endTime + timer
+		castBar.SpellStartTime = 	startTime
+		castBar.SpellEndTime = 		endTime + timer
+		castBar.value = GetTime() - castBar.spellStartTime
+		castBar.maxValue = castBar.spellEndTime - castBar.spellStartTime
+
+		castBar:SetMinMaxValues(0, castBar.maxValue)
+		castBar:SetValue(castBar.value)
+	end
+
+	castBar.finished = false
+	castBar.canInterrupt = configTable.canInterrupt
+
+	castBar:SetColor(configTable.color or "yellow")
+
+	castBar.spellName = 		configTable.text
+	castBar.spellID = 		1
+	castBar.spellTexture = 		configTable.texture
+
+	castBar.flashTexture:Hide()
+	castBar:Animation_StopAllAnimations()
+
+	Plater.CastBarOnEvent_Hook(castBar, "UNIT_SPELLCAST_START", plateFrame.unitFrame.unit, plateFrame.unitFrame.unit)
+
+	if (not castBar:IsShown()) then
+		castBar:Animation_FadeIn()
+		castBar:Show()
+	end
+end
+
+function TESTPlater()
+    local plateFrame = C_NamePlate.GetNamePlateForUnit ("target")
+    local config = {
+        
+        iconTexture = "Interface\\CHARACTERFRAME\\Button_BloodPresence_DeathKnight",
+        --iconTexcoord = {0, 1, 0, 1},
+        iconAlpha = 1,
+        
+        text = "Test Cast Bar",
+        
+        texture = "Interface\\CHARACTERFRAME\\UI-BarFill-Simple",
+        color = "pink",
+        
+        isChanneling = false,
+        canInterrupt = true,
+    }
+    
+    local timer = 5
+    local isChanneling = false
+    local canInterrupt = true
+   
+    Plater.SetAltCastBar(plateFrame, config, timer)
+end
+
+function Plater.InitializeSpellPrediction()
+	--check if Deadly Boss Mods are installed
+	if (_G.DBM) then
+		local timerCallback = function (bar_type, id, msg, timer, icon, bartype, spellId, colorId, modid)
+			local spellsDB = Plater.db.profile.captured_spells
+			local spellInfoFromDB = spellsDB[spellId]
+
+			--print("DBM:",bar_type, id, msg, timer, icon, bartype, spellId, colorId, modid)
+			--does Plater already saw this spell?
+			if (spellInfoFromDB) then
+				--check if is the caster of this spell has a valid npcId
+				local npcId = spellInfoFromDB.npcID
+				if (npcId and npcId > 1) then
+					--print("PlaterDebug", "DBMTIMER", timer, spellId, bartype)
+
+					--this is correct and working
+
+					_G.C_Timer.After(timer-3, function()
+						--print(3)
+						--_G.C_Timer.After(1, function() print(2) end)
+						--_G.C_Timer.After(2, function() print(1) end)
+						--working
+					end)
+				end
+			end
+
+			--DB_CAPTURED_SPELLS [spellID] = {event = token, source = sourceName, npcID = Plater:GetNpcIdFromGuid (sourceGUID or ""), encounterID = Plater.CurrentEncounterID}
+--			local spell = tostring (spellId)
+--			if (spell and not current_table_dbm [spell]) then
+--				current_table_dbm [spell] = {spell, id, msg, timer, icon, bartype, spellId, colorId, modid}
+		end
+
+		_G.DBM:RegisterCallback ("DBM_TimerStart", timerCallback)
+	end
 end
