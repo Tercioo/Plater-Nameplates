@@ -269,6 +269,15 @@ function Plater.SetAltCastBar(plateFrame, configTable, timer)
 	if (configTable.isChanneling) then
 		castBar.casting = nil
 		castBar.channeling = true
+		castBar.spellStartTime = 	startTime
+		castBar.spellEndTime = 		endTime
+		castBar.SpellStartTime = 	startTime
+		castBar.SpellEndTime = 		endTime
+		castBar.value = endTime - GetTime()
+		castBar.maxValue = endTime - startTime
+
+		castBar:SetMinMaxValues(0, castBar.maxValue)
+		castBar:SetValue(castBar.value)
 	else
 		castBar.casting = true
 		castBar.channeling = nil
@@ -276,8 +285,8 @@ function Plater.SetAltCastBar(plateFrame, configTable, timer)
 		castBar.spellEndTime = 		endTime
 		castBar.SpellStartTime = 	startTime
 		castBar.SpellEndTime = 		endTime
-		castBar.value = GetTime() - castBar.spellStartTime
-		castBar.maxValue = castBar.spellEndTime - castBar.spellStartTime
+		castBar.value = GetTime() - startTime
+		castBar.maxValue = endTime - startTime
 
 		castBar:SetMinMaxValues(0, castBar.maxValue)
 		castBar:SetValue(castBar.value)
@@ -300,6 +309,26 @@ function Plater.SetAltCastBar(plateFrame, configTable, timer)
 	if (not castBar:IsShown()) then
 		castBar:Animation_FadeIn()
 		castBar:Show()
+	end
+end
+
+function Plater.StopAltCastBar(plateFrame)
+
+	--check if the nameplate is valid
+	if (not plateFrame or not plateFrame.unitFrame) then
+		return
+	end
+
+	local castBar = plateFrame.unitFrame.castBar2
+	
+	castBar.CastBarEvents = {}
+	castBar:SetUnit(nil)
+
+	castBar.Text:SetText("")
+
+	if (castBar:IsShown()) then
+		castBar:Animation_FadeOut()
+		castBar:Hide()
 	end
 end
 
