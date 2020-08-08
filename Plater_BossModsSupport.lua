@@ -357,7 +357,7 @@ function TESTPlater()
 end
 
 --SETTINGS
-local prediction_time_to_show = 2
+local prediction_time_to_show = 3
 
 local triggerCastBar = function(timerObject)
 	--get the bar timer id
@@ -366,13 +366,13 @@ local triggerCastBar = function(timerObject)
 
 	--check if the bar still exists
 	if (not barInfo) then
-		print("there no bar information for", timerId)
+		--print("there no bar information for", timerId)
 		return
 	end
 
 	local bar = DBM.Bars:GetBar(timerId)
 	if (not bar) then
-		print("DBM returned nil for GetBar", timerId)
+		--print("DBM returned nil for GetBar", timerId)
 		return
 	end
 
@@ -391,13 +391,13 @@ local triggerCastBar = function(timerObject)
 	--set the castbar config
 	local config = {
 		iconTexture = barInfo[5],
-		iconTexcoord = {0, 1, 0, 1},
+		iconTexcoord = {0.1, 0.9, 0.1, 0.9},
 		iconAlpha = 1,
 		
 		text = barInfo[3],
 		
-		texture = "Interface\\CHARACTERFRAME\\UI-BarFill-Simple",
-		color = "pink",
+		texture = [[Interface\AddOns\Plater\images\bar_background]],
+		color = "silver",
 		
 		isChanneling = false,
 		canInterrupt = false,
@@ -405,12 +405,18 @@ local triggerCastBar = function(timerObject)
 
 	--show the cast bar
 	Plater.SetAltCastBar(plateFrame, config, prediction_time_to_show)
+	DF:TruncateText(plateFrame.unitFrame.castBar2.Text, plateFrame.unitFrame.castBar:GetWidth() - 28)
+	DF:SetFontSize(plateFrame.unitFrame.castBar2.Text, 10)
 end
 
 --this table will store all bars created by the boss mods which is used by Plater
 Plater.BossModsTimeBar = {}
 
---local bar = DBM.Bars:GetBar(id)
+--need to investigate
+--there no bar information for Timer267409cd	Creature-0-3881-1861-3977-134635-00002F0387
+--there no bar information for Timer272506cdcount	11
+--there no bar information for Timer272506cdcount	9
+--there no bar information for Timer263235cdcount	3
 
 function Plater.InitializeSpellPrediction()
 	local DBM = _G.DBM
@@ -433,7 +439,7 @@ function Plater.InitializeSpellPrediction()
 					local newTimer = C_Timer.NewTimer(timer - prediction_time_to_show, triggerCastBar)
 					newTimer.timerId = id
 					newTimer.findUnitBySpellId = true
-					print("NewTimer:", 1)
+					--print("NewTimer:", 1)
 
 				else
 					--Plater know the spell but there's no npcId attached to it
@@ -441,16 +447,16 @@ function Plater.InitializeSpellPrediction()
 					local newTimer = C_Timer.NewTimer(timer - prediction_time_to_show, triggerCastBar)
 					newTimer.timerId = id
 					newTimer.attachToCurrentTarget = true
-					print("NewTimer:", 2)
+					--print("NewTimer:", 2)
 				end
 			
 			else
 				--Plater doesn't know the spell
 				Plater.BossModsTimeBar[id] = {bar_type, id, msg, timer, icon, bartype, spellId, colorId, modid, arg1, arg2}
-				local newTimer = C_Timer.NewTimer(timer - 3, triggerCastBar)
+				local newTimer = C_Timer.NewTimer(timer - prediction_time_to_show, triggerCastBar)
 				newTimer.timerId = id
 				newTimer.attachToCurrentTarget = true
-				print("NewTimer:", 3)
+				--print("NewTimer:", 3)
 			end
 
 			--DB_CAPTURED_SPELLS [spellID] = {event = token, source = sourceName, npcID = Plater:GetNpcIdFromGuid (sourceGUID or ""), encounterID = Plater.CurrentEncounterID}
@@ -461,13 +467,10 @@ function Plater.InitializeSpellPrediction()
 
 		DBM:RegisterCallback ("DBM_TimerStart", timerStartCallback)
 
-
 		--timer stop
-		local timerEndCallback = function (bar_type, id, msg, timer, icon, bartype, spellId, colorId, modid, arg1, arg2)
-			print("TimerSTOP", bar_type, id, msg, timer, icon, bartype, spellId, colorId, modid, arg1, arg2)
+		local timerEndCallback = function (bar_type, id)
 			Plater.BossModsTimeBar[id] = nil
 		end
-
 		DBM:RegisterCallback ("DBM_TimerStop", timerEndCallback)
 	end
 end
