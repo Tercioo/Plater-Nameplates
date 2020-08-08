@@ -242,6 +242,9 @@ function Plater.SetAltCastBar(plateFrame, configTable, timer)
 	end
 
 	local castBar = plateFrame.unitFrame.castBar2
+	
+	castBar.CastBarEvents = {}
+	castBar:SetUnit(plateFrame.unitFrame.unit)
 
 	castBar.Text:SetText(configTable.text)
 
@@ -270,9 +273,9 @@ function Plater.SetAltCastBar(plateFrame, configTable, timer)
 		castBar.casting = true
 		castBar.channeling = nil
 		castBar.spellStartTime = 	startTime
-		castBar.spellEndTime = 		endTime + timer
+		castBar.spellEndTime = 		endTime
 		castBar.SpellStartTime = 	startTime
-		castBar.SpellEndTime = 		endTime + timer
+		castBar.SpellEndTime = 		endTime
 		castBar.value = GetTime() - castBar.spellStartTime
 		castBar.maxValue = castBar.spellEndTime - castBar.spellStartTime
 
