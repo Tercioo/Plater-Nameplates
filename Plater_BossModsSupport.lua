@@ -11,6 +11,8 @@ Plater.db.profile.bossmod_icons_anchor = {side = 8, x = 0, y = 40}
 
 local DF = _G ["DetailsFramework"]
 local Plater = _G.Plater
+local C_Timer = _G.C_Timer
+local C_NamePlate = _G.C_NamePlate
 
 local UNIT_BOSS_MOD_AURAS_ACTIVE = {} --contains for each [GUID] a list of {texture, duration, desaturate}
 local UNIT_BOSS_MOD_AURAS_TO_BE_REMOVED = {} --contains for each [GUID] a list of texture-ids to be removed
@@ -321,44 +323,122 @@ function TESTPlater()
     }
     
     local timer = 5
-    local isChanneling = false
-    local canInterrupt = true
    
     Plater.SetAltCastBar(plateFrame, config, timer)
 end
 
+--SETTINGS
+local prediction_time_to_show = 2
+
+local triggerCastBar = function(timerObject)
+	--get the bar timer id
+	local timerId = timerObject.timerId
+	local barInfo = Plater.BossModsTimeBar[timerId]
+
+	--check if the bar still exists
+	if (not barInfo) then
+		print("there no bar information for", timerId)
+		return
+	end
+
+	local bar = DBM.Bars:GetBar(timerId)
+	if (not bar) then
+		print("DBM returned nil for GetBar", timerId)
+		return
+	end
+
+	--the nameplate to attach the cast bar
+	local plateFrame
+
+	if (timerObject.findUnitBySpellId) then
+		--find the mob responsible for cast the ability
+		plateFrame = C_NamePlate.GetNamePlateForUnit("target") --debug
+
+	elseif (timerObject.attachToCurrentTarget) then
+		plateFrame = C_NamePlate.GetNamePlateForUnit("target")
+
+	end
+
+	--set the castbar config
+	local config = {
+		iconTexture = barInfo[5],
+		iconTexcoord = {0, 1, 0, 1},
+		iconAlpha = 1,
+		
+		text = barInfo[3],
+		
+		texture = "Interface\\CHARACTERFRAME\\UI-BarFill-Simple",
+		color = "pink",
+		
+		isChanneling = false,
+		canInterrupt = false,
+	}
+
+	--show the cast bar
+	Plater.SetAltCastBar(plateFrame, config, prediction_time_to_show)
+end
+
+--this table will store all bars created by the boss mods which is used by Plater
+Plater.BossModsTimeBar = {}
+
+--local bar = DBM.Bars:GetBar(id)
+
 function Plater.InitializeSpellPrediction()
+	local DBM = _G.DBM
+
 	--check if Deadly Boss Mods are installed
-	if (_G.DBM) then
-		local timerCallback = function (bar_type, id, msg, timer, icon, bartype, spellId, colorId, modid)
+	if (DBM) then
+		local timerStartCallback = function (bar_type, id, msg, timer, icon, bartype, spellId, colorId, modid, arg1, arg2)
+
 			local spellsDB = Plater.db.profile.captured_spells
 			local spellInfoFromDB = spellsDB[spellId]
 
 			--print("DBM:",bar_type, id, msg, timer, icon, bartype, spellId, colorId, modid)
-			--does Plater already saw this spell?
+
+			--check if Plater know this spell
 			if (spellInfoFromDB) then
 				--check if is the caster of this spell has a valid npcId
 				local npcId = spellInfoFromDB.npcID
 				if (npcId and npcId > 1) then
-					--print("PlaterDebug", "DBMTIMER", timer, spellId, bartype)
+					Plater.BossModsTimeBar[id] = {bar_type, id, msg, timer, icon, bartype, spellId, colorId, modid, arg1, arg2}
+					local newTimer = C_Timer.NewTimer(timer - prediction_time_to_show, triggerCastBar)
+					newTimer.timerId = id
+					newTimer.findUnitBySpellId = true
+					print("NewTimer:", 1)
 
-					--this is correct and working
-
-					_G.C_Timer.After(timer-3, function()
-						--print(3)
-						--_G.C_Timer.After(1, function() print(2) end)
-						--_G.C_Timer.After(2, function() print(1) end)
-						--working
-					end)
+				else
+					--Plater know the spell but there's no npcId attached to it
+					Plater.BossModsTimeBar[id] = {bar_type, id, msg, timer, icon, bartype, spellId, colorId, modid, arg1, arg2}
+					local newTimer = C_Timer.NewTimer(timer - prediction_time_to_show, triggerCastBar)
+					newTimer.timerId = id
+					newTimer.attachToCurrentTarget = true
+					print("NewTimer:", 2)
 				end
+			
+			else
+				--Plater doesn't know the spell
+				Plater.BossModsTimeBar[id] = {bar_type, id, msg, timer, icon, bartype, spellId, colorId, modid, arg1, arg2}
+				local newTimer = C_Timer.NewTimer(timer - 3, triggerCastBar)
+				newTimer.timerId = id
+				newTimer.attachToCurrentTarget = true
+				print("NewTimer:", 3)
 			end
 
 			--DB_CAPTURED_SPELLS [spellID] = {event = token, source = sourceName, npcID = Plater:GetNpcIdFromGuid (sourceGUID or ""), encounterID = Plater.CurrentEncounterID}
 --			local spell = tostring (spellId)
 --			if (spell and not current_table_dbm [spell]) then
---				current_table_dbm [spell] = {spell, id, msg, timer, icon, bartype, spellId, colorId, modid}
+--			current_table_dbm [spell] = {spell, id, msg, timer, icon, bartype, spellId, colorId, modid}
 		end
 
-		_G.DBM:RegisterCallback ("DBM_TimerStart", timerCallback)
+		DBM:RegisterCallback ("DBM_TimerStart", timerStartCallback)
+
+
+		--timer stop
+		local timerEndCallback = function (bar_type, id, msg, timer, icon, bartype, spellId, colorId, modid, arg1, arg2)
+			print("TimerSTOP", bar_type, id, msg, timer, icon, bartype, spellId, colorId, modid, arg1, arg2)
+			Plater.BossModsTimeBar[id] = nil
+		end
+
+		DBM:RegisterCallback ("DBM_TimerStop", timerEndCallback)
 	end
 end
