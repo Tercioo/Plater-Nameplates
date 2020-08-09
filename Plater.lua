@@ -8876,7 +8876,8 @@ end
 		local numEntries, numQuests = C_QuestLog.GetNumQuestLogEntries()
 		for questLogId = 1, numEntries do
 			local questDetails = C_QuestLog.GetInfo(questLogId)
-			ViragDevTool_AddData(questDetails, "QuestUpdate - " .. questLogId)
+			--any chance to track via quest objective? no unit IDs given there...
+			--ViragDevTool_AddData({questDetails = questDetails, QuestObjectives = C_QuestLog.GetQuestObjectives(questDetails.questID), Title = C_QuestLog.GetTitleForLogIndex(questLogId)}, "QuestUpdate - " .. questLogId)
 			if (questDetails and not questDetails.isHeader and questDetails.title and type (questDetails.questID) == "number" and questDetails.questID > 0) then
 				Plater.QuestCache [questDetails.title] = true
 			end
