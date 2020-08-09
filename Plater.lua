@@ -8874,11 +8874,11 @@ end
 		
 		--update the quest cache
 		local numEntries, numQuests = C_QuestLog.GetNumQuestLogEntries()
-		for questId = 1, numEntries do
-			--local title, level, suggestedGroup, isHeader, isCollapsed, isComplete, frequency, questId, startEvent, displayQuestID, isOnMap, hasLocalPOI, isTask, isStory = C_QuestLog.GetQuestLogTitle(questId)
-			local title = C_QuestLog.GetTitleForQuestID(questId)
-			if (title and type (questId) == "number" and questId > 0) then -- and not isComplete
-				Plater.QuestCache [title] = true
+		for questLogId = 1, numEntries do
+			local questDetails = C_QuestLog.GetInfo(questLogId)
+			ViragDevTool_AddData(questDetails, "QuestUpdate - " .. questLogId)
+			if (questDetails and not questDetails.isHeader and questDetails.title and type (questDetails.questID) == "number" and questDetails.questID > 0) then
+				Plater.QuestCache [questDetails.title] = true
 			end
 		end
 		
