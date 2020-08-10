@@ -507,6 +507,12 @@ PLATER_DEFAULT_SETTINGS = {
 		plater_resources_scale = 0.8,
 		plater_resources_padding = 2,
 
+		spell_prediction = {
+			enabled = false,
+			castbar_height = 12,
+
+		},
+
 		--transparency control
 		transparency_behavior = 0x1,
 		transparency_behavior_use_division = false,

@@ -427,6 +427,8 @@ local triggerCastBar = function(timerObject)
 		
 		isChanneling = false,
 		canInterrupt = false,
+
+		height = Plater.db.profile.spell_prediction.castbar_height,
 	}
 
 	--show the cast bar
@@ -450,6 +452,11 @@ function Plater.InitializeSpellPrediction()
 	--check if Deadly Boss Mods are installed
 	if (DBM) then
 		local timerStartCallback = function (bar_type, id, msg, timer, icon, bartype, spellId, colorId, modid, arg1, arg2)
+
+			--check if spell prediction is enabled
+			if (not Plater.db.profile.spell_prediction.enabled) then
+				return
+			end
 
 			local spellsDB = Plater.db.profile.captured_spells
 			local spellInfoFromDB = spellsDB[spellId]
