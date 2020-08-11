@@ -1,5 +1,5 @@
 
-local dversion = 198
+local dversion = 199
 
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
@@ -1444,8 +1444,10 @@ end
 					line_widgets_created = 0
 					max_x = 0
 				end
-
-				widget_created:Show()
+				
+				if widget_created then
+					widget_created:Show()
+				end
 			end
 		end
 
