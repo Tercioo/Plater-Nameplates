@@ -1085,7 +1085,9 @@ end
 		height = height*-1
 
 		for index, widget_table in ipairs(menu) do
-
+			
+			local widget_created
+			
 			local widget_created
 			if (latestInlineWidget) then
 				if (not widget_table.inline) then
