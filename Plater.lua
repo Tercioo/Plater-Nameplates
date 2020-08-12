@@ -11007,7 +11007,7 @@ end
 		--consistency/init:
 		scriptObjectNew.OptionsValues = scriptObjectNew.OptionsValues or {}
 		scriptObjectNew.Options = scriptObjectNew.Options or {}
-		scriptObjectOld.scriptObjectOld = scriptObjectOld.scriptObjectOld or {}
+		scriptObjectOld.OptionsValues = scriptObjectOld.OptionsValues or {}
 		
 		local newUserOptions = scriptObjectNew.OptionsValues
 		local newOptions = scriptObjectNew.Options
