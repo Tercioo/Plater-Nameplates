@@ -8209,11 +8209,12 @@ end
 	end
 	
 	function Plater.GetUnitType (plateFrame)
-		if (PET_CACHE [plateFrame [MEMBER_GUID]]) then
+		if (plateFrame ["namePlateClassification"] == "minus") then
+			return "minus"
+			
+		elseif (PET_CACHE [plateFrame [MEMBER_GUID]]) then
 			return "pet"
 			
-		elseif (plateFrame ["namePlateClassification"] == "minus") then
-			return "minus"
 		end
 		
 		return "normal"
