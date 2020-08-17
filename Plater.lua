@@ -3594,75 +3594,6 @@ function Plater.OnInit() --private --~oninit ~init
 				end
 			end
 			
-			--migrate buff frame sizes and anchors
-			if not Plater.db.profile.buff_frame_anchor_and_size_migrated then
-				--migrate BuffFrame2 sizes
-				Plater.db.profile.aura_width2 = Plater.db.profile.aura_width
-				Plater.db.profile.aura_height2 = Plater.db.profile.aura_height
-				
-				--migrate BuffFrame1 and BuffFrame2 anchors/offsets
-				local hasNonDefaultValues = Plater.db.profile.aura_x_offset or Plater.db.profile.aura_y_offset or Plater.db.profile.aura2_x_offset or Plater.db.profile.aura2_y_offset 
-				
-				local heightOffset = 5
-				if DB_USE_UIPARENT then
-					local clickHeight = Plater.db.profile.click_space[2] / UIParent:GetEffectiveScale()
-					local hbHeight = Plater.db.profile.plate_config.enemynpc.health_incombat[2]
-					heightOffset = ((clickHeight - hbHeight) / 2) - (Plater.db.profile.aura_height / 2) + 5
-					heightOffset = math.floor(heightOffset*10+0.5)/10
-				end
-				
-				if Plater.db.profile.aura_grow_direction == 3 and Plater.db.profile.aura_x_offset or 0 < -20 then -- left to right
-					if Plater.db.profile.aura_y_offset or 0 < -15 then
-						Plater.db.profile.aura_frame1_anchor.side = 3
-					else
-						Plater.db.profile.aura_frame1_anchor.side = 1
-					end
-					Plater.db.profile.aura_frame1_anchor.x = 0
-				elseif Plater.db.profile.aura_grow_direction == 1 and Plater.db.profile.aura_x_offset or 0 > 20 then -- right to left
-					if Plater.db.profile.aura_y_offset or 0 < -15 then
-						Plater.db.profile.aura_frame1_anchor.side = 5
-					else
-						Plater.db.profile.aura_frame1_anchor.side = 7
-					end
-					Plater.db.profile.aura_frame1_anchor.x = 0
-				else
-					Plater.db.profile.aura_frame1_anchor.side = 8
-					Plater.db.profile.aura_frame1_anchor.x = Plater.db.profile.aura_x_offset or 0
-				end
-				Plater.db.profile.aura_frame1_anchor.y = (Plater.db.profile.aura_y_offset or 0) + heightOffset
-				Plater.db.profile.aura_x_offset = Plater.db.profile.aura_frame1_anchor.x
-				Plater.db.profile.aura_y_offset = Plater.db.profile.aura_frame1_anchor.y
-				
-				
-				if Plater.db.profile.aura2_grow_direction == 3 and Plater.db.profile.aura2_x_offset or 0 < -20 then -- left to right
-					if Plater.db.profile.aura2_y_offset or 0 < -15 then
-						Plater.db.profile.aura_frame2_anchor.side = 3
-					else
-						Plater.db.profile.aura_frame2_anchor.side = 1
-					end
-					Plater.db.profile.aura_frame2_anchor.x = 0
-				elseif Plater.db.profile.aura2_grow_direction == 1 and Plater.db.profile.aura2_x_offset or 0 > 20 then -- right to left
-					if Plater.db.profile.aura2_y_offset or 0 < -15 then
-						Plater.db.profile.aura_frame2_anchor.side = 5
-					else
-						Plater.db.profile.aura_frame2_anchor.side = 7
-					end
-					Plater.db.profile.aura_frame2_anchor.x = 0
-				else
-					Plater.db.profile.aura_frame2_anchor.side = 8
-					Plater.db.profile.aura_frame2_anchor.x = Plater.db.profile.aura2_x_offset or 0
-				end
-				Plater.db.profile.aura_frame2_anchor.y = (Plater.db.profile.aura2_y_offset or 0) + heightOffset
-				Plater.db.profile.aura2_x_offset = Plater.db.profile.aura_frame2_anchor.x
-				Plater.db.profile.aura2_y_offset = Plater.db.profile.aura_frame2_anchor.y
-				
-				if hasNonDefaultValues then
-					C_Timer.After (10, function() DF:ShowErrorMessage ("Buff Settings have been changed to support anchoring of both Buff Frames and the offsets and anchors were migrated automatically.\nPlease check the Buff Settings tab and adjust your Buff Frame anchors and offsets if needed.", "ATTENTION: Important Plater Changes") end)
-				end
-				
-				Plater.db.profile.buff_frame_anchor_and_size_migrated = true
-			end
-			
 			if (not Plater.db.profile.number_region_first_run) then
 				if (GetLocale() == "koKR") then
 					Plater.db.profile.number_region = "eastasia"
@@ -4567,7 +4498,9 @@ end
 	function Plater.AlignAuraFrames (self)
 
 		if (self.isNameplate) then
-			local horizontalLength = 0
+			local horizontalLength = 1
+			local curRowLength = 0
+			local verticalHeight = 1
 			local firstIcon
 		
 			if (Plater.db.profile.aura_consolidate) then
@@ -4592,8 +4525,6 @@ end
 			
 			if (growDirection ~= 2) then --it's growing to left or right
 			
-				self:SetSize (1, 1)
-				
 				--debug where the buffFrame anchors are
 				--self:SetSize (5, 5)
 				--self:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
@@ -4602,7 +4533,7 @@ end
 				local framersPerRow = Plater.MaxAurasPerRow + 1
 				
 				--which slot index is being manipulated within the icon loop
-				--is an icon is hidden it won't be used and the slot won't increase
+				--if an icon is hidden it won't be used and the slot won't increase
 				--the slot 1 is guaranteed to always be in use
 				local slotId = 1
 				
@@ -4616,7 +4547,6 @@ end
 						--get the icon id from the icon frame container
 						local iconFrame = iconFrameContainer [i]
 						if (iconFrame:IsShown()) then
-							horizontalLength = horizontalLength + iconFrame:GetWidth() + DB_AURA_PADDING
 							iconFrame:ClearAllPoints()
 							
 							if not firstIcon then
@@ -4624,12 +4554,15 @@ end
 								iconFrame:ClearAllPoints()
 								iconFrame:SetPoint ("bottomleft", self, "bottomleft", 0, 0)
 								firstIcon = iconFrame
+								verticalHeight = firstIcon:GetHeight()
 							else
 								if (slotId == framersPerRow) then
 									iconFrame:SetPoint ("bottomleft", firstIcon, "topleft", 0, Plater.db.profile.aura_breakline_space)
-									framersPerRow = framersPerRow + framersPerRow
+									framersPerRow = framersPerRow + Plater.MaxAurasPerRow
 									--update the first icon to be the first icon in the second row
 									firstIcon = iconFrame
+									verticalHeight = verticalHeight + Plater.db.profile.aura_breakline_space + firstIcon:GetHeight()
+									
 								else
 									iconFrame:SetPoint ("topleft", lastIconUsed, "topright", DB_AURA_PADDING, 0)
 								end
@@ -4647,7 +4580,6 @@ end
 						--get the icon id from the icon frame container
 						local iconFrame = iconFrameContainer [i]
 						if (iconFrame:IsShown()) then
-							horizontalLength = horizontalLength + iconFrame:GetWidth() + DB_AURA_PADDING
 							iconFrame:ClearAllPoints()
 							
 							if not firstIcon then
@@ -4655,12 +4587,15 @@ end
 								iconFrame:ClearAllPoints()
 								iconFrame:SetPoint ("bottomright", self, "bottomright", 0, 0)
 								firstIcon = iconFrame
+								verticalHeight = firstIcon:GetHeight()
 							else
 								if (slotId == framersPerRow) then
 									iconFrame:SetPoint ("bottomright", firstIcon, "topright", 0, Plater.db.profile.aura_breakline_space)
-									framersPerRow = framersPerRow + framersPerRow
+									framersPerRow = framersPerRow + Plater.MaxAurasPerRow
 									--update the first icon to be the first icon in the second row
 									firstIcon = iconFrame
+									verticalHeight = verticalHeight + Plater.db.profile.aura_breakline_space + firstIcon:GetHeight()
+									
 								else
 									iconFrame:SetPoint ("topright", lastIconUsed, "topleft", -DB_AURA_PADDING, 0)
 								end
@@ -4672,9 +4607,10 @@ end
 					end
 				end
 				
+				horizontalLength = 1 + DB_AURA_PADDING
+				
 			else --it's growing from center
 				
-				local iconAmount = 0
 				local previousIcon
 
 				--iterate among all icons in the aura frame
@@ -4683,31 +4619,38 @@ end
 				for i = 1, #iconFrameContainer do
 					local iconFrame = iconFrameContainer [i]
 					if (iconFrame:IsShown()) then
-						iconAmount = iconAmount + 1
-						horizontalLength = horizontalLength + iconFrame:GetWidth() + DB_AURA_PADDING
+						curRowLength = curRowLength + iconFrame:GetWidth() + DB_AURA_PADDING
 						iconFrame:ClearAllPoints()
 						
 						if (not firstIcon) then
 							firstIcon = iconFrame
 							firstIcon:SetPoint ("bottomleft", self, "bottomleft", 0, 0)
 							previousIcon = firstIcon
+							verticalHeight = firstIcon:GetHeight()
+							horizontalLength = curRowLength
+							
 						else
 							iconFrame:SetPoint ("bottomleft", previousIcon, "bottomright", DB_AURA_PADDING, 0)
 							previousIcon = iconFrame
 						end
 					end
 				end
+				
 			end
 			
 			if (not firstIcon) then
 				return
 			end
 			
+			if curRowLength > horizontalLength then
+				horizontalLength = curRowLength
+			end
+			
 			--remove 1 icon padding value
 			horizontalLength = horizontalLength - DB_AURA_PADDING
 			--set the size of the buff frame
 			self:SetWidth (horizontalLength)
-			self:SetHeight (firstIcon:GetHeight())
+			self:SetHeight (verticalHeight)
 		end
 	end
 
