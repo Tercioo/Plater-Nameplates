@@ -3017,6 +3017,9 @@ Plater.DefaultSpellRangeListF = {
 			
 			local unitID = unitBarId
 			
+			local isWidgetOnlyMode = UnitNameplateShowsWidgetsOnly (unitBarId)
+			plateFrame.unitFrame.isWidgetOnlyMode = isWidgetOnlyMode
+			
 			--hide blizzard namepaltes
 			plateFrame.UnitFrame:Hide()
 			--show plater unit frame
