@@ -1122,7 +1122,7 @@ function DF:NewDropDown (parent, container, name, member, w, h, func, default, t
 	end
 
 	if (template) then
-		--DropDownObject:SetTemplate (template)
+		DropDownObject:SetTemplate(template)
 	end
 	
 	return DropDownObject
