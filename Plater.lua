@@ -68,6 +68,7 @@ local min = math.min
 
 local LibSharedMedia = LibStub:GetLibrary ("LibSharedMedia-3.0")
 local LCG = LibStub:GetLibrary("LibCustomGlow-1.0")
+local LibRangeCheck = LibStub:GetLibrary ("LibRangeCheck-2.0")
 local _
 
 local Plater = DF:CreateAddOn ("Plater", "PlaterDB", PLATER_DEFAULT_SETTINGS, { --options table
@@ -592,56 +593,106 @@ Plater.SpecList = { --private
 	},
 }
 
---> default spells to use in the range check proccess, player can select a different spell in the options panel
+--> default ranges to use in the range check proccess against enemies, player can select a different range in the options panel
 Plater.DefaultSpellRangeList = {
-	-- 185245 spellID for Torment, it is always failing to check range with IsSpellInRange()
-	[577] = 278326, --> havoc demon hunter - Consume Magic
-	[581] = 278326, --> vengeance demon hunter - Consume Magic
+	[577] = 30, --> havoc demon hunter
+	[581] = 30, --> vengeance demon hunter
 
-	[250] = 56222, --> blood dk - dark command
-	[251] = 56222, --> frost dk - dark command
-	[252] = 56222, --> unholy dk - dark command
+	[250] = 30, --> blood dk
+	[251] = 30, --> frost dk
+	[252] = 30, --> unholy dk
 	
-	[102] = 8921, -->  druid balance - Moonfire (45 yards)
-	[103] = 8921, -->  druid feral - Moonfire (40 yards)
-	[104] = 6795, -->  druid guardian - Growl
-	[105] = 8921, -->  druid resto - Moonfire (40 yards)
+	[102] = 45, -->  druid balance
+	[103] = 40, -->  druid feral
+	[104] = 30, -->  druid guardian
+	[105] = 40, -->  druid resto
 
-	[253] = 193455, -->  hunter bm - Cobra Shot
-	[254] = 19434, --> hunter marks - Aimed Shot
-	[255] = 271788, --> hunter survivor - Serpent Sting
+	[253] = 40, -->  hunter bm - Cobra Shot
+	[254] = 40, --> hunter marks - Aimed Shot
+	[255] = 40, --> hunter survivor - Serpent Sting
 	
-	[62] = 227170, --> mage arcane - arcane blast
-	[63] = 133, --> mage fire - fireball
-	[64] = 228597, --> mage frost - frostbolt
+	[62] = 40, --> mage arcane
+	[63] = 40, --> mage fire
+	[64] = 40, --> mage frost
 	
-	[268] = 115546 , --> monk bm - Provoke
-	[269] = 117952, --> monk ww - Crackling Jade Lightning (40 yards)
-	[270] = 117952, --> monk mw - Crackling Jade Lightning (40 yards)
+	[268] = 30 , --> monk bm
+	[269] = 40, --> monk ww
+	[270] = 40, --> monk mw
 	
-	[65] = 20473, --> paladin holy - Holy Shock (40 yards)
-	[66] = 62124, --> paladin protect - Hand of Reckoning
-	[70] = 62124, --> paladin ret - Hand of Reckoning
+	[65] = 40, --> paladin holy
+	[66] = 30, --> paladin protect
+	[70] = 30, --> paladin ret
 	
-	[256] = 585, --> priest disc - Smite
-	[257] = 585, --> priest holy - Smite
-	[258] = 8092, --> priest shadow - Mind Blast
+	[256] = 40, --> priest disc
+	[257] = 40, --> priest holy
+	[258] = 40, --> priest shadow
 	
-	[259] = 185565, --> rogue assassination - Poisoned Knife (30 yards)
-	[260] = 185763, --> rogue outlaw - Pistol Shot (20 yards)
-	[261] = 114014, --> rogue sub - Shuriken Toss (30 yards)
+	[259] = 30, --> rogue assassination
+	[260] = 20, --> rogue outlaw
+	[261] = 30, --> rogue sub
 
-	[262] = 188196, --> shaman elemental - Lightning Bolt
-	[263] = 187837, --> shaman enhancement - Lightning Bolt (instance cast)
-	[264] = 403, --> shaman resto - Lightning Bolt
+	[262] = 40, --> shaman elemental
+	[263] = 40, --> shaman enhancement
+	[264] = 40, --> shaman resto
 
-	[265] = 686, --> warlock aff - Shadow Bolt
-	[266] = 686, --> warlock demo - Shadow Bolt
-	[267] = 116858, --> warlock destro - Chaos Bolt
+	[265] = 40, --> warlock aff
+	[266] = 40, --> warlock demo
+	[267] = 40, --> warlock destro
 	
-	[71] = 355, --> warrior arms - Taunt
-	[72] = 355, --> warrior fury - Taunt
-	[73] = 355, --> warrior protect - Taunt
+	[71] = 30, --> warrior arms
+	[72] = 30, --> warrior fury
+	[73] = 30, --> warrior protect
+}
+
+--> default ranges to use in the range check proccess against friendlies, player can select a different range in the options panel
+Plater.DefaultSpellRangeListF = {
+	[577] = 30, --> havoc demon hunter
+	[581] = 30, --> vengeance demon hunter
+
+	[250] = 30, --> blood dk
+	[251] = 30, --> frost dk
+	[252] = 30, --> unholy dk
+	
+	[102] = 45, -->  druid balance
+	[103] = 40, -->  druid feral
+	[104] = 30, -->  druid guardian
+	[105] = 40, -->  druid resto
+
+	[253] = 40, -->  hunter bm - Cobra Shot
+	[254] = 40, --> hunter marks - Aimed Shot
+	[255] = 40, --> hunter survivor - Serpent Sting
+	
+	[62] = 40, --> mage arcane
+	[63] = 40, --> mage fire
+	[64] = 40, --> mage frost
+	
+	[268] = 30 , --> monk bm
+	[269] = 40, --> monk ww
+	[270] = 40, --> monk mw
+	
+	[65] = 40, --> paladin holy
+	[66] = 30, --> paladin protect
+	[70] = 30, --> paladin ret
+	
+	[256] = 40, --> priest disc
+	[257] = 40, --> priest holy
+	[258] = 40, --> priest shadow
+	
+	[259] = 30, --> rogue assassination
+	[260] = 20, --> rogue outlaw
+	[261] = 30, --> rogue sub
+
+	[262] = 40, --> shaman elemental
+	[263] = 40, --> shaman enhancement
+	[264] = 40, --> shaman resto
+
+	[265] = 40, --> warlock aff
+	[266] = 40, --> warlock demo
+	[267] = 40, --> warlock destro
+	
+	[71] = 30, --> warrior arms
+	[72] = 30, --> warrior fury
+	[73] = 30, --> warrior protect
 }
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -942,6 +993,8 @@ Plater.DefaultSpellRangeList = {
 		local castBar_rangeCheckAlpha
 		local buffFrames_rangeCheckAlpha
 		local powerBar_rangeCheckAlpha
+		local rangeChecker
+		local rangeCheckRange
 		
 		if plateFrame [MEMBER_REACTION] < 5 then
 			-- enemy
@@ -951,6 +1004,8 @@ Plater.DefaultSpellRangeList = {
 			castBar_rangeCheckAlpha = Plater.db.profile.range_check_cast_bar_alpha
 			buffFrames_rangeCheckAlpha = Plater.db.profile.range_check_buffs_alpha
 			powerBar_rangeCheckAlpha = Plater.db.profile.range_check_power_bar_alpha
+			rangeChecker = Plater.RangeCheckFunctionEnemy
+			rangeCheckRange = Plater.RangeCheckRangeEnemy
 			
 		else
 			-- friendly
@@ -960,6 +1015,16 @@ Plater.DefaultSpellRangeList = {
 			castBar_rangeCheckAlpha = Plater.db.profile.range_check_cast_bar_alpha_friendlies
 			buffFrames_rangeCheckAlpha = Plater.db.profile.range_check_buffs_alpha_friendlies
 			powerBar_rangeCheckAlpha = Plater.db.profile.range_check_power_bar_alpha_friendlies
+			rangeChecker = Plater.RangeCheckFunctionFriendly
+			rangeCheckRange = Plater.RangeCheckRangeFriendly
+		end
+		
+		if not rangeChecker then
+			--TODO: remove...
+			if rangeCheckRange then print("Fallback range-check used! (Please report class and selected ranges to Ariani|Continuity on the discord.)") end
+			rangeChecker = function (unit)
+				return LibRangeCheck:GetRange(unit) < (rangeCheckRange or 40)
+			end
 		end
 
 		--this unit is target
@@ -987,9 +1052,9 @@ Plater.DefaultSpellRangeList = {
 		end
  
 		--is using the range check by ability
-		if (DB_USE_RANGE_CHECK) then
+		if (DB_USE_RANGE_CHECK and rangeChecker) then
 			--check when the unit just has been added to the screen
-			local isInRange = IsSpellInRange (Plater.SpellForRangeCheck, plateFrame [MEMBER_UNITID]) == 1
+			local isInRange = rangeChecker (plateFrame [MEMBER_UNITID])
 
 			if (isInRange) then
 				--unit is in rage
@@ -1125,39 +1190,21 @@ Plater.DefaultSpellRangeList = {
 
 	--> execute after player logon or when the player changes its spec
 	function Plater.GetSpellForRangeCheck()
-		Plater.SpellBookForRangeCheck = nil
+		Plater.RangeCheckRangeEnemy = nil
+		Plater.RangeCheckRangeFriendly = nil
+		Plater.RangeCheckFunctionEnemy = nil
+		Plater.RangeCheckFunctionFriendly = nil
 
 		local specIndex = GetSpecialization()
 		if (specIndex) then
 			local specID = GetSpecializationInfo (specIndex)
 			if (specID and specID ~= 0) then
 				--the local character saved variable hold the spell name used for the range check
-				Plater.SpellForRangeCheck = PlaterDBChr.spellRangeCheck [specID]
+				Plater.RangeCheckRangeFriendly = PlaterDBChr.spellRangeCheckRangeFriendly [specID]
+				Plater.RangeCheckRangeEnemy = PlaterDBChr.spellRangeCheckRangeEnemy [specID]
+				Plater.RangeCheckFunctionFriendly = LibRangeCheck:GetFriendMaxChecker(Plater.RangeCheckRangeFriendly)
+				Plater.RangeCheckFunctionEnemy = LibRangeCheck:GetHarmMaxChecker(Plater.RangeCheckRangeEnemy)
 				
-				--getting the spell slot from the spellbook doesn't fix the problem with the demonhunter taunt ability
-				--the rest of the code of this function is disabled, maybe in the future I'll revisit it
-
-				--[=[
-				--attempt ot get the spellbook slot for this spell
-				for i = 1, GetNumSpellTabs() do
-					local name, texture, offset, numEntries, isGuild, offspecID = GetSpellTabInfo (i)
-					
-					--is the tab enabled?
-					if (offspecID == 0) then
-						for slotIndex = offset, offset + numEntries - 1 do
-							local skillType, spellID = GetSpellBookItemInfo (slotIndex, BOOKTYPE_SPELL)
-							if (skillType == "SPELL" or skillType == "FUTURESPELL") then
-								local spellName = GetSpellInfo (spellID)
-								if (spellName == Plater.SpellForRangeCheck) then
-									Plater.SpellForRangeCheck = FindSpellBookSlotBySpellID (spellID)
-									Plater.SpellBookForRangeCheck = skillType
-									break
-								end
-							end
-						end
-					end
-				end
-				--]=]
 			else
 				C_Timer.After (5, re_GetSpellForRangeCheck)
 			end
@@ -3411,20 +3458,30 @@ function Plater.OnInit() --private --~oninit ~init
 		PlaterDBChr.first_run3 = PlaterDBChr.first_run3 or {}
 		PlaterDBChr.debuffsBanned = PlaterDBChr.debuffsBanned or {}
 		PlaterDBChr.buffsBanned = PlaterDBChr.buffsBanned or {}
-		PlaterDBChr.spellRangeCheck = PlaterDBChr.spellRangeCheck or {}
+		PlaterDBChr.spellRangeCheckRangeEnemy = PlaterDBChr.spellRangeCheckRangeEnemy or {}
+		PlaterDBChr.spellRangeCheckRangeFriendly = PlaterDBChr.spellRangeCheckRangeFriendly or {}
 
 	--to fix: attempt to index field 'spellRangeCheck' (a string value)
-		if (type (PlaterDBChr.spellRangeCheck) ~= "table") then
-			PlaterDBChr.spellRangeCheck = {}
+		if (type (PlaterDBChr.spellRangeCheckRangeEnemy) ~= "table") then
+			PlaterDBChr.spellRangeCheckRangeEnemy = {}
+		end
+		if (type (PlaterDBChr.spellRangeCheckRangeFriendly) ~= "table") then
+			PlaterDBChr.spellRangeCheckRangeFriendly = {}
 		end
 	
 	--range check spells
 		for specID, _ in pairs (Plater.SpecList [select (2, UnitClass ("player"))]) do
-			if (PlaterDBChr.spellRangeCheck [specID] == nil) then
-				PlaterDBChr.spellRangeCheck [specID] = GetSpellInfo (Plater.DefaultSpellRangeList [specID])
+			if (PlaterDBChr.spellRangeCheckRangeEnemy [specID] == nil or not LibRangeCheck:GetHarmMaxChecker (PlaterDBChr.spellRangeCheckRangeEnemy [specID])) then
+				PlaterDBChr.spellRangeCheckRangeEnemy [specID] = Plater.DefaultSpellRangeList [specID]
+			end
+			if (PlaterDBChr.spellRangeCheckRangeFriendly [specID] == nil or not LibRangeCheck:GetFriendMaxChecker(PlaterDBChr.spellRangeCheckRangeFriendly [specID])) then
+				PlaterDBChr.spellRangeCheckRangeFriendly [specID] = Plater.DefaultSpellRangeListF [specID]
 			end
 		end
-		Plater.SpellForRangeCheck = ""
+		Plater.RangeCheckRangeEnemy = nil
+		Plater.RangeCheckRangeFriendly = nil
+		Plater.RangeCheckFunctionEnemy = nil
+		Plater.RangeCheckFunctionFriendly = nil
 	
 	--who is the player
 		Plater.PlayerGUID = UnitGUID ("player")
@@ -9711,17 +9768,15 @@ end
 	function Plater.NameplateInRange (unitFrame, spellName)
 		if (spellName) then
 			return IsSpellInRange (spellName, unitFrame [MEMBER_UNITID]) == 1
-			
-		elseif (Plater.SpellBookForRangeCheck) then
-			if (IsSpellInRange (Plater.SpellForRangeCheck, Plater.SpellBookForRangeCheck, unitFrame [MEMBER_UNITID]) == 1) then
-				unitFrame [MEMBER_RANGE] = true
-				return true
-			else
-				unitFrame [MEMBER_RANGE] = false
-				return false
-			end
+
 		else
-			if (IsSpellInRange (Plater.SpellForRangeCheck, unitFrame [MEMBER_UNITID]) == 1) then
+			local rangeChecker
+			if unitFrame [MEMBER_REACTION] < 5 then 
+				spellForRangeCheck = Plater.RangeCheckFunctionEnemy
+			else
+				spellForRangeCheck = Plater.RangeCheckFunctionFriendly
+			end
+			if (rangeChecker and rangeChecker (unitFrame [MEMBER_UNITID])) then
 				unitFrame [MEMBER_RANGE] = true
 				return true
 			else

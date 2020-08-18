@@ -3,6 +3,7 @@
 local Plater = Plater
 local DF = DetailsFramework
 local LibSharedMedia = LibStub:GetLibrary ("LibSharedMedia-3.0")
+local LibRangeCheck = LibStub:GetLibrary ("LibRangeCheck-2.0")
 local _
 
 --localization
@@ -12231,49 +12232,67 @@ local alpha_major_options = {
 
 	{type = "blank"},
 	
-	{type = "label", get = function() return "Range Check Spells" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+	{type = "label", get = function() return "Range Check Spells - Enemy" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 }
 
-	local spells = {}
-	local offset
-	for i = 2, GetNumSpellTabs() do
-		local name, texture, offset, numEntries, isGuild, offspecID = GetSpellTabInfo (i)
-		local tabEnd = offset + numEntries
-		offset = offset + 1
-		for j = offset, tabEnd - 1 do
-			local spellType, spellID = GetSpellBookItemInfo (j, "player")
-			if (spellType == "SPELL") then
-				tinsert (spells, spellID)
-			end
-		end
-	end
-
 	local playerSpecs = Plater.SpecList [select (2, UnitClass ("player"))]
-	local i = 1
 	for specID, _ in pairs (playerSpecs) do
 		local spec_id, spec_name, spec_description, spec_icon, spec_background, spec_role, spec_class = GetSpecializationInfoByID (specID)
 		tinsert (alpha_major_options, {
 			type = "select",
-			get = function() return PlaterDBChr.spellRangeCheck [specID] end,
+			get = function() return PlaterDBChr.spellRangeCheckRangeEnemy [specID] end,
 			values = function() 
-				local onSelectFunc = function (_, _, spellName)
-					PlaterDBChr.spellRangeCheck [specID] = spellName
+				local onSelectFunc = function (_, _, range)
+					PlaterDBChr.spellRangeCheckRangeEnemy [specID] = range
 					Plater.GetSpellForRangeCheck()
 				end
 				local t = {}
-				for _, spellID in ipairs (spells) do
-					local spellName, _, spellIcon = GetSpellInfo (spellID)
-					tinsert (t, {label = spellName, icon = spellIcon, onclick = onSelectFunc, value = spellName})
+				local checkers = LibRangeCheck:GetHarmCheckers()
+				for range, checker in checkers do
+					tinsert (t, {label = range, onclick = onSelectFunc, value = range})
 				end
 				return t
 			end,
 			name = "|T" .. spec_icon .. ":16:16|t " .. L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK"],
 			desc = L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK_SPEC_DESC"],
 		})
-		i = i + 1
+	end	
+	
+	local alpha_major_options_continue1 = {
+	
+		{type = "blank"},
+	
+		{type = "label", get = function() return "Range Check Spells - Friendly" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		
+	}
+	
+	for _, t in ipairs (alpha_major_options_continue1) do
+		tinsert (alpha_major_options, t)
+	end
+	
+	for specID, _ in pairs (playerSpecs) do
+		local spec_id, spec_name, spec_description, spec_icon, spec_background, spec_role, spec_class = GetSpecializationInfoByID (specID)
+		tinsert (alpha_major_options, {
+			type = "select",
+			get = function() return PlaterDBChr.spellRangeCheckRangeFriendly [specID] end,
+			values = function() 
+				local onSelectFunc = function (_, _, range)
+					PlaterDBChr.spellRangeCheckRangeFriendly [specID] = range
+					Plater.GetSpellForRangeCheck()
+				end
+				local t = {}
+				local checkers = LibRangeCheck:GetFriendCheckers()
+				for range, checker in checkers do
+					tinsert (t, {label = range, onclick = onSelectFunc, value = range})
+				end
+				return t
+			end,
+			name = "|T" .. spec_icon .. ":16:16|t " .. L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK"],
+			desc = L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK_SPEC_DESC"],
+		})
 	end	
 
-	local alpha_major_options_continue = {
+	local alpha_major_options_continue2 = {
 	
 		{type = "breakline"},
 		--enemies
@@ -12494,7 +12513,7 @@ local alpha_major_options = {
 		},
 	}
 
-	for _, t in ipairs (alpha_major_options_continue) do
+	for _, t in ipairs (alpha_major_options_continue2) do
 		tinsert (alpha_major_options, t)
 	end
 
