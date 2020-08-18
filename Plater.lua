@@ -1204,7 +1204,6 @@ Plater.DefaultSpellRangeListF = {
 				Plater.RangeCheckRangeEnemy = PlaterDBChr.spellRangeCheckRangeEnemy [specID]
 				Plater.RangeCheckFunctionFriendly = LibRangeCheck:GetFriendMaxChecker(Plater.RangeCheckRangeFriendly)
 				Plater.RangeCheckFunctionEnemy = LibRangeCheck:GetHarmMaxChecker(Plater.RangeCheckRangeEnemy)
-				
 			else
 				C_Timer.After (5, re_GetSpellForRangeCheck)
 			end
@@ -2233,7 +2232,7 @@ Plater.DefaultSpellRangeListF = {
 		end,
 
 		PLAYER_TALENT_UPDATE = function()
-			C_Timer.After (2, Plater.GetSpellForRangeCheck)
+			--C_Timer.After (2, Plater.GetSpellForRangeCheck)
 			C_Timer.After (2, Plater.GetHealthCutoffValue)
 			C_Timer.After (1, Plater.DispatchTalentUpdateHookEvent)
 		end,
@@ -3485,6 +3484,8 @@ function Plater.OnInit() --private --~oninit ~init
 		Plater.RangeCheckRangeFriendly = nil
 		Plater.RangeCheckFunctionEnemy = nil
 		Plater.RangeCheckFunctionFriendly = nil
+		
+		LibRangeCheck.RegisterCallback(Plater, LibRangeCheck.CHECKERS_CHANGED, function() Plater.GetSpellForRangeCheck() end)
 	
 	--who is the player
 		Plater.PlayerGUID = UnitGUID ("player")
@@ -3521,7 +3522,7 @@ function Plater.OnInit() --private --~oninit ~init
 	
 	--schedule data update
 		C_Timer.After (0.1, Plater.UpdatePlateClickSpace)
-		C_Timer.After (1, Plater.GetSpellForRangeCheck)
+		--C_Timer.After (1, Plater.GetSpellForRangeCheck)
 		C_Timer.After (4, Plater.GetHealthCutoffValue)
 		C_Timer.After (4.2, Plater.ForceCVars)
 	
@@ -3621,7 +3622,7 @@ function Plater.OnInit() --private --~oninit ~init
 		--many times at saved variables load the spell database isn't loaded yet
 		function Plater:PLAYER_LOGIN()
 			C_Timer.After (0.1, Plater.UpdatePlateClickSpace)
-			C_Timer.After (0.2, Plater.GetSpellForRangeCheck)
+			--C_Timer.After (0.2, Plater.GetSpellForRangeCheck)
 			C_Timer.After (0.4, Plater.ForceCVars)
 			
 			-- ensure OmniCC settings are up to date
