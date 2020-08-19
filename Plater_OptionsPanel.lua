@@ -11,23 +11,7 @@ local L = LibStub ("AceLocale-3.0"):GetLocale ("PlaterNameplates", true)
 
 --credits text -- ~todo - take colaborators character names?
 local creditsText = [=[
-Plater Nameplates Credits
-
---todo: build brackets
---bracket Plater Core Programmers and Contributors
-
---bracket Plater Community Constributors
-
---bracket Script Contributors
-
---bracket Discord Moderators
-
---bracket Discord Assistants
-
---bracket World Wide Localization 
-
---bracket Special Thanks
-
+Space reserved to castbar options
 ]=]
 
 --templates
@@ -116,8 +100,8 @@ Plater.RegisterRefreshDBCallback (on_refresh_db)
 local update_wago_update_icons = function()
 	local countMods, countScripts, hasProfileUpdate = Plater.CheckWagoUpdates(true)
 	local mainFrame = PlaterOptionsPanelContainer
-	local scriptButton = mainFrame.AllButtons [5]
-	local modButton = mainFrame.AllButtons [6]
+	local scriptButton = mainFrame.AllButtons [6]
+	local modButton = mainFrame.AllButtons [7]
 	local profileButton = mainFrame.AllButtons [21]
 	
 	if countMods > 0 then
@@ -196,11 +180,11 @@ function Plater.OpenOptionsPanel()
 		{name = "FrontPage", title = L["OPTIONS_TABNAME_GENERALSETTINGS"]},
 		{name = "ThreatConfig", title = L["OPTIONS_TABNAME_THREAT"]},
 		{name = "TargetConfig", title = L["OPTIONS_TABNAME_TARGET"]},
+		{name = "CastBarConfig", title = "Cast Bar"}, --localize-me
 		{name = "LevelStrataConfig", title = L["OPTIONS_TABNAME_STRATA"]},
 		{name = "Scripting", title = L["OPTIONS_TABNAME_SCRIPTING"]},
 		{name = "AutoRunCode", title = L["OPTIONS_TABNAME_MODDING"]},
 		{name = "PersonalBar", title = L["OPTIONS_TABNAME_PERSONAL"]},
-		{name = "AdvancedConfig", title = L["OPTIONS_TABNAME_ADVANCED"]},
 		
 		{name = "DebuffConfig", title = L["OPTIONS_TABNAME_BUFF_SETTINGS"]},
 		{name = "DebuffBlacklist", title = L["OPTIONS_TABNAME_BUFF_TRACKING"]},
@@ -211,14 +195,16 @@ function Plater.OpenOptionsPanel()
 		{name = "FriendlyNpc", title = L["OPTIONS_TABNAME_NPCFRIENDLY"]},
 		{name = "FriendlyPlayer", title = L["OPTIONS_TABNAME_PLAYERFRIENDLY"]},
 
-		{name = "AlphaManagemet", title = "Alpha"},
+		{name = "AlphaManagemet", title = "Alpha"}, --localize-me
 		{name = "ColorManagement", title = L["OPTIONS_TABNAME_COLORSNPC"]},
 		{name = "AnimationPanel", title = L["OPTIONS_TABNAME_ANIMATIONS"]},
 		{name = "Automation", title = L["OPTIONS_TABNAME_AUTO"]},
 		{name = "ProfileManagement", title = L["OPTIONS_TABNAME_PROFILES"]},
-		{name = "CreditsFrame", title = L["OPTIONS_TABNAME_CREDITS"]},
+		{name = "AdvancedConfig", title = L["OPTIONS_TABNAME_ADVANCED"]},
+		{name = "SearchFrame", title = "Search"}, --localize-me
 
-		{name = "SearchFrame", title = "Search"},
+		--L["OPTIONS_TABNAME_CREDITS"] --to be removed when 9.0 launches
+		
 	}, 
 	frame_options)
 
@@ -233,11 +219,11 @@ function Plater.OpenOptionsPanel()
 	local frontPageFrame = mainFrame.AllFrames [1]
 	local threatFrame = mainFrame.AllFrames [2]
 	local targetFrame = mainFrame.AllFrames [3]
-	local uiParentFeatureFrame = mainFrame.AllFrames [4]
-	local scriptingFrame = mainFrame.AllFrames [5]
-	local runCodeFrame = mainFrame.AllFrames [6]
-	local personalPlayerFrame = mainFrame.AllFrames [7]
-	local advancedFrame = mainFrame.AllFrames [8]
+	local CastBarFrame = mainFrame.AllFrames [4]
+	local uiParentFeatureFrame = mainFrame.AllFrames [5]
+	local scriptingFrame = mainFrame.AllFrames [6]
+	local runCodeFrame = mainFrame.AllFrames [7]
+	local personalPlayerFrame = mainFrame.AllFrames [8]
 	
 	--2nd row
 	local auraOptionsFrame = mainFrame.AllFrames [9]
@@ -255,29 +241,14 @@ function Plater.OpenOptionsPanel()
 	local animationFrame = mainFrame.AllFrames [19]
 	local autoFrame = mainFrame.AllFrames [20]
 	local profilesFrame = mainFrame.AllFrames [21]
-	local creditsFrame = mainFrame.AllFrames [22]
-
+	local advancedFrame = mainFrame.AllFrames [22]
 	local searchFrame = mainFrame.AllFrames [23]
 	
 	--
 	local colorNpcsButton = mainFrame.AllButtons [18]
-	local scriptButton = mainFrame.AllButtons [5]
-	local modButton = mainFrame.AllButtons [6]
+	local scriptButton = mainFrame.AllButtons [6]
+	local modButton = mainFrame.AllButtons [7]
 	local profileButton = mainFrame.AllButtons [21]
-	
-	--[=[ --tab highlight
-	local colorNpcsButtonNew = colorNpcsButton:CreateTexture (nil, "overlay")
-	colorNpcsButtonNew:SetPoint ("bottomleft", colorNpcsButton.widget, "bottomleft", -4, 0)
-	colorNpcsButtonNew:SetPoint ("bottomright", colorNpcsButton.widget, "bottomright", 4, 0)
-	colorNpcsButtonNew:SetTexture ([[Interface\AddOns\Plater\media\glow_horizontal_256]])
-	colorNpcsButtonNew:SetHeight (16)
-	colorNpcsButtonNew:SetVertexColor (.5, .9, 1, .7)
-	colorNpcsButtonNew.Anim = DF:CreateAnimationHub (colorNpcsButtonNew)
-	DF:CreateAnimation (colorNpcsButtonNew.Anim, "alpha", 1, 3, 0, .5)
-	DF:CreateAnimation (colorNpcsButtonNew.Anim, "alpha", 2, 3, .6, 0)
-	colorNpcsButtonNew.Anim:SetLooping ("repeat")
-	colorNpcsButtonNew.Anim:Play()
-	--]=]
 	
 	local generalOptionsAnchor = CreateFrame ("frame", "$parentOptionsAnchor", frontPageFrame, BackdropTemplateMixin and "BackdropTemplate")
 	generalOptionsAnchor:SetSize (1, 1)
@@ -351,7 +322,7 @@ function Plater.OpenOptionsPanel()
 	function f.CopySettings (_, _, from)
 		local currentTab = mainFrame.CurrentIndex
 		local settingsTo
-		if (currentTab == 7) then
+		if (currentTab == 8) then
 			settingsTo = "player"
 		elseif (currentTab == 13) then
 			settingsTo = "enemynpc"
@@ -10932,7 +10903,7 @@ local relevance_options = {
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> credits
 
-	local creditsTextEditor = DF:NewSpecialLuaEditorEntry (creditsFrame, 100, 100, "CreditsTextEditor", "$parentCreditsEditor", true)
+	local creditsTextEditor = DF:NewSpecialLuaEditorEntry (CastBarFrame, 100, 100, "CreditsTextEditor", "$parentCreditsEditor", true)
 	creditsTextEditor:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
 	
 	local luaeditor_backdrop_color = {.2, .2, .2, .5}
@@ -10943,11 +10914,11 @@ local relevance_options = {
 	creditsTextEditor:SetBackdropBorderColor (unpack (luaeditor_border_color))
 	creditsTextEditor:SetBackdropColor (unpack (luaeditor_backdrop_color))
 	creditsTextEditor.editbox:SetJustifyH ("center")
-	creditsFrame.creditsStringField = creditsTextEditor
+	CastBarFrame.creditsStringField = creditsTextEditor
 	DF:ReskinSlider (creditsTextEditor.scroll)
 	
-	creditsTextEditor:SetPoint ("topleft", creditsFrame, "topleft", 0, 0 + startY)
-	creditsTextEditor:SetPoint ("bottomright", creditsFrame, "bottomright", 0, 20)
+	creditsTextEditor:SetPoint ("topleft", CastBarFrame, "topleft", 0, 0 + startY)
+	creditsTextEditor:SetPoint ("bottomright", CastBarFrame, "bottomright", 0, 20)
 	
 	creditsTextEditor:SetText (creditsText)
 
