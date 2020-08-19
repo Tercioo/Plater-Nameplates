@@ -252,7 +252,7 @@ function Plater.OpenOptionsPanel()
 	
 	local generalOptionsAnchor = CreateFrame ("frame", "$parentOptionsAnchor", frontPageFrame, BackdropTemplateMixin and "BackdropTemplate")
 	generalOptionsAnchor:SetSize (1, 1)
-	generalOptionsAnchor:SetPoint ("topleft", frontPageFrame, "topleft", 10, -230)
+	generalOptionsAnchor:SetPoint ("topleft", frontPageFrame, "topleft", startX, startY)
 	
 	local statusBar = CreateFrame ("frame", nil, f, BackdropTemplateMixin and "BackdropTemplate")
 	statusBar:SetPoint ("bottomleft", f, "bottomleft")
@@ -994,163 +994,10 @@ local nameplate_anchor_options = {
 }
 
 local interface_options = {
-
-		--{type = "label", get = function() return "Interface Options:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-
-		{
-			type = "toggle",
-			get = function() return GetCVar ("nameplateShowSelf") == CVAR_ENABLED end,
-			set = function (self, fixedparam, value) 
-				if (not InCombatLockdown()) then
-					SetCVar ("nameplateShowSelf", math.abs (tonumber (GetCVar ("nameplateShowSelf"))-1))
-				else
-					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
-					self:SetValue (GetCVar ("nameplateShowSelf") == CVAR_ENABLED)
-				end
-			end,
-			name = "Personal Health and Mana Bars" .. CVarIcon,
-			desc = "Shows a mini health and mana bars under your character." .. CVarDesc,
-			nocombat = true,
-		},
-		{
-			type = "toggle",
-			get = function() return PlaterDBChr.resources_on_target end,
-			set = function (self, fixedparam, value) 
-				PlaterDBChr.resources_on_target = value
-				if (not InCombatLockdown()) then
-					SetCVar (CVAR_RESOURCEONTARGET, CVAR_DISABLED) -- reset this to false always, as it conflicts
-				end
-			end,
-			name = "Show Resources on Target",
-			desc = "Shows your resource such as combo points above your current target.\n\nCharacter specific setting!",
-			nocombat = true,
-		},
-		{
-			type = "toggle",
-			get = function() return GetCVar (CVAR_SHOWALL) == CVAR_ENABLED end,
-			set = function (self, fixedparam, value) 
-				if (not InCombatLockdown()) then
-					SetCVar (CVAR_SHOWALL, math.abs (tonumber (GetCVar (CVAR_SHOWALL))-1))
-				else
-					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
-					self:SetValue (GetCVar (CVAR_SHOWALL) == CVAR_ENABLED)
-				end
-			end,
-			name = "Always Show Nameplates" .. CVarIcon,
-			desc = "Show nameplates for all units near you. If disabled on show relevant units when you are in combat." .. CVarDesc,
-			nocombat = true,
-		},
-		
-		{type = "breakline"},
-		
-		{
-			type = "toggle",
-			get = function() return GetCVarBool (CVAR_PLATEMOTION) end, --GetCVar (CVAR_PLATEMOTION) == CVAR_ENABLED
-			set = function (self, fixedparam, value) 
-				if (not InCombatLockdown()) then
-					SetCVar (CVAR_PLATEMOTION, value and "1" or "0")
-					Plater.db.profile.stacking_nameplates_enabled = value
-				else
-					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
-					self:SetValue (GetCVar (CVAR_PLATEMOTION) == CVAR_ENABLED)
-				end
-			end,
-			name = "Stacking Nameplates" .. CVarIcon,
-			desc = "If enabled, nameplates won't overlap each other." .. CVarDesc .. "\n\n|cFFFFFF00Important|r: to set the amount of space between each nameplate see '|cFFFFFFFFNameplate Vertical Padding|r' option below.",
-			nocombat = true,
-		},
-		
-		{
-			type = "range",
-			get = function() return tonumber (GetCVar ("nameplateOverlapV")) end,
-			set = function (self, fixedparam, value) 
-				if (not InCombatLockdown()) then
-					SetCVar ("nameplateOverlapV", value)
-				else
-					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
-				end
-			end,
-			min = 0.2,
-			max = 1.6,
-			step = 0.05,
-			thumbscale = 1.7,
-			usedecimals = true,
-			name = "Space Between Nameplates" .. CVarIcon,
-			desc = "The space between each nameplate vertically when stacking is enabled.\n\n|cFFFFFFFFDefault: 1.10|r" .. CVarDesc .. "\n\n|cFFFFFF00Important|r: if you find issues with this setting, use:\n|cFFFFFFFF/run SetCVar ('nameplateOverlapV', '1.6')|r",
-			nocombat = true,
-		},
-		
-		{
-			type = "range",
-			get = function() return tonumber (GetCVar (CVAR_CULLINGDISTANCE)) end,
-			set = function (self, fixedparam, value) 
-				if (not InCombatLockdown()) then
-					SetCVar (CVAR_CULLINGDISTANCE, value)
-				else
-					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
-				end
-			end,
-			min = 1,
-			max = 100,
-			step = 1,
-			name = "View Distance" .. CVarIcon,
-			desc = "How far you can see nameplates (in yards).\n\n|cFFFFFFFFDefault: 40|r" .. CVarDesc,
-			nocombat = true,
-		},
-	
-		{type = "breakline"},
-		
-		{
-			type = "toggle",
-			get = function() return GetCVarBool ("nameplateShowEnemies") end,
-			set = function (self, fixedparam, value) 
-				if (not InCombatLockdown()) then
-					SetCVar ("nameplateShowEnemies", value and "1" or "0")
-				else
-					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
-					self:SetValue (GetCVarBool ("nameplateShowEnemies"))
-				end
-			end,
-			name = "Show Enemy Nameplates" .. CVarIcon,
-			desc = "Show nameplate for enemy and neutral units." .. CVarDesc,
-			nocombat = true,
-		},
-		
-		{
-			type = "toggle",
-			get = function() return GetCVarBool ("nameplateShowFriends") end,
-			set = function (self, fixedparam, value) 
-				if (not InCombatLockdown()) then
-					SetCVar ("nameplateShowFriends", value and "1" or "0")
-				else
-					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
-					self:SetValue (GetCVarBool ("nameplateShowFriends"))
-				end
-			end,
-			name = "Show Friendly Nameplates" .. CVarIcon,
-			desc = "Show nameplate for friendly players." .. CVarDesc,
-			nocombat = true,
-		},
-		
-		{
-			type = "toggle",
-			get = function() return GetCVarBool ("nameplateShowOnlyNames") end,
-			set = function (self, fixedparam, value) 
-				if (not InCombatLockdown()) then
-					SetCVar ("nameplateShowOnlyNames", value and "1" or "0")
-				else
-					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
-					self:SetValue (GetCVarBool ("nameplateShowOnlyNames"))
-				end
-			end,
-			name = "Hide Friendly Health Bar in Dungeons" .. CVarIcon,
-			desc = "While in dungeons or raids, if friendly nameplates are enabled it'll show only the player name." .. CVarDesc,
-			nocombat = true,
-		},
-
+	--{type = "label", get = function() return "Interface Options:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 }
 
-local interface_title = Plater:CreateLabel (frontPageFrame, "Interface Options (from the client):", Plater:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
+local interface_title = Plater:CreateLabel (frontPageFrame, "", Plater:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
 interface_title:SetPoint (startX, startY)
 
 local in_combat_background = Plater:CreateImage (frontPageFrame)
@@ -6079,7 +5926,161 @@ local relevance_options = {
 	
 	--menu 1 ~general ~geral
 	local options_table1 = {
+
+		{type = "label", get = function() return "Interface Options (from the client):" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{
+			type = "toggle",
+			get = function() return GetCVar ("nameplateShowSelf") == CVAR_ENABLED end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateShowSelf", math.abs (tonumber (GetCVar ("nameplateShowSelf"))-1))
+				else
+					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+					self:SetValue (GetCVar ("nameplateShowSelf") == CVAR_ENABLED)
+				end
+			end,
+			name = "Personal Health and Mana Bars" .. CVarIcon,
+			desc = "Shows a mini health and mana bars under your character." .. CVarDesc,
+			nocombat = true,
+		},
+		{
+			type = "toggle",
+			get = function() return PlaterDBChr.resources_on_target end,
+			set = function (self, fixedparam, value) 
+				PlaterDBChr.resources_on_target = value
+				if (not InCombatLockdown()) then
+					SetCVar (CVAR_RESOURCEONTARGET, CVAR_DISABLED) -- reset this to false always, as it conflicts
+				end
+			end,
+			name = "Show Resources on Target",
+			desc = "Shows your resource such as combo points above your current target.\n\nCharacter specific setting!",
+			nocombat = true,
+		},
+		{
+			type = "toggle",
+			get = function() return GetCVar (CVAR_SHOWALL) == CVAR_ENABLED end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar (CVAR_SHOWALL, math.abs (tonumber (GetCVar (CVAR_SHOWALL))-1))
+				else
+					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+					self:SetValue (GetCVar (CVAR_SHOWALL) == CVAR_ENABLED)
+				end
+			end,
+			name = "Always Show Nameplates" .. CVarIcon,
+			desc = "Show nameplates for all units near you. If disabled on show relevant units when you are in combat." .. CVarDesc,
+			nocombat = true,
+		},
+		
+		{type = "blank"},
+		
+		{
+			type = "toggle",
+			get = function() return GetCVarBool (CVAR_PLATEMOTION) end, --GetCVar (CVAR_PLATEMOTION) == CVAR_ENABLED
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar (CVAR_PLATEMOTION, value and "1" or "0")
+					Plater.db.profile.stacking_nameplates_enabled = value
+				else
+					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+					self:SetValue (GetCVar (CVAR_PLATEMOTION) == CVAR_ENABLED)
+				end
+			end,
+			name = "Stacking Nameplates" .. CVarIcon,
+			desc = "If enabled, nameplates won't overlap each other." .. CVarDesc .. "\n\n|cFFFFFF00Important|r: to set the amount of space between each nameplate see '|cFFFFFFFFNameplate Vertical Padding|r' option below.",
+			nocombat = true,
+		},
+		
+		{
+			type = "range",
+			get = function() return tonumber (GetCVar ("nameplateOverlapV")) end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateOverlapV", value)
+				else
+					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+				end
+			end,
+			min = 0.2,
+			max = 1.6,
+			step = 0.05,
+			thumbscale = 1.7,
+			usedecimals = true,
+			name = "Space Between Nameplates" .. CVarIcon,
+			desc = "The space between each nameplate vertically when stacking is enabled.\n\n|cFFFFFFFFDefault: 1.10|r" .. CVarDesc .. "\n\n|cFFFFFF00Important|r: if you find issues with this setting, use:\n|cFFFFFFFF/run SetCVar ('nameplateOverlapV', '1.6')|r",
+			nocombat = true,
+		},
+		
+		{
+			type = "range",
+			get = function() return tonumber (GetCVar (CVAR_CULLINGDISTANCE)) end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar (CVAR_CULLINGDISTANCE, value)
+				else
+					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+				end
+			end,
+			min = 1,
+			max = 100,
+			step = 1,
+			name = "View Distance" .. CVarIcon,
+			desc = "How far you can see nameplates (in yards).\n\n|cFFFFFFFFDefault: 40|r" .. CVarDesc,
+			nocombat = true,
+		},
 	
+		{type = "blank"},
+		
+		{
+			type = "toggle",
+			get = function() return GetCVarBool ("nameplateShowEnemies") end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateShowEnemies", value and "1" or "0")
+				else
+					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+					self:SetValue (GetCVarBool ("nameplateShowEnemies"))
+				end
+			end,
+			name = "Show Enemy Nameplates" .. CVarIcon,
+			desc = "Show nameplate for enemy and neutral units." .. CVarDesc,
+			nocombat = true,
+		},
+		
+		{
+			type = "toggle",
+			get = function() return GetCVarBool ("nameplateShowFriends") end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateShowFriends", value and "1" or "0")
+				else
+					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+					self:SetValue (GetCVarBool ("nameplateShowFriends"))
+				end
+			end,
+			name = "Show Friendly Nameplates" .. CVarIcon,
+			desc = "Show nameplate for friendly players." .. CVarDesc,
+			nocombat = true,
+		},
+		
+		{
+			type = "toggle",
+			get = function() return GetCVarBool ("nameplateShowOnlyNames") end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateShowOnlyNames", value and "1" or "0")
+				else
+					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+					self:SetValue (GetCVarBool ("nameplateShowOnlyNames"))
+				end
+			end,
+			name = "Hide Friendly Health Bar in Dungeons" .. CVarIcon,
+			desc = "While in dungeons or raids, if friendly nameplates are enabled it'll show only the player name." .. CVarDesc,
+			nocombat = true,
+		},
+
+		{type = "breakline"},
+
 		{type = "label", get = function() return L["OPTIONS_GENERALSETTINGS_HEALTHBAR_ANCHOR_TITLE"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "select",
