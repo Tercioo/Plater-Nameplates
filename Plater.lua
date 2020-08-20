@@ -3520,7 +3520,7 @@ function Plater.OnInit() --private --~oninit ~init
 	--set some cvars that we want to set
 		function Plater.ForceCVars()
 			if (InCombatLockdown()) then
-				return C_Timer.After (1, function() re_ForceCVars end)
+				return C_Timer.After (1, function() re_ForceCVars() end)
 			end
 			SetCVar ("nameplateMinAlpha", 0.90135484)
 			SetCVar ("nameplateMinAlphaDistance", -10^5.2)
