@@ -518,6 +518,7 @@ PLATER_DEFAULT_SETTINGS = {
 		transparency_behavior_use_division = false,
 		non_targeted_alpha_enabled = false,
 		transparency_behavior_on_enemies = true,
+		honor_blizzard_plate_alpha = true,
 		
 		
 		transparency_behavior_on_friendlies = false,

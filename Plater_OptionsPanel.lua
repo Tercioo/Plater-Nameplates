@@ -558,6 +558,9 @@ function Plater.OpenOptionsPanel()
 					end
 				end
 				
+				--restore CVars of the profile
+				Plater.RestoreProfileCVars()
+				
 				--automatically reload the user UI
 				ReloadUI()
 			end

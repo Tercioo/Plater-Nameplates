@@ -3517,12 +3517,9 @@ function Plater.OnInit() --private --~oninit ~init
 		end
 	
 	--set some cvars that we want to set
-		local re_ForceCVars = function()
-			Plater.ForceCVars()
-		end
 		function Plater.ForceCVars()
 			if (InCombatLockdown()) then
-				return C_Timer.After (1, re_ForceCVars)
+				return C_Timer.After (1, function() re_ForceCVars end)
 			end
 			SetCVar ("nameplateMinAlpha", 0.90135484)
 			SetCVar ("nameplateMinAlphaDistance", -10^5.2)
@@ -3629,8 +3626,10 @@ function Plater.OnInit() --private --~oninit ~init
 		
 		--many times at saved variables load the spell database isn't loaded yet
 		function Plater:PLAYER_LOGIN()
-			C_Timer.After (0.1, Plater.UpdatePlateClickSpace)
-			--C_Timer.After (0.2, Plater.GetSpellForRangeCheck)
+			C_Timer.After(0.1, Plater.RestoreProfileCVars)
+			
+			C_Timer.After (0.2, Plater.UpdatePlateClickSpace)
+			--C_Timer.After (0.3, Plater.GetSpellForRangeCheck)
 			C_Timer.After (0.4, Plater.ForceCVars)
 			
 			-- ensure OmniCC settings are up to date
@@ -8673,13 +8672,10 @@ function Plater.CreatePlaterButtonAtInterfaceOptions()
 end
 
 --elseof
-local run_SetCVarsOnFirstRun = function()
-	Plater.SetCVarsOnFirstRun()
-end
 function Plater.SetCVarsOnFirstRun()
 
 	if (InCombatLockdown()) then
-		C_Timer.After (1, run_SetCVarsOnFirstRun)
+		C_Timer.After (1, function() Plater.SetCVarsOnFirstRun() end)
 		return
 	end
 
@@ -8736,8 +8732,7 @@ function Plater.SetCVarsOnFirstRun()
 
 	--> movement speed of nameplates when using stacking, going above this isn't recommended
 	SetCVar ("nameplateMotionSpeed", "0.05")
-	--> this must be 1 for bug reasons on the game client
-	SetCVar ("nameplateOccludedAlphaMult", 1)
+
 	--> make the personal bar hide very fast
 	SetCVar ("nameplatePersonalHideDelaySeconds", 0.2)
 
@@ -8759,7 +8754,20 @@ function Plater.SetCVarsOnFirstRun()
 	Plater.CreatePlaterButtonAtInterfaceOptions()
 	
 	--[=[
-	--> try to restore cvars from the profile
+	Plater.RestoreProfileCVars()
+	--]=]
+	
+	--Plater:Msg ("Plater has been successfully installed on this character.")
+
+end
+
+function Plater.RestoreProfileCVars()
+	if (InCombatLockdown()) then
+		C_Timer.After (1, function() Plater.RestoreProfileCVars() end)
+		return
+	end
+	
+--> try to restore cvars from the profile
 	local savedCVars = Plater.db and Plater.db.profile and Plater.db.profile.saved_cvars
 	if (savedCVars) then
 		for CVarName, CVarValue in pairs (savedCVars) do
@@ -8769,10 +8777,6 @@ function Plater.SetCVarsOnFirstRun()
 			PlaterOptionsPanelFrame.RefreshOptionsFrame()
 		end
 	end
-	--]=]
-	
-	--Plater:Msg ("Plater has been successfully installed on this character.")
-
 end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
