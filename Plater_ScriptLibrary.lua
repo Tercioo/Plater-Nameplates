@@ -512,7 +512,7 @@ do
 			for i = 1, #hookData do
 				local hook = hookData [i]
 				if (hook.Name == "Cast Bar Icon Settings [P]") then
-					hook.Enabled = true
+					hook.Enabled = false --true, plater now have default castbar icon settings, this mod can be always disabled by default
 					Plater.WipeAndRecompileAllScripts("hook")
 				end
 			end
