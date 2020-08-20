@@ -57,7 +57,6 @@ local format = string.format
 local GetSpellInfo = GetSpellInfo
 local UnitIsUnit = UnitIsUnit
 local type = type
-local tonumber = tonumber
 local select = select
 local UnitGUID = UnitGUID
 local strsplit = strsplit
@@ -65,6 +64,8 @@ local lower = string.lower
 local floor = floor
 local max = math.max
 local min = math.min
+
+local PixelUtil = _G.PixelUtil
 
 local LibSharedMedia = LibStub:GetLibrary ("LibSharedMedia-3.0")
 local LCG = LibStub:GetLibrary("LibCustomGlow-1.0")
@@ -4130,6 +4131,44 @@ function Plater.OnInit() --private --~oninit ~init
 					Plater.UpdateSpellNameSize (self.Text, self.unitFrame.ActorType)
 
 					Plater.UpdateCastbarTargetText (self)
+
+					--castbar icon
+					local profile = Plater.db.profile
+					if (profile.castbar_icon_customization_enabled) then
+						local icon = self.Icon
+
+						if (profile.castbar_icon_show) then
+							icon:ClearAllPoints()
+							self.BorderShield:Hide()
+
+							if (profile.castbar_icon_attach_to_side == "left") then
+								if (profile.castbar_icon_size == "same as castbar") then
+									icon:SetPoint("topright", self, "topleft", profile.castbar_icon_x_offset, 0)
+									icon:SetPoint("bottomright", self, "bottomleft", profile.castbar_icon_x_offset, 0)
+
+								elseif (profile.castbar_icon_size == "same as castbar plus healthbar") then
+									icon:SetPoint("topright", self.unitFrame.healthBar, "topleft", profile.castbar_icon_x_offset, 0)
+									icon:SetPoint("bottomright", self, "bottomleft", profile.castbar_icon_x_offset, 0)
+								end
+
+							elseif (profile.castbar_icon_attach_to_side == "right") then
+								if (profile.castbar_icon_size == "same as castbar") then
+									icon:SetPoint("topleft", self, "topright", profile.castbar_icon_x_offset, 0)
+									icon:SetPoint("bottomleft", self, "bottomright", profile.castbar_icon_x_offset, 0)
+
+								elseif (profile.castbar_icon_size == "same as castbar plus healthbar") then
+									icon:SetPoint("topleft", self.unitFrame.healthBar, "topright", profile.castbar_icon_x_offset, 0)
+									icon:SetPoint("bottomleft", self, "bottomright", profile.castbar_icon_x_offset, 0)
+								end
+							end
+
+							icon:SetWidth(icon:GetHeight())
+						else
+							icon:Hide()
+							self.BorderShield:Hide()
+						end
+					end
+
 					shouldRunCastStartHook = true
 
 				elseif (event == "UNIT_SPELLCAST_INTERRUPTED") then
@@ -5878,9 +5917,9 @@ end
 			PixelUtil.SetPoint (castBar, "topright", healthBar, "bottomright", -castBarOffSetX, castBarOffSetY)
 			PixelUtil.SetWidth (castBar, castBarWidth)
 			PixelUtil.SetHeight (castBar, castBarHeight)
-			PixelUtil.SetSize (castBar.Icon, castBarHeight, castBarHeight)
 			PixelUtil.SetSize (castBar.BorderShield, castBarHeight * 1.4, castBarHeight * 1.4)
 			PixelUtil.SetSize (castBar.Spark, profile.cast_statusbar_spark_width, castBarHeight)
+			PixelUtil.SetSize (castBar.Icon, castBarHeight, castBarHeight)
 
 		--power bar
 			powerBar:ClearAllPoints()

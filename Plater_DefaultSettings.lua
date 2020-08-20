@@ -591,6 +591,7 @@ PLATER_DEFAULT_SETTINGS = {
 		
 		no_spellname_length_limit = false,
 		
+		--> castbar target name
 		castbar_target_show = false,
 		castbar_target_anchor = {side = 5, x = 0, y = 0},
 		castbar_target_text_size = 10,
@@ -599,6 +600,14 @@ PLATER_DEFAULT_SETTINGS = {
 		castbar_target_shadow_color_offset = {1, -1},
 		castbar_target_color = {0.968627, 0.992156, 1, 1},
 		castbar_target_font = "Arial Narrow",
+
+		--> castbar icon
+		castbar_icon_customization_enabled = true,
+		castbar_icon_show = true,
+		castbar_icon_attach_to_side = "left", --"right"
+		castbar_icon_size = "same as castbar", --"same as castbar plus healthbar"
+		castbar_icon_x_offset = 0,
+		
 		
 		--> store spells from the latest event the player has been into
 		captured_spells = {},

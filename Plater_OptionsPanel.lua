@@ -10520,7 +10520,27 @@ local relevance_options = {
 	DF:BuildMenu (autoFrame, auto_options, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)	
 	
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
---> credits
+--> castbar options
+
+	local onSelectCastBarIconSideAttach = function(_a, _b, value)
+		Plater.db.profile.castbar_icon_attach_to_side = value
+		Plater.RefreshDBUpvalues()
+		Plater.UpdateAllPlates()
+	end
+	local castbar_icon_attach_to_side_options = {
+		{value = "left", label = "Left", onclick = onSelectCastBarIconSideAttach},
+		{value = "right", label = "Right", onclick = onSelectCastBarIconSideAttach},
+	}
+
+	local onSelectCastBarSize = function(_, _, value)
+		Plater.db.profile.castbar_icon_size = value
+		Plater.RefreshDBUpvalues()
+		Plater.UpdateAllPlates()
+	end
+	local castbar_icon_size_options = {
+		{value = "same as castbar", label = "Castbar Size", onclick = onSelectCastBarSize},
+		{value = "same as castbar plus healthbar", label = "Castbar + Healthbar Size", onclick = onSelectCastBarSize},
+	}
 
 	local castBar_options = {
 		--cast bar options
@@ -10908,6 +10928,60 @@ local relevance_options = {
 			desc = "Y Offset",
 		},
 
+		{type = "breakline"},
+		--toggle cast bar target
+		{type = "label", get = function() return "Spell Icon:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.castbar_icon_customization_enabled end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.castbar_icon_customization_enabled = value
+				Plater.RefreshDBUpvalues()
+			end,
+			name = "Icon Customization Enabled",
+			desc = "If this option is disabled, Plater won't modify the spell icon, leaving it for scripts to do.",
+		},
+
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.castbar_icon_show end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.castbar_icon_show = value
+				Plater.RefreshDBUpvalues()
+			end,
+			name = "Show Icon",
+			desc = "Show Icon",
+		},
+
+		{
+			type = "select",
+			get = function() return Plater.db.profile.castbar_icon_attach_to_side end,
+			values = function() return castbar_icon_attach_to_side_options end,
+			name = "Icon Side",
+			desc = "Icon Side",
+		},
+
+		{
+			type = "select",
+			get = function() return Plater.db.profile.castbar_icon_size end,
+			values = function() return castbar_icon_size_options end,
+			name = "Icon Size",
+			desc = "Icon Size",
+		},
+
+		{
+			type = "range",
+			get = function() return Plater.db.profile.castbar_icon_x_offset end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.castbar_icon_x_offset = value
+				Plater.UpdateAllPlates()
+			end,
+			min = -20,
+			max = 20,
+			step = 1,
+			name = L["OPTIONS_XOFFSET"],
+			desc = L["OPTIONS_XOFFSET"],
+		},
 	}
 
 
