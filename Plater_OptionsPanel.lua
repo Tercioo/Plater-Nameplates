@@ -12160,6 +12160,36 @@ local alpha_major_options = {
 		desc = "When the unit is out of range and isn't your target, alpha is greatly reduced.",
 		id = "transparency_division",
 	},
+	{
+		type = "range",
+		get = function() return tonumber (GetCVar ("nameplateOccludedAlphaMult")) end,
+		set = function (self, fixedparam, value) 
+			if (not InCombatLockdown()) then
+				SetCVar ("nameplateOccludedAlphaMult", value)
+			else
+				Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+			end
+		end,
+		min = 0,
+		max = 1,
+		step = 0.1,
+		thumbscale = 1.7,
+		usedecimals = true,
+		name = "Occluded Alpha Multiplier" .. CVarIcon,
+		desc = "Alpha multiplyer for 'occluded' plates (when they are not in line of sight)." .. CVarDesc,
+		nocombat = true,
+	},
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.honor_blizzard_plate_alpha end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.honor_blizzard_plate_alpha = value
+			Plater.UpdateAllPlates()
+		end,
+		name = "Honor Blizzard Alpha",
+		desc = "Honor 'occluded' and 'personal bar alpha' blizzard settings. This setting only works with 'Use custom strata channels' enabled.",
+		id = "transparency_blizzard_alpha",
+	},
 	
 	{type = "blank"},
 	
@@ -12483,6 +12513,12 @@ if (Plater.db.profile.transparency_behavior == 0x3) then
 	checkBoxDivisionByTwo:Enable()
 else
 	checkBoxDivisionByTwo:Disable()
+end
+local checkBoxBlizzPlateAlpha = alphaFrame:GetWidgetById("transparency_blizzard_alpha")
+if (Plater.db.profile.use_ui_parent) then
+	checkBoxBlizzPlateAlpha:Enable()
+else
+	checkBoxBlizzPlateAlpha:Disable()
 end
 
 

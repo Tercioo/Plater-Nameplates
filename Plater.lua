@@ -954,9 +954,17 @@ Plater.DefaultSpellRangeListF = {
 	function Plater.CheckRange (plateFrame, onAdded)
 
 		local unitFrame = plateFrame.unitFrame
+		local nameplateAlpha = 1
+		if DB_USE_UIPARENT and Plater.db.profile.honor_blizzard_plate_alpha then
+		--if DB_USE_UIPARENT end
+			nameplateAlpha = plateFrame:GetAlpha()
+		end
 		
 		--if is using the no combat alpha and the unit isn't in combat, ignore the range check, no combat alpha is disabled by default
-		if (plateFrame [MEMBER_NOCOMBAT]) then
+		if (plateFrame [MEMBER_NOCOMBAT] or unitFrame.isSelf) then
+			if nameplateAlpha < Plater.db.profile.not_affecting_combat_alpha then
+				unitFrame:SetAlpha (nameplateAlpha)
+			end
 			--unitFrame:SetAlpha (Plater.db.profile.not_affecting_combat_alpha) -- already set if necessary
 			unitFrame.healthBar:SetAlpha (1)
 			if not castBarFade then
@@ -970,7 +978,7 @@ Plater.DefaultSpellRangeListF = {
 		
 		--the unit is friendly or not using range check and non targets alpha
 		elseif ((not DB_USE_ALPHA_FRIENDLIES and plateFrame [MEMBER_REACTION] >= 5) or (not DB_USE_ALPHA_ENEMIES and plateFrame [MEMBER_REACTION] < 5) or (not DB_USE_RANGE_CHECK and not DB_USE_NON_TARGETS_ALPHA)) then
-			unitFrame:SetAlpha (1)
+			unitFrame:SetAlpha (nameplateAlpha)
 			unitFrame.healthBar:SetAlpha (1)
 			if not castBarFade then
 				unitFrame.castBar:SetAlpha (1)
@@ -1061,7 +1069,7 @@ Plater.DefaultSpellRangeListF = {
 				if (onAdded) then
 					--plateFrame.FadedIn = true
 
-					unitFrame:SetAlpha (inRangeAlpha * (notTheTarget and overallRangeCheckAlpha or 1))
+					unitFrame:SetAlpha (nameplateAlpha * inRangeAlpha * (notTheTarget and overallRangeCheckAlpha or 1))
 					healthBar:SetAlpha (inRangeAlpha * (notTheTarget and healthBar_rangeCheckAlpha or 1))
 					castBar:SetAlpha (inRangeAlpha * (notTheTarget and castBar_rangeCheckAlpha or 1))
 					powerBar:SetAlpha (inRangeAlpha * (notTheTarget and powerBar_rangeCheckAlpha or 1))
@@ -1072,10 +1080,10 @@ Plater.DefaultSpellRangeListF = {
 					plateFrame.unitFrame [MEMBER_RANGE] = true
 
 				else
-					local newAlpha = inRangeAlpha * (notTheTarget and overallRangeCheckAlpha or 1)
+					local newAlpha = nameplateAlpha * inRangeAlpha * (notTheTarget and overallRangeCheckAlpha or 1)
 					if (not DF:IsNearlyEqual (unitFrame:GetAlpha(), newAlpha, 0.01)) then
 						--play animations (animation aren't while in development)
-						unitFrame:SetAlpha (inRangeAlpha * (notTheTarget and overallRangeCheckAlpha or 1))
+						unitFrame:SetAlpha (nameplateAlpha * inRangeAlpha * (notTheTarget and overallRangeCheckAlpha or 1))
 						healthBar:SetAlpha (inRangeAlpha * (notTheTarget and healthBar_rangeCheckAlpha or 1))
 						castBar:SetAlpha (inRangeAlpha * (notTheTarget and castBar_rangeCheckAlpha or 1))
 						powerBar:SetAlpha (inRangeAlpha * (notTheTarget and powerBar_rangeCheckAlpha or 1))
@@ -1098,18 +1106,18 @@ Plater.DefaultSpellRangeListF = {
 --					buffFrame1:SetAlpha (buffFrames_rangeCheckAlpha * (notTheTarget and buffFrames_rangeCheckAlpha or 1))
 --					buffFrame2:SetAlpha (buffFrames_rangeCheckAlpha * (notTheTarget and buffFrames_rangeCheckAlpha or 1))
 
-					unitFrame:SetAlpha (unitIsTarget and inRangeAlpha or overallRangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
-					healthBar:SetAlpha (unitIsTarget and inRangeAlpha or healthBar_rangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
-					castBar:SetAlpha (unitIsTarget and inRangeAlpha or castBar_rangeCheckAlpha * (notTheTarget and alphaMultiplier  or 1))
-					powerBar:SetAlpha (unitIsTarget and inRangeAlpha or powerBar_rangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
-					buffFrame1:SetAlpha (unitIsTarget and inRangeAlpha or buffFrames_rangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
-					buffFrame2:SetAlpha (unitIsTarget and inRangeAlpha or buffFrames_rangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
+					unitFrame:SetAlpha ((unitIsTarget and inRangeAlpha or overallRangeCheckAlpha) * nameplateAlpha * (notTheTarget and alphaMultiplier or 1))
+					healthBar:SetAlpha ((unitIsTarget and inRangeAlpha or healthBar_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
+					castBar:SetAlpha ((unitIsTarget and inRangeAlpha or castBar_rangeCheckAlpha) * (notTheTarget and alphaMultiplier  or 1))
+					powerBar:SetAlpha ((unitIsTarget and inRangeAlpha or powerBar_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
+					buffFrame1:SetAlpha ((unitIsTarget and inRangeAlpha or buffFrames_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
+					buffFrame2:SetAlpha ((unitIsTarget and inRangeAlpha or buffFrames_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
 
 					plateFrame [MEMBER_RANGE] = false
 					plateFrame.unitFrame [MEMBER_RANGE] = false
 
 				else
-					local newAlpha = overallRangeCheckAlpha * (notTheTarget and alphaMultiplier or 1)
+					local newAlpha = nameplateAlpha * overallRangeCheckAlpha * (notTheTarget and alphaMultiplier or 1)
 					if (not DF:IsNearlyEqual (unitFrame:GetAlpha(), newAlpha, 0.01)) then
 						
 						--play animations (animation aren't while in development)
@@ -1120,12 +1128,12 @@ Plater.DefaultSpellRangeListF = {
 --						buffFrame1:SetAlpha (buffFrames_rangeCheckAlpha * (notTheTarget and buffFrames_rangeCheckAlpha or 1))
 --						buffFrame2:SetAlpha (buffFrames_rangeCheckAlpha * (notTheTarget and buffFrames_rangeCheckAlpha or 1))
 						
-						unitFrame:SetAlpha (unitIsTarget and inRangeAlpha or overallRangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
-						healthBar:SetAlpha (unitIsTarget and inRangeAlpha or healthBar_rangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
-						castBar:SetAlpha (unitIsTarget and inRangeAlpha or castBar_rangeCheckAlpha * (notTheTarget and alphaMultiplier  or 1))
-						powerBar:SetAlpha (unitIsTarget and inRangeAlpha or powerBar_rangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
-						buffFrame1:SetAlpha (unitIsTarget and inRangeAlpha or buffFrames_rangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
-						buffFrame2:SetAlpha (unitIsTarget and inRangeAlpha or buffFrames_rangeCheckAlpha * (notTheTarget and alphaMultiplier or 1))
+						unitFrame:SetAlpha ((unitIsTarget and inRangeAlpha or overallRangeCheckAlpha) * nameplateAlpha * (notTheTarget and alphaMultiplier or 1))
+						healthBar:SetAlpha ((unitIsTarget and inRangeAlpha or healthBar_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
+						castBar:SetAlpha ((unitIsTarget and inRangeAlpha or castBar_rangeCheckAlpha) * (notTheTarget and alphaMultiplier  or 1))
+						powerBar:SetAlpha ((unitIsTarget and inRangeAlpha or powerBar_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
+						buffFrame1:SetAlpha ((unitIsTarget and inRangeAlpha or buffFrames_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
+						buffFrame2:SetAlpha ((unitIsTarget and inRangeAlpha or buffFrames_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
 
 					end
 					plateFrame [MEMBER_RANGE] = false
@@ -1140,8 +1148,8 @@ Plater.DefaultSpellRangeListF = {
 			if (Plater.PlayerHasTargetNonSelf) then
 				--is this unit is the current player target?
 				if (unitIsTarget) then
-					if (not DF:IsNearlyEqual (unitFrame:GetAlpha(), inRangeAlpha, 0.01)) then
-						unitFrame:SetAlpha (inRangeAlpha)
+					if (not DF:IsNearlyEqual (unitFrame:GetAlpha(), nameplateAlpha * inRangeAlpha, 0.01)) then
+						unitFrame:SetAlpha (nameplateAlpha * inRangeAlpha)
 						healthBar:SetAlpha (inRangeAlpha)
 						castBar:SetAlpha (inRangeAlpha)
 						powerBar:SetAlpha (inRangeAlpha)
@@ -1152,8 +1160,8 @@ Plater.DefaultSpellRangeListF = {
 
 				else
 					--this unit isnt the current player target
-					if (not DF:IsNearlyEqual (unitFrame:GetAlpha(), inRangeAlpha * overallRangeCheckAlpha, 0.01)) then
-						unitFrame:SetAlpha (inRangeAlpha * overallRangeCheckAlpha)
+					if (not DF:IsNearlyEqual (unitFrame:GetAlpha(), nameplateAlpha * inRangeAlpha * overallRangeCheckAlpha, 0.01)) then
+						unitFrame:SetAlpha (nameplateAlpha * inRangeAlpha * overallRangeCheckAlpha)
 						healthBar:SetAlpha (inRangeAlpha * healthBar_rangeCheckAlpha)
 						castBar:SetAlpha (inRangeAlpha * castBar_rangeCheckAlpha)
 						powerBar:SetAlpha (inRangeAlpha * powerBar_rangeCheckAlpha)
@@ -1165,7 +1173,7 @@ Plater.DefaultSpellRangeListF = {
 			else
 				--player does not have a target, so just set to regular alpha
 				plateFrame.FadedIn = true
-				plateFrame.unitFrame:SetAlpha (inRangeAlpha)
+				unitFrame:SetAlpha (nameplateAlpha * inRangeAlpha)
 				healthBar:SetAlpha (1)
 				castBar:SetAlpha (1)
 				powerBar:SetAlpha (1)
@@ -1175,7 +1183,7 @@ Plater.DefaultSpellRangeListF = {
 		else
 			-- no alpha settings, so just go to default
 			plateFrame.FadedIn = true
-			unitFrame:SetAlpha (inRangeAlpha)
+			unitFrame:SetAlpha (nameplateAlpha * inRangeAlpha)
 			healthBar:SetAlpha (1)
 			castBar:SetAlpha (1)
 			powerBar:SetAlpha (1)
