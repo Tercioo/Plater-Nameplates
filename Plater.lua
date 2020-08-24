@@ -3951,37 +3951,39 @@ function Plater.OnInit() --private --~oninit ~init
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 				local castBar = plateFrame.unitFrame.castBar
 				
-				castBar.Text:SetText ("Getting Bald")
-				castBar.Icon:SetTexture ([[Interface\AddOns\Plater\images\icon_bald_guy]])
-				castBar.Icon:SetAlpha (1)
+				local spellName, _, spellIcon = GetSpellInfo(116)
+
+				castBar.Text:SetText(spellName)
+				castBar.Icon:SetTexture(spellIcon)
+				castBar.Icon:SetAlpha(1)
 				castBar.Icon:Show()
 				castBar.percentText:Show()
-				castBar:SetMinMaxValues (0, 3)
-				castBar:SetValue (0)
+				castBar:SetMinMaxValues(0, 3)
+				castBar:SetValue(0)
 				castBar.Spark:Show()
 				castBar.casting = true
 				castBar.finished = false
 				castBar.value = 0
 				castBar.maxValue = 3
 				castBar.canInterrupt = math.random (1, 2) == 1
-				castBar.canInterrupt = true
+				--castBar.canInterrupt = true
 				castBar:UpdateCastColor()
 				
-				castBar.spellName = 		"Getting Bald"
-				castBar.spellID = 		1
-				castBar.spellTexture = 		[[Interface\AddOns\Plater\images\icon_bald_guy]]
+				castBar.spellName = 		spellName
+				castBar.spellID = 			1
+				castBar.spellTexture = 		spellIcon
 				castBar.spellStartTime = 	GetTime()
-				castBar.spellEndTime = 	GetTime() + 3
+				castBar.spellEndTime = 		GetTime() + 3
 				
 				castBar.SpellStartTime = 	GetTime()
-				castBar.SpellEndTime = 	GetTime() + 3
+				castBar.SpellEndTime = 		GetTime() + 3
 				
 				castBar.playedFinishedTest = nil
 				
 				castBar.flashTexture:Hide()
 				castBar:Animation_StopAllAnimations()
 
-				Plater.CastBarOnEvent_Hook (castBar, "UNIT_SPELLCAST_START", plateFrame.unitFrame.unit, plateFrame.unitFrame.unit)
+				Plater.CastBarOnEvent_Hook(castBar, "UNIT_SPELLCAST_START", plateFrame.unitFrame.unit, plateFrame.unitFrame.unit)
 				
 				if (not castBar:IsShown()) then
 					castBar:Animation_FadeIn()
