@@ -4342,6 +4342,8 @@ function Plater.OnInit() --private --~oninit ~init
 		
 		unitFrame.healthBar.CurrentHealth = unitHealth
 		unitFrame.healthBar.CurrentHealthMax = unitHealthMax
+		unitFrame.healthBar.currentHealth = unitHealth
+		unitFrame.healthBar.currentHealthMax = unitHealthMax
 	end
 	
 	local run_on_health_change_hook = function (unitFrame)
@@ -6057,7 +6059,6 @@ end
 			
 			--health cutoff (execute range) - don't show if the nameplate is the personal bar
 			if (DB_USE_HEALTHCUTOFF and not unitFrame.IsSelf) then
-				--local healthPercent = UnitHealth (tickFrame.unit) / UnitHealthMax (tickFrame.unit)
 				local healthPercent = (healthBar.currentHealth or 1) / (healthBar.currentHealthMax or 1)
 				if (healthPercent < DB_HEALTHCUTOFF_AT) then
 					if (not healthBar.healthCutOff:IsShown()) then
@@ -8089,7 +8090,8 @@ end
 			plateFrame.IsFriendlyPlayerWithoutHealthBar = true
 			
 		elseif (DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_damaged) then
-			if (UnitHealth (plateFrame.unitFrame [MEMBER_UNITID]) < UnitHealthMax (plateFrame.unitFrame [MEMBER_UNITID])) then
+			local healthBar = plateFrame.unitFrame.healthBar
+			if ((healthBar.currentHealthMax or 1) < (healthBar.currentHealthMax or 1)) then
 				Plater.ShowHealthBar (plateFrame.unitFrame)
 			else
 				Plater.HideHealthBar (plateFrame.unitFrame, true)
