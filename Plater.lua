@@ -8871,7 +8871,7 @@ end
 			if (Plater.QuestCache [text]) then
 				--unit belongs to a quest
 				isQuestUnit = true
-				local amount1, amount2 = nil, nil
+				local amount1, amount2, questText = nil, nil, nil
 				local j = i
 				while (ScanQuestTextCache [j+1]) do
 					--check if the unit objective isn't already done
@@ -8892,6 +8892,7 @@ end
 								-- quest not completed
 								atLeastOneQuestUnfinished = true
 								amount1, amount2 = p1, p2
+								questText = nextLineText
 							end
 						else
 							j = 99 --safely break here, as we saw threat% -> quest text is done
@@ -8903,10 +8904,12 @@ end
 				if (amount1 and atLeastOneQuestUnfinished) then
 					plateFrame.QuestAmountCurrent = amount1
 					plateFrame.QuestAmountTotal = amount2
+					plateFrame.QuestText = questText
 					
 					--expose to scripts
 					plateFrame.unitFrame.QuestAmountCurrent = amount1
 					plateFrame.unitFrame.QuestAmountTotal = amount2
+					plateFrame.unitFrame.QuestText = questText
 				end
 			end
 		end
