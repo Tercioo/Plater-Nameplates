@@ -1,5 +1,5 @@
 
-local dversion = 201
+local dversion = 202
 
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
@@ -1085,9 +1085,7 @@ end
 		height = height*-1
 
 		for index, widget_table in ipairs(menu) do
-			
-			local widget_created
-			
+
 			local widget_created
 			if (latestInlineWidget) then
 				if (not widget_table.inline) then
