@@ -7606,10 +7606,13 @@ DF.PowerFrameFunctions = {
 	--> when a event different from unit_power_update is triggered, update which type of power the unit should show
 	UpdatePowerInfo = function (self)
 		if (self.Settings.ShowAlternatePower) then
-			local _, minPower, _, _, _, _, showOnRaid = UnitAlternatePowerInfo (self.displayedUnit)
-			if (showOnRaid and IsInGroup()) then
+			local barID = UnitPowerBarID(self.displayedUnit)
+			local barInfo = GetUnitPowerBarInfoByID(barID)
+			--local name, tooltip, cost = GetUnitPowerBarStringsByID(barID);
+			--barInfo.barType,barInfo.minPower, barInfo.startInset, barInfo.endInset, barInfo.smooth, barInfo.hideFromOthers, barInfo.showOnRaid, barInfo.opaqueSpark, barInfo.opaqueFlash, barInfo.anchorTop, name, tooltip, cost, barInfo.ID, barInfo.forcePercentage, barInfo.sparkUnderFrame;
+			if (barInfo and barInfo.showOnRaid and IsInGroup()) then
 				self.powerType = ALTERNATE_POWER_INDEX
-				self.minPower = minPower
+				self.minPower = barInfo.minPower
 				return
 			end
 		end
