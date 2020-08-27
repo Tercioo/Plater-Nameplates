@@ -2302,6 +2302,7 @@ Plater.DefaultSpellRangeListF = {
 					Plater.FriendsCache [toonName] = true
 				end
 			end
+			--]]
 			
 			--let's not trigger a full update on all plates because a friend is now online
 			--Plater.UpdateAllPlates()
