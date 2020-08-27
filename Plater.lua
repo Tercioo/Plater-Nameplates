@@ -2296,10 +2296,11 @@ Plater.DefaultSpellRangeListF = {
 					Plater.FriendsCache [DF:RemoveRealmName (info.name)] = true
 				end
 			end
-			for i = 1, BNGetNumFriends() do 
-				local presenceID, presenceName, battleTag, isBattleTagPresence, toonName, toonID, client, isOnline, lastOnline, isAFK, isDND, messageText, noteText, isRIDFriend, broadcastTime, canSoR = BNGetFriendInfo (i)
-				if (isOnline and toonName) then
-					Plater.FriendsCache [toonName] = true
+			local _, numBNetOnline = BNGetNumFriends();
+			for i = 1, numBNetOnline do
+				local accountInfo = C_BattleNet.GetFriendAccountInfo(i);
+				if (accountInfo and accountInfo.gameAccountInfo and accountInfo.gameAccountInfo.isOnline and accountInfo.gameAccountInfo.characterName) then
+					Plater.FriendsCache [accountInfo.gameAccountInfo.characterName] = true
 				end
 			end
 			--]]
