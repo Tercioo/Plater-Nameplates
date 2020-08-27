@@ -2289,8 +2289,8 @@ Plater.DefaultSpellRangeListF = {
 
 		FRIENDLIST_UPDATE = function()
 			wipe (Plater.FriendsCache)
-			for i = 1, GetNumFriends() do
-				local toonName, level, class, area, connected, status, note = GetFriendInfo (i)
+			for i = 1, C_FriendList.GetNumFriends() do
+				local toonName, level, class, area, connected, status, note = C_FriendList.GetFriendInfo (i)
 				if (connected and toonName) then
 					Plater.FriendsCache [toonName] = true
 					Plater.FriendsCache [DF:RemoveRealmName (toonName)] = true
