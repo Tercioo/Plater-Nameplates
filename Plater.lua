@@ -6057,7 +6057,8 @@ end
 			
 			--health cutoff (execute range) - don't show if the nameplate is the personal bar
 			if (DB_USE_HEALTHCUTOFF and not unitFrame.IsSelf) then
-				local healthPercent = UnitHealth (tickFrame.unit) / UnitHealthMax (tickFrame.unit)
+				--local healthPercent = UnitHealth (tickFrame.unit) / UnitHealthMax (tickFrame.unit)
+				local healthPercent = (healthBar.currentHealth or 1) / (healthBar.currentHealthMax or 1)
 				if (healthPercent < DB_HEALTHCUTOFF_AT) then
 					if (not healthBar.healthCutOff:IsShown()) then
 						healthBar.healthCutOff:ClearAllPoints()
