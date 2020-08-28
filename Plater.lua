@@ -3400,6 +3400,9 @@ Plater.DefaultSpellRangeListF = {
 			--tell the framework to execute a cleanup on the unit frame, this is required since Plater set .ClearUnitOnHide to false
 			plateFrame.unitFrame:SetUnit (nil)
 			
+			-- remove widgets
+			plateFrame.unitFrame.WidgetContainer:UnregisterForWidgetSet()
+			
 			--community patch by Ariani#0960 (discord)
 			--make the unitFrame be parented to UIParent allowing frames to be moved between strata levels
 			--March 3rd, 2019
