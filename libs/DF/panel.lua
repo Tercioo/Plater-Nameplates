@@ -1651,8 +1651,9 @@ function DF:IconPick (callback, close_when_select, param1, param2)
 				for j = offset, tabEnd - 1 do
 					--to get spell info by slot, you have to pass in a pet argument
 					local spellType, ID = GetSpellBookItemInfo (j, "player")
-					if (spellType ~= "FUTURESPELL") then
+					if (spellType ~= "FLYOUT") then
 						MACRO_ICON_FILENAMES [index] = GetSpellBookItemTexture (j, "player") or 0
+						SPELLNAMES_CACHE [index] = GetSpellInfo (ID)
 						index = index + 1
 						
 					elseif (spellType == "FLYOUT") then
@@ -1662,6 +1663,7 @@ function DF:IconPick (callback, close_when_select, param1, param2)
 								local spellID, overrideSpellID, isKnown = GetFlyoutSlotInfo (ID, k)
 								if (isKnown) then
 									MACRO_ICON_FILENAMES [index] = GetSpellTexture (spellID) or 0
+									SPELLNAMES_CACHE [index] = GetSpellInfo (spellID)
 									index = index + 1
 								end
 							end
@@ -1684,6 +1686,7 @@ function DF:IconPick (callback, close_when_select, param1, param2)
 		
 		DF.IconPickFrame:SetScript ("OnHide", function()
 			wipe (MACRO_ICON_FILENAMES)
+			wipe (SPELLNAMES_CACHE)
 			DF.IconPickFrame.preview:Hide()
 			collectgarbage()
 		end)
@@ -1836,23 +1839,10 @@ function DF:IconPick (callback, close_when_select, param1, param2)
 			local shown = 0
 			
 			if (filter and filter ~= "") then
-				if (#SPELLNAMES_CACHE == 0) then
-					--build name cache
-					local GetSpellInfo = GetSpellInfo
-					for i = 1, #MACRO_ICON_FILENAMES do
-						local spellName = GetSpellInfo (MACRO_ICON_FILENAMES [i])
-						if (spellName) then
-							SPELLNAMES_CACHE [i] = spellName
-						else
-							SPELLNAMES_CACHE [i] = MACRO_ICON_FILENAMES [i]
-						end
-					end
-				end
-				
 				--do the filter
 				pool = {}
 				for i = 1, #SPELLNAMES_CACHE do
-					if (SPELLNAMES_CACHE [i]:find (filter)) then
+					if (SPELLNAMES_CACHE [i] and SPELLNAMES_CACHE [i]:lower():find (filter)) then
 						pool [#pool+1] = MACRO_ICON_FILENAMES [i]
 						shown = shown + 1
 					end
