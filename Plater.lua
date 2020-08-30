@@ -3371,6 +3371,8 @@ Plater.DefaultSpellRangeListF = {
 			
 			plateFrame [MEMBER_QUEST] = false
 			plateFrame.unitFrame [MEMBER_QUEST] = false
+			plateFrame.QuestInfo = {}
+			plateFrame.unitFrame.QuestInfo = {}
 			plateFrame [MEMBER_TARGET] = nil
 			
 			local healthBar = plateFrame.unitFrame.healthBar
@@ -7362,6 +7364,8 @@ end
 		local wasQuestPlate = plateFrame [MEMBER_QUEST]
 		plateFrame [MEMBER_QUEST] = false
 		unitFrame [MEMBER_QUEST] = false
+		plateFrame.QuestInfo = {}
+		unitFrame.QuestInfo = {}
 		
 		plateFrame.ActorNameSpecial:Hide()
 		plateFrame.ActorTitleSpecial:Hide()
@@ -7378,13 +7382,9 @@ end
 			if (isQuestMob and not Plater.IsUnitTapDenied (plateFrame.unitFrame.unit)) then
 				if (plateFrame [MEMBER_REACTION] == UNITREACTION_NEUTRAL) then
 					Plater.ChangeHealthBarColor_Internal (healthBar, unpack (DB_PLATE_CONFIG [actorType].quest_color_neutral))
-					plateFrame [MEMBER_QUEST] = true
-					unitFrame [MEMBER_QUEST] = true
 					
 				else
 					Plater.ChangeHealthBarColor_Internal (healthBar, unpack (DB_PLATE_CONFIG [actorType].quest_color_enemy))
-					plateFrame [MEMBER_QUEST] = true
-					unitFrame [MEMBER_QUEST] = true
 				end
 			else
 				if (wasQuestPlate) then
@@ -7436,8 +7436,6 @@ end
 				--these twoseettings make the healthing dummy show the healthbar
 --				Plater.db.profile.plate_config.friendlynpc.only_names = false
 --				Plater.db.profile.plate_config.friendlynpc.all_names = false
-				plateFrame [MEMBER_QUEST] = true
-				unitFrame [MEMBER_QUEST] = true
 			
 			elseif (DB_PLATE_CONFIG [actorType].only_names) then
 				--show only the npc name without the health bar
@@ -8866,6 +8864,9 @@ end
 		
 		GameTooltipScanQuest:SetOwner (WorldFrame, "ANCHOR_NONE")
 		GameTooltipScanQuest:SetHyperlink ("unit:" .. plateFrame [MEMBER_GUID])
+		
+		local playerName = UnitName("player")
+		local unitQuestData = {}
 
 		--8.2 tooltip changes fix by GentMerc#9560 on Discord
 		for i = 1, GameTooltipScanQuest:NumLines() do
@@ -8879,13 +8880,29 @@ end
 			if (Plater.QuestCache [text]) then
 				--unit belongs to a quest
 				isQuestUnit = true
+				local isGroupQuest, yourQuest = nil, nil
+				local questData = {
+					questName = text,
+					questText = "",
+					finished = true,
+					groupQuest = false,
+					groupFinished = true,
+					amount = 0,
+					total = 0,
+					yourQuest = false,
+				}
 				local amount1, amount2, questText = nil, nil, nil
 				local j = i
 				while (ScanQuestTextCache [j+1]) do
 					--check if the unit objective isn't already done
 					local nextLineText = ScanQuestTextCache [j+1]:GetText()
 					if (nextLineText) then
-						if not nextLineText:match(THREAT_TOOLTIP) then
+						if nextLineText == playerName then
+							yourQuest = true
+							isGroupQuest = true
+							questData.yourQuest = true
+							questData.groupQuest = true
+						elseif not nextLineText:match(THREAT_TOOLTIP) then
 							local p1, p2 = nextLineText:match ("(%d+)/(%d+)") 
 							if (not p1) then
 								-- check for % based quests
@@ -8900,6 +8917,14 @@ end
 								-- quest not completed
 								atLeastOneQuestUnfinished = true
 								amount1, amount2 = p1, p2
+								questData.amount = amount1
+								questData.total = amount2
+								if yourQuest ~= false then
+									yourQuest = false
+									questData.finished = false
+								end
+								questData.groupFinished = false
+								questData.questText = nextLineText
 								questText = nextLineText
 							end
 						else
@@ -8919,13 +8944,26 @@ end
 					plateFrame.unitFrame.QuestAmountTotal = amount2
 					plateFrame.unitFrame.QuestText = questText
 				end
+				
+				if not isGroupQuest then
+					questData.yourQuest = true
+				end
+				
+				tinsert(unitQuestData, questData)
 			end
 		end
+		
+		plateFrame.QuestInfo = unitQuestData
+		plateFrame.unitFrame.QuestInfo = unitQuestData
 		
 		if isQuestUnit and atLeastOneQuestUnfinished then
 			plateFrame [MEMBER_QUEST] = true
 			plateFrame.unitFrame [MEMBER_QUEST] = true
 			return true
+		else
+			plateFrame [MEMBER_QUEST] = false
+			plateFrame.unitFrame [MEMBER_QUEST] = false
+			return false
 		end
 		
 	end
