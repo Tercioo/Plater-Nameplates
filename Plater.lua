@@ -884,16 +884,8 @@ Plater.DefaultSpellRangeListF = {
 		if (spec and class) then
 		
 			if (class == "PRIEST") then
-				--playing as shadow?
-				local specID = GetSpecializationInfo (spec)
-				if (specID and specID ~= 0) then
-					if (specID == 258) then --shadow
-						local _, _, _, using_SWDeath = GetTalentInfo (5, 2, 1)
-						if (using_SWDeath) then
-							Plater.SetExecuteRange (true, 0.20)
-						end
-					end
-				end
+				-- SW:D is available to all priest specs
+				Plater.SetExecuteRange (true, 0.20)
 				
 			elseif (class == "MAGE") then
 				--playing fire mage?
