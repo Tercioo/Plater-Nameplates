@@ -676,6 +676,7 @@ PLATER_DEFAULT_SETTINGS = {
 		aura_padding = 1, --space between each icon
 		aura_consolidate = false, --aura icons shown with the same name is stacked into only one
 		aura_consolidate_timeleft_lower = true, --when stacking auras with the same name, show the time left for the aura with the lesser remaining time
+		aura_sort = false, -- sort auras via sort function -> default by time left
 		
 		aura_alpha = 0.85,
 		aura_custom = {},

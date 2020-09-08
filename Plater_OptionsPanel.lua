@@ -1289,6 +1289,16 @@ local debuff_options = {
 		name = "Stack Similar Auras",
 		desc = "Auras with the same name (e.g. warlock's unstable affliction debuff) get stacked together.",
 	},
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_sort end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_sort = value
+			Plater.UpdateAllPlates()
+		end,
+		name = "Sort Auras",
+		desc = "Auras are sorted by time remaining (default).",
+	},
 	
 	{type = "blank"},
 	{type = "label", get = function() return "Aura Size (Frame 1):" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},

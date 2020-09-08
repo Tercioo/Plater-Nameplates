@@ -4599,6 +4599,13 @@ end
 		end
 	end
 	
+	
+	--sort aura icons according to this function. default is time remaining hight to low (l->r) with 0-duration on the left
+	function Plater.AuraIconsSortFunction (aura1, aura2)
+		return (aura1.Duration == 0 and 99999999 or aura1.RemainingTime or 0) < (aura2.Duration == 0 and 99999999 or aura2.RemainingTime or 0)
+		--return (aura1.Duration == 0 and 99999999 or aura1.RemainingTime or 0) > (aura2.Duration == 0 and 99999999 or aura2.RemainingTime or 0)
+	end
+	
 	--align the aura frame icons currently shown in buff container
 	--this function is called after Plater complete the aura update loop
 	--at this point, icons shown are reliable icons that has auras that are shown above the nameplate
@@ -4615,6 +4622,10 @@ end
 		
 			if (Plater.db.profile.aura_consolidate) then
 				Plater.ConsolidateAuraIcons (self)
+			end
+			
+			if (Plater.db.profile.aura_sort) then
+				table.sort (self.PlaterBuffList, Plater.AuraIconsSortFunction)
 			end
 		
 			local growDirection
@@ -5147,8 +5158,11 @@ end
 		
 		--> spell name must be update here and cannot be cached due to scripts
 		auraIconFrame.SpellName = spellName
+		auraIconFrame.SpellId = spellId
 		auraIconFrame.InUse = true
 		auraIconFrame.RemainingTime = max (expirationTime - GetTime(), 0)
+		auraIconFrame.Duration = duration
+		auraIconFrame.ExpirationTime = expirationTime
 		auraIconFrame:Show()
 		
 		--get the script object of the aura which will be showing in this icon frame
