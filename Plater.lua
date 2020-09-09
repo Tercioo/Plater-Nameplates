@@ -5162,6 +5162,7 @@ end
 		auraIconFrame.InUse = true
 		auraIconFrame.RemainingTime = max (expirationTime - GetTime(), 0)
 		auraIconFrame.Duration = duration
+		auraIconFrame.Stacks = count
 		auraIconFrame.ExpirationTime = expirationTime
 		auraIconFrame:Show()
 		
