@@ -1292,7 +1292,7 @@ Plater.DefaultSpellRangeListF = {
 
 	--> returns what member from the profile need to be used, since there's entries for in combat and out of combat
 	function Plater.GetHashKey (inCombat) --private
-		if (PLAYER_IN_COMBAT or inCombat) then
+		if (inCombat or (inCombat == nil and PLAYER_IN_COMBAT)) then
 			return "cast_incombat", "health_incombat", "mana_incombat"
 		else
 			return "cast", "health", "mana"
@@ -4087,6 +4087,7 @@ function Plater.OnInit() --private --~oninit ~init
 			end
 			
 			if (self.isNamePlate) then
+				local unitFrame = self.unitFrame
 				local shouldRunCastStartHook = false
 				
 				if (event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_CHANNEL_START") then
@@ -4129,7 +4130,7 @@ function Plater.OnInit() --private --~oninit ~init
 					self.FrameOverlay:SetBackdropBorderColor (0, 0, 0, 0)
 					
 					--cut the spell name text to fit within the castbar
-					Plater.UpdateSpellNameSize (self.Text, self.unitFrame.ActorType)
+					Plater.UpdateSpellNameSize (self.Text, unitFrame.ActorType, unitFrame.InCombat)
 
 					Plater.UpdateCastbarTargetText (self)
 
@@ -4148,7 +4149,7 @@ function Plater.OnInit() --private --~oninit ~init
 									icon:SetPoint("bottomright", self, "bottomleft", profile.castbar_icon_x_offset, 0)
 
 								elseif (profile.castbar_icon_size == "same as castbar plus healthbar") then
-									icon:SetPoint("topright", self.unitFrame.healthBar, "topleft", profile.castbar_icon_x_offset, 0)
+									icon:SetPoint("topright", unitFrame.healthBar, "topleft", profile.castbar_icon_x_offset, 0)
 									icon:SetPoint("bottomright", self, "bottomleft", profile.castbar_icon_x_offset, 0)
 								end
 
@@ -4158,7 +4159,7 @@ function Plater.OnInit() --private --~oninit ~init
 									icon:SetPoint("bottomleft", self, "bottomright", profile.castbar_icon_x_offset, 0)
 
 								elseif (profile.castbar_icon_size == "same as castbar plus healthbar") then
-									icon:SetPoint("topleft", self.unitFrame.healthBar, "topright", profile.castbar_icon_x_offset, 0)
+									icon:SetPoint("topleft", unitFrame.healthBar, "topright", profile.castbar_icon_x_offset, 0)
 									icon:SetPoint("bottomleft", self, "bottomright", profile.castbar_icon_x_offset, 0)
 								end
 							end
@@ -4197,7 +4198,6 @@ function Plater.OnInit() --private --~oninit ~init
 					if (HOOK_CAST_START.ScriptAmount > 0) then
 						for i = 1, HOOK_CAST_START.ScriptAmount do
 							local globalScriptObject = HOOK_CAST_START [i]
-							local unitFrame = self.unitFrame
 							local scriptContainer = unitFrame:ScriptGetContainer()
 							local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Cast Start")
 							
@@ -5869,7 +5869,7 @@ end
 		--get the config for this actor type
 		local plateConfigs = DB_PLATE_CONFIG [actorType]
 		--get the config key based if the player is in combat
-		local castBarConfigKey, healthBarConfigKey, manaConfigKey = Plater.GetHashKey (isInCombat)
+		local castBarConfigKey, healthBarConfigKey, manaConfigKey = Plater.GetHashKey (unitFrame.InCombat)
 
 		local healthBarWidth, healthBarHeight = unitFrame.customHealthBarWidth or plateConfigs [healthBarConfigKey][1], unitFrame.customHealthBarHeight or plateConfigs [healthBarConfigKey][2]
 		local castBarWidth, castBarHeight = unitFrame.customCastBarWidth or plateConfigs [castBarConfigKey][1], unitFrame.customCastBarHeight or plateConfigs [castBarConfigKey][2]
@@ -7253,14 +7253,14 @@ end
 		end
 	end
 
-	function Plater.UpdateSpellNameSize (nameString, actorType, cutOff)
+	function Plater.UpdateSpellNameSize (nameString, actorType, cutOff, inCombat)
 		local spellName = nameString:GetText()
 		local maxLength = Plater.MaxCastBarTextLength or 500
 		cutOff = cutOff or 40
 		actorType = actorType or "enemynpc"
 		
 		if (not Plater.db.profile.no_spellname_length_limit) then
-			local castKey = Plater.GetHashKey()
+			local castKey = Plater.GetHashKey(inCombat)
 			if Plater.db.profile.plate_config[actorType][castKey] then
 				maxLength = Plater.db.profile.plate_config[actorType][castKey][1] - cutOff
 			end
