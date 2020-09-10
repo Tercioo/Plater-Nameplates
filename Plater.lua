@@ -4130,7 +4130,7 @@ function Plater.OnInit() --private --~oninit ~init
 					self.FrameOverlay:SetBackdropBorderColor (0, 0, 0, 0)
 					
 					--cut the spell name text to fit within the castbar
-					Plater.UpdateSpellNameSize (self.Text, unitFrame.ActorType, unitFrame.InCombat)
+					Plater.UpdateSpellNameSize (self.Text, unitFrame.ActorType, nil, unitFrame.InCombat)
 
 					Plater.UpdateCastbarTargetText (self)
 
