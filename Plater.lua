@@ -7700,7 +7700,7 @@ end
 			elseif (zoneType == "raid") then
 				SetCVar ("nameplateShowFriends", Plater.db.profile.auto_toggle_friendly ["raid"] and CVAR_ENABLED or CVAR_DISABLED)
 				
-			elseif (zoneType == "arena") then
+			elseif (zoneType == "arena" or zoneType == "pvp") then
 				SetCVar ("nameplateShowFriends", Plater.db.profile.auto_toggle_friendly ["arena"] and CVAR_ENABLED or CVAR_DISABLED)
 				
 			else
@@ -7722,7 +7722,7 @@ end
 			elseif (zoneType == "raid") then
 				SetCVar ("nameplateMotion", Plater.db.profile.auto_toggle_stacking ["raid"] and CVAR_ENABLED or CVAR_DISABLED)
 				
-			elseif (zoneType == "arena") then
+			elseif (zoneType == "arena" or zoneType == "pvp") then
 				SetCVar ("nameplateMotion", Plater.db.profile.auto_toggle_stacking ["arena"] and CVAR_ENABLED or CVAR_DISABLED)
 				
 			else

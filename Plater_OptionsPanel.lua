@@ -11160,8 +11160,8 @@ local relevance_options = {
 				Plater.db.profile.auto_toggle_friendly ["arena"] = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "In Arena",
-			desc = "Show friendly nameplates when inside arena.",
+			name = "In Arena / BG",
+			desc = "Show friendly nameplates when inside arena or battleground.",
 		},
 		{
 			type = "toggle",
@@ -11229,8 +11229,8 @@ local relevance_options = {
 				Plater.db.profile.auto_toggle_stacking ["arena"] = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "In Arena",
-			desc = "Set stacking on when inside arena.",
+			name = "In Arena / BG",
+			desc = "Set stacking on when inside arena or battleground.",
 		},
 		{
 			type = "toggle",
