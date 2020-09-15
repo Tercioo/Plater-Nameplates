@@ -948,6 +948,7 @@ Plater.DefaultSpellRangeListF = {
 	function Plater.CheckRange (plateFrame, onAdded)
 
 		local unitFrame = plateFrame.unitFrame
+		local castBarFade = unitFrame.castBar.fadeOutAnimation:IsPlaying() --and Plater.db.profile.cast_statusbar_use_fade_effects
 		local nameplateAlpha = 1
 		if DB_USE_UIPARENT and Plater.db.profile.honor_blizzard_plate_alpha then
 		--if DB_USE_UIPARENT end
@@ -986,7 +987,6 @@ Plater.DefaultSpellRangeListF = {
 			return
 		end
 		
-		local castBarFade = unitFrame.castBar.fadeOutAnimation:IsPlaying() --and Plater.db.profile.cast_statusbar_use_fade_effects
 		
 		--alpha values
 		local inRangeAlpha
@@ -1065,7 +1065,9 @@ Plater.DefaultSpellRangeListF = {
 
 					unitFrame:SetAlpha (nameplateAlpha * inRangeAlpha * (notTheTarget and overallRangeCheckAlpha or 1))
 					healthBar:SetAlpha (inRangeAlpha * (notTheTarget and healthBar_rangeCheckAlpha or 1))
-					castBar:SetAlpha (inRangeAlpha * (notTheTarget and castBar_rangeCheckAlpha or 1))
+					if not castBarFade then
+						castBar:SetAlpha (inRangeAlpha * (notTheTarget and castBar_rangeCheckAlpha or 1))
+					end
 					powerBar:SetAlpha (inRangeAlpha * (notTheTarget and powerBar_rangeCheckAlpha or 1))
 					buffFrame1:SetAlpha (inRangeAlpha * (notTheTarget and buffFrames_rangeCheckAlpha or 1))
 					buffFrame2:SetAlpha (inRangeAlpha * (notTheTarget and buffFrames_rangeCheckAlpha or 1))
@@ -1079,7 +1081,9 @@ Plater.DefaultSpellRangeListF = {
 						--play animations (animation aren't while in development)
 						unitFrame:SetAlpha (nameplateAlpha * inRangeAlpha * (notTheTarget and overallRangeCheckAlpha or 1))
 						healthBar:SetAlpha (inRangeAlpha * (notTheTarget and healthBar_rangeCheckAlpha or 1))
-						castBar:SetAlpha (inRangeAlpha * (notTheTarget and castBar_rangeCheckAlpha or 1))
+						if not castBarFade then
+							castBar:SetAlpha (inRangeAlpha * (notTheTarget and castBar_rangeCheckAlpha or 1))
+						end
 						powerBar:SetAlpha (inRangeAlpha * (notTheTarget and powerBar_rangeCheckAlpha or 1))
 						buffFrame1:SetAlpha (inRangeAlpha * (notTheTarget and buffFrames_rangeCheckAlpha or 1))
 						buffFrame2:SetAlpha (inRangeAlpha * (notTheTarget and buffFrames_rangeCheckAlpha or 1))
@@ -1102,7 +1106,9 @@ Plater.DefaultSpellRangeListF = {
 
 					unitFrame:SetAlpha ((unitIsTarget and inRangeAlpha or overallRangeCheckAlpha) * nameplateAlpha * (notTheTarget and alphaMultiplier or 1))
 					healthBar:SetAlpha ((unitIsTarget and inRangeAlpha or healthBar_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
-					castBar:SetAlpha ((unitIsTarget and inRangeAlpha or castBar_rangeCheckAlpha) * (notTheTarget and alphaMultiplier  or 1))
+					if not castBarFade then
+						castBar:SetAlpha ((unitIsTarget and inRangeAlpha or castBar_rangeCheckAlpha) * (notTheTarget and alphaMultiplier  or 1))
+					end
 					powerBar:SetAlpha ((unitIsTarget and inRangeAlpha or powerBar_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
 					buffFrame1:SetAlpha ((unitIsTarget and inRangeAlpha or buffFrames_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
 					buffFrame2:SetAlpha ((unitIsTarget and inRangeAlpha or buffFrames_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
@@ -1124,7 +1130,9 @@ Plater.DefaultSpellRangeListF = {
 						
 						unitFrame:SetAlpha ((unitIsTarget and inRangeAlpha or overallRangeCheckAlpha) * nameplateAlpha * (notTheTarget and alphaMultiplier or 1))
 						healthBar:SetAlpha ((unitIsTarget and inRangeAlpha or healthBar_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
-						castBar:SetAlpha ((unitIsTarget and inRangeAlpha or castBar_rangeCheckAlpha) * (notTheTarget and alphaMultiplier  or 1))
+						if not castBarFade then
+							castBar:SetAlpha ((unitIsTarget and inRangeAlpha or castBar_rangeCheckAlpha) * (notTheTarget and alphaMultiplier  or 1))
+						end
 						powerBar:SetAlpha ((unitIsTarget and inRangeAlpha or powerBar_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
 						buffFrame1:SetAlpha ((unitIsTarget and inRangeAlpha or buffFrames_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
 						buffFrame2:SetAlpha ((unitIsTarget and inRangeAlpha or buffFrames_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
@@ -1145,7 +1153,9 @@ Plater.DefaultSpellRangeListF = {
 					if (not DF:IsNearlyEqual (unitFrame:GetAlpha(), nameplateAlpha * inRangeAlpha, 0.01)) then
 						unitFrame:SetAlpha (nameplateAlpha * inRangeAlpha)
 						healthBar:SetAlpha (inRangeAlpha)
-						castBar:SetAlpha (inRangeAlpha)
+						if not castBarFade then
+							castBar:SetAlpha (inRangeAlpha)
+						end
 						powerBar:SetAlpha (inRangeAlpha)
 						buffFrame1:SetAlpha (inRangeAlpha)
 						buffFrame2:SetAlpha (inRangeAlpha)
@@ -1157,7 +1167,9 @@ Plater.DefaultSpellRangeListF = {
 					if (not DF:IsNearlyEqual (unitFrame:GetAlpha(), nameplateAlpha * inRangeAlpha * overallRangeCheckAlpha, 0.01)) then
 						unitFrame:SetAlpha (nameplateAlpha * inRangeAlpha * overallRangeCheckAlpha)
 						healthBar:SetAlpha (inRangeAlpha * healthBar_rangeCheckAlpha)
-						castBar:SetAlpha (inRangeAlpha * castBar_rangeCheckAlpha)
+						if not castBarFade then
+							castBar:SetAlpha (inRangeAlpha * castBar_rangeCheckAlpha)
+						end
 						powerBar:SetAlpha (inRangeAlpha * powerBar_rangeCheckAlpha)
 						buffFrame1:SetAlpha (inRangeAlpha * buffFrames_rangeCheckAlpha)
 						buffFrame2:SetAlpha (inRangeAlpha * buffFrames_rangeCheckAlpha)
@@ -1169,7 +1181,9 @@ Plater.DefaultSpellRangeListF = {
 				plateFrame.FadedIn = true
 				unitFrame:SetAlpha (nameplateAlpha * inRangeAlpha)
 				healthBar:SetAlpha (1)
-				castBar:SetAlpha (1)
+				if not castBarFade then
+					castBar:SetAlpha (1)
+				end
 				powerBar:SetAlpha (1)
 				buffFrame1:SetAlpha (1)
 				buffFrame2:SetAlpha (1)
@@ -1179,7 +1193,9 @@ Plater.DefaultSpellRangeListF = {
 			plateFrame.FadedIn = true
 			unitFrame:SetAlpha (nameplateAlpha * inRangeAlpha)
 			healthBar:SetAlpha (1)
-			castBar:SetAlpha (1)
+			if not castBarFade then
+				castBar:SetAlpha (1)
+			end
 			powerBar:SetAlpha (1)
 			buffFrame1:SetAlpha (1)
 			buffFrame2:SetAlpha (1)
