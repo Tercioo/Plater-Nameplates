@@ -6710,14 +6710,14 @@ end
 		plateFrame.TargetNeonUp:SetVertexColor (unpack (color))
 		plateFrame.TargetNeonUp:SetAlpha (alpha)
 		plateFrame.TargetNeonUp:SetTexture (texture)
-		PixelUtil.SetHeight (plateFrame.TargetNeonUp, height)
+		plateFrame.TargetNeonUp:SetHeight (height)
 		PixelUtil.SetPoint (plateFrame.TargetNeonUp, "bottomleft", healthBar, "topleft", 0, 0)
 		PixelUtil.SetPoint (plateFrame.TargetNeonUp, "bottomright", healthBar, "topright", 0, 0)
 
 		plateFrame.TargetNeonDown:SetVertexColor (unpack (color))
 		plateFrame.TargetNeonDown:SetAlpha (alpha)
 		plateFrame.TargetNeonDown:SetTexture (texture)
-		PixelUtil.SetHeight (plateFrame.TargetNeonDown, height)
+		plateFrame.TargetNeonDown:SetHeight (height)
 		PixelUtil.SetPoint (plateFrame.TargetNeonDown, "topleft", healthBar, "bottomleft", 0, 0)
 		PixelUtil.SetPoint (plateFrame.TargetNeonDown, "topright", healthBar, "bottomright", 0, 0)
 	end
