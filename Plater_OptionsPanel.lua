@@ -6192,6 +6192,16 @@ local relevance_options = {
 
 		{
 			type = "toggle",
+			get = function() return Plater.db.profile.indicator_worldboss end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_worldboss = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Worldboss Icon",
+			desc = "Show when the actor is elite.",
+		},
+		{
+			type = "toggle",
 			get = function() return Plater.db.profile.indicator_elite end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.indicator_elite = value

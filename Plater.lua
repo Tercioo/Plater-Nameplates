@@ -7842,7 +7842,7 @@ end
 
 			--classification
 			local unitClassification = UnitClassification (plateFrame.unitFrame [MEMBER_UNITID]) --elite minus normal rare rareelite worldboss
-			if (unitClassification == "worldboss") then
+			if (unitClassification == "worldboss" and config.indicator_worldboss) then
 				Plater.AddIndicator (plateFrame, "worldboss")
 				
 			elseif (unitClassification == "rareelite" and (config.indicator_rare or config.indicator_elite)) then

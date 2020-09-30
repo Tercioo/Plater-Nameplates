@@ -2448,6 +2448,7 @@ PLATER_DEFAULT_SETTINGS = {
 		
 		indicator_faction = true,
 		indicator_spec = true,
+		indicator_worldboss = true,
 		indicator_elite = true,
 		indicator_rare = true,
 		indicator_quest = true,
