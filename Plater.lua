@@ -4190,7 +4190,7 @@ function Plater.OnInit() --private --~oninit ~init
 					end
 					
 					self:OnHideWidget()
-					self.IsInterrupted = true
+					--self.IsInterrupted = true
 					
 				end
 				
