@@ -8259,8 +8259,8 @@ end
 
 	function Plater.CreateAggroFlashFrame (plateFrame) --private
 
-		--local f_anim = CreateFrame ("frame", nil, plateFrame.unitFrame.healthBar)
-		local f_anim = CreateFrame ("frame", nil, plateFrame, BackdropTemplateMixin and "BackdropTemplate")
+		local f_anim = CreateFrame ("frame", nil, plateFrame.unitFrame.healthBar, BackdropTemplateMixin and "BackdropTemplate")
+		--local f_anim = CreateFrame ("frame", nil, plateFrame, BackdropTemplateMixin and "BackdropTemplate")
 		f_anim:SetFrameLevel (plateFrame.unitFrame.healthBar:GetFrameLevel()+3)
 		f_anim:SetPoint ("topleft", plateFrame.unitFrame.healthBar, "topleft")
 		f_anim:SetPoint ("bottomright", plateFrame.unitFrame.healthBar, "bottomright")
