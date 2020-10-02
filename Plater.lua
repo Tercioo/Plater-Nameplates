@@ -9641,8 +9641,6 @@ end
 		return f
 	end
 
-	
-
 	function Plater.OnPlayCustomFlashAnimation (animationHub)
 		animationHub:GetParent():Show()
 		animationHub.Texture:Show()
