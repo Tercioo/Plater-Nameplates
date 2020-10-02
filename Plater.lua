@@ -376,6 +376,7 @@ Plater.TargetHighlights = {
 	[[Interface\AddOns\Plater\images\selection_indicator4]],
 	[[Interface\AddOns\Plater\images\selection_indicator5]],
 	[[Interface\AddOns\Plater\images\selection_indicator6]],
+	[[Interface\AddOns\Plater\images\selection_indicator7]],
 }
 
 --> icons available for any purpose
@@ -9639,6 +9640,8 @@ end
 		
 		return f
 	end
+
+	
 
 	function Plater.OnPlayCustomFlashAnimation (animationHub)
 		animationHub:GetParent():Show()
