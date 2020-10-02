@@ -4,7 +4,7 @@ local DF = _G.DetailsFramework
 local AnimateTexCoords = _G.AnimateTexCoords
 
 
-local pointTexturesInfo = {
+local dotTexturesInfo = {
     {
         texture = [[Interface\AddOns\Plater\images\ants_rectangle]],
         width = 512,
@@ -52,56 +52,36 @@ local pointTexturesInfo = {
     },
 }
 
-local pointTextureOnUpdateFunc = function(self, deltaTime)
-    AnimateTexCoords(self.pointTexture, self.textureInfo.width, self.textureInfo.height, self.textureInfo.partWidth, self.textureInfo.partHeight, self.textureInfo.partAmount, deltaTime, self.textureInfo.throttle)
+local dotTextureOnUpdateFunc = function(self, deltaTime)
+    AnimateTexCoords(self.dotTexture, self.textureInfo.width, self.textureInfo.height, self.textureInfo.partWidth, self.textureInfo.partHeight, self.textureInfo.partAmount, deltaTime, self.textureInfo.throttle)
 end
 
-function Plater.StopPointsAnimation(frame, pointFrame)
-    if (pointFrame) then
-        pointFrame:SetScript("OnUpdate", nil)
-        pointFrame:ClearAllPoints()
-        pointFrame:Hide()
-        Plater.pointsAnimationFrames:Release(pointFrame)
+--play an animation with dots around the nameplate
+--@frame: parent frame
+--@textureId: which dot texture to use, goes from 1 to 5
+--@color: accept color name "yellow", rgba{1, .7, .2, 1}, {r = 1, g = 1, b = 1, a = 1}
+--@xOffset: adjust the left and right padding
+--@yOffset: adjust the bottom and top padding
+--@blendMode: default "ADD", shouldn't be changed
+--@throttleOverride: override the animation speed, default 0.016
+--this function return a frame to be used on StopDotsAnimation()
+function Plater.PlayDotAnimation(frame, textureId, color, xOffset, yOffset, blendMode, throttleOverride)
+    --stores all dot animations active in the frame
+    frame.dotTextureAnimations = frame.dotTextureAnimations or {}
 
-        --remove the pointFrame from the parent
-        for i = 1, #frame.pointTextureAnimations do
-            if (frame.pointTextureAnimations[i] == pointFrame) then
-                tremove(frame.pointTextureAnimations, i)
-                break
-            end
-        end
-        --print("removed", Plater.pointsAnimationFrames:GetAmount()) --debug
-    else
-        --remove all animations
-        for i = #frame.pointTextureAnimations, 1, -1 do
-            local pointFrame = frame.pointTextureAnimations[i]
-            pointFrame:SetScript("OnUpdate", nil)
-            pointFrame:ClearAllPoints()
-            pointFrame:Hide()
-            Plater.pointsAnimationFrames:Release(pointFrame)
-            tremove(frame.pointTextureAnimations, i)
-            --print("removed", Plater.pointsAnimationFrames:GetAmount()) --debug
-        end
-    end
-end
-
-function Plater.PlayPointsAnimation(frame, textureId, color, xOffset, yOffset, blendMode, throttleOverride)
-    --stores all point animations active in the frame
-    frame.pointTextureAnimations = frame.pointTextureAnimations or {}
-
-    if (not Plater.pointsAnimationFrames) then
+    if (not Plater.dotAnimationFrames) then
         local createObjectFunc = function()
             --make a new frame
             local newFrame = CreateFrame("frame", nil, UIParent)
 
-            --make the texture which will show the points
-            local pointTexture = newFrame:CreateTexture(nil, "overlay")
-            newFrame.pointTexture = pointTexture
-            pointTexture:SetAllPoints()
+            --make the texture which will show the dots
+            local dotTexture = newFrame:CreateTexture(nil, "overlay")
+            newFrame.dotTexture = dotTexture
+            dotTexture:SetAllPoints()
 
             return newFrame
         end
-        Plater.pointsAnimationFrames = DF:CreatePool(createObjectFunc)
+        Plater.dotAnimationFrames = DF:CreatePool(createObjectFunc)
     end
 
     xOffset = xOffset or 0
@@ -111,36 +91,69 @@ function Plater.PlayPointsAnimation(frame, textureId, color, xOffset, yOffset, b
     blendMode = blendMode or "ADD"
 
     --setup the frame
-    local pointFrame = Plater.pointsAnimationFrames:Acquire()
-    pointFrame:SetParent(frame)
-    pointFrame:ClearAllPoints()
-    pointFrame:SetFrameLevel(frame:GetFrameLevel()+1)
-    pointFrame:SetPoint("topleft", frame, "topleft", -xOffset, yOffset)
-    pointFrame:SetPoint("bottomright", frame, "bottomright", xOffset, -yOffset)
-    pointFrame:Show()
+    local dotFrame = Plater.dotAnimationFrames:Acquire()
+    dotFrame:SetParent(frame)
+    dotFrame:ClearAllPoints()
+    dotFrame:SetFrameLevel(frame:GetFrameLevel()+1)
+    dotFrame:SetPoint("topleft", frame, "topleft", -xOffset, yOffset)
+    dotFrame:SetPoint("bottomright", frame, "bottomright", xOffset, -yOffset)
+    dotFrame:Show()
 
     --setup the texture
-    local textureInfo = DF.table.copy({}, pointTexturesInfo[textureId])
+    local textureInfo = DF.table.copy({}, dotTexturesInfo[textureId])
     textureInfo.throttle = throttleOverride or textureInfo.throttle
 
-    pointFrame.textureInfo = textureInfo
-    pointFrame.pointTexture:SetTexture(textureInfo.texture)
-    pointFrame.pointTexture:SetVertexColor(DF:ParseColors(color))
-    pointFrame.pointTexture:SetBlendMode(blendMode)
-    pointFrame.pointTexture:SetTexCoord(0, 1, 0, 1)
+    dotFrame.textureInfo = textureInfo
+    dotFrame.dotTexture:SetTexture(textureInfo.texture)
+    dotFrame.dotTexture:SetVertexColor(DF:ParseColors(color))
+    dotFrame.dotTexture:SetBlendMode(blendMode)
+    dotFrame.dotTexture:SetTexCoord(0, 1, 0, 1)
 
     --clear AnimateTexCoords() stuff added in the texture
-    pointFrame.pointTexture.frame = nil
-    pointFrame.pointTexture.throttle = nil
-    pointFrame.pointTexture.numColumns = nil
-    pointFrame.pointTexture.numRows = nil
-    pointFrame.pointTexture.columnWidth = nil
-    pointFrame.pointTexture.rowHeight = nil
+    dotFrame.dotTexture.frame = nil
+    dotFrame.dotTexture.throttle = nil
+    dotFrame.dotTexture.numColumns = nil
+    dotFrame.dotTexture.numRows = nil
+    dotFrame.dotTexture.columnWidth = nil
+    dotFrame.dotTexture.rowHeight = nil
 
-    tinsert(frame.pointTextureAnimations, pointFrame)
+    tinsert(frame.dotTextureAnimations, dotFrame)
 
     --scripts
-    pointFrame:SetScript("OnUpdate", pointTextureOnUpdateFunc)
-    --print("added", Plater.pointsAnimationFrames:GetAmount()) --debug
-    return pointFrame
+    dotFrame:SetScript("OnUpdate", dotTextureOnUpdateFunc)
+    --print("added", Plater.dotsAnimationFrames:GetAmount()) --debug
+    return dotFrame
+end
+
+--stop an animation
+--@frame: the parent frame used on PlayDotAnimation()
+--@dotFrame: the frame returned from PlayDotAnimation()
+--if no @dotFrame, it'll stop all point animations in the frame
+function Plater.StopDotAnimation(frame, dotFrame)
+    if (dotFrame) then
+        dotFrame:SetScript("OnUpdate", nil)
+        dotFrame:ClearAllPoints()
+        dotFrame:Hide()
+        Plater.dotAnimationFrames:Release(dotFrame)
+
+        --remove the dotFrame from the parent
+        for i = 1, #frame.dotTextureAnimations do
+            if (frame.dotTextureAnimations[i] == dotFrame) then
+                tremove(frame.dotTextureAnimations, i)
+                break
+            end
+        end
+        --print("removed", Plater.dotAnimationFrames:GetAmount()) --debug
+    else
+        --remove all animations
+        for i = #frame.dotTextureAnimations, 1, -1 do
+            local dotFrame = frame.dotTextureAnimations[i]
+            dotFrame:SetScript("OnUpdate", nil)
+            dotFrame:ClearAllPoints()
+            dotFrame:Hide()
+            Plater.dotAnimationFrames:Release(dotFrame)
+            tremove(frame.dotTextureAnimations, i)
+            --print("removed", Plater.dotAnimationFrames:GetAmount()) --debug
+        end
+    end
 end
