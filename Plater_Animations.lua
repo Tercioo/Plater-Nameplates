@@ -50,6 +50,15 @@ local dotTexturesInfo = {
         partAmount = 63,
         throttle = 0.016
     },
+    {
+        texture = [[Interface\AddOns\Plater\images\ants_square_white1]],
+        width = 1024,
+        height = 512,
+        partWidth = 64,
+        partHeight = 64,
+        partAmount = 74, --79
+        throttle = 0.016
+    },
 }
 
 local dotTextureOnUpdateFunc = function(self, deltaTime)
