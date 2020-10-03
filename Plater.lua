@@ -4216,6 +4216,7 @@ function Plater.OnInit() --private --~oninit ~init
 							scriptEnv._RemainingTime = max (self.SpellEndTime - GetTime(), 0)
 							scriptEnv._CanStealOrPurge = self.CanStealOrPurge
 							scriptEnv._AuraType = self.AuraType
+							scriptEnv._CastBarHeight = unitFrame.castBar:GetHeight()
 							
 							--run
 							unitFrame:ScriptRunHook (scriptInfo, "Cast Start", self)
@@ -10087,6 +10088,8 @@ end
 		ScriptRunOnShow = function (self, scriptInfo)
 			--dispatch the on show script
 			local unitFrame = self.unitFrame or self
+			scriptInfo.Env._DefaultWidth = self:GetWidth()
+			scriptInfo.Env._DefaultHeight = self:GetHeight()
 			local okay, errortext = pcall (scriptInfo.GlobalScriptObject ["OnShowCode"], self, unitFrame.displayedUnit or unitFrame.unit or unitFrame.PlateFrame[MEMBER_UNITID], unitFrame, scriptInfo.Env, PLATER_GLOBAL_SCRIPT_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.Name])
 			if (not okay) then
 				Plater:Msg ("Script |cFFAAAA22" .. scriptInfo.GlobalScriptObject.DBScriptObject.Name .. "|r OnShow error: " .. errortext)
