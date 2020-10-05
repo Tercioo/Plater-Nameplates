@@ -1091,12 +1091,12 @@ end
 		local script_options_background_size = {620, 453}
 		local options_frame_width = 407
 		local options_frame_shared_height = 100
-		local options_frame_widget_options_height = 284
+		local options_frame_widget_options_height = 259
 		
 		if (_G.PlaterOptionsPanelContainer.AllFrames[PLATER_OPTIONS_SCRIPTING_TAB] == mainFrame) then --scripting tab
-			script_options_background_size = {620, 413}
+			script_options_background_size = {620, 407}
 			script_options_scroll_size = {170, 369}
-			options_frame_widget_options_height = 264
+			options_frame_widget_options_height = 264 - 25
 			script_options_topleft_anchor = {230, -25}
 			options_frame_width = 420
 		end
@@ -1149,7 +1149,7 @@ end
 				docs_button:SetFrameLevel(adminFrame:GetFrameLevel()+11)
 
 				if (mainFrame:GetName() == "PlaterOptionsPanelContainerScripting") then
-					save_script_button:SetPoint ("topright", mainFrame.CodeEditorLuaEntry, "bottomright", 0, 10)
+					save_script_button:SetPoint ("topright", mainFrame.CodeEditorLuaEntry, "bottomright", 0, 21)
 				else
 					save_script_button:SetPoint ("topright", mainFrame.CodeEditorLuaEntry, "bottomright", 0, -25)
 				end
@@ -1177,7 +1177,7 @@ end
 				docs_button:SetFrameLevel(userFrame:GetFrameLevel()+11)
 
 				if (mainFrame:GetName() == "PlaterOptionsPanelContainerScripting") then
-					save_script_button:SetPoint ("topright", mainFrame.CodeEditorLuaEntry, "bottomright", 0, 10)
+					save_script_button:SetPoint ("topright", mainFrame.CodeEditorLuaEntry, "bottomright", 0, 21)
 				else
 					save_script_button:SetPoint ("topright", mainFrame.CodeEditorLuaEntry, "bottomright", 0, -25)
 				end
