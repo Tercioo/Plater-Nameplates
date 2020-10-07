@@ -773,7 +773,8 @@ local align_rows = function (self)
 	end
 
 	local cur_width = 0
-	local row_width = self._width / rows_shown
+	local row_width = self._width / max (rows_shown, 0.0001)
+	
 
 	local sindex = 1
 	
@@ -5083,6 +5084,9 @@ function DF:CreateTitleBar (f, titleText)
 	f.TitleBar = titleBar
 	f.CloseButton = closeButton
 	f.TitleLabel = titleLabel
+	
+	titleBar.CloseButton = closeButton
+	titleBar.Text = titleLabel
 	
 	DF:Mixin (f, DF.TitleFunctions)
 	

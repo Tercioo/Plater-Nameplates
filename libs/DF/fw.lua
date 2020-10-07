@@ -1,5 +1,5 @@
 
-local dversion = 205
+local dversion = 209
 
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
@@ -2781,6 +2781,7 @@ local glow_overlay_play = function (self)
 		self.animOut:Stop()
 	end
 	if (not self.animIn:IsPlaying()) then
+		self.animIn:Stop()
 		self.animIn:Play()
 	end
 end
@@ -4039,7 +4040,7 @@ do
 
 	--return the amount of objects 
 		local getamount = function(self)
-			return #self.notUse + #self.inUse
+			return #self.notUse + #self.inUse, #self.notUse, #self.inUse
 		end
     
     local poolMixin = {
@@ -4072,4 +4073,122 @@ do
 	end
     
 end
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+--> forbidden functions on scripts
+
+	--these are functions which scripts cannot run due to security issues
+	local forbiddenFunction = {
+		--block mail, trades, action house, banks
+		["C_AuctionHouse"] 	= true,
+		["C_Bank"] = true,
+		["C_GuildBank"] = true,
+		["SetSendMailMoney"] = true,
+		["SendMail"]		= true,
+		["SetTradeMoney"]	= true,
+		["AddTradeMoney"]	= true,
+		["PickupTradeMoney"]	= true,
+		["PickupPlayerMoney"]	= true,
+		["AcceptTrade"]		= true,
+
+		--frames
+		["BankFrame"] 		= true,
+		["TradeFrame"]		= true,
+		["GuildBankFrame"] 	= true,
+		["MailFrame"]		= true,
+		["EnumerateFrames"] = true,
+
+		--block run code inside code
+		["RunScript"] = true,
+		["securecall"] = true,
+		["getfenv"] = true,
+		["getfenv"] = true,
+		["loadstring"] = true,
+		["pcall"] = true,
+		["xpcall"] = true,
+		["getglobal"] = true,
+		["setmetatable"] = true,
+		["DevTools_DumpCommand"] = true,
+
+		--avoid creating macros
+		["SetBindingMacro"] = true,
+		["CreateMacro"] = true,
+		["EditMacro"] = true,
+		["hash_SlashCmdList"] = true,
+		["SlashCmdList"] = true,
+
+		--block guild commands
+		["GuildDisband"] = true,
+		["GuildUninvite"] = true,
+
+		--other things
+		["C_GMTicketInfo"] = true,
+
+		--deny messing addons with script support
+		["PlaterDB"] = true,
+		["_detalhes_global"] = true,
+		["WeakAurasSaved"] = true,
+	}
+
+	local C_RestrictedSubFunctions = {
+		["C_GuildInfo"] = {
+			["RemoveFromGuild"] = true,
+		},
+	}
+
+	--not in use, can't find a way to check within the environment handle
+	local addonRestrictedFunctions = {
+		["DetailsFramework"] = {
+			["SetEnvironment"] = true,
+		},
+
+		["Plater"] = {
+			["ImportScriptString"] = true,
+			["db"] = true,
+		},
+
+		["WeakAuras"] = {
+			["Add"] = true,
+			["AddMany"] = true,
+			["Delete"] = true,
+			["NewAura"] = true,
+		},
+	}
+
+    local C_SubFunctionsTable = {}
+    for globalTableName, functionTable in pairs(C_RestrictedSubFunctions) do
+        C_SubFunctionsTable [globalTableName] = {}
+        for functionName, functionObject in pairs(_G[globalTableName]) do
+            if (not functionTable[functionName]) then
+                C_SubFunctionsTable [globalTableName][functionName] = functionObject
+            end
+        end
+    end
+	
+	DF.DefaultSecureScriptEnvironmentHandle = {
+		__index = function (env, key)
+
+			if (forbiddenFunction[key]) then
+				return nil
+
+			elseif (key == "_G") then
+				return env
+				
+			elseif (C_SubFunctionsTable[key]) then
+				return C_SubFunctionsTable[key]
+			end
+
+			return _G[key]
+		end
+	}
+
+	function DF:SetEnvironment(func, environmentHandle)
+		environmentHandle = environmentHandle or DF.DefaultSecureScriptEnvironmentHandle
+
+		local newEnvironment = {}
+
+		setmetatable(newEnvironment, environmentHandle)
+		_G.setfenv(func, newEnvironment)
+	end
 
