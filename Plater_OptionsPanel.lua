@@ -9373,9 +9373,9 @@ end
 		--out of combat
 		{
 			type = "toggle",
-			get = function() return Plater.db.profile.plate_config.friendlyplayer.percent_text_ooc end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.percent_text_ooc end,
 			set = function (self, fixedparam, value) 
-				Plater.db.profile.plate_config.friendlyplayer.percent_text_ooc = value
+				Plater.db.profile.plate_config.friendlynpc.percent_text_ooc = value
 				
 				Plater.UpdateAllPlates()
 			end,
