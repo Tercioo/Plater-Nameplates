@@ -1134,7 +1134,6 @@ Plater.DefaultSpellRangeListF = {
 						powerBar:SetAlpha ((unitIsTarget and inRangeAlpha or powerBar_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
 						buffFrame1:SetAlpha ((unitIsTarget and inRangeAlpha or buffFrames_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
 						buffFrame2:SetAlpha ((unitIsTarget and inRangeAlpha or buffFrames_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
-
 					end
 					plateFrame [MEMBER_RANGE] = false
 					plateFrame.unitFrame [MEMBER_RANGE] = false
