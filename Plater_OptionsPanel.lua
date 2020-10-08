@@ -6154,6 +6154,69 @@ local relevance_options = {
 			desc = "How thick the border should be.\n\n|cFFFFFF00Important|r: right click the slider to manually type the value.",
 		},
 
+		{type = "blank"},
+
+		{ --global healthbar width
+			type = "range",
+			get = function() return Plater.db.profile.plate_config.enemynpc.health[1] end,
+			set = function (self, fixedparam, value) 
+
+				local plateConfig = Plater.db.profile.plate_config
+
+				plateConfig.friendlyplayer.health[1] = value
+				plateConfig.friendlyplayer.health_incombat[1] = value
+
+				plateConfig.enemyplayer.health[1] = value
+				plateConfig.enemyplayer.health_incombat[1] = value
+
+				plateConfig.friendlynpc.health[1] = value
+				plateConfig.friendlynpc.health_incombat[1] = value
+
+				plateConfig.enemynpc.health[1] = value
+				plateConfig.enemynpc.health_incombat[1] = value
+
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates(nil, true)
+				PlaterOptionsPanelFrame.RefreshOptionsFrame()
+			end,
+			min = 50,
+			max = 300,
+			step = 1,
+			name = "Health Bar Width",
+			desc = "Change the width of Enemy and Friendly nameplates for players and npcs in combat and out of combat.\n\nEach one of these options can be changed individually on Enemy Npc, Enemy Player tabs.",
+		},
+
+		{ --global healthbar height
+			type = "range",
+			get = function() return Plater.db.profile.plate_config.enemynpc.health[2] end,
+			set = function (self, fixedparam, value) 
+
+				local plateConfig = Plater.db.profile.plate_config
+
+				plateConfig.friendlyplayer.health[2] = value
+				plateConfig.friendlyplayer.health_incombat[2] = value
+
+				plateConfig.enemyplayer.health[2] = value
+				plateConfig.enemyplayer.health_incombat[2] = value
+
+				plateConfig.friendlynpc.health[2] = value
+				plateConfig.friendlynpc.health_incombat[2] = value
+
+				plateConfig.enemynpc.health[2] = value
+				plateConfig.enemynpc.health_incombat[2] = value
+
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates(nil, true)
+				PlaterOptionsPanelFrame.RefreshOptionsFrame()
+			end,
+			min = 1,
+			max = 100,
+			step = 1,
+			name = "Health Bar Height",
+			desc = "Change the height of Enemy and Friendly nameplates for players and npcs in combat and out of combat.\n\nEach one of these options can be changed individually on Enemy Npc, Enemy Player tabs.",
+		},
+
+
 		{type = "breakline"},
 		{type = "label", get = function() return "Indicators:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		

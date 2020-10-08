@@ -5512,7 +5512,6 @@ end
 							can_show_this_debuff = true
 						end
 						
-
 						--> check for special auras auto added by setting like 'show crowd control' or 'show dispellable'
 						--> SPECIAL_AURAS_AUTO_ADDED has a list of crowd control not do not have a list of dispellable, so check if canStealOrPurge
 						--> in addition, we want to check if enrage tracking is enabled and show enrage effects
@@ -5520,7 +5519,6 @@ end
 							Plater.AddExtraIcon (self, name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
 							can_show_this_debuff = false
 						end
-
 					end
 					
 					--> check for special auras added by the user it self
