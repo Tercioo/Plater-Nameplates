@@ -1,4 +1,4 @@
-## Interface: 80300
+## Interface: 90002
 ## Title: Plater
 ## Notes: Nameplate addon designed for advanced users.
 ## SavedVariables: PlaterDB
@@ -33,3 +33,5 @@ Plater_Designer.lua
 Plater_ChangeLog.lua
 Plater_Docs.lua
 Plater_BossModsSupport.lua
+Plater_Animations.lua
+#Plater_SpellPrediction.lua

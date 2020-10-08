@@ -517,6 +517,11 @@ PLATER_DEFAULT_SETTINGS = {
 		transparency_behavior = 0x1,
 		transparency_behavior_use_division = false,
 		non_targeted_alpha_enabled = false,
+		transparency_behavior_on_enemies = true,
+		honor_blizzard_plate_alpha = false,
+		
+		
+		transparency_behavior_on_friendlies = false,
 		
 		quick_hide = false, --hide the nameplate when the unit hits 0 health points | making disabled by default, this maybe is bugging hunters FD
 		
@@ -586,6 +591,7 @@ PLATER_DEFAULT_SETTINGS = {
 		
 		no_spellname_length_limit = false,
 		
+		--> castbar target name
 		castbar_target_show = false,
 		castbar_target_anchor = {side = 5, x = 0, y = 0},
 		castbar_target_text_size = 10,
@@ -594,6 +600,14 @@ PLATER_DEFAULT_SETTINGS = {
 		castbar_target_shadow_color_offset = {1, -1},
 		castbar_target_color = {0.968627, 0.992156, 1, 1},
 		castbar_target_font = "Arial Narrow",
+
+		--> castbar icon
+		castbar_icon_customization_enabled = true,
+		castbar_icon_show = true,
+		castbar_icon_attach_to_side = "left", --"right"
+		castbar_icon_size = "same as castbar", --"same as castbar plus healthbar"
+		castbar_icon_x_offset = 0,
+		
 		
 		--> store spells from the latest event the player has been into
 		captured_spells = {},
@@ -616,7 +630,7 @@ PLATER_DEFAULT_SETTINGS = {
 		health_cutoff_extra_glow = false,
 		health_cutoff_hide_divisor = false,
 		
-		update_throttle = 0.25,
+		update_throttle = 0.120,
 		culling_distance = 100,
 		use_playerclass_color = true, --friendly player
 		
@@ -662,6 +676,7 @@ PLATER_DEFAULT_SETTINGS = {
 		aura_padding = 1, --space between each icon
 		aura_consolidate = false, --aura icons shown with the same name is stacked into only one
 		aura_consolidate_timeleft_lower = true, --when stacking auras with the same name, show the time left for the aura with the lesser remaining time
+		aura_sort = false, -- sort auras via sort function -> default by time left
 		
 		aura_alpha = 0.85,
 		aura_custom = {},
@@ -783,6 +798,13 @@ PLATER_DEFAULT_SETTINGS = {
 		range_check_buffs_alpha = 1,
 		range_check_power_bar_alpha = 1,
 		range_check_in_range_or_target_alpha = 0.9, 
+		
+		range_check_alpha_friendlies = 0.65, --overall as it set in the unitFrame
+		range_check_health_bar_alpha_friendlies = 1,
+		range_check_cast_bar_alpha_friendlies = 1,
+		range_check_buffs_alpha_friendlies = 1,
+		range_check_power_bar_alpha_friendlies = 1,
+		range_check_in_range_or_target_alpha_friendlies = 0.9,
 		
 		target_highlight = true,
 		target_highlight_alpha = 0.75,
@@ -2426,6 +2448,7 @@ PLATER_DEFAULT_SETTINGS = {
 		
 		indicator_faction = true,
 		indicator_spec = true,
+		indicator_worldboss = true,
 		indicator_elite = true,
 		indicator_rare = true,
 		indicator_quest = true,

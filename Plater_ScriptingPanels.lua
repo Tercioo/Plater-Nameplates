@@ -29,8 +29,8 @@ local function round(x)
 end
 
 --tab indexes
-local PLATER_OPTIONS_SCRIPTING_TAB = 5
-local PLATER_OPTIONS_HOOKING_TAB = 6
+local PLATER_OPTIONS_SCRIPTING_TAB = 6
+local PLATER_OPTIONS_HOOKING_TAB = 7
 
 --options
 local start_y = -130
@@ -63,6 +63,15 @@ local options_dropdown_template = DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_
 local options_switch_template = DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_TEMPLATE")
 local options_slider_template = DF:GetTemplate ("slider", "OPTIONS_SLIDER_TEMPLATE")
 local options_button_template = DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE")
+
+options_dropdown_template = DF.table.copy({}, options_dropdown_template)
+options_dropdown_template.backdropcolor = {.2, .2, .2, .8}
+
+options_slider_template = DF.table.copy({}, options_slider_template)
+options_slider_template.backdropcolor = {.2, .2, .2, .8}
+
+options_button_template = DF.table.copy({}, options_button_template)
+options_button_template.backdropcolor = {.2, .2, .2, .8}
 
 Plater.APIList = {
 	{Name = "SetNameplateColor", 		Signature = "Plater.SetNameplateColor (unitFrame, color)", 				Desc = "Set the color of the nameplate.\n\nColor formats are:\n|cFFFFFF00Just Values|r: r, g, b\n|cFFFFFF00Index Table|r: {r, g, b}\n|cFFFFFF00Hash Table|r: {r = 1, g = 1, b = 1}\n|cFFFFFF00Hex|r: '#FFFF0000' or '#FF0000'\n|cFFFFFF00Name|r: 'yellow' 'white'\n\nCalling without passing width and height reset the color to default."},
@@ -279,7 +288,7 @@ local openURL = function(url)
 		
 		DF:CreateBorder (f)
 		
-		local LinkBox = DF:CreateTextEntry (f, function()end, 380, 20, "ExportLinkBox", _, _, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+		local LinkBox = DF:CreateTextEntry (f, function()end, 380, 20, "ExportLinkBox", _, _, options_dropdown_template)
 		LinkBox:SetPoint ("center", f, "center", 0, -10)
 		PlaterURLFrameHelper.linkBox = LinkBox
 		
@@ -769,7 +778,7 @@ end
 	--create a line in the scroll box
 	local create_line_scrollbox = function (self, index)
 		--create a new line
-		local line = CreateFrame ("button", "$parentLine" .. index, self)
+		local line = CreateFrame ("button", "$parentLine" .. index, self, BackdropTemplateMixin and "BackdropTemplate")
 		--get the scripting frame and store in the line
 		line.MainFrame = self:GetParent()
 		
@@ -903,12 +912,12 @@ end
 		end
 		
 		--create new script script button, it does use the width of the scrollbox to select a created script	
-		local create_new_script_button = DF:CreateButton (mainFrame, onclick_create_new_script_button, scrollbox_size[1] - (28*3), buttons_size[2], buttonText, -1, nil, nil, "CreateButton", nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+		local create_new_script_button = DF:CreateButton (mainFrame, onclick_create_new_script_button, scrollbox_size[1] - (28*3), buttons_size[2], buttonText, -1, nil, nil, "CreateButton", nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
 		create_new_script_button:SetPoint ("topleft", mainFrame, "topleft", 10, start_y)
 		create_new_script_button:SetIcon ([[Interface\BUTTONS\UI-PlusButton-Up]], 20, 20, "overlay", {0, 1, 0, 1})
 		
 		--create the trash restore button
-		local restore_script_button = DF:CreateButton (mainFrame, function() GameCooltip:Hide() end, 26, buttons_size[2], "", nil, nil, nil, nil, nil, false, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
+		local restore_script_button = DF:CreateButton (mainFrame, function() GameCooltip:Hide() end, 26, buttons_size[2], "", nil, nil, nil, nil, nil, false, options_button_template)
 		restore_script_button:SetPoint ("left", create_new_script_button, "right", 2, 0)
 		restore_script_button:SetIcon ([[Interface\AddOns\Plater\images\icons]], 16, 16, "overlay", {0, 64/512, 0, 64/512}, {0.945, .635, 0}, nil, nil, nil, false)
 		mainFrame.RestoreScriptButton = restore_script_button
@@ -964,7 +973,7 @@ end
 		GameCooltip:CoolTipInject (restore_script_button)
 		
 		--import button
-		local import_script_button = DF:CreateButton (mainFrame, mainFrame.ShowImportTextField, 26, buttons_size[2], "", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+		local import_script_button = DF:CreateButton (mainFrame, mainFrame.ShowImportTextField, 26, buttons_size[2], "", -1, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
 		import_script_button:SetPoint ("left", restore_script_button, "right", 2, 0)
 		import_script_button:SetIcon ([[Interface\AddOns\Plater\images\icons]], 16, 16, "overlay", {5/512, 19/512, 195/512, 210/512}, {1, .8, .2}, nil, nil, nil, false)
 		
@@ -984,7 +993,7 @@ end
 		end)
 		
 		--help button
-		local help_script_button = DF:CreateButton (mainFrame, function() mainFrame.HelpFrame:Show() end, 26, buttons_size[2], "", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+		local help_script_button = DF:CreateButton (mainFrame, function() mainFrame.HelpFrame:Show() end, 26, buttons_size[2], "", -1, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
 		help_script_button:SetPoint ("left", import_script_button, "right", 2, 0)
 		help_script_button:SetIcon ([[Interface\GossipFrame\ActiveQuestIcon]], 18, 18, "overlay", {0, 1, 0, 1}, nil, 0, -1, nil, false)	
 	
@@ -1040,7 +1049,7 @@ end
 			mainFrame.ScriptIconButton:SetIcon (texture)
 		end
 		local script_icon_label = DF:CreateLabel (parent, "Icon:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
-		local script_icon_button = DF:CreateButton (parent, function() DF:IconPick (script_icon_callback, true) end, 20, 20, "", 0, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
+		local script_icon_button = DF:CreateButton (parent, function() DF:IconPick (script_icon_callback, true) end, 20, 20, "", 0, nil, nil, nil, nil, nil, options_button_template)
 		script_icon_button:SetPoint ("topleft", script_icon_label, "bottomleft", 0, -2)
 		mainFrame.ScriptIconButton = script_icon_button
 	
@@ -1057,8 +1066,8 @@ end
 		mainFrame.ScriptPrioSlideEntry = script_prio_entry
 
 		--options button
-		local scriptOptionButton = DF:CreateButton (parent, function() Plater.RefreshUserScriptOptions(mainFrame) end, 170, 20, "Options", 0, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
-		local scriptOptionButtonAdmin = DF:CreateButton (parent, function() Plater.RefreshAdminScriptOptions(mainFrame) end, 20, 20, "", 0, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
+		local scriptOptionButton = DF:CreateButton (parent, function() Plater.RefreshUserScriptOptions(mainFrame) end, 170, 20, "Options", 0, nil, nil, nil, nil, nil, options_button_template)
+		local scriptOptionButtonAdmin = DF:CreateButton (parent, function() Plater.RefreshAdminScriptOptions(mainFrame) end, 20, 20, "", 0, nil, nil, nil, nil, nil, options_button_template)
 		scriptOptionButton.tooltip = "Show options for this script or mod"
 		scriptOptionButtonAdmin.tooltip = "Build or edit the options panel for this script or mod"
 		scriptOptionButtonAdmin:SetIcon ([[Interface\BUTTONS\UI-OptionsButton]], 18, 18, "overlay", false, false, 0, -3, 0, false)
@@ -1082,12 +1091,12 @@ end
 		local script_options_background_size = {620, 453}
 		local options_frame_width = 407
 		local options_frame_shared_height = 100
-		local options_frame_widget_options_height = 284
+		local options_frame_widget_options_height = 259
 		
 		if (_G.PlaterOptionsPanelContainer.AllFrames[PLATER_OPTIONS_SCRIPTING_TAB] == mainFrame) then --scripting tab
-			script_options_background_size = {620, 413}
+			script_options_background_size = {620, 407}
 			script_options_scroll_size = {170, 369}
-			options_frame_widget_options_height = 264
+			options_frame_widget_options_height = 264 - 25
 			script_options_topleft_anchor = {230, -25}
 			options_frame_width = 420
 		end
@@ -1104,7 +1113,7 @@ end
 
 		--> admin script options (this frame is used to configurate the options which the script has)
 		--> far below this code there's the code for user options frame
-			local adminFrame = CreateFrame("frame", "$parentEditScriptOptionsAdmin", parent)
+			local adminFrame = CreateFrame("frame", "$parentEditScriptOptionsAdmin", parent, BackdropTemplateMixin and "BackdropTemplate")
 			adminFrame:SetSize(script_options_background_size[1], script_options_background_size[2])
 			adminFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
 			adminFrame:SetBackdropBorderColor (unpack (luaeditor_border_color))
@@ -1113,7 +1122,7 @@ end
 			adminFrame:Hide()
 
 		--> user script options (this frame is where the end user adjust the script settings)
-			local userFrame = CreateFrame("frame", "$parentEditScriptOptionsUser", parent)
+			local userFrame = CreateFrame("frame", "$parentEditScriptOptionsUser", parent, BackdropTemplateMixin and "BackdropTemplate")
 			userFrame:SetSize(edit_script_size[1], edit_script_size[2])
 			userFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
 			userFrame:SetBackdropBorderColor (unpack (luaeditor_border_color))
@@ -1124,23 +1133,23 @@ end
 			--regular buttons admin frame
 			do
 				--save button
-				local save_script_button = DF:CreateButton (adminFrame, mainFrame.SaveScript, buttons_size[1], buttons_size[2], "Save", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				local save_script_button = DF:CreateButton (adminFrame, mainFrame.SaveScript, buttons_size[1], buttons_size[2], "Save", -1, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
 				save_script_button:SetIcon ([[Interface\BUTTONS\UI-Panel-ExpandButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
 				save_script_button.tooltip = "While editing, you may use:\n\n|cFFFFFF00SHIFT + Enter|r: save the script, apply the changes and don't lose the focus on the editor.\n\n|cFFFFFF00CTRL + Enter|r: save the script and apply the changes."
 				save_script_button:SetFrameLevel(adminFrame:GetFrameLevel()+11)
 				
 				--cancel button
-				local cancel_script_button = DF:CreateButton (adminFrame, mainFrame.CancelEditing, buttons_size[1], buttons_size[2], "Cancel", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				local cancel_script_button = DF:CreateButton (adminFrame, mainFrame.CancelEditing, buttons_size[1], buttons_size[2], "Cancel", -1, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
 				cancel_script_button:SetIcon ([[Interface\BUTTONS\UI-Panel-MinimizeButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
 				cancel_script_button:SetFrameLevel(adminFrame:GetFrameLevel()+11)
 
 				--documentation icon
-				local docs_button = DF:CreateButton (adminFrame, mainFrame.OpenDocs, buttons_size[1], buttons_size[2], "Docs", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				local docs_button = DF:CreateButton (adminFrame, mainFrame.OpenDocs, buttons_size[1], buttons_size[2], "Docs", -1, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
 				docs_button:SetIcon ([[Interface\BUTTONS\UI-GuildButton-PublicNote-Up]], 16, 16, "overlay", {0, 1, 0, 1})
 				docs_button:SetFrameLevel(adminFrame:GetFrameLevel()+11)
 
 				if (mainFrame:GetName() == "PlaterOptionsPanelContainerScripting") then
-					save_script_button:SetPoint ("topright", mainFrame.CodeEditorLuaEntry, "bottomright", 0, 10)
+					save_script_button:SetPoint ("topright", mainFrame.CodeEditorLuaEntry, "bottomright", 0, 21)
 				else
 					save_script_button:SetPoint ("topright", mainFrame.CodeEditorLuaEntry, "bottomright", 0, -25)
 				end
@@ -1152,23 +1161,23 @@ end
 			--regular buttons user frame
 			do
 				--save button
-				local save_script_button = DF:CreateButton (userFrame, mainFrame.SaveScript, buttons_size[1], buttons_size[2], "Save", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				local save_script_button = DF:CreateButton (userFrame, mainFrame.SaveScript, buttons_size[1], buttons_size[2], "Save", -1, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
 				save_script_button:SetIcon ([[Interface\BUTTONS\UI-Panel-ExpandButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
 				save_script_button.tooltip = "While editing, you may use:\n\n|cFFFFFF00SHIFT + Enter|r: save the script, apply the changes and don't lose the focus on the editor.\n\n|cFFFFFF00CTRL + Enter|r: save the script and apply the changes."
 				save_script_button:SetFrameLevel(userFrame:GetFrameLevel()+11)
 				
 				--cancel button
-				local cancel_script_button = DF:CreateButton (userFrame, mainFrame.CancelEditing, buttons_size[1], buttons_size[2], "Cancel", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				local cancel_script_button = DF:CreateButton (userFrame, mainFrame.CancelEditing, buttons_size[1], buttons_size[2], "Cancel", -1, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
 				cancel_script_button:SetIcon ([[Interface\BUTTONS\UI-Panel-MinimizeButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
 				cancel_script_button:SetFrameLevel(userFrame:GetFrameLevel()+11)
 
 				--documentation icon
-				local docs_button = DF:CreateButton (userFrame, mainFrame.OpenDocs, buttons_size[1], buttons_size[2], "Docs", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				local docs_button = DF:CreateButton (userFrame, mainFrame.OpenDocs, buttons_size[1], buttons_size[2], "Docs", -1, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
 				docs_button:SetIcon ([[Interface\BUTTONS\UI-GuildButton-PublicNote-Up]], 16, 16, "overlay", {0, 1, 0, 1})
 				docs_button:SetFrameLevel(userFrame:GetFrameLevel()+11)
 
 				if (mainFrame:GetName() == "PlaterOptionsPanelContainerScripting") then
-					save_script_button:SetPoint ("topright", mainFrame.CodeEditorLuaEntry, "bottomright", 0, 10)
+					save_script_button:SetPoint ("topright", mainFrame.CodeEditorLuaEntry, "bottomright", 0, 21)
 				else
 					save_script_button:SetPoint ("topright", mainFrame.CodeEditorLuaEntry, "bottomright", 0, -25)
 				end
@@ -1267,13 +1276,13 @@ end
 			end
 
 			local createOptionLabel = DF:CreateLabel (adminFrame, "Create New Option:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
-			local createOptionDropdown = DF:CreateDropDown (adminFrame, getListOfAvailableOptions, 1, 130, 20, nil, nil, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+			local createOptionDropdown = DF:CreateDropDown (adminFrame, getListOfAvailableOptions, 1, 130, 20, nil, nil, options_dropdown_template)
 			createOptionLabel:SetPoint("topleft", parent, "topleft", unpack(script_options_topleft_anchor))
 			createOptionDropdown:SetPoint("topleft", createOptionLabel, "bottomleft", 0, -2)
 			mainFrame.SelectScriptOptionTypeDropdown = createOptionDropdown
 
 			--button to commit the creation at the right of the dropdown
-			local createOptionButton = DF:CreateButton (adminFrame, createNewOptionButtonFunction, 60, 20, "Add", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+			local createOptionButton = DF:CreateButton (adminFrame, createNewOptionButtonFunction, 60, 20, "Add", -1, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
 			createOptionButton:SetPoint("left", createOptionDropdown, "right", 2, 0)
 			mainFrame.CreateOptionForScriptButton = createOptionButton
 
@@ -1410,7 +1419,7 @@ end
 				
 				--create a new line within the scrollbox containing options created to edit
 				local optionsListCreateLine = function (self, index)
-					local line = CreateFrame ("button", "$parentLine" .. index, self)
+					local line = CreateFrame ("button", "$parentLine" .. index, self, BackdropTemplateMixin and "BackdropTemplate")
 					
 					--set its parameters
 					line:SetPoint ("topleft", self, "topleft", 0, -((index-1) * (script_options_line_height+1)))
@@ -1498,7 +1507,7 @@ end
 				mainFrame.TypeFrames = {}
 
 			--> shared options frame
-				local sharedOptionsFrame = CreateFrame("frame", "$parentSharedOptions", adminFrame)
+				local sharedOptionsFrame = CreateFrame("frame", "$parentSharedOptions", adminFrame, BackdropTemplateMixin and "BackdropTemplate")
 				sharedOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
 				sharedOptionsFrame:SetBackdropColor (0, 0, 0, 0.2)
 				sharedOptionsFrame:SetBackdropBorderColor (0, 0, 0, 1)
@@ -1543,6 +1552,7 @@ end
 						set = function (self, fixedparam, value) setOptionValue("Name", value, ""); mainFrame.ScriptOptionsScrollBox:Refresh() end,
 						name = "Name",
 						desc = "The name of this option.",
+						width = 200,
 					},
 					--key
 					{
@@ -1551,6 +1561,7 @@ end
 						set = function (self, fixedparam, value) setOptionValue("Key", value, "") end,
 						name = "Key",
 						desc = "Key to be used inside the code to insert the value.",
+						width = 200,
 					},
 					--desc
 					{
@@ -1568,7 +1579,7 @@ end
 			--create subframes to hold panels with specific options for:
 			-- ~options
 			--option: color
-				local colorOptionsFrame = CreateFrame("frame", "$parentColorOptions", adminFrame)
+				local colorOptionsFrame = CreateFrame("frame", "$parentColorOptions", adminFrame, BackdropTemplateMixin and "BackdropTemplate")
 				colorOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
 				colorOptionsFrame:SetBackdropColor (0, 0, 0, 0.2)
 				colorOptionsFrame:SetBackdropBorderColor (0, 0, 0, 1)
@@ -1591,7 +1602,7 @@ end
 				DF:BuildMenuVolatile(colorOptionsFrame, colorOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 
 			--option: number
-				local numberOptionsFrame = CreateFrame("frame", "$parentNumberOptions", adminFrame)
+				local numberOptionsFrame = CreateFrame("frame", "$parentNumberOptions", adminFrame, BackdropTemplateMixin and "BackdropTemplate")
 				numberOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
 				numberOptionsFrame:SetBackdropColor (0, 0, 0, 0.2)
 				numberOptionsFrame:SetBackdropBorderColor (0, 0, 0, 1)
@@ -1638,7 +1649,7 @@ end
 				DF:BuildMenuVolatile(numberOptionsFrame, numberOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 
 			--option: text
-				local textOptionsFrame = CreateFrame("frame", "$parentTextOptions", adminFrame)
+				local textOptionsFrame = CreateFrame("frame", "$parentTextOptions", adminFrame, BackdropTemplateMixin and "BackdropTemplate")
 				textOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
 				textOptionsFrame:SetBackdropColor (0, 0, 0, 0.2)
 				textOptionsFrame:SetBackdropBorderColor (0, 0, 0, 1)
@@ -1661,7 +1672,7 @@ end
 				DF:BuildMenuVolatile(textOptionsFrame, textOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 
 			--option: boolean
-				local booleanOptionsFrame = CreateFrame("frame", "$parentBooleanOptions", adminFrame)
+				local booleanOptionsFrame = CreateFrame("frame", "$parentBooleanOptions", adminFrame, BackdropTemplateMixin and "BackdropTemplate")
 				booleanOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
 				booleanOptionsFrame:SetBackdropColor (0, 0, 0, 0.2)
 				booleanOptionsFrame:SetBackdropBorderColor (0, 0, 0, 1)
@@ -1684,7 +1695,7 @@ end
 				DF:BuildMenuVolatile(booleanOptionsFrame, boolOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 			
 			--option: label
-				local labelOptionsFrame = CreateFrame("frame", "$parentLabelOptions", adminFrame)
+				local labelOptionsFrame = CreateFrame("frame", "$parentLabelOptions", adminFrame, BackdropTemplateMixin and "BackdropTemplate")
 				labelOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
 				labelOptionsFrame:SetBackdropColor (0, 0, 0, 0.2)
 				labelOptionsFrame:SetBackdropBorderColor (0, 0, 0, 1)
@@ -1701,13 +1712,14 @@ end
 						set = function (self, fixedparam, value) setOptionValue("Value", value, "") end,
 						name = "Label Text",
 						desc = "Text shown as a header of a section.",
+						width = 330,
 					},
 				}
 
 				DF:BuildMenuVolatile(labelOptionsFrame, labelOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 
 			--option: blank space
-				local blackspaceOptionsFrame = CreateFrame("frame", "$parentBlankSpaceOptions", adminFrame)
+				local blackspaceOptionsFrame = CreateFrame("frame", "$parentBlankSpaceOptions", adminFrame, BackdropTemplateMixin and "BackdropTemplate")
 				blackspaceOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
 				blackspaceOptionsFrame:SetBackdropColor (0, 0, 0, 0.2)
 				blackspaceOptionsFrame:SetBackdropBorderColor (0, 0, 0, 1)
@@ -1722,7 +1734,7 @@ end
 				DF:BuildMenuVolatile(blackspaceOptionsFrame, blankspaceOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 
 			--option: texture
-				local textureOptionsFrame = CreateFrame("frame", "$parentTextureOptions", adminFrame)
+				local textureOptionsFrame = CreateFrame("frame", "$parentTextureOptions", adminFrame, BackdropTemplateMixin and "BackdropTemplate")
 				textureOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
 				textureOptionsFrame:SetBackdropColor (0, 0, 0, 0.2)
 				textureOptionsFrame:SetBackdropBorderColor (0, 0, 0, 1)
@@ -1920,11 +1932,11 @@ end
 		mainFrame.ImportTextEditor.TextInfo = info_import_label
 		
 		--import button
-		local okay_import_button = DF:CreateButton (import_text_editor, mainFrame.ImportScript, buttons_size[1], buttons_size[2], "Okay", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+		local okay_import_button = DF:CreateButton (import_text_editor, mainFrame.ImportScript, buttons_size[1], buttons_size[2], "Okay", -1, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
 		okay_import_button:SetIcon ([[Interface\BUTTONS\UI-Panel-BiggerButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
 	
 		--cancel button
-		local cancel_import_button = DF:CreateButton (import_text_editor, function() mainFrame.ImportTextEditor:Hide() end, buttons_size[1], buttons_size[2], "Cancel", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+		local cancel_import_button = DF:CreateButton (import_text_editor, function() mainFrame.ImportTextEditor:Hide() end, buttons_size[1], buttons_size[2], "Cancel", -1, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
 		cancel_import_button:SetIcon ([[Interface\BUTTONS\UI-Panel-MinimizeButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
 		
 		import_text_editor.OkayButton = okay_import_button
@@ -1975,7 +1987,7 @@ end
 		end
 		
 		local add_API_label = DF:CreateLabel (parent, "API:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
-		local add_API_dropdown = DF:CreateDropDown (parent, build_API_dropdown_options, 1, 130, 20, "AddAPIDropdown", _, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+		local add_API_dropdown = DF:CreateDropDown (parent, build_API_dropdown_options, 1, 130, 20, "AddAPIDropdown", _, options_dropdown_template)
 		mainFrame.AddAPIDropdown = add_API_dropdown
 		add_API_dropdown:SetFrameStrata (code_editor:GetFrameStrata())
 		add_API_dropdown:SetFrameLevel (code_editor:GetFrameLevel()+100)
@@ -2037,7 +2049,7 @@ end
 		end
 		
 		local add_FW_label = DF:CreateLabel (parent, "Framework:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
-		local add_FW_dropdown = DF:CreateDropDown (parent, build_FW_dropdown_options, 1, 130, 20, "AddFWDropdown", _, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+		local add_FW_dropdown = DF:CreateDropDown (parent, build_FW_dropdown_options, 1, 130, 20, "AddFWDropdown", _, options_dropdown_template)
 		mainFrame.AddFWDropdown = add_FW_dropdown
 		add_FW_dropdown:SetFrameStrata (code_editor:GetFrameStrata())
 		add_FW_dropdown:SetFrameLevel (code_editor:GetFrameLevel()+100)
@@ -2046,7 +2058,7 @@ end
 		add_FW_label:SetPoint ("right", add_FW_dropdown, "left", -2, 0)
 		
 		--error text
-		local errortext_frame = CreateFrame ("frame", nil, code_editor)
+		local errortext_frame = CreateFrame ("frame", nil, code_editor, BackdropTemplateMixin and "BackdropTemplate")
 		errortext_frame:SetPoint ("bottomleft", code_editor, "bottomleft", 1, 1)
 		errortext_frame:SetPoint ("bottomright", code_editor, "bottomright", -1, 1)
 		errortext_frame:SetHeight (20)
@@ -2093,23 +2105,23 @@ end
 		end)
 		
 		--apply button
-		local apply_script_button = DF:CreateButton (code_editor, mainFrame.ApplyScript, buttons_size[1], buttons_size[2], "Apply", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+		local apply_script_button = DF:CreateButton (code_editor, mainFrame.ApplyScript, buttons_size[1], buttons_size[2], "Apply", -1, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
 		apply_script_button:SetIcon ([[Interface\BUTTONS\UI-Panel-BiggerButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
 		apply_script_button:SetFrameLevel(code_editor:GetFrameLevel()+11)
 		
 		--save button
-		local save_script_button = DF:CreateButton (code_editor, mainFrame.SaveScript, buttons_size[1], buttons_size[2], "Save", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+		local save_script_button = DF:CreateButton (code_editor, mainFrame.SaveScript, buttons_size[1], buttons_size[2], "Save", -1, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
 		save_script_button:SetIcon ([[Interface\BUTTONS\UI-Panel-ExpandButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
 		save_script_button.tooltip = "While editing, you may use:\n\n|cFFFFFF00SHIFT + Enter|r: save the script, apply the changes and don't lose the focus on the editor.\n\n|cFFFFFF00CTRL + Enter|r: save the script and apply the changes."
 		save_script_button:SetFrameLevel(code_editor:GetFrameLevel()+11)
 		
 		--cancel button
-		local cancel_script_button = DF:CreateButton (code_editor, mainFrame.CancelEditing, buttons_size[1], buttons_size[2], "Cancel", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+		local cancel_script_button = DF:CreateButton (code_editor, mainFrame.CancelEditing, buttons_size[1], buttons_size[2], "Cancel", -1, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
 		cancel_script_button:SetIcon ([[Interface\BUTTONS\UI-Panel-MinimizeButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
 		cancel_script_button:SetFrameLevel(code_editor:GetFrameLevel()+11)
 
 		--documentation icon
-		local docs_button = DF:CreateButton (code_editor, mainFrame.OpenDocs, buttons_size[1], buttons_size[2], "Docs", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+		local docs_button = DF:CreateButton (code_editor, mainFrame.OpenDocs, buttons_size[1], buttons_size[2], "Docs", -1, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
 		docs_button:SetIcon ([[Interface\BUTTONS\UI-GuildButton-PublicNote-Up]], 16, 16, "overlay", {0, 1, 0, 1})		
 		docs_button:SetFrameLevel(code_editor:GetFrameLevel()+11)
 
@@ -2576,7 +2588,7 @@ function Plater.CreateHookingPanel()
 		
 		DF:CreateBorder (f)
 		
-		local LinkBox = DF:CreateTextEntry (f, function()end, 380, 20, "ExportLinkBox", _, _, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+		local LinkBox = DF:CreateTextEntry (f, function()end, 380, 20, "ExportLinkBox", _, _, options_dropdown_template)
 		LinkBox:SetPoint ("center", f, "center", 0, -10)
 		
 		f:SetScript ("OnShow", function()
@@ -2658,7 +2670,7 @@ function Plater.CreateHookingPanel()
 	end
 	
 	--create the frame which will hold the create panel
-	local edit_script_frame = CreateFrame ("frame", "$parentCreateScript", hookFrame)
+	local edit_script_frame = CreateFrame ("frame", "$parentCreateScript", hookFrame, BackdropTemplateMixin and "BackdropTemplate")
 	edit_script_frame:SetSize (unpack (main_frames_size))
 	edit_script_frame:SetScript ("OnShow", function()
 
@@ -2902,7 +2914,7 @@ function Plater.CreateHookingPanel()
 	
 	local hookListCreateLine = function (self, index)
 		--create a new line
-		local line = CreateFrame ("button", "$parentLine" .. index, self)
+		local line = CreateFrame ("button", "$parentLine" .. index, self, BackdropTemplateMixin and "BackdropTemplate")
 		
 		--set its parameters
 		line:SetPoint ("topleft", self, "topleft", 0, -((index-1) * (triggerbox_line_height+1)))
@@ -2928,7 +2940,7 @@ function Plater.CreateHookingPanel()
 		removeButton:SetPoint ("topright", line, "topright")
 		removeButton:GetNormalTexture():SetDesaturated (true)
 		
-		local addButton = CreateFrame ("button", "$parentRemoveButton", line)
+		local addButton = CreateFrame ("button", "$parentRemoveButton", line, BackdropTemplateMixin and "BackdropTemplate")
 		addButton:SetSize (16, 16)
 		addButton:SetScript ("OnClick", addHookToScriptObject)
 		addButton:SetPoint ("right", line, "right")
@@ -2984,7 +2996,7 @@ function Plater.CreateHookingPanel()
 			DF:OpenLoadConditionsPanel (scriptObject.LoadConditions, onLoadConditionsChange, {title = "Hook Load Conditions", name = scriptObject.Name})
 		end
 	end
-	local loadConditionsButton = DF:CreateButton (edit_script_frame, openConditionsPanel, triggerbox_size[1], 20, "Load Conditions", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+	local loadConditionsButton = DF:CreateButton (edit_script_frame, openConditionsPanel, triggerbox_size[1], 20, "Load Conditions", -1, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
 	--add_trigger_button:SetIcon ([[Interface\BUTTONS\UI-PlusButton-Up]], 20, 20, "overlay", {0, 1, 0, 1})
 	loadConditionsButton:SetPoint ("top", hookScrollbox, "bottom", 0, -4)
 	hookFrame.LoadConditionsButton = loadConditionsButton
@@ -2995,7 +3007,7 @@ function Plater.CreateHookingPanel()
 	
 	--create the components button and cooltip
 		--api help small frame
-		local componentsButton = DF:CreateButton (hookFrame.CodeEditorLuaEntry, function() end, 100, 20, "Components", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+		local componentsButton = DF:CreateButton (hookFrame.CodeEditorLuaEntry, function() end, 100, 20, "Components", -1, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
 		componentsButton:SetIcon ([[Interface\FriendsFrame\UI-FriendsList-Large-Up]], 16, 16, "overlay", {.2, .74, .27, .75}, nil, 4)
 		hookFrame.ComponentsButton = componentsButton
 
@@ -3011,7 +3023,7 @@ function Plater.CreateHookingPanel()
 			
 			DF:CreateBorder (f)
 			
-			local LinkBox = DF:CreateTextEntry (f, function()end, 380, 20, "ExportLinkBox", _, _, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+			local LinkBox = DF:CreateTextEntry (f, function()end, 380, 20, "ExportLinkBox", _, _, options_dropdown_template)
 			LinkBox:SetPoint ("center", f, "center", 0, -10)
 			
 			f:SetScript ("OnShow", function()
@@ -3026,7 +3038,7 @@ function Plater.CreateHookingPanel()
 			f:Show()
 		end
 		
-		local moreModsButton = DF:CreateButton (hookFrame.CodeEditorLuaEntry, getMoreModsFunc, 120, 20, "Get More Mods", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+		local moreModsButton = DF:CreateButton (hookFrame.CodeEditorLuaEntry, getMoreModsFunc, 120, 20, "Get More Mods", -1, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
 		moreModsButton:SetIcon ([[Interface\FriendsFrame\UI-FriendsList-Large-Up]], 16, 16, "overlay", {.2, .74, .27, .75}, nil, 4)
 		hookFrame.MoreModsButton = moreModsButton
 		hookFrame.MoreModsButton:SetPoint ("left", componentsButton, "right", 2, 0)
@@ -3107,7 +3119,7 @@ function Plater.CreateHookingPanel()
 	create_edit_options_box(edit_script_frame, hookFrame)
 	
 	local hookTypeLabel = DF:CreateLabel (hookFrame.CodeEditorLuaEntry, "Edit Hook:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
-	local hookTypeDropdown = DF:CreateDropDown (hookFrame.CodeEditorLuaEntry, buildHookDropdownList, 1, 160, 20, "HookTypeDropdown", _, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+	local hookTypeDropdown = DF:CreateDropDown (hookFrame.CodeEditorLuaEntry, buildHookDropdownList, 1, 160, 20, "HookTypeDropdown", _, options_dropdown_template)
 	hookTypeDropdown:SetPoint ("left", hookTypeLabel, "right", 2, 0)
 	hookTypeDropdown.CodeType = 1
 	hookFrame.HookTypeDropdown = hookTypeDropdown
@@ -3630,7 +3642,7 @@ function Plater.CreateScriptingPanel()
 		
 		DF:CreateBorder (f)
 		
-		local LinkBox = DF:CreateTextEntry (f, function()end, 380, 20, "ExportLinkBox", _, _, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+		local LinkBox = DF:CreateTextEntry (f, function()end, 380, 20, "ExportLinkBox", _, _, options_dropdown_template)
 		LinkBox:SetPoint ("center", f, "center", 0, -10)
 		
 		f:SetScript ("OnShow", function()
@@ -3810,7 +3822,7 @@ function Plater.CreateScriptingPanel()
 	end
 	
 	--create the frame which will hold the create panel
-	local edit_script_frame = CreateFrame ("frame", "$parentCreateScript", scriptingFrame)
+	local edit_script_frame = CreateFrame ("frame", "$parentCreateScript", scriptingFrame, BackdropTemplateMixin and "BackdropTemplate")
 	edit_script_frame:SetSize (unpack (main_frames_size))
 	edit_script_frame:SetScript ("OnShow", function()
 
@@ -3926,7 +3938,7 @@ function Plater.CreateScriptingPanel()
 			end
 			
 			local script_type_label = DF:CreateLabel (edit_script_frame, "Trigger Type:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
-			local script_type_dropdown = DF:CreateDropDown (edit_script_frame, build_script_type_dropdown_options, 1, 160, 20, "ScriptTypeDropdown", _, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+			local script_type_dropdown = DF:CreateDropDown (edit_script_frame, build_script_type_dropdown_options, 1, 160, 20, "ScriptTypeDropdown", _, options_dropdown_template)
 			script_type_dropdown:SetPoint ("topleft", script_type_label, "bottomleft", 0, -2)
 			script_type_dropdown.tooltip = "The type of event when the script check for trigger matches, only the selected option is used.\n\n|cFFFFFF00Buffs & Debuffs|r: an aura shown in the nameplate.\n\n|cFFFFFF00Spell Casting|r: the spell the unit is casting.\n\n|cFFFFFF00Unit Name|r: the unit name shown in the nameplate."
 			scriptingFrame.ScriptTypeDropdown = script_type_dropdown
@@ -3950,7 +3962,7 @@ function Plater.CreateScriptingPanel()
 				end
 			end)
 
-			local add_trigger_button = DF:CreateButton (edit_script_frame, scriptingFrame.AddTrigger, 50, 20, "Add", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+			local add_trigger_button = DF:CreateButton (edit_script_frame, scriptingFrame.AddTrigger, 50, 20, "Add", -1, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
 			add_trigger_button:SetIcon ([[Interface\BUTTONS\UI-PlusButton-Up]], 20, 20, "overlay", {0, 1, 0, 1})
 			add_trigger_button:SetPoint ("left", add_trigger_textentry, "right", 2, 0)
 			--add_trigger_button.tooltip = 
@@ -4082,7 +4094,7 @@ function Plater.CreateScriptingPanel()
 			--create a line in the scroll box
 				local create_line_triggerbox = function (self, index)
 					--create a new line
-					local line = CreateFrame ("button", "$parentLine" .. index, self)
+					local line = CreateFrame ("button", "$parentLine" .. index, self, BackdropTemplateMixin and "BackdropTemplate")
 					--set its parameters
 					line:SetPoint ("topleft", self, "topleft", 0, -((index-1) * (triggerbox_line_height+1)))
 					line:SetSize (triggerbox_size[1], triggerbox_line_height)
@@ -4229,7 +4241,7 @@ function Plater.CreateScriptingPanel()
 					
 						function overlapFrame:CreateNewFrameTable()
 							local i = #overlapFrame.OverlappedScriptFrames + 1
-							local f = CreateFrame ("frame", "$parentTriggerCluster" .. i, overlapFrame)
+							local f = CreateFrame ("frame", "$parentTriggerCluster" .. i, overlapFrame, BackdropTemplateMixin and "BackdropTemplate")
 							f:SetSize (590, 20)
 							f.Reset = reset
 							DF:ApplyStandardBackdrop (f, true, 0.1)
@@ -4260,7 +4272,7 @@ function Plater.CreateScriptingPanel()
 						end
 						
 						function overlapFrame:CreateFrameForScript (f, i)
-							local ff = CreateFrame ("frame", "$parentLine" .. i, f)
+							local ff = CreateFrame ("frame", "$parentLine" .. i, f, BackdropTemplateMixin and "BackdropTemplate")
 							ff:SetSize (580, 22)
 							ff:SetPoint ("topleft", f, "topleft", 0, -24 - ((i - 1) * 23))
 							DF:ApplyStandardBackdrop (ff, true, 0.8)
@@ -4270,12 +4282,12 @@ function Plater.CreateScriptingPanel()
 							ff.OriginalBackdropColor = {ff:GetBackdropColor()}
 							
 							local scriptName = DF:CreateLabel (ff)
-							local enableScript = DF:CreateButton (ff, enableScriptFromOverlapPanel, 120, 20, "Enable Script", nil, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
-							local disableScript = DF:CreateButton (ff, disableScriptFromOverlapPanel, 120, 20, "Disable Script", nil, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
-							local removeTrigger = DF:CreateButton (ff, removeTriggerFromOverlapPanel, 120, 20, "Remove Trigger", nil, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+							local enableScript = DF:CreateButton (ff, enableScriptFromOverlapPanel, 120, 20, "Enable Script", nil, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
+							local disableScript = DF:CreateButton (ff, disableScriptFromOverlapPanel, 120, 20, "Disable Script", nil, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
+							local removeTrigger = DF:CreateButton (ff, removeTriggerFromOverlapPanel, 120, 20, "Remove Trigger", nil, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
 							
 							--> create a background below the script name to make an impression it's a button
-							local nameBackdrop = CreateFrame ("frame", nil, ff)
+							local nameBackdrop = CreateFrame ("frame", nil, ff, BackdropTemplateMixin and "BackdropTemplate")
 							nameBackdrop:SetSize (140, 20)
 							DF:ApplyStandardBackdrop (nameBackdrop)
 							nameBackdrop:SetPoint ("topleft", ff, "topleft", 3, 0)
@@ -4378,7 +4390,7 @@ function Plater.CreateScriptingPanel()
 				end)
 				
 				--add script overlap button / frame
-				local overlapButton = Plater:CreateButton (scriptingFrame, function() overlapFrame:Show() end, 160, 20, "Trigger Overlaps: 0", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				local overlapButton = Plater:CreateButton (scriptingFrame, function() overlapFrame:Show() end, 160, 20, "Trigger Overlaps: 0", -1, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
 				overlapButton:SetPoint ("topleft", trigger_scrollbox, "bottomleft", 0, -2)
 				overlapButton:SetPoint ("topright", trigger_scrollbox, "bottomright", 0, -2)
 				scriptingFrame.OverlapButton = overlapButton
@@ -4424,7 +4436,7 @@ function Plater.CreateScriptingPanel()
 					overlapButton:SetText ("Trigger Overlaps: " .. amoutOfOverlaps)
 					
 					if (amoutOfOverlaps > 0) then
-						overlapButton:SetTemplate (DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
+						overlapButton:SetTemplate (options_button_template)
 						overlapButton:SetTextColor (DF:GetTemplate ("font", "PLATER_BUTTON").color)
 					else
 						overlapButton:SetTemplate (DF:GetTemplate ("button", "PLATER_BUTTON_DISABLED"))
@@ -4447,7 +4459,7 @@ function Plater.CreateScriptingPanel()
 		create_code_editor (edit_script_frame, scriptingFrame)
 
 				--api help small frame
-				local unit_frame_components_menu = DF:CreateButton (scriptingFrame.CodeEditorLuaEntry, function() end, 100, 20, "Components", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				local unit_frame_components_menu = DF:CreateButton (scriptingFrame.CodeEditorLuaEntry, function() end, 100, 20, "Components", -1, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
 				unit_frame_components_menu:SetIcon ([[Interface\FriendsFrame\UI-FriendsList-Large-Up]], 16, 16, "overlay", {.2, .74, .27, .75}, nil, 4)
 				
 				local onSelectComponentMember = function (a, d, member)
@@ -4480,7 +4492,7 @@ function Plater.CreateScriptingPanel()
 				GameCooltip2:CoolTipInject (unit_frame_components_menu)
 				
 				--script env helper
-				local script_env_helper = DF:CreateButton (scriptingFrame.CodeEditorLuaEntry, function() end, 100, 20, "envTable", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				local script_env_helper = DF:CreateButton (scriptingFrame.CodeEditorLuaEntry, function() end, 100, 20, "envTable", -1, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
 				script_env_helper:SetIcon ([[Interface\FriendsFrame\UI-FriendsList-Small-Up]], 16, 16, "overlay", {.2, .74, .27, .75}, nil, 4)
 				
 				local onSelectEnvTableMember = function (a, d, member)
@@ -4616,7 +4628,7 @@ function Plater.CreateScriptingPanel()
 			end
 			
 			local code_type_label = DF:CreateLabel (scriptingFrame, "Edit Script For:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
-			local code_type_dropdown = DF:CreateDropDown (scriptingFrame, build_script_code_dropdown_options, 1, 160, 20, "CodeTypeDropdown", _, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+			local code_type_dropdown = DF:CreateDropDown (scriptingFrame, build_script_code_dropdown_options, 1, 160, 20, "CodeTypeDropdown", _, options_dropdown_template)
 			--code_type_dropdown:SetPoint ("left", code_type_label, "right", 2, 0)
 			code_type_dropdown.CodeType = 1
 			scriptingFrame.CodeTypeDropdown = code_type_dropdown
@@ -4632,19 +4644,19 @@ function Plater.CreateScriptingPanel()
 				local codeButtonSize = {100, 20}
 				scriptingFrame.scriptButtons = {}
 
-				local code_oninit_button = DF:CreateButton(scriptingFrame, on_select_code_type, codeButtonSize[1], codeButtonSize[2], "Initialization", 5, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				local code_oninit_button = DF:CreateButton(scriptingFrame, on_select_code_type, codeButtonSize[1], codeButtonSize[2], "Initialization", 5, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
 				code_oninit_button:SetPoint("topleft", scriptingFrame.CodeEditorLuaEntry, "bottomleft", 0, -15)
 
-				local code_constructor_button = DF:CreateButton(scriptingFrame, on_select_code_type, codeButtonSize[1], codeButtonSize[2], "Constructor", 2, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				local code_constructor_button = DF:CreateButton(scriptingFrame, on_select_code_type, codeButtonSize[1], codeButtonSize[2], "Constructor", 2, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
 				code_constructor_button:SetPoint("left", code_oninit_button, "right", 2, 0)
 
-				local code_onshow_button = DF:CreateButton(scriptingFrame, on_select_code_type, codeButtonSize[1], codeButtonSize[2], "On Show", 4, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				local code_onshow_button = DF:CreateButton(scriptingFrame, on_select_code_type, codeButtonSize[1], codeButtonSize[2], "On Show", 4, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
 				code_onshow_button:SetPoint("left", code_constructor_button, "right", 2, 0)
 
-				local code_onupdate_button = DF:CreateButton(scriptingFrame, on_select_code_type, codeButtonSize[1], codeButtonSize[2], "On Update", 1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				local code_onupdate_button = DF:CreateButton(scriptingFrame, on_select_code_type, codeButtonSize[1], codeButtonSize[2], "On Update", 1, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
 				code_onupdate_button:SetPoint("left", code_onshow_button, "right", 2, 0)
 
-				local code_hide_button = DF:CreateButton(scriptingFrame, on_select_code_type, codeButtonSize[1], codeButtonSize[2], "On Hide", 3, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				local code_hide_button = DF:CreateButton(scriptingFrame, on_select_code_type, codeButtonSize[1], codeButtonSize[2], "On Hide", 3, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
 				code_hide_button:SetPoint("left", code_onupdate_button, "right", 2, 0)
 
 				tinsert(scriptingFrame.scriptButtons, code_onupdate_button)
