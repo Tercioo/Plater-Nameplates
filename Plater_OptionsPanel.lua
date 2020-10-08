@@ -5983,6 +5983,37 @@ local relevance_options = {
 			desc = "Show nameplates for all units near you. If disabled on show relevant units when you are in combat." .. CVarDesc,
 			nocombat = true,
 		},
+
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.honor_blizzard_plate_alpha end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.honor_blizzard_plate_alpha = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Use Blizzard's Occlusion" .. CVarIcon,
+			desc = "Use the 'occluded' feature from blizzard.\n\nThis setting only works with 'Use custom strata channels' enabled." .. CVarDesc,
+			id = "transparency_blizzard_alpha",
+		},
+		{
+			type = "range",
+			get = function() return tonumber (GetCVar ("nameplateOccludedAlphaMult")) end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateOccludedAlphaMult", value)
+				else
+					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+				end
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			thumbscale = 1.7,
+			usedecimals = true,
+			name = "Occluded Alpha Multiplier" .. CVarIcon,
+			desc = "Alpha multiplyer for 'occluded' plates (when they are not in line of sight)." .. CVarDesc,
+			nocombat = true,
+		},
 		
 		{type = "blank"},
 		
@@ -6216,159 +6247,7 @@ local relevance_options = {
 			desc = "Change the height of Enemy and Friendly nameplates for players and npcs in combat and out of combat.\n\nEach one of these options can be changed individually on Enemy Npc, Enemy Player tabs.",
 		},
 
-
 		{type = "breakline"},
-		{type = "label", get = function() return "Indicators:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-		
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.indicator_faction end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.indicator_faction = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Enemy Faction Icon",
-			desc = "Show horde or alliance icon.",
-		},
-		
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.indicator_pet end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.indicator_pet = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Pet Icon",
-			desc = "Pet Icon",
-		},
-		
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.health_cutoff end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.health_cutoff = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Execute Range",
-			desc = "Show an indicator when the unit is in execute range.\n\nPlater auto detects execute range for:\n\n|cFFFFFF00Hunter|r: Beast Master spec with Killer Instinct talent.\n\n|cFFFFFF00Warrior|r: Arms and Fury specs.\n\n|cFFFFFF00Priest|r: Shadow spec with Shadow Word: Death talent.\n\n|cFFFFFF00Mage|r: Fire spec with Searing Touch talent.",
-		},
-
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.indicator_worldboss end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.indicator_worldboss = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Worldboss Icon",
-			desc = "Show when the actor is elite.",
-		},
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.indicator_elite end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.indicator_elite = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Elite Icon",
-			desc = "Show when the actor is elite.",
-		},
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.indicator_rare end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.indicator_rare = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Rare Icon",
-			desc = "Show when the actor is rare.",
-		},
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.indicator_quest end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.indicator_quest = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Quest Icon",
-			desc = "Show when the actor is a boss for a quest.",
-		},
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.indicator_enemyclass end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.indicator_enemyclass = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Enemy Class",
-			desc = "Enemy player class icon.",
-		},
-		
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.indicator_spec end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.indicator_spec = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Enemy Spec",
-			desc = "Enemy player spec icon.\n\n|cFFFFFF00Important|r: must have Details! Damage Meter installed.",
-		},
-		{
-			type = "range",
-			get = function() return Plater.db.profile.indicator_scale end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.indicator_scale = value
-				Plater.UpdateAllPlates()
-			end,
-			min = 0.2,
-			max = 3,
-			step = 0.01,
-			usedecimals = true,
-			name = "Scale",
-			desc = "Scale",
-		},
-
-		--indicator icon anchor
-		{
-			type = "select",
-			get = function() return Plater.db.profile.indicator_anchor.side end,
-			values = function() return build_anchor_side_table (nil, "indicator_anchor") end,
-			name = L["OPTIONS_ANCHOR"],
-			desc = "Which side of the nameplate this widget is attach to.",
-		},
-		--indicator icon anchor x offset
-		{
-			type = "range",
-			get = function() return Plater.db.profile.indicator_anchor.x end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.indicator_anchor.x = value
-				Plater.UpdateAllPlates()
-			end,
-			min = -100,
-			max = 100,
-			step = 1,
-			usedecimals = true,
-			name = L["OPTIONS_XOFFSET"],
-			desc = "Slightly move horizontally.",
-		},
-		--indicator icon anchor y offset
-		{
-			type = "range",
-			get = function() return Plater.db.profile.indicator_anchor.y end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.indicator_anchor.y = value
-				Plater.UpdateAllPlates()
-			end,
-			min = -100,
-			max = 100,
-			step = 1,
-			usedecimals = true,
-			name = L["OPTIONS_YOFFSET"],
-			desc = "Slightly move vertically.",
-		},
-		
-		{type="breakline"},
 		
 		{type = "label", get = function() return L["OPTIONS_GENERALSETTINGS_TRANSPARENCY_ANCHOR_TITLE"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
@@ -6512,39 +6391,7 @@ local relevance_options = {
 			desc = "When the unit is out of range and isn't your target, alpha is greatly reduced.",
 			id = "transparency_division",
 		},
-		{
-			type = "range",
-			get = function() return tonumber (GetCVar ("nameplateOccludedAlphaMult")) end,
-			set = function (self, fixedparam, value) 
-				if (not InCombatLockdown()) then
-					SetCVar ("nameplateOccludedAlphaMult", value)
-				else
-					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
-				end
-			end,
-			min = 0,
-			max = 1,
-			step = 0.1,
-			thumbscale = 1.7,
-			usedecimals = true,
-			name = "Occluded Alpha Multiplier" .. CVarIcon,
-			desc = "Alpha multiplyer for 'occluded' plates (when they are not in line of sight)." .. CVarDesc,
-			nocombat = true,
-		},
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.honor_blizzard_plate_alpha end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.honor_blizzard_plate_alpha = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Honor Blizzard Alpha",
-			desc = "Honor 'occluded' and 'personal bar alpha' blizzard settings. This setting only works with 'Use custom strata channels' enabled.",
-			id = "transparency_blizzard_alpha",
-		},
-		
-		{type = "blank"},
-		
+
 		--no combat alpha
 		{
 			type = "toggle",
@@ -6573,7 +6420,7 @@ local relevance_options = {
 
 		{type = "blank"},
 		
-		{type = "label", get = function() return "Range Check Spells - Enemy" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},		
+		{type = "label", get = function() return "Range Check By Yards - Enemy" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},		
 	}
 	
 	local playerSpecs = Plater.SpecList [select (2, UnitClass ("player"))]
@@ -6603,7 +6450,7 @@ local relevance_options = {
 	
 		{type = "blank"},
 	
-		{type = "label", get = function() return "Range Check Spells - Friendly" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return "Range Check By Yards - Friendly" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 	}
 	
@@ -6851,6 +6698,158 @@ local relevance_options = {
 			name = "In-Range/Target alpha",
 			desc = "Frame alpha for targets or in-range units.",
 			usedecimals = true,
+		},
+
+		{type = "breakline"},
+
+		{type = "label", get = function() return "Indicators:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.indicator_faction end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_faction = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Enemy Faction Icon",
+			desc = "Show horde or alliance icon.",
+		},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.indicator_pet end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_pet = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Pet Icon",
+			desc = "Pet Icon",
+		},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.health_cutoff end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.health_cutoff = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Execute Range",
+			desc = "Show an indicator when the unit is in execute range.\n\nPlater auto detects execute range for:\n\n|cFFFFFF00Hunter|r: Beast Master spec with Killer Instinct talent.\n\n|cFFFFFF00Warrior|r: Arms and Fury specs.\n\n|cFFFFFF00Priest|r: Shadow spec with Shadow Word: Death talent.\n\n|cFFFFFF00Mage|r: Fire spec with Searing Touch talent.",
+		},
+
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.indicator_worldboss end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_worldboss = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Worldboss Icon",
+			desc = "Show when the actor is elite.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.indicator_elite end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_elite = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Elite Icon",
+			desc = "Show when the actor is elite.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.indicator_rare end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_rare = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Rare Icon",
+			desc = "Show when the actor is rare.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.indicator_quest end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_quest = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Quest Icon",
+			desc = "Show when the actor is a boss for a quest.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.indicator_enemyclass end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_enemyclass = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Enemy Class",
+			desc = "Enemy player class icon.",
+		},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.indicator_spec end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_spec = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Enemy Spec",
+			desc = "Enemy player spec icon.\n\n|cFFFFFF00Important|r: must have Details! Damage Meter installed.",
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.indicator_scale end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_scale = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 0.2,
+			max = 3,
+			step = 0.01,
+			usedecimals = true,
+			name = "Scale",
+			desc = "Scale",
+		},
+
+		--indicator icon anchor
+		{
+			type = "select",
+			get = function() return Plater.db.profile.indicator_anchor.side end,
+			values = function() return build_anchor_side_table (nil, "indicator_anchor") end,
+			name = L["OPTIONS_ANCHOR"],
+			desc = "Which side of the nameplate this widget is attach to.",
+		},
+		--indicator icon anchor x offset
+		{
+			type = "range",
+			get = function() return Plater.db.profile.indicator_anchor.x end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_anchor.x = value
+				Plater.UpdateAllPlates()
+			end,
+			min = -100,
+			max = 100,
+			step = 1,
+			usedecimals = true,
+			name = L["OPTIONS_XOFFSET"],
+			desc = "Slightly move horizontally.",
+		},
+		--indicator icon anchor y offset
+		{
+			type = "range",
+			get = function() return Plater.db.profile.indicator_anchor.y end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_anchor.y = value
+				Plater.UpdateAllPlates()
+			end,
+			min = -100,
+			max = 100,
+			step = 1,
+			usedecimals = true,
+			name = L["OPTIONS_YOFFSET"],
+			desc = "Slightly move vertically.",
 		},
 	}
 
