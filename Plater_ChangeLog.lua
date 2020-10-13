@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1602538221,  "Options Changes", "October 13th, 2020", "New global nameplate width and height options for easier setup."},
 			{1602538221,  "Backend Changes", "October 13th, 2020", "'In Combat' config now applies according to combat state of the unit."},
 			{1602538221,  "New Feature", "October 13th, 2020", "Adding overwritable aura sort function 'Plater.AuraIconsSortFunction(aura1, aura2)' and options to enable/disable sorting. Default: time remaining."},
 			{1602538221,  "New Feature", "October 13th, 2020", "Quest mobs now have additional information available: 'QuestInfo'-list, containing all active quests with name, text, states and more information."},
