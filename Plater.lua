@@ -642,6 +642,8 @@ Plater.DefaultSpellRangeList = {
 	[71] = 30, --> warrior arms
 	[72] = 30, --> warrior fury
 	[73] = 30, --> warrior protect
+	
+	[1444] = 40, --> DAMAGER (low-level chars)
 }
 
 --> default ranges to use in the range check proccess against friendlies, player can select a different range in the options panel
@@ -693,6 +695,8 @@ Plater.DefaultSpellRangeListF = {
 	[71] = 30, --> warrior arms
 	[72] = 30, --> warrior fury
 	[73] = 30, --> warrior protect
+	
+	[1444] = 40, --> DAMAGER (low-level chars)
 }
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -900,7 +904,7 @@ Plater.DefaultSpellRangeListF = {
 				
 				
 			elseif (class == "WARRIOR") then
-				--is playing as a Arms warrior?
+				-- Execute is baseline
 				local specID = GetSpecializationInfo (spec)
 				if (specID and specID ~= 0) then
 					if (specID == 71 or specID == 72) then --arms or fury
@@ -927,6 +931,7 @@ Plater.DefaultSpellRangeListF = {
 						end
 					end
 				end
+				
 			elseif (class == "PALADIN") then
 				local specID = GetSpecializationInfo (spec)
 				if (specID and specID ~= 0) then
@@ -1215,8 +1220,8 @@ Plater.DefaultSpellRangeListF = {
 			local specID = GetSpecializationInfo (specIndex)
 			if (specID and specID ~= 0) then
 				--the local character saved variable hold the spell name used for the range check
-				Plater.RangeCheckRangeFriendly = PlaterDBChr.spellRangeCheckRangeFriendly [specID]
-				Plater.RangeCheckRangeEnemy = PlaterDBChr.spellRangeCheckRangeEnemy [specID]
+				Plater.RangeCheckRangeFriendly = PlaterDBChr.spellRangeCheckRangeFriendly [specID] or Plater.DefaultSpellRangeListF [specID] or 40
+				Plater.RangeCheckRangeEnemy = PlaterDBChr.spellRangeCheckRangeEnemy [specID] or Plater.DefaultSpellRangeList [specID] or 40
 				Plater.RangeCheckFunctionFriendly = LibRangeCheck:GetFriendMaxChecker(Plater.RangeCheckRangeFriendly)
 				Plater.RangeCheckFunctionEnemy = LibRangeCheck:GetHarmMaxChecker(Plater.RangeCheckRangeEnemy)
 			else
