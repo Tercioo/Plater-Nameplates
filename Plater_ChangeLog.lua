@@ -8,6 +8,11 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1602710092,  "Bug Fix", "October 14th, 2020", "Adding Warrior, Paladin and Monk execute spells as baseline."},
+			{1602710092,  "Bug Fix", "October 14th, 2020", "Fixed range check for low-level characters."},
+			{1602710092,  "Bug Fix", "October 14th, 2020", "Fixing issue with plate sizes not updating properly when entering combat."},
+			{1602710092,  "Bug Fix", "October 14th, 2020", "Fixing npc title recognition."},
+			
 			{1602538221,  "Options Changes", "October 13th, 2020", "New global nameplate width and height options for easier setup."},
 			{1602538221,  "Backend Changes", "October 13th, 2020", "'In Combat' config now applies according to combat state of the unit."},
 			{1602538221,  "New Feature", "October 13th, 2020", "Adding overwritable aura sort function 'Plater.AuraIconsSortFunction(aura1, aura2)' and options to enable/disable sorting. Default: time remaining."},
