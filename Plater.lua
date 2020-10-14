@@ -5883,14 +5883,14 @@ end
 			return
 		end
 		
-		local isInCombat = PLAYER_IN_COMBAT
-		
 		local unitFrame = plateFrame.unitFrame
 		local healthBar = unitFrame.healthBar
 		local castBar = unitFrame.castBar
 		local powerBar = unitFrame.powerBar
 		local buffFrame1 = unitFrame.BuffFrame
 		local buffFrame2 = unitFrame.BuffFrame2
+		
+		local isInCombat = unitFrame.InCombat --PLAYER_IN_COMBAT
 		
 		--use in combat bars when in pvp
 		if (plateFrame.actorType == ACTORTYPE_ENEMY_PLAYER) then
@@ -5905,7 +5905,7 @@ end
 		--get the config for this actor type
 		local plateConfigs = DB_PLATE_CONFIG [actorType]
 		--get the config key based if the player is in combat
-		local castBarConfigKey, healthBarConfigKey, manaConfigKey = Plater.GetHashKey (unitFrame.InCombat)
+		local castBarConfigKey, healthBarConfigKey, manaConfigKey = Plater.GetHashKey (isInCombat)
 
 		local healthBarWidth, healthBarHeight = unitFrame.customHealthBarWidth or plateConfigs [healthBarConfigKey][1], unitFrame.customHealthBarHeight or plateConfigs [healthBarConfigKey][2]
 		local castBarWidth, castBarHeight = unitFrame.customCastBarWidth or plateConfigs [castBarConfigKey][1], unitFrame.customCastBarHeight or plateConfigs [castBarConfigKey][2]
@@ -6145,7 +6145,11 @@ end
 				end
 			end
 			
+			local wasCombat = unitFrame.InCombat
 			unitFrame.InCombat = UnitAffectingCombat (tickFrame.unit)
+			if wasCombat ~= unitFrame.InCombat then
+				Plater.UpdatePlateSize (tickFrame.PlateFrame)
+			end
 			
 			--if the unit tapped? (gray color)
 			if (Plater.IsUnitTapDenied (tickFrame.unit)) then
