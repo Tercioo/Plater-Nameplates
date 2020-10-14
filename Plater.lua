@@ -907,15 +907,12 @@ Plater.DefaultSpellRangeListF = {
 				-- Execute is baseline
 				local specID = GetSpecializationInfo (spec)
 				if (specID and specID ~= 0) then
-					if (specID == 71 or specID == 72) then --arms or fury
-						Plater.SetExecuteRange (true, 0.20)
-						
-						if (specID == 71) then --arms
-							local _, _, _, using_Massacre = GetTalentInfo (3, 1, 1)
-							if (using_Massacre) then
-								--if using massacre, execute can be used at 35% health in Arms spec
-								Plater.SetExecuteRange (true, 0.35)
-							end
+					Plater.SetExecuteRange (true, 0.20)
+					if (specID == 71) then --arms
+						local _, _, _, using_Massacre = GetTalentInfo (3, 1, 1)
+						if (using_Massacre) then
+							--if using massacre, execute can be used at 35% health in Arms spec
+							Plater.SetExecuteRange (true, 0.35)
 						end
 					end
 				end
@@ -933,16 +930,13 @@ Plater.DefaultSpellRangeListF = {
 				end
 				
 			elseif (class == "PALADIN") then
-				local specID = GetSpecializationInfo (spec)
-				if (specID and specID ~= 0) then
-					if (specID == 70) then --retribution paladin
-						--> is using hammer of wrath?
-						local _, _, _, using_HammerOfWrath = GetTalentInfo (2, 3, 1)
-						if (using_HammerOfWrath) then
-							Plater.SetExecuteRange (true, 0.2)
-						end
-					end
-				end
+				-- hammer of wrath
+				Plater.SetExecuteRange (true, 0.2)
+				
+			elseif (class == "MONK") then
+				--Touch of Death
+				Plater.SetExecuteRange (true, 0.15)
+				
 			end
 		end
 	end	
