@@ -790,6 +790,14 @@ function Plater.OpenOptionsPanel()
 			profilesFrame.ImportStringField = importStringField
 			DF:ReskinSlider (importStringField.scroll)
 			
+			local block_mouse_frame = CreateFrame ("frame", nil, importStringField, BackdropTemplateMixin and "BackdropTemplate")
+			--block_mouse_frame:SetFrameLevel (block_mouse_frame:GetFrameLevel()-5)
+			block_mouse_frame:SetAllPoints()
+			block_mouse_frame:SetScript ("OnMouseDown", function()
+				importStringField:SetFocus (true)
+				importStringField.editbox:HighlightText()
+			end)
+			
 			--import button
 			local okayButton = DF:CreateButton (importStringField, function() profilesFrame.ConfirmImportProfile(false) end, buttons_size[1], buttons_size[2], L["OPTIONS_OKAY"], -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 			okayButton:SetIcon ([[Interface\BUTTONS\UI-Panel-BiggerButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
