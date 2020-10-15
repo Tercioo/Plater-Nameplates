@@ -2493,7 +2493,7 @@ Plater.DefaultSpellRangeListF = {
 		end,
 
 		PLAYER_LOGOUT = function()
-			Plater.SaveConsoleVariables()
+			--Plater.SaveConsoleVariables()
 		end,
 		
 		DISPLAY_SIZE_CHANGED = function()
