@@ -6423,6 +6423,17 @@ local relevance_options = {
 			usedecimals = true,
 		},
 
+		--per unit combat check
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.per_unit_combat_check end,
+			set = function (self, fixedparam, value)
+				Plater.db.profile.per_unit_combat_check = value
+			end,
+			name = "Per Unit Combat Check",
+			desc = "The units plates will only use the 'In Combat' variant if that specific unit is in combat. If this is unchecked once you enter combat all units plates will showq the 'In Combat' variant if you are in combat.",
+		},
+
 		{type = "blank"},
 		
 		{type = "label", get = function() return "Range Check By Yards - Enemy" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},		

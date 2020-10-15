@@ -5889,7 +5889,9 @@ end
 		local buffFrame1 = unitFrame.BuffFrame
 		local buffFrame2 = unitFrame.BuffFrame2
 		
-		local isInCombat = unitFrame.InCombat --PLAYER_IN_COMBAT
+		local profile = Plater.db.profile
+
+		local isInCombat = unitFrame.InCombat or (!profile.per_unit_combat_check and PLAYER_IN_COMBAT)
 		
 		--use in combat bars when in pvp
 		if (plateFrame.actorType == ACTORTYPE_ENEMY_PLAYER) then
@@ -5900,7 +5902,6 @@ end
 		
 		local actorType = plateFrame.actorType
 		
-		local profile = Plater.db.profile
 		--get the config for this actor type
 		local plateConfigs = DB_PLATE_CONFIG [actorType]
 		--get the config key based if the player is in combat
