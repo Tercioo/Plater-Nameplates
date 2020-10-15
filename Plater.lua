@@ -1432,7 +1432,9 @@ Plater.DefaultSpellRangeListF = {
 		local cvarTable = Plater.db.profile.saved_cvars
 		
 		if (not cvarTable) then
-			return
+			--return
+			Plater.db.profile.saved_cvars = {}
+			cvarTable = Plater.db.profile.saved_cvars
 		end
 		
 		--> personal and resources
@@ -2491,7 +2493,7 @@ Plater.DefaultSpellRangeListF = {
 		end,
 
 		PLAYER_LOGOUT = function()
-			
+			Plater.SaveConsoleVariables()
 		end,
 		
 		DISPLAY_SIZE_CHANGED = function()
@@ -4483,7 +4485,7 @@ function Plater.OnInit() --private --~oninit ~init
 		Plater.db.RegisterCallback (Plater, "OnProfileChanged", "RefreshConfigProfileChanged")
 		Plater.db.RegisterCallback (Plater, "OnProfileCopied", "RefreshConfig")
 		Plater.db.RegisterCallback (Plater, "OnProfileReset", "RefreshConfig")
-		Plater.db.RegisterCallback (Plater, "OnDatabaseShutdown", "SaveConsoleVariables")
+		--Plater.db.RegisterCallback (Plater, "OnDatabaseShutdown", "SaveConsoleVariables")
 		
 		function Plater.OnProfileCreated()
 			C_Timer.After (.5, function()
