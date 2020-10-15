@@ -8866,7 +8866,7 @@ function Plater.RestoreProfileCVars()
 			SetCVar (CVarName, CVarValue)
 		end
 		if (PlaterOptionsPanelFrame) then
-			PlaterOptionsPanelFrame.RefreshOptionsFrame()
+			--PlaterOptionsPanelFrame.RefreshOptionsFrame()
 		end
 	end
 end
