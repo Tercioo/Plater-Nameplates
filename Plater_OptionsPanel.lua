@@ -6479,6 +6479,7 @@ local relevance_options = {
 			values = function() 
 				local onSelectFunc = function (_, _, range)
 					PlaterDBChr.spellRangeCheckRangeEnemy [specID] = range
+					PlaterDBChr.spellRangeCheckRangeEnemy [1444] = range -- workaround for "DAMAGER" (level 1-10) spec
 					Plater.GetSpellForRangeCheck()
 				end
 				local t = {}
@@ -6513,6 +6514,7 @@ local relevance_options = {
 			values = function() 
 				local onSelectFunc = function (_, _, range)
 					PlaterDBChr.spellRangeCheckRangeFriendly [specID] = range
+					PlaterDBChr.spellRangeCheckRangeFriendly [1444] = range -- workaround for "DAMAGER" (level 1-10) spec
 					Plater.GetSpellForRangeCheck()
 				end
 				local t = {}
