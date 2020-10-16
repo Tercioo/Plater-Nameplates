@@ -12491,6 +12491,16 @@ end
 			desc = "If the Masque addon is installed, enabling this will make Plater to use Masque borders.\n\n|cFFFFFF00Important|r: require /reload after changing this setting.",
 		},
 		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.use_player_combat_state end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.use_player_combat_state = value
+			end,
+			name = "In/Out of Combat Settings: Use Player Combat State",
+			desc = "Use the players combat state instead of the units when applying settings for In/Out of Combat.",
+		},
+		
 			--=[ --removed top and bottom constrain options
 			--added back for debug
 			{type = "blank"},

@@ -4146,13 +4146,15 @@ function Plater.OnInit() --private --~oninit ~init
 					
 					self.FrameOverlay:SetBackdropBorderColor (0, 0, 0, 0)
 					
+					local profile = Plater.db.profile
+					local isInCombat = profile.use_player_combat_state and PLAYER_IN_COMBAT or unitFrame.InCombat
+					
 					--cut the spell name text to fit within the castbar
-					Plater.UpdateSpellNameSize (self.Text, unitFrame.ActorType, nil, unitFrame.InCombat)
+					Plater.UpdateSpellNameSize (self.Text, unitFrame.ActorType, nil, isInCombat)
 
 					Plater.UpdateCastbarTargetText (self)
 
 					--castbar icon
-					local profile = Plater.db.profile
 					if (profile.castbar_icon_customization_enabled) then
 						local icon = self.Icon
 
@@ -5886,6 +5888,7 @@ end
 			return
 		end
 		
+		local profile = Plater.db.profile
 		local unitFrame = plateFrame.unitFrame
 		local healthBar = unitFrame.healthBar
 		local castBar = unitFrame.castBar
@@ -5893,7 +5896,7 @@ end
 		local buffFrame1 = unitFrame.BuffFrame
 		local buffFrame2 = unitFrame.BuffFrame2
 		
-		local isInCombat = unitFrame.InCombat --PLAYER_IN_COMBAT
+		local isInCombat = profile.use_player_combat_state and PLAYER_IN_COMBAT or unitFrame.InCombat
 		
 		--use in combat bars when in pvp
 		if (plateFrame.actorType == ACTORTYPE_ENEMY_PLAYER) then
@@ -5904,7 +5907,6 @@ end
 		
 		local actorType = plateFrame.actorType
 		
-		local profile = Plater.db.profile
 		--get the config for this actor type
 		local plateConfigs = DB_PLATE_CONFIG [actorType]
 		--get the config key based if the player is in combat
@@ -6159,7 +6161,7 @@ end
 				Plater.ChangeHealthBarColor_Internal (healthBar, unpack (Plater.db.profile.tap_denied_color))
 			
 			--check aggro if is in combat
-			elseif (PLAYER_IN_COMBAT) then
+			elseif (PLAYER_IN_COMBAT and unitFrame.InCombat) then
 
 				if (unitFrame.CanCheckAggro) then
 					Plater.UpdateNameplateThread (unitFrame)
@@ -6273,7 +6275,7 @@ end
 			end
 			
 			--details! integration
-			if (IS_USING_DETAILS_INTEGRATION and not tickFrame.PlateFrame.isSelf and PLAYER_IN_COMBAT) then
+			if (IS_USING_DETAILS_INTEGRATION and not tickFrame.PlateFrame.isSelf and PLAYER_IN_COMBAT and unitFrame.InCombat) then
 				local detailsPlaterConfig = Details.plater
 
 				--> current damage taken from all sources
@@ -6605,7 +6607,9 @@ end
 	-- ~target
 	function Plater.UpdateTarget (plateFrame) --private
 
-		if (UnitIsUnit (plateFrame.unitFrame [MEMBER_UNITID], "focus") and Plater.db.profile.focus_indicator_enabled) then
+		local profile = Plater.db.profile
+		local unitFrame = plateFrame.unitFrame
+		if (UnitIsUnit (unitFrame [MEMBER_UNITID], "focus") and profile.focus_indicator_enabled) then
 			--this is a rare call, no need to cache these values
 			local texture = LibSharedMedia:Fetch ("statusbar", Plater.db.profile.focus_texture)
 			plateFrame.FocusIndicator:SetTexture (texture)
@@ -6615,9 +6619,9 @@ end
 			plateFrame.FocusIndicator:Hide()
 		end
 
-		if (UnitIsUnit (plateFrame.unitFrame [MEMBER_UNITID], "target")) then
+		if (UnitIsUnit (unitFrame [MEMBER_UNITID], "target")) then
 			plateFrame [MEMBER_TARGET] = true
-			plateFrame.unitFrame [MEMBER_TARGET] = true
+			unitFrame [MEMBER_TARGET] = true
 			
 			--hide obscured texture
 			plateFrame.Obscured:Hide()
@@ -6626,7 +6630,7 @@ end
 			Plater.UpdateTargetIndicator (plateFrame)
 			
 			--target highlight
-			if (Plater.db.profile.target_highlight) then
+			if (profile.target_highlight) then
 				if (plateFrame.actorType ~= ACTORTYPE_FRIENDLY_PLAYER and plateFrame.actorType ~= ACTORTYPE_FRIENDLY_NPC and not plateFrame.PlayerCannotAttack) then
 					plateFrame.TargetNeonUp:Show()
 					plateFrame.TargetNeonDown:Show()
@@ -6640,37 +6644,37 @@ end
 				plateFrame.TargetNeonDown:Hide()
 			end
 			
-			if (not plateFrame.unitFrame.healthBar:IsShown()) then
-				plateFrame.unitFrame.targetOverlayTexture:Hide()
+			if (not unitFrame.healthBar:IsShown()) then
+				unitFrame.targetOverlayTexture:Hide()
 			else
-				plateFrame.unitFrame.targetOverlayTexture:Show()
+				unitFrame.targetOverlayTexture:Show()
 			end
 			
 			if (DB_USE_UIPARENT) then
-				Plater.UpdateUIParentTargetLevels (plateFrame.unitFrame)
+				Plater.UpdateUIParentTargetLevels (unitFrame)
 			end
 			
 			Plater.UpdateResourceFrame()
 		else
 			plateFrame.TargetNeonUp:Hide()
 			plateFrame.TargetNeonDown:Hide()
-			plateFrame.unitFrame.targetOverlayTexture:Hide()
+			unitFrame.targetOverlayTexture:Hide()
 			
 			plateFrame [MEMBER_TARGET] = nil
-			plateFrame.unitFrame [MEMBER_TARGET] = nil
+			unitFrame [MEMBER_TARGET] = nil
 			
-			if (plateFrame.unitFrame.IsTarget or plateFrame.unitFrame.TargetTextures2Sides [1]:IsShown() or plateFrame.unitFrame.TargetTextures4Sides [1]:IsShown()) then
+			if (unitFrame.IsTarget or unitFrame.TargetTextures2Sides [1]:IsShown() or unitFrame.TargetTextures4Sides [1]:IsShown()) then
 				for i = 1, 2 do
-					plateFrame.unitFrame.TargetTextures2Sides [i]:Hide()
+					unitFrame.TargetTextures2Sides [i]:Hide()
 				end
 				for i = 1, 4 do
-					plateFrame.unitFrame.TargetTextures4Sides [i]:Hide()
+					unitFrame.TargetTextures4Sides [i]:Hide()
 				end
 				
-				plateFrame.unitFrame.IsTarget = false
+				unitFrame.IsTarget = false
 			end
 			
-			if (DB_TARGET_SHADY_ENABLED and (not DB_TARGET_SHADY_COMBATONLY or PLAYER_IN_COMBAT) and not plateFrame.isSelf) then
+			if (DB_TARGET_SHADY_ENABLED and (not DB_TARGET_SHADY_COMBATONLY or (profile.use_player_combat_state and PLAYER_IN_COMBAT or unitFrame.InCombat)) and not plateFrame.isSelf) then
 				plateFrame.Obscured:Show()
 				plateFrame.Obscured:SetAlpha (DB_TARGET_SHADY_ALPHA)
 			else
@@ -6678,7 +6682,7 @@ end
 			end
 			
 			if (DB_USE_UIPARENT) then
-				Plater.UpdateUIParentLevels (plateFrame.unitFrame)
+				Plater.UpdateUIParentLevels (unitFrame)
 			end
 		end
 
@@ -7192,7 +7196,7 @@ end
 		
 		if (plateConfigs.percent_text_enabled) then
 			--can show out of combat? or if the player is in combat
-			if (PLAYER_IN_COMBAT or plateConfigs.percent_text_ooc) then
+			if ((Plater.db.profile.use_player_combat_state and PLAYER_IN_COMBAT or self.unitFrame.InCombat) or plateConfigs.percent_text_ooc) then
 				self.unitFrame.healthBar.lifePercent:Show()
 			else
 				self.unitFrame.healthBar.lifePercent:Hide()
@@ -7261,7 +7265,7 @@ end
 		end
 		
 		local actorTypeDBConfig = DB_PLATE_CONFIG [unitFrame.actorType]
-		if (PLAYER_IN_COMBAT) then
+		if (Plater.db.profile.use_player_combat_state and PLAYER_IN_COMBAT or unitFrame.InCombat) then
 			if (actorTypeDBConfig.percent_text_enabled) then
 				Plater.UpdateLifePercentText (unitFrame.healthBar, unitFrame.unit, actorTypeDBConfig.percent_show_health, actorTypeDBConfig.percent_show_percent, actorTypeDBConfig.percent_text_show_decimals)
 			end
