@@ -918,6 +918,8 @@ Plater.DefaultSpellRangeListF = {
 				end
 				
 			elseif (class == "HUNTER") then
+				Plater.SetExecuteRange (true, 0.2) -- Kill Shot available to all hunters
+				
 				local specID = GetSpecializationInfo (spec)
 				if (specID and specID ~= 0) then
 					if (specID == 253) then --beast mastery
@@ -8867,7 +8869,7 @@ function Plater.RestoreProfileCVars()
 			SetCVar (CVarName, CVarValue)
 		end
 		if (PlaterOptionsPanelFrame) then
-			PlaterOptionsPanelFrame.RefreshOptionsFrame()
+			--PlaterOptionsPanelFrame.RefreshOptionsFrame()
 		end
 	end
 end
