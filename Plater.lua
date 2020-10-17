@@ -1021,11 +1021,10 @@ Plater.DefaultSpellRangeListF = {
 		end
 		
 		if not rangeChecker then
-			--TODO: remove...
-			if rangeCheckRange then print("Fallback range-check used! (Please report class and selected ranges to Ariani|Continuity on the discord.)") end
 			rangeChecker = function (unit)
 				return LibRangeCheck:GetRange(unit) < (rangeCheckRange or 40)
 			end
+			Plater.GetSpellForRangeCheck()
 		end
 
 		--this unit is target
@@ -1205,7 +1204,9 @@ Plater.DefaultSpellRangeListF = {
 	end
 
 	--> execute after player logon or when the player changes its spec
+	local tryingToUpdateRangeChecker = false
 	function Plater.GetSpellForRangeCheck()
+		if tryingToUpdateRangeChecker then return end
 		Plater.RangeCheckRangeEnemy = nil
 		Plater.RangeCheckRangeFriendly = nil
 		Plater.RangeCheckFunctionEnemy = nil
@@ -1220,10 +1221,13 @@ Plater.DefaultSpellRangeListF = {
 				Plater.RangeCheckRangeEnemy = PlaterDBChr.spellRangeCheckRangeEnemy [specID] or Plater.DefaultSpellRangeList [specID] or 40
 				Plater.RangeCheckFunctionFriendly = LibRangeCheck:GetFriendMaxChecker(Plater.RangeCheckRangeFriendly)
 				Plater.RangeCheckFunctionEnemy = LibRangeCheck:GetHarmMaxChecker(Plater.RangeCheckRangeEnemy)
+				tryingToUpdateRangeChecker = false
 			else
+				tryingToUpdateRangeChecker = true
 				C_Timer.After (5, re_GetSpellForRangeCheck)
 			end
 		else
+			tryingToUpdateRangeChecker = true
 			C_Timer.After (5, re_GetSpellForRangeCheck)
 		end
 
