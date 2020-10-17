@@ -1469,6 +1469,7 @@ Plater.DefaultSpellRangeListF = {
 		--> reset the horizontal and vertical scale
 		cvarTable ["NamePlateHorizontalScale"] = GetCVar ("NamePlateHorizontalScale")
 		cvarTable ["NamePlateVerticalScale"] = GetCVar ("NamePlateVerticalScale")
+		cvarTable ["NamePlateClassificationScale"] = GetCVar ("NamePlateClassificationScale")
 		
 		--> stacking nameplates
 		cvarTable ["nameplateMotion"] = GetCVar ("nameplateMotion")
@@ -8830,6 +8831,7 @@ function Plater.SetCVarsOnFirstRun()
 	--> reset the horizontal and vertical scale
 	SetCVar ("NamePlateHorizontalScale", CVAR_ENABLED)
 	SetCVar ("NamePlateVerticalScale", CVAR_ENABLED)
+	SetCVar ("NamePlateClassificationScale", CVAR_ENABLED)
 	
 	--> make the selection be a little bigger
 	SetCVar ("nameplateSelectedScale", "1.15")
