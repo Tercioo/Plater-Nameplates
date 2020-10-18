@@ -8,6 +8,18 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1603047531,  "Bug Fix", "October 18th, 2020", "Execute spells are now checked for being available."},
+			{1603047531,  "Bug Fix", "October 18th, 2020", "Execute Glow effect now scales properly with healthbar size."},
+			{1603047531,  "Bug Fix", "October 17th, 2020", "Fixing an issue with overwritten modTable/scriptTable for mods/scripts with the same name."},
+			{1603047531,  "Bug Fix", "October 17th, 2020", "Destructor Hooks now are called again."},
+			{1603047531,  "Bug Fix", "October 16th, 2020", "Fixing range check for low-level characters without a talent spec."},
+			{1603047531,  "Bug Fix", "October 16th, 2020", "Adding an option to switch back to player combat state recognition instead of unit state. (Thanks Jaden for the initial work on this)"},
+			{1603047531,  "Bug Fix", "October 16th, 2020", "Fixing 'combat state' recognition for certain options."},
+			{1603047531,  "Bug Fix", "October 15th, 2020", "CVars should now be stored and restored more consistently when changed through Plater."},
+			{1603047531,  "Bug Fix", "October 15th, 2020", "Selecting Profile Import text box is now easier."},
+			{1603047531,  "Backend Changes", "October 15th, 2020", "Adding missing execute spells."},
+			{1603047531,  "Bug Fix", "October 15th, 2020", "Fixing an issue with importing profiles."},
+			
 			{1602710092,  "Bug Fix", "October 14th, 2020", "Adding Warrior, Paladin and Monk execute spells as baseline."},
 			{1602710092,  "Bug Fix", "October 14th, 2020", "Fixed range check for low-level characters."},
 			{1602710092,  "Bug Fix", "October 14th, 2020", "Fixing issue with plate sizes not updating properly when entering combat."},
