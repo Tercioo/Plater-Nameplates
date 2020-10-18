@@ -2765,16 +2765,18 @@ Plater.DefaultSpellRangeListF = {
 				executeGlowUp:SetHeight (32)		
 				executeGlowUp:SetBlendMode ("ADD")
 				executeGlowUp:Hide()
-				PixelUtil.SetPoint (executeGlowUp, "bottom", healthBar, "top", 0, 0)
+				PixelUtil.SetPoint (executeGlowUp, "bottomright", healthBar, "topright", 0, 0)
+				PixelUtil.SetPoint (executeGlowUp, "bottomleft", healthBar, "topleft", 0, 0)
 				healthBar.ExecuteGlowUp = executeGlowUp
 				
 				local executeGlowDown = healthBar:CreateTexture (nil, "overlay")
 				executeGlowDown:SetTexture ([[Interface\AddOns\Plater\images\blue_neon]])
 				executeGlowDown:SetTexCoord (0, 1, 0.5, 1)
-				executeGlowDown:SetHeight (30)
+				executeGlowDown:SetHeight (32)
 				executeGlowDown:SetBlendMode ("ADD")
 				executeGlowDown:Hide()
-				PixelUtil.SetPoint (executeGlowDown, "top", healthBar, "bottom", 0, 0)
+				PixelUtil.SetPoint (executeGlowDown, "topright", healthBar, "bottomright", 0, 0)
+				PixelUtil.SetPoint (executeGlowDown, "topleft", healthBar, "bottomleft", 0, 0)
 				healthBar.ExecuteGlowDown = executeGlowDown
 				
 				local executeGlowAnimationOnPlay = function (self)
