@@ -888,7 +888,9 @@ Plater.DefaultSpellRangeListF = {
 		
 			if (class == "PRIEST") then
 				-- SW:D is available to all priest specs
-				Plater.SetExecuteRange (true, 0.20)
+				if IsSpellKnown(32379) then
+					Plater.SetExecuteRange (true, 0.20)
+				end
 				
 			elseif (class == "MAGE") then
 				--playing fire mage?
@@ -905,39 +907,48 @@ Plater.DefaultSpellRangeListF = {
 				
 			elseif (class == "WARRIOR") then
 				-- Execute is baseline
-				local specID = GetSpecializationInfo (spec)
-				if (specID and specID ~= 0) then
+				if IsSpellKnown(163201) then
 					Plater.SetExecuteRange (true, 0.20)
-					if (specID == 71) then --arms
-						local _, _, _, using_Massacre = GetTalentInfo (3, 1, 1)
-						if (using_Massacre) then
-							--if using massacre, execute can be used at 35% health in Arms spec
-							Plater.SetExecuteRange (true, 0.35)
+					local specID = GetSpecializationInfo (spec)
+					if (specID and specID ~= 0) then
+						
+						if (specID == 71) then --arms
+							local _, _, _, using_Massacre = GetTalentInfo (3, 1, 1)
+							if (using_Massacre) then
+								--if using massacre, execute can be used at 35% health in Arms spec
+								Plater.SetExecuteRange (true, 0.35)
+							end
 						end
 					end
 				end
 				
 			elseif (class == "HUNTER") then
-				Plater.SetExecuteRange (true, 0.2) -- Kill Shot available to all hunters
-				
-				local specID = GetSpecializationInfo (spec)
-				if (specID and specID ~= 0) then
-					if (specID == 253) then --beast mastery
-						--> is using killer instinct?
-						local _, _, _, using_KillerInstinct = GetTalentInfo (1, 1, 1)
-						if (using_KillerInstinct) then
-							Plater.SetExecuteRange (true, 0.35)
+				if IsSpellKnown(53351) then
+					Plater.SetExecuteRange (true, 0.2) -- Kill Shot available to all hunters
+					
+					local specID = GetSpecializationInfo (spec)
+					if (specID and specID ~= 0) then
+						if (specID == 253) then --beast mastery
+							--> is using killer instinct?
+							local _, _, _, using_KillerInstinct = GetTalentInfo (1, 1, 1)
+							if (using_KillerInstinct) then
+								Plater.SetExecuteRange (true, 0.35)
+							end
 						end
 					end
 				end
 				
 			elseif (class == "PALADIN") then
 				-- hammer of wrath
-				Plater.SetExecuteRange (true, 0.2)
+				if IsSpellKnown(24275) then
+					Plater.SetExecuteRange (true, 0.2)
+				end
 				
 			elseif (class == "MONK") then
 				--Touch of Death
-				Plater.SetExecuteRange (true, 0.15)
+				if IsSpellKnown(322109) then
+					Plater.SetExecuteRange (true, 0.15)
+				end
 				
 			end
 		end
