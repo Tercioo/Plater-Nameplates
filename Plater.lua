@@ -1016,7 +1016,7 @@ Plater.DefaultSpellRangeListF = {
 			castBar_rangeCheckAlpha = Plater.db.profile.range_check_cast_bar_alpha
 			buffFrames_rangeCheckAlpha = Plater.db.profile.range_check_buffs_alpha
 			powerBar_rangeCheckAlpha = Plater.db.profile.range_check_power_bar_alpha
-			rangeChecker = Plater.RangeCheckFunctionEnemy
+			rangeChecker = Plater.RangeCheckFunctionEnemy or LibRangeCheck:GetHarmMaxChecker(Plater.RangeCheckRangeEnemy or 40)
 			rangeCheckRange = Plater.RangeCheckRangeEnemy
 			
 		else
@@ -1027,13 +1027,13 @@ Plater.DefaultSpellRangeListF = {
 			castBar_rangeCheckAlpha = Plater.db.profile.range_check_cast_bar_alpha_friendlies
 			buffFrames_rangeCheckAlpha = Plater.db.profile.range_check_buffs_alpha_friendlies
 			powerBar_rangeCheckAlpha = Plater.db.profile.range_check_power_bar_alpha_friendlies
-			rangeChecker = Plater.RangeCheckFunctionFriendly
+			rangeChecker = Plater.RangeCheckFunctionFriendly or LibRangeCheck:GetFriendMaxChecker(Plater.RangeCheckRangeFriendly or 40)
 			rangeCheckRange = Plater.RangeCheckRangeFriendly
 		end
 		
 		if not rangeChecker then
 			rangeChecker = function (unit)
-				return LibRangeCheck:GetRange(unit) < (rangeCheckRange or 40)
+				return (LibRangeCheck:GetRange(unit) or 0) < (rangeCheckRange or 40)
 			end
 			Plater.GetSpellForRangeCheck()
 		end
@@ -1235,11 +1235,11 @@ Plater.DefaultSpellRangeListF = {
 				tryingToUpdateRangeChecker = false
 			else
 				tryingToUpdateRangeChecker = true
-				C_Timer.After (5, re_GetSpellForRangeCheck)
+				C_Timer.After (1, re_GetSpellForRangeCheck)
 			end
 		else
 			tryingToUpdateRangeChecker = true
-			C_Timer.After (5, re_GetSpellForRangeCheck)
+			C_Timer.After (1, re_GetSpellForRangeCheck)
 		end
 
 	end	
