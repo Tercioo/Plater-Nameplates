@@ -10371,6 +10371,9 @@ end
 
 	--recompile a single scriptObject deleting the global environment
 	function Plater.RecompileScript(scriptObject)
+		if not scriptObject.scriptId then
+			scriptObject.scriptId = tostring(scriptObject)
+		end
 		local scriptType = Plater.GetScriptType(scriptObject)
 		if (scriptType == "script") then
 			PLATER_GLOBAL_SCRIPT_ENV [scriptObject.scriptId] = nil
@@ -10715,6 +10718,10 @@ end
 			return
 		end
 		
+		if not scriptObject.scriptId then
+			scriptObject.scriptId = tostring(scriptObject)
+		end
+		
 		do --check integrity
 			if (not scriptObject.Name) then
 				Plater:Msg ("fail to load mod: " .. (scriptObject.Name or "") .. ".")
@@ -10844,6 +10851,10 @@ end
 			return
 		elseif (not scriptObject.Enabled) then
 			return
+		end
+		
+		if not scriptObject.scriptId then
+			scriptObject.scriptId = tostring(scriptObject)
 		end
 		
 		--store the scripts to be compiled
