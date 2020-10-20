@@ -6783,7 +6783,7 @@ local relevance_options = {
 				Plater.UpdateAllPlates()
 			end,
 			name = "Execute Range",
-			desc = "Show an indicator when the unit is in execute range.\n\nPlater auto detects execute range for:\n\n|cFFFFFF00Hunter|r\n\n|cFFFFFF00Warrior|r\n\n|cFFFFFF00Priest|r\n\n|cFFFFFF00Paladin|r\n\n|cFFFFFF00Monk|r\n\n|cFFFFFF00Mage|r: Fire spec with Searing Touch talent.",
+			desc = "Show an indicator when the unit is in execute range.\n\nPlater auto detects execute range for:\n\n|cFFFFFF00Hunter|r\n\n|cFFFFFF00Warrior|r\n\n|cFFFFFF00Priest|r\n\n|cFFFFFF00Paladin|r\n\n|cFFFFFF00Monk|r\n\n|cFFFFFF00Mage|r: Fire spec with Searing Touch talent.\n\n|cFFFFFF00Warlock|r: Destruction spec with Shadowburn talent.",
 		},
 
 		{
