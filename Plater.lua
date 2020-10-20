@@ -957,7 +957,7 @@ Plater.DefaultSpellRangeListF = {
 					if (specID == 267) then --destro
 						local _, _, _, using_Shadowburn = GetTalentInfo (2, 3, 1)
 						if (using_Shadowburn) then
-							Plater.SetExecuteRange (true, 0.30)
+							Plater.SetExecuteRange (true, 0.20)
 						end
 					end
 				end
