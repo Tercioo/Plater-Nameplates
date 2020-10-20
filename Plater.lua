@@ -951,12 +951,17 @@ Plater.DefaultSpellRangeListF = {
 				end
 			
 			elseif (class == "WARLOCK") then
-				--playing fire mage?
+				-- which WL spec?
 				local specID = GetSpecializationInfo (spec)
 				if (specID and specID ~= 0) then
 					if (specID == 267) then --destro
 						local _, _, _, using_Shadowburn = GetTalentInfo (2, 3, 1)
 						if (using_Shadowburn) then
+							Plater.SetExecuteRange (true, 0.20)
+						end
+					elseif (specID == 265) then --affli
+						local _, _, _, using_DrainSoul = GetTalentInfo (1, 3, 1)
+						if (using_DrainSoul) then
 							Plater.SetExecuteRange (true, 0.20)
 						end
 					end
