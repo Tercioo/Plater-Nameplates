@@ -6149,6 +6149,7 @@ end
 		tickFrame.ThrottleUpdate = tickFrame.ThrottleUpdate - deltaTime
 		local unitFrame = tickFrame.unitFrame
 		local healthBar = unitFrame.healthBar
+		local profile = Plater.db.profile
 		
 		--throttle updates, things on this block update with the interval set in the advanced tab
 		if (tickFrame.ThrottleUpdate < 0) then
@@ -6167,7 +6168,7 @@ end
 						healthBar.healthCutOff:SetSize (healthBar:GetHeight(), healthBar:GetHeight())
 						healthBar.healthCutOff:SetPoint ("center", healthBar, "left", healthBar:GetWidth() * DB_HEALTHCUTOFF_AT, 0)
 						
-						if (not Plater.db.profile.health_cutoff_hide_divisor) then
+						if (not profile.health_cutoff_hide_divisor) then
 							healthBar.healthCutOff:Show()
 							healthBar.healthCutOff.ShowAnimation:Play()
 						else
@@ -6182,7 +6183,7 @@ end
 						healthBar.executeRange:SetHeight (healthBar:GetHeight())
 						healthBar.executeRange:SetPoint ("right", healthBar.healthCutOff, "center")
 						
-						if (Plater.db.profile.health_cutoff_extra_glow) then
+						if (profile.health_cutoff_extra_glow) then
 							healthBar.ExecuteGlowUp.ShowAnimation:Play()
 							healthBar.ExecuteGlowDown.ShowAnimation:Play()
 						end
@@ -6205,26 +6206,22 @@ end
 				Plater.UpdatePlateSize (tickFrame.PlateFrame)
 			end
 			
-			--if the unit tapped? (gray color)
-			if (Plater.IsUnitTapDenied (tickFrame.unit)) then
-				Plater.ChangeHealthBarColor_Internal (healthBar, unpack (Plater.db.profile.tap_denied_color))
-			
 			--check aggro if is in combat
-			elseif (PLAYER_IN_COMBAT and unitFrame.InCombat) then
-
+			if (PLAYER_IN_COMBAT) then
 				if (unitFrame.CanCheckAggro) then
 					Plater.UpdateNameplateThread (unitFrame)
 				end
-				
-				if (actorTypeDBConfig.percent_text_enabled) then
-					Plater.UpdateLifePercentText (healthBar, unitFrame.unit, actorTypeDBConfig.percent_show_health, actorTypeDBConfig.percent_show_percent, actorTypeDBConfig.percent_text_show_decimals)
-				end
-			else
-				--if not in combat, check if can show the percent health out of combat
-				if (actorTypeDBConfig.percent_text_enabled and actorTypeDBConfig.percent_text_ooc) then
-					Plater.UpdateLifePercentText (healthBar, unitFrame.unit, actorTypeDBConfig.percent_show_health, actorTypeDBConfig.percent_show_percent, actorTypeDBConfig.percent_text_show_decimals)
-					healthBar.lifePercent:Show()
-				end
+			end
+			
+			--if not in combat, check if can show the percent health out of combat
+			if (actorTypeDBConfig.percent_text_enabled and ((profile.use_player_combat_state and PLAYER_IN_COMBAT or unitFrame.InCombat)) or actorTypeDBConfig.percent_text_ooc) then
+				Plater.UpdateLifePercentText (healthBar, unitFrame.unit, actorTypeDBConfig.percent_show_health, actorTypeDBConfig.percent_show_percent, actorTypeDBConfig.percent_text_show_decimals)
+				healthBar.lifePercent:Show()
+			end
+						
+			--if the unit tapped? (gray color)
+			if (Plater.IsUnitTapDenied (tickFrame.unit)) then
+				Plater.ChangeHealthBarColor_Internal (healthBar, unpack (profile.tap_denied_color))
 			end
 
 			--the color overrider for unitIDs goes after the threat check and before the aura, since auras can run scripts and scripts have priority on setting colors
