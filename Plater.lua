@@ -2854,6 +2854,26 @@ Plater.DefaultSpellRangeListF = {
 				onTickFrame.unitFrame = plateFrame.unitFrame
 				onTickFrame.BuffFrame = plateFrame.unitFrame.BuffFrame
 				onTickFrame.BuffFrame2 = plateFrame.unitFrame.BuffFrame2
+				
+				
+				--> create a second castbar
+				local castBar2 = DF:CreateCastBar (plateFrame.unitFrame, "$parentCastBar2")
+				plateFrame.unitFrame.castBar2 = castBar2
+				castBar2.Icon:ClearAllPoints()
+				castBar2.Icon:SetPoint("right", castBar2, "left", -1, 0)
+
+				castBar2.FrameOverlay = CreateFrame ("frame", "$parentOverlayFrame", castBar2, BackdropTemplateMixin and "BackdropTemplate")
+				castBar2.FrameOverlay:SetAllPoints()
+
+				--pushing the spell name up
+				castBar2.Text:SetParent (castBar2.FrameOverlay)
+				
+				--does have a border but its alpha is zero by default
+				castBar2.FrameOverlay:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
+				castBar2.FrameOverlay:SetBackdropBorderColor (1, 1, 1, 0)
+				castBar2:SetPoint("topleft", plateFrame.unitFrame.castBar, "bottomleft", 0, -2)
+				castBar2:SetPoint("topright", plateFrame.unitFrame.castBar, "bottomright", 0, -2)
+
 			
 			--> unit name
 				--regular name
