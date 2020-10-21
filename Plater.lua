@@ -3235,9 +3235,6 @@ Plater.DefaultSpellRangeListF = {
 			--clear the custom indicators table
 			wipe (unitFrame.CustomIndicators)
 			
-			--sending true to force the color update when the color overrider is enabled
-			Plater.FindAndSetNameplateColor (unitFrame, true)
-			
 			--health amount
 			Plater.QuickHealthUpdate (unitFrame)
 			healthBar.IsAnimating = false
@@ -3349,6 +3346,9 @@ Plater.DefaultSpellRangeListF = {
 					end
 				end
 			end
+			
+			--sending true to force the color update when the color overrider is enabled
+			Plater.FindAndSetNameplateColor (unitFrame, true)
 			
 			--icone da cast bar
 			castBar.Icon:ClearAllPoints()
