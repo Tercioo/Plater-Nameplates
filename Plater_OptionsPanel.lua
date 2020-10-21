@@ -561,6 +561,25 @@ function Plater.OpenOptionsPanel()
 					end
 				end
 				
+				-- cleanup NPC cache/colors
+				local cache = Plater.db.profile.npc_cache
+				local cacheTemp = DetailsFramework.table.copy({},cache)
+				for n, v in pairs(cacheTemp) do
+					if tonumber(n) then 
+						cache[n] = nil
+						cache[tonumber(n)] = v 
+					end
+				end
+				
+				local colors = Plater.db.profile.npc_colors
+				local colorsTemp = DetailsFramework.table.copy({},colors)
+				for n, v in pairs(colorsTemp) do
+					if tonumber(n) then 
+						colors[n] = nil
+						colors[tonumber(n)] = v 
+					end
+				end
+				
 				--restore CVars of the profile
 				Plater.RestoreProfileCVars()
 				
