@@ -889,88 +889,61 @@ Plater.DefaultSpellRangeListF = {
 		
 			if (class == "PRIEST") then
 				-- SW:D is available to all priest specs
-				if IsSpellKnown(32379) then
+				if IsPlayerSpell(32379) then
 					Plater.SetExecuteRange (true, 0.20)
 				end
 				
 			elseif (class == "MAGE") then
-				--playing fire mage?
-				local specID = GetSpecializationInfo (spec)
-				if (specID and specID ~= 0) then
-					if (specID == 63) then --fire
-						local _, _, _, using_SearingTouch = GetTalentInfo (1, 3, 1)
-						local _, _, _, using_Firestarter = GetTalentInfo (1, 1, 1)
-						if (using_SearingTouch) then
-							Plater.SetExecuteRange (true, 0.30)
-						elseif (using_Firestarter) then
-							Plater.SetExecuteRange (true, 0, 0.9)
-						end
-					end
+				if IsPlayerSpell(269644) then -- Searing Touch
+					Plater.SetExecuteRange (true, 0.20)
+				elseif IsPlayerSpell(205026) then --Firestarter
+					Plater.SetExecuteRange (true, 0, 0.9)
 				end
-				
 				
 			elseif (class == "WARRIOR") then
 				-- Execute is baseline
-				--TODO: 317349/317485 Condemng (Venthyr) <20 + >80
-				if IsSpellKnown(163201) then
-					Plater.SetExecuteRange (true, 0.20)
-					local specID = GetSpecializationInfo (spec)
-					if (specID and specID ~= 0) then
-						
-						if (specID == 71) then --arms
-							local _, _, _, using_Massacre = GetTalentInfo (3, 1, 1)
-							if (using_Massacre) then
-								--if using massacre, execute can be used at 35% health in Arms spec
-								Plater.SetExecuteRange (true, 0.35)
-							end
-						end
-					end
+				if IsPlayerSpell(163201) then
+					local using_Massacre = IsPlayerSpell(281001) or IsPlayerSpell(206315)
+					local lowExecute = using_Massacre and 0.35 or 0.2
+					local using_Condemn = IsPlayerSpell(317349) or IsPlayerSpell(317485)
+					local highExecute = using_Condemn and 0.8 or 1
+					
+					Plater.SetExecuteRange (true, lowExecute, highExecute)
 				end
 				
 			elseif (class == "HUNTER") then
-				if IsSpellKnown(53351) then
-					Plater.SetExecuteRange (true, 0.2) -- Kill Shot available to all hunters
-					
-					local specID = GetSpecializationInfo (spec)
-					if (specID and specID ~= 0) then
-						if (specID == 253) then --beast mastery
-							--> is using killer instinct?
-							local _, _, _, using_KillerInstinct = GetTalentInfo (1, 1, 1)
-							if (using_KillerInstinct) then
-								Plater.SetExecuteRange (true, 0.35)
-							end
-						end
+				if IsPlayerSpell(53351) then
+					if IsPlayerSpell(273887) then --> is using killer instinct?
+						Plater.SetExecuteRange (true, 0.35)
+					else
+						Plater.SetExecuteRange (true, 0.2) -- Kill Shot available to all hunters
 					end
 				end
 				
 			elseif (class == "PALADIN") then
 				-- hammer of wrath
-				if IsSpellKnown(24275) then
+				if IsPlayerSpell(24275) then
 					Plater.SetExecuteRange (true, 0.2)
 				end
 				
 			elseif (class == "MONK") then
 				--Touch of Death
-				if IsSpellKnown(322109) then
+				if IsPlayerSpell(322109) then
 					Plater.SetExecuteRange (true, 0.15)
 				end
 			
-			elseif (class == "WARLOCK") then
-				-- which WL spec?
-				local specID = GetSpecializationInfo (spec)
-				if (specID and specID ~= 0) then
-					if (specID == 267) then --destro
-						local _, _, _, using_Shadowburn = GetTalentInfo (2, 3, 1)
-						if (using_Shadowburn) then
-							Plater.SetExecuteRange (true, 0.20)
-						end
-					elseif (specID == 265) then --affli
-						local _, _, _, using_DrainSoul = GetTalentInfo (1, 3, 1)
-						if (using_DrainSoul) then
-							Plater.SetExecuteRange (true, 0.20)
-						end
-					end
+			elseif (class == "WARLOCK") then				
+				if IsPlayerSpell(17877) then --Shadowburn
+					Plater.SetExecuteRange (true, 0.20)
+				elseif IsPlayerSpell(198590) then --Drain Soul
+					Plater.SetExecuteRange (true, 0.20)
 				end
+			
+			elseif (class == "ROGUE") then				
+				if IsPlayerSpell(328085) then --Blindside
+					Plater.SetExecuteRange (true, 0.35)
+				end
+			
 			end
 		end
 	end	
