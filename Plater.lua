@@ -4391,8 +4391,6 @@ function Plater.OnInit() --private --~oninit ~init
 		
 		unitFrame.healthBar.CurrentHealth = unitHealth
 		unitFrame.healthBar.CurrentHealthMax = unitHealthMax
-		unitFrame.healthBar.currentHealth = unitHealth
-		unitFrame.healthBar.currentHealthMax = unitHealthMax
 	end
 	
 	local run_on_health_change_hook = function (unitFrame)
@@ -6024,14 +6022,12 @@ end
 			
 		--aura frame
 			--plateConfigs.buff_frame_y_offset is the offset from the actor type, e.g. enemy npc
-			--PixelUtil.SetPoint (buffFrame1, "bottom", unitFrame, "top", DB_AURA_X_OFFSET,  plateConfigs.buff_frame_y_offset + DB_AURA_Y_OFFSET)
 			local bf1Anchor = Plater.db.profile.aura_frame1_anchor
-			Plater.SetAnchor (buffFrame1, {side = bf1Anchor.side, x = bf1Anchor.x, y = bf1Anchor.y + plateConfigs.buff_frame_y_offset}, unitFrame.healthBar)
+			Plater.SetAnchor (buffFrame1, {side = bf1Anchor.side, x = bf1Anchor.x, y = bf1Anchor.y + plateConfigs.buff_frame_y_offset}, unitFrame.healthBar, (Plater.db.profile.aura_grow_direction or 2) == 2)
 			
 			
-			--PixelUtil.SetPoint (buffFrame2, "bottom", unitFrame, "top", Plater.db.profile.aura2_x_offset,  plateConfigs.buff_frame_y_offset + Plater.db.profile.aura2_y_offset)
 			local bf2Anchor = Plater.db.profile.aura_frame2_anchor
-			Plater.SetAnchor (buffFrame2, {side = bf2Anchor.side, x = bf2Anchor.x, y = bf2Anchor.y + plateConfigs.buff_frame_y_offset}, unitFrame.healthBar)
+			Plater.SetAnchor (buffFrame2, {side = bf2Anchor.side, x = bf2Anchor.x, y = bf2Anchor.y + plateConfigs.buff_frame_y_offset}, unitFrame.healthBar, (Plater.db.profile.aura2_grow_direction or 2) == 2)
 			
 		if (Plater.db.profile.show_health_prediction or Plater.db.profile.show_shield_prediction) and healthBar.displayedUnit then
 			healthBar:UpdateHealPrediction() -- ensure health prediction is updated properly
@@ -6672,13 +6668,17 @@ end
 
 		local profile = Plater.db.profile
 		local unitFrame = plateFrame.unitFrame
-		if (UnitIsUnit (unitFrame [MEMBER_UNITID], "focus") and profile.focus_indicator_enabled) then
-			--this is a rare call, no need to cache these values
-			local texture = LibSharedMedia:Fetch ("statusbar", Plater.db.profile.focus_texture)
-			plateFrame.FocusIndicator:SetTexture (texture)
-			plateFrame.FocusIndicator:SetVertexColor (unpack (Plater.db.profile.focus_color))
-			plateFrame.FocusIndicator:Show()
+		if UnitIsUnit (unitFrame [MEMBER_UNITID], "focus") then
+			if profile.focus_indicator_enabled then
+				--this is a rare call, no need to cache these values
+				local texture = LibSharedMedia:Fetch ("statusbar", Plater.db.profile.focus_texture)
+				plateFrame.FocusIndicator:SetTexture (texture)
+				plateFrame.FocusIndicator:SetVertexColor (unpack (Plater.db.profile.focus_color))
+				plateFrame.FocusIndicator:Show()
+			end
+			unitFrame.IsFocus = true
 		else
+			unitFrame.IsFocus = false
 			plateFrame.FocusIndicator:Hide()
 		end
 
@@ -8138,64 +8138,70 @@ end
 	end
 
 	local anchor_functions = {
-		function (widget, config, attachTo)--1
+		function (widget, config, attachTo, centered)--1
 			widget:ClearAllPoints()
-			PixelUtil.SetPoint (widget, "bottomleft", attachTo, "topleft", config.x, config.y, 0, 0)
+			local widgetRelative = centered and "bottom" or "bottomleft"
+			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "topleft", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo)--2
+		function (widget, config, attachTo, centered)--2
 			widget:ClearAllPoints()
-			PixelUtil.SetPoint (widget, "right", attachTo, "left", config.x, config.y, 0, 0)
+			local widgetRelative = centered and "center" or "right"
+			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "left", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo)--3
+		function (widget, config, attachTo, centered)--3
 			widget:ClearAllPoints()
-			PixelUtil.SetPoint (widget, "topleft", attachTo, "bottomleft", config.x, config.y, 0, 0)
+			local widgetRelative = centered and "top" or "topleft"
+			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "bottomleft", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo)--4
+		function (widget, config, attachTo, centered)--4
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "top", attachTo, "bottom", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo)--5
+		function (widget, config, attachTo, centered)--5
 			widget:ClearAllPoints()
-			PixelUtil.SetPoint (widget, "topright", attachTo, "bottomright", config.x, config.y, 0, 0)
+			local widgetRelative = centered and "top" or "topright"
+			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "bottomright", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo)--6
+		function (widget, config, attachTo, centered)--6
 			widget:ClearAllPoints()
-			PixelUtil.SetPoint (widget, "left", attachTo, "right", config.x, config.y, 0, 0)
+			local widgetRelative = centered and "center" or "left"
+			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "right", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo)--7
+		function (widget, config, attachTo, centered)--7
 			widget:ClearAllPoints()
-			PixelUtil.SetPoint (widget, "bottomright", attachTo, "topright", config.x, config.y, 0, 0)
+			local widgetRelative = centered and "bottom" or "bottomright"
+			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "topright", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo)--8
+		function (widget, config, attachTo, centered)--8
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "bottom", attachTo, "top", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo)--9
+		function (widget, config, attachTo, centered)--9
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "center", attachTo, "center", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo)--10
+		function (widget, config, attachTo, centered)--10
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "left", attachTo, "left", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo)--11
+		function (widget, config, attachTo, centered)--11
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "right", attachTo, "right", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo)--12
+		function (widget, config, attachTo, centered)--12
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "top", attachTo, "top", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo)--13
+		function (widget, config, attachTo, centered)--13
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "bottom", attachTo, "bottom", config.x, config.y, 0, 0)
 		end
 	}
 
 	--auto set the point based on the table from the config, if attachTo isn't received, it'll use its parent
-	function Plater.SetAnchor (widget, config, attachTo) --private
+	function Plater.SetAnchor (widget, config, attachTo, centered) --private
 		attachTo = attachTo or widget:GetParent()
-		anchor_functions [config.side] (widget, config, attachTo)
+		anchor_functions [config.side] (widget, config, attachTo, centered)
 	end
 
 	--check the setting 'only_damaged' and 'only_thename' for player characters. not critical code, can run slow
