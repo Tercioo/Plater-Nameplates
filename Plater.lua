@@ -784,6 +784,7 @@ Plater.DefaultSpellRangeListF = {
 	
 	local DB_USE_HEALTHCUTOFF = false
 	local DB_HEALTHCUTOFF_AT = 20
+	local DB_HEALTHCUTOFF_AT_UPPER = 80
 	
 	--store the npc id cache
 	local DB_NPCIDS_CACHE = {}
@@ -898,8 +899,11 @@ Plater.DefaultSpellRangeListF = {
 				if (specID and specID ~= 0) then
 					if (specID == 63) then --fire
 						local _, _, _, using_SearingTouch = GetTalentInfo (1, 3, 1)
+						local _, _, _, using_Firestarter = GetTalentInfo (1, 1, 1)
 						if (using_SearingTouch) then
 							Plater.SetExecuteRange (true, 0.30)
+						elseif (using_Firestarter) then
+							Plater.SetExecuteRange (true, 0, 0.9)
 						end
 					end
 				end
@@ -907,6 +911,7 @@ Plater.DefaultSpellRangeListF = {
 				
 			elseif (class == "WARRIOR") then
 				-- Execute is baseline
+				--TODO: 317349/317485 Condemng (Venthyr) <20 + >80
 				if IsSpellKnown(163201) then
 					Plater.SetExecuteRange (true, 0.20)
 					local specID = GetSpecializationInfo (spec)
@@ -6168,7 +6173,9 @@ end
 			if (DB_USE_HEALTHCUTOFF and not unitFrame.IsSelf) then
 				local healthPercent = (healthBar.currentHealth or 1) / (healthBar.currentHealthMax or 1)
 				if (healthPercent < DB_HEALTHCUTOFF_AT) then
-					if (not healthBar.healthCutOff:IsShown()) then
+					if (not healthBar.healthCutOff:IsShown() or healthBar.healthCutOff.isLower) then
+						healthBar.healthCutOff.isUpper = true
+						healthBar.healthCutOff.isLower = false
 						healthBar.healthCutOff:ClearAllPoints()
 						healthBar.healthCutOff:SetSize (healthBar:GetHeight(), healthBar:GetHeight())
 						healthBar.healthCutOff:SetPoint ("center", healthBar, "left", healthBar:GetWidth() * DB_HEALTHCUTOFF_AT, 0)
@@ -6183,10 +6190,42 @@ end
 
 						healthBar.executeRange:Show()
 						healthBar.executeRange:SetTexCoord (0, DB_HEALTHCUTOFF_AT, 0, 1)
-						healthBar.executeRange:SetAlpha (0.2)
+						healthBar.executeRange:SetAlpha (1)--(0.2)
 						healthBar.executeRange:SetVertexColor (.3, .3, .3)
 						healthBar.executeRange:SetHeight (healthBar:GetHeight())
 						healthBar.executeRange:SetPoint ("right", healthBar.healthCutOff, "center")
+						healthBar.executeRange:SetPoint ("left", healthBar, "left")
+						
+						if (profile.health_cutoff_extra_glow) then
+							healthBar.ExecuteGlowUp.ShowAnimation:Play()
+							healthBar.ExecuteGlowDown.ShowAnimation:Play()
+						end
+					end
+					
+					unitFrame.InExecuteRange = true
+				elseif (healthPercent > DB_HEALTHCUTOFF_AT_UPPER and healthPercent < 0.999) then
+					if (not healthBar.healthCutOff:IsShown() or healthBar.healthCutOff.isUpper) then
+						healthBar.healthCutOff.isUpper = false
+						healthBar.healthCutOff.isLower = true
+						healthBar.healthCutOff:ClearAllPoints()
+						healthBar.healthCutOff:SetSize (healthBar:GetHeight(), healthBar:GetHeight())
+						healthBar.healthCutOff:SetPoint ("center", healthBar, "right", - (healthBar:GetWidth() * (1-DB_HEALTHCUTOFF_AT_UPPER)), 0)
+						
+						if (not profile.health_cutoff_hide_divisor) then
+							healthBar.healthCutOff:Show()
+							healthBar.healthCutOff.ShowAnimation:Play()
+						else
+							healthBar.healthCutOff:Show()
+							healthBar.healthCutOff:SetAlpha (0)
+						end
+
+						healthBar.executeRange:Show()
+						healthBar.executeRange:SetTexCoord (0, 1-DB_HEALTHCUTOFF_AT_UPPER, 0, 1)
+						healthBar.executeRange:SetAlpha (1)--(0.2)
+						healthBar.executeRange:SetVertexColor (.3, .3, .3)
+						healthBar.executeRange:SetHeight (healthBar:GetHeight())
+						healthBar.executeRange:SetPoint ("left", healthBar.healthCutOff, "center")
+						healthBar.executeRange:SetPoint ("right", healthBar, "right")
 						
 						if (profile.health_cutoff_extra_glow) then
 							healthBar.ExecuteGlowUp.ShowAnimation:Play()
@@ -9425,9 +9464,10 @@ end
 	
 	--set if Plater will check for the execute range and what percent of life is require to enter in the execute range
 	--healthAmount is a floor com zero to one, example: 25% is 0.25
-	function Plater.SetExecuteRange (isExecuteEnabled, healthAmount)
+	function Plater.SetExecuteRange (isExecuteEnabled, healthAmountLower, healthAmountUpper)
 		DB_USE_HEALTHCUTOFF = isExecuteEnabled
-		DB_HEALTHCUTOFF_AT = type (healthAmount) == "number" and healthAmount or 0
+		DB_HEALTHCUTOFF_AT = tonumber (healthAmountLower) or -1
+		DB_HEALTHCUTOFF_AT_UPPER = tonumber (healthAmountUpper) or 101
 	end
 	
 	--return the name of the unit guild
