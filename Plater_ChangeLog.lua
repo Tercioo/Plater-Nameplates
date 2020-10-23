@@ -8,6 +8,11 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1603456546,  "Bug Fix", "October 22nd, 2020", "Regression fixes for aura anchors and IsFocus."},
+			{1603456546,  "Backend Changes", "October 22nd, 2020", "Adding 'upper range' execute ranges. (e.g. 100% to 80% for Warrior Condemn or 100% to 90% for Mage Firestarter)"},
+			{1603456546,  "Backend Changes", "October 22nd, 2020", "Adding additional execute spells for WL, Rogue and Warriors."},
+			{1603456546,  "Bug Fix", "October 21st, 2020", "Fixing 'Only Damaged Players' option."},
+			
 			{1603223454,  "Bug Fix", "October 20th, 2020", "Fixing issue with no-combat alpha and coloring."},
 			{1603223454,  "Bug Fix", "October 20th, 2020", "Adjusting execute settings tooltip and adding Shadowburn (WL, Destro) talent."},
 			{1603223454,  "Bug Fix", "October 20th, 2020", "Adding sanity checks for range-checking to omit unwanted errors."},
