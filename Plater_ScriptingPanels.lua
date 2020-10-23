@@ -94,7 +94,7 @@ Plater.APIList = {
 	{Name = "GetPlayerRole", 			Signature = "Plater:GetPlayerRole()", 							Desc = "Return TANK DAMAGER HEALER or NONE."},
 	{Name = "GetUnitGuildName", 		Signature = "Plater.GetUnitGuildName (unitFrame)", 					Desc = "Return the name unit's guild name if any, always return nil for npcs."},
 	{Name = "GetNpcColor", 			Signature = "Plater.GetNpcColor (unitFrame)", 						Desc = "Return a table with the color selected in the Npc Colors tab.\n\nThe color set there must have the 'Only Scripts' checked."},
-	{Name = "SetExecuteRange", 		Signature = "Plater.SetExecuteRange (isExecuteEnabled, healthAmount)", 	Desc = "Set if Plater should check for execute range and in what percent of health the execute range starts\n\nhealthAmount is in a range of zero to one, example: 25% is 0.25"},
+	{Name = "SetExecuteRange", 		Signature = "function Plater.SetExecuteRange (isExecuteEnabled, healthAmountLower, healthAmountUpper)", 	Desc = "Set if Plater should check for execute range and in what percent of health the execute range starts\n\nhealthAmountLower is in a range of zero to value, whereas healthAmountUpper is in range of value to 1.\nExample:\n'healthAmountLower = 0.25' sets lower execute range to start at 25% health; 'healthAmountUpper = 0.8' will enable execute between full health and 80%.\n'nil' or '0'/'1' values for lower/upper will disable this range."},
 	
 	{Name = "IsUnitInFriendsList", 		Signature = "Plater.IsUnitInFriendsList (unitFrame)", 					Desc = "Return 'true' if the unit is in the player's friends list."},
 	{Name = "IsUnitTank", 				Signature = "Plater.IsUnitTank (unitFrame)", 						Desc = "Return 'true' if the unit is in tank role."},
