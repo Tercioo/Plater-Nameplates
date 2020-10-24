@@ -9624,19 +9624,20 @@ end
 	end
 	
 	-- creates a button glow effect
-	function Plater.StartButtonGlow(frame, color, options)
+	function Plater.StartButtonGlow(frame, color, options, key)
 		-- type "button"
 		if not options then
 			options = {
 				glowType = "button",
 				color = color, -- all plater color types accepted, from lib: {r,g,b,a}, color of lines and opacity, from 0 to 1. Defaul value is {0.95, 0.95, 0.32, 1}
 				frequency = 0.125, -- frequency, set to negative to inverse direction of rotation. Default value is 0.125;
+				key = key or "", -- key of glow, allows for multiple glows on one frame;
 			}
 		else
 			options.glowType = "button"
 		end
 		
-		Plater.StartGlow(frame, color, options)
+		Plater.StartGlow(frame, options.color, options, options.key)
 	end
 	
 	-- creates an ants glow effect
@@ -9657,7 +9658,7 @@ end
 			options.glowType = "ants"
 		end
 		
-		Plater.StartGlow(frame, color, options, key)
+		Plater.StartGlow(frame, options.color, options, options.key)
 	end
 	
 	-- creates a pixel glow effect
@@ -9680,7 +9681,7 @@ end
 			options.glowType = "pixel"
 		end
 		
-		Plater.StartGlow(frame, color, options, key)
+		Plater.StartGlow(frame, options.color, options, options.key)
 	end
 	
 	-- stop LibCustomGlow effects on the frame, if existing
