@@ -4669,13 +4669,21 @@ end
 			local curRowLength = 0
 			local verticalHeight = 1
 			local firstIcon
+			
+			--get the table where all icon frames are stored in
+			local iconFrameContainer = self.PlaterBuffList
 		
 			if (Plater.db.profile.aura_consolidate) then
 				Plater.ConsolidateAuraIcons (self)
 			end
 			
 			if (Plater.db.profile.aura_sort) then
-				table.sort (self.PlaterBuffList, Plater.AuraIconsSortFunction)
+				local iconFrameContainerCopy = {}
+				for index, icon in pairs(iconFrameContainer) do
+					iconFrameContainerCopy[index] = icon
+				end
+				iconFrameContainer = iconFrameContainerCopy
+				table.sort (iconFrameContainer, Plater.AuraIconsSortFunction)
 			end
 		
 			local growDirection
@@ -4687,9 +4695,6 @@ end
 			elseif (self.Name == "Secondary") then
 				growDirection = DB_AURA_GROW_DIRECTION2
 			end
-			
-			--get the table where all icon frames are stored in
-			local iconFrameContainer = self.PlaterBuffList
 			
 			--get the amount of auras shown in the frame, this variable should be always reliable
 			local amountFramesShown = self.amountAurasShown
