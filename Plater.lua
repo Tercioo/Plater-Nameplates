@@ -3438,6 +3438,14 @@ Plater.DefaultSpellRangeListF = {
 				auraIconFrame:OnHideWidget()
 			end
 			
+			--stop animations
+			if plateFrame.unitFrame.BodyFlashFrame and plateFrame.unitFrame.BodyFlashFrame.animation then
+				plateFrame.unitFrame.BodyFlashFrame.animation:Stop()
+			end
+			if plateFrame.unitFrame.healthBar.HealthFlashFrame and plateFrame.unitFrame.healthBar.HealthFlashFrame.animation then
+				plateFrame.unitFrame.healthBar.HealthFlashFrame.animation:Stop()
+			end
+			
 			plateFrame.unitFrame.PlaterOnScreen = nil
 			
 			--tell the framework to execute a cleanup on the unit frame, this is required since Plater set .ClearUnitOnHide to false
@@ -8331,6 +8339,7 @@ end
 		t:SetColorTexture (1, 1, 1, 1)
 		t:SetAllPoints()
 		t:SetBlendMode ("ADD")
+		f_anim.texture = t
 		
 		local animation = t:CreateAnimationGroup()
 		local anim1 = animation:CreateAnimation ("Alpha")
@@ -8348,6 +8357,7 @@ end
 		anim3:SetFromAlpha (0)
 		anim3:SetToAlpha (1)
 		anim3:SetDuration (0.1)
+		f_anim.animation = animation
 
 		animation:SetScript ("OnFinished", function (self)
 			f_anim:Hide()
@@ -8373,6 +8383,7 @@ end
 		end
 		
 		f_anim:Hide()
+		plateFrame.unitFrame.healthBar.HealthFlashFrame = f_anim
 		plateFrame.unitFrame.healthBar.PlayHealthFlash = do_flash_anim
 	end
 
@@ -8390,10 +8401,12 @@ end
 		t:SetColorTexture (1, 1, 1, 1)
 		t:SetAllPoints()
 		t:SetBlendMode ("ADD")
+		f_anim.texture = t
 		local s = f_anim:CreateFontString (nil, "overlay", "GameFontNormal")
 		s:SetText ("-AGGRO-")
 		s:SetTextColor (.70, .70, .70)
 		s:SetPoint ("center", t, "center")
+		f_anim.text = s
 		
 		local animation = t:CreateAnimationGroup()
 		local anim1 = animation:CreateAnimation ("Alpha")
@@ -8406,6 +8419,7 @@ end
 		anim2:SetFromAlpha (1)
 		anim2:SetToAlpha (0)
 		anim2:SetDuration (0.2)
+		f_anim.animation = animation
 		
 		animation:SetScript ("OnFinished", function (self)
 			f_anim:Hide()
@@ -8431,6 +8445,7 @@ end
 		end
 		
 		f_anim:Hide()
+		plateFrame.unitFrame.BodyFlashFrame = f_anim
 		plateFrame.PlayBodyFlash = do_flash_anim
 	end	
 	
