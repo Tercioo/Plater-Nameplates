@@ -3441,9 +3441,11 @@ Plater.DefaultSpellRangeListF = {
 			--stop animations
 			if plateFrame.unitFrame.BodyFlashFrame and plateFrame.unitFrame.BodyFlashFrame.animation then
 				plateFrame.unitFrame.BodyFlashFrame.animation:Stop()
+				plateFrame.unitFrame.BodyFlashFrame:Hide()
 			end
 			if plateFrame.unitFrame.healthBar.HealthFlashFrame and plateFrame.unitFrame.healthBar.HealthFlashFrame.animation then
 				plateFrame.unitFrame.healthBar.HealthFlashFrame.animation:Stop()
+				plateFrame.unitFrame.healthBar.HealthFlashFrame:Hide()
 			end
 			
 			plateFrame.unitFrame.PlaterOnScreen = nil
