@@ -6939,6 +6939,12 @@ if (Plater.db.profile.use_ui_parent) then
 else
 	checkBoxBlizzPlateAlpha:Disable()
 end
+
+frontPageFrame.RefreshOptionsOrig = frontPageFrame.RefreshOptionsOrig or frontPageFrame.RefreshOptions
+frontPageFrame.RefreshOptions = function ()
+	frontPageFrame:RefreshOptionsOrig()
+	generalOptionsAnchor:RefreshOptions()
+end
 	
 ------------------------------------------------	
 --order functions
