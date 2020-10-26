@@ -397,6 +397,20 @@ function Plater.OpenOptionsPanel()
 					Plater.db.profile.captured_spells = {}
 					Plater.db.profile.aura_cache_by_name = {}
 					
+					--save mod/script editing
+					local hookFrame = mainFrame.AllFrames [7]
+					local scriptObject = hookFrame.GetCurrentScriptObject()
+					if (scriptObject) then
+						hookFrame.SaveScript()
+						hookFrame.CancelEditing()
+					end
+					local scriptingFrame = mainFrame.AllFrames [6]
+					local scriptObject = scriptingFrame.GetCurrentScriptObject()
+					if (scriptObject) then
+						scriptingFrame.SaveScript()
+						scriptingFrame.CancelEditing()
+					end
+					
 					--export to string
 					profilesFrame.ImportStringField:SetText (Plater.ExportProfileToString() or L["OPTIONS_ERROR_EXPORTSTRINGERROR"])
 					
