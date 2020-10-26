@@ -960,7 +960,19 @@ Plater.DefaultSpellRangeListF = {
 		end
 		
 		--if is using the no combat alpha and the unit isn't in combat, ignore the range check, no combat alpha is disabled by default
-		if (plateFrame [MEMBER_NOCOMBAT] or unitFrame.isSelf) then
+		if (unitFrame.IsSelf) then
+			unitFrame:SetAlpha (nameplateAlpha)
+
+			unitFrame.healthBar:SetAlpha (1)
+			if not castBarFade then
+				unitFrame.castBar:SetAlpha (1)
+			end
+			unitFrame.powerBar:SetAlpha (1)
+			unitFrame.BuffFrame:SetAlpha (1)
+			unitFrame.BuffFrame2:SetAlpha (1)
+			
+			return
+		elseif (plateFrame [MEMBER_NOCOMBAT]) then
 			if nameplateAlpha < Plater.db.profile.not_affecting_combat_alpha then
 				unitFrame:SetAlpha (nameplateAlpha)
 			end
