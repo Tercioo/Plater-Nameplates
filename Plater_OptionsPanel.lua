@@ -6039,7 +6039,7 @@ local relevance_options = {
 				end
 			end,
 			name = "Always Show Nameplates" .. CVarIcon,
-			desc = "Show nameplates for all units near you. If disabled on show relevant units when you are in combat." .. CVarDesc,
+			desc = "Show nameplates for all units near you. If disabled only show relevant units when you are in combat." .. CVarDesc,
 			nocombat = true,
 		},
 
@@ -6938,6 +6938,12 @@ if (Plater.db.profile.use_ui_parent) then
 	checkBoxBlizzPlateAlpha:Enable()
 else
 	checkBoxBlizzPlateAlpha:Disable()
+end
+
+frontPageFrame.RefreshOptionsOrig = frontPageFrame.RefreshOptionsOrig or frontPageFrame.RefreshOptions
+frontPageFrame.RefreshOptions = function ()
+	frontPageFrame:RefreshOptionsOrig()
+	generalOptionsAnchor:RefreshOptions()
 end
 	
 ------------------------------------------------	
