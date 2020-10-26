@@ -2398,7 +2398,7 @@ Plater.DefaultSpellRangeListF = {
 					plateFrame [MEMBER_NAMELOWER] = lower (plateFrame [MEMBER_NAME])
 					local unitFrame = plateFrame.unitFrame
 					
-					if (plateFrame.isSelf) then
+					if (plateFrame.IsSelf) then
 						--name isn't shown in the personal bar
 						unitFrame.healthBar.unitName:SetText ("")
 						return
@@ -3151,6 +3151,7 @@ Plater.DefaultSpellRangeListF = {
 			plateFrame.CurrentUnitNameString = plateFrame.unitName
 			
 			plateFrame.isSelf = nil
+			plateFrame.IsSelf = nil
 			unitFrame.IsSelf = nil --value exposed to scripts
 			castBar.IsSelf = nil --value exposed to scripts
 			
@@ -3247,6 +3248,7 @@ Plater.DefaultSpellRangeListF = {
 				if (UnitIsUnit (unitID, "player")) then
 					--> personal health bar
 					plateFrame.isSelf = true
+					plateFrame.IsSelf = true
 					unitFrame.IsSelf = true --this is the value exposed to scripts
 					castBar.IsSelf = true --this is the value exposed to scripts
 					actorType = ACTORTYPE_PLAYER
@@ -4441,7 +4443,7 @@ function Plater.OnInit() --private --~oninit ~init
 		self.CurrentHealth = currentHealth
 		self.CurrentHealthMax = currentHealthMax
 	
-		if (plateFrame.isSelf) then
+		if (plateFrame.IsSelf) then
 			self.CurrentHealth = currentHealth
 			self.CurrentHealthMax = currentHealthMax
 		
@@ -5821,8 +5823,7 @@ end
 	function Plater.FindAndSetNameplateColor (unitFrame, forceRefresh)
 		local r, g, b = 1, 1, 1
 		local unitID = unitFrame.unit
-		
-		if (unitFrame.isSelf) then
+		if (unitFrame.IsSelf) then
 			return
 			
 		else
@@ -5879,7 +5880,7 @@ end
 	--called after leaving the combat
 	function Plater.UpdateAllNameplateColors() --private
 		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-			if (not plateFrame.isSelf) then
+			if (not plateFrame.IsSelf) then
 				--reset the nameplate color
 				Plater.FindAndSetNameplateColor (plateFrame.unitFrame)
 			end
@@ -6122,7 +6123,7 @@ end
 		
 		if (isDebug and not Plater.db.profile.click_space_always_show) then
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-				if not plateFrame.isSelf then
+				if not plateFrame.IsSelf then
 					Plater.ShowClickSpace (plateFrame)
 					
 					if (Plater.PlateSizeDebugTimer and not Plater.PlateSizeDebugTimer._cancelled) then
@@ -6361,7 +6362,7 @@ end
 			end
 			
 			--details! integration
-			if (IS_USING_DETAILS_INTEGRATION and not tickFrame.PlateFrame.isSelf and PLAYER_IN_COMBAT and unitFrame.InCombat) then
+			if (IS_USING_DETAILS_INTEGRATION and not tickFrame.PlateFrame.IsSelf and PLAYER_IN_COMBAT and unitFrame.InCombat) then
 				local detailsPlaterConfig = Details.plater
 
 				--> current damage taken from all sources
@@ -6764,7 +6765,7 @@ end
 				unitFrame.IsTarget = false
 			end
 			
-			if (DB_TARGET_SHADY_ENABLED and (not DB_TARGET_SHADY_COMBATONLY or (profile.use_player_combat_state and PLAYER_IN_COMBAT or unitFrame.InCombat)) and not plateFrame.isSelf) then
+			if (DB_TARGET_SHADY_ENABLED and (not DB_TARGET_SHADY_COMBATONLY or (profile.use_player_combat_state and PLAYER_IN_COMBAT or unitFrame.InCombat)) and not plateFrame.IsSelf) then
 				plateFrame.Obscured:Show()
 				plateFrame.Obscured:SetAlpha (DB_TARGET_SHADY_ALPHA)
 			else
@@ -6974,7 +6975,7 @@ end
 		
 	
 		-- updates for special frames
-		if (plateFrame.isSelf) then
+		if (plateFrame.IsSelf) then
 		
 			--return
 			--needReset = true
@@ -7272,7 +7273,7 @@ end
 		end
 		
 		--name isn't shown in the personal bar
-		if (plateFrame.isSelf) then
+		if (plateFrame.IsSelf) then
 			plateFrame.unitFrame.healthBar.unitName:SetText ("")
 		end
 		
@@ -7757,7 +7758,7 @@ end
 		Plater.UpdateTarget (plateFrame)
 		
 		--personal player bar
-		if (plateFrame.isSelf) then
+		if (plateFrame.IsSelf) then
 			Plater.UpdatePersonalBar (NamePlateDriverFrame)
 			if (not DB_PLATE_CONFIG [actorType].healthbar_color_by_hp) then
 				Plater.ChangeHealthBarColor_Internal (healthBar, unpack (DB_PLATE_CONFIG [actorType].healthbar_color))
@@ -7886,7 +7887,7 @@ end
 	function Plater.UpdatePlateRaidMarker (plateFrame)
 		local index = GetRaidTargetIndex (plateFrame.unitFrame [MEMBER_UNITID])
 
-		if (index and not plateFrame.isSelf) then
+		if (index and not plateFrame.IsSelf) then
 			local icon = plateFrame.unitFrame.PlaterRaidTargetFrame.RaidTargetIcon
 			SetRaidTargetIconTexture (icon, index)
 			icon:Show()
