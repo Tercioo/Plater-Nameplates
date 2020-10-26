@@ -3538,6 +3538,8 @@ function Plater.OnInit() --private --~oninit ~init
 		PLAYER_IN_COMBAT = true
 	end
 
+	Plater.Locale =  GetLocale()
+
 	--Plater:BossModsLink()
 	
 	--character settings
@@ -7408,8 +7410,12 @@ end
 			end
 		end
 		
+		local shortBy = 1
+		if Plater.Locale == "ruRU" then
+			shortBy = 2
+		end
 		while (nameString:GetStringWidth() > maxLength) do
-			spellName = strsub (spellName, 1, #spellName - 1)
+			spellName = strsub (spellName, 1, #spellName - shortBy)
 			nameString:SetText (spellName)
 			if (string.len (spellName) <= 1) then
 				break
