@@ -11971,6 +11971,20 @@ end
 			desc = L["OPTIONS_FRIENDLY"],
 		},
 		
+		{type = "blank"},
+		
+		{type = "label", get = function() return "Misc" .. ":" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.show_aggro_flash end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.show_aggro_flash = value
+			end,
+			name = "Enable aggro flash",
+			desc = "Enables the -AGGRO- flash animation on the nameplates when gaining aggro as dps.",
+		},
+		
 	}
 	
 	_G.C_Timer.After(0.990, function() --~delay

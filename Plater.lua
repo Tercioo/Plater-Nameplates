@@ -6454,6 +6454,8 @@ end
 			return
 		end
 		
+		local profile = Plater.db.profile
+		
 		local isTanking, threatStatus, threatpct = UnitDetailedThreatSituation ("player", self.displayedUnit)
 		
 		--expose all threat situation to scripts
@@ -6533,7 +6535,7 @@ end
 						
 						if (DB_NOT_COMBAT_ALPHA_ENABLED) then
 							self.PlateFrame [MEMBER_NOCOMBAT] = true
-							self:SetAlpha (Plater.db.profile.not_affecting_combat_alpha)
+							self:SetAlpha (profile.not_affecting_combat_alpha)
 						end
 					end
 				end
@@ -6562,13 +6564,15 @@ end
 			--dps
 			if (isTanking) then
 				--the player is tanking as dps
-				if Plater.db.profile.dps.use_aggro_solo and not IsInGroup() then
+				if profile.dps.use_aggro_solo and not IsInGroup() then
 					set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.solo))
 				else
 					set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.aggro))
 				end
 				if (not self.PlateFrame.playerHasAggro and IS_IN_INSTANCE) then
-					self.PlateFrame.PlayBodyFlash ("-AGGRO-")
+					if profile.show_aggro_flash then
+						self.PlateFrame.PlayBodyFlash ("-AGGRO-")
+					end
 				end
 				self.PlateFrame.playerHasAggro = true
 				
@@ -6602,25 +6606,27 @@ end
 							
 							if (DB_NOT_COMBAT_ALPHA_ENABLED) then --not self.PlateFrame [MEMBER_NOCOMBAT] and 
 								self.PlateFrame [MEMBER_NOCOMBAT] = true
-								self:SetAlpha (Plater.db.profile.not_affecting_combat_alpha)
+								self:SetAlpha (profile.not_affecting_combat_alpha)
 							end
 						end
 						
 					end
 				else
 					if (threatStatus == 3) then --player is tanking the mob as dps
-						if Plater.db.profile.dps.use_aggro_solo and not IsInGroup() then
+						if profile.dps.use_aggro_solo and not IsInGroup() then
 							set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.solo))
 						else
 							set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.aggro))
 						end
 						if (not self.PlateFrame.playerHasAggro and IS_IN_INSTANCE) then
-							self.PlateFrame.PlayBodyFlash ("-AGGRO-")
+							if profile.show_aggro_flash then
+								self.PlateFrame.PlayBodyFlash ("-AGGRO-")
+							end
 						end
 						self.PlateFrame.playerHasAggro = true
 						
 					elseif (threatStatus == 2) then --player is tanking the mob with low aggro
-						if Plater.db.profile.dps.use_aggro_solo and not IsInGroup() then
+						if profile.dps.use_aggro_solo and not IsInGroup() then
 							set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.solo))
 						else
 							set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.aggro))
@@ -6636,7 +6642,7 @@ end
 							--show aggro warning indicators
 							self.aggroGlowUpper:Show()
 							self.aggroGlowLower:Show()
-							if Plater.db.profile.dps.use_aggro_solo and not IsInGroup() then
+							if profile.dps.use_aggro_solo and not IsInGroup() then
 								colorToUse = DB_AGGRO_DPS_COLORS.solo
 							else
 								colorToUse = DB_AGGRO_DPS_COLORS.pulling
