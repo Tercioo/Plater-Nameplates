@@ -7420,13 +7420,25 @@ end
 		if Plater.Locale == "ruRU" then
 			shortBy = 2
 		end
+		
 		while (nameString:GetStringWidth() > maxLength) do
 			spellName = strsub (spellName, 1, #spellName - shortBy)
 			nameString:SetText (spellName)
 			if (string.len (spellName) <= 1) then
 				break
 			end
-		end	
+		end
+		
+		if Plater.Locale == "ruRU" then
+			local specialCharsSplit = {strsplit("[ -]", spellName)}
+			specialCharsSplit = specialCharsSplit and #specialCharsSplit - 1 or 0
+			if specialCharsSplit == 0 and strfind(spellName, "[ -]") then
+				specialCharsSplit = specialCharsSplit + 1
+			end
+			spellName = strsub (spellName, 1, #spellName - math.fmod(#spellName - specialCharsSplit, 2))
+			nameString:SetText (spellName)
+		end
+		
 	end
 
 	function Plater.AddGuildNameToPlayerName (plateFrame)
