@@ -8,11 +8,21 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
-			{1603456546,  "Bug Fix", "October 24th, 2020", "Fixing an issue with aura sort option."},
-			{1603456546,  "Bug Fix", "October 22nd, 2020", "Regression fixes for aura anchors and IsFocus."},
-			{1603456546,  "Backend Changes", "October 22nd, 2020", "Adding 'upper range' execute ranges. (e.g. 100% to 80% for Warrior Condemn or 100% to 90% for Mage Firestarter)"},
-			{1603456546,  "Backend Changes", "October 22nd, 2020", "Adding additional execute spells for WL, Rogue and Warriors."},
-			{1603456546,  "Bug Fix", "October 21st, 2020", "Fixing 'Only Damaged Players' option."},
+			{1603831718,  "Options Changes", "October 27th, 2020", "Adding an option to disable the '-AGGRO-' flash (off by default)."},
+			{1603831718,  "Bug Fix", "October 26th, 2020", "Ensure mods/scripts are saved properly before exporting a profile."},
+			{1603831718,  "Bug Fix", "October 26th, 2020", "Shortening spell-names in Russian locale now should work properly."},
+			{1603831718,  "Bachend Changes", "October 25th, 2020", "'IsSelf' is now more consistent across the members."},
+			{1603831718,  "Bachend Changes", "October 25th, 2020", "Proper alpha checks for the personal bar."},
+			{1603831718,  "Bachend Changes", "October 25th, 2020", "Refresh settings tab when selecting it."},
+			{1603831718,  "Bug Fix", "October 25th, 2020", "Stopping nameplate flash animations on nameplate removal."},
+			{1603831718,  "Bug Fix", "October 24th, 2020", "Fixing an issue with internal aura sorting making auras too 'jumpy'."},
+			{1603831718,  "Bug Fix", "October 24th, 2020", "Fixing an issue with LibCustomGlow implementation not recognizing the key properly in certain cases."},
+			{1603831718,  "Bug Fix", "October 24th, 2020", "Fixing an issue with the Combo Points mod."},
+			
+			{1603831718,  "Bug Fix", "October 22nd, 2020", "Regression fixes for aura anchors and IsFocus."},
+			{1603831718,  "Backend Changes", "October 22nd, 2020", "Adding 'upper range' execute ranges. (e.g. 100% to 80% for Warrior Condemn or 100% to 90% for Mage Firestarter)"},
+			{1603831718,  "Backend Changes", "October 22nd, 2020", "Adding additional execute spells for WL, Rogue and Warriors."},
+			{1603831718,  "Bug Fix", "October 21st, 2020", "Fixing 'Only Damaged Players' option."},
 			
 			{1603223454,  "Bug Fix", "October 20th, 2020", "Fixing issue with no-combat alpha and coloring."},
 			{1603223454,  "Bug Fix", "October 20th, 2020", "Adjusting execute settings tooltip and adding Shadowburn (WL, Destro) talent."},
