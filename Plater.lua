@@ -7416,26 +7416,17 @@ end
 			end
 		end
 		
-		local shortBy = 1
-		if Plater.Locale == "ruRU" then
-			shortBy = 2
-		end
-		
 		while (nameString:GetStringWidth() > maxLength) do
-			spellName = strsub (spellName, 1, #spellName - shortBy)
+			spellName = strsub (spellName, 1, #spellName - 1)
 			nameString:SetText (spellName)
 			if (string.len (spellName) <= 1) then
 				break
 			end
 		end
 		
-		if Plater.Locale == "ruRU" then
-			local specialCharsSplit = {strsplit("[ -]", spellName)}
-			specialCharsSplit = specialCharsSplit and #specialCharsSplit - 1 or 0
-			if specialCharsSplit == 0 and strfind(spellName, "[ -]") then
-				specialCharsSplit = specialCharsSplit + 1
-			end
-			spellName = strsub (spellName, 1, #spellName - math.fmod(#spellName - specialCharsSplit, 2))
+		local b = string.byte(strsub(spellName, #spellName, #spellName))
+		if b == 208 or b == 209 then
+			spellName = strsub (spellName, 1, #spellName - 1)
 			nameString:SetText (spellName)
 		end
 		
@@ -7482,6 +7473,12 @@ end
 			if (string.len (name) <= 1) then
 				break
 			end
+		end
+		
+		local b = string.byte(strsub(name, #name, #name))
+		if b == 208 or b == 209 then
+			name = strsub (name, 1, #name - 1)
+			nameString:SetText (name)
 		end
 	end
 
@@ -9567,6 +9564,13 @@ end
 				break
 			end
 		end	
+		
+		local b = string.byte(strsub(text, #text, #text))
+		if b == 208 or b == 209 then
+			text = strsub (text, 1, #text - 1)
+			fontString:SetText (text)
+		end
+		
 	end
 	
 	--create a custom aura checking, this reset the currently shown auras and only check for auras the script passed
