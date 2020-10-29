@@ -2715,7 +2715,7 @@ Plater.CreateAuraTesting()
 							local allNpcsDetectedTable = Plater.db.profile.npc_cache
 
 							--the uncompressed table is a numeric table of tables
-							for i, colorTable in ipairs (colorData) do
+							for i, colorTable in pairs (colorData) do
 								--check integrity
 								if (type (colorTable) == "table") then
 									local npcID, scriptOnly, colorID, npcName, zoneName = unpack (colorTable)
