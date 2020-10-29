@@ -7424,8 +7424,8 @@ end
 			end
 		end
 		
-		local b = string.byte(strsub(spellName, #spellName, #spellName))
-		if b == 208 or b == 209 then
+		local b = strbyte(strsub(spellName, #spellName, #spellName))
+		if b >= 194 and b <= 223 then
 			spellName = strsub (spellName, 1, #spellName - 1)
 			nameString:SetText (spellName)
 		end
@@ -7475,8 +7475,8 @@ end
 			end
 		end
 		
-		local b = string.byte(strsub(name, #name, #name))
-		if b == 208 or b == 209 then
+		local b = strbyte(strsub(name, #name, #name))
+		if b >= 194 and b <= 223 then
 			name = strsub (name, 1, #name - 1)
 			nameString:SetText (name)
 		end
@@ -9565,8 +9565,8 @@ end
 			end
 		end	
 		
-		local b = string.byte(strsub(text, #text, #text))
-		if b == 208 or b == 209 then
+		local b = strbyte(strsub(text, #text, #text))
+		if b >= 194 and b <= 223 then
 			text = strsub (text, 1, #text - 1)
 			fontString:SetText (text)
 		end
