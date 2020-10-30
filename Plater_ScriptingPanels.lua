@@ -2601,6 +2601,14 @@ function Plater.CreateHookingPanel()
 		--update the hook scripts scrollbox
 		hookFrame.ScriptSelectionScrollBox:Refresh()
 		
+		--update options
+		if hookFrame.ScriptOptionsPanelUser:IsShown() then
+			Plater.RefreshUserScriptOptions(hookFrame)
+		end
+		if hookFrame.ScriptOptionsPanelAdmin:IsShown() then
+			Plater.RefreshAdminScriptOptions(hookFrame)
+		end
+		
 		--check trash can timeout
 		local timeout = 60 * 60 * 24 * 30
 		
@@ -3311,6 +3319,14 @@ function Plater.CreateScriptingPanel()
 	scriptingFrame:SetScript ("OnShow", function()
 		--update the created scripts scrollbox
 		scriptingFrame.ScriptSelectionScrollBox:Refresh()
+		
+		--update options
+		if scriptingFrame.ScriptOptionsPanelUser:IsShown() then
+			Plater.RefreshUserScriptOptions(scriptingFrame)
+		end
+		if scriptingFrame.ScriptOptionsPanelAdmin:IsShown() then
+			Plater.RefreshAdminScriptOptions(scriptingFrame)
+		end
 		
 		--check trash can timeout
 		local timeout = 60 * 60 * 24 * 30
