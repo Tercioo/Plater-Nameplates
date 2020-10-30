@@ -2395,9 +2395,11 @@ Plater.DefaultSpellRangeListF = {
 			if (unitID) then
 				local plateFrame = C_NamePlate.GetNamePlateForUnit (unitID)
 				if (plateFrame) then
+					local unitFrame = plateFrame.unitFrame
 					plateFrame [MEMBER_NAME] = UnitName (unitID)
 					plateFrame [MEMBER_NAMELOWER] = lower (plateFrame [MEMBER_NAME])
-					local unitFrame = plateFrame.unitFrame
+					unitFrame [MEMBER_NAME] = plateFrame [MEMBER_NAME]
+					unitFrame [MEMBER_NAMELOWER] = plateFrame [MEMBER_NAMELOWER]
 					
 					if (plateFrame.IsSelf) then
 						--name isn't shown in the personal bar
@@ -3224,6 +3226,10 @@ Plater.DefaultSpellRangeListF = {
 			unitFrame.BuffFrame.unit = unitID
 			unitFrame.BuffFrame2.unit = unitID
 			
+			local isBattlePet = UnitIsBattlePet(unitID)
+			plateFrame.isBattlePet = isBattlePet
+			unitFrame.isBattlePet = isBattlePet
+			
 			--clear the custom indicators table
 			wipe (unitFrame.CustomIndicators)
 			
@@ -3311,6 +3317,16 @@ Plater.DefaultSpellRangeListF = {
 							if (DB_CASTBAR_HIDE_FRIENDLY) then
 								CastingBarFrame_SetUnit (castBar, nil, nil, nil)
 							end
+						elseif isBattlePet then
+							plateFrame.NameAnchor = DB_NAME_NPCFRIENDLY_ANCHOR
+							plateFrame.PlateConfig = DB_PLATE_CONFIG.friendlynpc
+							Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_FRIENDLY_NPC, nil, true)
+							actorType = ACTORTYPE_FRIENDLY_NPC
+							unitFrame.Settings.ShowCastBar = not DB_CASTBAR_HIDE_FRIENDLY
+							if (DB_CASTBAR_HIDE_FRIENDLY) then
+								CastingBarFrame_SetUnit (castBar, nil, nil, nil)
+							end
+							
 						else
 							--includes neutral npcs
 							
@@ -6455,6 +6471,8 @@ end
 			return
 		end
 		
+		local profile = Plater.db.profile
+		
 		local isTanking, threatStatus, threatpct = UnitDetailedThreatSituation ("player", self.displayedUnit)
 		
 		--expose all threat situation to scripts
@@ -6534,7 +6552,7 @@ end
 						
 						if (DB_NOT_COMBAT_ALPHA_ENABLED) then
 							self.PlateFrame [MEMBER_NOCOMBAT] = true
-							self:SetAlpha (Plater.db.profile.not_affecting_combat_alpha)
+							self:SetAlpha (profile.not_affecting_combat_alpha)
 						end
 					end
 				end
@@ -6563,13 +6581,15 @@ end
 			--dps
 			if (isTanking) then
 				--the player is tanking as dps
-				if Plater.db.profile.dps.use_aggro_solo and not IsInGroup() then
+				if profile.dps.use_aggro_solo and not IsInGroup() then
 					set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.solo))
 				else
 					set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.aggro))
 				end
 				if (not self.PlateFrame.playerHasAggro and IS_IN_INSTANCE) then
-					self.PlateFrame.PlayBodyFlash ("-AGGRO-")
+					if profile.show_aggro_flash then
+						self.PlateFrame.PlayBodyFlash ("-AGGRO-")
+					end
 				end
 				self.PlateFrame.playerHasAggro = true
 				
@@ -6603,25 +6623,27 @@ end
 							
 							if (DB_NOT_COMBAT_ALPHA_ENABLED) then --not self.PlateFrame [MEMBER_NOCOMBAT] and 
 								self.PlateFrame [MEMBER_NOCOMBAT] = true
-								self:SetAlpha (Plater.db.profile.not_affecting_combat_alpha)
+								self:SetAlpha (profile.not_affecting_combat_alpha)
 							end
 						end
 						
 					end
 				else
 					if (threatStatus == 3) then --player is tanking the mob as dps
-						if Plater.db.profile.dps.use_aggro_solo and not IsInGroup() then
+						if profile.dps.use_aggro_solo and not IsInGroup() then
 							set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.solo))
 						else
 							set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.aggro))
 						end
 						if (not self.PlateFrame.playerHasAggro and IS_IN_INSTANCE) then
-							self.PlateFrame.PlayBodyFlash ("-AGGRO-")
+							if profile.show_aggro_flash then
+								self.PlateFrame.PlayBodyFlash ("-AGGRO-")
+							end
 						end
 						self.PlateFrame.playerHasAggro = true
 						
 					elseif (threatStatus == 2) then --player is tanking the mob with low aggro
-						if Plater.db.profile.dps.use_aggro_solo and not IsInGroup() then
+						if profile.dps.use_aggro_solo and not IsInGroup() then
 							set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.solo))
 						else
 							set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.aggro))
@@ -6637,7 +6659,7 @@ end
 							--show aggro warning indicators
 							self.aggroGlowUpper:Show()
 							self.aggroGlowLower:Show()
-							if Plater.db.profile.dps.use_aggro_solo and not IsInGroup() then
+							if profile.dps.use_aggro_solo and not IsInGroup() then
 								colorToUse = DB_AGGRO_DPS_COLORS.solo
 							else
 								colorToUse = DB_AGGRO_DPS_COLORS.pulling
@@ -7411,17 +7433,20 @@ end
 			end
 		end
 		
-		local shortBy = 1
-		if Plater.Locale == "ruRU" then
-			shortBy = 2
-		end
 		while (nameString:GetStringWidth() > maxLength) do
-			spellName = strsub (spellName, 1, #spellName - shortBy)
+			spellName = strsub (spellName, 1, #spellName - 1)
 			nameString:SetText (spellName)
 			if (string.len (spellName) <= 1) then
 				break
 			end
-		end	
+		end
+		
+		local b = strbyte(strsub(spellName, #spellName, #spellName))
+		if b >= 194 and b <= 223 then
+			spellName = strsub (spellName, 1, #spellName - 1)
+			nameString:SetText (spellName)
+		end
+		
 	end
 
 	function Plater.AddGuildNameToPlayerName (plateFrame)
@@ -7437,12 +7462,12 @@ end
 		if (plateFrame.NameAnchor >= 9) then
 			--remove some character from the unit name if the name is placed inside the nameplate
 			local stringSize = max (plateFrame.unitFrame.healthBar:GetWidth() - 6, 44)
-			local name = plateFrame [MEMBER_NAME]
+			local name = plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME]
 			
 			nameString:SetText (name)
 			Plater.UpdateUnitNameTextSize (plateFrame, nameString)
 		else
-			nameString:SetText (plateFrame [MEMBER_NAME])
+			nameString:SetText (plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME])
 		end
 		
 		--check if the player has a guild, this check is done when the nameplate is added
@@ -7465,6 +7490,12 @@ end
 			if (string.len (name) <= 1) then
 				break
 			end
+		end
+		
+		local b = strbyte(strsub(name, #name, #name))
+		if b >= 194 and b <= 223 then
+			name = strsub (name, 1, #name - 1)
+			nameString:SetText (name)
 		end
 	end
 
@@ -7565,7 +7596,7 @@ end
 			Plater.ForceFindPetOwner (plateFrame [MEMBER_GUID])
 		
 			-- handle own pets separately, including nazjatar guardians
-			if (Plater.PlayerPetCache [unitFrame [MEMBER_GUID]]) then
+			if (Plater.PlayerPetCache [unitFrame [MEMBER_GUID]] and not plateFrame.isBattlePet) then
 				if (DB_PLATE_CONFIG [actorType].only_names) then
 					healthBar:Hide()
 					buffFrame:Hide()
@@ -9550,6 +9581,13 @@ end
 				break
 			end
 		end	
+		
+		local b = strbyte(strsub(text, #text, #text))
+		if b >= 194 and b <= 223 then
+			text = strsub (text, 1, #text - 1)
+			fontString:SetText (text)
+		end
+		
 	end
 	
 	--create a custom aura checking, this reset the currently shown auras and only check for auras the script passed

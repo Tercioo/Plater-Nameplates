@@ -397,6 +397,20 @@ function Plater.OpenOptionsPanel()
 					Plater.db.profile.captured_spells = {}
 					Plater.db.profile.aura_cache_by_name = {}
 					
+					--save mod/script editing
+					local hookFrame = mainFrame.AllFrames [7]
+					local scriptObject = hookFrame.GetCurrentScriptObject()
+					if (scriptObject) then
+						hookFrame.SaveScript()
+						hookFrame.CancelEditing()
+					end
+					local scriptingFrame = mainFrame.AllFrames [6]
+					local scriptObject = scriptingFrame.GetCurrentScriptObject()
+					if (scriptObject) then
+						scriptingFrame.SaveScript()
+						scriptingFrame.CancelEditing()
+					end
+					
 					--export to string
 					profilesFrame.ImportStringField:SetText (Plater.ExportProfileToString() or L["OPTIONS_ERROR_EXPORTSTRINGERROR"])
 					
@@ -2701,7 +2715,7 @@ Plater.CreateAuraTesting()
 							local allNpcsDetectedTable = Plater.db.profile.npc_cache
 
 							--the uncompressed table is a numeric table of tables
-							for i, colorTable in ipairs (colorData) do
+							for i, colorTable in pairs (colorData) do
 								--check integrity
 								if (type (colorTable) == "table") then
 									local npcID, scriptOnly, colorID, npcName, zoneName = unpack (colorTable)
@@ -11955,6 +11969,20 @@ end
 			end,
 			name = L["OPTIONS_FRIENDLY"],
 			desc = L["OPTIONS_FRIENDLY"],
+		},
+		
+		{type = "blank"},
+		
+		{type = "label", get = function() return "Misc" .. ":" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.show_aggro_flash end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.show_aggro_flash = value
+			end,
+			name = "Enable aggro flash",
+			desc = "Enables the -AGGRO- flash animation on the nameplates when gaining aggro as dps.",
 		},
 		
 	}
