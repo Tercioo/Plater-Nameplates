@@ -1405,16 +1405,113 @@ end
 						mainFrame.ScriptOptionsScrollBox:Refresh()
 					end
 				end
+
 				--duplicate the option
+				local onclick_menu_option_export = function(cooltip, scriptType, payload)
+					local scriptId, mainFrame, button, optionCopy = unpack(payload)
+					local scriptData = Plater.db.profile[scriptType] --script_data hook_data
+					local scriptObject = scriptData[scriptId]
+
+					if (scriptObject) then
+						scriptObject.Options = scriptObject.Options or {}
+						tinsert(scriptObject.Options, #scriptObject.Options+1, optionCopy)
+						mainFrame.ScriptOptionsScrollBox:Refresh()
+						Plater:Msg("Option '" .. optionCopy.Name .. "' copied to '" .. scriptObject.Name .. "'.")
+					end
+
+					GameCooltip:Close()
+				end
+
+				local onclick_menu_option_duplicate = function(cooltip, scriptOptionIndex, optionSelected, payload)
+
+					local mainFrame, button, optionCopy = unpack(payload)
+
+					if (optionSelected == 1) then --duplicate
+						local scriptObject = mainFrame.GetCurrentScriptObject()
+						if (scriptObject) then
+							tinsert(scriptObject.Options, scriptOptionIndex+1, optionCopy)
+							mainFrame.ScriptOptionsScrollBox:Refresh()
+						end
+
+						GameCooltip:Close()
+
+					elseif (optionSelected == 2) then --copy to another script
+						GameCooltip:Preset (2)
+						GameCooltip:SetType ("menu")
+						GameCooltip:SetOption ("TextSize", 10)
+						GameCooltip:SetOption ("FixedWidth", 200)
+						GameCooltip:SetOption ("ButtonsYModSub", -1)
+						GameCooltip:SetOption ("YSpacingModSub", -4)
+						GameCooltip:SetOwner (button, "topleft", "topright", 2, 0)
+						GameCooltip:SetFixedParameter ("script_data")
+			
+						--build a list of scripts (from the script tab)
+						local allScripts = Plater.db.profile.script_data
+						if (allScripts) then
+							for i = 1, #allScripts do
+								GameCooltip:AddLine (allScripts[i].Name)
+								GameCooltip:AddMenu (1, onclick_menu_option_export, {i, mainFrame, button, optionCopy})
+								GameCooltip:AddIcon ([[Interface\AddOns\Plater\images\icons]], 1, 1, 16, 16, 3/512, 21/512, 215/512, 233/512)
+							end
+						end
+						GameCooltip:SetOption("SubFollowButton", true)
+						GameCooltip:Show()
+
+					elseif (optionSelected == 3) then --copy to another mod
+						GameCooltip:Preset (2)
+						GameCooltip:SetType ("menu")
+						GameCooltip:SetOption ("TextSize", 10)
+						GameCooltip:SetOption ("FixedWidth", 200)
+						GameCooltip:SetOption ("ButtonsYModSub", -1)
+						GameCooltip:SetOption ("YSpacingModSub", -4)
+						GameCooltip:SetOwner (button, "topleft", "topright", 2, 0)
+						GameCooltip:SetFixedParameter ("hook_data")
+			
+						--build a list of mods (from the modding tab)
+						local allMods = Plater.db.profile.hook_data
+						if (allMods) then
+							for i = 1, #allMods do
+								GameCooltip:AddLine (allMods[i].Name)
+								GameCooltip:AddMenu (1, onclick_menu_option_export, {i, mainFrame, button, optionCopy})
+								GameCooltip:AddIcon ([[Interface\AddOns\Plater\images\icons]], 1, 1, 16, 16, 3/512, 21/512, 215/512, 233/512)
+							end
+						end
+						GameCooltip:SetOption("SubFollowButton", true)
+						GameCooltip:Show()
+					end
+				end
+
 				local onMouseUpDuplicateOptionButton = function(self)
 					local optionIndex = self.optionIndex
-					local scriptObject = mainFrame.GetCurrentScriptObject()
-					if (scriptObject) then
-						local toBeDuplicated = scriptObject.Options[optionIndex]
-						local newOption = DF.table.copy ({}, toBeDuplicated)
-						tinsert(scriptObject.Options, optionIndex+1, newOption)
-						mainFrame.ScriptOptionsScrollBox:Refresh()
-					end
+
+					GameCooltip:Preset (2)
+					GameCooltip:SetType ("menu")
+					GameCooltip:SetOption ("TextSize", 10)
+					GameCooltip:SetOption ("FixedWidth", 200)
+					GameCooltip:SetOption ("ButtonsYModSub", -1)
+					GameCooltip:SetOption ("YSpacingModSub", -4)
+					GameCooltip:SetOwner (self, "topleft", "topright", 2, 0)
+					GameCooltip:SetFixedParameter (optionIndex)
+
+					--send a copy of the option as payload
+					local optionCopy = DF.table.copy({}, mainFrame.GetCurrentScriptObject().Options[optionIndex])
+
+					local payload = {mainFrame, self, optionCopy}
+
+					GameCooltip:AddLine ("Duplicate Here")
+					GameCooltip:AddMenu (1, onclick_menu_option_duplicate, 1, payload)
+					GameCooltip:AddIcon ([[Interface\BUTTONS\UI-GuildButton-PublicNote-Up]], 1, 1, 16, 16)
+					
+					GameCooltip:AddLine ("Copy to Another Script")
+					GameCooltip:AddMenu (1, onclick_menu_option_duplicate, 2, payload)
+					GameCooltip:AddIcon ([[Interface\AddOns\Plater\images\icons]], 1, 1, 16, 16, 3/512, 21/512, 215/512, 233/512)
+
+					GameCooltip:AddLine ("Copy to Another Mod")
+					GameCooltip:AddMenu (1, onclick_menu_option_duplicate, 3, payload)
+					GameCooltip:AddIcon ([[Interface\AddOns\Plater\images\icons]], 1, 1, 16, 16, 3/512, 21/512, 215/512, 233/512)
+
+					GameCooltip:SetOption("SubFollowButton", true)
+					GameCooltip:Show()
 				end
 				
 				--create a new line within the scrollbox containing options created to edit

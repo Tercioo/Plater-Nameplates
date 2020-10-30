@@ -375,6 +375,7 @@ Plater.TargetHighlights = {
 	[[Interface\AddOns\Plater\images\selection_indicator5]],
 	[[Interface\AddOns\Plater\images\selection_indicator6]],
 	[[Interface\AddOns\Plater\images\selection_indicator7]],
+	[[Interface\AddOns\Plater\images\selection_indicator8]],
 }
 
 --> icons available for any purpose
