@@ -7489,6 +7489,10 @@ end
 		
 		nameString:SetText (name)
 		
+		if not name then
+			return
+		end
+		
 		while (nameString:GetStringWidth() > stringSize) do
 			name = strsub (name, 1, #name-1)
 			nameString:SetText (name)
@@ -9578,6 +9582,10 @@ end
 		
 		maxWidth = max (maxWidth or 0, 10)
 		local text = fontString:GetText()
+		
+		if not text then
+			return
+		end
 		
 		while (fontString:GetStringWidth() > maxWidth) do
 			text = strsub (text, 1, #text - 1)
