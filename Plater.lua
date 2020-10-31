@@ -913,12 +913,15 @@ Plater.DefaultSpellRangeListF = {
 				end
 				
 			elseif (class == "HUNTER") then
-				if IsPlayerSpell(53351) then
+				if IsPlayerSpell(53351) then -- Kill Shot
+					local lower, upper = 0.2, nil
 					if IsPlayerSpell(273887) then --> is using killer instinct?
-						Plater.SetExecuteRange (true, 0.35)
-					else
-						Plater.SetExecuteRange (true, 0.2) -- Kill Shot available to all hunters
+						lower = 0.35
 					end
+					if IsPlayerSpell(260228) then
+						upper = 0.7
+					end
+					Plater.SetExecuteRange (true, lower, upper)
 				end
 				
 			elseif (class == "PALADIN") then
