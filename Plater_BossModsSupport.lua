@@ -272,10 +272,26 @@ function Plater.SetAltCastBar(plateFrame, configTable, timer)
 		end
 	end
 	
+	--reset the castbar
+	castBar.Icon:ClearAllPoints()
+	castBar.Icon:SetPoint("right", castBar, "left", -1, 0)
+
+	castBar:ClearAllPoints()
+	castBar:SetPoint("topleft", plateFrame.unitFrame.castBar, "bottomleft", 0, -2)
+	castBar:SetPoint("topright", plateFrame.unitFrame.castBar, "bottomright", 0, -2)
+
+	castBar.percentText:ClearAllPoints()
+	castBar.percentText:SetPoint ("right", castBar, "right", -2, 0)
+
+	castBar.Text:ClearAllPoints()
+	castBar.Text:SetPoint ("left", castBar, "left", 2, 0)
+
+
+	--set the unit
 	castBar:SetUnit(plateFrame.unitFrame.unit)
-
+	--set spell name
 	castBar.Text:SetText(configTable.text)
-
+	--set texture
 	castBar.Icon:SetTexture(configTable.iconTexture or "")
 	if (configTable.iconTexcoord) then
 		castBar.Icon:SetTexCoord(unpack(configTable.iconTexcoord))
@@ -290,6 +306,22 @@ function Plater.SetAltCastBar(plateFrame, configTable, timer)
 	castBar:SetHeight(configTable.height or 12)
 	castBar.Icon:SetSize(castBar:GetHeight(), castBar:GetHeight())
 	castBar.Spark:Show()
+
+	if (configTable.spellNameAnchor) then
+		Plater.SetAnchor(castBar.Text, configTable.spellNameAnchor)
+	end
+
+	if (configTable.timerAnchor) then
+		Plater.SetAnchor(castBar.percentText, configTable.timerAnchor)
+	end
+
+	if (configTable.iconAnchor) then
+		Plater.SetAnchor(castBar.Icon, configTable.iconAnchor)
+	end
+
+	DF:SetFontSize(castBar.Text, configTable.textSize or 10)
+	DF:SetFontSize(castBar.percentText, configTable.textSize or 10)
+
 
 	local startTime = _G.GetTime()
 	local endTime = startTime + timer
