@@ -7459,19 +7459,8 @@ end
 		end
 		
 		-- cleanup utf8...
-		local b1 = strbyte(strsub(spellName, #spellName, #spellName))
-		local b2 = strbyte(strsub(spellName, #spellName-1, #spellName))
-		local b3 = strbyte(strsub(spellName, #spellName-2, #spellName))
-		if b1 and b1 >= 194 and b1 <= 244 then
-			spellName = strsub (spellName, 1, #spellName - 1)
-			nameString:SetText (spellName)
-		elseif b2 and b2 >= 224 and b2 <= 244 then
-			spellName = strsub (spellName, 1, #spellName - 2)
-			nameString:SetText (spellName)
-		elseif b3 and b3 >= 240 and b3 <= 244 then
-			spellName = strsub (spellName, 1, #spellName - 3)
-			nameString:SetText (spellName)
-		end
+		spellName = DF:CleanTruncateUTF8String(spellName)
+		nameString:SetText (spellName)
 		
 	end
 
@@ -7523,19 +7512,8 @@ end
 		end
 		
 		-- cleanup utf8...
-		local b1 = strbyte(strsub(name, #name, #name))
-		local b2 = strbyte(strsub(name, #name-1, #name))
-		local b3 = strbyte(strsub(name, #name-2, #name))
-		if b1 and b1 >= 194 and b1 <= 244 then
-			name = strsub (name, 1, #name - 1)
-			nameString:SetText (name)
-		elseif b2 and b2 >= 224 and b2 <= 244 then
-			name = strsub (name, 1, #name - 2)
-			nameString:SetText (name)
-		elseif b3 and b3 >= 240 and b3 <= 244 then
-			name = strsub (name, 1, #name - 3)
-			nameString:SetText (name)
-		end
+		name = DF:CleanTruncateUTF8String(name)
+		nameString:SetText (name)
 	end
 
 	--updates the level text and the color
@@ -9626,19 +9604,8 @@ end
 		end	
 		
 		-- cleanup utf8...
-		local b1 = strbyte(strsub(text, #text, #text))
-		local b2 = strbyte(strsub(text, #text-1, #text))
-		local b3 = strbyte(strsub(text, #text-2, #text))
-		if b1 and b1 >= 194 and b1 <= 244 then
-			text = strsub (text, 1, #text - 1)
-			fontString:SetText (text)
-		elseif b2 and b2 >= 224 and b2 <= 244 then
-			text = strsub (text, 1, #text - 2)
-			fontString:SetText (text)
-		elseif b3 and b3 >= 240 and b3 <= 244 then
-			text = strsub (text, 1, #text - 3)
-			fontString:SetText (text)
-		end
+		text = DF:CleanTruncateUTF8String(text)
+		fontString:SetText (text)
 		
 	end
 	
