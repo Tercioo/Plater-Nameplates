@@ -897,7 +897,7 @@ Plater.DefaultSpellRangeListF = {
 				
 			elseif (class == "MAGE") then
 				if IsPlayerSpell(269644) then -- Searing Touch
-					Plater.SetExecuteRange (true, 0.20)
+					Plater.SetExecuteRange (true, 0.30)
 				elseif IsPlayerSpell(205026) then --Firestarter
 					Plater.SetExecuteRange (true, 0, 0.9)
 				end
