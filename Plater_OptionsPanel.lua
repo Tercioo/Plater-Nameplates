@@ -6479,7 +6479,6 @@ local relevance_options = {
 			desc = "Use 'target alpha' for focus targets as well.",
 			id = "focus_target_alpha",
 		},
-		{type = "label", get = function() return "General:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
 			get = function() return Plater.db.profile.transparency_behavior_use_division end,
