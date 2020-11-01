@@ -759,6 +759,7 @@ Plater.DefaultSpellRangeListF = {
 
 	local DB_USE_RANGE_CHECK
 	local DB_USE_NON_TARGETS_ALPHA
+	local DB_USE_FOCUS_TARGET_ALPHA
 	local DB_USE_ALPHA_FRIENDLIES
 	local DB_USE_ALPHA_ENEMIES
 	local DB_USE_QUICK_HIDE
@@ -955,10 +956,11 @@ Plater.DefaultSpellRangeListF = {
 	--> range check ~range
 	function Plater.CheckRange (plateFrame, onAdded)
 
+		local profile = Plater.db.profile
 		local unitFrame = plateFrame.unitFrame
-		local castBarFade = unitFrame.castBar.fadeOutAnimation:IsPlaying() --and Plater.db.profile.cast_statusbar_use_fade_effects
+		local castBarFade = unitFrame.castBar.fadeOutAnimation:IsPlaying() --and profile.cast_statusbar_use_fade_effects
 		local nameplateAlpha = 1
-		if DB_USE_UIPARENT and Plater.db.profile.honor_blizzard_plate_alpha then
+		if DB_USE_UIPARENT and profile.honor_blizzard_plate_alpha then
 		--if DB_USE_UIPARENT end
 			nameplateAlpha = plateFrame:GetAlpha()
 		end
@@ -977,10 +979,10 @@ Plater.DefaultSpellRangeListF = {
 			
 			return
 		elseif (plateFrame [MEMBER_NOCOMBAT]) then
-			if nameplateAlpha < Plater.db.profile.not_affecting_combat_alpha then
+			if nameplateAlpha < profile.not_affecting_combat_alpha then
 				unitFrame:SetAlpha (nameplateAlpha)
 			end
-			--unitFrame:SetAlpha (Plater.db.profile.not_affecting_combat_alpha) -- already set if necessary
+			--unitFrame:SetAlpha (profile.not_affecting_combat_alpha) -- already set if necessary
 			unitFrame.healthBar:SetAlpha (1)
 			if not castBarFade then
 				unitFrame.castBar:SetAlpha (1)
@@ -1020,23 +1022,23 @@ Plater.DefaultSpellRangeListF = {
 		
 		if plateFrame [MEMBER_REACTION] < 5 then
 			-- enemy
-			inRangeAlpha = Plater.db.profile.range_check_in_range_or_target_alpha
-			overallRangeCheckAlpha = Plater.db.profile.range_check_alpha
-			healthBar_rangeCheckAlpha = Plater.db.profile.range_check_health_bar_alpha
-			castBar_rangeCheckAlpha = Plater.db.profile.range_check_cast_bar_alpha
-			buffFrames_rangeCheckAlpha = Plater.db.profile.range_check_buffs_alpha
-			powerBar_rangeCheckAlpha = Plater.db.profile.range_check_power_bar_alpha
+			inRangeAlpha = profile.range_check_in_range_or_target_alpha
+			overallRangeCheckAlpha = profile.range_check_alpha
+			healthBar_rangeCheckAlpha = profile.range_check_health_bar_alpha
+			castBar_rangeCheckAlpha = profile.range_check_cast_bar_alpha
+			buffFrames_rangeCheckAlpha = profile.range_check_buffs_alpha
+			powerBar_rangeCheckAlpha = profile.range_check_power_bar_alpha
 			rangeChecker = Plater.RangeCheckFunctionEnemy or LibRangeCheck:GetHarmMaxChecker(Plater.RangeCheckRangeEnemy or 40)
 			rangeCheckRange = Plater.RangeCheckRangeEnemy
 			
 		else
 			-- friendly
-			inRangeAlpha = Plater.db.profile.range_check_in_range_or_target_alpha_friendlies
-			overallRangeCheckAlpha = Plater.db.profile.range_check_alpha_friendlies
-			healthBar_rangeCheckAlpha = Plater.db.profile.range_check_health_bar_alpha_friendlies
-			castBar_rangeCheckAlpha = Plater.db.profile.range_check_cast_bar_alpha_friendlies
-			buffFrames_rangeCheckAlpha = Plater.db.profile.range_check_buffs_alpha_friendlies
-			powerBar_rangeCheckAlpha = Plater.db.profile.range_check_power_bar_alpha_friendlies
+			inRangeAlpha = profile.range_check_in_range_or_target_alpha_friendlies
+			overallRangeCheckAlpha = profile.range_check_alpha_friendlies
+			healthBar_rangeCheckAlpha = profile.range_check_health_bar_alpha_friendlies
+			castBar_rangeCheckAlpha = profile.range_check_cast_bar_alpha_friendlies
+			buffFrames_rangeCheckAlpha = profile.range_check_buffs_alpha_friendlies
+			powerBar_rangeCheckAlpha = profile.range_check_power_bar_alpha_friendlies
 			rangeChecker = Plater.RangeCheckFunctionFriendly or LibRangeCheck:GetFriendMaxChecker(Plater.RangeCheckRangeFriendly or 40)
 			rangeCheckRange = Plater.RangeCheckRangeFriendly
 		end
@@ -1061,12 +1063,14 @@ Plater.DefaultSpellRangeListF = {
 		local buffFrame2 = unitFrame.BuffFrame2		
 
 		--if "units which is not target" is enabled and the player is targetting something else than the player it self
-		if (DB_USE_NON_TARGETS_ALPHA and Plater.PlayerHasTargetNonSelf) then
+		if (DB_USE_NON_TARGETS_ALPHA and (DB_USE_FOCUS_TARGET_ALPHA or Plater.PlayerHasTargetNonSelf)) then
 			if (plateFrame [MEMBER_TARGET]) then
+				unitIsTarget = true
+			elseif (DB_USE_FOCUS_TARGET_ALPHA and unitFrame.IsFocus) then
 				unitIsTarget = true
 			else
 				notTheTarget = true
-				if (Plater.db.profile.transparency_behavior_use_division) then
+				if (profile.transparency_behavior_use_division) then
 					alphaMultiplier = 0.5
 				end
 			end
@@ -1551,6 +1555,7 @@ Plater.DefaultSpellRangeListF = {
 		DB_HOVER_HIGHLIGHT = profile.hover_highlight
 		DB_USE_RANGE_CHECK = profile.range_check_enabled
 		DB_USE_NON_TARGETS_ALPHA = profile.non_targeted_alpha_enabled
+		DB_USE_FOCUS_TARGET_ALPHA = profile.focus_as_target_alpha
 		DB_USE_ALPHA_FRIENDLIES = profile.transparency_behavior_on_friendlies
 		DB_USE_ALPHA_ENEMIES = profile.transparency_behavior_on_enemies
 		DB_USE_QUICK_HIDE = profile.quick_hide

@@ -6350,7 +6350,9 @@ local relevance_options = {
 				local checkBoxAll = generalOptionsAnchor:GetWidgetById("transparency_both")
 				checkBoxAll:SetValue(false)		
 				local checkBoxNone = generalOptionsAnchor:GetWidgetById("transparency_none")
-				checkBoxNone:SetValue(false)	
+				checkBoxNone:SetValue(false)
+				local checkBoxFocusTargetAlpha = generalOptionsAnchor:GetWidgetById("focus_target_alpha")
+				checkBoxFocusTargetAlpha:Disable()
 				local checkBoxDivisionByTwo = generalOptionsAnchor:GetWidgetById("transparency_division")
 				checkBoxDivisionByTwo:Disable()
 				Plater.RefreshDBUpvalues()
@@ -6382,7 +6384,9 @@ local relevance_options = {
 				local checkBoxAll = generalOptionsAnchor:GetWidgetById("transparency_both")
 				checkBoxAll:SetValue(false)				
 				local checkBoxNone = generalOptionsAnchor:GetWidgetById("transparency_none")
-				checkBoxNone:SetValue(false)	
+				checkBoxNone:SetValue(false)
+				local checkBoxFocusTargetAlpha = generalOptionsAnchor:GetWidgetById("focus_target_alpha")
+				checkBoxFocusTargetAlpha:Enable()
 				local checkBoxDivisionByTwo = generalOptionsAnchor:GetWidgetById("transparency_division")
 				checkBoxDivisionByTwo:Disable()
 				Plater.RefreshDBUpvalues()
@@ -6415,6 +6419,8 @@ local relevance_options = {
 				checkBoxNonTargets:SetValue(false)
 				local checkBoxNone = generalOptionsAnchor:GetWidgetById("transparency_none")
 				checkBoxNone:SetValue(false)
+				local checkBoxFocusTargetAlpha = generalOptionsAnchor:GetWidgetById("focus_target_alpha")
+				checkBoxFocusTargetAlpha:Enable()
 				local checkBoxDivisionByTwo = generalOptionsAnchor:GetWidgetById("transparency_division")
 				checkBoxDivisionByTwo:Enable()
 				Plater.RefreshDBUpvalues()
@@ -6446,6 +6452,8 @@ local relevance_options = {
 				checkBoxNonTargets:SetValue(false)
 				local checkBoxAll = generalOptionsAnchor:GetWidgetById("transparency_both")
 				checkBoxAll:SetValue(false)	
+				local checkBoxFocusTargetAlpha = generalOptionsAnchor:GetWidgetById("focus_target_alpha")
+				checkBoxFocusTargetAlpha:Disable()
 				local checkBoxDivisionByTwo = generalOptionsAnchor:GetWidgetById("transparency_division")
 				checkBoxDivisionByTwo:Disable()
 				Plater.RefreshDBUpvalues()
@@ -6459,6 +6467,18 @@ local relevance_options = {
 		},
 
 		{type = "blank"},
+		{type = "label", get = function() return "General:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.focus_as_target_alpha end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.focus_as_target_alpha = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Focus Target Alpha",
+			desc = "Use 'target alpha' for focus targets as well.",
+			id = "focus_target_alpha",
+		},
 		{type = "label", get = function() return "General:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
