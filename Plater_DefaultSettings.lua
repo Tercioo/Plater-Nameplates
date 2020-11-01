@@ -2490,6 +2490,7 @@ PLATER_DEFAULT_SETTINGS = {
 		aggro_can_check_notank = false,
 		
 		show_aggro_flash = false,
+		show_aggro_glow = true,
 		
 		tank = {
 			colors = {

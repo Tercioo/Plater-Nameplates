@@ -6566,8 +6566,10 @@ end
 					
 				elseif (threatStatus == 2) then --is tanking with risk of aggro loss
 					set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.pulling))
-					self.aggroGlowUpper:Show()
-					self.aggroGlowLower:Show()
+					if profile.show_aggro_glow then
+						self.aggroGlowUpper:Show()
+						self.aggroGlowLower:Show()
+					end
 					
 				else --not tanking
 					set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.noaggro))
@@ -6660,8 +6662,10 @@ end
 						local colorToUse
 						if (threatStatus == 1) then --player is almost aggroing the mob
 							--show aggro warning indicators
-							self.aggroGlowUpper:Show()
-							self.aggroGlowLower:Show()
+							if profile.show_aggro_glow then
+								self.aggroGlowUpper:Show()
+								self.aggroGlowLower:Show()
+							end
 							if profile.dps.use_aggro_solo and not IsInGroup() then
 								colorToUse = DB_AGGRO_DPS_COLORS.solo
 							else

@@ -11984,6 +11984,15 @@ end
 			name = "Enable aggro flash",
 			desc = "Enables the -AGGRO- flash animation on the nameplates when gaining aggro as dps.",
 		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.show_aggro_glow end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.show_aggro_glow = value
+			end,
+			name = "Enable aggro glow",
+			desc = "Enables the healthbar glow on the nameplates when gaining aggro as dps or losing aggro as tank.",
+		},
 		
 	}
 	
