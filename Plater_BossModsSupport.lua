@@ -13,6 +13,7 @@ local DF = _G ["DetailsFramework"]
 local Plater = _G.Plater
 local C_Timer = _G.C_Timer
 local C_NamePlate = _G.C_NamePlate
+local GetTime = _G.GetTime
 
 local UNIT_BOSS_MOD_AURAS_ACTIVE = {} --contains for each [GUID] a list of {texture, duration, desaturate}
 local UNIT_BOSS_MOD_AURAS_TO_BE_REMOVED = {} --contains for each [GUID] a list of texture-ids to be removed
@@ -254,7 +255,25 @@ end
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> spell prediction
 
-function Plater.SetAltCastBar(plateFrame, configTable, timer)
+function Plater.GetAltCastBarAltId(plateFrame)
+	--check if the nameplate is valid
+	if (not plateFrame or not plateFrame.unitFrame) then
+		return
+	end
+	return plateFrame.unitFrame.castBar2.altCastId
+end
+
+function Plater.ClearAltCastBar(plateFrame)
+	--check if the nameplate is valid
+	if (not plateFrame or not plateFrame.unitFrame) then
+		return
+	end
+	local castBar2 = plateFrame.unitFrame.castBar2
+	castBar2.altCastId = nil
+	castBar2:Hide()
+end
+
+function Plater.SetAltCastBar(plateFrame, configTable, timer, startedAt, altCastId)
 
 	--check if the nameplate is valid
 	if (not plateFrame or not plateFrame.unitFrame) then
@@ -262,7 +281,6 @@ function Plater.SetAltCastBar(plateFrame, configTable, timer)
 	end
 
 	local castBar = plateFrame.unitFrame.castBar2
-	
 	castBar.CastBarEvents = {}
 	
 	--> just update the current value since it wasn't running its tick function during the hide state
@@ -307,6 +325,7 @@ function Plater.SetAltCastBar(plateFrame, configTable, timer)
 
 	--set the unit
 	castBar:SetUnit(plateFrame.unitFrame.unit)
+	castBar.altCastId = altCastId
 	--set spell name
 	castBar.Text:SetText(configTable.text)
 	--set texture
@@ -346,8 +365,13 @@ function Plater.SetAltCastBar(plateFrame, configTable, timer)
 	DF:SetFontSize(castBar.Text, configTable.textSize or 10)
 	DF:SetFontSize(castBar.percentText, configTable.textSize or 10)
 
+	local startTime
+	if (startedAt) then
+		startTime = startedAt
+	else
+		startTime = GetTime()
+	end
 
-	local startTime = _G.GetTime()
 	local endTime = startTime + timer
 
 	if (configTable.isChanneling) then
@@ -407,6 +431,7 @@ function Plater.StopAltCastBar(plateFrame)
 	
 	castBar.CastBarEvents = {}
 	castBar:SetUnit(nil)
+	castBar.altCastId = nil
 
 	castBar.Text:SetText("")
 
