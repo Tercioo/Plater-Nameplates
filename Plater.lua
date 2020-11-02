@@ -648,7 +648,19 @@ Plater.DefaultSpellRangeList = {
 	[72] = 30, --> warrior fury
 	[73] = 30, --> warrior protect
 	
-	[1444] = 40, --> DAMAGER (low-level chars)
+	-- low-level (without spec)
+	[1444] = 40, --> Initial SHAMAN
+	[1446] = 40, --> Initial WARRIOR
+	[1447] = 40, --> Initial DRUID
+	[1448] = 40, --> Initial HUNTER
+	[1449] = 40, --> Initial MAGE
+	[1450] = 40, --> Initial MONK
+	[1451] = 40, --> Initial PALADIN
+	[1452] = 40, --> Initial PRIEST
+	[1453] = 40, --> Initial ROGUE
+	[1454] = 40, --> Initial WARLOCK
+	[1455] = 40, --> Initial DK
+	[1456] = 40, --> Initial DH
 }
 
 --> default ranges to use in the range check proccess against friendlies, player can select a different range in the options panel
@@ -763,6 +775,7 @@ Plater.DefaultSpellRangeListF = {
 
 	local DB_USE_RANGE_CHECK
 	local DB_USE_NON_TARGETS_ALPHA
+	local DB_USE_FOCUS_TARGET_ALPHA
 	local DB_USE_ALPHA_FRIENDLIES
 	local DB_USE_ALPHA_ENEMIES
 	local DB_USE_QUICK_HIDE
@@ -900,7 +913,7 @@ Plater.DefaultSpellRangeListF = {
 				
 			elseif (class == "MAGE") then
 				if IsPlayerSpell(269644) then -- Searing Touch
-					Plater.SetExecuteRange (true, 0.20)
+					Plater.SetExecuteRange (true, 0.30)
 				elseif IsPlayerSpell(205026) then --Firestarter
 					Plater.SetExecuteRange (true, 0, 0.9)
 				end
@@ -959,10 +972,11 @@ Plater.DefaultSpellRangeListF = {
 	--> range check ~range
 	function Plater.CheckRange (plateFrame, onAdded)
 
+		local profile = Plater.db.profile
 		local unitFrame = plateFrame.unitFrame
-		local castBarFade = unitFrame.castBar.fadeOutAnimation:IsPlaying() --and Plater.db.profile.cast_statusbar_use_fade_effects
+		local castBarFade = unitFrame.castBar.fadeOutAnimation:IsPlaying() --and profile.cast_statusbar_use_fade_effects
 		local nameplateAlpha = 1
-		if DB_USE_UIPARENT and Plater.db.profile.honor_blizzard_plate_alpha then
+		if DB_USE_UIPARENT and profile.honor_blizzard_plate_alpha then
 		--if DB_USE_UIPARENT end
 			nameplateAlpha = plateFrame:GetAlpha()
 		end
@@ -981,10 +995,10 @@ Plater.DefaultSpellRangeListF = {
 			
 			return
 		elseif (plateFrame [MEMBER_NOCOMBAT]) then
-			if nameplateAlpha < Plater.db.profile.not_affecting_combat_alpha then
+			if nameplateAlpha < profile.not_affecting_combat_alpha then
 				unitFrame:SetAlpha (nameplateAlpha)
 			end
-			--unitFrame:SetAlpha (Plater.db.profile.not_affecting_combat_alpha) -- already set if necessary
+			--unitFrame:SetAlpha (profile.not_affecting_combat_alpha) -- already set if necessary
 			unitFrame.healthBar:SetAlpha (1)
 			if not castBarFade then
 				unitFrame.castBar:SetAlpha (1)
@@ -1024,23 +1038,23 @@ Plater.DefaultSpellRangeListF = {
 		
 		if plateFrame [MEMBER_REACTION] < 5 then
 			-- enemy
-			inRangeAlpha = Plater.db.profile.range_check_in_range_or_target_alpha
-			overallRangeCheckAlpha = Plater.db.profile.range_check_alpha
-			healthBar_rangeCheckAlpha = Plater.db.profile.range_check_health_bar_alpha
-			castBar_rangeCheckAlpha = Plater.db.profile.range_check_cast_bar_alpha
-			buffFrames_rangeCheckAlpha = Plater.db.profile.range_check_buffs_alpha
-			powerBar_rangeCheckAlpha = Plater.db.profile.range_check_power_bar_alpha
+			inRangeAlpha = profile.range_check_in_range_or_target_alpha
+			overallRangeCheckAlpha = profile.range_check_alpha
+			healthBar_rangeCheckAlpha = profile.range_check_health_bar_alpha
+			castBar_rangeCheckAlpha = profile.range_check_cast_bar_alpha
+			buffFrames_rangeCheckAlpha = profile.range_check_buffs_alpha
+			powerBar_rangeCheckAlpha = profile.range_check_power_bar_alpha
 			rangeChecker = Plater.RangeCheckFunctionEnemy or LibRangeCheck:GetHarmMaxChecker(Plater.RangeCheckRangeEnemy or 40)
 			rangeCheckRange = Plater.RangeCheckRangeEnemy
 			
 		else
 			-- friendly
-			inRangeAlpha = Plater.db.profile.range_check_in_range_or_target_alpha_friendlies
-			overallRangeCheckAlpha = Plater.db.profile.range_check_alpha_friendlies
-			healthBar_rangeCheckAlpha = Plater.db.profile.range_check_health_bar_alpha_friendlies
-			castBar_rangeCheckAlpha = Plater.db.profile.range_check_cast_bar_alpha_friendlies
-			buffFrames_rangeCheckAlpha = Plater.db.profile.range_check_buffs_alpha_friendlies
-			powerBar_rangeCheckAlpha = Plater.db.profile.range_check_power_bar_alpha_friendlies
+			inRangeAlpha = profile.range_check_in_range_or_target_alpha_friendlies
+			overallRangeCheckAlpha = profile.range_check_alpha_friendlies
+			healthBar_rangeCheckAlpha = profile.range_check_health_bar_alpha_friendlies
+			castBar_rangeCheckAlpha = profile.range_check_cast_bar_alpha_friendlies
+			buffFrames_rangeCheckAlpha = profile.range_check_buffs_alpha_friendlies
+			powerBar_rangeCheckAlpha = profile.range_check_power_bar_alpha_friendlies
 			rangeChecker = Plater.RangeCheckFunctionFriendly or LibRangeCheck:GetFriendMaxChecker(Plater.RangeCheckRangeFriendly or 40)
 			rangeCheckRange = Plater.RangeCheckRangeFriendly
 		end
@@ -1065,12 +1079,14 @@ Plater.DefaultSpellRangeListF = {
 		local buffFrame2 = unitFrame.BuffFrame2		
 
 		--if "units which is not target" is enabled and the player is targetting something else than the player it self
-		if (DB_USE_NON_TARGETS_ALPHA and Plater.PlayerHasTargetNonSelf) then
+		if (DB_USE_NON_TARGETS_ALPHA and (DB_USE_FOCUS_TARGET_ALPHA or Plater.PlayerHasTargetNonSelf)) then
 			if (plateFrame [MEMBER_TARGET]) then
+				unitIsTarget = true
+			elseif (DB_USE_FOCUS_TARGET_ALPHA and unitFrame.IsFocus) then
 				unitIsTarget = true
 			else
 				notTheTarget = true
-				if (Plater.db.profile.transparency_behavior_use_division) then
+				if (profile.transparency_behavior_use_division) then
 					alphaMultiplier = 0.5
 				end
 			end
@@ -1555,6 +1571,7 @@ Plater.DefaultSpellRangeListF = {
 		DB_HOVER_HIGHLIGHT = profile.hover_highlight
 		DB_USE_RANGE_CHECK = profile.range_check_enabled
 		DB_USE_NON_TARGETS_ALPHA = profile.non_targeted_alpha_enabled
+		DB_USE_FOCUS_TARGET_ALPHA = profile.focus_as_target_alpha
 		DB_USE_ALPHA_FRIENDLIES = profile.transparency_behavior_on_friendlies
 		DB_USE_ALPHA_ENEMIES = profile.transparency_behavior_on_enemies
 		DB_USE_QUICK_HIDE = profile.quick_hide
@@ -6570,8 +6587,10 @@ end
 					
 				elseif (threatStatus == 2) then --is tanking with risk of aggro loss
 					set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.pulling))
-					self.aggroGlowUpper:Show()
-					self.aggroGlowLower:Show()
+					if profile.show_aggro_glow then
+						self.aggroGlowUpper:Show()
+						self.aggroGlowLower:Show()
+					end
 					
 				else --not tanking
 					set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.noaggro))
@@ -6664,8 +6683,10 @@ end
 						local colorToUse
 						if (threatStatus == 1) then --player is almost aggroing the mob
 							--show aggro warning indicators
-							self.aggroGlowUpper:Show()
-							self.aggroGlowLower:Show()
+							if profile.show_aggro_glow then
+								self.aggroGlowUpper:Show()
+								self.aggroGlowLower:Show()
+							end
 							if profile.dps.use_aggro_solo and not IsInGroup() then
 								colorToUse = DB_AGGRO_DPS_COLORS.solo
 							else
@@ -7454,19 +7475,8 @@ end
 		end
 		
 		-- cleanup utf8...
-		local b1 = strbyte(strsub(spellName, #spellName, #spellName))
-		local b2 = strbyte(strsub(spellName, #spellName-1, #spellName))
-		local b3 = strbyte(strsub(spellName, #spellName-2, #spellName))
-		if b1 and b1 >= 194 and b1 <= 244 then
-			spellName = strsub (spellName, 1, #spellName - 1)
-			nameString:SetText (spellName)
-		elseif b2 and b2 >= 224 and b2 <= 244 then
-			spellName = strsub (spellName, 1, #spellName - 2)
-			nameString:SetText (spellName)
-		elseif b3 and b3 >= 240 and b3 <= 244 then
-			spellName = strsub (spellName, 1, #spellName - 3)
-			nameString:SetText (spellName)
-		end
+		spellName = DF:CleanTruncateUTF8String(spellName)
+		nameString:SetText (spellName)
 		
 	end
 
@@ -7518,19 +7528,8 @@ end
 		end
 		
 		-- cleanup utf8...
-		local b1 = strbyte(strsub(name, #name, #name))
-		local b2 = strbyte(strsub(name, #name-1, #name))
-		local b3 = strbyte(strsub(name, #name-2, #name))
-		if b1 and b1 >= 194 and b1 <= 244 then
-			name = strsub (name, 1, #name - 1)
-			nameString:SetText (name)
-		elseif b2 and b2 >= 224 and b2 <= 244 then
-			name = strsub (name, 1, #name - 2)
-			nameString:SetText (name)
-		elseif b3 and b3 >= 240 and b3 <= 244 then
-			name = strsub (name, 1, #name - 3)
-			nameString:SetText (name)
-		end
+		name = DF:CleanTruncateUTF8String(name)
+		nameString:SetText (name)
 	end
 
 	--updates the level text and the color
@@ -9621,19 +9620,8 @@ end
 		end	
 		
 		-- cleanup utf8...
-		local b1 = strbyte(strsub(text, #text, #text))
-		local b2 = strbyte(strsub(text, #text-1, #text))
-		local b3 = strbyte(strsub(text, #text-2, #text))
-		if b1 and b1 >= 194 and b1 <= 244 then
-			text = strsub (text, 1, #text - 1)
-			fontString:SetText (text)
-		elseif b2 and b2 >= 224 and b2 <= 244 then
-			text = strsub (text, 1, #text - 2)
-			fontString:SetText (text)
-		elseif b3 and b3 >= 240 and b3 <= 244 then
-			text = strsub (text, 1, #text - 3)
-			fontString:SetText (text)
-		end
+		text = DF:CleanTruncateUTF8String(text)
+		fontString:SetText (text)
 		
 	end
 	

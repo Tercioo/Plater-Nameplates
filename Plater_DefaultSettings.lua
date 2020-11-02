@@ -519,6 +519,7 @@ PLATER_DEFAULT_SETTINGS = {
 		non_targeted_alpha_enabled = false,
 		transparency_behavior_on_enemies = true,
 		honor_blizzard_plate_alpha = false,
+		focus_as_target_alpha = false,
 		
 		
 		transparency_behavior_on_friendlies = false,
@@ -2490,6 +2491,7 @@ PLATER_DEFAULT_SETTINGS = {
 		aggro_can_check_notank = false,
 		
 		show_aggro_flash = false,
+		show_aggro_glow = true,
 		
 		tank = {
 			colors = {
