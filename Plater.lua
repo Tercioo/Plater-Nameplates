@@ -6234,7 +6234,7 @@ end
 
 						healthBar.executeRange:Show()
 						healthBar.executeRange:SetTexCoord (0, DB_HEALTHCUTOFF_AT, 0, 1)
-						healthBar.executeRange:SetAlpha (1)--(0.2)
+						healthBar.executeRange:SetAlpha (0.2)
 						healthBar.executeRange:SetVertexColor (.3, .3, .3)
 						healthBar.executeRange:SetHeight (healthBar:GetHeight())
 						healthBar.executeRange:SetPoint ("right", healthBar.healthCutOff, "center")
@@ -6265,7 +6265,7 @@ end
 
 						healthBar.executeRange:Show()
 						healthBar.executeRange:SetTexCoord (0, 1-DB_HEALTHCUTOFF_AT_UPPER, 0, 1)
-						healthBar.executeRange:SetAlpha (1)--(0.2)
+						healthBar.executeRange:SetAlpha (0.2)
 						healthBar.executeRange:SetVertexColor (.3, .3, .3)
 						healthBar.executeRange:SetHeight (healthBar:GetHeight())
 						healthBar.executeRange:SetPoint ("left", healthBar.healthCutOff, "center")
