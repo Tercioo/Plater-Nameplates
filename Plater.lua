@@ -4740,13 +4740,13 @@ end
 			local curRowLength = 0
 			local verticalHeight = 1
 			local firstIcon
-			
-			--get the table where all icon frames are stored in
-			local iconFrameContainer = self.PlaterBuffList
 		
 			if (Plater.db.profile.aura_consolidate) then
 				Plater.ConsolidateAuraIcons (self)
 			end
+			
+			--get the table where all icon frames are stored in
+			local iconFrameContainer = self.PlaterBuffList
 			
 			if (Plater.db.profile.aura_sort) then
 				local iconFrameContainerCopy = {}
