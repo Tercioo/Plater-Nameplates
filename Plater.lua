@@ -335,6 +335,10 @@ local AURA_TYPES = {
 	["nil"] = "none",
 }
 
+--these tables store all bars created by boss mods
+Plater.BossModsTimeBarDBM = {}
+Plater.BossModsTimeBarBW = {}
+
 --> icon texcoords
 Plater.WideIconCoords = {.1, .9, .1, .6} --used in extra icons frame, constant,  can be changed with scripts
 Plater.BorderLessIconCoords = {.1, .9, .1, .9} --used in extra icons frame,constant, can be changed with scripts

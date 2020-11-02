@@ -507,7 +507,7 @@ PLATER_DEFAULT_SETTINGS = {
 		plater_resources_scale = 0.8,
 		plater_resources_padding = 2,
 
-		spell_prediction = {
+		spell_prediction = { --not being used at the moment
 			enabled = false,
 			castbar_height = 12,
 
