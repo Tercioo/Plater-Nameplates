@@ -24,6 +24,7 @@ locales\zhTW.lua
 Plater_DefaultSettings.lua
 
 Plater.lua
+Plater_Auras.lua
 Plater_Resources.lua
 Plater_OptionsPanel.lua
 Plater_ScriptingPanels.lua
