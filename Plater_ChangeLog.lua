@@ -8,6 +8,16 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1604404314,  "Bachend Changes", "November 2nd, 2020", "Externalized all aura code."},
+			{1604404314,  "Bug Fix", "November 2nd, 2020", "Execute range indicator overlay is back to its lower alpha value."},
+			{1604404314,  "Bachend Changes", "November 2nd, 2020", "Sorting consolidated auras properly."},
+			{1604404314,  "Bachend Changes", "November 1st, 2020", "Support for all low-level specs."},
+			{1604404314,  "Bug Fix", "November 1st, 2020", "'Searing Touch' is a 30% execute."},
+			{1604404314,  "Options Changes", "November 1st, 2020", "Adding option to use target alpha settings for focus target as well."},
+			{1604404314,  "Options Changes", "November 1st, 2020", "Adding option to disable Aggro-Glow."},
+			{1604404314,  "Bug Fix", "October 31st, 2020", "Adding 'Careful Aim' to execute indicator."},
+			{1604404314,  "Bachend Changes", "October 31st, 2020", "Shortening names should now work properly on all non-latin charsets."},
+			
 			{1604093806,  "New Feature", "October 30th, 2020", "New function to duplicate or copy mod/script options to other mods/scripts."},
 			{1604093806,  "Bug Fix", "October 29th, 2020", "Fixing issue with npc colors import not working."},
 			{1604093806,  "Bachend Changes", "October 29th, 2020", "Enabling battle-pet healthbars in pet battles (friendly NPC options apply)."},
