@@ -860,7 +860,9 @@ Plater.DefaultSpellRangeListF = {
 	function Plater.GetHealthCutoffValue()
 		Plater.SetExecuteRange (false)
 		
-		if (not Plater.db.profile.health_cutoff) then
+		local lowerEnabled, upperEnabled = Plater.db.profile.health_cutoff, Plater.db.profile.health_cutoff_upper
+		
+		if (not lowerEnabled or upperEnabled) then
 			return
 		end
 		
@@ -870,14 +872,14 @@ Plater.DefaultSpellRangeListF = {
 		
 			if (class == "PRIEST") then
 				-- SW:D is available to all priest specs
-				if IsPlayerSpell(32379) then
+				if IsPlayerSpell(32379) and lowerEnabled then
 					Plater.SetExecuteRange (true, 0.20)
 				end
 				
 			elseif (class == "MAGE") then
-				if IsPlayerSpell(269644) then -- Searing Touch
+				if IsPlayerSpell(269644) and lowerEnabled then -- Searing Touch
 					Plater.SetExecuteRange (true, 0.30)
-				elseif IsPlayerSpell(205026) then --Firestarter
+				elseif IsPlayerSpell(205026) and upperEnabled then --Firestarter
 					Plater.SetExecuteRange (true, 0, 0.9)
 				end
 				
@@ -889,7 +891,7 @@ Plater.DefaultSpellRangeListF = {
 					local using_Condemn = IsPlayerSpell(317349) or IsPlayerSpell(317485)
 					local highExecute = using_Condemn and 0.8 or 1
 					
-					Plater.SetExecuteRange (true, lowExecute, highExecute)
+					Plater.SetExecuteRange (true, lowerEnabled and lowExecute or nil, upperEnabled and highExecute or nil)
 				end
 				
 			elseif (class == "HUNTER") then
@@ -898,33 +900,33 @@ Plater.DefaultSpellRangeListF = {
 					if IsPlayerSpell(273887) then --> is using killer instinct?
 						lower = 0.35
 					end
-					if IsPlayerSpell(260228) then
+					if IsPlayerSpell(260228) and upperEnabled then --> Careful Aim
 						upper = 0.7
 					end
-					Plater.SetExecuteRange (true, lower, upper)
+					Plater.SetExecuteRange (true, lowerEnabled and lower or nil, upper)
 				end
 				
 			elseif (class == "PALADIN") then
 				-- hammer of wrath
-				if IsPlayerSpell(24275) then
+				if IsPlayerSpell(24275) and lowerEnabled then
 					Plater.SetExecuteRange (true, 0.2)
 				end
 				
 			elseif (class == "MONK") then
 				--Touch of Death
-				if IsPlayerSpell(322109) then
+				if IsPlayerSpell(322109) and lowerEnabled then
 					Plater.SetExecuteRange (true, 0.15)
 				end
 			
 			elseif (class == "WARLOCK") then				
-				if IsPlayerSpell(17877) then --Shadowburn
+				if IsPlayerSpell(17877) and lowerEnabled then --Shadowburn
 					Plater.SetExecuteRange (true, 0.20)
-				elseif IsPlayerSpell(198590) then --Drain Soul
+				elseif IsPlayerSpell(198590) and lowerEnabled then --Drain Soul
 					Plater.SetExecuteRange (true, 0.20)
 				end
 			
 			elseif (class == "ROGUE") then				
-				if IsPlayerSpell(328085) then --Blindside
+				if IsPlayerSpell(328085) and lowerEnabled then --Blindside
 					Plater.SetExecuteRange (true, 0.35)
 				end
 			

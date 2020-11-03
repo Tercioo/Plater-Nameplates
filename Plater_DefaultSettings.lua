@@ -630,6 +630,7 @@ PLATER_DEFAULT_SETTINGS = {
 		patch_version_profile = 0,
 		
 		health_cutoff = true,
+		health_cutoff_upper = true,
 		health_cutoff_extra_glow = false,
 		health_cutoff_hide_divisor = false,
 		
