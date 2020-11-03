@@ -1585,8 +1585,8 @@ Plater.DefaultSpellRangeListF = {
 		Plater.RefreshDBLists()
 
 		--refresh auras
-		Plater.RefreshAurasCache() --on Plater_Auras.lua
-		Plater.RefreshAurasDBUpvalues() --on Plater_Auras.lua
+		Plater.RefreshAuraCache() --on Plater_Auras.lua
+		Plater.RefreshAuraDBUpvalues() --on Plater_Auras.lua
 		Plater.UpdateAuraCache() --on Plater_Auras.lua
 
 		--refresh resources

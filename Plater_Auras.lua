@@ -1388,7 +1388,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
     -------------------------------------------------------------------------------------------------------------------
     --> aura caches -- ~db
     
-    function Plater.RefreshAurasDBUpvalues()
+    function Plater.RefreshAuraDBUpvalues()
         local profile = Plater.db.profile
 
 		DB_SHOW_PURGE_IN_EXTRA_ICONS = profile.extra_icon_show_purge
@@ -1460,7 +1460,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 		end
     end
 
-	function Plater.RefreshAurasCache()
+	function Plater.RefreshAuraCache()
 		local profile = Plater.db.profile
 		
 		--> load spells filtered out, use the spellname instead of the spellId
