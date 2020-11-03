@@ -774,8 +774,8 @@ Plater.DefaultSpellRangeListF = {
 	local DB_NOT_COMBAT_ALPHA_ENABLED
 	
 	local DB_USE_HEALTHCUTOFF = false
-	local DB_HEALTHCUTOFF_AT = 20
-	local DB_HEALTHCUTOFF_AT_UPPER = 80
+	local DB_HEALTHCUTOFF_AT = 0.2
+	local DB_HEALTHCUTOFF_AT_UPPER = 0.8
 	
 	--store the npc id cache
 	local DB_NPCIDS_CACHE = {}
@@ -862,9 +862,11 @@ Plater.DefaultSpellRangeListF = {
 		
 		local lowerEnabled, upperEnabled = Plater.db.profile.health_cutoff, Plater.db.profile.health_cutoff_upper
 		
-		if (not lowerEnabled or upperEnabled) then
+		if (not (lowerEnabled or upperEnabled)) then
 			return
 		end
+		
+		local lowExecute, highExecute = nil, nil
 		
 		local classLoc, class = UnitClass ("player")
 		local spec = GetSpecialization()
@@ -872,66 +874,65 @@ Plater.DefaultSpellRangeListF = {
 		
 			if (class == "PRIEST") then
 				-- SW:D is available to all priest specs
-				if IsPlayerSpell(32379) and lowerEnabled then
-					Plater.SetExecuteRange (true, 0.20)
+				if IsPlayerSpell(32379) then
+					lowExecute = 0.2
 				end
 				
 			elseif (class == "MAGE") then
-				if IsPlayerSpell(269644) and lowerEnabled then -- Searing Touch
-					Plater.SetExecuteRange (true, 0.30)
-				elseif IsPlayerSpell(205026) and upperEnabled then --Firestarter
-					Plater.SetExecuteRange (true, 0, 0.9)
+				if IsPlayerSpell(269644) then -- Searing Touch
+					lowExecute = 0.3
+				elseif IsPlayerSpell(205026) then --Firestarter
+					highExecute = 0.9
 				end
 				
 			elseif (class == "WARRIOR") then
 				-- Execute is baseline
 				if IsPlayerSpell(163201) then
 					local using_Massacre = IsPlayerSpell(281001) or IsPlayerSpell(206315)
-					local lowExecute = using_Massacre and 0.35 or 0.2
+					lowExecute = using_Massacre and 0.35 or 0.2
 					local using_Condemn = IsPlayerSpell(317349) or IsPlayerSpell(317485)
-					local highExecute = using_Condemn and 0.8 or 1
-					
-					Plater.SetExecuteRange (true, lowerEnabled and lowExecute or nil, upperEnabled and highExecute or nil)
+					highExecute = using_Condemn and 0.8 or nil
 				end
 				
 			elseif (class == "HUNTER") then
 				if IsPlayerSpell(53351) then -- Kill Shot
-					local lower, upper = 0.2, nil
+					lowExecute = 0.2
 					if IsPlayerSpell(273887) then --> is using killer instinct?
-						lower = 0.35
+						lowExecute = 0.35
 					end
 					if IsPlayerSpell(260228) and upperEnabled then --> Careful Aim
-						upper = 0.7
+						highExecute = 0.7
 					end
-					Plater.SetExecuteRange (true, lowerEnabled and lower or nil, upper)
 				end
 				
 			elseif (class == "PALADIN") then
 				-- hammer of wrath
-				if IsPlayerSpell(24275) and lowerEnabled then
-					Plater.SetExecuteRange (true, 0.2)
+				if IsPlayerSpell(24275) then
+					lowExecute = 0.2
 				end
 				
 			elseif (class == "MONK") then
 				--Touch of Death
-				if IsPlayerSpell(322109) and lowerEnabled then
-					Plater.SetExecuteRange (true, 0.15)
+				if IsPlayerSpell(322109) then
+					lowExecute = 0.15
 				end
 			
 			elseif (class == "WARLOCK") then				
-				if IsPlayerSpell(17877) and lowerEnabled then --Shadowburn
-					Plater.SetExecuteRange (true, 0.20)
-				elseif IsPlayerSpell(198590) and lowerEnabled then --Drain Soul
-					Plater.SetExecuteRange (true, 0.20)
+				if IsPlayerSpell(17877) then --Shadowburn
+					lowExecute = 0.20
+				elseif IsPlayerSpell(198590) then --Drain Soul
+					lowExecute = 0.20
 				end
 			
 			elseif (class == "ROGUE") then				
-				if IsPlayerSpell(328085) and lowerEnabled then --Blindside
-					Plater.SetExecuteRange (true, 0.35)
+				if IsPlayerSpell(328085) then --Blindside
+					lowExecute = 0.35
 				end
 			
 			end
 		end
+		
+		Plater.SetExecuteRange (true, lowerEnabled and lowExecute or nil, upperEnabled and highExecute or nil)
 	end	
 
 	--> range check ~range
@@ -8019,8 +8020,8 @@ end
 	--healthAmount is a floor com zero to one, example: 25% is 0.25
 	function Plater.SetExecuteRange (isExecuteEnabled, healthAmountLower, healthAmountUpper)
 		DB_USE_HEALTHCUTOFF = isExecuteEnabled
-		DB_HEALTHCUTOFF_AT = tonumber (healthAmountLower) or -1
-		DB_HEALTHCUTOFF_AT_UPPER = tonumber (healthAmountUpper) or 101
+		DB_HEALTHCUTOFF_AT = tonumber (healthAmountLower) or -0.1
+		DB_HEALTHCUTOFF_AT_UPPER = tonumber (healthAmountUpper) or 1.1
 	end
 	
 	--return the name of the unit guild

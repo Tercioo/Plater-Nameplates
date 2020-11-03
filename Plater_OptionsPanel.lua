@@ -6832,6 +6832,7 @@ local relevance_options = {
 			get = function() return Plater.db.profile.health_cutoff end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.health_cutoff = value
+				Plater.GetHealthCutoffValue()
 				Plater.UpdateAllPlates()
 			end,
 			name = "Execute Range",
@@ -6843,6 +6844,7 @@ local relevance_options = {
 			get = function() return Plater.db.profile.health_cutoff_upper end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.health_cutoff_upper = value
+				Plater.GetHealthCutoffValue()
 				Plater.UpdateAllPlates()
 			end,
 			name = "Upper Execute Range",
