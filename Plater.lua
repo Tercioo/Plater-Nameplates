@@ -3875,6 +3875,11 @@ function Plater.OnInit() --private --~oninit ~init
 					castBar:Animation_FadeIn()
 					castBar:Show()
 				end
+
+				Plater.UpdateCastbarTargetText(castBar)
+				local textString = castBar.FrameOverlay.TargetName
+				textString:Show()
+				textString:SetText("Target Name")
 			end
 			
 			local totalTime = 0
@@ -3891,6 +3896,10 @@ function Plater.OnInit() --private --~oninit ~init
 
 				for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 					local castBar = plateFrame.unitFrame.castBar
+					local textString = castBar.FrameOverlay.TargetName
+					textString:Show()
+					textString:SetText("Target Name")
+
 					if (castBar.finished and not castBar.playedFinishedTest) then
 						Plater.CastBarOnEvent_Hook (castBar, "UNIT_SPELLCAST_STOP", plateFrame.unitFrame.unit, plateFrame.unitFrame.unit)
 						castBar.playedFinishedTest = true
@@ -4136,13 +4145,26 @@ function Plater.OnInit() --private --~oninit ~init
 					if (self.unit and Plater.db.profile.castbar_target_show and not UnitIsUnit (self.unit, "player")) then
 						local targetName = UnitName (self.unit .. "target")
 						if (targetName) then
-							local _, class = UnitClass (self.unit .. "target")
-							if (class) then 
-								self.FrameOverlay.TargetName:SetText (targetName)
-								self.FrameOverlay.TargetName:SetTextColor (DF:ParseColors (class))
+
+							local canShowTargetName = true
+							local notInTank = Plater.db.profile.castbar_target_notank
+							if (notInTank) then
+								if (Plater.PlayerIsTank and targetName == UnitName("player")) then
+									canShowTargetName = false
+								end
+							end
+
+							if (canShowTargetName) then
+								local _, class = UnitClass (self.unit .. "target")
+								if (class) then 
+									self.FrameOverlay.TargetName:SetText (targetName)
+									self.FrameOverlay.TargetName:SetTextColor (DF:ParseColors (class))
+								else
+									self.FrameOverlay.TargetName:SetText (targetName)
+									DF:SetFontColor (self.FrameOverlay.TargetName, Plater.db.profile.castbar_target_color)
+								end
 							else
-								self.FrameOverlay.TargetName:SetText (targetName)
-								DF:SetFontColor (self.FrameOverlay.TargetName, Plater.db.profile.castbar_target_color)
+								self.FrameOverlay.TargetName:SetText ("")
 							end
 						else
 							self.FrameOverlay.TargetName:SetText ("")

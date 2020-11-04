@@ -11551,6 +11551,18 @@ end
 			name = "Show Target Name",
 			desc = "Show who is the target of the current cast (if the target exists)",
 		},
+
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.castbar_target_notank end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.castbar_target_notank = value
+				Plater.RefreshDBUpvalues()
+			end,
+			name = "Not Cast on Tank",
+			desc = "If you are a tank and the cast is on you, it won't show your name.",
+		},
+		
 		{
 			type = "range",
 			get = function() return Plater.db.profile.castbar_target_text_size end,

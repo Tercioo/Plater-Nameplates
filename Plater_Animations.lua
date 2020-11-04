@@ -154,7 +154,8 @@ function Plater.StopDotAnimation(frame, dotFrame)
         end
         --print("removed", Plater.dotAnimationFrames:GetAmount()) --debug
     else
-        --remove all animations
+        --[=
+        --remove all animations from the frame
         for i = #frame.dotTextureAnimations, 1, -1 do
             local dotFrame = frame.dotTextureAnimations[i]
             dotFrame:SetScript("OnUpdate", nil)
@@ -164,5 +165,6 @@ function Plater.StopDotAnimation(frame, dotFrame)
             tremove(frame.dotTextureAnimations, i)
             --print("removed", Plater.dotAnimationFrames:GetAmount()) --debug
         end
+        --]=]
     end
 end
