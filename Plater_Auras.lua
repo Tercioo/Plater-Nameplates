@@ -20,9 +20,11 @@ local UnitIsUnit = _G.UnitIsUnit
 local UnitGUID = _G.UnitGUID
 local GetSpellInfo = _G.GetSpellInfo
 local floor = _G.floor
-local AuraUtilForEachAura = _G.AuraUtil.ForEachAura
+local UnitAuraSlots = _G.UnitAuraSlots
+local UnitAuraBySlot = _G.UnitAuraBySlot
 local BackdropTemplateMixin = _G.BackdropTemplateMixin
 local NamePlateTooltip = _G.NamePlateTooltip
+local BUFF_MAX_DISPLAY = _G.BUFF_MAX_DISPLAY
 
 local DB_AURA_GROW_DIRECTION
 local DB_AURA_GROW_DIRECTION2
@@ -920,11 +922,13 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 		if (isBuff) then
 			--> buffs
 			local buffIndex = 0
-			AuraUtilForEachAura(unit, "HELPFUL", _G.BUFF_MAX_DISPLAY,
-				function(name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
-					if (not name) then
-						return true
-					end
+			local continuationToken
+			repeat -- until continuationToken == nil
+				local slots = { UnitAuraSlots(unit, "HELPFUL", BUFF_MAX_DISPLAY, continuationToken) }
+				continuationToken = slots[1]
+				for i=2, #slots do
+					local slot = slots[i];
+					local name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll = UnitAuraBySlot(unit, slot)
 					
 					buffIndex = buffIndex + 1
 					
@@ -955,15 +959,17 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 						end
 					end
 				end
-			)
+			until continuationToken == nil
 		else
 			--> debuffs
 			local debuffIndex = 0
-			AuraUtilForEachAura(unit, "HARMFUL", _G.BUFF_MAX_DISPLAY,
-				function(name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
-					if (not name) then
-						return true
-					end
+			local continuationToken
+			repeat -- until continuationToken == nil
+				local slots = { UnitAuraSlots(unit, "HARMFUL", BUFF_MAX_DISPLAY, continuationToken) }
+				continuationToken = slots[1]
+				for i=2, #slots do
+					local slot = slots[i];
+					local name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll = UnitAuraBySlot(unit, slot)
 					
 					debuffIndex = debuffIndex + 1
 					
@@ -996,7 +1002,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 						end
 					end
 				end
-			)
+			until continuationToken == nil
 		end
 		
 		return true
@@ -1019,11 +1025,13 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 		
 		--> debuffs
 			local debuffIndex = 0
-			AuraUtilForEachAura(unit, "HARMFULL", _G.BUFF_MAX_DISPLAY,
-				function(name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll)
-					if (not name) then
-						return true
-					end
+			local continuationToken
+			repeat -- until continuationToken == nil
+				local slots = { UnitAuraSlots(unit, "HARMFULL", BUFF_MAX_DISPLAY, continuationToken) }
+				continuationToken = slots[1]
+				for i=2, #slots do
+					local slot = slots[i];
+					local name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll = UnitAuraBySlot(unit, slot)
 					
 					debuffIndex = debuffIndex + 1
 					
@@ -1080,15 +1088,17 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 						Plater.AddAura (buffFrame, auraIconFrame, debuffIndex, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, nil, nil, nil, nil, actualAuraType)
 					end
 				end
-			)
+			until continuationToken == nil
 		
 		--> buffs
 			local buffIndex = 0
-			AuraUtilForEachAura(unit, "HELPFUL", _G.BUFF_MAX_DISPLAY,
-				function(name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll)
-					if (not name) then
-						return true
-					end
+			local continuationToken
+			repeat -- until continuationToken == nil
+				local slots = { UnitAuraSlots(unit, "HELPFUL", BUFF_MAX_DISPLAY, continuationToken) }
+				continuationToken = slots[1]
+				for i=2, #slots do
+					local slot = slots[i];
+					local name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll = UnitAuraBySlot(unit, slot)
 
 					buffIndex = buffIndex + 1
 					
@@ -1154,7 +1164,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 
 					end
 				end
-			)
+			until continuationToken == nil
 		
 		--hide non used icons
 			Plater.HideNonUsedAuraIcons (self)
@@ -1168,11 +1178,13 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 		--> debuffs
 		if (Plater.db.profile.aura_show_debuffs_personal) then
 			local debuffIndex = 0
-			AuraUtilForEachAura("player", "HARMFUL", _G.BUFF_MAX_DISPLAY,
-				function(name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
-					if (not name) then
-						return true
-					end
+			local continuationToken
+			repeat -- until continuationToken == nil
+				local slots = { UnitAuraSlots(unit, "HARMFUL", BUFF_MAX_DISPLAY, continuationToken) }
+				continuationToken = slots[1]
+				for i=2, #slots do
+					local slot = slots[i];
+					local name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll = UnitAuraBySlot(unit, slot)
 					
 					debuffIndex = debuffIndex + 1
 					
@@ -1201,17 +1213,19 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 					end
 					
 				end
-			)
+			until continuationToken == nil
 		end
 		
 		--> buffs
 		local buffIndex = 0
 		if (Plater.db.profile.aura_show_buffs_personal) then
-			AuraUtilForEachAura("player", "HELPFUL|PLAYER", _G.BUFF_MAX_DISPLAY,
-				function(name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId)
-					if (not name) then
-						return true
-					end
+			local continuationToken
+			repeat -- until continuationToken == nil
+				local slots = { UnitAuraSlots(unit, "HELPFUL|PLAYER", BUFF_MAX_DISPLAY, continuationToken) }
+				continuationToken = slots[1]
+				for i=2, #slots do
+					local slot = slots[i];
+					local name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll = UnitAuraBySlot(unit, slot)
 					
 					buffIndex = buffIndex + 1
 					
@@ -1231,7 +1245,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 					
 					--> there is no special auras for buffs in the personal bar
 				end
-			)
+			until continuationToken == nil
 		end	
 		
 		--> hide not used aura frames
