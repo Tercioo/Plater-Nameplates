@@ -72,17 +72,6 @@ do
 		ScriptType = "script",
 		String = "TIvBVjooq4FllFPqvPIxlT90(HYY2UGAzRAy1PtvnkgIHy1GDKJZYspT53(nJDsiaj0I2tOwrCSF8Z8mJNzm2nTNypUP9422JBzBDl7xefn2578yN)ref788J(WaYxWjONOvyazf8wX8yNfN4ffX1lmCz0If(u3yNzsYQf40TcPYfucxf7mLW4tLm3fu7XDSTM6tM9QsiuEXoHW8dcOs7XDTTysbxXCbcSqs5exgo(f2wZPsIpaJVq4gUIixIJ3Z2IsKkpjzb(4L2w4w7tLXolzCyNUY2ssFJWTv4UMW(D5zRY4z7Y4zNs4z3s45fBZZE7XZlt5jY4MTVOZfnrk3fEtNMTVSTgI)2JcQob(JYPlxh7eaKJgcdf74sNgnFo(wWUcvWMbJReGn6rcbsUweDESZepwO2oybk9R4lW1R8GzWjlPb(Ax)mHVqMGLEp0RxAMdm(uXpP7VkcG0kQV)5AdCcDgxu)M3a1qWrdCCZUDA3QBJR62aTYXnVQd8Vg6iVMGBzEeFMIjaRRAi1F(zXorCMAOBYxUvc70zOP)ZjKP(0AXJIDs(K9T61bjpaPglX8vYiGAR0khdSzC856iC3nlZxmd9zSWBtEJZNHzr8bHRWnzMhD2RjcGr4tfrqkwJEvpumm(ckmmt7zwBoYatmm)c1ZDkfzOwSHfnDDQnGM(MTEo6wmlCOHLnbjPtdyqroQUTzXncNI(lvKe)2mrexDwkqtwhGd6gjjO8Js8VcyMhMW0lDgjuHwfSF)a4ZGKyTQvmMBLZ2qQA7tJ9hbuqcFg1pr0GJkbgncEuspbmBo46wkK5LjmYiVgVhQiav5cLXIRPNnVOTp9ZujL8ArtGYD)GMHjqiH6ahxXrDsmFRGdtuxr(ZTOEAK95MOWbPg(ZO58ss4uQRq)a6mggI)hwU5nzhBQLkaLA(1RVfh3n(9SpqK5zy8TkxQGTtoOnwZ4LYIDS6jeirS6AlQAceVMxvWNVbbFCAkNAhnQEIvvpWQmf6oh28S94lMuHvZNckh8BpVda925w0zLkDUhaLSq8mgmmf431FVN2m8y402s0T(KqVmJVVWD9oAuftswm1W5ToOJY9Op)T9Rhv(XX9lPHbUMYEySCKUGa)e1MAcM006upJ2x1Z5f1hapcVq96s6Cjn0RmUnQeP(jZYkpISwXB2MdMyM)Ie5dFWRsLpuU8sIM2P65oUmZJhXhOfbOlniJLWvCni(UWUWdMbEe3WKYIlJ8vmFW1gbnzb5LIcces0Uh9)uNfuLIXxeM3Okn1KwdQC6P5AJ(0tRuWs31TIldAOKYRuml8jt11nH6JHq2S8E4s6lB0bD46D0ePD9xG6Hk69MDix81F9oyGbnpkyCDuZuHsjwwjV2EUhL4R86tWQtvuIa8TnG)A3ip25ntTnegaDtMuYlR0dn1XN2oGsYwSaRz5ZcXQnuQBsVFtP5MM5TGPHIwARQ71cOElVxpvqx(39d3FU1fx2OxNxmEQbejKV5XizGiuNRRE970xik25H1qzsGN346wikqFWPOmuIXM3rElbcRSlJ0p7YiW4Xowmk(nS9I(cOX6OWIGUBVETVkb6((mmp1tWrcd29ZDFgRK7ZOX(wiOZt47wmITB2jdrcMJ9rXkxCL9flNAqEy2fIUl9crVlWxCrZg9sagUBIe19BXJb9XRpzW9wZfQ6N7cvACNGE1FWbwifQIzD3lBLaoiaWz38I8xZUp2g0E47t(2xF6(Vp4RF6tfs3wT7Lsxlk91KQadOHkPyTb3VKEXUhGl29XHUBVozkbepfgXug8EcVwOgNBue)tgqEJilkH)ZjlUc(W72pr2i)U4ZFtJyGhl)jNvmmKrFmH9gECm50jMOjS0eeznXINM(9oxKrJWWb6uV)WYcFASUhs8qBabchWm2PNiRDWl5KrSCWa75DuLEGH85IuWgoO27wnCtZ3fbms(TO8lf0bvPDPGnCVq7r35xI49vXNRmISq37YdKvvkAxZQTcreF(54rJdMnCq41XJm)OcqTtRn)4nP5QQUmjzvKVltMoEndmV85x2QoC7)KRQFunDu8K)gKJPAH1O)yTIS5BhrdwznSacqN)SFRInqPST)V)",
 	}
-
-	
-	--hooks
-	--[=[ deprecated
-	PlaterScriptLibrary ["Targetting Alpha"] = {
-		Revision = 3,
-		ScriptType = "hook",
-		String = "Tx1xRTnmq8VlfgjbwmXPPnzf2dDzSI3dMYC6dJX0KITsSOYsgj50L(G(SVtw2lEK6Lr3EzqrG9Pl397(B8puiAfkoeLelT4ve1wQXIVMxMtS4VClNyOQVIINcMC(0W5ZrXNJswMteBPwSj39qre6sIIks3BXYnwSGuqlDEQDMqa8yAXa41EzLcuvhKal(ZYklUGTnh(Phic4PbYHmMMSMdap4on88t(qTmNME)aajrtyVHkOkc3ItOgdtS1flYAaOCkysLgu5SKb6ZLY7dqXZqjrpYkKz0Xx)i4QuGIVaQRlMnD2IWlxa14LW1jHO45Uos8cOZKyiCQWasguYwLSQ0lMYjATxSGu(nwwZffjL6Lk3v21xDjn1lr2SH9DVi0ZKvcOf3baj3dGbf)gxce32nHXswgndLSPsKAysOmhQP8nVgkxbZeL1i8bf4bitf7w56KJSF0I9hgmDg(tBcI0jG)JQ7OIdw1EoyyoLWn5VJOUc62nlhdBXpOwXTuLwkiCWOobKYHz4raxNgcjmW9lybWR9u1YkfSfz8lH3Cx077nZEwzOh3rhJ2tNK90ZCl31zDKUfWtKK)Bt2)SK(zfZiDS0C6alYEIwyxL1x8AGdkP9Rk(pB8FXcCleVSi)YIC7ICFhGpuk0gvvQrQ(BwUhpoQOuQmav4v1KL)o2XZoID8StYog0PE7evTPQSXpsHJpYtJ)Re7Dj1FGXbOZj7Ox1Tz1ZiWIFRfpjyMluZM8Q(8OJXHbtCghoPFR78V1JCbp0TQxxpIdKNmDJUYgxT411CvhnGRjFr)4",
-		Enabled = false,
-	}
-	--]=]
 	
 	PlaterScriptLibrary ["Aura Reorder"] = {
 		Revision = 2,
@@ -169,7 +158,7 @@ do
 	}
 
 
---[=[
+--[=[ --template
 	PlaterScriptLibrary [""] = {
 		Revision = 1,
 		String = "",
@@ -190,6 +179,7 @@ do
 	
 	-- #1
 	tinsert (PlaterPatchLibrary, { --deprecated
+		Deprecated = true,
 		Notes = {
 			--"- Added 'Soul Harvest' to buff track (Soulbound Goliath from Waycrest Manor).",
 		},
@@ -201,6 +191,7 @@ do
 	
 	-- #2
 	tinsert (PlaterPatchLibrary, { --deprecated
+		Deprecated = true,
 		Notes = {
 			--"- Added 'Symbiote of G'huun' to Special Auras.",
 		},
@@ -240,6 +231,7 @@ do
 	
 	-- #5 (replace parts of a script)
 	tinsert (PlaterPatchLibrary, { --deprecated
+		Deprecated = true,
 		Notes = {
 			"- Replacing some parts of Aura Reorder mod.",
 		},
@@ -315,6 +307,7 @@ do
 
 	--#8 dummy patch, due to some patch deleted
 	tinsert (PlaterPatchLibrary, {
+		Deprecated = true,
 		Notes = {""},
 		Func = function()end
 	})
@@ -465,6 +458,21 @@ do
 				if (hook.Name == "Cast Bar Icon Settings [P]") then
 					hook.Enabled = false
 				end
+			end
+		end
+	})
+
+	--#13 (add breath of coldheart - torghast - into the ignored buffs)
+	tinsert (PlaterPatchLibrary, {
+		Notes = {
+			"- Adding 'Breath of Coldheart' into the ignored buffs (automatic tracking)."
+		},
+		Func = function()
+			--add breath of coldheart to ignore
+			local buffIgnoreTable = Plater.db.profile and Plater.db.profile.aura_tracker and Plater.db.profile.aura_tracker.buff_banned
+			if (buffIgnoreTable) then
+				--add the buff to be ignored
+				buffIgnoreTable[333553] = true
 			end
 		end
 	})

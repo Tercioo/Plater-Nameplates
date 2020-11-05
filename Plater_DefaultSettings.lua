@@ -596,6 +596,7 @@ PLATER_DEFAULT_SETTINGS = {
 		
 		--> castbar target name
 		castbar_target_show = false,
+		castbar_target_notank = false,
 		castbar_target_anchor = {side = 5, x = 0, y = 0},
 		castbar_target_text_size = 10,
 		castbar_target_outline = "OUTLINE",
@@ -702,7 +703,7 @@ PLATER_DEFAULT_SETTINGS = {
 		aura_stack_shadow_color_offset = {1, -1},
 		aura_stack_color = {1, 1, 1, 1},
 		
-		extra_icon_anchor = {side = 6, x = -4, y = 4},
+		extra_icon_anchor = {side = 6, x = -4, y = 0},
 		extra_icon_show_timer = true,
 		extra_icon_width = 30,
 		extra_icon_height = 18,
@@ -764,7 +765,10 @@ PLATER_DEFAULT_SETTINGS = {
 			["banner of the alliance"] = {
 				61573,
 			},
-		},		
+			["breath of coldheart"] = {
+				333553,
+			},
+		},
 		
 		aura_tracker = {
 			buff = {},
@@ -773,12 +777,14 @@ PLATER_DEFAULT_SETTINGS = {
 			debuff_ban_percharacter = {},
 			options = {},
 			track_method = 0x1,
-			buff_banned = { 
+			buff_banned = {
 				--banner of alliance and horde on training dummies
-				[61574] = true, 
+				[61574] = true,
 				[61573] = true,
 				--challenger's might on mythic+
-				[206150] = true, 
+				[206150] = true,
+				--breath of coldheart (torghast)
+				[333553] = true,
 			},
 			debuff_banned = {},
 			buff_tracked = {},

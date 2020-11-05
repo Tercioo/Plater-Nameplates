@@ -11560,7 +11560,7 @@ end
 				Plater.RefreshDBUpvalues()
 			end,
 			name = "[Tank] Don't Show Your Name",
-			desc = "If you are a tank and the cast is on you, it won't show your name.",
+			desc = "If you are a tank don't show the target name if the cast is on you.",
 		},
 		
 		{
