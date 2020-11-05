@@ -6274,6 +6274,7 @@ local relevance_options = {
 
 				local plateConfig = Plater.db.profile.plate_config
 
+				--change the health bars
 				plateConfig.friendlyplayer.health[1] = value
 				plateConfig.friendlyplayer.health_incombat[1] = value
 
@@ -6285,6 +6286,19 @@ local relevance_options = {
 
 				plateConfig.enemynpc.health[1] = value
 				plateConfig.enemynpc.health_incombat[1] = value
+
+				--change the castbars
+				plateConfig.friendlyplayer.cast[1] = value
+				plateConfig.friendlyplayer.cast_incombat[1] = value
+
+				plateConfig.enemyplayer.cast[1] = value
+				plateConfig.enemyplayer.cast_incombat[1] = value
+
+				plateConfig.friendlynpc.cast[1] = value
+				plateConfig.friendlynpc.cast_incombat[1] = value
+
+				plateConfig.enemynpc.cast[1] = value
+				plateConfig.enemynpc.cast_incombat[1] = value
 
 				Plater.RefreshDBUpvalues()
 				Plater.UpdateAllPlates(nil, true)
