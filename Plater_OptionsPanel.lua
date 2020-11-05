@@ -1829,7 +1829,7 @@ local debuff_options = {
 			Plater.UpdateAllPlates()
 		end,
 		name = "Show Dispellable Buffs",
-		desc = "Show auras which can be dispelled or stealed.",
+		desc = "Show auras which can be dispelled or stolen.",
 	},
 	
 	{
@@ -11559,7 +11559,7 @@ end
 				Plater.db.profile.castbar_target_notank = value
 				Plater.RefreshDBUpvalues()
 			end,
-			name = "Not Cast on Tank",
+			name = "[Tank] Don't Show Your Name",
 			desc = "If you are a tank and the cast is on you, it won't show your name.",
 		},
 		
