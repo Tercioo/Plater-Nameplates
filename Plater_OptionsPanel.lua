@@ -8080,7 +8080,37 @@ end
 			usedecimals = true,
 			name = L["OPTIONS_YOFFSET"],
 			desc = "Adjust the position on the Y axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
-		},			
+		},
+		
+		{type = "blank" },
+		
+		{type = "label", get = function() return "Player Name Text Colors" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		--player name color
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.plate_config.enemyplayer.actorname_use_class_color end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.enemyplayer.actorname_use_class_color = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Use Class Colors",
+			desc = "Player name text uses the class color instead of the selected color.",
+		},
+		--player name color
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.plate_config.enemyplayer.actorname_text_color
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.plate_config.enemyplayer.actorname_text_color
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllPlates()
+			end,
+			name = L["OPTIONS_COLOR"],
+			desc = "The color of the text.",
+		},
 		
 		{type = "breakline"},
 	
@@ -8226,21 +8256,6 @@ end
 			values = function() return DF:BuildDropDownFontList (on_select_enemy_playername_font) end,
 			name = L["OPTIONS_FONT"],
 			desc = "Font of the text.",
-		},
-		--player name color
-		{
-			type = "color",
-			get = function()
-				local color = Plater.db.profile.plate_config.enemyplayer.actorname_text_color
-				return {color[1], color[2], color[3], color[4]}
-			end,
-			set = function (self, r, g, b, a) 
-				local color = Plater.db.profile.plate_config.enemyplayer.actorname_text_color
-				color[1], color[2], color[3], color[4] = r, g, b, a
-				Plater.UpdateAllPlates()
-			end,
-			name = L["OPTIONS_COLOR"],
-			desc = "The color of the text.",
 		},
 		
 		--text outline options

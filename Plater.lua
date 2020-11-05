@@ -5931,6 +5931,20 @@ end
 				DF:SetFontColor (guildString, plateConfigs.actorname_text_color)
 			end
 		
+		elseif (plateFrame.actorType == ACTORTYPE_ENEMY_PLAYER and Plater.db.profile.plate_config [ACTORTYPE_ENEMY_PLAYER].actorname_use_class_color) then
+			--class colors should be used, if possible, because this is enabled
+			plateFrame.isFriend = nil
+			
+			local _, unitClass = UnitClass (plateFrame.unitFrame [MEMBER_UNITID])
+			if (unitClass) then
+				local color = RAID_CLASS_COLORS [unitClass]
+				DF:SetFontColor (nameString, color.r, color.g, color.b)
+				DF:SetFontColor (guildString, color.r, color.g, color.b)
+			else
+				DF:SetFontColor (nameString, plateConfigs.actorname_text_color)
+				DF:SetFontColor (guildString, plateConfigs.actorname_text_color)
+			end
+		
 		else
 			DF:SetFontColor (nameString, plateConfigs.actorname_text_color)
 			DF:SetFontColor (guildString, plateConfigs.actorname_text_color)
