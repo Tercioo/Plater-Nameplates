@@ -1518,6 +1518,10 @@ Plater.DefaultSpellRangeListF = {
 		end
 	end
 
+	function Plater.DisableAuraTrackingForAuraTest()
+		DB_AURA_ENABLED = false
+	end
+
 	--> place most used data into local upvalues to save process time
 	--> scripts need to call this function if they change something in the profile ~refresh ~db ~upvalues
 	function Plater.RefreshDBUpvalues()

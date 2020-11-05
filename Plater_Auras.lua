@@ -568,7 +568,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 		
 		--> check if a full refresh is required
 		if (auraIconFrame.RefreshID < PLATER_REFRESH_ID) then
-			print("refresh")
+
 			--stack counter
 			local stackLabel = auraIconFrame.CountFrame.Count
 			DF:SetFontSize (stackLabel, profile.aura_stack_size)
@@ -1266,6 +1266,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			
 			auraOptionsFrame.NextTime = auraOptionsFrame.NextTime - deltaTime
 			DB_AURA_ENABLED = false
+			Plater.DisableAuraTrackingForAuraTest()
 			
 			if (auraOptionsFrame.NextTime <= 0) then
 				auraOptionsFrame.NextTime = 0.016
@@ -1380,6 +1381,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 
 		auraOptionsFrame.EnableAuraTest = function()
 			DB_AURA_ENABLED = false
+			Plater.DisableAuraTrackingForAuraTest()
 			auraOptionsFrame.NextTime = 0.2
 			auraOptionsFrame:SetScript ("OnUpdate", auraOptionsFrame.OnUpdateFunc)
 		end
