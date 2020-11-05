@@ -568,6 +568,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 		
 		--> check if a full refresh is required
 		if (auraIconFrame.RefreshID < PLATER_REFRESH_ID) then
+			print("refresh")
 			--stack counter
 			local stackLabel = auraIconFrame.CountFrame.Count
 			DF:SetFontSize (stackLabel, profile.aura_stack_size)
@@ -1180,11 +1181,11 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			local debuffIndex = 0
 			local continuationToken
 			repeat -- until continuationToken == nil
-				local slots = { UnitAuraSlots(unit, "HARMFUL", BUFF_MAX_DISPLAY, continuationToken) }
+				local slots = { UnitAuraSlots("player", "HARMFUL", BUFF_MAX_DISPLAY, continuationToken) }
 				continuationToken = slots[1]
 				for i=2, #slots do
 					local slot = slots[i];
-					local name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll = UnitAuraBySlot(unit, slot)
+					local name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll = UnitAuraBySlot("player", slot)
 					
 					debuffIndex = debuffIndex + 1
 					
@@ -1221,11 +1222,11 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 		if (Plater.db.profile.aura_show_buffs_personal) then
 			local continuationToken
 			repeat -- until continuationToken == nil
-				local slots = { UnitAuraSlots(unit, "HELPFUL|PLAYER", BUFF_MAX_DISPLAY, continuationToken) }
+				local slots = { UnitAuraSlots("player", "HELPFUL|PLAYER", BUFF_MAX_DISPLAY, continuationToken) }
 				continuationToken = slots[1]
 				for i=2, #slots do
 					local slot = slots[i];
-					local name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll = UnitAuraBySlot(unit, slot)
+					local name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll = UnitAuraBySlot("player", slot)
 					
 					buffIndex = buffIndex + 1
 					
