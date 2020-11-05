@@ -12749,36 +12749,7 @@ end
 			--]= --end of top and bottom constrain		
 		
 		{type = "blank"},
-		{type = "label", get = function() return "Animation Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-		
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.use_color_lerp end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.use_color_lerp = value
-				Plater.RefreshDBUpvalues()
-				Plater.UpdateAllPlates()
-			end,
-			name = "Use Smooth Color Transition",
-			desc = "Color changes does a smooth transition between the old and the new color.",
-		},
-		{
-			type = "range",
-			get = function() return Plater.db.profile.color_lerp_speed end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.color_lerp_speed = value
-				Plater.RefreshDBUpvalues()
-				Plater.DebugColorAnimation()
-			end,
-			min = 1,
-			max = 50,
-			step = 1,
-			name = "Smooth Color Transition Speed",
-			desc = "How fast it transition between colors.",
-		},
-		
-		{type = "blank"},
-
+		{type = "label", get = function() return "Animations:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "toggle",
@@ -12788,8 +12759,19 @@ end
 				Plater.RefreshDBUpvalues()
 				Plater.UpdateAllPlates()
 			end,
-			name = "Use Smooth Health Transition",
+			name = "Animate Health Bar",
 			desc = "Do a smooth animation when the nameplate's health value changes.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.use_color_lerp end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.use_color_lerp = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end,
+			name = "Animate Color Transitions",
+			desc = "Color changes does a smooth transition between the old and the new color.",
 		},
 		{
 			type = "range",
@@ -12804,9 +12786,23 @@ end
 			step = 0.1,
 			usedecimals = true,
 			thumbscale = 1.7,
-			name = "Smooth Health Transition Speed",
-			desc = "How fast is the transition animation.",
+			name = "Health Bar Animation Speed",
+			desc = "How fast is the animation.",
 		},	
+		{
+			type = "range",
+			get = function() return Plater.db.profile.color_lerp_speed end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.color_lerp_speed = value
+				Plater.RefreshDBUpvalues()
+				Plater.DebugColorAnimation()
+			end,
+			min = 1,
+			max = 50,
+			step = 1,
+			name = "Color Animation Speed",
+			desc = "How fast is the animation.",
+		},
 
 		{type = "blank"},
 		{type = "label", get = function() return "Region:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
