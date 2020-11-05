@@ -1,6 +1,6 @@
 
 
-local dversion = 215
+local dversion = 216
 
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
@@ -611,7 +611,7 @@ function DF:TruncateText (fontString, maxWidth)
 		end
 	end
 	
-	DF:CleanTruncateUTF8String(text)
+	text = DF:CleanTruncateUTF8String(text)
 	fontString:SetText (text)
 end
 
