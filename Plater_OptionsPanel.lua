@@ -2924,13 +2924,13 @@ Plater.CreateAuraTesting()
 				
 					for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 						if (plateFrame.unitFrame.colorSelectionDropdown) then
-							if (Plater.ZoneInstanceType ~= "party" and Plater.ZoneInstanceType ~= "raid") then
-								plateFrame.unitFrame.colorSelectionDropdown:Hide()
-							else
+							--if (Plater.ZoneInstanceType ~= "party" and Plater.ZoneInstanceType ~= "raid") then
+							--	plateFrame.unitFrame.colorSelectionDropdown:Hide()
+							--else
 								local npcID = plateFrame.unitFrame.colorSelectionDropdown:GetParent() [MEMBER_NPCID]
 								plateFrame.unitFrame.colorSelectionDropdown:Select (DB_NPCID_COLORS [npcID] and DB_NPCID_COLORS [npcID][1] and DB_NPCID_COLORS [npcID][3] or "white")
 								plateFrame.unitFrame.colorSelectionDropdown:Show()
-							end
+							--end
 						end
 					end
 				end
@@ -3061,7 +3061,7 @@ Plater.CreateAuraTesting()
 					dropdown:Select (DB_NPCID_COLORS [npcID] and DB_NPCID_COLORS [npcID][1] and DB_NPCID_COLORS [npcID][3] or "white")
 					
 					if (Plater.ZoneInstanceType ~= "party" and Plater.ZoneInstanceType ~= "raid") then
-						dropdown:Hide()
+						--dropdown:Hide()
 					end
 					
 					--reset button
@@ -3119,7 +3119,7 @@ Plater.CreateAuraTesting()
 					elseif (event == "NAME_PLATE_UNIT_ADDED") then
 					
 						if (Plater.ZoneInstanceType ~= "party" and Plater.ZoneInstanceType ~= "raid") then
-							return
+							--return
 						end
 					
 						local dropdown = plateFrame.unitFrame.colorSelectionDropdown
