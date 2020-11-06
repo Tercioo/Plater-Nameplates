@@ -9981,6 +9981,13 @@ end
 								Plater.UpdateOptionsForModScriptImport(newScript, scriptObject)
 								
 								--replace the old script with the new one
+								local oldScript = scriptDB[i]
+								if (oldScript) then
+									--move it to trash
+									oldScript.__TrashAt = time()
+									tinsert(Plater.db.profile.script_data_trash, oldScript)
+								end
+
 								tremove (scriptDB, i)
 								tinsert (scriptDB, i, newScript)
 								objectAdded = newScript
@@ -10028,6 +10035,14 @@ end
 								
 								Plater.UpdateOptionsForModScriptImport(newScript, scriptObject)
 								
+								--replace the old script with the new one
+								local oldScript = scriptDB[i]
+								if (oldScript) then
+									--move it to trash
+									oldScript.__TrashAt = time()
+									tinsert(Plater.db.profile.hook_data_trash, oldScript)
+								end
+
 								--replace the old script with the new one
 								tremove (scriptDB, i)
 								tinsert (scriptDB, i, newScript)
