@@ -140,14 +140,18 @@ end
 --if no @dotFrame, it'll stop all point animations in the frame
 function Plater.StopDotAnimation(frame, dotFrame)
     if (dotFrame) then
-        dotFrame:SetScript("OnUpdate", nil)
-        dotFrame:ClearAllPoints()
-        dotFrame:Hide()
-        Plater.dotAnimationFrames:Release(dotFrame)
-
         --remove the dotFrame from the parent
+        if (not frame.dotTextureAnimations) then
+            return
+        end
+
         for i = 1, #frame.dotTextureAnimations do
-            if (frame.dotTextureAnimations[i] == dotFrame) then
+            local thisDotAnimation = frame.dotTextureAnimations[i]
+            if (thisDotAnimation == dotFrame) then
+                thisDotAnimation:SetScript("OnUpdate", nil)
+                thisDotAnimation:ClearAllPoints()
+                thisDotAnimation:Hide()
+                Plater.dotAnimationFrames:Release(thisDotAnimation)
                 tremove(frame.dotTextureAnimations, i)
                 break
             end
@@ -156,14 +160,16 @@ function Plater.StopDotAnimation(frame, dotFrame)
     else
         --[=
         --remove all animations from the frame
-        for i = #frame.dotTextureAnimations, 1, -1 do
-            local dotFrame = frame.dotTextureAnimations[i]
-            dotFrame:SetScript("OnUpdate", nil)
-            dotFrame:ClearAllPoints()
-            dotFrame:Hide()
-            Plater.dotAnimationFrames:Release(dotFrame)
-            tremove(frame.dotTextureAnimations, i)
-            --print("removed", Plater.dotAnimationFrames:GetAmount()) --debug
+        if (frame.dotTextureAnimations) then
+            for i = #frame.dotTextureAnimations, 1, -1 do
+                local dotFrame = frame.dotTextureAnimations[i]
+                dotFrame:SetScript("OnUpdate", nil)
+                dotFrame:ClearAllPoints()
+                dotFrame:Hide()
+                Plater.dotAnimationFrames:Release(dotFrame)
+                tremove(frame.dotTextureAnimations, i)
+                --print("removed", Plater.dotAnimationFrames:GetAmount()) --debug
+            end
         end
         --]=]
     end
