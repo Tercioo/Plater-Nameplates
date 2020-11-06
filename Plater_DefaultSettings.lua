@@ -183,6 +183,7 @@ PLATER_DEFAULT_SETTINGS = {
 				actorname_text_spacing = 12,
 				actorname_text_size = 12,
 				actorname_text_font = "Arial Narrow",
+				actorname_use_class_color = false,
 				actorname_text_color = {1, 1, 1, 1},
 				actorname_text_outline = "NONE",
 				actorname_text_shadow_color = {0, 0, 0, 1},

@@ -3159,10 +3159,7 @@ Plater.DefaultSpellRangeListF = {
 			Plater.FindAndSetNameplateColor (unitFrame, true)
 			
 			--icone da cast bar
-			castBar.Icon:ClearAllPoints()
-			PixelUtil.SetPoint (castBar.Icon, "left", castBar, "left", 0, 0)
-			castBar.BorderShield:ClearAllPoints()
-			PixelUtil.SetPoint (castBar.BorderShield, "left", castBar, "left", 0, 0)
+			Plater.UpdateCastbarIcon(castBar)
 			
 			--esconde os glow de aggro
 			unitFrame.aggroGlowUpper:Hide()
@@ -3965,6 +3962,50 @@ function Plater.OnInit() --private --~oninit ~init
 			end
 		end
 		
+		function Plater.UpdateCastbarIcon(castBar)
+			local profile = Plater.db.profile
+			if (profile.castbar_icon_customization_enabled) then
+				local icon = castBar.Icon
+				local unitFrame = castBar.unitFrame
+
+				if (profile.castbar_icon_show) then
+					icon:ClearAllPoints()
+					castBar.BorderShield:Hide()
+
+					if (profile.castbar_icon_attach_to_side == "left") then
+						if (profile.castbar_icon_size == "same as castbar") then
+							icon:SetPoint("topright", castBar, "topleft", profile.castbar_icon_x_offset, 0)
+							icon:SetPoint("bottomright", castBar, "bottomleft", profile.castbar_icon_x_offset, 0)
+
+						elseif (profile.castbar_icon_size == "same as castbar plus healthbar") then
+							icon:SetPoint("topright", unitFrame.healthBar, "topleft", profile.castbar_icon_x_offset, 0)
+							icon:SetPoint("bottomright", castBar, "bottomleft", profile.castbar_icon_x_offset, 0)
+						end
+
+					elseif (profile.castbar_icon_attach_to_side == "right") then
+						if (profile.castbar_icon_size == "same as castbar") then
+							icon:SetPoint("topleft", castBar, "topright", profile.castbar_icon_x_offset, 0)
+							icon:SetPoint("bottomleft", castBar, "bottomright", profile.castbar_icon_x_offset, 0)
+
+						elseif (profile.castbar_icon_size == "same as castbar plus healthbar") then
+							icon:SetPoint("topleft", unitFrame.healthBar, "topright", profile.castbar_icon_x_offset, 0)
+							icon:SetPoint("bottomleft", castBar, "bottomright", profile.castbar_icon_x_offset, 0)
+						end
+					end
+
+					icon:SetWidth(icon:GetHeight())
+				else
+					icon:Hide()
+					castBar.BorderShield:Hide()
+				end
+			else
+				castBar.Icon:ClearAllPoints()
+				PixelUtil.SetPoint (castBar.Icon, "left", castBar, "left", 0, 0)
+				castBar.BorderShield:ClearAllPoints()
+				PixelUtil.SetPoint (castBar.BorderShield, "left", castBar, "left", 0, 0)
+			end
+		end
+		
 		--~cast
 		--hook for all castbar events
 		function Plater.CastBarOnEvent_Hook (self, event, unit, ...) --private
@@ -4038,40 +4079,7 @@ function Plater.OnInit() --private --~oninit ~init
 					Plater.UpdateCastbarTargetText (self)
 
 					--castbar icon
-					if (profile.castbar_icon_customization_enabled) then
-						local icon = self.Icon
-
-						if (profile.castbar_icon_show) then
-							icon:ClearAllPoints()
-							self.BorderShield:Hide()
-
-							if (profile.castbar_icon_attach_to_side == "left") then
-								if (profile.castbar_icon_size == "same as castbar") then
-									icon:SetPoint("topright", self, "topleft", profile.castbar_icon_x_offset, 0)
-									icon:SetPoint("bottomright", self, "bottomleft", profile.castbar_icon_x_offset, 0)
-
-								elseif (profile.castbar_icon_size == "same as castbar plus healthbar") then
-									icon:SetPoint("topright", unitFrame.healthBar, "topleft", profile.castbar_icon_x_offset, 0)
-									icon:SetPoint("bottomright", self, "bottomleft", profile.castbar_icon_x_offset, 0)
-								end
-
-							elseif (profile.castbar_icon_attach_to_side == "right") then
-								if (profile.castbar_icon_size == "same as castbar") then
-									icon:SetPoint("topleft", self, "topright", profile.castbar_icon_x_offset, 0)
-									icon:SetPoint("bottomleft", self, "bottomright", profile.castbar_icon_x_offset, 0)
-
-								elseif (profile.castbar_icon_size == "same as castbar plus healthbar") then
-									icon:SetPoint("topleft", unitFrame.healthBar, "topright", profile.castbar_icon_x_offset, 0)
-									icon:SetPoint("bottomleft", self, "bottomright", profile.castbar_icon_x_offset, 0)
-								end
-							end
-
-							icon:SetWidth(icon:GetHeight())
-						else
-							icon:Hide()
-							self.BorderShield:Hide()
-						end
-					end
+					Plater.UpdateCastbarIcon(self)
 
 					shouldRunCastStartHook = true
 
@@ -4722,7 +4730,8 @@ end
 			PixelUtil.SetHeight (castBar, castBarHeight)
 			PixelUtil.SetSize (castBar.BorderShield, castBarHeight * 1.4, castBarHeight * 1.4)
 			PixelUtil.SetSize (castBar.Spark, profile.cast_statusbar_spark_width, castBarHeight)
-			PixelUtil.SetSize (castBar.Icon, castBarHeight, castBarHeight)
+			--PixelUtil.SetSize (castBar.Icon, castBarHeight, castBarHeight)
+			Plater.UpdateCastbarIcon(castBar)
 
 		--power bar
 			powerBar:ClearAllPoints()
@@ -5909,6 +5918,20 @@ end
 			plateFrame.isFriend = true		
 
 		elseif (plateFrame.actorType == ACTORTYPE_FRIENDLY_PLAYER and Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_class_color) then
+			--class colors should be used, if possible, because this is enabled
+			plateFrame.isFriend = nil
+			
+			local _, unitClass = UnitClass (plateFrame.unitFrame [MEMBER_UNITID])
+			if (unitClass) then
+				local color = RAID_CLASS_COLORS [unitClass]
+				DF:SetFontColor (nameString, color.r, color.g, color.b)
+				DF:SetFontColor (guildString, color.r, color.g, color.b)
+			else
+				DF:SetFontColor (nameString, plateConfigs.actorname_text_color)
+				DF:SetFontColor (guildString, plateConfigs.actorname_text_color)
+			end
+		
+		elseif (plateFrame.actorType == ACTORTYPE_ENEMY_PLAYER and Plater.db.profile.plate_config [ACTORTYPE_ENEMY_PLAYER].actorname_use_class_color) then
 			--class colors should be used, if possible, because this is enabled
 			plateFrame.isFriend = nil
 			

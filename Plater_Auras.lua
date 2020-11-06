@@ -412,7 +412,14 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 	
 	--create the animation when the icon is shown above the nameplate
 	function Plater.CreateShowAuraIconAnimation (iconFrame)
-		local iconShowInAnimation = DF:CreateAnimationHub (iconFrame)
+		local showAnimationOnPlay = function()
+			
+		end
+		local showAnimationOnStop = function()
+			iconFrame:SetScale(1)
+		end
+	
+		local iconShowInAnimation = DF:CreateAnimationHub (iconFrame, showAnimationOnPlay, showAnimationOnStop)
 		DF:CreateAnimation (iconShowInAnimation, "Scale", 1, .05, .7, .7, 1.1, 1.1)
 		DF:CreateAnimation (iconShowInAnimation, "Scale", 2, .05, 1.1, 1.1, 1, 1)
 		iconFrame.ShowAnimation = iconShowInAnimation
@@ -530,11 +537,13 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 		auraIconFrame:SetID (i)
 		local curBuffFrame = self.Name == "Secondary" and 2 or 1
 
+		-- ensure playing show animation if necessary
+		if (not auraIconFrame.InUse) then
+			auraIconFrame.ShowAnimation:Play()
+		end
+		
 		--> check if the icon is showing a different aura
 		if (auraIconFrame.spellId ~= spellId) then
-			if (not isBuff and not auraIconFrame:IsShown() or auraIconFrame.IsShowingBuff) then
-				auraIconFrame.ShowAnimation:Play()
-			end
 			
 			--> update the texture
 			auraIconFrame.Icon:SetTexture (texture)
