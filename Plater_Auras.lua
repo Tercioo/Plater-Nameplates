@@ -154,6 +154,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 				--hide all auras except for the first occurrence of this aura
 				for i = 2, amountOfSimilarAuras do
 					local iconFrame = iconFramesTable [i][1]
+					iconFrame.ShowAnimation:Stop()
 					iconFrame:Hide()
 					iconFrame.InUse = false
 					
@@ -793,6 +794,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 		for i = nextAuraIndex, #self.PlaterBuffList do
 			local icon = self.PlaterBuffList [i]
 			if (icon and icon.InUse and icon:IsShown()) then
+				icon.ShowAnimation:Stop()
 				icon:Hide()
 				icon.InUse = false
 			end
@@ -812,6 +814,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			for i = nextAuraIndex, #buffFrame2.PlaterBuffList do
 				local icon = buffFrame2.PlaterBuffList [i]
 				if (icon and icon.InUse and icon:IsShown()) then
+					icon.ShowAnimation:Stop()
 					icon:Hide()
 					icon.InUse = false
 				end
@@ -1334,6 +1337,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 						for i = 1, #buffFrame2.PlaterBuffList do
 							local icon = buffFrame2.PlaterBuffList [i]
 							if (icon) then
+								icon.ShowAnimation:Stop()
 								icon:Hide()
 								icon.InUse = false
 							end
