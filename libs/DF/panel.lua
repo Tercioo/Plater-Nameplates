@@ -5224,6 +5224,7 @@ DF.IconRowFunctions = {
 					
 					iconFrame.CountdownText:SetPoint (self.options.text_anchor or "center", iconFrame, self.options.text_rel_anchor or "center", self.options.text_x_offset or 0, self.options.text_y_offset or 0)
 					DF:SetFontSize (iconFrame.CountdownText, self.options.text_size)
+					DF:SetFontFace (iconFrame.CountdownText, self.options.text_font)
 					iconFrame.CountdownText:SetText (formattedTime)
 					iconFrame.Cooldown:SetHideCountdownNumbers (true)
 				else
@@ -5240,6 +5241,7 @@ DF.IconRowFunctions = {
 				iconFrame.Desc:SetTextColor (DF:ParseColors (descText.text_color or self.options.desc_text_color))
 				iconFrame.Desc:SetPoint(self.options.desc_text_anchor or "bottom", iconFrame, self.options.desc_text_rel_anchor or "top", self.options.desc_text_x_offset or 0, self.options.desc_text_y_offset or 2)
 				DF:SetFontSize (iconFrame.Desc, descText.text_size or self.options.desc_text_size)
+				DF:SetFontFace (iconFrame.Desc, self.options.desc_text_font)
 			else
 				iconFrame.Desc:Hide()
 			end
@@ -5250,6 +5252,7 @@ DF.IconRowFunctions = {
 				iconFrame.StackText:SetTextColor (DF:ParseColors (self.options.desc_text_color))
 				iconFrame.StackText:SetPoint (self.options.stack_text_anchor or "center", iconFrame, self.options.stack_text_rel_anchor or "bottomright", self.options.stack_text_x_offset or 0, self.options.stack_text_y_offset or 0)
 				DF:SetFontSize (iconFrame.StackText, self.options.stack_text_size)
+				DF:SetFontFace (iconFrame.StackText, self.options.stack_text_font)
 			else
 				iconFrame.StackText:Hide()
 			end
@@ -5330,6 +5333,7 @@ local default_icon_row_options = {
 	show_text = true,
 	text_color = {1, 1, 1, 1},
 	text_size = 12,
+	text_font = "Arial Narrow",
 	text_anchor = "center",
 	text_rel_anchor = "center",
 	text_x_offset = 0,
@@ -5337,6 +5341,7 @@ local default_icon_row_options = {
 	desc_text = true,
 	desc_text_color = {1, 1, 1, 1},
 	desc_text_size = 7,
+	desc_text_font = "Arial Narrow",
 	desc_text_anchor = "bottom",
 	desc_text_rel_anchor = "top",
 	desc_text_x_offset = 0,
@@ -5344,6 +5349,7 @@ local default_icon_row_options = {
 	stack_text = true,
 	stack_text_color = {1, 1, 1, 1},
 	stack_text_size = 10,
+	stack_text_font = "Arial Narrow",
 	stack_text_anchor = "center",
 	stack_text_rel_anchor = "bottomright",
 	stack_text_x_offset = 0,
