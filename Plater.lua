@@ -6525,6 +6525,7 @@ end
 			unitFrame.ExtraIconFrame:SetOption ("stack_text_size", Plater.db.profile.extra_icon_stack_size)
 			unitFrame.ExtraIconFrame:SetOption ("stack_text_outline", Plater.db.profile.extra_icon_stack_outline)
 			unitFrame.ExtraIconFrame:SetOption ("surpress_tulla_omni_cc", Plater.db.profile.disable_omnicc_on_auras)
+			unitFrame.ExtraIconFrame:SetOption ("surpress_blizzard_cd_timer", true)
 			
 			--> update refresh ID
 			unitFrame.ExtraIconFrame.RefreshID = PLATER_REFRESH_ID
