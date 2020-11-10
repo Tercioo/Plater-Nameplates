@@ -6511,6 +6511,7 @@ end
 			unitFrame.ExtraIconFrame:SetOption ("show_text", Plater.db.profile.extra_icon_show_timer)
 			unitFrame.ExtraIconFrame:SetOption ("text_font", Plater.db.profile.extra_icon_timer_font)
 			unitFrame.ExtraIconFrame:SetOption ("text_size", Plater.db.profile.extra_icon_timer_size)
+			unitFrame.ExtraIconFrame:SetOption ("text_outline", Plater.db.profile.extra_icon_timer_outline)
 			unitFrame.ExtraIconFrame:SetOption ("grow_direction", unitFrame.ExtraIconFrame:GetIconGrowDirection())
 			unitFrame.ExtraIconFrame:SetOption ("icon_width", Plater.db.profile.extra_icon_width)
 			unitFrame.ExtraIconFrame:SetOption ("icon_height", Plater.db.profile.extra_icon_height)
@@ -6518,9 +6519,11 @@ end
 			unitFrame.ExtraIconFrame:SetOption ("desc_text", Plater.db.profile.extra_icon_caster_name)
 			unitFrame.ExtraIconFrame:SetOption ("desc_text_font", Plater.db.profile.extra_icon_caster_font)
 			unitFrame.ExtraIconFrame:SetOption ("desc_text_size", Plater.db.profile.extra_icon_caster_size)
+			unitFrame.ExtraIconFrame:SetOption ("desc_text_outline", Plater.db.profile.extra_icon_caster_outline)
 			unitFrame.ExtraIconFrame:SetOption ("stack_text", Plater.db.profile.extra_icon_show_stacks)
 			unitFrame.ExtraIconFrame:SetOption ("stack_text_font", Plater.db.profile.extra_icon_stack_font)
 			unitFrame.ExtraIconFrame:SetOption ("stack_text_size", Plater.db.profile.extra_icon_stack_size)
+			unitFrame.ExtraIconFrame:SetOption ("stack_text_outline", Plater.db.profile.extra_icon_stack_outline)
 			unitFrame.ExtraIconFrame:SetOption ("surpress_tulla_omni_cc", Plater.db.profile.disable_omnicc_on_auras)
 			
 			--> update refresh ID

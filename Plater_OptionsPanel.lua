@@ -4052,9 +4052,8 @@ Plater.CreateAuraTesting()
 				desc = "Default Border Color",
 			},
 			
-			--{type = "blank"},
 			{type = "breakline"},
-			{type = "label", get = function() return "Text Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			--{type = "label", get = function() return "Text Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			--show timer
 			{
 				type = "toggle",
@@ -4085,6 +4084,14 @@ Plater.CreateAuraTesting()
 				step = 1,
 				name = L["OPTIONS_SIZE"],
 				desc = "Size of the text.",
+			},
+			--text outline options
+			{
+				type = "select",
+				get = function() return Plater.db.profile.extra_icon_timer_outline end,
+				values = function() return build_outline_modes_table (nil, "extra_icon_timer_outline") end,
+				name = L["OPTIONS_OUTLINE"],
+				desc = "Outline",
 			},
 
 			{type = "blank"},
@@ -4119,6 +4126,14 @@ Plater.CreateAuraTesting()
 				name = L["OPTIONS_SIZE"],
 				desc = "Size of the text.",
 			},
+			--text outline options
+			{
+				type = "select",
+				get = function() return Plater.db.profile.extra_icon_caster_outline end,
+				values = function() return build_outline_modes_table (nil, "extra_icon_caster_outline") end,
+				name = L["OPTIONS_OUTLINE"],
+				desc = "Outline",
+			},
 			
 			{type = "blank"},
 			--show stacks
@@ -4151,6 +4166,14 @@ Plater.CreateAuraTesting()
 				step = 1,
 				name = L["OPTIONS_SIZE"],
 				desc = "Size of the text.",
+			},
+			--text outline options
+			{
+				type = "select",
+				get = function() return Plater.db.profile.extra_icon_stack_outline end,
+				values = function() return build_outline_modes_table (nil, "extra_icon_stack_outline") end,
+				name = L["OPTIONS_OUTLINE"],
+				desc = "Outline",
 			},
 			
 			{type = "blank"},
