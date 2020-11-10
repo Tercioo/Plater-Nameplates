@@ -3020,6 +3020,7 @@ Plater.DefaultSpellRangeListF = {
 			unitFrame.BuffFrame2 [MEMBER_REACTION] = reaction
 			unitFrame.BuffFrame.unit = unitID
 			unitFrame.BuffFrame2.unit = unitID
+			unitFrame.ExtraIconFrame.unit = unitID
 			
 			local isBattlePet = UnitIsBattlePet(unitID)
 			plateFrame.isBattlePet = isBattlePet
