@@ -8,6 +8,30 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1605124078,  "Backend Changes", "November 10th, 2020", "Adding missing textures."},
+			{1605124078,  "Backend Changes", "November 10th, 2020", "Small fixes on aura animations."},
+			{1605124078,  "Options Changes", "November 10th, 2020", "Adding 'auras per row' overwrite option."},
+			{1605124078,  "Backend Changes", "November 10th, 2020", "Regression fix for not correctly loaded scripts."},
+			{1605124078,  "Backend Changes", "November 10th, 2020", "Make aura rows grow in the proper directions according to the selected anchor position."},
+			{1605124078,  "Backend Changes", "November 10th, 2020", "Enable tooltips on buff special."},
+			{1605124078,  "Backend Changes", "November 10th, 2020", "Supress blizzard timers on buff special."},
+			{1605124078,  "Options Changes", "November 10th, 2020", "Adding buff special text outline options."},
+			{1605124078,  "Options Changes", "November 10th, 2020", "Adding font options for buff special timer, stack and caster texts."},
+			
+			{1605124078,  "Options Changes", "November 6th, 2020", "Update on Scripts to support 9.0 dungeons. Scripts overwritten by this update are moved to trash."},
+			{1605124078,  "Options Changes", "November 5th, 2020", "Nameplate color dropdown now works on any map."},
+			{1605124078,  "Options Changes", "November 5th, 2020", "Added class color option to Enemy Player."},
+			{1605124078,  "Bug Fix", "November 5th, 2020", "Fixed aura show animation not playing at the right times + scale reset."},
+			{1605124078,  "Bug Fix", "November 5th, 2020", "Properly set cast bar icon according to settings."},
+			{1605124078,  "Backend Changes", "November 5th, 2020", "Fixed aura test blink."},
+			{1605124078,  "Options Changes", "November 5th, 2020", "Global health bar resizer now also resize the cast bar width."},
+			{1605124078,  "Options Changes", "November 5th, 2020", "Health bar animation option renamed from 'Use Smooth Health Transition' to 'Animate Health Bar'."},
+			{1605124078,  "Backend Changes", "November 5th, 2020", "Added Breath of the Coldheart to default buff ignored list, this a persistent buff on units in Torghast."},
+			{1605124078,  "Options Changes", "November 5th, 2020", "Adding an option to not show the cast target if the player is a tank."},
+			{1605124078,  "Backend Changes", "November 4th, 2020", "Backend changes on aura tracking."},
+			{1605124078,  "Options Changes", "November 3rd, 2020", "Adding option to enable/disable upper execute range."},
+			{1605124078,  "Options Changes", "November 3rd, 2020", "Execute detection updated to 9.0."},
+			
 			{1604404314,  "Bachend Changes", "November 2nd, 2020", "Externalized all aura code."},
 			{1604404314,  "Bug Fix", "November 2nd, 2020", "Execute range indicator overlay is back to its lower alpha value."},
 			{1604404314,  "Bachend Changes", "November 2nd, 2020", "Sorting consolidated auras properly."},
