@@ -418,6 +418,11 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 		iconFrame.ShowAnimation = iconShowInAnimation
 	end
 	
+	local function aura_icon_on_hide_callback (self)
+		self.ShowAnimation:Stop()
+		self:OnHideWidget()
+	end
+	
 	--an aura is about to be added in the nameplate, need to get an icon for it ~geticonaura
 	function Plater.GetAuraIcon (self, isBuff)
 		--self parent = NamePlate_X_UnitFrame
@@ -458,7 +463,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			--mixin the meta functions for scripts
 			DF:Mixin (newFrameIcon, Plater.ScriptMetaFunctions)
 			newFrameIcon.IsAuraIcon = true
-			newFrameIcon:HookScript ("OnHide", newFrameIcon.OnHideWidget)
+			newFrameIcon:HookScript ("OnHide", aura_icon_on_hide_callback)
 			
 			--create the animation for when the icon is shown
 			Plater.CreateShowAuraIconAnimation (newFrameIcon)
@@ -722,7 +727,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 		if (auraIconFrame:IsShown()) then
 			--is was showing a different aura, simulate a OnHide()
 			if (auraIconFrame.SpellName ~= spellName) then
-				auraIconFrame:OnHideWidget()
+				aura_icon_on_hide_callback(auraIconFrame)
 			end
 		end
 		
