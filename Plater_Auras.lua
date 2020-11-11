@@ -208,13 +208,16 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			end
 		
 			local growDirection
+			local anchorSide
 
 			--> get the grow direction for the buff frame
 			if (self.Name == "Main") then
 				growDirection = DB_AURA_GROW_DIRECTION
+				anchorSide = Plater.db.profile.aura_frame1_anchor.side
 				
 			elseif (self.Name == "Secondary") then
 				growDirection = DB_AURA_GROW_DIRECTION2
+				anchorSide = Plater.db.profile.aura_frame2_anchor.side
 			end
 			
 			--get the amount of auras shown in the frame, this variable should be always reliable
@@ -227,7 +230,8 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 				--self:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
 				--self:SetBackdropBorderColor (1, 0, 0, 1)
 			
-				local framersPerRow = Plater.MaxAurasPerRow + 1
+				local aurasPerRow = Plater.MaxAurasPerRow + 1
+				local rowGrowthDirectionUp = (anchorSide < 3 or anchorSide > 5)
 				
 				--which slot index is being manipulated within the icon loop
 				--if an icon is hidden it won't be used and the slot won't increase
@@ -236,71 +240,57 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 				
 				--which was the last shown and valid icon attached into the visible icon row
 				local lastIconUsed
+				local relIconPoint
+				local relIconPointTo
+				local relRowIconPoint
+				local relFirstIconPoint
+				local paddingMult
 				
 				--left to right
 				if (growDirection == 3) then
-					--iterate among all icon frames
-					for i = 1, #iconFrameContainer do
-						--get the icon id from the icon frame container
-						local iconFrame = iconFrameContainer [i]
-						if (iconFrame:IsShown()) then
-							iconFrame:ClearAllPoints()
-							
-							if not firstIcon then
-								--set the point of the first icon
-								iconFrame:ClearAllPoints()
-								iconFrame:SetPoint ("bottomleft", self, "bottomleft", 0, 0)
-								firstIcon = iconFrame
-								verticalHeight = firstIcon:GetHeight()
-							else
-								if (slotId == framersPerRow) then
-									iconFrame:SetPoint ("bottomleft", firstIcon, "topleft", 0, Plater.db.profile.aura_breakline_space)
-									framersPerRow = framersPerRow + Plater.MaxAurasPerRow
-									--update the first icon to be the first icon in the second row
-									firstIcon = iconFrame
-									verticalHeight = verticalHeight + Plater.db.profile.aura_breakline_space + firstIcon:GetHeight()
-									
-								else
-									iconFrame:SetPoint ("topleft", lastIconUsed, "topright", DB_AURA_PADDING, 0)
-								end
-							end
-							
-							lastIconUsed = iconFrame
-							slotId = slotId + 1
-						end
-					end
-
+					relIconPoint = rowGrowthDirectionUp and "bottomleft" or "topleft"
+					relIconPointTo = rowGrowthDirectionUp and "bottomright" or "topright"
+					relRowIconPoint = rowGrowthDirectionUp and "topleft" or "bottomleft"
+					relFirstIconPoint = rowGrowthDirectionUp and "bottomleft" or "topleft"
+					paddingMult = 1
+				
 				-- <-- right to left
 				elseif (growDirection == 1) then
-					--> iterate among all icon frames
-					for i = 1, #iconFrameContainer do
-						--get the icon id from the icon frame container
-						local iconFrame = iconFrameContainer [i]
-						if (iconFrame:IsShown()) then
+					relIconPoint = rowGrowthDirectionUp and "bottomright" or "topright"
+					relIconPointTo = rowGrowthDirectionUp and "bottomleft" or "topleft"
+					relRowIconPoint = rowGrowthDirectionUp and "topright" or "bottomright"
+					relFirstIconPoint = rowGrowthDirectionUp and "bottomright" or "topright"
+					paddingMult = -1
+				end
+				
+				--iterate among all icon frames
+				for i = 1, #iconFrameContainer do
+					--get the icon id from the icon frame container
+					local iconFrame = iconFrameContainer [i]
+					if (iconFrame:IsShown()) then
+						iconFrame:ClearAllPoints()
+						
+						if not firstIcon then
+							--set the point of the first icon
 							iconFrame:ClearAllPoints()
-							
-							if not firstIcon then
-								--set the point of the first icon
-								iconFrame:ClearAllPoints()
-								iconFrame:SetPoint ("bottomright", self, "bottomright", 0, 0)
+							iconFrame:SetPoint (relFirstIconPoint, self, relFirstIconPoint, 0, 0)
+							firstIcon = iconFrame
+							verticalHeight = firstIcon:GetHeight()
+						else
+							if (slotId == aurasPerRow) then
+								iconFrame:SetPoint (relIconPoint, firstIcon, relRowIconPoint, 0, Plater.db.profile.aura_breakline_space)
+								aurasPerRow = aurasPerRow + Plater.MaxAurasPerRow
+								--update the first icon to be the first icon in the second row
 								firstIcon = iconFrame
-								verticalHeight = firstIcon:GetHeight()
+								verticalHeight = verticalHeight + Plater.db.profile.aura_breakline_space + firstIcon:GetHeight()
+								
 							else
-								if (slotId == framersPerRow) then
-									iconFrame:SetPoint ("bottomright", firstIcon, "topright", 0, Plater.db.profile.aura_breakline_space)
-									framersPerRow = framersPerRow + Plater.MaxAurasPerRow
-									--update the first icon to be the first icon in the second row
-									firstIcon = iconFrame
-									verticalHeight = verticalHeight + Plater.db.profile.aura_breakline_space + firstIcon:GetHeight()
-									
-								else
-									iconFrame:SetPoint ("topright", lastIconUsed, "topleft", -DB_AURA_PADDING, 0)
-								end
+								iconFrame:SetPoint (relIconPoint, lastIconUsed, relIconPointTo, DB_AURA_PADDING * paddingMult, 0)
 							end
-							
-							lastIconUsed = iconFrame
-							slotId = slotId + 1
 						end
+						
+						lastIconUsed = iconFrame
+						slotId = slotId + 1
 					end
 				end
 				
