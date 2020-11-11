@@ -6915,61 +6915,61 @@ end
 	end
 
 	local anchor_functions = {
-		function (widget, config, attachTo, centered)--1
+		function (widget, config, attachTo, centered)--1 topleft
 			widget:ClearAllPoints()
 			local widgetRelative = centered and "bottom" or "bottomleft"
 			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "topleft", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--2
+		function (widget, config, attachTo, centered)--2 left
 			widget:ClearAllPoints()
 			local widgetRelative = centered and "center" or "right"
 			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "left", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--3
+		function (widget, config, attachTo, centered)--3 bottomleft
 			widget:ClearAllPoints()
 			local widgetRelative = centered and "top" or "topleft"
 			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "bottomleft", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--4
+		function (widget, config, attachTo, centered)--4 bottom
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "top", attachTo, "bottom", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--5
+		function (widget, config, attachTo, centered)--5 bottomright
 			widget:ClearAllPoints()
 			local widgetRelative = centered and "top" or "topright"
 			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "bottomright", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--6
+		function (widget, config, attachTo, centered)--6 right
 			widget:ClearAllPoints()
 			local widgetRelative = centered and "center" or "left"
 			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "right", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--7
+		function (widget, config, attachTo, centered)--7 topright
 			widget:ClearAllPoints()
 			local widgetRelative = centered and "bottom" or "bottomright"
 			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "topright", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--8
+		function (widget, config, attachTo, centered)--8 top
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "bottom", attachTo, "top", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--9
+		function (widget, config, attachTo, centered)--9 center
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "center", attachTo, "center", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--10
+		function (widget, config, attachTo, centered)--10 inner left
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "left", attachTo, "left", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--11
+		function (widget, config, attachTo, centered)--11 inner right
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "right", attachTo, "right", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--12
+		function (widget, config, attachTo, centered)--12 inner top
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "top", attachTo, "top", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--13
+		function (widget, config, attachTo, centered)--13 inner bottom
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "bottom", attachTo, "bottom", config.x, config.y, 0, 0)
 		end
