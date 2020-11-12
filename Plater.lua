@@ -9848,7 +9848,7 @@ end
 		if (PlaterScriptLibrary) then
 			for name, autoImportScript in pairs (PlaterScriptLibrary) do
 				local importedDB
-				
+
 				if (autoImportScript.ScriptType == "script") then
 					importedDB = Plater.db.profile.script_auto_imported
 					
@@ -9861,7 +9861,7 @@ end
 
 					local encodedString = autoImportScript.String
 					if (encodedString) then
-						local success, scriptAdded = Plater.ImportScriptString (encodedString, true, false, false)
+						local success, scriptAdded = Plater.ImportScriptString (encodedString, true, autoImportScript.OverrideTriggers, false, false)
 						if (success) then
 							if (autoImportScript.Revision == 1) then
 								Plater:Msg ("New Script Installed: " .. name)
@@ -9949,7 +9949,6 @@ end
 			local newScript = Plater.BuildScriptObjectFromIndexTable (indexScriptTable, scriptType)
 			
 			if (newScript) then
-			
 				if (scriptType == "script") then
 					local scriptName = newScript.Name
 					local alreadyExists = false
