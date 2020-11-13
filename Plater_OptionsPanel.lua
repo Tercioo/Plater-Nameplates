@@ -5426,6 +5426,7 @@ do
 				get = function() return Plater.db.profile.plate_config.player.healthbar_color_by_hp end,
 				set = function (self, fixedparam, value) 
 					Plater.db.profile.plate_config.player.healthbar_color_by_hp = value
+					Plater.UpdateSettingsCache()
 					Plater.UpdateAllPlates()
 				end,
 				name = "Color by Health",
@@ -5438,7 +5439,7 @@ do
 				get = function() return Plater.db.profile.plate_config.player.percent_text_ooc end,
 				set = function (self, fixedparam, value) 
 					Plater.db.profile.plate_config.player.percent_text_ooc = value
-					
+					Plater.UpdateSettingsCache()
 					Plater.UpdateAllPlates()
 				end,
 				name = "Out of Combat",
@@ -7801,6 +7802,7 @@ end
 			get = function() return Plater.db.profile.plate_config.friendlyplayer.percent_text_enabled end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config.friendlyplayer.percent_text_enabled = value
+				Plater.UpdateSettingsCache()
 				Plater.UpdateAllPlates()
 			end,
 			name = L["OPTIONS_ENABLED"],
@@ -7812,7 +7814,7 @@ end
 			get = function() return Plater.db.profile.plate_config.friendlyplayer.percent_text_ooc end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config.friendlyplayer.percent_text_ooc = value
-				
+				Plater.UpdateSettingsCache()
 				Plater.UpdateAllPlates()
 			end,
 			name = "Out of Combat",
@@ -8675,6 +8677,7 @@ end
 			get = function() return Plater.db.profile.plate_config.enemyplayer.percent_text_enabled end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config.enemyplayer.percent_text_enabled = value
+				Plater.UpdateSettingsCache()
 				Plater.UpdateAllPlates()
 			end,
 			name = L["OPTIONS_ENABLED"],
@@ -8686,7 +8689,7 @@ end
 			get = function() return Plater.db.profile.plate_config.enemyplayer.percent_text_ooc end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config.enemyplayer.percent_text_ooc = value
-				
+				Plater.UpdateSettingsCache()
 				Plater.UpdateAllPlates()
 			end,
 			name = "Out of Combat",
@@ -9702,6 +9705,7 @@ end
 			get = function() return Plater.db.profile.plate_config.friendlynpc.percent_text_enabled end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config.friendlynpc.percent_text_enabled = value
+				Plater.UpdateSettingsCache()
 				Plater.UpdateAllPlates()
 			end,
 			name = L["OPTIONS_ENABLED"],
@@ -9713,7 +9717,7 @@ end
 			get = function() return Plater.db.profile.plate_config.friendlynpc.percent_text_ooc end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config.friendlynpc.percent_text_ooc = value
-				
+				Plater.UpdateSettingsCache()
 				Plater.UpdateAllPlates()
 			end,
 			name = "Out of Combat",
@@ -10724,6 +10728,7 @@ end
 				get = function() return Plater.db.profile.plate_config.enemynpc.percent_text_enabled end,
 				set = function (self, fixedparam, value) 
 					Plater.db.profile.plate_config.enemynpc.percent_text_enabled = value
+					Plater.UpdateSettingsCache()
 					Plater.UpdateAllPlates()
 				end,
 				name = L["OPTIONS_ENABLED"],
@@ -10735,7 +10740,7 @@ end
 				get = function() return Plater.db.profile.plate_config.enemynpc.percent_text_ooc end,
 				set = function (self, fixedparam, value) 
 					Plater.db.profile.plate_config.enemynpc.percent_text_ooc = value
-					
+					Plater.UpdateSettingsCache()
 					Plater.UpdateAllPlates()
 				end,
 				name = "Out of Combat",
