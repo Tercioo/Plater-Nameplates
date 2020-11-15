@@ -929,6 +929,11 @@ Plater.DefaultSpellRangeListF = {
 					lowExecute = 0.35
 				end
 			
+			elseif (class == "DEATHKNIGHT") then
+				if IsPlayerSpell(343294) then --Soul Reaper
+					lowExecute = 0.35
+				end
+			
 			end
 		end
 		
