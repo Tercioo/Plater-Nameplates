@@ -65,9 +65,10 @@ local min = math.min
 
 local PixelUtil = _G.PixelUtil
 
-local LibSharedMedia = LibStub:GetLibrary ("LibSharedMedia-3.0")
-local LCG = LibStub:GetLibrary("LibCustomGlow-1.0")
-local LibRangeCheck = LibStub:GetLibrary ("LibRangeCheck-2.0")
+local LibSharedMedia = LibStub:GetLibrary ("LibSharedMedia-3.0") -- https://www.curseforge.com/wow/addons/libsharedmedia-3-0
+local LCG = LibStub:GetLibrary("LibCustomGlow-1.0") -- https://github.com/Stanzilla/LibCustomGlow
+local LibRangeCheck = LibStub:GetLibrary ("LibRangeCheck-2.0") -- https://www.curseforge.com/wow/addons/librangecheck-2-0/
+local LibTranslit = LibStub:GetLibrary ("LibTranslit-1.0") -- https://github.com/Vardex/LibTranslit
 local _
 
 local Plater = DF:CreateAddOn ("Plater", "PlaterDB", PLATER_DEFAULT_SETTINGS, { --options table
@@ -776,6 +777,10 @@ Plater.DefaultSpellRangeListF = {
 	local DB_USE_HEALTHCUTOFF = false
 	local DB_HEALTHCUTOFF_AT = 0.2
 	local DB_HEALTHCUTOFF_AT_UPPER = 0.8
+	
+	--store translit option
+	local DB_USE_NAME_TRANSLIT = false
+	local TRANSLIT_MARK = "*"
 	
 	--store the npc id cache
 	local DB_NPCIDS_CACHE = {}
@@ -1592,6 +1597,8 @@ Plater.DefaultSpellRangeListF = {
 		DB_CASTBAR_HIDE_FRIENDLY = profile.hide_friendly_castbars
 		
 		DB_CAPTURED_SPELLS = profile.captured_spells
+		
+		DB_USE_NAME_TRANSLIT = profile.use_name_translit
 
 		--refresh lists
 		Plater.RefreshDBLists()
@@ -2196,7 +2203,11 @@ Plater.DefaultSpellRangeListF = {
 				local plateFrame = C_NamePlate.GetNamePlateForUnit (unitID)
 				if (plateFrame) then
 					local unitFrame = plateFrame.unitFrame
-					plateFrame [MEMBER_NAME] = UnitName (unitID)
+					local unitName = UnitName (unitID)
+					if DB_USE_NAME_TRANSLIT then
+						unitName = LibTranslit:Transliterate(unitName, TRANSLIT_MARK)
+					end
+					plateFrame [MEMBER_NAME] = unitName
 					plateFrame [MEMBER_NAMELOWER] = lower (plateFrame [MEMBER_NAME])
 					unitFrame [MEMBER_NAME] = plateFrame [MEMBER_NAME]
 					unitFrame [MEMBER_NAMELOWER] = plateFrame [MEMBER_NAMELOWER]
@@ -2996,7 +3007,11 @@ Plater.DefaultSpellRangeListF = {
 			
 			--cache values
 			plateFrame [MEMBER_GUID] = UnitGUID (unitID) or ""
-			plateFrame [MEMBER_NAME] = UnitName (unitID) or ""
+			local unitName = UnitName (unitID) or ""
+			if DB_USE_NAME_TRANSLIT then
+				unitName = LibTranslit:Transliterate(unitName, TRANSLIT_MARK)
+			end
+			plateFrame [MEMBER_NAME] = unitName
 			plateFrame [MEMBER_NAMELOWER] = lower (plateFrame [MEMBER_NAME])
 			plateFrame ["namePlateClassification"] = UnitClassification (unitID)
 			
@@ -4162,6 +4177,9 @@ function Plater.OnInit() --private --~oninit ~init
 					
 					if (self.unit and Plater.db.profile.castbar_target_show and not UnitIsUnit (self.unit, "player")) then
 						local targetName = UnitName (self.unit .. "target")
+						if DB_USE_NAME_TRANSLIT then
+							targetName = LibTranslit:Transliterate(targetName, TRANSLIT_MARK)
+						end
 						if (targetName) then
 
 							local canShowTargetName = true
@@ -7521,6 +7539,9 @@ end
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 				if (plateFrame.unitFrame.castBar:IsShown()) then
 					if (plateFrame [MEMBER_GUID] == targetGUID) then
+						if DB_USE_NAME_TRANSLIT then
+							sourceName = LibTranslit:Transliterate(sourceName, TRANSLIT_MARK)
+						end
 						plateFrame.unitFrame.castBar.Text:SetText (INTERRUPTED .. " [" .. Plater.SetTextColorByClass (sourceName, sourceName) .. "]")
 						plateFrame.unitFrame.castBar.IsInterrupted = true
 						--> check and stop the casting script if any

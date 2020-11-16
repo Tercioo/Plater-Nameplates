@@ -12756,11 +12756,23 @@ end
 		
 		{
 			type = "toggle",
+			get = function() return Plater.db.profile.use_name_translit end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.use_name_translit = value
+				Plater.RefreshDBUpvalues()
+				Plater.FullRefreshAllPlates()
+			end,
+			name = "Name translit",
+			desc = "Use LibTranslit to translit names. Changed names will be tagged with a '*'",
+		},
+		
+		{
+			type = "toggle",
 			get = function() return Plater.db.profile.use_player_combat_state end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.use_player_combat_state = value
 			end,
-			name = "In/Out of Combat Settings: Use Player Combat State",
+			name = "In/Out of Combat Settings - Use Player Combat State",
 			desc = "Use the players combat state instead of the units when applying settings for In/Out of Combat.",
 		},
 		
