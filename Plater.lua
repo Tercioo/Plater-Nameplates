@@ -8824,12 +8824,16 @@ end
 			) then
 				local forceHotReload = scriptInfo and scriptInfo.GlobalScriptObject.NeedHotReload
 			
-				scriptInfo = {
+				-- keep script info and update as needed
+				scriptInfo = scriptInfo or {
 					GlobalScriptObject = globalScriptObject, 
 					HotReload = -1, 
 					Env = {}, 
 					IsActive = false
 				}
+				scriptInfo.GlobalScriptObject = globalScriptObject
+				scriptInfo.GlobalScriptObject.Build = PLATER_HOOK_BUILD
+				scriptInfo.GlobalScriptObject.NeedHotReload = false
 
 				if (globalScriptObject.HasConstructor and (not scriptInfo.Initialized or (isHookScript and forceHotReload))) then
 					local okay, errortext = pcall (globalScriptObject.Constructor, self, self.displayedUnit or self.unit or self:GetParent()[MEMBER_UNITID], self, scriptInfo.Env, PLATER_GLOBAL_MOD_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId])
