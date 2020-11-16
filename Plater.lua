@@ -8822,7 +8822,7 @@ end
 				(scriptInfo.GlobalScriptObject.NeedHotReload) or 
 				(scriptInfo.GlobalScriptObject.Build and scriptInfo.GlobalScriptObject.Build < PLATER_HOOK_BUILD)
 			) then
-				local forceHotReload = scriptInfo and ((scriptInfo.GlobalScriptObject.NeedHotReload) or (scriptInfo.GlobalScriptObject.Build and scriptInfo.GlobalScriptObject.Build < PLATER_HOOK_BUILD))
+				local forceHotReload = scriptInfo and scriptInfo.GlobalScriptObject.NeedHotReload
 			
 				scriptInfo = {
 					GlobalScriptObject = globalScriptObject, 
