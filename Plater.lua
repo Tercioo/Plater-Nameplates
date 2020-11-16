@@ -8813,16 +8813,16 @@ end
 		
 		--get the table which stores the information for a single script
 		ScriptGetInfo = function (self, globalScriptObject, widgetScriptContainer, isHookScript)
-			widgetScriptContainer = widgetScriptContainer or self:GetScriptContainer()
+			widgetScriptContainer = widgetScriptContainer or self:ScriptGetContainer()
 			
 			--using the memory address of the original scriptObject from db.profile as the map key
-			local scriptInfo = widgetScriptContainer [globalScriptObject.DBScriptObject]
+			local scriptInfo = widgetScriptContainer [globalScriptObject.DBScriptObject.scriptId]
 			if (
 				(not scriptInfo) or 
 				(scriptInfo.GlobalScriptObject.NeedHotReload) or 
 				(scriptInfo.GlobalScriptObject.Build and scriptInfo.GlobalScriptObject.Build < PLATER_HOOK_BUILD)
 			) then
-				local forceHotReload = scriptInfo and scriptInfo.GlobalScriptObject.NeedHotReload
+				local forceHotReload = scriptInfo and ((scriptInfo.GlobalScriptObject.NeedHotReload) or (scriptInfo.GlobalScriptObject.Build and scriptInfo.GlobalScriptObject.Build < PLATER_HOOK_BUILD))
 			
 				scriptInfo = {
 					GlobalScriptObject = globalScriptObject, 
@@ -8834,12 +8834,12 @@ end
 				if (globalScriptObject.HasConstructor and (not scriptInfo.Initialized or (isHookScript and forceHotReload))) then
 					local okay, errortext = pcall (globalScriptObject.Constructor, self, self.displayedUnit or self.unit or self:GetParent()[MEMBER_UNITID], self, scriptInfo.Env, PLATER_GLOBAL_MOD_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId])
 					if (not okay) then
-						Plater:Msg ((isHookScript and "Mod" or "Script") .. " |cFFAAAA22" .. scriptInfo.GlobalScriptObject.DBScriptObject.Name .. "|r Constructor error: " .. errortext)
+						Plater:Msg ("Mod |cFFAAAA22" .. scriptInfo.GlobalScriptObject.DBScriptObject.Name .. "|r Constructor error: " .. errortext)
 					end
 					scriptInfo.Initialized = true
 				end
 				
-				widgetScriptContainer [globalScriptObject.DBScriptObject] = scriptInfo
+				widgetScriptContainer [globalScriptObject.DBScriptObject.scriptId] = scriptInfo
 			end
 			
 			return scriptInfo
@@ -9439,18 +9439,19 @@ end
 		--check if the script is valid and if is enabled
 		if (not scriptObject) then
 			return
-			
-		elseif (not scriptObject.Enabled) then
-			--check if this hook is currently loaded
+		end
+		
+		if not scriptObject.scriptId then
+			scriptObject.scriptId = tostring(scriptObject)
+		end
+		
+		--check if this hook is currently loaded
+		if (not scriptObject.Enabled) then
 			if (Plater.CurrentlyLoadedHooks [scriptObject.scriptId]) then
 				Plater.CurrentlyLoadedHooks [scriptObject.scriptId] = false
 				Plater.RunDestructorForHook (scriptObject)
 			end
 			return
-		end
-		
-		if not scriptObject.scriptId then
-			scriptObject.scriptId = tostring(scriptObject)
 		end
 		
 		do --check integrity
