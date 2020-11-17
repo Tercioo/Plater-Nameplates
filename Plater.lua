@@ -65,9 +65,10 @@ local min = math.min
 
 local PixelUtil = _G.PixelUtil
 
-local LibSharedMedia = LibStub:GetLibrary ("LibSharedMedia-3.0")
-local LCG = LibStub:GetLibrary("LibCustomGlow-1.0")
-local LibRangeCheck = LibStub:GetLibrary ("LibRangeCheck-2.0")
+local LibSharedMedia = LibStub:GetLibrary ("LibSharedMedia-3.0") -- https://www.curseforge.com/wow/addons/libsharedmedia-3-0
+local LCG = LibStub:GetLibrary("LibCustomGlow-1.0") -- https://github.com/Stanzilla/LibCustomGlow
+local LibRangeCheck = LibStub:GetLibrary ("LibRangeCheck-2.0") -- https://www.curseforge.com/wow/addons/librangecheck-2-0/
+local LibTranslit = LibStub:GetLibrary ("LibTranslit-1.0") -- https://github.com/Vardex/LibTranslit
 local _
 
 local Plater = DF:CreateAddOn ("Plater", "PlaterDB", PLATER_DEFAULT_SETTINGS, { --options table
@@ -777,6 +778,10 @@ Plater.DefaultSpellRangeListF = {
 	local DB_HEALTHCUTOFF_AT = 0.2
 	local DB_HEALTHCUTOFF_AT_UPPER = 0.8
 	
+	--store translit option
+	local DB_USE_NAME_TRANSLIT = false
+	local TRANSLIT_MARK = "*"
+	
 	--store the npc id cache
 	local DB_NPCIDS_CACHE = {}
 
@@ -926,6 +931,11 @@ Plater.DefaultSpellRangeListF = {
 			
 			elseif (class == "ROGUE") then				
 				if IsPlayerSpell(328085) then --Blindside
+					lowExecute = 0.35
+				end
+			
+			elseif (class == "DEATHKNIGHT") then
+				if IsPlayerSpell(343294) then --Soul Reaper
 					lowExecute = 0.35
 				end
 			
@@ -1587,6 +1597,8 @@ Plater.DefaultSpellRangeListF = {
 		DB_CASTBAR_HIDE_FRIENDLY = profile.hide_friendly_castbars
 		
 		DB_CAPTURED_SPELLS = profile.captured_spells
+		
+		DB_USE_NAME_TRANSLIT = profile.use_name_translit
 
 		--refresh lists
 		Plater.RefreshDBLists()
@@ -2191,7 +2203,11 @@ Plater.DefaultSpellRangeListF = {
 				local plateFrame = C_NamePlate.GetNamePlateForUnit (unitID)
 				if (plateFrame) then
 					local unitFrame = plateFrame.unitFrame
-					plateFrame [MEMBER_NAME] = UnitName (unitID)
+					local unitName = UnitName (unitID)
+					if DB_USE_NAME_TRANSLIT then
+						unitName = LibTranslit:Transliterate(unitName, TRANSLIT_MARK)
+					end
+					plateFrame [MEMBER_NAME] = unitName
 					plateFrame [MEMBER_NAMELOWER] = lower (plateFrame [MEMBER_NAME])
 					unitFrame [MEMBER_NAME] = plateFrame [MEMBER_NAME]
 					unitFrame [MEMBER_NAMELOWER] = plateFrame [MEMBER_NAMELOWER]
@@ -2991,7 +3007,11 @@ Plater.DefaultSpellRangeListF = {
 			
 			--cache values
 			plateFrame [MEMBER_GUID] = UnitGUID (unitID) or ""
-			plateFrame [MEMBER_NAME] = UnitName (unitID) or ""
+			local unitName = UnitName (unitID) or ""
+			if DB_USE_NAME_TRANSLIT then
+				unitName = LibTranslit:Transliterate(unitName, TRANSLIT_MARK)
+			end
+			plateFrame [MEMBER_NAME] = unitName
 			plateFrame [MEMBER_NAMELOWER] = lower (plateFrame [MEMBER_NAME])
 			plateFrame ["namePlateClassification"] = UnitClassification (unitID)
 			
@@ -4157,6 +4177,9 @@ function Plater.OnInit() --private --~oninit ~init
 					
 					if (self.unit and Plater.db.profile.castbar_target_show and not UnitIsUnit (self.unit, "player")) then
 						local targetName = UnitName (self.unit .. "target")
+						if DB_USE_NAME_TRANSLIT then
+							targetName = LibTranslit:Transliterate(targetName, TRANSLIT_MARK)
+						end
 						if (targetName) then
 
 							local canShowTargetName = true
@@ -4952,9 +4975,11 @@ end
 			end
 			
 			--if not in combat, check if can show the percent health out of combat
-			if (actorTypeDBConfig.percent_text_enabled and ((profile.use_player_combat_state and PLAYER_IN_COMBAT or unitFrame.InCombat)) or actorTypeDBConfig.percent_text_ooc) then
+			if (actorTypeDBConfig.percent_text_enabled and (((profile.use_player_combat_state and PLAYER_IN_COMBAT or unitFrame.InCombat)) or actorTypeDBConfig.percent_text_ooc)) then
 				Plater.UpdateLifePercentText (healthBar, unitFrame.unit, actorTypeDBConfig.percent_show_health, actorTypeDBConfig.percent_show_percent, actorTypeDBConfig.percent_text_show_decimals)
 				healthBar.lifePercent:Show()
+			else
+				healthBar.lifePercent:Hide()
 			end
 						
 			--if the unit tapped? (gray color)
@@ -6080,11 +6105,15 @@ end
 		if (Plater.db.profile.use_player_combat_state and PLAYER_IN_COMBAT or unitFrame.InCombat) then
 			if (actorTypeDBConfig.percent_text_enabled) then
 				Plater.UpdateLifePercentText (unitFrame.healthBar, unitFrame.unit, actorTypeDBConfig.percent_show_health, actorTypeDBConfig.percent_show_percent, actorTypeDBConfig.percent_text_show_decimals)
+			else
+				unitFrame.healthBar.lifePercent:Hide()
 			end
 		else
 			--if not in combat, check if can show the percent health out of combat
 			if (actorTypeDBConfig.percent_text_enabled and actorTypeDBConfig.percent_text_ooc) then
 				Plater.UpdateLifePercentText (unitFrame.healthBar, unitFrame.unit, actorTypeDBConfig.percent_show_health, actorTypeDBConfig.percent_show_percent, actorTypeDBConfig.percent_text_show_decimals)
+			else
+				unitFrame.healthBar.lifePercent:Hide()
 			end
 		end
 	end
@@ -7510,6 +7539,9 @@ end
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 				if (plateFrame.unitFrame.castBar:IsShown()) then
 					if (plateFrame [MEMBER_GUID] == targetGUID) then
+						if DB_USE_NAME_TRANSLIT then
+							sourceName = LibTranslit:Transliterate(sourceName, TRANSLIT_MARK)
+						end
 						plateFrame.unitFrame.castBar.Text:SetText (INTERRUPTED .. " [" .. Plater.SetTextColorByClass (sourceName, sourceName) .. "]")
 						plateFrame.unitFrame.castBar.IsInterrupted = true
 						--> check and stop the casting script if any
@@ -8781,10 +8813,10 @@ end
 		
 		--get the table which stores the information for a single script
 		ScriptGetInfo = function (self, globalScriptObject, widgetScriptContainer, isHookScript)
-			widgetScriptContainer = widgetScriptContainer or self:GetScriptContainer()
+			widgetScriptContainer = widgetScriptContainer or self:ScriptGetContainer()
 			
 			--using the memory address of the original scriptObject from db.profile as the map key
-			local scriptInfo = widgetScriptContainer [globalScriptObject.DBScriptObject]
+			local scriptInfo = widgetScriptContainer [globalScriptObject.DBScriptObject.scriptId]
 			if (
 				(not scriptInfo) or 
 				(scriptInfo.GlobalScriptObject.NeedHotReload) or 
@@ -8792,22 +8824,26 @@ end
 			) then
 				local forceHotReload = scriptInfo and scriptInfo.GlobalScriptObject.NeedHotReload
 			
-				scriptInfo = {
+				-- keep script info and update as needed
+				scriptInfo = scriptInfo or {
 					GlobalScriptObject = globalScriptObject, 
 					HotReload = -1, 
 					Env = {}, 
 					IsActive = false
 				}
+				scriptInfo.GlobalScriptObject = globalScriptObject
+				scriptInfo.GlobalScriptObject.Build = PLATER_HOOK_BUILD
+				scriptInfo.GlobalScriptObject.NeedHotReload = false
 
 				if (globalScriptObject.HasConstructor and (not scriptInfo.Initialized or (isHookScript and forceHotReload))) then
 					local okay, errortext = pcall (globalScriptObject.Constructor, self, self.displayedUnit or self.unit or self:GetParent()[MEMBER_UNITID], self, scriptInfo.Env, PLATER_GLOBAL_MOD_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId])
 					if (not okay) then
-						Plater:Msg ((isHookScript and "Mod" or "Script") .. " |cFFAAAA22" .. scriptInfo.GlobalScriptObject.DBScriptObject.Name .. "|r Constructor error: " .. errortext)
+						Plater:Msg ("Mod |cFFAAAA22" .. scriptInfo.GlobalScriptObject.DBScriptObject.Name .. "|r Constructor error: " .. errortext)
 					end
 					scriptInfo.Initialized = true
 				end
 				
-				widgetScriptContainer [globalScriptObject.DBScriptObject] = scriptInfo
+				widgetScriptContainer [globalScriptObject.DBScriptObject.scriptId] = scriptInfo
 			end
 			
 			return scriptInfo
@@ -9407,18 +9443,19 @@ end
 		--check if the script is valid and if is enabled
 		if (not scriptObject) then
 			return
-			
-		elseif (not scriptObject.Enabled) then
-			--check if this hook is currently loaded
+		end
+		
+		if not scriptObject.scriptId then
+			scriptObject.scriptId = tostring(scriptObject)
+		end
+		
+		--check if this hook is currently loaded
+		if (not scriptObject.Enabled) then
 			if (Plater.CurrentlyLoadedHooks [scriptObject.scriptId]) then
 				Plater.CurrentlyLoadedHooks [scriptObject.scriptId] = false
 				Plater.RunDestructorForHook (scriptObject)
 			end
 			return
-		end
-		
-		if not scriptObject.scriptId then
-			scriptObject.scriptId = tostring(scriptObject)
 		end
 		
 		do --check integrity

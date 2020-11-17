@@ -529,6 +529,8 @@ PLATER_DEFAULT_SETTINGS = {
 		
 		enable_masque_support = false,
 		
+		use_name_translit = false,
+		
 		use_player_combat_state = false,
 		
 		last_news_time = 0,
