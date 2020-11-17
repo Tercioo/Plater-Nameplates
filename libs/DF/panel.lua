@@ -7302,6 +7302,11 @@ DF.StatusBarFunctions = {
 	end
 
 	healthBarMetaFunctions.UpdateHealth = function (self)
+		-- update max health regardless to avoid weird wrong values on UpdateMaxHealth sometimes
+		-- local maxHealth = UnitHealthMax (self.displayedUnit)
+		-- self:SetMinMaxValues (0, maxHealth)
+		-- self.currentHealthMax = maxHealth
+		
 		local health = UnitHealth (self.displayedUnit)
 		self.currentHealth = health
 		PixelUtil.SetStatusBarValue (self, health)

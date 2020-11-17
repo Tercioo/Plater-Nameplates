@@ -1,6 +1,6 @@
 
 
-local dversion = 218
+local dversion = 219
 
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
@@ -4204,10 +4204,9 @@ end
 		end
 	}
 
-	function DF:SetEnvironment(func, environmentHandle)
+	function DF:SetEnvironment(func, environmentHandle, newEnvironment)
 		environmentHandle = environmentHandle or DF.DefaultSecureScriptEnvironmentHandle
-
-		local newEnvironment = {}
+		newEnvironment = newEnvironment or {}
 
 		setmetatable(newEnvironment, environmentHandle)
 		_G.setfenv(func, newEnvironment)
