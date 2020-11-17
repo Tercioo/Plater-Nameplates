@@ -3354,6 +3354,16 @@ Plater.DefaultSpellRangeListF = {
 		end
 	end
 	
+	function Plater.SetFontOutlineAndShadow (fontString, outline, shadowColor, shadowXOffSet, shadowYOffSet)
+		--update the outline
+		DF:SetFontOutline (fontString, outline)
+		
+		--update shadow color and shadow offset
+		if (shadowColor) then
+			local r, g, b, a = DF:ParseColors (shadowColor)
+			DF:SetFontShadow (fontString, r, g, b, a, shadowXOffSet, shadowYOffSet)
+		end
+	end
 	
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> addon initialization
@@ -3676,17 +3686,6 @@ function Plater.OnInit() --private --~oninit ~init
 						Plater.CurrentTargetResourceFrame:SetPoint ("bottom", buffFrame.healthBar, "top", 0, Plater.db.profile.resources.y_offset_target)
 					end
 				end
-			end
-		end
-	
-		function Plater.SetFontOutlineAndShadow (fontString, outline, shadowColor, shadowXOffSet, shadowYOffSet)
-			--update the outline
-			DF:SetFontOutline (fontString, outline)
-			
-			--update shadow color and shadow offset
-			if (shadowColor) then
-				local r, g, b, a = DF:ParseColors (shadowColor)
-				DF:SetFontShadow (fontString, r, g, b, a, shadowXOffSet, shadowYOffSet)
 			end
 		end
 	
