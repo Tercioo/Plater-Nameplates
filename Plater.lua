@@ -9126,173 +9126,6 @@ end
 
 	Plater.CoreVersion = 1
 
-	--from weakauras
-	--source https://github.com/WeakAuras/WeakAuras2/blob/520951a4b49b64cb49d88c1a8542d02bbcdbe412/WeakAuras/AuraEnvironment.lua#L66
-	local blockedFunctions = {
-		-- Lua functions that may allow breaking out of the environment
-		getfenv = true,
-		getfenv = true,
-		loadstring = true,
-		pcall = true,
-		xpcall = true,
-		getglobal = true,
-		
-		-- blocked WoW API
-		SendMail = true,
-		SetTradeMoney = true,
-		AddTradeMoney = true,
-		PickupTradeMoney = true,
-		PickupPlayerMoney = true,
-		TradeFrame = true,
-		MailFrame = true,
-		EnumerateFrames = true,
-		RunScript = true,
-		AcceptTrade = true,
-		SetSendMailMoney = true,
-		EditMacro = true,
-		SlashCmdList = true,
-		DevTools_DumpCommand = true,
-		hash_SlashCmdList = true,
-		CreateMacro = true,
-		SetBindingMacro = true,
-		GuildDisband = true,
-		GuildUninvite = true,
-		securecall = true,
-		
-		--additional
-		setmetatable = true,
-	}
-	
-	--internal Plater functions
-	local privateFunctions = {
-		CompileAllScripts = true,
-		GetAllScripts = true,
-		ScriptMetaFunctions = true,
-		DecompressData = true,
-		CompressData = true,
-		ExportProfileToString = true,
-		WipeAndRecompileAllScripts = true,
-		AllHookGlobalContainers = true,
-		WipeHookContainers = true,
-		GetContainerForHook = true,
-		CurrentlyLoadedHooks = true,
-		DestructorScriptHooks = true,
-		RunDestructorForHook = true,
-		CompileHook = true,
-		CompileScript = true,
-		CheckScriptTriggerOverlap = true,
-		GetScriptObject = true,
-		GetScriptDB = true,
-		GetScriptType = true,
-		GetDecodedScriptType = true,
-		ImportScriptsFromLibrary = true,
-		ImportScriptString = true,
-		AddScript = true,
-		BuildScriptObjectFromIndexTable = true,
-		DecodeImportedString = true,
-		PrepareTableToExport = true,
-		ScriptReceivedFromGroup = true,
-		ExportScriptToGroup = true,
-		ShowImportScriptConfirmation = true,
-		DispatchTalentUpdateHookEvent  = true,
-		ScheduleHookForCombat = true,
-		ScheduleRunFunctionForEvent = true,
-		RunFunctionForEvent = true,
-		EventHandler = true,
-		RegisterRefreshDBCallback = true,
-		FireRefreshDBCallback = true,
-		--RefreshDBUpvalues = true,
-		--RefreshDBLists = true,
-		--UpdateAuraCache = true,
-		ApplyPatches = true,
-		RefreshConfig = true,
-		RefreshConfigProfileChanged = true,
-		RefreshConfig = true,
-		SaveConsoleVariables = true,
-		GetSettings = true,
-		CodeTypeNames = true,
-		HookScripts = true,
-		HookScriptsDesc = true,
-		IncreaseHookBuildID = true,
-		IncreaseRefreshID = true,
-		SpecList = true,
-		UpdateSettingsCache = true,
-		ActorTypeSettingsCache = true,
-		RunScheduledUpdate = true,
-		ScheduleUpdateForNameplate = true,
-		EventHandlerFrame = true,
-		OnInit = true,
-		HookLoadCallback = true,
-		CheckFirstRun = true,
-		CommHandler = true,
-		CommReceived = true,
-		GetAllShownPlates = true,
-		GetHashKey = true,
-		IsShowingResourcesOnTarget = true,
-		OnRetailNamePlateShow = true,
-		UpdateSelfPlate = true,
-		CastBarOnShow_Hook = true,
-		CastBarOnEvent_Hook = true,
-		CastBarOnTick_Hook = true,
-		OnEnterAura = true,
-		OnLeaveAur = true,
-		RefreshAuras = true,
-		CreateAuraIcon = true,
-		RefreshColorOverride = true,
-		ChangeHealthBarColor_Internal = true,
-		UpdateAllPlates = true,
-		FullRefreshAllPlates = true,
-		UpdatePlateClickSpace = true,
-		NameplateTick = true,
-		OnPlayerTargetChanged = true,
-		UpdateTarget = true,
-		UpdatePlateText = true,
-		CheckLifePercentText = true,
-		UpdateAllNames = true,
-		UpdateLevelTextAndColor = true,
-		UpdatePlateFrame = true,
-		ForceChangeBorderColor = true,
-		UpdatePlateBorders = true,
-		UpdateRaidMarkersOnAllNameplates = true,
-		RefreshAutoToggle = true,
-		ParseHealthSettingForPlayer = true,
-		CreateAlphaAnimation = true,
-		CreateHighlightNameplate = true,
-		CreateHealthFlashFrame = true,
-		CreateAggroFlashFrame = true,
-		CreateScaleAnimation = true,
-		DoNameplateAnimation = true,
-		RefreshIsEditingAnimations = true,
-		IsNpcInIgnoreList = true,
-		CanChangePlateSize = true,
-		RefreshOmniCCGroup = true,
-		CreatePlaterButtonAtInterfaceOptions = true,
-		SetCVarsOnFirstRun = true,
-		GetActorSubName = true,
-		QuestLogUpdated = true,
-		QuestLogUpdated = true,
-		GetNpcIDFromGUID = true,
-		GetNpcID = true,
-		ForceTickOnAllNameplates = true,
-		UpdateUIParentScale = true,
-		UpdateUIParentLevels = true,
-		UpdateUIParentTargetLevels = true,
-		RefreshTankCache = true,
-		ForceFindPetOwner = true,
-	}
-	
-	local functionFilter = setmetatable ({}, {__index = function (env, key)
-		if (key == "_G") then
-			return env
-			
-		elseif (blockedFunctions [key] or privateFunctions [key]) then
-			return nil
-			
-		else	
-			return _G [key]
-		end
-	end})	
-
 	function Plater.WipeAndRecompileAllScripts (scriptType, noHotReload)
 		if (scriptType == "script") then
 			table.wipe (SCRIPT_AURA)
@@ -9404,7 +9237,8 @@ end
 				Plater:Msg ("failed to compile destructor for script " .. scriptObject.Name .. ": " .. errortext)
 			else
 				--store the function to execute
-				setfenv (compiledScript, functionFilter)
+				--setfenv (compiledScript, functionFilter)
+				DetailsFramework:SetEnvironment(compiledScript)
 				local func = compiledScript()
 				
 				--iterate among all nameplates
@@ -9560,7 +9394,9 @@ end
 					Plater.DestructorScriptHooks [scriptObject.scriptId] = globalScriptObject
 				else
 					--store the function to execute inside the global script object
-					setfenv (compiledScript, functionFilter)
+					--setfenv (compiledScript, functionFilter)
+					DetailsFramework:SetEnvironment(compiledScript)
+					
 					globalScriptObject [hookName] = compiledScript()
 					
 					--insert the script in the global script container, no need to check if already exists, hook containers cache are cleaned before script compile
@@ -9651,7 +9487,8 @@ end
 				Plater:Msg ("failed to compile " .. scriptType .. " for script " .. scriptObject.Name .. ": " .. errortext)
 			else
 				--get the function to execute
-				setfenv (compiledScript, functionFilter)
+				--setfenv (compiledScript, functionFilter)
+				DetailsFramework:SetEnvironment(compiledScript)
 				scriptFunctions [scriptType] = compiledScript()
 			end
 		end
