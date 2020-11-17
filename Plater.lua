@@ -10625,6 +10625,28 @@ function SlashCmdList.PLATER (msg, editbox)
 		end
 	
 		return
+
+	elseif (msg == "rare") then
+		local waitTick = function(tickerObject)
+			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+				local unitClassification = UnitClassification(plateFrame.unitFrame[MEMBER_UNITID])
+				if (unitClassification == "rareelite") then
+					FlashClientIcon()
+					Plater:Msg("(debug) rare spawned!")
+				end
+			end
+		end
+
+		if (not Plater.rare_ticker) then
+			Plater:Msg("Plater will flash the taskbar wow icon when a rare spawns.")
+			Plater.rare_ticker = _G.C_Timer.NewTicker(3, waitTick)
+		else
+			Plater.rare_ticker:Cancel()
+			Plater.rare_ticker = nil
+			Plater:Msg("Plater stopped looking for rares.")
+		end
+		
+		return
 	end
 	
 	Plater.OpenOptionsPanel()
