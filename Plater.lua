@@ -9124,6 +9124,182 @@ end
 	-- ~scripts
 
 	Plater.CoreVersion = 1
+	
+	--[[
+	--internal Plater functions
+	local privateFunctions = {
+		CompileAllScripts = true,
+		GetAllScripts = true,
+		ScriptMetaFunctions = true,
+		DecompressData = true,
+		CompressData = true,
+		ExportProfileToString = true,
+		WipeAndRecompileAllScripts = true,
+		AllHookGlobalContainers = true,
+		WipeHookContainers = true,
+		GetContainerForHook = true,
+		CurrentlyLoadedHooks = true,
+		DestructorScriptHooks = true,
+		RunDestructorForHook = true,
+		CompileHook = true,
+		CompileScript = true,
+		CheckScriptTriggerOverlap = true,
+		GetScriptObject = true,
+		GetScriptDB = true,
+		GetScriptType = true,
+		GetDecodedScriptType = true,
+		ImportScriptsFromLibrary = true,
+		ImportScriptString = true,
+		AddScript = true,
+		BuildScriptObjectFromIndexTable = true,
+		DecodeImportedString = true,
+		PrepareTableToExport = true,
+		ScriptReceivedFromGroup = true,
+		ExportScriptToGroup = true,
+		ShowImportScriptConfirmation = true,
+		DispatchTalentUpdateHookEvent  = true,
+		ScheduleHookForCombat = true,
+		ScheduleRunFunctionForEvent = true,
+		RunFunctionForEvent = true,
+		EventHandler = true,
+		RegisterRefreshDBCallback = true,
+		FireRefreshDBCallback = true,
+		--RefreshDBUpvalues = true,
+		--RefreshDBLists = true,
+		--UpdateAuraCache = true,
+		ApplyPatches = true,
+		RefreshConfig = true,
+		RefreshConfigProfileChanged = true,
+		RefreshConfig = true,
+		SaveConsoleVariables = true,
+		GetSettings = true,
+		CodeTypeNames = true,
+		HookScripts = true,
+		HookScriptsDesc = true,
+		IncreaseHookBuildID = true,
+		IncreaseRefreshID = true,
+		SpecList = true,
+		UpdateSettingsCache = true,
+		ActorTypeSettingsCache = true,
+		RunScheduledUpdate = true,
+		ScheduleUpdateForNameplate = true,
+		EventHandlerFrame = true,
+		OnInit = true,
+		HookLoadCallback = true,
+		CheckFirstRun = true,
+		CommHandler = true,
+		CommReceived = true,
+		--GetAllShownPlates = true,
+		GetHashKey = true,
+		IsShowingResourcesOnTarget = true,
+		OnRetailNamePlateShow = true,
+		UpdateSelfPlate = true,
+		CastBarOnShow_Hook = true,
+		CastBarOnEvent_Hook = true,
+		CastBarOnTick_Hook = true,
+		RefreshAuras = true,
+		CreateAuraIcon = true,
+		RefreshColorOverride = true,
+		ChangeHealthBarColor_Internal = true,
+		UpdateAllPlates = true,
+		FullRefreshAllPlates = true,
+		UpdatePlateClickSpace = true,
+		NameplateTick = true,
+		OnPlayerTargetChanged = true,
+		UpdateTarget = true,
+		UpdatePlateText = true,
+		CheckLifePercentText = true,
+		UpdateAllNames = true,
+		UpdateLevelTextAndColor = true,
+		UpdatePlateFrame = true,
+		ForceChangeBorderColor = true,
+		UpdatePlateBorders = true,
+		UpdateRaidMarkersOnAllNameplates = true,
+		RefreshAutoToggle = true,
+		ParseHealthSettingForPlayer = true,
+		CreateAlphaAnimation = true,
+		CreateHighlightNameplate = true,
+		CreateHealthFlashFrame = true,
+		CreateAggroFlashFrame = true,
+		CreateScaleAnimation = true,
+		DoNameplateAnimation = true,
+		RefreshIsEditingAnimations = true,
+		IsNpcInIgnoreList = true,
+		CanChangePlateSize = true,
+		RefreshOmniCCGroup = true,
+		CreatePlaterButtonAtInterfaceOptions = true,
+		SetCVarsOnFirstRun = true,
+		--GetActorSubName = true,
+		QuestLogUpdated = true,
+		--GetNpcIDFromGUID = true,
+		GetNpcID = true,
+		ForceTickOnAllNameplates = true,
+		UpdateUIParentScale = true,
+		UpdateUIParentLevels = true,
+		UpdateUIParentTargetLevels = true,
+		RefreshTankCache = true,
+		ForceFindPetOwner = true,
+	}
+	
+	--UNUSED (for now)
+	--this allows full shadowing on 'Plater' global with the filter above
+	--but will not add overwrites to the global Plater functions, which is a shame for deep custo...
+	--e.g. 'Plater.FormatTime' cannot be overwritten, as it is directly shadow-copied, 
+	--but 'Plater.CanOverride_Functions.RefreshDBUpvalues' as it is inside the copied reference.
+	--__newindex metafunc does not handle changed values, only new ones.
+	local SubFunctionsTable = nil
+	local getSubFunctionsTable = function()
+		if not SubFunctionsTable then
+			local globalTableName = "Plater"
+			SubFunctionsTable = {}
+			SubFunctionsTable [globalTableName] = {}
+			for functionName, functionObject in pairs(_G[globalTableName]) do
+				if (not privateFunctions[functionName]) then
+					SubFunctionsTable [globalTableName][functionName] = functionObject
+				end
+			end
+			setmetatable(SubFunctionsTable [globalTableName], {
+				__newindex = function (t, k, v)
+					--ViragDevTool_AddData({t, k, v}, "__newindex_Plater")
+					rawset(t, k, v)
+					rawset(Plater, k, v)
+				end,
+			})
+		end
+		return SubFunctionsTable
+	end
+	
+	local DefaultSecureScriptEnvironmentHandle = DF.DefaultSecureScriptEnvironmentHandle.__index
+	local functionFilter = {
+		__index = function (env, key)
+			if (key == "_G") then
+				return env
+			
+			else
+				local subFuncTable = getSubFunctionsTable()
+				if (subFuncTable [key]) then
+					return subFuncTable [key]
+			
+				else
+					return DefaultSecureScriptEnvironmentHandle (env, key)
+				end
+			end
+		end,
+		
+		--__newindex = function (t, k, v)
+		--	--ViragDevTool_AddData({t, k, v}, "__newindex_Global")
+		--	rawset(t, k, v)
+		--end,
+	}
+	]]--
+	
+	local platerModEnvironment = {} -- needed for DF:SetEnvironment to have a common mod/script environment in Plater
+	
+	--[[setmetatable(platerModEnvironment, functionFilter)
+	local function SetPlaterEnvironment(func)
+		_G.setfenv(func, platerModEnvironment)
+	end
+	]]--
 
 	function Plater.WipeAndRecompileAllScripts (scriptType, noHotReload)
 		if (scriptType == "script") then
@@ -9237,7 +9413,8 @@ end
 			else
 				--store the function to execute
 				--setfenv (compiledScript, functionFilter)
-				DetailsFramework:SetEnvironment(compiledScript)
+				DF:SetEnvironment(compiledScript, nil, platerModEnvironment)
+				--SetPlaterEnvironment(compiledScript)
 				local func = compiledScript()
 				
 				--iterate among all nameplates
@@ -9394,7 +9571,8 @@ end
 				else
 					--store the function to execute inside the global script object
 					--setfenv (compiledScript, functionFilter)
-					DetailsFramework:SetEnvironment(compiledScript)
+					DF:SetEnvironment(compiledScript, nil, platerModEnvironment)
+					--SetPlaterEnvironment(compiledScript)
 					
 					globalScriptObject [hookName] = compiledScript()
 					
@@ -9487,7 +9665,8 @@ end
 			else
 				--get the function to execute
 				--setfenv (compiledScript, functionFilter)
-				DetailsFramework:SetEnvironment(compiledScript)
+				DF:SetEnvironment(compiledScript, nil, platerModEnvironment)
+				--SetPlaterEnvironment(compiledScript)
 				scriptFunctions [scriptType] = compiledScript()
 			end
 		end
