@@ -43,6 +43,9 @@ local AlphaBlending = ALPHA_BLEND_AMOUNT + 0.0654785
 local unpack = unpack
 local ipairs = ipairs
 local pairs = pairs
+local rawset = rawset
+local rawget = rawget
+local error = error
 local InCombatLockdown = InCombatLockdown
 local UnitIsPlayer = UnitIsPlayer
 local UnitClassification = UnitClassification
@@ -9125,148 +9128,272 @@ end
 
 	Plater.CoreVersion = 1
 	
-	--[[
 	--internal Plater functions
+	--in the list/false: can't be overwritten; true->can't be read at all
 	local privateFunctions = {
-		CompileAllScripts = true,
-		GetAllScripts = true,
-		ScriptMetaFunctions = true,
-		DecompressData = true,
-		CompressData = true,
-		ExportProfileToString = true,
-		WipeAndRecompileAllScripts = true,
-		AllHookGlobalContainers = true,
-		WipeHookContainers = true,
-		GetContainerForHook = true,
-		CurrentlyLoadedHooks = true,
-		DestructorScriptHooks = true,
-		RunDestructorForHook = true,
-		CompileHook = true,
-		CompileScript = true,
-		CheckScriptTriggerOverlap = true,
-		GetScriptObject = true,
-		GetScriptDB = true,
-		GetScriptType = true,
-		GetDecodedScriptType = true,
-		ImportScriptsFromLibrary = true,
-		ImportScriptString = true,
-		AddScript = true,
-		BuildScriptObjectFromIndexTable = true,
-		DecodeImportedString = true,
-		PrepareTableToExport = true,
-		ScriptReceivedFromGroup = true,
-		ExportScriptToGroup = true,
-		ShowImportScriptConfirmation = true,
-		DispatchTalentUpdateHookEvent  = true,
-		ScheduleHookForCombat = true,
-		ScheduleRunFunctionForEvent = true,
-		RunFunctionForEvent = true,
-		EventHandler = true,
-		RegisterRefreshDBCallback = true,
-		FireRefreshDBCallback = true,
-		--RefreshDBUpvalues = true,
-		--RefreshDBLists = true,
-		--UpdateAuraCache = true,
-		ApplyPatches = true,
-		RefreshConfig = true,
-		RefreshConfigProfileChanged = true,
-		RefreshConfig = true,
-		SaveConsoleVariables = true,
-		GetSettings = true,
-		CodeTypeNames = true,
-		HookScripts = true,
-		HookScriptsDesc = true,
-		IncreaseHookBuildID = true,
-		IncreaseRefreshID = true,
-		SpecList = true,
-		UpdateSettingsCache = true,
-		ActorTypeSettingsCache = true,
-		RunScheduledUpdate = true,
-		ScheduleUpdateForNameplate = true,
-		EventHandlerFrame = true,
-		OnInit = true,
-		HookLoadCallback = true,
-		CheckFirstRun = true,
-		CommHandler = true,
-		CommReceived = true,
-		--GetAllShownPlates = true,
-		GetHashKey = true,
-		IsShowingResourcesOnTarget = true,
-		OnRetailNamePlateShow = true,
-		UpdateSelfPlate = true,
-		CastBarOnShow_Hook = true,
-		CastBarOnEvent_Hook = true,
-		CastBarOnTick_Hook = true,
-		RefreshAuras = true,
-		CreateAuraIcon = true,
-		RefreshColorOverride = true,
-		ChangeHealthBarColor_Internal = true,
-		UpdateAllPlates = true,
-		FullRefreshAllPlates = true,
-		UpdatePlateClickSpace = true,
-		NameplateTick = true,
-		OnPlayerTargetChanged = true,
-		UpdateTarget = true,
-		UpdatePlateText = true,
-		CheckLifePercentText = true,
-		UpdateAllNames = true,
-		UpdateLevelTextAndColor = true,
-		UpdatePlateFrame = true,
-		ForceChangeBorderColor = true,
-		UpdatePlateBorders = true,
-		UpdateRaidMarkersOnAllNameplates = true,
-		RefreshAutoToggle = true,
-		ParseHealthSettingForPlayer = true,
-		CreateAlphaAnimation = true,
-		CreateHighlightNameplate = true,
-		CreateHealthFlashFrame = true,
-		CreateAggroFlashFrame = true,
-		CreateScaleAnimation = true,
-		DoNameplateAnimation = true,
-		RefreshIsEditingAnimations = true,
-		IsNpcInIgnoreList = true,
-		CanChangePlateSize = true,
-		RefreshOmniCCGroup = true,
-		CreatePlaterButtonAtInterfaceOptions = true,
-		SetCVarsOnFirstRun = true,
-		--GetActorSubName = true,
-		QuestLogUpdated = true,
-		--GetNpcIDFromGUID = true,
-		GetNpcID = true,
-		ForceTickOnAllNameplates = true,
-		UpdateUIParentScale = true,
-		UpdateUIParentLevels = true,
-		UpdateUIParentTargetLevels = true,
-		RefreshTankCache = true,
-		ForceFindPetOwner = true,
+		["Plater"] = {
+			["CompileAllScripts"] = true,
+			["GetAllScripts"] = true,
+			["ScriptMetaFunctions"] = true,
+			["DecompressData"] = true,
+			["CompressData"] = true,
+			["ExportProfileToString"] = true,
+			["WipeAndRecompileAllScripts"] = true,
+			["AllHookGlobalContainers"] = true,
+			["WipeHookContainers"] = true,
+			["GetContainerForHook"] = true,
+			["CurrentlyLoadedHooks"] = true,
+			["DestructorScriptHooks"] = true,
+			["RunDestructorForHook"] = true,
+			["CompileHook"] = true,
+			["CompileScript"] = true,
+			["CheckScriptTriggerOverlap"] = true,
+			["GetScriptObject"] = true,
+			["GetScriptDB"] = true,
+			["GetScriptType"] = true,
+			["GetDecodedScriptType"] = true,
+			["ImportScriptsFromLibrary"] = true,
+			["ImportScriptString"] = true,
+			["AddScript"] = true,
+			["BuildScriptObjectFromIndexTable"] = true,
+			["DecodeImportedString"] = true,
+			["PrepareTableToExport"] = true,
+			["ScriptReceivedFromGroup"] = true,
+			["ExportScriptToGroup"] = true,
+			["ShowImportScriptConfirmation"] = true,
+			["DispatchTalentUpdateHookEvent "] = true,
+			["ScheduleHookForCombat"] = true,
+			["ScheduleRunFunctionForEvent"] = true,
+			["RunFunctionForEvent"] = true,
+			["EventHandler"] = true,
+			["RegisterRefreshDBCallback"] = true,
+			["FireRefreshDBCallback"] = true,
+			["RefreshDBUpvalues"] = false,
+			["RefreshDBLists"] = false,
+			["UpdateAuraCache"] = false,
+			["ApplyPatches"] = true,
+			["RefreshConfig"] = true,
+			["RefreshConfigProfileChanged"] = true,
+			["RefreshConfig"] = true,
+			["SaveConsoleVariables"] = true,
+			["GetSettings"] = true,
+			["CodeTypeNames"] = true,
+			["HookScripts"] = true,
+			["HookScriptsDesc"] = true,
+			["IncreaseHookBuildID"] = true,
+			["IncreaseRefreshID"] = true,
+			["SpecList"] = true,
+			["UpdateSettingsCache"] = true,
+			["ActorTypeSettingsCache"] = true,
+			["RunScheduledUpdate"] = true,
+			["ScheduleUpdateForNameplate"] = true,
+			["EventHandlerFrame"] = true,
+			["OnInit"] = true,
+			["HookLoadCallback"] = true,
+			["CheckFirstRun"] = true,
+			["CommHandler"] = true,
+			["CommReceived"] = true,
+			["GetAllShownPlates"] = false,
+			["GetHashKey"] = true,
+			["IsShowingResourcesOnTarget"] = true,
+			["OnRetailNamePlateShow"] = true,
+			["UpdateSelfPlate"] = true,
+			["CastBarOnShow_Hook"] = true,
+			["CastBarOnEvent_Hook"] = true,
+			["CastBarOnTick_Hook"] = true,
+			["RefreshAuras"] = true,
+			["CreateAuraIcon"] = true,
+			["RefreshColorOverride"] = true,
+			["ChangeHealthBarColor_Internal"] = true,
+			["UpdateAllPlates"] = true,
+			["FullRefreshAllPlates"] = true,
+			["UpdatePlateClickSpace"] = true,
+			["NameplateTick"] = true,
+			["OnPlayerTargetChanged"] = true,
+			["UpdateTarget"] = true,
+			["UpdatePlateText"] = true,
+			["CheckLifePercentText"] = true,
+			["UpdateAllNames"] = true,
+			["UpdateLevelTextAndColor"] = true,
+			["UpdatePlateFrame"] = true,
+			["ForceChangeBorderColor"] = true,
+			["UpdatePlateBorders"] = true,
+			["UpdateRaidMarkersOnAllNameplates"] = true,
+			["RefreshAutoToggle"] = true,
+			["ParseHealthSettingForPlayer"] = true,
+			["CreateAlphaAnimation"] = true,
+			["CreateHighlightNameplate"] = true,
+			["CreateHealthFlashFrame"] = true,
+			["CreateAggroFlashFrame"] = true,
+			["CreateScaleAnimation"] = true,
+			["DoNameplateAnimation"] = true,
+			["RefreshIsEditingAnimations"] = true,
+			["IsNpcInIgnoreList"] = true,
+			["CanChangePlateSize"] = true,
+			["RefreshOmniCCGroup"] = true,
+			["CreatePlaterButtonAtInterfaceOptions"] = true,
+			["SetCVarsOnFirstRun"] = true,
+			["GetActorSubName"] = false,
+			["QuestLogUpdated"] = true,
+			["GetNpcIDFromGUID"] = false,
+			["GetNpcID"] = false,
+			["ForceTickOnAllNameplates"] = true,
+			["UpdateUIParentScale"] = true,
+			["UpdateUIParentLevels"] = true,
+			["UpdateUIParentTargetLevels"] = true,
+			["RefreshTankCache"] = true,
+			["ForceFindPetOwner"] = true,
+		},
+		
+		["DetailsFramework"] = {
+			["SetEnvironment"] = true,
+		},
+
+		["WeakAuras"] = {
+			["Add"] = true,
+			["AddMany"] = true,
+			["Delete"] = true,
+			["NewAura"] = true,
+		},
+		
+		["C_GuildInfo"] = {
+			["RemoveFromGuild"] = true,
+		},
+		
+		
+		--block mail, trades, action house, banks
+		["C_AuctionHouse"] 	= true,
+		["C_Bank"] = true,
+		["C_GuildBank"] = true,
+		["SetSendMailMoney"] = true,
+		["SendMail"]		= true,
+		["SetTradeMoney"]	= true,
+		["AddTradeMoney"]	= true,
+		["PickupTradeMoney"]	= true,
+		["PickupPlayerMoney"]	= true,
+		["AcceptTrade"]		= true,
+
+		--frames
+		["BankFrame"] 		= true,
+		["TradeFrame"]		= true,
+		["GuildBankFrame"] 	= true,
+		["MailFrame"]		= true,
+		["EnumerateFrames"] = true,
+
+		--block run code inside code
+		["RunScript"] = true,
+		["securecall"] = true,
+		["getfenv"] = true,
+		["getfenv"] = true,
+		["loadstring"] = true,
+		["pcall"] = true,
+		["xpcall"] = true,
+		["getglobal"] = true,
+		["setmetatable"] = true,
+		["DevTools_DumpCommand"] = true,
+
+		--avoid creating macros
+		["SetBindingMacro"] = true,
+		["CreateMacro"] = true,
+		["EditMacro"] = true,
+		["hash_SlashCmdList"] = true,
+		["SlashCmdList"] = true,
+
+		--block guild commands
+		["GuildDisband"] = true,
+		["GuildUninvite"] = true,
+
+		--other things
+		["C_GMTicketInfo"] = true,
+
+		--deny messing addons with script support
+		["PlaterDB"] = true,
+		["_detalhes_global"] = true,
+		["WeakAurasSaved"] = true,
 	}
 	
 	--UNUSED (for now)
 	--this allows full shadowing on 'Plater' global with the filter above
-	--but will not add overwrites to the global Plater functions, which is a shame for deep custo...
-	--e.g. 'Plater.FormatTime' cannot be overwritten, as it is directly shadow-copied, 
-	--but 'Plater.CanOverride_Functions.RefreshDBUpvalues' as it is inside the copied reference.
-	--__newindex metafunc does not handle changed values, only new ones.
-	local SubFunctionsTable = nil
-	local getSubFunctionsTable = function()
-		if not SubFunctionsTable then
-			local globalTableName = "Plater"
-			SubFunctionsTable = {}
-			SubFunctionsTable [globalTableName] = {}
-			for functionName, functionObject in pairs(_G[globalTableName]) do
-				if (not privateFunctions[functionName]) then
-					SubFunctionsTable [globalTableName][functionName] = functionObject
+	local function buildShadowTable(privateFunctionsTable, tableKey, shadowTable)
+		if not privateFunctionsTable then return end
+		shadowTable = shadowTable or {}
+		
+		--ViragDevTool_AddData({privateFunctionsTable, tableKey, shadowTable}, "buildShadowTable")
+		--build root-level tables
+		if not tableKey then
+			--ViragDevTool_AddData(nil, "buildShadowTable_ROOT")
+			local shadowGlobalTable = {}
+			for key, value in pairs(privateFunctionsTable) do
+				--ViragDevTool_AddData({key, value}, "buildShadowTable_ROOT_ITER")
+				if type(value) == "table" then
+					buildShadowTable(value, key, shadowTable)
+				else
+					ViragDevTool_AddData({key, value}, "buildShadowTable_GLOBAL_ADD")
+					shadowGlobalTable [key] = value
 				end
 			end
-			setmetatable(SubFunctionsTable [globalTableName], {
+			
+			ViragDevTool_AddData({shadowGlobalTable}, "buildShadowTable_GLOBAL")
+			setmetatable(shadowTable, {
+				__index = function (env, key)
+					if shadowGlobalTable [key] then -- if true, don't return value
+						return nil
+					else
+						return rawget(_G, key)
+					end
+				end,
+				
 				__newindex = function (t, k, v)
-					--ViragDevTool_AddData({t, k, v}, "__newindex_Plater")
-					rawset(t, k, v)
-					rawset(Plater, k, v)
+					if shadowGlobalTable [k] ~= nil then -- if in the list: don't overwrite
+						error ("'" .. tableKey .. "." .. k .. "' is protected and may not be overwritten.")
+					else
+						rawset(_G, k, v)
+					end
 				end,
 			})
+			
+			return shadowTable
 		end
-		return SubFunctionsTable
+		
+		--ViragDevTool_AddData(nil, "buildShadowTable_KEYS")
+		--build index shadow for key
+		shadowTable [tableKey] = {}
+		setmetatable(shadowTable [tableKey], {
+			__index = function (env, key)
+				if privateFunctionsTable [key] then -- if true, don't return value
+					return nil
+				else
+					return rawget(_G[tableKey], key)
+				end
+			end,
+			
+			__newindex = function (t, k, v)
+				if privateFunctionsTable [k] ~= nil then -- if in the list: don't overwrite
+					error ("'" .. tableKey .. "." .. k .. "' is protected and may not be overwritten.")
+				else
+					rawset(_G[tableKey], k, v)
+				end
+			end,
+		})
+		
+		--ViragDevTool_AddData(nil, "buildShadowTable_SUB")
+		-- build sub-tables
+		for key, value in pairs(privateFunctionsTable) do
+			--ViragDevTool_AddData({key, value}, "buildShadowTable_SUB_ITER")
+			if type(value) == "table" then
+				buildShadowTable(value, key, shadowTable [tableKey])
+			end
+		end
+		
+		return shadowTable
+	end
+	
+	local ShadowTable = nil
+	local getShadowTable = function()
+		if not ShadowTable then
+			ShadowTable = buildShadowTable(privateFunctions)
+		end
+		return ShadowTable
 	end
 	
 	local DefaultSecureScriptEnvironmentHandle = DF.DefaultSecureScriptEnvironmentHandle.__index
@@ -9276,30 +9403,24 @@ end
 				return env
 			
 			else
-				local subFuncTable = getSubFunctionsTable()
-				if (subFuncTable [key]) then
-					return subFuncTable [key]
+				local shadowTable = getShadowTable()
+				if (shadowTable [key]) then
+					return shadowTable [key]
 			
 				else
 					return DefaultSecureScriptEnvironmentHandle (env, key)
 				end
 			end
 		end,
-		
-		--__newindex = function (t, k, v)
-		--	--ViragDevTool_AddData({t, k, v}, "__newindex_Global")
-		--	rawset(t, k, v)
-		--end,
 	}
-	]]--
 	
 	local platerModEnvironment = {} -- needed for DF:SetEnvironment to have a common mod/script environment in Plater
-	
-	--[[setmetatable(platerModEnvironment, functionFilter)
+	--local platerModEnvironment2 = {}
+	--setmetatable(platerModEnvironment2, functionFilter)
+	local platerModEnvironment2 = getShadowTable()
 	local function SetPlaterEnvironment(func)
-		_G.setfenv(func, platerModEnvironment)
+		_G.setfenv(func, platerModEnvironment2)
 	end
-	]]--
 
 	function Plater.WipeAndRecompileAllScripts (scriptType, noHotReload)
 		if (scriptType == "script") then
