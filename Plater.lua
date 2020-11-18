@@ -9486,8 +9486,12 @@ end
 			else
 				--store the function to execute
 				--setfenv (compiledScript, functionFilter)
-				DF:SetEnvironment(compiledScript, nil, platerModEnvironment)
-				--SetPlaterEnvironment(compiledScript)
+				if not Plater.db.profile.shadowMode then
+					DF:SetEnvironment(compiledScript, nil, platerModEnvironment)
+				elseif Plater.db.profile.shadowMode == 1 then
+					SetPlaterEnvironment(compiledScript)
+				end
+				
 				local func = compiledScript()
 				
 				--iterate among all nameplates
@@ -9644,8 +9648,11 @@ end
 				else
 					--store the function to execute inside the global script object
 					--setfenv (compiledScript, functionFilter)
-					DF:SetEnvironment(compiledScript, nil, platerModEnvironment)
-					--SetPlaterEnvironment(compiledScript)
+					if not Plater.db.profile.shadowMode then
+						DF:SetEnvironment(compiledScript, nil, platerModEnvironment)
+					elseif Plater.db.profile.shadowMode == 1 then
+						SetPlaterEnvironment(compiledScript)
+					end
 					
 					globalScriptObject [hookName] = compiledScript()
 					
@@ -9738,8 +9745,11 @@ end
 			else
 				--get the function to execute
 				--setfenv (compiledScript, functionFilter)
-				DF:SetEnvironment(compiledScript, nil, platerModEnvironment)
-				--SetPlaterEnvironment(compiledScript)
+				if not Plater.db.profile.shadowMode then
+					DF:SetEnvironment(compiledScript, nil, platerModEnvironment)
+				elseif Plater.db.profile.shadowMode == 1 then
+					SetPlaterEnvironment(compiledScript)
+				end
 				scriptFunctions [scriptType] = compiledScript()
 			end
 		end
