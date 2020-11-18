@@ -9319,72 +9319,44 @@ end
 		shadowTable = shadowTable or {}
 		
 		--ViragDevTool_AddData({privateFunctionsTable, tableKey, shadowTable}, "buildShadowTable")
-		--build root-level tables
-		if not tableKey then
-			--ViragDevTool_AddData(nil, "buildShadowTable_ROOT")
-			local shadowGlobalTable = {}
-			for key, value in pairs(privateFunctionsTable) do
-				--ViragDevTool_AddData({key, value}, "buildShadowTable_ROOT_ITER")
-				if type(value) == "table" then
-					buildShadowTable(value, key, shadowTable)
-				else
-					ViragDevTool_AddData({key, value}, "buildShadowTable_GLOBAL_ADD")
-					shadowGlobalTable [key] = value
-				end
+		local shadowValuesTable = {}
+		if tableKey then
+			shadowTable[tableKey] = {}
+			shadowTable = shadowTable[tableKey]
+		end
+		--ViragDevTool_AddData({tableKey, shadowValuesTable}, "buildShadowTable_tables")
+		for key, value in pairs(privateFunctionsTable) do
+			--ViragDevTool_AddData({key, value}, "buildShadowTable_ITER")
+			if type(value) == "table" then
+				buildShadowTable(value, key, shadowTable)
+			else
+				--ViragDevTool_AddData({key, value}, "buildShadowTable_ADD")
+				shadowValuesTable [key] = value
 			end
-			
-			ViragDevTool_AddData({shadowGlobalTable}, "buildShadowTable_GLOBAL")
-			setmetatable(shadowTable, {
-				__index = function (env, key)
-					if shadowGlobalTable [key] then -- if true, don't return value
-						return nil
-					else
-						return rawget(_G, key)
-					end
-				end,
-				
-				__newindex = function (t, k, v)
-					if shadowGlobalTable [k] ~= nil then -- if in the list: don't overwrite
-						error ("'" .. tableKey .. "." .. k .. "' is protected and may not be overwritten.")
-					else
-						rawset(_G, k, v)
-					end
-				end,
-			})
-			
-			return shadowTable
 		end
 		
-		--ViragDevTool_AddData(nil, "buildShadowTable_KEYS")
-		--build index shadow for key
-		shadowTable [tableKey] = {}
-		setmetatable(shadowTable [tableKey], {
+		--ViragDevTool_AddData({shadowValuesTable, tableKey}, "buildShadowTable_SET")
+		setmetatable(shadowTable, {
 			__index = function (env, key)
-				if privateFunctionsTable [key] then -- if true, don't return value
+				--ViragDevTool_AddData({env, key, tableKey, tableKey and _G[tableKey] or _G}, "GET")
+				if shadowValuesTable [key] then -- if true, don't return value
 					return nil
 				else
-					return rawget(_G[tableKey], key)
+					return rawget(tableKey and _G[tableKey] or _G, key)
 				end
 			end,
 			
 			__newindex = function (t, k, v)
-				if privateFunctionsTable [k] ~= nil then -- if in the list: don't overwrite
+				--ViragDevTool_AddData({t, k, v, tableKey, tableKey and _G[tableKey] or _G}, "SET")
+				if shadowValuesTable [k] ~= nil then -- if in the list: don't overwrite
 					error ("'" .. tableKey .. "." .. k .. "' is protected and may not be overwritten.")
 				else
-					rawset(_G[tableKey], k, v)
+					rawset(tableKey and _G[tableKey] or _G, k, v)
 				end
 			end,
 		})
 		
-		--ViragDevTool_AddData(nil, "buildShadowTable_SUB")
-		-- build sub-tables
-		for key, value in pairs(privateFunctionsTable) do
-			--ViragDevTool_AddData({key, value}, "buildShadowTable_SUB_ITER")
-			if type(value) == "table" then
-				buildShadowTable(value, key, shadowTable [tableKey])
-			end
-		end
-		
+		--ViragDevTool_AddData({shadowTable}, "buildShadowTable_return")
 		return shadowTable
 	end
 	
@@ -9396,27 +9368,7 @@ end
 		return ShadowTable
 	end
 	
-	local DefaultSecureScriptEnvironmentHandle = DF.DefaultSecureScriptEnvironmentHandle.__index
-	local functionFilter = {
-		__index = function (env, key)
-			if (key == "_G") then
-				return env
-			
-			else
-				local shadowTable = getShadowTable()
-				if (shadowTable [key]) then
-					return shadowTable [key]
-			
-				else
-					return DefaultSecureScriptEnvironmentHandle (env, key)
-				end
-			end
-		end,
-	}
-	
 	local platerModEnvironment = {} -- needed for DF:SetEnvironment to have a common mod/script environment in Plater
-	--local platerModEnvironment2 = {}
-	--setmetatable(platerModEnvironment2, functionFilter)
 	local platerModEnvironment2 = getShadowTable()
 	local function SetPlaterEnvironment(func)
 		_G.setfenv(func, platerModEnvironment2)
@@ -9534,8 +9486,8 @@ end
 			else
 				--store the function to execute
 				--setfenv (compiledScript, functionFilter)
-				DF:SetEnvironment(compiledScript, nil, platerModEnvironment)
-				--SetPlaterEnvironment(compiledScript)
+				--DF:SetEnvironment(compiledScript, nil, platerModEnvironment)
+				SetPlaterEnvironment(compiledScript)
 				local func = compiledScript()
 				
 				--iterate among all nameplates
@@ -9692,8 +9644,8 @@ end
 				else
 					--store the function to execute inside the global script object
 					--setfenv (compiledScript, functionFilter)
-					DF:SetEnvironment(compiledScript, nil, platerModEnvironment)
-					--SetPlaterEnvironment(compiledScript)
+					--DF:SetEnvironment(compiledScript, nil, platerModEnvironment)
+					SetPlaterEnvironment(compiledScript)
 					
 					globalScriptObject [hookName] = compiledScript()
 					
@@ -9786,8 +9738,8 @@ end
 			else
 				--get the function to execute
 				--setfenv (compiledScript, functionFilter)
-				DF:SetEnvironment(compiledScript, nil, platerModEnvironment)
-				--SetPlaterEnvironment(compiledScript)
+				--DF:SetEnvironment(compiledScript, nil, platerModEnvironment)
+				SetPlaterEnvironment(compiledScript)
 				scriptFunctions [scriptType] = compiledScript()
 			end
 		end
