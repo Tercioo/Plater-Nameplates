@@ -8924,7 +8924,9 @@ end
 		ScriptRunHook = function (self, scriptInfo, hookName, frame)
 			--dispatch a hook for the script
 			--at the moment, self is always the unit frame
+			Plater.StartLogPerformance("hooks", scriptInfo.GlobalScriptObject.DBScriptObject.Name)
 			local okay, errortext = pcall (scriptInfo.GlobalScriptObject [hookName], frame or self, self.displayedUnit, self, scriptInfo.Env, PLATER_GLOBAL_MOD_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId])
+			Plater.EndLogPerformance("hooks", scriptInfo.GlobalScriptObject.DBScriptObject.Name)
 			if (not okay) then
 				Plater:Msg ("Mod |cFFAAAA22" .. scriptInfo.GlobalScriptObject.DBScriptObject.Name .. "|r code for |cFFBB8800" .. hookName .. "|r error: " .. errortext)
 			end
@@ -10782,6 +10784,24 @@ function SlashCmdList.PLATER (msg, editbox)
 		end
 		
 		return
+	
+	elseif (msg == "profstart") then
+		Plater.EnableProfiling()
+		Plater:Msg("Plater started profiling.")
+		
+		return
+	
+	elseif (msg == "profstop") then
+		Plater.DisableProfiling()
+		Plater:Msg("Plater stopped profiling.")
+		
+		return
+	
+	elseif (msg == "profprint") then
+		Plater.DumpPerformance()
+		
+		return
+	
 	end
 	
 	Plater.OpenOptionsPanel()
