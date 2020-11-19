@@ -9837,8 +9837,9 @@ end
 					}
 					mainScriptTable [triggerId] = globalScriptObject
 					
-				else --hot reload
+				else --hot reload and update
 					globalScriptObject.HotReload = globalScriptObject.HotReload + 1
+					globalScriptObject.DBScriptObject = scriptObject
 					
 				end
 				
