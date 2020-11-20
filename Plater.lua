@@ -4022,8 +4022,10 @@ function Plater.OnInit() --private --~oninit ~init
 					castBar.BorderShield:Hide()
 				end
 			else
+				local castBarHeight = castBar:GetHeight()
 				castBar.Icon:ClearAllPoints()
 				PixelUtil.SetPoint (castBar.Icon, "left", castBar, "left", 0, 0)
+				PixelUtil.SetSize (castBar.Icon, castBarHeight, castBarHeight)
 				castBar.BorderShield:ClearAllPoints()
 				PixelUtil.SetPoint (castBar.BorderShield, "left", castBar, "left", 0, 0)
 			end
@@ -4756,7 +4758,6 @@ end
 			PixelUtil.SetHeight (castBar, castBarHeight)
 			PixelUtil.SetSize (castBar.BorderShield, castBarHeight * 1.4, castBarHeight * 1.4)
 			PixelUtil.SetSize (castBar.Spark, profile.cast_statusbar_spark_width, castBarHeight)
-			--PixelUtil.SetSize (castBar.Icon, castBarHeight, castBarHeight)
 			Plater.UpdateCastbarIcon(castBar)
 
 		--power bar
