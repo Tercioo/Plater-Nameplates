@@ -1,5 +1,8 @@
 -- profiling support (WIP)
 
+local Plater = _G.Plater
+local DF = _G.DetailsFramework
+
 local profData = {}
 local profilingEnabled = false
 
@@ -37,7 +40,7 @@ function Plater.DisableProfiling()
 	profData.endTime = debugprofilestop()
 	
 	
-	Plater.DumpPerformance(false) -- for VDT mainly atm
+	Plater.DumpPerformance(true) -- for VDT mainly atm
 	
 end
 
@@ -81,66 +84,127 @@ function Plater.EndLogPerformance(pType, event, subType)
 	end
 end
 
-function Plater.DumpPerformance(printOut)
-	local perf = {}
-	local printStr = "Plater profiling data:" .. "\n"
+local function getPerfData()
+	local perfTable = {}
+	local indent = "    "
+	local printStr = ""
 	
-	perf.totalGlobalTime = (profData.endTime or debugprofilestop()) - (profData.startTime or debugprofilestop())
+	perfTable.totalGlobalTime = (profData.endTime or debugprofilestop()) - (profData.startTime or debugprofilestop())
 	
 	local sumTimePTypes = 0
 	local sumExecPTypes = 0
 	for pType, data in pairs(profData.data or {}) do
-		perf[pType] = {}
+		perfTable[pType] = {}
 		local pTypeTime = 0
 		local pTypeExec = 0
 		
-		printStr = printStr .. "\n" .. pType .. ":" .. "\n"
+		local printStrPType = ""
 		for event, pData in pairs(data) do
-			perf[pType][event] = {}
-			perf[pType][event].total = "avg: " .. roundTime(pData.totalTime / pData.count) .. "ms - count: " .. pData.count .. " - total: " .. roundTime(pData.totalTime) .. "ms"
+			perfTable[pType][event] = {}
+			perfTable[pType][event].total = "avg: " .. roundTime(pData.totalTime / pData.count) .. "ms - count: " .. pData.count .. " - total: " .. roundTime(pData.totalTime) .. "ms"
 			pTypeTime = pTypeTime + pData.totalTime
 			pTypeExec = pTypeExec + pData.count
-			printStr = printStr .. "  " .. event .. " - " .. perf[pType][event].total .. "\n"
+			printStrPType = printStrPType .. indent .. event .. " - " .. perfTable[pType][event].total .. "\n"
 			
-			perf[pType][event]._subTypeData = {}
+			perfTable[pType][event]._subTypeData = {}
 			local pTypeSufTime = 0
 			local pTypeSufExec = 0
-			printStr = printStr .. "  hooks:" .. "\n"
+			printStrPType = printStrPType .. indent .. "hooks:" .. "\n"
 			for subType, sufData in pairs(pData.subTypeData) do
-				perf[pType][event]._subTypeData[subType] = "avg: " .. roundTime(sufData.totalTime / sufData.count) .. "ms - count: " .. sufData.count .. " - total: " .. roundTime(sufData.totalTime) .. "ms"
+				perfTable[pType][event]._subTypeData[subType] = "avg: " .. roundTime(sufData.totalTime / sufData.count) .. "ms - count: " .. sufData.count .. " - total: " .. roundTime(sufData.totalTime) .. "ms"
 				pTypeSufTime = pTypeSufTime + sufData.totalTime
 				pTypeSufExec = pTypeSufExec + sufData.count
-				printStr = printStr .. "    " .. event .. " - " .. subType .. " - " .. perf[pType][event]._subTypeData[subType] .. "\n"
+				printStrPType = printStrPType .. indent .. indent .. subType .. " - " .. perfTable[pType][event]._subTypeData[subType] .. "\n"
 			end
-			perf[pType][event].pTypeSufTime = pTypeSufTime
-			perf[pType][event].pTypeSufExec = pTypeSufExec
+			perfTable[pType][event].pTypeSufTime = pTypeSufTime
+			perfTable[pType][event].pTypeSufExec = pTypeSufExec
+			printStrPType = printStrPType .. "\n"
 		end
-		perf[pType].pTypeTime = pTypeTime
-		perf[pType].pTypeExec = pTypeExec
-		perf[pType].pTypeGlobalPercent = pTypeTime / perf.totalGlobalTime
-		printStr = printStr .. "-> count: " .. pTypeExec .. " - time: "  .. roundTime(pTypeTime) .. "ms - %global: " .. roundPercent(perf[pType].pTypeGlobalPercent) .. "%" .. "\n"
+		perfTable[pType].pTypeTime = pTypeTime
+		perfTable[pType].pTypeExec = pTypeExec
+		perfTable[pType].pTypeGlobalPercent = pTypeTime / perfTable.totalGlobalTime
 		sumTimePTypes = sumTimePTypes + pTypeTime
 		sumExecPTypes = sumExecPTypes + pTypeExec
+		
+		printStr = printStr .. pType .. ":" .. "\n" .. "Total -> count: " .. pTypeExec .. " - time: "  .. roundTime(pTypeTime) .. "ms - %global: " .. roundPercent(perfTable[pType].pTypeGlobalPercent) .. "%" .. "\n\n" .. printStrPType
+		
+		printStr = printStr .. "\n"
 	end
 	
-	perf.timeInPlaterProfile = sumTimePTypes
-	perf.totalLoggedEvents = sumExecPTypes
-	perf.totalAveragePerEvent = sumTimePTypes / sumExecPTypes
-	perf.percentGlobalInPlater = sumTimePTypes / perf.totalGlobalTime
-	printStr = printStr .. "\n"
-	printStr = printStr .. "Plater profiling totals:"
-	printStr = printStr .. "  Profiling time: " .. roundTime(perf.totalGlobalTime / 100000)*100 .. "s" .. "\n"
-	printStr = printStr .. "  Time in Plater: " .. roundTime(perf.timeInPlaterProfile) .. "ms" .. "\n"
-	printStr = printStr .. "  Logged events: " .. perf.totalLoggedEvents .. "\n"
-	printStr = printStr .. "  Average runtimetime of event: " .. roundTime(perf.totalAveragePerEvent) .. "ms" .. "\n"
-	printStr = printStr .. "  % of global time: " .. roundPercent(perf.percentGlobalInPlater) .. "%" .. "\n"
+	perfTable.timeInPlaterProfile = sumTimePTypes
+	perfTable.totalLoggedEvents = sumExecPTypes
+	perfTable.totalAveragePerEvent = sumTimePTypes / sumExecPTypes
+	perfTable.percentGlobalInPlater = sumTimePTypes / perfTable.totalGlobalTime
+	local printStrHeader = ""
+	--printStrHeader = printStrHeader .. "Plater profiling data:" .. "\n\n"
+	printStrHeader = printStrHeader .. "Plater profiling totals:\n"
+	printStrHeader = printStrHeader .. indent .. "Profiling time: " .. roundTime(perfTable.totalGlobalTime / 100000)*100 .. "s" .. "\n"
+	printStrHeader = printStrHeader .. indent .. "Time in Plater: " .. roundTime(perfTable.timeInPlaterProfile) .. "ms" .. "\n"
+	printStrHeader = printStrHeader .. indent .. "Logged events: " .. perfTable.totalLoggedEvents .. "\n"
+	printStrHeader = printStrHeader .. indent .. "Average runtimetime of event: " .. roundTime(perfTable.totalAveragePerEvent) .. "ms" .. "\n"
+	printStrHeader = printStrHeader .. indent .. "% of global time: " .. roundPercent(perfTable.percentGlobalInPlater) .. "%" .. "\n\n"
 	
+	printStr = printStrHeader .. printStr
+	
+	return perfTable, printStr
+end
+
+function Plater.DumpPerformance(noPrintOut)
+
+	local perfTable, printStr = getPerfData()
+
 	if ViragDevTool_AddData then
-		ViragDevTool_AddData(perf,"Plater Profiling")
+		ViragDevTool_AddData(perfTable,"Plater Profiling")
 	end
-	if printOut then
+	if not noPrintOut then
 		print(printStr)
 	end
 	
-	return perf
+	return perfTable, printStr
+
+end
+
+function Plater.ShowPerfData()
+	local perfTable, printStr = getPerfData()
+	
+	if (not PlaterPerformanceProfilingResultPanel) then
+		local f = CreateFrame ("frame", "PlaterPerformanceProfilingResultPanel", UIParent, "BackdropTemplate") 
+		f:SetSize (800, 700)
+		f:EnableMouse (true)
+		f:SetMovable (true)
+		f:RegisterForDrag ("LeftButton")
+		f:SetScript ("OnDragStart", function() f:StartMoving() end)
+		f:SetScript ("OnDragStop", function() f:StopMovingOrSizing() end)
+		f:SetScript ("OnMouseDown", function (self, button) if (button == "RightButton") then f.EntryBox:ClearFocus() f:Hide() end end)
+		f:SetFrameStrata ("DIALOG")
+		f:SetPoint ("center", UIParent, "center", 0, 0)
+		f:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
+		f:SetBackdropColor (0, 0, 0, 0.8)
+		f:SetBackdropBorderColor (0, 0, 0, 1)
+		tinsert (UISpecialFrames, "PlaterPerformanceProfilingResultPanel")
+		
+		DF:CreateTitleBar (f, "Plater Performance Profiling")
+		DF:ApplyStandardBackdrop (f)
+		
+		local luaeditor_backdrop_color = {.2, .2, .2, .5}
+		local luaeditor_border_color = {0, 0, 0, 1}
+		local textField = DF:NewSpecialLuaEditorEntry (f, 775, 670, "TextField", "$parentTextField", true, false)
+		textField.editbox:SetFontObject ("GameFontHighlight")
+		textField:SetPoint ("top", f, "top", -10, -25)
+		textField.editbox:SetEnabled(false)
+		textField:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
+		textField:SetBackdropBorderColor (unpack (luaeditor_border_color))
+		textField:SetBackdropColor (unpack (luaeditor_backdrop_color))
+		DF:ReskinSlider (textField.scroll)
+		f.TextField = textField
+		
+		f:Hide()
+		Plater.PlaterPerformanceProfilingResultPanel = f
+	end
+	
+	
+	Plater.PlaterPerformanceProfilingResultPanel.TextField:SetText (printStr)
+	
+	Plater.PlaterPerformanceProfilingResultPanel:Show()
+	
 end

@@ -10822,7 +10822,7 @@ function SlashCmdList.PLATER (msg, editbox)
 		return
 	
 	elseif (msg == "profprint") then
-		Plater.DumpPerformance(true)
+		Plater.ShowPerfData()
 		
 		return
 	
