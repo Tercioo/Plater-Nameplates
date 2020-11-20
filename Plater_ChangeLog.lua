@@ -8,6 +8,14 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1605897389,  "New Feature", "November 20th, 2020", "Adding '/plater profstart|profstop|profprint' commands for mod/script profiling."},
+			{1605897389,  "Backend Changes", "November 18th, 2020", "Changes to mod/script execution environment."},
+			{1605897389,  "New Feature", "November 17th, 2020", "Adding '/plater rare' command to blink taskbar icon on rare spawn."},
+			{1605897389,  "Bug Fix", "November 16th, 2020", "Fixing several issues around consistent mod/script code execution."},
+			{1605897389,  "New Feature", "November 16th, 2020", "Adding option to use LibTranslit to translit russian names."},
+			{1605897389,  "Backend Changes", "November 15th, 2020", "Adding Soul Reaper (DK talent) to execute indicator."},
+			{1605897389,  "Bug Fix", "November 14th, 2020", "Fixing an issue with health text options not applying properly."},
+
 			{1605124078,  "Backend Changes", "November 10th, 2020", "Adding missing textures."},
 			{1605124078,  "Backend Changes", "November 10th, 2020", "Small fixes on aura animations."},
 			{1605124078,  "Options Changes", "November 10th, 2020", "Adding 'auras per row' overwrite option."},
