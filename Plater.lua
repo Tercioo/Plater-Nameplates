@@ -10811,13 +10811,11 @@ function SlashCmdList.PLATER (msg, editbox)
 	
 	elseif (msg == "profstart") then
 		Plater.EnableProfiling()
-		Plater:Msg("Plater started profiling.")
 		
 		return
 	
 	elseif (msg == "profstop") then
 		Plater.DisableProfiling()
-		Plater:Msg("Plater stopped profiling.")
 		
 		return
 	

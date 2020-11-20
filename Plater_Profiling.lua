@@ -31,6 +31,8 @@ function Plater.EnableProfiling()
 	profData.startTime = debugprofilestop()
 	profData.endTime = nil
 	profData.data = {}
+	
+	Plater:Msg("Plater started profiling.")
 end
 
 function Plater.DisableProfiling()
@@ -41,6 +43,7 @@ function Plater.DisableProfiling()
 	
 	
 	Plater.DumpPerformance(true) -- for VDT mainly atm
+	Plater:Msg("Plater stopped profiling.")
 	
 end
 
