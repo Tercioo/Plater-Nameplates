@@ -2861,7 +2861,7 @@ Plater.DefaultSpellRangeListF = {
 				plateFrame.unitFrame.aggroGlowLower:Hide()
 				
 			--> widget container
-				plateFrame.unitFrame.WidgetContainer = CreateFrame("frame", nil, plateFrame.unitFrame, "UIWidgetContainerTemplate")
+				plateFrame.unitFrame.WidgetContainer = CreateFrame("frame", nil, plateFrame.unitFrame, "UIWidgetContainerNoResizeTemplate")
 				Plater.SetAnchor (plateFrame.unitFrame.WidgetContainer, Plater.db.profile.widget_bar_anchor, plateFrame.unitFrame)
 				plateFrame.unitFrame.WidgetContainer:SetScale(Plater.db.profile.widget_bar_scale)
 				plateFrame.unitFrame.WidgetContainer:UnregisterForWidgetSet()
