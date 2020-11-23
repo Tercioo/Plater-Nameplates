@@ -24,13 +24,22 @@ end
 
 
 -- profiling
-function Plater.EnableProfiling()
+function Plater.EnableProfiling(core)
 	profilingEnabled = true
 	
 	profData = {}
 	profData.startTime = debugprofilestop()
 	profData.endTime = nil
+	profData.totalTimeInPlater = 0
 	profData.data = {}
+	
+	Plater.StartLogPerformance = StartLogPerformance
+	Plater.EndLogPerformance = EndLogPerformance
+	
+	if core then
+		Plater.StartLogPerformanceCore = StartLogPerformance
+		Plater.EndLogPerformanceCore = EndLogPerformance
+	end
 	
 	Plater:Msg("Plater started profiling.")
 end
@@ -41,50 +50,82 @@ function Plater.DisableProfiling()
 	
 	profData.endTime = debugprofilestop()
 	
+	Plater.StartLogPerformance = function() end
+	Plater.EndLogPerformance = function() end
 	
 	Plater.DumpPerformance(true) -- for VDT mainly atm
 	Plater:Msg("Plater stopped profiling.")
 	
+	if PlaterPerformanceProfilingResultPanel and PlaterPerformanceProfilingResultPanel:IsVisible() then
+		Plater.ShowPerfData()
+	end
 end
 
 --pType = profiling type (e.g. hooks)
-function Plater.StartLogPerformance(pType, event, subType)
-	if not profilingEnabled or not pType or not event then return end
+function Plater.StartLogPerformance()
+end
+function Plater.StartLogPerformanceCore()
+end
+function StartLogPerformance(pType, event, subType)
+	if not profilingEnabled or not pType or not event or not subType then return end	
 	
-	if not profData.data[pType] then
+	local startTime = debugprofilestop()
+	
+	local data = profData.data[pType]
+	if not data then
 		profData.data[pType] = {}
+		data = profData.data[pType]
 	end
-	if not profData.data[pType][event] then
+	if not data[event] then
 		profData.data[pType][event] = {}
 		profData.data[pType][event].subTypeData = {}
 	end
-	if subType and not profData.data[pType][event].subTypeData[subType] then
-		profData.data[pType][event].subTypeData[subType] = {}
+	if subType and not data[event].subTypeData[subType] then
+		data[event].subTypeData[subType] = {}
 	end
 	
-	local startTime = debugprofilestop()
-	profData.data[pType][event].curStartTime = startTime
-	if subType then
-		profData.data[pType][event].subTypeData[subType].curStartTime = startTime
+	
+	if not profData.curEvent then
+		profData.curEvent = event
+		profData.curSub = subType
+		data[event].curStartTime = startTime
 	end
+	
+	data[event].subTypeData[subType].curStartTime = startTime
 end
 
 --pType = profiling type (e.g. hooks)
-function Plater.EndLogPerformance(pType, event, subType)
-	if not profilingEnabled or not pType or not event then return end
+function Plater.EndLogPerformance()
+end
+function Plater.EndLogPerformanceCore()
+end
+function EndLogPerformance(pType, event, subType)
+	if not profilingEnabled or not pType or not event or not subType then return end
 	
-	local data = profData.data[pType][event]
+	local eData = profData.data[pType][event]
+	local sData = eData.subTypeData[subType]
 	local stopTime = debugprofilestop()
-	data.totalTime = (data.totalTime or 0) + (stopTime - data.curStartTime)
-	data.count = (data.count or 0) + 1
-	data.curStartTime = nil
 	
-	if subType then
-		-- add to event type as well
-		data = profData.data[pType][event].subTypeData[subType]
-		data.totalTime = (data.totalTime or 0) + (stopTime - data.curStartTime)
-		data.count = (data.count or 0) + 1
+	eData.count = (eData.count or 0) + 1
+	
+	if ((profData.curEvent == event) and (profData.curSub == subType)) then
+		profData.totalTimeInPlater = profData.totalTimeInPlater + (stopTime - eData.curStartTime)
+		eData.totalTime = (eData.totalTime or 0) + (stopTime - eData.curStartTime)
+		eData.curStartTime = nil
+		
+		profData.curEvent = nil
+		profData.curSub = nil
+
+	else
+		eData.subLogTime = (eData.subLogTime or 0) + (stopTime - sData.curStartTime)
+		eData.totalTime = (eData.totalTime or 0) + (stopTime - sData.curStartTime)
 	end
+	
+	-- add to event subType
+	sData.totalTime = (sData.totalTime or 0) + (stopTime - sData.curStartTime)
+	sData.count = (sData.count or 0) + 1
+	sData.curStartTime = nil
+	
 end
 
 local function getPerfData()
@@ -104,7 +145,8 @@ local function getPerfData()
 		local printStrPType = ""
 		for event, pData in pairs(data) do
 			perfTable[pType][event] = {}
-			perfTable[pType][event].total = "avg: " .. roundTime(pData.totalTime / pData.count) .. "ms - count: " .. pData.count .. " - total: " .. roundTime(pData.totalTime) .. "ms"
+			pData.count = pData.count or 0
+			perfTable[pType][event].total = "avg: " .. roundTime(pData.totalTime / pData.count) .. "ms - count: " .. pData.count .. " - total: " .. roundTime(pData.totalTime) .. "ms - (as sub-log: " .. roundTime(pData.subLogTime or 0) .. "ms)"
 			pTypeTime = pTypeTime + pData.totalTime
 			pTypeExec = pTypeExec + pData.count
 			printStrPType = printStrPType .. indent .. event .. " - " .. perfTable[pType][event].total .. "\n"
@@ -112,7 +154,7 @@ local function getPerfData()
 			perfTable[pType][event]._subTypeData = {}
 			local pTypeSufTime = 0
 			local pTypeSufExec = 0
-			printStrPType = printStrPType .. indent .. "hooks:" .. "\n"
+			--printStrPType = printStrPType .. indent .. "Sub-Events:" .. "\n"
 			for subType, sufData in pairs(pData.subTypeData) do
 				perfTable[pType][event]._subTypeData[subType] = "avg: " .. roundTime(sufData.totalTime / sufData.count) .. "ms - count: " .. sufData.count .. " - total: " .. roundTime(sufData.totalTime) .. "ms"
 				pTypeSufTime = pTypeSufTime + sufData.totalTime
@@ -121,11 +163,12 @@ local function getPerfData()
 			end
 			perfTable[pType][event].pTypeSufTime = pTypeSufTime
 			perfTable[pType][event].pTypeSufExec = pTypeSufExec
+			
 			printStrPType = printStrPType .. "\n"
 		end
 		perfTable[pType].pTypeTime = pTypeTime
 		perfTable[pType].pTypeExec = pTypeExec
-		perfTable[pType].pTypeGlobalPercent = pTypeTime / perfTable.totalGlobalTime
+		perfTable[pType].pTypeGlobalPercent = pTypeTime / perfTable.totalGlobalTime * 100
 		sumTimePTypes = sumTimePTypes + pTypeTime
 		sumExecPTypes = sumExecPTypes + pTypeExec
 		
@@ -134,10 +177,10 @@ local function getPerfData()
 		printStr = printStr .. "\n"
 	end
 	
-	perfTable.timeInPlaterProfile = sumTimePTypes
+	perfTable.timeInPlaterProfile = (profData.totalTimeInPlater or 0) --sumTimePTypes
 	perfTable.totalLoggedEvents = sumExecPTypes
-	perfTable.totalAveragePerEvent = sumTimePTypes / sumExecPTypes
-	perfTable.percentGlobalInPlater = sumTimePTypes / perfTable.totalGlobalTime
+	perfTable.totalAveragePerEvent = perfTable.timeInPlaterProfile / sumExecPTypes
+	perfTable.percentGlobalInPlater = perfTable.timeInPlaterProfile / perfTable.totalGlobalTime * 100
 	local printStrHeader = ""
 	--printStrHeader = printStrHeader .. "Plater profiling data:" .. "\n\n"
 	printStrHeader = printStrHeader .. "Plater profiling totals:\n"
@@ -178,7 +221,7 @@ function Plater.ShowPerfData()
 		f:RegisterForDrag ("LeftButton")
 		f:SetScript ("OnDragStart", function() f:StartMoving() end)
 		f:SetScript ("OnDragStop", function() f:StopMovingOrSizing() end)
-		f:SetScript ("OnMouseDown", function (self, button) if (button == "RightButton") then f.EntryBox:ClearFocus() f:Hide() end end)
+		f:SetScript ("OnMouseDown", function (self, button) if (button == "RightButton") then f.TextField:ClearFocus() f:Hide() end end)
 		f:SetFrameStrata ("DIALOG")
 		f:SetPoint ("center", UIParent, "center", 0, 0)
 		f:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
@@ -194,7 +237,7 @@ function Plater.ShowPerfData()
 		local textField = DF:NewSpecialLuaEditorEntry (f, 775, 670, "TextField", "$parentTextField", true, false)
 		textField.editbox:SetFontObject ("GameFontHighlight")
 		textField:SetPoint ("top", f, "top", -10, -25)
-		textField.editbox:SetEnabled(false)
+		--textField.editbox:SetEnabled(false)
 		textField:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
 		textField:SetBackdropBorderColor (unpack (luaeditor_border_color))
 		textField:SetBackdropColor (unpack (luaeditor_backdrop_color))
