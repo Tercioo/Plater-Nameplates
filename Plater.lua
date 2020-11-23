@@ -4406,6 +4406,7 @@ function Plater.OnInit() --private --~oninit ~init
 		Plater.StartLogPerformanceCore("Plater-Core", "Health", "OnUpdateHealthMax")
 		
 		--the framework already set the min max values
+		self.CurrentHealthMax = self.currentHealthMax
 		Plater.CheckLifePercentText (self.unitFrame)
 		
 		Plater.EndLogPerformanceCore("Plater-Core", "Health", "OnUpdateHealthMax")
