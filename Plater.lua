@@ -4315,6 +4315,10 @@ function Plater.OnInit() --private --~oninit ~init
 		
 		Plater.StartLogPerformanceCore("Plater-Core", "Health", "OnUpdateHealth")
 
+		-- update - for whatever weird reason max health event does not give proper values sometimes...
+		local maxHealth = UnitHealthMax (self.displayedUnit)
+		self:SetMinMaxValues (0, maxHealth)
+		self.currentHealthMax = maxHealth
 
 		local plateFrame = self.PlateFrame
 		local currentHealth = self.currentHealth
