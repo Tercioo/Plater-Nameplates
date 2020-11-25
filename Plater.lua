@@ -973,8 +973,10 @@ Plater.DefaultSpellRangeListF = {
 			unitFrame.BuffFrame2:SetAlpha (1)
 			
 			return
-		elseif (plateFrame [MEMBER_NOCOMBAT]) then
-			if nameplateAlpha < profile.not_affecting_combat_alpha then
+		elseif (plateFrame [MEMBER_NOCOMBAT] or unitFrame.isWidgetOnlyMode) then
+			if unitFrame.isWidgetOnlyMode then
+				unitFrame:SetAlpha (1)
+			elseif nameplateAlpha < profile.not_affecting_combat_alpha then
 				unitFrame:SetAlpha (nameplateAlpha)
 			end
 			--unitFrame:SetAlpha (profile.not_affecting_combat_alpha) -- already set if necessary
@@ -1892,11 +1894,11 @@ Plater.DefaultSpellRangeListF = {
 	
 	function Plater.PlaterDefaultWidgetLayout(widgetContainerFrame, sortedWidgets)
 		--ViragDevTool_AddData({ctime = GetTime(), unit = widgetContainerFrame:GetParent().unit or "nil", stack = debugstack(), wc = widgetContainerFrame, widgets = sortedWidgets, children = widgetContainerFrame:GetLayoutChildren(), wcp = widgetContainerFrame:GetParent()}, "WidgetContainer - " .. (widgetContainerFrame:GetParent().unit or "nil"))
-		local horizontalRowContainer = nil; 
-		local horizontalRowHeight = 0;
-		local horizontalRowWidth = 0;
-		local totalWidth = 0;
-		local totalHeight = 0;
+		local horizontalRowContainer = nil
+		local horizontalRowHeight = 0
+		local horizontalRowWidth = 0
+		local totalWidth = 0
+		local totalHeight = 0
 
 		widgetContainerFrame.horizontalRowContainerPool:ReleaseAll();
 
@@ -1915,19 +1917,19 @@ Plater.DefaultSpellRangeListF = {
 				if index == 1 then
 					-- But this is the first widget in the set, so just anchor it to the widget container
 					if widgetSetUsesVertical then
-						widgetFrame:SetPoint(widgetContainerFrame.verticalAnchorPoint, widgetContainerFrame);
+						widgetFrame:Point(widgetContainerFrame.verticalAnchorPoint, widgetContainerFrame);
 					else
-						widgetFrame:SetPoint(widgetContainerFrame.horizontalAnchorPoint, widgetContainerFrame);
+						widgetFrame:Point(widgetContainerFrame.horizontalAnchorPoint, widgetContainerFrame);
 					end
 				else
 					-- This is not the first widget in the set, so anchor it so it overlaps the previous widget
 					local relative = sortedWidgets[index - 1];
 					if widgetSetUsesVertical then
 						-- Overlap it vertically
-						widgetFrame:SetPoint(widgetContainerFrame.verticalAnchorPoint, relative, widgetContainerFrame.verticalAnchorPoint, 0, 0);
+						widgetFrame:Point(widgetContainerFrame.verticalAnchorPoint, relative, widgetContainerFrame.verticalAnchorPoint, 0, 0);
 					else
 						-- Overlap it horizontally
-						widgetFrame:SetPoint(widgetContainerFrame.horizontalAnchorPoint, relative, widgetContainerFrame.horizontalAnchorPoint, 0, 0);
+						widgetFrame:Point(widgetContainerFrame.horizontalAnchorPoint, relative, widgetContainerFrame.horizontalAnchorPoint, 0, 0);
 					end
 				end
 				
@@ -1940,22 +1942,22 @@ Plater.DefaultSpellRangeListF = {
 				end
 
 				widgetFrame:SetParent(widgetContainerFrame);
-			elseif useVerticalLayout then 
+			elseif useVerticalLayout then
 				-- This widget uses vertical layout
 
 				if index == 1 then
 					-- This is the first widget in the set, so just anchor it to the widget container
-					widgetFrame:SetPoint(widgetContainerFrame.verticalAnchorPoint, widgetContainerFrame);
+					widgetFrame:Point(widgetContainerFrame.verticalAnchorPoint, widgetContainerFrame);
 				else
 					-- This is not the first widget in the set, so anchor it to the previous widget (or the horizontalRowContainer if that exists)
 					local relative = horizontalRowContainer or sortedWidgets[index - 1];
-					widgetFrame:SetPoint(widgetContainerFrame.verticalAnchorPoint, relative, widgetContainerFrame.verticalRelativePoint, 0, widgetContainerFrame.verticalAnchorYOffset);
+					widgetFrame:Point(widgetContainerFrame.verticalAnchorPoint, relative, widgetContainerFrame.verticalRelativePoint, 0, widgetContainerFrame.verticalAnchorYOffset);
 
 					if horizontalRowContainer then
 						-- This widget is vertical, so horizontalRowContainer is done. Call layout on it and clear horizontalRowContainer
 						--horizontalRowContainer:Layout(); 
 						
-						horizontalRowContainer:SetSize(horizontalRowWidth, horizontalRowHeight);
+						horizontalRowContainer:Size(horizontalRowWidth, horizontalRowHeight);
 						totalWidth = totalWidth + horizontalRowWidth
 						totalHeight = totalHeight + horizontalRowHeight
 						horizontalRowHeight = 0;
@@ -1980,9 +1982,9 @@ Plater.DefaultSpellRangeListF = {
 				local needNewRowContainer = not horizontalRowContainer or forceNewRow;
 				if needNewRowContainer then 
 					-- We either don't have a horizontalRowContainer or this widget has requested a new row be started
-					if horizontalRowContainer then 
-						--horizontalRowContainer:Layout(); 
-						horizontalRowContainer:SetSize(horizontalRowWidth, horizontalRowHeight);
+					if horizontalRowContainer then
+						--horizontalRowContainer:Layout()
+						horizontalRowContainer:Size(horizontalRowWidth, horizontalRowHeight);
 						totalWidth = totalWidth + horizontalRowWidth
 						totalHeight = totalHeight + horizontalRowHeight
 						horizontalRowHeight = 0;
@@ -1990,19 +1992,19 @@ Plater.DefaultSpellRangeListF = {
 					end
 
 					local newHorizontalRowContainer = widgetContainerFrame.horizontalRowContainerPool:Acquire();
-					newHorizontalRowContainer:Show(); 
+					newHorizontalRowContainer:Show()
 
 					if index == 1 then
 						-- This is the first widget in the set, so just anchor it to the widget container
-						newHorizontalRowContainer:SetPoint(widgetContainerFrame.verticalAnchorPoint, widgetContainerFrame, widgetContainerFrame.verticalAnchorPoint);
+						newHorizontalRowContainer:Point(widgetContainerFrame.verticalAnchorPoint, widgetContainerFrame, widgetContainerFrame.verticalAnchorPoint);
 					else 
 						-- This is not the first widget in the set, so anchor it to the previous widget (or the horizontalRowContainer if that exists)
 						local relative = horizontalRowContainer or sortedWidgets[index - 1];
-						newHorizontalRowContainer:SetPoint(widgetContainerFrame.verticalAnchorPoint, relative, widgetContainerFrame.verticalRelativePoint, 0, widgetContainerFrame.verticalAnchorYOffset);
+						newHorizontalRowContainer:Point(widgetContainerFrame.verticalAnchorPoint, relative, widgetContainerFrame.verticalRelativePoint, 0, widgetContainerFrame.verticalAnchorYOffset);
 						
 						totalHeight = totalHeight + widgetContainerFrame.verticalAnchorYOffset
 					end
-					widgetFrame:SetPoint("TOPLEFT", newHorizontalRowContainer);
+					widgetFrame:Point("TOPLEFT", newHorizontalRowContainer);
 					widgetFrame:SetParent(newHorizontalRowContainer);
 					
 					horizontalRowWidth = horizontalRowWidth + widgetFrame:GetWidth();
@@ -2013,7 +2015,7 @@ Plater.DefaultSpellRangeListF = {
 					-- horizontalRowContainer already existed, so we just keep going in it, anchoring to the previous widget
 					local relative = sortedWidgets[index - 1];
 					widgetFrame:SetParent(horizontalRowContainer);
-					widgetFrame:SetPoint(widgetContainerFrame.horizontalAnchorPoint, relative, widgetContainerFrame.horizontalRelativePoint, widgetContainerFrame.horizontalAnchorXOffset, 0);
+					widgetFrame:Point(widgetContainerFrame.horizontalAnchorPoint, relative, widgetContainerFrame.horizontalRelativePoint, widgetContainerFrame.horizontalAnchorXOffset, 0);
 					
 					horizontalRowWidth = horizontalRowWidth + widgetFrame:GetWidth() + widgetContainerFrame.horizontalAnchorXOffset;
 				end
@@ -2025,17 +2027,17 @@ Plater.DefaultSpellRangeListF = {
 			end
 		end
 
-		if horizontalRowContainer then 
-			--horizontalRowContainer:Layout(); 
-			horizontalRowContainer:SetSize(horizontalRowWidth, horizontalRowHeight);
+		if horizontalRowContainer then
+			--horizontalRowContainer:Layout()
+			horizontalRowContainer:Size(horizontalRowWidth, horizontalRowHeight);
 			totalWidth = totalWidth + horizontalRowWidth
 			totalHeight = totalHeight + horizontalRowHeight
 			horizontalRowHeight = 0;
 			horizontalRowWidth = 0;
-		end 
-		--widgetContainerFrame:Layout();
+		end
+		--widgetContainerFrame:Layout()
 		--ViragDevTool_AddData({ctime = GetTime(), totalWidth = totalWidth, totalHeight = totalHeight}, "WidgetContainerSize - " .. (widgetContainerFrame:GetParent().unit or "nil"))
-		widgetContainerFrame:SetSize(totalWidth, totalHeight)
+		widgetContainerFrame:Size(totalWidth, totalHeight)
 	end
 	
 	--store all functions for all events that will be registered inside OnInit
