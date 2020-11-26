@@ -950,7 +950,8 @@ Plater.DefaultSpellRangeListF = {
 
 	--> range check ~range
 	function Plater.CheckRange (plateFrame, onAdded)
-
+		Plater.StartLogPerformanceCore("Plater-Core", "Update", "CheckRange")
+		
 		local profile = Plater.db.profile
 		local unitFrame = plateFrame.unitFrame
 		local castBarFade = unitFrame.castBar.fadeOutAnimation:IsPlaying() --and profile.cast_statusbar_use_fade_effects
@@ -1060,7 +1061,7 @@ Plater.DefaultSpellRangeListF = {
 		local buffFrame2 = unitFrame.BuffFrame2		
 
 		--if "units which is not target" is enabled and the player is targetting something else than the player it self
-		if (DB_USE_NON_TARGETS_ALPHA and (DB_USE_FOCUS_TARGET_ALPHA or Plater.PlayerHasTargetNonSelf)) then
+		if ((DB_USE_NON_TARGETS_ALPHA and Plater.PlayerHasTargetNonSelf) or (DB_USE_FOCUS_TARGET_ALPHA and Plater.PlayerHasFocusTargetNonSelf)) then
 			if (plateFrame [MEMBER_TARGET]) then
 				unitIsTarget = true
 			elseif (DB_USE_FOCUS_TARGET_ALPHA and unitFrame.IsFocus) then
@@ -1219,6 +1220,8 @@ Plater.DefaultSpellRangeListF = {
 			buffFrame1:SetAlpha (1)
 			buffFrame2:SetAlpha (1)
 		end
+		
+		Plater.EndLogPerformanceCore("Plater-Core", "Update", "CheckRange")
 	end	
 	
 	local re_GetSpellForRangeCheck = function()
@@ -5530,6 +5533,9 @@ end
 		Plater.PlayerCurrentTargetGUID = UnitGUID ("target")
 		Plater.PlayerHasTarget = Plater.PlayerCurrentTargetGUID and true
 		Plater.PlayerHasTargetNonSelf = Plater.PlayerHasTarget and Plater.PlayerCurrentTargetGUID ~= Plater.PlayerGUID and true
+		Plater.PlayerCurrentFocusTargetGUID = UnitGUID ("focus")
+		Plater.PlayerHasFocusTarget = Plater.PlayerCurrentFocusTargetGUID and true
+		Plater.PlayerHasFocusTargetNonSelf = Plater.PlayerHasFocusTarget and Plater.PlayerCurrentFocusTargetGUID ~= Plater.PlayerGUID and true
 		
 		for index, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 			Plater.UpdateTarget (plateFrame)
