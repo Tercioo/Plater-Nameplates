@@ -898,7 +898,7 @@ Plater.DefaultSpellRangeListF = {
 				if IsPlayerSpell(163201) then
 					local using_Massacre = IsPlayerSpell(281001) or IsPlayerSpell(206315)
 					lowExecute = using_Massacre and 0.35 or 0.2
-					local using_Condemn = IsPlayerSpell(317349) or IsPlayerSpell(317485)
+					local using_Condemn = IsPlayerSpell(317349) or IsPlayerSpell(317485) or IsPlayerSpell(330334)
 					highExecute = using_Condemn and 0.8 or nil
 				end
 				
