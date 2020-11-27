@@ -1,6 +1,6 @@
 
 
-local dversion = 219
+local dversion = 220
 
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
@@ -3399,13 +3399,13 @@ function DF:CoreDispatch (context, func, ...)
 		error (errortext)
 	end
 	
-	local okay, result1, result2, result3, result4 = pcall (func, ...)
-	
-	if (not okay) then
-		local stack = debugstack(2)
-		local errortext = "D!Framework (" .. context .. ") error: " .. result1 .. "\n====================\n" .. stack .. "\n====================\n"
-		error (errortext)
-	end
+	local okay, result1, result2, result3, result4 = xpcall(func, geterrorhandler(), ...)
+
+	--if (not okay) then --when using pcall
+		--local stack = debugstack(2)
+		--local errortext = "D!Framework (" .. context .. ") error: " .. result1 .. "\n====================\n" .. stack .. "\n====================\n"
+		--error (errortext)
+	--end
 	
 	return result1, result2, result3, result4
 end
