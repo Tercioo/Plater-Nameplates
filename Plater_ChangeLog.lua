@@ -8,6 +8,13 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1606569932,  "Bug Fix", "November 28th, 2020", "Fixing Condemn (Venthyr) execute for warriors."},
+			{1606569932,  "Bug Fix", "November 27th, 2020", "Fixing 'Unit - Health Markers' script."},
+			{1606569932,  "Bug Fix", "November 26th, 2020", "Enabling Focus Alpha now behaves properly with no targets."},
+			{1606569932,  "Bug Fix", "November 25th, 2020", "Fixing nameplate widgets."},
+			{1606569932,  "Bug Fix", "November 25th, 2020", "Fixing error around UnitMaxHealth."},
+			
+			
 			{1605897389,  "New Feature", "November 20th, 2020", "Adding '/plater profstart|profstop|profprint' commands for mod/script profiling."},
 			{1605897389,  "Backend Changes", "November 18th, 2020", "Changes to mod/script execution environment."},
 			{1605897389,  "New Feature", "November 17th, 2020", "Adding '/plater rare' command to blink taskbar icon on rare spawn."},
