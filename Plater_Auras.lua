@@ -1030,8 +1030,17 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 	function Plater.UpdateAuras_Manual (self, unit, isPersonal)
 		Plater.ResetAuraContainer (self)
 		
-		Plater.TrackSpecificAuras (self, unit, false, MANUAL_TRACKING_DEBUFFS, isPersonal)
-		Plater.TrackSpecificAuras (self, unit, true, MANUAL_TRACKING_BUFFS, isPersonal)
+		if isPersonal then
+			if (Plater.db.profile.aura_show_debuffs_personal) then
+				Plater.TrackSpecificAuras (self, unit, false, MANUAL_TRACKING_DEBUFFS, isPersonal)
+			end
+			if (Plater.db.profile.aura_show_buffs_personal) then
+				Plater.TrackSpecificAuras (self, unit, true, MANUAL_TRACKING_BUFFS, isPersonal)
+			end
+		else
+			Plater.TrackSpecificAuras (self, unit, false, MANUAL_TRACKING_DEBUFFS, isPersonal)
+			Plater.TrackSpecificAuras (self, unit, true, MANUAL_TRACKING_BUFFS, isPersonal)
+		end
 
 		--> hide not used aura frames
 		Plater.HideNonUsedAuraIcons (self)
