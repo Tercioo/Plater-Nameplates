@@ -1028,13 +1028,10 @@ function Plater.OpenOptionsPanel()
 function Plater.ChangeNameplateAnchor (_, _, value)
 	if (value == 0) then
 		SetCVar ("nameplateOtherAtBase", "0") --head
-		Plater.db.profile.saved_cvars.nameplateOtherAtBase = "0"
 	elseif (value == 1) then
 		SetCVar ("nameplateOtherAtBase", "1") --both
-		Plater.db.profile.saved_cvars.nameplateOtherAtBase = "1"
 	elseif (value == 2) then
 		SetCVar ("nameplateOtherAtBase", "2") --feet
-		Plater.db.profile.saved_cvars.nameplateOtherAtBase = "2"
 	end
 end
 local nameplate_anchor_options = {
@@ -4602,10 +4599,8 @@ do
 				set = function (self, fixedparam, value) 
 					if (value) then
 						SetCVar ("nameplatePersonalShowAlways", CVAR_ENABLED)
-						Plater.db.profile.saved_cvars.nameplatePersonalShowAlways = "1"
 					else
 						SetCVar ("nameplatePersonalShowAlways", CVAR_DISABLED)
-						Plater.db.profile.saved_cvars.nameplatePersonalShowAlways = "0"
 					end
 				end,
 				nocombat = true,
@@ -4619,10 +4614,8 @@ do
 				set = function (self, fixedparam, value) 
 					if (value) then
 						SetCVar ("nameplatePersonalShowWithTarget", CVAR_ENABLED)
-						Plater.db.profile.saved_cvars.nameplatePersonalShowWithTarget = "1"
 					else
 						SetCVar ("nameplatePersonalShowWithTarget", CVAR_DISABLED)
-						Plater.db.profile.saved_cvars.nameplatePersonalShowWithTarget = "0"
 					end
 				end,
 				nocombat = true,
@@ -4635,10 +4628,8 @@ do
 				set = function (self, fixedparam, value) 
 					if (value) then
 						SetCVar ("nameplatePersonalShowInCombat", CVAR_ENABLED)
-						Plater.db.profile.saved_cvars.nameplatePersonalShowInCombat = "1"
 					else
 						SetCVar ("nameplatePersonalShowInCombat", CVAR_DISABLED)
-						Plater.db.profile.saved_cvars.nameplatePersonalShowInCombat = "0"
 					end
 				end,
 				nocombat = true,
@@ -4651,7 +4642,6 @@ do
 				set = function (self, fixedparam, value) 
 					if (not InCombatLockdown()) then
 						SetCVar ("nameplateSelfAlpha", value)
-						Plater.db.profile.saved_cvars.nameplateSelfAlpha = tostring(value)
 					else
 						Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 					end
@@ -4671,7 +4661,6 @@ do
 				set = function (self, fixedparam, value) 
 					if (not InCombatLockdown()) then
 						SetCVar ("nameplateSelfScale", value)
-						Plater.db.profile.saved_cvars.nameplateSelfScale = tostring(value)
 					else
 						Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 					end
@@ -4781,8 +4770,6 @@ do
 				func = function() 
 					SetCVar ("nameplateSelfTopInset", 0.50)
 					SetCVar ("nameplateSelfBottomInset", 0.20)
-					Plater.db.profile.saved_cvars.nameplateSelfTopInset = "0.5"
-					Plater.db.profile.saved_cvars.nameplateSelfBottomInset = "0.20"
 				end,
 				desc = "When using a fixed position and want to go back to Blizzard default." .. CVarDesc,
 				name = "Reset to Automatic Position" .. CVarIcon,
@@ -4805,8 +4792,6 @@ do
 					
 					SetCVar ("nameplateSelfBottomInset", value / 100)
 					SetCVar ("nameplateSelfTopInset", abs (value - 99) / 100)
-					Plater.db.profile.saved_cvars.nameplateSelfBottomInset = tostring(value / 100)
-					Plater.db.profile.saved_cvars.nameplateSelfTopInset = tostring(abs (value - 99) / 100)
 					
 					if (not Plater.PersonalAdjustLocation) then
 						Plater.PersonalAdjustLocation = CreateFrame ("frame", "PlaterPersonalBarLocation", UIParent, BackdropTemplateMixin and "BackdropTemplate")
@@ -5838,10 +5823,8 @@ local targetOptions = {
 			set = function (self, fixedparam, value) 
 				if (value) then
 					SetCVar ("nameplateTargetRadialPosition", CVAR_ENABLED)
-					Plater.db.profile.saved_cvars.nameplateTargetRadialPosition = "1"
 				else
 					SetCVar ("nameplateTargetRadialPosition", CVAR_DISABLED)
-					Plater.db.profile.saved_cvars.nameplateTargetRadialPosition = "0"
 				end
 			end,
 			nocombat = true,
@@ -5858,14 +5841,10 @@ local targetOptions = {
 					if (value == 0) then
 						SetCVar ("nameplateOtherTopInset", -1)
 						SetCVar ("nameplateLargeTopInset", -1)
-						Plater.db.profile.saved_cvars.nameplateOtherTopInset = "-1"
-						Plater.db.profile.saved_cvars.nameplateLargeTopInset = "-1"
 						
 					else
 						SetCVar ("nameplateOtherTopInset", value)
 						SetCVar ("nameplateLargeTopInset", value)
-						Plater.db.profile.saved_cvars.nameplateOtherTopInset = tostring(value)
-						Plater.db.profile.saved_cvars.nameplateLargeTopInset = tostring(value)
 						
 					end
 				else
@@ -5888,7 +5867,6 @@ local targetOptions = {
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
 					SetCVar ("nameplateTargetBehindMaxDistance", value)
-					Plater.db.profile.saved_cvars.nameplateTargetBehindMaxDistance = tostring(value)
 				else
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 				end
@@ -5908,7 +5886,6 @@ local targetOptions = {
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
 					SetCVar ("nameplateSelectedScale", value)
-					Plater.db.profile.saved_cvars.nameplateSelectedScale = tostring(value)
 				else
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 				end
@@ -6138,7 +6115,6 @@ local relevance_options = {
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
 					SetCVar ("nameplateShowSelf", math.abs (tonumber (GetCVar ("nameplateShowSelf"))-1))
-					Plater.db.profile.saved_cvars.nameplateShowSelf = GetCVar ("nameplateShowSelf")
 				else
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 					self:SetValue (GetCVar ("nameplateShowSelf") == CVAR_ENABLED)
@@ -6155,7 +6131,6 @@ local relevance_options = {
 				PlaterDBChr.resources_on_target = value
 				if (not InCombatLockdown()) then
 					SetCVar (CVAR_RESOURCEONTARGET, CVAR_DISABLED) -- reset this to false always, as it conflicts
-					Plater.db.profile.saved_cvars.nameplateResourceOnTarget = "0"
 				end
 			end,
 			name = "Show Resources on Target",
@@ -6168,7 +6143,6 @@ local relevance_options = {
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
 					SetCVar (CVAR_SHOWALL, math.abs (tonumber (GetCVar (CVAR_SHOWALL))-1))
-					Plater.db.profile.saved_cvars.nameplateShowAll = GetCVar (CVAR_SHOWALL)
 				else
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 					self:SetValue (GetCVar (CVAR_SHOWALL) == CVAR_ENABLED)
@@ -6196,7 +6170,6 @@ local relevance_options = {
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
 					SetCVar ("nameplateOccludedAlphaMult", value)
-					Plater.db.profile.saved_cvars.nameplateOccludedAlphaMult = tostring(value)
 				else
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 				end
@@ -6220,7 +6193,6 @@ local relevance_options = {
 				if (not InCombatLockdown()) then
 					SetCVar (CVAR_PLATEMOTION, value and "1" or "0")
 					Plater.db.profile.stacking_nameplates_enabled = value
-					Plater.db.profile.saved_cvars.nameplateMotion = value and "1" or "0"
 				else
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 					self:SetValue (GetCVar (CVAR_PLATEMOTION) == CVAR_ENABLED)
@@ -6237,7 +6209,6 @@ local relevance_options = {
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
 					SetCVar ("nameplateOverlapV", value)
-					Plater.db.profile.saved_cvars.nameplateOverlapV = tostring(value)
 				else
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 				end
@@ -6258,7 +6229,6 @@ local relevance_options = {
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
 					SetCVar (CVAR_CULLINGDISTANCE, value)
-					Plater.db.profile.saved_cvars.nameplateMaxDistance = tostring(value)
 				else
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 				end
@@ -6279,7 +6249,6 @@ local relevance_options = {
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
 					SetCVar ("nameplateShowEnemies", value and "1" or "0")
-					Plater.db.profile.saved_cvars.nameplateShowEnemies = value and "1" or "0"
 				else
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 					self:SetValue (GetCVarBool ("nameplateShowEnemies"))
@@ -6296,7 +6265,6 @@ local relevance_options = {
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
 					SetCVar ("nameplateShowFriends", value and "1" or "0")
-					Plater.db.profile.saved_cvars.nameplateShowFriends = value and "1" or "0"
 				else
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 					self:SetValue (GetCVarBool ("nameplateShowFriends"))
@@ -6313,7 +6281,6 @@ local relevance_options = {
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
 					SetCVar ("nameplateShowOnlyNames", value and "1" or "0")
-					Plater.db.profile.saved_cvars.nameplateShowOnlyNames = value and "1" or "0"
 				else
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 					self:SetValue (GetCVarBool ("nameplateShowOnlyNames"))
@@ -9036,11 +9003,9 @@ end
 				if (value) then
 					SetCVar ("nameplateShowFriendlyNPCs", CVAR_ENABLED)
 					Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].enabled = true
-					Plater.db.profile.saved_cvars.nameplateShowFriendlyNPCs = "1"
 				else
 					SetCVar ("nameplateShowFriendlyNPCs", CVAR_DISABLED)
 					Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].enabled = false
-					Plater.db.profile.saved_cvars.nameplateShowFriendlyNPCs = "0"
 				end
 			end,
 			nocombat = true,
@@ -9063,9 +9028,6 @@ end
 				Plater.db.profile.plate_config.friendlynpc.quest_enabled = value
 				if value then
 					SetCVar("showQuestTrackingTooltips", 1)
-					Plater.db.profile.saved_cvars.showQuestTrackingTooltips = "1"
-				else
-					Plater.db.profile.saved_cvars.showQuestTrackingTooltips = "0"
 				end
 				Plater.UpdateAllPlates()
 			end,
@@ -10056,9 +10018,6 @@ end
 					Plater.db.profile.plate_config.enemynpc.quest_enabled = value
 					if value then
 						SetCVar("showQuestTrackingTooltips", 1)
-						Plater.db.profile.saved_cvars.showQuestTrackingTooltips = "1"
-					else
-						Plater.db.profile.saved_cvars.showQuestTrackingTooltips = "0"
 					end
 					Plater.UpdateAllPlates()
 				end,
@@ -12249,14 +12208,10 @@ end
 					if (value == 0) then
 						SetCVar ("nameplateOtherTopInset", -1)
 						SetCVar ("nameplateLargeTopInset", -1)
-						Plater.db.profile.saved_cvars.nameplateOtherTopInset = "-1"
-						Plater.db.profile.saved_cvars.nameplateLargeTopInset = "-1"
 						
 					else
 						SetCVar ("nameplateOtherTopInset", value)
 						SetCVar ("nameplateLargeTopInset", value)
-						Plater.db.profile.saved_cvars.nameplateOtherTopInset = tostring(value)
-						Plater.db.profile.saved_cvars.nameplateLargeTopInset = tostring(value)
 					end
 				else
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
@@ -12278,7 +12233,6 @@ end
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
 					SetCVar ("nameplateOverlapV", value)
-					Plater.db.profile.saved_cvars.nameplateOverlapV = tostring(value)
 				else
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 				end
@@ -12299,7 +12253,6 @@ end
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
 					SetCVar (CVAR_MOVEMENT_SPEED, value)
-					Plater.db.profile.saved_cvars.nameplateMotionSpeed = tostring(value)
 				else
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 				end
@@ -12319,7 +12272,6 @@ end
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
 					SetCVar ("nameplateGlobalScale", value)
-					Plater.db.profile.saved_cvars.nameplateGlobalScale = tostring(value)
 				else
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 				end
@@ -12340,7 +12292,6 @@ end
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
 					SetCVar ("nameplateMinScale", value)
-					Plater.db.profile.saved_cvars.nameplateMinScale = tostring(value)
 				else
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 				end
@@ -12372,7 +12323,6 @@ end
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
 					SetCVar ("nameplateShowEnemyGuardians", math.abs (tonumber (GetCVar ("nameplateShowEnemyGuardians"))-1))
-					Plater.db.profile.saved_cvars.nameplateShowEnemyGuardians = GetCVar ("nameplateShowEnemyGuardians")
 				else
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 					self:SetValue (GetCVar ("nameplateShowEnemyGuardians") == CVAR_ENABLED)
@@ -12389,7 +12339,6 @@ end
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
 					SetCVar ("nameplateShowEnemyMinions", math.abs (tonumber (GetCVar ("nameplateShowEnemyMinions"))-1))
-					Plater.db.profile.saved_cvars.nameplateShowEnemyMinions = GetCVar ("nameplateShowEnemyMinions")
 				else
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 					self:SetValue (GetCVar ("nameplateShowEnemyMinions") == CVAR_ENABLED)
@@ -12406,7 +12355,6 @@ end
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
 					SetCVar ("nameplateShowEnemyMinus", math.abs (tonumber (GetCVar ("nameplateShowEnemyMinus"))-1))
-					Plater.db.profile.saved_cvars.nameplateShowEnemyMinus = GetCVar ("nameplateShowEnemyMinus")
 				else
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 					self:SetValue (GetCVar ("nameplateShowEnemyMinus") == CVAR_ENABLED)
@@ -12423,7 +12371,6 @@ end
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
 					SetCVar ("nameplateShowEnemyPets", math.abs (tonumber (GetCVar ("nameplateShowEnemyPets"))-1))
-					Plater.db.profile.saved_cvars.nameplateShowEnemyPets = GetCVar ("nameplateShowEnemyPets")
 				else
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 					self:SetValue (GetCVar ("nameplateShowEnemyPets") == CVAR_ENABLED)
@@ -12440,7 +12387,6 @@ end
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
 					SetCVar ("nameplateShowEnemyTotems", math.abs (tonumber (GetCVar ("nameplateShowEnemyTotems"))-1))
-					Plater.db.profile.saved_cvars.nameplateShowEnemyTotems = GetCVar ("nameplateShowEnemyTotems")
 				else
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 					self:SetValue (GetCVar ("nameplateShowEnemyTotems") == CVAR_ENABLED)
@@ -12459,7 +12405,6 @@ end
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
 					SetCVar ("nameplateShowFriendlyNPCs", math.abs (tonumber (GetCVar ("nameplateShowFriendlyNPCs"))-1))
-					Plater.db.profile.saved_cvars.nameplateShowFriendlyNPCs = GetCVar ("nameplateShowFriendlyNPCs")
 				else
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 					self:SetValue (GetCVar ("nameplateShowFriendlyNPCs") == CVAR_ENABLED)
@@ -12476,7 +12421,6 @@ end
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
 					SetCVar ("nameplateShowFriendlyGuardians", math.abs (tonumber (GetCVar ("nameplateShowFriendlyGuardians"))-1))
-					Plater.db.profile.saved_cvars.nameplateShowFriendlyGuardians = GetCVar ("nameplateShowFriendlyGuardians")
 				else
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 					self:SetValue (GetCVar ("nameplateShowFriendlyGuardians") == CVAR_ENABLED)
@@ -12493,7 +12437,6 @@ end
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
 					SetCVar ("nameplateShowFriendlyMinions", math.abs (tonumber (GetCVar ("nameplateShowFriendlyMinions"))-1))
-					Plater.db.profile.saved_cvars.nameplateShowFriendlyMinions = GetCVar ("nameplateShowFriendlyMinions")
 				else
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 					self:SetValue (GetCVar ("nameplateShowFriendlyMinions") == CVAR_ENABLED)
@@ -12510,7 +12453,6 @@ end
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
 					SetCVar ("nameplateShowFriendlyPets", math.abs (tonumber (GetCVar ("nameplateShowFriendlyPets"))-1))
-					Plater.db.profile.saved_cvars.nameplateShowFriendlyPets = GetCVar ("nameplateShowFriendlyPets")
 				else
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 					self:SetValue (GetCVar ("nameplateShowFriendlyPets") == CVAR_ENABLED)
@@ -12527,7 +12469,6 @@ end
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
 					SetCVar ("nameplateShowFriendlyTotems", math.abs (tonumber (GetCVar ("nameplateShowFriendlyTotems"))-1))
-					Plater.db.profile.saved_cvars.nameplateShowFriendlyTotems = GetCVar ("nameplateShowFriendlyTotems")
 				else
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 					self:SetValue (GetCVar ("nameplateShowFriendlyTotems") == CVAR_ENABLED)
@@ -12798,7 +12739,6 @@ end
 
 					--SetCVar ("nameplateSelfBottomInset", value / 100)
 					SetCVar ("nameplateSelfTopInset", abs (value - 99) / 100)
-					Plater.db.profile.saved_cvars.nameplateSelfTopInset = tostring(abs (value - 99) / 100)
 					
 					if (not Plater.PersonalAdjustLocationTop) then
 						Plater.PersonalAdjustLocationTop = CreateFrame ("frame", "PlaterPersonalBarLocation", UIParent, BackdropTemplateMixin and "BackdropTemplate")
@@ -12865,7 +12805,6 @@ end
 
 					SetCVar ("nameplateSelfBottomInset", value / 100)
 					--SetCVar ("nameplateSelfTopInset", value / 100)
-					Plater.db.profile.saved_cvars.nameplateSelfBottomInset = tostring(value / 100)
 					
 					if (not Plater.PersonalAdjustLocationBottom) then
 						Plater.PersonalAdjustLocationBottom = CreateFrame ("frame", "PlaterPersonalBarLocation", UIParent, BackdropTemplateMixin and "BackdropTemplate")

@@ -1456,8 +1456,54 @@ Plater.DefaultSpellRangeListF = {
 	end
 	
 	--~save ~cvar
+	local cvars_to_store = {
+		["NamePlateClassificationScale"] = true,
+		["NamePlateHorizontalScale"] = true,
+		["NamePlateVerticalScale"] = true,
+		["ShowClassColorInNameplate"] = true,
+		["ShowNamePlateLoseAggroFlash"] = true,
+		["nameplateGlobalScale"] = true,
+		["nameplateLargeTopInset"] = true,
+		["nameplateMaxDistance"] = true,
+		["nameplateMinScale"] = true,
+		["nameplateMotion"] = true,
+		["nameplateMotionSpeed"] = true,
+		["nameplateOccludedAlphaMult"] = true,
+		["nameplateOtherAtBase"] = true,
+		["nameplateOtherTopInset"] = true,
+		["nameplateOverlapV"] = true,
+		["nameplatePersonalHideDelaySeconds"] = true,
+		["nameplatePersonalShowAlways"] = true,
+		["nameplatePersonalShowInCombat"] = true,
+		["nameplatePersonalShowWithTarget"] = true,
+		["nameplateResourceOnTarget"] = true,
+		["nameplateSelectedScale"] = true,
+		["nameplateSelfAlpha"] = true,
+		["nameplateSelfBottomInset"] = true,
+		["nameplateSelfScale"] = true,
+		["nameplateSelfTopInset"] = true,
+		["nameplateShowAll"] = true,
+		["nameplateShowEnemies"] = true,
+		["nameplateShowEnemyGuardians"] = true,
+		["nameplateShowEnemyMinions"] = true,
+		["nameplateShowEnemyMinus"] = true,
+		["nameplateShowEnemyPets"] = true,
+		["nameplateShowEnemyTotems"] = true,
+		["nameplateShowFriendlyGuardians"] = true,
+		["nameplateShowFriendlyMinions"] = true,
+		["nameplateShowFriendlyNPCs"] = true,
+		["nameplateShowFriendlyPets"] = true,
+		["nameplateShowFriendlyTotems"] = true,
+		["nameplateShowFriends"] = true,
+		["nameplateShowOnlyNames"] = true,
+		["nameplateShowSelf"] = true,
+		["nameplateTargetBehindMaxDistance"] = true,
+		["nameplateTargetRadialPosition"] = true,
+		["showQuestTrackingTooltips"] = true,
+	}
 	--on logout or on profile change, save some important cvars inside the profile
-	function Plater.SaveConsoleVariables() --private
+	function Plater.SaveConsoleVariables(cvar, value) --private
+		--print("save cvars", cvar, value, debugstack())
 		local cvarTable = Plater.db.profile.saved_cvars
 		
 		if (not cvarTable) then
@@ -1466,64 +1512,28 @@ Plater.DefaultSpellRangeListF = {
 			cvarTable = Plater.db.profile.saved_cvars
 		end
 		
-		--> personal and resources
-		cvarTable ["nameplateShowSelf"] = GetCVar ("nameplateShowSelf")
-		cvarTable ["nameplateResourceOnTarget"] = GetCVar ("nameplateResourceOnTarget")
-		cvarTable ["nameplatePersonalShowAlways"] = GetCVar ("nameplatePersonalShowAlways")
-		cvarTable ["nameplatePersonalShowWithTarget"] = GetCVar ("nameplatePersonalShowWithTarget")
-		cvarTable ["nameplatePersonalShowInCombat"] = GetCVar ("nameplatePersonalShowInCombat")
-		cvarTable ["nameplateSelfAlpha"] = GetCVar ("nameplateSelfAlpha")
-		cvarTable ["nameplateSelfScale"] = GetCVar ("nameplateSelfScale")
-		
-		--> which nameplates to show
-		cvarTable ["nameplateShowAll"] = GetCVar ("nameplateShowAll")
-		cvarTable ["ShowNamePlateLoseAggroFlash"] = GetCVar ("ShowNamePlateLoseAggroFlash")
-		cvarTable ["nameplateShowEnemyMinions"] = GetCVar ("nameplateShowEnemyMinions")
-		cvarTable ["nameplateShowEnemyMinus"] = GetCVar ("nameplateShowEnemyMinus")
-		cvarTable ["nameplateShowFriendlyGuardians"] = GetCVar ("nameplateShowFriendlyGuardians")
-		cvarTable ["nameplateShowFriendlyPets"] = GetCVar ("nameplateShowFriendlyPets")
-		cvarTable ["nameplateShowFriendlyTotems"] = GetCVar ("nameplateShowFriendlyTotems")
-		cvarTable ["nameplateShowFriendlyMinions"] = GetCVar ("nameplateShowFriendlyMinions")
-		
-		--> make it show the class color of players
-		cvarTable ["ShowClassColorInNameplate"] = GetCVar ("ShowClassColorInNameplate")
-		
-		--> just reset to default the clamp from the top side
-		cvarTable ["nameplateOtherTopInset"] = GetCVar ("nameplateOtherTopInset")
-		
-		--> reset the horizontal and vertical scale
-		cvarTable ["NamePlateHorizontalScale"] = GetCVar ("NamePlateHorizontalScale")
-		cvarTable ["NamePlateVerticalScale"] = GetCVar ("NamePlateVerticalScale")
-		cvarTable ["NamePlateClassificationScale"] = GetCVar ("NamePlateClassificationScale")
-		
-		--> stacking nameplates
-		cvarTable ["nameplateMotion"] = GetCVar ("nameplateMotion")
-		
-		--> make the selection be a little bigger
-		cvarTable ["nameplateSelectedScale"] = GetCVar ("nameplateSelectedScale")
-		cvarTable ["nameplateMinScale"] = GetCVar ("nameplateMinScale")
-		cvarTable ["nameplateGlobalScale"] = GetCVar ("nameplateGlobalScale")
-		
-		--> distance between each nameplate when using stacking
-		cvarTable ["nameplateOverlapV"] = GetCVar ("nameplateOverlapV")
-		
-		--> movement speed of nameplates when using stacking, going above this isn't recommended
-		cvarTable ["nameplateMotionSpeed"] = GetCVar ("nameplateMotionSpeed")
-		--> this must be 1 for bug reasons on the game client
-		cvarTable ["nameplateOccludedAlphaMult"] = GetCVar ("nameplateOccludedAlphaMult")
-		--> don't show friendly npcs
-		cvarTable ["nameplateShowFriendlyNPCs"] = GetCVar ("nameplateShowFriendlyNPCs")
-		--> make the personal bar hide very fast
-		cvarTable ["nameplatePersonalHideDelaySeconds"] = GetCVar ("nameplatePersonalHideDelaySeconds")
-		
-		--> location of the personagem bar
-		cvarTable ["nameplateSelfBottomInset"] = GetCVar ("nameplateSelfBottomInset")
-		cvarTable ["nameplateSelfTopInset"] = GetCVar ("nameplateSelfTopInset")
-		
-		--> view distance
-		cvarTable ["nameplateMaxDistance"] = GetCVar ("nameplateMaxDistance")
+		if not cvar then
+			for CVarName, enabled in pairs (cvars_to_store) do
+				if enabled then
+					cvarTable [CVarName] = tostring(GetCVar (CVarName))
+				end
+			end
+		elseif cvars_to_store [cvar] then
+			cvarTable [cvar] = tostring(value)
+		end
 		
 	end
+	hooksecurefunc('SetCVar', Plater.SaveConsoleVariables)
+	hooksecurefunc('ConsoleExec', function(console)
+		local par1, par2, par3 = console:match('^(%S+)%s+(%S+)%s*(%S*)')
+		if par1 then
+			if par1:lower() == 'set' then -- /console SET cvar value
+				Plater.SaveConsoleVariables(par2, par3)
+			else -- /console cvar value
+				Plater.SaveConsoleVariables(par1, par2)
+			end
+		end
+	end)
 
 	--refresh call back will run all functions in its table when Plater refreshes the dynamic upvales for the file
 	Plater.DBRefreshCallback = {}
