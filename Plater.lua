@@ -3384,6 +3384,10 @@ function Plater.OnInit() --private --~oninit ~init
 			PlaterDBChr.spellRangeCheckRangeFriendly = {}
 		end
 	
+	--ensure global nameplate width/height setting is initialized
+		Plater.db.profile.plate_config.global_health_width = Plater.db.profile.plate_config.global_health_width or Plater.db.profile.plate_config.enemynpc.health[1]
+		Plater.db.profile.plate_config.global_health_height = Plater.db.profile.plate_config.global_health_height or Plater.db.profile.plate_config.enemynpc.health[2]
+	
 	--range check spells
 		for specID, _ in pairs (Plater.SpecList [select (2, UnitClass ("player"))]) do
 			if (PlaterDBChr.spellRangeCheckRangeEnemy [specID] == nil or not LibRangeCheck:GetHarmMaxChecker (PlaterDBChr.spellRangeCheckRangeEnemy [specID])) then

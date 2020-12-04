@@ -6391,10 +6391,12 @@ local relevance_options = {
 
 		{ --global healthbar width
 			type = "range",
-			get = function() return Plater.db.profile.plate_config.enemynpc.health[1] end,
+			get = function() return Plater.db.profile.plate_config.global_health_width end,
 			set = function (self, fixedparam, value) 
 
 				local plateConfig = Plater.db.profile.plate_config
+
+				plateConfig.global_health_width = value
 
 				--change the health bars
 				plateConfig.friendlyplayer.health[1] = value
@@ -6435,10 +6437,12 @@ local relevance_options = {
 
 		{ --global healthbar height
 			type = "range",
-			get = function() return Plater.db.profile.plate_config.enemynpc.health[2] end,
+			get = function() return Plater.db.profile.plate_config.global_health_height end,
 			set = function (self, fixedparam, value) 
 
 				local plateConfig = Plater.db.profile.plate_config
+
+				plateConfig.global_health_height = value
 
 				plateConfig.friendlyplayer.health[2] = value
 				plateConfig.friendlyplayer.health_incombat[2] = value
