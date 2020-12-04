@@ -210,15 +210,21 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 		
 			local growDirection
 			local anchorSide
+			local auras_per_row
 
 			--> get the grow direction for the buff frame
 			if (self.Name == "Main") then
 				growDirection = DB_AURA_GROW_DIRECTION
 				anchorSide = profile.aura_frame1_anchor.side
+				auras_per_row = profile.auras_per_row_amount
 				
 			elseif (self.Name == "Secondary") then
 				growDirection = DB_AURA_GROW_DIRECTION2
 				anchorSide = profile.aura_frame2_anchor.side
+				auras_per_row = profile.auras_per_row_amount2
+			
+			else
+				return
 			end
 			
 			--get the amount of auras shown in the frame, this variable should be always reliable
@@ -231,7 +237,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 				--self:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
 				--self:SetBackdropBorderColor (1, 0, 0, 1)
 			
-				local aurasPerRow = (not profile.auras_per_row_auto and floor(profile.auras_per_row_amount) or Plater.MaxAurasPerRow)
+				local aurasPerRow = (not profile.auras_per_row_auto and floor(auras_per_row) or Plater.MaxAurasPerRow)
 				local curAurasRowCount = aurasPerRow + 1
 				local rowGrowthDirectionUp = (anchorSide < 3 or anchorSide > 5)
 				

@@ -668,6 +668,7 @@ PLATER_DEFAULT_SETTINGS = {
 		aura_height2 = 16,
 		auras_per_row_auto = true,
 		auras_per_row_amount = 10,
+		auras_per_row_amount2 = 10,
 		
 		--> aura frame 1
 		--aura_x_offset = 0,

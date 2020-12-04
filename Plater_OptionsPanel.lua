@@ -1414,36 +1414,6 @@ local debuff_options = {
 		desc = "Debuff's icon height.",
 	},
 	
-	{type = "break"},
-	{type = "label", get = function() return "Auras per Row:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-	{
-		type = "toggle",
-		get = function() return Plater.db.profile.auras_per_row_auto end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.auras_per_row_auto = value
-			Plater.RefreshDBUpvalues()
-			Plater.RefreshAuras()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Automatic",
-		desc = "When enabled auras are split into rows automatically according to healthbar width when growing left/right. Mods can overwrite the amount.",
-	},
-	{
-		type = "range",
-		get = function() return Plater.db.profile.auras_per_row_amount end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.auras_per_row_amount = value
-			Plater.RefreshDBUpvalues()
-			Plater.RefreshAuras()
-			Plater.UpdateAllPlates()
-		end,
-		min = 1,
-		max = 10,
-		step = 1,
-		name = "Auras per Row",
-		desc = "Auras per Row if auto-mode is disabled.",
-	},
-	
 	
 	{type = "breakline"},
 	{type = "label", get = function() return "Aura Frame 1:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
@@ -1664,6 +1634,51 @@ local debuff_options = {
 	
 	{type = "breakline"},
 	
+	{type = "label", get = function() return "Auras per Row:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.auras_per_row_auto end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.auras_per_row_auto = value
+			Plater.RefreshDBUpvalues()
+			Plater.RefreshAuras()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Automatic",
+		desc = "When enabled auras are split into rows automatically according to healthbar width when growing left/right. Mods can overwrite the amount.",
+	},
+	{
+		type = "range",
+		get = function() return Plater.db.profile.auras_per_row_amount end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.auras_per_row_amount = value
+			Plater.RefreshDBUpvalues()
+			Plater.RefreshAuras()
+			Plater.UpdateAllPlates()
+		end,
+		min = 1,
+		max = 10,
+		step = 1,
+		name = "Auras per Row 1",
+		desc = "Auras per Row if auto-mode is disabled for Aura Frame 1.",
+	},
+		{
+		type = "range",
+		get = function() return Plater.db.profile.auras_per_row_amount2 end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.auras_per_row_amount2 = value
+			Plater.RefreshDBUpvalues()
+			Plater.RefreshAuras()
+			Plater.UpdateAllPlates()
+		end,
+		min = 1,
+		max = 10,
+		step = 1,
+		name = "Auras per Row 2",
+		desc = "Auras per Row if auto-mode is disabled for Aura Frame 2.",
+	},
+	
+	{type = "break"},
 	{type = "label", get = function() return "Aura Timer:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	
 	{
