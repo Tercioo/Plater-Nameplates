@@ -2893,7 +2893,8 @@ Plater.DefaultSpellRangeListF = {
 			plateFrame.unitFrame.isWidgetOnlyMode = isWidgetOnlyMode
 			
 			--hide blizzard namepaltes
-			plateFrame.UnitFrame:Hide()
+			--plateFrame.UnitFrame:Hide()
+			Plater.OnRetailNamePlateShow(plateFrame.UnitFrame)
 			--show plater unit frame
 			plateFrame.unitFrame:Show()
 			
@@ -3349,6 +3350,11 @@ Plater.DefaultSpellRangeListF = {
 		if (CompactUnitFrame_UnregisterEvents) then
 			CompactUnitFrame_UnregisterEvents (self)
 		end
+		if (CompactUnitFrame_ClearWidgetSet) then
+			CompactUnitFrame_ClearWidgetSet (self)
+		end
+		--this is quite drastical and might break other stuff on retail nameplates in dungeons/raids:
+		--self.WidgetContainer = nil
 	end
 	
 	function Plater.SetFontOutlineAndShadow (fontString, outline, shadowColor, shadowXOffSet, shadowYOffSet)
