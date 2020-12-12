@@ -4769,6 +4769,10 @@ end
 				PixelUtil.SetPoint (healthBar, "bottomright", unitFrame, "bottomright", -xOffSet + profile.global_offset_x, yOffSet + profile.global_offset_y)
 		end
 		
+		--execute indicator
+			healthBar.healthCutOff:SetSize (healthBarHeight, healthBarHeight)
+			healthBar.executeRange:SetHeight (healthBarHeight)
+		
 		--cast bar - is set by default below the healthbar
 			castBar:ClearAllPoints()
 			PixelUtil.SetPoint (castBar, "topleft", healthBar, "bottomleft", castBarOffSetX, castBarOffSetY)
