@@ -4806,6 +4806,8 @@ end
 		if (Plater.db.profile.show_health_prediction or Plater.db.profile.show_shield_prediction) and healthBar.displayedUnit then
 			healthBar:UpdateHealPrediction() -- ensure health prediction is updated properly
 		end
+		
+		Plater.UpdateUnitName (plateFrame)
 	end
 	
 	--debug function to print the size of the anchor for each aura container
@@ -6217,10 +6219,6 @@ end
 
 		if (plateFrame.NameAnchor >= 9) then
 			--remove some character from the unit name if the name is placed inside the nameplate
-			local stringSize = max (plateFrame.unitFrame.healthBar:GetWidth() - 6, 44)
-			local name = plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME]
-			
-			nameString:SetText (name)
 			Plater.UpdateUnitNameTextSize (plateFrame, nameString)
 		else
 			nameString:SetText (plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME])
@@ -6234,9 +6232,9 @@ end
 		end
 	end
 
-	function Plater.UpdateUnitNameTextSize (plateFrame, nameString)
-		local stringSize = max (plateFrame.unitFrame.healthBar:GetWidth() - 6, 44)
-		local name = plateFrame [MEMBER_NAME]
+	function Plater.UpdateUnitNameTextSize (plateFrame, nameString, maxWidth)
+		local stringSize = maxWidth or max (plateFrame.unitFrame.healthBar:GetWidth() - 6, 44)
+		local name = plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME]
 		
 		nameString:SetText (name)
 		
