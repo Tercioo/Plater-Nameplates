@@ -1004,6 +1004,7 @@ function Plater.OpenOptionsPanel()
 	--
 	local cooldown_edge_texture_selected = function (self, capsule, value)
 		Plater.db.profile.aura_cooldown_edge_texture = value
+		Plater.IncreaseRefreshID()
 		Plater.UpdateAllPlates()
 	end
 	local cooldown_edge_texture_selected_options = {}
@@ -1817,6 +1818,7 @@ local debuff_options = {
 		get = function() return Plater.db.profile.aura_cooldown_show_swipe end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_cooldown_show_swipe = value
+			Plater.IncreaseRefreshID()
 			Plater.UpdateAllPlates()
 		end,
 		name = "Show Swipe Closure Texture",
@@ -1827,6 +1829,7 @@ local debuff_options = {
 		get = function() return Plater.db.profile.aura_cooldown_reverse end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_cooldown_reverse = value
+			Plater.IncreaseRefreshID()
 			Plater.UpdateAllPlates()
 		end,
 		name = "Swipe Closure Inverted",
