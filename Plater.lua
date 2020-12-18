@@ -4355,7 +4355,7 @@ function Plater.OnInit() --private --~oninit ~init
 			if (plateFrame.PlateConfig.healthbar_color_by_hp) then
 				local originalColor = plateFrame.PlateConfig.healthbar_color
 				local r, g, b = DF:LerpLinearColor (abs (currentHealth / currentHealthMax - 1), 1, originalColor[1], originalColor[2], originalColor[3], 1, .4, 0)
-				Plater.ChangeHealthBarColor_Internal (self, r, g, b, originalColor[4] or 1, true)
+				Plater.ChangeHealthBarColor_Internal (self, r, g, b, (originalColor[4] or 1), true)
 			end
 			
 			Plater.CheckLifePercentText (unitFrame)
@@ -4552,9 +4552,7 @@ end
 	
 	--internal function to change the health bar color
 	function Plater.ChangeHealthBarColor_Internal (healthBar, r, g, b, a, forceNoLerp) --private
-		if (a == nil) then
-			a = 1
-		end
+		a = a or 1
 		if (r ~= healthBar.R or g ~= healthBar.G or b ~= healthBar.B or a ~= healthBar.A) then
 			healthBar.R, healthBar.G, healthBar.B, healthBar.A = r, g, b, a
 			if (not DB_LERP_COLOR or forceNoLerp) then -- ~lerpcolor
