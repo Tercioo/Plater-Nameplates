@@ -6432,7 +6432,9 @@ end
 				healthBar:Show()
 				buffFrame:Show()
 				buffFrame2:Show()
-				nameFrame:Show()
+				if not unitFrame.IsSelf then
+					nameFrame:Show()
+				end
 				
 				--> check for enemy player class color
 				if (actorType == ACTORTYPE_ENEMY_PLAYER) then
