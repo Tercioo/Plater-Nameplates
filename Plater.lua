@@ -4553,8 +4553,8 @@ end
 	--internal function to change the health bar color
 	function Plater.ChangeHealthBarColor_Internal (healthBar, r, g, b, a, forceNoLerp) --private
 		a = a or 1
-		if (r ~= healthBar.R or g ~= healthBar.G or b ~= healthBar.B or a ~= healthBar.A) then
-			healthBar.R, healthBar.G, healthBar.B, healthBar.A = r, g, b, a
+		if (r ~= healthBar.R or g ~= healthBar.G or b ~= healthBar.B) then
+			healthBar.R, healthBar.G, healthBar.B = r, g, b
 			if (not DB_LERP_COLOR or forceNoLerp) then -- ~lerpcolor
 				healthBar.barTexture:SetVertexColor (r, g, b, a)
 			end
