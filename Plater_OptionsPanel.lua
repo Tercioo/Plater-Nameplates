@@ -9044,9 +9044,10 @@ end
 			get = function() return Plater.db.profile.plate_config.friendlynpc.quest_enabled end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config.friendlynpc.quest_enabled = value
-				if value then
-					SetCVar("showQuestTrackingTooltips", 1)
-				end
+				-- this seems to be gone as of 18.12.2020
+				--if value then
+					--SetCVar("showQuestTrackingTooltips", 1)
+				--end
 				Plater.UpdateAllPlates()
 			end,
 			name = "Use Quest Color",
@@ -10034,9 +10035,10 @@ end
 				get = function() return Plater.db.profile.plate_config.enemynpc.quest_enabled end,
 				set = function (self, fixedparam, value) 
 					Plater.db.profile.plate_config.enemynpc.quest_enabled = value
-					if value then
-						SetCVar("showQuestTrackingTooltips", 1)
-					end
+					-- this seems to be gone as of 18.12.2020
+					--if value then
+						--SetCVar("showQuestTrackingTooltips", 1)
+					--end
 					Plater.UpdateAllPlates()
 				end,
 				name = "Use Quest Color",

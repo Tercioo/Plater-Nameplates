@@ -1496,7 +1496,7 @@ Plater.DefaultSpellRangeListF = {
 		["nameplateShowSelf"] = true,
 		["nameplateTargetBehindMaxDistance"] = true,
 		["nameplateTargetRadialPosition"] = true,
-		["showQuestTrackingTooltips"] = true,
+		--["showQuestTrackingTooltips"] = true, -- this seems to be gone as of 18.12.2020
 	}
 	--on logout or on profile change, save some important cvars inside the profile
 	function Plater.SaveConsoleVariables(cvar, value) --private
@@ -2306,9 +2306,10 @@ Plater.DefaultSpellRangeListF = {
 				end
 			end
 			
-			if Plater.db.profile.plate_config.friendlynpc.quest_enabled and not InCombatLockdown() then
-				SetCVar("showQuestTrackingTooltips", 1) -- ensure it is turned on...
-			end
+			-- this seems to be gone as of 18.12.2020
+			--if Plater.db.profile.plate_config.friendlynpc.quest_enabled and not InCombatLockdown() then
+				--SetCVar("showQuestTrackingTooltips", 1) -- ensure it is turned on...
+			--end
 
 			--create the frame to hold the plater resoruce bar
 			Plater.CreatePlaterResourceFrame() --~resource
