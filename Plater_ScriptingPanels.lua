@@ -1063,6 +1063,7 @@ end
 		local script_prio_label = DF:CreateLabel (parent, "Priority:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
 		local script_prio_entry = DF:CreateSlider (parent, 191, 20, 1, 99, 1, 99, false, "ScriptPrioritySlider", _, _, options_slider_template, _)
 		script_prio_entry:SetPoint ("topleft", script_prio_label, "bottomleft", 0, -2)
+		script_prio_entry.tooltip = "Lower number -> higher priority.\nRight Click to Type the Value"
 		mainFrame.ScriptPrioSlideEntry = script_prio_entry
 
 		--options button
