@@ -291,9 +291,6 @@ local PLATER_GLOBAL_SCRIPT_ENV = {} -- contains modEnv for each script, identifi
 local COMM_PLATER_PREFIX = "PLT"
 local COMM_SCRIPT_GROUP_EXPORTED = "GE"
 
---> consts
-local BUFF_MAX_DISPLAY = BUFF_MAX_DISPLAY
-local CooldownFrame_Set = CooldownFrame_Set
 
  --> cvars just to make them easier to read
 local CVAR_ENABLED = "1"
@@ -4806,6 +4803,8 @@ end
 		if (Plater.db.profile.show_health_prediction or Plater.db.profile.show_shield_prediction) and healthBar.displayedUnit then
 			healthBar:UpdateHealPrediction() -- ensure health prediction is updated properly
 		end
+		
+		Plater.UpdateUnitName (plateFrame)
 	end
 	
 	--debug function to print the size of the anchor for each aura container
@@ -6217,10 +6216,6 @@ end
 
 		if (plateFrame.NameAnchor >= 9) then
 			--remove some character from the unit name if the name is placed inside the nameplate
-			local stringSize = max (plateFrame.unitFrame.healthBar:GetWidth() - 6, 44)
-			local name = plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME]
-			
-			nameString:SetText (name)
 			Plater.UpdateUnitNameTextSize (plateFrame, nameString)
 		else
 			nameString:SetText (plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME])
@@ -6234,9 +6229,9 @@ end
 		end
 	end
 
-	function Plater.UpdateUnitNameTextSize (plateFrame, nameString)
-		local stringSize = max (plateFrame.unitFrame.healthBar:GetWidth() - 6, 44)
-		local name = plateFrame [MEMBER_NAME]
+	function Plater.UpdateUnitNameTextSize (plateFrame, nameString, maxWidth)
+		local stringSize = maxWidth or max (plateFrame.unitFrame.healthBar:GetWidth() - 6, 44)
+		local name = plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME]
 		
 		nameString:SetText (name)
 		
@@ -6437,7 +6432,9 @@ end
 				healthBar:Show()
 				buffFrame:Show()
 				buffFrame2:Show()
-				nameFrame:Show()
+				if not unitFrame.IsSelf then
+					nameFrame:Show()
+				end
 				
 				--> check for enemy player class color
 				if (actorType == ACTORTYPE_ENEMY_PLAYER) then
