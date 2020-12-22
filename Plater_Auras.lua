@@ -1460,7 +1460,8 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			for spellId, _ in pairs (DF.CrowdControlSpells) do
 				local spellName = GetSpellInfo (spellId)
 				if (spellName) then
-					SPECIAL_AURAS_AUTO_ADDED [spellName] = true
+					--SPECIAL_AURAS_AUTO_ADDED [spellName] = true
+					SPECIAL_AURAS_AUTO_ADDED [spellId] = true
 					CROWDCONTROL_AURA_NAMES [spellName] = true
 				end
 			end
@@ -1616,8 +1617,8 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 				for spellId, _ in pairs (DF.CrowdControlSpells) do
 					local spellName = GetSpellInfo (spellId)
 					if (spellName) then
-						AUTO_TRACKING_EXTRA_BUFFS [spellName] = true
-						--AUTO_TRACKING_EXTRA_BUFFS [spellId] = true
+						--AUTO_TRACKING_EXTRA_BUFFS [spellName] = true
+						AUTO_TRACKING_EXTRA_BUFFS [spellId] = true
 						CAN_TRACK_EXTRA_BUFFS = true
 					end
 				end
