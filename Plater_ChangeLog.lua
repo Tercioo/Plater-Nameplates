@@ -8,6 +8,15 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1608659820,  "Bug Fix", "December 17th, 2020", "Updating texts after nameplate size updates to ensure proper length."},
+			{1608659820,  "Bug Fix", "December 12th, 2020", "Ensure proper size of the execute indicator."},
+			{1608659820,  "Backend Changes", "December 9th, 2020", "Not showing execute indicator on not attackable units."},
+			{1608659820,  "Bug Fix", "December 8th, 2020", "Fixing issue with double Buff Special."},
+			{1608659820,  "Options Changes", "December 4th, 2020", "Adding 'Auras per Row' option for Buff Frame 2."},
+			{1608659820,  "Backend Changes", "December 4th, 2020", "Reworked CVar re-/storing."},
+			{1608659820,  "Bug Fix", "December 4th, 2020", "Global width/height settings are stored and adjusted separately."},
+			{1608659820,  "Bug Fix", "December 1st, 2020", "Honoring Personal Bar buff tracking settings."},
+
 			{1606569932,  "Bug Fix", "November 28th, 2020", "Fixing Condemn (Venthyr) execute for warriors."},
 			{1606569932,  "Bug Fix", "November 27th, 2020", "Fixing 'Unit - Health Markers' script."},
 			{1606569932,  "Bug Fix", "November 26th, 2020", "Enabling Focus Alpha now behaves properly with no targets."},
