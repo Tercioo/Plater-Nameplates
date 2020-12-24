@@ -7,6 +7,8 @@ local _
 function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
+			{1608853110,  "New Feature", "December 24th, 2020", "Added a time to die to Spiteful affix units."},
+			{1608853110,  "Revamp", "December 24th, 2020", "Aura reorder mod has been refreshed."},
 
 			{1608659820,  "Bug Fix", "December 17th, 2020", "Updating texts after nameplate size updates to ensure proper length."},
 			{1608659820,  "Bug Fix", "December 12th, 2020", "Ensure proper size of the execute indicator."},
