@@ -148,6 +148,14 @@ do
 		OverrideTriggers = true,
 	}
 
+	PlaterScriptLibrary ["Spiteful Affix"] = {
+		Revision = 1,
+		ScriptType = "script",
+		String = "nBvBVTTnq4)lgyO2BjE6DjhG9H2uKgNH5ga6T9Laorlrztuzkdk6U4(b9BF3jAj)sSBIAgkkKTeLiVN75EoEKKAtNsjfR0Iczj0Cs97t3SItN4qj)b7r6eFlk598Yekb(GqcJb(WVZ3qjZM)3Iu9ck5Vy5RrlcPKjSLCkz73hNuiH7snxLXs4p8200pklF4(Cg8LhelzZ5Lpy8()ixVCgxrj3Oyj4hOZOAKeT8XUb83Xs(0CvXAzAv81f5fQgcuZ)B889d8JCT9DChf5g5rZU03fr6gFROap7iplNGWqNGaSNa6ex0SjE4DDBKTf4Uebjgt2QvAe4wYh0q(pwp2Qy)wvRrnnO43nFolNj)0((07PjqhVJsGHB9OM)OMi(cVLkrnSCk0tvSPVxFs0)ejrJhEA6d)HPkNaxlxlijggA5atSmjrxuUomvHbX)djlaoDrYN5QsK2tgzzzb6hlnfH0GaLyJmGOXiHuMOeRaRWKm8af7FbKSvcnpBDoL4dK01FKhKq9mHgXo0lm0fhnKbiBwYaMMC5B)IILJEbMJmvSKxfRlQItf8DOvfZYYepciaPYS1YeZCO(L88SlQIxlf6XPBBas)so0Ml)8u2SCSPHQ1VnO6UQyZ1LxkKLCfKfsksbNTGR476TX8H)5Qui4BycuypNR736iapouhEhEb0dc2QXvJ3NIh67X41z8CDFMNgmhtjJGzpJOKiq)cSII8DIIGxTD)EjdIma)w8gwUvgWzVRvamX6fC5UH3CDAlU6wrkV)Gx6Wbh0yrZi3l9KUNY3Q)oFV0LJuizH(RefDuMalQI)T97DbNLRx8oM6QRvCy242r1xkYb(3RakBZzB6bTnFjOtAmHRVVqi19FJsmFH(naaw4)UccUCzFNqWuBVUAB9kynH1qxaJ6B2yJWta2lf(NriVPqQjALqo)eAzVpaMGJysHAjlVxNe2DQAVAvT3fFffaDw7OU0PtIp6O7wxQfzBUTXxVcbBVIUV1QAtz5t87UcZx(ARpFuKxKWG9huGMnh(pd(ZQt6M9SU6EMQKxp7QC)1IhcBvMjMpC7bD(MMQFs4Qp53fNEo3h46B5ycQ)GbNlE2sBWh1Znr)CAMC4cxneO5indEoKRd7od95eRZMxswRuCje2OgCUIXHxFWOohwlzp2fCGZ(1bIAa5EUkbaO2bhr9F9ac8ZWAtwwNfnnCoMPfVxywipdx)awi4NgANvIL4h5ma6OovVJp736Jxr1(vKff)B32r(ylo1oX17fB)J9r1SmhIM(Fd",
+		Enabled = true,
+		OverrideTriggers = true,
+	}
+
 	-------------------------------------
 	--hooks
 	

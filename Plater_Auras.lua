@@ -1204,6 +1204,35 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			Plater.HideNonUsedAuraIcons (self)
 	end
 
+	--used in scripts to get a specific buff from the unit, return full information
+	--can be used with spellId or spellName
+	function Plater.GetBuff(unitId, spellName)
+		if (type(spellName) == "number") then
+			spellName = GetSpellInfo(spellName)
+		end
+
+		if (not spellName) then
+			return
+		end
+
+		spellName =  spellName:lower()
+
+		local continuationToken
+		repeat
+			local slots = { UnitAuraSlots(unitId, "HELPFUL", BUFF_MAX_DISPLAY, continuationToken) }
+			continuationToken = slots[1]
+			for i=2, #slots do
+				local slot = slots[i];
+				local name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll = UnitAuraBySlot(unitId, slot)
+				if (name) then
+					if (name:lower()  == spellName) then
+						return name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll
+					end
+				end
+			end
+		until not continuationToken
+	end
+
 	function Plater.UpdateAuras_Self_Automatic (self)
 		Plater.ResetAuraContainer (self)
 		local unitAuraCache = self.unitFrame.AuraCache
