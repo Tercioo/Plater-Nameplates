@@ -3047,12 +3047,12 @@ Plater.DefaultSpellRangeListF = {
 			Plater.QuickHealthUpdate (unitFrame)
 			healthBar.IsAnimating = false
 			
-			if (not DB_USE_HEALTHCUTOFF) then
-				healthBar.healthCutOff:Hide()
-				healthBar.executeRange:Hide()
-				healthBar.ExecuteGlowUp:Hide()
-				healthBar.ExecuteGlowDown:Hide()
-			end
+			--hide execute indicators
+			healthBar.healthCutOff:Hide()
+			healthBar.executeRange:Hide()
+			healthBar.ExecuteGlowUp:Hide()
+			healthBar.ExecuteGlowDown:Hide()
+			
 			
 			local actorType
 			
