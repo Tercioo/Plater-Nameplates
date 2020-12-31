@@ -821,6 +821,8 @@ Plater.DefaultSpellRangeListF = {
 
 	--if true, the animation will update its settings before play
 	local IS_EDITING_SPELL_ANIMATIONS = false
+	
+	local HOOKED_BLIZZARD_PLATEFRAMES = {}
 
 	--store a list of friendly players in the player friends list
 	Plater.FriendsCache = {}
@@ -2908,10 +2910,14 @@ Plater.DefaultSpellRangeListF = {
 				unitFrame.ShowUIParentAnimation:Play()
 			end
 			
-			if (not plateFrame.UnitFrame.HasPlaterHooksRegistered) then
+			--if (not plateFrame.UnitFrame.HasPlaterHooksRegistered) then
+			if not HOOKED_BLIZZARD_PLATEFRAMES[tostring(plateFrame.UnitFrame)] then
+				--print(HOOKED_BLIZZARD_PLATEFRAMES[tostring(plateFrame.UnitFrame)], tostring(plateFrame.UnitFrame), plateFrame.UnitFrame.HasPlaterHooksRegistered)
                 --hook the retail nameplate
-                plateFrame.UnitFrame:HookScript("OnShow", Plater.OnRetailNamePlateShow)
-                plateFrame.UnitFrame.HasPlaterHooksRegistered = true
+                --plateFrame.UnitFrame:HookScript("OnShow", Plater.OnRetailNamePlateShow)
+				hooksecurefunc(plateFrame.UnitFrame, "Show", Plater.OnRetailNamePlateShow)
+                --plateFrame.UnitFrame.HasPlaterHooksRegistered = true
+				HOOKED_BLIZZARD_PLATEFRAMES[tostring(plateFrame.UnitFrame)] = true
 				
             end
 			
@@ -3349,7 +3355,7 @@ Plater.DefaultSpellRangeListF = {
 			CompactUnitFrame_UnregisterEvents (self)
 		end
 		if (CompactUnitFrame_ClearWidgetSet) then
-			CompactUnitFrame_ClearWidgetSet (self)
+			--CompactUnitFrame_ClearWidgetSet (self)
 		end
 		--this is quite drastical and might break other stuff on retail nameplates in dungeons/raids:
 		--self.WidgetContainer = nil
