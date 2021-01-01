@@ -12576,7 +12576,7 @@ end
 			end,
 			nocombat = true,
 			name = "Always Show Background",
-			desc = "Enable a background showing the area of the clicable area.",
+			desc = "Enable a background showing the area of the clickable area.",
 		},
 		
 		{type = "blank"},
