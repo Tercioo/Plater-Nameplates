@@ -3660,6 +3660,7 @@ function Plater.CreateScriptingPanel()
 		newScript.url = nil
 		newScript.semver = nil
 		newScript.version = nil
+		newScript.scriptId = nil
 		
 		tinsert (Plater.db.profile.script_data, newScript)
 		scriptingFrame.ScriptSelectionScrollBox:Refresh()

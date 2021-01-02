@@ -9119,10 +9119,21 @@ end
 		end
 		
 		if (scriptType == "script") then
-			--scripts = DF.table.copy({}, Plater.db.profile.script_data)
+			--cleanup first
+			for scriptId, scriptObject in ipairs (Plater.db.profile.script_data) do
+				scriptObject.scriptId = nil
+			end
+			
+			--copy
 			scripts = copyHookTables({}, Plater.db.profile.script_data)
+			
 		elseif (scriptType == "hook") then
-			--scripts = DF.table.copy({}, Plater.db.profile.hook_data)
+			--cleanup first
+			for scriptId, scriptObject in ipairs (Plater.db.profile.hook_data) do
+				scriptObject.scriptId = nil
+			end
+			
+			--copy
 			scripts = copyHookTables({}, Plater.db.profile.hook_data)
 		end
 		
@@ -9197,6 +9208,7 @@ end
 		["Plater"] = {
 			["CompileAllScripts"] = true,
 			["GetAllScripts"] = true,
+			["GetAllScriptsAsPrioSortedCopy"] = true,
 			["ScriptMetaFunctions"] = true,
 			["DecompressData"] = true,
 			["CompressData"] = true,
