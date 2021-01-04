@@ -417,10 +417,29 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 		local showAnimationOnStop = function()
 			iconFrame:SetScale(1)
 		end
+		
+		local iconShowInAnimation = {}
 	
-		local iconShowInAnimation = DF:CreateAnimationHub (iconFrame, showAnimationOnPlay, showAnimationOnStop)
-		DF:CreateAnimation (iconShowInAnimation, "Scale", 1, .05, .7, .7, 1.1, 1.1)
-		DF:CreateAnimation (iconShowInAnimation, "Scale", 2, .05, 1.1, 1.1, 1, 1)
+		local iconShowInAnimationIcon = DF:CreateAnimationHub (iconFrame.Icon, showAnimationOnPlay, showAnimationOnStop)
+		DF:CreateAnimation (iconShowInAnimationIcon, "Scale", 1, .05, .7, .7, 1.1, 1.1)
+		DF:CreateAnimation (iconShowInAnimationIcon, "Scale", 2, .05, 1.1, 1.1, 1, 1)
+		
+		local iconShowInAnimationBorder = DF:CreateAnimationHub (iconFrame.Border, showAnimationOnPlay, showAnimationOnStop)
+		DF:CreateAnimation (iconShowInAnimationBorder, "Scale", 1, .05, .7, .7, 1.1, 1.1)
+		DF:CreateAnimation (iconShowInAnimationBorder, "Scale", 2, .05, 1.1, 1.1, 1, 1)
+		
+		iconShowInAnimation.iconShowInAnimationIcon = iconShowInAnimationIcon
+		iconShowInAnimation.iconShowInAnimationBorder = iconShowInAnimationBorder
+		
+		function iconShowInAnimation.Play(iconShowInAnimation)
+			iconShowInAnimation.iconShowInAnimationIcon:Play()
+			iconShowInAnimation.iconShowInAnimationBorder:Play()
+		end
+		function iconShowInAnimation.Stop(iconShowInAnimation)
+			iconShowInAnimation.iconShowInAnimationIcon:Stop()
+			iconShowInAnimation.iconShowInAnimationBorder:Stop()
+		end
+		
 		iconFrame.ShowAnimation = iconShowInAnimation
 	end
 	
