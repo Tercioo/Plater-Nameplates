@@ -6722,7 +6722,7 @@ local relevance_options = {
 				Plater.UpdateAllPlates()
 			end,
 			name = "Enable for enemies",
-			desc = "Apply aplha settings to enemy units.",
+			desc = "Apply alpha settings to enemy units.",
 		},
 		
 		{type = "break"},
@@ -6831,7 +6831,7 @@ local relevance_options = {
 				Plater.UpdateAllPlates()
 			end,
 			name = "Enable for friendlies",
-			desc = "Apply aplha settings to friendly units.",
+			desc = "Apply alpha settings to friendly units.",
 		},
 		
 		{type = "break"},
