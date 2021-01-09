@@ -1471,6 +1471,7 @@ Plater.DefaultSpellRangeListF = {
 		["nameplateOtherAtBase"] = true,
 		["nameplateOtherTopInset"] = true,
 		["nameplateOverlapV"] = true,
+		["nameplateOverlapH"] = true,
 		["nameplatePersonalHideDelaySeconds"] = true,
 		["nameplatePersonalShowAlways"] = true,
 		["nameplatePersonalShowInCombat"] = true,
