@@ -12283,7 +12283,7 @@ end
 			thumbscale = 1.7,
 			usedecimals = true,
 			name = "Space Between Nameplates (H)" .. CVarIcon,
-			desc = "The space between each nameplate horizontally when stacking is enabled.\n\n|cFFFFFFFFDefault: 1.10|r" .. CVarDesc .. "\n\n|cFFFFFF00Important|r: if you find issues with this setting, use:\n|cFFFFFFFF/run SetCVar ('nameplateOverlapV', '1.6')|r",
+			desc = "The space between each nameplate horizontally when stacking is enabled.\n\n|cFFFFFFFFDefault: 0.8|r" .. CVarDesc .. "\n\n|cFFFFFF00Important|r: if you find issues with this setting, use:\n|cFFFFFFFF/run SetCVar ('nameplateOverlapH', '0.8')|r",
 			nocombat = true,
 		},
 		
