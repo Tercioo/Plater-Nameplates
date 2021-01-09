@@ -7,6 +7,20 @@ local _
 function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
+		
+			{1610229480,  "Options Changes", "January 8st, 2021", "Adding option for horizontal nameplate overlap and renaming options."},
+			{1610229480,  "Bug Fix", "January 8st, 2021", "Fixing an issue with mod/script load conditions not tracking spec properly."},
+			{1610229480,  "Bug Fix", "January 8st, 2021", "Fixing an issue with Buff Special stacks not showing under some conditions."},
+			{1610229480,  "Bug Fix", "January 7th, 2021", "Adding glyphed Hex spells to CC (@Freddy090909)."},
+			{1610229480,  "Bug Fix", "January 6th, 2021", "Updating clickable area sizes when closing game menus."},
+			{1610229480,  "Bug Fix", "January 4th, 2021", "Fixing aura show animation breaking timer and stack text size."},
+			{1610229480,  "Bug Fix", "January 2nd, 2021", "Fixing an issue with mod/script options when duplicating mods/scripts."},
+			{1610229480,  "Bug Fix", "January 1st, 2021", "Fixing some typos."},
+			{1610229480,  "Bug Fix", "December 31th, 2020", "Another round of fixes for nameplate widgets."},
+			{1610229480,  "Bug Fix", "December 31th, 2020", "CCs should now be probably tracked again with auto-tracking."},
+			{1610229480,  "New Feature", "December 30th, 2020", "Update to 'Spiteful' script."},
+			{1610229480,  "Bug Fix", "December 30th, 2020", "Fixing leftover execute indicators on friendly units."},
+		
 			{1608853110,  "New Feature", "December 24th, 2020", "Added a time to die to Spiteful affix units."},
 			{1608853110,  "Revamp", "December 24th, 2020", "Aura reorder mod has been refreshed."},
 
