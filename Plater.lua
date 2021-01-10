@@ -2298,6 +2298,7 @@ local class_specs_coords = {
 			
 			local pvpType, isFFA, faction = GetZonePVPInfo()
 			Plater.ZonePvpType = pvpType
+			updateBgPlayerRoleCache()
 			
 			local name, instanceType, difficultyID, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, instanceMapID, instanceGroupSize = GetInstanceInfo()
 			
