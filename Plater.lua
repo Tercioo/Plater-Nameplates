@@ -2298,7 +2298,7 @@ local class_specs_coords = {
 			
 			local pvpType, isFFA, faction = GetZonePVPInfo()
 			Plater.ZonePvpType = pvpType
-			updateBgPlayerRoleCache()
+			Plater.UpdateBgPlayerRoleCache()
 			
 			local name, instanceType, difficultyID, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, instanceMapID, instanceGroupSize = GetInstanceInfo()
 			
@@ -8116,7 +8116,7 @@ end
 	
 	
 	local BG_PLAYER_CACHE = {}
-	local function updateBgPlayerRoleCache()
+	local function Plater.UpdateBgPlayerRoleCache()
 		local curNumScores = GetNumBattlefieldScores()
 		wipe(BG_PLAYER_CACHE)
 		for i = 1, curNumScores do
@@ -8130,7 +8130,7 @@ end
 	function Plater.GetSpecIconForUnitFromBG(unit)
 		local name = GetUnitName(unit, true)
 		if not BG_PLAYER_CACHE[name] then
-			updateBgPlayerRoleCache()
+			Plater.UpdateBgPlayerRoleCache()
 		end
 		
 		local cache = BG_PLAYER_CACHE[name]
@@ -9430,6 +9430,7 @@ end
 			["UpdateUIParentTargetLevels"] = true,
 			["RefreshTankCache"] = true,
 			["ForceFindPetOwner"] = true,
+			["UpdateBgPlayerRoleCache"] = false,
 		},
 		
 		["DetailsFramework"] = {
