@@ -8116,7 +8116,7 @@ end
 	
 	
 	local BG_PLAYER_CACHE = {}
-	local function Plater.UpdateBgPlayerRoleCache()
+	function Plater.UpdateBgPlayerRoleCache()
 		local curNumScores = GetNumBattlefieldScores()
 		wipe(BG_PLAYER_CACHE)
 		for i = 1, curNumScores do
