@@ -701,6 +701,56 @@ Plater.DefaultSpellRangeListF = {
 	[1444] = 40, --> DAMAGER (low-level chars)
 }
 
+local class_specs_coords = {
+	[577] = {128/512, 192/512, 256/512, 320/512}, --> havoc demon hunter
+	[581] = {192/512, 256/512, 256/512, 320/512}, --> vengeance demon hunter
+
+	[250] = {0, 64/512, 0, 64/512}, --> blood dk
+	[251] = {64/512, 128/512, 0, 64/512}, --> frost dk
+	[252] = {128/512, 192/512, 0, 64/512}, --> unholy dk
+	
+	[102] = {192/512, 256/512, 0, 64/512}, -->  druid balance
+	[103] = {256/512, 320/512, 0, 64/512}, -->  druid feral
+	[104] = {320/512, 384/512, 0, 64/512}, -->  druid guardian
+	[105] = {384/512, 448/512, 0, 64/512}, -->  druid resto
+
+	[253] = {448/512, 512/512, 0, 64/512}, -->  hunter bm
+	[254] = {0, 64/512, 64/512, 128/512}, --> hunter marks
+	[255] = {64/512, 128/512, 64/512, 128/512}, --> hunter survivor
+	
+	[62] = {(128/512) + 0.001953125, 192/512, 64/512, 128/512}, --> mage arcane
+	[63] = {192/512, 256/512, 64/512, 128/512}, --> mage fire
+	[64] = {256/512, 320/512, 64/512, 128/512}, --> mage frost
+	
+	[268] = {320/512, 384/512, 64/512, 128/512}, --> monk bm
+	[269] = {448/512, 512/512, 64/512, 128/512}, --> monk ww
+	[270] = {384/512, 448/512, 64/512, 128/512}, --> monk mw
+	
+	[65] = {0, 64/512, 128/512, 192/512}, --> paladin holy
+	[66] = {64/512, 128/512, 128/512, 192/512}, --> paladin protect
+	[70] = {(128/512) + 0.001953125, 192/512, 128/512, 192/512}, --> paladin ret
+	
+	[256] = {192/512, 256/512, 128/512, 192/512}, --> priest disc
+	[257] = {256/512, 320/512, 128/512, 192/512}, --> priest holy
+	[258] = {(320/512) + (0.001953125 * 4), 384/512, 128/512, 192/512}, --> priest shadow
+	
+	[259] = {384/512, 448/512, 128/512, 192/512}, --> rogue assassination
+	[260] = {448/512, 512/512, 128/512, 192/512}, --> rogue combat
+	[261] = {0, 64/512, 192/512, 256/512}, --> rogue sub
+	
+	[262] = {64/512, 128/512, 192/512, 256/512}, --> shaman elemental
+	[263] = {128/512, 192/512, 192/512, 256/512}, --> shamel enhancement
+	[264] = {192/512, 256/512, 192/512, 256/512}, --> shaman resto
+	
+	[265] = {256/512, 320/512, 192/512, 256/512}, --> warlock aff
+	[266] = {320/512, 384/512, 192/512, 256/512}, --> warlock demo
+	[267] = {384/512, 448/512, 192/512, 256/512}, --> warlock destro
+	
+	[71] = {448/512, 512/512, 192/512, 256/512}, --> warrior arms
+	[72] = {0, 64/512, 256/512, 320/512}, --> warrior fury
+	[73] = {64/512, 128/512, 256/512, 320/512}, --> warrior protect
+}
+
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> cached value ~cache
 --Plater allocate several values in memory to save performance (cpu), this may increase memory usage
@@ -823,6 +873,8 @@ Plater.DefaultSpellRangeListF = {
 	local IS_EDITING_SPELL_ANIMATIONS = false
 	
 	local HOOKED_BLIZZARD_PLATEFRAMES = {}
+	
+	local CLASS_INFO_CACHE = {}
 
 	--store a list of friendly players in the player friends list
 	Plater.FriendsCache = {}
@@ -4485,6 +4537,18 @@ function Plater.OnInit() --private --~oninit ~init
 		end
 	end)
 	
+	-- fill class-info cache data
+	for classID = 1, MAX_CLASSES do
+		local _, classFile = GetClassInfo(classID)
+		CLASS_INFO_CACHE[classFile] = {}
+		for i = 1, GetNumSpecializationsForClassID(classID) do
+			local specID, maleName, _, iconID, role = GetSpecializationInfoForClassID(classID, i, 2) -- male
+			local _, femaleName, _, iconID, role = GetSpecializationInfoForClassID(classID, i, 3) -- female
+			CLASS_INFO_CACHE[classFile][maleName] = {role = role, specID = specID, iconID = iconID}
+			CLASS_INFO_CACHE[classFile][femaleName] = CLASS_INFO_CACHE[classFile][maleName]
+		end
+	end
+	
 	-- hook to the InterfaceOptionsFrame and VideoOptionsFrame to update the nameplate sizes, as blizzard somehow messes things up there on hide...
 	InterfaceOptionsFrame:HookScript('OnHide',Plater.UpdatePlateClickSpace)
 	VideoOptionsFrame:HookScript('OnHide',Plater.UpdatePlateClickSpace)
@@ -6777,13 +6841,19 @@ end
 			if (config.indicator_enemyclass) then
 				Plater.AddIndicator (plateFrame, "classicon")
 			end
-			if (config.indicator_spec) then 
-				--> check if the user is using details
-				if (Details and Details.realversion >= 134) then
-					local spec = Details:GetSpecByGUID (plateFrame [MEMBER_GUID])
-					if (spec) then
-						local texture, L, R, T, B = Details:GetSpecIcon (spec)
-						Plater.AddIndicator (plateFrame, "specicon", texture, L, R, T, B)
+			if (config.indicator_spec) then
+				-- use BG info if available
+				local texture, L, R, T, B = Plater.GetSpecIconForUnitFromBG(plateFrame [MEMBER_UNITID])
+				if texture then
+					Plater.AddIndicator (plateFrame, "specicon", texture, L, R, T, B)
+				else
+					--> check if the user is using details
+					if (Details and Details.realversion >= 134) then
+						local spec = Details:GetSpecByGUID (plateFrame [MEMBER_GUID])
+						if (spec) then
+							local texture, L, R, T, B = Details:GetSpecIcon (spec)
+							Plater.AddIndicator (plateFrame, "specicon", texture, L, R, T, B)
+						end
 					end
 				end
 			end
@@ -8041,6 +8111,45 @@ end
 		end
 		
 		return assignedRole
+	end
+	
+	
+	local BG_PLAYER_CACHE = {}
+	local function updateBgPlayerRoleCache()
+		local curNumScores = GetNumBattlefieldScores()
+		wipe(BG_PLAYER_CACHE)
+		for i = 1, curNumScores do
+			local name, _, _, _, _, faction, race, class, classToken, _, _, _, _, _, _, talentSpec = GetBattlefieldScore(i)
+			if name then
+				BG_PLAYER_CACHE[name] = {faction = faction, race = race, class = class, classToken = classToken, talentSpec = talentSpec}
+			end
+		end
+	end
+	
+	function Plater.GetSpecIconForUnitFromBG(unit)
+		local name = GetUnitName(unit, true)
+		if not BG_PLAYER_CACHE[name] then
+			updateBgPlayerRoleCache()
+		end
+		
+		local cache = BG_PLAYER_CACHE[name]
+		if cache then
+			return Plater.GetSpecIcon(CLASS_INFO_CACHE[cache.classToken] and CLASS_INFO_CACHE[cache.classToken][cache.talentSpec] and CLASS_INFO_CACHE[cache.classToken][cache.talentSpec].specID)
+		end
+		return nil
+	end
+	
+	function Plater.GetSpecIcon(spec)
+		if (spec) then
+			if (spec > 500) then --hack to new spec ids on new leveling zones from level 1-10
+				spec = 65
+			end
+			if (useAlpha) then
+				return [[Interface\AddOns\Plater\images\spec_icons_normal_alpha]], unpack (class_specs_coords [spec])
+			else
+				return [[Interface\AddOns\Plater\images\spec_icons_normal]], unpack (class_specs_coords [spec])
+			end
+		end
 	end
 	
 	--similar to Plater.GetSettings, but can be called from scripts
