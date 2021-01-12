@@ -6383,6 +6383,11 @@ local relevance_options = {
 				local plateConfig = Plater.db.profile.plate_config
 
 				plateConfig.global_health_width = value
+				
+				-- do not propagate during import or profile switch!
+				if not PlaterOptionsPanelFrame:IsShown() or profilesFrame.IsImporting then
+					return
+				end
 
 				--change the health bars
 				plateConfig.friendlyplayer.health[1] = value
@@ -6429,6 +6434,11 @@ local relevance_options = {
 				local plateConfig = Plater.db.profile.plate_config
 
 				plateConfig.global_health_height = value
+				
+				-- do not propagate during import or profile switch!
+				if not PlaterOptionsPanelFrame:IsShown() or profilesFrame.IsImporting then
+					return
+				end
 
 				plateConfig.friendlyplayer.health[2] = value
 				plateConfig.friendlyplayer.health_incombat[2] = value
