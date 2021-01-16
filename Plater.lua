@@ -10535,53 +10535,6 @@ end
 			end
 		end
 	end
-
-	--make an indexScriptTable for the script object using indexes instead of key to decrease the size of the string to be exported
-	--function Plater.PrepareTableToExport (scriptObject)
-	function Plater.PrepareTableToExport_OLD (scriptObject)
-		
-		if (scriptObject.Hooks) then
-			--script for hooks
-			local t = {}
-			
-			t [1] = scriptObject.Name
-			t [2] = scriptObject.Icon
-			t [3] = scriptObject.Desc
-			t [4] = scriptObject.Author
-			t [5] = scriptObject.Time
-			t [6] = scriptObject.Revision
-			t [7] = scriptObject.PlaterCore
-			t [8] = scriptObject.LoadConditions
-			t [9] = {}
-
-			for hookName, hookCode in pairs (scriptObject.Hooks) do
-				t [9] [hookName] = hookCode
-			end
-			
-			return t
-		else
-			--regular script for aura cast or unitID
-			local t = {}
-			
-			t [1] = scriptObject.ScriptType
-			t [2] = scriptObject.Name
-			t [3] = scriptObject.SpellIds
-			t [4] = scriptObject.NpcNames
-			t [5] = scriptObject.Icon
-			t [6] = scriptObject.Desc
-			t [7] = scriptObject.Author
-			t [8] = scriptObject.Time
-			t [9] = scriptObject.Revision
-			t [10] = scriptObject.PlaterCore
-			
-			for i = 1, #Plater.CodeTypeNames do
-				local memberName = Plater.CodeTypeNames [i]
-				t [#t + 1] = scriptObject [memberName]
-			end
-			
-			return t
-		end
-	end
 	
 	--function Plater.PrepareTableToExportStringIndexes (scriptObject)
 	function Plater.PrepareTableToExport (scriptObject)
