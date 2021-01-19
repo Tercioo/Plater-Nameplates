@@ -7956,13 +7956,15 @@ end
 							questData.yourQuest = true
 							questData.groupQuest = true
 						elseif not nextLineText:match(THREAT_TOOLTIP) then
-							local p1, p2 = nextLineText:match ("(%d+)/(%d+)") 
+								local p1, p2 = nextLineText:match ("(%d+)/(%d+)")
+							local progressQuest = false
 							if (not p1) then
 								-- check for % based quests
 								p1 = nextLineText:match ("(%d+%%)")
 								if p1 then
 									-- remove the % sign for consistency
 									p1 = string.gsub(p1,"%%", '')
+									progressQuest = true
 								end
 							end
 							
@@ -7971,7 +7973,12 @@ end
 								atLeastOneQuestUnfinished = true
 								amount1, amount2 = p1, p2
 								questData.amount = amount1
-								questData.total = amount2
+								questData.progressQuest = progressQuest
+								if progressQuest then
+									questData.total = 100
+								else
+									questData.total = amount2
+								end
 								if yourQuest ~= false then
 									yourQuest = false
 									questData.finished = false
