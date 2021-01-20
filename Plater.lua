@@ -6858,6 +6858,30 @@ end
 					end
 				end
 			end
+		
+		elseif (actorType == ACTORTYPE_FRIENDLY_PLAYER) then
+			if (config.indicator_friendlyfaction) then
+				Plater.AddIndicator (plateFrame, UnitFactionGroup (plateFrame.unitFrame [MEMBER_UNITID]))
+			end
+			if (config.indicator_friendlyclass) then
+				Plater.AddIndicator (plateFrame, "classicon")
+			end
+			if (config.indicator_friendlyspec) then
+				-- use BG info if available
+				local texture, L, R, T, B = Plater.GetSpecIconForUnitFromBG(plateFrame [MEMBER_UNITID])
+				if texture then
+					Plater.AddIndicator (plateFrame, "specicon", texture, L, R, T, B)
+				else
+					--> check if the user is using details
+					if (Details and Details.realversion >= 134) then
+						local spec = Details:GetSpecByGUID (plateFrame [MEMBER_GUID])
+						if (spec) then
+							local texture, L, R, T, B = Details:GetSpecIcon (spec)
+							Plater.AddIndicator (plateFrame, "specicon", texture, L, R, T, B)
+						end
+					end
+				end
+			end
 			
 		elseif (actorType == ACTORTYPE_ENEMY_NPC) then
 		

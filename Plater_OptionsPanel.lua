@@ -6943,17 +6943,6 @@ local relevance_options = {
 		
 		{
 			type = "toggle",
-			get = function() return Plater.db.profile.indicator_faction end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.indicator_faction = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Enemy Faction Icon",
-			desc = "Show horde or alliance icon.",
-		},
-		
-		{
-			type = "toggle",
 			get = function() return Plater.db.profile.indicator_pet end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.indicator_pet = value
@@ -7029,6 +7018,16 @@ local relevance_options = {
 		},
 		{
 			type = "toggle",
+			get = function() return Plater.db.profile.indicator_faction end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_faction = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Enemy Faction Icon",
+			desc = "Show horde or alliance icon.",
+		},
+		{
+			type = "toggle",
 			get = function() return Plater.db.profile.indicator_enemyclass end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.indicator_enemyclass = value
@@ -7046,7 +7045,37 @@ local relevance_options = {
 				Plater.UpdateAllPlates()
 			end,
 			name = "Enemy Spec",
-			desc = "Enemy player spec icon.\n\n|cFFFFFF00Important|r: must have Details! Damage Meter installed.",
+			desc = "Enemy player spec icon.\n\n|cFFFFFF00Important|r: must have Details! Damage Meter installed to work outside of BG/Arena.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.indicator_friendlyfaction end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_friendlyfaction = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Friendly Faction Icon",
+			desc = "Show horde or alliance icon.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.indicator_friendlyclass end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_friendlyclass = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Friendly Class",
+			desc = "Friendly player class icon.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.indicator_friendlyspec end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_friendlyspec = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Friendly Spec",
+			desc = "Friendly player spec icon.\n\n|cFFFFFF00Important|r: must have Details! Damage Meter installed to work outside of BG/Arena.",
 		},
 		{
 			type = "range",

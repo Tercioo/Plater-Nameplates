@@ -2472,13 +2472,16 @@ PLATER_DEFAULT_SETTINGS = {
 		cast_statusbar_spark_color = {1, 1, 1, 1},
 		
 		indicator_faction = true,
+		indicator_friendlyfaction = false,
 		indicator_spec = true,
+		indicator_friendlyspec = false,
 		indicator_worldboss = true,
 		indicator_elite = true,
 		indicator_rare = true,
 		indicator_quest = true,
 		indicator_pet = true,
 		indicator_enemyclass = false,
+		indicator_friendlyclass = false,
 		indicator_anchor = {side = 2, x = -2, y = 0},
 		indicator_scale = 1,
 		
