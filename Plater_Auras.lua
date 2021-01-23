@@ -1225,6 +1225,9 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 
 	--used in scripts to get a specific buff from the unit, return full information
 	--can be used with spellId or spellName
+	function Plater.GetAura(unitId, spellName) --alias
+		return Plater.GetBuff(unitId, spellName)
+	end
 	function Plater.GetBuff(unitId, spellName)
 		if (type(spellName) == "number") then
 			spellName = GetSpellInfo(spellName)
@@ -1239,6 +1242,21 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 		local continuationToken
 		repeat
 			local slots = { UnitAuraSlots(unitId, "HELPFUL", BUFF_MAX_DISPLAY, continuationToken) }
+			continuationToken = slots[1]
+			for i=2, #slots do
+				local slot = slots[i];
+				local name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll = UnitAuraBySlot(unitId, slot)
+				if (name) then
+					if (name:lower()  == spellName) then
+						return name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll
+					end
+				end
+			end
+		until not continuationToken
+
+		local continuationToken
+		repeat
+			local slots = { UnitAuraSlots(unitId, "HARMFUL", BUFF_MAX_DISPLAY, continuationToken) }
 			continuationToken = slots[1]
 			for i=2, #slots do
 				local slot = slots[i];
