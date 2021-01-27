@@ -1116,7 +1116,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 							can_show_this_debuff = true
 							
 						--> user added this buff to track in the buff tracking tab
-						elseif (AUTO_TRACKING_EXTRA_DEBUFFS [name]) then
+						elseif (AUTO_TRACKING_EXTRA_DEBUFFS [name] or AUTO_TRACKING_EXTRA_DEBUFFS [spellId]) then
 							can_show_this_debuff = true
 						end
 						
