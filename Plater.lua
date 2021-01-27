@@ -6400,7 +6400,7 @@ end
 		--check for quest color
 		if (IS_IN_OPEN_WORLD and actorType == ACTORTYPE_ENEMY_NPC and DB_PLATE_CONFIG [actorType].quest_enabled) then --actorType == ACTORTYPE_FRIENDLY_NPC or 
 			local isQuestMob = Plater.IsQuestObjective (plateFrame)
-			if (isQuestMob and not Plater.IsUnitTapDenied (plateFrame.unitFrame.unit)) then
+			if (isQuestMob and DB_PLATE_CONFIG [actorType].quest_color_enabled and not Plater.IsUnitTapDenied (plateFrame.unitFrame.unit)) then
 				if (plateFrame [MEMBER_REACTION] == UNITREACTION_NEUTRAL) then
 					Plater.ChangeHealthBarColor_Internal (healthBar, unpack (DB_PLATE_CONFIG [actorType].quest_color_neutral))
 					
@@ -6447,7 +6447,9 @@ end
 				end
 			
 			elseif (IS_IN_OPEN_WORLD and DB_PLATE_CONFIG [actorType].quest_enabled and Plater.IsQuestObjective (plateFrame)) then
-				Plater.ChangeHealthBarColor_Internal (healthBar, unpack (DB_PLATE_CONFIG [actorType].quest_color))
+				if (DB_PLATE_CONFIG [actorType].quest_color_enabled) then
+					Plater.ChangeHealthBarColor_Internal (healthBar, unpack (DB_PLATE_CONFIG [actorType].quest_color))
+				end
 
 				healthBar:Show()
 				buffFrame:Show()

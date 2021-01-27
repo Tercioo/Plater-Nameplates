@@ -312,6 +312,7 @@ PLATER_DEFAULT_SETTINGS = {
 				percent_text_alpha = 1,
 				
 				quest_enabled = true,
+				quest_color_enabled = true,
 				quest_color = {.5, 1, 0, 1},
 				
 				big_actortitle_text_size = 11,
@@ -394,6 +395,7 @@ PLATER_DEFAULT_SETTINGS = {
 				percent_text_alpha = 1,
 				
 				quest_enabled = true,
+				quest_color_enabled = true,
 				quest_color_enemy = {1, .369, 0, 1},
 				quest_color_neutral = {1, .65, 0, 1},
 				
