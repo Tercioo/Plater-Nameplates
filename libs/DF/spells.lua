@@ -135,6 +135,7 @@ DF.CooldownsBySpec = {
 			[30283] = 5, --Shadowfury
 			[6789] = 5, --Mortal Coil (talent)
 			[333889] = 5, --Fel Domination
+			[5484] = 5, --Howl of Terror (talent)
 		},
 		--demonology
 		[266] = {
@@ -162,6 +163,7 @@ DF.CooldownsBySpec = {
 			[6789] = 5, --Mortal Coil (talent)
 			[30283] = 5, --Shadowfury
 			[333889] = 5, --Fel Domination
+			[5484] = 5, --Howl of Terror (talent)
 		},
 	
 	--WARRIOR
@@ -537,6 +539,7 @@ DF.CooldownsInfo = {
 	[113858] = {cooldown = 120, duration = 20, talent = 23092, charges = 1, class = "WARLOCK", type = 1}, --Dark Soul: Instability (talent)
 	[30283] = {cooldown = 60, duration = 3, talent = false, charges = 1, class = "WARLOCK", type = 5}, --Shadowfury
 	[333889] = {cooldown = 180, duration = 15, talent = false, charges = 1, class = "WARLOCK", type = 5}, --Fel Domination
+	[5484] = {cooldown = 40, duration = 20, talent = true, charges = 1, class = "WARLOCK", type = 5}, --Howl of Terror (talent)
 	
 	--> shaman
 	[198067] = {cooldown = 150, duration = 30, talent = false, charges = 1, class = "SHAMAN", type = 1}, --Fire Elemental
@@ -716,6 +719,7 @@ DF.CrowdControlSpells = {
 	[6789] = "WARLOCK", --Mortal Coil
 	[30283] = "WARLOCK", --Shadowfury
 	[710] = "WARLOCK", --Banish
+	[5484] = "WARLOCK", --Howl of Terror (talent)
 
 	[118] = "MAGE", --Polymorph
 	[61305] = "MAGE", --Polymorph (black cat)
@@ -948,6 +952,11 @@ DF.FoodIDs = {
 	[308419] = 1, -- (periodicaly damage) Smothered Shank
 	[327715] = 1, -- (speed) Fried Bonefish
 
+	--feasts
+	[327706] = 2, --strength +20
+	[327707] = 2, --stamina +20
+	[327708] = 2, --intellect +20
+	[327709] = 2, --agility +20
 }
 
 DF.PotionIDs = {
