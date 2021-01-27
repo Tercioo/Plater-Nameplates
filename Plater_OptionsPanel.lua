@@ -11197,7 +11197,15 @@ end
 			values = function() return build_framelevel_table ("ui_parent_buff2_strata") end,
 			name = "Aura Frame 2",
 			desc = "Which strata aura frame 2 will be placed in.",
-		},		
+		},
+		
+		{
+			type = "select",
+			get = function() return Plater.db.profile.ui_parent_buff_special_strata end,
+			values = function() return build_framelevel_table ("ui_parent_buff_special_strata") end,
+			name = "Buff Special Frame",
+			desc = "Which strata buff special frame frame will be placed in.",
+		},
 		
 		{type = "blank"},
 		{type = "label", get = function() return "Frame Levels:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
@@ -11244,6 +11252,21 @@ end
 			max = 5000,
 			step = 1,
 			name = "Aura Frame 2",
+			desc = "Move frames up or down within the strata channel.",
+		},
+		
+		{
+			type = "range",
+			get = function() return Plater.db.profile.ui_parent_buff_special_level end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.ui_parent_buff_special_level = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end,
+			min = 1,
+			max = 5000,
+			step = 1,
+			name = "Buff Special Frame",
 			desc = "Move frames up or down within the strata channel.",
 		},
 		

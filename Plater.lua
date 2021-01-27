@@ -1802,15 +1802,20 @@ local class_specs_coords = {
 			local castBar = unitFrame.castBar
 			local buffFrame1 = unitFrame.BuffFrame
 			local buffFrame2 = unitFrame.BuffFrame2
+			local buffSpecial = unitFrame.ExtraIconFrame
+			
 			--strata
 			unitFrame:SetFrameStrata (profile.ui_parent_base_strata)
 			castBar:SetFrameStrata (profile.ui_parent_cast_strata)
 			buffFrame1:SetFrameStrata (profile.ui_parent_buff_strata)
 			buffFrame2:SetFrameStrata (profile.ui_parent_buff2_strata)
+			buffSpecial:SetFrameStrata (profile.ui_parent_buff_special_strata)
+			
 			--level
 			castBar:SetFrameLevel (profile.ui_parent_cast_level)
 			buffFrame1:SetFrameLevel (profile.ui_parent_buff_level)
 			buffFrame2:SetFrameLevel (profile.ui_parent_buff2_level)
+			buffSpecial:SetFrameLevel (profile.ui_parent_buff_special_level)
 			
 			--raid-target marker adjust:
 			unitFrame.PlaterRaidTargetFrame:SetFrameStrata(unitFrame.healthBar:GetFrameStrata())
