@@ -141,13 +141,15 @@ local function getPerfData()
 		perfTable[pType] = {}
 		local pTypeTime = 0
 		local pTypeExec = 0
+		local pTypeSubLog = 0
 		
 		local printStrPType = ""
 		for event, pData in pairs(data) do
 			perfTable[pType][event] = {}
 			pData.count = pData.count or 0
-			perfTable[pType][event].total = "avg: " .. roundTime(pData.totalTime / pData.count) .. "ms - count: " .. pData.count .. " - total: " .. roundTime(pData.totalTime) .. "ms - (as sub-log: " .. roundTime(pData.subLogTime or 0) .. "ms)"
-			pTypeTime = pTypeTime + pData.totalTime
+			perfTable[pType][event].total = "avg: " .. roundTime(pData.totalTime / pData.count) .. "ms - count: " .. pData.count .. " - total: " .. roundTime(pData.totalTime - (pData.subLogTime or 0)) .. "ms - (as sub-log: " .. roundTime(pData.subLogTime or 0) .. "ms)"
+			pTypeTime = pTypeTime + pData.totalTime - (pData.subLogTime or 0)
+			pTypeSubLog = pTypeSubLog + (pData.subLogTime or 0)
 			pTypeExec = pTypeExec + pData.count
 			printStrPType = printStrPType .. indent .. event .. " - " .. perfTable[pType][event].total .. "\n"
 			
@@ -168,11 +170,12 @@ local function getPerfData()
 		end
 		perfTable[pType].pTypeTime = pTypeTime
 		perfTable[pType].pTypeExec = pTypeExec
+		perfTable[pType].pTypeSubLog = pTypeSubLog
 		perfTable[pType].pTypeGlobalPercent = pTypeTime / perfTable.totalGlobalTime * 100
 		sumTimePTypes = sumTimePTypes + pTypeTime
 		sumExecPTypes = sumExecPTypes + pTypeExec
 		
-		printStr = printStr .. pType .. ":" .. "\n" .. "Total -> count: " .. pTypeExec .. " - time: "  .. roundTime(pTypeTime) .. "ms - %global: " .. roundPercent(perfTable[pType].pTypeGlobalPercent) .. "%" .. "\n\n" .. printStrPType
+		printStr = printStr .. pType .. ":" .. "\n" .. "Total -> count: " .. pTypeExec .. " - time: "  .. roundTime(pTypeTime) .. "ms - %global: " .. roundPercent(perfTable[pType].pTypeGlobalPercent) .. "% - (as sub-log: " .. roundTime(pTypeSubLog) .. "ms)" .. "\n\n" .. printStrPType
 		
 		printStr = printStr .. "\n"
 	end
