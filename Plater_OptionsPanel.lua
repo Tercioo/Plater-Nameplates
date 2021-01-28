@@ -4621,6 +4621,18 @@ do
 			
 			{
 				type = "toggle",
+				get = function() return Plater.db.profile.plate_config.player.enabled end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.plate_config.player.enabled = value
+					ReloadUI()
+				end,
+				nocombat = true,
+				name = "Module Enabled",
+				desc = "Enable Plater nameplates for the personal bar.\n\n|cFFFFFF00Important|r: Forces a /reload on change.\nThis option is dependent on the client`s nameplate state (on/off)",
+			},
+			
+			{
+				type = "toggle",
 				get = function() return Plater.db.profile.plate_config.player.click_through end,
 				set = function (self, fixedparam, value) 
 					Plater.db.profile.plate_config.player.click_through = value
@@ -7229,7 +7241,19 @@ end
 			values = function() return copy_settings_options end,
 			name = "Copy",
 			desc = "Copy settings from another tab.\n\nWhen selecting an option a confirmation box is shown to confirm the copy.",
-		},	
+		},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.enabled end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.friendlyplayer.enabled = value
+				ReloadUI()
+			end,
+			nocombat = true,
+			name = "Module Enabled",
+			desc = "Enable Plater nameplates for friendly players.\n\n|cFFFFFF00Important|r: Forces a /reload on change.\nThis option is dependent on the client`s nameplate state (on/off)",
+		},
 		
 		{
 			type = "toggle",
@@ -8182,6 +8206,18 @@ end
 		
 		{
 			type = "toggle",
+			get = function() return Plater.db.profile.plate_config.enemyplayer.enabled end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.enemyplayer.enabled = value
+				ReloadUI()
+			end,
+			nocombat = true,
+			name = "Module Enabled",
+			desc = "Enable Plater nameplates for enemy players.\n\n|cFFFFFF00Important|r: Forces a /reload on change.\nThis option is dependent on the client`s nameplate state (on/off)",
+		},
+		
+		{
+			type = "toggle",
 			get = function() return Plater.db.profile.plate_config.enemyplayer.use_playerclass_color end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config.enemyplayer.use_playerclass_color = value
@@ -9073,19 +9109,20 @@ end
 		
 		{
 			type = "toggle",
-			get = function() return GetCVarBool ("nameplateShowFriendlyNPCs") end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.enabled end,
 			set = function (self, fixedparam, value) 
 				if (value) then
-					SetCVar ("nameplateShowFriendlyNPCs", CVAR_ENABLED)
-					Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].enabled = true
+					--SetCVar ("nameplateShowFriendlyNPCs", CVAR_ENABLED)
+					Plater.db.profile.plate_config.friendlynpc.enabled = true
 				else
-					SetCVar ("nameplateShowFriendlyNPCs", CVAR_DISABLED)
-					Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].enabled = false
+					--SetCVar ("nameplateShowFriendlyNPCs", CVAR_DISABLED)
+					Plater.db.profile.plate_config.friendlynpc.enabled = false
 				end
+				ReloadUI()
 			end,
 			nocombat = true,
-			name = L["OPTIONS_ENABLED"] .. CVarIcon,
-			desc = "Show nameplate for friendly npcs.\n\n|cFFFFFF00Important|r: This option is dependent on the client`s nameplate state (on/off).\n\n|cFFFFFF00Important|r: when disabled but enabled on the client through (" .. (GetBindingKey ("FRIENDNAMEPLATES") or "") .. ") the healthbar isn't visible but the nameplate is still clickable." .. CVarDesc,
+			name = "Module Enabled",
+			desc = "Enable Plater nameplates for friendly NPCs.\n\n|cFFFFFF00Important|r: Forces a /reload on change.\nThis option is dependent on the client`s nameplate state (on/off)",
 		},
 
 		{
@@ -10098,6 +10135,18 @@ end
 				values = function() return copy_settings_options end,
 				name = "Copy",
 				desc = "Copy settings from another tab.\n\nWhen selecting an option a confirmation box is shown to confirm the copy.",
+			},
+			
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.plate_config.enemynpc.enabled end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.plate_config.enemynpc.enabled = value
+					ReloadUI()
+				end,
+				nocombat = true,
+				name = "Module Enabled",
+				desc = "Enable Plater nameplates for enemy NPCs.\n\n|cFFFFFF00Important|r: Forces a /reload on change.\nThis option is dependent on the client`s nameplate state (on/off)",
 			},
 			
 			{type = "blank"},
