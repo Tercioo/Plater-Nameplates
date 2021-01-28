@@ -920,6 +920,7 @@ local class_specs_coords = {
 	local IS_EDITING_SPELL_ANIMATIONS = false
 	
 	local HOOKED_BLIZZARD_PLATEFRAMES = {}
+	local ENABLED_BLIZZARD_PLATEFRAMES = {}
 	
 	local CLASS_INFO_CACHE = {}
 
@@ -1556,6 +1557,9 @@ local class_specs_coords = {
 		if (plateFrame:IsShown() and unitGUID == plateFrame [MEMBER_GUID]) then
 			--save user input data (usualy set from scripts) before call the unit added event
 				local unitFrame = plateFrame.unitFrame
+				if not unitFrame.PlaterOnScreen then
+					return
+				end
 				local customHealthBarWidth = unitFrame.customHealthBarWidth
 				local customHealthBarHeight = unitFrame.customHealthBarHeight
 				
@@ -1600,6 +1604,11 @@ local class_specs_coords = {
 	--run a delayed update on the namepalte, this is used when the client receives an information from the server but does not update the state immediately
 	--this usualy happens with faction and flag changes
 	function Plater.ScheduleUpdateForNameplate (plateFrame) --private
+	
+		if not plateFrame.unitFrame.PlaterOnScreen then
+			return
+		end
+	
 		--check if there's already an update scheduled for this unit
 		if (plateFrame.HasUpdateScheduled and not plateFrame.HasUpdateScheduled._cancelled) then
 			return
@@ -2391,7 +2400,7 @@ local class_specs_coords = {
 		UNIT_NAME_UPDATE = function (_, unitID)
 			if (unitID) then
 				local plateFrame = C_NamePlate.GetNamePlateForUnit (unitID)
-				if (plateFrame) then
+				if (plateFrame and plateFrame.unitFrame.PlaterOnScreen) then
 					local unitFrame = plateFrame.unitFrame
 					local unitName = UnitName (unitID)
 					if DB_USE_NAME_TRANSLIT then
@@ -2526,14 +2535,16 @@ local class_specs_coords = {
 		
 		DISPLAY_SIZE_CHANGED = function()
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-				plateFrame.UnitFrame:Hide()
+				if plateFrame.unitFrame.PlaterOnScreen then
+					Plater.OnRetailNamePlateShow(plateFrame.UnitFrame)
+				end
 			end
 			Plater.UpdateAllPlates (true)
 		end,
 		
 		UI_SCALE_CHANGED = function()
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-				plateFrame.UnitFrame:Hide()
+				Plater.OnRetailNamePlateShow(plateFrame.UnitFrame)
 			end
 			Plater.UpdateAllPlates (true)
 		end,
@@ -3079,6 +3090,8 @@ local class_specs_coords = {
 --				print ("nameplate added", UnitName (unitBarId))
 --			end
 		
+			local unitID = unitBarId
+		
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId)
 			if (not plateFrame) then
 				return
@@ -3089,7 +3102,77 @@ local class_specs_coords = {
 				plateFrame.unitFrame = plateFrame.unitFramePlater
 			end
 			
-			local unitID = unitBarId
+			--get and format the reaction to always be the value of the constants, then cache the reaction in some widgets for performance
+			local reaction = UnitReaction (unitID, "player") or 1
+			reaction = reaction <= UNITREACTION_HOSTILE and UNITREACTION_HOSTILE or reaction >= UNITREACTION_FRIENDLY and UNITREACTION_FRIENDLY or UNITREACTION_NEUTRAL
+			
+			local isBattlePet = UnitIsBattlePet(unitID)
+			local isPlayer = UnitIsPlayer (unitID)
+			local isSelf = UnitIsUnit (unitID, "player")
+			
+			local actorType
+			local isPlateEnabled = true
+			if (unitID) then
+				
+				if (isSelf) then
+					--> personal health bar
+					actorType = ACTORTYPE_PLAYER
+					
+				else
+					--> regular nameplate
+					
+					if (isPlayer) then
+						--unit is a player
+						
+						if (reaction >= UNITREACTION_FRIENDLY) then
+							actorType = ACTORTYPE_FRIENDLY_PLAYER
+							
+							isPlateEnabled = false
+							
+						else
+							actorType = ACTORTYPE_ENEMY_PLAYER
+							
+						end
+					else
+						--the unit is a npc
+						
+						if (reaction >= UNITREACTION_FRIENDLY) then
+							actorType = ACTORTYPE_FRIENDLY_NPC
+							
+						elseif isBattlePet then
+							actorType = ACTORTYPE_FRIENDLY_NPC
+							
+						else
+							--includes neutral npcs
+							actorType = ACTORTYPE_ENEMY_NPC
+							
+						end
+					end
+				end
+			end
+			
+			local blizzardPlateFrameID = tostring(plateFrame.UnitFrame)
+			plateFrame.unitFrame.blizzardPlateFrameID = blizzardPlateFrameID
+			
+			--if (not plateFrame.UnitFrame.HasPlaterHooksRegistered) then
+			if not HOOKED_BLIZZARD_PLATEFRAMES[blizzardPlateFrameID] then
+				--print(HOOKED_BLIZZARD_PLATEFRAMES[tostring(plateFrame.UnitFrame)], tostring(plateFrame.UnitFrame), plateFrame.UnitFrame.HasPlaterHooksRegistered)
+                --hook the retail nameplate
+                --plateFrame.UnitFrame:HookScript("OnShow", Plater.OnRetailNamePlateShow)
+				hooksecurefunc(plateFrame.UnitFrame, "Show", Plater.OnRetailNamePlateShow)
+                --plateFrame.UnitFrame.HasPlaterHooksRegistered = true
+				HOOKED_BLIZZARD_PLATEFRAMES[blizzardPlateFrameID] = true
+				
+            end
+			
+			if isPlateEnabled then
+				ENABLED_BLIZZARD_PLATEFRAMES[blizzardPlateFrameID] = false
+				
+			else
+				ENABLED_BLIZZARD_PLATEFRAMES[blizzardPlateFrameID] = true
+				plateFrame.unitFrame:Hide()
+				return
+			end
 			
 			local isWidgetOnlyMode = UnitNameplateShowsWidgetsOnly (unitBarId)
 			plateFrame.unitFrame.isWidgetOnlyMode = isWidgetOnlyMode
@@ -3099,6 +3182,8 @@ local class_specs_coords = {
 			Plater.OnRetailNamePlateShow(plateFrame.UnitFrame)
 			--show plater unit frame
 			plateFrame.unitFrame:Show()
+			
+			plateFrame.unitFrame.PlaterOnScreen = true
 			
 			--save the last unit type shown in this plate
 			plateFrame.PreviousUnitType = plateFrame.actorType
@@ -3111,17 +3196,6 @@ local class_specs_coords = {
 			if (unitFrame.ShowUIParentAnimation) then
 				unitFrame.ShowUIParentAnimation:Play()
 			end
-			
-			--if (not plateFrame.UnitFrame.HasPlaterHooksRegistered) then
-			if not HOOKED_BLIZZARD_PLATEFRAMES[tostring(plateFrame.UnitFrame)] then
-				--print(HOOKED_BLIZZARD_PLATEFRAMES[tostring(plateFrame.UnitFrame)], tostring(plateFrame.UnitFrame), plateFrame.UnitFrame.HasPlaterHooksRegistered)
-                --hook the retail nameplate
-                --plateFrame.UnitFrame:HookScript("OnShow", Plater.OnRetailNamePlateShow)
-				hooksecurefunc(plateFrame.UnitFrame, "Show", Plater.OnRetailNamePlateShow)
-                --plateFrame.UnitFrame.HasPlaterHooksRegistered = true
-				HOOKED_BLIZZARD_PLATEFRAMES[tostring(plateFrame.UnitFrame)] = true
-				
-            end
 			
 			if (DB_USE_UIPARENT) then
 				plateFrame:HookScript("OnSizeChanged", Plater.UpdateUIParentScale)
@@ -3234,10 +3308,6 @@ local class_specs_coords = {
 			unitFrame.namePlateThreatOffTankIsTanking = false
 			unitFrame.namePlateThreatOffTankName = nil
 			
-			--get and format the reaction to always be the value of the constants, then cache the reaction in some widgets for performance
-			local reaction = UnitReaction (unitID, "player") or 1
-			reaction = reaction <= UNITREACTION_HOSTILE and UNITREACTION_HOSTILE or reaction >= UNITREACTION_FRIENDLY and UNITREACTION_FRIENDLY or UNITREACTION_NEUTRAL
-			
 			plateFrame [MEMBER_REACTION] = reaction
 			unitFrame [MEMBER_REACTION] = reaction
 			unitFrame.BuffFrame [MEMBER_REACTION] = reaction
@@ -3246,9 +3316,11 @@ local class_specs_coords = {
 			unitFrame.BuffFrame2.unit = unitID
 			unitFrame.ExtraIconFrame.unit = unitID
 			
-			local isBattlePet = UnitIsBattlePet(unitID)
 			plateFrame.isBattlePet = isBattlePet
 			unitFrame.isBattlePet = isBattlePet
+			
+			plateFrame.isPlayer = isPlayer
+			unitFrame.isPlayer = isPlayer
 			
 			--clear the custom indicators table
 			wipe (unitFrame.CustomIndicators)
@@ -3266,21 +3338,18 @@ local class_specs_coords = {
 			--reset color values
 			healthBar.R, healthBar.G, healthBar.B = nil, nil, nil
 			
-			local actorType
-			
 			--reset the frame level and strata if using UIParent as the parent of the unitFrame
 			--the function checks if the option is enabled, no need to check here
 			Plater.UpdateUIParentLevels (unitFrame)
 			
 			if (unitFrame.unit) then
 				
-				if (UnitIsUnit (unitID, "player")) then
+				if (isSelf) then
 					--> personal health bar
 					plateFrame.isSelf = true
 					plateFrame.IsSelf = true
 					unitFrame.IsSelf = true --this is the value exposed to scripts
 					castBar.IsSelf = true --this is the value exposed to scripts
-					actorType = ACTORTYPE_PLAYER
 					plateFrame.NameAnchor = 0
 					
 					--do not allow the framework to show the unit name
@@ -3303,7 +3372,7 @@ local class_specs_coords = {
 					plateFrame.PlayerCannotAttack = not UnitCanAttack ("player", unitID)
 					unitFrame.PlayerCannotAttack = plateFrame.PlayerCannotAttack --expose to scripts
 					
-					if (UnitIsPlayer (unitID)) then
+					if (isPlayer) then
 						--unit is a player
 						plateFrame.playerGuildName = GetGuildInfo (unitID)
 						
@@ -3311,7 +3380,6 @@ local class_specs_coords = {
 							plateFrame.NameAnchor = DB_NAME_PLAYERFRIENDLY_ANCHOR
 							plateFrame.PlateConfig = DB_PLATE_CONFIG.friendlyplayer
 							Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_FRIENDLY_PLAYER, nil, true)
-							actorType = ACTORTYPE_FRIENDLY_PLAYER
 							unitFrame.Settings.ShowCastBar = not DB_CASTBAR_HIDE_FRIENDLY
 							if (DB_CASTBAR_HIDE_FRIENDLY) then
 								CastingBarFrame_SetUnit (castBar, nil, nil, nil)
@@ -3320,7 +3388,6 @@ local class_specs_coords = {
 							plateFrame.NameAnchor = DB_NAME_PLAYERENEMY_ANCHOR
 							plateFrame.PlateConfig = DB_PLATE_CONFIG.enemyplayer
 							Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_ENEMY_PLAYER, nil, true)
-							actorType = ACTORTYPE_ENEMY_PLAYER
 							unitFrame.Settings.ShowCastBar = not DB_CASTBAR_HIDE_ENEMIES
 							if (DB_CASTBAR_HIDE_ENEMIES) then
 								CastingBarFrame_SetUnit (castBar, nil, nil, nil)
@@ -3334,7 +3401,6 @@ local class_specs_coords = {
 							plateFrame.NameAnchor = DB_NAME_NPCFRIENDLY_ANCHOR
 							plateFrame.PlateConfig = DB_PLATE_CONFIG.friendlynpc
 							Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_FRIENDLY_NPC, nil, true)
-							actorType = ACTORTYPE_FRIENDLY_NPC
 							unitFrame.Settings.ShowCastBar = not DB_CASTBAR_HIDE_FRIENDLY
 							if (DB_CASTBAR_HIDE_FRIENDLY) then
 								CastingBarFrame_SetUnit (castBar, nil, nil, nil)
@@ -3343,7 +3409,6 @@ local class_specs_coords = {
 							plateFrame.NameAnchor = DB_NAME_NPCFRIENDLY_ANCHOR
 							plateFrame.PlateConfig = DB_PLATE_CONFIG.friendlynpc
 							Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_FRIENDLY_NPC, nil, true)
-							actorType = ACTORTYPE_FRIENDLY_NPC
 							unitFrame.Settings.ShowCastBar = not DB_CASTBAR_HIDE_FRIENDLY
 							if (DB_CASTBAR_HIDE_FRIENDLY) then
 								CastingBarFrame_SetUnit (castBar, nil, nil, nil)
@@ -3362,7 +3427,6 @@ local class_specs_coords = {
 							plateFrame.NameAnchor = DB_NAME_NPCENEMY_ANCHOR
 							plateFrame.PlateConfig = DB_PLATE_CONFIG.enemynpc
 							Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_ENEMY_NPC, nil, true)
-							actorType = ACTORTYPE_ENEMY_NPC
 							unitFrame.Settings.ShowCastBar = not DB_CASTBAR_HIDE_ENEMIES
 							if (DB_CASTBAR_HIDE_ENEMIES) then
 								CastingBarFrame_SetUnit (castBar, nil, nil, nil)
@@ -3443,6 +3507,10 @@ local class_specs_coords = {
 			--ViragDevTool_AddData({ctime = GetTime(), unit = unitBarId or "nil", stack = debugstack()}, "NAME_PLATE_UNIT_REMOVED - " .. (unitBarId or "nil"))
 			
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId)
+			ENABLED_BLIZZARD_PLATEFRAMES[plateFrame.unitFrame.blizzardPlateFrameID] = true -- OnRetailNamePlateShow is called first. ensure the plate might show!
+			if not plateFrame.unitFrame.PlaterOnScreen then
+				return
+			end
 			
 			--debug for hunter faith death
 			--if (select (2, UnitClass (unitBarId)) == "HUNTER") then
@@ -3555,6 +3623,9 @@ local class_specs_coords = {
 	--function for plateFrame.UnitFrame OnShow script
 	--it'll hide the retail nameplate when it shown
 	function Plater.OnRetailNamePlateShow (self) --private
+		if ENABLED_BLIZZARD_PLATEFRAMES[tostring(self)] then
+			return
+		end
 		self:Hide()
 		self:UnregisterAllEvents()
 		if (CompactUnitFrame_UnregisterEvents) then
@@ -4811,7 +4882,7 @@ end
 	function Plater.FindAndSetNameplateColor (unitFrame, forceRefresh)
 		local r, g, b, a = 1, 1, 1, 1
 		local unitID = unitFrame.unit
-		if (unitFrame.IsSelf) then
+		if (unitFrame.IsSelf or not unitFrame.PlaterOnScreen) then
 			return
 			
 		else
@@ -5817,17 +5888,19 @@ end
 		Plater.PlayerHasFocusTargetNonSelf = Plater.PlayerHasFocusTarget and Plater.PlayerCurrentFocusTargetGUID ~= Plater.PlayerGUID and true
 		
 		for index, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-			Plater.UpdateTarget (plateFrame)
-			
-			--hooks
-			if (HOOK_TARGET_CHANGED.ScriptAmount > 0) then
-				for i = 1, HOOK_TARGET_CHANGED.ScriptAmount do
-					local globalScriptObject = HOOK_TARGET_CHANGED [i]
-					local unitFrame = plateFrame.unitFrame
-					local scriptContainer = unitFrame:ScriptGetContainer()
-					local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Target Changed")
-					--run
-					unitFrame:ScriptRunHook (scriptInfo, "Target Changed")
+			if plateFrame.unitFrame.PlaterOnScreen then
+				Plater.UpdateTarget (plateFrame)
+				
+				--hooks
+				if (HOOK_TARGET_CHANGED.ScriptAmount > 0) then
+					for i = 1, HOOK_TARGET_CHANGED.ScriptAmount do
+						local globalScriptObject = HOOK_TARGET_CHANGED [i]
+						local unitFrame = plateFrame.unitFrame
+						local scriptContainer = unitFrame:ScriptGetContainer()
+						local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Target Changed")
+						--run
+						unitFrame:ScriptRunHook (scriptInfo, "Target Changed")
+					end
 				end
 			end
 		end
@@ -6544,7 +6617,7 @@ end
 		
 		actorType = actorType or plateFrame.actorType
 		
-		if (not actorType) then
+		if (not actorType or not plateFrame.unitFrame.PlaterOnScreen) then
 			return
 		end
 		
@@ -7018,17 +7091,19 @@ end
 	--iterate among all nameplates and update the raid target icon
 	function Plater.UpdateRaidMarkersOnAllNameplates() --private
 		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-			Plater.UpdatePlateRaidMarker (plateFrame)
-			
-			--hooks
-			if (HOOK_RAID_TARGET.ScriptAmount > 0) then
-				for i = 1, HOOK_RAID_TARGET.ScriptAmount do
-					local globalScriptObject = HOOK_RAID_TARGET [i]
-					local unitFrame = plateFrame.unitFrame
-					local scriptContainer = unitFrame:ScriptGetContainer()
-					local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Raid Target")
-					--run
-					unitFrame:ScriptRunHook (scriptInfo, "Raid Target")
+			if plateFrame.unitFrame.PlaterOnScreen then
+				Plater.UpdatePlateRaidMarker (plateFrame)
+				
+				--hooks
+				if (HOOK_RAID_TARGET.ScriptAmount > 0) then
+					for i = 1, HOOK_RAID_TARGET.ScriptAmount do
+						local globalScriptObject = HOOK_RAID_TARGET [i]
+						local unitFrame = plateFrame.unitFrame
+						local scriptContainer = unitFrame:ScriptGetContainer()
+						local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Raid Target")
+						--run
+						unitFrame:ScriptRunHook (scriptInfo, "Raid Target")
+					end
 				end
 			end
 		end
@@ -7839,7 +7914,7 @@ end
 		SPELL_DAMAGE = function (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical)
 			if (SPELL_WITH_ANIMATIONS [spellName] and sourceGUID == Plater.PlayerGUID) then
 				for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-					if (plateFrame [MEMBER_GUID] == targetGUID) then
+					if (plateFrame [MEMBER_GUID] == targetGUID and plateFrame.unitFrame.PlaterOnScreen) then
 						--disabled for patch 8.2
 						--need a workaround for GetPoints() not being available on this patch
 						
@@ -7877,7 +7952,7 @@ end
 			end
 			
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-				if (plateFrame.unitFrame.castBar:IsShown()) then
+				if (plateFrame.unitFrame.PlaterOnScreen and plateFrame.unitFrame.castBar:IsShown()) then
 					if (plateFrame [MEMBER_GUID] == targetGUID) then
 						if DB_USE_NAME_TRANSLIT then
 							sourceName = LibTranslit:Transliterate(sourceName, TRANSLIT_MARK)
@@ -11072,10 +11147,13 @@ end
 	function Plater.DispatchTalentUpdateHookEvent()
 		if (HOOK_PLAYER_TALENT_UPDATE.ScriptAmount > 0) then
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-				if (plateFrame) then
+				if (plateFrame and plateFrame.unitFrame.PlaterOnScreen) then
 					for i = 1, HOOK_PLAYER_TALENT_UPDATE.ScriptAmount do
 						local globalScriptObject = HOOK_PLAYER_TALENT_UPDATE [i]
 						local unitFrame = plateFrame.unitFrame
+						if not plateFrame.unitFrame.PlaterOnScreen then
+							return
+						end
 						local scriptContainer = unitFrame:ScriptGetContainer()
 						local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Player Talent Update")
 						--run
@@ -11093,6 +11171,9 @@ end
 					for i = 1, HOOK_COMBAT_ENTER.ScriptAmount do
 						local globalScriptObject = HOOK_COMBAT_ENTER [i]
 						local unitFrame = plateFrame.unitFrame
+						if not plateFrame.unitFrame.PlaterOnScreen then
+							return
+						end
 						local scriptContainer = unitFrame:ScriptGetContainer()
 						local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Enter Combat")
 						--run
@@ -11107,6 +11188,9 @@ end
 					for i = 1, HOOK_COMBAT_LEAVE.ScriptAmount do
 						local globalScriptObject = HOOK_COMBAT_LEAVE [i]
 						local unitFrame = plateFrame.unitFrame
+						if not plateFrame.unitFrame.PlaterOnScreen then
+							return
+						end
 						local scriptContainer = unitFrame:ScriptGetContainer()
 						local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Leave Combat")
 						--run
