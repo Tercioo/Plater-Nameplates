@@ -7716,7 +7716,7 @@ end
 		if (func) then
 			Plater.StartLogPerformanceCore("Plater-Core", "Events", token)
 			func (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical)
-			Plater.EndLogPerformanceCore("Plater-Core", "Events", event)
+			Plater.EndLogPerformanceCore("Plater-Core", "Events", token)
 		end
 	end
 
