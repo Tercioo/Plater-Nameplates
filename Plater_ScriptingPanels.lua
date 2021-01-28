@@ -1032,7 +1032,7 @@ end
 		script_search_textentry:SetPoint ("topleft", mainFrame.CreateButton, "bottomleft", 0, -20)
 		script_search_textentry:SetHook ("OnChar", mainFrame.OnSearchBoxTextChanged)
 		script_search_textentry:SetHook ("OnTextChanged", mainFrame.OnSearchBoxTextChanged)
-		script_search_label = DF:CreateLabel (mainFrame, "Search:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
+		local script_search_label = DF:CreateLabel (mainFrame, "Search:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
 		script_search_label:SetPoint ("bottomleft", script_search_textentry, "topleft", 0, 2)	
 	
 	end
