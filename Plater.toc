@@ -27,6 +27,7 @@ Plater.lua
 Plater_Auras.lua
 Plater_Resources.lua
 Plater_OptionsPanel.lua
+Plater_ScriptingOptions.lua
 Plater_ScriptingPanels.lua
 Plater_ScriptLibrary.lua
 Plater_AnimationEditor.lua
