@@ -3622,6 +3622,16 @@ local class_specs_coords = {
 	--it'll hide the retail nameplate when it shown
 	function Plater.OnRetailNamePlateShow (self) --private
 		if ENABLED_BLIZZARD_PLATEFRAMES[tostring(self)] then
+			local options = self.optionTable
+			if (CompactUnitFrame_OnLoad) then
+				CompactUnitFrame_OnLoad(self)
+			end
+			if (CompactUnitFrame_SetOptionTable) then
+				CompactUnitFrame_SetOptionTable(self, options)
+			end
+			if (CompactUnitFrame_RegisterEvents) then
+				CompactUnitFrame_RegisterEvents(self)
+			end
 			return
 		end
 		self:Hide()
