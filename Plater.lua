@@ -3622,13 +3622,35 @@ local class_specs_coords = {
 	--it'll hide the retail nameplate when it shown
 	function Plater.OnRetailNamePlateShow (self) --private
 		if ENABLED_BLIZZARD_PLATEFRAMES[tostring(self)] then
-			local options = self.optionTable
-			if (CompactUnitFrame_OnLoad) then
-				CompactUnitFrame_OnLoad(self)
-			end
-			if (CompactUnitFrame_SetOptionTable) then
-				CompactUnitFrame_SetOptionTable(self, options)
-			end
+			-- re-register events (CompactUnitFrame_OnLoad):
+			self:RegisterEvent("PLAYER_ENTERING_WORLD");
+			self:RegisterEvent("UNIT_DISPLAYPOWER");
+			self:RegisterEvent("UNIT_POWER_BAR_SHOW");
+			self:RegisterEvent("UNIT_POWER_BAR_HIDE");
+			self:RegisterEvent("UNIT_NAME_UPDATE");
+			self:RegisterEvent("PLAYER_TARGET_CHANGED");
+			self:RegisterEvent("PLAYER_REGEN_ENABLED");
+			self:RegisterEvent("PLAYER_REGEN_DISABLED");
+			self:RegisterEvent("UNIT_CONNECTION");
+			self:RegisterEvent("PLAYER_ROLES_ASSIGNED");
+			self:RegisterEvent("UNIT_ENTERED_VEHICLE");
+			self:RegisterEvent("UNIT_EXITED_VEHICLE");
+			self:RegisterEvent("UNIT_PET");
+			self:RegisterEvent("READY_CHECK");
+			self:RegisterEvent("READY_CHECK_FINISHED");
+			self:RegisterEvent("READY_CHECK_CONFIRM");
+			self:RegisterEvent("PARTY_MEMBER_DISABLE");
+			self:RegisterEvent("PARTY_MEMBER_ENABLE");
+			self:RegisterEvent("INCOMING_RESURRECT_CHANGED");
+			self:RegisterEvent("UNIT_OTHER_PARTY_CHANGED");
+			self:RegisterEvent("UNIT_ABSORB_AMOUNT_CHANGED");
+			self:RegisterEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED");
+			self:RegisterEvent("UNIT_PHASE");
+			self:RegisterEvent("UNIT_CTR_OPTIONS");
+			self:RegisterEvent("UNIT_FLAGS");
+			self:RegisterEvent("GROUP_JOINED");
+			self:RegisterEvent("GROUP_LEFT");
+			self:RegisterEvent("INCOMING_SUMMON_CHANGED");
 			if (CompactUnitFrame_RegisterEvents) then
 				CompactUnitFrame_RegisterEvents(self)
 			end
