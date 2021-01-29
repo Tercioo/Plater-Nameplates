@@ -4015,7 +4015,7 @@ function Plater.OnInit() --private --~oninit ~init
 		--self if the nameplate driver frame: _G.NamePlateDriverFrame
 		--at the moment self isn't being used ~personal
 		function Plater.UpdatePersonalBar (self)
-			local showSelf = GetCVarBool ("nameplateShowSelf")
+			local showSelf = GetCVarBool ("nameplateShowSelf") and Plater.db.profile.plate_config.player.enabled
 			if (not showSelf) then
 				if PlaterDBChr.resources_on_target then
 					Plater.UpdateResourceFrame()
@@ -4102,7 +4102,7 @@ function Plater.OnInit() --private --~oninit ~init
 			--it is used when checking if the unit has auras to move the resources up to make room for the auras
 			Plater.CurrentTargetResourceFrame = nil
 		
-			local showSelf = GetCVarBool ("nameplateShowSelf")
+			local showSelf = GetCVarBool ("nameplateShowSelf") and Plater.db.profile.plate_config.player.enabled
 			local onCurrentTarget = PlaterDBChr.resources_on_target
 			
 			if (not showSelf) then
