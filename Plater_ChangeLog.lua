@@ -8,9 +8,20 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
-			{1610229480,  "Options Changes", "January 8st, 2021", "Adding option for horizontal nameplate overlap and renaming options."},
-			{1610229480,  "Bug Fix", "January 8st, 2021", "Fixing an issue with mod/script load conditions not tracking spec properly."},
-			{1610229480,  "Bug Fix", "January 8st, 2021", "Fixing an issue with Buff Special stacks not showing under some conditions."},
+			{1612048309,  "Options Changes", "January 12th, 2021", ""},
+			{1612048309,  "Bug Fix", "January 12th, 2021", "Fixing an issue with the Blink Time Left script glow feature."},
+			{1612048309,  "Revamp", "January 12th, 2021", "Update for the M+ Spiteful script."},
+			{1612048309,  "Options Changes", "January 12th, 2021", "Quest Tracking and Quest Coloring are now separated."},
+			{1612048309,  "Bug Fix", "January 12th, 2021", "Fixing CCs not showing for auto-tracking."},
+			{1612048309,  "Backend Changes", "January 12th, 2021", "Updated / fixed Plater Profiling"},
+			{1612048309,  "Options Changes", "January 12th, 2021", "Adding Level & Strata options for Buff Special"},
+			{1612048309,  "Options Changes", "January 12th, 2021", "Adding class/spec/faction indicators for friendly units."},
+			{1612048309,  "Bug Fix", "January 12th, 2021", "Global healthbar size settings won't be reset when importing or switching profiles."},
+			{1612048309,  "Backend Changes", "January 10th, 2021", "Fetching Class/Spec Icon indicators from BG/Arena info if available."},
+			
+			{1610229480,  "Options Changes", "January 8th, 2021", "Adding option for horizontal nameplate overlap and renaming options."},
+			{1610229480,  "Bug Fix", "January 8th, 2021", "Fixing an issue with mod/script load conditions not tracking spec properly."},
+			{1610229480,  "Bug Fix", "January 8th, 2021", "Fixing an issue with Buff Special stacks not showing under some conditions."},
 			{1610229480,  "Bug Fix", "January 7th, 2021", "Adding glyphed Hex spells to CC (@Freddy090909)."},
 			{1610229480,  "Bug Fix", "January 6th, 2021", "Updating clickable area sizes when closing game menus."},
 			{1610229480,  "Bug Fix", "January 4th, 2021", "Fixing aura show animation breaking timer and stack text size."},
