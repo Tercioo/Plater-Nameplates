@@ -759,6 +759,7 @@ DF.CrowdControlSpells = {
 	[221562] = "DEATHKNIGHT", --Asphyxiate
 	[108194] = "DEATHKNIGHT", --Asphyxiate (talent)
 	[207167] = "DEATHKNIGHT", --Blinding Sleet
+	[334693] = "DEAHTKNIGHT", --Absolute Zero (legendary)
 	
 	[339] = "DRUID", --Entangling Roots
 	[2637] = "DRUID", --Hibernate
@@ -807,6 +808,8 @@ DF.CrowdControlSpells = {
 	[200166] = "DEMONHUNTER", --Metamorphosis
 	[207685] = "DEMONHUNTER", --Sigil of Misery
 	[211881] = "DEMONHUNTER", -- Fel Eruption
+	
+	[331866] = "COVENANT|VENTHYR", --Agent of Chaos (Nadia soulbind)
 }
 
 DF.SpecIds = {
