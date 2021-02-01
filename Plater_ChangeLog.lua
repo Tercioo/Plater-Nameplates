@@ -8,16 +8,15 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
-			{1612048309,  "Options Changes", "January 12th, 2021", ""},
-			{1612048309,  "Bug Fix", "January 12th, 2021", "Fixing an issue with the Blink Time Left script glow feature."},
-			{1612048309,  "Revamp", "January 12th, 2021", "Update for the M+ Spiteful script."},
-			{1612048309,  "Options Changes", "January 12th, 2021", "Quest Tracking and Quest Coloring are now separated."},
-			{1612048309,  "Bug Fix", "January 12th, 2021", "Fixing CCs not showing for auto-tracking."},
-			{1612048309,  "Backend Changes", "January 12th, 2021", "Updated / fixed Plater Profiling"},
-			{1612048309,  "Options Changes", "January 12th, 2021", "Adding Level & Strata options for Buff Special"},
-			{1612048309,  "Options Changes", "January 12th, 2021", "Adding class/spec/faction indicators for friendly units."},
-			{1612048309,  "Bug Fix", "January 12th, 2021", "Global healthbar size settings won't be reset when importing or switching profiles."},
-			{1612048309,  "Backend Changes", "January 10th, 2021", "Fetching Class/Spec Icon indicators from BG/Arena info if available."},
+			{1612172218,  "Bug Fix", "January 12th, 2021", "Fixing an issue with the Blink Time Left script glow feature."},
+			{1612172218,  "Revamp", "January 12th, 2021", "Update for the M+ Spiteful script."},
+			{1612172218,  "Options Changes", "January 12th, 2021", "Quest Tracking and Quest Coloring are now separated."},
+			{1612172218,  "Bug Fix", "January 12th, 2021", "Fixing CCs not showing for auto-tracking."},
+			{1612172218,  "Backend Changes", "January 12th, 2021", "Updated / fixed Plater Profiling"},
+			{1612172218,  "Options Changes", "January 12th, 2021", "Adding Level & Strata options for Buff Special"},
+			{1612172218,  "Options Changes", "January 12th, 2021", "Adding class/spec/faction indicators for friendly units."},
+			{1612172218,  "Bug Fix", "January 12th, 2021", "Global healthbar size settings won't be reset when importing or switching profiles."},
+			{1612172218,  "Backend Changes", "January 10th, 2021", "Fetching Class/Spec Icon indicators from BG/Arena info if available."},
 			
 			{1610229480,  "Options Changes", "January 8th, 2021", "Adding option for horizontal nameplate overlap and renaming options."},
 			{1610229480,  "Bug Fix", "January 8th, 2021", "Fixing an issue with mod/script load conditions not tracking spec properly."},
