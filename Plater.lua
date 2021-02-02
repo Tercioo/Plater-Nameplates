@@ -2910,10 +2910,6 @@ local class_specs_coords = {
 				--mix the plater functions into the castbar (most of the functions are for scripting support)
 				DF:Mixin (plateFrame.unitFrame.castBar, Plater.ScriptMetaFunctions)
 				plateFrame.unitFrame.castBar:HookScript ("OnHide", plateFrame.unitFrame.castBar.OnHideWidget)
-
-				--setup non interruptible cast shield
-				plateFrame.unitFrame.castBar.BorderShield:SetTexture ([[Interface\ACHIEVEMENTFRAME\UI-Achievement-Progressive-IconBorder]])
-				plateFrame.unitFrame.castBar.BorderShield:SetTexCoord (5/64, 37/64, 1/64, 36/64)
 				
 				--> create an overlay frame that sits just above the castbar
 				--this is ideal for adding borders and other overlays
@@ -4137,38 +4133,50 @@ function Plater.OnInit() --private --~oninit ~init
 		
 		function Plater.UpdateCastbarIcon(castBar)
 			local profile = Plater.db.profile
+			local icon = castBar.Icon
+			local unitFrame = castBar.unitFrame
+			local borderShield = castBar.BorderShield
+			
+			icon:SetDrawLayer ("OVERLAY", 5)
+			borderShield:SetDrawLayer ("OVERLAY", 6)
+			local castBarHeight = castBar:GetHeight()
+			
 			if (profile.castbar_icon_customization_enabled) then
-				local icon = castBar.Icon
-				local unitFrame = castBar.unitFrame
-				local borderShield = castBar.BorderShield
 
 				if (profile.castbar_icon_show) then
 					icon:ClearAllPoints()
 					borderShield:ClearAllPoints()
-					borderShield:Hide()
+					borderShield:SetTexture ([[Interface\GROUPFRAME\UI-GROUP-MAINTANKICON]])
+					borderShield:SetTexCoord (0, 1, 0, 1)
+					borderShield:SetDesaturated (true)
+					PixelUtil.SetSize (borderShield, castBarHeight * 0.8, castBarHeight)
 
 					if (profile.castbar_icon_attach_to_side == "left") then
 						if (profile.castbar_icon_size == "same as castbar") then
 							icon:SetPoint("topright", castBar, "topleft", profile.castbar_icon_x_offset, 0)
 							icon:SetPoint("bottomright", castBar, "bottomleft", profile.castbar_icon_x_offset, 0)
-							PixelUtil.SetPoint (borderShield, "left", castBar, "left", 0, 0)
+							
+							PixelUtil.SetPoint (borderShield, "center", castBar, "left", 0, 0)
 
 						elseif (profile.castbar_icon_size == "same as castbar plus healthbar") then
 							icon:SetPoint("topright", unitFrame.healthBar, "topleft", profile.castbar_icon_x_offset, 0)
 							icon:SetPoint("bottomright", castBar, "bottomleft", profile.castbar_icon_x_offset, 0)
-							PixelUtil.SetPoint (borderShield, "left", castBar, "left", 0, 0)
+							
+							PixelUtil.SetPoint (borderShield, "center", castBar, "left", 0, 0)
 						end
 
 					elseif (profile.castbar_icon_attach_to_side == "right") then
 						if (profile.castbar_icon_size == "same as castbar") then
 							icon:SetPoint("topleft", castBar, "topright", profile.castbar_icon_x_offset, 0)
 							icon:SetPoint("bottomleft", castBar, "bottomright", profile.castbar_icon_x_offset, 0)
-							PixelUtil.SetPoint (borderShield, "right", castBar, "right", 0, 0)
+							
+							PixelUtil.SetPoint (borderShield, "center", castBar, "right", 0, 0)
 
 						elseif (profile.castbar_icon_size == "same as castbar plus healthbar") then
 							icon:SetPoint("topleft", unitFrame.healthBar, "topright", profile.castbar_icon_x_offset, 0)
 							icon:SetPoint("bottomleft", castBar, "bottomright", profile.castbar_icon_x_offset, 0)
-							PixelUtil.SetPoint (borderShield, "right", castBar, "right", 0, 0)
+							
+							PixelUtil.SetPoint (borderShield, "center", castBar, "right", 0, 0)
 						end
 					end
 
@@ -4178,12 +4186,17 @@ function Plater.OnInit() --private --~oninit ~init
 					borderShield:Hide()
 				end
 			else
-				local castBarHeight = castBar:GetHeight()
-				castBar.Icon:ClearAllPoints()
-				PixelUtil.SetPoint (castBar.Icon, "left", castBar, "left", 0, 0)
-				PixelUtil.SetSize (castBar.Icon, castBarHeight, castBarHeight)
-				castBar.BorderShield:ClearAllPoints()
-				PixelUtil.SetPoint (castBar.BorderShield, "left", castBar, "left", 0, 0)
+				icon:ClearAllPoints()
+				PixelUtil.SetPoint (icon, "left", castBar, "left", 0, 0)
+				PixelUtil.SetSize (icon, castBarHeight, castBarHeight)
+				
+				--setup non interruptible cast shield
+				borderShield:SetTexture ([[Interface\ACHIEVEMENTFRAME\UI-Achievement-Progressive-IconBorder]])
+				borderShield:SetTexCoord (5/64, 37/64, 1/64, 36/64)
+				borderShield:ClearAllPoints()
+				borderShield:SetPoint ("center", castBar.Icon, "center")
+				PixelUtil.SetSize (borderShield, castBarHeight * 1.4, castBarHeight * 1.4)
+				borderShield:SetDesaturated (false)
 			end
 		end
 		
@@ -4230,10 +4243,6 @@ function Plater.OnInit() --private --~oninit ~init
 					self.IsInterrupted = false
 					self.ReUpdateNextTick = true
 					self.ThrottleUpdate = -1
-					
-					--> set border shield
-					self.Icon:SetDrawLayer ("OVERLAY", 5)
-					self.BorderShield:SetDrawLayer ("OVERLAY", 6)
 					
 					if (notInterruptible) then
 						self.BorderShield:Show()
@@ -4941,7 +4950,7 @@ end
 			PixelUtil.SetPoint (castBar, "topright", healthBar, "bottomright", -castBarOffSetX, castBarOffSetY)
 			PixelUtil.SetWidth (castBar, castBarWidth)
 			PixelUtil.SetHeight (castBar, castBarHeight)
-			PixelUtil.SetSize (castBar.BorderShield, castBarHeight * 1.4, castBarHeight * 1.4)
+			--PixelUtil.SetSize (castBar.BorderShield, castBarHeight * 1.4, castBarHeight * 1.4)
 			PixelUtil.SetSize (castBar.Spark, profile.cast_statusbar_spark_width, castBarHeight)
 			Plater.UpdateCastbarIcon(castBar)
 
