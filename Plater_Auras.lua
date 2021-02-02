@@ -1380,109 +1380,111 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 				auraOptionsFrame.NextTime = 0.016
 				
 				for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+					if plateFrame.unitFrame.PlaterOnScreen then
 
-					local buffFrame = plateFrame.unitFrame.BuffFrame
-					local buffFrame2 = plateFrame.unitFrame.BuffFrame2
-					local unitAuraCache = plateFrame.unitFrame.AuraCache
+						local buffFrame = plateFrame.unitFrame.BuffFrame
+						local buffFrame2 = plateFrame.unitFrame.BuffFrame2
+						local unitAuraCache = plateFrame.unitFrame.AuraCache
+						
+						buffFrame:SetAlpha (DB_AURA_ALPHA)
+						buffFrame2:SetAlpha (DB_AURA_ALPHA)
+						
+						--> reset next aura icon to use
+						buffFrame.NextAuraIcon = 1
+						buffFrame2.NextAuraIcon = 1
 					
-					buffFrame:SetAlpha (DB_AURA_ALPHA)
-					buffFrame2:SetAlpha (DB_AURA_ALPHA)
-					
-					--> reset next aura icon to use
-					buffFrame.NextAuraIcon = 1
-					buffFrame2.NextAuraIcon = 1
-				
-					if (not DB_AURA_SEPARATE_BUFFS) then
-						for index, auraTable in ipairs (auraOptionsFrame.AuraTesting.DEBUFF) do
-							local auraIconFrame = Plater.GetAuraIcon (buffFrame)
-							if (not auraTable.ApplyTime or auraTable.ApplyTime+auraTable.Duration < GetTime()) then
-								auraTable.ApplyTime = GetTime() + math.random (3, 12)
+						if (not DB_AURA_SEPARATE_BUFFS) then
+							for index, auraTable in ipairs (auraOptionsFrame.AuraTesting.DEBUFF) do
+								local auraIconFrame = Plater.GetAuraIcon (buffFrame)
+								if (not auraTable.ApplyTime or auraTable.ApplyTime+auraTable.Duration < GetTime()) then
+									auraTable.ApplyTime = GetTime() + math.random (3, 12)
+								end
+								
+								if (not UnitIsUnit (plateFrame.unitFrame [MEMBER_UNITID], "player")) then
+									Plater.AddAura (buffFrame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, nil, nil, nil, nil, auraTable.Type)
+								else
+									Plater.AddAura (buffFrame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, false, false, true, true, auraTable.Type)
+								end
+								
+								unitAuraCache[auraTable.SpellName] = true
+								unitAuraCache[auraTable.SpellID] = true
+								
+								Plater.UpdateIconAspecRatio (auraIconFrame)
 							end
 							
-							if (not UnitIsUnit (plateFrame.unitFrame [MEMBER_UNITID], "player")) then
-								Plater.AddAura (buffFrame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, nil, nil, nil, nil, auraTable.Type)
-							else
-								Plater.AddAura (buffFrame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, false, false, true, true, auraTable.Type)
+							for index, auraTable in ipairs (auraOptionsFrame.AuraTesting.BUFF) do
+								local auraIconFrame = Plater.GetAuraIcon (buffFrame)
+								if (not auraTable.ApplyTime or auraTable.ApplyTime+auraTable.Duration < GetTime()) then
+									auraTable.ApplyTime = GetTime() + math.random (3, 12)
+								end
+								
+								if (not UnitIsUnit (plateFrame.unitFrame [MEMBER_UNITID], "player")) then
+									Plater.AddAura (buffFrame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, true, nil, nil, nil, auraTable.Type)
+								else
+									Plater.AddAura (buffFrame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, false, false, false, true, auraTable.Type)
+								end
+								
+								unitAuraCache[auraTable.SpellName] = true
+								unitAuraCache[auraTable.SpellID] = true
+								
+								Plater.UpdateIconAspecRatio (auraIconFrame)
 							end
 							
-							unitAuraCache[auraTable.SpellName] = true
-							unitAuraCache[auraTable.SpellID] = true
-							
-							Plater.UpdateIconAspecRatio (auraIconFrame)
+							--hide icons on the second buff frame
+							for i = 1, #buffFrame2.PlaterBuffList do
+								local icon = buffFrame2.PlaterBuffList [i]
+								if (icon) then
+									icon.ShowAnimation:Stop()
+									icon:Hide()
+									icon.InUse = false
+								end
+							end
 						end
 						
-						for index, auraTable in ipairs (auraOptionsFrame.AuraTesting.BUFF) do
-							local auraIconFrame = Plater.GetAuraIcon (buffFrame)
-							if (not auraTable.ApplyTime or auraTable.ApplyTime+auraTable.Duration < GetTime()) then
-								auraTable.ApplyTime = GetTime() + math.random (3, 12)
-							end
-							
-							if (not UnitIsUnit (plateFrame.unitFrame [MEMBER_UNITID], "player")) then
-								Plater.AddAura (buffFrame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, true, nil, nil, nil, auraTable.Type)
-							else
-								Plater.AddAura (buffFrame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, false, false, false, true, auraTable.Type)
-							end
-							
-							unitAuraCache[auraTable.SpellName] = true
-							unitAuraCache[auraTable.SpellID] = true
-							
-							Plater.UpdateIconAspecRatio (auraIconFrame)
-						end
-						
-						--hide icons on the second buff frame
-						for i = 1, #buffFrame2.PlaterBuffList do
-							local icon = buffFrame2.PlaterBuffList [i]
-							if (icon) then
-								icon.ShowAnimation:Stop()
-								icon:Hide()
-								icon.InUse = false
-							end
-						end
-					end
-					
-					if (DB_AURA_SEPARATE_BUFFS) then
+						if (DB_AURA_SEPARATE_BUFFS) then
 
-						for index, auraTable in ipairs (auraOptionsFrame.AuraTesting.DEBUFF) do
-							local auraIconFrame = Plater.GetAuraIcon (buffFrame)
-							if (not auraTable.ApplyTime or auraTable.ApplyTime+auraTable.Duration < GetTime()) then
-								auraTable.ApplyTime = GetTime() + math.random (3, 12)
+							for index, auraTable in ipairs (auraOptionsFrame.AuraTesting.DEBUFF) do
+								local auraIconFrame = Plater.GetAuraIcon (buffFrame)
+								if (not auraTable.ApplyTime or auraTable.ApplyTime+auraTable.Duration < GetTime()) then
+									auraTable.ApplyTime = GetTime() + math.random (3, 12)
+								end
+								
+								if (not UnitIsUnit (plateFrame.unitFrame [MEMBER_UNITID], "player")) then
+									Plater.AddAura (buffFrame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, nil, nil, nil, nil, auraTable.Type)
+								else
+									Plater.AddAura (buffFrame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, false, false, true, true, auraTable.Type)
+								end
+								
+								unitAuraCache[auraTable.SpellName] = true
+								unitAuraCache[auraTable.SpellID] = true
+								unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or auraTable.Type == AURA_TYPE_ENRAGE
 							end
 							
-							if (not UnitIsUnit (plateFrame.unitFrame [MEMBER_UNITID], "player")) then
-								Plater.AddAura (buffFrame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, nil, nil, nil, nil, auraTable.Type)
-							else
-								Plater.AddAura (buffFrame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, false, false, true, true, auraTable.Type)
+							for index, auraTable in ipairs (auraOptionsFrame.AuraTesting.BUFF) do
+								local auraIconFrame, frame = Plater.GetAuraIcon (buffFrame, true)
+								if (not auraTable.ApplyTime or auraTable.ApplyTime+auraTable.Duration < GetTime()) then
+									auraTable.ApplyTime = GetTime() + math.random (3, 12)
+								end
+								
+								if (not UnitIsUnit (plateFrame.unitFrame [MEMBER_UNITID], "player")) then
+									Plater.AddAura (frame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "BUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, true, nil, nil, nil, auraTable.Type)
+								else
+									Plater.AddAura (frame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "BUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, true, false, false, false, auraTable.Type)
+									--Plater.AddAura (frame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "BUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, false, false, false, true, auraTable.Type)
+								end
+								
+								unitAuraCache[auraTable.SpellName] = true
+								unitAuraCache[auraTable.SpellID] = true
+								unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or auraTable.Type == AURA_TYPE_ENRAGE
 							end
-							
-							unitAuraCache[auraTable.SpellName] = true
-							unitAuraCache[auraTable.SpellID] = true
-							unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or auraTable.Type == AURA_TYPE_ENRAGE
 						end
 						
-						for index, auraTable in ipairs (auraOptionsFrame.AuraTesting.BUFF) do
-							local auraIconFrame, frame = Plater.GetAuraIcon (buffFrame, true)
-							if (not auraTable.ApplyTime or auraTable.ApplyTime+auraTable.Duration < GetTime()) then
-								auraTable.ApplyTime = GetTime() + math.random (3, 12)
-							end
-							
-							if (not UnitIsUnit (plateFrame.unitFrame [MEMBER_UNITID], "player")) then
-								Plater.AddAura (frame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "BUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, true, nil, nil, nil, auraTable.Type)
-							else
-								Plater.AddAura (frame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "BUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, true, false, false, false, auraTable.Type)
-								--Plater.AddAura (frame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "BUFF", auraTable.Duration, auraTable.ApplyTime+auraTable.Duration, "player", false, false, auraTable.SpellID, false, false, false, true, auraTable.Type)
-							end
-							
-							unitAuraCache[auraTable.SpellName] = true
-							unitAuraCache[auraTable.SpellID] = true
-							unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or auraTable.Type == AURA_TYPE_ENRAGE
+						Plater.HideNonUsedAuraIcons (buffFrame)
+						Plater.AlignAuraFrames (buffFrame)
+						
+						if (DB_AURA_SEPARATE_BUFFS) then
+							Plater.AlignAuraFrames (buffFrame.BuffFrame2)
 						end
-					end
-					
-					Plater.HideNonUsedAuraIcons (buffFrame)
-					Plater.AlignAuraFrames (buffFrame)
-					
-					if (DB_AURA_SEPARATE_BUFFS) then
-						Plater.AlignAuraFrames (buffFrame.BuffFrame2)
 					end
 				end
 			end

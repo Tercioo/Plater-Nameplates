@@ -4178,51 +4178,53 @@ function Plater.OnInit() --private --~oninit ~init
 		function Plater.DoCastBarTest (castNoInterrupt)
 
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-				local castBar = plateFrame.unitFrame.castBar
-				
-				local spellName, _, spellIcon = GetSpellInfo(116)
+				if plateFrame.unitFrame.PlaterOnScreen then
+					local castBar = plateFrame.unitFrame.castBar
+					
+					local spellName, _, spellIcon = GetSpellInfo(116)
 
-				castBar.Text:SetText(spellName)
-				castBar.Icon:SetTexture(spellIcon)
-				castBar.Icon:SetAlpha(1)
-				castBar.Icon:Show()
-				castBar.percentText:Show()
-				castBar:SetMinMaxValues(0, 3)
-				castBar:SetValue(0)
-				castBar.Spark:Show()
-				castBar.casting = true
-				castBar.finished = false
-				castBar.value = 0
-				castBar.maxValue = 3
-				castBar.canInterrupt = math.random (1, 2) == 1
-				--castBar.canInterrupt = true
-				castBar:UpdateCastColor()
-				
-				castBar.spellName = 		spellName
-				castBar.spellID = 			1
-				castBar.spellTexture = 		spellIcon
-				castBar.spellStartTime = 	GetTime()
-				castBar.spellEndTime = 		GetTime() + 3
-				
-				castBar.SpellStartTime = 	GetTime()
-				castBar.SpellEndTime = 		GetTime() + 3
-				
-				castBar.playedFinishedTest = nil
-				
-				castBar.flashTexture:Hide()
-				castBar:Animation_StopAllAnimations()
+					castBar.Text:SetText(spellName)
+					castBar.Icon:SetTexture(spellIcon)
+					castBar.Icon:SetAlpha(1)
+					castBar.Icon:Show()
+					castBar.percentText:Show()
+					castBar:SetMinMaxValues(0, 3)
+					castBar:SetValue(0)
+					castBar.Spark:Show()
+					castBar.casting = true
+					castBar.finished = false
+					castBar.value = 0
+					castBar.maxValue = 3
+					castBar.canInterrupt = math.random (1, 2) == 1
+					--castBar.canInterrupt = true
+					castBar:UpdateCastColor()
+					
+					castBar.spellName = 		spellName
+					castBar.spellID = 			1
+					castBar.spellTexture = 		spellIcon
+					castBar.spellStartTime = 	GetTime()
+					castBar.spellEndTime = 		GetTime() + 3
+					
+					castBar.SpellStartTime = 	GetTime()
+					castBar.SpellEndTime = 		GetTime() + 3
+					
+					castBar.playedFinishedTest = nil
+					
+					castBar.flashTexture:Hide()
+					castBar:Animation_StopAllAnimations()
 
-				Plater.CastBarOnEvent_Hook(castBar, "UNIT_SPELLCAST_START", plateFrame.unitFrame.unit, plateFrame.unitFrame.unit)
-				
-				if (not castBar:IsShown()) then
-					castBar:Animation_FadeIn()
-					castBar:Show()
+					Plater.CastBarOnEvent_Hook(castBar, "UNIT_SPELLCAST_START", plateFrame.unitFrame.unit, plateFrame.unitFrame.unit)
+					
+					if (not castBar:IsShown()) then
+						castBar:Animation_FadeIn()
+						castBar:Show()
+					end
+
+					Plater.UpdateCastbarTargetText(castBar)
+					local textString = castBar.FrameOverlay.TargetName
+					textString:Show()
+					textString:SetText("Target Name")
 				end
-
-				Plater.UpdateCastbarTargetText(castBar)
-				local textString = castBar.FrameOverlay.TargetName
-				textString:Show()
-				textString:SetText("Target Name")
 			end
 			
 			local totalTime = 0
@@ -4238,14 +4240,16 @@ function Plater.OnInit() --private --~oninit ~init
 				end
 
 				for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-					local castBar = plateFrame.unitFrame.castBar
-					local textString = castBar.FrameOverlay.TargetName
-					textString:Show()
-					textString:SetText("Target Name")
+					if plateFrame.unitFrame.PlaterOnScreen then
+						local castBar = plateFrame.unitFrame.castBar
+						local textString = castBar.FrameOverlay.TargetName
+						textString:Show()
+						textString:SetText("Target Name")
 
-					if (castBar.finished and not castBar.playedFinishedTest) then
-						Plater.CastBarOnEvent_Hook (castBar, "UNIT_SPELLCAST_STOP", plateFrame.unitFrame.unit, plateFrame.unitFrame.unit)
-						castBar.playedFinishedTest = true
+						if (castBar.finished and not castBar.playedFinishedTest) then
+							Plater.CastBarOnEvent_Hook (castBar, "UNIT_SPELLCAST_STOP", plateFrame.unitFrame.unit, plateFrame.unitFrame.unit)
+							castBar.playedFinishedTest = true
+						end
 					end
 				end
 				
