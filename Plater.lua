@@ -4182,8 +4182,8 @@ function Plater.OnInit() --private --~oninit ~init
 				castBar.Icon:ClearAllPoints()
 				PixelUtil.SetPoint (castBar.Icon, "left", castBar, "left", 0, 0)
 				PixelUtil.SetSize (castBar.Icon, castBarHeight, castBarHeight)
-				borderShield:ClearAllPoints()
-				PixelUtil.SetPoint (borderShield, "left", castBar, "left", 0, 0)
+				castBar.BorderShield:ClearAllPoints()
+				PixelUtil.SetPoint (castBar.BorderShield, "left", castBar, "left", 0, 0)
 			end
 		end
 		
