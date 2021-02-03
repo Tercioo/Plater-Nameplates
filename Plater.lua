@@ -8962,9 +8962,9 @@ end
 		else
 			local rangeChecker
 			if unitFrame [MEMBER_REACTION] < 5 then 
-				spellForRangeCheck = Plater.RangeCheckFunctionEnemy
+				rangeChecker = Plater.RangeCheckFunctionEnemy
 			else
-				spellForRangeCheck = Plater.RangeCheckFunctionFriendly
+				rangeChecker = Plater.RangeCheckFunctionFriendly
 			end
 			if (rangeChecker and rangeChecker (unitFrame [MEMBER_UNITID])) then
 				unitFrame [MEMBER_RANGE] = true
