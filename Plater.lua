@@ -4551,8 +4551,9 @@ function Plater.OnInit() --private --~oninit ~init
 			end
 			
 			if (plateFrame.actorType == ACTORTYPE_FRIENDLY_PLAYER) then
+				local isWithoutHealthbar = plateFrame.IsFriendlyPlayerWithoutHealthBar
 				Plater.ParseHealthSettingForPlayer (plateFrame)
-				self.ScheduleNameUpdate = true
+				self.ScheduleNameUpdate = plateFrame.IsFriendlyPlayerWithoutHealthBar ~= isWithoutHealthbar
 				--Plater.UpdatePlateText (plateFrame, DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER], false)
 			end
 			
@@ -7251,22 +7252,17 @@ end
 
 	--check the setting 'only_damaged' and 'only_thename' for player characters. not critical code, can run slow
 	function Plater.ParseHealthSettingForPlayer (plateFrame) --private
-		plateFrame.IsFriendlyPlayerWithoutHealthBar = false
-
+	
 		if (DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_thename and not DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_damaged) then
 			Plater.HideHealthBar (plateFrame.unitFrame, true)
-			plateFrame.IsFriendlyPlayerWithoutHealthBar = true
 			
 		elseif (DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_damaged) then
 			local healthBar = plateFrame.unitFrame.healthBar
 			if ((healthBar.currentHealth or 1) < (healthBar.currentHealthMax or 1)) then
 				Plater.ShowHealthBar (plateFrame.unitFrame)
+				
 			else
 				Plater.HideHealthBar (plateFrame.unitFrame, true)
-				
-				if (DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_thename) then
-					plateFrame.IsFriendlyPlayerWithoutHealthBar = true
-				end
 			end
 			
 		else
