@@ -198,13 +198,21 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			
 			--get the table where all icon frames are stored in
 			local iconFrameContainer = self.PlaterBuffList
+			--get the amount of auras shown in the frame, this variable should be always reliable
+			local amountFramesShown = self.amountAurasShown
 			
 			if (profile.aura_sort) then
 				local iconFrameContainerCopy = {}
-				for index, icon in pairs(iconFrameContainer) do
-					iconFrameContainerCopy[index] = icon
+				local index = 0
+				for i = 1, amountFramesShown do
+					local icon = iconFrameContainer[i]
+					if icon:IsShown() then
+						index = index + 1
+						iconFrameContainerCopy[index] = icon
+					end
 				end
 				iconFrameContainer = iconFrameContainerCopy
+				amountFramesShown = index
 				table.sort (iconFrameContainer, Plater.AuraIconsSortFunction)
 			end
 		
@@ -226,9 +234,6 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			else
 				return
 			end
-			
-			--get the amount of auras shown in the frame, this variable should be always reliable
-			local amountFramesShown = self.amountAurasShown
 			
 			if (growDirection ~= 2) then --it's growing to left or right
 			
@@ -272,7 +277,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 				end
 				
 				--iterate among all icon frames
-				for i = 1, #iconFrameContainer do
+				for i = 1, amountFramesShown do
 					--get the icon id from the icon frame container
 					local iconFrame = iconFrameContainer [i]
 					if (iconFrame:IsShown()) then
@@ -311,7 +316,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 				--iterate among all icons in the aura frame
 				--set the point of the first icon in the bottom left of the buff frame
 				--set the point of all other icons to the right of the previous icon and update the size of the buff frame
-				for i = 1, #iconFrameContainer do
+				for i = 1, amountFramesShown do
 					local iconFrame = iconFrameContainer [i]
 					if (iconFrame:IsShown()) then
 						curRowLength = curRowLength + iconFrame:GetWidth() + DB_AURA_PADDING
@@ -764,6 +769,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 		auraIconFrame.Duration = duration
 		auraIconFrame.Stacks = count
 		auraIconFrame.ExpirationTime = expirationTime
+		auraIconFrame.Caster = caster
 		auraIconFrame:Show()
 		
 		--get the script object of the aura which will be showing in this icon frame

@@ -218,7 +218,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
             "Toggle", --just a yes or not
             "Label", --a text to name a section in the options
             "Blank Line", --an empty line to separate two sections
-            "List Panel", --a panel to add values to a list
+            --"List Panel", --a panel to add values to a list
         }
         local getListOfAvailableOptions = function()
             local t = {}

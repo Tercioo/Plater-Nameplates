@@ -72,13 +72,24 @@ local LibSharedMedia = LibStub:GetLibrary ("LibSharedMedia-3.0") -- https://www.
 local LCG = LibStub:GetLibrary("LibCustomGlow-1.0") -- https://github.com/Stanzilla/LibCustomGlow
 local LibRangeCheck = LibStub:GetLibrary ("LibRangeCheck-2.0") -- https://www.curseforge.com/wow/addons/librangecheck-2-0/
 local LibTranslit = LibStub:GetLibrary ("LibTranslit-1.0") -- https://github.com/Vardex/LibTranslit
+local LDB = LibStub ("LibDataBroker-1.1", true)
+local LDBIcon = LDB and LibStub ("LibDBIcon-1.0", true)
 local _
 
 local Plater = DF:CreateAddOn ("Plater", "PlaterDB", PLATER_DEFAULT_SETTINGS, { --options table
 	name = "Plater Nameplates",
 	type = "group",
 	args = {
-		
+		openOptions = {
+			name = "Open Plater Options",
+			desc = "Opens the Plater Options Menu.",
+			type = "execute",
+			func = function()
+				InterfaceOptionsFrame:Hide()
+				HideUIPanel(GameMenuFrame)
+				Plater.OpenOptionsPanel()
+			end,
+		},
 	}
 })
 Plater.versionString = GetAddOnMetadata("Plater_dev", "Version") or GetAddOnMetadata("Plater", "Version")
@@ -908,6 +919,75 @@ local class_specs_coords = {
 		Plater.ActorTypeSettingsCache [ACTORTYPE_PLAYER] = DF.table.copy ({}, namePlateConfig [ACTORTYPE_PLAYER])
 		
 		Plater.ActorTypeSettingsCache.RefreshID = PLATER_REFRESH_ID
+	end
+	
+	function Plater.InitLDB()
+		if LDB then
+			local databroker = LDB:NewDataObject ("Plater", {
+				type = "data source",
+				icon = [[Interface\AddOns\Plater\images\cast_bar]],
+				text = "Plater",
+				
+				HotCornerIgnore = true,
+				
+				OnClick = function (self, button)
+				
+					if (button == "LeftButton") then
+						if (PlaterOptionsPanelFrame and PlaterOptionsPanelFrame:IsShown()) then
+							PlaterOptionsPanelFrame:Hide()
+							return true
+						end
+						Plater.OpenOptionsPanel()
+					
+					elseif (button == "RightButton") then
+					
+						GameTooltip:Hide()
+						local GameCooltip = GameCooltip
+						
+						GameCooltip:Reset()
+						GameCooltip:SetType ("menu")
+						GameCooltip:SetOption ("ButtonsYMod", -5)
+						GameCooltip:SetOption ("HeighMod", 5)
+						GameCooltip:SetOption ("TextSize", 10)
+						
+						--> disable minimap icon
+						local disable_minimap = function()
+							PlaterDBChr.minimap.hide = not PlaterDBChr.minimap.hide
+							
+							if (PlaterDBChr.minimap.hide) then
+								LDBIcon:Hide ("Plater")
+							else
+								LDBIcon:Show ("Plater")
+							end
+							LDBIcon:Refresh ("Plater", PlaterDBChr.minimap)
+						end
+						GameCooltip:AddMenu (1, disable_minimap, true, nil, nil, "Hide/Show Minimap Icon", nil, true)
+						GameCooltip:AddIcon ([[Interface\Buttons\UI-Panel-HideButton-Disabled]], 1, 1, 14, 14, 7/32, 24/32, 8/32, 24/32, "gray")
+						
+						--GameCooltip:SetBackdrop (1, _detalhes.tooltip_backdrop, nil, _detalhes.tooltip_border_color)
+						GameCooltip:SetWallpaper (1, [[Interface\SPELLBOOK\Spellbook-Page-1]], {.6, 0.1, 0.64453125, 0}, {.8, .8, .8, 0.2}, true)
+						
+						GameCooltip:SetOwner (self, "topright", "bottomleft")
+						GameCooltip:ShowCooltip()
+					
+					end
+					
+				end,
+				OnTooltipShow = function (tooltip)
+					tooltip:AddLine ("Plater", 1, 1, 1)
+					tooltip:AddLine ("|cFFCFCFCFLeft click|r: Show/Hide Options Window")
+					tooltip:AddLine ("|cFFCFCFCFRight click|r: Quick Menu")
+				end,
+			})
+			
+			if (databroker and not LDBIcon:IsRegistered ("Plater")) then
+				PlaterDBChr.minimap = PlaterDBChr.minimap or {}
+				LDBIcon:Register ("Plater", databroker, PlaterDBChr.minimap)
+			end
+			
+			Plater.databroker = databroker
+		end
+
 	end
 	
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -2830,10 +2910,6 @@ local class_specs_coords = {
 				--mix the plater functions into the castbar (most of the functions are for scripting support)
 				DF:Mixin (plateFrame.unitFrame.castBar, Plater.ScriptMetaFunctions)
 				plateFrame.unitFrame.castBar:HookScript ("OnHide", plateFrame.unitFrame.castBar.OnHideWidget)
-
-				--setup non interruptible cast shield
-				plateFrame.unitFrame.castBar.BorderShield:SetTexture ([[Interface\ACHIEVEMENTFRAME\UI-Achievement-Progressive-IconBorder]])
-				plateFrame.unitFrame.castBar.BorderShield:SetTexCoord (5/64, 37/64, 1/64, 36/64)
 				
 				--> create an overlay frame that sits just above the castbar
 				--this is ideal for adding borders and other overlays
@@ -3445,6 +3521,9 @@ function Plater.OnInit() --private --~oninit ~init
 	end
 
 	Plater.Locale =  GetLocale()
+	
+	--Register LDB
+	Plater.InitLDB()
 
 	--Plater:BossModsLink()
 	
@@ -4054,47 +4133,70 @@ function Plater.OnInit() --private --~oninit ~init
 		
 		function Plater.UpdateCastbarIcon(castBar)
 			local profile = Plater.db.profile
+			local icon = castBar.Icon
+			local unitFrame = castBar.unitFrame
+			local borderShield = castBar.BorderShield
+			
+			icon:SetDrawLayer ("OVERLAY", 5)
+			borderShield:SetDrawLayer ("OVERLAY", 6)
+			local castBarHeight = castBar:GetHeight()
+			
 			if (profile.castbar_icon_customization_enabled) then
-				local icon = castBar.Icon
-				local unitFrame = castBar.unitFrame
 
 				if (profile.castbar_icon_show) then
 					icon:ClearAllPoints()
-					castBar.BorderShield:Hide()
+					borderShield:ClearAllPoints()
+					borderShield:SetTexture ([[Interface\GROUPFRAME\UI-GROUP-MAINTANKICON]])
+					borderShield:SetTexCoord (0, 1, 0, 1)
+					borderShield:SetDesaturated (true)
+					PixelUtil.SetSize (borderShield, castBarHeight * 0.8, castBarHeight)
 
 					if (profile.castbar_icon_attach_to_side == "left") then
 						if (profile.castbar_icon_size == "same as castbar") then
 							icon:SetPoint("topright", castBar, "topleft", profile.castbar_icon_x_offset, 0)
 							icon:SetPoint("bottomright", castBar, "bottomleft", profile.castbar_icon_x_offset, 0)
+							
+							PixelUtil.SetPoint (borderShield, "center", castBar, "left", 0, 0)
 
 						elseif (profile.castbar_icon_size == "same as castbar plus healthbar") then
 							icon:SetPoint("topright", unitFrame.healthBar, "topleft", profile.castbar_icon_x_offset, 0)
 							icon:SetPoint("bottomright", castBar, "bottomleft", profile.castbar_icon_x_offset, 0)
+							
+							PixelUtil.SetPoint (borderShield, "center", castBar, "left", 0, 0)
 						end
 
 					elseif (profile.castbar_icon_attach_to_side == "right") then
 						if (profile.castbar_icon_size == "same as castbar") then
 							icon:SetPoint("topleft", castBar, "topright", profile.castbar_icon_x_offset, 0)
 							icon:SetPoint("bottomleft", castBar, "bottomright", profile.castbar_icon_x_offset, 0)
+							
+							PixelUtil.SetPoint (borderShield, "center", castBar, "right", 0, 0)
 
 						elseif (profile.castbar_icon_size == "same as castbar plus healthbar") then
 							icon:SetPoint("topleft", unitFrame.healthBar, "topright", profile.castbar_icon_x_offset, 0)
 							icon:SetPoint("bottomleft", castBar, "bottomright", profile.castbar_icon_x_offset, 0)
+							
+							PixelUtil.SetPoint (borderShield, "center", castBar, "right", 0, 0)
 						end
 					end
 
 					icon:SetWidth(icon:GetHeight())
 				else
 					icon:Hide()
-					castBar.BorderShield:Hide()
+					borderShield:Hide()
 				end
 			else
-				local castBarHeight = castBar:GetHeight()
-				castBar.Icon:ClearAllPoints()
-				PixelUtil.SetPoint (castBar.Icon, "left", castBar, "left", 0, 0)
-				PixelUtil.SetSize (castBar.Icon, castBarHeight, castBarHeight)
-				castBar.BorderShield:ClearAllPoints()
-				PixelUtil.SetPoint (castBar.BorderShield, "left", castBar, "left", 0, 0)
+				icon:ClearAllPoints()
+				PixelUtil.SetPoint (icon, "left", castBar, "left", 0, 0)
+				PixelUtil.SetSize (icon, castBarHeight, castBarHeight)
+				
+				--setup non interruptible cast shield
+				borderShield:SetTexture ([[Interface\ACHIEVEMENTFRAME\UI-Achievement-Progressive-IconBorder]])
+				borderShield:SetTexCoord (5/64, 37/64, 1/64, 36/64)
+				borderShield:ClearAllPoints()
+				borderShield:SetPoint ("center", castBar.Icon, "center")
+				PixelUtil.SetSize (borderShield, castBarHeight * 1.4, castBarHeight * 1.4)
+				borderShield:SetDesaturated (false)
 			end
 		end
 		
@@ -4142,13 +4244,7 @@ function Plater.OnInit() --private --~oninit ~init
 					self.ReUpdateNextTick = true
 					self.ThrottleUpdate = -1
 					
-					--> set border shield
-					self.Icon:SetDrawLayer ("OVERLAY", 5)
-					self.BorderShield:SetDrawLayer ("OVERLAY", 6)
-					
 					if (notInterruptible) then
-						self.BorderShield:ClearAllPoints()
-						self.BorderShield:SetPoint ("center", self.Icon, "center")
 						self.BorderShield:Show()
 					else
 						self.BorderShield:Hide()
@@ -4238,8 +4334,6 @@ function Plater.OnInit() --private --~oninit ~init
 					self.SpellEndTime = self.spellEndTime or GetTime()
 				
 					if (self.ReUpdateNextTick) then
-						self.BorderShield:ClearAllPoints()
-						self.BorderShield:SetPoint ("center", self.Icon, "center")
 						self.ReUpdateNextTick = nil
 					end
 
@@ -4856,7 +4950,7 @@ end
 			PixelUtil.SetPoint (castBar, "topright", healthBar, "bottomright", -castBarOffSetX, castBarOffSetY)
 			PixelUtil.SetWidth (castBar, castBarWidth)
 			PixelUtil.SetHeight (castBar, castBarHeight)
-			PixelUtil.SetSize (castBar.BorderShield, castBarHeight * 1.4, castBarHeight * 1.4)
+			--PixelUtil.SetSize (castBar.BorderShield, castBarHeight * 1.4, castBarHeight * 1.4)
 			PixelUtil.SetSize (castBar.Spark, profile.cast_statusbar_spark_width, castBarHeight)
 			Plater.UpdateCastbarIcon(castBar)
 
@@ -7794,6 +7888,7 @@ function Plater.CreatePlaterButtonAtInterfaceOptions()
 	
 	local open_options = function()
 		InterfaceOptionsFrame:Hide()
+		HideUIPanel(GameMenuFrame)
 		Plater.OpenOptionsPanel()
 	end
 	
@@ -7884,7 +7979,6 @@ function Plater.SetCVarsOnFirstRun()
 	--InterfaceOptionsNamesPanelUnitNameplatesMakeLarger:Click() --this isn't required anymore since we use our own unitframe now
 	--InterfaceOptionsNamesPanelUnitNameplatesPersonalResource:Click() --removing this since I don't have documentation on why this was added
 	--InterfaceOptionsNamesPanelUnitNameplatesPersonalResource:Click()
-	Plater.CreatePlaterButtonAtInterfaceOptions()
 	
 	--[=[
 	Plater.RestoreProfileCVars()
@@ -8868,9 +8962,9 @@ end
 		else
 			local rangeChecker
 			if unitFrame [MEMBER_REACTION] < 5 then 
-				spellForRangeCheck = Plater.RangeCheckFunctionEnemy
+				rangeChecker = Plater.RangeCheckFunctionEnemy
 			else
-				spellForRangeCheck = Plater.RangeCheckFunctionFriendly
+				rangeChecker = Plater.RangeCheckFunctionFriendly
 			end
 			if (rangeChecker and rangeChecker (unitFrame [MEMBER_UNITID])) then
 				unitFrame [MEMBER_RANGE] = true
@@ -9464,6 +9558,7 @@ end
 			["RefreshTankCache"] = true,
 			["ForceFindPetOwner"] = true,
 			["UpdateBgPlayerRoleCache"] = false,
+			["InitLDB"] = true,
 		},
 		
 		["DetailsFramework"] = {
@@ -10978,7 +11073,31 @@ function SlashCmdList.PLATER (msg, editbox)
 		
 		return
 	
+	elseif (msg == "minimap") then
+		PlaterDBChr.minimap.hide = not PlaterDBChr.minimap.hide
+		
+		if (PlaterDBChr.minimap.hide) then
+			LDBIcon:Hide ("Plater")
+		else
+			LDBIcon:Show ("Plater")
+		end
+		LDBIcon:Refresh ("Plater", PlaterDBChr.minimap)
+		
+		return
+	
 	end
+	
+	local usage = "Usage Info:"
+	usage = usage .. "\n|cffffaeae/plater|r : Open the Plater options window"
+	usage = usage .. "\n|cffffaeae/plater|r |cffffff33version|r: print Plater version information"
+	usage = usage .. "\n|cffffaeae/plater|r |cffffff33profstart|r: Start Plater profiling"
+	usage = usage .. "\n|cffffaeae/plater|r |cffffff33profstop|r: Stop Plater profiling"
+	usage = usage .. "\n|cffffaeae/plater|r |cffffff33profprint|r: Print gathered profiling information"
+	usage = usage .. "\n|cffffaeae/plater|r |cffffff33add|r: Adds the targeted unit to the NPC Cache"
+	usage = usage .. "\n|cffffaeae/plater|r |cffffff33colors|r: Opens the Plater color palette"
+	usage = usage .. "\n|cffffaeae/plater|r |cffffff33minimap|r: Toggle the Plater minimap icon"
+	usage = usage .. "\n|cffffaeaeVersion:|r |cffffff33" .. Plater.GetVersionInfo() .. "|r"
+	Plater:Msg(usage)
 	
 	Plater.OpenOptionsPanel()
 end
