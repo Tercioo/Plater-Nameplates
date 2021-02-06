@@ -3521,9 +3521,6 @@ function Plater.OnInit() --private --~oninit ~init
 	end
 
 	Plater.Locale =  GetLocale()
-	
-	--Register LDB
-	Plater.InitLDB()
 
 	--Plater:BossModsLink()
 	
@@ -3534,6 +3531,9 @@ function Plater.OnInit() --private --~oninit ~init
 		PlaterDBChr.buffsBanned = PlaterDBChr.buffsBanned or {}
 		PlaterDBChr.spellRangeCheckRangeEnemy = PlaterDBChr.spellRangeCheckRangeEnemy or {}
 		PlaterDBChr.spellRangeCheckRangeFriendly = PlaterDBChr.spellRangeCheckRangeFriendly or {}
+
+	--Register LDB
+	Plater.InitLDB()
 
 	--to fix: attempt to index field 'spellRangeCheck' (a string value)
 		if (type (PlaterDBChr.spellRangeCheckRangeEnemy) ~= "table") then
