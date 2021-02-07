@@ -5877,6 +5877,13 @@ end
 	-- needReset is true when the previous unit type shown on this place is different from the current unit
 	function Plater.UpdatePlateText (plateFrame, plateConfigs, needReset) --private
 	
+		if plateFrame.unitFrame.isWidgetOnlyMode then
+			plateFrame.ActorNameSpecial:Hide()
+			plateFrame.ActorTitleSpecial:Hide()
+			
+			return
+		end
+		
 		-- ensure castBar updates are done, as this needs to be done for all types of plates...
 		local spellnameString = plateFrame.unitFrame.castBar.Text
 		local spellPercentString = plateFrame.unitFrame.castBar.percentText
