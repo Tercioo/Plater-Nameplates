@@ -9226,7 +9226,7 @@ function DF:CreateUnitFrame (parent, name, unitFrameSettingsOverride, healthBarS
 	
 	--> overlay frame (widgets that need to stay above the unit frame)
 	local overlayFrame = CreateFrame ("frame", "$parentOverlayFrame", f, "BackdropTemplate")
-	borderFrame:SetFrameLevel (f:GetFrameLevel() + 6)
+	overlayFrame:SetFrameLevel (f:GetFrameLevel() + 6)
 	f.overlayFrame = overlayFrame
 	
 	--> unit frame layers
