@@ -603,8 +603,8 @@ function Plater.OpenOptionsPanel()
 			end
 			
 			function profilesFrame.OpenProfileManagement()
-				Plater:OpenInterfaceProfile()
 				f:Hide()
+				Plater:OpenInterfaceProfile()
 				C_Timer.After (.5, function()
 					mainFrame:SetIndex (1)
 					mainFrame:SelectIndex (_, 1)
