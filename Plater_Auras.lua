@@ -989,7 +989,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 					
 					local auraType = "BUFF"
 					--verify is this aura is in the table passed
-					if (aurasToCheck [name]) then
+					if (aurasToCheck [name] or aurasToCheck [spellId]) then
 						local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
 						Plater.AddAura (buffFrame, auraIconFrame, buffIndex, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, true, false, false, isPersonal, actualAuraType)
 					end
@@ -1031,7 +1031,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 					local auraType = "DEBUFF"
 					--checking here if the debuff is placed by the player
 					--if (caster and aurasToCheck [name] and UnitIsUnit (caster, "player")) then --this doesn't track the pet, so auras like freeze from mage frost elemental won't show
-					if (caster and aurasToCheck [name] and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet"))) then
+					if (caster and (aurasToCheck [name] or aurasToCheck [spellId]) and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet"))) then
 					--if (aurasToCheck [name]) then
 						local auraIconFrame, buffFrame = Plater.GetAuraIcon (self)
 						Plater.AddAura (buffFrame, auraIconFrame, debuffIndex, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, false, false, false, isPersonal, actualAuraType)
@@ -1599,14 +1599,22 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			for spellId, state in pairs (profile.aura_tracker.buff_banned) do
 				local spellName = GetSpellInfo (spellId)
 				if (spellName) then
-					DB_BUFF_BANNED [spellName] = true
+					if state then
+						DB_BUFF_BANNED [spellName] = true
+					else
+						DB_BUFF_BANNED [spellId] = true
+					end
 				end
 			end
 			
 			for spellId, state in pairs (profile.aura_tracker.debuff_banned) do
 				local spellName = GetSpellInfo (spellId)
 				if (spellName) then
-					DB_DEBUFF_BANNED [spellName] = true
+					if state then
+						DB_DEBUFF_BANNED [spellName] = true
+					else
+						DB_DEBUFF_BANNED [spellId] = true
+					end
 				end
 			end
 		
@@ -1669,18 +1677,26 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			CAN_TRACK_EXTRA_BUFFS = false
 			CAN_TRACK_EXTRA_DEBUFFS = false
 
-			for spellId, _ in pairs (extraBuffsToTrack) do
+			for spellId, flag in pairs (extraBuffsToTrack) do
 				local spellName = GetSpellInfo (spellId)
 				if (spellName) then
-					AUTO_TRACKING_EXTRA_BUFFS [spellName] = true
+					if flag then
+						AUTO_TRACKING_EXTRA_BUFFS [spellName] = true
+					else
+						AUTO_TRACKING_EXTRA_BUFFS [spellId] = true
+					end
 					CAN_TRACK_EXTRA_BUFFS = true
 				end
 			end
 			
-			for spellId, _ in pairs (extraDebuffsToTrack) do
+			for spellId, flag in pairs (extraDebuffsToTrack) do
 				local spellName = GetSpellInfo (spellId)
 				if (spellName) then
-					AUTO_TRACKING_EXTRA_DEBUFFS [spellName] = true
+					if flag then
+						AUTO_TRACKING_EXTRA_DEBUFFS [spellName] = true
+					else
+						AUTO_TRACKING_EXTRA_DEBUFFS [spellId] = true
+					end
 					CAN_TRACK_EXTRA_DEBUFFS = true
 				end
 			end
