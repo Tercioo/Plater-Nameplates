@@ -9928,7 +9928,7 @@ end
 		
 		--init modEnv if necessary
 		local needsInitCall = false
-		if not PLATER_GLOBAL_MOD_ENV [scriptObject.scriptId] then
+		if (not PLATER_GLOBAL_MOD_ENV [scriptObject.scriptId]) then
 			needsInitCall = true
 			PLATER_GLOBAL_MOD_ENV [scriptObject.scriptId] = {
 				config = {}
@@ -9943,8 +9943,8 @@ end
 
 		for i = 1, #scriptOptions do
 			local thisOption = scriptOptions[i]
-			if options_for_config_table[thisOption.Type] then
-				if type(scriptOptionsValues[thisOption.Key]) == "boolean" then
+			if (options_for_config_table[thisOption.Type]) then
+				if (type(scriptOptionsValues[thisOption.Key]) == "boolean") then
 					PLATER_GLOBAL_MOD_ENV [scriptObject.scriptId].config[thisOption.Key] = scriptOptionsValues[thisOption.Key]
 				else
 					PLATER_GLOBAL_MOD_ENV [scriptObject.scriptId].config[thisOption.Key] = scriptOptionsValues[thisOption.Key] or thisOption.Value
@@ -9969,9 +9969,9 @@ end
 				else
 					--store the function to execute inside the global script object
 					--setfenv (compiledScript, functionFilter)
-					if not Plater.db.profile.shadowMode then
+					if (not Plater.db.profile.shadowMode) then
 						DF:SetEnvironment(compiledScript, nil, platerModEnvironment)
-					elseif Plater.db.profile.shadowMode == 1 then
+					elseif (Plater.db.profile.shadowMode == 1) then
 						SetPlaterEnvironment(compiledScript)
 					end
 					
@@ -10049,11 +10049,24 @@ end
 
 		for i = 1, #scriptOptions do
 			local thisOption = scriptOptions[i]
-			if options_for_config_table[thisOption.Type] then
-				if type(scriptOptionsValues[thisOption.Key]) == "boolean" then
+			if (options_for_config_table[thisOption.Type]) then
+				if (type(scriptOptionsValues[thisOption.Key]) == "boolean") then
 					PLATER_GLOBAL_SCRIPT_ENV [scriptObject.scriptId].config[thisOption.Key] = scriptOptionsValues[thisOption.Key]
 				else
-					PLATER_GLOBAL_SCRIPT_ENV [scriptObject.scriptId].config[thisOption.Key] = scriptOptionsValues[thisOption.Key] or thisOption.Value
+					--check if the options is a list
+					if (thisOption.Type == 7) then
+						--build a hash table with the entries in the list
+						local hashTable = {}
+						for index, entryTable in ipairs(thisOption.Value) do
+							local key = entryTable[1]
+							local value = entryTable[2]
+							hashTable[key] = value
+						end
+
+						PLATER_GLOBAL_SCRIPT_ENV [scriptObject.scriptId].config[thisOption.Key] = hashTable
+					else
+						PLATER_GLOBAL_SCRIPT_ENV [scriptObject.scriptId].config[thisOption.Key] = scriptOptionsValues[thisOption.Key] or thisOption.Value
+					end					
 				end
 			end
 		end
@@ -10066,9 +10079,9 @@ end
 			else
 				--get the function to execute
 				--setfenv (compiledScript, functionFilter)
-				if not Plater.db.profile.shadowMode then
+				if (not Plater.db.profile.shadowMode) then
 					DF:SetEnvironment(compiledScript, nil, platerModEnvironment)
-				elseif Plater.db.profile.shadowMode == 1 then
+				elseif (Plater.db.profile.shadowMode == 1) then
 					SetPlaterEnvironment(compiledScript)
 				end
 				scriptFunctions [scriptType] = compiledScript()
@@ -10083,7 +10096,6 @@ end
 		elseif (scriptObject.ScriptType == 3) then --unit plate
 			triggerContainer = "NpcNames"
 		end
-		
 		
 		for i = 1, #scriptObject [triggerContainer] do
 			local triggerId = scriptObject [triggerContainer] [i]
@@ -10146,7 +10158,7 @@ end
 				end
 				
 				--run initialization (once)
-				if needsInitCall then
+				if (needsInitCall) then
 					Plater.ScriptMetaFunctions.ScriptRunInitialization(globalScriptObject)
 					needsInitCall = false
 				end
