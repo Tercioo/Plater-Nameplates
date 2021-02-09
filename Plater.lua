@@ -4672,7 +4672,7 @@ end
 
 	function Plater.SetQuestColorByReaction (unitFrame)
 		--unit is a quest mob, reset the color to quest color
-		if (unitFrame.ActorType) then
+		if (unitFrame.ActorType and DB_PLATE_CONFIG [unitFrame.ActorType].quest_color_enabled) then
 			if (unitFrame [MEMBER_REACTION] == UNITREACTION_NEUTRAL) then
 				Plater.ChangeHealthBarColor_Internal (unitFrame.healthBar, unpack (DB_PLATE_CONFIG [unitFrame.ActorType].quest_color_neutral))
 				
@@ -6006,7 +6006,7 @@ end
 					local r, g, b, a
 					
 					--get the quest color if this npcs is a quest npc
-					if (plateFrame [MEMBER_QUEST]) then
+					if (plateFrame [MEMBER_QUEST] and DB_PLATE_CONFIG [plateFrame.unitFrame.ActorType].quest_color_enabled) then
 						if (plateFrame [MEMBER_REACTION] == UNITREACTION_NEUTRAL) then
 							r, g, b, a = unpack (plateConfigs.quest_color_neutral)
 						else
