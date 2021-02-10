@@ -81,7 +81,38 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
         userFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
         userFrame:SetBackdropBorderColor (unpack (luaeditor_border_color))
         userFrame:SetBackdropColor (unpack (luaeditor_backdrop_color))
-        mainFrame.ScriptOptionsPanelUser = userFrame
+        
+		local listScrollFrame = CreateFrame("ScrollFrame", "$parentListScrollFrame", userFrame, "UIPanelScrollFrameTemplate,BackdropTemplate")
+		listScrollFrame:SetWidth(345)
+		listScrollFrame:SetPoint("TOPRIGHT", userFrame, "TOPRIGHT", -5, -5)
+		listScrollFrame:SetPoint("BOTTOMRIGHT", userFrame, "BOTTOMRIGHT", -5, 5)
+		DF:ApplyStandardBackdrop (listScrollFrame)
+		DF:ReskinSlider (listScrollFrame)
+		
+		userFrame.listScrollFrame = listScrollFrame
+		local scrollChild = CreateFrame("Frame", "$parentListScrollFrameChild", listScrollFrame, "BackdropTemplate")
+		DF:ApplyStandardBackdrop (scrollChild)
+		userFrame.listScrollFrame.scrollChild = scrollChild
+		listScrollFrame:SetScrollChild(scrollChild)
+		
+		local scrollbarName = listScrollFrame:GetName()
+		local scrollbar = _G[scrollbarName.."ScrollBar"]
+		local scrollupbutton = _G[scrollbarName.."ScrollBarScrollUpButton"]
+		local scrolldownbutton = _G[scrollbarName.."ScrollBarScrollDownButton"]
+		
+		scrollupbutton:ClearAllPoints()
+		scrollupbutton:SetPoint("TOPRIGHT", listScrollFrame, "TOPRIGHT", -2, -2)
+		
+		scrolldownbutton:ClearAllPoints()
+		scrolldownbutton:SetPoint("BOTTOMRIGHT", listScrollFrame, "BOTTOMRIGHT", -2, 2)
+		
+		scrollbar:ClearAllPoints()
+		scrollbar:SetPoint("TOP", scrollupbutton, "BOTTOM", 0, -2)
+		scrollbar:SetPoint("BOTTOM", scrolldownbutton, "TOP", 0, 2)
+		
+		scrollChild:SetSize(listScrollFrame:GetWidth()-10, (listScrollFrame:GetHeight())-10)
+		
+		mainFrame.ScriptOptionsPanelUser = userFrame
         userFrame:Hide()
 
         userFrame.listFrames = {}
@@ -110,8 +141,8 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
 
         function userFrame.CreateListFrame(index)
             local headerTable = {
-                {text = "Value 1", width = 100},
-                {text = "Value 2", width = 100},
+                {text = "Key", width = 100},
+                {text = "Value", width = 100},
             }
 
             local headerOptions = {
@@ -129,7 +160,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                 line_backdrop_border_color = {0, 0, 0, .1},
             }
 
-            local listBox = DF:CreateListBox(userFrame, "$parentListFrame" .. index, {}, listBoxOptions, headerTable, headerOptions)
+            local listBox = DF:CreateListBox(userFrame.listScrollFrame.scrollChild, "$parentListFrame" .. index, {}, listBoxOptions, headerTable, headerOptions)
             listBox:SetBackdropColor(.3, .3, .3, .5)
             listBox.__background:Hide()
             listBox.scrollBox.__background:Hide()
@@ -863,8 +894,8 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
 
             --> create the list box
                 local headerTable = {
-                    {text = "Value 1", width = 153},
-                    {text = "Value 2", width = 153},
+                    {text = "Key", width = 153},
+                    {text = "Value", width = 153},
                 }
 
                 local headerOptions = {
@@ -1008,7 +1039,10 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                         --list box is a separated widget from the menu
                         --flag the value here to add it after the menu is built
                         newOption.type = "list"
-                        tinsert(listFramesNeeded, {thisOption.Value, thisOption.Name})
+						if not thisOptionsValues[thisOption.Key] then
+							thisOptionsValues[thisOption.Key] = DF.table.copy({}, thisOption.Value)
+						end
+                        tinsert(listFramesNeeded, {thisOptionsValues[thisOption.Key], thisOption.Name})
 
                     end
 
@@ -1025,13 +1059,10 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                     local title = t[2]
                     listFrame:SetData(data)
                     local posY = i - 1
-                    if (i == 1) then
-                        listFrame:SetPoint("topright", mainFrame.ScriptOptionsPanelUser, "topright", -5, (-posY*216) - 21)
-                    else
-                        listFrame:SetPoint("topright", mainFrame.ScriptOptionsPanelUser, "topright", -5, (-posY*216) - 3)
-                    end
+                    listFrame:SetPoint("topright", mainFrame.ScriptOptionsPanelUser.listScrollFrame.scrollChild, "topright", -25, (-posY*205) - 21)
                     listFrame.titleText:SetText(title)
                 end
+				mainFrame.ScriptOptionsPanelUser.listScrollFrame.scrollChild:SetSize(mainFrame.ScriptOptionsPanelUser.listScrollFrame:GetWidth(), #listFramesNeeded * 205 + 21)
 
             end
         end

@@ -9946,6 +9946,23 @@ end
 			if (options_for_config_table[thisOption.Type]) then
 				if (type(scriptOptionsValues[thisOption.Key]) == "boolean") then
 					PLATER_GLOBAL_MOD_ENV [scriptObject.scriptId].config[thisOption.Key] = scriptOptionsValues[thisOption.Key]
+				elseif (thisOption.Type == 7) then
+					--check if the options is a list
+					
+					--build default values if needed
+					if not scriptOptionsValues[thisOption.Key] then
+						scriptOptionsValues[thisOption.Key] = DF.table.copy({}, thisOption.Value)
+					end
+					
+					--build a hash table with the entries in the list
+					local hashTable = {}
+					for index, entryTable in ipairs(scriptOptionsValues[thisOption.Key]) do
+						local key = entryTable[1]
+						local value = entryTable[2]
+						hashTable[key] = value
+					end
+
+					PLATER_GLOBAL_MOD_ENV [scriptObject.scriptId].config[thisOption.Key] = hashTable
 				else
 					PLATER_GLOBAL_MOD_ENV [scriptObject.scriptId].config[thisOption.Key] = scriptOptionsValues[thisOption.Key] or thisOption.Value
 				end
@@ -10052,21 +10069,25 @@ end
 			if (options_for_config_table[thisOption.Type]) then
 				if (type(scriptOptionsValues[thisOption.Key]) == "boolean") then
 					PLATER_GLOBAL_SCRIPT_ENV [scriptObject.scriptId].config[thisOption.Key] = scriptOptionsValues[thisOption.Key]
-				else
+				elseif (thisOption.Type == 7) then
 					--check if the options is a list
-					if (thisOption.Type == 7) then
-						--build a hash table with the entries in the list
-						local hashTable = {}
-						for index, entryTable in ipairs(thisOption.Value) do
-							local key = entryTable[1]
-							local value = entryTable[2]
-							hashTable[key] = value
-						end
+					
+					--build default values if needed
+					if not scriptOptionsValues[thisOption.Key] then
+						scriptOptionsValues[thisOption.Key] = DF.table.copy({}, thisOption.Value)
+					end
+					
+					--build a hash table with the entries in the list
+					local hashTable = {}
+					for index, entryTable in ipairs(scriptOptionsValues[thisOption.Key]) do
+						local key = entryTable[1]
+						local value = entryTable[2]
+						hashTable[key] = value
+					end
 
-						PLATER_GLOBAL_SCRIPT_ENV [scriptObject.scriptId].config[thisOption.Key] = hashTable
-					else
-						PLATER_GLOBAL_SCRIPT_ENV [scriptObject.scriptId].config[thisOption.Key] = scriptOptionsValues[thisOption.Key] or thisOption.Value
-					end					
+					PLATER_GLOBAL_SCRIPT_ENV [scriptObject.scriptId].config[thisOption.Key] = hashTable
+				else
+					PLATER_GLOBAL_SCRIPT_ENV [scriptObject.scriptId].config[thisOption.Key] = scriptOptionsValues[thisOption.Key] or thisOption.Value
 				end
 			end
 		end
