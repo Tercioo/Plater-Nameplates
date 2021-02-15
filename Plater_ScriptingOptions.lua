@@ -82,37 +82,37 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
         userFrame:SetBackdropBorderColor (unpack (luaeditor_border_color))
         userFrame:SetBackdropColor (unpack (luaeditor_backdrop_color))
         
-		local listScrollFrame = CreateFrame("ScrollFrame", "$parentListScrollFrame", userFrame, "UIPanelScrollFrameTemplate,BackdropTemplate")
-		listScrollFrame:SetWidth(345)
-		listScrollFrame:SetPoint("TOPRIGHT", userFrame, "TOPRIGHT", -5, -5)
-		listScrollFrame:SetPoint("BOTTOMRIGHT", userFrame, "BOTTOMRIGHT", -5, 5)
-		DF:ApplyStandardBackdrop (listScrollFrame)
-		DF:ReskinSlider (listScrollFrame)
-		
-		userFrame.listScrollFrame = listScrollFrame
-		local scrollChild = CreateFrame("Frame", "$parentListScrollFrameChild", listScrollFrame, "BackdropTemplate")
-		DF:ApplyStandardBackdrop (scrollChild)
-		userFrame.listScrollFrame.scrollChild = scrollChild
-		listScrollFrame:SetScrollChild(scrollChild)
-		
-		local scrollbarName = listScrollFrame:GetName()
-		local scrollbar = _G[scrollbarName.."ScrollBar"]
-		local scrollupbutton = _G[scrollbarName.."ScrollBarScrollUpButton"]
-		local scrolldownbutton = _G[scrollbarName.."ScrollBarScrollDownButton"]
-		
-		scrollupbutton:ClearAllPoints()
-		scrollupbutton:SetPoint("TOPRIGHT", listScrollFrame, "TOPRIGHT", -2, -2)
-		
-		scrolldownbutton:ClearAllPoints()
-		scrolldownbutton:SetPoint("BOTTOMRIGHT", listScrollFrame, "BOTTOMRIGHT", -2, 2)
-		
-		scrollbar:ClearAllPoints()
-		scrollbar:SetPoint("TOP", scrollupbutton, "BOTTOM", 0, -2)
-		scrollbar:SetPoint("BOTTOM", scrolldownbutton, "TOP", 0, 2)
-		
-		scrollChild:SetSize(listScrollFrame:GetWidth()-10, (listScrollFrame:GetHeight())-10)
-		
-		mainFrame.ScriptOptionsPanelUser = userFrame
+        local listScrollFrame = CreateFrame("ScrollFrame", "$parentListScrollFrame", userFrame, "UIPanelScrollFrameTemplate,BackdropTemplate")
+        listScrollFrame:SetWidth(345)
+        listScrollFrame:SetPoint("TOPRIGHT", userFrame, "TOPRIGHT", -5, -5)
+        listScrollFrame:SetPoint("BOTTOMRIGHT", userFrame, "BOTTOMRIGHT", -5, 5)
+        DF:ApplyStandardBackdrop (listScrollFrame)
+        DF:ReskinSlider (listScrollFrame)
+        
+        userFrame.listScrollFrame = listScrollFrame
+        local scrollChild = CreateFrame("Frame", "$parentListScrollFrameChild", listScrollFrame, "BackdropTemplate")
+        DF:ApplyStandardBackdrop (scrollChild)
+        userFrame.listScrollFrame.scrollChild = scrollChild
+        listScrollFrame:SetScrollChild(scrollChild)
+        
+        local scrollbarName = listScrollFrame:GetName()
+        local scrollbar = _G[scrollbarName.."ScrollBar"]
+        local scrollupbutton = _G[scrollbarName.."ScrollBarScrollUpButton"]
+        local scrolldownbutton = _G[scrollbarName.."ScrollBarScrollDownButton"]
+        
+        scrollupbutton:ClearAllPoints()
+        scrollupbutton:SetPoint("TOPRIGHT", listScrollFrame, "TOPRIGHT", -2, -2)
+        
+        scrolldownbutton:ClearAllPoints()
+        scrolldownbutton:SetPoint("BOTTOMRIGHT", listScrollFrame, "BOTTOMRIGHT", -2, 2)
+        
+        scrollbar:ClearAllPoints()
+        scrollbar:SetPoint("TOP", scrollupbutton, "BOTTOM", 0, -2)
+        scrollbar:SetPoint("BOTTOM", scrolldownbutton, "TOP", 0, 2)
+        
+        scrollChild:SetSize(listScrollFrame:GetWidth()-10, (listScrollFrame:GetHeight())-10)
+        
+        mainFrame.ScriptOptionsPanelUser = userFrame
         userFrame:Hide()
 
         userFrame.listFrames = {}
@@ -164,16 +164,41 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
             listBox:SetBackdropColor(.3, .3, .3, .5)
             listBox.__background:Hide()
             listBox.scrollBox.__background:Hide()
-
-            --listFrameOptionsMenu has the method Refresh() added by BuildMenuVolatile(), hook it
-            hooksecurefunc(userFrame, "RefreshOptions", function()
-                local value = mainFrame.getOptionValue("Value", {})
-                listBox:SetData(value)
-            end)
+            
+            local reApplyDefaultValues = function(self)
+                local listBox = self:GetParent()
+                local data = listBox.data or {}
+                local defaultValues = listBox.defaultValues or {}
+                
+                for defEntry, defValues in ipairs(defaultValues) do
+                    local found = false
+                    for dataEntry, dataValues in ipairs(data) do
+                        if dataValues[1] == defValues[1] then
+                            dataValues[2] = defValues[2]
+                            found = true
+                            break
+                        end
+                    end
+                    if not found then
+                        tinsert(data, {defValues[1], defValues[2]})
+                    end
+                end
+                
+                listBox.scrollBox:Refresh()
+            end
+            
+            local reapplyDefaultButton = DF:CreateButton(listBox, reApplyDefaultValues, 80, 20, "Re-Apply Default Values", nil, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "ORANGE_FONT_TEMPLATE"))
+            reapplyDefaultButton:SetPoint("topright", listBox.scrollBox, "bottomright", 0, -4)
 
             local titleText = DF:CreateLabel(listBox, "", DF:GetTemplate("font", "ORANGE_FONT_TEMPLATE"))
             titleText:SetPoint("bottomleft", listBox, "topleft", 0, 2)
             listBox.titleText = titleText
+            
+            listBox:SetScript("OnHide", function(self)
+                if (self.scriptObject) then
+                    Plater.RecompileScript(self.scriptObject)
+                end
+            end)
 
             return listBox
         end
@@ -1039,10 +1064,10 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                         --list box is a separated widget from the menu
                         --flag the value here to add it after the menu is built
                         newOption.type = "list"
-						if not thisOptionsValues[thisOption.Key] then
-							thisOptionsValues[thisOption.Key] = DF.table.copy({}, thisOption.Value)
-						end
-                        tinsert(listFramesNeeded, {thisOptionsValues[thisOption.Key], thisOption.Name})
+                        if not thisOptionsValues[thisOption.Key] then
+                            thisOptionsValues[thisOption.Key] = DF.table.copy({}, thisOption.Value)
+                        end
+                        tinsert(listFramesNeeded, {thisOptionsValues[thisOption.Key], thisOption.Name, thisOption.Value})
 
                     end
 
@@ -1057,12 +1082,17 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                     local t = listFramesNeeded[i]
                     local data = t[1]
                     local title = t[2]
+                    local defaultValues = t[3] or {}
+                    
                     listFrame:SetData(data)
+                    listFrame.defaultValues = defaultValues
+                    listFrame.scriptObject = scriptObject
+                    
                     local posY = i - 1
                     listFrame:SetPoint("topright", mainFrame.ScriptOptionsPanelUser.listScrollFrame.scrollChild, "topright", -25, (-posY*205) - 21)
                     listFrame.titleText:SetText(title)
                 end
-				mainFrame.ScriptOptionsPanelUser.listScrollFrame.scrollChild:SetSize(mainFrame.ScriptOptionsPanelUser.listScrollFrame:GetWidth(), #listFramesNeeded * 205 + 21)
+                mainFrame.ScriptOptionsPanelUser.listScrollFrame.scrollChild:SetSize(mainFrame.ScriptOptionsPanelUser.listScrollFrame:GetWidth(), #listFramesNeeded * 205 + 21)
 
             end
         end
