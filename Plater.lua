@@ -3623,6 +3623,7 @@ local class_specs_coords = {
 	function Plater.OnRetailNamePlateShow (self) --private
 		if ENABLED_BLIZZARD_PLATEFRAMES[tostring(self)] then
 			-- re-register events (CompactUnitFrame_OnLoad):
+			--[[
 			self:RegisterEvent("PLAYER_ENTERING_WORLD");
 			self:RegisterEvent("UNIT_DISPLAYPOWER");
 			self:RegisterEvent("UNIT_POWER_BAR_SHOW");
@@ -3654,10 +3655,11 @@ local class_specs_coords = {
 			if (CompactUnitFrame_RegisterEvents) then
 				CompactUnitFrame_RegisterEvents(self)
 			end
+			]]--
 			return
 		end
 		self:Hide()
-		self:UnregisterAllEvents()
+		--self:UnregisterAllEvents()
 		if (CompactUnitFrame_UnregisterEvents) then
 			CompactUnitFrame_UnregisterEvents (self)
 		end
