@@ -4621,9 +4621,9 @@ do
 			
 			{
 				type = "toggle",
-				get = function() return Plater.db.profile.plate_config.player.enabled end,
+				get = function() return Plater.db.profile.plate_config.player.module_enabled end,
 				set = function (self, fixedparam, value) 
-					Plater.db.profile.plate_config.player.enabled = value
+					Plater.db.profile.plate_config.player.module_enabled = value
 					ReloadUI()
 				end,
 				nocombat = true,
@@ -7245,9 +7245,9 @@ end
 		
 		{
 			type = "toggle",
-			get = function() return Plater.db.profile.plate_config.friendlyplayer.enabled end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.module_enabled end,
 			set = function (self, fixedparam, value) 
-				Plater.db.profile.plate_config.friendlyplayer.enabled = value
+				Plater.db.profile.plate_config.friendlyplayer.module_enabled = value
 				ReloadUI()
 			end,
 			nocombat = true,
@@ -8206,9 +8206,9 @@ end
 		
 		{
 			type = "toggle",
-			get = function() return Plater.db.profile.plate_config.enemyplayer.enabled end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.module_enabled end,
 			set = function (self, fixedparam, value) 
-				Plater.db.profile.plate_config.enemyplayer.enabled = value
+				Plater.db.profile.plate_config.enemyplayer.module_enabled = value
 				ReloadUI()
 			end,
 			nocombat = true,
@@ -9106,17 +9106,32 @@ end
 			name = "Copy",
 			desc = "Copy settings from another tab.\n\nWhen selecting an option a confirmation box is shown to confirm the copy.",
 		},
-		
 		{
 			type = "toggle",
-			get = function() return Plater.db.profile.plate_config.friendlynpc.enabled end,
+			get = function() return GetCVarBool ("nameplateShowFriendlyNPCs") end,
+			set = function (self, fixedparam, value) 
+				if (value) then
+					SetCVar ("nameplateShowFriendlyNPCs", CVAR_ENABLED)
+					Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].enabled = true
+				else
+					SetCVar ("nameplateShowFriendlyNPCs", CVAR_DISABLED)
+					Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].enabled = false
+				end
+			end,
+			nocombat = true,
+			name = L["OPTIONS_ENABLED"] .. CVarIcon,
+			desc = "Show nameplate for friendly npcs.\n\n|cFFFFFF00Important|r: This option is dependent on the client`s nameplate state (on/off).\n\n|cFFFFFF00Important|r: when disabled but enabled on the client through (" .. (GetBindingKey ("FRIENDNAMEPLATES") or "") .. ") the healthbar isn't visible but the nameplate is still clickable." .. CVarDesc,
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.plate_config.friendlynpc.module_enabled end,
 			set = function (self, fixedparam, value) 
 				if (value) then
 					--SetCVar ("nameplateShowFriendlyNPCs", CVAR_ENABLED)
-					Plater.db.profile.plate_config.friendlynpc.enabled = true
+					Plater.db.profile.plate_config.friendlynpc.module_enabled = true
 				else
 					--SetCVar ("nameplateShowFriendlyNPCs", CVAR_DISABLED)
-					Plater.db.profile.plate_config.friendlynpc.enabled = false
+					Plater.db.profile.plate_config.friendlynpc.module_enabled = false
 				end
 				ReloadUI()
 			end,
@@ -10139,9 +10154,9 @@ end
 			
 			{
 				type = "toggle",
-				get = function() return Plater.db.profile.plate_config.enemynpc.enabled end,
+				get = function() return Plater.db.profile.plate_config.enemynpc.module_enabled end,
 				set = function (self, fixedparam, value) 
-					Plater.db.profile.plate_config.enemynpc.enabled = value
+					Plater.db.profile.plate_config.enemynpc.module_enabled = value
 					ReloadUI()
 				end,
 				nocombat = true,

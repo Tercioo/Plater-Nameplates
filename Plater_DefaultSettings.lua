@@ -91,6 +91,7 @@ PLATER_DEFAULT_SETTINGS = {
 		plate_config  = {
 			friendlyplayer = {
 				enabled = true,
+				module_enabled = true,
 				only_damaged = true,
 				only_thename = false,
 				click_through = true,
@@ -164,6 +165,7 @@ PLATER_DEFAULT_SETTINGS = {
 			
 			enemyplayer = {
 				enabled = true,
+				module_enabled = true,
 				show_guild_name = false,
 				
 				use_playerclass_color = true,
@@ -250,6 +252,7 @@ PLATER_DEFAULT_SETTINGS = {
 				all_names = true,
 				relevance_state = 4,
 				enabled = true,
+				module_enabled = true,
 				
 				health = {112, 12},
 				cast = {112, 10},
@@ -332,6 +335,7 @@ PLATER_DEFAULT_SETTINGS = {
 			
 			enemynpc = {
 				enabled = true,
+				module_enabled = true,
 				all_names = true,
 				
 				health = {112, 12},
@@ -417,6 +421,7 @@ PLATER_DEFAULT_SETTINGS = {
 
 			player = {
 				enabled = true,
+				module_enabled = true,
 				click_through = false,
 				health = {150, 12},
 				health_incombat = {150, 12},

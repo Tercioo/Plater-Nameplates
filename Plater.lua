@@ -3147,7 +3147,7 @@ local class_specs_coords = {
 					end
 				end
 			end
-			local isPlateEnabled = DB_PLATE_CONFIG [actorType].enabled
+			local isPlateEnabled = DB_PLATE_CONFIG [actorType].module_enabled
 			
 			local blizzardPlateFrameID = tostring(plateFrame.UnitFrame)
 			plateFrame.unitFrame.blizzardPlateFrameID = blizzardPlateFrameID
@@ -4017,7 +4017,7 @@ function Plater.OnInit() --private --~oninit ~init
 		--self if the nameplate driver frame: _G.NamePlateDriverFrame
 		--at the moment self isn't being used ~personal
 		function Plater.UpdatePersonalBar (self)
-			local showSelf = GetCVarBool ("nameplateShowSelf") and Plater.db.profile.plate_config.player.enabled
+			local showSelf = GetCVarBool ("nameplateShowSelf") and Plater.db.profile.plate_config.player.module_enabled
 			if (not showSelf) then
 				if PlaterDBChr.resources_on_target then
 					Plater.UpdateResourceFrame()
@@ -4104,7 +4104,7 @@ function Plater.OnInit() --private --~oninit ~init
 			--it is used when checking if the unit has auras to move the resources up to make room for the auras
 			Plater.CurrentTargetResourceFrame = nil
 		
-			local showSelf = GetCVarBool ("nameplateShowSelf") and Plater.db.profile.plate_config.player.enabled
+			local showSelf = GetCVarBool ("nameplateShowSelf") and Plater.db.profile.plate_config.player.module_enabled
 			local onCurrentTarget = PlaterDBChr.resources_on_target
 			
 			if (not showSelf) then
