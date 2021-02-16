@@ -204,15 +204,13 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			if (profile.aura_sort) then
 				local iconFrameContainerCopy = {}
 				local index = 0
-				for i = 1, amountFramesShown do
-					local icon = iconFrameContainer[i]
+				for _, icon in pairs(iconFrameContainer) do
 					if icon:IsShown() then
 						index = index + 1
 						iconFrameContainerCopy[index] = icon
 					end
 				end
 				iconFrameContainer = iconFrameContainerCopy
-				amountFramesShown = index
 				table.sort (iconFrameContainer, Plater.AuraIconsSortFunction)
 			end
 		
