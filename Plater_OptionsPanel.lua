@@ -151,7 +151,7 @@ function Plater.OpenOptionsPanel()
 	--controi o menu principal
 	local f = DF:CreateSimplePanel (UIParent, optionsWidth, optionsHeight, "Plater: professional nameplate addon for hardcore gamers", "PlaterOptionsPanelFrame", {UseScaleBar = true}, Plater.db.profile.OptionsPanelDB)
 	f.Title:SetAlpha (.75)
-	f:SetFrameStrata ("MEDIUM")
+	f:SetFrameStrata ("DIALOG")
 	DF:ApplyStandardBackdrop (f)
 	f:ClearAllPoints()
 	PixelUtil.SetPoint (f, "center", UIParent, "center", 2, 2, 1, 1)
