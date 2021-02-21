@@ -243,6 +243,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 				local aurasPerRow = (not profile.auras_per_row_auto and floor(auras_per_row) or Plater.MaxAurasPerRow)
 				local curAurasRowCount = aurasPerRow + 1
 				local rowGrowthDirectionUp = (anchorSide < 3 or anchorSide > 5)
+				local lineBreakMult = rowGrowthDirectionUp and 1 or -1
 				
 				--which slot index is being manipulated within the icon loop
 				--if an icon is hidden it won't be used and the slot won't increase
@@ -289,7 +290,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 							verticalHeight = firstIcon:GetHeight()
 						else
 							if (slotId == curAurasRowCount) then
-								iconFrame:SetPoint (relIconPoint, firstIcon, relRowIconPoint, 0, profile.aura_breakline_space)
+								iconFrame:SetPoint (relIconPoint, firstIcon, relRowIconPoint, 0, profile.aura_breakline_space * lineBreakMult)
 								curAurasRowCount = curAurasRowCount + aurasPerRow
 								--update the first icon to be the first icon in the second row
 								firstIcon = iconFrame

@@ -1318,7 +1318,7 @@ local debuff_options = {
 			Plater.db.profile.aura_breakline_space = value
 			Plater.RefreshDBUpvalues()
 		end,
-		min = 1,
+		min = 0,
 		max = 15,
 		step = 0.01,
 		usedecimals = true,
