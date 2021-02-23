@@ -974,7 +974,7 @@ local class_specs_coords = {
 					
 				end,
 				OnTooltipShow = function (tooltip)
-					tooltip:AddLine ("Plater", 1, 1, 1)
+					tooltip:AddLine ("Plater Nameplates", 1, 1, 1)
 					tooltip:AddLine ("|cFFCFCFCFLeft click|r: Show/Hide Options Window")
 					tooltip:AddLine ("|cFFCFCFCFRight click|r: Quick Menu")
 				end,
