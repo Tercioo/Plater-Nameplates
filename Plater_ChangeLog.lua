@@ -16,7 +16,7 @@ function Plater.GetChangelogTable()
 			{1614089754,  "New Feature", "February 8th, 2021", "Buff Tracking now accepts spellID and names for dedicated or global buff/debuff track- and blocklists in auto-mode."},
 			{1614089754,  "Backend Changes", "February 7th, 2021", "Hide names in 'Widget Only' mode."},
 			{1614089754,  "Backend Changes", "February 6th, 2021", "Less frequent updates to hide healthbars to mitigate unwanted side-effects."},
-			{1614089754,  "Bug Fix", "February 3rd, 2021", "'NameplateInRange' works properly with internal ranche checking now."},
+			{1614089754,  "Bug Fix", "February 3rd, 2021", "'NameplateInRange' works properly with internal range checking now."},
 			{1614089754,  "Options Changes", "February 2nd, 2021", "When configuring cast icon to be on the side, show a shield icon instead of border texture."},
 			{1614089754,  "New Feature", "February 2nd, 2021", "Adding Button to open Plater options panel from interface options menu."},
 			{1614089754,  "New Feature", "February 2nd, 2021", "Adding '/plater' command usage output."},
