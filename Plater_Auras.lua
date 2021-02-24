@@ -881,11 +881,11 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			--> enrage effects
 			borderColor = Plater.db.profile.extra_icon_show_enrage_border
 		
-		elseif (DF.CooldownsAllDeffensive and DF.CooldownsAllDeffensive[spellName]) then 
+		elseif (DF.CooldownsAllDeffensive and DF.CooldownsAllDeffensive[spellId]) then 
 			--> defensive effects
 			borderColor = Plater.db.profile.extra_icon_show_defensive_border
 		
-		elseif (DF.CooldownsAttack and DF.CooldownsAttack[spellName]) then 
+		elseif (DF.CooldownsAttack and DF.CooldownsAttack[spellId]) then 
 			--> offensive effects
 			borderColor = Plater.db.profile.extra_icon_show_offensive_border
 		
