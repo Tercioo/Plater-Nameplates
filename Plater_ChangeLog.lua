@@ -8,6 +8,20 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1614089754,  "Backend Changes", "February 21st, 2021", "Plater options menu now opens on higher layer."},
+			{1614089754,  "Bug Fix", "February 21st, 2021", "Fixing aura icon row offset for bottom anchors."},
+			{1614089754,  "Options Changes", "February 20th, 2021", "New text outline options: 'Monochrome Outline' and 'Monochrome Thick Outline'."},
+			{1614089754,  "New Feature", "February 9th, 2021", "Adding 'List' type options for mods/scripts."},
+			{1614089754,  "Bug Fix", "February 9th, 2021", "Quest color setting should now be applied more thorough."},
+			{1614089754,  "New Feature", "February 8th, 2021", "Buff Tracking now accepts spellID and names for dedicated or global buff/debuff track- and blocklists in auto-mode."},
+			{1614089754,  "Backend Changes", "February 7th, 2021", "Hide names in 'Widget Only' mode."},
+			{1614089754,  "Backend Changes", "February 6th, 2021", "Less frequent updates to hide healthbars to mitigate unwanted side-effects."},
+			{1614089754,  "Bug Fix", "February 3rd, 2021", "'NameplateInRange' works properly with internal range checking now."},
+			{1614089754,  "Options Changes", "February 2nd, 2021", "When configuring cast icon to be on the side, show a shield icon instead of border texture."},
+			{1614089754,  "New Feature", "February 2nd, 2021", "Adding Button to open Plater options panel from interface options menu."},
+			{1614089754,  "New Feature", "February 2nd, 2021", "Adding '/plater' command usage output."},
+			{1614089754,  "New Feature", "February 2nd, 2021", "Adding support for LDB and LDBIcon with Minimap-Icon to open Plater options menu."},
+			
 			{1612172218,  "Bug Fix", "January 12th, 2021", "Fixing an issue with the Blink Time Left script glow feature."},
 			{1612172218,  "Revamp", "January 12th, 2021", "Update for the M+ Spiteful script."},
 			{1612172218,  "Options Changes", "January 12th, 2021", "Quest Tracking and Quest Coloring are now separated."},

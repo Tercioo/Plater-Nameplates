@@ -204,15 +204,13 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			if (profile.aura_sort) then
 				local iconFrameContainerCopy = {}
 				local index = 0
-				for i = 1, amountFramesShown do
-					local icon = iconFrameContainer[i]
+				for _, icon in pairs(iconFrameContainer) do
 					if icon:IsShown() then
 						index = index + 1
 						iconFrameContainerCopy[index] = icon
 					end
 				end
 				iconFrameContainer = iconFrameContainerCopy
-				amountFramesShown = index
 				table.sort (iconFrameContainer, Plater.AuraIconsSortFunction)
 			end
 		
@@ -245,6 +243,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 				local aurasPerRow = (not profile.auras_per_row_auto and floor(auras_per_row) or Plater.MaxAurasPerRow)
 				local curAurasRowCount = aurasPerRow + 1
 				local rowGrowthDirectionUp = (anchorSide < 3 or anchorSide > 5)
+				local lineBreakMult = rowGrowthDirectionUp and 1 or -1
 				
 				--which slot index is being manipulated within the icon loop
 				--if an icon is hidden it won't be used and the slot won't increase
@@ -291,7 +290,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 							verticalHeight = firstIcon:GetHeight()
 						else
 							if (slotId == curAurasRowCount) then
-								iconFrame:SetPoint (relIconPoint, firstIcon, relRowIconPoint, 0, profile.aura_breakline_space)
+								iconFrame:SetPoint (relIconPoint, firstIcon, relRowIconPoint, 0, profile.aura_breakline_space * lineBreakMult)
 								curAurasRowCount = curAurasRowCount + aurasPerRow
 								--update the first icon to be the first icon in the second row
 								firstIcon = iconFrame
