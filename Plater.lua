@@ -9499,7 +9499,6 @@ end
 			["ApplyPatches"] = true,
 			["RefreshConfig"] = true,
 			["RefreshConfigProfileChanged"] = true,
-			["RefreshConfig"] = true,
 			["SaveConsoleVariables"] = true,
 			["GetSettings"] = true,
 			["CodeTypeNames"] = true,
