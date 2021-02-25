@@ -942,7 +942,7 @@ local class_specs_coords = {
 					elseif (button == "RightButton") then
 					
 						GameTooltip:Hide()
-						local GameCooltip = GameCooltip
+						local GameCooltip = GameCooltip2
 						
 						GameCooltip:Reset()
 						GameCooltip:SetType ("menu")
