@@ -71,8 +71,10 @@ local SCRIPT_AURA = Plater.ScriptAura
 local SCRIPT_CASTBAR = Plater.ScriptCastBar
 local SCRIPT_UNIT = Plater.ScriptUnit
 
---caches aura names for crowd control to determine the border color for special auras, if the aura is in this table, the border will be colored with crowd control color
-local CROWDCONTROL_AURA_NAMES = {}
+--caches auras for crowd control, offensives and defensives to determine the border color for special auras, if the aura is in this table, the border will be colored with the respective color
+local CROWDCONTROL_AURA_IDS = {}
+local OFFENSIVE_AURA_IDS = {}
+local DEFENSIVE_AURA_IDS = {}
 --list of auras Plater added automatically to special auras, automatic added auras passes throught black list filters while auras manually added by the user do no
 local SPECIAL_AURAS_AUTO_ADDED = {}
 --list of auras the user added into the track list for special auras, _MINE caches the auras where the user checked the 'Only Mine' checkbox
@@ -707,6 +709,18 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			local color = DebuffTypeColor[actualAuraType or "none"] or {r=0,b=0,g=0, a=0}
 			auraIconFrame:SetBackdropBorderColor (color.r, color.g, color.b, color.a or 1)
 		
+		elseif (CROWDCONTROL_AURA_IDS [spellId]) then 
+			--> CC effects
+			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.crowdcontrol))
+		
+		elseif (OFFENSIVE_AURA_IDS [spellId]) then 
+			--> offensive CDs
+			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.offensive))
+		
+		elseif (DEFENSIVE_AURA_IDS [spellId]) then 
+			--> defensive CDs
+			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.defensive))
+			
 		elseif (isBuff) then
 			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.is_buff))
 			auraIconFrame.IsShowingBuff = true
@@ -718,18 +732,6 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 		elseif (actualAuraType == AURA_TYPE_ENRAGE) then 
 			--> enrage effects
 			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.enrage))
-		
-		elseif (DF.CrowdControlSpells and DF.CrowdControlSpells [spellId]) then 
-			--> CC effects
-			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.crowdcontrol))
-		
-		elseif (DF.CooldownsAttack and DF.CooldownsAttack [spellId]) then 
-			--> offensive CDs
-			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.offensive))
-		
-		elseif (DF.CooldownsAllDeffensive and DF.CooldownsAllDeffensive [spellId]) then 
-			--> defensive CDs
-			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.defensive))
 		
 		elseif (isShowAll) then
 			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.is_show_all))
@@ -874,20 +876,20 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			local color = DebuffTypeColor[actualAuraType or "none"] or {r=0,b=0,g=0, a=0} --actualAuraType is a global? it have been not passed
 			borderColor = {color.r, color.g, color.b, color.a or 1}
 			
-		elseif (CROWDCONTROL_AURA_NAMES [spellName]) then
+		elseif (CROWDCONTROL_AURA_IDS [spellId]) then
 			borderColor = Plater.db.profile.debuff_show_cc_border
+		
+		elseif (DEFENSIVE_AURA_IDS [spellId]) then 
+			--> defensive effects
+			borderColor = Plater.db.profile.extra_icon_show_defensive_border
+		
+		elseif (OFFENSIVE_AURA_IDS [spellId]) then 
+			--> offensive effects
+			borderColor = Plater.db.profile.extra_icon_show_offensive_border
 		
 		elseif (debuffType == AURA_TYPE_ENRAGE) then 
 			--> enrage effects
 			borderColor = Plater.db.profile.extra_icon_show_enrage_border
-		
-		elseif (DF.CooldownsAllDeffensive and DF.CooldownsAllDeffensive[spellId]) then 
-			--> defensive effects
-			borderColor = Plater.db.profile.extra_icon_show_defensive_border
-		
-		elseif (DF.CooldownsAttack and DF.CooldownsAttack[spellId]) then 
-			--> offensive effects
-			borderColor = Plater.db.profile.extra_icon_show_offensive_border
 		
 		else
 			borderColor = Plater.db.profile.extra_icon_border_color
@@ -1523,8 +1525,10 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 		--list of auras Plater added automatically to special auras
         wipe (SPECIAL_AURAS_AUTO_ADDED)
 
-		--crown control spells for the border in the special auras
-		wipe (CROWDCONTROL_AURA_NAMES)
+		--cached spells for the border in the special auras
+		wipe (CROWDCONTROL_AURA_IDS)
+		wipe (OFFENSIVE_AURA_IDS)
+		wipe (DEFENSIVE_AURA_IDS)
 
 		--build the crowd control list
 		if (profile.debuff_show_cc) then
@@ -1533,7 +1537,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 				if (spellName) then
 					--SPECIAL_AURAS_AUTO_ADDED [spellName] = true
 					SPECIAL_AURAS_AUTO_ADDED [spellId] = true
-					CROWDCONTROL_AURA_NAMES [spellName] = true
+					CROWDCONTROL_AURA_IDS [spellId] = true
 				end
 			end
         end
@@ -1545,6 +1549,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 				if (spellName) then
 					--SPECIAL_AURAS_AUTO_ADDED [spellName] = true
 					SPECIAL_AURAS_AUTO_ADDED [spellId] = true
+					OFFENSIVE_AURA_IDS [spellId] = true
 				end
 			end
         end
@@ -1556,6 +1561,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 				if (spellName) then
 					--SPECIAL_AURAS_AUTO_ADDED [spellName] = true
 					SPECIAL_AURAS_AUTO_ADDED [spellId] = true
+					DEFENSIVE_AURA_IDS [spellId] = true
 				end
 			end
         end
@@ -1706,6 +1712,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 					if (spellName) then
 						--AUTO_TRACKING_EXTRA_DEBUFFS [spellName] = true
 						AUTO_TRACKING_EXTRA_DEBUFFS [spellId] = true
+						CROWDCONTROL_AURA_IDS [spellId] = true
 						CAN_TRACK_EXTRA_BUFFS = true
 					end
 				end
@@ -1717,6 +1724,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 					if (spellName) then
 						--AUTO_TRACKING_EXTRA_BUFFS [spellName] = true
 						AUTO_TRACKING_EXTRA_BUFFS [spellId] = true
+						OFFENSIVE_AURA_IDS [spellId] = true
 						CAN_TRACK_EXTRA_BUFFS = true
 					end
 				end
@@ -1728,6 +1736,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 					if (spellName) then
 						--AUTO_TRACKING_EXTRA_BUFFS [spellName] = true
 						AUTO_TRACKING_EXTRA_BUFFS [spellId] = true
+						DEFENSIVE_AURA_IDS [spellId] = true
 						CAN_TRACK_EXTRA_BUFFS = true
 					end
 				end
