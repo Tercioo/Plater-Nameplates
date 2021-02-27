@@ -8258,6 +8258,15 @@ end
 			end
 		end
 	end
+
+	function Plater.GetUnitBGInfo(unit)
+		local name = GetUnitName(unit, true)
+		if not BG_PLAYER_CACHE[name] then
+			Plater.UpdateBgPlayerRoleCache()
+		end
+
+		return BG_PLAYER_CACHE[name]
+	end
 	
 	function Plater.GetSpecIconForUnitFromBG(unit)
 		local name = GetUnitName(unit, true)
