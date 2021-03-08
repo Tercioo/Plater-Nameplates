@@ -435,6 +435,8 @@ Plater.TargetIndicators = {
 		desaturated = false,
 		width = 8,
 		height = 10,
+		autoScale = true,
+		--scale = 1,
 		x = 2,
 		y = 2,
 	},
@@ -445,6 +447,8 @@ Plater.TargetIndicators = {
 		desaturated = true,
 		width = 10,
 		height = 10,
+		autoScale = true,
+		--scale = 1,
 		x = 2,
 		y = 2,
 	},
@@ -455,6 +459,8 @@ Plater.TargetIndicators = {
 		desaturated = 1,
 		width = 4,
 		height = 4,
+		autoScale = true,
+		--scale = 1,
 		x = 2,
 		y = 2,
 	},
@@ -470,6 +476,8 @@ Plater.TargetIndicators = {
 		desaturated = false,
 		width = 6,
 		height = 6,
+		autoScale = true,
+		--scale = 1,
 		x = 1,
 		y = 1,
 	},
@@ -483,7 +491,11 @@ Plater.TargetIndicators = {
 		desaturated = false,
 		width = 18,
 		height = 12,
-		x = 18,
+		wscale = 1,
+		hscale = 1.2,
+		autoScale = true,
+		--scale = 1,
+		x = 14,
 		y = 0,
 	},
 	
@@ -496,6 +508,10 @@ Plater.TargetIndicators = {
 		desaturated = false,
 		width = 8,
 		height = 12,
+		wscale = 1,
+		hscale = 1.2,
+		autoScale = true,
+		--scale = 1,
 		x = 0,
 		y = 0,
 	},
@@ -510,6 +526,10 @@ Plater.TargetIndicators = {
 		width = 8,
 		height = 12,
 		alpha = 0.7,
+		wscale = 1,
+		hscale = 1.2,
+		autoScale = true,
+		--scale = 1,
 		x = 0,
 		y = 0,
 		color = "red",
@@ -524,6 +544,10 @@ Plater.TargetIndicators = {
 		desaturated = false,
 		width = 6,
 		height = 12,
+		wscale = 1,
+		hscale = 1.2,
+		autoScale = true,
+		--scale = 1,
 		x = 3,
 		y = 0,
 		blend = "ADD",
@@ -5802,15 +5826,18 @@ end
 		end
 		
 		local width, height = preset.width, preset.height
-		local x, y = preset.x, preset.y
+		local wscale, hscale = preset.wscale or 1, preset.hscale or 1
+		local x, y = preset.x or 0, preset.y or 0
 		local desaturated = preset.desaturated
 		local coords = preset.coords
 		local path = preset.path
 		local blend = preset.blend or "BLEND"
 		local alpha = preset.alpha or 1
+		local doScale = preset.autoScale
+		local custScale = preset.scale
 		local overlayColorR, overlayColorG, overlayColorB = DF:ParseColors (preset.color or "white")
 		
-		local scale = healthBarHeight / 10
+		local scale = (not doScale and custScale) or (healthBarHeight / (doScale and height or 10))
 		
 		--four parts (textures)
 		if (#coords == 4) then
@@ -5819,22 +5846,22 @@ end
 				texture:Show()
 				texture:SetTexture (path)
 				texture:SetTexCoord (unpack (coords [i]))
-				texture:SetSize (width * scale, height * scale)
+				texture:SetSize (width * scale * wscale, height * scale * hscale)
 				texture:SetAlpha (alpha)
 				texture:SetVertexColor (overlayColorR, overlayColorG, overlayColorB)
 				texture:SetDesaturated (desaturated)
 				
 				if (i == 1) then
-					PixelUtil.SetPoint (texture, "topleft", plateFrame.unitFrame.healthBar, "topleft", -x, y)
+					PixelUtil.SetPoint (texture, "topleft", plateFrame.unitFrame.healthBar, "topleft", -x * scale, y * scale)
 					
 				elseif (i == 2) then
-					PixelUtil.SetPoint (texture, "bottomleft", plateFrame.unitFrame.healthBar, "bottomleft", -x, -y)
+					PixelUtil.SetPoint (texture, "bottomleft", plateFrame.unitFrame.healthBar, "bottomleft", -x * scale, -y * scale)
 					
 				elseif (i == 3) then
-					PixelUtil.SetPoint (texture, "bottomright", plateFrame.unitFrame.healthBar, "bottomright", x, -y)
+					PixelUtil.SetPoint (texture, "bottomright", plateFrame.unitFrame.healthBar, "bottomright", x * scale, -y * scale)
 					
 				elseif (i == 4) then
-					PixelUtil.SetPoint (texture, "topright", plateFrame.unitFrame.healthBar, "topright", x, y)
+					PixelUtil.SetPoint (texture, "topright", plateFrame.unitFrame.healthBar, "topright", x * scale, y * scale)
 					
 				end
 			end
@@ -5851,16 +5878,18 @@ end
 				texture:SetTexture (path)
 				texture:SetBlendMode (blend)
 				texture:SetTexCoord (unpack (coords [i]))
-				PixelUtil.SetSize (texture, width * scale, height * scale)
+				--PixelUtil.SetSize (texture, width * scale, height * scale)
+				PixelUtil.SetSize (texture, width * scale * wscale, height * scale * hscale)
+				--texture:SetSize (width * scale * wscale, height * scale * hscale)
 				texture:SetDesaturated (desaturated)
 				texture:SetAlpha (alpha)
 				texture:SetVertexColor (overlayColorR, overlayColorG, overlayColorB)
 				
 				if (i == 1) then
-					PixelUtil.SetPoint (texture, "left", plateFrame.unitFrame.healthBar, "left", -x, y)
+					PixelUtil.SetPoint (texture, "left", plateFrame.unitFrame.healthBar, "left", -x * scale, y * scale)
 					
 				elseif (i == 2) then
-					PixelUtil.SetPoint (texture, "right", plateFrame.unitFrame.healthBar, "right", x, -y)
+					PixelUtil.SetPoint (texture, "right", plateFrame.unitFrame.healthBar, "right", x * scale, -y * scale)
 				end
 			end
 			
