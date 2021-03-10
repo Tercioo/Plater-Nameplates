@@ -2249,7 +2249,7 @@ local class_specs_coords = {
 
 			Plater.RefreshTankCache()
 			
-			Plater.UpdateAuraCache()
+			--Plater.UpdateAuraCache()
 			Plater.UpdateAllPlates()
 			
 			--check if can run combat enter hook and schedule it true

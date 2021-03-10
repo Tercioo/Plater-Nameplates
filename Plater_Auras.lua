@@ -1592,37 +1592,6 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 	function Plater.RefreshAuraCache()
 		local profile = Plater.db.profile
 		
-		--> load spells filtered out, use the spellname instead of the spellId
-			if (not DB_BUFF_BANNED) then
-				DB_BUFF_BANNED = {}
-				DB_DEBUFF_BANNED = {}
-			else
-				wipe (DB_BUFF_BANNED)
-				wipe (DB_DEBUFF_BANNED)
-			end
-		
-			for spellId, state in pairs (profile.aura_tracker.buff_banned) do
-				local spellName = GetSpellInfo (spellId)
-				if (spellName) then
-					if state then
-						DB_BUFF_BANNED [spellName] = true
-					else
-						DB_BUFF_BANNED [spellId] = true
-					end
-				end
-			end
-			
-			for spellId, state in pairs (profile.aura_tracker.debuff_banned) do
-				local spellName = GetSpellInfo (spellId)
-				if (spellName) then
-					if state then
-						DB_DEBUFF_BANNED [spellName] = true
-					else
-						DB_DEBUFF_BANNED [spellId] = true
-					end
-				end
-			end
-		
 		DB_AURA_ENABLED = profile.aura_enabled
 		DB_AURA_ALPHA = profile.aura_alpha
 		
@@ -1642,12 +1611,13 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
     end
     
     function Plater.UpdateAuraCache()
+		local profile = Plater.db.profile
 		--manual tracking has an indexed table to store what to track
 		--the extra auras for automatic tracking has a hash table with spellIds
 		
 		--manual aura tracking
-			local manualBuffsToTrack = Plater.db.profile.aura_tracker.buff
-			local manualDebuffsToTrack = Plater.db.profile.aura_tracker.debuff
+			local manualBuffsToTrack = profile.aura_tracker.buff
+			local manualDebuffsToTrack = profile.aura_tracker.debuff
 
 			wipe (MANUAL_TRACKING_DEBUFFS)
 			wipe (MANUAL_TRACKING_BUFFS)
@@ -1673,8 +1643,8 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			end
 
 		--extra auras to track on automatic aura tracking
-			local extraBuffsToTrack = Plater.db.profile.aura_tracker.buff_tracked
-			local extraDebuffsToTrack = Plater.db.profile.aura_tracker.debuff_tracked
+			local extraBuffsToTrack = profile.aura_tracker.buff_tracked
+			local extraDebuffsToTrack = profile.aura_tracker.debuff_tracked
 			
 			wipe (AUTO_TRACKING_EXTRA_BUFFS)
 			wipe (AUTO_TRACKING_EXTRA_DEBUFFS)
@@ -1706,7 +1676,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 				end
 			end
 			
-			if (Plater.db.profile.aura_show_crowdcontrol and DF.CrowdControlSpells) then
+			if (profile.aura_show_crowdcontrol and DF.CrowdControlSpells) then
 				for spellId, _ in pairs (DF.CrowdControlSpells) do
 					local spellName = GetSpellInfo (spellId)
 					if (spellName) then
@@ -1718,7 +1688,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 				end
 			end
 			
-			if (Plater.db.profile.aura_show_offensive_cd and DF.CooldownsAttack) then
+			if (profile.aura_show_offensive_cd and DF.CooldownsAttack) then
 				for spellId, _ in pairs (DF.CooldownsAttack) do
 					local spellName = GetSpellInfo (spellId)
 					if (spellName) then
@@ -1730,7 +1700,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 				end
 			end
 			
-			if (Plater.db.profile.aura_show_defensive_cd and DF.CooldownsAllDeffensive) then
+			if (profile.aura_show_defensive_cd and DF.CooldownsAllDeffensive) then
 				for spellId, _ in pairs (DF.CooldownsAllDeffensive) do
 					local spellName = GetSpellInfo (spellId)
 					if (spellName) then
@@ -1738,6 +1708,37 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 						AUTO_TRACKING_EXTRA_BUFFS [spellId] = true
 						DEFENSIVE_AURA_IDS [spellId] = true
 						CAN_TRACK_EXTRA_BUFFS = true
+					end
+				end
+			end
+			
+			--> load spells filtered out, use the spellname instead of the spellId
+			if (not DB_BUFF_BANNED) then
+				DB_BUFF_BANNED = {}
+				DB_DEBUFF_BANNED = {}
+			else
+				wipe (DB_BUFF_BANNED)
+				wipe (DB_DEBUFF_BANNED)
+			end
+		
+			for spellId, state in pairs (profile.aura_tracker.buff_banned) do
+				local spellName = GetSpellInfo (spellId)
+				if (spellName) then
+					if state then
+						DB_BUFF_BANNED [spellName] = true
+					else
+						DB_BUFF_BANNED [spellId] = true
+					end
+				end
+			end
+			
+			for spellId, state in pairs (profile.aura_tracker.debuff_banned) do
+				local spellName = GetSpellInfo (spellId)
+				if (spellName) then
+					if state then
+						DB_DEBUFF_BANNED [spellName] = true
+					else
+						DB_DEBUFF_BANNED [spellId] = true
 					end
 				end
 			end
