@@ -1105,7 +1105,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 					unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
 
 					--check if the debuff isn't filtered out
-					if (not DB_DEBUFF_BANNED [name]) then
+					if (not DB_DEBUFF_BANNED [name] and not DB_DEBUFF_BANNED [spellId]) then
 				
 						--> if true it'll show all auras - this can be called from scripts to debug aura things
 						if (Plater.DebugAuras) then
@@ -1173,7 +1173,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 					if (((SPECIAL_AURAS_USER_LIST [name] or SPECIAL_AURAS_USER_LIST [spellId]) and not (SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId])) or ((SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId]) and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
 						Plater.AddExtraIcon (self, name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, "HELPFUL", buffIndex)
 						
-					elseif (not DB_BUFF_BANNED [name]) then
+					elseif (not DB_BUFF_BANNED [name] and not DB_BUFF_BANNED [spellId]) then
 						--> if true it'll show all auras - this can be called from scripts to debug aura things
 						if (Plater.DebugAuras) then
 							if (duration and duration < 60) then
@@ -1302,7 +1302,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 					unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or canStealOrPurge
 					unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
 						
-					if (not DB_DEBUFF_BANNED [name]) then
+					if (not DB_DEBUFF_BANNED [name] and not DB_DEBUFF_BANNED [spellId]) then
 						local auraIconFrame, buffFrame = Plater.GetAuraIcon (self)
 						Plater.AddAura (buffFrame, auraIconFrame, debuffIndex, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, false, false, true, true, actualAuraType)
 						
@@ -1344,7 +1344,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 					unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
 					
 					--> only show buffs casted by the player it self and less than 1 minute in duration
-					if (not DB_BUFF_BANNED [name] and (noBuffDurationLimitation or (duration and (duration > 0 and duration < 60)) and (caster and UnitIsUnit (caster, "player")))) then
+					if ((not DB_BUFF_BANNED [name] and not DB_BUFF_BANNED [spellId]) and (noBuffDurationLimitation or (duration and (duration > 0 and duration < 60)) and (caster and UnitIsUnit (caster, "player")))) then
 						local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
 						Plater.AddAura (buffFrame, auraIconFrame, buffIndex, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, false, false, false, true, actualAuraType)
 
