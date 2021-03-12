@@ -3109,6 +3109,7 @@ local class_specs_coords = {
 			local isBattlePet = UnitIsBattlePet(unitID)
 			local isPlayer = UnitIsPlayer (unitID)
 			local isSelf = UnitIsUnit (unitID, "player")
+			local isWidgetOnlyMode = UnitNameplateShowsWidgetsOnly (unitID)
 			
 			local actorType
 			if (unitID) then
@@ -3147,7 +3148,7 @@ local class_specs_coords = {
 					end
 				end
 			end
-			local isPlateEnabled = DB_PLATE_CONFIG [actorType].module_enabled
+			local isPlateEnabled = (DB_PLATE_CONFIG [actorType].module_enabled and not isWidgetOnlyMode) or (isWidgetOnlyMode and Plater.db.profile.usePlaterWidget)
 			
 			local blizzardPlateFrameID = tostring(plateFrame.UnitFrame)
 			plateFrame.unitFrame.blizzardPlateFrameID = blizzardPlateFrameID
@@ -3171,9 +3172,6 @@ local class_specs_coords = {
 				plateFrame.unitFrame:Hide()
 				return
 			end
-			
-			local isWidgetOnlyMode = UnitNameplateShowsWidgetsOnly (unitBarId)
-			plateFrame.unitFrame.isWidgetOnlyMode = isWidgetOnlyMode
 			
 			--hide blizzard namepaltes
 			--plateFrame.UnitFrame:Hide()
@@ -3316,6 +3314,9 @@ local class_specs_coords = {
 			
 			plateFrame.isBattlePet = isBattlePet
 			unitFrame.isBattlePet = isBattlePet
+			
+			plateFrame.isWidgetOnlyMode = isWidgetOnlyMode
+			unitFrame.isWidgetOnlyMode = isWidgetOnlyMode
 			
 			plateFrame.isPlayer = isPlayer
 			unitFrame.isPlayer = isPlayer
