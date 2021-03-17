@@ -4802,7 +4802,7 @@ end
 				end
 
 				--check if the mob is a quest mob
-				if (unitFrame [MEMBER_QUEST]) then
+				if (unitFrame [MEMBER_QUEST] and DB_PLATE_CONFIG [unitFrame.ActorType].quest_color_enabled) then
 					Plater.SetQuestColorByReaction (unitFrame)
 					return
 				end
