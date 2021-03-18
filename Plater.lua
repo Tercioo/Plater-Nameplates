@@ -8281,12 +8281,31 @@ end
 	
 	local BG_PLAYER_CACHE = {}
 	function Plater.UpdateBgPlayerRoleCache()
-		local curNumScores = GetNumBattlefieldScores()
 		wipe(BG_PLAYER_CACHE)
-		for i = 1, curNumScores do
-			local name, _, _, _, _, faction, race, class, classToken, _, _, _, _, _, _, talentSpec = GetBattlefieldScore(i)
-			if name then
-				BG_PLAYER_CACHE[name] = {faction = faction, race = race, class = class, classToken = classToken, talentSpec = talentSpec}
+		if Plater.ZoneInstanceType == "pvp" then
+			local curNumScores = GetNumBattlefieldScores()
+			for i = 1, curNumScores do
+				local info = C_PvP.GetScoreInfo(i)
+				if info then
+					local name, faction, race, class, classToken, talentSpec = info.name, info.faction, info.raceName, info.className, info.classToken, info.talenSpec
+					if name then
+						BG_PLAYER_CACHE[name] = {faction = faction, race = race, class = class, classToken = classToken, talentSpec = talentSpec, specID = (CLASS_INFO_CACHE[cache.classToken] and CLASS_INFO_CACHE[cache.classToken][cache.talentSpec] and CLASS_INFO_CACHE[cache.classToken][cache.talentSpec].specID), name = name}
+					end
+				end
+			end
+		elseif Plater.ZoneInstanceType == "arena" then
+			local numOpps = GetNumArenaOpponentSpecs();
+			for i=1, numOpps do
+				local specID, gender = GetArenaOpponentSpec(i);
+				if (specID > 0) then
+					local name = GetUnitName ("arena"..i, true)
+					if name then
+						local id, talentSpec, _, _, _, class = GetSpecializationInfoByID(specID, gender);
+						local class, classToken = UnitClass("arena"..i);
+						local race = UnitRace("arena"..i);
+						BG_PLAYER_CACHE[name] = {faction = nil, race = race, class = class, classToken = classToken, talentSpec = talentSpec, specID = specID, name = name}
+					end
+				end
 			end
 		end
 	end
@@ -8294,6 +8313,10 @@ end
 	function Plater.GetUnitBGInfo(unit)
 
 		if (not UnitIsPlayer(unit)) then
+			return nil
+		end
+		
+		if (not Plater.ZoneInstanceType == "pvp" and not Plater.ZoneInstanceType == "arena") then
 			return nil
 		end
 
@@ -8310,6 +8333,10 @@ end
 		if (not UnitIsPlayer(unit)) then
 			return nil
 		end
+		
+		if (not Plater.ZoneInstanceType == "pvp" and not Plater.ZoneInstanceType == "arena") then
+			return nil
+		end
 
 		local name = GetUnitName(unit, true)
 		if not BG_PLAYER_CACHE[name] then
@@ -8317,8 +8344,8 @@ end
 		end
 		
 		local cache = BG_PLAYER_CACHE[name]
-		if cache then
-			return Plater.GetSpecIcon(CLASS_INFO_CACHE[cache.classToken] and CLASS_INFO_CACHE[cache.classToken][cache.talentSpec] and CLASS_INFO_CACHE[cache.classToken][cache.talentSpec].specID)
+		if cache and cache.specID then
+			return Plater.GetSpecIcon(cache.specID)
 		end
 		return nil
 	end
