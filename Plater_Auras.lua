@@ -200,8 +200,8 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			
 			--get the table where all icon frames are stored in
 			local iconFrameContainer = self.PlaterBuffList
-			--get the amount of auras shown in the frame, this variable should be always reliable
-			local amountFramesShown = self.amountAurasShown
+			--get the amount of auras shown in the frame; iterate over all if not sorting
+			local amountFramesShown = #iconFrameContainer
 			
 			if (profile.aura_sort) then
 				local iconFrameContainerCopy = {}
@@ -214,6 +214,8 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 				end
 				iconFrameContainer = iconFrameContainerCopy
 				table.sort (iconFrameContainer, Plater.AuraIconsSortFunction)
+				--when sorted, this is reliable
+				amountFramesShown = index
 			end
 		
 			local growDirection
