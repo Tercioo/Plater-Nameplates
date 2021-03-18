@@ -4550,6 +4550,7 @@ function Plater.OnInit() --private --~oninit ~init
 				if (not UnitExists (unitFrame.unit) or self.CurrentHealth < 1) then
 					--the unit died!
 					unitFrame:Hide()
+					Plater.EndLogPerformanceCore("Plater-Core", "Health", "OnUpdateHealth")
 					return
 				end
 			end
