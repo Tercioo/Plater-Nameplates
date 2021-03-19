@@ -8289,7 +8289,7 @@ end
 				if info then
 					local name, faction, race, class, classToken, talentSpec = info.name, info.faction, info.raceName, info.className, info.classToken, info.talenSpec
 					if name then
-						BG_PLAYER_CACHE[name] = {faction = faction, race = race, class = class, classToken = classToken, talentSpec = talentSpec, specID = (CLASS_INFO_CACHE[cache.classToken] and CLASS_INFO_CACHE[cache.classToken][cache.talentSpec] and CLASS_INFO_CACHE[cache.classToken][cache.talentSpec].specID), name = name}
+						BG_PLAYER_CACHE[name] = {faction = faction, race = race, class = class, classToken = classToken, talentSpec = talentSpec, specID = (CLASS_INFO_CACHE[classToken] and CLASS_INFO_CACHE[classToken][talentSpec] and CLASS_INFO_CACHE[classToken][talentSpec].specID), name = name}
 					end
 				end
 			end
