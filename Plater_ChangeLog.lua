@@ -8,6 +8,17 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1616411319,  "Backend Changes", "March , 2021", "Adjust healthbar / castbar border frame levels."},
+			{1616411319,  "Backend Changes", "March , 2021", "Get spec-information in arena and BG."},
+			{1616411319,  "Bug Fix", "March 18th, 2021", "Fixing an issue with aura consolidation disabled not showing all auras properly."},
+			{1616411319,  "Bug Fix", "March 17th, 2021", "Fixing perfomance logging for health update."},
+			{1616411319,  "Backend Changes", "March 15th, 2021", "Resetting colors upon nameplate added."},
+			{1616411319,  "Bug Fix", "March 10th, 2021", "Fixing tracking/untracking via spellID."},
+			{1616411319,  "Backend Changes", "March 9th, 2021", "Toc update."},
+			{1616411319,  "Backend Changes", "March 8rd, 2021", "Updating target indicators to better scale with bars."},
+			{1616411319,  "Backend Changes", "March 1st, 2021", "Hide list options scroll frame if unused."},
+			{1616411319,  "Backend Changes", "February 27th, 2021", "Add 'Plater.GetUnitBGInfo(unit)' to access BG player score board information. (xeropresence)"},
+		
 			{1614264576,  "Bug Fix", "February 25th, 2021", "Fixing minimap icon right-click menu."},
 			{1614264576,  "Backend Changes", "February 25th, 2021", "Changed the way aura icon border colors are priotized."},
 			{1614264576,  "Bug Fix", "February 25th, 2021", "Fixing Buff Special icon border not showing properly for offensive and devensive CDs."},
