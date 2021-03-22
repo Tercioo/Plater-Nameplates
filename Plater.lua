@@ -9718,7 +9718,6 @@ end
 		["WeakAurasSaved"] = true,
 	}
 	
-	--UNUSED (for now)
 	--this allows full shadowing on 'Plater' global with the filter above
 	local function buildShadowTable(privateFunctionsTable, tableKey, shadowTable)
 		if not privateFunctionsTable then return end
@@ -9892,9 +9891,9 @@ end
 			else
 				--store the function to execute
 				--setfenv (compiledScript, functionFilter)
-				if not Plater.db.profile.shadowMode then
+				if (Plater.db.profile.shadowMode and Plater.db.profile.shadowMode == 0) then -- legacy mode
 					DF:SetEnvironment(compiledScript, nil, platerModEnvironment)
-				elseif Plater.db.profile.shadowMode == 1 then
+				elseif (not Plater.db.profile.shadowMode or Plater.db.profile.shadowMode == 1) then
 					SetPlaterEnvironment(compiledScript)
 				end
 				
@@ -10071,9 +10070,9 @@ end
 				else
 					--store the function to execute inside the global script object
 					--setfenv (compiledScript, functionFilter)
-					if (not Plater.db.profile.shadowMode) then
+					if (Plater.db.profile.shadowMode and Plater.db.profile.shadowMode == 0) then -- legacy mode
 						DF:SetEnvironment(compiledScript, nil, platerModEnvironment)
-					elseif (Plater.db.profile.shadowMode == 1) then
+					elseif (not Plater.db.profile.shadowMode or Plater.db.profile.shadowMode == 1) then
 						SetPlaterEnvironment(compiledScript)
 					end
 					
@@ -10185,9 +10184,9 @@ end
 			else
 				--get the function to execute
 				--setfenv (compiledScript, functionFilter)
-				if (not Plater.db.profile.shadowMode) then
+				if (Plater.db.profile.shadowMode and Plater.db.profile.shadowMode == 0) then -- legacy mode
 					DF:SetEnvironment(compiledScript, nil, platerModEnvironment)
-				elseif (Plater.db.profile.shadowMode == 1) then
+				elseif (not Plater.db.profile.shadowMode or Plater.db.profile.shadowMode == 1) then
 					SetPlaterEnvironment(compiledScript)
 				end
 				scriptFunctions [scriptType] = compiledScript()

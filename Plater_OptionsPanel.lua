@@ -12860,6 +12860,18 @@ end
 			desc = "Use the players combat state instead of the units when applying settings for In/Out of Combat.",
 		},
 		
+		{
+			type = "toggle",
+			get = function() return (Plater.db.profile.shadowMode == 0) end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.shadowMode = value and 0 or 1
+				Plater.WipeAndRecompileAllScripts ("script")
+				Plater.WipeAndRecompileAllScripts ("hook")
+			end,
+			name = "Legacy scrip/mod code support.",
+			desc = "Enable this when experiencing issues with mod/script compilation\n\n||cFFFFFF00Important|r: Will be deprecated in the future.",
+		},
+		
 			--=[ --removed top and bottom constrain options
 			--added back for debug
 			{type = "blank"},

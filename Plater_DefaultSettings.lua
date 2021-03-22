@@ -535,6 +535,8 @@ PLATER_DEFAULT_SETTINGS = {
 		
 		use_player_combat_state = false,
 		
+		shadowMode = 1,
+		
 		last_news_time = 0,
 		disable_omnicc_on_auras = false,
 		
