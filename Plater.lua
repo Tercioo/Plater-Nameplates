@@ -1916,12 +1916,12 @@ local class_specs_coords = {
 			buffSpecial:SetFrameStrata (profile.ui_parent_buff_special_strata)
 			
 			--level
-			local baseLevel = unitFrame:GetFrameLevel() + 10000
+			local baseLevel = unitFrame:GetFrameLevel()
 			
 			local tmplevel = baseLevel + profile.ui_parent_cast_level + 3
 			castBar:SetFrameLevel ((tmplevel > 0) and tmplevel or 0)
 			
-			tmplevel = baseLevel + profile.ui_parent_cast_level + 3
+			tmplevel = baseLevel + profile.ui_parent_buff_level + 3
 			buffFrame1:SetFrameLevel ((tmplevel > 0) and tmplevel or 0)
 			
 			tmplevel = baseLevel + profile.ui_parent_buff2_level + 10

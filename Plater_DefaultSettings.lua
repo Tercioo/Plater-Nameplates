@@ -577,10 +577,10 @@ PLATER_DEFAULT_SETTINGS = {
 		ui_parent_buff_special_strata = "BACKGROUND",
 		ui_parent_cast_strata = "BACKGROUND", --testing, the castbar should be in front of everythings
 		ui_parent_target_strata = "LOW", --testing, the current target nameplate should be in this strata
-		ui_parent_buff_level = 10,
-		ui_parent_buff2_level = 10,
-		ui_parent_buff_special_level = 10,
-		ui_parent_cast_level = 10,
+		ui_parent_buff_level = 0,
+		ui_parent_buff2_level = 0,
+		ui_parent_buff_special_level = 0,
+		ui_parent_cast_level = 0,
 		ui_parent_scale_tune = 0, --testing, a slider to change the unit frame scale / goal is to have a fine tune knob to adjust the overall size when using this feature
 		
 		resources = {
