@@ -1916,10 +1916,19 @@ local class_specs_coords = {
 			buffSpecial:SetFrameStrata (profile.ui_parent_buff_special_strata)
 			
 			--level
-			castBar:SetFrameLevel (profile.ui_parent_cast_level)
-			buffFrame1:SetFrameLevel (profile.ui_parent_buff_level)
-			buffFrame2:SetFrameLevel (profile.ui_parent_buff2_level)
-			buffSpecial:SetFrameLevel (profile.ui_parent_buff_special_level)
+			local baseLevel = unitFrame:GetFrameLevel() + 10000
+			
+			local tmplevel = baseLevel + profile.ui_parent_cast_level + 3
+			castBar:SetFrameLevel ((tmplevel > 0) and tmplevel or 0)
+			
+			tmplevel = baseLevel + profile.ui_parent_cast_level + 3
+			buffFrame1:SetFrameLevel ((tmplevel > 0) and tmplevel or 0)
+			
+			tmplevel = baseLevel + profile.ui_parent_buff2_level + 10
+			buffFrame2:SetFrameLevel ((tmplevel > 0) and tmplevel or 0)
+			
+			tmplevel = baseLevel + profile.ui_parent_buff_special_level + 10
+			buffSpecial:SetFrameLevel ((tmplevel > 0) and tmplevel or 0)
 			
 			--raid-target marker adjust:
 			unitFrame.PlaterRaidTargetFrame:SetFrameStrata(unitFrame.healthBar:GetFrameStrata())
@@ -4171,8 +4180,8 @@ function Plater.OnInit() --private --~oninit ~init
 			local unitFrame = castBar.unitFrame
 			local borderShield = castBar.BorderShield
 			
-			icon:SetDrawLayer ("OVERLAY", 5)
-			borderShield:SetDrawLayer ("OVERLAY", 6)
+			--icon:SetDrawLayer ("OVERLAY", 5)
+			--borderShield:SetDrawLayer ("OVERLAY", 6)
 			local castBarHeight = castBar:GetHeight()
 			
 			if (profile.castbar_icon_customization_enabled) then

@@ -11244,7 +11244,7 @@ end
 				Plater.RefreshDBUpvalues()
 				Plater.UpdateAllPlates()
 			end,
-			min = 1,
+			min = -5000,
 			max = 5000,
 			step = 1,
 			name = "Cast Bar",
@@ -11259,7 +11259,7 @@ end
 				Plater.RefreshDBUpvalues()
 				Plater.UpdateAllPlates()
 			end,
-			min = 1,
+			min = -5000,
 			max = 5000,
 			step = 1,
 			name = "Aura Frame 1",
@@ -11274,7 +11274,7 @@ end
 				Plater.RefreshDBUpvalues()
 				Plater.UpdateAllPlates()
 			end,
-			min = 1,
+			min = -5000,
 			max = 5000,
 			step = 1,
 			name = "Aura Frame 2",
@@ -11289,7 +11289,7 @@ end
 				Plater.RefreshDBUpvalues()
 				Plater.UpdateAllPlates()
 			end,
-			min = 1,
+			min = -5000,
 			max = 5000,
 			step = 1,
 			name = "Buff Special Frame",
