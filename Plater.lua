@@ -8304,7 +8304,7 @@ end
 			for i = 1, curNumScores do
 				local info = C_PvP.GetScoreInfo(i)
 				if info then
-					local name, faction, race, class, classToken, talentSpec = info.name, info.faction, info.raceName, info.className, info.classToken, info.talenSpec
+					local name, faction, race, class, classToken, talentSpec = info.name, info.faction, info.raceName, info.className, info.classToken, info.talentSpec
 					if name then
 						BG_PLAYER_CACHE[name] = {faction = faction, race = race, class = class, classToken = classToken, talentSpec = talentSpec, specID = (CLASS_INFO_CACHE[classToken] and CLASS_INFO_CACHE[classToken][talentSpec] and CLASS_INFO_CACHE[classToken][talentSpec].specID), name = name}
 					end
