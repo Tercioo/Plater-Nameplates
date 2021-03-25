@@ -1128,7 +1128,9 @@ local class_specs_coords = {
 			unitFrame.BuffFrame:SetAlpha (1)
 			unitFrame.BuffFrame2:SetAlpha (1)
 			
+			Plater.EndLogPerformanceCore("Plater-Core", "Update", "CheckRange")
 			return
+			
 		elseif (plateFrame [MEMBER_NOCOMBAT] or unitFrame.isWidgetOnlyMode) then
 			if unitFrame.isWidgetOnlyMode then
 				unitFrame:SetAlpha (1)
@@ -1144,6 +1146,7 @@ local class_specs_coords = {
 			unitFrame.BuffFrame:SetAlpha (1)
 			unitFrame.BuffFrame2:SetAlpha (1)
 			
+			Plater.EndLogPerformanceCore("Plater-Core", "Update", "CheckRange")
 			return
 		
 		--the unit is friendly or not using range check and non targets alpha
@@ -1159,6 +1162,8 @@ local class_specs_coords = {
 			
 			plateFrame [MEMBER_RANGE] = true
 			unitFrame [MEMBER_RANGE] = true
+			
+			Plater.EndLogPerformanceCore("Plater-Core", "Update", "CheckRange")
 			return
 		end
 		
@@ -1198,6 +1203,7 @@ local class_specs_coords = {
 		
 		if not rangeChecker then
 			rangeChecker = function (unit)
+				Plater.EndLogPerformanceCore("Plater-Core", "Update", "CheckRange")
 				return (LibRangeCheck:GetRange(unit) or 0) < (rangeCheckRange or 40)
 			end
 			Plater.GetSpellForRangeCheck()
