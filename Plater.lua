@@ -4570,6 +4570,8 @@ function Plater.OnInit() --private --~oninit ~init
 				local originalColor = plateFrame.PlateConfig.healthbar_color
 				local r, g, b = DF:LerpLinearColor (abs (currentHealth / currentHealthMax - 1), 1, originalColor[1], originalColor[2], originalColor[3], 1, .4, 0)
 				Plater.ChangeHealthBarColor_Internal (self, r, g, b, (originalColor[4] or 1), true)
+			--else
+				--Plater.ChangeHealthBarColor_Internal (self, unpack (plateFrame.PlateConfig.healthbar_color))
 			end
 			
 			Plater.CheckLifePercentText (unitFrame)
@@ -6695,6 +6697,17 @@ end
 						end
 					else
 						Plater.ChangeHealthBarColor_Internal (healthBar, unpack (DB_PLATE_CONFIG [actorType].fixed_class_color))
+					end
+				elseif unitFrame.IsSelf then
+					--refresh color
+					if (plateFrame.PlateConfig.healthbar_color_by_hp) then
+						local currentHealth = healthBar.currentHealth
+						local currentHealthMax = healthBar.currentHealthMax
+						local originalColor = plateFrame.PlateConfig.healthbar_color
+						local r, g, b = DF:LerpLinearColor (abs (currentHealth / currentHealthMax - 1), 1, originalColor[1], originalColor[2], originalColor[3], 1, .4, 0)
+						Plater.ChangeHealthBarColor_Internal (healthBar, r, g, b, (originalColor[4] or 1), true)
+					else
+						Plater.ChangeHealthBarColor_Internal (healthBar, unpack (DB_PLATE_CONFIG [actorType].healthbar_color))
 					end
 				else
 					-- could be a pet
