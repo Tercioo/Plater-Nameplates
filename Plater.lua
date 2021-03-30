@@ -3249,6 +3249,8 @@ local class_specs_coords = {
 			healthBar.ExecuteGlowUp:Hide()
 			healthBar.ExecuteGlowDown:Hide()
 			
+			--reset color values
+			healthBar.R, healthBar.G, healthBar.B = nil, nil, nil
 			
 			local actorType
 			
@@ -3366,8 +3368,6 @@ local class_specs_coords = {
 			unitFrame.actorType = actorType
 			unitFrame.ActorType = actorType --exposed to scripts
 			
-			--reset color values
-			healthBar.R, healthBar.G, healthBar.B = nil, nil, nil
 			--sending true to force the color update when the color overrider is enabled
 			Plater.FindAndSetNameplateColor (unitFrame, true)
 			
