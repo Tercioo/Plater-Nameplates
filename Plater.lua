@@ -5658,11 +5658,13 @@ end
 									--check if this isn't a false positive where the mob target another unit to cast a spell
 									local hasTankAggro = false
 									for tankName, _ in pairs (TANK_CACHE) do
-										local threatStatus = UnitThreatSituation (tankName, self.displayedUnit)
-										if (threatStatus and threatStatus >= 2) then
-											--a tank has aggro on this unit, it is a false positive
-											hasTankAggro = true
-											break
+										if UnitExists(tankName) then
+											local threatStatus = UnitThreatSituation (tankName, self.displayedUnit)
+											if (threatStatus and threatStatus >= 2) then
+												--a tank has aggro on this unit, it is a false positive
+												hasTankAggro = true
+												break
+											end
 										end
 									end
 									
