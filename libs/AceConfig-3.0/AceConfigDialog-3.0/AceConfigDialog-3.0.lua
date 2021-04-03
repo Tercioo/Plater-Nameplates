@@ -565,6 +565,9 @@ do
 		end)
 
 		if WOW_PROJECT_ID == WOW_PROJECT_CLASSIC then
+			local border = CreateFrame("Frame", nil, frame, "DialogBorderDarkTemplate")
+			border:SetAllPoints(frame)
+			if false then
 			frame:SetBackdrop({
 				bgFile = [[Interface\DialogFrame\UI-DialogBox-Background-Dark]],
 				edgeFile = [[Interface\DialogFrame\UI-DialogBox-Border]],
@@ -573,6 +576,7 @@ do
 				edgeSize = 32,
 				insets = { left = 11, right = 11, top = 11, bottom = 11 },
 			})
+			end
 		else
 			local border = CreateFrame("Frame", nil, frame, "DialogBorderDarkTemplate")
 			border:SetAllPoints(frame)

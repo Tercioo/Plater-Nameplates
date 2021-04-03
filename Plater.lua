@@ -66,7 +66,7 @@ local floor = floor
 local max = math.max
 local min = math.min
 
-local PixelUtil = _G.PixelUtil
+local PixelUtil = PixelUtil or DFPixelUtil
 
 local LibSharedMedia = LibStub:GetLibrary ("LibSharedMedia-3.0") -- https://www.curseforge.com/wow/addons/libsharedmedia-3-0
 local LCG = LibStub:GetLibrary("LibCustomGlow-1.0") -- https://github.com/Stanzilla/LibCustomGlow
@@ -620,6 +620,20 @@ Plater.SpecList = { --private
 
 --> default ranges to use in the range check proccess against enemies, player can select a different range in the options panel
 Plater.DefaultSpellRangeList = {
+	--classes
+	[1] = 10, --Warrior
+	[2] = 30, --Paladin
+	[3] = 30, --Hunter
+	[4] = 10, --Rogue
+	[5] = 30, --Priest
+	[6] = 10, --DeathKnight
+	[7] = 30, --Shaman
+	[8] = 30, --Mage
+	[9] = 30, --Warlock
+	[10] = 10, --Monk
+	[11] = 30, --Druid
+	[12] = 10, --DH
+
 	[577] = 30, --> havoc demon hunter
 	[581] = 30, --> vengeance demon hunter
 
@@ -685,6 +699,20 @@ Plater.DefaultSpellRangeList = {
 
 --> default ranges to use in the range check proccess against friendlies, player can select a different range in the options panel
 Plater.DefaultSpellRangeListF = {
+	--classes
+	[1] = 30, --Warrior
+	[2] = 40, --Paladin
+	[3] = 40, --Hunter
+	[4] = 30, --Rogue
+	[5] = 40, --Priest
+	[6] = 30, --DeathKnight
+	[7] = 40, --Shaman
+	[8] = 40, --Mage
+	[9] = 40, --Warlock
+	[10] = 40, --Monk
+	[11] = 40, --Druid
+	[12] = 30, --DH
+
 	[577] = 30, --> havoc demon hunter
 	[581] = 30, --> vengeance demon hunter
 
@@ -1044,85 +1072,86 @@ local class_specs_coords = {
 	--> in scripts you can use Plater.SetExecuteRange or override this function completelly
 	function Plater.GetHealthCutoffValue()
 		Plater.SetExecuteRange (false)
-		
-		local lowerEnabled, upperEnabled = Plater.db.profile.health_cutoff, Plater.db.profile.health_cutoff_upper
-		
-		if (not (lowerEnabled or upperEnabled)) then
-			return
-		end
-		
-		local lowExecute, highExecute = nil, nil
-		
-		local classLoc, class = UnitClass ("player")
-		local spec = GetSpecialization()
-		if (spec and class) then
-		
-			if (class == "PRIEST") then
-				-- SW:D is available to all priest specs
-				if IsPlayerSpell(32379) then
-					lowExecute = 0.2
-				end
+		if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+			local lowerEnabled, upperEnabled = Plater.db.profile.health_cutoff, Plater.db.profile.health_cutoff_upper
+			
+			if (not (lowerEnabled or upperEnabled)) then
+				return
+			end
+			
+			local lowExecute, highExecute = nil, nil
+			
+			local classLoc, class = UnitClass ("player")
+			local spec = GetSpecialization()
+			if (spec and class) then
+			
+				if (class == "PRIEST") then
+					-- SW:D is available to all priest specs
+					if IsPlayerSpell(32379) then
+						lowExecute = 0.2
+					end
+					
+				elseif (class == "MAGE") then
+					if IsPlayerSpell(269644) then -- Searing Touch
+						lowExecute = 0.3
+					elseif IsPlayerSpell(205026) then --Firestarter
+						highExecute = 0.9
+					end
+					
+				elseif (class == "WARRIOR") then
+					-- Execute is baseline
+					if IsPlayerSpell(163201) then
+						local using_Massacre = IsPlayerSpell(281001) or IsPlayerSpell(206315)
+						lowExecute = using_Massacre and 0.35 or 0.2
+						local using_Condemn = IsPlayerSpell(317320)
+						highExecute = using_Condemn and 0.8 or nil
+					end
+					
+				elseif (class == "HUNTER") then
+					if IsPlayerSpell(53351) then -- Kill Shot
+						lowExecute = 0.2
+						if IsPlayerSpell(273887) then --> is using killer instinct?
+							lowExecute = 0.35
+						end
+						if IsPlayerSpell(260228) and upperEnabled then --> Careful Aim
+							highExecute = 0.7
+						end
+					end
+					
+				elseif (class == "PALADIN") then
+					-- hammer of wrath
+					if IsPlayerSpell(24275) then
+						lowExecute = 0.2
+					end
+					
+				elseif (class == "MONK") then
+					--Touch of Death
+					if IsPlayerSpell(322109) then
+						lowExecute = 0.15
+					end
 				
-			elseif (class == "MAGE") then
-				if IsPlayerSpell(269644) then -- Searing Touch
-					lowExecute = 0.3
-				elseif IsPlayerSpell(205026) then --Firestarter
-					highExecute = 0.9
-				end
+				elseif (class == "WARLOCK") then				
+					if IsPlayerSpell(17877) then --Shadowburn
+						lowExecute = 0.20
+					elseif IsPlayerSpell(198590) then --Drain Soul
+						lowExecute = 0.20
+					end
 				
-			elseif (class == "WARRIOR") then
-				-- Execute is baseline
-				if IsPlayerSpell(163201) then
-					local using_Massacre = IsPlayerSpell(281001) or IsPlayerSpell(206315)
-					lowExecute = using_Massacre and 0.35 or 0.2
-					local using_Condemn = IsPlayerSpell(317320)
-					highExecute = using_Condemn and 0.8 or nil
-				end
-				
-			elseif (class == "HUNTER") then
-				if IsPlayerSpell(53351) then -- Kill Shot
-					lowExecute = 0.2
-					if IsPlayerSpell(273887) then --> is using killer instinct?
+				elseif (class == "ROGUE") then				
+					if IsPlayerSpell(328085) then --Blindside
 						lowExecute = 0.35
 					end
-					if IsPlayerSpell(260228) and upperEnabled then --> Careful Aim
-						highExecute = 0.7
+				
+				elseif (class == "DEATHKNIGHT") then
+					if IsPlayerSpell(343294) then --Soul Reaper
+						lowExecute = 0.35
 					end
-				end
 				
-			elseif (class == "PALADIN") then
-				-- hammer of wrath
-				if IsPlayerSpell(24275) then
-					lowExecute = 0.2
 				end
-				
-			elseif (class == "MONK") then
-				--Touch of Death
-				if IsPlayerSpell(322109) then
-					lowExecute = 0.15
-				end
-			
-			elseif (class == "WARLOCK") then				
-				if IsPlayerSpell(17877) then --Shadowburn
-					lowExecute = 0.20
-				elseif IsPlayerSpell(198590) then --Drain Soul
-					lowExecute = 0.20
-				end
-			
-			elseif (class == "ROGUE") then				
-				if IsPlayerSpell(328085) then --Blindside
-					lowExecute = 0.35
-				end
-			
-			elseif (class == "DEATHKNIGHT") then
-				if IsPlayerSpell(343294) then --Soul Reaper
-					lowExecute = 0.35
-				end
-			
 			end
+			
+			Plater.SetExecuteRange (true, lowerEnabled and lowExecute or nil, upperEnabled and highExecute or nil)
 		end
-		
-		Plater.SetExecuteRange (true, lowerEnabled and lowExecute or nil, upperEnabled and highExecute or nil)
 	end	
 
 	--> range check ~range
@@ -1420,9 +1449,9 @@ local class_specs_coords = {
 		Plater.RangeCheckFunctionEnemy = nil
 		Plater.RangeCheckFunctionFriendly = nil
 
-		local specIndex = GetSpecialization()
+		local specIndex = (WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC) and GetSpecialization() or 0
 		if (specIndex) then
-			local specID = GetSpecializationInfo (specIndex)
+			local specID = (WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC) and GetSpecializationInfo (specIndex) or select (3, UnitClass ("player"))
 			if (specID and specID ~= 0) then
 				--the local character saved variable hold the spell name used for the range check
 				Plater.RangeCheckRangeFriendly = PlaterDBChr.spellRangeCheckRangeFriendly [specID] or Plater.DefaultSpellRangeListF [specID] or 40
@@ -1438,23 +1467,53 @@ local class_specs_coords = {
 			tryingToUpdateRangeChecker = true
 			C_Timer.After (1, re_GetSpellForRangeCheck)
 		end
-
-	end	
+	end
 
 	-- ~tank --todo: make these functions be inside the Plater object
 	--true if the 'player' unit is a tank
 	local function IsPlayerEffectivelyTank()
-		local assignedRole = UnitGroupRolesAssigned ("player")
-		if (assignedRole == "NONE") then
-			local spec = GetSpecialization()
-			return spec and GetSpecializationRole (spec) == "TANK"
+		if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+			local assignedRole = UnitGroupRolesAssigned ("player")
+			if (assignedRole == "NONE") then
+				local spec = GetSpecialization()
+				return spec and GetSpecializationRole (spec) == "TANK"
+			end
+			return assignedRole == "TANK"
+		else
+			local playerIsTank = hasTankAura or false
+		
+			if not hasTankAura then
+				local playerClass = Plater.PlayerClass
+				if playerClass == "WARRIOR" then
+					playerIsTank = GetShapeshiftForm() == 2 or IsEquippedItemType("Shields") -- Defensive Stance or shield
+				elseif playerClass == "DRUID" then
+					playerIsTank = GetShapeshiftForm() == 1 -- Bear Form
+				elseif playerClass == "PALADIN" then
+					for i=1,40 do
+					  local spellId = select(10, UnitBuff("player",i))
+					  if spellId == 25780 then
+						playerIsTank = true
+					  end
+					end
+				end
+			end
+			
+			-- if the player is assigned as MAINTANK, then treat him as one:
+			if not playerIsTank then
+				playerIsTank = GetPartyAssignment("MAINTANK", "player") or false
+			end
+			
+			return playerIsTank
 		end
-		return assignedRole == "TANK"
 	end
 
 	--return true if the unit is in tank role
 	local function IsUnitEffectivelyTank (unit)
-		return UnitGroupRolesAssigned (unit) == "TANK"
+		if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+			return UnitGroupRolesAssigned (unit) == "TANK"
+		else
+			return GetPartyAssignment("MAINTANK", unit)
+		end
 	end
 	
 	--iterate among group members and store the names of all tanks in the group
@@ -3011,14 +3070,14 @@ local class_specs_coords = {
 
 			--> border
 				--create a border using default borders from the retail game
-				local healthBarBorder = CreateFrame("frame", nil, plateFrame.unitFrame.healthBar, "NamePlateFullBorderTemplate", BackdropTemplateMixin and "BackdropTemplate")
+				local healthBarBorder = CreateFrame("frame", nil, plateFrame.unitFrame.healthBar, (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC) and "PlaterNameplateFullBorderTemplate" or "NamePlateFullBorderTemplate", BackdropTemplateMixin and "BackdropTemplate")
 				healthBarBorder.Left:SetDrawLayer("OVERLAY", 6)
 				healthBarBorder.Right:SetDrawLayer("OVERLAY", 6)
 				healthBarBorder.Top:SetDrawLayer("OVERLAY", 6)
 				healthBarBorder.Bottom:SetDrawLayer("OVERLAY", 6)
 				plateFrame.unitFrame.healthBar.border = healthBarBorder
 				
-				local powerBarBorder = CreateFrame("frame", nil, plateFrame.unitFrame.powerBar, "NamePlateFullBorderTemplate", BackdropTemplateMixin and "BackdropTemplate")
+				local powerBarBorder = CreateFrame("frame", nil, plateFrame.unitFrame.powerBar, (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC) and "PlaterNameplateFullBorderTemplate" or "NamePlateFullBorderTemplate", BackdropTemplateMixin and "BackdropTemplate")
 				powerBarBorder.Left:SetDrawLayer("OVERLAY", 6)
 				powerBarBorder.Right:SetDrawLayer("OVERLAY", 6)
 				powerBarBorder.Top:SetDrawLayer("OVERLAY", 6)
@@ -3072,11 +3131,13 @@ local class_specs_coords = {
 				plateFrame.unitFrame.aggroGlowLower:Hide()
 				
 			--> widget container
+			if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
 				plateFrame.unitFrame.WidgetContainer = CreateFrame("frame", nil, plateFrame.unitFrame, "UIWidgetContainerNoResizeTemplate")
 				plateFrame.unitFrame.WidgetContainer.horizontalRowContainerPool = CreateFramePool("FRAME", plateFrame.unitFrame.WidgetContainer);
 				Plater.SetAnchor (plateFrame.unitFrame.WidgetContainer, Plater.db.profile.widget_bar_anchor, plateFrame.unitFrame)
 				plateFrame.unitFrame.WidgetContainer:SetScale(Plater.db.profile.widget_bar_scale)
 				plateFrame.unitFrame.WidgetContainer:UnregisterForWidgetSet()
+			end
 			
 			--> name plate created hook
 				if (HOOK_NAMEPLATE_CREATED.ScriptAmount > 0) then
@@ -3113,6 +3174,7 @@ local class_specs_coords = {
 			local reaction = UnitReaction (unitID, "player") or 1
 			reaction = reaction <= UNITREACTION_HOSTILE and UNITREACTION_HOSTILE or reaction >= UNITREACTION_FRIENDLY and UNITREACTION_FRIENDLY or UNITREACTION_NEUTRAL
 			
+			local isWidgetOnlyMode = (WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC) and UnitNameplateShowsWidgetsOnly (unitBarId) or false
 			local isBattlePet = UnitIsBattlePet(unitID)
 			local isPlayer = UnitIsPlayer (unitID)
 			local isSelf = UnitIsUnit (unitID, "player")
@@ -3319,7 +3381,7 @@ local class_specs_coords = {
 			unitFrame.BuffFrame2.unit = unitID
 			unitFrame.ExtraIconFrame.unit = unitID
 			
-			plateFrame.isBattlePet = isBattlePet
+			local isBattlePet = (WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC) and UnitIsBattlePet(unitID) or false			plateFrame.isBattlePet = isBattlePet
 			unitFrame.isBattlePet = isBattlePet
 			
 			plateFrame.isWidgetOnlyMode = isWidgetOnlyMode
@@ -3463,15 +3525,17 @@ local class_specs_coords = {
 			unitFrame.aggroGlowLower:Hide()
 			
 			--widget container update
-			Plater.SetAnchor (unitFrame.WidgetContainer, Plater.db.profile.widget_bar_anchor, unitFrame)
-			plateFrame.unitFrame.WidgetContainer:SetScale(Plater.db.profile.widget_bar_scale)
-			unitFrame.WidgetContainer:UnregisterForWidgetSet()
-			local widgetSetId = UnitWidgetSet(unitID)
-		    local playerControlled = UnitPlayerControlled(unitID)
-		    if widgetSetId and ((playerControlled and UnitIsOwnerOrControllerOfUnit('player', unitID)) or not playerControlled) then
-				--unitFrame.WidgetContainer:RegisterForWidgetSet(widgetSetId)
-				unitFrame.WidgetContainer:RegisterForWidgetSet(widgetSetId, Plater.PlaterDefaultWidgetLayout, nil, unitID);
-				unitFrame.WidgetContainer:ProcessAllWidgets()
+			if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+				Plater.SetAnchor (unitFrame.WidgetContainer, Plater.db.profile.widget_bar_anchor, unitFrame)
+				plateFrame.unitFrame.WidgetContainer:SetScale(Plater.db.profile.widget_bar_scale)
+				unitFrame.WidgetContainer:UnregisterForWidgetSet()
+				local widgetSetId = UnitWidgetSet(unitID)
+				local playerControlled = UnitPlayerControlled(unitID)
+				if widgetSetId and ((playerControlled and UnitIsOwnerOrControllerOfUnit('player', unitID)) or not playerControlled) then
+					--unitFrame.WidgetContainer:RegisterForWidgetSet(widgetSetId)
+					unitFrame.WidgetContainer:RegisterForWidgetSet(widgetSetId, Plater.PlaterDefaultWidgetLayout, nil, unitID);
+					unitFrame.WidgetContainer:ProcessAllWidgets()
+				end
 			end
 			
 			--can check aggro
@@ -3590,7 +3654,9 @@ local class_specs_coords = {
 			plateFrame.unitFrame:SetUnit (nil)
 			
 			-- remove widgets
-			plateFrame.unitFrame.WidgetContainer:UnregisterForWidgetSet()
+			if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+				plateFrame.unitFrame.WidgetContainer:UnregisterForWidgetSet()
+			end
 			
 			--community patch by Ariani#0960 (discord)
 			--make the unitFrame be parented to UIParent allowing frames to be moved between strata levels
@@ -3710,12 +3776,22 @@ function Plater.OnInit() --private --~oninit ~init
 		Plater.db.profile.plate_config.global_health_height = Plater.db.profile.plate_config.global_health_height or Plater.db.profile.plate_config.enemynpc.health[2]
 	
 	--range check spells
-		for specID, _ in pairs (Plater.SpecList [select (2, UnitClass ("player"))]) do
-			if (PlaterDBChr.spellRangeCheckRangeEnemy [specID] == nil or not LibRangeCheck:GetHarmMaxChecker (PlaterDBChr.spellRangeCheckRangeEnemy [specID])) then
-				PlaterDBChr.spellRangeCheckRangeEnemy [specID] = Plater.DefaultSpellRangeList [specID]
+		if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+			for specID, _ in pairs (Plater.SpecList [select (2, UnitClass ("player"))]) do
+				if (PlaterDBChr.spellRangeCheckRangeEnemy [specID] == nil or not LibRangeCheck:GetHarmMaxChecker (PlaterDBChr.spellRangeCheckRangeEnemy [specID])) then
+					PlaterDBChr.spellRangeCheckRangeEnemy [specID] = Plater.DefaultSpellRangeList [specID]
+				end
+				if (PlaterDBChr.spellRangeCheckRangeFriendly [specID] == nil or not LibRangeCheck:GetFriendMaxChecker(PlaterDBChr.spellRangeCheckRangeFriendly [specID])) then
+					PlaterDBChr.spellRangeCheckRangeFriendly [specID] = Plater.DefaultSpellRangeListF [specID]
+				end
 			end
-			if (PlaterDBChr.spellRangeCheckRangeFriendly [specID] == nil or not LibRangeCheck:GetFriendMaxChecker(PlaterDBChr.spellRangeCheckRangeFriendly [specID])) then
-				PlaterDBChr.spellRangeCheckRangeFriendly [specID] = Plater.DefaultSpellRangeListF [specID]
+		else
+			local playerClass = select (3, UnitClass ("player"))
+			if (PlaterDBChr.spellRangeCheckRangeEnemy [playerClass] == nil or not LibRangeCheck:GetHarmMaxChecker (PlaterDBChr.spellRangeCheckRangeEnemy [playerClass])) then
+				PlaterDBChr.spellRangeCheckRangeEnemy [playerClass] = Plater.DefaultSpellRangeList [playerClass]
+			end
+			if (PlaterDBChr.spellRangeCheckRangeFriendly [playerClass] == nil or not LibRangeCheck:GetFriendMaxChecker(PlaterDBChr.spellRangeCheckRangeFriendly [playerClass])) then
+				PlaterDBChr.spellRangeCheckRangeFriendly [playerClass] = Plater.DefaultSpellRangeListF [playerClass]
 			end
 		end
 		Plater.RangeCheckRangeEnemy = nil
@@ -3831,18 +3907,24 @@ function Plater.OnInit() --private --~oninit ~init
 		Plater.EventHandlerFrame:RegisterEvent ("QUEST_REMOVED")
 		Plater.EventHandlerFrame:RegisterEvent ("QUEST_ACCEPT_CONFIRM")
 		Plater.EventHandlerFrame:RegisterEvent ("QUEST_COMPLETE")
-		Plater.EventHandlerFrame:RegisterEvent ("QUEST_POI_UPDATE")
+		if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+			Plater.EventHandlerFrame:RegisterEvent ("QUEST_POI_UPDATE")
+		end
 		Plater.EventHandlerFrame:RegisterEvent ("QUEST_DETAIL")
 		Plater.EventHandlerFrame:RegisterEvent ("QUEST_FINISHED")
 		Plater.EventHandlerFrame:RegisterEvent ("QUEST_GREETING")
 		Plater.EventHandlerFrame:RegisterEvent ("QUEST_LOG_UPDATE")
 		Plater.EventHandlerFrame:RegisterEvent ("UNIT_QUEST_LOG_CHANGED")
-		Plater.EventHandlerFrame:RegisterEvent ("PLAYER_SPECIALIZATION_CHANGED")
-		Plater.EventHandlerFrame:RegisterEvent ("PLAYER_TALENT_UPDATE")
+		if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+			Plater.EventHandlerFrame:RegisterEvent ("PLAYER_SPECIALIZATION_CHANGED")
+			Plater.EventHandlerFrame:RegisterEvent ("PLAYER_TALENT_UPDATE")
+		end
 		
 		Plater.EventHandlerFrame:RegisterEvent ("ENCOUNTER_START")
 		Plater.EventHandlerFrame:RegisterEvent ("ENCOUNTER_END")
-		Plater.EventHandlerFrame:RegisterEvent ("CHALLENGE_MODE_START")
+		if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+			Plater.EventHandlerFrame:RegisterEvent ("CHALLENGE_MODE_START")
+		end
 		
 		Plater.EventHandlerFrame:RegisterEvent ("UNIT_NAME_UPDATE")
 		
@@ -4084,7 +4166,9 @@ function Plater.OnInit() --private --~oninit ~init
 			return Plater.UpdatePersonalBar (self)
 		end
 		--can also hook 'ClassNameplateBar:ShowNameplateBar()' which will show and call NamePlateDriverFrame:SetClassNameplateBar(self); which will call SetupClassNameplateBars()
-		hooksecurefunc (NamePlateDriverFrame, "SetupClassNameplateBars", on_personal_bar_update)
+		if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+			hooksecurefunc (NamePlateDriverFrame, "SetupClassNameplateBars", on_personal_bar_update)
+		end
 
 		--update the resource location and anchor
 		function Plater.UpdateResourceFrame()
@@ -4809,14 +4893,16 @@ function Plater.OnInit() --private --~oninit ~init
 	end)
 	
 	-- fill class-info cache data
-	for classID = 1, MAX_CLASSES do
-		local _, classFile = GetClassInfo(classID)
-		CLASS_INFO_CACHE[classFile] = {}
-		for i = 1, GetNumSpecializationsForClassID(classID) do
-			local specID, maleName, _, iconID, role = GetSpecializationInfoForClassID(classID, i, 2) -- male
-			local _, femaleName, _, iconID, role = GetSpecializationInfoForClassID(classID, i, 3) -- female
-			CLASS_INFO_CACHE[classFile][maleName] = {role = role, specID = specID, iconID = iconID}
-			CLASS_INFO_CACHE[classFile][femaleName] = CLASS_INFO_CACHE[classFile][maleName]
+	if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+		for classID = 1, MAX_CLASSES do
+			local _, classFile = GetClassInfo(classID)
+			CLASS_INFO_CACHE[classFile] = {}
+			for i = 1, GetNumSpecializationsForClassID(classID) do
+				local specID, maleName, _, iconID, role = GetSpecializationInfoForClassID(classID, i, 2) -- male
+				local _, femaleName, _, iconID, role = GetSpecializationInfoForClassID(classID, i, 3) -- female
+				CLASS_INFO_CACHE[classFile][maleName] = {role = role, specID = specID, iconID = iconID}
+				CLASS_INFO_CACHE[classFile][femaleName] = CLASS_INFO_CACHE[classFile][maleName]
+			end
 		end
 	end
 	
@@ -6913,8 +6999,10 @@ end
 				unitFrame.healthBar:UNIT_HEALTH()
 			end
 			
-			Plater.SetAnchor (unitFrame.WidgetContainer, profile.widget_bar_anchor, unitFrame)
-			plateFrame.unitFrame.WidgetContainer:SetScale(Plater.db.profile.widget_bar_scale)
+			if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+				Plater.SetAnchor (unitFrame.WidgetContainer, profile.widget_bar_anchor, unitFrame)
+				plateFrame.unitFrame.WidgetContainer:SetScale(Plater.db.profile.widget_bar_scale)
+			end
 		end
 		
 		--update the plate size for this unit
@@ -7215,7 +7303,7 @@ end
 			end
 			
 			--quest boss
-			local isQuestBoss = UnitIsQuestBoss (plateFrame.unitFrame [MEMBER_UNITID]) --true false
+			local isQuestBoss = (WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC) and UnitIsQuestBoss (plateFrame.unitFrame [MEMBER_UNITID]) or false --true false
 			if (isQuestBoss and config.indicator_quest) then
 				Plater.AddIndicator (plateFrame, "quest")
 			end
@@ -8123,7 +8211,9 @@ function Plater.SetCVarsOnFirstRun()
 	
 	--> make nameplates always shown and down't show minions
 	SetCVar ("nameplateShowAll", CVAR_ENABLED)
-	SetCVar ("ShowNamePlateLoseAggroFlash", CVAR_ENABLED) --blizzard flash
+	if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+		SetCVar ("ShowNamePlateLoseAggroFlash", CVAR_ENABLED) --blizzard flash
+	end
 	
 	--scale when it is too far away from the camera
 	SetCVar ("nameplateMinScale", 1)
@@ -8154,7 +8244,9 @@ function Plater.SetCVarsOnFirstRun()
 	--> reset the horizontal and vertical scale
 	SetCVar ("NamePlateHorizontalScale", CVAR_ENABLED)
 	SetCVar ("NamePlateVerticalScale", CVAR_ENABLED)
-	SetCVar ("NamePlateClassificationScale", CVAR_ENABLED)
+	if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+		SetCVar ("NamePlateClassificationScale", CVAR_ENABLED)
+	end
 	
 	--> make the selection be a little bigger
 	SetCVar ("nameplateSelectedScale", "1.15")
@@ -8169,8 +8261,10 @@ function Plater.SetCVarsOnFirstRun()
 	SetCVar ("nameplateMaxDistance", 100)
 	
 	--> ensure resource on target consistency:
-	PlaterDBChr.resources_on_target = GetCVar ("nameplateResourceOnTarget") == CVAR_ENABLED
-	SetCVar ("nameplateResourceOnTarget", CVAR_DISABLED)
+	if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+		PlaterDBChr.resources_on_target = GetCVar ("nameplateResourceOnTarget") == CVAR_ENABLED
+		SetCVar ("nameplateResourceOnTarget", CVAR_DISABLED)
+	end
 	
 	PlaterDBChr.first_run3 [UnitGUID ("player")] = true
 	Plater.db.profile.first_run3 = true
@@ -8361,26 +8455,35 @@ end
 		end
 		
 		--update the quest cache
-		local numEntries, numQuests = C_QuestLog.GetNumQuestLogEntries()
+		local numEntries, numQuests = C_QuestLog.GetNumQuestLogEntries and C_QuestLog.GetNumQuestLogEntries() or GetNumQuestLogEntries()
 		for questLogId = 1, numEntries do
-			local questDetails = C_QuestLog.GetInfo(questLogId)
-			--any chance to track via quest objective? no unit IDs given there...
-			--ViragDevTool_AddData({questDetails = questDetails, QuestObjectives = C_QuestLog.GetQuestObjectives(questDetails.questID), Title = C_QuestLog.GetTitleForLogIndex(questLogId)}, "QuestUpdate - " .. questLogId)
-			if (questDetails and not questDetails.isHeader and questDetails.title and type (questDetails.questID) == "number" and questDetails.questID > 0) then
-				Plater.QuestCache [questDetails.title] = true
+			if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+				local questDetails = C_QuestLog.GetInfo(questLogId)
+				--any chance to track via quest objective? no unit IDs given there...
+				--ViragDevTool_AddData({questDetails = questDetails, QuestObjectives = C_QuestLog.GetQuestObjectives(questDetails.questID), Title = C_QuestLog.GetTitleForLogIndex(questLogId)}, "QuestUpdate - " .. questLogId)
+				if (questDetails and not questDetails.isHeader and questDetails.title and type (questDetails.questID) == "number" and questDetails.questID > 0) then
+					Plater.QuestCache [questDetails.title] = true
+				end
+			else
+				local title, level, suggestedGroup, isHeader, isCollapsed, isComplete, frequency, questId, startEvent, displayQuestID, isOnMap, hasLocalPOI, isTask, isStory = GetQuestLogTitle (questLogId)
+				if (type (questId) == "number" and questId > 0) then -- and not isComplete
+					Plater.QuestCache [title] = true
+				end
 			end
 		end
 		
-		local mapId = C_Map.GetBestMapForUnit ("player")
-		if (mapId) then
-			local worldQuests = C_TaskQuest.GetQuestsForPlayerByMapID (mapId)
-			if (type (worldQuests) == "table") then
-				for i, questTable in ipairs (worldQuests) do
-					local x, y, floor, numObjectives, questId, inProgress = questTable.x, questTable.y, questTable.floor, questTable.numObjectives, questTable.questId, questTable.inProgress
-					if (type (questId) == "number" and questId > 0) then
-						local questName = C_TaskQuest.GetQuestInfoByQuestID (questId)
-						if (questName) then
-							Plater.QuestCache [questName] = true
+		if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+			local mapId = C_Map.GetBestMapForUnit ("player")
+			if (mapId) then
+				local worldQuests = C_TaskQuest.GetQuestsForPlayerByMapID (mapId)
+				if (type (worldQuests) == "table") then
+					for i, questTable in ipairs (worldQuests) do
+						local x, y, floor, numObjectives, questId, inProgress = questTable.x, questTable.y, questTable.floor, questTable.numObjectives, questTable.questId, questTable.inProgress
+						if (type (questId) == "number" and questId > 0) then
+							local questName = C_TaskQuest.GetQuestInfoByQuestID (questId)
+							if (questName) then
+								Plater.QuestCache [questName] = true
+							end
 						end
 					end
 				end
@@ -10388,7 +10491,9 @@ end
 				if (type (triggerId) == "number") then
 					triggerId = GetSpellInfo (triggerId)
 					if (not triggerId) then
-						Plater:Msg ("failed to get the spell name for spellId: " .. (scriptObject [triggerContainer] [i] or "invalid spellId"), triggerId)
+						if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then -- disable this in classic for now... too spammy
+							Plater:Msg ("failed to get the spell name for spellId: " .. (scriptObject [triggerContainer] [i] or "invalid spellId") .. "for script '" .. scriptObject.Name .. "'")
+						end
 					end
 				end
 			
