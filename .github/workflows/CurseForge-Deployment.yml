@@ -1,4 +1,4 @@
-name: CurseForge - Package and Release - All pushes
+name: Main - CurseForge - Package and Release - All pushes
 
 # Deploy on all pushes to master, except '.github/**' folder.
 on:
