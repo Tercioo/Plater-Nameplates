@@ -8,8 +8,20 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
-			{1616411319,  "Backend Changes", "March , 2021", "Adjust healthbar / castbar border frame levels."},
-			{1616411319,  "Backend Changes", "March , 2021", "Get spec-information in arena and BG."},
+			{1617654022,  "Bug Fix", "April 2nd, 2021", "Fixing non-existing tanks during threat checks."},
+			{1617654022,  "Bug Fix", "Arpil 1st, 2021", "Fixing default friendly range check ranges for low level chars."},
+			{1617654022,  "Bug Fix", "March 29th, 2021", "Ensure personal bar color is updated properly."},
+			{1617654022,  "New Feature", "March 25th, 2021", "Adding profiling actions to LDB-Icon."},
+			{1617654022,  "Bug Fix", "March 25th, 2021", "Sanity checks for profiling data."},
+			{1617654022,  "Bug Fix", "March 25th, 2021", "Fixing profiling for range check."},
+			{1617654022,  "Bug Fix", "March 24th, 2021", "Fixing BG player role info cache (xeropresence)."},
+			{1617654022,  "Backend Changes", "March 23rd, 2021", "Adjusting frame levels to allow better overlapping of different nameplates."},
+			{1617654022,  "Bug Fix", "March 23rd, 2021", "Fixing the 'Pins' indicator size."},
+			{1617654022,  "Backend Changes", "March 23rd, 2021", "Adjusted the health-/castbar border draw layers."},
+			{1617654022,  "Backend Changes", "March 22nd, 2021", "Changed the mod/script code restrictions."},
+			
+			{1616411319,  "Backend Changes", "March 21st, 2021", "Adjust healthbar / castbar border frame levels."},
+			{1616411319,  "Backend Changes", "March 19th, 2021", "Get spec-information in arena and BG."},
 			{1616411319,  "Bug Fix", "March 18th, 2021", "Fixing an issue with aura consolidation disabled not showing all auras properly."},
 			{1616411319,  "Bug Fix", "March 17th, 2021", "Fixing perfomance logging for health update."},
 			{1616411319,  "Backend Changes", "March 15th, 2021", "Resetting colors upon nameplate added."},
