@@ -1,4 +1,5 @@
 ## Interface: 90005
+## Interface-BC: 20501
 ## Title: Plater
 ## Notes: Nameplate addon designed for advanced users.
 ## SavedVariables: PlaterDB
