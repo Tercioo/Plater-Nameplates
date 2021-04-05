@@ -1,0 +1,38 @@
+name: CurseForge - Package and Release - All pushes
+
+# Deploy on all pushes to master, except '.github/**' folder.
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - '.github/**'
+
+jobs:
+
+  cf-release:
+  
+    runs-on: ubuntu-latest
+    
+    env:
+      CF_API_KEY: ${{ secrets.CF_API_KEY }}
+      GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}  # "GITHUB_TOKEN" is a secret always provided to the workflow
+                                                 # for your own token, the name cannot start with "GITHUB_"
+
+
+    steps:
+    
+      - name: Clone project
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 100 # for automated history
+
+      - name: Package and Release - Retail
+        uses: BigWigsMods/packager@master
+        with:
+          args: -g retail -p 100547
+
+      #- name: Package and Release for BC
+      #  uses: BigWigsMods/packager@master
+      #  with:
+      #    args: -g bc -p 100547
