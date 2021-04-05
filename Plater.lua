@@ -2400,14 +2400,23 @@ local class_specs_coords = {
 					Plater.FriendsCache [DF:RemoveRealmName (info.name)] = true
 				end
 			end
-			local _, numBNetOnline = BNGetNumFriends();
-			for i = 1, numBNetOnline do
-				local accountInfo = C_BattleNet.GetFriendAccountInfo(i);
-				if (accountInfo and accountInfo.gameAccountInfo and accountInfo.gameAccountInfo.isOnline and accountInfo.gameAccountInfo.characterName) then
-					Plater.FriendsCache [accountInfo.gameAccountInfo.characterName] = true
+			
+			if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+				local _, numBNetOnline = BNGetNumFriends();
+				for i = 1, numBNetOnline do
+					local accountInfo = C_BattleNet.GetFriendAccountInfo(i);
+					if (accountInfo and accountInfo.gameAccountInfo and accountInfo.gameAccountInfo.isOnline and accountInfo.gameAccountInfo.characterName) then
+						Plater.FriendsCache [accountInfo.gameAccountInfo.characterName] = true
+					end
+				end
+			else
+				for i = 1, BNGetNumFriends() do 
+					local presenceID, presenceName, battleTag, isBattleTagPresence, toonName, toonID, client, isOnline, lastOnline, isAFK, isDND, messageText, noteText, isRIDFriend, broadcastTime, canSoR = BNGetFriendInfo (i)
+					if (isOnline and toonName) then
+						Plater.FriendsCache [toonName] = true
+					end
 				end
 			end
-			--]]
 			
 			--let's not trigger a full update on all plates because a friend is now online
 			--Plater.UpdateAllPlates()
