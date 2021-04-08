@@ -5,6 +5,10 @@ on:
   push:
     branches:
       - bc-beta
+    tags:
+      - '*'
+    paths-ignore:
+      - '.github/**'
 
 jobs:
 
@@ -28,4 +32,4 @@ jobs:
       - name: Package and Release - BC
         uses: BigWigsMods/packager@master
         with:
-          args: -g bc
+          args: -g bc -n '{project-version}{classic}'
