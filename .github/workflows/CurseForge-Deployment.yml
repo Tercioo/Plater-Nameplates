@@ -32,9 +32,9 @@ jobs:
       - name: Package and Release - Retail
         uses: BigWigsMods/packager@master
         with:
-          args: -g retail
+          args: -g retail -n '{project-version}'
 
       #- name: Package and Release for BC
       #  uses: BigWigsMods/packager@master
       #  with:
-      #    args: -g bc
+      #    args: -g bc -n '{project-version}{classic}'
