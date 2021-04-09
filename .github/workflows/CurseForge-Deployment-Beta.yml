@@ -29,6 +29,11 @@ jobs:
         with:
           fetch-depth: 100 # for automated history
 
+      - uses: leafo/gh-actions-lua@v8.0.0
+
+      - name: Create Changelog
+        run: lua Plater_ChangeLog.lua latest >> CHANGELOG.md
+
       - name: Package and Release - BC
         uses: BigWigsMods/packager@master
         with:
