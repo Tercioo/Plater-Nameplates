@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1618161402,  "Backend Change", "April 11th, 2021", "Allowing 'UpdateLevelTextAndColor' again.", "cont1nuity"},
+		
 			{1617654022,  "Bug Fix", "April 2nd, 2021", "Fixing non-existing tanks during threat checks.", "cont1nuity"},
 			{1617654022,  "Bug Fix", "Arpil 1st, 2021", "Fixing default friendly range check ranges for low level chars.", "cont1nuity"},
 			{1617654022,  "Bug Fix", "March 29th, 2021", "Ensure personal bar color is updated properly.", "cont1nuity"},
