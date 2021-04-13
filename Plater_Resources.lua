@@ -323,6 +323,8 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
 
 
     local canUsePlaterResourceFrame = function()
+		if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then return end
+		
         --nameplate which will have the resource bar
         local nameplateAnchor
 
@@ -405,6 +407,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
 --called when 'CanUsePlaterResourceFrame' gives green flag to show the resource bar
 --this function receives the nameplate where the resource bar will be attached
     function Plater.UpdatePlaterResourceFrame(plateFrame)
+		if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then return end
 
         --get the main resource frame
         local platerResourceFrame = _G.PlaterNameplatesResourceFrame

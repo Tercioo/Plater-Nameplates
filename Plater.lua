@@ -2664,7 +2664,9 @@ local class_specs_coords = {
 					newUnitFrame:SetAllPoints()
 					newUnitFrame:SetFrameStrata ("BACKGROUND")
 
-					--plateFrame:HookScript("OnSizeChanged", Plater.UpdateUIParentScale)
+					if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then
+						plateFrame:HookScript("OnSizeChanged", Plater.UpdateUIParentScale)
+					end
 					
 					--create a 33ms show animation played when the nameplate is added in the screen
 					--nevermind, unitFrame childs are kepping the last alpha value of the animation instead of reseting to their defaults
@@ -2689,7 +2691,9 @@ local class_specs_coords = {
 				DF:Mixin(newUnitFrame, Plater.ScriptMetaFunctions)
 
 				--hook the retail nameplate
-				--plateFrame.UnitFrame:HookScript("OnShow", Plater.OnRetailNamePlateShow)
+				if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then
+					plateFrame.UnitFrame:HookScript("OnShow", Plater.OnRetailNamePlateShow)
+				end
 				
 				--OnHide handler
 				newUnitFrame:HookScript("OnHide", newUnitFrame.OnHideWidget)
@@ -3253,7 +3257,11 @@ local class_specs_coords = {
 			
 			--hide blizzard namepaltes
 			--plateFrame.UnitFrame:Hide()
-			Plater.OnRetailNamePlateShow(plateFrame.UnitFrame)
+			if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
+				Plater.OnRetailNamePlateShow(plateFrame.UnitFrame)
+			else
+				--plateFrame.UnitFrame:Hide()
+			end
 			--show plater unit frame
 			plateFrame.unitFrame:Show()
 			
@@ -3271,13 +3279,29 @@ local class_specs_coords = {
 				unitFrame.ShowUIParentAnimation:Play()
 			end
 			
-			if (DB_USE_UIPARENT) then
+			if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
+				--if (not plateFrame.UnitFrame.HasPlaterHooksRegistered) then
+				if not HOOKED_BLIZZARD_PLATEFRAMES[tostring(plateFrame.UnitFrame)] then
+					--print(HOOKED_BLIZZARD_PLATEFRAMES[tostring(plateFrame.UnitFrame)], tostring(plateFrame.UnitFrame), plateFrame.UnitFrame.HasPlaterHooksRegistered)
+					--hook the retail nameplate
+					--plateFrame.UnitFrame:HookScript("OnShow", Plater.OnRetailNamePlateShow)
+					hooksecurefunc(plateFrame.UnitFrame, "Show", Plater.OnRetailNamePlateShow)
+					--plateFrame.UnitFrame.HasPlaterHooksRegistered = true
+					HOOKED_BLIZZARD_PLATEFRAMES[tostring(plateFrame.UnitFrame)] = true
+					
+				end
+			end
+			
+			if (DB_USE_UIPARENT and WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
 				plateFrame:HookScript("OnSizeChanged", Plater.UpdateUIParentScale)
 				Plater.UpdateUIParentScale(plateFrame)
 			end
 			
 			--check if the hide hook is registered on this Blizzard nameplate
 			if (not unitFrame.HasHideHookRegistered) then
+				if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then
+					plateFrame.UnitFrame:HookScript("OnShow", Plater.OnRetailNamePlateShow)
+				end
 				--onHide for unitFrame
 				plateFrame.unitFrame:HookScript ("OnHide", unitFrame.OnHideWidget)
 				--onShow for castbar
@@ -4181,6 +4205,7 @@ function Plater.OnInit() --private --~oninit ~init
 
 		--update the resource location and anchor
 		function Plater.UpdateResourceFrame()
+			if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then return end
 			--this holds a reference of the current resource frame anchored into the 'target' namepate
 			--it is used when checking if the unit has auras to move the resources up to make room for the auras
 			Plater.CurrentTargetResourceFrame = nil
@@ -4243,10 +4268,12 @@ function Plater.OnInit() --private --~oninit ~init
 			end
 		end
 
-		--this function is declared inside 'NamePlateDriverMixin' at Blizzard_NamePlates.lua
-		hooksecurefunc (NamePlateDriverFrame, "UpdateNamePlateOptions", function()
-			Plater.UpdateSelfPlate()
-		end)
+		if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
+			--this function is declared inside 'NamePlateDriverMixin' at Blizzard_NamePlates.lua
+			hooksecurefunc (NamePlateDriverFrame, "UpdateNamePlateOptions", function()
+				Plater.UpdateSelfPlate()
+			end)
+		end
 
 	--> cast frame ~castbar
 	
