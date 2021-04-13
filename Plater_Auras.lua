@@ -983,7 +983,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			repeat -- until continuationToken == nil
 				local numSlots = 0
 				local slots
-				if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+				if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
 					slots = { UnitAuraSlots(unit, "HELPFUL", BUFF_MAX_DISPLAY, continuationToken) }
 					continuationToken = slots[1]
 					numSlots = #slots
@@ -993,7 +993,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 				
 				for i=2, numSlots do
 					local name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll
-					if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+					if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
 						local slot = slots[i]
 						name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll = UnitAuraBySlot(unit, slot)
 					else
@@ -1040,7 +1040,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			repeat -- until continuationToken == nil
 				local numSlots = 0
 				local slots
-				if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+				if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
 					slots = { UnitAuraSlots(unit, "HARMFUL", BUFF_MAX_DISPLAY, continuationToken) }
 					continuationToken = slots[1]
 					numSlots = #slots
@@ -1050,7 +1050,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 				
 				for i=2, numSlots do
 					local name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll
-					if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+					if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
 						local slot = slots[i]
 						name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll = UnitAuraBySlot(unit, slot)
 					else
@@ -1127,7 +1127,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			repeat -- until continuationToken == nil
 				local numSlots = 0
 				local slots
-				if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+				if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
 					slots = { UnitAuraSlots(unit, "HARMFULL", BUFF_MAX_DISPLAY, continuationToken) }
 					continuationToken = slots[1]
 					numSlots = #slots
@@ -1137,7 +1137,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 				
 				for i=2, numSlots do
 					local name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll
-					if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+					if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
 						local slot = slots[i]
 						name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll = UnitAuraBySlot(unit, slot)
 					else
@@ -1210,7 +1210,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			repeat -- until continuationToken == nil
 				local numSlots = 0
 				local slots
-				if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+				if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
 					slots = { UnitAuraSlots(unit, "HELPFUL", BUFF_MAX_DISPLAY, continuationToken) }
 					continuationToken = slots[1]
 					numSlots = #slots
@@ -1220,7 +1220,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 				
 				for i=2, numSlots do
 					local name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll
-					if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+					if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
 						local slot = slots[i]
 						name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll = UnitAuraBySlot(unit, slot)
 					else
@@ -1359,7 +1359,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			repeat -- until continuationToken == nil
 				local numSlots = 0
 				local slots
-				if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+				if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
 					slots = { UnitAuraSlots("player", "HARMFUL", BUFF_MAX_DISPLAY, continuationToken) }
 					continuationToken = slots[1]
 					numSlots = #slots
@@ -1369,7 +1369,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 				
 				for i=2, numSlots do
 					local name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll
-					if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+					if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
 						local slot = slots[i]
 						name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll = UnitAuraBySlot("player", slot)
 					else
@@ -1416,7 +1416,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			repeat -- until continuationToken == nil
 				local numSlots = 0
 				local slots
-				if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+				if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
 					slots = { UnitAuraSlots("player", "HELPFUL|PLAYER", BUFF_MAX_DISPLAY, continuationToken) }
 					continuationToken = slots[1]
 					numSlots = #slots
@@ -1426,7 +1426,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 				
 				for i=2, numSlots do
 					local name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll
-					if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+					if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
 						local slot = slots[i]
 						name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll = UnitAuraBySlot("player", slot)
 					else
