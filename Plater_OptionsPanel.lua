@@ -12327,6 +12327,35 @@ end
 		},
 		
 		{type = "breakline"},
+	
+	}
+	
+	
+	if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then
+		local thread_options_tank = {
+			{type = "label", get = function() return "Tank or DPS Colors:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.tank_threat_colors end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.tank_threat_colors = value
+					Plater.RefreshTankCache()
+				end,
+				name = "Use Tank Threat Colors",
+				desc = "Use Tank Threat Colors",
+			},
+		
+			{type = "blank"},
+			
+		}
+		
+		for _, t in ipairs (thread_options_tank) do
+			tinsert (thread_options, t)
+		end
+	end
+	
+	local thread_options2 = {
 		
 		{type = "label", get = function() return L["OPTIONS_THREAT_COLOR_OVERRIDE_ANCHOR_TITLE"] .. ":" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
@@ -12408,6 +12437,10 @@ end
 		},
 		
 	}
+	
+	for _, t in ipairs (thread_options2) do
+		tinsert (thread_options, t)
+	end
 	
 	_G.C_Timer.After(0.990, function() --~delay
 		DF:BuildMenu (threatFrame, thread_options, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)

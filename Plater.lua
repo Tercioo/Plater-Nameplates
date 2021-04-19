@@ -1471,7 +1471,8 @@ local class_specs_coords = {
 
 	-- ~tank --todo: make these functions be inside the Plater object
 	--true if the 'player' unit is a tank
-	local function IsPlayerEffectivelyTank()
+	--parameter "hasTankAura" is used to force aura scan skip for paladins -> UpdatePlayerTankState -> SPELL_AURA_APPLIED/REMOVED (CLASSIC)
+	local function IsPlayerEffectivelyTank(hasTankAura)
 		if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
 			local assignedRole = UnitGroupRolesAssigned ("player")
 			if (assignedRole == "NONE") then
@@ -1516,6 +1517,34 @@ local class_specs_coords = {
 		end
 	end
 	
+	
+	-- toggle Threat Color Mode between tank / dps (CLASSIC)
+	function Plater.ToggleThreatColorMode()
+		if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then
+			Plater.db.profile.tank_threat_colors = not Plater.db.profile.tank_threat_colors
+			Plater.RefreshTankCache()
+			if Plater.PlayerIsTank then
+				print("Plater: Using Tank Threat Colors")
+			else
+				print("Plater: Using DPS Threat Colors")
+			end
+		end
+	end
+	
+	local function UpdatePlayerTankState(hasAura)
+		if (IsPlayerEffectivelyTank(hasAura)) then
+			TANK_CACHE [UnitName ("player")] = true
+			Plater.PlayerIsTank = true
+		else
+			TANK_CACHE [UnitName ("player")] = false
+			if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
+				Plater.PlayerIsTank = false
+			else
+				Plater.PlayerIsTank = false or Plater.db.profile.tank_threat_colors
+			end
+		end
+	end
+	
 	--iterate among group members and store the names of all tanks in the group
 	--this is called when the player enter, leave or when the group roster is changed
 	--tank cache is used mostly in the aggro check to know if the player is a tank
@@ -1525,10 +1554,7 @@ local class_specs_coords = {
 		wipe (TANK_CACHE)
 		
 		--add the player to the tank pool if the player is a tank
-		if (IsPlayerEffectivelyTank()) then
-			TANK_CACHE [UnitName ("player")] = true
-			Plater.PlayerIsTank = true
-		end
+		UpdatePlayerTankState()
 		
 		--search for tanks in the raid
 		if (IsInRaid()) then
@@ -3701,6 +3727,18 @@ local class_specs_coords = {
 			--end of patch
 			
 		end,
+		
+		UNIT_INVENTORY_CHANGED = function()
+			UpdatePlayerTankState()
+			Plater.UpdateAllNameplateColors()
+			Plater.UpdateAllPlates()
+		end,
+		
+		UPDATE_SHAPESHIFT_FORM = function()
+			UpdatePlayerTankState()
+			Plater.UpdateAllNameplateColors()
+			Plater.UpdateAllPlates()
+		end,
 	}
 
 	function Plater.EventHandler (_, event, ...) --private
@@ -3968,6 +4006,11 @@ function Plater.OnInit() --private --~oninit ~init
 		Plater.EventHandlerFrame:RegisterEvent ("UI_SCALE_CHANGED")
 		
 		Plater.EventHandlerFrame:RegisterEvent ("GROUP_ROSTER_UPDATE")
+		
+		if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then -- tank spec detection
+			Plater.EventHandlerFrame:RegisterEvent ("UNIT_INVENTORY_CHANGED")
+			Plater.EventHandlerFrame:RegisterEvent ("UPDATE_SHAPESHIFT_FORM")
+		end
 		
 		--many times at saved variables load the spell database isn't loaded yet
 		function Plater:PLAYER_LOGIN()
@@ -8126,8 +8169,36 @@ end
 				local auraType = amount
 				DB_CAPTURED_SPELLS [spellID] = {event = token, source = sourceName, type = auraType, npcID = Plater:GetNpcIdFromGuid (sourceGUID or ""), encounterID = Plater.CurrentEncounterID}
 			end
+			
+			if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then
+				-- paladin tank buff tracking
+				local playerGUID = Plater.PlayerGUID
+				if sourceGUID == playerGUID and targetGUID == playerGUID then
+					spellId = select(7, GetSpellInfo(spellName))
+					if spellId == 25780 then
+						UpdatePlayerTankState(true)
+						--Plater.RefreshTankCache()
+					end
+				end
+			end
 		end,
 	}
+	
+	if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then
+		tinsert(parserFunctions, {
+			SPELL_AURA_REMOVED = function (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical)
+				-- paladin tank buff tracking
+				local playerGUID = Plater.PlayerGUID
+				if sourceGUID == playerGUID and targetGUID == playerGUID then
+					spellId = select(7, GetSpellInfo(spellName))
+					if spellId == 25780 then
+						UpdatePlayerTankState(false)
+						--Plater.RefreshTankCache()
+					end
+				end
+			end,
+		})
+	end
 
 	PlaterCLEUParser.Parser = function (self)
 		local time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical = CombatLogGetCurrentEventInfo()
@@ -9934,6 +10005,7 @@ end
 			["UpdateUIParentLevels"] = true,
 			["UpdateUIParentTargetLevels"] = true,
 			["RefreshTankCache"] = true,
+			["ToggleThreatColorMode"] = false,
 			["ForceFindPetOwner"] = true,
 			["UpdateBgPlayerRoleCache"] = false,
 			["GetSpecIconForUnitFromBG"] = false,
