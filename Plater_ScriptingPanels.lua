@@ -1376,7 +1376,7 @@ function Plater.CreateHookingPanel()
 	hookFrame.SearchString = ""
 	hookFrame.ScriptType = "hook"
 	hookFrame.LastAddedHookTime = GetTime()
-	currentEditingScript = nil
+	local currentEditingScript = nil
 	
 	function hookFrame.GetCurrentScriptObject()
 		return currentEditingScript
