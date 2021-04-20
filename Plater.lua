@@ -921,6 +921,7 @@ local class_specs_coords = {
 	
 	local HOOKED_BLIZZARD_PLATEFRAMES = {}
 	local ENABLED_BLIZZARD_PLATEFRAMES = {}
+	local SUPPORT_BLIZZARD_PLATEFRAMES = false
 	
 	local CLASS_INFO_CACHE = {}
 
@@ -3631,52 +3632,21 @@ local class_specs_coords = {
 	--it'll hide the retail nameplate when it shown
 	function Plater.OnRetailNamePlateShow (self) --private
 		if ENABLED_BLIZZARD_PLATEFRAMES[tostring(self)] then
-			-- re-register events (CompactUnitFrame_OnLoad):
-			--[[
-			self:RegisterEvent("PLAYER_ENTERING_WORLD");
-			self:RegisterEvent("UNIT_DISPLAYPOWER");
-			self:RegisterEvent("UNIT_POWER_BAR_SHOW");
-			self:RegisterEvent("UNIT_POWER_BAR_HIDE");
-			self:RegisterEvent("UNIT_NAME_UPDATE");
-			self:RegisterEvent("PLAYER_TARGET_CHANGED");
-			self:RegisterEvent("PLAYER_REGEN_ENABLED");
-			self:RegisterEvent("PLAYER_REGEN_DISABLED");
-			self:RegisterEvent("UNIT_CONNECTION");
-			self:RegisterEvent("PLAYER_ROLES_ASSIGNED");
-			self:RegisterEvent("UNIT_ENTERED_VEHICLE");
-			self:RegisterEvent("UNIT_EXITED_VEHICLE");
-			self:RegisterEvent("UNIT_PET");
-			self:RegisterEvent("READY_CHECK");
-			self:RegisterEvent("READY_CHECK_FINISHED");
-			self:RegisterEvent("READY_CHECK_CONFIRM");
-			self:RegisterEvent("PARTY_MEMBER_DISABLE");
-			self:RegisterEvent("PARTY_MEMBER_ENABLE");
-			self:RegisterEvent("INCOMING_RESURRECT_CHANGED");
-			self:RegisterEvent("UNIT_OTHER_PARTY_CHANGED");
-			self:RegisterEvent("UNIT_ABSORB_AMOUNT_CHANGED");
-			self:RegisterEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED");
-			self:RegisterEvent("UNIT_PHASE");
-			self:RegisterEvent("UNIT_CTR_OPTIONS");
-			self:RegisterEvent("UNIT_FLAGS");
-			self:RegisterEvent("GROUP_JOINED");
-			self:RegisterEvent("GROUP_LEFT");
-			self:RegisterEvent("INCOMING_SUMMON_CHANGED");
-			if (CompactUnitFrame_RegisterEvents) then
-				CompactUnitFrame_RegisterEvents(self)
-			end
-			]]--
+			-- do not hide
 			return
 		end
+		
 		self:Hide()
-		--self:UnregisterAllEvents()
+		
+		if not SUPPORT_BLIZZARD_PLATEFRAMES then
+			-- should be done if events are not needed
+			-- CompactUnitFrame_UnregisterEvents only removes event hanlder functions
+			self:UnregisterAllEvents()
+		end
+		
 		if (CompactUnitFrame_UnregisterEvents) then
 			CompactUnitFrame_UnregisterEvents (self)
 		end
-		if (CompactUnitFrame_ClearWidgetSet) then
-			--CompactUnitFrame_ClearWidgetSet (self)
-		end
-		--this is quite drastical and might break other stuff on retail nameplates in dungeons/raids:
-		--self.WidgetContainer = nil
 	end
 	
 	function Plater.SetFontOutlineAndShadow (fontString, outline, shadowColor, shadowXOffSet, shadowYOffSet)
@@ -3695,6 +3665,9 @@ local class_specs_coords = {
 
 function Plater.OnInit() --private --~oninit ~init
 	Plater.RefreshDBUpvalues()
+	
+	-- do we need to support blizzard frames?
+	SUPPORT_BLIZZARD_PLATEFRAMES = (not DB_PLATE_CONFIG [ACTORTYPE_PLAYER].module_enabled) or (not DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].module_enabled) or (not DB_PLATE_CONFIG [ACTORTYPE_ENEMY_PLAYER].module_enabled) or (not DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_NPC].module_enabled) or (not DB_PLATE_CONFIG [ACTORTYPE_ENEMY_NPC].module_enabled)
 	
 	Plater.CombatTime = GetTime()
 
