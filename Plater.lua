@@ -1759,12 +1759,12 @@ local class_specs_coords = {
 		["nameplatePersonalShowAlways"] = true,
 		["nameplatePersonalShowInCombat"] = true,
 		["nameplatePersonalShowWithTarget"] = true,
-		["nameplateResourceOnTarget"] = true,
+		["nameplateResourceOnTarget"] = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE),
 		["nameplateSelectedScale"] = true,
-		["nameplateSelfAlpha"] = true,
-		["nameplateSelfBottomInset"] = true,
-		["nameplateSelfScale"] = true,
-		["nameplateSelfTopInset"] = true,
+		["nameplateSelfAlpha"] = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE),
+		["nameplateSelfBottomInset"] = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE),
+		["nameplateSelfScale"] = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE),
+		["nameplateSelfTopInset"] = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE),
 		["nameplateShowAll"] = true,
 		["nameplateShowEnemies"] = true,
 		["nameplateShowEnemyGuardians"] = true,
@@ -1779,7 +1779,7 @@ local class_specs_coords = {
 		["nameplateShowFriendlyTotems"] = true,
 		["nameplateShowFriends"] = true,
 		["nameplateShowOnlyNames"] = true,
-		["nameplateShowSelf"] = true,
+		["nameplateShowSelf"] = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE),
 		["nameplateTargetBehindMaxDistance"] = true,
 		["nameplateTargetRadialPosition"] = true,
 		--["showQuestTrackingTooltips"] = true, -- this seems to be gone as of 18.12.2020
@@ -8400,7 +8400,9 @@ function Plater.RestoreProfileCVars()
 	local savedCVars = Plater.db and Plater.db.profile and Plater.db.profile.saved_cvars
 	if (savedCVars) then
 		for CVarName, CVarValue in pairs (savedCVars) do
-			SetCVar (CVarName, CVarValue)
+			if cvars_to_store [CVarName] then --only restore what we want to store/restore!
+				SetCVar (CVarName, CVarValue)
+			end
 		end
 		if (PlaterOptionsPanelFrame) then
 			--PlaterOptionsPanelFrame.RefreshOptionsFrame()
