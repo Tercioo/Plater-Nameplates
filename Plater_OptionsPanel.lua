@@ -103,6 +103,7 @@ local update_wago_update_icons = function()
 	local scriptButton = mainFrame.AllButtons [6]
 	local modButton = mainFrame.AllButtons [7]
 	local profileButton = mainFrame.AllButtons [20]
+	local importButton = mainFrame.AllButtons [23]
 	
 	if countMods > 0 then
 		modButton.updateIcon:Show()
@@ -120,6 +121,13 @@ local update_wago_update_icons = function()
 		profileButton.updateIcon:Show()
 	else
 		profileButton.updateIcon:Hide()
+	end
+	
+	--wago_imports
+	if PlaterDB.wago_stash_data and next(PlaterDB.wago_stash_data) then
+		--importButton.updateIcon:Show()
+	else
+		--importButton.updateIcon:Hide()
 	end
 end
 Plater.UpdateOptionsTabUpdateState = update_wago_update_icons
@@ -207,8 +215,7 @@ function Plater.OpenOptionsPanel()
 		{name = "ProfileManagement", title = L["OPTIONS_TABNAME_PROFILES"]},
 		{name = "AdvancedConfig", title = L["OPTIONS_TABNAME_ADVANCED"]},
 		{name = "SearchFrame", title = "Search"}, --localize-me
-
-		--L["OPTIONS_TABNAME_CREDITS"] --to be removed when 9.0 launches
+		--{name = "WagoIo", title = "Wago Imports"}, --wago_imports --localize-me
 		
 	}, 
 	frame_options)
@@ -247,12 +254,14 @@ function Plater.OpenOptionsPanel()
 	local profilesFrame = mainFrame.AllFrames [20]
 	local advancedFrame = mainFrame.AllFrames [21]
 	local searchFrame = mainFrame.AllFrames [22]
+	--local wagoIoFrame = mainFrame.AllFrames [23] --wago_imports
 	
 	--
 	local colorNpcsButton = mainFrame.AllButtons [17]
 	local scriptButton = mainFrame.AllButtons [6]
 	local modButton = mainFrame.AllButtons [7]
 	local profileButton = mainFrame.AllButtons [20]
+	local importButton = mainFrame.AllButtons [23]
 	
 	local generalOptionsAnchor = CreateFrame ("frame", "$parentOptionsAnchor", frontPageFrame, BackdropTemplateMixin and "BackdropTemplate")
 	generalOptionsAnchor:SetSize (1, 1)
@@ -299,6 +308,14 @@ function Plater.OpenOptionsPanel()
 	updateIconProfile:SetPoint("bottomright", profileButton.button, "bottomright", -2, 2)
 	updateIconProfile:Hide()
 	profileButton.updateIcon = updateIconProfile
+	
+	--wago_imports
+	--local updateIconImports = importButton.button:CreateTexture ("$parentIcon", "overlay")
+	--updateIconImports:SetSize (16, 10)
+	--updateIconImports:SetTexture([[Interface\AddOns\Plater\images\wagologo.tga]])
+	--updateIconImports:SetPoint("bottomright", importButton.button, "bottomright", -2, 2)
+	--updateIconImports:Hide()
+	--importButton.updateIcon = updateIconImports
 	
 	f.AllMenuFrames = {}
 	for _, frame in ipairs (mainFrame.AllFrames) do
@@ -11100,6 +11117,7 @@ end
 --> ~scripts ~scripting ~code �nimations ~animations
 	Plater.CreateScriptingPanel()
 	Plater.CreateHookingPanel()
+	--Plater.CreateWagoPanel() --wago_imports
 	Plater.CreateSpellAnimationPanel()
 	
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
