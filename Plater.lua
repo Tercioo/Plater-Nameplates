@@ -8616,70 +8616,93 @@ end
 
 	--attempt to get the role of the unit shown in the nameplate
 	function Plater.GetUnitRole (unitFrame)
-		local assignedRole = UnitGroupRolesAssigned (unitFrame.unit)
-		if (assignedRole and assignedRole ~= "NONE") then
-			return assignedRole
-		end
+		if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
+			local assignedRole = UnitGroupRolesAssigned (unitFrame.unit)
+			if (assignedRole and assignedRole ~= "NONE") then
+				return assignedRole
+			end
 		
-		if (Plater.ZoneInstanceType == "arena") then
-			local oponentes = GetNumArenaOpponentSpecs()
-			for i = 1, oponentes do
-				local unitGUID = UnitGUID ("arena" .. i)
-				if (unitGUID == unitFrame [MEMBER_GUID]) then
-					local spec = GetArenaOpponentSpec (i)
-					if (spec) then
-						local id, name, description, icon, role, class = GetSpecializationInfoByID (spec)
-						if (role and role ~= "NONE") then
-							return role
+			if (Plater.ZoneInstanceType == "arena") then
+				local oponentes = GetNumArenaOpponentSpecs()
+				for i = 1, oponentes do
+					local unitGUID = UnitGUID ("arena" .. i)
+					if (unitGUID == unitFrame [MEMBER_GUID]) then
+						local spec = GetArenaOpponentSpec (i)
+						if (spec) then
+							local id, name, description, icon, role, class = GetSpecializationInfoByID (spec)
+							if (role and role ~= "NONE") then
+								return role
+							end
+						end
+					end
+				end
+				
+			elseif (Plater.ZoneInstanceType == "pvp") then
+				if (Details) then
+					local actor = Details:GetActor ("current", DETAILS_ATTRIBUTE_DAMAGE, GetUnitName (unitFrame.unit, true))
+					if (actor) then
+						local spec = actor.spec
+						if (spec) then
+							local id, name, description, icon, role, class = GetSpecializationInfoByID (spec)
+							if (role and role ~= "NONE") then
+								return role
+							end
 						end
 					end
 				end
 			end
 			
-		elseif (Plater.ZoneInstanceType == "pvp") then
-			if (Details) then
-				local actor = Details:GetActor ("current", DETAILS_ATTRIBUTE_DAMAGE, GetUnitName (unitFrame.unit, true))
-				if (actor) then
-					local spec = actor.spec
-					if (spec) then
-						local id, name, description, icon, role, class = GetSpecializationInfoByID (spec)
-						if (role and role ~= "NONE") then
-							return role
-						end
-					end
-				end
+			return assignedRole
+			
+		else
+			if GetPartyAssignment("MAINTANK", unit) then
+				return "MAINTANK"
+			elseif GetPartyAssignment("MAINASSIST", unit) then
+				return "MAINASSIST"
 			end
 		end
-		
-		return assignedRole
 	end
 	
 	
 	local BG_PLAYER_CACHE = {}
 	function Plater.UpdateBgPlayerRoleCache()
 		wipe(BG_PLAYER_CACHE)
-		if Plater.ZoneInstanceType == "pvp" then
-			local curNumScores = GetNumBattlefieldScores()
-			for i = 1, curNumScores do
-				local info = C_PvP.GetScoreInfo(i)
-				if info then
-					local name, faction, race, class, classToken, talentSpec = info.name, info.faction, info.raceName, info.className, info.classToken, info.talentSpec
-					if name then
-						BG_PLAYER_CACHE[name] = {faction = faction, race = race, class = class, classToken = classToken, talentSpec = talentSpec, specID = (CLASS_INFO_CACHE[classToken] and CLASS_INFO_CACHE[classToken][talentSpec] and CLASS_INFO_CACHE[classToken][talentSpec].specID), name = name}
+	
+		if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
+			if Plater.ZoneInstanceType == "pvp" then
+				local curNumScores = GetNumBattlefieldScores()
+				for i = 1, curNumScores do
+					local info = C_PvP.GetScoreInfo(i)
+					if info then
+						local name, faction, race, class, classToken, talentSpec = info.name, info.faction, info.raceName, info.className, info.classToken, info.talentSpec
+						if name then
+							BG_PLAYER_CACHE[name] = {faction = faction, race = race, class = class, classToken = classToken, talentSpec = talentSpec, specID = (CLASS_INFO_CACHE[classToken] and CLASS_INFO_CACHE[classToken][talentSpec] and CLASS_INFO_CACHE[classToken][talentSpec].specID), name = name}
+						end
+					end
+				end
+			elseif Plater.ZoneInstanceType == "arena" then
+				local numOpps = GetNumArenaOpponentSpecs();
+				for i=1, numOpps do
+					local specID, gender = GetArenaOpponentSpec(i);
+					if (specID > 0) then
+						local name = GetUnitName ("arena"..i, true)
+						if name then
+							local id, talentSpec, _, _, _, class = GetSpecializationInfoByID(specID, gender);
+							local class, classToken = UnitClass("arena"..i);
+							local race = UnitRace("arena"..i);
+							BG_PLAYER_CACHE[name] = {faction = nil, race = race, class = class, classToken = classToken, talentSpec = talentSpec, specID = specID, name = name}
+						end
 					end
 				end
 			end
-		elseif Plater.ZoneInstanceType == "arena" then
-			local numOpps = GetNumArenaOpponentSpecs();
-			for i=1, numOpps do
-				local specID, gender = GetArenaOpponentSpec(i);
-				if (specID > 0) then
-					local name = GetUnitName ("arena"..i, true)
+			
+		else
+			if Plater.ZoneInstanceType == "pvp" or Plater.ZoneInstanceType == "arena" then
+				local curNumScores = GetNumBattlefieldScores()
+				for i = 1, curNumScores do
+					local name, _, _, _, _, faction, _, race, class, classToken = GetBattlefieldScore(index);
 					if name then
-						local id, talentSpec, _, _, _, class = GetSpecializationInfoByID(specID, gender);
-						local class, classToken = UnitClass("arena"..i);
-						local race = UnitRace("arena"..i);
-						BG_PLAYER_CACHE[name] = {faction = nil, race = race, class = class, classToken = classToken, talentSpec = talentSpec, specID = specID, name = name}
+						BG_PLAYER_CACHE[name] = {faction = faction, race = race, class = class, classToken = classToken, talentSpec = "UNKNOWN", specID = nil, name = name}
 					end
 				end
 			end
