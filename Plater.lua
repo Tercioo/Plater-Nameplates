@@ -8387,21 +8387,8 @@ end
 	end
 	
 	function Plater.GetSpecIconForUnitFromBG(unit)
-
-		if (not UnitIsPlayer(unit)) then
-			return nil
-		end
 		
-		if (not Plater.ZoneInstanceType == "pvp" and not Plater.ZoneInstanceType == "arena") then
-			return nil
-		end
-
-		local name = GetUnitName(unit, true)
-		if not BG_PLAYER_CACHE[name] then
-			Plater.UpdateBgPlayerRoleCache()
-		end
-		
-		local cache = BG_PLAYER_CACHE[name]
+		local cache = Plater.GetUnitBGInfo(unit)
 		if cache and cache.specID then
 			return Plater.GetSpecIcon(cache.specID)
 		end
@@ -9704,6 +9691,9 @@ end
 			["RefreshTankCache"] = true,
 			["ForceFindPetOwner"] = true,
 			["UpdateBgPlayerRoleCache"] = false,
+			["GetSpecIconForUnitFromBG"] = false,
+			["GetUnitBGInfo"] = false,
+			["GetSpecIcon"] = false,
 			["InitLDB"] = true,
 			["APIList"] = true,
 			["FrameworkList"] = true,
