@@ -8697,10 +8697,11 @@ end
 			end
 			
 		else
+			--TODO: Does this really work in BG/Arena or is it just score screen?
 			if Plater.ZoneInstanceType == "pvp" or Plater.ZoneInstanceType == "arena" then
 				local curNumScores = GetNumBattlefieldScores()
 				for i = 1, curNumScores do
-					local name, _, _, _, _, faction, _, race, class, classToken = GetBattlefieldScore(index);
+					local name, _, _, _, _, faction, _, race, class, classToken = GetBattlefieldScore(i);
 					if name then
 						BG_PLAYER_CACHE[name] = {faction = faction, race = race, class = class, classToken = classToken, talentSpec = "UNKNOWN", specID = nil, name = name}
 					end
