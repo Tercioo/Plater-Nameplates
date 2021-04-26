@@ -3231,6 +3231,8 @@ local class_specs_coords = {
 			unitFrame.namePlateThreatPercent = 0
 			unitFrame.namePlateThreatIsTanking = nil
 			unitFrame.namePlateThreatStatus = nil
+			unitFrame.namePlateThreatOffTankIsTanking = false
+			unitFrame.namePlateThreatOffTankName = nil
 			
 			--get and format the reaction to always be the value of the constants, then cache the reaction in some widgets for performance
 			local reaction = UnitReaction (unitID, "player") or 1
@@ -5454,6 +5456,8 @@ end
 		self.namePlateThreatStatus = threatStatus
 		self.namePlateThreatPercent = threatpct or 0
 		-- (3 = securely tanking, 2 = insecurely tanking, 1 = not tanking but higher threat than tank, 0 = not tanking and lower threat than tank)
+		self.namePlateThreatOffTankIsTanking = false
+		self.namePlateThreatOffTankName = nil
 		
 		self.aggroGlowUpper:Hide()
 		self.aggroGlowLower:Hide()
@@ -5483,6 +5487,8 @@ end
 
 						--another tank is tanking the unit
 						if (unitOffTank) then
+							self.namePlateThreatOffTankIsTanking = true
+							self.namePlateThreatOffTankName = unitOffTank
 							--as the unit is being tanked by the off-tank, check if the player it self which is the other tank is about to accidently pull aggro just by hitting the mob
 							if (threatpct and otherThreatpct) then
 								--threatpct = player threat on the mob

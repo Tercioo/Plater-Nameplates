@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1618990724,  "Backend Change", "April 26th, 2021", "Adding 'namePlateThreatOffTankIsTanking' and 'namePlateThreatOffTankName' fields.", "cont1nuity"},
 			{1618990724,  "Bug Fix", "April 21st, 2021", "Fixing several default script visual effects.", "cont1nuity"},
 			{1618990724,  "Backend Change", "April 21st, 2021", "Updating locked API.", "cont1nuity"},
 			{1618990724,  "Backend Change", "April 21st, 2021", "Profiling is now correctly disabled.", "cont1nuity"},
