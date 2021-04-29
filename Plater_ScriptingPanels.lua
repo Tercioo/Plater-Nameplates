@@ -31,6 +31,7 @@ end
 --tab indexes
 local PLATER_OPTIONS_SCRIPTING_TAB = 6
 local PLATER_OPTIONS_HOOKING_TAB = 7
+local PLATER_OPTIONS_WAGO_TAB = 23
 
 --options
 local start_y = -130
@@ -462,6 +463,167 @@ end
 		end
 	end
 	
+	local import_npc_colors = function (colorData)
+		if (colorData and colorData.NpcColor) then
+			--store which npcs has a color enabled
+			local dbColors = Plater.db.profile.npc_colors
+			--table storing all npcs already detected inside dungeons and raids
+			local allNpcsDetectedTable = Plater.db.profile.npc_cache
+
+			--the uncompressed table is a numeric table of tables
+			for i, colorTable in pairs (colorData) do
+				--check integrity
+				if (type (colorTable) == "table") then
+					local npcID, scriptOnly, colorID, npcName, zoneName = unpack (colorTable)
+					if (npcID and colorID and npcName and zoneName) then
+						if (type (colorID) == "string" and type (npcName) == "string" and type (zoneName) == "string") then
+							if (type (npcID) == "number" and type (scriptOnly) == "boolean") then
+								dbColors [npcID] = dbColors [npcID] or {}
+								dbColors [npcID] [1] = true --the color for the npc is enabled
+								dbColors [npcID] [2] = scriptOnly --the color is only used in scripts
+								dbColors [npcID] [3] = colorID --string with the color name
+								
+								--add this npcs in the npcs detected table as well
+								allNpcsDetectedTable [npcID] = allNpcsDetectedTable [npcID] or {}
+								allNpcsDetectedTable [npcID] [1] = npcName
+								allNpcsDetectedTable [npcID] [2] = zoneName
+							end
+						end
+					end
+				end
+			end
+			
+			Plater:Msg ("NPC colors imported.")
+		end
+	end
+	
+	local import_from_wago = function (script_id)
+		if script_id and PlaterDB.wago_stash_data [script_id] then
+			local update = PlaterDB.wago_stash_data [script_id]
+			--import_mod_or_script(update.encoded)
+			local encoded = update.encoded
+			
+			--cleanup the text removing extra spaces and break lines
+			encoded = DF:Trim (encoded)
+			
+			if (string.len (encoded) > 0) then
+			
+				local decompressedTable = Plater.DecompressData (encoded, "print")
+				
+				if (decompressedTable and type (decompressedTable) == "table") then
+					
+					decompressedTable = Plater.MigrateScriptModImport (decompressedTable)
+					
+					--check if the user in importing a profile
+					if (decompressedTable.plate_config) then
+						--DF:ShowErrorMessage ("Profiles are currently not supported.") --TODO! :D
+						
+						local profile = decompressedTable
+						local profileName = update.Name
+						
+						
+						if (not profile.spell_animation_list) then
+							profile.spell_animation_list = DF.table.copy ({}, PLATER_DEFAULT_SETTINGS.profile.spell_animation_list)
+						end
+						
+						local profiles = Plater.db:GetProfiles()
+						local profileExists = false
+						for i, existingProfName in ipairs(profiles) do
+							if existingProfName == profileName then
+								profileExists = true
+								break
+							end
+						end
+						
+						if profileExists then
+							DF:ShowPromptPanel (format (L["OPTIONS_PROFILE_IMPORT_OVERWRITE"], profileName), function() profilesFrame.DoProfileImport(profileName, profile, true, isWagoUpdate) end, function() end, true, 500)
+						else
+							profilesFrame.DoProfileImport(profileName, profile, false, false)
+						end
+						
+						return
+					elseif (decompressedTable.NpcColor) then
+						import_npc_colors(decompressedTable)
+						return
+					end
+				
+					local scriptType = Plater.GetDecodedScriptType (decompressedTable)
+					
+					local promptToOverwrite = false
+					local scriptDB = Plater.GetScriptDB (scriptType) or {}
+					local newScript = Plater.BuildScriptObjectFromIndexTable (decompressedTable, scriptType) or {}
+					for i = 1, #scriptDB do
+						local scriptObject = scriptDB [i]
+						if (scriptObject.Name == newScript.Name) then
+							promptToOverwrite = true
+						end
+					end
+					
+					if promptToOverwrite then
+						DF:ShowPromptPanel ("This Mod/Script already exists. Do you want to overwrite it?\nClicking 'No' will create a copy instead.\nTo cancel close this window wiht the 'x'.", function() do_script_or_hook_import (encoded, scriptType, false) end, function() do_script_or_hook_import (encoded, scriptType, true) end, true, 550)
+					else
+						do_script_or_hook_import (encoded, scriptType, true)
+					end
+				else
+					Plater:Msg ("Cannot import: data imported is invalid")
+				end
+			end
+			
+			
+		end
+	end
+	
+	local update_wago_stash_data = function(existing)
+		local stash = WeakAurasCompanion and WeakAurasCompanion.Plater and WeakAurasCompanion.Plater.stash or {}
+		PlaterDB.wago_stash_data = PlaterDB.wago_stash_data or {}
+		local stashData = PlaterDB.wago_stash_data
+		
+		for slug, entry in pairs(stash) do
+			local found = -1
+			--remove existing entries to update
+			for index, existingEntry in pairs(stashData) do
+				if existingEntry.slug == slug then
+					tremove(stashData, index)
+					break
+				end
+			end
+			
+			local newScriptObject = { -- Dummy data
+				Enabled = true,
+				Name = "New Mod",
+				Icon = "",
+				Desc = "",
+				Author = "",
+				Time = time(),
+				Revision = 1,
+				PlaterCore = Plater.CoreVersion,
+				Hooks = {},
+				HooksTemp = {},
+				LastHookEdited = "",
+				LoadConditions = DF:UpdateLoadConditionsTable ({}),
+				Options = {},
+			}
+
+			Plater.CreateOptionTableForScriptObject(newScriptObject)
+			
+			newScriptObject.semver = entry.wagoSemver
+			newScriptObject.Author = entry.author
+			newScriptObject.version = tonumber(entry.wagoVersion) or 0
+			newScriptObject.Name = entry.name
+			newScriptObject.encoded = entry.encoded
+			newScriptObject.url = "https://wago.io/" .. slug .. "/" .. entry.wagoVersion
+			newScriptObject.slug = slug
+			newScriptObject.isWagoImport = true
+			
+			
+			tinsert(stashData, newScriptObject)
+			
+		end
+		
+		return stashData
+	end
+	Plater.UpdateWagoStashData = update_wago_stash_data
+	
 	function Plater.CheckWagoUpdates(silent)
 		local countScripts = 0
 		for _, scriptObject in pairs(Plater.db.profile.script_data) do
@@ -542,6 +704,9 @@ end
 			mainFrame.ScriptSelectionScrollBox:Refresh()
 			Plater.UpdateOptionsTabUpdateState()
 			
+		elseif (option == "wago_import") then
+			import_from_wago(scriptId)
+			
 		end
 		
 		GameCooltip:Hide()
@@ -599,7 +764,9 @@ end
 			mainFrame.ScriptSelectionScrollBox:Refresh()
 			
 			--open the user options
-			Plater.RefreshUserScriptOptions(mainFrame)
+			if mainFrame.ScriptType ~= "wago_import" then
+				Plater.RefreshUserScriptOptions(mainFrame)
+			end
 			--Plater.RefreshAdminScriptOptions(mainFrame) --debug open the admin panel
 			
 			
@@ -614,72 +781,89 @@ end
 			GameCooltip:SetOwner (self, "topleft", "topright", 2, 0)
 			GameCooltip:SetFixedParameter (self.ScriptId)
 
-			GameCooltip:AddLine ("Edit Script")
-			GameCooltip:AddMenu (1, onclick_menu_scroll_line, "editscript", mainFrame)
-			GameCooltip:AddIcon ([[Interface\BUTTONS\UI-GuildButton-PublicNote-Up]], 1, 1, 16, 16)
-			
-			GameCooltip:AddLine ("Duplicate")
-			GameCooltip:AddMenu (1, onclick_menu_scroll_line, "duplicate", mainFrame)
-			GameCooltip:AddIcon ([[Interface\AddOns\Plater\images\icons]], 1, 1, 16, 16, 3/512, 21/512, 215/512, 233/512)
-
-			GameCooltip:AddLine ("Export")
-			GameCooltip:AddIcon ([[Interface\BUTTONS\UI-GuildButton-MOTD-Up]], 1, 1, 16, 16, 1, 0, 0, 1)
-			
-			GameCooltip:AddLine ("As a Text String", "", 2)
-			GameCooltip:AddIcon ([[Interface\BUTTONS\UI-GuildButton-MOTD-Up]], 2, 1, 16, 16, 1, 0, 0, 1)
-			GameCooltip:AddMenu (2, onclick_menu_scroll_line, "export", mainFrame)
-
-			GameCooltip:AddLine ("Send to Your Party/Raid", "", 2)
-			GameCooltip:AddIcon ([[Interface\BUTTONS\UI-GuildButton-MOTD-Up]], 2, 1, 16, 16, 1, 0, 0, 1)
-			GameCooltip:AddMenu (2, onclick_menu_scroll_line, "sendtogroup", mainFrame)
-			
-			GameCooltip:AddLine ("Remove")
-			GameCooltip:AddMenu (1, onclick_menu_scroll_line, "remove", mainFrame)
-			GameCooltip:AddIcon ([[Interface\AddOns\Plater\images\icons]], 1, 1, 16, 16, 3/512, 21/512, 235/512, 257/512)
-			
 			local scriptObject = mainFrame.GetScriptObject (self.ScriptId)
-
-			if (scriptObject.url) then
-				GameCooltip:AddLine ("$div")
 			
+			if mainFrame.ScriptType == "wago_import" then
+				-- wago import tab
+				GameCooltip:AddLine ("Remove")
+				GameCooltip:AddMenu (1, onclick_menu_scroll_line, "remove", mainFrame)
+				GameCooltip:AddIcon ([[Interface\AddOns\Plater\images\icons]], 1, 1, 16, 16, 3/512, 21/512, 235/512, 257/512)
+				
+				GameCooltip:AddLine ("Import")
+				GameCooltip:AddMenu (1, onclick_menu_scroll_line, "wago_import", mainFrame)
+				GameCooltip:AddIcon ([[Interface\AddOns\Plater\images\wagologo.tga]], 1, 1, 16, 10)
+				
 				GameCooltip:AddLine ("Copy Wago.io URL")
 				GameCooltip:AddMenu (1, onclick_menu_scroll_line, "url", scriptObject.url)
 				GameCooltip:AddIcon ([[Interface\AddOns\Plater\images\wagologo.tga]], 1, 1, 16, 10)
 			
-				local has_update = has_wago_update(scriptObject)
-				local wago_update = get_update_from_companion(scriptObject)
-				local companionVersion = wago_update and tonumber(wago_update.wagoVersion) or nil
+			else
+				-- script/mod tab
+				GameCooltip:AddLine ("Edit Script")
+				GameCooltip:AddMenu (1, onclick_menu_scroll_line, "editscript", mainFrame)
+				GameCooltip:AddIcon ([[Interface\BUTTONS\UI-GuildButton-PublicNote-Up]], 1, 1, 16, 16)
 				
-				if (has_update) then
-					GameCooltip:AddLine ("Update from Wago.io")
-					GameCooltip:AddMenu (1, onclick_menu_scroll_line, "wago_update", mainFrame)
+				GameCooltip:AddLine ("Duplicate")
+				GameCooltip:AddMenu (1, onclick_menu_scroll_line, "duplicate", mainFrame)
+				GameCooltip:AddIcon ([[Interface\AddOns\Plater\images\icons]], 1, 1, 16, 16, 3/512, 21/512, 215/512, 233/512)
+
+				GameCooltip:AddLine ("Export")
+				GameCooltip:AddIcon ([[Interface\BUTTONS\UI-GuildButton-MOTD-Up]], 1, 1, 16, 16, 1, 0, 0, 1)
+				
+				GameCooltip:AddLine ("As a Text String", "", 2)
+				GameCooltip:AddIcon ([[Interface\BUTTONS\UI-GuildButton-MOTD-Up]], 2, 1, 16, 16, 1, 0, 0, 1)
+				GameCooltip:AddMenu (2, onclick_menu_scroll_line, "export", mainFrame)
+
+				GameCooltip:AddLine ("Send to Your Party/Raid", "", 2)
+				GameCooltip:AddIcon ([[Interface\BUTTONS\UI-GuildButton-MOTD-Up]], 2, 1, 16, 16, 1, 0, 0, 1)
+				GameCooltip:AddMenu (2, onclick_menu_scroll_line, "sendtogroup", mainFrame)
+				
+				GameCooltip:AddLine ("Remove")
+				GameCooltip:AddMenu (1, onclick_menu_scroll_line, "remove", mainFrame)
+				GameCooltip:AddIcon ([[Interface\AddOns\Plater\images\icons]], 1, 1, 16, 16, 3/512, 21/512, 235/512, 257/512)
+
+				if (scriptObject.url) then
+					GameCooltip:AddLine ("$div")
+				
+					GameCooltip:AddLine ("Copy Wago.io URL")
+					GameCooltip:AddMenu (1, onclick_menu_scroll_line, "url", scriptObject.url)
 					GameCooltip:AddIcon ([[Interface\AddOns\Plater\images\wagologo.tga]], 1, 1, 16, 10)
-				end
 				
-				if (scriptObject.skipWagoUpdate and wago_update) or has_update then
-					if scriptObject.skipWagoUpdate or companionVersion and scriptObject.skipWagoUpdate == companionVersion then
-						GameCooltip:AddLine ("Don't skip this version")
-						GameCooltip:AddMenu (1, onclick_menu_scroll_line, "dont_skip_wago_update", mainFrame)
+					local has_update = has_wago_update(scriptObject)
+					local wago_update = get_update_from_companion(scriptObject)
+					local companionVersion = wago_update and tonumber(wago_update.wagoVersion) or nil
+					
+					if (has_update) then
+						GameCooltip:AddLine ("Update from Wago.io")
+						GameCooltip:AddMenu (1, onclick_menu_scroll_line, "wago_update", mainFrame)
+						GameCooltip:AddIcon ([[Interface\AddOns\Plater\images\wagologo.tga]], 1, 1, 16, 10)
+					end
+					
+					if (scriptObject.skipWagoUpdate and wago_update) or has_update then
+						if scriptObject.skipWagoUpdate or companionVersion and scriptObject.skipWagoUpdate == companionVersion then
+							GameCooltip:AddLine ("Don't skip this version")
+							GameCooltip:AddMenu (1, onclick_menu_scroll_line, "dont_skip_wago_update", mainFrame)
+						else
+							GameCooltip:AddLine ("Skip this version")
+							GameCooltip:AddMenu (1, onclick_menu_scroll_line, "skip_wago_update", mainFrame)
+						end
+						GameCooltip:AddIcon ([[Interface\AddOns\Plater\images\wagologo.tga]], 1, 1, 16, 10)
+					end
+					
+					if scriptObject.ignoreWagoUpdate then
+						GameCooltip:AddLine ("Don't ignore Wago Updates")
+						GameCooltip:AddMenu (1, onclick_menu_scroll_line, "dont_ignore_wago_update", mainFrame)
 					else
-						GameCooltip:AddLine ("Skip this version")
-						GameCooltip:AddMenu (1, onclick_menu_scroll_line, "skip_wago_update", mainFrame)
+						GameCooltip:AddLine ("Ignore Wago Updates")
+						GameCooltip:AddMenu (1, onclick_menu_scroll_line, "ignore_wago_update", mainFrame)
 					end
 					GameCooltip:AddIcon ([[Interface\AddOns\Plater\images\wagologo.tga]], 1, 1, 16, 10)
-				end
-				
-				if scriptObject.ignoreWagoUpdate then
-					GameCooltip:AddLine ("Don't ignore Wago Updates")
-					GameCooltip:AddMenu (1, onclick_menu_scroll_line, "dont_ignore_wago_update", mainFrame)
+					
 				else
-					GameCooltip:AddLine ("Ignore Wago Updates")
-					GameCooltip:AddMenu (1, onclick_menu_scroll_line, "ignore_wago_update", mainFrame)
+					GameCooltip:AddLine ("no wago.io url found", "", 1, "gray")
 				end
-				GameCooltip:AddIcon ([[Interface\AddOns\Plater\images\wagologo.tga]], 1, 1, 16, 10)
-				
-			else
-				GameCooltip:AddLine ("no wago.io url found", "", 1, "gray")
 			end
-
+			
 			GameCooltip:SetOption("SubFollowButton", true)
 			GameCooltip:Show()
 		end
@@ -701,7 +885,11 @@ end
 
 		self.EnabledCheckbox:SetFixedParameter (script_id)
 		
-		if has_wago_update(data) then
+		if data.isWagoImport then
+			self.EnabledCheckbox:Hide()
+		end
+		
+		if not data.isWagoImport and has_wago_update(data) then
 			self.UpdateIcon:Show()
 		else
 			self.UpdateIcon:Hide()
@@ -722,14 +910,16 @@ end
 		local mainFrame = self.MainFrame
 		
 		local scriptObject = mainFrame.GetScriptObject (self.ScriptId)
-		local lastEdited = date ("%d/%m/%Y", scriptObject.Time)
+		local lastEdited = scriptObject.Time and date ("%d/%m/%Y", scriptObject.Time)
 		
 		GameCooltip:AddLine (scriptObject.Name, nil, 1, "yellow", "yellow", 11, "Friz Quadrata TT", "OUTLINE")
 		if (scriptObject.Icon ~= "") then
 			GameCooltip:AddIcon (scriptObject.Icon)
 		end
 
-		GameCooltip:AddLine ("Last Edited:", lastEdited)
+		if lastEdited then
+			GameCooltip:AddLine ("Last Edited:", lastEdited)
+		end
 		
 		local scriptTypeName = mainFrame.GetScriptTriggerTypeName (scriptObject.ScriptType)
 		GameCooltip:AddLine ("Trigger Type:", scriptTypeName)
@@ -997,6 +1187,9 @@ end
 		help_script_button:SetPoint ("left", import_script_button, "right", 2, 0)
 		help_script_button:SetIcon ([[Interface\GossipFrame\ActiveQuestIcon]], 18, 18, "overlay", {0, 1, 0, 1}, nil, 0, -1, nil, false)	
 	
+	end
+	
+	local create_script_scroll = function (mainFrame)
 		--scroll panel to select which script to edit
 		local script_scrollbox_label = DF:CreateLabel (mainFrame, "Scripts", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
 		local enabled_scrollbox_label = DF:CreateLabel (mainFrame, "Enabled", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
@@ -1009,6 +1202,8 @@ end
 			data = Plater.db.profile.script_data
 		elseif (mainFrame.ScriptType == "hook") then
 			data = Plater.db.profile.hook_data
+		elseif (mainFrame.ScriptType == "wago_import") then
+			data = PlaterDB.wago_stash_data
 		end
 		
 		local script_scroll_box = DF:CreateScrollBox (mainFrame, "$parentScrollBox", refresh_script_scrollbox, data, scrollbox_size[1], scrollbox_size[2], scrollbox_lines, scrollbox_line_height)
@@ -1029,7 +1224,11 @@ end
 		end
 
 		local script_search_textentry = DF:CreateTextEntry (mainFrame, function()end, 200, 20, "ScriptSearchTextEntry", _, _, options_dropdown_template)
-		script_search_textentry:SetPoint ("topleft", mainFrame.CreateButton, "bottomleft", 0, -20)
+		if mainFrame.CreateButton then
+			script_search_textentry:SetPoint ("topleft", mainFrame.CreateButton, "bottomleft", 0, -20)
+		else
+			script_search_textentry:SetPoint ("topleft", mainFrame, "topleft", 10, start_y)
+		end
 		script_search_textentry:SetHook ("OnChar", mainFrame.OnSearchBoxTextChanged)
 		script_search_textentry:SetHook ("OnTextChanged", mainFrame.OnSearchBoxTextChanged)
 		local script_search_label = DF:CreateLabel (mainFrame, "Search:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
@@ -1352,6 +1551,164 @@ end
 	end
 	
 
+function Plater.CreateWagoPanel()
+	
+	--controi o menu principal
+	local f = PlaterOptionsPanelFrame
+	local mainFrame = PlaterOptionsPanelContainer
+	
+
+	local wagoFrame = mainFrame.AllFrames [PLATER_OPTIONS_WAGO_TAB]
+	
+	--holds the current text to search
+	wagoFrame.SearchString = ""
+	wagoFrame.ScriptType = "wago_import"
+	local currentEditingScript = nil
+	
+	update_wago_stash_data()
+	
+	--create the frame which will hold the create panel
+	local wago_info_frame = CreateFrame ("frame", "$parentCreateScript", wagoFrame, BackdropTemplateMixin and "BackdropTemplate")
+	wago_info_frame:SetSize (unpack (main_frames_size))
+	wago_info_frame:SetScript ("OnShow", function()
+
+	end)
+	wago_info_frame:SetScript ("OnHide", function()
+
+	end)
+	wago_info_frame:Hide()
+	wagoFrame.EditScriptFrame = wago_info_frame	
+	
+	create_script_scroll (wagoFrame)
+	--create_script_namedesc (wagoFrame, wago_info_frame)
+	
+	wagoFrame.ScriptScrollLabel.text = "Imports"
+	
+	wagoFrame.ScriptSelectionScrollBox:SetPoint ("topleft", wagoFrame.ScriptSearchTextEntry.widget, "bottomleft", 0, -20)
+	wagoFrame.ScriptScrollLabel:SetPoint ("bottomleft", wagoFrame.ScriptSelectionScrollBox, "topleft", 0, 2)
+	wagoFrame.ScriptEnabledLabel:Hide()
+	
+	wago_info_frame:SetPoint ("topleft", wagoFrame, "topleft", scrollbox_size[1] + 30, start_y)
+	
+	--script options
+	--wago_info_frame.ScriptNameLabel:SetPoint ("topleft", wago_info_frame, "topleft", 10, 2)
+	--wago_info_frame.ScriptIconLabel:Hide()
+	--wago_info_frame.ScriptDescLabel:SetPoint ("topleft", wago_info_frame, "topleft", 10, -40)
+	--wago_info_frame.ScriptPrioLabel:Hide()
+	
+	
+	function wagoFrame.GetCurrentScriptObject()
+		return currentEditingScript
+	end
+	
+	function wagoFrame.GetScriptTriggerTypeName()
+		return ""
+	end
+	
+	function wagoFrame.GetScriptObject (script_id)
+		local script = PlaterDB.wago_stash_data [script_id]
+		if (script) then
+			return script
+		else
+			Plater:Msg ("GetScriptObject could find the script id")
+			return
+		end
+	end
+	
+	function wagoFrame.RemoveScript (scriptId)
+		local scriptObjectToBeRemoved = wagoFrame.GetScriptObject (scriptId)
+		local currentScript = wagoFrame.GetCurrentScriptObject()
+		
+		--check if the script to be removed is valid
+		if (not scriptObjectToBeRemoved) then
+			return
+		end
+		
+		--if is the current script being edited, cancel the edit
+		if (currentScript == scriptObjectToBeRemoved) then
+			--cancel the editing process
+			wagoFrame.CancelEditing (true)
+		end
+		
+		tremove (PlaterDB.wago_stash_data, scriptId)
+		--WeakAurasCompanion.Plater.stash[scriptObjectToBeRemoved.slug] = nil -- this does nothing...
+		
+		--refresh the script selection scrollbox
+		wagoFrame.ScriptSelectionScrollBox:Refresh()
+
+		Plater.UpdateOptionsTabUpdateState()
+		
+		GameCooltip:Hide()
+		Plater:Msg ("Import deleted.")
+	end
+	
+	function wagoFrame.UpdateEditingPanel()
+		--get the current editing object
+		local scriptObject = wagoFrame.GetCurrentScriptObject()
+		
+		--set the data from the object in the widgets
+		--wagoFrame.ScriptNameTextEntry.text =  scriptObject.Name
+		--wagoFrame.ScriptNameTextEntry:ClearFocus()
+		--wagoFrame.ScriptIconButton:SetIcon (scriptObject.Icon)
+		--wagoFrame.ScriptDescTextEntry.text = scriptObject.Desc or ""
+		--wagoFrame.ScriptDescTextEntry:ClearFocus()
+		--wagoFrame.ScriptPrioSlideEntry.value = round(scriptObject.Prio or 99)
+		--wagoFrame.ScriptPrioSlideEntry:ClearFocus()
+		
+	end
+	
+	--start editing a script
+	function wagoFrame.EditScript (script_id)
+		local scriptObject
+
+		--> check if passed a script object
+		if (type (script_id) == "table") then
+			scriptObject = script_id
+		else
+			scriptObject = wagoFrame.GetScriptObject (script_id)
+		end
+		
+		if (not scriptObject) then
+			return
+		end
+		
+		--set the new editing script
+		currentEditingScript = scriptObject
+		
+		--load the values in the frame
+		wagoFrame.UpdateEditingPanel()
+	end
+	
+	function wagoFrame.SaveScript()
+	end
+	
+	--restore the values on the text fields and scroll boxes to the values on the object
+	function wagoFrame.CancelEditing (is_deleting)
+		if (not is_deleting) then
+			--re fill all the text entried and dropdowns to the default from the script
+			--doing this to restore the script so it can do a hot reload
+			wagoFrame.UpdateEditingPanel()
+			
+			--hot reload restored scripts
+			wagoFrame.ApplyScript()
+		end
+		
+		--clear current editing script
+		currentEditingScript = nil
+
+		--reload the script selection scrollbox in case the script got renamed
+		wagoFrame.ScriptSelectionScrollBox:Refresh()
+	end
+	
+	wagoFrame:SetScript ("OnShow", function()
+		--update the hook scripts scrollbox
+		wagoFrame.ScriptSelectionScrollBox:Refresh()
+	end)
+	
+	wagoFrame.EditScriptFrame:Show()
+	
+end
+
 function Plater.CreateHookingPanel()
 	
 	--controi o menu principal
@@ -1376,7 +1733,7 @@ function Plater.CreateHookingPanel()
 	hookFrame.SearchString = ""
 	hookFrame.ScriptType = "hook"
 	hookFrame.LastAddedHookTime = GetTime()
-	currentEditingScript = nil
+	local currentEditingScript = nil
 	
 	function hookFrame.GetCurrentScriptObject()
 		return currentEditingScript
@@ -1949,6 +2306,7 @@ function Plater.CreateHookingPanel()
 	
 	--create the header and script scroll box
 	create_script_control_header (hookFrame, "hook")
+	create_script_scroll(hookFrame)
 	
 	--create the script name and desc frames
 	create_script_namedesc (hookFrame, edit_script_frame)
@@ -3874,6 +4232,7 @@ function Plater.CreateScriptingPanel()
 
 	--create the header
 	create_script_control_header (scriptingFrame, "script")
+	create_script_scroll(scriptingFrame)
 
 	--
 

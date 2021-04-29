@@ -53,6 +53,9 @@ function Plater.DisableProfiling()
 	Plater.StartLogPerformance = function() end
 	Plater.EndLogPerformance = function() end
 	
+	Plater.StartLogPerformanceCore = function() end
+	Plater.EndLogPerformanceCore = function() end
+	
 	Plater.DumpPerformance(true) -- for VDT mainly atm
 	Plater:Msg("Plater stopped profiling.")
 	

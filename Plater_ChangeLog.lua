@@ -1,24 +1,32 @@
 
 
 
-local Plater = Plater
+local Plater = Plater or {} -- for build execution
 local _
 
 function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
-			{1617654022,  "Bug Fix", "April 2nd, 2021", "Fixing non-existing tanks during threat checks."},
-			{1617654022,  "Bug Fix", "Arpil 1st, 2021", "Fixing default friendly range check ranges for low level chars."},
-			{1617654022,  "Bug Fix", "March 29th, 2021", "Ensure personal bar color is updated properly."},
-			{1617654022,  "New Feature", "March 25th, 2021", "Adding profiling actions to LDB-Icon."},
-			{1617654022,  "Bug Fix", "March 25th, 2021", "Sanity checks for profiling data."},
-			{1617654022,  "Bug Fix", "March 25th, 2021", "Fixing profiling for range check."},
-			{1617654022,  "Bug Fix", "March 24th, 2021", "Fixing BG player role info cache (xeropresence)."},
-			{1617654022,  "Backend Changes", "March 23rd, 2021", "Adjusting frame levels to allow better overlapping of different nameplates."},
-			{1617654022,  "Bug Fix", "March 23rd, 2021", "Fixing the 'Pins' indicator size."},
-			{1617654022,  "Backend Changes", "March 23rd, 2021", "Adjusted the health-/castbar border draw layers."},
-			{1617654022,  "Backend Changes", "March 22nd, 2021", "Changed the mod/script code restrictions."},
+			{1619548649,  "Backend Change", "April 26th, 2021", "Adding 'namePlateThreatOffTankIsTanking' and 'namePlateThreatOffTankName' fields.", "cont1nuity"},
+			{1619548649,  "Backend Change", "April 23rd, 2021", "Code cleanup for BG/Arena player information.", "cont1nuity"},
+			{1619548649,  "Bug Fix", "April 21st, 2021", "Fixing several default script visual effects.", "cont1nuity"},
+			{1619548649,  "Backend Change", "April 21st, 2021", "Updating locked API.", "cont1nuity"},
+			{1619548649,  "Backend Change", "April 21st, 2021", "Profiling is now correctly disabled.", "cont1nuity"},
+			{1619548649,  "Backend Change", "April 21st, 2021", "Fixing global leak.", "cont1nuity"},
+			{1619548649,  "Backend Change", "April 11th, 2021", "Allowing 'UpdateLevelTextAndColor' again.", "cont1nuity"},
+		
+			{1617654022,  "Bug Fix", "April 2nd, 2021", "Fixing non-existing tanks during threat checks.", "cont1nuity"},
+			{1617654022,  "Bug Fix", "Arpil 1st, 2021", "Fixing default friendly range check ranges for low level chars.", "cont1nuity"},
+			{1617654022,  "Bug Fix", "March 29th, 2021", "Ensure personal bar color is updated properly.", "cont1nuity"},
+			{1617654022,  "New Feature", "March 25th, 2021", "Adding profiling actions to LDB-Icon.", "cont1nuity"},
+			{1617654022,  "Bug Fix", "March 25th, 2021", "Sanity checks for profiling data.", "cont1nuity"},
+			{1617654022,  "Bug Fix", "March 25th, 2021", "Fixing profiling for range check.", "cont1nuity"},
+			{1617654022,  "Bug Fix", "March 24th, 2021", "Fixing BG player role info cache.", "xeropresence"},
+			{1617654022,  "Backend Changes", "March 23rd, 2021", "Adjusting frame levels to allow better overlapping of different nameplates.", "cont1nuity"},
+			{1617654022,  "Bug Fix", "March 23rd, 2021", "Fixing the 'Pins' indicator size.", "cont1nuity"},
+			{1617654022,  "Backend Changes", "March 23rd, 2021", "Adjusted the health-/castbar border draw layers.", "cont1nuity"},
+			{1617654022,  "Backend Changes", "March 22nd, 2021", "Changed the mod/script code restrictions.", "cont1nuity"},
 			
 			{1616411319,  "Backend Changes", "March 21st, 2021", "Adjust healthbar / castbar border frame levels."},
 			{1616411319,  "Backend Changes", "March 19th, 2021", "Get spec-information in arena and BG."},
@@ -415,4 +423,55 @@ function Plater.GetChangelogTable()
 	end
 	
 	return Plater.ChangeLogTable
+end
+
+function Plater.GetChangeLogText(requiredInfo)
+	if not requiredInfo then return end
+	
+	local changeLogTable = Plater.GetChangelogTable()
+	-- build printable table
+	local timestamp
+	local clByAuthor = {}
+	for _, entry in ipairs(changeLogTable) do
+		
+		if not timestamp or (requiredInfo and requiredInfo == "all") then
+			timestamp = entry[1]
+		end
+	
+		if timestamp == entry[1] then
+			local author = entry[5] or "Unknown Author"
+			if not clByAuthor[author] then
+				clByAuthor[author] = {}
+				clByAuthor[author].data = {}
+				clByAuthor[author].entries = 0
+			end
+
+			clByAuthor[author].entries = clByAuthor[author].entries + 1
+			clByAuthor[author].data[clByAuthor[author].entries] = entry
+		end
+	end
+	
+	-- build text
+	local text
+	for author, entry in pairs(clByAuthor) do
+		text = (text and (text .. "\n") or "") .. "@" .. author .. ":\n"
+		
+		for _, data in ipairs(entry.data) do
+			text = text .. "- " .. data[4] .. "\n"
+		end
+		
+	end
+	
+	return text
+end
+
+if arg and arg[1] then
+	local requiredInfo
+	if arg[1] == "all" or arg[1] == "latest" then
+		requiredInfo = arg[1]
+	else
+		return
+	end
+	
+	print(Plater.GetChangeLogText(requiredInfo))
 end

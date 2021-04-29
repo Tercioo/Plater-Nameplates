@@ -3231,6 +3231,8 @@ local class_specs_coords = {
 			unitFrame.namePlateThreatPercent = 0
 			unitFrame.namePlateThreatIsTanking = nil
 			unitFrame.namePlateThreatStatus = nil
+			unitFrame.namePlateThreatOffTankIsTanking = false
+			unitFrame.namePlateThreatOffTankName = nil
 			
 			--get and format the reaction to always be the value of the constants, then cache the reaction in some widgets for performance
 			local reaction = UnitReaction (unitID, "player") or 1
@@ -5454,6 +5456,8 @@ end
 		self.namePlateThreatStatus = threatStatus
 		self.namePlateThreatPercent = threatpct or 0
 		-- (3 = securely tanking, 2 = insecurely tanking, 1 = not tanking but higher threat than tank, 0 = not tanking and lower threat than tank)
+		self.namePlateThreatOffTankIsTanking = false
+		self.namePlateThreatOffTankName = nil
 		
 		self.aggroGlowUpper:Hide()
 		self.aggroGlowLower:Hide()
@@ -5483,6 +5487,8 @@ end
 
 						--another tank is tanking the unit
 						if (unitOffTank) then
+							self.namePlateThreatOffTankIsTanking = true
+							self.namePlateThreatOffTankName = unitOffTank
 							--as the unit is being tanked by the off-tank, check if the player it self which is the other tank is about to accidently pull aggro just by hitting the mob
 							if (threatpct and otherThreatpct) then
 								--threatpct = player threat on the mob
@@ -6514,7 +6520,7 @@ end
 	end
 
 	--updates the level text and the color
-	function Plater.UpdateLevelTextAndColor (levelString, unitId) --private
+	function Plater.UpdateLevelTextAndColor (levelString, unitId)
 		--level text
 		local level = UnitLevel (unitId)
 		if (not level) then
@@ -8387,21 +8393,8 @@ end
 	end
 	
 	function Plater.GetSpecIconForUnitFromBG(unit)
-
-		if (not UnitIsPlayer(unit)) then
-			return nil
-		end
 		
-		if (not Plater.ZoneInstanceType == "pvp" and not Plater.ZoneInstanceType == "arena") then
-			return nil
-		end
-
-		local name = GetUnitName(unit, true)
-		if not BG_PLAYER_CACHE[name] then
-			Plater.UpdateBgPlayerRoleCache()
-		end
-		
-		local cache = BG_PLAYER_CACHE[name]
+		local cache = Plater.GetUnitBGInfo(unit)
 		if cache and cache.specID then
 			return Plater.GetSpecIcon(cache.specID)
 		end
@@ -9674,7 +9667,7 @@ end
 			["UpdatePlateText"] = true,
 			["CheckLifePercentText"] = true,
 			["UpdateAllNames"] = true,
-			["UpdateLevelTextAndColor"] = true,
+			--["UpdateLevelTextAndColor"] = true,
 			["UpdatePlateFrame"] = true,
 			["ForceChangeBorderColor"] = true,
 			["UpdatePlateBorders"] = true,
@@ -9704,7 +9697,32 @@ end
 			["RefreshTankCache"] = true,
 			["ForceFindPetOwner"] = true,
 			["UpdateBgPlayerRoleCache"] = false,
+			["GetSpecIconForUnitFromBG"] = false,
+			["GetUnitBGInfo"] = false,
+			["GetSpecIcon"] = false,
 			["InitLDB"] = true,
+			["APIList"] = true,
+			["FrameworkList"] = true,
+			["UnitFrameMembers"] = true,
+			["NameplateComponents"] = true,
+			["UpdateOptionsTabUpdateState"] = true,
+			["EnableProfiling"] = false,
+			["DisableProfiling"] = false,
+			["StartLogPerformance"] = false,
+			["StartLogPerformanceCore"] = false,
+			["StartLogPerformanceCore"] = false,
+			["EndLogPerformanceCore"] = false,
+			["DumpPerformance"] = true,
+			["ShowPerfData"] = true,
+			["CheckOptionsTab"] = true,
+			["OpenOptionsPanel"] = true,
+			["TriggerDefaultMembers"] = true,
+			["OpenCopyUrlDialog"] = true,
+			["CreateOptionTableForScriptObject"] = true,
+			["HasWagoUpdate"] = true,
+			["GetWagoUpdateDataFromCompanion"] = true,
+			["UpdateWagoStashData"] = true,
+			["CheckWagoUpdates"] = true,
 		},
 		
 		["DetailsFramework"] = {
@@ -9770,6 +9788,7 @@ end
 
 		--deny messing addons with script support
 		["PlaterDB"] = true,
+		["PlaterDBChr"] = true,
 		["_detalhes_global"] = true,
 		["WeakAurasSaved"] = true,
 	}

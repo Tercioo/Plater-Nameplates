@@ -1,0 +1,5 @@
+enable-nolib-creation: no
+
+manual-changelog:
+  filename: CHANGELOG.md
+  markup-type: text
