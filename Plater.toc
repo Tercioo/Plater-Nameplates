@@ -8,6 +8,7 @@
 ## Version: @project-version@
 #@end-version-retail@
 ## X-Curse-Project-ID: 100547
+## X-Wago-ID: jRs56mlC
 
 #@no-lib-strip@
 libs\libs.xml
