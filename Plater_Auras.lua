@@ -1571,7 +1571,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 		--> add auras added by the player into the special aura container
 		for index, spellId in ipairs (profile.extra_icon_auras) do
 			local spellName = GetSpellInfo (spellId)
-			if (spellName) then
+			if (spellName) or type(spellId) == "string" then -- either valid ID or name
 				SPECIAL_AURAS_USER_LIST [spellId] = true
 			end
         end
@@ -1579,7 +1579,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 		for spellId, state in pairs (profile.extra_icon_auras_mine) do
 			if (state) then
 				local spellName = GetSpellInfo (spellId)
-				if (spellName) then
+				if (spellName) or type(spellId) == "string" then -- either valid ID or name
 					--> mine list only store if the user checked the 'only mine' box
 					--> if the user remove the spell, that spell isn't removed from the 'only mine' list
 					--> so need to check if the spell on 'only mine' list is included in the special aura list

@@ -3922,7 +3922,7 @@ Plater.CreateAuraTesting()
 		DF:SetFontSize (new_buff_string, 12)
 		
 		local new_buff_entry = DF:CreateTextEntry (specialAuraFrame, function()end, 200, 20, "NewSpecialAuraTextBox", _, _, options_dropdown_template)
-		new_buff_entry.tooltip = "Enter the aura name using lower case letters.\n\nYou can add several spells at once using |cFFFFFF00;|r to separate each spell name."
+		new_buff_entry.tooltip = "Enter the aura name using lower case letters or spell-IDs.\n\nYou can add several spells at once using |cFFFFFF00;|r to separate each spell name."
 		new_buff_entry:SetJustifyH ("left")
 		
 		new_buff_entry:SetHook ("OnEditFocusGained", function (self, capsule)
