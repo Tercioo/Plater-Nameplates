@@ -9723,6 +9723,9 @@ end
 			["GetWagoUpdateDataFromCompanion"] = true,
 			["UpdateWagoStashData"] = true,
 			["CheckWagoUpdates"] = true,
+			["GetVersionInfo"] = false,
+			["versionString"] = false,
+			["fullVersionInfo"] = false,
 		},
 		
 		["DetailsFramework"] = {
