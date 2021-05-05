@@ -10283,8 +10283,13 @@ end
 		--check if the script has a destructor script
 		if (scriptObject.Hooks ["Destructor"]) then
 			--load and compile the destructor code
+			local code = "return " .. scriptObject.Hooks ["Destructor"]
 			
-			local compiledScript, errortext = loadstring ("return " .. scriptObject.Hooks ["Destructor"], "Destructor for " .. scriptObject.Name)
+			if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then
+				code = string.gsub(code, "\"NamePlateFullBorderTemplate\"", "\"PlaterNamePlateFullBorderTemplate\"")
+			end
+			
+			local compiledScript, errortext = loadstring (code, "Destructor for " .. scriptObject.Name)
 			if (not compiledScript) then
 				Plater:Msg ("failed to compile destructor for script " .. scriptObject.Name .. ": " .. errortext)
 			else
@@ -10460,6 +10465,10 @@ end
 				return
 			end
 			
+			if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then
+				code = string.gsub(code, "\"NamePlateFullBorderTemplate\"", "\"PlaterNamePlateFullBorderTemplate\"")
+			end
+			
 			local compiledScript, errortext = loadstring (code, "" .. hookName .. " for " .. scriptObject.Name)
 			if (not compiledScript) then
 				Plater:Msg ("failed to compile " .. hookName .. " for script " .. scriptObject.Name .. ": " .. errortext)
@@ -10577,6 +10586,11 @@ end
 
 		--compile
 		for scriptType, code in pairs (scriptCode) do
+		
+			if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then
+				code = string.gsub(code, "\"NamePlateFullBorderTemplate\"", "\"PlaterNamePlateFullBorderTemplate\"")
+			end
+			
 			local compiledScript, errortext = loadstring (code, "" .. scriptType .. " for " .. scriptObject.Name)
 			if (not compiledScript) then
 				Plater:Msg ("failed to compile " .. scriptType .. " for script " .. scriptObject.Name .. ": " .. errortext)
