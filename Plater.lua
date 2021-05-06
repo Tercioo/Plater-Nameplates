@@ -3192,7 +3192,7 @@ local class_specs_coords = {
 		
 			local unitID = unitBarId
 		
-			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId)
+			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitID)
 			if (not plateFrame) then
 				return
 			end
@@ -3206,11 +3206,10 @@ local class_specs_coords = {
 			local reaction = UnitReaction (unitID, "player") or 1
 			reaction = reaction <= UNITREACTION_HOSTILE and UNITREACTION_HOSTILE or reaction >= UNITREACTION_FRIENDLY and UNITREACTION_FRIENDLY or UNITREACTION_NEUTRAL
 			
-			local isWidgetOnlyMode = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) and UnitNameplateShowsWidgetsOnly (unitBarId) or false
-			local isBattlePet = UnitIsBattlePet(unitID)
+			local isWidgetOnlyMode = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) and UnitNameplateShowsWidgetsOnly (unitID) or false
+			local isBattlePet = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) and UnitIsBattlePet(unitID) or false
 			local isPlayer = UnitIsPlayer (unitID)
 			local isSelf = UnitIsUnit (unitID, "player")
-			local isWidgetOnlyMode = UnitNameplateShowsWidgetsOnly (unitID)
 			
 			local actorType
 			if (unitID) then
@@ -3424,8 +3423,8 @@ local class_specs_coords = {
 			unitFrame.BuffFrame2.unit = unitID
 			unitFrame.ExtraIconFrame.unit = unitID
 			
-			local isBattlePet = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) and UnitIsBattlePet(unitID) or false
-			plateFrame.isBattlePet = isBattlePet			unitFrame.isBattlePet = isBattlePet
+			plateFrame.isBattlePet = isBattlePet
+			unitFrame.isBattlePet = isBattlePet
 			
 			plateFrame.isWidgetOnlyMode = isWidgetOnlyMode
 			unitFrame.isWidgetOnlyMode = isWidgetOnlyMode
