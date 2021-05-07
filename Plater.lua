@@ -10607,7 +10607,7 @@ end
 
 					local encodedString = autoImportScript.String
 					if (encodedString) then
-						local success, scriptAdded = Plater.ImportScriptString (encodedString, true, autoImportScript.OverrideTriggers, false, false)
+						local success, scriptAdded, wasEnabled = Plater.ImportScriptString (encodedString, true, autoImportScript.OverrideTriggers, false, false)
 						if (success) then
 							if (autoImportScript.Revision == 1) then
 								Plater:Msg ("New Script Installed: " .. name)
@@ -10617,7 +10617,7 @@ end
 							
 							--all scripts imported are enabled by default, if the import object has a enabled member, probably its value is false
 							if (type (autoImportScript.Enabled) == "boolean") then
-								scriptAdded.Enabled = autoImportScript.Enabled
+								scriptAdded.Enabled = wasEnabled == nil and autoImportScript.Enabled or wasEnabled or false
 							end
 						end
 					end
@@ -10683,7 +10683,7 @@ end
 			return
 		end
 		
-		local errortext, objectAdded
+		local errortext, objectAdded, wasEnabled
 		
 		local indexScriptTable = Plater.DecompressData (text, "print")
 		if (indexScriptTable and type (indexScriptTable) == "table") then
@@ -10732,6 +10732,7 @@ end
 								end
 								
 								--keep the enabled state
+								wasEnabled = scriptObject.Enabled
 								newScript.Enabled = scriptObject.Enabled
 								
 								Plater.UpdateOptionsForModScriptImport(newScript, scriptObject)
@@ -10787,6 +10788,7 @@ end
 								end
 								
 								--keep the enabled state
+								wasEnabled = scriptObject.Enabled
 								newScript.Enabled = scriptObject.Enabled
 								
 								Plater.UpdateOptionsForModScriptImport(newScript, scriptObject)
@@ -10842,7 +10844,7 @@ end
 			return false
 		end
 		
-		return true, objectAdded
+		return true, objectAdded, wasEnabled
 	end
 
 	--add a scriptObject to the script db
