@@ -12699,7 +12699,7 @@ end
 				Plater.db.profile.click_space[1] = value
 				Plater.UpdatePlateClickSpace (nil, true)
 			end,
-			min = 50,
+			min = 1,
 			max = 300,
 			step = 1,
 			name = "Width",
@@ -12732,7 +12732,7 @@ end
 				Plater.db.profile.click_space_friendly[1] = value
 				Plater.UpdatePlateClickSpace (nil, true)
 			end,
-			min = 50,
+			min = 1,
 			max = 300,
 			step = 1,
 			name = "Width",
