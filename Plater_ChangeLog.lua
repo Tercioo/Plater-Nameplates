@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1619982881,  "Bug Fix", "May 7th, 2021", "Updating 'Attacking Specific Unit' mod with color resets, border coloring and options.", "cont1nuity"},
 			{1619982881,  "New Feature", "May 5th, 2021", "Allowing to enable/disable specific Actor Types and chose between Plater or Blizzard nameplates.", "cont1nuity"},
 			{1619982881,  "Backend Change", "May 2nd, 2021", "Buff Special tracking is now working with aura names.", "cont1nuity"},
 			
