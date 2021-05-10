@@ -1356,6 +1356,19 @@ local debuff_options = {
 	},
 	{
 		type = "toggle",
+		get = function() return Plater.db.profile.aura_consolidate_timeleft_lower end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_consolidate_timeleft_lower = value
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show shortest time of stacked auras",
+		desc = "Show shortest time of stacked auras or the longes time, when disabled.",
+	},
+	
+	{type = "blank"},
+	
+	{
+		type = "toggle",
 		get = function() return Plater.db.profile.aura_sort end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_sort = value

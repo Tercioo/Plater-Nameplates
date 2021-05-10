@@ -130,28 +130,30 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 		for i = 1, amountFramesShown do
 			local iconFrame = iconFrameContainer [i]
 			local texture = iconFrame.texture
-			
-			if (aurasDuplicated [texture]) then
-				tinsert (aurasDuplicated [texture], {iconFrame, iconFrame.RemainingTime})
+			local spellName = iconFrame.SpellName
+			local index = spellName .. texture
+
+			if (aurasDuplicated [index]) then
+				tinsert (aurasDuplicated [index], {iconFrame, iconFrame.RemainingTime})
 			else
-				aurasDuplicated [texture] = {
+				aurasDuplicated [index] = {
 					{iconFrame, iconFrame.RemainingTime}
 				}
 			end
 		end
 
-		for texture, iconFramesTable in pairs (aurasDuplicated) do
+		for index, iconFramesTable in pairs (aurasDuplicated) do
 			--how many auras with the same name the unit has
 			local amountOfSimilarAuras = #iconFramesTable
+			local totalStacks = iconFramesTable [1][1].Stacks > 0 and iconFramesTable [1][1].Stacks or 1
 			
 			if (amountOfSimilarAuras > 1) then
-				--reverse order: the aura with the less time left is shown
-				--if the aura with less time isn't the first occurence of this aura, it'll create some empty gaps
-			--	if (Plater.db.profile.aura_consolidate_timeleft_lower) then
-			--		table.sort (iconFramesTable, DF.SortOrder2R)
-			--	else
-			--		table.sort (iconFramesTable, DF.SortOrder2)
-			--	end
+				--sort order: the aura with the least time left is shown by default
+				if (Plater.db.profile.aura_consolidate_timeleft_lower) then
+					table.sort (iconFramesTable, DF.SortOrder2R)
+				else
+					table.sort (iconFramesTable, DF.SortOrder2)
+				end
 				
 				--hide all auras except for the first occurrence of this aura
 				for i = 2, amountOfSimilarAuras do
@@ -160,13 +162,15 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 					iconFrame:Hide()
 					iconFrame.InUse = false
 					
+					totalStacks = totalStacks + (iconFrame.Stacks > 0 and iconFrame.Stacks or 1)
+					
 					--decrease the amount of auras shown on the buff frame
 					self.amountAurasShown = self.amountAurasShown - 1
 				end
 				
 				--set the stack amount number to indicate how many auras similar to this the unit has
 				local stackLabel = iconFramesTable [1][1].StackText
-				stackLabel:SetText (amountOfSimilarAuras)
+				stackLabel:SetText (totalStacks)
 				stackLabel:Show()
 			end
 		end
