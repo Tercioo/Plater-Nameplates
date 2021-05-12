@@ -209,6 +209,7 @@ local FriendItems  = {
     },
     [10] = {
         32321, -- Sparrowhawk Net
+        17626, -- Frostwolf Muzzle
     },
     [15] = {
         1251, -- Linen Bandage
@@ -233,6 +234,7 @@ local FriendItems  = {
     },
     [25] = {
         31463, -- Zezzak's Shard
+        13289, -- Egan's Blaster
     },
     [30] = {
         1180, -- Scroll of Stamina
@@ -311,6 +313,7 @@ local HarmItems = {
     },
     [10] = {
         32321, -- Sparrowhawk Net
+        17626, -- Frostwolf Muzzle
     },
     [15] = {
         33069, -- Sturdy Rope
@@ -322,6 +325,7 @@ local HarmItems = {
         24268, -- Netherweave Net
         41509, -- Frostweave Net
         31463, -- Zezzak's Shard
+        13289, -- Egan's Blaster
     },
     [30] = {
         835, -- Large Rope Net
