@@ -1476,7 +1476,10 @@ local class_specs_coords = {
 			for i = 1, GetNumGroupMembers() do
 				if (IsUnitEffectivelyTank ("raid" .. i)) then
 					if (not UnitIsUnit ("raid" .. i, "player")) then
-						TANK_CACHE [UnitName ("raid" .. i)] = true
+						local unitName = UnitName ("raid" .. i)
+						if unitName ~= UNKNOWN then
+							TANK_CACHE [unitName] = true
+						end
 					end
 				end
 			end
@@ -1487,7 +1490,10 @@ local class_specs_coords = {
 			for i = 1, GetNumGroupMembers() -1 do
 				if (IsUnitEffectivelyTank ("party" .. i)) then
 					if (not UnitIsUnit ("party" .. i, "player")) then
-						TANK_CACHE [UnitName ("party" .. i)] = true
+						local unitName = UnitName ("party" .. i)
+						if unitName ~= UNKNOWN then
+							TANK_CACHE [unitName] = true
+						end
 					end
 				end
 			end
@@ -5566,7 +5572,7 @@ end
 						local otherIsTanking, otherThreatStatus, otherThreatpct
 						--loop on all tanks in the group (tank_cache is updated on entering combat or when group roster is updated) 
 						for tank, _ in pairs(TANK_CACHE) do
-							if not UnitIsUnit("player", tank) then
+							if UnitExists(tankName) and not UnitIsUnit("player", tank) then
 								otherIsTanking, otherThreatStatus, otherThreatpct = UnitDetailedThreatSituation (tank, self.displayedUnit)
 								if otherIsTanking then
 									unitOffTank = tank
