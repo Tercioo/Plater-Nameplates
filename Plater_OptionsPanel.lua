@@ -6347,8 +6347,8 @@ local relevance_options = {
 					self:SetValue (GetCVarBool ("nameplateShowOnlyNames"))
 				end
 			end,
-			name = "Hide Friendly Health Bar in Dungeons" .. CVarIcon,
-			desc = "While in dungeons or raids, if friendly nameplates are enabled it'll show only the player name." .. CVarDesc,
+			name = "Hide Blizzard Health Bars" .. CVarIcon,
+			desc = "While in dungeons or raids, if friendly nameplates are enabled it'll show only the player name.\nIf any Plater module is disabled, this will affect these nameplates as well." .. CVarDesc,
 			nocombat = true,
 		},
 
