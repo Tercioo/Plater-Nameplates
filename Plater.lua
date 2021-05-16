@@ -5572,7 +5572,7 @@ end
 						local otherIsTanking, otherThreatStatus, otherThreatpct
 						--loop on all tanks in the group (tank_cache is updated on entering combat or when group roster is updated) 
 						for tank, _ in pairs(TANK_CACHE) do
-							if UnitExists(tankName) and not UnitIsUnit("player", tank) then
+							if UnitExists(tank) and not UnitIsUnit("player", tank) then
 								otherIsTanking, otherThreatStatus, otherThreatpct = UnitDetailedThreatSituation (tank, self.displayedUnit)
 								if otherIsTanking then
 									unitOffTank = tank
