@@ -1,5 +1,5 @@
 ## Interface: 90005
-## Interface-BC: 20501
+## Interface-BCC: 20501
 ## Title: Plater
 ## Notes: Nameplate addon designed for advanced users.
 ## SavedVariables: PlaterDB
@@ -8,7 +8,7 @@
 ## Version: @project-version@-Retail
 #@end-version-retail@
 #@version-bc@
-## Version: @project-version@-BC
+## Version: @project-version@-BCC
 #@end-version-bc@
 ## X-Curse-Project-ID: 100547
 ## X-Wago-ID: kRNLep6o
