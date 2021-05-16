@@ -39,4 +39,4 @@ jobs:
       - name: Package and Release - BC
         uses: BigWigsMods/packager@master
         with:
-          args: -g bc -n '{project-version}{classic}'
+          args: -g bcc -n '{project-version}{classic}'
