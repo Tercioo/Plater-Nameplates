@@ -166,7 +166,7 @@ function Plater.OpenOptionsPanel()
 	
 	-- version text
 	local versionText = DF:CreateLabel (f, Plater.versionString, 11, "white")
-	versionText:SetPoint ("topright", frame, "topright", -25, -7)
+	versionText:SetPoint ("topright", f, "topright", -25, -7)
 	versionText:SetAlpha(0.75)
 
 	local profile = Plater.db.profile

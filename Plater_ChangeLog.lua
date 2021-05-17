@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1619982881,  "Bug Fix", "May 17th, 2021", "Fixing wrong frame alignment of version text in the options panel.", "cont1nuity"},
 			{1619982881,  "Bug Fix", "May 12th, 2021", "Fixing non-existant tanks leading to erros during threat checks.", "cont1nuity"},
 			{1619982881,  "New Feature", "May 10th, 2021", "Adding option to show either shortest or longest duration of stacked aura.", "cont1nuity"},
 			{1619982881,  "Bug Fix", "May 10th, 2021", "Consolidate similar auras by texture and name instead of texture only.", "cont1nuity"},
