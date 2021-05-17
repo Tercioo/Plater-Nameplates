@@ -29,8 +29,8 @@ jobs:
     
       - name: Clone project
         uses: actions/checkout@v1
-        with:
-          fetch-depth: 100 # for automated history
+        #with:
+        #  fetch-depth: 100 # for automated history
 
       - uses: leafo/gh-actions-lua@v8.0.0
 
@@ -42,7 +42,7 @@ jobs:
         with:
           args: -g retail -n '{project-version}-Retail'
 
-      #- name: Package and Release for BC
-      #  uses: BigWigsMods/packager@master
-      #  with:
-      #    args: -g bc -n '{project-version}{classic}'
+      - name: Package and Release - BC
+        uses: BigWigsMods/packager@master
+        with:
+          args: -g bcc -n '{project-version}{classic}'
