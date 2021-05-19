@@ -8320,11 +8320,12 @@ DF.CastFrameFunctions = {
 	
 	UNIT_SPELLCAST_START = function (self, unit)
 
-		local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, spellID = UnitCastingInfo (unit)
+		local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, spellID
 		if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
 			name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, spellID = UnitCastingInfo (unit)
 		else
 			name, text, texture, startTime, endTime, isTradeSkill, castID, spellID = UnitCastingInfo (unit)
+			notInterruptible = false
 		end
 		
 		--> is valid?
