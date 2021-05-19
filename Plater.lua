@@ -1783,6 +1783,8 @@ local class_specs_coords = {
 		["nameplateTargetBehindMaxDistance"] = true,
 		["nameplateTargetRadialPosition"] = true,
 		--["showQuestTrackingTooltips"] = true, -- this seems to be gone as of 18.12.2020
+		["nameplateSelectedAlpha"] = true,
+		["nameplateNotSelectedAlpha"] = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE),
 	}
 	--on logout or on profile change, save some important cvars inside the profile
 	function Plater.SaveConsoleVariables(cvar, value) --private
@@ -3883,6 +3885,10 @@ function Plater.OnInit() --private --~oninit ~init
 			end
 			SetCVar ("nameplateMinAlpha", 0.90135484)
 			SetCVar ("nameplateMinAlphaDistance", -10^5.2)
+			if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
+				SetCVar ("nameplateSelectedAlpha", 1)
+				SetCVar ("nameplateNotSelectedAlpha", 1)
+			end
 		end
 	
 	--schedule data update
