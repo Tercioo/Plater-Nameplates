@@ -3885,7 +3885,7 @@ function Plater.OnInit() --private --~oninit ~init
 			end
 			SetCVar ("nameplateMinAlpha", 0.90135484)
 			SetCVar ("nameplateMinAlphaDistance", -10^5.2)
-			if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
+			if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
 				SetCVar ("nameplateSelectedAlpha", 1)
 				SetCVar ("nameplateNotSelectedAlpha", 1)
 			end
@@ -8435,21 +8435,40 @@ end
 		plateFrame.unitFrame.QuestAmountCurrent = nil
 		plateFrame.unitFrame.QuestAmountTotal = nil
 		
-		GameTooltipScanQuest:SetOwner (WorldFrame, "ANCHOR_NONE")
-		GameTooltipScanQuest:SetHyperlink ("unit:" .. plateFrame [MEMBER_GUID])
+		local useQuestie = false
+		local QuestieTooltips = QuestieLoader and QuestieLoader._modules["QuestieTooltips"]
+		if QuestieTooltips then
+			ScanQuestTextCache = QuestieTooltips:GetTooltip("m_"..plateFrame [MEMBER_NPCID])
+			if not ScanQuestTextCache then
+				ScanQuestTextCache = {}
+			end
+			useQuestie = true
+		else
+			GameTooltipScanQuest:SetOwner (WorldFrame, "ANCHOR_NONE")
+			GameTooltipScanQuest:SetHyperlink ("unit:" .. plateFrame [MEMBER_GUID])
+			
+			--8.2 tooltip changes fix by GentMerc#9560 on Discord
+			for i = 1, GameTooltipScanQuest:NumLines() do
+				ScanQuestTextCache [i] = _G ["PlaterScanQuestTooltipTextLeft" .. i]
+			end
+		end
 		
 		local playerName = UnitName("player")
 		local unitQuestData = {}
-
-		--8.2 tooltip changes fix by GentMerc#9560 on Discord
-		for i = 1, GameTooltipScanQuest:NumLines() do
-			ScanQuestTextCache [i] = _G ["PlaterScanQuestTooltipTextLeft" .. i]
-		end
 		
 		local isQuestUnit = false
 		local atLeastOneQuestUnfinished = false
 		for i = 1, #ScanQuestTextCache do
-			local text = ScanQuestTextCache [i]:GetText()
+			local text = nil
+			if useQuestie then
+				text = ScanQuestTextCache [i]
+				text = gsub(text,"|c........","") -- remove coloring begin
+				text = gsub(text,"|r","") -- remove color end
+				text = gsub(text,"%[.*%] ","") -- remove level text
+			else
+				text = ScanQuestTextCache [i]:GetText()
+			end
+			
 			if (Plater.QuestCache [text]) then
 				--unit belongs to a quest
 				isQuestUnit = true
@@ -8468,7 +8487,17 @@ end
 				local j = i
 				while (ScanQuestTextCache [j+1]) do
 					--check if the unit objective isn't already done
-					local nextLineText = ScanQuestTextCache [j+1]:GetText()
+					local nextLineText = nil
+					if useQuestie then
+						nextLineText = ScanQuestTextCache [j+1]
+						if nextLineText then
+							nextLineText = gsub(nextLineText,"|c........","") -- remove coloring begin
+							nextLineText = gsub(nextLineText,"|r","") -- remove color end
+						end
+					else
+						nextLineText = ScanQuestTextCache [j+1]:GetText()
+					end
+					
 					if (nextLineText) then
 						if nextLineText == playerName then
 							yourQuest = true

@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1621287943,  "Backend Change", "May 19th, 2021", "Adding support for Questie quest tracking.", "cont1nuity"},
 			{1621287943,  "Backend Change", "May 19th, 2021", "Support for 'nameplateNotSelectedAlpha' (defaults to 1 for compatibility).", "cont1nuity"},
 			{1621287943,  "Backend Change", "May 18th, 2021", "Support for Burning Crusade Classic client.", "cont1nuity"},
 			{1621287943,  "Bug Fix", "May 17th, 2021", "Fixing wrong frame alignment of version text in the options panel.", "cont1nuity"},
