@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1621287943,  "Bug Fix", "May 20th, 2021", "Hiding 'Personal Bar' options in classic.", "cont1nuity"},
 			{1621287943,  "Bug Fix", "May 19th, 2021", "Fixing mod load conditions and 'Combo Points [Plater]' mod.", "cont1nuity"},
 			{1621287943,  "Backend Change", "May 19th, 2021", "Adding support for Questie quest tracking.", "cont1nuity"},
 			{1621287943,  "Backend Change", "May 19th, 2021", "Support for 'nameplateNotSelectedAlpha' (defaults to 1 for compatibility).", "cont1nuity"},
