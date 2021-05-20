@@ -878,6 +878,7 @@ local class_specs_coords = {
 	local DB_USE_ALPHA_FRIENDLIES
 	local DB_USE_ALPHA_ENEMIES
 	local DB_USE_QUICK_HIDE
+	local DB_SHOW_HEALTHBARS_FOR_NOT_ATTACKABLE
 
 	local DB_TEXTURE_CASTBAR
 	local DB_TEXTURE_CASTBAR_BG
@@ -1862,6 +1863,7 @@ local class_specs_coords = {
 		DB_USE_ALPHA_FRIENDLIES = profile.transparency_behavior_on_friendlies
 		DB_USE_ALPHA_ENEMIES = profile.transparency_behavior_on_enemies
 		DB_USE_QUICK_HIDE = profile.quick_hide
+		DB_SHOW_HEALTHBARS_FOR_NOT_ATTACKABLE = profile.show_healthbars_on_not_attackable
 		
 		DB_NPCIDS_CACHE = Plater.db.profile.npc_cache
 		
@@ -3593,7 +3595,7 @@ local class_specs_coords = {
 			Plater.NameplateTick (plateFrame.OnTickFrame, 10)
 
 			--highlight check
-			if (DB_HOVER_HIGHLIGHT and not plateFrame.PlayerCannotAttack and (actorType ~= ACTORTYPE_FRIENDLY_PLAYER and actorType ~= ACTORTYPE_FRIENDLY_NPC and actorType ~= ACTORTYPE_PLAYER)) then
+			if (DB_HOVER_HIGHLIGHT and (not plateFrame.PlayerCannotAttack or (plateFrame.PlayerCannotAttack and DB_SHOW_HEALTHBARS_FOR_NOT_ATTACKABLE)) and (actorType == ACTORTYPE_ENEMY_PLAYER or actorType == ACTORTYPE_ENEMY_NPC)) then
 				Plater.EnableHighlight (unitFrame)
 			else
 				Plater.DisableHighlight (unitFrame)
@@ -6939,10 +6941,37 @@ end
 				end
 			end
 			
+		elseif (actorType == ACTORTYPE_ENEMY_PLAYER) then
+			if (plateFrame.PlayerCannotAttack and not DB_SHOW_HEALTHBARS_FOR_NOT_ATTACKABLE) then
+				healthBar:Hide()
+				buffFrame:Hide()
+				buffFrame2:Hide()
+				nameFrame:Hide()
+				plateFrame.IsFriendlyPlayerWithoutHealthBar = true
+				
+			else
+				healthBar:Show()
+				buffFrame:Show()
+				buffFrame2:Show()
+				nameFrame:Show()
+				
+				if (DB_PLATE_CONFIG [actorType].use_playerclass_color) then
+					local _, class = UnitClass (unitFrame [MEMBER_UNITID])
+					if (class) then		
+						local color = RAID_CLASS_COLORS [class]
+						Plater.ChangeHealthBarColor_Internal (healthBar, color.r, color.g, color.b, color.a)
+					else
+						Plater.ChangeHealthBarColor_Internal (healthBar, unpack (DB_PLATE_CONFIG [actorType].fixed_class_color))
+					end
+				else
+					Plater.ChangeHealthBarColor_Internal (healthBar, unpack (DB_PLATE_CONFIG [actorType].fixed_class_color))
+				end
+			end
+			
 		else
 			--> enemy npc or enemy player pass throught here
 			--check if this is an enemy npc but the player cannot attack it
-			if (plateFrame.PlayerCannotAttack) then
+			if (plateFrame.PlayerCannotAttack and not DB_SHOW_HEALTHBARS_FOR_NOT_ATTACKABLE) then
 				healthBar:Hide()
 				buffFrame:Hide()
 				buffFrame2:Hide()
@@ -6953,24 +6982,8 @@ end
 				healthBar:Show()
 				buffFrame:Show()
 				buffFrame2:Show()
-				if not unitFrame.IsSelf then
-					nameFrame:Show()
-				end
 				
-				--> check for enemy player class color
-				if (actorType == ACTORTYPE_ENEMY_PLAYER) then
-					if (DB_PLATE_CONFIG [actorType].use_playerclass_color) then
-						local _, class = UnitClass (unitFrame [MEMBER_UNITID])
-						if (class) then		
-							local color = RAID_CLASS_COLORS [class]
-							Plater.ChangeHealthBarColor_Internal (healthBar, color.r, color.g, color.b, color.a)
-						else
-							Plater.ChangeHealthBarColor_Internal (healthBar, unpack (DB_PLATE_CONFIG [actorType].fixed_class_color))
-						end
-					else
-						Plater.ChangeHealthBarColor_Internal (healthBar, unpack (DB_PLATE_CONFIG [actorType].fixed_class_color))
-					end
-				elseif unitFrame.IsSelf then
+				if unitFrame.IsSelf then
 					--refresh color
 					if (plateFrame.PlateConfig.healthbar_color_by_hp) then
 						local currentHealth = healthBar.currentHealth
@@ -6982,6 +6995,7 @@ end
 						Plater.ChangeHealthBarColor_Internal (healthBar, unpack (DB_PLATE_CONFIG [actorType].healthbar_color))
 					end
 				else
+					nameFrame:Show()
 					-- could be a pet
 					Plater.ForceFindPetOwner (plateFrame [MEMBER_GUID])
 				end
@@ -9440,10 +9454,10 @@ end
 		unitFrame.PlateFrame.IsNpcWithoutHealthBar = showNameNpc
 		
 		if (showPlayerName) then
-			Plater.UpdatePlateText (unitFrame.PlateFrame, DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER], true)
+			Plater.UpdatePlateText (unitFrame.PlateFrame, DB_PLATE_CONFIG [unitFrame.ActorType], true)
 			
 		elseif (showNameNpc) then
-			Plater.UpdatePlateText (unitFrame.PlateFrame, DB_PLATE_CONFIG [ACTORTYPE_ENEMY_NPC], true)
+			Plater.UpdatePlateText (unitFrame.PlateFrame, DB_PLATE_CONFIG [unitFrame.ActorType], true)
 		end
 	end
 	

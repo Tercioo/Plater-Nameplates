@@ -12487,6 +12487,17 @@ end
 			desc = "When the unit dies, immediately hide the nameplates without playing the shrink animation.",
 		},
 		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.show_healthbars_on_not_attackable end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.show_healthbars_on_not_attackable = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Show healthbars on not attackable units",
+			desc = "Show Healthbars on not attackable units instead of defaulting to 'name only'.",
+		},
+		
 		{type = "blank"},
 		
 		{type = "label", get = function() return "Client Settings (CVars):" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
@@ -12624,7 +12635,8 @@ end
 			nocombat = true,
 		},
 		
-		{type = "blank"},
+		{type = "breakline"},
+		{type = "label", get = function() return "Unit types:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "toggle",
