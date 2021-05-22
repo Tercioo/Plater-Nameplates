@@ -34,6 +34,7 @@ Plater.xml
 Plater_DefaultSettings.lua
 
 Plater.lua
+Plater_Comms.lua
 Plater_Auras.lua
 Plater_Resources.lua
 Plater_OptionsPanel.lua

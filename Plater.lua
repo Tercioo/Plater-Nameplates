@@ -301,6 +301,7 @@ local PLATER_GLOBAL_SCRIPT_ENV = {} -- contains modEnv for each script, identifi
 --> addon comm
 local COMM_PLATER_PREFIX = "PLT"
 local COMM_SCRIPT_GROUP_EXPORTED = "GE"
+Plater.COMM_SCRIPT_MSG = "PLTM"
 
 
  --> cvars just to make them easier to read
@@ -4112,27 +4113,6 @@ function Plater.OnInit() --private --~oninit ~init
 				end
 			end
 		end)
-
-	--addon comm handler
-		Plater.CommHandler = { --private
-			[COMM_SCRIPT_GROUP_EXPORTED] = Plater.ScriptReceivedFromGroup,
-		}
-		
-		function Plater:CommReceived (_, dataReceived)
-			local LibAceSerializer = LibStub:GetLibrary ("AceSerializer-3.0")
-			if (LibAceSerializer) then
-				local prefix =  select (2, LibAceSerializer:Deserialize (dataReceived))
-				local func = Plater.CommHandler [prefix]
-				if (func) then
-					local values = {LibAceSerializer:Deserialize (dataReceived)}
-					if (values [1]) then
-						tremove (values, 1) --remove the Deserialize state
-						func (unpack (values))
-					end
-				end
-			end
-		end
-		Plater:RegisterComm (COMM_PLATER_PREFIX, "CommReceived")
 	
 		--this should pull the resources bar up and down based on if the target has debuffs shown on it or not
 		function Plater.UpdateResourceFrameAnchor (buffFrame)
@@ -9487,68 +9467,7 @@ end
 	
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> scripting ~scripting
-	
-	-- ~compress ~zip ~export ~import ~deflate ~serialize
-	function Plater.CompressData (data, dataType)
-		local LibDeflate = LibStub:GetLibrary ("LibDeflate")
-		local LibAceSerializer = LibStub:GetLibrary ("AceSerializer-3.0")
-		
-		if (LibDeflate and LibAceSerializer) then
-			local dataSerialized = LibAceSerializer:Serialize (data)
-			if (dataSerialized) then
-				local dataCompressed = LibDeflate:CompressDeflate (dataSerialized, {level = 9})
-				if (dataCompressed) then
-					if (dataType == "print") then
-						local dataEncoded = LibDeflate:EncodeForPrint (dataCompressed)
-						return dataEncoded
-						
-					elseif (dataType == "comm") then
-						local dataEncoded = LibDeflate:EncodeForWoWAddonChannel (dataCompressed)
-						return dataEncoded
-					end
-				end
-			end
-		end
-	end
 
-	function Plater.DecompressData (data, dataType)
-		local LibDeflate = LibStub:GetLibrary ("LibDeflate")
-		local LibAceSerializer = LibStub:GetLibrary ("AceSerializer-3.0")
-		
-		if (LibDeflate and LibAceSerializer) then
-			
-			local dataCompressed
-			
-			if (dataType == "print") then
-				dataCompressed = LibDeflate:DecodeForPrint (data)
-				if (not dataCompressed) then
-					Plater:Msg ("couldn't decode the data.")
-					return false
-				end
-
-			elseif (dataType == "comm") then
-				dataCompressed = LibDeflate:DecodeForWoWAddonChannel (data)
-				if (not dataCompressed) then
-					Plater:Msg ("couldn't decode the data.")
-					return false
-				end
-			end
-			
-			local dataSerialized = LibDeflate:DecompressDeflate (dataCompressed)
-			if (not dataSerialized) then
-				Plater:Msg ("couldn't uncompress the data.")
-				return false
-			end
-			
-			local okay, data = LibAceSerializer:Deserialize (dataSerialized)
-			if (not okay) then
-				Plater:Msg ("couldn't unserialize the data.")
-				return false
-			end
-			
-			return data
-		end
-	end
 
 	function Plater.ExportProfileToString()
 		local profile = Plater.db.profile
@@ -11307,6 +11226,11 @@ end
 			
 			return t
 		end
+	end
+
+	function Plater.ScriptReceivedMessage(prefix, playerName, playerRealm, playerGUID, message)
+		--implemented on Plater_Comms
+		return Plater.MessageReceivedFromScript(prefix, playerName, playerRealm, playerGUID, message)
 	end
 
 	function Plater.ScriptReceivedFromGroup (prefix, playerName, playerRealm, playerGUID, importedString)
