@@ -294,6 +294,7 @@ local HOOK_UNITNAME_UPDATE = {ScriptAmount = 0}
 local HOOK_LOAD_SCREEN = {ScriptAmount = 0}
 local HOOK_PLAYER_LOGON = {ScriptAmount = 0}
 local HOOK_MOD_INITIALIZATION = {ScriptAmount = 0}
+local HOOK_COMM_RECEIVED = {ScriptAmount = 0}
 
 local PLATER_GLOBAL_MOD_ENV = {}  -- contains modEnv for each mod, identified by "<mod name>"
 local PLATER_GLOBAL_SCRIPT_ENV = {} -- contains modEnv for each script, identified by "<script name>"
@@ -10178,7 +10179,8 @@ end
 		HOOK_UNITNAME_UPDATE,
 		HOOK_LOAD_SCREEN,
 		HOOK_PLAYER_LOGON,
-		HOOK_MOD_INITIALIZATION
+		HOOK_MOD_INITIALIZATION,
+		HOOK_COMM_RECEIVED,
 	}
 
 	function Plater.WipeHookContainers (noHotReload)
@@ -10236,6 +10238,8 @@ end
 			return HOOK_LOAD_SCREEN	
 		elseif (hookName == "Player Logon") then
 			return HOOK_PLAYER_LOGON
+		elseif (hookName == "Comm Message") then
+			return HOOK_COMM_RECEIVED
 		else
 			Plater:Msg ("Unknown hook: " .. (hookName or "Invalid Hook Name"))
 		end
@@ -10435,6 +10439,9 @@ end
 			if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then
 				code = string.gsub(code, "\"NamePlateFullBorderTemplate\"", "\"PlaterNamePlateFullBorderTemplate\"")
 			end
+
+			--todo
+			--find occurences of Plater.SendComm(arg1, arg2, arg3, ...) and replace with Plater.SendComm_Internal(uniqueIdentifier, arg1, arg2, arg3, ...)
 			
 			local compiledScript, errortext = loadstring (code, "" .. hookName .. " for " .. scriptObject.Name)
 			if (not compiledScript) then

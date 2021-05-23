@@ -10,20 +10,17 @@ function Plater.CreateCommHeader(prefix, encodedString)
     return LibAceSerializer:Serialize(prefix, UnitName("player"), GetRealmName(), UnitGUID("player"), encodedString)
 end
 
+function Plater.SendComm_Internal(uniqueId, ...)
+    --create the payload, the first index is always the hook id
+    local arguments = {uniqueId, ...}
 
-
-function Plater.SendComm(msg, debugMsg)
     --compress the msg
-    local msgEncoded = Plater.CompressData(msg, "comm")
+    local msgEncoded = Plater.CompressData(arguments, "comm")
     if (not msgEncoded) then
-        if (debugMsg) then
-            return Plater:Msg("failed to compress comm", debugMsg)
-        else
-            return
-        end
+        return
     end
 
-    --create the header
+    --create the comm header
     local header = Plater.CreateCommHeader(Plater.COMM_SCRIPT_MSG, msgEncoded)
 
     --send the message

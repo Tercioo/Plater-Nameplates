@@ -309,6 +309,15 @@ local openURL = function(url)
 end
 Plater.OpenCopyUrlDialog = openURL
 
+--return a unique string ID to identify each script
+--this string is the current unix time plus the fraction portion of GetTime()
+--resulting in 10^3 unique ids per second
+local createUniqueIdentifier = function()
+	local _, id = string.match(tostring(GetTime()), "([^.]*)%.([^.]*)")
+    id = time() .. id
+	return id
+end
+
 --initialize the options panel for a script object
 function Plater.CreateOptionTableForScriptObject(scriptObject)
 	scriptObject.Options = scriptObject.Options or {}
