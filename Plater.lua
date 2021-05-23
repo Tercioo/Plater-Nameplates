@@ -1784,6 +1784,7 @@ local class_specs_coords = {
 		["nameplateShowOnlyNames"] = true,
 		["nameplateShowSelf"] = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE),
 		["nameplateTargetBehindMaxDistance"] = true,
+		["clampTargetNameplateToScreen"] = true,
 		["nameplateTargetRadialPosition"] = true,
 		--["showQuestTrackingTooltips"] = true, -- this seems to be gone as of 18.12.2020
 		["nameplateSelectedAlpha"] = true,
@@ -8329,6 +8330,7 @@ function Plater.SetCVarsOnFirstRun()
 	--> lock nameplates to screen
 	SetCVar ("nameplateOtherTopInset", "0.085")
 	SetCVar ("nameplateLargeTopInset", "0.085")
+	SetCVar ("clampTargetNameplateToScreen", "1")
 	SetCVar ("nameplateTargetRadialPosition", "1")
 	SetCVar ("nameplateTargetBehindMaxDistance", "30")
 

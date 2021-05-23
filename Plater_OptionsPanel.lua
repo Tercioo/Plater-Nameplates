@@ -5891,8 +5891,10 @@ local targetOptions = {
 			get = function() return GetCVarBool ("nameplateTargetRadialPosition") end,
 			set = function (self, fixedparam, value) 
 				if (value) then
+					SetCVar ("clampTargetNameplateToScreen", CVAR_ENABLED)
 					SetCVar ("nameplateTargetRadialPosition", CVAR_ENABLED)
 				else
+					SetCVar ("clampTargetNameplateToScreen", CVAR_DISABLED)
 					SetCVar ("nameplateTargetRadialPosition", CVAR_DISABLED)
 				end
 			end,
