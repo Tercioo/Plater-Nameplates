@@ -562,6 +562,34 @@ do
 			end
 		end
 	})
+	
+	--#14 cleanup of npc_cache, npc_colors of string-indexed values
+	tinsert (PlaterPatchLibrary, {
+		Notes = {
+			"- Cleanup wrong indexes in npc_cache and npc_colors."
+		},
+		Func = function()
+			--clean up npc_cache
+			local npc_cache = Plater.db.profile.npc_cache
+			local copy = DetailsFramework.table.copy({},npc_cache)
+			for n,v in pairs(copy) do 
+				if tonumber(n) then
+					npc_cache[n] = nil
+					npc_cache[tonumber(n)] = v
+				end
+			end
+			
+			--clean up npc_colors
+			local npc_colors = Plater.db.profile.npc_colors
+			local copy = DetailsFramework.table.copy({},npc_colors)
+			for n,v in pairs(copy) do 
+				if tonumber(n) then
+					npc_colors[n] = nil
+					npc_colors[tonumber(n)] = v
+				end
+			end
+		end
+	})
 
 end
 
