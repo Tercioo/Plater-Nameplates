@@ -10,7 +10,7 @@ function Plater.CreateCommHeader(prefix, encodedString)
     return LibAceSerializer:Serialize(prefix, UnitName("player"), GetRealmName(), UnitGUID("player"), encodedString)
 end
 
-function Plater.SendComm_Internal(uniqueId, ...)
+function Plater.Plater.SendComm(uniqueId, ...)
     --create the payload, the first index is always the hook id
     local arguments = {uniqueId, ...}
 
