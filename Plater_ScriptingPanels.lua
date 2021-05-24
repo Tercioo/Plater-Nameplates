@@ -1883,7 +1883,10 @@ function Plater.CreateHookingPanel()
 	function hookFrame.DuplicateScript (scriptId)
 		local scriptToBeCopied = hookFrame.GetScriptObject (scriptId)
 		local newScript = DF.table.copy ({}, scriptToBeCopied)
-		
+
+		--generate a new unique id
+		newScript.UID = createUniqueIdentifier()
+
 		--cleanup:
 		newScript.HooksTemp  = {}
 		newScript.url = nil
@@ -2110,6 +2113,7 @@ function Plater.CreateHookingPanel()
 			--ModEnvStart = "", --run once when the mod starts
 			--ModEnvTable = {}, --store data that is shared among all nameplates running this script
 			Options = {}, --store options where the end user can change aspects of the hook without messing with the code
+			UID = createUniqueIdentifier(), --create an ID that identifies this script, the ID cannot be changed, if the script is duplicated, a new id is generated
 		}
 
 		Plater.CreateOptionTableForScriptObject(newScriptObject)
@@ -2840,6 +2844,7 @@ function Plater.CreateScriptingPanel()
 			Revision = 1, --increase everytime the save button is pressed
 			PlaterCore = Plater.CoreVersion, --store the version of plater required to run this script
 			Options = {}, --store options where the end user can change aspects of the script without messing with the code
+			UID = createUniqueIdentifier(), --create an ID that identifies this script, the ID cannot be changed, if the script is duplicated, a new id is generated
 		}
 
 		Plater.CreateOptionTableForScriptObject(newScriptObject)
@@ -3102,6 +3107,9 @@ function Plater.CreateScriptingPanel()
 		local scriptToBeCopied = scriptingFrame.GetScriptObject (scriptId)
 		local newScript = DF.table.copy ({}, scriptToBeCopied)
 		
+		--generate a new unique id
+		newScript.UID = createUniqueIdentifier()
+
 		--cleanup:
 		newScript.url = nil
 		newScript.semver = nil
