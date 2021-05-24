@@ -243,6 +243,7 @@ Plater.HookScripts = { --private
 	"Name Updated",
 	"Load Screen",
 	"Player Logon",
+	"Comm Received",
 }
 
 Plater.HookScriptsDesc = { --private
@@ -271,6 +272,7 @@ Plater.HookScriptsDesc = { --private
 	["Name Updated"] = "Executed when the name of the unit shown in the nameplate receives an update.",
 	["Load Screen"] = "Run when a load screen finishes.\n\nUse to change settings for a specific area or map.\n\n|cFF44FF44Do not run on nameplates|r.",
 	["Player Logon"] = "Run when the player login into the game.\n\nUse to register textures, indicators, etc.\n\n|cFF44FF44Do not run on nameplates,\nrun only once after login\nor /reload|r.",
+	["Comm Received"] = "Executed when a comm is received, a comm can be sent using Plater.SendComm(payload)."
 }
 
 -- ~hook (hook scripts are cached in the indexed part of these tales, for performance the member ScriptAmount caches the amount of scripts inside the indexed table)
