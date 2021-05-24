@@ -1593,6 +1593,23 @@ local class_specs_coords = {
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> general unit functions
 
+	--return the script object that correspond to the uID passed
+	function Plater.GetScriptFromUID(uID)
+		local hookData = Plater.db.profile.hook_data
+		for i = 1, #hookData do
+			if (hookData[i].UID == uID) then
+				return hookData[i]
+			end
+		end
+
+		local scriptData = Plater.db.profile.script_data
+		for i = 1, #scriptData do
+			if (scriptData[i].UID == uID) then
+				return scriptData[i]
+			end
+		end
+	end
+
 	--> return a table with points on where the unitFrame is attached
 	--these points are hardcoded in the UpdatePlateSize() function
 	function Plater.GetPoints (unitFrame)
@@ -10242,7 +10259,7 @@ end
 			return HOOK_LOAD_SCREEN	
 		elseif (hookName == "Player Logon") then
 			return HOOK_PLAYER_LOGON
-		elseif (hookName == "Comm Message") then
+		elseif (hookName == "Comm Received") then
 			return HOOK_COMM_RECEIVED
 		else
 			Plater:Msg ("Unknown hook: " .. (hookName or "Invalid Hook Name"))
