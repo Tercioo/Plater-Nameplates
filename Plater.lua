@@ -243,7 +243,7 @@ Plater.HookScripts = { --private
 	"Name Updated",
 	"Load Screen",
 	"Player Logon",
-	"Comm Received",
+	"Comm Message",
 }
 
 Plater.HookScriptsDesc = { --private
@@ -272,7 +272,7 @@ Plater.HookScriptsDesc = { --private
 	["Name Updated"] = "Executed when the name of the unit shown in the nameplate receives an update.",
 	["Load Screen"] = "Run when a load screen finishes.\n\nUse to change settings for a specific area or map.\n\n|cFF44FF44Do not run on nameplates|r.",
 	["Player Logon"] = "Run when the player login into the game.\n\nUse to register textures, indicators, etc.\n\n|cFF44FF44Do not run on nameplates,\nrun only once after login\nor /reload|r.",
-	["Comm Received"] = "Executed when a comm is received, a comm can be sent using Plater.SendComm(payload)."
+	["Comm Message"] = "Executed when a comm is received, a comm can be sent using Plater.SendComm(payload)."
 }
 
 -- ~hook (hook scripts are cached in the indexed part of these tales, for performance the member ScriptAmount caches the amount of scripts inside the indexed table)
@@ -296,7 +296,7 @@ local HOOK_UNITNAME_UPDATE = {ScriptAmount = 0}
 local HOOK_LOAD_SCREEN = {ScriptAmount = 0}
 local HOOK_PLAYER_LOGON = {ScriptAmount = 0}
 local HOOK_MOD_INITIALIZATION = {ScriptAmount = 0}
-local HOOK_COMM_RECEIVED = {ScriptAmount = 0}
+local HOOK_COMM_MESSAGE = {ScriptAmount = 0}
 
 local PLATER_GLOBAL_MOD_ENV = {}  -- contains modEnv for each mod, identified by "<mod name>"
 local PLATER_GLOBAL_SCRIPT_ENV = {} -- contains modEnv for each script, identified by "<script name>"
@@ -9666,6 +9666,15 @@ end
 			end
 		end,
 		
+		ScriptRunCommMessage = function(self, scriptInfo, modName, source, ...)
+			Plater.StartLogPerformance("Mod-RunHooks", modName, "Comm Message")
+			local okay, errortext = pcall (scriptInfo.GlobalScriptObject ["Comm Message"], self, self.displayedUnit, self, scriptInfo.Env, PLATER_GLOBAL_MOD_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId], source, ...)
+			Plater.EndLogPerformance("Mod-RunHooks", modName, "Comm Message")
+			if (not okay) then
+				Plater:Msg ("Mod |cFFAAAA22" .. modName .. "|r code for |cFFBB8800" .. "Comm Message" .. "|r error: " .. errortext)
+			end
+		end,
+		
 		ScriptRunHook = function (self, scriptInfo, hookName, frame)
 			--dispatch a hook for the script
 			--at the moment, self is always the unit frame
@@ -10201,7 +10210,7 @@ end
 		HOOK_LOAD_SCREEN,
 		HOOK_PLAYER_LOGON,
 		HOOK_MOD_INITIALIZATION,
-		HOOK_COMM_RECEIVED,
+		HOOK_COMM_MESSAGE,
 	}
 
 	function Plater.WipeHookContainers (noHotReload)
@@ -10259,8 +10268,8 @@ end
 			return HOOK_LOAD_SCREEN	
 		elseif (hookName == "Player Logon") then
 			return HOOK_PLAYER_LOGON
-		elseif (hookName == "Comm Received") then
-			return HOOK_COMM_RECEIVED
+		elseif (hookName == "Comm Message") then
+			return HOOK_COMM_MESSAGE
 		else
 			Plater:Msg ("Unknown hook: " .. (hookName or "Invalid Hook Name"))
 		end
@@ -11407,6 +11416,29 @@ end
 		end
 		
 	end	
+
+	function Plater.DispatchCommMessageHookEvent(scriptObject, source, ...)
+		if (HOOK_COMM_MESSAGE.ScriptAmount > 0) then
+			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+				if (plateFrame and plateFrame.unitFrame.PlaterOnScreen) then
+					for i = 1, HOOK_COMM_MESSAGE.ScriptAmount do
+						local globalScriptObject = HOOK_COMM_MESSAGE[i]
+						local unitFrame = plateFrame.unitFrame
+
+						if (not plateFrame.unitFrame.PlaterOnScreen) then
+							return
+						end
+
+						local scriptContainer = unitFrame:ScriptGetContainer()
+						local scriptInfo = unitFrame:ScriptGetInfo(globalScriptObject, scriptContainer, "Comm Message")
+
+						--run
+						unitFrame:ScriptRunCommMessage(scriptInfo, scriptObject.Name, source, ...)
+					end
+				end
+			end
+		end
+	end
 
 	function Plater.DispatchTalentUpdateHookEvent()
 		if (HOOK_PLAYER_TALENT_UPDATE.ScriptAmount > 0) then

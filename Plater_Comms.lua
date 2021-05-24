@@ -35,10 +35,25 @@ function Plater.SendComm(uniqueId, ...)
 end
 
 --when received a message from a script
-function Plater.MessageReceivedFromScript(prefix, playerName, playerRealm, playerGUID, message)
-    --localize the script
+function Plater.MessageReceivedFromScript(prefix, source, playerRealm, playerGUID, message)
 
-    --trigger the event 'Comm Message'
+    local data = Plater.DecompressData(message, "comm")
+
+    if (not data) then
+        return
+    end
+
+    local scriptUID = tostring(data[1])
+    tremove(data, 1)
+
+    --get the script that matches the unique id
+    local scriptObject = Plater.GetScriptFromUID(scriptUID)
+    if (not scriptObject) then
+        return
+    end
+
+    --trigger the event 'Comm Received'
+    Plater.DispatchCommMessageHookEvent(scriptObject, source, unpack(data))
 end
 
 
@@ -140,3 +155,4 @@ function Plater.DecompressData (data, dataType)
         return data
     end
 end
+
