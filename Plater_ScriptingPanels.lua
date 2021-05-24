@@ -310,12 +310,24 @@ end
 Plater.OpenCopyUrlDialog = openURL
 
 --return a unique string ID to identify each script
---this string is the current unix time plus the fraction portion of GetTime()
---resulting in 10^3 unique ids per second
+--return a string containing time() and GetTime() merged into a string which is converted to hexadecimal
+--examples: 0x60abce782cb0df 0x60abce7847845 0x60abce782cb3cd 0x60abce782cb485 0x60abce792cb51b 0x60abce792cb58f 0x60abce792cb625
 local createUniqueIdentifier = function()
-	local _, id = string.match(tostring(GetTime()), "([^.]*)%.([^.]*)")
-    id = time() .. id
-	return id
+	--transform time() into a hex
+    local hexTime =  format("%8x", time())
+
+	--take the GetTime() and remove the dot
+    local getTime = tostring(GetTime()) --convert to string
+    getTime = getTime:gsub("%.", "") --remove the dot
+    local getTimeInt = tonumber(getTime) --conver to to number
+
+	--tranform GetTime into a hex
+    local hexGetTime = format("%8x", getTimeInt)
+	--remove spaces added due to the string not having 8 digits
+    hexGetTime = hexGetTime:gsub("%s", "")
+
+    local finalHex = "0x" .. hexTime .. hexGetTime
+	return finalHex
 end
 
 --initialize the options panel for a script object
@@ -2089,8 +2101,15 @@ function Plater.CreateHookingPanel()
 			--insert code here
 			
 		end
-	]=]	
-	
+	]=]
+
+	hookFrame.DefaultCommScript = [=[
+		function (self, unitId, unitFrame, envTable, modTable, source, ...)
+			--source is the player who sent the comm, vararg is the payload
+			
+		end
+	]=]
+
 	--a new script has been created
 	function hookFrame.CreateNewScript()
 
@@ -2163,20 +2182,25 @@ function Plater.CreateHookingPanel()
 		if (not scriptObject) then
 			return
 		end
-		
+
 		--add the hook to the script object
 		if (not scriptObject.Hooks [hookName]) then
 			local defaultScript
 			if (hookName == "Load Screen" or hookName == "Player Logon" or hookName == "Initialization") then
 				defaultScript = hookFrame.DefaultScriptNoNameplate
+
+			elseif (hookName == "Comm Message") then
+				defaultScript = hookFrame.DefaultCommScript
+
 			else
 				defaultScript = hookFrame.DefaultScript
 			end
+
 			--try to restore code from the temp table
 			scriptObject.Hooks [hookName] = scriptObject.HooksTemp [hookName] or defaultScript
 			scriptObject.HooksTemp [hookName] = defaultScript
 		end
-		
+
 		--when adding, it start to edit the code for the hook added, check if there's a code being edited and save it
 		local lastEditedHook = scriptObject.LastHookEdited
 		if (lastEditedHook ~= "") then
@@ -2184,7 +2208,7 @@ function Plater.CreateHookingPanel()
 		end
 		hookFrame.CodeEditorLuaEntry:SetText (scriptObject.Hooks [hookName])
 		scriptObject.LastHookEdited = hookName
-		
+
 		--update the hook scroll list
 		hookFrame.HookScrollBox:Refresh()
 		
