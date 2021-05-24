@@ -9798,6 +9798,7 @@ end
 	
 	function Plater.GetAllScriptsAsPrioSortedCopy (scriptType)
 		local scripts
+		local seeds = {}
 		
 		local function copyHookTables (t1, t2)
 			for key, value in pairs (t2) do 
@@ -9805,7 +9806,23 @@ end
 					if (type (value) == "table") then
 						t1 [key] = t1 [key] or {}
 						-- add hashID to the hook-data
-						t1 [key].scriptId = tostring(value)
+						--t1 [key].scriptId = tostring(value)
+
+						--create UID if it does not exist --TODO maybe not needed in the future
+						local uID = value.UID
+						if not uID then
+							local seed = tonumber(value.Time) or time()
+							while seeds[seed] do
+								seed = math.random(value.Time)
+							end
+							seeds[seed] = true
+							
+							uID = Plater.CreateUniqueIdentifier(seed)
+							--value.UID = uID -- TODO permanently set UID
+							t1 [key].UID = uID -- TODO temporary volatile for now
+						end
+						t1 [key].scriptId = uID -- this needs to stay for now, maybe switch it to UID in all places later or use the above again?
+						
 						DF.table.copy (t1 [key], t2 [key])
 					else
 						t1 [key] = value
@@ -10478,7 +10495,7 @@ end
 			end
 
 			--find occurences of Plater.SendComm(arg1, arg2, arg3, ...) and replace with Plater.SendComm_Internal(uniqueIdentifier, arg1, arg2, arg3, ...)
-			code = code:gsub("Plater.SendComm%(", "Plater.SendComm(" .. (scriptObject.UID or 0) .. ", ")
+			code = code:gsub("Plater.SendComm%s*%(", "Plater.SendComm(" .. (scriptObject.UID) .. ", ")
 			
 			local compiledScript, errortext = loadstring (code, "" .. hookName .. " for " .. scriptObject.Name)
 			if (not compiledScript) then
@@ -11166,6 +11183,8 @@ end
 			scriptObject.version = indexTable.version or -1
 			scriptObject.semver  = indexTable.semver or ""
 			
+			scriptObject.UID = indexTable.UID
+			
 			return scriptObject
 			
 		elseif (scriptType == "script") then
@@ -11240,6 +11259,7 @@ end
 			t ["addon"] = "Plater"
 			t ["tocversion"] = select(4, GetBuildInfo()) -- provide export toc
 			t ["type"] = "hook"
+			t ["UID"] = scriptObject.UID
 			
 			return t
 		else
