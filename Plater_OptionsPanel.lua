@@ -6194,6 +6194,7 @@ local relevance_options = {
 			name = "Personal Health and Mana Bars" .. CVarIcon,
 			desc = "Shows a mini health and mana bars under your character." .. CVarDesc,
 			nocombat = true,
+			hidden = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE,
 		},
 		{
 			type = "toggle",
@@ -6207,6 +6208,7 @@ local relevance_options = {
 			name = "Show Resources on Target",
 			desc = "Shows your resource such as combo points above your current target.\n\nCharacter specific setting!",
 			nocombat = true,
+			hidden = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE,
 		},
 		{
 			type = "toggle",
@@ -13056,7 +13058,7 @@ end
 		},
 	
 		{type = "blank"},
-		{type = "label", get = function() return "Personal Bar Custom Position:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return "Personal Bar Custom Position:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE},
 		{
 			type = "range",
 			get = function() return tonumber (GetCVar ("nameplateSelfTopInset")*100) end,
@@ -13121,6 +13123,7 @@ end
 			nocombat = true,
 			name = "Top Constrain" .. CVarIcon,
 			desc = "Adjust the top constrain position where the personal bar cannot pass.\n\n|cFFFFFFFFDefault: 50|r" .. CVarDesc,
+			hidden = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE,
 		},
 		
 		{
@@ -13187,6 +13190,7 @@ end
 			nocombat = true,
 			name = "Bottom Constrain" .. CVarIcon,
 			desc = "Adjust the bottom constrain position where the personal bar cannot pass.\n\n|cFFFFFFFFDefault: 20|r" .. CVarDesc,
+			hidden = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE,
 		},	
 		
 		{type = "blank"},
@@ -13247,7 +13251,7 @@ end
 
 		{type = "blank"},
 
-		{type = "label", get = function() return "Unit Widget Bars:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return "Unit Widget Bars:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE},
 		{
 			type = "toggle",
 			get = function() return Plater.db.profile.usePlaterWidget end,
@@ -13256,6 +13260,7 @@ end
 			end,
 			name = L["OPTIONS_ENABLED"],
 			desc = "Enabled",
+			hidden = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE,
 		},
 		{
 			type = "range",
@@ -13270,6 +13275,7 @@ end
 			name = "Scale",
 			desc = "Slightly adjust the size of widget bars.",
 			usedecimals = true,
+			hidden = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE,
 		},
 		{
 			type = "select",
@@ -13277,6 +13283,7 @@ end
 			values = function() return build_anchor_side_table (nil, "widget_bar_anchor") end,
 			name = L["OPTIONS_ANCHOR"],
 			desc = "Which side of the nameplate the widget bar should attach to.",
+			hidden = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE,
 		},
 		{
 			type = "range",
@@ -13291,8 +13298,8 @@ end
 			usedecimals = true,
 			name = L["OPTIONS_XOFFSET"],
 			desc = "Adjust the position on the X axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
+			hidden = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE,
 		},
-		--y offset
 		{
 			type = "range",
 			get = function() return Plater.db.profile.widget_bar_anchor.y end,
@@ -13306,6 +13313,7 @@ end
 			usedecimals = true,
 			name = L["OPTIONS_YOFFSET"],
 			desc = "Adjust the position on the Y axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
+			hidden = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE,
 		},
 		
 	}
