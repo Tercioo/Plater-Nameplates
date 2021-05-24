@@ -591,6 +591,45 @@ do
 		end
 	})
 
+	--#15 create a UID for script that doesn't have one
+	--[=[ --disabled atm, might be enabled at the release of the Comm Message feature
+	tinsert (PlaterPatchLibrary, {
+		Notes = {
+			"- Creating UID for all scripts."
+		},
+		Func = function()
+			local needUID = {}
+
+			local hookData = Plater.db.profile.hook_data
+			for i = 1, #hookData do
+				local hook = hookData [i]
+				if (not hook.UID) then
+					tinsert(needUID, hook)
+				end
+			end
+
+			local scriptData = Plater.db.profile.script_data
+			for i = 1, #scriptData do
+				local script = scriptData [i]
+				if (not script.UID) then
+					tinsert(needUID, script)
+				end
+			end
+
+			--create the UIDs inside a onupdate loop, otherwise the ids will have the same value for being created at the same time
+			local f = CreateFrame("frame", "PlaterPatcherFrameUID", UIParent)
+			f:SetScript("OnUpdate", function()
+				local script = tremove(needUID)
+				if (script) then
+					local newUID = Plater.CreateUniqueIdentifier()
+					script.UID = newUID
+				else
+					f:SetScript("OnUpdate", nil)
+				end
+			end)
+		end
+	})
+	--]=]
 end
 
 

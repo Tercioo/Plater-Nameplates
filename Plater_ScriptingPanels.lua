@@ -330,6 +330,10 @@ local createUniqueIdentifier = function()
 	return finalHex
 end
 
+function Plater.CreateUniqueIdentifier()
+	return createUniqueIdentifier()
+end
+
 --initialize the options panel for a script object
 function Plater.CreateOptionTableForScriptObject(scriptObject)
 	scriptObject.Options = scriptObject.Options or {}
