@@ -243,7 +243,7 @@ Plater.HookScripts = { --private
 	"Name Updated",
 	"Load Screen",
 	"Player Logon",
---	"Comm Message",
+	"Comm Message",
 }
 
 Plater.HookScriptsDesc = { --private
