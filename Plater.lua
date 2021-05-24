@@ -10045,6 +10045,13 @@ end
 			["GetVersionInfo"] = false,
 			["versionString"] = false,
 			["fullVersionInfo"] = false,
+			["DispatchCommMessageHookEvent"] = true,
+			["MessageReceivedFromScript"] = true,
+			["CreateUniqueIdentifier"] = false,
+			["GetScriptFromUID"] = true,
+			["SendCommMessage"] = true,
+			["CreateCommHeader"] = true,
+			["ScriptReceivedMessage"] = true,
 		},
 		
 		["DetailsFramework"] = {
