@@ -3925,10 +3925,8 @@ function Plater.OnInit() --private --~oninit ~init
 			end
 			SetCVar ("nameplateMinAlpha", 0.90135484)
 			SetCVar ("nameplateMinAlphaDistance", -10^5.2)
-			if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
-				SetCVar ("nameplateSelectedAlpha", 1)
-				SetCVar ("nameplateNotSelectedAlpha", 1)
-			end
+			SetCVar ("nameplateSelectedAlpha", 1)
+			SetCVar ("nameplateNotSelectedAlpha", 1)
 		end
 	
 	--schedule data update
