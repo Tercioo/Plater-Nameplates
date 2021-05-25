@@ -10070,6 +10070,7 @@ end
 			["SendCommMessage"] = true,
 			["CreateCommHeader"] = true,
 			["ScriptReceivedMessage"] = true,
+			["SendComm"] = false,
 		},
 		
 		["DetailsFramework"] = {
@@ -10496,7 +10497,7 @@ end
 			end
 
 			--find occurences of Plater.SendComm(arg1, arg2, arg3, ...) and replace with Plater.SendComm_Internal(uniqueIdentifier, arg1, arg2, arg3, ...)
-			code = code:gsub("Plater.SendComm%s*%(", "Plater.SendComm(" .. (scriptObject.UID) .. ", ")
+			code = code:gsub("Plater.SendComm%s*%(", "Plater.SendComm(\"" .. scriptObject.UID .. "\", ")
 			
 			local compiledScript, errortext = loadstring (code, "" .. hookName .. " for " .. scriptObject.Name)
 			if (not compiledScript) then
