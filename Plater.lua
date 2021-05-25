@@ -1077,14 +1077,17 @@ local class_specs_coords = {
 	--> in scripts you can use Plater.SetExecuteRange or override this function completelly
 	function Plater.GetHealthCutoffValue()
 		Plater.SetExecuteRange (false)
+		
+		local lowerEnabled, upperEnabled = Plater.db.profile.health_cutoff, Plater.db.profile.health_cutoff_upper
+			
+		if (not (lowerEnabled or upperEnabled)) then
+			return
+		end
+		
+		local lowExecute, highExecute = nil, nil
+		
 		if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
-			local lowerEnabled, upperEnabled = Plater.db.profile.health_cutoff, Plater.db.profile.health_cutoff_upper
-			
-			if (not (lowerEnabled or upperEnabled)) then
-				return
-			end
-			
-			local lowExecute, highExecute = nil, nil
+			--retail
 			
 			local classLoc, class = UnitClass ("player")
 			local spec = GetSpecialization()
@@ -1154,9 +1157,22 @@ local class_specs_coords = {
 				
 				end
 			end
-			
-			Plater.SetExecuteRange (true, lowerEnabled and lowExecute or nil, upperEnabled and highExecute or nil)
+		
+		else
+			-- TBC
+			local classLoc, class = UnitClass ("player")
+			if (class) then
+				if (class == "WARRIOR") then
+					-- Execute
+					if GetSpellInfo(GetSpellInfo(5308)) then
+						lowExecute = 0.2
+					end
+				end
+			end
+		
 		end
+		
+		Plater.SetExecuteRange (true, lowerEnabled and lowExecute or nil, upperEnabled and highExecute or nil)
 	end	
 
 	--> range check ~range
