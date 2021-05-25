@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1621935367,  "Bug Fix", "May 25th, 2021", "'Combo Points' mod now handles targeted combo points correctly in TBC.", "cont1nuity"},
+			
 			{1621880868,  "Bug Fix", "May 24th, 2021", "Hiding unavailable options on TBC client.", "Terciob"},
 			{1621880868,  "Backend Change", "May 23rd, 2021", "'Target always on screen' will now keep it on screen on top side as well.", "cont1nuity"},
 			{1621880868,  "New Feature", "May 20th, 2021", "Adding option to show healthbars for not attackable units (npcs and players).", "cont1nuity"},
