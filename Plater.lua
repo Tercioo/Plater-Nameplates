@@ -4118,7 +4118,8 @@ function Plater.OnInit() --private --~oninit ~init
 		--hookPowerEventFrame:RegisterUnitEvent ("UNIT_DISPLAYPOWER", "player")
 		--hookPowerEventFrame:RegisterUnitEvent ("UNIT_POWER_BAR_HIDE", "player")
 
-		hookPowerEventFrame:SetScript ("OnEvent", function()
+		hookPowerEventFrame:SetScript ("OnEvent", function(self, event, target, powerType)
+			-- target is always 'player'
 			if (HOOK_PLAYER_POWER_UPDATE.ScriptAmount > 0) then
 				for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 					if (plateFrame) then
@@ -4128,7 +4129,7 @@ function Plater.OnInit() --private --~oninit ~init
 							local scriptContainer = unitFrame:ScriptGetContainer()
 							local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Player Power Update")
 							--run
-							unitFrame:ScriptRunHook (scriptInfo, "Player Power Update")
+							unitFrame:ScriptRunHook (scriptInfo, "Player Power Update", unitFrame, powerType)
 						end
 					end
 				end
@@ -9675,12 +9676,12 @@ end
 			end
 		end,
 		
-		ScriptRunHook = function (self, scriptInfo, hookName, frame)
+		ScriptRunHook = function (self, scriptInfo, hookName, frame, ...)
 			--dispatch a hook for the script
 			--at the moment, self is always the unit frame
 			local modName = scriptInfo.GlobalScriptObject.DBScriptObject.Name
 			Plater.StartLogPerformance("Mod-RunHooks", modName, hookName)
-			local okay, errortext = pcall (scriptInfo.GlobalScriptObject [hookName], frame or self, self.displayedUnit, self, scriptInfo.Env, PLATER_GLOBAL_MOD_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId])
+			local okay, errortext = pcall (scriptInfo.GlobalScriptObject [hookName], frame or self, self.displayedUnit, self, scriptInfo.Env, PLATER_GLOBAL_MOD_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId], ...)
 			Plater.EndLogPerformance("Mod-RunHooks", modName, hookName)
 			if (not okay) then
 				Plater:Msg ("Mod |cFFAAAA22" .. modName .. "|r code for |cFFBB8800" .. hookName .. "|r error: " .. errortext)

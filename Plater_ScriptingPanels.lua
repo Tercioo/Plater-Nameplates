@@ -2107,6 +2107,13 @@ function Plater.CreateHookingPanel()
 		end
 	]=]
 
+	hookFrame.DefaultPayloadScript = [=[
+		function (self, unitId, unitFrame, envTable, modTable, ...)
+			--vararg is the payload of the event, e.g. 'powerType' for power updates
+			
+		end
+	]=]
+
 	hookFrame.DefaultCommScript = [=[
 		function (self, unitId, unitFrame, envTable, modTable, source, ...)
 			--source is the player who sent the comm, vararg is the payload
@@ -2192,6 +2199,9 @@ function Plater.CreateHookingPanel()
 			local defaultScript
 			if (hookName == "Load Screen" or hookName == "Player Logon" or hookName == "Initialization") then
 				defaultScript = hookFrame.DefaultScriptNoNameplate
+
+			elseif (hookName == "Player Power Update") then
+				defaultScript = hookFrame.DefaultPayloadScript
 
 			elseif (hookName == "Comm Message") then
 				defaultScript = hookFrame.DefaultCommScript
