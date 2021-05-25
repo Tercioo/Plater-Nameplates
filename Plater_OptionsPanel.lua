@@ -7073,6 +7073,7 @@ local relevance_options = {
 			end,
 			name = "Upper Execute Range",
 			desc = "Show an indicator when the unit is in the upper execute range.\nPlater auto detects execute range for:\n\n|cFFFFFF00Hunter|r: Careful Aim talented.\n\n|cFFFFFF00Warrior|r: Condemn (Venthyr Covenant).\n\n|cFFFFFF00Mage|r: Fire spec with Firestarter talented.",
+			hidden = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE,
 		},
 
 		{
