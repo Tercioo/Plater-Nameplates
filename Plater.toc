@@ -7,9 +7,9 @@
 #@version-retail@
 ## Version: @project-version@-Retail
 #@end-version-retail@
-#@version-bc@
+#@version-bcc@
 ## Version: @project-version@-BCC
-#@end-version-bc@
+#@end-version-bcc@
 ## X-Curse-Project-ID: 100547
 ## X-Wago-ID: kRNLep6o
 
