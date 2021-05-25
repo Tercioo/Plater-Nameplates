@@ -1609,23 +1609,6 @@ local class_specs_coords = {
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> general unit functions
 
-	--return the script object that correspond to the uID passed
-	function Plater.GetScriptFromUID(uID)
-		local hookData = Plater.db.profile.hook_data
-		for i = 1, #hookData do
-			if (hookData[i].UID == uID) then
-				return hookData[i]
-			end
-		end
-
-		local scriptData = Plater.db.profile.script_data
-		for i = 1, #scriptData do
-			if (scriptData[i].UID == uID) then
-				return scriptData[i]
-			end
-		end
-	end
-
 	--> return a table with points on where the unitFrame is attached
 	--these points are hardcoded in the UpdatePlateSize() function
 	function Plater.GetPoints (unitFrame)
@@ -9681,7 +9664,8 @@ end
 			end
 		end,
 		
-		ScriptRunCommMessage = function(self, scriptInfo, modName, source, ...)
+		ScriptRunCommMessage = function(self, scriptInfo, source, ...)
+			local modName = scriptInfo.GlobalScriptObject.DBScriptObject.Name
 			Plater.StartLogPerformance("Mod-RunHooks", modName, "Comm Message")
 			local okay, errortext = pcall (scriptInfo.GlobalScriptObject ["Comm Message"], self, self.displayedUnit, self, scriptInfo.Env, PLATER_GLOBAL_MOD_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId], source, ...)
 			Plater.EndLogPerformance("Mod-RunHooks", modName, "Comm Message")
@@ -10083,7 +10067,6 @@ end
 			["GetScriptFromUID"] = true,
 			["SendCommMessage"] = true,
 			["CreateCommHeader"] = true,
-			["ScriptReceivedMessage"] = true,
 			["SendComm"] = false,
 		},
 		
@@ -11308,11 +11291,6 @@ end
 		end
 	end
 
-	function Plater.ScriptReceivedMessage(prefix, playerName, playerRealm, playerGUID, message)
-		--implemented on Plater_Comms
-		return Plater.MessageReceivedFromScript(prefix, playerName, playerRealm, playerGUID, message)
-	end
-
 	function Plater.ScriptReceivedFromGroup (prefix, playerName, playerRealm, playerGUID, importedString)
 		if (not Plater.db.profile.script_banned_user [playerGUID]) then
 			
@@ -11460,7 +11438,7 @@ end
 		
 	end	
 
-	function Plater.DispatchCommMessageHookEvent(scriptObject, source, ...)
+	function Plater.DispatchCommMessageHookEvent(scriptUID, source, ...)
 		if (HOOK_COMM_MESSAGE.ScriptAmount > 0) then
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 				if (plateFrame and plateFrame.unitFrame.PlaterOnScreen) then
@@ -11468,15 +11446,13 @@ end
 						local globalScriptObject = HOOK_COMM_MESSAGE[i]
 						local unitFrame = plateFrame.unitFrame
 
-						if (not plateFrame.unitFrame.PlaterOnScreen) then
-							return
+						if (globalScriptObject.DBScriptObject.UID == scriptUID) then
+							local scriptContainer = unitFrame:ScriptGetContainer()
+							local scriptInfo = unitFrame:ScriptGetInfo(globalScriptObject, scriptContainer, "Comm Message")
+
+							--run
+							unitFrame:ScriptRunCommMessage(scriptInfo, source, ...)
 						end
-
-						local scriptContainer = unitFrame:ScriptGetContainer()
-						local scriptInfo = unitFrame:ScriptGetInfo(globalScriptObject, scriptContainer, "Comm Message")
-
-						--run
-						unitFrame:ScriptRunCommMessage(scriptInfo, scriptObject.Name, source, ...)
 					end
 				end
 			end

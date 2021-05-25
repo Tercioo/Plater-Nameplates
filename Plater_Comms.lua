@@ -46,21 +46,15 @@ function Plater.MessageReceivedFromScript(prefix, source, playerRealm, playerGUI
     local scriptUID = tostring(data[1])
     tremove(data, 1)
 
-    --get the script that matches the unique id
-    local scriptObject = Plater.GetScriptFromUID(scriptUID)
-    if (not scriptObject) then
-        return
-    end
-
     --trigger the event 'Comm Received'
-    Plater.DispatchCommMessageHookEvent(scriptObject, source, unpack(data))
+    Plater.DispatchCommMessageHookEvent(scriptUID, source, unpack(data))
 end
 
 
 --> Plater comm handler
     Plater.CommHandler = {
         [COMM_SCRIPT_GROUP_EXPORTED] = Plater.ScriptReceivedFromGroup,
-        [Plater.COMM_SCRIPT_MSG] = Plater.ScriptReceivedMessage,
+        [Plater.COMM_SCRIPT_MSG] = Plater.MessageReceivedFromScript,
     }
 
     function Plater:CommReceived(commPrefix, dataReceived, channel, source)

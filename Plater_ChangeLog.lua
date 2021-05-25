@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			--{1621935367,  "New Feature", "May 25th, 2021", "Mod 'Comm Message' hook to react to 'Plater.SendComm(...)' calls from the exact same mod of another user in party or raid.", "Terciob"},
 			{1621935367,  "Bug Fix", "May 25th, 2021", "Alpha of non-targets should now work correctly again.", "cont1nuity"},
 			{1621935367,  "Backend Change", "May 25th, 2021", "Enabling execute range indicator for warriors in TBC.", "cont1nuity"},
 			{1621935367,  "Bug Fix", "May 25th, 2021", "'Combo Points' mod now handles targeted combo points correctly in TBC.", "cont1nuity"},
