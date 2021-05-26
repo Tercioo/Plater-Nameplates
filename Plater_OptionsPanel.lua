@@ -12566,9 +12566,9 @@ end
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.quick_hide = value
 				if (value) then
-					SetCVar ("nameplateRemovalAnimation", CVAR_ENABLED)
-				else
 					SetCVar ("nameplateRemovalAnimation", CVAR_DISABLED)
+				else
+					SetCVar ("nameplateRemovalAnimation", CVAR_ENABLED)
 				end
 				Plater.UpdateAllPlates()
 			end,
