@@ -3127,14 +3127,16 @@ local class_specs_coords = {
 
 			--> border
 				--create a border using default borders from the retail game
-				local healthBarBorder = CreateFrame("frame", nil, plateFrame.unitFrame.healthBar, (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) and "PlaterNameplateFullBorderTemplate" or "NamePlateFullBorderTemplate")
+				--local healthBarBorder = CreateFrame("frame", nil, plateFrame.unitFrame.healthBar, (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) and "PlaterNameplateFullBorderTemplate" or "NamePlateFullBorderTemplate")
+				local healthBarBorder = DF:CreateFullBorder(nil, plateFrame.unitFrame.healthBar)
 				healthBarBorder.Left:SetDrawLayer("OVERLAY", 6)
 				healthBarBorder.Right:SetDrawLayer("OVERLAY", 6)
 				healthBarBorder.Top:SetDrawLayer("OVERLAY", 6)
 				healthBarBorder.Bottom:SetDrawLayer("OVERLAY", 6)
 				plateFrame.unitFrame.healthBar.border = healthBarBorder
 				
-				local powerBarBorder = CreateFrame("frame", nil, plateFrame.unitFrame.powerBar, (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) and "PlaterNameplateFullBorderTemplate" or "NamePlateFullBorderTemplate")
+				--local powerBarBorder = CreateFrame("frame", nil, plateFrame.unitFrame.powerBar, (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) and "PlaterNameplateFullBorderTemplate" or "NamePlateFullBorderTemplate")
+				local powerBarBorder = DF:CreateFullBorder(nil, plateFrame.unitFrame.powerBar)
 				powerBarBorder.Left:SetDrawLayer("OVERLAY", 6)
 				powerBarBorder.Right:SetDrawLayer("OVERLAY", 6)
 				powerBarBorder.Top:SetDrawLayer("OVERLAY", 6)
