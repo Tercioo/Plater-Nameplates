@@ -4906,6 +4906,20 @@ do
 			name = "Fixed Position" .. CVarIcon,
 			desc = "With a fixed position, personal bar won't move.\n\nTo revert this, click the button above." .. CVarDesc,
 		},
+		
+		{type = "blank"},
+		{type = "label", get = function() return "Blizzard Cast Bar:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		
+		--hide castbar from blizzard
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.hide_blizzard_castbar end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.hide_blizzard_castbar = value
+			end,
+			name = "Hide Blizzard Cast Bar",
+			desc = "Hide Blizzard Cast Bar",
+		},
 
 		{type = "breakline"},
 		
@@ -5044,6 +5058,21 @@ do
 			name = "Height",
 			desc = "Height of the cast bar.",
 		},
+		--x offset
+		{
+			type = "range",
+			get = function() return Plater.db.profile.plate_config.player.castbar_offset_x end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.player.castbar_offset_x = value
+				Plater.UpdateAllPlates()
+			end,
+			min = -128,
+			max = 128,
+			step = 1,
+			usedecimals = true,
+			name = L["OPTIONS_XOFFSET"],
+			desc = "Adjust the position on the X axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
+		},
 		--y offset
 		{
 			type = "range",
@@ -5058,16 +5087,6 @@ do
 			usedecimals = true,
 			name = L["OPTIONS_YOFFSET"],
 			desc = "Adjust the position on the Y axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
-		},
-		--hide castbar from blizzard
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.hide_blizzard_castbar end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.hide_blizzard_castbar = value
-			end,
-			name = "Hide Blizzard Cast Bar",
-			desc = "Hide Blizzard Cast Bar",
 		},
 		
 		{type = "blank"},
@@ -7410,21 +7429,36 @@ end
 		},
 		
 		{type = "label", get = function() return "Cast Bar:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-			--y offset
-			{
-				type = "range",
-				get = function() return Plater.db.profile.plate_config.friendlyplayer.castbar_offset end,
-				set = function (self, fixedparam, value) 
-					Plater.db.profile.plate_config.friendlyplayer.castbar_offset = value
-					Plater.UpdateAllPlates()
-				end,
-				min = -128,
-				max = 128,
-				step = 1,
-				usedecimals = true,
-				name = L["OPTIONS_YOFFSET"],
-				desc = "Adjust the position on the Y axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
-			},
+		--x offset
+		{
+			type = "range",
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.castbar_offset_x end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.friendlyplayer.castbar_offset_x = value
+				Plater.UpdateAllPlates()
+			end,
+			min = -128,
+			max = 128,
+			step = 1,
+			usedecimals = true,
+			name = L["OPTIONS_XOFFSET"],
+			desc = "Adjust the position on the X axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
+		},
+		--y offset
+		{
+			type = "range",
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.castbar_offset end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.friendlyplayer.castbar_offset = value
+				Plater.UpdateAllPlates()
+			end,
+			min = -128,
+			max = 128,
+			step = 1,
+			usedecimals = true,
+			name = L["OPTIONS_YOFFSET"],
+			desc = "Adjust the position on the Y axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
+		},
 		
 		{type = "blank"},
 		{type = "label", get = function() return "Player Name Text Colors" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
@@ -8342,6 +8376,21 @@ end
 		},		
 		
 		{type = "label", get = function() return "Cast Bar:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		--x offset
+		{
+			type = "range",
+			get = function() return Plater.db.profile.plate_config.enemyplayer.castbar_offset_x end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.enemyplayer.castbar_offset_x = value
+				Plater.UpdateAllPlates()
+			end,
+			min = -128,
+			max = 128,
+			step = 1,
+			usedecimals = true,
+			name = L["OPTIONS_XOFFSET"],
+			desc = "Adjust the position on the X axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
+		},
 		--y offset
 		{
 			type = "range",
@@ -9239,153 +9288,35 @@ end
 		},
 		
 		{type = "label", get = function() return "Cast Bar:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-			--y offset
-			{
-				type = "range",
-				get = function() return Plater.db.profile.plate_config.friendlynpc.castbar_offset end,
-				set = function (self, fixedparam, value) 
-					Plater.db.profile.plate_config.friendlynpc.castbar_offset = value
-					Plater.UpdateAllPlates()
-				end,
-				min = -128,
-				max = 128,
-				step = 1,
-				usedecimals = true,
-				name = L["OPTIONS_YOFFSET"],
-				desc = "Adjust the position on the Y axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
-			},
-		
-		{type = "blank"},
-		
-		{type = "label", get = function() return "Npc Name Text When no Health Bar Shown:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-		--text size
+		--x offset
 		{
 			type = "range",
-			get = function() return Plater.db.profile.plate_config.friendlynpc.big_actorname_text_size end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.castbar_offset_x end,
 			set = function (self, fixedparam, value) 
-				Plater.db.profile.plate_config.friendlynpc.big_actorname_text_size = value
+				Plater.db.profile.plate_config.friendlynpc.castbar_offset_x = value
 				Plater.UpdateAllPlates()
 			end,
-			min = 6,
-			max = 99,
+			min = -128,
+			max = 128,
 			step = 1,
-			name = L["OPTIONS_SIZE"],
-			desc = "Size of the text.",
+			usedecimals = true,
+			name = L["OPTIONS_XOFFSET"],
+			desc = "Adjust the position on the X axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
 		},
-		--text font
-		{
-			type = "select",
-			get = function() return Plater.db.profile.plate_config.friendlynpc.big_actorname_text_font end,
-			values = function() return DF:BuildDropDownFontList (on_select_friendlynpc_bignametext_text_font) end,
-			name = L["OPTIONS_FONT"],
-			desc = "Font of the text.",
-		},
-		
-		--text outline options
-		{
-			type = "select",
-			get = function() return Plater.db.profile.plate_config.friendlynpc.big_actorname_text_outline end,
-			values = function() return build_outline_modes_table ("friendlynpc", "big_actorname_text_outline") end,
-			name = L["OPTIONS_OUTLINE"],
-			desc = "Outline",
-		},
-		
-		--text shadow color
-		{
-			type = "color",
-			get = function()
-				local color = Plater.db.profile.plate_config.friendlynpc.big_actorname_text_shadow_color
-				return {color[1], color[2], color[3], color[4]}
-			end,
-			set = function (self, r, g, b, a) 
-				local color = Plater.db.profile.plate_config.friendlynpc.big_actorname_text_shadow_color
-				color[1], color[2], color[3], color[4] = r, g, b, a
-				Plater.UpdateAllPlates()
-			end,
-			name = L["OPTIONS_SHADOWCOLOR"],
-			desc = "|cFFFFFF00Important|r: hide and show nameplates to see changes.",
-		},
-		
-		--text color
-		{
-			type = "color",
-			get = function()
-				local color = Plater.db.profile.plate_config.friendlynpc.big_actorname_text_color
-				return {color[1], color[2], color[3], color[4]}
-			end,
-			set = function (self, r, g, b, a) 
-				local color = Plater.db.profile.plate_config.friendlynpc.big_actorname_text_color
-				color[1], color[2], color[3], color[4] = r, g, b, a
-				Plater.UpdateAllPlates()
-			end,
-			name = L["OPTIONS_COLOR"],
-			desc = "The color of the text.",
-		},
-
-		{type = "blank"},
-		{type = "label", get = function() return "Npc Title Text When no Health Bar Shown:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-		--profession text size
+		--y offset
 		{
 			type = "range",
-			get = function() return Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_size end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.castbar_offset end,
 			set = function (self, fixedparam, value) 
-				Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_size = value
+				Plater.db.profile.plate_config.friendlynpc.castbar_offset = value
 				Plater.UpdateAllPlates()
 			end,
-			min = 6,
-			max = 99,
+			min = -128,
+			max = 128,
 			step = 1,
-			name = L["OPTIONS_SIZE"],
-			desc = "Size of the text.",
-		},
-		--profession text font
-		{
-			type = "select",
-			get = function() return Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_font end,
-			values = function() return DF:BuildDropDownFontList (on_select_friendlynpc_bigtitletext_text_font) end,
-			name = L["OPTIONS_FONT"],
-			desc = "Font of the text.",
-		},
-		
-		--profession text outline options
-		{
-			type = "select",
-			get = function() return Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_outline end,
-			values = function() return build_outline_modes_table ("friendlynpc", "big_actortitle_text_outline") end,
-			name = L["OPTIONS_OUTLINE"],
-			desc = "Outline",
-		},
-		
-		--profession text shadow color
-		{
-			type = "color",
-			get = function()
-				local color = Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_shadow_color
-				return {color[1], color[2], color[3], color[4]}
-			end,
-			set = function (self, r, g, b, a) 
-				local color = Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_shadow_color
-				color[1], color[2], color[3], color[4] = r, g, b, a
-				Plater.UpdateAllPlates()
-			end,
-			name = L["OPTIONS_SHADOWCOLOR"],
-			desc = "|cFFFFFF00Important|r: hide and show nameplates to see changes.",
-		},
-		
-		--profession text color
-		{
-			type = "color",
-			get = function()
-				local color = Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_color
-				return {color[1], color[2], color[3], color[4]}
-			end,
-			set = function (self, r, g, b, a) 
-				local color = Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_color
-				color[1], color[2], color[3], color[4] = r, g, b, a
-				Plater.UpdateAllPlates()
-			end,
-			name = "Profession Text Color",
-			desc = "The color of the profession text below the npc name.",
+			usedecimals = true,
+			name = L["OPTIONS_YOFFSET"],
+			desc = "Adjust the position on the Y axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
 		},
 
 		{type = "breakline"},
@@ -10011,6 +9942,73 @@ end
 			name = L["OPTIONS_YOFFSET"],
 			desc = "Adjust the position on the Y axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
 		},
+		
+		{type = "blank"},
+		
+		{type = "label", get = function() return "Npc Name Text When no Health Bar Shown:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		--text size
+		{
+			type = "range",
+			get = function() return Plater.db.profile.plate_config.friendlynpc.big_actorname_text_size end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.friendlynpc.big_actorname_text_size = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 6,
+			max = 99,
+			step = 1,
+			name = L["OPTIONS_SIZE"],
+			desc = "Size of the text.",
+		},
+		--text font
+		{
+			type = "select",
+			get = function() return Plater.db.profile.plate_config.friendlynpc.big_actorname_text_font end,
+			values = function() return DF:BuildDropDownFontList (on_select_friendlynpc_bignametext_text_font) end,
+			name = L["OPTIONS_FONT"],
+			desc = "Font of the text.",
+		},
+		
+		--text outline options
+		{
+			type = "select",
+			get = function() return Plater.db.profile.plate_config.friendlynpc.big_actorname_text_outline end,
+			values = function() return build_outline_modes_table ("friendlynpc", "big_actorname_text_outline") end,
+			name = L["OPTIONS_OUTLINE"],
+			desc = "Outline",
+		},
+		
+		--text shadow color
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.plate_config.friendlynpc.big_actorname_text_shadow_color
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.plate_config.friendlynpc.big_actorname_text_shadow_color
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllPlates()
+			end,
+			name = L["OPTIONS_SHADOWCOLOR"],
+			desc = "|cFFFFFF00Important|r: hide and show nameplates to see changes.",
+		},
+		
+		--text color
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.plate_config.friendlynpc.big_actorname_text_color
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.plate_config.friendlynpc.big_actorname_text_color
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllPlates()
+			end,
+			name = L["OPTIONS_COLOR"],
+			desc = "The color of the text.",
+		},
 	
 		{type = "breakline"},
 		
@@ -10170,6 +10168,72 @@ end
 			desc = "Nameplate has this color when a friendly npc unit is a quest objective.",
 		},
 		
+		{type = "blank"},
+		{type = "label", get = function() return "Npc Title Text When no Health Bar Shown:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		--profession text size
+		{
+			type = "range",
+			get = function() return Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_size end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_size = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 6,
+			max = 99,
+			step = 1,
+			name = L["OPTIONS_SIZE"],
+			desc = "Size of the text.",
+		},
+		--profession text font
+		{
+			type = "select",
+			get = function() return Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_font end,
+			values = function() return DF:BuildDropDownFontList (on_select_friendlynpc_bigtitletext_text_font) end,
+			name = L["OPTIONS_FONT"],
+			desc = "Font of the text.",
+		},
+		
+		--profession text outline options
+		{
+			type = "select",
+			get = function() return Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_outline end,
+			values = function() return build_outline_modes_table ("friendlynpc", "big_actortitle_text_outline") end,
+			name = L["OPTIONS_OUTLINE"],
+			desc = "Outline",
+		},
+		
+		--profession text shadow color
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_shadow_color
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_shadow_color
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllPlates()
+			end,
+			name = L["OPTIONS_SHADOWCOLOR"],
+			desc = "|cFFFFFF00Important|r: hide and show nameplates to see changes.",
+		},
+		
+		--profession text color
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_color
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.plate_config.friendlynpc.big_actortitle_text_color
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllPlates()
+			end,
+			name = "Profession Text Color",
+			desc = "The color of the profession text below the npc name.",
+		},
+		
 	}
 	
 	_G.C_Timer.After(0.780, function() --~delay
@@ -10254,6 +10318,21 @@ end
 			},
 			
 			{type = "label", get = function() return "Cast Bar:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			--x offset
+			{
+				type = "range",
+				get = function() return Plater.db.profile.plate_config.enemynpc.castbar_offset_x end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.plate_config.enemynpc.castbar_offset_x = value
+					Plater.UpdateAllPlates()
+				end,
+				min = -128,
+				max = 128,
+				step = 1,
+				usedecimals = true,
+				name = L["OPTIONS_XOFFSET"],
+				desc = "Adjust the position on the X axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
+			},
 			--y offset
 			{
 				type = "range",

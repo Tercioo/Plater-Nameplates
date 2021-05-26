@@ -3120,9 +3120,6 @@ local class_specs_coords = {
 				--create custom border frame for modeling
 				if (Plater.CreateCustomDesignBorder) then
 					Plater.CreateCustomDesignBorder(plateFrame.unitFrame.castBar)
-				else
-					--this msg can be removed after january 2020
-					print("you may want to restart your game client to update addons!")
 				end
 
 			--> border
@@ -3147,17 +3144,11 @@ local class_specs_coords = {
 				--create custom border frame for modeling
 				if (Plater.CreateCustomDesignBorder) then
 					Plater.CreateCustomDesignBorder(healthBar)
-				else
-					--this msg can be removed after january 2020
-					print("you may want to restart your game client to update addons!")
 				end
 
 				--create custom border frame for modeling
 				if (Plater.CreateCustomDesignBorder) then
 					Plater.CreateCustomDesignBorder(plateFrame.unitFrame.powerBar)
-				else
-					--this msg can be removed after january 2020
-					print("you may want to restart your game client to update addons!")
 				end
 			
 			--> focus indicator
@@ -5215,7 +5206,8 @@ end
 		local castBarWidth, castBarHeight = unitFrame.customCastBarWidth or plateConfigs [castBarConfigKey][1], unitFrame.customCastBarHeight or plateConfigs [castBarConfigKey][2]
 		local powerBarWidth, powerBarHeight = unitFrame.customPowerBarHeight or plateConfigs [manaConfigKey][1], unitFrame.customPowerBarHeight or plateConfigs [manaConfigKey][2]
 		
-		local castBarOffSetX = (healthBarWidth - castBarWidth) / 2
+		local castBarOffSetX = plateConfigs.castbar_offset_x
+		local castBarOffSetXRel = (healthBarWidth - castBarWidth) / 2
 		local castBarOffSetY = plateConfigs.castbar_offset
 		
 		local powerBarOffSetX = (healthBarWidth - powerBarWidth) / 2
@@ -5274,8 +5266,8 @@ end
 		
 		--cast bar - is set by default below the healthbar
 			castBar:ClearAllPoints()
-			PixelUtil.SetPoint (castBar, "topleft", healthBar, "bottomleft", castBarOffSetX, castBarOffSetY)
-			PixelUtil.SetPoint (castBar, "topright", healthBar, "bottomright", -castBarOffSetX, castBarOffSetY)
+			PixelUtil.SetPoint (castBar, "topleft", healthBar, "bottomleft", castBarOffSetXRel + castBarOffSetX, castBarOffSetY)
+			PixelUtil.SetPoint (castBar, "topright", healthBar, "bottomright", -castBarOffSetXRel + castBarOffSetX, castBarOffSetY)
 			PixelUtil.SetWidth (castBar, castBarWidth)
 			PixelUtil.SetHeight (castBar, castBarHeight)
 			--PixelUtil.SetSize (castBar.BorderShield, castBarHeight * 1.4, castBarHeight * 1.4)

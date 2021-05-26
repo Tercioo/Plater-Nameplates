@@ -106,6 +106,7 @@ PLATER_DEFAULT_SETTINGS = {
 				mana = {100, 3},
 				mana_incombat = {100, 3},
 				buff_frame_y_offset = 10,
+				castbar_offset_x = 0,
 				castbar_offset = 0,
 				
 				actorname_text_spacing = 10,
@@ -180,6 +181,7 @@ PLATER_DEFAULT_SETTINGS = {
 				mana_incombat = {100, 4},
 				
 				buff_frame_y_offset = 0,
+				castbar_offset_x = 0,
 				castbar_offset = 0,
 				
 				actorname_text_spacing = 12,
@@ -263,6 +265,7 @@ PLATER_DEFAULT_SETTINGS = {
 				mana_incombat = {100, 4},
 				
 				buff_frame_y_offset = 0,
+				castbar_offset_x = 0,
 				castbar_offset = 0,
 				
 				actorname_text_spacing = 10,
@@ -347,6 +350,7 @@ PLATER_DEFAULT_SETTINGS = {
 				mana_incombat = {100, 4},
 				
 				buff_frame_y_offset = 0,
+				castbar_offset_x = 0,
 				castbar_offset = 0,
 				
 				actorname_text_spacing = 10,
@@ -433,6 +437,7 @@ PLATER_DEFAULT_SETTINGS = {
 				healthbar_enabled = true,
 				healthbar_color = {0.564706, 0.933333, 0.564706, 1},
 				healthbar_color_by_hp = false,
+				castbar_offset_x = 0,
 				castbar_offset = 0, --not used?
 				
 				castbar_enabled = true,
