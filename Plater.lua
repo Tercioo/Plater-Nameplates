@@ -1806,7 +1806,8 @@ local class_specs_coords = {
 		["nameplateTargetRadialPosition"] = true,
 		--["showQuestTrackingTooltips"] = true, -- this seems to be gone as of 18.12.2020
 		["nameplateSelectedAlpha"] = true,
-		["nameplateNotSelectedAlpha"] = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE),
+		["nameplateNotSelectedAlpha"] = (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE),
+		["nameplateRemovalAnimation"] = (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE),
 	}
 	--on logout or on profile change, save some important cvars inside the profile
 	function Plater.SaveConsoleVariables(cvar, value) --private
@@ -3903,6 +3904,7 @@ function Plater.OnInit() --private --~oninit ~init
 			SetCVar ("nameplateMinAlphaDistance", -10^5.2)
 			SetCVar ("nameplateSelectedAlpha", 1)
 			SetCVar ("nameplateNotSelectedAlpha", 1)
+			SetCVar ("nameplateRemovalAnimation", DB_USE_QUICK_HIDE and 1 or 0)
 		end
 	
 	--schedule data update
@@ -4835,7 +4837,7 @@ function Plater.OnInit() --private --~oninit ~init
 		else
 
 			--quick hide the nameplate if the unit doesn't exists or if the unit died
-			if (DB_USE_QUICK_HIDE) then
+			if (DB_USE_QUICK_HIDE and (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)) then
 				if (not UnitExists (unitFrame.unit) or self.CurrentHealth < 1) then
 					--the unit died!
 					unitFrame:Hide()

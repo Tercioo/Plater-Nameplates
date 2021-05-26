@@ -9,6 +9,7 @@ function Plater.GetChangelogTable()
 		Plater.ChangeLogTable = {
 		
 			--{1621935367,  "New Feature", "May 25th, 2021", "Mod 'Comm Message' hook to react to 'Plater.SendComm(...)' calls from the exact same mod of another user in party or raid.", "Terciob"},
+			{1621935367,  "Backend Change", "May 26th, 2021", "'Quick Hide on Death' now uses the corresponding CVar setting to disable the hide animation in TBC.", "cont1nuity"},
 			{1621935367,  "Backend Change", "May 26th, 2021", "Adding x-offset options for cast-bars.", "cont1nuity"},
 			{1621935367,  "Backend Change", "May 25th, 2021", "Mod hook 'Player Power Update' now provides the energy type as additional payload in the vararg parameter.", "cont1nuity"},
 			{1621935367,  "Bug Fix", "May 25th, 2021", "Alpha of non-targets should now work correctly again.", "cont1nuity"},

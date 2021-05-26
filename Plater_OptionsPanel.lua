@@ -12565,9 +12565,15 @@ end
 			get = function() return Plater.db.profile.quick_hide end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.quick_hide = value
+				if (value) then
+					SetCVar ("nameplateRemovalAnimation", CVAR_ENABLED)
+				else
+					SetCVar ("nameplateRemovalAnimation", CVAR_DISABLED)
+				end
 				Plater.UpdateAllPlates()
 			end,
-			name = "Quick Hide on Death",
+			nocombat = true,
+			name = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) and "Quick Hide on Death" or "Quick Hide Nameplates",
 			desc = "When the unit dies, immediately hide the nameplates without playing the shrink animation.",
 		},
 		
