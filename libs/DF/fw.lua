@@ -1,6 +1,6 @@
 
 
-local dversion = 252
+local dversion = 253
 
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
@@ -3791,7 +3791,7 @@ DF.CLEncounterID = {
 }
 
 function DF:GetPlayerRole()
-	local assignedRole = UnitGroupRolesAssigned ("player")
+	local assignedRole = DF.UnitGroupRolesAssigned ("player")
 	if (assignedRole == "NONE") then
 		local spec = DF.GetSpecialization()
 		return spec and DF.GetSpecializationRole (spec) or "NONE"
