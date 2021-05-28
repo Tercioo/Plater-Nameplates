@@ -4917,8 +4917,8 @@ do
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.hide_blizzard_castbar = value
 			end,
-			name = "Hide Blizzard Cast Bar",
-			desc = "Hide Blizzard Cast Bar",
+			name = "Hide Blizzard Player Cast Bar",
+			desc = "Hide Blizzard Player Cast Bar",
 		},
 
 		{type = "breakline"},
@@ -12173,6 +12173,20 @@ end
 			step = 1,
 			name = L["OPTIONS_XOFFSET"],
 			desc = L["OPTIONS_XOFFSET"],
+		},
+		
+		{type = "blank"},
+		{type = "label", get = function() return "Blizzard Cast Bar:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		
+		--hide castbar from blizzard
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.hide_blizzard_castbar end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.hide_blizzard_castbar = value
+			end,
+			name = "Hide Blizzard Player Cast Bar",
+			desc = "Hide Blizzard Player Cast Bar",
 		},
 	}
 
