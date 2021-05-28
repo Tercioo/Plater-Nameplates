@@ -10113,12 +10113,15 @@ end
 		["setmetatable"] = true,
 		["DevTools_DumpCommand"] = true,
 
-		--avoid creating macros
+		--avoid creating/running macros
 		["SetBindingMacro"] = true,
 		["CreateMacro"] = true,
 		["EditMacro"] = true,
 		["hash_SlashCmdList"] = true,
 		["SlashCmdList"] = true,
+		["MacroEditBox"] = true,
+		["ChatEdit_SendText"] = true,
+		["AreDangerousScriptsAllowed"] = true,
 
 		--block guild commands
 		["GuildDisband"] = true,
@@ -10132,6 +10135,16 @@ end
 		["PlaterDBChr"] = true,
 		["_detalhes_global"] = true,
 		["WeakAurasSaved"] = true,
+	}
+	
+	local overrideFunctions = {
+		["CreateFrame"] = function(frameType, name, parent, template, id)
+			if template then
+				template = string.gsub(template, "SecureActionButtonTemplate", "")
+				template = string.gsub(template, "SecureHandlerClickTemplate", "")
+			end
+			return CreateFrame(frameType, name, parent, template, id)
+		end,
 	}
 	
 	--this allows full shadowing on 'Plater' global with the filter above
@@ -10160,7 +10173,11 @@ end
 		setmetatable(shadowTable, {
 			__index = function (env, key)
 				--ViragDevTool_AddData({env, key, tableKey, tableKey and _G[tableKey] or _G}, "GET")
-				if shadowValuesTable [key] then -- if true, don't return value
+				if key == "_G" then
+					return env
+				elseif overrideFunctions [key] then
+					return overrideFunctions [key]
+				elseif shadowValuesTable [key] then -- if true, don't return value
 					return nil
 				else
 					return rawget(tableKey and _G[tableKey] or _G, key)
