@@ -10506,7 +10506,7 @@ end
 				code = string.gsub(code, "\"NamePlateFullBorderTemplate\"", "\"PlaterNamePlateFullBorderTemplate\"")
 			end
 
-			--find occurences of Plater.SendComm(arg1, arg2, arg3, ...) and replace with Plater.SendComm_Internal(uniqueIdentifier, arg1, arg2, arg3, ...)
+			--find occurences of Plater.SendComm(arg1, arg2, arg3, ...) and replace with Plater.SendComm(uniqueIdentifier, arg1, arg2, arg3, ...)
 			code = code:gsub("Plater.SendComm%s*%(", "Plater.SendComm(\"" .. scriptObject.UID .. "\", ")
 			
 			local compiledScript, errortext = loadstring (code, "" .. hookName .. " for " .. scriptObject.Name)

@@ -5,14 +5,88 @@ local COMM_SCRIPT_GROUP_EXPORTED = "GE"
 
 local LibAceSerializer = LibStub:GetLibrary ("AceSerializer-3.0")
 
+local CONST_THROTTLE_HOOK_COMMS = 0.500 --2 comms per second per hook
 
 function Plater.CreateCommHeader(prefix, encodedString)
     return LibAceSerializer:Serialize(prefix, UnitName("player"), GetRealmName(), UnitGUID("player"), encodedString)
 end
 
+--store comms scheduled due to have sent data recently
+local commScheduleCache = {}
+--comm cache - store the comms recently sent
+--store the [uniqueId] = GetTime() of when the comm got sent
+local commSentTime = {}
+
+local commScheduled = function(uniqueId, ...)
+    local scheduleObject = commScheduleCache[uniqueId]
+    local timeLastSent = commSentTime[uniqueId]
+
+    if (not scheduleObject and not timeLastSent) then
+        --first time sending this comm
+        return false
+
+    elseif (not scheduleObject and timeLastSent) then
+        --no schedule but was sent recently, check how much time has elapsed
+        local timeNow = GetTime()
+        local expirationTime = timeLastSent + CONST_THROTTLE_HOOK_COMMS
+
+        if (timeNow > expirationTime) then
+            --good to sent again
+            return false
+
+        else
+            --don't send more than 1 comm for the hook on each tick
+            if (timeNow == timeLastSent) then
+                return true
+            end
+
+            --comms for this hook is on cooldown, schedule to send it
+            local scheduleTime = expirationTime - timeNow
+            local scheduleObject = DF.Schedules.NewTimer(scheduleTime, Plater.SendComm_ScheduledCallback, uniqueId, ...)
+            DF.Schedules.SetName(scheduleObject, "PlaterComm" .. uniqueId)
+            commScheduleCache[uniqueId] = scheduleObject
+
+            return true
+        end
+
+    elseif (scheduleObject and timeLastSent) then
+        --trying to send a comm and the hook already has a comm scheduled
+        --on this case the timer for the next comm doesn't change, only the payload is updated
+        local remainingTime = scheduleObject.expireAt - GetTime()
+        DF.Schedules.Cancel(scheduleObject)
+
+        --reschedule with the updated payload
+        local scheduleObject = DF.Schedules.NewTimer(remainingTime, Plater.SendComm_ScheduledCallback, uniqueId, ...)
+        DF.Schedules.SetName(scheduleObject, "PlaterComm" .. uniqueId)
+        commScheduleCache[uniqueId] = scheduleObject
+        return true
+
+    else
+        Plater:Msg("0x541296")
+    end
+end
+
+function Plater.SendComm_ScheduledCallback(uniqueId, ...)
+    --remove the hook from schedule cache
+    if (commScheduleCache[uniqueId]) then
+        commScheduleCache[uniqueId]:Cancel()
+        commScheduleCache[uniqueId] = nil
+    end
+    return Plater.SendComm(uniqueId, ...)
+end
+
 function Plater.SendComm(uniqueId, ...)
     --create the payload, the first index is always the hook id
     local arguments = {uniqueId, ...}
+
+    if (commScheduled(uniqueId, ...)) then
+        --this comm got scheduled for later
+        return
+    end
+
+    --store the last time a comm has sent for this hook
+    --this is used to avoid sending more than 1 comm per tick and measure the time of the last comm sent
+    commSentTime[uniqueId] = GetTime()
 
     --compress the msg
     local msgEncoded = Plater.CompressData(arguments, "comm")
