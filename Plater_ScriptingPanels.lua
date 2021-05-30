@@ -2114,9 +2114,16 @@ function Plater.CreateHookingPanel()
 		end
 	]=]
 
-	hookFrame.DefaultCommScript = [=[
-		function (self, unitId, unitFrame, envTable, modTable, source, ...)
+	hookFrame.DefaultReceiveCommScript = [=[
+		function (modTable, source, ...)
 			--source is the player who sent the comm, vararg is the payload
+			
+		end
+	]=]
+	
+	hookFrame.DefaultSendCommScript = [=[
+		function (modTable)
+			--called on a timer internally. use 'Plater.SendComm(payload)' to send comm-data if needed.
 			
 		end
 	]=]
@@ -2203,8 +2210,11 @@ function Plater.CreateHookingPanel()
 			elseif (hookName == "Player Power Update") then
 				defaultScript = hookFrame.DefaultPayloadScript
 
-			elseif (hookName == "Comm Message") then
-				defaultScript = hookFrame.DefaultCommScript
+			elseif (hookName == "Receive Comm Message") then
+				defaultScript = hookFrame.DefaultReceiveCommScript
+			
+			elseif (hookName == "Send Comm Message") then
+				defaultScript = hookFrame.DefaultSendCommScript
 
 			else
 				defaultScript = hookFrame.DefaultScript
