@@ -9805,7 +9805,7 @@ end
 					if (type (value) == "table") then
 						t1 [key] = t1 [key] or {}
 						-- add hashID to the hook-data
-						--t1 [key].scriptId = tostring(value)
+						t1 [key].scriptId = tostring(value) -- keep this internal hashed
 
 						--create UID if it does not exist --TODO maybe not needed in the future
 						local uID = value.UID
@@ -9820,7 +9820,6 @@ end
 							--value.UID = uID -- TODO permanently set UID
 							t1 [key].UID = uID -- TODO temporary volatile for now
 						end
-						t1 [key].scriptId = uID -- this needs to stay for now, maybe switch it to UID in all places later or use the above again?
 						
 						DF.table.copy (t1 [key], t2 [key])
 					else
@@ -10063,13 +10062,13 @@ end
 			["fullVersionInfo"] = false,
 			["DispatchCommReceivedMessageHookEvent"] = true,
 			["DispatchCommSendMessageHookEvents"] = true,
+			["VerifyScriptIdForComm"] = true,
 			["MessageReceivedFromScript"] = true,
 			["CreateUniqueIdentifier"] = false,
 			["GetScriptFromUID"] = true,
 			["SendCommMessage"] = true,
 			["CreateCommHeader"] = true,
 			["SendComm"] = false,
-			["SendComm_Internal"] = true,
 		},
 		
 		["DetailsFramework"] = {
@@ -10506,6 +10505,8 @@ end
 		--compile
 		for hookName, code in pairs (scriptCode) do
 			
+			local globalScriptContainer = Plater.GetContainerForHook (hookName)
+			
 			if (type (code) ~= "string") then
 				Plater:Msg ("fail to load mod: " .. (scriptObject.Name or "") .. ".")
 				return
@@ -10517,7 +10518,8 @@ end
 
 			--find occurences of Plater.SendComm(arg1, arg2, arg3, ...) and replace with Plater.SendComm_Internal(uniqueIdentifier, arg1, arg2, arg3, ...) or fail to compile for all than "Send Comm Message" and don't replace (use empty dummy)
 			if hookName == "Send Comm Message" then
-				code = string.gsub(code, "Plater.SendComm_Internal%s*%(", "Plater.SendComm(\"" .. scriptObject.UID .. "\", ")
+				code = string.gsub(code, "Plater.SendComm%s*%(", "Plater.SendComm(" .. globalScriptContainer.ScriptAmount + 1 .. ", \"" .. scriptObject.scriptId .. "\", \"" .. scriptObject.UID .. "\", ")
+				DevTools_Dump(code)
 			else
 				local foundSendComm = string.find(code, "Plater.SendComm")
 				if foundSendComm then
@@ -10543,7 +10545,6 @@ end
 					globalScriptObject [hookName] = compiledScript()
 					
 					--insert the script in the global script container, no need to check if already exists, hook containers cache are cleaned before script compile
-					local globalScriptContainer = Plater.GetContainerForHook (hookName)
 					tinsert (globalScriptContainer, globalScriptObject)
 					globalScriptContainer.ScriptAmount = globalScriptContainer.ScriptAmount + 1
 					
@@ -11489,6 +11490,17 @@ end
 				Plater.ScriptMetaFunctions.ScriptRunCommMessageHook(globalScriptObject, "Send Comm Message")
 			end
 		end
+	end
+	
+	function Plater.VerifyScriptIdForComm(scriptIndex, scriptId, uniqueId)
+		if not scriptIndex or not scriptId or not uniqueId then return end
+		
+		local globalScriptObject = HOOK_COMM_SEND_MESSAGE[scriptIndex]
+		if globalScriptObject and globalScriptObject.DBScriptObject and globalScriptObject.DBScriptObject.scriptId and globalScriptObject.DBScriptObject.scriptId == scriptId and globalScriptObject.DBScriptObject.UID and globalScriptObject.DBScriptObject.UID == uniqueId then
+			return true
+		end
+		
+		return false
 	end
 
 	function Plater.DispatchTalentUpdateHookEvent()

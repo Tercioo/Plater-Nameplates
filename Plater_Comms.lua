@@ -17,9 +17,10 @@ function dispatchSendCommEvents()
 end
 dispatchSendCommEvents() -- can be done immediately
 
-function Plater.SendComm() end --dummy for all other hooks, do nothing.
-
-function Plater.SendComm_Internal(uniqueId, ...)
+function Plater.SendComm(scriptIndex, scriptId, uniqueId, ...)
+	
+	if not Plater.VerifyScriptIdForComm(scriptIndex, scriptId, uniqueId) then return end -- block execution if verification fails
+	
     --create the payload, the first index is always the hook id
     local arguments = {uniqueId, ...}
 
