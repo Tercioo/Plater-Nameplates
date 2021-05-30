@@ -10519,7 +10519,6 @@ end
 			--find occurences of Plater.SendComm(arg1, arg2, arg3, ...) and replace with Plater.SendComm_Internal(uniqueIdentifier, arg1, arg2, arg3, ...) or fail to compile for all than "Send Comm Message" and don't replace (use empty dummy)
 			if hookName == "Send Comm Message" then
 				code = string.gsub(code, "Plater.SendComm%s*%(", "Plater.SendComm(" .. globalScriptContainer.ScriptAmount + 1 .. ", \"" .. scriptObject.scriptId .. "\", \"" .. scriptObject.UID .. "\", ")
-				DevTools_Dump(code)
 			else
 				local foundSendComm = string.find(code, "Plater.SendComm")
 				if foundSendComm then
