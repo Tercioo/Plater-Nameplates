@@ -301,6 +301,7 @@ local HOOK_PLAYER_LOGON = {ScriptAmount = 0}
 local HOOK_MOD_INITIALIZATION = {ScriptAmount = 0}
 local HOOK_COMM_RECEIVED_MESSAGE = {ScriptAmount = 0}
 local HOOK_COMM_SEND_MESSAGE = {ScriptAmount = 0}
+local HOOK_NAMEPLATE_DESTRUCTOR = {ScriptAmount = 0}
 
 local PLATER_GLOBAL_MOD_ENV = {}  -- contains modEnv for each mod, identified by "<mod name>"
 local PLATER_GLOBAL_SCRIPT_ENV = {} -- contains modEnv for each script, identified by "<script name>"
@@ -9930,7 +9931,6 @@ end
 			["WipeHookContainers"] = true,
 			["GetContainerForHook"] = true,
 			["CurrentlyLoadedHooks"] = true,
-			["DestructorScriptHooks"] = true,
 			["RunDestructorForHook"] = true,
 			["CompileHook"] = true,
 			["CompileScript"] = true,
@@ -10048,6 +10048,7 @@ end
 			["EndLogPerformanceCore"] = false,
 			["DumpPerformance"] = true,
 			["ShowPerfData"] = true,
+			["StoreEventLogData"] = true,
 			["CheckOptionsTab"] = true,
 			["OpenOptionsPanel"] = true,
 			["TriggerDefaultMembers"] = true,
@@ -10253,6 +10254,7 @@ end
 		HOOK_MOD_INITIALIZATION,
 		HOOK_COMM_RECEIVED_MESSAGE,
 		HOOK_COMM_SEND_MESSAGE,
+		HOOK_NAMEPLATE_DESTRUCTOR,
 	}
 
 	function Plater.WipeHookContainers (noHotReload)
@@ -10314,6 +10316,8 @@ end
 			return HOOK_COMM_RECEIVED_MESSAGE
 		elseif (hookName == "Send Comm Message") then
 			return HOOK_COMM_SEND_MESSAGE
+		elseif (hookName == "Destructor") then
+			return HOOK_NAMEPLATE_DESTRUCTOR
 		else
 			Plater:Msg ("Unknown hook: " .. (hookName or "Invalid Hook Name"))
 		end
@@ -10321,8 +10325,6 @@ end
 
 	--store the names of hooks that passed the filters
 	Plater.CurrentlyLoadedHooks = {}
-	--store global objects of hooks with destructors, key is the script object, value is the global object
-	Plater.DestructorScriptHooks = {}
 
 	function Plater.RunDestructorForHook (scriptObject)
 		--check if the script has a destructor script
@@ -10352,7 +10354,13 @@ end
 				for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 					if (plateFrame) then
 						
-						local globalScriptObject = Plater.DestructorScriptHooks [scriptObject.scriptId]
+						--local globalScriptObject = HOOK_NAMEPLATE_DESTRUCTOR [scriptObject.scriptId]
+						--does not exist when mod is not loaded through load conditions or similar
+						local globalScriptObject = HOOK_NAMEPLATE_DESTRUCTOR [scriptObject.scriptId] or {
+							HotReload = -1,
+							DBScriptObject = scriptObject,
+							Build = PLATER_HOOK_BUILD,
+						}
 						local unitFrame = plateFrame.unitFrame
 						local scriptContainer = unitFrame:ScriptGetContainer()
 						local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Destructor")
@@ -10537,21 +10545,17 @@ end
 					SetPlaterEnvironment(compiledScript)
 				end
 				
-				if (hookName == "Destructor") then
-					Plater.DestructorScriptHooks [scriptObject.scriptId] = globalScriptObject
-				else
-					--store the function to execute inside the global script object
-					globalScriptObject [hookName] = compiledScript()
-					
-					--insert the script in the global script container, no need to check if already exists, hook containers cache are cleaned before script compile
-					tinsert (globalScriptContainer, globalScriptObject)
-					globalScriptContainer.ScriptAmount = globalScriptContainer.ScriptAmount + 1
-					
-					if (hookName == "Constructor") then
-						globalScriptObject.HasConstructor = true
-					elseif (hookName == "Initialization") and needsInitCall then
-						Plater.ScriptMetaFunctions.ScriptRunNoAttach (globalScriptObject, "Initialization")
-					end
+				--store the function to execute inside the global script object
+				globalScriptObject [hookName] = compiledScript()
+				
+				--insert the script in the global script container, no need to check if already exists, hook containers cache are cleaned before script compile
+				tinsert (globalScriptContainer, globalScriptObject)
+				globalScriptContainer.ScriptAmount = globalScriptContainer.ScriptAmount + 1
+				
+				if (hookName == "Constructor") then
+					globalScriptObject.HasConstructor = true
+				elseif (hookName == "Initialization") and needsInitCall then
+					Plater.ScriptMetaFunctions.ScriptRunNoAttach (globalScriptObject, "Initialization")
 				end
 			end
 		end
