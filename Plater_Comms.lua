@@ -13,7 +13,7 @@ end
 
 function dispatchSendCommEvents()
 	Plater.DispatchCommSendMessageHookEvents()
-	C_Timer.NewTimer(CONST_THROTTLE_HOOK_COMMS, dispatchSendCommEvents)
+	C_Timer.After(CONST_THROTTLE_HOOK_COMMS, dispatchSendCommEvents)
 end
 dispatchSendCommEvents() -- can be done immediately
 
