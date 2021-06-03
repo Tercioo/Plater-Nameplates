@@ -6252,8 +6252,8 @@ local relevance_options = {
 				Plater.db.profile.honor_blizzard_plate_alpha = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Use Blizzard's Occlusion" .. CVarIcon,
-			desc = "Use the 'occluded' feature from blizzard.\n\nThis setting only works with 'Use custom strata channels' enabled." .. CVarDesc,
+			name = "Use Blizzard's Nameplate Alpha" .. CVarIcon,
+			desc = "Use the 'occluded' and other blizzard nameplate alpha values from blizzard settings.\n\nThis setting only works with 'Use custom strata channels' enabled." .. CVarDesc,
 			id = "transparency_blizzard_alpha",
 		},
 		{
