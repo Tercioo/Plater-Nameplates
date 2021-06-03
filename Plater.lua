@@ -2030,27 +2030,36 @@ local class_specs_coords = {
 		end
 	end
 	
+	function Plater.SetNameplateScale(unitFrame, scale)
+		scale = tonumber(scale)
+		unitFrame.nameplateScaleAdjust = scale and (scale > 0) and scale or 1
+		if (DB_USE_UIPARENT) then
+			Plater.UpdateUIParentScale (unitFrame.PlateFrame)
+		else
+			unitFrame:SetScale (unitFrame.nameplateScaleAdjust)
+		end
+	end
+	
 	--when using UIParent as the parent for the unitFrame, this function is hooked in the plateFrame OnSizeChanged script
 	--the goal is to adjust the the unitFrame scale when the plateFrame scale changes
 	--this approach also solves the issue to the unitFrame not playing correctly the animation when the nameplate is removed from the screen
 	--self is plateFrame, w, h aren't reliable
 	function Plater.UpdateUIParentScale (self, w, h) --private
-		if (self.unitFrame) then
+		local unitFrame = self.unitFrame
+		if (unitFrame) then
 			local defaultScale = self:GetEffectiveScale()
 			--local defaultScale = UIParent:GetEffectiveScale()
 			
 			if (defaultScale < 0.4) then
 				--assuming the nameplate is in process of being removed from the screen if the scale if lower than .4
-				self.unitFrame:SetScale (defaultScale)
+				unitFrame:SetScale (defaultScale)
 			else
 				--scale (adding a fine tune knob)
 				local scaleFineTune = max (Plater.db.profile.ui_parent_scale_tune, 0.3)
 				
 				--@Ariani - March, 9
-				self.unitFrame:SetScale (defaultScale * scaleFineTune)
-				
-				--@Tercio
-				--self.unitFrame:SetScale (Clamp (defaultScale + scaleFineTune, 0.01, 5))
+				unitFrame:SetScale (defaultScale * scaleFineTune * (tonumber(unitFrame.nameplateScaleAdjust) or 1))
+
 			end
 		end
 	end
@@ -3327,6 +3336,8 @@ local class_specs_coords = {
 				HOOKED_BLIZZARD_PLATEFRAMES[tostring(plateFrame.UnitFrame)] = true
 				
 			end
+			
+			unitFrame.nameplateScaleAdjust = 1
 			
 			if (DB_USE_UIPARENT) then
 				plateFrame:HookScript("OnSizeChanged", Plater.UpdateUIParentScale)
@@ -10025,6 +10036,7 @@ end
 			["GetNpcID"] = false,
 			["ForceTickOnAllNameplates"] = true,
 			["UpdateUIParentScale"] = true,
+			["SetNameplateScale"] = false,
 			["UpdateUIParentLevels"] = true,
 			["UpdateUIParentTargetLevels"] = true,
 			["RefreshTankCache"] = true,
