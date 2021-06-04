@@ -321,6 +321,10 @@ local createUniqueIdentifier = function(seed)
     getTime = getTime:gsub("%.", "") --remove the dot
     local getTimeInt = tonumber(getTime) --conver to to number
 
+    
+    getTimeInt = math.fmod(getTimeInt, 2^31) --ensure integer range
+
+
 	--tranform GetTime into a hex
     local hexGetTime = format("%8x", getTimeInt)
 	--remove spaces added due to the string not having 8 digits
