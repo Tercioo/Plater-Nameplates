@@ -899,9 +899,6 @@ local class_specs_coords = {
 
 	local DB_CAPTURED_SPELLS = {}
 
-	local DB_SHOW_PURGE_IN_EXTRA_ICONS
-	local DB_SHOW_ENRAGE_IN_EXTRA_ICONS
-
 	--store the aggro color table for tanks and dps
 	local DB_AGGRO_TANK_COLORS
 	local DB_AGGRO_DPS_COLORS
@@ -928,10 +925,6 @@ local class_specs_coords = {
 
 	Plater.ScriptUnit = {}
 	local SCRIPT_UNIT = Plater.ScriptUnit
-
-	--if automatic aura tracking and there's auras to manually track (user added into the buff tracking tab)
-	local CAN_TRACK_EXTRA_BUFFS = false
-	local CAN_TRACK_EXTRA_DEBUFFS = false
 	
 	--spell animations - store a table with information about animation for spells
 	local SPELL_WITH_ANIMATIONS = {}
