@@ -1098,6 +1098,8 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 	end
 	
 	function Plater.UpdateAuras_Manual (self, unit, isPersonal)
+		Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdateAuras_Manual")
+		
 		Plater.ResetAuraContainer (self)
 		
 		if isPersonal then
@@ -1114,10 +1116,14 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 
 		--> hide not used aura frames
 		Plater.HideNonUsedAuraIcons (self)
+		
+		Plater.EndLogPerformanceCore("Plater-Core", "Update", "UpdateAuras_Manual")
 	end
 
 	--> track auras automatically when the user has automatic aura tracking selected in the options panel
 	function Plater.UpdateAuras_Automatic (self, unit)
+		Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdateAuras_Automatic")
+		
 		Plater.ResetAuraContainer (self)
 		local unitAuraCache = self.unitFrame.AuraCache
 		
@@ -1298,6 +1304,8 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 		
 		--hide non used icons
 			Plater.HideNonUsedAuraIcons (self)
+			
+		Plater.EndLogPerformanceCore("Plater-Core", "Update", "UpdateAuras_Automatic")
 	end
 
 	--used in scripts to get a specific buff from the unit, return full information
@@ -1348,6 +1356,8 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 	end
 
 	function Plater.UpdateAuras_Self_Automatic (self)
+		Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdateAuras_Self_Automatic")
+		
 		Plater.ResetAuraContainer (self)
 		local unitAuraCache = self.unitFrame.AuraCache
 		local noBuffDurationLimitation = Plater.db.profile.aura_show_all_duration_buffs_personal
@@ -1459,6 +1469,8 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 		
 		--> hide not used aura frames
 		Plater.HideNonUsedAuraIcons (self)
+		
+		Plater.EndLogPerformanceCore("Plater-Core", "Update", "UpdateAuras_Self_Automatic")
     end
     
 

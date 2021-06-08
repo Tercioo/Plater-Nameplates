@@ -5536,6 +5536,8 @@ end
 			
 			--update buffs and debuffs
 			if (DB_AURA_ENABLED) then
+				--Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdateAuras")
+				
 				if (DB_TRACK_METHOD == 0x1) then --automatic
 					if (tickFrame.actorType == ACTORTYPE_PLAYER) then
 						--update auras on the personal bar
@@ -5560,6 +5562,8 @@ end
 				
 				tickFrame.BuffFrame:SetAlpha (DB_AURA_ALPHA)
 				tickFrame.BuffFrame2:SetAlpha (DB_AURA_ALPHA)
+				
+				--Plater.EndLogPerformanceCore("Plater-Core", "Update", "UpdateAuras")
 			end
 			-- update DBM and BigWigs nameplate auras
 			Plater.UpdateBossModAuras(unitFrame)
