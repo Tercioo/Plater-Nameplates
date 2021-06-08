@@ -3618,12 +3618,11 @@ local class_specs_coords = {
 			--can check aggro
 			unitFrame.CanCheckAggro = unitFrame.displayedUnit == unitID and actorType == ACTORTYPE_ENEMY_NPC
 			
-			--tick
+			--tick-setup
 			plateFrame.OnTickFrame.ThrottleUpdate = DB_TICK_THROTTLE
 			plateFrame.OnTickFrame.actorType = actorType
 			plateFrame.OnTickFrame.unit = unitID
 			plateFrame.OnTickFrame:SetScript ("OnUpdate", Plater.NameplateTick)
-			Plater.NameplateTick (plateFrame.OnTickFrame, 10)
 
 			--highlight check
 			if (DB_HOVER_HIGHLIGHT and (not plateFrame.PlayerCannotAttack or (plateFrame.PlayerCannotAttack and DB_SHOW_HEALTHBARS_FOR_NOT_ATTACKABLE)) and (actorType == ACTORTYPE_ENEMY_PLAYER or actorType == ACTORTYPE_ENEMY_NPC)) then
@@ -3633,7 +3632,7 @@ local class_specs_coords = {
 			end
 			
 			--range
-			Plater.CheckRange (plateFrame, true)
+			--Plater.CheckRange (plateFrame, true)
 			
 			--hooks
 			if (HOOK_NAMEPLATE_ADDED.ScriptAmount > 0) then
@@ -3645,6 +3644,9 @@ local class_specs_coords = {
 					unitFrame:ScriptRunHook (scriptInfo, "Nameplate Added")
 				end
 			end
+			
+			--tick
+			Plater.NameplateTick (plateFrame.OnTickFrame, 999)
 			
 			unitFrame.PlaterOnScreen = true
 		end,
@@ -5406,7 +5408,7 @@ end
 	
 	function Plater.ForceTickOnAllNameplates() --private
 		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-			Plater.NameplateTick (plateFrame.OnTickFrame, 1) --GetWorldDeltaSeconds()
+			Plater.NameplateTick (plateFrame.OnTickFrame, 10) --GetWorldDeltaSeconds()
 		end
 	end
 	
@@ -5467,7 +5469,7 @@ end
 			local actorTypeDBConfig = DB_PLATE_CONFIG [tickFrame.actorType]
 			
 			--perform a range check
-			Plater.CheckRange (tickFrame.PlateFrame)
+			Plater.CheckRange (tickFrame.PlateFrame, (deltaTime == 999))
 			
 			--health cutoff (execute range) - don't show if the nameplate is the personal bar
 			if (DB_USE_HEALTHCUTOFF and not unitFrame.IsSelf and not unitFrame.PlayerCannotAttack) then
