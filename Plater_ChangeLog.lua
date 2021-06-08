@@ -8,6 +8,9 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1623138127,  "Backend Change", "June 8th, 2021", "Removing redundant calls.", "cont1nuity"},
+			{1623138127,  "Backend Change", "June 8th, 2021", "Nameplate update ticks are now spread across multiple frames for smother update cycles.", "cont1nuity"},
+			{1623138127,  "Backend Change", "June 8th, 2021", "Performance logging now captures unit aura updates.", "cont1nuity"},
 			{1623138127,  "Bug Fix", "June 8th, 2021", "Fixing an issue with unit name updates.", "cont1nuity"},
 			
 			{1621935367,  "New Feature", "June 3rd, 2021", "New function 'Plater.SetNameplateScale(unitFrame, scale)' to a custom nameplate scale factor.", "cont1nuity"},
