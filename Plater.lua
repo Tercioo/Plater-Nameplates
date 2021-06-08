@@ -8506,6 +8506,8 @@ end
 			return
 		end
 		
+		Plater.StartLogPerformanceCore("Plater-Core", "Update", "IsQuestObjective")
+		
 		-- reset quest amount
 		plateFrame.QuestAmountCurrent = nil
 		plateFrame.QuestAmountTotal = nil
@@ -8635,16 +8637,13 @@ end
 		plateFrame.QuestInfo = unitQuestData
 		plateFrame.unitFrame.QuestInfo = unitQuestData
 		
-		if isQuestUnit and atLeastOneQuestUnfinished then
-			plateFrame [MEMBER_QUEST] = true
-			plateFrame.unitFrame [MEMBER_QUEST] = true
-			return true
-		else
-			plateFrame [MEMBER_QUEST] = false
-			plateFrame.unitFrame [MEMBER_QUEST] = false
-			return false
-		end
+		local namePlateIsQuestObjective = isQuestUnit and atLeastOneQuestUnfinished
+		plateFrame [MEMBER_QUEST] = namePlateIsQuestObjective
+		plateFrame.unitFrame [MEMBER_QUEST] = namePlateIsQuestObjective
 		
+		Plater.EndLogPerformanceCore("Plater-Core", "Update", "IsQuestObjective")
+		
+		return namePlateIsQuestObjective
 	end
 
 	local update_quest_cache = function()
