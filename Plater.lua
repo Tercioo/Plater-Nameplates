@@ -5410,6 +5410,38 @@ end
 		end
 	end
 	
+	--FPS meter to spread NameplateTick evenly
+	Plater.FPSData = {
+		startTime = GetTime(),
+		platesUpdatedThisFrame = 0,
+		platesToUpdatePerFrame = 40,
+		frames = 0,
+		curFPS = 0,
+	}
+	
+	function Plater.EveryFrameFPSCheck()
+		-- calculate every .25sec
+		local curTime = GetTime()
+		local curFPSData = Plater.FPSData
+		if (curFPSData.startTime + 0.25) < curTime then
+			curFPSData.curFPS = curFPSData.frames / (curTime - curFPSData.startTime)
+			curFPSData.platesToUpdatePerFrame = math.ceil(NUM_NAMEPLATES_ON_SCREEN / DB_TICK_THROTTLE / curFPSData.curFPS)
+			
+			--ViragDevTool_AddData({curFPSData=curFPSData, NUM_NAMEPLATES_ON_SCREEN = NUM_NAMEPLATES_ON_SCREEN}, "Plater_FPS")
+			
+			curFPSData.frames = 0
+			curFPSData.startTime = curTime
+		else
+			curFPSData.frames = curFPSData.frames + 1
+		end
+		
+		--ViragDevTool_AddData(curFPSData.platesUpdatedThisFrame, "platesUpdatedThisFrame")
+		curFPSData.platesUpdatedThisFrame = 0
+		
+		C_Timer.After( 0, Plater.EveryFrameFPSCheck )
+	end
+	C_Timer.After( 0, Plater.EveryFrameFPSCheck )
+	
 	-- ~ontick ~onupdate ~tick
 	function Plater.NameplateTick (tickFrame, deltaTime) --private
 		Plater.StartLogPerformanceCore("Plater-Core", "Update", "NameplateTick")
@@ -5420,7 +5452,17 @@ end
 		local profile = Plater.db.profile
 		
 		--throttle updates, things on this block update with the interval set in the advanced tab
-		if (tickFrame.ThrottleUpdate < 0) then
+		local shouldUpdate = tickFrame.ThrottleUpdate < 0
+		local curFPSData = Plater.FPSData
+		if shouldUpdate and not ((1.5 * DB_TICK_THROTTLE + tickFrame.ThrottleUpdate) < 0) then --ensure updates are not posponed indefinetely
+			if curFPSData.platesUpdatedThisFrame >= curFPSData.platesToUpdatePerFrame then
+				shouldUpdate = false
+			end
+		end
+		
+		if (shouldUpdate) then
+			curFPSData.platesUpdatedThisFrame = curFPSData.platesUpdatedThisFrame + 1
+			
 			--make the db path smaller for performance
 			local actorTypeDBConfig = DB_PLATE_CONFIG [tickFrame.actorType]
 			
@@ -10012,6 +10054,7 @@ end
 			["UpdateAllPlates"] = true,
 			["FullRefreshAllPlates"] = true,
 			["UpdatePlateClickSpace"] = true,
+			["EveryFrameFPSCheck"] = true,
 			["NameplateTick"] = true,
 			["OnPlayerTargetChanged"] = true,
 			["UpdateTarget"] = true,
@@ -10089,6 +10132,13 @@ end
 			["SendCommMessage"] = true,
 			["CreateCommHeader"] = true,
 			["SendComm"] = false,
+			["FPSData"] = {
+				["startTime"] = true,
+				["frames"] = true,
+				["platesUpdatedThisFrame"] = true,
+				["platesToUpdatePerFrame"] = true,
+				["curFPS"] = false,
+			}
 		},
 		
 		["DetailsFramework"] = {
