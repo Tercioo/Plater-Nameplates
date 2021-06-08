@@ -953,6 +953,8 @@ local class_specs_coords = {
 	local HOOKED_BLIZZARD_PLATEFRAMES = {}
 	local ENABLED_BLIZZARD_PLATEFRAMES = {}
 	local SUPPORT_BLIZZARD_PLATEFRAMES = false
+	local NUM_NAMEPLATES_ON_SCREEN = 0
+	local NAMEPLATES_ON_SCREEN_CACHE = {}
 	
 	local CLASS_INFO_CACHE = {}
 
@@ -3299,6 +3301,11 @@ local class_specs_coords = {
 				return
 			end
 			
+			if not NAMEPLATES_ON_SCREEN_CACHE[unitID] then
+				NAMEPLATES_ON_SCREEN_CACHE[unitID] = true
+				NUM_NAMEPLATES_ON_SCREEN = NUM_NAMEPLATES_ON_SCREEN + 1
+			end
+			
 			--hide blizzard namepaltes
 			--plateFrame.UnitFrame:Hide()
 			Plater.OnRetailNamePlateShow(plateFrame.UnitFrame)
@@ -3651,6 +3658,9 @@ local class_specs_coords = {
 			if not plateFrame.unitFrame.PlaterOnScreen then
 				return
 			end
+			
+			NAMEPLATES_ON_SCREEN_CACHE[unitBarId] = false
+			NUM_NAMEPLATES_ON_SCREEN = NUM_NAMEPLATES_ON_SCREEN - 1
 			
 			--debug for hunter faith death
 			--if (select (2, UnitClass (unitBarId)) == "HUNTER") then
