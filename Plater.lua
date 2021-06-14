@@ -1726,7 +1726,7 @@ local class_specs_coords = {
 		if (plateFrame.HasUpdateScheduled and not plateFrame.HasUpdateScheduled._cancelled) then
 			return
 		else
-			plateFrame.HasUpdateScheduled = C_Timer.NewTimer (0.75, Plater.RunScheduledUpdate)
+			plateFrame.HasUpdateScheduled = C_Timer.NewTimer (0, Plater.RunScheduledUpdate) --next frame
 			plateFrame.HasUpdateScheduled.plateFrame = plateFrame
 			plateFrame.HasUpdateScheduled.GUID = plateFrame [MEMBER_GUID]
 		end
