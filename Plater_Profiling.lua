@@ -2,6 +2,8 @@
 
 local Plater = _G.Plater
 local DF = _G.DetailsFramework
+local C_Timer = _G.C_Timer
+local debugprofilestop = debugprofilestop
 
 local profData = {}
 local eventLogData = {}
