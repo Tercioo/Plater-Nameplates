@@ -3346,6 +3346,8 @@ local class_specs_coords = {
 			if (DB_USE_UIPARENT) then
 				plateFrame:HookScript("OnSizeChanged", Plater.UpdateUIParentScale)
 				Plater.UpdateUIParentScale(plateFrame)
+			else
+				unitFrame:SetScale (1) --reset scale
 			end
 			
 			--check if the hide hook is registered on this Blizzard nameplate
