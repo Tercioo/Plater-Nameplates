@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1623138127,  "Backend Change", "June 16th, 2021", "Enabling execute range indicator for paladins in TBC.", "cont1nuity"},
 			{1623138127,  "Backend Change", "June 8th, 2021", "Removing redundant calls.", "cont1nuity"},
 			{1623138127,  "Backend Change", "June 8th, 2021", "Nameplate update ticks are now spread across multiple frames for smother update cycles.", "cont1nuity"},
 			{1623138127,  "Backend Change", "June 8th, 2021", "Performance logging now captures unit aura updates.", "cont1nuity"},

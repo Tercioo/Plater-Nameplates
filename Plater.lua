@@ -1171,6 +1171,11 @@ local class_specs_coords = {
 					if GetSpellInfo(GetSpellInfo(5308)) then
 						lowExecute = 0.2
 					end
+				elseif (class == "PALADIN") then
+					-- Hammer of Wrath
+					if GetSpellInfo(GetSpellInfo(24275)) then
+						lowExecute = 0.2
+					end
 				end
 			end
 		
