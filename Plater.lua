@@ -10118,6 +10118,7 @@ end
 			["EnableProfiling"] = false,
 			["DisableProfiling"] = false,
 			["StartLogPerformance"] = false,
+			["EndLogPerformance"] = false,
 			["StartLogPerformanceCore"] = false,
 			["StartLogPerformanceCore"] = false,
 			["EndLogPerformanceCore"] = false,
