@@ -4683,15 +4683,9 @@ function Plater.OnInit() --private --~oninit ~init
 					if (self.ReUpdateNextTick) then
 						self.ReUpdateNextTick = nil
 					end
-
-					--get the script object of the aura which will be showing in this icon frame
-					local globalScriptObject = SCRIPT_CASTBAR [self.SpellName]
 					
 					if (self.unit and Plater.db.profile.castbar_target_show and not UnitIsUnit (self.unit, "player")) then
 						local targetName = UnitName (self.unit .. "target")
-						if DB_USE_NAME_TRANSLIT then
-							targetName = LibTranslit:Transliterate(targetName, TRANSLIT_MARK)
-						end
 						if (targetName) then
 
 							local canShowTargetName = true
@@ -4703,6 +4697,10 @@ function Plater.OnInit() --private --~oninit ~init
 							end
 
 							if (canShowTargetName) then
+								if DB_USE_NAME_TRANSLIT then
+									targetName = LibTranslit:Transliterate(targetName, TRANSLIT_MARK)
+								end
+								
 								local _, class = UnitClass (self.unit .. "target")
 								if (class) then 
 									self.FrameOverlay.TargetName:SetText (targetName)
@@ -4722,6 +4720,9 @@ function Plater.OnInit() --private --~oninit ~init
 					end
 					
 					self.ThrottleUpdate = DB_TICK_THROTTLE
+
+					--get the script object of the aura which will be showing in this icon frame
+					local globalScriptObject = SCRIPT_CASTBAR [self.SpellName]
 
 					--check if this aura has a custom script
 					if (globalScriptObject and self.SpellEndTime and GetTime() < self.SpellEndTime and (self.casting or self.channeling) and not self.IsInterrupted) then
