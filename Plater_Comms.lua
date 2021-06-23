@@ -1,9 +1,12 @@
 local Plater = _G.Plater
-local C_Timer = C_Timer
+local C_Timer = _G.C_Timer
 local COMM_PLATER_PREFIX = "PLT"
 local COMM_SCRIPT_GROUP_EXPORTED = "GE"
 
+local pcall = pcall
+
 local LibAceSerializer = LibStub:GetLibrary ("AceSerializer-3.0")
+local LibDeflate = LibStub:GetLibrary ("LibDeflate")
 
 local CONST_THROTTLE_HOOK_COMMS = 0.500 --2 comms per second per mod
 
@@ -101,7 +104,6 @@ end
 
 -- ~compress ~zip ~export ~import ~deflate ~serialize
 function Plater.CompressData (data, dataType)
-    local LibDeflate = LibStub:GetLibrary ("LibDeflate")
     
     if (LibDeflate and LibAceSerializer) then
         local dataSerialized = LibAceSerializer:Serialize (data)
@@ -123,7 +125,6 @@ end
 
 
 function Plater.DecompressData (data, dataType)
-    local LibDeflate = LibStub:GetLibrary ("LibDeflate")
     
     if (LibDeflate and LibAceSerializer) then
         

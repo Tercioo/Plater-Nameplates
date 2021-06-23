@@ -6,6 +6,9 @@ local LibSharedMedia = LibStub:GetLibrary ("LibSharedMedia-3.0")
 local LibRangeCheck = LibStub:GetLibrary ("LibRangeCheck-2.0")
 local _
 
+local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
+local IS_WOW_PROJECT_NOT_MAINLINE = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
+
 local PixelUtil = PixelUtil or DFPixelUtil
 
 --localization
@@ -5749,7 +5752,7 @@ do
 		
 	}
 	
-	if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then
+	if IS_WOW_PROJECT_NOT_MAINLINE then
 		options_personal = {
 			{type = "label", get = function() return "Not available in WoW Classic." end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		}
@@ -6213,7 +6216,7 @@ local relevance_options = {
 			name = "Personal Health and Mana Bars" .. CVarIcon,
 			desc = "Shows a mini health and mana bars under your character." .. CVarDesc,
 			nocombat = true,
-			hidden = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE,
+			hidden = IS_WOW_PROJECT_NOT_MAINLINE,
 		},
 		{
 			type = "toggle",
@@ -6227,7 +6230,7 @@ local relevance_options = {
 			name = "Show Resources on Target",
 			desc = "Shows your resource such as combo points above your current target.\n\nCharacter specific setting!",
 			nocombat = true,
-			hidden = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE,
+			hidden = IS_WOW_PROJECT_NOT_MAINLINE,
 		},
 		{
 			type = "toggle",
@@ -6731,7 +6734,7 @@ local relevance_options = {
 		{type = "label", get = function() return "Range Check By Yards - Enemy" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},		
 	}
 	
-	if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
+	if IS_WOW_PROJECT_MAINLINE then
 		local playerSpecs = Plater.SpecList [select (2, UnitClass ("player"))]
 		for specID, _ in pairs (playerSpecs) do
 			local spec_id, spec_name, spec_description, spec_icon, spec_background, spec_role, spec_class = GetSpecializationInfoByID (specID)
@@ -6789,7 +6792,7 @@ local relevance_options = {
 		tinsert (options_table1, t)
 	end
 	
-	if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
+	if IS_WOW_PROJECT_MAINLINE then
 		local playerSpecs = Plater.SpecList [select (2, UnitClass ("player"))]
 		for specID, _ in pairs (playerSpecs) do
 			local spec_id, spec_name, spec_description, spec_icon, spec_background, spec_role, spec_class = GetSpecializationInfoByID (specID)
@@ -7092,7 +7095,7 @@ local relevance_options = {
 			end,
 			name = "Upper Execute Range",
 			desc = "Show an indicator when the unit is in the upper execute range.\nPlater auto detects execute range for:\n\n|cFFFFFF00Hunter|r: Careful Aim talented.\n\n|cFFFFFF00Warrior|r: Condemn (Venthyr Covenant).\n\n|cFFFFFF00Mage|r: Fire spec with Firestarter talented.",
-			hidden = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE,
+			hidden = IS_WOW_PROJECT_NOT_MAINLINE,
 		},
 
 		{
@@ -12435,7 +12438,7 @@ end
 	}
 	
 	
-	if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then
+	if IS_WOW_PROJECT_NOT_MAINLINE then
 		local thread_options_tank = {
 			{type = "label", get = function() return "Tank or DPS Colors:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			
@@ -12587,7 +12590,7 @@ end
 				Plater.UpdateAllPlates()
 			end,
 			nocombat = true,
-			name = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) and "Quick Hide on Death" or "Quick Hide Nameplates",
+			name = (IS_WOW_PROJECT_MAINLINE) and "Quick Hide on Death" or "Quick Hide Nameplates",
 			desc = "When the unit dies, immediately hide the nameplates without playing the shrink animation.",
 		},
 		
@@ -13158,7 +13161,7 @@ end
 		},
 	
 		{type = "blank"},
-		{type = "label", get = function() return "Personal Bar Custom Position:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE},
+		{type = "label", get = function() return "Personal Bar Custom Position:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = IS_WOW_PROJECT_NOT_MAINLINE},
 		{
 			type = "range",
 			get = function() return tonumber (GetCVar ("nameplateSelfTopInset")*100) end,
@@ -13223,7 +13226,7 @@ end
 			nocombat = true,
 			name = "Top Constrain" .. CVarIcon,
 			desc = "Adjust the top constrain position where the personal bar cannot pass.\n\n|cFFFFFFFFDefault: 50|r" .. CVarDesc,
-			hidden = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE,
+			hidden = IS_WOW_PROJECT_NOT_MAINLINE,
 		},
 		
 		{
@@ -13290,7 +13293,7 @@ end
 			nocombat = true,
 			name = "Bottom Constrain" .. CVarIcon,
 			desc = "Adjust the bottom constrain position where the personal bar cannot pass.\n\n|cFFFFFFFFDefault: 20|r" .. CVarDesc,
-			hidden = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE,
+			hidden = IS_WOW_PROJECT_NOT_MAINLINE,
 		},	
 		
 		{type = "blank"},
@@ -13351,7 +13354,7 @@ end
 
 		{type = "blank"},
 
-		{type = "label", get = function() return "Unit Widget Bars:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE},
+		{type = "label", get = function() return "Unit Widget Bars:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = IS_WOW_PROJECT_NOT_MAINLINE},
 		{
 			type = "toggle",
 			get = function() return Plater.db.profile.usePlaterWidget end,
@@ -13360,7 +13363,7 @@ end
 			end,
 			name = L["OPTIONS_ENABLED"],
 			desc = "Enabled",
-			hidden = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE,
+			hidden = IS_WOW_PROJECT_NOT_MAINLINE,
 		},
 		{
 			type = "range",
@@ -13375,7 +13378,7 @@ end
 			name = "Scale",
 			desc = "Slightly adjust the size of widget bars.",
 			usedecimals = true,
-			hidden = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE,
+			hidden = IS_WOW_PROJECT_NOT_MAINLINE,
 		},
 		{
 			type = "select",
@@ -13383,7 +13386,7 @@ end
 			values = function() return build_anchor_side_table (nil, "widget_bar_anchor") end,
 			name = L["OPTIONS_ANCHOR"],
 			desc = "Which side of the nameplate the widget bar should attach to.",
-			hidden = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE,
+			hidden = IS_WOW_PROJECT_NOT_MAINLINE,
 		},
 		{
 			type = "range",
@@ -13398,7 +13401,7 @@ end
 			usedecimals = true,
 			name = L["OPTIONS_XOFFSET"],
 			desc = "Adjust the position on the X axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
-			hidden = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE,
+			hidden = IS_WOW_PROJECT_NOT_MAINLINE,
 		},
 		{
 			type = "range",
@@ -13413,7 +13416,7 @@ end
 			usedecimals = true,
 			name = L["OPTIONS_YOFFSET"],
 			desc = "Adjust the position on the Y axis.\n\n|cFFFFFF00Important|r: right click to type the value.",
-			hidden = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE,
+			hidden = IS_WOW_PROJECT_NOT_MAINLINE,
 		},
 		
 	}

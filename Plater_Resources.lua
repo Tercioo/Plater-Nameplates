@@ -7,6 +7,9 @@ local UnitPower = _G.UnitPower
 local UnitPowerMax = _G.UnitPowerMax
 local abs = _G.abs
 
+local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
+local IS_WOW_PROJECT_NOT_MAINLINE = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
+
 --when 'runOnNextFrame' is used instead of 'C_Timer.After', it's to indicate the func will skip the current frame and run on the next one
 local runOnNextFrame = function (func)
     _G.C_Timer.After(0, func)
@@ -269,7 +272,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
         --grab the player class
         local playerClass = Plater.PlayerClass
 
-        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then --classic
+        if (IS_WOW_PROJECT_NOT_MAINLINE) then --classic
 
         else
             if (playerClass == "MAGE") then
@@ -323,7 +326,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
 
 
     local canUsePlaterResourceFrame = function()
-		if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then return end
+		if IS_WOW_PROJECT_NOT_MAINLINE then return end
 		
         --nameplate which will have the resource bar
         local nameplateAnchor
@@ -348,7 +351,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
             end
         end
 
-        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+        if (IS_WOW_PROJECT_NOT_MAINLINE) then
 
         else
 
@@ -407,7 +410,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
 --called when 'CanUsePlaterResourceFrame' gives green flag to show the resource bar
 --this function receives the nameplate where the resource bar will be attached
     function Plater.UpdatePlaterResourceFrame(plateFrame)
-		if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then return end
+		if IS_WOW_PROJECT_NOT_MAINLINE then return end
 
         --get the main resource frame
         local platerResourceFrame = _G.PlaterNameplatesResourceFrame
@@ -457,7 +460,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
         resourceBar:SetHeight(1)
         platerResourceFrame:Show()
         
-        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+        if (IS_WOW_PROJECT_NOT_MAINLINE) then
 
 
         else
