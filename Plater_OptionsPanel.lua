@@ -3045,6 +3045,17 @@ Plater.CreateAuraTesting()
 						local npcID = unitFrame [MEMBER_NPCID]
 						
 						if (npcID) then
+							if (not DB_NPCID_CACHE [npcID]) then
+								DB_NPCID_CACHE [npcID] = {unitFrame.PlateFrame [MEMBER_NAME], Plater.ZoneName}
+								
+								if (PlaterOptionsPanelFrame and PlaterOptionsPanelFrame:IsShown()) then
+									PlaterOptionsPanelContainerColorManagementColorsScroll:Hide()
+									C_Timer.After (.2, function()
+										PlaterOptionsPanelContainerColorManagementColorsScroll:Show()
+									end)
+								end
+								
+							end
 							if (not DB_NPCID_COLORS [npcID]) then
 								DB_NPCID_COLORS [npcID] = {true, false, "blue"}
 							end

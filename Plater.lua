@@ -11736,7 +11736,7 @@ function SlashCmdList.PLATER (msg, editbox)
 		if (plateFrame) then
 			local npcId = plateFrame [MEMBER_NPCID]
 			if (npcId) then
-				local colorDB = Plater.db.profile.npc_colors
+				local colorDB = Plater.db.profile.npc_cache
 				if (not colorDB [npcId]) then
 					Plater.db.profile.npc_cache [npcId] = {plateFrame [MEMBER_NAME], Plater.ZoneName}
 					Plater:Msg ("Unit added.")
