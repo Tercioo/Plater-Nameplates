@@ -7482,6 +7482,7 @@ end
 		
 		if (not thisIndicator) then
 			local newIndicator = plateFrame.unitFrame.healthBar:CreateTexture (nil, "overlay")
+			newIndicator:SetDrawLayer("OVERLAY", 7)
 			newIndicator:SetSize (10, 10)
 			tinsert (plateFrame.IconIndicators, newIndicator)
 			thisIndicator = newIndicator
