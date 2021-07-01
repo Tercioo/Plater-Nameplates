@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1625133487,  "Bug Fix", "July 1st, 2021", "Adding consistency checks for broken mod / script imports.", "cont1nuity"},
+			
 			{1624829303,  "Bug Fix", "June 30th, 2021", "Draw indicators above healthbar borders.", "cont1nuity"},
 			{1624829303,  "Backend Change", "June 29th, 2021", "Failsafe checks for 'Plater.HideHealthBar' when selecting to show name-only mode.", "cont1nuity"},
 			{1624829303,  "Backend Change", "June 29th, 2021", "ToC update for 9.1.0 retail client.", "cont1nuity"},

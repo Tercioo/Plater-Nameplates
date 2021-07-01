@@ -11277,6 +11277,11 @@ end
 	function Plater.BuildScriptObjectFromIndexTable (indexTable, scriptType)
 		
 		if (scriptType == "hook") then
+			-- check integrity: name and hooks
+			if not indexTable ["1"] or not indexTable ["9"] then
+				return nil
+			end
+		
 			local scriptObject = {}
 			scriptObject.Enabled 		= true --imported scripts are always enabled
 			scriptObject.Name		= indexTable ["1"]
@@ -11307,6 +11312,12 @@ end
 			return scriptObject
 			
 		elseif (scriptType == "script") then
+			-- check integrity: type, name, triggers and hooks
+			if not indexTable ["1"] or not indexTable ["2"] or not indexTable ["3"] or not indexTable ["4"]
+				or not indexTable ["11"] or not indexTable ["12"] or not indexTable ["13"] or not indexTable ["14"] or not indexTable ["15"] then
+				return nil
+			end
+		
 			local scriptObject = {}
 			
 			scriptObject.Enabled 		= true --imported scripts are always enabled
