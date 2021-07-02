@@ -174,3 +174,19 @@ function Plater.StopDotAnimation(frame, dotFrame)
         --]=]
     end
 end
+
+
+--return true if there's a dot animation running in the frame
+--@frame: the parent frame used on PlayDotAnimation()
+function Plater.HasDotAnimationPlaying(frame)
+    if (not frame.dotTextureAnimations) then
+        return
+    end
+
+    for i = 1, #frame.dotTextureAnimations do
+        local thisDotAnimation = frame.dotTextureAnimations[i]
+        if (thisDotAnimation:GetScript("OnUpdate")) then
+            return true
+        end
+    end
+end
