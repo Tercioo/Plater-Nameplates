@@ -368,7 +368,10 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                     if (option) then
                         local line = self:GetLine(i)
                         line.Icon:SetTexture(option.Icon)
+
                         line.OptionNameLabel:SetText(option.Name)
+                        DF:TruncateText (line.OptionNameLabel, line:GetWidth()-67)
+
                         line.TypeLabel:SetText(listOfAvailableOptions[option.Type])
                         line.RemoveButton.optionIndex = index
                         line.optionIndex = index
