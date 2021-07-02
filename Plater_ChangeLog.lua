@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1625239133,  "Bug Fix", "July 2nd, 2021", "Enabling enemy player class color setting.", "cont1nuity"},
+			
 			{1625133487,  "Bug Fix", "July 1st, 2021", "Adding consistency checks for broken mod / script imports.", "cont1nuity"},
 			
 			{1624829303,  "Bug Fix", "June 30th, 2021", "Draw indicators above healthbar borders.", "cont1nuity"},
