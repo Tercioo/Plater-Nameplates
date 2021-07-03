@@ -3577,13 +3577,15 @@ Plater.CreateAuraTesting()
 						line.SpellName:SetTextTruncated (spellName, headerTable [3].width)
 						line.SourceName:SetTextTruncated (spellData.source, headerTable [4].width)
 						
+						local isCast = spellData.event == "SPELL_CAST_START" or spellData.event == "SPELL_CAST_SUCCESS"
+
 						if (spellData.type == "BUFF") then
 							line.SpellType.color = "PLATER_BUFF"
 							
 						elseif (spellData.type == "DEBUFF") then
 							line.SpellType.color = "PLATER_DEBUFF"
 							
-						elseif (spellData.event == "SPELL_CAST_START") then
+						elseif (isCast) then
 							line.SpellType.color = "PLATER_CAST"
 							
 						end
@@ -3593,8 +3595,7 @@ Plater.CreateAuraTesting()
 						line.SpellIDEntry:SetText (spellID)
 
 						--{event = token, source = sourceName, type = auraType, npcID = Plater:GetNpcIdFromGuid (sourceGUID or "")}
-
-						line.SpellType:SetText (spellData.event == "SPELL_CAST_START" and "Spell Cast" or spellData.event == "SPELL_AURA_APPLIED" and spellData.type)
+						line.SpellType:SetText (isCast and "Spell Cast" or spellData.event == "SPELL_AURA_APPLIED" and spellData.type)
 						
 						line.AddTrackList.SpellID = spellID
 						line.AddTrackList.AuraType = spellData.type

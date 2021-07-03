@@ -9664,6 +9664,9 @@ end
 				--update the hotreload state
 				scriptInfo.HotReload = scriptInfo.GlobalScriptObject.HotReload
 
+				--there's some bug with the global env becoming nil after saving a script
+				--print(scriptInfo.GlobalScriptObject.DBScriptObject.Name, PLATER_GLOBAL_SCRIPT_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId])
+
 				--dispatch the constructor
 				local unitFrame = self.unitFrame or self
 				local scriptName = scriptInfo.GlobalScriptObject.DBScriptObject.Name
