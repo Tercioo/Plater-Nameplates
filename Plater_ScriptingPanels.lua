@@ -338,6 +338,20 @@ function Plater.CreateUniqueIdentifier(seed)
 	return createUniqueIdentifier(seed)
 end
 
+--get numbers from a string of number separated by a comma
+--example: "10, 45, 30, 5, 16"  returns 10, 45, 30, 5, 16
+function Plater.GetNumbersFromString(str)
+	local result = {}
+	for value in str:gmatch("([^,%s]+)") do
+		local number = tonumber(value)
+		if (number) then
+			result[#result+1] = number
+		end
+	end
+
+	return unpack(result)
+end
+
 --initialize the options panel for a script object
 function Plater.CreateOptionTableForScriptObject(scriptObject)
 	scriptObject.Options = scriptObject.Options or {}
