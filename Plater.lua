@@ -11368,7 +11368,7 @@ end
 		elseif (scriptType == "script") then
 			-- check integrity: type, name, triggers and hooks
 			if not indexTable ["1"] or not indexTable ["2"] or not indexTable ["3"] or not indexTable ["4"]
-				or not indexTable ["11"] or not indexTable ["12"] or not indexTable ["13"] or not indexTable ["14"] or not indexTable ["15"] then
+				or not indexTable ["11"] or not indexTable ["12"] or not indexTable ["13"] or not indexTable ["14"] then
 				return nil
 			end
 		
