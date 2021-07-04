@@ -161,3 +161,26 @@ function Plater.DecompressData (data, dataType)
     end
 end
 
+--when an imported line is pasted in the wrong tab
+--send a message telling which tab is responsible for the data
+function Plater.SendScriptTypeErrorMsg(data)
+    if (data and type(data) == "table") then
+        if (data.type == "script") then
+            Plater:Msg ("this import look like Script, try importing in the Scripting tab.")
+
+        elseif (data.type == "hook") then
+            Plater:Msg ("this import look like a Mod, try importing in the Modding tab.")
+
+        elseif (data[Plater.Export_CastColors]) then
+            Plater:Msg ("this import look like a Cast Colors, try importing in the Cast Colors tab.")
+
+        elseif (data.NpcColor) then
+            Plater:Msg ("this import looks to be a Npc Colors import, try importing in the Npc Colors tab.")
+
+        elseif (data.plate_config) then
+            Plater:Msg ("this import looks like a profile, import profiles at the Profiles tab.")
+        end
+    end
+
+    Plater:Msg ("failed to import the data provided.")
+end
