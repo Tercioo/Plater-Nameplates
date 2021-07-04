@@ -11245,7 +11245,11 @@ end
 			return false
 		end
 		
-		return true, objectAdded, wasEnabled
+		if objectAdded then
+			return true, objectAdded, wasEnabled
+		else
+			return false
+		end
 	end
 
 	--add a scriptObject to the script db
