@@ -71,6 +71,9 @@ PLATER_DEFAULT_SETTINGS = {
 		--store as [NpcID] = {enabled1, enabled2, colorID}
 		--enabled1 is if the color is enabled overall, enabled2 is if the color is only for scripts
 		npc_colors = {},
+
+		--store the cast colors customized by the user
+		cast_colors = {},
 	
 		click_space = {140, 28},
 		click_space_friendly = {140, 28},

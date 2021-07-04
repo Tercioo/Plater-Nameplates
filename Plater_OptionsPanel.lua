@@ -107,8 +107,8 @@ local update_wago_update_icons = function()
 	local mainFrame = PlaterOptionsPanelContainer
 	local scriptButton = mainFrame.AllButtons [6]
 	local modButton = mainFrame.AllButtons [7]
-	local profileButton = mainFrame.AllButtons [20]
-	local importButton = mainFrame.AllButtons [23]
+	local profileButton = mainFrame.AllButtons [21]
+	local importButton = mainFrame.AllButtons [24]
 	
 	if countMods > 0 then
 		modButton.updateIcon:Show()
@@ -215,6 +215,7 @@ function Plater.OpenOptionsPanel()
 		{name = "FriendlyPlayer", title = L["OPTIONS_TABNAME_PLAYERFRIENDLY"]},
 
 		{name = "ColorManagement", title = L["OPTIONS_TABNAME_COLORSNPC"]},
+		{name = "CastColorManagement", title = "Cast Colors"}, --localize-me
 		{name = "AnimationPanel", title = L["OPTIONS_TABNAME_ANIMATIONS"]},
 		{name = "Automation", title = L["OPTIONS_TABNAME_AUTO"]},
 		{name = "ProfileManagement", title = L["OPTIONS_TABNAME_PROFILES"]},
@@ -254,19 +255,22 @@ function Plater.OpenOptionsPanel()
 	
 	--3rd row
 	local colorsFrame = mainFrame.AllFrames [17]
-	local animationFrame = mainFrame.AllFrames [18]
-	local autoFrame = mainFrame.AllFrames [19]
-	local profilesFrame = mainFrame.AllFrames [20]
-	local advancedFrame = mainFrame.AllFrames [21]
-	local searchFrame = mainFrame.AllFrames [22]
-	--local wagoIoFrame = mainFrame.AllFrames [23] --wago_imports
+	local castColorsFrame = mainFrame.AllFrames [18]
+	local animationFrame = mainFrame.AllFrames [19]
+	local autoFrame = mainFrame.AllFrames [20]
+	local profilesFrame = mainFrame.AllFrames [21]
+	local advancedFrame = mainFrame.AllFrames [22]
+	local searchFrame = mainFrame.AllFrames [23]
+	--local wagoIoFrame = mainFrame.AllFrames [24] --wago_imports
 	
 	--
 	local colorNpcsButton = mainFrame.AllButtons [17]
 	local scriptButton = mainFrame.AllButtons [6]
 	local modButton = mainFrame.AllButtons [7]
-	local profileButton = mainFrame.AllButtons [20]
-	local importButton = mainFrame.AllButtons [23]
+	local profileButton = mainFrame.AllButtons [21]
+	local importButton = mainFrame.AllButtons [24]
+
+	Plater.CreateCastColorOptionsFrame(castColorsFrame)
 	
 	local generalOptionsAnchor = CreateFrame ("frame", "$parentOptionsAnchor", frontPageFrame, BackdropTemplateMixin and "BackdropTemplate")
 	generalOptionsAnchor:SetSize (1, 1)
@@ -3682,7 +3686,7 @@ Plater.CreateAuraTesting()
 				--select all spells in the details! all spells panel
 				if (DetailsForgePanel and DetailsForgePanel.SelectModule) then
 					-- module 2 is the All Spells
-					DetailsForgePanel.SelectModule (_, _, 2)
+					DetailsForgePanel.SelectModule (_, _, 1)
 				end
 			else
 				Plater:Msg ("Details! Damage Meter is required and isn't installed, get it on Twitch App!")
