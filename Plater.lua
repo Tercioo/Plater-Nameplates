@@ -215,6 +215,10 @@ Plater.CanOverride_Members = {
 	
 }
 
+--> export strings identification
+Plater.Export_CastColors = "CastColor"
+Plater.Export_NpcColors = "CastColor"
+
 --> types of codes for each script in the Scripting tab (do not change these inside scripts)
 Plater.CodeTypeNames = { --private
 	[1] = "UpdateCode",
@@ -2570,11 +2574,15 @@ local class_specs_coords = {
 
 		ENCOUNTER_END = function()
 			Plater.CurrentEncounterID = nil
+			Plater.CurrentEncounterName = nil
+			Plater.CurrentEncounterDifficultyId = nil
 			Plater.LatestEncounter = time()
 		end,
 
-		ENCOUNTER_START = function (_, encounterID)
+		ENCOUNTER_START = function (_, encounterID, encounterName, difficultyID)
 			Plater.CurrentEncounterID = encounterID
+			Plater.CurrentEncounterName = encounterName
+			Plater.CurrentEncounterDifficultyId = difficultyID
 			
 			local _, zoneType = GetInstanceInfo()
 			if (zoneType == "raid") then
@@ -8238,14 +8246,14 @@ end
 		
 		SPELL_CAST_SUCCESS = function (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical)
 			if (not DB_CAPTURED_SPELLS [spellID]) then
-				DB_CAPTURED_SPELLS [spellID] = {event = token, source = sourceName, npcID = Plater:GetNpcIdFromGuid (sourceGUID or ""), encounterID = Plater.CurrentEncounterID}
+				DB_CAPTURED_SPELLS [spellID] = {event = token, source = sourceName, npcID = Plater:GetNpcIdFromGuid (sourceGUID or ""), encounterID = Plater.CurrentEncounterID, encounterName = Plater.CurrentEncounterName}
 			end
 		end,
 
 		SPELL_AURA_APPLIED = function (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical)
 			if (not DB_CAPTURED_SPELLS [spellID]) then
 				local auraType = amount
-				DB_CAPTURED_SPELLS [spellID] = {event = token, source = sourceName, type = auraType, npcID = Plater:GetNpcIdFromGuid (sourceGUID or ""), encounterID = Plater.CurrentEncounterID}
+				DB_CAPTURED_SPELLS [spellID] = {event = token, source = sourceName, type = auraType, npcID = Plater:GetNpcIdFromGuid (sourceGUID or ""), encounterID = Plater.CurrentEncounterID, encounterName = Plater.CurrentEncounterName}
 			end
 			
 			if IS_WOW_PROJECT_NOT_MAINLINE then
