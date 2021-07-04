@@ -421,8 +421,13 @@ function Plater.OpenOptionsPanel()
 					--do not export cache data, these data can be rebuild at run time
 					local captured_spells = Plater.db.profile.captured_spells
 					local aura_cache_by_name = Plater.db.profile.aura_cache_by_name
+					local captured_casts = Plater.db.profile.captured_casts
+					local npc_cache = Plater.db.profile.npc_cache
+
 					Plater.db.profile.captured_spells = {}
 					Plater.db.profile.aura_cache_by_name = {}
+					Plater.db.profile.captured_casts = {}
+					Plater.db.profile.npc_cache = {}
 					
 					--save mod/script editing
 					local hookFrame = mainFrame.AllFrames [7]
@@ -444,6 +449,8 @@ function Plater.OpenOptionsPanel()
 					--set back again the cache data
 					Plater.db.profile.captured_spells = captured_spells
 					Plater.db.profile.aura_cache_by_name = aura_cache_by_name
+					Plater.db.profile.captured_casts = captured_casts
+					Plater.db.profile.npc_cache = npc_cache
 				end)
 				
 				C_Timer.After (.3, function()
@@ -2825,15 +2832,9 @@ Plater.CreateAuraTesting()
 							
 							colorsFrame.RefreshScroll()
 							Plater:Msg ("npc colors imported.")
-						else
-							if (colorData.NpcNames) then
-								Plater:Msg ("this import look like Script, try importing in the Scripting tab.")
-							
-							elseif (colorData.LoadConditions) then
-								Plater:Msg ("this import look like a Mod, try importing in the Modding tab.")
-							end
 
-							Plater:Msg ("failed to import color data table.")
+						else
+							Plater.SendScriptTypeErrorMsg(colorData)
 						end
 					end
 					

@@ -417,17 +417,13 @@ end
 			if (indexScriptTable and type (indexScriptTable) == "table") then
 				
 				indexScriptTable = Plater.MigrateScriptModImport (indexScriptTable)
-				--print(DF.table.dump(indexScriptTable))
-				
-				--check if the user in importing a profile in the scripting tab
-				if (indexScriptTable.plate_config) then
-					DF:ShowErrorMessage ("Invalid Script or Mod.\n\nImport profiles at the Profiles tab.")
-					return
-				elseif (indexScriptTable.NpcColor) then
-					DF:ShowErrorMessage ("Invalid Script or Mod.\n\nImport NpcColors at the Npc Colors tab.")
+
+				--check if this is a mod or a script, if none show a msg for the import data
+				if (indexScriptTable.type ~= "script" and indexScriptTable.type ~= "hook") then
+					Plater.SendScriptTypeErrorMsg(indexScriptTable)
 					return
 				end
-			
+
 				local scriptType = Plater.GetDecodedScriptType (indexScriptTable)
 				
 				local promptToOverwrite = false

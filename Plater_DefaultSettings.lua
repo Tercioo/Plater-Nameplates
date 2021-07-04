@@ -74,7 +74,15 @@ PLATER_DEFAULT_SETTINGS = {
 
 		--store the cast colors customized by the user
 		cast_colors = {},
-	
+		cast_color_settings = {
+			enabled = true,
+			width = 12,
+			height_offset = 0,
+			alpha = 0.8,
+			anchor = {side = 11, x = 0, y = 0},
+			layer = "Artwork",
+		},
+
 		click_space = {140, 28},
 		click_space_friendly = {140, 28},
 		click_space_always_show = false,
@@ -640,6 +648,7 @@ PLATER_DEFAULT_SETTINGS = {
 		
 		--> store spells from the latest event the player has been into
 		captured_spells = {},
+		captured_casts = {},
 
 		--script tab
 		script_data = {},
