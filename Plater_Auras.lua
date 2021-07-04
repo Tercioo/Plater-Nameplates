@@ -1744,7 +1744,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			wipe (MANUAL_TRACKING_BUFFS)
 			
 			for i = 1, #manualDebuffsToTrack do
-				local spellName = GetSpellInfo (manualDebuffsToTrack [i])
+				local spellName = GetSpellInfo (tonumber(manualDebuffsToTrack [i]) or manualDebuffsToTrack [i])
 				if (spellName) then
 					MANUAL_TRACKING_DEBUFFS [spellName] = true
 				else
@@ -1754,7 +1754,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			end
 
 			for i = 1, #manualBuffsToTrack do
-				local spellName = GetSpellInfo (manualBuffsToTrack [i])
+				local spellName = GetSpellInfo (tonumber(manualBuffsToTrack [i]) or manualBuffsToTrack [i])
 				if (spellName) then
 					MANUAL_TRACKING_BUFFS [spellName] = true
 				else
@@ -1774,7 +1774,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			CAN_TRACK_EXTRA_DEBUFFS = false
 
 			for spellId, flag in pairs (extraBuffsToTrack) do
-				local spellName = GetSpellInfo (spellId)
+				local spellName = GetSpellInfo (tonumber(spellId) or spellId)
 				if (spellName) then
 					if flag then
 						AUTO_TRACKING_EXTRA_BUFFS [spellName] = true
@@ -1786,7 +1786,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			end
 			
 			for spellId, flag in pairs (extraDebuffsToTrack) do
-				local spellName = GetSpellInfo (spellId)
+				local spellName = GetSpellInfo (tonumber(spellId) or spellId)
 				if (spellName) then
 					if flag then
 						AUTO_TRACKING_EXTRA_DEBUFFS [spellName] = true
@@ -1843,7 +1843,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			end
 		
 			for spellId, state in pairs (profile.aura_tracker.buff_banned) do
-				local spellName = GetSpellInfo (spellId)
+				local spellName = GetSpellInfo (tonumber(spellId) or spellId)
 				if (spellName) then
 					if state then
 						DB_BUFF_BANNED [spellName] = true
@@ -1854,7 +1854,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 			end
 			
 			for spellId, state in pairs (profile.aura_tracker.debuff_banned) do
-				local spellName = GetSpellInfo (spellId)
+				local spellName = GetSpellInfo (tonumber(spellId) or spellId)
 				if (spellName) then
 					if state then
 						DB_DEBUFF_BANNED [spellName] = true
