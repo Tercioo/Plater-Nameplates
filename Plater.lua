@@ -10201,7 +10201,12 @@ end
 				["platesUpdatedThisFrame"] = true,
 				["platesToUpdatePerFrame"] = true,
 				["curFPS"] = false,
-			}
+			},
+			["UnitReaction"] = {
+				["UNITREACTION_HOSTILE"] = false,
+				["UNITREACTION_NEUTRAL"] = false,
+				["UNITREACTION_FRIENDLY"] = false,
+			},
 		},
 		
 		["DetailsFramework"] = {
