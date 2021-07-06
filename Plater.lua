@@ -8280,9 +8280,12 @@ end
 			if (not DB_CAPTURED_SPELLS[spellID]) then
 				DB_CAPTURED_SPELLS[spellID] = {event = token, source = sourceName, npcID = Plater:GetNpcIdFromGuid (sourceGUID or ""), encounterID = Plater.CurrentEncounterID, encounterName = Plater.CurrentEncounterName}
 			end
-
+		end,
+		
+		SPELL_CAST_START = function (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical)
+			-- SPELL_CAST_START does not fire for instant casts, no need to capture those
 			if (not DB_CAPTURED_CASTS[spellID]) then
-				DB_CAPTURED_CASTS[spellID] = {npcID = Plater:GetNpcIdFromGuid(sourceGUID or 0), encounterName = Plater.CurrentEncounterName}
+				DB_CAPTURED_CASTS[spellID] = {npcID = Plater:GetNpcIdFromGuid(sourceGUID or ""), encounterID = Plater.CurrentEncounterID, encounterName = Plater.CurrentEncounterName}
 			end
 		end,
 
