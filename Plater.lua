@@ -217,7 +217,7 @@ Plater.CanOverride_Members = {
 
 --> export strings identification
 Plater.Export_CastColors = "CastColor"
-Plater.Export_NpcColors = "CastColor"
+Plater.Export_NpcColors = "NpcColor"
 
 --> types of codes for each script in the Scripting tab (do not change these inside scripts)
 Plater.CodeTypeNames = { --private
@@ -5450,7 +5450,9 @@ end
 	
 	function Plater.ForceTickOnAllNameplates() --private
 		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-			Plater.NameplateTick (plateFrame.OnTickFrame, 10) --GetWorldDeltaSeconds()
+			if plateFrame.unitFrame.PlaterOnScreen then
+				Plater.NameplateTick (plateFrame.OnTickFrame, 10) --GetWorldDeltaSeconds()
+			end
 		end
 	end
 	
@@ -10207,6 +10209,8 @@ end
 				["UNITREACTION_NEUTRAL"] = false,
 				["UNITREACTION_FRIENDLY"] = false,
 			},
+			["Export_NpcColors"] = true,
+			["Export_CastColors"] = true,
 		},
 		
 		["DetailsFramework"] = {
