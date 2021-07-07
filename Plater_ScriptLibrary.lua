@@ -156,6 +156,30 @@ do
 		OverrideTriggers = true,
 	}
 
+	PlaterScriptLibrary ["Cast - Alert + Timer [P]"] = {
+		Revision = 1,
+		ScriptType = "script",
+		String = "1Q1EtPXsw8pll)ZcvGjdiiQvL)aXxSxfTYyYT2sfOzMgNzTPhUZdnCVv4Z(Eo9J5bmdOrtzc209PpV7Z5x3jJAo62rw(lI885HWWHIVF7Yf0rd3FK1FqxQxT5iRVtyXW8MJSgsMthzDmJWFA1Kl94Wxgy7ZHp5r0GzeB699CCUMhE)nmcmZ9EZjpsdVxYQXtXnoY6eAO9iRrrJg2kvQDYj1wAPA1NegTAsyeja(fHdmexhMHgf5XFmuRuxVqoFR3MkXitPSSQ0EL5iAxQJWAbiL3PNODQyBReBCifn(PKG((m)aT4pwlDPN5ysWQjccwn5uozkJ68gvfF)ehWF6sbxivYM6RMy7s4aPRMe5sHVje4uuG2OaRJkENufVPsXTlqRfPy4FAn6SUD7AEyZUMMTnp0S1(hoAwJoTrpp4zbRhOkQmB8TzA2YTiTnLpYF26wJbAg7xwyV7VZ8)UPsfYBVI8dHtmBSiJQkodaXcpy8mgj0D1KaYcph2sisrC(FXirU(VaRkOpHoAOXQjcJaMeyWCpgZlKckUtObiwpoyCgMD023zsMFsCG4SwQdWasnplGylM943MTZJNpLgOCTc1kH)GJ4GcCeMApXaUDaLewuEOl17rx8llX1qJ7zzzdPrvqA0fQDCLVtIH1jJzn9DywOIbcrkc0So8ThFRlMlG(VbBHatoNWyWVCjpHrp9o4GzTa1N6A7wxpepBYJc8zHQKbMp)rzYqeWJmb8MAVJLK5feVB9bfVfQF24neCliGNeXVav8qWkeQUoUl4Iw)BLpMPu5dwZM6nFbZlk2H(Ev(ugHAFZn1(dYR8YJGPQnCQZ)5uVFZc1(2MRP(Nfq)Ryk3E57v9tzeQ(zA72vlXB9MtHJhvH9iD5wlOm2ahSPRtUYhiL1Yvxx8H1EDmB3suH3QJU5UC(oDpORy(MD0Tyvl0PRCdnBpcpWi14iuvU0lm6n2kxSdzmiXkKrGCMYZPMIyvYC)yEKQZai6m9ieofPMf5B)mniedydp0uKRsCCqTtQmGniSKi0TAfAh4Ta2LYuhM6BgQT69edrpdqxlDnQgqolJIyD(Ks8RMC3npGU0D5gWQiJHQIJ9dWU2JSqmfaVHq8T0aBpF)gwlzpt4ea00(c9EjYEcphWQxkSUe0bXsHbt6LckGYzECpv7glQo9x6stQCPWCAiI5wZI52sXwnKYMbvZI5ErdCudGZiZXsCu(Z3IysGHspR4B1w9Fwnr9tYOgnG6Ilt6qMyyHPKO5MXzXmguVw0V7i0DuTewMSd74Gakps3e5lzutdv1)JoNQwVmUfqdJ8d8WABcxIdDgjMHEAV)g(AvUpmgpW6fqDWz52uzfCcdAe6Sexfzrw)QRNdv7DYixpivUAI6FDG3JECctQF1eBLNrjv)GHIJSOjMz5miJp1PyJ1t18EZE3cRnHsMVnHL2q)lkTOqNzjQJyxkguGUSHvPL1NYWX(zBHdhZkmekp3za8sr(X(bo0afctDMCt4VgT0FaGNkKxj5pIeqXivX)uVE6SLKrfMCAZUmuUW39HunsaGCvwGaKGpNTuMJyJvbMksOatliErenRT3OH0MHuWyKpkb6fMirb31jYYkdqLco9LnG3W9X5XmBCpqMCkVuLMjWexZVaYOn20AZNrpUpHpqRYLMql2tMkhgqBLzEpAS2vSkD)RNcbLcJIdpMKeYLENJUHeaCeNlmRsMtg12K95o8uYjPeMDmX(PhdGwwo7QU1gLMmGBQg8u6zGQBT4voEk1Qc(r0upxD8clqJfccf91S9Xcvie314)iRdrOv7by4oagSFRo7F4bh2g(AZ9(D0PytJVWsEJprMvVrjVChaJ8xKCIdAos0W(k4CoaLyXV058I7BHSRWIJRNOSoH)Esus9j2Uu7NKN9YEJgf4HzIIgYRUGWZ2OtGIUVKlqQp4Mar8UiF4EcqV0mbmjY1tQ9qr6LOuGy7LEAFh5QBWYcRdlpYlUngOWBsSYkvlJM5)uEDhpGSBP)ikgB5dKwPs9DsSTp0usYy4UEIoqhk(un(N7Gf9ylCjI93ChuAjGTGe2Eluw(krGLjnlRfEpHxZhUXV)CiO(V2MDIBlr0h8llzTp9U72b(AeA90KZup8WwKOQNi67n2hraK8HPXb)8xsv9c77s4CktGB8l4nmzH0TPdzAm(Q2q5RKbuwNTWGx8CICfuPai5m1yrG)mp4qP4XkgRo9s505l5lSnCPewK7ypmCpLeDxZh(L0prbe8AS942UAhFOaqmmApWT)dXity0sXOgT2wuquEOqE15vZRF(AQyKcKShtJLmtTwXY6oBsFxDL2H4O8yYpRvE1fjlBv8nvAT5(0RyGvBoQpJsc6Xy34dOcdRwBx0d2HGuOcBfOzdJolQs9uIGHvM6hf5pxVc6en3gBxaxCfUV1BvBYUT1uQamvUyTkzPYulfkpGJN5Zf1EQwKiHDFq5xnQaKuacNwFCiCGoVPnFKWtL4X3bg)cHRwwd4SVXFXT)vxa3r9QFB0FV)1dpBW5JpUx))48VE93gEY4ZUSN1fJp5BFT3TdUEyzso3BhxSOjooRDJc8MgL82XfB)zVd428bj0vcgi4UVrubUh5lcQFwIP(pV5vI3ospHAuYkyGsvmPVqKQ51zs4Z7RUsALxC9IOvQTtfopqwnGTSp(CrkCgGTjncosPtzb9MnLUaFBUxmElKK8USBHMKh)SEstWKFBQ8kkhKeDKYtEUQYryw1T2UDCjOkWSU4qTVJKe9NsD94oLh(vNqqWgNNcGplaWC(1bi(K0yDoGm9VyWPF)0RoD4TN91ExD69FBqJE2UE0NPZHQvneV1yJZz(VG4zsEYL)e7KxT2N23S(MVdZN6ykQzMafclz(p4CTnn)CNMT0U1UMFgUd3pZ4Wk2IWcQhZG6IxjGBxTsVtob5z3x1opjG8YL4lzwTY1F)0VEzV)7RFVjngWs30GkkRfnp1m7Mn4ZuuDhjfY3zo9nwDJNkZoC9z68G1FWsuvePT0DF3U8Lg2yX0QdQmMEAHCbQivl2YQxeIfDtQIA)Ul)TR)lvl(1pQ)HkOnIif1i(1eXEpHeJzeh6a(wJmj0uEak7ZdS2UXS0ExEZf9QOQHTRoQFwFY0OBNAVAlqCgtviU6UfrT3YJxjeX1Xr72lji697MA9ADtnLqaFZwYhH3kZ)EdL8yFBJe1Z8S5DoE1JYHqfWM28J813syoWyt5)xpg9))",
+		Enabled = true,
+		OverrideTriggers = true,
+	}
+
+	PlaterScriptLibrary ["Cast - Castbar is Timer [P]"] = {
+		Revision = 1,
+		ScriptType = "script",
+		String = "fNvBZPTrq4)lUFr0XqqGbS9mUZ4ehxB3uINrUjFi2YCiDyUjcj6Dh2oPt53E3D17GEbSPjdXG0jD7ZZ((kfBt7BSTcMRfb(k4WH0538T5C7HdSTgYMXTTE3cLoyM47C3LJSGFwoY4p4FB5OtGtNZ98wo6YZ2F5OpX8wWPv)SWvpfw5cU4HP6g2w0LIfp8LL5a7HDGF60gUnZ(2A4JfiuBlhcmegBRlDc8HV91C5eMd)2tDD)OV62R9yWk3kMXEGRUnK837juGioJRCSTEpUJLJ0tb6OqgEjWCHVoiAnI9mFyXNiMoL4zUBHyCRLJE)ZSzZ94hhTjZbj6jYDI5GIKyZaD6pzpd)2UDmzGve(2d7fPFeIXwKHGqSToxYCqDWE82PY(lMnMlt8smfOcVLjJS)iZ6UoZ62zDILLaXeRFbYn0F(YijP8HgAKzhKYSeK(iTJLJ6LWI2r7luw92oKh7X8)AIYQrnTcRHfxhhXqH4btIo1H0FTazizWomIu4sYZd81HbRjE0DRd9geLW8ouh6xHDRFj2T(Vs72Gum7TkMdIX0cjkWt(CMKPdKQCuyWwMmZgZ9YsHdtPGzI9jWlqMR2c(Vo03DPVpW(8EDpAWGoD709G(hnOdevpPzVUjfBuXSnswBdhDc3skhpQOYaRKSzUkWFoF5GDvStCfaqr1bopYLkuKdpQTjwyI56IcouoqvyIWAK5wkhPyoSRUrw0U9oO9HTr50joIS5Yr4bJXkccvse6xU(oBRE1sxmD6EyV3lu3tzq2wyTaaaig5mHM5giBE63LmpKIqO7NNYH4mwuL8LJKCfF2ypoG8SajNUKoKc6PSC36yUW)HWmyqlpW2AYcFNW4wdf3Bc07zHVqFPB0bGTFghoM7)4nmac4Wq7bDwJLxTCu4NMnf(kUemgobUafMYbIKC10JIfulO6sKndtKnkbSeYumQzXpa8PsbInvKAXCxWiVC0ej)VxW9DGwvyRm5cqv5WTINlC(AQesyql06av3BDZuzGw7X)Rirb9XBAwPsfENFq4ZVoqjOris1Sgz3sf4EmyAo1B(uMHjOQCOP8vXFaFwV8(SxKZirM2whbr6hcbYhIn460dkj0Rle2z29NyOXfGxeTH5SDftFS3YpAEMI3ooyo6JxGdZlZyANKbO7PXlV8Ss3vCwGB4yPNKdSwq1ZjIhALor5x0bkTeQjyebxJ7wx0RVIagfWihunO0o)c2CE(9u0GWXdycemSAyRFNRhsvSvNlbYfYQvWOuPhjJi)WBlWpKh4cef3tXRL(rPOuZKYSUesBQKUi1ouGOISsVc1olH3FfulYiqPw16)B2mU8ACFg(ZfqZq6H1ZIhkecBwVo7CU0H7RVbKX(fAgYnxzJSvmClUxGAX4LJCfpkWM8QQR6gL4EPI6A)jOaGaCqu9hYTSH3zayf(N)nfGi3mBwWcF9hNKkV(RFp(WKayffi5MhMW3UvNIyDCsU)PjBrhmN2rCvjQgybEwC5JHCSRzsWwB04ySkRr9gtkv3pqVHgIVyExPLcMG2ibXwZ9xZ04guBoZJzqAfFtCVZ3j5qmhgkTqYn8fEaq7noq6YL7bhgUqZUvukzZutXDebYXOsfz27cZgOzRJ5iAks(RcEvR1jjm6cm6pPWAKj50mx1ilH2hJNGB9BNdrq7VwWvJnLffJge8KLxO3qbaZ3lsJZh7NXu0PvVWVBSdGKHJtvjKT3fWOLmFLhTsPG10SFnWL150c3p5mZ5DF51TNX(k(ac(zei6YtE1qm5xdRMVqYRy0e62kkbSLfDTRE9XOeiRhCIXK4jnkTDZwgbcLAXJY(DjzInB(srOB2C8yK2ri0zR0bYQ2A8IzZZi8AdV2cELlvRnLexA(vD9Ekys7AEcRYI78GnqcylAPF1Mod46DHG(S0LnAuNuYm)xHIj86KCQiB0H)wU(jo3pDmJ8S8nR2UTmHjbF1dWFOVKLndfMBqXPgxkJcgrl)7nQXg08A3pEGx8ybjEBSnD57c7g)opotEQN31bcFTYOrTG88hGFtsBkW2)ROsunOWiaeEg75XNO3B)c89yQu8ftGSMghXYMEiGQ8rB6tdSQGZn3sUiLA380GNm2aesFVh1QKy9VAVZ4NTGCwzCDVz1eeWRz2UDDcdAeXDpnUL8ewLpYy5xHMPgJ0pzLW8AFk6CwHvNGFJgki3IBED3AENm)puT9Ns5GYmPRB1Y9E5k)JTLP5p(xr1p13g6ApU6RkCyLWGFjJWkkgyl99f)MTOh3DLmEQLw1jN0EtFvDO6DDC5NFlF9OTkrNEiGJXPGRkBVQkvA5cE97S(7G0WsM5p)qLhFPcjm(o8ASXkB5bFfHa(KaBIbP4Nn6fbzKpydvJxDL5kRXavwAJ)hsPTT)V",
+		Enabled = true,
+		OverrideTriggers = true,
+	}
+
+	PlaterScriptLibrary ["Cast - Important Target [P]"] = {
+		Revision = 1,
+		ScriptType = "script",
+		String = "9Qv7YPnpw47f(ZAMnqTnFNz6pinjnPBBsMxtBFFNMsracWBm2S2MMK2z5oBN9sAVf2ZrswwgKbtG2HwcylDopNVE0rY03QFV(oblIDd8JGpEd779EEbT)nn778pOpNCxR(oFI4TeUUzFNBiZP9DULDJvdGBD9OaF4D)yA4eYi69Dhp(w)O7VZJax5E35KP0O75c6Bd9i(p035CA0O(o9J7FJDQoBKrN2j60XzwWJrRgepJcVrcNsJxnWhaXQbUaaiRgerxqcbLTAWWGNwhG27ha9idPEQaSwgaUHSfy8cu4cmgTG65LaXGqXfU(C4ltedXHpee)SVdiA1GEHUtNIsbScWU8HlnZfS1sWDlvDDNZbzu1Zlsxp)iD9dms3y3r6l9irZonrXSVDGgAZuLcQ5dKNGS8Q2jJ4QGhxnWlWFkeksYWMGAD1GfEKNPqe4Xz0KG0iseenIGuW4iiC8bxFWlv1sylS5D(sip0fXBIxSABWqcjJyx9S9ZA8xoFinmJ7y1aPkaRRvQ1LbgVjWlimbdScB8F2S3RXEVo(E8AIwmT9bIJ4tH7ozZxjlNhabC2oV0Tw5NU16at36OPU1zg5bQcVc8TtpQ1vwMBMVzwTrYq(S(KPtyxlK(3I40zZji5qecpfocKpzbIc2WX81iACSR)u4taMJdd8GpntjLog5lFGQjzLjBnjR2hRKvho4vtwTS0ulAMPumcmImfJmCMa)mGV78fEUXlhldNyuwI9HhbSNQbe82Bc(2zb)ewenf2Rgmp47Po)mO)Yq6)Aj1F0Zs0x38id)uvGWVwUlTxBlRTx7aRbTQNhNVLCHgNZda3wxFqu4nKS)zV8Hwx2ytMYXbXBYtEzdZ2nRB1UUPDZwTSB2S)KknQHX88UtTCVtwowM9COmSDh)pxkZYgTgDlyqibsyWsS1HSCgmNGMfdTn1k6hDhhpBdrhha9MaCoypktq2fKB65GLHkkkjDVcwAZ8ZpD7KjatLmnRDgpYFUAqY9FjP8kLmOf2ABumzSWzu3PZIpCtuTMvyG1eg(ZhIHP4I(lPlcnXCxlfUZgvYIkYdRiUtgnMrWP6BnGCy7jW83UgT(D7vTT)TRXA)29Q5t)3rs))g2YMNrc3y1NohiPVTcPFDH6xgrrfoKeMH7)SeL)XiGkqcPxeH9WGajmyIJ3Q3quCmk7QmW1CZvKWbE2AiJVQuR6wTA2PwdZADmRxRoBfM6kD0BU(QnhMjKTRETWVLMKj52IBLtgL9H2uVD7TTBCzHJtpXXeCR4WnYaI2hAEvNnxLPMCpLIfhAl0j)alqG64(J0MvX(FooT71J(eyOmHJNwHzMCE1KAyZyrYSbzAppXdV4zpZgYlpzNPFRmP1QqS4BkL74GjDOPUmezRbrNrg9WurJsAWLjdxMPLwx2UDZow1Az1Pr9MnB1WM3IxCMG8ztpk4TMo8geoMgwmSQ6df4Ip9Jc6QRPdRMMRL8xZmdaGe950pJTukZ)7C02Udt4RgWfpIWgfR6utJB2MRj0Rynj(Yq362Vqw4lN4GrFNggHAh8ewMGEjJhJ6GlY(oSkdNy0kCIgf6UaMvnreVwdy1awYNDc7CLvdUE(IGWyIp8Te2VVC3x770yNahx25Ba)(34OTVdgJH)0cZ7MpKm()9F)pbv6(JqIhcrGU)kWu849pVXPYcyhiEMS0FeNv2iI6n5Kvdw67gF9yXhyEe4Zu)V3Jm0d)i3kzFR8Q3TAG4L8tUqJ6gjJV6hxmgmbUHEwWtgQcLRPYLzGZxrwBiZKxsXMYlWpksWr9Sr5IicUlTkBA3KStHKY2mWZSQzJY7Pyg)8AcPujUKA1OqOtovMfX(K4ycsDPPxTqImB84BVH4ZsZcxUioFpV6Cvc4vH6RjUtRUw3z7uojVWuStDOXq9w8YOKwOaDWDNNEhjeKmETi9kwTZRYLZxHuybJ3vOlMELS3(D8VQ8ckyAKTGrBLqLkU(r0WySlSXSnWgs1k3(oDacUAqzABKB2UrZonBclw5GhNZXVUuKXcCAlGDRkpWM0S1QXjvPkcU6yLXwwtw272zTjQrdTqknBhhZUZ23I21yfNEL7ykQyfpUL9VcxBLkJcPSNRfbQeG(Hwgs5hrXsSJUjykor(elgsN5kp4N09CKhvQpE0cPM3qW7(2uVBpU2Gfv4CS5wkwyjSAWRttxo9nmd7ACbOu)1x(IYkvV5QRV4tx8HlUP3L)r3pCX9F86kDhnZL(D6CQFCLUEqTqL36f84x)6jcgG3sJzTbyu(Vx3u5I8LEHRAJxT0qzIesI(t8A1nnFvdlBKtf(VvlZxbLn)7Y5weN8jVGrep0pRZ0zwCX9psHQFGi)2zEao(aR83Ou3ZpVu5ImRZdjp(EYZ0qJs3(Pl(J339Vq7UvHM7DbUyhfgLgrXqtjHxfDJIRSBXKuVSTeCwsljHqay3woKNPplWBC2NmNYOI4hXnD3SfSyr(3eRKYKzk5MUcbIHEl7eDRlMqdySLLrYZFpl4rDtdc6NCuv0greDz5fjIvKqIOgzczm9AFwCqVNwLDETaeMU1993Dvxm)ZklZzYs4zE(RVswkxwlqUDz8raj2ffjiKn3nf)iGMiKiF8rm(9ShJVMeD1L3w3IYS0N6IqAqDMhj4wgI8XITLXiF2tNGUBViQYFnt8hqBWS)GFr0eXBfeorQWTCooULSTaiFwiO2v9zIutwBsdIc4po0hdq2mFk(K9bh9RcPEbeLCEEskJ0u4j03V4AH4YzLaKDDiIypmYOhyX29Zi1K6u92q3PU(epz0LLmTZCGIj0uhXR3DQxXePmdBRYmDu7MklzpSyExYpEh8hIZw7As2uyb6psowgKvkqnknb)tj1gfX2wW9)bS0dQwfiDCyMOCt(8EgkTwVLLq2QXHbl6rNZ4lkvUqiIT3j3FqnAJvN2MfFw8qtme6igL6D7TVV313vuLM3Qq5OkgZGrjp6KnT7qSbVsc2fZ9BlXz1sIh04N0XtPx66XReuBn9SLXXb(r3)5RUU3fT)Z2SgqXrJUq2OrkTHt1ozXjWConM46fLCemPTKYewCYmJdxsfFpv4zAmTGMdBNTgvXfJuER9(liLJs0WmXHV2cT7Lt)gwL2R1RyrvcqOb5yU(tn8D9W4njm(XGWhWiEP3ctbhXnbHZjEfm57g2UdLjvB2lBon8NUjV95OO2esIEr445JSrjDc4hz1887wk3zJdw6((O4lgQYS4NKtISEXNDJ6ZqOWhCJOBfKibIG8SQCIwyO(XzU6500fXLEMKtOGg3l5zkiWzgF1jPtBBNae0fZX2U04nLp9J99WOYpmxGQb0)yuaNqwZJTYX(zDzEOyL3lSUjR2MhYNrU6u8mAk)Y1Pkb4(PzLzU36pNDg(II2O1WpNKCbB6tSz)DuItBz7YMpOxKfL2hMOW(ksK6jpINWnUuHUU0kmXK2ZPuLnb1sboVZg6las(TNP)UIFXu6VP4xv0VsEHDCsvyq(t0qGIAFQcs)Hjx(ff2dPai85TeTpZpJ3yZZIVVJL1VIZUDVApyqohKVLj)P52))d",
+		Enabled = true,
+		OverrideTriggers = true,
+	}
+
 	-------------------------------------
 	--hooks
 	
@@ -590,6 +614,57 @@ do
 			end
 		end
 	})
+
+	--#15 add new triggers on 9.1, sanctum of domination
+--[=
+
+	tinsert (PlaterPatchLibrary, {
+		Notes = {
+			"- Adding Sanctum of Domination triggers for scripts."
+		},
+		Func = function()
+			local scriptData = Plater.db.profile.script_data
+			for i = 1, #scriptData do
+				local script = scriptData[i]
+				if (script.Name == "Unit - Main Target [P]") then
+					script.NpcNames[#script.NpcNames+1] = 179124
+
+				elseif (script.Name == "Cast - Small Alert [Plater]") then
+					script.SpellIds[#script.SpellIds+1] = 350554
+					script.SpellIds[#script.SpellIds+1] = 348513
+					script.SpellIds[#script.SpellIds+1] = 351779
+
+					--add 350554 --call of eternity
+					--348513 --reverberating hammer
+					--351779 --agonizing nova
+
+				elseif (script.Name == "Cast - Very Important [Plater]") then
+					--350687/word-of-recall
+					script.SpellIds[#script.SpellIds+1] = 350687
+
+				elseif (script.Name == "Cast - Big Alert [Plater]") then
+					--add 350421 --fated conjunction
+					--352158 --torment
+					--349985/tormented-eruptions
+					script.SpellIds[#script.SpellIds+1] = 350421
+					script.SpellIds[#script.SpellIds+1] = 352158
+					script.SpellIds[#script.SpellIds+1] = 349985
+
+
+				elseif (script.Name == "Cast - Frontal Cone [Plater]") then
+					--add spell=352833 --disintegration
+					script.SpellIds[#script.SpellIds+1] = 352833
+					
+				elseif (script.Name == "Cast - Castbar is Timer [P]") then
+
+
+				end
+			end
+		end
+	})
+
+--]=]
+
 
 	--#15 create a UID for script that doesn't have one
 	--[=[ --disabled atm, might be enabled at the release of the Comm Message feature
