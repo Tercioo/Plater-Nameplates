@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1625732512,  "Bug Fix", "July 8th, 2021", "Fixing an issue with color alpha changes not being carried out properly.", "cont1nuity"},
+			
 			{1625732511,  "New Feature", "July 8th, 2021", "New scripts: 'Cast - Alert + Timer [P]', 'Cast - Castbar is Timer [P]' and 'Cast - Important Target [P]' + spell trigger updates for existing ones.", "Terciob"},
 			{1625732511,  "Bug Fix", "July 7th, 2021", "Mod Load-Conditions for Encounter IDs should now work consistently after importing from wago.io again.", "cont1nuity"},
 			{1625732511,  "Bug Fix", "July 4th, 2021", "Manual and automatic aura tracking lists should now work consistently after importing from wago.io again.", "cont1nuity"},
