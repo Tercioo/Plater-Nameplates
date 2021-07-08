@@ -8,10 +8,13 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
-			{1625239133,  "Bug Fix", "July 4th, 2021", "'Buff Tracking' lists should now work properly after importing a profile.", "cont1nuity"},
-			{1625239133,  "New Feature", "July 4th, 2021", "Adding 'Cast Colors' tab to easily automate cast bar colors.", "Terciob"},
-			{1625239133,  "Bug Fix", "July 4th, 2021", "Better handling of faults during script/mod imports.", "cont1nuity"},
-			{1625239133,  "Bug Fix", "July 2nd, 2021", "Enabling enemy player class color setting.", "cont1nuity"},
+			{1625732511,  "New Feature", "July 8th, 2021", "New scripts: 'Cast - Alert + Timer [P]', 'Cast - Castbar is Timer [P]' and 'Cast - Important Target [P]' + spell trigger updates for existing ones.", "Terciob"},
+			{1625732511,  "Bug Fix", "July 7th, 2021", "Mod Load-Conditions for Encounter IDs should now work consistently after importing from wago.io again.", "cont1nuity"},
+			{1625732511,  "Bug Fix", "July 4th, 2021", "Manual and automatic aura tracking lists should now work consistently after importing from wago.io again.", "cont1nuity"},
+			{1625732511,  "Bug Fix", "July 4th, 2021", "'Buff Tracking' lists should now work properly after importing a profile.", "cont1nuity"},
+			{1625732511,  "New Feature", "July 4th, 2021", "Adding 'Cast Colors' tab to easily automate cast bar colors.", "Terciob"},
+			{1625732511,  "Bug Fix", "July 4th, 2021", "Better handling of faults during script/mod imports.", "cont1nuity"},
+			{1625732511,  "Bug Fix", "July 2nd, 2021", "Enabling enemy player class color setting.", "cont1nuity"},
 			
 			{1625133487,  "Bug Fix", "July 1st, 2021", "Adding consistency checks for broken mod / script imports.", "cont1nuity"},
 			
