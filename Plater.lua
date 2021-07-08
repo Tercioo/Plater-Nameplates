@@ -3507,7 +3507,7 @@ local class_specs_coords = {
 			healthBar.ExecuteGlowDown:Hide()
 			
 			--reset color values
-			healthBar.R, healthBar.G, healthBar.B = nil, nil, nil
+			healthBar.R, healthBar.G, healthBar.B, healthBar.A = nil, nil, nil, nil
 			
 			--reset the frame level and strata if using UIParent as the parent of the unitFrame
 			--the function checks if the option is enabled, no need to check here
@@ -5107,8 +5107,8 @@ end
 	--internal function to change the health bar color
 	function Plater.ChangeHealthBarColor_Internal (healthBar, r, g, b, a, forceNoLerp) --private
 		a = a or 1
-		if (r ~= healthBar.R or g ~= healthBar.G or b ~= healthBar.B) then
-			healthBar.R, healthBar.G, healthBar.B = r, g, b
+		if (r ~= healthBar.R or g ~= healthBar.G or b ~= healthBar.B or a ~= healthBar.A) then
+			healthBar.R, healthBar.G, healthBar.B, healthBar.A = r, g, b, a
 			if (not DB_LERP_COLOR or forceNoLerp) then -- ~lerpcolor
 				healthBar.barTexture:SetVertexColor (r, g, b, a)
 			end
