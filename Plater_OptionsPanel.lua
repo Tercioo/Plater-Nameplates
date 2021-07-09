@@ -733,7 +733,7 @@ function Plater.OpenOptionsPanel()
 			local moreProfilesLabel = DF:CreateLabel (profilesFrame, L["OPTIONS_PROFILE_CONFIG_MOREPROFILES"] .. ":", DF:GetTemplate ("font", "PLATER_BUTTON"))
 			moreProfilesLabel:SetPoint ("topleft", openManagementProfileButton, "bottomleft", 0, -20)
 			
-			local moreProfilesTextEntry = DF:CreateTextEntry (profilesFrame, function()end, 160, 20, "moreProfilesTextEntry", nil, nil, options_dropdown_template)
+			local moreProfilesTextEntry = DF:CreateTextEntry (profilesFrame, function()end, 160, 20, "moreProfilesTextEntry", nil, nil, DF:GetTemplate ("dropdown", "PLATER_DROPDOWN_OPTIONS"))
 			moreProfilesTextEntry:SetPoint ("topleft", moreProfilesLabel, "bottomleft", 0, -2)
 			moreProfilesTextEntry:SetText ("https://wago.io/plater")
 			
@@ -879,7 +879,7 @@ function Plater.OpenOptionsPanel()
 			
 			--new profile name
 			local newProfileNameLabel = DF:CreateLabel (profilesFrame, L["OPTIONS_PROFILE_CONFIG_PROFILENAME"] .. ":", DF:GetTemplate ("font", "OPTIONS_FONT_TEMPLATE"))
-			local newProfileNameTextEntry = DF:CreateTextEntry (profilesFrame, function()end, 160, 20, "ProfileNameTextEntry", _, _, options_dropdown_template)
+			local newProfileNameTextEntry = DF:CreateTextEntry (profilesFrame, function()end, 160, 20, "ProfileNameTextEntry", _, _, DF:GetTemplate ("dropdown", "PLATER_DROPDOWN_OPTIONS"))
 			newProfileNameTextEntry:SetText ("MyNewProfile")
 			newProfileNameTextEntry.tooltip = L["OPTIONS_PROFILE_CONFIG_PROFILENAME_DESC"]
 			newProfileNameLabel:SetPoint ("topleft", importStringField, "bottomleft", 0, -16)
@@ -2227,7 +2227,7 @@ Plater.CreateAuraTesting()
 		
 			--header
 			local headerTable = {
-				{text = "Enabled", width = 70},
+				{text = "Enabled", width = 50},
 				{text = "Scripts Only", width = 80},
 				{text = "Npc ID", width = 64},
 				{text = "Npc Name", width = 162},
@@ -2440,7 +2440,7 @@ Plater.CreateAuraTesting()
 					return colorsFrame.cachedColorTable
 				end
 			end
-			
+
 			--line
 			local scroll_createline = function (self, index)
 			
@@ -2466,12 +2466,14 @@ Plater.CreateAuraTesting()
 				forScriptCheckBox:SetAsCheckBox()
 				
 				--npc ID
-				local npcIDEntry = DF:CreateTextEntry (line, function()end, headerTable[3].width, 20, "NpcIDEntry", nil, nil, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+				local npcIDEntry = DF:CreateTextEntry (line, function()end, headerTable[3].width, 20, "NpcIDEntry", nil, nil, DF:GetTemplate ("dropdown", "PLATER_DROPDOWN_OPTIONS"))
 				npcIDEntry:SetHook ("OnEditFocusGained", oneditfocusgained_spellid)			
+				npcIDEntry:SetJustifyH("left")
 				
 				--npc Name
-				local npcNameEntry = DF:CreateTextEntry (line, function()end, headerTable[4].width, 20, "NpcNameEntry", nil, nil, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+				local npcNameEntry = DF:CreateTextEntry (line, function()end, headerTable[4].width, 20, "NpcNameEntry", nil, nil, DF:GetTemplate ("dropdown", "PLATER_DROPDOWN_OPTIONS"))
 				npcNameEntry:SetHook ("OnEditFocusGained", oneditfocusgained_spellid)
+				npcNameEntry:SetJustifyH("left")
 				
 				--zone name
 				local zoneNameLabel = DF:CreateLabel (line, "", 10, "white", nil, "ZoneNameLabel")
@@ -3461,8 +3463,9 @@ Plater.CreateAuraTesting()
 			local icon = line:CreateTexture ("$parentSpellIcon", "overlay")
 			icon:SetSize (scroll_line_height - 2, scroll_line_height - 2)
 			
-			local spell_id = DF:CreateTextEntry (line, function()end, headerTable[2].width, 20, nil, nil, nil, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+			local spell_id = DF:CreateTextEntry (line, function()end, headerTable[2].width, 20, nil, nil, nil, DF:GetTemplate ("dropdown", "PLATER_DROPDOWN_OPTIONS"))
 			spell_id:SetHook ("OnEditFocusGained", oneditfocusgained_spellid)
+			spell_id:SetJustifyH("left")
 	
 			local spell_name = DF:CreateLabel (line, "", DF:GetTemplate ("font", "PLATER_SCRIPTS_NAME"))
 			local source_name = DF:CreateLabel (line, "", DF:GetTemplate ("font", "PLATER_SCRIPTS_NAME"))
@@ -3721,7 +3724,7 @@ Plater.CreateAuraTesting()
 			aura_search_textentry:SetPoint ("right", clear_list_button, "left", -6, 0)
 			aura_search_textentry:SetHook ("OnChar",		auraLastEventFrame.OnSearchBoxTextChanged)
 			aura_search_textentry:SetHook ("OnTextChanged", 	auraLastEventFrame.OnSearchBoxTextChanged)
-			aura_search_label = DF:CreateLabel (auraLastEventFrame, "Search:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
+			local aura_search_label = DF:CreateLabel (auraLastEventFrame, "Search:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
 			aura_search_label:SetPoint ("right", aura_search_textentry, "left", -2, 0)
 		
 		--create the title
@@ -13447,8 +13450,9 @@ end
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	--~search panel
 	local searchLabel = DF:CreateLabel(searchFrame, "Search:")
-	local searchBox = DF:CreateTextEntry (searchFrame, function()end, 156, 20, "serachTextEntry", _, _, options_dropdown_template)
-	
+	local searchBox = DF:CreateTextEntry (searchFrame, function()end, 156, 20, "serachTextEntry", _, _, DF:GetTemplate ("dropdown", "PLATER_DROPDOWN_OPTIONS"))
+	searchBox:SetJustifyH("left")
+
 	searchLabel:SetPoint(10, -120)
 	searchBox:SetPoint(10, -130)
 

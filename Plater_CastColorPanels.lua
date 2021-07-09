@@ -274,12 +274,12 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         line.spellIconTexture = spellIconTexture
 
         --spell Id
-        local spellIdEntry = DF:CreateTextEntry(line, function()end, headerTable[3].width, 20, "spellIdEntry", nil, nil, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+        local spellIdEntry = DF:CreateTextEntry(line, function()end, headerTable[3].width, 20, "spellIdEntry", nil, nil, DF:GetTemplate ("dropdown", "PLATER_DROPDOWN_OPTIONS"))
         spellIdEntry:SetHook ("OnEditFocusGained", oneditfocusgained_spellid)
         spellIdEntry:SetJustifyH("left")
 
         --spell Name
-        local spellNameEntry = DF:CreateTextEntry(line, function()end, headerTable[4].width, 20, "spellNameEntry", nil, nil, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+        local spellNameEntry = DF:CreateTextEntry(line, function()end, headerTable[4].width, 20, "spellNameEntry", nil, nil, DF:GetTemplate ("dropdown", "PLATER_DROPDOWN_OPTIONS"))
         spellNameEntry:SetHook("OnEditFocusGained", oneditfocusgained_spellid)
         spellNameEntry:SetJustifyH("left")
 
