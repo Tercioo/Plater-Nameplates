@@ -11034,10 +11034,8 @@ end
 		if (indexScriptTable.NpcColor) then
 			return "npc_colors"
 		elseif (type (indexScriptTable ["9"]) == "table") then --hook
-			indexScriptTable.type = "hook"
 			return "hook"
 		elseif (type (indexScriptTable ["9"]) == "number") then --script
-			indexScriptTable.type = "script"
 			return "script"
 		end
 	end
