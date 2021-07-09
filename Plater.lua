@@ -1938,8 +1938,8 @@ local class_specs_coords = {
 		DB_CASTBAR_HIDE_ENEMIES = profile.hide_enemy_castbars
 		DB_CASTBAR_HIDE_FRIENDLY = profile.hide_friendly_castbars
 		
-		DB_CAPTURED_SPELLS = profile.captured_spells
-		DB_CAPTURED_CASTS = profile.captured_casts
+		DB_CAPTURED_CASTS = PlaterDB.captured_casts
+		DB_CAPTURED_SPELLS = PlaterDB.captured_spells
 		
 		DB_USE_NAME_TRANSLIT = profile.use_name_translit
 
@@ -3855,7 +3855,17 @@ local class_specs_coords = {
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> addon initialization
 
+function Plater.InitializeSavedVariables()
+	local PlaterDB = _G.PlaterDB
+
+	--table to store casts with SPELL_CAST_START
+	PlaterDB.captured_casts = PlaterDB.captured_casts or {}
+	--table to store auras and any spell cast
+	PlaterDB.captured_spells = PlaterDB.captured_spells or {}
+end
+
 function Plater.OnInit() --private --~oninit ~init
+	Plater.InitializeSavedVariables()
 	Plater.RefreshDBUpvalues()
 	
 	-- do we need to support blizzard frames?

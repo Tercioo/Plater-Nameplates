@@ -92,7 +92,7 @@ local DB_AURA_SEPARATE_BUFFS
 
 local on_refresh_db = function()
 	local profile = Plater.db.profile
-	DB_CAPTURED_SPELLS = profile.captured_spells
+	DB_CAPTURED_SPELLS = PlaterDB.captured_spells
 	DB_NPCID_CACHE = profile.npc_cache
 	DB_NPCID_COLORS = profile.npc_colors
 	DB_AURA_ALPHA = profile.aura_alpha

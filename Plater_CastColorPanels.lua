@@ -36,8 +36,8 @@ local on_refresh_db = function()
 	local profile = Plater.db.profile
 	DB_CAST_COLORS = profile.cast_colors
     DB_NPCID_CACHE = profile.npc_cache
-    DB_CAPTURED_SPELLS = profile.captured_spells
-    DB_CAPTURED_CASTS = profile.captured_casts
+    DB_CAPTURED_SPELLS = PlaterDB.captured_spells
+    DB_CAPTURED_CASTS = PlaterDB.captured_casts
 end
 Plater.RegisterRefreshDBCallback(on_refresh_db)
 
@@ -64,7 +64,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
     DB_CAST_COLORS = Plater.db.profile.cast_colors
     DB_NPCID_CACHE = Plater.db.profile.npc_cache
-    DB_CAPTURED_SPELLS = Plater.db.profile.captured_spells
+    DB_CAPTURED_CASTS = PlaterDB.captured_casts
 
     --header
     local headerTable = {
