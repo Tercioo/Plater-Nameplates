@@ -8274,28 +8274,35 @@ end
 		
 		SPELL_CAST_SUCCESS = function (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical)
 			if (not DB_CAPTURED_SPELLS[spellID]) then
-				DB_CAPTURED_SPELLS[spellID] = {event = token, source = sourceName, npcID = Plater:GetNpcIdFromGuid (sourceGUID or ""), encounterID = Plater.CurrentEncounterID, encounterName = Plater.CurrentEncounterName}
+				if (not sourceFlag or bit.band(sourceFlag, 0x00000400) == 0) then --not a player
+					local npcId = Plater:GetNpcIdFromGuid(sourceGUID or "")
+					if (npcId and npcId ~= 0) then
+						DB_CAPTURED_SPELLS[spellID] = {event = token, source = sourceName, npcID = npcId, encounterID = Plater.CurrentEncounterID, encounterName = Plater.CurrentEncounterName}
+					end
+				end
 			end
 		end,
 		
 		SPELL_CAST_START = function (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical)
-			-- SPELL_CAST_START does not fire for instant casts, no need to capture those
 			if (not DB_CAPTURED_CASTS[spellID]) then
-				--check if this is a player spell
-				if (sourceFlag and bit.band(sourceFlag, 0x00000400) ~= 0) then --0x00000400 = player flag
-					--ignore player spells
-					--local _, unitClass = UnitClass(sourceName)
-					--DB_CAPTURED_CASTS[spellID] = {npcID = Plater:GetNpcIdFromGuid(sourceGUID or ""), encounterID = "", encounterName = unitClass or ""}
-				else
-					DB_CAPTURED_CASTS[spellID] = {npcID = Plater:GetNpcIdFromGuid(sourceGUID or ""), encounterID = Plater.CurrentEncounterID, encounterName = Plater.CurrentEncounterName}
+				if (not sourceFlag or bit.band(sourceFlag, 0x00000400) == 0) then --not a player
+					local npcId = Plater:GetNpcIdFromGuid(sourceGUID or "")
+					if (npcId and npcId ~= 0) then
+						DB_CAPTURED_CASTS[spellID] = {npcID = Plater:GetNpcIdFromGuid(sourceGUID or ""), encounterID = Plater.CurrentEncounterID, encounterName = Plater.CurrentEncounterName}
+					end
 				end
 			end
 		end,
 
 		SPELL_AURA_APPLIED = function (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical)
-			if (not DB_CAPTURED_SPELLS [spellID]) then
-				local auraType = amount
-				DB_CAPTURED_SPELLS [spellID] = {event = token, source = sourceName, type = auraType, npcID = Plater:GetNpcIdFromGuid (sourceGUID or ""), encounterID = Plater.CurrentEncounterID, encounterName = Plater.CurrentEncounterName}
+			if (not DB_CAPTURED_SPELLS[spellID]) then
+				if (not sourceFlag or bit.band(sourceFlag, 0x00000400) == 0) then --not a player
+					local npcId = Plater:GetNpcIdFromGuid(sourceGUID or "")
+					if (npcId and npcId ~= 0) then
+						local auraType = amount
+						DB_CAPTURED_SPELLS [spellID] = {event = token, source = sourceName, type = auraType, npcID = npcId, encounterID = Plater.CurrentEncounterID, encounterName = Plater.CurrentEncounterName}
+					end
+				end
 			end
 			
 			if IS_WOW_PROJECT_NOT_MAINLINE then

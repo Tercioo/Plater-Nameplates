@@ -668,6 +668,7 @@ do
 		},
 		Func = function()
 			wipe(Plater.db.profile.captured_casts)
+			wipe(Plater.db.profile.captured_spells)
 			wipe(Plater.db.profile.cast_colors)
 		end,
 	})
