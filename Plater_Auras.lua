@@ -565,6 +565,10 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 		local auraIconFrame = self.PlaterBuffList [i]
 		self.NextAuraIcon = self.NextAuraIcon + 1
 		
+		auraIconFrame:SetAlpha(1)
+		auraIconFrame.Icon:SetDesaturated(false)
+		auraIconFrame.Cooldown:Show()
+
 		return auraIconFrame, self
     end
     
@@ -1481,7 +1485,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 
 
     --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
---> aura test - when the options panel is opened at the buff settings
+--> aura ~test - when the options panel is opened at the buff settings
 
 	function Plater.CreateAuraTesting()
 
