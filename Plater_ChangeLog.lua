@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1625966028,  "Bug Fix", "July 16th, 2021", "Fixed the Fated Conjunction timer which was off about 200ms.", "Terciob"},
 			{1625966028,  "Backend Change", "July 10th, 2021", "Fixing nameplate color in 'Aura - Blink Time Left' script.", "cont1nuity"},
 			{1625966028,  "Backend Change", "July 10th, 2021", "Changed the way caches are stored.", "Terciob"},
 
