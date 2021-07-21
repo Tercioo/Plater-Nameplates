@@ -987,6 +987,11 @@ local class_specs_coords = {
 	
 	Plater.ForceInCombatUnits = {
 		--[] = true, --
+		[170927] = true, --Erupting Ooze, Doctor Ickus Plaguefall
+		[171887] = true, --Slimy Smorgasbord, Globgrog Plaguefall
+		[164362] = true, --Slimy Morsel, Globgrog Plaguefall
+		[169159] = true, --Unstable Canister, Plaguefall
+		[168394] = true, --Slimy Morsel, Plaguefall
 		[176581] = true, --Spiked Ball, Painsmith Raznal SoD
 		[176920] = true, --Domination Arrow, Sylvanas SoD
 		[175861] = true, --Glacial Spike, Kel'Thusad SoD
