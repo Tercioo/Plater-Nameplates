@@ -984,6 +984,13 @@ local class_specs_coords = {
 		[ACTORTYPE_ENEMY_NPC] = {},
 		[ACTORTYPE_PLAYER] = {},
 	}
+	
+	Plater.ForceInCombatUnits = {
+		--[] = true, --
+		[176581] = true, --Spiked Ball, Painsmith Raznal SoD
+		[176920] = true, --Domination Arrow, Sylvanas SoD
+		[175861] = true, --Glacial Spike, Kel'Thusad SoD
+	}
 
 	--update the settings cache for scritps
 	--this is a table with a copy of the settings from the profile so can be safelly accessed by scripts
@@ -3462,7 +3469,7 @@ local class_specs_coords = {
 			--clear name schedules
 			unitFrame.ScheduleNameUpdate = nil
 			
-			unitFrame.InCombat = UnitAffectingCombat (unitID)
+			unitFrame.InCombat = UnitAffectingCombat (unitID) or (Plater.ForceInCombatUnits[unitFrame [MEMBER_NPCID]] and PLAYER_IN_COMBAT)
 			
 			--cache values into the unitFrame as well to reduce the overhead on scripts and hooks
 			unitFrame [MEMBER_NAME] = plateFrame [MEMBER_NAME]
@@ -5601,7 +5608,7 @@ end
 			end
 			
 			local wasCombat = unitFrame.InCombat
-			unitFrame.InCombat = UnitAffectingCombat (tickFrame.unit)
+			unitFrame.InCombat = UnitAffectingCombat (tickFrame.unit) or (Plater.ForceInCombatUnits[unitFrame [MEMBER_NPCID]] and PLAYER_IN_COMBAT)
 			if wasCombat ~= unitFrame.InCombat then
 				Plater.UpdatePlateSize (tickFrame.PlateFrame)
 			end
@@ -9438,7 +9445,7 @@ end
 			else
 				if (InCombatLockdown()) then
 					local unitReaction = unitFrame.PlateFrame [MEMBER_REACTION]
-					if (unitReaction == 4 and not UnitAffectingCombat (unitFrame.unit)) then
+					if (unitReaction == 4 and not unitFrame.InCombat) then
 						Plater.FindAndSetNameplateColor (unitFrame, true)
 					elseif (DB_AGGRO_CHANGE_HEALTHBAR_COLOR and unitFrame.CanCheckAggro and unitReaction <= 4) then
 						Plater.UpdateNameplateThread (unitFrame)
