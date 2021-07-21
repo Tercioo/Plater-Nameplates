@@ -3469,6 +3469,10 @@ local class_specs_coords = {
 			--clear name schedules
 			unitFrame.ScheduleNameUpdate = nil
 			
+			if (not isPlayer) then
+				Plater.GetNpcID (plateFrame)
+			end
+			
 			unitFrame.InCombat = UnitAffectingCombat (unitID) or (Plater.ForceInCombatUnits[unitFrame [MEMBER_NPCID]] and PLAYER_IN_COMBAT)
 			
 			--cache values into the unitFrame as well to reduce the overhead on scripts and hooks
@@ -3573,7 +3577,6 @@ local class_specs_coords = {
 						end
 					else
 						--the unit is a npc
-						Plater.GetNpcID (plateFrame)	
 						
 						if (reaction >= Plater.UnitReaction.UNITREACTION_FRIENDLY) then
 							plateFrame.NameAnchor = DB_NAME_NPCFRIENDLY_ANCHOR
