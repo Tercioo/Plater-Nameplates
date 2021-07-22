@@ -672,6 +672,32 @@ do
 			wipe(Plater.db.profile.cast_colors)
 		end,
 	})
+
+	--#17 disable the change nameplate color from "Blink by Time Left" script
+	tinsert (PlaterPatchLibrary, {
+		Notes = {
+			"- Disable the change nameplate color from 'Blink by Time Left' script."
+		},
+		Func = function()
+			local scriptData = Plater.db.profile.script_data
+			for i = 1, #scriptData do
+				local script = scriptData[i]
+				if (script.Name == "Aura - Blink by Time Left [Plater]") then
+					for _, scriptOptions in ipairs(script.Options) do
+						if (scriptOptions.Key == "changeNameplateColor") then
+							scriptOptions.Value = false
+						end
+					end
+
+					if (script.OptionsValues and script.OptionsValues["changeNameplateColor"]) then
+						script.OptionsValues["changeNameplateColor"] = false
+					end
+
+					break
+				end
+			end
+		end
+	})
 end
 
 
