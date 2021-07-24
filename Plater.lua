@@ -232,6 +232,7 @@ Plater.CodeTypeNames = { --private
 --> types of codes available to add in a script in the Hooking tab
 Plater.HookScripts = { --private
 	"Initialization",
+	"Deinitialization",
 	"Constructor",
 	"Destructor",
 	"Nameplate Created",
@@ -258,6 +259,7 @@ Plater.HookScripts = { --private
 
 Plater.HookScriptsDesc = { --private
 	["Initialization"] = "Executed once for the mod when it is compiled. Used to initialize the global mod environment 'modTable'.",
+	["Deinitialization"] = "Executed once for the mod when it is unloaded. Used to de-initialize the global mod environment 'modTable' and the mod for the last time.",
 	["Constructor"] = "Executed once when the nameplate run the hook for the first time.\n\nUse to initialize configs in the environment.\n\nAlways receive unitFrame in 'self' parameter.",
 	["Destructor"] = "Run when the hook is Disabled or unloaded due to Load Conditions.\n\nUse to hide all frames created.\n\n|cFF44FF44Run on all nameplates shown in the screen|r.",
 	["Nameplate Created"] = "Executed when a nameplate is created.\n\nRequires a |cFFFFFF22/reload|r after changing the code.",
@@ -307,6 +309,7 @@ local HOOK_UNITNAME_UPDATE = {ScriptAmount = 0}
 local HOOK_LOAD_SCREEN = {ScriptAmount = 0}
 local HOOK_PLAYER_LOGON = {ScriptAmount = 0}
 local HOOK_MOD_INITIALIZATION = {ScriptAmount = 0}
+local HOOK_MOD_DEINITIALIZATION = {ScriptAmount = 0}
 local HOOK_COMM_RECEIVED_MESSAGE = {ScriptAmount = 0}
 local HOOK_COMM_SEND_MESSAGE = {ScriptAmount = 0}
 local HOOK_NAMEPLATE_DESTRUCTOR = {ScriptAmount = 0}
@@ -10445,7 +10448,9 @@ end
 
 	function Plater.GetContainerForHook (hookName)
 		if (hookName == "Initialization") then
-			return HOOK_MOD_INITIALIZATION	
+			return HOOK_MOD_INITIALIZATION
+		elseif (hookName == "Deinitialization") then
+			return HOOK_MOD_DEINITIALIZATION
 		elseif (hookName == "Constructor") then
 			return HOOK_NAMEPLATE_CONSTRUCTOR	
 		elseif (hookName == "Nameplate Created") then
@@ -10547,6 +10552,43 @@ end
 		end
 	end
 	
+	function Plater.RunDeinitializationForHook (scriptObject)
+		--check if the script has a destructor script
+		if (scriptObject.Hooks ["Deinitialization"]) then
+			--load and compile the destructor code
+			local code = "return " .. scriptObject.Hooks ["Deinitialization"]
+			
+			if IS_WOW_PROJECT_NOT_MAINLINE then
+				code = string.gsub(code, "\"NamePlateFullBorderTemplate\"", "\"PlaterNamePlateFullBorderTemplate\"")
+			end
+			
+			local compiledScript, errortext = loadstring (code, "Deinitialization for " .. scriptObject.Name)
+			if (not compiledScript) then
+				Plater:Msg ("failed to compile Deinitialization for script " .. scriptObject.Name .. ": " .. errortext)
+			else
+				--store the function to execute
+				--setfenv (compiledScript, functionFilter)
+				if (Plater.db.profile.shadowMode and Plater.db.profile.shadowMode == 0) then -- legacy mode
+					DF:SetEnvironment(compiledScript, nil, platerModEnvironment)
+				elseif (not Plater.db.profile.shadowMode or Plater.db.profile.shadowMode == 1) then
+					SetPlaterEnvironment(compiledScript)
+				end
+				
+				--does not exist when mod is not loaded through load conditions or similar
+				local globalScriptObject = HOOK_NAMEPLATE_DESTRUCTOR [scriptObject.scriptId] or {
+					HotReload = -1,
+					DBScriptObject = scriptObject,
+					Build = PLATER_HOOK_BUILD,
+				}
+				
+				globalScriptObject ["Deinitialization"] = compiledScript()
+				
+				Plater.ScriptMetaFunctions.ScriptRunNoAttach (globalScriptObject, "Deinitialization")
+
+			end		
+		end
+	end
+	
 	-- which option types should be copied to modTable.config?
 	local options_for_config_table = {
 		[1] = true, -- Color
@@ -10575,6 +10617,7 @@ end
 			if (Plater.CurrentlyLoadedHooks [scriptObject.scriptId]) then
 				Plater.CurrentlyLoadedHooks [scriptObject.scriptId] = false
 				Plater.RunDestructorForHook (scriptObject)
+				Plater.RunDeinitializationForHook (scriptObject)
 			end
 			--clear env when disabling/disabled
 			PLATER_GLOBAL_MOD_ENV [scriptObject.scriptId] = nil
@@ -10620,6 +10663,7 @@ end
 			if (Plater.CurrentlyLoadedHooks [scriptObject.scriptId]) then
 				Plater.CurrentlyLoadedHooks [scriptObject.scriptId] = false
 				Plater.RunDestructorForHook (scriptObject)
+				Plater.RunDeinitializationForHook (scriptObject)
 			end
 			if not noHotReload then
 				--clear env if needed
