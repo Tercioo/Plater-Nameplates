@@ -3084,7 +3084,7 @@ function Plater.CreateScriptingPanel()
 			if on_save then
 				Plater.WipeAndRecompileAllScripts ("script")
 			else
-				Plater.CompileScript (scriptObject, unpack (t))
+				Plater.CompileScript (scriptObject, false, unpack (t))
 			end
 		end
 		

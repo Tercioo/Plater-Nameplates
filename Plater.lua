@@ -10039,19 +10039,13 @@ end
 		if (scriptType == "script") then
 			for scriptId, scriptObject in ipairs (Plater.GetAllScriptsAsPrioSortedCopy ("script")) do
 				if (scriptObject.Enabled) then
-					if not noHotReload then
-						PLATER_GLOBAL_SCRIPT_ENV [scriptObject.scriptId] = nil
-					end
-					Plater.CompileScript (scriptObject)
+					Plater.CompileScript (scriptObject, noHotReload)
 				end
 			end
 		elseif (scriptType == "hook") then
 			--get all hook scripts from the profile database
 			for scriptId, scriptObject in ipairs (Plater.GetAllScriptsAsPrioSortedCopy ("hook")) do
-				if not noHotReload then
-					PLATER_GLOBAL_MOD_ENV [scriptObject.scriptId] = nil
-				end
-				Plater.CompileHook (scriptObject)
+				Plater.CompileHook (scriptObject, noHotReload)
 			end
 		end
 	end
@@ -10063,11 +10057,9 @@ end
 		end
 		local scriptType = Plater.GetScriptType(scriptObject)
 		if (scriptType == "script") then
-			PLATER_GLOBAL_SCRIPT_ENV [scriptObject.scriptId] = nil
 			Plater.CompileScript(scriptObject)
 
 		elseif (scriptType == "hook") then
-			PLATER_GLOBAL_MOD_ENV [scriptObject.scriptId] = nil
 			Plater.CompileHook(scriptObject)
 		end
 	end
@@ -10567,7 +10559,7 @@ end
 	}
 	
 	--compile scripts from the Hooking tab
-	function Plater.CompileHook (scriptObject)
+	function Plater.CompileHook (scriptObject, noHotReload)
 		
 		--check if the script is valid and if is enabled
 		if (not scriptObject) then
@@ -10584,6 +10576,8 @@ end
 				Plater.CurrentlyLoadedHooks [scriptObject.scriptId] = false
 				Plater.RunDestructorForHook (scriptObject)
 			end
+			--clear env when disabling/disabled
+			PLATER_GLOBAL_MOD_ENV [scriptObject.scriptId] = nil
 			return
 		end
 		
@@ -10626,6 +10620,10 @@ end
 			if (Plater.CurrentlyLoadedHooks [scriptObject.scriptId]) then
 				Plater.CurrentlyLoadedHooks [scriptObject.scriptId] = false
 				Plater.RunDestructorForHook (scriptObject)
+			end
+			if not noHotReload then
+				--clear env if needed
+				PLATER_GLOBAL_MOD_ENV [scriptObject.scriptId] = nil
 			end
 			return
 		else
@@ -10743,8 +10741,7 @@ end
 	end
 
 	--compile scripts from the Scripting tab
-	function Plater.CompileScript (scriptObject, ...)
-		
+	function Plater.CompileScript (scriptObject, noHotReload, ...)
 		--check if the script is valid and if is enabled
 		if (not scriptObject) then
 			return
@@ -10754,6 +10751,11 @@ end
 		
 		if not scriptObject.scriptId then
 			scriptObject.scriptId = tostring(scriptObject)
+		end
+		
+		--clear env on re-compilation if necessary
+		if not noHotReload then
+			PLATER_GLOBAL_SCRIPT_ENV [scriptObject.scriptId] = nil
 		end
 		
 		--store the scripts to be compiled
