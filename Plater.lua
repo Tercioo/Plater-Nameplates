@@ -10674,6 +10674,11 @@ end
 			Plater.CurrentlyLoadedHooks [scriptObject.scriptId] = true
 		end
 		
+		if not noHotReload then
+			--clear env if needed
+			PLATER_GLOBAL_MOD_ENV [scriptObject.scriptId] = nil
+		end
+		
 		--store the scripts to be compiled
 		local scriptCode = {}
 		
