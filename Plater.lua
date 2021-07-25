@@ -258,8 +258,8 @@ Plater.HookScripts = { --private
 }
 
 Plater.HookScriptsDesc = { --private
-	["Initialization"] = "Executed once for the mod when it is compiled. Used to initialize the global mod environment 'modTable'.",
-	["Deinitialization"] = "Executed once for the mod when it is unloaded. Used to de-initialize the global mod environment 'modTable' and the mod for the last time.",
+	["Initialization"] = "Executed once for the mod every time it is loaded or compiled. Used to initialize the global mod environment 'modTable'.",
+	["Deinitialization"] = "Executed once for the mod every time it is unloaded. Used to de-initialize the global mod environment 'modTable' and the mod.",
 	["Constructor"] = "Executed once when the nameplate run the hook for the first time.\n\nUse to initialize configs in the environment.\n\nAlways receive unitFrame in 'self' parameter.",
 	["Destructor"] = "Run when the hook is Disabled or unloaded due to Load Conditions.\n\nUse to hide all frames created.\n\n|cFF44FF44Run on all nameplates shown in the screen|r.",
 	["Nameplate Created"] = "Executed when a nameplate is created.\n\nRequires a |cFFFFFF22/reload|r after changing the code.",
