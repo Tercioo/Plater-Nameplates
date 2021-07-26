@@ -998,7 +998,8 @@ local class_specs_coords = {
 		[168394] = true, --Slimy Morsel, Plaguefall
 		[176581] = true, --Spiked Ball, Painsmith Raznal SoD
 		[176920] = true, --Domination Arrow, Sylvanas SoD
-		[178008] = true, --Decrepid Orb, Sylvanas SoD
+		[178008] = true, --Decrepit Orb, Sylvanas SoD
+		[179963] = true, --Terror Orb, Sylvanas SoD
 		[175861] = true, --Glacial Spike, Kel'Thusad SoD
 	}
 
