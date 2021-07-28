@@ -4634,6 +4634,8 @@ function Plater.OnInit() --private --~oninit ~init
 					local notInterruptible = not self.canInterrupt
 					
 					self.IsInterrupted = false
+					self.InterruptSourceName = nil
+					self.InterruptSourceGUID = nil
 					self.ReUpdateNextTick = true
 					self.ThrottleUpdate = -1
 					
@@ -4685,8 +4687,9 @@ function Plater.OnInit() --private --~oninit ~init
 						return
 					end
 					
-					self:OnHideWidget()
-					self.IsInterrupted = true
+					-- this is called in SPELL_INTERRUPT event
+					--self:OnHideWidget()
+					--self.IsInterrupted = true
 
 				elseif (event == "UNIT_SPELLCAST_STOP" or event == "UNIT_SPELLCAST_CHANNEL_STOP") then
 					local unitCast = unit
@@ -8288,16 +8291,21 @@ end
 				return
 			end
 			
+			local name = sourceName
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-				if (plateFrame.unitFrame.PlaterOnScreen and plateFrame.unitFrame.castBar:IsShown()) then
+				local unitFrame = plateFrame.unitFrame
+				local castBar = unitFrame.castBar
+				if (unitFrame.PlaterOnScreen and castBar:IsShown()) then
 					if (plateFrame [MEMBER_GUID] == targetGUID) then
 						if DB_USE_NAME_TRANSLIT then
-							sourceName = LibTranslit:Transliterate(sourceName, TRANSLIT_MARK)
+							name = LibTranslit:Transliterate(name, TRANSLIT_MARK)
 						end
-						plateFrame.unitFrame.castBar.Text:SetText (INTERRUPTED .. " [" .. Plater.SetTextColorByClass (sourceName, sourceName) .. "]")
-						plateFrame.unitFrame.castBar.IsInterrupted = true
+						castBar.Text:SetText (INTERRUPTED .. " [" .. Plater.SetTextColorByClass (sourceName, name) .. "]")
+						castBar.IsInterrupted = true
+						castBar.InterruptSourceName = sourceName
+						castBar.InterruptSourceGUID = sourceGUID
 						--> check and stop the casting script if any
-						plateFrame.unitFrame.castBar:OnHideWidget()
+						castBar:OnHideWidget()
 					end
 				end
 			end
