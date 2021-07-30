@@ -4967,6 +4967,7 @@ function Plater.OnInit() --private --~oninit ~init
 			
 			if (plateFrame.actorType == ACTORTYPE_FRIENDLY_PLAYER) then
 				local isWithoutHealthbar = plateFrame.IsFriendlyPlayerWithoutHealthBar
+				plateFrame.IsNpcWithoutHealthBar = false --ensure this.
 				Plater.ParseHealthSettingForPlayer (plateFrame)
 				self.ScheduleNameUpdate = plateFrame.IsFriendlyPlayerWithoutHealthBar ~= isWithoutHealthbar
 				--Plater.UpdatePlateText (plateFrame, DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER], false)
@@ -6956,8 +6957,6 @@ end
 		local shouldForceRefresh = justAdded or forceUpdate
 		if (plateFrame.IsNpcWithoutHealthBar or plateFrame.IsFriendlyPlayerWithoutHealthBar) then
 			shouldForceRefresh = true
-			plateFrame.IsNpcWithoutHealthBar = false
-			plateFrame.IsFriendlyPlayerWithoutHealthBar = false
 			
 		end
 
@@ -7001,6 +7000,8 @@ end
 		
 		--if the nameplate is for a friendly npc
 		if (actorType == ACTORTYPE_FRIENDLY_NPC) then
+			plateFrame.IsFriendlyPlayerWithoutHealthBar = false
+			
 			local subTitleExists = false
 			local subTitle = Plater.GetActorSubName (plateFrame)
 			if (subTitle and subTitle ~= "" and not Plater.IsNpcInIgnoreList (plateFrame, true)) then
@@ -7025,6 +7026,7 @@ end
 					buffFrame:Show()
 					buffFrame2:Show()
 					nameFrame:Show()
+					plateFrame.IsNpcWithoutHealthBar = false
 				end
 			
 			elseif (IS_IN_OPEN_WORLD and DB_PLATE_CONFIG [actorType].quest_enabled and Plater.IsQuestObjective (plateFrame)) then
@@ -7036,6 +7038,7 @@ end
 				buffFrame:Show()
 				buffFrame2:Show()
 				nameFrame:Show()
+				plateFrame.IsNpcWithoutHealthBar = false
 				
 				--these twoseettings make the healthing dummy show the healthbar
 --				Plater.db.profile.plate_config.friendlynpc.only_names = false
@@ -7063,10 +7066,12 @@ end
 				buffFrame:Show()
 				buffFrame2:Show()
 				nameFrame:Show()
+				plateFrame.IsNpcWithoutHealthBar = false
 			end
 
 		elseif (actorType == ACTORTYPE_FRIENDLY_PLAYER) then
-			Plater.ParseHealthSettingForPlayer (plateFrame)
+			plateFrame.IsNpcWithoutHealthBar = false
+			Plater.ParseHealthSettingForPlayer (plateFrame, justAdded)
 			
 				--change the player health bar color to either class color or users choice
 			if (not Plater.db.profile.use_playerclass_color) then
@@ -7082,6 +7087,8 @@ end
 			end
 			
 		elseif (actorType == ACTORTYPE_ENEMY_PLAYER) then
+			plateFrame.IsNpcWithoutHealthBar = false
+			
 			if (plateFrame.PlayerCannotAttack and not DB_SHOW_HEALTHBARS_FOR_NOT_ATTACKABLE) then
 				healthBar:Hide()
 				buffFrame:Hide()
@@ -7094,6 +7101,7 @@ end
 				buffFrame:Show()
 				buffFrame2:Show()
 				nameFrame:Show()
+				plateFrame.IsFriendlyPlayerWithoutHealthBar = false
 				
 				if (DB_PLATE_CONFIG [actorType].use_playerclass_color) then
 					local _, class = UnitClass (unitFrame [MEMBER_UNITID])
@@ -7109,7 +7117,9 @@ end
 			end
 			
 		else
-			--> enemy npc or enemy player pass throught here
+			--> enemy npc pass throught here
+			plateFrame.IsFriendlyPlayerWithoutHealthBar = false
+			
 			--check if this is an enemy npc but the player cannot attack it
 			if (plateFrame.PlayerCannotAttack and not DB_SHOW_HEALTHBARS_FOR_NOT_ATTACKABLE) then
 				healthBar:Hide()
@@ -7122,6 +7132,7 @@ end
 				healthBar:Show()
 				buffFrame:Show()
 				buffFrame2:Show()
+				plateFrame.IsNpcWithoutHealthBar = false
 				
 				if unitFrame.IsSelf then
 					--refresh color
@@ -7773,23 +7784,25 @@ end
 	end
 
 	--check the setting 'only_damaged' and 'only_thename' for player characters. not critical code, can run slow
-	function Plater.ParseHealthSettingForPlayer (plateFrame) --private
+	function Plater.ParseHealthSettingForPlayer (plateFrame, force) --private
 		local isFriendlyPlayerWithoutHealthBar = plateFrame.IsFriendlyPlayerWithoutHealthBar
 		if (DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_thename and not DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_damaged) then
-			if not isFriendlyPlayerWithoutHealthBar then
+			if (not isFriendlyPlayerWithoutHealthBar) or force then
 				Plater.HideHealthBar (plateFrame.unitFrame, true)
 			end
 			
 		elseif (DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_damaged) then
 			local healthBar = plateFrame.unitFrame.healthBar
 			if ((healthBar.currentHealth or 1) < (healthBar.currentHealthMax or 1)) then
-				Plater.ShowHealthBar (plateFrame.unitFrame)
+				if isFriendlyPlayerWithoutHealthBar or force then
+					Plater.ShowHealthBar (plateFrame.unitFrame)
+				end
 				
-			elseif not isFriendlyPlayerWithoutHealthBar then
+			elseif (not isFriendlyPlayerWithoutHealthBar) or force then
 				Plater.HideHealthBar (plateFrame.unitFrame, true)
 			end
 			
-		else
+		elseif isFriendlyPlayerWithoutHealthBar or force then
 			Plater.ShowHealthBar (plateFrame.unitFrame)
 		end
 	end

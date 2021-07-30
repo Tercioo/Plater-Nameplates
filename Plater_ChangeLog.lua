@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1625966028,  "Backend Change", "July 30th, 2021", "Improvements on showing/hiding friendly player healthbars depending on health state.", "cont1nuity"},
 			{1625966028,  "Backend Change", "July 24th, 2021", "Storing 'InterruptSourceName' and 'InterruptSourceGUID' on the castBar.", "cont1nuity"},
 			{1625966028,  "New Feature", "July 24th, 2021", "Adding 'Deinitialization' hook for mods to run when the mod is unloaded.", "cont1nuity"},
 			{1625966028,  "Bug Fix", "July 24th, 2021", "Fixed 'modTable' being 'nil' in the Destructor code.", "cont1nuity"},
