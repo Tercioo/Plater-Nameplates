@@ -5496,8 +5496,8 @@ end
 		startTime = GetTime(),
 		platesUpdatedThisFrame = 0,
 		platesToUpdatePerFrame = 40,
-		frames = 0,
-		curFPS = 0,
+		frames = 1,
+		curFPS = 1,
 	}
 	
 	function Plater.EveryFrameFPSCheck()
@@ -5505,7 +5505,7 @@ end
 		local curTime = GetTime()
 		local curFPSData = Plater.FPSData
 		if (curFPSData.startTime + 0.25) < curTime then
-			curFPSData.curFPS = curFPSData.frames / (curTime - curFPSData.startTime)
+			curFPSData.curFPS = math.max(curFPSData.frames / (curTime - curFPSData.startTime), 1)
 			curFPSData.platesToUpdatePerFrame = math.ceil(NUM_NAMEPLATES_ON_SCREEN / DB_TICK_THROTTLE / curFPSData.curFPS)
 			
 			--ViragDevTool_AddData({curFPSData=curFPSData, NUM_NAMEPLATES_ON_SCREEN = NUM_NAMEPLATES_ON_SCREEN}, "Plater_FPS")
