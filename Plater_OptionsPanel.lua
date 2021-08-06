@@ -6329,7 +6329,7 @@ local relevance_options = {
 				end
 			end,
 			min = 0.2,
-			max = 1.6,
+			max = 2.5,
 			step = 0.05,
 			thumbscale = 1.7,
 			usedecimals = true,
@@ -12666,7 +12666,7 @@ end
 				end
 			end,
 			min = 0.2,
-			max = 1.6,
+			max = 2.5,
 			step = 0.05,
 			thumbscale = 1.7,
 			usedecimals = true,
@@ -12685,7 +12685,7 @@ end
 				end
 			end,
 			min = 0.2,
-			max = 1.6,
+			max = 2.5,
 			step = 0.05,
 			thumbscale = 1.7,
 			usedecimals = true,
