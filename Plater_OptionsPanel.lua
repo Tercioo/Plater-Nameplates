@@ -13461,37 +13461,39 @@ end
 	
 	--all settings tables
 	local allTabSettings = {
-		interface_options,
-		debuff_options,
-		especial_aura_settings,
-		options_personal,
-		targetOptions,
-		options_table1,
-		options_table3,
-		options_table4,
-		friendly_npc_options_table,
-		options_table2,
-		experimental_options,
-		auto_options,
-		thread_options,
-		advanced_options,
+		interface_options, -- general
+		options_table1, -- general
+		thread_options, -- threat & aggro
+		targetOptions, -- target
+		castBar_options, -- cast bar
+		experimental_options, --  level & strata
+		options_personal, -- personal bar
+		debuff_options, -- buff settings
+		especial_aura_settings, -- buff special
+		options_table2, -- enemy npc
+		options_table4, -- enemy player
+		options_table3, -- friendly player
+		friendly_npc_options_table, -- friendly npc
+		auto_options, -- auto
+		advanced_options, -- advanced
 	}
 	
 	local allTabHeaders = {
-		mainFrame.AllButtons [1].button.text:GetText(),
-		mainFrame.AllButtons [9].button.text:GetText(),
-		mainFrame.AllButtons [11].button.text:GetText(),
-		mainFrame.AllButtons [8].button.text:GetText(),
-		mainFrame.AllButtons [3].button.text:GetText(),
-		mainFrame.AllButtons [1].button.text:GetText(),
-		mainFrame.AllButtons [16].button.text:GetText(),
-		mainFrame.AllButtons [14].button.text:GetText(),
-		mainFrame.AllButtons [15].button.text:GetText(),
-		mainFrame.AllButtons [13].button.text:GetText(),
-		mainFrame.AllButtons [5].button.text:GetText(),
-		mainFrame.AllButtons [20].button.text:GetText(),
-		mainFrame.AllButtons [2].button.text:GetText(),
-		mainFrame.AllButtons [22].button.text:GetText(),
+		mainFrame.AllButtons [1].button.text:GetText(), -- general
+		mainFrame.AllButtons [1].button.text:GetText(), -- general
+		mainFrame.AllButtons [2].button.text:GetText(), -- threat & aggro
+		mainFrame.AllButtons [3].button.text:GetText(), -- target
+		mainFrame.AllButtons [4].button.text:GetText(), -- cast bar
+		mainFrame.AllButtons [5].button.text:GetText(), -- level & strata
+		mainFrame.AllButtons [8].button.text:GetText(), -- personal bar
+		mainFrame.AllButtons [9].button.text:GetText(), -- buff settings
+		mainFrame.AllButtons [11].button.text:GetText(), -- buff special
+		mainFrame.AllButtons [13].button.text:GetText(), -- enemy npc
+		mainFrame.AllButtons [14].button.text:GetText(), -- enemy player
+		mainFrame.AllButtons [15].button.text:GetText(), -- friendly npc
+		mainFrame.AllButtons [16].button.text:GetText(), -- friendly player
+		mainFrame.AllButtons [20].button.text:GetText(), -- auto
+		mainFrame.AllButtons [22].button.text:GetText(), -- advanced
 	}
 
 	--this table will hold all options
