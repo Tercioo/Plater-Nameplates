@@ -13474,7 +13474,24 @@ end
 		experimental_options,
 		auto_options,
 		thread_options,
-		advanced_options
+		advanced_options,
+	}
+	
+	local allTabHeaders = {
+		mainFrame.AllButtons [1].button.text:GetText(),
+		mainFrame.AllButtons [9].button.text:GetText(),
+		mainFrame.AllButtons [11].button.text:GetText(),
+		mainFrame.AllButtons [8].button.text:GetText(),
+		mainFrame.AllButtons [3].button.text:GetText(),
+		mainFrame.AllButtons [1].button.text:GetText(),
+		mainFrame.AllButtons [16].button.text:GetText(),
+		mainFrame.AllButtons [14].button.text:GetText(),
+		mainFrame.AllButtons [15].button.text:GetText(),
+		mainFrame.AllButtons [13].button.text:GetText(),
+		mainFrame.AllButtons [5].button.text:GetText(),
+		mainFrame.AllButtons [20].button.text:GetText(),
+		mainFrame.AllButtons [2].button.text:GetText(),
+		mainFrame.AllButtons [22].button.text:GetText(),
 	}
 
 	--this table will hold all options
@@ -13482,9 +13499,13 @@ end
 	--start the fill process filling 'allOptions' with each individual option from each tab
 	for i = 1, #allTabSettings do
 		local tabSettings = allTabSettings[i]
-		for k, setting in pairs(tabSettings) do 
+		local lastLabel = nil
+		for k, setting in pairs(tabSettings) do
+			if (setting.type == "label") then
+				lastLabel = setting
+			end
 			if (setting.name) then
-				allOptions[#allOptions+1] = setting
+				allOptions[#allOptions+1] = {setting = setting, label = lastLabel, header = allTabHeaders[i] }
 			end
 		end
 	end
@@ -13495,10 +13516,25 @@ end
 		local searchingText = string.lower(searchBox.text)
 		searchBox:SetFocus(false)
 
+		local lastTab = nil
+		local lastLabel = nil
 		for i = 1, #allOptions do
-			local optionName = string.lower(allOptions[i].name)
+			local optionData = allOptions[i]
+			local optionName = string.lower(optionData.setting.name)
 			if (optionName:find(searchingText)) then
-				options[#options+1] = allOptions[i]
+				if optionData.header ~= lastTab then
+					if lastTab ~= nil then
+						options[#options+1] = {type = "label", get = function() return "" end, text_template = DF:GetTemplate ("font", "OPTIONS_FONT_TEMPLATE")} -- blank
+					end
+					options[#options+1] = {type = "label", get = function() return optionData.header end, text_template = {color = "gold", size = 14, font = DF:GetBestFontForLanguage()}}
+					lastTab = optionData.header
+					lastLabel = nil
+				end
+				if optionData.label ~= lastLabel then
+					options[#options+1] = optionData.label
+					lastLabel = optionData.label
+				end
+				options[#options+1] = optionData.setting
 			end
 		end
 
