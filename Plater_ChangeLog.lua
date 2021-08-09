@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1628157906,  "Bug Fix", "August 9th, 2021", "Fixing an issue with target indicators not scaling correctly in some cases.", "cont1nuity"},
 			{1628157906,  "New Feature", "August 6th, 2021", "Adding tab names and headers to the search tab results.", "cont1nuity"},
 			{1628157906,  "Bug Fix", "August 5th, 2021", "Fixing rare div by zero issue.", "cont1nuity"},
 			
