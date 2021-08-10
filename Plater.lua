@@ -3400,7 +3400,12 @@ local class_specs_coords = {
 			
 			--powerbar are disabled by default in the settings table, called SetUnit will make the framework hide the power bar
 			--SetPowerBarSize() will show the power bar or the personal resource bar update also will show it
+			
+			--ensure castBar is enabled properly when switching actorType or unit (with unit changing, it will be properly enabled)
+			local castBarWasEnabled = (unitFrame.Settings.ShowCastBar and (plateFrame.PreviousUnitType == actorType)) or (unitFrame.unit ~= unitID)
 			unitFrame.Settings.ShowCastBar = true -- reset to default, clearing later.
+		
+			--set the unit
 			unitFrame:SetUnit (unitID)
 			
 			--show unit name, the frame work will hide it due to ShowUnitName is set to false
@@ -3553,6 +3558,8 @@ local class_specs_coords = {
 					unitFrame.Settings.ShowCastBar = DB_PLATE_CONFIG.player.castbar_enabled
 					if (not DB_PLATE_CONFIG.player.castbar_enabled) then
 						CastingBarFrame_SetUnit (castBar, nil, nil, nil)
+					elseif not castBarWasEnabled then
+						unitFrame.castBar:SetUnit (unitID, unitID)
 					end
 					
 					plateFrame.PlateConfig = DB_PLATE_CONFIG.player
@@ -3576,6 +3583,8 @@ local class_specs_coords = {
 							unitFrame.Settings.ShowCastBar = not DB_CASTBAR_HIDE_FRIENDLY
 							if (DB_CASTBAR_HIDE_FRIENDLY) then
 								CastingBarFrame_SetUnit (castBar, nil, nil, nil)
+							elseif not castBarWasEnabled then
+								unitFrame.castBar:SetUnit (unitID, unitID)
 							end
 						else
 							plateFrame.NameAnchor = DB_NAME_PLAYERENEMY_ANCHOR
@@ -3584,6 +3593,8 @@ local class_specs_coords = {
 							unitFrame.Settings.ShowCastBar = not DB_CASTBAR_HIDE_ENEMIES
 							if (DB_CASTBAR_HIDE_ENEMIES) then
 								CastingBarFrame_SetUnit (castBar, nil, nil, nil)
+							elseif not castBarWasEnabled then
+								unitFrame.castBar:SetUnit (unitID, unitID)
 							end
 						end
 					else
@@ -3596,6 +3607,8 @@ local class_specs_coords = {
 							unitFrame.Settings.ShowCastBar = not DB_CASTBAR_HIDE_FRIENDLY
 							if (DB_CASTBAR_HIDE_FRIENDLY) then
 								CastingBarFrame_SetUnit (castBar, nil, nil, nil)
+							elseif not castBarWasEnabled then
+								unitFrame.castBar:SetUnit (unitID, unitID)
 							end
 						elseif isBattlePet then
 							plateFrame.NameAnchor = DB_NAME_NPCFRIENDLY_ANCHOR
@@ -3604,6 +3617,8 @@ local class_specs_coords = {
 							unitFrame.Settings.ShowCastBar = not DB_CASTBAR_HIDE_FRIENDLY
 							if (DB_CASTBAR_HIDE_FRIENDLY) then
 								CastingBarFrame_SetUnit (castBar, nil, nil, nil)
+							elseif not castBarWasEnabled then
+								unitFrame.castBar:SetUnit (unitID, unitID)
 							end
 							
 						else
@@ -3622,6 +3637,8 @@ local class_specs_coords = {
 							unitFrame.Settings.ShowCastBar = not DB_CASTBAR_HIDE_ENEMIES
 							if (DB_CASTBAR_HIDE_ENEMIES) then
 								CastingBarFrame_SetUnit (castBar, nil, nil, nil)
+							elseif not castBarWasEnabled then
+								unitFrame.castBar:SetUnit (unitID, unitID)
 							end
 							
 							--get threat situation to expose it to scripts already in the nameplate added hook

@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1628157906,  "Bug Fix", "August 10th, 2021", "Fixing an issue with cast bars not being re-enabled correctly when units become attackable and friendly cast bars are disabled.", "cont1nuity"},
 			{1628157906,  "New Feature", "August 10th, 2021", "Adding option to show 'magic' type buffs.", "cont1nuity"},
 			{1628157906,  "New Feature", "August 10th, 2021", "Adding option to show auras cast by other players.", "cont1nuity"},
 			{1628157906,  "Bug Fix", "August 9th, 2021", "Fixing an issue with target indicators not scaling correctly in some cases.", "cont1nuity"},
