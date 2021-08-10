@@ -4218,7 +4218,6 @@ Plater.CreateAuraTesting()
 				desc = "Outline",
 			},
 
-			{type = "blank"},
 			--show caster name
 			{
 				type = "toggle",
@@ -4259,7 +4258,6 @@ Plater.CreateAuraTesting()
 				desc = "Outline",
 			},
 			
-			{type = "blank"},
 			--show stacks
 			{
 				type = "toggle",
