@@ -1659,7 +1659,7 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 
 		DB_SHOW_PURGE_IN_EXTRA_ICONS = profile.extra_icon_show_purge
 		DB_SHOW_ENRAGE_IN_EXTRA_ICONS = profile.extra_icon_show_enrage
-		DB_SHOW_MAGIC_IN_EXTRA_ICONS = profile.extra_icon_show_enrage
+		DB_SHOW_MAGIC_IN_EXTRA_ICONS = profile.extra_icon_show_magic
 
 		--list of auras the user added into the track list for special auras
 		wipe (SPECIAL_AURAS_USER_LIST)
