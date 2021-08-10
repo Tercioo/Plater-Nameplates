@@ -1898,6 +1898,18 @@ local debuff_options = {
 		name = "Show Auras Casted by You",
 		desc = "Show Auras Casted by You.",
 	},
+	
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_show_aura_by_other_players end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_aura_by_other_players = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Auras Casted by other Players",
+		desc = "Show Auras Casted by other Players.\n\n|cFFFFFF00Important|r: This may cause a lot of auras to show!",
+	},
 
 	{type = "blank"},
 	
