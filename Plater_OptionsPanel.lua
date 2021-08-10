@@ -1951,6 +1951,18 @@ local debuff_options = {
 	
 	{
 		type = "toggle",
+		get = function() return Plater.db.profile.aura_show_magic end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_magic = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Magic Buffs",
+		desc = "Show auras which are in the magic type category.",
+	},
+	
+	{
+		type = "toggle",
 		get = function() return Plater.db.profile.aura_show_crowdcontrol end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_show_crowdcontrol = value
@@ -2103,8 +2115,6 @@ local debuff_options = {
 		name = "Defensive CD Border Color",
 		desc = "Defensive CD Border Color",
 	},
-	
-	{type = "blank"},
 	
 	{
 		type = "toggle",
@@ -4329,6 +4339,18 @@ Plater.CreateAuraTesting()
 				end,
 				name = "Enrage",
 				desc = "When the unit has an enrage effect on it, show it.",
+			},
+			--show enrages
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.extra_icon_show_magic end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.extra_icon_show_magic = value
+					Plater.RefreshDBUpvalues()
+					Plater.UpdateAllPlates()
+				end,
+				name = "Magic",
+				desc = "When the unit has a magic buff on it, show it.",
 			},
 			--show offensive CDs
 			{
