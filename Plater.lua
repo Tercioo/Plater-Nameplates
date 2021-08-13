@@ -5236,11 +5236,16 @@ end
 		end
 	end
 	
-	--get a unit and a text and color the text with the class color of the unit
+	--get a unit and a text and color the text with the class color of the unit (accepts player GUID as well)
 	function Plater.SetTextColorByClass (unit, text)
 		--checking if the unit exists because this can be called from the cleu parser
 		if (unit) then
-			local _, class = UnitClass (unit)
+			local _, class = nil, nil
+			if (unit:sub(1, #"Player-") == "Player-") then
+				_, class = GetPlayerInfoByGUID (unit)
+			else
+				_, class = UnitClass (unit)
+			end
 			if (class) then
 				local color = RAID_CLASS_COLORS [class]
 				if (color) then
@@ -8336,7 +8341,7 @@ end
 						if DB_USE_NAME_TRANSLIT then
 							name = LibTranslit:Transliterate(name, TRANSLIT_MARK)
 						end
-						castBar.Text:SetText (INTERRUPTED .. " [" .. Plater.SetTextColorByClass (sourceName, name) .. "]")
+						castBar.Text:SetText (INTERRUPTED .. " [" .. Plater.SetTextColorByClass (sourceGUID, name) .. "]")
 						castBar.IsInterrupted = true
 						castBar.InterruptSourceName = sourceName
 						castBar.InterruptSourceGUID = sourceGUID
