@@ -1574,7 +1574,7 @@ function DF:IconPick (callback, close_when_select, param1, param2)
 		DF.IconPickFrame.preview:Hide()
 		
 		--serach
-		DF.IconPickFrame.searchLabel =  DF:NewLabel (DF.IconPickFrame, nil, "$parentSearchBoxLabel", nil, "search:", font, size, color)
+		DF.IconPickFrame.searchLabel =  DF:NewLabel (DF.IconPickFrame, nil, "$parentSearchBoxLabel", nil, "search:")
 		DF.IconPickFrame.searchLabel:SetPoint ("topleft", DF.IconPickFrame, "topleft", 12, -36)
 		DF.IconPickFrame.searchLabel:SetTemplate (DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
 		
