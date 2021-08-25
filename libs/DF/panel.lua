@@ -8128,6 +8128,9 @@ DF.CastFrameFunctions = {
 			if (self.casting) then
 				local name, text, texture, startTime = UnitCastingInfo (self.unit)
 				if (name) then
+					--[[if not self.spellStartTime then
+						self:UpdateCastingInfo(self.unit)
+					end]]--
 					self.value = GetTime() - self.spellStartTime
 				end
 
@@ -8136,6 +8139,9 @@ DF.CastFrameFunctions = {
 			elseif (self.channeling) then
 				local name, text, texture, endTime = UnitChannelInfo (self.unit)
 				if (name) then
+					--[[if not self.spellEndTime then
+						self:UpdateChannelInfo(self.unit)
+					end]]--
 					self.value = self.spellEndTime - GetTime()
 				end
 
@@ -8329,10 +8335,12 @@ DF.CastFrameFunctions = {
 		
 		if (isChannel) then
 			self.channeling = true
+			self:UpdateChannelInfo(unit)
 			return self.unit == arg1 and "UNIT_SPELLCAST_CHANNEL_START"
 			
 		elseif (isRegularCast) then
 			self.casting = true
+			self:UpdateCastingInfo(unit)
 			return self.unit == arg1 and "UNIT_SPELLCAST_START"
 			
 		else
@@ -8346,8 +8354,7 @@ DF.CastFrameFunctions = {
 		end
 	end,
 	
-	UNIT_SPELLCAST_START = function (self, unit)
-
+	UpdateCastingInfo = function (self, unit)
 		local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, spellID
 		if IS_WOW_PROJECT_MAINLINE then
 			name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, spellID = UnitCastingInfo (unit)
@@ -8406,10 +8413,16 @@ DF.CastFrameFunctions = {
 		--> update the interrupt cast border
 		self:UpdateInterruptState()
 		
+	end,
+	
+	UNIT_SPELLCAST_START = function (self, unit)
+
+		self:UpdateCastingInfo(unit)
+		
 		self:RunHooksForWidget ("OnCastStart", self, self.unit, "UNIT_SPELLCAST_START")
 	end,
 	
-	UNIT_SPELLCAST_CHANNEL_START = function (self, unit, ...)
+	UpdateChannelInfo = function (self, unit, ...)
 		local name, text, texture, startTime, endTime, isTradeSkill, notInterruptible, spellID
 		if IS_WOW_PROJECT_MAINLINE then
 			name, text, texture, startTime, endTime, isTradeSkill, notInterruptible, spellID = UnitChannelInfo (unit)
@@ -8467,6 +8480,12 @@ DF.CastFrameFunctions = {
 			
 		--> update the interrupt cast border
 		self:UpdateInterruptState()
+		
+	end,
+	
+	UNIT_SPELLCAST_CHANNEL_START = function (self, unit, ...)
+		
+		self:UpdateChannelInfo(unit, ...)
 
 		self:RunHooksForWidget ("OnCastStart", self, self.unit, "UNIT_SPELLCAST_CHANNEL_START")
 	end,

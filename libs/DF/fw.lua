@@ -1,6 +1,6 @@
 
 
-local dversion = 265
+local dversion = 268
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
 
@@ -587,6 +587,44 @@ function DF:AddClassColorToText (text, class)
 		return DF:RemoveRealName (text)
 	end
 	
+	return text
+end
+
+function DF:AddClassIconToText(text, playerName, class, useSpec, iconSize)
+	local size = iconSize or 16
+	
+	local iconToUse, spec
+	if (useSpec) then
+		if (Details) then
+			local guid = UnitGUID(playerName)
+			if (guid) then
+				local spec = Details.cached_specs[guid]
+				if (spec) then
+					spec = spec
+				end
+			end
+		end
+	end
+
+	if (spec) then --if spec is valid, the user has Details! installed
+		local specString = ""
+		local L, R, T, B = unpack (Details.class_specs_coords[spec])
+		if (L) then
+			specString = "|TInterface\\AddOns\\Details\\images\\spec_icons_normal:" .. size .. ":" .. size .. ":0:0:512:512:" .. (L * 512) .. ":" .. (R * 512) .. ":" .. (T * 512) .. ":" .. (B * 512) .. "|t"
+			return specString .. " " .. text
+		end
+	end
+
+	if (class) then
+		local classString = ""
+		local L, R, T, B = unpack (Details.class_coords[class])
+		if (L) then
+			local imageSize = 128
+			classString = "|TInterface\\AddOns\\Details\\images\\classes_small:" .. size .. ":" .. size .. ":0:0:" .. imageSize .. ":" .. imageSize .. ":" .. (L * imageSize) .. ":" .. (R * imageSize) .. ":" .. (T * imageSize) .. ":" .. (B * imageSize) .. "|t"
+			return classString .. " " .. text
+		end
+	end
+
 	return text
 end
 
