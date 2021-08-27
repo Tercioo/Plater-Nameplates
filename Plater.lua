@@ -1220,9 +1220,12 @@ local class_specs_coords = {
 		--if DB_USE_UIPARENT end
 			nameplateAlpha = plateFrame:GetAlpha()
 		end
+		unitFrame.IsInRange = nil
 		
 		--if is using the no combat alpha and the unit isn't in combat, ignore the range check, no combat alpha is disabled by default
 		if (unitFrame.IsSelf) then
+			unitFrame.IsInRange = true --player plate is always in range
+			
 			unitFrame:SetAlpha (nameplateAlpha)
 
 			unitFrame.healthBar:SetAlpha (1)
@@ -1347,6 +1350,8 @@ local class_specs_coords = {
 
 			if (isInRange) then
 				--unit is in rage
+				unitFrame.IsInRange = true
+				
 				if (onAdded) then
 					--plateFrame.FadedIn = true
 
@@ -1381,6 +1386,8 @@ local class_specs_coords = {
 				end
 			else
 				--unit is out of range
+				unitFrame.IsInRange = false
+				
 				if (onAdded) then
 					plateFrame.FadedIn = nil
 
@@ -3463,6 +3470,8 @@ local class_specs_coords = {
 			unitFrame.UsingCustomColor = nil
 			
 			unitFrame.InExecuteRange = false
+			
+			unitFrame.IsInRange = nil
 			
 			--check if this nameplate has an update scheduled
 			if (plateFrame.HasUpdateScheduled) then

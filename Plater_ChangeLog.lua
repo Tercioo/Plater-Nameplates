@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1629883344,  "Backend Change", "August 27th, 2021", "Added 'unitFrame.IsInRange' when plater range check is enabled.", "cont1nuity"},
 			{1629883344,  "Bug Fix", "August 25th, 2021", "Fixing an issue with proper cast bar initialization on login/reload when the unit was already casting.", "cont1nuity"},
 			{1629883344,  "Backend Change", "August 19th, 2021", "Enhancements to profiling (data and formatting).", "cont1nuity"},
 			{1629883344,  "Backend Change", "August 13th, 2021", "Interrupt class coloring works for players outside your group now.", "cont1nuity"},
