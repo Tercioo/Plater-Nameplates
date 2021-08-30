@@ -8,16 +8,17 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
-			{1629883344,  "Backend Change", "August 27th, 2021", "Added 'unitFrame.IsInRange' when plater range check is enabled.", "cont1nuity"},
-			{1629883344,  "Bug Fix", "August 25th, 2021", "Fixing an issue with proper cast bar initialization on login/reload when the unit was already casting.", "cont1nuity"},
-			{1629883344,  "Backend Change", "August 19th, 2021", "Enhancements to profiling (data and formatting).", "cont1nuity"},
-			{1629883344,  "Backend Change", "August 13th, 2021", "Interrupt class coloring works for players outside your group now.", "cont1nuity"},
-			{1629883344,  "Bug Fix", "August 10th, 2021", "Fixing an issue with cast bars not being re-enabled correctly when units become attackable and friendly cast bars are disabled.", "cont1nuity"},
-			{1629883344,  "New Feature", "August 10th, 2021", "Adding option to show 'magic' type buffs.", "cont1nuity"},
-			{1629883344,  "New Feature", "August 10th, 2021", "Adding option to show auras cast by other players.", "cont1nuity"},
-			{1629883344,  "Bug Fix", "August 9th, 2021", "Fixing an issue with target indicators not scaling correctly in some cases.", "cont1nuity"},
-			{1629883344,  "New Feature", "August 6th, 2021", "Adding tab names and headers to the search tab results.", "cont1nuity"},
-			{1629883344,  "Bug Fix", "August 5th, 2021", "Fixing rare div by zero issue.", "cont1nuity"},
+			{1630313665,  "New Feature", "August 30th, 2021", "Added 'Plater.IsUnitPet (unitFrame)' which returns 'isPet, isPlayerPet, {ownerGUID, ownerName, petName}' if available.", "cont1nuity"},
+			{1630313665,  "Backend Change", "August 27th, 2021", "Added 'unitFrame.IsInRange' when plater range check is enabled.", "cont1nuity"},
+			{1630313665,  "Bug Fix", "August 25th, 2021", "Fixing an issue with proper cast bar initialization on login/reload when the unit was already casting.", "cont1nuity"},
+			{1630313665,  "Backend Change", "August 19th, 2021", "Enhancements to profiling (data and formatting).", "cont1nuity"},
+			{1630313665,  "Backend Change", "August 13th, 2021", "Interrupt class coloring works for players outside your group now.", "cont1nuity"},
+			{1630313665,  "Bug Fix", "August 10th, 2021", "Fixing an issue with cast bars not being re-enabled correctly when units become attackable and friendly cast bars are disabled.", "cont1nuity"},
+			{1630313665,  "New Feature", "August 10th, 2021", "Adding option to show 'magic' type buffs.", "cont1nuity"},
+			{1630313665,  "New Feature", "August 10th, 2021", "Adding option to show auras cast by other players.", "cont1nuity"},
+			{1630313665,  "Bug Fix", "August 9th, 2021", "Fixing an issue with target indicators not scaling correctly in some cases.", "cont1nuity"},
+			{1630313665,  "New Feature", "August 6th, 2021", "Adding tab names and headers to the search tab results.", "cont1nuity"},
+			{1630313665,  "Bug Fix", "August 5th, 2021", "Fixing rare div by zero issue.", "cont1nuity"},
 			
 			{1625966028,  "Backend Change", "July 30th, 2021", "Improvements on showing/hiding friendly player healthbars depending on health state.", "cont1nuity"},
 			{1625966028,  "Backend Change", "July 24th, 2021", "Storing 'InterruptSourceName' and 'InterruptSourceGUID' on the castBar.", "cont1nuity"},

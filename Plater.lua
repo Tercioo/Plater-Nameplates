@@ -4141,7 +4141,8 @@ function Plater.OnInit() --private --~oninit ~init
 			C_Timer.After (5, function()
 				local petGUID = UnitGUID ("playerpet")
 				if (petGUID) then
-					Plater.PlayerPetCache [petGUID] = time()
+					local entry = {ownerGUID = Plater.PlayerGUID, ownerName = UnitName("player"), petName = UnitName("playerpet"), time = time()}
+					Plater.PlayerPetCache [petGUID] = entry
 				end
 			end)
 			
@@ -8243,6 +8244,16 @@ end
 		
 		return "normal"
 	end
+	
+	--returns isPet, isPlayerPet, PET_CACHE-entry (if existing)
+	function Plater.IsUnitPet (unitFrame) 
+		if not unitFrame then return false, false, nil end
+		local entry = PET_CACHE [unitFrame.PlateFrame [MEMBER_GUID]]
+		if (entry) then
+			return true, Plater.PlayerPetCache [unitFrame.PlateFrame [MEMBER_GUID]] and true or false, entry
+		end
+		return false, false, nil
+	end
 
 	function Plater.CanChangePlateSize() --private
 		return not InCombatLockdown()
@@ -8329,10 +8340,11 @@ end
 			end
 		--]=]
 
-			PET_CACHE [targetGUID] = time
+			local entry = {ownerGUID = sourceGUID, ownerName = sourceName, petName = targetName, time = time}
+			PET_CACHE [targetGUID] = entry
 			
 			if (sourceGUID == Plater.PlayerGUID) then
-				Plater.PlayerPetCache [targetGUID] = time
+				Plater.PlayerPetCache [targetGUID] = entry
 			end
 		end,
 		
@@ -8437,15 +8449,17 @@ end
 	PlaterCLEUParser:SetScript ("OnEvent", PlaterCLEUParser.Parser)
 	PlaterCLEUParser:RegisterEvent ("COMBAT_LOG_EVENT_UNFILTERED")
 
-	C_Timer.NewTicker (180, function()
+	C_Timer.NewTicker (600, function()
 		local now = time()
-		for guid, time in pairs (PET_CACHE) do
-			if (time+180 < now) then
+		for guid, entry in pairs (PET_CACHE) do
+			local time = entry.time
+			if (time+600 < now) then
 				PET_CACHE [guid] = nil
 			end
 		end
 		
-		for guid, time in pairs (Plater.PlayerPetCache) do
+		for guid, entry in pairs (Plater.PlayerPetCache) do
+			local time = entry.time
 			if (time + 3600 < now) then
 				Plater.PlayerPetCache [guid] = nil
 			end
@@ -8454,6 +8468,8 @@ end
 
 	Plater.NpcBlackList = {} 
 	function Plater.ForceFindPetOwner (serial) --private
+		Plater.StartLogPerformanceCore("Plater-Core", "Update", "ForceFindPetOwner")
+		
 		local tooltipFrame = PlaterPetOwnerFinder or CreateFrame ("GameTooltip", "PlaterPetOwnerFinder", nil, "GameTooltipTemplate")
 		
 		tooltipFrame:SetOwner (WorldFrame, "ANCHOR_NONE")
@@ -8461,6 +8477,7 @@ end
 		
 		local isPlayerPet = false
 		local isOtherPet = false
+		local ownerName = nil
 		
 		local line1 = _G ["PlaterPetOwnerFinderTextLeft2"]
 		local text1 = line1 and line1:GetText()
@@ -8469,8 +8486,11 @@ end
 			local playerName = pName:gsub ("%-.*", "") --remove realm name
 			if (text1:find (playerName)) then
 				isPlayerPet = true
-			elseif (string.match(text1, string.gsub(UNITNAME_TITLE_PET, "%%s", "(%.*)")) or string.match(text1, string.gsub(UNITNAME_TITLE_MINION, "%%s", "(%.*)"))) then
-				isOtherPet = true
+			else
+				ownerName = (string.match(text1, string.gsub(UNITNAME_TITLE_PET, "%%s", "(%.*)")) or string.match(text1, string.gsub(UNITNAME_TITLE_MINION, "%%s", "(%.*)")))
+				if ownerName then
+					isOtherPet = true
+				end
 			end
 		end
 		
@@ -8482,20 +8502,32 @@ end
 				local playerName = pName:gsub ("%-.*", "") --remove realm name
 				if (text2:find (playerName)) then
 					isPlayerPet = true
-				elseif (string.match(text2, string.gsub(UNITNAME_TITLE_PET, "%%s", "(%.*)")) or string.match(text2, string.gsub(UNITNAME_TITLE_MINION, "%%s", "(%.*)"))) then
-					isOtherPet = true
+				else
+					ownerName = (string.match(text2, string.gsub(UNITNAME_TITLE_PET, "%%s", "(%.*)")) or string.match(text2, string.gsub(UNITNAME_TITLE_MINION, "%%s", "(%.*)")))
+					if ownerName then
+						isOtherPet = true
+					end
 				end
 			end
 		end
 		
-		if (isPlayerPet) then
-			PET_CACHE [serial] = time()
-			Plater.PlayerPetCache [serial] = time()
-		elseif (isOtherPet) then
-			PET_CACHE [serial] = time()
+		if (isPlayerPet or isOtherPet) then
+			local petNameLine = _G ["PlaterPetOwnerFinderTextLeft1"]
+			local petName = petNameLine and petNameLine:GetText()
+			local entry = {ownerGUID = UnitGUID(ownerName), ownerName = ownerName, petName = petName, time = time()}
+			
+			if (isPlayerPet) then
+				PET_CACHE [serial] = entry
+				Plater.PlayerPetCache [serial] = entry
+			elseif (isOtherPet) then
+				--ViragDevTool_AddData({serial = serial, entry = entry, tooltipFrame = tooltipFrame}, "pet")
+				PET_CACHE [serial] = entry
+			end
 		else
 			Plater.NpcBlackList [serial] = true
 		end
+		
+		Plater.EndLogPerformanceCore("Plater-Core", "Update", "ForceFindPetOwner")
 	end
 	
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
