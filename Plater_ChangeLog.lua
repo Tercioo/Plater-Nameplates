@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1630693177,  "Bug Fix", "September 5th, 2021", "Disabling OTF fonts 'Oswald' and 'NuevaStd' as those are not working in 9.1.5, 2.5.2 and 1.14.0 (possibly not temporarily).", "cont1nuity"},
+			
 			{1630347577,  "Bug Fix", "August 30th, 2021", "Fixing an issue with player pet nameplates.", "cont1nuity"},
 			{1630313665,  "New Feature", "August 30th, 2021", "Added 'Plater.IsUnitPet (unitFrame)' which returns 'isPet, isPlayerPet, {ownerGUID, ownerName, petName}' if available.", "cont1nuity"},
 			{1630313665,  "Backend Change", "August 27th, 2021", "Added 'unitFrame.IsInRange' when plater range check is enabled.", "cont1nuity"},
