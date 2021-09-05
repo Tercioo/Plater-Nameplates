@@ -1220,9 +1220,12 @@ local class_specs_coords = {
 		--if DB_USE_UIPARENT end
 			nameplateAlpha = plateFrame:GetAlpha()
 		end
+		unitFrame.IsInRange = nil
 		
 		--if is using the no combat alpha and the unit isn't in combat, ignore the range check, no combat alpha is disabled by default
 		if (unitFrame.IsSelf) then
+			unitFrame.IsInRange = true --player plate is always in range
+			
 			unitFrame:SetAlpha (nameplateAlpha)
 
 			unitFrame.healthBar:SetAlpha (1)
@@ -1347,6 +1350,8 @@ local class_specs_coords = {
 
 			if (isInRange) then
 				--unit is in rage
+				unitFrame.IsInRange = true
+				
 				if (onAdded) then
 					--plateFrame.FadedIn = true
 
@@ -1381,6 +1386,8 @@ local class_specs_coords = {
 				end
 			else
 				--unit is out of range
+				unitFrame.IsInRange = false
+				
 				if (onAdded) then
 					plateFrame.FadedIn = nil
 
@@ -3400,7 +3407,12 @@ local class_specs_coords = {
 			
 			--powerbar are disabled by default in the settings table, called SetUnit will make the framework hide the power bar
 			--SetPowerBarSize() will show the power bar or the personal resource bar update also will show it
+			
+			--ensure castBar is enabled properly when switching actorType or unit (with unit changing, it will be properly enabled)
+			local castBarWasEnabled = (unitFrame.Settings.ShowCastBar and (plateFrame.PreviousUnitType == actorType)) or (unitFrame.unit ~= unitID)
 			unitFrame.Settings.ShowCastBar = true -- reset to default, clearing later.
+		
+			--set the unit
 			unitFrame:SetUnit (unitID)
 			
 			--show unit name, the frame work will hide it due to ShowUnitName is set to false
@@ -3458,6 +3470,8 @@ local class_specs_coords = {
 			unitFrame.UsingCustomColor = nil
 			
 			unitFrame.InExecuteRange = false
+			
+			unitFrame.IsInRange = nil
 			
 			--check if this nameplate has an update scheduled
 			if (plateFrame.HasUpdateScheduled) then
@@ -3553,6 +3567,8 @@ local class_specs_coords = {
 					unitFrame.Settings.ShowCastBar = DB_PLATE_CONFIG.player.castbar_enabled
 					if (not DB_PLATE_CONFIG.player.castbar_enabled) then
 						CastingBarFrame_SetUnit (castBar, nil, nil, nil)
+					elseif not castBarWasEnabled then
+						unitFrame.castBar:SetUnit (unitID, unitID)
 					end
 					
 					plateFrame.PlateConfig = DB_PLATE_CONFIG.player
@@ -3576,6 +3592,8 @@ local class_specs_coords = {
 							unitFrame.Settings.ShowCastBar = not DB_CASTBAR_HIDE_FRIENDLY
 							if (DB_CASTBAR_HIDE_FRIENDLY) then
 								CastingBarFrame_SetUnit (castBar, nil, nil, nil)
+							elseif not castBarWasEnabled then
+								unitFrame.castBar:SetUnit (unitID, unitID)
 							end
 						else
 							plateFrame.NameAnchor = DB_NAME_PLAYERENEMY_ANCHOR
@@ -3584,6 +3602,8 @@ local class_specs_coords = {
 							unitFrame.Settings.ShowCastBar = not DB_CASTBAR_HIDE_ENEMIES
 							if (DB_CASTBAR_HIDE_ENEMIES) then
 								CastingBarFrame_SetUnit (castBar, nil, nil, nil)
+							elseif not castBarWasEnabled then
+								unitFrame.castBar:SetUnit (unitID, unitID)
 							end
 						end
 					else
@@ -3596,6 +3616,8 @@ local class_specs_coords = {
 							unitFrame.Settings.ShowCastBar = not DB_CASTBAR_HIDE_FRIENDLY
 							if (DB_CASTBAR_HIDE_FRIENDLY) then
 								CastingBarFrame_SetUnit (castBar, nil, nil, nil)
+							elseif not castBarWasEnabled then
+								unitFrame.castBar:SetUnit (unitID, unitID)
 							end
 						elseif isBattlePet then
 							plateFrame.NameAnchor = DB_NAME_NPCFRIENDLY_ANCHOR
@@ -3604,6 +3626,8 @@ local class_specs_coords = {
 							unitFrame.Settings.ShowCastBar = not DB_CASTBAR_HIDE_FRIENDLY
 							if (DB_CASTBAR_HIDE_FRIENDLY) then
 								CastingBarFrame_SetUnit (castBar, nil, nil, nil)
+							elseif not castBarWasEnabled then
+								unitFrame.castBar:SetUnit (unitID, unitID)
 							end
 							
 						else
@@ -3622,6 +3646,8 @@ local class_specs_coords = {
 							unitFrame.Settings.ShowCastBar = not DB_CASTBAR_HIDE_ENEMIES
 							if (DB_CASTBAR_HIDE_ENEMIES) then
 								CastingBarFrame_SetUnit (castBar, nil, nil, nil)
+							elseif not castBarWasEnabled then
+								unitFrame.castBar:SetUnit (unitID, unitID)
 							end
 							
 							--get threat situation to expose it to scripts already in the nameplate added hook
@@ -4115,7 +4141,8 @@ function Plater.OnInit() --private --~oninit ~init
 			C_Timer.After (5, function()
 				local petGUID = UnitGUID ("playerpet")
 				if (petGUID) then
-					Plater.PlayerPetCache [petGUID] = time()
+					local entry = {ownerGUID = Plater.PlayerGUID, ownerName = UnitName("player"), petName = UnitName("playerpet"), time = time()}
+					Plater.PlayerPetCache [petGUID] = entry
 				end
 			end)
 			
@@ -5219,11 +5246,16 @@ end
 		end
 	end
 	
-	--get a unit and a text and color the text with the class color of the unit
+	--get a unit and a text and color the text with the class color of the unit (accepts player GUID as well)
 	function Plater.SetTextColorByClass (unit, text)
 		--checking if the unit exists because this can be called from the cleu parser
 		if (unit) then
-			local _, class = UnitClass (unit)
+			local _, class = nil, nil
+			if (unit:sub(1, #"Player-") == "Player-") then
+				_, class = GetPlayerInfoByGUID (unit)
+			else
+				_, class = UnitClass (unit)
+			end
 			if (class) then
 				local color = RAID_CLASS_COLORS [class]
 				if (color) then
@@ -5496,8 +5528,8 @@ end
 		startTime = GetTime(),
 		platesUpdatedThisFrame = 0,
 		platesToUpdatePerFrame = 40,
-		frames = 0,
-		curFPS = 0,
+		frames = 1,
+		curFPS = 1,
 	}
 	
 	function Plater.EveryFrameFPSCheck()
@@ -5505,7 +5537,7 @@ end
 		local curTime = GetTime()
 		local curFPSData = Plater.FPSData
 		if (curFPSData.startTime + 0.25) < curTime then
-			curFPSData.curFPS = curFPSData.frames / (curTime - curFPSData.startTime)
+			curFPSData.curFPS = math.max(curFPSData.frames / (curTime - curFPSData.startTime), 1)
 			curFPSData.platesToUpdatePerFrame = math.ceil(NUM_NAMEPLATES_ON_SCREEN / DB_TICK_THROTTLE / curFPSData.curFPS)
 			
 			--ViragDevTool_AddData({curFPSData=curFPSData, NUM_NAMEPLATES_ON_SCREEN = NUM_NAMEPLATES_ON_SCREEN}, "Plater_FPS")
@@ -6303,16 +6335,20 @@ end
 				texture:SetDesaturated (desaturated)
 				
 				if (i == 1) then
-					PixelUtil.SetPoint (texture, "topleft", plateFrame.unitFrame.healthBar, "topleft", -x * scale, y * scale)
+					--PixelUtil.SetPoint (texture, "topleft", plateFrame.unitFrame.healthBar, "topleft", -x * scale, y * scale)
+					texture:SetPoint ("topleft", plateFrame.unitFrame.healthBar, "topleft", -x * scale, y * scale)
 					
 				elseif (i == 2) then
-					PixelUtil.SetPoint (texture, "bottomleft", plateFrame.unitFrame.healthBar, "bottomleft", -x * scale, -y * scale)
+					--PixelUtil.SetPoint (texture, "bottomleft", plateFrame.unitFrame.healthBar, "bottomleft", -x * scale, -y * scale)
+					texture:SetPoint ("bottomleft", plateFrame.unitFrame.healthBar, "bottomleft", -x * scale, -y * scale)
 					
 				elseif (i == 3) then
-					PixelUtil.SetPoint (texture, "bottomright", plateFrame.unitFrame.healthBar, "bottomright", x * scale, -y * scale)
+					--PixelUtil.SetPoint (texture, "bottomright", plateFrame.unitFrame.healthBar, "bottomright", x * scale, -y * scale)
+					texture:SetPoint ("bottomright", plateFrame.unitFrame.healthBar, "bottomright", x * scale, -y * scale)
 					
 				elseif (i == 4) then
-					PixelUtil.SetPoint (texture, "topright", plateFrame.unitFrame.healthBar, "topright", x * scale, y * scale)
+					--PixelUtil.SetPoint (texture, "topright", plateFrame.unitFrame.healthBar, "topright", x * scale, y * scale)
+					texture:SetPoint ("topright", plateFrame.unitFrame.healthBar, "topright", x * scale, y * scale)
 					
 				end
 			end
@@ -6330,17 +6366,19 @@ end
 				texture:SetBlendMode (blend)
 				texture:SetTexCoord (unpack (coords [i]))
 				--PixelUtil.SetSize (texture, width * scale, height * scale)
-				PixelUtil.SetSize (texture, width * scale * wscale, height * scale * hscale)
-				--texture:SetSize (width * scale * wscale, height * scale * hscale)
+				--PixelUtil.SetSize (texture, width * scale * wscale, height * scale * hscale)
+				texture:SetSize (width * scale * wscale, height * scale * hscale)
 				texture:SetDesaturated (desaturated)
 				texture:SetAlpha (alpha)
 				texture:SetVertexColor (overlayColorR, overlayColorG, overlayColorB)
 				
 				if (i == 1) then
-					PixelUtil.SetPoint (texture, "left", plateFrame.unitFrame.healthBar, "left", -x * scale, y * scale)
+					--PixelUtil.SetPoint (texture, "left", plateFrame.unitFrame.healthBar, "left", -x * scale, y * scale)
+					texture:SetPoint ("left", plateFrame.unitFrame.healthBar, "left", -x * scale, y * scale)
 					
 				elseif (i == 2) then
-					PixelUtil.SetPoint (texture, "right", plateFrame.unitFrame.healthBar, "right", x * scale, -y * scale)
+					--PixelUtil.SetPoint (texture, "right", plateFrame.unitFrame.healthBar, "right", x * scale, -y * scale)
+					texture:SetPoint ("right", plateFrame.unitFrame.healthBar, "right", x * scale, -y * scale)
 				end
 			end
 			
@@ -8206,6 +8244,16 @@ end
 		
 		return "normal"
 	end
+	
+	--returns isPet, isPlayerPet, PET_CACHE-entry (if existing)
+	function Plater.IsUnitPet (unitFrame) 
+		if not unitFrame then return false, false, nil end
+		local entry = PET_CACHE [unitFrame.PlateFrame [MEMBER_GUID]]
+		if (entry) then
+			return true, Plater.PlayerPetCache [unitFrame.PlateFrame [MEMBER_GUID]] and true or false, entry
+		end
+		return false, false, nil
+	end
 
 	function Plater.CanChangePlateSize() --private
 		return not InCombatLockdown()
@@ -8292,10 +8340,11 @@ end
 			end
 		--]=]
 
-			PET_CACHE [targetGUID] = time
+			local entry = {ownerGUID = sourceGUID, ownerName = sourceName, petName = targetName, time = time}
+			PET_CACHE [targetGUID] = entry
 			
 			if (sourceGUID == Plater.PlayerGUID) then
-				Plater.PlayerPetCache [targetGUID] = time
+				Plater.PlayerPetCache [targetGUID] = entry
 			end
 		end,
 		
@@ -8313,7 +8362,7 @@ end
 						if DB_USE_NAME_TRANSLIT then
 							name = LibTranslit:Transliterate(name, TRANSLIT_MARK)
 						end
-						castBar.Text:SetText (INTERRUPTED .. " [" .. Plater.SetTextColorByClass (sourceName, name) .. "]")
+						castBar.Text:SetText (INTERRUPTED .. " [" .. Plater.SetTextColorByClass (sourceGUID, name) .. "]")
 						castBar.IsInterrupted = true
 						castBar.InterruptSourceName = sourceName
 						castBar.InterruptSourceGUID = sourceGUID
@@ -8400,15 +8449,17 @@ end
 	PlaterCLEUParser:SetScript ("OnEvent", PlaterCLEUParser.Parser)
 	PlaterCLEUParser:RegisterEvent ("COMBAT_LOG_EVENT_UNFILTERED")
 
-	C_Timer.NewTicker (180, function()
+	C_Timer.NewTicker (600, function()
 		local now = time()
-		for guid, time in pairs (PET_CACHE) do
-			if (time+180 < now) then
+		for guid, entry in pairs (PET_CACHE) do
+			local time = entry.time
+			if (time+600 < now) then
 				PET_CACHE [guid] = nil
 			end
 		end
 		
-		for guid, time in pairs (Plater.PlayerPetCache) do
+		for guid, entry in pairs (Plater.PlayerPetCache) do
+			local time = entry.time
 			if (time + 3600 < now) then
 				Plater.PlayerPetCache [guid] = nil
 			end
@@ -8417,6 +8468,8 @@ end
 
 	Plater.NpcBlackList = {} 
 	function Plater.ForceFindPetOwner (serial) --private
+		Plater.StartLogPerformanceCore("Plater-Core", "Update", "ForceFindPetOwner")
+		
 		local tooltipFrame = PlaterPetOwnerFinder or CreateFrame ("GameTooltip", "PlaterPetOwnerFinder", nil, "GameTooltipTemplate")
 		
 		tooltipFrame:SetOwner (WorldFrame, "ANCHOR_NONE")
@@ -8424,6 +8477,7 @@ end
 		
 		local isPlayerPet = false
 		local isOtherPet = false
+		local ownerName = ""
 		
 		local line1 = _G ["PlaterPetOwnerFinderTextLeft2"]
 		local text1 = line1 and line1:GetText()
@@ -8432,8 +8486,12 @@ end
 			local playerName = pName:gsub ("%-.*", "") --remove realm name
 			if (text1:find (playerName)) then
 				isPlayerPet = true
-			elseif (string.match(text1, string.gsub(UNITNAME_TITLE_PET, "%%s", "(%.*)")) or string.match(text1, string.gsub(UNITNAME_TITLE_MINION, "%%s", "(%.*)"))) then
-				isOtherPet = true
+				ownerName = playerName
+			else
+				ownerName = (string.match(text1, string.gsub(UNITNAME_TITLE_PET, "%%s", "(%.*)")) or string.match(text1, string.gsub(UNITNAME_TITLE_MINION, "%%s", "(%.*)")))
+				if ownerName then
+					isOtherPet = true
+				end
 			end
 		end
 		
@@ -8445,20 +8503,33 @@ end
 				local playerName = pName:gsub ("%-.*", "") --remove realm name
 				if (text2:find (playerName)) then
 					isPlayerPet = true
-				elseif (string.match(text2, string.gsub(UNITNAME_TITLE_PET, "%%s", "(%.*)")) or string.match(text2, string.gsub(UNITNAME_TITLE_MINION, "%%s", "(%.*)"))) then
-					isOtherPet = true
+					ownerName = playerName
+				else
+					ownerName = (string.match(text2, string.gsub(UNITNAME_TITLE_PET, "%%s", "(%.*)")) or string.match(text2, string.gsub(UNITNAME_TITLE_MINION, "%%s", "(%.*)")))
+					if ownerName then
+						isOtherPet = true
+					end
 				end
 			end
 		end
 		
-		if (isPlayerPet) then
-			PET_CACHE [serial] = time()
-			Plater.PlayerPetCache [serial] = time()
-		elseif (isOtherPet) then
-			PET_CACHE [serial] = time()
+		if (isPlayerPet or isOtherPet) then
+			local petNameLine = _G ["PlaterPetOwnerFinderTextLeft1"]
+			local petName = petNameLine and petNameLine:GetText()
+			local entry = {ownerGUID = UnitGUID(ownerName), ownerName = ownerName, petName = petName, time = time()}
+			
+			if (isPlayerPet) then
+				PET_CACHE [serial] = entry
+				Plater.PlayerPetCache [serial] = entry
+			elseif (isOtherPet) then
+				--ViragDevTool_AddData({serial = serial, entry = entry, tooltipFrame = tooltipFrame}, "pet")
+				PET_CACHE [serial] = entry
+			end
 		else
 			Plater.NpcBlackList [serial] = true
 		end
+		
+		Plater.EndLogPerformanceCore("Plater-Core", "Update", "ForceFindPetOwner")
 	end
 	
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

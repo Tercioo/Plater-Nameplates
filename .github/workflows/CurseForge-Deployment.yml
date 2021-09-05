@@ -37,14 +37,14 @@ jobs:
       - name: Create Changelog
         run: lua Plater_ChangeLog.lua latest >> CHANGELOG.md
 
-      - name: Package and Release - Retail
-        uses: BigWigsMods/packager@master
-        #continue-on-error: true
-        with:
-          args: -g retail -n '{project-version}-Retail'
-
       - name: Package and Release - BC
         uses: BigWigsMods/packager@master
         #continue-on-error: true
         with:
           args: -g bcc -n '{project-version}{classic}'
+
+      - name: Package and Release - Retail
+        uses: BigWigsMods/packager@master
+        #continue-on-error: true
+        with:
+          args: -g retail -n '{project-version}-Retail'

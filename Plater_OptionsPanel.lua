@@ -1898,6 +1898,18 @@ local debuff_options = {
 		name = "Show Auras Casted by You",
 		desc = "Show Auras Casted by You.",
 	},
+	
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_show_aura_by_other_players end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_aura_by_other_players = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Auras Casted by other Players",
+		desc = "Show Auras Casted by other Players.\n\n|cFFFFFF00Important|r: This may cause a lot of auras to show!",
+	},
 
 	{type = "blank"},
 	
@@ -1935,6 +1947,18 @@ local debuff_options = {
 		end,
 		name = "Show Enrage Buffs",
 		desc = "Show auras which are in the enrage category.",
+	},
+	
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_show_magic end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_magic = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Magic Buffs",
+		desc = "Show auras which are in the magic type category.",
 	},
 	
 	{
@@ -2091,8 +2115,6 @@ local debuff_options = {
 		name = "Defensive CD Border Color",
 		desc = "Defensive CD Border Color",
 	},
-	
-	{type = "blank"},
 	
 	{
 		type = "toggle",
@@ -4196,7 +4218,6 @@ Plater.CreateAuraTesting()
 				desc = "Outline",
 			},
 
-			{type = "blank"},
 			--show caster name
 			{
 				type = "toggle",
@@ -4237,7 +4258,6 @@ Plater.CreateAuraTesting()
 				desc = "Outline",
 			},
 			
-			{type = "blank"},
 			--show stacks
 			{
 				type = "toggle",
@@ -4317,6 +4337,18 @@ Plater.CreateAuraTesting()
 				end,
 				name = "Enrage",
 				desc = "When the unit has an enrage effect on it, show it.",
+			},
+			--show enrages
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.extra_icon_show_magic end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.extra_icon_show_magic = value
+					Plater.RefreshDBUpvalues()
+					Plater.UpdateAllPlates()
+				end,
+				name = "Magic",
+				desc = "When the unit has a magic buff on it, show it.",
 			},
 			--show offensive CDs
 			{
@@ -6329,7 +6361,7 @@ local relevance_options = {
 				end
 			end,
 			min = 0.2,
-			max = 1.6,
+			max = 2.5,
 			step = 0.05,
 			thumbscale = 1.7,
 			usedecimals = true,
@@ -12666,7 +12698,7 @@ end
 				end
 			end,
 			min = 0.2,
-			max = 1.6,
+			max = 2.5,
 			step = 0.05,
 			thumbscale = 1.7,
 			usedecimals = true,
@@ -12685,7 +12717,7 @@ end
 				end
 			end,
 			min = 0.2,
-			max = 1.6,
+			max = 2.5,
 			step = 0.05,
 			thumbscale = 1.7,
 			usedecimals = true,
@@ -13461,20 +13493,39 @@ end
 	
 	--all settings tables
 	local allTabSettings = {
-		interface_options,
-		debuff_options,
-		especial_aura_settings,
-		options_personal,
-		targetOptions,
-		options_table1,
-		options_table3,
-		options_table4,
-		friendly_npc_options_table,
-		options_table2,
-		experimental_options,
-		auto_options,
-		thread_options,
-		advanced_options
+		interface_options, -- general
+		options_table1, -- general
+		thread_options, -- threat & aggro
+		targetOptions, -- target
+		castBar_options, -- cast bar
+		experimental_options, --  level & strata
+		options_personal, -- personal bar
+		debuff_options, -- buff settings
+		especial_aura_settings, -- buff special
+		options_table2, -- enemy npc
+		options_table4, -- enemy player
+		options_table3, -- friendly player
+		friendly_npc_options_table, -- friendly npc
+		auto_options, -- auto
+		advanced_options, -- advanced
+	}
+	
+	local allTabHeaders = {
+		mainFrame.AllButtons [1].button.text:GetText(), -- general
+		mainFrame.AllButtons [1].button.text:GetText(), -- general
+		mainFrame.AllButtons [2].button.text:GetText(), -- threat & aggro
+		mainFrame.AllButtons [3].button.text:GetText(), -- target
+		mainFrame.AllButtons [4].button.text:GetText(), -- cast bar
+		mainFrame.AllButtons [5].button.text:GetText(), -- level & strata
+		mainFrame.AllButtons [8].button.text:GetText(), -- personal bar
+		mainFrame.AllButtons [9].button.text:GetText(), -- buff settings
+		mainFrame.AllButtons [11].button.text:GetText(), -- buff special
+		mainFrame.AllButtons [13].button.text:GetText(), -- enemy npc
+		mainFrame.AllButtons [14].button.text:GetText(), -- enemy player
+		mainFrame.AllButtons [15].button.text:GetText(), -- friendly npc
+		mainFrame.AllButtons [16].button.text:GetText(), -- friendly player
+		mainFrame.AllButtons [20].button.text:GetText(), -- auto
+		mainFrame.AllButtons [22].button.text:GetText(), -- advanced
 	}
 
 	--this table will hold all options
@@ -13482,9 +13533,13 @@ end
 	--start the fill process filling 'allOptions' with each individual option from each tab
 	for i = 1, #allTabSettings do
 		local tabSettings = allTabSettings[i]
-		for k, setting in pairs(tabSettings) do 
+		local lastLabel = nil
+		for k, setting in pairs(tabSettings) do
+			if (setting.type == "label") then
+				lastLabel = setting
+			end
 			if (setting.name) then
-				allOptions[#allOptions+1] = setting
+				allOptions[#allOptions+1] = {setting = setting, label = lastLabel, header = allTabHeaders[i] }
 			end
 		end
 	end
@@ -13495,10 +13550,25 @@ end
 		local searchingText = string.lower(searchBox.text)
 		searchBox:SetFocus(false)
 
+		local lastTab = nil
+		local lastLabel = nil
 		for i = 1, #allOptions do
-			local optionName = string.lower(allOptions[i].name)
+			local optionData = allOptions[i]
+			local optionName = string.lower(optionData.setting.name)
 			if (optionName:find(searchingText)) then
-				options[#options+1] = allOptions[i]
+				if optionData.header ~= lastTab then
+					if lastTab ~= nil then
+						options[#options+1] = {type = "label", get = function() return "" end, text_template = DF:GetTemplate ("font", "OPTIONS_FONT_TEMPLATE")} -- blank
+					end
+					options[#options+1] = {type = "label", get = function() return optionData.header end, text_template = {color = "gold", size = 14, font = DF:GetBestFontForLanguage()}}
+					lastTab = optionData.header
+					lastLabel = nil
+				end
+				if optionData.label ~= lastLabel then
+					options[#options+1] = optionData.label
+					lastLabel = optionData.label
+				end
+				options[#options+1] = optionData.setting
 			end
 		end
 

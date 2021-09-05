@@ -1,5 +1,5 @@
 ## Interface: 90100
-## Interface-BCC: 20501
+## Interface-BCC: 20502
 ## Title: Plater
 ## Notes: Nameplate addon designed for advanced users.
 ## SavedVariables: PlaterDB

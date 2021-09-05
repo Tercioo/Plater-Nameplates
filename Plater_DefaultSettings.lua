@@ -26,8 +26,10 @@ LibSharedMedia:Register ("statusbar", "testbar", [[Interface\AddOns\Plater\image
 LibSharedMedia:Register ("statusbar", "You Are Beautiful!", [[Interface\AddOns\Plater\images\regular_white]])
 LibSharedMedia:Register ("statusbar", "PlaterBackground 2", [[Interface\AddOns\Plater\images\noise_background]])
 
-LibSharedMedia:Register ("font", "Oswald", [[Interface\Addons\Plater\fonts\Oswald-Regular.otf]])
-LibSharedMedia:Register ("font", "Nueva Std Cond", [[Interface\Addons\Plater\fonts\NuevaStd-Cond.otf]])
+-- OTF fonts are broken in TBC and 9.1.5, disabling them for now
+-- see https://github.com/Stanzilla/WoWUIBugs/issues/164
+--LibSharedMedia:Register ("font", "Oswald", [[Interface\Addons\Plater\fonts\Oswald-Regular.otf]])
+--LibSharedMedia:Register ("font", "Nueva Std Cond", [[Interface\Addons\Plater\fonts\NuevaStd-Cond.otf]])
 LibSharedMedia:Register ("font", "Accidental Presidency", [[Interface\Addons\Plater\fonts\Accidental Presidency.ttf]])
 LibSharedMedia:Register ("font", "TrashHand", [[Interface\Addons\Plater\fonts\TrashHand.TTF]])
 LibSharedMedia:Register ("font", "Harry P", [[Interface\Addons\Plater\fonts\HARRYP__.TTF]])
@@ -785,6 +787,7 @@ PLATER_DEFAULT_SETTINGS = {
 		extra_icon_show_purge = false, --extra frame show purge
 		extra_icon_show_purge_border = {0, .925, 1, 1},
 		extra_icon_show_enrage = false, --extra frame show purge
+		extra_icon_show_magic = false,
 		extra_icon_show_enrage_border = {0.85, 0.2, 0.1, 1},
 		extra_icon_show_offensive = false,
 		extra_icon_show_offensive_border = {0, .65, .1, 1},
@@ -803,7 +806,9 @@ PLATER_DEFAULT_SETTINGS = {
 		aura_show_important = true,
 		aura_show_dispellable = true,
 		aura_show_enrage = false,
+		aura_show_magic = false,
 		aura_show_aura_by_the_player = true,
+		aura_show_aura_by_other_players = false,
 		aura_show_buff_by_the_unit = true,
 		aura_border_colors_by_type = false,
 		aura_show_crowdcontrol = false,
