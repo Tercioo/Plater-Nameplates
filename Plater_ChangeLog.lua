@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1630693177,  "Bug Fix", "September 9th, 2021", "Fixing a few global variable leaks.", "cont1nuity"},
 			{1630693177,  "Bug Fix", "September 5th, 2021", "Disabling OTF fonts 'Oswald' and 'NuevaStd' as those are not working in 9.1.5, 2.5.2 and 1.14.0 (possibly not temporarily).", "cont1nuity"},
 			
 			{1630347577,  "Bug Fix", "August 30th, 2021", "Fixing an issue with player pet nameplates.", "cont1nuity"},

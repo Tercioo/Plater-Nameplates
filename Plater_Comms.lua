@@ -14,7 +14,7 @@ function Plater.CreateCommHeader(prefix, encodedString)
     return LibAceSerializer:Serialize(prefix, UnitName("player"), GetRealmName(), UnitGUID("player"), encodedString)
 end
 
-function dispatchSendCommEvents()
+local function dispatchSendCommEvents()
 	Plater.DispatchCommSendMessageHookEvents()
 	C_Timer.After(CONST_THROTTLE_HOOK_COMMS, dispatchSendCommEvents)
 end

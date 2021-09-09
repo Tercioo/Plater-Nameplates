@@ -39,56 +39,11 @@ local function everyFrameEventLog()
 end
 C_Timer.After( 0, everyFrameEventLog )
 
-function Plater.EnableProfiling(core)
-	profilingEnabled = true
-	
-	profData = {}
-	profData.startTime = debugprofilestop()
-	profData.endTime = nil
-	profData.totalTimeInPlater = 0
-	profData.data = {}
-	
-	eventLogData = {}
-	
-	Plater.StartLogPerformance = StartLogPerformance
-	Plater.EndLogPerformance = EndLogPerformance
-	
-	if core then
-		Plater.StartLogPerformanceCore = StartLogPerformance
-		Plater.EndLogPerformanceCore = EndLogPerformance
-	end
-	
-	C_Timer.After( 0, everyFrameEventLog )
-	
-	Plater:Msg("Plater started profiling.")
-end
-
-function Plater.DisableProfiling()
-	if not profilingEnabled then return end
-	profilingEnabled = false
-	
-	profData.endTime = debugprofilestop()
-	
-	Plater.StartLogPerformance = function() end
-	Plater.EndLogPerformance = function() end
-	
-	Plater.StartLogPerformanceCore = function() end
-	Plater.EndLogPerformanceCore = function() end
-	
-	Plater.DumpPerformance(true) -- for VDT mainly atm
-	Plater:Msg("Plater stopped profiling.")
-	
-	if PlaterPerformanceProfilingResultPanel and PlaterPerformanceProfilingResultPanel:IsVisible() then
-		Plater.ShowPerfData()
-	end
-end
-
---pType = profiling type (e.g. hooks)
 function Plater.StartLogPerformance()
 end
 function Plater.StartLogPerformanceCore()
 end
-function StartLogPerformance(pType, event, subType)
+local function StartLogPerformance(pType, event, subType)
 	if not profilingEnabled or not pType or not event or not subType then return end	
 	
 	local startTime = debugprofilestop()
@@ -119,12 +74,11 @@ function StartLogPerformance(pType, event, subType)
 	tinsert(eventLogData, '\n    {"ph":"B","name":"' .. pType .. " - " .. event .. " - " .. subType .. '","ts":' .. (startTime * 1000) .. ',"pid":0}')
 end
 
---pType = profiling type (e.g. hooks)
 function Plater.EndLogPerformance()
 end
 function Plater.EndLogPerformanceCore()
 end
-function EndLogPerformance(pType, event, subType)
+local function EndLogPerformance(pType, event, subType)
 	if not profilingEnabled or not pType or not event or not subType then return end
 	
 	local eData = profData.data[pType][event]
@@ -173,6 +127,50 @@ function EndLogPerformance(pType, event, subType)
 	end
 	
 	tinsert(eventLogData, '\n    {"ph":"E","name":"' .. pType .. " - " .. event .. " - " .. subType .. '","ts":' .. (stopTime * 1000) .. ',"pid":0}')
+end
+
+function Plater.EnableProfiling(core)
+	profilingEnabled = true
+	
+	profData = {}
+	profData.startTime = debugprofilestop()
+	profData.endTime = nil
+	profData.totalTimeInPlater = 0
+	profData.data = {}
+	
+	eventLogData = {}
+	
+	Plater.StartLogPerformance = StartLogPerformance
+	Plater.EndLogPerformance = EndLogPerformance
+	
+	if core then
+		Plater.StartLogPerformanceCore = StartLogPerformance
+		Plater.EndLogPerformanceCore = EndLogPerformance
+	end
+	
+	C_Timer.After( 0, everyFrameEventLog )
+	
+	Plater:Msg("Plater started profiling.")
+end
+
+function Plater.DisableProfiling()
+	if not profilingEnabled then return end
+	profilingEnabled = false
+	
+	profData.endTime = debugprofilestop()
+	
+	Plater.StartLogPerformance = function() end
+	Plater.EndLogPerformance = function() end
+	
+	Plater.StartLogPerformanceCore = function() end
+	Plater.EndLogPerformanceCore = function() end
+	
+	Plater.DumpPerformance(true) -- for VDT mainly atm
+	Plater:Msg("Plater stopped profiling.")
+	
+	if PlaterPerformanceProfilingResultPanel and PlaterPerformanceProfilingResultPanel:IsVisible() then
+		Plater.ShowPerfData()
+	end
 end
 
 local function getPerfData()
