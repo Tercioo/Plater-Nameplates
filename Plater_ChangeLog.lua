@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1630693177,  "Backend Change", "September 10th, 2021", "Exporting profile name for importing purposes.", "cont1nuity"},
 			{1630693177,  "Backend Change", "September 10th, 2021", "Increase profile import performance and show profile information instead of import string.", "cont1nuity"},
 			{1630693177,  "Bug Fix", "September 9th, 2021", "Fixing a few global variable leaks.", "cont1nuity"},
 			{1630693177,  "Bug Fix", "September 5th, 2021", "Disabling OTF fonts 'Oswald' and 'NuevaStd' as those are not working in 9.1.5, 2.5.2 and 1.14.0 (possibly not temporarily).", "cont1nuity"},
