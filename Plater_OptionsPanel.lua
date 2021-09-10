@@ -31,6 +31,9 @@ local startX, startY, heightSize = 10, -130, 710
 local optionsWidth, optionsHeight = 1100, 650
 local mainHeightSize = 800
 
+local IMPORT_EXPORT_EDIT_MAX_BYTES = 0 --1024000*4 -- 0 appears to be "no limit"
+local IMPORT_EXPORT_EDIT_MAX_LETTERS = 0 --128000*4 -- 0 appears to be "no limit"
+
  --cvars
 local CVAR_ENABLED = "1"
 local CVAR_DISABLED = "0"
@@ -148,7 +151,7 @@ function Plater.CheckOptionsTab()
 end
 
 local TAB_INDEX_UIPARENTING = 4
-local TAB_INDEX_PROFILES = 20
+local TAB_INDEX_PROFILES = 21
 
 -- ~options �ptions
 function Plater.OpenOptionsPanel()
@@ -391,6 +394,11 @@ function Plater.OpenOptionsPanel()
 			function profilesFrame.ExportCurrentProfile()
 				profilesFrame.IsExporting = true
 				profilesFrame.IsImporting = nil
+				profilesFrame.ImportStringField.importDataText = nil
+				
+				local editbox = profilesFrame.ImportStringField.editbox
+				editbox:SetMaxBytes (IMPORT_EXPORT_EDIT_MAX_BYTES)
+				editbox:SetScript("OnChar", nil);
 				
 				if (not profilesFrame.ImportingProfileAlert) then
 					profilesFrame.ImportingProfileAlert = CreateFrame ("frame", "PlaterExportingProfileAlert", UIParent, BackdropTemplateMixin and "BackdropTemplate")
@@ -463,7 +471,55 @@ function Plater.OpenOptionsPanel()
 			function profilesFrame.ImportProfile()
 				profilesFrame.IsExporting = nil
 				profilesFrame.IsImporting = true
+				
+				profilesFrame.ImportStringField.importDataText = nil
+				local editbox = profilesFrame.ImportStringField.editbox
+				local pasteBuffer, pasteCharCount, isPasting = {}, 0, false
+				editbox:SetMaxBytes (1) -- for performance
+				
+				local function clearBuffer(self)
+					self:SetScript('OnUpdate', nil)
+					editbox:SetMaxBytes (IMPORT_EXPORT_EDIT_MAX_BYTES)
+					isPasting = false
+					if pasteCharCount > 10 then
+						local paste = strtrim(table.concat(pasteBuffer))
+						
+						local wagoProfile = Plater.DecompressData (paste, "print")
+						if (wagoProfile and type (wagoProfile == "table") and wagoProfile.plate_config) then
+						
+							local wagoInfoText = "Got the following Profile data:\n"
+							wagoInfoText = wagoInfoText .. "Name: " .. (wagoProfile.profile_name or "N/A") .. "\n"
+							wagoInfoText = wagoInfoText .. "Wago-Revision: " .. (wagoProfile.version or "-") .. "\n"
+							wagoInfoText = wagoInfoText .. "Wago-Version: " .. (wagoProfile.semver or "-") .. "\n"
+							wagoInfoText = wagoInfoText .. (wagoProfile.url or "")
+							
+							editbox:SetText (wagoInfoText)
+							profilesFrame.ImportStringField.importDataText = paste
+							local curNewProfName = profilesFrame.NewProfileTextEntry:GetText()
+							if wagoProfile.profile_name and wagoProfile.profile_name ~= "Default" and curNewProfName and curNewProfName == "MyNewProfile" then
+								profilesFrame.NewProfileTextEntry:SetText(wagoProfile.profile_name)
+							end
+						else
+							editbox:SetText("Could not decompress the data... Try copying the import string again.")
+						end
+						
+						editbox:ClearFocus()
+					end
+				end
+				editbox:SetScript('OnChar', function(self, c)
+					if not isPasting then
+						if editbox:GetMaxBytes() ~= 1 then -- ensure this for performance!
+							editbox:SetMaxBytes (1)
+						end
+						pasteBuffer, pasteCharCount, isPasting = {}, 0, true
+						self:SetScript('OnUpdate', clearBuffer)
+					end
+					pasteCharCount = pasteCharCount + 1
+					pasteBuffer[pasteCharCount] = c
+				end)
+				
 				profilesFrame.ImportStringField:Show()
+				
 				C_Timer.After (.2, function()
 					profilesFrame.ImportStringField:SetText ("")
 					profilesFrame.ImportStringField:SetFocus (true)
@@ -476,9 +532,15 @@ function Plater.OpenOptionsPanel()
 			function profilesFrame.HideStringField()
 				profilesFrame.IsExporting = nil
 				profilesFrame.IsImporting = nil
+				profilesFrame.ImportStringField.importDataText = nil
+				
+				local editbox = profilesFrame.ImportStringField.editbox
+				editbox:SetMaxBytes (IMPORT_EXPORT_EDIT_MAX_BYTES)
+				editbox:SetScript("OnChar", nil);
 				
 				profilesFrame.ImportStringField:Hide()
 				profilesFrame.ImportStringField:SetText ("")
+				
 				profilesFrame.NewProfileLabel:Hide()
 				profilesFrame.NewProfileTextEntry:Hide()
 			end
@@ -491,7 +553,7 @@ function Plater.OpenOptionsPanel()
 					return
 				end
 
-				local text = profilesFrame.ImportStringField:GetText()
+				local text = profilesFrame.ImportStringField.importDataText
 				local profile = Plater.DecompressData (text, "print")
 				
 				if (profile and type (profile == "table")) then
@@ -543,6 +605,8 @@ function Plater.OpenOptionsPanel()
 			
 			function profilesFrame.DoProfileImport(profileName, profile, isUpdate, keepModsNotInUpdate)
 				profilesFrame.HideStringField()
+				
+				profile.profile_name = nil --no need to import
 				
 				local wasUsingUIParent = Plater.db.profile.use_ui_parent
 				
@@ -860,10 +924,18 @@ function Plater.OpenOptionsPanel()
 			local block_mouse_frame = CreateFrame ("frame", nil, importStringField, BackdropTemplateMixin and "BackdropTemplate")
 			--block_mouse_frame:SetFrameLevel (block_mouse_frame:GetFrameLevel()-5)
 			block_mouse_frame:SetAllPoints()
-			block_mouse_frame:SetScript ("OnMouseDown", function()
+			
+			local function importStringFieldTextHighlight()
 				importStringField:SetFocus (true)
-				importStringField.editbox:HighlightText()
-			end)
+				if profilesFrame.IsImporting then
+					--importStringField.editbox:SetText("")
+					importStringField.editbox:HighlightText()
+				else
+					importStringField.editbox:HighlightText()
+				end
+			end
+			block_mouse_frame:SetScript ("OnMouseDown", importStringFieldTextHighlight)
+			importStringField.editbox:SetScript ("OnCursorChanged", importStringFieldTextHighlight)
 			
 			--import button
 			local okayButton = DF:CreateButton (importStringField, function() profilesFrame.ConfirmImportProfile(false) end, buttons_size[1], buttons_size[2], L["OPTIONS_OKAY"], -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
@@ -890,11 +962,9 @@ function Plater.OpenOptionsPanel()
 			profilesFrame.NewProfileLabel:Hide()
 			profilesFrame.NewProfileTextEntry:Hide()
 			
-			profilesFrame.ImportStringField.editbox:SetMaxBytes (1024000*4)
-			profilesFrame.ImportStringField.editbox:SetMaxLetters (128000*4)
-			
-			--print (profilesFrame.ImportStringField.editbox:GetMaxBytes())
-			--print (profilesFrame.ImportStringField.editbox:GetMaxLetters())
+			-- don't do this anymore, this causes huge lag when pasting large strings... buffer instead on importing. Setting values for good measure, though
+			profilesFrame.ImportStringField.editbox:SetMaxBytes (IMPORT_EXPORT_EDIT_MAX_BYTES)
+			profilesFrame.ImportStringField.editbox:SetMaxLetters (IMPORT_EXPORT_EDIT_MAX_LETTERS)
 			
 	end
 -------------------------
