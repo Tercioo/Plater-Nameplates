@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1630693177,  "Bug Fix", "September 14th, 2021", "Adding fonts 'Oswald' and 'NuevaStd' as ttf fonts again.", "cont1nuity"},
 			{1630693177,  "Backend Change", "September 10th, 2021", "Exporting profile name for importing purposes.", "cont1nuity"},
 			{1630693177,  "Backend Change", "September 10th, 2021", "Increase profile import performance and show profile information instead of import string.", "cont1nuity"},
 			{1630693177,  "Bug Fix", "September 9th, 2021", "Fixing a few global variable leaks.", "cont1nuity"},
