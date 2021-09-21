@@ -8624,7 +8624,11 @@ function Plater.SetCVarsOnFirstRun()
 	SetCVar ("nameplatePersonalHideDelaySeconds", 0.2)
 
 	--> view distance
-	SetCVar ("nameplateMaxDistance", 100)
+	if IS_WOW_PROJECT_MAINLINE then
+		SetCVar ("nameplateMaxDistance", 100)
+	else
+		SetCVar ("nameplateMaxDistance", 41)
+	end
 	
 	--> ensure resource on target consistency:
 	if IS_WOW_PROJECT_MAINLINE then
