@@ -27,7 +27,6 @@ local UnitAuraSlots = _G.UnitAuraSlots
 local UnitAuraBySlot = _G.UnitAuraBySlot
 local UnitAura = _G.UnitAura
 local BackdropTemplateMixin = _G.BackdropTemplateMixin
-local NamePlateTooltip = _G.NamePlateTooltip
 local BUFF_MAX_DISPLAY = _G.BUFF_MAX_DISPLAY
 local _
 
@@ -97,19 +96,25 @@ local AUTO_TRACKING_EXTRA_BUFFS = {}
 local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 
 
+local NamePlateTooltip = _G.NamePlateTooltip -- can be removed later
+local PlaterNamePlateAuraTooltip = CreateFrame("GameTooltip", "PlaterNamePlateAuraTooltip", UIParent, "GameTooltipTemplate")
+PlaterNamePlateAuraTooltip:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Buttons\WHITE8X8]], tileSize = 0, tile = false, tileEdge = true})
+PlaterNamePlateAuraTooltip:SetBackdropColor (0.05, 0.05, 0.05, 0.8)
+PlaterNamePlateAuraTooltip:SetBackdropBorderColor (0, 0, 0, 1)
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> aura buffs and debuffs ~aura ~buffs ~debuffs ~auras
 
 	--> show the tooltip in the aura icon
 	function Plater.OnEnterAura (iconFrame) --private
-		NamePlateTooltip:SetOwner (iconFrame, "ANCHOR_LEFT")
-		NamePlateTooltip:SetUnitAura (iconFrame:GetParent().unit, iconFrame:GetID(), iconFrame.filter)
+		PlaterNamePlateAuraTooltip:SetOwner (iconFrame, "ANCHOR_LEFT")
+		PlaterNamePlateAuraTooltip:SetUnitAura (iconFrame:GetParent().unit, iconFrame:GetID(), iconFrame.filter)
 		iconFrame.UpdateTooltip = Plater.OnEnterAura
 	end
 
 	function Plater.OnLeaveAura (iconFrame) --private
-		NamePlateTooltip:Hide()
+		PlaterNamePlateAuraTooltip:Hide()
+		NamePlateTooltip:Hide() -- backwards compatibility for mods (should be removed later)
 	end
 	
 	--called from the options panel, request a refresh on all auras shown
