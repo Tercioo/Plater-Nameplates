@@ -114,6 +114,7 @@ PlaterNamePlateAuraTooltip:SetBackdropBorderColor (0, 0, 0, 1)
 
 	function Plater.OnLeaveAura (iconFrame) --private
 		PlaterNamePlateAuraTooltip:Hide()
+		if NamePlateTooltip:IsForbidden() then return end
 		NamePlateTooltip:Hide() -- backwards compatibility for mods (should be removed later)
 	end
 	
