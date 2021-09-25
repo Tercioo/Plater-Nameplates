@@ -6450,11 +6450,11 @@ local relevance_options = {
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 				end
 			end,
-			min = 1,
-			max = 100,
+			min = IS_WOW_PROJECT_MAINLINE and 1 or 20, --20y for tbc
+			max = IS_WOW_PROJECT_MAINLINE and 100 or 41, --41y for tbc
 			step = 1,
 			name = "View Distance" .. CVarIcon,
-			desc = "How far you can see nameplates (in yards).\n\n|cFFFFFFFFDefault: 40|r" .. CVarDesc,
+			desc = "How far you can see nameplates (in yards).\n\n|cFFFFFFFFCurrent limitations: Retail = 60y, TBC = 20-41y|r" .. CVarDesc,
 			nocombat = true,
 		},
 	
