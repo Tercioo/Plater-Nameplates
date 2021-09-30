@@ -5,6 +5,7 @@ local DF = _G.DetailsFramework
 
 local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_NOT_MAINLINE = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
+local IS_WOW_PROJECT_CLASSIC_ERA = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
 
 --stop yellow lines on my editor
 local tinsert = _G.tinsert
@@ -95,6 +96,14 @@ local MANUAL_TRACKING_DEBUFFS = {}
 local AUTO_TRACKING_EXTRA_BUFFS = {}
 local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 
+-- support for LibClassicDurations from https://github.com/rgd87/LibClassicDurations by d87
+local UnitAura = _G.UnitAura
+local LCD = LibStub:GetLibrary("LibClassicDurations", true)
+if IS_WOW_PROJECT_CLASSIC_ERA and LCD then
+	LCD:Register(Plater)
+	LCD.RegisterCallback(Plater, "UNIT_BUFF", function(event, unit)end)
+	UnitAura = LCD.UnitAuraWithBuffs
+end
 
 local NamePlateTooltip = _G.NamePlateTooltip -- can be removed later
 local PlaterNamePlateAuraTooltip = CreateFrame("GameTooltip", "PlaterNamePlateAuraTooltip", UIParent, "GameTooltipTemplate")
