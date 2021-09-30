@@ -8371,7 +8371,6 @@ DF.CastFrameFunctions = {
 		local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, spellID
 		if not IS_WOW_PROJECT_CLASSIC_TBC then
 			name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, spellID = UnitCastingInfo (unit)
-			print(name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, spellID)
 		else
 			name, text, texture, startTime, endTime, isTradeSkill, castID, spellID = UnitCastingInfo (unit)
 			notInterruptible = false
