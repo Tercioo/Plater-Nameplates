@@ -45,7 +45,6 @@ local ipairs = ipairs
 local pairs = pairs
 local rawset = rawset
 local rawget = rawget
-local error = error
 local setfenv = setfenv
 local pcall = pcall
 local InCombatLockdown = InCombatLockdown
@@ -70,6 +69,8 @@ local min = math.min
 
 local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_NOT_MAINLINE = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
+local IS_WOW_PROJECT_CLASSIC_ERA = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
+local IS_WOW_PROJECT_CLASSIC_TBC = WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC
 
 local PixelUtil = PixelUtil or DFPixelUtil
 
@@ -1187,7 +1188,7 @@ local class_specs_coords = {
 			end
 		
 		else
-			-- TBC
+			-- TBC and classic
 			local classLoc, class = UnitClass ("player")
 			if (class) then
 				if (class == "WARRIOR") then
