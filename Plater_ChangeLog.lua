@@ -8,7 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
-			{1633027791,  "Backend Change", "September 30th, 2021", "Adding full support and release stream for Classic Era.", "cont1nuity"},
+			{1633205712,  "Backend Change", "October 2nd, 2021", "Fixing an issue with profile updates not working.", "cont1nuity"},
 			
 			{1632595917,  "Backend Change", "September 25th, 2021", "Adjustments of view distance values for TBC.", "cont1nuity"},
 			{1632595917,  "Backend Change", "September 23rd, 2021", "Switching Aura Tooltip implementation from 'NameplateTooltip' to 'PlaterNamePlateAuraTooltip'.", "cont1nuity"},

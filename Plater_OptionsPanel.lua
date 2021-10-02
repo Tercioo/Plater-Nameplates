@@ -491,7 +491,8 @@ function Plater.OpenOptionsPanel()
 							wagoInfoText = wagoInfoText .. "Name: " .. (wagoProfile.profile_name or "N/A") .. "\n"
 							wagoInfoText = wagoInfoText .. "Wago-Revision: " .. (wagoProfile.version or "-") .. "\n"
 							wagoInfoText = wagoInfoText .. "Wago-Version: " .. (wagoProfile.semver or "-") .. "\n"
-							wagoInfoText = wagoInfoText .. (wagoProfile.url or "")
+							wagoInfoText = wagoInfoText .. (wagoProfile.url and (wagoProfile.url .. "\n") or "")
+							wagoInfoText = wagoInfoText .. "\nYou may change the name below and click on '".. L["OPTIONS_OKAY"] .. "' to import the profile."
 							
 							editbox:SetText (wagoInfoText)
 							profilesFrame.ImportStringField.importDataText = paste
@@ -720,7 +721,7 @@ function Plater.OpenOptionsPanel()
 					profilesFrame.IsImporting = true
 					
 					profilesFrame.NewProfileTextEntry:SetText(Plater.db:GetCurrentProfile())
-					profilesFrame.ImportStringField:SetText(update.encoded)
+					profilesFrame.ImportStringField.importDataText = update.encoded
 					
 					profilesFrame.ConfirmImportProfile(true)
 				end
