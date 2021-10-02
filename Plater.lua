@@ -4273,6 +4273,7 @@ function Plater.OnInit() --private --~oninit ~init
 				if (NamePlateDriverFrame.classNamePlatePowerBar and NamePlateDriverFrame.classNamePlatePowerBar:IsShown()) then
 					--hide the power bar from default ui
 					NamePlateDriverFrame.classNamePlatePowerBar:Hide()
+					NamePlateDriverFrame.classNamePlatePowerBar:UnregisterAllEvents()
 				end
 				
 				local unitFrame = plateFrame.unitFrame
@@ -5560,7 +5561,7 @@ end
 	function Plater.NameplateTick (tickFrame, deltaTime) --private
 		Plater.StartLogPerformanceCore("Plater-Core", "Update", "NameplateTick")
 
-		tickFrame.ThrottleUpdate = tickFrame.ThrottleUpdate - deltaTime
+		tickFrame.ThrottleUpdate = (tickFrame.ThrottleUpdate or 0) - deltaTime
 		local unitFrame = tickFrame.unitFrame
 		local healthBar = unitFrame.healthBar
 		local profile = Plater.db.profile
