@@ -121,6 +121,11 @@ function Plater.IncreaseRefreshID() --private
 	Plater.IncreaseRefreshID_Auras()
 end
 
+--> namespaces:
+	--resources
+	Plater.Resources = {}
+
+
 --all functions below can be overridden by scripts, hooks or any external code
 --this allows the user to fully modify Plater at a high level
 
@@ -1978,7 +1983,7 @@ local class_specs_coords = {
 		Plater.UpdateAuraCache() --on Plater_Auras.lua
 
 		--refresh resources
-		Plater.RefreshResourcesDBUpvalues() --Plater_Resources.lua
+		Plater.Resources.RefreshResourcesDBUpvalues() --Plater_Resources.lua
 	end
 	
 	function Plater.RefreshDBLists()
@@ -2441,7 +2446,7 @@ local class_specs_coords = {
 		end,
 
 		PLAYER_SPECIALIZATION_CHANGED = function()
-			C_Timer.After (1.5, Plater.CanUsePlaterResourceFrame) --~resource
+			C_Timer.After (1.5, Plater.Resources.CanUsePlaterResourceFrame) --~resource
 			C_Timer.After (2, Plater.GetSpellForRangeCheck)
 			C_Timer.After (2, Plater.GetHealthCutoffValue)
 			C_Timer.After (1, Plater.DispatchTalentUpdateHookEvent)
@@ -2703,7 +2708,7 @@ local class_specs_coords = {
 			--end
 
 			--create the frame to hold the plater resoruce bar
-			Plater.CreatePlaterResourceFrame() --~resource
+			Plater.Resources.CreatePlaterResourceFrame() --~resource
 			
 			--run hooks on load screen
 			if (HOOK_LOAD_SCREEN.ScriptAmount > 0) then
@@ -6261,7 +6266,7 @@ end
 			end
 		end
 
-		Plater.CanUsePlaterResourceFrame() --~resource
+		Plater.Resources.CanUsePlaterResourceFrame() --~resource
 	end
 
 	function Plater.UpdateTargetHighlight (plateFrame)

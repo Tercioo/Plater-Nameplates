@@ -10,19 +10,19 @@ local abs = _G.abs
 local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_NOT_MAINLINE = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
 
-local CONST_MONK_WINDWALKER_SPECID = 269
-local CONST_MAGE_ARCANE_SPECID = 62
-local CONST_ROGUE_ASSASSINATION = 259
-local CONST_ROGUE_OUTLAW = 260
-local CONST_ROGUE_SUBTLETY = 261
-local CONST_DRUID_FERAL = 103
-local CONST_PALADIN_RETRIBUTION = 70
-local CONST_WARLOCK_AFFLICTION = 265
-local CONST_WARLOCK_DEMONOLOGY = 266
-local CONST_WARLOCK_DESTRUCTION = 267
-local CONST_DK_UNHOLY = 252
-local CONST_DK_FROST = 251
-local CONST_DK_BLOOD = 250
+local CONST_SPECID_MONK_WINDWALKER = 269
+local CONST_SPECID_MAGE_ARCANE = 62
+local CONST_SPECID_ROGUE_ASSASSINATION = 259
+local CONST_SPECID_ROGUE_OUTLAW = 260
+local CONST_SPECID_ROGUE_SUBTLETY = 261
+local CONST_SPECID_DRUID_FERAL = 103
+local CONST_SPECID_PALADIN_RETRIBUTION = 70
+local CONST_SPECID_WARLOCK_AFFLICTION = 265
+local CONST_SPECID_WARLOCK_DEMONOLOGY = 266
+local CONST_SPECID_WARLOCK_DESTRUCTION = 267
+local CONST_SPECID_DK_UNHOLY = 252
+local CONST_SPECID_DK_FROST = 251
+local CONST_SPECID_DK_BLOOD = 250
 
 local CONST_NUM_RESOURCES_WIDGETS = 10
 local CONST_WIDGET_WIDTH = 20
@@ -49,8 +49,19 @@ end
     block_texture_overlay = "Interface\\CHARACTERFRAME\\TempPortraitAlphaMaskSmall"
 --]=]
 
+--this table store the resource creation functions, these functions are declared in the Plater_Resources_Frames file
+local resourceWidgetCreationFunctions = {}
+function Plater.Resources.GetResourceWidgetCreationTable()
+    return resourceWidgetCreationFunctions
+end
+
+function Plater.Resources.GetCreateResourceWidgetFunctionForSpecId(specId)
+    --function to create the resource bar
+    return resourceWidgetCreationFunctions[specId]
+end
+
 --store functions to create the widgets for the class and the function to update them
-local resourceWidgetsFunctions = {}
+local resourceWidgetsFunctions = {} --this table has created when only monk combo point was finished, perhaps in the future this need to be more organized
 
 --store functions used to create the resource bar for each type of resource
 local resourceByClass = {}
@@ -123,11 +134,11 @@ local DB_PLATER_RESOURCE_GROW_DIRECTON
 local DB_PLATER_RESOURCE_SHOW_DEPLATED
 local DB_PLATER_RESOURCE_SHOW_NUMBER
 
-
+--Plater.Resources
 
 --when plater in the main file refreshes its upvalues, this function is also called
 --called from plater.lua on Plater.RefreshDBUpvalues()
-    function Plater.RefreshResourcesDBUpvalues()
+    function Plater.Resources.RefreshResourcesDBUpvalues()
         local profile = Plater.db.profile
 
         DB_USE_PLATER_RESOURCE_BAR = profile.plater_resources_show
@@ -142,9 +153,9 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
 
         --check if the frame exists if the player opt-in to use plater resources
         if (DB_USE_PLATER_RESOURCE_BAR) then
-            local mainResourceFrame = Plater.GetMainResourceFrame()
+            local mainResourceFrame = Plater.Resources.GetMainResourceFrame()
             if (not mainResourceFrame) then
-                C_Timer.After (2, Plater.CreatePlaterResourceFrame)
+                C_Timer.After(2, Plater.Resources.CreatePlaterResourceFrame)
             end
         end
     end
@@ -167,7 +178,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
             resourceBar.widgets[#resourceBar.widgets + 1] = newWidget
             newWidget:EnableMouse(false)
             newWidget:EnableMouseWheel(false)
-            newWidget:SetSize(20, 20)
+            newWidget:SetSize(CONST_WIDGET_WIDTH, CONST_WIDGET_HEIGHT)
             newWidget:Hide()
 
             local CPOID = DF:CreateLabel(newWidget, i, 12, "white", nil, nil, nil, "overlay")
@@ -181,8 +192,9 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
 
 --> functions for class and specs resources
     resourceByClass["MONK"] = function(mainResourceFrame)
-        local newResourceBar = createResourceBar(mainResourceFrame, "$parentMonk2Resource", resourceWidgetsFunctions.CreateMonkComboPoints) --windwalker chi
-        mainResourceFrame.resourceBars[CONST_MONK_WINDWALKER_SPECID] = newResourceBar
+        local resourceWidgetCreationFunc = Plater.Resources.GetCreateResourceWidgetFunctionForSpecId(CONST_SPECID_MONK_WINDWALKER)
+        local newResourceBar = createResourceBar(mainResourceFrame, "$parentMonk2Resource", resourceWidgetCreationFunc) --windwalker chi
+        mainResourceFrame.resourceBars[CONST_SPECID_MONK_WINDWALKER] = newResourceBar
         newResourceBar.resourceId = SPELL_POWER_CHI
         newResourceBar.updateResourceFunc = resourceWidgetsFunctions.OnComboPointsChanged
         tinsert(mainResourceFrame.allResourceBars, newResourceBar)
@@ -190,7 +202,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
 
     resourceByClass["MAGE"] = function(mainResourceFrame)
         local newResourceBar = createResourceBar(mainResourceFrame, "$parentArcaneResource")
-        mainResourceFrame.resourceBars[CONST_MAGE_ARCANE_SPECID] = newResourceBar
+        mainResourceFrame.resourceBars[CONST_SPECID_MAGE_ARCANE] = newResourceBar
         newResourceBar.resourceId = SPELL_POWER_ARCANE_CHARGES
         newResourceBar.updateResourceFunc = false
         tinsert(mainResourceFrame.allResourceBars, newResourceBar)
@@ -201,10 +213,10 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
         newResourceBar.resourceId = SPELL_POWER_COMBO_POINTS2
         newResourceBar.updateResourceFunc = false
 
-        mainResourceFrame.resourceBars[CONST_ROGUE_ASSASSINATION] = newResourceBar
-        mainResourceFrame.resourceBars[CONST_ROGUE_OUTLAW] = newResourceBar
-        mainResourceFrame.resourceBars[CONST_ROGUE_SUBTLETY] = newResourceBar
-        mainResourceFrame.resourceBars[CONST_DRUID_FERAL] = newResourceBar
+        mainResourceFrame.resourceBars[CONST_SPECID_ROGUE_ASSASSINATION] = newResourceBar
+        mainResourceFrame.resourceBars[CONST_SPECID_ROGUE_OUTLAW] = newResourceBar
+        mainResourceFrame.resourceBars[CONST_SPECID_ROGUE_SUBTLETY] = newResourceBar
+        mainResourceFrame.resourceBars[CONST_SPECID_DRUID_FERAL] = newResourceBar
 
         tinsert(mainResourceFrame.allResourceBars, newResourceBar)
     end
@@ -213,9 +225,9 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
 
     resourceByClass["WARLOCK"] = function(mainResourceFrame)
         local newResourceBar = createResourceBar(mainResourceFrame, "$parentWarlockResource")
-        mainResourceFrame.resourceBars[CONST_WARLOCK_AFFLICTION] = newResourceBar
-        mainResourceFrame.resourceBars[CONST_WARLOCK_DEMONOLOGY] = newResourceBar
-        mainResourceFrame.resourceBars[CONST_WARLOCK_DESTRUCTION] = newResourceBar
+        mainResourceFrame.resourceBars[CONST_SPECID_WARLOCK_AFFLICTION] = newResourceBar
+        mainResourceFrame.resourceBars[CONST_SPECID_WARLOCK_DEMONOLOGY] = newResourceBar
+        mainResourceFrame.resourceBars[CONST_SPECID_WARLOCK_DESTRUCTION] = newResourceBar
         newResourceBar.resourceId = SPELL_POWER_SOUL_SHARDS
         newResourceBar.updateResourceFunc = false
         tinsert(mainResourceFrame.allResourceBars, newResourceBar)
@@ -223,7 +235,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
 
     resourceByClass["PALADIN"] = function(mainResourceFrame)
         local newResourceBar = createResourceBar(mainResourceFrame, "$parentPaladinResource")
-        mainResourceFrame.resourceBars[CONST_PALADIN_RETRIBUTION] = newResourceBar
+        mainResourceFrame.resourceBars[CONST_SPECID_PALADIN_RETRIBUTION] = newResourceBar
         newResourceBar.resourceId = SPELL_POWER_HOLY_POWER
         newResourceBar.updateResourceFunc = false
         tinsert(mainResourceFrame.allResourceBars, newResourceBar)
@@ -231,22 +243,22 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
 
     resourceByClass["DEATHKNIGHT"] = function(mainResourceFrame)
         local newResourceBar = createResourceBar(mainResourceFrame, "$parentDKResource")
-        mainResourceFrame.resourceBars[CONST_DK_UNHOLY] = newResourceBar
-        mainResourceFrame.resourceBars[CONST_DK_FROST] = newResourceBar
-        mainResourceFrame.resourceBars[CONST_DK_BLOOD] = newResourceBar
+        mainResourceFrame.resourceBars[CONST_SPECID_DK_UNHOLY] = newResourceBar
+        mainResourceFrame.resourceBars[CONST_SPECID_DK_FROST] = newResourceBar
+        mainResourceFrame.resourceBars[CONST_SPECID_DK_BLOOD] = newResourceBar
         newResourceBar.resourceId = SPELL_POWER_RUNES
         newResourceBar.updateResourceFunc = false
         tinsert(mainResourceFrame.allResourceBars, newResourceBar)
     end
 
 --> this funtion is called once at the logon, it'll create the resource frames for the class
-    function Plater.CreatePlaterResourceFrame()
+    function Plater.Resources.CreatePlaterResourceFrame()
         if (not DB_USE_PLATER_RESOURCE_BAR) then
             --ignore if the settings are off
             return
         end
 
-        local mainResourceFrame = Plater.GetMainResourceFrame()
+        local mainResourceFrame = Plater.Resources.GetMainResourceFrame()
         if (mainResourceFrame) then
             --ignore if the resource frame is already created
             return
@@ -286,26 +298,26 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
         end)
     end
 
-    function Plater.GetMainResourceFrame()
+    function Plater.Resources.GetMainResourceFrame()
         return _G.PlaterNameplatesResourceFrame
     end
 
     function Plater.ResourceFrame_EnableEvents()
-        local mainResourceFrame = Plater.GetMainResourceFrame()
+        local mainResourceFrame = Plater.Resources.GetMainResourceFrame()
 		mainResourceFrame:RegisterUnitEvent("UNIT_POWER_FREQUENT", "player")
         mainResourceFrame:RegisterUnitEvent("UNIT_MAXPOWER", "player")
     end
 
     function Plater.ResourceFrame_DisableEvents()
-        local mainResourceFrame = Plater.GetMainResourceFrame()
+        local mainResourceFrame = Plater.Resources.GetMainResourceFrame()
 		mainResourceFrame:UnregisterEvent("UNIT_POWER_FREQUENT")
         mainResourceFrame:UnregisterEvent("UNIT_MAXPOWER")
     end
 
 
 --> called when use plater resource bar is disabled or when no match on rules to show it; only called from inside this file
-    function Plater.HidePlaterResourceFrame()
-        local mainResourceFrame = Plater.GetMainResourceFrame()
+    function Plater.Resources.HidePlaterResourceFrame()
+        local mainResourceFrame = Plater.Resources.GetMainResourceFrame()
         if (mainResourceFrame) then
             Plater.ResourceFrame_DisableEvents()
             return mainResourceFrame:Hide()
@@ -322,14 +334,14 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
         local plateFrame
 
         if (not DB_USE_PLATER_RESOURCE_BAR) then
-            return Plater.HidePlaterResourceFrame()
+            return Plater.Resources.HidePlaterResourceFrame()
 
         elseif (not DB_PLATER_RESOURCE_BAR_ON_PERSONAL) then
             --target nameplate
             plateFrame = C_NamePlate.GetNamePlateForUnit("target")
             --if the player has no target, this will return nil
             if (not plateFrame) then
-                return Plater.HidePlaterResourceFrame()
+                return Plater.Resources.HidePlaterResourceFrame()
             end
 
         else
@@ -337,7 +349,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
             plateFrame = C_NamePlate.GetNamePlateForUnit("player")
             --if the player nameplate does not exists, just quit
             if (not plateFrame) then
-                return Plater.HidePlaterResourceFrame()
+                return Plater.Resources.HidePlaterResourceFrame()
             end
         end
 
@@ -348,7 +360,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
             --spec index from 1 to 4 (see specialization frame pressing N ingame), characters below level 10 might have a bigger index
             local specIndexSelected = GetSpecialization()
             local specId = GetSpecializationInfo(specIndexSelected)
-            local mainResourceFrame = Plater.GetMainResourceFrame()
+            local mainResourceFrame = Plater.Resources.GetMainResourceFrame()
 
             if (specId) then
                 --check if the current player spec uses a resource bar
@@ -358,8 +370,8 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
                     resourceBarBySpec.resourceSpec = specId
 
                     Plater.ResourceFrame_EnableEvents()
-                    Plater.UpdateMainResourceFrame(plateFrame)
-                    return Plater.UpdateResourceBar(plateFrame, resourceBarBySpec)
+                    Plater.Resources.UpdateMainResourceFrame(plateFrame)
+                    return Plater.Resources.UpdateResourceBar(plateFrame, resourceBarBySpec)
                 end
             else
                 --if no specialization, player might be low level
@@ -367,14 +379,14 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
                     --should get by class?
                     if (playerClass == "ROGUE") then
                         Plater.ResourceFrame_EnableEvents()
-                        Plater.UpdateMainResourceFrame(plateFrame)
-                        return Plater.UpdateResourceBar(plateFrame, mainResourceFrame.resourceBars ["ROGUE"])
+                        Plater.Resources.UpdateMainResourceFrame(plateFrame)
+                        return Plater.Resources.UpdateResourceBar(plateFrame, mainResourceFrame.resourceBars ["ROGUE"])
                     end
                 end
             end
         end
 
-        return Plater.HidePlaterResourceFrame()
+        return Plater.Resources.HidePlaterResourceFrame()
     end
 
 
@@ -382,20 +394,20 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
     --player spec change (PLAYER_SPECIALIZATION_CHANGED)
     --player target has changed
     --decides if the resource is shown or not
-    function Plater.CanUsePlaterResourceFrame()
+    function Plater.Resources.CanUsePlaterResourceFrame()
         return runOnNextFrame(canUsePlaterResourceFrame)
     end
 
 
 --called when 'CanUsePlaterResourceFrame' gives green flag to show the resource bar
 --this function receives the nameplate where the resource bar will be attached
-    function Plater.UpdateMainResourceFrame(plateFrame)
+    function Plater.Resources.UpdateMainResourceFrame(plateFrame)
 		if IS_WOW_PROJECT_NOT_MAINLINE then
             return
         end
 
         --get the main resource frame
-        local mainResourceFrame = Plater.GetMainResourceFrame()
+        local mainResourceFrame = Plater.Resources.GetMainResourceFrame()
 
         --make its parent be the healthBar from the nameplate where it is anchored to
         mainResourceFrame:SetParent(plateFrame.unitFrame.healthBar)
@@ -413,9 +425,9 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
 
 --called when 'CanUsePlaterResourceFrame' gives green flag to show the resource bar
 --this funtion receives the nameplate and the bar to show
-    function Plater.UpdateResourceBar(plateFrame, resourceBar)
+    function Plater.Resources.UpdateResourceBar(plateFrame, resourceBar)
         --main resource frame
-        local mainResourceFrame = Plater.GetMainResourceFrame()
+        local mainResourceFrame = Plater.Resources.GetMainResourceFrame()
 
         --hide all resourcebar widgets
         for i = 1, #resourceBar.widgets do
@@ -444,14 +456,14 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
 
         else
             if (DB_PLATER_RESOURCE_SHOW_DEPLATED) then
-                Plater.UpdateResourcesFor_ShowDepleted(mainResourceFrame, resourceBar)
+                Plater.Resources.UpdateResourcesFor_ShowDepleted(mainResourceFrame, resourceBar)
             end
         end
     end
 
 --update the resources widgets when using the resources showing the background of depleted
 --on this type, the location of each resource icon is precomputed
-    function Plater.UpdateResourcesFor_ShowDepleted(mainResourceFrame, resourceBar)
+    function Plater.Resources.UpdateResourcesFor_ShowDepleted(mainResourceFrame, resourceBar)
         --get the table with the widgets created
         local widgetTable = resourceBar.widgets
 
@@ -531,10 +543,10 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
 
 --realign the combat points after the amount of available combo points change
 --this amount isn't the max amount of combo points but the current resources deom UnitPower
-    local updateResources_noDepleted = function(resourceBar, currentResources)
+    function Plater.Resources.UpdateResources_NoDepleted(resourceBar, currentResources)
 
         --main resource frame
-        local mainResourceFrame = Plater.GetMainResourceFrame()
+        local mainResourceFrame = Plater.Resources.GetMainResourceFrame()
 
         --get the table with the widgets created to represent monk wind walker chi
         local widgetTable = resourceBar.widgets
@@ -592,7 +604,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
     end
 
 
-    local updateResources_withDepleted = function(resourceBar, currentResources)
+    function Plater.Resources.UpdateResources_WithDepleted(resourceBar, currentResources)
         --calculate how many widgets need to be shown or need to be hide
         if (currentResources < resourceBar.lastResourceAmount) then --hide widgets
             for i = resourceBar.lastResourceAmount, currentResources+1, -1 do
@@ -621,163 +633,8 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
 
         --which update method to use
         if (DB_PLATER_RESOURCE_SHOW_DEPLATED) then
-            return updateResources_withDepleted(resourceBar, currentResources)
+            return Plater.Resources.UpdateResources_WithDepleted(resourceBar, currentResources)
         else
-            return updateResources_noDepleted(resourceBar, currentResources)
+            return Plater.Resources.UpdateResources_NoDepleted(resourceBar, currentResources)
         end
     end
-
-
---functions to create the class or spec resources widgets
-resourceWidgetsFunctions.CreateMonkComboPoints = function(parent, frameName)
-
-    --> create the main frame
-    local MonkWWComboPoint = CreateFrame ("frame", frameName, parent)
-
-    --create background
-    local Background  = parent:CreateTexture (nil, "BORDER")
-    Background:SetTexture ([[Interface\PLAYERFRAME\MonkUIAtlas]])
-    Background:SetDrawLayer ("BORDER", 1)
-    Background:SetPoint ("center", MonkWWComboPoint, "center", 0, 0)
-    Background:SetSize (CONST_WIDGET_WIDTH, CONST_WIDGET_HEIGHT)
-    Background:SetVertexColor (0.98431158065796, 0.99215465784073, 0.99999779462814, 0.99999779462814)
-    Background:SetTexCoord (0.5513224029541, 0.61600479125977, 0.025, 0.1610000038147)
-    parent.widgetsBackground [ #parent.widgetsBackground + 1 ] = Background
-
-    --> single animation group
-    local MainAnimationGroup = MonkWWComboPoint:CreateAnimationGroup()
-    MainAnimationGroup:SetLooping ("NONE")
-    MainAnimationGroup:SetToFinalAlpha(true)
-
-    --> widgets:
-
-    ----------------------------------------------
-
-    local BallTexture  = MonkWWComboPoint:CreateTexture (nil, "ARTWORK")
-    BallTexture:SetTexture ([[Interface\PLAYERFRAME\MonkUIAtlas]])
-    BallTexture:SetDrawLayer ("ARTWORK", 0)
-    BallTexture:SetPoint ("center", MonkWWComboPoint, "center", 0, 0)
-    BallTexture:SetSize (CONST_WIDGET_WIDTH * 0.90, CONST_WIDGET_HEIGHT * 0.90)
-    BallTexture:SetTexCoord (0.6427360534668, 0.70684181213379, 0.02872227191925, 0.15893713951111)
-
-    --> animations for BallTexture
-
-    BallTexture.scale = MainAnimationGroup:CreateAnimation ("SCALE")
-    BallTexture.scale:SetTarget (BallTexture)
-    BallTexture.scale:SetOrder (1)
-    BallTexture.scale:SetDuration (0.195999994874)
-    BallTexture.scale:SetFromScale (0, 0)
-    BallTexture.scale:SetToScale (1, 1)
-    BallTexture.scale:SetOrigin ("center", 0, 0)
-    BallTexture.scale = MainAnimationGroup:CreateAnimation ("SCALE")
-    BallTexture.scale:SetTarget (BallTexture)
-    BallTexture.scale:SetOrder (2)
-    BallTexture.scale:SetDuration (0.046000000089407)
-    BallTexture.scale:SetFromScale (1, 1)
-    BallTexture.scale:SetToScale (1.1999999284744, 1.1999999284744)
-    BallTexture.scale:SetOrigin ("center", 0, 0)
-    BallTexture.scale = MainAnimationGroup:CreateAnimation ("SCALE")
-    BallTexture.scale:SetTarget (BallTexture)
-    BallTexture.scale:SetOrder (3)
-    BallTexture.scale:SetDuration (0.016000000759959)
-    BallTexture.scale:SetFromScale (1.1999999284744, 1.1999999284744)
-    BallTexture.scale:SetToScale (1, 1)
-    BallTexture.scale:SetOrigin ("center", 0, 0)
-
-    ----------------------------------------------
-
-    local UpSpark  = MonkWWComboPoint:CreateTexture (nil, "OVERLAY")
-    UpSpark:SetTexture ([[Interface\QUESTFRAME\ObjectiveTracker]])
-    UpSpark:SetDrawLayer ("OVERLAY", 0)
-    UpSpark:SetPoint ("center", MonkWWComboPoint, "center", 0, 0)
-    UpSpark:SetSize (CONST_WIDGET_WIDTH * 0.89, CONST_WIDGET_HEIGHT * 0.89)
-    UpSpark:SetTexCoord (0.7108479309082, 0.83905952453613, 0.0010000000149012, 0.12888721466064)
-
-    --> animations for UpSpark
-
-    UpSpark.scale = MainAnimationGroup:CreateAnimation ("SCALE")
-    UpSpark.scale:SetTarget (UpSpark)
-    UpSpark.scale:SetOrder (1)
-    UpSpark.scale:SetDuration (0.195999994874)
-    UpSpark.scale:SetFromScale (0, 0)
-    UpSpark.scale:SetToScale (1, 1)
-    UpSpark.scale:SetOrigin ("center", 0, 0)
-    UpSpark.alpha = MainAnimationGroup:CreateAnimation ("ALPHA")
-    UpSpark.alpha:SetTarget (UpSpark)
-    UpSpark.alpha:SetOrder (1)
-    UpSpark.alpha:SetDuration (0.195999994874)
-    UpSpark.alpha:SetFromAlpha (0)
-    UpSpark.alpha:SetToAlpha (0.40382900834084)
-    UpSpark.rotation = MainAnimationGroup:CreateAnimation ("ROTATION")
-    UpSpark.rotation:SetTarget (UpSpark)
-    UpSpark.rotation:SetOrder (1)
-    UpSpark.rotation:SetDuration (0.195999994874)
-    UpSpark.rotation:SetDegrees (60)
-    UpSpark.rotation:SetOrigin ("center", 0, 0)
-    UpSpark.rotation = MainAnimationGroup:CreateAnimation ("ROTATION")
-    UpSpark.rotation:SetTarget (UpSpark)
-    UpSpark.rotation:SetOrder (2)
-    UpSpark.rotation:SetDuration (0.195999994874)
-    UpSpark.rotation:SetDegrees (15)
-    UpSpark.rotation:SetOrigin ("center", 0, 0)
-    UpSpark.alpha = MainAnimationGroup:CreateAnimation ("ALPHA")
-    UpSpark.alpha:SetTarget (UpSpark)
-    UpSpark.alpha:SetOrder (2)
-    UpSpark.alpha:SetDuration (0.096000000834465)
-    UpSpark.alpha:SetFromAlpha (0.4038280248642)
-    UpSpark.alpha:SetToAlpha (0.25)
-    UpSpark.rotation = MainAnimationGroup:CreateAnimation ("ROTATION")
-    UpSpark.rotation:SetTarget (UpSpark)
-    UpSpark.rotation:SetOrder (3)
-    UpSpark.rotation:SetDuration (0.195999994874)
-    UpSpark.rotation:SetDegrees (60)
-    UpSpark.rotation:SetOrigin ("center", 0, 0)
-    UpSpark.alpha = MainAnimationGroup:CreateAnimation ("ALPHA")
-    UpSpark.alpha:SetTarget (UpSpark)
-    UpSpark.alpha:SetOrder (3)
-    UpSpark.alpha:SetDuration (0.195999994874)
-    UpSpark.alpha:SetFromAlpha (0.25)
-    UpSpark.alpha:SetToAlpha (0)
-
-    ----------------------------------------------
-
-    local BackgroundSpark  = MonkWWComboPoint:CreateTexture (nil, "BACKGROUND")
-    BackgroundSpark:SetTexture ([[Interface\PVPFrame\PvPHonorSystem]])
-    BackgroundSpark:SetDrawLayer ("BACKGROUND", 0)
-    BackgroundSpark:SetPoint ("center", MonkWWComboPoint, "center", 0, 0)
-    BackgroundSpark:SetSize (CONST_WIDGET_WIDTH * 1.39, CONST_WIDGET_HEIGHT * 1.39)
-    BackgroundSpark:SetTexCoord (0.0096916198730469, 0.1160000038147, 0.43700000762939, 0.54200000762939)
-
-    --> animations for BackgroundSpark
-
-    BackgroundSpark.alpha = MainAnimationGroup:CreateAnimation ("ALPHA")
-    BackgroundSpark.alpha:SetTarget (BackgroundSpark)
-    BackgroundSpark.alpha:SetOrder (1)
-    BackgroundSpark.alpha:SetDuration (0.195999994874)
-    BackgroundSpark.alpha:SetFromAlpha (0)
-    BackgroundSpark.alpha:SetToAlpha (1)
-    BackgroundSpark.rotation = MainAnimationGroup:CreateAnimation ("ROTATION")
-    BackgroundSpark.rotation:SetTarget (BackgroundSpark)
-    BackgroundSpark.rotation:SetOrder (1)
-    BackgroundSpark.rotation:SetDuration (0.195999994874)
-    BackgroundSpark.rotation:SetDegrees (2)
-    BackgroundSpark.rotation:SetOrigin ("center", 0, 0)
-    BackgroundSpark.alpha = MainAnimationGroup:CreateAnimation ("ALPHA")
-    BackgroundSpark.alpha:SetTarget (BackgroundSpark)
-    BackgroundSpark.alpha:SetOrder (2)
-    BackgroundSpark.alpha:SetDuration (0.195999994874)
-    BackgroundSpark.alpha:SetFromAlpha (0.34612736105919)
-    BackgroundSpark.alpha:SetToAlpha (0.24995632469654)
-    BackgroundSpark.alpha = MainAnimationGroup:CreateAnimation ("ALPHA")
-    BackgroundSpark.alpha:SetTarget (BackgroundSpark)
-    BackgroundSpark.alpha:SetOrder (3)
-    BackgroundSpark.alpha:SetDuration (0.195999994874)
-    BackgroundSpark.alpha:SetFromAlpha (0.25)
-    BackgroundSpark.alpha:SetToAlpha (0)
-
-    --> test the animation
-    --MainAnimationGroup:Play()
-
-    MonkWWComboPoint.ShowAnimation = MainAnimationGroup
-    return MonkWWComboPoint
-end
