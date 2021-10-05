@@ -489,7 +489,7 @@ function Plater.OpenOptionsPanel()
 							
 							local existingProfileName = nil
 							local wagoInfoText = ""
-							if wagoProfile.profile_name or wagoProfile.url then
+							if wagoProfile.url then
 								local impProfUrl = wagoProfile.url or ""
 								local impProfID = impProfUrl:match("wago.io/([^/]+)/([0-9]+)") or impProfUrl:match("wago.io/([^/]+)$")
 								local profiles = Plater.db.profiles
