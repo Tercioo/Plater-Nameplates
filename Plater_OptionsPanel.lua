@@ -475,7 +475,7 @@ function Plater.OpenOptionsPanel()
 				profilesFrame.ImportStringField.importDataText = nil
 				local editbox = profilesFrame.ImportStringField.editbox
 				local pasteBuffer, pasteCharCount, isPasting = {}, 0, false
-				editbox:SetMaxBytes (1) -- for performance
+				--editbox:SetMaxBytes (1) -- for performance
 				
 				local function clearBuffer(self)
 					self:SetScript('OnUpdate', nil)
@@ -488,7 +488,7 @@ function Plater.OpenOptionsPanel()
 						if (wagoProfile and type (wagoProfile == "table") and wagoProfile.plate_config) then
 							
 							local existingProfileName = nil
-							local wagoInfoText = ""
+							local wagoInfoText = "Import data verified.\n\n"
 							if wagoProfile.url then
 								local impProfUrl = wagoProfile.url or ""
 								local impProfID = impProfUrl:match("wago.io/([^/]+)/([0-9]+)") or impProfUrl:match("wago.io/([^/]+)$")
@@ -504,11 +504,11 @@ function Plater.OpenOptionsPanel()
 									end
 								end
 							
-								wagoInfoText = wagoInfoText .. "Got the following wago information from the import data:\n"
-								wagoInfoText = wagoInfoText .. "Name: " .. (wagoProfile.profile_name or "N/A") .. "\n"
-								wagoInfoText = wagoInfoText .. "Wago-Revision: " .. (wagoProfile.version or "-") .. "\n"
-								wagoInfoText = wagoInfoText .. "Wago-Version: " .. (wagoProfile.semver or "-") .. "\n"
-								wagoInfoText = wagoInfoText .. "Wago-URL: " .. (wagoProfile.url and (wagoProfile.url .. "\n") or "")
+								wagoInfoText = wagoInfoText .. "Extracted the following wago information from the profile data:\n"
+								wagoInfoText = wagoInfoText .. "  Local Profile Name: " .. (wagoProfile.profile_name or "N/A") .. "\n"
+								wagoInfoText = wagoInfoText .. "  Wago-Revision: " .. (wagoProfile.version or "-") .. "\n"
+								wagoInfoText = wagoInfoText .. "  Wago-Version: " .. (wagoProfile.semver or "-") .. "\n"
+								wagoInfoText = wagoInfoText .. "  Wago-URL: " .. (wagoProfile.url and (wagoProfile.url .. "\n") or "")
 								wagoInfoText = wagoInfoText .. (existingProfileName and ("\nThis profile already exists as: '" .. existingProfileName .. "' in your profiles.\n") or "")
 							else
 								wagoInfoText = "This profile does not contain any wago.io information.\n"
@@ -546,7 +546,7 @@ function Plater.OpenOptionsPanel()
 				profilesFrame.ImportStringField:Show()
 				
 				C_Timer.After (.2, function()
-					profilesFrame.ImportStringField:SetText ("")
+					profilesFrame.ImportStringField:SetText ("<Paste import string here>")
 					profilesFrame.ImportStringField:SetFocus (true)
 				end)
 				
