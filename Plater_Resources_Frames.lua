@@ -178,3 +178,84 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         widgetFrame.ShowAnimation = MainAnimationGroup
         return widgetFrame
     end
+
+
+    local comboPointFunc = function(parent, frameName)
+        --> create the main frame
+        local widgetFrame = CreateFrame("frame", frameName, parent)
+
+        --> create background
+        local backgroundTexture = parent:CreateTexture("$parenttopCircleTexture", "OVERLAY")
+        backgroundTexture:SetTexture([[Interface\Artifacts\Artifacts-PerkRing-Final-Mask]])
+        backgroundTexture:SetDrawLayer("OVERLAY", 1)
+        backgroundTexture:SetPoint("center", widgetFrame, "center", 0, 0)
+        backgroundTexture:SetSize(20, 20)
+        backgroundTexture:SetVertexColor(0.96470373868942, 0.99999779462814, 0.98823314905167, 0.99999779462814)
+        backgroundTexture:SetTexCoord(0.12200000762939, 0.87099998474121, 0.1210000038147, 0.87)
+        parent.widgetsBackground[#parent.widgetsBackground + 1] = backgroundTexture
+
+        --> single animation group
+        local MainAnimationGroup = widgetFrame:CreateAnimationGroup()
+        MainAnimationGroup:SetLooping("NONE")
+        MainAnimationGroup:SetToFinalAlpha(true)
+
+        ----------------------------------------------
+
+        local glassTexture  = widgetFrame:CreateTexture("$parentglassTextureTexture", "ARTWORK")
+        glassTexture:SetTexture([[Interface\Challenges\ChallengeModeRunes]])
+        glassTexture:SetDrawLayer("ARTWORK", 0)
+        glassTexture:SetPoint("center", widgetFrame, "center", 1, 0)
+        glassTexture:SetSize(18, 18)
+        glassTexture:SetDesaturated(true)
+        glassTexture:SetTexCoord(0.70323081970215, 0.96235160827637, 0.30575012207031, 0.55901210784912)
+        glassTexture:SetBlendMode("ADD")
+
+        ----------------------------------------------
+
+        local comboPointTexture  = widgetFrame:CreateTexture("$parentcomboPointTextureTexture", "BORDER")
+        comboPointTexture:SetTexture([[Interface\PLAYERFRAME\ClassOverlayComboPoints]])
+        comboPointTexture:SetDrawLayer("BORDER", 0)
+        comboPointTexture:SetPoint("center", widgetFrame, "center", 0, 0)
+        comboPointTexture:SetSize(18, 18)
+        comboPointTexture:SetTexCoord(0.025221042633057, 0.14739701271057, 0.62713066101074, 0.73891525268555)
+
+        --> animations for comboPointTexture
+
+        comboPointTexture.alpha1 = MainAnimationGroup:CreateAnimation("ALPHA")
+        comboPointTexture.alpha1:SetTarget(comboPointTexture)
+        comboPointTexture.alpha1:SetOrder(1)
+        comboPointTexture.alpha1:SetDuration(0.195999994874)
+        comboPointTexture.alpha1:SetFromAlpha(0)
+        comboPointTexture.alpha1:SetToAlpha(0.49912714958191)
+        comboPointTexture.scale1 = MainAnimationGroup:CreateAnimation("SCALE")
+        comboPointTexture.scale1:SetTarget(comboPointTexture)
+        comboPointTexture.scale1:SetOrder(1)
+        comboPointTexture.scale1:SetDuration(0.195999994874)
+        comboPointTexture.scale1:SetFromScale(0.29999998211861, 0.29999998211861)
+        comboPointTexture.scale1:SetToScale(1.3999999761581, 1.3999999761581)
+        comboPointTexture.scale1:SetOrigin("center", 0, 0)
+        comboPointTexture.scale2 = MainAnimationGroup:CreateAnimation("SCALE")
+        comboPointTexture.scale2:SetTarget(comboPointTexture)
+        comboPointTexture.scale2:SetOrder(2)
+        comboPointTexture.scale2:SetDuration(0.096000000834465)
+        comboPointTexture.scale2:SetFromScale(0.9899999499321, 0.9899999499321)
+        comboPointTexture.scale2:SetToScale(0.79999995231628, 0.78999996185303)
+        comboPointTexture.scale2:SetOrigin("center", 0, 0)
+        comboPointTexture.alpha1 = MainAnimationGroup:CreateAnimation("ALPHA")
+        comboPointTexture.alpha1:SetTarget(comboPointTexture)
+        comboPointTexture.alpha1:SetOrder(2)
+        comboPointTexture.alpha1:SetDuration(0.096000000834465)
+        comboPointTexture.alpha1:SetFromAlpha(0.69999998807907)
+        comboPointTexture.alpha1:SetToAlpha(1)
+
+        --> test the animation
+        --MainAnimationGroup:Play()
+
+        widgetFrame.ShowAnimation = MainAnimationGroup
+        return widgetFrame
+    end
+
+    resourceCreationFunctions[CONST_SPECID_DRUID_FERAL] = comboPointFunc
+    resourceCreationFunctions[CONST_SPECID_ROGUE_ASSASSINATION] = comboPointFunc
+    resourceCreationFunctions[CONST_SPECID_ROGUE_OUTLAW] = comboPointFunc
+    resourceCreationFunctions[CONST_SPECID_ROGUE_SUBTLETY] = comboPointFunc

@@ -169,7 +169,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
 
         --store all widgets
         resourceBar.widgets = {}
-        --store all background textures
+        --store all background textures (created on plater_resources_frames), this texture is the default texture shown when the combo point isn't active
         resourceBar.widgetsBackground = {}
 
         --create widgets which are frames holding textures and animations
@@ -195,6 +195,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
         local resourceWidgetCreationFunc = Plater.Resources.GetCreateResourceWidgetFunctionForSpecId(CONST_SPECID_MONK_WINDWALKER)
         local newResourceBar = createResourceBar(mainResourceFrame, "$parentMonk2Resource", resourceWidgetCreationFunc) --windwalker chi
         mainResourceFrame.resourceBars[CONST_SPECID_MONK_WINDWALKER] = newResourceBar
+
         newResourceBar.resourceId = SPELL_POWER_CHI
         newResourceBar.updateResourceFunc = resourceWidgetsFunctions.OnComboPointsChanged
         tinsert(mainResourceFrame.allResourceBars, newResourceBar)
@@ -209,15 +210,15 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
     end
 
     local resourceDruidAndRogue = function(mainResourceFrame)
-        local newResourceBar = createResourceBar(mainResourceFrame, "$parentRogueResource")
-        newResourceBar.resourceId = SPELL_POWER_COMBO_POINTS2
-        newResourceBar.updateResourceFunc = false
-
+        local resourceWidgetCreationFunc = Plater.Resources.GetCreateResourceWidgetFunctionForSpecId(CONST_SPECID_ROGUE_OUTLAW)
+        local newResourceBar = createResourceBar(mainResourceFrame, "$parentRogueResource", resourceWidgetCreationFunc)
         mainResourceFrame.resourceBars[CONST_SPECID_ROGUE_ASSASSINATION] = newResourceBar
         mainResourceFrame.resourceBars[CONST_SPECID_ROGUE_OUTLAW] = newResourceBar
         mainResourceFrame.resourceBars[CONST_SPECID_ROGUE_SUBTLETY] = newResourceBar
         mainResourceFrame.resourceBars[CONST_SPECID_DRUID_FERAL] = newResourceBar
 
+        newResourceBar.resourceId = SPELL_POWER_COMBO_POINTS2
+        newResourceBar.updateResourceFunc = resourceWidgetsFunctions.OnComboPointsChanged
         tinsert(mainResourceFrame.allResourceBars, newResourceBar)
     end
     resourceByClass["ROGUE"] = resourceDruidAndRogue
