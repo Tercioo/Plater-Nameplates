@@ -769,7 +769,6 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
         
         --amount of resources the player has now
         local currentResources = GetComboPoints("player", "target") --UnitPower("player", resourceBar.resourceId)
-        ViragDevTool_AddData({stack = debugstack(), currentResources = currentResources, resourceBar = resourceBar, mainResourceFrame = mainResourceFrame, forcedRefresh = forcedRefresh, event = event, unit = unit, powerType = powerType}, "Resource-Event - " .. GetTime())
 
         --resources amount got updated?
         if (currentResources == resourceBar.lastResourceAmount and not forcedRefresh) then
