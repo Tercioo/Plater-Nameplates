@@ -330,7 +330,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
         if (not mainResourceFrame or mainResourceFrame.eventsEnabled) then return end
         mainResourceFrame:RegisterUnitEvent("UNIT_POWER_FREQUENT", "player")
         mainResourceFrame:RegisterUnitEvent("UNIT_MAXPOWER", "player")
-        if (IS_WOW_PROJECT_NOT_MAINLINE and Plater.PlayerClass == "ROGUE") then
+        if (IS_WOW_PROJECT_MAINLINE and Plater.PlayerClass == "ROGUE") then
             mainResourceFrame:RegisterUnitEvent("UNIT_POWER_POINT_CHARGE", "player")
         end
         mainResourceFrame.eventsEnabled = true
@@ -341,7 +341,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
         if (not mainResourceFrame or not mainResourceFrame.eventsEnabled) then return end
         mainResourceFrame:UnregisterEvent("UNIT_POWER_FREQUENT")
         mainResourceFrame:UnregisterEvent("UNIT_MAXPOWER")
-        if (IS_WOW_PROJECT_NOT_MAINLINE and Plater.PlayerClass == "ROGUE") then
+        if (IS_WOW_PROJECT_MAINLINE and Plater.PlayerClass == "ROGUE") then
             mainResourceFrame:UnregisterEvent("UNIT_POWER_POINT_CHARGE", "player")
         end
         mainResourceFrame.eventsEnabled = false
@@ -408,6 +408,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
 
             if (specId) then
                 --check if the current player spec uses a resource bar
+                --TODO: Druid can use it in all specs. stance check needed!
                 local resourceBarBySpec = mainResourceFrame.resourceBars[specId]
                 if (resourceBarBySpec) then
                     resourceBarBySpec.resourceClass = false
@@ -470,7 +471,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
         end
 
         --make its parent be the healthBar from the nameplate where it is anchored to
-		local healthBar = plateFrame.unitFrame.healthBar
+        local healthBar = plateFrame.unitFrame.healthBar
         mainResourceFrame:SetParent(healthBar)
 
         --update the resource anchor
@@ -480,8 +481,8 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
         mainResourceFrame:SetWidth(healthBar:GetWidth())
         mainResourceFrame:SetHeight(2)
         mainResourceFrame:SetScale(DB_PLATER_RESOURCE_BAR_SCALE)
-		mainResourceFrame:SetFrameStrata(healthBar:GetFrameStrata())
-		mainResourceFrame:SetFrameLevel(healthBar:GetFrameLevel() + 25)
+        mainResourceFrame:SetFrameStrata(healthBar:GetFrameStrata())
+        mainResourceFrame:SetFrameLevel(healthBar:GetFrameLevel() + 25)
         
         Plater.EndLogPerformanceCore("Plater-Resources", "Update", "UpdateMainResourceFrame")
     end
