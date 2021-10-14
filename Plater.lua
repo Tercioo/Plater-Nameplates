@@ -6266,6 +6266,7 @@ end
 			end
 		end
 
+		--Plater.Resources.UpdatePlaterResourceFramePosition() --~resource
 		Plater.Resources.CanUsePlaterResourceFrame() --~resource
 	end
 

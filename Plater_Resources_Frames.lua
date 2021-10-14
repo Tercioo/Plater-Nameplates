@@ -4,6 +4,11 @@ local Plater = _G.Plater
 local DF = DetailsFramework
 local _
 
+local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
+local IS_WOW_PROJECT_NOT_MAINLINE = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
+local IS_WOW_PROJECT_CLASSIC_ERA = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
+local IS_WOW_PROJECT_CLASSIC_TBC = WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC
+
 --[=[
     search keys:
     ~monk
@@ -185,13 +190,22 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         local widgetFrame = CreateFrame("frame", frameName, parent)
 
         --> create background
-        local backgroundTexture = parent:CreateTexture("$parenttopCircleTexture", "OVERLAY")
-        backgroundTexture:SetTexture([[Interface\Artifacts\Artifacts-PerkRing-Final-Mask]])
+        local backgroundTexture = parent:CreateTexture("$parenttopCircleTexture", "BACKGROUND")
+        --backgroundTexture:SetTexture([[Interface\Artifacts\Artifacts-PerkRing-Final-Mask]])
+        --backgroundTexture:SetTexCoord(0.12200000762939, 0.87099998474121, 0.1210000038147, 0.87)
         backgroundTexture:SetDrawLayer("OVERLAY", 1)
         backgroundTexture:SetPoint("center", widgetFrame, "center", 0, 0)
         backgroundTexture:SetSize(20, 20)
         backgroundTexture:SetVertexColor(0.96470373868942, 0.99999779462814, 0.98823314905167, 0.99999779462814)
-        backgroundTexture:SetTexCoord(0.12200000762939, 0.87099998474121, 0.1210000038147, 0.87)
+        if IS_WOW_PROJECT_MAINLINE then
+            --backgroundTexture:SetTexture([[Interface\PLAYERFRAME\ClassOverlayComboPoints]])
+            --backgroundTexture:SetTexCoord(0/128, 21/128, 101/128, 122/128)
+            backgroundTexture:SetAtlas("ClassOverlay-ComboPoint-Off")
+        else
+            backgroundTexture:SetTexture([[Interface\PLAYERFRAME\ClassOverlayComboPoints]])
+            backgroundTexture:SetTexCoord(78/128, 98/128, 21/64, 41/64)
+        end
+        widgetFrame.background = backgroundTexture
         parent.widgetsBackground[#parent.widgetsBackground + 1] = backgroundTexture
 
         --> single animation group
@@ -201,23 +215,20 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 
         ----------------------------------------------
 
-        local glassTexture  = widgetFrame:CreateTexture("$parentglassTextureTexture", "ARTWORK")
-        glassTexture:SetTexture([[Interface\Challenges\ChallengeModeRunes]])
-        glassTexture:SetDrawLayer("ARTWORK", 0)
-        glassTexture:SetPoint("center", widgetFrame, "center", 1, 0)
-        glassTexture:SetSize(18, 18)
-        glassTexture:SetDesaturated(true)
-        glassTexture:SetTexCoord(0.70323081970215, 0.96235160827637, 0.30575012207031, 0.55901210784912)
-        glassTexture:SetBlendMode("ADD")
-
-        ----------------------------------------------
-
-        local comboPointTexture  = widgetFrame:CreateTexture("$parentcomboPointTextureTexture", "BORDER")
-        comboPointTexture:SetTexture([[Interface\PLAYERFRAME\ClassOverlayComboPoints]])
+        local comboPointTexture  = widgetFrame:CreateTexture("$parentcomboPointTextureTexture", "ARTWORK")
+        --comboPointTexture:SetTexture([[Interface\PLAYERFRAME\ClassOverlayComboPoints]])
+        --comboPointTexture:SetTexCoord(0.025221042633057, 0.14739701271057, 0.62713066101074, 0.73891525268555)
         comboPointTexture:SetDrawLayer("BORDER", 0)
         comboPointTexture:SetPoint("center", widgetFrame, "center", 0, 0)
-        comboPointTexture:SetSize(18, 18)
-        comboPointTexture:SetTexCoord(0.025221042633057, 0.14739701271057, 0.62713066101074, 0.73891525268555)
+        comboPointTexture:SetSize(20, 20)
+        if IS_WOW_PROJECT_MAINLINE then
+            --comboPointTexture:SetTexCoord(3/128, 19/128, 79/128, 95/128)
+            --comboPointTexture:SetTexCoord(0/128, 19/128, 79/128, 95/128)
+            comboPointTexture:SetAtlas("ClassOverlay-ComboPoint")
+        else
+            comboPointTexture:SetTexCoord(100/128, 120/128, 21/64, 41/64)
+        end
+        widgetFrame.texture = comboPointTexture
 
         --> animations for comboPointTexture
 
