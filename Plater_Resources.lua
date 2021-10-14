@@ -69,6 +69,7 @@ local resourceWidgetsFunctions = {} --this table has created when only monk comb
 local resourceByClass = {}
 
 --power
+local PowerEnum = Enum.PowerType
 local SPELL_POWER_MANA = SPELL_POWER_MANA or (PowerEnum and PowerEnum.Mana) or 0
 local SPELL_POWER_RAGE = SPELL_POWER_RAGE or (PowerEnum and PowerEnum.Rage) or 1
 local SPELL_POWER_FOCUS = SPELL_POWER_FOCUS or (PowerEnum and PowerEnum.Focus) or 2
@@ -358,15 +359,15 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
     end
 
     local getPlateFrameForResourceFrame = function()
-        local plateFrame
+        local plateFrame = nil
         if (not DB_USE_PLATER_RESOURCE_BAR) then
             -- do nothing
 
-        elseif (not DB_PLATER_RESOURCE_BAR_ON_PERSONAL) then
+        elseif (not DB_PLATER_RESOURCE_BAR_ON_PERSONAL or IS_WOW_PROJECT_NOT_MAINLINE) then
             --target nameplate
             plateFrame = C_NamePlate.GetNamePlateForUnit("target")
 
-        else
+        elseif (IS_WOW_PROJECT_MAINLINE) then
             --personal bar
             plateFrame = C_NamePlate.GetNamePlateForUnit("player")
         end
@@ -392,9 +393,10 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
         local playerClass = Plater.PlayerClass
         if (IS_WOW_PROJECT_NOT_MAINLINE) then
             if (playerClass == "ROGUE") then
+                local mainResourceFrame = Plater.Resources.GetMainResourceFrame()
                 Plater.ResourceFrame_EnableEvents()
                 Plater.Resources.UpdateMainResourceFrame(plateFrame)
-                retVal = Plater.Resources.UpdateResourceBar(plateFrame, mainResourceFrame.resourceBars ["ROGUE"])
+                retVal = Plater.Resources.UpdateResourceBar(plateFrame, mainResourceFrame.resourceBars [CONST_SPECID_ROGUE_OUTLAW])
                 
                 Plater.EndLogPerformanceCore("Plater-Resources", "Update", "CanUsePlaterResourceFrame")
                 return retVal
@@ -428,7 +430,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
                     if (playerClass == "ROGUE") then
                         Plater.ResourceFrame_EnableEvents()
                         Plater.Resources.UpdateMainResourceFrame(plateFrame)
-                        retVal = Plater.Resources.UpdateResourceBar(plateFrame, mainResourceFrame.resourceBars ["ROGUE"])
+                        retVal = Plater.Resources.UpdateResourceBar(plateFrame, mainResourceFrame.resourceBars [CONST_SPECID_ROGUE_OUTLAW])
                         
                         Plater.EndLogPerformanceCore("Plater-Resources", "Update", "CanUsePlaterResourceFrame")
                         return retVal
@@ -454,7 +456,9 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
 --> currently is called from:
     --player target has changed
     function Plater.Resources.UpdatePlaterResourceFramePosition()
-        Plater.Resources.UpdateMainResourceFrame(getPlateFrameForResourceFrame())
+        Plater.Resources.CanUsePlaterResourceFrame()
+        --TODO: implement single update instead of the above
+        --Plater.Resources.UpdateMainResourceFrame(getPlateFrameForResourceFrame())
     end
 
 --called when 'CanUsePlaterResourceFrame' gives green flag to show the resource bar
@@ -519,12 +523,9 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
         resourceBar:Show()
         resourceBar:SetHeight(1)
         mainResourceFrame:Show()
-        if (IS_WOW_PROJECT_NOT_MAINLINE) then
-
-        else
-            if (DB_PLATER_RESOURCE_SHOW_DEPLETED) then
-                Plater.Resources.UpdateResourcesFor_ShowDepleted(mainResourceFrame, resourceBar)
-            end
+        
+        if (DB_PLATER_RESOURCE_SHOW_DEPLETED) then
+            Plater.Resources.UpdateResourcesFor_ShowDepleted(mainResourceFrame, resourceBar)
         end
         
         Plater.EndLogPerformanceCore("Plater-Resources", "Update", "UpdateResourceBar")
@@ -768,6 +769,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
         
         --amount of resources the player has now
         local currentResources = GetComboPoints("player", "target") --UnitPower("player", resourceBar.resourceId)
+        ViragDevTool_AddData({stack = debugstack(), currentResources = currentResources, resourceBar = resourceBar, mainResourceFrame = mainResourceFrame, forcedRefresh = forcedRefresh, event = event, unit = unit, powerType = powerType}, "Resource-Event - " .. GetTime())
 
         --resources amount got updated?
         if (currentResources == resourceBar.lastResourceAmount and not forcedRefresh) then

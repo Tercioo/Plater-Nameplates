@@ -191,20 +191,11 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 
         --> create background
         local backgroundTexture = parent:CreateTexture("$parenttopCircleTexture", "BACKGROUND")
-        --backgroundTexture:SetTexture([[Interface\Artifacts\Artifacts-PerkRing-Final-Mask]])
-        --backgroundTexture:SetTexCoord(0.12200000762939, 0.87099998474121, 0.1210000038147, 0.87)
+        backgroundTexture:SetAtlas("ClassOverlay-ComboPoint-Off")
         backgroundTexture:SetDrawLayer("OVERLAY", 1)
         backgroundTexture:SetPoint("center", widgetFrame, "center", 0, 0)
         backgroundTexture:SetSize(20, 20)
         backgroundTexture:SetVertexColor(0.96470373868942, 0.99999779462814, 0.98823314905167, 0.99999779462814)
-        if IS_WOW_PROJECT_MAINLINE then
-            --backgroundTexture:SetTexture([[Interface\PLAYERFRAME\ClassOverlayComboPoints]])
-            --backgroundTexture:SetTexCoord(0/128, 21/128, 101/128, 122/128)
-            backgroundTexture:SetAtlas("ClassOverlay-ComboPoint-Off")
-        else
-            backgroundTexture:SetTexture([[Interface\PLAYERFRAME\ClassOverlayComboPoints]])
-            backgroundTexture:SetTexCoord(78/128, 98/128, 21/64, 41/64)
-        end
         widgetFrame.background = backgroundTexture
         parent.widgetsBackground[#parent.widgetsBackground + 1] = backgroundTexture
 
@@ -216,18 +207,11 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         ----------------------------------------------
 
         local comboPointTexture  = widgetFrame:CreateTexture("$parentcomboPointTextureTexture", "ARTWORK")
-        --comboPointTexture:SetTexture([[Interface\PLAYERFRAME\ClassOverlayComboPoints]])
-        --comboPointTexture:SetTexCoord(0.025221042633057, 0.14739701271057, 0.62713066101074, 0.73891525268555)
+        comboPointTexture:SetAtlas("ClassOverlay-ComboPoint")
         comboPointTexture:SetDrawLayer("BORDER", 0)
         comboPointTexture:SetPoint("center", widgetFrame, "center", 0, 0)
         comboPointTexture:SetSize(20, 20)
-        if IS_WOW_PROJECT_MAINLINE then
-            --comboPointTexture:SetTexCoord(3/128, 19/128, 79/128, 95/128)
-            --comboPointTexture:SetTexCoord(0/128, 19/128, 79/128, 95/128)
-            comboPointTexture:SetAtlas("ClassOverlay-ComboPoint")
-        else
-            comboPointTexture:SetTexCoord(100/128, 120/128, 21/64, 41/64)
-        end
+        
         widgetFrame.texture = comboPointTexture
 
         --> animations for comboPointTexture
