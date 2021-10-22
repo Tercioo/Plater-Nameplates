@@ -51,7 +51,6 @@ local InCombatLockdown = InCombatLockdown
 local UnitIsPlayer = UnitIsPlayer
 local UnitClassification = UnitClassification
 local UnitDetailedThreatSituation = UnitDetailedThreatSituation
-local AuraUtilForEachAura = AuraUtil.ForEachAura
 local UnitCanAttack = UnitCanAttack
 local IsSpellInRange = IsSpellInRange
 local abs = math.abs

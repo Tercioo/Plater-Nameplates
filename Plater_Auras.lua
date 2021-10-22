@@ -107,9 +107,9 @@ end
 
 local NamePlateTooltip = _G.NamePlateTooltip -- can be removed later
 local PlaterNamePlateAuraTooltip = CreateFrame("GameTooltip", "PlaterNamePlateAuraTooltip", UIParent, "GameTooltipTemplate")
-PlaterNamePlateAuraTooltip:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Buttons\WHITE8X8]], tileSize = 0, tile = false, tileEdge = true})
-PlaterNamePlateAuraTooltip:SetBackdropColor (0.05, 0.05, 0.05, 0.8)
-PlaterNamePlateAuraTooltip:SetBackdropBorderColor (0, 0, 0, 1)
+--PlaterNamePlateAuraTooltip:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Buttons\WHITE8X8]], tileSize = 0, tile = false, tileEdge = true})
+--PlaterNamePlateAuraTooltip:SetBackdropColor (0.05, 0.05, 0.05, 0.8)
+--PlaterNamePlateAuraTooltip:SetBackdropBorderColor (0, 0, 0, 1)
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> aura buffs and debuffs ~aura ~buffs ~debuffs ~auras
