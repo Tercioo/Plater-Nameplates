@@ -18,6 +18,8 @@ local CONST_SPECID_ROGUE_ASSASSINATION = 259
 local CONST_SPECID_ROGUE_OUTLAW = 260
 local CONST_SPECID_ROGUE_SUBTLETY = 261
 local CONST_SPECID_DRUID_FERAL = 103
+local CONST_SPECID_PALADIN_HOLY = 65
+local CONST_SPECID_PALADIN_PROTECTION = 66
 local CONST_SPECID_PALADIN_RETRIBUTION = 70
 local CONST_SPECID_WARLOCK_AFFLICTION = 265
 local CONST_SPECID_WARLOCK_DEMONOLOGY = 266
@@ -187,18 +189,20 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
         resourceBar.widgetsBackground = {}
 
         --create widgets which are frames holding textures and animations
-        for i = 1, CONST_NUM_RESOURCES_WIDGETS do
-            local newWidget = func(resourceBar, "$parentCPO" .. i)
-            resourceBar.widgets[#resourceBar.widgets + 1] = newWidget
-            newWidget:EnableMouse(false)
-            newWidget:EnableMouseWheel(false)
-            newWidget:SetSize(widgetWidth or CONST_WIDGET_WIDTH, widgetHeight or CONST_WIDGET_HEIGHT)
-            newWidget:Hide()
+        if (func) then
+            for i = 1, CONST_NUM_RESOURCES_WIDGETS do
+                local newWidget = func(resourceBar, "$parentCPO" .. i)
+                resourceBar.widgets[#resourceBar.widgets + 1] = newWidget
+                newWidget:EnableMouse(false)
+                newWidget:EnableMouseWheel(false)
+                newWidget:SetSize(widgetWidth or CONST_WIDGET_WIDTH, widgetHeight or CONST_WIDGET_HEIGHT)
+                newWidget:Hide()
 
-            local CPOID = DF:CreateLabel(newWidget, i, 12, "white", nil, nil, nil, "overlay")
-            CPOID:SetPoint("bottom", newWidget, "top", 0, 5)
-            CPOID:Hide()
-            newWidget.numberId = CPOID
+                local CPOID = DF:CreateLabel(newWidget, i, 12, "white", nil, nil, nil, "overlay")
+                CPOID:SetPoint("bottom", newWidget, "top", 0, 5)
+                CPOID:Hide()
+                newWidget.numberId = CPOID
+            end
         end
 
         return resourceBar
@@ -209,17 +213,19 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
         local resourceWidgetCreationFunc = Plater.Resources.GetCreateResourceWidgetFunctionForSpecId(CONST_SPECID_MONK_WINDWALKER)
         local newResourceBar = createResourceBar(mainResourceFrame, "$parentMonk2Resource", resourceWidgetCreationFunc) --windwalker chi
         mainResourceFrame.resourceBars[CONST_SPECID_MONK_WINDWALKER] = newResourceBar
-
         newResourceBar.resourceId = SPELL_POWER_CHI
-        newResourceBar.updateResourceFunc = resourceWidgetsFunctions.OnChiPointsChanged
+        newResourceBar.updateResourceFunc = resourceWidgetsFunctions.OnResourceChanged
         tinsert(mainResourceFrame.allResourceBars, newResourceBar)
+        
+        --stagger?
     end
 
     resourceByClass["MAGE"] = function(mainResourceFrame)
-        local newResourceBar = createResourceBar(mainResourceFrame, "$parentArcaneResource")
+        local resourceWidgetCreationFunc = Plater.Resources.GetCreateResourceWidgetFunctionForSpecId(CONST_SPECID_MAGE_ARCANE)
+        local newResourceBar = createResourceBar(mainResourceFrame, "$parentWarlockResource", resourceWidgetCreationFunc)
         mainResourceFrame.resourceBars[CONST_SPECID_MAGE_ARCANE] = newResourceBar
         newResourceBar.resourceId = SPELL_POWER_ARCANE_CHARGES
-        newResourceBar.updateResourceFunc = false
+        newResourceBar.updateResourceFunc = resourceWidgetsFunctions.OnResourceChanged
         tinsert(mainResourceFrame.allResourceBars, newResourceBar)
     end
 
@@ -241,30 +247,35 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
     resourceByClass["DRUID"] = resourceDruidAndRogue
 
     resourceByClass["WARLOCK"] = function(mainResourceFrame)
-        local newResourceBar = createResourceBar(mainResourceFrame, "$parentWarlockResource")
+        local resourceWidgetCreationFunc = Plater.Resources.GetCreateResourceWidgetFunctionForSpecId(CONST_SPECID_WARLOCK_AFFLICTION)
+        local newResourceBar = createResourceBar(mainResourceFrame, "$parentWarlockResource", resourceWidgetCreationFunc)
         mainResourceFrame.resourceBars[CONST_SPECID_WARLOCK_AFFLICTION] = newResourceBar
         mainResourceFrame.resourceBars[CONST_SPECID_WARLOCK_DEMONOLOGY] = newResourceBar
         mainResourceFrame.resourceBars[CONST_SPECID_WARLOCK_DESTRUCTION] = newResourceBar
         newResourceBar.resourceId = SPELL_POWER_SOUL_SHARDS
-        newResourceBar.updateResourceFunc = false
+        newResourceBar.updateResourceFunc = resourceWidgetsFunctions.OnSoulChardsChanged
         tinsert(mainResourceFrame.allResourceBars, newResourceBar)
     end
 
     resourceByClass["PALADIN"] = function(mainResourceFrame)
-        local newResourceBar = createResourceBar(mainResourceFrame, "$parentPaladinResource")
+        local resourceWidgetCreationFunc = Plater.Resources.GetCreateResourceWidgetFunctionForSpecId(CONST_SPECID_PALADIN_RETRIBUTION)
+        local newResourceBar = createResourceBar(mainResourceFrame, "$parentWarlockResource", resourceWidgetCreationFunc)
+        mainResourceFrame.resourceBars[CONST_SPECID_PALADIN_HOLY] = newResourceBar
+        mainResourceFrame.resourceBars[CONST_SPECID_PALADIN_PROTECTION] = newResourceBar
         mainResourceFrame.resourceBars[CONST_SPECID_PALADIN_RETRIBUTION] = newResourceBar
         newResourceBar.resourceId = SPELL_POWER_HOLY_POWER
-        newResourceBar.updateResourceFunc = false
+        newResourceBar.updateResourceFunc = resourceWidgetsFunctions.OnResourceChanged
         tinsert(mainResourceFrame.allResourceBars, newResourceBar)
     end
 
     resourceByClass["DEATHKNIGHT"] = function(mainResourceFrame)
-        local newResourceBar = createResourceBar(mainResourceFrame, "$parentDKResource")
+        local resourceWidgetCreationFunc = Plater.Resources.GetCreateResourceWidgetFunctionForSpecId(CONST_SPECID_DK_FROST)
+        local newResourceBar = createResourceBar(mainResourceFrame, "$parentWarlockResource", resourceWidgetCreationFunc)
         mainResourceFrame.resourceBars[CONST_SPECID_DK_UNHOLY] = newResourceBar
         mainResourceFrame.resourceBars[CONST_SPECID_DK_FROST] = newResourceBar
         mainResourceFrame.resourceBars[CONST_SPECID_DK_BLOOD] = newResourceBar
         newResourceBar.resourceId = SPELL_POWER_RUNES
-        newResourceBar.updateResourceFunc = false
+        newResourceBar.updateResourceFunc = resourceWidgetsFunctions.OnRunesChanged
         tinsert(mainResourceFrame.allResourceBars, newResourceBar)
     end
 
@@ -396,7 +407,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
                 local mainResourceFrame = Plater.Resources.GetMainResourceFrame()
                 Plater.ResourceFrame_EnableEvents()
                 Plater.Resources.UpdateMainResourceFrame(plateFrame)
-                retVal = Plater.Resources.UpdateResourceBar(plateFrame, mainResourceFrame.resourceBars [CONST_SPECID_ROGUE_OUTLAW])
+                retVal = Plater.Resources.UpdateResourceBar(plateFrame, mainResourceFrame.resourceBars [CONST_SPECID_ROGUE_OUTLAW]) --any spec would do
                 
                 Plater.EndLogPerformanceCore("Plater-Resources", "Update", "CanUsePlaterResourceFrame")
                 return retVal
@@ -430,7 +441,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
                     if (playerClass == "ROGUE") then
                         Plater.ResourceFrame_EnableEvents()
                         Plater.Resources.UpdateMainResourceFrame(plateFrame)
-                        retVal = Plater.Resources.UpdateResourceBar(plateFrame, mainResourceFrame.resourceBars [CONST_SPECID_ROGUE_OUTLAW])
+                        retVal = Plater.Resources.UpdateResourceBar(plateFrame, mainResourceFrame.resourceBars [CONST_SPECID_ROGUE_OUTLAW]) --any spec would do
                         
                         Plater.EndLogPerformanceCore("Plater-Resources", "Update", "CanUsePlaterResourceFrame")
                         return retVal
@@ -707,9 +718,10 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
 
 
 -- CLASS SPECIFIC UPDATE FUNCTIONS
-    function resourceWidgetsFunctions.OnChiPointsChanged(mainResourceFrame, resourceBar, forcedRefresh, event, unit, powerType)
+    --generic update
+    function resourceWidgetsFunctions.OnResourceChanged(mainResourceFrame, resourceBar, forcedRefresh, event, unit, powerType)
         
-        if (event == "UNIT_MAXPOWER") then
+        if (event == "UNIT_MAXPOWER" and DB_PLATER_RESOURCE_SHOW_DEPLETED) then
             Plater.Resources.UpdateResourcesFor_ShowDepleted(mainResourceFrame, resourceBar)
             forcedRefresh = true
         end
@@ -735,9 +747,10 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
         end
     end
 
+    --rogue/druid CP
     function resourceWidgetsFunctions.OnComboPointsChanged(mainResourceFrame, resourceBar, forcedRefresh, event, unit, powerType)
         
-        if (event == "UNIT_MAXPOWER") then
+        if (event == "UNIT_MAXPOWER" and DB_PLATER_RESOURCE_SHOW_DEPLETED) then
             Plater.Resources.UpdateResourcesFor_ShowDepleted(mainResourceFrame, resourceBar)
             forcedRefresh = true
         end
@@ -769,6 +782,64 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
         
         --amount of resources the player has now
         local currentResources = GetComboPoints("player", "target") --UnitPower("player", resourceBar.resourceId)
+
+        --resources amount got updated?
+        if (currentResources == resourceBar.lastResourceAmount and not forcedRefresh) then
+            return
+        end
+
+        --which update method to use
+        if (DB_PLATER_RESOURCE_SHOW_DEPLETED) then
+            return Plater.Resources.UpdateResources_WithDepleted(resourceBar, currentResources)
+        else
+            return Plater.Resources.UpdateResources_NoDepleted(resourceBar, currentResources)
+        end
+    end
+    
+    --DK runes update
+    function resourceWidgetsFunctions.OnRunesChanged(mainResourceFrame, resourceBar, forcedRefresh, event, unit, powerType)
+        
+        if (event == "UNIT_MAXPOWER" and DB_PLATER_RESOURCE_SHOW_DEPLETED) then
+            Plater.Resources.UpdateResourcesFor_ShowDepleted(mainResourceFrame, resourceBar)
+            forcedRefresh = true
+        end
+        
+        -- ensure to only update for proper power type or if forced
+        if not forcedRefresh and powerType and powerType ~= classPowerTypes[Plater.PlayerClass] then
+            return
+        end
+        
+        --amount of resources the player has now
+        local currentResources = UnitPower("player", resourceBar.resourceId)
+
+        --resources amount got updated?
+        if (currentResources == resourceBar.lastResourceAmount and not forcedRefresh) then
+            return
+        end
+
+        --which update method to use
+        if (DB_PLATER_RESOURCE_SHOW_DEPLETED) then
+            return Plater.Resources.UpdateResources_WithDepleted(resourceBar, currentResources)
+        else
+            return Plater.Resources.UpdateResources_NoDepleted(resourceBar, currentResources)
+        end
+    end
+    
+    --WL soul chards
+    function resourceWidgetsFunctions.OnSoulChardsChanged(mainResourceFrame, resourceBar, forcedRefresh, event, unit, powerType)
+        
+        if (event == "UNIT_MAXPOWER" and DB_PLATER_RESOURCE_SHOW_DEPLETED) then
+            Plater.Resources.UpdateResourcesFor_ShowDepleted(mainResourceFrame, resourceBar)
+            forcedRefresh = true
+        end
+        
+        -- ensure to only update for proper power type or if forced
+        if not forcedRefresh and powerType and powerType ~= classPowerTypes[Plater.PlayerClass] then
+            return
+        end
+        
+        --amount of resources the player has now
+        local currentResources = UnitPower("player", resourceBar.resourceId)
 
         --resources amount got updated?
         if (currentResources == resourceBar.lastResourceAmount and not forcedRefresh) then
