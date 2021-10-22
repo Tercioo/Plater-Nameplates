@@ -105,11 +105,55 @@ if IS_WOW_PROJECT_CLASSIC_ERA and LCD then
 	UnitAura = LCD.UnitAuraWithBuffs
 end
 
+local function CreatePlaterNamePlateAuraTooltip()
+	local tooltip = CreateFrame("GameTooltip", "PlaterNamePlateAuraTooltip", parent or UIParent, "GameTooltipTemplate")
+	
+	tooltip.ApplyOwnBackdrop = function(self)
+		self:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Buttons\WHITE8X8]], tileSize = 0, tile = false, tileEdge = true})
+		self:SetBackdropColor (0.05, 0.05, 0.05, 0.8)
+		self:SetBackdropBorderColor (0, 0, 0, 1)
+	end
+	
+	if tooltip.SetBackdrop then
+		return tooltip
+	end
+	
+	-- workarounds for 9.1.5
+	local nineSlice = tooltip.NineSlice or tooltip
+    Mixin(nineSlice, BackdropTemplateMixin)
+    nineSlice:SetScript("OnSizeChanged", nineSlice.OnSizeChanged)
+
+    nineSlice.backdropInfo = tooltip.backdropInfo
+    nineSlice.backdropColor = tooltip.backdropColor
+    nineSlice.backdropColorAlpha = tooltip.backdropColorAlpha
+    nineSlice.backdropBorderColor = tooltip.backdropBorderColor
+    nineSlice.backdropBorderColorAlpha = tooltip.backdropBorderColorAlpha
+    nineSlice.backdropBorderBlendMode = tooltip.backdropBorderBlendMode
+
+    nineSlice:OnBackdropLoaded()
+	
+	tooltip.SetBackdrop = function(self,...)
+		local nineSlice = self.NineSlice or self
+		nineSlice:SetBackdrop(...)
+	end
+	tooltip.SetBackdropColor = function(self,...)
+		local nineSlice = self.NineSlice or self
+		nineSlice:SetBackdropColor(...)
+	end
+	tooltip.SetBackdropBorderColor = function(self,...)
+		local nineSlice = self.NineSlice or self
+		nineSlice:SetBackdropBorderColor(...)
+	end
+	tooltip.ApplyBackdrop = function(self,...)
+		local nineSlice = self.NineSlice or self
+		nineSlice:ApplyBackdrop(...)
+	end
+	
+	return tooltip
+end
+
 local NamePlateTooltip = _G.NamePlateTooltip -- can be removed later
-local PlaterNamePlateAuraTooltip = CreateFrame("GameTooltip", "PlaterNamePlateAuraTooltip", UIParent, "GameTooltipTemplate")
---PlaterNamePlateAuraTooltip:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Buttons\WHITE8X8]], tileSize = 0, tile = false, tileEdge = true})
---PlaterNamePlateAuraTooltip:SetBackdropColor (0.05, 0.05, 0.05, 0.8)
---PlaterNamePlateAuraTooltip:SetBackdropBorderColor (0, 0, 0, 1)
+local PlaterNamePlateAuraTooltip = CreatePlaterNamePlateAuraTooltip()
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> aura buffs and debuffs ~aura ~buffs ~debuffs ~auras
@@ -118,6 +162,7 @@ local PlaterNamePlateAuraTooltip = CreateFrame("GameTooltip", "PlaterNamePlateAu
 	function Plater.OnEnterAura (iconFrame) --private
 		PlaterNamePlateAuraTooltip:SetOwner (iconFrame, "ANCHOR_LEFT")
 		PlaterNamePlateAuraTooltip:SetUnitAura (iconFrame:GetParent().unit, iconFrame:GetID(), iconFrame.filter)
+		PlaterNamePlateAuraTooltip:ApplyOwnBackdrop()
 		iconFrame.UpdateTooltip = Plater.OnEnterAura
 	end
 
