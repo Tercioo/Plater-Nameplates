@@ -540,7 +540,7 @@ PLATER_DEFAULT_SETTINGS = {
 
 		login_counter = 0,
 
-		--plater resources bar
+		--plater resources bar ~resources
 		plater_resources_show = false, --if the resource bar from plater is enabled
 		plater_resources_personal_bar = false, --if the resource bar shows in the personal bar intead of the current target
 		plater_resources_align = "horizontal", --combo points are horizontal alignment

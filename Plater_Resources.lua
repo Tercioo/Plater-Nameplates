@@ -32,6 +32,9 @@ local CONST_NUM_RESOURCES_WIDGETS = 10
 local CONST_WIDGET_WIDTH = 20
 local CONST_WIDGET_HEIGHT = 20
 
+--store the time of the last combo point gained in order to play the show animation when a combo point is awarded
+local lastComboPointGainedTime = 0
+
 --when 'runOnNextFrame' is used instead of 'C_Timer.After', it's to indicate the func will skip the current frame and run on the next one
 local runOnNextFrame = function(func)
     _G.C_Timer.After(0, func)
@@ -129,13 +132,23 @@ local resourcePowerType = {
 
 -- the power types which update functions should update on
 local classPowerTypes = {
-    ["ROGUE"] = 'COMBO_POINTS',
-    ["MONK"] = 'CHI',
-    ["PALADIN"] = 'HOLY_POWER',
-    ["WARLOCK"] = 'SOUL_SHARDS',
-    ["DRUID"] = 'COMBO_POINTS',
-    ["MAGE"] = 'ARCANE_CHARGES',
-    ["DEATHKNIGHT"] = 'RUNES',
+    ["ROGUE"] = "COMBO_POINTS",
+    ["MONK"] = "CHI",
+    ["PALADIN"] = "HOLY_POWER",
+    ["WARLOCK"] = "SOUL_SHARDS",
+    ["DRUID"] = "COMBO_POINTS",
+    ["MAGE"] = "ARCANE_CHARGES",
+    ["DEATHKNIGHT"] = "RUNES",
+}
+
+--these power types can active a combo point function
+local powerTypesFilter = {
+    ["COMBO_POINTS"] = true,
+    ["CHI"] = true,
+    ["HOLY_POWER"] = true,
+    ["SOUL_SHARDS"] = true,
+    ["ARCANE_CHARGES"] = true,
+    ["RUNES"] = true,
 }
 
 --cache
@@ -222,7 +235,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
 
     resourceByClass["MAGE"] = function(mainResourceFrame)
         local resourceWidgetCreationFunc = Plater.Resources.GetCreateResourceWidgetFunctionForSpecId(CONST_SPECID_MAGE_ARCANE)
-        local newResourceBar = createResourceBar(mainResourceFrame, "$parentWarlockResource", resourceWidgetCreationFunc)
+        local newResourceBar = createResourceBar(mainResourceFrame, "$parentArcaneMageResource", resourceWidgetCreationFunc)
         mainResourceFrame.resourceBars[CONST_SPECID_MAGE_ARCANE] = newResourceBar
         newResourceBar.resourceId = SPELL_POWER_ARCANE_CHARGES
         newResourceBar.updateResourceFunc = resourceWidgetsFunctions.OnResourceChanged
@@ -325,9 +338,13 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
             if (currentResourceBar) then
                 local updateResourceFunc = currentResourceBar.updateResourceFunc
                 if (updateResourceFunc) then
-                    Plater.StartLogPerformanceCore("Plater-Resources", "Events", event)
-                    updateResourceFunc(self, currentResourceBar, false, event, unit, powerType)
-                    Plater.EndLogPerformanceCore("Plater-Resources", "Events", event)
+                    --check if the power type passes the filter
+                    if (powerTypesFilter[powerType]) then
+                        lastComboPointGainedTime = GetTime()
+                        Plater.StartLogPerformanceCore("Plater-Resources", "Events", event)
+                        updateResourceFunc(self, currentResourceBar, false, event, unit, powerType)
+                        Plater.EndLogPerformanceCore("Plater-Resources", "Events", event)
+                    end
                 end
             end
         end)
@@ -339,12 +356,17 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
 
     function Plater.ResourceFrame_EnableEvents()
         local mainResourceFrame = Plater.Resources.GetMainResourceFrame()
-        if (not mainResourceFrame or mainResourceFrame.eventsEnabled) then return end
+        if (not mainResourceFrame or mainResourceFrame.eventsEnabled) then
+            return
+        end
+
         mainResourceFrame:RegisterUnitEvent("UNIT_POWER_FREQUENT", "player")
         mainResourceFrame:RegisterUnitEvent("UNIT_MAXPOWER", "player")
+
         if (IS_WOW_PROJECT_MAINLINE and Plater.PlayerClass == "ROGUE") then
             mainResourceFrame:RegisterUnitEvent("UNIT_POWER_POINT_CHARGE", "player")
         end
+
         mainResourceFrame.eventsEnabled = true
     end
 
@@ -365,7 +387,8 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
         local mainResourceFrame = Plater.Resources.GetMainResourceFrame()
         if (mainResourceFrame) then
             Plater.ResourceFrame_DisableEvents()
-            return mainResourceFrame:Hide()
+            mainResourceFrame:Hide()
+            return
         end
     end
 
@@ -382,7 +405,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
             --personal bar
             plateFrame = C_NamePlate.GetNamePlateForUnit("player")
         end
-        
+
         return plateFrame
     end
 
@@ -514,7 +537,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
         --hide all resourcebar widgets
         for i = 1, #resourceBar.widgets do
             resourceBar.widgets[i]:Hide()
-            resourceBar.widgets[i].numberId:SetShown(DB_PLATER_RESOURCE_SHOW_NUMBER)
+            resourceBar.widgets[i].numberId:SetShown(DB_PLATER_RESOURCE_SHOW_NUMBER) --numberId is a fontstring above the combo point showing the combo point number
         end
 
         --check if the bar already shown isn't the bar asking to be shown
@@ -546,7 +569,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
 --on this type, the location of each resource icon is precomputed
     function Plater.Resources.UpdateResourcesFor_ShowDepleted(mainResourceFrame, resourceBar)
         Plater.StartLogPerformanceCore("Plater-Resources", "Update", "UpdateResourcesFor_ShowDepleted")
-    
+
         --get the table with the widgets created
         local widgetTable = resourceBar.widgets
 
@@ -603,6 +626,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
                 else
                     resourceBar.widgetsBackground[i]:SetPoint("left", lastResourceWidget, "right", DB_PLATER_RESOURCE_PADDING, 0)
                     thisResourceWidget:SetPoint("left", lastResourceWidget, "right", DB_PLATER_RESOURCE_PADDING, 0)
+
                 end
 
                 --add the spacing into the total width occupied
@@ -655,7 +679,9 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
                 thisResouceBackground:Show()
 
                 thisResourceWidget.inUse = true
-                thisResourceWidget.ShowAnimation:Play()
+                if (lastComboPointGainedTime == GetTime()) then
+                    thisResourceWidget.ShowAnimation:Play()
+                end
                 thisResourceWidget:SetSize (widgetWidth, widgetHeight)
             end
 
@@ -689,14 +715,13 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
 
         --save the amount of resources
         resourceBar.lastResourceAmount = currentResources
-        
+
         Plater.EndLogPerformanceCore("Plater-Resources", "Update", "UpdateResources_NoDepleted")
     end
 
-
     function Plater.Resources.UpdateResources_WithDepleted(resourceBar, currentResources)
         Plater.StartLogPerformanceCore("Plater-Resources", "Update", "UpdateResources_WithDepleted")
-        
+
         --calculate how many widgets need to be shown or need to be hide
         if (currentResources < resourceBar.lastResourceAmount) then --hide widgets
             for i = resourceBar.lastResourceAmount, currentResources+1, -1 do
@@ -706,13 +731,14 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
         elseif (currentResources > resourceBar.lastResourceAmount) then --show widgets
             for i = resourceBar.lastResourceAmount + 1, currentResources do
                 resourceBar.widgets[i]:Show()
-                resourceBar.widgets[i].ShowAnimation:Play()
+                if (lastComboPointGainedTime == GetTime()) then
+                    resourceBar.widgets[i].ShowAnimation:Play()
+                end
             end
         end
 
         --save the amount of resources
         resourceBar.lastResourceAmount = currentResources
-        
         Plater.EndLogPerformanceCore("Plater-Resources", "Update", "UpdateResources_WithDepleted")
     end
 
@@ -720,7 +746,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
 -- CLASS SPECIFIC UPDATE FUNCTIONS
     --generic update
     function resourceWidgetsFunctions.OnResourceChanged(mainResourceFrame, resourceBar, forcedRefresh, event, unit, powerType)
-        
+
         if (event == "UNIT_MAXPOWER" and DB_PLATER_RESOURCE_SHOW_DEPLETED) then
             Plater.Resources.UpdateResourcesFor_ShowDepleted(mainResourceFrame, resourceBar)
             forcedRefresh = true
@@ -749,7 +775,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
 
     --rogue/druid CP
     function resourceWidgetsFunctions.OnComboPointsChanged(mainResourceFrame, resourceBar, forcedRefresh, event, unit, powerType)
-        
+
         if (event == "UNIT_MAXPOWER" and DB_PLATER_RESOURCE_SHOW_DEPLETED) then
             Plater.Resources.UpdateResourcesFor_ShowDepleted(mainResourceFrame, resourceBar)
             forcedRefresh = true
