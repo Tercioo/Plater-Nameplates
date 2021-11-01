@@ -485,47 +485,55 @@ function Plater.OpenOptionsPanel()
 						local paste = strtrim(table.concat(pasteBuffer))
 						
 						local wagoProfile = Plater.DecompressData (paste, "print")
-						if (wagoProfile and type (wagoProfile == "table") and wagoProfile.plate_config) then
-							
-							local existingProfileName = nil
-							local wagoInfoText = "Import data verified.\n\n"
-							if wagoProfile.url then
-								local impProfUrl = wagoProfile.url or ""
-								local impProfID = impProfUrl:match("wago.io/([^/]+)/([0-9]+)") or impProfUrl:match("wago.io/([^/]+)$")
-								local profiles = Plater.db.profiles
-								if impProfID then
-									for pName, pData in pairs(profiles) do
-										local pUrl = pData.url or ""
-										local id = pUrl:match("wago.io/([^/]+)/([0-9]+)") or pUrl:match("wago.io/([^/]+)$")
-										if id and impProfID == id then
-											existingProfileName = pName
-											break
-										end									
+						if (wagoProfile and type (wagoProfile == "table")) then
+							if  (wagoProfile.plate_config) then
+								local existingProfileName = nil
+								local wagoInfoText = "Import data verified.\n\n"
+								if wagoProfile.url then
+									local impProfUrl = wagoProfile.url or ""
+									local impProfID = impProfUrl:match("wago.io/([^/]+)/([0-9]+)") or impProfUrl:match("wago.io/([^/]+)$")
+									local profiles = Plater.db.profiles
+									if impProfID then
+										for pName, pData in pairs(profiles) do
+											local pUrl = pData.url or ""
+											local id = pUrl:match("wago.io/([^/]+)/([0-9]+)") or pUrl:match("wago.io/([^/]+)$")
+											if id and impProfID == id then
+												existingProfileName = pName
+												break
+											end									
+										end
 									end
+								
+									wagoInfoText = wagoInfoText .. "Extracted the following wago information from the profile data:\n"
+									wagoInfoText = wagoInfoText .. "  Local Profile Name: " .. (wagoProfile.profile_name or "N/A") .. "\n"
+									wagoInfoText = wagoInfoText .. "  Wago-Revision: " .. (wagoProfile.version or "-") .. "\n"
+									wagoInfoText = wagoInfoText .. "  Wago-Version: " .. (wagoProfile.semver or "-") .. "\n"
+									wagoInfoText = wagoInfoText .. "  Wago-URL: " .. (wagoProfile.url and (wagoProfile.url .. "\n") or "")
+									wagoInfoText = wagoInfoText .. (existingProfileName and ("\nThis profile already exists as: '" .. existingProfileName .. "' in your profiles.\n") or "")
+								else
+									wagoInfoText = "This profile does not contain any wago.io information.\n"
 								end
-							
-								wagoInfoText = wagoInfoText .. "Extracted the following wago information from the profile data:\n"
-								wagoInfoText = wagoInfoText .. "  Local Profile Name: " .. (wagoProfile.profile_name or "N/A") .. "\n"
-								wagoInfoText = wagoInfoText .. "  Wago-Revision: " .. (wagoProfile.version or "-") .. "\n"
-								wagoInfoText = wagoInfoText .. "  Wago-Version: " .. (wagoProfile.semver or "-") .. "\n"
-								wagoInfoText = wagoInfoText .. "  Wago-URL: " .. (wagoProfile.url and (wagoProfile.url .. "\n") or "")
-								wagoInfoText = wagoInfoText .. (existingProfileName and ("\nThis profile already exists as: '" .. existingProfileName .. "' in your profiles.\n") or "")
+								
+								wagoInfoText = wagoInfoText .. "\nYou may change the name below and click on '".. L["OPTIONS_OKAY"] .. "' to import the profile."
+								
+								editbox:SetText (wagoInfoText)
+								profilesFrame.ImportStringField.importDataText = paste
+								local curNewProfName = profilesFrame.NewProfileTextEntry:GetText()
+								if existingProfileName and curNewProfName and curNewProfName == "MyNewProfile" then
+									profilesFrame.NewProfileTextEntry:SetText(existingProfileName)
+								elseif wagoProfile.profile_name and wagoProfile.profile_name ~= "Default" and curNewProfName and curNewProfName == "MyNewProfile" then
+									profilesFrame.NewProfileTextEntry:SetText(wagoProfile.profile_name)
+								end
 							else
-								wagoInfoText = "This profile does not contain any wago.io information.\n"
-							end
-							
-							wagoInfoText = wagoInfoText .. "\nYou may change the name below and click on '".. L["OPTIONS_OKAY"] .. "' to import the profile."
-							
-							editbox:SetText (wagoInfoText)
-							profilesFrame.ImportStringField.importDataText = paste
-							local curNewProfName = profilesFrame.NewProfileTextEntry:GetText()
-							if existingProfileName and curNewProfName and curNewProfName == "MyNewProfile" then
-								profilesFrame.NewProfileTextEntry:SetText(existingProfileName)
-							elseif wagoProfile.profile_name and wagoProfile.profile_name ~= "Default" and curNewProfName and curNewProfName == "MyNewProfile" then
-								profilesFrame.NewProfileTextEntry:SetText(wagoProfile.profile_name)
+								local scriptType = Plater.GetDecodedScriptType (wagoProfile)
+								if (scriptType == "hook" or scriptType == "script") then
+									editbox:SetText (L["OPTIONS_PROFILE_ERROR_WRONGTAB"])
+								else
+									editbox:SetText (L["OPTIONS_PROFILE_ERROR_STRINGINVALID"])
+								end
 							end
 						else
-							editbox:SetText("Could not decompress the data... Try copying the import string again.")
+							editbox:SetText("Could not decompress the data. The text pasted does not appear to be a serialized Plater profile.\nTry copying the import string again.")
 						end
 						
 						editbox:ClearFocus()
