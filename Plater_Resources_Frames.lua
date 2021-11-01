@@ -310,110 +310,61 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         comboPointTexture.scale:SetToScale(1, 1)
         comboPointTexture.scale:SetOrigin("center", 0, 0)
 
-        ----------------------------------------------
+        --> test the animation
+        --MainAnimationGroup:Play()
 
-        --[=[
-        local rotatingSpark  = widgetFrame:CreateTexture("$parentrotatingSparkTexture", "BACKGROUND")
-        rotatingSpark:SetTexture([[Interface\PLAYERFRAME\MageArcaneCharges]])
-        rotatingSpark:SetDrawLayer("BACKGROUND", 1)
-        rotatingSpark:SetPoint("center", widgetFrame, "center", 0, -6)
-        rotatingSpark:SetSize(20, 20)
-        rotatingSpark:SetTexCoord(0.0010000000149012, 0.2252681350708, 0.047248387336731, 0.5467858505249)
-        rotatingSpark:SetBlendMode("ADD")
+        widgetFrame.ShowAnimation = MainAnimationGroup
+        return widgetFrame
+    end
 
-        --> animations for rotatingSpark
+    local paladinChargesFunc = function(parent, frameName)
 
-        rotatingSpark.alpha = MainAnimationGroup:CreateAnimation("ALPHA")
-        rotatingSpark.alpha:SetTarget(rotatingSpark)
-        rotatingSpark.alpha:SetOrder(1)
-        rotatingSpark.alpha:SetDuration(0.016000000759959)
-        rotatingSpark.alpha:SetFromAlpha(0)
-        rotatingSpark.alpha:SetToAlpha(0)
-        rotatingSpark.rotation = MainAnimationGroup:CreateAnimation("ROTATION")
-        rotatingSpark.rotation:SetTarget(rotatingSpark)
-        rotatingSpark.rotation:SetOrder(3)
-        rotatingSpark.rotation:SetDuration(10)
-        rotatingSpark.rotation:SetDegrees(360)
-        rotatingSpark.rotation:SetOrigin("center", 0, 0)
-        rotatingSpark.alpha1 = MainAnimationGroup:CreateAnimation("ALPHA")
-        rotatingSpark.alpha1:SetTarget(rotatingSpark)
-        rotatingSpark.alpha1:SetOrder(3)
-        rotatingSpark.alpha1:SetDuration(4.9959998130798)
-        rotatingSpark.alpha1:SetFromAlpha(0.099999994039536)
-        rotatingSpark.alpha1:SetToAlpha(0.19999998807907)
-        rotatingSpark.alpha2 = MainAnimationGroup:CreateAnimation("ALPHA")
-        rotatingSpark.alpha2:SetTarget(rotatingSpark)
-        rotatingSpark.alpha2:SetOrder(3)
-        rotatingSpark.alpha2:SetDuration(4.9959998130798)
-        rotatingSpark.alpha2:SetStartDelay(5)
-        rotatingSpark.alpha2:SetFromAlpha(0.19999998807907)
-        rotatingSpark.alpha2:SetToAlpha(0.099999994039536)
-        --]=]
+        --> create the main frame
+        local widgetFrame = CreateFrame("frame", frameName, parent)
 
-        ----------------------------------------------
-        --[=[
-        local pinkRotatingSpark  = widgetFrame:CreateTexture("$parentpinkRotatingSparkTexture", "ARTWORK")
-        pinkRotatingSpark:SetTexture([[Interface\PLAYERFRAME\MageArcaneCharges]])
-        pinkRotatingSpark:SetDrawLayer("ARTWORK", -1)
-        pinkRotatingSpark:SetPoint("center", widgetFrame, "center", 0, 0)
-        pinkRotatingSpark:SetSize(20, 20)
-        pinkRotatingSpark:SetVertexColor(0.99999779462814, 0.99999779462814, 0.99999779462814, 0.39999911189079)
-        pinkRotatingSpark:SetTexCoord(0.39799999237061, 0.55700000762939, 0.17, 0.425)
-        pinkRotatingSpark:SetBlendMode("ADD")
-        pinkRotatingSpark:SetAlpha(0.40000003576279)
+        --> create background
+        local backgroundTexture = widgetFrame:CreateTexture("$parentbackgroundTexture", "BACKGROUND")
+        backgroundTexture:SetTexture([[Interface\AddOns\Plater\images\paladin_combo_point_deactive]])
+        backgroundTexture:SetDrawLayer("BACKGROUND", 0)
+        backgroundTexture:SetPoint("center", widgetFrame, "center", 0, 0)
+        backgroundTexture:SetSize(20, 20)
+        backgroundTexture:SetDesaturated(true)
+        backgroundTexture:SetTexCoord(0, 1, 0, 1)
+        widgetFrame.background = backgroundTexture
+        parent.widgetsBackground[#parent.widgetsBackground + 1] = backgroundTexture
 
-        --> animations for pinkRotatingSpark
+        --> single animation group
+        local MainAnimationGroup = widgetFrame:CreateAnimationGroup("widgetFrameAnimationGroup")
+        MainAnimationGroup:SetLooping("NONE")
+        MainAnimationGroup:SetToFinalAlpha(true)
 
-        pinkRotatingSpark.alpha1 = MainAnimationGroup:CreateAnimation("ALPHA")
-        pinkRotatingSpark.alpha1:SetTarget(pinkRotatingSpark)
-        pinkRotatingSpark.alpha1:SetOrder(1)
-        pinkRotatingSpark.alpha1:SetDuration(0.016000000759959)
-        pinkRotatingSpark.alpha1:SetFromAlpha(0)
-        pinkRotatingSpark.alpha1:SetToAlpha(0)
-        pinkRotatingSpark.alpha2 = MainAnimationGroup:CreateAnimation("ALPHA")
-        pinkRotatingSpark.alpha2:SetTarget(pinkRotatingSpark)
-        pinkRotatingSpark.alpha2:SetOrder(3)
-        pinkRotatingSpark.alpha2:SetDuration(0.99599993228912)
-        pinkRotatingSpark.alpha2:SetFromAlpha(0)
-        pinkRotatingSpark.alpha2:SetToAlpha(0.23999999463558)
-        pinkRotatingSpark.scale1 = MainAnimationGroup:CreateAnimation("SCALE")
-        pinkRotatingSpark.scale1:SetTarget(pinkRotatingSpark)
-        pinkRotatingSpark.scale1:SetOrder(3)
-        pinkRotatingSpark.scale1:SetDuration(2.9960000514984)
-        pinkRotatingSpark.scale1:SetFromScale(0.5, 0.5)
-        pinkRotatingSpark.scale1:SetToScale(1.1999999284744, 1.1999999284744)
-        pinkRotatingSpark.scale1:SetOrigin("center", 0, 0)
-        pinkRotatingSpark.scale2 = MainAnimationGroup:CreateAnimation("SCALE")
-        pinkRotatingSpark.scale2:SetTarget(pinkRotatingSpark)
-        pinkRotatingSpark.scale2:SetOrder(3)
-        pinkRotatingSpark.scale2:SetDuration(1.9959999322891)
-        pinkRotatingSpark.scale2:SetStartDelay(3)
-        pinkRotatingSpark.scale2:SetFromScale(1.1999999284744, 1.1999999284744)
-        pinkRotatingSpark.scale2:SetToScale(0.69999998807907, 0.69999998807907)
-        pinkRotatingSpark.scale2:SetOrigin("center", 0, 0)
-        pinkRotatingSpark.scale3 = MainAnimationGroup:CreateAnimation("SCALE")
-        pinkRotatingSpark.scale3:SetTarget(pinkRotatingSpark)
-        pinkRotatingSpark.scale3:SetOrder(3)
-        pinkRotatingSpark.scale3:SetDuration(2.9960000514984)
-        pinkRotatingSpark.scale3:SetStartDelay(5)
-        pinkRotatingSpark.scale3:SetFromScale(0.79999995231628, 0.79999995231628)
-        pinkRotatingSpark.scale3:SetToScale(1.1000000238419, 1.1000000238419)
-        pinkRotatingSpark.scale3:SetOrigin("center", 0, 0)
-        pinkRotatingSpark.scale4 = MainAnimationGroup:CreateAnimation("SCALE")
-        pinkRotatingSpark.scale4:SetTarget(pinkRotatingSpark)
-        pinkRotatingSpark.scale4:SetOrder(3)
-        pinkRotatingSpark.scale4:SetDuration(1.9959999322891)
-        pinkRotatingSpark.scale4:SetStartDelay(8)
-        pinkRotatingSpark.scale4:SetFromScale(1.1000000238419, 1.1000000238419)
-        pinkRotatingSpark.scale4:SetToScale(0.5, 0.5)
-        pinkRotatingSpark.scale4:SetOrigin("center", 0, 0)
-        pinkRotatingSpark.rotation1 = MainAnimationGroup:CreateAnimation("ROTATION")
-        pinkRotatingSpark.rotation1:SetTarget(pinkRotatingSpark)
-        pinkRotatingSpark.rotation1:SetOrder(3)
-        pinkRotatingSpark.rotation1:SetDuration(10)
-        pinkRotatingSpark.rotation1:SetDegrees(248)
-        pinkRotatingSpark.rotation1:SetOrigin("center", 0, 0)
-        --]=]
+        widgetFrame:SetScript("OnHide", function()
+            MainAnimationGroup:Stop()
+        end)
+
+        local comboPointOn  = widgetFrame:CreateTexture("$parentcomboPointOnTexture", "ARTWORK")
+        comboPointOn:SetTexture([[Interface\AddOns\Plater\images\paladin_combo_point_active]])
+        comboPointOn:SetDrawLayer("ARTWORK", 0)
+        comboPointOn:SetPoint("center", widgetFrame, "center", 0, 0)
+        comboPointOn:SetSize(20, 20)
+        comboPointOn:SetTexCoord(0, 1, 0, 1)
+
+        --> animations for comboPointOn
+
+        comboPointOn.scale = MainAnimationGroup:CreateAnimation("SCALE")
+        comboPointOn.scale:SetTarget(comboPointOn)
+        comboPointOn.scale:SetOrder(1)
+        comboPointOn.scale:SetDuration(0.096000000834465)
+        comboPointOn.scale:SetFromScale(0.44999998807907, 0.59999996423721)
+        comboPointOn.scale:SetToScale(1, 1)
+        comboPointOn.scale:SetOrigin("center", 0, 0)
+        comboPointOn.scale2 = MainAnimationGroup:CreateAnimation("SCALE")
+        comboPointOn.scale2:SetTarget(comboPointOn)
+        comboPointOn.scale2:SetOrder(2)
+        comboPointOn.scale2:SetDuration(0.056000001728535)
+        comboPointOn.scale2:SetFromScale(1.0951955318451, 1.0951955318451)
+        comboPointOn.scale2:SetToScale(1, 1)
+        comboPointOn.scale2:SetOrigin("center", 0, 0)
 
         --> test the animation
         --MainAnimationGroup:Play()
@@ -427,3 +378,6 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
     resourceCreationFunctions[CONST_SPECID_ROGUE_OUTLAW] = comboPointFunc
     resourceCreationFunctions[CONST_SPECID_ROGUE_SUBTLETY] = comboPointFunc
     resourceCreationFunctions[CONST_SPECID_MAGE_ARCANE] = arcaneChargesFunc
+    resourceCreationFunctions[CONST_SPECID_PALADIN_HOLY] = paladinChargesFunc
+    resourceCreationFunctions[CONST_SPECID_PALADIN_PROTECTION] = paladinChargesFunc
+    resourceCreationFunctions[CONST_SPECID_PALADIN_RETRIBUTION] = paladinChargesFunc

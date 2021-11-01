@@ -698,6 +698,37 @@ do
 			end
 		end
 	})
+
+	--#18 9.1.5 spell trigger additions
+	tinsert (PlaterPatchLibrary, {
+		Notes = {
+			"- Added Wing Buffet spell to frontal cone script."
+		},
+		Func = function()
+			--scripts
+			local scriptData = Plater.db.profile.script_data
+			for i = 1, #scriptData do
+				local script = scriptData[i]
+				if (script.Name == "Cast - Frontal Cone [Plater]") then
+					--add Wing Buffet spell from Plagueroc on Plaguefall
+					script.SpellIds[#script.SpellIds+1] = 330403
+					break
+
+				elseif (script.Name == "Cast - Big Alert [Plater]") then
+					--add Creepy Crawlers spell from Decaying Flesh Giant
+					script.SpellIds[#script.SpellIds+1] = 329239
+					--Stealthlings
+					script.SpellIds[#script.SpellIds+1] = 328400
+
+				elseif (script.Name == "Cast - Small Alert [Plater]") then
+					--Gripping Infection
+					script.SpellIds[#script.SpellIds+1] = 328180
+					--Vile Spit
+					script.SpellIds[#script.SpellIds+1] = 319898
+				end
+			end
+		end
+	})
 end
 
 
