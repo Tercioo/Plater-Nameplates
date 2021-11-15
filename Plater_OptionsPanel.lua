@@ -439,7 +439,7 @@ function Plater.OpenOptionsPanel()
 					
 					--retain npc_cache for set npc_colors
 					for npcID, _ in pairs (Plater.db.profile.npc_colors) do
-						Plater.db.profile.npc_cache = npc_cache [npcID]
+						Plater.db.profile.npc_cache [npcID] = npc_cache [npcID]
 					end
 					
 					--save mod/script editing
