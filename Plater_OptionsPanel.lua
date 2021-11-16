@@ -432,13 +432,18 @@ function Plater.OpenOptionsPanel()
 					--do not export cache data, these data can be rebuild at run time
 					local captured_spells = Plater.db.profile.captured_spells
 					local aura_cache_by_name = Plater.db.profile.aura_cache_by_name
-					local captured_casts = Plater.db.profile.captured_casts
+					local captured_casts = Plater.db.profile.captured_casts -- ? local DB ?
 					local npc_cache = Plater.db.profile.npc_cache
 
 					Plater.db.profile.captured_spells = {}
 					Plater.db.profile.aura_cache_by_name = {}
 					Plater.db.profile.captured_casts = {}
 					Plater.db.profile.npc_cache = {}
+					
+					--retain npc_cache for set npc_colors
+					for npcID, _ in pairs (Plater.db.profile.npc_colors) do
+						Plater.db.profile.npc_cache [npcID] = npc_cache [npcID]
+					end
 					
 					--save mod/script editing
 					local hookFrame = mainFrame.AllFrames [7]
