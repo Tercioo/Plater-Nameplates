@@ -551,6 +551,11 @@ PLATER_DEFAULT_SETTINGS = {
 		plater_resources_scale = 0.8,
 		plater_resources_padding = 2,
 
+		resources_settings = {
+			chr = {}, --store which resource model is used on each character
+
+		},
+
 		spell_prediction = { --not being used at the moment
 			enabled = false,
 			castbar_height = 12,
