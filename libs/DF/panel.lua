@@ -8410,7 +8410,7 @@ DF.CastFrameFunctions = {
 			self:SetAlpha (1)
 			self.Icon:SetTexture (texture)
 			self.Icon:Show()
-			self.Text:SetText (text)
+			self.Text:SetText (text or name)
 			
 			if (self.Settings.ShowCastTime and self.Settings.CanLazyTick) then
 				self.percentText:Show()

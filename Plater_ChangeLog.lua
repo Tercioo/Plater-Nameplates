@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1634909555,  "Backend Change", "November 17th, 2021", "Fixing missing cast name in classic era.", "cont1nuity"},
 			{1634909555,  "Backend Change", "November 15th, 2021", "NPC-Cache entries will be kept on profile export if NPC-Colors are assigned.", "cont1nuity"},
 			
 			{1634909553,  "Backend Change", "October 31st, 2021", "TOC update for 9.1.5.", "cont1nuity"},
