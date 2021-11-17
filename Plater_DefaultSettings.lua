@@ -541,19 +541,40 @@ PLATER_DEFAULT_SETTINGS = {
 		login_counter = 0,
 
 		--plater resources bar ~resources
-		plater_resources_show = false, --if the resource bar from plater is enabled
-		plater_resources_personal_bar = false, --if the resource bar shows in the personal bar intead of the current target
-		plater_resources_align = "horizontal", --combo points are horizontal alignment
-		plater_resources_grow_direction = "center",
-		plater_resources_show_depleted = true,
-		plater_resources_show_number = false,
-		plater_resources_anchor = {side = 8, x = 0, y = 40},
-		plater_resources_scale = 0.8,
-		plater_resources_padding = 2,
-
 		resources_settings = {
 			chr = {}, --store which resource model is used on each character
+			global_settings = {
+				show = false, --if the resource bar from plater is enabled
+				personal_bar = false, --if the resource bar shows in the personal bar intead of the current target
+				align = "horizontal", --combo points are horizontal alignment
+				grow_direction = "center",
+				show_depleted = true,
+				show_number = false,
+				anchor = {side = 8, x = 0, y = 40},
+				scale = 0.8,
+				padding = 2,
+			},
+			resource_options = {
+				--names below are from Enum.PowerType[<resource name>]
+				["ComboPoints"] = {
 
+				},
+				["HolyPower"] = {
+
+				},
+				["Runes"] = {
+
+				},
+				["SoulShards"] = {
+
+				},
+				["Chi"] = {
+
+				},
+				["ArcaneCharges"] =  {
+
+				},
+			},
 		},
 
 		spell_prediction = { --not being used at the moment

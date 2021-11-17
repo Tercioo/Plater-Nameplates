@@ -9,6 +9,9 @@ local abs = _G.abs
 
 local hookbox_label_y = -130
 
+local CONST_GLOBALSETTINGS_X = 240
+local CONST_GLOBALSETTINGS_Y = hookbox_label_y
+
 local CONST_SCROLLBOX_WIDTH = 200
 local CONST_SCROLLBOX_HEIGHT = 495
 local CONST_SCROLLBOX_LINES = 20
@@ -22,25 +25,69 @@ local CONST_OPTIONSFRAME_WIDTH = 864
 
 local CONST_ENUMNAME_COMBOPOINT = "ComboPoints"
 local CONST_ENUMNAME_HOLYPOWER = "HolyPower"
+local CONST_ENUMNAME_RUNES = "Runes"
+local CONST_ENUMNAME_ARCANECHARGES = "ArcaneCharges"
+local CONST_ENUMNAME_CHI = "Chi"
+local CONST_ENUMNAME_SOULCHARGES = "SoulShards"
 
-function Plater.Resources.BuildResourceOptionsTab(frame)
 
-    local playerSerial = UnitGUID("player")
+--templates
+local options_text_template = DF:GetTemplate("font", "OPTIONS_FONT_TEMPLATE")
+local options_dropdown_template = DF:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE")
+local options_switch_template = DF:GetTemplate("switch", "OPTIONS_CHECKBOX_TEMPLATE")
+local options_slider_template = DF:GetTemplate("slider", "OPTIONS_SLIDER_TEMPLATE")
+local options_button_template = DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE")
+
+--localization
+local L = LibStub ("AceLocale-3.0"):GetLocale ("PlaterNameplates", true)
+
+function Plater.Resources.GetResourceEnumNameForPlayer()
+    local playerSerial = Plater.PlayerGUID
     local playerClassLoc, playerClass = UnitClass("player")
 
     if (not Plater.db.profile.resources_settings.chr[playerSerial]) then
-        if (playerClass == "ROGUE") then
+        if (playerClass == "ROGUE" or playerClass == "DRUID") then
             Plater.db.profile.resources_settings.chr[playerSerial] = CONST_ENUMNAME_COMBOPOINT
+            return CONST_ENUMNAME_COMBOPOINT
+
+        elseif (playerClass == "WARLOCK") then
+            Plater.db.profile.resources_settings.chr[playerSerial] = CONST_ENUMNAME_SOULCHARGES
+            return CONST_ENUMNAME_SOULCHARGES
+
+        elseif (playerClass == "MONK") then
+            Plater.db.profile.resources_settings.chr[playerSerial] = CONST_ENUMNAME_CHI
+            return CONST_ENUMNAME_CHI
+
+        elseif (playerClass == "MAGE") then
+            Plater.db.profile.resources_settings.chr[playerSerial] = CONST_ENUMNAME_ARCANECHARGES
+            return CONST_ENUMNAME_ARCANECHARGES
+
+        elseif (playerClass == "DEATHKNIGHT") then
+            Plater.db.profile.resources_settings.chr[playerSerial] = CONST_ENUMNAME_RUNES
+            return CONST_ENUMNAME_RUNES
 
         elseif (playerClass == "PALADIN") then
             Plater.db.profile.resources_settings.chr[playerSerial] = CONST_ENUMNAME_HOLYPOWER
+            return CONST_ENUMNAME_HOLYPOWER
         end
     end
 
+    return Plater.db.profile.resources_settings.chr[playerSerial]
+end
+
+function Plater.Resources.BuildResourceOptionsTab(frame)
+
+    --if there's no default resource name for this character yet, calling this will set a default
+    Plater.Resources.GetResourceEnumNameForPlayer()
+
     --left menu
-    local resourceDisplaysAvailable = {
+    local resourceDisplaysAvailable = { --name should be able to get from the client
         {name = "Combo Point", defaultClass = {"DRUID", "ROGUE"}, enumName = CONST_ENUMNAME_COMBOPOINT, iconTexture = false, iconAtlas = "ClassOverlay-ComboPoint"}, --4
         {name = "Holy Power", defaultClass = {"PALADIN"}, enumName = CONST_ENUMNAME_HOLYPOWER, iconTexture = [[Interface\PLAYERFRAME\ClassOverlayHolyPower]], iconCoords = {0.530999, 0.6619999, 0.01600000, 0.3479999}}, --9
+        {name = "Runes", defaultClass = {"DEATHKNIGHT"}, enumName = CONST_ENUMNAME_RUNES, iconTexture = [[Interface\PLAYERFRAME\UI-PlayerFrame-Deathknight-SingleRune]], iconCoords = {0, 1, 0, 1}}, --5
+        {name = "Arcane Charges", defaultClass = {"MAGE"}, enumName = CONST_ENUMNAME_ARCANECHARGES, iconTexture = [[Interface\PLAYERFRAME\MageArcaneCharges]], iconCoords = {64/256, 91/256, 64/128, 91/128}}, --16
+        {name = "Chi", defaultClass = {"MONK"}, enumName = CONST_ENUMNAME_CHI, iconTexture = [[Interface\PLAYERFRAME\MonkLightPower]], iconCoords = {0.1, .9, 0.1, .9}}, --12
+        {name = "Soul Shards", defaultClass = {"WARLOCK"}, enumName = CONST_ENUMNAME_SOULCHARGES, iconTexture = [[Interface\PLAYERFRAME\UI-WARLOCKSHARD]], iconCoords = {0/64, 18/64, 0/128, 18/128}}, --7
     }
 
     local refreshResourceScrollBox = function(self, data, offset, totalLines)
@@ -49,7 +96,7 @@ function Plater.Resources.BuildResourceOptionsTab(frame)
 
 			local resource = data[index]
 			if (resource) then
-                local isSelected = Plater.db.profile.resources_settings.chr[playerSerial] == resource.enumName
+                local isSelected = Plater.db.profile.resources_settings.chr[Plater.PlayerGUID] == resource.enumName
 				local line = self:GetLine(i)
 
                 line.resource = resource
@@ -83,6 +130,9 @@ function Plater.Resources.BuildResourceOptionsTab(frame)
     selectResourceScrollBox:SetPoint("topleft", frame, "topleft", 5, hookbox_label_y)
     frame.selectResourceScrollBox = selectResourceScrollBox
 
+    local selectResourceLabel = DF:CreateLabel(frame, "Select which resource to use on this character:", 12, "orange")
+    selectResourceLabel:SetPoint("bottomleft", selectResourceScrollBox, "topleft", 0, 4)
+
     local onEnterResourceLine = function(self)
         if (not self.isSelected) then
             self:SetBackdropColor(unpack(CONST_SCROLLBOX_LINE_BACKDROP_COLOR_HOVER))
@@ -102,8 +152,9 @@ function Plater.Resources.BuildResourceOptionsTab(frame)
     local toggleResource = function(self)
         local line = self:GetParent()
         local resource = line.resource
-        Plater.db.profile.resources_settings.chr[playerSerial] = resource.enumName
+        Plater.db.profile.resources_settings.chr[Plater.PlayerGUID] = resource.enumName
         selectResourceScrollBox:Refresh()
+        Plater.Resources.UpdateResourceFrameToUse()
     end
 
     local resourceListCreateLine = function(self, index)
@@ -152,4 +203,197 @@ function Plater.Resources.BuildResourceOptionsTab(frame)
     optionsFrame:SetPoint("bottomleft", selectResourceScrollBox, "bottomright", 26, 0)
     DF:ApplyStandardBackdrop(optionsFrame)
 
+	--anchor table
+	local anchor_names = {
+		L["OPTIONS_ANCHOR_TOPLEFT"],
+		L["OPTIONS_ANCHOR_LEFT"],
+		L["OPTIONS_ANCHOR_BOTTOMLEFT"],
+		L["OPTIONS_ANCHOR_BOTTOM"],
+		L["OPTIONS_ANCHOR_BOTTOMRIGHT"],
+		L["OPTIONS_ANCHOR_RIGHT"],
+		L["OPTIONS_ANCHOR_TOPRIGHT"],
+		L["OPTIONS_ANCHOR_TOP"],
+		L["OPTIONS_ANCHOR_CENTER"],
+		L["OPTIONS_ANCHOR_INNERLEFT"],
+		L["OPTIONS_ANCHOR_INNERRIGHT"],
+		L["OPTIONS_ANCHOR_INNERTOP"],
+		L["OPTIONS_ANCHOR_INNERBOTTOM"],
+	}
+
+	local build_anchor_side_table = function(member1, member2)
+		local t = {}
+		for i = 1, 13 do
+			tinsert(t, {
+				label = anchor_names[i],
+				value = i,
+				onclick = function(_, _, value)
+					Plater.db.profile.resources_settings[member1][member2].side = value
+					Plater.RefreshDBUpvalues()
+					Plater.UpdateAllPlates()
+					Plater.UpdateAllNames()
+				end
+                }
+            )
+		end
+		return t
+	end
+
+    --[=[
+        -show = false, --if the resource bar from plater is enabled
+        -personal_bar = false, --if the resource bar shows in the personal bar intead of the current target
+        align = "horizontal", --combo points are horizontal alignment
+        grow_direction = "center",
+        -show_depleted = true,
+        -show_number = false,
+        -anchor = {side = 8, x = 0, y = 40},
+        -scale = 0.8,
+        -padding = 2,
+    --]=]
+
+    local globalResourceOptions = {
+        {type = "label", get = function() return "Global Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        --use plater resources
+        {
+            type = "toggle",
+            get = function() return Plater.db.profile.resources_settings.global_settings.show end,
+            set = function (self, fixedparam, value)
+                Plater.db.profile.resources_settings.global_settings.show = value
+                Plater.UpdateAllPlates()
+            end,
+            name = "Use Plater Rsources",
+            desc = "Use Plater Rsources",
+        },
+
+        --show on personal bar
+        {
+            type = "toggle",
+            get = function() return Plater.db.profile.resources_settings.global_settings.personal_bar end,
+            set = function (self, fixedparam, value)
+                Plater.db.profile.resources_settings.global_settings.personal_bar = value
+                Plater.UpdateAllPlates()
+            end,
+            name = "Show On Personal Bar",
+            desc = "Show On Personal Bar",
+        },
+
+        --show on personal bar
+        {
+            type = "toggle",
+            get = function() return Plater.db.profile.resources_settings.global_settings.personal_bar end,
+            set = function (self, fixedparam, value)
+                Plater.db.profile.resources_settings.global_settings.personal_bar = value
+                Plater.UpdateAllPlates()
+            end,
+            name = "Show On Personal Bar",
+            desc = "Show On Personal Bar",
+        },
+
+        --alignment (is this implemented?)
+
+        --grow direction (is this implemented?)
+
+
+        --show depleted
+        {
+            type = "toggle",
+            get = function() return Plater.db.profile.resources_settings.global_settings.show_depleted end,
+            set = function (self, fixedparam, value)
+                Plater.db.profile.resources_settings.global_settings.show_depleted = value
+                Plater.UpdateAllPlates()
+            end,
+            name = "Show Background",
+            desc = "Show Background",
+        },
+        --show resource number
+        {
+            type = "toggle",
+            get = function() return Plater.db.profile.resources_settings.global_settings.show_number end,
+            set = function (self, fixedparam, value)
+                Plater.db.profile.resources_settings.global_settings.show_number = value
+                Plater.UpdateAllPlates()
+            end,
+            name = "Show Amount",
+            desc = "Show Amount",
+        },
+
+        --anchor
+		{
+			type = "select",
+			get = function() return Plater.db.profile.resources_settings.global_settings.anchor.side end,
+			values = function() return build_anchor_side_table("global_settings", "anchor") end,
+			name = L["OPTIONS_ANCHOR"],
+			desc = "Which side of the nameplate this widget is attach to.",
+		},
+		--anchor x offset
+		{
+			type = "range",
+			get = function() return Plater.db.profile.resources_settings.global_settings.anchor.x end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.resources_settings.global_settings.anchor.x = value
+				Plater.UpdateAllPlates()
+			end,
+			min = -100,
+			max = 100,
+			step = 1,
+			usedecimals = true,
+			name = L["OPTIONS_XOFFSET"],
+			desc = "Slightly move horizontally.",
+		},
+		--anchor y offset
+		{
+			type = "range",
+			get = function() return Plater.db.profile.resources_settings.global_settings.anchor.y end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.resources_settings.global_settings.anchor.y = value
+				Plater.UpdateAllPlates()
+			end,
+			min = -100,
+			max = 100,
+			step = 1,
+			usedecimals = true,
+			name = L["OPTIONS_YOFFSET"],
+			desc = "Slightly move vertically.",
+		},
+
+        --scale
+		{
+			type = "range",
+			get = function() return Plater.db.profile.resources_settings.global_settings.scale end,
+			set = function (self, fixedparam, value)
+				Plater.db.profile.resources_settings.global_settings.scale = value
+                --call update on the resource bar
+				Plater.UpdateAllPlates()
+			end,
+			min = 0.6,
+			max = 2,
+			step = 0.1,
+			usedecimals = true,
+			name = "Scale",
+			desc = "Scale",
+		},
+        --padding
+		{
+			type = "range",
+			get = function() return Plater.db.profile.resources_settings.global_settings.padding end,
+			set = function (self, fixedparam, value)
+				Plater.db.profile.resources_settings.global_settings.padding = value
+                --call update on the resource bar
+				Plater.UpdateAllPlates()
+			end,
+			min = -10,
+			max = 10,
+			step = 1,
+			name = "Padding",
+			desc = "Padding",
+		},
+    }
+
+    local optionChangedCallback = function()
+        Plater.Resources.RefreshResourcesDBUpvalues()
+        Plater.Resources.UpdateResourceFrameToUse()
+    end
+
+	_G.C_Timer.After(1.4, function()
+		DF:BuildMenu(optionsFrame, globalResourceOptions, 5, -5, CONST_SCROLLBOX_HEIGHT, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, optionChangedCallback)
+	end)
 end

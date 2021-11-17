@@ -151,6 +151,13 @@ local powerTypesFilter = {
     ["RUNES"] = true,
 }
 
+local CONST_ENUMNAME_COMBOPOINT = "ComboPoints"
+local CONST_ENUMNAME_HOLYPOWER = "HolyPower"
+local CONST_ENUMNAME_RUNES = "Runes"
+local CONST_ENUMNAME_ARCANECHARGES = "ArcaneCharges"
+local CONST_ENUMNAME_CHI = "Chi"
+local CONST_ENUMNAME_SOULCHARGES = "SoulShards"
+
 --cache
 local DB_USE_PLATER_RESOURCE_BAR = false
 local DB_PLATER_RESOURCE_BAR_ON_PERSONAL = false
@@ -170,15 +177,18 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
     function Plater.Resources.RefreshResourcesDBUpvalues()
         local profile = Plater.db.profile
 
-        DB_USE_PLATER_RESOURCE_BAR = profile.plater_resources_show
-        DB_PLATER_RESOURCE_BAR_ON_PERSONAL = profile.plater_resources_personal_bar
-        DB_PLATER_RESOURCE_BAR_ANCHOR = profile.plater_resources_anchor
-        --DB_PLATER_RESOURCE_BAR_HEIGHT = profile.plater_resource_width
-        DB_PLATER_RESOURCE_BAR_SCALE = profile.plater_resources_scale
-        DB_PLATER_RESOURCE_PADDING = profile.plater_resources_padding
-        DB_PLATER_RESOURCE_GROW_DIRECTON = profile.plater_resources_grow_direction
-        DB_PLATER_RESOURCE_SHOW_DEPLETED = profile.plater_resources_show_depleted
-        DB_PLATER_RESOURCE_SHOW_NUMBER = profile.plater_resources_show_number
+        --resourceGlobalSettings: where options for all resources are stored
+        local resourceGlobalSettings = profile.resources_settings.global_settings
+
+        DB_USE_PLATER_RESOURCE_BAR = resourceGlobalSettings.show
+        DB_PLATER_RESOURCE_BAR_ON_PERSONAL = resourceGlobalSettings.personal_bar
+        DB_PLATER_RESOURCE_BAR_ANCHOR = resourceGlobalSettings.anchor
+        --DB_PLATER_RESOURCE_BAR_HEIGHT = resourceGlobalSettings.width
+        DB_PLATER_RESOURCE_BAR_SCALE = resourceGlobalSettings.scale
+        DB_PLATER_RESOURCE_PADDING = resourceGlobalSettings.padding
+        DB_PLATER_RESOURCE_GROW_DIRECTON = resourceGlobalSettings.grow_direction
+        DB_PLATER_RESOURCE_SHOW_DEPLETED = resourceGlobalSettings.show_depleted
+        DB_PLATER_RESOURCE_SHOW_NUMBER = resourceGlobalSettings.show_number
 
         --check if the frame exists if the player opt-in to use plater resources
         if (DB_USE_PLATER_RESOURCE_BAR) then
@@ -229,7 +239,9 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
         newResourceBar.resourceId = SPELL_POWER_CHI
         newResourceBar.updateResourceFunc = resourceWidgetsFunctions.OnResourceChanged
         tinsert(mainResourceFrame.allResourceBars, newResourceBar)
-        
+        mainResourceFrame.resourceBarsByEnumName[CONST_ENUMNAME_CHI] = newResourceBar
+        return newResourceBar
+
         --stagger?
     end
 
@@ -240,6 +252,8 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
         newResourceBar.resourceId = SPELL_POWER_ARCANE_CHARGES
         newResourceBar.updateResourceFunc = resourceWidgetsFunctions.OnResourceChanged
         tinsert(mainResourceFrame.allResourceBars, newResourceBar)
+        mainResourceFrame.resourceBarsByEnumName[CONST_ENUMNAME_ARCANECHARGES] = newResourceBar
+        return newResourceBar
     end
 
     local resourceDruidAndRogue = function(mainResourceFrame)
@@ -255,6 +269,8 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
         newResourceBar.resourceId = SPELL_POWER_COMBO_POINTS
         newResourceBar.updateResourceFunc = resourceWidgetsFunctions.OnComboPointsChanged
         tinsert(mainResourceFrame.allResourceBars, newResourceBar)
+        mainResourceFrame.resourceBarsByEnumName[CONST_ENUMNAME_COMBOPOINT] = newResourceBar
+        return newResourceBar
     end
     resourceByClass["ROGUE"] = resourceDruidAndRogue
     resourceByClass["DRUID"] = resourceDruidAndRogue
@@ -268,6 +284,8 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
         newResourceBar.resourceId = SPELL_POWER_SOUL_SHARDS
         newResourceBar.updateResourceFunc = resourceWidgetsFunctions.OnSoulChardsChanged
         tinsert(mainResourceFrame.allResourceBars, newResourceBar)
+        mainResourceFrame.resourceBarsByEnumName[CONST_ENUMNAME_SOULCHARGES] = newResourceBar
+        return newResourceBar
     end
 
     resourceByClass["PALADIN"] = function(mainResourceFrame)
@@ -279,6 +297,8 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
         newResourceBar.resourceId = SPELL_POWER_HOLY_POWER
         newResourceBar.updateResourceFunc = resourceWidgetsFunctions.OnResourceChanged
         tinsert(mainResourceFrame.allResourceBars, newResourceBar)
+        mainResourceFrame.resourceBarsByEnumName[CONST_ENUMNAME_HOLYPOWER] = newResourceBar
+        return newResourceBar
     end
 
     resourceByClass["DEATHKNIGHT"] = function(mainResourceFrame)
@@ -290,6 +310,8 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
         newResourceBar.resourceId = SPELL_POWER_RUNES
         newResourceBar.updateResourceFunc = resourceWidgetsFunctions.OnRunesChanged
         tinsert(mainResourceFrame.allResourceBars, newResourceBar)
+        mainResourceFrame.resourceBarsByEnumName[CONST_ENUMNAME_RUNES] = newResourceBar
+        return newResourceBar
     end
 
 --> this funtion is called once at the logon, it'll create the resource frames for the class
@@ -312,26 +334,13 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
         mainResourceFrame.resourceBars = {}
         --store all resource bars created (index table)
         mainResourceFrame.allResourceBars = {}
+        --store the resource bar by its _G.Enum.PowerType name (hash table where the key is a string from  _G.Enum.PowerType), e.g. resourceBarsByEnum["HolyPower"] = resourceBar
+        mainResourceFrame.resourceBarsByEnumName = {}
 
-        --grab the player class
-        local playerClass = Plater.PlayerClass
+        --get/create the resource frame set in the options panel
+        Plater.Resources.UpdateResourceFrameToUse()
 
-        if (IS_WOW_PROJECT_NOT_MAINLINE) then --classic
-            if (playerClass == "ROGUE") then
-                local classResourceFunc = resourceByClass[playerClass]
-                if (classResourceFunc) then
-                    classResourceFunc(mainResourceFrame)
-                end
-            end
-        else
-            --create the resource bar for the class, event if it'll be used by certain specs
-            local classResourceFunc = resourceByClass[playerClass]
-            if (classResourceFunc) then
-                classResourceFunc(mainResourceFrame)
-            end
-        end
-
-        --set the event function on the main frame of the resources
+        --set the OnEvent function
         mainResourceFrame:SetScript("OnEvent", function(self, event, unit, powerType, ...)
             --get the current shown resource bar, then get its update func and call it passing the mainResourceFrame as #1 and the resourceBar itself as #2 argument
             local currentResourceBar = self.currentResourceBarShown
@@ -348,6 +357,43 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
                 end
             end
         end)
+    end
+
+    function Plater.Resources.UpdateResourceFrameToUse()
+        local mainResourceFrame = Plater.Resources.GetMainResourceFrame()
+
+        --grab the player class
+        local playerClass = Plater.PlayerClass
+
+        if (IS_WOW_PROJECT_NOT_MAINLINE) then --classic
+            if (playerClass == "ROGUE") then
+                local classResourceFunc = resourceByClass["ROGUE"]
+                if (classResourceFunc) then
+                    local resourceBar = classResourceFunc(mainResourceFrame)
+                    return resourceBar
+                end
+            end
+        else
+            --get the resource to use on this character, players can change which resource model to use in the options panel
+            local resourceEnumName = Plater.Resources.GetResourceEnumNameForPlayer()
+            local resourceBar = mainResourceFrame.resourceBarsByEnumName[resourceEnumName]
+
+            if (not resourceBar) then
+                local classResourceFunc = resourceByClass[playerClass]
+                if (classResourceFunc) then
+                    resourceBar = classResourceFunc(mainResourceFrame)
+                end
+            end
+
+            for _, thisResourceBar in pairs(mainResourceFrame.resourceBarsByEnumName) do
+                resourceBar:Hide()
+            end
+
+            mainResourceFrame.currentResourceBarShown = resourceBar
+            Plater.Resources.UpdateResourceBar(nil, resourceBar)
+
+            return resourceBar
+        end
     end
 
     function Plater.Resources.GetMainResourceFrame()
@@ -498,7 +544,10 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
 --called when 'CanUsePlaterResourceFrame' gives green flag to show the resource bar
 --this function receives the nameplate where the resource bar will be attached
     function Plater.Resources.UpdateMainResourceFrame(plateFrame)
-        if (not plateFrame) then return end
+        if (not plateFrame) then
+            return
+        end
+
         Plater.StartLogPerformanceCore("Plater-Resources", "Update", "UpdateMainResourceFrame")
 
         --get the main resource frame
@@ -530,7 +579,7 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
 --this funtion receives the nameplate and the bar to show
     function Plater.Resources.UpdateResourceBar(plateFrame, resourceBar)
         Plater.StartLogPerformanceCore("Plater-Resources", "Update", "UpdateResourceBar")
-        
+
         --main resource frame
         local mainResourceFrame = Plater.Resources.GetMainResourceFrame()
 
@@ -557,11 +606,11 @@ local DB_PLATER_RESOURCE_SHOW_NUMBER
         resourceBar:Show()
         resourceBar:SetHeight(1)
         mainResourceFrame:Show()
-        
+
         if (DB_PLATER_RESOURCE_SHOW_DEPLETED) then
             Plater.Resources.UpdateResourcesFor_ShowDepleted(mainResourceFrame, resourceBar)
         end
-        
+
         Plater.EndLogPerformanceCore("Plater-Resources", "Update", "UpdateResourceBar")
     end
 
