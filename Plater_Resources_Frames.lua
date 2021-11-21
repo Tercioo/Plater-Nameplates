@@ -258,7 +258,7 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         local widgetFrame = CreateFrame("frame", frameName, parent)
 
         --> create background
-        local backgroundTexture = widgetFrame:CreateTexture("$parentbackgroundTexture", "OVERLAY")
+        local backgroundTexture = parent:CreateTexture("$parentbackgroundTexture", "OVERLAY")
         backgroundTexture:SetTexture([[Interface\PLAYERFRAME\MageArcaneCharges]])
         backgroundTexture:SetDrawLayer("OVERLAY", 0)
         backgroundTexture:SetPoint("center", widgetFrame, "center", 0, 0)
@@ -318,12 +318,11 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
     end
 
     local paladinChargesFunc = function(parent, frameName)
-
         --> create the main frame
         local widgetFrame = CreateFrame("frame", frameName, parent)
 
         --> create background
-        local backgroundTexture = widgetFrame:CreateTexture("$parentbackgroundTexture", "BACKGROUND")
+        local backgroundTexture = parent:CreateTexture("$parentBackgroundTexture", "BACKGROUND")
         backgroundTexture:SetTexture([[Interface\AddOns\Plater\images\paladin_combo_point_deactive]])
         backgroundTexture:SetDrawLayer("BACKGROUND", 0)
         backgroundTexture:SetPoint("center", widgetFrame, "center", 0, 0)

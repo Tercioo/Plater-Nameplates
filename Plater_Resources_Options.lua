@@ -42,7 +42,7 @@ local options_button_template = DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLAT
 local L = LibStub ("AceLocale-3.0"):GetLocale ("PlaterNameplates", true)
 
 function Plater.Resources.GetResourceEnumNameForPlayer()
-    local playerSerial = Plater.PlayerGUID
+    local playerSerial = Plater.PlayerGUID or UnitGUID("player")
     local playerClassLoc, playerClass = UnitClass("player")
 
     if (not Plater.db.profile.resources_settings.chr[playerSerial]) then
@@ -75,6 +75,33 @@ function Plater.Resources.GetResourceEnumNameForPlayer()
     return Plater.db.profile.resources_settings.chr[playerSerial]
 end
 
+--return the resource Id for the player, resourceId is used to query how much resources the player has UnitPower and UnitPowerMax
+function Plater.Resources.GetResourceIdForPlayer()
+    local playerSerial = Plater.PlayerGUID or UnitGUID("player")
+    local playerClassLoc, playerClass = UnitClass("player")
+
+    if (playerClass == "ROGUE" or playerClass == "DRUID") then
+        return Enum.PowerType[CONST_ENUMNAME_COMBOPOINT]
+
+    elseif (playerClass == "WARLOCK") then
+        return Enum.PowerType[CONST_ENUMNAME_SOULCHARGES]
+
+    elseif (playerClass == "MONK") then
+        return Enum.PowerType[CONST_ENUMNAME_CHI]
+
+    elseif (playerClass == "MAGE") then
+        return Enum.PowerType[CONST_ENUMNAME_ARCANECHARGES]
+
+    elseif (playerClass == "DEATHKNIGHT") then
+        return Enum.PowerType[CONST_ENUMNAME_RUNES]
+
+    elseif (playerClass == "PALADIN") then
+        return Enum.PowerType[CONST_ENUMNAME_HOLYPOWER]
+    end
+
+    --return none if not found, this will trigger an error on new resources in the future
+end
+
 function Plater.Resources.BuildResourceOptionsTab(frame)
 
     --if there's no default resource name for this character yet, calling this will set a default
@@ -84,10 +111,10 @@ function Plater.Resources.BuildResourceOptionsTab(frame)
     local resourceDisplaysAvailable = { --name should be able to get from the client
         {name = "Combo Point", defaultClass = {"DRUID", "ROGUE"}, enumName = CONST_ENUMNAME_COMBOPOINT, iconTexture = false, iconAtlas = "ClassOverlay-ComboPoint"}, --4
         {name = "Holy Power", defaultClass = {"PALADIN"}, enumName = CONST_ENUMNAME_HOLYPOWER, iconTexture = [[Interface\PLAYERFRAME\ClassOverlayHolyPower]], iconCoords = {0.530999, 0.6619999, 0.01600000, 0.3479999}}, --9
-        {name = "Runes", defaultClass = {"DEATHKNIGHT"}, enumName = CONST_ENUMNAME_RUNES, iconTexture = [[Interface\PLAYERFRAME\UI-PlayerFrame-Deathknight-SingleRune]], iconCoords = {0, 1, 0, 1}}, --5
+        --{name = "Runes", defaultClass = {"DEATHKNIGHT"}, enumName = CONST_ENUMNAME_RUNES, iconTexture = [[Interface\PLAYERFRAME\UI-PlayerFrame-Deathknight-SingleRune]], iconCoords = {0, 1, 0, 1}}, --5
         {name = "Arcane Charges", defaultClass = {"MAGE"}, enumName = CONST_ENUMNAME_ARCANECHARGES, iconTexture = [[Interface\PLAYERFRAME\MageArcaneCharges]], iconCoords = {64/256, 91/256, 64/128, 91/128}}, --16
         {name = "Chi", defaultClass = {"MONK"}, enumName = CONST_ENUMNAME_CHI, iconTexture = [[Interface\PLAYERFRAME\MonkLightPower]], iconCoords = {0.1, .9, 0.1, .9}}, --12
-        {name = "Soul Shards", defaultClass = {"WARLOCK"}, enumName = CONST_ENUMNAME_SOULCHARGES, iconTexture = [[Interface\PLAYERFRAME\UI-WARLOCKSHARD]], iconCoords = {0/64, 18/64, 0/128, 18/128}}, --7
+        --{name = "Soul Shards", defaultClass = {"WARLOCK"}, enumName = CONST_ENUMNAME_SOULCHARGES, iconTexture = [[Interface\PLAYERFRAME\UI-WARLOCKSHARD]], iconCoords = {0/64, 18/64, 0/128, 18/128}}, --7
     }
 
     local refreshResourceScrollBox = function(self, data, offset, totalLines)
@@ -276,18 +303,6 @@ function Plater.Resources.BuildResourceOptionsTab(frame)
             desc = "Show On Personal Bar",
         },
 
-        --show on personal bar
-        {
-            type = "toggle",
-            get = function() return Plater.db.profile.resources_settings.global_settings.personal_bar end,
-            set = function (self, fixedparam, value)
-                Plater.db.profile.resources_settings.global_settings.personal_bar = value
-                Plater.UpdateAllPlates()
-            end,
-            name = "Show On Personal Bar",
-            desc = "Show On Personal Bar",
-        },
-
         --alignment (is this implemented?)
 
         --grow direction (is this implemented?)
@@ -390,7 +405,6 @@ function Plater.Resources.BuildResourceOptionsTab(frame)
 
     local optionChangedCallback = function()
         Plater.Resources.RefreshResourcesDBUpvalues()
-        Plater.Resources.UpdateResourceFrameToUse()
     end
 
 	_G.C_Timer.After(1.4, function()

@@ -3713,7 +3713,7 @@ local class_specs_coords = {
 			--Plater.CheckRange (plateFrame, true)
 			
 			--resources - TODO:
-			Plater.Resources.UpdatePlaterResourceFramePosition() --~resource
+			Plater.Resources.UpdateResourceFramePosition() --~resource
 			
 			--hooks
 			if (HOOK_NAMEPLATE_ADDED.ScriptAmount > 0) then
@@ -6268,7 +6268,7 @@ end
 			end
 		end
 
-		Plater.Resources.UpdatePlaterResourceFramePosition() --~resource
+		Plater.Resources.UpdateResourceFramePosition() --~resource
 	end
 
 	function Plater.UpdateTargetHighlight (plateFrame)
