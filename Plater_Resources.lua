@@ -729,6 +729,8 @@ end
 
         --get the table with the widgets created
         local widgetTable = resourceBar.widgets
+		--fallback if it is not implemented/created
+		if (not widgetTable[1]) then return end
 
         --get the total of widgets to show
         local totalWidgetsShown = UnitPowerMax("player", Plater.Resources.playerResourceId)
@@ -831,6 +833,8 @@ end
 
         --get the table with the widgets created to represent the resource points
         local widgetTable = resourceBar.widgets
+		--fallback if it is not implemented/created
+		if (not widgetTable[1]) then return end
 
         --get the default size of each widget
         local widgetWidth = mainResourceFrame.widgetWidth or CONST_WIDGET_WIDTH
@@ -891,6 +895,9 @@ end
     function Plater.Resources.UpdateResources_WithDepleted(resourceBar, currentResources)
         Plater.StartLogPerformanceCore("Plater-Resources", "Update", "UpdateResources_WithDepleted")
 
+		--fallback if it is not implemented/created
+		if (not resourceBar.widgets[1]) then return end
+
         --calculate how many widgets need to be shown or need to be hide
         if (currentResources < resourceBar.lastResourceAmount) then --hide widgets
             for i = resourceBar.lastResourceAmount, currentResources+1, -1 do
@@ -950,6 +957,9 @@ end
         end
 
         if (event == "UNIT_POWER_POINT_CHARGE") then
+			--fallback if it is not implemented/created
+			if (not resourceBar.widgets[1]) then return end
+			
             --charges changed
             local chargedPowerPoints = GetUnitChargedPowerPoints("player")
             --chargedPowerPoints = {[1] = random(1,2), [2] = random(3,5)} --testing
