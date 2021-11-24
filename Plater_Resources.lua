@@ -330,7 +330,8 @@ end
         return newResourceBar
     end
 
-    local resourceDruidAndRogue = function(mainResourceFrame)
+    resourceBarCreateFuncByEnumName[CONST_ENUMNAME_COMBOPOINT] = function(mainResourceFrame)
+		ViragDevTool_AddData({mainResourceFrame}, "resourceDruidAndRogue")
         local resourceWidgetCreationFunc = Plater.Resources.GetCreateResourceWidgetFunctionForSpecId(CONST_SPECID_ROGUE_OUTLAW)
         local newResourceBar = createResourceBar(mainResourceFrame, "$parentRogueResource", resourceWidgetCreationFunc, 13, 13)
         mainResourceFrame.widgetHeight = 13
@@ -346,8 +347,6 @@ end
         mainResourceFrame.resourceBarsByEnumName[CONST_ENUMNAME_COMBOPOINT] = newResourceBar
         return newResourceBar
     end
-    resourceBarCreateFuncByEnumName[CONST_ENUMNAME_COMBOPOINT] = resourceDruidAndRogue
-    resourceBarCreateFuncByEnumName[CONST_ENUMNAME_COMBOPOINT] = resourceDruidAndRogue
 
     resourceBarCreateFuncByEnumName[CONST_ENUMNAME_SOULCHARGES] = function(mainResourceFrame)
         local resourceWidgetCreationFunc = Plater.Resources.GetCreateResourceWidgetFunctionForSpecId(CONST_SPECID_WARLOCK_AFFLICTION)
@@ -450,21 +449,23 @@ end
         end
 
         --grab the player class
-        local playerClass = Plater.PlayerClass
+        local playerClass = Plater.PlayerClass or select (2, UnitClass ("player"))
+		--the resourceId to query the amount of resources the player has
+        Plater.Resources.playerResourceId = Plater.Resources.GetResourceIdForPlayer()
 
         if (IS_WOW_PROJECT_NOT_MAINLINE) then --classic
             if (playerClass == "ROGUE") then
                 local classResourceFunc = resourceBarCreateFuncByEnumName[CONST_ENUMNAME_COMBOPOINT]
                 if (classResourceFunc) then
                     local resourceBar = classResourceFunc(mainResourceFrame)
+					mainResourceFrame.currentResourceBarShown = resourceBar
+					Plater.Resources.UpdateResourceBar(nil, resourceBar)
                     return resourceBar
                 end
             end
         else
             --get the resource to use on this character, players can change which resource model to use in the options panel
             local resourceEnumName = Plater.Resources.GetResourceEnumNameForPlayer()
-            --the resourceId to query the amount of resources the player has
-            Plater.Resources.playerResourceId = Plater.Resources.GetResourceIdForPlayer()
 
             --if no enum name, this class does not use a resource bar
             if (not resourceEnumName) then
