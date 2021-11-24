@@ -331,7 +331,6 @@ end
     end
 
     resourceBarCreateFuncByEnumName[CONST_ENUMNAME_COMBOPOINT] = function(mainResourceFrame)
-		ViragDevTool_AddData({mainResourceFrame}, "resourceDruidAndRogue")
         local resourceWidgetCreationFunc = Plater.Resources.GetCreateResourceWidgetFunctionForSpecId(CONST_SPECID_ROGUE_OUTLAW)
         local newResourceBar = createResourceBar(mainResourceFrame, "$parentRogueResource", resourceWidgetCreationFunc, 13, 13)
         mainResourceFrame.widgetHeight = 13
