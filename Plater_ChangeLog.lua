@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1634909555,  "Bug Fix", "November 29th, 2021", "Limit 'View Distance' settings according to client limitations.", "cont1nuity"},
 			{1634909555,  "Bug Fix", "November 26th, 2021", "Only show cast colors if they are enabled.", "cont1nuity"},
 			{1634909555,  "Bug Fix", "November 24th, 2021", "Fixing issues with combo points in classic era (in development).", "cont1nuity"},
 			{1634909555,  "Bug Fix", "November 17th, 2021", "Fixing missing cast name in classic era.", "cont1nuity"},
