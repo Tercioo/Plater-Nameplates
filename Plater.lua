@@ -2707,7 +2707,7 @@ local class_specs_coords = {
 			--end
 
 			--create the frame to hold the plater resoruce bar
-			Plater.Resources.CreatePlaterResourceFrame() --~resource
+			Plater.Resources.CreateMainResourceFrame() --~resource
 			
 			--run hooks on load screen
 			if (HOOK_LOAD_SCREEN.ScriptAmount > 0) then

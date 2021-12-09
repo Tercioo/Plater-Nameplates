@@ -77,7 +77,6 @@ end
 
 --return the resource Id for the player, resourceId is used to query how much resources the player has UnitPower and UnitPowerMax
 function Plater.Resources.GetResourceIdForPlayer()
-    local playerSerial = Plater.PlayerGUID or UnitGUID("player")
     local playerClassLoc, playerClass = UnitClass("player")
 
     if (playerClass == "ROGUE" or playerClass == "DRUID") then

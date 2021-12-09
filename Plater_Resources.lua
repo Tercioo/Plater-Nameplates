@@ -241,17 +241,20 @@ end
             if (not mainResourceFrame) then
                 C_Timer.After(0, function()
                     --create on next frame
-                    Plater.Resources.CreatePlaterResourceFrame()
+                    Plater.Resources.CreateMainResourceFrame()
                     Plater.Resources.UpdateResourceFrameToUse()
                     Plater.Resources.UpdateResourceFramePosition()
                 end)
             else
-                Plater.Resources.CreatePlaterResourceFrame()
+                Plater.Resources.CreateMainResourceFrame()
                 Plater.Resources.UpdateResourceFrameToUse()
                 Plater.Resources.UpdateResourceFramePosition()
 
-                --to refresh background (show depleted)
                 local resourceBar = Plater.Resources.GetResourceBarInUse()
+                --characters without resources to show may not have a resource bar created for them
+                if (not resourceBar) then
+                    return
+                end
 
                 --amount of resources the player has now
                 local currentResources = UnitPower("player", Plater.Resources.playerResourceId)
@@ -386,8 +389,8 @@ end
         return newResourceBar
     end
 
---> this funtion is called once at the logon, it initializes the resource frame
-    function Plater.Resources.CreatePlaterResourceFrame()
+--> this funtion is called once at the logon, it initializes the main frame
+    function Plater.Resources.CreateMainResourceFrame()
         if (not DB_USE_PLATER_RESOURCE_BAR) then
             --ignore if the settings are off
             --return
@@ -443,12 +446,12 @@ end
     function Plater.Resources.UpdateResourceFrameToUse()
         local mainResourceFrame = Plater.Resources.GetMainResourceFrame()
         if (not mainResourceFrame) then
-            Plater.Resources.CreatePlaterResourceFrame()
+            Plater.Resources.CreateMainResourceFrame()
             mainResourceFrame = Plater.Resources.GetMainResourceFrame()
         end
 
         --grab the player class
-        local playerClass = Plater.PlayerClass or select (2, UnitClass ("player"))
+        local playerClass = Plater.PlayerClass or select(2, UnitClass("player"))
 		--the resourceId to query the amount of resources the player has
         Plater.Resources.playerResourceId = Plater.Resources.GetResourceIdForPlayer()
 
@@ -463,6 +466,11 @@ end
                 end
             end
         else
+            --return if there's no resource for this character
+            if (not Plater.Resources.playerResourceId) then
+                return
+            end
+
             --get the resource to use on this character, players can change which resource model to use in the options panel
             local resourceEnumName = Plater.Resources.GetResourceEnumNameForPlayer()
 
@@ -498,7 +506,7 @@ end
         if (mainResourceFrame) then
             return mainResourceFrame
         else
-            Plater.Resources.CreatePlaterResourceFrame()
+            Plater.Resources.CreateMainResourceFrame()
             mainResourceFrame = _G.PlaterNameplatesResourceFrame
             return mainResourceFrame
         end
@@ -730,9 +738,11 @@ end
         --get the table with the widgets created
         local widgetTable = resourceBar.widgets
 		--fallback if it is not implemented/created
-		if (not widgetTable[1]) then return end
+		if (not widgetTable[1]) then
+            return
+        end
 
-        --get the total of widgets to show
+        --warning: calling UnitPowerMax with a nil resource id is returning a default resource amount, example in shadow priest which returns max insanity amount
         local totalWidgetsShown = UnitPowerMax("player", Plater.Resources.playerResourceId)
 
         --store the amount of widgets currently in use
@@ -775,18 +785,14 @@ end
 
             if (i ~= firstWidgetIndex) then
                 --adjust the point of widgets
-                local widgetBackground = resourceBar.widgetsBackground[i]
                 thisResourceWidget:ClearAllPoints()
-                --widgetBackground:ClearAllPoints()
-
                 if (isGrowingToLeft) then
                     thisResourceWidget:SetPoint("right", lastResourceWidget, "left", -DB_PLATER_RESOURCE_PADDING, 0)
-                    --widgetBackground:SetPoint("center", thisResourceWidget, "center", 0, 0)
                 else
                     thisResourceWidget:SetPoint("left", lastResourceWidget, "right", DB_PLATER_RESOURCE_PADDING, 0)
-                    --widgetBackground:SetPoint("center", thisResourceWidget, "center", 0, 0)
                 end
 
+                local widgetBackground = resourceBar.widgetsBackground[i]
                 widgetBackground:SetSize(widgetWidth, widgetHeight)
                 widgetBackground:Show()
 
