@@ -4709,7 +4709,7 @@ function Plater.OnInit() --private --~oninit ~init
 						local castColors = Plater.db.profile.cast_colors
 
 						--check if this cast has a custom color
-						if (castColors[self.spellID]) then
+						if (castColors[self.spellID] and castColors[self.spellID][1]) then
 							self.castColorTexture:Show()
 							local r, g, b = Plater:ParseColors(castColors[self.spellID][2])
 							self.castColorTexture:SetColorTexture(r, g, b)
