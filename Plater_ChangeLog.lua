@@ -8,11 +8,12 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
-			{1634909555,  "Bug Fix", "November 29th, 2021", "Limit 'View Distance' settings according to client limitations.", "cont1nuity"},
-			{1634909555,  "Bug Fix", "November 26th, 2021", "Only show cast colors if they are enabled.", "cont1nuity"},
-			{1634909555,  "Bug Fix", "November 24th, 2021", "Fixing issues with combo points in classic era (in development).", "cont1nuity"},
-			{1634909555,  "Bug Fix", "November 17th, 2021", "Fixing missing cast name in classic era.", "cont1nuity"},
-			{1634909555,  "Backend Change", "November 15th, 2021", "NPC-Cache entries will be kept on profile export if NPC-Colors are assigned.", "cont1nuity"},
+			{1639859833,  "Bug Fix", "December 9th, 2021", "Work on next feature: personal resources.", "Terciob"},
+			{1639859833,  "Bug Fix", "November 29th, 2021", "Limit 'View Distance' settings according to client limitations.", "cont1nuity"},
+			{1639859833,  "Bug Fix", "November 26th, 2021", "Only show cast colors if they are enabled.", "cont1nuity"},
+			{1639859833,  "Bug Fix", "November 24th, 2021", "Fixing issues with combo points in classic era (feature in development).", "cont1nuity"},
+			{1639859833,  "Bug Fix", "November 17th, 2021", "Fixing missing cast name in classic era.", "cont1nuity"},
+			{1639859833,  "Backend Change", "November 15th, 2021", "NPC-Cache entries will be kept on profile export if NPC-Colors are assigned.", "cont1nuity"},
 			
 			{1634909553,  "Backend Change", "October 31st, 2021", "TOC update for 9.1.5.", "cont1nuity"},
 			{1634909553,  "Backend Change", "October 31st, 2021", "Improvements to profile import and wrong data recognition.", "cont1nuity"},
