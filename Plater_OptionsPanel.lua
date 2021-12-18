@@ -113,7 +113,8 @@ local update_wago_update_icons = function()
 	local scriptButton = mainFrame.AllButtons [6]
 	local modButton = mainFrame.AllButtons [7]
 	local profileButton = mainFrame.AllButtons [21]
-	local importButton = mainFrame.AllButtons [25]
+	local importButton = mainFrame.AllButtons [24]
+	--local importButton = mainFrame.AllButtons [25] -- with resource fame
 	
 	if countMods > 0 then
 		modButton.updateIcon:Show()
@@ -225,7 +226,7 @@ function Plater.OpenOptionsPanel()
 		{name = "Automation", title = L["OPTIONS_TABNAME_AUTO"]},
 		{name = "ProfileManagement", title = L["OPTIONS_TABNAME_PROFILES"]},
 		{name = "AdvancedConfig", title = L["OPTIONS_TABNAME_ADVANCED"]},
-		{name = "resourceFrame", title = "Combo Points"}, --localize-me
+		--{name = "resourceFrame", title = "Combo Points"}, --localize-me
 		{name = "SearchFrame", title = "Search"}, --localize-me
 		--{name = "WagoIo", title = "Wago Imports"}, --wago_imports --localize-me
 		
@@ -266,9 +267,10 @@ function Plater.OpenOptionsPanel()
 	local autoFrame = mainFrame.AllFrames [20]
 	local profilesFrame = mainFrame.AllFrames [21]
 	local advancedFrame = mainFrame.AllFrames [22]
-	local resourceFrame = mainFrame.AllFrames [23]
-	local searchFrame = mainFrame.AllFrames [24]
-	--local wagoIoFrame = mainFrame.AllFrames [25] --wago_imports
+	--local resourceFrame = mainFrame.AllFrames [23]
+	--local searchFrame = mainFrame.AllFrames [24]
+	local searchFrame = mainFrame.AllFrames [23]
+	--local wagoIoFrame = mainFrame.AllFrames [26] --wago_imports
 	
 	--
 	local colorNpcsButton = mainFrame.AllButtons [17]
@@ -277,7 +279,7 @@ function Plater.OpenOptionsPanel()
 	local profileButton = mainFrame.AllButtons [21]
 	local importButton = mainFrame.AllButtons [25]
 
-	Plater.Resources.BuildResourceOptionsTab(resourceFrame)
+	--Plater.Resources.BuildResourceOptionsTab(resourceFrame)
 	Plater.CreateCastColorOptionsFrame(castColorsFrame)
 	
 	local generalOptionsAnchor = CreateFrame ("frame", "$parentOptionsAnchor", frontPageFrame, BackdropTemplateMixin and "BackdropTemplate")
