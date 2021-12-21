@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1640087710,  "Bug Fix", "December 21st, 2021", "Shaman elementals should now properly be recognized as pets.", "cont1nuity"},
+			
 			{1639859833,  "Bug Fix", "December 9th, 2021", "Work on next feature: personal resources.", "Terciob"},
 			{1639859833,  "Bug Fix", "November 29th, 2021", "Limit 'View Distance' settings according to client limitations.", "cont1nuity"},
 			{1639859833,  "Bug Fix", "November 26th, 2021", "Only show cast colors if they are enabled.", "cont1nuity"},

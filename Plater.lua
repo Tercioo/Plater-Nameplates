@@ -8497,7 +8497,7 @@ end
 				isPlayerPet = true
 				ownerName = playerName
 			else
-				ownerName = (string.match(text1, string.gsub(UNITNAME_TITLE_PET, "%%s", "(%.*)")) or string.match(text1, string.gsub(UNITNAME_TITLE_MINION, "%%s", "(%.*)")))
+				ownerName = (string.match(text1, string.gsub(UNITNAME_TITLE_PET, "%%s", "(%.*)")) or string.match(text1, string.gsub(UNITNAME_TITLE_MINION, "%%s", "(%.*)")) or string.match(text1, string.gsub(UNITNAME_TITLE_GUARDIAN, "%%s", "(%.*)")))
 				if ownerName then
 					isOtherPet = true
 				end
@@ -8514,7 +8514,7 @@ end
 					isPlayerPet = true
 					ownerName = playerName
 				else
-					ownerName = (string.match(text2, string.gsub(UNITNAME_TITLE_PET, "%%s", "(%.*)")) or string.match(text2, string.gsub(UNITNAME_TITLE_MINION, "%%s", "(%.*)")))
+					ownerName = (string.match(text2, string.gsub(UNITNAME_TITLE_PET, "%%s", "(%.*)")) or string.match(text2, string.gsub(UNITNAME_TITLE_MINION, "%%s", "(%.*)")) or string.match(text2, string.gsub(UNITNAME_TITLE_GUARDIAN, "%%s", "(%.*)")))
 					if ownerName then
 						isOtherPet = true
 					end
