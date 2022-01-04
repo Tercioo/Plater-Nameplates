@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1640087710,  "Backend Change", "January 4th, 2022", "'CreateFlash' API now handles color alpha values correctly.", "cont1nuity"},
+			{1640087710,  "Bug Fix", "January 2nd, 2022", "Font path fixed for 'Nueva Std Cond'.", "Terciob"},
 			{1640087710,  "Bug Fix", "December 21st, 2021", "Shaman elementals should now properly be recognized as pets.", "cont1nuity"},
 			
 			{1639859833,  "Bug Fix", "December 9th, 2021", "Work on next feature: personal resources.", "Terciob"},

@@ -9514,15 +9514,15 @@ end
 	end
 
 	--creates a flash, call returnedValue:Play() to flash
-	function Plater.CreateFlash (frame, duration, amount, r, g, b)
+	function Plater.CreateFlash (frame, duration, amount, r, g, b, a)
 		--defaults
 		duration = duration or 0.25
 		amount = amount or 1
 		
 		if (not r) then
-			r, g, b = 1, 1, 1
+			r, g, b, a = 1, 1, 1, 1
 		else
-			r, g, b = DF:ParseColors (r, g, b)
+			r, g, b, a = DF:ParseColors (r, g, b, a)
 		end
 
 		--create the flash frame
@@ -9533,7 +9533,7 @@ end
 		
 		--create the flash texture
 		local t = f:CreateTexture ("PlaterFlashAnimationTexture".. math.random (1, 100000000), "artwork")
-		t:SetColorTexture (r, g, b)
+		t:SetColorTexture (r, g, b, a)
 		t:SetAllPoints()
 		t:SetBlendMode ("ADD")
 		t:Hide()
