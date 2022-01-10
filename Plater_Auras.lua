@@ -267,7 +267,7 @@ local PlaterNamePlateAuraTooltip = CreatePlaterNamePlateAuraTooltip()
 			local verticalHeight = 1
 			local firstIcon
 		
-			if (Plater.db.profile.aura_consolidate) then
+			if (profile.aura_consolidate) then
 				Plater.ConsolidateAuraIcons (self)
 			end
 			

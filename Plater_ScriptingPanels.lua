@@ -87,6 +87,9 @@ Plater.APIList = {
 	{Name = "FlashNameplateBody", 		Signature = "Plater.FlashNameplateBody (unitFrame [, text [, duration]])", 	Desc = "Flash the healthbar portion of the nameplate, text and duration are optionals."},
 	
 	{Name = "NameplateHasAura", 		Signature = "Plater.NameplateHasAura (unitFrame, aura)",				Desc = "Return true if the aura is shown on nameplate.\n\nAura can be the buff name, debuff name or spellID."},	
+	{Name = "UnitHasAura", 		Signature = "Plater.UnitHasAura (unitFrame, aura)",				Desc = "Return true if the aura exist on the nameplate, visible or not.\n\nAura can be the buff name, debuff name or spellID."},	
+	{Name = "UnitHasEnrage", 		Signature = "Plater.UnitHasEnrage (unitFrame)",				Desc = "Return true if any of the auras is an enrage effect."},	
+	{Name = "UnitHasDispellable", 		Signature = "Plater.UnitHasDispellable (unitFrame)",				Desc = "Return true if there is any aura on the unit your character can remove at this moment (enrage, magic, etc)."},	
 	{Name = "NameplateInRange", 		Signature = "Plater.NameplateInRange (unitFrame)", 					Desc = "Return true if the nameplate is in range of the selected spell for range check.\n\nIt also updates the range flag for unitFrame.namePlateInRange."},
 	
 	{Name = "GetNpcIDFromGUID", 		Signature = "Plater.GetNpcIDFromGUID (GUID)", 					Desc = "Extract the npcID from a GUID, guarantee to always return a number."},
