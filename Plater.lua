@@ -1238,8 +1238,8 @@ local class_specs_coords = {
 				unitFrame.castBar:SetAlpha (1)
 			end
 			unitFrame.powerBar:SetAlpha (1)
-			unitFrame.BuffFrame:SetAlpha (1)
-			unitFrame.BuffFrame2:SetAlpha (1)
+			unitFrame.BuffFrame:SetAlpha (DB_AURA_ALPHA)
+			unitFrame.BuffFrame2:SetAlpha (DB_AURA_ALPHA)
 			
 			Plater.EndLogPerformanceCore("Plater-Core", "Update", "CheckRange")
 			return
@@ -1256,8 +1256,8 @@ local class_specs_coords = {
 				unitFrame.castBar:SetAlpha (1)
 			end
 			unitFrame.powerBar:SetAlpha (1)
-			unitFrame.BuffFrame:SetAlpha (1)
-			unitFrame.BuffFrame2:SetAlpha (1)
+			unitFrame.BuffFrame:SetAlpha (DB_AURA_ALPHA)
+			unitFrame.BuffFrame2:SetAlpha (DB_AURA_ALPHA)
 			
 			Plater.EndLogPerformanceCore("Plater-Core", "Update", "CheckRange")
 			return
@@ -1270,8 +1270,8 @@ local class_specs_coords = {
 				unitFrame.castBar:SetAlpha (1)
 			end
 			unitFrame.powerBar:SetAlpha (1)
-			unitFrame.BuffFrame:SetAlpha (1)
-			unitFrame.BuffFrame2:SetAlpha (1)
+			unitFrame.BuffFrame:SetAlpha (DB_AURA_ALPHA)
+			unitFrame.BuffFrame2:SetAlpha (DB_AURA_ALPHA)
 			
 			plateFrame [MEMBER_RANGE] = true
 			unitFrame [MEMBER_RANGE] = true
@@ -1455,8 +1455,8 @@ local class_specs_coords = {
 							castBar:SetAlpha (inRangeAlpha)
 						end
 						powerBar:SetAlpha (inRangeAlpha)
-						buffFrame1:SetAlpha (inRangeAlpha)
-						buffFrame2:SetAlpha (inRangeAlpha)
+						buffFrame1:SetAlpha (DB_AURA_ALPHA)
+						buffFrame2:SetAlpha (DB_AURA_ALPHA)
 					end
 					plateFrame.FadedIn = true
 
@@ -1483,8 +1483,8 @@ local class_specs_coords = {
 					castBar:SetAlpha (1)
 				end
 				powerBar:SetAlpha (1)
-				buffFrame1:SetAlpha (1)
-				buffFrame2:SetAlpha (1)
+				buffFrame1:SetAlpha (DB_AURA_ALPHA)
+				buffFrame2:SetAlpha (DB_AURA_ALPHA)
 			end
 		else
 			-- no alpha settings, so just go to default
@@ -1495,8 +1495,8 @@ local class_specs_coords = {
 				castBar:SetAlpha (1)
 			end
 			powerBar:SetAlpha (1)
-			buffFrame1:SetAlpha (1)
-			buffFrame2:SetAlpha (1)
+			buffFrame1:SetAlpha (DB_AURA_ALPHA)
+			buffFrame2:SetAlpha (DB_AURA_ALPHA)
 		end
 		
 		Plater.EndLogPerformanceCore("Plater-Core", "Update", "CheckRange")
@@ -5724,8 +5724,8 @@ end
 					Plater.AlignAuraFrames (tickFrame.BuffFrame.BuffFrame2)
 				end
 				
-				tickFrame.BuffFrame:SetAlpha (DB_AURA_ALPHA)
-				tickFrame.BuffFrame2:SetAlpha (DB_AURA_ALPHA)
+				--tickFrame.BuffFrame:SetAlpha (DB_AURA_ALPHA)
+				--tickFrame.BuffFrame2:SetAlpha (DB_AURA_ALPHA)
 				
 				--Plater.EndLogPerformanceCore("Plater-Core", "Update", "UpdateAuras")
 			end
@@ -9252,12 +9252,12 @@ end
 		--update the buff layout and alpha
 		buffFrame.unit = self.unit
 		Plater.AlignAuraFrames (buffFrame)
-		buffFrame:SetAlpha (DB_AURA_ALPHA)
+		--buffFrame:SetAlpha (DB_AURA_ALPHA)
 		
 		if (DB_AURA_SEPARATE_BUFFS) then
 			buffFrame2.unit = self.unit
 			Plater.AlignAuraFrames (buffFrame2)
-			buffFrame2:SetAlpha (DB_AURA_ALPHA)
+			--buffFrame2:SetAlpha (DB_AURA_ALPHA)
 		end
 	end
 	
