@@ -6494,10 +6494,10 @@ local relevance_options = {
 				end
 			end,
 			min = IS_WOW_PROJECT_MAINLINE and 60 or 20, --20y for tbc and classic
-			max = (IS_WOW_PROJECT_MAINLINE and 60) or (IS_WOW_PROJECT_CLASSIC_TBC and 41) or 20, --41y for tbc, 20y for classic era
+			max = (IS_WOW_PROJECT_MAINLINE and 60) or (IS_WOW_PROJECT_CLASSIC_TBC and 40) or 20, --40y for tbc, 20y for classic era
 			step = 1,
 			name = "View Distance" .. CVarIcon,
-			desc = "How far you can see nameplates (in yards).\n\n|cFFFFFFFFCurrent limitations: Retail = 60y, TBC = 20-41y, Classic = 20y|r" .. CVarDesc,
+			desc = "How far you can see nameplates (in yards).\n\n|cFFFFFFFFCurrent limitations: Retail = 60y, TBC = 20-40y, Classic = 20y|r" .. CVarDesc,
 			nocombat = true,
 		},
 	

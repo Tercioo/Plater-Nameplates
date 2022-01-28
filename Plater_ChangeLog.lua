@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1642115747,  "Backend Change", "January 28th, 2022", "Changing TBC max nameplate distance option to the correct value.", "cont1nuity"},
+			{1642115747,  "Backend Change", "January 28th, 2022", "Updating TOC for classic/tbc versions.", "cont1nuity"},
 			{1642115747,  "Bug Fix", "January 14th, 2022", "Fixing aura frame alpha settings for target/range alpha.", "cont1nuity"},
 			{1642115747,  "Backend Change", "January 10th, 2022", "Adding some missing functions to the scripting api list.", "cont1nuity"},
 			{1642115747,  "Backend Change", "January 4th, 2022", "'CreateFlash' API now handles color alpha values correctly.", "cont1nuity"},
