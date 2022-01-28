@@ -113,7 +113,7 @@ function Plater.Resources.BuildResourceOptionsTab(frame)
         --{name = "Runes", defaultClass = {"DEATHKNIGHT"}, enumName = CONST_ENUMNAME_RUNES, iconTexture = [[Interface\PLAYERFRAME\UI-PlayerFrame-Deathknight-SingleRune]], iconCoords = {0, 1, 0, 1}}, --5
         {name = "Arcane Charges", defaultClass = {"MAGE"}, enumName = CONST_ENUMNAME_ARCANECHARGES, iconTexture = [[Interface\PLAYERFRAME\MageArcaneCharges]], iconCoords = {64/256, 91/256, 64/128, 91/128}}, --16
         {name = "Chi", defaultClass = {"MONK"}, enumName = CONST_ENUMNAME_CHI, iconTexture = [[Interface\PLAYERFRAME\MonkLightPower]], iconCoords = {0.1, .9, 0.1, .9}}, --12
-        --{name = "Soul Shards", defaultClass = {"WARLOCK"}, enumName = CONST_ENUMNAME_SOULCHARGES, iconTexture = [[Interface\PLAYERFRAME\UI-WARLOCKSHARD]], iconCoords = {0/64, 18/64, 0/128, 18/128}}, --7
+        {name = "Soul Shards", defaultClass = {"WARLOCK"}, enumName = CONST_ENUMNAME_SOULCHARGES, iconTexture = [[Interface\PLAYERFRAME\UI-WARLOCKSHARD]], iconCoords = {0/64, 18/64, 0/128, 18/128}}, --7
     }
 
     local refreshResourceScrollBox = function(self, data, offset, totalLines)

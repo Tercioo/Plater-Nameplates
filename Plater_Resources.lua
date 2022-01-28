@@ -337,7 +337,7 @@ end
         local resourceWidgetCreationFunc = Plater.Resources.GetCreateResourceWidgetFunctionForSpecId(CONST_SPECID_ROGUE_OUTLAW)
         local newResourceBar = createResourceBar(mainResourceFrame, "$parentRogueResource", resourceWidgetCreationFunc, 13, 13)
         mainResourceFrame.widgetHeight = 13
-        mainResourceFrame.widgetHeight = 13
+        mainResourceFrame.widgetWidth = 13
         mainResourceFrame.resourceBars[CONST_SPECID_ROGUE_ASSASSINATION] = newResourceBar
         mainResourceFrame.resourceBars[CONST_SPECID_ROGUE_OUTLAW] = newResourceBar
         mainResourceFrame.resourceBars[CONST_SPECID_ROGUE_SUBTLETY] = newResourceBar
@@ -352,7 +352,9 @@ end
 
     resourceBarCreateFuncByEnumName[CONST_ENUMNAME_SOULCHARGES] = function(mainResourceFrame)
         local resourceWidgetCreationFunc = Plater.Resources.GetCreateResourceWidgetFunctionForSpecId(CONST_SPECID_WARLOCK_AFFLICTION)
-        local newResourceBar = createResourceBar(mainResourceFrame, "$parentWarlockResource", resourceWidgetCreationFunc)
+        local newResourceBar = createResourceBar(mainResourceFrame, "$parentWarlockResource", resourceWidgetCreationFunc, 17, 22)
+		mainResourceFrame.widgetWidth = 17
+		mainResourceFrame.widgetHeight = 22
         mainResourceFrame.resourceBars[CONST_SPECID_WARLOCK_AFFLICTION] = newResourceBar
         mainResourceFrame.resourceBars[CONST_SPECID_WARLOCK_DEMONOLOGY] = newResourceBar
         mainResourceFrame.resourceBars[CONST_SPECID_WARLOCK_DESTRUCTION] = newResourceBar
@@ -365,7 +367,9 @@ end
 
     resourceBarCreateFuncByEnumName[CONST_ENUMNAME_HOLYPOWER] = function(mainResourceFrame)
         local resourceWidgetCreationFunc = Plater.Resources.GetCreateResourceWidgetFunctionForSpecId(CONST_SPECID_PALADIN_RETRIBUTION)
-        local newResourceBar = createResourceBar(mainResourceFrame, "$parentPaladinResource", resourceWidgetCreationFunc)
+        local newResourceBar = createResourceBar(mainResourceFrame, "$parentPaladinResource", resourceWidgetCreationFunc, 25, 19)
+		mainResourceFrame.widgetWidth = 25
+		mainResourceFrame.widgetHeight = 19
         mainResourceFrame.resourceBars[CONST_SPECID_PALADIN_HOLY] = newResourceBar
         mainResourceFrame.resourceBars[CONST_SPECID_PALADIN_PROTECTION] = newResourceBar
         mainResourceFrame.resourceBars[CONST_SPECID_PALADIN_RETRIBUTION] = newResourceBar
@@ -646,17 +650,18 @@ end
 
 --this function receives the nameplate where the resource bar will be attached
     function Plater.Resources.UpdateMainResourceFrame(plateFrame)
-
-        if (not plateFrame) then
-            return
-        end
-
         Plater.StartLogPerformanceCore("Plater-Resources", "Update", "UpdateMainResourceFrame")
 
         --get the main resource frame
         local mainResourceFrame = Plater.Resources.GetMainResourceFrame()
         if (not mainResourceFrame) then
             Plater.EndLogPerformanceCore("Plater-Resources", "Update", "UpdateMainResourceFrame")
+            return
+        end
+		
+		if (not plateFrame) then
+			Plater.Resources.HidePlaterResourceFrame()
+			Plater.EndLogPerformanceCore("Plater-Resources", "Update", "UpdateMainResourceFrame")
             return
         end
 
@@ -906,12 +911,12 @@ end
 
         --calculate how many widgets need to be shown or need to be hide
         if (currentResources < resourceBar.lastResourceAmount) then --hide widgets
-            for i = resourceBar.lastResourceAmount, currentResources+1, -1 do
+            for i = floor(resourceBar.lastResourceAmount), currentResources+1, -1 do
                 resourceBar.widgets[i]:Hide()
             end
 
         elseif (currentResources > resourceBar.lastResourceAmount) then --show widgets
-            for i = resourceBar.lastResourceAmount + 1, currentResources do
+            for i = floor(resourceBar.lastResourceAmount) + 1, currentResources do
                 resourceBar.widgets[i]:Show()
                 if (lastComboPointGainedTime == GetTime()) then
                     resourceBar.widgets[i].ShowAnimation:Play()
@@ -1000,9 +1005,9 @@ end
 
         --which update method to use
         if (DB_PLATER_RESOURCE_SHOW_DEPLETED) then
-            return Plater.Resources.UpdateResources_WithDepleted(resourceBar, currentResources)
+            Plater.Resources.UpdateResources_WithDepleted(resourceBar, currentResources)
         else
-            return Plater.Resources.UpdateResources_NoDepleted(resourceBar, currentResources)
+            Plater.Resources.UpdateResources_NoDepleted(resourceBar, currentResources)
         end
     end
     
@@ -1029,13 +1034,26 @@ end
 
         --which update method to use
         if (DB_PLATER_RESOURCE_SHOW_DEPLETED) then
-            return Plater.Resources.UpdateResources_WithDepleted(resourceBar, currentResources)
+            Plater.Resources.UpdateResources_WithDepleted(resourceBar, currentResources)
         else
-            return Plater.Resources.UpdateResources_NoDepleted(resourceBar, currentResources)
+            Plater.Resources.UpdateResources_NoDepleted(resourceBar, currentResources)
         end
     end
     
     --WL soul chards
+	local widthByFillAmount = {
+		[0] = 0,
+		[1] = 6,
+		[2] = 12,
+		[3] = 14,
+		[4] = 18,
+		[5] = 22,
+		[6] = 22,
+		[7] = 24,
+		[8] = 20,
+		[9] = 18,
+		[10] = 0,
+	};
     function resourceWidgetsFunctions.OnSoulChardsChanged(mainResourceFrame, resourceBar, forcedRefresh, event, unit, powerType)
         
         if (event == "UNIT_MAXPOWER" and DB_PLATER_RESOURCE_SHOW_DEPLETED) then
@@ -1049,7 +1067,18 @@ end
         end
         
         --amount of resources the player has now
-        local currentResources = UnitPower("player", Plater.Resources.playerResourceId)
+		local shardPower = UnitPower("player", Plater.Resources.playerResourceId, true)
+		local shardModifier = UnitPowerDisplayMod(Enum.PowerType.SoulShards)
+		local currentResources = (shardModifier ~= 0) and (shardPower / shardModifier) or 0
+		
+		-- how to handle partial?
+		local actualResources = currentResources
+		local isDestro = GetSpecialization() == SPEC_WARLOCK_DESTRUCTION
+		if isDestro then
+			currentResources = math.floor(currentResources) + 1 -- ensure partial is shown
+		else
+			currentResources = math.floor(currentResources)
+		end
 
         --resources amount got updated?
         if (currentResources == resourceBar.lastResourceAmount and not forcedRefresh) then
@@ -1058,8 +1087,34 @@ end
 
         --which update method to use
         if (DB_PLATER_RESOURCE_SHOW_DEPLETED) then
-            return Plater.Resources.UpdateResources_WithDepleted(resourceBar, currentResources)
+            Plater.Resources.UpdateResources_WithDepleted(resourceBar, currentResources)
         else
-            return Plater.Resources.UpdateResources_NoDepleted(resourceBar, currentResources)
+            Plater.Resources.UpdateResources_NoDepleted(resourceBar, currentResources)
         end
+		
+		resourceBar.lastResourceAmount = actualResources
+		
+		for i = 1, resourceBar.widgetsInUseAmount do
+			local widget = resourceBar.widgets[i]
+			local fillAmount = Saturate(actualResources - i + 1)
+			local active = fillAmount >= 1
+			if active then
+				--widget:Show()
+				widget.texture:Show()
+				widget.fillBar:SetValue(0)
+				--widget.fillBar:Hide()
+			else
+				--widget:Hide()
+				widget.texture:Hide()
+				widget.fillBar:SetValue(fillAmount)
+				--widget.fillBar:Show()
+			end
+			widget.glowtexture:SetShown(fillAmount > 0 and fillAmount < 1)
+			if (widget.glowtexture:IsShown()) then
+				local sparkWidthIndex = math.floor(fillAmount * 10)
+				local fullOffset = widthByFillAmount[sparkWidthIndex]
+				widget.glowtexture:SetPoint("TOPLEFT", widget.fillBar:GetStatusBarTexture(), "TOP", -(fullOffset/2), 2)
+				widget.glowtexture:SetPoint("BOTTOMRIGHT", widget.fillBar:GetStatusBarTexture(), "TOP", fullOffset/2, -2)
+			end
+		end
     end

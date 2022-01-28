@@ -19,7 +19,10 @@ local CONST_SPECID_MAGE_ARCANE = 62
 local CONST_SPECID_ROGUE_ASSASSINATION = 259
 local CONST_SPECID_ROGUE_OUTLAW = 260
 local CONST_SPECID_ROGUE_SUBTLETY = 261
+local CONST_SPECID_DRUID_BALANCE = 102
 local CONST_SPECID_DRUID_FERAL = 103
+local CONST_SPECID_DRUID_GUARDIAN = 104
+local CONST_SPECID_DRUID_RESTORATION = 105
 local CONST_SPECID_PALADIN_HOLY = 65
 local CONST_SPECID_PALADIN_PROTECTION = 66
 local CONST_SPECID_PALADIN_RETRIBUTION = 70
@@ -40,12 +43,11 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 
         --> create background
             local backgroundTexture = parent:CreateTexture (nil, "BORDER")
-            backgroundTexture:SetTexture([[Interface\PLAYERFRAME\MonkUIAtlas]])
+            backgroundTexture:SetAtlas("MonkUI-OrbOff")
             backgroundTexture:SetDrawLayer("BORDER", 1)
             backgroundTexture:SetPoint("center", widgetFrame, "center", 0, 0)
             backgroundTexture:SetSize(20, 20)
             backgroundTexture:SetVertexColor(0.98431158065796, 0.99215465784073, 0.99999779462814, 0.99999779462814)
-            backgroundTexture:SetTexCoord(0.5513224029541, 0.61600479125977, 0.025, 0.1610000038147)
             parent.widgetsBackground[#parent.widgetsBackground + 1] = backgroundTexture
 
         --> single animation group
@@ -58,11 +60,11 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         ----------------------------------------------
 
         local BallTexture  = widgetFrame:CreateTexture (nil, "ARTWORK")
-        BallTexture:SetTexture ([[Interface\PLAYERFRAME\MonkUIAtlas]])
+        BallTexture:SetAtlas ("MonkUI-LightOrb")
         BallTexture:SetDrawLayer ("ARTWORK", 0)
         BallTexture:SetPoint ("center", widgetFrame, "center", 0, 0)
-        BallTexture:SetSize (20 * 0.90, 20 * 0.90)
-        BallTexture:SetTexCoord (0.6427360534668, 0.70684181213379, 0.02872227191925, 0.15893713951111)
+        --BallTexture:SetSize (20 * 0.90, 20 * 0.90)
+		BallTexture:SetSize (20, 20)
 
         --> animations for BallTexture
 
@@ -259,12 +261,11 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 
         --> create background
         local backgroundTexture = parent:CreateTexture("$parentbackgroundTexture", "OVERLAY")
-        backgroundTexture:SetTexture([[Interface\PLAYERFRAME\MageArcaneCharges]])
+        backgroundTexture:SetAtkas("Mage-ArcaneCharge")
         backgroundTexture:SetDrawLayer("OVERLAY", 0)
         backgroundTexture:SetPoint("center", widgetFrame, "center", 0, 0)
         backgroundTexture:SetSize(20, 20)
         backgroundTexture:SetDesaturated(true)
-        backgroundTexture:SetTexCoord(0.23063896179199, 0.39712070465088, 0.15204653739929, 0.45421440124512)
         backgroundTexture:SetBlendMode("ADD")
         widgetFrame.background = backgroundTexture
         parent.widgetsBackground[#parent.widgetsBackground + 1] = backgroundTexture
@@ -281,11 +282,10 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         ----------------------------------------------
 
         local comboPointTexture  = widgetFrame:CreateTexture("$parentcomboPointTextureTexture", "ARTWORK")
-        comboPointTexture:SetTexture([[Interface\PLAYERFRAME\MageArcaneCharges]])
+        comboPointTexture:SetAtlas("Mage-ArcaneCharge")
         comboPointTexture:SetDrawLayer("ARTWORK", 0)
         comboPointTexture:SetPoint("center", widgetFrame, "center", 0, 0)
         comboPointTexture:SetSize(20, 20)
-        comboPointTexture:SetTexCoord(0.25749048233032, 0.36221286773682, 0.51534648895264, 0.73018249511719)
 
         --> animations for comboPointTexture
 
@@ -320,15 +320,22 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
     local paladinChargesFunc = function(parent, frameName)
         --> create the main frame
         local widgetFrame = CreateFrame("frame", frameName, parent)
+		local curWidtgetNum = #parent.widgets + 1
 
         --> create background
         local backgroundTexture = parent:CreateTexture("$parentBackgroundTexture", "BACKGROUND")
-        backgroundTexture:SetTexture([[Interface\AddOns\Plater\images\paladin_combo_point_deactive]])
+        --backgroundTexture:SetTexture([[Interface\AddOns\Plater\images\paladin_combo_point_deactive]])
+		--backgroundTexture:SetTexCoord(0, 1, 0, 1)
+		if curWidtgetNum == 5 then
+			backgroundTexture:SetAtlas("nameplates-holypower4-off")
+			backgroundTexture:SetTexCoord(1,0,0,1)
+		else
+			backgroundTexture:SetAtlas("nameplates-holypower" .. curWidtgetNum .. "-off")
+		end
         backgroundTexture:SetDrawLayer("BACKGROUND", 0)
         backgroundTexture:SetPoint("center", widgetFrame, "center", 0, 0)
-        backgroundTexture:SetSize(20, 20)
+        backgroundTexture:SetSize(25, 19)
         backgroundTexture:SetDesaturated(true)
-        backgroundTexture:SetTexCoord(0, 1, 0, 1)
         widgetFrame.background = backgroundTexture
         parent.widgetsBackground[#parent.widgetsBackground + 1] = backgroundTexture
 
@@ -342,11 +349,18 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         end)
 
         local comboPointOn  = widgetFrame:CreateTexture("$parentcomboPointOnTexture", "ARTWORK")
-        comboPointOn:SetTexture([[Interface\AddOns\Plater\images\paladin_combo_point_active]])
+        --comboPointOn:SetTexture([[Interface\AddOns\Plater\images\paladin_combo_point_active]])
+		--comboPointOn:SetTexCoord(0, 1, 0, 1)
+		if curWidtgetNum == 5 then
+			comboPointOn:SetAtlas("nameplates-holypower4-on")
+			comboPointOn:SetTexCoord(1,0,0,1)
+		else
+			comboPointOn:SetAtlas("nameplates-holypower" .. curWidtgetNum .. "-on")
+		end
+		
         comboPointOn:SetDrawLayer("ARTWORK", 0)
         comboPointOn:SetPoint("center", widgetFrame, "center", 0, 0)
-        comboPointOn:SetSize(20, 20)
-        comboPointOn:SetTexCoord(0, 1, 0, 1)
+        comboPointOn:SetSize(25, 19)
 
         --> animations for comboPointOn
 
@@ -371,6 +385,88 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         widgetFrame.ShowAnimation = MainAnimationGroup
         return widgetFrame
     end
+	
+	local warlockChargesFunc = function(parent, frameName)
+        --> create the main frame
+        local widgetFrame = CreateFrame("frame", frameName, parent)
+		widgetFrame:SetSize(17,22)
+
+        --> create background
+        local backgroundTexture = parent:CreateTexture("$parenttopCircleTexture", "BACKGROUND")
+        backgroundTexture:SetAtlas("Warlock-EmptyShard")
+        backgroundTexture:SetDrawLayer("OVERLAY", 1)
+        backgroundTexture:SetPoint("center", widgetFrame, "center", 0, 0)
+        backgroundTexture:SetSize(17, 22)
+        widgetFrame.background = backgroundTexture
+        parent.widgetsBackground[#parent.widgetsBackground + 1] = backgroundTexture
+
+        --> single animation group
+        local MainAnimationGroup = widgetFrame:CreateAnimationGroup()
+        MainAnimationGroup:SetLooping("NONE")
+        MainAnimationGroup:SetToFinalAlpha(true)
+
+        ----------------------------------------------
+
+        local comboPointTexture  = widgetFrame:CreateTexture("$parentcomboPointTextureTexture", "ARTWORK")
+        comboPointTexture:SetAtlas("Warlock-ReadyShard")
+        comboPointTexture:SetDrawLayer("BORDER", 0)
+        comboPointTexture:SetPoint("center", widgetFrame, "center", 0, 0)
+        comboPointTexture:SetSize(17, 22)
+		
+		widgetFrame.texture = comboPointTexture
+		
+		local glowTexture  = widgetFrame:CreateTexture("$parentglowTextureTexture", "ARTWORK")
+		glowTexture:SetAtlas("Warlock-ReadyShard-Glow")
+        glowTexture:SetDrawLayer("BORDER", 0)
+        glowTexture:SetPoint("center", widgetFrame, "center", 0, 0)
+        glowTexture:SetSize(17, 22)
+		
+		widgetFrame.glowtexture = glowTexture
+		
+		--Warlock-FillShard
+		local fillBar = CreateFrame("StatusBar", "$parentFillBar", widgetFrame)
+		fillBar:SetAllPoints()
+		fillBar:SetFrameLevel(widgetFrame:GetFrameLevel() + 1)
+		fillBar:SetFrameStrata(widgetFrame:GetFrameStrata())
+		fillBar.barTexture = fillBar:CreateTexture ("$parentTexture", "ARTWORK")
+		fillBar.barTexture:SetAtlas("Warlock-FillShard")
+		fillBar:SetStatusBarTexture (fillBar.barTexture)
+		fillBar:SetOrientation("VERTICAL")
+		fillBar:SetMinMaxValues(0,1)
+		fillBar:SetAlpha(0.7)
+		fillBar:SetPoint("TOPLEFT", comboPointTexture, "TOPLEFT", 0, 0)
+		fillBar:SetPoint("BOTTOMRIGHT", comboPointTexture, "BOTTOMRIGHT", 0, 0)
+		
+		widgetFrame.fillBar = fillBar
+		
+		
+		comboPointTexture.scale = MainAnimationGroup:CreateAnimation("SCALE")
+        comboPointTexture.scale:SetTarget(comboPointTexture)
+        comboPointTexture.scale:SetOrder(1)
+        comboPointTexture.scale:SetDuration(0.096000000834465)
+        comboPointTexture.scale:SetFromScale(0, 0)
+        comboPointTexture.scale:SetToScale(1, 1)
+        comboPointTexture.scale:SetOrigin("center", 0, 0)
+        comboPointTexture.alpha = MainAnimationGroup:CreateAnimation("ALPHA")
+        comboPointTexture.alpha:SetTarget(comboPointTexture)
+        comboPointTexture.alpha:SetOrder(1)
+        comboPointTexture.alpha:SetDuration(0.096000000834465)
+        comboPointTexture.alpha:SetFromAlpha(0)
+        comboPointTexture.alpha:SetToAlpha(1)
+        comboPointTexture.scale = MainAnimationGroup:CreateAnimation("SCALE")
+        comboPointTexture.scale:SetTarget(comboPointTexture)
+        comboPointTexture.scale:SetOrder(2)
+        comboPointTexture.scale:SetDuration(0.096000000834465)
+        comboPointTexture.scale:SetFromScale(1.3097063302994, 1.3097063302994)
+        comboPointTexture.scale:SetToScale(1, 1)
+        comboPointTexture.scale:SetOrigin("center", 0, 0)
+
+        --> test the animation
+        --MainAnimationGroup:Play()
+
+        widgetFrame.ShowAnimation = MainAnimationGroup
+        return widgetFrame
+    end
 
     resourceCreationFunctions[CONST_SPECID_DRUID_FERAL] = comboPointFunc
     resourceCreationFunctions[CONST_SPECID_ROGUE_ASSASSINATION] = comboPointFunc
@@ -380,3 +476,9 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
     resourceCreationFunctions[CONST_SPECID_PALADIN_HOLY] = paladinChargesFunc
     resourceCreationFunctions[CONST_SPECID_PALADIN_PROTECTION] = paladinChargesFunc
     resourceCreationFunctions[CONST_SPECID_PALADIN_RETRIBUTION] = paladinChargesFunc
+	resourceCreationFunctions[CONST_SPECID_WARLOCK_AFFLICTION] = warlockChargesFunc
+	resourceCreationFunctions[CONST_SPECID_WARLOCK_DEMONOLOGY] = warlockChargesFunc
+	resourceCreationFunctions[CONST_SPECID_WARLOCK_DESTRUCTION] = warlockChargesFunc
+	--resourceCreationFunctions[CONST_SPECID_DK_UNHOLY] = deathknightChargesFunc
+	--resourceCreationFunctions[CONST_SPECID_DK_FROST] = deathknightChargesFunc
+	--resourceCreationFunctions[CONST_SPECID_DK_BLOOD] = deathknightChargesFunc
