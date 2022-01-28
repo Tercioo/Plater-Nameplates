@@ -110,7 +110,7 @@ function Plater.Resources.BuildResourceOptionsTab(frame)
     local resourceDisplaysAvailable = { --name should be able to get from the client
         {name = "Combo Point", defaultClass = {"DRUID", "ROGUE"}, enumName = CONST_ENUMNAME_COMBOPOINT, iconTexture = false, iconAtlas = "ClassOverlay-ComboPoint"}, --4
         {name = "Holy Power", defaultClass = {"PALADIN"}, enumName = CONST_ENUMNAME_HOLYPOWER, iconTexture = [[Interface\PLAYERFRAME\ClassOverlayHolyPower]], iconCoords = {0.530999, 0.6619999, 0.01600000, 0.3479999}}, --9
-        --{name = "Runes", defaultClass = {"DEATHKNIGHT"}, enumName = CONST_ENUMNAME_RUNES, iconTexture = [[Interface\PLAYERFRAME\UI-PlayerFrame-Deathknight-SingleRune]], iconCoords = {0, 1, 0, 1}}, --5
+        {name = "Runes", defaultClass = {"DEATHKNIGHT"}, enumName = CONST_ENUMNAME_RUNES, iconTexture = [[Interface\PLAYERFRAME\UI-PlayerFrame-Deathknight-SingleRune]], iconCoords = {0, 1, 0, 1}}, --5
         {name = "Arcane Charges", defaultClass = {"MAGE"}, enumName = CONST_ENUMNAME_ARCANECHARGES, iconTexture = [[Interface\PLAYERFRAME\MageArcaneCharges]], iconCoords = {64/256, 91/256, 64/128, 91/128}}, --16
         {name = "Chi", defaultClass = {"MONK"}, enumName = CONST_ENUMNAME_CHI, iconTexture = [[Interface\PLAYERFRAME\MonkLightPower]], iconCoords = {0.1, .9, 0.1, .9}}, --12
         {name = "Soul Shards", defaultClass = {"WARLOCK"}, enumName = CONST_ENUMNAME_SOULCHARGES, iconTexture = [[Interface\PLAYERFRAME\UI-WARLOCKSHARD]], iconCoords = {0/64, 18/64, 0/128, 18/128}}, --7

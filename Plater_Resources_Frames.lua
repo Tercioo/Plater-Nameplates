@@ -394,7 +394,7 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         --> create background
         local backgroundTexture = parent:CreateTexture("$parenttopCircleTexture", "BACKGROUND")
         backgroundTexture:SetAtlas("Warlock-EmptyShard")
-        backgroundTexture:SetDrawLayer("OVERLAY", 1)
+        backgroundTexture:SetDrawLayer("BACKGROUND", 1)
         backgroundTexture:SetPoint("center", widgetFrame, "center", 0, 0)
         backgroundTexture:SetSize(17, 22)
         widgetFrame.background = backgroundTexture
@@ -416,7 +416,7 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 		widgetFrame.texture = comboPointTexture
 		
 		local glowTexture  = widgetFrame:CreateTexture("$parentglowTextureTexture", "ARTWORK")
-		glowTexture:SetAtlas("Warlock-ReadyShard-Glow")
+		glowTexture:SetAtlas("Warlock-Shard-Spark")
         glowTexture:SetDrawLayer("BORDER", 0)
         glowTexture:SetPoint("center", widgetFrame, "center", 0, 0)
         glowTexture:SetSize(17, 22)
@@ -467,6 +467,120 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         widgetFrame.ShowAnimation = MainAnimationGroup
         return widgetFrame
     end
+	
+	--helper from blizz
+	local RUNE_KEY_BY_SPEC = {
+		[1] = "Blood",
+		[2] = "Frost",
+		[3] = "Unholy",
+	}
+	function Plater.Resources.GetRuneKeyBySpec(specIndex)
+		return RUNE_KEY_BY_SPEC[specIndex] or "Base";
+	end
+	local CD_EDGE_BY_SPEC = {
+		[1] = "BloodUnholy",
+		[2] = "Frost",
+		[3] = "BloodUnholy",
+	}
+	function Plater.Resources.GetCDEdgeBySpec(specIndex)
+		return CD_EDGE_BY_SPEC[specIndex] or "BloodUnholy";
+	end
+	
+	local deathknightChargesFunc = function(parent, frameName)
+		local specIndex = GetSpecialization()
+		
+        --> create the main frame
+        --local widgetFrame = CreateFrame("Button", frameName, parent, "ClassNameplateBarDeathKnightRuneButton")
+		local widgetFrame = CreateFrame("Button", frameName, parent)
+		widgetFrame:SetSize(16,16)
+		
+		--> single animation group
+		local MainAnimationGroup = widgetFrame:CreateAnimationGroup()
+		MainAnimationGroup:SetLooping("NONE")
+		MainAnimationGroup:SetToFinalAlpha(true)
+		
+		local comboPointTexture
+		local test = nil 
+		
+		--rune cd
+		local cooldown = CreateFrame("Cooldown", "$parentCooldown", widgetFrame, "CooldownFrameTemplate")
+		cooldown:SetPoint("center", widgetFrame, "center", 0, 0)
+		cooldown:SetSize(40, 40)
+		cooldown:SetReverse(true)
+		cooldown:SetDrawBling(false)
+		cooldown:SetHideCountdownNumbers(true)
+		cooldown:SetUseCircularEdge(true)
+		cooldown:SetSwipeColor(1, 1, 1, 1)
+		cooldown:SetSwipeTexture("Interface\\PlayerFrame\\DK-"..Plater.Resources.GetRuneKeyBySpec(specIndex).."-Rune-CDFill")
+		cooldown:SetEdgeTexture("Interface\\PlayerFrame\\DK-"..Plater.Resources.GetCDEdgeBySpec(specIndex).."-Rune-CDSpark")
+		--cooldown:SetFrameLevel(widgetFrame:GetFrameLevel() + 5)
+		--cooldown:SetFrameStrata(widgetFrame:GetFrameStrata())
+		
+		widgetFrame.cooldown = cooldown
+
+		--> create background
+		local backgroundTexture = widgetFrame:CreateTexture("$parenttopCircleTexture", "BACKGROUND")
+		backgroundTexture:SetAtlas("DK-Rune-CD")
+		--backgroundTexture:SetDrawLayer("BACKGROUND", 1)
+		backgroundTexture:SetPoint("center", widgetFrame, "center", 0, 0)
+		backgroundTexture:SetSize(16, 16)
+		backgroundTexture:SetTexelSnappingBias(0.0)
+		backgroundTexture:SetSnapToPixelGrid(false)
+		widgetFrame.background = backgroundTexture
+		parent.widgetsBackground[#parent.widgetsBackground + 1] = backgroundTexture
+
+		----------------------------------------------
+
+		comboPointTexture = widgetFrame:CreateTexture("$parentcomboPointTextureTexture", "ARTWORK")
+		comboPointTexture:SetAtlas("DK-"..Plater.Resources.GetRuneKeyBySpec(specIndex).."-Rune-Ready")
+		--comboPointTexture:SetTexture([[Interface\PlayerFrame\UI-PlayerFrame-Deathknight-SingleRune]])
+		--comboPointTexture:SetDrawLayer("ARTWORK", 0)
+		comboPointTexture:SetPoint("center", widgetFrame, "center", 0, 0)
+		comboPointTexture:SetSize(16, 16)
+		comboPointTexture:SetTexelSnappingBias(0.0)
+		comboPointTexture:SetSnapToPixelGrid(false)
+		
+		widgetFrame.texture = comboPointTexture
+		
+		--[[
+		local glowTexture  = widgetFrame:CreateTexture("$parentglowTextureTexture", "OVERLAY")
+		glowTexture:SetAtlas("DK-Rune-Glow")
+		glowTexture:SetDrawLayer("OVERLAY", 0)
+		glowTexture:SetPoint("center", widgetFrame, "center", 0, 0)
+		glowTexture:SetSize(16, 16)
+		glowTexture:SetTexelSnappingBias(0.0);
+		glowTexture:SetSnapToPixelGrid(false);
+		
+		widgetFrame.glowtexture = glowTexture
+		]]--
+		
+		comboPointTexture.scale = MainAnimationGroup:CreateAnimation("SCALE")
+        comboPointTexture.scale:SetTarget(comboPointTexture)
+        comboPointTexture.scale:SetOrder(1)
+        comboPointTexture.scale:SetDuration(0.096000000834465)
+        comboPointTexture.scale:SetFromScale(0, 0)
+        comboPointTexture.scale:SetToScale(1, 1)
+        comboPointTexture.scale:SetOrigin("center", 0, 0)
+        comboPointTexture.alpha = MainAnimationGroup:CreateAnimation("ALPHA")
+        comboPointTexture.alpha:SetTarget(comboPointTexture)
+        comboPointTexture.alpha:SetOrder(1)
+        comboPointTexture.alpha:SetDuration(0.096000000834465)
+        comboPointTexture.alpha:SetFromAlpha(0)
+        comboPointTexture.alpha:SetToAlpha(1)
+        comboPointTexture.scale = MainAnimationGroup:CreateAnimation("SCALE")
+        comboPointTexture.scale:SetTarget(comboPointTexture)
+        comboPointTexture.scale:SetOrder(2)
+        comboPointTexture.scale:SetDuration(0.096000000834465)
+        comboPointTexture.scale:SetFromScale(1.3097063302994, 1.3097063302994)
+        comboPointTexture.scale:SetToScale(1, 1)
+        comboPointTexture.scale:SetOrigin("center", 0, 0)
+
+        --> test the animation
+        --MainAnimationGroup:Play()
+
+        widgetFrame.ShowAnimation = MainAnimationGroup
+        return widgetFrame
+    end
 
     resourceCreationFunctions[CONST_SPECID_DRUID_FERAL] = comboPointFunc
     resourceCreationFunctions[CONST_SPECID_ROGUE_ASSASSINATION] = comboPointFunc
@@ -479,6 +593,6 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 	resourceCreationFunctions[CONST_SPECID_WARLOCK_AFFLICTION] = warlockChargesFunc
 	resourceCreationFunctions[CONST_SPECID_WARLOCK_DEMONOLOGY] = warlockChargesFunc
 	resourceCreationFunctions[CONST_SPECID_WARLOCK_DESTRUCTION] = warlockChargesFunc
-	--resourceCreationFunctions[CONST_SPECID_DK_UNHOLY] = deathknightChargesFunc
-	--resourceCreationFunctions[CONST_SPECID_DK_FROST] = deathknightChargesFunc
-	--resourceCreationFunctions[CONST_SPECID_DK_BLOOD] = deathknightChargesFunc
+	resourceCreationFunctions[CONST_SPECID_DK_UNHOLY] = deathknightChargesFunc
+	resourceCreationFunctions[CONST_SPECID_DK_FROST] = deathknightChargesFunc
+	resourceCreationFunctions[CONST_SPECID_DK_BLOOD] = deathknightChargesFunc

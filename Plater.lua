@@ -2445,7 +2445,7 @@ local class_specs_coords = {
 		end,
 
 		PLAYER_SPECIALIZATION_CHANGED = function()
-			C_Timer.After (1.5, Plater.Resources.CanUsePlaterResourceFrame) --~resource
+			C_Timer.After (1.5, Plater.Resources.OnSpecChanged) --~resource
 			C_Timer.After (2, Plater.GetSpellForRangeCheck)
 			C_Timer.After (2, Plater.GetHealthCutoffValue)
 			C_Timer.After (1, Plater.DispatchTalentUpdateHookEvent)
