@@ -261,7 +261,7 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 
         --> create background
         local backgroundTexture = parent:CreateTexture("$parentbackgroundTexture", "OVERLAY")
-        backgroundTexture:SetAtkas("Mage-ArcaneCharge")
+        backgroundTexture:SetAtlas("Mage-ArcaneCharge")
         backgroundTexture:SetDrawLayer("OVERLAY", 0)
         backgroundTexture:SetPoint("center", widgetFrame, "center", 0, 0)
         backgroundTexture:SetSize(20, 20)
