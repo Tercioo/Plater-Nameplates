@@ -347,7 +347,7 @@ end
         mainResourceFrame.resourceBars[CONST_SPECID_DRUID_FERAL] = newResourceBar
 
         newResourceBar.resourceId = SPELL_POWER_COMBO_POINTS
-        newResourceBar.updateResourceFunc = resourceWidgetsFunctions.OnResourceChanged --this was: resourceWidgetsFunctions.OnComboPointsChanged, change due to all classes can use any resource display
+        newResourceBar.updateResourceFunc = resourceWidgetsFunctions.OnComboPointsChanged
         tinsert(mainResourceFrame.allResourceBars, newResourceBar)
         mainResourceFrame.resourceBarsByEnumName[CONST_ENUMNAME_COMBOPOINT] = newResourceBar
         return newResourceBar
@@ -997,7 +997,7 @@ end
         end
     end
 
-    --rogue/druid CP --NOT IN USE ATM
+    --rogue/druid CP
     function resourceWidgetsFunctions.OnComboPointsChanged(mainResourceFrame, resourceBar, forcedRefresh, event, unit, powerType)
         if (event == "UNIT_MAXPOWER" and DB_PLATER_RESOURCE_SHOW_DEPLETED) then
             Plater.Resources.UpdateResourcesFor_ShowDepleted(mainResourceFrame, resourceBar)

@@ -198,7 +198,7 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         backgroundTexture:SetAtlas("ClassOverlay-ComboPoint-Off")
         backgroundTexture:SetDrawLayer("OVERLAY", 1)
         backgroundTexture:SetPoint("center", widgetFrame, "center", 0, 0)
-        backgroundTexture:SetSize(20, 20)
+        backgroundTexture:SetSize(13, 13)
         backgroundTexture:SetVertexColor(0.96470373868942, 0.99999779462814, 0.98823314905167, 0.99999779462814)
         widgetFrame.background = backgroundTexture
         parent.widgetsBackground[#parent.widgetsBackground + 1] = backgroundTexture
@@ -214,7 +214,7 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         comboPointTexture:SetAtlas("ClassOverlay-ComboPoint")
         comboPointTexture:SetDrawLayer("BORDER", 0)
         comboPointTexture:SetPoint("center", widgetFrame, "center", 0, 0)
-        comboPointTexture:SetSize(20, 20)
+        comboPointTexture:SetSize(13, 13)
         
         widgetFrame.texture = comboPointTexture
 
