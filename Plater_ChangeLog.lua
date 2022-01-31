@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1642115747,  "Backend Change", "January 31st, 2022", "Range check range setting should not reset when selecting a range which is not native to your class/spec spells.", "cont1nuity"},
 			{1642115747,  "Backend Change", "January 28th, 2022", "Changing TBC max nameplate distance option to the correct value.", "cont1nuity"},
 			{1642115747,  "Backend Change", "January 28th, 2022", "Updating TOC for classic/tbc versions.", "cont1nuity"},
 			{1642115747,  "Bug Fix", "January 14th, 2022", "Fixing aura frame alpha settings for target/range alpha.", "cont1nuity"},
