@@ -4024,7 +4024,11 @@ function Plater.OnInit() --private --~oninit ~init
 		end
 	
 	--schedule data update
-		C_Timer.After (0.1, Plater.UpdatePlateClickSpace)
+		if IS_WOW_PROJECT_MAINLINE then
+			C_Timer.After (0.1, Plater.UpdatePlateClickSpace)
+		else
+			Plater.UpdatePlateClickSpace() -- try updating immediately for classic
+		end
 		--C_Timer.After (1, Plater.GetSpellForRangeCheck)
 		C_Timer.After (4, Plater.GetHealthCutoffValue)
 		C_Timer.After (4.2, Plater.ForceCVars)
@@ -4139,7 +4143,11 @@ function Plater.OnInit() --private --~oninit ~init
 			
 			C_Timer.After (0.2, Plater.ForceCVars)
 			--C_Timer.After (0.3, Plater.GetSpellForRangeCheck)
-			C_Timer.After (0.4, Plater.UpdatePlateClickSpace)
+			if IS_WOW_PROJECT_MAINLINE then
+				C_Timer.After (0.4, Plater.UpdatePlateClickSpace)
+			else
+				Plater.UpdatePlateClickSpace() -- update immediately for classic/tbc
+			end
 			
 			
 			-- ensure OmniCC settings are up to date
