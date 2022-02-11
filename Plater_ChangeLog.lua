@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1642115747,  "Bug Fix", "February 11th, 2022", "NPC Colors search should no longer break when the zone or name of an npc are unknown.", "cont1nuity"},
+			{1642115747,  "Bug Fix", "February 11th, 2022", "Small fixes for DK resource color.", "cont1nuity"},
 			{1642115747,  "Backend Change", "January 31st, 2022", "Range check range setting should not reset when selecting a range which is not native to your class/spec spells.", "cont1nuity"},
 			{1642115747,  "Backend Change", "January 28th, 2022", "Changing TBC max nameplate distance option to the correct value.", "cont1nuity"},
 			{1642115747,  "Backend Change", "January 28th, 2022", "Updating TOC for classic/tbc versions.", "cont1nuity"},

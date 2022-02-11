@@ -510,7 +510,7 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 		cooldown:SetDrawBling(false)
 		cooldown:SetHideCountdownNumbers(true)
 		cooldown:SetUseCircularEdge(true)
-		cooldown:SetSwipeColor(1, 1, 1, 1)
+		--cooldown:SetSwipeColor(1, 1, 1, 1)
 		cooldown:SetSwipeTexture("Interface\\PlayerFrame\\DK-"..Plater.Resources.GetRuneKeyBySpec(specIndex).."-Rune-CDFill")
 		cooldown:SetEdgeTexture("Interface\\PlayerFrame\\DK-"..Plater.Resources.GetCDEdgeBySpec(specIndex).."-Rune-CDSpark")
 		--cooldown:SetFrameLevel(widgetFrame:GetFrameLevel() + 5)
