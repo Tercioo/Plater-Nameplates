@@ -1287,6 +1287,7 @@ end
 	
 		--icon selection
 		local script_icon_callback = function (texture)
+			mainFrame.ScriptIconButtonTexture = texture
 			mainFrame.ScriptIconButton:SetIcon (texture)
 		end
 		local script_icon_label = DF:CreateLabel (parent, "Icon:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
@@ -1825,7 +1826,7 @@ function Plater.CreateHookingPanel()
 		--script name
 		scriptObject.Name = hookFrame.ScriptNameTextEntry.text
 		--script icon
-		scriptObject.Icon = hookFrame.ScriptIconButton:GetIconTexture()
+		scriptObject.Icon = hookFrame.ScriptIconButtonTexture or hookFrame.ScriptIconButton:GetIconTexture()
 		--script description
 		scriptObject.Desc = hookFrame.ScriptDescTextEntry.text
 		--script priority
@@ -2015,6 +2016,7 @@ function Plater.CreateHookingPanel()
 		hookFrame.ScriptNameTextEntry.text =  scriptObject.Name
 		hookFrame.ScriptNameTextEntry:ClearFocus()
 		hookFrame.ScriptIconButton:SetIcon (scriptObject.Icon)
+		hookFrame.ScriptIconButtonTexture = scriptObject.Icon
 		hookFrame.ScriptDescTextEntry.text = scriptObject.Desc or ""
 		hookFrame.ScriptDescTextEntry:ClearFocus()
 		hookFrame.ScriptPrioSlideEntry.value = round(scriptObject.Prio or 99)
@@ -2325,6 +2327,7 @@ function Plater.CreateHookingPanel()
 		hookFrame.ScriptNameTextEntry:SetText ("")
 		hookFrame.ScriptNameTextEntry:Disable()
 		hookFrame.ScriptIconButton:SetIcon ("")
+		hookFrame.ScriptIconButtonTexture = nil
 		hookFrame.ScriptIconButton:Disable()
 		hookFrame.ScriptDescTextEntry:SetText ("")
 		hookFrame.ScriptDescTextEntry:Disable()
@@ -3004,7 +3007,7 @@ function Plater.CreateScriptingPanel()
 		--script name
 		scriptObject.Name = scriptingFrame.ScriptNameTextEntry.text
 		--script icon
-		scriptObject.Icon = scriptingFrame.ScriptIconButton:GetIconTexture()
+		scriptObject.Icon = scriptingFrame.ScriptIconButtonTexture or scriptingFrame.ScriptIconButton:GetIconTexture()
 		--script description
 		scriptObject.Desc = scriptingFrame.ScriptDescTextEntry.text
 		--script prio
@@ -3300,6 +3303,7 @@ function Plater.CreateScriptingPanel()
 			scriptingFrame.ScriptNameTextEntry.text =  scriptObject.Name
 			scriptingFrame.ScriptNameTextEntry:ClearFocus()
 			scriptingFrame.ScriptIconButton:SetIcon (scriptObject.Icon)
+			scriptingFrame.ScriptIconButtonTexture = scriptObject.Icon
 			scriptingFrame.ScriptDescTextEntry.text = scriptObject.Desc or ""
 			scriptingFrame.ScriptDescTextEntry:ClearFocus()
 			scriptingFrame.ScriptPrioSlideEntry.value = round(scriptObject.Prio or 99)
@@ -3402,6 +3406,7 @@ function Plater.CreateScriptingPanel()
 			if (not scriptObject.Icon or scriptObject.Icon == "") then
 				local _, _, spellIcon = GetSpellInfo (spellId)
 				scriptingFrame.ScriptIconButton:SetIcon (spellIcon)
+				scriptingFrame.ScriptIconButtonTexture = spellIcon
 			end
 			
 		elseif (scriptObject.ScriptType == 3) then
