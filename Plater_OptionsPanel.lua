@@ -2668,8 +2668,8 @@ Plater.CreateAuraTesting()
 					
 						for i = 1, #data do
 							local npcID = data [i][1]
-							local npcName = data [i][2]
-							local zoneName = data [i][3]
+							local npcName = data [i][2] or "UNKNOWN"
+							local zoneName = data [i][3] or "UNKNOWN"
 							local color = DB_NPCID_COLORS [npcID] and DB_NPCID_COLORS [npcID][1] and DB_NPCID_COLORS [npcID][3] or "white" --has | is enabled | color
 						
 							if (npcName:lower():find (IsSearchingFor) or zoneName:lower():find (IsSearchingFor)) then
