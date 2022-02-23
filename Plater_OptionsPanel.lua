@@ -6388,12 +6388,15 @@ local relevance_options = {
 			get = function() return PlaterDBChr.resources_on_target end,
 			set = function (self, fixedparam, value) 
 				PlaterDBChr.resources_on_target = value
+				if value then
+					Plater.db.profile.resources_settings.global_settings.show = false
+				end
 				if (not InCombatLockdown()) then
 					SetCVar (CVAR_RESOURCEONTARGET, CVAR_DISABLED) -- reset this to false always, as it conflicts
 				end
 			end,
 			name = "Show Resources on Target",
-			desc = "Shows your resource such as combo points above your current target.\n\nCharacter specific setting!",
+			desc = "Shows your resource such as combo points above your current target.\nUses Blizzard default resources and disables Platers own resources.\n\nCharacter specific setting!",
 			nocombat = true,
 			hidden = IS_WOW_PROJECT_NOT_MAINLINE,
 		},
