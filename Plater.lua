@@ -4378,6 +4378,11 @@ function Plater.OnInit() --private --~oninit ~init
 				return
 			end
 			
+			if Plater.db.profile.resources_settings.global_settings.show then
+				resourceFrame:Hide()
+				return
+			end
+			
 			--> set scale based on Plater user settings
 			resourceFrame:SetScale (Plater.db.profile.resources.scale)
 			resourceFrame:SetAlpha (Plater.db.profile.resources.alpha)
