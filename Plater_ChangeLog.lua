@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1642115747,  "Backend Change", "February 23rd, 2022", "9.2 TOC update.", "cont1nuity"},
 			{1642115747,  "Bug Fix", "February 20th, 2022", "Fixing an issue with script icons breaking under some circumstances.", "cont1nuity"},
 			{1642115747,  "Bug Fix", "February 11th, 2022", "NPC Colors search should no longer break when the zone or name of an npc are unknown.", "cont1nuity"},
 			{1642115747,  "Bug Fix", "February 11th, 2022", "Small fixes for DK resource color.", "cont1nuity"},
