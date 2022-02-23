@@ -4215,7 +4215,7 @@ function Plater.OnInit() --private --~oninit ~init
 			
 			--check addons incompatibility
 			--> Plater has issues with ElvUI due to be using the same namespace for unitFrame and healthBar
-			C_Timer.After (5, function()
+			C_Timer.After (15, function()
 				if (IsAddOnLoaded ("ElvUI")) then
 					if (ElvUI[1] and ElvUI[1].private and ElvUI[1].private.nameplates and ElvUI[1].private.nameplates.enable) then
 						Plater:Msg ("'ElvUI Nameplates' and 'Plater Nameplates' are enabled and both nameplates won't work together.")
@@ -4223,6 +4223,9 @@ function Plater.OnInit() --private --~oninit ~init
 					end
 				end 
 			end)
+
+			-- ensure resources are up to date
+			C_Timer.After (3, Plater.Resources.OnSpecChanged)
 
 		end
 		Plater:RegisterEvent ("PLAYER_LOGIN")
