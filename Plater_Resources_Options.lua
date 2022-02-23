@@ -30,6 +30,7 @@ local CONST_ENUMNAME_ARCANECHARGES = "ArcaneCharges"
 local CONST_ENUMNAME_CHI = "Chi"
 local CONST_ENUMNAME_SOULCHARGES = "SoulShards"
 
+local startX, startY, heightSize = 10, -130, 710
 
 --templates
 local options_text_template = DF:GetTemplate("font", "OPTIONS_FONT_TEMPLATE")
@@ -221,13 +222,18 @@ function Plater.Resources.BuildResourceOptionsTab(frame)
 	end
 
     selectResourceScrollBox:Refresh()
+	
+	--hide for now and move other settings over ~TODO
+	selectResourceLabel:Hide()
+	selectResourceScrollBox:Hide()
 
     --center options
-    local optionsFrame = CreateFrame("frame", "$parentOptionsFrame", frame, "BackdropTemplate")
-    optionsFrame:SetWidth(CONST_OPTIONSFRAME_WIDTH)
-    optionsFrame:SetPoint("topleft", selectResourceScrollBox, "topright", 26, 0)
-    optionsFrame:SetPoint("bottomleft", selectResourceScrollBox, "bottomright", 26, 0)
-    DF:ApplyStandardBackdrop(optionsFrame)
+	--TODO disabled for now
+    --local optionsFrame = CreateFrame("frame", "$parentOptionsFrame", frame, "BackdropTemplate")
+    --optionsFrame:SetWidth(CONST_OPTIONSFRAME_WIDTH)
+    --optionsFrame:SetPoint("topleft", selectResourceScrollBox, "topright", 26, 0)
+    --optionsFrame:SetPoint("bottomleft", selectResourceScrollBox, "bottomright", 26, 0)
+    --DF:ApplyStandardBackdrop(optionsFrame)
 
 	--anchor table
 	local anchor_names = {
@@ -284,6 +290,9 @@ function Plater.Resources.BuildResourceOptionsTab(frame)
             get = function() return Plater.db.profile.resources_settings.global_settings.show end,
             set = function (self, fixedparam, value)
                 Plater.db.profile.resources_settings.global_settings.show = value
+				if value then
+					PlaterDBChr.resources_on_target = false
+				end
                 Plater.UpdateAllPlates()
             end,
             name = "Use Plater Rsources",
@@ -407,6 +416,8 @@ function Plater.Resources.BuildResourceOptionsTab(frame)
     end
 
 	_G.C_Timer.After(1.4, function()
-		DF:BuildMenu(optionsFrame, globalResourceOptions, 5, -5, CONST_SCROLLBOX_HEIGHT, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, optionChangedCallback)
+		--TODO to other frame for now
+		--DF:BuildMenu(optionsFrame, globalResourceOptions, 5, -5, CONST_SCROLLBOX_HEIGHT, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, optionChangedCallback)
+		DF:BuildMenu(frame, globalResourceOptions, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, optionChangedCallback)
 	end)
 end
