@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1645778212,  "Backend Change", "February 25th, 2022", "NPC Colors list should be auto filled with Thorgast NPCs.", "cont1nuity"},
+			
 			{1645624151,  "Backend Change", "February 23rd, 2022", "Additional work on resources.", "cont1nuity"},
 			{1645624151,  "Backend Change", "February 23rd, 2022", "9.2 TOC update.", "cont1nuity"},
 			{1645624151,  "Bug Fix", "February 20th, 2022", "Fixing an issue with script icons breaking under some circumstances.", "cont1nuity"},
