@@ -1739,7 +1739,6 @@ local PlaterNamePlateAuraTooltip = CreatePlaterNamePlateAuraTooltip()
 			for spellId, _ in pairs (DF.CrowdControlSpells) do
 				local spellName = GetSpellInfo (spellId)
 				if (spellName) then
-					--SPECIAL_AURAS_AUTO_ADDED [spellName] = true
 					SPECIAL_AURAS_AUTO_ADDED [spellId] = true
 					CROWDCONTROL_AURA_IDS [spellId] = true
 				end
@@ -1751,7 +1750,6 @@ local PlaterNamePlateAuraTooltip = CreatePlaterNamePlateAuraTooltip()
 			for spellId, _ in pairs (DF.CooldownsAttack) do
 				local spellName = GetSpellInfo (spellId)
 				if (spellName) then
-					--SPECIAL_AURAS_AUTO_ADDED [spellName] = true
 					SPECIAL_AURAS_AUTO_ADDED [spellId] = true
 					OFFENSIVE_AURA_IDS [spellId] = true
 				end
@@ -1763,7 +1761,6 @@ local PlaterNamePlateAuraTooltip = CreatePlaterNamePlateAuraTooltip()
 			for spellId, _ in pairs (DF.CooldownsAllDeffensive) do
 				local spellName = GetSpellInfo (spellId)
 				if (spellName) then
-					--SPECIAL_AURAS_AUTO_ADDED [spellName] = true
 					SPECIAL_AURAS_AUTO_ADDED [spellId] = true
 					DEFENSIVE_AURA_IDS [spellId] = true
 				end
