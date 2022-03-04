@@ -5608,9 +5608,6 @@ end
 			--make the db path smaller for performance
 			local actorTypeDBConfig = DB_PLATE_CONFIG [tickFrame.actorType]
 			
-			--perform a range check
-			Plater.CheckRange (tickFrame.PlateFrame, (deltaTime == 999))
-			
 			--health cutoff (execute range) - don't show if the nameplate is the personal bar
 			if (DB_USE_HEALTHCUTOFF and not unitFrame.IsSelf and not unitFrame.PlayerCannotAttack) then
 				local healthPercent = (healthBar.currentHealth or 1) / (healthBar.currentHealthMax or 1)
@@ -5698,6 +5695,9 @@ end
 					Plater.UpdateNameplateThread (unitFrame)
 				end
 			end
+			
+			--perform a range check
+			Plater.CheckRange (tickFrame.PlateFrame, (deltaTime == 999))
 			
 			--if not in combat, check if can show the percent health out of combat
 			if (actorTypeDBConfig.percent_text_enabled and (((profile.use_player_combat_state and PLAYER_IN_COMBAT or unitFrame.InCombat)) or actorTypeDBConfig.percent_text_ooc)) then
@@ -10379,6 +10379,9 @@ end
 			},
 			["Export_NpcColors"] = true,
 			["Export_CastColors"] = true,
+			["ScriptAura"] = true,
+			["ScriptCastBar"] = true,
+			["ScriptUnit"] = true,
 		},
 		
 		["DetailsFramework"] = {
