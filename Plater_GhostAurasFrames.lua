@@ -266,6 +266,8 @@ function Plater.Auras.BuildGhostAurasOptionsTab(frame)
 			get = function() return Plater.db.profile.ghost_auras.enabled end,
 			set = function (self, fixedparam, value)
 				Plater.db.profile.ghost_auras.enabled = value
+                Plater.RefreshAuraCache()
+                Plater.UpdateAuraCache()
 				--call an update on auras to remove the ghost auras currently shown
 			end,
 			name = "Enabled",
