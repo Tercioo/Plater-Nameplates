@@ -729,10 +729,24 @@ do
 			end
 		end
 	})
+
+	--#19 9.2 add default ghost auras
+	tinsert (PlaterPatchLibrary, {
+		Notes = {
+			"- Added default ghost aura spells."
+		},
+		Func = function()
+			local auraTable = Plater.db.profile.ghost_auras.auras
+			auraTable["PRIEST"][3][589] = true --shadow word: pain
+			auraTable["PRIEST"][3][34914] = true --vampiric touch
+			auraTable["WARLOCK"][1][172] = true --corruption
+			auraTable["WARLOCK"][1][980] = true --agony
+		end
+	})
 end
 
 
---Patches to apply only when the profiling is running for the first time
+--Patches to apply only when the profile is running for the first time
 do
 	PlaterPatchLibraryForNewProfiles = {}
 

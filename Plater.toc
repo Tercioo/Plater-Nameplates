@@ -44,6 +44,8 @@ Plater_Auras.lua
 Plater_Resources.lua
 Plater_Resources_Frames.lua
 Plater_Resources_Options.lua
+Plater_GhostAuras.lua
+Plater_GhostAurasFrames.lua
 Plater_OptionsPanel.lua
 Plater_ScriptingOptions.lua
 Plater_ScriptingPanels.lua

@@ -187,10 +187,10 @@ function Plater.OpenOptionsPanel()
 	
 	local frame_options = {
 		y_offset = 0,
-		button_width = 102,
+		button_width = 101,
 		button_height = 20,
 		button_x = 210,
-		button_y = -7,
+		button_y = -3,
 		button_text_size = 10,
 		right_click_y = 5,
 		rightbutton_always_close = true,
@@ -227,6 +227,9 @@ function Plater.OpenOptionsPanel()
 		{name = "AdvancedConfig", title = L["OPTIONS_TABNAME_ADVANCED"]},
 		{name = "resourceFrame", title = "Combo Points"}, --localize-me
 		{name = "SearchFrame", title = "Search"}, --localize-me
+
+		{name = "GhostAurasFrame", title = "Ghost Auras"}, --localize-me
+
 		--{name = "WagoIo", title = "Wago Imports"}, --wago_imports --localize-me
 		
 	}, 
@@ -268,7 +271,11 @@ function Plater.OpenOptionsPanel()
 	local advancedFrame = mainFrame.AllFrames [22]
 	local resourceFrame = mainFrame.AllFrames [23]
 	local searchFrame = mainFrame.AllFrames [24]
-	--local wagoIoFrame = mainFrame.AllFrames [25] --wago_imports
+
+	--4th row
+	local ghostAuras = mainFrame.AllFrames [25]
+
+	--local wagoIoFrame = mainFrame.AllFrames [26] --wago_imports
 	
 	--
 	local colorNpcsButton = mainFrame.AllButtons [17]
@@ -278,6 +285,7 @@ function Plater.OpenOptionsPanel()
 	local importButton = mainFrame.AllButtons [25]
 
 	Plater.Resources.BuildResourceOptionsTab(resourceFrame)
+	Plater.Auras.BuildGhostAurasOptionsTab(ghostAuras)
 	Plater.CreateCastColorOptionsFrame(castColorsFrame)
 	
 	local generalOptionsAnchor = CreateFrame ("frame", "$parentOptionsAnchor", frontPageFrame, BackdropTemplateMixin and "BackdropTemplate")
@@ -3871,7 +3879,7 @@ Plater.CreateAuraTesting()
 	end
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
---> special auras
+--> special auras ~special ~aura
 --> special aura container
 	local especial_aura_settings
 	do 

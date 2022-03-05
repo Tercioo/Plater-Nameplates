@@ -49,6 +49,7 @@ local DB_AURA_SHOW_MAGIC
 local DB_AURA_SHOW_BYUNIT
 local DB_AURA_ALPHA
 local DB_AURA_ENABLED
+local DB_AURA_GHOSTAURA_ENABLED
 
 local DebuffTypeColor = _G.DebuffTypeColor
 
@@ -95,6 +96,9 @@ local MANUAL_TRACKING_BUFFS = {}
 local MANUAL_TRACKING_DEBUFFS = {}
 local AUTO_TRACKING_EXTRA_BUFFS = {}
 local AUTO_TRACKING_EXTRA_DEBUFFS = {}
+
+--ghost auras
+local GHOSTAURAS = {}
 
 -- support for LibClassicDurations from https://github.com/rgd87/LibClassicDurations by d87
 local UnitAura = _G.UnitAura
@@ -251,6 +255,27 @@ local PlaterNamePlateAuraTooltip = CreatePlaterNamePlateAuraTooltip()
 		return (aura1.Duration == 0 and 99999999 or aura1.RemainingTime or 0) < (aura2.Duration == 0 and 99999999 or aura2.RemainingTime or 0)
 		--return (aura1.Duration == 0 and 99999999 or aura1.RemainingTime or 0) > (aura2.Duration == 0 and 99999999 or aura2.RemainingTime or 0)
 	end
+
+	--update the ghost auras
+	--this function is guaranteed to run after all auras been processed
+	function Plater.ShowGhostAuras(buffFrame)
+		if (DB_AURA_GHOSTAURA_ENABLED) then
+			if (InCombatLockdown() and buffFrame.unitFrame.InCombat) then
+				local nameplateAuraCache = buffFrame.AuraCache --auras already shown in the nameplate
+				for spellName, spellTable in pairs(GHOSTAURAS) do
+					if (not nameplateAuraCache[spellName]) then --the ghost aura isn't in the nameplate
+						--add the extra icon
+						local spellIcon, spellId = spellTable[1], spellTable[2]
+						local auraIconFrame, _, buffIndex = Plater.GetAuraIcon(buffFrame, true)
+						auraIconFrame.InUse = true --don't play animation
+						Plater.AddAura(buffFrame, auraIconFrame, buffIndex, spellName, spellIcon, 1, "DEBUFF", 0, 0, "player", false, false, spellId, false, false, false, false, "DEBUFF")
+						Plater.Auras.GhostAuras.ApplyAppearance(auraIconFrame, spellName, spellIcon, spellId)
+					end
+				end
+			end
+		end
+	end
+
 	
 	--align the aura frame icons currently shown in buff container
 	--this function is called after Plater complete the aura update loop
@@ -633,14 +658,14 @@ local PlaterNamePlateAuraTooltip = CreatePlaterNamePlateAuraTooltip()
 		auraIconFrame.Icon:SetDesaturated(false)
 		auraIconFrame.Cooldown:Show()
 
-		return auraIconFrame, self
+		return auraIconFrame, self, self.NextAuraIcon-1
     end
     
 
     	
 	--update the aura icon, this icon is getted with GetAuraIcon -
 	--actualAuraType is the UnitAura return value for the auraType ("" is enrage, nil/"none" for unspecified and "Disease", "Poison", "Curse", "Magic" for other types. -Continuity/Ariani
-	            
+	--self is .BuffFrame or .BuffFrame2
 	function Plater.AddAura (self, auraIconFrame, i, spellName, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, isBuff, isShowAll, isDebuff, isPersonal, actualAuraType)
 		auraIconFrame:SetID (i)
 		local curBuffFrame = self.Name == "Secondary" and 2 or 1
@@ -1792,10 +1817,10 @@ local PlaterNamePlateAuraTooltip = CreatePlaterNamePlateAuraTooltip()
 
 	function Plater.RefreshAuraCache()
 		local profile = Plater.db.profile
-		
+
 		DB_AURA_ENABLED = profile.aura_enabled
 		DB_AURA_ALPHA = profile.aura_alpha
-		
+
 		DB_AURA_SEPARATE_BUFFS = Plater.db.profile.buffs_on_aura2
 
 		DB_AURA_SHOW_IMPORTANT = profile.aura_show_important
@@ -1809,22 +1834,44 @@ local PlaterNamePlateAuraTooltip = CreatePlaterNamePlateAuraTooltip()
 
 		DB_AURA_GROW_DIRECTION = profile.aura_grow_direction
 		DB_AURA_GROW_DIRECTION2 = profile.aura2_grow_direction
-		
-		Plater.MaxAurasPerRow = floor (profile.plate_config.enemynpc.health_incombat[1] / (profile.aura_width + DB_AURA_PADDING))
+
+		DB_AURA_GHOSTAURA_ENABLED = profile.ghost_auras.enabled
+
+		Plater.MaxAurasPerRow = floor(profile.plate_config.enemynpc.health_incombat[1] / (profile.aura_width + DB_AURA_PADDING))
     end
-    
+
+	function Plater.UpdateGhostAurasCache()
+		wipe(GHOSTAURAS)
+		local ghostAuraList = Plater.Auras.GhostAuras.GetAuraListForCurrentSpec()
+		if (not ghostAuraList) then
+			--something in the pipeline is triggering before being ready
+			C_Timer.After(1, Plater.UpdateGhostAurasCache)
+			return
+		end
+
+		local spellBookSpells = Plater.Auras.GhostAuras.GetSpellBookSpells()
+		for spellId in pairs(ghostAuraList) do
+			local spellName, _, spellIcon = GetSpellInfo(spellId)
+			if (spellName) then
+				if (spellBookSpells[spellName]) then
+					GHOSTAURAS[spellName] = {spellIcon, spellId}
+				end
+			end
+		end
+	end
+
     function Plater.UpdateAuraCache()
 		local profile = Plater.db.profile
 		--manual tracking has an indexed table to store what to track
 		--the extra auras for automatic tracking has a hash table with spellIds
-		
-		--manual aura tracking
+
+		--> manual aura tracking
 			local manualBuffsToTrack = profile.aura_tracker.buff
 			local manualDebuffsToTrack = profile.aura_tracker.debuff
 
-			wipe (MANUAL_TRACKING_DEBUFFS)
-			wipe (MANUAL_TRACKING_BUFFS)
-			
+			wipe(MANUAL_TRACKING_DEBUFFS)
+			wipe(MANUAL_TRACKING_BUFFS)
+
 			for i = 1, #manualDebuffsToTrack do
 				local spellName = GetSpellInfo (tonumber(manualDebuffsToTrack [i]) or manualDebuffsToTrack [i])
 				if (spellName) then
@@ -1845,12 +1892,12 @@ local PlaterNamePlateAuraTooltip = CreatePlaterNamePlateAuraTooltip()
 				end
 			end
 
-		--extra auras to track on automatic aura tracking
+		--> extra auras to track on automatic aura tracking
 			local extraBuffsToTrack = profile.aura_tracker.buff_tracked
 			local extraDebuffsToTrack = profile.aura_tracker.debuff_tracked
-			
-			wipe (AUTO_TRACKING_EXTRA_BUFFS)
-			wipe (AUTO_TRACKING_EXTRA_DEBUFFS)
+
+			wipe(AUTO_TRACKING_EXTRA_BUFFS)
+			wipe(AUTO_TRACKING_EXTRA_DEBUFFS)
 
 			for spellId, flag in pairs (extraBuffsToTrack) do
 				local spellName = GetSpellInfo (tonumber(spellId) or spellId)
@@ -1862,7 +1909,7 @@ local PlaterNamePlateAuraTooltip = CreatePlaterNamePlateAuraTooltip()
 					end
 				end
 			end
-			
+
 			for spellId, flag in pairs (extraDebuffsToTrack) do
 				local spellName = GetSpellInfo (tonumber(spellId) or spellId)
 				if (spellName) then
@@ -1873,7 +1920,7 @@ local PlaterNamePlateAuraTooltip = CreatePlaterNamePlateAuraTooltip()
 					end
 				end
 			end
-			
+
 			if (profile.aura_show_crowdcontrol and DF.CrowdControlSpells) then
 				for spellId, _ in pairs (DF.CrowdControlSpells) do
 					local spellName = GetSpellInfo (spellId)
@@ -1884,7 +1931,7 @@ local PlaterNamePlateAuraTooltip = CreatePlaterNamePlateAuraTooltip()
 					end
 				end
 			end
-			
+
 			if (profile.aura_show_offensive_cd and DF.CooldownsAttack) then
 				for spellId, _ in pairs (DF.CooldownsAttack) do
 					local spellName = GetSpellInfo (spellId)
@@ -1895,7 +1942,7 @@ local PlaterNamePlateAuraTooltip = CreatePlaterNamePlateAuraTooltip()
 					end
 				end
 			end
-			
+
 			if (profile.aura_show_defensive_cd and DF.CooldownsAllDeffensive) then
 				for spellId, _ in pairs (DF.CooldownsAllDeffensive) do
 					local spellName = GetSpellInfo (spellId)
@@ -1906,16 +1953,16 @@ local PlaterNamePlateAuraTooltip = CreatePlaterNamePlateAuraTooltip()
 					end
 				end
 			end
-			
+
 			--> load spells filtered out, use the spellname instead of the spellId
 			if (not DB_BUFF_BANNED) then
 				DB_BUFF_BANNED = {}
 				DB_DEBUFF_BANNED = {}
 			else
-				wipe (DB_BUFF_BANNED)
-				wipe (DB_DEBUFF_BANNED)
+				wipe(DB_BUFF_BANNED)
+				wipe(DB_DEBUFF_BANNED)
 			end
-		
+
 			for spellId, state in pairs (profile.aura_tracker.buff_banned) do
 				local spellName = GetSpellInfo (tonumber(spellId) or spellId)
 				if (spellName) then
@@ -1926,7 +1973,7 @@ local PlaterNamePlateAuraTooltip = CreatePlaterNamePlateAuraTooltip()
 					end
 				end
 			end
-			
+
 			for spellId, state in pairs (profile.aura_tracker.debuff_banned) do
 				local spellName = GetSpellInfo (tonumber(spellId) or spellId)
 				if (spellName) then
@@ -1937,4 +1984,7 @@ local PlaterNamePlateAuraTooltip = CreatePlaterNamePlateAuraTooltip()
 					end
 				end
 			end
+
+		--> ghost aura cache
+		Plater.UpdateGhostAurasCache()
 	end

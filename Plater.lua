@@ -123,6 +123,7 @@ end
 --> namespaces:
 	--resources
 	Plater.Resources = {}
+	Plater.Auras = {}
 
 
 --all functions below can be overridden by scripts, hooks or any external code
@@ -5736,6 +5737,9 @@ end
 				
 				--update the buff layout and alpha
 				tickFrame.BuffFrame.unit = tickFrame.unit
+
+				--check for ghost auras
+				Plater.ShowGhostAuras(tickFrame.BuffFrame) --ghost auras only show in the debuff frame
 				
 				--align icons in the aura frame
 				Plater.AlignAuraFrames (tickFrame.BuffFrame)

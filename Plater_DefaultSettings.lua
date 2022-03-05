@@ -944,10 +944,80 @@ PLATER_DEFAULT_SETTINGS = {
 			["world"] =  true,
 			["cities"] = false,
 		},
-		
+
 		spell_animations = true,
 		spell_animations_scale = 1.25,
-		
+
+		ghost_auras = {
+			enabled = false,
+			width = 0,
+			height = 0,
+			alpha = 0.5,
+			desaturated = true,
+			auras = {
+				["DEMONHUNTER"] = {
+					[1] = {},
+					[2] = {},
+				},
+				["DEATHKNIGHT"] = {
+					[1] = {},
+					[2] = {},
+					[3] = {},
+				},
+				["WARRIOR"] = {
+					[1] = {},
+					[2] = {},
+					[3] = {},
+				},
+				["MAGE"] = {
+					[1] = {},
+					[2] = {},
+					[3] = {},
+				},
+				["ROGUE"] = {
+					[1] = {},
+					[2] = {},
+					[3] = {},
+				},
+				["DRUID"] = {
+					[1] = {},
+					[2] = {},
+					[3] = {},
+					[4] = {},
+				},
+				["HUNTER"] = {
+					[1] = {},
+					[2] = {},
+					[3] = {},
+				},
+				["SHAMAN"] = {
+					[1] = {},
+					[2] = {},
+					[3] = {},
+				},
+				["PRIEST"] = {
+					[1] = {},
+					[2] = {},
+					[3] = {},
+				},
+				["WARLOCK"] = {
+					[1] = {},
+					[2] = {},
+					[3] = {},
+				},
+				["PALADIN"] = {
+					[1] = {},
+					[2] = {},
+					[3] = {},
+				},
+				["MONK"] = {
+					[1] = {},
+					[2] = {},
+					[3] = {},
+				},
+			},
+		},
+
 		spell_animation_list = {
 		
 			--chaos bolt
