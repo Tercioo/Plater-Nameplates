@@ -241,10 +241,17 @@ function Plater.Auras.BuildGhostAurasOptionsTab(frame)
         end
     end, 100, 20, "Add Aura", nil, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
 
-    newAuraEntry:SetPoint ("topleft",  spellScrollBox, "topright", 40, 0)
+    newAuraEntry:SetPoint ("topleft",  spellScrollBox, "topright", 35, 0)
     newAuraLabel:SetPoint ("bottomleft", newAuraEntry, "topleft", 0, 2)
     newAuraButton:SetPoint ("topleft", newAuraEntry, "bottomleft", 0, -2)
     newAuraButton.tooltip = "Add the aura to be tracked."
+
+    --image showing ghost aura example
+    ghostAuraFrame.ExampleImageDesc = DF:CreateLabel (ghostAuraFrame, "Ghost auras look like this:", 14)
+    ghostAuraFrame.ExampleImageDesc:SetPoint (300, -250)
+    ghostAuraFrame.ExampleImage = DF:CreateImage (ghostAuraFrame, [[Interface\AddOns\Plater\images\ghostauras_example]], 256*0.8, 128*0.8)
+    ghostAuraFrame.ExampleImage:SetPoint (300, -264)
+    ghostAuraFrame.ExampleImage:SetAlpha (.834)
 
     local optionsTable = {
         {type = "blank"},
