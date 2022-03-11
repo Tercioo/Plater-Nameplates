@@ -14,7 +14,7 @@ Plater.Auras.GhostAuras = {}
 function Plater.Auras.GhostAuras.GetPlayerSpecInfo()
     local specId
     local specName
-    local specIndex
+    local specIndex = 0 --fallback for TBC
     local _, playerClass = UnitClass("player")
 
     if (IS_WOW_PROJECT_MAINLINE) then --retail
@@ -91,7 +91,11 @@ end
 
 --refresh caches when spec changes
 local specChangeFrame = CreateFrame("frame")
-specChangeFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+if IS_WOW_PROJECT_MAINLINE then
+    specChangeFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+else
+    --specChangeFrame:RegisterEvent("CHARACTER_POINTS_CHANGED") --not needed for TBC/Classic, as there is no spec differences in the config, just class.
+end
 specChangeFrame:SetScript("OnEvent", function(self, event, ...)
     Plater.RefreshAuraCache()
     Plater.UpdateAuraCache()
