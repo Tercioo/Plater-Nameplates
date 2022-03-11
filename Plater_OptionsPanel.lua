@@ -2666,7 +2666,13 @@ Plater.CreateAuraTesting()
 				--data has all npcIDs from dungeons
 			
 				local dataInOrder = {}
-				
+
+				local canSortByLastCombat = false
+				local lastCombatNpcs = Plater.LastCombat.npcNames
+				if (next(lastCombatNpcs)) then
+					canSortByLastCombat = true
+				end
+
 				if (IsSearchingFor and IsSearchingFor ~= "") then
 					if (self.SearchCachedTable and IsSearchingFor == self.SearchCachedTable.SearchTerm) then
 						dataInOrder = self.SearchCachedTable
@@ -2702,6 +2708,7 @@ Plater.CreateAuraTesting()
 				else
 					if (not self.CachedTable) then
 						local enabledTable = {}
+						local lastCombatNpcsList = {}
 					
 						for i = 1, #data do
 							local npcID = data [i][1]
@@ -2709,8 +2716,12 @@ Plater.CreateAuraTesting()
 							local zoneName = data [i][3]
 							local color = DB_NPCID_COLORS [npcID] and DB_NPCID_COLORS [npcID][1] and DB_NPCID_COLORS [npcID][3] or "white" --has | is enabled | color
 							
-							if (DB_NPCID_COLORS [npcID] and DB_NPCID_COLORS [npcID][1]) then
+							if (canSortByLastCombat and lastCombatNpcs[npcName]) then
+								lastCombatNpcsList [#lastCombatNpcsList+1] = {2, color, npcName, zoneName, npcID}
+
+							elseif (DB_NPCID_COLORS [npcID] and DB_NPCID_COLORS [npcID][1]) then
 								enabledTable [#enabledTable+1] = {1, color, npcName, zoneName, npcID}
+
 							else
 								dataInOrder [#dataInOrder+1] = {0, color, npcName, zoneName, npcID}
 							end
@@ -2720,14 +2731,18 @@ Plater.CreateAuraTesting()
 						
 						table.sort (enabledTable, sort_enabled_colors)
 						table.sort (dataInOrder, DF.SortOrder3R) --npc name
-						
+
+						--add enabled
 						for i = #enabledTable, 1, -1 do
 							tinsert (dataInOrder, 1, enabledTable[i])
+						end
+						--add from last combat
+						for i = #lastCombatNpcsList, 1, -1 do
+							tinsert (dataInOrder, 1, lastCombatNpcsList[i])
 						end
 					end
 					
 					dataInOrder = self.CachedTable
-
 				end
 				
 				if (#dataInOrder > 6) then

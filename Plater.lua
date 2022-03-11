@@ -221,6 +221,11 @@ Plater.CanOverride_Members = {
 	
 }
 
+Plater.LastCombat = {
+	npcNames = {},
+	spellNames = {},
+}
+
 --> export strings identification
 Plater.Export_CastColors = "CastColor"
 Plater.Export_NpcColors = "NpcColor"
@@ -2477,6 +2482,12 @@ local class_specs_coords = {
 			end
 			
 			Plater.CombatTime = GetTime()
+
+			--store names and casts from 'last' combat, this is used when showing Npcs Colors and Cast Colors to bump up stuff from the last combat
+			Plater.LastCombat = {
+				npcNames = {},
+				spellNames = {},
+			}
 		end,
 
 		PLAYER_REGEN_ENABLED = function()
@@ -8426,6 +8437,9 @@ end
 					end
 				end
 			end
+			if (spellName) then
+				Plater.LastCombat.spellNames[spellName] = true
+			end
 		end,
 
 		SPELL_AURA_APPLIED = function (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical)
@@ -8475,6 +8489,9 @@ end
 		if (func) then
 			Plater.StartLogPerformanceCore("Plater-Core", "Events", token)
 			func (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical)
+			if (targetName) then
+				Plater.LastCombat.npcNames[targetName] = true
+			end
 			Plater.EndLogPerformanceCore("Plater-Core", "Events", token)
 		end
 	end
