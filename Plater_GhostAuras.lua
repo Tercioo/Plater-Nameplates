@@ -88,3 +88,18 @@ function Plater.Auras.GhostAuras.GetSpellBookSpells()
 
     return spellNamesInSpellBook
 end
+
+--refresh caches when spec changes
+local specChangeFrame = CreateFrame("frame")
+specChangeFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+specChangeFrame:SetScript("OnEvent", function(self, event, ...)
+    Plater.RefreshAuraCache()
+    Plater.UpdateAuraCache()
+
+    local ghostAurasOptionsFrame = _G.PlaterOptionsPanelContainerGhostAurasFrame
+    if (ghostAurasOptionsFrame) then
+        if (ghostAurasOptionsFrame:IsShown()) then
+            Plater.Auras.GhostAuras.SetSpec()
+        end
+    end
+end)

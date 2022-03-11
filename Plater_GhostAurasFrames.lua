@@ -344,23 +344,4 @@ function Plater.Auras.BuildGhostAurasOptionsTab(frame)
     _G.C_Timer.After(1.8, function() --~delay
         DF:BuildMenu(ghostAuraFrame, optionsTable, optionsStartX, optionsStartY, 800, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
     end)
-
-    ghostAuraFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
-    ghostAuraFrame:SetScript("OnEvent", function(self, event, ...)
-        if (ghostAuraFrame:IsShown()) then
-            Plater.Auras.GhostAuras.SetSpec()
-        end
-    end)
-
 end
-
-
---fontstring showing "current auras for spec X"
-
-
---scroll bar showing all spells being tracked for this specialization
-
-
-
-
---common options for ghost auras
