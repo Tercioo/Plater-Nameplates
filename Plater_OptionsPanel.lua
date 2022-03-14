@@ -113,7 +113,6 @@ local update_wago_update_icons = function()
 	local scriptButton = mainFrame.AllButtons [6]
 	local modButton = mainFrame.AllButtons [7]
 	local profileButton = mainFrame.AllButtons [21]
-	local importButton = mainFrame.AllButtons [25]
 	
 	if countMods > 0 then
 		modButton.updateIcon:Show()
@@ -131,13 +130,6 @@ local update_wago_update_icons = function()
 		profileButton.updateIcon:Show()
 	else
 		profileButton.updateIcon:Hide()
-	end
-	
-	--wago_imports
-	if PlaterDB.wago_stash_data and next(PlaterDB.wago_stash_data) then
-		--importButton.updateIcon:Show()
-	else
-		--importButton.updateIcon:Hide()
 	end
 end
 Plater.UpdateOptionsTabUpdateState = update_wago_update_icons
@@ -282,7 +274,15 @@ function Plater.OpenOptionsPanel()
 	local scriptButton = mainFrame.AllButtons [6]
 	local modButton = mainFrame.AllButtons [7]
 	local profileButton = mainFrame.AllButtons [21]
-	local importButton = mainFrame.AllButtons [25]
+
+	local ghostAurasButton = mainFrame.AllButtons [25]
+	ghostAuras.newTexture = ghostAurasButton:CreateTexture(nil, "overlay", nil, 7)
+	ghostAuras.newTexture:SetTexture([[Interface\AddOns\Plater\images\new]])
+	ghostAuras.newTexture:SetPoint("top", ghostAurasButton.widget, "bottom", 0, 10)
+	ghostAuras.newTexture:SetSize(35, 35)
+	ghostAuras.newTexture:SetAlpha(0.88)
+	ghostAuras.newTexture:SetDesaturated(true)
+	--ghostAuras.newTexture:SetVertexColor(1, .7, 0)
 
 	Plater.Resources.BuildResourceOptionsTab(resourceFrame)
 	Plater.Auras.BuildGhostAurasOptionsTab(ghostAuras)
@@ -333,14 +333,6 @@ function Plater.OpenOptionsPanel()
 	updateIconProfile:SetPoint("bottomright", profileButton.button, "bottomright", -2, 2)
 	updateIconProfile:Hide()
 	profileButton.updateIcon = updateIconProfile
-	
-	--wago_imports
-	--local updateIconImports = importButton.button:CreateTexture ("$parentIcon", "overlay")
-	--updateIconImports:SetSize (16, 10)
-	--updateIconImports:SetTexture([[Interface\AddOns\Plater\images\wagologo.tga]])
-	--updateIconImports:SetPoint("bottomright", importButton.button, "bottomright", -2, 2)
-	--updateIconImports:Hide()
-	--importButton.updateIcon = updateIconImports
 	
 	f.AllMenuFrames = {}
 	for _, frame in ipairs (mainFrame.AllFrames) do
