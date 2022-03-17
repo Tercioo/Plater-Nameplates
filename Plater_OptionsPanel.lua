@@ -214,7 +214,7 @@ function Plater.OpenOptionsPanel()
 		{name = "FrontPage", title = L["OPTIONS_TABNAME_GENERALSETTINGS"]},
 		{name = "ThreatConfig", title = L["OPTIONS_TABNAME_THREAT"]},
 		{name = "TargetConfig", title = L["OPTIONS_TABNAME_TARGET"]},
-		{name = "CastBarConfig", title = "Cast Bar"}, --localize-me
+		{name = "CastBarConfig", title = L["OPTIONS_TABNAME_CASTBAR"]},
 		{name = "LevelStrataConfig", title = L["OPTIONS_TABNAME_STRATA"]},
 		{name = "Scripting", title = L["OPTIONS_TABNAME_SCRIPTING"]},
 		{name = "AutoRunCode", title = L["OPTIONS_TABNAME_MODDING"]},
@@ -229,15 +229,14 @@ function Plater.OpenOptionsPanel()
 		{name = "FriendlyNpc", title = L["OPTIONS_TABNAME_NPCFRIENDLY"]},
 		{name = "FriendlyPlayer", title = L["OPTIONS_TABNAME_PLAYERFRIENDLY"]},
 
-		--{name = "ColorManagement", title = L["OPTIONS_TABNAME_COLORSNPC"]},
-		{name = "ColorManagement", title = "Npc Colors and Names"},
-		{name = "CastColorManagement", title = "Cast Colors"}, --localize-me
+		{name = "ColorManagement", title = L["OPTIONS_TABNAME_NPC_COLORNAME"]},
+		{name = "CastColorManagement", title = L["OPTIONS_TABNAME_CASTCOLORS"]},
 		{name = "AnimationPanel", title = L["OPTIONS_TABNAME_ANIMATIONS"]},
 		{name = "Automation", title = L["OPTIONS_TABNAME_AUTO"]},
 		{name = "ProfileManagement", title = L["OPTIONS_TABNAME_PROFILES"]},
 		{name = "AdvancedConfig", title = L["OPTIONS_TABNAME_ADVANCED"]},
-		{name = "resourceFrame", title = "Combo Points"}, --localize-me
-		{name = "SearchFrame", title = "Search"}, --localize-me
+		{name = "resourceFrame", title = L["OPTIONS_TABNAME_COMBOPOINTS"]},
+		{name = "SearchFrame", title = L["OPTIONS_TABNAME_SEARCH"]},
 
 		{name = "GhostAurasFrame", title = "Ghost Auras"}, --localize-me
 
@@ -267,16 +266,21 @@ function Plater.OpenOptionsPanel()
 		leftSelectionIndicator:SetSize(4, tabButton:GetHeight()-4)
 		tabButton.leftSelectionIndicator = leftSelectionIndicator
 
-		local maxTextLength = tabButton:GetWidth() - 6
+		local maxTextLength = tabButton:GetWidth() - 7
 
 		local fontString = _G[tabButton:GetName() .. "_Text"]
 		fontString:ClearAllPoints()
 		fontString:SetPoint("left", leftSelectionIndicator, "right", 2, 0)
 		fontString:SetJustifyH("left")
 		fontString:SetWidth(maxTextLength)
-		fontString:SetHeight(tabButton:GetHeight())
+		fontString:SetHeight(tabButton:GetHeight()+20)
+		fontString:SetWordWrap(true)
+		fontString:SetText(fontString:GetText())
 
 		local stringWidth = fontString:GetStringWidth()
+
+		--print(stringWidth, maxTextLength, fontString:GetText())
+
 		if (stringWidth > maxTextLength) then
 			local fontSize = DF:GetFontSize(fontString)
 			DF:SetFontSize(fontString, fontSize-0.5)
