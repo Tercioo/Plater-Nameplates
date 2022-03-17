@@ -2598,7 +2598,7 @@ Plater.CreateAuraTesting()
 							tinsert (colorsAddedT, {{r, g, b}, color, hex (r * 255) .. hex (g * 255) .. hex (b * 255)})
 						end
 					end
-					table.sort (colorsAddedT, sort_color)
+					--table.sort (colorsAddedT, sort_color)
 					
 					for index, colorTable in ipairs (colorsAddedT) do
 						local colortable = colorTable [1]
@@ -2617,7 +2617,7 @@ Plater.CreateAuraTesting()
 							tinsert (allColors, {colorTable, colorName, hex (colorTable[1]*255) .. hex (colorTable[2]*255) .. hex (colorTable[3]*255)})
 						end
 					end
-					table.sort (allColors, sort_color)
+					--table.sort (allColors, sort_color)
 					
 					for index, colorTable in ipairs (allColors) do
 						local colortable = colorTable [1]
@@ -3348,7 +3348,7 @@ Plater.CreateAuraTesting()
 									tinsert (colorsAddedT, {{r, g, b}, color, hex (r * 255) .. hex (g * 255) .. hex (b * 255)})
 								end
 							end
-							table.sort (colorsAddedT, sort_color)
+							--table.sort (colorsAddedT, sort_color)
 							
 							for index, colorTable in ipairs (colorsAddedT) do
 								local colortable = colorTable [1]
@@ -3367,7 +3367,7 @@ Plater.CreateAuraTesting()
 									tinsert (allColors, {colorTable, colorName, hex (colorTable[1]*255) .. hex (colorTable[2]*255) .. hex (colorTable[3]*255)})
 								end
 							end
-							table.sort (allColors, sort_color)
+							--table.sort (allColors, sort_color)
 							
 							for index, colorTable in ipairs (allColors) do
 								local colortable = colorTable [1]
