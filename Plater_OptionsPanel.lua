@@ -190,6 +190,22 @@ function Plater.OpenOptionsPanel()
 		rightbutton_always_close = true,
 		close_text_alpha = 0.4,
 	}
+
+	local hookList = {
+		OnSelectIndex = function(mainFrame, tabButton)
+			if (not tabButton.leftSelectionIndicator) then
+				return
+			end
+
+			for index, frame in ipairs(mainFrame.AllFrames) do
+				local tabButton = mainFrame.AllButtons[index]
+				tabButton.leftSelectionIndicator:SetColorTexture(.4, .4, .4)
+			end
+
+			tabButton.leftSelectionIndicator:SetColorTexture(1, 1, 0)
+			tabButton.selectedUnderlineGlow:Hide()
+		end,
+	}
 	
 	-- mainFrame � um frame vazio para sustentrar todos os demais frames, este frame sempre ser� mostrado
 	local mainFrame = DF:CreateTabContainer (f, "Plater Options", "PlaterOptionsPanelContainer", 
@@ -213,7 +229,8 @@ function Plater.OpenOptionsPanel()
 		{name = "FriendlyNpc", title = L["OPTIONS_TABNAME_NPCFRIENDLY"]},
 		{name = "FriendlyPlayer", title = L["OPTIONS_TABNAME_PLAYERFRIENDLY"]},
 
-		{name = "ColorManagement", title = L["OPTIONS_TABNAME_COLORSNPC"]},
+		--{name = "ColorManagement", title = L["OPTIONS_TABNAME_COLORSNPC"]},
+		{name = "ColorManagement", title = "Npc Colors and Names"},
 		{name = "CastColorManagement", title = "Cast Colors"}, --localize-me
 		{name = "AnimationPanel", title = L["OPTIONS_TABNAME_ANIMATIONS"]},
 		{name = "Automation", title = L["OPTIONS_TABNAME_AUTO"]},
@@ -227,13 +244,43 @@ function Plater.OpenOptionsPanel()
 		--{name = "WagoIo", title = "Wago Imports"}, --wago_imports --localize-me
 		
 	}, 
-	frame_options)
+	frame_options, hookList)
 
 	--> when any setting is changed, call this function
 	local globalCallback = function()
 		Plater.IncreaseRefreshID()
 		Plater.RefreshDBUpvalues()
 		Plater.UpdateAllPlates()
+	end
+
+	for index, frame in ipairs(mainFrame.AllFrames) do
+		local tabButton = mainFrame.AllButtons[index]
+
+		local leftSelectionIndicator = tabButton:CreateTexture(nil, "overlay")
+
+		if (index == 1) then
+			leftSelectionIndicator:SetColorTexture(1, 1, 0)
+		else
+			leftSelectionIndicator:SetColorTexture(.4, .4, .4)
+		end
+		leftSelectionIndicator:SetPoint("left", tabButton.widget, "left", 2, 0)
+		leftSelectionIndicator:SetSize(4, tabButton:GetHeight()-4)
+		tabButton.leftSelectionIndicator = leftSelectionIndicator
+
+		local maxTextLength = tabButton:GetWidth() - 6
+
+		local fontString = _G[tabButton:GetName() .. "_Text"]
+		fontString:ClearAllPoints()
+		fontString:SetPoint("left", leftSelectionIndicator, "right", 2, 0)
+		fontString:SetJustifyH("left")
+		fontString:SetWidth(maxTextLength)
+		fontString:SetHeight(tabButton:GetHeight())
+
+		local stringWidth = fontString:GetStringWidth()
+		if (stringWidth > maxTextLength) then
+			local fontSize = DF:GetFontSize(fontString)
+			DF:SetFontSize(fontString, fontSize-0.5)
+		end
 	end
 
 	--1st row
@@ -285,8 +332,6 @@ function Plater.OpenOptionsPanel()
 		ghostAuras.newTexture:SetPoint("top", ghostAurasButton.widget, "bottom", 0, 10)
 		ghostAuras.newTexture:SetSize(35, 35)
 		ghostAuras.newTexture:SetAlpha(0.88)
-		--ghostAuras.newTexture:SetDesaturated(true)
-		--ghostAuras.newTexture:SetVertexColor(1, .7, 0)
 	end
 
 	Plater.Resources.BuildResourceOptionsTab(resourceFrame)
