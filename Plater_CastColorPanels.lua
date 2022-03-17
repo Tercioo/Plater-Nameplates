@@ -138,6 +138,10 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         end
         DB_CAST_COLORS[spellId][CONST_INDEX_ENABLED] = state
 
+        --clean the refresh scroll cache
+        castFrame.spellsScroll.CachedTable = nil
+        castFrame.spellsScroll.SearchCachedTable = nil
+
         if (state) then
             self:GetParent():RefreshColor(DB_CAST_COLORS[spellId][CONST_INDEX_COLOR])
         else
@@ -148,7 +152,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         Plater.UpdateAllNameplateColors()
         Plater.ForceTickOnAllNameplates()
 
-        --castFrame.RefreshScroll() --refreshing at the click is weird
+        castFrame.RefreshScroll(0)
     end
 
     local line_select_color_dropdown = function (self, spellId, color)
@@ -165,6 +169,10 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             checkBox:SetValue(true)
         end
 
+        --clean the refresh scroll cache
+        castFrame.spellsScroll.CachedTable = nil
+        castFrame.spellsScroll.SearchCachedTable = nil
+
         self:GetParent():RefreshColor(color)
 
         Plater.RefreshDBLists()
@@ -173,6 +181,8 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         --o que é esses dois caches
         castFrame.cachedColorTable = nil
         castFrame.cachedColorTableNameplate = nil
+
+        castFrame.RefreshScroll(0)
     end
 
     local function hex (num)
@@ -739,6 +749,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
     local spells_scroll = DF:CreateScrollBox (castFrame, "$parentColorsScroll", scroll_refresh, {}, scroll_width, scroll_height, scroll_lines, scroll_line_height)
     DF:ReskinSlider (spells_scroll)
     spells_scroll:SetPoint ("topleft", castFrame, "topleft", 10, scrollY)
+    castFrame.spellsScroll = spells_scroll
 
     spells_scroll:SetScript("OnShow", function(self)
         if (self.LastRefresh and self.LastRefresh+0.5 > GetTime()) then
@@ -832,8 +843,13 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         clear_search_button:SetFrameLevel(castFrame.Header:GetFrameLevel() + 21)
 
         function castFrame.RefreshScroll(refreshSpeed)
-            spells_scroll:Hide()
-            C_Timer.After (refreshSpeed or .01, function() spells_scroll:Show() end)
+            if (refreshSpeed and refreshSpeed == 0) then
+                spells_scroll:Hide()
+                spells_scroll:Show()
+            else
+                spells_scroll:Hide()
+                C_Timer.After (refreshSpeed or .01, function() spells_scroll:Show() end)
+            end
         end
 
     --help button
