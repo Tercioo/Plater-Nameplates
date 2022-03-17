@@ -3529,7 +3529,7 @@ Plater.CreateAuraTesting()
 			{text = "Add to Tracklist", width = 100},
 			{text = "Add to Blacklist", width = 100},
 			{text = "Add to Special Auras", width = 120},
-			{text = "Add to Script Trigger", width = 120},
+			{text = "Add to Script", width = 120},
 			{text = "From Last Combat", width = 120}, --, icon = _G.WeakAuras and [[Interface\AddOns\WeakAuras\Media\Textures\icon]] or ""
 		}
 		local headerOptions = {

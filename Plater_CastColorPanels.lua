@@ -15,7 +15,7 @@ local options_slider_template = DF:GetTemplate ("slider", "OPTIONS_SLIDER_TEMPLA
 local options_button_template = DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE")
 
 local DB_CAST_COLORS
-local DB_NPCID_CACHE
+local DB_NPCIDS_CACHE
 local DB_CAPTURED_SPELLS
 local DB_CAPTURED_CASTS
 
@@ -35,7 +35,7 @@ local CONST_CASTINFO_ENCOUNTERNAME = 9
 local on_refresh_db = function()
 	local profile = Plater.db.profile
 	DB_CAST_COLORS = profile.cast_colors
-    DB_NPCID_CACHE = profile.npc_cache
+    DB_NPCIDS_CACHE = profile.npc_cache
     DB_CAPTURED_SPELLS = PlaterDB.captured_spells
     DB_CAPTURED_CASTS = PlaterDB.captured_casts
 end
@@ -63,8 +63,8 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
     local buttons_size = {120, 20}
 
     DB_CAST_COLORS = Plater.db.profile.cast_colors
-    DB_NPCID_CACHE = Plater.db.profile.npc_cache
-    DB_CAPTURED_CASTS = PlaterDB.captured_casts
+    DB_NPCIDS_CACHE = Plater.db.profile.npc_cache --[npcId] = {npc name, npc zone}
+    DB_CAPTURED_CASTS = PlaterDB.captured_casts --[spellId] = {[npcID] = 000000}
 
     --header
     local headerTable = {
@@ -767,23 +767,22 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         for spellId, spellTable in pairs(DB_CAPTURED_CASTS) do
             local spellName, _, spellIcon = GetSpellInfo(spellId)
             if (spellName) then
+                --build the castInfo table for this spell
+                local npcId = spellTable.npcID
                 local isEnabled = DB_CAST_COLORS[spellId] and DB_CAST_COLORS[spellId][CONST_INDEX_ENABLED] or false
                 local color = DB_CAST_COLORS[spellId] and DB_CAST_COLORS[spellId][CONST_INDEX_COLOR] or "white"
-                local castInfo = {isEnabled, color, spellId, spellName, spellIcon, "", spellTable.npcID or 0}
 
-                local npcInfo = DB_NPCID_CACHE[spellTable.npcID]
-                if (npcInfo) then
-                    if (not castInfo[CONST_CASTINFO_SOURCENAME]) then
-                        castInfo[CONST_CASTINFO_SOURCENAME]  = npcInfo[1] or "" --npc name
-                    end
-                    castInfo[CONST_CASTINFO_NPCLOCATION] = npcInfo[2] or "" --npc location
-                else
-                    castInfo[CONST_CASTINFO_SOURCENAME]  = "" --npc name
-                    castInfo[CONST_CASTINFO_NPCLOCATION] = "" --npc location
-                end
-
-                local encounterName = spellTable.encounterName or ""
-                castInfo[CONST_CASTINFO_ENCOUNTERNAME] = encounterName
+                local castInfo = {
+                    isEnabled,
+                    color,
+                    spellId,
+                    spellName,
+                    spellIcon,
+                    DB_NPCIDS_CACHE[npcId] and DB_NPCIDS_CACHE[npcId][1] or "", --npc name
+                    npcId,
+                    DB_NPCIDS_CACHE[npcId] and DB_NPCIDS_CACHE[npcId][2] or "", --npc location
+                    spellTable.encounterName or "",
+                }
 
                 tinsert(newData, castInfo)
             end
@@ -934,8 +933,8 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
                                 --add into the npc cache
                                 if (npcId and npcId ~= 0 and sourceName and sourceName ~= "" and npcLocation and npcLocation ~= "") then
-                                    if (not DB_NPCID_CACHE[npcId]) then
-                                        DB_NPCID_CACHE[npcId] = {
+                                    if (not DB_NPCIDS_CACHE[npcId]) then
+                                        DB_NPCIDS_CACHE[npcId] = {
                                             sourceName,
                                             npcLocation
                                         }
@@ -1032,7 +1031,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                         npcId = capturedSpell.npcID or 0
 
                         --this db give npc name, npc location
-                        local npcInfo = DB_NPCID_CACHE[npcId]
+                        local npcInfo = DB_NPCIDS_CACHE[npcId]
                         if (npcInfo) then
                             sourceName = npcInfo[1] or sourceName
                             npcLocation = npcInfo[2] or ""
