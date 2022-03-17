@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1647277035,  "New Feature", "March 17th, 2022", "Buff List and Npc Colors tab now show on the top entries from last segment, they are also highlight with yellow color.", "Terciob"},
+			{1647277035,  "New Feature", "March 17th, 2022", "Added 'Rename To' field on Npc Colors, use it to quick rename npcs.", "Terciob"},
 			{1647277035,  "New Feature", "March 14th, 2022", "Added Ghost Auras, ghost auras adds an extra icon to indicate a missing debuff on an enemy.", "Terciob"},
 			{1647277035,  "New Feature", "March 14th, 2022", "Added new script for the new Affix on Mythic+.", "Terciob"},
 

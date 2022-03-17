@@ -948,6 +948,9 @@ PLATER_DEFAULT_SETTINGS = {
 		spell_animations = true,
 		spell_animations_scale = 1.25,
 
+		--hold the npcs that has been rename on the Npcs tab, format: [npcId] = "new npc name"
+		npcs_renamed = {},
+
 		ghost_auras = {
 			enabled = false,
 			width = 0,

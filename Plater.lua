@@ -3459,6 +3459,8 @@ local class_specs_coords = {
 			plateFrame.IsSelf = nil
 			unitFrame.IsSelf = nil --value exposed to scripts
 			castBar.IsSelf = nil --value exposed to scripts
+
+			unitFrame.unitName.isRenamed = nil
 			
 			plateFrame.PlayerCannotAttack = nil
 			plateFrame.playerGuildName = nil
@@ -3672,6 +3674,8 @@ local class_specs_coords = {
 							unitFrame.namePlateThreatIsTanking = isTanking
 							unitFrame.namePlateThreatStatus = threatStatus
 							unitFrame.namePlateThreatPercent = threatpct or 0
+
+							Plater.UpdateNameOnRenamedUnit(plateFrame)
 						end
 					end
 				end
@@ -7015,6 +7019,21 @@ end
 		levelString:SetTextColor (color.r, color.g, color.b, Plater.db.profile.level_text_alpha)
 	end	
 
+	--units can be rename on the Npc Colors tab, this function run from nameplate_added and UpdatePlateFrame() (usually from UpdateAllPlates() are called)
+	function Plater.UpdateNameOnRenamedUnit(plateFrame)
+		--set the npc name if the unit has a custom name
+		local newNpcName = Plater.db.profile.npcs_renamed[plateFrame[MEMBER_NPCID]]
+		if (newNpcName) then
+			plateFrame.unitFrame.unitName:SetText(newNpcName)
+			plateFrame.unitFrame.unitName.isRenamed = true
+		else
+			if (plateFrame.unitFrame.unitName.isRenamed) then
+				plateFrame.unitFrame.unitName:SetText(UnitName(plateFrame[MEMBER_UNITID]))
+				plateFrame.unitFrame.unitName.isRenamed = nil
+			end
+		end
+	end
+
 	-- ~updateplate ~update ~updatenameplate
 	function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate, justAdded)
 		Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdatePlateFrame")
@@ -7123,8 +7142,8 @@ end
 				plateFrame.IsNpcWithoutHealthBar = false
 				
 				--these twoseettings make the healthing dummy show the healthbar
---				Plater.db.profile.plate_config.friendlynpc.only_names = false
---				Plater.db.profile.plate_config.friendlynpc.all_names = false
+				--				Plater.db.profile.plate_config.friendlynpc.only_names = false
+				--				Plater.db.profile.plate_config.friendlynpc.all_names = false
 			
 			elseif (DB_PLATE_CONFIG [actorType].only_names) then
 				--show only the npc name without the health bar
@@ -7233,7 +7252,6 @@ end
 					Plater.ForceFindPetOwner (plateFrame [MEMBER_GUID])
 				end
 			end
-
 		end
 		
 		castBar:SetStatusBarTexture (DB_TEXTURE_CASTBAR)
@@ -7354,6 +7372,8 @@ end
 		end
 		
 		Plater.UpdateCustomDesign (unitFrame)
+
+		Plater.UpdateNameOnRenamedUnit(plateFrame)
 
 		--update options in the extra icons row frame
 		if (unitFrame.ExtraIconFrame.RefreshID < PLATER_REFRESH_ID) then
