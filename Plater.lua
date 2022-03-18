@@ -4751,10 +4751,18 @@ function Plater.OnInit() --private --~oninit ~init
 					local castColors = profile.cast_colors
 					local customColor = castColors[self.spellID]
 					if (customColor) then
-						local color, isEnabled = customColor[1], customColor[2]
+						local isEnabled, color, customSpellName = customColor[1], customColor[2], customColor[3]
 						if (color and isEnabled) then
 							--set the new cast color
-							self:SetColor(color)
+							if (color == "white") then
+								--the color white is used as a default disabled color
+							else
+								self:SetColor(color)
+							end
+
+							if (customSpellName and customSpellName ~= "") then
+								self.Text:SetText(customSpellName)
+							end
 
 							--check if the original cast color is enabled
 							if (profile.cast_color_settings.enabled) then

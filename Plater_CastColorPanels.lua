@@ -21,6 +21,7 @@ local DB_CAPTURED_CASTS
 
 local CONST_INDEX_ENABLED = 1
 local CONST_INDEX_COLOR = 2
+local CONST_INDEX_NAME = 3
 
 local CONST_CASTINFO_ENABLED = 1
 local CONST_CASTINFO_COLOR = 2
@@ -31,6 +32,7 @@ local CONST_CASTINFO_SOURCENAME = 6
 local CONST_CASTINFO_NPCID = 7
 local CONST_CASTINFO_NPCLOCATION = 8
 local CONST_CASTINFO_ENCOUNTERNAME = 9
+local CONST_CASTINFO_CUSTOMSPELLNAME = 10
 
 local on_refresh_db = function()
 	local profile = Plater.db.profile
@@ -72,10 +74,10 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         {text = "Icon", width = 32},
         {text = "Spell Id", width = 50},
         {text = "Spell Name", width = 140},
+        {text = "Rename To", width = 110},
         {text = "Npc Name", width = 120},
         {text = "Npc Id", width = 50},
-        {text = "Location", width = 110},
-        {text = "Encounter", width = 110},
+        {text = "Zone Name", width = 110},
         {text = "Color", width = 110},
         {text = "Options", width = 270},
     }
@@ -93,7 +95,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
     --line scripts
     local line_onenter = function(self)
-        self:SetBackdropColor (unpack (backdrop_color_on_enter))
+        self:SetBackdropColor (unpack (backdrop_color_on_enter or backdrop_color))
         if (self.spellId) then
             GameTooltip:SetOwner (self, "ANCHOR_TOPLEFT")
             GameTooltip:SetSpellByID (self.spellId)
@@ -106,7 +108,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         end
     end
     local line_onleave = function(self)
-        self:SetBackdropColor(unpack (self.backdrop_color))
+        self:SetBackdropColor(unpack (self.backdrop_color or backdrop_color))
         GameTooltip:Hide()
     end
 
@@ -163,7 +165,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
     local line_select_color_dropdown = function (self, spellId, color)
         if (not DB_CAST_COLORS[spellId]) then
-            DB_CAST_COLORS[spellId] = {true, "blue"}
+            DB_CAST_COLORS[spellId] = {true, "blue", ""}
         end
 
         DB_CAST_COLORS[spellId][CONST_INDEX_ENABLED] = true
@@ -232,7 +234,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                     tinsert(colorsAddedT, {{r, g, b}, color, hex (r * 255) .. hex (g * 255) .. hex (b * 255)})
                 end
             end
-            --table.sort (colorsAddedT, sort_color)
+            --table.sort (colorsAddedT, sort_color) --this make the list be listed from the brightness color to the darkness
 
             for index, colorTable in ipairs (colorsAddedT) do
                 local colortable = colorTable[1]
@@ -251,13 +253,16 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                     tinsert (allColors, {colorTable, colorName, hex (colorTable[1]*255) .. hex (colorTable[2]*255) .. hex (colorTable[3]*255)})
                 end
             end
-            --table.sort (allColors, sort_color)
+
+            --table.sort (allColors, sort_color) --this make the list be listed from the brightness color to the darkness
 
             for index, colorTable in ipairs (allColors) do
                 local colortable = colorTable[1]
                 local colorname = colorTable[2]
                 tinsert (t, {label = colorname, value = colorname, color = colortable, onclick = line_select_color_dropdown})
             end
+
+            tinsert(t, 1, {label = "no color", value = "white", color = "white", onclick = line_select_color_dropdown}) --localize-me
 
             castFrame.cachedColorTable = t
             return t
@@ -301,6 +306,36 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         spellNameEntry:SetHook("OnEditFocusGained", oneditfocusgained_spellid)
         spellNameEntry:SetJustifyH("left")
 
+        local spellRenameEntry = DF:CreateTextEntry(line, function()end, headerTable[5].width, 20, "spellRenameEntry", nil, nil, DF:GetTemplate ("dropdown", "PLATER_DROPDOWN_OPTIONS"))
+        spellRenameEntry:SetHook("OnEditFocusGained", oneditfocusgained_spellid)
+        spellRenameEntry:SetJustifyH("left")
+
+        spellRenameEntry:SetHook("OnEditFocusLost", function(widget, capsule, text)
+            local castColors = Plater.db.profile.cast_colors
+            local spellId = capsule.spellId
+            capsule.text = castColors[spellId] and castColors[spellId][CONST_INDEX_NAME] or ""
+        end)
+
+        spellRenameEntry:SetHook("OnEnterPressed", function(widget, capsule, text)
+            local castColors = Plater.db.profile.cast_colors
+            local spellId = capsule.spellId
+            local castColor = castColors[spellId]
+
+            if (text == "") then
+                if (castColor) then
+                    castColor[CONST_INDEX_NAME] = ""
+                end
+            else
+                if (castColor) then
+                    castColor[CONST_INDEX_NAME] = text
+                else
+                    castColors[spellId] = {true, "white", text}
+                end
+            end
+
+            Plater.UpdateAllPlates()
+        end)
+
         --npc name
         local npcNameLabel = DF:CreateLabel(line, "", 10, "white", nil, "npcNameLabel")
 
@@ -311,10 +346,10 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         local npcLocationLabel = DF:CreateLabel(line, "", 10, "white", nil, "npcLocationLabel")
 
         --encounter
-        local encounterNameLabel = DF:CreateLabel(line, "", 10, "white", nil, "encounterNameLabel")
+        local encounterNameLabel = DF:CreateLabel(line, "", 10, "white", nil, "encounterNameLabel") --not in use, got replaced by spell name rename
 
         --color
-        local colorDropdown = DF:CreateDropDown(line, line_refresh_color_dropdown, 1, headerTable[7].width - 1, 20, "ColorDropdown", nil, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+        local colorDropdown = DF:CreateDropDown(line, line_refresh_color_dropdown, 1, headerTable[8].width - 1, 20, "ColorDropdown", nil, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
 
         enabledCheckBox:SetHook ("OnEnter", widget_onenter)
         enabledCheckBox:SetHook ("OnLeave", widget_onleave)
@@ -322,6 +357,8 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         spellIdEntry:SetHook ("OnLeave", widget_onleave)
         spellNameEntry:SetHook ("OnEnter", widget_onenter)
         spellNameEntry:SetHook ("OnLeave", widget_onleave)
+        spellRenameEntry:SetHook ("OnEnter", widget_onenter)
+        spellRenameEntry:SetHook ("OnLeave", widget_onleave)
         colorDropdown:SetHook ("OnEnter", widget_onenter)
         colorDropdown:SetHook ("OnLeave", widget_onleave)
 
@@ -329,10 +366,11 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         line:AddFrameToHeaderAlignment (spellIconTexture)
         line:AddFrameToHeaderAlignment (spellIdEntry)
         line:AddFrameToHeaderAlignment (spellNameEntry)
+        line:AddFrameToHeaderAlignment (spellRenameEntry)
         line:AddFrameToHeaderAlignment (npcNameLabel)
         line:AddFrameToHeaderAlignment (npcIdLabel)
         line:AddFrameToHeaderAlignment (npcLocationLabel)
-        line:AddFrameToHeaderAlignment (encounterNameLabel)
+        --line:AddFrameToHeaderAlignment (encounterNameLabel)
         line:AddFrameToHeaderAlignment (colorDropdown)
 
         line:AlignWithHeader (castFrame.Header, "left")
@@ -637,12 +675,13 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                     local npcId = thisData[CONST_CASTINFO_NPCID]
                     local npcLocation = thisData[CONST_CASTINFO_NPCLOCATION]
                     local encounterName = thisData[CONST_CASTINFO_ENCOUNTERNAME]
+                    local customSpellName = thisData[CONST_CASTINFO_CUSTOMSPELLNAME]
 
                     if (spellName:lower():find(IsSearchingFor) or sourceName:lower():find(IsSearchingFor) or npcLocation:lower():find(IsSearchingFor) or encounterName:lower():find(IsSearchingFor)) then
                         if (isEnabled) then
-                            enabledTable[#enabledTable+1] = {true, color, spellId, spellName, spellIcon, sourceName, npcId, npcLocation, encounterName}
+                            enabledTable[#enabledTable+1] = {true, color, spellId, spellName, spellIcon, sourceName, npcId, npcLocation, encounterName, customSpellName}
                         else
-                            dataInOrder[#dataInOrder+1] = {false, color, spellId, spellName, spellIcon, sourceName, npcId, npcLocation, encounterName}
+                            dataInOrder[#dataInOrder+1] = {false, color, spellId, spellName, spellIcon, sourceName, npcId, npcLocation, encounterName, customSpellName}
                         end
                     end
                 end
@@ -673,11 +712,12 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                     local npcId = thisData[CONST_CASTINFO_NPCID]
                     local npcLocation = thisData[CONST_CASTINFO_NPCLOCATION]
                     local encounterName = thisData[CONST_CASTINFO_ENCOUNTERNAME]
+                    local customSpellName = thisData[CONST_CASTINFO_CUSTOMSPELLNAME]
 
                     if (isEnabled) then
-                        enabledTable[#enabledTable+1] = {true, color, spellId, spellName, spellIcon, sourceName, npcId, npcLocation, encounterName}
+                        enabledTable[#enabledTable+1] = {true, color, spellId, spellName, spellIcon, sourceName, npcId, npcLocation, encounterName, customSpellName}
                     else
-                        dataInOrder[#dataInOrder+1] = {false, color, spellId, spellName, spellIcon, sourceName, npcId, npcLocation, encounterName}
+                        dataInOrder[#dataInOrder+1] = {false, color, spellId, spellName, spellIcon, sourceName, npcId, npcLocation, encounterName, customSpellName}
                     end
                 end
 
@@ -716,6 +756,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                 local npcId = spellInfo[CONST_CASTINFO_NPCID]
                 local npcLocation = spellInfo[CONST_CASTINFO_NPCLOCATION]
                 local encounterName = spellInfo[CONST_CASTINFO_ENCOUNTERNAME]
+                local customSpellName = spellInfo[CONST_CASTINFO_CUSTOMSPELLNAME]
 
                 line.value = spellInfo
                 line.spellId = nil
@@ -726,10 +767,12 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
                     line.ColorDropdown.spellId = spellId
                     line.ColorDropdown:SetFixedParameter(spellId)
+                    line.spellRenameEntry.spellId = spellId
 
                     line.spellIconTexture:SetTexture(spellIcon)
                     line.spellIdEntry:SetText(spellId)
                     line.spellNameEntry:SetText(spellName)
+                    line.spellRenameEntry:SetText(customSpellName)
                     line.npcNameLabel:SetText(sourceName)
                     line.npcIdLabel:SetText(npcId)
                     line.npcLocationLabel:SetText(npcLocation)
@@ -798,6 +841,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                 local npcId = spellTable.npcID
                 local isEnabled = DB_CAST_COLORS[spellId] and DB_CAST_COLORS[spellId][CONST_INDEX_ENABLED] or false
                 local color = DB_CAST_COLORS[spellId] and DB_CAST_COLORS[spellId][CONST_INDEX_COLOR] or "white"
+                local customSpellName = DB_CAST_COLORS[spellId] and DB_CAST_COLORS[spellId][CONST_INDEX_NAME] or ""
 
                 local castInfo = {
                     isEnabled,
@@ -809,6 +853,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                     npcId,
                     DB_NPCIDS_CACHE[npcId] and DB_NPCIDS_CACHE[npcId][2] or "", --npc location
                     spellTable.encounterName or "",
+                    customSpellName,
                 }
 
                 tinsert(newData, castInfo)
@@ -929,15 +974,12 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                 --exported cast colors has this member to identify the exported data
                 if (colorData and colorData[Plater.Export_CastColors]) then
 
-                    --table storing all spell casts discovered
-                    local allSpellCastsDiscovered = Plater.db.profile.captured_spells
-
                     --the uncompressed table is a numeric table of tables
                     for i, colorTable in pairs(colorData) do
                         --check integrity
                         if (type(colorTable) == "table") then
 
-                            local spellId, color, npcId, sourceName, npcLocation, encounterName = unpack(colorTable)
+                            local spellId, color, npcId, sourceName, npcLocation, encounterName, customSpellName = unpack(colorTable)
 
                             --check integrity
                             spellId = tonumber(spellId)
@@ -946,12 +988,14 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                             sourceName = tostring(sourceName or "")
                             npcLocation = tostring(npcLocation or "")
                             encounterName = tostring(encounterName or "")
+                            customSpellName = tostring(customSpellName or "")
 
-                            if (spellId and color) then
+                            if (spellId and (color or customSpellName)) then
                                 --add into the cast_colors data
                                 DB_CAST_COLORS[spellId] = DB_CAST_COLORS[spellId] or {}
                                 DB_CAST_COLORS[spellId][CONST_INDEX_COLOR] = color
                                 DB_CAST_COLORS[spellId][CONST_INDEX_ENABLED] = true
+                                DB_CAST_COLORS[spellId][CONST_INDEX_NAME] = customSpellName
 
                                 --add into the discoreved spell cache
                                 if (not DB_CAPTURED_SPELLS[spellId]) then
@@ -1040,6 +1084,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                     local npcId = searchResult[CONST_CASTINFO_NPCID]
                     local npcLocation = searchResult[CONST_CASTINFO_NPCLOCATION]
                     local encounterName = searchResult[CONST_CASTINFO_ENCOUNTERNAME]
+                    local customSpellName = searchResult[CONST_CASTINFO_CUSTOMSPELLNAME] or ""
 
                     local castColor = dbColors[spellId]
 
@@ -1047,7 +1092,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                         local isEnabled = castColor[CONST_INDEX_ENABLED]
                         local color = castColor[CONST_INDEX_COLOR]
                         if (isEnabled) then
-                            tinsert (exportedTable, {spellId, color, npcId, sourceName, npcLocation, encounterName})
+                            tinsert (exportedTable, {spellId, color, npcId, sourceName, npcLocation, encounterName, customSpellName})
                         end
                     end
                 end
@@ -1056,6 +1101,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                     local isEnabled = castColor[CONST_INDEX_ENABLED]
                     local color = castColor[CONST_INDEX_COLOR]
                     local npcId, sourceName, npcLocation, encounterName
+                    local customSpellName = castColor[CONST_INDEX_NAME] or ""
 
                     --this db gives source, npcID, event, encounterName
                     local capturedSpell = DB_CAPTURED_SPELLS[spellId]
@@ -1076,7 +1122,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                     encounterName = capturedSpell.encounterName or ""
 
                     if (isEnabled) then
-                        tinsert (exportedTable, {spellId, color, npcId, sourceName, npcLocation, encounterName})
+                        tinsert (exportedTable, {spellId, color, npcId, sourceName, npcLocation, encounterName, customSpellName})
                     end
                 end
             end

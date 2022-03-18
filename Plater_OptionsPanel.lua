@@ -324,12 +324,12 @@ function Plater.OpenOptionsPanel()
 	local scriptButton		= mainFrame.AllButtons [6] --also need update on line 115 and 13818
 	local modButton		 	= mainFrame.AllButtons [7]
 	local profileButton		= mainFrame.AllButtons [22]
-	local ghostAurasButton	= mainFrame.AllButtons [25]
+	local ghostAurasButton	= mainFrame.AllButtons [12]
 
 	if (time() + 60*60*24*15 > 1647542962) then
 		ghostAuras.newTexture = ghostAurasButton:CreateTexture(nil, "overlay", nil, 7)
 		ghostAuras.newTexture:SetTexture([[Interface\AddOns\Plater\images\new]])
-		ghostAuras.newTexture:SetPoint("top", ghostAurasButton.widget, "bottom", 0, 10)
+		ghostAuras.newTexture:SetPoint("right", ghostAurasButton.widget, "right", 4, -9)
 		ghostAuras.newTexture:SetSize(35, 35)
 		ghostAuras.newTexture:SetAlpha(0.88)
 	end
