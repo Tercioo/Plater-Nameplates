@@ -93,8 +93,8 @@ PLATER_DEFAULT_SETTINGS = {
 		npc_colors = {},
 
 		--store the cast colors customized by the user
-		cast_colors = {},
-		cast_color_settings = {
+		cast_colors = {}, --[spellId] = {[1] = color, [2] = enabled}
+		cast_color_settings = { --these are settings for the original cast color settings
 			enabled = true,
 			width = 12,
 			height_offset = 0,

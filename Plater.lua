@@ -221,10 +221,16 @@ Plater.CanOverride_Members = {
 	
 }
 
+--store npc names and spell names from the current/latest combat
+--used to sort data in the options panel: Spell List, Spell Colors and Npc Colors
 Plater.LastCombat = {
 	npcNames = {},
 	spellNames = {},
 }
+
+--store spell cache. spell cache is loaded when adding new auras to track
+Plater.SpellHashTable = {}
+Plater.SpellIndexTable = {}
 
 --> export strings identification
 Plater.Export_CastColors = "CastColor"
@@ -4741,15 +4747,24 @@ function Plater.OnInit() --private --~oninit ~init
 					--spell color
 					self.castColorTexture:Hide()
 
-					if (profile.cast_color_settings.enabled) then
-						local castColors = Plater.db.profile.cast_colors
+					--cast color (from options tab Cast Colors)
+					local castColors = profile.cast_colors
+					local customColor = castColors[self.spellID]
+					if (customColor) then
+						local color, isEnabled = customColor[1], customColor[2]
+						if (color and isEnabled) then
+							--set the new cast color
+							self:SetColor(color)
 
-						--check if this cast has a custom color
-						if (castColors[self.spellID] and castColors[self.spellID][1]) then
-							self.castColorTexture:Show()
-							local r, g, b = Plater:ParseColors(castColors[self.spellID][2])
-							self.castColorTexture:SetColorTexture(r, g, b)
-							self.castColorTexture:SetHeight(self:GetHeight() + profile.cast_color_settings.height_offset)
+							--check if the original cast color is enabled
+							if (profile.cast_color_settings.enabled) then
+								--get the original cast color
+								local castColor = self:GetCastColor()
+								self.castColorTexture:Show()
+								local r, g, b = Plater:ParseColors(castColor)
+								self.castColorTexture:SetColorTexture(r, g, b)
+								self.castColorTexture:SetHeight(self:GetHeight() + profile.cast_color_settings.height_offset)
+							end
 						end
 					end
 

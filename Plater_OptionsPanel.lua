@@ -112,9 +112,9 @@ Plater.RegisterRefreshDBCallback (on_refresh_db)
 local update_wago_update_icons = function()
 	local countMods, countScripts, hasProfileUpdate = Plater.CheckWagoUpdates(true)
 	local mainFrame = PlaterOptionsPanelContainer
-	local scriptButton = mainFrame.AllButtons [6]
-	local modButton = mainFrame.AllButtons [7]
-	local profileButton = mainFrame.AllButtons [21]
+	local scriptButton		= mainFrame.AllButtons [6]
+	local modButton			= mainFrame.AllButtons [7]
+	local profileButton		= mainFrame.AllButtons [22]
 	
 	if countMods > 0 then
 		modButton.updateIcon:Show()
@@ -146,8 +146,8 @@ function Plater.CheckOptionsTab()
 	update_wago_update_icons()
 end
 
-local TAB_INDEX_UIPARENTING = 4
-local TAB_INDEX_PROFILES = 21
+local TAB_INDEX_UIPARENTING = 5
+local TAB_INDEX_PROFILES = 22
 
 -- ~options �ptions
 function Plater.OpenOptionsPanel()
@@ -211,35 +211,34 @@ function Plater.OpenOptionsPanel()
 	local mainFrame = DF:CreateTabContainer (f, "Plater Options", "PlaterOptionsPanelContainer", 
 	{
 		--when chaging these indexes also need to change the function f.CopySettings
-		{name = "FrontPage", title = L["OPTIONS_TABNAME_GENERALSETTINGS"]},
-		{name = "ThreatConfig", title = L["OPTIONS_TABNAME_THREAT"]},
-		{name = "TargetConfig", title = L["OPTIONS_TABNAME_TARGET"]},
-		{name = "CastBarConfig", title = L["OPTIONS_TABNAME_CASTBAR"]},
-		{name = "LevelStrataConfig", title = L["OPTIONS_TABNAME_STRATA"]},
-		{name = "Scripting", title = L["OPTIONS_TABNAME_SCRIPTING"]},
-		{name = "AutoRunCode", title = L["OPTIONS_TABNAME_MODDING"]},
-		{name = "PersonalBar", title = L["OPTIONS_TABNAME_PERSONAL"]},
+		{name = "FrontPage",				title = L["OPTIONS_TABNAME_GENERALSETTINGS"]},
+		{name = "ThreatConfig",				title = L["OPTIONS_TABNAME_THREAT"]},
+		{name = "TargetConfig",				title = L["OPTIONS_TABNAME_TARGET"]},
+		{name = "CastBarConfig",			title = L["OPTIONS_TABNAME_CASTBAR"]},
+		{name = "LevelStrataConfig",		title = L["OPTIONS_TABNAME_STRATA"]},
+		{name = "Scripting",				title = L["OPTIONS_TABNAME_SCRIPTING"]},
+		{name = "AutoRunCode",				title = L["OPTIONS_TABNAME_MODDING"]},
+		{name = "PersonalBar",				title = L["OPTIONS_TABNAME_PERSONAL"]},
 		
-		{name = "DebuffConfig", title = L["OPTIONS_TABNAME_BUFF_SETTINGS"]},
-		{name = "DebuffBlacklist", title = L["OPTIONS_TABNAME_BUFF_TRACKING"]},
-		{name = "DebuffSpecialContainer", title = L["OPTIONS_TABNAME_BUFF_SPECIAL"]},
-		{name = "DebuffLastEvent", title = L["OPTIONS_TABNAME_BUFF_LIST"]},
-		{name = "EnemyNpc", title = L["OPTIONS_TABNAME_NPCENEMY"]},
-		{name = "EnemyPlayer", title = L["OPTIONS_TABNAME_PLAYERENEMY"]},
-		{name = "FriendlyNpc", title = L["OPTIONS_TABNAME_NPCFRIENDLY"]},
-		{name = "FriendlyPlayer", title = L["OPTIONS_TABNAME_PLAYERFRIENDLY"]},
+		{name = "DebuffConfig",				title = L["OPTIONS_TABNAME_BUFF_SETTINGS"]},
+		{name = "DebuffBlacklist",			title = L["OPTIONS_TABNAME_BUFF_TRACKING"]},
+		{name = "DebuffSpecialContainer",	title = L["OPTIONS_TABNAME_BUFF_SPECIAL"]},
+		{name = "GhostAurasFrame",			title = "Ghost Auras"}, --localize-me
+		{name = "EnemyNpc",					title = L["OPTIONS_TABNAME_NPCENEMY"]},
+		{name = "EnemyPlayer",				title = L["OPTIONS_TABNAME_PLAYERENEMY"]},
+		{name = "FriendlyNpc",				title = L["OPTIONS_TABNAME_NPCFRIENDLY"]},
+		{name = "FriendlyPlayer",			title = L["OPTIONS_TABNAME_PLAYERFRIENDLY"]},
 
-		{name = "ColorManagement", title = L["OPTIONS_TABNAME_NPC_COLORNAME"]},
-		{name = "CastColorManagement", title = L["OPTIONS_TABNAME_CASTCOLORS"]},
-		{name = "AnimationPanel", title = L["OPTIONS_TABNAME_ANIMATIONS"]},
-		{name = "Automation", title = L["OPTIONS_TABNAME_AUTO"]},
-		{name = "ProfileManagement", title = L["OPTIONS_TABNAME_PROFILES"]},
-		{name = "AdvancedConfig", title = L["OPTIONS_TABNAME_ADVANCED"]},
-		{name = "resourceFrame", title = L["OPTIONS_TABNAME_COMBOPOINTS"]},
+		{name = "ColorManagement",			title = L["OPTIONS_TABNAME_NPC_COLORNAME"]},
+		{name = "CastColorManagement",		title = L["OPTIONS_TABNAME_CASTCOLORS"]},
+		{name = "DebuffLastEvent",			title = L["OPTIONS_TABNAME_BUFF_LIST"]},
+		{name = "AnimationPanel",			title = L["OPTIONS_TABNAME_ANIMATIONS"]},
+		{name = "Automation",				title = L["OPTIONS_TABNAME_AUTO"]},
+		{name = "ProfileManagement",		title = L["OPTIONS_TABNAME_PROFILES"]},
+		{name = "AdvancedConfig",			title = L["OPTIONS_TABNAME_ADVANCED"]},
+		{name = "resourceFrame",			title = L["OPTIONS_TABNAME_COMBOPOINTS"]},
+
 		{name = "SearchFrame", title = L["OPTIONS_TABNAME_SEARCH"]},
-
-		{name = "GhostAurasFrame", title = "Ghost Auras"}, --localize-me
-
 		--{name = "WagoIo", title = "Wago Imports"}, --wago_imports --localize-me
 		
 	}, 
@@ -252,6 +251,7 @@ function Plater.OpenOptionsPanel()
 		Plater.UpdateAllPlates()
 	end
 
+	--make the tab button's text be aligned to left and fit the button's area
 	for index, frame in ipairs(mainFrame.AllFrames) do
 		local tabButton = mainFrame.AllButtons[index]
 
@@ -288,47 +288,43 @@ function Plater.OpenOptionsPanel()
 	end
 
 	--1st row
-	local frontPageFrame = mainFrame.AllFrames [1]
-	local threatFrame = mainFrame.AllFrames [2]
-	local targetFrame = mainFrame.AllFrames [3]
-	local castBarFrame = mainFrame.AllFrames [4]
-	local uiParentFeatureFrame = mainFrame.AllFrames [5]
-	local scriptingFrame = mainFrame.AllFrames [6]
-	local runCodeFrame = mainFrame.AllFrames [7]
-	local personalPlayerFrame = mainFrame.AllFrames [8]
+	local frontPageFrame		= mainFrame.AllFrames [1]
+	local threatFrame			= mainFrame.AllFrames [2]
+	local targetFrame			= mainFrame.AllFrames [3]
+	local castBarFrame			= mainFrame.AllFrames [4]
+	local uiParentFeatureFrame	= mainFrame.AllFrames [5]
+	local scriptingFrame		= mainFrame.AllFrames [6]
+	local runCodeFrame			= mainFrame.AllFrames [7]
+	local personalPlayerFrame	= mainFrame.AllFrames [8]
 	
 	--2nd row
-	local auraOptionsFrame = mainFrame.AllFrames [9]
-	local auraFilterFrame = mainFrame.AllFrames [10]
-	local auraSpecialFrame = mainFrame.AllFrames [11]
-	local auraLastEventFrame = mainFrame.AllFrames [12]
-	local enemyNPCsFrame = mainFrame.AllFrames [13]
-	local enemyPCsFrame = mainFrame.AllFrames [14]
-	local friendlyNPCsFrame = mainFrame.AllFrames [15]
-	local friendlyPCsFrame = mainFrame.AllFrames [16]
+	local auraOptionsFrame		= mainFrame.AllFrames [9]
+	local auraFilterFrame		= mainFrame.AllFrames [10]
+	local auraSpecialFrame		= mainFrame.AllFrames [11]
+	local ghostAuras			= mainFrame.AllFrames [12]
+	local enemyNPCsFrame		= mainFrame.AllFrames [13]
+	local enemyPCsFrame			= mainFrame.AllFrames [14]
+	local friendlyNPCsFrame		= mainFrame.AllFrames [15]
+	local friendlyPCsFrame		= mainFrame.AllFrames [16]
 	
 	--3rd row
-	local colorsFrame = mainFrame.AllFrames [17]
-	local castColorsFrame = mainFrame.AllFrames [18]
-	local animationFrame = mainFrame.AllFrames [19]
-	local autoFrame = mainFrame.AllFrames [20]
-	local profilesFrame = mainFrame.AllFrames [21]
-	local advancedFrame = mainFrame.AllFrames [22]
-	local resourceFrame = mainFrame.AllFrames [23]
-	local searchFrame = mainFrame.AllFrames [24]
+	local colorsFrame			= mainFrame.AllFrames [17]
+	local castColorsFrame		= mainFrame.AllFrames [18]
+	local auraLastEventFrame	= mainFrame.AllFrames [19]
+	local animationFrame		= mainFrame.AllFrames [20] --need to change the index on Plater_AnimationEditor.lua
+	local autoFrame				= mainFrame.AllFrames [21]
+	local profilesFrame			= mainFrame.AllFrames [22]
+	local advancedFrame			= mainFrame.AllFrames [23]
+	local resourceFrame			= mainFrame.AllFrames [24]
 
 	--4th row
-	local ghostAuras = mainFrame.AllFrames [25]
-
+	local searchFrame			= mainFrame.AllFrames [25]
 	--local wagoIoFrame = mainFrame.AllFrames [26] --wago_imports
-	
-	--
-	local colorNpcsButton = mainFrame.AllButtons [17]
-	local scriptButton = mainFrame.AllButtons [6]
-	local modButton = mainFrame.AllButtons [7]
-	local profileButton = mainFrame.AllButtons [21]
 
-	local ghostAurasButton = mainFrame.AllButtons [25]
+	local scriptButton		= mainFrame.AllButtons [6] --also need update on line 115 and 13818
+	local modButton		 	= mainFrame.AllButtons [7]
+	local profileButton		= mainFrame.AllButtons [22]
+	local ghostAurasButton	= mainFrame.AllButtons [25]
 
 	if (time() + 60*60*24*15 > 1647542962) then
 		ghostAuras.newTexture = ghostAurasButton:CreateTexture(nil, "overlay", nil, 7)
@@ -2361,7 +2357,7 @@ Plater.CreateAuraTesting()
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> aura tracking
 
--- ~aura ~buff ~debuff
+-- ~aura ~bufftracking ~debuff ~tracking
 	
 	local aura_options = {
 		height = 330, 
@@ -4093,13 +4089,10 @@ Plater.CreateAuraTesting()
 		specialAuraFrame:SetPoint ("topright", auraSpecialFrame, "topright", -10, startY)
 		--DF:ApplyStandardBackdrop (specialAuraFrame, false, 0.6)
 		
-		specialAuraFrame.SpellHashTable = {}
-		specialAuraFrame.SpellIndexTable = {}
-		
 		function specialAuraFrame.LoadGameSpells()
-			if (not next (specialAuraFrame.SpellHashTable)) then
+			if (not next (Plater.SpellHashTable)) then
 				--load all spells in the game
-				DF:LoadAllSpells (specialAuraFrame.SpellHashTable, specialAuraFrame.SpellIndexTable)
+				DF:LoadAllSpells (Plater.SpellHashTable, Plater.SpellIndexTable)
 				return true
 			end
 		end
@@ -4145,7 +4138,7 @@ Plater.CreateAuraTesting()
 			
 			if  not spellid then
 				-- if the player class does not know the spell, try checking the cache
-				spellid = specialAuraFrame.SpellHashTable[self.value]
+				spellid = Plater.SpellHashTable[self.value]
 			end
 			
 			if (spellid) then
@@ -4234,23 +4227,24 @@ Plater.CreateAuraTesting()
 				local aura = data [index]
 				if (aura) then
 					local line = self:GetLine (i)
-					local name, _, icon = GetSpellInfo (aura)
+					local spellName, _, spellIcon = GetSpellInfo (aura)
 					line.value = aura
 					
-					if not name then
+					if not spellName then
 						-- if the player class does not know the spell, try checking the cache
 						-- avoids "unknown spell" in this case
-						if (not next (specialAuraFrame.SpellHashTable)) then
+
+						if (not next (Plater.SpellHashTable)) then
 							specialAuraFrame.LoadGameSpells()
 							C_Timer.After (0.2, function() self:Refresh() end)
 						end
-						local id = specialAuraFrame.SpellHashTable[lower(aura)]
-						name, _, icon = GetSpellInfo (id)
+						local id = Plater.SpellHashTable[lower(aura)]
+						spellName, _, spellIcon = GetSpellInfo (id)
 					end
 					
-					if (name) then
-						line.name:SetText (name)
-						line.icon:SetTexture (icon)
+					if (spellName) then
+						line.name:SetText (spellName)
+						line.icon:SetTexture (spellIcon)
 						line.icon:SetTexCoord (.1, .9, .1, .9)
 						line.mineCheckbox:SetFixedParameter (aura)
 						line.mineCheckbox:SetValue (Plater.db.profile.extra_icon_auras_mine [aura] or false)
@@ -4294,7 +4288,7 @@ Plater.CreateAuraTesting()
 		
 		new_buff_entry:SetHook ("OnEditFocusGained", function (self, capsule)
 			specialAuraFrame.LoadGameSpells()
-			new_buff_entry.SpellAutoCompleteList = specialAuraFrame.SpellIndexTable
+			new_buff_entry.SpellAutoCompleteList = Plater.SpellIndexTable
 			new_buff_entry:SetAsAutoComplete ("SpellAutoCompleteList", nil, true)
 		end)
 		
@@ -4312,7 +4306,7 @@ Plater.CreateAuraTesting()
 			
 			--get the spell ID from the spell name
 			local lowertext = lower (text)
-			local spellID = specialAuraFrame.SpellHashTable [lowertext]
+			local spellID = Plater.SpellHashTable [lowertext]
 			if (not spellID) then
 				return
 			end
@@ -13803,7 +13797,7 @@ end
 	
 	--all settings tables
 	local allTabSettings = {
-		interface_options, -- general
+		--interface_options, -- general
 		options_table1, -- general
 		thread_options, -- threat & aggro
 		targetOptions, -- target
@@ -13812,16 +13806,18 @@ end
 		options_personal, -- personal bar
 		debuff_options, -- buff settings
 		especial_aura_settings, -- buff special
+		--ghost auras settings
 		options_table2, -- enemy npc
 		options_table4, -- enemy player
 		options_table3, -- friendly player
 		friendly_npc_options_table, -- friendly npc
+		--spell feedback (animations)
 		auto_options, -- auto
 		advanced_options, -- advanced
+		--resources
 	}
 	
 	local allTabHeaders = {
-		mainFrame.AllButtons [1].button.text:GetText(), -- general
 		mainFrame.AllButtons [1].button.text:GetText(), -- general
 		mainFrame.AllButtons [2].button.text:GetText(), -- threat & aggro
 		mainFrame.AllButtons [3].button.text:GetText(), -- target
@@ -13829,13 +13825,20 @@ end
 		mainFrame.AllButtons [5].button.text:GetText(), -- level & strata
 		mainFrame.AllButtons [8].button.text:GetText(), -- personal bar
 		mainFrame.AllButtons [9].button.text:GetText(), -- buff settings
+		--10 aura filter
 		mainFrame.AllButtons [11].button.text:GetText(), -- buff special
+		--mainFrame.AllButtons [12].button.text:GetText(), -- ghost auras
 		mainFrame.AllButtons [13].button.text:GetText(), -- enemy npc
 		mainFrame.AllButtons [14].button.text:GetText(), -- enemy player
 		mainFrame.AllButtons [15].button.text:GetText(), -- friendly npc
 		mainFrame.AllButtons [16].button.text:GetText(), -- friendly player
-		mainFrame.AllButtons [20].button.text:GetText(), -- auto
-		mainFrame.AllButtons [22].button.text:GetText(), -- advanced
+		--17 18 19 has no options (npc colors, cast colors, aura list)
+		--mainFrame.AllButtons [20].button.text:GetText(), -- spell feedback (animations)
+		mainFrame.AllButtons [21].button.text:GetText(), -- auto
+		--22 profiles
+		mainFrame.AllButtons [23].button.text:GetText(), -- advanced
+		--mainFrame.AllButtons [24].button.text:GetText(), -- resources
+		--25 search
 	}
 
 	--this table will hold all options

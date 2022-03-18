@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1647277035,  "New Feature", "March 18th, 2022", "Cast Colors options now actually changes the color of the cast bar, the old design now shows the original color of the cast.", "Terciob"},
 			{1647277035,  "New Feature", "March 17th, 2022", "Buff List and Npc Colors tab now show on the top entries from last segment, they are also highlight with yellow color.", "Terciob"},
 			{1647277035,  "New Feature", "March 17th, 2022", "Added 'Rename To' field on Npc Colors, use it to quick rename npcs.", "Terciob"},
 			{1647277035,  "New Feature", "March 14th, 2022", "Added Ghost Auras, ghost auras adds an extra icon to indicate a missing debuff on an enemy.", "Terciob"},

@@ -23,7 +23,7 @@ local luaeditor_border_color = {0, 0, 0, 1}
 
 local debugmode = false
 
-local PLATER_OPTIONS_ANIMATION_TAB = 19
+local PLATER_OPTIONS_ANIMATION_TAB = 20
 
 function Plater.CreateSpellAnimationPanel()
 

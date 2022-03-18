@@ -99,6 +99,10 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             GameTooltip:SetSpellByID (self.spellId)
             GameTooltip:AddLine (" ")
             GameTooltip:Show()
+
+            castColorFrame.latestSpellId = self.spellId
+            castColorFrame.optionsFrame.previewCastBar.UpdateAppearance()
+            castColorFrame.optionsFrame.previewCastBar.UpdateAppearance()
         end
     end
     local line_onleave = function(self)
@@ -144,6 +148,8 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
         if (state) then
             self:GetParent():RefreshColor(DB_CAST_COLORS[spellId][CONST_INDEX_COLOR])
+            castColorFrame.latestSpellId = spellId
+            castColorFrame.optionsFrame.previewCastBar.UpdateAppearance()
         else
             self:GetParent():RefreshColor()
         end
@@ -183,6 +189,8 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         castFrame.cachedColorTableNameplate = nil
 
         castFrame.RefreshScroll(0)
+        castColorFrame.latestSpellId = spellId
+        castColorFrame.optionsFrame.previewCastBar.UpdateAppearance()
     end
 
     local function hex (num)
@@ -344,12 +352,6 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         optionsFrame:SetBackdropColor(.1, .1, .1, 1)
         optionsFrame:EnableMouse(true)
 
-        --[=[]]
-        cast_color_settings = {
-            layer = "artwork",
-        },
-    --]=]
-
         local onChangeOption = function()
             --when a setting if changed
             Plater.RefreshDBUpvalues()
@@ -417,9 +419,9 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                 set = function (self, fixedparam, value) 
                     Plater.db.profile.cast_color_settings.enabled = value
                 end,
-                name = "Enabled",
+                name = "Enable Original Cast Color",
+                desc = "Show a small indicator showing the original color of the cast.",
             },
-            {type = "blank"},
             {
                 type = "range",
                 get = function() return Plater.db.profile.cast_color_settings.alpha end,
@@ -460,7 +462,6 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                 values = function() return buildLayerMenu() end,
                 name = "Layer",
             },
-            {type = "blank"},
             {
                 type = "select",
                 get = function() return Plater.db.profile.cast_color_settings.anchor.side end,
@@ -522,6 +523,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
         local previewCastBar = DF:CreateCastBar(previewWindow, previewWindow:GetName() .. "CastBar", settingsOverride)
         optionsFrame.previewCastBar = previewCastBar
+        castColorFrame.optionsFrame = optionsFrame
 
         previewCastBar:SetSize(190, 20)
         previewCastBar:SetPoint("center", previewWindow, "center", 0, 0)
@@ -546,7 +548,6 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         previewCastBar.Spark:SetTexture(Plater.db.profile.cast_statusbar_spark_texture)
         previewCastBar.Spark:SetVertexColor(unpack (Plater.db.profile.cast_statusbar_spark_color))
         previewCastBar.Spark:SetAlpha(Plater.db.profile.cast_statusbar_spark_alpha)
-
         previewCastBar:SetColor(Plater.db.profile.cast_statusbar_color)
         previewCastBar:SetStatusBarTexture(LibSharedMedia:Fetch("statusbar", Plater.db.profile.cast_statusbar_texture))
 
@@ -555,9 +556,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         local hookEventCast = function(self, event, unit, ...)
             local isEnabled = DB_CAST_COLORS[self.spellID] and DB_CAST_COLORS[self.spellID][CONST_INDEX_ENABLED]
             if (isEnabled) then
-                local color = DB_CAST_COLORS[self.spellID] and DB_CAST_COLORS[self.spellID][CONST_INDEX_COLOR] or "white"
-                local r, g, b = Plater:ParseColors(color)
-                previewCastBar.castColorTexture:SetColorTexture(r, g, b)
+                previewCastBar.castColorTexture:SetColorTexture(unpack(Plater.db.profile.cast_statusbar_color))
             end
         end
         hooksecurefunc(previewCastBar, "UNIT_SPELLCAST_START", hookEventCast)
@@ -566,16 +565,35 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         function previewCastBar.UpdateAppearance()
             local profile = Plater.db.profile
 
-            --default color
-            local r, g, b = .3, .7, 1
-            previewCastBar.castColorTexture:SetColorTexture(r, g, b)
-            previewCastBar.castColorTexture:SetHeight(previewCastBar:GetHeight() + profile.cast_color_settings.height_offset)
-            previewCastBar.castColorTexture:SetWidth(profile.cast_color_settings.width)
-            previewCastBar.castColorTexture:SetAlpha(profile.cast_color_settings.alpha)
-            previewCastBar.castColorTexture:SetDrawLayer(profile.cast_color_settings.layer, -6)
-            Plater.SetAnchor(previewCastBar.castColorTexture, profile.cast_color_settings.anchor)
+            --original cast color
+            local isEnabled = profile.cast_color_settings.enabled
+            if (isEnabled) then
+                previewCastBar.castColorTexture:SetColorTexture(unpack(Plater.db.profile.cast_statusbar_color))
+                previewCastBar.castColorTexture:SetHeight(previewCastBar:GetHeight() + profile.cast_color_settings.height_offset)
+                previewCastBar.castColorTexture:SetWidth(profile.cast_color_settings.width)
+                previewCastBar.castColorTexture:SetAlpha(profile.cast_color_settings.alpha)
+                previewCastBar.castColorTexture:SetDrawLayer(profile.cast_color_settings.layer, -6)
+                Plater.SetAnchor(previewCastBar.castColorTexture, profile.cast_color_settings.anchor)
+                previewCastBar.castColorTexture:Show()
+            else
+                previewCastBar.castColorTexture:Hide()
+            end
 
-            previewCastBar.castColorTexture:Show()
+            --cast color
+            local latestSpellId = castColorFrame.latestSpellId
+            if (latestSpellId) then
+                local castColor = DB_CAST_COLORS[latestSpellId]
+                if (castColor) then
+                   local color = castColor[CONST_INDEX_COLOR]
+                   if (color) then
+                    previewCastBar:SetColor(color)
+                   end
+                else
+                    previewCastBar:SetColor(Plater.db.profile.cast_statusbar_color)
+                end
+            else
+                previewCastBar:SetColor(Plater.db.profile.cast_statusbar_color)
+            end
         end
 
         previewCastBar.UpdateAppearance()
@@ -772,8 +790,6 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                 "Kings' Rest", -- [2] Location
             },
         --]=]
-
-        --
 
         for spellId, spellTable in pairs(DB_CAPTURED_CASTS) do
             local spellName, _, spellIcon = GetSpellInfo(spellId)
