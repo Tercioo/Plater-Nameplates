@@ -184,7 +184,7 @@ function Plater.OpenOptionsPanel()
 		button_width = 101,
 		button_height = 20,
 		button_x = 210,
-		button_y = -3,
+		button_y = 1,
 		button_text_size = 10,
 		right_click_y = 5,
 		rightbutton_always_close = true,
@@ -253,6 +253,23 @@ function Plater.OpenOptionsPanel()
 
 	--make the tab button's text be aligned to left and fit the button's area
 	for index, frame in ipairs(mainFrame.AllFrames) do
+
+		--DF:ApplyStandardBackdrop(frame)
+		local frameBackgroundTexture = frame:CreateTexture(nil, "artwork")
+		frameBackgroundTexture:SetPoint("topleft", frame, "topleft", 1, -120)
+		frameBackgroundTexture:SetPoint("bottomright", frame, "bottomright", -1, 20)
+		frameBackgroundTexture:SetColorTexture (0.2317647, 0.2317647, 0.2317647)
+		frameBackgroundTexture:SetVertexColor (0.27, 0.27, 0.27)
+		frameBackgroundTexture:SetAlpha (0.5)
+
+		--divisor shown above the background (create above)
+		local frameBackgroundTextureTopLine = frame:CreateTexture(nil, "artwork")
+		frameBackgroundTextureTopLine:SetPoint("bottomleft", frameBackgroundTexture, "topleft", 0, 0)
+		frameBackgroundTextureTopLine:SetPoint("bottomright", frame, "topright", -1, 0)
+		frameBackgroundTextureTopLine:SetHeight(1)
+		frameBackgroundTextureTopLine:SetColorTexture (0.1317647, 0.1317647, 0.1317647)
+		frameBackgroundTextureTopLine:SetAlpha (0.3)
+
 		local tabButton = mainFrame.AllButtons[index]
 
 		local leftSelectionIndicator = tabButton:CreateTexture(nil, "overlay")
@@ -3286,11 +3303,9 @@ Plater.CreateAuraTesting()
 				empty_text:SetPoint ("center", spells_scroll, "center", -colorsFrame.ModelFrame:GetWidth() / 2, 0)
 				colorsFrame.EmptyText = empty_text
 			 
-			--create the title
+			--create the description
 			colorsFrame.TitleDescText = Plater:CreateLabel (colorsFrame, "For raid and dungeon npcs, they are added into the list after you see them for the first time", 10, "silver")
 			colorsFrame.TitleDescText:SetPoint ("bottomleft", spells_scroll, "topleft", 0, 26)
-			colorsFrame.TitleText = Plater:CreateLabel (colorsFrame, "Npc Color", 14, "orange")
-			colorsFrame.TitleText:SetPoint ("bottomleft", colorsFrame.TitleDescText, "topleft", 0, 2)
 			
 			colorsFrame:SetScript ("OnShow", function()
 				
@@ -4052,16 +4067,14 @@ Plater.CreateAuraTesting()
 			local aura_search_label = DF:CreateLabel (auraLastEventFrame, "Search:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
 			aura_search_label:SetPoint ("right", aura_search_textentry, "left", -2, 0)
 		
-		--create the title
+		--create the description
 		auraLastEventFrame.TitleDescText = Plater:CreateLabel (auraLastEventFrame, "Quick way to manage auras from a recent raid boss or dungeon run", 10, "silver")
 		auraLastEventFrame.TitleDescText:SetPoint ("bottomleft", spells_scroll, "topleft", 0, 26)
-		auraLastEventFrame.TitleText = Plater:CreateLabel (auraLastEventFrame, "Aura Ease", 14, "orange")
-		auraLastEventFrame.TitleText:SetPoint ("bottomleft", auraLastEventFrame.TitleDescText, "topleft", 0, 2)
 		
 	end
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
---> special auras ~special ~aura
+--> special auras ~special ~aura ~buffspecial
 --> special aura container
 	local especial_aura_settings
 	do 
@@ -4934,12 +4947,9 @@ Plater.CreateAuraTesting()
 			
 		end)
 		
-		--create the title
+		--create the description
 		auraSpecialFrame.TitleDescText = Plater:CreateLabel (auraSpecialFrame, "Track auras adding them to a special buff frame separated from the main buff line. Use it to emphasize important auras from raid bosses or mythic dungeons.", 10, "silver")
 		auraSpecialFrame.TitleDescText:SetPoint ("bottomleft", special_auras_added, "topleft", 0, 26)
-		auraSpecialFrame.TitleText = Plater:CreateLabel (auraSpecialFrame, "Aura Special", 14, "orange")
-		auraSpecialFrame.TitleText:SetPoint ("bottomleft", auraSpecialFrame.TitleDescText, "topleft", 0, 2)
-		
 	end
 
 
@@ -12550,7 +12560,8 @@ end
 	}
 
 	_G.C_Timer.After(0.800, function() --~delay
-		DF:BuildMenu (castBarFrame, castBar_options, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)	
+		--the -30 is to fix an annomaly where the options for castbars starts 30 pixels to the right, dunno why (tercio)
+		DF:BuildMenu (castBarFrame, castBar_options, startX - 30, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)	
 	end)
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -13789,8 +13800,8 @@ end
 	local searchBox = DF:CreateTextEntry (searchFrame, function()end, 156, 20, "serachTextEntry", _, _, DF:GetTemplate ("dropdown", "PLATER_DROPDOWN_OPTIONS"))
 	searchBox:SetJustifyH("left")
 
-	searchLabel:SetPoint(10, -120)
-	searchBox:SetPoint(10, -130)
+	searchLabel:SetPoint(10, -130)
+	searchBox:SetPoint(10, -140)
 
 	local optionsWildCardFrame = CreateFrame("frame", "$parentWildCardOptionsFrame", searchFrame, BackdropTemplateMixin and "BackdropTemplate")
 	optionsWildCardFrame:SetAllPoints()

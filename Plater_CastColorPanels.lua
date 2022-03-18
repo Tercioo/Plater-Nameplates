@@ -58,7 +58,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
     local backdrop_color_on_enter = {.8, .8, .8, 0.4}
     local y = startY or 5
     local headerY = y - 20
-    local scrollY = headerY - 20
+    local scrollY = headerY - 15
 
     local luaeditor_border_color = {0, 0, 0, 1}
     local edit_script_size = {620, 300}
@@ -87,7 +87,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
     }
 
     castFrame.Header = DF:CreateHeader(castFrame, headerTable, headerOptions)
-    castFrame.Header:SetPoint("topleft", castFrame, "topleft", 10, headerY)
+    castFrame.Header:SetPoint("topleft", castFrame, "topleft", 5, headerY+5)
 
     --store npcID = checkbox object
     --this is used when selecting the color from the dropdown, it'll automatically enable the color and need to set the checkbox to checked for feedback
@@ -622,15 +622,20 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             if (latestSpellId) then
                 local castColor = DB_CAST_COLORS[latestSpellId]
                 if (castColor) then
-                   local color = castColor[CONST_INDEX_COLOR]
-                   if (color) then
-                    previewCastBar:SetColor(color)
-                   end
+                    local color = castColor[CONST_INDEX_COLOR]
+                    if (color and color ~= "white") then
+                        previewCastBar:SetColor(color)
+                    else
+                        previewCastBar:SetColor(Plater.db.profile.cast_statusbar_color)
+                        previewCastBar.castColorTexture:Hide()
+                    end
                 else
                     previewCastBar:SetColor(Plater.db.profile.cast_statusbar_color)
+                    previewCastBar.castColorTexture:Hide()
                 end
             else
                 previewCastBar:SetColor(Plater.db.profile.cast_statusbar_color)
+                previewCastBar.castColorTexture:Hide()
             end
         end
 
@@ -809,7 +814,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
     --create scroll
     local spells_scroll = DF:CreateScrollBox (castFrame, "$parentColorsScroll", scroll_refresh, {}, scroll_width, scroll_height, scroll_lines, scroll_line_height)
     DF:ReskinSlider (spells_scroll)
-    spells_scroll:SetPoint ("topleft", castFrame, "topleft", 10, scrollY)
+    spells_scroll:SetPoint ("topleft", castFrame, "topleft", 5, scrollY)
     castFrame.spellsScroll = spells_scroll
 
     spells_scroll:SetScript("OnShow", function(self)
@@ -1183,11 +1188,9 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         empty_text:SetPoint("center", spells_scroll, "center", -130, 0)
         castFrame.EmptyText = empty_text
 
-    --create the title
+    --create the description
     castFrame.TitleDescText = Plater:CreateLabel(castFrame, "For raid and dungeon npcs, they are added into the list after you see them for the first time", 10, "silver")
     castFrame.TitleDescText:SetPoint("bottomleft", spells_scroll, "topleft", 0, 26)
-    castFrame.TitleText = Plater:CreateLabel(castFrame, "Cast Color", 14, "orange")
-    castFrame.TitleText:SetPoint("bottomleft", castFrame.TitleDescText, "topleft", 0, 2)
 
     castFrame:SetScript("OnHide", function()
         if (castFrame.ImportEditor) then

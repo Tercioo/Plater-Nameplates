@@ -15,9 +15,9 @@ local y = -170
 local optionsStartX = 300
 local optionsStartY = y
 
-local scrollBoxWidth = 260
-local scrollBoxHeight = 420
-local scrollBoxLinesHeight = 20
+local scrollBoxWidth = 280
+local scrollBoxHeight = 442
+local scrollBoxLinesHeight = 21
 local scrollAmoutLines = floor(scrollBoxHeight / scrollBoxLinesHeight)
 local scrollbox_line_backdrop_color = {.8, .8, .8, 0.2}
 local scrollbox_line_backdrop_color_hightlight = {.8, .8, .8, 0.4}
@@ -80,19 +80,24 @@ function Plater.Auras.GhostAuras.ApplyAppearance(auraIconFrame, spellName, spell
 end
 
 function Plater.Auras.BuildGhostAurasOptionsTab(frame)
-    ghostAuraFrame = frame
+
+    --this support frame is just to align widgets more easily
+    local supportFrame = CreateFrame("frame", "$parentSupportFrame", frame, "BackdropTemplate")
+    supportFrame:SetPoint("topleft", frame, "topleft", 5, 0)
+    supportFrame:SetSize(frame:GetSize())
+
+    ghostAuraFrame = supportFrame
     ghostAuraFrame:SetBackdrop(nil)
 
     --text above the scroll frame
     ghostAuraFrame.auraScrollLabel = DF:CreateLabel(ghostAuraFrame, "Auras for specialization") --localize-me
     ghostAuraFrame.auraScrollLabel.fontcolor = "orange"
     ghostAuraFrame.auraScrollLabel.fontsize = 11
-    ghostAuraFrame.auraScrollLabel:SetPoint("topleft", ghostAuraFrame, "topleft", 5, y)
+    ghostAuraFrame.auraScrollLabel:SetPoint("topleft", ghostAuraFrame, "topleft", 5, y+16)
 
+    --create the description
     ghostAuraFrame.TitleDescText = Plater:CreateLabel (ghostAuraFrame, "Add an icon as a reminder that a debuff is missing on the enemy", 10, "silver") --localize-me
-    ghostAuraFrame.TitleDescText:SetPoint ("bottomleft", ghostAuraFrame.auraScrollLabel, "topleft", 0, 26)
-    ghostAuraFrame.TitleText = Plater:CreateLabel (ghostAuraFrame, "Ghost Auras", 14, "orange") --localize-me
-    ghostAuraFrame.TitleText:SetPoint ("bottomleft", ghostAuraFrame.TitleDescText, "topleft", 0, 2)
+    ghostAuraFrame.TitleDescText:SetPoint ("bottomleft", ghostAuraFrame.auraScrollLabel, "topleft", 0, 10)
 
     --scroll frame
     local refreshAuraList = function(self, data, offset, totalLines)
@@ -238,16 +243,16 @@ function Plater.Auras.BuildGhostAurasOptionsTab(frame)
         end
     end, 100, 20, "Add Aura", nil, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))
 
-    newAuraEntry:SetPoint ("topleft",  spellScrollBox, "topright", 35, 0)
+    newAuraEntry:SetPoint ("topleft",  spellScrollBox, "topright", 40, 0)
     newAuraLabel:SetPoint ("bottomleft", newAuraEntry, "topleft", 0, 2)
     newAuraButton:SetPoint ("topleft", newAuraEntry, "bottomleft", 0, -2)
     newAuraButton.tooltip = "Add the aura to be tracked."
 
     --image showing ghost aura example
     ghostAuraFrame.ExampleImageDesc = DF:CreateLabel (ghostAuraFrame, "Ghost auras look like this:", 14)
-    ghostAuraFrame.ExampleImageDesc:SetPoint (300, -250)
+    ghostAuraFrame.ExampleImageDesc:SetPoint (325, -220)
     ghostAuraFrame.ExampleImage = DF:CreateImage (ghostAuraFrame, [[Interface\AddOns\Plater\images\ghostauras_example]], 256*0.8, 128*0.8)
-    ghostAuraFrame.ExampleImage:SetPoint (300, -264)
+    ghostAuraFrame.ExampleImage:SetPoint (325, -234)
     ghostAuraFrame.ExampleImage:SetAlpha (.834)
 
     local optionsTable = {
@@ -339,6 +344,6 @@ function Plater.Auras.BuildGhostAurasOptionsTab(frame)
     end
 
     _G.C_Timer.After(1.8, function() --~delay
-        DF:BuildMenu(ghostAuraFrame, optionsTable, optionsStartX, optionsStartY, 800, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
+        DF:BuildMenu(ghostAuraFrame, optionsTable, 325, -157, 800, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
     end)
 end
