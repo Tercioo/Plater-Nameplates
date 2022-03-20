@@ -3282,7 +3282,7 @@ local class_specs_coords = {
 				end
 		end,
 
-		-- ~added
+		-- ~added ãdded 
 		NAME_PLATE_UNIT_ADDED = function (event, unitBarId)
 			--ViragDevTool_AddData({ctime = GetTime(), unit = unitBarId or "nil", stack = debugstack()}, "NAME_PLATE_UNIT_ADDED - " .. (unitBarId or "nil"))
 			--debug for hunter faith death
@@ -3633,7 +3633,7 @@ local class_specs_coords = {
 						end
 					else
 						--the unit is a npc
-						
+						 
 						if (reaction >= Plater.UnitReaction.UNITREACTION_FRIENDLY) then
 							plateFrame.NameAnchor = DB_NAME_NPCFRIENDLY_ANCHOR
 							plateFrame.PlateConfig = DB_PLATE_CONFIG.friendlynpc
@@ -6205,7 +6205,7 @@ end
 		end
 	end	
 	
-	-- ~target
+	-- ~target ~selection
 	function Plater.UpdateTarget (plateFrame) --private
 
 		local profile = Plater.db.profile
@@ -6236,7 +6236,7 @@ end
 			
 			--target highlight
 			if (profile.target_highlight) then
-				if (plateFrame.actorType ~= ACTORTYPE_FRIENDLY_PLAYER and plateFrame.actorType ~= ACTORTYPE_FRIENDLY_NPC and not plateFrame.PlayerCannotAttack) then
+				if (plateFrame.actorType ~= ACTORTYPE_FRIENDLY_PLAYER and plateFrame.actorType ~= ACTORTYPE_FRIENDLY_NPC and not plateFrame.PlayerCannotAttack and unitFrame.healthBar:IsShown()) then
 					plateFrame.TargetNeonUp:Show()
 					plateFrame.TargetNeonDown:Show()
 				else
