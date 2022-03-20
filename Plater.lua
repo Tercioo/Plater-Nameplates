@@ -5350,7 +5350,7 @@ end
 
 	--run the hook "Nameplate Updated", this is called from inside the Tick and UpdateAllPlates()
 	function Plater.TriggerNameplateUpdatedEvent(unitFrame)
-		if (HOOK_NAMEPLATE_UPDATED.ScriptAmount > 0) then
+		if unitFrame.PlaterOnScreen and (HOOK_NAMEPLATE_UPDATED.ScriptAmount > 0) then
 			for i = 1, HOOK_NAMEPLATE_UPDATED.ScriptAmount do
 				local globalScriptObject = HOOK_NAMEPLATE_UPDATED [i]
 
