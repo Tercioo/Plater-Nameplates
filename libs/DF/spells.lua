@@ -623,6 +623,7 @@ if (IS_WOW_PROJECT_NOT_MAINLINE) then
 	DF.CooldownsBySpec[258][19242] = 5 --desperate prayer Rank 6
 	DF.CooldownsBySpec[258][19243] = 5 --desperate prayer Rank 7
 	DF.CooldownsBySpec[258][25437] = 5 --desperate prayer Rank 8
+	DF.CooldownsBySpec[258][15286] = nil --vampiric embrace is a debuff on target in classic, not a buff on priest
 
 	--ROGUE - 259
 	DF.CooldownsBySpec[259][1857] = 2 --vanish Rank 2
