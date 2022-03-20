@@ -961,7 +961,7 @@ local PlaterNamePlateAuraTooltip = CreatePlaterNamePlateAuraTooltip()
 		Plater.UpdateResourceFrameAnchor (self)
 	end
 
-	--~special ~auraspecial
+	--~special ~auraspecial self is BuffFrame
 	function Plater.AddExtraIcon (self, spellName, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, filter, id)
 		local _, casterClass = UnitClass(caster or "")
 		local casterName
@@ -969,46 +969,47 @@ local PlaterNamePlateAuraTooltip = CreatePlaterNamePlateAuraTooltip()
 			--adding only the name for players in case the player used a stun
 			casterName = UnitName(caster)
 		end
-		
+
 		local borderColor
-		
+		local profile = Plater.db.profile
+
 		if (canStealOrPurge) then
-			borderColor = Plater.db.profile.extra_icon_show_purge_border
-			
-		elseif (Plater.db.profile.extra_icon_use_blizzard_border_color) then
+			borderColor = profile.extra_icon_show_purge_border
+
+		elseif (profile.extra_icon_use_blizzard_border_color) then
 			-- use blizzard border colors
-			local color = DebuffTypeColor[actualAuraType or "none"] or {r=0,b=0,g=0, a=0} --actualAuraType is a global? it have been not passed
+			local color = DebuffTypeColor[debuffType or "none"] or {r=0, b=0, g=0, a=0} --actualAuraType is a global? it have been not passed | actualAuraType is the 5th argument
 			borderColor = {color.r, color.g, color.b, color.a or 1}
-			
+
 		elseif (CROWDCONTROL_AURA_IDS [spellId]) then
-			borderColor = Plater.db.profile.debuff_show_cc_border
-		
-		elseif (DEFENSIVE_AURA_IDS [spellId]) then 
+			borderColor = profile.debuff_show_cc_border
+
+		elseif (DEFENSIVE_AURA_IDS [spellId]) then
 			--> defensive effects
-			borderColor = Plater.db.profile.extra_icon_show_defensive_border
-		
-		elseif (OFFENSIVE_AURA_IDS [spellId]) then 
+			borderColor = profile.extra_icon_show_defensive_border
+
+		elseif (OFFENSIVE_AURA_IDS [spellId]) then
 			--> offensive effects
-			borderColor = Plater.db.profile.extra_icon_show_offensive_border
-		
-		elseif (debuffType == AURA_TYPE_ENRAGE) then 
+			borderColor = profile.extra_icon_show_offensive_border
+
+		elseif (debuffType == AURA_TYPE_ENRAGE) then
 			--> enrage effects
-			borderColor = Plater.db.profile.extra_icon_show_enrage_border
-		
+			borderColor = profile.extra_icon_show_enrage_border
+
 		else
-			borderColor = Plater.db.profile.extra_icon_border_color
-			
+			borderColor = profile.extra_icon_border_color
 		end
-		
+
 		--spellId, borderColor, startTime, duration, forceTexture, descText
+		--calling SetIcon make the ExtraIconFrame call show() on it self
 		local iconFrame = self.ExtraIconFrame:SetIcon (spellId, borderColor, expirationTime - duration, duration, false, casterName and {text = casterName, text_color = casterClass} or false, count, debuffType, caster, canStealOrPurge)
-		
+
 		-- tooltip info
 		iconFrame:SetID (id)
 		iconFrame.filter = filter
 		iconFrame:SetScript ("OnEnter", Plater.OnEnterAura)
 		iconFrame:SetScript ("OnLeave", Plater.OnLeaveAura)
-		iconFrame:EnableMouse (Plater.db.profile.aura_show_tooltip)
+		iconFrame:EnableMouse (profile.aura_show_tooltip)
 		
 		
 		--add the spell into the cache

@@ -1770,7 +1770,7 @@ local class_specs_coords = {
 				end
 		end
 	end
-	
+
 	--run a delayed update on the namepalte, this is used when the client receives an information from the server but does not update the state immediately
 	--this usualy happens with faction and flag changes
 	function Plater.ScheduleUpdateForNameplate (plateFrame) --private
@@ -3738,6 +3738,10 @@ local class_specs_coords = {
 			Plater.Resources.UpdateResourceFramePosition() --~resource
 			
 			--hooks
+
+			--Nameplate Added hook can now be deprecated and replaced by Nameplate Updated
+			--when deprecating, this part of the code can be just removed, a Nameplate Update is called within the Tick which is forced right below this block
+			--this block may never be removed due to back compatibility with old Mods using it
 			if (HOOK_NAMEPLATE_ADDED.ScriptAmount > 0) then
 				for i = 1, HOOK_NAMEPLATE_ADDED.ScriptAmount do
 					local globalScriptObject = HOOK_NAMEPLATE_ADDED [i]
@@ -5344,14 +5348,33 @@ end
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> update functions ~update
 
+	--run the hook "Nameplate Updated", this is called from inside the Tick and UpdateAllPlates()
+	function Plater.TriggerNameplateUpdatedEvent(unitFrame)
+		if (HOOK_NAMEPLATE_UPDATED.ScriptAmount > 0) then
+			for i = 1, HOOK_NAMEPLATE_UPDATED.ScriptAmount do
+				local globalScriptObject = HOOK_NAMEPLATE_UPDATED [i]
+
+				local scriptContainer = unitFrame:ScriptGetContainer()
+				local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Nameplate Updated")
+				local scriptEnv = scriptInfo.Env
+				scriptEnv._HealthPercent = unitFrame.healthBar.CurrentHealth / unitFrame.healthBar.CurrentHealthMax * 100
+				
+				--run
+				unitFrame:ScriptRunHook (scriptInfo, "Nameplate Updated")
+			end
+		end
+	end
+
 	--full refresh calls
 	function Plater.UpdateAllPlates (forceUpdate, justAdded) --private
 		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 			Plater.UpdatePlateFrame (plateFrame, nil, forceUpdate, justAdded)
+			--trigger a nameplate updated event
+			Plater.TriggerNameplateUpdatedEvent(plateFrame.unitFrame)
 		end
 	end
 	
-	--called from the options panel
+	--called from the options panel | this is the same as calling Name_Plate_Unit_Added for each nameplate
 	function Plater.FullRefreshAllPlates() --private
 		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 			--hack to call the update without overriding user settings from scripts
@@ -5761,7 +5784,7 @@ end
 			end
 			
 			--update buffs and debuffs
-			if (DB_AURA_ENABLED) then
+			if (DB_AURA_ENABLED) then --should update only when the heathbar is shown?
 				--Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdateAuras")
 				
 				if (DB_TRACK_METHOD == 0x1) then --automatic
@@ -5843,19 +5866,7 @@ end
 			end
 			
 			--hooks
-			if (HOOK_NAMEPLATE_UPDATED.ScriptAmount > 0) then
-				for i = 1, HOOK_NAMEPLATE_UPDATED.ScriptAmount do
-					local globalScriptObject = HOOK_NAMEPLATE_UPDATED [i]
-
-					local scriptContainer = unitFrame:ScriptGetContainer()
-					local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Nameplate Updated")
-					local scriptEnv = scriptInfo.Env
-					scriptEnv._HealthPercent = healthBar.CurrentHealth / healthBar.CurrentHealthMax * 100
-					
-					--run
-					unitFrame:ScriptRunHook (scriptInfo, "Nameplate Updated")
-				end
-			end
+			Plater.TriggerNameplateUpdatedEvent(unitFrame)
 			
 			--details! integration
 			if (IS_USING_DETAILS_INTEGRATION and not tickFrame.PlateFrame.IsSelf and PLAYER_IN_COMBAT and unitFrame.InCombat) then
@@ -7243,8 +7254,7 @@ end
 				end
 			end
 			
-		else
-			--> enemy npc pass throught here
+		else --> ENEMY NPC pass throught here
 			plateFrame.IsFriendlyPlayerWithoutHealthBar = false
 			
 			--check if this is an enemy npc but the player cannot attack it
