@@ -763,11 +763,41 @@ end
 
         if (DB_PLATER_RESOURCE_SHOW_DEPLETED) then
             Plater.Resources.UpdateResourcesFor_ShowDepleted(mainResourceFrame, resourceBar)
+        else
+            Plater.Resources.UpdateResourcesFor_HideDepleted(mainResourceFrame, resourceBar)
         end
 
         Plater.EndLogPerformanceCore("Plater-Resources", "Update", "UpdateResourceBar")
     end
 
+--update the resources widgets when hiding the resources background for depleted
+--on this type, the location of each resource icon is depending on the amount shown
+    function Plater.Resources.UpdateResourcesFor_HideDepleted(mainResourceFrame, resourceBar)
+        Plater.StartLogPerformanceCore("Plater-Resources", "Update", "UpdateResourcesFor_HideDepleted")
+        
+        --get the table with the widgets created
+        local widgetTable = resourceBar.widgets
+		--fallback if it is not implemented/created
+		if (not widgetTable[1]) then
+            return
+        end
+        
+        --store the amount of widgets currently in use - as we are hiding before update: 0
+        resourceBar.widgetsInUseAmount = 0
+        --set the amount of resources the player has - 0 before update
+        resourceBar.lastResourceAmount = 0
+        
+        for i = 1, CONST_NUM_RESOURCES_WIDGETS do
+            local thisResourceWidget = widgetTable[i]
+            thisResourceWidget.inUse = false
+            thisResourceWidget:Hide()
+            resourceBar.widgetsBackground[i]:Hide()
+        end
+        
+        mainResourceFrame.currentResourceBarShown.updateResourceFunc(mainResourceFrame, mainResourceFrame.currentResourceBarShown, true)
+        
+        Plater.EndLogPerformanceCore("Plater-Resources", "Update", "UpdateResourcesFor_HideDepleted")
+    end
 
 --update the resources widgets when using the resources showing the background of depleted
 --on this type, the location of each resource icon is precomputed
@@ -934,6 +964,8 @@ end
         resourceBar:SetWidth(totalWidth)
         resourceBar:SetPoint(DB_PLATER_RESOURCE_GROW_DIRECTON, mainResourceFrame, DB_PLATER_RESOURCE_GROW_DIRECTON, 0, 0)
 
+        --store current resources
+        resourceBar.widgetsInUseAmount = currentResources
         --save the amount of resources
         resourceBar.lastResourceAmount = currentResources
 
