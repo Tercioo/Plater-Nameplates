@@ -3738,10 +3738,6 @@ local class_specs_coords = {
 			Plater.Resources.UpdateResourceFramePosition() --~resource
 			
 			--hooks
-
-			--Nameplate Added hook can now be deprecated and replaced by Nameplate Updated
-			--when deprecating, this part of the code can be just removed, a Nameplate Update is called within the Tick which is forced right below this block
-			--this block may never be removed due to back compatibility with old Mods using it
 			if (HOOK_NAMEPLATE_ADDED.ScriptAmount > 0) then
 				for i = 1, HOOK_NAMEPLATE_ADDED.ScriptAmount do
 					local globalScriptObject = HOOK_NAMEPLATE_ADDED [i]
