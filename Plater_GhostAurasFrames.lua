@@ -96,7 +96,7 @@ function Plater.Auras.BuildGhostAurasOptionsTab(frame)
     ghostAuraFrame.auraScrollLabel:SetPoint("topleft", ghostAuraFrame, "topleft", 5, y+16)
 
     --create the description
-    ghostAuraFrame.TitleDescText = Plater:CreateLabel (ghostAuraFrame, "Add an icon as a reminder that a debuff is missing on the enemy", 10, "silver") --localize-me
+    ghostAuraFrame.TitleDescText = Plater:CreateLabel (ghostAuraFrame, "Add an icon as a reminder that a debuff you can cast directly is missing on the enemy.", 10, "silver") --localize-me
     ghostAuraFrame.TitleDescText:SetPoint ("bottomleft", ghostAuraFrame.auraScrollLabel, "topleft", 0, 10)
 
     --scroll frame
