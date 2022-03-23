@@ -260,7 +260,7 @@ local PlaterNamePlateAuraTooltip = CreatePlaterNamePlateAuraTooltip()
 	--this function is guaranteed to run after all auras been processed
 	function Plater.ShowGhostAuras(buffFrame)
 		if (DB_AURA_GHOSTAURA_ENABLED) then
-			if (InCombatLockdown() and buffFrame.unitFrame.InCombat) then
+			if (InCombatLockdown() and buffFrame.unitFrame.InCombat and not buffFrame.unitFrame.IsSelf) then
 				local nameplateAuraCache = buffFrame.AuraCache --auras already shown in the nameplate
 				for spellName, spellTable in pairs(GHOSTAURAS) do
 					if (not nameplateAuraCache[spellName]) then --the ghost aura isn't in the nameplate
