@@ -1852,13 +1852,10 @@ local PlaterNamePlateAuraTooltip = CreatePlaterNamePlateAuraTooltip()
 			return
 		end
 
-		local spellBookSpells = Plater.Auras.GhostAuras.GetSpellBookSpells()
 		for spellId in pairs(ghostAuraList) do
 			local spellName, _, spellIcon = GetSpellInfo(spellId)
 			if (spellName) then
-				if (spellBookSpells[spellName]) then
-					GHOSTAURAS[spellName] = {spellIcon, spellId}
-				end
+				GHOSTAURAS[spellName] = {spellIcon, spellId}
 			end
 		end
 	end

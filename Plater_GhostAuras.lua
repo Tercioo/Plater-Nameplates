@@ -47,48 +47,6 @@ function Plater.Auras.GhostAuras.RemoveGhostAura(spellId)
     auraList[spellId] = nil
 end
 
---return a list of spell names that contain in the player spellbook
---[spellName] = true
---working on retail
-function Plater.Auras.GhostAuras.GetSpellBookSpells()
-    local spellNamesInSpellBook = {}
-
-    for i = 1, GetNumSpellTabs() do
-        local tabName, tabTexture, offset, numSpells, isGuild, offspecId = GetSpellTabInfo(i)
-
-        if (offspecId == 0) then
-            offset = offset + 1
-            local tabEnd = offset + numSpells
-
-            for j = offset, tabEnd - 1 do
-                local spellType, spellId = GetSpellBookItemInfo(j, "player")
-
-                if (spellId) then
-                    if (spellType ~= "FLYOUT") then
-                        local spellName = GetSpellInfo(spellId)
-                        if (spellName) then
-                            spellNamesInSpellBook[spellName] = true
-                        end
-                    else
-                        local _, _, numSlots, isKnown = GetFlyoutInfo(spellId)
-                        if (isKnown and numSlots > 0) then
-                            for k = 1, numSlots do
-                                local spellID, overrideSpellID, isKnown = GetFlyoutSlotInfo(spellId, k)
-                                if (isKnown) then
-                                    local spellName = GetSpellInfo(spellID)
-                                    spellNamesInSpellBook[spellName] = true
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
-
-    return spellNamesInSpellBook
-end
-
 --refresh caches when spec changes
 local specChangeFrame = CreateFrame("frame")
 if IS_WOW_PROJECT_MAINLINE then
