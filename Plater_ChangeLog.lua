@@ -15,7 +15,7 @@ function Plater.GetChangelogTable()
 			{1647277035,  "New Feature", "March 17th, 2022", "Buff List and Npc Colors tab now show on the top entries from last segment, they are also highlight with yellow color.", "Terciob"},
 			{1647277035,  "New Feature", "March 17th, 2022", "Added 'Rename To' field on Npc Colors, use it to quick rename npcs.", "Terciob"},
 			{1647277035,  "New Feature", "March 14th, 2022", "Added Ghost Auras, ghost auras adds an extra icon to indicate a missing debuff on an enemy.", "Terciob"},
-			{1647277035,  "New Feature", "March 14th, 2022", "Added new script for the new Affix on Mythic+.", "Terciob"},
+			{1647277035,  "New Feature", "March 14th, 2022", "Added new script called 'Relics 9.2 M Dungeons' for the new Affix on Mythic+.", "Terciob"},
 			{1647277035,  "Bug Fix", "March 4th, 2022", "Ensure occlusion alpha is not overwritten by no combat alpha setting.", "cont1nuity"},
 			{1647277035,  "Backend Change", "February 25th, 2022", "NPC Colors list should be auto filled with Thorgast NPCs.", "cont1nuity"},
 			
