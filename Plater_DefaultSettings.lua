@@ -945,6 +945,11 @@ PLATER_DEFAULT_SETTINGS = {
 			["cities"] = false,
 		},
 
+		auto_inside_raid_dungeon = {
+			hide_enemy_player_pets = false,
+			hide_enemy_player_totems = false,
+		},
+
 		spell_animations = true,
 		spell_animations_scale = 1.25,
 
