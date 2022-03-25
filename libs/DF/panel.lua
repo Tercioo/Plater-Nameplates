@@ -5218,6 +5218,7 @@ DF.IconRowFunctions = {
 		
 		if (not iconFrame) then
 			local newIconFrame = CreateFrame ("frame", "$parentIcon" .. self.NextIcon, self, "BackdropTemplate")
+			newIconFrame.parentIconRow = self
 			
 			newIconFrame.Texture = newIconFrame:CreateTexture (nil, "artwork")
 			PixelUtil.SetPoint (newIconFrame.Texture, "topleft", newIconFrame, "topleft", 1, -1)
@@ -5315,30 +5316,36 @@ DF.IconRowFunctions = {
 				if (self.options.show_text) then
 					iconFrame.CountdownText:Show()
 					
-					local formattedTime = floor (startTime + duration - GetTime())
+					local now = GetTime()
 					
-					if (formattedTime >= 3600) then
-						formattedTime = floor (formattedTime / 3600) .. "h"
-						
-					elseif (formattedTime >= 60) then
-						formattedTime = floor (formattedTime / 60) .. "m"
-						
-					else
-						formattedTime = floor (formattedTime)
-					end
+					iconFrame.timeRemaining = startTime + duration - now
+					iconFrame.expirationTime = startTime + duration
+					
+					local formattedTime = (iconFrame.timeRemaining > 0) and iconFrame.parentIconRow.FormatCooldownTime(iconFrame.timeRemaining) or ""
+					iconFrame.CountdownText:SetText (formattedTime)
 					
 					iconFrame.CountdownText:SetPoint (self.options.text_anchor or "center", iconFrame, self.options.text_rel_anchor or "center", self.options.text_x_offset or 0, self.options.text_y_offset or 0)
 					DF:SetFontSize (iconFrame.CountdownText, self.options.text_size)
 					DF:SetFontFace (iconFrame.CountdownText, self.options.text_font)
 					DF:SetFontOutline (iconFrame.CountdownText, self.options.text_outline)
-					iconFrame.CountdownText:SetText (formattedTime)
+					
+					if self.options.on_tick_cooldown_update then
+						iconFrame.lastUpdateCooldown = now
+						iconFrame:SetScript("OnUpdate", self.OnIconTick)
+					else
+						iconFrame:SetScript("OnUpdate", nil)
+					end
 					
 				else
+					iconFrame:SetScript("OnUpdate", nil)
 					iconFrame.CountdownText:Hide()
 				end
 				
 				iconFrame.Cooldown:SetHideCountdownNumbers (self.options.surpress_blizzard_cd_timer)
 			else
+				iconFrame.timeRemaining = nil
+				iconFrame.expirationTime = nil
+				iconFrame:SetScript("OnUpdate", nil)
 				iconFrame.CountdownText:Hide()
 			end
 			
@@ -5387,6 +5394,32 @@ DF.IconRowFunctions = {
 			
 			return iconFrame
 		end
+	end,
+	
+	OnIconTick = function (self, deltaTime)
+		local now = GetTime()
+		if (self.lastUpdateCooldown + 0.05) <= now then
+			self.timeRemaining = self.expirationTime - now
+			if self.timeRemaining > 0 then
+				self.CountdownText:SetText (self.parentIconRow.FormatCooldownTime(self.timeRemaining))
+			else
+				self.CountdownText:SetText ("")
+			end
+			self.lastUpdateCooldown = now
+		end
+	end,
+	
+	FormatCooldownTime = function (formattedTime)
+		if (formattedTime >= 3600) then
+			formattedTime = floor (formattedTime / 3600) .. "h"
+			
+		elseif (formattedTime >= 60) then
+			formattedTime = floor (formattedTime / 60) .. "m"
+			
+		else
+			formattedTime = floor (formattedTime)
+		end
+		return formattedTime
 	end,
 	
 	ClearIcons = function (self)
@@ -5476,6 +5509,7 @@ local default_icon_row_options = {
 	grow_direction = 1, --1 = to right 2 = to left
 	surpress_blizzard_cd_timer = false,
 	surpress_tulla_omni_cc = false,
+	on_tick_cooldown_update = true,
 }
 
 function DF:CreateIconRow (parent, name, options)
