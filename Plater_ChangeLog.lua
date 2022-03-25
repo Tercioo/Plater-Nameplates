@@ -7,9 +7,11 @@ local _
 function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
-			{1648130735,  "New Feature", "March 24rd, 2022", "Added into the 'Auto' section two options to hide Enemy Pets and Enemy Totems within raids and dungeons (default disabled).", "Terciob"},
-
-			{1647277135,  "Bug Fix", "March 23rd, 2022", "Don't show ghost auras on personal bar.", "cont1nuity"},
+		
+			{1648130736,  "Backend Change", "March 25th, 2022", "Changing the aura tracking backend to update only when needed.", "Terciob"},
+			
+			{1648130735,  "New Feature", "March 24th, 2022", "Added into the 'Auto' section two options to hide Enemy Pets and Enemy Totems within raids and dungeons (default disabled).", "cont1nuity"},
+			{1648130735,  "Bug Fix", "March 23rd, 2022", "Don't show ghost auras on personal bar.", "cont1nuity"},
 			
 			{1647277035,  "Bug Fix", "March 21st, 2022", "Fixed an issue with the resources on the Plater resource bar not updating properly when disabling the 'Show Background' option.", "cont1nuity"},
 			{1647277035,  "New Feature", "March 18th, 2022", "Cast Colors options now actually changes the color of the cast bar, the old design now shows the original color of the cast.", "Terciob"},

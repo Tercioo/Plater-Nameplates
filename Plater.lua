@@ -3386,6 +3386,8 @@ local class_specs_coords = {
 			
 			plateFrame.unitFrame.PlaterOnScreen = true
 			
+			Plater.AddToAuraUpdate(unitID)
+			
 			--save the last unit type shown in this plate
 			plateFrame.PreviousUnitType = plateFrame.actorType
 			
@@ -3837,6 +3839,8 @@ local class_specs_coords = {
 			
 			--tell the framework to execute a cleanup on the unit frame, this is required since Plater set .ClearUnitOnHide to false
 			plateFrame.unitFrame:SetUnit (nil)
+			
+			Plater.RemoveFromAuraUpdate (unitBarId)
 			
 			-- remove widgets
 			if IS_WOW_PROJECT_MAINLINE then
@@ -4494,7 +4498,7 @@ function Plater.OnInit() --private --~oninit ~init
 					castBar:UpdateCastColor()
 					
 					castBar.spellName = 		spellName
-					castBar.spellID = 			1
+					castBar.spellID = 			116
 					castBar.spellTexture = 		spellIcon
 					castBar.spellStartTime = 	GetTime()
 					castBar.spellEndTime = 		GetTime() + 3
@@ -10472,6 +10476,8 @@ end
 			["ScriptAura"] = true,
 			["ScriptCastBar"] = true,
 			["ScriptUnit"] = true,
+			["RemoveFromAuraUpdate"] = true,
+			["AddToAuraUpdate"] = true,
 		},
 		
 		["DetailsFramework"] = {
