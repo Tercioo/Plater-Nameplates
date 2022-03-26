@@ -242,7 +242,7 @@ local UnitAuraEventHandler = function (_, event, arg1, arg2, arg3, ...)
 		if unit and UnitAuraEventHandlerValidUnits[unit] then
 			--TODO: implement pre-check against blacklist and stuff based on updatedAuras here
 			local needsUpdate, hasBuff, hasDebuff = UnitAuraEventHandlerValidation(unit, isFullUpdate, updatedAuras)
-			ViragDevTool_AddData({unit = unit, isFullUpdate = isFullUpdate, updatedAuras = updatedAuras, needsUpdate = needsUpdate, hasBuff = hasBuff, hasDebuff = hasDebuff}, "Plater_UNIT_AURA")
+			--ViragDevTool_AddData({unit = unit, isFullUpdate = isFullUpdate, updatedAuras = updatedAuras, needsUpdate = needsUpdate, hasBuff = hasBuff, hasDebuff = hasDebuff}, "Plater_UNIT_AURA")
 			if needsUpdate then
 				local existingData = UnitAuraEventHandlerData[unit] or { hasBuff = false, hasDebuff = false }
 				UnitAuraEventHandlerData[unit] = { hasBuff = existingData.hasBuff or hasBuff, hasDebuff = existingData.hasDebuff or hasDebuff }
@@ -1344,10 +1344,16 @@ end
 		
 			Plater.ResetAuraContainer (self)
 			
-			if UnitAuraEventHandlerData[unit].hasDebuff then
+			local unitAuraEventData = UnitAuraEventHandlerData[unit]
+			if (unitAuraEventData.hasDebuff or unitAuraEventData.hasBuff) then -- TODO: don't wipe full container?
+				unitAuraEventData.hasDebuff = true
+				unitAuraEventData.hasBuff = true
+			end
+			
+			if unitAuraEventData.hasDebuff then
 				Plater.TrackSpecificAuras (self, unit, false, MANUAL_TRACKING_DEBUFFS, isPersonal)
 			end
-			if UnitAuraEventHandlerData[unit].hasBuff then
+			if unitAuraEventData.hasBuff then
 				Plater.TrackSpecificAuras (self, unit, true, MANUAL_TRACKING_BUFFS, isPersonal)
 			end
 
@@ -1364,8 +1370,8 @@ end
 	function Plater.UpdateAuras_Automatic (self, unit)
 		Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdateAuras_Automatic")
 		
-		--UnitAuraEventHandlerData[unit] = true --testing
-		if not UnitAuraEventHandlerData[unit] then
+		local unitAuraEventData = UnitAuraEventHandlerData[unit]
+		if not unitAuraEventData then
 			Plater.EndLogPerformanceCore("Plater-Core", "Update", "UpdateAuras_Automatic")
 			return
 		end
@@ -1373,8 +1379,13 @@ end
 		Plater.ResetAuraContainer (self)
 		local unitAuraCache = self.unitFrame.AuraCache
 		
+		if (unitAuraEventData.hasDebuff or unitAuraEventData.hasBuff) then -- TODO: don't wipe full container?
+			unitAuraEventData.hasDebuff = true
+			unitAuraEventData.hasBuff = true
+		end
+		
 		--> debuffs
-		if UnitAuraEventHandlerData[unit].hasDebuff then
+		if unitAuraEventData.hasDebuff then
 			local debuffIndex = 0
 			local continuationToken
 			repeat -- until continuationToken == nil
@@ -1463,7 +1474,7 @@ end
 		end
 		
 		--> buffs
-		if UnitAuraEventHandlerData[unit].hasBuff then
+		if unitAuraEventData.hasBuff then
 			local buffIndex = 0
 			local continuationToken
 			repeat -- until continuationToken == nil
@@ -1634,6 +1645,11 @@ end
 		Plater.ResetAuraContainer (self)
 		local unitAuraCache = self.unitFrame.AuraCache
 		local noBuffDurationLimitation = Plater.db.profile.aura_show_all_duration_buffs_personal
+		
+		if (unitAuraEventData.hasDebuff or unitAuraEventData.hasBuff) then -- TODO: don't wipe full container?
+			unitAuraEventData.hasDebuff = true
+			unitAuraEventData.hasBuff = true
+		end
 		
 		--> debuffs
 		if (Plater.db.profile.aura_show_debuffs_personal and unitAuraEventData.hasDebuff) then
