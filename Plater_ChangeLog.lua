@@ -8,7 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
-			{1648130736,  "Backend Change", "March 25th, 2022", "Changing the aura tracking backend to update only when needed.", "Terciob"},
+			{1648130736,  "New Feature", "March 26th, 2022", "Added new indicator: Shield Bar.", "Terciob"},
+			{1648130736,  "Backend Change", "March 25th, 2022", "Changing the aura tracking backend to update only when needed.", "cont1nuity"},
 			
 			{1648130735,  "New Feature", "March 24th, 2022", "Added into the 'Auto' section two options to hide Enemy Pets and Enemy Totems within raids and dungeons (default disabled).", "cont1nuity"},
 			{1648130735,  "Bug Fix", "March 23rd, 2022", "Don't show ghost auras on personal bar.", "cont1nuity"},

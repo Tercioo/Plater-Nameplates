@@ -7439,6 +7439,17 @@ local relevance_options = {
 			name = "Pet Icon",
 			desc = "Pet Icon",
 		},
+
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.indicator_shield end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.indicator_shield = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Shield Bar",
+			desc = "Shield Bar",
+		},
 		
 		{
 			type = "toggle",

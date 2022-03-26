@@ -2985,6 +2985,15 @@ local class_specs_coords = {
 				DF:CreateAnimation (healthCutOffShowAnimation, "Alpha", 2, .2, 1, .5)
 				healthCutOff.ShowAnimation = healthCutOffShowAnimation
 				
+				--shield indicator
+				local shieldIndicator = healthBar:CreateTexture(nil, "overlay", nil, 7)
+				shieldIndicator:SetPoint("bottomleft", healthBar, "bottomleft", 0, 0)
+				shieldIndicator:SetHeight(3)
+				shieldIndicator:SetTexture([[Interface\AddOns\Plater\images\shieldbar]])
+				shieldIndicator:SetAlpha(0.85)
+				shieldIndicator:Hide()
+				healthBar.shieldIndicator = shieldIndicator
+
 				--overlay for the healthbar showing the healthbar of the execute (shown when the unit is on execute range)
 				local executeRange = healthBar:CreateTexture (nil, "border")
 				executeRange:SetTexture ([[Interface\AddOns\Plater\images\execute_bar]])
@@ -5914,6 +5923,35 @@ end
 				end
 			end
 			
+			--check shield
+			if (IS_WOW_PROJECT_MAINLINE) then
+				if (profile.indicator_shield) then
+					local amountAbsorb = UnitGetTotalAbsorbs(tickFrame.PlateFrame[MEMBER_UNITID])
+					if (amountAbsorb and amountAbsorb > 0) then
+						--update the total amount on the shield indicator
+						if (not healthBar.shieldIndicator.shieldTotal) then
+							healthBar.shieldIndicator.shieldTotal = amountAbsorb
+						else
+							if (amountAbsorb > healthBar.shieldIndicator.shieldTotal) then
+								healthBar.shieldIndicator.shieldTotal = amountAbsorb
+							end
+						end
+
+						healthBar.shieldIndicator:Show()
+
+						local percent = amountAbsorb / healthBar.shieldIndicator.shieldTotal
+						local width = healthBar:GetWidth() * percent
+						healthBar.shieldIndicator:SetWidth(width)
+					else
+						--hide the shield bar is currently shown
+						if (healthBar.shieldIndicator:IsShown()) then
+							healthBar.shieldIndicator:Hide()
+							healthBar.shieldIndicator.shieldTotal = nil
+						end
+					end
+				end
+			end
+
 			--end of throttled updates
 		end
 

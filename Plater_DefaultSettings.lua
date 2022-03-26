@@ -2654,6 +2654,7 @@ PLATER_DEFAULT_SETTINGS = {
 		indicator_friendlyclass = false,
 		indicator_anchor = {side = 2, x = -2, y = 0},
 		indicator_scale = 1,
+		indicator_shield = true,
 		
 		indicator_extra_raidmark = true,
 		indicator_raidmark_scale = 1,
