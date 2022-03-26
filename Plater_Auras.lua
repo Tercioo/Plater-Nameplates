@@ -166,12 +166,17 @@ local PlaterNamePlateAuraTooltip = CreatePlaterNamePlateAuraTooltip()
 local UnitAuraEventHandlerValidation = function (unit, isFullUpdate, updatedAuras)
 	--ViragDevTool_AddData({unit = unit, isFullUpdate = isFullUpdate, updatedAuras = updatedAuras}, "Plater_UNIT_AURA")
 	if isFullUpdate ~= false or not updatedAuras then
-		return true
+		return true, true, true --update all
 	end
 	
 	local needsUpdate = false
+	local hasBuff = false
+	local hasDebuff = false
 	for _, auraData in pairs(updatedAuras) do
 		local name, spellId = auraData.name, auraData.spellId
+		
+		hasBuff = auraData.isHelpful or hasBuff
+		hasDebuff = auraData.isHarmful or hasDebuff
 		
 		if DB_TRACK_METHOD == 0x2 then
 			--manual tracking
@@ -201,7 +206,7 @@ local UnitAuraEventHandlerValidation = function (unit, isFullUpdate, updatedAura
 	
 	end
 
-	return needsUpdate
+	return needsUpdate, hasBuff, hasDebuff
 end
 
 --[[
@@ -236,15 +241,13 @@ local UnitAuraEventHandler = function (_, event, arg1, arg2, arg3, ...)
 		local unit, isFullUpdate, updatedAuras = arg1, arg2, arg3
 		if unit and UnitAuraEventHandlerValidUnits[unit] then
 			--TODO: implement pre-check against blacklist and stuff based on updatedAuras here
-			local needsUpdate = UnitAuraEventHandlerValidation(unit, isFullUpdate, updatedAuras)
-			
+			local needsUpdate, hasBuff, hasDebuff = UnitAuraEventHandlerValidation(unit, isFullUpdate, updatedAuras)
+			ViragDevTool_AddData({unit = unit, isFullUpdate = isFullUpdate, updatedAuras = updatedAuras, needsUpdate = needsUpdate, hasBuff = hasBuff, hasDebuff = hasDebuff}, "Plater_UNIT_AURA")
 			if needsUpdate then
-				--local existingData = UnitAuraEventHandlerData[unit]
-				--merge data if necessary when we want to store more than a flag here...
-				
-				UnitAuraEventHandlerData[unit] = true
+				local existingData = UnitAuraEventHandlerData[unit] or { hasBuff = false, hasDebuff = false }
+				UnitAuraEventHandlerData[unit] = { hasBuff = existingData.hasBuff or hasBuff, hasDebuff = existingData.hasDebuff or hasDebuff }
 			else
-				UnitAuraEventHandlerData[unit] = false
+				UnitAuraEventHandlerData[unit] = nil
 			end
 		end
 	end
@@ -255,12 +258,12 @@ UnitAuraEventHandlerFrame:SetScript ("OnEvent", UnitAuraEventHandler)
 UnitAuraEventHandlerFrame:RegisterEvent ("UNIT_AURA")
 
 function Plater.RemoveFromAuraUpdate (unit)
-	UnitAuraEventHandlerValidUnits[unit] = false
+	UnitAuraEventHandlerValidUnits[unit] = nil
 end
 
 function Plater.AddToAuraUpdate (unit)
 	UnitAuraEventHandlerValidUnits[unit] = true
-	UnitAuraEventHandlerData[unit] = true --update at least once
+	UnitAuraEventHandlerData[unit] = { hasBuff = true, hasDebuff = true } --update at least once
 end
 
 
@@ -285,7 +288,7 @@ end
 	function Plater.RefreshAuras() --private
 		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 			if plateFrame.unitFrame.PlaterOnScreen then -- only for visible
-				UnitAuraEventHandlerData[plateFrame.unitFrame.unit] = true -- ensure aura update
+				UnitAuraEventHandlerData[plateFrame.unitFrame.unit] = { hasBuff = true, hasDebuff = true } -- ensure aura update
 				Plater.NameplateTick (plateFrame.OnTickFrame, 1)
 			end
 		end
@@ -1341,8 +1344,12 @@ end
 		
 			Plater.ResetAuraContainer (self)
 			
-			Plater.TrackSpecificAuras (self, unit, false, MANUAL_TRACKING_DEBUFFS, isPersonal)
-			Plater.TrackSpecificAuras (self, unit, true, MANUAL_TRACKING_BUFFS, isPersonal)
+			if UnitAuraEventHandlerData[unit].hasDebuff then
+				Plater.TrackSpecificAuras (self, unit, false, MANUAL_TRACKING_DEBUFFS, isPersonal)
+			end
+			if UnitAuraEventHandlerData[unit].hasBuff then
+				Plater.TrackSpecificAuras (self, unit, true, MANUAL_TRACKING_BUFFS, isPersonal)
+			end
 
 			--> hide not used aura frames
 			Plater.HideNonUsedAuraIcons (self)
@@ -1367,6 +1374,7 @@ end
 		local unitAuraCache = self.unitFrame.AuraCache
 		
 		--> debuffs
+		if UnitAuraEventHandlerData[unit].hasDebuff then
 			local debuffIndex = 0
 			local continuationToken
 			repeat -- until continuationToken == nil
@@ -1452,8 +1460,10 @@ end
 					end
 				end
 			until continuationToken == nil
+		end
 		
 		--> buffs
+		if UnitAuraEventHandlerData[unit].hasBuff then
 			local buffIndex = 0
 			local continuationToken
 			repeat -- until continuationToken == nil
@@ -1554,9 +1564,10 @@ end
 					end
 				end
 			until continuationToken == nil
+		end
 		
 		--hide non used icons
-			Plater.HideNonUsedAuraIcons (self)
+		Plater.HideNonUsedAuraIcons (self)
 			
 		UnitAuraEventHandlerData[unit] = nil
 		
@@ -1613,7 +1624,9 @@ end
 	function Plater.UpdateAuras_Self_Automatic (self)
 		Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdateAuras_Self_Automatic")
 		
-		if not UnitAuraEventHandlerData[self.unit] and not UnitAuraEventHandlerData["player"] then
+		local unitAuraEventData = UnitAuraEventHandlerData[self.unit] or UnitAuraEventHandlerData["player"]
+		
+		if not unitAuraEventData then
 			Plater.EndLogPerformanceCore("Plater-Core", "Update", "UpdateAuras_Self_Automatic")
 			return
 		end
@@ -1623,7 +1636,7 @@ end
 		local noBuffDurationLimitation = Plater.db.profile.aura_show_all_duration_buffs_personal
 		
 		--> debuffs
-		if (Plater.db.profile.aura_show_debuffs_personal) then
+		if (Plater.db.profile.aura_show_debuffs_personal and unitAuraEventData.hasDebuff) then
 			local debuffIndex = 0
 			local continuationToken
 			repeat -- until continuationToken == nil
@@ -1681,7 +1694,7 @@ end
 		
 		--> buffs
 		local buffIndex = 0
-		if (Plater.db.profile.aura_show_buffs_personal) then
+		if (Plater.db.profile.aura_show_buffs_personal and unitAuraEventData.hasBuff) then
 			local continuationToken
 			repeat -- until continuationToken == nil
 				local numSlots = 0
@@ -1868,11 +1881,13 @@ end
 		auraOptionsFrame.EnableAuraTest = function()
 			DB_AURA_ENABLED = false
 			Plater.DisableAuraTrackingForAuraTest()
+			Plater.RefreshAuras()
 			auraOptionsFrame.NextTime = 0.2
 			auraOptionsFrame:SetScript ("OnUpdate", auraOptionsFrame.OnUpdateFunc)
 		end
 		auraOptionsFrame.DisableAuraTest = function()
 			Plater.RefreshDBUpvalues()
+			Plater.RefreshAuras()
 			auraOptionsFrame:SetScript ("OnUpdate", nil)
 		end
 
