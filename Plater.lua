@@ -948,13 +948,13 @@ local class_specs_coords = {
 	local DB_NPCIDS_CACHE = {}
 
 	Plater.ScriptAura = {}
-	local SCRIPT_AURA = Plater.ScriptAura
+	local SCRIPT_AURA_TRIGGER_CACHE = Plater.ScriptAura
 
 	Plater.ScriptCastBar = {}
-	local SCRIPT_CASTBAR = Plater.ScriptCastBar
+	local SCRIPT_CASTBAR_TRIGGER_CACHE = Plater.ScriptCastBar
 
 	Plater.ScriptUnit = {}
-	local SCRIPT_UNIT = Plater.ScriptUnit
+	local SCRIPT_UNIT_TRIGGER_CACHE = Plater.ScriptUnit
 	
 	--spell animations - store a table with information about animation for spells
 	local SPELL_WITH_ANIMATIONS = {}
@@ -4897,7 +4897,7 @@ function Plater.OnInit() --private --~oninit ~init
 					self.ThrottleUpdate = DB_TICK_THROTTLE
 
 					--get the script object of the aura which will be showing in this icon frame
-					local globalScriptObject = SCRIPT_CASTBAR [self.SpellName]
+					local globalScriptObject = SCRIPT_CASTBAR_TRIGGER_CACHE[self.SpellName]
 
 					--check if this aura has a custom script
 					if (globalScriptObject and self.SpellEndTime and GetTime() < self.SpellEndTime and (self.casting or self.channeling) and not self.IsInterrupted) then
@@ -5833,7 +5833,7 @@ end
 			tickFrame.ThrottleUpdate = DB_TICK_THROTTLE
 
 			--check if the unit name or unit npcID has a script
-			local globalScriptObject = SCRIPT_UNIT [tickFrame.PlateFrame [MEMBER_NAMELOWER]] or SCRIPT_UNIT [unitFrame [MEMBER_NPCID]]
+			local globalScriptObject = SCRIPT_UNIT_TRIGGER_CACHE[tickFrame.PlateFrame [MEMBER_NAMELOWER]] or SCRIPT_UNIT_TRIGGER_CACHE[unitFrame [MEMBER_NPCID]]
 			--check if this aura has a custom script
 			if (globalScriptObject) then
 				--stored information about scripts
@@ -5923,7 +5923,7 @@ end
 				end
 			end
 			
-			--check shield
+			--check shield ~shield
 			if (IS_WOW_PROJECT_MAINLINE) then
 				if (profile.indicator_shield) then
 					local amountAbsorb = UnitGetTotalAbsorbs(tickFrame.PlateFrame[MEMBER_UNITID])
@@ -9958,7 +9958,7 @@ end
 	Plater.ScriptMetaFunctions = {
 		--get the table which stores all script information for the widget
 		--self is the affected widget, e.g. icon frame, unitframe, castbar progressbar
-		ScriptGetContainer = function (self)
+		ScriptGetContainer = function(self)
 			local infoTable = self.ScriptInfoTable
 			if (not infoTable) then
 				self.ScriptInfoTable = {}
@@ -9969,11 +9969,11 @@ end
 		end,
 		
 		--get the table which stores the information for a single script
-		ScriptGetInfo = function (self, globalScriptObject, widgetScriptContainer, isHookScript)
-			widgetScriptContainer = widgetScriptContainer or self:ScriptGetContainer()
+		ScriptGetInfo = function (self, globalScriptObject, scriptContainer, isHookScript)
+			scriptContainer = scriptContainer or self:ScriptGetContainer()
 			
 			--using the memory address of the original scriptObject from db.profile as the map key
-			local scriptInfo = widgetScriptContainer [globalScriptObject.DBScriptObject.scriptId]
+			local scriptInfo = scriptContainer[globalScriptObject.DBScriptObject.scriptId]
 			if (
 				(not scriptInfo) or 
 				(scriptInfo.GlobalScriptObject.NeedHotReload) or 
@@ -9981,7 +9981,7 @@ end
 			) then
 				local forceHotReload = scriptInfo and scriptInfo.GlobalScriptObject.NeedHotReload
 			
-				-- keep script info and update as needed
+				--keep script info and update as needed
 				scriptInfo = scriptInfo or {
 					GlobalScriptObject = globalScriptObject, 
 					HotReload = -1, 
@@ -10003,7 +10003,7 @@ end
 					scriptInfo.Initialized = true
 				end
 				
-				widgetScriptContainer [globalScriptObject.DBScriptObject.scriptId] = scriptInfo
+				scriptContainer [globalScriptObject.DBScriptObject.scriptId] = scriptInfo
 			end
 			
 			return scriptInfo
@@ -10052,15 +10052,20 @@ end
 		end,
 		
 		--run the OnShow script
-		ScriptRunOnShow = function (self, scriptInfo)
+		ScriptRunOnShow = function(self, scriptInfo)
 			--dispatch the on show script
 			local unitFrame = self.unitFrame or self
 			scriptInfo.Env._DefaultWidth = self:GetWidth()
 			scriptInfo.Env._DefaultHeight = self:GetHeight()
+
 			local scriptName = scriptInfo.GlobalScriptObject.DBScriptObject.Name
 			Plater.StartLogPerformance("Scripts", scriptName, "OnShow")
-			local okay, errortext = pcall (scriptInfo.GlobalScriptObject ["OnShowCode"], self, unitFrame.displayedUnit or unitFrame.unit or unitFrame.PlateFrame[MEMBER_UNITID], unitFrame, scriptInfo.Env, PLATER_GLOBAL_SCRIPT_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId])
+
+			local func = scriptInfo.GlobalScriptObject["OnShowCode"] --this function is always running the first ever script compiled and GlobalScriptObject is also the first table created
+
+			local okay, errortext = pcall(scriptInfo.GlobalScriptObject["OnShowCode"], self, unitFrame.displayedUnit or unitFrame.unit or unitFrame.PlateFrame[MEMBER_UNITID], unitFrame, scriptInfo.Env, PLATER_GLOBAL_SCRIPT_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId])
 			Plater.EndLogPerformance("Scripts", scriptName, "OnShow")
+
 			if (not okay) then
 				Plater:Msg ("Script |cFFAAAA22" .. scriptName .. "|r OnShow error: " .. errortext)
 			end
@@ -10132,30 +10137,30 @@ end
 		end,
 		
 		--run when the widget hides
-		OnHideWidget = function (self)
-			--> check if can quickly quit (if there's no script container for the nameplate)
+		OnHideWidget = function(self)
+			--check if can quickly quit (if there's no script container for the nameplate)
 			if (self.ScriptInfoTable) then
-				local mainScriptTable
+				local triggerCacheTable
 				
 				if (self.IsAuraIcon) then
-					mainScriptTable = SCRIPT_AURA
+					triggerCacheTable = SCRIPT_AURA_TRIGGER_CACHE
 				elseif (self.IsCastBar) then
-					mainScriptTable = SCRIPT_CASTBAR
+					triggerCacheTable = SCRIPT_CASTBAR_TRIGGER_CACHE
 				elseif (self.IsUnitNameplate) then
-					mainScriptTable = SCRIPT_UNIT				
+					triggerCacheTable = SCRIPT_UNIT_TRIGGER_CACHE
 				end
 
-				--> ScriptKey holds the trigger of the script currently running
-				local globalScriptObject = mainScriptTable [self.ScriptKey]
+				--ScriptKey holds the trigger of the script currently running
+				local globalScriptObject = triggerCacheTable[self.ScriptKey]
 				
 				--does the aura has a custom script?
 				if (globalScriptObject) then
 					--does the aura icon has a table with script information?
-					local scriptContainer = self:ScriptGetContainer()
+					local scriptContainer = self:ScriptGetContainer() --return self.ScriptInfoTable
 					if (scriptContainer) then
-						local scriptInfo = self:ScriptGetInfo (globalScriptObject, scriptContainer)
+						local scriptInfo = self:ScriptGetInfo(globalScriptObject, scriptContainer)
 						if (scriptInfo and scriptInfo.IsActive) then
-							self:ScriptRunOnHide (scriptInfo)
+							self:ScriptRunOnHide(scriptInfo)
 						end
 					end
 				end
@@ -10168,7 +10173,7 @@ end
 						local globalScriptObject = HOOK_CAST_STOP [i]
 						local unitFrame = self.unitFrame
 						local scriptContainer = unitFrame:ScriptGetContainer()
-						local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Cast Stop")
+						local scriptInfo = unitFrame:ScriptGetInfo(globalScriptObject, scriptContainer, "Cast Stop")
 						--run
 						unitFrame:ScriptRunHook (scriptInfo, "Cast Stop", self)
 					end
@@ -10179,23 +10184,23 @@ end
 		
 		--stop a running script by the trigger ID
 		--this is used when deleting a script or disabling it
-		KillScript = function (self, triggerID)
-			local mainScriptTable
+		KillScript = function(self, triggerID)
+			local triggerCacheTable
 			
 			if (self.IsAuraIcon) then
-				mainScriptTable = SCRIPT_AURA
-				triggerID = GetSpellInfo (triggerID)
+				triggerCacheTable = SCRIPT_AURA_TRIGGER_CACHE
+				triggerID = GetSpellInfo(triggerID)
 				
 			elseif (self.IsCastBar) then
-				mainScriptTable = SCRIPT_CASTBAR
-				triggerID = GetSpellInfo (triggerID)
+				triggerCacheTable = SCRIPT_CASTBAR_TRIGGER_CACHE
+				triggerID = GetSpellInfo(triggerID)
 				
 			elseif (self.IsUnitNameplate) then
-				mainScriptTable = SCRIPT_UNIT				
+				triggerCacheTable = SCRIPT_UNIT_TRIGGER_CACHE
 			end
 			
 			if (self.ScriptKey and self.ScriptKey == triggerID) then
-				local globalScriptObject = mainScriptTable [triggerID]
+				local globalScriptObject = triggerCacheTable[triggerID]
 				if (globalScriptObject) then
 					local scriptContainer = self:ScriptGetContainer()
 					if (scriptContainer) then
@@ -10666,9 +10671,9 @@ end
 
 	function Plater.WipeAndRecompileAllScripts (scriptType, noHotReload)
 		if (scriptType == "script") then
-			table.wipe (SCRIPT_AURA)
-			table.wipe (SCRIPT_CASTBAR)
-			table.wipe (SCRIPT_UNIT)
+			table.wipe(SCRIPT_AURA_TRIGGER_CACHE)
+			table.wipe(SCRIPT_CASTBAR_TRIGGER_CACHE)
+			table.wipe(SCRIPT_UNIT_TRIGGER_CACHE)
 			Plater.CompileAllScripts (scriptType, noHotReload)
 			
 		elseif (scriptType == "hook") then
@@ -11061,7 +11066,7 @@ end
 	end
 
 	--compile scripts from the Scripting tab
-	function Plater.CompileScript (scriptObject, noHotReload, ...)
+	function Plater.CompileScript(scriptObject, noHotReload, ...)
 		--check if the script is valid and if is enabled
 		if (not scriptObject) then
 			return
@@ -11069,51 +11074,50 @@ end
 			return
 		end
 		
-		if not scriptObject.scriptId then
+		if (not scriptObject.scriptId) then
 			scriptObject.scriptId = tostring(scriptObject)
 		end
-		
+
 		--clear env on re-compilation if necessary
-		if not noHotReload then
-			PLATER_GLOBAL_SCRIPT_ENV [scriptObject.scriptId] = nil
+		if (not noHotReload) then
+			PLATER_GLOBAL_SCRIPT_ENV[scriptObject.scriptId] = nil
 		end
 		
 		--store the scripts to be compiled
 		local scriptCode, scriptFunctions = {}, {}
 		
-		--get scripts passed to
+		--get scripts passed
 		for i = 1, select ("#",...) do
-			scriptCode [Plater.CodeTypeNames [i]] = "return " .. select (i, ...)
+			scriptCode[Plater.CodeTypeNames [i]] = "return " .. select(i, ...)
 		end
 		
 		--get scripts which wasn't passed
 		for i = 1, #Plater.CodeTypeNames do
-			local scriptType = Plater.CodeTypeNames [i]
-			-- ensure init is filled always
-			if (not scriptObject [scriptType] and i == 5) then
-				scriptObject [scriptType] = [=[
+			local scriptType = Plater.CodeTypeNames[i]
+			-- ensure init is filled always, 5 is the index where the init code is
+			if (not scriptObject[scriptType] and i == 5) then
+				scriptObject[scriptType] = [=[
 					function (scriptTable)
 						--insert code here
 						
 					end
 				]=]	
 			end
-			if (not scriptCode [scriptType]) then
-				scriptCode [scriptType] = "return " .. scriptObject [scriptType]
+			if (not scriptCode[scriptType]) then
+				scriptCode[scriptType] = "return " .. scriptObject[scriptType]
 			end
 		end
 		
 		--init modEnv if necessary
 		local needsInitCall = false
-		if not PLATER_GLOBAL_SCRIPT_ENV [scriptObject.scriptId] then
+		if (not PLATER_GLOBAL_SCRIPT_ENV[scriptObject.scriptId]) then
 			needsInitCall = true
-			PLATER_GLOBAL_SCRIPT_ENV [scriptObject.scriptId] = {
+			PLATER_GLOBAL_SCRIPT_ENV[scriptObject.scriptId] = {
 				config = {}
 			}
 		end
 
-		--copy options to global env
-		-- ensure options are valid:
+		--copy options to global env and ensure options are valid
 		Plater.CreateOptionTableForScriptObject(scriptObject)
 		local scriptOptions = scriptObject.Options
 		local scriptOptionsValues = scriptObject.OptionsValues
@@ -11121,11 +11125,11 @@ end
 		for i = 1, #scriptOptions do
 			local thisOption = scriptOptions[i]
 			if (options_for_config_table[thisOption.Type]) then
+
 				if (type(scriptOptionsValues[thisOption.Key]) == "boolean") then
 					PLATER_GLOBAL_SCRIPT_ENV [scriptObject.scriptId].config[thisOption.Key] = scriptOptionsValues[thisOption.Key]
-				elseif (thisOption.Type == 7) then
-					--check if the options is a list
-					
+
+				elseif (thisOption.Type == 7) then --check if the options is a list
 					--build default values if needed
 					if not scriptOptionsValues[thisOption.Key] then
 						scriptOptionsValues[thisOption.Key] = DF.table.copy({}, thisOption.Value)
@@ -11147,43 +11151,46 @@ end
 		end
 
 		--compile
-		for scriptType, code in pairs (scriptCode) do
-		
-			if IS_WOW_PROJECT_NOT_MAINLINE then
+		for scriptType, code in pairs(scriptCode) do
+			if (IS_WOW_PROJECT_NOT_MAINLINE) then
 				code = string.gsub(code, "\"NamePlateFullBorderTemplate\"", "\"PlaterNamePlateFullBorderTemplate\"")
 			end
 			
-			local compiledScript, errortext = loadstring (code, "" .. scriptType .. " for " .. scriptObject.Name)
+			local compiledScript, errortext = loadstring(code, "" .. scriptType .. " for " .. scriptObject.Name)
 			if (not compiledScript) then
 				Plater:Msg ("failed to compile " .. scriptType .. " for script " .. scriptObject.Name .. ": " .. errortext)
 			else
 				--get the function to execute
-				--setfenv (compiledScript, functionFilter)
-				if (Plater.db.profile.shadowMode and Plater.db.profile.shadowMode == 0) then -- legacy mode
+				--setfenv(compiledScript, functionFilter) deprecated
+				if (Plater.db.profile.shadowMode and Plater.db.profile.shadowMode == 0) then --legacy mode
 					DF:SetEnvironment(compiledScript, nil, platerModEnvironment)
+
 				elseif (not Plater.db.profile.shadowMode or Plater.db.profile.shadowMode == 1) then
 					SetPlaterEnvironment(compiledScript)
 				end
-				scriptFunctions [scriptType] = compiledScript()
+
+				--extract the function
+				scriptFunctions[scriptType] = compiledScript()
 			end
 		end
 		
-		--trigger container is the table with spellIds for auras or spellcast
-		--triggerId is the spellId then converted to spellName or the unitName in case is a Unit script
+		--trigger container is the table with spellIds for auras and/or spellcast
+		--triggerId is the spellId converted to spellName or the unitName in case of a Unit name
 		local triggerContainer, triggerId
 		if (scriptObject.ScriptType == 1 or scriptObject.ScriptType == 2) then --aura or castbar
 			triggerContainer = "SpellIds"
-		elseif (scriptObject.ScriptType == 3) then --unit plate
+
+		elseif (scriptObject.ScriptType == 3) then --unit name
 			triggerContainer = "NpcNames"
 		end
 		
-		for i = 1, #scriptObject [triggerContainer] do
-			local triggerId = scriptObject [triggerContainer] [i]
+		for i = 1, #scriptObject[triggerContainer] do
+			local triggerId = scriptObject[triggerContainer][i]
 			
-			--> if the trigger is using spellId, check if the spell exists
+			--if the trigger is using spellId, check if the spell exists
 			if (scriptObject.ScriptType == 1 or scriptObject.ScriptType == 2) then
-				if (type (triggerId) == "number") then
-					triggerId = GetSpellInfo (triggerId)
+				if (type(triggerId) == "number") then
+					triggerId = GetSpellInfo(triggerId)
 					if (not triggerId) then
 						if IS_WOW_PROJECT_MAINLINE then -- disable this in classic for now... too spammy
 							Plater:Msg ("failed to get the spell name for spellId: " .. (scriptObject [triggerContainer] [i] or "invalid spellId") .. "for script '" .. scriptObject.Name .. "'")
@@ -11191,30 +11198,29 @@ end
 					end
 				end
 			
-			--> if is a unit name, make it be in lower case	
-			elseif (scriptObject.ScriptType == 3) then
-				--> cast the string to number to see if it's a npcId
-				triggerId = tonumber (triggerId) or triggerId
+			elseif (scriptObject.ScriptType == 3) then --unit names
+				--cast the string to number to see if it's a npcId
+				triggerId = tonumber(triggerId) or triggerId
 				
-				--> the user may have inserted the npcId
-				if (type (triggerId) == "string") then
-					triggerId = lower (triggerId)
+				--if is a unit name, make it be in lower case
+				if (type(triggerId) == "string") then
+					triggerId = lower(triggerId)
 				end
 			end
 
 			if (triggerId) then
 				--get the global script object table
-				local mainScriptTable
+				local triggerCacheTable
 				
 				if (scriptObject.ScriptType == 1) then
-					mainScriptTable = SCRIPT_AURA
+					triggerCacheTable = SCRIPT_AURA_TRIGGER_CACHE
 				elseif (scriptObject.ScriptType == 2) then
-					mainScriptTable = SCRIPT_CASTBAR
+					triggerCacheTable = SCRIPT_CASTBAR_TRIGGER_CACHE
 				elseif (scriptObject.ScriptType == 3) then
-					mainScriptTable = SCRIPT_UNIT
+					triggerCacheTable = SCRIPT_UNIT_TRIGGER_CACHE
 				end
 				
-				local globalScriptObject = mainScriptTable [triggerId]
+				local globalScriptObject = triggerCacheTable[triggerId]
 				
 				if (not globalScriptObject) then
 					--first time compiled, create the global script object
@@ -11226,17 +11232,18 @@ end
 						--script key is set in the widget so it can lookup for a script using the key when the widget is hidding
 						ScriptKey = triggerId,
 					}
-					mainScriptTable [triggerId] = globalScriptObject
+
+					--insert the table just created inthe the triggerCacheTable
+					triggerCacheTable[triggerId] = globalScriptObject
 					
 				else --hot reload and update
 					globalScriptObject.HotReload = globalScriptObject.HotReload + 1
 					globalScriptObject.DBScriptObject = scriptObject
-					
 				end
 				
 				--add the script functions to the global object table
-				for scriptType, func in pairs (scriptFunctions) do
-					globalScriptObject [scriptType] = func
+				for scriptType, func in pairs(scriptFunctions) do
+					globalScriptObject[scriptType] = func
 				end
 				
 				--run initialization (once)

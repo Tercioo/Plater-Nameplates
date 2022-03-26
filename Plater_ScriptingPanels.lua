@@ -1880,10 +1880,10 @@ function Plater.CreateHookingPanel()
 	
 	--hot reload the script by compiling it and applying it to the nameplates
 	function hookFrame.ApplyScript()
-		Plater.WipeAndRecompileAllScripts ("hook")
+		Plater.WipeAndRecompileAllScripts("hook")
 	end
 	
-	function hookFrame.RemoveScript (scriptId)
+	function hookFrame.RemoveScript(scriptId)
 		local scriptObjectToBeRemoved = hookFrame.GetScriptObject (scriptId)
 		local currentScript = hookFrame.GetCurrentScriptObject()
 		
@@ -3030,7 +3030,7 @@ function Plater.CreateScriptingPanel()
 		scriptObject.Revision = scriptObject.Revision + 1
 		
 		--do a hot reload on the script
-		scriptingFrame.ApplyScript (true)
+		scriptingFrame.ApplyScript(true)
 		
 		--reload the script selection scrollbox in case the script got renamed
 		scriptingFrame.ScriptSelectionScrollBox:Refresh()
@@ -3049,31 +3049,30 @@ function Plater.CreateScriptingPanel()
 	end
 	
 	--hot reload the script by compiling it and applying it to the nameplates without saving
-	function scriptingFrame.ApplyScript (on_save)
+	function scriptingFrame.ApplyScript(onSave)
 		--get the text from the text fields, compile and apply the changes to the nameplate without saving the script
 
 		--doing this since the framework send 'self' in the first parameter of the button click
-		on_save = type (on_save) == "boolean" and on_save
+		onSave = type(onSave) == "boolean" and onSave
 		
 		local code = {}
 		--prebuild the code table with the code types (constructor/onupdate etc)
 		for i = 1, #Plater.CodeTypeNames do
-			local memberName = Plater.CodeTypeNames [i]
-			code [memberName] = ""
-		end		
+			local memberName = Plater.CodeTypeNames[i]
+			code[memberName] = ""
+		end
 
 		local scriptObject = scriptingFrame.GetCurrentScriptObject()
 
-		if (not on_save) then
+		if (not onSave) then
 			--is hot reload, get the code from the code editor
 			for i = 1, #Plater.CodeTypeNames do
 				local memberName = Plater.CodeTypeNames [i]
 				code [memberName] = scriptObject ["Temp_" .. memberName]
 			end
-			
 			code [Plater.CodeTypeNames [scriptingFrame.currentScriptType]] = scriptingFrame.CodeEditorLuaEntry:GetText()
 		else
-			--is a save, get the code from the object
+			--it's a save, get the code from the object
 			for i = 1, #Plater.CodeTypeNames do
 				local memberName = Plater.CodeTypeNames [i]
 				code [memberName] = scriptObject [memberName]
@@ -3081,19 +3080,21 @@ function Plater.CreateScriptingPanel()
 		end
 
 		do
-			local t = {}
-			--build a script table for the comppiler
+			--build a script table for the compiler
+			local allCodes = {}
+
 			for i = 1, #Plater.CodeTypeNames do
 				local memberName = Plater.CodeTypeNames [i]
-				tinsert (t, code [memberName])
+				tinsert (allCodes, code[memberName])
 			end
-			if on_save then
-				Plater.WipeAndRecompileAllScripts ("script")
+
+			if (onSave) then
+				Plater.WipeAndRecompileAllScripts("script")
 			else
-				Plater.CompileScript (scriptObject, false, unpack (t))
+				Plater.CompileScript(scriptObject, false, unpack(allCodes))
 			end
 		end
-		
+
 		--remove the focus so the user can cast spells etc
 		scriptingFrame.CodeEditorLuaEntry:ClearFocus()
 	end
