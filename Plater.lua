@@ -2247,7 +2247,7 @@ local class_specs_coords = {
 						local globalScriptObject = HOOK_ZONE_CHANGED [i]
 						local unitFrame = plateFrame.unitFrame
 						local scriptContainer = unitFrame:ScriptGetContainer()
-						local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Zone Changed")
+						local scriptInfo = unitFrame:HookGetInfo(globalScriptObject, scriptContainer, "Zone Changed")
 						--run
 						unitFrame:ScriptRunHook (scriptInfo, "Zone Changed")
 					end
@@ -3285,7 +3285,7 @@ local class_specs_coords = {
 					for i = 1, HOOK_NAMEPLATE_CREATED.ScriptAmount do
 						local globalScriptObject = HOOK_NAMEPLATE_CREATED [i]
 						local scriptContainer = plateFrame.unitFrame:ScriptGetContainer()
-						local scriptInfo = plateFrame.unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Nameplate Created")
+						local scriptInfo = plateFrame.unitFrame:HookGetInfo (globalScriptObject, scriptContainer, "Nameplate Created")
 						plateFrame.unitFrame:ScriptRunHook (scriptInfo, "Nameplate Created")
 					end
 				end
@@ -3753,7 +3753,7 @@ local class_specs_coords = {
 				for i = 1, HOOK_NAMEPLATE_ADDED.ScriptAmount do
 					local globalScriptObject = HOOK_NAMEPLATE_ADDED [i]
 					local scriptContainer = unitFrame:ScriptGetContainer()
-					local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Nameplate Added")
+					local scriptInfo = unitFrame:HookGetInfo(globalScriptObject, scriptContainer, "Nameplate Added")
 					--run
 					unitFrame:ScriptRunHook (scriptInfo, "Nameplate Added")
 				end
@@ -3789,7 +3789,7 @@ local class_specs_coords = {
 					local globalScriptObject = HOOK_NAMEPLATE_REMOVED [i]
 					local unitFrame = plateFrame.unitFrame
 					local scriptContainer = unitFrame:ScriptGetContainer()
-					local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Nameplate Removed")
+					local scriptInfo = unitFrame:HookGetInfo(globalScriptObject, scriptContainer, "Nameplate Removed")
 					--run
 					plateFrame.unitFrame:ScriptRunHook (scriptInfo, "Nameplate Removed")
 				end
@@ -4282,7 +4282,7 @@ function Plater.OnInit() --private --~oninit ~init
 							local globalScriptObject = HOOK_PLAYER_POWER_UPDATE [i]
 							local unitFrame = plateFrame.unitFrame
 							local scriptContainer = unitFrame:ScriptGetContainer()
-							local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Player Power Update")
+							local scriptInfo = unitFrame:HookGetInfo(globalScriptObject, scriptContainer, "Player Power Update")
 							--run
 							unitFrame:ScriptRunHook (scriptInfo, "Player Power Update", unitFrame, powerType)
 						end
@@ -4819,7 +4819,7 @@ function Plater.OnInit() --private --~oninit ~init
 						for i = 1, HOOK_CAST_START.ScriptAmount do
 							local globalScriptObject = HOOK_CAST_START [i]
 							local scriptContainer = unitFrame:ScriptGetContainer()
-							local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Cast Start")
+							local scriptInfo = unitFrame:HookGetInfo(globalScriptObject, scriptContainer, "Cast Start")
 							
 							--update envTable
 							local scriptEnv = scriptInfo.Env
@@ -4938,7 +4938,7 @@ function Plater.OnInit() --private --~oninit ~init
 							local globalScriptObject = HOOK_CAST_UPDATE [i]
 							local unitFrame = self.unitFrame
 							local scriptContainer = unitFrame:ScriptGetContainer()
-							local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Cast Update")
+							local scriptInfo = unitFrame:HookGetInfo(globalScriptObject, scriptContainer, "Cast Update")
 							
 							--update envTable
 							local scriptEnv = scriptInfo.Env
@@ -4983,7 +4983,7 @@ function Plater.OnInit() --private --~oninit ~init
 		for i = 1, HOOK_HEALTH_UPDATE.ScriptAmount do
 			local globalScriptObject = HOOK_HEALTH_UPDATE [i]
 			local scriptContainer = unitFrame:ScriptGetContainer()
-			local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Health Update")
+			local scriptInfo = unitFrame:HookGetInfo(globalScriptObject, scriptContainer, "Health Update")
 			--run
 			unitFrame:ScriptRunHook (scriptInfo, "Health Update")
 		end
@@ -5364,7 +5364,7 @@ end
 				local globalScriptObject = HOOK_NAMEPLATE_UPDATED [i]
 
 				local scriptContainer = unitFrame:ScriptGetContainer()
-				local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Nameplate Updated")
+				local scriptInfo = unitFrame:HookGetInfo(globalScriptObject, scriptContainer, "Nameplate Updated")
 				local scriptEnv = scriptInfo.Env
 				scriptEnv._HealthPercent = unitFrame.healthBar.CurrentHealth / unitFrame.healthBar.CurrentHealthMax * 100
 				
@@ -5839,7 +5839,7 @@ end
 				--stored information about scripts
 				local scriptContainer = unitFrame:ScriptGetContainer()
 				--get the info about this particularly script
-				local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer)
+				local scriptInfo = unitFrame:ScriptGetInfo(globalScriptObject, scriptContainer)
 				
 				local scriptEnv = scriptInfo.Env
 				scriptEnv._UnitID = tickFrame.PlateFrame [MEMBER_UNITID]
@@ -5849,7 +5849,7 @@ end
 				scriptEnv._HealthPercent = healthBar.CurrentHealth / healthBar.CurrentHealthMax * 100
 		
 				--run onupdate script
-				unitFrame:ScriptRunOnUpdate (scriptInfo)
+				unitFrame:ScriptRunOnUpdate(scriptInfo)
 			end
 			
 			--scheduled name update
@@ -5867,7 +5867,7 @@ end
 					for i = 1, HOOK_UNITNAME_UPDATE.ScriptAmount do
 						local globalScriptObject = HOOK_UNITNAME_UPDATE [i]
 						local scriptContainer = unitFrame:ScriptGetContainer()
-						local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Name Updated")
+						local scriptInfo = unitFrame:HookGetInfo(globalScriptObject, scriptContainer, "Name Updated")
 						--run
 						unitFrame:ScriptRunHook (scriptInfo, "Name Updated")
 					end
@@ -6374,7 +6374,7 @@ end
 						local globalScriptObject = HOOK_TARGET_CHANGED [i]
 						local unitFrame = plateFrame.unitFrame
 						local scriptContainer = unitFrame:ScriptGetContainer()
-						local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Target Changed")
+						local scriptInfo = unitFrame:HookGetInfo(globalScriptObject, scriptContainer, "Target Changed")
 						--run
 						unitFrame:ScriptRunHook (scriptInfo, "Target Changed")
 					end
@@ -7630,7 +7630,7 @@ end
 						local globalScriptObject = HOOK_RAID_TARGET [i]
 						local unitFrame = plateFrame.unitFrame
 						local scriptContainer = unitFrame:ScriptGetContainer()
-						local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Raid Target")
+						local scriptInfo = unitFrame:HookGetInfo(globalScriptObject, scriptContainer, "Raid Target")
 						--run
 						unitFrame:ScriptRunHook (scriptInfo, "Raid Target")
 					end
@@ -9969,11 +9969,13 @@ end
 		end,
 		
 		--get the table which stores the information for a single script
-		ScriptGetInfo = function (self, globalScriptObject, scriptContainer, isHookScript)
+		--run for hooks only
+		HookGetInfo = function (self, globalScriptObject, scriptContainer)
 			scriptContainer = scriptContainer or self:ScriptGetContainer()
 			
 			--using the memory address of the original scriptObject from db.profile as the map key
 			local scriptInfo = scriptContainer[globalScriptObject.DBScriptObject.scriptId]
+
 			if (
 				(not scriptInfo) or 
 				(scriptInfo.GlobalScriptObject.NeedHotReload) or 
@@ -9992,7 +9994,7 @@ end
 				scriptInfo.GlobalScriptObject.Build = PLATER_HOOK_BUILD
 				scriptInfo.GlobalScriptObject.NeedHotReload = false
 
-				if (globalScriptObject.HasConstructor and (not scriptInfo.Initialized or (isHookScript and forceHotReload))) then
+				if (globalScriptObject.HasConstructor and (not scriptInfo.Initialized or forceHotReload)) then
 					local modName = scriptInfo.GlobalScriptObject.DBScriptObject.Name
 					Plater.StartLogPerformance("Mod-RunHooks", modName, "Constructor")
 					local okay, errortext = pcall (globalScriptObject.Constructor, self, self.displayedUnit or self.unit or self:GetParent()[MEMBER_UNITID], self, scriptInfo.Env, PLATER_GLOBAL_MOD_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId])
@@ -10006,6 +10008,53 @@ end
 				scriptContainer [globalScriptObject.DBScriptObject.scriptId] = scriptInfo
 			end
 			
+			--always overwriting the globalScriptObject fixes the issue for not updating the script after saving it but only for OnShow OnUpdate and OnHide
+			scriptInfo.GlobalScriptObject = globalScriptObject
+			return scriptInfo
+		end,
+
+		--get the table which stores the information for a single script
+		--run for scripts only
+		ScriptGetInfo = function (self, globalScriptObject, scriptContainer) --isHookScript is never true
+			scriptContainer = scriptContainer or self:ScriptGetContainer()
+			
+			--using the memory address of the original scriptObject from db.profile as the map key
+			local scriptInfo = scriptContainer[globalScriptObject.DBScriptObject.scriptId]
+
+			if (
+				(not scriptInfo) or 
+				(scriptInfo.GlobalScriptObject.NeedHotReload) or 
+				(scriptInfo.GlobalScriptObject.Build and scriptInfo.GlobalScriptObject.Build < PLATER_HOOK_BUILD)
+			) then
+				local forceHotReload = scriptInfo and scriptInfo.GlobalScriptObject.NeedHotReload
+			
+				--keep script info and update as needed
+				scriptInfo = scriptInfo or {
+					GlobalScriptObject = globalScriptObject, 
+					HotReload = -1, 
+					Env = {}, 
+					IsActive = false
+				}
+				scriptInfo.GlobalScriptObject = globalScriptObject
+				scriptInfo.GlobalScriptObject.Build = PLATER_HOOK_BUILD
+				scriptInfo.GlobalScriptObject.NeedHotReload = false
+
+				if (globalScriptObject.HasConstructor and (not scriptInfo.Initialized or forceHotReload)) then
+					local modName = scriptInfo.GlobalScriptObject.DBScriptObject.Name
+					Plater.StartLogPerformance("Mod-RunHooks", modName, "Constructor")
+					local okay, errortext = pcall (globalScriptObject.Constructor, self, self.displayedUnit or self.unit or self:GetParent()[MEMBER_UNITID], self, scriptInfo.Env, PLATER_GLOBAL_MOD_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId])
+					Plater.EndLogPerformance("Mod-RunHooks", modName, "Constructor")
+					if (not okay) then
+						Plater:Msg ("Mod |cFFAAAA22" .. modName .. "|r Constructor error: " .. errortext)
+					end
+					scriptInfo.Initialized = true
+				end
+				
+				scriptContainer [globalScriptObject.DBScriptObject.scriptId] = scriptInfo
+			end
+			
+			--always overwriting the globalScriptObject fixes the issue for not updating the script after saving it but only for OnShow OnUpdate and OnHide
+			scriptInfo.GlobalScriptObject = globalScriptObject
 			return scriptInfo
 		end,
 		
@@ -10173,7 +10222,7 @@ end
 						local globalScriptObject = HOOK_CAST_STOP [i]
 						local unitFrame = self.unitFrame
 						local scriptContainer = unitFrame:ScriptGetContainer()
-						local scriptInfo = unitFrame:ScriptGetInfo(globalScriptObject, scriptContainer, "Cast Stop")
+						local scriptInfo = unitFrame:HookGetInfo(globalScriptObject, scriptContainer, "Cast Stop")
 						--run
 						unitFrame:ScriptRunHook (scriptInfo, "Cast Stop", self)
 					end
@@ -10816,7 +10865,7 @@ end
 						}
 						local unitFrame = plateFrame.unitFrame
 						local scriptContainer = unitFrame:ScriptGetContainer()
-						local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Destructor")
+						local scriptInfo = unitFrame:HookGetInfo(globalScriptObject, scriptContainer, "Destructor")
 
 						local okay, errortext = pcall (func, unitFrame, unitFrame.displayedUnit, unitFrame, scriptInfo.Env, PLATER_GLOBAL_MOD_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId])
 						if (not okay) then
@@ -12041,7 +12090,7 @@ end
 							return
 						end
 						local scriptContainer = unitFrame:ScriptGetContainer()
-						local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Player Talent Update")
+						local scriptInfo = unitFrame:HookGetInfo(globalScriptObject, scriptContainer, "Player Talent Update")
 						--run
 						unitFrame:ScriptRunHook (scriptInfo, "Player Talent Update")
 					end
@@ -12061,7 +12110,7 @@ end
 							return
 						end
 						local scriptContainer = unitFrame:ScriptGetContainer()
-						local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Enter Combat")
+						local scriptInfo = unitFrame:HookGetInfo(globalScriptObject, scriptContainer, "Enter Combat")
 						--run
 						unitFrame:ScriptRunHook (scriptInfo, "Enter Combat")
 					end
@@ -12078,7 +12127,7 @@ end
 							return
 						end
 						local scriptContainer = unitFrame:ScriptGetContainer()
-						local scriptInfo = unitFrame:ScriptGetInfo (globalScriptObject, scriptContainer, "Leave Combat")
+						local scriptInfo = unitFrame:HookGetInfo(globalScriptObject, scriptContainer, "Leave Combat")
 						--run
 						unitFrame:ScriptRunHook (scriptInfo, "Leave Combat")
 					end
