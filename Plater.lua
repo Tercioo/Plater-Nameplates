@@ -10036,6 +10036,9 @@ end
 				scriptInfo.LastUpdateTime = GetTime()
 				scriptInfo.GlobalScriptObject = globalScriptObject
 
+				--envTable can be wiped here, at the moment I dunno if it should wipe the envTable on hotreload
+				--wipe(scriptInfo.Env)
+
 				--dispatch the constructor
 				local unitFrame = self.unitFrame or self
 				local scriptName = scriptInfo.GlobalScriptObject.DBScriptObject.Name
