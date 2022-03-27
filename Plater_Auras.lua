@@ -1144,11 +1144,6 @@ end
 		iconFrame:SetScript ("OnLeave", Plater.OnLeaveAura)
 		iconFrame:EnableMouse (profile.aura_show_tooltip)
 		
-		
-		--add the spell into the cache
-		self.ExtraIconFrame.AuraCache [spellId] = true
-		self.ExtraIconFrame.AuraCache [spellName] = true
-		
 		--check if Masque is enabled on Plater and reskin the aura icon
 		if (Plater.Masque and not iconFrame.Masqued) then
 			local t = {
@@ -1177,27 +1172,39 @@ end
 	end
 	
 	--> reset both buff frames to make them ready to receive an aura update
-	function Plater.ResetAuraContainer (self)
+	function Plater.ResetAuraContainer (self, resetBuffs, resetDebuffs)
+		-- ensure reset is happening if nil
+		resetBuffs = resetBuffs ~= false
+		resetDebuffs = resetDebuffs ~= false
+		resetDebuffs = not DB_AURA_SEPARATE_BUFFS and resetBuffs or resetDebuffs --resets buffs and debuffs if not aura frame 2
+	
 		--> reset the extra icon frame
-		self.ExtraIconFrame:ClearIcons()
+		self.ExtraIconFrame:ClearIcons(resetBuffs, resetDebuffs)
 
 		--> reset next aura icon to use
 		self.NextAuraIcon = 1
 		self.BuffFrame2.NextAuraIcon = 1
 		
 		--> reset auras
-		self.HasBuff = false
-		self.HasDebuff = false
+		if resetDebuffs then
+			wipe (self.AuraCache)
+			self.HasBuff = false
+			self.HasDebuff = false
+		end
 		
 		--> second buff anchor
-		self.BuffFrame2.HasBuff = false 
-		self.BuffFrame2.HasDebuff = false
+		if resetBuffs then
+			wipe (self.BuffFrame2.AuraCache)
+			self.BuffFrame2.HasBuff = false 
+			self.BuffFrame2.HasDebuff = false
+		end
 		
 		--> wipe the cache
-		wipe (self.AuraCache)
-		wipe (self.BuffFrame2.AuraCache)
-		wipe (self.ExtraIconFrame.AuraCache)
 		wipe (self.unitFrame.AuraCache)
+		
+		--> rebuild the cache
+		self.unitFrame.AuraCache = DF.table.copy(self.unitFrame.AuraCache, self.AuraCache)
+		self.unitFrame.AuraCache = DF.table.copy(self.unitFrame.AuraCache, self.BuffFrame2.AuraCache)
 		
 	end
 
@@ -1342,13 +1349,16 @@ end
 		
 		if UnitAuraEventHandlerData[unit] then
 		
-			Plater.ResetAuraContainer (self)
-			
 			local unitAuraEventData = UnitAuraEventHandlerData[unit]
+			
+			Plater.ResetAuraContainer (self, unitAuraEventData.hasBuff, unitAuraEventData.hasDebuff)
+			
+			--[[
 			if (unitAuraEventData.hasDebuff or unitAuraEventData.hasBuff) then -- TODO: don't wipe full container?
 				unitAuraEventData.hasDebuff = true
 				unitAuraEventData.hasBuff = true
 			end
+			]]--
 			
 			if unitAuraEventData.hasDebuff then
 				Plater.TrackSpecificAuras (self, unit, false, MANUAL_TRACKING_DEBUFFS, isPersonal)
@@ -1376,13 +1386,15 @@ end
 			return
 		end
 		
-		Plater.ResetAuraContainer (self)
+		Plater.ResetAuraContainer (self, unitAuraEventData.hasBuff, unitAuraEventData.hasDebuff)
 		local unitAuraCache = self.unitFrame.AuraCache
 		
+		--[[
 		if (unitAuraEventData.hasDebuff or unitAuraEventData.hasBuff) then -- TODO: don't wipe full container?
 			unitAuraEventData.hasDebuff = true
 			unitAuraEventData.hasBuff = true
 		end
+		]]--
 		
 		--> debuffs
 		if unitAuraEventData.hasDebuff then
@@ -1642,14 +1654,16 @@ end
 			return
 		end
 		
-		Plater.ResetAuraContainer (self)
+		Plater.ResetAuraContainer (self, unitAuraEventData.hasBuff, unitAuraEventData.hasDebuff)
 		local unitAuraCache = self.unitFrame.AuraCache
 		local noBuffDurationLimitation = Plater.db.profile.aura_show_all_duration_buffs_personal
 		
+		--[[
 		if (unitAuraEventData.hasDebuff or unitAuraEventData.hasBuff) then -- TODO: don't wipe full container?
 			unitAuraEventData.hasDebuff = true
 			unitAuraEventData.hasBuff = true
 		end
+		]]--
 		
 		--> debuffs
 		if (Plater.db.profile.aura_show_debuffs_personal and unitAuraEventData.hasDebuff) then
