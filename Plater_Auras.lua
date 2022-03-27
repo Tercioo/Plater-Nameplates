@@ -78,9 +78,9 @@ function Plater.IncreaseRefreshID_Auras()
     PLATER_REFRESH_ID = PLATER_REFRESH_ID + 1
 end
 
-local SCRIPT_AURA = Plater.ScriptAura
-local SCRIPT_CASTBAR = Plater.ScriptCastBar
-local SCRIPT_UNIT = Plater.ScriptUnit
+local SCRIPT_AURA_TRIGGER_CACHE = Plater.ScriptAura
+--local SCRIPT_CASTBAR = Plater.ScriptCastBar
+--local SCRIPT_UNIT = Plater.ScriptUnit
 
 --caches auras for crowd control, offensives and defensives to determine the border color for special auras, if the aura is in this table, the border will be colored with the respective color
 local CROWDCONTROL_AURA_IDS = {}
@@ -1010,7 +1010,7 @@ end
 		auraIconFrame:Show()
 		
 		--get the script object of the aura which will be showing in this icon frame
-		local globalScriptObject = SCRIPT_AURA [spellName]
+		local globalScriptObject = SCRIPT_AURA_TRIGGER_CACHE[spellName]
 		
 		--check if this aura has a custom script
 		if (globalScriptObject) then

@@ -10015,50 +10015,47 @@ end
 
 		--get the table which stores the information for a single script
 		--run for scripts only
-		ScriptGetInfo = function (self, globalScriptObject, scriptContainer) --isHookScript is never true
+		ScriptGetInfo = function (self, globalScriptObject, scriptContainer)
 			scriptContainer = scriptContainer or self:ScriptGetContainer()
 			
 			--using the memory address of the original scriptObject from db.profile as the map key
 			local scriptInfo = scriptContainer[globalScriptObject.DBScriptObject.scriptId]
 
-			if (
-				(not scriptInfo) or 
-				(scriptInfo.GlobalScriptObject.NeedHotReload) or 
-				(scriptInfo.GlobalScriptObject.Build and scriptInfo.GlobalScriptObject.Build < PLATER_HOOK_BUILD)
-			) then
-				local forceHotReload = scriptInfo and scriptInfo.GlobalScriptObject.NeedHotReload
-			
-				--keep script info and update as needed
-				scriptInfo = scriptInfo or {
-					GlobalScriptObject = globalScriptObject, 
-					HotReload = -1, 
-					Env = {}, 
-					IsActive = false
-				}
-				scriptInfo.GlobalScriptObject = globalScriptObject
-				scriptInfo.GlobalScriptObject.Build = PLATER_HOOK_BUILD
-				scriptInfo.GlobalScriptObject.NeedHotReload = false
+			local lastUpdateTime = globalScriptObject.LastUpdateTime or 0
+			if (not scriptInfo or scriptInfo.LastUpdateTime <= lastUpdateTime) then
+				--create script info
+				if (not scriptInfo) then
+					scriptInfo = {
+						--GlobalScriptObject = globalScriptObject, --is set below
+						--HotReload = -1, --deprecated
+						Env = {}, 
+						IsActive = false
+					}
+				end
 
-				if (globalScriptObject.HasConstructor and (not scriptInfo.Initialized or forceHotReload)) then
-					local modName = scriptInfo.GlobalScriptObject.DBScriptObject.Name
-					Plater.StartLogPerformance("Mod-RunHooks", modName, "Constructor")
-					local okay, errortext = pcall (globalScriptObject.Constructor, self, self.displayedUnit or self.unit or self:GetParent()[MEMBER_UNITID], self, scriptInfo.Env, PLATER_GLOBAL_MOD_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId])
-					Plater.EndLogPerformance("Mod-RunHooks", modName, "Constructor")
-					if (not okay) then
-						Plater:Msg ("Mod |cFFAAAA22" .. modName .. "|r Constructor error: " .. errortext)
-					end
-					scriptInfo.Initialized = true
+				scriptInfo.LastUpdateTime = GetTime()
+				scriptInfo.GlobalScriptObject = globalScriptObject
+
+				--dispatch the constructor
+				local unitFrame = self.unitFrame or self
+				local scriptName = scriptInfo.GlobalScriptObject.DBScriptObject.Name
+				Plater.StartLogPerformance("Scripts", scriptName, "Constructor")
+				local okay, errortext = pcall (scriptInfo.GlobalScriptObject["ConstructorCode"], self, unitFrame.displayedUnit or unitFrame.unit or unitFrame.PlateFrame[MEMBER_UNITID], unitFrame, scriptInfo.Env, PLATER_GLOBAL_SCRIPT_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId])
+				Plater.EndLogPerformance("Scripts", scriptName, "Constructor")
+				if (not okay) then
+					Plater:Msg ("Script |cFFAAAA22" .. scriptName .. "|r Constructor error: " .. errortext)
 				end
 				
 				scriptContainer [globalScriptObject.DBScriptObject.scriptId] = scriptInfo
 			end
 			
 			--always overwriting the globalScriptObject fixes the issue for not updating the script after saving it but only for OnShow OnUpdate and OnHide
-			scriptInfo.GlobalScriptObject = globalScriptObject
+			--scriptInfo.GlobalScriptObject = globalScriptObject
 			return scriptInfo
 		end,
 		
 		--if the global script had an update or if the first time running this script on this widget, run the constructor
+		--[=[ --deprecated, as the hot reload is done in the ScriptGetInfo()
 		ScriptHotReload = function (self, scriptInfo)
 			--dispatch constructor if necessary
 			if (scriptInfo.HotReload < scriptInfo.GlobalScriptObject.HotReload) then
@@ -10079,12 +10076,13 @@ end
 				end
 			end
 		end,
+		--]=]
 		
-		--run the update script
+		--run the update script, called when the castbar updates, from within the tick and from the aura file on the AddAura()
 		ScriptRunOnUpdate = function (self, scriptInfo)
 			if (not scriptInfo.IsActive) then
 				--run constructor
-				self:ScriptHotReload (scriptInfo)
+				--self:ScriptHotReload (scriptInfo) --deprecated
 				--run on show
 				self:ScriptRunOnShow (scriptInfo)
 			end
@@ -10110,9 +10108,9 @@ end
 			local scriptName = scriptInfo.GlobalScriptObject.DBScriptObject.Name
 			Plater.StartLogPerformance("Scripts", scriptName, "OnShow")
 
-			local func = scriptInfo.GlobalScriptObject["OnShowCode"] --this function is always running the first ever script compiled and GlobalScriptObject is also the first table created
+			local func = scriptInfo.GlobalScriptObject["OnShowCode"]
 
-			local okay, errortext = pcall(scriptInfo.GlobalScriptObject["OnShowCode"], self, unitFrame.displayedUnit or unitFrame.unit or unitFrame.PlateFrame[MEMBER_UNITID], unitFrame, scriptInfo.Env, PLATER_GLOBAL_SCRIPT_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId])
+			local okay, errortext = pcall(func, self, unitFrame.displayedUnit or unitFrame.unit or unitFrame.PlateFrame[MEMBER_UNITID], unitFrame, scriptInfo.Env, PLATER_GLOBAL_SCRIPT_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId])
 			Plater.EndLogPerformance("Scripts", scriptName, "OnShow")
 
 			if (not okay) then
@@ -11289,6 +11287,8 @@ end
 					globalScriptObject.HotReload = globalScriptObject.HotReload + 1
 					globalScriptObject.DBScriptObject = scriptObject
 				end
+
+				globalScriptObject.LastUpdateTime = GetTime()-0.05
 				
 				--add the script functions to the global object table
 				for scriptType, func in pairs(scriptFunctions) do
