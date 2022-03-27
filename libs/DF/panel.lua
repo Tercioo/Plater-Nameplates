@@ -5289,13 +5289,11 @@ DF.IconRowFunctions = {
 		return iconFrame
 	end,
 	
-	SetIcon = function (self, spellId, borderColor, startTime, duration, forceTexture, descText, count, debuffType, caster, canStealOrPurge)
+	SetIcon = function (self, spellId, borderColor, startTime, duration, forceTexture, descText, count, debuffType, caster, canStealOrPurge, isBuff)
 	
-		local spellName, _, spellIcon
+		local spellName, _, spellIcon = GetSpellInfo (spellId)
 	
-		if (not forceTexture) then
-			spellName, _, spellIcon = GetSpellInfo (spellId)
-		else
+		if forceTexture then
 			spellIcon = forceTexture
 		end
 		
@@ -5388,6 +5386,12 @@ DF.IconRowFunctions = {
 			iconFrame.debuffType = debuffType
 			iconFrame.caster = caster
 			iconFrame.canStealOrPurge = canStealOrPurge
+			iconFrame.isBuff = isBuff
+			iconFrame.spellName = spellName
+			
+			--add the spell into the cache
+			self.AuraCache [spellId] = true
+			self.AuraCache [spellName] = true
 
 			--> show the frame
 			self:Show()
@@ -5422,12 +5426,33 @@ DF.IconRowFunctions = {
 		return formattedTime
 	end,
 	
-	ClearIcons = function (self)
+	ClearIcons = function (self, resetBuffs, resetDebuffs)
+		resetBuffs = resetBuffs ~= false
+		resetDebuffs = resetDebuffs ~= false
+		table.wipe (self.AuraCache)
+		
+		local iconPool = self.IconPool
+		local countStillShown = 0
 		for i = 1, self.NextIcon -1 do
-			self.IconPool [i]:Hide()
+			if resetBuffs and iconPool[i].isBuff then
+				iconPool[i]:Hide()
+			elseif resetDebuffs and not iconPool[i].isBuff then
+				iconPool[i]:Hide()
+			else
+				self.AuraCache [iconPool[i].spellId] = true
+				self.AuraCache [iconPool[i].spellName] = true
+				countStillShown = countStillShown + 1
+			end
 		end
-		self.NextIcon = 1
-		self:Hide()
+		
+		if countStillShown == 0 then
+			self.NextIcon = 1
+			self:Hide()
+		else
+			self.NextIcon = countStillShown + 1
+			table.sort (iconPool, function(i1, i2) return i1:IsShown() < i2:IsShown() end)
+		end
+		
 	end,
 	
 	GetIconGrowDirection = function (self)
@@ -5516,6 +5541,7 @@ function DF:CreateIconRow (parent, name, options)
 	local f = CreateFrame("frame", name, parent, "BackdropTemplate")
 	f.IconPool = {}
 	f.NextIcon = 1
+	f.AuraCache = {}
 	
 	DF:Mixin (f, DF.IconRowFunctions)
 	DF:Mixin (f, DF.OptionsFunctions)
