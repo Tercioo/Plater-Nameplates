@@ -7098,13 +7098,23 @@ end
 	function Plater.UpdateNameOnRenamedUnit(plateFrame)
 		--set the npc name if the unit has a custom name
 		local newNpcName = Plater.db.profile.npcs_renamed[plateFrame[MEMBER_NPCID]]
+		local unitFrame = plateFrame.unitFrame
 		if (newNpcName) then
-			plateFrame.unitFrame.unitName:SetText(newNpcName)
-			plateFrame.unitFrame.unitName.isRenamed = true
+			plateFrame [MEMBER_NAME] = newNpcName
+			plateFrame [MEMBER_NAMELOWER] = lower (newNpcName)
+			unitFrame [MEMBER_NAME] = newNpcName
+			unitFrame [MEMBER_NAMELOWER] = plateFrame [MEMBER_NAMELOWER]
+			unitFrame.unitName:SetText(newNpcName)
+			unitFrame.unitName.isRenamed = true
 		else
-			if (plateFrame.unitFrame.unitName.isRenamed) then
-				plateFrame.unitFrame.unitName:SetText(UnitName(plateFrame[MEMBER_UNITID]))
-				plateFrame.unitFrame.unitName.isRenamed = nil
+			if (unitFrame.unitName.isRenamed) then
+				newNpcName = UnitName(plateFrame[MEMBER_UNITID])
+				plateFrame [MEMBER_NAME] = newNpcName
+				plateFrame [MEMBER_NAMELOWER] = lower (newNpcName)
+				unitFrame [MEMBER_NAME] = newNpcName
+				unitFrame [MEMBER_NAMELOWER] = plateFrame [MEMBER_NAMELOWER]
+				unitFrame.unitName:SetText(newNpcName)
+				unitFrame.unitName.isRenamed = nil
 			end
 		end
 	end
