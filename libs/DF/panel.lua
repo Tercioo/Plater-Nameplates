@@ -5454,7 +5454,7 @@ DF.IconRowFunctions = {
 			self:Hide()
 		else
 			self.NextIcon = countStillShown + 1
-			table.sort (iconPool, function(i1, i2) return i1:IsShown() < i2:IsShown() end)
+			table.sort (iconPool, function(i1, i2) return i1:IsShown() and not i2:IsShown() end)
 		end
 		
 	end,
