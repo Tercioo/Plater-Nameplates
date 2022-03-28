@@ -5289,13 +5289,15 @@ DF.IconRowFunctions = {
 		return iconFrame
 	end,
 	
-	SetIcon = function (self, spellId, borderColor, startTime, duration, forceTexture, descText, count, debuffType, caster, canStealOrPurge, isBuff)
+	SetIcon = function (self, spellId, borderColor, startTime, duration, forceTexture, descText, count, debuffType, caster, canStealOrPurge, spellName, isBuff)
 	
-		local spellName, _, spellIcon = GetSpellInfo (spellId)
+		local actualSpellName, _, spellIcon = GetSpellInfo (spellId)
 	
 		if forceTexture then
 			spellIcon = forceTexture
 		end
+		
+		spellName = spellName or actualSpellName or "unknown_aura"
 		
 		if (spellIcon) then
 			local iconFrame = self:GetIcon()
@@ -5434,7 +5436,9 @@ DF.IconRowFunctions = {
 		local iconPool = self.IconPool
 		local countStillShown = 0
 		for i = 1, self.NextIcon -1 do
-			if resetBuffs and iconPool[i].isBuff then
+			if iconPool[i].isBuff == nil then
+				iconPool[i]:Hide()
+			elseif resetBuffs and iconPool[i].isBuff then
 				iconPool[i]:Hide()
 			elseif resetDebuffs and not iconPool[i].isBuff then
 				iconPool[i]:Hide()
