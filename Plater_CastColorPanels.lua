@@ -1116,7 +1116,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                         --this db give npc name, npc location
                         local npcInfo = DB_NPCIDS_CACHE[npcId]
                         if (npcInfo) then
-                            sourceName = npcInfo[1] or sourceName
+                            sourceName = npcInfo[1] or ""
                             npcLocation = npcInfo[2] or ""
                         end
                     end
@@ -1124,7 +1124,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                     npcId = npcId or 0
                     sourceName = sourceName or ""
                     npcLocation = npcLocation or ""
-                    encounterName = capturedSpell.encounterName or ""
+                    encounterName = capturedSpell and capturedSpell.encounterName or ""
 
                     if (isEnabled) then
                         tinsert (exportedTable, {spellId, color, npcId, sourceName, npcLocation, encounterName, customSpellName})
