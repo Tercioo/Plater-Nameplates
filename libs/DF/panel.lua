@@ -5264,7 +5264,7 @@ DF.IconRowFunctions = {
 		
 		local anchor = self.options.anchor
 		local anchorTo = self.NextIcon == 1 and self or self.IconPool [self.NextIcon - 1]
-		local xPadding = self.NextIcon == 1 and self.options.left_padding or self.options.icon_padding
+		local xPadding = self.NextIcon == 1 and self.options.left_padding or self.options.icon_padding or 1
 		local growDirection = self.options.grow_direction
 
 		if (growDirection == 1) then --grow to right
@@ -5438,10 +5438,13 @@ DF.IconRowFunctions = {
 		for i = 1, self.NextIcon -1 do
 			if iconPool[i].isBuff == nil then
 				iconPool[i]:Hide()
+				iconPool[i]:ClearAllPoints()
 			elseif resetBuffs and iconPool[i].isBuff then
 				iconPool[i]:Hide()
+				iconPool[i]:ClearAllPoints()
 			elseif resetDebuffs and not iconPool[i].isBuff then
 				iconPool[i]:Hide()
+				iconPool[i]:ClearAllPoints()
 			else
 				self.AuraCache [iconPool[i].spellId] = true
 				self.AuraCache [iconPool[i].spellName] = true
