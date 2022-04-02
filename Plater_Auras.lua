@@ -205,6 +205,8 @@ local UnitAuraEventHandlerValidation = function (unit, isFullUpdate, updatedAura
 		end
 	
 	end
+	
+	hasDebuff = not DB_AURA_SEPARATE_BUFFS and hasBuff or hasDebuff --resets buffs and debuffs if not using aura frame 2
 
 	return needsUpdate, hasBuff, hasDebuff
 end
@@ -1176,20 +1178,17 @@ end
 		-- ensure reset is happening if nil
 		resetBuffs = resetBuffs ~= false
 		resetDebuffs = resetDebuffs ~= false
-		resetDebuffs = not DB_AURA_SEPARATE_BUFFS and resetBuffs or resetDebuffs --resets buffs and debuffs if not aura frame 2
 	
 		--> reset the extra icon frame
-		self.ExtraIconFrame:ClearIcons(resetBuffs, resetDebuffs)
-
-		--> reset next aura icon to use
-		self.NextAuraIcon = 1
-		self.BuffFrame2.NextAuraIcon = 1
+		self.ExtraIconFrame:ClearIcons(resetBuffs, resetDebuffs
 		
 		--> reset auras
 		if resetDebuffs then
 			wipe (self.AuraCache)
 			self.HasBuff = false
 			self.HasDebuff = false
+			--> reset next aura icon to use
+			self.NextAuraIcon = 1
 		end
 		
 		--> second buff anchor
@@ -1197,6 +1196,8 @@ end
 			wipe (self.BuffFrame2.AuraCache)
 			self.BuffFrame2.HasBuff = false 
 			self.BuffFrame2.HasDebuff = false
+			--> reset next aura icon to use
+			self.BuffFrame2.NextAuraIcon = 1
 		end
 		
 		--> wipe the cache
