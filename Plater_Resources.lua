@@ -182,6 +182,12 @@ local powerTypesFilter = {
     ["RUNES"] = true,
 }
 
+local eventsFilter = {
+	["UNIT_POWER_POINT_CHARGE"] = true,
+	["RUNE_POWER_UPDATE"] = true,
+	["UPDATE_SHAPESHIFT_FORM"] = true,
+}
+
 local CONST_ENUMNAME_COMBOPOINT = "ComboPoints"
 local CONST_ENUMNAME_HOLYPOWER = "HolyPower"
 local CONST_ENUMNAME_RUNES = "Runes"
@@ -442,7 +448,8 @@ end
                     local updateResourceFunc = currentResourceBar.updateResourceFunc
                     if (updateResourceFunc) then
                         --check if the power type passes the filter
-                        if (powerTypesFilter[powerType] or event == "RUNE_POWER_UPDATE") then
+                        if (powerTypesFilter[powerType] or eventsFilter[event]) then
+							ViragDevTool_AddData({event = event, unit = unit, powerType = powerType}, "EVENT")
                             lastComboPointGainedTime = GetTime()
                             Plater.StartLogPerformanceCore("Plater-Resources", "Events", event)
                             updateResourceFunc(self, currentResourceBar, false, event, unit, powerType)
@@ -1048,11 +1055,11 @@ end
                 local isCharged = chargedPowerPoints and tContains(chargedPowerPoints, i)
                 if (widget.isCharged ~= isCharged) then
                     if (isCharged) then
-                        widget.texture:SetAtlas("ClassOverlay-ComboPoint-Kyrian")
-                        widget.background:SetAtlas("ClassOverlay-ComboPoint-Off-Kyrian")
+                        widget.texture:SetAtlas("ComboPoints-ComboPoint-Kyrian")
+                        widget.background:SetAtlas("ComboPoints-PointBg-Kyrian")
                     else
-                        widget.texture:SetAtlas("ClassOverlay-ComboPoint")
-                        widget.background:SetAtlas("ClassOverlay-ComboPoint-Off")
+                        widget.texture:SetAtlas("ComboPoints-ComboPoint")
+                        widget.background:SetAtlas("ComboPoints-PointBg")
                     end
                 end
             end
@@ -1112,6 +1119,9 @@ end
 				if start then
 					cooldown:SetCooldown(start, duration)
 				end
+				if not DB_PLATER_RESOURCE_SHOW_DEPLETED then
+					cooldown:SetAlpha(0)
+				end
 				runeButton.texture:SetAlpha(0)
 				--runeButton.energize:Stop()
 			else
@@ -1131,19 +1141,10 @@ end
 					runeButton.texture:SetAlpha(1)
 				end
 
+				cooldown:SetAlpha(1)
 				cooldown:Hide()
 			end
 		end
-		
-		
-
-        --which update method to use
-		-- can't use core updat here...
-        --[[if (DB_PLATER_RESOURCE_SHOW_DEPLETED) then
-            Plater.Resources.UpdateResources_WithDepleted(resourceBar, currentResources)
-        else
-            Plater.Resources.UpdateResources_NoDepleted(resourceBar, currentResources)
-        end]]--
     end
     
     --WL soul chards

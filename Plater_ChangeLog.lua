@@ -8,11 +8,12 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
-			{1648130736,  "Bug Fix", "March 29th, 2022", "Fixing an issue with cast colors exports.", "cont1nuity"},
-			{1648130736,  "Bug Fix", "March 28th, 2022", "Ensure npc renaming sticks through internal updates.", "cont1nuity"},
-			{1648130736,  "Bug Fix", "March 28th, 2022", "Fixing URL pointing towards the script/mod documentation.", "cont1nuity"},
-			{1648130736,  "New Feature", "March 26th, 2022", "Added new indicator: Shield Bar.", "Terciob"},
-			{1648130736,  "Backend Change", "March 25th, 2022", "Changing the aura tracking backend to update only when needed.", "cont1nuity"},
+			{1648924404,  "Bug Fix", "April 2nd, 2022", "Fixing Kyrian combo point charges and DK runes CDs showing if 'show background' was disabled.", "cont1nuity"},
+			{1648924404,  "Bug Fix", "March 29th, 2022", "Fixing an issue with cast colors exports.", "cont1nuity"},
+			{1648924404,  "Bug Fix", "March 28th, 2022", "Ensure npc renaming sticks through internal updates.", "cont1nuity"},
+			{1648924404,  "Bug Fix", "March 28th, 2022", "Fixing URL pointing towards the script/mod documentation.", "cont1nuity"},
+			{1648924404,  "New Feature", "March 26th, 2022", "Added new indicator: Shield Bar.", "Terciob"},
+			{1648924404,  "Backend Change", "March 25th, 2022", "Changing the aura tracking backend to update only when needed.", "cont1nuity"},
 			
 			{1648130735,  "New Feature", "March 24th, 2022", "Added into the 'Auto' section two options to hide Enemy Pets and Enemy Totems within raids and dungeons (default disabled).", "cont1nuity"},
 			{1648130735,  "Bug Fix", "March 23rd, 2022", "Don't show ghost auras on personal bar.", "cont1nuity"},

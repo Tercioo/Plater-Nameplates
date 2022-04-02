@@ -195,7 +195,8 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 
         --> create background
         local backgroundTexture = parent:CreateTexture("$parenttopCircleTexture", "BACKGROUND")
-        backgroundTexture:SetAtlas("ClassOverlay-ComboPoint-Off")
+		backgroundTexture:SetAtlas("ComboPoints-PointBg")
+        --backgroundTexture:SetAtlas("ClassOverlay-ComboPoint-Off")
         backgroundTexture:SetDrawLayer("OVERLAY", 1)
         backgroundTexture:SetPoint("center", widgetFrame, "center", 0, 0)
         backgroundTexture:SetSize(13, 13)
@@ -211,7 +212,8 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         ----------------------------------------------
 
         local comboPointTexture  = widgetFrame:CreateTexture("$parentcomboPointTextureTexture", "ARTWORK")
-        comboPointTexture:SetAtlas("ClassOverlay-ComboPoint")
+        comboPointTexture:SetAtlas("ComboPoints-ComboPoint")
+		--comboPointTexture:SetAtlas("ClassOverlay-ComboPoint")
         comboPointTexture:SetDrawLayer("BORDER", 0)
         comboPointTexture:SetPoint("center", widgetFrame, "center", 0, 0)
         comboPointTexture:SetSize(13, 13)
