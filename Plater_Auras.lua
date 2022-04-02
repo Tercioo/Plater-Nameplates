@@ -1180,7 +1180,7 @@ end
 		resetDebuffs = resetDebuffs ~= false
 	
 		--> reset the extra icon frame
-		self.ExtraIconFrame:ClearIcons(resetBuffs, resetDebuffs
+		self.ExtraIconFrame:ClearIcons(resetBuffs, resetDebuffs)
 		
 		--> reset auras
 		if resetDebuffs then
