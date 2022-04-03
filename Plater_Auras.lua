@@ -242,7 +242,6 @@ local UnitAuraEventHandler = function (_, event, arg1, arg2, arg3, ...)
 	if event == "UNIT_AURA" then
 		local unit, isFullUpdate, updatedAuras = arg1, arg2, arg3
 		if unit and UnitAuraEventHandlerValidUnits[unit] then
-			--TODO: implement pre-check against blacklist and stuff based on updatedAuras here
 			local needsUpdate, hasBuff, hasDebuff = UnitAuraEventHandlerValidation(unit, isFullUpdate, updatedAuras)
 			--ViragDevTool_AddData({unit = unit, isFullUpdate = isFullUpdate, updatedAuras = updatedAuras, needsUpdate = needsUpdate, hasBuff = hasBuff, hasDebuff = hasDebuff}, "Plater_UNIT_AURA")
 			if needsUpdate then
@@ -1354,12 +1353,6 @@ end
 			
 			Plater.ResetAuraContainer (self, unitAuraEventData.hasBuff, unitAuraEventData.hasDebuff)
 			
-			--[[
-			if (unitAuraEventData.hasDebuff or unitAuraEventData.hasBuff) then -- TODO: don't wipe full container?
-				unitAuraEventData.hasDebuff = true
-				unitAuraEventData.hasBuff = true
-			end
-			]]--
 			
 			if unitAuraEventData.hasDebuff then
 				Plater.TrackSpecificAuras (self, unit, false, MANUAL_TRACKING_DEBUFFS, isPersonal)
@@ -1389,13 +1382,6 @@ end
 		
 		Plater.ResetAuraContainer (self, unitAuraEventData.hasBuff, unitAuraEventData.hasDebuff)
 		local unitAuraCache = self.unitFrame.AuraCache
-		
-		--[[
-		if (unitAuraEventData.hasDebuff or unitAuraEventData.hasBuff) then -- TODO: don't wipe full container?
-			unitAuraEventData.hasDebuff = true
-			unitAuraEventData.hasBuff = true
-		end
-		]]--
 		
 		--> debuffs
 		if unitAuraEventData.hasDebuff then
@@ -1658,13 +1644,6 @@ end
 		Plater.ResetAuraContainer (self, unitAuraEventData.hasBuff, unitAuraEventData.hasDebuff)
 		local unitAuraCache = self.unitFrame.AuraCache
 		local noBuffDurationLimitation = Plater.db.profile.aura_show_all_duration_buffs_personal
-		
-		--[[
-		if (unitAuraEventData.hasDebuff or unitAuraEventData.hasBuff) then -- TODO: don't wipe full container?
-			unitAuraEventData.hasDebuff = true
-			unitAuraEventData.hasBuff = true
-		end
-		]]--
 		
 		--> debuffs
 		if (Plater.db.profile.aura_show_debuffs_personal and unitAuraEventData.hasDebuff) then
