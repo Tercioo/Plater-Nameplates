@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1648924404,  "Bug Fix", "April 3rd, 2022", "Fixing NPC Colors tab model viewer zoom functionality.", "cont1nuity"},
 			{1648924404,  "Bug Fix", "April 2nd, 2022", "Fixing Kyrian combo point charges and DK runes CDs showing if 'show background' was disabled.", "cont1nuity"},
 			{1648924404,  "Bug Fix", "March 29th, 2022", "Fixing an issue with cast colors exports.", "cont1nuity"},
 			{1648924404,  "Bug Fix", "March 28th, 2022", "Ensure npc renaming sticks through internal updates.", "cont1nuity"},

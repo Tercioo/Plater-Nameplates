@@ -2493,6 +2493,10 @@ Plater.CreateAuraTesting()
 			colorsFrame.ModelFrame:SetBackdropColor (.4, .4, .4, 1)
 
 			colorsFrame.ModelFrame:SetScript ("OnEnter", nil)
+			--colorsFrame.ModelFrame:SetScript ("OnMouseWheel", nil)
+			colorsFrame.ModelFrame.zoomLevel = 0.1
+			colorsFrame.ModelFrame.minZoom = 0.01
+			colorsFrame.ModelFrame.maxZoom = 1
 			
 			--store npcID = checkbox object
 			--this is used when selecting the color from the dropdown, it'll automatically enable the color and need to set the checkbox to checked for feedback
