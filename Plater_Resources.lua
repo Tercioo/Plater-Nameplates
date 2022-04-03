@@ -1071,7 +1071,12 @@ end
         end
 
         --amount of resources the player has now
-        local currentResources = GetComboPoints("player", "target") --UnitPower("player", Plater.Resources.playerResourceId)
+        local currentResources
+		if Plater.PlayerHasTargetNonSelf then
+			currentResources = GetComboPoints("player", "target")
+		else
+			currentResources = UnitPower("player", Plater.Resources.playerResourceId)
+		end
 
         --resources amount got updated?
         if (currentResources == resourceBar.lastResourceAmount and not forcedRefresh) then
