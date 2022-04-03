@@ -449,7 +449,6 @@ end
                     if (updateResourceFunc) then
                         --check if the power type passes the filter
                         if (powerTypesFilter[powerType] or eventsFilter[event]) then
-							ViragDevTool_AddData({event = event, unit = unit, powerType = powerType}, "EVENT")
                             lastComboPointGainedTime = GetTime()
                             Plater.StartLogPerformanceCore("Plater-Resources", "Events", event)
                             updateResourceFunc(self, currentResourceBar, false, event, unit, powerType)
