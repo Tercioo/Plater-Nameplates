@@ -10743,7 +10743,7 @@ end
 				get = function() return Plater.db.profile.plate_config.enemynpc.big_actorname_text_size end,
 				set = function (self, fixedparam, value) 
 					Plater.db.profile.plate_config.enemynpc.big_actorname_text_size = value
-					Plater.db.profile.plate_config.enemynpc.big_actortitle_text_size = value
+					--Plater.db.profile.plate_config.enemynpc.big_actortitle_text_size = value --why? there's a separate setting.
 					Plater.UpdateAllPlates()
 				end,
 				min = 6,
