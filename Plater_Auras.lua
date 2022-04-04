@@ -206,7 +206,9 @@ local UnitAuraEventHandlerValidation = function (unit, isFullUpdate, updatedAura
 	
 	end
 	
-	hasDebuff = not DB_AURA_SEPARATE_BUFFS and hasBuff or hasDebuff --resets buffs and debuffs if not using aura frame 2
+	--resets buffs and debuffs if not using aura frame 2 (for now, until partial clear is implemented)
+	hasBuff = not DB_AURA_SEPARATE_BUFFS and hasDebuff or hasBuff 
+	hasDebuff = not DB_AURA_SEPARATE_BUFFS and hasBuff or hasDebuff
 
 	return needsUpdate, hasBuff, hasDebuff
 end
