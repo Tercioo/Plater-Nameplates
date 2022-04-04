@@ -2472,6 +2472,13 @@ local class_specs_coords = {
 		GROUP_ROSTER_UPDATE = function()
 			Plater.RefreshTankCache()
 		end,
+		
+		UNIT_PET = function(_, unit)
+			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+				Plater.AddToAuraUpdate(plateFrame.unitFrame.unit) -- force aura update
+				Plater.ScheduleUpdateForNameplate (plateFrame)
+			end
+		end,
 
 		PLAYER_REGEN_DISABLED = function()
 			PLAYER_IN_COMBAT = true
@@ -3770,6 +3777,9 @@ local class_specs_coords = {
 			--ViragDevTool_AddData({ctime = GetTime(), unit = unitBarId or "nil", stack = debugstack()}, "NAME_PLATE_UNIT_REMOVED - " .. (unitBarId or "nil"))
 			
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId)
+			
+			Plater.RemoveFromAuraUpdate (unitBarId) -- ensure no updates
+			
 			ENABLED_BLIZZARD_PLATEFRAMES[plateFrame.unitFrame.blizzardPlateFrameID] = true -- OnRetailNamePlateShow is called first. ensure the plate might show!
 			if not plateFrame.unitFrame.PlaterOnScreen then
 				return
@@ -3848,8 +3858,6 @@ local class_specs_coords = {
 			
 			--tell the framework to execute a cleanup on the unit frame, this is required since Plater set .ClearUnitOnHide to false
 			plateFrame.unitFrame:SetUnit (nil)
-			
-			Plater.RemoveFromAuraUpdate (unitBarId)
 			
 			-- remove widgets
 			if IS_WOW_PROJECT_MAINLINE then
@@ -4166,6 +4174,8 @@ function Plater.OnInit() --private --~oninit ~init
 		Plater.EventHandlerFrame:RegisterEvent ("UI_SCALE_CHANGED")
 		
 		Plater.EventHandlerFrame:RegisterEvent ("GROUP_ROSTER_UPDATE")
+		
+		Plater.EventHandlerFrame:RegisterEvent ("UNIT_PET")
 		
 		if IS_WOW_PROJECT_NOT_MAINLINE then -- tank spec detection
 			Plater.EventHandlerFrame:RegisterEvent ("UNIT_INVENTORY_CHANGED")
@@ -5377,6 +5387,7 @@ end
 	--full refresh calls
 	function Plater.UpdateAllPlates (forceUpdate, justAdded) --private
 		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+			Plater.AddToAuraUpdate(plateFrame.unitFrame.unit) -- force aura update
 			Plater.UpdatePlateFrame (plateFrame, nil, forceUpdate, justAdded)
 			--trigger a nameplate updated event
 			Plater.TriggerNameplateUpdatedEvent(plateFrame.unitFrame)
