@@ -2475,8 +2475,10 @@ local class_specs_coords = {
 		
 		UNIT_PET = function(_, unit)
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-				Plater.AddToAuraUpdate(plateFrame.unitFrame.unit) -- force aura update
-				Plater.ScheduleUpdateForNameplate (plateFrame)
+				if plateFrame.unitFrame and plateFrame.unitFrame.PlaterOnScreen then
+					Plater.AddToAuraUpdate(plateFrame.unitFrame.unit) -- force aura update
+					Plater.ScheduleUpdateForNameplate (plateFrame)
+				end
 			end
 		end,
 
@@ -5387,10 +5389,12 @@ end
 	--full refresh calls
 	function Plater.UpdateAllPlates (forceUpdate, justAdded) --private
 		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-			Plater.AddToAuraUpdate(plateFrame.unitFrame.unit) -- force aura update
-			Plater.UpdatePlateFrame (plateFrame, nil, forceUpdate, justAdded)
-			--trigger a nameplate updated event
-			Plater.TriggerNameplateUpdatedEvent(plateFrame.unitFrame)
+			if plateFrame.unitFrame and plateFrame.unitFrame.PlaterOnScreen then
+				Plater.AddToAuraUpdate(plateFrame.unitFrame.unit) -- force aura update
+				Plater.UpdatePlateFrame (plateFrame, nil, forceUpdate, justAdded)
+				--trigger a nameplate updated event
+				Plater.TriggerNameplateUpdatedEvent(plateFrame.unitFrame)
+			end
 		end
 	end
 	

@@ -261,10 +261,12 @@ UnitAuraEventHandlerFrame:SetScript ("OnEvent", UnitAuraEventHandler)
 UnitAuraEventHandlerFrame:RegisterEvent ("UNIT_AURA")
 
 function Plater.RemoveFromAuraUpdate (unit)
+	if not unit then return end
 	UnitAuraEventHandlerValidUnits[unit] = nil
 end
 
 function Plater.AddToAuraUpdate (unit)
+	if not unit then return end
 	UnitAuraEventHandlerValidUnits[unit] = true
 	UnitAuraEventHandlerData[unit] = { hasBuff = true, hasDebuff = true } --update at least once
 end
