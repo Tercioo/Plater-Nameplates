@@ -1865,6 +1865,8 @@ local class_specs_coords = {
 		["nameplateSelectedAlpha"] = true,
 		["nameplateNotSelectedAlpha"] = (IS_WOW_PROJECT_NOT_MAINLINE),
 		["nameplateRemovalAnimation"] = (IS_WOW_PROJECT_NOT_MAINLINE),
+		["nameplateMinAlpha"] = true,
+		["nameplateMinAlphaDistance"] = true,
 	}
 	--on logout or on profile change, save some important cvars inside the profile
 	function Plater.SaveConsoleVariables(cvar, value) --private
