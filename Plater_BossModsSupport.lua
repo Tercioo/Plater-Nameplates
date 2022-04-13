@@ -131,7 +131,8 @@ function Plater.UpdateBossModAuras(unitFrame)
 			if values.duration and curTime > values.starttime + values.duration then
 				tremove(UNIT_BOSS_MOD_AURAS_ACTIVE [guid], activeIndex)
 			else
-				local icon = iconFrame:SetIcon(nil, nil, values.duration and values.starttime, values.duration, values.texture)
+				local icon = iconFrame:SetIcon(-1, nil, values.duration and values.starttime, values.duration, values.texture)
+				--							spellId, borderColor, startTime, duration, forceTexture, descText, count, debuffType, caster, canStealOrPurge, spellName, isBuff
 				icon.Texture:SetDesaturated(values.desaturate)
 				--icon.Cooldown:SetDesaturated(values.desaturate)
 				
