@@ -5392,7 +5392,7 @@ DF.IconRowFunctions = {
 			iconFrame.spellName = spellName
 			
 			--add the spell into the cache
-			self.AuraCache [spellId] = true
+			self.AuraCache [spellId or -1] = true
 			self.AuraCache [spellName] = true
 
 			--> show the frame

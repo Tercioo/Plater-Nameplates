@@ -465,7 +465,9 @@ local SplitBarMetaFunctions = _G[DF.GlobalWidgetControlNames ["split_bar"]]
 		if (self.currentValue - 0.001 <= self.targetValue) then
 			self:SetValue(self.targetValue)
 			self.currentValue = self.targetValue
-			self.spark:Hide()
+			if (not self.SparkAlwaysShow) then
+				self.spark:Hide()
+			end
 			self.widget:SetScript("OnUpdate", nil)
 			return
 		end
@@ -490,7 +492,9 @@ local SplitBarMetaFunctions = _G[DF.GlobalWidgetControlNames ["split_bar"]]
 		if (self.currentValue + 0.001 >= self.targetValue) then
 			self:SetValue(self.targetValue)
 			self.currentValue = self.targetValue
-			self.spark:Hide()
+			if (not self.SparkAlwaysShow) then
+				self.spark:Hide()
+			end
 			self.widget:SetScript("OnUpdate", nil)
 			return
 		end
