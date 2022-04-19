@@ -382,9 +382,10 @@ end
 					if (not nameplateAuraCache[spellName]) then --the ghost aura isn't in the nameplate
 						--add the extra icon
 						local spellIcon, spellId = spellTable[1], spellTable[2]
-						local auraIconFrame, _, buffIndex = Plater.GetAuraIcon(buffFrame, true)
+						local auraIconFrame = Plater.GetAuraIcon(buffFrame, true)
 						auraIconFrame.InUse = true --don't play animation
-						Plater.AddAura(buffFrame, auraIconFrame, buffIndex, spellName, spellIcon, 1, "DEBUFF", 0, 0, "player", false, false, spellId, false, false, false, false, "DEBUFF")
+						auraIconFrame:EnableMouse (false) --don't use tooltips, as there is no real aura
+						Plater.AddAura(buffFrame, auraIconFrame, -1, spellName, spellIcon, 1, "DEBUFF", 0, 0, "player", false, false, spellId, false, false, false, false, "DEBUFF")
 						Plater.Auras.GhostAuras.ApplyAppearance(auraIconFrame, spellName, spellIcon, spellId)
 					end
 				end
