@@ -8002,6 +8002,23 @@ end
 		attachTo = attachTo or widget:GetParent()
 		anchor_functions [config.side] (widget, config, attachTo, centered)
 	end
+	
+	-- anchor sides as comprehensive table.
+	Plater.AnchorSides = {
+        TOP_LEFT = 1,
+        LEFT = 2,
+        BOTTOM_LEFT = 3,
+        BOTTOM = 4,
+        BOTTOM_RIGHT = 5,
+        RIGHT = 6,
+        TOP_RIGHT = 7,
+        TOP = 8,
+        CENTER = 9,
+        INNER_LEFT = 10,
+        INNER_RIGHT = 11,
+        INNER_TOP = 12,
+        INNER_BOTTOM = 13,
+    }
 
 	--check the setting 'only_damaged' and 'only_thename' for player characters. not critical code, can run slow
 	function Plater.ParseHealthSettingForPlayer (plateFrame, force) --private
@@ -10598,6 +10615,8 @@ end
 			["ScriptUnit"] = true,
 			["RemoveFromAuraUpdate"] = true,
 			["AddToAuraUpdate"] = true,
+			["AnchorSides"] = false,
+			["SetAnchor"] = false,
 		},
 		
 		["DetailsFramework"] = {

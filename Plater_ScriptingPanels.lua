@@ -119,6 +119,8 @@ Plater.APIList = {
 	
 	{Name = "SafeSetCVar", 			Signature = "Plater.SafeSetCVar (variableName, value)", 				Desc = "Change the value of a CVar, if called during combat, it'll be applied when the player leaves combat.\n\nOriginal value is stored until Plater.RestoreCVar (variableName) is called."},	
 	{Name = "RestoreCVar", 			Signature = "Plater.RestoreCVar (variableName)", 					Desc = "Restore the value a CVar had before Plater.SafeSetCVar() was called."},
+	
+	{Name = "SetAnchor", 			Signature = "Plater.SetAnchor (frame, config, attachTo, centered)", 					Desc = "Anchor the 'frame' to the 'attachTo' frame according to the given 'config' ('config = {x = 0, y = 0, side = 1}', where 'side' is one of the following:\nTOP_LEFT = 1, LEFT = 2, BOTTOM_LEFT = 3, BOTTOM = 4, BOTTOM_RIGHT = 5, RIGHT = 6, TOP_RIGHT = 7, TOP = 8, CENTER = 9, INNER_LEFT = 10, INNER_RIGHT = 11, INNER_TOP = 12, INNER_BOTTOM = 13)"},
 }
 
 Plater.FrameworkList = {
