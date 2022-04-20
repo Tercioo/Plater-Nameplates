@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1648924404,  "Bug Fix", "April 21st, 2022", "NPC Colors export/import now covers renaming as well and renamed NPCs are kept in cache for exported profiles.", "cont1nuity"},
 			{1648924404,  "Bug Fix", "April 3rd, 2022", "Fixing NPC Colors tab model viewer zoom functionality.", "cont1nuity"},
 			{1648924404,  "Bug Fix", "April 2nd, 2022", "Fixing Kyrian combo point charges and DK runes CDs showing if 'show background' was disabled.", "cont1nuity"},
 			{1648924404,  "Bug Fix", "March 29th, 2022", "Fixing an issue with cast colors exports.", "cont1nuity"},

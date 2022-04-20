@@ -514,6 +514,10 @@ function Plater.OpenOptionsPanel()
 					for npcID, _ in pairs (Plater.db.profile.npc_colors) do
 						Plater.db.profile.npc_cache [npcID] = npc_cache [npcID]
 					end
+					--retain npc_cache for set npc_colors
+					for npcID, _ in pairs (Plater.db.profile.npcs_renamed) do
+						Plater.db.profile.npc_cache [npcID] = npc_cache [npcID]
+					end
 					
 					--save mod/script editing
 					local hookFrame = mainFrame.AllFrames [7]
@@ -3118,12 +3122,13 @@ Plater.CreateAuraTesting()
 							local dbColors = Plater.db.profile.npc_colors
 							--table storing all npcs already detected inside dungeons and raids
 							local allNpcsDetectedTable = Plater.db.profile.npc_cache
+							local allNpcsRenamed = Plater.db.profile.npcs_renamed
 
 							--the uncompressed table is a numeric table of tables
 							for i, colorTable in pairs (colorData) do
 								--check integrity
 								if (type (colorTable) == "table") then
-									local npcID, scriptOnly, colorID, npcName, zoneName = unpack (colorTable)
+									local npcID, scriptOnly, colorID, npcName, zoneName, renamedName = unpack (colorTable)
 									if (npcID and colorID and npcName and zoneName) then
 										if (type (colorID) == "string" and type (npcName) == "string" and type (zoneName) == "string") then
 											if (type (npcID) == "number" and type (scriptOnly) == "boolean") then
@@ -3136,6 +3141,8 @@ Plater.CreateAuraTesting()
 												allNpcsDetectedTable [npcID] = allNpcsDetectedTable [npcID] or {}
 												allNpcsDetectedTable [npcID] [1] = npcName
 												allNpcsDetectedTable [npcID] [2] = zoneName
+												
+												allNpcsRenamed [npcID] = renamedName
 											end
 										end
 									end
@@ -3206,8 +3213,9 @@ Plater.CreateAuraTesting()
 								--build a table to store one the npc and insert the table inside the main table which will be compressed
 								--only add the npc if it is enabled in the color panel
 								if (enabled1) then
-												       --number   | boolean     | string   | string      | string
-									tinsert (exportedTable, {npcID, enabled2, colorID, npcName, zoneName})
+									local renamedName = Plater.db.profile.npcs_renamed [npcID]
+															--number| boolean |string  |string  |string   |string
+									tinsert (exportedTable, {npcID, enabled2, colorID, npcName, zoneName, renamedName})
 								end
 							end
 						end
@@ -3228,8 +3236,9 @@ Plater.CreateAuraTesting()
 							--build a table to store one the npc and insert the table inside the main table which will be compressed
 							--only add the npc if it is enabled in the color panel
 							if (enabled1 and npcName and zoneName) then
-											       --number   | boolean     | string   | string      | string
-								tinsert (exportedTable, {npcID, enabled2, colorID, npcName, zoneName})
+								local renamedName = Plater.db.profile.npcs_renamed [npcID]
+															--number| boolean |string  |string  |string   |string
+									tinsert (exportedTable, {npcID, enabled2, colorID, npcName, zoneName, renamedName})
 							end
 						end
 					end
