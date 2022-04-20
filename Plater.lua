@@ -9376,7 +9376,7 @@ end
 	
 	--return if the unit has a specific aura
 	function Plater.UnitHasAura (unitFrame, aura)
-		return unitFrame and unitFrame.AuraCache and aura and unitFrame.AuraCache [aura]
+		return unitFrame and unitFrame.AuraCache and aura and unitFrame.AuraCache [aura] and true or false
 	end
 	
 	--return if the unit has an enrage effect
@@ -9386,7 +9386,7 @@ end
 	
 	--return if the unit has a dispellable effect
 	function Plater.UnitHasDispellable (unitFrame)
-		return unitFrame and unitFrame.AuraCache and  unitFrame.AuraCache.canStealOrPurge
+		return unitFrame and unitFrame.AuraCache and unitFrame.AuraCache.canStealOrPurge
 	end
 	
 	--get npc color set in the colors tab

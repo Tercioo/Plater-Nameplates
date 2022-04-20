@@ -377,9 +377,9 @@ end
 	function Plater.ShowGhostAuras(buffFrame)
 		if (DB_AURA_GHOSTAURA_ENABLED) then
 			if (InCombatLockdown() and buffFrame.unitFrame.InCombat and not buffFrame.unitFrame.IsSelf) then
-				local nameplateAuraCache = buffFrame.AuraCache --auras already shown in the nameplate
+				local nameplateAuraCache = buffFrame.unitFrame.AuraCache --auras already shown in the nameplate
 				for spellName, spellTable in pairs(GHOSTAURAS) do
-					if (not nameplateAuraCache[spellName]) then --the ghost aura isn't in the nameplate
+					if (not nameplateAuraCache[spellName.."_player"] and not nameplateAuraCache[spellName.."_player_ghost"]) then --the ghost aura isn't in the nameplate
 						--add the extra icon
 						local spellIcon, spellId = spellTable[1], spellTable[2]
 						local auraIconFrame = Plater.GetAuraIcon(buffFrame, true)
@@ -387,6 +387,7 @@ end
 						auraIconFrame:EnableMouse (false) --don't use tooltips, as there is no real aura
 						Plater.AddAura(buffFrame, auraIconFrame, -1, spellName, spellIcon, 1, "DEBUFF", 0, 0, "player", false, false, spellId, false, false, false, false, "DEBUFF")
 						Plater.Auras.GhostAuras.ApplyAppearance(auraIconFrame, spellName, spellIcon, spellId)
+						nameplateAuraCache[spellName.."_player_ghost"] = true --this is shown as ghost aura
 					end
 				end
 			end
@@ -840,6 +841,8 @@ end
 		
 		self.AuraCache [spellId] = true
 		self.AuraCache [spellName] = true
+		self.AuraCache [spellId.."_"..(caster or "N/A")] = true
+		self.AuraCache [spellName.."_"..(caster or "N/A")] = true
 		
 		--> check if a full refresh is required
 		if (auraIconFrame.RefreshID < PLATER_REFRESH_ID) then
@@ -1253,6 +1256,8 @@ end
 					
 					unitAuraCache[name] = true
 					unitAuraCache[spellId] = true
+					unitAuraCache[name.."_"..(caster or "N/A")] = true
+					unitAuraCache[spellId.."_"..(caster or "N/A")] = true
 					unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or canStealOrPurge
 					unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
 					
@@ -1313,6 +1318,8 @@ end
 					
 					unitAuraCache[name] = true
 					unitAuraCache[spellId] = true
+					unitAuraCache[name.."_"..(caster or "N/A")] = true
+					unitAuraCache[spellId.."_"..(caster or "N/A")] = true
 					unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or canStealOrPurge
 					unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
 					
@@ -1423,6 +1430,8 @@ end
 					
 					unitAuraCache[name] = true
 					unitAuraCache[spellId] = true
+					unitAuraCache[name.."_"..(caster or "N/A")] = true
+					unitAuraCache[spellId.."_"..(caster or "N/A")] = true
 					unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or canStealOrPurge
 					unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
 
@@ -1510,6 +1519,8 @@ end
 					
 					unitAuraCache[name] = true
 					unitAuraCache[spellId] = true
+					unitAuraCache[name.."_"..(caster or "N/A")] = true
+					unitAuraCache[spellId.."_"..(caster or "N/A")] = true
 					unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or canStealOrPurge
 					unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
 					
@@ -1683,6 +1694,8 @@ end
 					
 					unitAuraCache[name] = true
 					unitAuraCache[spellId] = true
+					unitAuraCache[name.."_"..(caster or "N/A")] = true
+					unitAuraCache[spellId.."_"..(caster or "N/A")] = true
 					unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or canStealOrPurge
 					unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
 						
@@ -1740,6 +1753,8 @@ end
 
 					unitAuraCache[name] = true
 					unitAuraCache[spellId] = true
+					unitAuraCache[name.."_"..(caster or "N/A")] = true
+					unitAuraCache[spellId.."_"..(caster or "N/A")] = true
 					unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or canStealOrPurge
 					unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
 					
@@ -1811,6 +1826,8 @@ end
 								
 								unitAuraCache[auraTable.SpellName] = true
 								unitAuraCache[auraTable.SpellID] = true
+								unitAuraCache[auraTable.SpellName.."_player"] = true
+								unitAuraCache[auraTable.SpellID.."_player"] = true
 								
 								Plater.UpdateIconAspecRatio (auraIconFrame)
 							end
@@ -1829,6 +1846,8 @@ end
 								
 								unitAuraCache[auraTable.SpellName] = true
 								unitAuraCache[auraTable.SpellID] = true
+								unitAuraCache[auraTable.SpellName.."_player"] = true
+								unitAuraCache[auraTable.SpellID.."_player"] = true
 								
 								Plater.UpdateIconAspecRatio (auraIconFrame)
 							end
@@ -1860,6 +1879,8 @@ end
 								
 								unitAuraCache[auraTable.SpellName] = true
 								unitAuraCache[auraTable.SpellID] = true
+								unitAuraCache[auraTable.SpellName.."_player"] = true
+								unitAuraCache[auraTable.SpellID.."_player"] = true
 								unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or auraTable.Type == AURA_TYPE_ENRAGE
 							end
 							
@@ -1878,6 +1899,8 @@ end
 								
 								unitAuraCache[auraTable.SpellName] = true
 								unitAuraCache[auraTable.SpellID] = true
+								unitAuraCache[auraTable.SpellName.."_player"] = true
+								unitAuraCache[auraTable.SpellID.."_player"] = true
 								unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or auraTable.Type == AURA_TYPE_ENRAGE
 							end
 						end
