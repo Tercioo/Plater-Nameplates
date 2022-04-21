@@ -8830,7 +8830,7 @@ function Plater.SetCVarsOnFirstRun()
 	SetCVar ("nameplatePersonalHideDelaySeconds", 0.2)
 	
 	--> don't show debuffs on blizzard healthbars
-	SetCVar ("nameplateShowDebuffsOnFriendly", 0)
+	SetCVar ("nameplateShowDebuffsOnFriendly", CVAR_DISABLED)
 
 	--> view distance
 	if IS_WOW_PROJECT_MAINLINE then
