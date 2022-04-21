@@ -13156,6 +13156,21 @@ end
 			desc = "Where the nameplate is anchored to.\n\n|cFFFFFFFFDefault: Head|r" .. CVarDesc,
 			nocombat = true,
 		},
+		{
+			type = "toggle",
+			get = function() return GetCVarBool ("nameplateShowDebuffsOnFriendly") end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateShowDebuffsOnFriendly", value and "1" or "0")
+				else
+					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+					self:SetValue (GetCVarBool ("nameplateShowDebuffsOnFriendly"))
+				end
+			end,
+			name = "Show Debuffs on Blizzard Health Bars" .. CVarIcon,
+			desc = "While in dungeons or raids, if friendly nameplates are enabled it won't show debuffs on them.\nIf any Plater module is disabled, this will affect these nameplates as well." .. CVarDesc .. CVarNeedReload,
+			nocombat = true,
+		},
 		
 		{type = "breakline"},
 		{type = "label", get = function() return "Unit types:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},

@@ -1867,6 +1867,7 @@ local class_specs_coords = {
 		["nameplateRemovalAnimation"] = (IS_WOW_PROJECT_NOT_MAINLINE),
 		["nameplateMinAlpha"] = true,
 		["nameplateMinAlphaDistance"] = true,
+		["nameplateShowDebuffsOnFriendly"] = true,
 	}
 	--on logout or on profile change, save some important cvars inside the profile
 	function Plater.SaveConsoleVariables(cvar, value) --private
@@ -8827,6 +8828,9 @@ function Plater.SetCVarsOnFirstRun()
 
 	--> make the personal bar hide very fast
 	SetCVar ("nameplatePersonalHideDelaySeconds", 0.2)
+	
+	--> don't show debuffs on blizzard healthbars
+	SetCVar ("nameplateShowDebuffsOnFriendly", 0)
 
 	--> view distance
 	if IS_WOW_PROJECT_MAINLINE then
