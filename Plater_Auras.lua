@@ -172,18 +172,24 @@ local UnitAuraEventHandlerValidation = function (unit, isFullUpdate, updatedAura
 	local needsUpdate = false
 	local hasBuff = false
 	local hasDebuff = false
+	
+	-- ensure ghost are always checked
+	if DB_AURA_GHOSTAURA_ENABLED and DB_AURA_SEPARATE_BUFFS then
+		for _, auraData in pairs(updatedAuras) do
+			if auraData.isHarmful and auraData.sourceUnit == "player" and GHOSTAURAS[auraData.name] then
+				-- ensure ghost auras are updated properly
+				hasBuff = true
+				needsUpdate = true
+				break
+			end
+		end
+	end
+	
 	for _, auraData in pairs(updatedAuras) do
 		local name, spellId = auraData.name, auraData.spellId
 		
 		hasBuff = auraData.isHelpful or hasBuff
 		hasDebuff = auraData.isHarmful or hasDebuff
-		
-		if DB_AURA_SEPARATE_BUFFS and DB_AURA_GHOSTAURA_ENABLED and auraData.isHarmful and GHOSTAURAS[name] then
-			-- ensure ghost auras are updated properly
-			hasBuff = true
-			needsUpdate = true
-			break
-		end
 		
 		if DB_TRACK_METHOD == 0x2 then
 			--manual tracking
