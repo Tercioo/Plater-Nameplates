@@ -1038,37 +1038,6 @@ end
 		auraIconFrame.AuraAmount = auraAmount
 		auraIconFrame:Show()
 		
-		--get the script object of the aura which will be showing in this icon frame
-		local globalScriptObject = SCRIPT_AURA_TRIGGER_CACHE[spellName]
-		
-		--check if this aura has a custom script
-		if (globalScriptObject) then
-			--stored information about scripts
-			local scriptContainer = auraIconFrame:ScriptGetContainer()
-			
-			--get the info about this particularly script
-			local scriptInfo = auraIconFrame:ScriptGetInfo (globalScriptObject, scriptContainer)
-			
-			--set the aura information on the script env
-			local scriptEnv = scriptInfo.Env
-			scriptEnv._SpellID = spellId
-			scriptEnv._UnitID = caster
-			scriptEnv._SpellName = spellName
-			scriptEnv._Texture = texture
-			scriptEnv._Caster = caster
-			scriptEnv._StackCount = count
-			scriptEnv._Duration = duration
-			scriptEnv._StartTime = expirationTime - duration
-			scriptEnv._EndTime = expirationTime
-			scriptEnv._RemainingTime = max (expirationTime - now, 0)
-			scriptEnv._CanStealOrPurge = canStealOrPurge
-			scriptEnv._AuraType = AURA_TYPES[actualAuraType] or "none"
-			scriptEnv._AuraAmount = auraIconFrame.AuraAmount
-			
-			--run onupdate script
-			auraIconFrame:ScriptRunOnUpdate (scriptInfo)
-		end	
-		
 		--Plater.Masque.AuraFrame1:ReSkin()
 
 		--auraIconFrame.Icon:Hide()
@@ -1079,6 +1048,60 @@ end
 		--print (self:GetName(), self:GetSize(), self:IsShown())
 		
 		return true
+	end
+	
+	function Plater.RunScriptTriggersForAuraIcons (unitFrame)
+		
+		local now = GetTime()
+		
+		local auraContainers = {unitFrame.BuffFrame.PlaterBuffList}
+		if (DB_AURA_SEPARATE_BUFFS) then
+			auraContainers [2] = unitFrame.BuffFrame2.PlaterBuffList
+		end
+    
+		for containerID = 1, #auraContainers do
+			local auraContainer = auraContainers [containerID]
+		
+			for index, auraIconFrame in pairs(auraContainer) do
+				
+				if auraIconFrame:IsShown() then
+					local spellName = auraIconFrame.SpellName
+					
+					--get the script object of the aura which will be showing in this icon frame
+					local globalScriptObject = SCRIPT_AURA_TRIGGER_CACHE[spellName]
+					
+					--check if this aura has a custom script
+					if (globalScriptObject) then
+						--stored information about scripts
+						local scriptContainer = auraIconFrame:ScriptGetContainer()
+						
+						--get the info about this particularly script
+						local scriptInfo = auraIconFrame:ScriptGetInfo (globalScriptObject, scriptContainer)
+						
+						--set the aura information on the script env
+						local scriptEnv = scriptInfo.Env
+						scriptEnv._SpellID = auraIconFrame.spellId
+						scriptEnv._UnitID = auraIconFrame.Caster
+						scriptEnv._SpellName = auraIconFrame.SpellName
+						scriptEnv._Texture = auraIconFrame.texture
+						scriptEnv._Caster = auraIconFrame.Caster
+						scriptEnv._StackCount = auraIconFrame.Stacks
+						scriptEnv._Duration = auraIconFrame.Duration
+						scriptEnv._StartTime = auraIconFrame.ExpirationTime - auraIconFrame.Duration
+						scriptEnv._EndTime = auraIconFrame.ExpirationTime
+						scriptEnv._RemainingTime = max (auraIconFrame.ExpirationTime - now, 0)
+						scriptEnv._CanStealOrPurge = auraIconFrame.CanStealOrPurge
+						scriptEnv._AuraType = auraIconFrame.AuraType
+						scriptEnv._AuraAmount = auraIconFrame.AuraAmount
+						
+						--run onupdate script
+						auraIconFrame:ScriptRunOnUpdate (scriptInfo)
+					end
+				end
+			
+			end
+		end
+		
 	end
 
 	--> check both buff frames for aura icons which aren't in use and hide them
