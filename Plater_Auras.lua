@@ -179,6 +179,7 @@ local UnitAuraEventHandlerValidation = function (unit, isFullUpdate, updatedAura
 		hasDebuff = auraData.isHarmful or hasDebuff
 		
 		if DB_AURA_SEPARATE_BUFFS and DB_AURA_GHOSTAURA_ENABLED and auraData.isHarmful and GHOSTAURAS[name] then
+			-- ensure ghost auras are updated properly
 			hasBuff = true
 			needsUpdate = true
 			break
@@ -1232,6 +1233,7 @@ end
 		--> rebuild the cache
 		self.unitFrame.AuraCache = DF.table.copy(self.unitFrame.AuraCache, self.AuraCache)
 		self.unitFrame.AuraCache = DF.table.copy(self.unitFrame.AuraCache, self.BuffFrame2.AuraCache)
+		self.unitFrame.AuraCache = DF.table.copy(self.unitFrame.AuraCache, self.ExtraIconFrame.AuraCache)
 		
 	end
 
