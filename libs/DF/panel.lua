@@ -5409,7 +5409,11 @@ DF.IconRowFunctions = {
 		if (self.lastUpdateCooldown + 0.05) <= now then
 			self.timeRemaining = self.expirationTime - now
 			if self.timeRemaining > 0 then
-				self.CountdownText:SetText (self.parentIconRow.FormatCooldownTime(self.timeRemaining))
+				if self.parentIconRow.options.decimal_timer then
+					self.CountdownText:SetText (self.parentIconRow.FormatCooldownTimeDecimal(self.timeRemaining))
+				else
+					self.CountdownText:SetText (self.parentIconRow.FormatCooldownTime(self.timeRemaining))
+				end
 			else
 				self.CountdownText:SetText ("")
 			end
@@ -5428,6 +5432,20 @@ DF.IconRowFunctions = {
 			formattedTime = floor (formattedTime)
 		end
 		return formattedTime
+	end,
+	
+	FormatCooldownTimeDecimal = function (formattedTime)
+        if formattedTime < 10 then
+            return ("%.1f"):format(formattedTime)
+        elseif formattedTime < 60 then
+            return ("%d"):format(formattedTime)
+        elseif formattedTime < 3600 then
+            return ("%d:%02d"):format(formattedTime/60%60, formattedTime%60)
+        elseif formattedTime < 86400 then
+            return ("%dh %02dm"):format(formattedTime/(3600), formattedTime/60%60)
+        else
+            return ("%dd %02dh"):format(formattedTime/86400, (formattedTime/3600) - (floor(formattedTime/86400) * 24))
+        end
 	end,
 	
 	ClearIcons = function (self, resetBuffs, resetDebuffs)
@@ -5572,6 +5590,7 @@ local default_icon_row_options = {
 	surpress_blizzard_cd_timer = false,
 	surpress_tulla_omni_cc = false,
 	on_tick_cooldown_update = true,
+	decimal_timer = false,
 }
 
 function DF:CreateIconRow (parent, name, options)
