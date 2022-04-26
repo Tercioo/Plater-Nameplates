@@ -843,6 +843,8 @@ end
 		self.AuraCache [spellName] = true
 		self.AuraCache [spellId.."_"..(caster or "N/A")] = true
 		self.AuraCache [spellName.."_"..(caster or "N/A")] = true
+		self.AuraCache.canStealOrPurge = self.AuraCache.canStealOrPurge or canStealOrPurge
+		self.AuraCache.hasEnrage = self.AuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
 		
 		--> check if a full refresh is required
 		if (auraIconFrame.RefreshID < PLATER_REFRESH_ID) then
