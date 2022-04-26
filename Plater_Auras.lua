@@ -198,11 +198,13 @@ local UnitAuraEventHandlerValidation = function (unit, isFullUpdate, updatedAura
 			if DB_TRACK_METHOD == 0x2 then
 				--manual tracking
 				
-				if auraData.sourceUnit == "player" and ( MANUAL_TRACKING_BUFFS[name] or MANUAL_TRACKING_BUFFS[spellId] or MANUAL_TRACKING_DEBUFFS[name] or MANUAL_TRACKING_DEBUFFS[spellId] ) then -- only player buffs in manual tracking
-					
+				if DB_SHOW_PURGE_IN_EXTRA_ICONS or DB_SHOW_ENRAGE_IN_EXTRA_ICONS or DB_SHOW_MAGIC_IN_EXTRA_ICONS
+					or (auraData.sourceUnit == "player" and ( MANUAL_TRACKING_BUFFS[name] or MANUAL_TRACKING_BUFFS[spellId] or MANUAL_TRACKING_DEBUFFS[name] or MANUAL_TRACKING_DEBUFFS[spellId] ))
+					or ( SPECIAL_AURAS_AUTO_ADDED [name] or SPECIAL_AURAS_AUTO_ADDED [spellId] or  SPECIAL_AURAS_USER_LIST [name] or SPECIAL_AURAS_USER_LIST [spellId] or SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId] )
+					then -- only player buffs in manual tracking
 					needsUpdate = true
-					--break
 				end
+				
 			else
 				-- automatic tracking
 				
@@ -211,14 +213,12 @@ local UnitAuraEventHandlerValidation = function (unit, isFullUpdate, updatedAura
 				if not (DB_BUFF_BANNED[name] or DB_BUFF_BANNED[spellId] or DB_DEBUFF_BANNED[name] or DB_DEBUFF_BANNED[spellId]) then
 					--a not blocked aura is included in the update
 					needsUpdate = true
-					--break
 				end
 			end
 			
 			if SPECIAL_AURAS_USER_LIST[name] or SPECIAL_AURAS_USER_LIST[spellId] or (auraData.sourceUnit == "player" and (SPECIAL_AURAS_USER_LIST_MINE[name] or SPECIAL_AURAS_USER_LIST_MINE[spellId])) then
 				--include buff special at all times
 				needsUpdate = true
-				--break
 			end
 		end
 	
