@@ -186,35 +186,40 @@ local UnitAuraEventHandlerValidation = function (unit, isFullUpdate, updatedAura
 	end
 	
 	for _, auraData in pairs(updatedAuras) do
-		local name, spellId = auraData.name, auraData.spellId
-		
-		hasBuff = auraData.isHelpful or hasBuff
-		hasDebuff = auraData.isHarmful or hasDebuff
-		
-		if DB_TRACK_METHOD == 0x2 then
-			--manual tracking
+		-- do we still need to check?
+		if (auraData.isHelpful and not hasBuff) or (auraData.isHarmful and not hasDebuff) or not needsUpdate then
+			local name, spellId = auraData.name, auraData.spellId
 			
-			if auraData.sourceUnit == "player" and ( MANUAL_TRACKING_BUFFS[name] or MANUAL_TRACKING_BUFFS[spellId] or MANUAL_TRACKING_DEBUFFS[name] or MANUAL_TRACKING_DEBUFFS[spellId] ) then -- only player buffs in manual tracking
+			--ViragDevTool_AddData({blacklist = (DB_BUFF_BANNED[name] or DB_BUFF_BANNED[spellId] or DB_DEBUFF_BANNED[name] or DB_DEBUFF_BANNED[spellId]), spellId = spellId, name = name}, "UnitAura-Check: "..name)
+			
+			hasBuff = auraData.isHelpful or hasBuff
+			hasDebuff = auraData.isHarmful or hasDebuff
+			
+			if DB_TRACK_METHOD == 0x2 then
+				--manual tracking
 				
-				needsUpdate = true
-				break
+				if auraData.sourceUnit == "player" and ( MANUAL_TRACKING_BUFFS[name] or MANUAL_TRACKING_BUFFS[spellId] or MANUAL_TRACKING_DEBUFFS[name] or MANUAL_TRACKING_DEBUFFS[spellId] ) then -- only player buffs in manual tracking
+					
+					needsUpdate = true
+					--break
+				end
+			else
+				-- automatic tracking
+				
+				--TODO: additional checks for track-list etc. possible, depending on the buff settings: if nothing like dispellable or so is ticked, we can verify this here
+				
+				if not (DB_BUFF_BANNED[name] or DB_BUFF_BANNED[spellId] or DB_DEBUFF_BANNED[name] or DB_DEBUFF_BANNED[spellId]) then
+					--a not blocked aura is included in the update
+					needsUpdate = true
+					--break
+				end
 			end
-		else
-			-- automatic tracking
 			
-			--TODO: additional checks for track-list etc. possible, depending on the buff settings: if nothing like dispellable or so is ticked, we can verify this here
-			
-			if not (DB_BUFF_BANNED[name] or DB_BUFF_BANNED[spellId] or DB_DEBUFF_BANNED[name] or DB_DEBUFF_BANNED[spellId]) then
-				--a not blocked aura is included in the update
+			if SPECIAL_AURAS_USER_LIST[name] or SPECIAL_AURAS_USER_LIST[spellId] or (auraData.sourceUnit == "player" and (SPECIAL_AURAS_USER_LIST_MINE[name] or SPECIAL_AURAS_USER_LIST_MINE[spellId])) then
+				--include buff special at all times
 				needsUpdate = true
-				break
+				--break
 			end
-		end
-		
-		if SPECIAL_AURAS_USER_LIST[name] or SPECIAL_AURAS_USER_LIST[spellId] or (auraData.sourceUnit == "player" and (SPECIAL_AURAS_USER_LIST_MINE[name] or SPECIAL_AURAS_USER_LIST_MINE[spellId])) then
-			--include buff special at all times
-			needsUpdate = true
-			break
 		end
 	
 	end
@@ -223,6 +228,7 @@ local UnitAuraEventHandlerValidation = function (unit, isFullUpdate, updatedAura
 	hasBuff = not DB_AURA_SEPARATE_BUFFS and hasDebuff or hasBuff 
 	hasDebuff = not DB_AURA_SEPARATE_BUFFS and hasBuff or hasDebuff
 
+	--ViragDevTool_AddData({needsUpdate=needsUpdate, hasBuff=hasBuff, hasDebuff=hasDebuff}, "Plater_UNIT_AURA return")
 	return needsUpdate, hasBuff, hasDebuff
 end
 
@@ -258,7 +264,7 @@ local UnitAuraEventHandler = function (_, event, arg1, arg2, arg3, ...)
 		local unit, isFullUpdate, updatedAuras = arg1, arg2, arg3
 		if unit and UnitAuraEventHandlerValidUnits[unit] then
 			local needsUpdate, hasBuff, hasDebuff = UnitAuraEventHandlerValidation(unit, isFullUpdate, updatedAuras)
-			--ViragDevTool_AddData({unit = unit, isFullUpdate = isFullUpdate, updatedAuras = updatedAuras, needsUpdate = needsUpdate, hasBuff = hasBuff, hasDebuff = hasDebuff}, "Plater_UNIT_AURA")
+			--ViragDevTool_AddData({unit = unit, isFullUpdate = isFullUpdate, updatedAuras = updatedAuras, needsUpdate = needsUpdate, hasBuff = hasBuff, hasDebuff = hasDebuff, existing=CopyTable(UnitAuraEventHandlerData[unit] or {})}, "Plater_UNIT_AURA_AFTER")
 			if needsUpdate then
 				local existingData = UnitAuraEventHandlerData[unit] or { hasBuff = false, hasDebuff = false }
 				UnitAuraEventHandlerData[unit] = { hasBuff = existingData.hasBuff or hasBuff, hasDebuff = existingData.hasDebuff or hasDebuff }
