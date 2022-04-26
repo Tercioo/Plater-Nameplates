@@ -770,6 +770,7 @@ PLATER_DEFAULT_SETTINGS = {
 		aura_custom = {},
 		
 		aura_timer = true,
+		aura_timer_decimals = false,
 		aura_timer_text_size = 15,
 		aura_timer_text_font = "Arial Narrow",
 		aura_timer_text_anchor = {side = 9, x = 0, y = 0},
@@ -788,6 +789,7 @@ PLATER_DEFAULT_SETTINGS = {
 		
 		extra_icon_anchor = {side = 6, x = -4, y = 0},
 		extra_icon_show_timer = true,
+		extra_icon_timer_decimals = false,
 		extra_icon_timer_font = "Arial Narrow",
 		extra_icon_timer_size = 12,
 		extra_icon_timer_outline = "NONE",

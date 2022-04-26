@@ -1925,6 +1925,18 @@ local debuff_options = {
 		name = L["OPTIONS_ENABLED"],
 		desc = "Time left on buff or debuff.",
 	},
+	
+	{
+		type = "toggle",
+		get = function() return Plater.db.profile.aura_timer_decimals end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_timer_decimals = value
+			Plater.RefreshAuras()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Decimals",
+		desc = "Show decimals below 10s remaining time",
+	},
 
 	{
 		type = "toggle",
@@ -4516,6 +4528,16 @@ Plater.CreateAuraTesting()
 				end,
 				name = "Show Timer",
 				desc = "Show Timer",
+			},
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.extra_icon_timer_decimals end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.extra_icon_timer_decimals = value
+					Plater.UpdateAllPlates()
+				end,
+				name = "Show Decimals",
+				desc = "Show decimals below 10s remaining time",
 			},
 			{
 				type = "select",

@@ -155,6 +155,7 @@ Plater.CanOverride_Functions = {
 	OnUpdateHealthMax = true, --when the maxhealth of the healthbar get updated
 	UpdateIconAspecRatio = true, --adjust the icon texcoords depending on its size
 	FormatTime = true, --get a number and return it formated into time, e.g. 63 return "1m" 1 minute
+	FormatTimeDecimal = true, --get a number and return it formated into time with decimals below 10sec, e.g. 9.5 return "9.5s"
 	GetAuraIcon = true, --return an icon to be use to show an aura
 	AddAura = true, --adds an aura into the nameplate, require all the aura data and an icon
 	AddExtraIcon = true, --adds an aura into the extra buff row of icons, require the aura data
@@ -5211,6 +5212,20 @@ function Plater.FormatTime (time)
 	end
 end
 
+function Plater.FormatTimeDecimal (time)
+	if time < 10 then
+		return ("%.1f"):format(time)
+	elseif time < 60 then
+		return ("%d"):format(time)
+	elseif time < 3600 then
+		return ("%d:%02d"):format(time/60%60, time%60)
+	elseif time < 86400 then
+		return ("%dh %02dm"):format(time/(3600), time/60%60)
+	else
+		return ("%dd %02dh"):format(time/86400, (time/3600) - (floor(time/86400) * 24))
+	end
+end
+
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> color stuff ~color
@@ -7501,6 +7516,7 @@ end
 			unitFrame.ExtraIconFrame:SetOption ("stack_text_outline", Plater.db.profile.extra_icon_stack_outline)
 			unitFrame.ExtraIconFrame:SetOption ("surpress_tulla_omni_cc", Plater.db.profile.disable_omnicc_on_auras)
 			unitFrame.ExtraIconFrame:SetOption ("surpress_blizzard_cd_timer", true)
+			unitFrame.ExtraIconFrame:SetOption ("decimal_timer", Plater.db.profile.extra_icon_timer_decimals)
 			
 			--> update refresh ID
 			unitFrame.ExtraIconFrame.RefreshID = PLATER_REFRESH_ID

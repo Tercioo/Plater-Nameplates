@@ -696,7 +696,11 @@ end
 		if (self.lastUpdateCooldown + 0.05) <= now then
 			self.RemainingTime = self.ExpirationTime - now
 			if self.RemainingTime > 0 then
-				self.Cooldown.Timer:SetText (Plater.FormatTime (self.RemainingTime))
+				if self.formatWithDecimals then
+					self.Cooldown.Timer:SetText (Plater.FormatTimeDecimal (self.RemainingTime))
+				else
+					self.Cooldown.Timer:SetText (Plater.FormatTime (self.RemainingTime))
+				end
 			else
 				self.Cooldown.Timer:SetText ("")
 			end
@@ -1008,8 +1012,13 @@ end
 		if (profile.aura_timer and timeLeft > 0) then
 			--> update the aura timer
 			local timerLabel = auraIconFrame.Cooldown.Timer
-		
-			timerLabel:SetText (Plater.FormatTime (timeLeft))
+
+			auraIconFrame.formatWithDecimals = profile.aura_timer_decimals -- update setting
+			if profile.aura_timer_decimals then
+				timerLabel:SetText (Plater.FormatTimeDecimal (timeLeft))
+			else
+				timerLabel:SetText (Plater.FormatTime (timeLeft))
+			end
 			auraIconFrame.lastUpdateCooldown = now
 			auraIconFrame:SetScript ("OnUpdate", auraIconFrame.UpdateCooldown)
 			timerLabel:Show()

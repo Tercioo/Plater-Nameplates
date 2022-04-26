@@ -8,9 +8,10 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
-			{1650922959,  "Bug Fix", "April 26th, 2022", "Fixing an issue with Script constructors containing empty 'envTable'.", "cont1nuity"},
-			{1650922959,  "Bug Fix", "April 26th, 2022", "Fixing an issue with Ghost Auras not updating properly and showing twice in some cases.", "cont1nuity"},
-			{1650922959,  "Bug Fix", "April 26th, 2022", "Fixing an issue with aura caches.", "cont1nuity"},
+			{1650994470,  "New Feature", "April 26th, 2022", "Adding 'Decimal Timer' settings to Auras and Buff Special.", "cont1nuity"},
+			{1650994470,  "Bug Fix", "April 26th, 2022", "Fixing an issue with Script constructors containing empty 'envTable'.", "cont1nuity"},
+			{1650994470,  "Bug Fix", "April 26th, 2022", "Fixing an issue with Ghost Auras not updating properly and showing twice in some cases.", "cont1nuity"},
+			{1650994470,  "Bug Fix", "April 26th, 2022", "Fixing an issue with aura caches.", "cont1nuity"},
 			
 			{1650922959,  "Bug Fix", "April 21st, 2022", "Ensure NPC renaming is exported/imported properly.", "cont1nuity"},
 			{1650922959,  "Bug Fix", "April 21st, 2022", "Ghost Auras will now properly check for applied player spells.", "cont1nuity"},
