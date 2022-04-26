@@ -10079,38 +10079,24 @@ end
 				if (not scriptInfo) then
 					scriptInfo = {
 						--GlobalScriptObject = globalScriptObject, --is set below
-						--HotReload = -1, --deprecated
+						HotReload = -1, --deprecated
 						Env = {}, 
 						IsActive = false
 					}
 				end
 
 				scriptInfo.LastUpdateTime = GetTime()
-				scriptInfo.GlobalScriptObject = globalScriptObject
-
-				--envTable can be wiped here, at the moment I dunno if it should wipe the envTable on hotreload
-				--wipe(scriptInfo.Env)
-
-				--dispatch the constructor
-				local unitFrame = self.unitFrame or self
-				local scriptName = scriptInfo.GlobalScriptObject.DBScriptObject.Name
-				Plater.StartLogPerformance("Scripts", scriptName, "Constructor")
-				local okay, errortext = pcall (scriptInfo.GlobalScriptObject["ConstructorCode"], self, unitFrame.displayedUnit or unitFrame.unit or unitFrame.PlateFrame[MEMBER_UNITID], unitFrame, scriptInfo.Env, PLATER_GLOBAL_SCRIPT_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId])
-				Plater.EndLogPerformance("Scripts", scriptName, "Constructor")
-				if (not okay) then
-					Plater:Msg ("Script |cFFAAAA22" .. scriptName .. "|r Constructor error: " .. errortext)
-				end
+				--scriptInfo.GlobalScriptObject = globalScriptObject
 				
 				scriptContainer [globalScriptObject.DBScriptObject.scriptId] = scriptInfo
 			end
 			
 			--always overwriting the globalScriptObject fixes the issue for not updating the script after saving it but only for OnShow OnUpdate and OnHide
-			--scriptInfo.GlobalScriptObject = globalScriptObject
+			scriptInfo.GlobalScriptObject = globalScriptObject
 			return scriptInfo
 		end,
 		
 		--if the global script had an update or if the first time running this script on this widget, run the constructor
-		--[=[ --deprecated, as the hot reload is done in the ScriptGetInfo()
 		ScriptHotReload = function (self, scriptInfo)
 			--dispatch constructor if necessary
 			if (scriptInfo.HotReload < scriptInfo.GlobalScriptObject.HotReload) then
@@ -10131,13 +10117,12 @@ end
 				end
 			end
 		end,
-		--]=]
 		
 		--run the update script, called when the castbar updates, from within the tick and from the aura file on the AddAura()
 		ScriptRunOnUpdate = function (self, scriptInfo)
 			if (not scriptInfo.IsActive) then
 				--run constructor
-				--self:ScriptHotReload (scriptInfo) --deprecated
+				self:ScriptHotReload (scriptInfo)
 				--run on show
 				self:ScriptRunOnShow (scriptInfo)
 			end
@@ -10625,6 +10610,17 @@ end
 			["AddToAuraUpdate"] = true,
 			["AnchorSides"] = false,
 			["SetAnchor"] = false,
+			["RunScriptTriggersForAuraIcons"] = true,
+			["AddAura"] = true,
+			["GetAuraIcon"] = true,
+			["HideNonUsedAuraIcons"] = true,
+			["AddExtraIcon"] = true,
+			["ResetAuraContainer"] = true,
+			["TrackSpecificAuras"] = true,
+			["UpdateAuras_Manual"] = true,
+			["UpdateAuras_Automatic"] = true,
+			["UpdateAuras_Self_Automatic"] = true,
+			["CreateAuraIcon"] = true,
 		},
 		
 		["DetailsFramework"] = {
