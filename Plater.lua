@@ -2892,6 +2892,7 @@ local class_specs_coords = {
 			
 			--> unit aura cache
 			plateFrame.unitFrame.AuraCache = {}
+			plateFrame.unitFrame.GhostAuraCache = {}
 			
 			local healthBar = plateFrame.unitFrame.healthBar
 			

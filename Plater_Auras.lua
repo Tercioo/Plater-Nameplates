@@ -178,6 +178,12 @@ local UnitAuraEventHandlerValidation = function (unit, isFullUpdate, updatedAura
 		hasBuff = auraData.isHelpful or hasBuff
 		hasDebuff = auraData.isHarmful or hasDebuff
 		
+		if DB_AURA_SEPARATE_BUFFS and DB_AURA_GHOSTAURA_ENABLED and auraData.isHarmful and GHOSTAURAS[name] then
+			hasBuff = true
+			needsUpdate = true
+			break
+		end
+		
 		if DB_TRACK_METHOD == 0x2 then
 			--manual tracking
 			
@@ -378,16 +384,21 @@ end
 		if (DB_AURA_GHOSTAURA_ENABLED) then
 			if (InCombatLockdown() and buffFrame.unitFrame.InCombat and not buffFrame.unitFrame.IsSelf) then
 				local nameplateAuraCache = buffFrame.unitFrame.AuraCache --auras already shown in the nameplate
+				local nameplateGhostAuraCache = buffFrame.unitFrame.GhostAuraCache --auras already shown in the nameplate
 				for spellName, spellTable in pairs(GHOSTAURAS) do
-					if (not nameplateAuraCache[spellName.."_player"] and not nameplateAuraCache[spellName.."_player_ghost"]) then --the ghost aura isn't in the nameplate
-						--add the extra icon
-						local spellIcon, spellId = spellTable[1], spellTable[2]
-						local auraIconFrame = Plater.GetAuraIcon(buffFrame, true)
-						auraIconFrame.InUse = true --don't play animation
-						auraIconFrame:EnableMouse (false) --don't use tooltips, as there is no real aura
-						Plater.AddAura(buffFrame, auraIconFrame, -1, spellName, spellIcon, 1, "DEBUFF", 0, 0, "player", false, false, spellId, false, false, false, false, "DEBUFF")
-						Plater.Auras.GhostAuras.ApplyAppearance(auraIconFrame, spellName, spellIcon, spellId)
-						nameplateAuraCache[spellName.."_player_ghost"] = true --this is shown as ghost aura
+					if (not nameplateAuraCache[spellName.."_player"]) then
+						if (not nameplateGhostAuraCache[spellName.."_player_ghost"]) then --the ghost aura isn't in the nameplate
+							--add the extra icon
+							local spellIcon, spellId = spellTable[1], spellTable[2]
+							local auraIconFrame = Plater.GetAuraIcon(buffFrame, true) -- show on debuff frame
+							auraIconFrame.InUse = true --don't play animation
+							auraIconFrame:EnableMouse (false) --don't use tooltips, as there is no real aura
+							Plater.AddAura(buffFrame, auraIconFrame, -1, spellName.."_player_ghost", spellIcon, 1, "DEBUFF", 0, 0, "player", false, false, spellId, false, false, false, false, "DEBUFF")
+							Plater.Auras.GhostAuras.ApplyAppearance(auraIconFrame, spellName.."_player_ghost", spellIcon, spellId)
+							nameplateGhostAuraCache[spellName.."_player_ghost"] = true --this is shown as ghost aura
+						end
+					else
+						nameplateGhostAuraCache[spellName.."_player_ghost"] = false --this is shown as regular aura
 					end
 				end
 			end
@@ -1193,6 +1204,9 @@ end
 		
 		--> reset auras
 		if resetDebuffs then
+			if not DB_AURA_SEPARATE_BUFFS then
+				wipe (self.unitFrame.GhostAuraCache) -- ghost are on aura frame 1, needs to be cleared.
+			end
 			wipe (self.AuraCache)
 			self.HasBuff = false
 			self.HasDebuff = false
@@ -1202,6 +1216,9 @@ end
 		
 		--> second buff anchor
 		if resetBuffs then
+			if DB_AURA_SEPARATE_BUFFS then
+				wipe (self.unitFrame.GhostAuraCache) -- ghost are on aura frame 1, needs to be cleared.
+			end
 			wipe (self.BuffFrame2.AuraCache)
 			self.BuffFrame2.HasBuff = false 
 			self.BuffFrame2.HasDebuff = false

@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1650922959,  "Bug Fix", "April 26th, 2022", "Fixing an issue with Ghost Auras not updating properly and showing twice in some cases.", "cont1nuity"},
 			{1650922959,  "Bug Fix", "April 26th, 2022", "Fixing an issue with aura caches.", "cont1nuity"},
 			
 			{1650922959,  "Bug Fix", "April 21st, 2022", "Ensure NPC renaming is exported/imported properly.", "cont1nuity"},
