@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1651070242,  "Bug Fix", "April 27th, 2022", "Fixing an issue 'Plater.SetNameplateScale' not working properly when Custom Strata Channels were disabled.", "cont1nuity"},
+			
 			{1650994470,  "Bug Fix", "April 27th, 2022", "Fixing an issue with Auras not updating properly under certain conditions.", "cont1nuity"},
 			{1650994470,  "Bug Fix", "April 27th, 2022", "Fixing an issue with Buff Special usage without proper IDs.", "cont1nuity"},
 			{1650994470,  "New Feature", "April 26th, 2022", "Adding 'Decimal Timer' settings to Auras and Buff Special.", "cont1nuity"},

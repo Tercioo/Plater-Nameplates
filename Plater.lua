@@ -2094,6 +2094,7 @@ local class_specs_coords = {
 			Plater.UpdateUIParentScale (unitFrame.PlateFrame)
 		else
 			unitFrame:SetScale (unitFrame.nameplateScaleAdjust)
+			Plater.UpdatePlateSize(unitFrame.PlateFrame)
 		end
 	end
 	
@@ -5521,8 +5522,10 @@ end
 			--health bar
 				--this calculates the health bar anchor points
 				--it will always be placed in the center of the nameplate main frame attached with two anchor points
-				local xOffSet = (plateFrame:GetWidth() - healthBarWidth) / 2
-				local yOffSet = (plateFrame:GetHeight() - healthBarHeight) / 2
+				local xOffSet = (plateFrame:GetWidth() - (healthBarWidth * unitFrame.nameplateScaleAdjust)) / 2
+				local yOffSet = (plateFrame:GetHeight() - (healthBarHeight * unitFrame.nameplateScaleAdjust)) / 2
+				
+				healthBar:SetScale(1/unitFrame.nameplateScaleAdjust)
 				
 				healthBar:ClearAllPoints()
 				PixelUtil.SetPoint (healthBar, "topleft", unitFrame, "topleft", xOffSet + profile.global_offset_x, -yOffSet + profile.global_offset_y)
