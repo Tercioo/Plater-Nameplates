@@ -1205,11 +1205,17 @@ end
 		local iconFrame = self.ExtraIconFrame:SetIcon (spellId, borderColor, expirationTime - duration, duration, false, casterName and {text = casterName, text_color = casterClass} or false, count, debuffType, caster, canStealOrPurge, spellName, isBuff)
 
 		-- tooltip info
-		iconFrame:SetID (id)
-		iconFrame.filter = filter
-		iconFrame:SetScript ("OnEnter", Plater.OnEnterAura)
-		iconFrame:SetScript ("OnLeave", Plater.OnLeaveAura)
-		iconFrame:EnableMouse (profile.aura_show_tooltip)
+		if id and id > 0 the 
+			iconFrame:SetID (id)
+			iconFrame.filter = filter
+			iconFrame:SetScript ("OnEnter", Plater.OnEnterAura)
+			iconFrame:SetScript ("OnLeave", Plater.OnLeaveAura)
+			iconFrame:EnableMouse (profile.aura_show_tooltip)
+		else
+			iconFrame:SetScript ("OnEnter", nil)
+			iconFrame:SetScript ("OnLeave", nil)
+			iconFrame:EnableMouse (false)
+		end
 		
 		--check if Masque is enabled on Plater and reskin the aura icon
 		if (Plater.Masque and not iconFrame.Masqued) then
