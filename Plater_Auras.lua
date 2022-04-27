@@ -276,8 +276,6 @@ local UnitAuraEventHandler = function (_, event, arg1, arg2, arg3, ...)
 			if needsUpdate then
 				local existingData = UnitAuraEventHandlerData[unit] or { hasBuff = false, hasDebuff = false }
 				UnitAuraEventHandlerData[unit] = { hasBuff = existingData.hasBuff or hasBuff, hasDebuff = existingData.hasDebuff or hasDebuff }
-			else
-				UnitAuraEventHandlerData[unit] = nil
 			end
 		end
 	end
