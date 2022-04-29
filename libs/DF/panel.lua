@@ -5289,6 +5289,19 @@ DF.IconRowFunctions = {
 		return iconFrame
 	end,
 	
+	--adds only if not existing already in the cache
+	AddSpecificIcon = function (self, identifierKey, spellId, borderColor, startTime, duration, forceTexture, descText, count, debuffType, caster, canStealOrPurge, spellName, isBuff)
+		if not identifierKey or identifierKey == "" then
+			return
+		end
+		
+		if not self.AuraCache[identifierKey] then
+			local icon = self:SetIcon (spellId, borderColor, startTime, duration, forceTexture, descText, count, debuffType, caster, canStealOrPurge, spellName, isBuff or false)
+			icon.identifierKey = identifierKey
+			self.AuraCache[identifierKey] = true
+		end
+	end,
+	
 	SetIcon = function (self, spellId, borderColor, startTime, duration, forceTexture, descText, count, debuffType, caster, canStealOrPurge, spellName, isBuff)
 	
 		local actualSpellName, _, spellIcon = GetSpellInfo (spellId)
@@ -5391,6 +5404,8 @@ DF.IconRowFunctions = {
 			iconFrame.isBuff = isBuff
 			iconFrame.spellName = spellName
 			
+			iconFrame.identifierKey = nil -- only used for "specific" add/remove
+			
 			--add the spell into the cache
 			self.AuraCache [spellId or -1] = true
 			self.AuraCache [spellName] = true
@@ -5448,46 +5463,83 @@ DF.IconRowFunctions = {
         end
 	end,
 	
+	RemoveSpecificIcon = function (self, identifierKey)
+		if not identifierKey or identifierKey == "" then
+			return
+		end
+	
+		table.wipe (self.AuraCache)
+	
+		local iconPool = self.IconPool
+		local countStillShown = 0
+		for i = 1, self.NextIcon -1 do
+			local iconFrame = iconPool[i]
+			if iconFrame.identifierKey and iconFrame.identifierKey == identifierKey then
+				iconFrame:Hide()
+				iconFrame:ClearAllPoints()
+				iconFrame.identifierKey = nil
+			else
+				self.AuraCache [iconFrame.spellId] = true
+				self.AuraCache [iconFrame.spellName] = true
+				self.AuraCache.canStealOrPurge = self.AuraCache.canStealOrPurge or iconFrame.canStealOrPurge
+				self.AuraCache.hasEnrage = self.AuraCache.hasEnrage or iconFrame.debuffType == "" --yes, enrages are empty-string...
+				countStillShown = countStillShown + 1
+			end
+		end
+		
+		self:AlignAuraIcons()
+		
+	end,
+	
 	ClearIcons = function (self, resetBuffs, resetDebuffs)
 		resetBuffs = resetBuffs ~= false
 		resetDebuffs = resetDebuffs ~= false
 		table.wipe (self.AuraCache)
 		
 		local iconPool = self.IconPool
-		local countStillShown = 0
 		for i = 1, self.NextIcon -1 do
-			if iconPool[i].isBuff == nil then
-				iconPool[i]:Hide()
-				iconPool[i]:ClearAllPoints()
-			elseif resetBuffs and iconPool[i].isBuff then
-				iconPool[i]:Hide()
-				iconPool[i]:ClearAllPoints()
-			elseif resetDebuffs and not iconPool[i].isBuff then
-				iconPool[i]:Hide()
-				iconPool[i]:ClearAllPoints()
+			local iconFrame = iconPool[i]
+			if iconFrame.isBuff == nil then
+				iconFrame:Hide()
+				iconFrame:ClearAllPoints()
+			elseif resetBuffs and iconFrame.isBuff then
+				iconFrame:Hide()
+				iconFrame:ClearAllPoints()
+			elseif resetDebuffs and not iconFrame.isBuff then
+				iconFrame:Hide()
+				iconFrame:ClearAllPoints()
 			else
-				self.AuraCache [iconPool[i].spellId] = true
-				self.AuraCache [iconPool[i].spellName] = true
-				self.AuraCache.canStealOrPurge = self.AuraCache.canStealOrPurge or iconPool[i].canStealOrPurge
-				self.AuraCache.hasEnrage = self.AuraCache.hasEnrage or iconPool[i].debuffType == "" --yes, enrages are empty-string...
-				countStillShown = countStillShown + 1
+				self.AuraCache [iconFrame.spellId] = true
+				self.AuraCache [iconFrame.spellName] = true
+				self.AuraCache.canStealOrPurge = self.AuraCache.canStealOrPurge or iconFrame.canStealOrPurge
+				self.AuraCache.hasEnrage = self.AuraCache.hasEnrage or iconFrame.debuffType == "" --yes, enrages are empty-string...
 			end
 		end
 		
-		if countStillShown == 0 then
-			self.NextIcon = 1
+		self:AlignAuraIcons()
+		
+	end,
+	
+	AlignAuraIcons = function (self)
+		
+		local iconPool = self.IconPool
+		local iconAmount = #iconPool
+		local countStillShown = 0
+		
+		table.sort (iconPool, function(i1, i2) return i1:IsShown() and not i2:IsShown() end)
+		
+		if iconAmount == 0 then
 			self:Hide()
 		else
-			self.NextIcon = countStillShown + 1
-			table.sort (iconPool, function(i1, i2) return i1:IsShown() and not i2:IsShown() end)
-			
 			-- re-anchor not hidden
-			for i = 1, countStillShown do
+			for i = 1, iconAmount do
 				local iconFrame = iconPool[i]
 				local anchor = self.options.anchor
 				local anchorTo = i == 1 and self or self.IconPool [i - 1]
 				local xPadding = i == 1 and self.options.left_padding or self.options.icon_padding or 1
 				local growDirection = self.options.grow_direction
+				
+				countStillShown = countStillShown + (iconFrame:IsShown() and 1 or 0)
 				
 				iconFrame:ClearAllPoints()
 				if (growDirection == 1) then --grow to right
@@ -5507,6 +5559,8 @@ DF.IconRowFunctions = {
 				end
 			end
 		end
+		
+		self.NextIcon = countStillShown + 1
 		
 	end,
 	
