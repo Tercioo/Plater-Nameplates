@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1651482849,  "Backend Change", "May 2nd, 2022", "Fixing CVar load behavior to ensure they are restored properly.", "cont1nuity"},
 			{1651482849,  "Backend Change", "May 2nd, 2022", "Adding some SotFO units to 'ForceInCombatUnits'.", "cont1nuity"},
 			{1651482849,  "Bug Fix", "April 29th, 2022", "Fixing an issue with spellID not being set properly on casts.", "cont1nuity"},
 			{1651482849,  "Bug Fix", "April 27th, 2022", "Fixing an issue 'Plater.SetNameplateScale' not working properly when Custom Strata Channels were disabled.", "cont1nuity"},

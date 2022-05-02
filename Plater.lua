@@ -2755,6 +2755,99 @@ local class_specs_coords = {
 			--Plater.SaveConsoleVariables()
 		end,
 		
+		VARIABLES_LOADED = function()
+			
+			C_Timer.After (0.1, Plater.ForceCVars)
+			
+			C_Timer.After (0.2, Plater.RestoreProfileCVars)
+
+			C_Timer.After (0.3, Plater.UpdatePlateClickSpace)
+		end,
+		
+		--many times at saved variables load the spell database isn't loaded yet
+		PLAYER_LOGIN = function()			
+			
+			--C_Timer.After (0.1, Plater.GetSpellForRangeCheck)
+			
+			-- ensure OmniCC settings are up to date
+			C_Timer.After (1, Plater.RefreshOmniCCGroup)
+			
+			--wait more time for the talents information be received from the server
+			C_Timer.After (4, Plater.GetHealthCutoffValue)
+			
+			C_Timer.After (2, Plater.ScheduleZoneChangeHook)
+			
+			C_Timer.After (5, function()
+				local petGUID = UnitGUID ("playerpet")
+				if (petGUID) then
+					local entry = {ownerGUID = Plater.PlayerGUID, ownerName = UnitName("player"), petName = UnitName("playerpet"), time = time()}
+					Plater.PlayerPetCache [petGUID] = entry
+				end
+			end)
+			
+			--if the user just used a /reload to enable ui parenting, auto adjust the fine tune scale
+			--the uiparent fine tune scale initially: after testing and playing around with it, I think it should be 1 / UIParent:GetEffectiveScale() and scaling should be done by multiplying defaultScale * scaleFineTune
+			if (Plater.db.profile.use_ui_parent_just_enabled) then
+				Plater.db.profile.use_ui_parent_just_enabled = false
+				if (Plater.db.profile.ui_parent_scale_tune == 0) then
+					--@Ariani - march 9
+					Plater.db.profile.ui_parent_scale_tune = 1 / UIParent:GetEffectiveScale()
+					
+					--@Tercio:
+					--if (UIParent:GetEffectiveScale() < 1) then
+					--	Plater.db.profile.ui_parent_scale_tune = 1 - UIParent:GetEffectiveScale()
+					--end
+				end
+			end
+			
+			if (not Plater.db.profile.number_region_first_run) then
+				if (GetLocale() == "koKR") then
+					Plater.db.profile.number_region = "eastasia"
+				elseif (GetLocale() == "zhCN") then
+					Plater.db.profile.number_region = "eastasia"
+				elseif (GetLocale() == "zhTW") then
+					Plater.db.profile.number_region = "eastasia"
+				else
+					Plater.db.profile.number_region = "western"
+				end
+				
+				Plater.db.profile.number_region_first_run = true
+			end
+			
+			if (Plater.db.profile.reopoen_options_panel_on_tab) then
+				C_Timer.After (2, function()
+					Plater.OpenOptionsPanel()
+					PlaterOptionsPanelContainer:SelectIndex (Plater, Plater.db.profile.reopoen_options_panel_on_tab)
+					Plater.db.profile.reopoen_options_panel_on_tab = false
+				end)
+			end
+			
+			--run hooks on player logon
+			if (HOOK_PLAYER_LOGON.ScriptAmount > 0) then
+				C_Timer.After (1, function()
+					for i = 1, HOOK_PLAYER_LOGON.ScriptAmount do
+						local hookInfo = HOOK_PLAYER_LOGON [i]
+						Plater.ScriptMetaFunctions.ScriptRunNoAttach (hookInfo, "Player Logon")
+					end
+				end)
+			end
+			
+			--check addons incompatibility
+			--> Plater has issues with ElvUI due to be using the same namespace for unitFrame and healthBar
+			C_Timer.After (15, function()
+				if (IsAddOnLoaded ("ElvUI")) then
+					if (ElvUI[1] and ElvUI[1].private and ElvUI[1].private.nameplates and ElvUI[1].private.nameplates.enable) then
+						Plater:Msg ("'ElvUI Nameplates' and 'Plater Nameplates' are enabled and both nameplates won't work together.")
+						Plater:Msg ("You may disable ElvUI Nameplates at /elvui > Nameplates section or you may disable Plater at the addon control panel.")
+					end
+				end 
+			end)
+
+			-- ensure resources are up to date
+			C_Timer.After (3, Plater.Resources.OnSpecChanged)
+
+		end,
+		
 		DISPLAY_SIZE_CHANGED = function()
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 				if plateFrame.unitFrame.PlaterOnScreen then
@@ -4079,14 +4172,8 @@ function Plater.OnInit() --private --~oninit ~init
 		end
 	
 	--schedule data update
-		if IS_WOW_PROJECT_MAINLINE then
-			C_Timer.After (0.1, Plater.UpdatePlateClickSpace)
-		else
-			Plater.UpdatePlateClickSpace() -- try updating immediately for classic
-		end
 		--C_Timer.After (1, Plater.GetSpellForRangeCheck)
 		C_Timer.After (4, Plater.GetHealthCutoffValue)
-		C_Timer.After (4.2, Plater.ForceCVars)
 	
 	--hooking scripts has load conditions, here it creates a load filter for plater
 	--so when a load condition is changed it reload hooks
@@ -4194,98 +4281,8 @@ function Plater.OnInit() --private --~oninit ~init
 			Plater.EventHandlerFrame:RegisterEvent ("UPDATE_SHAPESHIFT_FORM")
 		end
 		
-		--many times at saved variables load the spell database isn't loaded yet
-		function Plater:PLAYER_LOGIN()
-			C_Timer.After(0.1, Plater.RestoreProfileCVars)
-			
-			C_Timer.After (0.2, Plater.ForceCVars)
-			--C_Timer.After (0.3, Plater.GetSpellForRangeCheck)
-			if IS_WOW_PROJECT_MAINLINE then
-				C_Timer.After (0.4, Plater.UpdatePlateClickSpace)
-			else
-				Plater.UpdatePlateClickSpace() -- update immediately for classic/tbc
-			end
-			
-			
-			-- ensure OmniCC settings are up to date
-			C_Timer.After (1, Plater.RefreshOmniCCGroup)
-			
-			--wait more time for the talents information be received from the server
-			C_Timer.After (4, Plater.GetHealthCutoffValue)
-			
-			C_Timer.After (2, Plater.ScheduleZoneChangeHook)
-			
-			C_Timer.After (5, function()
-				local petGUID = UnitGUID ("playerpet")
-				if (petGUID) then
-					local entry = {ownerGUID = Plater.PlayerGUID, ownerName = UnitName("player"), petName = UnitName("playerpet"), time = time()}
-					Plater.PlayerPetCache [petGUID] = entry
-				end
-			end)
-			
-			--if the user just used a /reload to enable ui parenting, auto adjust the fine tune scale
-			--the uiparent fine tune scale initially: after testing and playing around with it, I think it should be 1 / UIParent:GetEffectiveScale() and scaling should be done by multiplying defaultScale * scaleFineTune
-			if (Plater.db.profile.use_ui_parent_just_enabled) then
-				Plater.db.profile.use_ui_parent_just_enabled = false
-				if (Plater.db.profile.ui_parent_scale_tune == 0) then
-					--@Ariani - march 9
-					Plater.db.profile.ui_parent_scale_tune = 1 / UIParent:GetEffectiveScale()
-					
-					--@Tercio:
-					--if (UIParent:GetEffectiveScale() < 1) then
-					--	Plater.db.profile.ui_parent_scale_tune = 1 - UIParent:GetEffectiveScale()
-					--end
-				end
-			end
-			
-			if (not Plater.db.profile.number_region_first_run) then
-				if (GetLocale() == "koKR") then
-					Plater.db.profile.number_region = "eastasia"
-				elseif (GetLocale() == "zhCN") then
-					Plater.db.profile.number_region = "eastasia"
-				elseif (GetLocale() == "zhTW") then
-					Plater.db.profile.number_region = "eastasia"
-				else
-					Plater.db.profile.number_region = "western"
-				end
-				
-				Plater.db.profile.number_region_first_run = true
-			end
-			
-			if (Plater.db.profile.reopoen_options_panel_on_tab) then
-				C_Timer.After (2, function()
-					Plater.OpenOptionsPanel()
-					PlaterOptionsPanelContainer:SelectIndex (Plater, Plater.db.profile.reopoen_options_panel_on_tab)
-					Plater.db.profile.reopoen_options_panel_on_tab = false
-				end)
-			end
-			
-			--run hooks on player logon
-			if (HOOK_PLAYER_LOGON.ScriptAmount > 0) then
-				C_Timer.After (1, function()
-					for i = 1, HOOK_PLAYER_LOGON.ScriptAmount do
-						local hookInfo = HOOK_PLAYER_LOGON [i]
-						Plater.ScriptMetaFunctions.ScriptRunNoAttach (hookInfo, "Player Logon")
-					end
-				end)
-			end
-			
-			--check addons incompatibility
-			--> Plater has issues with ElvUI due to be using the same namespace for unitFrame and healthBar
-			C_Timer.After (15, function()
-				if (IsAddOnLoaded ("ElvUI")) then
-					if (ElvUI[1] and ElvUI[1].private and ElvUI[1].private.nameplates and ElvUI[1].private.nameplates.enable) then
-						Plater:Msg ("'ElvUI Nameplates' and 'Plater Nameplates' are enabled and both nameplates won't work together.")
-						Plater:Msg ("You may disable ElvUI Nameplates at /elvui > Nameplates section or you may disable Plater at the addon control panel.")
-					end
-				end 
-			end)
-
-			-- ensure resources are up to date
-			C_Timer.After (3, Plater.Resources.OnSpecChanged)
-
-		end
-		Plater:RegisterEvent ("PLAYER_LOGIN")
+		Plater.EventHandlerFrame:RegisterEvent ("PLAYER_LOGIN")
+		Plater.EventHandlerFrame:RegisterEvent ("VARIABLES_LOADED")
 
 		--power update for hooking scripts
 		local hookPowerEventFrame = CreateFrame ("frame")
