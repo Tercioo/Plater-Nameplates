@@ -4128,10 +4128,12 @@ Plater.CreateAuraTesting()
 		specialAuraFrame:SetPoint ("topright", auraSpecialFrame, "topright", -10, startY)
 		--DF:ApplyStandardBackdrop (specialAuraFrame, false, 0.6)
 		
+		local LoadGameSpellsCalled = false
 		function specialAuraFrame.LoadGameSpells()
-			if (not next (Plater.SpellHashTable)) then
+			if (not next (Plater.SpellHashTable) and not LoadGameSpellsCalled) then
 				--load all spells in the game
 				DF:LoadAllSpells (Plater.SpellHashTable, Plater.SpellIndexTable)
+				LoadGameSpellsCalled = true
 				return true
 			end
 		end
@@ -4274,8 +4276,11 @@ Plater.CreateAuraTesting()
 						-- avoids "unknown spell" in this case
 
 						if (not next (Plater.SpellHashTable)) then
-							specialAuraFrame.LoadGameSpells()
-							C_Timer.After (0.2, function() self:Refresh() end)
+							local loaded = specialAuraFrame.LoadGameSpells()
+							if loaded then
+								DF.LoadingAuraAlertFrame:HookScript("OnHide", function() self:Refresh() end)
+							end
+							--C_Timer.After (1, function() self:Refresh() end)
 						end
 						local id = Plater.SpellHashTable[lower(aura)]
 						spellName, _, spellIcon = GetSpellInfo (id)
