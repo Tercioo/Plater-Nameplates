@@ -1019,6 +1019,10 @@ local class_specs_coords = {
 		[178008] = true, --Decrepit Orb, Sylvanas SoD
 		[179963] = true, --Terror Orb, Sylvanas SoD
 		[175861] = true, --Glacial Spike, Kel'Thusad SoD
+		[182778] = true, --Collapsing Quasar, Rygelon SotFO
+		[182823] = true, --Cosmic Core, Rygelon SotFO
+		[183945] = true, --Unstable Matter, Rygelon SotFO
+		[183745] = true, --Protoform Schematic, Lihuvim SotFO
 	}
 
 	--update the settings cache for scritps
