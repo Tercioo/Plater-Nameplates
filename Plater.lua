@@ -1896,17 +1896,6 @@ local class_specs_coords = {
 		end
 		
 	end
-	hooksecurefunc('SetCVar', Plater.SaveConsoleVariables)
-	hooksecurefunc('ConsoleExec', function(console)
-		local par1, par2, par3 = console:match('^(%S+)%s+(%S+)%s*(%S*)')
-		if par1 then
-			if par1:lower() == 'set' then -- /console SET cvar value
-				Plater.SaveConsoleVariables(par2, par3)
-			else -- /console cvar value
-				Plater.SaveConsoleVariables(par1, par2)
-			end
-		end
-	end)
 
 	--refresh call back will run all functions in its table when Plater refreshes the dynamic upvales for the file
 	Plater.DBRefreshCallback = {}
@@ -2762,6 +2751,20 @@ local class_specs_coords = {
 			C_Timer.After (0.2, Plater.RestoreProfileCVars)
 
 			C_Timer.After (0.3, Plater.UpdatePlateClickSpace)
+			
+			-- hook CVar saving
+			hooksecurefunc('SetCVar', Plater.SaveConsoleVariables)
+			hooksecurefunc('ConsoleExec', function(console)
+				local par1, par2, par3 = console:match('^(%S+)%s+(%S+)%s*(%S*)')
+				if par1 then
+					if par1:lower() == 'set' then -- /console SET cvar value
+						Plater.SaveConsoleVariables(par2, par3)
+					else -- /console cvar value
+						Plater.SaveConsoleVariables(par1, par2)
+					end
+				end
+			end)
+			
 		end,
 		
 		--many times at saved variables load the spell database isn't loaded yet
