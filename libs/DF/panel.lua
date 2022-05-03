@@ -5334,7 +5334,7 @@ DF.IconRowFunctions = {
 					iconFrame.timeRemaining = startTime + duration - now
 					iconFrame.expirationTime = startTime + duration
 					
-					local formattedTime = (iconFrame.timeRemaining > 0) and iconFrame.parentIconRow.FormatCooldownTime(iconFrame.timeRemaining) or ""
+					local formattedTime = (iconFrame.timeRemaining > 0) and self.options.decimal_timer and iconFrame.parentIconRow.FormatCooldownTimeDecimal(iconFrame.timeRemaining) or iconFrame.parentIconRow.FormatCooldownTime(iconFrame.timeRemaining) or ""
 					iconFrame.CountdownText:SetText (formattedTime)
 					
 					iconFrame.CountdownText:SetPoint (self.options.text_anchor or "center", iconFrame, self.options.text_rel_anchor or "center", self.options.text_x_offset or 0, self.options.text_y_offset or 0)
