@@ -5354,6 +5354,7 @@ DF.IconRowFunctions = {
 					iconFrame.CountdownText:Hide()
 				end
 				
+				iconFrame.Cooldown:SetReverse (self.options.cooldown_reverse)
 				iconFrame.Cooldown:SetHideCountdownNumbers (self.options.surpress_blizzard_cd_timer)
 			else
 				iconFrame.timeRemaining = nil
@@ -5645,6 +5646,7 @@ local default_icon_row_options = {
 	surpress_tulla_omni_cc = false,
 	on_tick_cooldown_update = true,
 	decimal_timer = false,
+	cooldown_reverse = false,
 }
 
 function DF:CreateIconRow (parent, name, options)
