@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1651482849,  "Backend Change", "May 4th, 2022", "Adding Masque support to cast bar icons (experimental).", "cont1nuity"},
 			{1651482849,  "Bug Fix", "May 2nd, 2022", "Fixing load times of Buff Special tab with larger spell lists.", "cont1nuity"},
 			{1651482849,  "Backend Change", "May 2nd, 2022", "Fixing CVar load behavior to ensure they are restored properly.", "cont1nuity"},
 			{1651482849,  "Backend Change", "May 2nd, 2022", "Adding some SotFO units to 'ForceInCombatUnits'.", "cont1nuity"},

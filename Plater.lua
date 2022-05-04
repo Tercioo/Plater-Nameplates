@@ -3303,6 +3303,57 @@ local class_specs_coords = {
 				castBar.isNamePlate = true
 				castBar.ThrottleUpdate = 0
 				
+				--check if Masque is enabled on Plater and reskin the cast icon
+				local castIconFrame = castBar.Icon
+				if (Plater.Masque and not castIconFrame.Masqued) then
+					--as masque only skins buttons and not textures alone, work around that with a dummy frame and some meta-table shenannigans to not break anything...
+					--create the button frame and anchor the original icon within
+					local dummyMasqueIconButton = CreateFrame ("Button", castBar:GetName() .. "dummyMasqueIconButton", castBar, BackdropTemplateMixin and "BackdropTemplate")
+					dummyMasqueIconButton:SetSize(castIconFrame:GetSize())
+					castIconFrame:ClearAllPoints()
+					castIconFrame:SetParent(dummyMasqueIconButton)
+					castIconFrame:SetPoint("TOPLEFT")
+					castIconFrame:SetPoint("BOTTOMRIGHT")
+					castIconFrame:Show()
+					
+					--overwrite original and keep a reference
+					dummyMasqueIconButton.Icon = castIconFrame
+					castBar.IconOrig = castIconFrame
+					castBar.Icon = dummyMasqueIconButton
+					
+					--now ensure all calls to the icon which are directed towards the original texture are re-routed to the icon texture
+					local origIndex = getmetatable(dummyMasqueIconButton).__index
+					local metaTable = {
+						__index = function (t,k)
+							--print(k, rawget(dummyMasqueIconButton, k), rawget(origIndex, k), castIconFrame[k])
+							local v = rawget(dummyMasqueIconButton, k) or rawget(origIndex, k)
+							if not v then
+								v = castIconFrame[k]--rawget(castIconFrame, k) or rawget(getmetatable(castIconFrame).__index, k) or rawget(t, k)
+								if type(v) == "function" then
+									return function(self, ...) return castIconFrame[k](castIconFrame, ...) end
+								end
+							end
+							return v
+						end,
+					
+						__newindex = function (t,k,v)
+							rawset(t, k, v)
+						end
+						
+					}
+					setmetatable(dummyMasqueIconButton, metaTable)
+					dummyMasqueIconButton:Show()
+					
+					-- now skin!
+					local t = {
+						Icon = castIconFrame,
+					}
+					Plater.Masque.CastIcon:AddButton (dummyMasqueIconButton, t, "Frame", true)
+					Plater.Masque.CastIcon:ReSkin(dummyMasqueIconButton)
+					castIconFrame.Masqued = true
+					dummyMasqueIconButton.Masqued = true
+				end
+				
 				--mix the plater functions into the castbar (most of the functions are for scripting support)
 				DF:Mixin (castBar, Plater.ScriptMetaFunctions)
 				castBar:HookScript ("OnHide", castBar.OnHideWidget)
@@ -4160,6 +4211,7 @@ function Plater.OnInit() --private --~oninit ~init
 			Plater.Masque.AuraFrame2 = Masque:Group ("Plater Nameplates", "Aura Frame 2")
 			Plater.Masque.BuffSpecial = Masque:Group ("Plater Nameplates", "Buff Special")
 			Plater.Masque.BossModIconFrame = Masque:Group ("Plater Nameplates", "Boss Mod Icons")
+			Plater.Masque.CastIcon = Masque:Group ("Plater Nameplates", "Cast Bar Icons")
 		end
 	
 	--set some cvars that we want to set
@@ -4703,6 +4755,9 @@ function Plater.OnInit() --private --~oninit ~init
 				borderShield:SetPoint ("center", castBar.Icon, "center")
 				PixelUtil.SetSize (borderShield, castBarHeight * 1.4, castBarHeight * 1.4)
 				borderShield:SetDesaturated (false)
+			end
+			if castBar.Icon.Masqued then
+				Plater.Masque.CastIcon:ReSkin(castBar.Icon)
 			end
 		end
 		

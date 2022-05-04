@@ -789,8 +789,8 @@ end
 						Shine = nil, --false,
 					}
 					newFrameIcon.Border:Hide() --let Masque handle the border...
-					Plater.Masque.AuraFrame1:AddButton (newFrameIcon, t)
-					Plater.Masque.AuraFrame1:ReSkin()
+					Plater.Masque.AuraFrame1:AddButton (newFrameIcon, t, nil, true)
+					Plater.Masque.AuraFrame1:ReSkin(newFrameIcon)
 					
 				elseif (self.Name == "Secondary") then
 					local t = {
@@ -812,8 +812,8 @@ end
 						Shine = nil, --false,
 					}
 					newFrameIcon.Border:Hide() --let Masque handle the border...
-					Plater.Masque.AuraFrame2:AddButton (newFrameIcon, t)
-					Plater.Masque.AuraFrame2:ReSkin()
+					Plater.Masque.AuraFrame2:AddButton (newFrameIcon, t, nil, true)
+					Plater.Masque.AuraFrame2:ReSkin(newFrameIcon)
 					
 				end
 			end
@@ -1244,8 +1244,8 @@ end
 				Shine = nil, --false,
 			}
 			iconFrame.Border:Hide() --let Masque handle the border...
-			Plater.Masque.BuffSpecial:AddButton (iconFrame, t)
-			Plater.Masque.BuffSpecial:ReSkin()
+			Plater.Masque.BuffSpecial:AddButton (iconFrame, t, nil, true)
+			Plater.Masque.BuffSpecial:ReSkin(iconFrame)
 			iconFrame.Masqued = true
 		end
 	end
