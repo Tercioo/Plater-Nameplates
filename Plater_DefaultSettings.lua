@@ -790,6 +790,7 @@ PLATER_DEFAULT_SETTINGS = {
 		extra_icon_anchor = {side = 6, x = -4, y = 0},
 		extra_icon_show_timer = true,
 		extra_icon_timer_decimals = false,
+		extra_icon_cooldown_reverse = false,
 		extra_icon_timer_font = "Arial Narrow",
 		extra_icon_timer_size = 12,
 		extra_icon_timer_outline = "NONE",

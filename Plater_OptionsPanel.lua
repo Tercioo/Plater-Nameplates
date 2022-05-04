@@ -4520,6 +4520,16 @@ Plater.CreateAuraTesting()
 				name = "Default Border Color",
 				desc = "Default Border Color",
 			},
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.extra_icon_cooldown_reverse end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.extra_icon_cooldown_reverse = value
+					Plater.UpdateAllPlates()
+				end,
+				name = "Swipe Closure Inverted",
+				desc = "If enabled the swipe closure texture is applied as the swipe moves instead.",
+			},
 			
 			{type = "breakline"},
 			--{type = "label", get = function() return "Text Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
