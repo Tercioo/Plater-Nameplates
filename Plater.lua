@@ -1874,7 +1874,20 @@ local class_specs_coords = {
 		["nameplateMinAlphaDistance"] = true,
 		["nameplateShowDebuffsOnFriendly"] = true,
 	}
-	--on logout or on profile change, save some important cvars inside the profile
+	
+	function get_cvar_value(value)
+		if value == nil then return nil end
+		--bool checks
+		if type(value) == "boolean" then
+			value = value and 1 or 0 --store as 1/0
+		elseif value == "true" then
+			value = 1
+		elseif value == "false" then
+			value = 0
+		end
+		return tostring(value) --to store string representation
+	end
+	--on logout or on profile change, or when they are actually set, save some important cvars inside the profile
 	function Plater.SaveConsoleVariables(cvar, value) --private
 		--print("save cvars", cvar, value, debugstack())
 		local cvarTable = Plater.db.profile.saved_cvars
@@ -1885,16 +1898,33 @@ local class_specs_coords = {
 			cvarTable = Plater.db.profile.saved_cvars
 		end
 		
-		if not cvar then
+		if not cvar then -- store all
 			for CVarName, enabled in pairs (cvars_to_store) do
 				if enabled then
-					cvarTable [CVarName] = tostring(GetCVar (CVarName))
+					cvarTable [CVarName] = get_cvar_value(GetCVar (CVarName))
 				end
 			end
 		elseif cvars_to_store [cvar] then
-			cvarTable [cvar] = tostring(value)
+			cvarTable [cvar] = get_cvar_value(value)
 		end
 		
+	end
+	--restore profile cvars
+	function Plater.RestoreProfileCVars()
+		if (InCombatLockdown()) then
+			C_Timer.After (1, function() Plater.RestoreProfileCVars() end)
+			return
+		end
+		
+		--> try to restore cvars from the profile
+		local savedCVars = Plater.db and Plater.db.profile and Plater.db.profile.saved_cvars
+		if (savedCVars) then
+			for CVarName, CVarValue in pairs (savedCVars) do
+				if cvars_to_store [CVarName] then --only restore what we want to store/restore!
+					SetCVar (CVarName, get_cvar_value(CVarValue))
+				end
+			end
+		end
 	end
 
 	--refresh call back will run all functions in its table when Plater refreshes the dynamic upvales for the file
@@ -8944,26 +8974,6 @@ function Plater.SetCVarsOnFirstRun()
 	
 	--Plater:Msg ("Plater has been successfully installed on this character.")
 
-end
-
-function Plater.RestoreProfileCVars()
-	if (InCombatLockdown()) then
-		C_Timer.After (1, function() Plater.RestoreProfileCVars() end)
-		return
-	end
-	
---> try to restore cvars from the profile
-	local savedCVars = Plater.db and Plater.db.profile and Plater.db.profile.saved_cvars
-	if (savedCVars) then
-		for CVarName, CVarValue in pairs (savedCVars) do
-			if cvars_to_store [CVarName] then --only restore what we want to store/restore!
-				SetCVar (CVarName, CVarValue)
-			end
-		end
-		if (PlaterOptionsPanelFrame) then
-			--PlaterOptionsPanelFrame.RefreshOptionsFrame()
-		end
-	end
 end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
