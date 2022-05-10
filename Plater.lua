@@ -8648,6 +8648,8 @@ end
 						castBar.IsInterrupted = true
 						castBar.InterruptSourceName = sourceName
 						castBar.InterruptSourceGUID = sourceGUID
+						
+						castBar.FrameOverlay.TargetName:Hide() -- hide the target immediately
 						--> check and stop the casting script if any
 						castBar:OnHideWidget()
 					end
