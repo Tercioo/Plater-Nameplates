@@ -240,7 +240,7 @@ function Plater.OpenOptionsPanel()
 		{name = "resourceFrame",			title = L["OPTIONS_TABNAME_COMBOPOINTS"]},
 
 		{name = "SearchFrame", title = L["OPTIONS_TABNAME_SEARCH"]},
-		--{name = "WagoIo", title = "Wago Imports"}, --wago_imports --localize-me
+		{name = "WagoIo", title = "Wago Imports"}, --wago_imports --localize-me
 		
 	}, 
 	frame_options, hookList)
@@ -337,7 +337,7 @@ function Plater.OpenOptionsPanel()
 
 	--4th row
 	local searchFrame			= mainFrame.AllFrames [25]
-	--local wagoIoFrame = mainFrame.AllFrames [26] --wago_imports
+	local wagoIoFrame 			= mainFrame.AllFrames [26] --wago_imports
 
 	local scriptButton		= mainFrame.AllButtons [6] --also need update on line 115 and 13818
 	local modButton		 	= mainFrame.AllButtons [7]
@@ -828,8 +828,8 @@ function Plater.OpenOptionsPanel()
 		
 				local url = Plater.db.profile.url or ""
 				local id = url:match("wago.io/([^/]+)/([0-9]+)") or url:match("wago.io/([^/]+)$")
-				if id and WeakAurasCompanion.Plater.slugs[id] then
-					local update = WeakAurasCompanion.Plater.slugs[id]
+				if id and Plater.CompanionDataSlugs[id] then
+					local update = Plater.CompanionDataSlugs[id]
 					
 					profilesFrame.IsExporting = nil
 					profilesFrame.IsImporting = true
@@ -981,8 +981,8 @@ function Plater.OpenOptionsPanel()
 				
 				local url = Plater.db.profile.url or ""
 				local id = url:match("wago.io/([^/]+)/([0-9]+)") or url:match("wago.io/([^/]+)$")
-				if id and WeakAurasCompanion.Plater.slugs[id] then
-					local update = WeakAurasCompanion.Plater.slugs[id]
+				if id and Plater.CompanionDataSlugs[id] then
+					local update = Plater.CompanionDataSlugs[id]
 					
 					local wagoProfile = Plater.DecompressData (update.encoded, "print")				
 					if (wagoProfile and type (wagoProfile == "table") and wagoProfile.plate_config) then
@@ -11762,7 +11762,7 @@ end
 --> ~scripts ~scripting ~code �nimations ~animations
 	Plater.CreateScriptingPanel()
 	Plater.CreateHookingPanel()
-	--Plater.CreateWagoPanel() --wago_imports
+	Plater.CreateWagoPanel() --wago_imports
 	Plater.CreateSpellAnimationPanel()
 	
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

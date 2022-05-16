@@ -16,6 +16,11 @@ function Plater.SortScripts (t1, t2)
 		return true
 	elseif (t1[4] < t2[4]) then
 		return false
+	--> index 5 stores if the script is a wago update import
+	elseif (t1[5] > t2[5]) then
+		return true
+	elseif (t1[5] < t2[5]) then
+		return false
 	else
 		--> index 3 stores the script name
 		return t1[3] < t2[3]
@@ -31,7 +36,7 @@ end
 --tab indexes
 local PLATER_OPTIONS_SCRIPTING_TAB = 6
 local PLATER_OPTIONS_HOOKING_TAB = 7
-local PLATER_OPTIONS_WAGO_TAB = 23
+local PLATER_OPTIONS_WAGO_TAB = 26
 
 --options
 local start_y = -130
@@ -452,12 +457,37 @@ end
 		end
 	end
 	
+	-- store companion update data internally
+	local CompanionDataSlugs = {}
+	Plater.CompanionDataSlugs = CompanionDataSlugs
+	local CompanionDataStash = {}
+	local legacyDataInitialized = false
+	local CompanionSlugData = {}
+	local CompanionStashData = {}
+	
+	local copy_companion_data = function(data)
+		if not data or not type(data) == "table" or data.encoded then return end -- just accept slugs tables
+		DF.table.copy(CompanionDataSlugs, data.slugs or {})
+		DF.table.copy(CompanionDataStash, data.stash or {})
+	end
+	Plater.AddCompanionData = copy_companion_data
+	
+	local handle_legacy_wa_companion_data = function()
+		if legacyDataInitialized then return end
+		--handle update slugs
+		local data = WeakAurasCompanion and WeakAurasCompanion.Plater
+		if data then
+			copy_companion_data(data)
+			legacyDataInitialized = true
+		end
+	end
+	
 	local has_wago_update = function (scriptObject)
-		if WeakAurasCompanion and WeakAurasCompanion.Plater and WeakAurasCompanion.Plater.slugs and scriptObject and scriptObject.url then
+		if scriptObject and scriptObject.url then
 			local url = scriptObject.url
 			local id = url:match("wago.io/([^/]+)/([0-9]+)") or url:match("wago.io/([^/]+)$")
-			if id and WeakAurasCompanion.Plater.slugs[id] then
-				local update = WeakAurasCompanion.Plater.slugs[id]
+			if id and CompanionDataSlugs[id] then
+				local update = CompanionDataSlugs[id]
 				local companionVersion = tonumber(update.wagoVersion)
 				
 				--skip?
@@ -479,14 +509,41 @@ end
 	end
 	Plater.HasWagoUpdate = has_wago_update
 	
+	local is_wago_update = function(slug)
+		for _, scriptObject in pairs(Plater.db.profile.script_data) do
+			local url = scriptObject.url
+			local id = url and (url:match("wago.io/([^/]+)/([0-9]+)") or url:match("wago.io/([^/]+)$"))
+			if id and slug == id then
+				return has_wago_update(scriptObject)
+			end
+		end
+		
+		for _, scriptObject in pairs(Plater.db.profile.hook_data) do
+			local url = scriptObject.url
+			local id = url and (url:match("wago.io/([^/]+)/([0-9]+)") or url:match("wago.io/([^/]+)$"))
+			if id and slug == id then
+				return has_wago_update(scriptObject)
+			end
+		end
+		
+		--profile:
+		local url = Plater.db.profile.url
+		local id = url and (url:match("wago.io/([^/]+)/([0-9]+)") or url:match("wago.io/([^/]+)$"))
+		if id and slug == id then
+			return has_wago_update(Plater.db.profile)
+		end
+		
+		return false
+	end
+	
 	local get_update_from_companion = function (object)
 		--if not has_wago_update(object) then return end
 		
-		if WeakAurasCompanion and WeakAurasCompanion.Plater and WeakAurasCompanion.Plater.slugs and object and object.url then
+		if object and object.url then
 			local url = object.url
 			local id = url:match("wago.io/([^/]+)/([0-9]+)") or url:match("wago.io/([^/]+)$")
-			if id and WeakAurasCompanion.Plater.slugs[id] then
-				local update = WeakAurasCompanion.Plater.slugs[id]
+			if id and CompanionDataSlugs[id] then
+				local update = CompanionDataSlugs[id]
 				return update
 			end
 		end
@@ -495,13 +552,13 @@ end
 	Plater.GetWagoUpdateDataFromCompanion = get_update_from_companion
 	
 	local update_from_wago = function (scriptObject)
-		if not has_wago_update(scriptObject) then return end
+		if not scriptObject.hasWagoUpdateFromImport and not has_wago_update(scriptObject) then return end
 		
-		if WeakAurasCompanion and WeakAurasCompanion.Plater and WeakAurasCompanion.Plater.slugs and scriptObject and scriptObject.url then
+		if scriptObject and scriptObject.url then
 			local url = scriptObject.url
 			local id = url:match("wago.io/([^/]+)/([0-9]+)") or url:match("wago.io/([^/]+)$")
-			if id and WeakAurasCompanion.Plater.slugs[id] then
-				local update = WeakAurasCompanion.Plater.slugs[id]
+			if id and CompanionDataSlugs[id] then
+				local update = CompanionDataSlugs[id]
 				import_mod_or_script(update.encoded)
 			end
 		end
@@ -541,10 +598,10 @@ end
 		end
 	end
 	
-	local import_from_wago = function (script_id)
-		if script_id and PlaterDB.wago_stash_data [script_id] then
-			local update = PlaterDB.wago_stash_data [script_id]
-			--import_mod_or_script(update.encoded)
+	local import_from_wago = function (script_id, isStash)
+		
+		local update = script_id and isStash and CompanionStashData [script_id] or CompanionSlugData [script_id]
+		if update then
 			local encoded = update.encoded
 			
 			--cleanup the text removing extra spaces and break lines
@@ -617,20 +674,13 @@ end
 		end
 	end
 	
-	local update_wago_stash_data = function(existing)
-		local stash = WeakAurasCompanion and WeakAurasCompanion.Plater and WeakAurasCompanion.Plater.stash or {}
-		PlaterDB.wago_stash_data = PlaterDB.wago_stash_data or {}
-		local stashData = PlaterDB.wago_stash_data
+	local update_wago_slug_data = function(existing)
+		handle_legacy_wa_companion_data()
+		local slugs = CompanionDataSlugs
+		local slugData = CompanionSlugData
 		
-		for slug, entry in pairs(stash) do
-			local found = -1
-			--remove existing entries to update
-			for index, existingEntry in pairs(stashData) do
-				if existingEntry.slug == slug then
-					tremove(stashData, index)
-					break
-				end
-			end
+		for slug, entry in pairs(slugs) do
+			local isUpdate = is_wago_update(slug)
 			
 			local newScriptObject = { -- Dummy data
 				Enabled = true,
@@ -653,12 +703,57 @@ end
 			newScriptObject.semver = entry.wagoSemver
 			newScriptObject.Author = entry.author
 			newScriptObject.version = tonumber(entry.wagoVersion) or 0
-			newScriptObject.Name = entry.name
+			newScriptObject.Name = DF:CleanTruncateUTF8String(strsub(entry.name, 1, 28)) --entry.name
+			newScriptObject.FullName = entry.name
 			newScriptObject.encoded = entry.encoded
 			newScriptObject.url = "https://wago.io/" .. slug .. "/" .. entry.wagoVersion
 			newScriptObject.slug = slug
 			newScriptObject.isWagoImport = true
+			newScriptObject.hasWagoUpdateFromImport = isUpdate
 			
+			tinsert(slugData, newScriptObject)
+			
+		end
+		
+		return slugData
+	end
+	
+	local update_wago_stash_data = function(existing)
+		handle_legacy_wa_companion_data()
+		local stash = CompanionDataStash
+		local stashData = CompanionStashData
+		
+		for slug, entry in pairs(stash) do
+			local isUpdate = is_wago_update(slug)
+			
+			local newScriptObject = { -- Dummy data
+				Enabled = true,
+				Name = "New Mod",
+				Icon = "",
+				Desc = "",
+				Author = "",
+				Time = time(),
+				Revision = 1,
+				PlaterCore = Plater.CoreVersion,
+				Hooks = {},
+				HooksTemp = {},
+				LastHookEdited = "",
+				LoadConditions = DF:UpdateLoadConditionsTable ({}),
+				Options = {},
+			}
+
+			Plater.CreateOptionTableForScriptObject(newScriptObject)
+			
+			newScriptObject.semver = entry.wagoSemver
+			newScriptObject.Author = entry.author
+			newScriptObject.version = tonumber(entry.wagoVersion) or 0
+			newScriptObject.Name = DF:CleanTruncateUTF8String(strsub(entry.name, 1, 28)) --entry.name
+			newScriptObject.FullName = entry.name
+			newScriptObject.encoded = entry.encoded
+			newScriptObject.url = "https://wago.io/" .. slug .. "/" .. entry.wagoVersion
+			newScriptObject.slug = slug
+			newScriptObject.isWagoImport = true
+			newScriptObject.hasWagoUpdateFromImport = isUpdate
 			
 			tinsert(stashData, newScriptObject)
 			
@@ -666,9 +761,10 @@ end
 		
 		return stashData
 	end
-	Plater.UpdateWagoStashData = update_wago_stash_data
 	
 	function Plater.CheckWagoUpdates(silent)
+		handle_legacy_wa_companion_data()
+		
 		local countScripts = 0
 		for _, scriptObject in pairs(Plater.db.profile.script_data) do
 			countScripts = countScripts + (has_wago_update(scriptObject) and 1 or 0)
@@ -748,8 +844,11 @@ end
 			mainFrame.ScriptSelectionScrollBox:Refresh()
 			Plater.UpdateOptionsTabUpdateState()
 			
-		elseif (option == "wago_import") then
+		elseif (option == "wago_slugs") then
 			import_from_wago(scriptId)
+			
+		elseif (option == "wago_stash") then
+			import_from_wago(scriptId, true)
 			
 		end
 		
@@ -798,7 +897,7 @@ end
 			end
 			
 			--save the current script if any
-			if (currentScriptObject) then
+			if (currentScriptObject and mainFrame.ScriptType ~= "wago_slugs" and mainFrame.ScriptType ~= "wago_stash") then
 				mainFrame.SaveScript()
 			end
 			
@@ -808,7 +907,7 @@ end
 			mainFrame.ScriptSelectionScrollBox:Refresh()
 			
 			--open the user options
-			if mainFrame.ScriptType ~= "wago_import" then
+			if mainFrame.ScriptType ~= "wago_slugs" and mainFrame.ScriptType ~= "wago_stash" then
 				Plater.RefreshUserScriptOptions(mainFrame)
 			end
 			--Plater.RefreshAdminScriptOptions(mainFrame) --debug open the admin panel
@@ -827,14 +926,14 @@ end
 
 			local scriptObject = mainFrame.GetScriptObject (self.ScriptId)
 			
-			if mainFrame.ScriptType == "wago_import" then
+			if mainFrame.ScriptType == "wago_slugs" or mainFrame.ScriptType == "wago_stash" then
 				-- wago import tab
-				GameCooltip:AddLine ("Remove")
-				GameCooltip:AddMenu (1, onclick_menu_scroll_line, "remove", mainFrame)
-				GameCooltip:AddIcon ([[Interface\AddOns\Plater\images\icons]], 1, 1, 16, 16, 3/512, 21/512, 235/512, 257/512)
+				--GameCooltip:AddLine ("Remove")
+				--GameCooltip:AddMenu (1, onclick_menu_scroll_line, "remove", mainFrame)
+				--GameCooltip:AddIcon ([[Interface\AddOns\Plater\images\icons]], 1, 1, 16, 16, 3/512, 21/512, 235/512, 257/512)
 				
 				GameCooltip:AddLine ("Import")
-				GameCooltip:AddMenu (1, onclick_menu_scroll_line, "wago_import", mainFrame)
+				GameCooltip:AddMenu (1, onclick_menu_scroll_line, mainFrame.ScriptType, mainFrame)
 				GameCooltip:AddIcon ([[Interface\AddOns\Plater\images\wagologo.tga]], 1, 1, 16, 10)
 				
 				GameCooltip:AddLine ("Copy Wago.io URL")
@@ -933,7 +1032,8 @@ end
 			self.EnabledCheckbox:Hide()
 		end
 		
-		if not data.isWagoImport and has_wago_update(data) then
+		--if not data.isWagoImport and has_wago_update(data) then
+		if data.hasWagoUpdateFromImport or has_wago_update(data) then
 			self.UpdateIcon:Show()
 		else
 			self.UpdateIcon:Hide()
@@ -1086,13 +1186,18 @@ end
 		
 		if (mainFrame.SearchString ~= "") then
 			for i = 1, #data do
-				if (data [i].Name:lower():find (mainFrame.SearchString)) then
-					dataInOrder [#dataInOrder+1] = {i, data [i], data[i].Name, data[i].Enabled and 1 or 0}
+				if not data[i].hidden then
+					local name = data[i].FullName or data[i].Name or ""
+					if (name:lower():find (mainFrame.SearchString)) then
+						dataInOrder [#dataInOrder+1] = {i, data [i], data[i].Name, data[i].Enabled and 1 or 0, data[i].hasWagoUpdateFromImport and 1 or 0}
+					end
 				end
 			end
 		else
 			for i = 1, #data do
-				dataInOrder [#dataInOrder+1] = {i, data [i], data[i].Name, data[i].Enabled and 1 or 0}
+				if not data[i].hidden then
+					dataInOrder [#dataInOrder+1] = {i, data [i], data[i].Name, data[i].Enabled and 1 or 0, data[i].hasWagoUpdateFromImport and 1 or 0}
+				end
 			end
 		end
 		
@@ -1246,8 +1351,10 @@ end
 			data = Plater.db.profile.script_data
 		elseif (mainFrame.ScriptType == "hook") then
 			data = Plater.db.profile.hook_data
-		elseif (mainFrame.ScriptType == "wago_import") then
-			data = PlaterDB.wago_stash_data
+		elseif (mainFrame.ScriptType == "wago_slugs") then
+			data = CompanionSlugData
+		elseif (mainFrame.ScriptType == "wago_stash") then
+			data = CompanionStashData
 		end
 		
 		local script_scroll_box = DF:CreateScrollBox (mainFrame, "$parentScrollBox", refresh_script_scrollbox, data, scrollbox_size[1], scrollbox_size[2], scrollbox_lines, scrollbox_line_height)
@@ -1604,54 +1711,120 @@ function Plater.CreateWagoPanel()
 	
 
 	local wagoFrame = mainFrame.AllFrames [PLATER_OPTIONS_WAGO_TAB]
+	local wagoSlugFrame = CreateFrame ("frame", "$parentWagoSlugFrame", wagoFrame)
+	wagoSlugFrame:SetPoint("topleft", wagoFrame, "topleft")
+	wagoSlugFrame:SetPoint("bottomright", wagoFrame, "bottomright")
+	wagoFrame.wagoSlugFrame = wagoSlugFrame
+	wagoSlugFrame:Show()
+	local wagoStashFrame = CreateFrame ("frame", "$parentWagoStashFrame", wagoFrame)
+	wagoStashFrame:SetPoint("topleft", wagoFrame, "topleft")
+	wagoStashFrame:SetPoint("bottomright", wagoFrame, "bottomright")
+	wagoFrame.wagoStashFrame = wagoStashFrame
+	wagoStashFrame:Show()
 	
-	--holds the current text to search
-	wagoFrame.SearchString = ""
-	wagoFrame.ScriptType = "wago_import"
 	local currentEditingScript = nil
 	
+	wagoSlugFrame.SearchString = ""
+	wagoSlugFrame.ScriptType = "wago_slugs"
+	wagoStashFrame.SearchString = ""
+	wagoStashFrame.ScriptType = "wago_stash"
+	
+	update_wago_slug_data()
 	update_wago_stash_data()
 	
 	--create the frame which will hold the create panel
-	local wago_info_frame = CreateFrame ("frame", "$parentCreateScript", wagoFrame, BackdropTemplateMixin and "BackdropTemplate")
+	local wago_info_frame = CreateFrame ("frame", "$parentWagoInfoFrame2", wagoFrame, BackdropTemplateMixin and "BackdropTemplate")
 	wago_info_frame:SetSize (unpack (main_frames_size))
-	wago_info_frame:SetScript ("OnShow", function()
-
-	end)
-	wago_info_frame:SetScript ("OnHide", function()
-
-	end)
+	wago_info_frame:SetScript ("OnShow", function() end)
+	wago_info_frame:SetScript ("OnHide", function() end)
 	wago_info_frame:Hide()
-	wagoFrame.EditScriptFrame = wago_info_frame	
-	
-	create_script_scroll (wagoFrame)
-	--create_script_namedesc (wagoFrame, wago_info_frame)
-	
-	wagoFrame.ScriptScrollLabel.text = "Imports"
-	
-	wagoFrame.ScriptSelectionScrollBox:SetPoint ("topleft", wagoFrame.ScriptSearchTextEntry.widget, "bottomleft", 0, -20)
-	wagoFrame.ScriptScrollLabel:SetPoint ("bottomleft", wagoFrame.ScriptSelectionScrollBox, "topleft", 0, 2)
-	wagoFrame.ScriptEnabledLabel:Hide()
-	
 	wago_info_frame:SetPoint ("topleft", wagoFrame, "topleft", scrollbox_size[1] + 30, start_y)
+	wagoSlugFrame.EditScriptFrame = wago_info_frame
 	
-	--script options
-	--wago_info_frame.ScriptNameLabel:SetPoint ("topleft", wago_info_frame, "topleft", 10, 2)
-	--wago_info_frame.ScriptIconLabel:Hide()
-	--wago_info_frame.ScriptDescLabel:SetPoint ("topleft", wago_info_frame, "topleft", 10, -40)
-	--wago_info_frame.ScriptPrioLabel:Hide()
+	wago_info_frame = CreateFrame ("frame", "$parentWagoInfoFrame3", wagoFrame, BackdropTemplateMixin and "BackdropTemplate")
+	wago_info_frame:SetSize (unpack (main_frames_size))
+	wago_info_frame:SetScript ("OnShow", function() end)
+	wago_info_frame:SetScript ("OnHide", function() end)
+	wago_info_frame:Hide()
+	wago_info_frame:SetPoint ("topleft", wagoFrame, "topleft", scrollbox_size[1] + 30, start_y)
+	wagoStashFrame.EditScriptFrame = wago_info_frame	
+	
+	
+	create_script_scroll (wagoSlugFrame)
+	create_script_scroll (wagoStashFrame)
+	
+	
+	wagoSlugFrame.ScriptScrollLabel.text = "Updates/Imports"
+	wagoSlugFrame.ScriptSelectionScrollBox:SetPoint ("topleft", wagoSlugFrame.ScriptSearchTextEntry.widget, "bottomleft", 0, -20)
+	wagoSlugFrame.ScriptScrollLabel:SetPoint ("bottomleft", wagoSlugFrame.ScriptSelectionScrollBox, "topleft", 0, 2)
+	wagoSlugFrame.ScriptEnabledLabel:Hide()
+	
+	wagoStashFrame.ScriptScrollLabel.text = "Stash"
+	wagoStashFrame.ScriptSearchTextEntry.widget:SetPoint ("topleft", wagoSlugFrame.ScriptSearchTextEntry.widget, "topright", 20, 0)
+	wagoStashFrame.ScriptSelectionScrollBox:SetPoint ("topleft", wagoStashFrame.ScriptSearchTextEntry.widget, "bottomleft", 0, -20)
+	wagoStashFrame.ScriptScrollLabel:SetPoint ("bottomleft", wagoStashFrame.ScriptSelectionScrollBox, "topleft", 0, 2)
+	wagoStashFrame.ScriptEnabledLabel:Hide()
+	
+	
+	
+	
+	local helpText = "The 'Updates/Imports' list contains all scripts, mods and profiles that are made available as update by the WeakAuras-Companion app or other wago.io updater tools." .. "\n\n"
+	helpText = helpText .. "The 'Stash' list contains content sent from wago.io to the client directly via 'Send to Desktop App'.".."\n\n"
+	helpText = helpText .. "The lists are sorted by 'updates' first." .. "\n\n"
+	helpText = helpText .. "Use the wago-icons for updates or the right-click menu to import." --localize me
+	local wagoTabInfoLabel = DF:CreateLabel (wagoStashFrame, helpText, DF:GetTemplate ("font", "PLATER_BUTTON"))
+	wagoTabInfoLabel.width = 200
+	--wagoTabInfoLabel.height = 80
+	wagoTabInfoLabel.valign = "bottom"
+	wagoTabInfoLabel.align = "left"
+	wagoTabInfoLabel:SetPoint ("bottomleft", wagoStashFrame.ScriptSelectionScrollBox, "bottomright", 40, 0)
+	
+	local importInfoLabel = DF:CreateLabel (wagoFrame, "Selected Import Info:", DF:GetTemplate ("font", "PLATER_BUTTON"))
+	importInfoLabel.width = 200
+	importInfoLabel:SetPoint ("topleft", wagoStashFrame.ScriptSelectionScrollBox, "topright", 40, 40)
+	
+	local importInfoText = ""
+	importInfoText = importInfoText .. "Name: \n\n"
+	importInfoText = importInfoText .. "Import-Revision: \n"
+	importInfoText = importInfoText .. "Import-Version: \n\n"
+	
+	local importInfo = DF:CreateLabel(wagoFrame, importInfoText, 10, "orange")
+	importInfo.width = 200
+	importInfo.height = 120
+	importInfo.valign = "top"
+	importInfo.align = "left"
+	importInfo:SetPoint("topleft", importInfoLabel, "bottomleft", 0, -5)
+	wagoFrame.importInfoText = importInfo
 	
 	
 	function wagoFrame.GetCurrentScriptObject()
 		return currentEditingScript
 	end
+	function wagoSlugFrame.GetCurrentScriptObject()
+		return currentEditingScript
+	end
+	function wagoStashFrame.GetCurrentScriptObject()
+		return currentEditingScript
+	end
 	
-	function wagoFrame.GetScriptTriggerTypeName()
+	function wagoSlugFrame.GetScriptTriggerTypeName()
+		return ""
+	end
+	function wagoStashFrame.GetScriptTriggerTypeName()
 		return ""
 	end
 	
-	function wagoFrame.GetScriptObject (script_id)
-		local script = PlaterDB.wago_stash_data [script_id]
+	function wagoSlugFrame.GetScriptObject (script_id)
+		local script = CompanionSlugData [script_id]
+		if (script) then
+			return script
+		else
+			Plater:Msg ("GetScriptObject could find the script id")
+			return
+		end
+	end
+	function wagoStashFrame.GetScriptObject (script_id)
+		local script = CompanionStashData [script_id]
 		if (script) then
 			return script
 		else
@@ -1660,57 +1833,57 @@ function Plater.CreateWagoPanel()
 		end
 	end
 	
-	function wagoFrame.RemoveScript (scriptId)
-		local scriptObjectToBeRemoved = wagoFrame.GetScriptObject (scriptId)
-		local currentScript = wagoFrame.GetCurrentScriptObject()
-		
-		--check if the script to be removed is valid
-		if (not scriptObjectToBeRemoved) then
-			return
-		end
-		
-		--if is the current script being edited, cancel the edit
-		if (currentScript == scriptObjectToBeRemoved) then
-			--cancel the editing process
-			wagoFrame.CancelEditing (true)
-		end
-		
-		tremove (PlaterDB.wago_stash_data, scriptId)
-		--WeakAurasCompanion.Plater.stash[scriptObjectToBeRemoved.slug] = nil -- this does nothing...
-		
-		--refresh the script selection scrollbox
-		wagoFrame.ScriptSelectionScrollBox:Refresh()
-
-		Plater.UpdateOptionsTabUpdateState()
-		
-		GameCooltip:Hide()
-		Plater:Msg ("Import deleted.")
-	end
-	
 	function wagoFrame.UpdateEditingPanel()
 		--get the current editing object
 		local scriptObject = wagoFrame.GetCurrentScriptObject()
 		
-		--set the data from the object in the widgets
-		--wagoFrame.ScriptNameTextEntry.text =  scriptObject.Name
-		--wagoFrame.ScriptNameTextEntry:ClearFocus()
-		--wagoFrame.ScriptIconButton:SetIcon (scriptObject.Icon)
-		--wagoFrame.ScriptDescTextEntry.text = scriptObject.Desc or ""
-		--wagoFrame.ScriptDescTextEntry:ClearFocus()
-		--wagoFrame.ScriptPrioSlideEntry.value = round(scriptObject.Prio or 99)
-		--wagoFrame.ScriptPrioSlideEntry:ClearFocus()
+		local importInfoText = ""
+		if scriptObject then
+			importInfoText = importInfoText .. "Name: \n" .. scriptObject.FullName .. "\n\n"
+			importInfoText = importInfoText .. "Import-Revision: " .. scriptObject.version .. "\n"
+			importInfoText = importInfoText .. "Import-Version: " .. scriptObject.semver .. "\n"
+			importInfoText = importInfoText .. (scriptObject.url or "")
+		else
+			importInfoText = importInfoText .. "Name: \n\n"
+			importInfoText = importInfoText .. "Import-Revision: \n"
+			importInfoText = importInfoText .. "Import-Version: \n\n"
+		end
 		
+		wagoFrame.importInfoText:SetText(importInfoText)
 	end
 	
-	--start editing a script
-	function wagoFrame.EditScript (script_id)
+	function wagoSlugFrame.EditScript (script_id)
+		wagoStashFrame.CancelEditing()
+				
 		local scriptObject
 
 		--> check if passed a script object
 		if (type (script_id) == "table") then
 			scriptObject = script_id
 		else
-			scriptObject = wagoFrame.GetScriptObject (script_id)
+			scriptObject = wagoSlugFrame.GetScriptObject (script_id)
+		end
+		
+		if (not scriptObject) then
+			return
+		end
+		
+		--set the new editing script
+		currentEditingScript = scriptObject
+		
+		--load the values in the frame
+		wagoFrame.UpdateEditingPanel()
+	end
+	function wagoStashFrame.EditScript (script_id)
+		wagoSlugFrame.CancelEditing()
+		
+		local scriptObject
+
+		--> check if passed a script object
+		if (type (script_id) == "table") then
+			scriptObject = script_id
+		else
+			scriptObject = wagoStashFrame.GetScriptObject (script_id)
 		end
 		
 		if (not scriptObject) then
@@ -1724,34 +1897,27 @@ function Plater.CreateWagoPanel()
 		wagoFrame.UpdateEditingPanel()
 	end
 	
-	function wagoFrame.SaveScript()
-	end
-	
 	--restore the values on the text fields and scroll boxes to the values on the object
-	function wagoFrame.CancelEditing (is_deleting)
-		if (not is_deleting) then
-			--re fill all the text entried and dropdowns to the default from the script
-			--doing this to restore the script so it can do a hot reload
-			wagoFrame.UpdateEditingPanel()
-			
-			--hot reload restored scripts
-			wagoFrame.ApplyScript()
-		end
-		
+	function wagoStashFrame.CancelEditing ()
 		--clear current editing script
 		currentEditingScript = nil
 
 		--reload the script selection scrollbox in case the script got renamed
-		wagoFrame.ScriptSelectionScrollBox:Refresh()
+		wagoStashFrame.ScriptSelectionScrollBox:Refresh()
+	end
+	function wagoSlugFrame.CancelEditing ()
+		--clear current editing script
+		currentEditingScript = nil
+
+		--reload the script selection scrollbox in case the script got renamed
+		wagoSlugFrame.ScriptSelectionScrollBox:Refresh()
 	end
 	
 	wagoFrame:SetScript ("OnShow", function()
 		--update the hook scripts scrollbox
-		wagoFrame.ScriptSelectionScrollBox:Refresh()
+		wagoSlugFrame.ScriptSelectionScrollBox:Refresh()
+		wagoStashFrame.ScriptSelectionScrollBox:Refresh()
 	end)
-	
-	wagoFrame.EditScriptFrame:Show()
-	
 end
 
 function Plater.CreateHookingPanel()
