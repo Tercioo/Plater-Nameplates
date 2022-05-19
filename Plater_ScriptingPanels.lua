@@ -509,20 +509,55 @@ end
 	end
 	Plater.HasWagoUpdate = has_wago_update
 	
-	local is_wago_update = function(slug)
+	-- return: notImported, isScipt, isMod, isProfile
+	local is_wago_stash_slug_already_imported = function(slug)
+		--scripts
 		for _, scriptObject in pairs(Plater.db.profile.script_data) do
 			local url = scriptObject.url
 			local id = url and (url:match("wago.io/([^/]+)/([0-9]+)") or url:match("wago.io/([^/]+)$"))
 			if id and slug == id then
-				return has_wago_update(scriptObject)
+				return not has_wago_update(scriptObject), true, false, false
 			end
 		end
 		
+		--mods:
 		for _, scriptObject in pairs(Plater.db.profile.hook_data) do
 			local url = scriptObject.url
 			local id = url and (url:match("wago.io/([^/]+)/([0-9]+)") or url:match("wago.io/([^/]+)$"))
 			if id and slug == id then
-				return has_wago_update(scriptObject)
+				return not has_wago_update(scriptObject), false, true, false
+			end
+		end
+		
+		--profile:
+		for _, profile in pairs(Plater.db.profiles) do
+			local url = profile.url
+			local id = url and (url:match("wago.io/([^/]+)/([0-9]+)") or url:match("wago.io/([^/]+)$"))
+			if id and slug == id then
+				return not has_wago_update(profile), false, false, true
+			end
+		end
+		
+		return false
+	end
+	
+	-- return: isUpdate, isScipt, isMod, isProfile
+	local is_wago_update = function(slug)
+		--scripts:
+		for _, scriptObject in pairs(Plater.db.profile.script_data) do
+			local url = scriptObject.url
+			local id = url and (url:match("wago.io/([^/]+)/([0-9]+)") or url:match("wago.io/([^/]+)$"))
+			if id and slug == id then
+				return has_wago_update(scriptObject), true, false, false
+			end
+		end
+		
+		--mods:
+		for _, scriptObject in pairs(Plater.db.profile.hook_data) do
+			local url = scriptObject.url
+			local id = url and (url:match("wago.io/([^/]+)/([0-9]+)") or url:match("wago.io/([^/]+)$"))
+			if id and slug == id then
+				return has_wago_update(scriptObject), false, true, false
 			end
 		end
 		
@@ -530,7 +565,7 @@ end
 		local url = Plater.db.profile.url
 		local id = url and (url:match("wago.io/([^/]+)/([0-9]+)") or url:match("wago.io/([^/]+)$"))
 		if id and slug == id then
-			return has_wago_update(Plater.db.profile)
+			return has_wago_update(Plater.db.profile), false, false, true
 		end
 		
 		return false
@@ -674,13 +709,15 @@ end
 		end
 	end
 	
-	local update_wago_slug_data = function(existing)
+	local update_wago_slug_data = function()
 		handle_legacy_wa_companion_data()
 		local slugs = CompanionDataSlugs
 		local slugData = CompanionSlugData
 		
+		wipe(slugData)
+		
 		for slug, entry in pairs(slugs) do
-			local isUpdate = is_wago_update(slug)
+			local isUpdate, isScipt, isMod, isProfile = is_wago_update(slug)
 			
 			local newScriptObject = { -- Dummy data
 				Enabled = true,
@@ -709,7 +746,11 @@ end
 			newScriptObject.url = "https://wago.io/" .. slug .. "/" .. entry.wagoVersion
 			newScriptObject.slug = slug
 			newScriptObject.isWagoImport = true
+			newScriptObject.isWagoStash = false
 			newScriptObject.hasWagoUpdateFromImport = isUpdate
+			newScriptObject.isScipt = isScipt
+			newScriptObject.isMod = isMod
+			newScriptObject.isProfile = isProfile
 			
 			tinsert(slugData, newScriptObject)
 			
@@ -718,44 +759,52 @@ end
 		return slugData
 	end
 	
-	local update_wago_stash_data = function(existing)
+	local update_wago_stash_data = function()
 		handle_legacy_wa_companion_data()
 		local stash = CompanionDataStash
 		local stashData = CompanionStashData
 		
+		wipe(stashData)
+		
 		for slug, entry in pairs(stash) do
-			local isUpdate = is_wago_update(slug)
+			local isAlreadyImported = is_wago_stash_slug_already_imported(slug)
 			
-			local newScriptObject = { -- Dummy data
-				Enabled = true,
-				Name = "New Mod",
-				Icon = "",
-				Desc = "",
-				Author = "",
-				Time = time(),
-				Revision = 1,
-				PlaterCore = Plater.CoreVersion,
-				Hooks = {},
-				HooksTemp = {},
-				LastHookEdited = "",
-				LoadConditions = DF:UpdateLoadConditionsTable ({}),
-				Options = {},
-			}
+			if not isAlreadyImported then
+				local newScriptObject = { -- Dummy data
+					Enabled = true,
+					Name = "New Mod",
+					Icon = "",
+					Desc = "",
+					Author = "",
+					Time = time(),
+					Revision = 1,
+					PlaterCore = Plater.CoreVersion,
+					Hooks = {},
+					HooksTemp = {},
+					LastHookEdited = "",
+					LoadConditions = DF:UpdateLoadConditionsTable ({}),
+					Options = {},
+				}
 
-			Plater.CreateOptionTableForScriptObject(newScriptObject)
-			
-			newScriptObject.semver = entry.wagoSemver
-			newScriptObject.Author = entry.author
-			newScriptObject.version = tonumber(entry.wagoVersion) or 0
-			newScriptObject.Name = DF:CleanTruncateUTF8String(strsub(entry.name, 1, 28)) --entry.name
-			newScriptObject.FullName = entry.name
-			newScriptObject.encoded = entry.encoded
-			newScriptObject.url = "https://wago.io/" .. slug .. "/" .. entry.wagoVersion
-			newScriptObject.slug = slug
-			newScriptObject.isWagoImport = true
-			newScriptObject.hasWagoUpdateFromImport = isUpdate
-			
-			tinsert(stashData, newScriptObject)
+				Plater.CreateOptionTableForScriptObject(newScriptObject)
+				
+				newScriptObject.semver = entry.wagoSemver
+				newScriptObject.Author = entry.author
+				newScriptObject.version = tonumber(entry.wagoVersion) or 0
+				newScriptObject.Name = DF:CleanTruncateUTF8String(strsub(entry.name, 1, 28)) --entry.name
+				newScriptObject.FullName = entry.name
+				newScriptObject.encoded = entry.encoded
+				newScriptObject.url = "https://wago.io/" .. slug .. "/" .. entry.wagoVersion
+				newScriptObject.slug = slug
+				newScriptObject.isWagoImport = true
+				newScriptObject.isWagoStash = true
+				newScriptObject.hasWagoUpdateFromImport = true
+				newScriptObject.isScipt = isScipt
+				newScriptObject.isMod = isMod
+				newScriptObject.isProfile = isProfile
+				
+				tinsert(stashData, newScriptObject)
+			end
 			
 		end
 		
@@ -846,9 +895,13 @@ end
 			
 		elseif (option == "wago_slugs") then
 			import_from_wago(scriptId)
+			update_wago_slug_data()
+			mainFrame.wagoSlugFrame.ScriptSelectionScrollBox:Refresh()
 			
 		elseif (option == "wago_stash") then
 			import_from_wago(scriptId, true)
+			update_wago_stash_data()
+			mainFrame.wagoStashFrame.ScriptSelectionScrollBox:Refresh()
 			
 		end
 		
@@ -877,7 +930,11 @@ end
 		if (button == "LeftButton") then
 			local mainFrame = self.line.MainFrame
 			local scriptObject = mainFrame.GetScriptObject (self.line.ScriptId)
-			update_from_wago(scriptObject)
+			if not scriptObject.isWagoImport then
+				update_from_wago(scriptObject)
+			else
+				import_from_wago(self.line.ScriptId, scriptObject.isWagoStash)
+			end
 		end
 		
 	end
@@ -1708,7 +1765,6 @@ function Plater.CreateWagoPanel()
 	--controi o menu principal
 	local f = PlaterOptionsPanelFrame
 	local mainFrame = PlaterOptionsPanelContainer
-	
 
 	local wagoFrame = mainFrame.AllFrames [PLATER_OPTIONS_WAGO_TAB]
 	local wagoSlugFrame = CreateFrame ("frame", "$parentWagoSlugFrame", wagoFrame)
@@ -1716,6 +1772,8 @@ function Plater.CreateWagoPanel()
 	wagoSlugFrame:SetPoint("bottomright", wagoFrame, "bottomright")
 	wagoFrame.wagoSlugFrame = wagoSlugFrame
 	wagoSlugFrame:Show()
+	wagoSlugFrame:SetScript("OnShow", function()  end)
+	
 	local wagoStashFrame = CreateFrame ("frame", "$parentWagoStashFrame", wagoFrame)
 	wagoStashFrame:SetPoint("topleft", wagoFrame, "topleft")
 	wagoStashFrame:SetPoint("bottomright", wagoFrame, "bottomright")
@@ -1915,6 +1973,8 @@ function Plater.CreateWagoPanel()
 	
 	wagoFrame:SetScript ("OnShow", function()
 		--update the hook scripts scrollbox
+		update_wago_stash_data()
+		update_wago_slug_data()
 		wagoSlugFrame.ScriptSelectionScrollBox:Refresh()
 		wagoStashFrame.ScriptSelectionScrollBox:Refresh()
 	end)
