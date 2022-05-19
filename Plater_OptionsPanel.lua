@@ -506,11 +506,13 @@ function Plater.OpenOptionsPanel()
 					local aura_cache_by_name = Plater.db.profile.aura_cache_by_name
 					local captured_casts = Plater.db.profile.captured_casts -- ? local DB ?
 					local npc_cache = Plater.db.profile.npc_cache
+					local cvars_caller_cache = Plater.db.profile.saved_cvars_last_change
 
 					Plater.db.profile.captured_spells = {}
 					Plater.db.profile.aura_cache_by_name = {}
 					Plater.db.profile.captured_casts = {}
 					Plater.db.profile.npc_cache = {}
+					Plater.db.profile.saved_cvars_last_change = {}
 					
 					--retain npc_cache for set npc_colors
 					for npcID, _ in pairs (Plater.db.profile.npc_colors) do
@@ -543,6 +545,7 @@ function Plater.OpenOptionsPanel()
 					Plater.db.profile.aura_cache_by_name = aura_cache_by_name
 					Plater.db.profile.captured_casts = captured_casts
 					Plater.db.profile.npc_cache = npc_cache
+					Plater.db.profile.saved_cvars_last_change = cvars_caller_cache
 				end)
 				
 				C_Timer.After (.3, function()

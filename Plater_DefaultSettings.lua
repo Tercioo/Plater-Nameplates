@@ -83,6 +83,7 @@ PLATER_DEFAULT_SETTINGS = {
 	
 		--> save some cvars values so it can restore when a new character login using Plater
 		saved_cvars = {},
+		saved_cvars_last_change = {},
 		keybinds = {},
 		
 		--store npcs found in raids and dungeons

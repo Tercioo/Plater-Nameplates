@@ -1887,10 +1887,15 @@ local class_specs_coords = {
 		end
 		return tostring(value) --to store string representation
 	end
+	
+	local canSaveCVars = false --only allow storing after plater has restored
 	--on logout or on profile change, or when they are actually set, save some important cvars inside the profile
 	function Plater.SaveConsoleVariables(cvar, value) --private
+		if not canSaveCVars then return end
+		
 		--print("save cvars", cvar, value, debugstack())
 		local cvarTable = Plater.db.profile.saved_cvars
+		local cvarLastChangedTable = Plater.db.profile.saved_cvars_last_change
 		
 		if (not cvarTable) then
 			--return
@@ -1906,6 +1911,15 @@ local class_specs_coords = {
 			end
 		elseif cvars_to_store [cvar] then
 			cvarTable [cvar] = get_cvar_value(value)
+			local callstack = debugstack(2) -- starts at "SetCVar" or caller
+			local caller, line = callstack:match("\"@([^\"]+)\"%]:(%d+)")
+			if not caller then
+				caller, line = callstack:match("in function <([^:%[>]+):(%d+)>")
+			end
+			if not caller or (caller and not caller:lower():find("[\\/]sharedxml[\\/]cvarutil%.lua")) then
+				--print((caller and caller .. ":" .. line) or callstack)
+				cvarLastChangedTable [cvar] = (caller and (caller .. ":" .. line)) or callstack
+			end
 		end
 		
 	end
@@ -1923,6 +1937,24 @@ local class_specs_coords = {
 				if cvars_to_store [CVarName] then --only restore what we want to store/restore!
 					SetCVar (CVarName, get_cvar_value(CVarValue))
 				end
+			end
+		end
+		canSaveCVars = true --allow storing after restoring the first time
+	end
+	
+	function Plater.DebugCVars(cvar)
+		cvar = cvar and cvar:gsub(" ", "") or nil
+		if cvar and cvar ~= "" then
+			if cvars_to_store[cvar] then
+				print("CVar info:\nName: '" .. cvar .. "'\nCurrent Value: " .. (get_cvar_value(GetCVar (cvar)) or "<not set>") .. "\nStored Value: " .. (Plater.db.profile.saved_cvars[cvar] or "<not stored>") ..  "\nLast changed by: " .. (Plater.db.profile.saved_cvars_last_change[cvar] and ("\n" .. Plater.db.profile.saved_cvars_last_change[cvar]) or "<no info>"))
+			else
+				print("CVar '" .. cvar .. "' is not stored in Plater.")
+			end
+		else
+			print("No CVar name provided. Printing all stored CVar names. Use '/plater cvar <cvar name> for more details.'")
+			local savedCVars = Plater.db and Plater.db.profile and Plater.db.profile.saved_cvars or {}
+			for CVarName, CVarValue in pairs (savedCVars) do
+				print("'" .. CVarName .. "' = " .. (get_cvar_value(CVarValue) or "<not set>"))
 			end
 		end
 	end
@@ -2784,6 +2816,9 @@ local class_specs_coords = {
 			
 			-- hook CVar saving
 			hooksecurefunc('SetCVar', Plater.SaveConsoleVariables)
+			if C_CVar and C_CVar.SetCVar then
+				hooksecurefunc(C_CVar, 'SetCVar', Plater.SaveConsoleVariables)
+			end
 			hooksecurefunc('ConsoleExec', function(console)
 				local par1, par2, par3 = console:match('^(%S+)%s+(%S+)%s*(%S*)')
 				if par1 then
@@ -12449,6 +12484,10 @@ function SlashCmdList.PLATER (msg, editbox)
 		
 		return
 	
+	elseif (msg and msg:find("^cvar[s]?")) then
+		Plater.DebugCVars(msg:gsub("^cvar[s]? ?", ""))
+		return
+	
 	end
 	
 	local usage = "Usage Info:"
@@ -12460,6 +12499,7 @@ function SlashCmdList.PLATER (msg, editbox)
 	usage = usage .. "\n|cffffaeae/plater|r |cffffff33add|r: Adds the targeted unit to the NPC Cache"
 	usage = usage .. "\n|cffffaeae/plater|r |cffffff33colors|r: Opens the Plater color palette"
 	usage = usage .. "\n|cffffaeae/plater|r |cffffff33minimap|r: Toggle the Plater minimap icon"
+	usage = usage .. "\n|cffffaeae/plater|r |cffffff33cvar <cvar name>|r: Print information about a cvar value stored in the profile."
 	usage = usage .. "\n|cffffaeaeVersion:|r |cffffff33" .. Plater.GetVersionInfo() .. "|r"
 	Plater:Msg(usage)
 	
