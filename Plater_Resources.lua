@@ -279,7 +279,7 @@ end
                 end
 
                 --update the resource bar
-                Plater.Resources.UpdateResourceBar(_, resourceBar)
+                Plater.Resources.UpdateResourceBar(nil, resourceBar)
             end
         else
             --player opt-out of using plater resources on this character
@@ -867,6 +867,7 @@ end
                 else
                     thisResourceWidget:SetPoint("left", lastResourceWidget, "right", DB_PLATER_RESOURCE_PADDING, 0)
                 end
+                thisResourceWidget:Hide() -- ensure 'reset'. will be shown through update later, if needed.
 
                 local widgetBackground = resourceBar.widgetsBackground[i]
                 widgetBackground:SetSize(widgetWidth, widgetHeight)
@@ -988,6 +989,7 @@ end
         --calculate how many widgets need to be shown or need to be hide
         if (currentResources < resourceBar.lastResourceAmount) then --hide widgets
             for i = floor(resourceBar.lastResourceAmount), currentResources+1, -1 do
+                resourceBar.widgets[i].ShowAnimation:Stop()
                 resourceBar.widgets[i]:Hide()
             end
 
