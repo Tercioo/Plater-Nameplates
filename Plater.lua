@@ -8914,6 +8914,8 @@ function Plater.SetCVarsOnFirstRun()
 		C_Timer.After (1, function() Plater.SetCVarsOnFirstRun() end)
 		return
 	end
+	
+	canSaveCVars = false -- ensure to not overwrite profile
 
 	--> these are the cvars set for each character when they logon
 	
@@ -9008,6 +9010,10 @@ function Plater.SetCVarsOnFirstRun()
 	--]=]
 	
 	--Plater:Msg ("Plater has been successfully installed on this character.")
+	
+	Plater.RestoreProfileCVars() -- restore profile, if existing
+	
+	canSaveCVars = true -- save cvars again
 
 end
 
