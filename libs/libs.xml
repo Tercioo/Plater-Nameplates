@@ -25,6 +25,7 @@
 	<Script file="LibClassicCasterino\LibClassicCasterino.lua"/>
 	<Include file="LibClassicDurations\LibClassicDurations.xml"/>
 	
+	<Include file="LibOpenRaid\lib.xml"/>
 	<Include file="LibTranslit-1.0\LibTranslit-1.0.xml"/>
 	<Include file="DF\load.xml"/>
 </Ui>
