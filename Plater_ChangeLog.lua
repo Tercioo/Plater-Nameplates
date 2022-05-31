@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1652698988,  "Backend Change", "May 31st, 2022", "Casts which result in a channeled spell should now re-trigger scripts 'On Show' code when the chast is finished and channel starts.", "cont1nuity"},
 			{1652698988,  "Backend Change", "May 19th, 2022", "Changing the way CVars are stored / restored to counter some restoring issues and adding '/plater cvars <cvar>' command for debug information.", "cont1nuity"},
 			{1652698988,  "Bug Fix", "May 19th, 2022", "Fixing an issue with plater resources (Combo Points) not showing the correct amount sometimes.", "cont1nuity"},
 			{1652698988,  "New Feature", "May 16th, 2022", "Adding 'Wago Imports' options tab to show companion app updates and imports.", "cont1nuity"},
