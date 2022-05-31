@@ -6677,8 +6677,8 @@ local relevance_options = {
 				Plater.db.profile.honor_blizzard_plate_alpha = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Use Blizzard's Nameplate Alpha" .. CVarIcon,
-			desc = "Use the 'occluded' and other blizzard nameplate alpha values from blizzard settings.\n\nThis setting only works with 'Use custom strata channels' enabled." .. CVarDesc,
+			name = "Use Blizzard's Nameplate Alpha",
+			desc = "Use the 'occluded' and other blizzard nameplate alpha values from blizzard settings.\n\nThis setting only works with 'Use custom strata channels' enabled.",
 			id = "transparency_blizzard_alpha",
 		},
 		{
@@ -13326,7 +13326,7 @@ end
 					self:SetValue (GetCVar ("nameplateShowFriendlyGuardians") == CVAR_ENABLED)
 				end
 			end,
-			name = "Show Friendly Guadians" .. CVarIcon,
+			name = "Show Friendly Guardians" .. CVarIcon,
 			desc = "Show nameplates for friendly pets considered as guardian" .. CVarDesc,
 			nocombat = true,
 		},
