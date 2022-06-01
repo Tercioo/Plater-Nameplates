@@ -1772,7 +1772,7 @@ function Plater.CreateWagoPanel()
 	wagoSlugFrame:SetPoint("bottomright", wagoFrame, "bottomright")
 	wagoFrame.wagoSlugFrame = wagoSlugFrame
 	wagoSlugFrame:Show()
-	wagoSlugFrame:SetScript("OnShow", function()  end)
+	--wagoSlugFrame:SetScript("OnShow", function()  end)
 	
 	local wagoStashFrame = CreateFrame ("frame", "$parentWagoStashFrame", wagoFrame)
 	wagoStashFrame:SetPoint("topleft", wagoFrame, "topleft")
@@ -1813,6 +1813,7 @@ function Plater.CreateWagoPanel()
 	
 	
 	wagoSlugFrame.ScriptScrollLabel.text = "Updates/Imports"
+	wagoSlugFrame.ScriptSearchTextEntry.widget:SetPoint ("topleft", wagoFrame, "topleft", 10, start_y - 10)
 	wagoSlugFrame.ScriptSelectionScrollBox:SetPoint ("topleft", wagoSlugFrame.ScriptSearchTextEntry.widget, "bottomleft", 0, -20)
 	wagoSlugFrame.ScriptScrollLabel:SetPoint ("bottomleft", wagoSlugFrame.ScriptSelectionScrollBox, "topleft", 0, 2)
 	wagoSlugFrame.ScriptEnabledLabel:Hide()
