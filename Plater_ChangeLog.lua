@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1654159795,  "Backend Change", "June 2nd, 2022", "Adding separate color setting for 'channelled cast'.", "cont1nuity"},
+			
 			{1654070113,  "Backend Change", "June 1st, 2022", "Retail toc update.", "cont1nuity"},
 			{1654070113,  "Backend Change", "May 31st, 2022", "Casts which result in a channeled spell should now re-trigger scripts 'On Show' code when the chast is finished and channel starts.", "cont1nuity"},
 			{1654070113,  "Backend Change", "May 21st, 2022", "Library updates.", "Terciob"},

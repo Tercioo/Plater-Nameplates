@@ -7543,7 +7543,7 @@ end
 			
 			local colors = castBar.Settings.Colors
 			colors.Casting:SetColor (profile.cast_statusbar_color)
-			colors.Channeling:SetColor (profile.cast_statusbar_color) --for channeling color, use the same color as the regular cast
+			colors.Channeling:SetColor (profile.cast_statusbar_color_channeling)
 			colors.NonInterruptible:SetColor (profile.cast_statusbar_color_nointerrupt)
 			colors.Interrupted:SetColor (profile.cast_statusbar_color_interrupted)
 			colors.Finished:SetColor (profile.cast_statusbar_color_finished)

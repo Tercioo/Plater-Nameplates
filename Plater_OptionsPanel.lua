@@ -12397,6 +12397,21 @@ end
 		{
 			type = "color",
 			get = function()
+				local color = Plater.db.profile.cast_statusbar_color_channeling
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.cast_statusbar_color_channeling
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllPlates()
+				Plater.DoCastBarTest()
+			end,
+			name = "Channelled Cast",
+			desc = "Channelled Cast",
+		},
+		{
+			type = "color",
+			get = function()
 				local color = Plater.db.profile.cast_statusbar_color_nointerrupt
 				return {color[1], color[2], color[3], color[4]}
 			end,
