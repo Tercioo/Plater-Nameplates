@@ -40,11 +40,13 @@ end
 function Plater.Auras.GhostAuras.AddGhostAura(spellId)
     local auraList = Plater.Auras.GhostAuras.GetAuraListForCurrentSpec()
     auraList[spellId] = true
+    Plater.UpdateGhostAurasCache()
 end
 
 function Plater.Auras.GhostAuras.RemoveGhostAura(spellId)
     local auraList = Plater.Auras.GhostAuras.GetAuraListForCurrentSpec()
     auraList[spellId] = nil
+    Plater.UpdateGhostAurasCache()
 end
 
 --refresh caches when spec changes
