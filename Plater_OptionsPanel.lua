@@ -3763,12 +3763,11 @@ Plater.CreateAuraTesting()
 			for i = 1, #scripts do
 				local scriptObject = scripts [i]
 				if (scriptObject.ScriptType == 1 or scriptObject.ScriptType == 2) then
-					tinsert (t, {0, 0, scriptObject.Name, scriptObject.Enabled and 1 or 0, label = scriptObject.Name, value = i, color = scriptObject.Enabled and "white" or "red", onclick = line_onclick_trigger_dropdown, desc = scriptObject.Desc})
+					tinsert (t, {0, 0, scriptObject.Name, scriptObject.Enabled and 1 or 0, 0, label = scriptObject.Name, value = i, color = scriptObject.Enabled and "white" or "red", onclick = line_onclick_trigger_dropdown, desc = scriptObject.Desc})
 				end
 			end
 			
 			table.sort (t, Plater.SortScripts)
-			
 			return t
 		end
 		
