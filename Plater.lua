@@ -5390,7 +5390,7 @@ end
 		--not in combat or aggro isn't changing the healthbar color
 		if (forceRefresh or not InCombatLockdown() or not DB_AGGRO_CHANGE_HEALTHBAR_COLOR) then
 			--isn't a quest
-			if (not unitFrame [MEMBER_QUEST]) then
+			if (not unitFrame [MEMBER_QUEST] or not DB_PLATE_CONFIG [unitFrame.ActorType].quest_color_enabled) then
 				local reaction = unitFrame [MEMBER_REACTION]
 				--has a valid reaction
 				if (reaction) then
