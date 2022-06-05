@@ -36,7 +36,7 @@ end
 --tab indexes
 local PLATER_OPTIONS_SCRIPTING_TAB = 6
 local PLATER_OPTIONS_HOOKING_TAB = 7
-local PLATER_OPTIONS_WAGO_TAB = 26
+local PLATER_OPTIONS_WAGO_TAB = 25
 
 --options
 local start_y = -130

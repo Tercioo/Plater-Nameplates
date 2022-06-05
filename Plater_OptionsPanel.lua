@@ -241,8 +241,8 @@ function Plater.OpenOptionsPanel()
 		{name = "AdvancedConfig",			title = L["OPTIONS_TABNAME_ADVANCED"]},
 		{name = "resourceFrame",			title = L["OPTIONS_TABNAME_COMBOPOINTS"]},
 
-		{name = "SearchFrame", title = L["OPTIONS_TABNAME_SEARCH"]},
 		{name = "WagoIo", title = "Wago Imports"}, --wago_imports --localize-me
+		{name = "SearchFrame", title = L["OPTIONS_TABNAME_SEARCH"]},
 		
 	}, 
 	frame_options, hookList)
@@ -338,8 +338,8 @@ function Plater.OpenOptionsPanel()
 	local resourceFrame			= mainFrame.AllFrames [24]
 
 	--4th row
-	local searchFrame			= mainFrame.AllFrames [25]
-	local wagoIoFrame 			= mainFrame.AllFrames [26] --wago_imports
+	local wagoIoFrame 			= mainFrame.AllFrames [25] --wago_imports
+	local searchFrame			= mainFrame.AllFrames [26]
 
 	local scriptButton		= mainFrame.AllButtons [6] --also need update on line 115 and 13818
 	local modButton		 	= mainFrame.AllButtons [7]
