@@ -2548,7 +2548,7 @@ local class_specs_coords = {
 			Plater.RefreshTankCache()
 			
 			--Plater.UpdateAuraCache()
-			Plater.UpdateAllPlates()
+			Plater.UpdateAllPlates(false, false, true)
 			
 			--check if can run combat enter hook and schedule it true
 			if (HOOK_COMBAT_ENTER.ScriptAmount > 0) then
@@ -5541,11 +5541,11 @@ end
 	end
 
 	--full refresh calls
-	function Plater.UpdateAllPlates (forceUpdate, justAdded) --private
+	function Plater.UpdateAllPlates (forceUpdate, justAdded, regenDisabled) --private
 		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 			if plateFrame.unitFrame and plateFrame.unitFrame.PlaterOnScreen then
 				Plater.AddToAuraUpdate(plateFrame.unitFrame.unit) -- force aura update
-				Plater.UpdatePlateFrame (plateFrame, nil, forceUpdate, justAdded)
+				Plater.UpdatePlateFrame (plateFrame, nil, forceUpdate, justAdded, regenDisabled)
 				--trigger a nameplate updated event
 				Plater.TriggerNameplateUpdatedEvent(plateFrame.unitFrame)
 			end
@@ -7293,7 +7293,7 @@ end
 	end
 
 	-- ~updateplate ~update ~updatenameplate
-	function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate, justAdded)
+	function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate, justAdded, regenDisabled)
 		Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdatePlateFrame")
 		
 		actorType = actorType or plateFrame.actorType
@@ -7610,7 +7610,7 @@ end
 		Plater.UpdatePlateRaidMarker (plateFrame)
 		
 		--indicators for the unit
-		Plater.UpdateIndicators (plateFrame, actorType)
+		Plater.UpdateIndicators (plateFrame, actorType, regenDisabled)
 		
 		--update the visibility of the health text
 		Plater.UpdateLifePercentVisibility (plateFrame)
@@ -7825,19 +7825,25 @@ end
 	end
 
 	-- ~indicators
-	function Plater.UpdateIndicators (plateFrame, actorType)
+	function Plater.UpdateIndicators (plateFrame, actorType, regenDisabled)
 		--limpa os indicadores
 		Plater.ClearIndicators (plateFrame)
 		local config = Plater.db.profile
 		
 		if (actorType == ACTORTYPE_ENEMY_PLAYER) then
 			if (config.indicator_faction) then
-				Plater.AddIndicator (plateFrame, UnitFactionGroup (plateFrame.unitFrame [MEMBER_UNITID]))
+				--don't show faction icon on arena of battleground, it's kinda useless (terciob july 2022)
+				if (Plater.ZoneInstanceType ~= "pvp" and Plater.ZoneInstanceType ~= "arena") then
+					Plater.AddIndicator (plateFrame, UnitFactionGroup (plateFrame.unitFrame [MEMBER_UNITID]))
+				end
 			end
+
 			if (config.indicator_enemyclass) then
 				Plater.AddIndicator (plateFrame, "classicon")
 			end
-			if (config.indicator_spec) then
+
+			--don't show spec icon during combat, it occupies a valuable space (terciob july 2022)
+			if (config.indicator_spec and not InCombatLockdown() and not regenDisabled) then
 				-- use BG info if available
 				local texture, L, R, T, B = Plater.GetSpecIconForUnitFromBG(plateFrame.unitFrame [MEMBER_UNITID])
 				if texture then
