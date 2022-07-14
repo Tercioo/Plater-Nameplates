@@ -8,6 +8,9 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1657813887,  "Backend Change", "July 14th, 2022", "On Arena and Battleground, faction and spec icons are now hidden while in combat.", "Terciob"},
+			{1657813887,  "Backend Change", "July 14th, 2022", "Dispellable buffs won't show if its duration is bigger than 2 minutes.", "Terciob"},
+
 			{1654159795,  "Bug Fix", "June 4th, 2022", "Update Ghost Auras when adding or removing.", "cont1nuity"},
 			{1654159795,  "Backend Change", "June 2nd, 2022", "Adding separate color setting for 'channelled cast'.", "cont1nuity"},
 			
