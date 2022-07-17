@@ -833,6 +833,7 @@ PLATER_DEFAULT_SETTINGS = {
 		
 		aura_show_important = true,
 		aura_show_dispellable = true,
+		aura_show_only_short_dispellable_on_players = false,
 		aura_show_enrage = false,
 		aura_show_magic = false,
 		aura_show_aura_by_the_player = true,

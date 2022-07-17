@@ -2141,6 +2141,18 @@ local debuff_options = {
 	
 	{
 		type = "toggle",
+		get = function() return Plater.db.profile.aura_show_only_short_dispellable_on_players end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_only_short_dispellable_on_players = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Only short Dispellable Buffs on Players",
+		desc = "Show auras which can be dispelled or stolen on players if they are below 120sec duration (only applicable when 'Show Dispellable Buffs' is enabled).",
+	},
+	
+	{
+		type = "toggle",
 		get = function() return Plater.db.profile.aura_show_enrage end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_show_enrage = value

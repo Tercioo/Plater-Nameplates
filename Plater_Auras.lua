@@ -44,6 +44,7 @@ local DB_AURA_SHOW_BYPLAYER
 local DB_AURA_SHOW_BYOTHERPLAYERS
 local DB_BUFF_BANNED
 local DB_AURA_SHOW_DISPELLABLE
+local DB_AURA_SHOW_ONLY_SHORT_DISPELLABLE_ON_PLAYERS
 local DB_AURA_SHOW_ENRAGE
 local DB_AURA_SHOW_MAGIC
 local DB_AURA_SHOW_BYUNIT
@@ -1628,10 +1629,11 @@ end
 							
 							--> is dispellable or can be steal
 							elseif (DB_AURA_SHOW_DISPELLABLE and canStealOrPurge) then
-								if (self.unitFrame.isPlayer) then
+								if (self.unitFrame.isPlayer and DB_AURA_SHOW_ONLY_SHORT_DISPELLABLE_ON_PLAYERS) then
 									--don't show dispellable on players if the duration is bigger than 2 minutes (terciob july 2022)
 									--this avoid showing big buffs like power word: fortitute
-									if (duration < 120) then
+									--show infinite as well and option to enable this separately (continuity, july 2022)
+									if (duration == 0 or duration < 120) then
 										local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
 										Plater.AddAura (buffFrame, auraIconFrame, buffIndex, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, nil, nil, nil, nil, actualAuraType, auraAmount)
 									end
@@ -2115,6 +2117,7 @@ end
 
 		DB_AURA_SHOW_IMPORTANT = profile.aura_show_important
 		DB_AURA_SHOW_DISPELLABLE = profile.aura_show_dispellable
+		DB_AURA_SHOW_ONLY_SHORT_DISPELLABLE_ON_PLAYERS = profile.aura_show_only_short_dispellable_on_players
 		DB_AURA_SHOW_ENRAGE = profile.aura_show_enrage
 		DB_AURA_SHOW_MAGIC = profile.aura_show_magic
 		DB_AURA_SHOW_BYPLAYER = profile.aura_show_aura_by_the_player
