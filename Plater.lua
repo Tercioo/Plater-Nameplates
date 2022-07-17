@@ -4857,15 +4857,14 @@ function Plater.OnInit() --private --~oninit ~init
 						return
 					end
 					
-					-- if we are starting a channel but it is an immediate channel from a starting cast, then needs to trigger OnShow again
-					if (event == "UNIT_SPELLCAST_CHANNEL_START") then
-						local globalScriptObject = SCRIPT_CASTBAR_TRIGGER_CACHE[self.SpellName]
-						if (globalScriptObject and self.SpellEndTime and GetTime() < self.SpellEndTime and (self.casting or self.channeling) and not self.IsInterrupted) then
-							local scriptContainer = self:ScriptGetContainer()
-							local scriptInfo = self:ScriptGetInfo (globalScriptObject, scriptContainer)
-							scriptInfo.IsActive = false
-						end
+					-- if we are starting a cast but it is an immediate chained cast, then needs to trigger OnShow again					
+					local globalScriptObject = SCRIPT_CASTBAR_TRIGGER_CACHE[self.SpellName]
+					if (globalScriptObject and self.SpellEndTime and GetTime() < self.SpellEndTime and (self.casting or self.channeling) and not self.IsInterrupted) then
+						local scriptContainer = self:ScriptGetContainer()
+						local scriptInfo = self:ScriptGetInfo (globalScriptObject, scriptContainer)
+						scriptInfo.IsActive = false
 					end
+					
 					
 					--local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, spellId = UnitCastingInfo (unitCast)
 					self.SpellName = 		self.spellName
