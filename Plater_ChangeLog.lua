@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1654119895,  "New Feature", "July 25th, 2022", "Support for WotLK DK runes (Combo Point settings).", "cont1nuity"},
+			
 			{1657813887,  "Backend Change", "July 14th, 2022", "On Arena and Battleground, faction and spec icons are now hidden while in combat.", "Terciob"},
 			{1657813887,  "Backend Change", "July 14th, 2022", "Dispellable buffs won't show if its duration is bigger than 2 minutes.", "Terciob"},
 
