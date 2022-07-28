@@ -3918,10 +3918,12 @@ local class_specs_coords = {
 							end
 							
 							--get threat situation to expose it to scripts already in the nameplate added hook
-							local isTanking, threatStatus, threatpct = UnitDetailedThreatSituation ("player", unitID)
+							local isTanking, threatStatus, threatpct, threatrawpct, threatValue = UnitDetailedThreatSituation ("player", unitID)
 							unitFrame.namePlateThreatIsTanking = isTanking
 							unitFrame.namePlateThreatStatus = threatStatus
 							unitFrame.namePlateThreatPercent = threatpct or 0
+							unitFrame.namePlateThreatRawPercent = threatrawpct or 0
+							unitFrame.namePlateThreatValue = threatValue or 0
 
 							Plater.UpdateNameOnRenamedUnit(plateFrame)
 						end
@@ -6169,12 +6171,14 @@ end
 		
 		local profile = Plater.db.profile
 		
-		local isTanking, threatStatus, threatpct = UnitDetailedThreatSituation ("player", self.displayedUnit)
+		local isTanking, threatStatus, threatpct, threatrawpct, threatValue = UnitDetailedThreatSituation ("player", self.displayedUnit)
 		
 		--expose all threat situation to scripts
 		self.namePlateThreatIsTanking = isTanking
 		self.namePlateThreatStatus = threatStatus
 		self.namePlateThreatPercent = threatpct or 0
+		self.namePlateThreatRawPercent = threatrawpct or 0
+		self.namePlateThreatValue = threatValue or 0
 		-- (3 = securely tanking, 2 = insecurely tanking, 1 = not tanking but higher threat than tank, 0 = not tanking and lower threat than tank)
 		self.namePlateThreatOffTankIsTanking = false
 		self.namePlateThreatOffTankName = nil
