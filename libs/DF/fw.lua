@@ -1,6 +1,6 @@
 
 
-local dversion = 322
+local dversion = 325
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
 
@@ -39,9 +39,9 @@ DF.AuthorInfo = {
 
 local PixelUtil = PixelUtil or DFPixelUtil
 if (not PixelUtil) then
-	--check if is in classic or TBC wow, if it is, build a replacement for PixelUtil
+	--check if is in classic, TBC, or WotLK wow, if it is, build a replacement for PixelUtil
 	local gameVersion = GetBuildInfo()
-	if (gameVersion:match("%d") == "1" or gameVersion:match("%d") == "2") then
+	if (gameVersion:match("%d") == "1" or gameVersion:match("%d") == "2" or gameVersion:match("%d") == "3") then
 		PixelUtil = {
 			SetWidth = function (self, width) self:SetWidth (width) end,
 			SetHeight = function (self, height) self:SetHeight (height) end,
@@ -52,7 +52,7 @@ if (not PixelUtil) then
 end
 
 function DF.IsTimewalkWoW()
-	return DF.IsClassicWow() or DF.IsTBCWow()
+	return DF.IsClassicWow() or DF.IsTBCWow() or DF.IsWotLKWow()
 end
 
 function DF.IsClassicWow()
@@ -66,6 +66,14 @@ end
 function DF.IsTBCWow()
 	local gameVersion = GetBuildInfo()
 	if (gameVersion:match ("%d") == "2") then
+		return true
+	end
+	return false
+end
+
+function DF.IsWotLKWow()
+	local gameVersion = GetBuildInfo()
+	if (gameVersion:match ("%d") == "3") then
 		return true
 	end
 	return false
@@ -108,6 +116,10 @@ local roleBySpecTextureName = {
 	WarriorArms = "DAMAGER",
 	WarriorFury = "DAMAGER",
 	WarriorProtection = "TANK",
+
+	DeathKnightBlood = "TANK",
+	DeathKnightFrost = "DAMAGER",
+	DeathKnightUnholy = "DAMAGER",
 }
 
 --classic, tbc and wotlk role guesser based on the weights of each talent tree
@@ -427,6 +439,26 @@ function DF.table.reverse (t)
 	return new
 end
 
+function DF.table.duplicate(t1, t2)
+	for key, value in pairs(t2) do
+		if (key ~= "__index" and key ~= "__newindex") then
+			--preserve a wowObject passing it to the new table with copying it
+			if (type(value) == "table" and table.GetObjectType and table:GetObjectType()) then
+				t1[key] = value
+
+			elseif (type (value) == "table") then
+				t1[key] = t1[key] or {}
+				DF.table.copy(t1[key], t2[key])
+
+			else
+				t1[key] = value
+			end
+		end
+	end
+
+	return t1
+end
+
 --> copy from table2 to table1 overwriting values
 function DF.table.copy(t1, t2)
 	for key, value in pairs(t2) do
@@ -455,6 +487,14 @@ function DF.table.copytocompress(t1, t2)
 				t1 [key] = value
 			end
 		end
+	end
+	return t1
+end
+
+--add the indexes of table2 into table1
+function DF.table.append(t1, t2)
+	for i = 1, #t2 do
+		t1[#t1+1] = t2[i]
 	end
 	return t1
 end
@@ -838,6 +878,21 @@ function DF:CleanTruncateUTF8String(text)
 	return text
 end
 
+--DF:TruncateNumber(number, fractionDigits): truncate the amount of numbers used to show fraction.
+function DF:TruncateNumber(number, fractionDigits)
+	fractionDigits = fractionDigits or 2
+	--local truncatedNumber = format("%." .. fractionDigits .. "f", number) --4x slower than:
+	--http://lua-users.org/wiki/SimpleRound
+	local mult = 10 ^ fractionDigits
+	if (number >= 0) then
+		truncatedNumber = floor(number * mult + 0.5) / mult
+	else
+		truncatedNumber = ceil(number * mult + 0.5) / mult
+	end
+
+	return truncatedNumber
+end
+
 function DF:Msg (msg, ...)
 	print ("|cFFFFFFAA" .. (self.__name or "FW Msg:") .. "|r ", msg, ...)
 end
@@ -1139,7 +1194,37 @@ end
 		
 		IsColorTable = true,
 	}
-	
+
+	--convert a any format of color to any other format of color
+	function DF:FormatColor(newFormat, r, g, b, a, decimalsAmount)
+		r, g, b, a = DF:ParseColors(r, g, b, a)
+		decimalsAmount = decimalsAmount or 4
+
+		r = DF:TruncateNumber(r, decimalsAmount)
+		g = DF:TruncateNumber(g, decimalsAmount)
+		b = DF:TruncateNumber(b, decimalsAmount)
+		a = DF:TruncateNumber(a, decimalsAmount)
+
+		if (newFormat == "commastring") then
+			return r .. ", " .. g .. ", " .. b .. ", " .. a
+
+		elseif (newFormat == "tablestring") then
+			return "{" .. r .. ", " .. g .. ", " .. b .. ", " .. a .. "}"
+
+		elseif (newFormat == "table") then
+			return {r, g, b, a}
+
+		elseif (newFormat == "tablemembers") then
+			return {["r"] = r, ["g"] = g, ["b"] = b, ["a"] = 1}
+
+		elseif (newFormat == "numbers") then
+			return r, g, b, a
+
+		elseif (newFormat == "hex") then
+			return format("%.2x%.2x%.2x%.2x", a * 255, r * 255, g * 255, b * 255)
+		end
+	end
+
 	function DF:CreateColorTable (r, g, b, a)
 		local t  = {
 			r = r or 1, 
@@ -1155,53 +1240,69 @@ end
 		return DF.alias_text_colors [color]
 	end
 
-	local tn = tonumber
-	function DF:ParseColors (_arg1, _arg2, _arg3, _arg4)
-		if (_type (_arg1) == "table") then
-			if (_arg1.IsColorTable) then
-				return _arg1:GetColor()
-				
-			elseif (not _arg1[1] and _arg1.r) then
-				_arg1, _arg2, _arg3, _arg4 = _arg1.r, _arg1.g, _arg1.b, _arg1.a
-				
+	function DF:ParseColors (red, green, blue, alpha)
+		local firstParameter = red
+
+		--the first value passed is a table?
+		if (type(firstParameter) == "table") then
+			local colorTable = red
+
+			if (colorTable.IsColorTable) then
+				--using colorTable mixin
+				return colorTable:GetColor()
+
+			elseif (not colorTable[1] and colorTable.r) then
+				--{["r"] = 1, ["g"] = 1, ["b"] = 1}
+				red, green, blue, alpha = colorTable.r, colorTable.g, colorTable.b, colorTable.a
+
 			else
-				_arg1, _arg2, _arg3, _arg4 = _unpack (_arg1)
+				--{1, .7, .2, 1}
+				red, green, blue, alpha = unpack(colorTable)
 			end
-		
-		elseif (_type (_arg1) == "string") then
-		
-			if (string.find (_arg1, "#")) then
-				_arg1 = _arg1:gsub ("#","")
-				if (string.len (_arg1) == 8) then --alpha
-					_arg1, _arg2, _arg3, _arg4 = tn ("0x" .. _arg1:sub (3, 4))/255, tn ("0x" .. _arg1:sub (5, 6))/255, tn ("0x" .. _arg1:sub (7, 8))/255, tn ("0x" .. _arg1:sub (1, 2))/255
+
+		--the first value passed is a string?
+		elseif (type(firstParameter) == "string") then
+			local colorString = red
+			--hexadecimal
+			if (string.find(colorString, "#")) then
+				colorString = colorString:gsub("#","")
+				if (string.len(colorString) == 8) then --with alpha
+					red, green, blue, alpha = tonumber("0x" .. colorString:sub(3, 4))/255, tonumber("0x" .. colorString:sub(5, 6))/255, tonumber("0x" .. colorString:sub(7, 8))/255, tonumber("0x" .. colorString:sub(1, 2))/255
 				else
-					_arg1, _arg2, _arg3, _arg4 = tn ("0x" .. _arg1:sub (1, 2))/255, tn ("0x" .. _arg1:sub (3, 4))/255, tn ("0x" .. _arg1:sub (5, 6))/255, 1
+					red, green, blue, alpha = tonumber("0x" .. colorString:sub(1, 2))/255, tonumber("0x" .. colorString:sub(3, 4))/255, tonumber("0x" .. colorString:sub(5, 6))/255, 1
 				end
-			
 			else
-				local color = DF.alias_text_colors [_arg1]
-				if (color) then
-					_arg1, _arg2, _arg3, _arg4 = _unpack (color)
+				--name of the color
+				local colorTable = DF.alias_text_colors[colorString]
+				if (colorTable) then
+					red, green, blue, alpha = unpack(colorTable)
+
+				--string with number separated by comma
+				elseif (colorString:find(",")) then
+					local r, g, b, a = strsplit(",", colorString)
+					red, green, blue, alpha = tonumber(r), tonumber(g), tonumber(b), tonumber(a)
+
 				else
-					_arg1, _arg2, _arg3, _arg4 = _unpack (DF.alias_text_colors.none)
+					--no color found within the string, return default color
+					red, green, blue, alpha = unpack(DF.alias_text_colors.none)
 				end
 			end
 		end
-		
-		if (not _arg1) then
-			_arg1 = 1
+
+		if (not red or type(red) ~= "number") then
+			red = 1
 		end
-		if (not _arg2) then
-			_arg2 = 1
+		if (not green) or type(green) ~= "number" then
+			green = 1
 		end
-		if (not _arg3) then
-			_arg3 = 1
+		if (not blue or type(blue) ~= "number") then
+			blue = 1
 		end
-		if (not _arg4) then
-			_arg4 = 1
+		if (not alpha or type(alpha) ~= "number") then
+			alpha = 1
 		end
-		
-		return _arg1, _arg2, _arg3, _arg4
+
+		return red, green, blue, alpha
 	end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
