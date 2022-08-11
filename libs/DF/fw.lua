@@ -1,6 +1,6 @@
 
 
-local dversion = 325
+local dversion = 327
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
 
@@ -802,10 +802,16 @@ local ValidOutlines = {
 function DF:SetFontOutline (fontString, outline)
 	local fonte, size = fontString:GetFont()
 	if (outline) then
-		if (ValidOutlines [outline]) then
+		if (type(outline) == "string") then
+			outline = outline:upper()
+		end
+
+		if (ValidOutlines[outline]) then
 			outline = outline
-		elseif (_type (outline) == "boolean" and outline) then
+		elseif (type(outline) == "boolean" and outline) then
 			outline = "OUTLINE"
+		elseif (type(outline) == "boolean" and not outline) then
+			outline = "NONE"
 		elseif (outline == 1) then
 			outline = "OUTLINE"
 		elseif (outline == 2) then
@@ -2480,7 +2486,7 @@ function DF:GetBestFontForLanguage (language, western, cyrillic, china, korean, 
 	end
 
 	if (language == "enUS" or language == "deDE" or language == "esES" or language == "esMX" or language == "frFR" or language == "itIT" or language == "ptBR") then
-		return western or "Accidental Presidency"
+		return western or "Friz Quadrata TT"
 		
 	elseif (language == "ruRU") then
 		return cyrillic or "Arial Narrow"
@@ -2499,8 +2505,8 @@ end
 
 --DF.font_templates ["ORANGE_FONT_TEMPLATE"] = {color = "orange", size = 11, font = "Accidental Presidency"}
 --DF.font_templates ["OPTIONS_FONT_TEMPLATE"] = {color = "yellow", size = 12, font = "Accidental Presidency"}
-DF.font_templates ["ORANGE_FONT_TEMPLATE"] = {color = "orange", size = 11, font = DF:GetBestFontForLanguage()}
-DF.font_templates ["OPTIONS_FONT_TEMPLATE"] = {color = "yellow", size = 12, font = DF:GetBestFontForLanguage()}
+DF.font_templates ["ORANGE_FONT_TEMPLATE"] = {color = "orange", size = 10, font = DF:GetBestFontForLanguage()}
+DF.font_templates ["OPTIONS_FONT_TEMPLATE"] = {color = "yellow", size = 10, font = DF:GetBestFontForLanguage()}
 
 -- dropdowns
 
@@ -3241,6 +3247,7 @@ function DF:CreateGlowOverlay (parent, antsColor, glowColor)
 	glowFrame.GlowColor = {r, g, b, a}
 	
 	glowFrame.outerGlow:SetScale (1.2)
+	glowFrame:EnableMouse(false)
 	return glowFrame
 end
 
@@ -3782,6 +3789,10 @@ function DF:GetCurrentSpec()
 	end
 end
 
+function DF:GetCurrentSpecId()
+	return DF:GetCurrentSpec()
+end
+
 local specs_per_class = {
 	["DEMONHUNTER"] = {577, 581},
 	["DEATHKNIGHT"] = {250, 251, 252},
@@ -3822,18 +3833,21 @@ function DF:QuickDispatch (func, ...)
 	return true
 end
 
-function DF:Dispatch (func, ...)
+function DF:Dispatch(func, ...)
 	if (type (func) ~= "function") then
-		return dispatch_error (_, "Dispatch required a function.")
+		return dispatch_error (_, "DF:Dispatch expect a function as parameter 1.")
 	end
 
-	local okay, result1, result2, result3, result4 = xpcall (func, geterrorhandler(), ...)
-	
+	local dispatchResult = {xpcall (func, geterrorhandler(), ...)}
+	local okay = dispatchResult[1]
+
 	if (not okay) then
 		return nil
 	end
-	
-	return result1, result2, result3, result4
+
+	tremove(dispatchResult, 1)
+
+	return unpack(dispatchResult)
 end
 
 --[=[
@@ -3989,7 +4003,7 @@ end
 
 --> store and return a list of character races, always return the non-localized value
 DF.RaceCache = {}
-function DF:GetCharacterRaceList (fullList)
+function DF:GetCharacterRaceList()
 	if (next (DF.RaceCache)) then
 		return DF.RaceCache
 	end
@@ -3997,13 +4011,13 @@ function DF:GetCharacterRaceList (fullList)
 	for i = 1, 100 do
 		local raceInfo = C_CreatureInfo.GetRaceInfo (i)
 		if (raceInfo and DF.RaceList [raceInfo.raceID]) then
-			tinsert (DF.RaceCache, {Name = raceInfo.raceName, FileString = raceInfo.clientFileString})
+			tinsert (DF.RaceCache, {Name = raceInfo.raceName, FileString = raceInfo.clientFileString, ID = raceInfo.raceID})
 		end
 		
 		if IS_WOW_PROJECT_MAINLINE then
 			local alliedRaceInfo = C_AlliedRaces.GetRaceInfoByID (i)
 			if (alliedRaceInfo and DF.AlliedRaceList [alliedRaceInfo.raceID]) then
-				tinsert (DF.RaceCache, {Name = alliedRaceInfo.maleName, FileString = alliedRaceInfo.raceFileString})
+				tinsert (DF.RaceCache, {Name = alliedRaceInfo.maleName, FileString = alliedRaceInfo.raceFileString, ID = alliedRaceInfo.raceID})
 			end
 		end
 	end
@@ -4133,6 +4147,11 @@ function DF:AddRoleIconToText(text, role, size)
 	end
 
 	return text
+end
+
+function DF:GetRoleTCoordsAndTexture(roleID)
+	local texture, l, r, t, b = DF:GetRoleIconAndCoords(roleID)
+	return l, r, t, b, texture
 end
 
 -- TODO: maybe make this auto-generaded some day?...
@@ -4332,6 +4351,10 @@ DF.BattlegroundSizes = {
 	[1803] = 10, --Seething Shore
 }
 
+function DF:GetBattlegroundSize(instanceInfoMapId)
+	return DF.BattlegroundSizes[instanceInfoMapId]
+end
+
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> execute range
 
@@ -4429,6 +4452,10 @@ function GetWorldDeltaSeconds()
 	return deltaTimeFrame.deltaTime
 end
 
+function DF:GetWorldDeltaSeconds()
+	return deltaTimeFrame.deltaTime
+end
+
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> build the global script channel for scripts communication
 --send and retrieve data sent by othe users in scripts
@@ -4457,6 +4484,7 @@ end
 						if (Ambiguate (sourceName, "none") == commSource) then
 							local func = DF.RegisteredScriptsComm [ID]
 							if (func) then
+								DF:MakeFunctionSecure(func)
 								DF:Dispatch (func, commSource, select (5, unpack (data))) --this use xpcall
 							end
 						end
@@ -4538,7 +4566,7 @@ do
         if (object) then
             tinsert(self.inUse, object)
 			if (self.onAcquire) then
-				local result, errortext = pcall(self.onAcquire, object)
+				DF:QuickDispatch(self.onAcquire, object)
 			end
 			return object, false
         else
@@ -4547,7 +4575,7 @@ do
             if (newObject) then
 				tinsert(self.inUse, newObject)
 				if (self.onAcquire) then
-					local result, errortext = pcall(self.onAcquire, object)
+					DF:QuickDispatch(self.onAcquire, object)
 				end
 				return newObject, true
             end
@@ -4563,6 +4591,10 @@ do
             if (self.inUse[i] == object) then
                 tremove(self.inUse, i)
                 tinsert(self.notUse, object)
+
+				if (self.onRelease) then
+					DF:QuickDispatch(self.onRelease, object)
+				end
                 break
             end
         end
@@ -4574,7 +4606,7 @@ do
             tinsert(self.notUse, object)
 
 			if (self.onReset) then
-				local result, errortext = pcall(self.onReset, object)
+				DF:QuickDispatch(self.onReset, object)
 			end
         end
 	end
@@ -4608,10 +4640,22 @@ do
 		Hide = hide,
 		Show = show,
 		GetAmount = getamount,
+
+		SetCallbackOnRelease = function(self, func)
+			self.onRelease = func
+		end,
+
 		SetOnReset = function(self, func)
 			self.onReset = func
 		end,
+		SetCallbackOnReleaseAll = function(self, func)
+			self.onReset = func
+		end,
+
 		SetOnAcquire = function(self, func)
+			self.onAcquire = func
+		end,
+		SetCallbackOnGet = function(self, func)
 			self.onAcquire = func
 		end,
     }
@@ -4662,7 +4706,7 @@ end
 		--block run code inside code
 		["RunScript"] = true,
 		["securecall"] = true,
-		["getfenv"] = true,
+		["setfenv"] = true,
 		["getfenv"] = true,
 		["loadstring"] = true,
 		["pcall"] = true,
@@ -4749,6 +4793,10 @@ end
 
 		setmetatable(newEnvironment, environmentHandle)
 		_G.setfenv(func, newEnvironment)
+	end
+
+	function DF:MakeFunctionSecure(func)
+		return DF:SetEnvironment(func)
 	end
 
 
