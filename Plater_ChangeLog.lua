@@ -7,7 +7,7 @@ local _
 function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
-		
+			{1660343737,  "New Feature", "August 12th, 2022", "Added Spells and New Scripts to support Season 4 for M+ Dungeons.", "Terciob"},
 			{1657813888,  "Bug Fix", "July 31st, 2022", "Fixing profile import from wago stash.", "cont1nuity"},
 			{1657813888,  "Backend Change", "July 28th, 2022", "Cache players threat raw percent and absolute threat values on unitFrame 'namePlateThreatRawPercent' and 'namePlateThreatValue' respectively.", "cont1nuity"},
 			{1657813888,  "Bug Fix", "July 25th, 2022", "Bug fix for broken DBM or BW installations for Boss-Mod support registration.", "cont1nuity"},
