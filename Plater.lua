@@ -5273,8 +5273,8 @@ function Plater.OnInit() --private --~oninit ~init
 
 	function Plater.OnHealthChange (self, unitId) --~health
 		if (self.isPerformanceUnit) then
-			--if this is a performance unit, it has a 33% change to update healthBar
-			if (math.random(1, 5) == 1) then
+			--reduce the amount of updates on performance units
+			if (math.random(1, 10) == 1) then
 				Plater.OnUpdateHealth(self)
 			end
 		else
@@ -5872,7 +5872,7 @@ end
 		end
 		
 		if (shouldUpdate and unitFrame.isPerformanceUnit) then
-			shouldUpdate = math.random(1, 4) == 1
+			shouldUpdate = math.random(1, 5) == 1
 		end
 
 		if (shouldUpdate) then
