@@ -125,6 +125,13 @@ end
 	Plater.Resources = {}
 	Plater.Auras = {}
 
+	--store npcIds for npcs which flood the screen with nameplates and can be quickly processed
+	--search .isPerformanceUnit for locations where there code for improve performance
+	--unitFrame.isPerformanceUnit healthBar.isPerformanceUnit
+	Plater.PerformanceUnits = {
+		[189706] = true, --chaotic essence (shadowlands season 4 raid affixes)
+		[189707] = true, --chaotic essence (shadowlands season 4 raid affixes)
+	}
 
 --all functions below can be overridden by scripts, hooks or any external code
 --this allows the user to fully modify Plater at a high level
@@ -3739,6 +3746,10 @@ local class_specs_coords = {
 			unitFrame.InExecuteRange = false
 			
 			unitFrame.IsInRange = nil
+
+			--reset performance unit
+			unitFrame.isPerformanceUnit = nil
+			unitFrame.healthBar.isPerformanceUnit = nil
 			
 			--check if this nameplate has an update scheduled
 			if (plateFrame.HasUpdateScheduled) then
@@ -3981,6 +3992,12 @@ local class_specs_coords = {
 			--resources - TODO:
 			Plater.Resources.UpdateResourceFramePosition() --~resource
 			
+			if (Plater.PerformanceUnits[plateFrame[MEMBER_NPCID]]) then
+				unitFrame.castBar:SetUnit(nil)
+				unitFrame.isPerformanceUnit = true
+				unitFrame.healthBar.isPerformanceUnit = true
+			end
+
 			--hooks
 			if (HOOK_NAMEPLATE_ADDED.ScriptAmount > 0) then
 				for i = 1, HOOK_NAMEPLATE_ADDED.ScriptAmount do
@@ -5142,7 +5159,7 @@ function Plater.OnInit() --private --~oninit ~init
 		end
 	end
 	
-	function Plater.OnUpdateHealth (self)
+	function Plater.OnUpdateHealth (self) --self is unitFrame.healthBar
 		if (not self.isNamePlate) then
 			--this is not a nameplate, perhaps another frame from the framework
 			return
@@ -5254,12 +5271,18 @@ function Plater.OnInit() --private --~oninit ~init
 		Plater.EndLogPerformanceCore("Plater-Core", "Health", "OnUpdateHealthMax")
 	end
 
-	function Plater.OnHealthChange (self, unitId)
-		Plater.OnUpdateHealth (self)
-		
-		--> run on health changed hook
-		if (HOOK_HEALTH_UPDATE.ScriptAmount > 0) then
-			return run_on_health_change_hook (self.unitFrame)
+	function Plater.OnHealthChange (self, unitId) --~health
+		if (self.isPerformanceUnit) then
+			--if this is a performance unit, it has a 33% change to update healthBar
+			if (math.random(1, 5) == 1) then
+				Plater.OnUpdateHealth(self)
+			end
+		else
+			Plater.OnUpdateHealth (self)
+			--> run on health changed hook
+			if (HOOK_HEALTH_UPDATE.ScriptAmount > 0) then
+				return run_on_health_change_hook (self.unitFrame)
+			end
 		end
 	end
 	
@@ -5848,6 +5871,10 @@ end
 			end
 		end
 		
+		if (shouldUpdate and unitFrame.isPerformanceUnit) then
+			shouldUpdate = math.random(1, 4) == 1
+		end
+
 		if (shouldUpdate) then
 			curFPSData.platesUpdatedThisFrame = curFPSData.platesUpdatedThisFrame + 1
 			
@@ -6131,14 +6158,14 @@ end
 
 		--OnTick updates
 			--smooth color transition ~lerpcolor
-			if (DB_LERP_COLOR) then
+			if (DB_LERP_COLOR and not unitFrame.isPerformanceUnit) then
 				local currentR, currentG, currentB = healthBar.barTexture:GetVertexColor()
 				local r, g, b = DF:LerpLinearColor (deltaTime, DB_LERP_COLOR_SPEED, currentR, currentG, currentB, healthBar.R or currentR, healthBar.G or currentG, healthBar.B or currentB)
 				healthBar.barTexture:SetVertexColor (r, g, b)
 			end
 			
 			--animate health bar ~animation
-			if (DB_DO_ANIMATIONS) then
+			if (DB_DO_ANIMATIONS and not unitFrame.isPerformanceUnit) then
 				if (healthBar.IsAnimating) then
 					healthBar.AnimateFunc (healthBar, deltaTime)
 				end
