@@ -5307,11 +5307,9 @@ function Plater.OnInit() --private --~oninit ~init
 	function Plater.OnHealthChange (self, unitId) --~health
 		Plater.OnUpdateHealth (self)
 		
-		if (not self.isPerformanceUnit) then
-			--> run on health changed hook
-			if (HOOK_HEALTH_UPDATE.ScriptAmount > 0) then
-				return run_on_health_change_hook (self.unitFrame)
-			end
+		--> run on health changed hook
+		if (HOOK_HEALTH_UPDATE.ScriptAmount > 0) then
+			return run_on_health_change_hook (self.unitFrame)
 		end
 	end
 	
