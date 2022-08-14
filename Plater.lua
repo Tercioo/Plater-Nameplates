@@ -5182,6 +5182,7 @@ function Plater.OnInit() --private --~oninit ~init
 	end
 	
 	local run_on_health_change_hook = function (unitFrame)
+		if unitFrame.isPerformanceUnit then return end -- don't run health update hooks on performance units
 		for i = 1, HOOK_HEALTH_UPDATE.ScriptAmount do
 			local globalScriptObject = HOOK_HEALTH_UPDATE [i]
 			local scriptContainer = unitFrame:ScriptGetContainer()

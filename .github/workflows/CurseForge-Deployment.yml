@@ -49,6 +49,12 @@ jobs:
         with:
           args: -g bcc -n '{project-version}{classic}'
 
+      - name: Package and Release - Wrath
+        uses: BigWigsMods/packager@master
+        #continue-on-error: true
+        with:
+          args: -g wrath -n '{project-version}{classic}'
+
       - name: Package and Release - Retail
         uses: BigWigsMods/packager@master
         #continue-on-error: true
