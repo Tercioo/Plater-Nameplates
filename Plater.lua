@@ -3977,7 +3977,6 @@ local class_specs_coords = {
 			plateFrame.OnTickFrame.ThrottleUpdate = DB_TICK_THROTTLE
 			plateFrame.OnTickFrame.actorType = actorType
 			plateFrame.OnTickFrame.unit = unitID
-			plateFrame.OnTickFrame:SetScript ("OnUpdate", Plater.NameplateTick)
 
 			--highlight check
 			if (DB_HOVER_HIGHLIGHT and (not plateFrame.PlayerCannotAttack or (plateFrame.PlayerCannotAttack and DB_SHOW_HEALTHBARS_FOR_NOT_ATTACKABLE)) and (actorType == ACTORTYPE_ENEMY_PLAYER or actorType == ACTORTYPE_ENEMY_NPC)) then
@@ -3996,6 +3995,9 @@ local class_specs_coords = {
 				unitFrame.castBar:SetUnit(nil)
 				unitFrame.isPerformanceUnit = true
 				unitFrame.healthBar.isPerformanceUnit = true
+			else
+				--if isn't a performance unit, start the tick on update
+				plateFrame.OnTickFrame:SetScript ("OnUpdate", Plater.NameplateTick)
 			end
 
 			--hooks
@@ -5871,9 +5873,10 @@ end
 			end
 		end
 		
-		if (shouldUpdate and unitFrame.isPerformanceUnit) then
-			shouldUpdate = math.random(1, 5) == 1
-		end
+		--if (unitFrame.isPerformanceUnit) then
+			--houldUpdate = math.random(1, 5) == 1
+			--print("running tick on performance unitt")
+		--end --not unitFrame.isPerformanceUnit
 
 		if (shouldUpdate) then
 			curFPSData.platesUpdatedThisFrame = curFPSData.platesUpdatedThisFrame + 1
