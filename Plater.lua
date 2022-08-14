@@ -3730,7 +3730,7 @@ local class_specs_coords = {
 			unitFrame.healthBar.isPerformanceUnit = nil
 			
 			if (Plater.PerformanceUnits[plateFrame[MEMBER_NPCID]]) then
-				print("perf", plateFrame[MEMBER_NPCID])
+				--print("perf", plateFrame[MEMBER_NPCID])
 				unitFrame.castBar:SetUnit(nil) -- no casts
 				Plater.RemoveFromAuraUpdate (unitID) -- no auras
 				unitFrame.isPerformanceUnit = true
@@ -5306,9 +5306,11 @@ function Plater.OnInit() --private --~oninit ~init
 	function Plater.OnHealthChange (self, unitId) --~health
 		Plater.OnUpdateHealth (self)
 		
-		--> run on health changed hook
-		if (HOOK_HEALTH_UPDATE.ScriptAmount > 0) then
-			return run_on_health_change_hook (self.unitFrame)
+		if (not self.isPerformanceUnit) then
+			--> run on health changed hook
+			if (HOOK_HEALTH_UPDATE.ScriptAmount > 0) then
+				return run_on_health_change_hook (self.unitFrame)
+			end
 		end
 	end
 	
