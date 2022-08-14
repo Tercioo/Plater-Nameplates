@@ -12677,7 +12677,7 @@ end
 
 	_G.C_Timer.After(0.800, function() --~delay
 		--the -30 is to fix an annomaly where the options for castbars starts 30 pixels to the right, dunno why (tercio)
-		DF:BuildMenu (castBarFrame, castBar_options, startX - 30, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)	
+		DF:BuildMenu (castBarFrame, castBar_options, startX-20, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)	
 	end)
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
