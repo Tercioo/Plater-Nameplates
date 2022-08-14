@@ -7,11 +7,14 @@ local _
 function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
-			{1660343737,  "New Feature", "August 12th, 2022", "Added Spells and New Scripts to support Season 4 for M+ Dungeons.", "Terciob"},
-			{1657813888,  "Bug Fix", "July 31st, 2022", "Fixing profile import from wago stash.", "cont1nuity"},
-			{1657813888,  "Backend Change", "July 28th, 2022", "Cache players threat raw percent and absolute threat values on unitFrame 'namePlateThreatRawPercent' and 'namePlateThreatValue' respectively.", "cont1nuity"},
-			{1657813888,  "Bug Fix", "July 25th, 2022", "Bug fix for broken DBM or BW installations for Boss-Mod support registration.", "cont1nuity"},
-			{1657813888,  "New Feature", "July 25th, 2022", "Support for WotLK DK runes (Combo Point settings).", "cont1nuity"},
+			
+			{1660508009,  "New Feature", "August 14th, 2022", "Added 'Forced Blizzard Nameplate Units' which will always show blizzard nameplates. Use 'Plater.AddForceBlizzardNameplateUnits(npcID)' / 'Plater.RemoveForceBlizzardNameplateUnits(npcID)' in a mod to add/remove them to the list.", "cont1nuity"},
+			{1660508009,  "New Feature", "August 13th, 2022", "Added 'Performance Units' which won't have auras, threat and other high usage things enabled. Use 'Plater.AddPerformanceUnits(npcID)' / 'Plater.RemovePerformanceUnits(npcID)' in a mod to add/remove them to the list.", "Terciob"},
+			{1660508009,  "New Feature", "August 12th, 2022", "Added Spells and New Scripts to support Season 4 for M+ Dungeons.", "Terciob"},
+			{1660508009,  "Bug Fix", "July 31st, 2022", "Fixing profile import from wago stash.", "cont1nuity"},
+			{1660508009,  "Backend Change", "July 28th, 2022", "Cache players threat raw percent and absolute threat values on unitFrame 'namePlateThreatRawPercent' and 'namePlateThreatValue' respectively.", "cont1nuity"},
+			{1660508009,  "Bug Fix", "July 25th, 2022", "Bug fix for broken DBM or BW installations for Boss-Mod support registration.", "cont1nuity"},
+			{1660508009,  "New Feature", "July 25th, 2022", "Support for WotLK DK runes (Combo Point settings).", "cont1nuity"},
 			
 			{1657813887,  "Backend Change", "July 14th, 2022", "On Arena and Battleground, faction and spec icons are now hidden while in combat.", "Terciob"},
 			{1657813887,  "Backend Change", "July 14th, 2022", "Dispellable buffs won't show if its duration is bigger than 2 minutes.", "Terciob"},

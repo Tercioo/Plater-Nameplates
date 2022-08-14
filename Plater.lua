@@ -132,6 +132,33 @@ end
 		[189706] = true, --chaotic essence (shadowlands season 4 raid affixes)
 		[189707] = true, --chaotic essence (shadowlands season 4 raid affixes)
 	}
+	
+	--setter
+	Plater.AddPerformanceUnits = function (npcID)
+		if type(npcID) == "number" then
+			Plater.PerformanceUnits[npcID] = true
+		end
+	end
+	Plater.RemovePerformanceUnits = function (npcID)
+		if type(npcID) == "number" then
+			Plater.PerformanceUnits[npcID] = nil
+		end
+	end
+	
+	Plater.ForceBlizzardNameplateUnits = {
+		--
+	}
+	
+	Plater.AddForceBlizzardNameplateUnits = function(npcID)
+		if type(npcID) == "number" then
+			Plater.ForceBlizzardNameplateUnits[npcID] = true
+		end
+	end
+	Plater.RemoveForceBlizzardNameplateUnits = function(npcID)
+		if type(npcID) == "number" then
+			Plater.ForceBlizzardNameplateUnits[npcID] = nil
+		end
+	end
 
 --all functions below can be overridden by scripts, hooks or any external code
 --this allows the user to fully modify Plater at a high level
@@ -2543,7 +2570,9 @@ local class_specs_coords = {
 		UNIT_PET = function(_, unit)
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 				if plateFrame.unitFrame and plateFrame.unitFrame.PlaterOnScreen then
-					Plater.AddToAuraUpdate(plateFrame.unitFrame.unit) -- force aura update
+					if not plateFrame.unitFrame.isPerformanceUnit then
+						Plater.AddToAuraUpdate(plateFrame.unitFrame.unit) -- force aura update
+					end
 					Plater.ScheduleUpdateForNameplate (plateFrame)
 				end
 			end
@@ -3558,6 +3587,14 @@ local class_specs_coords = {
 			local isPlayer = UnitIsPlayer (unitID)
 			local isSelf = UnitIsUnit (unitID, "player")
 			
+			plateFrame [MEMBER_NPCID] = nil
+			plateFrame.unitFrame [MEMBER_NPCID] = nil
+			plateFrame [MEMBER_GUID] = UnitGUID (unitID) or ""
+			plateFrame.unitFrame [MEMBER_GUID] = plateFrame [MEMBER_GUID]
+			if (not isPlayer) then
+				Plater.GetNpcID (plateFrame)
+			end
+			
 			local actorType
 			if (unitID) then
 				
@@ -3596,6 +3633,7 @@ local class_specs_coords = {
 				end
 			end
 			local isPlateEnabled = (DB_PLATE_CONFIG [actorType].module_enabled and not isWidgetOnlyMode) or (isWidgetOnlyMode and Plater.db.profile.usePlaterWidget)
+			isPlateEnabled = (not isPlayer and not Plater.ForceBlizzardNameplateUnits[plateFrame [MEMBER_NPCID]]) and isPlateEnabled
 			
 			local blizzardPlateFrameID = tostring(plateFrame.UnitFrame)
 			plateFrame.unitFrame.blizzardPlateFrameID = blizzardPlateFrameID
@@ -3687,6 +3725,18 @@ local class_specs_coords = {
 			--set the unit
 			unitFrame:SetUnit (unitID)
 			
+			--reset performance unit
+			unitFrame.isPerformanceUnit = nil
+			unitFrame.healthBar.isPerformanceUnit = nil
+			
+			if (Plater.PerformanceUnits[plateFrame[MEMBER_NPCID]]) then
+				print("perf", plateFrame[MEMBER_NPCID])
+				unitFrame.castBar:SetUnit(nil) -- no casts
+				Plater.RemoveFromAuraUpdate (unitID) -- no auras
+				unitFrame.isPerformanceUnit = true
+				unitFrame.healthBar.isPerformanceUnit = true
+			end
+			
 			--show unit name, the frame work will hide it due to ShowUnitName is set to false
 			unitFrame.unitName:Show()
 			
@@ -3722,9 +3772,7 @@ local class_specs_coords = {
 			plateFrame [MEMBER_NOCOMBAT] = nil
 			
 			plateFrame [MEMBER_TARGET] = nil
-			plateFrame [MEMBER_NPCID] = nil
 			unitFrame [MEMBER_TARGET] = nil
-			unitFrame [MEMBER_NPCID] = nil
 			
 			--reset custom size set by the user
 			unitFrame.customHealthBarWidth = nil
@@ -3746,10 +3794,6 @@ local class_specs_coords = {
 			unitFrame.InExecuteRange = false
 			
 			unitFrame.IsInRange = nil
-
-			--reset performance unit
-			unitFrame.isPerformanceUnit = nil
-			unitFrame.healthBar.isPerformanceUnit = nil
 			
 			--check if this nameplate has an update scheduled
 			if (plateFrame.HasUpdateScheduled) then
@@ -3760,7 +3804,6 @@ local class_specs_coords = {
 			end
 			
 			--cache values
-			plateFrame [MEMBER_GUID] = UnitGUID (unitID) or ""
 			local unitName = UnitName (unitID) or ""
 			if DB_USE_NAME_TRANSLIT then
 				unitName = LibTranslit:Transliterate(unitName, TRANSLIT_MARK)
@@ -3772,16 +3815,11 @@ local class_specs_coords = {
 			--clear name schedules
 			unitFrame.ScheduleNameUpdate = nil
 			
-			if (not isPlayer) then
-				Plater.GetNpcID (plateFrame)
-			end
-			
 			unitFrame.InCombat = UnitAffectingCombat (unitID) or (Plater.ForceInCombatUnits[unitFrame [MEMBER_NPCID]] and PLAYER_IN_COMBAT) or false
 			
 			--cache values into the unitFrame as well to reduce the overhead on scripts and hooks
 			unitFrame [MEMBER_NAME] = plateFrame [MEMBER_NAME]
 			unitFrame [MEMBER_NAMELOWER] = plateFrame [MEMBER_NAMELOWER]
-			unitFrame [MEMBER_GUID] = plateFrame [MEMBER_GUID]
 			unitFrame ["namePlateClassification"] = plateFrame ["namePlateClassification"]
 			unitFrame [MEMBER_UNITID] = unitID
 			unitFrame.namePlateThreatPercent = 0
@@ -3971,12 +4009,13 @@ local class_specs_coords = {
 			end
 			
 			--can check aggro
-			unitFrame.CanCheckAggro = unitFrame.displayedUnit == unitID and actorType == ACTORTYPE_ENEMY_NPC
+			unitFrame.CanCheckAggro = unitFrame.displayedUnit == unitID and actorType == ACTORTYPE_ENEMY_NPC and not unitFrame.isPerformanceUnit
 			
 			--tick-setup
 			plateFrame.OnTickFrame.ThrottleUpdate = DB_TICK_THROTTLE
 			plateFrame.OnTickFrame.actorType = actorType
 			plateFrame.OnTickFrame.unit = unitID
+			plateFrame.OnTickFrame:SetScript ("OnUpdate", Plater.NameplateTick)
 
 			--highlight check
 			if (DB_HOVER_HIGHLIGHT and (not plateFrame.PlayerCannotAttack or (plateFrame.PlayerCannotAttack and DB_SHOW_HEALTHBARS_FOR_NOT_ATTACKABLE)) and (actorType == ACTORTYPE_ENEMY_PLAYER or actorType == ACTORTYPE_ENEMY_NPC)) then
@@ -3990,15 +4029,6 @@ local class_specs_coords = {
 			
 			--resources - TODO:
 			Plater.Resources.UpdateResourceFramePosition() --~resource
-			
-			if (Plater.PerformanceUnits[plateFrame[MEMBER_NPCID]]) then
-				unitFrame.castBar:SetUnit(nil)
-				unitFrame.isPerformanceUnit = true
-				unitFrame.healthBar.isPerformanceUnit = true
-			else
-				--if isn't a performance unit, start the tick on update
-				plateFrame.OnTickFrame:SetScript ("OnUpdate", Plater.NameplateTick)
-			end
 
 			--hooks
 			if (HOOK_NAMEPLATE_ADDED.ScriptAmount > 0) then
@@ -5274,17 +5304,11 @@ function Plater.OnInit() --private --~oninit ~init
 	end
 
 	function Plater.OnHealthChange (self, unitId) --~health
-		if (self.isPerformanceUnit) then
-			--reduce the amount of updates on performance units
-			if (math.random(1, 10) == 1) then
-				Plater.OnUpdateHealth(self)
-			end
-		else
-			Plater.OnUpdateHealth (self)
-			--> run on health changed hook
-			if (HOOK_HEALTH_UPDATE.ScriptAmount > 0) then
-				return run_on_health_change_hook (self.unitFrame)
-			end
+		Plater.OnUpdateHealth (self)
+		
+		--> run on health changed hook
+		if (HOOK_HEALTH_UPDATE.ScriptAmount > 0) then
+			return run_on_health_change_hook (self.unitFrame)
 		end
 	end
 	
@@ -5570,7 +5594,10 @@ end
 	function Plater.UpdateAllPlates (forceUpdate, justAdded, regenDisabled) --private
 		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 			if plateFrame.unitFrame and plateFrame.unitFrame.PlaterOnScreen then
-				Plater.AddToAuraUpdate(plateFrame.unitFrame.unit) -- force aura update
+				if not plateFrame.unitFrame.isPerformanceUnit then
+					Plater.AddToAuraUpdate(plateFrame.unitFrame.unit) -- force aura update
+				end
+				
 				Plater.UpdatePlateFrame (plateFrame, nil, forceUpdate, justAdded, regenDisabled)
 				--trigger a nameplate updated event
 				Plater.TriggerNameplateUpdatedEvent(plateFrame.unitFrame)
@@ -5872,11 +5899,6 @@ end
 				shouldUpdate = false
 			end
 		end
-		
-		--if (unitFrame.isPerformanceUnit) then
-			--houldUpdate = math.random(1, 5) == 1
-			--print("running tick on performance unitt")
-		--end --not unitFrame.isPerformanceUnit
 
 		if (shouldUpdate) then
 			curFPSData.platesUpdatedThisFrame = curFPSData.platesUpdatedThisFrame + 1
@@ -6034,7 +6056,7 @@ end
 			Plater.UpdateBossModAuras(unitFrame)
 			
 			--set the delay to perform another update
-			tickFrame.ThrottleUpdate = DB_TICK_THROTTLE
+			tickFrame.ThrottleUpdate = DB_TICK_THROTTLE * (unitFrame.isPerformanceUnit and 5 or 1)
 
 			--check if the unit name or unit npcID has a script
 			local globalScriptObject = SCRIPT_UNIT_TRIGGER_CACHE[tickFrame.PlateFrame [MEMBER_NAMELOWER]] or SCRIPT_UNIT_TRIGGER_CACHE[unitFrame [MEMBER_NPCID]]
@@ -10803,6 +10825,8 @@ end
 			["UpdateAuras_Automatic"] = true,
 			["UpdateAuras_Self_Automatic"] = true,
 			["CreateAuraIcon"] = true,
+			["PerformanceUnits"] = true,
+			["ForceBlizzardNameplateUnits"] = true,
 		},
 		
 		["DetailsFramework"] = {
