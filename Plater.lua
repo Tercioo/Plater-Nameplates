@@ -4833,8 +4833,20 @@ function Plater.OnInit() --private --~oninit ~init
 							PixelUtil.SetPoint (borderShield, "center", castBar, "left", 0, 0)
 
 						elseif (profile.castbar_icon_size == "same as castbar plus healthbar") then
-							icon:SetPoint("topright", unitFrame.healthBar, "topleft", profile.castbar_icon_x_offset, 0)
-							icon:SetPoint("bottomright", castBar, "bottomleft", profile.castbar_icon_x_offset, 0)
+							local actorType = unitFrame.actorType
+							local plateConfigs = DB_PLATE_CONFIG [actorType]
+							local castBarConfigKey, healthBarConfigKey, manaConfigKey = Plater.GetHashKey (isInCombat)
+
+							local healthBarHeight = unitFrame.customHealthBarHeight or plateConfigs [healthBarConfigKey][2]
+							local castBarOffSetY = plateConfigs.castbar_offset
+							
+							if castBarOffSetY > healthBarHeight then
+								icon:SetPoint("topright", castBar, "topleft", profile.castbar_icon_x_offset, 0)
+								icon:SetPoint("bottomright", unitFrame.healthBar, "bottomleft", profile.castbar_icon_x_offset, 0)
+							else
+								icon:SetPoint("topright", unitFrame.healthBar, "topleft", profile.castbar_icon_x_offset, 0)
+								icon:SetPoint("bottomright", castBar, "bottomleft", profile.castbar_icon_x_offset, 0)
+							end
 							
 							PixelUtil.SetPoint (borderShield, "center", castBar, "left", 0, 0)
 						end
@@ -4847,8 +4859,20 @@ function Plater.OnInit() --private --~oninit ~init
 							PixelUtil.SetPoint (borderShield, "center", castBar, "right", 0, 0)
 
 						elseif (profile.castbar_icon_size == "same as castbar plus healthbar") then
-							icon:SetPoint("topleft", unitFrame.healthBar, "topright", profile.castbar_icon_x_offset, 0)
-							icon:SetPoint("bottomleft", castBar, "bottomright", profile.castbar_icon_x_offset, 0)
+							local actorType = unitFrame.actorType
+							local plateConfigs = DB_PLATE_CONFIG [actorType]
+							local castBarConfigKey, healthBarConfigKey, manaConfigKey = Plater.GetHashKey (isInCombat)
+
+							local healthBarHeight = unitFrame.customHealthBarHeight or plateConfigs [healthBarConfigKey][2]
+							local castBarOffSetY = plateConfigs.castbar_offset
+							
+							if castBarOffSetY > healthBarHeight then
+								icon:SetPoint("topleft", castBar, "topright", profile.castbar_icon_x_offset, 0)
+								icon:SetPoint("bottomleft", unitFrame.healthBar, "bottomright", profile.castbar_icon_x_offset, 0)
+							else
+								icon:SetPoint("topleft", unitFrame.healthBar, "topright", profile.castbar_icon_x_offset, 0)
+								icon:SetPoint("bottomleft", castBar, "bottomright", profile.castbar_icon_x_offset, 0)
+							end
 							
 							PixelUtil.SetPoint (borderShield, "center", castBar, "right", 0, 0)
 						end
