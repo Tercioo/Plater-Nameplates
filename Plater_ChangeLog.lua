@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 			
+			{1660508009,  "Bug Fix", "August 16th, 2022", "Rune 'ready animation' could cause additonal cooldown texts to not scale correctly and become larger over time.", "cont1nuity"},
 			{1660508009,  "Bug Fix", "August 16th, 2022", "Cast Icon customization will now properly show the icon when moving the cast bar above the health bar through offsets.", "cont1nuity"},
 			{1660508009,  "New Feature", "August 14th, 2022", "Added 'Forced Blizzard Nameplate Units' which will always show blizzard nameplates. Use 'Plater.AddForceBlizzardNameplateUnits(npcID)' / 'Plater.RemoveForceBlizzardNameplateUnits(npcID)' in a mod to add/remove them to the list.", "cont1nuity"},
 			{1660508009,  "New Feature", "August 13th, 2022", "Added 'Performance Units' which won't have auras, threat and other high usage things enabled. Use 'Plater.AddPerformanceUnits(npcID)' / 'Plater.RemovePerformanceUnits(npcID)' in a mod to add/remove them to the list.", "Terciob"},

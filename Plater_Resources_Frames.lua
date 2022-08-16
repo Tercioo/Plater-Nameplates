@@ -496,11 +496,6 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 		local widgetFrame = CreateFrame("Button", frameName, parent)
 		widgetFrame:SetSize(16,16)
 		
-		--> single animation group
-		local MainAnimationGroup = widgetFrame:CreateAnimationGroup()
-		MainAnimationGroup:SetLooping("NONE")
-		MainAnimationGroup:SetToFinalAlpha(true)
-		
 		local comboPointTexture
 		local test = nil 
 		
@@ -556,6 +551,10 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 		widgetFrame.glowtexture = glowTexture
 		]]--
 		
+		--> animation group on icon to work around cooldown texts behaving weird...
+		local MainAnimationGroup = comboPointTexture:CreateAnimationGroup()
+		MainAnimationGroup:SetLooping("NONE")
+		MainAnimationGroup:SetToFinalAlpha(true)
 		comboPointTexture.scale = MainAnimationGroup:CreateAnimation("SCALE")
         comboPointTexture.scale:SetTarget(comboPointTexture)
         comboPointTexture.scale:SetOrder(1)
@@ -590,11 +589,6 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         --local widgetFrame = CreateFrame("Button", frameName, parent, "ClassNameplateBarDeathKnightRuneButton")
 		local widgetFrame = CreateFrame("Button", frameName, parent)
 		widgetFrame:SetSize(18,18)
-		
-		--> single animation group
-		local MainAnimationGroup = widgetFrame:CreateAnimationGroup()
-		MainAnimationGroup:SetLooping("NONE")
-		MainAnimationGroup:SetToFinalAlpha(true)
 		
 		--rune cd
 		local cooldown = CreateFrame("Cooldown", "$parentCooldown", widgetFrame, "CooldownFrameTemplate")
@@ -645,6 +639,10 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 		widgetFrame.glowtexture = glowTexture
 		]]--
 		
+		--> animation group on icon to work around cooldown texts behaving weird...
+		local MainAnimationGroup = comboPointTexture:CreateAnimationGroup()
+		MainAnimationGroup:SetLooping("NONE")
+		MainAnimationGroup:SetToFinalAlpha(true)
 		comboPointTexture.scale = MainAnimationGroup:CreateAnimation("SCALE")
         comboPointTexture.scale:SetTarget(comboPointTexture)
         comboPointTexture.scale:SetOrder(1)
