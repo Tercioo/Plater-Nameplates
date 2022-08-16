@@ -9181,6 +9181,7 @@ end
 				text = gsub(text,"|c........","") -- remove coloring begin
 				text = gsub(text,"|r","") -- remove color end
 				text = gsub(text,"%[.*%] ","") -- remove level text
+				text = gsub(text," %(%d+%)","") -- remove quest-id
 			else
 				text = ScanQuestTextCache [i]:GetText()
 			end
