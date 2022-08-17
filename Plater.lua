@@ -5660,6 +5660,8 @@ end
 			return
 		end
 		
+		Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdatePlateSize")
+		
 		local profile = Plater.db.profile
 		local unitFrame = plateFrame.unitFrame
 		local healthBar = unitFrame.healthBar
@@ -5783,6 +5785,8 @@ end
 		end
 		
 		Plater.UpdateUnitName (plateFrame)
+		
+		Plater.EndLogPerformanceCore("Plater-Core", "Update", "UpdatePlateSize")
 	end
 	
 	--debug function to print the size of the anchor for each aura container
@@ -6246,6 +6250,8 @@ end
 			return
 		end
 		
+		Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdateNameplateThreat")
+		
 		local profile = Plater.db.profile
 		
 		local isTanking, threatStatus, threatpct, threatrawpct, threatValue = UnitDetailedThreatSituation ("player", self.displayedUnit)
@@ -6505,6 +6511,8 @@ end
 				end
 			end
 		end
+		
+		Plater.EndLogPerformanceCore("Plater-Core", "Update", "UpdateNameplateThreat")
 	end	
 	
 	-- ~target ~selection
