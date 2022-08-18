@@ -675,7 +675,7 @@ function Plater.StoreEventLogData()
 		end
 	end
 	
-	local eventLogStr = "==[[\n[" .. table.concat(eventLogData, ",") .. "]\n]]=="
+	local eventLogStr = "[" .. table.concat(eventLogData, ",") .. "]"
 	
 	PlaterDBChr.perfEventLog = eventLogStr
 	
