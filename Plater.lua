@@ -4933,12 +4933,10 @@ function Plater.OnInit() --private --~oninit ~init
 						return
 					end
 					
-					-- if we are starting a cast but it is an immediate chained cast, then needs to trigger OnShow again					
+					-- if we are starting a cast but it is an immediate chained cast, then needs to trigger OnHide and OnShow again afterwards
 					local globalScriptObject = SCRIPT_CASTBAR_TRIGGER_CACHE[self.SpellName]
 					if (globalScriptObject and self.SpellEndTime and GetTime() < self.SpellEndTime and (self.casting or self.channeling) and not self.IsInterrupted) then
-						local scriptContainer = self:ScriptGetContainer()
-						local scriptInfo = self:ScriptGetInfo (globalScriptObject, scriptContainer)
-						scriptInfo.IsActive = false
+						self:OnHideWidget()
 					end
 					
 					
