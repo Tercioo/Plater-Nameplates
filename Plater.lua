@@ -4838,8 +4838,8 @@ function Plater.OnInit() --private --~oninit ~init
 							local plateConfigs = DB_PLATE_CONFIG [actorType]
 							local castBarConfigKey, healthBarConfigKey, manaConfigKey = Plater.GetHashKey (isInCombat)
 
-							local healthBarHeight = unitFrame.customHealthBarHeight or plateConfigs [healthBarConfigKey][2]
-							local castBarOffSetY = plateConfigs.castbar_offset
+							local healthBarHeight = unitFrame.customHealthBarHeight or (plateConfigs and plateConfigs [healthBarConfigKey][2]) or 0
+							local castBarOffSetY = plateConfigs and plateConfigs.castbar_offset or 0
 							
 							if castBarOffSetY > healthBarHeight then
 								icon:SetPoint("topright", castBar, "topleft", profile.castbar_icon_x_offset, 0)
@@ -4864,8 +4864,8 @@ function Plater.OnInit() --private --~oninit ~init
 							local plateConfigs = DB_PLATE_CONFIG [actorType]
 							local castBarConfigKey, healthBarConfigKey, manaConfigKey = Plater.GetHashKey (isInCombat)
 
-							local healthBarHeight = unitFrame.customHealthBarHeight or plateConfigs [healthBarConfigKey][2]
-							local castBarOffSetY = plateConfigs.castbar_offset
+							local healthBarHeight = unitFrame.customHealthBarHeight or (plateConfigs and plateConfigs [healthBarConfigKey][2]) or 0
+							local castBarOffSetY = plateConfigs and plateConfigs.castbar_offset or 0
 							
 							if castBarOffSetY > healthBarHeight then
 								icon:SetPoint("topleft", castBar, "topright", profile.castbar_icon_x_offset, 0)
