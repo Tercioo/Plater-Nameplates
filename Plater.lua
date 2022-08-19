@@ -69,7 +69,7 @@ local min = math.min
 local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_NOT_MAINLINE = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_CLASSIC_ERA = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
-local IS_WOW_PROJECT_CLASSIC_TBC = WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC
+local IS_WOW_PROJECT_CLASSIC_WRATH = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpansionAtLeast and ClassicExpansionAtLeast(LE_EXPANSION_WRATH_OF_THE_LICH_KING)
 
 local PixelUtil = PixelUtil or DFPixelUtil
 
@@ -1598,6 +1598,11 @@ local class_specs_coords = {
 			end
 			return assignedRole == "TANK"
 		else
+			if IS_WOW_PROJECT_CLASSIC_WRATH then
+				local assignedRole = UnitGroupRolesAssigned ("player")
+				hasTankAura = assignedRole == "TANK"
+			end
+		
 			local playerIsTank = hasTankAura or false
 		
 			if not hasTankAura then
@@ -1627,7 +1632,7 @@ local class_specs_coords = {
 
 	--return true if the unit is in tank role
 	local function IsUnitEffectivelyTank (unit)
-		if IS_WOW_PROJECT_MAINLINE then
+		if IS_WOW_PROJECT_MAINLINE or IS_WOW_PROJECT_CLASSIC_WRATH then
 			return UnitGroupRolesAssigned (unit) == "TANK"
 		else
 			return GetPartyAssignment("MAINTANK", unit)
@@ -1637,7 +1642,7 @@ local class_specs_coords = {
 	
 	-- toggle Threat Color Mode between tank / dps (CLASSIC)
 	function Plater.ToggleThreatColorMode()
-		if IS_WOW_PROJECT_NOT_MAINLINE then
+		if IS_WOW_PROJECT_NOT_MAINLINE and not IS_WOW_PROJECT_CLASSIC_WRATH then
 			Plater.db.profile.tank_threat_colors = not Plater.db.profile.tank_threat_colors
 			Plater.RefreshTankCache()
 			if Plater.PlayerIsTank then
@@ -9395,6 +9400,12 @@ end
 			return assignedRole
 			
 		else
+			if IS_WOW_PROJECT_CLASSIC_WRATH then
+				local assignedRole = UnitGroupRolesAssigned (unitFrame.unit)
+				if (assignedRole and assignedRole ~= "NONE") then
+					return assignedRole
+				end
+			end
 			if GetPartyAssignment("MAINTANK", unit) then
 				return "MAINTANK"
 			elseif GetPartyAssignment("MAINASSIST", unit) then

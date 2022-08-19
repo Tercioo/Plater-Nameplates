@@ -10,6 +10,7 @@ local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_NOT_MAINLINE = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_CLASSIC_ERA = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
 local IS_WOW_PROJECT_CLASSIC_TBC = WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC
+local IS_WOW_PROJECT_CLASSIC_WRATH = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpansionAtLeast and ClassicExpansionAtLeast(LE_EXPANSION_WRATH_OF_THE_LICH_KING)
 
 local PixelUtil = PixelUtil or DFPixelUtil
 
@@ -12921,7 +12922,7 @@ end
 	}
 	
 	
-	if IS_WOW_PROJECT_NOT_MAINLINE then
+	if IS_WOW_PROJECT_NOT_MAINLINE and not IS_WOW_PROJECT_CLASSIC_WRATH then
 		local thread_options_tank = {
 			{type = "label", get = function() return "Tank or DPS Colors:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			
