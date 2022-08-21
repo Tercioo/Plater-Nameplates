@@ -1600,6 +1600,9 @@ local class_specs_coords = {
 		else
 			if IS_WOW_PROJECT_CLASSIC_WRATH then
 				local assignedRole = UnitGroupRolesAssigned ("player")
+				if assignedRole == "NONE" then
+					assignedRole = GetTalentGroupRole(GetActiveTalentGroup())
+				end
 				hasTankAura = assignedRole == "TANK"
 			end
 		
