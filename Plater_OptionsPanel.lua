@@ -677,7 +677,7 @@ function Plater.OpenOptionsPanel()
 				local text = profilesFrame.ImportStringField.importDataText
 				local profile = Plater.DecompressData (text, "print")
 				
-				if (profile and type (profile == "table")) then
+				if (profile and type (profile) == "table") then
 				
 					--decompress success, need to see if this is a real profile and not a script
 					if (not profile.plate_config) then
