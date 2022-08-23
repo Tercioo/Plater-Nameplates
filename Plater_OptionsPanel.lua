@@ -991,7 +991,7 @@ function Plater.OpenOptionsPanel()
 					local update = Plater.CompanionDataSlugs[id]
 					
 					local wagoProfile = Plater.DecompressData (update.encoded, "print")				
-					if (wagoProfile and type (wagoProfile == "table") and wagoProfile.plate_config) then
+					if (wagoProfile and type(wagoProfile) == "table" and wagoProfile.plate_config) then
 				
 						local wagoInfoText = ""
 						wagoInfoText = wagoInfoText .. "Name: " .. update.name .. "\n\n"
