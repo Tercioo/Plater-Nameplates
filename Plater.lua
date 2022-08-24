@@ -131,6 +131,7 @@ end
 	Plater.PerformanceUnits = {
 		[189706] = true, --chaotic essence (shadowlands season 4 raid affixes)
 		[189707] = true, --chaotic essence (shadowlands season 4 raid affixes)
+		[167999] = true, --Echo of Sin (shadowlands, Castle Nathria, Sire Denathrius)
 	}
 	
 	--setter
@@ -1057,6 +1058,9 @@ local class_specs_coords = {
 		[182823] = true, --Cosmic Core, Rygelon SotFO
 		[183945] = true, --Unstable Matter, Rygelon SotFO
 		[183745] = true, --Protoform Schematic, Lihuvim SotFO
+		[188302] = true, --Reconfiguration Emitter, Shadowlands S4 Fated affix
+		[188703] = true, --Protoform Barrier, Shadowlands S4 Fated affix
+		[176026] = true, --Dancing Fools, Council of Blood CN
 	}
 
 	--update the settings cache for scritps
