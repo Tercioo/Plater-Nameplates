@@ -1667,7 +1667,7 @@ local class_specs_coords = {
 			Plater.PlayerIsTank = true
 		else
 			TANK_CACHE [UnitName ("player")] = false
-			if IS_WOW_PROJECT_MAINLINE then
+			if IS_WOW_PROJECT_MAINLINE or IS_WOW_PROJECT_CLASSIC_WRATH then
 				Plater.PlayerIsTank = false
 			else
 				Plater.PlayerIsTank = false or Plater.db.profile.tank_threat_colors
@@ -4175,6 +4175,12 @@ local class_specs_coords = {
 			Plater.UpdateAllNameplateColors()
 			Plater.UpdateAllPlates()
 		end,
+		
+		TALENT_GROUP_ROLE_CHANGED = function()
+			UpdatePlayerTankState()
+			Plater.UpdateAllNameplateColors()
+			Plater.UpdateAllPlates()
+		end,
 	}
 
 	function Plater.EventHandler (_, event, ...) --private
@@ -4464,6 +4470,9 @@ function Plater.OnInit() --private --~oninit ~init
 		if IS_WOW_PROJECT_NOT_MAINLINE then -- tank spec detection
 			Plater.EventHandlerFrame:RegisterEvent ("UNIT_INVENTORY_CHANGED")
 			Plater.EventHandlerFrame:RegisterEvent ("UPDATE_SHAPESHIFT_FORM")
+			if IS_WOW_PROJECT_CLASSIC_WRATH then
+				Plater.EventHandlerFrame:RegisterEvent ("TALENT_GROUP_ROLE_CHANGED")
+			end
 		end
 		
 		Plater.EventHandlerFrame:RegisterEvent ("PLAYER_LOGIN")
