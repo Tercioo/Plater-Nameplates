@@ -208,14 +208,14 @@ function Plater.RegisterBossModAuras()
 	if IS_REGISTERED then return end
 
 	if Plater.db.profile.bossmod_support_enabled then
-		if DBM then
+		if DBM and DBM.RegisterCallback then
 			DBM:RegisterCallback('BossMod_ShowNameplateAura',Callback_DBM_ShowAura)
 			DBM:RegisterCallback('BossMod_HideNameplateAura',Callback_DBM_HideNameplateAura)
 			DBM:RegisterCallback('BossMod_EnableHostileNameplates',Callback_DBM_EnableHostile)
 			DBM:RegisterCallback('BossMod_DisableHostileNameplates',Callback_DBM_DisableHostile)
 		end
 		
-		if BigWigsLoader then
+		if BigWigsLoader and BigWigsLoader.RegisterMessage then
 			--[[
 			BigWigsLoader.RegisterMessage(Plater,'BigWigs_ShowNameplateAura',function(_,_,...)
 				Callback_ShowAura(select(5,...),...)

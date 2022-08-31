@@ -496,11 +496,6 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 		local widgetFrame = CreateFrame("Button", frameName, parent)
 		widgetFrame:SetSize(16,16)
 		
-		--> single animation group
-		local MainAnimationGroup = widgetFrame:CreateAnimationGroup()
-		MainAnimationGroup:SetLooping("NONE")
-		MainAnimationGroup:SetToFinalAlpha(true)
-		
 		local comboPointTexture
 		local test = nil 
 		
@@ -556,6 +551,98 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 		widgetFrame.glowtexture = glowTexture
 		]]--
 		
+		--> animation group on icon to work around cooldown texts behaving weird...
+		local MainAnimationGroup = comboPointTexture:CreateAnimationGroup()
+		MainAnimationGroup:SetLooping("NONE")
+		MainAnimationGroup:SetToFinalAlpha(true)
+		comboPointTexture.scale = MainAnimationGroup:CreateAnimation("SCALE")
+        comboPointTexture.scale:SetTarget(comboPointTexture)
+        comboPointTexture.scale:SetOrder(1)
+        comboPointTexture.scale:SetDuration(0.096000000834465)
+        comboPointTexture.scale:SetFromScale(0, 0)
+        comboPointTexture.scale:SetToScale(1, 1)
+        comboPointTexture.scale:SetOrigin("center", 0, 0)
+        comboPointTexture.alpha = MainAnimationGroup:CreateAnimation("ALPHA")
+        comboPointTexture.alpha:SetTarget(comboPointTexture)
+        comboPointTexture.alpha:SetOrder(1)
+        comboPointTexture.alpha:SetDuration(0.096000000834465)
+        comboPointTexture.alpha:SetFromAlpha(0)
+        comboPointTexture.alpha:SetToAlpha(1)
+        comboPointTexture.scale = MainAnimationGroup:CreateAnimation("SCALE")
+        comboPointTexture.scale:SetTarget(comboPointTexture)
+        comboPointTexture.scale:SetOrder(2)
+        comboPointTexture.scale:SetDuration(0.096000000834465)
+        comboPointTexture.scale:SetFromScale(1.3097063302994, 1.3097063302994)
+        comboPointTexture.scale:SetToScale(1, 1)
+        comboPointTexture.scale:SetOrigin("center", 0, 0)
+
+        --> test the animation
+        --MainAnimationGroup:Play()
+
+        widgetFrame.ShowAnimation = MainAnimationGroup
+        return widgetFrame
+    end
+	
+	local deathknightChargesFuncWotLK = function(parent, frameName)
+		
+        --> create the main frame
+        --local widgetFrame = CreateFrame("Button", frameName, parent, "ClassNameplateBarDeathKnightRuneButton")
+		local widgetFrame = CreateFrame("Button", frameName, parent)
+		widgetFrame:SetSize(18,18)
+		
+		--rune cd
+		local cooldown = CreateFrame("Cooldown", "$parentCooldown", widgetFrame, "CooldownFrameTemplate")
+        cooldown:ClearAllPoints()
+		cooldown:SetPoint("center", widgetFrame, "center", 0, -1)
+		cooldown:SetSize(14, 14)
+		cooldown:SetReverse(false)
+		cooldown:SetDrawBling(false)
+		cooldown:SetHideCountdownNumbers(true)
+		cooldown:SetUseCircularEdge(true)
+		cooldown:SetDrawEdge(true)
+		
+		widgetFrame.cooldown = cooldown
+
+		--> create background
+		local backgroundTexture = widgetFrame:CreateTexture("$parenttopCircleTexture", "BACKGROUND")
+		backgroundTexture:SetTexture("Interface\\PlayerFrame\\UI-PlayerFrame-Deathknight-Ring")
+		backgroundTexture:SetPoint("center", widgetFrame, "center", 0, 0)
+		backgroundTexture:SetSize(18, 18)
+		backgroundTexture:SetTexelSnappingBias(0.0)
+		backgroundTexture:SetSnapToPixelGrid(false)
+		backgroundTexture:SetVertexColor(.6, .6, .6, 1)
+        backgroundTexture:SetDrawLayer("OVERLAY", 1)
+		widgetFrame.background = backgroundTexture
+		parent.widgetsBackground[#parent.widgetsBackground + 1] = backgroundTexture
+
+		----------------------------------------------
+
+		local comboPointTexture = widgetFrame:CreateTexture("$parentcomboPointTextureTexture", "ARTWORK")
+		comboPointTexture:SetTexture("Interface\\ComboFrame\\ComboPoint")
+		comboPointTexture:SetPoint("center", widgetFrame, "center", 0, 0)
+		comboPointTexture:SetSize(18, 18)
+		comboPointTexture:SetTexelSnappingBias(0.0)
+		comboPointTexture:SetSnapToPixelGrid(false)
+		comboPointTexture:SetDrawLayer("OVERLAY", 0)
+		
+		widgetFrame.texture = comboPointTexture
+		
+		--[[
+		local glowTexture  = widgetFrame:CreateTexture("$parentglowTextureTexture", "OVERLAY")
+		glowTexture:SetAtlas("DK-Rune-Glow")
+		glowTexture:SetDrawLayer("OVERLAY", 0)
+		glowTexture:SetPoint("center", widgetFrame, "center", 0, 0)
+		glowTexture:SetSize(16, 16)
+		glowTexture:SetTexelSnappingBias(0.0);
+		glowTexture:SetSnapToPixelGrid(false);
+		
+		widgetFrame.glowtexture = glowTexture
+		]]--
+		
+		--> animation group on icon to work around cooldown texts behaving weird...
+		local MainAnimationGroup = comboPointTexture:CreateAnimationGroup()
+		MainAnimationGroup:SetLooping("NONE")
+		MainAnimationGroup:SetToFinalAlpha(true)
 		comboPointTexture.scale = MainAnimationGroup:CreateAnimation("SCALE")
         comboPointTexture.scale:SetTarget(comboPointTexture)
         comboPointTexture.scale:SetOrder(1)
@@ -595,6 +682,6 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 	resourceCreationFunctions[CONST_SPECID_WARLOCK_AFFLICTION] = warlockChargesFunc
 	resourceCreationFunctions[CONST_SPECID_WARLOCK_DEMONOLOGY] = warlockChargesFunc
 	resourceCreationFunctions[CONST_SPECID_WARLOCK_DESTRUCTION] = warlockChargesFunc
-	resourceCreationFunctions[CONST_SPECID_DK_UNHOLY] = deathknightChargesFunc
-	resourceCreationFunctions[CONST_SPECID_DK_FROST] = deathknightChargesFunc
-	resourceCreationFunctions[CONST_SPECID_DK_BLOOD] = deathknightChargesFunc
+	resourceCreationFunctions[CONST_SPECID_DK_UNHOLY] = IS_WOW_PROJECT_MAINLINE and deathknightChargesFunc or deathknightChargesFuncWotLK
+	resourceCreationFunctions[CONST_SPECID_DK_FROST] = IS_WOW_PROJECT_MAINLINE and deathknightChargesFunc or deathknightChargesFuncWotLK
+	resourceCreationFunctions[CONST_SPECID_DK_BLOOD] = IS_WOW_PROJECT_MAINLINE and deathknightChargesFunc or deathknightChargesFuncWotLK

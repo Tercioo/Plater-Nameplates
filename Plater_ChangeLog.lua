@@ -7,7 +7,27 @@ local _
 function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
-		
+			
+			{1661805804,  "Bug Fix", "August 29th, 2022", "Fixing mod Load Conditions.", "cont1nuity"},
+			{1661805804,  "Backend Change", "August 28th, 2022", "Support for aura modRate.", "cont1nuity"},
+			{1661805804,  "Bug Fix", "August 28th, 2022", "Fixing tank/spec detection in WotLK. Using your selected talent role now.", "cont1nuity"},
+			{1661805804,  "Backend Change", "August 25th, 2022", "Update on default 'Performance Units'.", "cont1nuity"},
+			
+			{1661327305,  "Backend Change", "August 24th, 2022", "Fixing load on TBC.", "cont1nuity"},
+			{1661327305,  "Backend Change", "August 18th, 2022", "New profiling in development with extended data. Use '/plater profstartadvance' to use it.", "cont1nuity"},
+			{1661327305,  "Bug Fix", "August 18th, 2022", "Casts which result in a channeled spell should now re-trigger scripts 'On Hide' code for cast and 'On Show' for the channel when the cast is finished and channel starts.", "cont1nuity"},
+			{1661327305,  "Backend Change", "August 17th, 2022", "Adding new option for namepalte 'Larger Scale' CVar.", "cont1nuity"},
+			{1661327305,  "Bug Fix", "August 16th, 2022", "Questie support restored for WotLK beta.", "cont1nuity"},
+			{1661327305,  "Bug Fix", "August 16th, 2022", "Rune 'ready animation' could cause additonal cooldown texts to not scale correctly and become larger over time.", "cont1nuity"},
+			{1661327305,  "Bug Fix", "August 16th, 2022", "Cast Icon customization will now properly show the icon when moving the cast bar above the health bar through offsets.", "cont1nuity"},
+			{1661327305,  "New Feature", "August 14th, 2022", "Added 'Forced Blizzard Nameplate Units' which will always show blizzard nameplates. Use 'Plater.AddForceBlizzardNameplateUnits(npcID)' / 'Plater.RemoveForceBlizzardNameplateUnits(npcID)' in a mod to add/remove them to the list.", "cont1nuity"},
+			{1661327305,  "New Feature", "August 13th, 2022", "Added 'Performance Units' which won't have auras, threat and other high usage things enabled. Use 'Plater.AddPerformanceUnits(npcID)' / 'Plater.RemovePerformanceUnits(npcID)' in a mod to add/remove them to the list.", "Terciob"},
+			{1661327305,  "New Feature", "August 12th, 2022", "Added Spells and New Scripts to support Season 4 for M+ Dungeons.", "Terciob"},
+			{1661327305,  "Bug Fix", "July 31st, 2022", "Fixing profile import from wago stash.", "cont1nuity"},
+			{1661327305,  "Backend Change", "July 28th, 2022", "Cache players threat raw percent and absolute threat values on unitFrame 'namePlateThreatRawPercent' and 'namePlateThreatValue' respectively.", "cont1nuity"},
+			{1661327305,  "Bug Fix", "July 25th, 2022", "Bug fix for broken DBM or BW installations for Boss-Mod support registration.", "cont1nuity"},
+			{1661327305,  "New Feature", "July 25th, 2022", "Support for WotLK DK runes (Combo Point settings).", "cont1nuity"},
+			
 			{1657813887,  "Backend Change", "July 14th, 2022", "On Arena and Battleground, faction and spec icons are now hidden while in combat.", "Terciob"},
 			{1657813887,  "Backend Change", "July 14th, 2022", "Dispellable buffs won't show if its duration is bigger than 2 minutes.", "Terciob"},
 

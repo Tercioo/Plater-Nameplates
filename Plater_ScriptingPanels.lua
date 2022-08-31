@@ -36,6 +36,7 @@ end
 --tab indexes
 local PLATER_OPTIONS_SCRIPTING_TAB = 6
 local PLATER_OPTIONS_HOOKING_TAB = 7
+local PLATER_OPTIONS_PROFILES_TAB = 22
 local PLATER_OPTIONS_WAGO_TAB = 25
 
 --options
@@ -670,6 +671,9 @@ end
 								break
 							end
 						end
+						
+						local mainFrame = PlaterOptionsPanelContainer
+						local profilesFrame = mainFrame.AllFrames [PLATER_OPTIONS_PROFILES_TAB]
 						
 						if profileExists then
 							DF:ShowPromptPanel (format (L["OPTIONS_PROFILE_IMPORT_OVERWRITE"], profileName), function() profilesFrame.DoProfileImport(profileName, profile, true, isWagoUpdate) end, function() end, true, 500)

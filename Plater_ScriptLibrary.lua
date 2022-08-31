@@ -21,7 +21,23 @@ do
 		Enabled = true,
 		OverrideTriggers = true,
 	}
-	
+
+	PlaterScriptLibrary ["Aura is Shield [P]"] = {
+		Revision = 1,
+		ScriptType = "script",
+		String = "fBvBVPTou4)lDFbKOvqO0UoP(HqBrlDukAMQURQQjMedynx7OehAz3T8B)EooqiuGI2lAxzPYXN4ZZ5v)4sBqhqj6iJqRsardLy0bZ4XjGcAVZQ7uVfLWcdHDK(sMHhtjnO9AaNBEeNsscIfrGvnbJbT9CCoT1XVhXXHsCtJzz(IKmFYubxgM5)q)hPKw0EN0O(XNcN44CFEkL8j(8KiUuEO73Izs0DNqjKP6NZ8J0pZJZ8hXG)88uEmhW0aGoJjt554BMccJshpUqBL0KuMCEMFcGHcoLATtz0APrevfYMJPKXPQaSeaMLWLJRL5NQegVWfcDIzpXbzUA2a2ijkMN32DvZUoZpFD4Hcvcp2K5hOdbFzd2IVMDnxfcBHf4wOUM5L5v21RJPhU2bI2VL)BoMEuYz0ETGs67H(WjNu3P1znDAc(P5FR0tQdyYCe7JDS2y)68sU4OOLQlSP8H)WhfH8kvxVk58)tZPXFo3UssaZDvU)27h2)Z3E9vxmyO3LG6VdLOYkVX1RxxVExv1oVQkb0Ivm3KgRkdCEKVH)w0qc0kJqLYWKzG(RLHCXjsKA4(0R1owNQcZVcdH4yMmHVnVeZJ4mZM6xUYbhH4FZ8VdQCiKeuzLIc6bF8QU97Cx3da5231Pdue(YWl9i976(p12sga1MFSPN2mrrVA9)dnECZZRsFIueCV7vfHDNqJ1WCTWAKtTYOeQ3I5BwPlfvIh3RfQ8Xmd)fORZTfJuLb(LfyacoSyoayIbfHGiM64q5lrI8ndewZdyja1TvqrmCM824(PXtWpHoicz2rY2(aZVwXK40mYgB7oGnUrrY5OVQH8TT1jjxYrIu72laWBphEDyU1fRbOReXYarXnAelgGH7tykyldlNhAphRHRgiWYt1Tv83DBzTBzlcEWhNV6k6rdjw1xU8QfqjO48q81Gm)jCZIximXIjtWxCwIYUJIcQf3rqglMXlEQBV28Rqx(M5SchTwJq1lbBbQkv3jxYUwRbdHBW(0IUt19JY68r)0DWvx0ktazIt573MfKJx)tfABpEl9iLri3o9cexk4B7IS32sksJD2f(DgfS(5xSRV1xFFZIJDd8h4jY64)VNHs)Vd",
+		Enabled = true,
+		OverrideTriggers = true,
+	}
+
+	PlaterScriptLibrary ["Fixate by Unit Buff [P]"] = {
+		Revision = 1,
+		ScriptType = "script",
+		String = "ftv3UTnpm0NLLRsaAm8)29YSmua3b4wu1TB(YuSInDIaCKdKK7w2f6zFuwzTUOOx8nmGbcOFcjp8WJzenG(iL0FsZ7fk8y549hpFcShjLSJGB9uhtdMQ19D9sk5RSUbWfEPpTmKEtIFqswwuMFyASVFEiTDzseTmY6jpnoipg9KLfMMA9KrlJTjRPKpdNPeXVRWf8lQ7f4QqdYwwnSzvtZDc1M7THi3WpY2dQnowVT2LYNavnLS(atSh5P(aUac44ztL4f6pgl6T3gbx98p89dGWu1Y)btZf7nvN7h(asoKE6(6NaPcleT8A)q)ekH10yzNJmusWOsPTsgrvl5NWSIUOnH5jr55wCcPKBSWJKyhYPVi4At1hhABnv)39FJssM2UfRVRKSz1oEhxFERlVMTenUT9bOHsIr8rqZW2MRzn9YLR(PK1zPvkLSQdKi6SD9d2nt1Wy1AD4yQ6fxeiuvodshJguJDog9Urw9CqxurlgEy3gtjTdIAR0BQMRGU2RColAUC4gjk4xzt8Phz76ShD6Y4TfMBnvoB5sUqns16(gSshaj8IxZTGObVIgwwuFmfMIPL(1ywyT3bXrFUDhMfuY14xhe0C87uAQFeoEMGsxq0BRZFul()LobH)B01G)ELLJtnZTd2fk76ChkMkppt1mntUh0ZWKN5M6MTyX4aMycZUyU)z5raD5RExy(u6mHdE4RfT89EV(vKjmd6uW7wMhGwjOo8ELAkmwD7zX7TgkN(Ux1O)6",
+		Enabled = true,
+		OverrideTriggers = true,
+	}
+
 	PlaterScriptLibrary ["Aura - Debuff Alert"] = {
 		Revision = 11,
 		ScriptType = "script",
@@ -184,6 +200,14 @@ do
 		Revision = 2,
 		ScriptType = "script",
 		String = "nJ1wVPnsu4)l9PeTbKVBCLYdPjButxfAuC2TVe56b7bS3ySrEgcn9b)BFpNz8fmGdxB1keGzgpNZ335UXt17jp3Sz84SugC5qXVF6TzuVHMEU)f9TQDv9C)hsYCQN71zjz5f(UuopoDcZZDizA1YvlEvAquwUN7DbzPWNPCA(ysa95Rcd)Ak75hsiWkphpLmHYEwQGVNqgrt8CVHYc8CVk8FNZ4f(8iAHFkOGz4rk8dKkFm(bLeev4pnBKh3BOwdWvlbEeHXPcyvHDbbVDGQJH9atnfdDvDDBDVX9mnqjCRTTTIJQTIIHIJIMLnUJP3qDVBnCmmv1CuGvv0g4ma3r3BObkqELj4ZOcl8lv5(W9a5rKCpskg5ACu9ltnPQUp714P0uWc5oJsNvR0L5PP5afhGIkAo62MM2n80WYXEGTMPPMHTMTPEjBqEAzblROPOzyAOAPuEMkEkSRtzhldNwJEMe91C1yD3yqy(giNLMQLTUULIUMTMMQEPRciNPYald1bgOd0wZYQKc6Ds72oXRZYscZwKw4)inCEac(J3Lgul08gHwtAZgsB1kPZSIZdvQG3xNjpS5(HMrjK0xQqdQtRUs0TQt0DJ)jD98CC1twAoIe7gKyu7eIiPtaLpSjZh1Bf0gvfAqsL3PCZ9YGaEKkuC3ySqtmRWhFherdEHgEX6fFycdI8EqTgc3sw5T9kcmyhGCzlqAnOHwAq(k5hW3kkvQKNXjjf(lId5qnSSXRQm4eXPGRboWT5eradY6YObvuqclGqa7hZtNpDenVYs)nHaa86SoEnwfUr04jr83bVA1Lcf3zdG1AZJdbVYA6s5YrBqxznoDN14CKznQD3FuPoV5tz5H0n0HuU(jn3rvRvYJapSOSfsvvHOpvHGhiXyr3QDp08LVfrbBjnLmkPjpPSZCDOXOsRWI4emYH8kTCdgaL6BNWwlscPLEx(wmqQlNlU3X5Dn607Qx7DhkG)Q(w8ZM1ooF6sTd0xEugPMkHXNVY9P)CLbpK)yFuoN(dElDB1s3VthXwG56BESPz9jaf2RBbMYAPX7DxAsiAZKqHNaRahR3f8knNHvRgctcILBjHHOeLcWZvvanoIrxwqE8m4uyul8feg(injoacTD6Rv4FFH)nZH2f4i2UWmkgAw6WizEUgYzzCvhyAnqm8I8sfHSfxQJc0gaxmNeML37QFMtsqCyH1OFHIZ)MtXzHzVj7gfgZWOW5XSiCAdjowed93aVwyjoGUyPLOBgHhaDqGyF3XZtl9UNXOjJHm75PX87clVakGpLEbM4)6tyQpCPK5IFDEXxk8LV61loLrZ5ywEifBBaqSE3QJ3)ASr7Fdc(Snj9LKxXxOPHaenBdXdq3cjb)eE556aZEao2byyVHTJJHbmxVlMQ)7Xq0cmyXRFxQT6Qg9Da(KYxXq9(ZQp(3hol4UBk8V8sOCSiu(Cr9901pydyLpVtN3qTWH6RI5WBbTpio9hoV7ZV(o0egDl4wFhW906kpmrLNdLbtzNC4BUdWFtptYHsbOS)EYH0WLRieUJHNBu7JYsNZWUfBcbRTsswaokBoCWj4HH3KlKZFSlhxy4R1O0KxhdUfBUqh(x2kTTp0NAC8K(1D47(4TGSqo3q5K4eMWqSil)Lp(ajNj)lpyN1LseBFybCRYBrK7rqAzt9FLmU8)Q40qxzu(rW3YPJ(vs4Q)TKZ3sox30xoHdMQv)03RNZ1cOD1wytWB5NyFR2Ynaf8CTqYguI4HI38wYNF8Wno96v(Cn7mJBECSTs319(5)HsFnC1YVhHFVl2lPgFh)2Xyc2CTYA1agzscp6tK8(4AOR7JaKEcMY(m8ONVsL)6PG61t28cNBzd9Mk3wbFAsXedLlOJdbVAR4T8cg4s9)Fd8U88GkY)vsV)7p",
+		Enabled = true,
+		OverrideTriggers = true,
+	}
+
+	PlaterScriptLibrary ["Cast - Glowing [P]"] = {
+		Revision = 1,
+		ScriptType = "script",
+		String = "nN1)VPnou8)x4(LW2GMajqPsBsm61TURfqkODNuBtJBIHgDHyKtyBDNU83(9SDsiH89RT6of1sW2VV)Xp)EgdfJvg6KDboepF4158VV6PDyJ5dm0Vg9d4tzd9ZX(wg6ZXy7qtuO5juSlbzdlWXZyUMH(VHFYq3hVzl2lWF6wYEVad9VIC3d8zmqiAl2qxmEOjzDOPE0An0V0I4b)3latxJSW3o12EHN)TlDrWi36SfTb7FRqdV3B)2hWud9lOil2agpyeWu0eDwjww67q0)m0CgXLqJ1eU5DXPJuoDK2qvzvTHJuhFQX6EAdzmbMC(qy(jYkdgoyGS6Ot1gOmkAEv28bXwkJ7r8Un6VLGeH3KP6dlq1)Kl57fQ5JhputBI6inv5XkJgRLO5WmJLNOmwwwvEI8GrtyZOY4oZMYO5BaM)cO4a7ciwFdt9zrH5GqLbuaY2MXsbhm0v4yOaM1P7BrD2bunuylZhoEO6Gjm(alzgYhGf9cnzMUJ3MqZBwENHUwTANfq49pGO3ZmldDvG5ahba3km1YH8GH(iak8iZFcOwBN1RXumdcI8aoWSSqZ1eAOzWJ4qtlUAaSRpO7Qg6R37zjwJKp2D97cn375eCPD0laiClgEh79TvOhCzVkSs(36g(LqtXJlXc5ky)hrGWEFk67hpAYQJzx8m)UJDWJCIIg4SpHd4dkLsgrZ1NJ7pthh8vmna)dEOw6CCaYX1NlWVtG5xIO(y(C(sP05(aIyTZM(hG3DtjICgeW)G9uSEafhy9il1qglBn2DASBUFU1MWSJN5mw8kTPLFbppRlzlq3AeY0axKVuN)yj4yzwsVfuK3g8kkiUovr7mxmqHR7sIdKIRoBHVkPouNnpg05DhfkHV3XcZ2fWMsM9xnS7ZygJKsbwIgPoZ9JUyp7Rj2yPotp)CWanRX94U7rKKCFTA475u03Vc9eMk1HazmCrpXmLXfIS4BgD4ajLS7NsWMzoKHrJnjfNkeHwfWCLyj(34CxE20RxehEUyUagMj)oQSETJfcZdK8x1KbjMrW7qUrBPa6ECbRUuNueszjHks2vyMMtQpu0ajMsJ1D(jwkROFR27Yi6cWTfz6fcVg1Tn6t5ByJFCGAwKyaZ33auzx(bkEfOb5v)s29Z23Nm2XB7toQW1h3gH4IxFSmIhsYPNs33KnEadpOiP6z3YyDuMIkIJF2bs70MqwFFa7Yz(cQne7Ry)XHLEoBhcyyhL0Q01FbLSvN9fGGbvVj8arRics47ABMCwarAhpP6d4LUh2oYYw5SvKTlxcky)0hX)0btfybakFsdqYm9GB6Y9Lv4Fu0gRJucUcGEWxkTw1Rysl37GyGMMfGtwAQaSSwtiGfHRfDEy5RiXh6P2EBzqlmMbzSMy)yx2jsGFSjeRhGOWXcq6WuK3a6s5r6R1iksCkDtxeRDrhVNuB7S9uwH4RsD(SsblBom)sOuES4KE2QKLzV1eSB4xeAXrpqT9qJfHxgEz667Zw4(LSNE9C88HJJH8LqrrHMpc9oepN4tb)V0qFc0qJk0a3PqVnJgjRPOOne6crz4lxte)VTgPYsHxce41T3HiLi)gY8ybi8m41i80UU9ETQbllFfvsDmBJRVQiRO4qrfrPqtgS8V(7IygV4jpsqJJWLwavtriPT0zumuxCegwYZXLv3tQsffJOvp0TwZiEFsBv)y64QDgxyPNS0(KafLcOIubTZ7v4r7nZOzjvycmr4L88L2ptYzvGq)eLSFxAbLEu(vaf3la3Gt0t(kK6wRVdLHGseuPmjl1ItvVWXd5koAv0sxRT)8C9kczNJ3gPoZxm)x709z4u56yeQ4MBoCpDZwC91lMFBYLMC3DDBkVMriuBwP2tMilk5uw5Oxuv0M0m(L72mEg4hEH6IQAZ6rpcRi1rF20RQ0VMVDbeDdoqkA8NLAYljRrQ50Rw(5Pnrnpu57lSAo4vqph0ifntY9sY0xzHd19afwO8FFHfLvXLFtk0R0t)sQm)E2D2NuA(hkUM9sphmsL8sxEFBlUVXDF5FtjTDCxURAUXuEiN(zlzTyvioROMyEFzt82JChvWWcAEQ05EBMgRk3xLn6MtcGi(LG6QUPwlFYPfFhwvl8p8Yi7jt(3LligRsOBrUo)eBxySm7(Htey5xNMEIy2o2940O76jNQhFdtSZvp6ATQ4hOOIBpmsxEtj)6vr3Mf4GHCJYIFosJ)5p",
 		Enabled = true,
 		OverrideTriggers = true,
 	}
@@ -751,8 +775,183 @@ do
 			auraTable["WARLOCK"][1][980] = true --agony
 		end
 	})
+
+	--#20 9.2.5 Season 4 Dungeons Spells
+	tinsert (PlaterPatchLibrary, {
+		Notes = {
+			"- Added Season 4 Dungeon Spells Into Scripts."
+		},
+		Func = function()
+			local addUnique = DetailsFramework.table.addunique
+
+			--aura tracker
+			local buffTrackerTable = Plater.db.profile and Plater.db.profile.aura_tracker and Plater.db.profile.aura_tracker.buff_tracked
+			if (buffTrackerTable) then
+				--Sanguine Sphere (iron docks)
+				buffTrackerTable[163689] = true
+				--whip rage
+				buffTrackerTable[233210] = true
+				--
+				buffTrackerTable[297133] = true
+				--In The Spotlight (karazhan)
+				buffTrackerTable[227931] = true
+			end
+
+			--scripts
+			local scriptData = Plater.db.profile.script_data
+			for i = 1, #scriptData do
+				local script = scriptData[i]
+
+				if (script.Name == "Aura - Buff Alert [Plater]") then
+					addUnique(script.SpellIds, 163689) --Sanguine Sphere (iron docks)
+					addUnique(script.SpellIds, 227931) --In The Spotlight (karazhan)
+					addUnique(script.SpellIds, 233210) --Whip Rage (karazhan)
+					addUnique(script.SpellIds, 300207) --Shock Coil
+					addUnique(script.SpellIds, 301629) --Enlarge
+					addUnique(script.SpellIds, 297133) --Defensive Countermesure
+
+				elseif (script.Name == "Unit - Show Energy [Plater]") then
+					addUnique(script.NpcNames, 150159) --King Gobbamak
+
+				elseif (script.Name == "Unit - Important [Plater]") then
+					addUnique(script.NpcNames, 80875) --Bombsquad npc 3rd boss (iron docks)
+					addUnique(script.NpcNames, 163746) --Walkie Shockie X1
+					addUnique(script.NpcNames, 152033) --Inconspicuous Plant
+
+				elseif (script.Name == "Cast - Very Important [Plater]") then
+					addUnique(script.SpellIds, 161090) --Mad Dash (grimrail)
+					addUnique(script.SpellIds, 156301) --Blackrock Mortar (grimrail)
+					addUnique(script.SpellIds, 166341) --Thunder Zone (grimrail)
+					addUnique(script.SpellIds, 163379) --Big Boom (iron docks)
+					addUnique(script.SpellIds, 166923) --Barbed Arrow Barrage (iron docks)
+					addUnique(script.SpellIds, 172952) --Throw Gatecrasher (iron docks)
+					addUnique(script.SpellIds, 164426) --Reckless Provocation (iron docks)
+					addUnique(script.SpellIds, 163665) --Flaming Slash (iron docks)
+					addUnique(script.SpellIds, 227578) --Healing Stream (karazhan)
+					addUnique(script.SpellIds, 228528) --Heartbreaker (karazhan)
+					addUnique(script.SpellIds, 227789) --Sacred Ground (karazhan)
+					addUnique(script.SpellIds, 227779) --Ceaseless Winter (karazhan)
+					addUnique(script.SpellIds, 229608) --Mighty Swing (karazhan)
+					addUnique(script.SpellIds, 227925) --Final Curtain (karazhan)
+					addUnique(script.SpellIds, 300129) --Self-Destruct Protocol
+					addUnique(script.SpellIds, 296522) --Self-Destruct
+					addUnique(script.SpellIds, 294349) --Volatile Waste
+					addUnique(script.SpellIds, 293854) --Activate Anti-Personnel Squirrel
+					addUnique(script.SpellIds, 297834) --Toxic Wave
+					addUnique(script.SpellIds, 299588) --Overclock
+					addUnique(script.SpellIds, 302682) --Mega Taze
+					addUnique(script.SpellIds, 291946) --Venting Flames
+					addUnique(script.SpellIds, 295169) --Capacitor Discharge
+					addUnique(script.SpellIds, 285440) --"Hidden" Flame Cannon
+					addUnique(script.SpellIds, 291613) --Take Off!
+					addUnique(script.SpellIds, 283551) --Magneto-Arm
+
+				elseif (script.Name == "Cast - Ultra Important [P]") then
+					addUnique(script.SpellIds, 163966) --Activating (grimrail)
+					addUnique(script.SpellIds, 227966) --Flashlight (karazhan)
+
+				elseif (script.Name == "Cast - Frontal Cone [Plater]") then
+					addUnique(script.SpellIds, 166675) --Shrapnel Blast (grimrail)
+					addUnique(script.SpellIds, 176127) --Cannon Barrage (grimrail)
+					addUnique(script.SpellIds, 166380) --Reckless Slash (grimrail)
+					addUnique(script.SpellIds, 162058) --Spinning Spear (grimrail)
+					addUnique(script.SpellIds, 167516) --Shrapnel Blast (iron docks)
+					addUnique(script.SpellIds, 166923) --Bladestorm (iron docks)
+					addUnique(script.SpellIds, 178299) --High Explosive Grenade (iron docks)
+					addUnique(script.SpellIds, 172982) --Shattering Strike (iron docks)
+					addUnique(script.SpellIds, 163390) --Ogre Traps (iron docks)
+					addUnique(script.SpellIds, 173384) --Trampling Stampede (iron docks)
+					addUnique(script.SpellIds, 173514) --Lava Blast (iron docks)
+					addUnique(script.SpellIds, 29513) --Goblin Dragon Gun (karazhan)
+					addUnique(script.SpellIds, 227672) --Will Breaker (karazhan)
+					addUnique(script.SpellIds, 228603) --Charge (karazhan)
+					addUnique(script.SpellIds, 227339) --Mezair (karazhan)
+					addUnique(script.SpellIds, 227493) --Mortal Strike (karazhan)
+					addUnique(script.SpellIds, 241774) --Shield Smash (karazhan)
+					addUnique(script.SpellIds, 229611) --Heavy Smash (karazhan)
+					addUnique(script.SpellIds, 229151) --Disintegrate (karazhan)
+					addUnique(script.SpellIds, 300188) --Scrap Cannon
+					addUnique(script.SpellIds, 299475) --B.O.R.K
+					addUnique(script.SpellIds, 299502) --Nanoslicer
+					addUnique(script.SpellIds, 300777) --Slimewave
+					addUnique(script.SpellIds, 301681) --Charge
+					addUnique(script.SpellIds, 298946) --Roadkill
+					addUnique(script.SpellIds, 298940) --Bolt Buster
+					addUnique(script.SpellIds, 300424) --Shockwave
+					addUnique(script.SpellIds, 283422) --Maximum Thrust
+					addUnique(script.SpellIds, 294290) --Process Waste
+					addUnique(script.SpellIds, 291973) --Explosive Leap
+					addUnique(script.SpellIds, 293986) --Sonic Pulse
+					addUnique(script.SpellIds, 291878) --Pulse Blast
+					addUnique(script.SpellIds, 292264) --Giga-Zap
+
+				elseif (script.Name == "Cast - Big Alert [Plater]") then
+					addUnique(script.SpellIds, 164192) --50K volts (grimrail)
+					addUnique(script.SpellIds, 176032) --Flametongue (grimrail)
+					addUnique(script.SpellIds, 166335) --Storm Shield (grimrail)
+					addUnique(script.SpellIds, 166387) --Healing Rain (grimrail)
+					addUnique(script.SpellIds, 162066) --Freezing Snare (grimrail)
+					addUnique(script.SpellIds, 163689) --Sanguine Sphere (iron docks)
+					addUnique(script.SpellIds, 227592) --Frostbite (karazhan)
+					addUnique(script.SpellIds, 228254) --Soul Leech (karazhan)
+					addUnique(script.SpellIds, 227999) --Pennies From Heaven (karazhan)
+					addUnique(script.SpellIds, 227987) --Dinner Bell! (karazhan)
+					addUnique(script.SpellIds, 232115) --Firelands Portal (karazhan)
+					addUnique(script.SpellIds, 29580) --Heal (karazhan)
+					addUnique(script.SpellIds, 227616) --Empowered Arms (karazhan)
+					addUnique(script.SpellIds, 241828) --Trampling Stomp (karazhan)
+					addUnique(script.SpellIds, 228606) --Healing Touch (karazhan)
+					addUnique(script.SpellIds, 227800) --Holy Shock (karazhan)
+					addUnique(script.SpellIds, 228239) --Terrifying Wail (karazhan)
+					addUnique(script.SpellIds, 229706) --Leech Life (karazhan)
+					addUnique(script.SpellIds, 294884) --Gyro-Scrap
+					addUnique(script.SpellIds, 301629) --Enlarge
+					addUnique(script.SpellIds, 284219) --Shrink
+					addUnique(script.SpellIds, 301689) --Charged Coil
+					addUnique(script.SpellIds, 300650) --Suffocating Smog
+					addUnique(script.SpellIds, 297835) --Coalesce
+					addUnique(script.SpellIds, 300171) --Repair Protocol
+					addUnique(script.SpellIds, 300087) --Repair
+					addUnique(script.SpellIds, 300414) --Enrage
+					addUnique(script.SpellIds, 300436) --Grasping Hex
+					addUnique(script.SpellIds, 301088) --Detonate
+					addUnique(script.SpellIds, 293729) --Tune Up
+					addUnique(script.SpellIds, 291928) --Giga-Zap
+
+				elseif (script.Name == "Cast - Small Alert [Plater]") then
+					addUnique(script.SpellIds, 328180) --Gripping Infection
+					addUnique(script.SpellIds, 319898) --Vile Spit
+					addUnique(script.SpellIds, 166335) --Storm Shield (grimrail)
+					addUnique(script.SpellIds, 172810) --Burning Arrows (iron docks)
+					addUnique(script.SpellIds, 172943) --Brutal Inspiration (iron docks)
+					addUnique(script.SpellIds, 173148) --Flaming Arrows (iron docks)
+					addUnique(script.SpellIds, 163376) --Malfunctioning (iron docks) Jumper Cables 9000-XL
+					addUnique(script.SpellIds, 228011) --Soup Spray (karazhan)
+					addUnique(script.SpellIds, 228277) --Shackles of Servitude (karazhan)
+					addUnique(script.SpellIds, 29928) --Immolate (karazhan)
+					addUnique(script.SpellIds, 228559) --Charming Perfume (karazhan)
+					addUnique(script.SpellIds, 230050) --Force Blade (karazhan)
+					addUnique(script.SpellIds, 374743) --Fel Fireball (karazhan)
+					addUnique(script.SpellIds, 227615) --Inferno Bolt (karazhan)
+					addUnique(script.SpellIds, 229716) --Curse of Doom (karazhan)
+					addUnique(script.SpellIds, 229083) --Burning Blast (karazhan)
+					addUnique(script.SpellIds, 299525) --Scrap Grenade
+					addUnique(script.SpellIds, 300514) --Stoneskin
+					addUnique(script.SpellIds, 285388) --Vent Jets
+					addUnique(script.SpellIds, 294324) --Mega Drill
+					addUnique(script.SpellIds, 294180) --Flaming Refuse
+					addUnique(script.SpellIds, 293827) --Giga-Wallop
+					addUnique(script.SpellIds, 297128) --Short Out
+					addUnique(script.SpellIds, 294015) --Launch High-Explosive Rockets
+					addUnique(script.SpellIds, 291865) --Recalibrate
+				end
+			end
+		end
+	})
 end
 
+--set the patch version to
+-- /run Plater.db.profile.patch_version = 
 
 --Patches to apply only when the profile is running for the first time
 do

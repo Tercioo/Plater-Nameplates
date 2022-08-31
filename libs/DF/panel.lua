@@ -17,7 +17,6 @@ local loadstring = loadstring --> lua local
 local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_NOT_MAINLINE = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_CLASSIC_ERA = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
-local IS_WOW_PROJECT_CLASSIC_TBC = WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC
 
 local UnitCastingInfo = UnitCastingInfo
 local UnitChannelInfo = UnitChannelInfo
@@ -62,44 +61,6 @@ do
 end
 
 local PanelMetaFunctions = _G[DF.GlobalWidgetControlNames ["panel"]]
-
---> mixin for options functions
-DF.OptionsFunctions = {
-	SetOption = function (self, optionName, optionValue)
-		if (self.options) then
-			self.options [optionName] = optionValue
-		else
-			self.options = {}
-			self.options [optionName] = optionValue
-		end
-		
-		if (self.OnOptionChanged) then
-			DF:Dispatch (self.OnOptionChanged, self, optionName, optionValue)
-		end
-	end,
-	
-	GetOption = function (self, optionName)
-		return self.options and self.options [optionName]
-	end,
-	
-	GetAllOptions = function (self)
-		if (self.options) then
-			local optionsTable = {}
-			for key, _ in pairs (self.options) do
-				optionsTable [#optionsTable + 1] = key
-			end
-			return optionsTable
-		else
-			return {}
-		end
-	end,
-	
-	BuildOptionsTable = function (self, defaultOptions, userOptions)
-		self.options = self.options or {}
-		DF.table.deploy (self.options, userOptions or {})
-		DF.table.deploy (self.options, defaultOptions or {})
-	end
-}
 
 --> default options for the frame layout
 local default_framelayout_options = {
@@ -2144,6 +2105,10 @@ function DF:CreateSimplePanel (parent, w, h, title, name, panel_options, db)
 	
 	f.Title:SetPoint ("center", title_bar, "center")
 	f.Close:SetPoint ("right", title_bar, "right", -2, 0)
+
+	if (panel_options.NoCloseButton) then
+		f.Close:Hide()
+	end
 	
 	f:SetScript ("OnMouseDown", simple_panel_mouse_down)
 	f:SetScript ("OnMouseUp", simple_panel_mouse_up)
@@ -5310,7 +5275,7 @@ DF.IconRowFunctions = {
 		end
 	end,
 	
-	SetIcon = function (self, spellId, borderColor, startTime, duration, forceTexture, descText, count, debuffType, caster, canStealOrPurge, spellName, isBuff)
+	SetIcon = function (self, spellId, borderColor, startTime, duration, forceTexture, descText, count, debuffType, caster, canStealOrPurge, spellName, isBuff, modRate)
 	
 		local actualSpellName, _, spellIcon = GetSpellInfo (spellId)
 	
@@ -5319,6 +5284,7 @@ DF.IconRowFunctions = {
 		end
 		
 		spellName = spellName or actualSpellName or "unknown_aura"
+		modRate = modRate or 1
 		
 		if (spellIcon) then
 			local iconFrame = self:GetIcon()
@@ -5332,14 +5298,14 @@ DF.IconRowFunctions = {
 			end	
 			
 			if (startTime) then
-				CooldownFrame_Set (iconFrame.Cooldown, startTime, duration, true, true)
+				CooldownFrame_Set (iconFrame.Cooldown, startTime, duration, true, true, modRate)
 				
 				if (self.options.show_text) then
 					iconFrame.CountdownText:Show()
 					
 					local now = GetTime()
 					
-					iconFrame.timeRemaining = startTime + duration - now
+					iconFrame.timeRemaining = (startTime + duration - now) / modRate
 					iconFrame.expirationTime = startTime + duration
 					
 					local formattedTime = (iconFrame.timeRemaining > 0) and self.options.decimal_timer and iconFrame.parentIconRow.FormatCooldownTimeDecimal(iconFrame.timeRemaining) or iconFrame.parentIconRow.FormatCooldownTime(iconFrame.timeRemaining) or ""
@@ -5363,6 +5329,7 @@ DF.IconRowFunctions = {
 				end
 				
 				iconFrame.Cooldown:SetReverse (self.options.cooldown_reverse)
+				iconFrame.Cooldown:SetDrawSwipe (self.options.cooldown_swipe_enabled)
 				iconFrame.Cooldown:SetHideCountdownNumbers (self.options.surpress_blizzard_cd_timer)
 			else
 				iconFrame.timeRemaining = nil
@@ -5655,6 +5622,7 @@ local default_icon_row_options = {
 	on_tick_cooldown_update = true,
 	decimal_timer = false,
 	cooldown_reverse = false,
+	cooldown_swipe = true,
 }
 
 function DF:CreateIconRow (parent, name, options)
@@ -6100,130 +6068,150 @@ local default_radiogroup_options = {
 }
 
 DF.RadioGroupCoreFunctions = {
-	RadioOnClick = function (self, fixedParam, value)
-		--turn off all checkboxes
-		local frameList = {self:GetParent():GetChildren()}
-		for _, checkbox in ipairs (frameList) do
-			checkbox = checkbox.GetCapsule and checkbox:GetCapsule() or checkbox
-			checkbox:SetValue (false)
-		end
-		
-		--turn on the clicked checkbox
-		self:SetValue (true)
-		
-		--callback
-		DF:QuickDispatch (self._set, fixedParam)
-	end,
-	
 	Disable = function (self)
-		local frameList = {self:GetChildren()}
-		for _, checkbox in ipairs (frameList) do
+		local frameList = self:GetAllCheckboxes()
+		for _, checkbox in ipairs(frameList) do
 			checkbox = checkbox.GetCapsule and checkbox:GetCapsule() or checkbox
 			checkbox:Disable()
 		end
 	end,
 	
 	Enable = function (self)
-		local frameList = {self:GetChildren()}
-		for _, checkbox in ipairs (frameList) do
+		local frameList = self:GetAllCheckboxes()
+		for _, checkbox in ipairs(frameList) do
 			checkbox = checkbox.GetCapsule and checkbox:GetCapsule() or checkbox
 			checkbox:Enable()
 		end
 	end,
 	
-	DeselectAll = function (self)
-		local frameList = {self:GetChildren()}
-		for _, checkbox in ipairs (frameList) do
+	DeselectAll = function(self)
+		local frameList = self:GetAllCheckboxes()
+		for _, checkbox in ipairs(frameList) do
 			checkbox = checkbox.GetCapsule and checkbox:GetCapsule() or checkbox
-			checkbox:SetValue (false)
+			checkbox:SetValue(false)
 		end
 	end,
 
-	FadeIn = function (self)
-		local frameList = {self:GetChildren()}
-		for _, checkbox in ipairs (frameList) do
-			checkbox:SetAlpha (1)
+	FadeIn = function(self)
+		local frameList = self:GetAllCheckboxes()
+		for _, checkbox in ipairs(frameList) do
+			checkbox:SetAlpha(1)
 		end
 	end,
 	
-	FadeOut = function (self)
-		local frameList = {self:GetChildren()}
-		for _, checkbox in ipairs (frameList) do
-			checkbox:SetAlpha (.7)
+	FadeOut = function(self)
+		local frameList = self:GetAllCheckboxes()
+		for _, checkbox in ipairs(frameList) do
+			checkbox:SetAlpha(.7)
 		end
 	end,
 	
-	SetFadeState = function (self, state)
+	SetFadeState = function(self, state)
 		if (state) then
 			self:FadeIn()
 		else
 			self:FadeOut()
 		end
 	end,
-	
-	CreateCheckbox = function (self)
-		local checkbox = DF:CreateSwitch (self, function()end, false, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"))
-		checkbox:SetAsCheckBox()
-		checkbox.Icon = DF:CreateImage (checkbox, "", 16, 16)
-		checkbox.Label = DF:CreateLabel (checkbox, "")
-		
+
+	GetAllCheckboxes = function(self)
+		return {self:GetChildren()}
+	end,
+
+	GetCheckbox = function(self, checkboxId)
+		local allCheckboxes = self:GetAllCheckboxes()
+		local checkbox = allCheckboxes[checkboxId]
+		if (not checkbox) then
+			checkbox = self:CreateCheckbox()
+		end
 		return checkbox
 	end,
 	
-	RefreshCheckbox = function (self, checkbox, optionTable)
-		checkbox = checkbox.GetCapsule and checkbox:GetCapsule() or checkbox
+	CreateCheckbox = function(self)
+		local checkbox = DF:CreateSwitch(self, function()end, false, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"))
+		checkbox:SetAsCheckBox()
+		checkbox.Icon = DF:CreateImage(checkbox, "", 16, 16)
+		checkbox.Label = DF:CreateLabel(checkbox, "")
 		
-		local setFunc = self.options.is_radio and self.RadioOnClick or optionTable.set
-		checkbox:SetSwitchFunction (setFunc)
-		checkbox._set = setFunc
-		checkbox:SetFixedParameter (optionTable.param)
-		
-		local isChecked = DF:Dispatch (optionTable.get)
-		checkbox:SetValue (isChecked)
-		
-		checkbox.Label:SetText (optionTable.name)
-		
-		if (optionTable.texture) then
-			checkbox.Icon:SetTexture (optionTable.texture)
-			checkbox.Icon:SetPoint ("left", checkbox, "right", 2, 0)
-			checkbox.Label:SetPoint ("left", checkbox.Icon, "right", 2, 0)
-			
-			if (optionTable.texcoord) then
-				checkbox.Icon:SetTexCoord (unpack (optionTable.texcoord))
-			else
-				checkbox.Icon:SetTexCoord (0, 1, 0, 1)
-			end
-		else
-			checkbox.Icon:SetTexture ("")
-			checkbox.Label:SetPoint ("left", checkbox, "right", 2, 0)
+		return checkbox
+	end,
+
+	ResetAllCheckboxes = function(self)
+		local radioCheckboxes = self:GetAllCheckboxes()
+		for i = 1, #radioCheckboxes do
+			local checkBox = radioCheckboxes[i]
+			checkBox:Hide()
 		end
 	end,
 
-	Refresh = function (self)
-		local radioOptions = self.RadioOptionsTable
-		local radioCheckboxes = {self:GetChildren()}
+	--if the list of checkboxes are a radio group
+	RadioOnClick = function(checkbox, fixedParam, value)
+		--turn off all checkboxes
+		checkbox:GetParent():DeselectAll()
 		
-		for _, checkbox in ipairs (radioCheckboxes) do
-			checkbox:Hide()
+		--turn on the clicked checkbox
+		checkbox:SetValue(true)
+		
+		--callback
+		if (checkbox._callback) then
+			DF:QuickDispatch(checkbox._callback, fixedParam, checkbox._optionid)
 		end
+	end,
+	
+	RefreshCheckbox = function(self, checkbox, optionTable, optionId)
+		checkbox = checkbox.GetCapsule and checkbox:GetCapsule() or checkbox
 		
-		for radioIndex, optionsTable in ipairs (radioOptions) do
-			local checkbox = radioCheckboxes [radioIndex]
-			if (not checkbox) then
-				checkbox = self:CreateCheckbox()
+		local setFunc = self.options.is_radio and self.RadioOnClick or optionTable.set
+		checkbox:SetSwitchFunction(setFunc)
+		checkbox._callback = optionTable.callback
+		checkbox._set = self.options.is_radio and optionTable.callback or optionTable.set
+		checkbox._optionid = optionId
+		checkbox:SetFixedParameter(optionTable.param or optionId)
+		
+		local isChecked = type(optionTable.get) == "function" and DF:Dispatch(optionTable.get) or false
+		checkbox:SetValue(isChecked)
+		
+		checkbox.Label:SetText(optionTable.name)
+		
+		if (optionTable.texture) then
+			checkbox.Icon:SetTexture(optionTable.texture)
+			checkbox.Icon:SetPoint("left", checkbox, "right", 2, 0)
+			checkbox.Label:SetPoint("left", checkbox.Icon, "right", 2, 0)
+			
+			if (optionTable.texcoord) then
+				checkbox.Icon:SetTexCoord(unpack(optionTable.texcoord))
+			else
+				checkbox.Icon:SetTexCoord(0, 1, 0, 1)
 			end
-			checkbox.OptionID = radioIndex
+		else
+			checkbox.Icon:SetTexture("")
+			checkbox.Label:SetPoint("left", checkbox, "right", 2, 0)
+		end
+	end,
+
+	Refresh = function(self)
+		self:ResetAllCheckboxes()
+		local radioOptions = self:GetOptions()
+		local radioCheckboxes = self:GetAllCheckboxes()
+
+		for optionId, optionsTable in ipairs(radioOptions) do
+			local checkbox = self:GetCheckbox(optionId)
+			checkbox.OptionID = optionId
 			checkbox:Show()
-			self:RefreshCheckbox (checkbox, optionsTable)
+			self:RefreshCheckbox(checkbox, optionsTable, optionId)
 		end
 		
 		--sending false to automatically use the radio group children
-		self:ArrangeFrames (false, self.AnchorOptions)
+		self:ArrangeFrames(false, self.AnchorOptions)
 	end,
 	
-	SetOptions = function (self, radioOptions)
+	SetOptions = function(self, radioOptions)
 		self.RadioOptionsTable = radioOptions
 		self:Refresh()
+	end,
+
+	GetOptions = function(self)
+		return self.RadioOptionsTable
 	end,
 }
 
@@ -6235,7 +6223,7 @@ DF.RadioGroupCoreFunctions = {
 	options: override options for default_radiogroup_options table
 	anchorOptions: override options for default_framelayout_options table
 --]=]
-function DF:CreateRadionGroup (parent, radioOptions, name, options, anchorOptions)
+function DF:CreateCheckboxGroup(parent, radioOptions, name, options, anchorOptions)
 	local f = CreateFrame ("frame", name, parent, "BackdropTemplate")
 	
 	DF:Mixin (f, DF.OptionsFunctions)
@@ -6260,6 +6248,16 @@ function DF:CreateRadionGroup (parent, radioOptions, name, options, anchorOption
 	f:SetOptions (radioOptions)
 
 	return f
+end
+
+function DF:CreateRadionGroup(parent, radioOptions, name, options, anchorOptions) --alias for miss spelled old function
+	return DF:CreateRadioGroup(parent, radioOptions, name, options, anchorOptions)
+end
+
+function DF:CreateRadioGroup(parent, radioOptions, name, options, anchorOptions)
+	options = options or {}
+	options.is_radio = true
+	return DF:CreateCheckboxGroup(parent, radioOptions, name, options, anchorOptions)
 end
 
 
@@ -6544,8 +6542,8 @@ function DF:OpenLoadConditionsPanel (optionsTable, callback, frameOptions)
 			pvptalent = {x2StartAt, -70},
 			group = {x2StartAt, -210},
 			affix = {x2StartAt, -270},
-			encounter_ids = {x2StartAt, -400},
-			map_ids = {x2StartAt, -440},
+			encounter_ids = {x2StartAt, -420},
+			map_ids = {x2StartAt, -460},
 		}
 		
 		local editingLabel = DF:CreateLabel (f, "Load Conditions For:")
@@ -6594,7 +6592,7 @@ function DF:OpenLoadConditionsPanel (optionsTable, callback, frameOptions)
 				})
 			end
 			
-			local classGroup = DF:CreateRadionGroup (f, classes, name, {width = 200, height = 200, title = "Character Class"}, {offset_x = 130, amount_per_line = 3})
+			local classGroup = DF:CreateCheckboxGroup (f, classes, name, {width = 200, height = 200, title = "Character Class"}, {offset_x = 130, amount_per_line = 3})
 			classGroup:SetPoint ("topleft", f, "topleft", anchorPositions.class [1], anchorPositions.class [2])
 			classGroup.DBKey = "class"
 			tinsert (f.AllRadioGroups, classGroup)
@@ -6612,7 +6610,7 @@ function DF:OpenLoadConditionsPanel (optionsTable, callback, frameOptions)
 						texture = specIcon,
 					})
 				end
-				local specGroup = DF:CreateRadionGroup (f, specs, name, {width = 200, height = 200, title = "Character Spec"}, {offset_x = 130, amount_per_line = 4})
+				local specGroup = DF:CreateCheckboxGroup (f, specs, name, {width = 200, height = 200, title = "Character Spec"}, {offset_x = 130, amount_per_line = 4})
 				specGroup:SetPoint ("topleft", f, "topleft", anchorPositions.spec [1], anchorPositions.spec [2])
 				specGroup.DBKey = "spec"
 				tinsert (f.AllRadioGroups, specGroup)
@@ -6628,7 +6626,7 @@ function DF:OpenLoadConditionsPanel (optionsTable, callback, frameOptions)
 					get = function() return f.OptionsTable.race [raceTable.FileString] end,
 				})
 			end
-			local raceGroup = DF:CreateRadionGroup (f, raceList, name, {width = 200, height = 200, title = "Character Race"})
+			local raceGroup = DF:CreateCheckboxGroup (f, raceList, name, {width = 200, height = 200, title = "Character Race"})
 			raceGroup:SetPoint ("topleft", f, "topleft", anchorPositions.race [1], anchorPositions.race [2])
 			raceGroup.DBKey = "race"
 			tinsert (f.AllRadioGroups, raceGroup)
@@ -6645,7 +6643,7 @@ function DF:OpenLoadConditionsPanel (optionsTable, callback, frameOptions)
 						texture = talentTable.Texture,
 					})
 				end
-				local talentGroup = DF:CreateRadionGroup (f, talentList, name, {width = 200, height = 200, title = "Characer Talents"}, {offset_x = 150, amount_per_line = 3})
+				local talentGroup = DF:CreateCheckboxGroup (f, talentList, name, {width = 200, height = 200, title = "Characer Talents"}, {offset_x = 150, amount_per_line = 3})
 				talentGroup:SetPoint ("topleft", f, "topleft", anchorPositions.talent [1], anchorPositions.talent [2])
 				talentGroup.DBKey = "talent"
 				tinsert (f.AllRadioGroups, talentGroup)
@@ -6745,7 +6743,7 @@ function DF:OpenLoadConditionsPanel (optionsTable, callback, frameOptions)
 						texture = talentTable.Texture,
 					})
 				end
-				local pvpTalentGroup = DF:CreateRadionGroup (f, pvpTalentList, name, {width = 200, height = 200, title = "Characer PvP Talents"}, {offset_x = 150, amount_per_line = 3})
+				local pvpTalentGroup = DF:CreateCheckboxGroup (f, pvpTalentList, name, {width = 200, height = 200, title = "Characer PvP Talents"}, {offset_x = 150, amount_per_line = 3})
 				pvpTalentGroup:SetPoint ("topleft", f, "topleft", anchorPositions.pvptalent [1], anchorPositions.pvptalent [2])
 				pvpTalentGroup.DBKey = "pvptalent"
 				tinsert (f.AllRadioGroups, pvpTalentGroup)
@@ -6843,7 +6841,7 @@ function DF:OpenLoadConditionsPanel (optionsTable, callback, frameOptions)
 					get = function() return f.OptionsTable.group [groupTable.ID] or f.OptionsTable.group [groupTable.ID .. ""] end,
 				})
 			end
-			local groupTypesGroup = DF:CreateRadionGroup (f, groupTypes, name, {width = 200, height = 200, title = "Group Types"})
+			local groupTypesGroup = DF:CreateCheckboxGroup (f, groupTypes, name, {width = 200, height = 200, title = "Group Types"})
 			groupTypesGroup:SetPoint ("topleft", f, "topleft", anchorPositions.group [1], anchorPositions.group [2])
 			groupTypesGroup.DBKey = "group"
 			tinsert (f.AllRadioGroups, groupTypesGroup)
@@ -6858,7 +6856,7 @@ function DF:OpenLoadConditionsPanel (optionsTable, callback, frameOptions)
 					get = function() return f.OptionsTable.role [roleTable.ID] or f.OptionsTable.role [roleTable.ID .. ""] end,
 				})
 			end
-			local roleTypesGroup = DF:CreateRadionGroup (f, roleTypes, name, {width = 200, height = 200, title = "Role Types"})
+			local roleTypesGroup = DF:CreateCheckboxGroup (f, roleTypes, name, {width = 200, height = 200, title = "Role Types"})
 			roleTypesGroup:SetPoint ("topleft", f, "topleft", anchorPositions.role [1], anchorPositions.role [2])
 			roleTypesGroup.DBKey = "role"
 			tinsert (f.AllRadioGroups, roleTypesGroup)
@@ -6878,7 +6876,7 @@ function DF:OpenLoadConditionsPanel (optionsTable, callback, frameOptions)
 						})
 					end
 				end
-				local affixTypesGroup = DF:CreateRadionGroup (f, affixes, name, {width = 200, height = 200, title = "M+ Affixes"})
+				local affixTypesGroup = DF:CreateCheckboxGroup (f, affixes, name, {width = 200, height = 200, title = "M+ Affixes"})
 				affixTypesGroup:SetPoint ("topleft", f, "topleft", anchorPositions.affix [1], anchorPositions.affix [2])
 				affixTypesGroup.DBKey = "affix"
 				tinsert (f.AllRadioGroups, affixTypesGroup)
@@ -8349,7 +8347,7 @@ DF.CastFrameFunctions = {
 	end,
 	
 	HasScheduledHide = function (self)
-		return self.scheduledHideTime and not self.scheduledHideTime._cancelled
+		return self.scheduledHideTime and not self.scheduledHideTime:IsCancelled()
 	end,
 	
 	CancelScheduleToHide = function (self)
@@ -8361,7 +8359,7 @@ DF.CastFrameFunctions = {
 	--> after an interrupt, do not immediately hide the cast bar, let it up for short amount of time to give feedback to the player
 	ScheduleToHide = function (self, delay)
 		if (not delay) then
-			if (self.scheduledHideTime and not self.scheduledHideTime._cancelled) then
+			if (self.scheduledHideTime and not self.scheduledHideTime:IsCancelled()) then
 				self.scheduledHideTime:Cancel()
 			end
 			
@@ -8370,7 +8368,7 @@ DF.CastFrameFunctions = {
 		end
 
 		--> already have a scheduled timer?
-		if (self.scheduledHideTime and not self.scheduledHideTime._cancelled) then
+		if (self.scheduledHideTime and not self.scheduledHideTime:IsCancelled()) then
 			self.scheduledHideTime:Cancel()
 		end
 		
@@ -8683,12 +8681,7 @@ DF.CastFrameFunctions = {
 	end,
 	
 	UpdateChannelInfo = function (self, unit, ...)
-		local name, text, texture, startTime, endTime, isTradeSkill, notInterruptible, spellID
-		if not IS_WOW_PROJECT_CLASSIC_TBC then
-			name, text, texture, startTime, endTime, isTradeSkill, notInterruptible, spellID = UnitChannelInfo (unit)
-		else
-			name, text, texture, startTime, endTime, isTradeSkill, spellID = UnitChannelInfo (unit)
-		end
+		local name, text, texture, startTime, endTime, isTradeSkill, notInterruptible, spellID = UnitChannelInfo (unit)
 
 		--> is valid?
 		if (not self:IsValid (unit, name, isTradeSkill, true)) then

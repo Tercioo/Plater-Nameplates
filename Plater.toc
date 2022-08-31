@@ -1,6 +1,7 @@
 ## Interface: 90200
-## Interface-Mainline: 90205
+## Interface-Mainline: 90207
 ## Interface-BCC: 20504
+## Interface-Wrath: 30400
 ## Interface-Classic: 11403
 ## Title: Plater
 ## Notes: Nameplate addon designed for advanced users.
@@ -12,6 +13,9 @@
 #@version-bcc@
 ## Version: @project-version@-BCC
 #@end-version-bcc@
+#@version-wrath@
+## Version: @project-version@-Wrath
+#@end-version-wrath@
 #@version-classic@
 ## Version: @project-version@-Classic
 #@end-version-classic@

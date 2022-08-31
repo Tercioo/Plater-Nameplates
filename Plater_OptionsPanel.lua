@@ -10,6 +10,7 @@ local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_NOT_MAINLINE = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_CLASSIC_ERA = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
 local IS_WOW_PROJECT_CLASSIC_TBC = WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC
+local IS_WOW_PROJECT_CLASSIC_WRATH = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_WRATH_OF_THE_LICH_KING and ClassicExpansionAtLeast(LE_EXPANSION_WRATH_OF_THE_LICH_KING)
 
 local PixelUtil = PixelUtil or DFPixelUtil
 
@@ -572,7 +573,7 @@ function Plater.OpenOptionsPanel()
 						local paste = strtrim(table.concat(pasteBuffer))
 						
 						local wagoProfile = Plater.DecompressData (paste, "print")
-						if (wagoProfile and type (wagoProfile == "table")) then
+						if (wagoProfile and type (wagoProfile) == "table") then
 							if  (wagoProfile.plate_config) then
 								local existingProfileName = nil
 								local wagoInfoText = "Import data verified.\n\n"
@@ -676,7 +677,7 @@ function Plater.OpenOptionsPanel()
 				local text = profilesFrame.ImportStringField.importDataText
 				local profile = Plater.DecompressData (text, "print")
 				
-				if (profile and type (profile == "table")) then
+				if (profile and type (profile) == "table") then
 				
 					--decompress success, need to see if this is a real profile and not a script
 					if (not profile.plate_config) then
@@ -990,7 +991,7 @@ function Plater.OpenOptionsPanel()
 					local update = Plater.CompanionDataSlugs[id]
 					
 					local wagoProfile = Plater.DecompressData (update.encoded, "print")				
-					if (wagoProfile and type (wagoProfile == "table") and wagoProfile.plate_config) then
+					if (wagoProfile and type(wagoProfile) == "table" and wagoProfile.plate_config) then
 				
 						local wagoInfoText = ""
 						wagoInfoText = wagoInfoText .. "Name: " .. update.name .. "\n\n"
@@ -6762,7 +6763,7 @@ local relevance_options = {
 				end
 			end,
 			min = IS_WOW_PROJECT_MAINLINE and 60 or 20, --20y for tbc and classic
-			max = (IS_WOW_PROJECT_MAINLINE and 60) or (IS_WOW_PROJECT_CLASSIC_TBC and 41) or 20, --41y for tbc, 20y for classic era
+			max = (IS_WOW_PROJECT_MAINLINE and 60) or ((IS_WOW_PROJECT_CLASSIC_TBC or IS_WOW_PROJECT_CLASSIC_WRATH) and 41) or 20, --41y for tbc, 20y for classic era
 			step = 1,
 			name = "View Distance" .. CVarIcon,
 			desc = "How far you can see nameplates (in yards).\n\n|cFFFFFFFFCurrent limitations: Retail = 60y, TBC = 20-41y, Classic = 20y|r" .. CVarDesc,
@@ -12677,7 +12678,7 @@ end
 
 	_G.C_Timer.After(0.800, function() --~delay
 		--the -30 is to fix an annomaly where the options for castbars starts 30 pixels to the right, dunno why (tercio)
-		DF:BuildMenu (castBarFrame, castBar_options, startX - 30, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)	
+		DF:BuildMenu (castBarFrame, castBar_options, startX-20, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)	
 	end)
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -12921,7 +12922,7 @@ end
 	}
 	
 	
-	if IS_WOW_PROJECT_NOT_MAINLINE then
+	if IS_WOW_PROJECT_NOT_MAINLINE and not IS_WOW_PROJECT_CLASSIC_WRATH then
 		local thread_options_tank = {
 			{type = "label", get = function() return "Tank or DPS Colors:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			
@@ -13213,6 +13214,26 @@ end
 			usedecimals = true,
 			name = "Min Scale" .. CVarIcon,
 			desc = "Scale applied when the nameplate is far away from the camera.\n\n" .. ImportantText .. "is the distance from the camera and |cFFFF4444not|r the distance from your character.\n\n|cFFFFFFFFDefault: 0.8|r" .. CVarDesc,
+			nocombat = true,
+		},
+		
+		{
+			type = "range",
+			get = function() return tonumber (GetCVar ("nameplateLargerScale")) end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateLargerScale", value)
+				else
+					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+				end
+			end,
+			min = 0.3,
+			max = 2,
+			step = 0.1,
+			thumbscale = 1.7,
+			usedecimals = true,
+			name = "Larger Scale" .. CVarIcon,
+			desc = "Scale applied to important monsters (such as bosses).\n\n|cFFFFFFFFDefault: 1.2|r" .. CVarDesc,
 			nocombat = true,
 		},
 
