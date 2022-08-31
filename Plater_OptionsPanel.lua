@@ -170,7 +170,7 @@ function Plater.OpenOptionsPanel()
 	PixelUtil.SetPoint (f, "center", UIParent, "center", 2, 2, 1, 1)
 	
 	-- version text
-	local versionText = DF:CreateLabel (f, Plater.versionString, 11, "white")
+	local versionText = DF:CreateLabel (f, Plater.fullVersionInfo, 11, "white")
 	versionText:SetPoint ("topright", f, "topright", -25, -7)
 	versionText:SetAlpha(0.75)
 
