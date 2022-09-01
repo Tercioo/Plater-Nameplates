@@ -7,6 +7,9 @@ local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_NOT_MAINLINE = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_CLASSIC_ERA = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
 
+--preparation for 10.0
+local IS_NEW_UNIT_AURA_AVAILABLE = C_UnitAuras and C_UnitAuras.GetAuraDataBySlot and true
+
 --stop yellow lines on my editor
 local tinsert = _G.tinsert
 local min = _G.min
@@ -262,6 +265,22 @@ UNIT_AURA Payload:
 			sourceUnit,
 			spellId,
 		}
+
+In 10.0:
+	- unit
+	- UnitAuraUpdateInfo = {
+			addedAuras = AuraInstanceInfo[]?,
+			updatedAuraInstanceIDs = number[]?
+			removedAuraInstanceIDs = number[]?
+			isFullUpdate = boolean?,
+		}
+
+with AuraInstanceInfo = {	
+		--FULL UnitAura return values plus:
+		auraInstanceID = number,
+		-- "Magic" | "Curse" | "Disease" | "Poison"
+		dispelName = string,  
+	}
 ]]--
 local UnitAuraEventHandlerData = {}
 local UnitAuraEventHandlerValidUnits = {} -- units on screen. set via Plater.RemoveFromAuraUpdate and Plater.AddToAuraUpdate from NAME_PLATE_UNIT_REMOVED and NAME_PLATE_UNIT_ADDED events
@@ -270,13 +289,27 @@ local UnitAuraEventHandler = function (_, event, arg1, arg2, arg3, ...)
 	Plater.StartLogPerformanceCore("Plater-Core", "Events", event)
 	
 	if event == "UNIT_AURA" then
-		local unit, isFullUpdate, updatedAuras = arg1, arg2, arg3
-		if unit and UnitAuraEventHandlerValidUnits[unit] then
-			local needsUpdate, hasBuff, hasDebuff = UnitAuraEventHandlerValidation(unit, isFullUpdate, updatedAuras)
-			--ViragDevTool_AddData({unit = unit, isFullUpdate = isFullUpdate, updatedAuras = updatedAuras, needsUpdate = needsUpdate, hasBuff = hasBuff, hasDebuff = hasDebuff, existing=CopyTable(UnitAuraEventHandlerData[unit] or {})}, "Plater_UNIT_AURA_AFTER")
-			if needsUpdate then
-				local existingData = UnitAuraEventHandlerData[unit] or { hasBuff = false, hasDebuff = false }
-				UnitAuraEventHandlerData[unit] = { hasBuff = existingData.hasBuff or hasBuff, hasDebuff = existingData.hasDebuff or hasDebuff }
+		if IS_NEW_UNIT_AURA_AVAILABLE then --for 10.0
+			local unit, updatedAuras = arg1, arg2
+			local isFullUpdate = updatedAuras.isFullUpdate or not updatedAuras
+			if unit and UnitAuraEventHandlerValidUnits[unit] then
+				local needsUpdate, hasBuff, hasDebuff = UnitAuraEventHandlerValidation(unit, isFullUpdate, updatedAuras)
+				--ViragDevTool_AddData({unit = unit, isFullUpdate = isFullUpdate, updatedAuras = updatedAuras, needsUpdate = needsUpdate, hasBuff = hasBuff, hasDebuff = hasDebuff, existing=CopyTable(UnitAuraEventHandlerData[unit] or {})}, "Plater_UNIT_AURA_AFTER")
+				if needsUpdate then
+					local existingData = UnitAuraEventHandlerData[unit] or { hasBuff = false, hasDebuff = false }
+					UnitAuraEventHandlerData[unit] = { hasBuff = existingData.hasBuff or hasBuff, hasDebuff = existingData.hasDebuff or hasDebuff }
+				end
+			end
+			
+		else --old code
+			local unit, isFullUpdate, updatedAuras = arg1, arg2, arg3
+			if unit and UnitAuraEventHandlerValidUnits[unit] then
+				local needsUpdate, hasBuff, hasDebuff = UnitAuraEventHandlerValidation(unit, isFullUpdate, updatedAuras)
+				--ViragDevTool_AddData({unit = unit, isFullUpdate = isFullUpdate, updatedAuras = updatedAuras, needsUpdate = needsUpdate, hasBuff = hasBuff, hasDebuff = hasDebuff, existing=CopyTable(UnitAuraEventHandlerData[unit] or {})}, "Plater_UNIT_AURA_AFTER")
+				if needsUpdate then
+					local existingData = UnitAuraEventHandlerData[unit] or { hasBuff = false, hasDebuff = false }
+					UnitAuraEventHandlerData[unit] = { hasBuff = existingData.hasBuff or hasBuff, hasDebuff = existingData.hasDebuff or hasDebuff }
+				end
 			end
 		end
 	end
