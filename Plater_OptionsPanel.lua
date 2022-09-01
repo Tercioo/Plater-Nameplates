@@ -1237,6 +1237,16 @@ function Plater.OpenOptionsPanel()
 		cooldown_edge_texture_selected_options [#cooldown_edge_texture_selected_options + 1] = {value = texturePath, label = "Texture " .. index, statusbar = texturePath, onclick = cooldown_edge_texture_selected}
 	end
 	--
+	local extra_icon_cooldown_edge_texture_selected = function (self, capsule, value)
+		Plater.db.profile.extra_icon_cooldown_edge_texture = value
+		Plater.IncreaseRefreshID()
+		Plater.UpdateAllPlates()
+	end
+	local extra_icon_cooldown_edge_texture_selected_options = {}
+	for index, texturePath in ipairs (Plater.CooldownEdgeTextures) do
+		extra_icon_cooldown_edge_texture_selected_options [#extra_icon_cooldown_edge_texture_selected_options + 1] = {value = texturePath, label = "Texture " .. index, statusbar = texturePath, onclick = extra_icon_cooldown_edge_texture_selected}
+	end
+	--
 	local cast_spark_texture_selected = function (self, capsule, value)
 		Plater.db.profile.cast_statusbar_spark_texture = value
 		Plater.UpdateAllPlates()
@@ -4431,8 +4441,6 @@ Plater.CreateAuraTesting()
 			{type = "blank"},
 			{type = "blank"},
 			{type = "blank"},
-			{type = "blank"},
-			{type = "blank"},
 			{type = "label", get = function() return "Icon Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			--anchor
 			{
@@ -4536,6 +4544,23 @@ Plater.CreateAuraTesting()
 				end,
 				name = "Default Border Color",
 				desc = "Default Border Color",
+			},
+			{
+				type = "select",
+				get = function() return Plater.db.profile.extra_icon_cooldown_edge_texture end,
+				values = function() return extra_icon_cooldown_edge_texture_selected_options end,
+				name = "Swipe Texture",
+				desc = "Texture in the form of a line which rotates within the aura icon following the aura remaining time.",
+			},
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.extra_icon_show_swipe end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.extra_icon_show_swipe = value
+					Plater.UpdateAllPlates()
+				end,
+				name = "Show Swipe Closure Texture",
+				desc = "If enabled the swipe closure texture is applied as the swipe moves instead.",
 			},
 			{
 				type = "toggle",
@@ -4954,9 +4979,9 @@ Plater.CreateAuraTesting()
 		}
 		
 		auraSpecialFrame.ExampleImageDesc = DF:CreateLabel (auraSpecialFrame, "Special auras look like this:", 14)
-		auraSpecialFrame.ExampleImageDesc:SetPoint (330, -220)
+		auraSpecialFrame.ExampleImageDesc:SetPoint (330, -215)
 		auraSpecialFrame.ExampleImage = DF:CreateImage (auraSpecialFrame, [[Interface\AddOns\Plater\images\extra_icon_example]], 256*0.8, 128*0.8)
-		auraSpecialFrame.ExampleImage:SetPoint (330, -234)
+		auraSpecialFrame.ExampleImage:SetPoint (330, -229)
 		auraSpecialFrame.ExampleImage:SetAlpha (.834)
 		
 		local fff = CreateFrame ("frame", "$parentExtraIconsSettings", auraSpecialFrame, BackdropTemplateMixin and "BackdropTemplate")

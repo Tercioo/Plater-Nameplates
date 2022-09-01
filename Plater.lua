@@ -7765,6 +7765,8 @@ end
 			unitFrame.ExtraIconFrame:SetOption ("surpress_blizzard_cd_timer", true)
 			unitFrame.ExtraIconFrame:SetOption ("decimal_timer", Plater.db.profile.extra_icon_timer_decimals)
 			unitFrame.ExtraIconFrame:SetOption ("cooldown_reverse", Plater.db.profile.extra_icon_cooldown_reverse)
+			unitFrame.ExtraIconFrame:SetOption ("cooldown_swipe_enabled", Plater.db.profile.extra_icon_show_swipe)
+			unitFrame.ExtraIconFrame:SetOption ("cooldown_edge_texture", Plater.db.profile.extra_icon_cooldown_edge_texture)
 			
 			--> update refresh ID
 			unitFrame.ExtraIconFrame.RefreshID = PLATER_REFRESH_ID

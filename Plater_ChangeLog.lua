@@ -8,10 +8,11 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 			
-			{1661805804,  "Bug Fix", "August 29th, 2022", "Fixing mod Load Conditions.", "cont1nuity"},
-			{1661805804,  "Backend Change", "August 28th, 2022", "Support for aura modRate.", "cont1nuity"},
-			{1661805804,  "Bug Fix", "August 28th, 2022", "Fixing tank/spec detection in WotLK. Using your selected talent role now.", "cont1nuity"},
-			{1661805804,  "Backend Change", "August 25th, 2022", "Update on default 'Performance Units'.", "cont1nuity"},
+			{1662054080,  "New Feature", "September 1st, 2022", "Adding options for swipe texture on Buff Special.", "cont1nuity"},
+			{1662054080,  "Bug Fix", "August 29th, 2022", "Fixing mod Load Conditions.", "cont1nuity"},
+			{1662054080,  "Backend Change", "August 28th, 2022", "Support for aura modRate.", "cont1nuity"},
+			{1662054080,  "Bug Fix", "August 28th, 2022", "Fixing tank/spec detection in WotLK. Using your selected talent role now.", "cont1nuity"},
+			{1662054080,  "Backend Change", "August 25th, 2022", "Update on default 'Performance Units'.", "cont1nuity"},
 			
 			{1661327305,  "Backend Change", "August 24th, 2022", "Fixing load on TBC.", "cont1nuity"},
 			{1661327305,  "Backend Change", "August 18th, 2022", "New profiling in development with extended data. Use '/plater profstartadvance' to use it.", "cont1nuity"},
