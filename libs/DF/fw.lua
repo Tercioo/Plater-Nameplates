@@ -1,6 +1,6 @@
 
 
-local dversion = 335
+local dversion = 342
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
 
@@ -51,32 +51,36 @@ if (not PixelUtil) then
 	end
 end
 
+function DF.IsDragonflight()
+	return select(4, GetBuildInfo()) >= 100000
+end
+
 function DF.IsTimewalkWoW()
-	return DF.IsClassicWow() or DF.IsTBCWow() or DF.IsWotLKWow()
+    local _, _, _, buildInfo = GetBuildInfo()
+    if (buildInfo < 40000) then
+        return true
+    end
 end
 
 function DF.IsClassicWow()
-	local gameVersion = GetBuildInfo()
-	if (gameVersion:match ("%d") == "1") then
-		return true
-	end
-	return false
+    local _, _, _, buildInfo = GetBuildInfo()
+    if (buildInfo < 20000) then
+        return true
+    end
 end
 
 function DF.IsTBCWow()
-	local gameVersion = GetBuildInfo()
-	if (gameVersion:match ("%d") == "2") then
-		return true
-	end
-	return false
+    local _, _, _, buildInfo = GetBuildInfo()
+    if (buildInfo < 30000 and buildInfo >= 20000) then
+        return true
+    end
 end
 
 function DF.IsWotLKWow()
-	local gameVersion = GetBuildInfo()
-	if (gameVersion:match ("%d") == "3") then
-		return true
-	end
-	return false
+    local _, _, _, buildInfo = GetBuildInfo()
+    if (buildInfo < 40000 and buildInfo >= 30000) then
+        return true
+    end
 end
 
 local roleBySpecTextureName = {
@@ -2905,8 +2909,14 @@ function DF:CreateAnimation (animation, type, order, duration, arg1, arg2, arg3,
 		anim:SetToAlpha (arg2)
 	
 	elseif (type == "SCALE") then
-		anim:SetFromScale (arg1, arg2)
-		anim:SetToScale (arg3, arg4)
+		if (DF.IsDragonflight()) then
+			anim:SetScaleFrom (arg1, arg2)
+			anim:SetScaleTo (arg3, arg4)
+		else
+			anim:SetFromScale (arg1, arg2)
+			anim:SetToScale (arg3, arg4)
+		end
+
 		anim:SetOrigin (arg5 or "center", arg6 or 0, arg7 or 0) --point, x, y
 	
 	elseif (type == "ROTATION") then
