@@ -3873,7 +3873,7 @@ local button_tab_template = DF.table.copy ({}, DF:GetTemplate ("button", "OPTION
 button_tab_template.backdropbordercolor = nil
 
 DF.TabContainerFunctions.CreateUnderlineGlow = function (button)
-	local selectedGlow = button:CreateTexture (nil, "background", -4)
+	local selectedGlow = button:CreateTexture (nil, "background", nil, -4)
 	selectedGlow:SetPoint ("topleft", button.widget, "bottomleft", -7, 0)
 	selectedGlow:SetPoint ("topright", button.widget, "bottomright", 7, 0)
 	selectedGlow:SetTexture ([[Interface\BUTTONS\UI-Panel-Button-Glow]])
@@ -5086,7 +5086,8 @@ function DF:ApplyStandardBackdrop (f, darkTheme, alphaScale)
 	alphaScale = alphaScale or 1.0
 
 	if(not f.SetBackdrop)then
-		print(debugstack(1,2,1))
+		--print(debugstack(1,2,1))
+		Mixin(f, BackdropTemplateMixin)
 	end
 
 	if (darkTheme) then
