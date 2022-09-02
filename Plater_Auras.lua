@@ -30,7 +30,7 @@ local floor = _G.floor
 local UnitAuraSlots = _G.UnitAuraSlots
 local UnitAuraBySlot = _G.UnitAuraBySlot
 local UnitAura = _G.UnitAura
-local GetAuraDataBySlot = _G.C_UnitAuras.GetAuraDataBySlot
+local GetAuraDataBySlot = _G.C_UnitAuras and _G.C_UnitAuras.GetAuraDataBySlot
 local BackdropTemplateMixin = _G.BackdropTemplateMixin
 local BUFF_MAX_DISPLAY = _G.BUFF_MAX_DISPLAY
 local _
@@ -223,10 +223,6 @@ local ValidateAuraForUpdate = function (unit, aura)
 			needsUpdate = true
 		end
 	end
-	
-	--resets buffs and debuffs if not using aura frame 2 (for now, until partial clear is implemented)
-	hasBuff = not DB_AURA_SEPARATE_BUFFS and hasDebuff or hasBuff 
-	hasDebuff = not DB_AURA_SEPARATE_BUFFS and hasBuff or hasDebuff
 
 	--ViragDevTool_AddData({needsUpdate=needsUpdate, hasBuff=hasBuff, hasDebuff=hasDebuff}, "Plater_UNIT_AURA return")
 	return needsUpdate, hasBuff, hasDebuff
@@ -247,10 +243,14 @@ local UnitAuraEventHandlerValidation = function (unit, isFullUpdate, updatedAura
 		local nU, hB, hD = ValidateAuraForUpdate(unit, aura)
 		needsUpdate = needsUpdate or nU
 		hasBuff = hasBuff or hB
-		hasDebuff = hasDebuff or bD
+		hasDebuff = hasDebuff or hD
 	end
 	
-	--ViragDevTool_AddData({needsUpdate=needsUpdate, hasBuff=hasBuff, hasDebuff=hasDebuff}, "Plater_UNIT_AURA return")
+	--resets buffs and debuffs if not using aura frame 2 (for now, until partial clear is implemented)
+	hasBuff = not DB_AURA_SEPARATE_BUFFS and hasDebuff or hasBuff 
+	hasDebuff = not DB_AURA_SEPARATE_BUFFS and hasBuff or hasDebuff
+	
+	ViragDevTool_AddData({unit = unit, needsUpdate=needsUpdate, hasBuff=hasBuff, hasDebuff=hasDebuff}, "Plater_UNIT_AURA return")
 	return needsUpdate, hasBuff, hasDebuff
 end
 
