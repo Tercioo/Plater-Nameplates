@@ -3534,7 +3534,7 @@ local class_specs_coords = {
 				plateFrame.unitFrame.FocusIndicator = focusIndicator
 			
 			--> low aggro warning
-				plateFrame.unitFrame.aggroGlowUpper = plateFrame:CreateTexture (nil, "background", -4)
+				plateFrame.unitFrame.aggroGlowUpper = plateFrame:CreateTexture (nil, "background", nil, -4)
 				PixelUtil.SetPoint (plateFrame.unitFrame.aggroGlowUpper, "bottomleft", plateFrame.unitFrame.healthBar, "topleft", -3, 0)
 				PixelUtil.SetPoint (plateFrame.unitFrame.aggroGlowUpper, "bottomright", plateFrame.unitFrame.healthBar, "topright", 3, 0)
 				plateFrame.unitFrame.aggroGlowUpper:SetTexture ([[Interface\BUTTONS\UI-Panel-Button-Glow]])
@@ -3543,7 +3543,7 @@ local class_specs_coords = {
 				plateFrame.unitFrame.aggroGlowUpper:SetHeight (4)
 				plateFrame.unitFrame.aggroGlowUpper:Hide()
 				
-				plateFrame.unitFrame.aggroGlowLower = plateFrame:CreateTexture (nil, "background", -4)
+				plateFrame.unitFrame.aggroGlowLower = plateFrame:CreateTexture (nil, "background", nil, -4)
 				PixelUtil.SetPoint (plateFrame.unitFrame.aggroGlowLower, "topleft", plateFrame.unitFrame.healthBar, "bottomleft", -3, 0)
 				PixelUtil.SetPoint (plateFrame.unitFrame.aggroGlowLower, "topright", plateFrame.unitFrame.healthBar, "bottomright", 3, 0)
 				plateFrame.unitFrame.aggroGlowLower:SetTexture ([[Interface\BUTTONS\UI-Panel-Button-Glow]])
@@ -3554,7 +3554,7 @@ local class_specs_coords = {
 				
 			--> widget container
 			if IS_WOW_PROJECT_MAINLINE then
-				plateFrame.unitFrame.WidgetContainer = CreateFrame("frame", nil, plateFrame.unitFrame, "UIWidgetContainerNoResizeTemplate")
+				plateFrame.unitFrame.WidgetContainer = CreateFrame("frame", "", plateFrame.unitFrame, "UIWidgetContainerNoResizeTemplate")
 				plateFrame.unitFrame.WidgetContainer.horizontalRowContainerPool = CreateFramePool("FRAME", plateFrame.unitFrame.WidgetContainer);
 				Plater.SetAnchor (plateFrame.unitFrame.WidgetContainer, Plater.db.profile.widget_bar_anchor, plateFrame.unitFrame)
 				plateFrame.unitFrame.WidgetContainer:SetScale(Plater.db.profile.widget_bar_scale)
@@ -5408,11 +5408,19 @@ function Plater.OnInit() --private --~oninit ~init
 			C_Timer.After (i, Plater.RefreshDBUpvalues)
 		end
 		
-	CastingBarFrame:HookScript ("OnShow", function (self)
-		if (Plater.db.profile.hide_blizzard_castbar) then
-			self:Hide()
-		end
-	end)
+	if CastingBarFrame then
+		CastingBarFrame:HookScript ("OnShow", function (self)
+			if (Plater.db.profile.hide_blizzard_castbar) then
+				self:Hide()
+			end
+		end)
+	elseif PlayerCastingBarFrame then
+		PlayerCastingBarFrame:HookScript ("OnShow", function (self)
+			if (Plater.db.profile.hide_blizzard_castbar) then
+				self:Hide()
+			end
+		end)		
+	end
 	
 	-- fill class-info cache data
 	if IS_WOW_PROJECT_MAINLINE then
@@ -5429,8 +5437,12 @@ function Plater.OnInit() --private --~oninit ~init
 	end
 	
 	-- hook to the InterfaceOptionsFrame and VideoOptionsFrame to update the nameplate sizes, as blizzard somehow messes things up there on hide...
-	InterfaceOptionsFrame:HookScript('OnHide',Plater.UpdatePlateClickSpace)
-	VideoOptionsFrame:HookScript('OnHide',Plater.UpdatePlateClickSpace)
+	if InterfaceOptionsFrame then
+		InterfaceOptionsFrame:HookScript('OnHide',Plater.UpdatePlateClickSpace)
+		VideoOptionsFrame:HookScript('OnHide',Plater.UpdatePlateClickSpace)
+	elseif SettingsPanel then
+		SettingsPanel:HookScript('OnHide',Plater.UpdatePlateClickSpace)
+	end
 end
 
 
@@ -8597,12 +8609,12 @@ end
 					animationHub.ScaleDown:SetDuration (animationTable.duration)
 					
 					local scaleUpX, scaleUpY = animationTable.scale_upX, animationTable.scale_upY
-					local scaleDownX, scaleDownY = animationTable.scale_downX, animationTable.scale_downY
+					local scaleDownX, scaleDownY = animationTable.scale_downX, animationTable.scale_downY;
 					
-					animationHub.ScaleUp:SetFromScale (1, 1)
-					animationHub.ScaleUp:SetToScale (scaleUpX, scaleUpY)
-					animationHub.ScaleDown:SetFromScale (1, 1)
-					animationHub.ScaleDown:SetToScale (scaleDownX, scaleDownY)
+					(animationHub.ScaleUp.SetFromScale or animationHub.ScaleUp.SetScaleFrom) (animationHub.ScaleUp, 1, 1);
+					(animationHub.ScaleUp.SetToScale or animationHub.ScaleUp.SetScaleTo) (animationHub.ScaleUp, scaleUpX, scaleUpY);
+					(animationHub.ScaleDown.SetFromScale or animationHub.ScaleDown.SetScaleFrom) (animationHub.ScaleDown, 1, 1);
+					(animationHub.ScaleDown.SetToScale or animationHub.ScaleDown.SetScaleTo) (animationHub.ScaleDown, scaleDownX, scaleDownY)
 					
 					--play it
 					animationHub:Play()
@@ -9019,6 +9031,7 @@ end
 --> cvars - ~cvars
 	
 function Plater.CreatePlaterButtonAtInterfaceOptions()
+	if not InterfaceOptionsFrame then return end --DF does not has this anymore TODO
 	local f = CreateFrame ("frame", nil, InterfaceOptionsNamesPanel, BackdropTemplateMixin and "BackdropTemplate")
 	f:SetSize (300, 200)
 	f:SetPoint ("topleft", InterfaceOptionsNamesPanel, "topleft", 10, -440)
