@@ -1517,7 +1517,7 @@ end
 				local numSlots = 0
 				local slots
 				if IS_WOW_PROJECT_MAINLINE then
-					slots = { UnitAuraSlots(unit, "HARMFULL", BUFF_MAX_DISPLAY, continuationToken) }
+					slots = { UnitAuraSlots(unit, "HARMFUL", BUFF_MAX_DISPLAY, continuationToken) }
 					continuationToken = slots[1]
 					numSlots = #slots
 				else
