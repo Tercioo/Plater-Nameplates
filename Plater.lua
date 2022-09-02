@@ -4336,6 +4336,9 @@ function Plater.OnInit() --private --~oninit ~init
 	--who is the player
 		Plater.PlayerGUID = UnitGUID ("player")
 		Plater.PlayerClass = select (2, UnitClass ("player"))
+	
+	--track player auras
+		Plater.AddToAuraUpdate("player")
 
 	--load scripts from the script library
 		Plater.ImportScriptsFromLibrary()
@@ -6091,7 +6094,7 @@ end
 				if (DB_TRACK_METHOD == 0x1) then --automatic
 					if (tickFrame.actorType == ACTORTYPE_PLAYER) then
 						--update auras on the personal bar
-						Plater.UpdateAuras_Self_Automatic (tickFrame.BuffFrame)
+						Plater.UpdateAuras_Self_Automatic (tickFrame.BuffFrame, tickFrame.unit)
 					else
 						Plater.UpdateAuras_Automatic (tickFrame.BuffFrame, tickFrame.unit)
 					end

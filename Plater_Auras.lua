@@ -30,6 +30,7 @@ local floor = _G.floor
 local UnitAuraSlots = _G.UnitAuraSlots
 local UnitAuraBySlot = _G.UnitAuraBySlot
 local UnitAura = _G.UnitAura
+local GetAuraDataBySlot = _G.C_UnitAuras.GetAuraDataBySlot
 local BackdropTemplateMixin = _G.BackdropTemplateMixin
 local BUFF_MAX_DISPLAY = _G.BUFF_MAX_DISPLAY
 local _
@@ -167,6 +168,71 @@ local PlaterNamePlateAuraTooltip = CreatePlaterNamePlateAuraTooltip()
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> UNIT_AURA event handling
 
+local ValidateAuraForUpdate = function (unit, aura)
+	local needsUpdate = false
+	local hasBuff = false
+	local hasDebuff = false
+	
+	if DB_AURA_GHOSTAURA_ENABLED and DB_AURA_SEPARATE_BUFFS then
+		if aura.isHarmful and aura.sourceUnit == "player" and GHOSTAURAS[aura.name] then
+			-- ensure ghost auras are updated properly
+			hasBuff = true
+			needsUpdate = true
+		end
+	end
+	
+	if (aura.isHelpful and not hasBuff) or (aura.isHarmful and not hasDebuff) or not needsUpdate then
+		local name, spellId = aura.name, aura.spellId
+		
+		--ViragDevTool_AddData({blacklist = (DB_BUFF_BANNED[name] or DB_BUFF_BANNED[spellId] or DB_DEBUFF_BANNED[name] or DB_DEBUFF_BANNED[spellId]) or false, spellId = spellId, name = name}, "UnitAura-Check: "..name)
+		
+		hasBuff = aura.isHelpful or hasBuff
+		hasDebuff = aura.isHarmful or hasDebuff
+		
+		local advancedBrokenFilteringTest = false
+		if advancedBrokenFilteringTest then
+		
+			if DB_TRACK_METHOD == 0x2 then
+				--manual tracking
+				
+				if DB_SHOW_PURGE_IN_EXTRA_ICONS or DB_SHOW_ENRAGE_IN_EXTRA_ICONS or DB_SHOW_MAGIC_IN_EXTRA_ICONS
+					or (aura.sourceUnit == "player" and ( MANUAL_TRACKING_BUFFS[name] or MANUAL_TRACKING_BUFFS[spellId] or MANUAL_TRACKING_DEBUFFS[name] or MANUAL_TRACKING_DEBUFFS[spellId] ))
+					then -- only player buffs in manual tracking
+					needsUpdate = true
+				end
+				
+			else
+				-- automatic tracking
+				
+				--TODO: additional checks for track-list etc. possible, depending on the buff settings: if nothing like dispellable or so is ticked, we can verify this here
+				
+				if not (DB_BUFF_BANNED[name] or DB_BUFF_BANNED[spellId] or DB_DEBUFF_BANNED[name] or DB_DEBUFF_BANNED[spellId]) then
+					--a not blocked aura is included in the update
+					needsUpdate = true
+				end
+			end
+			
+			if SPECIAL_AURAS_AUTO_ADDED [name] or SPECIAL_AURAS_AUTO_ADDED [spellId] or  SPECIAL_AURAS_USER_LIST[name] or SPECIAL_AURAS_USER_LIST[spellId] or (auraData.sourceUnit == "player" and (SPECIAL_AURAS_USER_LIST_MINE[name] or SPECIAL_AURAS_USER_LIST_MINE[spellId])) then
+				--or DB_SHOW_PURGE_IN_EXTRA_ICONS or DB_SHOW_ENRAGE_IN_EXTRA_ICONS or DB_SHOW_MAGIC_IN_EXTRA_ICONS
+				--include buff special at all times
+				needsUpdate = true
+			end
+			
+			
+		else
+			needsUpdate = true
+		end
+	end
+	
+	--resets buffs and debuffs if not using aura frame 2 (for now, until partial clear is implemented)
+	hasBuff = not DB_AURA_SEPARATE_BUFFS and hasDebuff or hasBuff 
+	hasDebuff = not DB_AURA_SEPARATE_BUFFS and hasBuff or hasDebuff
+
+	--ViragDevTool_AddData({needsUpdate=needsUpdate, hasBuff=hasBuff, hasDebuff=hasDebuff}, "Plater_UNIT_AURA return")
+	return needsUpdate, hasBuff, hasDebuff
+	
+end
+
 local UnitAuraEventHandlerValidation = function (unit, isFullUpdate, updatedAuras)
 	--ViragDevTool_AddData({unit = unit, isFullUpdate = isFullUpdate, updatedAuras = updatedAuras}, "Plater_UNIT_AURA")
 	if isFullUpdate ~= false or not updatedAuras then
@@ -177,69 +243,13 @@ local UnitAuraEventHandlerValidation = function (unit, isFullUpdate, updatedAura
 	local hasBuff = false
 	local hasDebuff = false
 	
-	-- ensure ghost are always checked
-	if DB_AURA_GHOSTAURA_ENABLED and DB_AURA_SEPARATE_BUFFS then
-		for _, auraData in pairs(updatedAuras) do
-			if auraData.isHarmful and auraData.sourceUnit == "player" and GHOSTAURAS[auraData.name] then
-				-- ensure ghost auras are updated properly
-				hasBuff = true
-				needsUpdate = true
-				break
-			end
-		end
+	for _, aura in pairs(updatedAuras) do
+		local nU, hB, hD = ValidateAuraForUpdate(unit, aura)
+		needsUpdate = needsUpdate or nU
+		hasBuff = hasBuff or hB
+		hasDebuff = hasDebuff or bD
 	end
 	
-	for _, auraData in pairs(updatedAuras) do
-		-- do we still need to check?
-		if (auraData.isHelpful and not hasBuff) or (auraData.isHarmful and not hasDebuff) or not needsUpdate then
-			local name, spellId = auraData.name, auraData.spellId
-			
-			--ViragDevTool_AddData({blacklist = (DB_BUFF_BANNED[name] or DB_BUFF_BANNED[spellId] or DB_DEBUFF_BANNED[name] or DB_DEBUFF_BANNED[spellId]) or false, spellId = spellId, name = name}, "UnitAura-Check: "..name)
-			
-			hasBuff = auraData.isHelpful or hasBuff
-			hasDebuff = auraData.isHarmful or hasDebuff
-			
-			local advancedBrokenFilteringTest = false
-			if advancedBrokenFilteringTest then
-			
-				if DB_TRACK_METHOD == 0x2 then
-					--manual tracking
-					
-					if DB_SHOW_PURGE_IN_EXTRA_ICONS or DB_SHOW_ENRAGE_IN_EXTRA_ICONS or DB_SHOW_MAGIC_IN_EXTRA_ICONS
-						or (auraData.sourceUnit == "player" and ( MANUAL_TRACKING_BUFFS[name] or MANUAL_TRACKING_BUFFS[spellId] or MANUAL_TRACKING_DEBUFFS[name] or MANUAL_TRACKING_DEBUFFS[spellId] ))
-						then -- only player buffs in manual tracking
-						needsUpdate = true
-					end
-					
-				else
-					-- automatic tracking
-					
-					--TODO: additional checks for track-list etc. possible, depending on the buff settings: if nothing like dispellable or so is ticked, we can verify this here
-					
-					if not (DB_BUFF_BANNED[name] or DB_BUFF_BANNED[spellId] or DB_DEBUFF_BANNED[name] or DB_DEBUFF_BANNED[spellId]) then
-						--a not blocked aura is included in the update
-						needsUpdate = true
-					end
-				end
-				
-				if SPECIAL_AURAS_AUTO_ADDED [name] or SPECIAL_AURAS_AUTO_ADDED [spellId] or  SPECIAL_AURAS_USER_LIST[name] or SPECIAL_AURAS_USER_LIST[spellId] or (auraData.sourceUnit == "player" and (SPECIAL_AURAS_USER_LIST_MINE[name] or SPECIAL_AURAS_USER_LIST_MINE[spellId])) then
-					--or DB_SHOW_PURGE_IN_EXTRA_ICONS or DB_SHOW_ENRAGE_IN_EXTRA_ICONS or DB_SHOW_MAGIC_IN_EXTRA_ICONS
-					--include buff special at all times
-					needsUpdate = true
-				end
-				
-				
-			else
-				needsUpdate = true
-			end
-		end
-	
-	end
-	
-	--resets buffs and debuffs if not using aura frame 2 (for now, until partial clear is implemented)
-	hasBuff = not DB_AURA_SEPARATE_BUFFS and hasDebuff or hasBuff 
-	hasDebuff = not DB_AURA_SEPARATE_BUFFS and hasBuff or hasDebuff
-
 	--ViragDevTool_AddData({needsUpdate=needsUpdate, hasBuff=hasBuff, hasDebuff=hasDebuff}, "Plater_UNIT_AURA return")
 	return needsUpdate, hasBuff, hasDebuff
 end
@@ -284,6 +294,8 @@ with AuraInstanceInfo = {
 ]]--
 local UnitAuraEventHandlerData = {}
 local UnitAuraEventHandlerValidUnits = {} -- units on screen. set via Plater.RemoveFromAuraUpdate and Plater.AddToAuraUpdate from NAME_PLATE_UNIT_REMOVED and NAME_PLATE_UNIT_ADDED events
+local UnitAuraCacheData = {} --new unit aura event info data cache
+local UpdateUnitAuraCacheData
 local UnitAuraEventHandlerFrame = CreateFrame ("frame") --private
 local UnitAuraEventHandler = function (_, event, arg1, arg2, arg3, ...)
 	Plater.StartLogPerformanceCore("Plater-Core", "Events", event)
@@ -291,14 +303,9 @@ local UnitAuraEventHandler = function (_, event, arg1, arg2, arg3, ...)
 	if event == "UNIT_AURA" then
 		if IS_NEW_UNIT_AURA_AVAILABLE then --for 10.0
 			local unit, updatedAuras = arg1, arg2
-			local isFullUpdate = updatedAuras.isFullUpdate or not updatedAuras
+			--ViragDevTool_AddData({unit = unit, updatedAuras = updatedAuras}, "Plater_UNIT_AURA")
 			if unit and UnitAuraEventHandlerValidUnits[unit] then
-				local needsUpdate, hasBuff, hasDebuff = UnitAuraEventHandlerValidation(unit, isFullUpdate, updatedAuras)
-				--ViragDevTool_AddData({unit = unit, isFullUpdate = isFullUpdate, updatedAuras = updatedAuras, needsUpdate = needsUpdate, hasBuff = hasBuff, hasDebuff = hasDebuff, existing=CopyTable(UnitAuraEventHandlerData[unit] or {})}, "Plater_UNIT_AURA_AFTER")
-				if needsUpdate then
-					local existingData = UnitAuraEventHandlerData[unit] or { hasBuff = false, hasDebuff = false }
-					UnitAuraEventHandlerData[unit] = { hasBuff = existingData.hasBuff or hasBuff, hasDebuff = existingData.hasDebuff or hasDebuff }
-				end
+				UpdateUnitAuraCacheData(unit, updatedAuras)
 			end
 			
 		else --old code
@@ -328,8 +335,175 @@ function Plater.AddToAuraUpdate (unit)
 	if not unit then return end
 	UnitAuraEventHandlerValidUnits[unit] = true
 	UnitAuraEventHandlerData[unit] = { hasBuff = true, hasDebuff = true } --update at least once
+	UpdateUnitAuraCacheData(unit, nil)
 end
 
+
+UpdateUnitAuraCacheData = function (unit, updatedAuras)
+	local unitCacheData = UnitAuraCacheData[unit]
+	if not unitCacheData then
+		unitCacheData = {}
+		unitCacheData.buffs = {}
+		unitCacheData.debuffs = {}
+		UnitAuraCacheData[unit] = unitCacheData
+	end
+	
+	if updatedAuras == nil or updatedAuras.isFullUpdate or unitCacheData.isFullUpdate then
+		UnitAuraCacheData[unit] = {}
+		UnitAuraCacheData[unit].buffs = {}
+		UnitAuraCacheData[unit].debuffs = {}
+		UnitAuraCacheData[unit].isFullUpdate = true
+		UnitAuraEventHandlerData[unit] = { hasBuff = true, hasDebuff = true }
+		return
+	end
+	
+	for _, aura in ipairs(updatedAuras.addedAuras or {}) do
+		local needsUpdate = ValidateAuraForUpdate(unit, aura)
+		if needsUpdate then
+			if aura.isHarmful then
+				unitCacheData.debuffs[aura.auraInstanceID] = aura
+				unitCacheData.debuffsChanged = true
+			elseif aura.isHelpful then
+				unitCacheData.buffs[aura.auraInstanceID] = aura
+				unitCacheData.buffsChanged = true
+			end
+		end
+	end
+	
+	for _, auraInstanceID in ipairs(updatedAuras.updatedAuraInstanceIDs or {}) do
+		local needsUpdate = ValidateAuraForUpdate(unit, aura)
+		if needsUpdate then
+			if unitCacheData.debuffs[auraInstanceID] ~= nil then
+				unitCacheData.debuffs[auraInstanceID].requriresUpdate = true
+				unitCacheData.debuffsChanged = true
+			elseif unitCacheData.buffs[auraInstanceID] ~= nil then
+				unitCacheData.buffs[auraInstanceID].requriresUpdate = true
+				unitCacheData.buffsChanged = true
+			end
+		end
+	end
+	
+	for _, auraInstanceID in ipairs(updatedAuras.removedAuraInstanceIDs or {}) do
+		if unitCacheData.debuffs[auraInstanceID] ~= nil then
+			unitCacheData.debuffs[auraInstanceID] = nil
+			unitCacheData.debuffsChanged = true
+		elseif unitCacheData.buffs[auraInstanceID] ~= nil then
+			unitCacheData.buffs[auraInstanceID] = nil
+			unitCacheData.buffsChanged = true
+		end
+	end
+	
+	local existingData = UnitAuraEventHandlerData[unit] or { hasBuff = false, hasDebuff = false }
+	UnitAuraEventHandlerData[unit] = { hasBuff = existingData.hasBuff or unitCacheData.buffsChanged, hasDebuff = existingData.hasDebuff or unitCacheData.debuffsChanged }
+end
+
+local function getUnitAuras(unit, filter)
+	if not filter or not unit then return end
+	
+	local unitCacheData = UnitAuraCacheData[unit]
+	
+	if unitCacheData and not unitCacheData.isFullUpdate then --new aura event
+		-- debuffs
+		if unitCacheData.debuffsChanged then
+			local tmpDebuffs = {}
+			for auraInstanceID, aura in pairs (unitCacheData.debuffs) do
+				if aura.requriresUpdate then
+					tmpDebuffs[auraInstanceID] = C_UnitAuras.GetAuraDataByAuraInstanceID(unit, auraInstanceID)
+				else
+					tmpDebuffs[auraInstanceID] = aura
+				end
+			end
+			unitCacheData.debuffs = tmpDebuffs
+		end
+		
+		-- buffs
+		if unitCacheData.buffsChanged then
+			local tmpBuffs = {}
+			for auraInstanceID, aura in pairs (unitCacheData.buffs) do
+				if aura.requriresUpdate then
+					tmpDebuffs[auraInstanceID] = C_UnitAuras.GetAuraDataByAuraInstanceID(unit, auraInstanceID)
+				else
+					tmpDebuffs[auraInstanceID] = aura
+				end
+			end
+			unitCacheData.buffs = tmpBuffs
+		end
+		
+		return unitCacheData
+	end
+	
+	
+	unitCacheData = unitCacheData or {}
+	
+	-- full updates and old way here
+	local isHarmful = string.find(filter, "HARMFUL")
+	local isHelpful = string.find(filter, "HELPFUL")
+	local filterCache = (isHarmful and unitCacheData.debuffs) or (isHelpful and unitCacheData.buffs) or nil
+	if not filterCache then return end
+	
+	local continuationToken
+	local debuffIndex = 0
+	repeat -- until continuationToken == nil
+		local numSlots = 0
+		local slots
+		if IS_WOW_PROJECT_MAINLINE then
+			slots = { UnitAuraSlots(unit, filter, BUFF_MAX_DISPLAY, continuationToken) }
+			continuationToken = slots[1]
+			numSlots = #slots
+		else
+			numSlots = BUFF_MAX_DISPLAY + 1
+		end
+		
+		for i=2, numSlots do
+			if IS_NEW_UNIT_AURA_AVAILABLE then
+				local slot = slots[i]
+				local aura = C_UnitAuras.GetAuraDataBySlot(unit, slot)
+				filterCache[aura.auraInstanceID] = aura
+			else
+				local name, icon, applications, actualAuraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications
+				if IS_WOW_PROJECT_MAINLINE then
+					local slot = slots[i]
+					name, icon, applications, actualAuraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = UnitAuraBySlot(unit, slot)
+				else
+					name, icon, applications, actualAuraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = UnitAura(unit, i-1, filter)
+					if not name then
+						break
+					end
+				end
+				
+				debuffIndex = debuffIndex + 1
+				
+				filterCache[debuffIndex] = {
+					applications = applications,
+					auraInstanceID = debuffIndex,
+					canApplyAura = canApplyAura,
+					dispellName = nil,
+					duration = duration,
+					expirationTime = expirationTime,
+					icon = icon,
+					isBossAura = isBossAura,
+					isFromPlayerOrPlayerPet = isFromPlayerOrPlayerPet,
+					isHarmful = isHarmful,
+					isHelpful = isHelpful,
+					isNameplateOnly = false,
+					isRaid = false,
+					isStealable = isStealable,
+					name = name,
+					nameplateShowAll = nameplateShowAll,
+					nameplateShowPersonal = nameplateShowPersonal,
+					points = {},
+					sourceUnit = sourceUnit,
+					spellId = spellId,
+					timeMod = timeMod,
+				}
+			end
+			
+		end
+	until continuationToken == nil
+	
+	
+	return unitCacheData
+end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> aura buffs and debuffs ~aura ~buffs ~debuffs ~auras
@@ -337,7 +511,16 @@ end
 	--> show the tooltip in the aura icon
 	function Plater.OnEnterAura (iconFrame) --private
 		PlaterNamePlateAuraTooltip:SetOwner (iconFrame, "ANCHOR_LEFT")
-		PlaterNamePlateAuraTooltip:SetUnitAura (iconFrame:GetParent().unit, iconFrame:GetID(), iconFrame.filter)
+		if PlaterNamePlateAuraTooltip.SetUnitBuffByAuraInstanceID then
+            if(iconFrame.spellId and not iconFrame.auraInstanceID) then 
+                PlaterNamePlateAuraTooltip:SetSpellByID(iconFrame.spellId);
+            elseif(iconFrame.auraInstanceID) then 
+                local setFunction = iconFrame.isBuff and NamePlateTooltip.SetUnitBuffByAuraInstanceID or NamePlateTooltip.SetUnitDebuffByAuraInstanceID;
+                setFunction(PlaterNamePlateAuraTooltip, iconFrame:GetParent().unit, iconFrame:GetID(), iconFrame.filter);
+            end 
+        else
+            PlaterNamePlateAuraTooltip:SetUnitAura (iconFrame:GetParent().unit, iconFrame:GetID(), iconFrame.filter)
+        end
 		PlaterNamePlateAuraTooltip:ApplyOwnBackdrop()
 		iconFrame.UpdateTooltip = Plater.OnEnterAura
 	end
@@ -377,9 +560,9 @@ end
 		
 		for i = 1, amountFramesShown do
 			local iconFrame = iconFrameContainer [i]
-			local texture = iconFrame.texture
+			local icon = iconFrame.texture
 			local spellName = iconFrame.SpellName
-			local index = spellName .. texture
+			local index = spellName .. icon
 
 			if (aurasDuplicated [index]) then
 				tinsert (aurasDuplicated [index], {iconFrame, iconFrame.RemainingTime})
@@ -637,8 +820,8 @@ end
 		end
 	end
 
-	--adjust the texcoord of the texture by the size of the icon
-	--if the icon is more of a retangular shape, it'll cut the top and bottom sides of the texture giving a wide view
+	--adjust the texcoord of the icon by the size of the icon
+	--if the icon is more of a retangular shape, it'll cut the top and bottom sides of the icon giving a wide view
 	function Plater.UpdateIconAspecRatio (auraIconFrame)
 		local width, height = auraIconFrame:GetSize()
 		local ratio = width > height and min (max (abs (width / height - 2) + 0.05, 0.6), 1) or .95
@@ -868,8 +1051,9 @@ end
 	--update the aura icon, this icon is getted with GetAuraIcon -
 	--actualAuraType is the UnitAura return value for the auraType ("" is enrage, nil/"none" for unspecified and "Disease", "Poison", "Curse", "Magic" for other types. -Continuity/Ariani
 	--self is .BuffFrame or .BuffFrame2
-	function Plater.AddAura (self, auraIconFrame, i, spellName, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, isBuff, isShowAll, isDebuff, isPersonal, actualAuraType, auraAmount, modRate)
+	function Plater.AddAura (self, auraIconFrame, i, spellName, icon, applications, auraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, isBuff, isShowAll, isDebuff, isPersonal, actualAuraType, applications, modRate)
 		auraIconFrame:SetID (i)
+		auraIconFrame.auraInstanceID = i
 		local curBuffFrame = self.Name == "Secondary" and 2 or 1
 
 		-- ensure playing show animation if necessary
@@ -880,12 +1064,12 @@ end
 		--> check if the icon is showing a different aura
 		if (auraIconFrame.spellId ~= spellId) then
 			
-			--> update the texture
-			auraIconFrame.Icon:SetTexture (texture)
+			--> update the icon
+			auraIconFrame.Icon:SetTexture (icon)
 			
 			--> update members
 			auraIconFrame.spellId = spellId
-			auraIconFrame.texture = texture
+			auraIconFrame.texture = icon
 			auraIconFrame.layoutIndex = auraIconFrame.ID
 			auraIconFrame.IsShowingBuff = false
 			auraIconFrame.CanStealOrPurge = false
@@ -909,9 +1093,9 @@ end
 		
 		self.AuraCache [spellId] = true
 		self.AuraCache [spellName] = true
-		self.AuraCache [spellId.."_"..(caster or "N/A")] = true
-		self.AuraCache [spellName.."_"..(caster or "N/A")] = true
-		self.AuraCache.canStealOrPurge = self.AuraCache.canStealOrPurge or canStealOrPurge
+		self.AuraCache [spellId.."_"..(sourceUnit or "N/A")] = true
+		self.AuraCache [spellName.."_"..(sourceUnit or "N/A")] = true
+		self.AuraCache.canStealOrPurge = self.AuraCache.canStealOrPurge or isStealable
 		self.AuraCache.hasEnrage = self.AuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
 		
 		--> check if a full refresh is required
@@ -1001,16 +1185,16 @@ end
 		auraIconFrame.IsPersonal = isPersonal
 		auraIconFrame.BuffFrame = self.Name == "Secondary" and 2 or 1
 
-		if (count > 1) then
+		if (applications > 1) then
 			local stackLabel = auraIconFrame.CountFrame.Count
-			stackLabel:SetText (count)
+			stackLabel:SetText (applications)
 			stackLabel:Show()
 		else
 			auraIconFrame.CountFrame.Count:Hide()
 		end
 		
 		--border colors
-		if (canStealOrPurge) then
+		if (isStealable) then
 			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.steal_or_purge))
 			auraIconFrame.CanStealOrPurge = true
 		
@@ -1089,10 +1273,10 @@ end
 		auraIconFrame.InUse = true
 		auraIconFrame.RemainingTime = max (timeLeft, 0)
 		auraIconFrame.Duration = duration
-		auraIconFrame.Stacks = count
+		auraIconFrame.Stacks = applications
 		auraIconFrame.ExpirationTime = expirationTime
-		auraIconFrame.Caster = caster
-		auraIconFrame.AuraAmount = auraAmount
+		auraIconFrame.Caster = sourceUnit
+		auraIconFrame.AuraAmount = applications
 		auraIconFrame.ModRate = modRate
 		auraIconFrame:Show()
 		
@@ -1205,18 +1389,18 @@ end
 	end
 
 	--~special ~auraspecial self is BuffFrame
-	function Plater.AddExtraIcon (self, spellName, texture, count, debuffType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, isBuff, filter, id, modRate)
-		local _, casterClass = UnitClass(caster or "")
-		local casterName
-		if (casterClass and UnitPlayerControlled(caster)) then
+	function Plater.AddExtraIcon (self, spellName, icon, applications, debuffType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, isBuff, filter, id, modRate)
+		local _, sourceUnitClass = UnitClass(sourceUnit or "")
+		local sourceUnitName
+		if (sourceUnitClass and UnitPlayerControlled(sourceUnit)) then
 			--adding only the name for players in case the player used a stun
-			casterName = UnitName(caster)
+			sourceUnitName = UnitName(sourceUnit)
 		end
 
 		local borderColor
 		local profile = Plater.db.profile
 
-		if (canStealOrPurge) then
+		if (isStealable) then
 			borderColor = profile.extra_icon_show_purge_border
 
 		elseif (profile.extra_icon_use_blizzard_border_color) then
@@ -1245,7 +1429,7 @@ end
 
 		--spellId, borderColor, startTime, duration, forceTexture, descText
 		--calling SetIcon make the ExtraIconFrame call show() on it self
-		local iconFrame = self.ExtraIconFrame:SetIcon (spellId, borderColor, expirationTime - duration, duration, false, casterName and {text = casterName, text_color = casterClass} or false, count, debuffType, caster, canStealOrPurge, spellName, isBuff, modRate)
+		local iconFrame = self.ExtraIconFrame:SetIcon (spellId, borderColor, expirationTime - duration, duration, false, sourceUnitName and {text = sourceUnitName, text_color = sourceUnitClass} or false, applications, debuffType, sourceUnit, isStealable, spellName, isBuff, modRate)
 
 		-- tooltip info
 		if id and id > 0 then
@@ -1340,131 +1524,90 @@ end
 		local show_buffs_personal = Plater.db.profile.aura_show_buffs_personal
  
 		if (isBuff) then
-			--> buffs
-			local buffIndex = 0
-			local continuationToken
-			repeat -- until continuationToken == nil
-				local numSlots = 0
-				local slots
-				if IS_WOW_PROJECT_MAINLINE then
-					slots = { UnitAuraSlots(unit, "HELPFUL", BUFF_MAX_DISPLAY, continuationToken) }
-					continuationToken = slots[1]
-					numSlots = #slots
-				else
-					numSlots = BUFF_MAX_DISPLAY + 1
-				end
+			local unitAuras = getUnitAuras(unit, "HELPFUL") or {}
+			
+			for id, aura in pairs(unitAuras.buffs or {}) do
+				--ViragDevTool_AddData({i, aura})
+				local name, icon, applications, actualAuraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = 
+					aura.name, aura.icon, aura.applications, aura.actualAuraType, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
+					aura.isBossAura, aura.isFromPlayerOrPlayerPet, aura.nameplateShowAll, aura.timeMod, aura.applications
 				
-				for i=2, numSlots do
-					local name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, auraAmount
-					if IS_WOW_PROJECT_MAINLINE then
-						local slot = slots[i]
-						name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, auraAmount = UnitAuraBySlot(unit, slot)
-					else
-						name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, auraAmount = UnitAura(unit, i-1, "HELPFUL")
-						if not name then
-							break
-						end
+				unitAuraCache[name] = true
+				unitAuraCache[spellId] = true
+				unitAuraCache[name.."_"..(sourceUnit or "N/A")] = true
+				unitAuraCache[spellId.."_"..(sourceUnit or "N/A")] = true
+				unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or isStealable
+				unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
+				
+				if ((show_buffs_personal and isPersonal) or not isPersonal) then
+				
+					local auraType = "BUFF"
+					--verify is this aura is in the table passed
+					if (aurasToCheck [name] or aurasToCheck [spellId]) then
+						local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
+						Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, true, false, false, isPersonal, actualAuraType, applications, timeMod)
 					end
 					
-					buffIndex = buffIndex + 1
-					
-					unitAuraCache[name] = true
-					unitAuraCache[spellId] = true
-					unitAuraCache[name.."_"..(caster or "N/A")] = true
-					unitAuraCache[spellId.."_"..(caster or "N/A")] = true
-					unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or canStealOrPurge
-					unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
-					
-					if ((show_buffs_personal and isPersonal) or not isPersonal) then
-					
-						local auraType = "BUFF"
-						--verify is this aura is in the table passed
-						if (aurasToCheck [name] or aurasToCheck [spellId]) then
-							local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
-							Plater.AddAura (buffFrame, auraIconFrame, buffIndex, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, true, false, false, isPersonal, actualAuraType, auraAmount, timeMod)
-						end
+					--> check if is a special aura
+					if (not noSpecial) then
+						--> check for special auras auto added by setting like 'show crowd control' or 'show dispellable'
+						--> SPECIAL_AURAS_AUTO_ADDED has a list of crowd control not do not have a list of dispellable, so check if isStealable.
+						--> in addition, we want to check if enrage tracking is enabled and show enrage effects
+						if (SPECIAL_AURAS_AUTO_ADDED [name] or SPECIAL_AURAS_AUTO_ADDED [spellId] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and isStealable) or (DB_SHOW_ENRAGE_IN_EXTRA_ICONS and actualAuraType == AURA_TYPE_ENRAGE) or (DB_SHOW_MAGIC_IN_EXTRA_ICONS and actualAuraType == AURA_TYPE_MAGIC)) then
+							Plater.AddExtraIcon (self, name, icon, applications, actualAuraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, true, "HELPFUL", id, timeMod)
 						
-						--> check if is a special aura
-						if (not noSpecial) then
-							--> check for special auras auto added by setting like 'show crowd control' or 'show dispellable'
-							--> SPECIAL_AURAS_AUTO_ADDED has a list of crowd control not do not have a list of dispellable, so check if canStealOrPurge.
-							--> in addition, we want to check if enrage tracking is enabled and show enrage effects
-							if (SPECIAL_AURAS_AUTO_ADDED [name] or SPECIAL_AURAS_AUTO_ADDED [spellId] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge) or (DB_SHOW_ENRAGE_IN_EXTRA_ICONS and actualAuraType == AURA_TYPE_ENRAGE) or (DB_SHOW_MAGIC_IN_EXTRA_ICONS and actualAuraType == AURA_TYPE_MAGIC)) then
-								Plater.AddExtraIcon (self, name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, true, "HELPFUL", buffIndex, timeMod)
+						--> check for special auras added by the user it self
+						elseif (((SPECIAL_AURAS_USER_LIST [name] or SPECIAL_AURAS_USER_LIST [spellId]) and not (SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId])) or ((SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId]) and sourceUnit and (UnitIsUnit (sourceUnit, "player") or UnitIsUnit (sourceUnit, "pet")))) then
+							Plater.AddExtraIcon (self, name, icon, applications, actualAuraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, true,"HELPFUL", id, timeMod)
 							
-							--> check for special auras added by the user it self
-							elseif (((SPECIAL_AURAS_USER_LIST [name] or SPECIAL_AURAS_USER_LIST [spellId]) and not (SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId])) or ((SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId]) and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
-								Plater.AddExtraIcon (self, name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, true,"HELPFUL", buffIndex, timeMod)
-								
-							end
 						end
 					end
 				end
-			until continuationToken == nil
+			end
 		else
 			--> debuffs
-			local debuffIndex = 0
-			local continuationToken
-			repeat -- until continuationToken == nil
-				local numSlots = 0
-				local slots
-				if IS_WOW_PROJECT_MAINLINE then
-					slots = { UnitAuraSlots(unit, "HARMFUL", BUFF_MAX_DISPLAY, continuationToken) }
-					continuationToken = slots[1]
-					numSlots = #slots
-				else
-					numSlots = BUFF_MAX_DISPLAY + 1
-				end
+			local unitAuras = getUnitAuras(unit, "HARMFUL") or {}
+			
+			for id, aura in pairs(unitAuras.debuffs or {}) do
+				--ViragDevTool_AddData({i, aura})
+				local name, icon, applications, actualAuraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = 
+					aura.name, aura.icon, aura.applications, aura.actualAuraType, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
+					aura.isBossAura, aura.isFromPlayerOrPlayerPet, aura.nameplateShowAll, aura.timeMod, aura.applications
 				
-				for i=2, numSlots do
-					local name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, auraAmount
-					if IS_WOW_PROJECT_MAINLINE then
-						local slot = slots[i]
-						name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, auraAmount = UnitAuraBySlot(unit, slot)
-					else
-						name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, auraAmount = UnitAura(unit, i-1, "HARMFUL")
-						if not name then
-							break
-						end
+				unitAuraCache[name] = true
+				unitAuraCache[spellId] = true
+				unitAuraCache[name.."_"..(sourceUnit or "N/A")] = true
+				unitAuraCache[spellId.."_"..(sourceUnit or "N/A")] = true
+				unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or isStealable
+				unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
+				
+				if ((show_debuffs_personal and isPersonal) or not isPersonal) then
+				
+					local auraType = "DEBUFF"
+					--checking here if the debuff is placed by the player
+					--if (sourceUnit and aurasToCheck [name] and UnitIsUnit (sourceUnit, "player")) then --this doesn't track the pet, so auras like freeze from mage frost elemental won't show
+					if (sourceUnit and (aurasToCheck [name] or aurasToCheck [spellId]) and (UnitIsUnit (sourceUnit, "player") or UnitIsUnit (sourceUnit, "pet"))) then
+					--if (aurasToCheck [name]) then
+						local auraIconFrame, buffFrame = Plater.GetAuraIcon (self)
+						Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, false, false, false, isPersonal, actualAuraType, applications, timeMod)
 					end
 					
-					debuffIndex = debuffIndex + 1
-					
-					unitAuraCache[name] = true
-					unitAuraCache[spellId] = true
-					unitAuraCache[name.."_"..(caster or "N/A")] = true
-					unitAuraCache[spellId.."_"..(caster or "N/A")] = true
-					unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or canStealOrPurge
-					unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
-					
-					if ((show_debuffs_personal and isPersonal) or not isPersonal) then
-					
-						local auraType = "DEBUFF"
-						--checking here if the debuff is placed by the player
-						--if (caster and aurasToCheck [name] and UnitIsUnit (caster, "player")) then --this doesn't track the pet, so auras like freeze from mage frost elemental won't show
-						if (caster and (aurasToCheck [name] or aurasToCheck [spellId]) and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet"))) then
-						--if (aurasToCheck [name]) then
-							local auraIconFrame, buffFrame = Plater.GetAuraIcon (self)
-							Plater.AddAura (buffFrame, auraIconFrame, debuffIndex, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, false, false, false, isPersonal, actualAuraType, auraAmount, timeMod)
-						end
+					--> check if is a special aura
+					if (not noSpecial) then
+						--> check for special auras auto added by setting like 'show crowd control' or 'show dispellable'
+						--> SPECIAL_AURAS_AUTO_ADDED has a list of crowd control not do not have a list of dispellable, so check if isStealable
+						--> in addition, we want to check if enrage tracking is enabled and show enrage effects
+						if (SPECIAL_AURAS_AUTO_ADDED [name] or SPECIAL_AURAS_AUTO_ADDED [spellId] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and isStealable) or (DB_SHOW_ENRAGE_IN_EXTRA_ICONS and actualAuraType == AURA_TYPE_ENRAGE)) then
+							Plater.AddExtraIcon (self, name, icon, applications, actualAuraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, false, "HARMFUL", id, timeMod)
 						
-						--> check if is a special aura
-						if (not noSpecial) then
-							--> check for special auras auto added by setting like 'show crowd control' or 'show dispellable'
-							--> SPECIAL_AURAS_AUTO_ADDED has a list of crowd control not do not have a list of dispellable, so check if canStealOrPurge
-							--> in addition, we want to check if enrage tracking is enabled and show enrage effects
-							if (SPECIAL_AURAS_AUTO_ADDED [name] or SPECIAL_AURAS_AUTO_ADDED [spellId] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge) or (DB_SHOW_ENRAGE_IN_EXTRA_ICONS and actualAuraType == AURA_TYPE_ENRAGE)) then
-								Plater.AddExtraIcon (self, name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, false, "HARMFUL", debuffIndex, timeMod)
+						--> check for special auras added by the user it self
+						elseif (((SPECIAL_AURAS_USER_LIST [name] or SPECIAL_AURAS_USER_LIST [spellId]) and not (SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId])) or ((SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId]) and sourceUnit and (UnitIsUnit (sourceUnit, "player") or UnitIsUnit (sourceUnit, "pet")))) then
+							Plater.AddExtraIcon (self, name, icon, applications, actualAuraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, false, "HARMFUL", id, timeMod)
 							
-							--> check for special auras added by the user it self
-							elseif (((SPECIAL_AURAS_USER_LIST [name] or SPECIAL_AURAS_USER_LIST [spellId]) and not (SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId])) or ((SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId]) and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
-								Plater.AddExtraIcon (self, name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, false, "HARMFUL", debuffIndex, timeMod)
-								
-							end
 						end
 					end
 				end
-			until continuationToken == nil
+			end
 		end
 		
 		return true
@@ -1511,209 +1654,169 @@ end
 		
 		--> debuffs
 		if unitAuraEventData.hasDebuff then
-			local debuffIndex = 0
-			local continuationToken
-			repeat -- until continuationToken == nil
-				local numSlots = 0
-				local slots
-				if IS_WOW_PROJECT_MAINLINE then
-					slots = { UnitAuraSlots(unit, "HARMFULL", BUFF_MAX_DISPLAY, continuationToken) }
-					continuationToken = slots[1]
-					numSlots = #slots
-				else
-					numSlots = BUFF_MAX_DISPLAY + 1
-				end
+			local unitAuras = getUnitAuras(unit, "HARMFUL") or {}
+			
+			for id, aura in pairs(unitAuras.debuffs or {}) do
+				--ViragDevTool_AddData({i, aura})
+				local name, icon, applications, actualAuraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = 
+					aura.name, aura.icon, aura.applications, aura.actualAuraType, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
+					aura.isBossAura, aura.isFromPlayerOrPlayerPet, aura.nameplateShowAll, aura.timeMod, aura.applications
 				
-				for i=2, numSlots do
-					local name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, auraAmount
-					if IS_WOW_PROJECT_MAINLINE then
-						local slot = slots[i]
-						name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, auraAmount = UnitAuraBySlot(unit, slot)
-					else
-						name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, auraAmount = UnitAura(unit, i-1, "HARMFUL")
-						if not name then
-							break
-						end
-					end
-					
-					debuffIndex = debuffIndex + 1
-					
-					--start as false, during the checks can be changed to true, if is true this debuff is added on the nameplate
-					local can_show_this_debuff
-					local auraType = "DEBUFF"
-					
-					unitAuraCache[name] = true
-					unitAuraCache[spellId] = true
-					unitAuraCache[name.."_"..(caster or "N/A")] = true
-					unitAuraCache[spellId.."_"..(caster or "N/A")] = true
-					unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or canStealOrPurge
-					unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
+				--start as false, during the checks can be changed to true, if is true this debuff is added on the nameplate
+				local can_show_this_debuff
+				local auraType = "DEBUFF"
+				
+				unitAuraCache[name] = true
+				unitAuraCache[spellId] = true
+				unitAuraCache[name.."_"..(sourceUnit or "N/A")] = true
+				unitAuraCache[spellId.."_"..(sourceUnit or "N/A")] = true
+				unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or isStealable
+				unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
 
-					--check if the debuff isn't filtered out
-					if (not DB_DEBUFF_BANNED [name] and not DB_DEBUFF_BANNED [spellId]) then
-				
-						--> if true it'll show all auras - this can be called from scripts to debug aura things
-						if (Plater.DebugAuras) then
-							if (duration and duration < 60) then
-								can_show_this_debuff = true
-							end
-						end
-				
-						--> important aura
-						if (DB_AURA_SHOW_IMPORTANT and (nameplateShowAll or isBossDebuff)) then
+				--check if the debuff isn't filtered out
+				if (not DB_DEBUFF_BANNED [name] and not DB_DEBUFF_BANNED [spellId]) then
+			
+					--> if true it'll show all auras - this can be called from scripts to debug aura things
+					if (Plater.DebugAuras) then
+						if (duration and duration < 60) then
 							can_show_this_debuff = true
-						
-						--> is casted by the player
-						elseif (DB_AURA_SHOW_BYPLAYER and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet") or Plater.PlayerPetCache[UnitGUID(caster)])) then
-							can_show_this_debuff = true
-							
-						--> is casted by other players
-						elseif (DB_AURA_SHOW_BYOTHERPLAYERS and isCastByPlayer and caster and not UnitIsUnit (caster, "player")) then
-							can_show_this_debuff = true	
-							
-						--> user added this buff to track in the buff tracking tab
-						elseif (AUTO_TRACKING_EXTRA_DEBUFFS [name] or AUTO_TRACKING_EXTRA_DEBUFFS [spellId]) then
-							can_show_this_debuff = true
-						end
-						
-						--> check for special auras auto added by setting like 'show crowd control' or 'show dispellable'
-						--> SPECIAL_AURAS_AUTO_ADDED has a list of crowd control not do not have a list of dispellable, so check if canStealOrPurge
-						--> in addition, we want to check if enrage tracking is enabled and show enrage effects
-						if (SPECIAL_AURAS_AUTO_ADDED [name] or SPECIAL_AURAS_AUTO_ADDED [spellId] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge) or (DB_SHOW_ENRAGE_IN_EXTRA_ICONS and actualAuraType == AURA_TYPE_ENRAGE)) then
-							Plater.AddExtraIcon (self, name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, false, "HARMFUL", debuffIndex, timeMod)
-							can_show_this_debuff = false
 						end
 					end
+			
+					--> important aura
+					if (DB_AURA_SHOW_IMPORTANT and (nameplateShowAll or isBossAura)) then
+						can_show_this_debuff = true
 					
-					--> check for special auras added by the user it self
-					if (can_show_this_debuff ~= false and (((SPECIAL_AURAS_USER_LIST [name] or SPECIAL_AURAS_USER_LIST [spellId]) and not (SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId])) or ((SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId]) and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet"))))) then
-						Plater.AddExtraIcon (self, name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, false, "HARMFUL", debuffIndex, timeMod)
+					--> is casted by the player
+					elseif (DB_AURA_SHOW_BYPLAYER and sourceUnit and (UnitIsUnit (sourceUnit, "player") or UnitIsUnit (sourceUnit, "pet") or Plater.PlayerPetCache[UnitGUID(sourceUnit)])) then
+						can_show_this_debuff = true
+						
+					--> is casted by other players
+					elseif (DB_AURA_SHOW_BYOTHERPLAYERS and isFromPlayerOrPlayerPet and sourceUnit and not UnitIsUnit (sourceUnit, "player")) then
+						can_show_this_debuff = true	
+						
+					--> user added this buff to track in the buff tracking tab
+					elseif (AUTO_TRACKING_EXTRA_DEBUFFS [name] or AUTO_TRACKING_EXTRA_DEBUFFS [spellId]) then
+						can_show_this_debuff = true
+					end
+					
+					--> check for special auras auto added by setting like 'show crowd control' or 'show dispellable'
+					--> SPECIAL_AURAS_AUTO_ADDED has a list of crowd control not do not have a list of dispellable, so check if isStealable
+					--> in addition, we want to check if enrage tracking is enabled and show enrage effects
+					if (SPECIAL_AURAS_AUTO_ADDED [name] or SPECIAL_AURAS_AUTO_ADDED [spellId] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and isStealable) or (DB_SHOW_ENRAGE_IN_EXTRA_ICONS and actualAuraType == AURA_TYPE_ENRAGE)) then
+						Plater.AddExtraIcon (self, name, icon, applications, actualAuraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, false, "HARMFUL", id, timeMod)
 						can_show_this_debuff = false
 					end
-					
-					if (can_show_this_debuff) then
-						--get the icon to be used by this aura
-						local auraIconFrame, buffFrame = Plater.GetAuraIcon (self)
-						Plater.AddAura (buffFrame, auraIconFrame, debuffIndex, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, nil, nil, nil, nil, actualAuraType, auraAmount, timeMod)
-					end
 				end
-			until continuationToken == nil
+				
+				--> check for special auras added by the user it self
+				if (can_show_this_debuff ~= false and (((SPECIAL_AURAS_USER_LIST [name] or SPECIAL_AURAS_USER_LIST [spellId]) and not (SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId])) or ((SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId]) and sourceUnit and (UnitIsUnit (sourceUnit, "player") or UnitIsUnit (sourceUnit, "pet"))))) then
+					Plater.AddExtraIcon (self, name, icon, applications, actualAuraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, false, "HARMFUL", id, timeMod)
+					can_show_this_debuff = false
+				end
+				
+				if (can_show_this_debuff) then
+					--get the icon to be used by this aura
+					local auraIconFrame, buffFrame = Plater.GetAuraIcon (self)
+					Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, nil, nil, nil, nil, actualAuraType, applications, timeMod)
+				end
+			end
 		end
 		
 		--> buffs
 		if unitAuraEventData.hasBuff then
-			local buffIndex = 0
-			local continuationToken
-			repeat -- until continuationToken == nil
-				local numSlots = 0
-				local slots
-				if IS_WOW_PROJECT_MAINLINE then
-					slots = { UnitAuraSlots(unit, "HELPFUL", BUFF_MAX_DISPLAY, continuationToken) }
-					continuationToken = slots[1]
-					numSlots = #slots
-				else
-					numSlots = BUFF_MAX_DISPLAY + 1
-				end
+			local unitAuras = getUnitAuras(unit, "HELPFUL") or {}
+			
+			for id, aura in pairs(unitAuras.buffs or {}) do
+				--ViragDevTool_AddData({i, aura})
+				local name, icon, applications, actualAuraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = 
+					aura.name, aura.icon, aura.applications, aura.actualAuraType, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
+					aura.isBossAura, aura.isFromPlayerOrPlayerPet, aura.nameplateShowAll, aura.timeMod, aura.applications
 				
-				for i=2, numSlots do
-					local name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, auraAmount
-					if IS_WOW_PROJECT_MAINLINE then
-						local slot = slots[i]
-						name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, auraAmount = UnitAuraBySlot(unit, slot)
+				local auraType = "BUFF"
+				
+				unitAuraCache[name] = true
+				unitAuraCache[spellId] = true
+				unitAuraCache[name.."_"..(sourceUnit or "N/A")] = true
+				unitAuraCache[spellId.."_"..(sourceUnit or "N/A")] = true
+				unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or isStealable
+				unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
+				
+				--> check for special auras added by the user it self
+				if (((SPECIAL_AURAS_USER_LIST [name] or SPECIAL_AURAS_USER_LIST [spellId]) and not (SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId])) or ((SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId]) and sourceUnit and (UnitIsUnit (sourceUnit, "player") or UnitIsUnit (sourceUnit, "pet")))) then
+					Plater.AddExtraIcon (self, name, icon, applications, actualAuraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, true, "HELPFUL", id, timeMod)
+					
+				elseif (not DB_BUFF_BANNED [name] and not DB_BUFF_BANNED [spellId]) then
+					--> if true it'll show all auras - this can be called from scripts to debug aura things
+					if (Plater.DebugAuras) then
+						if (duration and duration < 60) then
+							local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
+							Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, true, nil, nil, nil, actualAuraType, applications, timeMod)
+						end
+					end
+					
+					--> this special aura check is inside the 'buff banned' prevented because they are automatic added
+					--> check for special auras auto added by setting like 'show crowd control' or 'show dispellable'
+					--> SPECIAL_AURAS_AUTO_ADDED has a list of crowd control not do not have a list of dispellable, so check if isStealable
+					--> in addition, we want to check if enrage tracking is enabled and show enrage effects
+					if (SPECIAL_AURAS_AUTO_ADDED [name] or SPECIAL_AURAS_AUTO_ADDED [spellId] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and isStealable) or (DB_SHOW_ENRAGE_IN_EXTRA_ICONS and actualAuraType == AURA_TYPE_ENRAGE) or (DB_SHOW_MAGIC_IN_EXTRA_ICONS and actualAuraType == AURA_TYPE_MAGIC)) then
+						Plater.AddExtraIcon (self, name, icon, applications, actualAuraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, true, "HELPFUL", id, timeMod)
 					else
-						name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, auraAmount = UnitAura(unit, i-1, "HELPFUL")
-						if not name then
-							break
-						end
-					end
-					
-					buffIndex = buffIndex + 1
-					
-					local auraType = "BUFF"
-					
-					unitAuraCache[name] = true
-					unitAuraCache[spellId] = true
-					unitAuraCache[name.."_"..(caster or "N/A")] = true
-					unitAuraCache[spellId.."_"..(caster or "N/A")] = true
-					unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or canStealOrPurge
-					unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
-					
-					--> check for special auras added by the user it self
-					if (((SPECIAL_AURAS_USER_LIST [name] or SPECIAL_AURAS_USER_LIST [spellId]) and not (SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId])) or ((SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId]) and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
-						Plater.AddExtraIcon (self, name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, true, "HELPFUL", buffIndex, timeMod)
+						--> important aura
+						if (DB_AURA_SHOW_IMPORTANT and (nameplateShowAll or isBossAura)) then
+							local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
+							Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, false, true, nil, nil, actualAuraType, applications, timeMod)
 						
-					elseif (not DB_BUFF_BANNED [name] and not DB_BUFF_BANNED [spellId]) then
-						--> if true it'll show all auras - this can be called from scripts to debug aura things
-						if (Plater.DebugAuras) then
-							if (duration and duration < 60) then
-								local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
-								Plater.AddAura (buffFrame, auraIconFrame, buffIndex, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, true, nil, nil, nil, actualAuraType, auraAmount, timeMod)
-							end
-						end
-						
-						--> this special aura check is inside the 'buff banned' prevented because they are automatic added
-						--> check for special auras auto added by setting like 'show crowd control' or 'show dispellable'
-						--> SPECIAL_AURAS_AUTO_ADDED has a list of crowd control not do not have a list of dispellable, so check if canStealOrPurge
-						--> in addition, we want to check if enrage tracking is enabled and show enrage effects
-						if (SPECIAL_AURAS_AUTO_ADDED [name] or SPECIAL_AURAS_AUTO_ADDED [spellId] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge) or (DB_SHOW_ENRAGE_IN_EXTRA_ICONS and actualAuraType == AURA_TYPE_ENRAGE) or (DB_SHOW_MAGIC_IN_EXTRA_ICONS and actualAuraType == AURA_TYPE_MAGIC)) then
-							Plater.AddExtraIcon (self, name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, true, "HELPFUL", buffIndex, timeMod)
-						else
-							--> important aura
-							if (DB_AURA_SHOW_IMPORTANT and (nameplateShowAll or isBossDebuff)) then
-								local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
-								Plater.AddAura (buffFrame, auraIconFrame, buffIndex, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, false, true, nil, nil, actualAuraType, auraAmount, timeMod)
-							
-							--> is dispellable or can be steal
-							elseif (DB_AURA_SHOW_DISPELLABLE and canStealOrPurge) then
-								if (self.unitFrame.isPlayer and DB_AURA_SHOW_ONLY_SHORT_DISPELLABLE_ON_PLAYERS) then
-									--don't show dispellable on players if the duration is bigger than 2 minutes (terciob july 2022)
-									--this avoid showing big buffs like power word: fortitute
-									--show infinite as well and option to enable this separately (continuity, july 2022)
-									if (duration == 0 or duration < 120) then
-										local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
-										Plater.AddAura (buffFrame, auraIconFrame, buffIndex, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, nil, nil, nil, nil, actualAuraType, auraAmount, timeMod)
-									end
-								else
+						--> is dispellable or can be steal
+						elseif (DB_AURA_SHOW_DISPELLABLE and isStealable) then
+							if (self.unitFrame.isPlayer and DB_AURA_SHOW_ONLY_SHORT_DISPELLABLE_ON_PLAYERS) then
+								--don't show dispellable on players if the duration is bigger than 2 minutes (terciob july 2022)
+								--this avoid showing big buffs like power word: fortitute
+								--show infinite as well and option to enable this separately (continuity, july 2022)
+								if (duration == 0 or duration < 120) then
 									local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
-									Plater.AddAura (buffFrame, auraIconFrame, buffIndex, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, nil, nil, nil, nil, actualAuraType, auraAmount, timeMod)
+									Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, nil, nil, nil, nil, actualAuraType, applications, timeMod)
 								end
-                                
-							--> is enrage
-							elseif (DB_AURA_SHOW_ENRAGE and actualAuraType == AURA_TYPE_ENRAGE) then
+							else
 								local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
-								Plater.AddAura (buffFrame, auraIconFrame, buffIndex, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, nil, nil, nil, nil, actualAuraType, auraAmount, timeMod)
-							
-							--> is magic
-							elseif (DB_AURA_SHOW_MAGIC and actualAuraType == AURA_TYPE_MAGIC) then
-								local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
-								Plater.AddAura (buffFrame, auraIconFrame, buffIndex, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, nil, nil, nil, nil, actualAuraType, auraAmount, timeMod)
-							
-							--> is casted by the player
-							elseif (DB_AURA_SHOW_BYPLAYER and caster and UnitIsUnit (caster, "player")) then
-								local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
-								Plater.AddAura (buffFrame, auraIconFrame, buffIndex, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, nil, nil, nil, nil, actualAuraType, auraAmount, timeMod)
-								
-							--> is casted by other players
-							elseif (DB_AURA_SHOW_BYOTHERPLAYERS and isCastByPlayer and caster and not UnitIsUnit (caster, "player")) then
-								local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
-								Plater.AddAura (buffFrame, auraIconFrame, buffIndex, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, nil, nil, nil, nil, actualAuraType, auraAmount, timeMod)
-								
-							--> is casted by the unit it self
-							elseif (DB_AURA_SHOW_BYUNIT and caster and UnitIsUnit (caster, unit) and not isCastByPlayer) then
-								local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
-								Plater.AddAura (buffFrame, auraIconFrame, buffIndex, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, true, nil, nil, nil, actualAuraType, auraAmount, timeMod)
-							
-							--> user added this buff to track in the buff tracking tab
-							elseif (AUTO_TRACKING_EXTRA_BUFFS [name] or AUTO_TRACKING_EXTRA_BUFFS [spellId]) then
-								local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
-								Plater.AddAura (buffFrame, auraIconFrame, buffIndex, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, true, nil, nil, nil, actualAuraType, auraAmount, timeMod)
-								
+								Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, nil, nil, nil, nil, actualAuraType, applications, timeMod)
 							end
+							
+						--> is enrage
+						elseif (DB_AURA_SHOW_ENRAGE and actualAuraType == AURA_TYPE_ENRAGE) then
+							local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
+							Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, nil, nil, nil, nil, actualAuraType, applications, timeMod)
+						
+						--> is magic
+						elseif (DB_AURA_SHOW_MAGIC and actualAuraType == AURA_TYPE_MAGIC) then
+							local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
+							Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, nil, nil, nil, nil, actualAuraType, applications, timeMod)
+						
+						--> is casted by the player
+						elseif (DB_AURA_SHOW_BYPLAYER and sourceUnit and UnitIsUnit (sourceUnit, "player")) then
+							local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
+							Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, nil, nil, nil, nil, actualAuraType, applications, timeMod)
+							
+						--> is casted by other players
+						elseif (DB_AURA_SHOW_BYOTHERPLAYERS and isFromPlayerOrPlayerPet and sourceUnit and not UnitIsUnit (sourceUnit, "player")) then
+							local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
+							Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, nil, nil, nil, nil, actualAuraType, applications, timeMod)
+							
+						--> is casted by the unit it self
+						elseif (DB_AURA_SHOW_BYUNIT and sourceUnit and UnitIsUnit (sourceUnit, unit) and not isFromPlayerOrPlayerPet) then
+							local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
+							Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, true, nil, nil, nil, actualAuraType, applications, timeMod)
+						
+						--> user added this buff to track in the buff tracking tab
+						elseif (AUTO_TRACKING_EXTRA_BUFFS [name] or AUTO_TRACKING_EXTRA_BUFFS [spellId]) then
+							local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
+							Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, true, nil, nil, nil, actualAuraType, applications, timeMod)
+							
 						end
-
 					end
+
 				end
-			until continuationToken == nil
+			end
 		end
 		
 		--hide non used icons
@@ -1746,10 +1849,10 @@ end
 			continuationToken = slots[1]
 			for i=2, #slots do
 				local slot = slots[i];
-				local name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, auraAmount = UnitAuraBySlot(unitId, slot)
+				local name, icon, applications, actualAuraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = UnitAuraBySlot(unitId, slot)
 				if (name) then
 					if (name:lower()  == spellName) then
-						return name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, auraAmount
+						return name, icon, applications, actualAuraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications
 					end
 				end
 			end
@@ -1761,17 +1864,17 @@ end
 			continuationToken = slots[1]
 			for i=2, #slots do
 				local slot = slots[i];
-				local name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, auraAmount = UnitAuraBySlot(unitId, slot)
+				local name, icon, applications, actualAuraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = UnitAuraBySlot(unitId, slot)
 				if (name) then
 					if (name:lower()  == spellName) then
-						return name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, auraAmount
+						return name, icon, applications, actualAuraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications
 					end
 				end
 			end
 		until not continuationToken
 	end
 
-	function Plater.UpdateAuras_Self_Automatic (self)
+	function Plater.UpdateAuras_Self_Automatic (self, unit)
 		Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdateAuras_Self_Automatic")
 		
 		local unitAuraEventData = UnitAuraEventHandlerData[self.unit] or UnitAuraEventHandlerData["player"]
@@ -1787,111 +1890,73 @@ end
 		
 		--> debuffs
 		if (Plater.db.profile.aura_show_debuffs_personal and unitAuraEventData.hasDebuff) then
-			local debuffIndex = 0
-			local continuationToken
-			repeat -- until continuationToken == nil
-				local numSlots = 0
-				local slots
-				if IS_WOW_PROJECT_MAINLINE then
-					slots = { UnitAuraSlots("player", "HARMFUL", BUFF_MAX_DISPLAY, continuationToken) }
-					continuationToken = slots[1]
-					numSlots = #slots
-				else
-					numSlots = BUFF_MAX_DISPLAY + 1
+			local unitAuras = getUnitAuras(unit, "HARMFUL") or {}
+			
+			for id, aura in pairs(unitAuras.debuffs or {}) do
+				--ViragDevTool_AddData({i, aura})
+				local name, icon, applications, actualAuraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = 
+					aura.name, aura.icon, aura.applications, aura.actualAuraType, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
+					aura.isBossAura, aura.isFromPlayerOrPlayerPet, aura.nameplateShowAll, aura.timeMod, aura.applications
+
+				
+				local auraType = "DEBUFF"
+				
+				unitAuraCache[name] = true
+				unitAuraCache[spellId] = true
+				unitAuraCache[name.."_"..(sourceUnit or "N/A")] = true
+				unitAuraCache[spellId.."_"..(sourceUnit or "N/A")] = true
+				unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or isStealable
+				unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
+					
+				if (not DB_DEBUFF_BANNED [name] and not DB_DEBUFF_BANNED [spellId]) then
+					local auraIconFrame, buffFrame = Plater.GetAuraIcon (self)
+					Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, false, false, true, true, actualAuraType, applications, timeMod)
+					
+					--> check for special auras auto added by setting like 'show crowd control' or 'show dispellable'
+					--> SPECIAL_AURAS_AUTO_ADDED has a list of crowd control not do not have a list of dispellable, so check if isStealable
+					--> in addition, we want to check if enrage tracking is enabled and show enrage effects
+					if (SPECIAL_AURAS_AUTO_ADDED [name] or SPECIAL_AURAS_AUTO_ADDED [spellId] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and isStealable) or (DB_SHOW_ENRAGE_IN_EXTRA_ICONS and actualAuraType == AURA_TYPE_ENRAGE)) then
+						Plater.AddExtraIcon (self, name, icon, applications, actualAuraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, false, "HARMFUL", id, timeMod)
+					end
 				end
 				
-				for i=2, numSlots do
-					local name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, auraAmount
-					if IS_WOW_PROJECT_MAINLINE then
-						local slot = slots[i]
-						name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, auraAmount = UnitAuraBySlot("player", slot)
-					else
-						name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, auraAmount = UnitAura("player", i-1, "HARMFUL")
-						if not name then
-							break
-						end
-					end
-
-					debuffIndex = debuffIndex + 1
-					
-					local auraType = "DEBUFF"
-					
-					unitAuraCache[name] = true
-					unitAuraCache[spellId] = true
-					unitAuraCache[name.."_"..(caster or "N/A")] = true
-					unitAuraCache[spellId.."_"..(caster or "N/A")] = true
-					unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or canStealOrPurge
-					unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
-						
-					if (not DB_DEBUFF_BANNED [name] and not DB_DEBUFF_BANNED [spellId]) then
-						local auraIconFrame, buffFrame = Plater.GetAuraIcon (self)
-						Plater.AddAura (buffFrame, auraIconFrame, debuffIndex, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, false, false, true, true, actualAuraType, auraAmount, timeMod)
-						
-						--> check for special auras auto added by setting like 'show crowd control' or 'show dispellable'
-						--> SPECIAL_AURAS_AUTO_ADDED has a list of crowd control not do not have a list of dispellable, so check if canStealOrPurge
-						--> in addition, we want to check if enrage tracking is enabled and show enrage effects
-						if (SPECIAL_AURAS_AUTO_ADDED [name] or SPECIAL_AURAS_AUTO_ADDED [spellId] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and canStealOrPurge) or (DB_SHOW_ENRAGE_IN_EXTRA_ICONS and actualAuraType == AURA_TYPE_ENRAGE)) then
-							Plater.AddExtraIcon (self, name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, false, "HARMFUL", debuffIndex, timeMod)
-						end
-					end
-					
-					--> check for special auras added by the user it self
-					if (((SPECIAL_AURAS_USER_LIST [name] or SPECIAL_AURAS_USER_LIST [spellId]) and not (SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId])) or ((SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId]) and caster and (UnitIsUnit (caster, "player") or UnitIsUnit (caster, "pet")))) then
-						Plater.AddExtraIcon (self, name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, false, "HARMFUL", debuffIndex, timeMod)
-					end
-					
+				--> check for special auras added by the user it self
+				if (((SPECIAL_AURAS_USER_LIST [name] or SPECIAL_AURAS_USER_LIST [spellId]) and not (SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId])) or ((SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId]) and sourceUnit and (UnitIsUnit (sourceUnit, "player") or UnitIsUnit (sourceUnit, "pet")))) then
+					Plater.AddExtraIcon (self, name, icon, applications, actualAuraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, false, "HARMFUL", id, timeMod)
 				end
-			until continuationToken == nil
+				
+			end
 		end
 		
 		--> buffs
-		local buffIndex = 0
 		if (Plater.db.profile.aura_show_buffs_personal and unitAuraEventData.hasBuff) then
-			local continuationToken
-			repeat -- until continuationToken == nil
-				local numSlots = 0
-				local slots
-				if IS_WOW_PROJECT_MAINLINE then
-					slots = { UnitAuraSlots("player", "HELPFUL|PLAYER", BUFF_MAX_DISPLAY, continuationToken) }
-					continuationToken = slots[1]
-					numSlots = #slots
-				else
-					numSlots = BUFF_MAX_DISPLAY + 1
+			local unitAuras = getUnitAuras(unit, "HELPFUL|PLAYER") or {}
+			ViragDevTool_AddData(unitAuras)
+			
+			for id, aura in pairs(unitAuras.buffs or {}) do
+				ViragDevTool_AddData({i, aura})
+				local name, icon, applications, actualAuraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = 
+					aura.name, aura.icon, aura.applications, aura.actualAuraType, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
+					aura.isBossAura, aura.isFromPlayerOrPlayerPet, aura.nameplateShowAll, aura.timeMod, aura.applications
+					
+				local auraType = "BUFF"
+
+				unitAuraCache[name] = true
+				unitAuraCache[spellId] = true
+				unitAuraCache[name.."_"..(sourceUnit or "N/A")] = true
+				unitAuraCache[spellId.."_"..(sourceUnit or "N/A")] = true
+				unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or isStealable
+				unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
+				
+				--> only show buffs casted by the player it self and less than 1 minute in duration
+				if ((not DB_BUFF_BANNED [name] and not DB_BUFF_BANNED [spellId]) and (noBuffDurationLimitation or (duration and (duration > 0 and duration < 60)) and (sourceUnit and UnitIsUnit (sourceUnit, "player")))) then
+					local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
+					Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, false, false, false, true, actualAuraType, applications, timeMod)
+
 				end
 				
-				for i=2, numSlots do
-					local name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, auraAmount
-					if IS_WOW_PROJECT_MAINLINE then
-						local slot = slots[i]
-						name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, auraAmount = UnitAuraBySlot("player", slot)
-					else
-						name, texture, count, actualAuraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, canApplyAura, isBossDebuff, isCastByPlayer, nameplateShowAll, timeMod, auraAmount = UnitAura("player", i-1, "HELPFUL|PLAYER")
-						if not name then
-							break
-						end
-					end
-
-					buffIndex = buffIndex + 1
-					
-					local auraType = "BUFF"
-
-					unitAuraCache[name] = true
-					unitAuraCache[spellId] = true
-					unitAuraCache[name.."_"..(caster or "N/A")] = true
-					unitAuraCache[spellId.."_"..(caster or "N/A")] = true
-					unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or canStealOrPurge
-					unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or actualAuraType == AURA_TYPE_ENRAGE
-					
-					--> only show buffs casted by the player it self and less than 1 minute in duration
-					if ((not DB_BUFF_BANNED [name] and not DB_BUFF_BANNED [spellId]) and (noBuffDurationLimitation or (duration and (duration > 0 and duration < 60)) and (caster and UnitIsUnit (caster, "player")))) then
-						local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
-						Plater.AddAura (buffFrame, auraIconFrame, buffIndex, name, texture, count, auraType, duration, expirationTime, caster, canStealOrPurge, nameplateShowPersonal, spellId, false, false, false, true, actualAuraType, auraAmount, timeMod)
-
-					end
-					
-					--> there is no special auras for buffs in the personal bar
-				end
-			until continuationToken == nil
+				--> there is no special auras for buffs in the personal bar
+			end
 		end	
 		
 		--> hide not used aura frames
