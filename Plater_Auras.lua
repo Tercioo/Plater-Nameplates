@@ -250,7 +250,7 @@ local UnitAuraEventHandlerValidation = function (unit, isFullUpdate, updatedAura
 	hasBuff = not DB_AURA_SEPARATE_BUFFS and hasDebuff or hasBuff 
 	hasDebuff = not DB_AURA_SEPARATE_BUFFS and hasBuff or hasDebuff
 	
-	ViragDevTool_AddData({unit = unit, needsUpdate=needsUpdate, hasBuff=hasBuff, hasDebuff=hasDebuff}, "Plater_UNIT_AURA return")
+	--ViragDevTool_AddData({unit = unit, needsUpdate=needsUpdate, hasBuff=hasBuff, hasDebuff=hasDebuff}, "Plater_UNIT_AURA return")
 	return needsUpdate, hasBuff, hasDebuff
 end
 
