@@ -691,6 +691,10 @@ Plater.SpecList = { --private
 		[269] = true, 
 		[270] = true, 
 	},
+	["EVOKER"] = {
+		[1467] = true,
+		[1468] = true,
+	},
 }
 
 --> default ranges to use in the range check proccess against enemies, player can select a different range in the options panel

@@ -32,6 +32,8 @@ local CONST_SPECID_WARLOCK_DESTRUCTION = 267
 local CONST_SPECID_DK_UNHOLY = 252
 local CONST_SPECID_DK_FROST = 251
 local CONST_SPECID_DK_BLOOD = 250
+local CONST_SPECID_EVOKER_DEVASTATION = 1467
+local CONST_SPECID_EVOKER_PRESERVATION = 1468
 
 local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTable()
 
@@ -530,6 +532,25 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         widgetFrame.ShowAnimation = MainAnimationGroup
         return widgetFrame
     end
+	
+	local evokerChargesFunc = function(parent, frameName)
+		--> create the main frame
+        --local widgetFrame = CreateFrame("Button", frameName, parent, "ClassNameplateBarDeathKnightRuneButton")
+		local widgetFrame = CreateFrame("Button", frameName, parent, "EssencePointButtonTemplate")
+		widgetFrame:SetSize(24,24)
+		
+        widgetFrame.background = widgetFrame.EssenceEmpty
+		parent.widgetsBackground[#parent.widgetsBackground + 1] = widgetFrame.EssenceEmpty
+		
+		widgetFrame.ShowAnimation = {Play = function() end, Stop = function() end}
+		widgetFrame.EssenceFillDone.AnimInOrig = widgetFrame.EssenceFillDone.AnimIn
+		widgetFrame.EssenceFillDone.AnimIn = {Play = function() end, Stop = function() end}
+		widgetFrame.EssenceFilling.FillingAnim:SetScript("OnFinished", nil)
+		widgetFrame.EssenceDepleting.AnimInOrig = widgetFrame.EssenceDepleting.AnimIn
+		widgetFrame.EssenceDepleting.AnimIn = {Play = function() end, Stop = function() end}
+		
+        return widgetFrame
+	end
 
     resourceCreationFunctions[CONST_SPECID_DRUID_FERAL] = comboPointFunc
     resourceCreationFunctions[CONST_SPECID_ROGUE_ASSASSINATION] = comboPointFunc
@@ -545,3 +566,5 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 	resourceCreationFunctions[CONST_SPECID_DK_UNHOLY] = IS_WOW_PROJECT_MAINLINE and deathknightChargesFunc or deathknightChargesFuncWotLK
 	resourceCreationFunctions[CONST_SPECID_DK_FROST] = IS_WOW_PROJECT_MAINLINE and deathknightChargesFunc or deathknightChargesFuncWotLK
 	resourceCreationFunctions[CONST_SPECID_DK_BLOOD] = IS_WOW_PROJECT_MAINLINE and deathknightChargesFunc or deathknightChargesFuncWotLK
+	resourceCreationFunctions[CONST_SPECID_EVOKER_DEVASTATION] = evokerChargesFunc
+	resourceCreationFunctions[CONST_SPECID_EVOKER_PRESERVATION] = evokerChargesFunc

@@ -10,7 +10,7 @@ local abs = _G.abs
 local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_NOT_MAINLINE = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_CLASSIC_ERA = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
-local IS_WOW_PROJECT_CLASSIC_TBC = WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC
+local IS_WOW_PROJECT_CLASSIC_WRATH = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_WRATH_OF_THE_LICH_KING and ClassicExpansionAtLeast(LE_EXPANSION_WRATH_OF_THE_LICH_KING)
 
 local PlayerClass = select(2, UnitClass("player"))
 
@@ -29,6 +29,8 @@ local CONST_SPECID_WARLOCK_DESTRUCTION = 267
 local CONST_SPECID_DK_UNHOLY = 252
 local CONST_SPECID_DK_FROST = 251
 local CONST_SPECID_DK_BLOOD = 250
+local CONST_SPECID_EVOKER_DEVASTATION = 1467
+local CONST_SPECID_EVOKER_PRESERVATION = 1468
 
 local CONST_NUM_RESOURCES_WIDGETS = PlayerClass == "DEATHKNIGHT" and 6 or 10
 local CONST_WIDGET_WIDTH = 20
@@ -97,6 +99,7 @@ local SPELL_POWER_OBSOLETE2 = SPELL_POWER_OBSOLETE2 or (PowerEnum and PowerEnum.
 local SPELL_POWER_ARCANE_CHARGES = SPELL_POWER_ARCANE_CHARGES or (PowerEnum and PowerEnum.ArcaneCharges) or 16
 local SPELL_POWER_FURY = SPELL_POWER_FURY or (PowerEnum and PowerEnum.Fury) or 17
 local SPELL_POWER_PAIN = SPELL_POWER_PAIN or (PowerEnum and PowerEnum.Pain) or 18
+local SPELL_POWER_ESSENCE = SPELL_POWER_ESSENCE or (PowerEnum and PowerEnum.Essence) or 19
 
 local specsWithResource =  {
     [CONST_SPECID_MONK_WINDWALKER] = true,
@@ -114,6 +117,8 @@ local specsWithResource =  {
     [CONST_SPECID_DK_UNHOLY] = true,
     [CONST_SPECID_DK_FROST] = true,
     [CONST_SPECID_DK_BLOOD] = true,
+    [CONST_SPECID_EVOKER_DEVASTATION] = true,
+    [CONST_SPECID_EVOKER_PRESERVATION] = true,
 }
 
 
@@ -130,6 +135,7 @@ local resourceTypes = {
     [SPELL_POWER_RUNES] = true, --dk
     [SPELL_POWER_ARCANE_CHARGES] = true, --mage
     [SPELL_POWER_FURY] = true, --warrior demonhunter dps
+    [SPELL_POWER_ESSENCE] = true, --evoker
 }
 
 local energyTypes = {
@@ -137,6 +143,7 @@ local energyTypes = {
     [SPELL_POWER_RAGE] = true,
     [SPELL_POWER_ENERGY] = true,
     [SPELL_POWER_RUNIC_POWER] = true,
+    [SPELL_POWER_ESSENCE] = true,
 }
 
 local resourcePowerType = {
@@ -151,6 +158,7 @@ local resourcePowerType = {
     [SPELL_POWER_RUNES] = SPELL_POWER_RUNIC_POWER, --dk
     [SPELL_POWER_ARCANE_CHARGES] = SPELL_POWER_MANA, --mage
     [SPELL_POWER_FURY] = SPELL_POWER_RAGE, --warrior
+    [SPELL_POWER_ESSENCE] = SPELL_POWER_MANA, --evoker
 }
 
 -- the power types which update functions should update on
@@ -162,6 +170,7 @@ local classPowerTypes = {
     ["DRUID"] = "COMBO_POINTS",
     ["MAGE"] = "ARCANE_CHARGES",
     ["DEATHKNIGHT"] = "RUNES",
+    ["EVOKER"] = "ESSENCE",
 }
 
 local doesClassUseResource = function(class)
@@ -180,6 +189,7 @@ local powerTypesFilter = {
     ["SOUL_SHARDS"] = true,
     ["ARCANE_CHARGES"] = true,
     ["RUNES"] = true,
+    ["ESSENCE"] = true,
 }
 
 local eventsFilter = {
@@ -195,6 +205,7 @@ local CONST_ENUMNAME_RUNES = "Runes"
 local CONST_ENUMNAME_ARCANECHARGES = "ArcaneCharges"
 local CONST_ENUMNAME_CHI = "Chi"
 local CONST_ENUMNAME_SOULCHARGES = "SoulShards"
+local CONST_ENUMNAME_ESSENCE = "Essence"
 
 --cache
 local DB_USE_PLATER_RESOURCE_BAR = false
@@ -435,6 +446,20 @@ end
         end
         tinsert(mainResourceFrame.allResourceBars, newResourceBar)
         mainResourceFrame.resourceBarsByEnumName[CONST_ENUMNAME_RUNES] = newResourceBar
+        return newResourceBar
+    end
+    
+    resourceBarCreateFuncByEnumName[CONST_ENUMNAME_ESSENCE] = function(mainResourceFrame)
+        local resourceWidgetCreationFunc = Plater.Resources.GetCreateResourceWidgetFunctionForSpecId(CONST_SPECID_EVOKER_DEVASTATION)
+        local newResourceBar = createResourceBar(mainResourceFrame, "$parentEvokerResource", resourceWidgetCreationFunc, 24, 24)
+		mainResourceFrame.widgetWidth = 24
+		mainResourceFrame.widgetHeight = 24
+        mainResourceFrame.resourceBars[CONST_SPECID_EVOKER_DEVASTATION] = newResourceBar
+        mainResourceFrame.resourceBars[CONST_SPECID_EVOKER_PRESERVATION] = newResourceBar
+        newResourceBar.resourceId = SPELL_POWER_ESSEMCE
+        newResourceBar.updateResourceFunc = resourceWidgetsFunctions.OnEssenceChanged
+        tinsert(mainResourceFrame.allResourceBars, newResourceBar)
+        mainResourceFrame.resourceBarsByEnumName[CONST_ENUMNAME_ESSENCE] = newResourceBar
         return newResourceBar
     end
 
@@ -866,6 +891,7 @@ end
         resourceBar.widgetsInUseAmount = totalWidgetsShown
         --set the amount of resources the player has
         resourceBar.lastResourceAmount = 0
+        ViragDevTool_AddData({debugstack()})
 
         --get the default size of each widget
         local widgetWidth = mainResourceFrame.widgetWidth or CONST_WIDGET_WIDTH
@@ -1314,4 +1340,82 @@ end
 				widget.glowtexture:SetPoint("BOTTOMRIGHT", widget.fillBar:GetStatusBarTexture(), "TOP", fullOffset/2, -2)
 			end
 		end
+    end
+    
+    --Evoker Essence
+    local FillingAnimationTime = 5.0; 
+    function resourceWidgetsFunctions.OnEssenceChanged(mainResourceFrame, resourceBar, forcedRefresh, event, unit, powerType)
+        if (event == "UNIT_MAXPOWER" and DB_PLATER_RESOURCE_SHOW_DEPLETED) then
+            Plater.Resources.UpdateResourcesFor_ShowDepleted(mainResourceFrame, resourceBar)
+            forcedRefresh = true
+        end
+
+        -- ensure to only update for proper power type or if forced
+        if not forcedRefresh and powerType and powerType ~= classPowerTypes[PlayerClass] then
+            return
+        end
+
+        --amount of resources the player has now
+        local currentResources = UnitPower("player", Plater.Resources.playerResourceId)
+        local pace, interrupted = GetPowerRegenForPowerType(Enum.PowerType.Essence)
+        if (pace == nil or pace == 0) then
+            pace = 0.2
+        end
+        
+        --resources amount got updated?
+        if ((currentResources == resourceBar.lastResourceAmount) and (pace == (resourceBar.lastPace or 0)) and not forcedRefresh) then
+            return
+        end
+        
+        --which update method to use
+        if (DB_PLATER_RESOURCE_SHOW_DEPLETED) then
+            Plater.Resources.UpdateResources_WithDepleted(resourceBar, currentResources + (isAtMaxPoints and 0 or 1))
+        else
+            Plater.Resources.UpdateResources_NoDepleted(resourceBar, currentResources + (isAtMaxPoints and 0 or 1))
+        end
+        
+        resourceBar.lastResourceAmount = currentResources
+        resourceBar.lastPace = pace
+        
+        for i = 1, min(currentResources, resourceBar.widgetsInUseAmount) do
+            local widget = resourceBar.widgets[i]
+            widget.EssenceFull:Show()
+            if not widget.EssenceFillDone:IsShown() then
+                widget.EssenceFillDone:Show()
+                widget.EssenceFillDone.AnimInOrig:Play()
+            end
+            widget.EssenceEmpty:Hide()
+            widget.EssenceFilling.FillingAnim:Stop()
+            widget.EssenceFilling.CircleAnim:Stop()
+            widget:Show()
+        end
+        for i = currentResources + 1, resourceBar.widgetsInUseAmount do
+            local widget = resourceBar.widgets[i]
+           	if(widget.EssenceFull:IsShown() or widget.EssenceFilling:IsShown() or widget.EssenceFillDone:IsShown()) then
+                if not widget.EssenceDepleting:IsShown() then
+                    widget.EssenceDepleting:Show()
+                    widget.EssenceDepleting.AnimInOrig:Play()
+                end
+                widget.EssenceFilling:Hide()
+                widget.EssenceEmpty:Hide()
+                widget.EssenceFillDone:Hide()
+                widget.EssenceFull:Hide()
+            end
+            widget:Show()
+        end
+
+        local isAtMaxPoints = currentResources == resourceBar.widgetsInUseAmount
+        local cooldownDuration = 1 / pace
+        local animationSpeedMultiplier = FillingAnimationTime / cooldownDuration
+        local widget = resourceBar.widgets[currentResources + 1]
+        if (not isAtMaxPoints and widget and not widget.EssenceFull:IsShown()) then
+            widget.EssenceFilling.FillingAnim:SetAnimationSpeedMultiplier(animationSpeedMultiplier)
+            widget.EssenceFilling.CircleAnim:SetAnimationSpeedMultiplier(animationSpeedMultiplier)
+
+            widget.EssenceFilling:Show()
+            widget.EssenceDepleting:Hide()
+            widget.EssenceEmpty:Hide()
+            widget.EssenceFillDone:Hide()
+            widget.EssenceFull:Hide()
+        end
     end
