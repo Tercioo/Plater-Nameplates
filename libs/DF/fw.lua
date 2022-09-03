@@ -1,6 +1,6 @@
 
 
-local dversion = 345
+local dversion = 346
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
 
@@ -3877,6 +3877,7 @@ local specs_per_class = {
 	["WARLOCK"] = {265, 266, 267},
 	["PALADIN"] = {65, 66, 70},
 	["MONK"] = {268, 269, 270},
+	["EVOKER"] = {1467, 1468},
 }
 
 function DF:GetClassSpecIDs (class)
@@ -3976,6 +3977,7 @@ DF.ClassIndexToFileName = {
 	[11] = "DRUID",
 	[10] = "MONK",
 	[2] = "PALADIN",
+	[13] = "EVOKER",
 }
 
 
@@ -3992,6 +3994,7 @@ DF.ClassFileNameToIndex = {
 	["DRUID"] = 11,
 	["MONK"] = 10,
 	["PALADIN"] = 2,
+	["EVOKER"] = 13,
 }
 DF.ClassCache = {}
 
@@ -4313,6 +4316,10 @@ DF.ClassSpecs = {
 		[269] = true, 
 		[270] = true, 
 	},
+	["EVOKER"] = {
+		[1467] = true,
+		[1468] = true,
+	},
 }
 
 DF.SpecListByClass = {
@@ -4375,6 +4382,10 @@ DF.SpecListByClass = {
 		268, 
 		269, 
 		270, 
+	},
+	["EVOKER"] = {
+		1467,
+		1468,
 	},
 }
 
