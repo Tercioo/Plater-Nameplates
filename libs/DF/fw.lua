@@ -1,6 +1,6 @@
 
 
-local dversion = 346
+local dversion = 347
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary (major, minor)
 
@@ -2833,11 +2833,29 @@ end
 function DF:OpenInterfaceProfile()
 	-- OptionsFrame1/2 should be registered if created with DF:CreateAddOn, so open to them directly
 	if self.OptionsFrame1 then
-		InterfaceOptionsFrame_OpenToCategory (self.OptionsFrame1)
-		if self.OptionsFrame2 then
-			InterfaceOptionsFrame_OpenToCategory (self.OptionsFrame2)
+		if SettingsPanel then
+			--SettingsPanel:OpenToCategory(self.OptionsFrame1.name)
+			local category = SettingsPanel:GetCategoryList():GetCategory(self.OptionsFrame1.name)
+			if category then
+				SettingsPanel:Open()
+				SettingsPanel:SelectCategory(category)
+				if self.OptionsFrame2 and category:HasSubcategories() then
+					for _, subcategory in pairs(category:GetSubcategories()) do
+						if subcategory:GetName() == self.OptionsFrame2.name then
+							SettingsPanel:SelectCategory(subcategory)
+							break
+						end
+					end
+				end
+			end
+			return
+		elseif InterfaceOptionsFrame_OpenToCategory then
+			InterfaceOptionsFrame_OpenToCategory (self.OptionsFrame1)
+			if self.OptionsFrame2 then
+				InterfaceOptionsFrame_OpenToCategory (self.OptionsFrame2)
+			end
+			return
 		end
-		return
 	end
 	
 	-- fallback (broken as of ElvUI Skins in version 12.18+... maybe fix/change will come)
