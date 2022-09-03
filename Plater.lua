@@ -90,7 +90,11 @@ local Plater = DF:CreateAddOn ("Plater", "PlaterDB", PLATER_DEFAULT_SETTINGS, { 
 			desc = "Opens the Plater Options Menu.",
 			type = "execute",
 			func = function()
-				InterfaceOptionsFrame:Hide()
+				if InterfaceOptionsFrame then
+					InterfaceOptionsFrame:Hide()
+				elseif SettingsPanel then
+					SettingsPanel:Hide()
+				end
 				HideUIPanel(GameMenuFrame)
 				Plater.OpenOptionsPanel()
 			end,
