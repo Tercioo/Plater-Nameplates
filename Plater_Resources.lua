@@ -891,7 +891,6 @@ end
         resourceBar.widgetsInUseAmount = totalWidgetsShown
         --set the amount of resources the player has
         resourceBar.lastResourceAmount = 0
-        ViragDevTool_AddData({debugstack()})
 
         --get the default size of each widget
         local widgetWidth = mainResourceFrame.widgetWidth or CONST_WIDGET_WIDTH
