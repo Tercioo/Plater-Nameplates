@@ -3909,7 +3909,8 @@ local class_specs_coords = {
 					--setup castbar
 					unitFrame.Settings.ShowCastBar = DB_PLATE_CONFIG.player.castbar_enabled
 					if (not DB_PLATE_CONFIG.player.castbar_enabled) then
-						CastingBarFrame_SetUnit (castBar, nil, nil, nil)
+						--CastingBarFrame_SetUnit (castBar, nil, nil, nil)
+						unitFrame.castBar:SetUnit(nil, nil)
 					elseif not castBarWasEnabled then
 						unitFrame.castBar:SetUnit (unitID, unitID)
 					end
@@ -3934,7 +3935,8 @@ local class_specs_coords = {
 							Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_FRIENDLY_PLAYER, nil, true)
 							unitFrame.Settings.ShowCastBar = not DB_CASTBAR_HIDE_FRIENDLY
 							if (DB_CASTBAR_HIDE_FRIENDLY) then
-								CastingBarFrame_SetUnit (castBar, nil, nil, nil)
+								--CastingBarFrame_SetUnit (castBar, nil, nil, nil)
+								unitFrame.castBar:SetUnit(nil, nil)
 							elseif not castBarWasEnabled then
 								unitFrame.castBar:SetUnit (unitID, unitID)
 							end
@@ -3944,7 +3946,8 @@ local class_specs_coords = {
 							Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_ENEMY_PLAYER, nil, true)
 							unitFrame.Settings.ShowCastBar = not DB_CASTBAR_HIDE_ENEMIES
 							if (DB_CASTBAR_HIDE_ENEMIES) then
-								CastingBarFrame_SetUnit (castBar, nil, nil, nil)
+								--CastingBarFrame_SetUnit (castBar, nil, nil, nil)
+								unitFrame.castBar:SetUnit(nil, nil)
 							elseif not castBarWasEnabled then
 								unitFrame.castBar:SetUnit (unitID, unitID)
 							end
@@ -3958,7 +3961,8 @@ local class_specs_coords = {
 							Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_FRIENDLY_NPC, nil, true)
 							unitFrame.Settings.ShowCastBar = not DB_CASTBAR_HIDE_FRIENDLY
 							if (DB_CASTBAR_HIDE_FRIENDLY) then
-								CastingBarFrame_SetUnit (castBar, nil, nil, nil)
+								--CastingBarFrame_SetUnit (castBar, nil, nil, nil)
+								unitFrame.castBar:SetUnit(nil, nil)
 							elseif not castBarWasEnabled then
 								unitFrame.castBar:SetUnit (unitID, unitID)
 							end
@@ -3968,7 +3972,8 @@ local class_specs_coords = {
 							Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_FRIENDLY_NPC, nil, true)
 							unitFrame.Settings.ShowCastBar = not DB_CASTBAR_HIDE_FRIENDLY
 							if (DB_CASTBAR_HIDE_FRIENDLY) then
-								CastingBarFrame_SetUnit (castBar, nil, nil, nil)
+								--CastingBarFrame_SetUnit (castBar, nil, nil, nil)
+								unitFrame.castBar:SetUnit(nil, nil)
 							elseif not castBarWasEnabled then
 								unitFrame.castBar:SetUnit (unitID, unitID)
 							end
@@ -3988,7 +3993,8 @@ local class_specs_coords = {
 							Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_ENEMY_NPC, nil, true)
 							unitFrame.Settings.ShowCastBar = not DB_CASTBAR_HIDE_ENEMIES
 							if (DB_CASTBAR_HIDE_ENEMIES) then
-								CastingBarFrame_SetUnit (castBar, nil, nil, nil)
+								--CastingBarFrame_SetUnit (castBar, nil, nil, nil)
+								unitFrame.castBar:SetUnit(nil, nil)
 							elseif not castBarWasEnabled then
 								unitFrame.castBar:SetUnit (unitID, unitID)
 							end
