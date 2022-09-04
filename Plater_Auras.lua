@@ -107,7 +107,6 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 local GHOSTAURAS = {}
 
 -- support for LibClassicDurations from https://github.com/rgd87/LibClassicDurations by d87
-local UnitAura = _G.UnitAura
 local LCD = LibStub:GetLibrary("LibClassicDurations", true)
 if IS_WOW_PROJECT_CLASSIC_ERA and LCD then
 	LCD:Register(Plater)
@@ -433,7 +432,7 @@ local function getUnitAuras(unit, filter)
 	end
 	
 	
-	unitCacheData = unitCacheData or {}
+	unitCacheData = unitCacheData or {debuffs = {}, buffs = {}}
 	
 	-- full updates and old way here
 	local isHarmful = string.find(filter, "HARMFUL")
