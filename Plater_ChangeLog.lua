@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 			
+			{1662328363,  "Bug Fix", "September 4th, 2022", "Fixing tank spec detection for WotLK.", "cont1nuity"},
+			
 			{1662054080,  "New Feature", "September 1st, 2022", "Adding options for swipe texture on Buff Special.", "cont1nuity"},
 			{1662054080,  "Bug Fix", "August 29th, 2022", "Fixing mod Load Conditions.", "cont1nuity"},
 			{1662054080,  "Backend Change", "August 28th, 2022", "Support for aura modRate.", "cont1nuity"},

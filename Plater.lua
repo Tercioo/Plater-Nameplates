@@ -1602,14 +1602,19 @@ local class_specs_coords = {
 				return spec and GetSpecializationRole (spec) == "TANK"
 			end
 			return assignedRole == "TANK"
-		else
-			if IS_WOW_PROJECT_CLASSIC_WRATH then
-				local assignedRole = UnitGroupRolesAssigned ("player")
-				if assignedRole == "NONE" then
-					assignedRole = GetTalentGroupRole(GetActiveTalentGroup())
-				end
-				hasTankAura = assignedRole == "TANK"
+		elseif IS_WOW_PROJECT_CLASSIC_WRATH then
+			local assignedRole = UnitGroupRolesAssigned ("player")
+			if assignedRole == "NONE" and UnitLevel ("player") >= 10 then
+				assignedRole = GetTalentGroupRole(GetActiveTalentGroup())
 			end
+			local playerIsTank = assignedRole == "TANK"
+			
+			if not playerIsTank then
+				playerIsTank = GetPartyAssignment("MAINTANK", "player") or false
+			end
+			
+			return playerIsTank
+		else
 		
 			local playerIsTank = hasTankAura or false
 		
