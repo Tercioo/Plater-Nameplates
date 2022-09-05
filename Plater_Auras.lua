@@ -180,47 +180,45 @@ local ValidateAuraForUpdate = function (unit, aura)
 		end
 	end
 	
-	if (aura.isHelpful and not hasBuff) or (aura.isHarmful and not hasDebuff) or not needsUpdate then
-		local name, spellId = aura.name, aura.spellId
-		
-		--ViragDevTool_AddData({blacklist = (DB_BUFF_BANNED[name] or DB_BUFF_BANNED[spellId] or DB_DEBUFF_BANNED[name] or DB_DEBUFF_BANNED[spellId]) or false, spellId = spellId, name = name}, "UnitAura-Check: "..name)
-		
-		hasBuff = aura.isHelpful or hasBuff
-		hasDebuff = aura.isHarmful or hasDebuff
-		
-		local advancedBrokenFilteringTest = false
-		if advancedBrokenFilteringTest then
-		
-			if DB_TRACK_METHOD == 0x2 then
-				--manual tracking
-				
-				if DB_SHOW_PURGE_IN_EXTRA_ICONS or DB_SHOW_ENRAGE_IN_EXTRA_ICONS or DB_SHOW_MAGIC_IN_EXTRA_ICONS
-					or (aura.sourceUnit == "player" and ( MANUAL_TRACKING_BUFFS[name] or MANUAL_TRACKING_BUFFS[spellId] or MANUAL_TRACKING_DEBUFFS[name] or MANUAL_TRACKING_DEBUFFS[spellId] ))
-					then -- only player buffs in manual tracking
-					needsUpdate = true
-				end
-				
-			else
-				-- automatic tracking
-				
-				--TODO: additional checks for track-list etc. possible, depending on the buff settings: if nothing like dispellable or so is ticked, we can verify this here
-				
-				if not (DB_BUFF_BANNED[name] or DB_BUFF_BANNED[spellId] or DB_DEBUFF_BANNED[name] or DB_DEBUFF_BANNED[spellId]) then
-					--a not blocked aura is included in the update
-					needsUpdate = true
-				end
-			end
+	local name, spellId = aura.name, aura.spellId
+	
+	--ViragDevTool_AddData({blacklist = (DB_BUFF_BANNED[name] or DB_BUFF_BANNED[spellId] or DB_DEBUFF_BANNED[name] or DB_DEBUFF_BANNED[spellId]) or false, spellId = spellId, name = name}, "UnitAura-Check: "..name)
+	
+	hasBuff = aura.isHelpful or hasBuff
+	hasDebuff = aura.isHarmful or hasDebuff
+	
+	local advancedBrokenFilteringTest = false
+	if advancedBrokenFilteringTest then
+	
+		if DB_TRACK_METHOD == 0x2 then
+			--manual tracking
 			
-			if SPECIAL_AURAS_AUTO_ADDED [name] or SPECIAL_AURAS_AUTO_ADDED [spellId] or  SPECIAL_AURAS_USER_LIST[name] or SPECIAL_AURAS_USER_LIST[spellId] or (auraData.sourceUnit == "player" and (SPECIAL_AURAS_USER_LIST_MINE[name] or SPECIAL_AURAS_USER_LIST_MINE[spellId])) then
-				--or DB_SHOW_PURGE_IN_EXTRA_ICONS or DB_SHOW_ENRAGE_IN_EXTRA_ICONS or DB_SHOW_MAGIC_IN_EXTRA_ICONS
-				--include buff special at all times
+			if DB_SHOW_PURGE_IN_EXTRA_ICONS or DB_SHOW_ENRAGE_IN_EXTRA_ICONS or DB_SHOW_MAGIC_IN_EXTRA_ICONS
+				or (aura.sourceUnit == "player" and ( MANUAL_TRACKING_BUFFS[name] or MANUAL_TRACKING_BUFFS[spellId] or MANUAL_TRACKING_DEBUFFS[name] or MANUAL_TRACKING_DEBUFFS[spellId] ))
+				then -- only player buffs in manual tracking
 				needsUpdate = true
 			end
 			
-			
 		else
+			-- automatic tracking
+			
+			--TODO: additional checks for track-list etc. possible, depending on the buff settings: if nothing like dispellable or so is ticked, we can verify this here
+			
+			if not (DB_BUFF_BANNED[name] or DB_BUFF_BANNED[spellId] or DB_DEBUFF_BANNED[name] or DB_DEBUFF_BANNED[spellId]) then
+				--a not blocked aura is included in the update
+				needsUpdate = true
+			end
+		end
+		
+		if SPECIAL_AURAS_AUTO_ADDED [name] or SPECIAL_AURAS_AUTO_ADDED [spellId] or  SPECIAL_AURAS_USER_LIST[name] or SPECIAL_AURAS_USER_LIST[spellId] or (auraData.sourceUnit == "player" and (SPECIAL_AURAS_USER_LIST_MINE[name] or SPECIAL_AURAS_USER_LIST_MINE[spellId])) then
+			--or DB_SHOW_PURGE_IN_EXTRA_ICONS or DB_SHOW_ENRAGE_IN_EXTRA_ICONS or DB_SHOW_MAGIC_IN_EXTRA_ICONS
+			--include buff special at all times
 			needsUpdate = true
 		end
+		
+		
+	else
+		needsUpdate = hasBuff or hasDebuff or false
 	end
 
 	--ViragDevTool_AddData({needsUpdate=needsUpdate, hasBuff=hasBuff, hasDebuff=hasDebuff}, "Plater_UNIT_AURA return")
@@ -229,7 +227,7 @@ local ValidateAuraForUpdate = function (unit, aura)
 end
 
 local UnitAuraEventHandlerValidation = function (unit, isFullUpdate, updatedAuras)
-	--ViragDevTool_AddData({unit = unit, isFullUpdate = isFullUpdate, updatedAuras = updatedAuras}, "Plater_UNIT_AURA")
+	ViragDevTool_AddData({unit = unit, isFullUpdate = isFullUpdate, updatedAuras = updatedAuras}, "Plater_UNIT_AURA")
 	if isFullUpdate ~= false or not updatedAuras then
 		return true, true, true --update all
 	end
@@ -334,7 +332,9 @@ function Plater.AddToAuraUpdate (unit)
 	if not unit then return end
 	UnitAuraEventHandlerValidUnits[unit] = true
 	UnitAuraEventHandlerData[unit] = { hasBuff = true, hasDebuff = true } --update at least once
-	UpdateUnitAuraCacheData(unit, nil)
+	if IS_NEW_UNIT_AURA_AVAILABLE then
+		UpdateUnitAuraCacheData(unit, nil)
+	end
 end
 
 
@@ -435,8 +435,8 @@ local function getUnitAuras(unit, filter)
 	unitCacheData = unitCacheData or {debuffs = {}, buffs = {}}
 	
 	-- full updates and old way here
-	local isHarmful = string.find(filter, "HARMFUL")
-	local isHelpful = string.find(filter, "HELPFUL")
+	local isHarmful = string.find(filter, "HARMFUL") and true or false
+	local isHelpful = string.find(filter, "HELPFUL") and true or false
 	local filterCache = (isHarmful and unitCacheData.debuffs) or (isHelpful and unitCacheData.buffs) or nil
 	if not filterCache then return end
 	
@@ -1725,6 +1725,7 @@ end
 		--> buffs
 		if unitAuraEventData.hasBuff then
 			local unitAuras = getUnitAuras(unit, "HELPFUL") or {}
+			ViragDevTool_AddData(unitAuras, "HELPFUL")
 			
 			for id, aura in pairs(unitAuras.buffs or {}) do
 				--ViragDevTool_AddData({i, aura})
