@@ -227,7 +227,7 @@ local ValidateAuraForUpdate = function (unit, aura)
 end
 
 local UnitAuraEventHandlerValidation = function (unit, isFullUpdate, updatedAuras)
-	ViragDevTool_AddData({unit = unit, isFullUpdate = isFullUpdate, updatedAuras = updatedAuras}, "Plater_UNIT_AURA")
+	--ViragDevTool_AddData({unit = unit, isFullUpdate = isFullUpdate, updatedAuras = updatedAuras}, "Plater_UNIT_AURA")
 	if isFullUpdate ~= false or not updatedAuras then
 		return true, true, true --update all
 	end
@@ -1725,7 +1725,7 @@ end
 		--> buffs
 		if unitAuraEventData.hasBuff then
 			local unitAuras = getUnitAuras(unit, "HELPFUL") or {}
-			ViragDevTool_AddData(unitAuras, "HELPFUL")
+			--ViragDevTool_AddData(unitAuras, "HELPFUL")
 			
 			for id, aura in pairs(unitAuras.buffs or {}) do
 				--ViragDevTool_AddData({i, aura})
@@ -1931,10 +1931,10 @@ end
 		--> buffs
 		if (Plater.db.profile.aura_show_buffs_personal and unitAuraEventData.hasBuff) then
 			local unitAuras = getUnitAuras(unit, "HELPFUL|PLAYER") or {}
-			ViragDevTool_AddData(unitAuras)
+			--ViragDevTool_AddData(unitAuras)
 			
 			for id, aura in pairs(unitAuras.buffs or {}) do
-				ViragDevTool_AddData({i, aura})
+				--ViragDevTool_AddData({i, aura})
 				local name, icon, applications, actualAuraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = 
 					aura.name, aura.icon, aura.applications, aura.actualAuraType, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
 					aura.isBossAura, aura.isFromPlayerOrPlayerPet, aura.nameplateShowAll, aura.timeMod, aura.applications
