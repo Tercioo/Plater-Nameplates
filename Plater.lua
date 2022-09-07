@@ -1248,7 +1248,7 @@ local class_specs_coords = {
 			end
 		
 		else
-			-- TBC and classic
+			-- WotLK and classic
 			local classLoc, class = UnitClass ("player")
 			if (class) then
 				if (class == "WARRIOR") then
@@ -1260,6 +1260,11 @@ local class_specs_coords = {
 					-- Hammer of Wrath
 					if GetSpellInfo(GetSpellInfo(24275)) then
 						lowExecute = 0.2
+					end
+				elseif (class == "WARLOCK") then
+					-- Decimation
+					if IsPlayerSpell(63156) or IsPlayerSpell(63158) then
+						lowExecute = 0.35
 					end
 				end
 			end
