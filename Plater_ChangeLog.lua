@@ -8,8 +8,10 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 			
-			{1662328363,  "Bug Fix", "September 7th, 2022", "Adding 'Decimation' talent to execute detection for Warlocks in WotLK.", "cont1nuity"},
-			{1662328363,  "Bug Fix", "September 4th, 2022", "Fixing tank spec detection for WotLK.", "cont1nuity"},
+			{1662995032,  "Backend Change", "September 12th, 2022", "Adding support for Dragonflight: Evoker resources, new UNIT_AURA event data, bugfixes.", "cont1nuity"},
+			{1662995032,  "Bug Fix", "September 7th, 2022", "Adding 'Decimation' talent to execute detection for Warlocks in WotLK.", "cont1nuity"},
+			{1662054080,  "New Feature", "September 7th, 2022", "Adding 'Decimation' talent to Warlock execute for WotLK.", "cont1nuity"},
+			{1662995032,  "Bug Fix", "September 4th, 2022", "Fixing tank spec detection for WotLK.", "cont1nuity"},
 			
 			{1662054080,  "New Feature", "September 1st, 2022", "Adding options for swipe texture on Buff Special.", "cont1nuity"},
 			{1662054080,  "Bug Fix", "August 29th, 2022", "Fixing mod Load Conditions.", "cont1nuity"},
