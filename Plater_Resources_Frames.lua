@@ -32,6 +32,8 @@ local CONST_SPECID_WARLOCK_DESTRUCTION = 267
 local CONST_SPECID_DK_UNHOLY = 252
 local CONST_SPECID_DK_FROST = 251
 local CONST_SPECID_DK_BLOOD = 250
+local CONST_SPECID_EVOKER_DEVASTATION = 1467
+local CONST_SPECID_EVOKER_PRESERVATION = 1468
 
 local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTable()
 
@@ -51,7 +53,7 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
             parent.widgetsBackground[#parent.widgetsBackground + 1] = backgroundTexture
 
         --> single animation group
-            local MainAnimationGroup = widgetFrame:CreateAnimationGroup()
+            local MainAnimationGroup = DF:CreateAnimationHub (widgetFrame)
             MainAnimationGroup:SetLooping("NONE")
             MainAnimationGroup:SetToFinalAlpha(true)
 
@@ -68,27 +70,12 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 
         --> animations for BallTexture
 
-        BallTexture.scale = MainAnimationGroup:CreateAnimation ("SCALE")
+        BallTexture.scale = DF:CreateAnimation (MainAnimationGroup, "SCALE", 1, 0.195999994874, 0, 0, 1, 1)
         BallTexture.scale:SetTarget (BallTexture)
-        BallTexture.scale:SetOrder (1)
-        BallTexture.scale:SetDuration (0.195999994874)
-        BallTexture.scale:SetFromScale (0, 0)
-        BallTexture.scale:SetToScale (1, 1)
-        BallTexture.scale:SetOrigin ("center", 0, 0)
-        BallTexture.scale = MainAnimationGroup:CreateAnimation ("SCALE")
-        BallTexture.scale:SetTarget (BallTexture)
-        BallTexture.scale:SetOrder (2)
-        BallTexture.scale:SetDuration (0.046000000089407)
-        BallTexture.scale:SetFromScale (1, 1)
-        BallTexture.scale:SetToScale (1.1999999284744, 1.1999999284744)
-        BallTexture.scale:SetOrigin ("center", 0, 0)
-        BallTexture.scale = MainAnimationGroup:CreateAnimation ("SCALE")
-        BallTexture.scale:SetTarget (BallTexture)
-        BallTexture.scale:SetOrder (3)
-        BallTexture.scale:SetDuration (0.016000000759959)
-        BallTexture.scale:SetFromScale (1.1999999284744, 1.1999999284744)
-        BallTexture.scale:SetToScale (1, 1)
-        BallTexture.scale:SetOrigin ("center", 0, 0)
+        BallTexture.scale2 = DF:CreateAnimation (MainAnimationGroup, "SCALE", 2, 0.046000000089407, 1, 1, 1.1999999284744, 1.1999999284744)
+        BallTexture.scale2:SetTarget (BallTexture)
+        BallTexture.scale3 = DF:CreateAnimation (MainAnimationGroup, "SCALE", 3, 0.016000000759959, 1.1999999284744, 1.1999999284744, 1, 1)
+        BallTexture.scale3:SetTarget (BallTexture)
 
         ----------------------------------------------
 
@@ -101,49 +88,20 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 
         --> animations for UpSpark
 
-        UpSpark.scale = MainAnimationGroup:CreateAnimation ("SCALE")
+        UpSpark.scale = DF:CreateAnimation (MainAnimationGroup, "SCALE", 1, 0.195999994874, 0, 0, 1, 1)
         UpSpark.scale:SetTarget (UpSpark)
-        UpSpark.scale:SetOrder (1)
-        UpSpark.scale:SetDuration (0.195999994874)
-        UpSpark.scale:SetFromScale (0, 0)
-        UpSpark.scale:SetToScale (1, 1)
-        UpSpark.scale:SetOrigin ("center", 0, 0)
-        UpSpark.alpha = MainAnimationGroup:CreateAnimation ("ALPHA")
+        UpSpark.alpha = DF:CreateAnimation (MainAnimationGroup, "ALPHA", 1, 0.195999994874, 0, 1)
         UpSpark.alpha:SetTarget (UpSpark)
-        UpSpark.alpha:SetOrder (1)
-        UpSpark.alpha:SetDuration (0.195999994874)
-        UpSpark.alpha:SetFromAlpha (0)
-        UpSpark.alpha:SetToAlpha (0.40382900834084)
-        UpSpark.rotation = MainAnimationGroup:CreateAnimation ("ROTATION")
+        UpSpark.rotation = DF:CreateAnimation (MainAnimationGroup, "ROTATION", 1, 0.195999994874, 60)
         UpSpark.rotation:SetTarget (UpSpark)
-        UpSpark.rotation:SetOrder (1)
-        UpSpark.rotation:SetDuration (0.195999994874)
-        UpSpark.rotation:SetDegrees (60)
-        UpSpark.rotation:SetOrigin ("center", 0, 0)
-        UpSpark.rotation = MainAnimationGroup:CreateAnimation ("ROTATION")
-        UpSpark.rotation:SetTarget (UpSpark)
-        UpSpark.rotation:SetOrder (2)
-        UpSpark.rotation:SetDuration (0.195999994874)
-        UpSpark.rotation:SetDegrees (15)
-        UpSpark.rotation:SetOrigin ("center", 0, 0)
-        UpSpark.alpha = MainAnimationGroup:CreateAnimation ("ALPHA")
-        UpSpark.alpha:SetTarget (UpSpark)
-        UpSpark.alpha:SetOrder (2)
-        UpSpark.alpha:SetDuration (0.096000000834465)
-        UpSpark.alpha:SetFromAlpha (0.4038280248642)
-        UpSpark.alpha:SetToAlpha (0.25)
-        UpSpark.rotation = MainAnimationGroup:CreateAnimation ("ROTATION")
-        UpSpark.rotation:SetTarget (UpSpark)
-        UpSpark.rotation:SetOrder (3)
-        UpSpark.rotation:SetDuration (0.195999994874)
-        UpSpark.rotation:SetDegrees (60)
-        UpSpark.rotation:SetOrigin ("center", 0, 0)
-        UpSpark.alpha = MainAnimationGroup:CreateAnimation ("ALPHA")
-        UpSpark.alpha:SetTarget (UpSpark)
-        UpSpark.alpha:SetOrder (3)
-        UpSpark.alpha:SetDuration (0.195999994874)
-        UpSpark.alpha:SetFromAlpha (0.25)
-        UpSpark.alpha:SetToAlpha (0)
+        UpSpark.rotation2 = DF:CreateAnimation (MainAnimationGroup, "ROTATION", 2, 0.195999994874, 15)
+        UpSpark.rotation2:SetTarget (UpSpark)
+        UpSpark.alpha2 =  DF:CreateAnimation (MainAnimationGroup, "ALPHA", 2, 0.096000000834465, 0.4038280248642, 0.25)
+        UpSpark.alpha2:SetTarget (UpSpark)
+        UpSpark.rotation3 = DF:CreateAnimation (MainAnimationGroup, "ROTATION", 3, 0.195999994874, 60)
+        UpSpark.rotation3:SetTarget (UpSpark)
+        UpSpark.alpha3 = DF:CreateAnimation (MainAnimationGroup, "ALPHA", 3, 0.195999994874, 0.25, 0)
+        UpSpark.alpha3:SetTarget (UpSpark)
 
         ----------------------------------------------
 
@@ -156,30 +114,14 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 
         --> animations for BackgroundSpark
 
-        BackgroundSpark.alpha = MainAnimationGroup:CreateAnimation ("ALPHA")
+        BackgroundSpark.alpha = DF:CreateAnimation (MainAnimationGroup, "ALPHA", 1, 0.195999994874, 0, 1)
         BackgroundSpark.alpha:SetTarget (BackgroundSpark)
-        BackgroundSpark.alpha:SetOrder (1)
-        BackgroundSpark.alpha:SetDuration (0.195999994874)
-        BackgroundSpark.alpha:SetFromAlpha (0)
-        BackgroundSpark.alpha:SetToAlpha (1)
-        BackgroundSpark.rotation = MainAnimationGroup:CreateAnimation ("ROTATION")
+        BackgroundSpark.rotation = DF:CreateAnimation (MainAnimationGroup, "ROTATION", 1, 0.195999994874, 2)
         BackgroundSpark.rotation:SetTarget (BackgroundSpark)
-        BackgroundSpark.rotation:SetOrder (1)
-        BackgroundSpark.rotation:SetDuration (0.195999994874)
-        BackgroundSpark.rotation:SetDegrees (2)
-        BackgroundSpark.rotation:SetOrigin ("center", 0, 0)
-        BackgroundSpark.alpha = MainAnimationGroup:CreateAnimation ("ALPHA")
-        BackgroundSpark.alpha:SetTarget (BackgroundSpark)
-        BackgroundSpark.alpha:SetOrder (2)
-        BackgroundSpark.alpha:SetDuration (0.195999994874)
-        BackgroundSpark.alpha:SetFromAlpha (0.34612736105919)
-        BackgroundSpark.alpha:SetToAlpha (0.24995632469654)
-        BackgroundSpark.alpha = MainAnimationGroup:CreateAnimation ("ALPHA")
-        BackgroundSpark.alpha:SetTarget (BackgroundSpark)
-        BackgroundSpark.alpha:SetOrder (3)
-        BackgroundSpark.alpha:SetDuration (0.195999994874)
-        BackgroundSpark.alpha:SetFromAlpha (0.25)
-        BackgroundSpark.alpha:SetToAlpha (0)
+        BackgroundSpark.alpha2 = DF:CreateAnimation (MainAnimationGroup, "ALPHA", 2, 0.195999994874, 0.34612736105919, 0.24995632469654)
+        BackgroundSpark.alpha2:SetTarget (BackgroundSpark)
+        BackgroundSpark.alpha3 = DF:CreateAnimation (MainAnimationGroup, "ALPHA", 3, 0.195999994874, 0.25, 0)
+        BackgroundSpark.alpha3:SetTarget (BackgroundSpark)
 
         --> test the animation
         --MainAnimationGroup:Play()
@@ -205,7 +147,7 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         parent.widgetsBackground[#parent.widgetsBackground + 1] = backgroundTexture
 
         --> single animation group
-        local MainAnimationGroup = widgetFrame:CreateAnimationGroup()
+        local MainAnimationGroup = DF:CreateAnimationHub (widgetFrame)
         MainAnimationGroup:SetLooping("NONE")
         MainAnimationGroup:SetToFinalAlpha(true)
 
@@ -222,32 +164,18 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 
         --> animations for comboPointTexture
 
-        comboPointTexture.alpha1 = MainAnimationGroup:CreateAnimation("ALPHA")
+        comboPointTexture.alpha1 = DF:CreateAnimation (MainAnimationGroup, "ALPHA", 1, 0.195999994874, 0, 0.49912714958191)
         comboPointTexture.alpha1:SetTarget(comboPointTexture)
-        comboPointTexture.alpha1:SetOrder(1)
-        comboPointTexture.alpha1:SetDuration(0.195999994874)
-        comboPointTexture.alpha1:SetFromAlpha(0)
-        comboPointTexture.alpha1:SetToAlpha(0.49912714958191)
-        comboPointTexture.scale1 = MainAnimationGroup:CreateAnimation("SCALE")
+        comboPointTexture.scale1 = DF:CreateAnimation (MainAnimationGroup, "SCALE", 1, 0.195999994874, 0.29999998211861, 0.29999998211861, 1.3999999761581, 1.3999999761581)
         comboPointTexture.scale1:SetTarget(comboPointTexture)
-        comboPointTexture.scale1:SetOrder(1)
-        comboPointTexture.scale1:SetDuration(0.195999994874)
-        comboPointTexture.scale1:SetFromScale(0.29999998211861, 0.29999998211861)
-        comboPointTexture.scale1:SetToScale(1.3999999761581, 1.3999999761581)
-        comboPointTexture.scale1:SetOrigin("center", 0, 0)
-        comboPointTexture.scale2 = MainAnimationGroup:CreateAnimation("SCALE")
+        comboPointTexture.scale2 = DF:CreateAnimation (MainAnimationGroup, "SCALE", 2, 0.096000000834465, 0.9899999499321, 0.9899999499321, 0.79999995231628, 0.78999996185303)
         comboPointTexture.scale2:SetTarget(comboPointTexture)
-        comboPointTexture.scale2:SetOrder(2)
-        comboPointTexture.scale2:SetDuration(0.096000000834465)
-        comboPointTexture.scale2:SetFromScale(0.9899999499321, 0.9899999499321)
-        comboPointTexture.scale2:SetToScale(0.79999995231628, 0.78999996185303)
-        comboPointTexture.scale2:SetOrigin("center", 0, 0)
-        comboPointTexture.alpha1 = MainAnimationGroup:CreateAnimation("ALPHA")
-        comboPointTexture.alpha1:SetTarget(comboPointTexture)
-        comboPointTexture.alpha1:SetOrder(2)
-        comboPointTexture.alpha1:SetDuration(0.096000000834465)
-        comboPointTexture.alpha1:SetFromAlpha(0.69999998807907)
-        comboPointTexture.alpha1:SetToAlpha(1)
+        comboPointTexture.alpha2 = DF:CreateAnimation (MainAnimationGroup, "ALPHA", 2, 0.096000000834465, 0.69999998807907, 1)
+        comboPointTexture.alpha2:SetTarget(comboPointTexture)
+        comboPointTexture.alpha2:SetOrder(2)
+        comboPointTexture.alpha2:SetDuration(0.096000000834465)
+        comboPointTexture.alpha2:SetFromAlpha(0.69999998807907)
+        comboPointTexture.alpha2:SetToAlpha(1)
 
         --> test the animation
         --MainAnimationGroup:Play()
@@ -273,7 +201,7 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         parent.widgetsBackground[#parent.widgetsBackground + 1] = backgroundTexture
 
         --> single animation group
-        local MainAnimationGroup = widgetFrame:CreateAnimationGroup("widgetFrameAnimationGroup")
+        local MainAnimationGroup = DF:CreateAnimationHub (widgetFrame)
         MainAnimationGroup:SetLooping("NONE")
         MainAnimationGroup:SetToFinalAlpha(true)
 
@@ -291,26 +219,12 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 
         --> animations for comboPointTexture
 
-        comboPointTexture.scale = MainAnimationGroup:CreateAnimation("SCALE")
+        comboPointTexture.scale = DF:CreateAnimation (MainAnimationGroup, "SCALE", 1, 0.096000000834465, 0, 0, 1, 1)
         comboPointTexture.scale:SetTarget(comboPointTexture)
-        comboPointTexture.scale:SetOrder(1)
-        comboPointTexture.scale:SetDuration(0.096000000834465)
-        comboPointTexture.scale:SetFromScale(0, 0)
-        comboPointTexture.scale:SetToScale(1, 1)
-        comboPointTexture.scale:SetOrigin("center", 0, 0)
-        comboPointTexture.alpha = MainAnimationGroup:CreateAnimation("ALPHA")
+        comboPointTexture.alpha = DF:CreateAnimation (MainAnimationGroup, "ALPHA", 1, 0.096000000834465, 0, 1)
         comboPointTexture.alpha:SetTarget(comboPointTexture)
-        comboPointTexture.alpha:SetOrder(1)
-        comboPointTexture.alpha:SetDuration(0.096000000834465)
-        comboPointTexture.alpha:SetFromAlpha(0)
-        comboPointTexture.alpha:SetToAlpha(1)
-        comboPointTexture.scale = MainAnimationGroup:CreateAnimation("SCALE")
-        comboPointTexture.scale:SetTarget(comboPointTexture)
-        comboPointTexture.scale:SetOrder(2)
-        comboPointTexture.scale:SetDuration(0.096000000834465)
-        comboPointTexture.scale:SetFromScale(1.3097063302994, 1.3097063302994)
-        comboPointTexture.scale:SetToScale(1, 1)
-        comboPointTexture.scale:SetOrigin("center", 0, 0)
+        comboPointTexture.scale2 = DF:CreateAnimation (MainAnimationGroup, "SCALE", 2, 0.096000000834465, 1.3097063302994, 1.3097063302994, 1, 1)
+        comboPointTexture.scale2:SetTarget(comboPointTexture)
 
         --> test the animation
         --MainAnimationGroup:Play()
@@ -342,7 +256,7 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         parent.widgetsBackground[#parent.widgetsBackground + 1] = backgroundTexture
 
         --> single animation group
-        local MainAnimationGroup = widgetFrame:CreateAnimationGroup("widgetFrameAnimationGroup")
+        local MainAnimationGroup = DF:CreateAnimationHub (widgetFrame)
         MainAnimationGroup:SetLooping("NONE")
         MainAnimationGroup:SetToFinalAlpha(true)
 
@@ -366,20 +280,10 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 
         --> animations for comboPointOn
 
-        comboPointOn.scale = MainAnimationGroup:CreateAnimation("SCALE")
+        comboPointOn.scale = DF:CreateAnimation (MainAnimationGroup, "SCALE", 1, 0.096000000834465, 0.44999998807907, 0.59999996423721, 1, 1)
         comboPointOn.scale:SetTarget(comboPointOn)
-        comboPointOn.scale:SetOrder(1)
-        comboPointOn.scale:SetDuration(0.096000000834465)
-        comboPointOn.scale:SetFromScale(0.44999998807907, 0.59999996423721)
-        comboPointOn.scale:SetToScale(1, 1)
-        comboPointOn.scale:SetOrigin("center", 0, 0)
-        comboPointOn.scale2 = MainAnimationGroup:CreateAnimation("SCALE")
+        comboPointOn.scale2 = DF:CreateAnimation (MainAnimationGroup, "SCALE", 2, 0.056000001728535, 1.0951955318451, 1.0951955318451, 1, 1)
         comboPointOn.scale2:SetTarget(comboPointOn)
-        comboPointOn.scale2:SetOrder(2)
-        comboPointOn.scale2:SetDuration(0.056000001728535)
-        comboPointOn.scale2:SetFromScale(1.0951955318451, 1.0951955318451)
-        comboPointOn.scale2:SetToScale(1, 1)
-        comboPointOn.scale2:SetOrigin("center", 0, 0)
 
         --> test the animation
         --MainAnimationGroup:Play()
@@ -403,7 +307,7 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         parent.widgetsBackground[#parent.widgetsBackground + 1] = backgroundTexture
 
         --> single animation group
-        local MainAnimationGroup = widgetFrame:CreateAnimationGroup()
+        local MainAnimationGroup = DF:CreateAnimationHub (widgetFrame)
         MainAnimationGroup:SetLooping("NONE")
         MainAnimationGroup:SetToFinalAlpha(true)
 
@@ -442,26 +346,12 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 		widgetFrame.fillBar = fillBar
 		
 		
-		comboPointTexture.scale = MainAnimationGroup:CreateAnimation("SCALE")
+		comboPointTexture.scale = DF:CreateAnimation (MainAnimationGroup, "SCALE", 1, 0.096000000834465, 0, 0, 1, 1)
         comboPointTexture.scale:SetTarget(comboPointTexture)
-        comboPointTexture.scale:SetOrder(1)
-        comboPointTexture.scale:SetDuration(0.096000000834465)
-        comboPointTexture.scale:SetFromScale(0, 0)
-        comboPointTexture.scale:SetToScale(1, 1)
-        comboPointTexture.scale:SetOrigin("center", 0, 0)
-        comboPointTexture.alpha = MainAnimationGroup:CreateAnimation("ALPHA")
+        comboPointTexture.alpha = DF:CreateAnimation (MainAnimationGroup, "ALPHA", 1, 0.096000000834465, 0, 1)
         comboPointTexture.alpha:SetTarget(comboPointTexture)
-        comboPointTexture.alpha:SetOrder(1)
-        comboPointTexture.alpha:SetDuration(0.096000000834465)
-        comboPointTexture.alpha:SetFromAlpha(0)
-        comboPointTexture.alpha:SetToAlpha(1)
-        comboPointTexture.scale = MainAnimationGroup:CreateAnimation("SCALE")
-        comboPointTexture.scale:SetTarget(comboPointTexture)
-        comboPointTexture.scale:SetOrder(2)
-        comboPointTexture.scale:SetDuration(0.096000000834465)
-        comboPointTexture.scale:SetFromScale(1.3097063302994, 1.3097063302994)
-        comboPointTexture.scale:SetToScale(1, 1)
-        comboPointTexture.scale:SetOrigin("center", 0, 0)
+        comboPointTexture.scale2 = DF:CreateAnimation (MainAnimationGroup, "SCALE", 2, 0.096000000834465, 1.3097063302994, 1.3097063302994, 1, 1)
+        comboPointTexture.scale2:SetTarget(comboPointTexture)
 
         --> test the animation
         --MainAnimationGroup:Play()
@@ -552,29 +442,15 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 		]]--
 		
 		--> animation group on icon to work around cooldown texts behaving weird...
-		local MainAnimationGroup = comboPointTexture:CreateAnimationGroup()
+		local MainAnimationGroup = DF:CreateAnimationHub (comboPointTexture)
 		MainAnimationGroup:SetLooping("NONE")
 		MainAnimationGroup:SetToFinalAlpha(true)
-		comboPointTexture.scale = MainAnimationGroup:CreateAnimation("SCALE")
+		comboPointTexture.scale = DF:CreateAnimation (MainAnimationGroup, "SCALE", 1, 0.096000000834465, 0, 0, 1, 1)
         comboPointTexture.scale:SetTarget(comboPointTexture)
-        comboPointTexture.scale:SetOrder(1)
-        comboPointTexture.scale:SetDuration(0.096000000834465)
-        comboPointTexture.scale:SetFromScale(0, 0)
-        comboPointTexture.scale:SetToScale(1, 1)
-        comboPointTexture.scale:SetOrigin("center", 0, 0)
-        comboPointTexture.alpha = MainAnimationGroup:CreateAnimation("ALPHA")
+        comboPointTexture.alpha = DF:CreateAnimation (MainAnimationGroup, "ALPHA", 1, 0.096000000834465, 0, 1)
         comboPointTexture.alpha:SetTarget(comboPointTexture)
-        comboPointTexture.alpha:SetOrder(1)
-        comboPointTexture.alpha:SetDuration(0.096000000834465)
-        comboPointTexture.alpha:SetFromAlpha(0)
-        comboPointTexture.alpha:SetToAlpha(1)
-        comboPointTexture.scale = MainAnimationGroup:CreateAnimation("SCALE")
+        comboPointTexture.scale = DF:CreateAnimation (MainAnimationGroup, "SCALE", 2, 0.096000000834465, 1.3097063302994, 1.3097063302994, 1, 1)
         comboPointTexture.scale:SetTarget(comboPointTexture)
-        comboPointTexture.scale:SetOrder(2)
-        comboPointTexture.scale:SetDuration(0.096000000834465)
-        comboPointTexture.scale:SetFromScale(1.3097063302994, 1.3097063302994)
-        comboPointTexture.scale:SetToScale(1, 1)
-        comboPointTexture.scale:SetOrigin("center", 0, 0)
 
         --> test the animation
         --MainAnimationGroup:Play()
@@ -640,29 +516,15 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 		]]--
 		
 		--> animation group on icon to work around cooldown texts behaving weird...
-		local MainAnimationGroup = comboPointTexture:CreateAnimationGroup()
+		local MainAnimationGroup = DF:CreateAnimationHub (comboPointTexture)
 		MainAnimationGroup:SetLooping("NONE")
 		MainAnimationGroup:SetToFinalAlpha(true)
-		comboPointTexture.scale = MainAnimationGroup:CreateAnimation("SCALE")
+		comboPointTexture.scale = DF:CreateAnimation (MainAnimationGroup, "SCALE", 1, 0.096000000834465, 0, 0, 1, 1)
         comboPointTexture.scale:SetTarget(comboPointTexture)
-        comboPointTexture.scale:SetOrder(1)
-        comboPointTexture.scale:SetDuration(0.096000000834465)
-        comboPointTexture.scale:SetFromScale(0, 0)
-        comboPointTexture.scale:SetToScale(1, 1)
-        comboPointTexture.scale:SetOrigin("center", 0, 0)
-        comboPointTexture.alpha = MainAnimationGroup:CreateAnimation("ALPHA")
+        comboPointTexture.alpha = DF:CreateAnimation (MainAnimationGroup, "ALPHA", 1, 0.096000000834465, 0, 1)
         comboPointTexture.alpha:SetTarget(comboPointTexture)
-        comboPointTexture.alpha:SetOrder(1)
-        comboPointTexture.alpha:SetDuration(0.096000000834465)
-        comboPointTexture.alpha:SetFromAlpha(0)
-        comboPointTexture.alpha:SetToAlpha(1)
-        comboPointTexture.scale = MainAnimationGroup:CreateAnimation("SCALE")
+        comboPointTexture.scale = DF:CreateAnimation (MainAnimationGroup, "SCALE", 2, 0.096000000834465, 1.3097063302994, 1.3097063302994, 1, 1)
         comboPointTexture.scale:SetTarget(comboPointTexture)
-        comboPointTexture.scale:SetOrder(2)
-        comboPointTexture.scale:SetDuration(0.096000000834465)
-        comboPointTexture.scale:SetFromScale(1.3097063302994, 1.3097063302994)
-        comboPointTexture.scale:SetToScale(1, 1)
-        comboPointTexture.scale:SetOrigin("center", 0, 0)
 
         --> test the animation
         --MainAnimationGroup:Play()
@@ -670,6 +532,25 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         widgetFrame.ShowAnimation = MainAnimationGroup
         return widgetFrame
     end
+	
+	local evokerChargesFunc = function(parent, frameName)
+		--> create the main frame
+        --local widgetFrame = CreateFrame("Button", frameName, parent, "ClassNameplateBarDeathKnightRuneButton")
+		local widgetFrame = CreateFrame("Button", frameName, parent, "EssencePointButtonTemplate")
+		widgetFrame:SetSize(24,24)
+		
+        widgetFrame.background = widgetFrame.EssenceEmpty
+		parent.widgetsBackground[#parent.widgetsBackground + 1] = widgetFrame.EssenceEmpty
+		
+		widgetFrame.ShowAnimation = {Play = function() end, Stop = function() end}
+		widgetFrame.EssenceFillDone.AnimInOrig = widgetFrame.EssenceFillDone.AnimIn
+		widgetFrame.EssenceFillDone.AnimIn = {Play = function() end, Stop = function() end}
+		widgetFrame.EssenceFilling.FillingAnim:SetScript("OnFinished", nil)
+		widgetFrame.EssenceDepleting.AnimInOrig = widgetFrame.EssenceDepleting.AnimIn
+		widgetFrame.EssenceDepleting.AnimIn = {Play = function() end, Stop = function() end}
+		
+        return widgetFrame
+	end
 
     resourceCreationFunctions[CONST_SPECID_DRUID_FERAL] = comboPointFunc
     resourceCreationFunctions[CONST_SPECID_ROGUE_ASSASSINATION] = comboPointFunc
@@ -685,3 +566,5 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 	resourceCreationFunctions[CONST_SPECID_DK_UNHOLY] = IS_WOW_PROJECT_MAINLINE and deathknightChargesFunc or deathknightChargesFuncWotLK
 	resourceCreationFunctions[CONST_SPECID_DK_FROST] = IS_WOW_PROJECT_MAINLINE and deathknightChargesFunc or deathknightChargesFuncWotLK
 	resourceCreationFunctions[CONST_SPECID_DK_BLOOD] = IS_WOW_PROJECT_MAINLINE and deathknightChargesFunc or deathknightChargesFuncWotLK
+	resourceCreationFunctions[CONST_SPECID_EVOKER_DEVASTATION] = evokerChargesFunc
+	resourceCreationFunctions[CONST_SPECID_EVOKER_PRESERVATION] = evokerChargesFunc

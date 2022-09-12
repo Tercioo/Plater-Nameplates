@@ -29,6 +29,7 @@ local CONST_ENUMNAME_RUNES = "Runes"
 local CONST_ENUMNAME_ARCANECHARGES = "ArcaneCharges"
 local CONST_ENUMNAME_CHI = "Chi"
 local CONST_ENUMNAME_SOULCHARGES = "SoulShards"
+local CONST_ENUMNAME_ESSENCE = "Essence"
 
 local startX, startY, heightSize = 10, -130, 710
 
@@ -70,6 +71,9 @@ function Plater.Resources.GetResourceEnumNameForPlayer()
         elseif (playerClass == "PALADIN") then
             Plater.db.profile.resources_settings.chr[playerSerial] = CONST_ENUMNAME_HOLYPOWER
             return CONST_ENUMNAME_HOLYPOWER
+		elseif (playerClass == "EVOKER") then
+            Plater.db.profile.resources_settings.chr[playerSerial] = CONST_ENUMNAME_ESSENCE
+            return CONST_ENUMNAME_ESSENCE
         end
     end
 
@@ -97,6 +101,9 @@ function Plater.Resources.GetResourceIdForPlayer()
 
     elseif (playerClass == "PALADIN") then
         return Enum.PowerType[CONST_ENUMNAME_HOLYPOWER]
+		
+	elseif (playerClass == "EVOKER") then
+        return Enum.PowerType[CONST_ENUMNAME_ESSENCE]
     end
 
     --return none if not found, this will trigger an error on new resources in the future
@@ -115,6 +122,7 @@ function Plater.Resources.BuildResourceOptionsTab(frame)
         {name = "Arcane Charges", defaultClass = {"MAGE"}, enumName = CONST_ENUMNAME_ARCANECHARGES, iconTexture = [[Interface\PLAYERFRAME\MageArcaneCharges]], iconCoords = {64/256, 91/256, 64/128, 91/128}}, --16
         {name = "Chi", defaultClass = {"MONK"}, enumName = CONST_ENUMNAME_CHI, iconTexture = [[Interface\PLAYERFRAME\MonkLightPower]], iconCoords = {0.1, .9, 0.1, .9}}, --12
         {name = "Soul Shards", defaultClass = {"WARLOCK"}, enumName = CONST_ENUMNAME_SOULCHARGES, iconTexture = [[Interface\PLAYERFRAME\UI-WARLOCKSHARD]], iconCoords = {0/64, 18/64, 0/128, 18/128}}, --7
+		{name = "Essence", defaultClass = {"EVOKER"}, enumName = CONST_ENUMNAME_ESSENCE, iconTexture = false, iconAtlas = "UF-Essence-Icon"}, --8
     }
 
     local refreshResourceScrollBox = function(self, data, offset, totalLines)
