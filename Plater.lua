@@ -4198,6 +4198,7 @@ local class_specs_coords = {
 			UpdatePlayerTankState()
 			Plater.UpdateAllNameplateColors()
 			Plater.UpdateAllPlates()
+			Plater.Resources.UpdateResourceFramePosition()
 		end,
 		
 		TALENT_GROUP_ROLE_CHANGED = function()

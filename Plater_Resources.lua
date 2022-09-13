@@ -530,7 +530,7 @@ end
         Plater.Resources.playerResourceId = Plater.Resources.GetResourceIdForPlayer()
 
         if (IS_WOW_PROJECT_NOT_MAINLINE) then --classic
-            if (playerClass == "ROGUE") then
+            if (playerClass == "ROGUE" or playerClass == "DRUID") then
                 local classResourceFunc = resourceBarCreateFuncByEnumName[CONST_ENUMNAME_COMBOPOINT]
                 if (classResourceFunc) then
                     local resourceBar = classResourceFunc(mainResourceFrame)
@@ -705,7 +705,7 @@ end
 
         local playerClass = PlayerClass
         if (IS_WOW_PROJECT_NOT_MAINLINE) then
-            if (playerClass == "ROGUE" or playerClass == "DEATHKNIGHT") then
+            if (playerClass == "ROGUE" or playerClass == "DEATHKNIGHT" or (playerClass == "DRUID" and GetShapeshiftForm() == 3)) then
                 Plater.EndLogPerformanceCore("Plater-Resources", "Update", "CanUsePlaterResourceFrame")
                 return true
             end
@@ -780,7 +780,6 @@ end
         Plater.Resources.EnableEvents()
 
         if (IS_WOW_PROJECT_NOT_MAINLINE) then
-            --Plater.Resources.UpdateResourceBar(plateFrame, mainResourceFrame.resourceBarsByEnumName[CONST_ENUMNAME_COMBOPOINT])
             local resourceBar =  Plater.Resources.GetResourceBarInUse()
             Plater.Resources.UpdateResourceBar(plateFrame, resourceBar)
         else
