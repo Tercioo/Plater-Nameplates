@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 			
+			{1662995032,  "Bug Fix", "September 13th, 2022", "Fixing a data leak on mod re-compile when changing mod options.", "cont1nuity"},
 			{1662995032,  "Backend Change", "September 12th, 2022", "Adding support for Dragonflight: Evoker resources, new UNIT_AURA event data, bugfixes.", "cont1nuity"},
 			{1662995032,  "Bug Fix", "September 7th, 2022", "Adding 'Decimation' talent to execute detection for Warlocks in WotLK.", "cont1nuity"},
 			{1662054080,  "New Feature", "September 7th, 2022", "Adding 'Decimation' talent to Warlock execute for WotLK.", "cont1nuity"},
