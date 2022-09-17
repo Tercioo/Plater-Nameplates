@@ -3531,6 +3531,12 @@ function DFNamePlateBorderTemplateMixin:SetVertexColor(r, g, b, a)
 	end
 end
 
+function DFNamePlateBorderTemplateMixin:GetVertexColor()
+	for i, texture in ipairs(self.Textures) do
+		return texture:GetVertexColor();
+	end
+end
+
 function DFNamePlateBorderTemplateMixin:SetBorderSizes(borderSize, borderSizeMinPixels, upwardExtendHeightPixels, upwardExtendHeightMinPixels)
 	self.borderSize = borderSize;
 	self.borderSizeMinPixels = borderSizeMinPixels;
