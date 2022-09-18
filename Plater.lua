@@ -1273,6 +1273,8 @@ local class_specs_coords = {
 					-- Decimation
 					if IsPlayerSpell(63156) or IsPlayerSpell(63158) then
 						lowExecute = 0.35
+					else
+						lowExecute = 0.25
 					end
 				end
 			end
