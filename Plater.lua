@@ -376,8 +376,8 @@ local PLATER_GLOBAL_MOD_ENV = {}  -- contains modEnv for each mod, identified by
 local PLATER_GLOBAL_SCRIPT_ENV = {} -- contains modEnv for each script, identified by "<script name>"
 
 --> addon comm
-local COMM_PLATER_PREFIX = "PLT"
-local COMM_SCRIPT_GROUP_EXPORTED = "GE"
+Plater.COMM_PLATER_PREFIX = "PLT"
+Plater.COMM_SCRIPT_GROUP_EXPORTED = "GE"
 Plater.COMM_SCRIPT_MSG = "PLTM"
 
 --> cvars just to make them easier to read
@@ -10934,6 +10934,9 @@ end
 			["CreateAuraIcon"] = true,
 			["PerformanceUnits"] = true,
 			["ForceBlizzardNameplateUnits"] = true,
+			["COMM_PLATER_PREFIX"] = true,
+			["COMM_SCRIPT_GROUP_EXPORTED"] = true,
+			["COMM_SCRIPT_MSG"] = true,
 		},
 		
 		["DetailsFramework"] = {
@@ -12323,10 +12326,10 @@ end
 			local LibAceSerializer = LibStub:GetLibrary ("AceSerializer-3.0")
 			
 			if (IsInRaid (LE_PARTY_CATEGORY_HOME)) then
-				Plater:SendCommMessage (COMM_PLATER_PREFIX, LibAceSerializer:Serialize (COMM_SCRIPT_GROUP_EXPORTED, UnitName ("player"), GetRealmName(), UnitGUID ("player"), encodedString), "RAID")
+				Plater:SendCommMessage (Plater.COMM_PLATER_PREFIX, LibAceSerializer:Serialize (Plater.COMM_SCRIPT_GROUP_EXPORTED, UnitName ("player"), GetRealmName(), UnitGUID ("player"), encodedString), "RAID")
 				
 			elseif (IsInGroup (LE_PARTY_CATEGORY_HOME)) then
-				Plater:SendCommMessage (COMM_PLATER_PREFIX, LibAceSerializer:Serialize (COMM_SCRIPT_GROUP_EXPORTED, UnitName ("player"), GetRealmName(), UnitGUID ("player"), encodedString), "PARTY")
+				Plater:SendCommMessage (Plater.COMM_PLATER_PREFIX, LibAceSerializer:Serialize (Plater.COMM_SCRIPT_GROUP_EXPORTED, UnitName ("player"), GetRealmName(), UnitGUID ("player"), encodedString), "PARTY")
 				
 			else
 				Plater:Msg ("Failed to send the script: your group isn't home group.")

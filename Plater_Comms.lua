@@ -1,7 +1,5 @@
 local Plater = _G.Plater
 local C_Timer = _G.C_Timer
-local COMM_PLATER_PREFIX = "PLT"
-local COMM_SCRIPT_GROUP_EXPORTED = "GE"
 
 local pcall = pcall
 
@@ -38,10 +36,10 @@ function Plater.SendComm(scriptIndex, scriptId, uniqueId, ...)
 
     --send the message
     if (IsInRaid()) then
-        Plater:SendCommMessage(COMM_PLATER_PREFIX, header, "RAID")
+        Plater:SendCommMessage(Plater.COMM_PLATER_PREFIX, header, "RAID")
 
     elseif (IsInGroup()) then
-        Plater:SendCommMessage(COMM_PLATER_PREFIX, header, "PARTY")
+        Plater:SendCommMessage(Plater.COMM_PLATER_PREFIX, header, "PARTY")
     end
 
     return true
@@ -66,7 +64,7 @@ end
 
 --> Plater comm handler
     Plater.CommHandler = {
-        [COMM_SCRIPT_GROUP_EXPORTED] = Plater.ScriptReceivedFromGroup,
+        [Plater.COMM_SCRIPT_GROUP_EXPORTED] = Plater.ScriptReceivedFromGroup,
         [Plater.COMM_SCRIPT_MSG] = Plater.MessageReceivedFromScript,
     }
 
@@ -97,7 +95,7 @@ end
     end
 
     --register the comm
-    Plater:RegisterComm(COMM_PLATER_PREFIX, "CommReceived")
+    Plater:RegisterComm(Plater.COMM_PLATER_PREFIX, "CommReceived")
 
 
 
