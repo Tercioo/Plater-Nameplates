@@ -2548,6 +2548,8 @@ local class_specs_coords = {
 	end
 	
 	--store all functions for all events that will be registered inside OnInit
+	local last_UPDATE_SHAPESHIFT_FORM = GetTime()
+	local last_GetShapeshiftForm = GetShapeshiftForm()
 	local eventFunctions = {
 
 		--when a unit from unatackable change its state, this event triggers several times, a schedule is used to only update once
@@ -4197,6 +4199,15 @@ local class_specs_coords = {
 		end,
 		
 		UPDATE_SHAPESHIFT_FORM = function()
+			local curTime = GetTime()
+			--this is to work around UPDATE_SHAPESHIFT_FORM firing for all units and not just the player... causing lag...
+			--if (curTime - last_UPDATE_SHAPESHIFT_FORM) < 1 or last_GetShapeshiftForm == GetShapeshiftForm() then
+			if last_GetShapeshiftForm == GetShapeshiftForm() then
+				return
+			end
+			last_UPDATE_SHAPESHIFT_FORM = curTime
+			last_GetShapeshiftForm = GetShapeshiftForm()
+			
 			UpdatePlayerTankState()
 			Plater.UpdateAllNameplateColors()
 			Plater.UpdateAllPlates()
