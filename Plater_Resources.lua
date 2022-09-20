@@ -334,20 +334,19 @@ end
     local function updateWotLKDKRuneTextures(resourceBar)
         if IS_WOW_PROJECT_NOT_MAINLINE then
             --wrath classic
-            local RUNETYPE_BLOOD = 1;
-            local RUNETYPE_FROST = 2;
-            local RUNETYPE_UNHOLY = 3;
-            local RUNETYPE_DEATH = 4;
-            local iconTextures = {};
-            iconTextures[RUNETYPE_BLOOD] = "Interface\\PlayerFrame\\UI-PlayerFrame-Deathknight-Blood";
-            iconTextures[RUNETYPE_FROST] = "Interface\\PlayerFrame\\UI-PlayerFrame-Deathknight-Frost";
-            iconTextures[RUNETYPE_UNHOLY] = "Interface\\PlayerFrame\\UI-PlayerFrame-Deathknight-Unholy";
-            iconTextures[RUNETYPE_DEATH] = "Interface\\PlayerFrame\\UI-PlayerFrame-Deathknight-Death";
+            local RUNETYPE_BLOOD = 1
+            local RUNETYPE_FROST = 2
+            local RUNETYPE_UNHOLY = 3
+            local RUNETYPE_DEATH = 4
+            local iconTextures = {}
+            iconTextures[RUNETYPE_BLOOD] = "Interface\\PlayerFrame\\UI-PlayerFrame-Deathknight-Blood"
+            iconTextures[RUNETYPE_FROST] = "Interface\\PlayerFrame\\UI-PlayerFrame-Deathknight-Frost"
+            iconTextures[RUNETYPE_UNHOLY] = "Interface\\PlayerFrame\\UI-PlayerFrame-Deathknight-Unholy"
+            iconTextures[RUNETYPE_DEATH] = "Interface\\PlayerFrame\\UI-PlayerFrame-Deathknight-Death"
             for i =1, #resourceBar.widgets do
-                local runeType = GetRuneType(i);
+                local runeType = GetRuneType(i)
                 resourceBar.widgets[i].texture:SetTexture(iconTextures[runeType])
-                resourceBar.widgets[i].cooldown:SetSwipeTexture("Interface\\PlayerFrame\\DK-"..Plater.Resources.GetRuneKeyBySpec(specIndex).."-Rune-CDFill")
-                resourceBar.widgets[i].cooldown:SetEdgeTexture("Interface\\PlayerFrame\\DK-"..Plater.Resources.GetCDEdgeBySpec(specIndex).."-Rune-CDSpark")
+                resourceBar.widgets[i].texture:Show()
             end
         end
     end
@@ -620,6 +619,9 @@ end
 		
 		if (PlayerClass == "DEATHKNIGHT") then
             mainResourceFrame:RegisterEvent("RUNE_POWER_UPDATE")
+            if IS_WOW_PROJECT_NOT_MAINLINE then
+                mainResourceFrame:RegisterEvent("RUNE_TYPE_UPDATE")
+            end
         end
 
         mainResourceFrame.eventsEnabled = true

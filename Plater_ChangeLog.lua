@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 			
+			{1662995032,  "Bug Fix", "September 20th, 2022", "WotLK DK death runes should now show properly.", "cont1nuity"},
 			{1662995032,  "Backend Change", "September 19th, 2022", "Throttling 'UPDATE_SHAPESHIFT_FORM' event to prevent unnecessary updates.", "cont1nuity"},
 			{1662995032,  "Backend Change", "September 13th, 2022", "Support for Druid combo points in WotLK.", "cont1nuity"},
 			{1662995032,  "Bug Fix", "September 13th, 2022", "Fixing a data leak on mod re-compile when changing mod options.", "cont1nuity"},
