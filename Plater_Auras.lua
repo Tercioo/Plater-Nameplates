@@ -625,7 +625,7 @@ end
 						if (not nameplateGhostAuraCache[spellName.."_player_ghost"]) then --the ghost aura isn't in the nameplate
 							--add the extra icon
 							local spellIcon, spellId = spellTable[1], spellTable[2]
-							local auraIconFrame = Plater.GetAuraIcon(buffFrame, true) -- show on debuff frame
+							local auraIconFrame = Plater.GetAuraIcon(buffFrame) -- show on debuff frame
 							auraIconFrame.InUse = true --don't play animation
 							auraIconFrame:EnableMouse (false) --don't use tooltips, as there is no real aura
 							Plater.AddAura(buffFrame, auraIconFrame, -1, spellName.."_player_ghost", spellIcon, 1, "DEBUFF", 0, 0, "player", false, false, spellId, false, false, false, false, "DEBUFF", 1)
