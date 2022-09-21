@@ -1660,8 +1660,14 @@ local class_specs_coords = {
 
 	--return true if the unit is in tank role
 	local function IsUnitEffectivelyTank (unit)
-		if IS_WOW_PROJECT_MAINLINE or IS_WOW_PROJECT_CLASSIC_WRATH then
+		if IS_WOW_PROJECT_MAINLINE then
 			return UnitGroupRolesAssigned (unit) == "TANK"
+		elseif IS_WOW_PROJECT_CLASSIC_WRATH then
+			if IsInRaid() then
+				return GetPartyAssignment("MAINTANK", unit)
+			else
+				return UnitGroupRolesAssigned (unit) == "TANK"
+			end
 		else
 			return GetPartyAssignment("MAINTANK", unit)
 		end
