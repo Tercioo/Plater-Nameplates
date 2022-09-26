@@ -378,8 +378,10 @@ function Plater.OpenOptionsPanel()
 	
 	DF:BuildStatusbarAuthorInfo (statusBar, "Plater is Maintained by ", "Ariani | Terciob")
 	
-	local bottomGradient = DF:CreateTexture(f, {gradient = "vertical", fromColor = "black", toColor = "transparent"}, 1, 100, "artwork", {0, 1, 0, 1}, "bottomGradient")
-	bottomGradient:SetPoint("bottom-top", statusBar)
+	if (DF.IsDragonflight()) then
+		local bottomGradient = DF:CreateTexture(f, {gradient = "vertical", fromColor = "black", toColor = "transparent"}, 1, 100, "artwork", {0, 1, 0, 1}, "bottomGradient")
+		bottomGradient:SetPoint("bottom-top", statusBar)
+	end
 
 	--wago.io support
 	local wagoDesc = DF:CreateLabel (statusBar, L["OPTIONS_STATUSBAR_TEXT"])
