@@ -11,7 +11,7 @@ local IS_WOW_PROJECT_CLASSIC_TBC = WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE
 
 local ghostAuraFrame
 
-local y = -170
+local y = -190
 local optionsStartX = 300
 local optionsStartY = y
 

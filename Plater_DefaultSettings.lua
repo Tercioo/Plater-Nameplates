@@ -1,3 +1,5 @@
+local addonName, platerInternal = ...
+
 --details! framework
 local DF = _G ["DetailsFramework"]
 if (not DF) then
@@ -76,6 +78,8 @@ DF:NewColor ("PLATER_CAST", 0.4117, 0.4784, 1, 1)
 local UNITREACTION_HOSTILE = 3
 local UNITREACTION_NEUTRAL = 4
 local UNITREACTION_FRIENDLY = 5
+
+platerInternal.optionsYStart = -150
 
 PLATER_DEFAULT_SETTINGS = {
 	

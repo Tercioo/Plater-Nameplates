@@ -1,4 +1,4 @@
-
+local addonName, platerInternal = ...
 
 local Plater = Plater
 local DF = DetailsFramework
@@ -30,7 +30,7 @@ local options_slider_template = DF:GetTemplate ("slider", "OPTIONS_SLIDER_TEMPLA
 local options_button_template = DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE")
 
 --configs
-local startX, startY, heightSize = 10, -150, 730
+local startX, startY, heightSize = 10, platerInternal.optionsYStart, 755
 local optionsWidth, optionsHeight = 1100, 670
 local mainHeightSize = 820
 
@@ -202,7 +202,7 @@ function Plater.OpenOptionsPanel()
 	local frame_options = {
 		y_offset = 0,
 		button_width = 108,
-		button_height = 22,
+		button_height = 23,
 		button_x = 190,
 		button_y = 1,
 		button_text_size = 10,
@@ -258,7 +258,6 @@ function Plater.OpenOptionsPanel()
 
 	--make the tab button's text be aligned to left and fit the button's area
 	for index, frame in ipairs(mainFrame.AllFrames) do
-
 		--DF:ApplyStandardBackdrop(frame)
 		local frameBackgroundTexture = frame:CreateTexture(nil, "artwork")
 		frameBackgroundTexture:SetPoint("topleft", frame, "topleft", 1, -140)
@@ -273,11 +272,16 @@ function Plater.OpenOptionsPanel()
 		frameBackgroundTextureTopLine:SetPoint("bottomleft", frameBackgroundTexture, "topleft", 0, 0)
 		frameBackgroundTextureTopLine:SetPoint("bottomright", frame, "topright", -1, 0)
 		frameBackgroundTextureTopLine:SetHeight(1)
-		frameBackgroundTextureTopLine:SetColorTexture (0.1317647, 0.1317647, 0.1317647)
-		frameBackgroundTextureTopLine:SetAlpha (0.9)
+		frameBackgroundTextureTopLine:SetColorTexture(0.1215, 0.1176, 0.1294)
+		frameBackgroundTextureTopLine:SetAlpha(1)
 
-		--local bottomGradient = DF:CreateTexture(frame, {gradient = "vertical", fromColor = "black", toColor = "transparent"}, 1, 100, "background", {0, 1, 0, 1}, "bottomGradient")
-		--bottomGradient:SetPoint("bottoms")
+		frame.titleText.fontsize = 12
+
+		local gradientBelowTheLine = DF:CreateTexture(frame, {gradient = "vertical", fromColor = "transparent", toColor = DF.IsDragonflight() and {0, 0, 0, 0.15} or {0, 0, 0, 0.25}}, 1, 100, "artwork", {0, 1, 0, 1}, "gradientBelowTheLine")
+		gradientBelowTheLine:SetPoint("top-bottom", frameBackgroundTextureTopLine)
+
+		local gradientAboveTheLine = DF:CreateTexture(frame, {gradient = "vertical", fromColor = DF.IsDragonflight() and {0, 0, 0, 0.3} or {0, 0, 0, 0.4}, toColor = "transparent"}, 1, 80, "artwork", {0, 1, 0, 1}, "gradientAboveTheLine")
+		gradientAboveTheLine:SetPoint("bottom-top", frameBackgroundTextureTopLine)
 
 		local tabButton = mainFrame.AllButtons[index]
 
@@ -378,10 +382,10 @@ function Plater.OpenOptionsPanel()
 	
 	DF:BuildStatusbarAuthorInfo (statusBar, "Plater is Maintained by ", "Ariani | Terciob")
 	
-	if (DF.IsDragonflight()) then
-		local bottomGradient = DF:CreateTexture(f, {gradient = "vertical", fromColor = "black", toColor = "transparent"}, 1, 100, "artwork", {0, 1, 0, 1}, "bottomGradient")
-		bottomGradient:SetPoint("bottom-top", statusBar)
-	end
+	--if (DF.IsDragonflight()) then
+	local bottomGradient = DF:CreateTexture(f, {gradient = "vertical", fromColor = {0, 0, 0, 0.6}, toColor = "transparent"}, 1, 100, "artwork", {0, 1, 0, 1}, "bottomGradient")
+	bottomGradient:SetPoint("bottom-top", statusBar)
+	--end
 
 	--wago.io support
 	local wagoDesc = DF:CreateLabel (statusBar, L["OPTIONS_STATUSBAR_TEXT"])
@@ -1316,7 +1320,8 @@ frontPageFrame:SetScript ("OnEvent", function (self, event)
 	end
 end)
 
-DF:BuildMenu (frontPageFrame, interface_options, startX, startY-20, 300 + 60, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
+interface_options.always_boxfirst = true
+DF:BuildMenu (frontPageFrame, interface_options, startX, startY-20, 300 + 60, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 
 function frontPageFrame.OpenNewsWindow()
 	if (not PlaterNewsFrame) then
@@ -1474,6 +1479,7 @@ local debuff_options = {
 	{type = "label", get = function() return "Test Auras:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	{
 		type = "toggle",
+		boxfirst = true,
 		get = function() return Plater.DisableAuraTest and true or false end,
 		set = function (self, fixedparam, value) 
 			Plater.DisableAuraTest = value
@@ -1492,6 +1498,7 @@ local debuff_options = {
 	{type = "label", get = function() return "General Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},	
 	{
 		type = "toggle",
+		boxfirst = true,
 		get = function() return Plater.db.profile.aura_enabled end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_enabled = value
@@ -1515,6 +1522,7 @@ local debuff_options = {
 	
 	{
 		type = "toggle",
+		boxfirst = true,
 		get = function() return Plater.db.profile.aura_show_tooltip end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_show_tooltip = value
@@ -1574,6 +1582,7 @@ local debuff_options = {
 	
 	{
 		type = "toggle",
+		boxfirst = true,
 		get = function() return Plater.db.profile.aura_consolidate end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_consolidate = value
@@ -1584,6 +1593,7 @@ local debuff_options = {
 	},
 	{
 		type = "toggle",
+		boxfirst = true,
 		get = function() return Plater.db.profile.aura_consolidate_timeleft_lower end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_consolidate_timeleft_lower = value
@@ -1597,6 +1607,7 @@ local debuff_options = {
 	
 	{
 		type = "toggle",
+		boxfirst = true,
 		get = function() return Plater.db.profile.aura_sort end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_sort = value
@@ -1732,6 +1743,7 @@ local debuff_options = {
 	
 	{
 		type = "toggle",
+		boxfirst = true,
 		get = function() return Plater.db.profile.buffs_on_aura2 end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.buffs_on_aura2 = value
@@ -1828,6 +1840,7 @@ local debuff_options = {
 	--text shadow color
 	{
 		type = "color",
+		boxfirst = true,
 		get = function()
 			local color = Plater.db.profile.aura_stack_shadow_color
 			return {color[1], color[2], color[3], color[4]}
@@ -1843,6 +1856,7 @@ local debuff_options = {
 
 	{
 		type = "color",
+		boxfirst = true,
 		get = function()
 			local color = Plater.db.profile.aura_stack_color
 			return {color[1], color[2], color[3], color[4]}
@@ -1897,6 +1911,7 @@ local debuff_options = {
 	{type = "label", get = function() return "Auras per Row:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	{
 		type = "toggle",
+		boxfirst = true,
 		get = function() return Plater.db.profile.auras_per_row_auto end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.auras_per_row_auto = value
@@ -1943,6 +1958,7 @@ local debuff_options = {
 	
 	{
 		type = "toggle",
+		boxfirst = true,
 		get = function() return Plater.db.profile.aura_timer end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_timer = value
@@ -1955,6 +1971,7 @@ local debuff_options = {
 	
 	{
 		type = "toggle",
+		boxfirst = true,
 		get = function() return Plater.db.profile.aura_timer_decimals end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_timer_decimals = value
@@ -1967,6 +1984,7 @@ local debuff_options = {
 
 	{
 		type = "toggle",
+		boxfirst = true,
 		get = function() return Plater.db.profile.disable_omnicc_on_auras end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.disable_omnicc_on_auras = value
@@ -2010,6 +2028,7 @@ local debuff_options = {
 	--text shadow color
 	{
 		type = "color",
+		boxfirst = true,
 		get = function()
 			local color = Plater.db.profile.aura_timer_text_shadow_color
 			return {color[1], color[2], color[3], color[4]}
@@ -2026,6 +2045,7 @@ local debuff_options = {
 	
 	{
 		type = "color",
+		boxfirst = true,
 		get = function()
 			local color = Plater.db.profile.aura_timer_text_color
 			return {color[1], color[2], color[3], color[4]}
@@ -2086,6 +2106,7 @@ local debuff_options = {
 	},
 	{
 		type = "toggle",
+		boxfirst = true,
 		get = function() return Plater.db.profile.aura_cooldown_show_swipe end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_cooldown_show_swipe = value
@@ -2097,6 +2118,7 @@ local debuff_options = {
 	},
 	{
 		type = "toggle",
+		boxfirst = true,
 		get = function() return Plater.db.profile.aura_cooldown_reverse end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_cooldown_reverse = value
@@ -2113,6 +2135,7 @@ local debuff_options = {
 
 	{
 		type = "toggle",
+		boxfirst = true,
 		get = function() return Plater.db.profile.aura_show_aura_by_the_player end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_show_aura_by_the_player = value
@@ -2125,6 +2148,7 @@ local debuff_options = {
 	
 	{
 		type = "toggle",
+		boxfirst = true,
 		get = function() return Plater.db.profile.aura_show_aura_by_other_players end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_show_aura_by_other_players = value
@@ -2139,6 +2163,7 @@ local debuff_options = {
 	
 	{
 		type = "toggle",
+		boxfirst = true,
 		get = function() return Plater.db.profile.aura_show_important end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_show_important = value
@@ -2151,6 +2176,7 @@ local debuff_options = {
 	
 	{
 		type = "toggle",
+		boxfirst = true,
 		get = function() return Plater.db.profile.aura_show_dispellable end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_show_dispellable = value
@@ -2163,6 +2189,7 @@ local debuff_options = {
 	
 	{
 		type = "toggle",
+		boxfirst = true,
 		get = function() return Plater.db.profile.aura_show_only_short_dispellable_on_players end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_show_only_short_dispellable_on_players = value
@@ -2175,6 +2202,7 @@ local debuff_options = {
 	
 	{
 		type = "toggle",
+		boxfirst = true,
 		get = function() return Plater.db.profile.aura_show_enrage end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_show_enrage = value
@@ -2187,6 +2215,7 @@ local debuff_options = {
 	
 	{
 		type = "toggle",
+		boxfirst = true,
 		get = function() return Plater.db.profile.aura_show_magic end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_show_magic = value
@@ -2199,6 +2228,7 @@ local debuff_options = {
 	
 	{
 		type = "toggle",
+		boxfirst = true,
 		get = function() return Plater.db.profile.aura_show_crowdcontrol end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_show_crowdcontrol = value
@@ -2213,6 +2243,7 @@ local debuff_options = {
 	
 	{
 		type = "toggle",
+		boxfirst = true,
 		get = function() return Plater.db.profile.aura_show_buff_by_the_unit end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_show_buff_by_the_unit = value
@@ -2224,6 +2255,7 @@ local debuff_options = {
 	},
 	{
 		type = "toggle",
+		boxfirst = true,
 		get = function() return Plater.db.profile.aura_show_offensive_cd end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_show_offensive_cd = value
@@ -2236,6 +2268,7 @@ local debuff_options = {
 	
 	{
 		type = "toggle",
+		boxfirst = true,
 		get = function() return Plater.db.profile.aura_show_defensive_cd end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_show_defensive_cd = value
@@ -2251,6 +2284,7 @@ local debuff_options = {
 	{type = "label", get = function() return "Aura Border Colors:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	{
 		type = "color",
+		boxfirst = true,
 		get = function()
 			local color = Plater.db.profile.aura_border_colors.is_show_all
 			return {color[1], color[2], color[3], color[4]}
@@ -2265,6 +2299,7 @@ local debuff_options = {
 	},
 	{
 		type = "color",
+		boxfirst = true,
 		get = function()
 			local color = Plater.db.profile.aura_border_colors.steal_or_purge
 			return {color[1], color[2], color[3], color[4]}
@@ -2279,6 +2314,7 @@ local debuff_options = {
 	},
 	{
 		type = "color",
+		boxfirst = true,
 		get = function()
 			local color = Plater.db.profile.aura_border_colors.enrage
 			return {color[1], color[2], color[3], color[4]}
@@ -2294,6 +2330,7 @@ local debuff_options = {
 	--border color is buff
 	{
 		type = "color",
+		boxfirst = true,
 		get = function()
 			local color = Plater.db.profile.aura_border_colors.is_buff
 			return {color[1], color[2], color[3], color[4]}
@@ -2309,6 +2346,7 @@ local debuff_options = {
 	--border color is offensive
 	{
 		type = "color",
+		boxfirst = true,
 		get = function()
 			local color = Plater.db.profile.aura_border_colors.crowdcontrol
 			return {color[1], color[2], color[3], color[4]}
@@ -2324,6 +2362,7 @@ local debuff_options = {
 	--border color is offensive
 	{
 		type = "color",
+		boxfirst = true,
 		get = function()
 			local color = Plater.db.profile.aura_border_colors.offensive
 			return {color[1], color[2], color[3], color[4]}
@@ -2339,6 +2378,7 @@ local debuff_options = {
 	--border color is offensive
 	{
 		type = "color",
+		boxfirst = true,
 		get = function()
 			local color = Plater.db.profile.aura_border_colors.defensive
 			return {color[1], color[2], color[3], color[4]}
@@ -2354,6 +2394,7 @@ local debuff_options = {
 	
 	{
 		type = "toggle",
+		boxfirst = true,
 		get = function() return Plater.db.profile.aura_border_colors_by_type end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_border_colors_by_type = value
@@ -2368,7 +2409,8 @@ local debuff_options = {
 }
 
 _G.C_Timer.After(0.850, function() --~delay
-	DF:BuildMenu (auraOptionsFrame, debuff_options, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
+	debuff_options.always_boxfirst = true
+	DF:BuildMenu (auraOptionsFrame, debuff_options, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 end)
 
 auraOptionsFrame.AuraTesting = {
@@ -4990,16 +5032,17 @@ Plater.CreateAuraTesting()
 		}
 		
 		auraSpecialFrame.ExampleImageDesc = DF:CreateLabel (auraSpecialFrame, "Special auras look like this:", 14)
-		auraSpecialFrame.ExampleImageDesc:SetPoint (330, -215)
+		auraSpecialFrame.ExampleImageDesc:SetPoint (330, -235)
 		auraSpecialFrame.ExampleImage = DF:CreateImage (auraSpecialFrame, [[Interface\AddOns\Plater\images\extra_icon_example]], 256*0.8, 128*0.8)
-		auraSpecialFrame.ExampleImage:SetPoint (330, -229)
+		auraSpecialFrame.ExampleImage:SetPoint (330, -249)
 		auraSpecialFrame.ExampleImage:SetAlpha (.834)
 		
 		local fff = CreateFrame ("frame", "$parentExtraIconsSettings", auraSpecialFrame, BackdropTemplateMixin and "BackdropTemplate")
 		fff:SetAllPoints()
 
 		_G.C_Timer.After(0.6, function() --~delay
-			DF:BuildMenu (fff, especial_aura_settings, 330, startY - 27, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
+			especial_aura_settings.always_boxfirst = true
+			DF:BuildMenu (fff, especial_aura_settings, 330, startY - 27, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 		end)
 
 		--when the profile has changed
@@ -6226,7 +6269,8 @@ do
 	end
 
 	_G.C_Timer.After(1.3, function() --~delay
-		DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
+		options_personal.always_boxfirst = true
+		DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 	end)
 end
 
@@ -6623,7 +6667,8 @@ local targetOptions = {
 }
 
 _G.C_Timer.After(1.20, function() --~delay
-	DF:BuildMenu (targetFrame, targetOptions, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
+	targetOptions.always_boxfirst = true
+	DF:BuildMenu (targetFrame, targetOptions, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 end)
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -7768,7 +7813,7 @@ local relevance_options = {
 	for _, t in ipairs (options_table1_continue2) do
 		tinsert (options_table1, t)
 	end
-	
+	options_table1.always_boxfirst = true
 	DF:BuildMenu (generalOptionsAnchor, options_table1, 0, 0, mainHeightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 
 local checkBoxDivisionByTwo = generalOptionsAnchor:GetWidgetById("transparency_division")
@@ -8782,7 +8827,8 @@ end
 	}
 
 	_G.C_Timer.After(1.420, function() --~delay
-		DF:BuildMenu (friendlyPCsFrame, options_table3, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
+		options_table3.always_boxfirst = true
+		DF:BuildMenu (friendlyPCsFrame, options_table3, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 	end)
 --------------------------------
 --Enemy Player painel de op��es ~enemy
@@ -9683,7 +9729,8 @@ end
 	}
 
 	_G.C_Timer.After(0.720, function() --~delay
-		DF:BuildMenu (enemyPCsFrame, options_table4, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
+		options_table4.always_boxfirst = true
+		DF:BuildMenu (enemyPCsFrame, options_table4, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 	end)
 -----------------------------------------------	
 --Friendly NPC painel de op��es ~friendly
@@ -10751,7 +10798,8 @@ end
 	}
 	
 	_G.C_Timer.After(0.780, function() --~delay
-		DF:BuildMenu (friendlyNPCsFrame, friendly_npc_options_table, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
+		friendly_npc_options_table.always_boxfirst = true
+		DF:BuildMenu (friendlyNPCsFrame, friendly_npc_options_table, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 	end)
 
 -----------------------------------------------	
@@ -11812,7 +11860,8 @@ end
 		}
 
 		_G.C_Timer.After(0.900, function() --~delay
-			DF:BuildMenu (enemyNPCsFrame, options_table2, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
+			options_table2.always_boxfirst = true
+			DF:BuildMenu (enemyNPCsFrame, options_table2, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 		end)
 	end
 	
@@ -12063,7 +12112,8 @@ end
 	}
 
 	_G.C_Timer.After(1.5, function() --~delay
-		DF:BuildMenu (uiParentFeatureFrame, experimental_options, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)	
+		experimental_options.always_boxfirst = true
+		DF:BuildMenu (uiParentFeatureFrame, experimental_options, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)	
 	end)
 	
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -12234,7 +12284,8 @@ end
 	}
 	
 	_G.C_Timer.After(1.2, function() --~delay
-		DF:BuildMenu (autoFrame, auto_options, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)	
+		auto_options.always_boxfirst = true
+		DF:BuildMenu (autoFrame, auto_options, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)	
 	end)
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> castbar options
@@ -12744,7 +12795,8 @@ end
 
 	_G.C_Timer.After(0.800, function() --~delay
 		--the -30 is to fix an annomaly where the options for castbars starts 30 pixels to the right, dunno why (tercio)
-		DF:BuildMenu (castBarFrame, castBar_options, startX-20, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)	
+		castBar_options.always_boxfirst = true
+		DF:BuildMenu (castBarFrame, castBar_options, startX-20, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)	
 	end)
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -13100,7 +13152,8 @@ end
 	end
 	
 	_G.C_Timer.After(0.990, function() --~delay
-		DF:BuildMenu (threatFrame, thread_options, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
+		thread_options.always_boxfirst = true
+		DF:BuildMenu (threatFrame, thread_options, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 	end)
 	
 	
@@ -14007,7 +14060,8 @@ end
 	}
 	
 	_G.C_Timer.After(1.4, function() --~delay
-		DF:BuildMenu (advancedFrame, advanced_options, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
+		advanced_options.always_boxfirst = true
+		DF:BuildMenu (advancedFrame, advanced_options, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 	end)
 
 
@@ -14077,11 +14131,13 @@ end
 		local tabSettings = allTabSettings[i]
 		local lastLabel = nil
 		for k, setting in pairs(tabSettings) do
-			if (setting.type == "label") then
-				lastLabel = setting
-			end
-			if (setting.name) then
-				allOptions[#allOptions+1] = {setting = setting, label = lastLabel, header = allTabHeaders[i] }
+			if (type(setting) == "table") then
+				if (setting.type == "label") then
+					lastLabel = setting
+				end
+				if (setting.name) then
+					allOptions[#allOptions+1] = {setting = setting, label = lastLabel, header = allTabHeaders[i] }
+				end
 			end
 		end
 	end
@@ -14114,7 +14170,8 @@ end
 			end
 		end
 
-		DF:BuildMenuVolatile (searchFrame, options, startX, startY-30, heightSize+40, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
+		options.always_boxfirst = true
+		DF:BuildMenuVolatile (searchFrame, options, startX, startY-30, heightSize+40, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 
 		--[=[
 		if (searchFrame.widget_list) then
