@@ -30,9 +30,9 @@ local options_slider_template = DF:GetTemplate ("slider", "OPTIONS_SLIDER_TEMPLA
 local options_button_template = DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE")
 
 --configs
-local startX, startY, heightSize = 10, -130, 710
-local optionsWidth, optionsHeight = 1100, 650
-local mainHeightSize = 800
+local startX, startY, heightSize = 10, -150, 730
+local optionsWidth, optionsHeight = 1100, 670
+local mainHeightSize = 820
 
 local IMPORT_EXPORT_EDIT_MAX_BYTES = 0 --1024000*4 -- 0 appears to be "no limit"
 local IMPORT_EXPORT_EDIT_MAX_LETTERS = 0 --128000*4 -- 0 appears to be "no limit"
@@ -168,7 +168,7 @@ function Plater.OpenOptionsPanel()
 	DF:ApplyStandardBackdrop (f)
 	f:ClearAllPoints()
 	PixelUtil.SetPoint (f, "center", UIParent, "center", 2, 2, 1, 1)
-	
+
 	-- version text
 	local versionText = DF:CreateLabel (f, Plater.fullVersionInfo, 11, "white")
 	versionText:SetPoint ("topright", f, "topright", -25, -7)
@@ -183,18 +183,6 @@ function Plater.OpenOptionsPanel()
 	local ImportantText = "|cFFFFFF00" .. "Important" .."|r: "
 	local SliderRightClickDesc = "\n\n" .. ImportantText .. "right click to type the value."
 	
-	local frame_options = {
-		y_offset = 0,
-		button_width = 101,
-		button_height = 20,
-		button_x = 210,
-		button_y = 1,
-		button_text_size = 10,
-		right_click_y = 5,
-		rightbutton_always_close = true,
-		close_text_alpha = 0.4,
-	}
-
 	local hookList = {
 		OnSelectIndex = function(mainFrame, tabButton)
 			if (not tabButton.leftSelectionIndicator) then
@@ -210,7 +198,20 @@ function Plater.OpenOptionsPanel()
 			tabButton.selectedUnderlineGlow:Hide()
 		end,
 	}
-	
+
+	local frame_options = {
+		y_offset = 0,
+		button_width = 108,
+		button_height = 22,
+		button_x = 190,
+		button_y = 1,
+		button_text_size = 10,
+		right_click_y = 5,
+		rightbutton_always_close = true,
+		close_text_alpha = 0.4,
+		container_width_offset = 30,
+	}
+
 	-- mainFrame � um frame vazio para sustentrar todos os demais frames, este frame sempre ser� mostrado
 	local mainFrame = DF:CreateTabContainer (f, "Plater Options", "PlaterOptionsPanelContainer", 
 	{
@@ -260,11 +261,12 @@ function Plater.OpenOptionsPanel()
 
 		--DF:ApplyStandardBackdrop(frame)
 		local frameBackgroundTexture = frame:CreateTexture(nil, "artwork")
-		frameBackgroundTexture:SetPoint("topleft", frame, "topleft", 1, -120)
+		frameBackgroundTexture:SetPoint("topleft", frame, "topleft", 1, -140)
 		frameBackgroundTexture:SetPoint("bottomright", frame, "bottomright", -1, 20)
 		frameBackgroundTexture:SetColorTexture (0.2317647, 0.2317647, 0.2317647)
 		frameBackgroundTexture:SetVertexColor (0.27, 0.27, 0.27)
-		frameBackgroundTexture:SetAlpha (0.5)
+		frameBackgroundTexture:SetAlpha (0.3)
+		--frameBackgroundTexture:Hide()
 
 		--divisor shown above the background (create above)
 		local frameBackgroundTextureTopLine = frame:CreateTexture(nil, "artwork")
@@ -272,7 +274,10 @@ function Plater.OpenOptionsPanel()
 		frameBackgroundTextureTopLine:SetPoint("bottomright", frame, "topright", -1, 0)
 		frameBackgroundTextureTopLine:SetHeight(1)
 		frameBackgroundTextureTopLine:SetColorTexture (0.1317647, 0.1317647, 0.1317647)
-		frameBackgroundTextureTopLine:SetAlpha (0.3)
+		frameBackgroundTextureTopLine:SetAlpha (0.9)
+
+		--local bottomGradient = DF:CreateTexture(frame, {gradient = "vertical", fromColor = "black", toColor = "transparent"}, 1, 100, "background", {0, 1, 0, 1}, "bottomGradient")
+		--bottomGradient:SetPoint("bottoms")
 
 		local tabButton = mainFrame.AllButtons[index]
 
@@ -363,15 +368,19 @@ function Plater.OpenOptionsPanel()
 	generalOptionsAnchor:SetSize (1, 1)
 	generalOptionsAnchor:SetPoint ("topleft", frontPageFrame, "topleft", startX, startY)
 	
-	local statusBar = CreateFrame ("frame", nil, f, BackdropTemplateMixin and "BackdropTemplate")
+	local statusBar = CreateFrame ("frame", "$parentStatusBar", f, BackdropTemplateMixin and "BackdropTemplate")
 	statusBar:SetPoint ("bottomleft", f, "bottomleft")
 	statusBar:SetPoint ("bottomright", f, "bottomright")
 	statusBar:SetHeight (20)
 	DF:ApplyStandardBackdrop (statusBar)
-	statusBar:SetAlpha (0.8)
+	statusBar:SetAlpha (0.9)
+	statusBar:SetFrameLevel (f:GetFrameLevel()+10)
 	
 	DF:BuildStatusbarAuthorInfo (statusBar, "Plater is Maintained by ", "Ariani | Terciob")
 	
+	local bottomGradient = DF:CreateTexture(f, {gradient = "vertical", fromColor = "black", toColor = "transparent"}, 1, 100, "artwork", {0, 1, 0, 1}, "bottomGradient")
+	bottomGradient:SetPoint("bottom-top", statusBar)
+
 	--wago.io support
 	local wagoDesc = DF:CreateLabel (statusBar, L["OPTIONS_STATUSBAR_TEXT"])
 	wagoDesc.textcolor = "white"
@@ -1362,12 +1371,12 @@ function Plater.CreateGoToTabFrame(parent, text, index)
 	goToTab:SetSize (230, 55)
 	DF:ApplyStandardBackdrop (goToTab, false, 0.6)
 	
-	local labelgoToTab = DF:CreateLabel(goToTab, text, 12, "orange")
-	labelgoToTab.width = 230
+	local labelgoToTab = DF:CreateLabel(goToTab, text, 10, "orange")
+	labelgoToTab.width = 220
 	labelgoToTab.height = 50
 	labelgoToTab.valign = "center"
 	labelgoToTab.align = "center"
-	labelgoToTab:SetPoint("topleft", goToTab, "topleft", 3, -3)
+	labelgoToTab:SetPoint("center", goToTab, "center", 0, 0)
 
 	local goTo = function()
 		PlaterOptionsPanelContainer:SelectIndex (Plater, index)
@@ -6660,6 +6669,7 @@ local relevance_options = {
 		{type = "label", get = function() return "Interface Options (from the client):" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
+			boxfirst = true,
 			get = function() return GetCVar ("nameplateShowSelf") == CVAR_ENABLED end,
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
@@ -6676,6 +6686,7 @@ local relevance_options = {
 		},
 		{
 			type = "toggle",
+			boxfirst = true,
 			get = function() return PlaterDBChr.resources_on_target end,
 			set = function (self, fixedparam, value) 
 				PlaterDBChr.resources_on_target = value
@@ -6693,6 +6704,7 @@ local relevance_options = {
 		},
 		{
 			type = "toggle",
+			boxfirst = true,
 			get = function() return GetCVar (CVAR_SHOWALL) == CVAR_ENABLED end,
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
@@ -6709,6 +6721,7 @@ local relevance_options = {
 
 		{
 			type = "toggle",
+			boxfirst = true,
 			get = function() return Plater.db.profile.honor_blizzard_plate_alpha end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.honor_blizzard_plate_alpha = value
@@ -6742,6 +6755,7 @@ local relevance_options = {
 		
 		{
 			type = "toggle",
+			boxfirst = true,
 			get = function() return GetCVarBool (CVAR_PLATEMOTION) end, --GetCVar (CVAR_PLATEMOTION) == CVAR_ENABLED
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
@@ -6799,6 +6813,7 @@ local relevance_options = {
 		
 		{
 			type = "toggle",
+			boxfirst = true,
 			get = function() return GetCVarBool ("nameplateShowEnemies") end,
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
@@ -6815,6 +6830,7 @@ local relevance_options = {
 		
 		{
 			type = "toggle",
+			boxfirst = true,
 			get = function() return GetCVarBool ("nameplateShowFriends") end,
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
@@ -6831,6 +6847,7 @@ local relevance_options = {
 		
 		{
 			type = "toggle",
+			boxfirst = true,
 			get = function() return GetCVarBool ("nameplateShowOnlyNames") end,
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
@@ -6864,6 +6881,7 @@ local relevance_options = {
 		},
 		{
 			type = "color",
+			boxfirst = true,
 			get = function()
 				local color = Plater.db.profile.health_statusbar_bgcolor
 				return {color[1], color[2], color[3], color[4]}
@@ -6879,6 +6897,7 @@ local relevance_options = {
 
 		{
 			type = "color",
+			boxfirst = true,
 			get = function()
 				local color = Plater.db.profile.border_color
 				return {color[1], color[2], color[3], color[4]}
@@ -7141,6 +7160,7 @@ local relevance_options = {
 		{type = "label", get = function() return "General:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
+			boxfirst = true,
 			get = function() return Plater.db.profile.focus_as_target_alpha end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.focus_as_target_alpha = value
@@ -7152,6 +7172,7 @@ local relevance_options = {
 		},
 		{
 			type = "toggle",
+			boxfirst = true,
 			get = function() return Plater.db.profile.transparency_behavior_use_division end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.transparency_behavior_use_division = value
@@ -7165,6 +7186,7 @@ local relevance_options = {
 		--no combat alpha
 		{
 			type = "toggle",
+			boxfirst = true,
 			get = function() return Plater.db.profile.not_affecting_combat_enabled end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.not_affecting_combat_enabled = value
@@ -7306,6 +7328,7 @@ local relevance_options = {
 		
 		{
 			type = "toggle",
+			boxfirst = true,
 			get = function() return Plater.db.profile.transparency_behavior_on_enemies end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.transparency_behavior_on_enemies = value
@@ -7415,6 +7438,7 @@ local relevance_options = {
 		
 		{
 			type = "toggle",
+			boxfirst = true,
 			get = function() return Plater.db.profile.transparency_behavior_on_friendlies end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.transparency_behavior_on_friendlies = value
@@ -7523,6 +7547,7 @@ local relevance_options = {
 		
 		{
 			type = "toggle",
+			boxfirst = true,
 			get = function() return Plater.db.profile.indicator_pet end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.indicator_pet = value
@@ -7534,6 +7559,7 @@ local relevance_options = {
 
 		{
 			type = "toggle",
+			boxfirst = true,
 			get = function() return Plater.db.profile.indicator_shield end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.indicator_shield = value
@@ -7545,6 +7571,7 @@ local relevance_options = {
 		
 		{
 			type = "toggle",
+			boxfirst = true,
 			get = function() return Plater.db.profile.health_cutoff end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.health_cutoff = value
@@ -7557,6 +7584,7 @@ local relevance_options = {
 		
 		{
 			type = "toggle",
+			boxfirst = true,
 			get = function() return Plater.db.profile.health_cutoff_upper end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.health_cutoff_upper = value
@@ -7570,6 +7598,7 @@ local relevance_options = {
 
 		{
 			type = "toggle",
+			boxfirst = true,
 			get = function() return Plater.db.profile.indicator_worldboss end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.indicator_worldboss = value
@@ -7580,6 +7609,7 @@ local relevance_options = {
 		},
 		{
 			type = "toggle",
+			boxfirst = true,
 			get = function() return Plater.db.profile.indicator_elite end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.indicator_elite = value
@@ -7590,6 +7620,7 @@ local relevance_options = {
 		},
 		{
 			type = "toggle",
+			boxfirst = true,
 			get = function() return Plater.db.profile.indicator_rare end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.indicator_rare = value
@@ -7600,6 +7631,7 @@ local relevance_options = {
 		},
 		{
 			type = "toggle",
+			boxfirst = true,
 			get = function() return Plater.db.profile.indicator_quest end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.indicator_quest = value
@@ -7610,6 +7642,7 @@ local relevance_options = {
 		},
 		{
 			type = "toggle",
+			boxfirst = true,
 			get = function() return Plater.db.profile.indicator_faction end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.indicator_faction = value
@@ -7620,6 +7653,7 @@ local relevance_options = {
 		},
 		{
 			type = "toggle",
+			boxfirst = true,
 			get = function() return Plater.db.profile.indicator_enemyclass end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.indicator_enemyclass = value
@@ -7631,6 +7665,7 @@ local relevance_options = {
 		
 		{
 			type = "toggle",
+			boxfirst = true,
 			get = function() return Plater.db.profile.indicator_spec end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.indicator_spec = value
@@ -7641,6 +7676,7 @@ local relevance_options = {
 		},
 		{
 			type = "toggle",
+			boxfirst = true,
 			get = function() return Plater.db.profile.indicator_friendlyfaction end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.indicator_friendlyfaction = value
@@ -7651,6 +7687,7 @@ local relevance_options = {
 		},
 		{
 			type = "toggle",
+			boxfirst = true,
 			get = function() return Plater.db.profile.indicator_friendlyclass end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.indicator_friendlyclass = value
@@ -7661,6 +7698,7 @@ local relevance_options = {
 		},
 		{
 			type = "toggle",
+			boxfirst = true,
 			get = function() return Plater.db.profile.indicator_friendlyspec end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.indicator_friendlyspec = value
@@ -7671,6 +7709,7 @@ local relevance_options = {
 		},
 		{
 			type = "range",
+			boxfirst = true,
 			get = function() return Plater.db.profile.indicator_scale end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.indicator_scale = value
@@ -7728,7 +7767,7 @@ local relevance_options = {
 		tinsert (options_table1, t)
 	end
 	
-	DF:BuildMenu (generalOptionsAnchor, options_table1, 0, 0, mainHeightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
+	DF:BuildMenu (generalOptionsAnchor, options_table1, 0, 0, mainHeightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 
 local checkBoxDivisionByTwo = generalOptionsAnchor:GetWidgetById("transparency_division")
 if (Plater.db.profile.transparency_behavior == 0x3) then
