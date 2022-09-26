@@ -1,4 +1,4 @@
-
+local addonName, platerInternal = ...
 
 local Plater = Plater
 local GameCooltip = GameCooltip2
@@ -40,7 +40,7 @@ local PLATER_OPTIONS_PROFILES_TAB = 22
 local PLATER_OPTIONS_WAGO_TAB = 25
 
 --options
-local start_y = -150
+local start_y = platerInternal.optionsYStart
 local main_frames_size = {600, 400}
 local edit_script_size = {620, 431}
 
