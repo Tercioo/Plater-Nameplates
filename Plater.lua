@@ -1276,6 +1276,11 @@ local class_specs_coords = {
 					else
 						lowExecute = 0.25
 					end
+				elseif (class == "HUNTER") then
+					-- Kill Shot
+					if GetSpellInfo(GetSpellInfo(53351)) then
+						lowExecute = 0.2
+					end
 				end
 			end
 		
