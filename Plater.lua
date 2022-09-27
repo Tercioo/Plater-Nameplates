@@ -1038,6 +1038,8 @@ local class_specs_coords = {
 	
 	--store quests the player is in
 	Plater.QuestCache = {}
+	--store only campaign quests
+	Plater.QuestCacheCampaign = {}
 	
 	--cache the profile settings for each actor type on this table, so scripts can have access to profile
 	Plater.ActorTypeSettingsCache = { --private
@@ -3798,8 +3800,10 @@ local class_specs_coords = {
 			
 			plateFrame.QuestAmountCurrent = nil
 			plateFrame.QuestAmountTotal = nil
+			plateFrame.QuestIsCampaign = nil
 			unitFrame.QuestAmountCurrent = nil
 			unitFrame.QuestAmountTotal = nil
+			unitFrame.QuestIsCampaign = nil
 			
 			--cache the unit target id, so it doesnt need to waste cycles building up on aggro checks
 			unitFrame.targetUnitID = unitID .. "target"
@@ -9297,6 +9301,9 @@ end
 					total = 0,
 					yourQuest = false,
 				}
+
+				local isCampaignQuest = Plater.QuestCacheCampaign[text]
+
 				local amount1, amount2, questText = nil, nil, nil
 				local j = i
 				while (ScanQuestTextCache [j+1]) do
@@ -9354,11 +9361,13 @@ end
 					plateFrame.QuestAmountCurrent = amount1
 					plateFrame.QuestAmountTotal = amount2
 					plateFrame.QuestText = questText
+					plateFrame.QuestIsCampaign = isCampaignQuest
 					
 					--expose to scripts
 					plateFrame.unitFrame.QuestAmountCurrent = amount1
 					plateFrame.unitFrame.QuestAmountTotal = amount2
 					plateFrame.unitFrame.QuestText = questText
+					plateFrame.unitFrame.QuestIsCampaign = isCampaignQuest
 				end
 				
 				if not isGroupQuest then
@@ -9385,6 +9394,7 @@ end
 
 		--clear the quest cache
 		wipe (Plater.QuestCache)
+		wipe (Plater.QuestCacheCampaign)
 
 		--do not update if is inside an instance
 		local isInInstance = IsInInstance()
@@ -9401,6 +9411,9 @@ end
 				--ViragDevTool_AddData({questDetails = questDetails, QuestObjectives = C_QuestLog.GetQuestObjectives(questDetails.questID), Title = C_QuestLog.GetTitleForLogIndex(questLogId)}, "QuestUpdate - " .. questLogId)
 				if (questDetails and not questDetails.isHeader and questDetails.title and type (questDetails.questID) == "number" and questDetails.questID > 0) then
 					Plater.QuestCache [questDetails.title] = true
+					if (questDetails.campaignID) then
+						Plater.QuestCacheCampaign[questDetails.title] = true
+					end
 				end
 			else
 				local title, level, suggestedGroup, isHeader, isCollapsed, isComplete, frequency, questId, startEvent, displayQuestID, isOnMap, hasLocalPOI, isTask, isStory = GetQuestLogTitle (questLogId)
