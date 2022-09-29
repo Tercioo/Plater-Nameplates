@@ -1,5 +1,11 @@
 enable-nolib-creation: no
 
+ignore:
+  libs/AceConfig-3.0
+
+externals:
+  libs/AceConfig-3.0: https://repos.curseforge.com/wow/ace3/trunk/AceConfig-3.0
+
 manual-changelog:
   filename: CHANGELOG.md
   markup-type: text
