@@ -1,10 +1,30 @@
 enable-nolib-creation: no
 
-ignore:
-  - libs/AceConfig-3.0
-
 externals:
+  libs/DF: https://github.com/Tercioo/Details-Framework
+  libs/AceAddon-3.0: https://repos.curseforge.com/wow/ace3/trunk/AceAddon-3.0
+  libs/AceComm-3.0: https://repos.curseforge.com/wow/ace3/trunk/AceComm-3.0
   libs/AceConfig-3.0: https://repos.curseforge.com/wow/ace3/trunk/AceConfig-3.0
+  libs/AceConsole-3.0: https://repos.curseforge.com/wow/ace3/trunk/AceConsole-3.0
+  libs/AceDB-3.0: https://repos.curseforge.com/wow/ace3/trunk/AceDB-3.0
+  libs/AceDBOptions-3.0: https://repos.curseforge.com/wow/ace3/trunk/AceDBOptions-3.0
+  libs/AceEvent-3.0: https://repos.curseforge.com/wow/ace3/trunk/AceEvent-3.0
+  libs/AceGUI-3.0: https://repos.curseforge.com/wow/ace3/trunk/AceGUI-3.0
+  libs/AceLocale-3.0: https://repos.curseforge.com/wow/ace3/trunk/AceLocale-3.0
+  libs/AceSerializer-3.0: https://repos.curseforge.com/wow/ace3/trunk/AceSerializer-3.0
+  libs/AceTimer-3.0: https://repos.curseforge.com/wow/ace3/trunk/AceTimer-3.0
+  libs/CallbackHandler-1.0: https://repos.curseforge.com/wow/callbackhandler/trunk/CallbackHandler-1.0
+  libs/LibClassicDurations: https://github.com/rgd87/LibClassicDurations
+  libs/LibClassicCasterino: https://github.com/rgd87/LibClassicCasterino
+  libs/LibCompress: https://repos.curseforge.com/wow/libcompress/trunk
+  libs/LibCustomGlow-1.0: https://github.com/Stanzilla/LibCustomGlow
+  libs/LibDataBroker-1.1: https://github.com/tekkub/libdatabroker-1-1
+  libs/LibDBIcon-1.0: https://repos.curseforge.com/wow/libdbicon-1-0/trunk/LibDBIcon-1.0
+  libs/LibDeflate: https://github.com/safeteeWow/LibDeflate
+  libs/LibRangeCheck-2.0: https://repos.curseforge.com/wow/librangecheck-2-0/trunk/LibRangeCheck-2.0
+  libs/LibStub: https://repos.curseforge.com/wow/libstub/trunk
+  libs/LibSharedMedia-3.0: https://repos.curseforge.com/wow/libsharedmedia-3-0/trunk/LibSharedMedia-3.0
+  libs/LibTranslit-1.0: https://github.com/Vardex/LibTranslit
 
 manual-changelog:
   filename: CHANGELOG.md
