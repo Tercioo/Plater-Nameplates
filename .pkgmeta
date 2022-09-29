@@ -1,7 +1,7 @@
 enable-nolib-creation: no
 
 externals:
-#  libs/DF: https://github.com/Tercioo/Details-Framework
+  libs/DF: https://github.com/Tercioo/Details-Framework
   libs/AceAddon-3.0: https://repos.curseforge.com/wow/ace3/trunk/AceAddon-3.0
   libs/AceComm-3.0: https://repos.curseforge.com/wow/ace3/trunk/AceComm-3.0
   libs/AceConfig-3.0: https://repos.curseforge.com/wow/ace3/trunk/AceConfig-3.0
