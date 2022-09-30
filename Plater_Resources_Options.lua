@@ -303,8 +303,8 @@ function Plater.Resources.BuildResourceOptionsTab(frame)
 				end
                 Plater.UpdateAllPlates()
             end,
-            name = "Use Plater Rsources",
-            desc = "Use Plater Rsources",
+            name = "Use Plater Resources",
+            desc = "Use Plater Resources",
         },
 
         --show on personal bar
