@@ -2599,6 +2599,14 @@ local class_specs_coords = {
 			end
 		end,
 
+		ACTIVE_TALENT_GROUP_CHANGED = function()
+			C_Timer.After (0.5, UpdatePlayerTankState)
+			C_Timer.After (0.5, Plater.Resources.OnSpecChanged) --~resource
+			C_Timer.After (2, Plater.GetSpellForRangeCheck)
+			C_Timer.After (2, Plater.GetHealthCutoffValue)
+			C_Timer.After (1, Plater.DispatchTalentUpdateHookEvent)
+		end,
+		
 		PLAYER_SPECIALIZATION_CHANGED = function()
 			C_Timer.After (0.5, Plater.Resources.OnSpecChanged) --~resource
 			C_Timer.After (2, Plater.GetSpellForRangeCheck)
@@ -4502,8 +4510,10 @@ function Plater.OnInit() --private --~oninit ~init
 		Plater.EventHandlerFrame:RegisterEvent ("UNIT_QUEST_LOG_CHANGED")
 		if IS_WOW_PROJECT_MAINLINE then
 			Plater.EventHandlerFrame:RegisterEvent ("PLAYER_SPECIALIZATION_CHANGED")
-			Plater.EventHandlerFrame:RegisterEvent ("PLAYER_TALENT_UPDATE")
+		elseif IS_WOW_PROJECT_CLASSIC_WRATH then
+			Plater.EventHandlerFrame:RegisterEvent ("ACTIVE_TALENT_GROUP_CHANGED")
 		end
+		Plater.EventHandlerFrame:RegisterEvent ("PLAYER_TALENT_UPDATE")
 		
 		Plater.EventHandlerFrame:RegisterEvent ("ENCOUNTER_START")
 		Plater.EventHandlerFrame:RegisterEvent ("ENCOUNTER_END")

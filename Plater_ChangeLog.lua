@@ -8,7 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 			
-			{1662995033,  "Backend Change", "September 21st, 2022", "Added Hunter Kill Shot to execute detection.", "cont1nuity"},
+			{1664735223,  "Backend Change", "October 2nd, 2022", "Fixing spec recognition on dual spec change in WotLK.", "cont1nuity"},
+			{1664735223,  "Backend Change", "September 21st, 2022", "Added Hunter Kill Shot to execute detection.", "cont1nuity"},
 			
 			{1662995032,  "Bug Fix", "September 21st, 2022", "Ghost Auras should be shown on the debuff frame.", "cont1nuity"},
 			{1662995032,  "Bug Fix", "September 21st, 2022", "WotLK tank recognition in raids is again based on raid roles instead of party role assignments.", "cont1nuity"},
