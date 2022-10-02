@@ -12682,18 +12682,18 @@ function SlashCmdList.PLATER (msg, editbox)
 		
 		return
 	
-	elseif (msg == "profstart" or msg == "profstartcore") then
-		Plater.EnableProfiling(true)
+	elseif (msg == "profstart" or msg == "profstartcore" or msg == "profstartadvance") then
+		Plater.EnableProfiling(true, true)
 		
 		return
 	
 	elseif (msg == "profstartmods") then
-		Plater.EnableProfiling(false)
+		Plater.EnableProfiling(false, true)
 		
 		return
 	
-	elseif (msg == "profstartadvance") then
-		Plater.EnableProfiling(true, true)
+	elseif (msg == "profstartold") then
+		Plater.EnableProfiling(true, false)
 		
 		return
 	
