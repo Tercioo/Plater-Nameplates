@@ -617,7 +617,7 @@ end
 	--this function is guaranteed to run after all auras been processed
 	function Plater.ShowGhostAuras(buffFrame)
 		if (DB_AURA_GHOSTAURA_ENABLED) then
-			if (InCombatLockdown() and buffFrame.unitFrame.InCombat and not buffFrame.unitFrame.IsSelf) then
+			if ((unitFrame.namePlateUnitReaction < 5) and buffFrame.unitFrame.InCombat and not buffFrame.unitFrame.IsSelf and InCombatLockdown()) then
 				local nameplateAuraCache = buffFrame.unitFrame.AuraCache --auras already shown in the nameplate
 				local nameplateGhostAuraCache = buffFrame.unitFrame.GhostAuraCache --auras already shown in the nameplate
 				for spellName, spellTable in pairs(GHOSTAURAS) do
