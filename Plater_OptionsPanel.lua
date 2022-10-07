@@ -837,7 +837,14 @@ function Plater.OpenOptionsPanel()
 			
 			function profilesFrame.OpenProfileManagement()
 				f:Hide()
-				Plater:OpenInterfaceProfile()
+				if SettingsPanel then
+					if not Plater.ProfileFrame then
+						Plater.ProfileFrame = LibStub ("AceConfig-3.0"):RegisterOptionsTable ("Plater", LibStub ("AceDBOptions-3.0"):GetOptionsTable (Plater.db))
+					end
+					LibStub ("AceConfigDialog-3.0"):Open("Plater")
+				else
+					Plater:OpenInterfaceProfile()
+				end
 				C_Timer.After (.5, function()
 					mainFrame:SetIndex (1)
 					mainFrame:SelectIndex (_, 1)
