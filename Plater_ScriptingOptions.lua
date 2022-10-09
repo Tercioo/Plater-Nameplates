@@ -750,7 +750,8 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                 },
             }
 
-            DF:BuildMenuVolatile(sharedOptionsFrame, sharedOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, false, options_slider_template, options_button_template)
+            sharedOptionsMenu.always_boxfirst = true
+            DF:BuildMenuVolatile(sharedOptionsFrame, sharedOptionsMenu, 5, -5, options_frame_shared_height, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 
         --create subframes to hold panels with specific options for:
         -- ~options
@@ -777,7 +778,8 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                 },
             }
 
-            DF:BuildMenuVolatile(colorOptionsFrame, colorOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+            colorOptionsMenu.always_boxfirst = true
+            DF:BuildMenuVolatile(colorOptionsFrame, colorOptionsMenu, 5, -5, options_frame_shared_height, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 
         --> option: number
             local numberOptionsFrame = CreateFrame("frame", "$parentNumberOptions", adminFrame, BackdropTemplateMixin and "BackdropTemplate")
@@ -826,7 +828,8 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                 },
             }
 
-            DF:BuildMenuVolatile(numberOptionsFrame, numberOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+            numberOptionsMenu.always_boxfirst = true
+            DF:BuildMenuVolatile(numberOptionsFrame, numberOptionsMenu, 5, -5, options_frame_shared_height, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 
         --> option: text
             local textOptionsFrame = CreateFrame("frame", "$parentTextOptions", adminFrame, BackdropTemplateMixin and "BackdropTemplate")
@@ -851,7 +854,8 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                 },
             }
 
-            DF:BuildMenuVolatile(textOptionsFrame, textOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, false, options_slider_template, options_button_template)
+            textOptionsMenu.always_boxfirst = true
+            DF:BuildMenuVolatile(textOptionsFrame, textOptionsMenu, 5, -5, options_frame_shared_height, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 
         --> option: boolean
             local booleanOptionsFrame = CreateFrame("frame", "$parentBooleanOptions", adminFrame, BackdropTemplateMixin and "BackdropTemplate")
@@ -876,8 +880,9 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                 },
             }
 
-            DF:BuildMenuVolatile(booleanOptionsFrame, boolOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, false, options_slider_template, options_button_template)
-
+            boolOptionsMenu.always_boxfirst = true
+            DF:BuildMenuVolatile(booleanOptionsFrame, boolOptionsMenu, 5, -5, options_frame_shared_height, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+        
         --> option: label
             local labelOptionsFrame = CreateFrame("frame", "$parentLabelOptions", adminFrame, BackdropTemplateMixin and "BackdropTemplate")
             labelOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
@@ -902,7 +907,8 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                 },
             }
 
-            DF:BuildMenuVolatile(labelOptionsFrame, labelOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, false, options_slider_template, options_button_template)
+            labelOptionsMenu.always_boxfirst = true
+            DF:BuildMenuVolatile(labelOptionsFrame, labelOptionsMenu, 5, -5, options_frame_shared_height, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 
         --> option: blank space
             local blackspaceOptionsFrame = CreateFrame("frame", "$parentBlankSpaceOptions", adminFrame, BackdropTemplateMixin and "BackdropTemplate")
@@ -919,7 +925,8 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                 {type = "label", get = function() return "There's no settings for blank space" end, text_template = DF:GetTemplate("font", "ORANGE_FONT_TEMPLATE")},
             }
 
-            DF:BuildMenuVolatile(blackspaceOptionsFrame, blankspaceOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+            blankspaceOptionsMenu.always_boxfirst = true
+            DF:BuildMenuVolatile(blackspaceOptionsFrame, blankspaceOptionsMenu, 5, -5, options_frame_shared_height, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 
         --> option: list panel
             local listFrameOptionsFrame = CreateFrame("frame", "$parentListFrameOptions", adminFrame, BackdropTemplateMixin and "BackdropTemplate")
@@ -935,7 +942,8 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
 
                 {type = "label", get = function() return "Edit the list box below:" end, text_template = DF:GetTemplate("font", "ORANGE_FONT_TEMPLATE")},
             }
-            DF:BuildMenuVolatile(listFrameOptionsFrame, listFrameOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, false, options_slider_template, options_button_template)
+            listFrameOptionsMenu.always_boxfirst = true
+            DF:BuildMenuVolatile(listFrameOptionsFrame, listFrameOptionsMenu, 5, -5, options_frame_shared_height, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 
             --> create the list box
                 local headerTable = {
@@ -983,7 +991,8 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                 --value
                 {type = "label", get = function() return "under construction:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
             }
-            DF:BuildMenuVolatile(textureOptionsFrame, textureOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, false, options_slider_template, options_button_template)
+            textureOptionsMenu.always_boxfirst = true
+            DF:BuildMenuVolatile(textureOptionsFrame, textureOptionsMenu, 5, -5, options_frame_shared_height, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 
         --refresh the panel where the player can adjust the options for the script
         function Plater.RefreshUserScriptOptions(mainFrame)
@@ -1098,6 +1107,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                     tinsert(menu, newOption)
                 end
 
+                menu.always_boxfirst = true
                 DF:BuildMenuVolatile(mainFrame.ScriptOptionsPanelUser, menu, 5, -5, options_frame_widget_options_height + options_frame_shared_height, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globaCallBack)
 
                 mainFrame.ScriptOptionsPanelUser.ResetListFrames()

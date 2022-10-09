@@ -1,3 +1,4 @@
+local addonName, platerInternal = ...
 
 local Plater = _G.Plater
 local GameCooltip = GameCooltip2
@@ -31,7 +32,7 @@ local CONST_ENUMNAME_CHI = "Chi"
 local CONST_ENUMNAME_SOULCHARGES = "SoulShards"
 local CONST_ENUMNAME_ESSENCE = "Essence"
 
-local startX, startY, heightSize = 10, -130, 710
+local startX, startY, heightSize = 10, platerInternal.optionsYStart, 755
 
 --templates
 local options_text_template = DF:GetTemplate("font", "OPTIONS_FONT_TEMPLATE")
@@ -318,11 +319,6 @@ function Plater.Resources.BuildResourceOptionsTab(frame)
             name = "Show On Personal Bar",
             desc = "Show On Personal Bar",
         },
-
-        --alignment (is this implemented?)
-
-        --grow direction (is this implemented?)
-
 
         --show depleted
         {
