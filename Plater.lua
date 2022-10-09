@@ -4835,6 +4835,7 @@ function Plater.OnInit() --private --~oninit ~init
 
 						if (castBar.finished and not castBar.playedFinishedTest) then
 							Plater.CastBarOnEvent_Hook (castBar, "UNIT_SPELLCAST_STOP", plateFrame.unitFrame.unit, plateFrame.unitFrame.unit)
+							castBar:Hide()
 							castBar.playedFinishedTest = true
 						end
 					end
