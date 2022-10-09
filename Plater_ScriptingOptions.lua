@@ -46,7 +46,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
     local options_frame_width = 407
     local options_frame_shared_height = 100
     local options_frame_widget_options_height = 259
-    
+
     if (_G.PlaterOptionsPanelContainer.AllFrames[PLATER_OPTIONS_SCRIPTING_TAB] == mainFrame) then --scripting tab
         script_options_background_size = {620, 407}
         script_options_scroll_size = {170, 369}
@@ -81,37 +81,37 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
         userFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
         userFrame:SetBackdropBorderColor (unpack (luaeditor_border_color))
         userFrame:SetBackdropColor (unpack (luaeditor_backdrop_color))
-        
+
         local listScrollFrame = CreateFrame("ScrollFrame", "$parentListScrollFrame", userFrame, "UIPanelScrollFrameTemplate,BackdropTemplate")
         listScrollFrame:SetWidth(345)
         listScrollFrame:SetPoint("TOPRIGHT", userFrame, "TOPRIGHT", -5, -5)
         listScrollFrame:SetPoint("BOTTOMRIGHT", userFrame, "BOTTOMRIGHT", -5, 5)
         DF:ApplyStandardBackdrop (listScrollFrame)
         DF:ReskinSlider (listScrollFrame)
-        
+
         userFrame.listScrollFrame = listScrollFrame
         local scrollChild = CreateFrame("Frame", "$parentListScrollFrameChild", listScrollFrame, "BackdropTemplate")
         DF:ApplyStandardBackdrop (scrollChild)
         userFrame.listScrollFrame.scrollChild = scrollChild
         listScrollFrame:SetScrollChild(scrollChild)
-        
+
         local scrollbarName = listScrollFrame:GetName()
         local scrollbar = _G[scrollbarName.."ScrollBar"]
         local scrollupbutton = _G[scrollbarName.."ScrollBarScrollUpButton"]
         local scrolldownbutton = _G[scrollbarName.."ScrollBarScrollDownButton"]
-        
+
         scrollupbutton:ClearAllPoints()
         scrollupbutton:SetPoint("TOPRIGHT", listScrollFrame, "TOPRIGHT", -2, -2)
-        
+
         scrolldownbutton:ClearAllPoints()
         scrolldownbutton:SetPoint("BOTTOMRIGHT", listScrollFrame, "BOTTOMRIGHT", -2, 2)
-        
+
         scrollbar:ClearAllPoints()
         scrollbar:SetPoint("TOP", scrollupbutton, "BOTTOM", 0, -2)
         scrollbar:SetPoint("BOTTOM", scrolldownbutton, "TOP", 0, 2)
-        
+
         scrollChild:SetSize(listScrollFrame:GetWidth()-10, (listScrollFrame:GetHeight())-10)
-        
+
         mainFrame.ScriptOptionsPanelUser = userFrame
         userFrame:Hide()
 
@@ -165,12 +165,12 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
             listBox:SetBackdropColor(.3, .3, .3, .5)
             listBox.__background:Hide()
             listBox.scrollBox.__background:Hide()
-            
+
             local reApplyDefaultValues = function(self)
                 local listBox = self:GetParent()
                 local data = listBox.data or {}
                 local defaultValues = listBox.defaultValues or {}
-                
+
                 for defEntry, defValues in ipairs(defaultValues) do
                     local found = false
                     for dataEntry, dataValues in ipairs(data) do
@@ -184,17 +184,17 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                         tinsert(data, {defValues[1], defValues[2]})
                     end
                 end
-                
+
                 listBox.scrollBox:Refresh()
             end
-            
+
             local reapplyDefaultButton = DF:CreateButton(listBox, reApplyDefaultValues, 80, 20, "Re-Apply Default Values", nil, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "ORANGE_FONT_TEMPLATE"))
             reapplyDefaultButton:SetPoint("topright", listBox.scrollBox, "bottomright", 0, -4)
 
             local titleText = DF:CreateLabel(listBox, "", DF:GetTemplate("font", "ORANGE_FONT_TEMPLATE"))
             titleText:SetPoint("bottomleft", listBox, "topleft", 0, 2)
             listBox.titleText = titleText
-            
+
             listBox:SetScript("OnHide", function(self)
                 if (self.scriptObject) then
                     Plater.RecompileScript(self.scriptObject)
@@ -211,7 +211,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
             save_script_button:SetIcon ([[Interface\BUTTONS\UI-Panel-ExpandButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
             save_script_button.tooltip = "While editing, you may use:\n\n|cFFFFFF00SHIFT + Enter|r: save the script, apply the changes and don't lose the focus on the editor.\n\n|cFFFFFF00CTRL + Enter|r: save the script and apply the changes."
             save_script_button:SetFrameLevel(adminFrame:GetFrameLevel()+11)
-            
+
             --cancel button
             local cancel_script_button = DF:CreateButton (adminFrame, mainFrame.CancelEditing, buttons_size[1], buttons_size[2], "Cancel", -1, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
             cancel_script_button:SetIcon ([[Interface\BUTTONS\UI-Panel-MinimizeButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
@@ -227,7 +227,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
             else
                 save_script_button:SetPoint ("topright", mainFrame.CodeEditorLuaEntry, "bottomright", 0, -25)
             end
-            
+
             cancel_script_button:SetPoint ("right", save_script_button, "left", -20, 0)
             docs_button:SetPoint ("right", cancel_script_button, "left", -20, 0)
         end
@@ -239,7 +239,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
             save_script_button:SetIcon ([[Interface\BUTTONS\UI-Panel-ExpandButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
             save_script_button.tooltip = "While editing, you may use:\n\n|cFFFFFF00SHIFT + Enter|r: save the script, apply the changes and don't lose the focus on the editor.\n\n|cFFFFFF00CTRL + Enter|r: save the script and apply the changes."
             save_script_button:SetFrameLevel(userFrame:GetFrameLevel()+11)
-            
+
             --cancel button
             local cancel_script_button = DF:CreateButton (userFrame, mainFrame.CancelEditing, buttons_size[1], buttons_size[2], "Cancel", -1, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
             cancel_script_button:SetIcon ([[Interface\BUTTONS\UI-Panel-MinimizeButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
@@ -259,7 +259,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
             cancel_script_button:SetPoint ("right", save_script_button, "left", -20, 0)
             docs_button:SetPoint ("right", cancel_script_button, "left", -20, 0)
         end
-        
+
         local createNewOptionButtonFunction = function(button, buttontype, param1, param2)
             --get the current selected script
             local scriptObject = mainFrame.GetCurrentScriptObject() --can be hook or script
@@ -282,7 +282,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                     --add its name into the local 'listOfAvailableOptions'
                     --goto ~options (search) add the frame for the option, can copy paste from an existing
                     --goto ~useroptions to add the option on the user options frame
-                
+
                 --add variables by option type
                 if (selectedOptionType == 1) then --color
                     newOptionObject.Value = {1, 1, 1, 1}
@@ -407,7 +407,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                 for i = 1, #mainFrame.TypeFrames do
                     mainFrame.TypeFrames[i]:Hide()
                 end
-                
+
                 mainFrame.optionSelected = optionIndex
                 mainFrame.ScriptOptionsScrollBox:Refresh()
                 mainFrame.SharedOptionsFrame:RefreshOptions()
@@ -521,7 +521,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                     GameCooltip:SetOption ("YSpacingModSub", -4)
                     GameCooltip:SetOwner (button, "topleft", "topright", 2, 0)
                     GameCooltip:SetFixedParameter ("script_data")
-        
+
                     --build a list of scripts (from the script tab)
                     local allScripts = Plater.db.profile.script_data
                     if (allScripts) then
@@ -543,7 +543,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                     GameCooltip:SetOption ("YSpacingModSub", -4)
                     GameCooltip:SetOwner (button, "topleft", "topright", 2, 0)
                     GameCooltip:SetFixedParameter ("hook_data")
-        
+
                     --build a list of mods (from the modding tab)
                     local allMods = Plater.db.profile.hook_data
                     if (allMods) then
@@ -578,7 +578,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                 GameCooltip:AddLine ("Duplicate Here")
                 GameCooltip:AddMenu (1, onclick_menu_option_duplicate, 1, payload)
                 GameCooltip:AddIcon ([[Interface\BUTTONS\UI-GuildButton-PublicNote-Up]], 1, 1, 16, 16)
-                
+
                 GameCooltip:AddLine ("Copy to Another Script")
                 GameCooltip:AddMenu (1, onclick_menu_option_duplicate, 2, payload)
                 GameCooltip:AddIcon ([[Interface\AddOns\Plater\images\icons]], 1, 1, 16, 16, 3/512, 21/512, 215/512, 233/512)
@@ -590,11 +590,11 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                 GameCooltip:SetOption("SubFollowButton", true)
                 GameCooltip:Show()
             end
-            
+
             --create a new line within the scrollbox containing options created to edit
             local optionsListCreateLine = function (self, index)
                 local line = CreateFrame ("button", "$parentLine" .. index, self, BackdropTemplateMixin and "BackdropTemplate")
-                
+
                 --set its parameters
                 line:SetPoint ("topleft", self, "topleft", 0, -((index-1) * (script_options_line_height+1)))
                 line:SetSize (script_options_scroll_size[1], script_options_line_height)
@@ -606,15 +606,15 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                 line:SetBackdrop ({bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true, edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
                 line:SetBackdropColor (unpack (scrollbox_line_backdrop_color))
                 line:SetBackdropBorderColor (0, 0, 0, 0)
-                
+
                 local icon = line:CreateTexture("$parentIcon", "overlay")
                 icon:SetSize (script_options_line_height - 2, script_options_line_height - 2)
                 icon:SetTexture ([[Interface\ICONS\INV_Hand_1H_PirateHook_B_01]])
                 icon:SetTexCoord (.1, .9, .1, .9)
-                
+
                 local optionNameLabel = DF:CreateLabel(line, "", DF:GetTemplate ("font", "PLATER_SCRIPTS_NAME"))
                 local typeLabel = DF:CreateLabel (line, "", DF:GetTemplate ("font", "PLATER_SCRIPTS_TRIGGER_SPELLID"))
-                
+
                 local removeButton = CreateFrame("button", "$parentRemoveButton", line, "UIPanelCloseButton")
                 removeButton:SetSize (16, 16)
                 removeButton:SetScript ("OnClick", onMouseUpDeleteOptionButton)
@@ -643,11 +643,11 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                 duplicateButton:SetIcon ([[Interface\AddOns\Plater\images\icons]], goButtonsIconSize[1], goButtonsIconSize[2], "overlay", {3/512, 21/512, 215/512, 233/512})
                 duplicateButton:SetPoint ("right", line, "right", duplicateX, 0)
                 duplicateButton:SetAlpha(goButtonsIconAlpha)
-        
+
                 icon:SetPoint ("left", line, "left", 2, 0)
                 optionNameLabel:SetPoint ("topleft", icon, "topright", 4, -2)
                 typeLabel:SetPoint ("topleft", optionNameLabel, "bottomleft", 0, 0)
-                
+
                 line.Icon = icon
                 line.OptionNameLabel = optionNameLabel
                 line.TypeLabel = typeLabel
@@ -657,10 +657,10 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                 line.DuplicateButton = duplicateButton
 
                 line:Hide()
-                
+
                 return line
             end
-            
+
             --scroll showing all options of the script
             local optionsLabel = DF:CreateLabel (adminFrame, "Options Created:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
             local scriptOptionsScrollbox = DF:CreateScrollBox (adminFrame, "$parentScriptOptionsScrollBox", refreshScriptOptionsScrollBox, {} --[[empty values, to be filled when a script is selected]], script_options_scroll_size[1], script_options_scroll_size[2], script_options_scrollbox_lines, script_options_line_height)
@@ -671,12 +671,12 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
             scriptOptionsScrollbox:SetBackdropBorderColor (0, 0, 0, 1)
             mainFrame.ScriptOptionsScrollBox = scriptOptionsScrollbox -- hookFrame.ScriptOptionsScrollBox scriptFrame.ScriptOptionsScrollBox
             DF:ReskinSlider (scriptOptionsScrollbox)
-            
+
             --create the hook scrollbox lines
             for i = 1, script_options_scrollbox_lines do
                 scriptOptionsScrollbox:CreateLine(optionsListCreateLine)
             end
-        
+
             --hold the frames for each type of option
             mainFrame.TypeFrames = {}
 
@@ -718,6 +718,8 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
 
             --widgets
             local sharedOptionsMenu = {
+                always_boxfirst = true,
+
                 {type = "label", get = function() return "General Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
                 --name
                 {
@@ -748,7 +750,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                 },
             }
 
-            DF:BuildMenuVolatile(sharedOptionsFrame, sharedOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+            DF:BuildMenuVolatile(sharedOptionsFrame, sharedOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, false, options_slider_template, options_button_template)
 
         --create subframes to hold panels with specific options for:
         -- ~options
@@ -760,8 +762,10 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
             colorOptionsFrame:SetPoint("topleft", sharedOptionsFrame, "bottomleft", 0, -5)
             colorOptionsFrame:SetSize(options_frame_width, options_frame_widget_options_height)
             mainFrame.TypeFrames[#mainFrame.TypeFrames+1] = colorOptionsFrame
-            
+
             local colorOptionsMenu = {
+                always_boxfirst = true,
+
                 {type = "label", get = function() return "Settings for Color:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
                 --value
                 {
@@ -785,6 +789,8 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
             mainFrame.TypeFrames[#mainFrame.TypeFrames+1] = numberOptionsFrame
 
             local numberOptionsMenu = {
+                always_boxfirst = true,
+
                 {type = "label", get = function() return "Settings for Number:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
                 --value
                 {
@@ -832,6 +838,8 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
             mainFrame.TypeFrames[#mainFrame.TypeFrames+1] = textOptionsFrame
 
             local textOptionsMenu = {
+                always_boxfirst = true,
+
                 {type = "label", get = function() return "Settings for Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
                 --value
                 {
@@ -843,7 +851,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                 },
             }
 
-            DF:BuildMenuVolatile(textOptionsFrame, textOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+            DF:BuildMenuVolatile(textOptionsFrame, textOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, false, options_slider_template, options_button_template)
 
         --> option: boolean
             local booleanOptionsFrame = CreateFrame("frame", "$parentBooleanOptions", adminFrame, BackdropTemplateMixin and "BackdropTemplate")
@@ -853,8 +861,10 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
             booleanOptionsFrame:SetPoint("topleft", sharedOptionsFrame, "bottomleft", 0, -5)
             booleanOptionsFrame:SetSize(options_frame_width, options_frame_widget_options_height)
             mainFrame.TypeFrames[#mainFrame.TypeFrames+1] = booleanOptionsFrame
-            
+
             local boolOptionsMenu = {
+                always_boxfirst = true,
+
                 {type = "label", get = function() return "Settings for Boolean:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
                 --value
                 {
@@ -866,8 +876,8 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                 },
             }
 
-            DF:BuildMenuVolatile(booleanOptionsFrame, boolOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
-        
+            DF:BuildMenuVolatile(booleanOptionsFrame, boolOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, false, options_slider_template, options_button_template)
+
         --> option: label
             local labelOptionsFrame = CreateFrame("frame", "$parentLabelOptions", adminFrame, BackdropTemplateMixin and "BackdropTemplate")
             labelOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
@@ -878,6 +888,8 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
             mainFrame.TypeFrames[#mainFrame.TypeFrames+1] = labelOptionsFrame
 
             local labelOptionsMenu = {
+                always_boxfirst = true,
+
                 {type = "label", get = function() return "Settings for Label:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
                 --value
                 {
@@ -890,7 +902,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                 },
             }
 
-            DF:BuildMenuVolatile(labelOptionsFrame, labelOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+            DF:BuildMenuVolatile(labelOptionsFrame, labelOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, false, options_slider_template, options_button_template)
 
         --> option: blank space
             local blackspaceOptionsFrame = CreateFrame("frame", "$parentBlankSpaceOptions", adminFrame, BackdropTemplateMixin and "BackdropTemplate")
@@ -902,6 +914,8 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
             mainFrame.TypeFrames[#mainFrame.TypeFrames+1] = blackspaceOptionsFrame
 
             local blankspaceOptionsMenu = {
+                always_boxfirst = true,
+
                 {type = "label", get = function() return "There's no settings for blank space" end, text_template = DF:GetTemplate("font", "ORANGE_FONT_TEMPLATE")},
             }
 
@@ -917,9 +931,11 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
             mainFrame.TypeFrames[#mainFrame.TypeFrames+1] = listFrameOptionsFrame
 
             local listFrameOptionsMenu = {
+                always_boxfirst = true,
+
                 {type = "label", get = function() return "Edit the list box below:" end, text_template = DF:GetTemplate("font", "ORANGE_FONT_TEMPLATE")},
             }
-            DF:BuildMenuVolatile(listFrameOptionsFrame, listFrameOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+            DF:BuildMenuVolatile(listFrameOptionsFrame, listFrameOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, false, options_slider_template, options_button_template)
 
             --> create the list box
                 local headerTable = {
@@ -935,7 +951,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                     height = 216,
                     auto_width = true,
                     line_height = 16,
-                    line_backdrop = {bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true, 
+                    line_backdrop = {bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true,
                     edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1},
                     line_backdrop_color = {.1, .1, .1, .6},
                     line_backdrop_border_color = {0, 0, 0, .5},
@@ -959,13 +975,15 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
             textureOptionsFrame:SetPoint("topleft", sharedOptionsFrame, "bottomleft", 0, -5)
             textureOptionsFrame:SetSize(options_frame_width, options_frame_widget_options_height)
             mainFrame.TypeFrames[#mainFrame.TypeFrames+1] = textureOptionsFrame
-            
+
             local textureOptionsMenu = {
+                always_boxfirst = true,
+
                 {type = "label", get = function() return "Settings for Texture:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
                 --value
                 {type = "label", get = function() return "under construction:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
             }
-            DF:BuildMenuVolatile(textureOptionsFrame, textureOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+            DF:BuildMenuVolatile(textureOptionsFrame, textureOptionsMenu, 5, -5, options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, false, options_slider_template, options_button_template)
 
         --refresh the panel where the player can adjust the options for the script
         function Plater.RefreshUserScriptOptions(mainFrame)
@@ -1010,7 +1028,9 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                 local thisOptionsValues = scriptObject.OptionsValues
 
                 local listFramesNeeded = {}
-                local menu = {}
+                local menu = {
+                    always_boxfirst = true,
+                }
 
                 for i = 1, #options do
                     local thisOption = options[i]
@@ -1078,7 +1098,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                     tinsert(menu, newOption)
                 end
 
-                DF:BuildMenuVolatile(mainFrame.ScriptOptionsPanelUser, menu, 5, -5, options_frame_widget_options_height + options_frame_shared_height, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globaCallBack)
+                DF:BuildMenuVolatile(mainFrame.ScriptOptionsPanelUser, menu, 5, -5, options_frame_widget_options_height + options_frame_shared_height, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globaCallBack)
 
                 mainFrame.ScriptOptionsPanelUser.ResetListFrames()
                 for i = 1, #listFramesNeeded do
@@ -1087,11 +1107,11 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                     local data = t[1]
                     local title = t[2]
                     local defaultValues = t[3] or {}
-                    
+
                     listFrame:SetData(data)
                     listFrame.defaultValues = defaultValues
                     listFrame.scriptObject = scriptObject
-                    
+
                     local posY = i - 1
                     listFrame:SetPoint("topright", mainFrame.ScriptOptionsPanelUser.listScrollFrame.scrollChild, "topright", -25, (-posY*205) - 21)
                     listFrame.titleText:SetText(title)

@@ -426,6 +426,12 @@ function Plater.Resources.BuildResourceOptionsTab(frame)
 	_G.C_Timer.After(1.4, function()
 		--TODO to other frame for now
 		--DF:BuildMenu(optionsFrame, globalResourceOptions, 5, -5, CONST_SCROLLBOX_HEIGHT, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, optionChangedCallback)
-		DF:BuildMenu(frame, globalResourceOptions, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, optionChangedCallback)
+
+        globalResourceOptions.always_boxfirst = true
+		DF:BuildMenu(frame, globalResourceOptions, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, optionChangedCallback)
+
+        --for widgetId, widget in pairs(frame.widgetids) do
+        --    print(widget.hasLabel:GetText())
+        --end
 	end)
 end

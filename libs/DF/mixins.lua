@@ -222,7 +222,7 @@ detailsFramework.SetPointMixin = {
 
 --mixin for options functions
 detailsFramework.OptionsFunctions = {
-	SetOption = function (self, optionName, optionValue)
+	SetOption = function(self, optionName, optionValue)
 		if (self.options) then
 			self.options [optionName] = optionValue
 		else
@@ -235,11 +235,11 @@ detailsFramework.OptionsFunctions = {
 		end
 	end,
 
-	GetOption = function (self, optionName)
+	GetOption = function(self, optionName)
 		return self.options and self.options [optionName]
 	end,
 
-	GetAllOptions = function (self)
+	GetAllOptions = function(self)
 		if (self.options) then
 			local optionsTable = {}
 			for key, _ in pairs (self.options) do
@@ -251,7 +251,7 @@ detailsFramework.OptionsFunctions = {
 		end
 	end,
 
-	BuildOptionsTable = function (self, defaultOptions, userOptions)
+	BuildOptionsTable = function(self, defaultOptions, userOptions)
 		self.options = self.options or {}
 		detailsFramework.table.deploy (self.options, userOptions or {})
 		detailsFramework.table.deploy (self.options, defaultOptions or {})
@@ -553,10 +553,10 @@ detailsFramework.ScrollBoxFunctions = {
 }
 
 local SortMember = ""
-local SortByMember = function (t1, t2)
+local SortByMember = function(t1, t2)
 	return t1[SortMember] > t2[SortMember]
 end
-local SortByMemberReverse = function (t1, t2)
+local SortByMemberReverse = function(t1, t2)
 	return t1[SortMember] < t2[SortMember]
 end
 

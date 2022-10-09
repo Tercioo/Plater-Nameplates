@@ -1,6 +1,6 @@
 
 
-local dversion = 378
+local dversion = 379
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary(major, minor)
 
@@ -184,7 +184,7 @@ function DF:GetRoleByClassicTalentTree()
 	local MIN_SPECS = 4
 
 	--put the spec with more talent point to the top
-	table.sort(pointsPerSpec, function (t1, t2) return t1[2] > t2[2] end)
+	table.sort(pointsPerSpec, function(t1, t2) return t1[2] > t2[2] end)
 
 	--get the spec with more points spent
 	local spec = pointsPerSpec[1]
@@ -1374,6 +1374,7 @@ end
 		if (text) then
 			if (useColon) then
 				text = text .. ":"
+				return text
 			else
 				return text
 			end
@@ -1551,6 +1552,8 @@ end
 					end
 				end
 
+				local extraPaddingY = 0
+
 				if (not widgetTable.novolatile) then
 					--step a line
 					if (widgetTable.type == "blank" or widgetTable.type == "space") then
@@ -1667,6 +1670,13 @@ end
 						if (widgetTable.boxfirst or useBoxFirstOnAllWidgets) then
 							switch:SetPoint (currentXOffset, currentYOffset)
 							switch.hasLabel:SetPoint ("left", switch, "right", 2)
+
+							local nextWidgetTable = menuOptions[index+1]
+							if (nextWidgetTable) then
+								if (nextWidgetTable.type ~= "blank" and nextWidgetTable.type ~= "breakline" and nextWidgetTable.type ~= "toggle" and nextWidgetTable.type ~= "color") then
+									extraPaddingY = 4
+								end
+							end
 						else
 							switch.hasLabel:SetPoint (currentXOffset, currentYOffset)
 							switch:SetPoint ("left", switch.hasLabel, "right", 2)
@@ -1893,6 +1903,10 @@ end
 						end
 					end
 
+					if (extraPaddingY > 0) then
+						currentYOffset = currentYOffset - extraPaddingY
+					end
+
 					if (widgetTable.type == "breakline" or currentYOffset < height) then
 						currentYOffset = yOffset
 						currentXOffset = currentXOffset + maxColumnWidth + 20
@@ -2077,12 +2091,12 @@ end
 						local nextWidgetTable = menuOptions[index+1]
 						if (nextWidgetTable) then
 							if (nextWidgetTable.type ~= "blank" and nextWidgetTable.type ~= "breakline" and nextWidgetTable.type ~= "toggle" and nextWidgetTable.type ~= "color") then
-								extraPaddingY = 3
+								extraPaddingY = 4
 							end
 						end
 					else
 						label:SetPoint(currentXOffset, currentYOffset)
-						switch:SetPoint("left", label, "right", 2)
+						switch:SetPoint("left", label, "right", 2, 0)
 					end
 					switch.hasLabel = label
 
@@ -2396,7 +2410,7 @@ end
 
 		frame:RegisterEvent ("PLAYER_REGEN_DISABLED")
 		frame:RegisterEvent ("PLAYER_REGEN_ENABLED")
-		frame:SetScript ("OnEvent", function (self, event)
+		frame:SetScript ("OnEvent", function(self, event)
 			if (event == "PLAYER_REGEN_DISABLED") then
 				in_combat_background:Show()
 				in_combat_label:Show()
@@ -2424,7 +2438,7 @@ end
 			TutorialAlertFrame:SetFrameStrata ("TOOLTIP")
 			TutorialAlertFrame:Hide()
 			
-			TutorialAlertFrame:SetScript ("OnMouseUp", function (self) 
+			TutorialAlertFrame:SetScript ("OnMouseUp", function(self) 
 				if (self.clickfunc and type (self.clickfunc) == "function") then
 					self.clickfunc()
 				end
@@ -2442,7 +2456,7 @@ end
 		TutorialAlertFrame:Show()
 	end
 	
-	local refresh_options = function (self)
+	local refresh_options = function(self)
 		for _, widget in ipairs (self.widget_list) do
 			if (widget._get) then
 				if (widget.widget_type == "label") then
@@ -2467,7 +2481,7 @@ end
 		end
 	end
 	
-	local get_frame_by_id = function (self, id)
+	local get_frame_by_id = function(self, id)
 		return self.widgetids [id]
 	end
 
@@ -3054,7 +3068,7 @@ local FrameshakeUpdateFrame = DetailsFrameworkFrameshakeControl or CreateFrame (
 --> store the frame which has frame shakes registered
 FrameshakeUpdateFrame.RegisteredFrames = FrameshakeUpdateFrame.RegisteredFrames or {}
 
-FrameshakeUpdateFrame.RegisterFrame = function (newFrame)
+FrameshakeUpdateFrame.RegisterFrame = function(newFrame)
 	--> add the frame into the registered frames to update
 	DF.table.addunique (FrameshakeUpdateFrame.RegisteredFrames, newFrame)
 end
@@ -3062,7 +3076,7 @@ end
 --forward declared
 local frameshake_do_update
 
-FrameshakeUpdateFrame:SetScript ("OnUpdate", function (self, deltaTime)
+FrameshakeUpdateFrame:SetScript ("OnUpdate", function(self, deltaTime)
 	for i = 1, #FrameshakeUpdateFrame.RegisteredFrames do
 		local parent = FrameshakeUpdateFrame.RegisteredFrames [i]
 		--> check if there's a shake running
@@ -3079,7 +3093,7 @@ FrameshakeUpdateFrame:SetScript ("OnUpdate", function (self, deltaTime)
 end)
 
 
-local frameshake_shake_finished = function (parent, shakeObject)
+local frameshake_shake_finished = function(parent, shakeObject)
 	if (shakeObject.IsPlaying) then
 		shakeObject.IsPlaying = false
 		shakeObject.TimeLeft = 0
@@ -3117,7 +3131,7 @@ local frameshake_shake_finished = function (parent, shakeObject)
 end
 
 --already declared above the update function
-frameshake_do_update = function (parent, shakeObject, deltaTime)
+frameshake_do_update = function(parent, shakeObject, deltaTime)
 
 	--> check delta time
 	deltaTime = deltaTime or 0
@@ -3193,12 +3207,12 @@ frameshake_do_update = function (parent, shakeObject, deltaTime)
 	end
 end
 
-local frameshake_stop = function (parent, shakeObject)
+local frameshake_stop = function(parent, shakeObject)
 	frameshake_shake_finished (parent, shakeObject)
 end
 
 --> scale direction scales the X and Y coordinates, scale strength scales the amplitude and frequency
-local frameshake_play = function (parent, shakeObject, scaleDirection, scaleAmplitude, scaleFrequency, scaleDuration)
+local frameshake_play = function(parent, shakeObject, scaleDirection, scaleAmplitude, scaleFrequency, scaleDuration)
 
 	--> check if is already playing
 	if (shakeObject.TimeLeft > 0) then
@@ -3271,7 +3285,7 @@ local frameshake_play = function (parent, shakeObject, scaleDirection, scaleAmpl
 	frameshake_do_update (parent, shakeObject)
 end
 
-local frameshake_set_config = function (parent, shakeObject, duration, amplitude, frequency, absoluteSineX, absoluteSineY, scaleX, scaleY, fadeInTime, fadeOutTime, anchorPoints)
+local frameshake_set_config = function(parent, shakeObject, duration, amplitude, frequency, absoluteSineX, absoluteSineY, scaleX, scaleY, fadeInTime, fadeOutTime, anchorPoints)
 	shakeObject.Amplitude = amplitude or shakeObject.Amplitude
 	shakeObject.Frequency = frequency or shakeObject.Frequency
 	shakeObject.Duration = duration or shakeObject.Duration
@@ -3348,7 +3362,7 @@ end
 -----------------------------
 --> glow overlay
 
-local glow_overlay_play = function (self)
+local glow_overlay_play = function(self)
 	if (not self:IsShown()) then
 		self:Show()
 	end
@@ -3361,7 +3375,7 @@ local glow_overlay_play = function (self)
 	end
 end
 
-local glow_overlay_stop = function (self)
+local glow_overlay_stop = function(self)
 	if (self.animOut:IsPlaying()) then
 		self.animOut:Stop()
 	end
@@ -3373,7 +3387,7 @@ local glow_overlay_stop = function (self)
 	end
 end
 
-local glow_overlay_setcolor = function (self, antsColor, glowColor)
+local glow_overlay_setcolor = function(self, antsColor, glowColor)
 	if (antsColor) then
 		local r, g, b, a = DF:ParseColors (antsColor)
 		self.ants:SetVertexColor (r, g, b, a)
@@ -3393,11 +3407,11 @@ local glow_overlay_setcolor = function (self, antsColor, glowColor)
 	end
 end
 
-local glow_overlay_onshow = function (self)
+local glow_overlay_onshow = function(self)
 	glow_overlay_play (self)
 end
 
-local glow_overlay_onhide = function (self)
+local glow_overlay_onhide = function(self)
 	glow_overlay_stop (self)
 end
 
@@ -3437,7 +3451,7 @@ function DF:CreateGlowOverlay (parent, antsColor, glowColor)
 end
 
 --> custom glow with ants animation
-local ants_set_texture_offset = function (self, leftOffset, rightOffset, topOffset, bottomOffset)
+local ants_set_texture_offset = function(self, leftOffset, rightOffset, topOffset, bottomOffset)
 	leftOffset = leftOffset or 0
 	rightOffset = rightOffset or 0
 	topOffset = topOffset or 0
@@ -3469,7 +3483,7 @@ function DF:CreateAnts (parent, antTable, leftOffset, rightOffset, topOffset, bo
 	
 	f.AntTable = antTable
 	
-	f:SetScript ("OnUpdate", function (self, deltaTime)
+	f:SetScript ("OnUpdate", function(self, deltaTime)
 		AnimateTexCoords (t, self.AntTable.TextureWidth, self.AntTable.TextureHeight, self.AntTable.TexturePartsWidth, self.AntTable.TexturePartsHeight, self.AntTable.AmountParts, deltaTime, self.AntTable.Throttle or 0.025)
 	end)
 	
@@ -3489,7 +3503,7 @@ local default_border_color1 = .5
 local default_border_color2 = .3
 local default_border_color3 = .1
 
-local SetBorderAlpha = function (self, alpha1, alpha2, alpha3)
+local SetBorderAlpha = function(self, alpha1, alpha2, alpha3)
 	self.Borders.Alpha1 = alpha1 or self.Borders.Alpha1
 	self.Borders.Alpha2 = alpha2 or self.Borders.Alpha2
 	self.Borders.Alpha3 = alpha3 or self.Borders.Alpha3
@@ -3505,7 +3519,7 @@ local SetBorderAlpha = function (self, alpha1, alpha2, alpha3)
 	end
 end
 
-local SetBorderColor = function (self, r, g, b)
+local SetBorderColor = function(self, r, g, b)
 	for _, texture in ipairs (self.Borders.Layer1) do
 		texture:SetColorTexture (r, g, b)
 	end
@@ -3517,7 +3531,7 @@ local SetBorderColor = function (self, r, g, b)
 	end
 end
 
-local SetLayerVisibility = function (self, layer1Shown, layer2Shown, layer3Shown)
+local SetLayerVisibility = function(self, layer1Shown, layer2Shown, layer3Shown)
 
 	for _, texture in ipairs (self.Borders.Layer1) do
 		texture:SetShown (layer1Shown)
@@ -3966,7 +3980,7 @@ function DF:GetClassSpecIDs (class)
 	return specs_per_class [class]
 end
 
-local dispatch_error = function (context, errortext)
+local dispatch_error = function(context, errortext)
 	DF:Msg ( (context or "<no context>") .. " |cFFFF9900error|r: " .. (errortext or "<no error given>"))
 end
 
@@ -4036,7 +4050,7 @@ function DF_CALC_PERFORMANCE()
 	local F = CreateFrame ("frame")
 	local T = GetTime()
 	local J = false
-	F:SetScript ("OnUpdate", function (self, deltaTime)
+	F:SetScript ("OnUpdate", function(self, deltaTime)
 		if (not J) then
 			J = true
 			return 
@@ -4608,7 +4622,7 @@ if (not DetailsFrameworkDeltaTimeFrame) then
 end
 
 local deltaTimeFrame = DetailsFrameworkDeltaTimeFrame
-deltaTimeFrame:SetScript ("OnUpdate", function (self, deltaTime)
+deltaTimeFrame:SetScript ("OnUpdate", function(self, deltaTime)
 	self.deltaTime = deltaTime
 end)
 
@@ -4689,11 +4703,11 @@ DF.DebugMixin = {
 
 	debug = true,
 
-	CheckPoint = function (self, checkPointName, ...)
+	CheckPoint = function(self, checkPointName, ...)
 		print (self:GetName(), checkPointName, ...)
 	end,
 	
-	CheckVisibilityState = function (self, widget)
+	CheckVisibilityState = function(self, widget)
 		
 		self = widget or self
 		
@@ -4706,7 +4720,7 @@ DF.DebugMixin = {
 		print ("shown:", self:IsShown(), "visible:", self:IsVisible(), "alpha:", self:GetAlpha(), "size:", width, height, "points:", numPoints)
 	end,
 	
-	CheckStack = function (self)
+	CheckStack = function(self)
 		local stack = debugstack()
 		Details:Dump (stack)
 	end,
@@ -4935,7 +4949,7 @@ end
     end
 	
 	DF.DefaultSecureScriptEnvironmentHandle = {
-		__index = function (env, key)
+		__index = function(env, key)
 
 			if (forbiddenFunction[key]) then
 				return nil

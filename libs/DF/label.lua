@@ -296,7 +296,7 @@ detailsFramework:Mixin(LabelMetaFunctions, detailsFramework.SetPointMixin)
 			local idx = getmetatable(labelObject.label).__index
 			for funcName, funcAddress in pairs(idx) do
 				if (not LabelMetaFunctions[funcName]) then
-					LabelMetaFunctions[funcName] = function (object, ...)
+					LabelMetaFunctions[funcName] = function(object, ...)
 						local x = loadstring( "return _G['"..object.label:GetName().."']:"..funcName.."(...)")
 						return x(...)
 					end
