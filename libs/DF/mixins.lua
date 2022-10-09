@@ -1,20 +1,125 @@
 
-local DF = _G ["DetailsFramework"]
-if (not DF or not DetailsFrameworkCanLoad) then
+local detailsFramework = _G["DetailsFramework"]
+if (not detailsFramework or not DetailsFrameworkCanLoad) then
 	return
 end
 
 local _
 
-DF.DefaultMetaFunctionsGet = {
-	parent = function(object)
-		return object:GetParent()
+detailsFramework.WidgetFunctions = {
+	GetCapsule = function(self)
+		return self.MyObject
+	end,
+
+	GetObject = function(self)
+		return self.MyObject
 	end,
 }
 
-DF.DefaultMetaFunctionsSet = {
+detailsFramework.DefaultMetaFunctionsGet = {
+	parent = function(object)
+		return object:GetParent()
+	end,
+
+	shown = function(object)
+		return object:IsShown()
+	end,
+}
+
+detailsFramework.DefaultMetaFunctionsSet = {
 	parent = function(object, value)
 		return object:SetParent(value)
+	end,
+
+	show = function(object, value)
+		if (value) then
+			return object:Show()
+		else
+			return object:Hide()
+		end
+	end,
+
+	hide = function(object, value)
+		if (value) then
+			return object:Hide()
+		else
+			return object:Show()
+		end
+	end,
+}
+
+detailsFramework.DefaultMetaFunctionsSet.shown = detailsFramework.DefaultMetaFunctionsSet.show
+
+detailsFramework.LayeredRegionMetaFunctionsSet = {
+	drawlayer = function(object, value)
+		object.image:SetDrawLayer(value)
+	end,
+
+	sublevel = function(object, value)
+		local drawLayer = object:GetDrawLayer()
+		object:SetDrawLayer(drawLayer, value)
+	end,
+}
+
+detailsFramework.LayeredRegionMetaFunctionsGet = {
+	drawlayer = function(object)
+		return object.image:GetDrawLayer()
+	end,
+
+	sublevel = function(object)
+		local _, subLevel = object.image:GetDrawLayer()
+		return subLevel
+	end,
+}
+
+local getFrame = function(frame)
+	return rawget(frame, "widget") or frame
+end
+
+detailsFramework.FrameMixin = {
+	SetFrameStrata = function(self, strata)
+		self = getFrame(self)
+		if (type(strata) == "table" and strata.GetObjectType) then
+			local UIObject = strata
+			self:SetFrameStrata(UIObject:GetFrameStrata())
+		else
+			self:SetFrameStrata(strata)
+		end
+	end,
+
+	SetFrameLevel = function(self, level, UIObject)
+		self = getFrame(self)
+		if (not UIObject) then
+			self:SetFrameLevel(level)
+		else
+			local framelevel = UIObject:GetFrameLevel(UIObject) + level
+			self:SetFrameLevel(framelevel)
+		end
+	end,
+
+	SetSize = function(self, width, height)
+		self = getFrame(self)
+		if (width) then
+			self:SetWidth(width)
+		end
+		if (height) then
+			self:SetHeight(height)
+		end
+	end,
+
+	SetBackdrop = function(self, ...)
+		self = getFrame(self)
+		self:SetBackdrop(...)
+	end,
+
+	SetBackdropColor = function(self, ...)
+		self = getFrame(self)
+		self:SetBackdropColor(...)
+	end,
+
+	SetBackdropBorderColor = function(self, ...)
+		self = getFrame(self)
+		getFrame(self):SetBackdropBorderColor(...)
 	end,
 }
 
@@ -23,19 +128,26 @@ local doublePoint = {
 	["rights"] = true,
 	["tops"] = true,
 	["bottoms"] = true,
+
+	["left-left"] = true,
+	["right-right"] = true,
+	["top-top"] = true,
+	["bottom-bottom"] = true,
+
 	["bottom-top"] = true,
 	["top-bottom"] = true,
 	["right-left"] = true,
+	["left-right"] = true,
 }
 
-DF.SetPointMixin = {
+detailsFramework.SetPointMixin = {
 	SetPoint = function(object, anchorName1, anchorObject, anchorName2, xOffset, yOffset)
 		if (doublePoint[anchorName1]) then
 			object:ClearAllPoints()
 			local anchorTo
 			if (anchorObject and type(anchorObject) == "table") then
 				xOffset, yOffset = anchorName2 or 0, xOffset or 0
-				anchorTo = anchorObject.widget or anchorObject
+				anchorTo = getFrame(anchorObject)
 			else
 				xOffset, yOffset = anchorObject or 0, anchorName2 or 0
 				anchorTo = object:GetParent()
@@ -58,6 +170,18 @@ DF.SetPointMixin = {
 				object:SetPoint("bottomleft", anchorTo, "bottomleft", xOffset, yOffset)
 				object:SetPoint("bottomright", anchorTo, "bottomright", -xOffset, yOffset)
 
+			elseif (anchorName1 == "left-left") then
+				object:SetPoint("left", anchorTo, "left", xOffset, yOffset)
+
+			elseif (anchorName1 == "right-right") then
+				object:SetPoint("right", anchorTo, "right", xOffset, yOffset)
+
+			elseif (anchorName1 == "top-top") then
+				object:SetPoint("top", anchorTo, "top", xOffset, yOffset)
+
+			elseif (anchorName1 == "bottom-bottom") then
+				object:SetPoint("bottom", anchorTo, "bottom", xOffset, yOffset)
+
 			elseif (anchorName1 == "bottom-top") then
 				object:SetPoint("bottomleft", anchorTo, "topleft", xOffset, yOffset)
 				object:SetPoint("bottomright", anchorTo, "topright", -xOffset, yOffset)
@@ -68,7 +192,11 @@ DF.SetPointMixin = {
 
 			elseif (anchorName1 == "right-left") then
 				object:SetPoint("topright", anchorTo, "topleft", xOffset, -yOffset)
-				object:SetPoint("bottomright", anchorTo, "bottomright", xOffset, yOffset)
+				object:SetPoint("bottomright", anchorTo, "bottomleft", xOffset, yOffset)
+
+			elseif (anchorName1 == "left-right") then
+				object:SetPoint("topleft", anchorTo, "topright", xOffset, -yOffset)
+				object:SetPoint("bottomleft", anchorTo, "bottomright", xOffset, yOffset)
 			end
 
 			return
@@ -77,17 +205,23 @@ DF.SetPointMixin = {
 		xOffset = xOffset or 0
 		yOffset = yOffset or 0
 
-		anchorName1, anchorObject, anchorName2, xOffset, yOffset = DF:CheckPoints(anchorName1, anchorObject, anchorName2, xOffset, yOffset, object)
+		anchorName1, anchorObject, anchorName2, xOffset, yOffset = detailsFramework:CheckPoints(anchorName1, anchorObject, anchorName2, xOffset, yOffset, object)
 		if (not anchorName1) then
 			error("SetPoint: Invalid parameter.")
 			return
 		end
-		return object.widget:SetPoint(anchorName1, anchorObject, anchorName2, xOffset, yOffset)
+
+		if (not object.widget) then
+			local SetPoint = getmetatable(object).__index.SetPoint
+			return SetPoint(object, anchorName1, anchorObject, anchorName2, xOffset, yOffset)
+		else
+			return object.widget:SetPoint(anchorName1, anchorObject, anchorName2, xOffset, yOffset)
+		end
 	end,
 }
 
 --mixin for options functions
-DF.OptionsFunctions = {
+detailsFramework.OptionsFunctions = {
 	SetOption = function (self, optionName, optionValue)
 		if (self.options) then
 			self.options [optionName] = optionValue
@@ -97,7 +231,7 @@ DF.OptionsFunctions = {
 		end
 
 		if (self.OnOptionChanged) then
-			DF:Dispatch (self.OnOptionChanged, self, optionName, optionValue)
+			detailsFramework:Dispatch (self.OnOptionChanged, self, optionName, optionValue)
 		end
 	end,
 
@@ -119,13 +253,13 @@ DF.OptionsFunctions = {
 
 	BuildOptionsTable = function (self, defaultOptions, userOptions)
 		self.options = self.options or {}
-		DF.table.deploy (self.options, userOptions or {})
-		DF.table.deploy (self.options, defaultOptions or {})
+		detailsFramework.table.deploy (self.options, userOptions or {})
+		detailsFramework.table.deploy (self.options, defaultOptions or {})
 	end
 }
 
 --payload mixin
-DF.PayloadMixin = {
+detailsFramework.PayloadMixin = {
 	ClearPayload = function(self)
 		self.payload = {}
 	end,
@@ -157,14 +291,15 @@ DF.PayloadMixin = {
 
 	--does not copy wow objects, just pass them to the new table, tables strings and numbers are copied entirely
 	DuplicatePayload = function(self)
-		local duplicatedPayload = DF.table.duplicate({}, self.payload)
+		local duplicatedPayload = detailsFramework.table.duplicate({}, self.payload)
 		return duplicatedPayload
 	end,
 }
 
-DF.ScrollBoxFunctions = {
+detailsFramework.ScrollBoxFunctions = {
 	Refresh = function(self)
 		--hide all frames and tag as not in use
+		self._LinesInUse = 0
 		for index, frame in ipairs(self.Frames) do
 			frame:Hide()
 			frame._InUse = nil
@@ -176,7 +311,7 @@ DF.ScrollBoxFunctions = {
 			offset = self:GetOffsetFaux()
 		end
 
-		DF:CoreDispatch((self:GetName() or "ScrollBox") .. ":Refresh()", self.refresh_func, self, self.data, offset, self.LineAmount)
+		detailsFramework:CoreDispatch((self:GetName() or "ScrollBox") .. ":Refresh()", self.refresh_func, self, self.data, offset, self.LineAmount)
 
 		for index, frame in ipairs(self.Frames) do
 			if (not frame._InUse) then
@@ -188,13 +323,25 @@ DF.ScrollBoxFunctions = {
 
 		self:Show()
 
-		if (self.HideScrollBar) then
-			local frameName = self:GetName()
-			if (frameName) then
+		local frameName = self:GetName()
+		if (frameName) then
+			if (self.HideScrollBar) then
 				local scrollBar = _G[frameName .. "ScrollBar"]
 				if (scrollBar) then
 					scrollBar:Hide()
 				end
+			else
+				--[=[ --maybe in the future I visit this again
+				local scrollBar = _G[frameName .. "ScrollBar"]
+				local height = self:GetHeight()
+				local totalLinesRequired = #self.data
+				local linesShown = self._LinesInUse
+
+				local percent = linesShown / totalLinesRequired
+				local thumbHeight = height * percent
+				scrollBar.ThumbTexture:SetSize(12, thumbHeight)
+				print("thumbHeight:", thumbHeight)
+				--]=]
 			end
 		end
 		return self.Frames
@@ -233,6 +380,8 @@ DF.ScrollBoxFunctions = {
 		if (line) then
 			line._InUse = true
 		end
+
+		self._LinesInUse = self._LinesInUse + 1
 		return line
 	end,
 
@@ -411,7 +560,7 @@ local SortByMemberReverse = function (t1, t2)
 	return t1[SortMember] < t2[SortMember]
 end
 
-DF.SortFunctions = {
+detailsFramework.SortFunctions = {
 	Sort = function(self, thisTable, memberName, isReverse)
 		SortMember = memberName
 		if (not isReverse) then
@@ -421,6 +570,3 @@ DF.SortFunctions = {
 		end
 	end
 }
-
-
-
