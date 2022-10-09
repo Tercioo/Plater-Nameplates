@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 			
+			{1664735223,  "Bug Fix", "October 9th, 2022", "Hiding test cast bars properly after test mode turned off.", "cont1nuity"},
 			{1664735223,  "Backend Change", "October 6th, 2022", "Limit Ghost Auras to enemy units.", "cont1nuity"},
 			{1664735223,  "Backend Change", "October 2nd, 2022", "Fixing spec recognition on dual spec change in WotLK.", "cont1nuity"},
 			{1664735223,  "Backend Change", "September 21st, 2022", "Added Hunter Kill Shot to execute detection.", "cont1nuity"},
