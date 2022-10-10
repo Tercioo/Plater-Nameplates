@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 			
+			{1665384519,  "Bug Fix", "October 10th, 2022", "Fixing Plater not working on Classic Era.", "cont1nuity"},
+			
 			{1665344387,  "Bug Fix", "October 9th, 2022", "Fixing labels on some options not showing up properly.", "Terciob"},
 			{1665344387,  "Bug Fix", "October 9th, 2022", "Hiding test cast bars properly after test mode turned off.", "cont1nuity"},
 			{1665344387,  "Backend Change", "October 6th, 2022", "Limit Ghost Auras to enemy units.", "cont1nuity"},
