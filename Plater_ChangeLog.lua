@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 			
+			{1665384519,  "Bug Fix", "October 11th, 2022", "Fixing aura types auto tracking for Dragonflight.", "cont1nuity"},
+			
 			{1665384519,  "Bug Fix", "October 10th, 2022", "Fixing Plater not working on Classic Era.", "cont1nuity"},
 			
 			{1665344387,  "Bug Fix", "October 9th, 2022", "Fixing labels on some options not showing up properly.", "Terciob"},
