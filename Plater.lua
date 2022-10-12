@@ -11517,13 +11517,15 @@ end
 				globalScriptObject [hookName] = compiledScript()
 				
 				--insert the script in the global script container, remove existing, as option changes re-compile only single mod without wipe
+				local isReplace = false
 				for i, curScriptObject in ipairs(globalScriptContainer) do
 					if scriptObject.scriptId == curScriptObject.scriptId then
 						tremove(globalScriptContainer, i)
+						isReplace = true
 					end
 				end
 				tinsert (globalScriptContainer, globalScriptObject)
-				globalScriptContainer.ScriptAmount = globalScriptContainer.ScriptAmount + 1
+				globalScriptContainer.ScriptAmount = globalScriptContainer.ScriptAmount + (isReplace and 0 or 1)
 				
 				if (hookName == "Constructor") then
 					globalScriptObject.HasConstructor = true
