@@ -1937,18 +1937,17 @@ local class_specs_coords = {
 		["nameplateShowEnemyMinus"] = true,
 		["nameplateShowEnemyPets"] = true,
 		["nameplateShowEnemyTotems"] = true,
+		["nameplateShowFriends"] = true,
 		["nameplateShowFriendlyGuardians"] = true,
-		["nameplateShowFriendlyMinions"] = true,
 		["nameplateShowFriendlyNPCs"] = true,
+		["nameplateShowFriendlyMinions"] = true,
 		["nameplateShowFriendlyPets"] = true,
 		["nameplateShowFriendlyTotems"] = true,
-		["nameplateShowFriends"] = true,
 		["nameplateShowOnlyNames"] = true,
 		["nameplateShowSelf"] = (IS_WOW_PROJECT_MAINLINE),
 		["nameplateTargetBehindMaxDistance"] = true,
 		["clampTargetNameplateToScreen"] = true,
 		["nameplateTargetRadialPosition"] = true,
-		--["showQuestTrackingTooltips"] = true, -- this seems to be gone as of 18.12.2020
 		["nameplateSelectedAlpha"] = true,
 		["nameplateNotSelectedAlpha"] = (IS_WOW_PROJECT_NOT_MAINLINE),
 		["nameplateRemovalAnimation"] = (IS_WOW_PROJECT_NOT_MAINLINE),
@@ -2015,8 +2014,16 @@ local class_specs_coords = {
 		--> try to restore cvars from the profile
 		local savedCVars = Plater.db and Plater.db.profile and Plater.db.profile.saved_cvars
 		if (savedCVars) then
-			for CVarName, CVarValue in pairs (savedCVars) do
-				if cvars_to_store [CVarName] then --only restore what we want to store/restore!
+			--pre-sort restore order:
+			local orderKeys = {}
+			for k in pairs (cvars_to_store) do
+				tinsert(orderKeys, k)
+			end
+			table.sort(orderKeys)
+			
+			for CVarName in pairs (orderKeys) do
+				local CVarValue = savedCVars [CVarName]
+				if CVarValue then --only restore what we want to store/restore!
 					SetCVar (CVarName, get_cvar_value(CVarValue))
 				end
 			end
@@ -9210,14 +9217,6 @@ function Plater.SetCVarsOnFirstRun()
 	Plater.db.profile.first_run3 = true
 	
 	Plater.RunFunctionForEvent ("ZONE_CHANGED_NEW_AREA")
-	
-	--InterfaceOptionsNamesPanelUnitNameplatesMakeLarger:Click() --this isn't required anymore since we use our own unitframe now
-	--InterfaceOptionsNamesPanelUnitNameplatesPersonalResource:Click() --removing this since I don't have documentation on why this was added
-	--InterfaceOptionsNamesPanelUnitNameplatesPersonalResource:Click()
-	
-	--[=[
-	Plater.RestoreProfileCVars()
-	--]=]
 	
 	--Plater:Msg ("Plater has been successfully installed on this character.")
 	
