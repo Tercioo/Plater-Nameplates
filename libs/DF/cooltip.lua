@@ -296,7 +296,7 @@ function DF:CreateCoolTip()
 		end
 	end
 
-	--> main frame
+	--main frame
 		local frame1 = GameCooltipFrame1
 		if (not GameCooltipFrame1) then
 			frame1 = CreateFrame("Frame", "GameCooltipFrame1", UIParent, "BackdropTemplate")
@@ -310,7 +310,7 @@ function DF:CreateCoolTip()
 
 		createTooltipFrames(frame1)
 
-	--> secondary frame
+	--secondary frame
 		local frame2 = GameCooltipFrame2
 		if (not GameCooltipFrame2) then
 			frame2 = CreateFrame("Frame", "GameCooltipFrame2", UIParent, "BackdropTemplate")
@@ -520,7 +520,7 @@ function DF:CreateCoolTip()
 		statusbar.texture:SetTexture("Interface\\PaperDollInfoFrame\\UI-Character-Skills-Bar")
 		statusbar.texture:SetSize(300, 14)
 		statusbar:SetStatusBarTexture (statusbar.texture)
-		statusbar:SetMinMaxValues (0, 100)
+		statusbar:SetMinMaxValues(0, 100)
 
 		statusbar.spark = statusbar:CreateTexture("$parent_Spark", "BACKGROUND")
 		statusbar.spark:Hide()
@@ -583,7 +583,7 @@ function DF:CreateCoolTip()
 		statusbar2.texture:SetTexture("Interface\\PaperDollInfoFrame\\UI-Character-Skills-Bar")
 		statusbar2.texture:SetSize(300, 14)
 		statusbar2:SetStatusBarTexture (statusbar2.texture)
-		statusbar2:SetMinMaxValues (0, 100)
+		statusbar2:SetMinMaxValues(0, 100)
 
 		--on load
 		self:RegisterForClicks("LeftButtonDown")
@@ -869,7 +869,7 @@ function DF:CreateCoolTip()
 			local func = gameCooltip.FunctionsTableMain[self.index]
 			local okay, errortext = pcall(func, gameCooltip.Host, gameCooltip.FixedValue, parameterTable[1], parameterTable[2], parameterTable[3], button)
 			if (not okay) then
-				print ("Cooltip OnClick Error:", errortext)
+				print("Cooltip OnClick Error:", errortext)
 			end
 		end
 	end
@@ -1863,13 +1863,13 @@ function DF:CreateCoolTip()
 
 			if (centerY) then
 				if (centerY + helpScreenHeight > screenHeight) then
-					--> out of top side
+					--out of top side
 					local moveDownOffset = (centerY + helpScreenHeight) - screenHeight
 					gameCooltip.internal_y_mod = -moveDownOffset
 					return gameCooltip:SetMyPoint(host, 0, -moveDownOffset)
 
 				elseif (centerY - helpScreenHeight < 0) then
-					--> out of bottom side
+					--out of bottom side
 					local moveUpOffset = centerY - helpScreenHeight
 					gameCooltip.internal_y_mod = moveUpOffset * -1
 					return gameCooltip:SetMyPoint(host, 0, moveUpOffset * -1)

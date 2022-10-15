@@ -5,7 +5,7 @@ if (not DF or not DetailsFrameworkCanLoad) then
 end
 
 local _
-local loadstring = loadstring --> lua local
+local loadstring = loadstring --lua local
 local APITextEntryFunctions = false
 
 do
@@ -154,7 +154,7 @@ DF.TextEntryCounter = DF.TextEntryCounter or 1
 
 	--text horizontal pos
 	local smember_horizontalpos = function(object, value)
-		return object.editbox:SetJustifyH (string.lower(value))
+		return object.editbox:SetJustifyH(string.lower(value))
 	end
 
 	TextEntryMetaFunctions.SetMembers = TextEntryMetaFunctions.SetMembers or {}
@@ -244,9 +244,9 @@ DF.TextEntryCounter = DF.TextEntryCounter or 1
 	function TextEntryMetaFunctions:Enable()
 		if (not self.editbox:IsEnabled()) then
 			self.editbox:Enable()
-			self.editbox:SetBackdropBorderColor (unpack (self.enabled_border_color))
-			self.editbox:SetBackdropColor (unpack (self.enabled_backdrop_color))
-			self.editbox:SetTextColor (unpack (self.enabled_text_color))
+			self.editbox:SetBackdropBorderColor(unpack(self.enabled_border_color))
+			self.editbox:SetBackdropColor(unpack(self.enabled_backdrop_color))
+			self.editbox:SetTextColor (unpack(self.enabled_text_color))
 			if (self.editbox.borderframe) then
 				local r, g, b, a = DF:ParseColors(unpack(self.editbox.borderframe.onleave_backdrop))
 				self.editbox.borderframe:SetBackdropColor(r, g, b, a)
@@ -283,7 +283,7 @@ DF.TextEntryCounter = DF.TextEntryCounter or 1
 	end
 
 ------------------------------------------------------------------------------------------------------------
---> scripts and hooks
+--scripts and hooks
 
 	local OnEnter = function(textentry)
 		local capsule = textentry.MyObject
@@ -294,16 +294,16 @@ DF.TextEntryCounter = DF.TextEntryCounter or 1
 		end
 
 		if (capsule.have_tooltip) then 
-			GameCooltip2:Preset (2)
-			GameCooltip2:AddLine (capsule.have_tooltip)
-			GameCooltip2:ShowCooltip (textentry, "tooltip")
+			GameCooltip2:Preset(2)
+			GameCooltip2:AddLine(capsule.have_tooltip)
+			GameCooltip2:ShowCooltip(textentry, "tooltip")
 		end
 		
 		textentry.mouse_over = true 
 
 		if (textentry:IsEnabled()) then 
 			textentry.current_bordercolor = textentry.current_bordercolor or {textentry:GetBackdropBorderColor()}
-			textentry:SetBackdropBorderColor (1, 1, 1, 1)
+			textentry:SetBackdropBorderColor(1, 1, 1, 1)
 		end
 	end
 	
@@ -316,13 +316,13 @@ DF.TextEntryCounter = DF.TextEntryCounter or 1
 		end
 
 		if (textentry.MyObject.have_tooltip) then 
-			GameCooltip2:ShowMe (false)
+			GameCooltip2:ShowMe(false)
 		end
 		
 		textentry.mouse_over = false 
 		
 		if (textentry:IsEnabled()) then 
-			textentry:SetBackdropBorderColor (unpack (textentry.current_bordercolor))
+			textentry:SetBackdropBorderColor(unpack(textentry.current_bordercolor))
 		end
 	end
 	
@@ -364,12 +364,12 @@ DF.TextEntryCounter = DF.TextEntryCounter or 1
 				textentry.MyObject.func(textentry.MyObject.param1, textentry.MyObject.param2, text, textentry, byScript or textentry)
 			end
 		else
-			textentry:SetText ("")
+			textentry:SetText("")
 			textentry.MyObject.currenttext = ""
 		end
 
 		if (not object.NoClearFocusOnEnterPressed) then
-			textentry.focuslost = true --> quando estiver editando e clicar em outra caixa
+			textentry.focuslost = true --quando estiver editando e clicar em outra caixa
 			textentry:ClearFocus()
 			if (textentry.MyObject.tab_on_enter and textentry.MyObject.next) then
 				textentry.MyObject.next:SetFocus()
@@ -481,25 +481,25 @@ DF.TextEntryCounter = DF.TextEntryCounter or 1
 	
 ------------------------------------------------------------------------------------------------------------
 
-function TextEntryMetaFunctions:SetTemplate (template)
+function TextEntryMetaFunctions:SetTemplate(template)
 	if (template.width) then
-		self.editbox:SetWidth (template.width)
+		self.editbox:SetWidth(template.width)
 	end
 	if (template.height) then
-		self.editbox:SetHeight (template.height)
+		self.editbox:SetHeight(template.height)
 	end
 	
 	if (template.backdrop) then
-		self.editbox:SetBackdrop (template.backdrop)
+		self.editbox:SetBackdrop(template.backdrop)
 	end
 	if (template.backdropcolor) then
-		local r, g, b, a = DF:ParseColors (template.backdropcolor)
-		self.editbox:SetBackdropColor (r, g, b, a)
+		local r, g, b, a = DF:ParseColors(template.backdropcolor)
+		self.editbox:SetBackdropColor(r, g, b, a)
 		self.onleave_backdrop = {r, g, b, a}
 	end
 	if (template.backdropbordercolor) then
-		local r, g, b, a = DF:ParseColors (template.backdropbordercolor)
-		self.editbox:SetBackdropBorderColor (r, g, b, a)
+		local r, g, b, a = DF:ParseColors(template.backdropbordercolor)
+		self.editbox:SetBackdropBorderColor(r, g, b, a)
 		self.editbox.current_bordercolor[1] = r
 		self.editbox.current_bordercolor[2] = g
 		self.editbox.current_bordercolor[3] = b
@@ -509,13 +509,13 @@ function TextEntryMetaFunctions:SetTemplate (template)
 end
 
 ------------------------------------------------------------------------------------------------------------
---> object constructor
+--object constructor
 
 function DF:CreateTextEntry (parent, func, w, h, member, name, with_label, entry_template, label_template)
-	return DF:NewTextEntry (parent, parent, name, member, w, h, func, nil, nil, nil, with_label, entry_template, label_template)
+	return DF:NewTextEntry(parent, parent, name, member, w, h, func, nil, nil, nil, with_label, entry_template, label_template)
 end
 
-function DF:NewTextEntry (parent, container, name, member, w, h, func, param1, param2, space, with_label, entry_template, label_template)
+function DF:NewTextEntry(parent, container, name, member, w, h, func, param1, param2, space, with_label, entry_template, label_template)
 	
 	if (not name) then
 		name = "DetailsFrameworkTextEntryNumber" .. DF.TextEntryCounter
@@ -547,8 +547,8 @@ function DF:NewTextEntry (parent, container, name, member, w, h, func, param1, p
 		container = container.widget
 	end
 	
-	--> default members:
-		--> hooks
+	--default members:
+		--hooks
 		TextEntryObject.OnEnterHook = nil
 		TextEntryObject.OnLeaveHook = nil
 		TextEntryObject.OnHideHook = nil
@@ -561,17 +561,17 @@ function DF:NewTextEntry (parent, container, name, member, w, h, func, param1, p
 		TextEntryObject.OnTextChangedHook = nil
 		TextEntryObject.OnTabPressedHook = nil
 
-		--> misc
+		--misc
 		TextEntryObject.container = container
 		TextEntryObject.have_tooltip = nil
 
-	TextEntryObject.editbox = CreateFrame ("EditBox", name, parent,"BackdropTemplate")
-	TextEntryObject.editbox:SetSize (232, 20)
-	TextEntryObject.editbox:SetBackdrop ({bgFile = [["Interface\DialogFrame\UI-DialogBox-Background"]], tileSize = 64, tile = true, edgeFile = [[Interface\DialogFrame\UI-DialogBox-Border]], edgeSize = 10, insets = {left = 1, right = 1, top = 0, bottom = 0}})
+	TextEntryObject.editbox = CreateFrame("EditBox", name, parent,"BackdropTemplate")
+	TextEntryObject.editbox:SetSize(232, 20)
+	TextEntryObject.editbox:SetBackdrop({bgFile = [["Interface\DialogFrame\UI-DialogBox-Background"]], tileSize = 64, tile = true, edgeFile = [[Interface\DialogFrame\UI-DialogBox-Border]], edgeSize = 10, insets = {left = 1, right = 1, top = 0, bottom = 0}})
 	
 	TextEntryObject.editbox.label = TextEntryObject.editbox:CreateFontString ("$parent_Desc", "OVERLAY", "GameFontHighlightSmall")
-	TextEntryObject.editbox.label:SetJustifyH ("left")
-	TextEntryObject.editbox.label:SetPoint ("RIGHT", TextEntryObject.editbox, "LEFT", -2, 0)
+	TextEntryObject.editbox.label:SetJustifyH("left")
+	TextEntryObject.editbox.label:SetPoint("RIGHT", TextEntryObject.editbox, "LEFT", -2, 0)
 	
 	TextEntryObject.widget = TextEntryObject.editbox
 	
@@ -580,7 +580,7 @@ function DF:NewTextEntry (parent, container, name, member, w, h, func, param1, p
 	if (not APITextEntryFunctions) then
 		APITextEntryFunctions = true
 		local idx = getmetatable (TextEntryObject.editbox).__index
-		for funcName, funcAddress in pairs (idx) do 
+		for funcName, funcAddress in pairs(idx) do 
 			if (not TextEntryMetaFunctions [funcName]) then
 				TextEntryMetaFunctions [funcName] = function(object, ...)
 					local x = loadstring ( "return _G['"..object.editbox:GetName().."']:"..funcName.."(...)")
@@ -596,22 +596,22 @@ function DF:NewTextEntry (parent, container, name, member, w, h, func, param1, p
 		w = space
 	elseif (w and space) then
 		if (DF.debug) then
-			--print ("warning: you are using width and space, try use only space for better results.")
+			--print("warning: you are using width and space, try use only space for better results.")
 		end
 	end
 	
-	TextEntryObject.editbox:SetWidth (w)
-	TextEntryObject.editbox:SetHeight (h)
+	TextEntryObject.editbox:SetWidth(w)
+	TextEntryObject.editbox:SetHeight(h)
 
-	TextEntryObject.editbox:SetJustifyH ("center")
-	TextEntryObject.editbox:EnableMouse (true)
-	TextEntryObject.editbox:SetText ("")
+	TextEntryObject.editbox:SetJustifyH("center")
+	TextEntryObject.editbox:EnableMouse(true)
+	TextEntryObject.editbox:SetText("")
 
 	TextEntryObject.editbox:SetAutoFocus (false)
 	TextEntryObject.editbox:SetFontObject ("GameFontHighlightSmall")
 
 	TextEntryObject.editbox.current_bordercolor = {1, 1, 1, 0.7}
-	TextEntryObject.editbox:SetBackdropBorderColor (1, 1, 1, 0.7)
+	TextEntryObject.editbox:SetBackdropBorderColor(1, 1, 1, 0.7)
 	TextEntryObject.enabled_border_color = {TextEntryObject.editbox:GetBackdropBorderColor()}
 	TextEntryObject.enabled_backdrop_color = {TextEntryObject.editbox:GetBackdropColor()}
 	TextEntryObject.enabled_text_color = {TextEntryObject.editbox:GetTextColor()}
@@ -626,10 +626,10 @@ function DF:NewTextEntry (parent, container, name, member, w, h, func, param1, p
 	TextEntryObject.tab_on_enter = false
 
 	TextEntryObject.label = _G [name .. "_Desc"]
-	TextEntryObject.editbox:SetBackdrop ({bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, insets = {left = 1, right = 1, top = 1, bottom = 1}})
-	TextEntryObject.editbox:SetBackdropColor (.2, .2, .2, 1)
+	TextEntryObject.editbox:SetBackdrop({bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, insets = {left = 1, right = 1, top = 1, bottom = 1}})
+	TextEntryObject.editbox:SetBackdropColor(.2, .2, .2, 1)
 
-	--> hooks
+	--hooks
 		TextEntryObject.HookList = {
 			OnEnter = {},
 			OnLeave = {},
@@ -645,34 +645,34 @@ function DF:NewTextEntry (parent, container, name, member, w, h, func, param1, p
 			OnTabPressed = {},
 		}
 		
-		TextEntryObject.editbox:SetScript ("OnEnter", OnEnter)
-		TextEntryObject.editbox:SetScript ("OnLeave", OnLeave)
-		TextEntryObject.editbox:SetScript ("OnHide", OnHide)
-		TextEntryObject.editbox:SetScript ("OnShow", OnShow)
+		TextEntryObject.editbox:SetScript("OnEnter", OnEnter)
+		TextEntryObject.editbox:SetScript("OnLeave", OnLeave)
+		TextEntryObject.editbox:SetScript("OnHide", OnHide)
+		TextEntryObject.editbox:SetScript("OnShow", OnShow)
 		
-		TextEntryObject.editbox:SetScript ("OnEnterPressed", OnEnterPressed)
-		TextEntryObject.editbox:SetScript ("OnEscapePressed", OnEscapePressed)
-		TextEntryObject.editbox:SetScript ("OnSpacePressed", OnSpacePressed)
-		TextEntryObject.editbox:SetScript ("OnEditFocusLost", OnEditFocusLost)
-		TextEntryObject.editbox:SetScript ("OnEditFocusGained", OnEditFocusGained)
-		TextEntryObject.editbox:SetScript ("OnChar", OnChar)
-		TextEntryObject.editbox:SetScript ("OnTextChanged", OnTextChanged)
-		TextEntryObject.editbox:SetScript ("OnTabPressed", OnTabPressed)
+		TextEntryObject.editbox:SetScript("OnEnterPressed", OnEnterPressed)
+		TextEntryObject.editbox:SetScript("OnEscapePressed", OnEscapePressed)
+		TextEntryObject.editbox:SetScript("OnSpacePressed", OnSpacePressed)
+		TextEntryObject.editbox:SetScript("OnEditFocusLost", OnEditFocusLost)
+		TextEntryObject.editbox:SetScript("OnEditFocusGained", OnEditFocusGained)
+		TextEntryObject.editbox:SetScript("OnChar", OnChar)
+		TextEntryObject.editbox:SetScript("OnTextChanged", OnTextChanged)
+		TextEntryObject.editbox:SetScript("OnTabPressed", OnTabPressed)
 		
-	setmetatable (TextEntryObject, TextEntryMetaFunctions)
+	setmetatable(TextEntryObject, TextEntryMetaFunctions)
 	
 	if (with_label) then
-		local label = DF:CreateLabel (TextEntryObject.editbox, with_label, nil, nil, nil, "label", nil, "overlay")
+		local label = DF:CreateLabel(TextEntryObject.editbox, with_label, nil, nil, nil, "label", nil, "overlay")
 		label.text = with_label
-		TextEntryObject.editbox:SetPoint ("left", label.widget, "right", 2, 0)
+		TextEntryObject.editbox:SetPoint("left", label.widget, "right", 2, 0)
 		if (label_template) then
-			label:SetTemplate (label_template)
+			label:SetTemplate(label_template)
 		end
 		with_label = label
 	end
 	
 	if (entry_template) then
-		TextEntryObject:SetTemplate (entry_template)
+		TextEntryObject:SetTemplate(entry_template)
 	end	
 	
 	return TextEntryObject, with_label
@@ -680,10 +680,10 @@ function DF:NewTextEntry (parent, container, name, member, w, h, func, param1, p
 end
 
 function DF:NewSpellEntry (parent, func, w, h, param1, param2, member, name)
-	local editbox = DF:NewTextEntry (parent, parent, name, member, w, h, func, param1, param2)
+	local editbox = DF:NewTextEntry(parent, parent, name, member, w, h, func, param1, param2)
 	
---	editbox:SetHook ("OnEditFocusGained", SpellEntryOnEditFocusGained)
---	editbox:SetHook ("OnTextChanged", SpellEntryOnTextChanged)
+--	editbox:SetHook("OnEditFocusGained", SpellEntryOnEditFocusGained)
+--	editbox:SetHook("OnTextChanged", SpellEntryOnTextChanged)
 	
 	return editbox	
 end
@@ -692,7 +692,7 @@ local function_gettext = function(self)
 	return self.editbox:GetText()
 end
 local function_settext = function(self, text)
-	return self.editbox:SetText (text)
+	return self.editbox:SetText(text)
 end
 local function_clearfocus = function(self)
 	return self.editbox:ClearFocus()
@@ -820,7 +820,7 @@ local get_last_word = function(self)
 		local character = text:sub (i, i)
 		if (character:match ("%a")) then
 			self.lastword = character .. self.lastword
-			--print (self.lastword)
+			--print(self.lastword)
 		else
 			break
 		end
@@ -833,10 +833,10 @@ local AutoComplete_OnTextChanged = function(editboxWidget, byUser, capsule)
 	
 	local chars_now = editboxWidget:GetText():len()
 	if (not editboxWidget.ignore_textchange) then
-		--> backspace
+		--backspace
 		if (chars_now == capsule.characters_count -1) then
 			capsule.lastword = capsule.lastword:sub (1, capsule.lastword:len()-1)
-		--> delete lots of text
+		--delete lots of text
 		elseif (chars_now < capsule.characters_count) then
 			--o auto complete selecionou outra palavra bem menor e caiu nesse filtro
 			editboxWidget.end_selection = nil
@@ -889,7 +889,7 @@ end
 local AutoComplete_OnEditFocusGained = function(editboxWidget)
 	local capsule = editboxWidget.MyObject or editboxWidget
 	capsule:GetLastWord()
-	--print ("last word:", editboxWidget.lastword)
+	--print("last word:", editboxWidget.lastword)
 	editboxWidget.end_selection = nil
 	editboxWidget.focusGained = true
 	capsule.characters_count = editboxWidget:GetText():len()	
@@ -1043,12 +1043,12 @@ function TextEntryMetaFunctions:SetAsAutoComplete (poolName, poolTable, shouldOp
 		self.NoClearFocusOnEnterPressed = true --avoid auto clear focus
 		self.ShouldOptimizeAutoComplete = shouldOptimize
 		
-		self:SetHook ("OnEditFocusGained", AutoComplete_OnEditFocusGained)
-		self:SetHook ("OnEnterPressed", AutoComplete_OnEnterPressed)
+		self:SetHook("OnEditFocusGained", AutoComplete_OnEditFocusGained)
+		self:SetHook("OnEnterPressed", AutoComplete_OnEnterPressed)
 		self.editbox:HookScript ("OnEscapePressed", AutoComplete_OnEscapePressed)
-		self.editbox:SetScript ("OnTextChanged", AutoComplete_OnTextChanged)
-		self.editbox:SetScript ("OnChar", AutoComplete_OnChar)
-		self.editbox:SetScript ("OnSpacePressed", AutoComplete_OnSpacePressed)
+		self.editbox:SetScript("OnTextChanged", AutoComplete_OnTextChanged)
+		self.editbox:SetScript("OnChar", AutoComplete_OnChar)
+		self.editbox:SetScript("OnSpacePressed", AutoComplete_OnSpacePressed)
 	end
 
 end
@@ -1067,63 +1067,63 @@ function DF:NewSpecialLuaEditorEntry (parent, w, h, member, name, nointent, show
 		name = name:gsub ("$parent", parentName)
 	end
 	
-	local borderframe = CreateFrame ("Frame", name, parent,"BackdropTemplate")
-	borderframe:SetSize (w, h)
+	local borderframe = CreateFrame("Frame", name, parent,"BackdropTemplate")
+	borderframe:SetSize(w, h)
 	
 	if (member) then
 		parent [member] = borderframe
 	end
 	
-	local scrollframe = CreateFrame ("ScrollFrame", name, borderframe, "UIPanelScrollFrameTemplate, BackdropTemplate")
-	local scrollframeNumberLines = CreateFrame ("ScrollFrame", name .. "NumberLines", borderframe, "UIPanelScrollFrameTemplate, BackdropTemplate")
+	local scrollframe = CreateFrame("ScrollFrame", name, borderframe, "UIPanelScrollFrameTemplate, BackdropTemplate")
+	local scrollframeNumberLines = CreateFrame("ScrollFrame", name .. "NumberLines", borderframe, "UIPanelScrollFrameTemplate, BackdropTemplate")
 
-	scrollframe.editbox = CreateFrame ("editbox", "$parentEditBox", scrollframe,"BackdropTemplate")
+	scrollframe.editbox = CreateFrame("editbox", "$parentEditBox", scrollframe,"BackdropTemplate")
 	scrollframe.editbox:SetMultiLine (true)
 	scrollframe.editbox:SetAutoFocus (false)
-	scrollframe.editbox:SetScript ("OnCursorChanged", _G.ScrollingEdit_OnCursorChanged)
-	scrollframe.editbox:SetScript ("OnEscapePressed", _G.EditBox_ClearFocus)
+	scrollframe.editbox:SetScript("OnCursorChanged", _G.ScrollingEdit_OnCursorChanged)
+	scrollframe.editbox:SetScript("OnEscapePressed", _G.EditBox_ClearFocus)
 	scrollframe.editbox:SetFontObject ("GameFontHighlightSmall")
 	scrollframe:SetScrollChild (scrollframe.editbox)
 
 	--line number
 	if (showLineNumbers) then
-		scrollframeNumberLines.editbox = CreateFrame ("editbox", "$parentLineNumbers", scrollframeNumberLines, "BackdropTemplate")
+		scrollframeNumberLines.editbox = CreateFrame("editbox", "$parentLineNumbers", scrollframeNumberLines, "BackdropTemplate")
 		scrollframeNumberLines.editbox:SetMultiLine (true)
 		scrollframeNumberLines.editbox:SetAutoFocus (false)
 		scrollframeNumberLines.editbox:SetEnabled (false)
 		scrollframeNumberLines.editbox:SetFontObject ("GameFontHighlightSmall")
-		scrollframeNumberLines.editbox:SetJustifyH ("left")
+		scrollframeNumberLines.editbox:SetJustifyH("left")
 		scrollframeNumberLines.editbox:SetJustifyV ("top")
 		scrollframeNumberLines.editbox:SetTextColor(.3, .3, .3, .5)
-		scrollframeNumberLines.editbox:SetPoint ("topleft", borderframe, "topleft", 10, -10)
-		scrollframeNumberLines.editbox:SetPoint ("bottomright", borderframe, "bottomright", -30, 10)
+		scrollframeNumberLines.editbox:SetPoint("topleft", borderframe, "topleft", 10, -10)
+		scrollframeNumberLines.editbox:SetPoint("bottomright", borderframe, "bottomright", -30, 10)
 
 		scrollframeNumberLines:SetScrollChild (scrollframeNumberLines.editbox)
-		scrollframeNumberLines:EnableMouseWheel (false)
+		scrollframeNumberLines:EnableMouseWheel(false)
 
 		for i = 1, 1000 do
 			scrollframeNumberLines.editbox:Insert (i .. "\n")
 		end
 
 		--place the lua code field 20 pixels to the right to make run to the lines scroll
-		scrollframe:SetPoint ("topleft", borderframe, "topleft", 30, -10)
-		scrollframe:SetPoint ("bottomright", borderframe, "bottomright", -10, 10)
+		scrollframe:SetPoint("topleft", borderframe, "topleft", 30, -10)
+		scrollframe:SetPoint("bottomright", borderframe, "bottomright", -10, 10)
 
 		--when the lua code field scrolls, make the lua field scroll too
-		scrollframe:SetScript ("OnVerticalScroll", function(self, offset)
+		scrollframe:SetScript("OnVerticalScroll", function(self, offset)
 			scrollframeNumberLines:SetVerticalScroll(scrollframe:GetVerticalScroll())
 			scrollframeNumberLines.ScrollBar:Hide()
 		end)
 
 		--place the number lines scroll in the begining of the editing code space
-		scrollframeNumberLines:SetPoint ("topleft", borderframe, "topleft", 10, -10)
-		scrollframeNumberLines:SetPoint ("bottomright", borderframe, "bottomright", -10, 10)
+		scrollframeNumberLines:SetPoint("topleft", borderframe, "topleft", 10, -10)
+		scrollframeNumberLines:SetPoint("bottomright", borderframe, "bottomright", -10, 10)
 
-		scrollframeNumberLines.editbox:SetJustifyH ("left")
+		scrollframeNumberLines.editbox:SetJustifyH("left")
 		scrollframeNumberLines.editbox:SetJustifyV ("top")
 
-		scrollframeNumberLines:SetScript ("OnSizeChanged", function(self)
-			scrollframeNumberLines.editbox:SetSize (self:GetSize())
+		scrollframeNumberLines:SetScript("OnSizeChanged", function(self)
+			scrollframeNumberLines.editbox:SetSize(self:GetSize())
 			scrollframeNumberLines.ScrollBar:Hide()
 		end)
 
@@ -1140,20 +1140,20 @@ function DF:NewSpecialLuaEditorEntry (parent, w, h, member, name, nointent, show
 		scrollframeNumberLines.editbox:SetBackdrop(nil)
 
 	else
-		scrollframe:SetPoint ("topleft", borderframe, "topleft", 10, -10)
-		scrollframe:SetPoint ("bottomright", borderframe, "bottomright", -10, 10)
-		scrollframeNumberLines:SetPoint ("topleft", borderframe, "topleft", 10, -10)
-		scrollframeNumberLines:SetPoint ("bottomright", borderframe, "bottomright", -10, 10)
+		scrollframe:SetPoint("topleft", borderframe, "topleft", 10, -10)
+		scrollframe:SetPoint("bottomright", borderframe, "bottomright", -10, 10)
+		scrollframeNumberLines:SetPoint("topleft", borderframe, "topleft", 10, -10)
+		scrollframeNumberLines:SetPoint("bottomright", borderframe, "bottomright", -10, 10)
 		scrollframeNumberLines:Hide()
 	end
 
 	borderframe.SetAsAutoComplete = TextEntryMetaFunctions.SetAsAutoComplete
 	
-	scrollframe:SetScript ("OnSizeChanged", function(self)
-		scrollframe.editbox:SetSize (self:GetSize())
+	scrollframe:SetScript("OnSizeChanged", function(self)
+		scrollframe.editbox:SetSize(self:GetSize())
 	end)
 	
-	scrollframe.editbox:SetJustifyH ("left")
+	scrollframe.editbox:SetJustifyH("left")
 	scrollframe.editbox:SetJustifyV ("top")
 	scrollframe.editbox:SetMaxBytes (1024000)
 	scrollframe.editbox:SetMaxLetters (128000)
@@ -1173,12 +1173,12 @@ function DF:NewSpecialLuaEditorEntry (parent, w, h, member, name, nointent, show
 		IndentationLib.enable (scrollframe.editbox, nil, 4)
 	end
 
-	borderframe:SetBackdrop ({bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], edgeFile = [[Interface\Tooltips\UI-Tooltip-Border]], 
+	borderframe:SetBackdrop({bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], edgeFile = [[Interface\Tooltips\UI-Tooltip-Border]], 
 		tile = 1, tileSize = 16, edgeSize = 16, insets = {left = 5, right = 5, top = 5, bottom = 5}})
 	
 	scrollframe.editbox.current_bordercolor = {1, 1, 1, 0.7}
-	borderframe:SetBackdropBorderColor (1, 1, 1, 0.7)
-	borderframe:SetBackdropColor (0.090195, 0.090195, 0.188234, 1)
+	borderframe:SetBackdropBorderColor(1, 1, 1, 0.7)
+	borderframe:SetBackdropColor(0.090195, 0.090195, 0.188234, 1)
 	
 	borderframe.enabled_border_color = {borderframe:GetBackdropBorderColor()}
 	borderframe.enabled_backdrop_color = {borderframe:GetBackdropColor()}

@@ -38,14 +38,14 @@ local LabelMetaFunctions = _G[detailsFramework.GlobalWidgetControlNames ["label"
 detailsFramework:Mixin(LabelMetaFunctions, detailsFramework.SetPointMixin)
 
 ------------------------------------------------------------------------------------------------------------
---> metatables
+--metatables
 
 	LabelMetaFunctions.__call = function(object, value)
 		return object.label:SetText(value)
 	end
 
 ------------------------------------------------------------------------------------------------------------
---> members
+--members
 
 	--get text
 	local gmember_text = function(object)
@@ -202,7 +202,7 @@ detailsFramework:Mixin(LabelMetaFunctions, detailsFramework.SetPointMixin)
 	LabelMetaFunctions.SetMembers["textsize"] = smember_textsize--alias
 	LabelMetaFunctions.SetMembers["shadow"] = smember_outline
 	LabelMetaFunctions.SetMembers["outline"] = smember_outline--alias
-	LabelMetaFunctions.SetMembers["rotation"] = smember_rotation--alias
+	LabelMetaFunctions.SetMembers["rotation"] = smember_rotation
 
 	LabelMetaFunctions.__newindex = function(object, key, value)
 		local func = LabelMetaFunctions.SetMembers[key]
