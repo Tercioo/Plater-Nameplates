@@ -9302,6 +9302,8 @@ end
 			if (Plater.QuestCache [text]) then
 				--unit belongs to a quest
 				isQuestUnit = true
+				
+				local isCampaignQuest = Plater.QuestCacheCampaign[text]
 				local isGroupQuest, yourQuest = nil, nil
 				local questData = {
 					questName = text,
@@ -9310,13 +9312,14 @@ end
 					groupQuest = false,
 					groupFinished = true,
 					amount = 0,
+					ownAmount = 0,
 					total = 0,
 					yourQuest = false,
+					isCampaignQuest = isCampaignQuest,
 				}
 
-				local isCampaignQuest = Plater.QuestCacheCampaign[text]
-
 				local amount1, amount2, questText = nil, nil, nil
+				local amountSet = false
 				local j = i
 				while (ScanQuestTextCache [j+1]) do
 					--check if the unit objective isn't already done
@@ -9352,15 +9355,24 @@ end
 								-- quest not completed
 								atLeastOneQuestUnfinished = true
 								amount1, amount2 = p1, p2
-								questData.amount = amount1
+								if not amountSet or ((tonumber(p1) or 0) < (tonumber(questData.amount) or 0)) then
+									questData.amount = amount1
+								end
+								
 								questData.total = amount2
 								if yourQuest ~= false then
-									yourQuest = false
+									yourQuest = false -- already set on data
 									questData.finished = false
+									questData.ownAmount = amount1
 								end
 								questData.groupFinished = false
 								questData.questText = nextLineText
 								questText = nextLineText
+								amountSet = true
+							elseif yourQuest and (p1 and p2 and (p1 == p2)) or (p1 and not p2 and (p1 == "100")) then
+								yourQuest = false -- already set on data
+								questData.finished = true
+								questData.ownAmount = p1
 							end
 						else
 							j = 99 --safely break here, as we saw threat% -> quest text is done
@@ -9370,13 +9382,13 @@ end
 				end
 
 				if (amount1 and atLeastOneQuestUnfinished) then
-					plateFrame.QuestAmountCurrent = amount1
+					plateFrame.QuestAmountCurrent = questData.amount
 					plateFrame.QuestAmountTotal = amount2
 					plateFrame.QuestText = questText
 					plateFrame.QuestIsCampaign = isCampaignQuest
 					
 					--expose to scripts
-					plateFrame.unitFrame.QuestAmountCurrent = amount1
+					plateFrame.unitFrame.QuestAmountCurrent = plateFrame.QuestAmountCurrent
 					plateFrame.unitFrame.QuestAmountTotal = amount2
 					plateFrame.unitFrame.QuestText = questText
 					plateFrame.unitFrame.QuestIsCampaign = isCampaignQuest
