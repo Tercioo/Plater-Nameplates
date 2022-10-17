@@ -8,7 +8,8 @@ assignees: ''
 ---
 
 **Game and Plater version**
-Which is the game version and Plater version you're using.
+Which is the game version and Plater version you're using?
+Full `/plater version` output please.
 
 
 **Describe the bug**
