@@ -9312,7 +9312,7 @@ end
 					groupQuest = false,
 					groupFinished = true,
 					amount = 0,
-					ownAmount = 0,
+					groupAmount = 0,
 					total = 0,
 					yourQuest = false,
 					isCampaignQuest = isCampaignQuest,
@@ -9355,15 +9355,15 @@ end
 								-- quest not completed
 								atLeastOneQuestUnfinished = true
 								amount1, amount2 = p1, p2
-								if not amountSet or ((tonumber(p1) or 0) < (tonumber(questData.amount) or 0)) then
-									questData.amount = amount1
+								if not amountSet or ((tonumber(p1) or 0) < (tonumber(questData.groupAmount) or 0)) then
+									questData.groupAmount = amount1
 								end
 								
 								questData.total = amount2
 								if yourQuest ~= false then
 									yourQuest = false -- already set on data
 									questData.finished = false
-									questData.ownAmount = amount1
+									questData.amount = amount1
 								end
 								questData.groupFinished = false
 								questData.questText = nextLineText
@@ -9372,7 +9372,7 @@ end
 							elseif yourQuest and (p1 and p2 and (p1 == p2)) or (p1 and not p2 and (p1 == "100")) then
 								yourQuest = false -- already set on data
 								questData.finished = true
-								questData.ownAmount = p1
+								questData.amount = p1
 							end
 						else
 							j = 99 --safely break here, as we saw threat% -> quest text is done
@@ -9382,13 +9382,13 @@ end
 				end
 
 				if (amount1 and atLeastOneQuestUnfinished) then
-					plateFrame.QuestAmountCurrent = questData.amount
+					plateFrame.QuestAmountCurrent = questData.groupAmount
 					plateFrame.QuestAmountTotal = amount2
 					plateFrame.QuestText = questText
 					plateFrame.QuestIsCampaign = isCampaignQuest
 					
 					--expose to scripts
-					plateFrame.unitFrame.QuestAmountCurrent = plateFrame.QuestAmountCurrent
+					plateFrame.unitFrame.QuestAmountCurrent = questData.groupAmount
 					plateFrame.unitFrame.QuestAmountTotal = amount2
 					plateFrame.unitFrame.QuestText = questText
 					plateFrame.unitFrame.QuestIsCampaign = isCampaignQuest
