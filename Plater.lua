@@ -4631,6 +4631,10 @@ function Plater.OnInit() --private --~oninit ~init
 				if (not DB_PLATE_CONFIG.player.healthbar_enabled) then
 					--the health bar is set when the nameplate is shown
 					healthBar:SetUnit (nil)
+					
+					-- hide target glow
+					plateFrame.TargetNeonUp:Hide()
+					plateFrame.TargetNeonDown:Hide()
 				end
 				
 				if (DB_PLATE_CONFIG.player.power_enabled) then
