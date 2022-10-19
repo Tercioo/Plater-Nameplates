@@ -42,7 +42,6 @@ local AlphaBlending = ALPHA_BLEND_AMOUNT + 0.0654785
 --> locals
 local unpack = unpack
 local ipairs = ipairs
-local pairs = pairs
 local rawset = rawset
 local rawget = rawget
 local setfenv = setfenv
@@ -921,6 +920,7 @@ local class_specs_coords = {
 	local DB_LERP_COLOR_SPEED
 	local DB_PLATE_CONFIG
 	local DB_HOVER_HIGHLIGHT
+	local DB_CLASS_COLORS
 
 	--auras
 	local DB_AURA_ENABLED
@@ -2076,6 +2076,7 @@ local class_specs_coords = {
 		
 		DB_TICK_THROTTLE = profile.update_throttle
 		DB_LERP_COLOR = profile.use_color_lerp
+		DB_CLASS_COLORS = profile.class_colors
 		DB_LERP_COLOR_SPEED = profile.color_lerp_speed
 		DB_PLATE_CONFIG = profile.plate_config
 		DB_TRACK_METHOD = profile.aura_tracker.track_method
@@ -5630,7 +5631,7 @@ end
 				if (unitFrame.ActorType == ACTORTYPE_FRIENDLY_PLAYER) then
 					if (Plater.db.profile.use_playerclass_color) then
 						local _, class = UnitClass (unitID)
-						local classColor = RAID_CLASS_COLORS [class]
+						local classColor = DB_CLASS_COLORS [class]
 						if (classColor) then -- and unitFrame.optionTable.useClassColors
 							r, g, b, a = classColor.r, classColor.g, classColor.b, classColor.a
 						end
@@ -5640,7 +5641,7 @@ end
 				elseif (unitFrame.ActorType == ACTORTYPE_ENEMY_PLAYER) then
 					if (Plater.db.profile.plate_config.enemyplayer.use_playerclass_color) then
 						local _, class = UnitClass (unitID)
-						local classColor = RAID_CLASS_COLORS [class]
+						local classColor = DB_CLASS_COLORS [class]
 						if (classColor) then -- and unitFrame.optionTable.useClassColors
 							r, g, b, a = classColor.r, classColor.g, classColor.b, classColor.a
 						end
@@ -5696,7 +5697,7 @@ end
 				_, class = UnitClass (unit)
 			end
 			if (class) then
-				local color = RAID_CLASS_COLORS [class]
+				local color = DB_CLASS_COLORS [class]
 				if (color) then
 					text = "|c" .. color.colorStr .. DF:RemoveRealName (text) .. "|r"
 				end
@@ -6986,7 +6987,7 @@ end
 				if (plateConfigs.actorname_use_class_color) then
 					local _, unitClass = UnitClass (plateFrame.unitFrame [MEMBER_UNITID])
 					if (unitClass) then
-						local color = RAID_CLASS_COLORS [unitClass]
+						local color = DB_CLASS_COLORS [unitClass]
 						DF:SetFontColor (nameFontString, color.r, color.g, color.b)
 					else
 						DF:SetFontColor (nameFontString, plateConfigs.actorname_text_color)
@@ -7178,7 +7179,7 @@ end
 			
 			local _, unitClass = UnitClass (plateFrame.unitFrame [MEMBER_UNITID])
 			if (unitClass) then
-				local color = RAID_CLASS_COLORS [unitClass]
+				local color = DB_CLASS_COLORS [unitClass]
 				DF:SetFontColor (nameString, color.r, color.g, color.b)
 				DF:SetFontColor (guildString, color.r, color.g, color.b)
 			else
@@ -7192,7 +7193,7 @@ end
 			
 			local _, unitClass = UnitClass (plateFrame.unitFrame [MEMBER_UNITID])
 			if (unitClass) then
-				local color = RAID_CLASS_COLORS [unitClass]
+				local color = DB_CLASS_COLORS [unitClass]
 				DF:SetFontColor (nameString, color.r, color.g, color.b)
 				DF:SetFontColor (guildString, color.r, color.g, color.b)
 			else
@@ -7640,7 +7641,7 @@ end
 			else
 				local _, class = UnitClass (unitFrame [MEMBER_UNITID])
 				if (class) then		
-					local color = RAID_CLASS_COLORS [class]
+					local color = DB_CLASS_COLORS [class]
 					Plater.ChangeHealthBarColor_Internal (healthBar, color.r, color.g, color.b, color.a)
 				else
 					Plater.ChangeHealthBarColor_Internal (healthBar, 1, 1, 1, 1)
@@ -7667,7 +7668,7 @@ end
 				if (DB_PLATE_CONFIG [actorType].use_playerclass_color) then
 					local _, class = UnitClass (unitFrame [MEMBER_UNITID])
 					if (class) then		
-						local color = RAID_CLASS_COLORS [class]
+						local color = DB_CLASS_COLORS [class]
 						Plater.ChangeHealthBarColor_Internal (healthBar, color.r, color.g, color.b, color.a)
 					else
 						Plater.ChangeHealthBarColor_Internal (healthBar, unpack (DB_PLATE_CONFIG [actorType].fixed_class_color))
