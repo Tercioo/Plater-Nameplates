@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 			
+			{1666341585,  "Backend Change", "October 22st, 2022", "Adding shadow priest execute for WotLK.", "cont1nuity"},
 			{1666341585,  "Backend Change", "October 21st, 2022", "Retail toc bump for Dragonflight pre-patch.", "cont1nuity"},
 			{1666341585,  "Backend Change", "October 19th, 2022", "Use Plater internal class colors.", "Terciob"},
 			{1666341585,  "Bug Fix", "October 17th, 2022", "Hide target glow on personal bar if the healthbar is disabled.", "cont1nuity"},
