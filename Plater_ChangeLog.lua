@@ -8,11 +8,12 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 			
-			{1666000575,  "Bug Fix", "October 17th, 2022", "Hide target glow on personal bar if the healthbar is disabled.", "cont1nuity"},
-			{1666000575,  "Backend Change", "October 17th, 2022", "Quest info cache now holds 'groupAmount' and uses lowest amount from group for the top level default, while 'amount' in the quest-data contains the players value.", "cont1nuity"},
-			{1666000575,  "Bug Fix", "October 13th, 2022", "Fixing CVar restore not working properly in some cases.", "cont1nuity"},
-			{1666000575,  "Bug Fix", "October 12th, 2022", "Fixing an issue with mod/script options not working properly.", "cont1nuity"},
-			{1666000575,  "Bug Fix", "October 11th, 2022", "Fixing aura types auto tracking for Dragonflight.", "cont1nuity"},
+			{1666341585,  "Backend Change", "October 17th, 2022", "Use Plater internal class colors.", "Terciob"},
+			{1666341585,  "Bug Fix", "October 17th, 2022", "Hide target glow on personal bar if the healthbar is disabled.", "cont1nuity"},
+			{1666341585,  "Backend Change", "October 17th, 2022", "Quest info cache now holds 'groupAmount' and uses lowest amount from group for the top level default, while 'amount' in the quest-data contains the players value.", "cont1nuity"},
+			{1666341585,  "Bug Fix", "October 13th, 2022", "Fixing CVar restore not working properly in some cases.", "cont1nuity"},
+			{1666341585,  "Bug Fix", "October 12th, 2022", "Fixing an issue with mod/script options not working properly.", "cont1nuity"},
+			{1666341585,  "Bug Fix", "October 11th, 2022", "Fixing aura types auto tracking for Dragonflight.", "cont1nuity"},
 			
 			{1665384519,  "Bug Fix", "October 10th, 2022", "Fixing Plater not working on Classic Era.", "cont1nuity"},
 			
