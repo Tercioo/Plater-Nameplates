@@ -5493,8 +5493,14 @@ function Plater.OnInit() --private --~oninit ~init
 
 		Plater.UpdateSelfPlate()
 		
+		--update quest log after the addon initialization
 		C_Timer.After (4.1, Plater.QuestLogUpdated)
-		C_Timer.After (5.1, function() Plater.IncreaseRefreshID(); Plater.UpdateAllPlates() end)
+
+		--update all nameplate after the addon initialized
+		C_Timer.After (5.1, function() 
+			Plater.IncreaseRefreshID()
+			Plater.FullRefreshAllPlates()
+		end)
 	
 		for i = 1, 3 do
 			C_Timer.After (i, Plater.RefreshDBUpvalues)
