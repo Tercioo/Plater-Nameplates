@@ -3817,9 +3817,13 @@ local class_specs_coords = {
 			
 			plateFrame.QuestAmountCurrent = nil
 			plateFrame.QuestAmountTotal = nil
+			plateFrame.QuestText = nil
+			plateFrame.QuestName = nil
 			plateFrame.QuestIsCampaign = nil
 			unitFrame.QuestAmountCurrent = nil
 			unitFrame.QuestAmountTotal = nil
+			unitFrame.QuestText = nil
+			unitFrame.QuestName = nil
 			unitFrame.QuestIsCampaign = nil
 			
 			--cache the unit target id, so it doesnt need to waste cycles building up on aggro checks
@@ -9266,8 +9270,14 @@ end
 		-- reset quest amount
 		plateFrame.QuestAmountCurrent = nil
 		plateFrame.QuestAmountTotal = nil
+		plateFrame.QuestText = nil
+		plateFrame.QuestName = nil
+		plateFrame.QuestIsCampaign = nil
 		plateFrame.unitFrame.QuestAmountCurrent = nil
 		plateFrame.unitFrame.QuestAmountTotal = nil
+		plateFrame.unitFrame.QuestText = nil
+		plateFrame.unitFrame.QuestName = nil
+		plateFrame.unitFrame.QuestIsCampaign = nil
 		
 		local useQuestie = false
 		local QuestieTooltips = QuestieLoader and QuestieLoader._modules["QuestieTooltips"]
@@ -9288,6 +9298,7 @@ end
 		end
 		
 		local playerName = UnitName("player")
+		local isInGroup = IsInGroup()
 		local unitQuestData = {}
 		
 		local isQuestUnit = false
@@ -9340,13 +9351,21 @@ end
 					end
 					
 					if (nextLineText) then
-						if nextLineText == playerName then
+						if useQuestie then
+							local isQuestieOwn = nextLineText:match ("%(("..playerName..")%)%s*$") and true or false
+							local isQuestieGroup = nextLineText:match ("%((%w+)%)%s*$") and isInGroup and true or false
+							yourQuest = isQuestieOwn or not isQuestieGroup
+							isGroupQuest = isQuestieGroup
+							questData.yourQuest = yourQuest
+							questData.groupQuest = isGroupQuest
+						end
+						if not useQuestie and isInGroup and nextLineText == playerName then
 							yourQuest = true
 							isGroupQuest = true
 							questData.yourQuest = true
 							questData.groupQuest = true
 						elseif not nextLineText:match(THREAT_TOOLTIP) then
-							local p1, p2 = nextLineText:match ("(%d+)/(%d+)") 
+							local p1, p2 = nextLineText:match ("(%d+)/(%d+)")
 							if (not p1) then
 								-- check for % based quests
 								p1 = nextLineText:match ("(%d+%%)")
@@ -9390,12 +9409,14 @@ end
 					plateFrame.QuestAmountCurrent = questData.groupAmount
 					plateFrame.QuestAmountTotal = amount2
 					plateFrame.QuestText = questText
+					plateFrame.QuestName = text
 					plateFrame.QuestIsCampaign = isCampaignQuest
 					
 					--expose to scripts
 					plateFrame.unitFrame.QuestAmountCurrent = questData.groupAmount
 					plateFrame.unitFrame.QuestAmountTotal = amount2
 					plateFrame.unitFrame.QuestText = questText
+					plateFrame.unitFrame.QuestName = text
 					plateFrame.unitFrame.QuestIsCampaign = isCampaignQuest
 				end
 				
