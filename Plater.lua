@@ -1287,9 +1287,8 @@ local class_specs_coords = {
 				elseif (class == "PRIEST") then
 					for i = 1, NUM_GLYPH_SLOTS do
 						local enabled, _, glyphSpellID = GetGlyphSocketInfo(i)
-						if enabled then
-							local _, _, _, _, _, _, spellID = GetSpellInfo(glyphSpellID)
-							if spellID == 56180 then --Glyph of Shadow Word: Death
+						if enabled and glyphSpellID then
+							if glyphSpellID == 55682 then --Glyph of Shadow Word: Death
 								lowExecute = 0.35
 								break
 							end
