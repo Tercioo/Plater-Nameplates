@@ -30,21 +30,22 @@ function Plater.CreateSpellAnimationPanel()
 	local f = PlaterOptionsPanelFrame
 	local mainFrame = PlaterOptionsPanelContainer
 	local animationFrame = mainFrame.AllFrames [PLATER_OPTIONS_ANIMATION_TAB]
-	
+
 	--store which animation is being edited
 	local currentAnimation
 	local currentCopy
 	local previewEnabled = true
 	local previewLoopTime = 1
-	
+
 	animationFrame.CurrentIndex = 1
 	animationFrame.SearchString = ""
 	animationFrame.AvailableSpells = {}
-	
+
 	--set points
 	local startX = 10
-	local startY = -200
-	
+	local startY = -220 --menu and settings panel
+	local startYGeneralSettings = -150
+
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	local CLEUFrame = CreateFrame ("frame")
@@ -52,7 +53,7 @@ function Plater.CreateSpellAnimationPanel()
 	CLEUFrame.PlayerSerial = UnitGUID ("player")
 	CLEUFrame:SetScript ("OnEvent", function (self, event)
 		local time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical = CombatLogGetCurrentEventInfo()
-		
+
 		if (token == "SPELL_DAMAGE" or token == "SPELL_PERIODIC_DAMAGE") then
 			if (CLEUFrame.PlayerSerial == sourceGUID) then
 				if (not CLEUFrame.SpellCaptured [spellID]) then
@@ -77,22 +78,22 @@ function Plater.CreateSpellAnimationPanel()
 			end
 		end
 	end
-	
+
 	function animationFrame.StopPreview()
 		if (animationFrame.PreviewTicker) then
 			animationFrame.PreviewTicker:Cancel()
 		end
 	end
-	
+
 	function animationFrame.UpdatePreview (newLoopTime)
 		if (animationFrame.PreviewTicker) then
 			animationFrame.PreviewTicker:Cancel()
 		end
-		
+
 		previewLoopTime = newLoopTime or previewLoopTime
-		
+
 		if (previewEnabled) then
-			animationFrame.PreviewTicker = C_Timer.NewTicker (previewLoopTime, animationFrame.LoopPreview)	
+			animationFrame.PreviewTicker = C_Timer.NewTicker (previewLoopTime, animationFrame.LoopPreview)
 		end
 	end
 
@@ -100,12 +101,12 @@ function Plater.CreateSpellAnimationPanel()
 		animationFrame.BuildAnimationDataForScroll()
 		CLEUFrame:RegisterEvent ("COMBAT_LOG_EVENT_UNFILTERED")
 		Plater.RefreshIsEditingAnimations (true)
-		
+
 		if (previewEnabled) then
 			animationFrame.UpdatePreview()
 		end
 	end)
-	
+
 	animationFrame:HookScript ("OnHide", function()
 		CLEUFrame:UnregisterEvent ("COMBAT_LOG_EVENT_UNFILTERED")
 		Plater.RefreshIsEditingAnimations (false)
@@ -123,16 +124,16 @@ function Plater.CreateSpellAnimationPanel()
 		if (not spellID or type (spellID) ~= "number") then
 			return
 		end
-		
+
 		--check if there's an animation for this spell
 		local db = Plater.db.profile.spell_animation_list
 		if (db [spellID]) then
 			Plater:Msg ("an animation for this spell already exists.")
 			return
 		end
-		
+
 		local _, playerClass = UnitClass ("player")
-		
+
 		--add the spell to the animation list
 		local newAnimationTable = {
 			info = {
@@ -142,32 +143,32 @@ function Plater.CreateSpellAnimationPanel()
 				spellid = spellID,
 			}
 		}
-		
+
 		db [spellID] = newAnimationTable
-		
+
 		--refresh the scrollbox
 		animationFrame.BuildAnimationDataForScroll()
-		
+
 		--start editing this new animation
 		animationFrame.EditAnimation (spellID)
 	end
-	
+
 	function animationFrame.ShowImportTextField()
 		animationFrame.ImportAnimation()
 	end
-	
+
 	--when a text in the searchi field is changed, get the text and update the animation list
 	function animationFrame.OnSearchBoxTextChanged()
 		local text = animationFrame.AnimationSearchTextEntry:GetText()
 		animationFrame.SearchString = text:lower()
 		animationFrame.AnimationScrollBox:Refresh()
 	end
-	
+
 	--build an index table to be used in the scroll selection
 	function animationFrame.BuildAnimationDataForScroll()
 		local db = Plater.db.profile.spell_animation_list
 		local t = {}
-		
+
 		--get the player class and only show animations that is used on its class
 		local _, playerClass = UnitClass ("player")
 		for spellID, animationTable in pairs (db) do
@@ -175,28 +176,28 @@ function Plater.CreateSpellAnimationPanel()
 				tinsert (t, animationTable)
 			end
 		end
-		
+
 		animationFrame.AnimationScrollBox:SetData (t)
 		animationFrame.AnimationScrollBox:Refresh()
 	end
-	
+
 	--sort by name, index 5 holds the name:lower()
 	function animationFrame.SortScroll (t1, t2)
 		return t1[5] < t2[5]
 	end
-	
+
 	--update the scroll list in the left side
 	function animationFrame.RefreshAnimationSelectScrollBox (self, data, offset, total_lines)
-		
+
 		--animationFrame.SearchString
 		local dataInOrder = {}
-		
+
 		if (animationFrame.SearchString ~= "") then
 			for i = 1, #data do
 				local animationTable = data[i]
 				local spellID = animationTable.info.spellid
 				local spellName, _, spellIcon = GetSpellInfo (spellID)
-				
+
 				if (spellName) then
 					local spellNameLower = spellName:lower()
 					if (spellNameLower:find (animationFrame.SearchString)) then
@@ -209,16 +210,16 @@ function Plater.CreateSpellAnimationPanel()
 				local animationTable = data[i]
 				local spellID = animationTable.info.spellid
 				local spellName, _, spellIcon = GetSpellInfo (spellID)
-				
+
 				if (spellName) then
 					local spellNameLower = spellName:lower()
 					dataInOrder [#dataInOrder+1] = {spellID, data[i], spellName, spellIcon, spellNameLower}
 				end
 			end
 		end
-		
+
 		table.sort (dataInOrder, animationFrame.SortScroll)
-		
+
 		--update the scroll
 		for i = 1, total_lines do
 			local index = i + offset
@@ -229,11 +230,11 @@ function Plater.CreateSpellAnimationPanel()
 				local data = t[2]
 				local spellName = t[3]
 				local spellIcon = t[4]
-				
+
 				--update the line
 				local line = self:GetLine (i)
 				line:UpdateLine (spellID, data, spellName, spellIcon)
-				
+
 				if (data == currentAnimation) then
 					line:SetBackdropColor (unpack (scrollbox_line_backdrop_color_selected))
 				else
@@ -242,11 +243,11 @@ function Plater.CreateSpellAnimationPanel()
 			end
 		end
 	end
-	
+
 	function animationFrame.OnEnterScrollSelectionLine (self)
 		self:SetBackdropColor (.3, .3, .3, .6)
 	end
-	
+
 	function animationFrame.OnLeaveScrollSelectionLine (self)
 		--check if the hover overed button is the current animation being edited
 		if (currentAnimation == self.Data) then
@@ -255,32 +256,32 @@ function Plater.CreateSpellAnimationPanel()
 			self:SetBackdropColor (unpack (scrollbox_line_backdrop_color))
 		end
 	end
-	
+
 	function animationFrame.EditAnimation (spellID)
 		local animationObject = animationFrame.GetAnimation (spellID)
-		
+
 		if (not animationObject) then
 			Plater:Msg ("animation not found")
 			return
 		end
-		
+
 		currentAnimation = animationObject
-		
+
 		--refresh the spell selection box
 		animationFrame.AnimationScrollBox:Refresh()
-		
+
 		--update the editing animation
 		--animationFrame:HideAllConfigFrames()
 		animationFrame.EffectSelectionDropdown:Refresh()
 		animationFrame.EffectSelectionDropdown:Select (1, true)
 		animationFrame.OnSelectEffect (_, _, 1)
 		animationFrame.RefreshAddAnimationButtons()
-		
+
 		if (animationFrame.IsExporting or animationFrame.IsImporting) then
 			animationFrame.HideStringField()
 		end
 	end
-	
+
 	--user selected 'paste' in the context menu of 'self'
 	--copy the settings from the 'currentCopy' variable into the animation table for this widget
 	function animationFrame.PasteAnimationSettings (self)
@@ -288,7 +289,7 @@ function Plater.CreateSpellAnimationPanel()
 			Plater:Msg ("there's no animation to paste.")
 			return
 		end
-		
+
 		local spellID = self.SpellID
 		if (spellID) then
 			local animationObject = animationFrame.GetAnimation (spellID)
@@ -299,7 +300,7 @@ function Plater.CreateSpellAnimationPanel()
 					local copiedEffectType = thisCopiedEffect.animation_type
 					--below it iterates among all animation in the target animation object, if it doesn't find an effect table like the copied one, it needs to add it then
 					local shouldAdd = true
-					
+
 					for i = 1, #animationObject do
 						local animationEffect = animationObject [i]
 						if (animationEffect.animation_type == copiedEffectType) then
@@ -309,15 +310,15 @@ function Plater.CreateSpellAnimationPanel()
 							break
 						end
 					end
-					
+
 					--if it fails to find a similar effect, add it
 					if (shouldAdd) then
 						tinsert (animationObject, DF.table.copy ({}, thisCopiedEffect))
 					end
 				end
-				
+
 				animationFrame.EditAnimation (spellID)
-				
+
 				Plater.RefreshDBUpvalues()
 				Plater:Msg ("settings applied!")
 			else
@@ -327,54 +328,54 @@ function Plater.CreateSpellAnimationPanel()
 			Plater:Msg ("invalid spellID")
 		end
 	end
-	
+
 	function animationFrame.OnClickMenuLine (self, spellID, option, value)
-		
+
 		if (option == "editanimation") then
 			animationFrame.EditAnimation (spellID)
-			
+
 		elseif (option == "copy") then
 			local animationObject = animationFrame.GetAnimation (self.SpellID)
-			
+
 			--make a new table for the copied effects
 			currentCopy = {}
-			
+
 			--animations stay in the indexed part of the animtion object
 			--copy the settings of these indexes into the copy table
 			for i = 1, #animationObject do
 				local effect = animationObject [i]
 				tinsert (currentCopy, DF.table.copy ({}, effect))
 			end
-			
+
 			local spellName = GetSpellInfo (spellID)
 			if (spellName) then
 				Plater:Msg (spellName .. " copied.")
 			end
-			
+
 		elseif (option == "export") then
 			animationFrame.ExportAnimation (self)
-		
+
 		elseif (option == "paste") then
 			animationFrame.PasteAnimationSettings (self)
-		
+
 		elseif (option == "remove") then
 			animationFrame.RemoveAnimation (self)
-			
+
 		elseif (option == "export_table") then
 			animationFrame.ExportAnimation (self, true)
-			
+
 		end
-		
+
 		GameCooltip:Hide()
-		
+
 	end
-	
+
 	function animationFrame.OnClickScrollSelectionLine (self, button)
 		local spellID = self.SpellID
 		if (spellID) then
 			if (button == "LeftButton") then
 				animationFrame.EditAnimation (spellID)
-				
+
 			elseif (button == "RightButton") then
 				--open menu
 				GameCooltip:Preset (2)
@@ -389,11 +390,11 @@ function Plater.CreateSpellAnimationPanel()
 				GameCooltip:AddLine ("Edit Animation")
 				GameCooltip:AddMenu (1, animationFrame.OnClickMenuLine, "editanimation")
 				GameCooltip:AddIcon ([[Interface\BUTTONS\UI-GuildButton-PublicNote-Up]], 1, 1, 16, 16)
-				
+
 				GameCooltip:AddLine ("Copy Settings")
 				GameCooltip:AddMenu (1, animationFrame.OnClickMenuLine, "copy")
 				GameCooltip:AddIcon ([[Interface\AddOns\Plater\images\icons]], 1, 1, 16, 16, 3/512, 21/512, 215/512, 233/512)
-				
+
 				if (currentCopy) then
 					GameCooltip:AddLine ("Paste Settings")
 					GameCooltip:AddMenu (1, animationFrame.OnClickMenuLine, "paste")
@@ -411,7 +412,7 @@ function Plater.CreateSpellAnimationPanel()
 				GameCooltip:AddLine ("Remove")
 				GameCooltip:AddMenu (1, animationFrame.OnClickMenuLine, "remove")
 				GameCooltip:AddIcon ([[Interface\AddOns\Plater\images\icons]], 1, 1, 16, 16, 3/512, 21/512, 235/512, 257/512)
-				
+
 				--dev tool to export in database format
 				if (GetRealmName() == "Azralon") then
 					GameCooltip:AddLine ("$div")
@@ -419,12 +420,12 @@ function Plater.CreateSpellAnimationPanel()
 					GameCooltip:AddIcon ([[Interface\BUTTONS\UI-GuildButton-MOTD-Up]], 1, 1, 16, 16, 1, 0, 0, 1)
 					GameCooltip:AddMenu (1, animationFrame.OnClickMenuLine, "export_table")
 				end
-				
+
 				GameCooltip:Show()
 			end
 		end
 	end
-	
+
 	--update a single line in the scroll list
 	function animationFrame.UpdateScrollLine (self, spellID, data, spellName, spellIcon)
 		self.Icon:SetTexture (spellIcon)
@@ -433,13 +434,13 @@ function Plater.CreateSpellAnimationPanel()
 		self.SpellID = spellID
 		self.Data = data
 	end
-	
+
 	function animationFrame:HideAllConfigFrames()
 		for _, frame in pairs (animationFrame.AllConfigFrames) do
 			frame:Hide()
 		end
 	end
-	
+
 	function animationFrame.OnSelectEffect (self, _, effectIndex)
 		if (not currentAnimation [effectIndex]) then
 			animationFrame.DisableOptions()
@@ -447,17 +448,17 @@ function Plater.CreateSpellAnimationPanel()
 		else
 			animationFrame.EnableOptions()
 		end
-		
+
 		animationFrame.CurrentIndex = effectIndex
 		animationFrame:HideAllConfigFrames()
-		
+
 		local animationData = currentAnimation [animationFrame.CurrentIndex]
 		local configFrame = animationFrame.AllConfigFrames [animationData.animation_type]
 		configFrame.Data = animationData
 		configFrame:RefreshOptions()
 		configFrame:Show()
 	end
-	
+
 	function animationFrame.RefreshEffectListDropdown (self)
 		local t = {}
 		if (currentAnimation) then
@@ -467,7 +468,7 @@ function Plater.CreateSpellAnimationPanel()
 		end
 		return t
 	end
-	
+
 	function animationFrame.AddNewShakeEffect()
 		if (currentAnimation) then
 			tinsert (currentAnimation, {
@@ -485,7 +486,7 @@ function Plater.CreateSpellAnimationPanel()
 					cooldown = 0.5,
 					critical_scale = 1.05,
 				})
-				
+
 			animationFrame.EffectSelectionDropdown:Refresh()
 
 			animationFrame.CurrentIndex = #currentAnimation
@@ -494,7 +495,7 @@ function Plater.CreateSpellAnimationPanel()
 			animationFrame.RefreshAddAnimationButtons()
 		end
 	end
-	
+
 	function animationFrame.AddNewScaleEffect()
 		if (currentAnimation) then
 			tinsert (currentAnimation, {
@@ -507,7 +508,7 @@ function Plater.CreateSpellAnimationPanel()
 				scale_downX = 0.97,
 				scale_downY = 0.97,
 			})
-			
+
 			animationFrame.EffectSelectionDropdown:Refresh()
 
 			animationFrame.CurrentIndex = #currentAnimation
@@ -516,17 +517,17 @@ function Plater.CreateSpellAnimationPanel()
 			animationFrame.RefreshAddAnimationButtons()
 		end
 	end
-	
+
 	function animationFrame.RefreshAddAnimationButtons()
 		animationFrame.AddShakeButton:Enable()
 		animationFrame.AddScaleButton:Enable()
-		
+
 		if (not currentAnimation) then
 			animationFrame.AddShakeButton:Disable()
 			animationFrame.AddScaleButton:Disable()
 			return
 		end
-		
+
 		for animationIndex, animationTable in ipairs (currentAnimation) do
 			if (animationTable.animation_type == "scale") then
 				animationFrame.AddScaleButton:Disable()
@@ -536,27 +537,27 @@ function Plater.CreateSpellAnimationPanel()
 			end
 		end
 	end
-	
+
 	local cooltipInjectionScrollLine = function (self, fixed_parameter)
 		GameCooltip:Preset (2)
 		GameCooltip:SetOption ("TextSize", 10)
 		GameCooltip:SetOption ("FixedWidth", 200)
-		
+
 		local animationObject = animationFrame.GetAnimation (self.SpellID)
 		local lastEdited = date ("%d/%m/%Y", animationObject.info.time)
-		
+
 		local spellName, _, spellIcon = GetSpellInfo (self.SpellID)
-		
+
 		GameCooltip:AddLine (spellName, nil, 1, "yellow", "yellow", 11, "Friz Quadrata TT", "OUTLINE")
 		GameCooltip:AddIcon (spellIcon, 1, 1, 18, 18, .1, .9, .1, .9)
 
 		GameCooltip:AddLine ("Last Edited:", lastEdited)
-	
+
 		if (animationObject.info.desc and animationObject.info.desc ~= "") then
 			GameCooltip:AddLine (animationObject.info.desc, "", 1, "gray")
 		end
 	end
-	
+
 	local cooltipInjectionTable_ScrollLine = {
 		Type = "tooltip",
 		BuildFunc = cooltipInjectionScrollLine,
@@ -566,7 +567,7 @@ function Plater.CreateSpellAnimationPanel()
 		X = 10,
 		Y = 0,
 	}
-	
+
 	function animationFrame.RemoveAnimation (self)
 		local spellID = self.SpellID
 		if (spellID) then
@@ -578,50 +579,50 @@ function Plater.CreateSpellAnimationPanel()
 				currentAnimation = nil
 				animationFrame.EffectSelectionDropdown:Refresh()
 			end
-		
+
 			Plater.db.profile.spell_animation_list [spellID] = nil
-			
+
 			Plater.RefreshDBUpvalues()
 			animationFrame.BuildAnimationDataForScroll()
 		end
 	end
-	
+
 	function animationFrame.ImportAnimation()
 		animationFrame.IsExporting = nil
 		animationFrame.IsImporting = true
-		
+
 		animationFrame.ImportStringField:Show()
 		animationFrame.AnimationConfigFrame:Hide()
-		
+
 		animationFrame.ImportStringField:SetText ("")
 		animationFrame.ImportStringField:SetFocus (true)
-	end	
-	
+	end
+
 	function animationFrame.ExportDev (self)
-	
+
 		local spellID = self.SpellID
 		local animationToExport = animationFrame.GetAnimation (spellID)
-		
+
 		local copy = DF.table.copy ({}, animationToExport)
 		copy = {
 			[spellID] = copy
 		}
-		
+
 		local spellName = GetSpellInfo (spellID)
 		local class = UnitClass ("player")
-		
+
 		animationFrame.ImportStringField:SetText ("--" .. spellName .. " (" .. class .. ")\n" .. DF.table.dump (copy))
 		animationFrame.ImportStringField:SetFocus (true)
 		animationFrame.ImportStringField.editbox:HighlightText()
 		animationFrame.AnimationConfigFrame:Hide()
-		return	
+		return
 	end
-	
+
 	function animationFrame.ExportAnimation (self, isDev)
 		animationFrame.IsExporting = true
 		animationFrame.IsImporting = nil
 		animationFrame.ImportStringField:Show()
-		
+
 		if (isDev) then
 			animationFrame.ExportDev (self)
 			return
@@ -629,40 +630,40 @@ function Plater.CreateSpellAnimationPanel()
 
 		local spellID = self.SpellID
 		local animationToExport = animationFrame.GetAnimation (spellID)
-		
+
 		if (animationToExport) then
 			--export to string
 			animationFrame.ImportStringField:SetText (Plater.CompressData (animationToExport, "print") or "failed to export")
-			
+
 			C_Timer.After (.1, function()
 				animationFrame.ImportStringField:SetFocus (true)
 				animationFrame.ImportStringField.editbox:HighlightText()
 			end)
-			
+
 			animationFrame.AnimationConfigFrame:Hide()
 		end
 	end
-	
+
 	function animationFrame.DoImportAnimation (animationObject)
 		local spellID = animationObject.info.spellid
 		local spellName = GetSpellInfo (spellID)
 
 		local db = Plater.db.profile.spell_animation_list
 		db [spellID] = animationObject
-		
+
 		Plater:Msg ("animation for spell " .. spellName .. " added!")
-		
+
 		local _, class = UnitClass ("player")
 		if (class ~= animationObject.info.class) then
 			Plater:Msg ("this animation is for " .. animationObject.info.class .. " and won't show on this character.")
 		end
-		
+
 		animationFrame.EditAnimation (spellID)
-		
+
 		animationFrame.BuildAnimationDataForScroll()
 		Plater.RefreshDBUpvalues()
 	end
-	
+
 	function animationFrame.ConfirmImportAnimation()
 		if (animationFrame.IsExporting) then
 			animationFrame.HideStringField()
@@ -672,30 +673,30 @@ function Plater.CreateSpellAnimationPanel()
 		local text = animationFrame.ImportStringField:GetText()
 		local animationObject = Plater.DecompressData (text, "print")
 		animationFrame.HideStringField()
-		
+
 		if (animationObject) then
 			local db = Plater.db.profile.spell_animation_list
 			local spellID = animationObject.info.spellid
-			
+
 			if (not spellID) then
 				Plater:Msg ("invalid animation.")
 				return
 			end
-			
+
 			local spellName = GetSpellInfo (spellID)
 			if (not spellName) then
 				Plater:Msg ("the spell for this animation doesn't exists.")
 				return
 			end
-			
+
 			--already have
 			if (db [spellID]) then
 				--show a box to confirm
-				DF:ShowPromptPanel ("Animation for " .. spellName .. " already exists, overwrite?", function() 
+				DF:ShowPromptPanel ("Animation for " .. spellName .. " already exists, overwrite?", function()
 					--true
 					animationFrame.DoImportAnimation (animationObject)
-				end, 
-				function() 
+				end,
+				function()
 					return
 				end)
 			else
@@ -705,17 +706,17 @@ function Plater.CreateSpellAnimationPanel()
 			Plater:Msg ("invalid animation.")
 		end
 	end
-	
+
 	function animationFrame.HideStringField()
 		animationFrame.IsExporting = nil
 		animationFrame.IsImporting = nil
-		
+
 		animationFrame.ImportStringField:Hide()
 		animationFrame.ImportStringField:SetText ("")
-		
+
 		animationFrame.AnimationConfigFrame:Show()
 	end
-	
+
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> build the frames
@@ -724,7 +725,7 @@ function Plater.CreateSpellAnimationPanel()
 		{
 			type = "toggle",
 			get = function() return Plater.db.profile.spell_animations end,
-			set = function (self, fixedparam, value) 
+			set = function (self, fixedparam, value)
 				Plater.db.profile.spell_animations = value
 				Plater.RefreshDBUpvalues()
 			end,
@@ -734,7 +735,7 @@ function Plater.CreateSpellAnimationPanel()
 		{
 			type = "range",
 			get = function() return Plater.db.profile.spell_animations_scale end,
-			set = function (self, fixedparam, value) 
+			set = function (self, fixedparam, value)
 				Plater.db.profile.spell_animations_scale = value
 			end,
 			min = 0.75,
@@ -747,15 +748,15 @@ function Plater.CreateSpellAnimationPanel()
 		},
 	}
 
-	DF:BuildMenu (animationFrame, optionsTable, 10, -130, 330, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, animationFrame.OnDataChange)
-	
+	DF:BuildMenu (animationFrame, optionsTable, 10, startYGeneralSettings, 330, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, animationFrame.OnDataChange)
+
 	local scrollBoxHeight = 396 - 70
 
 	--dropdown select spell to add
 	local buildAddSpellOptions = function()
 		local t = {}
 		local db = Plater.db.profile.spell_animation_list
-		for spellID, spellInfo in pairs (CLEUFrame.SpellCaptured) do 
+		for spellID, spellInfo in pairs (CLEUFrame.SpellCaptured) do
 			if (not db [spellInfo.ID]) then
 				local _, _, spellIcon = GetSpellInfo (spellInfo.ID)
 				if (spellIcon) then
@@ -765,22 +766,22 @@ function Plater.CreateSpellAnimationPanel()
 		end
 		return t
 	end
-	
+
 	local selectSpellLabel = DF:CreateLabel (animationFrame, "Select Spell to Add Animation:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
 	local selectSpellDropdown = DF:CreateDropDown (animationFrame, buildAddSpellOptions, 1, 130, 20, "SelectSpellDropdown", _, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
 	selectSpellDropdown:SetPoint ("topleft", selectSpellLabel, "bottomleft", 0, -2)
-	
+
 	--button add spell
 	local addSpellButton = DF:CreateButton (animationFrame, animationFrame.AddNewAnimation, 40, 20, "Add", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 	addSpellButton:SetPoint ("left", selectSpellDropdown, "right", 2, 0)
-	addSpellButton.tooltip = function() 
+	addSpellButton.tooltip = function()
 		if (not next (CLEUFrame.SpellCaptured)) then
 			return "No spells to add?\n\nHit any npc with spells while this window is open to fill the dropdown with options."
 		else
 			return "Add animation for the selected spell."
 		end
 	end
-	
+
 	--button import animation
 	local importButton = DF:CreateButton (animationFrame, animationFrame.ShowImportTextField, 26, 20, "", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 	importButton:SetIcon ([[Interface\AddOns\Plater\images\icons]], 16, 16, "overlay", {5/512, 19/512, 195/512, 210/512}, {1, .8, .2}, nil, nil, nil, false)
@@ -790,12 +791,12 @@ function Plater.CreateSpellAnimationPanel()
 		GameCooltip:SetOption ("TextSize", 10)
 		GameCooltip:SetOption ("FixedWidth", 200)
 		GameCooltip:SetOwner  (importButton.widget)
-		
+
 		GameCooltip:AddLine ("Import Animation", "", 1, "yellow", "yellow", 12, nil, "OUTLINE")
 		GameCooltip:AddLine ("Add an animation from a string.\n\nYou can export to string by right clicking an animation in the menu below.")
-		
+
 		GameCooltip:Show()
-	end)	
+	end)
 	importButton:HookScript ("OnLeave", function()
 		GameCooltip:Hide()
 	end)
@@ -803,16 +804,16 @@ function Plater.CreateSpellAnimationPanel()
 	--search box
 	local searchLabel = DF:CreateLabel (animationFrame, "Search:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
 	searchLabel:SetPoint ("topleft", selectSpellDropdown, "bottomleft", 0, -5)
-	
+
 	local searchAnimationTextEntry = DF:CreateTextEntry (animationFrame, function()end, 200, 20, "AnimationSearchTextEntry", _, _, options_dropdown_template)
 	searchAnimationTextEntry:SetHook ("OnChar", animationFrame.OnSearchBoxTextChanged)
 	searchAnimationTextEntry:SetHook ("OnTextChanged", animationFrame.OnSearchBoxTextChanged)
 	searchAnimationTextEntry:SetPoint ("topleft", searchLabel, "bottomleft", 0, -2)
-	
+
 	--scrollbox to select the spell animation to edit
 	local spellLabel = DF:CreateLabel (animationFrame, "Spell Animations", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
 	spellLabel:SetPoint ("topleft", searchAnimationTextEntry, "bottomleft", 0, -5)
-	
+
 	local animationSelectScrollBox = DF:CreateScrollBox (animationFrame, "$parentScrollBox", animationFrame.RefreshAnimationSelectScrollBox, {}, 200, scrollBoxHeight, scrollbox_lines, scrollbox_line_height)
 	animationSelectScrollBox:SetPoint ("topleft", spellLabel.widget, "bottomleft", 0, -2)
 	DF:ReskinSlider (animationSelectScrollBox)
@@ -821,28 +822,28 @@ function Plater.CreateSpellAnimationPanel()
 	local createNewLineFunc = function (self, index)
 		--create a new line
 		local line = CreateFrame ("button", "$parentLine" .. index, self, BackdropTemplateMixin and "BackdropTemplate")
-		
+
 		--set its parameters
 		line:SetPoint ("topleft", self, "topleft", 1, -((index-1) * (scrollbox_line_height+1)) - 1)
 		line:SetSize (scrollbox_size[1]-2, scrollbox_line_height)
 		line:RegisterForClicks ("LeftButtonDown", "RightButtonDown")
-		
+
 		line:SetScript ("OnEnter",	animationFrame.OnEnterScrollSelectionLine)
 		line:SetScript ("OnLeave",	animationFrame.OnLeaveScrollSelectionLine)
 		line:SetScript ("OnClick",	animationFrame.OnClickScrollSelectionLine)
-		
+
 		line.CoolTip = cooltipInjectionTable_ScrollLine
 		GameCooltip:CoolTipInject (line)
-		
+
 		line:SetBackdrop ({bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true, edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
 		line:SetBackdropColor (unpack (scrollbox_line_backdrop_color))
 		line:SetBackdropBorderColor (0, 0, 0, 1)
-		
+
 		local icon = line:CreateTexture ("$parentIcon", "overlay")
 		icon:SetSize (scrollbox_line_height-4, scrollbox_line_height-4)
-		
+
 		local animationName = DF:CreateLabel (line, "", DF:GetTemplate ("font", "PLATER_SCRIPTS_NAME"))
-		
+
 		--setup anchors
 		icon:SetPoint ("left", line, "left", 2, 0)
 		animationName:SetPoint ("topleft", icon, "topright", 2, -2)
@@ -853,9 +854,9 @@ function Plater.CreateSpellAnimationPanel()
 
 		return line
 	end
-	
+
 	--create the scrollbox lines
-	for i = 1, scrollbox_lines do 
+	for i = 1, scrollbox_lines do
 		animationSelectScrollBox:CreateLine (createNewLineFunc)
 	end
 
@@ -865,7 +866,7 @@ function Plater.CreateSpellAnimationPanel()
 		local luaeditor_border_color = {0, 0, 0, 1}
 		local edit_script_size = {620, 431}
 		local buttons_size = {120, 20}
-		
+
 		local importStringField = DF:NewSpecialLuaEditorEntry (animationFrame, 825, edit_script_size[2] - 75, "ImportEditor", "$parentImportEditor", true)
 		importStringField:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
 		importStringField:SetBackdropBorderColor (unpack (luaeditor_border_color))
@@ -873,56 +874,56 @@ function Plater.CreateSpellAnimationPanel()
 		importStringField:Hide()
 		animationFrame.ImportStringField = importStringField
 		DF:ReskinSlider (importStringField.scroll)
-		
+
 		--import button
 		local okayButton = DF:CreateButton (importStringField, animationFrame.ConfirmImportAnimation, buttons_size[1], buttons_size[2], "Okay", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 		okayButton:SetIcon ([[Interface\BUTTONS\UI-Panel-BiggerButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
-		
+
 		--cancel button
 		local cancelButton = DF:CreateButton (importStringField, animationFrame.HideStringField, buttons_size[1], buttons_size[2], "Cancel", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 		cancelButton:SetIcon ([[Interface\BUTTONS\UI-Panel-MinimizeButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
 		okayButton:SetPoint ("topright", importStringField, "bottomright", 0, -7)
 		cancelButton:SetPoint ("right", okayButton, "left", -20, 0)
-		
+
 	--editing settings of the animation
 	local animationConfigFrame = CreateFrame ("frame", "$parentAnimationConfig", animationFrame, BackdropTemplateMixin and "BackdropTemplate")
 	DF:ApplyStandardBackdrop (animationConfigFrame)
 	animationConfigFrame:SetPoint ("topleft", animationSelectScrollBox, "topright", 45, 53 + 70)
 	animationConfigFrame:SetSize (825, scrollBoxHeight + 53 + 5)
 	animationFrame.AnimationConfigFrame = animationConfigFrame
-	
+
 	local animationPreviewFrame = CreateFrame ("frame", "$parentPreviewConfig", animationFrame, BackdropTemplateMixin and "BackdropTemplate")
 	DF:ApplyStandardBackdrop (animationPreviewFrame)
 	animationPreviewFrame:SetPoint ("topleft", animationConfigFrame, "bottomleft", 0, -5)
 	animationPreviewFrame:SetPoint ("topright", animationConfigFrame, "bottomright", 0, -5)
 	animationPreviewFrame:SetHeight (60)
 	animationFrame.AnimationPreviewFrame = animationPreviewFrame
-	
+
 	local previewHeaderLabel = DF:CreateLabel (animationPreviewFrame, "Preview Settings:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
 	previewHeaderLabel:SetPoint ("topleft", animationPreviewFrame, "topleft", 5, -5)
-	
+
 	--select effect dropdown (scale, shake)
 	local effectSelectionLabel = DF:CreateLabel (animationConfigFrame, "Effect:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
 	local effectSelectionDropdown = DF:CreateDropDown (animationConfigFrame, animationFrame.RefreshEffectListDropdown, 1, 160, 20, "EffectSelectionDropdown", _, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
 	effectSelectionDropdown:SetPoint ("left", effectSelectionLabel, "right", 2, 0)
 	animationFrame.EffectSelectionDropdown = effectSelectionDropdown
-	
+
 	--add shake effect
 	local addShakeButton = DF:CreateButton (animationConfigFrame, animationFrame.AddNewShakeEffect, 120, 20, "Add Shake Effect", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 	animationFrame.AddShakeButton = addShakeButton
-	
+
 	--add scale effect
 	local addScaleButton = DF:CreateButton (animationConfigFrame, animationFrame.AddNewScaleEffect, 120, 20, "Add Scale Effect", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 	addScaleButton:SetPoint ("left", addShakeButton, "right", 2, 0)
-	animationFrame.AddScaleButton = addScaleButton	
-	
+	animationFrame.AddScaleButton = addScaleButton
+
 	animationFrame.AllConfigFrames = {}
 	local scaleOptionsFrame = CreateFrame ("frame", "$parentScaleFrame", animationConfigFrame, BackdropTemplateMixin and "BackdropTemplate")
 	scaleOptionsFrame:Hide()
 	animationFrame.AllConfigFrames ["scale"] = scaleOptionsFrame
 	local shakeOptionsFrame = CreateFrame ("frame", "$parentShakeFrame", animationConfigFrame, BackdropTemplateMixin and "BackdropTemplate")
 	animationFrame.AllConfigFrames ["frameshake"] = shakeOptionsFrame
-	
+
 	function animationFrame.DisableOptions()
 		for _, widget in ipairs (scaleOptionsFrame.widget_list) do
 			if (widget.Disable) then
@@ -935,7 +936,7 @@ function Plater.CreateSpellAnimationPanel()
 			end
 		end
 	end
-	
+
 	function animationFrame.EnableOptions()
 		for _, widget in ipairs (scaleOptionsFrame.widget_list) do
 			if (widget.Enable) then
@@ -948,33 +949,33 @@ function Plater.CreateSpellAnimationPanel()
 			end
 		end
 	end
-	
+
 	for _, frame in pairs (animationFrame.AllConfigFrames) do
 		frame:SetSize (460, 250)
 		frame:SetPoint ("topleft", animationConfigFrame, "topleft", 5, -5)
 		--frame:Hide()
 		frame.Data = {}
 	end
-	
-	
-	
+
+
+
 	local scaleOptionsTable = {
 		{
 			type = "toggle",
 			get = function() return scaleOptionsFrame.Data.enabled end,
-			set = function (self, fixedparam, value) 
+			set = function (self, fixedparam, value)
 				scaleOptionsFrame.Data.enabled = value
 			end,
 			name = "Enabled",
 		},
-		
+
 		{type = "blank"},
-		
+
 
 		{
 			type = "range",
 			get = function() return scaleOptionsFrame.Data.duration end,
-			set = function (self, fixedparam, value) 
+			set = function (self, fixedparam, value)
 				scaleOptionsFrame.Data.duration = value
 			end,
 			min = 0.05,
@@ -983,13 +984,13 @@ function Plater.CreateSpellAnimationPanel()
 			usedecimals = true,
 			name = "Duration",
 		},
-		
+
 		{type = "blank"},
-		
+
 		{
 			type = "range",
 			get = function() return scaleOptionsFrame.Data.scale_upX end,
-			set = function (self, fixedparam, value) 
+			set = function (self, fixedparam, value)
 				scaleOptionsFrame.Data.scale_upX = value
 			end,
 			min = 0,
@@ -1001,7 +1002,7 @@ function Plater.CreateSpellAnimationPanel()
 		{
 			type = "range",
 			get = function() return scaleOptionsFrame.Data.scale_upY end,
-			set = function (self, fixedparam, value) 
+			set = function (self, fixedparam, value)
 				scaleOptionsFrame.Data.scale_upY = value
 			end,
 			min = 0,
@@ -1013,7 +1014,7 @@ function Plater.CreateSpellAnimationPanel()
 		{
 			type = "range",
 			get = function() return scaleOptionsFrame.Data.scale_downX end,
-			set = function (self, fixedparam, value) 
+			set = function (self, fixedparam, value)
 				scaleOptionsFrame.Data.scale_downX = value
 			end,
 			min = 0,
@@ -1025,7 +1026,7 @@ function Plater.CreateSpellAnimationPanel()
 		{
 			type = "range",
 			get = function() return scaleOptionsFrame.Data.scale_downY end,
-			set = function (self, fixedparam, value) 
+			set = function (self, fixedparam, value)
 				scaleOptionsFrame.Data.scale_downY = value
 			end,
 			min = 0,
@@ -1034,13 +1035,13 @@ function Plater.CreateSpellAnimationPanel()
 			usedecimals = true,
 			name = "Scale Down Y",
 		},
-		
+
 		{type = "blank"},
-		
+
 		{
 			type = "range",
 			get = function() return scaleOptionsFrame.Data.cooldown end,
-			set = function (self, fixedparam, value) 
+			set = function (self, fixedparam, value)
 				scaleOptionsFrame.Data.cooldown = value
 			end,
 			min = 0,
@@ -1049,25 +1050,40 @@ function Plater.CreateSpellAnimationPanel()
 			usedecimals = true,
 			name = "Cooldown",
 		},
+
+		{type = "blank"},
+
+		{
+			type = "range",
+			get = function() return scaleOptionsFrame.Data.critical_scale end,
+			set = function (self, fixedparam, value)
+				scaleOptionsFrame.Data.critical_scale = value
+			end,
+			min = 1,
+			max = 2,
+			step = 0.05,
+			usedecimals = true,
+			name = "Critical Hit Scale",
+		},
 	}
-	
+
 	local shakeOptionsTable = {
 		{
 			type = "toggle",
 			get = function() return shakeOptionsFrame.Data.enabled end,
-			set = function (self, fixedparam, value) 
+			set = function (self, fixedparam, value)
 				shakeOptionsFrame.Data.enabled = value
 			end,
 			name = "Enabled",
 		},
-		
+
 		{type = "blank"},
-		
+
 
 		{
 			type = "range",
 			get = function() return shakeOptionsFrame.Data.duration end,
-			set = function (self, fixedparam, value) 
+			set = function (self, fixedparam, value)
 				shakeOptionsFrame.Data.duration = value
 			end,
 			min = 0.05,
@@ -1077,11 +1093,11 @@ function Plater.CreateSpellAnimationPanel()
 			name = "Duration",
 			desc = "Animation duration time.",
 		},
-		
+
 		{
 			type = "range",
 			get = function() return shakeOptionsFrame.Data.amplitude end,
-			set = function (self, fixedparam, value) 
+			set = function (self, fixedparam, value)
 				shakeOptionsFrame.Data.amplitude = value
 			end,
 			min = 0,
@@ -1094,7 +1110,7 @@ function Plater.CreateSpellAnimationPanel()
 		{
 			type = "range",
 			get = function() return shakeOptionsFrame.Data.frequency end,
-			set = function (self, fixedparam, value) 
+			set = function (self, fixedparam, value)
 				shakeOptionsFrame.Data.frequency = value
 			end,
 			min = 0,
@@ -1104,13 +1120,13 @@ function Plater.CreateSpellAnimationPanel()
 			name = "Frequency",
 			desc =  "Scale how fast and often the animation plays within its duration time.",
 		},
-		
+
 		{type = "blank"},
-		
+
 		{
 			type = "range",
 			get = function() return shakeOptionsFrame.Data.scaleX end,
-			set = function (self, fixedparam, value) 
+			set = function (self, fixedparam, value)
 				shakeOptionsFrame.Data.scaleX = value
 			end,
 			min = -50,
@@ -1123,7 +1139,7 @@ function Plater.CreateSpellAnimationPanel()
 		{
 			type = "range",
 			get = function() return shakeOptionsFrame.Data.scaleY end,
-			set = function (self, fixedparam, value) 
+			set = function (self, fixedparam, value)
 				shakeOptionsFrame.Data.scaleY = value
 			end,
 			min = -50,
@@ -1133,11 +1149,11 @@ function Plater.CreateSpellAnimationPanel()
 			name = "Scale Y",
 			desc = "Scale the animation on its vertical axis.",
 		},
-		
+
 		{
 			type = "toggle",
 			get = function() return shakeOptionsFrame.Data.absolute_sineX end,
-			set = function (self, fixedparam, value) 
+			set = function (self, fixedparam, value)
 				shakeOptionsFrame.Data.absolute_sineX = value
 			end,
 			name = "Absolute Sine X",
@@ -1146,19 +1162,19 @@ function Plater.CreateSpellAnimationPanel()
 		{
 			type = "toggle",
 			get = function() return shakeOptionsFrame.Data.absolute_sineY end,
-			set = function (self, fixedparam, value) 
+			set = function (self, fixedparam, value)
 				shakeOptionsFrame.Data.absolute_sineY = value
 			end,
 			name = "Absolute Sine Y",
 			desc = "Makes the sine wave of the animation to not use its negative part making it always to go up.\n\nIf the |cFFFFFF00Scale Y|r option has a negative value the animation goes down instead.",
 		},
-		
+
 		{type = "blank"},
-		
+
 		{
 			type = "range",
 			get = function() return shakeOptionsFrame.Data.fade_in end,
-			set = function (self, fixedparam, value) 
+			set = function (self, fixedparam, value)
 				shakeOptionsFrame.Data.fade_in = value
 			end,
 			min = 0,
@@ -1171,7 +1187,7 @@ function Plater.CreateSpellAnimationPanel()
 		{
 			type = "range",
 			get = function() return shakeOptionsFrame.Data.fade_out end,
-			set = function (self, fixedparam, value) 
+			set = function (self, fixedparam, value)
 				shakeOptionsFrame.Data.fade_out = value
 			end,
 			min = 0,
@@ -1181,13 +1197,13 @@ function Plater.CreateSpellAnimationPanel()
 			name = "Fade Out Time",
 			desc = "Time the animation takes to go from playing its full effect to not playing at all.\n\nThis time is within the animation duration time.",
 		},
-		
+
 		{type = "blank"},
-		
+
 		{
 			type = "range",
 			get = function() return shakeOptionsFrame.Data.cooldown end,
-			set = function (self, fixedparam, value) 
+			set = function (self, fixedparam, value)
 				shakeOptionsFrame.Data.cooldown = value
 			end,
 			min = 0,
@@ -1197,8 +1213,23 @@ function Plater.CreateSpellAnimationPanel()
 			name = "Cooldown",
 			desc = "Won't play this animation again while its cooldown time isn't passed.",
 		},
+
+		{type = "blank"},
+
+		{
+			type = "range",
+			get = function() return scaleOptionsFrame.Data.critical_scale end,
+			set = function (self, fixedparam, value)
+				scaleOptionsFrame.Data.critical_scale = value
+			end,
+			min = 1,
+			max = 2,
+			step = 0.05,
+			usedecimals = true,
+			name = "Critical Hit Scale",
+		},
 	}
-	
+
 	--the callback function seems to be firing before the OnValueChanged function in the widget
 	--delaying the update a little bit fixes this
 	local updateAnimationOnPlater = function()
@@ -1214,15 +1245,15 @@ function Plater.CreateSpellAnimationPanel()
 		end
 		animationFrame.RefreshTimer = C_Timer.NewTimer (.1, updateAnimationOnPlater)
 	end
-	
+
 	DF:BuildMenu (scaleOptionsFrame, scaleOptionsTable, 0, 0, 330, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, animationFrame.OnDataChange)
 	DF:BuildMenu (shakeOptionsFrame, shakeOptionsTable, 0, 0, 330, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, animationFrame.OnDataChange)
-	
+
 	local animationPreviewOptionsTable = {
 		{
 			type = "toggle",
 			get = function() return previewEnabled end,
-			set = function (self, fixedparam, value) 
+			set = function (self, fixedparam, value)
 				previewEnabled = value
 				animationFrame.UpdatePreview()
 			end,
@@ -1231,7 +1262,7 @@ function Plater.CreateSpellAnimationPanel()
 		{
 			type = "range",
 			get = function() return previewLoopTime end,
-			set = function (self, fixedparam, value) 
+			set = function (self, fixedparam, value)
 				animationFrame.UpdatePreview (value)
 			end,
 			min = .1,
@@ -1242,19 +1273,19 @@ function Plater.CreateSpellAnimationPanel()
 		},
 	}
 	DF:BuildMenu (animationPreviewFrame, animationPreviewOptionsTable, 5, -25, 10, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, animationFrame.OnDataChange)
-	
+
 	animationFrame.DisableOptions()
-	
+
 	selectSpellLabel:SetPoint ("topleft", animationFrame, "topleft", startX, startY)
 
 	effectSelectionLabel:SetPoint ("bottomleft", animationConfigFrame, "topleft", 0, 8)
 	addShakeButton:SetPoint ("left", effectSelectionDropdown, "right", 2, 0)
-	
+
 	importStringField:SetPoint ("topleft", animationSelectScrollBox, "topright", 45, 53 + 70)
-	
+
 	animationFrame.RefreshAddAnimationButtons()
 	animationFrame.BuildAnimationDataForScroll()
-	
+
 end
 
--- endd doo thend thens ends elses 
+-- endd doo thend thens ends elses
