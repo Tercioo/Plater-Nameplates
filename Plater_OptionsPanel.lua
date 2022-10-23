@@ -341,7 +341,7 @@ function Plater.OpenOptionsPanel()
 	local colorsFrame			= mainFrame.AllFrames [17]
 	local castColorsFrame		= mainFrame.AllFrames [18]
 	local auraLastEventFrame	= mainFrame.AllFrames [19]
-	local animationFrame		= mainFrame.AllFrames [20] --need to change the index on Plater_AnimationEditor.lua
+	local animationFrame		= mainFrame.AllFrames [20] --when this index is changed, need to also change the index on Plater_AnimationEditor.lua
 	local autoFrame				= mainFrame.AllFrames [21]
 	local profilesFrame			= mainFrame.AllFrames [22]
 	local advancedFrame			= mainFrame.AllFrames [23]
@@ -12358,6 +12358,17 @@ end
 			name = "Show Interrupt Author",
 			desc = "Show Interrupt Author",
 		},
+
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.cast_statusbar_interrupt_anim end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.cast_statusbar_interrupt_anim = value
+			end,
+			name = "Play Interrupt Animation",
+			desc = "Play Interrupt Animation",
+		},
+
 		{
 			type = "toggle",
 			get = function() return Plater.db.profile.hide_friendly_castbars end,

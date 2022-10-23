@@ -2816,6 +2816,8 @@ PLATER_DEFAULT_SETTINGS = {
 		cast_statusbar_spark_half = false,
 		cast_statusbar_spark_alpha = 0.834,
 		cast_statusbar_spark_color = {1, 1, 1, 1},
+
+		cast_statusbar_interrupt_anim = true,
 		
 		indicator_faction = true,
 		indicator_friendlyfaction = false,

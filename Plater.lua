@@ -5908,6 +5908,9 @@ end
 			PixelUtil.SetSize (castBar.Spark, profile.cast_statusbar_spark_width, castBarHeight)
 			Plater.UpdateCastbarIcon(castBar)
 
+			castBar._points = {{"topleft", healthBar, "bottomleft", castBarOffSetXRel + castBarOffSetX, castBarOffSetY},
+			{"topright", healthBar, "bottomright", -castBarOffSetXRel + castBarOffSetX, castBarOffSetY}}
+
 		--power bar
 			powerBar:ClearAllPoints()
 			PixelUtil.SetPoint (powerBar, "topleft", healthBar, "bottomleft", powerBarOffSetX, powerBarOffSetY)
@@ -8974,6 +8977,43 @@ end
 						castBar.InterruptSourceName = sourceName
 						castBar.InterruptSourceGUID = sourceGUID
 						
+						--interrupt animation
+						if (Plater.db.profile.cast_statusbar_interrupt_anim) then
+							local interruptAnim = castBar._interruptAnim
+							if (not interruptAnim) then
+								--scale animation
+								local duration = 0.05
+								local animationHub = DF:CreateAnimationHub(castBar)
+								animationHub.ScaleUp = DF:CreateAnimation(animationHub, "scale", 1, duration,	1, 	1, 	1, 	1.05)
+								animationHub.ScaleDown = DF:CreateAnimation(animationHub, "scale", 2, duration,	1, 	1.05, 	1, 	0.95)
+
+								--shake animattion
+								local duration = 0.36
+								local amplitude = 0.58
+								local frequency = 37.39
+								local absolute_sineX = false
+								local absolute_sineY = false
+								local scaleX = 0
+								local scaleY = 1.2
+								local fade_out = 0.33
+								local fade_in = 0.001
+								local cooldown = 0.5
+
+								local points = castBar._points
+								local frameShakeObject = DF:CreateFrameShake(castBar, duration, amplitude, frequency, absolute_sineX, absolute_sineY, scaleX, scaleY, fade_in, fade_out, points)
+
+								castBar._interruptAnim = {
+									Scale = animationHub,
+									Shake = frameShakeObject
+								}
+
+								interruptAnim = castBar._interruptAnim
+							end
+
+							interruptAnim.Scale:Play()
+							castBar:PlayFrameShake(interruptAnim.Shake)
+						end
+
 						castBar.FrameOverlay.TargetName:Hide() -- hide the target immediately
 						--> check and stop the casting script if any
 						castBar:OnHideWidget()
