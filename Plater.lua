@@ -8960,6 +8960,12 @@ end
 				local castBar = unitFrame.castBar
 				if (unitFrame.PlaterOnScreen and castBar:IsShown()) then
 					if (plateFrame [MEMBER_GUID] == targetGUID) then
+						--get owner name if a pet interrupted
+						local petOwnerTable = PET_CACHE[sourceGUID]
+						if (petOwnerTable) then
+							name = petOwnerTable.ownerName or name
+							sourceGUID = petOwnerTable.ownerGUID or sourceGUID
+						end
 						if DB_USE_NAME_TRANSLIT then
 							name = LibTranslit:Transliterate(name, TRANSLIT_MARK)
 						end
