@@ -1072,41 +1072,76 @@ PLATER_DEFAULT_SETTINGS = {
 		},
 
 		spell_animation_list = {
-		
 			--chaos bolt
-			[116858] = {
-				{
-					enabled = true,
-					duration = 0.075, --seconds
-					animation_type = "scale",
-					cooldown = 0.75, --seconds
-					scale_upX = 1.075,
-					scale_upY = 1.075,
-					scale_downX = 0.915,
-					scale_downY = 0.915,
+			[116858] =  {
+				[1] =  {
+				   ["enabled"] = true,
+				   ["scale_upX"] = 1.0499999523163,
+				   ["scale_downY"] = 0.94999998807907,
+				   ["scale_downX"] = 0.94999998807907,
+				   ["scale_upY"] = 1.0499999523163,
+				   ["critical_scale"] = 1,
+				   ["animation_type"] = "scale",
+				   ["cooldown"] = 0.75,
+				   ["duration"] = 0.099999994039536,
 				},
-				{
-					enabled = true,
-					animation_type = "frameshake",
-					scaleX = 0.1,
-					scaleY = 1,
-					absolute_sineX = false,
-					absolute_sineY = false,
-					duration = 0.15,
-					amplitude = 2,
-					frequency = 60,
-					fade_in = 0.05,
-					fade_out = 0.10,
-					cooldown = 0.25,
+				[2] =  {
+				   ["enabled"] = true,
+				   ["fade_out"] = 0.099999994039536,
+				   ["absolute_sineX"] = false,
+				   ["absolute_sineY"] = true,
+				   ["animation_type"] = "frameshake",
+				   ["scaleX"] = 0,
+				   ["duration"] = 0.099999994039536,
+				   ["amplitude"] = 0.59999996423721,
+				   ["fade_in"] = 0.049999997019768,
+				   ["scaleY"] = 4.9699974060059,
+				   ["cooldown"] = 0.25,
+				   ["frequency"] = 2.8999998569489,
 				},
-				info = {
-					time = 0,
-					desc = "",
-					class = "WARLOCK",
-					spellid = 116858,
-				}
+				["info"] =  {
+				   ["time"] = 0,
+				   ["class"] = "WARLOCK",
+				   ["spellid"] = 116858,
+				   ["desc"] = "",
+				},
 			},
-		
+
+			--malefic rapture
+			[324540] = {
+				[1] =  {
+				   ["enabled"] = true,
+				   ["fade_out"] = 0.089999996125698,
+				   ["duration"] = 0.1499999910593,
+				   ["absolute_sineX"] = false,
+				   ["absolute_sineY"] = false,
+				   ["animation_type"] = "frameshake",
+				   ["scaleX"] = 0.099998474121094,
+				   ["amplitude"] = 0.89999997615814,
+				   ["critical_scale"] = 1.05,
+				   ["fade_in"] = 0.0099999997764826,
+				   ["scaleY"] = 2,
+				   ["cooldown"] = 0.5,
+				   ["frequency"] = 25.650197982788,
+				},
+				[2] =  {
+				   ["enabled"] = true,
+				   ["scale_upX"] = 1.0299999713898,
+				   ["scale_downY"] = 0.96999996900558,
+				   ["scale_downX"] = 0.96999996900558,
+				   ["scale_upY"] = 1.0299999713898,
+				   ["duration"] = 0.05,
+				   ["cooldown"] = 0.75,
+				   ["animation_type"] = "scale",
+				},
+				["info"] =  {
+				   ["time"] = 1539292087,
+				   ["class"] = "WARLOCK",
+				   ["spellid"] = 324540,
+				   ["desc"] = "",
+				},
+			},
+
 			--seed of corruption
 			[27285] = {
 				{
@@ -1160,9 +1195,9 @@ PLATER_DEFAULT_SETTINGS = {
 					scaleY = 1,
 					absolute_sineX = false,
 					absolute_sineY = false,
-					duration = 0.15,
-					amplitude = 3,
-					frequency = 25,
+					duration = 0.12,
+					amplitude = 2.5,
+					frequency = 20,
 					fade_in = 0.01,
 					fade_out = 0.08,
 					cooldown = 0.25,
@@ -1172,9 +1207,9 @@ PLATER_DEFAULT_SETTINGS = {
 					desc = "",
 					class = "WARLOCK",
 					spellid = 264178,
-				}				
+				}
 			},
-			
+
 			--implosion
 			[196278] = {
 				{
@@ -1480,41 +1515,7 @@ PLATER_DEFAULT_SETTINGS = {
 					spellid = 5374,
 				}
 			},
-			
-			--envenom (assassination)
-			[32645] = {
-				{
-					enabled = true,
-					duration = 0.04, --seconds
-					animation_type = "scale",
-					cooldown = 0.75, --seconds
-					scale_upX = 1.1,
-					scale_upY = 1.1,
-					scale_downX = 0.9,
-					scale_downY = 0.9,
-				},
-				{
-					enabled = true,
-					animation_type = "frameshake",
-					scaleX = 1,
-					scaleY = 1,
-					absolute_sineX = false,
-					absolute_sineY = true,
-					duration = 0.08,
-					amplitude = 10,
-					frequency = 4.1,
-					fade_in = 0.01,
-					fade_out = 0.18,
-					cooldown = 0.5,
-				},
-				info = {
-					time = 0,
-					desc = "",
-					class = "ROGUE",
-					spellid = 32645,
-				}
-			},
-			
+
 			--toxic blade (assassination)
 			[245388] = {
 				{
@@ -1636,7 +1637,7 @@ PLATER_DEFAULT_SETTINGS = {
 					fade_in = 0.01,
 					fade_out = 0.09,
 					cooldown = 0.5,
-					critical_scale = 1.2,
+					critical_scale = 1,
 				},
 				info = {
 					time = 0,
@@ -1719,7 +1720,7 @@ PLATER_DEFAULT_SETTINGS = {
 					fade_in = 0.01,
 					fade_out = 0.09,
 					cooldown = 0.5,
-					critical_scale = 1.2,
+					critical_scale = 1,
 				},
 				info = {
 					time = 0,
@@ -1802,7 +1803,7 @@ PLATER_DEFAULT_SETTINGS = {
 					fade_in = 0.01,
 					fade_out = 0.09,
 					cooldown = 0.5,
-					critical_scale = 1.2,
+					critical_scale = 1,
 				},
 				info = {
 					time = 0,
@@ -1837,7 +1838,7 @@ PLATER_DEFAULT_SETTINGS = {
 					fade_in = 0.01,
 					fade_out = 0.09,
 					cooldown = 0.5,
-					critical_scale = 1.05,
+					critical_scale = 1,
 				},
 				info = {
 					time = 0,
@@ -1896,7 +1897,7 @@ PLATER_DEFAULT_SETTINGS = {
 					fade_in = 0.01,
 					fade_out = 0.09,
 					cooldown = 0.5,
-					critical_scale = 1.05,
+					critical_scale = 1,
 				},
 				info = {
 					time = 0,
@@ -1979,7 +1980,7 @@ PLATER_DEFAULT_SETTINGS = {
 					fade_in = 0.01,
 					fade_out = 0.2,
 					cooldown = 0.5,
-					critical_scale = 1.2,
+					critical_scale = 1,
 				},
 				info = {
 					time = 0,
@@ -2011,7 +2012,7 @@ PLATER_DEFAULT_SETTINGS = {
 					class = "WARRIOR",
 					spellid = 20243,
 				}
-			}, 
+			},
 			
 			--Shockwave (warrior)
 			[46968] = {
@@ -2035,65 +2036,65 @@ PLATER_DEFAULT_SETTINGS = {
 					class = "WARRIOR",
 					spellid = 46968,
 				}
-			}, 
+			},
 			
 			--Death Strike (dk)
 			[49998] = {
-				{
-					enabled = true,
-					animation_type = "frameshake",
-					scaleX = .1,
-					scaleY = 1,
-					absolute_sineX = false,
-					absolute_sineY = false,
-					duration = 0.13,
-					amplitude = 1.8,
-					frequency = 25,
-					fade_in = 0.01,
-					fade_out = 0.02,
-					cooldown = 0.5,
+				[1] =  {
+				   ["enabled"] = true,
+				   ["fade_out"] = 0.019999999552965,
+				   ["absolute_sineX"] = false,
+				   ["absolute_sineY"] = false,
+				   ["animation_type"] = "frameshake",
+				   ["scaleX"] = 0.099998474121094,
+				   ["duration"] = 0.050000000745058,
+				   ["amplitude"] = 1.0330086946487,
+				   ["fade_in"] = 0.01,
+				   ["scaleY"] = 1,
+				   ["cooldown"] = 0.5,
+				   ["frequency"] = 25,
 				},
-				info = {
-					time = 0,
-					desc = "",
-					class = "DEATHKNIGHT",
-					spellid = 49998,
-				}
-			}, 
+				["info"] =  {
+				   ["time"] = 0,
+				   ["class"] = "DEATHKNIGHT",
+				   ["spellid"] = 49998,
+				   ["desc"] = "",
+				},
+			},
 			
 			--Frost Strike (dk)
-			[222026] = {
-				{
-					enabled = true,
-					duration = 0.04, --seconds
-					animation_type = "scale",
-					cooldown = 0.75, --seconds
-					scale_upX = 1.1,
-					scale_upY = 1.1,
-					scale_downX = 0.9,
-					scale_downY = 0.9,
+			[222026] =  {
+				[1] =  {
+				   ["scale_upY"] = 1,
+				   ["scale_upX"] = 1.0199999809265,
+				   ["animation_type"] = "scale",
+				   ["cooldown"] = 0.75,
+				   ["enabled"] = true,
+				   ["duration"] = 0.050000000745058,
+				   ["scale_downX"] = 0.97999995946884,
+				   ["scale_downY"] = 1,
 				},
-				{
-					enabled = true,
-					animation_type = "frameshake",
-					scaleX = 1,
-					scaleY = -1,
-					absolute_sineX = false,
-					absolute_sineY = true,
-					duration = 0.08,
-					amplitude = 10,
-					frequency = 3.1,
-					fade_in = 0.01,
-					fade_out = 0.18,
-					cooldown = 0.5,
+				[2] =  {
+				   ["enabled"] = true,
+				   ["fade_out"] = 0.1799999922514,
+				   ["duration"] = 0.050000000745058,
+				   ["absolute_sineY"] = true,
+				   ["animation_type"] = "frameshake",
+				   ["scaleX"] = 0,
+				   ["absolute_sineX"] = false,
+				   ["amplitude"] = 5.6999998092651,
+				   ["fade_in"] = 0.0099999997764826,
+				   ["scaleY"] = -1,
+				   ["cooldown"] = 0.5,
+				   ["frequency"] = 3.0999999046326,
 				},
-				info = {
-					time = 0,
-					desc = "",
-					class = "DEATHKNIGHT",
-					spellid = 222026,
-				}
-			}, 
+				["info"] =  {
+				   ["time"] = 0,
+				   ["class"] = "DEATHKNIGHT",
+				   ["spellid"] = 222026,
+				   ["desc"] = "",
+				},
+			},
 			
 			--breath of sindragosa
 			[155166] = {
@@ -2121,122 +2122,122 @@ PLATER_DEFAULT_SETTINGS = {
 			
 			--Obliterate (dk)
 			[222024] = {
-				{
-					enabled = true,
-					duration = 0.035, --seconds
-					animation_type = "scale",
-					cooldown = 0.75, --seconds
-					scale_upX = 1.1,
-					scale_upY = 1.1,
-					scale_downX = 0.9,
-					scale_downY = 0.9,
+				[1] =  {
+				   ["enabled"] = true,
+				   ["scale_upX"] = 1,
+				   ["duration"] = 0.050000000745058,
+				   ["scale_downX"] = 1,
+				   ["scale_upY"] = 1.1000000238419,
+				   ["critical_scale"] = 1,
+				   ["animation_type"] = "scale",
+				   ["cooldown"] = 0.75,
+				   ["scale_downY"] = 0.89999997615814,
 				},
-				{
-					enabled = true,
-					animation_type = "frameshake",
-					scaleX = 1,
-					scaleY = -1,
-					absolute_sineX = true,
-					absolute_sineY = true,
-					duration = 0.075,
-					amplitude = 1.8,
-					frequency = 50,
-					fade_in = 0.01,
-					fade_out = 0.02,
-					cooldown = 0.5,
-					critical_scale = 2,
+				[2] =  {
+				   ["enabled"] = true,
+				   ["fade_out"] = 0.019999999552965,
+				   ["duration"] = 0.050000000745058,
+				   ["scaleY"] = 1,
+				   ["absolute_sineY"] = true,
+				   ["animation_type"] = "frameshake",
+				   ["scaleX"] = 0,
+				   ["critical_scale"] = 1,
+				   ["amplitude"] = 1.7999999523163,
+				   ["fade_in"] = 0.0099999997764826,
+				   ["absolute_sineX"] = true,
+				   ["cooldown"] = 0.5,
+				   ["frequency"] = 11.14999961853,
 				},
-				info = {
-					time = 0,
-					desc = "",
-					class = "DEATHKNIGHT",
-					spellid = 222024,
-				}
+				["info"] =  {
+				   ["time"] = 0,
+				   ["class"] = "DEATHKNIGHT",
+				   ["spellid"] = 222024,
+				   ["desc"] = "",
+				},
 			},
-			
+
 			--Scourge Strike (dk)
 			[55090] = {
-				{
-					enabled = true,
-					animation_type = "frameshake",
-					scaleX = 1,
-					scaleY = 1,
-					absolute_sineX = false,
-					absolute_sineY = true,
-					duration = 0.08,
-					amplitude = 10,
-					frequency = 4.1,
-					fade_in = 0.01,
-					fade_out = 0.18,
-					cooldown = 0.5,
+				[1] =  {
+				   ["enabled"] = true,
+				   ["fade_out"] = 0.1799999922514,
+				   ["absolute_sineX"] = false,
+				   ["absolute_sineY"] = true,
+				   ["animation_type"] = "frameshake",
+				   ["scaleX"] = 1,
+				   ["duration"] = 0.050000000745058,
+				   ["amplitude"] = 3.9020702838898,
+				   ["fade_in"] = 0.0099999997764826,
+				   ["scaleY"] = 1,
+				   ["cooldown"] = 0.5,
+				   ["frequency"] = 3.7999999523163,
 				},
-				info = {
-					time = 0,
-					desc = "",
-					class = "DEATHKNIGHT",
-					spellid = 55090,
-				}
-			}, 
+				["info"] =  {
+				   ["time"] = 0,
+				   ["class"] = "DEATHKNIGHT",
+				   ["spellid"] = 55090,
+				   ["desc"] = "",
+				},
+			},
 			
 			--Festering Strike (dk)
 			[85948] = {
-				{
-					enabled = true,
-					animation_type = "frameshake",
-					scaleX = .1,
-					scaleY = 1,
-					absolute_sineX = false,
-					absolute_sineY = false,
-					duration = 0.12,
-					amplitude = 1,
-					frequency = 25,
-					fade_in = 0.01,
-					fade_out = 0.02,
-					cooldown = 0.5,
+				[1] =  {
+				   ["enabled"] = true,
+				   ["fade_out"] = 0.019999999552965,
+				   ["absolute_sineX"] = false,
+				   ["absolute_sineY"] = false,
+				   ["animation_type"] = "frameshake",
+				   ["scaleX"] = 0.099998474121094,
+				   ["duration"] = 0.12000000476837,
+				   ["amplitude"] = 1,
+				   ["fade_in"] = 0.01,
+				   ["scaleY"] = 1,
+				   ["cooldown"] = 0.5,
+				   ["frequency"] = 25,
 				},
-				info = {
-					time = 0,
-					desc = "",
-					class = "DEATHKNIGHT",
-					spellid = 85948,
-				}
-			}, 
-			
+				["info"] =  {
+				   ["time"] = 0,
+				   ["class"] = "DEATHKNIGHT",
+				   ["spellid"] = 85948,
+				   ["desc"] = "",
+				},
+			},
+
 			--Heart Strike (dk)
 			[206930] = {
-				{
-					enabled = true,
-					duration = 0.035, --seconds
-					animation_type = "scale",
-					cooldown = 0.75, --seconds
-					scale_upX = 1.1,
-					scale_upY = 1.1,
-					scale_downX = 0.9,
-					scale_downY = 0.9,
+				[1] =  {
+					["scale_upY"] = 1,
+					["scale_upX"] = 1.0199999809265,
+					["animation_type"] = "scale",
+					["cooldown"] = 0.75,
+					["enabled"] = true,
+					["duration"] = 0.050000000745058,
+					["scale_downX"] = 0.97999995946884,
+					["scale_downY"] = 1,
 				},
-				{
-					enabled = true,
-					animation_type = "frameshake",
-					scaleX = -1,
-					scaleY = 1,
-					absolute_sineX = true,
-					absolute_sineY = true,
-					duration = 0.075,
-					amplitude = 1.8,
-					frequency = 50,
-					fade_in = 0.01,
-					fade_out = 0.02,
-					cooldown = 0.5,
-					critical_scale = 2,
+				[2] =  {
+					["enabled"] = true,
+					["fade_out"] = 0.1799999922514,
+					["duration"] = 0.050000000745058,
+					["absolute_sineY"] = true,
+					["animation_type"] = "frameshake",
+					["scaleX"] = 0,
+					["absolute_sineX"] = false,
+					["amplitude"] = 5.6999998092651,
+					["fade_in"] = 0.0099999997764826,
+					["scaleY"] = -1,
+					["cooldown"] = 0.5,
+					["frequency"] = 3.0999999046326,
 				},
-				info = {
-					time = 0,
-					desc = "",
-					class = "DEATHKNIGHT",
-					spellid = 206930,
-				}
-			}, 
-			
+				["info"] =  {
+					["time"] = 0,
+					["class"] = "DEATHKNIGHT",
+					["spellid"] = 222026,
+					["desc"] = "",
+				},
+			},
+
 			--Chi Burst (Monk)
 			[148135] =  {
 			   [1] =  {
@@ -2645,6 +2646,147 @@ PLATER_DEFAULT_SETTINGS = {
 			      ["time"] = 1539716637,
 			      ["desc"] = "",
 			   },
+			},
+
+			--multi shot (hunter)
+			[2643] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .2,
+					scaleY = .6,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.2,
+					amplitude = 0.45,
+					frequency = 200,
+					fade_in = 0.01,
+					fade_out = 0.01,
+					cooldown = 0.0,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "HUNTER",
+					spellid = 2643,
+				}
+			},
+
+			--kill shot (hunter)
+			[53351] = {
+				[1] =  {
+				   ["scale_upY"] = 1,
+				   ["scale_upX"] = 1.0199999809265,
+				   ["animation_type"] = "scale",
+				   ["cooldown"] = 0.75,
+				   ["enabled"] = true,
+				   ["duration"] = 0.050000000745058,
+				   ["scale_downX"] = 0.97999995946884,
+				   ["scale_downY"] = 1,
+				},
+				[2] =  {
+				   ["enabled"] = true,
+				   ["fade_out"] = 0.1799999922514,
+				   ["duration"] = 0.050000000745058,
+				   ["absolute_sineY"] = true,
+				   ["animation_type"] = "frameshake",
+				   ["scaleX"] = 0,
+				   ["absolute_sineX"] = false,
+				   ["amplitude"] = 5.6999998092651,
+				   ["fade_in"] = 0.0099999997764826,
+				   ["scaleY"] = -1,
+				   ["cooldown"] = 0.5,
+				   ["frequency"] = 3.0999999046326,
+				},
+				["info"] =  {
+				   ["time"] = 0,
+				   ["class"] = "HUNTER",
+				   ["spellid"] = 53351,
+				   ["desc"] = "",
+				},
+			},
+
+			[257045] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .2,
+					scaleY = 1,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.1,
+					amplitude = 0.75,
+					frequency = 200,
+					fade_in = 0.01,
+					fade_out = 0.01,
+					cooldown = 0.0,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "HUNTER",
+					spellid = 257045,
+				}
+			},
+
+			--carve (hunter)
+			[187708] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .2,
+					scaleY = .6,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.2,
+					amplitude = 0.45,
+					frequency = 200,
+					fade_in = 0.01,
+					fade_out = 0.01,
+					cooldown = 0.0,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "HUNTER",
+					spellid = 187708,
+				}
+			},
+
+			--wild fire bomb (hunter)
+			[265157] = {
+				[1] =  {
+				   ["enabled"] = true,
+				   ["scale_upX"] = 1,
+				   ["duration"] = 0.096889182925224,
+				   ["scale_downX"] = 1,
+				   ["scale_upY"] = 1.1000000238419,
+				   ["critical_scale"] = 1,
+				   ["animation_type"] = "scale",
+				   ["cooldown"] = 0.75,
+				   ["scale_downY"] = 0.89999997615814,
+				},
+				[2] =  {
+				   ["enabled"] = true,
+				   ["fade_out"] = 0.019999999552965,
+				   ["duration"] = 0.099999994039536,
+				   ["scaleY"] = 1,
+				   ["absolute_sineY"] = false,
+				   ["animation_type"] = "frameshake",
+				   ["scaleX"] = 1,
+				   ["critical_scale"] = 1,
+				   ["amplitude"] = 0.50999999046326,
+				   ["fade_in"] = 0.0099999997764826,
+				   ["absolute_sineX"] = false,
+				   ["cooldown"] = 0.5,
+				   ["frequency"] = 39.995635986328,
+				},
+				["info"] =  {
+				   ["time"] = 0,
+				   ["class"] = "HUNTER",
+				   ["spellid"] = 265157,
+				   ["desc"] = "",
+				},
 			},
 
 		},
