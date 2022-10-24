@@ -2789,6 +2789,156 @@ PLATER_DEFAULT_SETTINGS = {
 				},
 			},
 
+			--chain lightining (shaman)
+			[188443] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .2,
+					scaleY = .6,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.2,
+					amplitude = 0.45,
+					frequency = 200,
+					fade_in = 0.01,
+					fade_out = 0.01,
+					cooldown = 0.0,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "SHAMAN",
+					spellid = 188443,
+				}
+			},
+
+			--lava burst
+			[285452] = {
+				[1] =  {
+				   ["scale_upY"] = 1,
+				   ["scale_upX"] = 1.0199999809265,
+				   ["animation_type"] = "scale",
+				   ["cooldown"] = 0.75,
+				   ["enabled"] = true,
+				   ["duration"] = 0.050000000745058,
+				   ["scale_downX"] = 0.97999995946884,
+				   ["scale_downY"] = 1,
+				},
+				[2] =  {
+				   ["enabled"] = true,
+				   ["fade_out"] = 0.1799999922514,
+				   ["duration"] = 0.050000000745058,
+				   ["absolute_sineY"] = true,
+				   ["animation_type"] = "frameshake",
+				   ["scaleX"] = 0,
+				   ["absolute_sineX"] = false,
+				   ["amplitude"] = 5.6999998092651,
+				   ["fade_in"] = 0.0099999997764826,
+				   ["scaleY"] = -1,
+				   ["cooldown"] = 0.5,
+				   ["frequency"] = 3.0999999046326,
+				},
+				["info"] =  {
+				   ["time"] = 0,
+				   ["class"] = "SHAMAN",
+				   ["spellid"] = 285452,
+				   ["desc"] = "",
+				},
+			},
+
+			--earth shock (shamam)
+			[8042] = {
+				[1] =  {
+				   ["scale_upY"] = 1.05,
+				   ["scale_upX"] = 1.05,
+				   ["animation_type"] = "scale",
+				   ["cooldown"] = 0.75,
+				   ["enabled"] = true,
+				   ["duration"] = 0.060000000745058,
+				   ["scale_downX"] = 0.95,
+				   ["scale_downY"] = 0.95,
+				},
+				[2] =  {
+				   ["enabled"] = true,
+				   ["fade_out"] = 0.05,
+				   ["duration"] = 0.06,
+				   ["absolute_sineY"] = true,
+				   ["animation_type"] = "frameshake",
+				   ["scaleX"] = 0,
+				   ["absolute_sineX"] = false,
+				   ["amplitude"] = 7.5,
+				   ["fade_in"] = 0.0099999997764826,
+				   ["scaleY"] = -1,
+				   ["cooldown"] = 0.5,
+				   ["frequency"] = 3.0999999046326,
+				},
+				["info"] =  {
+				   ["time"] = 0,
+				   ["class"] = "SHAMAN",
+				   ["spellid"] = 285452,
+				   ["desc"] = "",
+				},
+			},
+
+			--crash lightning (shaman)
+			[187874] = {
+				{
+					enabled = true,
+					animation_type = "frameshake",
+					scaleX = .2,
+					scaleY = .6,
+					absolute_sineX = false,
+					absolute_sineY = false,
+					duration = 0.2,
+					amplitude = 0.85,
+					frequency = 100,
+					fade_in = 0.01,
+					fade_out = 0.01,
+					cooldown = 0.0,
+				},
+				info = {
+					time = 0,
+					desc = "",
+					class = "SHAMAN",
+					spellid = 187874,
+				}
+			},
+
+			--stormstrike (shaman)
+			[17364] = {
+				[1] =  {
+				   ["scale_upY"] = 1.02,
+				   ["scale_upX"] = 1.02,
+				   ["animation_type"] = "scale",
+				   ["cooldown"] = 0.75,
+				   ["enabled"] = true,
+				   ["duration"] = 0.10000000745058,
+				   ["scale_downX"] = 0.97,
+				   ["scale_downY"] = 0.97,
+				},
+				[2] =  {
+				   ["enabled"] = true,
+				   ["fade_out"] = 0.11,
+				   ["duration"] = 0.1,
+				   ["absolute_sineY"] = true,
+				   ["animation_type"] = "frameshake",
+				   ["scaleX"] = 0,
+				   ["absolute_sineX"] = false,
+				   ["amplitude"] = 2.5,
+				   ["fade_in"] = 0,
+				   ["scaleY"] = -1,
+				   ["cooldown"] = 0.5,
+				   ["frequency"] = 3.0999999046326,
+				},
+				["info"] =  {
+				   ["time"] = 0,
+				   ["class"] = "SHAMAN",
+				   ["spellid"] = 17364,
+				   ["desc"] = "",
+				},
+			},
+
 		},
 		
 		health_statusbar_texture = "You Are Beautiful!",
