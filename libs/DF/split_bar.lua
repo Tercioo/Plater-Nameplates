@@ -5,9 +5,9 @@ if (not DF or not DetailsFrameworkCanLoad) then
 end
 
 local _
-local _rawset = rawset --lua local
-local _rawget = rawget --lua local
-local _setmetatable = setmetatable --lua local
+local rawset = rawset --lua local
+local rawget = rawget --lua local
+local setmetatable = setmetatable --lua local
 local _unpack = unpack --lua local
 local type = type --lua local
 local _math_floor = math.floor --lua local
@@ -175,7 +175,7 @@ DF:Mixin(SplitBarMetaFunctions, DF.ScriptHookMixin)
 			return func (_table, _member_requested)
 		end
 		
-		local fromMe = _rawget (_table, _member_requested)
+		local fromMe = rawget (_table, _member_requested)
 		if (fromMe) then
 			return fromMe
 		end
@@ -289,8 +289,8 @@ DF:Mixin(SplitBarMetaFunctions, DF.ScriptHookMixin)
 	end
 	--font size
 	local smember_textsize = function(_object, _value)
-		DF:SetFontSize (_object.textleft, _value)
-		return DF:SetFontSize (_object.textright, _value)
+		DF:SetFontSize(_object.textleft, _value)
+		return DF:SetFontSize(_object.textright, _value)
 	end
 	--font color
 	local smember_textcolor = function(_object, _value)
@@ -324,7 +324,7 @@ DF:Mixin(SplitBarMetaFunctions, DF.ScriptHookMixin)
 		if (func) then
 			return func (_table, _value)
 		else
-			return _rawset (_table, _key, _value)
+			return rawset (_table, _key, _value)
 		end
 	end
 
@@ -433,13 +433,13 @@ DF:Mixin(SplitBarMetaFunctions, DF.ScriptHookMixin)
 -- tooltip
 	function SplitBarMetaFunctions:SetTooltip (tooltip)
 		if (tooltip) then
-			return _rawset (self, "have_tooltip", tooltip)
+			return rawset (self, "have_tooltip", tooltip)
 		else
-			return _rawset (self, "have_tooltip", nil)
+			return rawset (self, "have_tooltip", nil)
 		end
 	end
 	function SplitBarMetaFunctions:GetTooltip()
-		return _rawget (self, "have_tooltip")
+		return rawget (self, "have_tooltip")
 	end
 	
 -- frame levels
@@ -691,12 +691,12 @@ local build_statusbar = function(self)
 	self.spark:SetPoint("LEFT", self, "RIGHT", -17, -1)
 	
 	self.lefttext = self:CreateFontString("$parent_TextLeft", "OVERLAY", "GameFontHighlight")
-	DF:SetFontSize (self.lefttext, 10)
+	DF:SetFontSize(self.lefttext, 10)
 	self.lefttext:SetJustifyH("left")
 	self.lefttext:SetPoint("LEFT", self.lefticon, "RIGHT", 3, 0)
 	
 	self.righttext = self:CreateFontString("$parent_TextRight", "OVERLAY", "GameFontHighlight")
-	DF:SetFontSize (self.righttext, 10)
+	DF:SetFontSize(self.righttext, 10)
 	self.righttext:SetJustifyH("right")
 	self.righttext:SetPoint("RIGHT", self.righticon, "LEFT", -3, 0)
 
@@ -798,7 +798,7 @@ function DF:NewSplitBar (parent, container, name, member, w, h)
 	SplitBarObject.statusbar:SetScript("OnMouseUp", OnMouseUp)
 	SplitBarObject.statusbar:SetScript("OnSizeChanged", OnSizeChanged)
 		
-	_setmetatable(SplitBarObject, SplitBarMetaFunctions)
+	setmetatable(SplitBarObject, SplitBarMetaFunctions)
 	
 	return SplitBarObject
 end
