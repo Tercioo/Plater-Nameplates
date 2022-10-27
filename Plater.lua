@@ -11777,7 +11777,8 @@ end
 					triggerId = GetSpellInfo(triggerId)
 					if (not triggerId) then
 						if IS_WOW_PROJECT_MAINLINE then -- disable this in classic for now... too spammy
-							Plater:Msg ("failed to get the spell name for spellId: " .. (scriptObject [triggerContainer] [i] or "invalid spellId") .. "for script '" .. scriptObject.Name .. "'")
+							--just ignore, the spell on trigger list will be blank with a remove trigger button
+							--Plater:Msg ("failed to get the spell name for spellId: " .. (scriptObject [triggerContainer] [i] or "invalid spellId") .. " for script '" .. scriptObject.Name .. "', the spell has been removed from the triggers.")
 						end
 					end
 				end
