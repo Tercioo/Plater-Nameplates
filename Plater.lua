@@ -2059,7 +2059,6 @@ local class_specs_coords = {
 			for _, CVarName in pairs (orderKeys) do
 				local CVarValue = savedCVars [CVarName]
 				if CVarValue then --only restore what we want to store/restore!
-					print(CVarName, CVarValue)
 					SetCVar (CVarName, Plater.ParseCVarValue(CVarValue))
 				end
 			end
