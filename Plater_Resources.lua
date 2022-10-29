@@ -1194,6 +1194,7 @@ end
 			if not runeReady then
 				resourceBar.runesOnCooldown[index] = runeIndex
 				if start then
+                    cooldown:SetAlpha(1)
 					cooldown:SetCooldown(start, duration)
 				end
 				if not DB_PLATER_RESOURCE_SHOW_DEPLETED then
@@ -1218,7 +1219,7 @@ end
 					runeButton.texture:SetAlpha(1)
 				end
 
-				cooldown:SetAlpha(1)
+				cooldown:SetAlpha(0)
 				cooldown:Hide()
 			end
 		end
