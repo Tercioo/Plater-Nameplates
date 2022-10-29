@@ -1,6 +1,6 @@
 
 
-local dversion = 384
+local dversion = 385
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary(major, minor)
 
@@ -3372,7 +3372,12 @@ end
 
 --this is most copied from the wow client code, few changes applied to customize it
 function DF:CreateGlowOverlay (parent, antsColor, glowColor)
-	local glowFrame = CreateFrame("frame", parent:GetName() and "$parentGlow2" or "OverlayActionGlow" .. math.random(1, 10000000), parent, "ActionBarButtonSpellActivationAlert")
+	local pName = parent:GetName()
+	local fName = pName and (pName.."Glow2") or "OverlayActionGlow" .. math.random(1, 10000000)
+	if fName and string.len(fName) > 50 then -- shorten to work around too long names
+		fName = strsub(fName, string.len(fName)-49)
+	end
+	local glowFrame = CreateFrame("frame", fName, parent, "ActionBarButtonSpellActivationAlert")
 	glowFrame:HookScript ("OnShow", glow_overlay_onshow)
 	glowFrame:HookScript ("OnHide", glow_overlay_onhide)
 
