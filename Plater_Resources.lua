@@ -1200,6 +1200,7 @@ end
 				if not DB_PLATER_RESOURCE_SHOW_DEPLETED then
 					cooldown:SetAlpha(0)
 				end
+                runeButton.ShowAnimation:Stop()
 				runeButton.texture:SetAlpha(0)
 				--runeButton.energize:Stop()
 			else
