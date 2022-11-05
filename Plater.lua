@@ -3105,6 +3105,8 @@ local class_specs_coords = {
 					FadeOutTime = 0.66,
 					SparkHeight = 20,
 					LazyUpdateCooldown = 0.1,
+					FillOnInterrupt = false,
+					HideSparkOnInterrupt = false,
 				}
 				
 				local powerBarOptions = {
@@ -7573,6 +7575,9 @@ end
 		local buffFrame2 = unitFrame.BuffFrame2
 		local nameFrame = unitFrame.healthBar.unitName
 		
+		castBar.Settings.FillOnInterrupt = Plater.db.profile.cast_statusbar_spark_filloninterrupt
+		castBar.Settings.HideSparkOnInterrupt = Plater.db.profile.cast_statusbar_spark_hideoninterrupt
+
 		plateFrame.actorType = actorType
 		unitFrame.actorType = actorType
 		unitFrame.ActorType = actorType --exposed to scripts
@@ -8981,7 +8986,7 @@ end
 			if (not Plater.db.profile.show_interrupt_author) then
 				return
 			end
-			
+			--~interrupt
 			local name = sourceName
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 				local unitFrame = plateFrame.unitFrame
@@ -9015,7 +9020,7 @@ end
 								--shake animattion
 								local duration = 0.36
 								local amplitude = 0.58
-								local frequency = 37.39
+								local frequency = 3.39
 								local absolute_sineX = false
 								local absolute_sineY = false
 								local scaleX = 0

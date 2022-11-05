@@ -12371,6 +12371,17 @@ end
 
 		{
 			type = "toggle",
+			get = function() return Plater.db.profile.cast_statusbar_spark_filloninterrupt end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.cast_statusbar_spark_filloninterrupt = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Fill Cast Bar On Interrupt",
+			desc = "Fill Cast Bar On Interrupt",
+		},
+
+		{
+			type = "toggle",
 			get = function() return Plater.db.profile.hide_friendly_castbars end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.hide_friendly_castbars = value
@@ -12415,6 +12426,18 @@ end
 			name = "Spark Texture",
 			desc = "Spark Texture",
 		},
+
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.cast_statusbar_spark_hideoninterrupt end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.cast_statusbar_spark_hideoninterrupt = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Hide Spark On Interrupt",
+			desc = "Hide Spark On Interrupt",
+		},
+
 		{
 			type = "range",
 			get = function() return Plater.db.profile.cast_statusbar_spark_width end,

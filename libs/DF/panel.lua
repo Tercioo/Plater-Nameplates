@@ -7622,6 +7622,9 @@ detailsFramework.CastFrameFunctions = {
 		CanLazyTick = true, --if true, it'll execute the lazy tick function, it ticks in a much slower pace comparece with the regular tick
 		LazyUpdateCooldown = 0.2, --amount of time to wait for the next lazy update, this updates non critical things like the cast timer
 
+		FillOnInterrupt = true,
+		HideSparkOnInterrupt = true,
+
 		--default size
 		Width = 100,
 		Height = 20,
@@ -8268,12 +8271,26 @@ detailsFramework.CastFrameFunctions = {
 	UNIT_SPELLCAST_STOP = function(self, unit, ...)
 		local unitID, castID, spellID = ...
 		if (self.castID == castID) then
-			self.Spark:Hide()
+			if (self.interrupted) then
+				if (self.Settings.HideSparkOnInterrupt) then
+					self.Spark:Hide()
+				end
+			else
+				self.Spark:Hide()
+			end
+
 			self.percentText:Hide()
 
 			local value = self:GetValue()
 			local _, maxValue = self:GetMinMaxValues()
-			self:SetValue(self.maxValue or maxValue or 1)
+
+			if (self.interrupted) then
+				if (self.Settings.FillOnInterrupt) then
+					self:SetValue(self.maxValue or maxValue or 1)
+				end
+			else
+				self:SetValue(self.maxValue or maxValue or 1)
+			end
 
 			self.casting = nil
 			self.finished = true
@@ -8357,12 +8374,18 @@ detailsFramework.CastFrameFunctions = {
 			self.channeling = nil
 			self.interrupted = true
 			self.finished = true
-			self:SetValue(self.maxValue or select(2, self:GetMinMaxValues()) or 1)
+
+			if (self.Settings.FillOnInterrupt) then
+				self:SetValue(self.maxValue or select(2, self:GetMinMaxValues()) or 1)
+			end
+
+			if (self.Settings.HideSparkOnInterrupt) then
+				self.Spark:Hide()
+			end
 
 			local castColor = self:GetCastColor()
 			self:SetColor (castColor) --SetColor handles with ParseColors()
 
-			self.Spark:Hide()
 			self.percentText:Hide()
 			self.Text:SetText(INTERRUPTED) --auto locale within the global namespace
 
