@@ -8,8 +8,10 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 			
+			{1667816091,  "New Feature", "November 7th, 2022", "Added option to show names of 'softinteract' nameplates on hidden friendly NPCs (professions filter).", "cont1nuity"},
 			{1667816091,  "Bug Fix", "November 7th, 2022", "Fixing some quirks about 'softinteract' nameplates.", "cont1nuity"},
 			{1667816091,  "Backend Change", "November 5th, 2022", "More Cast Bar options for fill and spark on interrupt.", "Terciob"},
+			{1667816091,  "Bug Fix", "October 29th, 2022", "Fixing Rune CDs not showing properly in some cases.", "cont1nuity"},
 			{1667816091,  "Bug Fix", "October 28th, 2022", "Fixing CVar restore (again, for real).", "cont1nuity"},
 			{1667816091,  "Bug Fix", "October 27th, 2022", "Fixing 'Cast - Glowing' script.", "Terciob"},
 			

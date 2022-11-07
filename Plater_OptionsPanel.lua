@@ -13249,6 +13249,17 @@ end
 			desc = "Show Healthbars on not attackable units instead of defaulting to 'name only'.",
 		},
 		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.show_healthbars_on_softinteract end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.show_healthbars_on_softinteract = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Show name on your soft-interact target",
+			desc = "Show name on your soft-interact target instead of hiding them on NPCs.",
+		},
+		
 		{type = "blank"},
 		
 		{type = "label", get = function() return "Client Settings (CVars):" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},

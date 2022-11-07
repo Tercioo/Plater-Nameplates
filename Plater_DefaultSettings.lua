@@ -618,6 +618,7 @@ PLATER_DEFAULT_SETTINGS = {
 		quick_hide = false, --hide the nameplate when the unit hits 0 health points | making disabled by default, this maybe is bugging hunters FD
 		
 		show_healthbars_on_not_attackable = false,
+		show_healthbars_on_softinteract = true,
 		
 		enable_masque_support = false,
 		
