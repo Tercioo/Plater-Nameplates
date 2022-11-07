@@ -2286,12 +2286,16 @@ end
 		Plater.MaxAurasPerRow = floor(profile.plate_config.enemynpc.health_incombat[1] / (profile.aura_width + DB_AURA_PADDING))
     end
 
+	local function re_UpdateGhostAurasCache()
+		Plater.UpdateGhostAurasCache()
+	end
+	
 	function Plater.UpdateGhostAurasCache()
 		wipe(GHOSTAURAS)
 		local ghostAuraList = Plater.Auras.GhostAuras.GetAuraListForCurrentSpec()
 		if (not ghostAuraList) then
 			--something in the pipeline is triggering before being ready
-			C_Timer.After(1, Plater.UpdateGhostAurasCache)
+			C_Timer.After(1, re_UpdateGhostAurasCache)
 			return
 		end
 
