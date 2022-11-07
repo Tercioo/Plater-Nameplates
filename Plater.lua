@@ -2629,7 +2629,7 @@ local class_specs_coords = {
 				--nameplate is from a npc which the player cannot attack and now the player can attack
 				local playerCannotAttack = plateFrame.PlayerCannotAttack
 				--the player is in open world, dungeons and raids does trigger unit flag event but won't need a full refresh
-				local playerInOpenWorld = IS_IN_OPEN_WORLD
+				local playerInOpenWorld = IS_IN_OPEN_WORLD or Plater.ZoneInstanceType == "pvp" or Plater.ZoneInstanceType == "arena"
 				
 				if (playerCannotAttack or playerInOpenWorld) then
 					--print ("UNIT_FLAG", plateFrame, issecure(), unit, unit and UnitName (unit))
