@@ -7100,7 +7100,7 @@ end
 			
 			--hide for good measure as reset
 			plateFrame.ActorNameSpecial:Hide()
-			plateFrame.ActorTitleSpecial:Show()
+			plateFrame.ActorTitleSpecial:Hide()
 			
 			PixelUtil.SetPoint (plateFrame.ActorNameSpecial, "center", plateFrame.unitFrame, "center", 0, 10)
 			PixelUtil.SetPoint (plateFrame.ActorTitleSpecial, "top", plateFrame.ActorNameSpecial, "bottom", 0, -2)
