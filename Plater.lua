@@ -3695,7 +3695,8 @@ local class_specs_coords = {
 			end
 			
 			--get and format the reaction to always be the value of the constants, then cache the reaction in some widgets for performance
-			local reaction = UnitReaction (unitID, "player") or 1
+			local isSoftInteract = UnitIsUnit(unitID, "softinteract")
+			local reaction = UnitReaction (unitID, "player") or isSoftInteract and Plater.UnitReaction.UNITREACTION_NEUTRAL or Plater.UnitReaction.UNITREACTION_HOSTILE
 			reaction = reaction <= Plater.UnitReaction.UNITREACTION_HOSTILE and Plater.UnitReaction.UNITREACTION_HOSTILE or reaction >= Plater.UnitReaction.UNITREACTION_FRIENDLY and Plater.UnitReaction.UNITREACTION_FRIENDLY or Plater.UnitReaction.UNITREACTION_NEUTRAL
 			
 			local isWidgetOnlyMode = (IS_WOW_PROJECT_MAINLINE) and UnitNameplateShowsWidgetsOnly (unitID) or false
@@ -3707,6 +3708,8 @@ local class_specs_coords = {
 			plateFrame.unitFrame [MEMBER_NPCID] = nil
 			plateFrame [MEMBER_GUID] = UnitGUID (unitID) or ""
 			plateFrame.unitFrame [MEMBER_GUID] = plateFrame [MEMBER_GUID]
+			plateFrame.isSoftInteract = isSoftInteract
+			plateFrame.unitFrame.isSoftInteract = isSoftInteract
 			if (not isPlayer) then
 				Plater.GetNpcID (plateFrame)
 			end
@@ -7349,7 +7352,7 @@ end
 		local currentHealth, maxHealth = healthBar.CurrentHealth, healthBar.CurrentHealthMax
 		
 		if (showHealthAmount and showPercentAmount) then
-			local percent = currentHealth / maxHealth * 100
+			local percent = maxHealth == 0 and 100 or (currentHealth / maxHealth * 100)
 			
 			if (showDecimals) then
 				if (percent < 10) then
@@ -7368,7 +7371,7 @@ end
 			healthBar.lifePercent:SetText (Plater.FormatNumber (currentHealth))
 		
 		elseif (showPercentAmount) then
-			local percent = currentHealth / maxHealth * 100
+			local percent = maxHealth == 0 and 100 or (currentHealth / maxHealth * 100)
 			
 			if (showDecimals) then
 				if (percent < 10) then
@@ -8694,7 +8697,7 @@ end
 		local maxTravel = max (minTravel, 0.45) -- 0.45 = min scale speed on low travel speed
 		local calcAnimationSpeed = (self.CurrentHealthMax * (deltaTime * DB_ANIMATION_TIME_DILATATION)) * maxTravel --re-scale back to unit health, scale with delta time and scale with the travel speed
 		
-		self.AnimationStart = self.AnimationStart - (calcAnimationSpeed)
+		self.AnimationStart = self.CurrentHealthMax == 0 and 1 or self.AnimationStart - calcAnimationSpeed
 		self:SetValue (self.AnimationStart)
 		self.CurrentHealth = self.AnimationStart
 		
@@ -9883,7 +9886,7 @@ end
 	
 	--return if the unit has a specific aura
 	function Plater.UnitHasAura (unitFrame, aura)
-		return unitFrame and unitFrame.AuraCache and aura and unitFrame.AuraCache [aura] and true or false
+		return unitFrame and unitFrame.AuraCache and aura and unitFrame.AuraCache [aura]
 	end
 	
 	--return if the unit has an enrage effect
