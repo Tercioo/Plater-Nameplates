@@ -1412,7 +1412,7 @@ local class_specs_coords = {
 		end
 
 		--this unit is target
-		local unitIsTarget
+		local unitIsTarget = unitFrame.isSoftInteract -- default to softinteract
 		local notTheTarget = false
 		--when the unit is out of range and isnt target, alpha is multiplied by this amount
 		local alphaMultiplier = 0.70
