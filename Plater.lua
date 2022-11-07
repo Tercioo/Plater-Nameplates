@@ -4220,6 +4220,9 @@ local class_specs_coords = {
 			plateFrame.unitFrame.QuestInfo = {}
 			plateFrame [MEMBER_TARGET] = nil
 			
+			plateFrame.isSoftInteract = nil
+			plateFrame.unitFrame.isSoftInteract = nil
+			
 			local healthBar = plateFrame.unitFrame.healthBar
 			if (healthBar.TargetHeight) then
 				healthBar:SetHeight (healthBar.TargetHeight)
@@ -6190,6 +6193,10 @@ end
 					unitFrame.InExecuteRange = false
 				end
 			end
+			
+			local isSoftInteract = UnitIsUnit(tickFrame.unit, "softinteract")
+			unitFrame.isSoftInteract = isSoftInteract
+			unitFrame.PlateFrame.isSoftInteract = isSoftInteract
 			
 			local wasCombat = unitFrame.InCombat
 			unitFrame.InCombat = UnitAffectingCombat (tickFrame.unit) or (Plater.ForceInCombatUnits[unitFrame [MEMBER_NPCID]] and PLAYER_IN_COMBAT) or false
