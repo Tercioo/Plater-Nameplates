@@ -413,6 +413,7 @@ local function getUnitAuras(unit, filter)
 				end
 			end
 			unitCacheData.debuffs = tmpDebuffs
+			unitCacheData.debuffsChanged = false
 		end
 		
 		-- buffs
@@ -426,6 +427,7 @@ local function getUnitAuras(unit, filter)
 				end
 			end
 			unitCacheData.buffs = tmpBuffs
+			unitCacheData.buffsChanged = false
 		end
 		
 		return unitCacheData
