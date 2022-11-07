@@ -11124,6 +11124,8 @@ end
 			["UpdateAuras_Manual"] = true,
 			["UpdateAuras_Automatic"] = true,
 			["UpdateAuras_Self_Automatic"] = true,
+			["GetUnitAuras"] = false,
+			["GetUnitAurasForUnitID"] = false,
 			["CreateAuraIcon"] = true,
 			["PerformanceUnits"] = true,
 			["ForceBlizzardNameplateUnits"] = true,

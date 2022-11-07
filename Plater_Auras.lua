@@ -397,7 +397,7 @@ UpdateUnitAuraCacheData = function (unit, updatedAuras)
 end
 
 local function getUnitAuras(unit, filter)
-	if not filter or not unit then return end
+	if not unit then return end
 	
 	local unitCacheData = UnitAuraCacheData[unit]
 	
@@ -432,6 +432,7 @@ local function getUnitAuras(unit, filter)
 	end
 	
 	
+	if not filter then return end --old code requires this.
 	unitCacheData = unitCacheData or {debuffs = {}, buffs = {}}
 	
 	-- full updates and old way here
@@ -503,6 +504,52 @@ local function getUnitAuras(unit, filter)
 	
 	return unitCacheData
 end
+
+--[[
+returns the following structure from cached / quick-updated values:
+auras = {
+  [<aura-ID>] = {
+		applications,
+		auraInstanceID,
+		canApplyAura,
+		dispelName,
+		duration,
+		expirationTime,
+		icon,
+		isBossAura,
+		isFromPlayerOrPlayerPet,
+		isHarmful,
+		isHelpful,
+		isNameplateOnly,
+		isRaid,
+		isStealable,
+		name,
+		nameplateShowAll,
+		nameplateShowPersonal,
+		points,
+		sourceUnit,
+		spellId,
+		timeMod,
+	},
+}
+
+--]]
+function Plater.GetUnitAurasForUnitID(unitID)
+	if not IS_NEW_UNIT_AURA_AVAILABLE or not unitID or not UnitAuraCacheData[unitID] then
+		return nil
+	end
+
+	local allAuras = {}
+	local aurasHelp = getUnitAuras(unitID, "HELPFUL") or {buffs = {}}
+	local aurasHarm = getUnitAuras(unitID, "HARMFUL") or {debuffs = {}}
+	DF.table.copy(allAuras, aurasHelp.buffs)
+	DF.table.copy(allAuras, aurasHarm.debuffs)
+	return allAuras
+end
+function Plater.GetUnitAuras(unitFrame)
+	return Plater.GetUnitAurasForUnitID(unitFrame.namePlateUnitToken)
+end
+
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> aura buffs and debuffs ~aura ~buffs ~debuffs ~auras
