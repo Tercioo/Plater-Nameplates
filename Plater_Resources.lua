@@ -1244,12 +1244,14 @@ end
 			if not runeReady then
 				resourceBar.runesOnCooldown[index] = true
 				if start then
+                    cooldown:SetAlpha(1)
 					CooldownFrame_Set(cooldown, start, duration, 1, true);
-                    --cooldown:SetCooldown(start, duration)
 				end
 				if not DB_PLATER_RESOURCE_SHOW_DEPLETED then
 					cooldown:SetAlpha(0)
 				end
+                runeButton.ShowAnimation:Stop()
+                runeButton.texture:SetAlpha(0)
 			else
 				if (resourceBar.runesOnCooldown[index]) then
 					local _, _, runeReadyNow = GetRuneCooldown(index)
@@ -1263,7 +1265,7 @@ end
 					runeButton.texture:SetAlpha(1)
 				end
 
-				cooldown:SetAlpha(1)
+				cooldown:SetAlpha(0)
 				cooldown:Hide()
 			end
 		end
