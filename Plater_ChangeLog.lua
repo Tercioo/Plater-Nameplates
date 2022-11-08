@@ -7,7 +7,7 @@ local _
 function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
-			
+			{1667652138,  "New Feature", "November 05, 2022", "Added Fill Cast Bar on Interrupt and Hide Spark on Interrupt.", "Terciob"},
 			{1666724473,  "Bug Fix", "October 27th, 2022", "Fixing CVar restore (again, for real).", "cont1nuity"},
 			
 			{1666724473,  "Backend Change", "October 25th, 2022", "Updates to hit animations.", "Terciob"},

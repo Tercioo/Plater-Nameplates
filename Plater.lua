@@ -3579,6 +3579,13 @@ local class_specs_coords = {
 				--this is ideal for adding borders and other overlays
 				castBar.FrameOverlay = CreateFrame ("frame", "$parentOverlayFrame", castBar, BackdropTemplateMixin and "BackdropTemplate")
 				castBar.FrameOverlay:SetAllPoints()
+
+				--create a frame that are always below the castbar, this frame help with extra backdrops
+				--textures, animations are need to be placed below the cast bar
+				castBar.FrameDownlayer = CreateFrame ("frame", "$parentDownlayerFrame", castBar, BackdropTemplateMixin and "BackdropTemplate")
+				castBar.FrameDownlayer:SetFrameLevel(castBar:GetFrameLevel()-1)
+				castBar.FrameDownlayer:SetAllPoints()
+
 				--pushing the spell name up
 				castBar.Text:SetParent (castBar.FrameOverlay)
 				--does have a border but its alpha is zero by default
