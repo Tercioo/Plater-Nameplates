@@ -1412,7 +1412,7 @@ local class_specs_coords = {
 		end
 
 		--this unit is target
-		local unitIsTarget
+		local unitIsTarget = unitFrame.isSoftInteract -- default to softinteract
 		local notTheTarget = false
 		--when the unit is out of range and isnt target, alpha is multiplied by this amount
 		local alphaMultiplier = 0.70
@@ -2629,7 +2629,7 @@ local class_specs_coords = {
 				--nameplate is from a npc which the player cannot attack and now the player can attack
 				local playerCannotAttack = plateFrame.PlayerCannotAttack
 				--the player is in open world, dungeons and raids does trigger unit flag event but won't need a full refresh
-				local playerInOpenWorld = IS_IN_OPEN_WORLD
+				local playerInOpenWorld = IS_IN_OPEN_WORLD or Plater.ZoneInstanceType == "pvp" or Plater.ZoneInstanceType == "arena"
 				
 				if (playerCannotAttack or playerInOpenWorld) then
 					--print ("UNIT_FLAG", plateFrame, issecure(), unit, unit and UnitName (unit))
@@ -3080,6 +3080,21 @@ local class_specs_coords = {
 				Plater.OnRetailNamePlateShow(plateFrame.UnitFrame)
 			end
 			Plater.UpdateAllPlates (true)
+		end,
+		
+		PLAYER_SOFT_INTERACT_CHANGED = function(_, arg1, arg2)
+			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+				if plateFrame.unitFrame.PlaterOnScreen then
+					if plateFrame [MEMBER_GUID] == arg1 or plateFrame [MEMBER_GUID] == arg2 then
+						if plateFrame.IsNpcWithoutHealthBar then
+							local isSoftInteract = UnitIsUnit(plateFrame [MEMBER_UNITID], "softinteract")
+							plateFrame.isSoftInteract = isSoftInteract
+							plateFrame.unitFrame.isSoftInteract = isSoftInteract
+							Plater.UpdatePlateText (plateFrame, DB_PLATE_CONFIG [plateFrame.unitFrame.ActorType], false)
+						end
+					end
+				end
+			end
 		end,
 		
 		--~created ~events ~oncreated 
@@ -3702,7 +3717,8 @@ local class_specs_coords = {
 			end
 			
 			--get and format the reaction to always be the value of the constants, then cache the reaction in some widgets for performance
-			local reaction = UnitReaction (unitID, "player") or 1
+			local isSoftInteract = UnitIsUnit(unitID, "softinteract")
+			local reaction = UnitReaction (unitID, "player") or isSoftInteract and Plater.UnitReaction.UNITREACTION_NEUTRAL or Plater.UnitReaction.UNITREACTION_HOSTILE
 			reaction = reaction <= Plater.UnitReaction.UNITREACTION_HOSTILE and Plater.UnitReaction.UNITREACTION_HOSTILE or reaction >= Plater.UnitReaction.UNITREACTION_FRIENDLY and Plater.UnitReaction.UNITREACTION_FRIENDLY or Plater.UnitReaction.UNITREACTION_NEUTRAL
 			
 			local isWidgetOnlyMode = (IS_WOW_PROJECT_MAINLINE) and UnitNameplateShowsWidgetsOnly (unitID) or false
@@ -3714,6 +3730,8 @@ local class_specs_coords = {
 			plateFrame.unitFrame [MEMBER_NPCID] = nil
 			plateFrame [MEMBER_GUID] = UnitGUID (unitID) or ""
 			plateFrame.unitFrame [MEMBER_GUID] = plateFrame [MEMBER_GUID]
+			plateFrame.isSoftInteract = isSoftInteract
+			plateFrame.unitFrame.isSoftInteract = isSoftInteract
 			if (not isPlayer) then
 				Plater.GetNpcID (plateFrame)
 			end
@@ -4224,6 +4242,9 @@ local class_specs_coords = {
 			plateFrame.unitFrame.QuestInfo = {}
 			plateFrame [MEMBER_TARGET] = nil
 			
+			plateFrame.isSoftInteract = nil
+			plateFrame.unitFrame.isSoftInteract = nil
+			
 			local healthBar = plateFrame.unitFrame.healthBar
 			if (healthBar.TargetHeight) then
 				healthBar:SetHeight (healthBar.TargetHeight)
@@ -4554,6 +4575,9 @@ function Plater.OnInit() --private --~oninit ~init
 		
 		Plater.EventHandlerFrame:RegisterEvent ("PLAYER_TARGET_CHANGED")
 		Plater.EventHandlerFrame:RegisterEvent ("PLAYER_FOCUS_CHANGED")
+		if IS_WOW_PROJECT_MAINLINE then
+			Plater.EventHandlerFrame:RegisterEvent ("PLAYER_SOFT_INTERACT_CHANGED")
+		end
 		
 		Plater.EventHandlerFrame:RegisterEvent ("PLAYER_REGEN_DISABLED")
 		Plater.EventHandlerFrame:RegisterEvent ("PLAYER_REGEN_ENABLED")
@@ -6195,6 +6219,10 @@ end
 				end
 			end
 			
+			local isSoftInteract = UnitIsUnit(tickFrame.unit, "softinteract")
+			unitFrame.isSoftInteract = isSoftInteract
+			unitFrame.PlateFrame.isSoftInteract = isSoftInteract
+			
 			local wasCombat = unitFrame.InCombat
 			unitFrame.InCombat = UnitAffectingCombat (tickFrame.unit) or (Plater.ForceInCombatUnits[unitFrame [MEMBER_NPCID]] and PLAYER_IN_COMBAT) or false
 			if wasCombat ~= unitFrame.InCombat then
@@ -7077,12 +7105,16 @@ end
 			plateFrame.ActorNameSpecial:ClearAllPoints()
 			plateFrame.ActorTitleSpecial:ClearAllPoints()
 			
+			--hide for good measure as reset
+			plateFrame.ActorNameSpecial:Hide()
+			plateFrame.ActorTitleSpecial:Hide()
+			
 			PixelUtil.SetPoint (plateFrame.ActorNameSpecial, "center", plateFrame.unitFrame, "center", 0, 10)
 			PixelUtil.SetPoint (plateFrame.ActorTitleSpecial, "top", plateFrame.ActorNameSpecial, "bottom", 0, -2)
 
 			--there's two ways of showing this for friendly npcs (selected from the options panel): show all names or only npcs with profession names
 			--enemy npcs always show all
-			if (plateConfigs.all_names) then
+			if (plateConfigs.all_names or (plateFrame.isSoftInteract and Plater.db.profile.show_healthbars_on_softinteract)) then
 				plateFrame.ActorNameSpecial:Show()
 				plateFrame.CurrentUnitNameString = plateFrame.ActorNameSpecial
 				Plater.UpdateUnitName (plateFrame)
@@ -7356,7 +7388,7 @@ end
 		local currentHealth, maxHealth = healthBar.CurrentHealth, healthBar.CurrentHealthMax
 		
 		if (showHealthAmount and showPercentAmount) then
-			local percent = currentHealth / maxHealth * 100
+			local percent = maxHealth == 0 and 100 or (currentHealth / maxHealth * 100)
 			
 			if (showDecimals) then
 				if (percent < 10) then
@@ -7375,7 +7407,7 @@ end
 			healthBar.lifePercent:SetText (Plater.FormatNumber (currentHealth))
 		
 		elseif (showPercentAmount) then
-			local percent = currentHealth / maxHealth * 100
+			local percent = maxHealth == 0 and 100 or (currentHealth / maxHealth * 100)
 			
 			if (showDecimals) then
 				if (percent < 10) then
@@ -7692,7 +7724,7 @@ end
 				-- show only if a title is present
 				healthBar:Hide()
 				buffFrame:Hide()
-				buffFrame:Hide()
+				buffFrame2:Hide()
 				nameFrame:Hide()
 				plateFrame.IsNpcWithoutHealthBar = true
 			
@@ -8701,7 +8733,7 @@ end
 		local maxTravel = max (minTravel, 0.45) -- 0.45 = min scale speed on low travel speed
 		local calcAnimationSpeed = (self.CurrentHealthMax * (deltaTime * DB_ANIMATION_TIME_DILATATION)) * maxTravel --re-scale back to unit health, scale with delta time and scale with the travel speed
 		
-		self.AnimationStart = self.AnimationStart - (calcAnimationSpeed)
+		self.AnimationStart = self.CurrentHealthMax == 0 and 1 or self.AnimationStart - calcAnimationSpeed
 		self:SetValue (self.AnimationStart)
 		self.CurrentHealth = self.AnimationStart
 		
@@ -9890,7 +9922,7 @@ end
 	
 	--return if the unit has a specific aura
 	function Plater.UnitHasAura (unitFrame, aura)
-		return unitFrame and unitFrame.AuraCache and aura and unitFrame.AuraCache [aura] and true or false
+		return unitFrame and unitFrame.AuraCache and aura and unitFrame.AuraCache [aura]
 	end
 	
 	--return if the unit has an enrage effect
@@ -11128,6 +11160,8 @@ end
 			["UpdateAuras_Manual"] = true,
 			["UpdateAuras_Automatic"] = true,
 			["UpdateAuras_Self_Automatic"] = true,
+			["GetUnitAuras"] = false,
+			["GetUnitAurasForUnitID"] = false,
 			["CreateAuraIcon"] = true,
 			["PerformanceUnits"] = true,
 			["ForceBlizzardNameplateUnits"] = true,
@@ -12848,20 +12882,15 @@ function SlashCmdList.PLATER (msg, editbox)
 		return
 	
 	elseif (msg == "profstart" or msg == "profstartcore" or msg == "profstartadvance") then
-		Plater.EnableProfiling(true, true)
+		Plater.EnableProfiling(true)
 		
 		return
 	
 	elseif (msg == "profstartmods") then
-		Plater.EnableProfiling(false, true)
+		Plater.EnableProfiling(false)
 		
 		return
-	
-	elseif (msg == "profstartold") then
-		Plater.EnableProfiling(true, false)
-		
-		return
-	
+
 	elseif (msg == "profstop") then
 		Plater.DisableProfiling()
 		
