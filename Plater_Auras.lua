@@ -676,8 +676,8 @@ end
 							local spellIcon, spellId = spellTable[1], spellTable[2]
 							local auraIconFrame = Plater.GetAuraIcon(buffFrame) -- show on debuff frame
 							auraIconFrame.InUse = true --don't play animation
-							auraIconFrame:EnableMouse (false) --don't use tooltips, as there is no real aura
 							Plater.AddAura(buffFrame, auraIconFrame, -1, spellName.."_player_ghost", spellIcon, 1, "DEBUFF", 0, 0, "player", false, false, spellId, false, false, false, false, "DEBUFF", 1)
+							auraIconFrame:EnableMouse (false) --don't use tooltips, as there is no real aura
 							Plater.Auras.GhostAuras.ApplyAppearance(auraIconFrame, spellName.."_player_ghost", spellIcon, spellId)
 							nameplateGhostAuraCache[spellName.."_player_ghost"] = true --this is shown as ghost aura
 						end
@@ -1199,10 +1199,11 @@ end
 
 			Plater.UpdateIconAspecRatio (auraIconFrame)
 			
-			--if tooltip enabled
-			auraIconFrame:EnableMouse (profile.aura_show_tooltip)
 			auraIconFrame:SetMouseClickEnabled (false)
 		end
+		
+		--ensure proper state:
+		auraIconFrame:EnableMouse (profile.aura_show_tooltip)
 
 		--icon size repeated due to:
 		--when the size is changed in the options it doesnt change the IsPersonal flag

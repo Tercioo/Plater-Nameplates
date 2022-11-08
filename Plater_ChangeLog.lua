@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 			
+			{1667816091,  "Backend Change", "November 8th, 2022", "Fix aura tooltips with ghost auras enabled.", "cont1nuity"},
 			{1667816091,  "Backend Change", "November 7th, 2022", "Changes and cleanup to the profiling functionality.", "cont1nuity"},
 			{1667816091,  "New Feature", "November 7th, 2022", "Added option to show names of 'softinteract' nameplates on hidden friendly NPCs (professions filter).", "cont1nuity"},
 			{1667816091,  "Bug Fix", "November 7th, 2022", "Fixing some quirks about 'softinteract' nameplates.", "cont1nuity"},
