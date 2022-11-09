@@ -1241,7 +1241,7 @@ local class_specs_coords = {
 				elseif (class == "WARLOCK") then				
 					if IsPlayerSpell(17877) then --Shadowburn
 						lowExecute = 0.20
-					elseif IsPlayerSpell(198590) then --Drain Soul
+					elseif IsSpellKnownOrOverridesKnown(198590) then --Drain Soul
 						lowExecute = 0.20
 					end
 				
