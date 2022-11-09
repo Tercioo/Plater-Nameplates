@@ -1,6 +1,6 @@
 
 
-local dversion = 390
+local dversion = 391
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary(major, minor)
 
@@ -4832,6 +4832,7 @@ end
 		["getglobal"] = true,
 		["setmetatable"] = true,
 		["DevTools_DumpCommand"] = true,
+		["ChatEdit_SendText"] = true,
 
 		--avoid creating macros
 		["SetBindingMacro"] = true,

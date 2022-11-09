@@ -667,8 +667,8 @@ end
 	function Plater.ShowGhostAuras(buffFrame)
 		if (DB_AURA_GHOSTAURA_ENABLED) then
 			if ((buffFrame.unitFrame.namePlateUnitReaction < 5) and buffFrame.unitFrame.InCombat and not buffFrame.unitFrame.IsSelf and InCombatLockdown()) then
-				local nameplateAuraCache = buffFrame.unitFrame.AuraCache --auras already shown in the nameplate
-				local nameplateGhostAuraCache = buffFrame.unitFrame.GhostAuraCache --auras already shown in the nameplate
+				local nameplateAuraCache = buffFrame.unitFrame.AuraCache --active auras currently shown in the nameplate
+				local nameplateGhostAuraCache = buffFrame.unitFrame.GhostAuraCache --active ghost auras currently shown in the nameplate
 				for spellName, spellTable in pairs(GHOSTAURAS) do
 					if (not nameplateAuraCache[spellName.."_player"]) then
 						if (not nameplateGhostAuraCache[spellName.."_player_ghost"]) then --the ghost aura isn't in the nameplate
