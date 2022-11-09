@@ -1216,14 +1216,14 @@ local class_specs_coords = {
 					end
 					
 				elseif (class == "HUNTER") then
-					if IsPlayerSpell(53351) then -- Kill Shot
+					if IsPlayerSpell(53351) or IsPlayerSpell(320976) then -- Kill Shot
 						lowExecute = 0.2
-						if IsPlayerSpell(273887) then --> is using killer instinct?
-							lowExecute = 0.35
-						end
-						if IsPlayerSpell(260228) and upperEnabled then --> Careful Aim
-							highExecute = 0.7
-						end
+					end
+					if IsPlayerSpell(273887) then --> is using killer instinct?
+						lowExecute = 0.35
+					end
+					if IsPlayerSpell(260228) and upperEnabled then --> Careful Aim
+						highExecute = 0.7
 					end
 					
 				elseif (class == "PALADIN") then
@@ -11162,7 +11162,6 @@ end
 			["UpdateAuras_Self_Automatic"] = true,
 			["GetUnitAuras"] = false,
 			["GetUnitAurasForUnitID"] = false,
-			["CreateAuraIcon"] = true,
 			["PerformanceUnits"] = true,
 			["ForceBlizzardNameplateUnits"] = true,
 			["COMM_PLATER_PREFIX"] = true,
