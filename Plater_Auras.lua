@@ -2,6 +2,8 @@
 
 local Plater = _G.Plater
 local DF = _G.DetailsFramework
+local addonName, platerInternal = ...
+local _ = nil
 
 local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_NOT_MAINLINE = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
@@ -876,7 +878,7 @@ end
 		auraIconFrame.Icon:SetTexCoord (.05, .95, .09, ratio)
 	end
 
-	function Plater.CreateAuraIcon (parent, name) --private
+	function platerInternal.CreateAuraIcon (parent, name) --private ~createicon ~icon
 		local newIcon = CreateFrame ("Button", name, parent, BackdropTemplateMixin and "BackdropTemplate")
 		newIcon:Hide()
 		newIcon:SetSize (20, 16)
@@ -999,7 +1001,7 @@ end
 		local i = self.NextAuraIcon
 		
 		if (not self.PlaterBuffList[i]) then
-			local newFrameIcon = Plater.CreateAuraIcon (self, self.unitFrame:GetName() .. "Plater" .. self.Name .. "AuraIcon" .. i)
+			local newFrameIcon = platerInternal.CreateAuraIcon (self, self.unitFrame:GetName() .. "Plater" .. self.Name .. "AuraIcon" .. i)
 			newFrameIcon.unitFrame = self.unitFrame
 			newFrameIcon.spellId = 0
 			newFrameIcon.ID = i
