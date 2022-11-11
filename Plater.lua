@@ -45,7 +45,7 @@ local ipairs = ipairs
 local rawset = rawset
 local rawget = rawget
 local setfenv = setfenv
-local pcall = pcall
+--local pcall = pcall --200 locals limit
 local InCombatLockdown = InCombatLockdown
 local UnitIsPlayer = UnitIsPlayer
 local UnitClassification = UnitClassification
@@ -78,7 +78,8 @@ local LibRangeCheck = LibStub:GetLibrary ("LibRangeCheck-2.0") -- https://www.cu
 local LibTranslit = LibStub:GetLibrary ("LibTranslit-1.0") -- https://github.com/Vardex/LibTranslit
 local LDB = LibStub ("LibDataBroker-1.1", true)
 local LDBIcon = LDB and LibStub ("LibDBIcon-1.0", true)
-local _
+local _, platerInternal = ...
+_ = nil
 
 local Plater = DF:CreateAddOn ("Plater", "PlaterDB", PLATER_DEFAULT_SETTINGS, InterfaceOptionsFrame and { --options table --TODO: DISABLED FOR DRAGONFLIGHT FOR NOW!
 	name = "Plater Nameplates",
@@ -3821,6 +3822,8 @@ local class_specs_coords = {
 			local unitFrame = plateFrame.unitFrame
 			local castBar = unitFrame.castBar
 			local healthBar = unitFrame.healthBar
+
+			unitFrame.IsNeutralOrHostile = actorType == ACTORTYPE_ENEMY_NPC or actorType == ACTORTYPE_ENEMY_PLAYER
 			
 			if (unitFrame.ShowUIParentAnimation) then
 				unitFrame.ShowUIParentAnimation:Play()
@@ -9977,6 +9980,7 @@ end
 	end
 	
 	--create a custom aura checking, this reset the currently shown auras and only check for auras the script passed
+	--this is only called from scripts
 	--@buffList: a table with aura names as keys and true as the value, example: ["aura name"] = true
 	--@debuffList: same as above
 	--@noSpecialAuras: won't check special auras
@@ -10521,6 +10525,10 @@ end
 		--clear the trash can
 		profile.script_data_trash = {}
 		profile.hook_data_trash = {}
+
+		--temp store plugin data
+		local pluginData = profile.plugins_data
+		profile.plugins_data = {}
 		
 		--cleanup mods HooksTemp (for good)
 		for i = #Plater.db.profile.hook_data, 1, -1 do
@@ -10538,6 +10546,7 @@ end
 		profile.spell_animation_list = spellAnimations
 		profile.script_data_trash = trashcanScripts
 		profile.hook_data_trash = trashcanHooks
+		profile.plugins_data = pluginData
 		
 		--reset profile_name
 		profile.profile_name = nil

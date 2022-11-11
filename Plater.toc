@@ -62,5 +62,6 @@ Plater_BossModsSupport.lua
 Plater_Animations.lua
 Plater_CastColorPanels.lua
 Plater_Profiling.lua
+Plater_Plugins.lua
 Plater_API.lua
 #Plater_SpellPrediction.lua

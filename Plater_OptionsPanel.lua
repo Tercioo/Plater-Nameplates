@@ -113,7 +113,7 @@ Plater.RegisterRefreshDBCallback (on_refresh_db)
 local update_wago_update_icons = function()
 	local countMods, countScripts, hasProfileUpdate = Plater.CheckWagoUpdates(true)
 	local mainFrame = PlaterOptionsPanelContainer
-	local scriptButton		= mainFrame.AllButtons [6]
+	local scriptButton		= mainFrame.AllButtons [6] --~changeindex1
 	local modButton			= mainFrame.AllButtons [7]
 	local profileButton		= mainFrame.AllButtons [22]
 	
@@ -245,6 +245,7 @@ function Plater.OpenOptionsPanel()
 
 		{name = "WagoIo", title = "Wago Imports"}, --wago_imports --localize-me
 		{name = "SearchFrame", title = L["OPTIONS_TABNAME_SEARCH"]},
+		{name = "PluginsFrame", title = "Plugins"}, --localize-me
 		
 	}, 
 	frame_options, hookList)
@@ -350,8 +351,9 @@ function Plater.OpenOptionsPanel()
 	--4th row
 	local wagoIoFrame 			= mainFrame.AllFrames [25] --wago_imports
 	local searchFrame			= mainFrame.AllFrames [26]
+	local pluginsFrame			= mainFrame.AllFrames [27]
 
-	local scriptButton		= mainFrame.AllButtons [6] --also need update on line 115 and 13818
+	local scriptButton		= mainFrame.AllButtons [6] --also need update on ~changeindex1 and ~changeindex2
 	local modButton		 	= mainFrame.AllButtons [7]
 	local profileButton		= mainFrame.AllButtons [22]
 	local ghostAurasButton	= mainFrame.AllButtons [12]
@@ -367,6 +369,7 @@ function Plater.OpenOptionsPanel()
 	Plater.Resources.BuildResourceOptionsTab(resourceFrame)
 	Plater.Auras.BuildGhostAurasOptionsTab(ghostAuras)
 	Plater.CreateCastColorOptionsFrame(castColorsFrame)
+	platerInternal.Plugins.CreatePluginsOptionsTab(pluginsFrame)
 	
 	local generalOptionsAnchor = CreateFrame ("frame", "$parentOptionsAnchor", frontPageFrame, BackdropTemplateMixin and "BackdropTemplate")
 	generalOptionsAnchor:SetSize (1, 1)
@@ -14152,7 +14155,7 @@ end
 		--resources
 	}
 	
-	local allTabHeaders = {
+	local allTabHeaders = { --~changeindex2
 		mainFrame.AllButtons [1].button.text:GetText(), -- general
 		mainFrame.AllButtons [2].button.text:GetText(), -- threat & aggro
 		mainFrame.AllButtons [3].button.text:GetText(), -- target

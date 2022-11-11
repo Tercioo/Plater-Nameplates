@@ -90,6 +90,9 @@ PLATER_DEFAULT_SETTINGS = {
 		saved_cvars_last_change = {},
 		keybinds = {},
 
+		--store the enabled or disabled state of a plugin, this table is not shared on exporting profile
+		plugins_data = {},
+
 		class_colors = {
 			["HUNTER"] = {r = 0.66666668653488, g = 0.82745105028152, b = 0.44705885648727, a = 1, colorStr = "ffaad372"},
 			["WARRIOR"] = {r = 0.77647066116333, g = 0.60784316062927, b = 0.42745101451874, a = 1, colorStr = "ffc69b6d"},
