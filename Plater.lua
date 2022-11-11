@@ -9154,6 +9154,11 @@ end
 				end
 			end
 		end,
+
+		UNIT_DIED = function(time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID)
+			--targetGUID is the GUID of the unit which died
+			platerInternal.ExtraAuras.RemoveGUIDFromUnitFrameCache(targetGUID)
+		end,
 	}
 	
 	if IS_WOW_PROJECT_NOT_MAINLINE then

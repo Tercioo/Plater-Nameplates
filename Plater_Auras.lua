@@ -133,6 +133,9 @@ end
 function platerInternal.ExtraAuras.GetUnitFrameFromGUID(GUID)
 	return platerInternal.ExtraAuras.unitFramesToGUID[GUID]
 end
+function platerInternal.ExtraAuras.RemoveGUIDFromUnitFrameCache(GUID)
+	platerInternal.ExtraAuras.unitFramesToGUID[GUID] = nil
+end
 
 --not caches, these two tables hold extra icons added from platerInternal.ExtraAuras.Add()
 --store {[spellId] = {[GUID] = exraAuraTable}}
@@ -193,6 +196,7 @@ function Plater.AddExtraAura(unitGUID, spellId, duration, borderColor, overlayCo
 	return true
 end
 
+--called from Plater.ResetAuraContainer()
 function platerInternal.ExtraAuras.WipeCache(unitFrame)
 	wipe(unitFrame.ExtraAuraCache)
 end
@@ -215,7 +219,7 @@ function platerInternal.ExtraAuras.Remove(spellId, unitGUID)
 				auraIconFrame.extraAuraSpellId = nil
 				auraIconFrame:Hide()
 			else
-				--the aura get cleaned by regular Plater.ResetAuraContainer()
+				--I guess the aura will get cleaned by regular Plater.ResetAuraContainer()
 			end
 		end
 	end
