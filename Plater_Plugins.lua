@@ -2,7 +2,7 @@
 local Plater = _G.Plater
 local addonName, platerInternal = ...
 local detailsFramework = DetailsFramework
-_ = nil
+local _
 
 --create a namespace for plugins
 platerInternal.Plugins = {}
