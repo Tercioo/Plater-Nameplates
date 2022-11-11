@@ -1,5 +1,4 @@
 
-
 local Plater = _G.Plater
 local DF = _G.DetailsFramework
 local addonName, platerInternal = ...
@@ -35,7 +34,6 @@ local UnitAura = _G.UnitAura
 local GetAuraDataBySlot = _G.C_UnitAuras and _G.C_UnitAuras.GetAuraDataBySlot
 local BackdropTemplateMixin = _G.BackdropTemplateMixin
 local BUFF_MAX_DISPLAY = _G.BUFF_MAX_DISPLAY
-local _
 
 local DB_AURA_GROW_DIRECTION
 local DB_AURA_GROW_DIRECTION2
@@ -58,6 +56,17 @@ local DB_AURA_ALPHA
 local DB_AURA_ENABLED
 local DB_AURA_GHOSTAURA_ENABLED
 local DB_TRACK_METHOD
+
+local MEMBER_UNITID = "namePlateUnitToken"
+local MEMBER_GUID = "namePlateUnitGUID"
+local MEMBER_NPCID = "namePlateNpcId"
+local MEMBER_QUEST = "namePlateIsQuestObjective"
+local MEMBER_REACTION = "namePlateUnitReaction"
+local MEMBER_RANGE = "namePlateInRange"
+local MEMBER_NOCOMBAT = "namePlateNoCombat"
+local MEMBER_NAME = "namePlateUnitName"
+local MEMBER_NAMELOWER = "namePlateUnitNameLower"
+local MEMBER_TARGET = "namePlateIsTarget"
 
 local DebuffTypeColor = _G.DebuffTypeColor
 
@@ -105,8 +114,138 @@ local MANUAL_TRACKING_DEBUFFS = {}
 local AUTO_TRACKING_EXTRA_BUFFS = {}
 local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 
---ghost auras
+--Cache for ghost auras
+--Updated on function: Plater.UpdateGhostAurasCache()
 local GHOSTAURAS = {}
+
+--extra auras namespace ~extraaura
+--Plater does not have a list of saved extra auras, these are added and removed on the fly from scripts and mods
+--These auras only live for its expirationTime, after that it need another Add() call to add it again
+platerInternal.ExtraAuras = {
+	--only store unitFrames whith an extra aura
+	unitFramesToGUID = {}
+}
+
+--when an extra aura is added to a nameplate, cache the unit GUID to unitFrame to use when the extra aura expired
+function platerInternal.ExtraAuras.CacheGUID_to_UnitFrame(GUID, unitFrame)
+	platerInternal.ExtraAuras.unitFramesToGUID[GUID] = unitFrame
+end
+function platerInternal.ExtraAuras.GetUnitFrameFromGUID(GUID)
+	return platerInternal.ExtraAuras.unitFramesToGUID[GUID]
+end
+
+--not caches, these two tables hold extra icons added from platerInternal.ExtraAuras.Add()
+--store {[spellId] = {[GUID] = exraAuraTable}}
+local EXTRAAURAS_SPELLIDS = {}
+--store {[GUID] = {[spellId] = exraAuraTable}}
+local EXTRAAURAS_GUIDS = {}
+
+--@unitGUID: to identify in which nameplate the extra aura is shown
+--@spellId: of the aura
+--@duration: debuff duration, start time is always the time that ExtraAuras.AddAura is called
+--@borderColor: optional border color
+function Plater.AddExtraAura(unitGUID, spellId, duration, borderColor, overlayColor, desaturated, showErrors)
+	local startTime = GetTime()
+	local expirationTime = startTime + duration
+	local spellName, _, spellIcon = GetSpellInfo(spellId)
+
+	if (not spellName) then
+		if (showErrors) then
+			Plater:Msg("platerInternal.ExtraAuras.Add(): invalid spellId or spell does not exists.")
+		end
+		return
+	end
+
+	local extraAuraTable = EXTRAAURAS_SPELLIDS[spellId] and EXTRAAURAS_SPELLIDS[spellId][unitGUID]
+	if (extraAuraTable) then
+		extraAuraTable.startTime = startTime
+		extraAuraTable.duration = duration
+		extraAuraTable.expirationTime = expirationTime
+		extraAuraTable.borderColor = borderColor
+		extraAuraTable.overlayColor = overlayColor
+		extraAuraTable.desaturated = desaturated
+		extraAuraTable.needRefresh = "refresh"
+	else
+		extraAuraTable = {
+			startTime = startTime,
+			duration = duration,
+			expirationTime = expirationTime,
+			borderColor = borderColor,
+			overlayColor = overlayColor,
+			desaturated = desaturated,
+			spellName = spellName,
+			spellIcon = spellIcon,
+			--pre-create cache keys to avoid expensive string manipulation at runtime
+			spellNameExtraCache = spellName .. "_extra",
+			spellNameAuraCache = spellName .. "_player",
+			spellNameGhostAuraCache = spellName .. "_player_ghost",
+			needRefresh = "added",
+		}
+	end
+
+	--add the extra aura
+	EXTRAAURAS_SPELLIDS[spellId] = EXTRAAURAS_SPELLIDS[spellId] or {}
+	EXTRAAURAS_SPELLIDS[spellId][unitGUID] = extraAuraTable
+
+	EXTRAAURAS_GUIDS[unitGUID] = EXTRAAURAS_GUIDS[unitGUID] or {}
+	EXTRAAURAS_GUIDS[unitGUID][spellId] = extraAuraTable
+
+	return true
+end
+
+function platerInternal.ExtraAuras.WipeCache(unitFrame)
+	wipe(unitFrame.ExtraAuraCache)
+end
+
+--remove an extra aura, this is called when a extra aura expires at platerInternal.ExtraAuras.ClearExpired()
+function platerInternal.ExtraAuras.Remove(spellId, unitGUID)
+	EXTRAAURAS_SPELLIDS[spellId][unitGUID] = nil
+	EXTRAAURAS_GUIDS[unitGUID][spellId] = nil
+
+	--find the unit frame and remove the icon
+	--! shouldn't this call Plater.ResetAuraContainer (self, resetBuffs, resetDebuffs)?
+		--! but calling it now might mess with regular and ghost auras already added in the pipe line
+	local unitFrame = platerInternal.ExtraAuras.GetUnitFrameFromGUID(unitGUID)
+	if (unitFrame:IsShown()) then
+		--need to find the extra aura icon
+		local buffFrame1 = unitFrame.BuffFrame
+		for i = 1, #buffFrame1.PlaterBuffList do
+			local auraIconFrame = buffFrame1.PlaterBuffList[i]
+			if (auraIconFrame.extraAuraSpellId == spellId and auraIconFrame.spellId == spellId) then
+				auraIconFrame.extraAuraSpellId = nil
+				auraIconFrame:Hide()
+			else
+				--the aura get cleaned by regular Plater.ResetAuraContainer()
+			end
+		end
+	end
+end
+
+--when adding a new extra icon, attempt to get an aura icon already showing the extra aura
+--! dunno if this should be require is the auras get clean up each tick? but not on retail I guess
+function platerInternal.ExtraAuras.GetAuraIconByExtraAuraSpellId(unitFrame, spellId)
+	local buffFrame1 = unitFrame.BuffFrame
+	for i = 1, #buffFrame1.PlaterBuffList do
+		local auraIconFrame = buffFrame1.PlaterBuffList[i]
+		if (auraIconFrame.extraAuraSpellId == spellId and auraIconFrame.spellId == spellId) then
+			return auraIconFrame
+		end
+	end
+end
+
+--iterate among all extra auras currently active and remove all expired
+--this is called from Tick after Plater.ShowGhostAuras(tickFrame.BuffFrame)
+function platerInternal.ExtraAuras.ClearExpired()
+	local currentTime = GetTime()
+	for spellId, listOfUnitGUIDs in pairs(EXTRAAURAS_SPELLIDS) do
+		for unitGUID, extraAuraTable in pairs(listOfUnitGUIDs) do
+			if (extraAuraTable.expirationTime < currentTime) then
+				--this extra aura has expired
+				platerInternal.ExtraAuras.Remove(spellId, unitGUID)
+			end
+		end
+	end
+end
 
 -- support for LibClassicDurations from https://github.com/rgd87/LibClassicDurations by d87
 local LCD = LibStub:GetLibrary("LibClassicDurations", true)
@@ -691,6 +830,78 @@ end
 		end
 	end
 
+	--extra auras
+	--these are auras which some script or weakaura requested to be shown in the nameplate of an unit
+	--plater does not have control, does not save or has a list of extra auras, they are all external
+	--plater just add an icon for the spellId and show it until its duration expires
+	--this function is called on tick after Plater.ShowGhostAuras(tickFrame.BuffFrame) and platerInternal.ExtraAuras.ClearExpired()
+	function platerInternal.ExtraAuras.Show(buffFrame)
+		local unitFrame = buffFrame.unitFrame
+		--unitFrame.IsNeutralOrHostile count npcs and players
+		if (unitFrame.IsNeutralOrHostile and not unitFrame.IsSelf) then --and unitFrame.InCombat --removed for debug on training dummies
+			if (InCombatLockdown()) then
+				local unitGUID = unitFrame[MEMBER_GUID]
+				local unitExtraAurasSpellIds = EXTRAAURAS_GUIDS[unitGUID]
+
+				--does the mob shown in the nameplate has an extra aura added to it?
+				if (unitExtraAurasSpellIds) then
+					--active extra auras currently shown in the nameplate
+					local nameplateExtraAurasCache = unitFrame.ExtraAuraCache
+					--active auras currently shown in the nameplate
+					local nameplateAuraCache = unitFrame.AuraCache
+					--active ghost auras currently shown in the nameplate
+					local nameplateGhostAuraCache = unitFrame.GhostAuraCache
+
+					for spellId, extraAuraTable in pairs(unitExtraAurasSpellIds) do
+						--does this extra aura just added or got a time refresh?
+						local needRefresh = extraAuraTable.needRefresh
+
+						if (needRefresh or not nameplateExtraAurasCache[extraAuraTable.spellNameExtraCache]) then
+							if (needRefresh or not nameplateAuraCache[extraAuraTable.spellNameAuraCache]) then
+								if (needRefresh or not nameplateGhostAuraCache[extraAuraTable.spellNameGhostAuraCache]) then
+									local spellName = extraAuraTable.spellName --not in use
+									local spellIcon = extraAuraTable.spellIcon
+									local duration = extraAuraTable.duration
+									local startTime = extraAuraTable.startTime --not in use
+									local expirationTime = extraAuraTable.expirationTime
+									local borderColor = extraAuraTable.borderColor
+									local overlayColor = extraAuraTable.overlayColor
+									local idDesaturated = extraAuraTable.desaturated
+
+									--check if can use the same icon, this might not be required in the future
+									local auraIconFrame = platerInternal.ExtraAuras.GetAuraIconByExtraAuraSpellId(unitFrame, spellId)
+									if (not auraIconFrame) then
+										auraIconFrame = Plater.GetAuraIcon(buffFrame)
+									end
+
+									auraIconFrame.InUse = true
+									Plater.AddAura  (buffFrame, auraIconFrame, -1, extraAuraTable.spellNameExtraCache, spellIcon, 1, "DEBUFF", duration, expirationTime, "player", false, false, spellId, false, false, true,  false, "DEBUFF", 1)
+
+									--Plater.AddAura(buffFrame, auraIconFrame, -1, spellName.."_player_ghost",    spellIcon, 1, "DEBUFF", 0,        0,              "player", false, false, spellId, false, false, false, false, "DEBUFF", 1)
+									auraIconFrame.extraAuraSpellId = spellId
+
+									--set the icon and border settings
+									auraIconFrame.Icon:SetDesaturated(idDesaturated)
+									auraIconFrame.Icon:SetVertexColor(DetailsFramework:ParseColors(overlayColor))
+
+									auraIconFrame:SetBackdropBorderColor(DetailsFramework:ParseColors(borderColor))
+
+									--add the aura to 'unitFrame.ExtraAuraCache', spellNameExtraCache = spellName .. "_extra"
+									nameplateExtraAurasCache[extraAuraTable.spellNameExtraCache] = true
+									--add to extra auras cache to know which unitFrame has the extra aura by the mob guid
+									platerInternal.ExtraAuras.CacheGUID_to_UnitFrame(unitGUID, unitFrame)
+
+									--tag this extra aura as clean
+									extraAuraTable.needRefresh = false
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+
 	
 	--align the aura frame icons currently shown in buff container
 	--this function is called after Plater complete the aura update loop
@@ -987,7 +1198,7 @@ end
 		end
 	end
 	
-	--an aura is about to be added in the nameplate, need to get an icon for it ~geticonaura
+	--an aura is about to be added in the nameplate, need to get an icon for it ~geticonaura ~icon
 	function Plater.GetAuraIcon (self, isBuff)
 		--self parent = NamePlate_X_UnitFrame
 		--self = BuffFrame
@@ -1101,7 +1312,7 @@ end
 	--update the aura icon, this icon is getted with GetAuraIcon -
 	--dispelName is the UnitAura return value for the auraType ("" is enrage, nil/"none" for unspecified and "Disease", "Poison", "Curse", "Magic" for other types. -Continuity/Ariani
 	--self is .BuffFrame or .BuffFrame2
-	function Plater.AddAura (self, auraIconFrame, i, spellName, icon, applications, auraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, isBuff, isShowAll, isDebuff, isPersonal, dispelName, applications, modRate)
+	function Plater.AddAura (self, auraIconFrame, i, spellName, icon, applications, auraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, isBuff, isShowAll, isDebuff, isPersonal, dispelName, applications, modRate) --~addaura ãddaura
 		auraIconFrame:SetID (i)
 		auraIconFrame.auraInstanceID = i
 		local curBuffFrame = self.Name == "Secondary" and 2 or 1
@@ -1535,7 +1746,8 @@ end
 		--> reset auras
 		if resetDebuffs then
 			if not DB_AURA_SEPARATE_BUFFS then
-				wipe (self.unitFrame.GhostAuraCache) -- ghost are on aura frame 1, needs to be cleared.
+				wipe (self.unitFrame.GhostAuraCache) -- ghost and extra are on aura frame 1, needs to be cleared.
+				platerInternal.ExtraAuras.WipeCache(self.unitFrame)
 			end
 			wipe (self.AuraCache)
 			self.HasBuff = false
@@ -1547,7 +1759,8 @@ end
 		--> second buff anchor
 		if resetBuffs then
 			if DB_AURA_SEPARATE_BUFFS then
-				wipe (self.unitFrame.GhostAuraCache) -- ghost are on aura frame 1, needs to be cleared.
+				wipe (self.unitFrame.GhostAuraCache) -- ghost and extra are on aura frame 1, needs to be cleared.
+				platerInternal.ExtraAuras.WipeCache(self.unitFrame)
 			end
 			wipe (self.BuffFrame2.AuraCache)
 			self.BuffFrame2.HasBuff = false 

@@ -3228,6 +3228,7 @@ local class_specs_coords = {
 			--> unit aura cache
 			plateFrame.unitFrame.AuraCache = {}
 			plateFrame.unitFrame.GhostAuraCache = {}
+			plateFrame.unitFrame.ExtraAuraCache = {}
 			
 			local healthBar = plateFrame.unitFrame.healthBar
 			
@@ -6280,8 +6281,12 @@ end
 				--update the buff layout and alpha
 				tickFrame.BuffFrame.unit = tickFrame.unit
 
-				--check for ghost auras
-				Plater.ShowGhostAuras(tickFrame.BuffFrame) --ghost auras only show in the debuff frame
+				--ghost and extra auras only show in the debuff frame
+				Plater.ShowGhostAuras(tickFrame.BuffFrame) 
+				--check for expired extra auras
+				platerInternal.ExtraAuras.ClearExpired()
+				--update extra auras
+				platerInternal.ExtraAuras.Show(tickFrame.BuffFrame)
 				
 				--align icons in the aura frame
 				Plater.AlignAuraFrames (tickFrame.BuffFrame)
