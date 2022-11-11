@@ -1189,6 +1189,13 @@ local class_specs_coords = {
 		if IS_WOW_PROJECT_MAINLINE then
 			--retail
 			
+			--small helper
+			local isTalentLearned = function(nodeID)
+				local nodeInfo = C_Traits.GetNodeInfo(C_ClassTalents.GetActiveConfigID(), nodeID)
+				print(nodeInfo and nodeInfo.entryIDsWithCommittedRanks and nodeInfo.entryIDsWithCommittedRanks[1] and true or false)
+				return nodeInfo and nodeInfo.entryIDsWithCommittedRanks and nodeInfo.entryIDsWithCommittedRanks[1] and true or false
+			end
+			
 			local classLoc, class = UnitClass ("player")
 			local spec = GetSpecialization()
 			if (spec and class) then
@@ -1200,9 +1207,10 @@ local class_specs_coords = {
 					end
 					
 				elseif (class == "MAGE") then
-					if IsPlayerSpell(269644) then -- Searing Touch
+					if isTalentLearned(62212) then -- Searing Touch
 						lowExecute = 0.3
-					elseif IsPlayerSpell(205026) then --Firestarter
+					end
+					if isTalentLearned(62083) then --Firestarter
 						highExecute = 0.9
 					end
 					
@@ -1222,7 +1230,7 @@ local class_specs_coords = {
 					if IsPlayerSpell(273887) then --> is using killer instinct?
 						lowExecute = 0.35
 					end
-					if IsPlayerSpell(260228) and upperEnabled then --> Careful Aim
+					if IsPlayerSpell(260228) then --> Careful Aim
 						highExecute = 0.7
 					end
 					
