@@ -605,7 +605,9 @@ local function getUnitAuras(unit, filter)
 			if IS_NEW_UNIT_AURA_AVAILABLE then
 				local slot = slots[i]
 				local aura = C_UnitAuras.GetAuraDataBySlot(unit, slot)
-				filterCache[aura.auraInstanceID] = aura
+				if aura then
+					filterCache[aura.auraInstanceID] = aura
+				end
 			else
 				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications
 				if IS_WOW_PROJECT_MAINLINE then
