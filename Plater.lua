@@ -125,6 +125,10 @@ function Plater.IncreaseRefreshID() --private
 	Plater.IncreaseRefreshID_Auras()
 end
 
+--script namespace
+platerInternal.Scripts = {}
+platerInternal.Mods = {}
+
 --> namespaces:
 	--resources
 	Plater.Resources = {}
@@ -12025,6 +12029,38 @@ end
 		end
 		
 		return scriptsWithOverlap, amount
+	end
+
+	function platerInternal.Scripts.GetScriptObjectByName(scriptName)
+		local allScripts = Plater.db.profile.script_data
+		for i = 1, #allScripts do
+			local scriptObject = allScripts[i]
+			if (scriptObject.Name == scriptName) then
+				return scriptObject
+			end
+		end
+	end
+
+	function platerInternal.Scripts.AddSpellToScriptTriggers(scriptObject, spellId)
+		DF.table.addUnique(scriptObject.SpellIds, spellId)
+	end
+
+	function platerInternal.Scripts.RemoveSpellFromScriptTriggers(scriptObject, spellId)
+		local index = DF.table.find(scriptObject.SpellIds, spellId)
+		if (index) then
+			tremove(scriptObject.SpellIds, index)
+		end
+	end
+
+	function platerInternal.Scripts.AddNpcToScriptTriggers(scriptObject, npcId)
+		DF.table.addUnique(scriptObject.NpcNames, npcId)
+	end
+
+	function platerInternal.Scripts.RemoveNpcFromScriptTriggers(scriptObject, npcId)
+		local index = DF.table.find(scriptObject.NpcNames, npcId)
+		if (index) then
+			tremove(scriptObject.NpcNames, index)
+		end
 	end
 
 	--retrive the script object for a selected scriptId
