@@ -1899,6 +1899,8 @@ local class_specs_coords = {
 	-- ~profile
 	--refreshes the values for the profile when the profile is loaded or changed
 	function Plater:RefreshConfig() --private
+		platerInternal.ScriptTriggers.WipeDeprecatedScriptTriggersFromProfile(Plater.db.profile)
+
 		Plater.IncreaseRefreshID()
 
 		Plater.RefreshDBUpvalues()
@@ -4457,6 +4459,9 @@ function Plater.OnInit() --private --~oninit ~init
 			PlaterDBChr.spellRangeCheckRangeFriendly = {}
 		end
 	
+	--run once per profile per expansion
+	platerInternal.ScriptTriggers.WipeDeprecatedScriptTriggersFromProfile(Plater.db.profile)
+
 	--ensure global nameplate width/height setting is initialized
 		Plater.db.profile.plate_config.global_health_width = Plater.db.profile.plate_config.global_health_width or Plater.db.profile.plate_config.enemynpc.health[1]
 		Plater.db.profile.plate_config.global_health_height = Plater.db.profile.plate_config.global_health_height or Plater.db.profile.plate_config.enemynpc.health[2]
@@ -12209,8 +12214,9 @@ end
 									end
 								end
 								
-								--copy triggers that the current script has to the new script object since the user might have modified the list
-								if (not overrideTriggers) then
+								--by not overriding it'll drop the new triggers and use triggers of the old script that got replaced
+								--this is to preserve triggers added by the users
+								if (type(overrideTriggers) == "boolean" and not overrideTriggers) then
 									if (newScript.ScriptType == 0x1 or newScript.ScriptType == 0x2) then
 										--aura or cast trigger
 										newScript.SpellIds = {}
@@ -12222,6 +12228,20 @@ end
 										newScript.NpcNames = {}
 										for index, trigger in ipairs (scriptObject.NpcNames) do
 											DF.table.addunique (newScript.NpcNames, trigger)
+										end
+									end
+
+								--this will use the old triggers and the new ones
+								elseif (type(overrideTriggers) == "string" and overrideTriggers == "none") then
+									if (newScript.ScriptType == 0x1 or newScript.ScriptType == 0x2) then
+										--aura or cast trigger
+										for index, trigger in ipairs(scriptObject.SpellIds) do
+											DF.table.addunique(newScript.SpellIds, trigger)
+										end
+									else
+										--npc trigger
+										for index, trigger in ipairs(scriptObject.NpcNames) do
+											DF.table.addunique(newScript.NpcNames, trigger)
 										end
 									end
 								end

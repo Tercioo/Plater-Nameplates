@@ -1,10 +1,9 @@
 
 local _
-
-do 
-	
+local addonName, platerInternal = ...
+do
 	PlaterScriptLibrary = {}
-	
+
 	--scripts
 
 	PlaterScriptLibrary ["Auto Set Skull"] = {
@@ -15,11 +14,11 @@ do
 	}
 
 	PlaterScriptLibrary ["Aura - Buff Alert"] = {
-		Revision = 13,
+		Revision = 14,
 		ScriptType = "script",
-		String = "vBvuVTjpu0)l9PgPVezSnq4tApK20U1nPSj5O9YYCXbmjOrTJas7Yl8BFxBGeOnrvrR9HjQAS5IVNZ9CUCt4o85CMEtzQwvalNz3pF3gjFMhN9f5U2OoC23fzBH7J4SzIhKC2vzc1VQczBerWU7I0k4)QszEcCJftIJ)QQyX3YeWDwK(GyLSyrDUUFP5KC2uzreNXl5ZWhG1ThS4wyz3yYCvy5AzvyXgzwwvOcOrvOoV5g3nf2K08ixTnbwMQA2cSPkCEE6QvMKSu)7QqHcU160YQWlGOxmQTS(Qf4Qq85vtzILYSU1e5usj5DvkPhGL2a7Qm9t3OelZKXTqVSf5pcXQc3h9SGwR7vWUhq2PdYxRZ05T4ABXU1h77rruhezmoiWFmpzOl10fCl1f7G9qJryIFGFagI4HmAjOvq9ahUSpZBY(5W7O6JCG4E9CQJ5ih8R((4FLt5)sNkwxw8mN6QwgnfI9g5uJ75uDt)lnlZFGX4cMXypxkIGOboOGglRVXSVgEdCfiDL6OhL5fqu(SaecbVrkIJnPSodCMLESstLWkIYt3aNI0WBcM4qdmKhwsjbylBjuKlLAPmHIDghy6BNriem23GjGXKT5IQWHTZqMKjZHHe)OgZFYzUVAjLc199cinCM51riT(GElZJs16HSDzpkuIcodA2SZLStOwAbREK2(XwLDMybdOCG(KKTQO6buxwiZs(VQWTQ0Y7IBwCBoKbyTu94CtNcSSwyS7gu95QWMR9Rstm56WdncyFs6QrDgBmWYhvNt3C1cZid9n2T5TY)NTw)0LDWscJApdG78wWRdm8WtuGUxRjFOkS2kgbFSBANyTQLxFfPlM2U2MhHmOltFwbuVT5cSf3(2Yr17Hdtvf2oPiDmyTRL5YJMtod6j9qqhZyOp2dbtePbEWWghY)gU)NsJLVZUFJhdti2Cmp(OnhVoJSMaOZ43dDE4WOCjWAyilmDzL9lVe56TQ2baMHgDP4rKwB)9jIy(zqnYY1wGoeQTeoHlBB7h8szW5SLHbhxvpTsJQ)Id(Fo",
+		String = "vB13pTnmq4)x2tuPLQ87FmP9qHcBSjvMKR2lRZy3eN2OfSRssH1x8F77StstYiiuhWdJGO25oFF399D(kyl8smsSRktWlHLl07xEyhdVWhJwqVJHrNNt5)ssq7OXWUVtZ3dwnXOVYo0Ewlm66ybh(lVIvKcoUAwsYn8YvFlNcVzv2D0nSYv1EF7AveXO5SYymcxHxy3bRxlS3O9vsSBXeDPk4ss1wMKuUJLNljCWvjru08IRNdBsBC589PWYmEZwiHKKLfzB2OcYAXVLekhE12Skj5DG13nDqnzFA1uoDnlVFn58VrLoVqQ0Tdw3wy)uU4bj5soDDolPf31nWUbmE00jbTqmOG96q2AiYxiYffT4Q7YUkWoW3101Y0j0okkieNA45QAeUY1Z2Y23m002jikiYgS4BQOtGOGscoCvVmVj0NsEhxFKUe3FGsnul60OXuWxKsfmIsnxuv(iL68MKkbm(QOuHduQJX(XYK6xqs8azi03Z10X0nYYmQrSgkj9lGxbvbIyLi(EwrjyfGWe(bUsstsuXSoeyKofrvQsbvgxKTdoM6Ih8b48S9fujXODuWSCwbCx)h1h(NyK3ZMCzqfClfcdg5wh2aG5yfXzcHb6q(9uoTeJG2g94f9GM1AWQNmDC6tvVbpWCglqXt3ZJRhXDwjlp99sYEEw11jnlUQaIaSMXVFPsZHL1vOE3e5xKKMNJRYsvXQZPPq2NMTzAVR4t05dV3PBEAHzQk9vcN6Q7hqBfpCwpSyWeZta4EDSppWGZZ4aVxZjFusQLIPWhhM3ZwlB5pKr6JPU)RXfNj9Z0)QaQ328aYI3qzzu(2WiJxQ7KIfjG0ULvWgnMyuemrXgAocH2uF)qRihxtObYY5)d1)ZzjS3y1VrJH767gtJhT545ZiTia8S9BbpByexWGSgMZbtx2O)goAHypVDaGAOr)uCeQv3F)ewu)3mn0YfAG6m1wcpHkRB7N8yAW6KPHjJZQpntBw)Ta4)8d",
 		Enabled = true,
-		OverrideTriggers = true,
+		OverrideTriggers = "none",
 	}
 
 	PlaterScriptLibrary ["Aura is Shield [P]"] = {
@@ -45,7 +44,7 @@ do
 		Enabled = true,
 		OverrideTriggers = true,
 	}
-	
+
 	PlaterScriptLibrary ["Aura - Blink Time Left"] = {
 		Revision = 13,
 		ScriptType = "script",
@@ -60,7 +59,7 @@ do
 		Enabled = true,
 		OverrideTriggers = true,
 	}
-	
+
 	PlaterScriptLibrary ["Cast - Big Alert"] = {
 		Revision = 12,
 		ScriptType = "script",
@@ -68,7 +67,7 @@ do
 		Enabled = true,
 		OverrideTriggers = true,
 	}
-	
+
 	PlaterScriptLibrary ["Cast - Small Alert"] = {
 		Revision = 11,
 		ScriptType = "script",
@@ -76,14 +75,14 @@ do
 		Enabled = true,
 		OverrideTriggers = true,
 	}
-	
+
 	PlaterScriptLibrary ["Explosion Affix M+"] = {
 		Revision = 11,
 		ScriptType = "script",
 		String = "DJ12YnQny43LCvC7AkGn(qMPxyNSBtABomLS9WKewKb5aDXigqojEVG3So9rQVc9xcjoylSDwNEtNSBcg9F47)8VSJHZTo2KeAijodE8k(NVDvc25Qbo2xHwGDSVMFCURHJ9VIIwchP7y)t4vsgH3FHhjg(DmfNoh5HVFIV)1Xz3FtecEZ9HlqpIZUVG6pnlcf)zh7ZWzEo2ouNRmR0P1660uQtBqwRYYDr5UzjyVque8Cmi5c6Yciphg)yUlnaN7IFjjIKXpGgUaR1aUMVo4gHMHJQd3EBXf1RfxuVd0f1VsNa8Ve9cx3fNFrSxkgLHZegVhkJM7odLM7gGdFmG9HvSZcbkEQWzEzyCfezmmfLEoN4sdaG8hsrEm84m71b)4LlMHtL(Mt54zkdpNlWZLeFMvzvzvgkO(usejvIhEUj7FMoFWYCqp9E6gwMdhQBAo0zExREmedMe4QaQOnnnHKEn2GxblfU4tdqXpQYbZPcEnr6FjXq2gLfDApjzyljjdpWKKHkQJMKMsE(KYIi5hRP1bhy5WOkT2xQvBOAm3LRmPQNkukRqvCWRYyjKsTwiDe4jrmbb)zg5jSi4edaiHjH17julQLKsEmfNLXJuJ3S0YqQPjc5hLeG0wRQHR7jStQcNAw1kAMEifncnxiFaLg6kGP5A483c9PbsC2Vz9RaIJwtbCw(6aALxOqimuAShOSOjqnywjO1Abn6TQfudnZbQ52MZ1wxCJdTnUrpfLONrG8YjYrzv1QB8(6i5qhIz0xrVxUgBVRRvFRb6JgBzo2y04b9BVRRpHEODCN4)Nlz1RfLUfDzjZfF2NHZYH)8QydlfzE6sPXnSFp3965ZZWurMxxdz09f57fr9(nCi147RjdSwgmdNd2jo)dv4urPCpb6xDiORMDwPx2p2uI3t4u2suqpsDDDaTiFFMgkeOJnpTWMYSf7mV0WeGREIugZ(697pGjhGK3xTo2K5ZdFbwa4BZDVRqop4yBb0Bm0YshmjwEjWfmlCkzXmK))83)fP7KVKIIyQgQvNKKebRZKHb01yjqy67Zb44nxbKKot2(pJIsP8X08njVCfm12l39SLW4D27EoKgK7UoEbtfsjMVm2RObXXz4O5Vl3DzCi9cFXdqeAbgEgh)0TOzrShlCk8p1j)hZDf)u(KKuny8vkSERDck9ZNWgVDSs6dHcGJlzYwojTd3KJRXX6YNsskM8VUSXX(QuurKr7drOSGRKduNss9Xqz4X1TwDnDRo7j7(RwJ5JoQqcdT2U7jBbkkc2Llcx1oKDDa1EPUDdfBeRyLGWVGROmI4XYGkpxUE63xAc(Z0GLfMhcGGtb0KkEE4JA4y8IvXjEAbyuen4tGgzzRaV3z(qLcknwbDWQONyJPs9C8gA(BRz1LEoBa0fvM7FwKwqLTOslwBvsqd2jv3TQYDWC6Nv7SJvyGqi1SzUVMWPjhlO(urty1hUAl2pRyK5vTPi6Ym52(G3Ta0NCdkndZFxgR0DtHx)scDavuuuu7hO(3Qz9VYcBwIxgoLYgy5Jz3(kfxhWLY1XEmmKza0zCeBIGE)bJhnOp0YJTGXBvBgrid6JNShHmLH(xrtRZd9XnBSSERN1PydK(l45Ws5vnmKHXsa)6BsWm()V1KOtJej2IGV9dM62fk2OWDNYu4Ov0xI7nAVYsykBkQYryTjGYBlQG5jLxaRnURUIMc2px6Sf5zQfrqtQu6Ry5r0YVDGmw9qXxjqg)IQ1U9P8INWO84SqFzUxHskUC62RZ4WSLtygHOL3PCeDbBJV6fqvwtNDUecMoncYZUK3j74JMC2zhTlM0EMDpqoeng8kMp1BNeJkJYAJ3fTu8l0LqJxg13D3o2gMhS69WdBTZISfwtNF1BpuhF12z7PtxYqnhEBz)8RMVnrulo0MmAT8TuivXhvvNBHX2cwt)4T3E9v23ZPQ7zKNJ7(Xe1HjOxfRPF9Vn49A4qt4QKGncSLND(Yz7m(QMZ6BWRqPSTITpDYp)E2QXgY1JfpZ)VM(iXFEt1LPcDPRn2s8NoQC87Zc67ISnhrVX6x85Cg)3mNBzIpFMpVpCco1dht3JEJ3qcJzZMpkcpNE07upe)hWuE5hZl8n1JfFI9LCFJqzUFh4S1170DmZv3zV6e1acZiukzXwaclodC(2bvWXL72NL0K72IFDobyPCKipmumtu6Wf3aFG(5FHn4ld3CHETBdsb7kc)rb9qXQEdv1yli9IV(jN)9",
 		Enabled = true,
 	}
-	
+
 	PlaterScriptLibrary ["Cast - Frontal Cone"] = {
 		Revision = 11,
 		ScriptType = "script",
@@ -99,7 +98,7 @@ do
 		Enabled = true,
 		OverrideTriggers = true,
 	}
-	
+
 	PlaterScriptLibrary ["Cast - Very Important"] = {
 		Revision = 12,
 		ScriptType = "script",
@@ -115,7 +114,7 @@ do
 		Enabled = true,
 		OverrideTriggers = true,
 	}
-	
+
 	PlaterScriptLibrary ["Unit - Important"] = {
 		Revision = 11,
 		ScriptType = "script",
@@ -123,7 +122,7 @@ do
 		Enabled = true,
 		OverrideTriggers = true,
 	}
-	
+
 	PlaterScriptLibrary ["Fixate On You"] = {
 		Revision = 11,
 		ScriptType = "script",
@@ -214,7 +213,7 @@ do
 
 	-------------------------------------
 	--hooks
-	
+
 	PlaterScriptLibrary ["Aura Reorder"] = {
 		Revision = 3,
 		ScriptType = "hook",
@@ -228,28 +227,28 @@ do
 		String = "TJvBVPTpq8Vl9vdPbATL2v2uFbJXePQkDcOAs)NMBCtUqSAWok2bgvt5Z(ohNeEOeEyLPP)silahN7oF)U73DobYPKHe7tjd6X8GuhBirftdtDUNZuYuNV)1qQcI)bX(muQwTExRRArSpVqCEH4jAXFBQJmqmn1zAaWX5qi4Qap9YakSka)YvWLQ4exLigx2nMfPsD81xiIum8Mni2njdSEMnw4b1B)mAEbNyFbU9x080lF3LN1eDLlj2V)C8J21TVcHWafne4kCMImyuSijYm1nKkLMPJPrpW8YViwecMzrtIwuxze4AMr99z)0mf4UIeogiwWauxJbue7wAh4wGobbyhX4hP499t4UAaL68gmq4)wtmYYlFYxIPJbCoWNmK(yiul9MuhZG5J6uktdo(vwwqNs6d0CRE91ZvUr)UT7m06o7hS7E)W(TVTww0Mp3MLJxSs96rzP4uhAymq9ML6eq5EHzjmM8LkSI7HU2miUdLZfQ2kf19PQ388rmOsIxZ9bUx1(568C3aW9jJhHEQJGhotZJ0KVPI4qVkC(YW2DOcw87qf(wM4ouThyO8n(pbhSqYkL7cdNfHXJ0FHX8t446NSRy0z9OCFqNP4idAmUUasZV2gYgG1HwCdxCR(APw6IABmPMXiwmlxBlWi7cZk4GmybJ02Zd8EnLdhlm2BkZXcInwqKdRIlVv4(KNyk)n1(BNG2RcTLT58QRIbzWqA8iarthKxo6yr2XtFowSToiK9CNAkJ2K5e4TXRkP9wstv2UFiQg876HOBOvrOeoWNyVP(sRH6V9(plSX9HXIj)FOf0ELM2uiyj4FFKh(7bc(1RBE)PIoJ(motgasDLeAMSTsxtMZS5LUXnVG6pLHDrleSytnb4SLcaAOk4tuDnUFEl3fmO(15s0DMEulldFso(kzPYWPLSx29RmWVssTCN)GLuNk2LgchONtTYeAxEw8(1)gChpn94PP)RFxU95yOn(UCDM)p2CO6VjbLIXhjxCtRknIPjC3HpUgzx(XmEPGl1quJI1THRwULzOMvyLc4JeuLiRLiKt0m)XxR0uTuZ5HT)OEy5SyTk9M3XExu5ZmPE36XgfeIFuBLiSs78YWAL9q3ae3hkyU)QvzpHyx(RhH(0LECRnEmH(F8J87d",
 		Enabled = false,
 	}
-	
+
 	PlaterScriptLibrary ["Players Targetting Amount"] = {
 		Revision = 4,
 		ScriptType = "hook",
 		String = "LR1wVTTnu4)l(LzJzN142CPnRpKMUv4IwVI6uShgMQOLOSfImPafTtChM(TVZHu3f1L4Kc0GvJMqkDi55Yhp3CSo26AR5hBT4tbK9uruS91eXkQ0NTk2MKol2(VG3lPI)2A(uG8xE6PNC(zwZFU1IfR53gBR(XgcBFSTG47cJPBwQ2oIGgBlZ3t5Ay(wMV0A(lSwm7B(B4U0jx(nbjGZSMFcS7N8IZNE25tNchWPW0ZHt8mKhNFoWRlKKaktcJKwlwj4Bd1dDcirr6HBiHF13nzIG4q1Jc3fwCTrHuh9iINN)D6HuMdFlde0cBapqVbah)sKb(aLSdKHR4BwsG37TL5i95Sy7Hr0aVXAPBMBYGFxq2qHXu2URjldOJIFFST(t6Jo6kctRgFDSThjiIEHbI0wIl3G83RwqLxtVdSldhma2rkZfwb8XAXC44crBvS9LUUu3hcdMpAYKBxtzkebl)a8r7lEiGzLNyAJCeuKsN1uNBas8sEEOcFPxJp(EL6l)eqchoJP1QFG7CJl)w2WrJulNvGNY4iZ744shTdjNvikvxSn3lfqgvFBnAtQ(WIMIHJUO(UuW8bwZEEkjw(IlwzwRVNDdjkYti6OeU4Z0n8DpwiJ7hZ0liFt45Ve6c)(rdrNbnbiRFOmboheWVnfqhP4qfnTcEMmbKaEDmpYmDG4RRqiGSB)fyLx65rDqNM67eaXAPS57eMULu9YWwLsSfPY2JJ6GCN1oCEaEze0hyKauusEolsk26i5ImDObgyjetWL6r2galwhfjLlIs2PcUuO7Ocybtp5zBIatyPfxHBq96uGguZ7l)PGGAc3wEzHlB7p(xMQFobfkqqCB5oQg2Dv25(6wE3pd7D9TQSLU6A(1A73mmc0osqZg6KpcQCRWW7n71PzysU1sqvg5QQ6egsFTibs1accE2kIFlmDBk2NDyC9QmEUxo5t)eWDqzsVMlAMUY2VzSpdP40PTj9tkhve2mF7gT7Yi9MLC3w54Au)e6UPabbv58preY9pASUA3mX7pqUU713RSI6AtA62J5WV3d4OrFSsKZAhILPVXBc92k9G0fpoQBnJp6rtvwIC1Kcze8BmviKhE(3fdGxnmzFd9)aZxSCYamUS(IBeh0h7UDtQrTQ8Q8q4wlWSyaVHReK9jOv7a)BuWy)0c5GCy2avqfLKMIlenqX0ITyXbribUaEcI6V1pWnn)kQetJjDrljr(oqAgj2nvghIesxZ53GS2JJr1LcvfkY5Gy7DeHpUGOxLtxsuauIVIhGScychWfe2k6Glms3c)VrvKD8uJwZesrquQdEGyqttVObIE7w404SoP7sbLrmM1CjYEdrkdOy5Xm3UP(pcPS)KlcmYMgW6LZsrTiqpakCkXznmUq(DzzlwSSrJjR1wC7QSnH5SoXq9p1Vye57QToNogzQJ1sfpmG6jvChmvp(5QXl5sjFJ(jVOWtITpP0mH)Q1ajNQEyYKZs38K5NNoVoBDN6vVqXt3HsQhMQvnY2Rtesr2(6K9Vgnnfr9)a9VUyvp8ECX7ILCjlO54dT)i5ASoOB9dcA0dDifn0MB5Kj3TfCOC0AkjqU(nerjxQ3phWkRNUmNxDLsc(azjnOyws5NdyKhmyCUpLXfCdzQVc699iWh)Lj3agAKjgNEfX0M0L8woewP30vNjGIQXcDjqofzL6DRFywHEP7AhTpqXbDYM)Wd(7izNjtaNg7uq8SWsGbfuu7tX4lrGBe2oIm)OC4Nz1BhHecHNzPbPX4NhChgnvpMj6kesRX9kR4aJ935jQ9kpLfJYsPaAPkj8sAMYiuGbka3s0cBrEUovSeVd7U917dPdh1qpfMLu)yl9jTnRx1i9nVKAgZ(uH67BSIuKVvs3bY41qu9HZ1s7bX0he3D)l9TxxEASejtqsTxHCeMdNjf8GOcnP0ypaludu12bMNnFMpjmDh96vhx1EbAaGBSWO(0qZKea)6y84JKquokEdbM667557SnqUF2BhRPO4)tP(JKq17tNRGHz5Z)oQCwYlMX849JNuq6I56RkZPi7PlPFa(vJnO)a(E4fOsRmuy8oWk9soYkhPjrjebOpnKLKsMAssi4RFAijLRQRrtZUWNgItHYoBswyCg97JWyQNU6O1hC7sBx)0QEQNkV0tqfuOhU)n3x80V4uT3(Q1iPCRlY0gQl6T6lV9Mz)(wB6Etn9x1riFDlwgRCldNIYU(r9FybGPf7(uxT2xlrz(EJTp6i1(I)AGw(h0bgb)Q4E3xM92eXAKgzMxDc2ydvToPeEiTxpDO5V)OhtOdPFvY1HDwDXy43vR7euvC)SX6Gs)p2ixxJOUQ3Oo47KS3BzgfRUtp(qXY4F3d4F2ow)3p",
 		Enabled = false,
 	}
-	
+
 	PlaterScriptLibrary ["Target Color"] = {
 		Revision = 3,
 		ScriptType = "hook",
 		String = "9svBRTnmq4)lzFPbA9QDJ7lBmgLcgY(GzmN9PX0SI9zhdQsgj5U(cX)23PxQDcjPTWGgrIoD6UN75oD5iHKfK0qs2nDsjW195lOYAa3VrWeY(8F9DgvdYFtsJiPxEXLrHHK0Zq7xr51GQpxVcWF8ov4Csl869NvM7A4dk5kTSRqBVQq20QdiPZizZFS5wrjCY1pkPmbNKgJuloo6S4zNhEfj9Cs6vNrsVWq40lrINPPmK0OKMKvlfDToXcgvPCI3sB)ttP)GuWaNu7DTB6RKw4VGwv1CVte4fIooM8JaOAHcRKgPIHaP0BHwtfQp)6YsOKKv1Xl0ncmzpsbSQJ7Z74n65LEHej6bkd87wqxYGP9FRp3TEwvWpBlre9pahn4fAkWl3kMolFxI6qFH9H)DiKO97zHDEJTp)pKyu6Kt6u0A4tdTRC0j0NG6(8jsOCcU9aWyI)o5ZJT4g48g9uigItnFx7pyvSgTEfCp2JRLn8ARXbiwFij5u8Jb2KeJ8K9XQHIKRW7lsFbDQTt2YGjBMah2yBWssEBw)uuC0hJIJnS3VhfpZiTEFuCS4)gErhCFGgL4ucUWm1W2sT9idrL)ClivcoL1NVKk3fMg0UJSOmeSG5QmSxyQfa(UUSBISl3ASHVr5Ag8)BZXVNhu(8mVrMYOpaYVEyyTCDKMgKTtxNRCpeVoJ9l3m5GmqpmlyNs(X7VfAQl)K1lpCyaMcEDsGGavsqTYN(BuOCVHV104hoyoCQm9fOQDoXlPCBl2EWIDqo5F",
 		Enabled = false,
 	}
-	
+
 	PlaterScriptLibrary ["Combo Points"] = {
 		Revision = 6,
 		ScriptType = "hook",
 		String = "vVvBVTnos4FlNVpC2hIvTCEztdUEaUoPBDrBIrKlkwKnkMwI2wOYscs0jnTx8V9BiPExuwukY7HdcjMwICMhoZWzgoIwxvFMUMQU2y3nlC3nFQRLdjy387MAJiy)711ip7H11w76(DDTJ11GwpTBUbV3EH9gTW9r8U5K1W)CqBWE0bVB(sx)DZV0FRL5U5Fa7JSHE6aTV1D1wCGIU2q9Rvp(0tgEMU2PqZZgQ(2Jpv9eGnNORn5NwBCnX9h9tyKUo6A)g0fDTZ0VE45WJFlf4xNWSX(y4ttDTLBDmiwUo7M3naBV8ODZ36yrMyg24d(WyG2yNhNHwyJ7T7t7MhEf3QFF)To0PPtaXFRbX1)VL(HPU)U5wGaa)dSXwG77M76y)m9)gaKEAn2HoLHBey4B5rGhSmumrfO7MdCjqjnaWG85t0RmZTrMMT3mZyn2ayTfGehmfYB9mzCHHl0g3ToHanNwoau9ojuIsGUr8s5ZOacyZ8m2FgYg7q(Air)3j4H1h(97X4wkIfDf3xE)ywLmBYrmC1n1CIkQkm9YbVyXIc1SKztpjygYFfMeAl64ssj9uMeObs2QHxcWyJ7c6YI0GRY5tGOENAYzhGRb7)OLjwcztkRRiHW41iNvheJlYA6kJuUdOFLzJzS13htnYiCq8)L6SwqdjsZu2LUgF1f1f9t0p4GR26nOj4vnQPIIskmz7Aq9r7rzWmWT)U5VJ1LsxELQNmft6rcdTZ4B(Y7V5HP3m56zADc7Zbt9UFTvwXDgbFgxT3I3aXYAP1dsBnKzP5L4OGl)Vdfzn54U0BSnxj(k2FCNcbEcdNY6TxiWmyEVO(vyieAqJih4HnSq2w)eXa5NAqWL04mafNCdXAdovqCBiGweVJaJa2vwSryjYVJjZaAkM1zSkgNKZXRrbathmHy5SkOW6EKJXAx)agU(vXfA)QZcxcXDtN0mrzngztw)EKpC3oexp6tha)n8KxokHgViA6fY2aRFIlLPpzzswZEO6WJk(41yRvRjL)8aGdCbTQKOHG)bzRF5aAbY47R8bZfZz8EY64D3nXbsxEjYa)Nt)8O)4QB)WTJ(Yv)5yWcj4MhX(G2pLNP7V)OkO8yxxFZqqm4nQdpNksvdBOoiU1WH0wVC0(YLi6YigaTn0Zq50q)4iCEEyJZJq(BplpWFjBWLVDZ3Ey6T38PRgp7Hjxc39)8US38lJMC9NNC9vLfyOkn5HxJwPM93IelV98eD8zNaFEc9Zx2dnl)jho1CLQB1bdInmhi7m6LkJshU0Cj1HZNXpIT5ROhmyG4(Or8reeRtDwdoi6SV9j0VVNV1Ju)XX3Y0Tikb)MGNxCHnfXyinUJtugVeQhxPYmmuQ9IqUXc6uAiptbH82dpRzeOsqrU85xrZtdLvIKeiNLkheeELZgw0XOO9vAglagl2AzBkw0hf2cIeMdh(XpJjTC5ZabttwQS5s6Kx(JCjmvAoO5mcx7gWhataZlmr4372HHAAushl70rs7vozJPx(m4cM66AxQru0vfZk24tGCPKPS0iFTJ)cnmrJhNUllxafwu7EnX3x)(xIjil7agLFY1)7xmYZZ(zncyoI8nFp4j2031lDLlkQK733eVy7QetlkSAgCqowByzHguPvJRdDfkDtPJIget0MkxVyQTpHtAhwErvBcY0NoDIPl1M3I8pc4(vG0bRMGSLjXK4cWVXueDB8D7LUTcDtfXtGlMemLt)U9QC1t(R6Ylny(2vcjt2Om1wPUF4vwrfKJ5YzJKzA3A2ibSk7(xInsgJ8dSnswE1k2iPRUM8AokRBnnN45D4g6LezVotrdwyTrj(3YnBsssukdr6yywGv23ecRu0zjpc3fJZcUpUDrgePuih5Je6)LhLwc8lMTz5zEk3HfMJMjGkDpZkQH7CEq4Dupu8fz7TgLLVkNEizy8eDymdvvgM8Fj5TSMrSGD1XmQ4QYxTzugsEKWL)TK0opNezwf9hZ86qXxbMvQvWVg6bs4gcI3pGSuH92jTa1ndPdyB7tcBSOnAkrU9LNIzLCzjlRyAANrjfZQe2rHLltHx4ljieXYja7teNWBaqVL1IivSxcHBqrsMiTOxCbBwgAUgFVUCLqNKU3rcuuG4ufrcnJkQKsH(9kOnRekmHRhI(2ZkHl8kT0RPmQnSMes4P8LFD7yGPLyQtBQRfxmRs11iFcDtFYaHcuUefDH(9kOD5kAbLuRxRihfcL2WuqiHBGPqr6iml2AmLLW7QYKGrqIQpgAoHe(UCBcDf7BQ4DLGuIn9lE32WiPqU8Dx2EHTX7v6U3YkvvPR(lOytLw32MekSwInb7YSgvnDFsGpKQs6DtkREVgqLOAT3nvL37jd(s2QynpJmLfGiiQC2PjqhEzZ7WE7KSdzW(8j1V)xbLA4bSi9yVYz7gLPrNUH0McnQmLXPEYtrowamZLGSZyNj6vruIKGwD7KXYiUyB37SUVnCAWQ1dmj(xVlNwO2fXHEG6sNip2HcAt5jqsf8ZkeIDZxBifN5Bw6LTys0n6jtXKQGOzIfr83IRpfLFeYv8tPjlwUiNLOOnTcAIM(aRKZwv5dHsw2eooSA5kRXzd8Sjomw7eoqWP0rSNW4dw23Ip9i8q0kMlu88DxAbuN9smFWW1zP1kfSdEZZoEgHhNLhSCOgQiYDQ3x7iqXHq(c6hTquKqUaBsa7)i2ud25a3iQB(Pz)OC4dp0m)ZmyJLq9BYb3Mv9LW3eo)errdzTVJnC1jwvmQxUikncKrVV5O3H3YMNWyO8nNaVxZi2hdpYsDhoOjuySng5pY2U6eKYLKXFp(4DvJCkIeEVl(0HjvYd7B(hTfX49aZjCVET07BzF2eYlSeN5KmsorJeeAfpSL1C8YR4BOR7CIaJgMgQr1PGkLne7TpYphXQ1nWEcgYuucB8ssN9uxw6MeI6tg)TVzOKfoVEPdvFycIU(Q3tXPp1lsbGklmBN3aEA8FyET3c(PJu1HwQgevQ9Bkz(l97BbX9zN6y8R6N1YR9xsq2J2orx7C6puk(HfdAb3GwjkpEtd6P)J(8R4B5s)96AxE7xNCjTXT387F9kOb0VniVhSmd4dY31gZB59OxActpeASFozdoMo(eAsheyDY7fgYTAlT6GjueTCP1pynHVqCnEe7ha5cQF9WbNoqfEUPj9hagpjoDnxpwvQchG()9p",
 		Enabled = false,
 	}
-	
+
 	PlaterScriptLibrary ["Extra Border"] = {
 		Revision = 2,
 		ScriptType = "hook",
@@ -270,21 +269,21 @@ do
 		String = "Dxvxpnoou0)lLxajsv5RPtrAFanSiXUJcRubnpqXexNBsJgh7iBNPDge53(CVXUHuANDaP9PLisVX(47hN75MWoIDll(i20pPLAttYf1oDj3vOvnj3)psUdmpWIpMn9AfAMXfWSlstVrzN53CwrjphSZe0XFCo3WIpHn9p52V3KSKJ3C6MeXcUkhq7f4nHpq6SMeogKAvHBytYnvGQdGY6m1chbZkmfvocAAtsMwk1ldWGv8YkjyhYIpLn9V5wxgxkJU4hgUuRyXNHL1zNo(Kjhp5e0(d4kJyXJPIn(Jyrp1XLGYHwo20CJUUYBkKCR1BwYRESin8GbRDVv13Q6FwBfi8w8SSIvEtqj01eL1ZbAP3bow8ekbI5LqfXInj3vLI)MYMMvReE2FFliZo0tqxNgmUYGNbTb13ULpxch08xnjHRoROiUZbLeTrSFo42K6Zm6YWkKp7wxwyDV4fPwWLD79hVeZHXvIw1IfLiDj1qfERvtChUevAFwVefpyN28(p778y42xN(WU5IISnREyfwMwKdTD8YcGlDlAsq57AyDoGo((TRDqlAvVOeU8tcdNcUUoAyAA)(9SGt6ooGs6EzS)XDErtNDZe)xPrA72TJHQkHnmHHfyXAoG4ibnIohPOcLfmOc98(UG4FVlErm9B2gDejTqLb5ClSbESlE5V0F9rgALDzhpnfWSNBpFhOO0a3izGbshG10GVd0RrgSdOlGveW9U6Qr4FTGrB6PDH2rSlI)PJqGJO)F(WWtTR882PE)U)2sBCi7PTLxBVsu06x(rTCBHkFdk2Z7VIOrKgiVwss8(Ww32dIOlp)TKa3p42f1QuWG5nE8VuOsnahFEWdTvXAQokkKDDHUupFJihOskF4wcx6UIMRF0egEEKe4vDHRhL3pO9Lz9Iw7Eua96GDeVXNnEYOqLS3OrT9)(oULU2wQ6JratUbOVOrf1REJY)wF1pMfCQcw2sywsyAG3uN5)BR8C78MutTqrT1rF5kOzMJFr(RG7x(o02V0Y(5p",
 		Enabled = false,
 	}
-	
+
 	PlaterScriptLibrary ["Attacking Specific Unit"] = {
 		Revision = 2,
 		ScriptType = "hook",
 		String = "9EvBtTnoq4)l5(WbZazY7P0z4d0YqhOTHBQHBMBaewyVoXdkwEKuOq7G)TF7kPK4qSbcT3vtH1sp6rp7APDLyTzNXcAZcoWy4r3MMnUimihIstsJkcppl1ueEXFj4gqDflW8qoWcMiL3Yc6Yc(4eE2yOi0mb)vgFkKtalcJKcPQimnX31mlnP6Iq(YzHxeQxmroeI0Br0FvMD7FIyp9EukgUzg2gr3HQzPXuhNPaEMr3Si8FKZkcNYFOieIjc((K0Ojo2qCulgfoFOzMxkrYmTrnlYqmQJuP5MMSGoSGJZqxmHhbxEqC8Pz6lDo9LPt5Jb9LP4aVEH6VMMbwqF2O2d60Q7WH4pSGESGpZ1MeUqS7b)qXfYmwWqedlyaBu3byeBpkAFmo4uUi9hCtkbjzwwezveU1uz8z8BeW2fNue6E2DxrQg9ejgnZYJOGywS1Bsv(qTEh0GJJ)gGCvnOmq87ltb9XXrXYpiVq32yMq(DGMfUgwbFE0XhwlFLr6xkSqD84yavpx)(kqrYa7iSHcIBG(uJhabQGgvaDcCpb8po6Ow4)SGrB6TQqBOykI)NTrGTO))4o(3ST846sFP18VjnJSl3)ax9rhR7xUpzws64NcPwoKQy4LPPeQ1zsbAWy7uxjhL7)58QVGRUonzKDLfsZplb2)CXG2T7n4QQvknb7qH6gsr6DqdR9uClmU9YV51TAzDAB3Q7760zt4nMsbqBQPeapdX972FJ4vpHpLwHccykKz4IkiDV(Tg(MiDmQwdTlc4kZKYtsToWG2T6p4Tmx5kmFLydMQLT8yXjaMy5e6HfmAz28ZZJX)gVsEknis2XTV)4yVXrkCmOnKDNvX7Su8LsNrffYKM5J1MajBDDPaZmvP2DsBX(6XGXN65tNVsMidxz7RMutczefmCOCdDFxzo3lBnxvnXQlnCWASDv7Fi)yRL8SDDoY6Tuw9pnrQx(RngVU9Wrj7Qo18tGze12rk5uVhuwt1Xd5LJS589EV7Lx07RMLV4ksSpTJxHvhB6RAS1CaB)6clrtaBT6KQco0PhwEoIf1Zrm05gOcK1QZO1ZZwoP3f255k3HmQgXCh5vbYgoU614YKNoVcv1lEkbS2Yqp)qN)4xWeaMfBT9JFRYBETYz76PBL9HVgzwUs3MQ0vg8VpzUGOMloq38J8EUTl50VkJTlyWJkcRtei0a5RVwIShyR6c3B(39)dcO)o)E)2ww(nibdltQFP5)dFRXZTRR6JDz6TVG)IHN()D0z5XARybw0cBySsol3zgj4ATZCkp)60y)lkPaCw53LxES8KK079yWlH4SGSi5m6EjljGUYK1cTnYO7aLMUdXO9Wtb3hPjoMUrHlQYcK5u9AAOJS3Z7m6(B09rOanE)nkkZc(BUyg4WCuV(DA3zqR31Qt3H7nCVoSKD73LnQtT9G)0InQhnyusFgEaDEhThhrs5fUxLtHx7hYHGoIfGeHt4c52BHC9x3exJveUI2)W8zEL1GBMeUrkfLvq3Ntb29rpre3SQiwUv7xth9QqhFJsH4NE9tdcLYV8lnZ0d7Fd",
 		Enabled = false,
 	}
-	
+
 	PlaterScriptLibrary ["Execute Range"] = {
 		Revision = 1,
 		ScriptType = "hook",
 		String = "1IvBVnQrq4)lUQsMkhxNx8DPrnFiNVMMls1nQox7hQkLnWGzBWl0LLyNuD8BVZS8UnGDSZDOlEHD3zEMN5Tfmp28EZPhBo7Nwb2XkiX63yI54p)5D(mfi)lZPNGZF64thFU50tnNDLJtIfSsjz4pUUGTkkXsfqpltassadtSMb4nkp8p2bIiLm2wfitSISL8qvILlDtqOIJto0C6zOO9wYo6QxKm)aH50XOAhF27pB07gFgQ63zo98ZmN(EcStphb9mfZhekCKYC2CzqCy6qBFwuu6WfSW)M7KDJmWhshf(uy19kz2ztWCD5Rshcc7GybsaLcikeS1JuMt)bcatzlGqILsS(COd(RJ5m3yHnzsjw9JaF3bjwXcU6tozdUwI7bhdINUN9GpyKCBIv2vXiUlU78vm8ZrWK4ivWImp0DG0gXUHMBfv2)gYj)6OJwWeXm)elhqbPWBJf5hytRWdy(kVpWqFZLvG8WYNVXo1WTy(HtILseF3OFqI13xrM1N7xyRsS(XlljJH7QfMDvsreflY2Dw8B)cSBSPeaHZ2PTYNa(rWUr0SykvOdAwtwL0ADu)v2I7YcRn9TP32YL5SjL5ZVnr8hDur1JcUBqkzH6jVmsELJLCFksLjC8ZNQy7HPXovf9spoToxg5fTslRLleYFTGP4ySV)ZKY4ZNtZwxO6kAvf5ZbXyTlbTLLmuB6cGranWJNvpmf4CKxSzKIdClvUiqvyPI5nRoSQjMSyRqLC7M()MlkOtAtn0M42mYjJzxhefCXGCZqBkEvyvTHXW1)eSvokMmAxzWIeRxazq6EdeuSWOHNmkv6W)QRlrtDYOVnLK0YLcDWIsCxObRVbJwlYgJSqpBWYClkpeIuOTxkpR1NOSwUDGp1AAjLjwfmAgr0UjxaVjmXeTSNKkPlZcgQaQA62lRu5duv3mTRJG0qEFHdQK0DAZWv9aKfGYIUOH1qMpoHvpj40d9q9EgiARxdl1dwrl8BU(6r4)0lght310QveJGR))oM870))YGS70p5lT7ElzVEZLai61S)9HaPduqCD4n(GEHLsDT8KInS(60CsZ62J7K7eDaxwSVQ0B6WFIhrIGrnBQ5OlCzCHdw6r1iUVbLDAJYpMlPMsUlYKrS4auvtMZ)GLgwtLfObdcO09O9hxvX0v(HESSeWXBBXvOuSMSc616gYIa(uomQQMJhVZBRIcDyYhBZpwLodL8N0vb6ZPt)jOQt5D4IQ07YjyZ2PLDc3)(0vlra2pMwPwNbxRKrHNATO(gpUrlfM26PnYVs7AnCgOkoXBgZ2VPo81YFn66WmoDO7xRjvjRDpmSA58nBv1uWxxJAJu)D2IA4a7zJMeR(vx3lir33OlO0LOGkbY5IARcQdYQ5Zv36HE1VK1A1e3PSPDakn532YHM7kVFVH6()EyB3iBjMyMxWYUCKTTnq97GubRYtB(iOyC)inqxgiF8I7yYO0Yar1cV3OPGXEP9SUc97O1KXHrt1I33DAQ(2omAQXEAg7fmAHVASzRXHxf7v)Hl2nh)eFGHy0)UaSdD0UuaQfg51lO9gZi5pJ)cu97KCXpdQBa(CpvFJbv2y1NBCikuBwOg7rKoi7vvj0H29bxvV118FWDuEu)HVR1x3Io1(BmxTEG69uYc2Ufr)ObDce61imoevLs1T5yoirx4a2GPRs)J2r(Ch0JKaDnfvlOG0AwSWB3byQT8n)ks6VwQ5)p",
 		Enabled = false,
 	}
-	
+
 	PlaterScriptLibrary ["Dont Have Aura"] = {
 		Revision = 1,
 		ScriptType = "hook",
@@ -306,19 +305,19 @@ do
 		String = "",
 	}
 --]=]
-	
+
 end
 
 
 do
-	
+
 	--[=[
 		Patch library are a set of functions to run after a Plater update.
 		These patches are intented to add or remove spells from the aura filters for the current world of warcraft relevant content.
 	--]=]
-	
+
 	PlaterPatchLibrary = {}
-	
+
 	-- #1
 	tinsert (PlaterPatchLibrary, { --deprecated
 		Deprecated = true,
@@ -330,7 +329,7 @@ do
 			--Soul Harvest, Soulbound Goliath, Waycrest Manor, BFA Dungeon
 			--Plater.db.profile.aura_tracker.buff_tracked [260512] = true
 	end})
-	
+
 	-- #2
 	tinsert (PlaterPatchLibrary, { --deprecated
 		Deprecated = true,
@@ -341,7 +340,7 @@ do
 			--add symbiote of g'huun to extra icons
 			--tinsert (Plater.db.profile.extra_icon_auras, 277242)
 	end})
-	
+
 	-- #3
 	tinsert (PlaterPatchLibrary, {
 		Notes = {
@@ -370,7 +369,7 @@ do
 			end
 		end
 	})
-	
+
 	-- #5 (replace parts of a script)
 	tinsert (PlaterPatchLibrary, { --deprecated
 		Deprecated = true,
@@ -393,7 +392,7 @@ do
 			]]--
 		end
 	})
-	
+
 	-- #6 (add bolstering into the buff tracker)
 	tinsert (PlaterPatchLibrary, {
 		Notes = {
@@ -411,7 +410,7 @@ do
 			end
 		end
 	})
-	
+
 	-- #7 (change scripts for 8.2 patch, editing the frameshake stuff)
 	tinsert (PlaterPatchLibrary, {
 		Notes = {
@@ -432,16 +431,16 @@ do
 					script ["OnHideCode"] = script ["OnHideCode"]:gsub ("self%:StopFrameShake", "unitFrame%:StopFrameShake")
 
 				elseif (script.Name == "Cast - Big Alert [Plater]") then
-					
+
 					--replace the frameshake in the cast bar and apply the frameshake in the unitFrame instead
 					script ["ConstructorCode"] = script ["ConstructorCode"]:gsub ("CreateFrameShake %(self", "CreateFrameShake %(unitFrame")
 					--replace the automatic GetPoint with preset points from Plater
 					script ["ConstructorCode"] = script ["ConstructorCode"]:gsub ("0%.05%, 0%.1%, true", "0%.05%, 0%.1%, Plater.GetPoints %(unitFrame%)")
-					
+
 					--replace the castbar with unitFrame
 					script ["OnShowCode"] = script ["OnShowCode"]:gsub ("self%:PlayFrameShake", "unitFrame%:PlayFrameShake")
 					script ["OnHideCode"] = script ["OnHideCode"]:gsub ("self%:StopFrameShake", "unitFrame%:StopFrameShake")
-					
+
 				end
 			end
 		end
@@ -472,7 +471,7 @@ do
 		end
 	})
 
-	-- #10 --migrate buff frame sizes and anchors 
+	-- #10 --migrate buff frame sizes and anchors
 	tinsert (PlaterPatchLibrary, {
 		Notes = {
 			"- Buff Settings have been changed to support anchoring of both Buff Frames. The offsets and anchors were migrated automatically.",
@@ -481,10 +480,10 @@ do
 			--migrate BuffFrame2 sizes
 			Plater.db.profile.aura_width2 = Plater.db.profile.aura_width
 			Plater.db.profile.aura_height2 = Plater.db.profile.aura_height
-			
+
 			--migrate BuffFrame1 and BuffFrame2 anchors/offsets
-			local hasNonDefaultValues = Plater.db.profile.aura_x_offset or Plater.db.profile.aura_y_offset or Plater.db.profile.aura2_x_offset or Plater.db.profile.aura2_y_offset 
-			
+			local hasNonDefaultValues = Plater.db.profile.aura_x_offset or Plater.db.profile.aura_y_offset or Plater.db.profile.aura2_x_offset or Plater.db.profile.aura2_y_offset
+
 			local heightOffset = 5
 			local hbHeight = Plater.db.profile.plate_config.enemynpc.health_incombat[2] or 16
 			--local hbWidth = Plater.db.profile.plate_config.enemynpc.health_incombat[1] or 100
@@ -493,8 +492,8 @@ do
 				heightOffset = ((clickHeight - hbHeight) / 2) - (Plater.db.profile.aura_height / 2) + 5
 				heightOffset = math.floor(heightOffset*10+0.5)/10
 			end
-			
-			
+
+
 			if Plater.db.profile.aura_grow_direction ~= 2 and (Plater.db.profile.aura_x_offset or 0) < -20 then -- assume left anchor
 				if (Plater.db.profile.aura_y_offset or 0) < -(hbHeight + Plater.db.profile.aura_height + heightOffset)  then
 					Plater.db.profile.aura_frame1_anchor.side = 3
@@ -529,8 +528,8 @@ do
 			end
 			Plater.db.profile.aura_x_offset = Plater.db.profile.aura_frame1_anchor.x
 			Plater.db.profile.aura_y_offset = Plater.db.profile.aura_frame1_anchor.y
-			
-			
+
+
 			if Plater.db.profile.aura2_grow_direction ~= 2 and (Plater.db.profile.aura2_x_offset or 0) < -20 then -- assume left anchor
 				if (Plater.db.profile.aura2_y_offset or 0) < -(hbHeight + Plater.db.profile.aura_height + heightOffset)  then
 					Plater.db.profile.aura_frame2_anchor.side = 3
@@ -565,7 +564,7 @@ do
 			end
 			Plater.db.profile.aura2_x_offset = Plater.db.profile.aura_frame2_anchor.x
 			Plater.db.profile.aura2_y_offset = Plater.db.profile.aura_frame2_anchor.y
-			
+
 			if hasNonDefaultValues then
 				C_Timer.After (10, function() DetailsFramework:ShowErrorMessage ("Buff Settings have been changed to support anchoring of both Buff Frames and the offsets and anchors were migrated automatically.\nPlease check the Buff Settings tab and adjust your Buff Frame anchors and offsets if needed.", "ATTENTION: Important Plater Profile Changes") end)
 			end
@@ -589,7 +588,7 @@ do
 			end
 		end
 	})
-	
+
 	--#12 disable the "Cast Bar Icon Config" by default
 	tinsert (PlaterPatchLibrary, {
 		Notes = {"- Disabling 'Cast Bar Icon Config' by default."},
@@ -618,7 +617,7 @@ do
 			end
 		end
 	})
-	
+
 	--#14 cleanup of npc_cache, npc_colors of string-indexed values
 	tinsert (PlaterPatchLibrary, {
 		Notes = {
@@ -628,17 +627,17 @@ do
 			--clean up npc_cache
 			local npc_cache = Plater.db.profile.npc_cache
 			local copy = DetailsFramework.table.copy({},npc_cache)
-			for n,v in pairs(copy) do 
+			for n,v in pairs(copy) do
 				if tonumber(n) then
 					npc_cache[n] = nil
 					npc_cache[tonumber(n)] = v
 				end
 			end
-			
+
 			--clean up npc_colors
 			local npc_colors = Plater.db.profile.npc_colors
 			local copy = DetailsFramework.table.copy({},npc_colors)
-			for n,v in pairs(copy) do 
+			for n,v in pairs(copy) do
 				if tonumber(n) then
 					npc_colors[n] = nil
 					npc_colors[tonumber(n)] = v
@@ -684,7 +683,7 @@ do
 				elseif (script.Name == "Cast - Frontal Cone [Plater]") then
 					--add spell=352833 --disintegration
 					script.SpellIds[#script.SpellIds+1] = 352833
-					
+
 				elseif (script.Name == "Cast - Castbar is Timer [P]") then
 
 
@@ -950,8 +949,88 @@ do
 	})
 end
 
+local listOfTriggersToDeprecateOnExpansion = {
+	[9] = { --9 = dragonflight (this probably can be removed on patch 10.2 - expansion mid tier)
+		--this is a complete list of Shadowlands default triggers on all bundled scripts
+		[323149] = true, [324392] = true, [342189] = true, [333227] = true, [227931] = true, [233210] = true, [300207] = true, [297133] = true,
+		[337220] = true, [337253] = true, [337251] = true,
+		[227548] = true,
+		[163520] = true, [163618] = true, [164506] = true,
+		[355787] = true,
+		[338353] = true, [334748] = true, [334749] = true, [320784] = true, [341352] = true, [341520] = true, [341522] = true, [336005] = true, [339777] = true, [331933] = true, [326617] = true, [324914] = true, [324776] = true, [326046] = true, [340634] = true, [319070] = true, [328295] = true, [317936] = true, [327413] = true, [319654] = true, [323821] = true, [320772] = true, [324293] = true, [330562] = true, [330868] = true, [341902] = true, [342139] = true, [342675] = true, [323190] = true, [332836] = true, [327648] = true, [328217] = true, [322938] = true, [340544] = true, [325876] = true, [325700] = true, [323552] = true, [332666] = true, [332612] = true, [332706] = true, [340026] = true, [294171] = true, [292910] = true, [294165] = true, [338871] = true, [330813] = true, [335694] = true, [327461] = true, [329787] = true, [304946] = true, [15245] = true, [276754] = true, [304831] = true, [277036] = true, [320657] = true, [294362] = true, [270248] = true, [292926] = true, [350421] = true, [352158] = true, [349985] = true, [329239] = true, [328400] = true, [164192] = true, [176032] = true, [166335] = true, [166387] = true, [162066] = true, [163689] = true, [227592] = true, [228254] = true, [227999] = true, [227987] = true, [232115] = true, [29580] = true, [227616] = true, [241828] = true, [228606] = true, [227800] = true, [228239] = true, [229706] = true, [294884] = true, [301629] = true, [284219] = true, [301689] = true, [300650] = true, [297835] = true, [300171] = true, [300087] = true, [300414] = true, [300436] = true, [301088] = true, [293729] = true, [291928] = true,
+		[323489] = true, [323496] = true, [319941] = true, [319592] = true, [334266] = true, [325258] = true, [334913] = true, [326221] = true, [322936] = true, [323236] = true, [321834] = true, [336752] = true, [325418] = true, [324667] = true, [327233] = true, [324368] = true, [324205] = true, [323943] = true, [319713] = true, [320596] = true, [320729] = true, [323608] = true, [330614] = true, [320063] = true, [332708] = true, [334023] = true, [317231] = true, [317943] = true, [320966] = true, [334053] = true, [328458] = true, [321968] = true, [331718] = true, [325793] = true, [330453] = true, [326997] = true, [334051] = true, [292903] = true, [330843] = true, [294173] = true, [189200] = true, [352833] = true, [330403] = true, [166675] = true, [176127] = true, [166380] = true, [162058] = true, [167516] = true, [166923] = true, [178299] = true, [172982] = true, [163390] = true, [173384] = true, [173514] = true, [29513] = true, [227672] = true, [228603] = true, [227339] = true, [227493] = true, [241774] = true, [229611] = true, [229151] = true, [300188] = true, [299475] = true, [299502] = true, [300777] = true, [301681] = true, [298946] = true, [298940] = true, [300424] = true, [283422] = true, [294290] = true, [291973] = true, [293986] = true, [291878] = true, [292264] = true,
+		[373429] = true,
+		[354173] = true,
+		[320170] = true, [320171] = true, [320462] = true, [330712] = true, [332170] = true, [333875] = true, [326836] = true, [342135] = true, [333861] = true, [341969] = true, [317963] = true, [327481] = true, [328331] = true, [322614] = true, [325701] = true, [326438] = true, [323538] = true, [321764] = true, [296523] = true, [330755] = true, [295929] = true, [296019] = true, [335685] = true, [170751] = true, [342207] = true, [350554] = true, [348513] = true, [351779] = true, [328180] = true, [319898] = true, [166335] = true, [172810] = true, [172943] = true, [173148] = true, [163376] = true, [228011] = true, [228277] = true, [29928] = true, [228559] = true, [230050] = true, [374743] = true, [227615] = true, [229716] = true, [229083] = true, [299525] = true, [300514] = true, [285388] = true, [294324] = true, [294180] = true, [293827] = true, [297128] = true, [294015] = true, [291865] = true,
+		[321828] = true,
+		[332329] = true, [320103] = true, [321406] = true, [335817] = true, [321061] = true, [320141] = true, [326171] = true, [163966] = true, [227966] = true,
+		[321247] = true, [334522] = true, [320232] = true, [319962] = true, [325879] = true, [324427] = true, [322999] = true, [325360] = true, [322903] = true, [324103] = true, [333294] = true, [333540] = true, [319521] = true, [326021] = true, [326450] = true, [322711] = true, [329104] = true, [295000] = true, [242391] = true, [320197] = true, [329608] = true, [350687] = true, [161090] = true, [156301] = true, [166341] = true, [163379] = true, [166923] = true, [172952] = true, [164426] = true, [163665] = true, [227578] = true, [228528] = true, [227789] = true, [227779] = true, [229608] = true, [227925] = true, [300129] = true, [296522] = true, [294349] = true, [293854] = true, [297834] = true, [299588] = true, [302682] = true, [291946] = true, [295169] = true, [285440] = true, [291613] = true, [283551] = true,
+		[164427] = true, [164414] = true, [164185] = true, [164567] = true, [165408] = true,
+		[165560] = true,
+		[185685] = true, [185680] = true, [185683] = true,
+		[164451] = true, [164463] = true, [164461] = true, [165946] = true, [164501] = true, [164218] = true,
+		[164362] = true, [168882] = true, [168988] = true, [170234] = true, [165905] = true, [170452] = true, [80875] = true, [163746] = true, [152033] = true,
+		[156212] = true, [168098] = true, [179124] = true,
+		[164406] = true, [164407] = true, [162100] = true, [162099] = true, [162329] = true, [164558] = true, [150159] = true,
+	}
+}
+
+local listOfScriptsToDeprecateOnExpasion = {
+	[9] = { --9 = dragonflight (this probably can be removed on patch 10.2 - expansion mid tier)
+		--this is a complete list of Shadowlands default scripts made only for that expansion
+		["Relics 9.2 M Dungeons"] = true,
+	}
+}
+
+--create namespace
+platerInternal.ScriptTriggers = {}
+
+--this function run at the beggining of Plater.OnInit() and Plater.RefreshConfig()
+function platerInternal.ScriptTriggers.WipeDeprecatedScriptTriggersFromProfile(profile)
+	local currentExpansion = GetExpansionLevel()
+
+	if (not profile.expansion_triggerwipe[currentExpansion]) then
+		local deprecatedTriggerListForExpansion = listOfTriggersToDeprecateOnExpansion[currentExpansion]
+		if (deprecatedTriggerListForExpansion) then
+			local scriptList = profile.script_data
+			for i = 1, #scriptList do
+				local scriptObject = scriptList[i]
+				local npcIdTriggers = scriptObject.NpcNames
+				local spellIdTriggers = scriptObject.SpellIds
+
+				for o = #npcIdTriggers, 1, -1 do
+					local npcId = tonumber(npcIdTriggers[o])
+					if (deprecatedTriggerListForExpansion[npcId]) then
+						tremove(npcIdTriggers, o)
+					end
+				end
+
+				for o = #spellIdTriggers, 1, -1 do
+					local spellIdId = spellIdTriggers[o]
+					if (deprecatedTriggerListForExpansion[spellIdId]) then
+						tremove(spellIdTriggers, o)
+					end
+				end
+			end
+		end
+
+		local deprecatedScripts = listOfScriptsToDeprecateOnExpasion[currentExpansion]
+		if (deprecatedScripts) then
+			local scriptList = profile.script_data
+			for i = #scriptList, 1, -1 do
+				local scriptObject = scriptList[i]
+				if (deprecatedScripts[scriptObject.Name]) then
+					tremove(scriptList, i)
+				end
+			end
+		end
+
+		profile.expansion_triggerwipe[currentExpansion] = true
+	end
+end
+
 --set the patch version to
--- /run Plater.db.profile.patch_version = 
+-- /run Plater.db.profile.patch_version =
 
 --Patches to apply only when the profile is running for the first time
 do
