@@ -126,15 +126,20 @@ platerInternal.ExtraAuras = {
 	unitFramesToGUID = {}
 }
 
+local extraAuraGUIDtoUnitFrameCache = platerInternal.ExtraAuras.unitFramesToGUID
+
 --when an extra aura is added to a nameplate, cache the unit GUID to unitFrame to use when the extra aura expired
 function platerInternal.ExtraAuras.CacheGUID_to_UnitFrame(GUID, unitFrame)
-	platerInternal.ExtraAuras.unitFramesToGUID[GUID] = unitFrame
+	extraAuraGUIDtoUnitFrameCache[GUID] = unitFrame
 end
 function platerInternal.ExtraAuras.GetUnitFrameFromGUID(GUID)
-	return platerInternal.ExtraAuras.unitFramesToGUID[GUID]
+	return extraAuraGUIDtoUnitFrameCache[GUID]
 end
+
 function platerInternal.ExtraAuras.RemoveGUIDFromUnitFrameCache(GUID)
-	platerInternal.ExtraAuras.unitFramesToGUID[GUID] = nil
+	if (extraAuraGUIDtoUnitFrameCache[GUID]) then
+		extraAuraGUIDtoUnitFrameCache[GUID] = nil
+	end
 end
 
 --not caches, these two tables hold extra icons added from platerInternal.ExtraAuras.Add()
@@ -148,6 +153,7 @@ local EXTRAAURAS_GUIDS = {}
 --@duration: debuff duration, start time is always the time that ExtraAuras.AddAura is called
 --@borderColor: optional border color
 function Plater.AddExtraAura(unitGUID, spellId, duration, borderColor, overlayColor, desaturated, showErrors)
+	--! if the extra aura won't show if the player isn't in combat, why add them when the player is out of combat?
 	local startTime = GetTime()
 	local expirationTime = startTime + duration
 	local spellName, _, spellIcon = GetSpellInfo(spellId)
@@ -160,7 +166,7 @@ function Plater.AddExtraAura(unitGUID, spellId, duration, borderColor, overlayCo
 	end
 
 	local extraAuraTable = EXTRAAURAS_SPELLIDS[spellId] and EXTRAAURAS_SPELLIDS[spellId][unitGUID]
-	if (extraAuraTable) then
+	if (extraAuraTable) then --refresh
 		extraAuraTable.startTime = startTime
 		extraAuraTable.duration = duration
 		extraAuraTable.expirationTime = expirationTime
@@ -169,7 +175,7 @@ function Plater.AddExtraAura(unitGUID, spellId, duration, borderColor, overlayCo
 		extraAuraTable.desaturated = desaturated
 		extraAuraTable.needRefresh = "refresh"
 	else
-		extraAuraTable = {
+		extraAuraTable = { --add new
 			startTime = startTime,
 			duration = duration,
 			expirationTime = expirationTime,
@@ -210,7 +216,8 @@ function platerInternal.ExtraAuras.Remove(spellId, unitGUID)
 	--! shouldn't this call Plater.ResetAuraContainer (self, resetBuffs, resetDebuffs)?
 		--! but calling it now might mess with regular and ghost auras already added in the pipe line
 	local unitFrame = platerInternal.ExtraAuras.GetUnitFrameFromGUID(unitGUID)
-	if (unitFrame:IsShown()) then
+	--unitFrame might not exist in the cache: got cleared by unit_died, or the player isn't in combat so extra auras aren't added to nameplates
+	if (unitFrame and unitFrame:IsShown()) then
 		--need to find the extra aura icon
 		local buffFrame1 = unitFrame.BuffFrame
 		for i = 1, #buffFrame1.PlaterBuffList do
