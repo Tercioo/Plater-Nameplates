@@ -1971,48 +1971,64 @@ function detailsFramework:CreateScaleBar(frame, config) --~scale
 end
 
 local no_options = {}
-function detailsFramework:CreateSimplePanel(parent, w, h, title, name, panel_options, db)
-
-	if (db and name and not db [name]) then
-		db [name] = {scale = 1}
+--[=[
+	options available to panel_options:
+	NoScripts = false, --if true, won't set OnMouseDown and OnMouseUp (won't be movable)
+	NoTUISpecialFrame = false, --if true, won't add the frame to 'UISpecialFrames'
+	DontRightClickClose = false, --if true, won't make the frame close when clicked with the right mouse button
+	UseScaleBar = false, --if true, will create a scale bar in the top left corner (require a table on 'db' to save the scale)
+	UseStatusBar = false, --if true, creates a status bar at the bottom of the frame (frame.StatusBar)
+	NoCloseButton = false, --if true, won't show the close button
+	NoTitleBar = false, --if true, don't create the title bar
+]=]
+function detailsFramework:CreateSimplePanel(parent, width, height, title, frameName, panelOptions, savedVariableTable)
+	if (savedVariableTable and frameName and not savedVariableTable[frameName]) then
+		savedVariableTable[frameName] = {
+			scale = 1
+		}
 	end
 
-	if (not name) then
-		name = "DetailsFrameworkSimplePanel" .. detailsFramework.SimplePanelCounter
+	if (not frameName) then
+		frameName = "DetailsFrameworkSimplePanel" .. detailsFramework.SimplePanelCounter
 		detailsFramework.SimplePanelCounter = detailsFramework.SimplePanelCounter + 1
 	end
 	if (not parent) then
 		parent = UIParent
 	end
 
-	panel_options = panel_options or no_options
+	panelOptions = panelOptions or no_options
 
-	local f = CreateFrame("frame", name, UIParent,"BackdropTemplate")
-	f:SetSize(w or 400, h or 250)
-	f:SetPoint("center", UIParent, "center", 0, 0)
-	f:SetFrameStrata("FULLSCREEN")
-	f:EnableMouse()
-	f:SetMovable(true)
-	f:SetBackdrop(SimplePanel_frame_backdrop)
-	f:SetBackdropColor(unpack(SimplePanel_frame_backdrop_color))
-	f:SetBackdropBorderColor(unpack(SimplePanel_frame_backdrop_border_color))
+	local simplePanel = CreateFrame("frame", frameName, UIParent,"BackdropTemplate")
+	simplePanel:SetSize(width or 400, height or 250)
+	simplePanel:SetPoint("center", UIParent, "center", 0, 0)
+	simplePanel:SetFrameStrata("FULLSCREEN")
+	simplePanel:EnableMouse()
+	simplePanel:SetMovable(true)
+	simplePanel:SetBackdrop(SimplePanel_frame_backdrop)
+	simplePanel:SetBackdropColor(unpack(SimplePanel_frame_backdrop_color))
+	simplePanel:SetBackdropBorderColor(unpack(SimplePanel_frame_backdrop_border_color))
 
-	f.DontRightClickClose = panel_options.DontRightClickClose
+	simplePanel.DontRightClickClose = panelOptions.DontRightClickClose
 
-	if (not panel_options.NoTUISpecialFrame) then
-		tinsert(UISpecialFrames, name)
+	if (not panelOptions.NoTUISpecialFrame) then
+		tinsert(UISpecialFrames, frameName)
 	end
 
-	local title_bar = CreateFrame("frame", name .. "TitleBar", f,"BackdropTemplate")
-	title_bar:SetPoint("topleft", f, "topleft", 2, -3)
-	title_bar:SetPoint("topright", f, "topright", -2, -3)
-	title_bar:SetHeight(20)
-	title_bar:SetBackdrop(SimplePanel_frame_backdrop)
-	title_bar:SetBackdropColor(.2, .2, .2, 1)
-	title_bar:SetBackdropBorderColor(0, 0, 0, 1)
-	f.TitleBar = title_bar
+	if (panelOptions.UseStatusBar) then
+		local statusBar = detailsFramework:CreateStatusBar(simplePanel)
+		simplePanel.StatusBar = statusBar
+	end
 
-	local close = CreateFrame("button", name and name .. "CloseButton", title_bar)
+	local titleBar = CreateFrame("frame", frameName .. "TitleBar", simplePanel,"BackdropTemplate")
+	titleBar:SetPoint("topleft", simplePanel, "topleft", 2, -3)
+	titleBar:SetPoint("topright", simplePanel, "topright", -2, -3)
+	titleBar:SetHeight(20)
+	titleBar:SetBackdrop(SimplePanel_frame_backdrop)
+	titleBar:SetBackdropColor(.2, .2, .2, 1)
+	titleBar:SetBackdropBorderColor(0, 0, 0, 1)
+	simplePanel.TitleBar = titleBar
+
+	local close = CreateFrame("button", frameName and frameName .. "CloseButton", titleBar)
 	close:SetFrameLevel(detailsFramework.FRAMELEVEL_OVERLAY)
 	close:SetSize(16, 16)
 
@@ -2025,31 +2041,37 @@ function detailsFramework:CreateSimplePanel(parent, w, h, title, name, panel_opt
 
 	close:SetAlpha(0.7)
 	close:SetScript("OnClick", simple_panel_close_click)
-	f.Close = close
+	simplePanel.Close = close
 
-	local title_string = title_bar:CreateFontString(name and name .. "Title", "overlay", "GameFontNormal")
-	title_string:SetTextColor(.8, .8, .8, 1)
-	title_string:SetText(title or "")
-	f.Title = title_string
+	local titleText = titleBar:CreateFontString(frameName and frameName .. "Title", "overlay", "GameFontNormal")
+	titleText:SetTextColor(.8, .8, .8, 1)
+	titleText:SetText(title or "")
+	simplePanel.Title = titleText
 
-	if (panel_options.UseScaleBar and db [name]) then
-		detailsFramework:CreateScaleBar (f, db [name])
-		f:SetScale(db [name].scale)
+	if (panelOptions.UseScaleBar and savedVariableTable [frameName]) then
+		detailsFramework:CreateScaleBar (simplePanel, savedVariableTable [frameName])
+		simplePanel:SetScale(savedVariableTable [frameName].scale)
 	end
 
-	f.Title:SetPoint("center", title_bar, "center")
-	f.Close:SetPoint("right", title_bar, "right", -2, 0)
+	simplePanel.Title:SetPoint("center", titleBar, "center")
+	simplePanel.Close:SetPoint("right", titleBar, "right", -2, 0)
 
-	if (panel_options.NoCloseButton) then
-		f.Close:Hide()
+	if (panelOptions.NoCloseButton) then
+		simplePanel.Close:Hide()
 	end
 
-	f:SetScript("OnMouseDown", simple_panel_mouse_down)
-	f:SetScript("OnMouseUp", simple_panel_mouse_up)
+	if (panelOptions.NoTitleBar) then
+		simplePanel.TitleBar:Hide()
+	end
 
-	f.SetTitle = simple_panel_settitle
+	if (not panelOptions.NoScripts) then
+		simplePanel:SetScript("OnMouseDown", simple_panel_mouse_down)
+		simplePanel:SetScript("OnMouseUp", simple_panel_mouse_up)
+	end
 
-	return f
+	simplePanel.SetTitle = simple_panel_settitle
+
+	return simplePanel
 end
 
 local Panel1PxBackdrop = {bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", tile = true, tileSize = 64,

@@ -1,6 +1,6 @@
 
 
-local dversion = 390
+local dversion = 392
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary(major, minor)
 
@@ -694,7 +694,7 @@ function DF:GroupIterator(callback, ...)
 	end
 end
 
-function DF:IntegerToTimer(value)
+function DF:IntegerToTimer(value) --~formattime
 	return "" .. floor(value/60) .. ":" .. format("%02.f", value%60)
 end
 
