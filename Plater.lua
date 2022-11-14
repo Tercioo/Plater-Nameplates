@@ -1296,7 +1296,7 @@ local class_specs_coords = {
 					if GetSpellInfo(GetSpellInfo(53351)) then
 						lowExecute = 0.2
 					end
-				elseif (class == "PRIEST") then
+				elseif (class == "PRIEST") and IS_WOW_PROJECT_CLASSIC_WRATH then
 					for i = 1, 6 do
 						local enabled, _, glyphSpellID = GetGlyphSocketInfo(i)
 						if enabled and glyphSpellID then
