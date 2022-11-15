@@ -625,6 +625,7 @@ PLATER_DEFAULT_SETTINGS = {
 		
 		show_healthbars_on_not_attackable = false,
 		show_healthbars_on_softinteract = true,
+		ignore_softinteract_objects = true,
 		
 		enable_masque_support = false,
 		

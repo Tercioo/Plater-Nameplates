@@ -8,14 +8,18 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 			
-			{1667816091,  "Backend Change", "November 8th, 2022", "Fix aura tooltips with ghost auras enabled.", "cont1nuity"},
-			{1667816091,  "Backend Change", "November 7th, 2022", "Changes and cleanup to the profiling functionality.", "cont1nuity"},
-			{1667816091,  "New Feature", "November 7th, 2022", "Added option to show names of 'softinteract' nameplates on hidden friendly NPCs (professions filter).", "cont1nuity"},
-			{1667816091,  "Bug Fix", "November 7th, 2022", "Fixing some quirks about 'softinteract' nameplates.", "cont1nuity"},
-			{1667816091,  "Backend Change", "November 5th, 2022", "More Cast Bar options for fill and spark on interrupt.", "Terciob"},
-			{1667816091,  "Bug Fix", "October 29th, 2022", "Fixing Rune CDs not showing properly in some cases.", "cont1nuity"},
-			{1667816091,  "Bug Fix", "October 28th, 2022", "Fixing CVar restore (again, for real).", "cont1nuity"},
-			{1667816091,  "Bug Fix", "October 27th, 2022", "Fixing 'Cast - Glowing' script.", "Terciob"},
+			{1668514794,  "New Feature", "November 15th, 2022", "Added option to show default blizzard icons on'softinteract' game objects instead of Plater nameplates.", "cont1nuity"},
+			{1668514794,  "New Feature", "November 12th, 2022", "(In Work) Support for Aura 'Extra Icons' which can be added/removed via mods/scripts or plugins.", "Terciob"},
+			{1668514794,  "New Feature", "November 11th, 2022", "(In Work) Support for Plugins.", "Terciob"},
+			{1668514794,  "Bug Fix", "November 7th, 2022", "Fixing some Execute indicator spells.", "cont1nuity"},
+			{1668514794,  "Backend Change", "November 8th, 2022", "Fix aura tooltips with ghost auras enabled.", "cont1nuity"},
+			{1668514794,  "Backend Change", "November 7th, 2022", "Changes and cleanup to the profiling functionality.", "cont1nuity"},
+			{1668514794,  "New Feature", "November 7th, 2022", "Added option to show names of 'softinteract' nameplates on hidden friendly NPCs (professions filter).", "cont1nuity"},
+			{1668514794,  "Bug Fix", "November 7th, 2022", "Fixing some quirks about 'softinteract' nameplates.", "cont1nuity"},
+			{1668514794,  "Backend Change", "November 5th, 2022", "More Cast Bar options for fill and spark on interrupt.", "Terciob"},
+			{1668514794,  "Bug Fix", "October 29th, 2022", "Fixing Rune CDs not showing properly in some cases.", "cont1nuity"},
+			{1668514794,  "Bug Fix", "October 28th, 2022", "Fixing CVar restore (again, for real).", "cont1nuity"},
+			{1668514794,  "Bug Fix", "October 27th, 2022", "Fixing 'Cast - Glowing' script.", "Terciob"},
 			
 			{1666724473,  "Backend Change", "October 25th, 2022", "Updates to hit animations.", "Terciob"},
 			{1666724473,  "Backend Change", "October 24th, 2022", "Several updates for Dragonflight compatibility.", "cont1nuity"},
