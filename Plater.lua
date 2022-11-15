@@ -2046,10 +2046,12 @@ local class_specs_coords = {
 			if not caller then
 				caller, line = callstack:match("in function <([^:%[>]+):(%d+)>")
 			end
-			if not caller or (caller and not caller:lower():find("[\\/]sharedxml[\\/]cvarutil%.lua")) then
-				--print((caller and caller .. ":" .. line) or callstack)
-				cvarLastChangedTable [cvar] = (caller and (caller .. ":" .. line)) or callstack
-			end
+
+			--print((caller and caller .. ":" .. line) or callstack)
+			
+			local isCVarUtil = (caller and caller:lower():find("[\\/]sharedxml[\\/]cvarutil%.lua"))
+			
+			cvarLastChangedTable [cvar] = not isCVarUtil and (caller and (caller .. ":" .. line)) or callstack
 		end
 		
 	end
