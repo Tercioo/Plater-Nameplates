@@ -39,6 +39,9 @@ local IMPORT_EXPORT_EDIT_MAX_LETTERS = 0 --128000*4 -- 0 appears to be "no limit
 
 local highlightColorLastCombat = {1, 1, .2, .25}
 
+local dropdownStatusBarTexture = platerInternal.Defaults.dropdownStatusBarTexture
+local dropdownStatusBarColor = platerInternal.Defaults.dropdownStatusBarColor
+
  --cvars
 local CVAR_ENABLED = "1"
 local CVAR_DISABLED = "0"
@@ -1129,6 +1132,8 @@ function Plater.OpenOptionsPanel()
 			tinsert (t, {
 				label = label,
 				value = value,
+                statusbar = dropdownStatusBarTexture,
+                statusbarcolor = dropdownStatusBarColor,
 				onclick = function (_, _, value)
 					if (actorType) then
 						Plater.db.profile.plate_config [actorType][member] = value
@@ -1170,6 +1175,8 @@ function Plater.OpenOptionsPanel()
 			tinsert (t, {
 				label = anchor_names[i], 
 				value = i, 
+                statusbar = dropdownStatusBarTexture,
+                statusbarcolor = dropdownStatusBarColor,
 				onclick = function (_, _, value)
 					if (actorType) then
 						Plater.db.profile.plate_config [actorType][member].side = value
@@ -1278,7 +1285,14 @@ function Plater.OpenOptionsPanel()
 	end
 	local cast_spark_texture_selected_options = {}
 	for index, texturePath in ipairs (Plater.SparkTextures) do
-		cast_spark_texture_selected_options [#cast_spark_texture_selected_options + 1] = {value = texturePath, label = "Texture " .. index, statusbar = texturePath, onclick = cast_spark_texture_selected}
+		cast_spark_texture_selected_options [#cast_spark_texture_selected_options + 1] = {
+			value = texturePath,
+			label = "Texture " .. index,
+			onclick = cast_spark_texture_selected,
+			centerTexture = texturePath,
+			statusbar = dropdownStatusBarTexture,
+			statusbarcolor = dropdownStatusBarColor,
+		}
 	end
 	
 	
