@@ -870,6 +870,9 @@ end
 		elseif (option == "exporttriggers") then
 			mainFrame.ExportScriptTriggers(scriptId)
 
+		elseif (option == "exportastable") then
+			mainFrame.ExportScriptAsLuaTable(scriptId)
+
 		elseif (option == "wago_update") then
 			local scriptObject = mainFrame.GetScriptObject (scriptId)
 			update_from_wago(scriptObject)
@@ -1030,6 +1033,13 @@ end
 					GameCooltip:AddLine("Export Triggers as Array", "", 2)
 					GameCooltip:AddIcon([[Interface\BUTTONS\UI-GuildButton-MOTD-Up]], 2, 1, 16, 16, 1, 0, 0, 1)
 					GameCooltip:AddMenu(2, onclick_menu_scroll_line, "exporttriggers", mainFrame)
+				end
+
+				if (mainFrame:GetName():find("Scripting")) then
+					GameCooltip:AddLine("$div", "$div", 2)
+					GameCooltip:AddLine("Export Table (debug)", "", 2)
+					GameCooltip:AddIcon([[Interface\BUTTONS\UI-GuildButton-MOTD-Up]], 2, 1, 16, 16, 1, 0, 0, 1)
+					GameCooltip:AddMenu(2, onclick_menu_scroll_line, "exportastable", mainFrame)
 				end
 				
 				GameCooltip:AddLine ("Remove")
@@ -3437,6 +3447,36 @@ function Plater.CreateScriptingPanel()
 		scriptingFrame.UpdateOverlapButton()
 	end
 	
+	function scriptingFrame.ExportScriptAsLuaTable(scriptId)
+		local scriptObject = scriptingFrame.GetScriptObject(scriptId)
+		local stringToExport = DF.table.dump(scriptObject)
+
+		stringToExport = "local scriptObject = {\n" .. stringToExport .. "\n}"
+
+		scriptingFrame.ImportTextEditor.IsImporting = false
+		scriptingFrame.ImportTextEditor.IsExporting = true
+
+		scriptingFrame.ImportTextEditor:Show()
+		scriptingFrame.CodeEditorLuaEntry:Hide()
+		scriptingFrame.ScriptOptionsPanelAdmin:Hide()
+		scriptingFrame.ScriptOptionsPanelUser:Hide()
+
+		scriptingFrame.ImportTextEditor:SetText(stringToExport)
+		scriptingFrame.ImportTextEditor.TextInfo.text = "Exporting '" .. scriptObject.Name .. "' as Table"
+		
+		--if there's anything being edited, start editing the script which is being exported
+		if (not scriptingFrame.GetCurrentScriptObject()) then
+			scriptingFrame.EditScript(scriptId)
+		end
+		
+		scriptingFrame.EditScriptFrame:Show()
+		
+		C_Timer.After (0.3, function()
+			scriptingFrame.ImportTextEditor.editbox:SetFocus(true)
+			scriptingFrame.ImportTextEditor.editbox:HighlightText()
+		end)		
+	end
+
 	function scriptingFrame.ExportScriptTriggers(scriptId)
 		local scriptObject = scriptingFrame.GetScriptObject(scriptId)
 		local listOfTriggers = {}
