@@ -1301,7 +1301,7 @@ local class_specs_coords = {
 					if GetSpellInfo(GetSpellInfo(53351)) then
 						lowExecute = 0.2
 					end
-				elseif (class == "PRIEST") then
+				elseif (class == "PRIEST") and IS_WOW_PROJECT_CLASSIC_WRATH then
 					for i = 1, 6 do
 						local enabled, _, glyphSpellID = GetGlyphSocketInfo(i)
 						if enabled and glyphSpellID then
@@ -2051,10 +2051,12 @@ local class_specs_coords = {
 			if not caller then
 				caller, line = callstack:match("in function <([^:%[>]+):(%d+)>")
 			end
-			if not caller or (caller and not caller:lower():find("[\\/]sharedxml[\\/]cvarutil%.lua")) then
-				--print((caller and caller .. ":" .. line) or callstack)
-				cvarLastChangedTable [cvar] = (caller and (caller .. ":" .. line)) or callstack
-			end
+
+			--print((caller and caller .. ":" .. line) or callstack)
+			
+			local isCVarUtil = (caller and caller:lower():find("[\\/]sharedxml[\\/]cvarutil%.lua"))
+			
+			cvarLastChangedTable [cvar] = not isCVarUtil and (caller and (caller .. ":" .. line)) or callstack
 		end
 		
 	end
@@ -3110,6 +3112,7 @@ local class_specs_coords = {
 							plateFrame.isSoftInteract = isSoftInteract
 							plateFrame.unitFrame.isSoftInteract = isSoftInteract
 							Plater.UpdatePlateText (plateFrame, DB_PLATE_CONFIG [plateFrame.unitFrame.ActorType], false)
+							--Plater.UpdatePlateFrame (plateFrame)
 						end
 					end
 				end
@@ -3738,7 +3741,10 @@ local class_specs_coords = {
 			
 			--get and format the reaction to always be the value of the constants, then cache the reaction in some widgets for performance
 			local isSoftInteract = UnitIsUnit(unitID, "softinteract")
-			local reaction = UnitReaction (unitID, "player") or isSoftInteract and Plater.UnitReaction.UNITREACTION_NEUTRAL or Plater.UnitReaction.UNITREACTION_HOSTILE
+			local reaction = UnitReaction (unitID, "player")
+			local isObject = reaction == nil
+			local isSoftInteractObject = isObject and isSoftInteract
+			reaction = reaction or isSoftInteract and Plater.UnitReaction.UNITREACTION_NEUTRAL or Plater.UnitReaction.UNITREACTION_HOSTILE
 			reaction = reaction <= Plater.UnitReaction.UNITREACTION_HOSTILE and Plater.UnitReaction.UNITREACTION_HOSTILE or reaction >= Plater.UnitReaction.UNITREACTION_FRIENDLY and Plater.UnitReaction.UNITREACTION_FRIENDLY or Plater.UnitReaction.UNITREACTION_NEUTRAL
 			
 			local isWidgetOnlyMode = (IS_WOW_PROJECT_MAINLINE) and UnitNameplateShowsWidgetsOnly (unitID) or false
@@ -3793,7 +3799,7 @@ local class_specs_coords = {
 					end
 				end
 			end
-			local isPlateEnabled = (DB_PLATE_CONFIG [actorType].module_enabled and not isWidgetOnlyMode) or (isWidgetOnlyMode and Plater.db.profile.usePlaterWidget)
+			local isPlateEnabled = not isSoftInteractObject and ((DB_PLATE_CONFIG [actorType].module_enabled and not isWidgetOnlyMode) or (isWidgetOnlyMode and Plater.db.profile.usePlaterWidget)) or (not Plater.db.profile.ignore_softinteract_objects and isSoftInteractObject)
 			isPlateEnabled = (isPlayer or not Plater.ForceBlizzardNameplateUnits[plateFrame [MEMBER_NPCID]]) and isPlateEnabled
 			
 			local blizzardPlateFrameID = tostring(plateFrame.UnitFrame)

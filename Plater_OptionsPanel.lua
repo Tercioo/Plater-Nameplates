@@ -13273,8 +13273,18 @@ end
 				Plater.db.profile.show_healthbars_on_softinteract = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Show name on your soft-interact target",
-			desc = "Show name on your soft-interact target instead of hiding them on NPCs.",
+			name = "Always show soft-interact target",
+			desc = "Always show the name or healthbar on your soft-interact target instead of hiding them on NPCs.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.ignore_softinteract_objects end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.ignore_softinteract_objects = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Use blizzard soft-interact for objects",
+			desc = "Only show Plater soft-interact nameplates on NPCs.",
 		},
 		
 		{type = "blank"},
