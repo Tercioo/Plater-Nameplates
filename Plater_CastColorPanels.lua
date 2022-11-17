@@ -1,6 +1,8 @@
 local Plater = Plater
+local addonName, platerInternal = ...
 local GameCooltip = GameCooltip2
 local DF = DetailsFramework
+local GetSpellInfo = GetSpellInfo
 local _
 
 --localization
@@ -14,7 +16,14 @@ local options_switch_template = DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_TEMP
 local options_slider_template = DF:GetTemplate ("slider", "OPTIONS_SLIDER_TEMPLATE")
 local options_button_template = DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE")
 
+local dropdownStatusBarTexture = platerInternal.Defaults.dropdownStatusBarTexture
+local dropdownStatusBarColor = platerInternal.Defaults.dropdownStatusBarColor
+
+local colorNoValue = {1, 1, 1, 0.5}
+local dropdownIconColor = {1, 1, 1, .6}
+
 local DB_CAST_COLORS
+local DB_CAST_AUDIOCUES
 local DB_NPCIDS_CACHE
 local DB_CAPTURED_SPELLS
 local DB_CAPTURED_CASTS
@@ -36,15 +45,42 @@ local CONST_CASTINFO_CUSTOMSPELLNAME = 10
 
 local on_refresh_db = function()
 	local profile = Plater.db.profile
+	DB_CAST_AUDIOCUES = profile.cast_audiocues
 	DB_CAST_COLORS = profile.cast_colors
     DB_NPCIDS_CACHE = profile.npc_cache
     DB_CAPTURED_SPELLS = PlaterDB.captured_spells
     DB_CAPTURED_CASTS = PlaterDB.captured_casts
+
+    DB_CAPTURED_CASTS[116] = {npcID = 188027}
 end
 Plater.RegisterRefreshDBCallback(on_refresh_db)
 
-function Plater.CreateCastColorOptionsFrame(castColorFrame)
+function Plater.GetSpellCustomColor(spellId) --exposed
+    local customColorTable = Plater.db.profile.cast_colors[spellId]
+    if (customColorTable) then
+        return customColorTable[2]
+    end
+end
 
+function Plater.SetCastBarColorForScript(castBar, canUseScriptColor, scriptColor, envTable) --exposed
+    local bCastColorChanged = false
+    if (envTable._CanInterrupt) then
+        if (canUseScriptColor) then
+            local customColor = Plater.GetSpellCustomColor(envTable._SpellID)
+            castBar:SetStatusBarColor(Plater:ParseColors(customColor or scriptColor))
+            bCastColorChanged =  true
+        end
+    end
+
+    if (not bCastColorChanged) then
+        local customColor = Plater.GetSpellCustomColor(envTable._SpellID)
+        if (customColor) then
+            castBar:SetStatusBarColor(Plater:ParseColors(customColor))
+        end
+    end
+end
+
+function Plater.CreateCastColorOptionsFrame(castColorFrame)
     local castFrame = CreateFrame("frame", castColorFrame:GetName() .. "ColorFrame", castColorFrame)
     castFrame:SetPoint("topleft", castColorFrame, "topleft", 5, -140)
     castFrame:SetSize(1060, 495)
@@ -56,9 +92,11 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
     local scroll_line_height = 20
     local backdrop_color = {.2, .2, .2, 0.2}
     local backdrop_color_on_enter = {.8, .8, .8, 0.4}
-    local y = startY or 5
+    local y = -20
     local headerY = y - 20
     local scrollY = headerY - 15
+
+    ----platerInternal.optionsYStart or
 
     local luaeditor_border_color = {0, 0, 0, 1}
     local edit_script_size = {620, 300}
@@ -77,9 +115,9 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         {text = "Rename To", width = 110},
         {text = "Npc Name", width = 120},
         {text = "Npc Id", width = 50},
-        {text = "Zone Name", width = 110},
+        {text = "Play Sound", width = 110},
         {text = "Color", width = 110},
-        {text = "Options", width = 270},
+        {text = "Add Animation", width = 270},
     }
 
     local headerOptions = {
@@ -95,6 +133,10 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
     --line scripts
     local line_onenter = function(self)
+        if (castColorFrame.lastLineEntered) then
+            castColorFrame.lastLineEntered:SetBackdropColor(unpack (castColorFrame.lastLineEntered.backdrop_color or backdrop_color))
+        end
+
         self:SetBackdropColor (unpack (backdrop_color_on_enter or backdrop_color))
         if (self.spellId) then
             GameTooltip:SetOwner (self, "ANCHOR_TOPLEFT")
@@ -104,12 +146,17 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
             castColorFrame.latestSpellId = self.spellId
             castColorFrame.optionsFrame.previewCastBar.UpdateAppearance()
-            castColorFrame.optionsFrame.previewCastBar.UpdateAppearance()
+
+            castColorFrame.SelectScriptForSpellId(self.spellId)
+            castColorFrame.currentSpellId = self.spellId
         end
     end
+
     local line_onleave = function(self)
-        self:SetBackdropColor(unpack (self.backdrop_color or backdrop_color))
+        --self:SetBackdropColor(unpack (self.backdrop_color or backdrop_color))
         GameTooltip:Hide()
+        castColorFrame.lastLineEntered = self
+        --castColorFrame.currentSpellId = nil
     end
 
     local widget_onenter = function(self)
@@ -163,6 +210,60 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         castFrame.RefreshScroll(0)
     end
 
+    --audio cues
+    local line_select_audio_dropdown = function (self, spellId, audioFilePath)
+        DB_CAST_AUDIOCUES[spellId] = audioFilePath
+    end
+
+    local createAudioCueList = function()
+        if (castFrame.AudioCueListCache) then
+            return
+        end
+
+        local audioCueList = {
+            {
+                label = " no audio",
+                value = nil,
+                color = colorNoValue,
+                statusbar = [[Interface\Tooltips\UI-Tooltip-Background]],
+                statusbarcolor = {.1, .1, .1, .92},
+                icon = [[Interface\AddOns\Plater\media\audio_cue_icon]],
+                iconcolor = {1, 1, 1, .4},
+                onclick = line_select_audio_dropdown
+            }
+        }
+
+        local audioCues = _G.LibStub:GetLibrary("LibSharedMedia-3.0"):HashTable("sound")
+        local audioListInOrder = {}
+        for cueName, cueFile in pairs(audioCues) do
+            audioListInOrder[#audioListInOrder+1] = {cueName, cueFile, cueName:lower()}
+        end
+        table.sort(audioListInOrder, function(t1, t2) return t1[3] < t2[3] end)
+
+        for i = 1, #audioListInOrder do
+            local cueName, cueFile = unpack(audioListInOrder[i])
+            audioCueList[#audioCueList+1] = {
+                label = " " .. cueName,
+                value = cueFile,
+                audiocue = cueFile,
+                color = "white",
+                statusbar = dropdownStatusBarTexture,
+                statusbarcolor = dropdownStatusBarColor,
+                iconcolor = dropdownIconColor,
+                icon = [[Interface\AddOns\Plater\media\audio_cue_icon]],
+                onclick = line_select_audio_dropdown,
+            }
+        end
+
+        castFrame.AudioCueListCache = audioCueList
+    end
+
+    local line_refresh_audio_dropdown = function(self)
+        createAudioCueList()
+        return castFrame.AudioCueListCache
+    end
+
+    --cast color
     local line_select_color_dropdown = function (self, spellId, color)
         if (not DB_CAST_COLORS[spellId]) then
             DB_CAST_COLORS[spellId] = {true, "blue", ""}
@@ -259,10 +360,25 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             for index, colorTable in ipairs (allColors) do
                 local colortable = colorTable[1]
                 local colorname = colorTable[2]
-                tinsert (t, {label = colorname, value = colorname, color = colortable, onclick = line_select_color_dropdown})
+                tinsert (t, {
+                    label = colorname,
+                    value = colorname,
+                    color = colortable,
+                    statusbar = dropdownStatusBarTexture,
+                    statusbarcolor = dropdownStatusBarColor,
+                    onclick = line_select_color_dropdown
+                })
             end
 
-            tinsert(t, 1, {label = "no color", value = "white", color = "white", onclick = line_select_color_dropdown}) --localize-me
+            tinsert(t, 1, {
+                label = "no color",
+                value = "white",
+                color = colorNoValue,
+                statusbar = dropdownStatusBarTexture,
+                statusbarcolor = dropdownStatusBarColor,
+                iconcolor = dropdownIconColor,
+                onclick = line_select_color_dropdown
+            }) --localize-me
 
             castFrame.cachedColorTable = t
             return t
@@ -290,6 +406,14 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         --enabled check box
         local enabledCheckBox = DF:CreateSwitch(line, onToggleEnabled, true, _, _, _, _, "EnabledCheckbox", "$parentEnabledToggle" .. index, _, _, _, nil, DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"))
         enabledCheckBox:SetAsCheckBox()
+
+        --has animation icon
+        local hasAnimationIconTexture = DF:CreateImage(line, [[Interface\BUTTONS\UI-SpellbookIcon-NextPage-Up]], scroll_line_height-2, scroll_line_height-2)
+        hasAnimationIconTexture:Hide()
+        hasAnimationIconTexture:SetScale(1.1)
+        hasAnimationIconTexture:SetAlpha(0.82)
+        hasAnimationIconTexture:SetPoint("left", enabledCheckBox, "right", 2, 0)
+        line.hasAnimationIconTexture = hasAnimationIconTexture
 
         --spell icon
         local spellIconTexture = DF:CreateImage(line, "", scroll_line_height-2, scroll_line_height-2)
@@ -343,7 +467,8 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         local npcIdLabel = DF:CreateLabel(line, "", 10, "white", nil, "npcIdLabel")
 
         --location
-        local npcLocationLabel = DF:CreateLabel(line, "", 10, "white", nil, "npcLocationLabel")
+        --local npcLocationLabel = DF:CreateLabel(line, "", 10, "white", nil, "npcLocationLabel")
+        local selectAudioDropdown = DF:CreateDropDown(line, line_refresh_audio_dropdown, 1, headerTable[8].width - 1, 20, "SelectAudioDropdown", nil, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
 
         --encounter
         local encounterNameLabel = DF:CreateLabel(line, "", 10, "white", nil, "encounterNameLabel") --not in use, got replaced by spell name rename
@@ -361,6 +486,8 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         spellRenameEntry:SetHook ("OnLeave", widget_onleave)
         colorDropdown:SetHook ("OnEnter", widget_onenter)
         colorDropdown:SetHook ("OnLeave", widget_onleave)
+        selectAudioDropdown:SetHook("OnEnter", widget_onenter)
+        selectAudioDropdown:SetHook("OnLeave", widget_onleave)
 
         line:AddFrameToHeaderAlignment (enabledCheckBox)
         line:AddFrameToHeaderAlignment (spellIconTexture)
@@ -369,7 +496,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         line:AddFrameToHeaderAlignment (spellRenameEntry)
         line:AddFrameToHeaderAlignment (npcNameLabel)
         line:AddFrameToHeaderAlignment (npcIdLabel)
-        line:AddFrameToHeaderAlignment (npcLocationLabel)
+        line:AddFrameToHeaderAlignment (selectAudioDropdown)
         --line:AddFrameToHeaderAlignment (encounterNameLabel)
         line:AddFrameToHeaderAlignment (colorDropdown)
 
@@ -378,16 +505,374 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         return line
     end
 
+        local onChangeOption = function()
+            --when a setting if changed
+            Plater.RefreshDBUpvalues()
+            Plater.UpdateAllPlates()
+            --optionsspFrameFrame.previewCastBar.UpdateAppearance()
+        end
+
+        --> build scripts preview to add the cast to a script
+        local scriptPreviewFrame = CreateFrame("frame", castFrame:GetName() .. "ScriptPreviewPanel", castFrame, "BackdropTemplate")
+        local spFrame = scriptPreviewFrame
+        spFrame:SetPoint("topright", castFrame, "topright", -5, -56)
+        spFrame:SetPoint("bottomright", castFrame, "bottomright", 0, 35)
+        spFrame:SetWidth(270)
+        spFrame:SetFrameLevel(castFrame:GetFrameLevel()+10)
+
+        DF:ApplyStandardBackdrop(spFrame)
+        spFrame:SetBackdropBorderColor(0, 0, 0, 0)
+        spFrame:EnableMouse(true)
+
+        local onChangeOption = function()
+            --when a setting if changed
+            Plater.RefreshDBUpvalues()
+            Plater.UpdateAllPlates()
+            --optionsspFrameFrame.previewCastBar.UpdateAppearance()
+        end
+
+        local settingsOverride = {
+            FadeInTime = 0.02,
+            FadeOutTime = 0.66,
+            SparkHeight = 20,
+            LazyUpdateCooldown = 0.1,
+            FillOnInterrupt = false,
+            HideSparkOnInterrupt = false,
+        }
+
+    local CONST_PREVIEW_SPELLID = 116
+    local allPreviewFrames = {}
+    castColorFrame.allPreviewFrames = allPreviewFrames
+
+    local allScripts = {
+        "Cast - Small Alert [Plater]",
+        "Cast - Big Alert [Plater]",
+        "Cast - Quick Flash [P]",
+        "Explosion Affix M+ [Plater]",
+        "Cast - Frontal Cone [Plater]",
+        "Cast - Ultra Important [P]",
+        "Cast - Very Important [Plater]",
+        "Cast - Glowing [P]",
+        "Cast - Circle AoE [P]",
+    }
+
+    local hasScriptWithPreviewSpellId = function(spellId)
+        local previewSpellId = spellId or CONST_PREVIEW_SPELLID
+        for i = 1, #allScripts do
+            local scriptName = allScripts[i]
+            local scriptObject = platerInternal.Scripts.GetScriptObjectByName(scriptName)
+            if (scriptObject) then
+                local index = DF.table.find(scriptObject.SpellIds, previewSpellId)
+                if (index) then
+                    return true
+                end
+            end
+        end
+    end
+
+    local castBarPreviewTexture = [[Interface\AddOns\Plater\Images\cast_bar_scripts_preview]]
+
+    for i = 1, #allScripts do
+        local scriptName = allScripts[i]
+
+        local previewFrame = CreateFrame("button", nil, spFrame, BackdropTemplateMixin and "BackdropTemplate")
+        previewFrame:SetSize(spFrame:GetWidth()-5, 45) --270
+        previewFrame:SetPoint("topleft", spFrame, "topleft", 5, (-45 * (i - 1)) -5)
+        DF:ApplyStandardBackdrop(previewFrame)
+        previewFrame.scriptName = scriptName
+
+        local scriptNameText = previewFrame:CreateFontString(nil, "overlay", "GameFontNormal")
+        scriptNameText:SetPoint("topright", previewFrame, "topright", -2, -1)
+        scriptNameText:SetJustifyH("right")
+        scriptNameText:SetText(scriptName)
+        scriptNameText:SetAlpha(0.5)
+        DF:SetFontSize(scriptNameText, 9)
+        previewFrame.scriptNameText = scriptNameText
+
+        local scriptPreviewTexture = previewFrame:CreateTexture(nil, "overlay")
+        scriptPreviewTexture:SetTexture(castBarPreviewTexture)
+        scriptPreviewTexture:SetTexCoord(0, 282/512, 50 * (i-1) / 512, 50 * i / 512)
+        scriptPreviewTexture:SetPoint("topleft", previewFrame, "topleft", 1, -1)
+        scriptPreviewTexture:SetPoint("bottomright", previewFrame, "bottomright", -1, 1)
+        scriptPreviewTexture:SetAlpha(1)
+        --scriptPreviewTexture:SetBlendMode("ADD")
+
+        local scriptPreviewTexture2 = previewFrame:CreateTexture(nil, "overlay")
+        scriptPreviewTexture2:SetTexture(castBarPreviewTexture)
+        scriptPreviewTexture2:SetTexCoord(0, 282/512, 50 * (i-1) / 512, 50 * i / 512)
+        scriptPreviewTexture2:SetPoint("topleft", previewFrame, "topleft", 1, -1)
+        scriptPreviewTexture2:SetPoint("bottomright", previewFrame, "bottomright", -1, 1)
+        scriptPreviewTexture2:SetAlpha(0.2)
+        scriptPreviewTexture2:SetBlendMode("ADD")
+        previewFrame.selectedHighlight = scriptPreviewTexture2
+
+        local selectedScript = previewFrame:CreateTexture(nil, "overlay")
+        selectedScript:SetPoint("topright", previewFrame, "topleft", 0, -1)
+        selectedScript:SetPoint("bottomright", previewFrame, "bottomleft", 0, 1)
+        selectedScript:SetColorTexture(.8, .8, .8, 0.92)
+        selectedScript:SetWidth(7)
+        selectedScript:Hide()
+        previewFrame.selectedScript = selectedScript
+
+        local scriptObject = platerInternal.Scripts.GetScriptObjectByName(scriptName)
+        if (not scriptObject) then
+            Plater:Msg("[#allScripts iterate] script not found:", scriptName)
+            return
+        end
+        platerInternal.Scripts.RemoveSpellFromScriptTriggers(scriptObject, CONST_PREVIEW_SPELLID)
+
+        previewFrame:EnableMouse(false)
+        allPreviewFrames[#allPreviewFrames+1] = previewFrame
+
+        previewFrame:SetScript("OnEnter", function(castBar)
+            GameCooltip:Reset()
+            GameCooltip:AddLine("Script:", previewFrame.scriptName)
+            GameCooltip:AddLine("Click to use this animation when the cast start")
+            GameCooltip:AddLine("Having enemy npcs near you, make their nameplates to preview this animation")
+
+            local scriptObject = platerInternal.Scripts.GetScriptObjectByName(previewFrame.scriptName)
+            if (scriptObject) then
+                GameCooltip:AddLine(" ")
+                GameCooltip:AddLine(scriptObject.Desc, "", 1, "yellow")
+            end
+
+            GameCooltip:SetOption("FixedWidth", 320)
+            GameCooltip:SetOwner(previewFrame)
+            GameCooltip:Show(previewFrame)
+            previewFrame:SetBackdropBorderColor(1, .7, .1, 1)
+            spFrame.StartCastBarPreview(previewFrame)
+        end)
+
+        previewFrame:SetScript("OnLeave", function(castBar)
+            GameCooltip:Hide()
+            previewFrame:SetBackdropBorderColor(0, 0, 0, 0)
+            spFrame.StopCastBarPreview(previewFrame)
+            if (spFrame.StopPreviewTimer and not spFrame.StopPreviewTimer:IsCancelled()) then
+                spFrame.StopPreviewTimer:Cancel()
+            end
+            spFrame.StopPreviewTimer = C_Timer.NewTimer(4, spFrame.ForceStopPreview)
+        end)
+
+        previewFrame:SetScript("OnClick", function() --~onclick õnclick
+            local spellId = castColorFrame.currentSpellId
+            local scriptName = previewFrame.scriptName
+            local scriptObject = platerInternal.Scripts.GetScriptObjectByName(scriptName)
+            if (not scriptObject) then
+                Plater:Msg("[Failed to add trigger to Script: script not found:", scriptName)
+                return
+            end
+
+            --already have this trigger?
+            local index = DF.table.find(scriptObject.SpellIds, spellId)
+            if (index) then
+                spFrame.RemoveTriggerFromAllScriptsBySpellID(spellId)
+
+            else
+                spFrame.RemoveTriggerFromAllScriptsBySpellID(spellId)
+                platerInternal.Scripts.AddSpellToScriptTriggers(scriptObject, spellId)
+
+            end
+
+            castColorFrame.SelectScriptForSpellId(spellId)
+            castFrame.RefreshScroll()
+        end)
+    end
+
+    function castColorFrame.SelectScriptForSpellId(spellId)
+        local foundScriptWithThisSpellId = false
+        for i = 1, #allScripts do
+            local scriptName = allScripts[i]
+            local scriptObject = platerInternal.Scripts.GetScriptObjectByName(scriptName)
+            if (scriptObject) then
+                local hasTrigger = platerInternal.Scripts.DoesScriptHasTrigger(scriptObject, spellId)
+                if (hasTrigger) then
+                    for o = 1, #allPreviewFrames do
+                        local previewFrame = allPreviewFrames[o]
+                        if (previewFrame.scriptName == scriptName) then
+                            previewFrame.selectedScript:Show()
+                            previewFrame.scriptNameText:SetAlpha(0.9)
+                            previewFrame.selectedHighlight:Show()
+                            foundScriptWithThisSpellId = true
+                        else
+                            previewFrame.selectedScript:Hide()
+                            previewFrame.scriptNameText:SetAlpha(0.5)
+                            previewFrame.selectedHighlight:Hide()
+                        end
+                    end
+                end
+            end
+        end
+
+        --no script has been found using this spellId as trigger
+        if (not foundScriptWithThisSpellId) then
+            for o = 1, #allPreviewFrames do
+                local previewFrame = allPreviewFrames[o]
+                previewFrame.selectedScript:Hide()
+                previewFrame.scriptNameText:SetAlpha(0.5)
+                previewFrame.selectedHighlight:Hide()
+            end
+        end
+    end
+
+    function spFrame.ForceStopPreview()
+        if (not spFrame.HasPreviewButtonHover()) then
+            Plater.StopCastBarTest()
+        end
+    end
+
+    function spFrame.HasPreviewButtonHover()
+        for i = 1, #allPreviewFrames do
+            local button = allPreviewFrames[i]
+            if (button:IsMouseOver()) then
+                return button
+            end
+        end
+    end
+
+    function spFrame.CheckIfNoAnimationsArePlaying()
+        if (hasScriptWithPreviewSpellId()) then
+            return
+        else
+            --the spellId is free to be used on another script
+            local previewFrame = spFrame.HasPreviewButtonHover()
+            if (previewFrame) then
+                spFrame.StartCastBarPreview(previewFrame)
+                spFrame.checkQueueToPlayNextAnimation:Cancel()
+            end
+        end
+    end
+
+    function spFrame.StartCastBarPreview(previewFrame)
+        if (hasScriptWithPreviewSpellId()) then
+            if (not spFrame.checkQueueToPlayNextAnimation or spFrame.checkQueueToPlayNextAnimation:IsCancelled()) then
+                spFrame.checkQueueToPlayNextAnimation = C_Timer.NewTicker(0.4, spFrame.CheckIfNoAnimationsArePlaying)
+                return
+            end
+        end
+
+        if (Plater.IsTestRunning) then
+            return
+        end
+
+        --it's still fuckup
+        local scriptName = previewFrame.scriptName
+        local scriptObject = platerInternal.Scripts.GetScriptObjectByName(scriptName)
+        if (not scriptObject) then
+            Plater:Msg("[StartCastBarPreview] script not found:", scriptName)
+            return
+        end
+
+        if (scriptPreviewFrame.TimerToRemoveTriggers) then
+            if (not scriptPreviewFrame.TimerToRemoveTriggers:IsCancelled()) then
+                scriptPreviewFrame.TimerToRemoveTriggers:Cancel()
+            end
+        end
+
+        spFrame.RemoveTriggerFromAllScripts()
+        platerInternal.Scripts.AddSpellToScriptTriggers(scriptObject, CONST_PREVIEW_SPELLID)
+
+        scriptPreviewFrame.NextAnimationCooldown = GetTime() + 2.05
+
+        Plater.StartCastBarTest(true, 2)
+    end
+
+    --on leave castBar area
+    function spFrame.StopCastBarPreview(previewFrame)
+        Plater.StopCastBarTest()
+
+        local scriptName = previewFrame.scriptName
+        local scriptObject = platerInternal.Scripts.GetScriptObjectByName(scriptName)
+        if (not scriptObject) then
+            Plater:Msg("[StopCastBarPreview] script not found:", scriptName)
+            return
+        end
+
+        scriptPreviewFrame.TimerToRemoveTriggers = C_Timer.NewTimer(2.1, function()
+            if (not Plater.IsTestRunning) then
+                spFrame.RemoveTriggerFromAllScripts()
+            end
+        end)
+    end
+
+    function spFrame.RemoveTriggerFromAllScripts()
+        --this should check if there's a any script running on any nameplate
+        --technically this function shouldn't exists as all the functions above should clean up the
+        --preview spellId from the trigger as it leave the preview button
+        --if the user press escape, it will call this and might remove the trigger while the 
+        --animation is still ongoing and cause the OnUpdate and OnHide scripts not triiger
+        --thica cause issue of not hidding parts of the script animation
+
+        local previewFrame = spFrame.HasPreviewButtonHover()
+        if (previewFrame and spFrame.checkQueueToPlayNextAnimation and not spFrame.checkQueueToPlayNextAnimation:IsCancelled()) then
+            spFrame.RemoveTriggerFromAllScriptsOnLeave()
+            --will check if there's a button being hovered over
+            spFrame.CheckIfNoAnimationsArePlaying()
+            return
+        end
+
+        spFrame.RemoveTriggerFromAllScriptsOnLeave()
+    end
+
+    function spFrame.RemoveTriggerFromAllScriptsBySpellID(spellId)
+        spellId = spellId or CONST_PREVIEW_SPELLID
+        local noRecompile = true
+        local scriptData = Plater.db.profile.script_data
+        local spellRemoved = false
+        for i, scriptObject in pairs(scriptData) do
+            platerInternal.Scripts.RemoveSpellFromScriptTriggers(scriptObject, spellId, noRecompile)
+            spellRemoved = true
+        end
+
+        if (spellRemoved) then
+            Plater.WipeAndRecompileAllScripts("script")
+        end
+    end
+
+    function spFrame.RemoveTriggerFromAllScriptsOnLeave()
+        for i = 1, #allScripts do
+            local scriptName = allScripts[i]
+            local scriptObject = platerInternal.Scripts.GetScriptObjectByName(scriptName)
+            if (not scriptObject) then
+                Plater:Msg("[spFrame:HookScript(OnHide)] script not found:", scriptName)
+                return
+            end
+            platerInternal.Scripts.RemoveSpellFromScriptTriggers(scriptObject, CONST_PREVIEW_SPELLID)
+        end
+
+        if (spFrame.checkQueueToPlayNextAnimation and not spFrame.checkQueueToPlayNextAnimation:IsCancelled()) then
+            spFrame.checkQueueToPlayNextAnimation:Cancel()
+        end
+    end
+
+    spFrame:HookScript("OnShow", function()
+        if (not spFrame.LoopPreviewTimer) then
+            --spFrame.LoopPreviewTimer = DF.Schedules.NewTicker(2, startCasting)
+        end
+    end)
+
+    spFrame.OnHide = function()
+        if (Plater.IsTestRunning) then
+            C_Timer.After(0.05, spFrame.OnHide)
+        else
+            spFrame.RemoveTriggerFromAllScriptsOnLeave()
+        end
+    end
+
+    spFrame:HookScript("OnHide", function()
+        spFrame.OnHide()
+    end)
+
+------------------------------------------------------------------------------------------------------------
         --> build the ~options panel
         local optionsFrame = CreateFrame("frame", castFrame:GetName() .. "OptionsPanel", castFrame, "BackdropTemplate")
-        optionsFrame:SetPoint("topright", castFrame, "topright", 0, -34)
+        optionsFrame:SetPoint("topright", castFrame, "topright", -5, -56)
         optionsFrame:SetPoint("bottomright", castFrame, "bottomright", 0, 35)
         optionsFrame:SetWidth(270)
         optionsFrame:SetFrameLevel(castFrame:GetFrameLevel()+10)
+        optionsFrame:Hide() --hidden by default
 
-        optionsFrame:SetBackdrop({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
-        optionsFrame:SetBackdropBorderColor(unpack (luaeditor_border_color))
-        optionsFrame:SetBackdropColor(.1, .1, .1, 1)
+        DF:ApplyStandardBackdrop(optionsFrame)
+        optionsFrame:SetBackdropBorderColor(0, 0, 0, 0)
         optionsFrame:EnableMouse(true)
 
         local onChangeOption = function()
@@ -454,7 +939,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             {
                 type = "toggle",
                 get = function() return Plater.db.profile.cast_color_settings.enabled end,
-                set = function (self, fixedparam, value) 
+                set = function (self, fixedparam, value)
                     Plater.db.profile.cast_color_settings.enabled = value
                 end,
                 name = "Enable Original Cast Color",
@@ -536,7 +1021,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         local startX, startY, heightSize = 10, -10, optionsFrame:GetHeight()
         DF:BuildMenu(optionsFrame, optionsTable, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, onChangeOption)
 
-    -->  ~preview window
+    -->  ~preview window (not in use as the script choise frame is over this one)
         local previewWindow = CreateFrame("frame", optionsFrame:GetName() .. "previewWindown", optionsFrame, "BackdropTemplate")
         previewWindow:SetSize(250, 40)
         previewWindow:SetPoint("topleft", optionsFrame, "topleft", 10, -240)
@@ -575,7 +1060,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         previewCastBar:OnTick_Casting(0.016)
         previewCastBar.Spark:Show()
 
-        local spellName, _, spellIcon = GetSpellInfo(116)
+        local spellName, _, spellIcon = GetSpellInfo(CONST_PREVIEW_SPELLID)
         previewCastBar.Text:SetText(spellName)
         previewCastBar.Icon:SetTexture(spellIcon)
         previewCastBar.Icon:SetAlpha(1)
@@ -653,6 +1138,36 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         end
     end
 
+    local sortByEnabledColor = function (t1, t2)
+        if (t1[1] and not t2[1]) then --color
+            return true
+        elseif (not t1[1] and t2[1]) then --color
+            return false
+        else
+            return t1[4] < t2[4] --alphabetical
+        end
+    end
+
+    local sort_enabled_animation = function (t1, t2)
+        if (t1[11] and not t2[11]) then
+            return true
+        elseif (not t1[11] and t2[11]) then
+            return false
+        else
+            return t1[4] < t2[4] --alphabetical
+        end
+    end
+
+    local sort_has_audio_cue = function(t1, t2)
+        if (t1[12] and not t2[12]) then
+            return true
+        elseif (not t1[12] and t2[12]) then
+            return false
+        else
+            return t1[4] < t2[4] --alphabetical
+        end
+    end
+
     local sortOrder4R = function(t1, t2)
         return t1[4] < t2[4]
     end
@@ -682,17 +1197,27 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                     local encounterName = thisData[CONST_CASTINFO_ENCOUNTERNAME]
                     local customSpellName = thisData[CONST_CASTINFO_CUSTOMSPELLNAME]
 
+                    local isTriggerOfAnyPreviewScript = hasScriptWithPreviewSpellId(spellId)
+
                     if (spellName:lower():find(IsSearchingFor) or sourceName:lower():find(IsSearchingFor) or npcLocation:lower():find(IsSearchingFor) or encounterName:lower():find(IsSearchingFor)) then
                         if (isEnabled) then
-                            enabledTable[#enabledTable+1] = {true, color, spellId, spellName, spellIcon, sourceName, npcId, npcLocation, encounterName, customSpellName}
+                            enabledTable[#enabledTable+1] = {true, color, spellId, spellName, spellIcon, sourceName, npcId, npcLocation, encounterName, customSpellName, isTriggerOfAnyPreviewScript or false, DB_CAST_AUDIOCUES[spellId] or false}
                         else
-                            dataInOrder[#dataInOrder+1] = {false, color, spellId, spellName, spellIcon, sourceName, npcId, npcLocation, encounterName, customSpellName}
+                            dataInOrder[#dataInOrder+1] = {false, color, spellId, spellName, spellIcon, sourceName, npcId, npcLocation, encounterName, customSpellName, isTriggerOfAnyPreviewScript or false, DB_CAST_AUDIOCUES[spellId] or false}
                         end
                     end
                 end
 
-                table.sort (enabledTable, sort_enabled_colors)
-                table.sort (dataInOrder, sortOrder4R) --spell name
+                table.sort (enabledTable, sort_enabled_colors) --sort by enabled state
+                table.sort (enabledTable, sort_enabled_animation) --is has a script trigger
+
+                table.sort (dataInOrder, sortOrder4R) --by spell name
+                table.sort (dataInOrder, sort_enabled_animation) --is has a script trigger
+                table.sort (dataInOrder, sort_has_audio_cue) --has an audio cue
+
+                --make the dropdown be bigger
+                --table.sort (enabledTable, sort_enabled_colors)
+                --table.sort (dataInOrder, sortOrder4R) --spell name
 
                 for i = #enabledTable, 1, -1 do
                     tinsert (dataInOrder, 1, enabledTable[i])
@@ -719,17 +1244,23 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                     local encounterName = thisData[CONST_CASTINFO_ENCOUNTERNAME]
                     local customSpellName = thisData[CONST_CASTINFO_CUSTOMSPELLNAME]
 
+                    local isTriggerOfAnyPreviewScript = hasScriptWithPreviewSpellId(spellId)
+
                     if (isEnabled) then
-                        enabledTable[#enabledTable+1] = {true, color, spellId, spellName, spellIcon, sourceName, npcId, npcLocation, encounterName, customSpellName}
+                        enabledTable[#enabledTable+1] = {true, color, spellId, spellName, spellIcon, sourceName, npcId, npcLocation, encounterName, customSpellName, isTriggerOfAnyPreviewScript or false, DB_CAST_AUDIOCUES[spellId]}
                     else
-                        dataInOrder[#dataInOrder+1] = {false, color, spellId, spellName, spellIcon, sourceName, npcId, npcLocation, encounterName, customSpellName}
+                        dataInOrder[#dataInOrder+1] = {false, color, spellId, spellName, spellIcon, sourceName, npcId, npcLocation, encounterName, customSpellName, isTriggerOfAnyPreviewScript or false, DB_CAST_AUDIOCUES[spellId]}
                     end
                 end
 
                 self.CachedTable = dataInOrder
 
-                table.sort (enabledTable, sort_enabled_colors)
-                table.sort (dataInOrder, sortOrder4R) --spell name
+                table.sort (enabledTable, sort_enabled_colors) --sort by enabled state
+                table.sort (enabledTable, sort_enabled_animation) --has a script trigger
+
+                table.sort (dataInOrder, sortOrder4R) --by spell name
+                table.sort (dataInOrder, sort_enabled_animation) --has a script trigger
+                table.sort (dataInOrder, sort_has_audio_cue) --has an audio cue
 
                 for i = #enabledTable, 1, -1 do
                     tinsert (dataInOrder, 1, enabledTable[i])
@@ -772,6 +1303,17 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
                     line.ColorDropdown.spellId = spellId
                     line.ColorDropdown:SetFixedParameter(spellId)
+
+                    line.SelectAudioDropdown.spellId = spellId
+                    line.SelectAudioDropdown:SetFixedParameter(spellId)
+                    local selectedAudioCue = DB_CAST_AUDIOCUES[spellId]
+                    if (selectedAudioCue)then
+                        --this spell has an audio cue
+                        line.SelectAudioDropdown:Select(selectedAudioCue)
+                    else
+                        line.SelectAudioDropdown:Select(1, true)
+                    end
+
                     line.spellRenameEntry.spellId = spellId
 
                     line.spellIconTexture:SetTexture(spellIcon)
@@ -780,8 +1322,10 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                     line.spellRenameEntry:SetText(customSpellName)
                     line.npcNameLabel:SetText(sourceName)
                     line.npcIdLabel:SetText(npcId)
-                    line.npcLocationLabel:SetText(npcLocation)
+                    --line.npcLocationLabel:SetText(npcLocation)
                     line.encounterNameLabel:SetText(encounterName)
+
+                    line.hasAnimationIconTexture:SetShown(spellInfo[11])
 
                     castFrame.CheckBoxCache[spellId] = line.EnabledCheckbox
 
@@ -889,7 +1433,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         end
 
         local aura_search_textentry = DF:CreateTextEntry(castFrame, function()end, 150, 20, "AuraSearchTextEntry", _, _, options_dropdown_template)
-        aura_search_textentry:SetPoint("bottomright", castFrame, "topright", 0, -15)
+        aura_search_textentry:SetPoint("bottomright", castFrame, "topright", 0, -20)
         aura_search_textentry:SetHook("OnChar", castFrame.OnSearchBoxTextChanged)
         aura_search_textentry:SetHook("OnTextChanged", castFrame.OnSearchBoxTextChanged)
 
@@ -1158,6 +1702,26 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         local export_button = DF:CreateButton(castFrame, export_func, 70, 20, "export", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
         export_button:SetPoint("right", import_button, "left", -2, 0)
         export_button:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
+
+        castFrame.showingScriptSelection = true
+        local toggleScriptSelectionAndOptionsFrame = function()
+            if (castFrame.showingScriptSelection) then
+                spFrame:Hide()
+                optionsFrame:Show()
+                castFrame.toggleOptionsButton:SetText("Show Scripts")
+            else
+                spFrame:Show()
+                optionsFrame:Hide()
+                castFrame.toggleOptionsButton:SetText("Show Options")
+            end
+
+            castFrame.showingScriptSelection = not castFrame.showingScriptSelection
+        end
+
+        local toggleOptionsButton = DF:CreateButton(castFrame, toggleScriptSelectionAndOptionsFrame, 70, 20, "Show Options", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+        toggleOptionsButton:SetPoint("right", export_button, "left", -2, 0)
+        toggleOptionsButton:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
+        castFrame.toggleOptionsButton = toggleOptionsButton
 
     --disable all button
         local disableAllColors = function()
