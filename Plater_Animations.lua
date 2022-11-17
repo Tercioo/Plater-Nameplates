@@ -5,64 +5,77 @@ local AnimateTexCoords = _G.AnimateTexCoords
 
 
 local dotTexturesInfo = {
-    {
+    { --1
         texture = [[Interface\AddOns\Plater\images\ants_rectangle]],
         width = 512,
         height = 512,
         partWidth = 167.4,
         partHeight = 83.6,
         partAmount = 15,
-        throttle = 0.025
+        throttle = 0.025,
+        speedMultiplier = 1,
     },
-    {
+    { --2
         texture = [[Interface\AddOns\Plater\images\ants_rectangle_white]],
         width = 512,
         height = 512,
         partWidth = 256,
         partHeight = 64,
         partAmount = 15,
-        throttle = 0.016
+        throttle = 0.016,
+        speedMultiplier = 1,
     },
-    {
+    { --3
         texture = [[Interface\AddOns\Plater\images\ants_rectangle_white2]],
         width = 512,
         height = 512,
         partWidth = 256,
         partHeight = 64,
         partAmount = 15,
-        throttle = 0.016
+        throttle = 0.016,
+        speedMultiplier = 1,
     },
-    {
+    { --4
         texture = [[Interface\AddOns\Plater\images\ants_rectangle_white3]],
         width = 512,
         height = 512,
         partWidth = 256,
         partHeight = 64,
         partAmount = 15,
-        throttle = 0.072
+        throttle = 0.072,
+        speedMultiplier = 1,
     },
-    {
+    { --5
         texture = [[Interface\AddOns\Plater\images\ants_rectangle_white4]],
         width = 1024,
         height = 1024,
         partWidth = 256,
         partHeight = 64,
         partAmount = 63,
-        throttle = 0.016
+        throttle = 0.016,
+        speedMultiplier = 1,
     },
-    {
+    { --6
         texture = [[Interface\AddOns\Plater\images\ants_square_white1]],
         width = 1024,
         height = 512,
         partWidth = 64,
         partHeight = 64,
         partAmount = 74, --79
-        throttle = 0.016
+        throttle = 0.016,
+        speedMultiplier = 1,
     },
 }
 
 local dotTextureOnUpdateFunc = function(self, deltaTime)
-    AnimateTexCoords(self.dotTexture, self.textureInfo.width, self.textureInfo.height, self.textureInfo.partWidth, self.textureInfo.partHeight, self.textureInfo.partAmount, deltaTime, self.textureInfo.throttle)
+    AnimateTexCoords(self.dotTexture,
+    self.textureInfo.width,
+    self.textureInfo.height,
+    self.textureInfo.partWidth,
+    self.textureInfo.partHeight,
+    self.textureInfo.partAmount,
+    deltaTime * self.textureInfo.speedMultiplier,
+    self.textureInfo.throttle)
 end
 
 --play an animation with dots around the nameplate
