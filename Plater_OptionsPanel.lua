@@ -361,6 +361,7 @@ function Plater.OpenOptionsPanel()
 	local profileButton		= mainFrame.AllButtons [22]
 	local ghostAurasButton	= mainFrame.AllButtons [12]
 
+	--[=[ ghost auras isn't new anymore, keeping this code in case need to add the button into another tab
 	if (time() + 60*60*24*15 > 1647542962) then
 		ghostAuras.newTexture = ghostAurasButton:CreateTexture(nil, "overlay", nil, 7)
 		ghostAuras.newTexture:SetTexture([[Interface\AddOns\Plater\images\new]])
@@ -368,6 +369,7 @@ function Plater.OpenOptionsPanel()
 		ghostAuras.newTexture:SetSize(35, 35)
 		ghostAuras.newTexture:SetAlpha(0.88)
 	end
+	--]=]
 
 	Plater.Resources.BuildResourceOptionsTab(resourceFrame)
 	Plater.Auras.BuildGhostAurasOptionsTab(ghostAuras)

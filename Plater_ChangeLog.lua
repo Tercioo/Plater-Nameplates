@@ -7,7 +7,11 @@ local _
 function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
-			
+
+			{1668692796,  "New Feature", "November 17th, 2022", "Added Cast Start Sound on Cast Colors and Names tab.", "Terciob"},
+			{1668692796,  "New Feature", "November 17th, 2022", "Added Spell Cast Animation selection on Cast Colors and Names tab.", "Terciob"},
+			{1668692796,  "New Feature", "November 17th, 2022", "Added New Scripts: 'Cast - Quick Flash' and 'Cast - Circular Swipe'.", "Terciob"},
+
 			{1668514794,  "New Feature", "November 15th, 2022", "Added option to show default blizzard icons on'softinteract' game objects instead of Plater nameplates.", "cont1nuity"},
 			{1668514794,  "New Feature", "November 12th, 2022", "(In Work) Support for Aura 'Extra Icons' which can be added/removed via mods/scripts or plugins.", "Terciob"},
 			{1668514794,  "New Feature", "November 11th, 2022", "(In Work) Support for Plugins.", "Terciob"},
