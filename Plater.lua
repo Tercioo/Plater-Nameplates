@@ -42,7 +42,7 @@ local AlphaBlending = ALPHA_BLEND_AMOUNT + 0.0654785
 --> locals
 local unpack = unpack
 local ipairs = ipairs
-local rawset = rawset
+--local rawset = rawset  --200 locals limit
 local rawget = rawget
 local setfenv = setfenv
 --local pcall = pcall --200 locals limit
@@ -128,6 +128,11 @@ end
 --script namespace
 platerInternal.Scripts = {}
 platerInternal.Mods = {}
+platerInternal.Events = {}
+platerInternal.Defaults = {
+	dropdownStatusBarTexture = [[Interface\Tooltips\UI-Tooltip-Background]],
+	dropdownStatusBarColor = {.1, .1, .1, .8},
+}
 
 --> namespaces:
 	--resources
@@ -3902,6 +3907,7 @@ local class_specs_coords = {
 			unitFrame.unit = unitID
 			unitFrame.namePlateUnitToken = unitID
 			unitFrame.displayedUnit = unitID
+			unitFrame.DenyColorChange = nil
 			
 			--was causing taints because MEMBER_UNITID is an actually member from the default blizzard nameplate
 			--so when this nameplate is reclycled to be in a proteecteed nameplate, it was causing taints
@@ -4351,6 +4357,11 @@ local class_specs_coords = {
 			Plater.UpdateAllPlates()
 		end,
 	}
+
+	--allow other files of the addon to have access to event functions
+	platerInternal.Events.GetEventFunction = function(event)
+		return eventFunctions[event]
+	end
 
 	function Plater.EventHandler (_, event, ...) --private
 		local func = eventFunctions [event]
@@ -4872,15 +4883,27 @@ function Plater.OnInit() --private --~oninit ~init
 
 	--> cast frame ~castbar
 	
-		--test castbar
+		--test castbar ~test
 		Plater.CastBarTestFrame = CreateFrame ("frame", nil, UIParent, BackdropTemplateMixin and "BackdropTemplate")
 		
-		function Plater.StartCastBarTest()
+		function Plater.StartCastBarTest(castNoInterrupt, castTime, isLoop)
+			castTime = castTime or 3
+
+			if (isLoop) then
+				Plater.CastBarTestFrame.castNoInterrupt = Plater.CastBarTestFrame.castNoInterrupt
+				Plater.CastBarTestFrame.castTime = Plater.CastBarTestFrame.castTime
+			else
+				Plater.CastBarTestFrame.castNoInterrupt = castNoInterrupt
+				Plater.CastBarTestFrame.castTime = castTime
+			end
+
 			Plater.IsShowingCastBarTest = true
-			Plater.DoCastBarTest()
+			Plater.DoCastBarTest(castNoInterrupt, castTime)
+
+			Plater.IsTestRunning = true
 		end
 		
-		function Plater.DoCastBarTest (castNoInterrupt)
+		function Plater.DoCastBarTest (castNoInterrupt, castTime)
 
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 				if plateFrame.unitFrame.PlaterOnScreen then
@@ -4893,25 +4916,25 @@ function Plater.OnInit() --private --~oninit ~init
 					castBar.Icon:SetAlpha(1)
 					castBar.Icon:Show()
 					castBar.percentText:Show()
-					castBar:SetMinMaxValues(0, 3)
+					castBar:SetMinMaxValues(0, (castTime or 3))
 					castBar:SetValue(0)
 					castBar.Spark:Show()
 					castBar.casting = true
 					castBar.finished = false
 					castBar.value = 0
-					castBar.maxValue = 3
-					castBar.canInterrupt = math.random (1, 2) == 1
+					castBar.maxValue = (castTime or 3)
+					castBar.canInterrupt = castNoInterrupt or math.random (1, 2) == 1
 					--castBar.canInterrupt = true
 					castBar:UpdateCastColor()
-					
+
 					castBar.spellName = 		spellName
 					castBar.spellID = 			116
 					castBar.spellTexture = 		spellIcon
 					castBar.spellStartTime = 	GetTime()
-					castBar.spellEndTime = 		GetTime() + 3
+					castBar.spellEndTime = 		GetTime() + (castTime or 3)
 					
 					castBar.SpellStartTime = 	GetTime()
-					castBar.SpellEndTime = 		GetTime() + 3
+					castBar.SpellEndTime = 		GetTime() + (castTime or 3)
 					
 					castBar.playedFinishedTest = nil
 					
@@ -4936,42 +4959,44 @@ function Plater.OnInit() --private --~oninit ~init
 			local forward = true
 
 			Plater.CastBarTestFrame:SetScript ("OnUpdate", function (self, deltaTime)
-				if (totalTime >= 3.7) then
+				if (totalTime >= (Plater.CastBarTestFrame.castTime + 0.1)) then
+					totalTime = 0
+
+					for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+						if plateFrame.unitFrame.PlaterOnScreen then
+							local castBar = plateFrame.unitFrame.castBar
+							local textString = castBar.FrameOverlay.TargetName
+							textString:Show()
+							textString:SetText("Target Name")
+
+							if (castBar.finished and not castBar.playedFinishedTest) then
+								Plater.CastBarOnEvent_Hook (castBar, "UNIT_SPELLCAST_STOP", plateFrame.unitFrame.unit, plateFrame.unitFrame.unit)
+								--castBar:Hide()
+								castBar.playedFinishedTest = true
+							end
+						end
+					end
+					
 					if (Plater.IsShowingCastBarTest) then
-						Plater.StartCastBarTest()
+						--run another cycle
+						C_Timer.After(.5, function()
+							Plater.StartCastBarTest(Plater.CastBarTestFrame.castNoInterrupt, Plater.CastBarTestFrame.castTime, true)
+						end)
+					end
+
+					if (not Plater.IsShowingCastBarTest) then
+						--don't run another cycle
+						Plater.CastBarTestFrame:SetScript("OnUpdate", nil)
+						Plater.IsTestRunning = nil
 					end
 				else
 					totalTime = totalTime + deltaTime
-				end
-
-				for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-					if plateFrame.unitFrame.PlaterOnScreen then
-						local castBar = plateFrame.unitFrame.castBar
-						local textString = castBar.FrameOverlay.TargetName
-						textString:Show()
-						textString:SetText("Target Name")
-
-						if (castBar.finished and not castBar.playedFinishedTest) then
-							Plater.CastBarOnEvent_Hook (castBar, "UNIT_SPELLCAST_STOP", plateFrame.unitFrame.unit, plateFrame.unitFrame.unit)
-							castBar:Hide()
-							castBar.playedFinishedTest = true
-						end
-					end
-				end
-				
-				if (not Plater.IsShowingCastBarTest) then
-					Plater.CastBarTestFrame:SetScript ("OnUpdate", nil)
 				end
 			end)
 		end
 		
 		function Plater.StopCastBarTest()
 			Plater.IsShowingCastBarTest = false
-			
-			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-				local castBar = plateFrame.unitFrame.castBar
-				castBar.playedFinishedTest = true
-			end
 		end
 	
 		--> when the option to show the target of the cast is enabled, this function update the text settings but not the target name
@@ -5140,14 +5165,12 @@ function Plater.OnInit() --private --~oninit ~init
 					if (unitCast ~= self.unit) then
 						return
 					end
-					
+
 					-- if we are starting a cast but it is an immediate chained cast, then needs to trigger OnHide and OnShow again afterwards
 					local globalScriptObject = SCRIPT_CASTBAR_TRIGGER_CACHE[self.SpellName]
-					--if (globalScriptObject and self.SpellEndTime and GetTime() <= self.SpellEndTime and (self.casting or self.channeling) and not self.IsInterrupted) then
 					if (globalScriptObject and (self.casting or self.channeling) and not self.IsInterrupted) then
 						self:OnHideWidget()
 					end
-					
 					
 					--local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, spellId = UnitCastingInfo (unitCast)
 					self.SpellName = 		self.spellName
@@ -5193,6 +5216,18 @@ function Plater.OnInit() --private --~oninit ~init
 
 					--spell color
 					self.castColorTexture:Hide()
+
+					--play audio cue
+					local audioCue = profile.cast_audiocues[self.spellID]
+					if (audioCue) then
+						if (platerInternal.LatestHandleForAudioPlayed) then
+							StopSound(platerInternal.LatestHandleForAudioPlayed, 0.5)
+						end
+						local willPlay, soundHandle = PlaySoundFile(audioCue, "Master")
+						if (willPlay) then
+							platerInternal.LatestHandleForAudioPlayed = soundHandle
+						end
+					end
 
 					--cast color (from options tab Cast Colors)
 					local castColors = profile.cast_colors
@@ -5703,6 +5738,10 @@ end
 				Plater.SetQuestColorByReaction (unitFrame)
 			end
 		end
+	end
+
+	function Plater.DenyColorChange(unitFrame, state)
+		unitFrame.DenyColorChange = state
 	end
 
 	--refresh the use of the color overrider
@@ -6252,7 +6291,9 @@ end
 			--check aggro if is in combat
 			if (PLAYER_IN_COMBAT) then
 				if (unitFrame.CanCheckAggro) then
-					Plater.UpdateNameplateThread (unitFrame)
+					if (not unitFrame.DenyColorChange) then --tagged from a script
+						Plater.UpdateNameplateThread (unitFrame)
+					end
 				end
 			end
 			
@@ -6266,10 +6307,12 @@ end
 			else
 				healthBar.lifePercent:Hide()
 			end
-						
-			--if the unit tapped? (gray color)
-			if (Plater.IsUnitTapDenied (tickFrame.unit)) then
-				Plater.ChangeHealthBarColor_Internal (healthBar, unpack (profile.tap_denied_color))
+
+			if (not unitFrame.DenyColorChange) then --tagged from a script
+				--if the unit tapped? (gray color)
+				if (Plater.IsUnitTapDenied (tickFrame.unit)) then
+					Plater.ChangeHealthBarColor_Internal (healthBar, unpack (profile.tap_denied_color))
+				end
 			end
 
 			--the color overrider for unitIDs goes after the threat check and before the aura, since auras can run scripts and scripts have priority on setting colors
@@ -12031,6 +12074,16 @@ end
 		return scriptsWithOverlap, amount
 	end
 
+	function platerInternal.Scripts.IsTriggerOnAnyScript(triggerId)
+		local allScripts = Plater.db.profile.script_data
+		for i = 1, #allScripts do
+			local scriptObject = allScripts[i]
+			if (platerInternal.Scripts.DoesScriptHasTrigger(scriptObject, triggerId)) then
+				return true
+			end
+		end
+	end
+
 	function platerInternal.Scripts.GetScriptObjectByName(scriptName)
 		local allScripts = Plater.db.profile.script_data
 		for i = 1, #allScripts do
@@ -12041,25 +12094,45 @@ end
 		end
 	end
 
+	--add or remove a trigger without the need to pass through the scripting panel
 	function platerInternal.Scripts.AddSpellToScriptTriggers(scriptObject, spellId)
-		DF.table.addUnique(scriptObject.SpellIds, spellId)
+		DF.table.addunique(scriptObject.SpellIds, spellId)
+		Plater.WipeAndRecompileAllScripts("script")
 	end
 
-	function platerInternal.Scripts.RemoveSpellFromScriptTriggers(scriptObject, spellId)
+	function platerInternal.Scripts.RemoveSpellFromScriptTriggers(scriptObject, spellId, noRecompile)
 		local index = DF.table.find(scriptObject.SpellIds, spellId)
 		if (index) then
 			tremove(scriptObject.SpellIds, index)
+
+			if (not noRecompile) then
+				Plater.WipeAndRecompileAllScripts("script")
+			end
+		end
+	end
+
+	function platerInternal.Scripts.DoesScriptHasTrigger(scriptObject, trigger)
+		local index = DF.table.find(scriptObject.SpellIds, trigger)
+		if (index) then
+			return true
+		end
+
+		local index = DF.table.find(scriptObject.NpcNames, trigger)
+		if (index) then
+			return true
 		end
 	end
 
 	function platerInternal.Scripts.AddNpcToScriptTriggers(scriptObject, npcId)
-		DF.table.addUnique(scriptObject.NpcNames, npcId)
+		DF.table.addunique(scriptObject.NpcNames, npcId)
+		Plater.WipeAndRecompileAllScripts("script")
 	end
 
 	function platerInternal.Scripts.RemoveNpcFromScriptTriggers(scriptObject, npcId)
 		local index = DF.table.find(scriptObject.NpcNames, npcId)
 		if (index) then
 			tremove(scriptObject.NpcNames, index)
+			Plater.WipeAndRecompileAllScripts("script")
 		end
 	end
 
