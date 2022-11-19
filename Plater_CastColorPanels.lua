@@ -577,6 +577,8 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         "Cast - Very Important [Plater]",
         "Cast - Glowing [P]",
         "Cast - Circle AoE [P]",
+        "Cast - Shield Interrupt [P]",
+        "Cast - Stop Casting [P]",
     }
 
     local hasScriptWithPreviewSpellId = function(spellId)
@@ -594,13 +596,14 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
     end
 
     local castBarPreviewTexture = [[Interface\AddOns\Plater\Images\cast_bar_scripts_preview]]
+    local eachCastBarButtonHeight = PlaterOptionsPanelContainerCastColorManagementColorFrameScriptPreviewPanel:GetHeight() / #allScripts
 
     for i = 1, #allScripts do
         local scriptName = allScripts[i]
 
         local previewFrame = CreateFrame("button", nil, spFrame, BackdropTemplateMixin and "BackdropTemplate")
-        previewFrame:SetSize(spFrame:GetWidth()-5, 45) --270
-        previewFrame:SetPoint("topleft", spFrame, "topleft", 5, (-45 * (i - 1)) -5)
+        previewFrame:SetSize(spFrame:GetWidth()-5, eachCastBarButtonHeight) --270
+        previewFrame:SetPoint("topleft", spFrame, "topleft", 5, (-eachCastBarButtonHeight * (i - 1)) -5)
         DF:ApplyStandardBackdrop(previewFrame)
         previewFrame.scriptName = scriptName
 
@@ -612,9 +615,12 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         DF:SetFontSize(scriptNameText, 9)
         previewFrame.scriptNameText = scriptNameText
 
+        local widthEnd = 282/512
+        local textureHeight = 46.54 --increasing reduces the preview texture height
+
         local scriptPreviewTexture = previewFrame:CreateTexture(nil, "overlay")
         scriptPreviewTexture:SetTexture(castBarPreviewTexture)
-        scriptPreviewTexture:SetTexCoord(0, 282/512, 50 * (i-1) / 512, 50 * i / 512)
+        scriptPreviewTexture:SetTexCoord(0, widthEnd, textureHeight * (i-1) / 512, textureHeight * i / 512)
         scriptPreviewTexture:SetPoint("topleft", previewFrame, "topleft", 1, -1)
         scriptPreviewTexture:SetPoint("bottomright", previewFrame, "bottomright", -1, 1)
         scriptPreviewTexture:SetAlpha(1)
@@ -622,7 +628,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
         local scriptPreviewTexture2 = previewFrame:CreateTexture(nil, "overlay")
         scriptPreviewTexture2:SetTexture(castBarPreviewTexture)
-        scriptPreviewTexture2:SetTexCoord(0, 282/512, 50 * (i-1) / 512, 50 * i / 512)
+        scriptPreviewTexture2:SetTexCoord(0, widthEnd, textureHeight * (i-1) / 512, textureHeight * i / 512)
         scriptPreviewTexture2:SetPoint("topleft", previewFrame, "topleft", 1, -1)
         scriptPreviewTexture2:SetPoint("bottomright", previewFrame, "bottomright", -1, 1)
         scriptPreviewTexture2:SetAlpha(0.2)

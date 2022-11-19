@@ -4,7 +4,15 @@ local addonName, platerInternal = ...
 do
 	PlaterScriptLibrary = {}
 
-	--scripts
+--scripts
+
+	PlaterScriptLibrary ["Cast - Shield Interrupt"] = {
+		Revision = 1,
+		ScriptType = "script",
+		String = "TFvBVTTnq4)l(tsf1VOO0eVaSb4MG26b0SGqNLpKewrBDoIi0Kcu0PnFr)23rkzB5ujB5TSpmGfIytrE3ZD8E5HY0a6ekrLA4kzgo1qjg1SNbDgUa9YGb4FhrjS4y8rYvcMb0usa9sCrZlPaLKntZtr1crTVe3i80Wtgo0cekY5SmtEu38ischeX5rJLia6LP4Q3D1duYhOeUDP5SzqFNvY6N6SsF(c2Jqw)zieFBkt7GHnntPNsjhx4QNsjFz5YhFS7FYeXA2tpbOtEcLCBciZJmjqEKvDavoHLHQNhLv6imj(HskEjp67BKE1UCuynSq9mexbh7NOKtXh5RohqmgooMsMVuoZgeZJ8YaX83NhTuYnJJlN8jnBbGZb5Ztytf2Pfbo3t(5)EEu5y9m(CelPcT6niaFgmtugMyKlcK57Clzf9khAWSuxzDapN1aUqnJjWOcWeMKpAJU)AfhT3M1Rr31B2RiDGZoJKO(UNFZYqsz6N(jP2dM4rg(bECaV7UB8QQK7VMXJDE59ffvD)exiE4b)Dd25cGPhjexPWux2b5eov86yuPcyUPZ7RiioV66dS)73waNQmg1IAXC7TAjSJePjmVa)DKVTz4ly2gRI6ixA)Opmya2D1TMYmVIIySAtHLid2Pl07RSFG9HlH11sBzPDRkxUrv0mfvT4aBUqkI8X5JR2GTDNZy7OBxUmd02EuvmyTIgwTxX3fyoMs(fKKAiLmePRobPQo94JcqIKGW3GM4)B28(fEmGDe7v2IM4sPRGD1S1rVDuHnKsFtdhBYt1eyAmpvJSoJUzDNP)d8Eub7LZoxd4nAR4YKCHTfxvSzh)wb)FFYW2Xfvllut8pTOwAFLWnh3DfzToY7K(FZyF5fx1h9TVEdx(ik993mU7MN660QvPH14)rbgQ(kwO71z0fx0ExBpb819ML9Nb))RQ8p8vvk9Nzl1AqA2CT1Q4vVVDnSGXLyPWe(cCV3LhnmmSxyy4HEl7RIWBBYFZ1u2qST0jxu9k5DENDJi8QBMFTynQykONHoRtVTD8(v8RdG77CLsh7z5IkHUKzkO9KD3YJnjER9S3vrWZ(8QT99BZPSX(42qOUppW9BDcoPbA3kDmIm4GOLpWJtljZTSi9MKOXxAva3KgJeU)u5Y2ervhiP0a7VC0qP)1p",
+		Enabled = true,
+	}
+
 	PlaterScriptLibrary ["Cast - Stop Casting"] = {
 		Revision = 1,
 		ScriptType = "script",
