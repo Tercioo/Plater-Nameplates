@@ -5,6 +5,8 @@ local DF = DetailsFramework
 local GetSpellInfo = GetSpellInfo
 local _
 
+local unpack = table.unpack or _G.unpack
+
 --localization
 local L = LibStub ("AceLocale-3.0"):GetLocale("PlaterNameplates", true)
 local LibSharedMedia = LibStub:GetLibrary("LibSharedMedia-3.0")
@@ -215,9 +217,9 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         DB_CAST_AUDIOCUES[spellId] = audioFilePath
     end
 
-    local createAudioCueList = function()
-        if (castFrame.AudioCueListCache) then
-            return
+    local createAudioCueList = function(fullRefresh)
+        if (castFrame.AudioCueListCache and not fullRefresh) then
+            --return
         end
 
         local audioCueList = {
@@ -233,22 +235,43 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             }
         }
 
+        local cuesInUse = {}
+        for spellId, cueFile in pairs(DB_CAST_AUDIOCUES) do
+            cuesInUse[cueFile] = true
+        end
+
         local audioCues = _G.LibStub:GetLibrary("LibSharedMedia-3.0"):HashTable("sound")
         local audioListInOrder = {}
         for cueName, cueFile in pairs(audioCues) do
-            audioListInOrder[#audioListInOrder+1] = {cueName, cueFile, cueName:lower()}
+            audioListInOrder[#audioListInOrder+1] = {cueName, cueFile, cueName:lower(), cuesInUse[cueFile] or false}
         end
-        table.sort(audioListInOrder, function(t1, t2) return t1[3] < t2[3] end)
+
+        table.sort(audioListInOrder, function(t1, t2) --alphabetical
+            if (t1[4] and not t2[4]) then
+                return true
+
+            elseif (not t1[4] and t2[4]) then
+                return false
+
+            elseif (t1[4] and t2[4]) then
+                return t1[3] < t2[3]
+            else
+                return t1[3] < t2[3]
+            end
+        end)
+
+        --table.sort(audioListInOrder, function(t1, t2) return t1[3] < t2[3] end) --alphabetical
+        --table.sort(audioListInOrder, function(t1, t2) return t1[4] > t2[4] end) --in use
 
         for i = 1, #audioListInOrder do
-            local cueName, cueFile = unpack(audioListInOrder[i])
+            local cueName, cueFile, lowerName, cueInUse = unpack(audioListInOrder[i])
             audioCueList[#audioCueList+1] = {
                 label = " " .. cueName,
                 value = cueFile,
                 audiocue = cueFile,
                 color = "white",
                 statusbar = dropdownStatusBarTexture,
-                statusbarcolor = dropdownStatusBarColor,
+                statusbarcolor = cueInUse and {.3, .3, .3, .8} or dropdownStatusBarColor,
                 iconcolor = dropdownIconColor,
                 icon = [[Interface\AddOns\Plater\media\audio_cue_icon]],
                 onclick = line_select_audio_dropdown,
@@ -259,7 +282,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
     end
 
     local line_refresh_audio_dropdown = function(self)
-        createAudioCueList()
+        createAudioCueList(true)
         return castFrame.AudioCueListCache
     end
 
