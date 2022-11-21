@@ -107,6 +107,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
     DB_CAST_COLORS = Plater.db.profile.cast_colors
     DB_NPCIDS_CACHE = Plater.db.profile.npc_cache --[npcId] = {npc name, npc zone}
     DB_CAPTURED_CASTS = PlaterDB.captured_casts --[spellId] = {[npcID] = 000000}
+    DB_CAPTURED_SPELLS = PlaterDB.captured_spells --[spellId] = {[npcID] = 000000}
 
     --header
     local headerTable = {
@@ -1397,6 +1398,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         self.LastRefresh = GetTime()
 
         local newData = {}
+        local addedSpells = {}
         --[=[
         --captured_spells
         [205762] = {
@@ -1415,6 +1417,34 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         for spellId, spellTable in pairs(DB_CAPTURED_CASTS) do
             local spellName, _, spellIcon = GetSpellInfo(spellId)
             if (spellName) then
+                --build the castInfo table for this spell
+                local npcId = spellTable.npcID
+                local isEnabled = DB_CAST_COLORS[spellId] and DB_CAST_COLORS[spellId][CONST_INDEX_ENABLED] or false
+                local color = DB_CAST_COLORS[spellId] and DB_CAST_COLORS[spellId][CONST_INDEX_COLOR] or "white"
+                local customSpellName = DB_CAST_COLORS[spellId] and DB_CAST_COLORS[spellId][CONST_INDEX_NAME] or ""
+
+                local castInfo = {
+                    isEnabled,
+                    color,
+                    spellId,
+                    spellName,
+                    spellIcon,
+                    DB_NPCIDS_CACHE[npcId] and DB_NPCIDS_CACHE[npcId][1] or "", --npc name
+                    npcId,
+                    DB_NPCIDS_CACHE[npcId] and DB_NPCIDS_CACHE[npcId][2] or "", --npc location
+                    spellTable.encounterName or "",
+                    customSpellName,
+                }
+
+                tinsert(newData, castInfo)
+                addedSpells[spellId] = true
+            end
+        end
+        
+        -- add SPELLS as well, if not yet added.
+        for spellId, spellTable in pairs(DB_CAPTURED_SPELLS) do
+            local spellName, _, spellIcon, castTime = GetSpellInfo(spellId)
+            if (spellName and not addedSpells[spellId] and castTime > 0) then -- and spellTable.event ~= "SPELL_AURA_APPLIED" ?
                 --build the castInfo table for this spell
                 local npcId = spellTable.npcID
                 local isEnabled = DB_CAST_COLORS[spellId] and DB_CAST_COLORS[spellId][CONST_INDEX_ENABLED] or false
@@ -1682,7 +1712,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                     local customSpellName = castColor[CONST_INDEX_NAME] or ""
 
                     --this db gives source, npcID, event, encounterName
-                    local capturedSpell = DB_CAPTURED_SPELLS[spellId]
+                    local capturedSpell = DB_CAPTURED_SPELLS[spellId] or DB_CAPTURED_CASTS[spellId]
                     if (capturedSpell) then
                         npcId = capturedSpell.npcID or 0
 

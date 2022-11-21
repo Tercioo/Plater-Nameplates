@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1668980528,  "Bug Fix", "November 21st, 2022", "Fixing some spells not showing up on the cast colors tab.", "cont1nuity"},
 			{1668980528,  "Bug Fix", "November 20th, 2022", "Fixing unit level being mistaken for title on some locales.", "cont1nuity"},
 			{1668980528,  "New Feature", "November 17th, 2022", "Added Cast Start Sound on Cast Colors and Names tab.", "Terciob"},
 			{1668980528,  "New Feature", "November 17th, 2022", "Added Spell Cast Animation selection on Cast Colors and Names tab.", "Terciob"},
