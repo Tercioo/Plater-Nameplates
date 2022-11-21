@@ -1268,9 +1268,26 @@ end
 		if (mainFrame.SearchString ~= "") then
 			for i = 1, #data do
 				if not data[i].hidden then
-					local name = data[i].FullName or data[i].Name or ""
-					if (name:lower():find (mainFrame.SearchString)) then
-						dataInOrder [#dataInOrder+1] = {i, data [i], data[i].Name, data[i].Enabled and 1 or 0, data[i].hasWagoUpdateFromImport and 1 or 0}
+					local bFoundMatch = false
+					local triggerSpellIdList = data[i].SpellIds
+					if (triggerSpellIdList and type(triggerSpellIdList) == "table") then
+						for o, spellId in ipairs(triggerSpellIdList) do
+							local spellName = GetSpellInfo(spellId)
+							if (spellName) then
+								spellName = spellName:lower()
+								if (spellName:find(mainFrame.SearchString)) then
+									dataInOrder[#dataInOrder+1] = {i, data [i], data[i].Name, data[i].Enabled and 1 or 0, data[i].hasWagoUpdateFromImport and 1 or 0}
+									bFoundMatch = true
+								end
+							end
+						end
+					end
+					
+					if (not bFoundMatch) then
+						local name = data[i].FullName or data[i].Name or ""
+						if (name:lower():find (mainFrame.SearchString)) then
+							dataInOrder [#dataInOrder+1] = {i, data [i], data[i].Name, data[i].Enabled and 1 or 0, data[i].hasWagoUpdateFromImport and 1 or 0}
+						end
 					end
 				end
 			end
