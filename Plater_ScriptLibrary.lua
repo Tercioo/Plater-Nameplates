@@ -5,7 +5,6 @@ do
 	PlaterScriptLibrary = {}
 
 --scripts
-
 	PlaterScriptLibrary ["Cast - Shield Interrupt"] = {
 		Revision = 1,
 		ScriptType = "script",
@@ -135,14 +134,6 @@ do
 		OverrideTriggers = true,
 	}
 
-	PlaterScriptLibrary ["Unit - Important"] = {
-		Revision = 11,
-		ScriptType = "script",
-		String = "vJ1wVTjsu4)l(L1wBTJ5IX2rQpKlBvtx10krAFjjegGX2JcmdIzCACFGF775mdgWj426MivTY1oWmho3pFZhnWk4QaFrUIj4s4Yl13F1MCAWLEb(xsYOb(NMs43xg6NtIH7(kjDnS74a))LUz7Z6g4FrSGd)Yv0IfGG3CssYN4YB(Ckbw5gwgzjvEJr67Iqng4Fovgh4hOcU0UXSt2A2pPLTm0BRn9)hu5LHQv0YqEEm8diyzOOqF7fjLHmE129aZxgEvbB5sArVYWiXJLHeoS2kMYSDVr7ecEhwiKsIOPTdbNDYC7MBAYzDLrFrzo3gZ6Uv9NTIWxcjb8UCulLHNjsffBDKtR8VyTC1svjZb5ocrDsiUYQkb8TyD1v1RIvLyTfuyrU2RT2617ZB1DL4)SXmiKNFN7uhhR5UZhB7o3YXDsWIHtCW4hKsvfB8xquzCZwjzVg31oW)JKh11yZ(mECbLi3gI8MOyfLTCf0SfTb3JjldFW0h)rgVzaQ(b8zFN(PflKuvDdJtG)7kiXOtfeDyXaFDweTOJClAMYWkdbX20)m9TZ6Od4CHA)1(355ApZZB60XooZCM6nTQQ7O7k2P2NiuYxJY(8)mGHwJ7an0)(1PPaIg9r16IAl)SLB5gGAEziAwwDuJQm4ERsZCC8gp11BSRZSPtDTXQKBNvjjQPxJYKL9ZhpTQfy3PnTrpjnFfPP4nYEBWvTXVZCw9C6PAxY55UK9tDPrU78yn(JxBN1pMKsFjZ(gfGZ6(kr8d0cjAVlNpE8yWLijjOIn6jW3sd6Oqh3xgxWYHNcJf4pGWFHJhEoSm8ISCrHIWH7U28O3g4pz)(xgnHrUrhprcovENhe7UMghFlpxhpBDcYYB2Sz2AFaUC(Sz6t1SMo22Xvpmy5nz(4j65ryv3j2ONnfm83zzIe6Wt(EbjfdiqG3dWVPgiyYoaZIfixaGTqtuaU7i9VvW4R1rAd)Ilb(fNJ8l0NUHsOmClQOwGltWNotuqbIfwGBVynp2qHPVKMU4ngTErs1fqPpJcxt5pCfjkfV0KX13nO8dLHMpmWD7VvQra42jCOEJAEG2x4nIU9JjTpck45N3s((12D0kkjvT6usrlp4j6UwRuG3uJjATChpwz4BRnp8Nn)cM3E3iFe0PVGTCunkoSTd81DqBJ3C1WH7)iyjEyxTKPcyuO1(VV6a6gpojAuEHybd8cTe3v5luonBdWXSYVVdSOilIGT)232yGoIVJ9PQT2P)ZS8F3klE5ZjcmOR4TXi44y9KOgyU6CGJ9xj(wF4PnvUQpqx5KD7k7SDdZNsAHcPRLOPXuqB7h16mWFomPob0jmMAbi(tMp3Dkof7CWn)TS)RsV7tYzTJUcQubdP)FRzzWZJLdRN49Se6o9eqHY(1dLQDkgADvm(sGXB)nI1aOibOaZPuaF8OcAQGKyq1KIm9BfGPnqyMK)xiyDEEkdLLLPp3qrt3mOlZSZ7w0QqQziu9IiAE3OTiPPIVrt6a(6mc)SoEtiDPUdCP4oLD4Wo08VMc39vv(rQPbz4NQR2I223oOEgTv(LKdJUAbp(maowrR2SpNLcDn9IiX3VSqSMN073hxJQ2Q1RVUMSXrgYghzMlps30CulYgw2ZU92bhSL(SaoUVFVykANEVPZjwmWAeym8D4Kxs09va4L(OUrOVjCo(ZKcPP1q2VJkEdn6bhEiQj8UxTQ39WvQMW5EvQE3bVsGydhE9BVgVWAI7epxn30eA06L4AFrcyqWusonn9IZbyGfyxA26ufBi8oxlxtqWd56C0qALOjIQvImJLUrZMdaf1RatvlxtxaWiOGinv9YlsPuL2ozeoBbC2sfniujOryCk6t5Qvs4b1mz1BkYZHtIKShGTJiCosLCOglJO)F5cjPMtyCT1aMWMhcOVdZqFtTsF7hzsL0i6vScoWY1pMHOHFWqowleyeQKhRhsJm2quSCfrQmhdmC4TVfyVdVT3l4q7DHLPX3BaDJrA2)yy69qZDpGY)ugVu1tbD73LRp6PQDFKDFkdQXMxHn4)o",
-		Enabled = true,
-		OverrideTriggers = true,
-	}
-
 	PlaterScriptLibrary ["Fixate On You"] = {
 		Revision = 11,
 		ScriptType = "script",
@@ -157,22 +148,6 @@ do
 		String = "Lsv0UPnmu0)fEcKkrjbinW0EPi1nQ6IQKzpvT7SjXbSKXg5yOLx83(UjbOanJ2nKfbBNZ9Co3RVXqamfi6vwHwvGtTaXQt3Wnf4gqYqFF)qGWYYWvKNKml3aKaiPhIB7koqksnIvyu9QdgbFV4veMJ(Cn8FbKbqsGF4WBdIbsFexsaYr0Gbr(LHClqgZLcMQlzRCdtXkaseqil0V4OSz6nix2f4dfBjFLSI7xwODurXUxGBULBC08kLZqY7dK81Q0YSYrBxWL534ORvc7KSDtU3GSHZ5QntzZK8oUhC0DJh4QmCjoqQgCkvvP75r0TRqvWnwhnvNHgAb3WBKV9dGmescJgcKySAe53pS3W4yFuUExJZ3VLx9zWuMzo3o67ImE7)oQjPA1bmhN5Hxxr8IMYr)QJw3GmASHJ))iBgxI6CG3oF5Jsmc3(KwOqYA3AM2A1lBDSX8UBDE(El2YQxv(wF8xGpY9785flqV3VtwYMZp2ViXH9IcIJlviA)Jwy)Rb7pBDH0P6eO5KPXe)S0P))u28)3u0TB9hTv1IVPnlLc1Ch9rMzdd)gWr)XuY5T5bbxttKuNYWEcBLLtqyvs)tmO6fTRjYr98kljvWoPqlYrqVfENQlmuhvLovOFJ2ivYkkoOZ46vFOq7hNz16ogp8SDk)v7yTuBUB7L48MJPOjbA800ZISxj4Bb3qSFs2gvE1B7pH419TNdUSBPXBs9lV43cWFo",
 		Enabled = true,
 		OverrideTriggers = true, --next cannot have override, this is a 9.0 cleanup
-	}
-
-	PlaterScriptLibrary ["Unit - Health Markers"] = {
-		Revision = 12,
-		ScriptType = "script",
-		String = "nJ1Apnoou0)l8P2r0UPp5HeReZmAwGfkvkmSFaie3exQ146u54YJD3j)23712jnTnbA4XOvfsCCSp3JVxFp2oET8UWZnAMIfjIHId0pFXtZOEd655(N0NsFBlp3lj85up3dddt8NsK)GkJt8zcvuIVAcnXFcLWvts8hrKqnqTs6uMaA8trZt8jJIMRGxgfhJpW4mfJIfHk5SXq)NrLbuHQPN7aYuWqNRnCIpy6JdIeWvHIkhtcOxdC4Cr81d5eOMRztj3rJV2q0B5KruUN7xPXbEUEkVbTxmM6BhtPdMboPgBeNi(bYebTAMt3X8MRZcZ1YAoWlWciQi5xI4rYuJRD34FT1x7OV2fVQsz1LuPc6jpX)uGyj(2(xf(fy6IHFhNsKeFD9nrc3DbHB75Eg5rnXxRde(Sjei4Cgta(TMTkJJhITBHdU5o755(njjazJ3NRg5fZNoIkx1lASGcNIMpYwqGCru2g2Ftr2(lfznM7BmoplUSbXvnpgdD6TgkngEruCNNjkAA7YbWLdkzrR25OOns(Acy5DoPHly0RIcUhKnqJoyphhhWAKWqeEdAEUAhMRchhUXbs2mOxygfCdA83fmqUOrI)rwTMZs1HUA4nEU9ErAA0OUnBQKNBxt8YTv)UD7PdA6I97OjIUOo8bf7Tx3(ADrO2EoT0t6GITBTlsVDaPrkNkXisJlIK3nHedv3xp2cGedsQS5ZRAA5g8QhMqf2wnxpWFWeZNqe3H6LGbGB6KzWuGbGwZMolsQic4X4zuohI3TaYpEUiWOMwlMYhVTbXJdTfGPctPqzQ4(liJ4yrJZx)u9Kts8n)A0GjIHeECMxOM9s6I3M29MFFwimcSbNAzwaaIcliCc(d4vVL51RWGlH3EqC0beB2fU33PFpN(7Slgy78(n8zJbeY6rttSZmmRRJuICCZ(R4MV)rSqAT6VCZphsy4KNwR96bE2O36rB)RksxqmhxeFOzj8e)ds8)N1hBnAiMfCC4QvNT0FIFi7EgkpeVENVQvVU9639gd476amVJZp3of5q6O53vuV0512E1v3bSXXXmIn3kKgqMXKMv5AOReLmGmliApJWeLGA)oRG6qinxsstzVKjNZ1dQQG5QmnX3LaDMBb9WGG5YyAyfafvTUbHSxgKj)70izOKQMqSaH24fzhO5zz3oO3VlEPLf0PSyfSjao16dzccoZ6jK1fcgOAUmygCofigSE6ecUochPIwUhqo2qVdvrc6u0VMb7plAE5I8GSzOFrsZuLwsuAZsz1SD1x9zICFdUxqFunxsRjyCyKSvKjVDRng(9DPk9McsbQf6EX)ReeUS)201Iy6Fqvhrz3nrvREbGUXIrFyEIuXU3IRihgVcFHrrDtMnv(ACRYqEKE7X2ZmP7T2dwK05vzvE7aqR8R3SoC6fHYdwPl9ScbqoE6kQ0lmNzlvzV73WCBNYXCmQwY2oN2nMRYa1dWBSc7cJkhN1wc4GCLFjsS26Yln8(9mKErpuHakIuLLPvzaxB5YnwmQCKcRG534wwMYYKOhQvb2zNY9ale3C7bLMc(xydQcWLR8nmc2wDTT40XQTkoNhvJsFTMzFYo)aE2P(hH306gSsGOEK2zyDlFQOzTnYnR9v7vYjcA8W5yW7dSVG32ewqhUe1yXM48H5LlFob(XjOpQxlPM5KG7pKaBGsxtC(ZC0eoL7y2Dnx(B1u)DzMP(eWpRX0T4xIVjxiS6oNSpCr93NjrL6yY(8dFi(eyNVZLBG49ZkXIVe2WQ(gUy4jvNxpZXjXtZhw6CQJJr9ybUZLnCDOkEk0x7Ps3ip4svMDo2L9y5pvBR)N(9lCmFtpV)7d",
-		Enabled = true,
-		OverrideTriggers = true,
-	}
-
-	PlaterScriptLibrary ["Unit - Main Target"] = {
-		Revision = 11,
-		ScriptType = "script",
-		String = "vB1wVTjsu4)l5PyTlwCZyZkLhsAAutQItLWBFjotyagBJkmJ1W4068a)275mG5snPQrTRIwzB8WzoCU(D(giwKfKaXwvQGxalNRVFX(TmYCpsWhz7pSRlj4Z0SDGCtsWCAoJeCrgL)LYWGT0y4URJfC4kxXKRablppj5oEXYpLrbjltZPRzflRS1Jr4tscUKvetcikYC7w3oPNB9o42G3JwUmuTHvgY3gdxGGOmui13EDszykVE7taFxgUqMUEntEszyK4BLHuoiBtQQA7tgFilUt7NYqVxxkKrJyzDtbNEvUHQqT1V(11FRkNBRBDRnC8gkFndJGTOjENitip49loeAVtRuzyJALH1k(QchHOPiexBrLa(j3vVQrk2yI1EqHn5MO2QoQ5dgVAij(1glCqr(k3Poow(U(M2U(woUtiRmM4GjpOL6q297LvvHzNISxB4AtcUL(nDpUA)uESKrloKI8wpVHLUEdG3I2J7Lwug(ufu(2uENXOoXAq6ZW17wTQGPocV0yzuRd68Asl(U8igKxxjPXOaseMBtFBWTZogbKiufVuZ)kpx7zEEtNA64mZzQ3062UJgw0V5FPq9NPT7)Mqgc5Hse)etwG9O5(MMMaOJMKGMSYcKalm1duySfuelt3cpfYab)bk)VCKNZOm8wkskUGkxZab3)PhibtE54kNLKsxw8LDzzrcoR4rpirDRAdbwt8STS1dawEZm9NH(AkySNtZfjmJZFwsZWqekvFaa(zvGFAVrcXkKigOQZ3kKkkhuacHX6R1dq70XEl5(CGC)sKCxZRGAOQi2R51rXu8PZfsgWQBbX8QD84kw9tlyzR(7kREDs9cyaiNbRz8NwqJYWLv1q9DJkVPmS(tZQQk0yOZSfGxNZHwi6GtBm34nmAMAZfuzxN0kDm2kQAeDnWGo7x)XldpRj2G)2)leB29Z2XasDv66XndFW2oWp3rDJO2vggVmHxbsF1OzMiMM1z)puth2gXjrJ3kfRsHOqRXJ1XcJZY3dhQxh3pcEuKhrreS9d)0Y0)eWuh8ZPh55)AWmFaE1EDfg8Id30)don0hLni8bRvfmPcp4lrFGGKnOLjb(ajMjm5mdM18mD9mN67dd4woVAW8O3iqRHHKvOGzW)VHlgDCU8dnDOpy)NKuP24gg3F294cRjUt8C1e2jSODR1Y0CSAzmGS8Ra0jr)cujqsHqk4ieG(8MkAzTEhVz1hdJhodi(TS(VGy0WiEdlgo5lfO2JrU9EVXxhuG(412he1)0bghh6TxhPTgVJ))beot1)bat3nF(zt91oOX0vnNxeiyw9QgKV)d",
-		Enabled = true,
-		OverrideTriggers = true,
 	}
 
 	PlaterScriptLibrary ["Unit - Show Energy"] = {
@@ -211,14 +186,6 @@ do
 		Revision = 1,
 		ScriptType = "script",
 		String = "9Qv7YPnpw47f(ZAMnqTnFNz6pinjnPBBsMxtBFFNMsracWBm2S2MMK2z5oBN9sAVf2ZrswwgKbtG2HwcylDopNVE0rY03QFV(oblIDd8JGpEd779EEbT)nn778pOpNCxR(oFI4TeUUzFNBiZP9DULDJvdGBD9OaF4D)yA4eYi69Dhp(w)O7VZJax5E35KP0O75c6Bd9i(p035CA0O(o9J7FJDQoBKrN2j60XzwWJrRgepJcVrcNsJxnWhaXQbUaaiRgerxqcbLTAWWGNwhG27ha9idPEQaSwgaUHSfy8cu4cmgTG65LaXGqXfU(C4ltedXHpee)SVdiA1GEHUtNIsbScWU8HlnZfS1sWDlvDDNZbzu1Zlsxp)iD9dms3y3r6l9irZonrXSVDGgAZuLcQ5dKNGS8Q2jJ4QGhxnWlWFkeksYWMGAD1GfEKNPqe4Xz0KG0iseenIGuW4iiC8bxFWlv1sylS5D(sip0fXBIxSABWqcjJyx9S9ZA8xoFinmJ7y1aPkaRRvQ1LbgVjWlimbdScB8F2S3RXEVo(E8AIwmT9bIJ4tH7ozZxjlNhabC2oV0Tw5NU16at36OPU1zg5bQcVc8TtpQ1vwMBMVzwTrYq(S(KPtyxlK(3I40zZji5qecpfocKpzbIc2WX81iACSR)u4taMJdd8GpntjLog5lFGQjzLjBnjR2hRKvho4vtwTS0ulAMPumcmImfJmCMa)mGV78fEUXlhldNyuwI9HhbSNQbe82Bc(2zb)ewenf2Rgmp47Po)mO)Yq6)Aj1F0Zs0x38id)uvGWVwUlTxBlRTx7aRbTQNhNVLCHgNZda3wxFqu4nKS)zV8Hwx2ytMYXbXBYtEzdZ2nRB1UUPDZwTSB2S)KknQHX88UtTCVtwowM9COmSDh)pxkZYgTgDlyqibsyWsS1HSCgmNGMfdTn1k6hDhhpBdrhha9MaCoypktq2fKB65GLHkkkjDVcwAZ8ZpD7KjatLmnRDgpYFUAqY9FjP8kLmOf2ABumzSWzu3PZIpCtuTMvyG1eg(ZhIHP4I(lPlcnXCxlfUZgvYIkYdRiUtgnMrWP6BnGCy7jW83UgT(D7vTT)TRXA)29Q5t)3rs))g2YMNrc3y1NohiPVTcPFDH6xgrrfoKeMH7)SeL)XiGkqcPxeH9WGajmyIJ3Q3quCmk7QmW1CZvKWbE2AiJVQuR6wTA2PwdZADmRxRoBfM6kD0BU(QnhMjKTRETWVLMKj52IBLtgL9H2uVD7TTBCzHJtpXXeCR4WnYaI2hAEvNnxLPMCpLIfhAl0j)alqG64(J0MvX(FooT71J(eyOmHJNwHzMCE1KAyZyrYSbzAppXdV4zpZgYlpzNPFRmP1QqS4BkL74GjDOPUmezRbrNrg9WurJsAWLjdxMPLwx2UDZow1Az1Pr9MnB1WM3IxCMG8ztpk4TMo8geoMgwmSQ6df4Ip9Jc6QRPdRMMRL8xZmdaGe950pJTukZ)7C02Udt4RgWfpIWgfR6utJB2MRj0Rynj(Yq362Vqw4lN4GrFNggHAh8ewMGEjJhJ6GlY(oSkdNy0kCIgf6UaMvnreVwdy1awYNDc7CLvdUE(IGWyIp8Te2VVC3x770yNahx25Ba)(34OTVdgJH)0cZ7MpKm()9F)pbv6(JqIhcrGU)kWu849pVXPYcyhiEMS0FeNv2iI6n5Kvdw67gF9yXhyEe4Zu)V3Jm0d)i3kzFR8Q3TAG4L8tUqJ6gjJV6hxmgmbUHEwWtgQcLRPYLzGZxrwBiZKxsXMYlWpksWr9Sr5IicUlTkBA3KStHKY2mWZSQzJY7Pyg)8AcPujUKA1OqOtovMfX(K4ycsDPPxTqImB84BVH4ZsZcxUioFpV6Cvc4vH6RjUtRUw3z7uojVWuStDOXq9w8YOKwOaDWDNNEhjeKmETi9kwTZRYLZxHuybJ3vOlMELS3(D8VQ8ckyAKTGrBLqLkU(r0WySlSXSnWgs1k3(oDacUAqzABKB2UrZonBclw5GhNZXVUuKXcCAlGDRkpWM0S1QXjvPkcU6yLXwwtw272zTjQrdTqknBhhZUZ23I21yfNEL7ykQyfpUL9VcxBLkJcPSNRfbQeG(Hwgs5hrXsSJUjykor(elgsN5kp4N09CKhvQpE0cPM3qW7(2uVBpU2Gfv4CS5wkwyjSAWRttxo9nmd7ACbOu)1x(IYkvV5QRV4tx8HlUP3L)r3pCX9F86kDhnZL(D6CQFCLUEqTqL36f84x)6jcgG3sJzTbyu(Vx3u5I8LEHRAJxT0qzIesI(t8A1nnFvdlBKtf(VvlZxbLn)7Y5weN8jVGrep0pRZ0zwCX9psHQFGi)2zEao(aR83Ou3ZpVu5ImRZdjp(EYZ0qJs3(Pl(J339Vq7UvHM7DbUyhfgLgrXqtjHxfDJIRSBXKuVSTeCwsljHqay3woKNPplWBC2NmNYOI4hXnD3SfSyr(3eRKYKzk5MUcbIHEl7eDRlMqdySLLrYZFpl4rDtdc6NCuv0greDz5fjIvKqIOgzczm9AFwCqVNwLDETaeMU1993Dvxm)ZklZzYs4zE(RVswkxwlqUDz8raj2ffjiKn3nf)iGMiKiF8rm(9ShJVMeD1L3w3IYS0N6IqAqDMhj4wgI8XITLXiF2tNGUBViQYFnt8hqBWS)GFr0eXBfeorQWTCooULSTaiFwiO2v9zIutwBsdIc4po0hdq2mFk(K9bh9RcPEbeLCEEskJ0u4j03V4AH4YzLaKDDiIypmYOhyX29Zi1K6u92q3PU(epz0LLmTZCGIj0uhXR3DQxXePmdBRYmDu7MklzpSyExYpEh8hIZw7As2uyb6psowgKvkqnknb)tj1gfX2wW9)bS0dQwfiDCyMOCt(8EgkTwVLLq2QXHbl6rNZ4lkvUqiIT3j3FqnAJvN2MfFw8qtme6igL6D7TVV313vuLM3Qq5OkgZGrjp6KnT7qSbVsc2fZ9BlXz1sIh04N0XtPx66XReuBn9SLXXb(r3)5RUU3fT)Z2SgqXrJUq2OrkTHt1ozXjWConM46fLCemPTKYewCYmJdxsfFpv4zAmTGMdBNTgvXfJuER9(liLJs0WmXHV2cT7Lt)gwL2R1RyrvcqOb5yU(tn8D9W4njm(XGWhWiEP3ctbhXnbHZjEfm57g2UdLjvB2lBon8NUjV95OO2esIEr445JSrjDc4hz1887wk3zJdw6((O4lgQYS4NKtISEXNDJ6ZqOWhCJOBfKibIG8SQCIwyO(XzU6500fXLEMKtOGg3l5zkiWzgF1jPtBBNae0fZX2U04nLp9J99WOYpmxGQb0)yuaNqwZJTYX(zDzEOyL3lSUjR2MhYNrU6u8mAk)Y1Pkb4(PzLzU36pNDg(II2O1WpNKCbB6tSz)DuItBz7YMpOxKfL2hMOW(ksK6jpINWnUuHUU0kmXK2ZPuLnb1sboVZg6las(TNP)UIFXu6VP4xv0VsEHDCsvyq(t0qGIAFQcs)Hjx(ff2dPai85TeTpZpJ3yZZIVVJL1VIZUDVApyqohKVLj)P52))d",
-		Enabled = true,
-		OverrideTriggers = true,
-	}
-
-	PlaterScriptLibrary ["Relics 9.2 M Dungeons"] = {
-		Revision = 2,
-		ScriptType = "script",
-		String = "nJ1wVPnsu4)l9PeTbKVBCLYdPjButxfAuC2TVe56b7bS3ySrEgcn9b)BFpNz8fmGdxB1keGzgpNZ335UXt17jp3Sz84SugC5qXVF6TzuVHMEU)f9TQDv9C)hsYCQN71zjz5f(UuopoDcZZDizA1YvlEvAquwUN7DbzPWNPCA(ysa95Rcd)Ak75hsiWkphpLmHYEwQGVNqgrt8CVHYc8CVk8FNZ4f(8iAHFkOGz4rk8dKkFm(bLeev4pnBKh3BOwdWvlbEeHXPcyvHDbbVDGQJH9atnfdDvDDBDVX9mnqjCRTTTIJQTIIHIJIMLnUJP3qDVBnCmmv1CuGvv0g4ma3r3BObkqELj4ZOcl8lv5(W9a5rKCpskg5ACu9ltnPQUp714P0uWc5oJsNvR0L5PP5afhGIkAo62MM2n80WYXEGTMPPMHTMTPEjBqEAzblROPOzyAOAPuEMkEkSRtzhldNwJEMe91C1yD3yqy(giNLMQLTUULIUMTMMQEPRciNPYald1bgOd0wZYQKc6Ds72oXRZYscZwKw4)inCEac(J3Lgul08gHwtAZgsB1kPZSIZdvQG3xNjpS5(HMrjK0xQqdQtRUs0TQt0DJ)jD98CC1twAoIe7gKyu7eIiPtaLpSjZh1Bf0gvfAqsL3PCZ9YGaEKkuC3ySqtmRWhFherdEHgEX6fFycdI8EqTgc3sw5T9kcmyhGCzlqAnOHwAq(k5hW3kkvQKNXjjf(lId5qnSSXRQm4eXPGRboWT5eradY6YObvuqclGqa7hZtNpDenVYs)nHaa86SoEnwfUr04jr83bVA1Lcf3zdG1AZJdbVYA6s5YrBqxznoDN14CKznQD3FuPoV5tz5H0n0HuU(jn3rvRvYJapSOSfsvvHOpvHGhiXyr3QDp08LVfrbBjnLmkPjpPSZCDOXOsRWI4emYH8kTCdgaL6BNWwlscPLEx(wmqQlNlU3X5Dn607Qx7DhkG)Q(w8ZM1ooF6sTd0xEugPMkHXNVY9P)CLbpK)yFuoN(dElDB1s3VthXwG56BESPz9jaf2RBbMYAPX7DxAsiAZKqHNaRahR3f8knNHvRgctcILBjHHOeLcWZvvanoIrxwqE8m4uyul8feg(injoacTD6Rv4FFH)nZH2f4i2UWmkgAw6WizEUgYzzCvhyAnqm8I8sfHSfxQJc0gaxmNeML37QFMtsqCyH1OFHIZ)MtXzHzVj7gfgZWOW5XSiCAdjowed93aVwyjoGUyPLOBgHhaDqGyF3XZtl9UNXOjJHm75PX87clVakGpLEbM4)6tyQpCPK5IFDEXxk8LV61loLrZ5ywEifBBaqSE3QJ3)ASr7Fdc(Snj9LKxXxOPHaenBdXdq3cjb)eE556aZEao2byyVHTJJHbmxVlMQ)7Xq0cmyXRFxQT6Qg9Da(KYxXq9(ZQp(3hol4UBk8V8sOCSiu(Cr9901pydyLpVtN3qTWH6RI5WBbTpio9hoV7ZV(o0egDl4wFhW906kpmrLNdLbtzNC4BUdWFtptYHsbOS)EYH0WLRieUJHNBu7JYsNZWUfBcbRTsswaokBoCWj4HH3KlKZFSlhxy4R1O0KxhdUfBUqh(x2kTTp0NAC8K(1D47(4TGSqo3q5K4eMWqSil)Lp(ajNj)lpyN1LseBFybCRYBrK7rqAzt9FLmU8)Q40qxzu(rW3YPJ(vs4Q)TKZ3sox30xoHdMQv)03RNZ1cOD1wytWB5NyFR2Ynaf8CTqYguI4HI38wYNF8Wno96v(Cn7mJBECSTs319(5)HsFnC1YVhHFVl2lPgFh)2Xyc2CTYA1agzscp6tK8(4AOR7JaKEcMY(m8ONVsL)6PG61t28cNBzd9Mk3wbFAsXedLlOJdbVAR4T8cg4s9)Fd8U88GkY)vsV)7p",
 		Enabled = true,
 		OverrideTriggers = true,
 	}
@@ -675,10 +642,10 @@ do
 			local scriptData = Plater.db.profile.script_data
 			for i = 1, #scriptData do
 				local script = scriptData[i]
-				if (script.Name == "Unit - Main Target [P]") then
-					script.NpcNames[#script.NpcNames+1] = 179124
+				--if (script.Name == "Unit - Main Target [P]") then --deprecated
+				--	script.NpcNames[#script.NpcNames+1] = 179124
 
-				elseif (script.Name == "Cast - Small Alert [Plater]") then
+				if (script.Name == "Cast - Small Alert [Plater]") then
 					script.SpellIds[#script.SpellIds+1] = 350554
 					script.SpellIds[#script.SpellIds+1] = 348513
 					script.SpellIds[#script.SpellIds+1] = 351779
@@ -795,8 +762,9 @@ do
 		end
 	})
 
-	--#20 9.2.5 Season 4 Dungeons Spells
+	--#20 9.2.5 Season 4 Dungeons Spells - all spellIds entries has been removed, script deprecated
 	tinsert (PlaterPatchLibrary, {
+		Deprecated = true,
 		Notes = {
 			"- Added Season 4 Dungeon Spells Into Scripts."
 		},
@@ -806,164 +774,12 @@ do
 			--aura tracker
 			local buffTrackerTable = Plater.db.profile and Plater.db.profile.aura_tracker and Plater.db.profile.aura_tracker.buff_tracked
 			if (buffTrackerTable) then
-				--Sanguine Sphere (iron docks)
-				buffTrackerTable[163689] = true
-				--whip rage
-				buffTrackerTable[233210] = true
-				--
-				buffTrackerTable[297133] = true
-				--In The Spotlight (karazhan)
-				buffTrackerTable[227931] = true
 			end
 
 			--scripts
 			local scriptData = Plater.db.profile.script_data
 			for i = 1, #scriptData do
 				local script = scriptData[i]
-
-				if (script.Name == "Aura - Buff Alert [Plater]") then
-					addUnique(script.SpellIds, 163689) --Sanguine Sphere (iron docks)
-					addUnique(script.SpellIds, 227931) --In The Spotlight (karazhan)
-					addUnique(script.SpellIds, 233210) --Whip Rage (karazhan)
-					addUnique(script.SpellIds, 300207) --Shock Coil
-					addUnique(script.SpellIds, 301629) --Enlarge
-					addUnique(script.SpellIds, 297133) --Defensive Countermesure
-
-				elseif (script.Name == "Unit - Show Energy [Plater]") then
-					addUnique(script.NpcNames, 150159) --King Gobbamak
-
-				elseif (script.Name == "Unit - Important [Plater]") then
-					addUnique(script.NpcNames, 80875) --Bombsquad npc 3rd boss (iron docks)
-					addUnique(script.NpcNames, 163746) --Walkie Shockie X1
-					addUnique(script.NpcNames, 152033) --Inconspicuous Plant
-
-				elseif (script.Name == "Cast - Very Important [Plater]") then
-					addUnique(script.SpellIds, 161090) --Mad Dash (grimrail)
-					addUnique(script.SpellIds, 156301) --Blackrock Mortar (grimrail)
-					addUnique(script.SpellIds, 166341) --Thunder Zone (grimrail)
-					addUnique(script.SpellIds, 163379) --Big Boom (iron docks)
-					addUnique(script.SpellIds, 166923) --Barbed Arrow Barrage (iron docks)
-					addUnique(script.SpellIds, 172952) --Throw Gatecrasher (iron docks)
-					addUnique(script.SpellIds, 164426) --Reckless Provocation (iron docks)
-					addUnique(script.SpellIds, 163665) --Flaming Slash (iron docks)
-					addUnique(script.SpellIds, 227578) --Healing Stream (karazhan)
-					addUnique(script.SpellIds, 228528) --Heartbreaker (karazhan)
-					addUnique(script.SpellIds, 227789) --Sacred Ground (karazhan)
-					addUnique(script.SpellIds, 227779) --Ceaseless Winter (karazhan)
-					addUnique(script.SpellIds, 229608) --Mighty Swing (karazhan)
-					addUnique(script.SpellIds, 227925) --Final Curtain (karazhan)
-					addUnique(script.SpellIds, 300129) --Self-Destruct Protocol
-					addUnique(script.SpellIds, 296522) --Self-Destruct
-					addUnique(script.SpellIds, 294349) --Volatile Waste
-					addUnique(script.SpellIds, 293854) --Activate Anti-Personnel Squirrel
-					addUnique(script.SpellIds, 297834) --Toxic Wave
-					addUnique(script.SpellIds, 299588) --Overclock
-					addUnique(script.SpellIds, 302682) --Mega Taze
-					addUnique(script.SpellIds, 291946) --Venting Flames
-					addUnique(script.SpellIds, 295169) --Capacitor Discharge
-					addUnique(script.SpellIds, 285440) --"Hidden" Flame Cannon
-					addUnique(script.SpellIds, 291613) --Take Off!
-					addUnique(script.SpellIds, 283551) --Magneto-Arm
-
-				elseif (script.Name == "Cast - Ultra Important [P]") then
-					addUnique(script.SpellIds, 163966) --Activating (grimrail)
-					addUnique(script.SpellIds, 227966) --Flashlight (karazhan)
-
-				elseif (script.Name == "Cast - Frontal Cone [Plater]") then
-					addUnique(script.SpellIds, 166675) --Shrapnel Blast (grimrail)
-					addUnique(script.SpellIds, 176127) --Cannon Barrage (grimrail)
-					addUnique(script.SpellIds, 166380) --Reckless Slash (grimrail)
-					addUnique(script.SpellIds, 162058) --Spinning Spear (grimrail)
-					addUnique(script.SpellIds, 167516) --Shrapnel Blast (iron docks)
-					addUnique(script.SpellIds, 166923) --Bladestorm (iron docks)
-					addUnique(script.SpellIds, 178299) --High Explosive Grenade (iron docks)
-					addUnique(script.SpellIds, 172982) --Shattering Strike (iron docks)
-					addUnique(script.SpellIds, 163390) --Ogre Traps (iron docks)
-					addUnique(script.SpellIds, 173384) --Trampling Stampede (iron docks)
-					addUnique(script.SpellIds, 173514) --Lava Blast (iron docks)
-					addUnique(script.SpellIds, 29513) --Goblin Dragon Gun (karazhan)
-					addUnique(script.SpellIds, 227672) --Will Breaker (karazhan)
-					addUnique(script.SpellIds, 228603) --Charge (karazhan)
-					addUnique(script.SpellIds, 227339) --Mezair (karazhan)
-					addUnique(script.SpellIds, 227493) --Mortal Strike (karazhan)
-					addUnique(script.SpellIds, 241774) --Shield Smash (karazhan)
-					addUnique(script.SpellIds, 229611) --Heavy Smash (karazhan)
-					addUnique(script.SpellIds, 229151) --Disintegrate (karazhan)
-					addUnique(script.SpellIds, 300188) --Scrap Cannon
-					addUnique(script.SpellIds, 299475) --B.O.R.K
-					addUnique(script.SpellIds, 299502) --Nanoslicer
-					addUnique(script.SpellIds, 300777) --Slimewave
-					addUnique(script.SpellIds, 301681) --Charge
-					addUnique(script.SpellIds, 298946) --Roadkill
-					addUnique(script.SpellIds, 298940) --Bolt Buster
-					addUnique(script.SpellIds, 300424) --Shockwave
-					addUnique(script.SpellIds, 283422) --Maximum Thrust
-					addUnique(script.SpellIds, 294290) --Process Waste
-					addUnique(script.SpellIds, 291973) --Explosive Leap
-					addUnique(script.SpellIds, 293986) --Sonic Pulse
-					addUnique(script.SpellIds, 291878) --Pulse Blast
-					addUnique(script.SpellIds, 292264) --Giga-Zap
-
-				elseif (script.Name == "Cast - Big Alert [Plater]") then
-					addUnique(script.SpellIds, 164192) --50K volts (grimrail)
-					addUnique(script.SpellIds, 176032) --Flametongue (grimrail)
-					addUnique(script.SpellIds, 166335) --Storm Shield (grimrail)
-					addUnique(script.SpellIds, 166387) --Healing Rain (grimrail)
-					addUnique(script.SpellIds, 162066) --Freezing Snare (grimrail)
-					addUnique(script.SpellIds, 163689) --Sanguine Sphere (iron docks)
-					addUnique(script.SpellIds, 227592) --Frostbite (karazhan)
-					addUnique(script.SpellIds, 228254) --Soul Leech (karazhan)
-					addUnique(script.SpellIds, 227999) --Pennies From Heaven (karazhan)
-					addUnique(script.SpellIds, 227987) --Dinner Bell! (karazhan)
-					addUnique(script.SpellIds, 232115) --Firelands Portal (karazhan)
-					addUnique(script.SpellIds, 29580) --Heal (karazhan)
-					addUnique(script.SpellIds, 227616) --Empowered Arms (karazhan)
-					addUnique(script.SpellIds, 241828) --Trampling Stomp (karazhan)
-					addUnique(script.SpellIds, 228606) --Healing Touch (karazhan)
-					addUnique(script.SpellIds, 227800) --Holy Shock (karazhan)
-					addUnique(script.SpellIds, 228239) --Terrifying Wail (karazhan)
-					addUnique(script.SpellIds, 229706) --Leech Life (karazhan)
-					addUnique(script.SpellIds, 294884) --Gyro-Scrap
-					addUnique(script.SpellIds, 301629) --Enlarge
-					addUnique(script.SpellIds, 284219) --Shrink
-					addUnique(script.SpellIds, 301689) --Charged Coil
-					addUnique(script.SpellIds, 300650) --Suffocating Smog
-					addUnique(script.SpellIds, 297835) --Coalesce
-					addUnique(script.SpellIds, 300171) --Repair Protocol
-					addUnique(script.SpellIds, 300087) --Repair
-					addUnique(script.SpellIds, 300414) --Enrage
-					addUnique(script.SpellIds, 300436) --Grasping Hex
-					addUnique(script.SpellIds, 301088) --Detonate
-					addUnique(script.SpellIds, 293729) --Tune Up
-					addUnique(script.SpellIds, 291928) --Giga-Zap
-
-				elseif (script.Name == "Cast - Small Alert [Plater]") then
-					addUnique(script.SpellIds, 328180) --Gripping Infection
-					addUnique(script.SpellIds, 319898) --Vile Spit
-					addUnique(script.SpellIds, 166335) --Storm Shield (grimrail)
-					addUnique(script.SpellIds, 172810) --Burning Arrows (iron docks)
-					addUnique(script.SpellIds, 172943) --Brutal Inspiration (iron docks)
-					addUnique(script.SpellIds, 173148) --Flaming Arrows (iron docks)
-					addUnique(script.SpellIds, 163376) --Malfunctioning (iron docks) Jumper Cables 9000-XL
-					addUnique(script.SpellIds, 228011) --Soup Spray (karazhan)
-					addUnique(script.SpellIds, 228277) --Shackles of Servitude (karazhan)
-					addUnique(script.SpellIds, 29928) --Immolate (karazhan)
-					addUnique(script.SpellIds, 228559) --Charming Perfume (karazhan)
-					addUnique(script.SpellIds, 230050) --Force Blade (karazhan)
-					addUnique(script.SpellIds, 374743) --Fel Fireball (karazhan)
-					addUnique(script.SpellIds, 227615) --Inferno Bolt (karazhan)
-					addUnique(script.SpellIds, 229716) --Curse of Doom (karazhan)
-					addUnique(script.SpellIds, 229083) --Burning Blast (karazhan)
-					addUnique(script.SpellIds, 299525) --Scrap Grenade
-					addUnique(script.SpellIds, 300514) --Stoneskin
-					addUnique(script.SpellIds, 285388) --Vent Jets
-					addUnique(script.SpellIds, 294324) --Mega Drill
-					addUnique(script.SpellIds, 294180) --Flaming Refuse
-					addUnique(script.SpellIds, 293827) --Giga-Wallop
-					addUnique(script.SpellIds, 297128) --Short Out
-					addUnique(script.SpellIds, 294015) --Launch High-Explosive Rockets
-					addUnique(script.SpellIds, 291865) --Recalibrate
-				end
 			end
 		end
 	})
@@ -1000,6 +816,9 @@ local listOfScriptsToDeprecateOnExpasion = {
 		--this is a complete list of Shadowlands default scripts made only for that expansion
 		["Relics 9.2 M Dungeons"] = true,
 		["Cast - Tank Interrupt [P]"] = true,
+		["Unit - Main Target [P]"] = true,
+		["Unit - Important [Plater]"] = true,
+		["Unit - Health Markers [P]"] = true,
 	}
 }
 
@@ -1037,13 +856,20 @@ function platerInternal.ScriptTriggers.WipeDeprecatedScriptTriggersFromProfile(p
 
 		local deprecatedScripts = listOfScriptsToDeprecateOnExpasion[currentExpansion]
 		if (deprecatedScripts) then
+			Plater:Msg("Checking for deprecated scritps")
 			local scriptList = profile.script_data
 			for i = #scriptList, 1, -1 do
 				local scriptObject = scriptList[i]
 				if (deprecatedScripts[scriptObject.Name]) then
-					tremove(scriptList, i)
+					--set the time when the script has been moved to trash
+					scriptObject.__TrashAt = time()
+					tinsert (Plater.db.profile.script_data_trash, scriptObject)
+					tremove (Plater.db.profile.script_data, i)
+					Plater:Msg("Script", scriptObject.Name, "removed because is deprecated, you can restore from the trashcan.")
 				end
 			end
+			Plater:Msg("Finished checking for deprecated scritps")
+			Plater.WipeAndRecompileAllScripts("script")
 		end
 
 		profile.expansion_triggerwipe[currentExpansion] = true

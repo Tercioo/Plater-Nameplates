@@ -2678,6 +2678,7 @@ Plater.CreateAuraTesting()
 			
 			local onToggleEnabled = function (self, npcID, state)
 				if (not DB_NPCID_COLORS [npcID]) then
+					--[1] enabled [2] only script [3] color
 					DB_NPCID_COLORS [npcID] = {false, false, "blue"}
 				end
 				DB_NPCID_COLORS [npcID][1] = state
