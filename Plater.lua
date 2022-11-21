@@ -2305,7 +2305,7 @@ local class_specs_coords = {
 			Plater.UpdatePlateSize(unitFrame.PlateFrame)
 		end
 	end
-	
+
 	--when using UIParent as the parent for the unitFrame, this function is hooked in the plateFrame OnSizeChanged script
 	--the goal is to adjust the the unitFrame scale when the plateFrame scale changes
 	--this approach also solves the issue to the unitFrame not playing correctly the animation when the nameplate is removed from the screen
@@ -10017,6 +10017,29 @@ end
 	function Plater.GetNpcColor (unitFrame)
 		return DB_UNITCOLOR_SCRIPT_CACHE [unitFrame [MEMBER_NPCID]]
 	end
+
+	--pass some colors and return the first valid color
+    function Plater.GetColorByPriority(unitFrame, color1, color2, color3)
+        if (unitFrame) then
+			--from the Npc Colors and Names
+            local npcColor = Plater.GetNpcColor(unitFrame)
+            if (npcColor) then
+                return npcColor
+            end
+        end
+        
+        if (color1) then
+            return color1
+        end
+        
+        if (color2) then
+            return color2
+        end
+
+		if (color3) then
+            return color3
+        end
+    end
 
 	--return which raid mark the namepalte has
 	function Plater.GetRaidMark (unitFrame)
