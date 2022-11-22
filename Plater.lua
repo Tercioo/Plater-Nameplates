@@ -7222,7 +7222,7 @@ end
 					
 					--npc title
 					local subTitle = Plater.GetActorSubName (plateFrame)
-					if (subTitle and subTitle ~= "" and not subTitle:match (string.gsub(UNIT_LEVEL_TEMPLATE, "%%d", "(%.*)"))) then
+					if (subTitle and subTitle ~= "" and not subTitle:lower():match (string.gsub(UNIT_LEVEL_TEMPLATE:lower(), "%%d", "(%.*)"))) then
 						plateFrame.ActorTitleSpecial:Show()
 						--subTitle = DF:RemoveRealmName (subTitle) -- why are removing real names on npc titles? e.g. <T-Shirt Scalper> Skin-Me-Own-Coat-Dibblefur gets broken to <T>.
 						plateFrame.ActorTitleSpecial:SetText ("<" .. subTitle .. ">")
@@ -7250,7 +7250,7 @@ end
 					
 					--profession (title)
 					local subTitle = Plater.GetActorSubName (plateFrame)
-					if (subTitle and subTitle ~= "" and not subTitle:match (string.gsub(UNIT_LEVEL_TEMPLATE, "%%d", "(%.*)"))) then
+					if (subTitle and subTitle ~= "" and not subTitle:lower():match (string.gsub(UNIT_LEVEL_TEMPLATE:lower(), "%%d", "(%.*)"))) then
 						plateFrame.ActorTitleSpecial:Show()
 						--subTitle = DF:RemoveRealmName (subTitle)
 						plateFrame.ActorTitleSpecial:SetText ("<" .. subTitle .. ">")
@@ -7269,7 +7269,7 @@ end
 				--scan tooltip to check if there's an title for this npc
 				local subTitle = Plater.GetActorSubName (plateFrame)
 				if (subTitle and subTitle ~= "" and not Plater.IsNpcInIgnoreList (plateFrame, true)) then
-					if (not subTitle:match (string.gsub(UNIT_LEVEL_TEMPLATE, "%%d", "(%.*)"))) then --isn't level
+					if (not subTitle:lower():match (string.gsub(UNIT_LEVEL_TEMPLATE:lower(), "%%d", "(%.*)"))) then --isn't level
 
 						plateFrame.ActorTitleSpecial:Show()
 						--subTitle = DF:RemoveRealmName (subTitle)
@@ -7745,7 +7745,7 @@ end
 			local subTitleExists = false
 			local subTitle = Plater.GetActorSubName (plateFrame)
 			if (subTitle and subTitle ~= "" and not Plater.IsNpcInIgnoreList (plateFrame, true)) then
-				if (not subTitle:match (string.gsub(UNIT_LEVEL_TEMPLATE, "%%d", "(%.*)"))) then --isn't level
+				if (not subTitle:lower():match (string.gsub(UNIT_LEVEL_TEMPLATE:lower(), "%%d", "(%.*)"))) then --isn't level
 					subTitleExists = true
 				end
 			end
@@ -9180,7 +9180,7 @@ end
 				if (not sourceFlag or bit.band(sourceFlag, 0x00000400) == 0) then --not a player
 					local npcId = Plater:GetNpcIdFromGuid(sourceGUID or "")
 					if (npcId and npcId ~= 0) then
-						DB_CAPTURED_CASTS[spellID] = {npcID = npcId, encounterID = Plater.CurrentEncounterID, encounterName = Plater.CurrentEncounterName}
+						DB_CAPTURED_CASTS[spellID] = {event = token, source = sourceName, npcID = npcId, encounterID = Plater.CurrentEncounterID, encounterName = Plater.CurrentEncounterName}
 					end
 				end
 			end
