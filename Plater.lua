@@ -1201,7 +1201,8 @@ local class_specs_coords = {
 			
 			--small helper
 			local isTalentLearned = function(nodeID)
-				local nodeInfo = C_Traits.GetNodeInfo(C_ClassTalents.GetActiveConfigID(), nodeID)
+				local talentConfig = C_ClassTalents.GetActiveConfigID()
+				local nodeInfo = talentConfig and nodeID and C_Traits.GetNodeInfo(talentConfig, nodeID)
 				return nodeInfo and nodeInfo.entryIDsWithCommittedRanks and nodeInfo.entryIDsWithCommittedRanks[1] and true or false
 			end
 			
