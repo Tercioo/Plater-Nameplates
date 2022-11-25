@@ -12354,7 +12354,6 @@ end
 								end
 								
 								--by not overriding it'll drop the new triggers and use triggers of the old script that got replaced
-								--this is to preserve triggers added by the users
 								if (type(overrideTriggers) == "boolean" and not overrideTriggers) then
 									if (newScript.ScriptType == 0x1 or newScript.ScriptType == 0x2) then
 										--aura or cast trigger
@@ -12370,8 +12369,11 @@ end
 										end
 									end
 
+								elseif (type(overrideTriggers) == "boolean" and overrideTriggers) then
+									--ignore the old triggers
+
 								--this will use the old triggers and the new ones
-								elseif (type(overrideTriggers) == "string" and overrideTriggers == "none") then
+								elseif (type(overrideTriggers) == "string" and overrideTriggers == "merge") then
 									if (newScript.ScriptType == 0x1 or newScript.ScriptType == 0x2) then
 										--aura or cast trigger
 										for index, trigger in ipairs(scriptObject.SpellIds) do

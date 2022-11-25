@@ -7,6 +7,9 @@ local _
 function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
+			{1669341150,  "New Feature", "November 24st, 2022", "Added a total of 11 new scripts for Mythic+ dungeons.", "Terciob"},
+			{1669341150,  "New Feature", "November 24st, 2022", "All trash and bosses for Season 1 Dragonflight has been parsed and added to scripts.", "Terciob"},
+			{1669341150,  "New Feature", "November 24st, 2022", "Added 5 new sounds to Plater.", "Terciob"},
 
 			{1668980528,  "Bug Fix", "November 21st, 2022", "Fixing some spells not showing up on the cast colors tab.", "cont1nuity"},
 			{1668980528,  "Bug Fix", "November 20th, 2022", "Fixing unit level being mistaken for title on some locales.", "cont1nuity"},

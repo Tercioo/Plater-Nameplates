@@ -35,6 +35,12 @@ LibSharedMedia:Register ("font", "TrashHand", [[Interface\Addons\Plater\fonts\Tr
 LibSharedMedia:Register ("font", "Harry P", [[Interface\Addons\Plater\fonts\HARRYP__.TTF]])
 LibSharedMedia:Register ("font", "FORCED SQUARE", [[Interface\Addons\Plater\fonts\FORCED SQUARE.ttf]])
 
+LibSharedMedia:Register("sound", "Plater HiHat", [[Interface\Addons\Plater\sounds\Plater HiHat.ogg]])
+LibSharedMedia:Register("sound", "Plater Hit", [[Interface\Addons\Plater\sounds\Plater Hit.ogg]])
+LibSharedMedia:Register("sound", "Plater Shaker", [[Interface\Addons\Plater\sounds\Plater Shaker.ogg]])
+LibSharedMedia:Register("sound", "Plater Steel", [[Interface\Addons\Plater\sounds\Plater Steel.ogg]])
+LibSharedMedia:Register("sound", "Plater Wood", [[Interface\Addons\Plater\sounds\Plater Wood.ogg]])
+
 --font templates
 DF:InstallTemplate ("font", "PLATER_SCRIPTS_NAME", {color = "orange", size = 10, font = "Friz Quadrata TT"})
 DF:InstallTemplate ("font", "PLATER_SCRIPTS_TYPE", {color = "gray", size = 9, font = "Friz Quadrata TT"})
