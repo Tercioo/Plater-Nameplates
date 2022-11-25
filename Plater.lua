@@ -1995,6 +1995,12 @@ local class_specs_coords = {
 			["nameplateShowFriendlyPets"] = 4,
 			["nameplateShowFriendlyGuardians"] = 5,
 			["nameplateShowFriendlyTotems"] = 6,
+			["nameplateShowEnemies"] = 7,
+			["nameplateShowEnemyNPCs"] = 8,
+			["nameplateShowEnemyMinions"] = 9,
+			["nameplateShowEnemyPets"] = 10,
+			["nameplateShowEnemyGuardians"] = 11,
+			["nameplateShowEnemyTotems"] = 12,
 		}
 		
 		local order1, order2 = restoreOrder[v1], restoreOrder[v2]
