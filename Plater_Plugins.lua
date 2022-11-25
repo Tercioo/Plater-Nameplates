@@ -255,6 +255,7 @@ end
 
 ------------------------------------------------------------------------------------------
 --create two test plugins
+--[=[
 
 C_Timer.After(1, function()
 	local plugin1 = {
@@ -277,3 +278,4 @@ C_Timer.After(1, function()
 	}
 	Plater.InstallPlugin(plugin2)
 end)
+--]=]
