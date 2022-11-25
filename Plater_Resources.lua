@@ -1361,6 +1361,7 @@ end
 
         --amount of resources the player has now
         local currentResources = UnitPower("player", Plater.Resources.playerResourceId)
+        local isAtMaxPoints = currentResources == resourceBar.widgetsInUseAmount
         local pace, interrupted = GetPowerRegenForPowerType(Enum.PowerType.Essence)
         if (pace == nil or pace == 0) then
             pace = 0.2
@@ -1408,7 +1409,6 @@ end
             widget:Show()
         end
 
-        local isAtMaxPoints = currentResources == resourceBar.widgetsInUseAmount
         local cooldownDuration = 1 / pace
         local animationSpeedMultiplier = FillingAnimationTime / cooldownDuration
         local widget = resourceBar.widgets[currentResources + 1]
