@@ -1984,6 +1984,8 @@ local class_specs_coords = {
 		["nameplateMinAlpha"] = true,
 		["nameplateMinAlphaDistance"] = true,
 		["nameplateShowDebuffsOnFriendly"] = true,
+		["SoftTargetIconGameObject"] = (IS_WOW_PROJECT_MAINLINE),
+		["SoftTargetInteract"] = (IS_WOW_PROJECT_MAINLINE),
 	}
 	
 	--keep this separate for now, with only stuff that NEEDS restoring in order
