@@ -13271,6 +13271,24 @@ end
 		
 		{
 			type = "toggle",
+			boxfirst = true,
+			get = function() return GetCVarBool ("SoftTargetIconGameObject") and (GetCVar("SoftTargetInteract") or 0) == 3 end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					
+					SetCVar ("SoftTargetIconGameObject", value and "1" or "0")
+					SetCVar ("SoftTargetInteract", value and "3" or "0")
+				else
+					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+				end
+			end,
+			name = "Show soft-interact on game objects" .. CVarIcon,
+			desc = "Show soft-interact on game objects." .. CVarDesc,
+			nocombat = true,
+		},
+		
+		{
+			type = "toggle",
 			get = function() return Plater.db.profile.show_healthbars_on_softinteract end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.show_healthbars_on_softinteract = value
