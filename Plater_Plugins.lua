@@ -41,6 +41,47 @@ function platerInternal.Plugins.GetPluginFrameByPluginUniqueName(pluginUniqueNam
 	return pluginObject.Frame
 end
 
+do
+	--[[
+		the state of 'Plater.db.profile.plugins_data[pluginUniqueName].enabled' is already set when the functions below are called
+	]]
+
+	--called after the plugin was installed
+	--the Plater.InstallPlugin() call does not check if the plugin is enabled or not
+	--this has to be done on this function
+	function platerInternal.Plugins.PluginInstalled(pluginUniqueName)
+		if (Plater.db.profile.plugins_data[pluginUniqueName].enabled) then
+			platerInternal.Plugins.PluginEnabled(pluginUniqueName)
+		else
+			platerInternal.Plugins.PluginDisabled(pluginUniqueName)
+		end
+	end
+
+	--called after the plugin is installed or by user interaction on the enabled checkbox from the plugin panel
+	function platerInternal.Plugins.PluginEnabled(pluginUniqueName)
+		local pluginObject = platerInternal.Plugins.GetPluginObjectByPluginUniqueName(pluginUniqueName)
+		if (pluginObject) then
+			if (pluginObject.OnEnable) then
+				xpcall(pluginObject.OnEnable, geterrorhandler(), pluginUniqueName)
+			end
+		else
+			error("Plater Plugins OnEnabled(): couldn't find plugin object for: " .. (pluginUniqueName or "-plugin name is nil"))
+		end
+	end
+
+	--called after the plugin is disabled by the user from the enabled checkbox on plugin panel
+	function platerInternal.Plugins.PluginDisabled(pluginUniqueName)
+		local pluginObject = platerInternal.Plugins.GetPluginObjectByPluginUniqueName(pluginUniqueName)
+		if (pluginObject) then
+			if (pluginObject.OnDisable) then
+				xpcall(pluginObject.OnDisable, geterrorhandler(), pluginUniqueName)
+			end
+		else
+			error("Plater Plugins OnDisable(): couldn't find plugin object for: " .. (pluginUniqueName or "-plugin name is nil"))
+		end
+	end
+end
+
 --install plugin on main plater object
 function Plater.InstallPlugin(pluginObject, silent)
 	assert(type(pluginObject) == "table", "Use: Plater.InstallPlugin(pluginObject)")
@@ -85,6 +126,8 @@ function Plater.InstallPlugin(pluginObject, silent)
             pluginsFrame.PluginsScrollBox:Refresh()
         end
     end
+
+	platerInternal.Plugins.PluginInstalled(pluginObject.UniqueName)
 
 	return true
 end
@@ -134,6 +177,14 @@ function platerInternal.Plugins.CreatePluginsOptionsTab(pluginsFrame)
     local checkBoxCallback = function(checkBox)
 		local pluginObject = platerInternal.Plugins.GetPluginObjectByPluginUniqueName(checkBox.pluginUniqueName)
         Plater.db.profile.plugins_data[pluginObject.UniqueName].enabled = not Plater.db.profile.plugins_data[pluginObject.UniqueName].enabled
+
+		if (Plater.db.profile.plugins_data[pluginObject.UniqueName].enabled) then
+			--user enabled the plugin
+			platerInternal.Plugins.PluginEnabled(checkBox.pluginUniqueName)
+		else
+			--use disabled the plugin
+			platerInternal.Plugins.PluginDisabled(checkBox.pluginUniqueName)
+		end
     end
 
 	--set points
@@ -263,8 +314,8 @@ C_Timer.After(1, function()
 		Name = "Test Plugin 1",
 		UniqueName = "TESTPLUGIN1",
 		Icon = [[Interface\ICONS\6BF_Explosive_Shard]],
-		OnEnable = function()end,
-		OnDisable = function()end,
+		OnEnable = function() print("plugin enabled")end,
+		OnDisable = function() print("plugin disabled")end,
 	}
 	Plater.InstallPlugin(plugin1, false)
 
