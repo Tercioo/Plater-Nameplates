@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1669577376,  "Bug Fix", "November 28th, 2022", "Fixing aura tooltip not updating properly.", "cont1nuity"},
+			
 			{1669577376,  "New Feature", "November 27th, 2022", "Added option to enable soft-interact icons on game objects.", "cont1nuity"},
 			{1669577376,  "New Feature", "November 24th, 2022", "Added a total of 11 new scripts for Mythic+ dungeons.", "Terciob"},
 			{1669577376,  "New Feature", "November 24th, 2022", "All trash and bosses for Season 1 Dragonflight has been parsed and added to scripts.", "Terciob"},

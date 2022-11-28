@@ -275,6 +275,20 @@ local function CreatePlaterNamePlateAuraTooltip()
 		self:SetBackdropBorderColor (0, 0, 0, 1)
 	end
 	
+	local function OnUpdate(self, elapsed)
+		self.updateTooltipTimer = (self.updateTooltipTimer or TOOLTIP_UPDATE_TIME or 0.2) - elapsed;
+		if self.updateTooltipTimer > 0 then
+			return;
+		end
+		self.updateTooltipTimer = TOOLTIP_UPDATE_TIME or 0.2
+		local owner = self:GetOwner();
+		if owner and owner.UpdateTooltip then
+			owner:UpdateTooltip();
+		end
+	end
+	
+	tooltip:SetScript("OnUpdate", OnUpdate)
+	
 	if tooltip.SetBackdrop then
 		return tooltip
 	end
