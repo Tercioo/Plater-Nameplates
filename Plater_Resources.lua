@@ -1114,7 +1114,7 @@ end
             forcedRefresh = true
         end
 
-        if (event == "UNIT_POWER_POINT_CHARGE" or forcedRefresh) then
+        if IS_WOW_PROJECT_MAINLINE and (event == "UNIT_POWER_POINT_CHARGE" or forcedRefresh) then
 			--fallback if it is not implemented/created
 			if (not resourceBar.widgets[1]) then return end
 			
