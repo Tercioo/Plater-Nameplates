@@ -625,6 +625,7 @@ end
         end
 
         mainResourceFrame.eventsEnabled = true
+        mainResourceFrame.currentResourceBarShown.updateResourceFunc(mainResourceFrame, mainResourceFrame.currentResourceBarShown, true)
     end
 
     function Plater.Resources.DisableEvents()
@@ -1113,7 +1114,7 @@ end
             forcedRefresh = true
         end
 
-        if (event == "UNIT_POWER_POINT_CHARGE") then
+        if (event == "UNIT_POWER_POINT_CHARGE" or forcedRefresh) then
 			--fallback if it is not implemented/created
 			if (not resourceBar.widgets[1]) then return end
 			
@@ -1135,7 +1136,9 @@ end
                     end
                 end
             end
-            return
+            if not forcedRefresh then
+                return
+            end
         end
 
         -- ensure to only update for proper power type or if forced
