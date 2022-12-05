@@ -64,20 +64,25 @@ function Plater.GetSpellCustomColor(spellId) --exposed
     end
 end
 
+--priority for user cast color >> can't interrupt color >> script color
 function Plater.SetCastBarColorForScript(castBar, canUseScriptColor, scriptColor, envTable) --exposed
-    local bCastColorChanged = false
-    if (envTable._CanInterrupt) then
-        if (canUseScriptColor) then
-            local customColor = Plater.GetSpellCustomColor(envTable._SpellID)
-            castBar:SetStatusBarColor(Plater:ParseColors(customColor or scriptColor))
-            bCastColorChanged =  true
-        end
+    --user set cast bar color into the Cast Colors tab in the options panel
+    local colorByUser = Plater.GetSpellCustomColor(envTable._SpellID)
+    if (colorByUser) then
+        castBar:SetStatusBarColor(Plater:ParseColors(colorByUser))
+        return
     end
 
-    if (not bCastColorChanged) then
-        local customColor = Plater.GetSpellCustomColor(envTable._SpellID)
-        if (customColor) then
-            castBar:SetStatusBarColor(Plater:ParseColors(customColor))
+    --don't change the color of non-interruptible casts
+    if (not envTable._CanInterrupt) then
+        castBar:SetStatusBarColor(Plater:ParseColors(Plater.db.profile.cast_statusbar_color_nointerrupt))
+        return
+    end
+
+    --if is interruptible and don't have a custom user color, set the script color
+    if (canUseScriptColor and scriptColor) then
+        if (type(scriptColor) == "table") then
+            castBar:SetStatusBarColor(Plater:ParseColors(scriptColor))
         end
     end
 end
