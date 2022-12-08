@@ -1083,6 +1083,12 @@ local class_specs_coords = {
 		[188302] = true, --Reconfiguration Emitter, Shadowlands S4 Fated affix
 		[188703] = true, --Protoform Barrier, Shadowlands S4 Fated affix
 		[176026] = true, --Dancing Fools, Council of Blood CN
+		[195318] = true,
+		[195821] = true,
+		[195580] = true,
+		[196043] = true,
+		[195820] = true,
+		[196642] = true,
 	}
 
 	--update the settings cache for scritps
