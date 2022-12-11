@@ -1229,6 +1229,9 @@ local class_specs_coords = {
 					if isTalentLearned(62083) then --Firestarter
 						highExecute = 0.9
 					end
+					if IsPlayerSpell(384581) then -- Arcane Bombardment
+						lowExecute = 0.35
+					end
 					
 				elseif (class == "WARRIOR") then
 					-- Execute is baseline
