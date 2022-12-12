@@ -21,10 +21,13 @@ externals:
   libs/LibDataBroker-1.1: https://github.com/tekkub/libdatabroker-1-1
   libs/LibDBIcon-1.0: https://repos.curseforge.com/wow/libdbicon-1-0/trunk/LibDBIcon-1.0
   libs/LibDeflate: https://github.com/safeteeWow/LibDeflate
-  libs/LibRangeCheck-2.0: https://github.com/WeakAuras/LibRangeCheck-2.0/LibRangeCheck-2.0
+  libs/LibRangeCheck-2.0: https://github.com/WeakAuras/LibRangeCheck-2.0
   libs/LibStub: https://repos.curseforge.com/wow/libstub/trunk
   libs/LibSharedMedia-3.0: https://repos.curseforge.com/wow/libsharedmedia-3-0/trunk/LibSharedMedia-3.0
   libs/LibTranslit-1.0: https://github.com/Vardex/LibTranslit
+
+move-folders:
+  libs/LibRangeCheck-2.0/LibRangeCheck-2.0: libs/LibRangeCheck-2.0
 
 manual-changelog:
   filename: CHANGELOG.md
