@@ -14097,16 +14097,6 @@ end
 
 		{type = "label", get = function() return "Unit Widget Bars:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = IS_WOW_PROJECT_NOT_MAINLINE},
 		{
-			type = "toggle",
-			get = function() return Plater.db.profile.usePlaterWidget end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.usePlaterWidget = value
-			end,
-			name = L["OPTIONS_ENABLED"],
-			desc = "Enabled",
-			hidden = IS_WOW_PROJECT_NOT_MAINLINE,
-		},
-		{
 			type = "range",
 			get = function() return Plater.db.profile.widget_bar_scale end,
 			set = function (self, fixedparam, value) 
