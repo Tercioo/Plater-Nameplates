@@ -4416,6 +4416,8 @@ function Plater.OnInit() --private --~oninit ~init
 			SetCVar ("nameplateSelectedAlpha", 1)
 			SetCVar ("nameplateNotSelectedAlpha", 1)
 			SetCVar ("nameplateRemovalAnimation", DB_USE_QUICK_HIDE and 0 or 1)
+			SetCVar ("nameplateShowFriendlyBuffs", 0)
+			SetCVar ("nameplateShowPersonalCooldowns", 0)
 		end
 	
 	--schedule data update
