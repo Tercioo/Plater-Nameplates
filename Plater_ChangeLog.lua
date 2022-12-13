@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1670709711,  "Bug Fix", "December 13th, 2022", "Fixing cast timer being behind cast name.", "cont1nuity"},
 			{1670709711,  "Bug Fix", "December 13th, 2022", "Fixing taint issues with widgets by reusing blizzards WidgetContainer.", "cont1nuity"},
 			{1670709711,  "Bug Fix", "December 12th, 2022", "Fixing issues with LibRangeCheck by switching to other version.", "cont1nuity"},
 			{1670709711,  "Bug Fix", "December 11th, 2022", "Adding support for 'Arcane Bombardment' execute.", "D. Potvin"},

@@ -3494,8 +3494,9 @@ local class_specs_coords = {
 				castBar.FrameDownlayer:SetFrameLevel(castBar:GetFrameLevel()-1)
 				castBar.FrameDownlayer:SetAllPoints()
 
-				--pushing the spell name up
+				--pushing the spell name and timer up
 				castBar.Text:SetParent (castBar.FrameOverlay)
+				castBar.percentText:SetParent (castBar.FrameOverlay)
 				--does have a border but its alpha is zero by default
 				castBar.FrameOverlay:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
 				castBar.FrameOverlay:SetBackdropBorderColor (1, 1, 1, 0)
