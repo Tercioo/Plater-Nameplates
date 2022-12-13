@@ -1,3 +1,5 @@
+package-as: Plater
+
 enable-nolib-creation: no
 
 externals:
@@ -27,7 +29,7 @@ externals:
   libs/LibTranslit-1.0: https://github.com/Vardex/LibTranslit
 
 move-folders:
-  libs/LibRangeCheck-2.0/LibRangeCheck-2.0: libs/LibRangeCheck-2.0
+  Plater/libs/LibRangeCheck-2.0/LibRangeCheck-2.0: Plater/libs/LibRangeCheck-2.0
 
 manual-changelog:
   filename: CHANGELOG.md
