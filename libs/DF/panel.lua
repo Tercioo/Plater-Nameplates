@@ -8257,7 +8257,7 @@ detailsFramework.CastFrameFunctions = {
 		startTime = startTime or ((self.spellStartTime or 0) * 1000)
 		endTime = endTime or ((self.spellEndTime or 0) * 1000)
 		
-		if not self.empStages then
+		if not self.empStages or not numStages or numStages <= 0 then
 			self.stagePips = self.stagePips or {}
 			for i, stagePip in pairs(self.stagePips) do
 				stagePip:Hide()
