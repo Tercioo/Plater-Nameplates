@@ -7656,7 +7656,7 @@ local relevance_options = {
 				Plater.UpdateAllPlates()
 			end,
 			name = "Execute Range",
-			desc = "Show an indicator when the unit is in execute range.\n\nPlater auto detects execute range for:\n\n|cFFFFFF00Hunter|r\n\n|cFFFFFF00Warrior|r\n\n|cFFFFFF00Priest|r\n\n|cFFFFFF00Paladin|r\n\n|cFFFFFF00Monk|r\n\n|cFFFFFF00Mage|r: Fire spec with Searing Touch talent.\n\n|cFFFFFF00Warlock|r: Destruction spec with Shadowburn talent.\nAffliction with Drain Soul talent.\n\n|cFFFFFF00Rogue|r: Assassination spec with Blindside talent.",
+			desc = "Show an indicator when the unit is in execute range.\n\nPlater auto detects execute range for:\n\n|cFFFFFF00Hunter|r\n\n|cFFFFFF00Warrior|r\n\n|cFFFFFF00Priest|r\n\n|cFFFFFF00Paladin|r\n\n|cFFFFFF00Monk|r\n\n|cFFFFFF00Mage|r: Fire spec with Searing Touch talent.\nArcane spec with Arcane Bombardment\n\n|cFFFFFF00Warlock|r: Destruction spec with Shadowburn talent.\nAffliction with Drain Soul talent.\n\n|cFFFFFF00Rogue|r: Assassination spec with Blindside talent.",
 		},
 		
 		{
@@ -14096,16 +14096,6 @@ end
 		{type = "blank"},
 
 		{type = "label", get = function() return "Unit Widget Bars:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = IS_WOW_PROJECT_NOT_MAINLINE},
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.usePlaterWidget end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.usePlaterWidget = value
-			end,
-			name = L["OPTIONS_ENABLED"],
-			desc = "Enabled",
-			hidden = IS_WOW_PROJECT_NOT_MAINLINE,
-		},
 		{
 			type = "range",
 			get = function() return Plater.db.profile.widget_bar_scale end,

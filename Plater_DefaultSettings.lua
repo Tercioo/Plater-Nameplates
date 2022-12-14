@@ -706,7 +706,6 @@ PLATER_DEFAULT_SETTINGS = {
 		minor_height_scale = 0.95,
 		
 		--> widget settings
-		usePlaterWidget = false,
 		widget_bar_scale = 0.75,
 		widget_bar_anchor = {side = 4, x = 0, y = 0},
 		
