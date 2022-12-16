@@ -851,6 +851,24 @@ do
 			end
 		end
 	})
+
+	--#21 script "Add - Tag Number [P]" doesn't work as intended due to if some nameplate isn't in the screen it will show wrong ids
+	tinsert (PlaterPatchLibrary, {
+		Notes = {
+			"- Disabling 'Add - Tag Number [P]' script.",
+		},
+		Func = function()
+			local scriptData = Plater.db.profile.script_data
+			for i = 1, #scriptData do
+				local script = scriptData[i]
+				if (script.Name == "Add - Tag Number [P]") then
+					script.Enabled = false
+					break
+				end
+			end
+		end
+	})
+
 end
 
 local listOfTriggersToDeprecateOnExpansion = {
