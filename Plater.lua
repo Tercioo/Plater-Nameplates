@@ -1875,7 +1875,7 @@ local class_specs_coords = {
 			
 			--full refresh the nameplate, this will override user data from scripts
 			unitFrame:SetUnit (nil)
-			Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_ADDED", unitId)
+			Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_ADDED", unitId or unitFrame [MEMBER_UNITID])
 			
 			--restore user input data
 				unitFrame.customHealthBarWidth = customHealthBarWidth
