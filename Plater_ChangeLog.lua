@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1671439834,  "Bug Fix", "December 17th, 2022", "Fixing more cases of invisible nameplates on some spawned or hostility changed units.", "cont1nuity"},
+			
 			{1671232346,  "Bug Fix", "December 17th, 2022", "Multiple Script bug fixes.", "Terciob"},
 			{1671232346,  "Bug Fix", "December 17th, 2022", "Hopefully fixing invisible nameplates on some spawned units.", "cont1nuity"},
 			{1671232346,  "Bug Fix", "December 13th, 2022", "Hiding blizzard buffs on personal bar.", "cont1nuity"},

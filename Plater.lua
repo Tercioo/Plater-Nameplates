@@ -1851,14 +1851,15 @@ local class_specs_coords = {
 
 		local plateFrame = timerObject.plateFrame
 		local unitGUID = timerObject.GUID
-		local forceUpdate = timerObject.forceUpdate
+		local unitId = timerObject.unitId
+		local forceUpdate = unitId and true or false
 		
 		
 		--checking the serial of the unit is the same in case this nameplate is being used on another unit
 		if (plateFrame:IsShown() and (unitGUID == plateFrame [MEMBER_GUID])) or (forceUpdate) then
 			--save user input data (usualy set from scripts) before call the unit added event
 				local unitFrame = plateFrame.unitFrame
-				if not unitFrame.PlaterOnScreen and not force then
+				if not unitFrame.PlaterOnScreen and not forceUpdate then
 					return
 				end
 				local customHealthBarWidth = unitFrame.customHealthBarWidth
@@ -1874,7 +1875,7 @@ local class_specs_coords = {
 			
 			--full refresh the nameplate, this will override user data from scripts
 			unitFrame:SetUnit (nil)
-			Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_ADDED", unitFrame [MEMBER_UNITID])
+			Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_ADDED", unitId)
 			
 			--restore user input data
 				unitFrame.customHealthBarWidth = customHealthBarWidth
@@ -1907,15 +1908,15 @@ local class_specs_coords = {
 
 	--run a delayed update on the namepalte, this is used when the client receives an information from the server but does not update the state immediately
 	--this usualy happens with faction and flag changes
-	function Plater.ScheduleUpdateForNameplate (plateFrame, force) --private
+	function Plater.ScheduleUpdateForNameplate (plateFrame, unitId) --private
 	
-		if not plateFrame.unitFrame.PlaterOnScreen and not force then
+		if not plateFrame.unitFrame.PlaterOnScreen and not unitId then
 			return
 		end
 	
 		--check if there's already an update scheduled for this unit
 		if (plateFrame.HasUpdateScheduled and not plateFrame.HasUpdateScheduled._cancelled) then
-			if force and not plateFrame.HasUpdateScheduled.forceUpdate then
+			if unitId and not plateFrame.HasUpdateScheduled.unitId then
 				plateFrame.HasUpdateScheduled:Cancel()
 			else
 				return
@@ -1925,7 +1926,7 @@ local class_specs_coords = {
 		plateFrame.HasUpdateScheduled = C_Timer.NewTimer (0, Plater.RunScheduledUpdate) --next frame
 		plateFrame.HasUpdateScheduled.plateFrame = plateFrame
 		plateFrame.HasUpdateScheduled.GUID = plateFrame [MEMBER_GUID]
-		plateFrame.HasUpdateScheduled.forceUpdate = force
+		plateFrame.HasUpdateScheduled.unitId = unitId
 	
 	end
 
@@ -2540,9 +2541,9 @@ local class_specs_coords = {
 				--can the user attack or no longer attack?
 				local attackableChanged = plateFrame.PlayerCannotAttack ~= not UnitCanAttack ("player", unit)
 				
-				if (reactionChanged or attackableChanged) then
+				if (reactionChanged or attackableChanged or not plateFrame.unitFrame.PlaterOnScreen) then
 					--print ("UNIT_FLAG", plateFrame, issecure(), unit, unit and UnitName (unit))
-					Plater.ScheduleUpdateForNameplate (plateFrame, true)
+					Plater.ScheduleUpdateForNameplate (plateFrame, unit)
 				end
 			end
 		end,
@@ -2555,7 +2556,7 @@ local class_specs_coords = {
 			--fires when somebody changes faction near the player
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unit, issecure())
 			if (plateFrame) then
-				Plater.ScheduleUpdateForNameplate (plateFrame, true)
+				Plater.ScheduleUpdateForNameplate (plateFrame, unit)
 			end
 		end,
 
