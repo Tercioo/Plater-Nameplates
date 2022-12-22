@@ -541,13 +541,11 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 		
         widgetFrame.background = widgetFrame.EssenceEmpty
 		parent.widgetsBackground[#parent.widgetsBackground + 1] = widgetFrame.EssenceEmpty
-		
-		widgetFrame.ShowAnimation = {Play = function() end, Stop = function() end}
+        
 		widgetFrame.EssenceFillDone.AnimInOrig = widgetFrame.EssenceFillDone.AnimIn
 		widgetFrame.EssenceFillDone.AnimIn = {Play = function() end, Stop = function() end}
-		widgetFrame.EssenceFilling.FillingAnim:SetScript("OnFinished", nil)
-		widgetFrame.EssenceDepleting.AnimInOrig = widgetFrame.EssenceDepleting.AnimIn
-		widgetFrame.EssenceDepleting.AnimIn = {Play = function() end, Stop = function() end}
+		
+		widgetFrame.ShowAnimation = {Play = function() end, Stop = function() end}
 		
         return widgetFrame
 	end
