@@ -291,6 +291,19 @@ Plater.TriggerDefaultMembers = {
 	},
 }
 
+function platerInternal.Scripts.GetDefaultScriptForSpellId(spellId)
+	--platerInternal.Scripts.DefaultCastScripts
+	local allScripts = Plater.db.profile.script_data
+	for i = 1, #allScripts do
+		local scriptObject = allScripts[i]
+		local triggers = scriptObject.SpellIds
+		local index = DF.table.find(triggers, spellId)
+		if (index) then
+			return scriptObject
+		end
+	end
+end
+
 local openURL = function(url)
 
 	if (not PlaterURLFrameHelper) then

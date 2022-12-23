@@ -2,6 +2,20 @@
 local _
 local addonName, platerInternal = ...
 
+platerInternal.Scripts.DefaultCastScripts = {
+	"Cast - Small Alert [Plater]",
+	"Cast - Big Alert [Plater]",
+	"Cast - Quick Flash [P]",
+	"Explosion Affix M+ [Plater]",
+	"Cast - Frontal Cone [Plater]",
+	"Cast - Ultra Important [P]",
+	"Cast - Very Important [Plater]",
+	"Cast - Glowing [P]",
+	"Cast - Circle AoE [P]",
+	"Cast - Shield Interrupt [P]",
+	"Cast - Stop Casting [P]",
+}
+
 do
 	PlaterScriptLibrary = {}
 

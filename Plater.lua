@@ -133,6 +133,9 @@ platerInternal.Defaults = {
 	dropdownStatusBarTexture = [[Interface\Tooltips\UI-Tooltip-Background]],
 	dropdownStatusBarColor = {.1, .1, .1, .8},
 }
+platerInternal.Comms = {}
+platerInternal.Frames = {}
+platerInternal.Data = {}
 
 --> namespaces:
 	--resources
@@ -389,6 +392,8 @@ local PLATER_GLOBAL_SCRIPT_ENV = {} -- contains modEnv for each script, identifi
 Plater.COMM_PLATER_PREFIX = "PLT"
 Plater.COMM_SCRIPT_GROUP_EXPORTED = "GE"
 Plater.COMM_SCRIPT_MSG = "PLTM"
+Plater.COMM_NPC_NAME_EXPORTED = "NN"
+Plater.COMM_NPC_COLOR_EXPORTED = "NC"
 
 --> cvars just to make them easier to read
 local CVAR_ENABLED = "1"
@@ -2308,7 +2313,7 @@ local class_specs_coords = {
 
 	--a patch is a function stored in the Plater_ScriptLibrary file and are executed only once to change a profile setting, remove or add an aura into the tracker or modify a script
 	--patch versions are stored within the profile, so importing or creating a new profile will apply all patches that wasn't applyed into it yet
-	function Plater.ApplyPatches() --private
+	function Plater.ApplyPatches() --private ~updates ~scriptupdates
 		if (PlaterPatchLibrary) then
 			local currentPatch = Plater.db.profile.patch_version
 			for i = currentPatch+1, #PlaterPatchLibrary do
@@ -11986,12 +11991,22 @@ end
 		return scriptsWithOverlap, amount
 	end
 
+	function platerInternal.Scripts.RemoveTriggerFromAnyScript(triggerId)
+		local allScripts = Plater.db.profile.script_data
+		for i = 1, #allScripts do
+			local scriptObject = allScripts[i]
+			if (platerInternal.Scripts.DoesScriptHasTrigger(scriptObject, triggerId)) then
+				platerInternal.Scripts.RemoveTriggerFromScript(scriptObject, triggerId)
+			end
+		end
+	end
+
 	function platerInternal.Scripts.IsTriggerOnAnyScript(triggerId)
 		local allScripts = Plater.db.profile.script_data
 		for i = 1, #allScripts do
 			local scriptObject = allScripts[i]
 			if (platerInternal.Scripts.DoesScriptHasTrigger(scriptObject, triggerId)) then
-				return true
+				return scriptObject
 			end
 		end
 	end
@@ -12499,7 +12514,7 @@ end
 	end
 
 	--transform the string into a indexScriptTable and then transform it into a scriptObject
-	function Plater.DecodeImportedString (str)
+	function Plater.DecodeImportedString (str) --not in use? (can't find something calling this - tercio)
 		local LibAceSerializer = LibStub:GetLibrary ("AceSerializer-3.0")
 		if (LibAceSerializer) then
 			-- ~zip
