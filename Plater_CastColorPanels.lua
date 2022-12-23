@@ -547,7 +547,9 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         --send to raid button
         local sendToRaidButton = DF:CreateButton(line, function()end, headerTable[7].width, 20, "Click to Select", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
         line.sendToRaidButton = sendToRaidButton
-        sendToRaidButton:Disable()
+        if (GetRealmName() ~= "Azralon") then --debug among friends
+            sendToRaidButton:Disable()
+        end
 
         --location
         --local npcLocationLabel = DF:CreateLabel(line, "", 10, "white", nil, "npcLocationLabel")
