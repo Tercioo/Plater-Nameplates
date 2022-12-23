@@ -609,7 +609,7 @@ end
         mainResourceFrame:RegisterUnitEvent("UNIT_POWER_FREQUENT", "player")
         mainResourceFrame:RegisterUnitEvent("UNIT_MAXPOWER", "player")
 
-        if (IS_WOW_PROJECT_MAINLINE and PlayerClass == "ROGUE") then
+        if (IS_WOW_PROJECT_MAINLINE and (PlayerClass == "ROGUE" or PlayerClass == "EVOKER")) then
             mainResourceFrame:RegisterUnitEvent("UNIT_POWER_POINT_CHARGE", "player")
         end
 
@@ -637,7 +637,7 @@ end
         mainResourceFrame:UnregisterEvent("UNIT_POWER_FREQUENT")
         mainResourceFrame:UnregisterEvent("UNIT_MAXPOWER")
 
-        if (IS_WOW_PROJECT_MAINLINE and PlayerClass == "ROGUE") then
+        if (IS_WOW_PROJECT_MAINLINE and (PlayerClass == "ROGUE" or PlayerClass == "EVOKER")) then
             mainResourceFrame:UnregisterEvent("UNIT_POWER_POINT_CHARGE")
         end
 
@@ -1351,7 +1351,20 @@ end
     
     --Evoker Essence
     local FillingAnimationTime = 5.0; 
+    local evokerEssenceOnUpdate = function(self, elapsed)
+       	local pace,interrupted = GetPowerRegenForPowerType(Plater.Resources.playerResourceId)
+        if (pace == nil or pace == 0) then
+            pace = 0.2
+        end
+        local cooldownDuration = 1 / pace
+        local animationSpeedMultiplier = FillingAnimationTime / cooldownDuration
+        self.EssenceFilling.FillingAnim:SetAnimationSpeedMultiplier(animationSpeedMultiplier)
+        self.EssenceFilling.CircleAnim:SetAnimationSpeedMultiplier(animationSpeedMultiplier)
+    end
     function resourceWidgetsFunctions.OnEssenceChanged(mainResourceFrame, resourceBar, forcedRefresh, event, unit, powerType)
+        if event == "UNIT_POWER_FREQUENT" then
+            print(event, UnitPower("player", Plater.Resources.playerResourceId), UnitPartialPower("player", Plater.Resources.playerResourceId, true) / 1000.0, UnitPowerMax("player", Plater.Resources.playerResourceId))
+        end
         if (event == "UNIT_MAXPOWER" and DB_PLATER_RESOURCE_SHOW_DEPLETED) then
             Plater.Resources.UpdateResourcesFor_ShowDepleted(mainResourceFrame, resourceBar)
             forcedRefresh = true
@@ -1366,14 +1379,14 @@ end
         local currentResources = UnitPower("player", Plater.Resources.playerResourceId)
         local maxResources = UnitPowerMax("player", Plater.Resources.playerResourceId)
         local isAtMaxPoints = currentResources == maxResources
-        local pace, interrupted = GetPowerRegenForPowerType(Enum.PowerType.Essence)
+        local pace, interrupted = GetPowerRegenForPowerType(Plater.Resources.playerResourceId)
         if (pace == nil or pace == 0) then
             pace = 0.2
         end
         
         --resources amount got updated?
-        if ((currentResources == resourceBar.lastResourceAmount) and (pace == (resourceBar.lastPace or 0)) and not forcedRefresh) then
-            return
+        if (currentResources == resourceBar.lastResourceAmount and not forcedRefresh) then
+            --return --this somehow fucks up because UnitPartialPower returns weird shit.
         end
         
         --which update method to use
@@ -1384,46 +1397,69 @@ end
         end
         
         resourceBar.lastResourceAmount = currentResources
-        resourceBar.lastPace = pace
         
         for i = 1, min(currentResources, resourceBar.widgetsInUseAmount) do
             local widget = resourceBar.widgets[i]
-            widget.EssenceFull:Show()
+            
+            --widget.EssenceFull:Show()
+            widget.EssenceFull:Hide()
+            
             if not widget.EssenceFillDone:IsShown() then
                 widget.EssenceFillDone:Show()
                 widget.EssenceFillDone.AnimInOrig:Play()
             end
-            widget.EssenceEmpty:Hide()
+            
             widget.EssenceFilling.FillingAnim:Stop()
             widget.EssenceFilling.CircleAnim:Stop()
+            widget.EssenceFilling:Hide()
+
+            --widget.EssenceFillDone:Show()
+            
+            widget.EssenceEmpty:Hide()
+            widget:SetScript("OnUpdate", nil)
             widget:Show()
         end
-        for i = currentResources + 1, resourceBar.widgetsInUseAmount do
+        for i = currentResources + 2, resourceBar.widgetsInUseAmount do
             local widget = resourceBar.widgets[i]
-           	if(widget.EssenceFull:IsShown() or widget.EssenceFilling:IsShown() or widget.EssenceFillDone:IsShown()) then
-                if not widget.EssenceDepleting:IsShown() then
-                    widget.EssenceDepleting:Show()
-                    widget.EssenceDepleting.AnimInOrig:Play()
+           	if (widget.EssenceFull:IsShown() or widget.EssenceFilling:IsShown() or widget.EssenceFillDone:IsShown()) then
+                widget.EssenceDepleting:Show()
+                if (not widget.EssenceDepleting.AnimIn:IsPlaying()) then
+                    widget.EssenceDepleting.AnimIn:Play()
                 end
+                widget.EssenceFilling.FillingAnim:Stop()
+                widget.EssenceFilling.CircleAnim:Stop()
                 widget.EssenceFilling:Hide()
                 widget.EssenceEmpty:Hide()
+                widget.EssenceFillDone.AnimIn:Stop()
                 widget.EssenceFillDone:Hide()
                 widget.EssenceFull:Hide()
             end
+            widget:SetScript("OnUpdate", nil)
             widget:Show()
         end
 
         local cooldownDuration = 1 / pace
         local animationSpeedMultiplier = FillingAnimationTime / cooldownDuration
         local widget = resourceBar.widgets[currentResources + 1]
-        if (not isAtMaxPoints and widget and not widget.EssenceFull:IsShown()) then
-            widget.EssenceFilling.FillingAnim:SetAnimationSpeedMultiplier(animationSpeedMultiplier)
-            widget.EssenceFilling.CircleAnim:SetAnimationSpeedMultiplier(animationSpeedMultiplier)
+        if (not isAtMaxPoints and widget )then --this just fucks up: and not (widget.EssenceFilling.FillingAnim:IsPlaying() or widget.EssenceFull:IsShown())) then
+            widget.EssenceDepleting.AnimIn:Stop()
+            widget.EssenceFillDone.AnimIn:Stop()
 
             widget.EssenceFilling:Show()
             widget.EssenceDepleting:Hide()
             widget.EssenceEmpty:Hide()
             widget.EssenceFillDone:Hide()
             widget.EssenceFull:Hide()
+            
+            local partial = UnitPartialPower("player", Plater.Resources.playerResourceId) / 1000.0
+            if partial == 0 then
+               partial = 0.001
+            end
+            
+            widget.EssenceFilling.FillingAnim:SetAnimationSpeedMultiplier(animationSpeedMultiplier)
+            widget.EssenceFilling.CircleAnim:SetAnimationSpeedMultiplier(animationSpeedMultiplier)
+            widget.EssenceFilling.FillingAnim:Restart(false, partial *  widget.EssenceFilling.FillingAnim:GetDuration())
+            widget.EssenceFilling.CircleAnim:Restart(false, partial * widget.EssenceFilling.CircleAnim:GetDuration())
+            widget:SetScript("OnUpdate", evokerEssenceOnUpdate)
         end
     end

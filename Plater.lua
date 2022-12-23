@@ -1094,7 +1094,10 @@ local class_specs_coords = {
 		[196043] = true,
 		[195820] = true,
 		[196642] = true,
-		--[189886] = true,
+		[189886] = true,
+		[192955] = true,
+		[194806] = true,
+		[196548] = true,
 	}
 
 	--update the settings cache for scritps
@@ -1856,14 +1859,15 @@ local class_specs_coords = {
 
 		local plateFrame = timerObject.plateFrame
 		local unitGUID = timerObject.GUID
-		local forceUpdate = timerObject.forceUpdate
+		local unitId = timerObject.unitId
+		local forceUpdate = unitId and true or false
 		
 		
 		--checking the serial of the unit is the same in case this nameplate is being used on another unit
 		if (plateFrame:IsShown() and (unitGUID == plateFrame [MEMBER_GUID])) or (forceUpdate) then
 			--save user input data (usualy set from scripts) before call the unit added event
 				local unitFrame = plateFrame.unitFrame
-				if not unitFrame.PlaterOnScreen and not force then
+				if not unitFrame.PlaterOnScreen and not forceUpdate then
 					return
 				end
 				local customHealthBarWidth = unitFrame.customHealthBarWidth
@@ -1879,7 +1883,7 @@ local class_specs_coords = {
 			
 			--full refresh the nameplate, this will override user data from scripts
 			unitFrame:SetUnit (nil)
-			Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_ADDED", plateFrame [MEMBER_UNITID])
+			Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_ADDED", unitId or unitFrame [MEMBER_UNITID])
 			
 			--restore user input data
 				unitFrame.customHealthBarWidth = customHealthBarWidth
@@ -1912,15 +1916,15 @@ local class_specs_coords = {
 
 	--run a delayed update on the namepalte, this is used when the client receives an information from the server but does not update the state immediately
 	--this usualy happens with faction and flag changes
-	function Plater.ScheduleUpdateForNameplate (plateFrame, force) --private
+	function Plater.ScheduleUpdateForNameplate (plateFrame, unitId) --private
 	
-		if not plateFrame.unitFrame.PlaterOnScreen and not force then
+		if not plateFrame.unitFrame.PlaterOnScreen and not unitId then
 			return
 		end
 	
 		--check if there's already an update scheduled for this unit
 		if (plateFrame.HasUpdateScheduled and not plateFrame.HasUpdateScheduled._cancelled) then
-			if force and not plateFrame.HasUpdateScheduled.forceUpdate then
+			if unitId and not plateFrame.HasUpdateScheduled.unitId then
 				plateFrame.HasUpdateScheduled:Cancel()
 			else
 				return
@@ -1930,7 +1934,7 @@ local class_specs_coords = {
 		plateFrame.HasUpdateScheduled = C_Timer.NewTimer (0, Plater.RunScheduledUpdate) --next frame
 		plateFrame.HasUpdateScheduled.plateFrame = plateFrame
 		plateFrame.HasUpdateScheduled.GUID = plateFrame [MEMBER_GUID]
-		plateFrame.HasUpdateScheduled.forceUpdate = force
+		plateFrame.HasUpdateScheduled.unitId = unitId
 	
 	end
 
@@ -2545,9 +2549,9 @@ local class_specs_coords = {
 				--can the user attack or no longer attack?
 				local attackableChanged = plateFrame.PlayerCannotAttack ~= not UnitCanAttack ("player", unit)
 				
-				if (reactionChanged or attackableChanged) then
+				if (reactionChanged or attackableChanged or not plateFrame.unitFrame.PlaterOnScreen) then
 					--print ("UNIT_FLAG", plateFrame, issecure(), unit, unit and UnitName (unit))
-					Plater.ScheduleUpdateForNameplate (plateFrame, true)
+					Plater.ScheduleUpdateForNameplate (plateFrame, unit)
 				end
 			end
 		end,
@@ -2560,7 +2564,7 @@ local class_specs_coords = {
 			--fires when somebody changes faction near the player
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unit, issecure())
 			if (plateFrame) then
-				Plater.ScheduleUpdateForNameplate (plateFrame, true)
+				Plater.ScheduleUpdateForNameplate (plateFrame, unit)
 			end
 		end,
 
@@ -5673,7 +5677,7 @@ end
 	--if force refresh is true, it'll ignore aggro and incombat checks in the ColorOverrider function
 	function Plater.FindAndSetNameplateColor (unitFrame, forceRefresh)
 		local r, g, b, a = 1, 1, 1, 1
-		local unitID = unitFrame.unit
+		local unitID = unitFrame [MEMBER_UNITID]
 		if (unitFrame.IsSelf or not unitFrame.PlaterOnScreen) then
 			return
 			
@@ -7189,9 +7193,6 @@ end
 			return
 		end
 		
-		--get the unitId shown on this nameplate
-		local unitId = plateFrame.unitFrame.unit
-		
 		--critical code
 		--the nameplate is showing the health bar
 		--cache the strings for performance
@@ -7277,10 +7278,10 @@ end
 				Plater.SetFontOutlineAndShadow (levelString, plateConfigs.level_text_outline, plateConfigs.level_text_shadow_color, plateConfigs.level_text_shadow_color_offset[1], plateConfigs.level_text_shadow_color_offset[2])
 				
 				Plater.SetAnchor (levelString, plateConfigs.level_text_anchor)
-				Plater.UpdateLevelTextAndColor (levelString, unitId)
+				Plater.UpdateLevelTextAndColor (levelString, plateFrame.unitFrame [MEMBER_UNITID])
 				levelString:SetAlpha (plateConfigs.level_text_alpha)
 			else
-				Plater.UpdateLevelTextAndColor (levelString, unitId)
+				Plater.UpdateLevelTextAndColor (levelString, plateFrame.unitFrame [MEMBER_UNITID])
 				levelString:SetAlpha (plateConfigs.level_text_alpha)
 			end
 		else
@@ -7303,7 +7304,7 @@ end
 				lifeString:SetAlpha (plateConfigs.percent_text_alpha)
 			end
 			
-			Plater.UpdateLifePercentText (plateFrame.unitFrame.healthBar, unitId, plateConfigs.percent_show_health, plateConfigs.percent_show_percent, plateConfigs.percent_text_show_decimals)
+			Plater.UpdateLifePercentText (plateFrame.unitFrame.healthBar, plateFrame.unitFrame [MEMBER_UNITID], plateConfigs.percent_show_health, plateConfigs.percent_show_percent, plateConfigs.percent_text_show_decimals)
 		else
 			lifeString:Hide()
 		end
