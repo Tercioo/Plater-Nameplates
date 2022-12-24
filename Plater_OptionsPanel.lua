@@ -839,6 +839,25 @@ function Plater.OpenOptionsPanel()
 					end
 				end
 				
+				-- cleanup cast colors/sounds
+				local castColors = Plater.db.profile.cast_colors
+				local castColorsTemp = DetailsFramework.table.copy({}, castColors)
+				for n, v in pairs(castColorsTemp) do
+					if tonumber(n) then 
+						audioCues[n] = nil
+						audioCues[tonumber(n)] = v 
+					end
+				end
+				
+				local audioCues = Plater.db.profile.cast_audiocues
+				local audioCuesTemp = DetailsFramework.table.copy({}, audioCues)
+				for n, v in pairs(audioCuesTemp) do
+					if tonumber(n) then 
+						audioCues[n] = nil
+						audioCues[tonumber(n)] = v 
+					end
+				end
+				
 				--restore CVars of the profile
 				Plater.RestoreProfileCVars()
 				
