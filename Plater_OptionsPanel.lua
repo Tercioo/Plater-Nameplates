@@ -2848,7 +2848,7 @@ Plater.CreateAuraTesting()
 			--callback from have clicked in the 'Send To Raid' button
 			local latestMenuClicked = false
 			local onSendToRaidButtonClicked = function(self, button, npcId)
-				if (npcId == latestMenuClicked) then
+				if (npcId == latestMenuClicked and GameCooltip:IsShown()) then
 					GameCooltip:Hide()
 					latestMenuClicked = false
 					return
@@ -3024,20 +3024,27 @@ Plater.CreateAuraTesting()
 					if (self.SearchCachedTable and IsSearchingFor == self.SearchCachedTable.SearchTerm) then
 						dataInOrder = self.SearchCachedTable
 					else
-					
 						local enabledTable = {}
-					
+						local npcsRenamed = Plater.db.profile.npcs_renamed
+
 						for i = 1, #data do
 							local npcID = data [i][1]
 							local npcName = data [i][2] or "UNKNOWN"
 							local zoneName = data [i][3] or "UNKNOWN"
-							local color = DB_NPCID_COLORS [npcID] and DB_NPCID_COLORS [npcID][1] and DB_NPCID_COLORS [npcID][3] or "white" --has | is enabled | color
+							local color = DB_NPCID_COLORS[npcID] and DB_NPCID_COLORS[npcID][1] and DB_NPCID_COLORS[npcID][3] or "white" --has | is enabled | color
+							local rename = npcsRenamed[npcID] and npcsRenamed[npcID]:lower()
+							local selectedColorName = DB_NPCID_COLORS[npcID] and DB_NPCID_COLORS[npcID][3]
 						
-							if (npcName:lower():find (IsSearchingFor) or zoneName:lower():find (IsSearchingFor)) then
-								if (DB_NPCID_COLORS [npcID] and DB_NPCID_COLORS [npcID][1]) then
-									enabledTable [#enabledTable+1] = {1, color, npcName, zoneName, npcID}
+							if (
+								npcName:lower():find(IsSearchingFor) or
+							 	zoneName:lower():find(IsSearchingFor) or
+							 	(rename and rename:find(IsSearchingFor)) or
+							 	(selectedColorName and selectedColorName:find(IsSearchingFor))
+							) then
+								if (DB_NPCID_COLORS[npcID] and DB_NPCID_COLORS[npcID][1]) then
+									enabledTable[#enabledTable+1] = {1, color, npcName, zoneName, npcID}
 								else
-									dataInOrder [#dataInOrder+1] = {0, color, npcName, zoneName, npcID}
+									dataInOrder[#dataInOrder+1] = {0, color, npcName, zoneName, npcID}
 								end
 							end
 						end
