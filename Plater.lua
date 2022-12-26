@@ -394,6 +394,7 @@ Plater.COMM_SCRIPT_GROUP_EXPORTED = "GE"
 Plater.COMM_SCRIPT_MSG = "PLTM"
 Plater.COMM_NPC_NAME_EXPORTED = "NN"
 Plater.COMM_NPC_COLOR_EXPORTED = "NC"
+Plater.COMM_NPC_OR_CAST_CUSTOMIZATION = "NCC"
 
 --> cvars just to make them easier to read
 local CVAR_ENABLED = "1"

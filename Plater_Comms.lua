@@ -7,6 +7,7 @@ local LibAceSerializer = LibStub:GetLibrary ("AceSerializer-3.0")
 local LibDeflate = LibStub:GetLibrary ("LibDeflate")
 
 local CONST_THROTTLE_HOOK_COMMS = 0.500 --2 comms per second per mod
+local CONST_COLORNPC_SHARING_CHANNEL = "PARTY"
 
 function Plater.CreateCommHeader(prefix, encodedString)
     return LibAceSerializer:Serialize(prefix, UnitName("player"), GetRealmName(), UnitGUID("player"), encodedString)
@@ -17,6 +18,16 @@ local function dispatchSendCommEvents()
 	C_Timer.After(CONST_THROTTLE_HOOK_COMMS, dispatchSendCommEvents)
 end
 dispatchSendCommEvents() -- can be done immediately
+
+local decompressReceivedData = function(data)
+	local dataCompressed = LibDeflate:DecodeForWoWAddonChannel(data)
+	if (dataCompressed) then
+		local dataDecompressed = LibDeflate:DecompressDeflate(dataCompressed)
+		if (type(dataDecompressed) == "string") then
+			return dataDecompressed
+		end
+	end
+end
 
 function Plater.SendComm(scriptIndex, scriptId, uniqueId, ...)
 
@@ -47,7 +58,6 @@ end
 
 --when received a message from a script
 function Plater.MessageReceivedFromScript(prefix, source, playerRealm, playerGUID, message)
-
     local data = Plater.DecompressData(message, "comm")
 
     if (not data) then
@@ -65,13 +75,10 @@ end
 	platerInternal.Comms.CommHandler = {
         [Plater.COMM_SCRIPT_GROUP_EXPORTED] = Plater.ScriptReceivedFromGroup,
         [Plater.COMM_SCRIPT_MSG] = Plater.MessageReceivedFromScript,
-        [Plater.COMM_NPC_NAME_EXPORTED] = platerInternal.Comms.OnReceiveNpcOrCastInfoFromGroup,
-        [Plater.COMM_NPC_COLOR_EXPORTED] = platerInternal.Comms.OnReceiveNpcOrCastInfoFromGroup,
     }
 
     function Plater:CommReceived(commPrefix, dataReceived, channel, source)
         local dataDeserialized = {LibAceSerializer:Deserialize(dataReceived)}
-
         local successfulDeserialize = dataDeserialized[1]
 
         if (not successfulDeserialize) then
@@ -84,6 +91,15 @@ end
         local realmName = dataDeserialized[4]
         local unitGUID = dataDeserialized[5]
         local encodedData = dataDeserialized[6]
+
+		if (Plater.debugcomm) then
+			local stringDecompressed = decompressReceivedData(encodedData)
+			local data = {strsplit(",", stringDecompressed)}
+			Plater:Msg("Comm Received:", prefix, source, unpack(data))
+			--dumpt(data)
+			local func = platerInternal.Comms.CommHandler[prefix]
+			print("prefix", prefix, "func", func)
+		end
 
         local func = platerInternal.Comms.CommHandler[prefix]
 
@@ -118,6 +134,23 @@ function Plater.CompressData (data, dataType)
                 end
             end
         end
+    end
+end
+
+-- ~compress ~zip ~export ~import ~deflate
+function Plater.CompressDataWithoutSerialization(data, dataType)
+    if (LibDeflate) then
+		local dataCompressed = LibDeflate:CompressDeflate(data, {level = 9})
+		if (dataCompressed) then
+			if (dataType == "print") then
+				local dataEncoded = LibDeflate:EncodeForPrint(dataCompressed)
+				return dataEncoded
+
+			elseif (dataType == "comm") then
+				local dataEncoded = LibDeflate:EncodeForWoWAddonChannel(dataCompressed)
+				return dataEncoded
+			end
+		end
     end
 end
 
@@ -241,7 +274,7 @@ end
 
 	local checkReceivedDataIsValid = function(unitName, channel)
 		--check if the data came from the guild channel
-		if (channel ~= "GUILD") then
+		if (channel ~= CONST_COLORNPC_SHARING_CHANNEL) then
 			return
 		end
 
@@ -255,16 +288,6 @@ end
 		return true
 	end
 
-	local decompressReceivedData = function(data)
-		local dataCompressed = LibDeflate:DecodeForWoWAddonChannel(data)
-		if (dataCompressed) then
-			local dataDecompressed = LibDeflate:DecompressDeflate(dataCompressed)
-			if (type(dataDecompressed) == "string") then
-				return dataDecompressed
-			end
-		end
-	end
-
 	local createImportNpcCastConfirmFrame = function()
 		local frame = DF:CreateSimplePanel(UIParent, 380, 130, "Plater Nameplates: Npc or Cast Importer", "PlaterImportNpcOrCastConfirmation")
 		platerInternal.Frames.ImportNpcCastConfirm = frame
@@ -273,11 +296,17 @@ end
 		DF:ApplyStandardBackdrop(frame)
 
 		--create the font strings to show the npc name or the cast name, npcID or spellID, Sender name, and another to show the color
-		local text1 = DF:CreateLabel(frame, "Npc Name:", 10, -30, "GameFontNormal", "white")
-		local text2 = DF:CreateLabel(frame, "Npc ID:", 10, -50, "GameFontNormal", "white")
-		local text3 = DF:CreateLabel(frame, "Npc Zone:", 10, -70, "GameFontNormal", "white")
-		local text4 = DF:CreateLabel(frame, "Sender:", 10, -90, "GameFontNormal", "white")
-		local text5 = DF:CreateLabel(frame, "Color:", 10, -110, "GameFontNormal", "white")
+		local text1 = DF:CreateLabel(frame, "Npc Name:", 12, "white", "GameFontNormal", "white")
+		local text2 = DF:CreateLabel(frame, "Npc ID:", 12, "white", "GameFontNormal", "white")
+		local text3 = DF:CreateLabel(frame, "Npc Zone:", 12, "white", "GameFontNormal", "white")
+		local text4 = DF:CreateLabel(frame, "Sender:", 12, "white", "GameFontNormal", "white")
+		local text5 = DF:CreateLabel(frame, "Color:", 12, "white", "GameFontNormal", "white")
+
+		text1:SetPoint("topleft", frame, "topleft", 10, -30)
+		text2:SetPoint("topleft", frame, "topleft", 10, -50)
+		text3:SetPoint("topleft", frame, "topleft", 10,	-70)
+		text4:SetPoint("topleft", frame, "topleft", 10,	-90)
+		text5:SetPoint("topleft", frame, "topleft", 10,	-110)
 
 		frame.Text1 = text1
 		frame.Text2 = text2
@@ -293,8 +322,11 @@ end
 		frame.AcceptButton = Plater:CreateButton(frame, function()end, 125, 20, "Accept", -1, nil, nil, nil, nil, nil, Plater:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"))
 		frame.DeclineButton = Plater:CreateButton(frame, declineData, 125, 20, "Decline", -1, nil, nil, nil, nil, nil, Plater:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"))
 
-		frame.AcceptButton:SetPoint("bottomright", frame, "bottomright", -14, 31)
-		frame.DeclineButton:SetPoint("bottomleft", frame, "bottomleft", 14, 31)
+		frame.DeclineButton:SetPoint("bottomleft", frame, "bottomleft", 5, 5)
+		frame.AcceptButton:SetPoint("bottomright", frame, "bottomright", -5, 5)
+
+		local gradientBottomSide = DF:CreateTexture(frame, {gradient = "vertical", fromColor = DF.IsDragonflight() and {0, 0, 0, 0.50} or {0, 0, 0, 0.25}, toColor = "transparent"}, 1, 70, "artwork", {0, 1, 0, 1}, "gradientBottomSide")
+		gradientBottomSide:SetPoint("bottoms", frame, 1, 0)
 
 		frame.Flash = Plater.CreateFlash(frame)
 	end
@@ -316,6 +348,12 @@ end
 			frame.Title:SetText("Plater Nameplates: Npc/Cast Data Import (" .. #queueToAcceptDataOfNpcsOrCasts .. ")")
 		end
 
+		frame.Text1:SetText("")
+		frame.Text2:SetText("")
+		frame.Text3:SetText("")
+		frame.Text4:SetText("")
+		frame.Text5:SetText("")
+
 		local nextDataToApprove = tremove(queueToAcceptDataOfNpcsOrCasts)
 		if (nextDataToApprove) then
 			local whichInfo = nextDataToApprove[1]
@@ -326,14 +364,11 @@ end
 				local npcZone = nextDataToApprove[4]
 				local senderName = nextDataToApprove[6]
 
-				frame.Text1:SetText("Npc Name: " .. npcName)
-				frame.Text2:SetText("Npc ID: " .. npcId)
-				frame.Text3:SetText("Npc Zone: " .. npcZone)
-				frame.Text4:SetText("Sender: " .. senderName)
+				frame.Text1:SetText("From: " .. senderName)
 
 				if (whichInfo == "npccolor") then
 					local color = nextDataToApprove[5]
-					frame.Text5:SetText("Nameplate Color: " .. color)
+					frame.Text2:SetText("Set Npc: |cFFFFDD00" .. npcName .. "|r Color to: " .. DF:AddColorToText(color, color))
 
 					frame.AcceptButton:SetClickFunction(function()
 						--accept the data sent and add to the database
@@ -344,17 +379,17 @@ end
 
 				elseif (whichInfo == "npcrename") then
 					local newName = nextDataToApprove[5]
-					frame.Text5:SetText("New Name: " .. newName)
+					frame.Text2:SetText("Rename: |cFFFFDD00" .. npcName .. "|r to: |cFFFFDD00" .. newName)
 
 					frame.AcceptButton:SetClickFunction(function()
 						--accept the data sent and add to the database
-						platerInternal.Comms.AcceptNpcRename(npcId, npcName, npcZone, newName)
+						platerInternal.Comms.AcceptNpcName(npcId, newName, npcZone)
 						frame:Hide()
 						platerInternal.Frames.ShowImportConfirmationForNpcAndCasts()
 					end)
 
 				elseif (whichInfo == "resetnpc") then
-					frame.Text5:SetText("Disable Npc Name and Color")
+					frame.Text2:SetText("Remove Npc Name and Color Customizations")
 
 					frame.AcceptButton:SetClickFunction(function()
 						platerInternal.Comms.AcceptNpcReset(npcId)
@@ -384,12 +419,11 @@ end
 					return
 				end
 
-				frame.Text1:SetText("Spell Name: " .. "|T" .. spellIcon .. ":16|t" .. npcName)
-				frame.Text2:SetText("Spell ID: " .. spellId)
-				frame.Text4:SetText("Sender: " .. senderName)
+				frame.Text1:SetText("From: " .. senderName)
 
 				if (whichInfo == "castcolor") then
-					frame.Text5:SetText("New CastBar Color: " .. value)
+					frame.Text2:SetText("Set Spell '|cFFFFDD00" .. spellName .. "|r' color to: " .. DF:AddColorToText(value, value))
+
 					frame.AcceptButton:SetClickFunction(function()
 						platerInternal.Comms.AcceptCastDataFromComm(whichInfo, spellId, npcName, npcId, value)
 						frame:Hide()
@@ -397,7 +431,8 @@ end
 					end)
 
 				elseif (whichInfo == "castrename") then
-					frame.Text5:SetText("New Spell Name: " .. value)
+					frame.Text2:SetText("Set Spell '|cFFFFDD00" .. spellName .. "|r' name to: " .. value)
+
 					frame.AcceptButton:SetClickFunction(function()
 						platerInternal.Comms.AcceptCastDataFromComm(whichInfo, spellId, npcName, npcId, value)
 						frame:Hide()
@@ -405,7 +440,8 @@ end
 					end)
 
 				elseif (whichInfo == "castscript") then
-					frame.Text5:SetText("New CastBar Script: " .. value)
+					frame.Text2:SetText("Set Spell '|cFFFFDD00" .. spellName .. "|r' to use script: " .. value)
+
 					frame.AcceptButton:SetClickFunction(function()
 						platerInternal.Comms.AcceptCastDataFromComm(whichInfo, spellId, npcName, npcId, value)
 						frame:Hide()
@@ -413,13 +449,17 @@ end
 					end)
 
 				elseif (whichInfo == "resetcast") then
-					frame.Text5:SetText("Disable CastBar Color, Rename and Script")
+					frame.Text2:SetText("Remove Spell Name, Color and Scripts Customizations")
+
 					frame.AcceptButton:SetClickFunction(function()
 						platerInternal.Comms.AcceptCastDataFromComm(whichInfo, spellId, npcName, npcId, value)
 						frame:Hide()
 						platerInternal.Frames.ShowImportConfirmationForNpcAndCasts()
 					end)
 				end
+
+				frame.Flash:Play()
+				frame:Show()
 			end
 		else
 			frame:Hide()
@@ -466,7 +506,10 @@ end
 			npcsRenamed[npcId] = npcName
 		end
 
+		Plater.RefreshDBLists()
+		Plater.UpdateAllNameplateColors()
 		Plater.UpdateAllPlates()
+		Plater.ForceTickOnAllNameplates()
 	end
 
 	function platerInternal.Comms.AcceptNpcReset(npcId)
@@ -484,11 +527,12 @@ end
 
 		Plater.RefreshDBLists()
 		Plater.UpdateAllNameplateColors()
+		Plater.UpdateAllPlates()
 		Plater.ForceTickOnAllNameplates()
 	end
 
 	function platerInternal.Comms.AcceptCastDataFromComm(whichInfo, spellId, npcName, npcId, value)
-		local castColorTable = Plater.db.profile.spell_colors[spellId] --{[1] = is enabled, [2] = color, [3] = renamed cast name}
+		local castColorTable = Plater.db.profile.cast_colors[spellId] --{[1] = is enabled, [2] = color, [3] = renamed cast name}
 
 		if (whichInfo == "castcolor") then
 			local color = value
@@ -540,23 +584,20 @@ end
 		Plater.ForceTickOnAllNameplates()
 	end
 
-
 	function platerInternal.Comms.OnReceiveNpcOrCastInfoFromGroup(prefix, unitName, realmName, unitGUID, encodedData, channel)
 		if (not checkReceivedDataIsValid(unitName, channel)) then
-			print("OnReceiveNpcOrCastInfoFromGroup does not passed the checkReceivedDataIsValid") --debug
 			return
 		end
 
 		local stringDecompressed = decompressReceivedData(encodedData)
 		if (not stringDecompressed) then
-			print("OnReceiveNpcRename does not passed the decompressReceivedData") --debug
 			return
 		end
 
 		local data = {strsplit(",", stringDecompressed)}
 
 		local whichInfo = data[1]
-		local ID = data[2] and tonumber(data[2])
+		local ID = data[2] and tonumber(data[2]) --npcId or spellId
 
 		if (type(ID) ~= "number" or ID < 1 or ID > 1000000) then
 			return
@@ -570,11 +611,12 @@ end
 			end
 		end
 
+		local value = data[6] --all values are strings
+
 		if (whichInfo == "castcolor" or whichInfo == "castrename" or whichInfo == "castscript" or whichInfo == "resetcast") then
 			local spellId = ID
 			local npcName = data[3]
 			local npcId = data[4] and tonumber(data[4]) or 0
-			local value = data[6] --all three values are strings
 
 			--check integrity of the data
 			if (type(spellId) ~= "number" or type(npcName) ~= "string" or type(npcId) ~= "number" or type(autoAccept) ~= "number" or type(value) ~= "string") then
@@ -636,7 +678,6 @@ end
 			local npcId = ID
 			local npcName = data[3]
 			local npcZone = data[4]
-			local value = data[6] --both color and new npc name are strings
 
 			--check integrity of the data
 			if (type(npcId) ~= "number" or type(npcName) ~= "string" or type(npcZone) ~= "string" or type(autoAccept) ~= "number" or type(value) ~= "string") then
@@ -681,6 +722,8 @@ end
 			Plater.ForceTickOnAllNameplates()
 		end
 	end
+
+	platerInternal.Comms.CommHandler[Plater.COMM_NPC_OR_CAST_CUSTOMIZATION] = platerInternal.Comms.OnReceiveNpcOrCastInfoFromGroup
 
 	--send npc info to group
 
@@ -764,25 +807,24 @@ end
 				return
 			end
 
-			dataToSend = whichInfo .. "," .. npcId .. "," .. npcName .. "," .. npcZone .. "," .. (autoAccept and "1," or "0,") .. "," .. npcColorName
+			dataToSend = whichInfo .. "," .. npcId .. "," .. npcName .. "," .. npcZone .. "," .. (autoAccept and "1" or "0") .. "," .. npcColorName
 
 		elseif (whichInfo == "npcrename") then
-			local npcColorTable = Plater.db.profile.npc_colors[npcId]
-			local npcCustomName = npcColorTable and npcColorTable[3]
-			if (not npcCustomName or type(npcCustomName) ~= "string") then
+			local npcNameRenamed = Plater.db.profile.npcs_renamed[npcId]
+			if (not npcNameRenamed or type(npcNameRenamed) ~= "string") then
 				Plater:Msg("npc does not have a custom name.")
 				return
 			end
 
-			dataToSend = whichInfo .. "," .. npcId .. "," .. npcName .. "," .. npcZone .. "," .. (autoAccept and "1," or "0,") .. "," .. npcCustomName
+			dataToSend = whichInfo .. "," .. npcId .. "," .. npcName .. "," .. npcZone .. "," .. (autoAccept and "1" or "0") .. "," .. npcNameRenamed
 
 		elseif (whichInfo == "resetnpc") then
-			dataToSend = whichInfo .. "," .. npcId .. "," .. npcName .. "," .. npcZone .. "," .. (autoAccept and "1," or "0,") .. "," .. "reset"
+			dataToSend = whichInfo .. "," .. npcId .. "," .. npcName .. "," .. npcZone .. "," .. (autoAccept and "1" or "0") .. "," .. "reset"
 		end
 
-		local encodedString = Plater.CompressData(dataToSend, "comm")
+		local encodedString = Plater.CompressDataWithoutSerialization(dataToSend, "comm")
 		--send to guild, the receiver will check if the player is in the group
-		Plater:SendCommMessage(Plater.COMM_PLATER_PREFIX, LibAceSerializer:Serialize(Plater.COMM_NPC_COLOR_EXPORTED, UnitName("player"), GetRealmName(), UnitGUID("player"), encodedString), "GUILD")
+		Plater:SendCommMessage(Plater.COMM_PLATER_PREFIX, LibAceSerializer:Serialize(Plater.COMM_NPC_OR_CAST_CUSTOMIZATION, UnitName("player"), GetRealmName(), UnitGUID("player"), encodedString), CONST_COLORNPC_SHARING_CHANNEL)
 	end
 
 	function platerInternal.Comms.SendCastInfoToGroup(buttonClicked, spellId, autoAccept, whichInfo)
@@ -807,7 +849,7 @@ end
 			local castColorTable = Plater.db.profile.cast_colors[spellId]
 			--the index 2 of the castColorTable is the custom color of the cast
 			if (castColorTable and type(castColorTable) == "table" and type(castColorTable[2]) == "string" and castColorTable[2] ~= "white") then
-				dataToSend = whichInfo .. "," .. spellId .. "," .. (thisCastInfo.source or "") .. "," .. (thisCastInfo.npcID or "") .. "," .. (autoAccept and "1," or "0,") .. "," .. castColorTable[2]
+				dataToSend = whichInfo .. "," .. spellId .. "," .. (thisCastInfo.source or "") .. "," .. (thisCastInfo.npcID or "") .. "," .. (autoAccept and "1" or "0") .. "," .. castColorTable[2]
 			else
 				Plater:Msg("cast does not have a color.")
 				return
@@ -817,7 +859,7 @@ end
 			local castColorTable = Plater.db.profile.cast_colors[spellId]
 			--index 3 of the castColorTable is the custom name of the cast
 			if (castColorTable and type(castColorTable) == "table" and type(castColorTable[3]) == "string" and castColorTable[3] ~= "") then
-				dataToSend = whichInfo .. "," .. spellId .. "," .. (thisCastInfo.source or "") .. "," .. (thisCastInfo.npcID or "") .. "," .. (autoAccept and "1," or "0,") .. "," .. castColorTable[3]
+				dataToSend = whichInfo .. "," .. spellId .. "," .. (thisCastInfo.source or "") .. "," .. (thisCastInfo.npcID or "") .. "," .. (autoAccept and "1" or "0") .. "," .. castColorTable[3]
 			else
 				Plater:Msg("cast does not have a custom name.")
 				return
@@ -826,17 +868,16 @@ end
 		elseif (whichInfo == "castscript") then
 			local scriptObject = platerInternal.Scripts.GetDefaultScriptForSpellId(spellId)
 			if (not scriptObject) then
-				print("this spell isn't a trigger on any basic cast script.")
 				return
 			end
 
-			dataToSend = whichInfo .. "," .. spellId .. "," .. (thisCastInfo.source or "") .. "," .. (thisCastInfo.npcID or "") .. "," .. (autoAccept and "1," or "0,") .. "," .. scriptObject.Name
+			dataToSend = whichInfo .. "," .. spellId .. "," .. (thisCastInfo.source or "") .. "," .. (thisCastInfo.npcID or "") .. "," .. (autoAccept and "1" or "0") .. "," .. scriptObject.Name
 
 		elseif (whichInfo == "resetcast") then
-			dataToSend = whichInfo .. "," .. spellId .. "," .. (thisCastInfo.source or "") .. "," .. (thisCastInfo.npcID or "") .. "," .. (autoAccept and "1," or "0,") .. "," .. "reset"
+			dataToSend = whichInfo .. "," .. spellId .. "," .. (thisCastInfo.source or "") .. "," .. (thisCastInfo.npcID or "") .. "," .. (autoAccept and "1" or "0") .. "," .. "reset"
 		end
 
-		local encodedString = Plater.CompressData(dataToSend, "comm")
+		local encodedString = Plater.CompressDataWithoutSerialization(dataToSend, "comm")
 		--send to guild, the receiver will check if the player is in the group
-		Plater:SendCommMessage(Plater.COMM_PLATER_PREFIX, LibAceSerializer:Serialize(Plater.COMM_CAST_COLOR_EXPORTED, UnitName("player"), GetRealmName(), UnitGUID("player"), encodedString), "GUILD")
+		Plater:SendCommMessage(Plater.COMM_PLATER_PREFIX, LibAceSerializer:Serialize(Plater.COMM_NPC_OR_CAST_CUSTOMIZATION, UnitName("player"), GetRealmName(), UnitGUID("player"), encodedString), CONST_COLORNPC_SHARING_CHANNEL)
 	end

@@ -1253,7 +1253,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
     --callback from have clicked in the 'Share With Raid' button
     local latestMenuClicked = false
     local onSendToRaidButtonClicked = function(self, button, spellId)
-        if (spellId == latestMenuClicked) then
+        if (spellId == latestMenuClicked and GameCooltip:IsShown()) then
             GameCooltip:Hide()
             latestMenuClicked = false
             return
