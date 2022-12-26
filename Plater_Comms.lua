@@ -7,7 +7,7 @@ local LibAceSerializer = LibStub:GetLibrary ("AceSerializer-3.0")
 local LibDeflate = LibStub:GetLibrary ("LibDeflate")
 
 local CONST_THROTTLE_HOOK_COMMS = 0.500 --2 comms per second per mod
-local CONST_COLORNPC_SHARING_CHANNEL = "PARTY"
+local CONST_COLORNPC_SHARING_CHANNEL = "GUILD"
 
 function Plater.CreateCommHeader(prefix, encodedString)
     return LibAceSerializer:Serialize(prefix, UnitName("player"), GetRealmName(), UnitGUID("player"), encodedString)
