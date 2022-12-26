@@ -3633,7 +3633,7 @@ local class_specs_coords = {
 			--get and format the reaction to always be the value of the constants, then cache the reaction in some widgets for performance
 			local isSoftInteract = UnitIsUnit(unitID, "softinteract")
 			local reaction = UnitReaction (unitID, "player")
-			local isObject = UnitIsGameObject(unitID) --reaction == nil
+			local isObject = (IS_WOW_PROJECT_MAINLINE and UnitIsGameObject(unitID)) or reaction == nil
 			local isSoftInteractObject = isObject and isSoftInteract
 			reaction = reaction or isSoftInteract and Plater.UnitReaction.UNITREACTION_NEUTRAL or Plater.UnitReaction.UNITREACTION_HOSTILE
 			reaction = reaction <= Plater.UnitReaction.UNITREACTION_HOSTILE and Plater.UnitReaction.UNITREACTION_HOSTILE or reaction >= Plater.UnitReaction.UNITREACTION_FRIENDLY and Plater.UnitReaction.UNITREACTION_FRIENDLY or Plater.UnitReaction.UNITREACTION_NEUTRAL
