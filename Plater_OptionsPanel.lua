@@ -844,8 +844,8 @@ function Plater.OpenOptionsPanel()
 				local castColorsTemp = DetailsFramework.table.copy({}, castColors)
 				for n, v in pairs(castColorsTemp) do
 					if tonumber(n) then 
-						audioCues[n] = nil
-						audioCues[tonumber(n)] = v 
+						castColors[n] = nil
+						castColors[tonumber(n)] = v 
 					end
 				end
 				
