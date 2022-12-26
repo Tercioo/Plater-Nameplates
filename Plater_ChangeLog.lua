@@ -8,6 +8,9 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1672013181,  "Bug Fix", "December 26th, 2022", "Fixing charged Combo Points not updating properly in some cases.", "cont1nuity"},
+			{1672013181,  "Bug Fix", "December 26th, 2022", "Fixing cast color/sounds not working after profile import.", "cont1nuity"},
+			
 			{1671749018,  "Bug Fix", "December 22nd, 2022", "Fixing Evoker Essence resource points.", "cont1nuity"},
 			
 			{1671439834,  "Bug Fix", "December 17th, 2022", "Fixing more cases of invisible nameplates on some spawned or hostility changed units.", "cont1nuity"},
