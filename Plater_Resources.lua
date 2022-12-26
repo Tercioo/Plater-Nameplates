@@ -1121,7 +1121,8 @@ end
             --charges changed
             local chargedPowerPoints = GetUnitChargedPowerPoints("player")
             --chargedPowerPoints = {[1] = random(1,2), [2] = random(3,5)} --testing
-            for i = 1, resourceBar.widgetsInUseAmount do
+            local maxPowerPoints = UnitPowerMax("player", Plater.Resources.playerResourceId)
+            for i = 1, maxPowerPoints do
                 local widget = resourceBar.widgets[i]
                 local isCharged = chargedPowerPoints and tContains(chargedPowerPoints, i)
                 if (widget.isCharged ~= isCharged) then
