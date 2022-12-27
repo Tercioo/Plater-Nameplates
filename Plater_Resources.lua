@@ -1363,9 +1363,6 @@ end
         self.EssenceFilling.CircleAnim:SetAnimationSpeedMultiplier(animationSpeedMultiplier)
     end
     function resourceWidgetsFunctions.OnEssenceChanged(mainResourceFrame, resourceBar, forcedRefresh, event, unit, powerType)
-        if event == "UNIT_POWER_FREQUENT" then
-            print(event, UnitPower("player", Plater.Resources.playerResourceId), UnitPartialPower("player", Plater.Resources.playerResourceId, true) / 1000.0, UnitPowerMax("player", Plater.Resources.playerResourceId))
-        end
         if (event == "UNIT_MAXPOWER" and DB_PLATER_RESOURCE_SHOW_DEPLETED) then
             Plater.Resources.UpdateResourcesFor_ShowDepleted(mainResourceFrame, resourceBar)
             forcedRefresh = true
