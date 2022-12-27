@@ -553,24 +553,26 @@ end
 			end
 			Plater.WipeAndRecompileAllScripts("script")
 
-		elseif (whichInfo == "castreset") then
+		elseif (whichInfo == "resetcast") then
 			if (castColorTable) then
 				castColorTable[1] = false
 				castColorTable[2] = "white"
 				castColorTable[3] = ""
 			end
 
+			--refresh the colors
+			Plater.RefreshDBLists()
+			Plater.UpdateAllNameplateColors()
+			Plater.ForceTickOnAllNameplates()
+
 			--reset script
 			local scriptObject = platerInternal.Scripts.GetDefaultScriptForSpellId(spellId)
-			if (not scriptObject) then
-				--print("this spell isn't a trigger on any basic cast script.")
-				return
+			if (scriptObject) then
+				platerInternal.Scripts.RemoveTriggerFromAnyScript(spellId)
+				platerInternal.Scripts.AddSpellToScriptTriggers(scriptObject, spellId)
+
+				Plater.WipeAndRecompileAllScripts("script")
 			end
-
-			platerInternal.Scripts.RemoveTriggerFromAnyScript(spellId)
-			platerInternal.Scripts.AddSpellToScriptTriggers(scriptObject, spellId)
-
-			Plater.WipeAndRecompileAllScripts("script")
 		end
 
 		--check if the captured_casts has the spell name and icon, if not add them to the database
@@ -582,6 +584,8 @@ end
 		Plater.RefreshDBLists()
 		Plater.UpdateAllNameplateColors()
 		Plater.ForceTickOnAllNameplates()
+
+		PlaterOptionsPanelContainerCastColorManagementColorFrame.RefreshScroll(0)
 	end
 
 	function platerInternal.Comms.OnReceiveNpcOrCastInfoFromGroup(prefix, unitName, realmName, unitGUID, encodedData, channel)
