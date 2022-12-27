@@ -12052,6 +12052,20 @@ end
 		end
 	end
 
+	function platerInternal.Scripts.RemoveTriggerFromScript(scriptObject, triggerId)
+		local index = DF.table.find(scriptObject.SpellIds, triggerId)
+		if (index) then
+			tremove(scriptObject.SpellIds, index)
+			Plater.WipeAndRecompileAllScripts("script")
+		end
+
+		local index = DF.table.find(scriptObject.NpcNames, triggerId)
+		if (index) then
+			tremove(scriptObject.NpcNames, index)
+			Plater.WipeAndRecompileAllScripts("script")
+		end
+	end
+
 	function platerInternal.Scripts.AddNpcToScriptTriggers(scriptObject, npcId)
 		DF.table.addunique(scriptObject.NpcNames, npcId)
 		Plater.WipeAndRecompileAllScripts("script")

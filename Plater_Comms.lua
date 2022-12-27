@@ -819,6 +819,14 @@ end
 			dataToSend = whichInfo .. "," .. npcId .. "," .. npcName .. "," .. npcZone .. "," .. (autoAccept and "1" or "0") .. "," .. npcNameRenamed
 
 		elseif (whichInfo == "resetnpc") then
+			--reset to the local player as well
+			Plater.db.profile.npcs_renamed[npcId] = nil
+			Plater.db.profile.npc_colors[npcId] = nil
+			PlaterOptionsPanelContainerColorManagement.RefreshScroll(0)
+			Plater.RefreshDBLists()
+			Plater.UpdateAllNameplateColors()
+			Plater.ForceTickOnAllNameplates()
+
 			dataToSend = whichInfo .. "," .. npcId .. "," .. npcName .. "," .. npcZone .. "," .. (autoAccept and "1" or "0") .. "," .. "reset"
 		end
 
@@ -874,6 +882,14 @@ end
 			dataToSend = whichInfo .. "," .. spellId .. "," .. (thisCastInfo.source or "") .. "," .. (thisCastInfo.npcID or "") .. "," .. (autoAccept and "1" or "0") .. "," .. scriptObject.Name
 
 		elseif (whichInfo == "resetcast") then
+			--reset cast information on the local player as well
+			Plater.db.profile.cast_colors[spellId] = nil
+			PlaterOptionsPanelContainerColorManagement.RefreshScroll(0)
+			platerInternal.Scripts.RemoveTriggerFromAnyScript(spellId)
+			Plater.RefreshDBLists()
+			Plater.UpdateAllNameplateColors()
+			Plater.ForceTickOnAllNameplates()
+
 			dataToSend = whichInfo .. "," .. spellId .. "," .. (thisCastInfo.source or "") .. "," .. (thisCastInfo.npcID or "") .. "," .. (autoAccept and "1" or "0") .. "," .. "reset"
 		end
 
