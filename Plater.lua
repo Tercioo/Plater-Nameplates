@@ -647,6 +647,63 @@ Plater.TargetIndicators = {
 		y = 0,
 		blend = "ADD",
 	},
+	
+	["Arrow"] = {
+        path = [[Interface\AddOns\Plater\media\arrow_single_right_64]],
+        coords = {
+            {0, 1, 0, 1}, 
+            {1, 0, 0, 1}
+        },
+        desaturated = false,
+        width = 20,
+        height = 20,
+        x = 28,
+        y = 0,
+		wscale = 1.5,
+		hscale = 2,
+		autoScale = true,
+		--scale = 1,
+        blend = "ADD",
+        color = "white",
+    },
+	
+	["Arrow Thin"] = {
+        path = [[Interface\AddOns\Plater\media\arrow_thin_right_64]],
+        coords = {
+            {0, 1, 0, 1}, 
+            {1, 0, 0, 1}
+        },
+        desaturated = false,
+        width = 20,
+        height = 20,
+        x = 28,
+        y = 0,
+		wscale = 1.5,
+		hscale = 2,
+		autoScale = true,
+		--scale = 1,
+        blend = "ADD",
+        color = "white",
+    },
+	
+	["Double Arrows"] = {
+        path = [[Interface\AddOns\Plater\media\arrow_double_right_64]],
+        coords = {
+            {0, 1, 0, 1}, 
+            {1, 0, 0, 1}
+        },
+        desaturated = false,
+        width = 20,
+        height = 20,
+        x = 28,
+        y = 0,
+		wscale = 1.5,
+		hscale = 2,
+		autoScale = true,
+		--scale = 1,
+        blend = "ADD",
+        color = "white",
+    },
 }
 
 --> which specs each class has available
