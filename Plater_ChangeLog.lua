@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1672432281,  "Backend Change", "December 31st, 2022", "Adding more 'forced in combat' units for Dragonflight dungeon boss adds.", "cont1nuity"},
 			{1672432281,  "Backend Change", "December 25th, 2022", "Adding additional arrow target indicators.", "cont1nuity"},
 			
 			{1672167745,  "New Feature", "December 27th, 2022", "Added 'Send to Raid' button on Npc and Cast customization tab.", "Terciob"},
