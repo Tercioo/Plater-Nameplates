@@ -3462,6 +3462,12 @@ local class_specs_coords = {
 				obscuredTexture:SetVertexColor (0, 0, 0, 1)
 				plateFrame.Obscured = obscuredTexture
 
+				obscuredTexture.Mask = healthBar:CreateMaskTexture(nil, "artwork")
+				obscuredTexture.Mask:SetAllPoints(obscuredTexture)
+				obscuredTexture.Mask:SetTexture([[Interface\AddOns\Plater\masks\mask1]])
+				obscuredTexture.Mask:Hide()
+				obscuredTexture:AddMaskTexture(obscuredTexture.Mask)
+
 			--> create the extra icon frame (used for the special aura)
 				local options = {
 					icon_width = 20, 
