@@ -1129,11 +1129,23 @@ end
 		newIcon.Border = newIcon:CreateTexture (nil, "background")
 		newIcon.Border:SetAllPoints()
 		newIcon.Border:SetColorTexture (0, 0, 0)
-		
+
+		newIcon.BorderMask = newIcon:CreateMaskTexture(nil, "artwork")
+		newIcon.BorderMask:SetAllPoints()
+		newIcon.BorderMask:SetTexture([[Interface/addons/plater/masks/rounded_square_32x32]])
+		newIcon.Border:AddMaskTexture(newIcon.BorderMask)
+		newIcon.BorderMask:Hide()
+
 		newIcon.Icon = newIcon:CreateTexture (nil, "BORDER")
 		newIcon.Icon:SetSize (18, 12)
 		newIcon.Icon:SetPoint ("center")
 		newIcon.Icon:SetTexCoord (.05, .95, .1, .6)
+
+		newIcon.IconMask = newIcon:CreateMaskTexture(nil, "artwork")
+		newIcon.IconMask:SetAllPoints()
+		newIcon.IconMask:SetTexture([[Interface/addons/plater/masks/rounded_square_32x32]])
+		newIcon.Icon:AddMaskTexture(newIcon.IconMask)
+		newIcon.IconMask:Hide()
 		
 		newIcon.Cooldown = CreateFrame ("cooldown", "$parentCooldown", newIcon, "CooldownFrameTemplate, BackdropTemplate")
 		newIcon.Cooldown:SetPoint ("center", 0, -1)
@@ -1141,16 +1153,28 @@ end
 		newIcon.Cooldown:EnableMouse (false)
 		newIcon.Cooldown:SetHideCountdownNumbers (true)
 		newIcon.Cooldown:Hide()
-		
+
+		--tested to change the texture used in the semi-transparent black overlay which get "cutted" by the edge texture
+		--newIcon.Cooldown.SwipeTexture = newIcon.Cooldown:CreateTexture(nil, "artwork")
+		--newIcon.Cooldown.SwipeTexture:SetAllPoints()
+		--newIcon.Cooldown.SwipeTexture:SetColorTexture(0, 0, 0, 0.3)
+		--newIcon.Cooldown:SetSwipeTexture([[Interface/addons/plater/masks/rounded_square_32x32]], 0, 0, 1, 1)
+		--newIcon.Cooldown:SetEdgeTexture([[Interface/addons/plater/masks/rounded_square_32x32]], 0, 0, 1, 1)
+		--newIcon.CooldownMask = newIcon.Cooldown:CreateMaskTexture(nil, "artwork")
+		--newIcon.CooldownMask:SetAllPoints()
+		--newIcon.CooldownMask:SetTexture([[Interface/addons/plater/masks/rounded_square_32x32]])
+		--newIcon.Cooldown.SwipeTexture:AddMaskTexture(newIcon.CooldownMask)
+		--newIcon.CooldownMask:Hide()
+
 		newIcon.Cooldown.noCooldownCount = Plater.db.profile.disable_omnicc_on_auras
-		
+
 		--newIcon.Cooldown:SetSwipeColor (0, 0, 0) --not working
 		--newIcon.Cooldown:SetDrawSwipe (false)
 		--newIcon.Cooldown:SetSwipeTexture ("Interface\\Garrison\\Garr_TimerFill")
 		--newIcon.Cooldown:SetEdgeTexture ("Interface\\Cooldown\\edge-LoC");
 		--newIcon.Cooldown:SetReverse (true)
 		--newIcon.Cooldown:SetCooldownUNIX (startTime, buildDuration);
-		
+
 		newIcon.CountFrame = CreateFrame ("frame", "$parentCountFrame", newIcon, BackdropTemplateMixin and "BackdropTemplate")
 		newIcon.CountFrame:SetAllPoints()
 		newIcon.CountFrame:EnableMouse (false)

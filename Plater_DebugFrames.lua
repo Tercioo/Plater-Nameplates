@@ -4,6 +4,10 @@ local C_Timer = _G.C_Timer
 local addonName, platerInternal = ...
 local DF = DetailsFramework
 
+function Plater.DebugNameplate()
+    return Plater.DebugTargetNameplate()
+end
+
 function Plater.DebugTargetNameplate()
     local plateFrame = C_NamePlate.GetNamePlateForUnit("target", issecure())
     if (plateFrame) then
