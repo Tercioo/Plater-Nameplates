@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1672432281,  "Backend Change", "December 25th, 2022", "Adding additional arrow target indicators.", "cont1nuity"},
+			
 			{1672167745,  "New Feature", "December 27th, 2022", "Added 'Send to Raid' button on Npc and Cast customization tab.", "Terciob"},
 			{1672167745,  "Bug Fix", "December 26th, 2022", "Fixing charged Combo Points not updating properly in some cases.", "cont1nuity"},
 			{1672167745,  "Bug Fix", "December 26th, 2022", "Fixing cast color/sounds not working after profile import.", "cont1nuity"},
