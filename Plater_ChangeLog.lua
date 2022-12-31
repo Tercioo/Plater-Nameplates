@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1672432281,  "Bug Fix", "December 31st, 2022", "Multiple Script bug fixes.", "Terciob"},
 			{1672432281,  "Backend Change", "December 31st, 2022", "Adding more 'forced in combat' units for Dragonflight dungeon boss adds.", "cont1nuity"},
 			{1672432281,  "Backend Change", "December 25th, 2022", "Adding additional arrow target indicators.", "cont1nuity"},
 			
