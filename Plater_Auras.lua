@@ -2614,7 +2614,8 @@ end
 			wipe(AUTO_TRACKING_EXTRA_DEBUFFS)
 
 			for spellId, flag in pairs (extraBuffsToTrack) do
-				local spellName = GetSpellInfo (tonumber(spellId) or spellId)
+				spellId = tonumber(spellId) or spellId --ensure either actual number or name of the spell
+				local spellName = GetSpellInfo (spellId)
 				if (spellName) then
 					if flag then
 						AUTO_TRACKING_EXTRA_BUFFS [spellName] = true
@@ -2625,7 +2626,8 @@ end
 			end
 
 			for spellId, flag in pairs (extraDebuffsToTrack) do
-				local spellName = GetSpellInfo (tonumber(spellId) or spellId)
+				spellId = tonumber(spellId) or spellId --ensure either actual number or name of the spell
+				local spellName = GetSpellInfo (spellId)
 				if (spellName) then
 					if flag then
 						AUTO_TRACKING_EXTRA_DEBUFFS [spellName] = true
@@ -2678,7 +2680,8 @@ end
 			end
 
 			for spellId, state in pairs (profile.aura_tracker.buff_banned) do
-				local spellName = GetSpellInfo (tonumber(spellId) or spellId)
+				spellId = tonumber(spellId) or spellId --ensure either actual number or name of the spell
+				local spellName = GetSpellInfo (spellId)
 				if (spellName) then
 					if state then
 						DB_BUFF_BANNED [spellName] = true
@@ -2689,7 +2692,8 @@ end
 			end
 
 			for spellId, state in pairs (profile.aura_tracker.debuff_banned) do
-				local spellName = GetSpellInfo (tonumber(spellId) or spellId)
+				spellId = tonumber(spellId) or spellId --ensure either actual number or name of the spell
+				local spellName = GetSpellInfo (spellId)
 				if (spellName) then
 					if state then
 						DB_DEBUFF_BANNED [spellName] = true
