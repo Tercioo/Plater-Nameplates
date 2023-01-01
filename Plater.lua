@@ -2607,9 +2607,9 @@ local class_specs_coords = {
 
 		--when a unit from unatackable change its state, this event triggers several times, a schedule is used to only update once
 		UNIT_FLAGS = function (_, unit)
-			if (unit == "player") then
-				return
-			end
+			--if (unit == "player") then
+			--	return
+			--end
 			
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unit, issecure())
 			if (plateFrame) then
@@ -2898,7 +2898,7 @@ local class_specs_coords = {
 			Plater.RunFunctionForEvent ("ZONE_CHANGED_NEW_AREA")
 		end,
 		
-		PLAYER_ENTERING_WORLD = function()
+		PLAYER_ENTERING_WORLD = function(self, event, isInitialLogin, isReloadingUi)
 
 			Plater.db.profile.login_counter = Plater.db.profile.login_counter + 1
 

@@ -836,6 +836,14 @@ end
         resourceBar:SetHeight(1)
         mainResourceFrame:Show()
 
+        -- hide blizzard resources
+        if DB_USE_PLATER_RESOURCE_BAR then
+            local resourceFrame = NamePlateDriverFrame and NamePlateDriverFrame.classNamePlateMechanicFrame
+            if (resourceFrame and not resourceFrame:IsForbidden()) then
+                resourceFrame:Hide()
+            end
+        end
+
         if (DB_PLATER_RESOURCE_SHOW_DEPLETED) then
             Plater.Resources.UpdateResourcesFor_ShowDepleted(mainResourceFrame, resourceBar)
         else
