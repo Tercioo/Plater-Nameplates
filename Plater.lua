@@ -150,6 +150,7 @@ platerInternal.Data = {}
 		[189707] = true, --chaotic essence (shadowlands season 4 raid affixes) --these are the multiple spawns from the above
 		[167999] = true, --Echo of Sin (shadowlands, Castle Nathria, Sire Denathrius)
 		[176920] = true, --Domination Arrow (shadowlands, Sanctum of Domination, Sylvanas)
+		[196642] = true, --Hungry Lasher (dragonflight, Algeth'ar Academy, Overgrown Ancient)
 	}
 	
 	--setter
@@ -1929,14 +1930,14 @@ local class_specs_coords = {
 	function Plater.RunScheduledUpdate (timerObject) --private
 		Plater.StartLogPerformanceCore("Plater-Core", "Update", "RunScheduledUpdate")
 
-		local plateFrame = timerObject.plateFrame
 		local unitGUID = timerObject.GUID
 		local unitId = timerObject.unitId
 		local forceUpdate = unitId and true or false
+		local plateFrame = C_NamePlate.GetNamePlateForUnit (unitId)
 		
 		
 		--checking the serial of the unit is the same in case this nameplate is being used on another unit
-		if (plateFrame:IsShown() and (unitGUID == plateFrame [MEMBER_GUID])) or (forceUpdate) then
+		if (plateFrame and (unitGUID == plateFrame [MEMBER_GUID])) then
 			--save user input data (usualy set from scripts) before call the unit added event
 				local unitFrame = plateFrame.unitFrame
 				if not unitFrame.PlaterOnScreen and not forceUpdate then
@@ -1954,7 +1955,7 @@ local class_specs_coords = {
 				local customBorderColor = unitFrame.customBorderColor
 			
 			--full refresh the nameplate, this will override user data from scripts
-			unitFrame:SetUnit (nil)
+			Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_REMOVED", unitId or unitFrame [MEMBER_UNITID])
 			Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_ADDED", unitId or unitFrame [MEMBER_UNITID])
 			
 			--restore user input data
@@ -1988,7 +1989,7 @@ local class_specs_coords = {
 
 	--run a delayed update on the namepalte, this is used when the client receives an information from the server but does not update the state immediately
 	--this usualy happens with faction and flag changes
-	function Plater.ScheduleUpdateForNameplate (plateFrame, unitId) --private
+	function Plater.ScheduleUpdateForNameplate (plateFrame) --private
 	
 		if not plateFrame.unitFrame.PlaterOnScreen and not unitId then
 			return
@@ -1996,7 +1997,7 @@ local class_specs_coords = {
 	
 		--check if there's already an update scheduled for this unit
 		if (plateFrame.HasUpdateScheduled and not plateFrame.HasUpdateScheduled._cancelled) then
-			if unitId and not plateFrame.HasUpdateScheduled.unitId then
+			if unitId and (not plateFrame.HasUpdateScheduled.unitId or plateFrame.HasUpdateScheduled.unitId ~= unitId) then
 				plateFrame.HasUpdateScheduled:Cancel()
 			else
 				return
@@ -2004,9 +2005,8 @@ local class_specs_coords = {
 		end
 		
 		plateFrame.HasUpdateScheduled = C_Timer.NewTimer (0, Plater.RunScheduledUpdate) --next frame
-		plateFrame.HasUpdateScheduled.plateFrame = plateFrame
 		plateFrame.HasUpdateScheduled.GUID = plateFrame [MEMBER_GUID]
-		plateFrame.HasUpdateScheduled.unitId = unitId
+		plateFrame.HasUpdateScheduled.unitId = plateFrame [MEMBER_UNITID]
 	
 	end
 
@@ -2623,7 +2623,7 @@ local class_specs_coords = {
 				
 				if (reactionChanged or attackableChanged or not plateFrame.unitFrame.PlaterOnScreen) then
 					--print ("UNIT_FLAG", plateFrame, issecure(), unit, unit and UnitName (unit))
-					Plater.ScheduleUpdateForNameplate (plateFrame, unit)
+					Plater.ScheduleUpdateForNameplate (plateFrame)
 				end
 			end
 		end,
@@ -2636,7 +2636,7 @@ local class_specs_coords = {
 			--fires when somebody changes faction near the player
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unit, issecure())
 			if (plateFrame) then
-				Plater.ScheduleUpdateForNameplate (plateFrame, unit)
+				Plater.ScheduleUpdateForNameplate (plateFrame)
 			end
 		end,
 
@@ -2898,7 +2898,7 @@ local class_specs_coords = {
 			Plater.RunFunctionForEvent ("ZONE_CHANGED_NEW_AREA")
 		end,
 		
-		PLAYER_ENTERING_WORLD = function(self, event, isInitialLogin, isReloadingUi)
+		PLAYER_ENTERING_WORLD = function(_, isInitialLogin, isReloadingUi)
 
 			Plater.db.profile.login_counter = Plater.db.profile.login_counter + 1
 
@@ -4208,6 +4208,14 @@ local class_specs_coords = {
 			
 			NAMEPLATES_ON_SCREEN_CACHE[unitBarId] = false
 			NUM_NAMEPLATES_ON_SCREEN = NUM_NAMEPLATES_ON_SCREEN - 1
+			
+			--check if this nameplate has an update scheduled
+			if (plateFrame.HasUpdateScheduled) then
+				if (not plateFrame.HasUpdateScheduled._cancelled) then
+					plateFrame.HasUpdateScheduled:Cancel()
+				end
+				plateFrame.HasUpdateScheduled = nil
+			end
 			
 			--debug for hunter faith death
 			--if (select (2, UnitClass (unitBarId)) == "HUNTER") then
@@ -5881,7 +5889,7 @@ end
 	function Plater.FullRefreshAllPlates() --private
 		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 			--hack to call the update without overriding user settings from scripts
-			Plater.RunScheduledUpdate ({plateFrame = plateFrame, GUID = plateFrame [MEMBER_GUID]})
+			Plater.RunScheduledUpdate ({unitId = plateFrame [MEMBER_UNITID], GUID = plateFrame [MEMBER_GUID]})
 		end
 	end
 
