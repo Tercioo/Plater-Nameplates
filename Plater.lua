@@ -2629,9 +2629,9 @@ local class_specs_coords = {
 		end,
 		
 		UNIT_FACTION = function (_, unit)
-			if (unit == "player") then
-				return
-			end
+			--if (unit == "player") then
+			--	return
+			--end
 			
 			--fires when somebody changes faction near the player
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unit, issecure())
@@ -4774,9 +4774,10 @@ function Plater.OnInit() --private --~oninit ~init
 					castBar:SetUnit (nil)
 				end
 				
-				--update resource bar
-				Plater.UpdateResourceFrame()
 			end
+			
+			--update resource bar
+			Plater.UpdateResourceFrame()
 		end
 		
 		local on_personal_bar_update = function (self)
@@ -4809,6 +4810,7 @@ function Plater.OnInit() --private --~oninit ~init
 			end
 			
 			if Plater.db.profile.resources_settings.global_settings.show then
+				resourceFrame:SetAlpha (0)
 				resourceFrame:Hide()
 				return
 			end
