@@ -1174,6 +1174,8 @@ local class_specs_coords = {
 		[190187] = true,
 		[195138] = true,
 		[195821] = true,
+		[99922] = true,
+		[104822] = true,
 	}
 
 	--update the settings cache for scritps
