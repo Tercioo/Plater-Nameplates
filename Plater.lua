@@ -966,8 +966,8 @@ local class_specs_coords = {
 	[257] = {256/512, 320/512, 128/512, 192/512}, --> priest holy
 	[258] = {(320/512) + (0.001953125 * 4), 384/512, 128/512, 192/512}, --> priest shadow
 	
-	[259] = {384/512, 448/512, 128/512, 192/512}, --> rogue assassination
-	[260] = {448/512, 512/512, 128/512, 192/512}, --> rogue combat
+	[259] = {64/512, 128/512, 384/512, 448/512}, --> rogue assassination
+	[260] = {0, 64/512, 384/512, 448/512}, --> rogue outlaw
 	[261] = {0, 64/512, 192/512, 256/512}, --> rogue sub
 	
 	[262] = {64/512, 128/512, 192/512, 256/512}, --> shaman elemental
@@ -981,6 +981,9 @@ local class_specs_coords = {
 	[71] = {448/512, 512/512, 192/512, 256/512}, --> warrior arms
 	[72] = {0, 64/512, 256/512, 320/512}, --> warrior fury
 	[73] = {64/512, 128/512, 256/512, 320/512}, --> warrior protect
+	
+	[1467] = {256/512, 320/512, 256/512, 320/512}, --> evoker devastation
+	[1468] = {320/512, 384/512, 256/512, 320/512}, --> evoker preservation
 }
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -8198,7 +8201,7 @@ end
 			end
 
 			--don't show spec icon during combat, it occupies a valuable space (terciob july 2022)
-			if (config.indicator_spec and not InCombatLockdown() and not regenDisabled) then
+			if (config.indicator_spec and (config.indicator_spec_always or (not InCombatLockdown() and not regenDisabled))) then
 				-- use BG info if available
 				local texture, L, R, T, B = Plater.GetSpecIconForUnitFromBG(plateFrame.unitFrame [MEMBER_UNITID])
 				if texture then

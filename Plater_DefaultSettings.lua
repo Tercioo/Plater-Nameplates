@@ -2991,6 +2991,7 @@ PLATER_DEFAULT_SETTINGS = {
 		indicator_faction = true,
 		indicator_friendlyfaction = false,
 		indicator_spec = true,
+		indicator_spec_always = false,
 		indicator_friendlyspec = false,
 		indicator_worldboss = true,
 		indicator_elite = true,
