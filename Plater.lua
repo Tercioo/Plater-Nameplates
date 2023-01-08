@@ -11046,6 +11046,16 @@ end
 		end
 	end
 
+	function Plater.IsModEnabled(modName)
+		for scriptId, scriptObject in ipairs (Plater.db.profile.hook_data) do
+			if (scriptObject.Name == modName) then
+				if (scriptObject.Enabled) then
+					return true
+				end
+			end
+		end
+	end
+
 	--when a script object get disabled, need to clear all compiled scripts in the cache and recompile than again
 	--this other scripts that uses the same trigger name get activated
 	-- ~scripts
