@@ -9836,7 +9836,7 @@ end
 	
 	function Plater.GetSpecIcon(spec)
 		if (spec) then
-			if (spec > 600) then --hack to new spec ids on new leveling zones from level 1-10
+			if (not class_specs_coords[spec]) then -- default to holy paladin if spec not supported
 				spec = 65
 			end
 			if (useAlpha) then
