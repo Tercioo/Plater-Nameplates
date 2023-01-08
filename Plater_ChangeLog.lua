@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1672598166,  "Bug Fix", "January 7th, 2023", "Fixing spec icon indicators for evoker.", "cont1nuity"},
 			{1672598166,  "Bug Fix", "January 1st, 2023", "Fixing aura tracking lists not working properly after importing profiles.", "cont1nuity"},
 			{1672598166,  "Bug Fix", "December 31st, 2022", "Multiple Script bug fixes.", "Terciob"},
 			{1672598166,  "Backend Change", "December 31st, 2022", "Adding more 'forced in combat' units for Dragonflight dungeon boss adds.", "cont1nuity"},
