@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1673476818,  "Bug Fix", "January 13th, 2023", "Fixing an issue with blizzard nameplates updating and changing sizes.", "cont1nuity"},
 			{1673476818,  "Bug Fix", "January 11th, 2023", "Fixing Cast Color tab issues when default scripts are removed.", "cont1nuity"},
 			
 			{1673301078,  "Bug Fix", "January 7th, 2023", "Fixing spec icon indicators for evoker.", "cont1nuity"},

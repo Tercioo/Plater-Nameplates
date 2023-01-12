@@ -4868,6 +4868,7 @@ function Plater.OnInit() --private --~oninit ~init
 			--this function is declared inside 'NamePlateDriverMixin' at Blizzard_NamePlates.lua
 			hooksecurefunc (NamePlateDriverFrame, "UpdateNamePlateOptions", function()
 				Plater.UpdateSelfPlate()
+				Plater.UpdatePlateClickSpace()
 			end)
 		end
 
