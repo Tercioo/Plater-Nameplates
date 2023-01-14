@@ -26,6 +26,17 @@ do
 --]=]
 
 --new scripts v10.0.2
+
+--place a red background texture around the PlateFrame when the unit is casting a spell and has a Buff or Debuff up
+--this is useful in cases where the buff the unit has avoid the spell cast to be interrupted
+PlaterScriptLibrary ["Aura While Casting [P]"] = {
+	Revision = 1,
+	ScriptType = "script",
+	String = "9wv3UPnmu43LEfrAfiek)uPDbG0uPx0HMzRxGWlUjhiw11gz702Tl8Z(oobiue0bttftIpX2NVZ35VeAiDkLOwz5kPbfTuIvL8mOn4c07cBI)ArjS0u8rYebZcAkje3bp4VwbuIjrZxHQfHAJRExu3wDBhrVR1AX(4m(Vx7(rrE4r0gKRzU47Z4cWfpIzSC5sx8SjZPKRqfJ60QzFkPDjD6sjt5AMKXUCWV1mHNhDOKB4lZe4L1fBZqyKSNGvE65IvlCXi(5soU5lzG0fNXmfRLaAlJJlmmFbEQAwnF5sqhGBktDXglt7buHNePvHkMvGqGUCBkzrUmXhOqfnGyXNkTX401cFrJCaLb5Ztzpi8ILbNINcC36IlhxEjxAaVLsuPiHZanuTR7wa5YT(bA2ROe3y34Dn9BXCSFCeel2RCUeZXucMpc7rj9WPoDXmeEdDTWOpk3BJ61VHNcdzjpUuRYLP12AIG3gaA9Xf33ijujmHlUOCQaCx8N3Xu1NuTXb0M7lSKk7UauF49J(53G0k)nOOUvUdaRhVNsf8O6axpsdO8u4vBUgQj5c01V4HTh)IGZd(RjGDGqmrXLwtTGDZzPhYt)ByTHyZMnwIV3yblbAmin9RstJY3K04jM5rtX9W5ZdorK9fo7YUkPQcLTvzKm1lhPkB)qZ)uA)edf)al7GxhPekDTqml1CZv92NDsc9Oti5CGyX70XDwmy)eqbd22ZUzG9UH))6D3R)QS(P(39yzw)jKALihC0wRZPOaeg4Dq4ecL7LxWhXist)3iTu6F(",
+	Enabled = true,
+	OverrideTriggers = "merge",
+}
+
 PlaterScriptLibrary ["Add - Explode on Die [P]"] = {
 	Revision = 1,
 	ScriptType = "script",
@@ -898,7 +909,7 @@ do
 					castColors[tonumber(n)] = v 
 				end
 			end
-			
+
 			local audioCues = Plater.db.profile.cast_audiocues
 			local audioCuesTemp = DetailsFramework.table.copy({}, audioCues)
 			for n, v in pairs(audioCuesTemp) do
@@ -910,7 +921,26 @@ do
 		end
 	})
 
-end
+	--#23 script trigger updates
+	tinsert (PlaterPatchLibrary, {
+		Notes = {
+			"- Patching scripts for Ruby Life Pools Season 1 Dragonflight."
+		},
+		Func = function()
+			--fixes for ruby life pools
+			Plater.AddTriggerToScript(372735, "cast", "Cast - Very Important [Plater]")
+			Plater.AddTriggerToScript(384194, "cast", "Cast - Big Alert [Plater]")
+			Plater.AddTriggerToScript(373017, "cast", "Cast - Very Important [Plater]")
+			Plater.AddTriggerToScript(372107, "cast", "Cast - Ultra Important [P]")
+			Plater.AddTriggerToScript(392488, "cast", "Cast - Very Important [Plater]")
+			Plater.AddTriggerToScript(391050, "cast", "Cast - Shield Interrupt [P]")
+			Plater.AddTriggerToScript(392451, "cast", "Cast - Big Alert [Plater]")
+			Plater.AddTriggerToScript(392924, "cast", "Cast - Big Alert [Plater]")
+		end
+	})
+
+	--/run Plater.db.profile.patch_version = 22
+end --end of patch library
 
 local listOfTriggersToDeprecateOnExpansion = {
 	[9] = { --9 = dragonflight (this probably can be removed on patch 10.2 - expansion mid tier)

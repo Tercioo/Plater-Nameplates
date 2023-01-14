@@ -3388,7 +3388,7 @@ function Plater.CreateScriptingPanel()
 		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 			local unitFrame = plateFrame.unitFrame
 
-			if (scriptObject.ScriptType == 1) then
+			if (scriptObject.ScriptType == 1) then --scriptType 1 means the scriptObject has triggers that check for Buffs and Debuffs, ScriptType can also be called TriggerType
 				--buff and debuffs
 				--iterate among all icons shown in the nameplate and attempt to kill the script by its trigger
 				for _, iconAuraFrame in ipairs (unitFrame.BuffFrame.PlaterBuffList) do
@@ -3402,13 +3402,13 @@ function Plater.CreateScriptingPanel()
 					end
 				end
 				
-			elseif (scriptObject.ScriptType == 2) then
+			elseif (scriptObject.ScriptType == 2) then --scriptType 2 means the scriptObject has triggers that check if a spell cast has a certain spellName or spellId
 				--cast bar
 				for _, spellID in ipairs (scriptObject.SpellIds) do
 					unitFrame.castBar:KillScript (spellID)
 				end
 
-			elseif (scriptObject.ScriptType == 3) then
+			elseif (scriptObject.ScriptType == 3) then --scriptType 3 means the scriptObject will check if nameplate is showing a certain npc (by matching npc name or npc id)
 				--nameplate
 				for _, triggerID in ipairs (scriptObject.NpcNames) do
 					unitFrame:KillScript (triggerID)
