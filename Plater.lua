@@ -4411,6 +4411,15 @@ local class_specs_coords = {
 		end
 	end
 	
+	---import scripts from the library database, after that apply patches and recompile scripts
+	function platerInternal.Scripts.UpdateFromLibrary()
+		Plater.ImportScriptsFromLibrary()
+		Plater.ApplyPatches()
+		--and compile all scripts and hooks
+		Plater.CompileAllScripts("script")
+		Plater.CompileAllScripts("hook")
+	end
+
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> addon initialization
 
@@ -4505,11 +4514,7 @@ function Plater.OnInit() --private --~oninit ~init
 		Plater.AddToAuraUpdate("player")
 
 	--load scripts from the script library
-		Plater.ImportScriptsFromLibrary()
-		Plater.ApplyPatches()
-		--and compile all scripts and hooks
-		Plater.CompileAllScripts ("script")
-		Plater.CompileAllScripts ("hook")
+		platerInternal.Scripts.UpdateFromLibrary()
 	
 	--check if masque is installed and add support for masque addon
 		local Masque = LibStub ("Masque", true)
@@ -5619,10 +5624,7 @@ function Plater.OnInit() --private --~oninit ~init
 		function Plater.OnProfileCreated()
 			C_Timer.After (.5, function()
 				Plater:Msg ("new profile created, applying patches and adding default scripts.")
-				Plater.ImportScriptsFromLibrary()
-				Plater.ApplyPatches()
-				Plater.CompileAllScripts ("script")
-				Plater.CompileAllScripts ("hook")
+				platerInternal.Scripts.UpdateFromLibrary()
 				
 				--enable UIParent nameplates for new installs of Plater
 				--this setting is disabled by default and will be enabled for new users and new profiles

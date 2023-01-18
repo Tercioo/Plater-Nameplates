@@ -939,6 +939,17 @@ do
 		end
 	})
 
+	--#24 script trigger updates
+	tinsert (PlaterPatchLibrary, {
+		Notes = {
+			"- Patching scripts for Temple of the Jade Serpent Season 1 Dragonflight."
+		},
+		Func = function()
+			Plater.AddTriggerToScript(200388, "npc", "Add - Explode on Die [P]") --little sha add which explodes on death
+			Plater.AddTriggerToScript(397889, "cast", "Cast - Big Alert [Plater]") --tidal burtal
+		end
+	})
+
 	--/run Plater.db.profile.patch_version = 22
 end --end of patch library
 
