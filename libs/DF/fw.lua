@@ -1,6 +1,6 @@
 
 
-local dversion = 412
+local dversion = 413
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary(major, minor)
 
@@ -4174,6 +4174,10 @@ function DF:QuickDispatch(func, ...)
 	return true
 end
 
+---call a function in safe mode with payload
+---@param func function
+---@param ... any
+---@return any
 function DF:Dispatch(func, ...)
 	if (type(func) ~= "function") then
 		return dispatch_error (_, "DF:Dispatch expect a function as parameter 1.")
@@ -4183,7 +4187,7 @@ function DF:Dispatch(func, ...)
 	local okay = dispatchResult[1]
 
 	if (not okay) then
-		return nil
+		return false
 	end
 
 	tremove(dispatchResult, 1)
