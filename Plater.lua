@@ -5389,7 +5389,7 @@ function Plater.OnInit() --private --~oninit ~init
 						self.FrameOverlay.TargetName:SetText ("")
 					end
 					
-					self.ThrottleUpdate = DB_TICK_THROTTLE
+					self.ThrottleUpdate = self.unitFrame.PlateFrame.OnTickFrame.ThrottleUpdate + DB_TICK_THROTTLE
 
 					--get the script object of the aura which will be showing in this icon frame
 					local globalScriptObject = SCRIPT_CASTBAR_TRIGGER_CACHE[self.SpellName]
@@ -6527,6 +6527,10 @@ end
 					healthBar.AnimateFunc (healthBar, deltaTime)
 				end
 			end
+			
+		if (unitFrame.castBar:IsShown()) then
+			Plater.CastBarOnTick_Hook(unitFrame.castBar, 999)
+		end
 			
 		Plater.EndLogPerformanceCore("Plater-Core", "Update", "NameplateTick")
 	end
