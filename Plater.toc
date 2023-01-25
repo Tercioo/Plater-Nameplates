@@ -1,5 +1,5 @@
-## Interface: 100002
-## Interface-Mainline: 100002
+## Interface: 100005
+## Interface-Mainline: 100005
 ## Interface-BCC: 20504
 ## Interface-Wrath: 30401
 ## Interface-Classic: 11403
