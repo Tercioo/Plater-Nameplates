@@ -4876,7 +4876,7 @@ function Plater.OnInit() --private --~oninit ~init
 			hooksecurefunc (NamePlateDriverFrame, "UpdateNamePlateOptions", function()
 				Plater.UpdateSelfPlate()
 				Plater.UpdatePlateClickSpace()
-				if IS_WOW_PROJECT_MAINLINE and (GetCVarBool ("nameplateShowOnlyNames") ) then --or Plater.db.profile.saved_cvars.nameplateShowOnlyNames == "1") then
+				if IS_WOW_PROJECT_MAINLINE and (GetCVarBool ("nameplateShowOnlyNames") or Plater.db.profile.saved_cvars.nameplateShowOnlyNames == "1") then
 					TableUtil.TrySet(DefaultCompactNamePlateFrameSetUpOptions, "hideHealthbar")
 					TableUtil.TrySet(DefaultCompactNamePlateFrameSetUpOptions, "hideCastbar")
 					TableUtil.TrySet(DefaultCompactNamePlateFriendlyFrameOptions, "hideHealthbar")
