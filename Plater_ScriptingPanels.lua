@@ -1825,6 +1825,7 @@ function Plater.CreateWagoPanel()
 	wagoSlugFrame:SetPoint("topleft", wagoFrame, "topleft")
 	wagoSlugFrame:SetPoint("bottomright", wagoFrame, "bottomright")
 	wagoFrame.wagoSlugFrame = wagoSlugFrame
+	mainFrame.wagoSlugFrame = wagoSlugFrame
 	wagoSlugFrame:Show()
 	--wagoSlugFrame:SetScript("OnShow", function()  end)
 	
