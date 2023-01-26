@@ -4881,6 +4881,8 @@ function Plater.OnInit() --private --~oninit ~init
 					TableUtil.TrySet(DefaultCompactNamePlateFrameSetUpOptions, "hideCastbar")
 					TableUtil.TrySet(DefaultCompactNamePlateFriendlyFrameOptions, "hideHealthbar")
 					TableUtil.TrySet(DefaultCompactNamePlateFriendlyFrameOptions, "hideCastbar")
+					TableUtil.TrySet(DefaultCompactNamePlateEnemyFrameOptions, "hideHealthbar")
+					TableUtil.TrySet(DefaultCompactNamePlateEnemyFrameOptions, "hideCastbar")
 				end
 			end)
 		end
