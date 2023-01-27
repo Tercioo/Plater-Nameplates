@@ -140,8 +140,8 @@ PLATER_DEFAULT_SETTINGS = {
 			layer = "Artwork",
 		},
 
-		click_space = {140, 28},
-		click_space_friendly = {140, 28},
+		click_space = {140, 28}, --classic: {132, 32}, retail: {110, 45},
+		click_space_friendly = {140, 28}, --classic: {132, 32}, retail: {110, 45},
 		click_space_always_show = false,
 		hide_friendly_castbars = false,
 		hide_enemy_castbars = false,

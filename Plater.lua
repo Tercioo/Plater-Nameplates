@@ -6160,10 +6160,10 @@ end
 		end
 		
 		local width, height = Plater.db.profile.click_space_friendly[1], Plater.db.profile.click_space_friendly[2]
-		C_NamePlate.SetNamePlateFriendlySize (width, height)
+		C_NamePlate.SetNamePlateFriendlySize (width, height) --classic: {132, 32}, retail: {110, 45},
 		
 		local width, height = Plater.db.profile.click_space[1], Plater.db.profile.click_space[2]
-		C_NamePlate.SetNamePlateEnemySize (width, height)
+		C_NamePlate.SetNamePlateEnemySize (width, height) --classic: {132, 32}, retail: {110, 45},
 		
 		C_NamePlate.SetNamePlateFriendlyClickThrough (Plater.db.profile.plate_config.friendlyplayer.click_through) 
 		
