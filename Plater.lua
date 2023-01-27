@@ -4871,30 +4871,39 @@ function Plater.OnInit() --private --~oninit ~init
 
 		if IS_WOW_PROJECT_MAINLINE then
 			C_CVar.RegisterCVar("nameplateShowOnlyNames") -- ensure this is still available and usable for our purposes, as it was removed with 10.0.5			
-			-- do this now
-			if IS_WOW_PROJECT_MAINLINE and GetCVarBool ("nameplateShowOnlyNames") or Plater.db.profile.saved_cvars.nameplateShowOnlyNames == "1" then
+		end
+		
+		function UpdateBaseNameplateOptions()
+			if GetCVarBool ("nameplateShowOnlyNames") or Plater.db.profile.saved_cvars.nameplateShowOnlyNames == "1" then
 				TableUtil.TrySet(DefaultCompactNamePlateFrameSetUpOptions, "hideHealthbar")
 				TableUtil.TrySet(DefaultCompactNamePlateFrameSetUpOptions, "hideCastbar")
+				TableUtil.TrySet(DefaultCompactNamePlateFrameSetUpOptions, "colorNameBySelection")
+				TableUtil.TrySet(DefaultCompactNamePlateFrameSetUpOptions, "colorNameWithExtendedColors")
 				TableUtil.TrySet(DefaultCompactNamePlateFriendlyFrameOptions, "hideHealthbar")
 				TableUtil.TrySet(DefaultCompactNamePlateFriendlyFrameOptions, "hideCastbar")
+				TableUtil.TrySet(DefaultCompactNamePlateFriendlyFrameOptions, "colorNameBySelection")
+				TableUtil.TrySet(DefaultCompactNamePlateFriendlyFrameOptions, "colorNameWithExtendedColors")
 				TableUtil.TrySet(DefaultCompactNamePlateEnemyFrameOptions, "hideHealthbar")
 				TableUtil.TrySet(DefaultCompactNamePlateEnemyFrameOptions, "hideCastbar")
+				TableUtil.TrySet(DefaultCompactNamePlateEnemyFrameOptions, "colorNameBySelection")
+				TableUtil.TrySet(DefaultCompactNamePlateEnemyFrameOptions, "colorNameWithExtendedColors")
+				
+				TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateFrameSetUpOptions }, "showLevel")
+				TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateFriendlyFrameOptions }, "showLevel")
+				TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateEnemyFrameOptions }, "showLevel")
 			end
-			
-			--this function is declared inside 'NamePlateDriverMixin' at Blizzard_NamePlates.lua
-			hooksecurefunc (NamePlateDriverFrame, "UpdateNamePlateOptions", function()
-				Plater.UpdateSelfPlate()
-				Plater.UpdatePlateClickSpace()
-				if IS_WOW_PROJECT_MAINLINE and GetCVarBool ("nameplateShowOnlyNames") or Plater.db.profile.saved_cvars.nameplateShowOnlyNames == "1" then --set this again for good measure!
-					TableUtil.TrySet(DefaultCompactNamePlateFrameSetUpOptions, "hideHealthbar")
-					TableUtil.TrySet(DefaultCompactNamePlateFrameSetUpOptions, "hideCastbar")
-					TableUtil.TrySet(DefaultCompactNamePlateFriendlyFrameOptions, "hideHealthbar")
-					TableUtil.TrySet(DefaultCompactNamePlateFriendlyFrameOptions, "hideCastbar")
-					TableUtil.TrySet(DefaultCompactNamePlateEnemyFrameOptions, "hideHealthbar")
-					TableUtil.TrySet(DefaultCompactNamePlateEnemyFrameOptions, "hideCastbar")
-				end
-			end)
 		end
+		
+		-- do this now
+		UpdateBaseNameplateOptions()
+		
+		--this function is declared inside 'NamePlateDriverMixin' at Blizzard_NamePlates.lua
+		hooksecurefunc (NamePlateDriverFrame, "UpdateNamePlateOptions", function()
+			Plater.UpdateSelfPlate()
+			Plater.UpdatePlateClickSpace()
+			UpdateBaseNameplateOptions()
+		end)
+		
 
 	--> cast frame ~castbar
 	
