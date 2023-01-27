@@ -4872,7 +4872,7 @@ function Plater.OnInit() --private --~oninit ~init
 		if IS_WOW_PROJECT_MAINLINE then
 			C_CVar.RegisterCVar("nameplateShowOnlyNames") -- ensure this is still available and usable for our purposes, as it was removed with 10.0.5			
 			-- do this now
-			if IS_WOW_PROJECT_MAINLINE and GetCVarBool ("nameplateShowOnlyNames") or Plater.db.profile.saved_cvars.nameplateShowOnlyNames == "1" then --set this again for good measure!
+			if IS_WOW_PROJECT_MAINLINE and GetCVarBool ("nameplateShowOnlyNames") or Plater.db.profile.saved_cvars.nameplateShowOnlyNames == "1" then
 				TableUtil.TrySet(DefaultCompactNamePlateFrameSetUpOptions, "hideHealthbar")
 				TableUtil.TrySet(DefaultCompactNamePlateFrameSetUpOptions, "hideCastbar")
 				TableUtil.TrySet(DefaultCompactNamePlateFriendlyFrameOptions, "hideHealthbar")
@@ -4885,7 +4885,7 @@ function Plater.OnInit() --private --~oninit ~init
 			hooksecurefunc (NamePlateDriverFrame, "UpdateNamePlateOptions", function()
 				Plater.UpdateSelfPlate()
 				Plater.UpdatePlateClickSpace()
-				if IS_WOW_PROJECT_MAINLINE and GetCVarBool ("nameplateShowOnlyNames") then --set this again for good measure!
+				if IS_WOW_PROJECT_MAINLINE and GetCVarBool ("nameplateShowOnlyNames") or Plater.db.profile.saved_cvars.nameplateShowOnlyNames == "1" then --set this again for good measure!
 					TableUtil.TrySet(DefaultCompactNamePlateFrameSetUpOptions, "hideHealthbar")
 					TableUtil.TrySet(DefaultCompactNamePlateFrameSetUpOptions, "hideCastbar")
 					TableUtil.TrySet(DefaultCompactNamePlateFriendlyFrameOptions, "hideHealthbar")
