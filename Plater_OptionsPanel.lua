@@ -7020,6 +7020,9 @@ local relevance_options = {
 				else
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 					self:SetValue (GetCVarBool ("nameplateShowOnlyNames"))
+					if NamePlateDriverFrame and NamePlateDriverFrame.UpdateNamePlateOptions then
+						NamePlateDriverFrame:UpdateNamePlateOptions() --update the setting directly
+					end
 				end
 			end,
 			name = "Hide Blizzard Health Bars" .. CVarIcon,
