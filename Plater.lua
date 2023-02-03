@@ -6537,6 +6537,11 @@ end
 					end
 				end
 			end
+			
+			if (unitFrame.castBar:IsShown()) then
+				Plater.CastBarOnTick_Hook(unitFrame.castBar, 999)
+			end
+			
 
 			--end of throttled updates
 		end
@@ -6555,10 +6560,6 @@ end
 					healthBar.AnimateFunc (healthBar, deltaTime)
 				end
 			end
-			
-		if (unitFrame.castBar:IsShown()) then
-			Plater.CastBarOnTick_Hook(unitFrame.castBar, 999)
-		end
 			
 		Plater.EndLogPerformanceCore("Plater-Core", "Update", "NameplateTick")
 	end
