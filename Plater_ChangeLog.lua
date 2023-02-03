@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1674723541,  "Backend Change", "February 3rd, 2023", "More detailed performance analysis.", "cont1nuity"},
 			{1674723541,  "Backend Change", "February 3rd, 2023", "Properly throttling cast updates to increase performance.", "cont1nuity"},
 			
 			{1674723541,  "Backend Change", "January 27th, 2023", "Extend'Hide Blizzard Healthbars' functionality for classic.", "cont1nuity"},

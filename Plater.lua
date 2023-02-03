@@ -5371,9 +5371,13 @@ function Plater.OnInit() --private --~oninit ~init
 		Plater.CastBarOnTick_Hook = function (self, deltaTime) --private
 			if (self.percentText) then --check if is a plater cast bar
 			
+				Plater.StartLogPerformanceCore("Plater-Core", "Update", "CastBarOnTick")
+				
 				self.ThrottleUpdate = self.ThrottleUpdate - deltaTime
 				
 				if (self.ThrottleUpdate < 0) then
+				
+					Plater.StartLogPerformanceCore("Plater-Core", "Update", "CastBarOnTick-Full")
 
 					self.SpellStartTime = self.spellStartTime or GetTime()
 					self.SpellEndTime = self.spellEndTime or GetTime()
@@ -5483,7 +5487,11 @@ function Plater.OnInit() --private --~oninit ~init
 						end
 					end
 					
+					Plater.EndLogPerformanceCore("Plater-Core", "Update", "CastBarOnTick-Full")
+					
 				end
+				
+				Plater.EndLogPerformanceCore("Plater-Core", "Update", "CastBarOnTick")
 			end
 		end
 		
@@ -6249,6 +6257,8 @@ end
 		end
 
 		if (shouldUpdate) then
+			Plater.StartLogPerformanceCore("Plater-Core", "Update", "NameplateTick-Full")
+		
 			curFPSData.platesUpdatedThisFrame = curFPSData.platesUpdatedThisFrame + 1
 			
 			--make the db path smaller for performance
@@ -6542,6 +6552,7 @@ end
 				Plater.CastBarOnTick_Hook(unitFrame.castBar, 999)
 			end
 			
+			Plater.EndLogPerformanceCore("Plater-Core", "Update", "NameplateTick-Full")
 
 			--end of throttled updates
 		end
