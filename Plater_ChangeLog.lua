@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1675986815,  "Bug Fix", "February 9th, 2023", "Fix mod option values not being updated properly when renaming or deleting options.", "cont1nuity"},
+			
 			{1674723541,  "Bug Fix", "February 3rd, 2023", "Fix 'Hide Blizzard Healthbars' functionality for classic-era.", "cont1nuity"},
 			{1674723541,  "Backend Change", "February 3rd, 2023", "More detailed performance analysis.", "cont1nuity"},
 			{1674723541,  "Backend Change", "February 3rd, 2023", "Properly throttling cast updates to increase performance.", "cont1nuity"},

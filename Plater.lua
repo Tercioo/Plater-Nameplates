@@ -6167,6 +6167,8 @@ end
 			return C_Timer.After (1, re_UpdatePlateClickSpace)
 		end
 		
+		Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdatePlateClickSpace")
+		
 		local width, height = Plater.db.profile.click_space_friendly[1], Plater.db.profile.click_space_friendly[2]
 		C_NamePlate.SetNamePlateFriendlySize (width, height) --classic: {132, 32}, retail: {110, 45},
 		
@@ -6196,6 +6198,8 @@ end
 				Plater.UpdatePlateFrame (plateFrame, plateFrame.actorType)
 			end
 		end
+		
+		Plater.EndLogPerformanceCore("Plater-Core", "Update", "UpdatePlateClickSpace")
 	end
 	
 	function Plater.ForceTickOnAllNameplates() --private
