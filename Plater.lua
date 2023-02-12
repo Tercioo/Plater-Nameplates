@@ -1176,6 +1176,7 @@ local class_specs_coords = {
 		[195821] = true,
 		[99922] = true,
 		[104822] = true,
+		[120651] = true, --explosives (M+)
 	}
 
 	--update the settings cache for scritps
