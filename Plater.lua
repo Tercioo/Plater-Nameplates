@@ -8350,7 +8350,7 @@ end
 				Plater.AddIndicator (plateFrame, "quest")
 			end
 		
-		elseif (actorType == ACTORTYPE_FRIENDLY_NPC) then
+		elseif (actorType == ACTORTYPE_FRIENDLY_NPC and config.indicator_quest) then
 			if (plateFrame [MEMBER_QUEST]) then
 				Plater.AddIndicator (plateFrame, "quest")
 			end
