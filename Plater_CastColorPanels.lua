@@ -1,5 +1,5 @@
 local Plater = Plater
-local addonName, platerInternal = ...
+local addonId, platerInternal = ...
 local GameCooltip = GameCooltip2
 local DF = DetailsFramework
 local GetSpellInfo = GetSpellInfo
@@ -8,7 +8,8 @@ local _
 local unpack = table.unpack or _G.unpack
 
 --localization
-local L = LibStub ("AceLocale-3.0"):GetLocale("PlaterNameplates", true)
+local LOC = DF.Language.GetLanguageTable(addonId)
+
 local LibSharedMedia = LibStub:GetLibrary("LibSharedMedia-3.0")
 
 --get templates
@@ -982,21 +983,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         end
 
         --anchor table
-        local anchorNames = {
-            L["OPTIONS_ANCHOR_TOPLEFT"],
-            L["OPTIONS_ANCHOR_LEFT"],
-            L["OPTIONS_ANCHOR_BOTTOMLEFT"],
-            L["OPTIONS_ANCHOR_BOTTOM"],
-            L["OPTIONS_ANCHOR_BOTTOMRIGHT"],
-            L["OPTIONS_ANCHOR_RIGHT"],
-            L["OPTIONS_ANCHOR_TOPRIGHT"],
-            L["OPTIONS_ANCHOR_TOP"],
-            L["OPTIONS_ANCHOR_CENTER"],
-            L["OPTIONS_ANCHOR_INNERLEFT"],
-            L["OPTIONS_ANCHOR_INNERRIGHT"],
-            L["OPTIONS_ANCHOR_INNERTOP"],
-            L["OPTIONS_ANCHOR_INNERBOTTOM"],
-        }
+        local anchorNames = Plater.AnchorNames
 
         local build_anchor_side_table = function()
             local t = {}
@@ -1067,7 +1054,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                 type = "select",
                 get = function() return Plater.db.profile.cast_color_settings.anchor.side end,
                 values = function() return build_anchor_side_table() end,
-                name = L["OPTIONS_ANCHOR"],
+                name = LOC["OPTIONS_ANCHOR"],
             },
             {
                 type = "range",
@@ -1079,7 +1066,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                 max = 200,
                 step = 1,
                 usedecimals = true,
-                name = L["OPTIONS_XOFFSET"],
+                name = LOC["OPTIONS_XOFFSET"],
             },
             {
                 type = "range",
@@ -1091,7 +1078,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                 max = 200,
                 step = 1,
                 usedecimals = true,
-                name = L["OPTIONS_YOFFSET"],
+                name = LOC["OPTIONS_YOFFSET"],
             },
 
         }

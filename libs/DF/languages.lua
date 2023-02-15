@@ -281,6 +281,15 @@ local errorText = {
 DF.Language = DF.Language or {version = 1}
 DF.Language.RegisteredNamespaces = DF.Language.RegisteredNamespaces or {}
 
+DF.Language.LanguageMixin = {
+    SetAddonID = function(self, addonId)
+        self.addonId = addonId
+    end,
+
+    GetAddonID = function(self, addonId)
+        return self.addonId
+    end,
+}
 
 --internal functions
 local isValid_AddonID = function(addonId)
@@ -384,12 +393,6 @@ local setOption = function(addonNamespaceTable, optionId, value)
     addonNamespaceTable.options[optionId] = value
 end
 
---if invalid, the __index from the metatable get the value from the first registered table
---will return nil if the languageTable is from the first registered language
-local getTextFromLangugeTable = function(languageTable, phraseId)
-    return languageTable[phraseId]
-end
-
 local getRegisteredObjects = function(addonNamespaceTable)
     return addonNamespaceTable.registeredObjects
 end
@@ -403,11 +406,20 @@ local getText = function(addonNamespaceTable, phraseId)
 
     local text = phraseId
 
+    --embed phraseId is when the phraseId is within the string but is surrounded by @
+    local embedPhraseId = phraseId:match("@(.-)@")
+
     --get the text from the current language table
     if (languageTable) then
-        text = rawget(languageTable, phraseId)
+        text = rawget(languageTable, embedPhraseId or phraseId)
         if (isValid_Text(text)) then
-            return text, currentLanguageId
+            if (embedPhraseId) then
+                --replace the embed phraseId with the translated text
+                text = phraseId:gsub("@" .. embedPhraseId .. "@", text)
+                return text, currentLanguageId
+            else
+                return text, currentLanguageId
+            end
         end
     end
 
@@ -417,9 +429,15 @@ local getText = function(addonNamespaceTable, phraseId)
     if (currentLanguageId ~= clientLanguage) then
         languageTable = getLanguageTable(addonNamespaceTable, clientLanguage)
         if (languageTable) then
-            text = rawget(languageTable, phraseId)
+            text = rawget(languageTable, embedPhraseId or phraseId)
             if (isValid_Text(text)) then
-                return text, clientLanguage
+                if (embedPhraseId) then
+                    --replace the embed phraseId with the translated text
+                    text = phraseId:gsub("@" .. embedPhraseId .. "@", text)
+                    return text, currentLanguageId
+                else
+                    return text, clientLanguage
+                end
             end
         end
     end
@@ -428,10 +446,15 @@ local getText = function(addonNamespaceTable, phraseId)
     if (currentLanguageId ~= CONST_LANGUAGEID_ENUS and clientLanguage ~= CONST_LANGUAGEID_ENUS) then
         languageTable = getLanguageTable(addonNamespaceTable, CONST_LANGUAGEID_ENUS)
         if (languageTable) then
-            --text = getTextFromLangugeTable(languageTable, phraseId)
-            text = rawget(languageTable, phraseId)
+            text = rawget(languageTable, embedPhraseId or phraseId)
             if (isValid_Text(text)) then
-                return text, CONST_LANGUAGEID_ENUS
+                if (embedPhraseId) then
+                    --replace the embed phraseId with the translated text
+                    text = phraseId:gsub("@" .. embedPhraseId .. "@", text)
+                    return text, CONST_LANGUAGEID_ENUS
+                else
+                    return text, CONST_LANGUAGEID_ENUS
+                end
             end
         end
     end
@@ -443,11 +466,25 @@ local setLanguageTableForLanguageId = function(addonNamespaceTable, languageId, 
     local isFirstLanguage = not next(addonNamespaceTable.languages)
     if (isFirstLanguage) then
         printDebug("setLanguageTableForLanguageId", "(first to be registered) addonId:", addonNamespaceTable.addonId, "languageId:", languageId, "languageTable:", languageTable, "languageIdType:", type(languageId), "languageTableType:", type(languageTable))
-        --defaultLanguageTable is constant
         addonNamespaceTable.defaultLanguageTable = languageTable
     else
         printDebug("setLanguageTableForLanguageId", "addonId:", addonNamespaceTable.addonId, "languageId:", languageId, "languageTable:", languageTable, "languageIdType:", type(languageId), "languageTableType:", type(languageTable))
-        local defaultLanguageMetatable = {__index = function(table, key) return addonNamespaceTable.defaultLanguageTable[key] or key end}
+
+        local defaultLanguageMetatable = {__index = function(table, key)
+            local value = rawget(table, key)
+            if (value) then
+                return value
+            end
+
+            local defaultLanguageTable = addonNamespaceTable.defaultLanguageTable
+            value = defaultLanguageTable[key]
+            if (value) then
+                return value
+            end
+
+            return key
+        end}
+
         setmetatable(languageTable, defaultLanguageMetatable)
     end
 
@@ -551,13 +588,22 @@ local setObject_Text = function(addonNamespaceTable, object, phraseInfoTable, te
     if (textLanguageId ~= object.__languageId) then
         local bShouldChangeFont, fontPath = shouldChangeFontForNewLanguage(addonNamespaceTable, object.__languageId, textLanguageId)
         if (bShouldChangeFont) then
-            local font, size, flags = object:GetFont()
-            object:SetFont(fontPath, size, flags)
+            if (object:GetObjectType() == "Button") then
+                local fontString = object:GetFontString()
+                if (fontString) then
+                    local font, size, flags = fontString:GetFont()
+                    fontString:SetFont(fontPath, size, flags)
+                end
+            else
+                local font, size, flags = object:GetFont()
+                object:SetFont(fontPath, size, flags)
+            end
             setObject_InternalMembers(object, false, false, false, textLanguageId)
         end
     end
 
     local formattedText = getFormattedText(phraseInfoTable, text)
+
     object:SetText(formattedText)
 end
 
@@ -661,7 +707,7 @@ local registerTableKeyTable = function(addonNamespaceTable, table, tableKeyTable
     addonNamespaceTable.tableKeys[table] = tableKeyTable
 end
 
-local registerTableKey = function(addonNamespaceTable, table, key, phraseId, ...)
+local registerTableKey = function(addonNamespaceTable, table, key, phraseId, ...) --~registerTableKey
     local tableKeyTable = getTableKeyTable(addonNamespaceTable, table)
     if (not tableKeyTable) then
         tableKeyTable = {}
@@ -709,12 +755,52 @@ local setFontForLanguageId = function(addonNamespaceTable, languageId, fontPath)
 end
 
 
+function DF.Language.DoesKeyExistsInDefaultLanguage(addonId, key)  --~DoesKeyExistsInDefaultLanguage
+    if (not isValid_AddonID(addonId)) then
+        error("DoesKeyExistsInDefaultLanguage() param #1 'addonId' must be a string or a table, got: " .. type(addonId) .. ".")
+    end
+
+    local addonNamespaceTable = getAddonNamespace(addonId)
+    if (not addonNamespaceTable) then
+        return false
+    end
+
+    local defaultLanguageTable = addonNamespaceTable.defaultLanguageTable
+    if (not defaultLanguageTable) then
+        return false
+    end
+
+    return rawget(defaultLanguageTable, key) and true
+end
+
+--when the phraseId is unknown, this function test ir and return true if the phraseId exists
+function DF.Language.TestPhraseIDAndGetText(addonId, phraseId, languageTable)
+    if (not isValid_AddonID(addonId)) then
+        error("TestPhraseIDAndGetText() param #2 'addonId' must be a string or a table, got: " .. type(addonId) .. ".")
+    end
+
+    if (not phraseId) then
+        return
+    end
+
+    if (not languageTable) then
+        return
+    end
+
+    local hasValue = DF.Language.DoesKeyExistsInDefaultLanguage(addonId, phraseId)
+    if (not hasValue) then
+        return
+    end
+
+    return true
+end
+
 --create a language table within an addon namespace
 --@addonId: an identifier, can be any table or string, will be used when getting the table with phrase translations, example: "DetailsLocalization", "Details", "PlaterLoc", _G.Plater
 --@languageId: game languages: "deDE", "enUS", "esES", "esMX", "frFR", "itIT", "koKR", "ptBR", "ruRU", "zhCN", "zhTW", or any other value if 'gameLanguageOnly' is false (default)
 --@gameLanguageOnly: if true won't allow to register a language not supported by the game, a supported language is any language returnted by GetLocale()
 --return value: return a languageTable, this table holds translations for the registered language
-function DF.Language.RegisterLanguage(addonId, languageId, gameLanguageOnly)
+function DF.Language.RegisterLanguage(addonId, languageId, gameLanguageOnly)  --~RegisterLanguage
     if (not isValid_AddonID(addonId)) then
         error(functionCallPath["RegisterLanguage"] .. ": " .. format(errorText["AddonID"], 1) .. ", use: " .. functionSignature["RegisterLanguage"] .. ".")
 
@@ -1009,7 +1095,7 @@ end
 --@phraseId: any string to identify the a translated text, example: token: "OPTIONS_FRAME_WIDTH" text: "Adjust the Width of the frame."
 --@silent: if true won't error on invalid phrase text or table already registered, it will still error on invalid addonId, table, key and phraseId
 --@vararg: arguments to pass for format(text, ...)
-function DF.Language.RegisterTableKey(addonId, table, key, phraseId, silent, ...)
+function DF.Language.RegisterTableKey(addonId, table, key, phraseId, silent, ...) --~RegisterTableKey
     if (not isValid_AddonID(addonId)) then
         error(functionCallPath["RegisterTableKey"] .. ": " .. format(errorText["AddonID"], 1) .. ", use: " .. functionSignature["RegisterTableKey"] .. ".")
     end
@@ -1036,7 +1122,7 @@ function DF.Language.RegisterTableKey(addonId, table, key, phraseId, silent, ...
     local text, textLanguageId = getText(addonNamespaceTable, phraseId)
     if (not isValid_Text(text)) then
         if (not silent) then
-            error(functionCallPath["RegisterTableKey"] .. ": " .. errorText["PhraseIDNotRegistered"] .. ", use: " .. functionSignature["GetLanguageTable"] .. "['PhraseID'] = 'translated text'.")
+            error(functionCallPath["RegisterTableKey"] .. ": " .. errorText["PhraseIDNotRegistered"] .. ": " .. phraseId .. ", use: " .. functionSignature["GetLanguageTable"] .. "['PhraseID'] = 'translated text'.")
         else
             text = phraseId
         end
@@ -1087,7 +1173,7 @@ function DF.Language.UpdateTableKeyArguments(addonId, table, key, ...)
 end
 
 
-function DF.Language.RegisterTableKeyWithDefault(addonId, table, key, phraseId, defaultText, ...)
+function DF.Language.RegisterTableKeyWithDefault(addonId, table, key, phraseId, defaultText, ...) --~RegisterTableKeyWithDefault
     if (addonId and phraseId) then
         DetailsFramework.Language.RegisterTableKey(addonId, table, key, phraseId, ...)
     else
@@ -1301,17 +1387,38 @@ function DF.Language.CreateLanguageSelector(addonId, parent, callback, selectedL
         DF.Language.SetCurrentLanguage(addonId, languageId)
     end
 
+    local languageTable = {
+        deDE = {text = "Deutsch", font = "Fonts\\FRIZQT__.TTF"},
+        enUS = {text = "English (US)", font = "Fonts\\FRIZQT__.TTF"},
+        esES = {text = "Español (ES)", font = "Fonts\\FRIZQT__.TTF"},
+        esMX = {text = "Español (MX)", font = "Fonts\\FRIZQT__.TTF"},
+        frFR = {text = "Français", font = "Fonts\\FRIZQT__.TTF"},
+        itIT = {text = "Italiano", font = "Fonts\\FRIZQT__.TTF"},
+        koKR = {text = "한국어", font = [[Fonts\2002.TTF]]},
+        ptBR = {text = "Português (BR)", font = "Fonts\\FRIZQT__.TTF"},
+        ruRU = {text = "Русский", font = "Fonts\\FRIZQT___CYR.TTF"},
+        zhCN = {text = "简体中文", font = [[Fonts\ARKai_T.ttf]]},
+        zhTW = {text = "繁體中文", font = [[Fonts\blei00d.TTF]]},
+    }
+
     local buildOptionsFunc = function()
         local resultTable = {}
 
         for languageId in pairs(allLanguagesRegistered) do
-            resultTable[#resultTable+1] = {value = languageId, label = languageId, onclick = onSelectLanguage} --, icon = icon, iconcolor = iconcolor, iconsize = iconsize
+            local languageName = languageTable[languageId]
+            resultTable[#resultTable+1] = {value = languageId, label = languageName.text, onclick = onSelectLanguage, font = languageName.font}
         end
 
         return resultTable
     end
 
-    local languageSelector = DF:CreateDropDown(parent, buildOptionsFunc, selectedLanguage or getCurrentLanguageId(addonNamespaceTable), 80, 20, nil, nil, DF:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+    local languageSelector = DF:CreateDropDown(parent, buildOptionsFunc, selectedLanguage or getCurrentLanguageId(addonNamespaceTable), 120, 20, nil, nil, DF:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+    languageSelector:SetAddonID(addonId)
     languageSelector:SetFixedParameter(addonId)
+
+    local languageLabel = DF:CreateLabel(parent, _G.LANGUAGE  .. ":", 10, "silver")
+    languageLabel:SetPoint("right", languageSelector, "left", -3, 0)
+    
+
     return languageSelector
 end

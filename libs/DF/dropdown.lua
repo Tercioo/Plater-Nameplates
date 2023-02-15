@@ -37,6 +37,7 @@ DF:Mixin(DropDownMetaFunctions, DF.SetPointMixin)
 DF:Mixin(DropDownMetaFunctions, DF.FrameMixin)
 DF:Mixin(DropDownMetaFunctions, DF.TooltipHandlerMixin)
 DF:Mixin(DropDownMetaFunctions, DF.ScriptHookMixin)
+DF:Mixin(DropDownMetaFunctions, DF.Language.LanguageMixin)
 
 ------------------------------------------------------------------------------------------------------------
 --metatables
@@ -758,6 +759,8 @@ function DetailsFrameworkDropDownOnMouseDown(button, buttontype)
 					end
 
 					thisOptionFrame.label:SetText(thisOption.label)
+
+
 
 					if (currentText and currentText == thisOption.label) then
 						if (thisOption.icon) then
