@@ -1561,6 +1561,20 @@ function DF.Language.CreateLanguageSelector(addonId, parent, callback, selectedL
         end)
     end
 
+    local languageTable = {
+        deDE = {text = "Deutsch", font = "Fonts\\FRIZQT__.TTF"},
+        enUS = {text = "English (US)", font = "Fonts\\FRIZQT__.TTF"},
+        esES = {text = "Español (ES)", font = "Fonts\\FRIZQT__.TTF"},
+        esMX = {text = "Español (MX)", font = "Fonts\\FRIZQT__.TTF"},
+        frFR = {text = "Français", font = "Fonts\\FRIZQT__.TTF"},
+        itIT = {text = "Italiano", font = "Fonts\\FRIZQT__.TTF"},
+        koKR = {text = "한국어", font = [[Fonts\2002.TTF]]},
+        ptBR = {text = "Português (BR)", font = "Fonts\\FRIZQT__.TTF"},
+        ruRU = {text = "Русский", font = "Fonts\\FRIZQT___CYR.TTF"},
+        zhCN = {text = "简体中文", font = [[Fonts\ARKai_T.ttf]]},
+        zhTW = {text = "繁體中文", font = [[Fonts\blei00d.TTF]]},
+    }
+
     local buildOptionsFunc = function()
         local resultTable = {}
 

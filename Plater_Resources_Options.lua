@@ -1,4 +1,4 @@
-local addonName, platerInternal = ...
+local addonId, platerInternal = ...
 
 local Plater = _G.Plater
 local GameCooltip = GameCooltip2
@@ -42,7 +42,7 @@ local options_slider_template = DF:GetTemplate("slider", "OPTIONS_SLIDER_TEMPLAT
 local options_button_template = DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE")
 
 --localization
-local L = LibStub ("AceLocale-3.0"):GetLocale ("PlaterNameplates", true)
+local LOC = DF.Language.GetLanguageTable(addonId)
 
 function Plater.Resources.GetResourceEnumNameForPlayer()
     local playerSerial = Plater.PlayerGUID or UnitGUID("player")
@@ -111,7 +111,6 @@ function Plater.Resources.GetResourceIdForPlayer()
 end
 
 function Plater.Resources.BuildResourceOptionsTab(frame)
-
     --if there's no default resource name for this character yet, calling this will set a default
     Plater.Resources.GetResourceEnumNameForPlayer()
 
@@ -246,19 +245,19 @@ function Plater.Resources.BuildResourceOptionsTab(frame)
 
 	--anchor table
 	local anchor_names = {
-		L["OPTIONS_ANCHOR_TOPLEFT"],
-		L["OPTIONS_ANCHOR_LEFT"],
-		L["OPTIONS_ANCHOR_BOTTOMLEFT"],
-		L["OPTIONS_ANCHOR_BOTTOM"],
-		L["OPTIONS_ANCHOR_BOTTOMRIGHT"],
-		L["OPTIONS_ANCHOR_RIGHT"],
-		L["OPTIONS_ANCHOR_TOPRIGHT"],
-		L["OPTIONS_ANCHOR_TOP"],
-		L["OPTIONS_ANCHOR_CENTER"],
-		L["OPTIONS_ANCHOR_INNERLEFT"],
-		L["OPTIONS_ANCHOR_INNERRIGHT"],
-		L["OPTIONS_ANCHOR_INNERTOP"],
-		L["OPTIONS_ANCHOR_INNERBOTTOM"],
+		LOC["OPTIONS_ANCHOR_TOPLEFT"],
+		LOC["OPTIONS_ANCHOR_LEFT"],
+		LOC["OPTIONS_ANCHOR_BOTTOMLEFT"],
+		LOC["OPTIONS_ANCHOR_BOTTOM"],
+		LOC["OPTIONS_ANCHOR_BOTTOMRIGHT"],
+		LOC["OPTIONS_ANCHOR_RIGHT"],
+		LOC["OPTIONS_ANCHOR_TOPRIGHT"],
+		LOC["OPTIONS_ANCHOR_TOP"],
+		LOC["OPTIONS_ANCHOR_CENTER"],
+		LOC["OPTIONS_ANCHOR_INNERLEFT"],
+		LOC["OPTIONS_ANCHOR_INNERRIGHT"],
+		LOC["OPTIONS_ANCHOR_INNERTOP"],
+		LOC["OPTIONS_ANCHOR_INNERBOTTOM"],
 	}
 
 	local build_anchor_side_table = function(member1, member2)
@@ -348,7 +347,7 @@ function Plater.Resources.BuildResourceOptionsTab(frame)
 			type = "select",
 			get = function() return Plater.db.profile.resources_settings.global_settings.anchor.side end,
 			values = function() return build_anchor_side_table("global_settings", "anchor") end,
-			name = L["OPTIONS_ANCHOR"],
+			name = LOC["OPTIONS_ANCHOR"],
 			desc = "Which side of the nameplate this widget is attach to.",
 		},
 		--anchor x offset
@@ -363,7 +362,7 @@ function Plater.Resources.BuildResourceOptionsTab(frame)
 			max = 100,
 			step = 1,
 			usedecimals = true,
-			name = L["OPTIONS_XOFFSET"],
+			name = LOC["OPTIONS_XOFFSET"],
 			desc = "Slightly move horizontally.",
 		},
 		--anchor y offset
@@ -378,7 +377,7 @@ function Plater.Resources.BuildResourceOptionsTab(frame)
 			max = 100,
 			step = 1,
 			usedecimals = true,
-			name = L["OPTIONS_YOFFSET"],
+			name = LOC["OPTIONS_YOFFSET"],
 			desc = "Slightly move vertically.",
 		},
 

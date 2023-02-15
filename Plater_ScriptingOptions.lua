@@ -1,5 +1,5 @@
 
-
+local addonId, platerInternal = ...
 local Plater = _G.Plater
 local GameCooltip = GameCooltip2
 local DF = DetailsFramework
@@ -9,6 +9,8 @@ local tremove = _G.tremove
 local CreateFrame = _G.CreateFrame
 local tinsert = _G.tinsert
 
+--localization
+local LOC = DF.Language.GetLanguageTable(addonId)
 
 --tab indexes
 local PLATER_OPTIONS_SCRIPTING_TAB = 6
@@ -188,7 +190,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                 listBox.scrollBox:Refresh()
             end
 
-            local reapplyDefaultButton = DF:CreateButton(listBox, reApplyDefaultValues, 80, 20, "Re-Apply Default Values", nil, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "ORANGE_FONT_TEMPLATE"))
+            local reapplyDefaultButton = DF:CreateButton(listBox, reApplyDefaultValues, 80, 20, LOC["OPTIONS_SCRIPTING_REAPPLY"], nil, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "ORANGE_FONT_TEMPLATE"))
             reapplyDefaultButton:SetPoint("topright", listBox.scrollBox, "bottomright", 0, -4)
 
             local titleText = DF:CreateLabel(listBox, "", DF:GetTemplate("font", "ORANGE_FONT_TEMPLATE"))

@@ -5,7 +5,7 @@
 ## Interface-Classic: 11403
 ## Title: Plater
 ## Notes: Nameplate addon designed for advanced users.
-## SavedVariables: PlaterDB
+## SavedVariables: PlaterDB, PlaterLanguage
 ## SavedVariablesPerCharacter: PlaterDBChr
 #@version-retail@
 ## Version: @project-version@-Retail

@@ -78,8 +78,12 @@ local LibRangeCheck = LibStub:GetLibrary ("LibRangeCheck-2.0") -- https://www.cu
 local LibTranslit = LibStub:GetLibrary ("LibTranslit-1.0") -- https://github.com/Vardex/LibTranslit
 local LDB = LibStub ("LibDataBroker-1.1", true)
 local LDBIcon = LDB and LibStub ("LibDBIcon-1.0", true)
-local _, platerInternal = ...
+
+local addonId, platerInternal = ...
 _ = nil
+
+--localization
+local LOC = DF.Language.GetLanguageTable(addonId)
 
 local Plater = DF:CreateAddOn ("Plater", "PlaterDB", PLATER_DEFAULT_SETTINGS, InterfaceOptionsFrame and { --options table --TODO: DISABLED FOR DRAGONFLIGHT FOR NOW!
 	name = "Plater Nameplates",
@@ -990,6 +994,22 @@ local class_specs_coords = {
 	
 	[1467] = {256/512, 320/512, 256/512, 320/512}, --> evoker devastation
 	[1468] = {320/512, 384/512, 256/512, 320/512}, --> evoker preservation
+}
+
+Plater.AnchorNames = {
+	LOC["OPTIONS_ANCHOR_TOPLEFT"],
+	LOC["OPTIONS_ANCHOR_LEFT"],
+	LOC["OPTIONS_ANCHOR_BOTTOMLEFT"],
+	LOC["OPTIONS_ANCHOR_BOTTOM"],
+	LOC["OPTIONS_ANCHOR_BOTTOMRIGHT"],
+	LOC["OPTIONS_ANCHOR_RIGHT"],
+	LOC["OPTIONS_ANCHOR_TOPRIGHT"],
+	LOC["OPTIONS_ANCHOR_TOP"],
+	LOC["OPTIONS_ANCHOR_CENTER"],
+	LOC["OPTIONS_ANCHOR_INNERLEFT"],
+	LOC["OPTIONS_ANCHOR_INNERRIGHT"],
+	LOC["OPTIONS_ANCHOR_INNERTOP"],
+	LOC["OPTIONS_ANCHOR_INNERBOTTOM"],
 }
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -4483,6 +4503,22 @@ function Plater.InitializeSavedVariables()
 end
 
 function Plater.OnInit() --private --~oninit ~init
+	do
+		local languageCurrentVersion = 1
+		if (not PlaterLanguage) then
+			PlaterLanguage = {
+				language = GetLocale(), 
+				version = languageCurrentVersion,
+			}
+		end
+
+		if (PlaterLanguage.version < languageCurrentVersion) then
+			--do stuff in the future
+		end
+
+		DF.Language.SetCurrentLanguage(addonId, PlaterLanguage.language)
+	end
+
 	Plater.InitializeSavedVariables()
 	Plater.RefreshDBUpvalues()
 	
