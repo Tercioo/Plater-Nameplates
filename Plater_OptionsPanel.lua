@@ -185,7 +185,7 @@ function Plater.OpenOptionsPanel()
 	local CVarDesc = "\n\n|cFFFF7700[*]|r |cFFa0a0a0CVar, saved within Plater profile and restored when loading the profile.|r"
 	local CVarIcon = "|cFFFF7700*|r"
 	local CVarNeedReload = "\n\n|cFFFF2200[*]|r |cFFa0a0a0A /reload may be required to take effect.|r"
-	local ImportantText = "|cFFFFFF00" .. "Important" .."|r: "
+	local ImportantText = "|cFFFFFF00 Important |r: "
 	local SliderRightClickDesc = "\n\n" .. ImportantText .. "right click to type the value."
 	
 	local hookList = {
@@ -1190,13 +1190,16 @@ function Plater.OpenOptionsPanel()
 	end	
 	
 	--anchor table
-	local anchor_names = Plater.AnchorNames
-	
 	local build_anchor_side_table = function (actorType, member)
-		local t = {}
+		local anchorOptions = {}
+		local phraseIdTable = Plater.AnchorNamesByPhraseId
+		local languageId = DF.Language.GetLanguageIdForAddonId(addonId)
+
 		for i = 1, 13 do
-			tinsert (t, {
-				label = anchor_names[i], 
+			tinsert (anchorOptions, {
+				label = DF.Language.GetText(addonId, phraseIdTable[i]),
+				languageId = languageId,
+				phraseId = phraseIdTable[i],
 				value = i, 
                 statusbar = dropdownStatusBarTexture,
                 statusbarcolor = dropdownStatusBarColor,
@@ -1216,7 +1219,7 @@ function Plater.OpenOptionsPanel()
 				end
 			})
 		end
-		return t
+		return anchorOptions
 	end	
 	--
 	local health_bar_texture_selected = function (self, capsule, value)
@@ -6948,8 +6951,8 @@ local relevance_options = {
 					self:SetValue (GetCVar (CVAR_PLATEMOTION) == CVAR_ENABLED)
 				end
 			end,
-			name = "Stacking Nameplates" .. CVarIcon,
-			desc = "If enabled, nameplates won't overlap each other." .. CVarDesc .. "\n\n" .. ImportantText .. "to set the amount of space between each nameplate see '|cFFFFFFFFNameplate Vertical Padding|r' option below.\nPlease check the Auto tab settings to setup automatic toggling of this option.",
+			name = "OPTIONS_NAMEPLATES_STACKING",
+			desc = "OPTIONS_NAMEPLATES_STACKING_DESC",
 			nocombat = true,
 		},
 		
@@ -6968,8 +6971,8 @@ local relevance_options = {
 			step = 0.05,
 			thumbscale = 1.7,
 			usedecimals = true,
-			name = "Nameplate Overlap (V)" .. CVarIcon,
-			desc = "The space between each nameplate vertically when stacking is enabled.\n\n|cFFFFFFFFDefault: 1.10|r" .. CVarDesc .. "\n\n" .. ImportantText .. "if you find issues with this setting, use:\n|cFFFFFFFF/run SetCVar ('nameplateOverlapV', '1.6')|r",
+			name = "OPTIONS_NAMEPLATES_OVERLAP",
+			desc = "OPTIONS_NAMEPLATES_OVERLAP_DESC",
 			nocombat = true,
 		},
 		
@@ -7005,8 +7008,8 @@ local relevance_options = {
 					self:SetValue (GetCVarBool ("nameplateShowEnemies"))
 				end
 			end,
-			name = "Show Enemy Nameplates" .. CVarIcon,
-			desc = "Show nameplate for enemy and neutral units." .. CVarDesc,
+			name = "OPTIONS_NAMEPLATE_SHOW_ENEMY", --show enemy nameplates
+			desc = "OPTIONS_NAMEPLATE_SHOW_ENEMY_DESC",
 			nocombat = true,
 		},
 		
@@ -7022,8 +7025,8 @@ local relevance_options = {
 					self:SetValue (GetCVarBool ("nameplateShowFriends"))
 				end
 			end,
-			name = "Show Friendly Nameplates" .. CVarIcon,
-			desc = "Show nameplate for friendly players." .. CVarDesc,
+			name = "OPTIONS_NAMEPLATE_SHOW_FRIENDLY", --show friendly nameplates
+			desc = "OPTIONS_NAMEPLATE_SHOW_FRIENDLY_DESC",
 			nocombat = true,
 		},
 		
@@ -7041,8 +7044,8 @@ local relevance_options = {
 
 				Plater.UpdateBaseNameplateOptions()
 			end,
-			name = "Hide Blizzard Health Bars" .. CVarIcon, --"Hide Blizzard Health Bars"
-			desc = "While in dungeons or raids, if friendly nameplates are enabled it'll show only the player name.\nIf any Plater module is disabled, this will affect these nameplates as well." .. CVarDesc .. CVarNeedReload,
+			name = "OPTIONS_NAMEPLATE_HIDE_FRIENDLY_HEALTH", --"Hide Blizzard Health Bars"
+			desc = "OPTIONS_NAMEPLATE_HIDE_FRIENDLY_HEALTH_DESC",
 			nocombat = true,
 		},
 
@@ -7054,14 +7057,14 @@ local relevance_options = {
 			type = "select",
 			get = function() return Plater.db.profile.health_statusbar_texture end,
 			values = function() return health_bar_texture_options end,
-			name = "OPTIONS_GENERALSETTINGS_HEALTHBAR_TEXTURE",
+			name = "OPTIONS_GENERALSETTINGS_HEALTHBAR_TEXTURE", --health bar texture
 			desc = "OPTIONS_GENERALSETTINGS_HEALTHBAR_TEXTURE",
 		},
 		{
 			type = "select",
 			get = function() return Plater.db.profile.health_statusbar_bgtexture end,
 			values = function() return health_bar_bgtexture_options end,
-			name = "OPTIONS_GENERALSETTINGS_HEALTHBAR_BGTEXTURE",
+			name = "OPTIONS_GENERALSETTINGS_HEALTHBAR_BGTEXTURE", --health bar background texture
 			desc = "OPTIONS_GENERALSETTINGS_HEALTHBAR_BGTEXTURE",
 		},
 		{
@@ -7076,7 +7079,7 @@ local relevance_options = {
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
-			name = "OPTIONS_GENERALSETTINGS_HEALTHBAR_BGCOLOR",
+			name = "OPTIONS_GENERALSETTINGS_HEALTHBAR_BGCOLOR", --health bar background color
 			desc = "OPTIONS_GENERALSETTINGS_HEALTHBAR_BGCOLOR",
 		},
 
@@ -7093,8 +7096,8 @@ local relevance_options = {
 				Plater.RefreshDBUpvalues()
 				Plater.UpdatePlateBorders()
 			end,
-			name = "Border Color",
-			desc = "Color of the plate border.",
+			name = "OPTIONS_BORDER_COLOR",
+			desc = "OPTIONS_BORDER_COLOR",
 		},
 		{
 			type = "range",
@@ -7108,8 +7111,8 @@ local relevance_options = {
 			max = 3,
 			step = 0.1,
 			usedecimals = true,
-			name = "Border Thickness",
-			desc = "How thick the border should be.\n\n" .. ImportantText .. "right click the slider to manually type the value.",
+			name = "OPTIONS_BORDER_THICKNESS",
+			desc = "OPTIONS_BORDER_THICKNESS",
 		},
 
 		{type = "blank"},
@@ -7161,8 +7164,8 @@ local relevance_options = {
 			min = 50,
 			max = 300,
 			step = 1,
-			name = "Health Bar Width",
-			desc = "Change the width of Enemy and Friendly nameplates for players and npcs in combat and out of combat.\n\nEach one of these options can be changed individually on Enemy Npc, Enemy Player tabs.",
+			name = "OPTIONS_HEALTHBAR_WIDTH", --Health Bar Width
+			desc = "OPTIONS_HEALTHBAR_SIZE_GLOBAL_DESC",
 		},
 
 		{ --global healthbar height
@@ -7198,8 +7201,8 @@ local relevance_options = {
 			min = 1,
 			max = 100,
 			step = 1,
-			name = "Health Bar Height",
-			desc = "Change the height of Enemy and Friendly nameplates for players and npcs in combat and out of combat.\n\nEach one of these options can be changed individually on Enemy Npc, Enemy Player tabs.",
+			name = "OPTIONS_HEALTHBAR_HEIGHT",
+			desc = "OPTIONS_HEALTHBAR_SIZE_GLOBAL_DESC",
 		},
 
 		{type = "breakline"},
@@ -7233,8 +7236,8 @@ local relevance_options = {
 				Plater.RefreshDBUpvalues()
 				Plater.UpdateAllPlates()
 			end,
-			name = "Units Out of Your Range",
-			desc = "When a nameplate is out of range, alpha is reduced.",
+			name = "OPTIONS_RANGECHECK_OUTOFRANGE", --Units Out of Your Range
+			desc = "OPTIONS_RANGECHECK_OUTOFRANGE_DESC",
 			boxfirst = true,
 			id = "transparency_rangecheck",
 			novolatile = true,
@@ -7267,8 +7270,8 @@ local relevance_options = {
 				Plater.RefreshDBUpvalues()
 				Plater.UpdateAllPlates()
 			end,
-			name = "Units Which Isn't Your Target",
-			desc = "When a nameplate isn't your current target, alpha is reduced.",
+			name = "OPTIONS_RANGECHECK_NOTMYTARGET", --When a nameplate isn't your current target, alpha is reduced
+			desc = "OPTIONS_RANGECHECK_NOTMYTARGET_DESC",
 			boxfirst = true,
 			id = "transparency_nontargets",
 			novolatile = true,
@@ -7301,8 +7304,8 @@ local relevance_options = {
 				Plater.RefreshDBUpvalues()
 				Plater.UpdateAllPlates()
 			end,
-			name = "Out of Range + Isn't Your Target",
-			desc = "Reduces the alpha of units which isn't your target.\nReduces even more if the unit is out of range.",
+			name = "OPTIONS_RANGECHECK_NOTMYTARGETOUTOFRANGE", --Out of Range + Isn't Your Target
+			desc = "OPTIONS_RANGECHECK_NOTMYTARGETOUTOFRANGE_DESC",
 			boxfirst = true,
 			id = "transparency_both",
 			novolatile = true,
@@ -7334,8 +7337,8 @@ local relevance_options = {
 				Plater.RefreshDBUpvalues()
 				Plater.UpdateAllPlates()
 			end,
-			name = "Nothing",
-			desc = "No alpha modifications is applyed.",
+			name = "OPTIONS_RANGECHECK_NONE", --Nothing
+			desc = "OPTIONS_RANGECHECK_NONE_DESC",
 			boxfirst = true,
 			id = "transparency_none",
 			novolatile = true,
@@ -7377,8 +7380,8 @@ local relevance_options = {
 				Plater.db.profile.not_affecting_combat_enabled = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Use No Combat Alpha",
-			desc = "Changes the nameplate alpha when you are in combat and the unit isn't.\n\n" .. ImportantText .. "If the unit isn't in combat, it overrides the alpha from the range check.",
+			name = "OPTIONS_NOCOMBATALPHA_ENABLED", --Use No Combat Alpha
+			desc = "OPTIONS_NOCOMBATALPHA_ENABLED_DESC",
 		},
 		{
 			type = "range",
@@ -7390,8 +7393,8 @@ local relevance_options = {
 			min = 0,
 			max = 1,
 			step = 0.1,
-			name = "No Combat Alpha",
-			desc = "Amount of transparency to apply for 'No Combat' feature.",
+			name = "OPTIONS_AMOUNT", --No Combat Alpha Amount
+			desc = "OPTIONS_NOCOMBATALPHA_AMOUNT_DESC",
 			usedecimals = true,
 		},
 
@@ -7510,7 +7513,7 @@ local relevance_options = {
 		{type = "breakline"},
 		--enemies
 		
-		{type = "label", get = function() return "Alpha Amount by Frame - Enemy" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return "OPTIONS_ALPHABYFRAME_TITLE_ENEMIES" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "toggle",
@@ -7520,8 +7523,8 @@ local relevance_options = {
 				Plater.db.profile.transparency_behavior_on_enemies = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Enable for enemies",
-			desc = "Apply alpha settings to enemy units.",
+			name = "OPTIONS_ALPHABYFRAME_ENABLE_ENEMIES", --Enable for enemies
+			desc = "OPTIONS_ALPHABYFRAME_ENABLE_ENEMIES_DESC",
 		},
 		
 		{type = "break"},
@@ -7537,8 +7540,8 @@ local relevance_options = {
 			min = 0,
 			max = 1,
 			step = 0.1,
-			name = "Overall",
-			desc = "Overall frame alpha.",
+			name = "OPTIONS_ALPHABYFRAME_DEFAULT", --default
+			desc = "OPTIONS_ALPHABYFRAME_DEFAULT_DESC",
 			usedecimals = true,
 		},
 		{
@@ -7552,8 +7555,8 @@ local relevance_options = {
 			min = 0,
 			max = 1,
 			step = 0.1,
-			name = "Health Bar",
-			desc = "Health Bar alpha multiplier.",
+			name = "OPTIONS_HEALTHBAR",
+			desc = "OPTIONS_ALPHABYFRAME_ALPHAMULTIPLIER",
 			usedecimals = true,
 		},
 		{
@@ -7567,8 +7570,8 @@ local relevance_options = {
 			min = 0,
 			max = 1,
 			step = 0.1,
-			name = "Cast Bar",
-			desc = "Cast Bar alpha multiplier.",
+			name = "OPTIONS_TABNAME_CASTBAR",
+			desc = "OPTIONS_ALPHABYFRAME_ALPHAMULTIPLIER",
 			usedecimals = true,
 		},
 		{
@@ -7582,8 +7585,8 @@ local relevance_options = {
 			min = 0,
 			max = 1,
 			step = 0.1,
-			name = "Power Bar",
-			desc = "Power Bar alpha multiplier.",
+			name = "OPTIONS_POWERBAR",
+			desc = "OPTIONS_ALPHABYFRAME_ALPHAMULTIPLIER",
 			usedecimals = true,
 		},
 		{
@@ -7597,8 +7600,8 @@ local relevance_options = {
 			min = 0,
 			max = 1,
 			step = 0.1,
-			name = "Buff Frames",
-			desc = "Buff Frames alpha multiplier.",
+			name = "OPTIONS_BUFFFRAMES",
+			desc = "OPTIONS_ALPHABYFRAME_ALPHAMULTIPLIER",
 			usedecimals = true,
 		},
 		{
@@ -7612,15 +7615,15 @@ local relevance_options = {
 			min = 0,
 			max = 1,
 			step = 0.1,
-			name = "In-Range/Target alpha",
-			desc = "Frame alpha for targets or in-range units.",
+			name = "OPTIONS_ALPHABYFRAME_TARGET_INRANGE", --In-Range/Target alpha
+			desc = "OPTIONS_ALPHABYFRAME_TARGET_INRANGE_DESC",
 			usedecimals = true,
 		},
 		
 		{type = "break"},
 		--friendlies
 		
-		{type = "label", get = function() return "Alpha Amount by Frame - Friendly" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return "OPTIONS_ALPHABYFRAME_TITLE_FRIENDLY" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "toggle",
@@ -7630,8 +7633,8 @@ local relevance_options = {
 				Plater.db.profile.transparency_behavior_on_friendlies = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Enable for friendlies",
-			desc = "Apply alpha settings to friendly units.",
+			name = "OPTIONS_ALPHABYFRAME_ENABLE_FRIENDLY", --Enable for friendlies
+			desc = "OPTIONS_ALPHABYFRAME_ENABLE_FRIENDLY_DESC",
 		},
 		
 		{type = "break"},
@@ -7647,8 +7650,8 @@ local relevance_options = {
 			min = 0,
 			max = 1,
 			step = 0.1,
-			name = "Overall",
-			desc = "Overall frame alpha.",
+			name = "OPTIONS_ALPHABYFRAME_DEFAULT", --Overall
+			desc = "OPTIONS_ALPHABYFRAME_DEFAULT_DESC",
 			usedecimals = true,
 		},
 		{
@@ -7662,8 +7665,8 @@ local relevance_options = {
 			min = 0,
 			max = 1,
 			step = 0.1,
-			name = "Health Bar",
-			desc = "Health Bar alpha multiplier.",
+			name = "OPTIONS_HEALTHBAR",
+			desc = "OPTIONS_ALPHABYFRAME_ALPHAMULTIPLIER",
 			usedecimals = true,
 		},
 		{
@@ -7677,8 +7680,8 @@ local relevance_options = {
 			min = 0,
 			max = 1,
 			step = 0.1,
-			name = "Cast Bar",
-			desc = "Cast Bar alpha multiplier.",
+			name = "OPTIONS_TABNAME_CASTBAR",
+			desc = "OPTIONS_ALPHABYFRAME_ALPHAMULTIPLIER",
 			usedecimals = true,
 		},
 		{
@@ -7692,8 +7695,8 @@ local relevance_options = {
 			min = 0,
 			max = 1,
 			step = 0.1,
-			name = "Power Bar",
-			desc = "Power Bar alpha multiplier.",
+			name = "OPTIONS_POWERBAR",
+			desc = "OPTIONS_ALPHABYFRAME_ALPHAMULTIPLIER",
 			usedecimals = true,
 		},
 		{
@@ -7707,8 +7710,8 @@ local relevance_options = {
 			min = 0,
 			max = 1,
 			step = 0.1,
-			name = "Buff Frames",
-			desc = "Buff Frames alpha multiplier.",
+			name = "OPTIONS_BUFFFRAMES",
+			desc = "OPTIONS_ALPHABYFRAME_ALPHAMULTIPLIER",
 			usedecimals = true,
 		},
 		{
@@ -7722,14 +7725,14 @@ local relevance_options = {
 			min = 0,
 			max = 1,
 			step = 0.1,
-			name = "In-Range/Target alpha",
-			desc = "Frame alpha for targets or in-range units.",
+			name = "OPTIONS_ALPHABYFRAME_TARGET_INRANGE",
+			desc = "OPTIONS_ALPHABYFRAME_TARGET_INRANGE_DESC",
 			usedecimals = true,
 		},
 
 		{type = "breakline"},
 
-		{type = "label", get = function() return "Indicators:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return "OPTIONS_INDICATORS" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "toggle",
@@ -7739,8 +7742,8 @@ local relevance_options = {
 				Plater.db.profile.indicator_pet = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Pet Icon",
-			desc = "Pet Icon",
+			name = "OPTIONS_ICON_PET",
+			desc = "OPTIONS_ICON_PET",
 		},
 
 		{
@@ -7751,8 +7754,8 @@ local relevance_options = {
 				Plater.db.profile.indicator_shield = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Shield Bar",
-			desc = "Shield Bar",
+			name = "OPTIONS_SHIELD_BAR",
+			desc = "OPTIONS_SHIELD_BAR",
 		},
 		
 		{
@@ -7764,8 +7767,8 @@ local relevance_options = {
 				Plater.GetHealthCutoffValue()
 				Plater.UpdateAllPlates()
 			end,
-			name = "Execute Range",
-			desc = "Show an indicator when the unit is in execute range.\n\nPlater auto detects execute range for:\n\n|cFFFFFF00Hunter|r\n\n|cFFFFFF00Warrior|r\n\n|cFFFFFF00Priest|r\n\n|cFFFFFF00Paladin|r\n\n|cFFFFFF00Monk|r\n\n|cFFFFFF00Mage|r: Fire spec with Searing Touch talent.\nArcane spec with Arcane Bombardment\n\n|cFFFFFF00Warlock|r: Destruction spec with Shadowburn talent.\nAffliction with Drain Soul talent.\n\n|cFFFFFF00Rogue|r: Assassination spec with Blindside talent.\n\n|cFFFFFF00Deathknight|r: With Soul Reaper talent.",
+			name = "OPTIONS_EXECUTERANGE",
+			desc = "OPTIONS_EXECUTERANGE_DESC",
 		},
 		
 		{
@@ -7777,8 +7780,8 @@ local relevance_options = {
 				Plater.GetHealthCutoffValue()
 				Plater.UpdateAllPlates()
 			end,
-			name = "Upper Execute Range",
-			desc = "Show an indicator when the unit is in the upper execute range.\nPlater auto detects execute range for:\n\n|cFFFFFF00Hunter|r: Careful Aim talented.\n\n|cFFFFFF00Warrior|r: Condemn (Venthyr Covenant).\n\n|cFFFFFF00Mage|r: Fire spec with Firestarter talented.",
+			name = "OPTIONS_EXECUTERANGE_HIGH_HEALTH",
+			desc = "OPTIONS_EXECUTERANGE_HIGH_HEALTH_DESC",
 			hidden = IS_WOW_PROJECT_NOT_MAINLINE,
 		},
 
@@ -7790,8 +7793,8 @@ local relevance_options = {
 				Plater.db.profile.indicator_worldboss = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Worldboss Icon",
-			desc = "Show when the actor is elite.",
+			name = "OPTIONS_ICON_WORLDBOSS",
+			desc = "OPTIONS_ICON_WORLDBOSS",
 		},
 		{
 			type = "toggle",
@@ -7801,8 +7804,8 @@ local relevance_options = {
 				Plater.db.profile.indicator_elite = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Elite Icon",
-			desc = "Show when the actor is elite.",
+			name = "OPTIONS_ICON_ELITE",
+			desc = "OPTIONS_ICON_ELITE",
 		},
 		{
 			type = "toggle",
@@ -7812,8 +7815,8 @@ local relevance_options = {
 				Plater.db.profile.indicator_rare = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Rare Icon",
-			desc = "Show when the actor is rare.",
+			name = "OPTIONS_ICON_RARE",
+			desc = "OPTIONS_ICON_RARE",
 		},
 		{
 			type = "toggle",
@@ -7823,8 +7826,8 @@ local relevance_options = {
 				Plater.db.profile.indicator_quest = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Quest Icon",
-			desc = "Show when the actor is a boss for a quest.",
+			name = "OPTIONS_ICON_QUEST",
+			desc = "OPTIONS_ICON_QUEST",
 		},
 		{
 			type = "toggle",
@@ -7834,8 +7837,8 @@ local relevance_options = {
 				Plater.db.profile.indicator_faction = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Enemy Faction Icon",
-			desc = "Show horde or alliance icon.",
+			name = "OPTIONS_ICON_ENEMYFACTION",
+			desc = "OPTIONS_ICON_ENEMYFACTION",
 		},
 		{
 			type = "toggle",
@@ -7845,8 +7848,8 @@ local relevance_options = {
 				Plater.db.profile.indicator_enemyclass = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Enemy Class",
-			desc = "Enemy player class icon.",
+			name = "OPTIONS_ICON_ENEMYCLASS",
+			desc = "OPTIONS_ICON_ENEMYCLASS",
 		},
 		
 		{
@@ -7857,8 +7860,8 @@ local relevance_options = {
 				Plater.db.profile.indicator_spec = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Enemy Spec",
-			desc = "Enemy player spec icon.\n\n" .. ImportantText .. "must have Details! Damage Meter installed to work outside of BG/Arena.",
+			name = "OPTIONS_ICON_ENEMYSPEC",
+			desc = "OPTIONS_ICON_ENEMYSPEC",
 		},
 		{
 			type = "toggle",
@@ -7868,8 +7871,8 @@ local relevance_options = {
 				Plater.db.profile.indicator_friendlyfaction = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Friendly Faction Icon",
-			desc = "Show horde or alliance icon.",
+			name = "OPTIONS_ICON_FRIENDLYFACTION",
+			desc = "OPTIONS_ICON_FRIENDLYFACTION",
 		},
 		{
 			type = "toggle",
@@ -7879,8 +7882,8 @@ local relevance_options = {
 				Plater.db.profile.indicator_friendlyclass = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Friendly Class",
-			desc = "Friendly player class icon.",
+			name = "OPTIONS_ICON_FRIENDLYCLASS",
+			desc = "OPTIONS_ICON_FRIENDLYCLASS",
 		},
 		{
 			type = "toggle",
@@ -7890,8 +7893,8 @@ local relevance_options = {
 				Plater.db.profile.indicator_friendlyspec = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Friendly Spec",
-			desc = "Friendly player spec icon.\n\n" .. ImportantText .. "must have Details! Damage Meter installed to work outside of BG/Arena.",
+			name = "OPTIONS_ICON_FRIENDLY_SPEC",
+			desc = "OPTIONS_ICON_FRIENDLY_SPEC",
 		},
 		{
 			type = "range",
@@ -7905,8 +7908,8 @@ local relevance_options = {
 			max = 3,
 			step = 0.01,
 			usedecimals = true,
-			name = "Scale",
-			desc = "Scale",
+			name = "OPTIONS_SCALE",
+			desc = "OPTIONS_SCALE",
 		},
 
 		--indicator icon anchor
@@ -7915,7 +7918,7 @@ local relevance_options = {
 			get = function() return Plater.db.profile.indicator_anchor.side end,
 			values = function() return build_anchor_side_table (nil, "indicator_anchor") end,
 			name = "OPTIONS_ANCHOR",
-			desc = "Which side of the nameplate this widget is attach to.",
+			desc = "OPTIONS_ANCHOR_TARGET_SIDE",
 		},
 		--indicator icon anchor x offset
 		{
@@ -7930,7 +7933,7 @@ local relevance_options = {
 			step = 1,
 			usedecimals = true,
 			name = "OPTIONS_XOFFSET",
-			desc = "Slightly move horizontally.",
+			desc = "OPTIONS_MOVE_HORIZONTAL",
 		},
 		--indicator icon anchor y offset
 		{
@@ -7945,7 +7948,7 @@ local relevance_options = {
 			step = 1,
 			usedecimals = true,
 			name = "OPTIONS_YOFFSET",
-			desc = "Slightly move vertically.",
+			desc = "OPTIONS_MOVE_VERTICAL",
 		},
 	}
 

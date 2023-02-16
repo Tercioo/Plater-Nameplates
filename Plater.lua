@@ -1012,6 +1012,22 @@ Plater.AnchorNames = {
 	LOC["OPTIONS_ANCHOR_INNERBOTTOM"],
 }
 
+Plater.AnchorNamesByPhraseId = {
+	"OPTIONS_ANCHOR_TOPLEFT",
+	"OPTIONS_ANCHOR_LEFT",
+	"OPTIONS_ANCHOR_BOTTOMLEFT",
+	"OPTIONS_ANCHOR_BOTTOM",
+	"OPTIONS_ANCHOR_BOTTOMRIGHT",
+	"OPTIONS_ANCHOR_RIGHT",
+	"OPTIONS_ANCHOR_TOPRIGHT",
+	"OPTIONS_ANCHOR_TOP",
+	"OPTIONS_ANCHOR_CENTER",
+	"OPTIONS_ANCHOR_INNERLEFT",
+	"OPTIONS_ANCHOR_INNERRIGHT",
+	"OPTIONS_ANCHOR_INNERTOP",
+	"OPTIONS_ANCHOR_INNERBOTTOM",
+}
+
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> cached value ~cache
 --Plater allocate several values in memory to save performance (cpu), this may increase memory usage
