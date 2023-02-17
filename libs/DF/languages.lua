@@ -249,6 +249,10 @@ local registerCharacters = function(languageId, languageTable)
     end
 end
 
+for letter in arAR:gmatch(".") do
+    alphabetTable[letter] = "arAR"
+end
+
 local functionSignature = {
     ["RegisterLanguage"] = "RegisterLanguage(addonID, languageID[, gameLanguageOnly])",
     ["SetCurrentLanguage"] = "SetCurrentLanguage(addonID, languageID)",

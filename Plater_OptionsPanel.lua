@@ -6432,8 +6432,8 @@ local targetOptions = {
 			type = "select",
 			get = function() return Plater.db.profile.health_selection_overlay end,
 			values = function() return health_selection_overlay_options end,
-			name = "Target Overlay Texture",
-			desc = "Used above the health bar when it is the current target.",
+			name = "OPTIONS_TARGET_OVERLAY_TEXTURE",
+			desc = "OPTIONS_TARGET_OVERLAY_TEXTURE_DESC",
 		},
 		{
 			type = "range",
@@ -6445,8 +6445,8 @@ local targetOptions = {
 			min = 0,
 			max = 1,
 			step = 0.1,
-			name = "Target Overlay Alpha",
-			desc = "Target Overlay Alpha",
+			name = "TARGET_OVERLAY_ALPHA",
+			desc = "TARGET_OVERLAY_ALPHA",
 			usedecimals = true,
 		},
 		{
@@ -6473,15 +6473,15 @@ local targetOptions = {
 				Plater.db.profile.target_highlight = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Target Highlight",
-			desc = "Highlight effect on the nameplate of your current target.",
+			name = "TARGET_HIGHLIGHT",
+			desc = "TARGET_HIGHLIGHT_DESC",
 		},
 		{
 			type = "select",
 			get = function() return Plater.db.profile.target_highlight_texture end,
 			values = function() return target_selection_texture_selected_options end,
-			name = "Target Highlight Texture",
-			desc = "Target Highlight Texture.",
+			name = "TARGET_HIGHLIGHT_TEXTURE",
+			desc = "TARGET_HIGHLIGHT_TEXTURE",
 		},
 		{
 			type = "range",
@@ -6493,8 +6493,8 @@ local targetOptions = {
 			min = 0,
 			max = 1,
 			step = 0.1,
-			name = "Target Highlight Alpha",
-			desc = "Target Highlight Alpha.",
+			name = "TARGET_HIGHLIGHT_ALPHA",
+			desc = "TARGET_HIGHLIGHT_ALPHA",
 			usedecimals = true,
 		},
 		{
@@ -6507,8 +6507,8 @@ local targetOptions = {
 			min = 2,
 			max = 60,
 			step = 1,
-			name = "Target Highlight Size",
-			desc = "Target Highlight Size",
+			name = "TARGET_HIGHLIGHT_SIZE",
+			desc = "TARGET_HIGHLIGHT_SIZE",
 		},
 		{
 			type = "color",
@@ -6521,8 +6521,8 @@ local targetOptions = {
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.OnPlayerTargetChanged()
 			end,
-			name = "Target Highlight Color",
-			desc = "Target Highlight Color",
+			name = "TARGET_HIGHLIGHT_COLOR",
+			desc = "TARGET_HIGHLIGHT_COLOR",
 		},
 		
 		--target_highlight_texture
@@ -6537,8 +6537,8 @@ local targetOptions = {
 				Plater.RefreshDBUpvalues()
 				Plater.FullRefreshAllPlates()
 			end,
-			name = "Hover Over Highlight",
-			desc = "Highlight effect when the mouse is over the nameplate.\n\n" .. ImportantText .. "for enemies only (players and npcs).",
+			name = "HIGHLIGHT_HOVEROVER",
+			desc = "HIGHLIGHT_HOVEROVER_DESC",
 		},
 		{
 			type = "range",
@@ -6550,8 +6550,8 @@ local targetOptions = {
 			min = 0,
 			max = 1,
 			step = 0.1,
-			name = "Hover Over Highlight Alpha",
-			desc = "Hover Over Highlight Alpha",
+			name = "HIGHLIGHT_HOVEROVER_ALPHA",
+			desc = "HIGHLIGHT_HOVEROVER_ALPHA",
 			usedecimals = true,
 		},		
 		
@@ -6624,9 +6624,8 @@ local targetOptions = {
 				end
 			end,
 			nocombat = true,
-			name = "Target Always on the Screen" .. CVarIcon,
-			desc = "When enabled, the nameplate of your target is always shown even when the enemy isn't in the screen." .. CVarDesc,
-			nocombat = true,
+			name = "TARGET_CVAR_ALWAYSONSCREEN",
+			desc = "TARGET_CVAR_ALWAYSONSCREEN_DESC",
 		},
 		
 		{
@@ -6652,8 +6651,8 @@ local targetOptions = {
 			step = 0.005,
 			thumbscale = 1.7,
 			usedecimals = true,
-			name = "Lock to Screen (Top Side)" .. CVarIcon,
-			desc = "Min space between the nameplate and the top of the screen. Increase this if some part of the nameplate are going out of the screen.\n\n|cFFFFFFFFDefault: 0.065|r\n\n" .. ImportantText .. "if you're having issue, manually set using these macros:\n/run SetCVar ('nameplateOtherTopInset', '0.065')\n/run SetCVar ('nameplateLargeTopInset', '0.065')\n\n" .. ImportantText .. "setting to 0 disables this feature." .. CVarDesc,
+			name = "TARGET_CVAR_LOCKTOSCREEN",
+			desc = "TARGET_CVAR_LOCKTOSCREEN_DESC",
 			nocombat = true,
 		},
 		
