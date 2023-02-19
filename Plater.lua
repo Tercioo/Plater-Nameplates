@@ -1957,8 +1957,10 @@ local class_specs_coords = {
 				local customBorderColor = unitFrame.customBorderColor
 			
 			--full refresh the nameplate, this will override user data from scripts
-			Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_REMOVED", unitId or unitFrame [MEMBER_UNITID])
-			Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_ADDED", unitId or unitFrame [MEMBER_UNITID])
+			if unitFrame.PlaterOnScreen then
+				Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_REMOVED", unitId)
+			end
+			Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_ADDED", unitId)
 			
 			--restore user input data
 				unitFrame.customHealthBarWidth = customHealthBarWidth
@@ -2627,7 +2629,7 @@ local class_specs_coords = {
 					--print ("UNIT_FLAG", plateFrame, issecure(), unit, unit and UnitName (unit))
 					--Plater.ScheduleUpdateForNameplate (plateFrame)
 					
-					Plater.RunScheduledUpdate({GUID = UnitGUID(unit), unitId = unit}) -- do this now
+					Plater.RunScheduledUpdate({unitId = plateFrame [MEMBER_UNITID], GUID = plateFrame [MEMBER_GUID]}) -- do this now
 				end
 			end
 		end,
