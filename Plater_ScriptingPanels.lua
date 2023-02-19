@@ -1279,6 +1279,7 @@ end
 		local dataInOrder = {}
 		
 		if (mainFrame.SearchString ~= "") then
+			local scriptsFound = {}
 			for i = 1, #data do
 				if not data[i].hidden then
 					local bFoundMatch = false
@@ -1288,9 +1289,10 @@ end
 							local spellName = GetSpellInfo(spellId)
 							if (spellName) then
 								spellName = spellName:lower()
-								if (spellName:find(mainFrame.SearchString)) then
+								if (spellName:find(mainFrame.SearchString) and not scriptsFound[data[i].Name]) then
 									dataInOrder[#dataInOrder+1] = {i, data [i], data[i].Name, data[i].Enabled and 1 or 0, data[i].hasWagoUpdateFromImport and 1 or 0}
 									bFoundMatch = true
+									scriptsFound[data[i].Name] = true
 								end
 							end
 						end
