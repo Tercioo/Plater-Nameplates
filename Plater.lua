@@ -1938,7 +1938,6 @@ local class_specs_coords = {
 
 		local unitGUID = timerObject.GUID
 		local unitId = timerObject.unitId
-		local forceUpdate = unitId and true or false
 		local plateFrame = C_NamePlate.GetNamePlateForUnit (unitId)
 		
 		
@@ -1946,9 +1945,6 @@ local class_specs_coords = {
 		if (plateFrame and (unitGUID == plateFrame [MEMBER_GUID])) then
 			--save user input data (usualy set from scripts) before call the unit added event
 				local unitFrame = plateFrame.unitFrame
-				if not unitFrame.PlaterOnScreen and not forceUpdate then
-					return
-				end
 				local customHealthBarWidth = unitFrame.customHealthBarWidth
 				local customHealthBarHeight = unitFrame.customHealthBarHeight
 				
@@ -2629,7 +2625,9 @@ local class_specs_coords = {
 				
 				if (reactionChanged or attackableChanged or not plateFrame.unitFrame.PlaterOnScreen) then
 					--print ("UNIT_FLAG", plateFrame, issecure(), unit, unit and UnitName (unit))
-					Plater.ScheduleUpdateForNameplate (plateFrame)
+					--Plater.ScheduleUpdateForNameplate (plateFrame)
+					
+					Plater.RunScheduledUpdate({GUID = UnitGUID(unit), unitId = unit}) -- do this now
 				end
 			end
 		end,
