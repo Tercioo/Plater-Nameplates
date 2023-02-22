@@ -1942,7 +1942,8 @@ local class_specs_coords = {
 		
 		
 		--checking the serial of the unit is the same in case this nameplate is being used on another unit
-		if (plateFrame and (unitGUID == plateFrame [MEMBER_GUID])) then
+		--if (plateFrame and (unitGUID == plateFrame [MEMBER_GUID])) then
+		if (plateFrame) then
 			--save user input data (usualy set from scripts) before call the unit added event
 				local unitFrame = plateFrame.unitFrame
 				local customHealthBarWidth = unitFrame.customHealthBarWidth
@@ -1957,9 +1958,7 @@ local class_specs_coords = {
 				local customBorderColor = unitFrame.customBorderColor
 			
 			--full refresh the nameplate, this will override user data from scripts
-			if unitFrame.PlaterOnScreen then
-				Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_REMOVED", unitId)
-			end
+			Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_REMOVED", unitId)
 			Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_ADDED", unitId)
 			
 			--restore user input data
@@ -2614,6 +2613,8 @@ local class_specs_coords = {
 			--	return
 			--end
 			
+			if not string.match(unit, "nameplate%d%d?") then return end
+			
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unit, issecure())
 			if (plateFrame) then
 				--rules if can schedule an update for unit flag event:
@@ -2628,7 +2629,7 @@ local class_specs_coords = {
 					--print ("UNIT_FLAG", plateFrame, issecure(), unit, unit and UnitName (unit))
 					--Plater.ScheduleUpdateForNameplate (plateFrame)
 					
-					Plater.RunScheduledUpdate({unitId = plateFrame [MEMBER_UNITID], GUID = plateFrame [MEMBER_GUID]}) -- do this now
+					Plater.RunScheduledUpdate({unitId = unit, GUID = plateFrame [MEMBER_GUID]}) -- do this now
 				end
 			end
 		end,
