@@ -12312,6 +12312,132 @@ end
 		
 		{type = "blank"},
 		
+		{type = "label", get = function() return "Auto Toggle Enemy Nameplates:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_enemy_enabled end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_enemy_enabled = value
+				
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+				Plater.RefreshAutoToggle()
+			end,
+			name = L["OPTIONS_ENABLED"],
+			desc = "When enabled, Plater will enable or disable enemy plates based on the settings below.",
+		},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_enemy ["party"] end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_enemy ["party"] = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "In Dungeons",
+			desc = "Show enemy nameplates when inside dungeons.",
+		},	
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_enemy ["raid"] end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_enemy ["raid"] = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "In Raid",
+			desc = "Show enemy nameplates when inside raids.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_enemy ["arena"] end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_enemy ["arena"] = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "In Arena / BG",
+			desc = "Show enemy nameplates when inside arena or battleground.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_enemy ["cities"] end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_enemy ["cities"] = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "In Major Cities",
+			desc = "Show enemy nameplates when inside a major city.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_enemy ["world"] end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_enemy ["world"] = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "In Open World",
+			desc = "Show enemy nameplates when at any place not listed on the other options.",
+		},
+		
+		{type = "blank"},
+		
+		{type = "label", get = function() return "Combat toggle:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_combat_enabled end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_combat_enabled = value
+				
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+				Plater.RefreshAutoToggle()
+			end,
+			name = L["OPTIONS_ENABLED"],
+			desc = "When enabled, Plater will enable or disable stacking nameplates based on the settings below.\n\n" .. ImportantText .. "only toggle on if 'Stacking Nameplates' is enabled in the General Settings tab.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_combat.enemy_ic end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_combat.enemy_ic = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "Enemy Nameplates in combat",
+			desc = "Automatically enable / disable enemy nameplates in combat.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_combat.enemy_ooc end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_combat.enemy_ooc = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "Enemy Nameplates out of combat",
+			desc = "Automatically enable / disable enemy nameplates out of combat.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_combat.friendly_ic end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_combat.friendly_ic = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "Friendly Nameplates in combat",
+			desc = "Automatically enable / disable friendly nameplates in combat.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_combat.friendly_ooc end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_combat.friendly_ooc = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "Friendly Nameplates out of combat",
+			desc = "Automatically enable / disable friendly nameplates out of combat.",
+		},
+		
+		{type = "breakline"},
+		{type = "breakline"},
 		{type = "label", get = function() return "Auto Toggle Stacking Nameplates:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{

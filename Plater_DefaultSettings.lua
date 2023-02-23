@@ -978,6 +978,15 @@ PLATER_DEFAULT_SETTINGS = {
 			["cities"] = true,
 		},
 		
+		auto_toggle_enemy_enabled = false,
+		auto_toggle_enemy = {
+			["party"] = true,
+			["raid"] = true,
+			["arena"] = true,
+			["world"] =  true,
+			["cities"] = false,
+		},
+		
 		stacking_nameplates_enabled = true,
 		
 		auto_toggle_stacking_enabled = false,
@@ -992,6 +1001,14 @@ PLATER_DEFAULT_SETTINGS = {
 		auto_inside_raid_dungeon = {
 			hide_enemy_player_pets = false,
 			hide_enemy_player_totems = false,
+		},
+		
+		auto_toggle_combat_enabled = false,
+		auto_toggle_combat = {
+			friendly_ic = false,
+			enemy_ic = false,
+			friendly_ooc = false,
+			enemy_ooc = false,
 		},
 
 		spell_animations = true,

@@ -1914,16 +1914,6 @@ local class_specs_coords = {
 		return PlaterDBChr.resources_on_target
 	end
 	
-	--> when the player left a zone but is in combat, wait 1 second and trigger the zone changed again
-	local wait_for_leave_combat = function()
-		Plater.RunFunctionForEvent ("ZONE_CHANGED_NEW_AREA")
-	end
-
-	--> when the auto toggle function is called but the player is in combat
-	local re_RefreshAutoToggle = function()
-		return Plater.RefreshAutoToggle()
-	end
-	
 	--> when the player enter in the world, wait a few seconds to get the guild name data
 	local delayed_guildname_check = function()
 		Plater.PlayerGuildName = GetGuildInfo ("player")
@@ -2691,6 +2681,8 @@ local class_specs_coords = {
 		PLAYER_REGEN_DISABLED = function()
 			PLAYER_IN_COMBAT = true
 
+			Plater.RefreshAutoToggle(PLAYER_IN_COMBAT)
+
 			Plater.RefreshTankCache()
 			
 			--Plater.UpdateAuraCache()
@@ -2714,6 +2706,8 @@ local class_specs_coords = {
 		PLAYER_REGEN_ENABLED = function()
 
 			PLAYER_IN_COMBAT = false
+			
+			Plater.RefreshAutoToggle(PLAYER_IN_COMBAT)
 			
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 				plateFrame [MEMBER_NOCOMBAT] = nil
@@ -2862,7 +2856,7 @@ local class_specs_coords = {
 
 		ZONE_CHANGED_NEW_AREA = function()
 			if (InCombatLockdown()) then
-				C_Timer.After (1, wait_for_leave_combat)
+				C_Timer.After (1, function() Plater.RunFunctionForEvent ("ZONE_CHANGED_NEW_AREA") end)
 				return
 			end
 			
@@ -8464,16 +8458,29 @@ end
 --> misc stuff - general functions ~misc
 
 	--auto toggle the show friendly players, and other stuff.
-	function Plater.RefreshAutoToggle() --private
+	function Plater.RefreshAutoToggle(combat) --private
 
-		if (InCombatLockdown()) then
-			C_Timer.After (0.5, re_RefreshAutoToggle)
+		if ((combat == nil) and InCombatLockdown()) then
+			C_Timer.After (0.5, function() Plater.RefreshAutoToggle() end)
 			return
 		end
 		
 		local zoneName, zoneType = GetInstanceInfo()
 		local profile = Plater.db.profile
+		
+		-- combat toggle
+		if (profile.auto_toggle_combat_enabled and (combat ~= nil)) then
+			if combat then
+				SetCVar("nameplateShowFriends", profile.auto_toggle_combat.friendly_ic and CVAR_ENABLED or CVAR_DISABLED)
+				SetCVar("nameplateShowEnemies", profile.auto_toggle_combat.enemy_ic and CVAR_ENABLED or CVAR_DISABLED)
+				return
+			else
+				SetCVar("nameplateShowFriends", profile.auto_toggle_combat.friendly_ooc and CVAR_ENABLED or CVAR_DISABLED)
+				SetCVar("nameplateShowEnemies", profile.auto_toggle_combat.enemy_ooc and CVAR_ENABLED or CVAR_DISABLED)
+			end
+		end
 
+		-- dungeon/raid toggle pets/totems
 		if (profile.auto_inside_raid_dungeon.hide_enemy_player_pets) then
 			if (zoneType == "party" or zoneType == "raid") then
 				SetCVar("nameplateShowEnemyPets", CVAR_DISABLED)
@@ -8481,7 +8488,6 @@ end
 				SetCVar("nameplateShowEnemyPets", CVAR_ENABLED)
 			end
 		end
-
 		if (profile.auto_inside_raid_dungeon.hide_enemy_player_totems) then
 			if (zoneType == "party" or zoneType == "raid") then
 				SetCVar("nameplateShowEnemyTotems", CVAR_DISABLED)
@@ -8489,6 +8495,30 @@ end
 				SetCVar("nameplateShowEnemyTotems", CVAR_ENABLED)
 			end
 		end
+		
+		--stacking toggle
+		if (profile.auto_toggle_stacking_enabled and profile.stacking_nameplates_enabled) then
+			--discover which is the map type the player is in
+			if (zoneType == "party") then
+				SetCVar ("nameplateMotion", profile.auto_toggle_stacking ["party"] and CVAR_ENABLED or CVAR_DISABLED)
+				
+			elseif (zoneType == "raid") then
+				SetCVar ("nameplateMotion", profile.auto_toggle_stacking ["raid"] and CVAR_ENABLED or CVAR_DISABLED)
+				
+			elseif (zoneType == "arena" or zoneType == "pvp") then
+				SetCVar ("nameplateMotion", profile.auto_toggle_stacking ["arena"] and CVAR_ENABLED or CVAR_DISABLED)
+				
+			else
+				--if the player is resting, consider inside a major city
+				if (IsResting()) then
+					SetCVar ("nameplateMotion", profile.auto_toggle_stacking ["cities"] and CVAR_ENABLED or CVAR_DISABLED)
+				else
+					SetCVar ("nameplateMotion", profile.auto_toggle_stacking ["world"] and CVAR_ENABLED or CVAR_DISABLED)
+				end
+			end
+		end
+		
+		if combat then return end
 
 		--friendly nameplate toggle
 		if (profile.auto_toggle_friendly_enabled) then
@@ -8512,24 +8542,24 @@ end
 			end
 		end
 		
-		--stacking toggle
-		if (profile.auto_toggle_stacking_enabled and profile.stacking_nameplates_enabled) then
+		--enemy nameplate toggle
+		if (profile.auto_toggle_enemy_enabled) then
 			--discover which is the map type the player is in
 			if (zoneType == "party") then
-				SetCVar ("nameplateMotion", profile.auto_toggle_stacking ["party"] and CVAR_ENABLED or CVAR_DISABLED)
+				SetCVar ("nameplateShowEnemies", profile.auto_toggle_enemy ["party"] and CVAR_ENABLED or CVAR_DISABLED)
 				
 			elseif (zoneType == "raid") then
-				SetCVar ("nameplateMotion", profile.auto_toggle_stacking ["raid"] and CVAR_ENABLED or CVAR_DISABLED)
+				SetCVar ("nameplateShowEnemies", profile.auto_toggle_enemy ["raid"] and CVAR_ENABLED or CVAR_DISABLED)
 				
 			elseif (zoneType == "arena" or zoneType == "pvp") then
-				SetCVar ("nameplateMotion", profile.auto_toggle_stacking ["arena"] and CVAR_ENABLED or CVAR_DISABLED)
+				SetCVar ("nameplateShowEnemies", profile.auto_toggle_enemy ["arena"] and CVAR_ENABLED or CVAR_DISABLED)
 				
 			else
 				--if the player is resting, consider inside a major city
 				if (IsResting()) then
-					SetCVar ("nameplateMotion", profile.auto_toggle_stacking ["cities"] and CVAR_ENABLED or CVAR_DISABLED)
+					SetCVar ("nameplateShowEnemies", profile.auto_toggle_enemy ["cities"] and CVAR_ENABLED or CVAR_DISABLED)
 				else
-					SetCVar ("nameplateMotion", profile.auto_toggle_stacking ["world"] and CVAR_ENABLED or CVAR_DISABLED)
+					SetCVar ("nameplateShowEnemies", profile.auto_toggle_enemy ["world"] and CVAR_ENABLED or CVAR_DISABLED)
 				end
 			end
 		end
