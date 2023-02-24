@@ -591,6 +591,7 @@ PLATER_DEFAULT_SETTINGS = {
 				scale = 0.8,
 				padding = 2,
 			},
+			druid_show_always = false,
 			resource_options = {
 				--names below are from Enum.PowerType[<resource name>]
 				["ComboPoints"] = {
