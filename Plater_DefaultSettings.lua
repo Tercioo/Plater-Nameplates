@@ -23,6 +23,7 @@ LibSharedMedia:Register ("statusbar", "PlaterBackground", [[Interface\AddOns\Pla
 LibSharedMedia:Register ("statusbar", "PlaterTexture", [[Interface\AddOns\Plater\images\platetexture]])
 LibSharedMedia:Register ("statusbar", "PlaterHighlight", [[Interface\AddOns\Plater\images\plateselected]])
 LibSharedMedia:Register ("statusbar", "PlaterFocus", [[Interface\AddOns\Plater\images\overlay_indicator_1]])
+LibSharedMedia:Register ("statusbar", "PlaterChess", [[Interface\AddOns\Plater\images\overlay_indicator_2]])
 LibSharedMedia:Register ("statusbar", "PlaterHealth", [[Interface\AddOns\Plater\images\nameplate_health_texture]])
 LibSharedMedia:Register ("statusbar", "testbar", [[Interface\AddOns\Plater\images\testbar.tga]])
 LibSharedMedia:Register ("statusbar", "You Are Beautiful!", [[Interface\AddOns\Plater\images\regular_white]])
