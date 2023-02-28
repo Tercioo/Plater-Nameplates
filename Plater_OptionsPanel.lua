@@ -13454,6 +13454,13 @@ end
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> ~advanced ãdvanced
 	
+	--font select
+	local on_select_blizzard_nameplate_font = function (_, _, value)
+		Plater.db.profile.blizzard_nameplate_font = value
+	end
+	local on_select_blizzard_nameplate_large_font = function (_, _, value)
+		Plater.db.profile.blizzard_nameplate_large_font = value
+	end
 
 	local advanced_options = {
 	
@@ -13877,6 +13884,69 @@ end
 			desc = "Show friendly totems" .. CVarDesc,
 			nocombat = true,
 		},
+		
+		{type = "blank"},
+		{type = "label", get = function() return "Blizzard nameplate fonts:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.blizzard_nameplate_font_override_enabled end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.blizzard_nameplate_font_override_enabled = value
+			end,
+			name = L["OPTIONS_ENABLED"],
+			desc = "Enable blizzard nameplate font override." .. CVarNeedReload,
+		},
+		{type = "label", get = function() return "Normal:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{
+			type = "select",
+			get = function() return Plater.db.profile.blizzard_nameplate_font end,
+			values = function() return DF:BuildDropDownFontList (on_select_blizzard_nameplate_font) end,
+			name = L["OPTIONS_FONT"],
+			desc = "Font of the text." .. CVarNeedReload,
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.blizzard_nameplate_font_size end,
+			set = function (self, fixedparam, value) Plater.db.profile.blizzard_nameplate_font_size = value end,
+			min = 6,
+			max = 24,
+			step = 1,
+			name = L["OPTIONS_SIZE"],
+			desc = "Size" .. CVarNeedReload,
+		},
+		{
+			type = "select",
+			get = function() return Plater.db.profile.blizzard_nameplate_font_outline end,
+			values = function() return build_outline_modes_table (nil, "blizzard_nameplate_font_outline") end,
+			name = L["OPTIONS_OUTLINE"],
+			desc = "Outline" .. CVarNeedReload,
+		},
+		{type = "label", get = function() return "Large:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{
+			type = "select",
+			get = function() return Plater.db.profile.blizzard_nameplate_large_font end,
+			values = function() return DF:BuildDropDownFontList (on_select_blizzard_nameplate_large_font) end,
+			name = L["OPTIONS_FONT"],
+			desc = "Font of the text." .. CVarNeedReload,
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.blizzard_nameplate_large_font_size end,
+			set = function (self, fixedparam, value) Plater.db.profile.blizzard_nameplate_large_font_size = value end,
+			min = 6,
+			max = 24,
+			step = 1,
+			name = L["OPTIONS_SIZE"],
+			desc = "Size" .. CVarNeedReload,
+		},
+		{
+			type = "select",
+			get = function() return Plater.db.profile.blizzard_nameplate_large_font_outline end,
+			values = function() return build_outline_modes_table (nil, "blizzard_nameplate_large_font_outline") end,
+			name = L["OPTIONS_OUTLINE"],
+			desc = "Outline" .. CVarNeedReload,
+		},
+		
 
 		{type = "breakline"},
 	

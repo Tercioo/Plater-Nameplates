@@ -8,12 +8,14 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
-			{1677190121,  "New Feature", "February 23rd, 2023", "Adding combat auto toggle options for friendly and enemy nameplates, as well as enemy auto toggle options.", "cont1nuity"},
-			{1677190121,  "Bug Fix", "February 21st, 2023", "Fix Combo Points not updating properly for Druids switching stances in retail.", "cont1nuity"},
-			{1677190121,  "Backend Change", "February 20th, 2023", "Change handling of units switching between attackable and not attackable, potentially fixing some issues around this.", "cont1nuity"},
-			{1677190121,  "Backend Change", "February 12th, 2023", "Adding Explosives to be always in combat.", "cont1nuity"},
-			{1677190121,  "Backend Change", "February 12th, 2023", "Friendly NPC quest indicator icon is now tied to the option to show quest indicators.", "cont1nuity"},
-			{1677190121,  "Bug Fix", "February 9th, 2023", "Fix mod option values not being updated properly when renaming or deleting options.", "cont1nuity"},
+			{1677610567,  "New Feature", "February 28th, 2023", "Adding options to change default blizzard nameplate name fonts.", "cont1nuity"},
+			{1677610567,  "New Feature", "February 28th, 2023", "Adding option to change target overlay color.", "cont1nuity"},
+			{1677610567,  "New Feature", "February 23rd, 2023", "Adding combat auto toggle options for friendly and enemy nameplates, as well as enemy auto toggle options.", "cont1nuity"},
+			{1677610567,  "Bug Fix", "February 21st, 2023", "Fix Combo Points not updating properly for Druids switching stances in retail.", "cont1nuity"},
+			{1677610567,  "Backend Change", "February 20th, 2023", "Change handling of units switching between attackable and not attackable, potentially fixing some issues around this.", "cont1nuity"},
+			{1677610567,  "Backend Change", "February 12th, 2023", "Adding Explosives to be always in combat.", "cont1nuity"},
+			{1677610567,  "Backend Change", "February 12th, 2023", "Friendly NPC quest indicator icon is now tied to the option to show quest indicators.", "cont1nuity"},
+			{1677610567,  "Bug Fix", "February 9th, 2023", "Fix mod option values not being updated properly when renaming or deleting options.", "cont1nuity"},
 			
 			{1674723541,  "Bug Fix", "February 3rd, 2023", "Fix 'Hide Blizzard Healthbars' functionality for classic-era.", "cont1nuity"},
 			{1674723541,  "Backend Change", "February 3rd, 2023", "More detailed performance analysis.", "cont1nuity"},

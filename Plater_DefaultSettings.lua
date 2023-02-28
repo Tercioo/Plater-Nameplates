@@ -693,6 +693,15 @@ PLATER_DEFAULT_SETTINGS = {
 		ui_parent_cast_level = 0,
 		ui_parent_scale_tune = 0, --testing, a slider to change the unit frame scale / goal is to have a fine tune knob to adjust the overall size when using this feature
 		
+		--blizzard default nameplate fonts
+		blizzard_nameplate_font_override_enabled = false,
+		blizzard_nameplate_font = "PT Sans Narrow",
+		blizzard_nameplate_font_outline = "OUTLINE",
+		blizzard_nameplate_font_size = 9,
+		blizzard_nameplate_large_font = "PT Sans Narrow",
+		blizzard_nameplate_large_font_outline = "OUTLINE",
+		blizzard_nameplate_large_font_size = 11,
+		
 		resources = {
 			alpha = 1,
 			scale = 0.8,
