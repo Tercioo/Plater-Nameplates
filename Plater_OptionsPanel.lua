@@ -6443,6 +6443,20 @@ local targetOptions = {
 			desc = "Target Overlay Alpha",
 			usedecimals = true,
 		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.health_selection_overlay_color
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.health_selection_overlay_color
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.OnPlayerTargetChanged()
+			end,
+			name = L["OPTIONS_COLOR"],
+			desc = "Focus Color",
+		},
 
 		{type = "blank"},
 		
@@ -6538,6 +6552,60 @@ local targetOptions = {
 		{type = "blank"},
 		
 		{
+			type = "select",
+			get = function() return Plater.db.profile.target_indicator end,
+			values = function() return build_target_indicator_table() end,
+			name = "Target Bracket Indicator",
+			desc = "Target Bracket Indicator",
+		},
+		
+		{type = "blank"},
+		
+		--target alpha
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.target_shady_enabled end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.target_shady_enabled = value
+				Plater.RefreshDBUpvalues()
+				Plater.OnPlayerTargetChanged()
+				--update
+			end,
+			name = "Target Shading",
+			desc = "Apply a layer of shadow above the nameplate when the unit is in range but isn't your current target.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.target_shady_combat_only end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.target_shady_combat_only = value
+				Plater.RefreshDBUpvalues()
+				Plater.OnPlayerTargetChanged()
+				--update
+			end,
+			name = "Target Shading Only in Combat",
+			desc = "Apply target shading only when in combat.",
+		},
+		{
+			type = "range",
+			get = function() return Plater.db.profile.target_shady_alpha end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.target_shady_alpha = value
+				Plater.RefreshDBUpvalues()
+				Plater.OnPlayerTargetChanged()
+				--update
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			name = "Target Shading Amount",
+			desc = "Amount of shade to apply.",
+			usedecimals = true,
+		},		
+		
+		{type = "breakline"},
+		
+		{
 			type = "toggle",
 			get = function() return GetCVarBool ("nameplateTargetRadialPosition") end,
 			set = function (self, fixedparam, value) 
@@ -6621,61 +6689,6 @@ local targetOptions = {
 			desc = "The nameplate size for the current target is multiplied by this value.\n\n|cFFFFFFFFDefault: 1|r\n\n|cFFFFFFFFRecommended: 1.15|r" .. CVarDesc,
 			nocombat = true,
 		},		
-		
-		{type = "blank"},
-		
-		{
-			type = "select",
-			get = function() return Plater.db.profile.target_indicator end,
-			values = function() return build_target_indicator_table() end,
-			name = "Target Bracket Indicator",
-			desc = "Target Bracket Indicator",
-		},
-		
-		{type = "blank"},
-		
-		--target alpha
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.target_shady_enabled end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.target_shady_enabled = value
-				Plater.RefreshDBUpvalues()
-				Plater.OnPlayerTargetChanged()
-				--update
-			end,
-			name = "Target Shading",
-			desc = "Apply a layer of shadow above the nameplate when the unit is in range but isn't your current target.",
-		},
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.target_shady_combat_only end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.target_shady_combat_only = value
-				Plater.RefreshDBUpvalues()
-				Plater.OnPlayerTargetChanged()
-				--update
-			end,
-			name = "Target Shading Only in Combat",
-			desc = "Apply target shading only when in combat.",
-		},
-		{
-			type = "range",
-			get = function() return Plater.db.profile.target_shady_alpha end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.target_shady_alpha = value
-				Plater.RefreshDBUpvalues()
-				Plater.OnPlayerTargetChanged()
-				--update
-			end,
-			min = 0,
-			max = 1,
-			step = 0.1,
-			name = "Target Shading Amount",
-			desc = "Amount of shade to apply.",
-			usedecimals = true,
-		},		
-		
 		
 		{type = "breakline"},
 		

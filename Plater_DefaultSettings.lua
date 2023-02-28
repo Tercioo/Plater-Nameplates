@@ -2981,6 +2981,7 @@ PLATER_DEFAULT_SETTINGS = {
 		
 		health_selection_overlay = "Details Flat",
 		health_selection_overlay_alpha = 0.1,
+		health_selection_overlay_color = {1, 1, 1, 1},
 		
 		health_statusbar_bgtexture = "PlaterBackground 2",
 		health_statusbar_bgcolor = {0.113725, 0.113725, 0.113725, 0.89000000},

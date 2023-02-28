@@ -8015,6 +8015,7 @@ end
 			--target overlay texture
 			local targetedOverlayTexture = LibSharedMedia:Fetch ("statusbar", profile.health_selection_overlay)
 			unitFrame.targetOverlayTexture:SetTexture (targetedOverlayTexture)
+			unitFrame.targetOverlayTexture:SetVertexColor (unpack (Plater.db.profile.health_selection_overlay_color))
 			unitFrame.targetOverlayTexture:SetAlpha (profile.health_selection_overlay_alpha)
 			
 			--heal prediction
