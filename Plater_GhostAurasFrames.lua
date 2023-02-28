@@ -66,14 +66,18 @@ function Plater.Auras.GhostAuras.ApplyAppearance(auraIconFrame, spellName, spell
 
     if (ghostAurasSettings.width ~= 0) then
         auraIconFrame:SetWidth(ghostAurasSettings.width)
+		auraIconFrame.Icon:SetWidth (ghostAurasSettings.width-2)
     else
         auraIconFrame:SetWidth(profile.aura_width)
+		auraIconFrame.Icon:SetWidth (profile.aura_width-2)
     end
 
     if (ghostAurasSettings.height ~= 0) then
         auraIconFrame:SetHeight(ghostAurasSettings.height)
+		auraIconFrame.Icon:SetHeight(ghostAurasSettings.height-2)
     else
         auraIconFrame:SetHeight(profile.aura_height)
+		auraIconFrame.Icon:SetHeight(profile.aura_height-2)
     end
 
     auraIconFrame:SetAlpha(ghostAurasSettings.alpha)

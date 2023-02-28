@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1677611810,  "Bug Fix", "February 28th, 2023", "Fixing Ghost Auras icon sizing settings not applying properly.", "cont1nuity"},
+			
 			{1677610567,  "New Feature", "February 28th, 2023", "Adding options to change default blizzard nameplate name fonts.", "cont1nuity"},
 			{1677610567,  "New Feature", "February 28th, 2023", "Adding option to change target overlay color.", "cont1nuity"},
 			{1677610567,  "New Feature", "February 23rd, 2023", "Adding combat auto toggle options for friendly and enemy nameplates, as well as enemy auto toggle options.", "cont1nuity"},
