@@ -695,10 +695,10 @@ PLATER_DEFAULT_SETTINGS = {
 		
 		--blizzard default nameplate fonts
 		blizzard_nameplate_font_override_enabled = false,
-		blizzard_nameplate_font = "PT Sans Narrow",
+		blizzard_nameplate_font = "Arial Narrow",
 		blizzard_nameplate_font_outline = "OUTLINE",
 		blizzard_nameplate_font_size = 9,
-		blizzard_nameplate_large_font = "PT Sans Narrow",
+		blizzard_nameplate_large_font = "Arial Narrow",
 		blizzard_nameplate_large_font_outline = "OUTLINE",
 		blizzard_nameplate_large_font_size = 11,
 		
