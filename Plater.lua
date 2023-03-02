@@ -839,6 +839,9 @@ Plater.DefaultSpellRangeList = {
 	[72] = 30, --> warrior fury
 	[73] = 30, --> warrior protect
 	
+	[1467] = 25, --> evoker devastation
+	[1468] = 25, --> evoker preservation
+	
 	-- low-level (without spec)
 	[1444] = 40, --> Initial SHAMAN
 	[1446] = 40, --> Initial WARRIOR
@@ -917,6 +920,9 @@ Plater.DefaultSpellRangeListF = {
 	[71] = 30, --> warrior arms
 	[72] = 30, --> warrior fury
 	[73] = 30, --> warrior protect
+	
+	[1467] = 25, --> evoker devastation
+	[1468] = 25, --> evoker preservation
 	
 	-- low-level (without spec)
 	[1444] = 40, --> Initial SHAMAN
