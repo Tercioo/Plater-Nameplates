@@ -1355,7 +1355,7 @@ local class_specs_coords = {
 					
 				elseif (class == "MONK") then
 					--Touch of Death
-					if IsPlayerSpell(322109) then
+					if IsPlayerSpell(322113) then
 						lowExecute = 0.15
 					end
 				
