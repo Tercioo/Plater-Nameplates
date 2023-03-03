@@ -587,9 +587,9 @@ local function getUnitAuras(unit, filter)
 			local tmpBuffs = {}
 			for auraInstanceID, aura in pairs (unitCacheData.buffs) do
 				if aura.requriresUpdate then
-					tmpDebuffs[auraInstanceID] = C_UnitAuras.GetAuraDataByAuraInstanceID(unit, auraInstanceID)
+					tmpBuffs[auraInstanceID] = C_UnitAuras.GetAuraDataByAuraInstanceID(unit, auraInstanceID)
 				else
-					tmpDebuffs[auraInstanceID] = aura
+					tmpBuffs[auraInstanceID] = aura
 				end
 			end
 			unitCacheData.buffs = tmpBuffs
