@@ -267,7 +267,7 @@ if IS_WOW_PROJECT_CLASSIC_ERA and LCD then
 end
 
 local function CreatePlaterNamePlateAuraTooltip()
-	local tooltip = CreateFrame("GameTooltip", "PlaterNamePlateAuraTooltip", parent or UIParent, "GameTooltipTemplate")
+	local tooltip = CreateFrame("GameTooltip", "PlaterNamePlateAuraTooltip", UIParent, "GameTooltipTemplate")
 	
 	tooltip.ApplyOwnBackdrop = function(self)
 		self:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Buttons\WHITE8X8]], tileSize = 0, tile = false, tileEdge = true})
@@ -376,7 +376,7 @@ local ValidateAuraForUpdate = function (unit, aura)
 			end
 		end
 		
-		if SPECIAL_AURAS_AUTO_ADDED [name] or SPECIAL_AURAS_AUTO_ADDED [spellId] or  SPECIAL_AURAS_USER_LIST[name] or SPECIAL_AURAS_USER_LIST[spellId] or (auraData.sourceUnit == "player" and (SPECIAL_AURAS_USER_LIST_MINE[name] or SPECIAL_AURAS_USER_LIST_MINE[spellId])) then
+		if SPECIAL_AURAS_AUTO_ADDED [name] or SPECIAL_AURAS_AUTO_ADDED [spellId] or  SPECIAL_AURAS_USER_LIST[name] or SPECIAL_AURAS_USER_LIST[spellId] or (aura.sourceUnit == "player" and (SPECIAL_AURAS_USER_LIST_MINE[name] or SPECIAL_AURAS_USER_LIST_MINE[spellId])) then
 			--or DB_SHOW_PURGE_IN_EXTRA_ICONS or DB_SHOW_ENRAGE_IN_EXTRA_ICONS or DB_SHOW_MAGIC_IN_EXTRA_ICONS
 			--include buff special at all times
 			needsUpdate = true
@@ -536,15 +536,12 @@ UpdateUnitAuraCacheData = function (unit, updatedAuras)
 	end
 	
 	for _, auraInstanceID in ipairs(updatedAuras.updatedAuraInstanceIDs or {}) do
-		local needsUpdate = ValidateAuraForUpdate(unit, aura)
-		if needsUpdate then
-			if unitCacheData.debuffs[auraInstanceID] ~= nil then
-				unitCacheData.debuffs[auraInstanceID].requriresUpdate = true
-				unitCacheData.debuffsChanged = true
-			elseif unitCacheData.buffs[auraInstanceID] ~= nil then
-				unitCacheData.buffs[auraInstanceID].requriresUpdate = true
-				unitCacheData.buffsChanged = true
-			end
+		if unitCacheData.debuffs[auraInstanceID] ~= nil then
+			unitCacheData.debuffs[auraInstanceID].requriresUpdate = true
+			unitCacheData.debuffsChanged = true
+		elseif unitCacheData.buffs[auraInstanceID] ~= nil then
+			unitCacheData.buffs[auraInstanceID].requriresUpdate = true
+			unitCacheData.buffsChanged = true
 		end
 	end
 	
