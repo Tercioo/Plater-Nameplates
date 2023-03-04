@@ -1093,7 +1093,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
 
                     elseif (thisOption.Type == 3) then --text
                         newOption.type = "textentry"
-                        newOption.width = 300
+                        newOption.width = 200
 
                     elseif (thisOption.Type == 4) then --toggle
                         newOption.type = "toggle"
@@ -1126,7 +1126,6 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                     end
                 end
 
-                menu.always_boxfirst = true
                 DF:BuildMenuVolatile(mainFrame.ScriptOptionsPanelUser, menu, 5, -5, options_frame_widget_options_height + options_frame_shared_height, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globaCallBack)
 
                 mainFrame.ScriptOptionsPanelUser.ResetListFrames()
