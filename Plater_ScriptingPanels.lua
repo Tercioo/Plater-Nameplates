@@ -2158,6 +2158,9 @@ function Plater.CreateHookingPanel()
 		--do a hot reload on the script
 		if (haveChanges) then
 			hookFrame.ApplyScript()
+		else
+			-- do this at least to ensure options changes are up to date
+			Plater.RecompileScript(scriptObject)
 		end
 		
 		--refresh all nameplates shown in the screen
