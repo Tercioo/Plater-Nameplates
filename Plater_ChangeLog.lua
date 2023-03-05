@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1677962653,  "Backend Change", "March 5th, 2023", "Trying to hide default blizzard namepalte cast bar as well in classic.", "cont1nuity"},
 			{1677962653,  "Bug Fix", "March 4th, 2023", "Fixing some issues around mod/script options not updating properly under some conditions.", "cont1nuity"},
 			{1677962653,  "Bug Fix", "March 2nd, 2023", "Fixing Monk execute detection for Improved Touch of Death talent.", "cont1nuity"},
 			{1677962653,  "Bug Fix", "March 2nd, 2023", "Adding missing default range check ranges for Evoker.", "cont1nuity"},
