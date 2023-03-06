@@ -7344,7 +7344,7 @@ end
 					
 					--npc title
 					local subTitle = Plater.GetActorSubName (plateFrame)
-					if (subTitle and subTitle ~= "" and not subTitle:lower():match (string.gsub(UNIT_LEVEL_TEMPLATE:lower(), "%%d", "(%.*)"))) then
+					if (subTitle and subTitle ~= "") then
 						plateFrame.ActorTitleSpecial:Show()
 						--subTitle = DF:RemoveRealmName (subTitle) -- why are removing real names on npc titles? e.g. <T-Shirt Scalper> Skin-Me-Own-Coat-Dibblefur gets broken to <T>.
 						plateFrame.ActorTitleSpecial:SetText ("<" .. subTitle .. ">")
@@ -7372,7 +7372,7 @@ end
 					
 					--profession (title)
 					local subTitle = Plater.GetActorSubName (plateFrame)
-					if (subTitle and subTitle ~= "" and not subTitle:lower():match (string.gsub(UNIT_LEVEL_TEMPLATE:lower(), "%%d", "(%.*)"))) then
+					if (subTitle and subTitle ~= "") then
 						plateFrame.ActorTitleSpecial:Show()
 						--subTitle = DF:RemoveRealmName (subTitle)
 						plateFrame.ActorTitleSpecial:SetText ("<" .. subTitle .. ">")
@@ -7391,35 +7391,33 @@ end
 				--scan tooltip to check if there's an title for this npc
 				local subTitle = Plater.GetActorSubName (plateFrame)
 				if (subTitle and subTitle ~= "" and not Plater.IsNpcInIgnoreList (plateFrame, true)) then
-					if (not subTitle:lower():match (string.gsub(UNIT_LEVEL_TEMPLATE:lower(), "%%d", "(%.*)"))) then --isn't level
+				
+					plateFrame.ActorTitleSpecial:Show()
+					--subTitle = DF:RemoveRealmName (subTitle)
+					plateFrame.ActorTitleSpecial:SetText ("<" .. subTitle .. ">")
+					plateFrame.ActorTitleSpecial:ClearAllPoints()
+					PixelUtil.SetPoint (plateFrame.ActorTitleSpecial, "top", plateFrame.ActorNameSpecial, "bottom", 0, -2)
+					
+					plateFrame.ActorTitleSpecial:SetTextColor (unpack (plateConfigs.big_actortitle_text_color))
+					plateFrame.ActorNameSpecial:SetTextColor (unpack (plateConfigs.big_actorname_text_color))
+					
+					DF:SetFontSize (plateFrame.ActorTitleSpecial, plateConfigs.big_actortitle_text_size)
+					DF:SetFontFace (plateFrame.ActorTitleSpecial, plateConfigs.big_actortitle_text_font)
+					
+					--DF:SetFontOutline (plateFrame.ActorTitleSpecial, plateConfigs.big_actortitle_text_shadow)
+					Plater.SetFontOutlineAndShadow (plateFrame.ActorTitleSpecial, plateConfigs.big_actortitle_text_outline, plateConfigs.big_actortitle_text_shadow_color, plateConfigs.big_actortitle_text_shadow_color_offset[1], plateConfigs.big_actortitle_text_shadow_color_offset[2])
+					
+					--npc name
+					plateFrame.ActorNameSpecial:Show()
 
-						plateFrame.ActorTitleSpecial:Show()
-						--subTitle = DF:RemoveRealmName (subTitle)
-						plateFrame.ActorTitleSpecial:SetText ("<" .. subTitle .. ">")
-						plateFrame.ActorTitleSpecial:ClearAllPoints()
-						PixelUtil.SetPoint (plateFrame.ActorTitleSpecial, "top", plateFrame.ActorNameSpecial, "bottom", 0, -2)
-						
-						plateFrame.ActorTitleSpecial:SetTextColor (unpack (plateConfigs.big_actortitle_text_color))
-						plateFrame.ActorNameSpecial:SetTextColor (unpack (plateConfigs.big_actorname_text_color))
-						
-						DF:SetFontSize (plateFrame.ActorTitleSpecial, plateConfigs.big_actortitle_text_size)
-						DF:SetFontFace (plateFrame.ActorTitleSpecial, plateConfigs.big_actortitle_text_font)
-						
-						--DF:SetFontOutline (plateFrame.ActorTitleSpecial, plateConfigs.big_actortitle_text_shadow)
-						Plater.SetFontOutlineAndShadow (plateFrame.ActorTitleSpecial, plateConfigs.big_actortitle_text_outline, plateConfigs.big_actortitle_text_shadow_color, plateConfigs.big_actortitle_text_shadow_color_offset[1], plateConfigs.big_actortitle_text_shadow_color_offset[2])
-						
-						--npc name
-						plateFrame.ActorNameSpecial:Show()
+					plateFrame.CurrentUnitNameString = plateFrame.ActorNameSpecial
+					Plater.UpdateUnitName (plateFrame)
 
-						plateFrame.CurrentUnitNameString = plateFrame.ActorNameSpecial
-						Plater.UpdateUnitName (plateFrame)
-
-						DF:SetFontSize (plateFrame.ActorNameSpecial, plateConfigs.big_actorname_text_size)
-						DF:SetFontFace (plateFrame.ActorNameSpecial, plateConfigs.big_actorname_text_font)
-						
-						--DF:SetFontOutline (plateFrame.ActorNameSpecial, plateConfigs.big_actorname_text_shadow)
-						Plater.SetFontOutlineAndShadow (plateFrame.ActorNameSpecial, plateConfigs.big_actorname_text_outline, plateConfigs.big_actorname_text_shadow_color, plateConfigs.big_actorname_text_shadow_color_offset[1], plateConfigs.big_actorname_text_shadow_color_offset[2])
-					end
+					DF:SetFontSize (plateFrame.ActorNameSpecial, plateConfigs.big_actorname_text_size)
+					DF:SetFontFace (plateFrame.ActorNameSpecial, plateConfigs.big_actorname_text_font)
+					
+					--DF:SetFontOutline (plateFrame.ActorNameSpecial, plateConfigs.big_actorname_text_shadow)
+					Plater.SetFontOutlineAndShadow (plateFrame.ActorNameSpecial, plateConfigs.big_actorname_text_outline, plateConfigs.big_actorname_text_shadow_color, plateConfigs.big_actorname_text_shadow_color_offset[1], plateConfigs.big_actorname_text_shadow_color_offset[2])
 				end
 			end
 			
@@ -7886,9 +7884,7 @@ end
 			local subTitleExists = false
 			local subTitle = Plater.GetActorSubName (plateFrame)
 			if (subTitle and subTitle ~= "" and not Plater.IsNpcInIgnoreList (plateFrame, true)) then
-				if (not subTitle:lower():match (string.gsub(UNIT_LEVEL_TEMPLATE:lower(), "%%d", "(%.*)"))) then --isn't level
-					subTitleExists = true
-				end
+				subTitleExists = true
 			end
 		
 			Plater.ForceFindPetOwner (plateFrame [MEMBER_GUID])
@@ -9452,17 +9448,35 @@ end
 	function Plater.ForceFindPetOwner (serial) --private
 		Plater.StartLogPerformanceCore("Plater-Core", "Update", "ForceFindPetOwner")
 		
-		local tooltipFrame = PlaterPetOwnerFinder or CreateFrame ("GameTooltip", "PlaterPetOwnerFinder", nil, "GameTooltipTemplate")
-		
-		tooltipFrame:SetOwner (WorldFrame, "ANCHOR_NONE")
-		tooltipFrame:SetHyperlink ("unit:" .. serial or "")
+		local petName,text1
+		local cbMode = tonumber(GetCVar("colorblindMode")) or 0
+		if IS_WOW_PROJECT_MAINLINE then
+			local tooltipData = C_TooltipInfo.GetHyperlink ("unit:" .. serial or "")
+			TooltipUtil.SurfaceArgs(tooltipData)
+			local lines = tooltipData.lines
+			for _, line in ipairs(lines) do
+				TooltipUtil.SurfaceArgs(line)
+			end
+			
+			petName = lines[1] and lines[1].leftText
+			text1 = lines[2 + cbMode] and lines[2 + cbMode].leftText
+			
+		else
+			local tooltipFrame = PlaterPetOwnerFinder or CreateFrame ("GameTooltip", "PlaterPetOwnerFinder", nil, "GameTooltipTemplate")
+			tooltipFrame:SetOwner (WorldFrame, "ANCHOR_NONE")
+			tooltipFrame:SetHyperlink ("unit:" .. serial or "")
+			
+			local petNameLine = _G ["PlaterPetOwnerFinderTextLeft1"]
+			petName = petNameLine and petNameLine:GetText()
+			local line1 = _G ["PlaterPetOwnerFinderTextLeft" .. (2 + cbMode)]
+			text1 = line1 and line1:GetText()
+		end
 		
 		local isPlayerPet = false
 		local isOtherPet = false
 		local ownerName = ""
 		
-		local line1 = _G ["PlaterPetOwnerFinderTextLeft2"]
-		local text1 = line1 and line1:GetText()
+		
 		if (text1 and text1 ~= "") then
 			local pName = GetUnitName ("player", true)
 			local playerName = pName:gsub ("%-.*", "") --remove realm name
@@ -9477,27 +9491,7 @@ end
 			end
 		end
 		
-		if (not isPlayerPet and not isOtherPet) then
-			local line2 = _G ["PlaterPetOwnerFinderTextLeft3"]
-			local text2 = line2 and line2:GetText()
-			if (text2 and text2 ~= "") then
-				local pName = GetUnitName ("player", true)
-				local playerName = pName:gsub ("%-.*", "") --remove realm name
-				if (text2:find (playerName)) then
-					isPlayerPet = true
-					ownerName = playerName
-				else
-					ownerName = (string.match(text2, string.gsub(UNITNAME_TITLE_PET, "%%s", "(%.*)")) or string.match(text2, string.gsub(UNITNAME_TITLE_MINION, "%%s", "(%.*)")) or string.match(text2, string.gsub(UNITNAME_TITLE_GUARDIAN, "%%s", "(%.*)")))
-					if ownerName then
-						isOtherPet = true
-					end
-				end
-			end
-		end
-		
-		if (isPlayerPet or isOtherPet) then
-			local petNameLine = _G ["PlaterPetOwnerFinderTextLeft1"]
-			local petName = petNameLine and petNameLine:GetText()
+		if (isPlayerPet or isOtherPet) and petName then
 			local entry = {ownerGUID = UnitGUID(ownerName), ownerName = ownerName, petName = petName, time = time()}
 			
 			if (isPlayerPet) then
@@ -9639,28 +9633,33 @@ end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> quest log stuff ~quest
-
-	--PlaterScanTooltip:SetOwner (WorldFrame, "ANCHOR_NONE")
-	local GameTooltipFrame = CreateFrame ("GameTooltip", "PlaterScanTooltip", nil, "GameTooltipTemplate")
-	local GameTooltipFrameTextLeft2 = _G ["PlaterScanTooltipTextLeft2"]
 	
 	function Plater.GetActorSubName (plateFrame) --private
-		local cbMode = GetCVar("colorblindMode") == "1"
-		GameTooltipFrame:SetOwner (WorldFrame, "ANCHOR_NONE")
-		GameTooltipFrame:SetHyperlink ("unit:" .. (plateFrame [MEMBER_GUID] or ''))
-		if cbMode then
-			local GameTooltipFrameTextLeft3 = GameTooltipFrameTextLeft3 or _G ["PlaterScanTooltipTextLeft3"]
-			return GameTooltipFrameTextLeft3 and GameTooltipFrameTextLeft3:GetText() or GameTooltipFrameTextLeft2:GetText()
+		local cbMode = tonumber(GetCVar("colorblindMode")) or 0
+		local subTitle = ""
+		if IS_WOW_PROJECT_MAINLINE then
+			local tooltipData = C_TooltipInfo.GetHyperlink("unit:" .. (plateFrame [MEMBER_GUID] or ""))
+			TooltipUtil.SurfaceArgs(tooltipData)
+			for _, line in ipairs(tooltipData.lines) do
+				TooltipUtil.SurfaceArgs(line)
+			end
+			
+			local line = tooltipData.lines[2 + cbMode]
+			subTitle = line and line.leftText or ""
 		else
-			return GameTooltipFrameTextLeft2:GetText()
+			local GameTooltipFrame = PlaterScanTooltip or CreateFrame ("GameTooltip", "PlaterScanTooltip", nil, "GameTooltipTemplate")
+			GameTooltipFrame:SetOwner (WorldFrame, "ANCHOR_NONE")
+			GameTooltipFrame:SetHyperlink ("unit:" .. (plateFrame [MEMBER_GUID] or ''))
+			
+			local GameTooltipFrameTextLeft = _G ["PlaterScanTooltipTextLeft" .. (2 + cbMode)]
+			subTitle = GameTooltipFrameTextLeft and GameTooltipFrameTextLeft:GetText() or ""
+		end
+		if subTitle ~= "" and not subTitle:lower():match (string.gsub(UNIT_LEVEL_TEMPLATE:lower(), "%%d", "(%.*)")) then
+			return subTitle
+		else
+			return nil
 		end
 	end
-
-	local GameTooltipScanQuest = CreateFrame ("GameTooltip", "PlaterScanQuestTooltip", nil, "GameTooltipTemplate")
-	local ScanQuestTextCache = {}
-	--for i = 1, 8 do
-	--	ScanQuestTextCache [i] = _G ["PlaterScanQuestTooltipTextLeft" .. i]
-	--end
 
 	function Plater.IsQuestObjective (plateFrame)
 		if (not plateFrame [MEMBER_GUID]) then --platerFrame.actorType == "friendlynpc"
@@ -9681,6 +9680,7 @@ end
 		plateFrame.unitFrame.QuestName = nil
 		plateFrame.unitFrame.QuestIsCampaign = nil
 		
+		local ScanQuestTextCache = {}
 		local useQuestie = false
 		local QuestieTooltips = QuestieLoader and QuestieLoader._modules["QuestieTooltips"]
 		if QuestieTooltips then
@@ -9690,13 +9690,26 @@ end
 			end
 			useQuestie = true
 		else
-			GameTooltipScanQuest:SetOwner (WorldFrame, "ANCHOR_NONE")
-			GameTooltipScanQuest:SetHyperlink ("unit:" .. plateFrame [MEMBER_GUID])
-			
-			--8.2 tooltip changes fix by GentMerc#9560 on Discord
-			for i = 1, GameTooltipScanQuest:NumLines() do
-				ScanQuestTextCache [i] = _G ["PlaterScanQuestTooltipTextLeft" .. i]
+			if IS_WOW_PROJECT_MAINLINE then
+				local tooltipData = C_TooltipInfo.GetHyperlink ("unit:" .. plateFrame [MEMBER_GUID])
+				TooltipUtil.SurfaceArgs(tooltipData)
+				for _, line in ipairs(tooltipData.lines) do
+					TooltipUtil.SurfaceArgs(line)
+					if line.type == Enum.TooltipDataLineType.QuestObjective or line.type == Enum.TooltipDataLineType.QuestTitle or line.type == Enum.TooltipDataLineType.QuestPlayer then
+						--only add actual quest tooltip lines
+						ScanQuestTextCache [#ScanQuestTextCache + 1] = line.leftText or ""
+					end
+				end
+			else
+				local GameTooltipScanQuest = PlaterScanQuestTooltip or CreateFrame ("GameTooltip", "PlaterScanQuestTooltip", nil, "GameTooltipTemplate")
+				GameTooltipScanQuest:SetOwner (WorldFrame, "ANCHOR_NONE")
+				GameTooltipScanQuest:SetHyperlink ("unit:" .. plateFrame [MEMBER_GUID])
+				
+				for i = 1, GameTooltipScanQuest:NumLines() do
+					ScanQuestTextCache [i] = _G ["PlaterScanQuestTooltipTextLeft" .. i]:GetText() or ""
+				end
 			end
+			
 		end
 		
 		local playerName = UnitName("player")
@@ -9706,15 +9719,12 @@ end
 		local isQuestUnit = false
 		local atLeastOneQuestUnfinished = false
 		for i = 1, #ScanQuestTextCache do
-			local text = nil
+			local text = ScanQuestTextCache [i]
 			if useQuestie then
-				text = ScanQuestTextCache [i]
 				text = gsub(text,"|c........","") -- remove coloring begin
 				text = gsub(text,"|r","") -- remove color end
 				text = gsub(text,"%[.*%] ","") -- remove level text
 				text = gsub(text," %(%d+%)","") -- remove quest-id
-			else
-				text = ScanQuestTextCache [i]:GetText()
 			end
 			
 			if (Plater.QuestCache [text]) then
@@ -9741,15 +9751,10 @@ end
 				local j = i
 				while (ScanQuestTextCache [j+1]) do
 					--check if the unit objective isn't already done
-					local nextLineText = nil
+					local nextLineText = ScanQuestTextCache [j+1]
 					if useQuestie then
-						nextLineText = ScanQuestTextCache [j+1]
-						if nextLineText then
-							nextLineText = gsub(nextLineText,"|c........","") -- remove coloring begin
-							nextLineText = gsub(nextLineText,"|r","") -- remove color end
-						end
-					else
-						nextLineText = ScanQuestTextCache [j+1]:GetText()
+						nextLineText = gsub(nextLineText,"|c........","") -- remove coloring begin
+						nextLineText = gsub(nextLineText,"|r","") -- remove color end
 					end
 					
 					if (nextLineText) then
@@ -9900,7 +9905,7 @@ end
 		if (Plater.UpdateQuestCacheThrottle and not Plater.UpdateQuestCacheThrottle._cancelled) then
 			Plater.UpdateQuestCacheThrottle:Cancel()
 		end
-		Plater.UpdateQuestCacheThrottle = C_Timer.NewTimer(2, update_quest_cache)
+		Plater.UpdateQuestCacheThrottle = C_Timer.NewTimer(1, update_quest_cache)
 	end
 
 
