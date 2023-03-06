@@ -8,13 +8,14 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
-			{1677962653,  "Backend Change", "March 6th, 2023", "Switching towards new tooltip API for retail instead of tooltip scanning.", "cont1nuity"},
-			{1677962653,  "Backend Change", "March 5th, 2023", "Trying to hide default blizzard namepalte cast bar as well in classic.", "cont1nuity"},
-			{1677962653,  "Bug Fix", "March 4th, 2023", "Fixing some issues around mod/script options not updating properly under some conditions.", "cont1nuity"},
-			{1677962653,  "Bug Fix", "March 2nd, 2023", "Fixing Monk execute detection for Improved Touch of Death talent.", "cont1nuity"},
-			{1677962653,  "Bug Fix", "March 2nd, 2023", "Adding missing default range check ranges for Evoker.", "cont1nuity"},
-			{1677962653,  "Bug Fix", "March 1st, 2023", "Changing blizzard nameplate font override default to something that actually exists in Plater by default.", "cont1nuity"},
-			{1677962653,  "Bug Fix", "February 28th, 2023", "Fixing Ghost Auras icon sizing settings not applying properly.", "cont1nuity"},
+			{1678135936,  "Bug Fix", "March 6th, 2023", "Fixing some issues unit hostility changes beeing too lax.", "cont1nuity"},
+			{1678135936,  "Backend Change", "March 6th, 2023", "Switching towards new tooltip API for retail instead of tooltip scanning.", "cont1nuity"},
+			{1678135936,  "Backend Change", "March 5th, 2023", "Trying to hide default blizzard namepalte cast bar as well in classic.", "cont1nuity"},
+			{1678135936,  "Bug Fix", "March 4th, 2023", "Fixing some issues around mod/script options not updating properly under some conditions.", "cont1nuity"},
+			{1678135936,  "Bug Fix", "March 2nd, 2023", "Fixing Monk execute detection for Improved Touch of Death talent.", "cont1nuity"},
+			{1678135936,  "Bug Fix", "March 2nd, 2023", "Adding missing default range check ranges for Evoker.", "cont1nuity"},
+			{1678135936,  "Bug Fix", "March 1st, 2023", "Changing blizzard nameplate font override default to something that actually exists in Plater by default.", "cont1nuity"},
+			{1678135936,  "Bug Fix", "February 28th, 2023", "Fixing Ghost Auras icon sizing settings not applying properly.", "cont1nuity"},
 			
 			{1677610567,  "New Feature", "February 28th, 2023", "Adding options to change default blizzard nameplate name fonts.", "cont1nuity"},
 			{1677610567,  "New Feature", "February 28th, 2023", "Adding option to change target overlay color.", "cont1nuity"},

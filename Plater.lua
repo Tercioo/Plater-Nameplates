@@ -2616,8 +2616,19 @@ local class_specs_coords = {
 				--rules if can schedule an update for unit flag event:
 				
 				--has the hostility changed?
-				local reactionChanged = plateFrame [MEMBER_REACTION] ~= UnitReaction(unit, "player")
-				
+				local reactionChanged = false
+				local curReaction = plateFrame [MEMBER_REACTION]
+				local newReaction = UnitReaction(unit, "player")
+				if curReaction ~= newReaction then
+					if curReaction == Plater.UnitReaction.UNITREACTION_NEUTRAL and newReaction ~= curReaction then
+						reactionChanged = true
+					elseif curReaction < Plater.UnitReaction.UNITREACTION_NEUTRAL and newReaction >= Plater.UnitReaction.UNITREACTION_NEUTRAL then
+						reactionChanged = true
+					elseif curReaction > Plater.UnitReaction.UNITREACTION_NEUTRAL and newReaction <= Plater.UnitReaction.UNITREACTION_NEUTRAL then
+						reactionChanged = true
+					end
+				end
+
 				--can the user attack or no longer attack?
 				local attackableChanged = plateFrame.PlayerCannotAttack ~= not UnitCanAttack ("player", unit)
 				
