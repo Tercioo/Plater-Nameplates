@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1678652930,  "Bug Fix", "March 12th, 2023", "Fixing some default values for 'hide blizzard healthbars' on the different WoW versions.", "cont1nuity"},
+			
 			{1678135936,  "Bug Fix", "March 6th, 2023", "Fixing some issues unit hostility changes beeing too lax.", "cont1nuity"},
 			{1678135936,  "Backend Change", "March 6th, 2023", "Switching towards new tooltip API for retail instead of tooltip scanning.", "cont1nuity"},
 			{1678135936,  "Backend Change", "March 5th, 2023", "Trying to hide default blizzard namepalte cast bar as well in classic.", "cont1nuity"},

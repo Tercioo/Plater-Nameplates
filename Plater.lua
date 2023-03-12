@@ -6213,20 +6213,26 @@ end
 		else
 			TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateFrameSetUpOptions }, "hideHealthbar")
 			TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateFrameSetUpOptions }, "hideCastbar")
-			TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateFrameSetUpOptions }, "colorNameBySelection")
-			TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateFrameSetUpOptions }, "colorNameWithExtendedColors")
 			TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateFriendlyFrameOptions }, "hideHealthbar")
 			TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateFriendlyFrameOptions }, "hideCastbar")
-			TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateFriendlyFrameOptions }, "colorNameBySelection")
-			TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateFriendlyFrameOptions }, "colorNameWithExtendedColors")
 			TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateEnemyFrameOptions }, "hideHealthbar")
 			TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateEnemyFrameOptions }, "hideCastbar")
-			TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateEnemyFrameOptions }, "colorNameBySelection")
-			TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateEnemyFrameOptions }, "colorNameWithExtendedColors")
 			
-			TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateFrameSetUpOptions }, "showLevel")
-			TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateFriendlyFrameOptions }, "showLevel")
-			TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateEnemyFrameOptions }, "showLevel")
+			
+			if not IS_WOW_PROJECT_MAINLINE then
+				--other defaults
+				TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateFrameSetUpOptions }, "colorNameBySelection")
+				TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateFrameSetUpOptions }, "colorNameWithExtendedColors")
+				TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateFriendlyFrameOptions }, "colorNameBySelection")
+				TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateFriendlyFrameOptions }, "colorNameWithExtendedColors")
+				TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateEnemyFrameOptions }, "colorNameBySelection")
+				TextureLoadingGroupMixin.RemoveTexture({ textures = DefaultCompactNamePlateEnemyFrameOptions }, "colorNameWithExtendedColors")
+				
+				TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateFrameSetUpOptions }, "showLevel")
+				TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateFriendlyFrameOptions }, "showLevel")
+				TextureLoadingGroupMixin.AddTexture({ textures = DefaultCompactNamePlateEnemyFrameOptions }, "showLevel")
+			end
+
 		end
 		for _, plateFrame in pairs(C_NamePlate.GetNamePlates(true)) do
 			if (plateFrame) then
