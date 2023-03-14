@@ -2619,7 +2619,9 @@ local class_specs_coords = {
 				local reactionChanged = false
 				local curReaction = plateFrame [MEMBER_REACTION]
 				local newReaction = UnitReaction(unit, "player")
-				if curReaction ~= newReaction then
+				if not curReaction then -- in case the plater nameplate is not on screen, ensure that it can change
+					reactionChanged = true
+				elseif curReaction ~= newReaction then
 					if curReaction == Plater.UnitReaction.UNITREACTION_NEUTRAL and newReaction ~= curReaction then
 						reactionChanged = true
 					elseif curReaction < Plater.UnitReaction.UNITREACTION_NEUTRAL and newReaction >= Plater.UnitReaction.UNITREACTION_NEUTRAL then
@@ -2630,7 +2632,7 @@ local class_specs_coords = {
 				end
 
 				--can the user attack or no longer attack?
-				local attackableChanged = plateFrame.PlayerCannotAttack ~= not UnitCanAttack ("player", unit)
+				local attackableChanged = plateFrame.PlayerCannotAttack ~= UnitCanAttack ("player", unit)
 				
 				if (reactionChanged or attackableChanged or not plateFrame.unitFrame.PlaterOnScreen) then
 					--print ("UNIT_FLAG", plateFrame, issecure(), unit, unit and UnitName (unit))
