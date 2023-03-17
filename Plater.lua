@@ -6243,7 +6243,6 @@ end
 				else
 					TextureLoadingGroupMixin.AddTexture({ textures = plateFrame.UnitFrame.CastBar }, "showCastbar")
 				end
-				print(plateFrame.UnitFrame.CastBar.showCastbar)
 			end
 		end
 	end
