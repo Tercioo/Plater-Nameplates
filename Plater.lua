@@ -6236,12 +6236,14 @@ end
 			end
 
 		end
-		for _, plateFrame in pairs(C_NamePlate.GetNamePlates(true)) do
-			if (plateFrame) then
-				if GetCVarBool ("nameplateShowOnlyNames") or Plater.db.profile.saved_cvars.nameplateShowOnlyNames == "1" then
-					TextureLoadingGroupMixin.RemoveTexture({ textures = plateFrame.UnitFrame.CastBar }, "showCastbar")
-				else
-					TextureLoadingGroupMixin.AddTexture({ textures = plateFrame.UnitFrame.CastBar }, "showCastbar")
+		if not IS_WOW_PROJECT_MAINLINE then
+			for _, plateFrame in pairs(C_NamePlate.GetNamePlates(true)) do
+				if (plateFrame) then
+					if GetCVarBool ("nameplateShowOnlyNames") or Plater.db.profile.saved_cvars.nameplateShowOnlyNames == "1" then
+						TextureLoadingGroupMixin.RemoveTexture({ textures = plateFrame.UnitFrame.CastBar }, "showCastbar")
+					else
+						TextureLoadingGroupMixin.AddTexture({ textures = plateFrame.UnitFrame.CastBar }, "showCastbar")
+					end
 				end
 			end
 		end

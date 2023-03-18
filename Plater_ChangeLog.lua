@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1678652930,  "Bug Fix", "March 18th, 2023", "Fixing and error for hiding blizzard healthbars.", "cont1nuity"},
 			{1678652930,  "Bug Fix", "March 14th, 2023", "Fixing some errors about unit flag changes when units are entering/leaving combat or change being attackable or not.", "cont1nuity"},
 			{1678652930,  "Bug Fix", "March 12th, 2023", "Fixing some default values for 'hide blizzard healthbars' on the different WoW versions.", "cont1nuity"},
 			
