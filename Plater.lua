@@ -3736,10 +3736,12 @@ local class_specs_coords = {
 				--try forbidden as well for hiding stuff
 				plateFrame = C_NamePlate.GetNamePlateForUnit (unitID, true)
 				if (plateFrame) then
-					if GetCVarBool ("nameplateShowOnlyNames") or Plater.db.profile.saved_cvars.nameplateShowOnlyNames == "1" then
-						TextureLoadingGroupMixin.RemoveTexture({ textures = plateFrame.UnitFrame.CastBar }, "showCastbar")
-					else
-						TextureLoadingGroupMixin.AddTexture({ textures = plateFrame.UnitFrame.CastBar }, "showCastbar")
+					if (not IS_WOW_PROJECT_MAINLINE) then
+						if GetCVarBool ("nameplateShowOnlyNames") or Plater.db.profile.saved_cvars.nameplateShowOnlyNames == "1" then
+							TextureLoadingGroupMixin.RemoveTexture({ textures = plateFrame.UnitFrame.CastBar }, "showCastbar")
+						else
+							TextureLoadingGroupMixin.AddTexture({ textures = plateFrame.UnitFrame.CastBar }, "showCastbar")
+						end
 					end
 				end
 				return
