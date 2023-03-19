@@ -9714,12 +9714,14 @@ end
 		else
 			if IS_WOW_PROJECT_MAINLINE then
 				local tooltipData = C_TooltipInfo.GetHyperlink ("unit:" .. plateFrame [MEMBER_GUID])
-				TooltipUtil.SurfaceArgs(tooltipData)
-				for _, line in ipairs(tooltipData.lines) do
-					TooltipUtil.SurfaceArgs(line)
-					if line.type == Enum.TooltipDataLineType.QuestObjective or line.type == Enum.TooltipDataLineType.QuestTitle or line.type == Enum.TooltipDataLineType.QuestPlayer then
-						--only add actual quest tooltip lines
-						ScanQuestTextCache [#ScanQuestTextCache + 1] = line.leftText or ""
+				if tooltipData then
+					TooltipUtil.SurfaceArgs(tooltipData)
+					for _, line in ipairs(tooltipData.lines) do
+						TooltipUtil.SurfaceArgs(line)
+						if line.type == Enum.TooltipDataLineType.QuestObjective or line.type == Enum.TooltipDataLineType.QuestTitle or line.type == Enum.TooltipDataLineType.QuestPlayer then
+							--only add actual quest tooltip lines
+							ScanQuestTextCache [#ScanQuestTextCache + 1] = line.leftText or ""
+						end
 					end
 				end
 			else
