@@ -27,6 +27,18 @@ do
 
 --new scripts v10.0.2
 
+--Cast - On Going Cast [P] backup
+--nF12UnUnq0)f)KmqSHS89a0h8MGS1TnxaK7Iw0uTIwIYwn0Kcuu760h03ENHKYroro2zZUanowMsCUCoZqodvqVGfb(ImvQGNddVrF)IhZO4q)FL(yGFSqDHGjKb(FIWkOgPW)90x7RVoi4QXdDh2BYu3r9gpz8Obtds6mCqGkW)gYgAG)LcvEzO1sZJeC4kxrLjKi69ZIJVLNF)Dmc8K7t3qwrZV3aRphzu5sAE0(wrHqyhC9c8VMSfaJ7(Y(hLH3MKKtbGCDkp4MoOaxjjrOXdwwXQBC3hO1u7TawEXMLuPnYT1AbfgLokq)ZMaADivtGNWS2rp(EGATyHctK7a6Ok3FRwHYWbVWXgtn4T54Lmc)HkUJ(CydbNQ5Nf)pf5QYW1IVwgMqWHQ10YWLSu(dP8vLHIOOczUnO521ZcT8mkn(ja3DqnM(HVTiLjA8b0ZLH(A7RWW0HrpGPYqYgrbhWTibWUKWZZiskp6X6mPmmIaIUM8fAftS8ytkFglBnPES)7kr0y04cGnJFn2q2(oytDqVlRm85GbDHLVFZ772q2UJpt2RG2E(6qv1UA4OH9goEKNR30jdhm2dRKnrxPZf3GasPSEsZ23BnnT(2a6(lTv0TQcjnalH4RerFHkZXiiu7a(dIDK4y0PgFe4RHVVczRFEKmnduRVLA9Na)nsx12ZD6OXJqBcsFHEpvhO2cKX(Oq7xZZ(R7(7a)HaJD7pPNle9WAdGsJbGNQiXczNz)RKWqea1kwOXoj6HvsyfsCncXHOEgcrl3GAzKYqjfKjYW9uECAerzinQsKgbPGKlP6NMbrvHCdnUBz4VNttkyGKIDAIQSMW5uMwAyZpJbkhB4tmbJ(aIGaOkDdTleQG6bjf8itLnNCkl5SYWcEQAESDaSGDdfgt5FzbzjdhAcQ67Ax(lLH2p7gHMP7TF8IpRxITWK(o)cgLiNXy3bOrL70(yY7tvArDAPezmAIQ1zgrHFQ)ix87BWAlfkLyJmD169S4ZE8ZT6tJyIictN4arwjPu(zygTaIS)uzOzr453rK5u9s6CNAHRUWUJK0vDFAhZPa8pb5l6wT4oV0TVgi1(rxJwdUgqIUbXXtIZ4WwxCvs35Cesxwi1368KhAFCDVTqDCLFbjGA)g7GvZoepQAq8sTjBpbTT1kF7bIRKInAvD2dMTpv9xiSAxhMNEOSM733aNmnSgAhooaloQHqJ8BcrguQXPLKMrjQwhNhNd7xE0Pr)uvWPlC07DY3R2MSUOUxwBYQ6xEN1ysU6i8npR9yQnpP9OLTpg66A7vnNNimBTUUGPsZyPuPg5UD7FYC17)1C17OCTxDMs5WXq7bnRlNxoVElN97Lmh)0PtkphQ5HngJHYQRPsA1CMFbRHdc8NcNvd6jdNlPh0mFk8UxdHU596)JVTwTf(qZOMxcBZDOanL7AEnu7Vp2XR9ZTIoja3cFGqK3pIquNorsQ(CiqP2egjF9UJVvg(11PrW9pqPz1pEh8ygD)d8aiAL5mla4E9(JMk6npdEMkCQZVqdk7ZD4PmSHpEmiytvRtPdSEVuL(9aT1FpfnnvvDps0stEsvQd7VlkGGucYGMpn8rxw2qGP2COHThvXeC2n3pxS0Pr2amUAbdSA)qmgEdvCwyL2jj)pNgtTY3(T18914NE6dtrNdOgUQGG5Rw2mm8Mz6R9Fw2(K6Q(Qaup)7eHE7qObREnu54q7(799B3)bQw3OBDnV2yW)9
+
+--for abilities that channel and while channeling throws something at players or do damage over time
+PlaterScriptLibrary ["Cast - On Going Cast [P]"] = {
+	Revision = 2,
+	ScriptType = "script",
+	String = "nFvBVnkoq4)l5tePgeqETv6(q2w1DZDxFrICRUvxpwCatcxDSrgt307d8B)g)cjql5LUDxPRPHyWZm(5zg7zgcCdMh4ZYePmAom8w19ZFodlh6)B4Nd8JzIlzegpW)ZisbwlL8Fp11(QRdcUE8qNHUto3zK74jJhn48GKEdheic8VfTgh4FftKxgAS0SigfUsfyEckc)W0447O5pCpbbp5H01OL48h0W6RrAvUcNh10kcje2cxVa)BqBaW40u2)Sm8UKKCmaKBsPb32tkW1CuK04blQy1Tog6UPs63cgPfRxG5nP6Ufwi9shfOFPnGw3G1eyhMRZKVheR48Z7a6GDaDu1YFNsLYWbVYzPn2G32sVGGOpwXD5AoSfNt18tJ)NICrz4k23kdtqYHIv4YWfKu6JP0LLHSOOcEUXP5y7zGwEgghVdW2dQyZhKAwg6RN)7XNT1N)bj6hDa0dyQmeTMvqbCZsaSZr08mehtJEUotkdJqGORqpHRyIHhRtPtjzRq199niIAnmI8(zZ4dXg0M3bBQTo7IkdRyjAZ7Gcn9hsuQngWNjnsO1qW9Lv76HJg6oC8iphVZNmCW4(Ymztuz6CKhqaPegyRy77nNMsFJdT5wBbEJOGJdKNm9fSONW8CPheYDa)b(ouCSCr1RrGVc((cjB9ZJ4PzGA9nuR)e4VrQS2EoNpA8iPnbPVuDMQhKBbIyFKPwx9Z(R7)7a)HaJD6pX1b8EYCdGsJbGNkqXmEVP)lhrKiaYvmxHDu0Jl5WoK4AeIcE9mjenCdYLHkd5yqMin3tPXPriHM0svIuiifKCbw90mWRY4RXX2LH)rooPGasY2QPuLvikftusdh(jeq5ynFIrsVpGiWbksxJTbxfKpiPGgPZSzLJjjNvgwqtfZIndGnSRXWym9P5Ofe5qTtvDx3YFTm08z7iPzSV7Jx(v1wS56W3fxsWi(uc5EanICRUhtEFSqjQvhblJGteDotlk8t9h5i)(gS2cMqWwZtxUQHfFXJFPv3nIWIqevGdezjhJPNjJOfGN9xkd1BcV4EephR2sNBvZDzdNossxAV7eZPa8pdXl8gL4wVEzpeivRJkhVcCTGevbIJheNsHJUYDj2ZOsiDvbxDR1UvO7X19UcXXv(vKaY9RTJmB2(4rvbIxRnAZjOTjX7B3rCnNTwPQvdy29u1FoZODDyE6UYAlFtdCY0WyOT4ypS4OgsAKFNXYGunwD44mms05484c48YZwTUovjCSHwV3kVBTdz2sDVQ2Kv5V8oR1GCvl8TpRPJ32N00Ay3JHoBtTQz0eM(O1nferAgjfZvi3XU)jZvV)xZvVJYv36mftH2mDHI1LZkNvVKtZAjZKF61lLMd58KfgJH0QRWCC1C6FbRjhe4Fo0Rw)aFOVexOy(5od96dvZD7)ZVSwTn(qXO23cBIDsbAl21(EOU)ySJx3xAfvqaUf(aUiVFgUOE9I4yvFiqQ2eckF1223kd)2Q0i4(hX4S6T3bpMGB2WdGOL6EwaWD46J6m6TpJSNk5uxCPcuMNBrtjYc(Y2GGdvDoLkWQZsv67cAR(EkAQZQ6CeVLI8OQqNS(oRaCsjsg0E3WhDBzloMAZjnSPvfTZz7CFQyHvRSbyC1ggy3((ym8gQYzHDANK8FkngBKV7BR47H4NA69trR9OMCxbsgV6yIWWBMPU2)fr7tQQ6bbOA(3jc92Iqnw9AjZX(o97(J70)EYw36Y6OFTXG)7d",
+	Enabled = true,
+	OverrideTriggers = "merge",
+}
+
 --place a red background texture around the PlateFrame when the unit is casting a spell and has a Buff or Debuff up
 --this is useful in cases where the buff the unit has avoid the spell cast to be interrupted
 PlaterScriptLibrary ["Aura While Casting [P]"] = {
@@ -947,6 +959,23 @@ do
 		Func = function()
 			Plater.AddTriggerToScript(200388, "npc", "Add - Explode on Die [P]") --little sha add which explodes on death
 			Plater.AddTriggerToScript(397889, "cast", "Cast - Big Alert [Plater]") --tidal burtal
+		end
+	})
+
+
+	--#25 script trigger updates
+	tinsert (PlaterPatchLibrary, {
+		Notes = {
+			"- Patching scripts triggers for season of Dragonflight Mythic+."
+		},
+		Func = function()
+			Plater.AddTriggerToScript(388923, "cast", "Cast - Ultra Important [P]") --Burst Forth
+			Plater.AddTriggerToScript(377912, "cast", "Cast - Circle AoE [P]") --Expel Intruders
+			Plater.AddTriggerToScript(377912, "cast", "Cast - On Going Cast [P]") --Arcane Rain
+			Plater.AddTriggerToScript(209495, "cast", "Cast - Frontal Cone [Plater]") --Charged Smash
+			Plater.AddTriggerToScript(209033, "cast", "Cast - Quick Flash [P]") --Fortification
+			Plater.AddTriggerToScript(209413, "cast", "Cast - Big Alert [Plater]") --Suppress
+			Plater.AddTriggerToScript(207980, "cast", "Cast - Big Alert [Plater]") --Disintegration Beam
 		end
 	})
 
