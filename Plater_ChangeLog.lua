@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1678652930,  "Bug Fix", "March 20th, 2023", "Fixing y-offset for target arrow indicators.", "cont1nuity"},
+			
 			{1678652930,  "Bug Fix", "March 19th, 2023", "Fixing and error on quest recognition rework.", "cont1nuity"},
 			{1678652930,  "Bug Fix", "March 18th, 2023", "Fixing and error for hiding blizzard healthbars.", "cont1nuity"},
 			{1678652930,  "Bug Fix", "March 14th, 2023", "Fixing some errors about unit flag changes when units are entering/leaving combat or change being attackable or not.", "cont1nuity"},
