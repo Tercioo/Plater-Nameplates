@@ -5,31 +5,6 @@ do
 
     --add to curseforge
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     --on curseforge
     L["OPTIONS_COLOR_BACKGROUND"] = "Background Color"
 
@@ -382,4 +357,8 @@ do
     L["TARGET_OVERLAY_ALPHA"] = "Target Overlay Alpha"
     L["TARGET_OVERLAY_TEXTURE"] = "Target Overlay Texture"
     L["TARGET_OVERLAY_TEXTURE_DESC"] = "Used above the health bar when it is the current target."
+
+
+------------------------------------------------------------
+--@localization(locale="enUS", format="lua_additive_table")@
 end
