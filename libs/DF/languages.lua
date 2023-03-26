@@ -206,8 +206,8 @@ local languagesAvailable = {
     koKR = {text = "한국어", font = [[Fonts\2002.TTF]]},
     ptBR = {text = "Português (BR)", font = "Fonts\\FRIZQT__.TTF"},
     ruRU = {text = "Русский", font = "Fonts\\FRIZQT___CYR.TTF"},
-    zhCN = {text = "简体中文", font = [[Fonts\ARKai_T.ttf]]},
-    zhTW = {text = "繁體中文", font = [[Fonts\blei00d.TTF]]},
+    zhCN = {text = "简体中文", font = [[Fonts\ARHei.ttf]]},
+    zhTW = {text = "繁體中文", font = [[Fonts\ARHei.ttf]]},
 }
 
 local ignoredCharacters = {}
@@ -249,8 +249,33 @@ local registerCharacters = function(languageId, languageTable)
     end
 end
 
-for letter in arAR:gmatch(".") do
-    alphabetTable[letter] = "arAR"
+---receives a character and attempt to get its byte code
+---@param character string
+---@return string
+local getQuickByteCodeForCharacter = function(character)
+    local byte1, byte2, byte3, byte4 = string.byte(character, 1, #character)
+    return (byte1 or "") .. "" .. (byte2 or "") .. "" .. (byte3 or "") .. "" .. (byte4 or "")
+end
+
+--version 2:
+---register the letters and symbols used on phrases
+---@param languageId any
+---@param languageTable any
+local registerCharacters = function(languageId, languageTable)
+    if (fontLanguageCompatibility[languageId] ~= 1) then
+        for stringId, textString in pairs(languageTable) do
+            for character in textString:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
+                local byteCode, amountOfBytes = getByteCodeForCharacter(character)
+
+                --latin letters and escape sequences always use one byte per character
+                if (amountOfBytes >= 2) then --at least 2 bytes
+                    if (not DF.LanguageKnowledge[byteCode]) then
+                        DF.LanguageKnowledge[byteCode] = languageId
+                    end
+                end
+            end
+        end
+    end
 end
 
 local functionSignature = {
