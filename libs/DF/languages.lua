@@ -230,6 +230,7 @@ for character in latinAlphabet:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
     DF.LanguageKnowledge[character] = CONST_LANGUAGEID_ENUS
 end
 
+--version 1:
 ---register the letters and symbols used on phrases
 ---@param languageId any
 ---@param languageTable any
@@ -238,15 +239,26 @@ local registerCharacters = function(languageId, languageTable)
         for character in textString:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
             if (not ignoredCharacters[character]) then
                 if (not DF.LanguageKnowledge[character]) then
-                    if (fontLanguageCompatibility[languageId] == 1) then
-                        DF.LanguageKnowledge[character] = CONST_LANGUAGEID_ENUS
-                    else
+                    if (fontLanguageCompatibility[languageId] ~= 1) then
                         DF.LanguageKnowledge[character] = languageId
                     end
                 end
             end
         end
     end
+end
+
+---receives a character and attempt to get its byte code
+---@param character string
+---@return string, number
+local getByteCodeForCharacter = function(character)
+    local byteCode = ""
+    local amountOfBytes = 0
+    for symbolPiece in character:gmatch(".") do --separate each byte, can one, two or three bytes
+        byteCode = byteCode .. string.byte(symbolPiece)
+        amountOfBytes = amountOfBytes + 1
+    end
+    return byteCode, amountOfBytes
 end
 
 ---receives a character and attempt to get its byte code
@@ -923,8 +935,9 @@ function DF.Language.DetectLanguageId(text)
         return "enUS"
     end
 
-    for letter in text:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
-        local languageId = DF.LanguageKnowledge[letter]
+    for character in text:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
+        local byteCode, amountOfBytes = getByteCodeForCharacter(character)
+        local languageId = DF.LanguageKnowledge[byteCode]
         if (languageId) then
             return languageId
         end
