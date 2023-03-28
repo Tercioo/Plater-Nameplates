@@ -6432,8 +6432,8 @@ local targetOptions = {
 			type = "select",
 			get = function() return Plater.db.profile.health_selection_overlay end,
 			values = function() return health_selection_overlay_options end,
-			name = "OPTIONS_TARGET_OVERLAY_TEXTURE",
-			desc = "OPTIONS_TARGET_OVERLAY_TEXTURE_DESC",
+			name = "TARGET_OVERLAY_TEXTURE",
+			desc = "TARGET_OVERLAY_TEXTURE_DESC",
 		},
 		{
 			type = "range",
@@ -12622,8 +12622,8 @@ end
 				Plater.db.profile.show_interrupt_author = value
 				Plater.RefreshDBUpvalues()
 			end,
-			name = "OPTIONS_INTERRUPT_AUTHOR_SHOW",
-			desc = "OPTIONS_INTERRUPT_AUTHOR_SHOW",
+			name = "OPTIONS_INTERRUPT_SHOW_AUTHOR",
+			desc = "OPTIONS_INTERRUPT_SHOW_AUTHOR",
 		},
 
 		{
@@ -13061,16 +13061,16 @@ end
 			type = "select",
 			get = function() return Plater.db.profile.castbar_icon_attach_to_side end,
 			values = function() return castbar_icon_attach_to_side_options end,
-			name = "OPTIONS_ICON_SIZE",
-			desc = "OPTIONS_ICON_SIZE",
+			name = "OPTIONS_ICON_SIDE",
+			desc = "OPTIONS_ICON_SIDE",
 		},
 
 		{
 			type = "select",
 			get = function() return Plater.db.profile.castbar_icon_size end,
 			values = function() return castbar_icon_size_options end,
-			name = "OPTIONS_ICON_SIDE",
-			desc = "OPTIONS_ICON_SIDE",
+			name = "OPTIONS_ICON_SIZE",
+			desc = "OPTIONS_ICON_SIZE",
 		},
 
 		{
