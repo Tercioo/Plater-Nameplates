@@ -8,6 +8,9 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1678652930,  "Bug Fix", "April 15th, 2023", "Fixing the search tab being broken.", "cont1nuity"},
+			{1678652930,  "Bug Fix", "April 15th, 2023", "Some locale fixes.", "cont1nuity"},
+			{1678652930,  "Backend Change", "March 28th, 2023", "Implementing on the fly locale change for Plater options.", "Terciob"},
 			{1678652930,  "Bug Fix", "March 20th, 2023", "Fixing y-offset for target arrow indicators.", "cont1nuity"},
 			
 			{1678652930,  "Bug Fix", "March 19th, 2023", "Fixing and error on quest recognition rework.", "cont1nuity"},
