@@ -5350,7 +5350,7 @@ do
 			step = 0.1,
 			thumbscale = 1.7,
 			usedecimals = true,
-			name = "OPTIONS_ALPHA" .. CVarIcon,
+			name = L["OPTIONS_ALPHA"] .. CVarIcon,
 			desc = "Alpha" .. CVarDesc,
 			nocombat = true,
 		},
