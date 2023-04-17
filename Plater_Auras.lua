@@ -843,6 +843,7 @@ end
 							auraIconFrame.InUse = true --don't play animation
 							Plater.AddAura(buffFrame, auraIconFrame, -1, spellName.."_player_ghost", spellIcon, 1, "DEBUFF", 0, 0, "player", false, false, spellId, false, false, false, false, "DEBUFF", 1)
 							auraIconFrame:EnableMouse (false) --don't use tooltips, as there is no real aura
+							auraIconFrame.IsGhostAura = true
 							Plater.Auras.GhostAuras.ApplyAppearance(auraIconFrame, spellName.."_player_ghost", spellIcon, spellId)
 							nameplateGhostAuraCache[spellName.."_player_ghost"] = true --this is shown as ghost aura
 						end
@@ -1470,7 +1471,7 @@ end
 		--when the size is changed in the options it doesnt change the IsPersonal flag
 		--when it changes the isPersonal flag it change locally without increasing the refresh ID
 		--> update the icon size depending on where it is shown
-		if (auraIconFrame.IsPersonal ~= isPersonal or auraIconFrame.BuffFrame ~= curBuffFrame) then
+		if (auraIconFrame.IsPersonal ~= isPersonal or auraIconFrame.BuffFrame ~= curBuffFrame or auraIconFrame.IsGhostAura) then
 			if (isPersonal) then
 				local auraWidth = profile.aura_width_personal
 				local auraHeight = profile.aura_height_personal
@@ -1493,6 +1494,7 @@ end
 			Plater.UpdateIconAspecRatio (auraIconFrame)
 		end
 		auraIconFrame.IsPersonal = isPersonal
+		auraIconFrame.IsGhostAura = false
 		auraIconFrame.BuffFrame = self.Name == "Secondary" and 2 or 1
 
 		if (applications > 1) then
