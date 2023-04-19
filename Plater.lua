@@ -9526,14 +9526,16 @@ end
 		local cbMode = tonumber(GetCVar("colorblindMode")) or 0
 		if IS_WOW_PROJECT_MAINLINE then
 			local tooltipData = C_TooltipInfo.GetHyperlink ("unit:" .. serial or "")
-			TooltipUtil.SurfaceArgs(tooltipData)
-			local lines = tooltipData.lines
-			for _, line in ipairs(lines) do
-				TooltipUtil.SurfaceArgs(line)
+			if tooltipData then
+				TooltipUtil.SurfaceArgs(tooltipData)
+				local lines = tooltipData.lines
+				for _, line in ipairs(lines) do
+					TooltipUtil.SurfaceArgs(line)
+				end
+				
+				petName = lines and lines[1] and lines[1].leftText
+				text1 = lines and lines[2 + cbMode] and lines[2 + cbMode].leftText
 			end
-			
-			petName = lines[1] and lines[1].leftText
-			text1 = lines[2 + cbMode] and lines[2 + cbMode].leftText
 			
 		else
 			local tooltipFrame = PlaterPetOwnerFinder or CreateFrame ("GameTooltip", "PlaterPetOwnerFinder", nil, "GameTooltipTemplate")
@@ -9713,13 +9715,15 @@ end
 		local subTitle = ""
 		if IS_WOW_PROJECT_MAINLINE then
 			local tooltipData = C_TooltipInfo.GetHyperlink("unit:" .. (plateFrame [MEMBER_GUID] or ""))
-			TooltipUtil.SurfaceArgs(tooltipData)
-			for _, line in ipairs(tooltipData.lines) do
-				TooltipUtil.SurfaceArgs(line)
+			if tooltipData then
+				TooltipUtil.SurfaceArgs(tooltipData)
+				for _, line in ipairs(tooltipData.lines) do
+					TooltipUtil.SurfaceArgs(line)
+				end
+				
+				local line = tooltipData.lines and tooltipData.lines[2 + cbMode]
+				subTitle = line and line.leftText or ""
 			end
-			
-			local line = tooltipData.lines[2 + cbMode]
-			subTitle = line and line.leftText or ""
 		else
 			local GameTooltipFrame = PlaterScanTooltip or CreateFrame ("GameTooltip", "PlaterScanTooltip", nil, "GameTooltipTemplate")
 			GameTooltipFrame:SetOwner (WorldFrame, "ANCHOR_NONE")

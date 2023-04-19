@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1678652930,  "Bug Fix", "April 19th, 2023", "Fixing an error with tooltip scanning rework.", "cont1nuity"},
 			{1678652930,  "Bug Fix", "April 17th, 2023", "Fixing Aura Icon sizes not updating properly with Ghost Auras set to a different size.", "cont1nuity"},
 			{1678652930,  "Bug Fix", "April 15th, 2023", "Fixing the search tab being broken.", "cont1nuity"},
 			{1678652930,  "Bug Fix", "April 15th, 2023", "Some locale fixes.", "cont1nuity"},
