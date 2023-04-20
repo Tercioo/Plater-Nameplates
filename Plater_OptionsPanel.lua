@@ -1152,6 +1152,35 @@ function Plater.OpenOptionsPanel()
 			profilesFrame.ImportStringField.editbox:SetMaxBytes (IMPORT_EXPORT_EDIT_MAX_BYTES)
 			profilesFrame.ImportStringField.editbox:SetMaxLetters (IMPORT_EXPORT_EDIT_MAX_LETTERS)
 			
+		--profile options (this is the panel in the right side of the profile tab)
+			local scriptUpdatesTitleLocTable = DetailsFramework.Language.CreateLocTable(addonId, "OPTIONS_NOESSENTIAL_TITLE")
+			local scriptUpdatesTitle = DF:CreateLabel(profilesFrame, scriptUpdatesTitleLocTableL, DF:GetTemplate("font", "YELLOW_FONT_TEMPLATE"))
+			scriptUpdatesTitle:SetPoint("topleft", profilesFrame, "topright", -235, startY)
+			scriptUpdatesTitle.textsize = 9
+
+			local scriptUpdatesDescLocTable = DetailsFramework.Language.CreateLocTable(addonId, "OPTIONS_NOESSENTIAL_DESC")
+			local scriptUpdatesDesc = DF:CreateLabel(profilesFrame, scriptUpdatesDescLocTable, DF:GetTemplate("font", "ORANGE_FONT_TEMPLATE"))
+			scriptUpdatesDesc:SetPoint("topleft", scriptUpdatesTitle, "bottomleft", 0, -5)
+			scriptUpdatesDesc.width = 180
+			scriptUpdatesDesc.textsize = 9
+
+			local scriptUpdatesCheckBox = DF:CreateSwitch(
+				profilesFrame, 
+				function() PlaterDB.SkipNonEssentialPatches = not PlaterDB.SkipNonEssentialPatches end, 
+				PlaterDB.SkipNonEssentialPatches, _, _, _, _, 
+				"ScriptUpdatesCheckBox", "$parentScriptUpdatesCheckBox", 
+				nil, nil, nil, nil,
+				DF:GetTemplate("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE")
+			)
+			scriptUpdatesCheckBox:SetAsCheckBox()
+			scriptUpdatesCheckBox:SetPoint("topleft", scriptUpdatesDesc, "bottomleft", 0, -10)
+
+			local scriptUpdatesCheckBoxLabelLocTable = DetailsFramework.Language.CreateLocTable(addonId, "OPTIONS_NOESSENTIAL_NAME")
+			local scriptUpdatesCheckBoxLabel = DF:CreateLabel(profilesFrame, scriptUpdatesCheckBoxLabelLocTable, DF:GetTemplate("font", "YELLOW_FONT_TEMPLATE"))
+			scriptUpdatesCheckBoxLabel:SetPoint("left", scriptUpdatesCheckBox, "right", 5, 0)
+			scriptUpdatesCheckBoxLabel.textsize = 9
+			scriptUpdatesCheckBoxLabel.width = 180
+
 	end
 -------------------------
 -- fun��es gerais dos dropdowns ~dropdowns

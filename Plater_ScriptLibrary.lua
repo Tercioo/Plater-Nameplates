@@ -1,6 +1,10 @@
 
 local _
 local addonName, platerInternal = ...
+local tinsert = tinsert
+local tremove = tremove
+local Plater = Plater
+local wipe = wipe
 
 platerInternal.Scripts.DefaultCastScripts = {
 	"Cast - Small Alert [Plater]",
@@ -976,9 +980,24 @@ do
 			Plater.AddTriggerToScript(209033, "cast", "Cast - Quick Flash [P]") --Fortification
 			Plater.AddTriggerToScript(209413, "cast", "Cast - Big Alert [Plater]") --Suppress
 			Plater.AddTriggerToScript(207980, "cast", "Cast - Big Alert [Plater]") --Disintegration Beam
-		end
+		end,
+		NotEssential = false,
 	})
 
+
+	--#26 test for the non-essential patches
+	tinsert (PlaterPatchLibrary, {
+		NotEssential = true,
+
+		Notes = {
+			"- test patch."
+		},
+		Func = function()
+		end,
+	})
+
+
+	--to tag an update as non-essential, add "NotEssential = true," to the table
 	--/run Plater.db.profile.patch_version = 22
 end --end of patch library
 

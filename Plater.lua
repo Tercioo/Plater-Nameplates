@@ -2427,18 +2427,29 @@ Plater.AnchorNamesByPhraseId = {
 	function Plater.ApplyPatches() --private ~updates ~scriptupdates
 		if (PlaterPatchLibrary) then
 			local currentPatch = Plater.db.profile.patch_version
-			for i = currentPatch+1, #PlaterPatchLibrary do
-			
-				local patch = PlaterPatchLibrary [i]
-				Plater:Msg ("Applied Patch #" .. i .. ":")
-				
-				for o = 1, #patch.Notes do
-					print (patch.Notes [o])
+			local bSkipNonEssentialPatches = PlaterDB.SkipNonEssentialPatches
+			for patchId = currentPatch+1, #PlaterPatchLibrary do
+				local bCanInstallPatch = true
+
+				if (bSkipNonEssentialPatches) then
+					if (PlaterPatchLibrary[patchId].NotEssential) then
+						print(L["OPTIONS_NOESSENTIAL_SKIP_ALERT"], PlaterPatchLibrary[patchId].Notes[1]) --"Skipped non-essential patch:"
+						bCanInstallPatch = false
+					end
+				end
+
+				if (bCanInstallPatch) then
+					local patch = PlaterPatchLibrary [patchId]
+					Plater:Msg ("Applied Patch #" .. patchId .. ":")
+					
+					for o = 1, #patch.Notes do
+						print (patch.Notes [o])
+					end
+					
+					DF:Dispatch (patch.Func)
 				end
 				
-				DF:Dispatch (patch.Func)
-				
-				Plater.db.profile.patch_version = i
+				Plater.db.profile.patch_version = patchId
 			end
 			
 			--do not clear patch library, when creating a new profile it'll need to re-apply patches
