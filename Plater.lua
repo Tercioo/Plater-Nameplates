@@ -4205,7 +4205,7 @@ Plater.AnchorNamesByPhraseId = {
 							--add the npc in the npcid cache
 							if (not DB_NPCIDS_CACHE [plateFrame [MEMBER_NPCID]] and (Plater.ZoneInstanceType == "raid" or Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "scenario") and plateFrame [MEMBER_NPCID]) then
 								if (UNKNOWN ~= plateFrame [MEMBER_NAME]) then --UNKNOWN is the global string from blizzard
-									DB_NPCIDS_CACHE [plateFrame [MEMBER_NPCID]] = {plateFrame [MEMBER_NAME], Plater.ZoneName or "UNKNOWN"}
+									DB_NPCIDS_CACHE [plateFrame [MEMBER_NPCID]] = {plateFrame [MEMBER_NAME], Plater.ZoneName or "UNKNOWN", Plater.Locale or "enGB"}
 								end
 							end
 							
@@ -13401,7 +13401,7 @@ function SlashCmdList.PLATER (msg, editbox)
 			if (npcId) then
 				local colorDB = Plater.db.profile.npc_cache
 				if (not colorDB [npcId]) then
-					Plater.db.profile.npc_cache [npcId] = {plateFrame [MEMBER_NAME] or "UNKNOWN", Plater.ZoneName or "UNKNOWN"}
+					Plater.db.profile.npc_cache [npcId] = {plateFrame [MEMBER_NAME] or "UNKNOWN", Plater.ZoneName or "UNKNOWN", Plater.Locale or "enGB"}
 					Plater:Msg ("Unit added.")
 					
 					if (PlaterOptionsPanelFrame and PlaterOptionsPanelFrame:IsShown()) then
