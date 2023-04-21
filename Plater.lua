@@ -1968,13 +1968,9 @@ Plater.AnchorNamesByPhraseId = {
 	function Plater.RunScheduledUpdate (timerObject) --private
 		Plater.StartLogPerformanceCore("Plater-Core", "Update", "RunScheduledUpdate")
 
-		local unitGUID = timerObject.GUID
 		local unitId = timerObject.unitId
 		local plateFrame = C_NamePlate.GetNamePlateForUnit (unitId)
 		
-		
-		--checking the serial of the unit is the same in case this nameplate is being used on another unit
-		--if (plateFrame and (unitGUID == plateFrame [MEMBER_GUID])) then
 		if (plateFrame) then
 			--save user input data (usualy set from scripts) before call the unit added event
 				local unitFrame = plateFrame.unitFrame
@@ -2024,12 +2020,18 @@ Plater.AnchorNamesByPhraseId = {
 
 	--run a delayed update on the namepalte, this is used when the client receives an information from the server but does not update the state immediately
 	--this usualy happens with faction and flag changes
-	function Plater.ScheduleUpdateForNameplate (plateFrame) --private
+	function Plater.ScheduleUpdateForNameplate (plateFrame, passedUnitId) --private
 	
-		if not plateFrame.unitFrame.PlaterOnScreen and not unitId then
-			return
+		if not plateFrame.unitFrame.PlaterOnScreen then
+			--return -- do we REALLY want to block this? maybe get nameplates ON screen this way if they were disabled type? -> get them on screen.
 		end
 	
+		local unitId = passedUnitId or plateFrame [MEMBER_UNITID]
+		if not unitId then -- well... fuck.
+			plateFrame.HasUpdateScheduled:Cancel()
+			return
+		end
+		
 		--check if there's already an update scheduled for this unit
 		if (plateFrame.HasUpdateScheduled and not plateFrame.HasUpdateScheduled._cancelled) then
 			if unitId and (not plateFrame.HasUpdateScheduled.unitId or plateFrame.HasUpdateScheduled.unitId ~= unitId) then
@@ -2040,8 +2042,7 @@ Plater.AnchorNamesByPhraseId = {
 		end
 		
 		plateFrame.HasUpdateScheduled = C_Timer.NewTimer (0, Plater.RunScheduledUpdate) --next frame
-		plateFrame.HasUpdateScheduled.GUID = plateFrame [MEMBER_GUID]
-		plateFrame.HasUpdateScheduled.unitId = plateFrame [MEMBER_UNITID]
+		plateFrame.HasUpdateScheduled.unitId = unitId
 	
 	end
 
@@ -2681,13 +2682,12 @@ Plater.AnchorNamesByPhraseId = {
 				end
 
 				--can the user attack or no longer attack?
-				local attackableChanged = plateFrame.PlayerCannotAttack ~= UnitCanAttack ("player", unit)
-				
+				local attackableChanged = plateFrame.PlayerCannotAttack ~= not UnitCanAttack ("player", unit)
 				if (reactionChanged or attackableChanged or not plateFrame.unitFrame.PlaterOnScreen) then
 					--print ("UNIT_FLAG", plateFrame, issecure(), unit, unit and UnitName (unit))
-					--Plater.ScheduleUpdateForNameplate (plateFrame)
+					Plater.ScheduleUpdateForNameplate (plateFrame, unit)
 					
-					Plater.RunScheduledUpdate({unitId = unit, GUID = plateFrame [MEMBER_GUID]}) -- do this now
+					--Plater.RunScheduledUpdate({unitId = unit}) -- do this now
 				end
 			end
 		end,
@@ -4122,6 +4122,8 @@ Plater.AnchorNamesByPhraseId = {
 					unitFrame.IsSelf = true --this is the value exposed to scripts
 					castBar.IsSelf = true --this is the value exposed to scripts
 					plateFrame.NameAnchor = 0
+					plateFrame.PlayerCannotAttack = true
+					unitFrame.PlayerCannotAttack = true
 					
 					--do not allow the framework to show the unit name
 					unitFrame.Settings.ShowUnitName = false
@@ -8084,7 +8086,7 @@ end
 			plateFrame.IsFriendlyPlayerWithoutHealthBar = false
 			
 			--check if this is an enemy npc but the player cannot attack it
-			if (plateFrame.PlayerCannotAttack and not DB_SHOW_HEALTHBARS_FOR_NOT_ATTACKABLE) then
+			if (plateFrame.PlayerCannotAttack and not DB_SHOW_HEALTHBARS_FOR_NOT_ATTACKABLE and not unitFrame.IsSelf) then
 				healthBar:Hide()
 				buffFrame:Hide()
 				buffFrame2:Hide()
