@@ -2020,6 +2020,7 @@ Plater.AnchorNamesByPhraseId = {
 
 	--run a delayed update on the namepalte, this is used when the client receives an information from the server but does not update the state immediately
 	--this usualy happens with faction and flag changes
+	function Plater.ScheduleUpdateForNameplate (plateFrame, passedUnitId, scheduleTime) --private
 	
 		local unitId = passedUnitId or plateFrame [MEMBER_UNITID]
 		if not unitId then -- well... fuck.
