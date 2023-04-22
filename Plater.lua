@@ -2041,7 +2041,7 @@ Plater.AnchorNamesByPhraseId = {
 			end
 		end
 		
-		plateFrame.HasUpdateScheduled = C_Timer.NewTimer (0, Plater.RunScheduledUpdate) --next frame
+		plateFrame.HasUpdateScheduled = C_Timer.NewTimer (scheduleTime or 0, Plater.RunScheduledUpdate) --scheduleTime or next frame
 		plateFrame.HasUpdateScheduled.unitId = unitId
 	
 	end
@@ -3897,9 +3897,12 @@ Plater.AnchorNamesByPhraseId = {
 				return
 			end
 			
+			local requiresScheduledUpdate = false
 			if not NAMEPLATES_ON_SCREEN_CACHE[unitID] then
 				NAMEPLATES_ON_SCREEN_CACHE[unitID] = true
 				NUM_NAMEPLATES_ON_SCREEN = NUM_NAMEPLATES_ON_SCREEN + 1
+			else
+				requiresScheduledUpdate = true
 			end
 			
 			--hide blizzard namepaltes
@@ -4043,12 +4046,16 @@ Plater.AnchorNamesByPhraseId = {
 			
 			unitFrame.IsInRange = nil
 			
-			--check if this nameplate has an update scheduled
+			--check if this nameplate has an update scheduled and cancel it in any case
 			if (plateFrame.HasUpdateScheduled) then
 				if (not plateFrame.HasUpdateScheduled._cancelled) then
 					plateFrame.HasUpdateScheduled:Cancel()
 				end
 				plateFrame.HasUpdateScheduled = nil
+			end
+			
+			if requiresScheduledUpdate then --this COULD counter some rare issues with feign death instant cancel where nameplate hide/show is weird
+				Plater.ScheduleUpdateForNameplate (plateFrame, unitID, 0.5) --half second enough maybe
 			end
 			
 			--cache values
