@@ -525,12 +525,12 @@ end
 
 function Plater.GetBossTimer(spellId)
 	for id, barInfo in pairs (Plater.BossModsTimeBarDBM) do
-		if ( (type(id) == "string" and id:find(spellId)) or (id == spellId)) then
+		if  ((barInfo.spellId == spellId) or (type(id) == "string" and id:find(spellId))) then
 			return DF.table.copy({}, barInfo)
 		end
 	end
 	for id, barInfo in pairs (Plater.BossModsTimeBarBW) do
-		if (id == spellId) then
+		if ((barInfo.spellId == spellId) or (id == spellId)) then
 			return DF.table.copy({}, barInfo)
 		end
 	end
@@ -542,22 +542,50 @@ function Plater.RegisterBossModsBars()
 	--check if Deadly Boss Mods is installed
 	if (DBM) then
 		--timer start
-		local timerStartCallback = function(bar_type, id, msg, timer, icon, bartype, spellId, colorId, modid, arg1, arg2)
+		local timerStartCallback = function(event, id, msg, timer, icon, barType, spellId, colorId, modId, keep, fade, name, guid)
 			if (id) then
+				local curTime =  GetTime()
 				Plater.BossModsTimeBarDBM[id] = {
-					name = msg,
+					msg = msg,
 					id = id,
 					timer =  timer,
-					start = GetTime(),
+					start = curTime,
 					icon = icon,
 					spellId = spellId,
+					barType = barType,
+					colorId = colorId,
+					modId = modId,
+					keep = keep,
+					fade = fade,
+					name = name,
+					guid = guid,
+					paused = false,
 				}
 			end
 		end
 		DBM:RegisterCallback("DBM_TimerStart", timerStartCallback)
+		
+		local timerPauseCallback = function(event, id)
+			local entry = id and Plater.BossModsTimeBarDBM[id] or nil
+			if entry then
+				entry.paused = true
+				entry.pauseStartTime = GetTime()
+			end
+		end
+		DBM:RegisterCallback("DBM_TimerPause", timerPauseCallback)
+		
+		local timerResumeCallback = function(event, id)
+			local entry = id and Plater.BossModsTimeBarDBM[id] or nil
+			if entry then
+				entry.paused = false
+				entry.start = entry.start + (GetTime() - entry.pauseStartTime)
+				entry.pauseStartTime = entry.start
+			end
+		end
+		DBM:RegisterCallback("DBM_TimerResume", timerResumeCallback)
 
 		--timer stop
-		local timerEndCallback = function (bar_type, id)
+		local timerEndCallback = function (event, id)
 			Plater.BossModsTimeBarDBM[id] = nil
 		end
 		DBM:RegisterCallback("DBM_TimerStop", timerEndCallback)
@@ -570,7 +598,7 @@ function Plater.RegisterBossModsBars()
 			if (event == "BigWigs_BarCreated") then
 				if (key) then
 					Plater.BossModsTimeBarBW[key] = {
-						name = text,
+						msg = text,
 						id = key,
 						timer =  time,
 						start = GetTime(),
