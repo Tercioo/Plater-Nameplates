@@ -919,12 +919,12 @@ end
 		elseif (option == "wago_slugs") then
 			import_from_wago(scriptId)
 			update_wago_slug_data()
-			mainFrame.wagoSlugFrame.ScriptSelectionScrollBox:Refresh()
+			mainFrame.ScriptSelectionScrollBox:Refresh()
 			
 		elseif (option == "wago_stash") then
 			import_from_wago(scriptId, true)
 			update_wago_stash_data()
-			mainFrame.wagoStashFrame.ScriptSelectionScrollBox:Refresh()
+			mainFrame.ScriptSelectionScrollBox:Refresh()
 			
 		end
 		
