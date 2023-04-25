@@ -177,7 +177,7 @@ function Plater.UpdateBossModAuras(unitFrame)
 				if data.paused then
 					start = curTime - (data.pauseStartTime - start) --offset for paused.
 				end
-				print(timer, start, data.name, data.msg, data.colorId)
+				--print(timer, start, data.name, data.msg, data.colorId)
 				local icon = iconFrame:SetIcon(-1, data.color, timer and start, timer, data.icon, {text = data.name or data.msg, text_color = data.color})
 				--							spellId, borderColor, startTime, duration, forceTexture, descText, count, debuffType, caster, canStealOrPurge, spellName, isBuff
 				icon.Texture:SetDesaturated(data.desaturate)
