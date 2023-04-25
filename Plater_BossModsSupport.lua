@@ -17,8 +17,11 @@ local GetTime = _G.GetTime
 
 local UNIT_BOSS_MOD_AURAS_ACTIVE = {} --contains for each [GUID] a list of {texture, duration, desaturate}
 local UNIT_BOSS_MOD_AURAS_TO_BE_REMOVED = {} --contains for each [GUID] a list of texture-ids to be removed
+local UNIT_BOSS_MOD_BARS = {} --contains for each [GUID] the bar information
 local HOSTILE_ENABLED = false
 local IS_REGISTERED = false
+
+local barsTestMode = false
 
 -- core functions
 local function ShowNameplateAura(guid, texture, duration, desaturate)
@@ -80,6 +83,7 @@ function Plater.CreateBossModAuraFrame(unitFrame)
 		show_text = Plater.db.profile.bossmod_cooldown_text_enabled,
 		text_size = Plater.db.profile.bossmod_cooldown_text_size or 16,
 		surpress_tulla_omni_cc = Plater.db.profile.disable_omnicc_on_auras,
+		desc_text = true,
 	}
 	unitFrame.BossModIconFrame = DF:CreateIconRow (unitFrame.healthBar, "$parentBossModIconRow", options)
 	unitFrame.BossModIconFrame:ClearIcons()
@@ -106,10 +110,6 @@ function Plater.UpdateBossModAuras(unitFrame)
 	local iconFrame = unitFrame.BossModIconFrame
 	iconFrame:ClearIcons()
 	
-	if not HOSTILE_ENABLED then
-		return
-	end
-	
 	local guid = unitFrame.PlateFrame.namePlateUnitGUID
 	local curTime = GetTime()
 
@@ -126,7 +126,7 @@ function Plater.UpdateBossModAuras(unitFrame)
 		UNIT_BOSS_MOD_AURAS_TO_BE_REMOVED [guid] = nil
 	end
 	
-	if UNIT_BOSS_MOD_AURAS_ACTIVE [guid] then
+	if HOSTILE_ENABLED and UNIT_BOSS_MOD_AURAS_ACTIVE [guid] then
 		for activeIndex, values in pairs(UNIT_BOSS_MOD_AURAS_ACTIVE [guid]) do
 			if values.duration and curTime > values.starttime + values.duration then
 				tremove(UNIT_BOSS_MOD_AURAS_ACTIVE [guid], activeIndex)
@@ -135,6 +135,57 @@ function Plater.UpdateBossModAuras(unitFrame)
 				--							spellId, borderColor, startTime, duration, forceTexture, descText, count, debuffType, caster, canStealOrPurge, spellName, isBuff
 				icon.Texture:SetDesaturated(values.desaturate)
 				--icon.Cooldown:SetDesaturated(values.desaturate)
+				
+				--check if Masque is enabled on Plater and reskin the aura icon
+				if (Plater.Masque and not icon.Masqued) then
+					local t = {
+						FloatingBG = nil, --false,
+						Icon = icon.Texture,
+						Cooldown = icon.Cooldown,
+						Flash = nil, --false,
+						Pushed = nil, --false,
+						Normal = false,
+						Disabled = nil, --false,
+						Checked = nil, --false,
+						Border = nil, --icon.Border,
+						AutoCastable = nil, --false,
+						Highlight = nil, --false,
+						HotKey = nil, --false,
+						Count = false,
+						Name = nil, --false,
+						Duration = false,
+						Shine = nil, --false,
+					}
+					icon.Border:Hide() --let Masque handle the border...
+					Plater.Masque.BossModIconFrame:AddButton (icon, t)
+					Plater.Masque.BossModIconFrame:ReSkin()
+					icon.Masqued = true
+				end
+			end
+		end
+	end
+	
+	if barsTestMode then 
+		guid = "barsTestMode"
+	end
+	if Plater.db.profile.bossmod_support_bars_enabled and UNIT_BOSS_MOD_BARS [guid] then
+		for id, data in pairs(UNIT_BOSS_MOD_BARS [guid]) do
+			if data.timer and curTime > data.start + data.timer then
+				UNIT_BOSS_MOD_BARS [guid][id] = nil
+			else
+				local timer, start = data.timer, data.start
+				if data.paused then
+					start = curTime - (data.pauseStartTime - start) --offset for paused.
+				end
+				print(timer, start, data.name, data.msg, data.colorId)
+				local icon = iconFrame:SetIcon(-1, data.color, timer and start, timer, data.icon, {text = data.name or data.msg, text_color = data.color})
+				--							spellId, borderColor, startTime, duration, forceTexture, descText, count, debuffType, caster, canStealOrPurge, spellName, isBuff
+				icon.Texture:SetDesaturated(data.desaturate)
+				--icon.Cooldown:SetDesaturated(data.desaturate)
+				if data.paused then
+					icon:SetScript("OnUpdate", nil)
+					icon.Cooldown:Pause()
+				end
 				
 				--check if Masque is enabled on Plater and reskin the aura icon
 				if (Plater.Masque and not icon.Masqued) then
@@ -536,16 +587,51 @@ function Plater.GetBossTimer(spellId)
 	end
 end
 
+function getDBTColor(colorId)
+	if DBT and DBT.Options then
+		local barOptions = DBT.Options
+		local barStartRed, barStartGreen, barStartBlue
+		if colorId and colorId >= 1 then
+			if colorId == 1 then--Add
+				barStartRed, barStartGreen, barStartBlue = barOptions.StartColorAR, barOptions.StartColorAG, barOptions.StartColorAB
+			elseif colorId == 2 then--AOE
+				barStartRed, barStartGreen, barStartBlue = barOptions.StartColorAER, barOptions.StartColorAEG, barOptions.StartColorAEB
+			elseif colorId == 3 then--Debuff
+				barStartRed, barStartGreen, barStartBlue = barOptions.StartColorDR, barOptions.StartColorDG, barOptions.StartColorDB
+			elseif colorId == 4 then--Interrupt
+				barStartRed, barStartGreen, barStartBlue = barOptions.StartColorIR, barOptions.StartColorIG, barOptions.StartColorIB
+			elseif colorId == 5 then--Role
+				barStartRed, barStartGreen, barStartBlue = barOptions.StartColorRR, barOptions.StartColorRG, barOptions.StartColorRB
+			elseif colorId == 6 then--Phase
+				barStartRed, barStartGreen, barStartBlue = barOptions.StartColorPR, barOptions.StartColorPG, barOptions.StartColorPB
+			elseif colorId == 7 then--Important
+				barStartRed, barStartGreen, barStartBlue = barOptions.StartColorUIR, barOptions.StartColorUIG, barOptions.StartColorUIB
+			end
+		else
+			barStartRed, barStartGreen, barStartBlue = barOptions.StartColorR, barOptions.StartColorG, barOptions.StartColorB
+		end
+		
+		return {barStartRed, barStartGreen, barStartBlue, 1}
+	end
+	
+	return {1, 1, 1, 1}
+end
+
 function Plater.RegisterBossModsBars()
 	local DBM = _G.DBM
+	local BigWigsLoader = _G.BigWigsLoader
 
 	--check if Deadly Boss Mods is installed
 	if (DBM) then
 		--timer start
 		local timerStartCallback = function(event, id, msg, timer, icon, barType, spellId, colorId, modId, keep, fade, name, guid)
-			if (id) then
+			if barsTestMode then 
+				guid = "barsTestMode"
+			end
+			if (id and guid) then
+				color = getDBTColor(colorId)
 				local curTime =  GetTime()
-				Plater.BossModsTimeBarDBM[id] = {
+				local barData = {
 					msg = msg,
 					id = id,
 					timer =  timer,
@@ -553,6 +639,7 @@ function Plater.RegisterBossModsBars()
 					icon = icon,
 					spellId = spellId,
 					barType = barType,
+					color = color,
 					colorId = colorId,
 					modId = modId,
 					keep = keep,
@@ -561,6 +648,9 @@ function Plater.RegisterBossModsBars()
 					guid = guid,
 					paused = false,
 				}
+				Plater.BossModsTimeBarDBM[id] = barData
+				UNIT_BOSS_MOD_BARS [guid] = UNIT_BOSS_MOD_BARS [guid] or {}
+				UNIT_BOSS_MOD_BARS [guid][id] = barData
 			end
 		end
 		DBM:RegisterCallback("DBM_TimerStart", timerStartCallback)
@@ -568,15 +658,17 @@ function Plater.RegisterBossModsBars()
 		local timerPauseCallback = function(event, id)
 			local entry = id and Plater.BossModsTimeBarDBM[id] or nil
 			if entry then
+				local curTime = GetTime()
+				--entry.start = entry.start - (curTime - entry.start)
 				entry.paused = true
-				entry.pauseStartTime = GetTime()
+				entry.pauseStartTime = curTime
 			end
 		end
 		DBM:RegisterCallback("DBM_TimerPause", timerPauseCallback)
 		
 		local timerResumeCallback = function(event, id)
 			local entry = id and Plater.BossModsTimeBarDBM[id] or nil
-			if entry then
+			if entry and entry.paused then
 				entry.paused = false
 				entry.start = entry.start + (GetTime() - entry.pauseStartTime)
 				entry.pauseStartTime = entry.start
@@ -586,13 +678,19 @@ function Plater.RegisterBossModsBars()
 
 		--timer stop
 		local timerEndCallback = function (event, id)
+			if not id then return end
+			local guid = Plater.BossModsTimeBarDBM[id] and Plater.BossModsTimeBarDBM[id].guid
 			Plater.BossModsTimeBarDBM[id] = nil
+			if guid then
+				UNIT_BOSS_MOD_BARS [guid] = UNIT_BOSS_MOD_BARS [guid] or {}
+				UNIT_BOSS_MOD_BARS [guid][id] = nil
+			end
 		end
 		DBM:RegisterCallback("DBM_TimerStop", timerEndCallback)
 	end
 
 	--check if BigWigs is installed
-	if (_G.BigWigsLoader) then
+	if (BigWigsLoader) then
 		function Plater:BigWigs_BarCreated(...)
 			local event, self, bar, module, key, text, time, icon, isApprox = ...
 			if (event == "BigWigs_BarCreated") then
@@ -604,14 +702,22 @@ function Plater.RegisterBossModsBars()
 						start = GetTime(),
 						icon = icon,
 						spellId = key,
+						barType = bar,
+						--color = {1,1,1,1},
+						--colorId = colorId,
+						modId = module,
+						--keep = keep,
+						--fade = fade,
+						name = text,
+						--guid = guid,
+						paused = false,
 					}
 				end
 			end
 		end
 		
-        if (_G.BigWigsLoader.RegisterMessage) then
-            --BigWigsLoader.RegisterMessage (Plater, "BigWigs_Message")
-            _G.BigWigsLoader.RegisterMessage (Plater, "BigWigs_BarCreated")
+        if (BigWigsLoader.RegisterMessage) then
+            BigWigsLoader.RegisterMessage (Plater, "BigWigs_BarCreated")
         end
 	end
 end

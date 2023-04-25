@@ -11594,6 +11594,9 @@ end
 				["GetCDEdgeBySpec"] = true,
 			},
 			["UpdateBaseNameplateOptions"] = true,
+			["BossModsTimeBarDBM"] = true,
+			["BossModsTimeBarBW"] = true,
+			["BigWigs_BarCreated"] = true,
 		},
 		
 		["DetailsFramework"] = {
