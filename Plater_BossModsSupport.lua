@@ -169,7 +169,27 @@ function Plater.UpdateBossModAuras(unitFrame)
 		guid = "barsTestMode"
 	end
 	if Plater.db.profile.bossmod_support_bars_enabled and UNIT_BOSS_MOD_BARS [guid] then
+		local sortedAuras = {}
 		for id, data in pairs(UNIT_BOSS_MOD_BARS [guid]) do
+			tinsert(sortedAuras, data)
+		end
+		table.sort(sortedAuras, function(a,b)
+			if a.paused and not b.paused then
+				return false
+			elseif b.paused and not a.paused then
+				return true
+			else
+				local curTime = GetTime()
+				local at, bt = a.timer or 0, b.timer or 0
+				local as, bs = a.start or 0, b.start or 0
+				local ar = at - (curTime - (a.paused and (curTime - (a.pauseStartTime - a.start)) or as))
+				local br = bt - (curTime - (b.paused and (curTime - (b.pauseStartTime - b.start)) or bs))
+				return br > ar
+			end			
+		end)
+		--for id, data in pairs(UNIT_BOSS_MOD_BARS [guid]) do
+		for _, data in pairs(sortedAuras) do
+			local id = data.id
 			if data.timer and curTime > data.start + data.timer then
 				UNIT_BOSS_MOD_BARS [guid][id] = nil
 			else
@@ -180,11 +200,13 @@ function Plater.UpdateBossModAuras(unitFrame)
 				--print(timer, start, data.name, data.msg, data.colorId)
 				local icon = iconFrame:SetIcon(-1, data.color, timer and start, timer, data.icon, {text = data.name or data.msg, text_color = data.color})
 				--							spellId, borderColor, startTime, duration, forceTexture, descText, count, debuffType, caster, canStealOrPurge, spellName, isBuff
-				icon.Texture:SetDesaturated(data.desaturate)
-				--icon.Cooldown:SetDesaturated(data.desaturate)
+				
 				if data.paused then
 					icon:SetScript("OnUpdate", nil)
 					icon.Cooldown:Pause()
+					icon.Texture:SetDesaturated(true)
+				else
+					icon.Texture:SetDesaturated(false)
 				end
 				
 				--check if Masque is enabled on Plater and reskin the aura icon
@@ -656,22 +678,31 @@ function Plater.RegisterBossModsBars()
 		DBM:RegisterCallback("DBM_TimerStart", timerStartCallback)
 		
 		local timerPauseCallback = function(event, id)
+			if not id then return end
 			local entry = id and Plater.BossModsTimeBarDBM[id] or nil
-			if entry then
+			local guid = entry and entry.guid
+			if entry and guid then
 				local curTime = GetTime()
 				--entry.start = entry.start - (curTime - entry.start)
 				entry.paused = true
 				entry.pauseStartTime = curTime
+				UNIT_BOSS_MOD_BARS [guid][id].paused = true
+				UNIT_BOSS_MOD_BARS [guid][id].pauseStartTime = curTime
 			end
 		end
 		DBM:RegisterCallback("DBM_TimerPause", timerPauseCallback)
 		
 		local timerResumeCallback = function(event, id)
+			if not id then return end
 			local entry = id and Plater.BossModsTimeBarDBM[id] or nil
-			if entry and entry.paused then
+			local guid = entry and entry.guid
+			if entry and entry.paused and guid then
 				entry.paused = false
 				entry.start = entry.start + (GetTime() - entry.pauseStartTime)
 				entry.pauseStartTime = entry.start
+				UNIT_BOSS_MOD_BARS [guid][id].paused = false
+				UNIT_BOSS_MOD_BARS [guid][id].start = entry.start + (GetTime() - entry.pauseStartTime)
+				UNIT_BOSS_MOD_BARS [guid][id].pauseStartTime = entry.start
 			end
 		end
 		DBM:RegisterCallback("DBM_TimerResume", timerResumeCallback)
