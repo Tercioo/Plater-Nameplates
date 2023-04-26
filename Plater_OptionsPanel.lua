@@ -13673,13 +13673,13 @@ end
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 				end
 			end,
-			min = 0.02,
+			min = 0.005,
 			max = 0.2,
 			step = 0.005,
 			thumbscale = 1.7,
 			usedecimals = true,
 			name = "Movement Speed" .. CVarIcon,
-			desc = "How fast the nameplate moves (when stacking is enabled).\n\n|cFFFFFFFFDefault: 0.025|r\n\n|cFFFFFFFFRecommended: 0.05|r" .. CVarDesc,
+			desc = "How fast the nameplate moves (when stacking is enabled).\n\n|cFFFFFFFFDefault: 0.025|r\n\n|cFFFFFFFFRecommended: >=0.02|r" .. CVarDesc,
 			nocombat = true,
 		},
 		{
