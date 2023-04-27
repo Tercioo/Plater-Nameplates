@@ -5087,8 +5087,8 @@ Plater.CreateAuraTesting()
 					Plater.db.profile.bossmod_support_enabled = value
 					Plater.UpdateAllPlates()
 				end,
-				name = "CD-Bars enabled",
-				desc = "Enable the boss mod bar support for BigWigs and DBM, to show timer bars as icons on the nameplates.",
+				name = "DBM CD-Bar Icons enabled",
+				desc = "Enable the boss mod bar support for DBM, to show timer bars as icons on the nameplates.",
 			},
 			
 			{type = "blank"},

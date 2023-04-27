@@ -748,7 +748,8 @@ function Plater.RegisterBossModsBars()
 		end
 		
         if (BigWigsLoader.RegisterMessage) then
-            BigWigsLoader.RegisterMessage (Plater, "BigWigs_BarCreated")
+			--this is not usable now, as there is no GUID
+            --BigWigsLoader.RegisterMessage (Plater, "BigWigs_BarCreated")
         end
 	end
 end
