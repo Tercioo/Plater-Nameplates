@@ -5066,7 +5066,7 @@ Plater.CreateAuraTesting()
 			},
 		
 			{type = "blank"},
-			{type = "blank"},
+			--{type = "blank"},
 			{type = "label", get = function() return "DBM / BigWigs Icon-Support:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 
 			{
@@ -5078,6 +5078,17 @@ Plater.CreateAuraTesting()
 				end,
 				name = "OPTIONS_ENABLED",
 				desc = "Enable the boss mod icon support for BigWigs and DBM.",
+			},
+			
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.bossmod_support_bars_enabled end,
+				set = function (self, bossmod_support_bars_enabled, value) 
+					Plater.db.profile.bossmod_support_enabled = value
+					Plater.UpdateAllPlates()
+				end,
+				name = "CD-Bars enabled",
+				desc = "Enable the boss mod bar support for BigWigs and DBM, to show timer bars as icons on the nameplates.",
 			},
 			
 			{type = "blank"},

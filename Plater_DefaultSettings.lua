@@ -942,6 +942,7 @@ PLATER_DEFAULT_SETTINGS = {
 		},
 		
 		bossmod_support_enabled = true,
+		bossmod_support_bars_enabled = false,
 		bossmod_aura_height = 32,
 		bossmod_aura_width = 32,
 		bossmod_cooldown_text_size = 16,
