@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1682318363,  "Backend Change", "April 27th, 2023", "Some code cleanup in auras.", "cont1nuity"},
 			{1682318363,  "Backend Change", "April 26th, 2023", "Changing default and value range for nameplate movement speed settings.", "cont1nuity"},
 			{1682318363,  "New Feature", "April 25th, 2023", "Adding support to show DBM timer bars as BossMod Icon on the nameplate.", "cont1nuity"},
 			{1682318363,  "Bug Fix", "April 23rd, 2023", "Fixing a minor error on the Wago Imports tab while importing mods/scripts.", "cont1nuity"},
