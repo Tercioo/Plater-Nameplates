@@ -5083,8 +5083,8 @@ Plater.CreateAuraTesting()
 			{
 				type = "toggle",
 				get = function() return Plater.db.profile.bossmod_support_bars_enabled end,
-				set = function (self, bossmod_support_bars_enabled, value) 
-					Plater.db.profile.bossmod_support_enabled = value
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.bossmod_support_bars_enabled = value
 					Plater.UpdateAllPlates()
 				end,
 				name = "DBM CD-Bar Icons enabled",
