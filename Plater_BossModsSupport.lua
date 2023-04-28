@@ -22,7 +22,7 @@ local UNIT_BOSS_MOD_NEEDS_UPDATE = {}
 local HOSTILE_ENABLED = false
 local IS_REGISTERED = false
 
-local barsTestMode = false
+--local barsTestMode = true
 
 -- core functions
 local function ShowNameplateAura(guid, texture, duration, desaturate)
@@ -674,30 +674,6 @@ function getAllShownGUIDs()
 	end
 	return guids
 end
-
-function Plater.PauseBarIcon(name)
-	if not name then return end
-	for id,entry in pairs(Plater.BossModsTimeBarDBM) do
-		print(name, entry.msg, entry.msg == name)
-		if entry.msg == name then
-			print("yes", entry.paused)
-			if not entry.paused then
-				entry.paused = true
-				entry.pauseStartTime = GetTime()
-				UNIT_BOSS_MOD_BARS [guid][id].paused = true
-				UNIT_BOSS_MOD_BARS [guid][id].pauseStartTime = curTime
-			else
-				entry.paused = false
-				entry.start = entry.start + (GetTime() - entry.pauseStartTime)
-				entry.pauseStartTime = entry.start
-				UNIT_BOSS_MOD_BARS [guid][id].paused = false
-				UNIT_BOSS_MOD_BARS [guid][id].start = entry.start + (GetTime() - entry.pauseStartTime)
-				UNIT_BOSS_MOD_BARS [guid][id].pauseStartTime = entry.start
-			end
-		end
-	end
-end
-
 
 function Plater.RegisterBossModsBars()
 	local DBM = _G.DBM
