@@ -3915,6 +3915,8 @@ Plater.AnchorNamesByPhraseId = {
 			plateFrame.unitFrame.PlaterOnScreen = true
 			
 			Plater.AddToAuraUpdate(unitID)
+			-- update DBM and BigWigs nameplate auras
+			Plater.EnsureUpdateBossModAuras(plateFrame [MEMBER_GUID])
 			
 			--save the last unit type shown in this plate
 			plateFrame.PreviousUnitType = plateFrame.actorType
@@ -11602,6 +11604,18 @@ end
 			["BossModsTimeBarDBM"] = true,
 			["BossModsTimeBarBW"] = true,
 			["BigWigs_BarCreated"] = true,
+			["UpdateBossModAuras"] = true,
+			["EnsureUpdateBossModAuras"] = true,
+			["CreateBossModAuraFrame"] = true,
+			["UpdateBossModAuraFrameSettings"] = true,
+			["RegisterBossModAuras"] = true,
+			["GetBossModsEventTimeLeft"] = false,
+			["GetAltCastBarAltId"] = false,
+			["ClearAltCastBar"] = false,
+			["SetAltCastBar"] = false,
+			["StopAltCastBar"] = false,
+			["GetBossTimer"] = false,
+			["RegisterBossModsBars"] = false,
 		},
 		
 		["DetailsFramework"] = {
