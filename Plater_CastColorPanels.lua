@@ -1532,19 +1532,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         -- add SPELLS as well, if not yet added.
         for spellId, spellTable in pairs(DB_CAPTURED_SPELLS) do
             local spellName, _, spellIcon, castTime = GetSpellInfo(spellId)
-            local isChanneled = false
-            if castTime == 0 then
-                -- is this a channeled spell? castTime will be 0, because reasons...
-                local tooltipFrame = PlaterSpellFinderTooltip or CreateFrame ("GameTooltip", "PlaterSpellFinderTooltip", nil, "GameTooltipTemplate")		
-                tooltipFrame:SetOwner (WorldFrame, "ANCHOR_NONE")
-                tooltipFrame:SetHyperlink ("spell:" .. spellId)
-                local line1 = _G ["PlaterSpellFinderTooltipTextLeft2"]
-                local text1 = line1 and line1:GetText()
-                local line2 = _G ["PlaterSpellFinderTooltipTextLeft3"]
-                local text2 = line2 and line2:GetText()
-                isChanneled = text1 == SPELL_CAST_CHANNELED or text2 == SPELL_CAST_CHANNELED
-            end
-            if (spellName and not addedSpells[spellId] and (castTime > 0 or isChanneled) and spellTable.event == "SPELL_CAST_SUCCESS") then -- and spellTable.event ~= "SPELL_AURA_APPLIED" ?
+            if (spellName and not addedSpells[spellId] and (castTime > 0 or spellTable.isChanneled) and spellTable.event == "SPELL_CAST_SUCCESS") then -- and spellTable.event ~= "SPELL_AURA_APPLIED" ?
                 --build the castInfo table for this spell
                 local npcId = spellTable.npcID
                 local isEnabled = DB_CAST_COLORS[spellId] and DB_CAST_COLORS[spellId][CONST_INDEX_ENABLED] or false
