@@ -95,6 +95,8 @@ function Plater.CreateBossModAuraFrame(unitFrame)
 	unitFrame.BossModIconFrame:ClearIcons()
 	unitFrame.BossModIconFrame.RefreshID = 0
 	
+	unitFrame.BossModIconFrame:SetOption ("anchor", Plater.db.profile.bossmod_icons_anchor or {side = 8, x = 0, y = 30})
+	unitFrame.BossModIconFrame:SetOption ("grow_direction", unitFrame.ExtraIconFrame:GetIconGrowDirection())
 	Plater.SetAnchor (unitFrame.BossModIconFrame, Plater.db.profile.bossmod_icons_anchor or {side = 8, x = 0, y = 30})
 
 end
@@ -105,6 +107,8 @@ function Plater.UpdateBossModAuraFrameSettings(unitFrame, refreshID)
 		unitFrame.BossModIconFrame:SetOption ("text_size", Plater.db.profile.bossmod_cooldown_text_size)
 		unitFrame.BossModIconFrame:SetOption ("icon_width", Plater.db.profile.bossmod_aura_width)
 		unitFrame.BossModIconFrame:SetOption ("icon_height", Plater.db.profile.bossmod_aura_height)
+		unitFrame.BossModIconFrame:SetOption ("anchor", Plater.db.profile.bossmod_icons_anchor or {side = 8, x = 0, y = 30})
+		unitFrame.BossModIconFrame:SetOption ("grow_direction", unitFrame.ExtraIconFrame:GetIconGrowDirection())
 		
 		--> update refresh ID
 		unitFrame.BossModIconFrame.RefreshID = refreshID
@@ -686,7 +690,7 @@ function Plater.RegisterBossModsBars()
 			if (id and guid) then
 				color = getDBTColor(colorId)
 				local display = DF:CleanTruncateUTF8String(strsub(string.match(name or msg or "", "^%s*(.-)%s*$" ), 1, 7))
-				local display = string.match(name or msg or "", "^%s*(.-)%s*$" )
+				--local display = string.match(name or msg or "", "^%s*(.-)%s*$" )
 				local curTime =  GetTime()
 				local barData = {
 					msg = msg,
@@ -715,7 +719,7 @@ function Plater.RegisterBossModsBars()
 				for _, guid in pairs(getAllShownGUIDs()) do
 					color = getDBTColor(colorId)
 					local display = DF:CleanTruncateUTF8String(strsub(string.match(name or msg or "", "^%s*(.-)%s*$" ), 1, 7))
-					local display = string.match(name or msg or "", "^%s*(.-)%s*$" )
+					--local display = string.match(name or msg or "", "^%s*(.-)%s*$" )
 					local curTime =  GetTime()
 					local barData = {
 						msg = msg,
