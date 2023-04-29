@@ -18,7 +18,7 @@ local GetTime = _G.GetTime
 local UNIT_BOSS_MOD_AURAS_ACTIVE = {} --contains for each [GUID] a list of {texture, duration, desaturate}
 local UNIT_BOSS_MOD_AURAS_TO_BE_REMOVED = {} --contains for each [GUID] a list of texture-ids to be removed
 local UNIT_BOSS_MOD_BARS = {} --contains for each [GUID] the bar information
-local UNIT_BOSS_MOD_NEEDS_UPDATE = {}
+local UNIT_BOSS_MOD_NEEDS_UPDATE_IN = {} -- timestamp for next update!
 local HOSTILE_ENABLED = false
 local IS_REGISTERED = false
 
@@ -47,7 +47,7 @@ local function ShowNameplateAura(guid, texture, duration, desaturate)
 	
 	tinsert(UNIT_BOSS_MOD_AURAS_ACTIVE [guid], values)
 	
-	UNIT_BOSS_MOD_NEEDS_UPDATE[guid] = true
+	UNIT_BOSS_MOD_NEEDS_UPDATE_IN[guid] = -1
 end
 
 local function HideNameplateAura(guid, texture)
@@ -58,7 +58,7 @@ local function HideNameplateAura(guid, texture)
 	UNIT_BOSS_MOD_AURAS_TO_BE_REMOVED [guid] = UNIT_BOSS_MOD_AURAS_TO_BE_REMOVED [guid] or {}
 	tinsert(UNIT_BOSS_MOD_AURAS_TO_BE_REMOVED [guid], texture)
 	
-	UNIT_BOSS_MOD_NEEDS_UPDATE[guid] = true
+	UNIT_BOSS_MOD_NEEDS_UPDATE_IN[guid] = -1
 end
 
 local function DisableHostile()
@@ -95,6 +95,7 @@ function Plater.CreateBossModAuraFrame(unitFrame)
 	unitFrame.BossModIconFrame:ClearIcons()
 	unitFrame.BossModIconFrame.RefreshID = 0
 	
+	unitFrame.BossModIconFrame:SetOption ("surpress_tulla_omni_cc", Plater.db.profile.disable_omnicc_on_auras)
 	unitFrame.BossModIconFrame:SetOption ("anchor", Plater.db.profile.bossmod_icons_anchor or {side = 8, x = 0, y = 30})
 	unitFrame.BossModIconFrame:SetOption ("grow_direction", unitFrame.ExtraIconFrame:GetIconGrowDirection())
 	Plater.SetAnchor (unitFrame.BossModIconFrame, Plater.db.profile.bossmod_icons_anchor or {side = 8, x = 0, y = 30})
@@ -104,6 +105,7 @@ end
 function Plater.UpdateBossModAuraFrameSettings(unitFrame, refreshID)
 	if (unitFrame.BossModIconFrame.RefreshID < refreshID) then
 		Plater.SetAnchor (unitFrame.BossModIconFrame, Plater.db.profile.bossmod_icons_anchor)
+		unitFrame.BossModIconFrame:SetOption ("surpress_tulla_omni_cc", Plater.db.profile.disable_omnicc_on_auras)
 		unitFrame.BossModIconFrame:SetOption ("text_size", Plater.db.profile.bossmod_cooldown_text_size)
 		unitFrame.BossModIconFrame:SetOption ("icon_width", Plater.db.profile.bossmod_aura_width)
 		unitFrame.BossModIconFrame:SetOption ("icon_height", Plater.db.profile.bossmod_aura_height)
@@ -117,7 +119,7 @@ end
 
 function Plater.EnsureUpdateBossModAuras(guid)
 	if not guid then return end
-	UNIT_BOSS_MOD_NEEDS_UPDATE[guid] = true
+	UNIT_BOSS_MOD_NEEDS_UPDATE_IN[guid] = -1
 end
 
 function Plater.UpdateBossModAuras(unitFrame)
@@ -125,8 +127,9 @@ function Plater.UpdateBossModAuras(unitFrame)
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdateBossModAuras")
 	
 	local guid = unitFrame.PlateFrame.namePlateUnitGUID
+	local curTime = GetTime()
 	
-	if not UNIT_BOSS_MOD_NEEDS_UPDATE[guid] then 
+	if not UNIT_BOSS_MOD_NEEDS_UPDATE_IN[guid] or UNIT_BOSS_MOD_NEEDS_UPDATE_IN[guid] > curTime then 
 		Plater.EndLogPerformanceCore("Plater-Core", "Update", "UpdateBossModAuras")
 		return
 	end
@@ -144,7 +147,7 @@ function Plater.UpdateBossModAuras(unitFrame)
 		UNIT_BOSS_MOD_AURAS_TO_BE_REMOVED [guid] = nil
 	end
 	
-	local curTime = GetTime()
+	local nextUpdateTime = nil
 	local iconFrame = unitFrame.BossModIconFrame
 	iconFrame:ClearIcons()
 	
@@ -157,6 +160,11 @@ function Plater.UpdateBossModAuras(unitFrame)
 				--							spellId, borderColor, startTime, duration, forceTexture, descText, count, debuffType, caster, canStealOrPurge, spellName, isBuff
 				icon.Texture:SetDesaturated(values.desaturate)
 				--icon.Cooldown:SetDesaturated(values.desaturate)
+				
+				local endTime = values.duration and (values.starttime + values.duration) or nil
+				if not nextUpdateTime or (endTime and endTime < nextUpdateTime) then
+					nextUpdateTime = endTime
+				end
 				
 				--check if Masque is enabled on Plater and reskin the aura icon
 				if (Plater.Masque and not icon.Masqued) then
@@ -225,14 +233,21 @@ function Plater.UpdateBossModAuras(unitFrame)
 					icon.Cooldown:Pause()
 					icon.Texture:SetDesaturated(true)
 				else
-					local curOnUpdate = icon:GetScript("OnUpdate")
+					--[[
+					local curOnUpdate = iconFrame.OnIconTick --icon:GetScript("OnUpdate")
 					icon:SetScript("OnUpdate", function(self)
 						if self.timeRemaining <= 0 then
-							UNIT_BOSS_MOD_NEEDS_UPDATE[guid] = true -- fallback to remove icons that have run out
+							UNIT_BOSS_MOD_NEEDS_UPDATE_IN[guid] = -1 -- fallback to remove icons that have run out
 						end
-						curOnUpdate(self)
+						self.parentIconRow.OnIconTick(self) --curOnUpdate(self)
 					end)
+					]]
 					icon.Texture:SetDesaturated(false)
+				end
+				
+				local endTime = timer and (start + timer) or nil
+				if not nextUpdateTime or (endTime and endTime < nextUpdateTime) then
+					nextUpdateTime = endTime
 				end
 				
 				--check if Masque is enabled on Plater and reskin the aura icon
@@ -264,7 +279,7 @@ function Plater.UpdateBossModAuras(unitFrame)
 		end
 	end
 	
-	UNIT_BOSS_MOD_NEEDS_UPDATE[guid] = nil
+	UNIT_BOSS_MOD_NEEDS_UPDATE_IN[guid] = nextUpdateTime
 	
 	Plater.EndLogPerformanceCore("Plater-Core", "Update", "UpdateBossModAuras")
 
@@ -714,7 +729,7 @@ function Plater.RegisterBossModsBars()
 				UNIT_BOSS_MOD_BARS [guid] = UNIT_BOSS_MOD_BARS [guid] or {}
 				UNIT_BOSS_MOD_BARS [guid][id] = barData
 				
-				UNIT_BOSS_MOD_NEEDS_UPDATE[guid] = true
+				UNIT_BOSS_MOD_NEEDS_UPDATE_IN[guid] = -1
 			elseif id and not guid and barsTestMode then
 				for _, guid in pairs(getAllShownGUIDs()) do
 					color = getDBTColor(colorId)
@@ -743,7 +758,7 @@ function Plater.RegisterBossModsBars()
 					UNIT_BOSS_MOD_BARS [guid] = UNIT_BOSS_MOD_BARS [guid] or {}
 					UNIT_BOSS_MOD_BARS [guid][id] = barData
 					
-					UNIT_BOSS_MOD_NEEDS_UPDATE[guid] = true
+					UNIT_BOSS_MOD_NEEDS_UPDATE_IN[guid] = -1
 				end
 			end
 		end
@@ -761,7 +776,7 @@ function Plater.RegisterBossModsBars()
 				UNIT_BOSS_MOD_BARS [guid][id].paused = true
 				UNIT_BOSS_MOD_BARS [guid][id].pauseStartTime = curTime
 				
-				UNIT_BOSS_MOD_NEEDS_UPDATE[guid] = true
+				UNIT_BOSS_MOD_NEEDS_UPDATE_IN[guid] = -1
 			end
 		end
 		DBM:RegisterCallback("DBM_TimerPause", timerPauseCallback)
@@ -778,7 +793,7 @@ function Plater.RegisterBossModsBars()
 				UNIT_BOSS_MOD_BARS [guid][id].start = entry.start + (GetTime() - entry.pauseStartTime)
 				UNIT_BOSS_MOD_BARS [guid][id].pauseStartTime = entry.start
 				
-				UNIT_BOSS_MOD_NEEDS_UPDATE[guid] = true
+				UNIT_BOSS_MOD_NEEDS_UPDATE_IN[guid] = -1
 			end
 		end
 		DBM:RegisterCallback("DBM_TimerResume", timerResumeCallback)
@@ -792,13 +807,13 @@ function Plater.RegisterBossModsBars()
 				UNIT_BOSS_MOD_BARS [guid] = UNIT_BOSS_MOD_BARS [guid] or {}
 				UNIT_BOSS_MOD_BARS [guid][id] = nil
 				
-				UNIT_BOSS_MOD_NEEDS_UPDATE[guid] = true
+				UNIT_BOSS_MOD_NEEDS_UPDATE_IN[guid] = -1
 			elseif not guid and barsTestMode then
 				for _, guid in pairs(getAllShownGUIDs()) do
 					UNIT_BOSS_MOD_BARS [guid] = UNIT_BOSS_MOD_BARS [guid] or {}
 					UNIT_BOSS_MOD_BARS [guid][id] = nil
 					
-					UNIT_BOSS_MOD_NEEDS_UPDATE[guid] = true
+					UNIT_BOSS_MOD_NEEDS_UPDATE_IN[guid] = -1
 				end
 			end
 		end
