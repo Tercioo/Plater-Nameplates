@@ -9445,7 +9445,7 @@ end
 				if (not sourceFlag or bit.band(sourceFlag, 0x00000400) == 0) then --not a player
 					local npcId = Plater:GetNpcIdFromGuid(sourceGUID or "")
 					local isChanneled = false
-					if UnitTokenFromGUID then -- this is the only proper way to check for channeled spells...
+					if sourceGUID and UnitTokenFromGUID then -- this is the only proper way to check for channeled spells...
 						local unit = UnitTokenFromGUID(sourceGUID)
 						if unit and UnitChannelInfo (unit) then
 							isChanneled = true
