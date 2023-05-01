@@ -7,6 +7,8 @@ Plater.db.profile.bossmod_aura_height = 32
 Plater.db.profile.bossmod_aura_width = 32
 Plater.db.profile.bossmod_cooldown_text_size = 16
 Plater.db.profile.bossmod_icons_anchor = {side = 8, x = 0, y = 40}
+Plater.db.profile.bossmod_support_bars_enabled = false
+Plater.db.profile.bossmod_support_bars_text_max_len = 7
 ]]--
 
 local DF = _G ["DetailsFramework"]
@@ -96,6 +98,7 @@ function Plater.CreateBossModAuraFrame(unitFrame)
 	unitFrame.BossModIconFrame.RefreshID = 0
 	
 	unitFrame.BossModIconFrame:SetOption ("surpress_tulla_omni_cc", Plater.db.profile.disable_omnicc_on_auras)
+	unitFrame.BossModIconFrame:SetOption ("surpress_blizzard_cd_timer", true)
 	unitFrame.BossModIconFrame:SetOption ("anchor", Plater.db.profile.bossmod_icons_anchor or {side = 8, x = 0, y = 30})
 	unitFrame.BossModIconFrame:SetOption ("grow_direction", unitFrame.ExtraIconFrame:GetIconGrowDirection())
 	Plater.SetAnchor (unitFrame.BossModIconFrame, Plater.db.profile.bossmod_icons_anchor or {side = 8, x = 0, y = 30})
@@ -704,7 +707,7 @@ function Plater.RegisterBossModsBars()
 		local timerStartCallback = function(event, id, msg, timer, icon, barType, spellId, colorId, modId, keep, fade, name, guid)
 			if (id and guid) then
 				color = getDBTColor(colorId)
-				local display = DF:CleanTruncateUTF8String(strsub(string.match(name or msg or "", "^%s*(.-)%s*$" ), 1, 7))
+				local display = DF:CleanTruncateUTF8String(strsub(string.match(name or msg or "", "^%s*(.-)%s*$" ), 1, Plater.db.profile.bossmod_support_bars_text_max_len or 7))
 				--local display = string.match(name or msg or "", "^%s*(.-)%s*$" )
 				local curTime =  GetTime()
 				local barData = {
@@ -733,7 +736,7 @@ function Plater.RegisterBossModsBars()
 			elseif id and not guid and barsTestMode then
 				for _, guid in pairs(getAllShownGUIDs()) do
 					color = getDBTColor(colorId)
-					local display = DF:CleanTruncateUTF8String(strsub(string.match(name or msg or "", "^%s*(.-)%s*$" ), 1, 7))
+					local display = DF:CleanTruncateUTF8String(strsub(string.match(name or msg or "", "^%s*(.-)%s*$" ), 1, Plater.db.profile.bossmod_support_bars_text_max_len or 7))
 					--local display = string.match(name or msg or "", "^%s*(.-)%s*$" )
 					local curTime =  GetTime()
 					local barData = {
