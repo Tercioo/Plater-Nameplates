@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1683096614,  "Bug Fix", "May 3rd, 2023", "Blizzard allows changing nameplate distance again in retail -> nameplateMaxDistance 0-60y.", "cont1nuity"},
 			{1683096614,  "Bug Fix", "May 3rd, 2023", "Apply workaround for player nameplates not showing until blizzard fixes this.", "cont1nuity"},
 			{1683096614,  "Bug Fix", "April 28th, 2023", "Fix channeled casts not appearing on the cast colors tab under some conditions.", "cont1nuity"},
 			{1683096614,  "Backend Change", "April 27th, 2023", "Some code cleanup in auras.", "cont1nuity"},

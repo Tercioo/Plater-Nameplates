@@ -7078,7 +7078,7 @@ local relevance_options = {
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 				end
 			end,
-			min = IS_WOW_PROJECT_MAINLINE and 60 or 20, --20y for tbc and classic
+			min = IS_WOW_PROJECT_MAINLINE and 0 or 20, --20y for tbc and classic
 			max = (IS_WOW_PROJECT_MAINLINE and 60) or ((IS_WOW_PROJECT_CLASSIC_TBC or IS_WOW_PROJECT_CLASSIC_WRATH) and 41) or 20, --41y for tbc, 20y for classic era
 			step = 1,
 			name = "View Distance" .. CVarIcon,
