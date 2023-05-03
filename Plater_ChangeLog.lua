@@ -8,11 +8,14 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
-			{1682318363,  "Bug Fix", "April 28th, 2023", "Fix channeled casts not appearing on the cast colors tab under some conditions.", "cont1nuity"},
-			{1682318363,  "Backend Change", "April 27th, 2023", "Some code cleanup in auras.", "cont1nuity"},
-			{1682318363,  "Backend Change", "April 26th, 2023", "Changing default and value range for nameplate movement speed settings.", "cont1nuity"},
-			{1682318363,  "New Feature", "April 25th, 2023", "Adding support to show DBM timer bars as BossMod Icon on the nameplate.", "cont1nuity"},
-			{1682318363,  "Bug Fix", "April 23rd, 2023", "Fixing a minor error on the Wago Imports tab while importing mods/scripts.", "cont1nuity"},
+			{1683096614,  "Bug Fix", "May 3rd, 2023", "Apply workaround for player nameplates not showing until blizzard fixes this.", "cont1nuity"},
+			{1683096614,  "Bug Fix", "April 28th, 2023", "Fix channeled casts not appearing on the cast colors tab under some conditions.", "cont1nuity"},
+			{1683096614,  "Backend Change", "April 27th, 2023", "Some code cleanup in auras.", "cont1nuity"},
+			{1683096614,  "Backend Change", "April 26th, 2023", "Changing default and value range for nameplate movement speed settings.", "cont1nuity"},
+			{1683096614,  "New Feature", "April 25th, 2023", "Adding support to show DBM timer bars as BossMod Icon on the nameplate.", "cont1nuity"},
+			{1683096614,  "Bug Fix", "April 23rd, 2023", "Fixing a minor error on the Wago Imports tab while importing mods/scripts.", "cont1nuity"},
+			{1683096614,  "Bug Fix", "April 22nd, 2023", "Hopefully fixing hunter feight death nameplates.", "cont1nuity"},
+			{1683096614,  "Backend Change", "April 20th, 2023", "Adding option to not automatically update plater internal scripts.", "Terciob"},
 			
 			{1681318363,  "Bug Fix", "April 19th, 2023", "Fixing an error with tooltip scanning rework.", "cont1nuity"},
 			{1681318363,  "Bug Fix", "April 17th, 2023", "Fixing Aura Icon sizes not updating properly with Ghost Auras set to a different size.", "cont1nuity"},

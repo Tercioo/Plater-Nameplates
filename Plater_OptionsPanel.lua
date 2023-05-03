@@ -6894,6 +6894,59 @@ local relevance_options = {
 		{
 			type = "toggle",
 			boxfirst = true,
+			get = function() return GetCVarBool ("nameplateShowEnemies") end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateShowEnemies", value and "1" or "0")
+				else
+					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+					self:SetValue (GetCVarBool ("nameplateShowEnemies"))
+				end
+			end,
+			name = "OPTIONS_NAMEPLATE_SHOW_ENEMY", --show enemy nameplates
+			desc = "OPTIONS_NAMEPLATE_SHOW_ENEMY_DESC",
+			nocombat = true,
+		},
+		
+		{
+			type = "toggle",
+			boxfirst = true,
+			get = function() return GetCVarBool ("nameplateShowFriends") end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateShowFriends", value and "1" or "0")
+				else
+					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+					self:SetValue (GetCVarBool ("nameplateShowFriends"))
+				end
+			end,
+			name = "OPTIONS_NAMEPLATE_SHOW_FRIENDLY", --show friendly nameplates
+			desc = "OPTIONS_NAMEPLATE_SHOW_FRIENDLY_DESC",
+			nocombat = true,
+		},
+		
+		{
+			type = "toggle",
+			boxfirst = true,
+			get = function() return GetCVarBool ("nameplateShowOnlyNames") end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateShowOnlyNames", value and "1" or "0")
+				else
+					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+					self:SetValue (GetCVarBool ("nameplateShowOnlyNames"))
+				end
+
+				Plater.UpdateBaseNameplateOptions()
+			end,
+			name = "OPTIONS_NAMEPLATE_HIDE_FRIENDLY_HEALTH", --"Hide Blizzard Health Bars"
+			desc = "OPTIONS_NAMEPLATE_HIDE_FRIENDLY_HEALTH_DESC",
+			nocombat = true,
+		},
+		
+		{
+			type = "toggle",
+			boxfirst = true,
 			get = function() return GetCVar ("nameplateShowSelf") == CVAR_ENABLED end,
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
@@ -7032,59 +7085,22 @@ local relevance_options = {
 			desc = "How far you can see nameplates (in yards).\n\n|cFFFFFFFFCurrent limitations: Retail = 60y, TBC = 20-41y, Classic = 20y|r" .. CVarDesc,
 			nocombat = true,
 		},
-	
-		{type = "blank"},
 		
 		{
-			type = "toggle",
-			boxfirst = true,
-			get = function() return GetCVarBool ("nameplateShowEnemies") end,
+			type = "range",
+			get = function() return tonumber (GetCVar ("nameplatePlayerMaxDistance")) or 0 end,
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
-					SetCVar ("nameplateShowEnemies", value and "1" or "0")
+					SetCVar ("nameplatePlayerMaxDistance", value)
 				else
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
-					self:SetValue (GetCVarBool ("nameplateShowEnemies"))
 				end
 			end,
-			name = "OPTIONS_NAMEPLATE_SHOW_ENEMY", --show enemy nameplates
-			desc = "OPTIONS_NAMEPLATE_SHOW_ENEMY_DESC",
-			nocombat = true,
-		},
-		
-		{
-			type = "toggle",
-			boxfirst = true,
-			get = function() return GetCVarBool ("nameplateShowFriends") end,
-			set = function (self, fixedparam, value) 
-				if (not InCombatLockdown()) then
-					SetCVar ("nameplateShowFriends", value and "1" or "0")
-				else
-					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
-					self:SetValue (GetCVarBool ("nameplateShowFriends"))
-				end
-			end,
-			name = "OPTIONS_NAMEPLATE_SHOW_FRIENDLY", --show friendly nameplates
-			desc = "OPTIONS_NAMEPLATE_SHOW_FRIENDLY_DESC",
-			nocombat = true,
-		},
-		
-		{
-			type = "toggle",
-			boxfirst = true,
-			get = function() return GetCVarBool ("nameplateShowOnlyNames") end,
-			set = function (self, fixedparam, value) 
-				if (not InCombatLockdown()) then
-					SetCVar ("nameplateShowOnlyNames", value and "1" or "0")
-				else
-					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
-					self:SetValue (GetCVarBool ("nameplateShowOnlyNames"))
-				end
-
-				Plater.UpdateBaseNameplateOptions()
-			end,
-			name = "OPTIONS_NAMEPLATE_HIDE_FRIENDLY_HEALTH", --"Hide Blizzard Health Bars"
-			desc = "OPTIONS_NAMEPLATE_HIDE_FRIENDLY_HEALTH_DESC",
+			min = 0,
+			max = (IS_WOW_PROJECT_MAINLINE and 60) or ((IS_WOW_PROJECT_CLASSIC_TBC or IS_WOW_PROJECT_CLASSIC_WRATH) and 0) or 0, --not available for classic/wrath
+			step = 1,
+			name = "Player View Distance" .. CVarIcon,
+			desc = "How far you can see player nameplates (in yards).\n\n|cFFFFFFFFLimitations: Retail = 60y, TBC/Classic: not available|r" .. CVarDesc,
 			nocombat = true,
 		},
 

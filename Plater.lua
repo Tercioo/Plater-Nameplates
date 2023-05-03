@@ -2081,6 +2081,7 @@ Plater.AnchorNamesByPhraseId = {
 		["nameplateLargerScale"] = true,
 		["nameplateLargeTopInset"] = true,
 		["nameplateMaxDistance"] = true,
+		["nameplatePlayerMaxDistance"] = true,
 		["nameplateMinScale"] = true,
 		["nameplateMotion"] = true,
 		["nameplateMotionSpeed"] = true,
@@ -4668,6 +4669,9 @@ function Plater.OnInit() --private --~oninit ~init
 			SetCVar ("nameplateRemovalAnimation", DB_USE_QUICK_HIDE and 0 or 1)
 			SetCVar ("nameplateShowFriendlyBuffs", 0)
 			SetCVar ("nameplateShowPersonalCooldowns", 0)
+			if IS_WOW_PROJECT_MAINLINE and not GetCVar("nameplatePlayerMaxDistance") then -- this is 10.1 workaround.
+				SetCVar ("nameplatePlayerMaxDistance", 60)
+			end
 		end
 	
 	--schedule data update
