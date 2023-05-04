@@ -13622,13 +13622,13 @@ end
 		},
 		{
 			type = "toggle",
-			get = function() return Plater.db.profile.hide_name_softinteract_objects end,
+			get = function() return Plater.db.profile.hide_name_on_game_objects end,
 			set = function (self, fixedparam, value) 
-				Plater.db.profile.hide_name_softinteract_objects = value
+				Plater.db.profile.hide_name_on_game_objects = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Hide Plater names soft-interact objects",
-			desc = "Hide Plater names soft-interact objects.",
+			name = "Hide Plater names game objects",
+			desc = "Hide Plater names game objects, such as soft-interact targets.",
 		},
 		{
 			type = "toggle",
