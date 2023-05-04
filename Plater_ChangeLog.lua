@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1683182752,  "Backend Change", "May 4th, 2023", "Export/Import of audio cues from the Cast Colors and Names tab.", "cont1nuity"},
 			{1683182752,  "New Feature", "May 4th, 2023", "Add options to show soft-interact icons and hide names on soft-interact objects.", "cont1nuity"},
 			{1683182752,  "Bug Fix", "May 4th, 2023", "Allow opt-out of auto-accepting NPC colors sent by raid-leaders.", "cont1nuity"},
 			{1683182752,  "Bug Fix", "May 4th, 2023", "Allow lower scaling range for personal resources, especially targeted at Blizzard Combo Points.", "cont1nuity"},

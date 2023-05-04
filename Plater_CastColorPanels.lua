@@ -1675,7 +1675,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                         --check integrity
                         if (type(colorTable) == "table") then
 
-                            local spellId, color, npcId, sourceName, npcLocation, encounterName, customSpellName = unpack(colorTable)
+                            local spellId, color, npcId, sourceName, npcLocation, encounterName, customSpellName, audioCue = unpack(colorTable)
 
                             --check integrity
                             spellId = tonumber(spellId)
@@ -1685,6 +1685,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                             npcLocation = tostring(npcLocation or "")
                             encounterName = tostring(encounterName or "")
                             customSpellName = tostring(customSpellName or "")
+                            audioCue = tostring(audioCue) -- may be nil
 
                             if (spellId and (color or customSpellName)) then
                                 --add into the cast_colors data
@@ -1692,6 +1693,8 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                                 DB_CAST_COLORS[spellId][CONST_INDEX_COLOR] = color
                                 DB_CAST_COLORS[spellId][CONST_INDEX_ENABLED] = true
                                 DB_CAST_COLORS[spellId][CONST_INDEX_NAME] = customSpellName
+                                
+                                DB_CAST_AUDIOCUES[spellId] = audioCue
 
                                 --add into the discoreved spell cache
                                 if (not DB_CAPTURED_SPELLS[spellId]) then
@@ -1781,6 +1784,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                     local npcLocation = searchResult[CONST_CASTINFO_NPCLOCATION]
                     local encounterName = searchResult[CONST_CASTINFO_ENCOUNTERNAME]
                     local customSpellName = searchResult[CONST_CASTINFO_CUSTOMSPELLNAME] or ""
+                    local audioCue = DB_CAST_AUDIOCUES[spellId]
 
                     local castColor = dbColors[spellId]
 
@@ -1788,7 +1792,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                         local isEnabled = castColor[CONST_INDEX_ENABLED]
                         local color = castColor[CONST_INDEX_COLOR]
                         if (isEnabled) then
-                            tinsert (exportedTable, {spellId, color, npcId, sourceName, npcLocation, encounterName, customSpellName})
+                            tinsert (exportedTable, {spellId, color, npcId, sourceName, npcLocation, encounterName, customSpellName, audioCue})
                         end
                     end
                 end
@@ -1798,6 +1802,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                     local color = castColor[CONST_INDEX_COLOR]
                     local npcId, sourceName, npcLocation, encounterName
                     local customSpellName = castColor[CONST_INDEX_NAME] or ""
+                    local audioCue = DB_CAST_AUDIOCUES[spellId]
 
                     --this db gives source, npcID, event, encounterName
                     local capturedSpell = DB_CAPTURED_SPELLS[spellId] or DB_CAPTURED_CASTS[spellId]
@@ -1818,7 +1823,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                     encounterName = capturedSpell and capturedSpell.encounterName or ""
 
                     if (isEnabled) then
-                        tinsert (exportedTable, {spellId, color, npcId, sourceName, npcLocation, encounterName, customSpellName})
+                        tinsert (exportedTable, {spellId, color, npcId, sourceName, npcLocation, encounterName, customSpellName, audioCue})
                     end
                 end
             end
