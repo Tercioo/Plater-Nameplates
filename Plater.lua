@@ -3750,6 +3750,7 @@ Plater.AnchorNamesByPhraseId = {
 				plateFrame.unitFrame.softInteractIconFrame.Mask:SetAllPoints(plateFrame.unitFrame.softInteractIcon)
 				plateFrame.unitFrame.softInteractIconFrame:Hide()
 				plateFrame.unitFrame.softInteractIcon.anchor = { side = 8, x = 0, y = 18, }
+				plateFrame.unitFrame.softInteractIcon.size = 24
 				--Plater.SetAnchor(plateFrame.unitFrame.softInteractIconFrame, plateFrame.unitFrame.softInteractIcon.anchor or { side = 8, x = 0, y = 18, }, plateFrame.unitFrame.healthBar)
 				--Plater.SetAnchor(plateFrame.unitFrame.softInteractIconFrame, plateFrame.unitFrame.softInteractIcon.anchor or { side = 8, x = 0, y = 18, }, plateFrame.unitFrame.PlateFrame)
 			
@@ -7079,10 +7080,11 @@ end
 			else
 				Plater.SetAnchor(unitFrame.softInteractIcon, unitFrame.softInteractIcon.anchor or { side = 8, x = 0, y = 18, }, unitFrame.healthBar)
 			end
-			unitFrame.softInteractIconFrame:SetSize(24, 24)
+			local size = unitFrame.softInteractIcon.size or 24
+			unitFrame.softInteractIconFrame:SetSize(size, size)
 			unitFrame.softInteractIcon:SetDesaturated(false)
 			unitFrame.softInteractIcon:SetIgnoreParentAlpha(true)
-			unitFrame.softInteractIcon:SetSize(24, 24)
+			unitFrame.softInteractIcon:SetSize(size, size)
 			unitFrame.softInteractIconFrame:Show()
 			unitFrame.softInteractIcon:Show()
 			
