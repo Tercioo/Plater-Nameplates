@@ -645,6 +645,8 @@ PLATER_DEFAULT_SETTINGS = {
 		
 		use_player_combat_state = false,
 		
+		opt_out_auto_accept_npc_colors = true,
+		
 		shadowMode = 1,
 		
 		last_news_time = 0,

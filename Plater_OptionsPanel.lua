@@ -14273,6 +14273,16 @@ end
 			name = "In/Out of Combat Settings - Use Player Combat State",
 			desc = "Use the players combat state instead of the units when applying settings for In/Out of Combat.",
 		},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.opt_out_auto_accept_npc_colors end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.opt_out_auto_accept_npc_colors = value
+			end,
+			name = "Opt-Out of automatically accepting NPC Colors",
+			desc = "Will not automatically accepd npc colors sent by raid-leaders but prompt instead.",
+		},
 	
 		{type = "blank"},
 		{type = "label", get = function() return "Personal Bar Custom Position:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = IS_WOW_PROJECT_NOT_MAINLINE},

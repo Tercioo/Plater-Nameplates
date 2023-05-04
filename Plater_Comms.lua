@@ -608,7 +608,7 @@ end
 		end
 
 		local autoAccept = data[5] and tonumber(data[5])
-		local bAutoAccept = autoAccept == 1
+		local bAutoAccept = (autoAccept == 1) and not Plater.db.profile.opt_out_auto_accept_npc_colors
 		if (bAutoAccept) then
 			if (not UnitIsGroupAssistant(unitName) and not UnitIsGroupLeader(unitName)) then
 				return

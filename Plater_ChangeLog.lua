@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
+			{1683182752,  "Bug Fix", "May 4th, 2023", "Allow opt-out of auto-accepting NPC colors sent by raid-leaders.", "cont1nuity"},
 			{1683182752,  "Bug Fix", "May 4th, 2023", "Allow lower scaling range for personal resources, especially targeted at Blizzard Combo Points.", "cont1nuity"},
 			
 			{1683096614,  "Bug Fix", "May 3rd, 2023", "Blizzard allows changing nameplate distance again in retail -> nameplateMaxDistance 0-60y.", "cont1nuity"},
