@@ -8164,7 +8164,7 @@ end
 			plateFrame.IsFriendlyPlayerWithoutHealthBar = false
 			
 			--check if this is an enemy npc but the player cannot attack it
-			if (plateFrame.PlayerCannotAttack and not DB_SHOW_HEALTHBARS_FOR_NOT_ATTACKABLE and not unitFrame.IsSelf) then
+			if (plateFrame.PlayerCannotAttack and not DB_SHOW_HEALTHBARS_FOR_NOT_ATTACKABLE and not unitFrame.IsSelf) or unitFrame.isSoftInteractObject then
 				healthBar:Hide()
 				buffFrame:Hide()
 				buffFrame2:Hide()
