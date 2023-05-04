@@ -6366,8 +6366,8 @@ do
 				Plater.db.profile.resources.scale = value
 				Plater.UpdateAllPlates()
 			end,
-			min = 0.65,
-			max = 3,
+			min = 0.25,
+			max = 2,
 			step = 0.01,
 			usedecimals = true,
 			nocombat = true,
