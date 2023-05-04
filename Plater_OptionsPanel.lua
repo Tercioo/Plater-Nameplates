@@ -13620,6 +13620,26 @@ end
 			name = "Use blizzard soft-interact for objects",
 			desc = "Only show Plater soft-interact nameplates on NPCs.",
 		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.hide_name_softinteract_objects end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.hide_name_softinteract_objects = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Hide Plater names soft-interact objects",
+			desc = "Hide Plater names soft-interact objects.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.show_softinteract_icons end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.show_softinteract_icons = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Show soft-interact Icon",
+			desc = "Show an icon on soft-interact targets.",
+		},
 		
 		{type = "blank"},
 		

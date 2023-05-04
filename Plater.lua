@@ -3143,13 +3143,7 @@ Plater.AnchorNamesByPhraseId = {
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 				if plateFrame.unitFrame.PlaterOnScreen then
 					if plateFrame [MEMBER_GUID] == arg1 or plateFrame [MEMBER_GUID] == arg2 then
-						if plateFrame.IsNpcWithoutHealthBar then
-							local isSoftInteract = UnitIsUnit(plateFrame [MEMBER_UNITID], "softinteract")
-							plateFrame.isSoftInteract = isSoftInteract
-							plateFrame.unitFrame.isSoftInteract = isSoftInteract
-							Plater.UpdatePlateText (plateFrame, DB_PLATE_CONFIG [plateFrame.unitFrame.ActorType], false)
-							--Plater.UpdatePlateFrame (plateFrame)
-						end
+						Plater.UpdateSoftInteractTarget(plateFrame, true)
 					end
 				end
 			end
@@ -3740,6 +3734,24 @@ Plater.AnchorNamesByPhraseId = {
 				plateFrame.unitFrame.aggroGlowLower:SetHeight (4)
 				plateFrame.unitFrame.aggroGlowLower:Hide()
 
+			--> soft-interact icon
+				plateFrame.unitFrame.softInteractIconFrame = CreateFrame ("frame",plateFrame.unitFrame:GetName() .. "softInteractIconFrame", plateFrame.unitFrame, BackdropTemplateMixin and "BackdropTemplate")
+				plateFrame.unitFrame.softInteractIcon = plateFrame.unitFrame.softInteractIconFrame:CreateTexture(nil, "OVERLAY")
+				plateFrame.unitFrame.softInteractIcon:SetTexture(136243)
+				plateFrame.unitFrame.softInteractIcon:Show()
+				plateFrame.unitFrame.softInteractIconFrame:SetFrameLevel(plateFrame.unitFrame.healthBar:GetFrameLevel() + 25)
+				plateFrame.unitFrame.softInteractIconFrame.Mask = plateFrame.unitFrame.softInteractIconFrame:CreateMaskTexture(nil, "OVERLAY", nil, 1)
+				plateFrame.unitFrame.softInteractIconFrame.Mask:Show()
+				plateFrame.unitFrame.softInteractIconFrame.Mask:SetAtlas("CircleMaskScalable", true)
+				--plateFrame.unitFrame.softInteractIconFrame.Mask:SetScale(1)
+				plateFrame.unitFrame.softInteractIcon:AddMaskTexture(plateFrame.unitFrame.softInteractIconFrame.Mask)
+				plateFrame.unitFrame.softInteractIconFrame.Mask:ClearAllPoints()
+				PixelUtil.SetPoint(plateFrame.unitFrame.softInteractIconFrame.Mask, "CENTER", plateFrame.unitFrame.softInteractIconFrame, "CENTER", 0, 0)
+				plateFrame.unitFrame.softInteractIconFrame.Mask:SetAllPoints(plateFrame.unitFrame.softInteractIcon)
+				plateFrame.unitFrame.softInteractIconFrame:Hide()
+				plateFrame.unitFrame.softInteractIcon.anchor = { side = 8, x = 0, y = 18, }
+				--Plater.SetAnchor(plateFrame.unitFrame.softInteractIconFrame, plateFrame.unitFrame.softInteractIcon.anchor or { side = 8, x = 0, y = 18, }, plateFrame.unitFrame.healthBar)
+				--Plater.SetAnchor(plateFrame.unitFrame.softInteractIconFrame, plateFrame.unitFrame.softInteractIcon.anchor or { side = 8, x = 0, y = 18, }, plateFrame.unitFrame.PlateFrame)
 			
 			--> name plate created hook
 				if (HOOK_NAMEPLATE_CREATED.ScriptAmount > 0) then
@@ -3801,9 +3813,10 @@ Plater.AnchorNamesByPhraseId = {
 			end
 			
 			--get and format the reaction to always be the value of the constants, then cache the reaction in some widgets for performance
-			local isSoftInteract = UnitIsUnit(unitID, "softinteract")
+			Plater.UpdateSoftInteractTarget(plateFrame)
 			local reaction = UnitReaction (unitID, "player")
-			local isObject = (IS_WOW_PROJECT_MAINLINE and UnitIsGameObject(unitID)) or reaction == nil
+			local isSoftInteract = plateFrame.isSoftInteract
+			local isObject = plateFrame.isObject
 			local isSoftInteractObject = isObject and isSoftInteract
 			reaction = reaction or isSoftInteract and Plater.UnitReaction.UNITREACTION_NEUTRAL or Plater.UnitReaction.UNITREACTION_HOSTILE
 			reaction = reaction <= Plater.UnitReaction.UNITREACTION_HOSTILE and Plater.UnitReaction.UNITREACTION_HOSTILE or reaction >= Plater.UnitReaction.UNITREACTION_FRIENDLY and Plater.UnitReaction.UNITREACTION_FRIENDLY or Plater.UnitReaction.UNITREACTION_NEUTRAL
@@ -3817,8 +3830,7 @@ Plater.AnchorNamesByPhraseId = {
 			plateFrame.unitFrame [MEMBER_NPCID] = nil
 			plateFrame [MEMBER_GUID] = UnitGUID (unitID) or ""
 			plateFrame.unitFrame [MEMBER_GUID] = plateFrame [MEMBER_GUID]
-			plateFrame.isSoftInteract = isSoftInteract
-			plateFrame.unitFrame.isSoftInteract = isSoftInteract
+			
 			if (not isPlayer) then
 				Plater.GetNpcID (plateFrame)
 			end
@@ -4362,8 +4374,12 @@ Plater.AnchorNamesByPhraseId = {
 			plateFrame.unitFrame.QuestInfo = {}
 			plateFrame [MEMBER_TARGET] = nil
 			
+			plateFrame.isObject = nil
+			plateFrame.unitFrame.isObject = nil
 			plateFrame.isSoftInteract = nil
 			plateFrame.unitFrame.isSoftInteract = nil
+			plateFrame.isSoftInteractObject = nil
+			plateFrame.unitFrame.isSoftInteractObject = nil
 			
 			local healthBar = plateFrame.unitFrame.healthBar
 			if (healthBar.TargetHeight) then
@@ -6517,6 +6533,8 @@ end
 			local isSoftInteract = UnitIsUnit(tickFrame.unit, "softinteract")
 			unitFrame.isSoftInteract = isSoftInteract
 			unitFrame.PlateFrame.isSoftInteract = isSoftInteract
+			unitFrame.isSoftInteractObject = isSoftInteract and (unitFrame.PlateFrame.isObject or unitFrame.isObject)
+			unitFrame.PlateFrame.isSoftInteractObject = isSoftInteract and (unitFrame.PlateFrame.isObject or unitFrame.isObject)
 			
 			local wasCombat = unitFrame.InCombat
 			unitFrame.InCombat = UnitAffectingCombat (tickFrame.unit) or (Plater.ForceInCombatUnits[unitFrame [MEMBER_NPCID]] and PLAYER_IN_COMBAT) or false
@@ -7037,6 +7055,46 @@ end
 		Plater.EndLogPerformanceCore("Plater-Core", "Update", "UpdateNameplateThreat")
 	end	
 	
+	function Plater.UpdateSoftInteractTarget(plateFrame, updateText)
+		local unitFrame = plateFrame.unitFrame
+		
+		local isSoftInteract = UnitIsUnit(plateFrame [MEMBER_UNITID], "softinteract")
+		local reaction = UnitReaction (plateFrame [MEMBER_UNITID], "player")
+		local isObject = (IS_WOW_PROJECT_MAINLINE and UnitIsGameObject(plateFrame [MEMBER_UNITID])) or reaction == nil
+		local isSoftInteractObject = isObject and isSoftInteract
+		plateFrame.isSoftInteract = isSoftInteract
+		unitFrame.isSoftInteract = isSoftInteract
+		plateFrame.isObject = isObject
+		unitFrame.isObject = isObject
+		plateFrame.isSoftInteractObject = isSoftInteractObject
+		unitFrame.isSoftInteractObject = isSoftInteractObject
+		
+		if plateFrame.IsNpcWithoutHealthBar and updateText then
+			Plater.UpdatePlateText (plateFrame, DB_PLATE_CONFIG [plateFrame.unitFrame.ActorType], false)
+		end
+		
+		if isSoftInteract and Plater.db.profile.show_softinteract_icons then
+			if unitFrame.PlateFrame.IsNpcWithoutHealthBar then -- 
+				Plater.SetAnchor(unitFrame.softInteractIcon, unitFrame.softInteractIcon.anchor or { side = 8, x = 0, y = 18, }, plateFrame)
+			else
+				Plater.SetAnchor(unitFrame.softInteractIcon, unitFrame.softInteractIcon.anchor or { side = 8, x = 0, y = 18, }, unitFrame.healthBar)
+			end
+			unitFrame.softInteractIconFrame:SetSize(24, 24)
+			unitFrame.softInteractIcon:SetDesaturated(false)
+			unitFrame.softInteractIcon:SetIgnoreParentAlpha(true)
+			unitFrame.softInteractIcon:SetSize(24, 24)
+			unitFrame.softInteractIconFrame:Show()
+			unitFrame.softInteractIcon:Show()
+			
+			local hasTexture =  SetUnitCursorTexture(unitFrame.softInteractIcon, plateFrame [MEMBER_UNITID], nil, true)
+			if not hasTexture then
+				unitFrame.softInteractIcon:SetTexture(136243)
+			end
+		else
+			unitFrame.softInteractIconFrame:Hide()
+		end
+	end
+	
 	-- ~target ~selection
 	function Plater.UpdateTarget (plateFrame) --private
 
@@ -7413,7 +7471,11 @@ end
 			--there's two ways of showing this for friendly npcs (selected from the options panel): show all names or only npcs with profession names
 			--enemy npcs always show all
 			if (plateConfigs.all_names or (plateFrame.isSoftInteract and Plater.db.profile.show_healthbars_on_softinteract)) then
-				plateFrame.ActorNameSpecial:Show()
+				if not plateFrame.isSoftInteractObject or (plateFrame.isSoftInteractObject and not Plater.db.profile.hide_name_softinteract_objects) then
+					plateFrame.ActorNameSpecial:Show()
+				else
+					plateFrame.ActorNameSpecial:Hide()
+				end
 				plateFrame.CurrentUnitNameString = plateFrame.ActorNameSpecial
 				Plater.UpdateUnitName (plateFrame)
 				
@@ -11475,6 +11537,7 @@ end
 			["NameplateTick"] = true,
 			["OnPlayerTargetChanged"] = true,
 			["UpdateTarget"] = true,
+			["UpdateSoftInteractTarget"] = true,
 			["UpdatePlateText"] = true,
 			["CheckLifePercentText"] = true,
 			["UpdateAllNames"] = true,
