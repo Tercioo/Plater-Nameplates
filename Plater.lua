@@ -7471,7 +7471,7 @@ end
 			--there's two ways of showing this for friendly npcs (selected from the options panel): show all names or only npcs with profession names
 			--enemy npcs always show all
 			if (plateConfigs.all_names or (plateFrame.isSoftInteract and Plater.db.profile.show_healthbars_on_softinteract)) then
-				if not plateFrame.isSoftInteractObject or (plateFrame.isSoftInteractObject and not Plater.db.profile.hide_name_softinteract_objects) then
+				if not plateFrame.isObject or (plateFrame.isObject and not Plater.db.profile.hide_name_on_game_objects) then
 					plateFrame.ActorNameSpecial:Show()
 				else
 					plateFrame.ActorNameSpecial:Hide()
