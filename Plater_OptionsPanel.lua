@@ -441,12 +441,17 @@ function Plater.OpenOptionsPanel()
 	tinsert (f.AllMenuFrames, generalOptionsAnchor)
 
 	--~languages
+		---executed when the user selects a language in the dropdown
+		---@param languageId string
 		local onLanguageChangedCallback = function(languageId)
 			PlaterLanguage.language = languageId
 		end
 
+		---@type string
+		local currentLanguage = PlaterLanguage.language
+
 		--addonId, parent, callback, defaultLanguage
-		local languageSelectorDropdown = DF.Language.CreateLanguageSelector(addonId, frontPageFrame, onLanguageChangedCallback, PlaterLanguage.language)
+		local languageSelectorDropdown = DF.Language.CreateLanguageSelector(addonId, frontPageFrame, onLanguageChangedCallback, currentLanguage)
 		languageSelectorDropdown:SetPoint("topright", -21, -108)
 	--end of languages
 

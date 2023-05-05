@@ -4526,6 +4526,9 @@ end
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- ~standard backdrop
 ---this is the standard backdrop for detailsframework, it's a dark-ish color semi transparent with a thin opaque black border
+---for the background it uses UI-Tooltip-Background with detailsFramework:GetDefaultBackdropColor() color
+---for the border it uses Interface\Buttons\WHITE8X8
+---also creates an additional texture frame.__background = texture with the same setting of the backdrop background
 ---@param frame table
 ---@param bUseSolidColor any
 ---@param alphaScale number
