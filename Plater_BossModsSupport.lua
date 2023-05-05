@@ -735,6 +735,7 @@ function Plater.RegisterBossModsBars()
 				UNIT_BOSS_MOD_NEEDS_UPDATE_IN[guid] = -1
 			elseif id and not guid and barsTestMode then
 				for _, guid in pairs(getAllShownGUIDs()) do
+					id = id .. guid
 					color = getDBTColor(colorId)
 					local display = DF:CleanTruncateUTF8String(strsub(string.match(name or msg or "", "^%s*(.-)%s*$" ), 1, Plater.db.profile.bossmod_support_bars_text_max_len or 7))
 					--local display = string.match(name or msg or "", "^%s*(.-)%s*$" )
@@ -767,6 +768,23 @@ function Plater.RegisterBossModsBars()
 		end
 		DBM:RegisterCallback("DBM_TimerStart", timerStartCallback)
 		
+		local timerUpdateCallback = function(event, id, elapsed, totalTime)
+			if not id or not elapsed or not totalTime then return end
+			local entry = id and Plater.BossModsTimeBarDBM[id] or nil
+			local guid = entry and entry.guid
+			local curTime = GetTime()
+			if entry and guid then
+				entry.timer = totalTime
+				entry.start = curTime - elapsed
+				if entry.paused then
+					entry.pauseStartTime = curTime
+				end
+				
+				UNIT_BOSS_MOD_NEEDS_UPDATE_IN[guid] = -1
+			end
+		end
+		DBM:RegisterCallback("DBM_TimerUpdate", timerUpdateCallback)
+		
 		local timerPauseCallback = function(event, id)
 			if not id then return end
 			local entry = id and Plater.BossModsTimeBarDBM[id] or nil
@@ -776,8 +794,8 @@ function Plater.RegisterBossModsBars()
 				--entry.start = entry.start - (curTime - entry.start)
 				entry.paused = true
 				entry.pauseStartTime = curTime
-				UNIT_BOSS_MOD_BARS [guid][id].paused = true
-				UNIT_BOSS_MOD_BARS [guid][id].pauseStartTime = curTime
+				--UNIT_BOSS_MOD_BARS [guid][id].paused = true
+				--UNIT_BOSS_MOD_BARS [guid][id].pauseStartTime = curTime
 				
 				UNIT_BOSS_MOD_NEEDS_UPDATE_IN[guid] = -1
 			end
@@ -792,9 +810,9 @@ function Plater.RegisterBossModsBars()
 				entry.paused = false
 				entry.start = entry.start + (GetTime() - entry.pauseStartTime)
 				entry.pauseStartTime = entry.start
-				UNIT_BOSS_MOD_BARS [guid][id].paused = false
-				UNIT_BOSS_MOD_BARS [guid][id].start = entry.start + (GetTime() - entry.pauseStartTime)
-				UNIT_BOSS_MOD_BARS [guid][id].pauseStartTime = entry.start
+				--UNIT_BOSS_MOD_BARS [guid][id].paused = false
+				--UNIT_BOSS_MOD_BARS [guid][id].start = entry.start + (GetTime() - entry.pauseStartTime)
+				--UNIT_BOSS_MOD_BARS [guid][id].pauseStartTime = entry.start
 				
 				UNIT_BOSS_MOD_NEEDS_UPDATE_IN[guid] = -1
 			end
