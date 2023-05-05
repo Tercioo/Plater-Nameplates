@@ -3229,6 +3229,9 @@ Plater.AnchorNamesByPhraseId = {
 				
 				newUnitFrame.HasHooksRegistered = true
 				
+				--to ensure all applies
+				newUnitFrame:UpdateTargetOverlay()
+				
 				--backup the unit frame address so we can restore it in case a script messes up and override the unit frame
 				plateFrame.unitFramePlater = newUnitFrame
 				
@@ -3447,6 +3450,7 @@ Plater.AnchorNamesByPhraseId = {
 
 				--raid target outside the health bar
 				plateFrame.unitFrame.PlaterRaidTargetFrame = CreateFrame ("frame", nil, plateFrame.unitFrame, BackdropTemplateMixin and "BackdropTemplate")
+				--plateFrame.unitFrame.PlaterRaidTargetFrame = CreateFrame ("frame", nil, plateFrame.unitFrame.healthBar, BackdropTemplateMixin and "BackdropTemplate")
 				local targetFrame = plateFrame.unitFrame.PlaterRaidTargetFrame
 				targetFrame:SetSize (22, 22)
 				PixelUtil.SetPoint (targetFrame, "right", healthBar, "left", -15, 0)
@@ -7076,8 +7080,11 @@ end
 		
 		if isSoftInteract and Plater.db.profile.show_softinteract_icons then
 			if unitFrame.PlateFrame.IsNpcWithoutHealthBar then -- 
-				Plater.SetAnchor(unitFrame.softInteractIcon, unitFrame.softInteractIcon.anchor or { side = 8, x = 0, y = 18, }, plateFrame)
+				--unitFrame.softInteractIcon:SetParent(plateFrame)
+				--Plater.SetAnchor(unitFrame.softInteractIcon, unitFrame.softInteractIcon.anchor or { side = 8, x = 0, y = 18, }, plateFrame)
+				Plater.SetAnchor(unitFrame.softInteractIcon, unitFrame.softInteractIcon.anchor or { side = 8, x = 0, y = 18, }, unitFrame.healthBar)
 			else
+				--unitFrame.softInteractIcon:SetParent(unitFrame.healthBar)
 				Plater.SetAnchor(unitFrame.softInteractIcon, unitFrame.softInteractIcon.anchor or { side = 8, x = 0, y = 18, }, unitFrame.healthBar)
 			end
 			local size = unitFrame.softInteractIcon.size or 24
@@ -9000,7 +9007,7 @@ end
 		highlightOverlay.HighlightTexture:SetAllPoints()
 		highlightOverlay.HighlightTexture:SetColorTexture (1, 1, 1, 1)
 		highlightOverlay.HighlightTexture:SetAlpha (1)
-		highlightOverlay:Hide()
+		highlightOverlay.HighlightTexture:Hide()
 		
 		plateFrame.unitFrame.HighlightFrame = highlightOverlay
 	end
