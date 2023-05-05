@@ -8,11 +8,13 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 		
-			{1683182752,  "Backend Change", "May 5th, 2023", "Further support for DBM Timer Icons.", "cont1nuity"},
-			{1683182752,  "Backend Change", "May 4th, 2023", "Export/Import of audio cues from the Cast Colors and Names tab.", "cont1nuity"},
-			{1683182752,  "New Feature", "May 4th, 2023", "Add options to show soft-interact icons and hide names on soft-interact objects.", "cont1nuity"},
-			{1683182752,  "Bug Fix", "May 4th, 2023", "Allow opt-out of auto-accepting NPC colors sent by raid-leaders.", "cont1nuity"},
-			{1683182752,  "Bug Fix", "May 4th, 2023", "Allow lower scaling range for personal resources, especially targeted at Blizzard Combo Points.", "cont1nuity"},
+			{1683096614,  "Bug Fix", "May 5th, 2023", "Fixing an issue with the Tooltip API.", "cont1nuity"},
+			{1683096614,  "Bug Fix", "May 5th, 2023", "Ensure that no artifacts are shown on soft-interact objects.", "cont1nuity"},
+			{1683096614,  "Backend Change", "May 5th, 2023", "Further support for DBM Timer Icons.", "cont1nuity"},
+			{1683096614,  "Backend Change", "May 4th, 2023", "Export/Import of audio cues from the Cast Colors and Names tab.", "cont1nuity"},
+			{1683096614,  "New Feature", "May 4th, 2023", "Add options to show soft-interact icons and hide names on soft-interact objects.", "cont1nuity"},
+			{1683096614,  "Bug Fix", "May 4th, 2023", "Allow opt-out of auto-accepting NPC colors sent by raid-leaders.", "cont1nuity"},
+			{1683096614,  "Bug Fix", "May 4th, 2023", "Allow lower scaling range for personal resources, especially targeted at Blizzard Combo Points.", "cont1nuity"},
 			
 			{1683096614,  "Bug Fix", "May 3rd, 2023", "Blizzard allows changing nameplate distance again in retail -> nameplateMaxDistance 0-60y.", "cont1nuity"},
 			{1683096614,  "Bug Fix", "May 3rd, 2023", "Apply workaround for player nameplates not showing until blizzard fixes this.", "cont1nuity"},

@@ -9635,11 +9635,7 @@ end
 		if IS_WOW_PROJECT_MAINLINE then
 			local tooltipData = C_TooltipInfo.GetHyperlink ("unit:" .. serial or "")
 			if tooltipData then
-				TooltipUtil.SurfaceArgs(tooltipData)
 				local lines = tooltipData.lines
-				for _, line in ipairs(lines) do
-					TooltipUtil.SurfaceArgs(line)
-				end
 				
 				petName = lines and lines[1] and lines[1].leftText
 				text1 = lines and lines[2 + cbMode] and lines[2 + cbMode].leftText
@@ -9824,11 +9820,6 @@ end
 		if IS_WOW_PROJECT_MAINLINE then
 			local tooltipData = C_TooltipInfo.GetHyperlink("unit:" .. (plateFrame [MEMBER_GUID] or ""))
 			if tooltipData then
-				TooltipUtil.SurfaceArgs(tooltipData)
-				for _, line in ipairs(tooltipData.lines) do
-					TooltipUtil.SurfaceArgs(line)
-				end
-				
 				local line = tooltipData.lines and tooltipData.lines[2 + cbMode]
 				subTitle = line and line.leftText or ""
 			end
@@ -9879,9 +9870,7 @@ end
 			if IS_WOW_PROJECT_MAINLINE then
 				local tooltipData = C_TooltipInfo.GetHyperlink ("unit:" .. plateFrame [MEMBER_GUID])
 				if tooltipData then
-					TooltipUtil.SurfaceArgs(tooltipData)
-					for _, line in ipairs(tooltipData.lines) do
-						TooltipUtil.SurfaceArgs(line)
+					for _, line in ipairs(tooltipData.lines or {}) do
 						if line.type == Enum.TooltipDataLineType.QuestObjective or line.type == Enum.TooltipDataLineType.QuestTitle or line.type == Enum.TooltipDataLineType.QuestPlayer then
 							--only add actual quest tooltip lines
 							ScanQuestTextCache [#ScanQuestTextCache + 1] = line.leftText or ""
