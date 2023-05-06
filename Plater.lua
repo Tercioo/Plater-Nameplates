@@ -7083,14 +7083,9 @@ end
 		end
 		
 		if isSoftInteract and Plater.db.profile.show_softinteract_icons then
-			if unitFrame.PlateFrame.IsNpcWithoutHealthBar then -- 
-				--unitFrame.softInteractIcon:SetParent(plateFrame)
-				--Plater.SetAnchor(unitFrame.softInteractIcon, unitFrame.softInteractIcon.anchor or { side = 8, x = 0, y = 18, }, plateFrame)
-				Plater.SetAnchor(unitFrame.softInteractIcon, unitFrame.softInteractIcon.anchor or { side = 8, x = 0, y = 18, }, unitFrame.healthBar)
-			else
-				--unitFrame.softInteractIcon:SetParent(unitFrame.healthBar)
-				Plater.SetAnchor(unitFrame.softInteractIcon, unitFrame.softInteractIcon.anchor or { side = 8, x = 0, y = 18, }, unitFrame.healthBar)
-			end
+			--re-anchor
+			Plater.SetAnchor(unitFrame.softInteractIcon, unitFrame.softInteractIcon.anchor or { side = 8, x = 0, y = 18, }, unitFrame)
+			
 			local size = unitFrame.softInteractIcon.size or 24
 			unitFrame.softInteractIconFrame:SetSize(size, size)
 			unitFrame.softInteractIcon:SetDesaturated(false)
