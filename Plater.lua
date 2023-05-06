@@ -2877,10 +2877,11 @@ Plater.AnchorNamesByPhraseId = {
 				if (plateFrame and plateFrame.unitFrame.PlaterOnScreen) then
 					local unitFrame = plateFrame.unitFrame
 					local unitName = UnitName (unitID)
+					local unitNameTranslit = unitName
 					if DB_USE_NAME_TRANSLIT then
-						unitName = LibTranslit:Transliterate(unitName, TRANSLIT_MARK)
+						unitNameTranslit = LibTranslit:Transliterate(unitName, TRANSLIT_MARK)
 					end
-					plateFrame [MEMBER_NAME] = unitName
+					plateFrame [MEMBER_NAME] = unitNameTranslit
 					plateFrame [MEMBER_NAMELOWER] = lower (plateFrame [MEMBER_NAME])
 					plateFrame.unitNameInternal = unitName
 					unitFrame [MEMBER_NAME] = plateFrame [MEMBER_NAME]
@@ -4081,12 +4082,14 @@ Plater.AnchorNamesByPhraseId = {
 			
 			--cache values
 			local unitName = UnitName (unitID) or ""
+			local unitNameTranslit = unitName
 			if DB_USE_NAME_TRANSLIT then
-				unitName = LibTranslit:Transliterate(unitName, TRANSLIT_MARK)
+				unitNameTranslit = LibTranslit:Transliterate(unitName, TRANSLIT_MARK)
 			end
-			plateFrame [MEMBER_NAME] = unitName
+			plateFrame [MEMBER_NAME] = unitNameTranslit
 			plateFrame [MEMBER_NAMELOWER] = lower (plateFrame [MEMBER_NAME])
 			plateFrame ["namePlateClassification"] = UnitClassification (unitID)
+			plateFrame.unitNameInternal = unitName
 			
 			--clear name schedules
 			unitFrame.ScheduleNameUpdate = nil
@@ -4097,6 +4100,7 @@ Plater.AnchorNamesByPhraseId = {
 			unitFrame [MEMBER_NAME] = plateFrame [MEMBER_NAME]
 			unitFrame [MEMBER_NAMELOWER] = plateFrame [MEMBER_NAMELOWER]
 			unitFrame ["namePlateClassification"] = plateFrame ["namePlateClassification"]
+			unitFrame.unitNameInternal = unitName
 			unitFrame [MEMBER_UNITID] = unitID
 			unitFrame.namePlateThreatPercent = 0
 			unitFrame.namePlateThreatIsTanking = nil
@@ -10334,7 +10338,7 @@ end
 	
 	--return if the unit is in the friends list
 	function Plater.IsUnitInFriendsList (unitFrame)
-		return Plater.FriendsCache [unitFrame.unitNameInternal] or Plater.FriendsCache [lower(unitFrame.unitNameInternal)]
+		return Plater.FriendsCache [unitFrame.unitNameInternal]
 	end
 	
 	--> api version of the tap denied function
