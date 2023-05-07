@@ -2877,10 +2877,11 @@ Plater.AnchorNamesByPhraseId = {
 				if (plateFrame and plateFrame.unitFrame.PlaterOnScreen) then
 					local unitFrame = plateFrame.unitFrame
 					local unitName = UnitName (unitID)
+					local unitNameTranslit = unitName
 					if DB_USE_NAME_TRANSLIT then
-						unitName = LibTranslit:Transliterate(unitName, TRANSLIT_MARK)
+						unitNameTranslit = LibTranslit:Transliterate(unitName, TRANSLIT_MARK)
 					end
-					plateFrame [MEMBER_NAME] = unitName
+					plateFrame [MEMBER_NAME] = unitNameTranslit
 					plateFrame [MEMBER_NAMELOWER] = lower (plateFrame [MEMBER_NAME])
 					plateFrame.unitNameInternal = unitName
 					unitFrame [MEMBER_NAME] = plateFrame [MEMBER_NAME]
@@ -3739,8 +3740,9 @@ Plater.AnchorNamesByPhraseId = {
 				plateFrame.unitFrame.aggroGlowLower:Hide()
 
 			--> soft-interact icon
-				plateFrame.unitFrame.softInteractIconFrame = CreateFrame ("frame",plateFrame.unitFrame:GetName() .. "softInteractIconFrame", plateFrame.unitFrame, BackdropTemplateMixin and "BackdropTemplate")
-				plateFrame.unitFrame.softInteractIcon = plateFrame.unitFrame.softInteractIconFrame:CreateTexture(nil, "OVERLAY")
+				plateFrame.unitFrame.softInteractIconFrame = CreateFrame ("frame",plateFrame.unitFrame:GetName() .. "softInteractIconFrame", plateFrame, BackdropTemplateMixin and "BackdropTemplate")
+				plateFrame.unitFrame.softInteractIcon = plateFrame.unitFrame.softInteractIconFrame:CreateTexture("$parentIcon", "OVERLAY")
+				plateFrame.unitFrame.softInteractIcon:SetParent(plateFrame)
 				plateFrame.unitFrame.softInteractIcon:SetTexture(136243)
 				plateFrame.unitFrame.softInteractIcon:Show()
 				plateFrame.unitFrame.softInteractIconFrame:SetFrameLevel(plateFrame.unitFrame.healthBar:GetFrameLevel() + 25)
@@ -4081,12 +4083,14 @@ Plater.AnchorNamesByPhraseId = {
 			
 			--cache values
 			local unitName = UnitName (unitID) or ""
+			local unitNameTranslit = unitName
 			if DB_USE_NAME_TRANSLIT then
-				unitName = LibTranslit:Transliterate(unitName, TRANSLIT_MARK)
+				unitNameTranslit = LibTranslit:Transliterate(unitName, TRANSLIT_MARK)
 			end
-			plateFrame [MEMBER_NAME] = unitName
+			plateFrame [MEMBER_NAME] = unitNameTranslit
 			plateFrame [MEMBER_NAMELOWER] = lower (plateFrame [MEMBER_NAME])
 			plateFrame ["namePlateClassification"] = UnitClassification (unitID)
+			plateFrame.unitNameInternal = unitName
 			
 			--clear name schedules
 			unitFrame.ScheduleNameUpdate = nil
@@ -4097,6 +4101,7 @@ Plater.AnchorNamesByPhraseId = {
 			unitFrame [MEMBER_NAME] = plateFrame [MEMBER_NAME]
 			unitFrame [MEMBER_NAMELOWER] = plateFrame [MEMBER_NAMELOWER]
 			unitFrame ["namePlateClassification"] = plateFrame ["namePlateClassification"]
+			unitFrame.unitNameInternal = unitName
 			unitFrame [MEMBER_UNITID] = unitID
 			unitFrame.namePlateThreatPercent = 0
 			unitFrame.namePlateThreatIsTanking = nil
@@ -7079,14 +7084,9 @@ end
 		end
 		
 		if isSoftInteract and Plater.db.profile.show_softinteract_icons then
-			if unitFrame.PlateFrame.IsNpcWithoutHealthBar then -- 
-				--unitFrame.softInteractIcon:SetParent(plateFrame)
-				--Plater.SetAnchor(unitFrame.softInteractIcon, unitFrame.softInteractIcon.anchor or { side = 8, x = 0, y = 18, }, plateFrame)
-				Plater.SetAnchor(unitFrame.softInteractIcon, unitFrame.softInteractIcon.anchor or { side = 8, x = 0, y = 18, }, unitFrame.healthBar)
-			else
-				--unitFrame.softInteractIcon:SetParent(unitFrame.healthBar)
-				Plater.SetAnchor(unitFrame.softInteractIcon, unitFrame.softInteractIcon.anchor or { side = 8, x = 0, y = 18, }, unitFrame.healthBar)
-			end
+			--re-anchor
+			Plater.SetAnchor(unitFrame.softInteractIcon, unitFrame.softInteractIcon.anchor or { side = 8, x = 0, y = 18, }, plateFrame)
+			
 			local size = unitFrame.softInteractIcon.size or 24
 			unitFrame.softInteractIconFrame:SetSize(size, size)
 			unitFrame.softInteractIcon:SetDesaturated(false)
@@ -10334,7 +10334,7 @@ end
 	
 	--return if the unit is in the friends list
 	function Plater.IsUnitInFriendsList (unitFrame)
-		return Plater.FriendsCache [unitFrame.unitNameInternal] or Plater.FriendsCache [lower(unitFrame.unitNameInternal)]
+		return Plater.FriendsCache [unitFrame.unitNameInternal]
 	end
 	
 	--> api version of the tap denied function

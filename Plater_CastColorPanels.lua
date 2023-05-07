@@ -110,7 +110,7 @@ end
 function Plater.GetSpellCustomColor(spellId) --exposed
     local customColorTable = Plater.db.profile.cast_colors[spellId]
     if (customColorTable) then
-        return customColorTable[2]
+        return customColorTable[2] and (customColorTable[2] ~= "white") and customColorTable[2] or nil
     end
 end
 
