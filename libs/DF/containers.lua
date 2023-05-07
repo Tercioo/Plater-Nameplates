@@ -322,7 +322,13 @@ detailsFramework.FrameContainerMixin = {
 
         frameContainer:CheckResizeLockedState()
         frameContainer:CheckMovableLockedState()
-        frameContainer:SetResizeBounds(50, 50, 1000, 1000)
+
+        if (frameContainer.SetMinResize) then --old versions of the game uses this method
+            frameContainer:SetMinResize(50, 50)
+            frameContainer:SetMaxResize(1000,1000)
+        else
+            frameContainer:SetResizeBounds(50, 50, 1000, 1000) --new versions has this method
+        end
     end,
 
     ---run when the container has its size changed

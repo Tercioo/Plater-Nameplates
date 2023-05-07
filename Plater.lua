@@ -2433,7 +2433,7 @@ Plater.AnchorNamesByPhraseId = {
 
 				if (bSkipNonEssentialPatches) then
 					if (PlaterPatchLibrary[patchId].NotEssential) then
-						print(L["OPTIONS_NOESSENTIAL_SKIP_ALERT"], PlaterPatchLibrary[patchId].Notes[1]) --"Skipped non-essential patch:"
+						print(LOC["OPTIONS_NOESSENTIAL_SKIP_ALERT"], PlaterPatchLibrary[patchId].Notes[1]) --"Skipped non-essential patch:"
 						bCanInstallPatch = false
 					end
 				end
