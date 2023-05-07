@@ -7,7 +7,8 @@ local _
 function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
-		
+			
+			{1683471224,  "New Feature", "May 7th, 2023", "Move from minimap icon to addon compartment", "kitsunekyo"},
 			{1683096614,  "Bug Fix", "May 6th, 2023", "Fixing an issue with internal default cast color handling.", "cont1nuity"},
 			{1683096614,  "Bug Fix", "May 6th, 2023", "Fixing an issue internal unit names.", "cont1nuity"},
 			{1683096614,  "Backend Change", "May 5th, 2023", "Details Framework updates.", "Terciob"},
