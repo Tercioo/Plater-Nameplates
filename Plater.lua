@@ -4618,19 +4618,21 @@ function Plater.OnInit() --private --~oninit ~init
 	Plater.InitLDB()
 
 	-- Register addon compartment
-	AddonCompartmentFrame:RegisterAddon({
-		text = "Plater",
-		icon = "Interface\\AddOns\\Plater\\images\\cast_bar",
-		notCheckable = true,
-		registerForRightClick = true,
-		func = function ()
-			if (PlaterOptionsPanelFrame and PlaterOptionsPanelFrame:IsShown()) then
-				PlaterOptionsPanelFrame:Hide()
-				return true
+	if IS_WOW_PROJECT_MAINLINE and AddonCompartmentFrame and AddonCompartmentFrame.RegisterAddon then
+		AddonCompartmentFrame:RegisterAddon({
+			text = "Plater",
+			icon = "Interface\\AddOns\\Plater\\images\\cast_bar",
+			notCheckable = true,
+			registerForRightClick = true,
+			func = function ()
+				if (PlaterOptionsPanelFrame and PlaterOptionsPanelFrame:IsShown()) then
+					PlaterOptionsPanelFrame:Hide()
+					return true
+				end
+				Plater.OpenOptionsPanel()
 			end
-			Plater.OpenOptionsPanel()
-		end
-	})
+		})
+	end
 
 	--to fix: attempt to index field 'spellRangeCheck' (a string value)
 		if (type (PlaterDBChr.spellRangeCheckRangeEnemy) ~= "table") then
