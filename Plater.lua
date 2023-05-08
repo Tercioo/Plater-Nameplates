@@ -11586,6 +11586,7 @@ end
 			["GetSpecIconForUnitFromBG"] = false,
 			["GetUnitBGInfo"] = false,
 			["GetSpecIcon"] = false,
+			["InitLDB"] = true,
 			["APIList"] = true,
 			["FrameworkList"] = true,
 			["UnitFrameMembers"] = true,
