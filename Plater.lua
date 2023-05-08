@@ -4614,6 +4614,9 @@ function Plater.OnInit() --private --~oninit ~init
 		PlaterDBChr.spellRangeCheckRangeEnemy = PlaterDBChr.spellRangeCheckRangeEnemy or {}
 		PlaterDBChr.spellRangeCheckRangeFriendly = PlaterDBChr.spellRangeCheckRangeFriendly or {}
 
+	--Register LDB
+	Plater.InitLDB()
+
 	-- Register addon compartment
 	AddonCompartmentFrame:RegisterAddon({
 		text = "Plater",
