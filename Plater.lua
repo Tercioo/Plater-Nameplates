@@ -1244,6 +1244,7 @@ Plater.AnchorNamesByPhraseId = {
 				type = "data source",
 				icon = [[Interface\AddOns\Plater\images\cast_bar]],
 				text = "Plater",
+				showInCompartment = true,
 				
 				HotCornerIgnore = true,
 				
@@ -1268,7 +1269,7 @@ Plater.AnchorNamesByPhraseId = {
 						GameCooltip:SetOption ("TextSize", 10)
 						
 						--> disable minimap icon
-						local disable_minimap = function()
+						local toggle_minimap = function()
 							PlaterDBChr.minimap.hide = not PlaterDBChr.minimap.hide
 							
 							if (PlaterDBChr.minimap.hide) then
@@ -1279,6 +1280,14 @@ Plater.AnchorNamesByPhraseId = {
 							LDBIcon:Refresh ("Plater", PlaterDBChr.minimap)
 						end
 						
+						local toggle_compartment = function()
+							if LDBIcon:IsButtonInCompartment("Plater") then
+								LDBIcon:RemoveButtonFromCompartment("Plater")
+							else
+								LDBIcon:AddButtonToCompartment("Plater")
+							end
+						end
+						
 						GameCooltip:AddMenu (1, function() Plater.EnableProfiling(true) end, true, nil, nil, "Start profiling", nil, true)
 						GameCooltip:AddIcon ([[Interface\Addons\Plater\media\sphere_full_64]], 1, 1, 14, 14, 0, 1, 0, 1, "red")
 						GameCooltip:AddMenu (1, function() Plater.DisableProfiling() end, true, nil, nil, "Stop profiling", nil, true)
@@ -1286,7 +1295,9 @@ Plater.AnchorNamesByPhraseId = {
 						GameCooltip:AddMenu (1, function() Plater.ShowPerfData() end, true, nil, nil, "Show profiling data", nil, true)
 						GameCooltip:AddIcon ([[Interface\Addons\Plater\media\eye_64]], 1, 1, 14, 14, 0, 1, 0, 1, "green")
 						GameCooltip:AddLine ("$div")
-						GameCooltip:AddMenu (1, disable_minimap, true, nil, nil, "Hide/Show Minimap Icon", nil, true)
+						GameCooltip:AddMenu (1, toggle_minimap, true, nil, nil, "Hide/Show Minimap Icon", nil, true)
+						GameCooltip:AddIcon ([[Interface\Buttons\UI-Panel-HideButton-Disabled]], 1, 1, 14, 14, 7/32, 24/32, 8/32, 24/32, "gray")
+						GameCooltip:AddMenu (1, toggle_compartment, true, nil, nil, "Hide/Show Compartment Entry", nil, true)
 						GameCooltip:AddIcon ([[Interface\Buttons\UI-Panel-HideButton-Disabled]], 1, 1, 14, 14, 7/32, 24/32, 8/32, 24/32, "gray")
 						
 						--GameCooltip:SetBackdrop (1, _detalhes.tooltip_backdrop, nil, _detalhes.tooltip_border_color)
@@ -1308,6 +1319,9 @@ Plater.AnchorNamesByPhraseId = {
 			if (databroker and not LDBIcon:IsRegistered ("Plater")) then
 				PlaterDBChr.minimap = PlaterDBChr.minimap or {}
 				LDBIcon:Register ("Plater", databroker, PlaterDBChr.minimap)
+				if not PlaterDBChr.minimap.showInCompartment == true then
+					--LDBIcon:AddButtonToCompartment("Plater") -- this is opt-in in LDBIcon (for now)
+				end
 			end
 			
 			Plater.databroker = databroker
@@ -4616,23 +4630,6 @@ function Plater.OnInit() --private --~oninit ~init
 
 	--Register LDB
 	Plater.InitLDB()
-
-	-- Register addon compartment
-	if IS_WOW_PROJECT_MAINLINE and AddonCompartmentFrame and AddonCompartmentFrame.RegisterAddon then
-		AddonCompartmentFrame:RegisterAddon({
-			text = "Plater",
-			icon = "Interface\\AddOns\\Plater\\images\\cast_bar",
-			notCheckable = true,
-			registerForRightClick = true,
-			func = function ()
-				if (PlaterOptionsPanelFrame and PlaterOptionsPanelFrame:IsShown()) then
-					PlaterOptionsPanelFrame:Hide()
-					return true
-				end
-				Plater.OpenOptionsPanel()
-			end
-		})
-	end
 
 	--to fix: attempt to index field 'spellRangeCheck' (a string value)
 		if (type (PlaterDBChr.spellRangeCheckRangeEnemy) ~= "table") then
@@ -13594,6 +13591,16 @@ function SlashCmdList.PLATER (msg, editbox)
 		
 		return
 	
+	elseif (msg == "compartment") then
+
+		if LDBIcon:IsButtonInCompartment("Plater") then
+			LDBIcon:RemoveButtonFromCompartment("Plater")
+		else
+			LDBIcon:AddButtonToCompartment("Plater")
+		end
+		
+		return
+	
 	elseif (msg and msg:find("^cvar[s]?")) then
 		Plater.DebugCVars(msg:gsub("^cvar[s]? ?", ""))
 		return
@@ -13608,6 +13615,7 @@ function SlashCmdList.PLATER (msg, editbox)
 		usage = usage .. "\n|cffffaeae/plater|r |cffffff33add|r: Adds the targeted unit to the NPC Cache"
 		usage = usage .. "\n|cffffaeae/plater|r |cffffff33colors|r: Opens the Plater color palette"
 		usage = usage .. "\n|cffffaeae/plater|r |cffffff33minimap|r: Toggle the Plater minimap icon"
+		usage = usage .. "\n|cffffaeae/plater|r |compartment|r: Toggle the Plater addon compartment icon"
 		usage = usage .. "\n|cffffaeae/plater|r |cffffff33cvar <cvar name>|r: Print information about a cvar value stored in the profile."
 		usage = usage .. "\n|cffffaeaeVersion:|r |cffffff33" .. Plater.GetVersionInfo() .. "|r"
 		Plater:Msg(usage)
