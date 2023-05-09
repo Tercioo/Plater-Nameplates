@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 			
+			{1683096614,  "Backend Change", "May 9th, 2023", "Additional work on DBM Boss-Mod-Icon-Bars.", "cont1nuity"},
 			{1683096614,  "Backend Change", "May 9th, 2023", "Do not print usage info by default.", "cont1nuity"},
 			{1683096614,  "New Feature", "May 8th, 2023", "Add addon compartment support", "kitsunekyo"},
 			{1683096614,  "Bug Fix", "May 6th, 2023", "Fixing an issue with internal default cast color handling.", "cont1nuity"},

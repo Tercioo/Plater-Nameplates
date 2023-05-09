@@ -220,12 +220,16 @@ function Plater.UpdateBossModAuras(unitFrame)
 		--for id, data in pairs(UNIT_BOSS_MOD_BARS [guid]) do
 		for _, data in pairs(sortedAuras) do
 			local id = data.id
-			if data.timer and curTime > data.start + data.timer then
+			local overTime = curTime > data.start + data.timer
+			if not data.keep and data.timer and overTime then
 				UNIT_BOSS_MOD_BARS [guid][id] = nil
 			else
 				local timer, start = data.timer, data.start
 				if data.paused then
 					start = curTime - (data.pauseStartTime - start) --offset for paused.
+				end
+				if overTime and data.keep then
+					timer = nil
 				end
 				--print(timer, start, data.name, data.msg, data.colorId)
 				local icon = iconFrame:SetIcon(-1, data.color, timer and start, timer, data.icon, {text = data.display, text_color = data.color})
