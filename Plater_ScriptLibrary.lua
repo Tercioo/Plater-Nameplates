@@ -62,9 +62,9 @@ PlaterScriptLibrary ["Add - Explode on Die [P]"] = {
 }
 
 PlaterScriptLibrary ["Add - Health Markers [P]"] = {
-	Revision = 1,
+	Revision = 2,
 	ScriptType = "script",
-	String = "nJ16Ujoou43L(lyuHfOaDPsZknxu3s3PuKc7S)OTPXKyaRXyh5yM2URM8SVhBNRqcnHHUABAZfBFU99D8X21UR9mBlUVKWzbWRt0Fp7fFS9Kb2wtqRX2w3Q7o0PRT1xr0nqlFWZl0zns8nSii0HWK8qh5kCOZkmIkxf6mhjGwGwf41egm4x4BcDqZ5BKqN8Ga1hekrsWQxHgPKfG8(yHlMjBBB9h4xIDmWUJD5m4otIflqU47bh4wwW9tPiOL7jRrlXb3Bg9Ju0Cm126Z4axBlBP9KEPX0W4yAofX(MYQmCCunPtKvRN50AkR5ol1CDJn3xXcjXfrdD(cyXqNpXPCrSH1WU63E67NPV3xDxg5raecsl5Ii5QJ)5AeX4FJJvuOJU92khUFQd3Z26g0ZAhFhbqu)viGzUHWaSQnmKlfixLnS)ykg2(8rLf0FqPG658SnRNJfBJcgfjvPOzz2iYlLnlGQ)Py2H5ywT5wqO0QtMgh6sqMKuGdMknAjLfpFpSOzS5jWmbqeXKqH9YtThcHLnsJPlaaKC3Vd1mukEs3oWpGPqEEk9BuNTLg0SKQaXkWvq8bXutPGh9IQ80k05QOcn3exe6UPpyBn4vDttbQhtsLST6BOmRUJoF4OZ1G3Grd63xzWZbdIPyHcKBnJlwUcfanpu7TUqknkUm4(RcgzoORNwHzrJAdJa19EYqJRqSLQ6FGbGh65NGPadaJMS2NlKig8zGpMsbkSBFG52WCnfMBeGPlo1OXXErVam4Am8oM99zO5u1Rg4u)vZWRdDmxTArybWuvvYKN27f40EJfV9F67brqeE3iXcGIWqb(RvxGFniVFDagmN(gbuZzal8RWZHdhDw)oJgcF29SJx4twaAirI2gUZeMn1mflJVfDv8WV4kIhUrZxF43cZbOOx2z86apj6Jq0EhVqTawvTS7uZIUHoVp05Fu0JNaTKZwqjlxj3nAUZmt5bZ4h05hNQK5sk4el3qP4IerpJAljMPMemH75ryldDMrwcZI2rY0w(rrXr6BPyusS9jbojJnxcB1OtT3UDxFejUWO3z4NLBe4gmcfcNt4go9KkR(lSWs9AaXkQlOg9F1sfwK)2iArE6VJLxHvSyJMn3h2(kjQVzir8eHFgOiJooaSWmBRkztLx)BBpKY1B6jA)XAP1iyrt6UlPXhN47o(ZpSR60fOYQSsllTLdO8XVS187uZzwbnPVFbq7oDkxNluRjronzl6Qf1G)8rean2Y784LRN4l)moLFvDIDQzNl8(Ten9QiuHkKXLLntR2kCNcTvUyu5AYRgMVYJSSklR4p1OgExuk3tep1gFEFPtb)l1aQJIlVY3uoSLRgNqXlKNu8CEv1O4U1E27IYpGV708TanJGHOsGQ6rAWicwExrzTTYK1EWOsMIGgeoJhCCu7RG2gArb4cvnw1q68MHYLNtOoYj(z9AjnmB8)IPiraw3sq29J2gouZcYY25pADZJsMP(ap71y6r8Fc2KHcRp4KC62MhNKOsbMKtH(MGjcmSRIku8EVLyvDc7Av)qTy4113V2ZrnuN0ZR0CQXbQ6Xm1oxQ46q18ekh6jwQecMRXKZ4KhX25co5t3)NEg3oM)Bo2)l",
+	String = "nJvBpnooq4)l8P2vqV2sFHI0EsllId4wkiLE79bGqCtCBTW1jYXDb2tB(TFZy7K00MaT8YPtPTjX2ZmpZZ4zSDDB5oY1jmsXcfXWJd1Vp6PiQ7WUUo)j9P0EB568DcFb115lbbjEZjY7PY4epMqfM4PMrt8MrjC1SeVXej0c0QKoNjGb)u4IepY4WfkOZW4y8fgNPyu8rOroBciFev6tfQgUodjZbdDP2WjEGPpZpua)kuu5eIp9gadxkIV5kobA5g2CYuA8ngGEhNmMYDDoMg7764QCh2o3N6z9PuNzyZuJnMte3Jirq3oZPfCzZTFU5AznhWcmFIku(1qEOm14A6g)0w)7(6F7G)Qsr13PsfijpX7BaWs8SYVn4Z3iIbFNLcKepD7nqa3jhWTDDUG8Og4RjaHhnJabNlycG3A0Qkm(fCC5eCJ(dwLfSJyB8cXI5JPGBCIK4Jn4EeI8UfISLeiZJY2W(BkY2RqK1yUtyCEwCzdIRACmbe6Tgkngopk2)zIIMXwmawGlZJwTl6yVHqvMNA0Hc9EvO)pGYgOrh2Qzt4JRdjiavUrxUoAgZrHoItSVKfbIHPuWT22Ip7L4DQTwZfP1HU(QBDD6(Iy0uJ6USPIUoDmXlNwd63BqFn51Dq3oD0WO1b9A3Upg9Gh70SDtDzXbaU7IaQpaikNkXGWEJcLtNrIHM7P9gFixGKwP85luAHd01dZOc7OwiyqPXhmH5zeXuSejya4Mo)fmfyay0S5rHsfraVghr5Cie3ca8KfcFtb0AXu(KDnA8Sa7dq0FofEMk(XiYyo(OHU1Vvp58epZ1E7XeXqooozlqJEjnV3uXB8xrbGhyJh1YSaOikSgW54fGRUfX1RWGf03ai01bO7dG79oy)UdGWfg22)9Z9ztanKjrdtSZ4M11rkXsyZEv(Wp8uwaTw9xE4xc5iCYtRnETJN59wgT97NRwsufxz(kZ6YjEFoX7FWWtGKmnumHZMotTU3CTjt6wZ4728x7IYCchaX0fCoTmr0zCRiXimjyyyqatmnXBeBkKfvIX0zOwrBBf9cy3mkz4cOUWXuFYtLkhMoBLRJvoOUYc(9A7DemlMQZCxxwD()kMCirsEKeNp6FvgVM)uEmlJR)QKMLbvibAZMEPXZQDDerEOrVJOpQwiP1emoa4DcnZX2zJv)HouLEnRuf1cuJ(7wPch2pnIwgs)dQ6ukoRQw9su6gN48HXePjMVfQyjD8k4ct2)MmBQ66XRIqEOE3B2T0RLwZGLve46SgVByK)zhF76QtxWCzLvzzYvaaIXVTs9MCZzwXpRVFdy7MnRwNtW1iz7MDQcCrw4BeHbSXkOliSA9KEfTeOI2uqS2AifCVFpttVidvQcfHQQY02AfUwH)nUyu1Akylm)gpYQQSml8HABb6St5EGfGBe7ZvMc(34a2gfxDLVRcHTawBhoDIANYZ5XQrPDRr2NSZpG3Bw)JGnT0GTeiwpstgwA5tLnRDVLM1(QzLLkcAy4LqW7JAFb22ewqcxI1yXH08dJLREobE2z6J61sQzoOYHxrGnEOBjE59h3aob2e20gf)ReQ)UmZuFaTN1y6r8Fc3SuiC7jNSZvx)9zsuLet2XA)q4ejf2vXgu8(zlXIDc7lvFdxm88ThxpZrFWtEgu5CQZIX6XcCNlB46qB5jMETNGAJyWcnMDMRIm2AxWjXA9)0ZC308xp5(Vp",
 	Enabled = true,
 	OverrideTriggers = "merge",
 }
@@ -993,6 +993,43 @@ do
 			"- test patch."
 		},
 		Func = function()
+		end,
+	})
+
+	--#27 triggers for 10.1 season 2 dragonflight m+ dungeons
+	tinsert (PlaterPatchLibrary, {
+		NotEssential = true,
+
+		Notes = {
+			"- Added support for season 2 mythic dungeons."
+		},
+		Func = function()
+			local addTriggers = {
+				["Add - Explode on Die [P]"] = {189299, 131402, npc = true},
+				["Add - Important [P]"] = {190381, 92538, 192464, npc = true},
+				["Add - Warning [P]"] = {129758, 190426, 186696, 101075, 100818, 98081, 52019, npc = true},
+				["Aura - Buff Alert [Plater]"] = {377738, 378149},
+				["Cast - Big Alert [Plater]"] = {257397, 257736, 382787, 374699, 377402, 369602, 369465, 369400, 381593, 265091, 265433, 382791, 376780},
+				["Cast - Circle AoE [P]"] = {258672, 258777, 257756, 257784, 256405, 256589, 393793, 388046, 375079, 390290, 369811, 369703, 226287, 410999, 372561},
+				["Cast - Frontal Cone [Plater]"] = {257426, 255952, 257870, 413147, 383107, 377559, 388060, 376170, 384524, 375351, 390111, 369791, 369573, 369563, 369335, 369061, 375727, 265016, 265019, 260793, 260292, 272457, 272609, 269843, 183465, 226296, 188169, 183088, 410873, 411012, 88308, 382708, 375251, 375439, 372311, 373742, 372201, 374533, 377204},
+				["Cast - Glowing [P]"] = {384353, 265376, 193941, 411002},
+				["Cast - Quick Flash [P]"] = {385029, 374563, 377341, 369675, 369365, 369411, 278961, 202108, 88186},
+				["Cast - Small Alert [Plater]"] = {281420, 274383, 259092, 367521, 374544, 385039, 382474, 369823, 377500, 260879, 186269, 378818, 371875, 372225},
+				["Cast - Ultra Important [P]"] = {376934, 384899, 373960, 374724, 385551, 259732, 373424, 373084, 87618},
+				["Cast - Very Important [Plater]"] = {257732, 256060, 257899, 384633, 374339, 395694, 391634, 372701, 369328, 265487, 413044, 183526, 88194, 87762, 413385, 411001, 378282, 384161},
+			}
+
+			for scriptName, triggerList in pairs(addTriggers) do
+				if (triggerList.npc) then
+					for _, npcId in ipairs(triggerList) do
+						Plater.AddTriggerToScript(npcId, "npc", scriptName)
+					end
+				else
+					for _, spellId in ipairs(triggerList) do
+						Plater.AddTriggerToScript(spellId, "cast", scriptName)
+					end
+				end
+			end
 		end,
 	})
 
