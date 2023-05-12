@@ -377,10 +377,10 @@ function Plater.OpenOptionsPanel()
 	end
 	--]=]
 
-	Plater.Resources.BuildResourceOptionsTab(resourceFrame)
-	Plater.Auras.BuildGhostAurasOptionsTab(ghostAuras)
-	Plater.CreateCastColorOptionsFrame(castColorsFrame)
-	platerInternal.Plugins.CreatePluginsOptionsTab(pluginsFrame)
+	C_Timer.After(0.1, function() Plater.Resources.BuildResourceOptionsTab(resourceFrame) end)
+	C_Timer.After(0.1, function() Plater.Auras.BuildGhostAurasOptionsTab(ghostAuras) end)
+	C_Timer.After(0.1, function() Plater.CreateCastColorOptionsFrame(castColorsFrame) end)
+	C_Timer.After(0.1, function() platerInternal.Plugins.CreatePluginsOptionsTab(pluginsFrame) end)
 	
 	local generalOptionsAnchor = CreateFrame ("frame", "$parentOptionsAnchor", frontPageFrame, BackdropTemplateMixin and "BackdropTemplate")
 	generalOptionsAnchor:SetSize (1, 1)
