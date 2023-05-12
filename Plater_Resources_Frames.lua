@@ -34,6 +34,7 @@ local CONST_SPECID_DK_FROST = 251
 local CONST_SPECID_DK_BLOOD = 250
 local CONST_SPECID_EVOKER_DEVASTATION = 1467
 local CONST_SPECID_EVOKER_PRESERVATION = 1468
+local CONST_SPECID_EVOKER_AUGMENTATION = 1473
 
 local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTable()
 
@@ -566,3 +567,4 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 	resourceCreationFunctions[CONST_SPECID_DK_BLOOD] = IS_WOW_PROJECT_MAINLINE and deathknightChargesFunc or deathknightChargesFuncWotLK
 	resourceCreationFunctions[CONST_SPECID_EVOKER_DEVASTATION] = evokerChargesFunc
 	resourceCreationFunctions[CONST_SPECID_EVOKER_PRESERVATION] = evokerChargesFunc
+	resourceCreationFunctions[CONST_SPECID_EVOKER_AUGMENTATION] = evokerChargesFunc

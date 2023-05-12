@@ -31,6 +31,7 @@ local CONST_SPECID_DK_FROST = 251
 local CONST_SPECID_DK_BLOOD = 250
 local CONST_SPECID_EVOKER_DEVASTATION = 1467
 local CONST_SPECID_EVOKER_PRESERVATION = 1468
+local CONST_SPECID_EVOKER_AUGMENTATION = 1473
 
 local CONST_NUM_RESOURCES_WIDGETS = PlayerClass == "DEATHKNIGHT" and 6 or 10
 local CONST_WIDGET_WIDTH = 20
@@ -119,6 +120,7 @@ local specsWithResource =  {
     [CONST_SPECID_DK_BLOOD] = true,
     [CONST_SPECID_EVOKER_DEVASTATION] = true,
     [CONST_SPECID_EVOKER_PRESERVATION] = true,
+    [CONST_SPECID_EVOKER_AUGMENTATION] = true,
 }
 
 
@@ -455,6 +457,7 @@ end
 		mainResourceFrame.widgetHeight = 24
         mainResourceFrame.resourceBars[CONST_SPECID_EVOKER_DEVASTATION] = newResourceBar
         mainResourceFrame.resourceBars[CONST_SPECID_EVOKER_PRESERVATION] = newResourceBar
+        mainResourceFrame.resourceBars[CONST_SPECID_EVOKER_AUGMENTATION] = newResourceBar
         newResourceBar.resourceId = SPELL_POWER_ESSEMCE
         newResourceBar.updateResourceFunc = resourceWidgetsFunctions.OnEssenceChanged
         tinsert(mainResourceFrame.allResourceBars, newResourceBar)
