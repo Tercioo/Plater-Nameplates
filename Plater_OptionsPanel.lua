@@ -7467,26 +7467,28 @@ local relevance_options = {
 		local playerSpecs = Plater.SpecList [select (2, UnitClass ("player"))]
 		for specID, _ in pairs (playerSpecs) do
 			local specId, specName, specDescription, specIcon, specBackground, specRole, specClass = GetSpecializationInfoByID(specID)
-			tinsert (options_table1, {
-				type = "select",
-				get = function() return PlaterDBChr.spellRangeCheckRangeEnemy [specID] end,
-				values = function() 
-					local onSelectFunc = function (_, _, range)
-						PlaterDBChr.spellRangeCheckRangeEnemy [specID] = range
-						PlaterDBChr.spellRangeCheckRangeEnemy [1444] = range -- workaround for "DAMAGER" (level 1-10) spec
-						Plater.GetSpellForRangeCheck()
-					end
-					local t = {}
-					local checkers = LibRangeCheck:GetHarmCheckers()
-					for range, checker in checkers do
-						tinsert (t, {label = range, onclick = onSelectFunc, value = range})
-					end
-					return t
-				end,
-				--the string between two '@' make the framework to consider it a PhraseID for the language system
-				name = "|T" .. specIcon .. ":16:16|t " .. "@OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK@",
-				desc = "OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK_SPEC_DESC",
-			})
+			if specId then
+				tinsert (options_table1, {
+					type = "select",
+					get = function() return PlaterDBChr.spellRangeCheckRangeEnemy [specID] end,
+					values = function() 
+						local onSelectFunc = function (_, _, range)
+							PlaterDBChr.spellRangeCheckRangeEnemy [specID] = range
+							PlaterDBChr.spellRangeCheckRangeEnemy [1444] = range -- workaround for "DAMAGER" (level 1-10) spec
+							Plater.GetSpellForRangeCheck()
+						end
+						local t = {}
+						local checkers = LibRangeCheck:GetHarmCheckers()
+						for range, checker in checkers do
+							tinsert (t, {label = range, onclick = onSelectFunc, value = range})
+						end
+						return t
+					end,
+					--the string between two '@' make the framework to consider it a PhraseID for the language system
+					name = "|T" .. specIcon .. ":16:16|t " .. "@OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK@",
+					desc = "OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK_SPEC_DESC",
+				})
+			end
 		end
 	else
 		local playerClass = select (3, UnitClass ("player"))
@@ -7526,25 +7528,27 @@ local relevance_options = {
 		local playerSpecs = Plater.SpecList [select (2, UnitClass ("player"))]
 		for specID, _ in pairs (playerSpecs) do
 			local spec_id, spec_name, spec_description, spec_icon, spec_background, spec_role, spec_class = GetSpecializationInfoByID (specID)
-			tinsert (options_table1, {
-				type = "select",
-				get = function() return PlaterDBChr.spellRangeCheckRangeFriendly [specID] end,
-				values = function() 
-					local onSelectFunc = function (_, _, range)
-						PlaterDBChr.spellRangeCheckRangeFriendly [specID] = range
-						PlaterDBChr.spellRangeCheckRangeFriendly [1444] = range -- workaround for "DAMAGER" (level 1-10) spec
-						Plater.GetSpellForRangeCheck()
-					end
-					local t = {}
-					local checkers = LibRangeCheck:GetFriendCheckers()
-					for range, checker in checkers do
-						tinsert (t, {label = range, onclick = onSelectFunc, value = range})
-					end
-					return t
-				end,
-				name = "|T" .. spec_icon .. ":16:16|t " .. "@OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK@",
-				desc = "OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK_SPEC_DESC",
-			})
+			if spec_id then
+				tinsert (options_table1, {
+					type = "select",
+					get = function() return PlaterDBChr.spellRangeCheckRangeFriendly [specID] end,
+					values = function() 
+						local onSelectFunc = function (_, _, range)
+							PlaterDBChr.spellRangeCheckRangeFriendly [specID] = range
+							PlaterDBChr.spellRangeCheckRangeFriendly [1444] = range -- workaround for "DAMAGER" (level 1-10) spec
+							Plater.GetSpellForRangeCheck()
+						end
+						local t = {}
+						local checkers = LibRangeCheck:GetFriendCheckers()
+						for range, checker in checkers do
+							tinsert (t, {label = range, onclick = onSelectFunc, value = range})
+						end
+						return t
+					end,
+					name = "|T" .. spec_icon .. ":16:16|t " .. "@OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK@",
+					desc = "OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK_SPEC_DESC",
+				})
+			end
 		end
 	else
 		local playerClass = select (3, UnitClass ("player"))
