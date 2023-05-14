@@ -776,6 +776,7 @@ Plater.SpecList = { --private
 	["EVOKER"] = {
 		[1467] = true,
 		[1468] = true,
+		[1473] = true,
 	},
 }
 
@@ -845,6 +846,7 @@ Plater.DefaultSpellRangeList = {
 	
 	[1467] = 25, --> evoker devastation
 	[1468] = 25, --> evoker preservation
+	[1473] = 25, --> evoker augmentation
 	
 	-- low-level (without spec)
 	[1444] = 40, --> Initial SHAMAN
@@ -927,6 +929,7 @@ Plater.DefaultSpellRangeListF = {
 	
 	[1467] = 25, --> evoker devastation
 	[1468] = 25, --> evoker preservation
+	[1473] = 25, --> evoker augmentation
 	
 	-- low-level (without spec)
 	[1444] = 40, --> Initial SHAMAN
@@ -994,6 +997,7 @@ local class_specs_coords = {
 	
 	[1467] = {256/512, 320/512, 256/512, 320/512}, --> evoker devastation
 	[1468] = {320/512, 384/512, 256/512, 320/512}, --> evoker preservation
+	[1473] = {320/512, 384/512, 256/512, 320/512}, --> evoker augmentation
 }
 
 Plater.AnchorNames = {
