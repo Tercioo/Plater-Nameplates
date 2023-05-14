@@ -689,7 +689,8 @@ end
 						local profilesFrame = mainFrame.AllFrames [PLATER_OPTIONS_PROFILES_TAB]
 						
 						if profileExists then
-							DF:ShowPromptPanel (format (L["OPTIONS_PROFILE_IMPORT_OVERWRITE"], profileName), function() profilesFrame.DoProfileImport(profileName, profile, true, isWagoUpdate) end, function() end, true, 500)
+							local LOC = DF.Language.GetLanguageTable(addonName)
+							DF:ShowPromptPanel(string.format(LOC["OPTIONS_PROFILE_IMPORT_OVERWRITE"], profileName), function() profilesFrame.DoProfileImport(profileName, profile, true, isWagoUpdate) end, function() end, true, 500)
 						else
 							profilesFrame.DoProfileImport(profileName, profile, false, false)
 						end

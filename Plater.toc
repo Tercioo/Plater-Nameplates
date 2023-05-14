@@ -42,6 +42,8 @@ locales\arAR.lua
 
 Plater.xml
 
+Definitions.lua
+
 Plater_DefaultSettings.lua
 
 Plater.lua
