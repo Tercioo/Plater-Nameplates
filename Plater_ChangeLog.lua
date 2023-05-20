@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 			
+			{1683636158,  "Backend Change", "May 20th, 2023", "Fixed 'Ultra Important Cast' script showing red color for interruptible casts.", "Terciob"},
 			{1683636158,  "Backend Change", "May 12th, 2023", "Support new evoker spec.", "cont1nuity"},
 			
 			{1683636158,  "Backend Change", "May 9th, 2023", "Move addon compartment support to LibDBIcon.", "cont1nuity"},

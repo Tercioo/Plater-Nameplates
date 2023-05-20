@@ -144,7 +144,9 @@ Plater.UpdateOptionsTabUpdateState = update_wago_update_icons
 function Plater.CheckOptionsTab()
 	if (Plater.LatestEncounter) then
 		if (Plater.LatestEncounter + 60 > time()) then
-			PlaterOptionsPanelContainer:SelectIndex (Plater, CONST_LASTEVENTS_TAB_INDEX)
+			---@type df_tabcontainer
+			local tabContainer = _G["PlaterOptionsPanelContainer"]
+			tabContainer:SelectTabByIndex(CONST_LASTEVENTS_TAB_INDEX)
 		end
 	end
 	update_wago_update_icons()
@@ -189,13 +191,15 @@ function Plater.OpenOptionsPanel()
 	local SliderRightClickDesc = "\n\n" .. ImportantText .. "right click to type the value."
 	
 	local hookList = {
-		OnSelectIndex = function(mainFrame, tabButton)
+		---@param tabContainer df_tabcontainer
+		---@param tabButton df_tabcontainerbutton
+		OnSelectIndex = function(tabContainer, tabButton)
 			if (not tabButton.leftSelectionIndicator) then
 				return
 			end
 
-			for index, frame in ipairs(mainFrame.AllFrames) do
-				local tabButton = mainFrame.AllButtons[index]
+			for index, frame in ipairs(tabContainer.AllFrames) do
+				local tabButton = tabContainer.AllButtons[index]
 				tabButton.leftSelectionIndicator:SetColorTexture(.4, .4, .4)
 			end
 
@@ -225,39 +229,41 @@ function Plater.OpenOptionsPanel()
 	local mainFrame = DF:CreateTabContainer (f, "Plater Options", "PlaterOptionsPanelContainer", 
 	{
 		--when chaging these indexes also need to change the function f.CopySettings
-		{name = "FrontPage",				title = "OPTIONS_TABNAME_GENERALSETTINGS"},
-		{name = "ThreatConfig",				title = "OPTIONS_TABNAME_THREAT"},
-		{name = "TargetConfig",				title = "OPTIONS_TABNAME_TARGET"},
-		{name = "CastBarConfig",			title = "OPTIONS_TABNAME_CASTBAR"},
-		{name = "LevelStrataConfig",		title = "OPTIONS_TABNAME_STRATA"},
-		{name = "Scripting",				title = "OPTIONS_TABNAME_SCRIPTING"},
-		{name = "AutoRunCode",				title = "OPTIONS_TABNAME_MODDING"},
-		{name = "PersonalBar",				title = "OPTIONS_TABNAME_PERSONAL"},
+		{name = "FrontPage",				text = "OPTIONS_TABNAME_GENERALSETTINGS"},
+		{name = "ThreatConfig",				text = "OPTIONS_TABNAME_THREAT"},
+		{name = "TargetConfig",				text = "OPTIONS_TABNAME_TARGET"},
+		{name = "CastBarConfig",			text = "OPTIONS_TABNAME_CASTBAR"},
+		{name = "LevelStrataConfig",		text = "OPTIONS_TABNAME_STRATA"},
+		{name = "Scripting",				text = "OPTIONS_TABNAME_SCRIPTING"},
+		{name = "AutoRunCode",				text = "OPTIONS_TABNAME_MODDING"},
+		{name = "PersonalBar",				text = "OPTIONS_TABNAME_PERSONAL"},
 		
-		{name = "DebuffConfig",				title = "OPTIONS_TABNAME_BUFF_SETTINGS"},
-		{name = "DebuffBlacklist",			title = "OPTIONS_TABNAME_BUFF_TRACKING"},
-		{name = "DebuffSpecialContainer",	title = "OPTIONS_TABNAME_BUFF_SPECIAL"},
-		{name = "GhostAurasFrame",			title = "Ghost Auras"}, --localize-me
-		{name = "EnemyNpc",					title = "OPTIONS_TABNAME_NPCENEMY"},
-		{name = "EnemyPlayer",				title = "OPTIONS_TABNAME_PLAYERENEMY"},
-		{name = "FriendlyNpc",				title = "OPTIONS_TABNAME_NPCFRIENDLY"},
-		{name = "FriendlyPlayer",			title = "OPTIONS_TABNAME_PLAYERFRIENDLY"},
+		{name = "DebuffConfig",				text = "OPTIONS_TABNAME_BUFF_SETTINGS"},
+		{name = "DebuffBlacklist",			text = "OPTIONS_TABNAME_BUFF_TRACKING"},
+		{name = "DebuffSpecialContainer",	text = "OPTIONS_TABNAME_BUFF_SPECIAL"},
+		{name = "GhostAurasFrame",			text = "Ghost Auras"}, --localize-me
+		{name = "EnemyNpc",					text = "OPTIONS_TABNAME_NPCENEMY"},
+		{name = "EnemyPlayer",				text = "OPTIONS_TABNAME_PLAYERENEMY"},
+		{name = "FriendlyNpc",				text = "OPTIONS_TABNAME_NPCFRIENDLY"},
+		{name = "FriendlyPlayer",			text = "OPTIONS_TABNAME_PLAYERFRIENDLY"},
 
-		{name = "ColorManagement",			title = "OPTIONS_TABNAME_NPC_COLORNAME"},
-		{name = "CastColorManagement",		title = "OPTIONS_TABNAME_CASTCOLORS"},
-		{name = "DebuffLastEvent",			title = "OPTIONS_TABNAME_BUFF_LIST"},
-		{name = "AnimationPanel",			title = "OPTIONS_TABNAME_ANIMATIONS"},
-		{name = "Automation",				title = "OPTIONS_TABNAME_AUTO"},
-		{name = "ProfileManagement",		title = "OPTIONS_TABNAME_PROFILES"},
-		{name = "AdvancedConfig",			title = "OPTIONS_TABNAME_ADVANCED"},
-		{name = "resourceFrame",			title = "OPTIONS_TABNAME_COMBOPOINTS"},
+		{name = "ColorManagement",			text = "OPTIONS_TABNAME_NPC_COLORNAME"},
+		{name = "CastColorManagement",		text = "OPTIONS_TABNAME_CASTCOLORS"},
+		{name = "DebuffLastEvent",			text = "OPTIONS_TABNAME_BUFF_LIST"},
+		{name = "AnimationPanel",			text = "OPTIONS_TABNAME_ANIMATIONS"},
+		{name = "Automation",				text = "OPTIONS_TABNAME_AUTO"},
+		{name = "ProfileManagement",		text = "OPTIONS_TABNAME_PROFILES"},
+		{name = "AdvancedConfig",			text = "OPTIONS_TABNAME_ADVANCED"},
+		{name = "resourceFrame",			text = "OPTIONS_TABNAME_COMBOPOINTS"},
 
-		{name = "WagoIo", title = "Wago Imports"}, --wago_imports --localize-me
-		{name = "SearchFrame", title = "OPTIONS_TABNAME_SEARCH"},
-		{name = "PluginsFrame", title = "Plugins"}, --localize-me
+		{name = "WagoIo", text = "Wago Imports"}, --wago_imports --localize-me
+		{name = "SearchFrame", text = "OPTIONS_TABNAME_SEARCH"},
+		{name = "PluginsFrame", text = "Plugins"}, --localize-me
 		
 	}, 
 	frame_options, hookList, languageInfo)
+
+	mainFrame:SetAllPoints()
 
 	--> when any setting is changed, call this function
 	local globalCallback = function()
@@ -916,8 +922,8 @@ function Plater.OpenOptionsPanel()
 					Plater:OpenInterfaceProfile()
 				end
 				C_Timer.After (.5, function()
-					mainFrame:SetIndex (1)
-					mainFrame:SelectIndex (_, 1)
+					mainFrame:SetIndex(1)
+					mainFrame:SelectTabByIndex(1)
 				end)
 			end
 			
@@ -1493,7 +1499,9 @@ function Plater.CreateGoToTabFrame(parent, text, index)
 	labelgoToTab:SetPoint("center", goToTab, "center", 0, 0)
 
 	local goTo = function()
-		PlaterOptionsPanelContainer:SelectIndex (Plater, index)
+		---@type df_tabcontainer
+		local platerOptionsPanelContainer = PlaterOptionsPanelContainer
+		platerOptionsPanelContainer:SelectTabByIndex(index)
 	end
 
 	local buttonGo = DF:CreateButton (parent, goTo, 20, 1, "", false, false, "", false, false, false, options_button_template)

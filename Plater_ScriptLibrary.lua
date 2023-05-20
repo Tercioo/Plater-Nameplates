@@ -1033,9 +1033,37 @@ do
 		end,
 	})
 
+	--#28 modify the castbar color option of "Cast - Ultra Important [P]" from red to yellow
+	tinsert(PlaterPatchLibrary, {
+		Notes = {
+			"- Modifying the default cast bar color of 'Cast - Ultra Important [P]' to yellow."
+		},
+		Func = function()
+			local scriptData = Plater.db.profile.script_data
+			for i = 1, #scriptData do
+				local script = scriptData[i]
+				if (script.Name == "Cast - Ultra Important [P]") then
+					for _, scriptOptions in ipairs(script.Options) do
+						if (scriptOptions.Key == "castBarColor") then
+							local color = scriptOptions.Value
+							if (type(color) == "boolean") then
+								scriptOptions.Value = {}
+								color = scriptOptions.Value
+							end
+							color[1] = 1 --red
+							color[2] = 0.431372 --green
+							color[3] = 0 --blue
+							color[4] = 1 --alpha
+						end
+					end
+					break
+				end
+			end
+		end
+	})
 
 	--to tag an update as non-essential, add "NotEssential = true," to the table
-	--/run Plater.db.profile.patch_version = 22
+	--/run Plater.db.profile.patch_version = 27
 end --end of patch library
 
 local listOfTriggersToDeprecateOnExpansion = {
