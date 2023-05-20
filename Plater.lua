@@ -3111,7 +3111,7 @@ Plater.AnchorNamesByPhraseId = {
 			if (Plater.db.profile.reopoen_options_panel_on_tab) then
 				C_Timer.After (2, function()
 					Plater.OpenOptionsPanel()
-					PlaterOptionsPanelContainer:SelectIndex (Plater, Plater.db.profile.reopoen_options_panel_on_tab)
+					PlaterOptionsPanelContainer:SelectTabByIndex (Plater.db.profile.reopoen_options_panel_on_tab)
 					Plater.db.profile.reopoen_options_panel_on_tab = false
 				end)
 			end
