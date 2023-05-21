@@ -408,7 +408,7 @@ end
 			--call the external function to import this script with ignoreRevision, overrideExisting and showDebug
 			local importSuccess, newObject = Plater.ImportScriptString (text, true, true, true, keepExisting)
 			if (importSuccess) then
-				PlaterOptionsPanelContainer:SelectIndex (Plater, PLATER_OPTIONS_HOOKING_TAB)
+				PlaterOptionsPanelContainer:SelectTabByIndex (PLATER_OPTIONS_HOOKING_TAB)
 				local mainFrame = PlaterOptionsPanelContainer
 				local hookFrame = mainFrame.AllFrames [PLATER_OPTIONS_HOOKING_TAB]
 				hookFrame.EditScript (newObject)
@@ -417,7 +417,7 @@ end
 		elseif (scriptType == "script") then
 			local importSuccess, newObject = Plater.ImportScriptString (text, true, true, true, keepExisting)
 			if (importSuccess) then
-				PlaterOptionsPanelContainer:SelectIndex (Plater, PLATER_OPTIONS_SCRIPTING_TAB)
+				PlaterOptionsPanelContainer:SelectTabByIndex (PLATER_OPTIONS_SCRIPTING_TAB)
 				local mainFrame = PlaterOptionsPanelContainer
 				local scriptingFrame = mainFrame.AllFrames [PLATER_OPTIONS_SCRIPTING_TAB]
 				scriptingFrame.EditScript (newObject)
