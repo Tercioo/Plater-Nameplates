@@ -1034,6 +1034,7 @@ DF.CrowdControlSpells = {
 	[331866] = "COVENANT|VENTHYR", --Agent of Chaos (Nadia soulbind)
 	
 	[372245] = "EVOKER", --Terror of the Skies
+	[360806] = "EVOKER", --Sleep Walk
 }
 
 -- additionals for classic
