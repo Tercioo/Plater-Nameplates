@@ -1084,7 +1084,9 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         }
 
         local startX, startY, heightSize = 10, -10, optionsFrame:GetHeight()
-        DF:BuildMenu(optionsFrame, optionsTable, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, onChangeOption)
+        _G.C_Timer.After(0.5, function() --~delay
+            DF:BuildMenu(optionsFrame, optionsTable, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, onChangeOption)
+        end)
 
     -->  ~preview window (not in use as the script choise frame is over this one)
         local previewWindow = CreateFrame("frame", optionsFrame:GetName() .. "previewWindown", optionsFrame, "BackdropTemplate")
