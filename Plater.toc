@@ -4,7 +4,7 @@
 ## Interface-Classic: 11403
 ## Title: Plater
 ## Notes: Nameplate addon designed for advanced users.
-## SavedVariables: PlaterDB, PlaterLanguage
+## SavedVariables: PlaterDB, PlaterLanguage, PlaterLogs
 ## SavedVariablesPerCharacter: PlaterDBChr
 ## IconTexture-blank: 982414
 ## IconTexture: Interface\AddOns\Plater\images\cast_bar
