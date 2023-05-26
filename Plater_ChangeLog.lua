@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 			
+			{1685108857,  "Bug Fix", "May 26th, 2023", "Aura tooltips no longer block camera movement.", "cont1nuity"},
+			
 			{1683636158,  "Backend Change", "May 20th, 2023", "Fixed 'Ultra Important Cast' script showing red color for interruptible casts.", "Terciob"},
 			{1683636158,  "Backend Change", "May 12th, 2023", "Support new evoker spec.", "cont1nuity"},
 			
