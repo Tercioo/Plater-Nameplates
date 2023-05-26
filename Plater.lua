@@ -1223,6 +1223,23 @@ Plater.AnchorNamesByPhraseId = {
 		[99922] = true,
 		[104822] = true,
 		[120651] = true, --explosives (M+)
+		[190381] = true, --Rotburst Totem
+		[130896] = true, --Blackout Barrel
+		[129758] = true, --Irontide Grenadier
+		[196712] = true, --Nullification Device
+		[195399] = true, --Curious Swoglet
+		[196043] = true, --Primalist Infuser
+		[97720] = true, --Blightshard Skitter
+		[98081] = true, --Bellowing Idol
+		[101075] = true, --Wormspeaker Devout
+		[101476] = true, --Molten Charskin
+		[192464] = true, --Raging Ember
+		[186696] = true, --Quaking Totem
+		[186107] = true, --Vault Keeper
+		[413263] = true, --Skyfall Nova
+		[202824] = true, --Erratic Remnant
+		[203230] = true, --Dragonfire Golem
+		[203812] = true, --Voice From Beyond
 	}
 
 	--update the settings cache for scritps
