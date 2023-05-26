@@ -4587,7 +4587,7 @@ detailsFramework.IconRowFunctions = {
 			if (count and count > 1 and self.options.stack_text) then
 				iconFrame.StackText:Show()
 				iconFrame.StackText:SetText(count)
-				iconFrame.StackText:SetTextColor(detailsFramework:ParseColors(self.options.desc_text_color))
+				iconFrame.StackText:SetTextColor(detailsFramework:ParseColors(self.options.stack_text_color))
 				iconFrame.StackText:SetPoint(self.options.stack_text_anchor or "center", iconFrame, self.options.stack_text_rel_anchor or "bottomright", self.options.stack_text_x_offset or 0, self.options.stack_text_y_offset or 0)
 				detailsFramework:SetFontSize(iconFrame.StackText, self.options.stack_text_size)
 				detailsFramework:SetFontFace (iconFrame.StackText, self.options.stack_text_font)
