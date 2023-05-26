@@ -969,6 +969,7 @@ DF.CrowdControlSpells = {
 	[105421] = "PALADIN", --Blinding Light (talent)
 	[31935] = "PALADIN", --Avengers Shield
 	[217824] = "PALADIN", --Shield of Virtue
+	[10326] = "PALADIN", --Turn Evil
 	
 	[221562] = "DEATHKNIGHT", --Asphyxiate
 	[108194] = "DEATHKNIGHT", --Asphyxiate (talent)
