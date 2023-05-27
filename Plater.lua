@@ -169,7 +169,7 @@ function platerInternal.Logs.Log(text)
 	if (type(text) == "string") then
 		local platerLogs = platerInternal.Logs.GetLogs()
 		table.insert(platerLogs._general_logs, 1, platerInternal.Date.GetDateForLogs() .. " | " .. text)
-		table.remove(platerLogs._general_logs, 30)
+		table.remove(platerLogs._general_logs, 20)
 	end
 end
 
@@ -4678,6 +4678,18 @@ function Plater.OnInit() --private --~oninit ~init
 	end
 
 	Plater.Locale =  GetLocale()
+
+	do --log initialization version
+		pcall(function()
+			local GetAddOnMetadata = C_AddOns and C_AddOns.GetAddOnMetadata or GetAddOnMetadata
+			local platerVersion = GetAddOnMetadata("Plater", "Version")
+			local frameworkVersion = "Framework v" .. select(2,LibStub:GetLibrary("DetailsFramework-1.0"))
+			local gameVersion = GetBuildInfo()
+			local gameLocale = Plater.Locale
+			local charName = UnitName("player")
+			platerInternal.Logs.Log("INIT | " .. platerVersion .. " | " .. frameworkVersion .. " | " .. gameVersion .. " | " .. gameLocale .. " | " .. charName)
+		end)
+	end
 
 	--Plater:BossModsLink()
 	
