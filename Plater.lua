@@ -10806,6 +10806,9 @@ end
 		if (unitFrame.unit) then
 			if (Plater.IsUnitTapDenied (unitFrame.unit)) then
 				Plater.ChangeHealthBarColor_Internal (unitFrame.healthBar, unpack (Plater.db.profile.tap_denied_color))
+			elseif (DB_UNITCOLOR_CACHE [unitFrame [MEMBER_NPCID] or -1]) then
+				Plater.ChangeHealthBarColor_Internal (unitFrame.healthBar, unpack (DB_UNITCOLOR_CACHE [unitFrame [MEMBER_NPCID]]))
+				unitFrame.UsingCustomColor = true --exposed to scripts
 			else
 				if (InCombatLockdown()) then
 					local unitReaction = unitFrame.PlateFrame [MEMBER_REACTION]
