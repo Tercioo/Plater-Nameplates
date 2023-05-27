@@ -140,6 +140,46 @@ platerInternal.Defaults = {
 platerInternal.Comms = {}
 platerInternal.Frames = {}
 platerInternal.Data = {}
+platerInternal.Date = {}
+platerInternal.Logs = {}
+
+function platerInternal.Date.GetDateForLogs()
+	return date("%Y-%m-%d %H:%M:%S")
+end
+
+---get the table which can save logs and errors
+---@return {_general_logs: string[], _error_logs: string[]}
+function platerInternal.Logs.GetLogs()
+	---@type {_general_logs: string[], _error_logs: string[]}
+	local platerLogs = PlaterLogs
+	if (not platerLogs) then
+		PlaterLogs = { --[[GLOBAL]]
+			_general_logs = {},
+			_error_logs = {},
+		}
+		return PlaterLogs
+	end
+
+	platerLogs._error_logs = platerLogs._error_logs or {}
+	platerLogs._general_logs = platerLogs._general_logs or {}
+	return platerLogs
+end
+
+function platerInternal.Logs.Log(text)
+	if (type(text) == "string") then
+		local platerLogs = platerInternal.Logs.GetLogs()
+		table.insert(platerLogs._general_logs, 1, platerInternal.Date.GetDateForLogs() .. " | " .. text)
+		table.remove(platerLogs._general_logs, 20)
+	end
+end
+
+function platerInternal.Logs.LogError(text)
+	if (type(text) == "string") then
+		local platerLogs = platerInternal.Logs.GetLogs()
+		table.insert(platerLogs._error_logs, 1, platerInternal.Date.GetDateForLogs() .. " | " .. text)
+		table.remove(platerLogs._error_logs, 10)
+	end
+end
 
 --> namespaces:
 	--resources
@@ -4638,6 +4678,18 @@ function Plater.OnInit() --private --~oninit ~init
 	end
 
 	Plater.Locale =  GetLocale()
+
+	do --log initialization version
+		pcall(function()
+			local GetAddOnMetadata = C_AddOns and C_AddOns.GetAddOnMetadata or GetAddOnMetadata
+			local platerVersion = GetAddOnMetadata("Plater", "Version")
+			local frameworkVersion = "Framework v" .. select(2,LibStub:GetLibrary("DetailsFramework-1.0"))
+			local gameVersion = GetBuildInfo()
+			local gameLocale = Plater.Locale
+			local charName = UnitName("player")
+			platerInternal.Logs.Log("INIT | " .. platerVersion .. " | " .. frameworkVersion .. " | " .. gameVersion .. " | " .. gameLocale .. " | " .. charName)
+		end)
+	end
 
 	--Plater:BossModsLink()
 	
@@ -13478,6 +13530,35 @@ function SlashCmdList.PLATER (msg, editbox)
 	if (msg == "version") then
 		Plater.GetVersionInfo(true)
 		return
+
+	elseif (msg == "showlogs") then
+		---@type {_general_logs: string[], _error_logs: string[]}
+		local logTable = platerInternal.Logs.GetLogs()
+		local generalLogs = logTable._general_logs
+		local errorLogs = logTable._error_logs
+
+		---@type string[]
+		local outputTable = {}
+
+		if (#generalLogs > 0) then
+			outputTable[#outputTable+1] = "General Logs:"
+			for i = 1, #generalLogs do
+				outputTable[#outputTable+1] = (generalLogs[i])
+			end
+		end
+
+		outputTable[#outputTable+1] = " "
+
+		if (#errorLogs > 0) then
+			outputTable[#outputTable+1] = "Error Logs:"
+			for i = 1, #errorLogs do
+				outputTable[#outputTable+1] = (errorLogs[i])
+			end
+		end
+
+		dumpt(outputTable) --this is a function from details! too buzy right now to thing on another function
+		return
+
 	elseif (msg == "dignostico" or msg == "diag" or msg == "debug") then
 		
 		print ("Plater Diagnostic:")
