@@ -843,7 +843,9 @@ end
 							auraIconFrame.InUse = true --don't play animation
 							Plater.AddAura(buffFrame, auraIconFrame, -1, spellName.."_player_ghost", spellIcon, 1, "DEBUFF", 0, 0, "player", false, false, spellId, false, false, false, false, "DEBUFF", 1)
 							auraIconFrame:EnableMouse (false) --don't use tooltips, as there is no real aura
-							auraIconFrame:EnableMouseMotion (false) --don't use tooltips, as there is no real aura
+							if IS_WOW_PROJECT_MAINLINE then
+								auraIconFrame:EnableMouseMotion (false) --don't use tooltips, as there is no real aura
+							end
 							auraIconFrame.IsGhostAura = true
 							Plater.Auras.GhostAuras.ApplyAppearance(auraIconFrame, spellName.."_player_ghost", spellIcon, spellId)
 							nameplateGhostAuraCache[spellName.."_player_ghost"] = true --this is shown as ghost aura
@@ -1150,7 +1152,9 @@ end
 		newIcon.Cooldown:SetPoint ("center", 0, -1)
 		newIcon.Cooldown:SetAllPoints()
 		newIcon.Cooldown:EnableMouse (false)
-		newIcon.Cooldown:EnableMouseMotion (false)
+		if IS_WOW_PROJECT_MAINLINE then
+			newIcon.Cooldown:EnableMouseMotion (false)
+		end
 		newIcon.Cooldown:SetHideCountdownNumbers (true)
 		newIcon.Cooldown:Hide()
 
@@ -1178,7 +1182,9 @@ end
 		newIcon.CountFrame = CreateFrame ("frame", "$parentCountFrame", newIcon, BackdropTemplateMixin and "BackdropTemplate")
 		newIcon.CountFrame:SetAllPoints()
 		newIcon.CountFrame:EnableMouse (false)
-		newIcon.CountFrame:EnableMouseMotion (false)
+		if IS_WOW_PROJECT_MAINLINE then
+			newIcon.CountFrame:EnableMouseMotion (false)
+		end
 		newIcon.CountFrame.Count = newIcon.CountFrame:CreateFontString (nil, "artwork", "NumberFontNormalSmall")
 		newIcon.CountFrame.Count:SetJustifyH ("right")
 		newIcon.CountFrame.Count:SetPoint ("bottomright", 3, -2)
@@ -1469,7 +1475,11 @@ end
 		
 		--ensure proper state:
 		--auraIconFrame:EnableMouse (profile.aura_show_tooltip)
-		auraIconFrame:EnableMouseMotion (profile.aura_show_tooltip)
+		if IS_WOW_PROJECT_MAINLINE then
+			auraIconFrame:EnableMouseMotion (profile.aura_show_tooltip)
+		else
+			auraIconFrame:EnableMouse (profile.aura_show_tooltip)
+		end
 
 		--icon size repeated due to:
 		--when the size is changed in the options it doesnt change the IsPersonal flag
@@ -1756,13 +1766,19 @@ end
 			iconFrame:SetScript ("OnEnter", Plater.OnEnterAura)
 			iconFrame:SetScript ("OnLeave", Plater.OnLeaveAura)
 			--iconFrame:EnableMouse (profile.aura_show_tooltip)
-			iconFrame:EnableMouse (false)
-			iconFrame:EnableMouseMotion (profile.aura_show_tooltip)
+			if IS_WOW_PROJECT_MAINLINE then
+				iconFrame:EnableMouse (false)
+				iconFrame:EnableMouseMotion (profile.aura_show_tooltip)
+			else
+				iconFrame:EnableMouse (profile.aura_show_tooltip)
+			end
 		else
 			iconFrame:SetScript ("OnEnter", nil)
 			iconFrame:SetScript ("OnLeave", nil)
 			iconFrame:EnableMouse (false)
-			iconFrame:EnableMouseMotion (false)
+			if IS_WOW_PROJECT_MAINLINE then
+				iconFrame:EnableMouseMotion (false)
+			end
 		end
 		
 		--check if Masque is enabled on Plater and reskin the aura icon
