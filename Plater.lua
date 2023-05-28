@@ -1280,7 +1280,7 @@ Plater.AnchorNamesByPhraseId = {
 		[202824] = true, --Erratic Remnant
 		[203230] = true, --Dragonfire Golem
 		[203812] = true, --Voice From Beyond
-		[98081] = true, -- Bellowing Idol
+		[100818] = true, -- Bellowing Idol
 		[92538] = true, -- Tarspitter Grub
 	}
 
