@@ -565,6 +565,8 @@ local function getUnitAuras(unit, filter)
 	local unitCacheData = UnitAuraCacheData[unit]
 	
 	if unitCacheData and not unitCacheData.isFullUpdate then --new aura event
+		Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdateAuras - getUnitAuras - short")
+		
 		-- debuffs
 		if unitCacheData.debuffsChanged then
 			local tmpDebuffs = {}
@@ -593,6 +595,7 @@ local function getUnitAuras(unit, filter)
 			unitCacheData.buffsChanged = false
 		end
 		
+		Plater.EndLogPerformanceCore("Plater-Core", "Update", "UpdateAuras - getUnitAuras - short")
 		return unitCacheData
 	end
 	
@@ -605,6 +608,8 @@ local function getUnitAuras(unit, filter)
 	local isHelpful = string.find(filter, "HELPFUL") and true or false
 	local filterCache = (isHarmful and unitCacheData.debuffs) or (isHelpful and unitCacheData.buffs) or nil
 	if not filterCache then return end
+	
+	Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdateAuras - getUnitAuras - long")
 	
 	local continuationToken
 	local debuffIndex = 0
@@ -668,6 +673,7 @@ local function getUnitAuras(unit, filter)
 		end
 	until continuationToken == nil
 	
+	Plater.EndLogPerformanceCore("Plater-Core", "Update", "UpdateAuras - getUnitAuras - long")
 	
 	return unitCacheData
 end
