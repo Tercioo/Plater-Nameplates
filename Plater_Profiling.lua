@@ -333,7 +333,11 @@ local function getAdvancedPerfData()
 	local sumExecPTypes = 0
 	local totalGlobalTime = (profEndTime or debugprofilestop()) - (profStartTime or debugprofilestop())
 	
+	table.sort(profData.data or {})
+	
 	for pType, data in pairs(profData.data or {}) do
+		table.sort(data.eventData)
+		
 		perfTable[pType] = {}
 		local pTypeTime = 0
 		local pTypeExec = 0
