@@ -333,18 +333,27 @@ local function getAdvancedPerfData()
 	local sumExecPTypes = 0
 	local totalGlobalTime = (profEndTime or debugprofilestop()) - (profStartTime or debugprofilestop())
 	
-	table.sort(profData.data or {})
+	--do sort
+	local dataKeys = {}
+	for k in pairs(profData.data) do table.insert(dataKeys, k) end
+	table.sort(dataKeys)
 	
-	for pType, data in pairs(profData.data or {}) do
-		table.sort(data.eventData)
-		
+	for _, dataKey in pairs(dataKeys) do
+		local pType, data = dataKey, profData.data[dataKey]
+
 		perfTable[pType] = {}
 		local pTypeTime = 0
 		local pTypeExec = 0
-		local pTypeSubLog = 0
-		
+		local pTypeSubLog = 0		
 		local printStrPType = ""
-		for event, pData in pairs(data.eventData) do
+		
+		--do sort
+		local eventKeys = {}
+		for k in pairs(data.eventData) do table.insert(eventKeys, k) end
+		table.sort(eventKeys)
+		
+		for _, eventKey in pairs(eventKeys) do
+			local event, pData = eventKey, data.eventData[eventKey]
 			perfTable[pType][event] = {}
 			pData.count = pData.count or 0
 			local modeVal, modeAmount, modeTotal = getModeTime(pData.times) 
@@ -359,7 +368,13 @@ local function getAdvancedPerfData()
 			local pTypeSufTime = 0
 			local pTypeSufExec = 0
 			if pData.subTypeData and #pData.subTypeData > 0 then printStrPType = printStrPType .. PRT_INDENT .. PRT_INDENT .. "Sub-Events:" .. "\n" end
-			for subType, sufData in pairs(pData.subTypeData) do
+			
+			--do sort
+			local subTypeDataKeys = {}
+			for k in pairs(pData.subTypeData) do table.insert(subTypeDataKeys, k) end
+			table.sort(subTypeDataKeys)
+			for _, sufDataKey in pairs(subTypeDataKeys) do
+				local subType, sufData = sufDataKey, pData.subTypeData[sufDataKey]
 				if sufData.totalTime then -- sanity check for bad data
 					local modeVal, modeAmount, modeTotal = getModeTime(sufData.times) 
 					local modeData = roundTime(modeVal).." ("..modeAmount.."/"..modeTotal..")"
