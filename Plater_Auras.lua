@@ -466,7 +466,7 @@ local UnitAuraEventHandler = function (_, event, arg1, arg2, arg3, ...)
 	if event == "UNIT_AURA" then
 		if IS_NEW_UNIT_AURA_AVAILABLE then --for 10.0
 			local unit, updatedAuras = arg1, arg2
-			--ViragDevTool_AddData({unit = unit, updatedAuras = updatedAuras}, "Plater_UNIT_AURA")
+			--ViragDevTool_AddData({unit = unit, updatedAuras = updatedAuras}, "Plater_UNIT_AURA - " .. unit)
 			if unit and UnitAuraEventHandlerValidUnits[unit] then
 				UpdateUnitAuraCacheData(unit, updatedAuras)
 			end
@@ -492,6 +492,8 @@ UnitAuraEventHandlerFrame:RegisterEvent ("UNIT_AURA")
 function Plater.RemoveFromAuraUpdate (unit)
 	if not unit then return end
 	UnitAuraEventHandlerValidUnits[unit] = nil
+	UnitAuraCacheData[unit] = nil
+	UnitAuraEventHandlerData[unit] = nil
 end
 
 function Plater.AddToAuraUpdate (unit)
@@ -563,6 +565,7 @@ local function getUnitAuras(unit, filter)
 	if not unit then return end
 	
 	local unitCacheData = UnitAuraCacheData[unit]
+	--ViragDevTool_AddData(unitCacheData, "getUnitAuras - " .. unit)
 	
 	if unitCacheData and not unitCacheData.isFullUpdate then --new aura event
 		Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdateAuras - getUnitAuras - short")
@@ -675,6 +678,7 @@ local function getUnitAuras(unit, filter)
 	
 	Plater.EndLogPerformanceCore("Plater-Core", "Update", "UpdateAuras - getUnitAuras - long")
 	
+	unitCacheData.isFullUpdate = false -- done that
 	return unitCacheData
 end
 
