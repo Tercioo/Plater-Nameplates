@@ -561,7 +561,9 @@ UpdateUnitAuraCacheData = function (unit, updatedAuras)
 	end
 	
 	local existingData = UnitAuraEventHandlerData[unit] or { hasBuff = false, hasDebuff = false }
-	UnitAuraEventHandlerData[unit] = { hasBuff = existingData.hasBuff or unitCacheData.buffsChanged or false, hasDebuff = existingData.hasDebuff or unitCacheData.debuffsChanged or false }
+	local hasDebuff = existingData.hasDebuff or unitCacheData.debuffsChanged or not DB_AURA_SEPARATE_BUFFS or false
+	local hasBuff = existingData.hasBuff or unitCacheData.buffsChanged or not DB_AURA_SEPARATE_BUFFS or false
+	UnitAuraEventHandlerData[unit] = { hasBuff = hasBuff, hasDebuff = hasDebuff }
 end
 
 local function getUnitAuras(unit, filter)
@@ -1846,7 +1848,7 @@ end
 		self.ExtraIconFrame:ClearIcons(resetBuffs, resetDebuffs)
 		
 		--> reset auras
-		if resetDebuffs then
+		if resetDebuffs or not DB_AURA_SEPARATE_BUFFS then
 			if not DB_AURA_SEPARATE_BUFFS then
 				wipe (self.unitFrame.GhostAuraCache) -- ghost and extra are on aura frame 1, needs to be cleared.
 				platerInternal.ExtraAuras.WipeCache(self.unitFrame)
