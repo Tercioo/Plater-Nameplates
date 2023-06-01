@@ -410,8 +410,8 @@ local UnitAuraEventHandlerValidation = function (unit, isFullUpdate, updatedAura
 	end
 	
 	--resets buffs and debuffs if not using aura frame 2 (for now, until partial clear is implemented)
-	hasBuff = not DB_AURA_SEPARATE_BUFFS and hasDebuff or hasBuff 
-	hasDebuff = not DB_AURA_SEPARATE_BUFFS and hasBuff or hasDebuff
+	hasBuff = not DB_AURA_SEPARATE_BUFFS and (hasBuff or hasDebuff) or hasBuff 
+	hasDebuff = not DB_AURA_SEPARATE_BUFFS and (hasBuff or hasDebuff) or hasDebuff
 	
 	--ViragDevTool_AddData({unit = unit, needsUpdate=needsUpdate, hasBuff=hasBuff, hasDebuff=hasDebuff}, "Plater_UNIT_AURA return")
 	return needsUpdate, hasBuff, hasDebuff
