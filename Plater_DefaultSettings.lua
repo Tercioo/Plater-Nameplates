@@ -1025,6 +1025,8 @@ PLATER_DEFAULT_SETTINGS = {
 			enemy_ic = false,
 			friendly_ooc = false,
 			enemy_ooc = false,
+			blizz_healthbar_ic = false,
+			blizz_healthbar_ooc = false,
 		},
 
 		spell_animations = true,

@@ -12556,6 +12556,26 @@ end
 			name = "Friendly Nameplates out of combat",
 			desc = "Automatically enable / disable friendly nameplates out of combat.",
 		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_combat.blizz_healthbar_ic end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_combat.blizz_healthbar_ic = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "Hide Blizzard Healthbars in combat",
+			desc = "Automatically enable / disable showing blizzard nameplate healthbars in combat.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_combat.blizz_healthbar_ooc end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_combat.blizz_healthbar_ooc = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "Hide Blizzard Healthbars out of combat",
+			desc = "Automatically enable / disable showing blizzard nameplate healthbars out of combat.",
+		},
 		
 		{type = "breakline"},
 		{type = "breakline"},

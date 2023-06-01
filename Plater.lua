@@ -8826,6 +8826,18 @@ end
 		
 		-- combat toggle
 		if (profile.auto_toggle_combat_enabled and (combat ~= nil)) then
+			local onlyNamesEnabled = GetCVarBool("nameplateShowOnlyNames")
+			local onlyNamesEnabledRaw = GetCVar("nameplateShowOnlyNames")
+			if combat then -- update this separately and only if needed
+				if onlyNamesEnabled ~= profile.auto_toggle_combat.blizz_healthbar_ic then
+					SetCVar("nameplateShowOnlyNames", profile.auto_toggle_combat.blizz_healthbar_ic and CVAR_ENABLED or CVAR_DISABLED)
+				end
+			else
+				if onlyNamesEnabled ~= profile.auto_toggle_combat.blizz_healthbar_ooc then
+					SetCVar("nameplateShowOnlyNames", profile.auto_toggle_combat.blizz_healthbar_ooc and CVAR_ENABLED or CVAR_DISABLED)
+				end
+			end
+			
 			if combat then
 				SetCVar("nameplateShowFriends", profile.auto_toggle_combat.friendly_ic and CVAR_ENABLED or CVAR_DISABLED)
 				SetCVar("nameplateShowEnemies", profile.auto_toggle_combat.enemy_ic and CVAR_ENABLED or CVAR_DISABLED)

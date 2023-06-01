@@ -1061,6 +1061,21 @@ do
 			end
 		end
 	})
+	
+	--#29 ensure auto-function for "hide blizzard healthbars" is setup properly
+	tinsert (PlaterPatchLibrary, {
+		NotEssential = false,
+
+		Notes = {
+			"- Setup auto-toggle for 'Hide Blizzard Healthbars'."
+		},
+		Func = function()
+			if GetCVarBool ("nameplateShowOnlyNames") or Plater.db.profile.saved_cvars.nameplateShowOnlyNames == "1" then
+				Plater.db.profile.auto_toggle_combat.blizz_healthbar_ic = true
+				Plater.db.profile.auto_toggle_combat.blizz_healthbar_ooc = true
+			end
+		end,
+	})
 
 	--to tag an update as non-essential, add "NotEssential = true," to the table
 	--/run Plater.db.profile.patch_version = 27
