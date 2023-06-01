@@ -478,6 +478,7 @@ local UnitAuraEventHandler = function (_, event, arg1, arg2, arg3, ...)
 				--ViragDevTool_AddData({unit = unit, isFullUpdate = isFullUpdate, updatedAuras = updatedAuras, needsUpdate = needsUpdate, hasBuff = hasBuff, hasDebuff = hasDebuff, existing=CopyTable(UnitAuraEventHandlerData[unit] or {})}, "Plater_UNIT_AURA_AFTER")
 				if needsUpdate then
 					local existingData = UnitAuraEventHandlerData[unit] or { hasBuff = false, hasDebuff = false }
+					UpdateUnitAuraCacheData(unit, nil)
 					UnitAuraEventHandlerData[unit] = { hasBuff = existingData.hasBuff or hasBuff or false, hasDebuff = existingData.hasDebuff or hasDebuff or false }
 				end
 			end
