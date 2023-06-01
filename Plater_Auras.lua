@@ -478,7 +478,7 @@ local UnitAuraEventHandler = function (_, event, arg1, arg2, arg3, ...)
 				--ViragDevTool_AddData({unit = unit, isFullUpdate = isFullUpdate, updatedAuras = updatedAuras, needsUpdate = needsUpdate, hasBuff = hasBuff, hasDebuff = hasDebuff, existing=CopyTable(UnitAuraEventHandlerData[unit] or {})}, "Plater_UNIT_AURA_AFTER")
 				if needsUpdate then
 					local existingData = UnitAuraEventHandlerData[unit] or { hasBuff = false, hasDebuff = false }
-					UnitAuraEventHandlerData[unit] = { hasBuff = existingData.hasBuff or hasBuff, hasDebuff = existingData.hasDebuff or hasDebuff }
+					UnitAuraEventHandlerData[unit] = { hasBuff = existingData.hasBuff or hasBuff or false, hasDebuff = existingData.hasDebuff or hasDebuff or false }
 				end
 			end
 		end
@@ -515,11 +515,14 @@ UpdateUnitAuraCacheData = function (unit, updatedAuras)
 		UnitAuraCacheData[unit] = unitCacheData
 	end
 	
-	if updatedAuras == nil or updatedAuras.isFullUpdate or unitCacheData.isFullUpdate then
+	local wasFullUpdateHelp = unitCacheData.isFullUpdateHelp
+	local wasFullUpdateHarm = unitCacheData.isFullUpdateHarm
+	if updatedAuras == nil or updatedAuras.isFullUpdate or wasFullUpdateHelp or wasFullUpdateHarm then
 		UnitAuraCacheData[unit] = {}
 		UnitAuraCacheData[unit].buffs = {}
 		UnitAuraCacheData[unit].debuffs = {}
-		UnitAuraCacheData[unit].isFullUpdate = true
+		UnitAuraCacheData[unit].isFullUpdateHelp = updatedAuras == nil and true or updatedAuras.isFullUpdate or wasFullUpdateHelp
+		UnitAuraCacheData[unit].isFullUpdateHarm = updatedAuras == nil and true or updatedAuras.isFullUpdate or wasFullUpdateHarm
 		UnitAuraEventHandlerData[unit] = { hasBuff = true, hasDebuff = true }
 		return
 	end
@@ -558,18 +561,20 @@ UpdateUnitAuraCacheData = function (unit, updatedAuras)
 	end
 	
 	local existingData = UnitAuraEventHandlerData[unit] or { hasBuff = false, hasDebuff = false }
-	UnitAuraEventHandlerData[unit] = { hasBuff = existingData.hasBuff or unitCacheData.buffsChanged, hasDebuff = existingData.hasDebuff or unitCacheData.debuffsChanged }
+	UnitAuraEventHandlerData[unit] = { hasBuff = existingData.hasBuff or unitCacheData.buffsChanged or false, hasDebuff = existingData.hasDebuff or unitCacheData.debuffsChanged or false }
 end
 
 local function getUnitAuras(unit, filter)
 	if not unit then return end
 	
-	local unitCacheData = UnitAuraCacheData[unit]
-	--ViragDevTool_AddData(unitCacheData, "getUnitAuras - " .. unit)
+	local isHarmful = string.find(filter or "", "HARMFUL") and true or false
+	local isHelpful = string.find(filter or "", "HELPFUL") and true or false
 	
-	if unitCacheData and not unitCacheData.isFullUpdate then --new aura event
+	local unitCacheData = UnitAuraCacheData[unit]
+	--ViragDevTool_AddData({unitCacheData, filter = filter, isFullUpdateHarm = unitCacheData.isFullUpdateHarm, isFullUpdateHelp = unitCacheData.isFullUpdateHelp, ((isHarmful and unitCacheData.isFullUpdateHarm) or (isHelpful and unitCacheData.isFullUpdateHelp))}, "getUnitAuras - " .. unit)
+	
+	if unitCacheData and not ((isHarmful and unitCacheData.isFullUpdateHarm) or (isHelpful and unitCacheData.isFullUpdateHelp)) then --new aura event
 		Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdateAuras - getUnitAuras - short")
-		
 		-- debuffs
 		if unitCacheData.debuffsChanged then
 			local tmpDebuffs = {}
@@ -602,13 +607,11 @@ local function getUnitAuras(unit, filter)
 		return unitCacheData
 	end
 	
-	
 	if not filter then return end --old code requires this.
 	unitCacheData = unitCacheData or {debuffs = {}, buffs = {}}
+	UnitAuraCacheData[unit] = unitCacheData
 	
 	-- full updates and old way here
-	local isHarmful = string.find(filter, "HARMFUL") and true or false
-	local isHelpful = string.find(filter, "HELPFUL") and true or false
 	local filterCache = (isHarmful and unitCacheData.debuffs) or (isHelpful and unitCacheData.buffs) or nil
 	if not filterCache then return end
 	
@@ -678,7 +681,9 @@ local function getUnitAuras(unit, filter)
 	
 	Plater.EndLogPerformanceCore("Plater-Core", "Update", "UpdateAuras - getUnitAuras - long")
 	
-	unitCacheData.isFullUpdate = false -- done that
+	-- done the update?
+	if unitCacheData.isFullUpdateHelp and isHelpful then unitCacheData.isFullUpdateHelp = false end
+	if unitCacheData.isFullUpdateHarm and isHarmful then unitCacheData.isFullUpdateHarm = false end
 	return unitCacheData
 end
 
@@ -1832,7 +1837,7 @@ end
 	--> reset both buff frames to make them ready to receive an aura update
 	function Plater.ResetAuraContainer (self, resetBuffs, resetDebuffs)
 		Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdateAuras - ResetAuraContainer")
-		
+		--ViragDevTool_AddData({resetBuffs, resetDebuffs}, "ResetAuraContainer")
 		-- ensure reset is happening if nil
 		resetBuffs = resetBuffs ~= false
 		resetDebuffs = resetDebuffs ~= false
@@ -2015,7 +2020,7 @@ end
 		
 		Plater.ResetAuraContainer (self, unitAuraEventData.hasBuff, unitAuraEventData.hasDebuff)
 		local unitAuraCache = self.unitFrame.AuraCache
-		
+		--ViragDevTool_AddData({unitAuraEventData.hasBuff, unitAuraEventData.hasDebuff}, "UpdateAuras_Automatic")
 		--> debuffs
 		if unitAuraEventData.hasDebuff then
 			local unitAuras = getUnitAuras(unit, "HARMFUL") or {}
