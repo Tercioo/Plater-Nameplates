@@ -1,26 +1,27 @@
 
-local DF = _G["DetailsFramework"]
+local detailsFramework = _G["DetailsFramework"]
 
-if (not DF or not DetailsFrameworkCanLoad) then
+if (not detailsFramework or not DetailsFrameworkCanLoad) then
 	return
 end
 
 local _
+local unpack = unpack
 local emptyFunction = function() end
 local APIButtonFunctions = false
 
 do
 	local metaPrototype = {
 		WidgetType = "button",
-		dversion = DF.dversion
+		dversion = detailsFramework.dversion
 	}
 
 	--check if there's a metaPrototype already existing
-	if (_G[DF.GlobalWidgetControlNames["button"]]) then
+	if (_G[detailsFramework.GlobalWidgetControlNames["button"]]) then
 		--get the already existing metaPrototype
-		local oldMetaPrototype = _G[DF.GlobalWidgetControlNames["button"]]
+		local oldMetaPrototype = _G[detailsFramework.GlobalWidgetControlNames["button"]]
 		--check if is older
-		if ( (not oldMetaPrototype.dversion) or (oldMetaPrototype.dversion < DF.dversion) ) then
+		if ( (not oldMetaPrototype.dversion) or (oldMetaPrototype.dversion < detailsFramework.dversion) ) then
 			--the version is older them the currently loading one
 			--copy the new values into the old metatable
 			for funcName, _ in pairs(metaPrototype) do
@@ -29,23 +30,23 @@ do
 		end
 	else
 		--first time loading the framework
-		_G[DF.GlobalWidgetControlNames["button"]] = metaPrototype
+		_G[detailsFramework.GlobalWidgetControlNames["button"]] = metaPrototype
 	end
 end
 
-local ButtonMetaFunctions = _G[DF.GlobalWidgetControlNames["button"]]
+local ButtonMetaFunctions = _G[detailsFramework.GlobalWidgetControlNames["button"]]
 
-DF:Mixin(ButtonMetaFunctions, DF.SetPointMixin)
-DF:Mixin(ButtonMetaFunctions, DF.FrameMixin)
-DF:Mixin(ButtonMetaFunctions, DF.TooltipHandlerMixin)
-DF:Mixin(ButtonMetaFunctions, DF.ScriptHookMixin)
+detailsFramework:Mixin(ButtonMetaFunctions, detailsFramework.SetPointMixin)
+detailsFramework:Mixin(ButtonMetaFunctions, detailsFramework.FrameMixin)
+detailsFramework:Mixin(ButtonMetaFunctions, detailsFramework.TooltipHandlerMixin)
+detailsFramework:Mixin(ButtonMetaFunctions, detailsFramework.ScriptHookMixin)
 
 ------------------------------------------------------------------------------------------------------------
 --metatables
 
 	ButtonMetaFunctions.__call = function(self)
 		local frameWidget = self.widget
-		DF:CoreDispatch((frameWidget:GetName() or "Button") .. ":__call()", self.func, frameWidget, "LeftButton", self.param1, self.param2)
+		detailsFramework:CoreDispatch((frameWidget:GetName() or "Button") .. ":__call()", self.func, frameWidget, "LeftButton", self.param1, self.param2)
 	end
 
 ------------------------------------------------------------------------------------------------------------
@@ -194,18 +195,18 @@ DF:Mixin(ButtonMetaFunctions, DF.ScriptHookMixin)
 
 	--text color
 	local smember_textcolor = function(object, value)
-		local value1, value2, value3, value4 = DF:ParseColors(value)
+		local value1, value2, value3, value4 = detailsFramework:ParseColors(value)
 		return object.button.text:SetTextColor(value1, value2, value3, value4)
 	end
 
 	--text font
 	local smember_textfont = function(object, value)
-		return DF:SetFontFace (object.button.text, value)
+		return detailsFramework:SetFontFace (object.button.text, value)
 	end
 
 	--text size
 	local smember_textsize = function(object, value)
-		return DF:SetFontSize(object.button.text, value)
+		return detailsFramework:SetFontSize(object.button.text, value)
 	end
 
 	--texture
@@ -331,7 +332,7 @@ DF:Mixin(ButtonMetaFunctions, DF.ScriptHookMixin)
 	---set the color of the button text
 	---@param ... any
 	function ButtonMetaFunctions:SetTextColor(...)
-		local red, green, blue, alpha = DF:ParseColors(...)
+		local red, green, blue, alpha = detailsFramework:ParseColors(...)
 		self.button.text:SetTextColor(red, green, blue, alpha)
 	end
 	ButtonMetaFunctions.SetFontColor = ButtonMetaFunctions.SetTextColor --alias
@@ -339,13 +340,13 @@ DF:Mixin(ButtonMetaFunctions, DF.ScriptHookMixin)
 	---set the size of the button text
 	---@param ... number
 	function ButtonMetaFunctions:SetFontSize(...)
-		DF:SetFontSize(self.button.text, ...)
+		detailsFramework:SetFontSize(self.button.text, ...)
 	end
 
 	---set the font into the button text
 	---@param font string
 	function ButtonMetaFunctions:SetFontFace(font)
-		DF:SetFontFace(self.button.text, font)
+		detailsFramework:SetFontFace(self.button.text, font)
 	end
 
 	---comment
@@ -425,14 +426,14 @@ DF:Mixin(ButtonMetaFunctions, DF.ScriptHookMixin)
 			if (isAtlas) then
 				self.icon:SetAtlas(texture)
 
-			elseif (DF:IsHtmlColor(texture)) then
-				local r, g, b, a = DF:ParseColors(texture)
+			elseif (detailsFramework:IsHtmlColor(texture)) then
+				local r, g, b, a = detailsFramework:ParseColors(texture)
 				self.icon:SetColorTexture(r, g, b, a)
 			else
 				self.icon:SetTexture(texture)
 			end
 		elseif (type(texture) == "table") then
-			local r, g, b, a = DF:ParseColors(texture)
+			local r, g, b, a = detailsFramework:ParseColors(texture)
 			self.icon:SetColorTexture(r, g, b, a)
 		else
 			self.icon:SetTexture(texture)
@@ -449,7 +450,7 @@ DF:Mixin(ButtonMetaFunctions, DF.ScriptHookMixin)
 
 		if (overlay) then
 			if (type(overlay) == "string") then
-				local r, g, b, a = DF:ParseColors(overlay)
+				local r, g, b, a = detailsFramework:ParseColors(overlay)
 				self.icon:SetVertexColor(r, g, b, a)
 			else
 				self.icon:SetVertexColor(unpack(overlay))
@@ -476,7 +477,7 @@ DF:Mixin(ButtonMetaFunctions, DF.ScriptHookMixin)
 						loop = false
 						break
 					else
-						DF:SetFontSize(self.button.text, textSize)
+						detailsFramework:SetFontSize(self.button.text, textSize)
 						textWidth = self.button.text:GetStringWidth()
 						textSize = textSize - 1
 					end
@@ -506,25 +507,25 @@ DF:Mixin(ButtonMetaFunctions, DF.ScriptHookMixin)
 	---simulate a click on the button
 	function ButtonMetaFunctions:Exec()
 		local frameWidget = self.widget
-		DF:CoreDispatch((frameWidget:GetName() or "Button") .. ":Exec()", self.func, frameWidget, "LeftButton", self.param1, self.param2)
+		detailsFramework:CoreDispatch((frameWidget:GetName() or "Button") .. ":Exec()", self.func, frameWidget, "LeftButton", self.param1, self.param2)
 	end
 
 	---simulate a click on the button, but this function is called with a different name
 	function ButtonMetaFunctions:Click()
 		local frameWidget = self.widget
-		DF:CoreDispatch((frameWidget:GetName() or "Button") .. ":Click()", self.func, frameWidget, "LeftButton", self.param1, self.param2)
+		detailsFramework:CoreDispatch((frameWidget:GetName() or "Button") .. ":Click()", self.func, frameWidget, "LeftButton", self.param1, self.param2)
 	end
 
 	---simulate a right click on the button
 	function ButtonMetaFunctions:RightClick()
 		local frameWidget = self.widget
-		DF:CoreDispatch((frameWidget:GetName() or "Button") .. ":RightClick()", self.funcright, frameWidget, "RightButton", self.param1, self.param2)
+		detailsFramework:CoreDispatch((frameWidget:GetName() or "Button") .. ":RightClick()", self.funcright, frameWidget, "RightButton", self.param1, self.param2)
 	end
 
 --custom textures
 	function ButtonMetaFunctions:InstallCustomTexture()
 		--function deprecated, now just set a the standard template
-		self:SetTemplate(DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"))
+		self:SetTemplate(detailsFramework:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"))
 	end
 
 ------------------------------------------------------------------------------------------------------------
@@ -649,8 +650,8 @@ DF:Mixin(ButtonMetaFunctions, DF.ScriptHookMixin)
 
 		button.mouse_down = GetTime()
 		local x, y = GetCursorPosition()
-		button.x = floor(x)
-		button.y = floor(y)
+		button.x = math.floor(x)
+		button.y = math.floor(y)
 
 		if (not object.container.isLocked and object.container:IsMovable()) then
 			if (not button.isLocked and button:IsMovable()) then
@@ -662,9 +663,9 @@ DF:Mixin(ButtonMetaFunctions, DF.ScriptHookMixin)
 		if (object.options.OnGrab) then
 			if (type(object.options.OnGrab) == "string" and object.options.OnGrab == "PassClick") then
 				if (buttontype == "LeftButton") then
-					DF:CoreDispatch((button:GetName() or "Button") .. ":OnMouseDown()", object.func, button, buttontype, object.param1, object.param2)
+					detailsFramework:CoreDispatch((button:GetName() or "Button") .. ":OnMouseDown()", object.func, button, buttontype, object.param1, object.param2)
 				else
-					DF:CoreDispatch((button:GetName() or "Button") .. ":OnMouseDown()", object.funcright, button, buttontype, object.param1, object.param2)
+					detailsFramework:CoreDispatch((button:GetName() or "Button") .. ":OnMouseDown()", object.funcright, button, buttontype, object.param1, object.param2)
 				end
 			end
 		end
@@ -727,16 +728,16 @@ DF:Mixin(ButtonMetaFunctions, DF.ScriptHookMixin)
 		end
 
 		local x, y = GetCursorPosition()
-		x = floor(x)
-		y = floor(y)
+		x = math.floor(x)
+		y = math.floor(y)
 
 		button.mouse_down = button.mouse_down or 0 --avoid issues when the button was pressed while disabled and release when enabled
 
 		if ((x == button.x and y == button.y) or (button.mouse_down + 0.5 > GetTime() and button:IsMouseOver())) then
 			if (buttonType == "LeftButton") then
-				DF:CoreDispatch((button:GetName() or "Button") .. ":OnMouseUp()", object.func, button, buttonType, object.param1, object.param2)
+				detailsFramework:CoreDispatch((button:GetName() or "Button") .. ":OnMouseUp()", object.func, button, buttonType, object.param1, object.param2)
 			else
-				DF:CoreDispatch((button:GetName() or "Button") .. ":OnMouseUp()", object.funcright, button, buttonType, object.param1, object.param2)
+				detailsFramework:CoreDispatch((button:GetName() or "Button") .. ":OnMouseUp()", object.funcright, button, buttonType, object.param1, object.param2)
 			end
 		end
 	end
@@ -749,11 +750,11 @@ DF:Mixin(ButtonMetaFunctions, DF.ScriptHookMixin)
 ---@param template table
 function ButtonMetaFunctions:SetTemplate(template)
 	if (type(template) == "string") then
-		template = DF:GetTemplate("button", template)
+		template = detailsFramework:GetTemplate("button", template)
 	end
 
 	if (not template) then
-		DF:Error("template not found")
+		detailsFramework:Error("template not found")
 		return
 	end
 
@@ -770,34 +771,34 @@ function ButtonMetaFunctions:SetTemplate(template)
 	end
 
 	if (template.backdropcolor) then
-		local r, g, b, a = DF:ParseColors(template.backdropcolor)
+		local r, g, b, a = detailsFramework:ParseColors(template.backdropcolor)
 		self:SetBackdropColor(r, g, b, a)
 		self.onleave_backdrop = {r, g, b, a}
 	end
 
 	if (template.backdropbordercolor) then
-		local r, g, b, a = DF:ParseColors(template.backdropbordercolor)
+		local r, g, b, a = detailsFramework:ParseColors(template.backdropbordercolor)
 		self:SetBackdropBorderColor(r, g, b, a)
 		self.onleave_backdrop_border_color = {r, g, b, a}
 	end
 
 	if (template.onentercolor) then
-		local r, g, b, a = DF:ParseColors(template.onentercolor)
+		local r, g, b, a = detailsFramework:ParseColors(template.onentercolor)
 		self.onenter_backdrop = {r, g, b, a}
 	end
 
 	if (template.onleavecolor) then
-		local r, g, b, a = DF:ParseColors(template.onleavecolor)
+		local r, g, b, a = detailsFramework:ParseColors(template.onleavecolor)
 		self.onleave_backdrop = {r, g, b, a}
 	end
 
 	if (template.onenterbordercolor) then
-		local r, g, b, a = DF:ParseColors(template.onenterbordercolor)
+		local r, g, b, a = detailsFramework:ParseColors(template.onenterbordercolor)
 		self.onenter_backdrop_border_color = {r, g, b, a}
 	end
 
 	if (template.onleavebordercolor) then
-		local r, g, b, a = DF:ParseColors(template.onleavebordercolor)
+		local r, g, b, a = detailsFramework:ParseColors(template.onleavebordercolor)
 		self.onleave_backdrop_border_color = {r, g, b, a}
 	end
 
@@ -842,7 +843,7 @@ end
 		self.text:SetJustifyH("CENTER")
 		self.text:SetPoint("CENTER", self, "CENTER", 0, 0)
 		self:SetFontString(self.text)
-		DF:SetFontSize(self.text, 10)
+		detailsFramework:SetFontSize(self.text, 10)
 
 		self.texture_disabled = self:CreateTexture("$parent_TextureDisabled", "OVERLAY")
 		self.texture_disabled:SetAllPoints()
@@ -852,6 +853,22 @@ end
 		self:SetScript("OnDisable", onDisableFunc)
 		self:SetScript("OnEnable", onEnableFunc)
 	end
+
+	---@class df_button : button
+	---@field SetTemplate fun(self: df_button, template: table) set the button visual by a template
+	---@field RightClick fun(self: df_button) right click the button executing its right click function
+	---@field Exec fun(self: df_button) execute the button function for the left button
+	---@field Disable fun(self: df_button) disable the button
+	---@field Enable fun(self: df_button) enable the button
+	---@field IsEnabled fun(self: df_button) : boolean returns true if the button is enabled
+	---@field SetIcon fun(self: df_button,texture: string, width: number|nil, height: number|nil, layout: string|nil, texcoord: table|nil, overlay: table|nil, textDistance: number|nil, leftPadding: number|nil, textHeight: number|nil, shortMethod: any|nil)
+	---@field GetIconTexture fun(self: df_button) : string returns the texture path of the button icon
+	---@field SetTexture fun(self: df_button, normalTexture: string, highlightTexture: string, pressedTexture: string, disabledTexture: string) set the regular button textures
+	---@field SetFontFace fun(self: df_button, font: string) set the button font
+	---@field SetFontSize fun(self: df_button, size: number) set the button font size
+	---@field SetTextColor fun(self: df_button, color: any) set the button text color
+	---@field SetText fun(self: df_button, text: string) set the button text
+	---@field SetClickFunction fun(self: df_button, func: function, param1: any, param2: any, clickType: "left"|"right"|nil)
 
 	---create a Details Framework button
 	---@param parent table
@@ -867,22 +884,23 @@ end
 	---@param shortMethod boolean|nil
 	---@param buttonTemplate table|nil
 	---@param textTemplate table|nil
-	---@return table|nil
-	function DF:CreateButton(parent, func, width, height, text, param1, param2, texture, member, name, shortMethod, buttonTemplate, textTemplate)
-		return DF:NewButton(parent, parent, name, member, width, height, func, param1, param2, texture, text, shortMethod, buttonTemplate, textTemplate)
+	---@return df_button
+	function detailsFramework:CreateButton(parent, func, width, height, text, param1, param2, texture, member, name, shortMethod, buttonTemplate, textTemplate)
+		return detailsFramework:NewButton(parent, parent, name, member, width, height, func, param1, param2, texture, text, shortMethod, buttonTemplate, textTemplate)
 	end
 
-	function DF:NewButton(parent, container, name, member, width, height, func, param1, param2, texture, text, shortMethod, buttonTemplate, textTemplate)
+	---@return df_button
+	function detailsFramework:NewButton(parent, container, name, member, width, height, func, param1, param2, texture, text, shortMethod, buttonTemplate, textTemplate)
 		if (not name) then
-			name = "DetailsFrameworkButtonNumber" .. DF.ButtonCounter
-			DF.ButtonCounter = DF.ButtonCounter + 1
+			name = "DetailsFrameworkButtonNumber" .. detailsFramework.ButtonCounter
+			detailsFramework.ButtonCounter = detailsFramework.ButtonCounter + 1
 
 		elseif (not parent) then
-			return error("Details! FrameWork: parent not found.", 2)
+			error("Details! FrameWork: parent not found.", 2)
 		end
 
 		if (name:find("$parent")) then
-			local parentName = DF.GetParentName(parent)
+			local parentName = detailsFramework.GetParentName(parent)
 			name = name:gsub("$parent", parentName)
 		end
 
@@ -904,7 +922,7 @@ end
 		buttonObject.options = {OnGrab = false}
 
 		buttonObject.button = CreateFrame("button", name, parent, "BackdropTemplate")
-		DF:Mixin(buttonObject.button, DF.WidgetFunctions)
+		detailsFramework:Mixin(buttonObject.button, detailsFramework.WidgetFunctions)
 
 		createButtonWidgets(buttonObject.button)
 		buttonObject.button:SetSize(width or 100, height or 20)
@@ -934,7 +952,7 @@ end
 		buttonObject.button:SetHighlightTexture(texture, "ADD")
 
 		local locTable = text
-		DF.Language.SetTextWithLocTableWithDefault(buttonObject.button.text, locTable, text)
+		detailsFramework.Language.SetTextWithLocTableWithDefault(buttonObject.button.text, locTable, text)
 
 		buttonObject.button.text:SetPoint("center", buttonObject.button, "center")
 
@@ -954,7 +972,7 @@ end
 						loop = false
 						break
 					else
-						DF:SetFontSize(buttonObject.button.text, textsize)
+						detailsFramework:SetFontSize(buttonObject.button.text, textsize)
 						textWidth = buttonObject.button.text:GetStringWidth()
 						textsize = textsize - 1
 					end
@@ -972,18 +990,18 @@ end
 
 		if (textTemplate) then
 			if (textTemplate.size) then
-				DF:SetFontSize(buttonObject.button.text, textTemplate.size)
+				detailsFramework:SetFontSize(buttonObject.button.text, textTemplate.size)
 			end
 
 			if (textTemplate.color) then
-				local r, g, b, a = DF:ParseColors(textTemplate.color)
+				local r, g, b, a = detailsFramework:ParseColors(textTemplate.color)
 				buttonObject.button.text:SetTextColor(r, g, b, a)
 			end
 
 			if (textTemplate.font) then
 				local SharedMedia = LibStub:GetLibrary("LibSharedMedia-3.0")
 				local font = SharedMedia:Fetch("font", textTemplate.font)
-				DF:SetFontFace(buttonObject.button.text, font)
+				detailsFramework:SetFontFace(buttonObject.button.text, font)
 			end
 		end
 
@@ -1021,18 +1039,18 @@ end
 		button.MyObject.color_texture:SetVertexColor(red, green, blue, alpha)
 
 		--safecall
-		DF:CoreDispatch((self:GetName() or "ColorPicker") .. ".pickcolor_callback()", button.MyObject.color_callback, button.MyObject, red, green, blue, alpha)
+		detailsFramework:CoreDispatch((self:GetName() or "ColorPicker") .. ".pickcolor_callback()", button.MyObject.color_callback, button.MyObject, red, green, blue, alpha)
 		button.MyObject:RunHooksForWidget("OnColorChanged", button.MyObject, red, green, blue, alpha)
 	end
 
 	local pickcolor = function(self)
 		local red, green, blue, alpha = self.MyObject.color_texture:GetVertexColor()
-		alpha = abs(alpha - 1)
-		DF:ColorPick(self, red, green, blue, alpha, pickcolorCallback)
+		alpha = math.abs(alpha - 1)
+		detailsFramework:ColorPick(self, red, green, blue, alpha, pickcolorCallback)
 	end
 
 	local setColorPickColor = function(button, ...)
-		local red, green, blue, alpha = DF:ParseColors(...)
+		local red, green, blue, alpha = detailsFramework:ParseColors(...)
 		button.color_texture:SetVertexColor(red, green, blue, alpha)
 	end
 
@@ -1052,13 +1070,13 @@ end
 	---@param alpha number|nil
 	---@param buttonTemplate table|nil
 	---@return table|nil
-	function DF:CreateColorPickButton(parent, name, member, callback, alpha, buttonTemplate)
-		return DF:NewColorPickButton(parent, name, member, callback, alpha, buttonTemplate)
+	function detailsFramework:CreateColorPickButton(parent, name, member, callback, alpha, buttonTemplate)
+		return detailsFramework:NewColorPickButton(parent, name, member, callback, alpha, buttonTemplate)
 	end
 
-	function DF:NewColorPickButton(parent, name, member, callback, alpha, buttonTemplate)
+	function detailsFramework:NewColorPickButton(parent, name, member, callback, alpha, buttonTemplate)
 		--button
-		local colorPickButton = DF:NewButton(parent, _, name, member, 16, 16, pickcolor, alpha, "param2", nil, nil, nil, buttonTemplate)
+		local colorPickButton = detailsFramework:NewButton(parent, _, name, member, 16, 16, pickcolor, alpha, "param2", nil, nil, nil, buttonTemplate)
 		colorPickButton.color_callback = callback
 		colorPickButton.Cancel = colorpickCancel
 		colorPickButton.SetColor = setColorPickColor
@@ -1067,7 +1085,7 @@ end
 		colorPickButton.HookList.OnColorChanged = {}
 
 		if (not buttonTemplate) then
-			colorPickButton:SetTemplate(DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"))
+			colorPickButton:SetTemplate(detailsFramework:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"))
 		end
 
 		--background showing a grid to indicate the transparency
@@ -1079,7 +1097,7 @@ end
 		background:SetAlpha(0.3)
 
 		--texture which shows the texture color
-		local colorTexture = DF:NewImage(colorPickButton, nil, 16, 16, nil, nil, "color_texture", "$parentTex")
+		local colorTexture = detailsFramework:NewImage(colorPickButton, nil, 16, 16, nil, nil, "color_texture", "$parentTex")
 		colorTexture:SetColorTexture(1, 1, 1)
 		colorTexture:SetPoint("topleft", colorPickButton.widget, "topleft", 0, 0)
 		colorTexture:SetPoint("bottomright", colorPickButton.widget, "bottomright", 0, 0)
@@ -1088,7 +1106,7 @@ end
 		return colorPickButton
 	end
 
-    function DF:SetRegularButtonTexture(button, texture, left, right, top, bottom)
+    function detailsFramework:SetRegularButtonTexture(button, texture, left, right, top, bottom)
         if (type(left) == "table") then
             left, right, top, bottom = unpack(left)
         end
@@ -1124,8 +1142,8 @@ end
         end
     end
 
-	function DF:SetRegularButtonVertexColor(button, ...)
-        local r, g, b, a = DF:ParseColor(...)
+	function detailsFramework:SetRegularButtonVertexColor(button, ...)
+        local r, g, b, a = detailsFramework:ParseColor(...)
         local normalTexture = button:GetNormalTexture()
         local pushedTexture = button:GetPushedTexture()
         local highlightTexture = button:GetHightlightTexture()
@@ -1136,3 +1154,66 @@ end
         highlightTexture:SetVertexColor(r, g, b, a)
         disabledTexture:SetVertexColor(r, g, b, a)
     end
+
+
+------------------------------------------------------------------------------------------------------------
+--tab button
+
+detailsFramework.TabButtonMixin = {
+	---set the text of the tab button
+	---@param self df_tabbutton
+	---@param text string
+	SetText = function(self, text)
+		self.Text:SetText(text)
+	end,
+
+}
+
+---create a button which can be used as a tab button, has textures for left, right, middle and a text
+---@param parent frame
+---@param name string|nil
+---@return df_tabbutton
+function detailsFramework:CreateTabButton(parent, name)
+	---@type df_tabbutton
+	local tabButton = CreateFrame("button", name, parent)
+	tabButton:SetSize(50, 20)
+
+	detailsFramework:Mixin(tabButton, detailsFramework.TabButtonMixin)
+
+	tabButton.Left = tabButton:CreateTexture(nil, "overlay")
+	tabButton.Right = tabButton:CreateTexture(nil, "overlay")
+	tabButton.Middle = tabButton:CreateTexture(nil, "overlay")
+	tabButton.Text = tabButton:CreateFontString(nil, "overlay", "GameFontNormal")
+
+	tabButton.Text:SetPoint("center", tabButton, "center", 0, 0)
+
+	tabButton.Left:SetPoint("bottomleft", tabButton, "bottomleft", 0, 0)
+	tabButton.Left:SetPoint("topleft", tabButton, "topleft", 0, 0)
+
+	tabButton.Right:SetPoint("bottomright", tabButton, "bottomright", 0, 0)
+	tabButton.Right:SetPoint("topright", tabButton, "topright", 0, 0)
+
+	tabButton.Middle:SetPoint("topleft", tabButton.Left, "topright", 0, 0)
+	tabButton.Middle:SetPoint("topright", tabButton.Right, "topleft", 0, 0)
+
+	tabButton.Left:SetAtlas("Options_Tab_Left")
+	tabButton.Left:SetWidth(2)
+
+	tabButton.Right:SetAtlas("Options_Tab_Right")
+	tabButton.Right:SetWidth(2)
+
+	tabButton.Middle:SetAtlas("Options_Tab_Middle")
+	tabButton.Middle:SetHeight(20)
+
+	tabButton.Text:SetText("tab")
+
+	return tabButton
+end
+
+
+---@class df_tabbutton : button
+---@field Left texture
+---@field Right texture
+---@field Middle texture
+---@field Text fontstring
+---@field SetText fun(self: df_tabbutton, text: string)
