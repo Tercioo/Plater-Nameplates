@@ -986,6 +986,22 @@ end
 				table.sort (iconFrameContainer, Plater.AuraIconsSortFunction)
 				--when sorted, this is reliable
 				amountFramesShown = index
+			elseif IS_NEW_UNIT_AURA_AVAILABLE then
+				-- still sort by auraInstanceID for some consistency
+				local iconFrameContainerCopy = {}
+				local index = 0
+				for _, icon in pairs(iconFrameContainer) do
+					if icon:IsShown() then
+						index = index + 1
+						iconFrameContainerCopy[index] = icon
+					end
+				end
+				iconFrameContainer = iconFrameContainerCopy
+				table.sort (iconFrameContainer, function(aura1, aura2) 
+					return (aura1.auraInstanceID or 0) < (aura2.auraInstanceID or 0)
+				end)
+				--when sorted, this is reliable
+				amountFramesShown = index
 			end
 		
 			local growDirection

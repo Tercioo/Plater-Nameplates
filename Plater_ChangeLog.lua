@@ -8,6 +8,9 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 			
+			{1686034099,  "Backend Change", "June 6th, 2023", "Keep auras in default sort order of not sorted by time.", "cont1nuity"},
+			{1686034099,  "Backend Change", "June 6th, 2023", "Possibility to change audio cues channel.", "cont1nuity"},
+			
 			{1685613078,  "Bug Fix", "June 1st, 2023", "Fixing an issue with aura updates not being done properly in some cases.", "cont1nuity"},
 			{1685613078,  "New Feature", "June 1st, 2023", "Adding auto-toggle for 'Hide Blizzard Healthbars' based on combat state.", "cont1nuity"},
 			{1685613078,  "Backend Change", "May 31st, 2023", "Fixing some issues on aura updates to increase performance.", "cont1nuity"},
