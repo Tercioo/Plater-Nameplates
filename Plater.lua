@@ -10942,54 +10942,69 @@ end
 		Plater.UpdatePlateSize (unitFrame.PlateFrame)
 	end
 	
-	--changes the border color, this call is for the API, can be called from external sources
-	function Plater.SetBorderColor (self, r, g, b, a) --self = unitFrame
+	---changes the border color, this call is for the API, can be called from external sources
+	---@param self table unitFrame
+	---@param r any
+	---@param g number|nil
+	---@param b number|nil
+	---@param a number|nil
+	function Plater.SetBorderColor(self, r, g, b, a)
 		if (not r) then
 			self.customBorderColor = nil
-			Plater.UpdateBorderColor (self)
+			Plater.UpdateBorderColor(self)
 			return
 		end
 		
-		r, g, b, a = DF:ParseColors (r, g, b, a)
+		r, g, b, a = DF:ParseColors(r, g, b, a)
 		
 		--UpdateBorderColor will use the value set on customBorderColor member if any
 		self.customBorderColor = {r, g, b, a}
 		
-		Plater.UpdateBorderColor (self)
+		Plater.UpdateBorderColor(self)
 	end
 
-	--flashes on the health bar border
-	function Plater.FlashNameplateBorder (unitFrame, duration)
+	---flashes on the health bar border
+	---@param unitFrame table unitFrame
+	---@param duration number
+	function Plater.FlashNameplateBorder(unitFrame, duration)
 		if (not unitFrame.healthBar.PlayHealthFlash) then
-			Plater.CreateHealthFlashFrame (unitFrame.PlateFrame)
+			Plater.CreateHealthFlashFrame(unitFrame.PlateFrame)
 		end
 		unitFrame.healthBar.canHealthFlash = true
-		unitFrame.healthBar.PlayHealthFlash (duration)
+		unitFrame.healthBar.PlayHealthFlash(duration)
 	end
 
-	--flashes the unitFrame body
-	function Plater.FlashNameplateBody (unitFrame, text, duration)
-		--> sending true to ignore cooldown
-		unitFrame.PlateFrame.PlayBodyFlash (text, duration, true)
+	---flashes the unitFrame body showing a text in the middle of the flash texture, by default this call is use to show aggro alerts with the word "-AGGRO-"
+	---@param unitFrame table unitFrame
+	---@param text string
+	---@param duration number
+	function Plater.FlashNameplateBody(unitFrame, text, duration)
+		--sending true to ignore cooldown
+		unitFrame.PlateFrame.PlayBodyFlash(text, duration, true)
 	end
 
-	--return if the player is in combat
+	---return if the player is in combat
+	---@return boolean bIsPlayerInCombat
 	function Plater.IsInCombat()
 		return InCombatLockdown() or PLAYER_IN_COMBAT
 	end
 
-	--return true if the unit is in the tank role
-	function Plater.IsUnitTank (unitFrame)
-		return TANK_CACHE [unitFrame.unitNameInternal] or TANK_CACHE [lower(unitFrame.unitNameInternal)]
+	---return true if the unit is in the tank role
+	---@param unitFrame table unitFrame
+	---@return boolean bIsUnitInTankRole
+	function Plater.IsUnitTank(unitFrame)
+		return TANK_CACHE[unitFrame.unitNameInternal] or TANK_CACHE[lower(unitFrame.unitNameInternal)]
 	end
 	
-	--check the role and the role of the specialization to return if the player is in a tank role
+	---check the player role and role specialization and return if it is in the tank role
+	---@return boolean bIsPlayerInTankRole
 	function Plater.IsPlayerTank()
 		return IsPlayerEffectivelyTank()
 	end
 	
-	--return the table where tanks is stored
-	--has the unit name as the key and true as value
+	---return the table where tanks is stored
+	---has the unit name as the key and true as value
+	---@return table<string, boolean> tankList
 	function Plater.GetTanks()
 		return TANK_CACHE
 	end
