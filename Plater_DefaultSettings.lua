@@ -129,6 +129,7 @@ PLATER_DEFAULT_SETTINGS = {
 		--store audio cues for spells
 		--format: [SpellID] = filePath
 		cast_audiocues = {},
+		cast_audiocues_channel = "Master",
 
 		--store the cast colors customized by the user
 		cast_colors = {}, --[spellId] = {[1] = color, [2] = enabled, [3] = custom spell name}

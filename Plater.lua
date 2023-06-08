@@ -5507,7 +5507,15 @@ function Plater.OnInit() --private --~oninit ~init
 						if (platerInternal.LatestHandleForAudioPlayed) then
 							StopSound(platerInternal.LatestHandleForAudioPlayed, 0.5)
 						end
-						local willPlay, soundHandle = PlaySoundFile(audioCue, "Master")
+						local validChannels = {
+							["Master"] = "Master",
+							["Music"] = "Music",
+							["SFX"] = "SFX",
+							["Ambience"] = "Ambience",
+							["Dialog"] = "Dialog",
+						}
+						local channel = validChannels[profile.cast_audiocues_channel or "Master"] or "Master"
+						local willPlay, soundHandle = PlaySoundFile(audioCue, channel)
 						if (willPlay) then
 							platerInternal.LatestHandleForAudioPlayed = soundHandle
 						end
