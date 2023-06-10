@@ -400,7 +400,7 @@ function Plater.OpenOptionsPanel()
 	statusBar:SetAlpha (0.9)
 	statusBar:SetFrameLevel (f:GetFrameLevel()+10)
 	
-	DF:BuildStatusbarAuthorInfo (statusBar, "Plater is Maintained by ", "Ariani | Terciob")
+	DF:BuildStatusbarAuthorInfo (statusBar, "Plater is Maintained by ", "Cont1nuity & Terciob")
 	
 	--if (DF.IsDragonflight()) then
 	local bottomGradient = DF:CreateTexture(f, {gradient = "vertical", fromColor = {0, 0, 0, 0.6}, toColor = "transparent"}, 1, 100, "artwork", {0, 1, 0, 1}, "bottomGradient")
