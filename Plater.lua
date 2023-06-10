@@ -2112,7 +2112,7 @@ Plater.AnchorNamesByPhraseId = {
 		end
 		
 		--check if there's already an update scheduled for this unit
-		if (plateFrame.HasUpdateScheduled and not plateFrame.HasUpdateScheduled:Cancelled()) then
+		if (plateFrame.HasUpdateScheduled and not plateFrame.HasUpdateScheduled:IsCancelled()) then
 			if unitId and (not plateFrame.HasUpdateScheduled.unitId or plateFrame.HasUpdateScheduled.unitId ~= unitId) then
 				plateFrame.HasUpdateScheduled:Cancel()
 			else
