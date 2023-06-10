@@ -855,6 +855,20 @@ end
 	end
 
 	---@class df_button : button
+	---@field tooltip string
+	---@field shown boolean
+	---@field width number
+	---@field height number
+	---@field text string
+	---@field clickfunction function
+	---@field texture string
+	---@field locked boolean
+	---@field fontcolor any
+	---@field fontface string
+	---@field fontsize number
+	---@field textcolor any
+	---@field textfont string
+	---@field textsize number
 	---@field SetTemplate fun(self: df_button, template: table) set the button visual by a template
 	---@field RightClick fun(self: df_button) right click the button executing its right click function
 	---@field Exec fun(self: df_button) execute the button function for the left button
@@ -1033,9 +1047,8 @@ end
 
 ------------------------------------------------------------------------------------------------------------
 --color picker button
-
 	local pickcolorCallback = function(self, red, green, blue, alpha, button)
-		alpha = abs(alpha - 1)
+		alpha = math.abs(alpha - 1)
 		button.MyObject.color_texture:SetVertexColor(red, green, blue, alpha)
 
 		--safecall
@@ -1159,61 +1172,180 @@ end
 ------------------------------------------------------------------------------------------------------------
 --tab button
 
+---@class df_tabbutton : button
+---@field LeftTexture texture
+---@field RightTexture texture
+---@field MiddleTexture texture
+---@field SelectedTexture texture
+---@field Text fontstring
+---@field CloseButton df_closebutton
+---@field leftTextureName string
+---@field rightTextureName string
+---@field middleTextureName string
+---@field leftTextureSelectedName string
+---@field rightTextureSelectedName string
+---@field middleTextureSelectedName string
+---@field bIsSelected boolean
+---@field SetText fun(self: df_tabbutton, text: string)
+---@field SetSelected fun(self: df_tabbutton, selected: boolean)
+---@field IsSelected fun(self: df_tabbutton): boolean
+---@field Reset fun(self: df_tabbutton)
+
 detailsFramework.TabButtonMixin = {
 	---set the text of the tab button
 	---@param self df_tabbutton
 	---@param text string
 	SetText = function(self, text)
 		self.Text:SetText(text)
+		--adjust the width of the tab button to fit the text
+		local fontStringLength = self.Text:GetStringWidth()
+		self:SetWidth(fontStringLength + 20)
+	end,
+
+	---highlight the tab textures to indicate the tab is selected
+	---@param self df_tabbutton
+	---@param selected boolean
+	SetSelected = function(self, selected)
+		self.LeftTexture:SetAtlas(selected and self.leftTextureSelectedName or self.leftTextureName)
+		self.RightTexture:SetAtlas(selected and self.rightTextureSelectedName or self.rightTextureName)
+		self.MiddleTexture:SetAtlas(selected and self.middleTextureSelectedName or self.middleTextureName)
+		self.SelectedTexture:SetShown(selected)
+		self.bIsSelected = selected
+	end,
+
+	---get a boolean representing if the tab is selected
+	---@param self df_tabbutton
+	---@return boolean
+	IsSelected = function(self)
+		return self.bIsSelected
+	end,
+
+	---set all textures to their default values, set the text to an empty string, set the selected state to false
+	---@param self df_tabbutton
+	Reset = function(self)
+		self.LeftTexture:SetAtlas(self.leftTextureName)
+		self.RightTexture:SetAtlas(self.rightTextureName)
+		self.MiddleTexture:SetAtlas(self.middleTextureName)
+		self.Text:SetText("")
+		self.bIsSelected = false
+		self.SelectedTexture:Hide()
 	end,
 
 }
 
 ---create a button which can be used as a tab button, has textures for left, right, middle and a text
 ---@param parent frame
----@param name string|nil
+---@param frameName string|nil
 ---@return df_tabbutton
-function detailsFramework:CreateTabButton(parent, name)
+function detailsFramework:CreateTabButton(parent, frameName)
 	---@type df_tabbutton
-	local tabButton = CreateFrame("button", name, parent)
+	local tabButton = CreateFrame("button", frameName, parent)
 	tabButton:SetSize(50, 20)
+	tabButton.bIsSelected = false
 
 	detailsFramework:Mixin(tabButton, detailsFramework.TabButtonMixin)
 
-	tabButton.Left = tabButton:CreateTexture(nil, "overlay")
-	tabButton.Right = tabButton:CreateTexture(nil, "overlay")
-	tabButton.Middle = tabButton:CreateTexture(nil, "overlay")
+	tabButton.LeftTexture = tabButton:CreateTexture(nil, "artwork")
+	tabButton.RightTexture = tabButton:CreateTexture(nil, "artwork")
+	tabButton.MiddleTexture = tabButton:CreateTexture(nil, "artwork")
+	tabButton.SelectedTexture = tabButton:CreateTexture(nil, "overlay")
+	tabButton.SelectedTexture:SetBlendMode("ADD")
+	tabButton.SelectedTexture:SetAlpha(0.5)
+	tabButton.SelectedTexture:Hide()
 	tabButton.Text = tabButton:CreateFontString(nil, "overlay", "GameFontNormal")
+	tabButton.CloseButton = detailsFramework:CreateCloseButton(tabButton, "$parentCloseButton")
 
 	tabButton.Text:SetPoint("center", tabButton, "center", 0, 0)
+	tabButton.CloseButton:SetPoint("topright", tabButton, "topright", 0, 0)
 
-	tabButton.Left:SetPoint("bottomleft", tabButton, "bottomleft", 0, 0)
-	tabButton.Left:SetPoint("topleft", tabButton, "topleft", 0, 0)
+	tabButton.LeftTexture:SetPoint("bottomleft", tabButton, "bottomleft", 0, 0)
+	tabButton.LeftTexture:SetPoint("topleft", tabButton, "topleft", 0, 0)
 
-	tabButton.Right:SetPoint("bottomright", tabButton, "bottomright", 0, 0)
-	tabButton.Right:SetPoint("topright", tabButton, "topright", 0, 0)
+	tabButton.RightTexture:SetPoint("bottomright", tabButton, "bottomright", 0, 0)
+	tabButton.RightTexture:SetPoint("topright", tabButton, "topright", 0, 0)
 
-	tabButton.Middle:SetPoint("topleft", tabButton.Left, "topright", 0, 0)
-	tabButton.Middle:SetPoint("topright", tabButton.Right, "topleft", 0, 0)
+	tabButton.MiddleTexture:SetPoint("topleft", tabButton.LeftTexture, "topright", 0, 0)
+	tabButton.MiddleTexture:SetPoint("topright", tabButton.RightTexture, "topleft", 0, 0)
 
-	tabButton.Left:SetAtlas("Options_Tab_Left")
-	tabButton.Left:SetWidth(2)
+	tabButton.SelectedTexture:SetAllPoints(tabButton.MiddleTexture)
 
-	tabButton.Right:SetAtlas("Options_Tab_Right")
-	tabButton.Right:SetWidth(2)
+	tabButton.leftTextureName = "Options_Tab_Left"
+	tabButton.rightTextureName = "Options_Tab_Right"
+	tabButton.middleTextureName = "Options_Tab_Middle"
 
-	tabButton.Middle:SetAtlas("Options_Tab_Middle")
-	tabButton.Middle:SetHeight(20)
+	tabButton.leftTextureSelectedName = "Options_Tab_Active_Left"
+	tabButton.rightTextureSelectedName = "Options_Tab_Active_Right"
+	tabButton.middleTextureSelectedName = "Options_Tab_Active_Middle"
 
-	tabButton.Text:SetText("tab")
+	tabButton.LeftTexture:SetAtlas(tabButton.leftTextureName)
+	tabButton.LeftTexture:SetWidth(2)
+
+	tabButton.RightTexture:SetAtlas(tabButton.rightTextureName)
+	tabButton.RightTexture:SetWidth(2)
+
+	tabButton.MiddleTexture:SetAtlas(tabButton.middleTextureName)
+	tabButton.MiddleTexture:SetHeight(20)
+
+	tabButton.SelectedTexture:SetTexture([[Interface\PaperDollInfoFrame\UI-Character-Tab-Highlight-yellow]])
+
+	tabButton.Text:SetText("")
 
 	return tabButton
 end
 
+------------------------------------------------------------------------------------------------------------
+--close button
 
----@class df_tabbutton : button
----@field Left texture
----@field Right texture
----@field Middle texture
----@field Text fontstring
----@field SetText fun(self: df_tabbutton, text: string)
+detailsFramework.CloseButtonMixin = {
+	OnClick = function(self)
+		self:GetParent():Hide()
+	end,
+	OnEnter = function(self)
+		self:GetNormalTexture():SetVertexColor(1, 0, 0)
+	end,
+	OnLeave = function(self)
+		self:GetNormalTexture():SetVertexColor(1, 1, 1)
+	end,
+}
+
+---@class df_closebutton : button
+---@field OnClick fun(self: df_closebutton)
+---@field OnEnter fun(self: df_closebutton)
+---@field OnLeave fun(self: df_closebutton)
+
+---create a close button which when clicked will hide the parent frame
+---@param parent frame
+---@param frameName string|nil
+---@return df_closebutton
+function detailsFramework:CreateCloseButton(parent, frameName)
+	---@type df_closebutton
+	local closeButton = CreateFrame("button", frameName, parent)
+	closeButton:SetFrameLevel(parent:GetFrameLevel() + 1)
+	closeButton:SetSize(16, 16)
+
+	detailsFramework:Mixin(closeButton, detailsFramework.CloseButtonMixin)
+
+	closeButton:SetNormalTexture([[Interface\GLUES\LOGIN\Glues-CheckBox-Check]])
+	closeButton:SetHighlightTexture([[Interface\GLUES\LOGIN\Glues-CheckBox-Check]])
+	closeButton:SetPushedTexture([[Interface\GLUES\LOGIN\Glues-CheckBox-Check]])
+	closeButton:GetNormalTexture():SetDesaturated(true)
+	closeButton:GetHighlightTexture():SetDesaturated(true)
+	closeButton:GetPushedTexture():SetDesaturated(true)
+
+	closeButton:SetAlpha(0.7)
+	closeButton:SetScript("OnClick", closeButton.OnClick)
+	closeButton:SetScript("OnEnter", closeButton.OnEnter)
+	closeButton:SetScript("OnLeave", closeButton.OnLeave)
+
+	return closeButton
+end
+
+--[=[
+	--example:
+	local frame = CreateFrame("frame", "MyTestFrameForCloseButton", UIParent)
+	frame:SetSize(200, 200)
+	frame:SetPoint("center", UIParent, "center", 0, 0)
+
+	local closeButton = detailsFramework:CreateCloseButton(frame, "$parentCloseButton")
+	closeButton:SetPoint("topright", frame, "topright", 0, 0)
+--]=]

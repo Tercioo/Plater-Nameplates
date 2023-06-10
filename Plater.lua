@@ -85,6 +85,7 @@ _ = nil
 --localization
 local LOC = DF.Language.GetLanguageTable(addonId)
 
+---@type plater
 local Plater = DF:CreateAddOn ("Plater", "PlaterDB", PLATER_DEFAULT_SETTINGS, InterfaceOptionsFrame and { --options table --TODO: DISABLED FOR DRAGONFLIGHT FOR NOW!
 	name = "Plater Nameplates",
 	type = "group",
@@ -1396,8 +1397,8 @@ Plater.AnchorNamesByPhraseId = {
 --> character specific abilities and spells ~spells
 
 	-- ~execute
-	--> update if can use execute indicators - this function needs to be updated when a new execute spell is added, removed, modified
-	--> in scripts you can use Plater.SetExecuteRange or override this function completelly
+	---update if can use execute indicators - this function needs to be updated when a new execute spell is added, removed, modified
+	---in scripts you can use Plater.SetExecuteRange or override this function completelly
 	function Plater.GetHealthCutoffValue()
 		Plater.SetExecuteRange (false)
 		
@@ -1536,7 +1537,9 @@ Plater.AnchorNamesByPhraseId = {
 		Plater.SetExecuteRange (true, lowerEnabled and lowExecute or nil, upperEnabled and highExecute or nil)
 	end	
 
-	--> range check ~range
+	---range check ~range
+	---@param plateFrame plateframe
+	---@param onAdded boolean
 	function Plater.CheckRange (plateFrame, onAdded)
 		Plater.StartLogPerformanceCore("Plater-Core", "Update", "CheckRange")
 		
@@ -2046,6 +2049,7 @@ Plater.AnchorNamesByPhraseId = {
 		Plater.StartLogPerformanceCore("Plater-Core", "Update", "RunScheduledUpdate")
 
 		local unitId = timerObject.unitId
+		---@type plateframe
 		local plateFrame = C_NamePlate.GetNamePlateForUnit (unitId)
 		
 		if (plateFrame) then
@@ -2095,10 +2099,12 @@ Plater.AnchorNamesByPhraseId = {
 		Plater.EndLogPerformanceCore("Plater-Core", "Update", "RunScheduledUpdate")
 	end
 
-	--run a delayed update on the namepalte, this is used when the client receives an information from the server but does not update the state immediately
-	--this usualy happens with faction and flag changes
+	---run a delayed update on the namepalte, this is used when the client receives an information from the server but does not update the state immediately
+	---this usualy happens with faction and flag changes
+	---@param plateFrame plateframe
+	---@param passedUnitId string|nil
+	---@param scheduleTime number|nil
 	function Plater.ScheduleUpdateForNameplate (plateFrame, passedUnitId, scheduleTime) --private
-	
 		local unitId = passedUnitId or plateFrame [MEMBER_UNITID]
 		if not unitId then -- well... fuck.
 			plateFrame.HasUpdateScheduled:Cancel()
@@ -2106,7 +2112,7 @@ Plater.AnchorNamesByPhraseId = {
 		end
 		
 		--check if there's already an update scheduled for this unit
-		if (plateFrame.HasUpdateScheduled and not plateFrame.HasUpdateScheduled._cancelled) then
+		if (plateFrame.HasUpdateScheduled and not plateFrame.HasUpdateScheduled:IsCancelled()) then
 			if unitId and (not plateFrame.HasUpdateScheduled.unitId or plateFrame.HasUpdateScheduled.unitId ~= unitId) then
 				plateFrame.HasUpdateScheduled:Cancel()
 			else
@@ -2116,7 +2122,6 @@ Plater.AnchorNamesByPhraseId = {
 		
 		plateFrame.HasUpdateScheduled = C_Timer.NewTimer (scheduleTime or 0, Plater.RunScheduledUpdate) --scheduleTime or next frame
 		plateFrame.HasUpdateScheduled.unitId = unitId
-	
 	end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -2545,10 +2550,13 @@ Plater.AnchorNamesByPhraseId = {
 		end
 	end
 
-	--when using UIParent as the parent for the unitFrame, this function is hooked in the plateFrame OnSizeChanged script
-	--the goal is to adjust the the unitFrame scale when the plateFrame scale changes
-	--this approach also solves the issue to the unitFrame not playing correctly the animation when the nameplate is removed from the screen
-	--self is plateFrame, w, h aren't reliable
+	---when using UIParent as the parent for the unitFrame, this function is hooked in the plateFrame OnSizeChanged script
+	---the goal is to adjust the the unitFrame scale when the plateFrame scale changes
+	---this approach also solves the issue to the unitFrame not playing correctly the animation when the nameplate is removed from the screen
+	---self is plateFrame, w, h aren't reliable
+	---@param self plateframe
+	---@param w any
+	---@param h any
 	function Plater.UpdateUIParentScale (self, w, h) --private
 		local unitFrame = self.unitFrame
 		if (unitFrame) then
@@ -2693,6 +2701,7 @@ Plater.AnchorNamesByPhraseId = {
 			local globalScope = _G
 			for i = 1, 40 do
 				--run on all nameplates already created
+				---@type plateframe
 				local plateFrame = globalScope ["NamePlate" .. i]
 				if (plateFrame) then
 					for i = 1, HOOK_ZONE_CHANGED.ScriptAmount do
@@ -2735,6 +2744,7 @@ Plater.AnchorNamesByPhraseId = {
 			
 			if not string.match(unit, "nameplate%d%d?$") then return end
 			
+			---@type plateframe
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unit, issecure())
 			if (plateFrame) then
 				--rules if can schedule an update for unit flag event:
@@ -2772,6 +2782,7 @@ Plater.AnchorNamesByPhraseId = {
 			--end
 			
 			--fires when somebody changes faction near the player
+			---@type plateframe
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unit, issecure())
 			if (plateFrame) then
 				Plater.ScheduleUpdateForNameplate (plateFrame)
@@ -2811,6 +2822,7 @@ Plater.AnchorNamesByPhraseId = {
 		
 		UNIT_PET = function(_, unit)
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+				---@cast plateFrame plateframe
 				if plateFrame.unitFrame and plateFrame.unitFrame.PlaterOnScreen then
 					if not plateFrame.unitFrame.isPerformanceUnit then
 						Plater.AddToAuraUpdate(plateFrame.unitFrame.unit) -- force aura update
@@ -2852,6 +2864,7 @@ Plater.AnchorNamesByPhraseId = {
 			Plater.RefreshAutoToggle(PLAYER_IN_COMBAT)
 			
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+				---@cast plateFrame plateframe
 				plateFrame [MEMBER_NOCOMBAT] = nil
 			end
 			
@@ -2950,6 +2963,7 @@ Plater.AnchorNamesByPhraseId = {
 		--update the unit name, triggered when the client receives the rest of the information about an unit
 		UNIT_NAME_UPDATE = function (_, unitID)
 			if (unitID) then
+				---@type plateframe
 				local plateFrame = C_NamePlate.GetNamePlateForUnit (unitID)
 				if (plateFrame and plateFrame.unitFrame.PlaterOnScreen) then
 					local unitFrame = plateFrame.unitFrame
@@ -3203,6 +3217,7 @@ Plater.AnchorNamesByPhraseId = {
 		
 		DISPLAY_SIZE_CHANGED = function()
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+				---@cast plateFrame plateframe
 				if plateFrame.unitFrame.PlaterOnScreen then
 					Plater.OnRetailNamePlateShow(plateFrame.UnitFrame)
 				end
@@ -3212,6 +3227,7 @@ Plater.AnchorNamesByPhraseId = {
 		
 		UI_SCALE_CHANGED = function()
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+				---@cast plateFrame plateframe
 				Plater.OnRetailNamePlateShow(plateFrame.UnitFrame)
 			end
 			Plater.UpdateAllPlates (true)
@@ -3219,6 +3235,7 @@ Plater.AnchorNamesByPhraseId = {
 		
 		PLAYER_SOFT_INTERACT_CHANGED = function(_, arg1, arg2)
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+				---@cast plateFrame plateframe
 				if plateFrame.unitFrame.PlaterOnScreen then
 					if plateFrame [MEMBER_GUID] == arg1 or plateFrame [MEMBER_GUID] == arg2 then
 						Plater.UpdateSoftInteractTarget(plateFrame, true)
@@ -3228,6 +3245,8 @@ Plater.AnchorNamesByPhraseId = {
 		end,
 		
 		--~created ~events ~oncreated 
+		---@param event string
+		---@param plateFrame plateframe
 		NAME_PLATE_CREATED = function (event, plateFrame)
 			--ViragDevTool_AddData({ctime = GetTime(), unit = plateFrame [MEMBER_UNITID] or "nil", stack = debugstack()}, "NAME_PLATE_CREATED - " .. (plateFrame [MEMBER_UNITID] or "nil"))
 			--> create the unitframe
@@ -3848,6 +3867,8 @@ Plater.AnchorNamesByPhraseId = {
 				end
 		end,
 		
+		---@param event string
+		---@param unitBarId string
 		FORBIDDEN_NAME_PLATE_UNIT_ADDED = function (event, unitBarId)
 			local unitID = unitBarId
 		
@@ -3866,6 +3887,8 @@ Plater.AnchorNamesByPhraseId = {
 		end,
 
 		-- ~added ãdded 
+		---@param event string
+		---@param unitBarId string
 		NAME_PLATE_UNIT_ADDED = function (event, unitBarId)
 			--ViragDevTool_AddData({ctime = GetTime(), unit = unitBarId or "nil", stack = debugstack()}, "NAME_PLATE_UNIT_ADDED - " .. (unitBarId or "nil"))
 			--debug for hunter faith death
@@ -3874,7 +3897,8 @@ Plater.AnchorNamesByPhraseId = {
 --			end
 		
 			local unitID = unitBarId
-		
+
+			---@type plateframe
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitID)
 			if (not plateFrame) then
 				--try forbidden as well for hiding stuff
@@ -4412,9 +4436,11 @@ Plater.AnchorNamesByPhraseId = {
 		end,
 
 		-- ~removed
+		---@param event string
+		---@param unitBarId string
 		NAME_PLATE_UNIT_REMOVED = function (event, unitBarId)
 			--ViragDevTool_AddData({ctime = GetTime(), unit = unitBarId or "nil", stack = debugstack()}, "NAME_PLATE_UNIT_REMOVED - " .. (unitBarId or "nil"))
-			
+			---@type plateframe
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId)
 			
 			Plater.RemoveFromAuraUpdate (unitBarId) -- ensure no updates
@@ -4926,6 +4952,7 @@ function Plater.OnInit() --private --~oninit ~init
 			-- target is always 'player'
 			if (HOOK_PLAYER_POWER_UPDATE.ScriptAmount > 0) then
 				for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+					---@cast plateFrame plateframe
 					if (plateFrame) then
 						for i = 1, HOOK_PLAYER_POWER_UPDATE.ScriptAmount do
 							local globalScriptObject = HOOK_PLAYER_POWER_UPDATE [i]
@@ -4969,6 +4996,7 @@ function Plater.OnInit() --private --~oninit ~init
 			end
 
 			--show Plater power bar for the player personal nameplate
+			---@type plateframe
 			local plateFrame = C_NamePlate.GetNamePlateForUnit ("player")
 			if (plateFrame) then
 			
@@ -5162,6 +5190,7 @@ function Plater.OnInit() --private --~oninit ~init
 			Plater.CastBarTestFrame.castTime = castTime or 3
 			
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+				---@cast plateFrame plateframe
 				if plateFrame.unitFrame.PlaterOnScreen then
 					local castBar = plateFrame.unitFrame.castBar
 					
@@ -5224,6 +5253,7 @@ function Plater.OnInit() --private --~oninit ~init
 					totalTime = 0
 
 					for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+						---@cast plateFrame plateframe
 						if plateFrame.unitFrame.PlaterOnScreen then
 							local castBar = plateFrame.unitFrame.castBar
 							local textString = castBar.FrameOverlay.TargetName
@@ -5403,6 +5433,7 @@ function Plater.OnInit() --private --~oninit ~init
 		---@return boolean|number
 		function Plater.UnitIsCasting(unitId, spellId)
 			if (UnitExists(unitId)) then
+				---@type plateframe
 				local plateFrame = C_NamePlate.GetNamePlateForUnit(unitId)
 				if (plateFrame) then
 					local castBar = plateFrame.unitFrame.castBar
@@ -5774,6 +5805,7 @@ function Plater.OnInit() --private --~oninit ~init
 			self.currentHealthMax = maxHealth
 		end
 
+		---@type plateframe
 		local plateFrame = self.PlateFrame
 		local currentHealth = self.currentHealth
 		local currentHealthMax = self.currentHealthMax
@@ -6126,6 +6158,7 @@ end
 	--called after leaving the combat
 	function Plater.UpdateAllNameplateColors() --private
 		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+			---@cast plateFrame plateframe
 			if (not plateFrame.IsSelf) then
 				--reset the nameplate color
 				Plater.FindAndSetNameplateColor (plateFrame.unitFrame)
@@ -6180,6 +6213,7 @@ end
 	--full refresh calls
 	function Plater.UpdateAllPlates (forceUpdate, justAdded, regenDisabled) --private
 		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+			---@cast plateFrame plateframe
 			if plateFrame.unitFrame and plateFrame.unitFrame.PlaterOnScreen then
 				if not plateFrame.unitFrame.isPerformanceUnit then
 					Plater.AddToAuraUpdate(plateFrame.unitFrame.unit) -- force aura update
@@ -6195,6 +6229,7 @@ end
 	--called from the options panel | this is the same as calling Name_Plate_Unit_Added for each nameplate
 	function Plater.FullRefreshAllPlates() --private
 		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+			---@cast plateFrame plateframe
 			--hack to call the update without overriding user settings from scripts
 			Plater.RunScheduledUpdate ({unitId = plateFrame [MEMBER_UNITID], GUID = plateFrame [MEMBER_GUID]})
 		end
@@ -6216,7 +6251,8 @@ end
 	end
 	
 	-- ~size ~updatesize
-	--update thee nameplate size including healthbar, castbar, etc
+	---update thee nameplate size including healthbar, castbar, etc
+	---@param plateFrame plateframe
 	function Plater.UpdatePlateSize (plateFrame)
 		if (not plateFrame.actorType) then
 			return
@@ -10021,6 +10057,8 @@ end
 				
 				local isCampaignQuest = Plater.QuestCacheCampaign[text]
 				local isGroupQuest, yourQuest = nil, nil
+
+				---@type questdata
 				local questData = {
 					questName = text,
 					questText = "",
@@ -10950,54 +10988,69 @@ end
 		Plater.UpdatePlateSize (unitFrame.PlateFrame)
 	end
 	
-	--changes the border color, this call is for the API, can be called from external sources
-	function Plater.SetBorderColor (self, r, g, b, a) --self = unitFrame
+	---changes the border color, this call is for the API, can be called from external sources
+	---@param self table unitFrame
+	---@param r any
+	---@param g number|nil
+	---@param b number|nil
+	---@param a number|nil
+	function Plater.SetBorderColor(self, r, g, b, a)
 		if (not r) then
 			self.customBorderColor = nil
-			Plater.UpdateBorderColor (self)
+			Plater.UpdateBorderColor(self)
 			return
 		end
 		
-		r, g, b, a = DF:ParseColors (r, g, b, a)
+		r, g, b, a = DF:ParseColors(r, g, b, a)
 		
 		--UpdateBorderColor will use the value set on customBorderColor member if any
 		self.customBorderColor = {r, g, b, a}
 		
-		Plater.UpdateBorderColor (self)
+		Plater.UpdateBorderColor(self)
 	end
 
-	--flashes on the health bar border
-	function Plater.FlashNameplateBorder (unitFrame, duration)
+	---flashes on the health bar border
+	---@param unitFrame table unitFrame
+	---@param duration number
+	function Plater.FlashNameplateBorder(unitFrame, duration)
 		if (not unitFrame.healthBar.PlayHealthFlash) then
-			Plater.CreateHealthFlashFrame (unitFrame.PlateFrame)
+			Plater.CreateHealthFlashFrame(unitFrame.PlateFrame)
 		end
 		unitFrame.healthBar.canHealthFlash = true
-		unitFrame.healthBar.PlayHealthFlash (duration)
+		unitFrame.healthBar.PlayHealthFlash(duration)
 	end
 
-	--flashes the unitFrame body
-	function Plater.FlashNameplateBody (unitFrame, text, duration)
-		--> sending true to ignore cooldown
-		unitFrame.PlateFrame.PlayBodyFlash (text, duration, true)
+	---flashes the unitFrame body showing a text in the middle of the flash texture, by default this call is use to show aggro alerts with the word "-AGGRO-"
+	---@param unitFrame table unitFrame
+	---@param text string
+	---@param duration number
+	function Plater.FlashNameplateBody(unitFrame, text, duration)
+		--sending true to ignore cooldown
+		unitFrame.PlateFrame.PlayBodyFlash(text, duration, true) --weird, there's no reference to the plateFrame
 	end
 
-	--return if the player is in combat
+	---return if the player is in combat
+	---@return boolean bIsPlayerInCombat
 	function Plater.IsInCombat()
 		return InCombatLockdown() or PLAYER_IN_COMBAT
 	end
 
-	--return true if the unit is in the tank role
-	function Plater.IsUnitTank (unitFrame)
-		return TANK_CACHE [unitFrame.unitNameInternal] or TANK_CACHE [lower(unitFrame.unitNameInternal)]
+	---return true if the unit is in the tank role
+	---@param unitFrame table unitFrame
+	---@return boolean bIsUnitInTankRole
+	function Plater.IsUnitTank(unitFrame)
+		return TANK_CACHE[unitFrame.unitNameInternal] or TANK_CACHE[lower(unitFrame.unitNameInternal)]
 	end
 	
-	--check the role and the role of the specialization to return if the player is in a tank role
+	---check the player role and role specialization and return if it is in the tank role
+	---@return boolean bIsPlayerInTankRole
 	function Plater.IsPlayerTank()
 		return IsPlayerEffectivelyTank()
 	end
 	
-	--return the table where tanks is stored
-	--has the unit name as the key and true as value
+	---return the table where tanks is stored
+	---has the unit name as the key and true as value
+	---@return table<string, boolean> tankList
 	function Plater.GetTanks()
 		return TANK_CACHE
 	end

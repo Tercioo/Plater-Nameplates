@@ -1,4 +1,60 @@
 
+---@class ctimer : table
+---@field Cancelled fun(self: ctimer) : boolean if true this timer was cancelled or finished
+---@field Cancel fun(self: ctimer) cancel the timer
+
+---@class plateframe : table
+---@field actorType string
+---@field ActorNameSpecial fontstring
+---@field ActorTitleSpecial fontstring
+---@field CurrentUnitNameString fontstring
+---@field debugAreaTexture texture
+---@field debugAreaText fontstring
+---@field FadedIn boolean
+---@field FocusIndicator texture
+---@field HasUpdateScheduled ctimer
+---@field isFriend boolean
+---@field isSoftInteract boolean
+---@field isObject boolean
+---@field isNamePlate boolean if the nameplate is a nameplate
+---@field isSelf boolean if the unit is the player
+---@field IsSelf boolean if the unit is the player
+---@field isBattlePet boolean
+---@field isWidgetOnlyMode boolean
+---@field isPlayer boolean
+---@field IsFriendlyPlayerWithoutHealthBar boolean
+---@field IsNpcWithoutHealthBar boolean
+---@field IconIndicators texture[]
+---@field NameAnchor number
+---@field Obscured texture
+---@field OnTickFrame frame
+---@field Plater boolean if the nameplate has a unitFrame created by plater
+---@field PlateConfig table
+---@field playerGuildName string
+---@field PreviousUnitType string
+---@field PlayerCannotAttack boolean
+---@field playerHasAggro boolean true if the player has aggro on the unit
+---@field PlayBodyFlash fun(text: string, duration: number, ignoreCooldown: boolean)
+---@field QuestInfo questdata
+---@field QuestAmountCurrent number current progress of the quest
+---@field QuestAmountTotal number total of progress of the quest
+---@field QuestText string
+---@field QuestName string name of the quest
+---@field QuestIsCampaign boolean true if the quest is a campaign quest
+---@field RaidTarget texture
+---@field SpellAnimations table
+---@field TargetNeonUp texture
+---@field TargetNeonDown texture
+---@field Top3DFrame frame
+---@field unitNameInternal string
+---@field unitFrame unitframe
+---@field UnitFrame frame unit frame from blizzard
+---@field unitFramePlater table backup the unit frame address so we can restore it in case a script messes up and override the unit frame
+
+---@class unitframe : table
+---@field healthBar table
+---@field castBar table
+---@field powerBar table
 
 ---@class npccolordb : {[number]: npccolortable} dictionary of npccolortable indexed by npcId
 ---@class npccolortable : {key1: boolean, key2: boolean, key3: string} [1] enabled [2] scriptOnly [3] colorID
@@ -7,3 +63,84 @@
 ---@class castcolortable : {key1: boolean, key2: string, key3: string} [1] enabled [2] colorId [3] renamed spellname 
 
 ---@class audiocuedb : {[number]: string} dictionary of strings with the path for the audio to play indexed by spellId
+
+---@class dbmtimerbar : table
+---@field msg string
+---@field display string
+---@field id number
+---@field timer number
+---@field start number
+---@field icon any
+---@field spellId number
+---@field barType any
+---@field color any
+---@field colorId any
+---@field modId any
+---@field keep any
+---@field fade any
+---@field name string
+---@field guid string
+---@field paused boolean
+
+---@class bwtimerbar : table
+---@field msg string
+---@field id any
+---@field timer  number
+---@field start number
+---@field icon any
+---@field spellId number
+---@field barType any
+---@field modId any
+---@field name string
+---@field paused boolean
+
+---@class targetindicator : table
+---@field path string
+---@field coords {key1: {key1: number, key2: number, key3: number, key4: number}, key2: {key1: number, key2: number, key3: number, key4: number}, key3: {key1: number, key2: number, key3: number, key4: number}, key4: {key1: number, key2: number, key3: number, key4: number}} texcoords, support 4 or 8 coords method
+---@field desaturated boolean
+---@field width number
+---@field height number
+---@field x number --offset
+---@field y number --offset
+
+---@class questdata : table
+---@field questName string
+---@field questText string
+---@field finished boolean
+---@field groupQuest boolean
+---@field groupFinished boolean
+---@field amount number
+---@field groupAmount number
+---@field total number
+---@field yourQuest boolean
+---@field isCampaignQuest boolean
+
+---@class classspeccoords : {key1: number, key2: number, key3: number, key4: number} texcoords
+
+---@class plater : table
+---@field versionString string version from the toc file
+---@field fullVersionInfo string version from the toc file + framework version
+---@field PerformanceUnits table<number, number> table with performance units: npcId = true
+---@field ForceBlizzardNameplateUnits table<number, number> npcId = true
+---@field LastCombat {npcNames: table<string, boolean>, spellNames: table<string, boolean>} store the npcnames and spellnames from the last combat
+---@field BossModsTimeBarDBM table<any, dbmtimerbar> store the bars created by DBM
+---@field BossModsTimeBarBW table<any, bwtimerbar> store the bars created by BigWigs
+---@field CooldownEdgeTextures string[] textures used in the cooldown animation, scripts can add more values to it, profile holds only the path to it
+---@field SparkTextures string[] textures used in the castbar, scripts can add more values to it, profile holds only the path to it
+---@field TargetHighlights string[] textures used to indicate which nameplate is the current target, scripts can add more values to it, profile holds only the path to it
+---@field Media {Icons: string[]} store the paths for the bundled icons in Plater Nameplates
+---@field TargetIndicators table<string, targetindicator> table with information about target indicators
+---@field SpecList table<string, table<number, boolean>> store the specId for each class, format: class = {specId = true, specId = true, specId = true}
+---@field DefaultSpellRangeList table<number, number> store the default range for each spec, format: specId = range
+---@field DefaultSpellRangeListF table<number, number> store the default range for each spec on friendly targets, format: specId = range
+---@field class_specs_coords table<string, classspeccoords> store the texcoords for the specs icons, format: specId = {left, right, top, bottom}
+---@field AnchorNames string[] localized anchor names used in the options panel
+---@field AnchorNamesByPhraseId string[] same as AnchorNames but indexed by phraseId
+---@field ForceInCombatUnits table<number, boolean> npcs in this list will always return true for UnitAffectingCombat()
+---@field GetVersionInfo fun(printOut: boolean) : string returns the version info of print to chat if printOut is true
+---@field AddPerformanceUnits fun(npcId: number)
+---@field RemovePerformanceUnits fun(npcId: number)
+---@field AddForceBlizzardNameplateUnits fun(npcId: number)
+---@field RemoveForceBlizzardNameplateUnits fun(npcId: number)
+---@field GetHealthCutoffValue fun() update the execute range by the class, spec and talents the player is using
+---@field CheckRange fun(plateFrame: table, onAdded: boolean) check if the nameplate is in range and update the alpha

@@ -2286,15 +2286,35 @@ end
 
 ------------------------------------------------------------------------------------------------------------------------------------------------
 -- ~prompt
---@dontOverride: won't show another prompt if theres already a shown prompt
-function detailsFramework:ShowPromptPanel(message, trueCallback, falseCallback, dontOverride, width)
+function detailsFramework:HidePromptPanel(promptName)
+	if (detailsFramework.promtp_panel) then
+		if (promptName) then
+			if (detailsFramework.promtp_panel.promptName == promptName) then
+				detailsFramework.promtp_panel:Hide()
+				detailsFramework.promtp_panel.promptName = nil
+			end
+		else
+			detailsFramework.promtp_panel:Hide()
+			detailsFramework.promtp_panel.promptName = nil
+		end
+	end
+end
+
+---show a prompt to the player with a question (message) and two buttons "yes" and "no"
+---@param message string the question to show to the player
+---@param trueCallback function if the player clicks on "yes"
+---@param falseCallback function if the player clicks on "no"
+---@param dontOverride boolean|nil if true, won't show another prompt if theres already a shown prompt
+---@param width number|nil width of the prompt frame, if ommited, will use the default width 400
+---@param promptName string|nil set a name to the prompt, used on HidePromptPanel(promptName)
+function detailsFramework:ShowPromptPanel(message, trueCallback, falseCallback, dontOverride, width, promptName)
 	if (not DetailsFrameworkPromptSimple) then
 		local promptFrame = CreateFrame("frame", "DetailsFrameworkPromptSimple", UIParent, "BackdropTemplate")
 		promptFrame:SetSize(400, 80)
 		promptFrame:SetFrameStrata("DIALOG")
 		promptFrame:SetPoint("center", UIParent, "center", 0, 300)
 		detailsFramework:ApplyStandardBackdrop(promptFrame)
-		tinsert(UISpecialFrames, "DetailsFrameworkPromptSimple")
+		table.insert(UISpecialFrames, "DetailsFrameworkPromptSimple")
 
 		detailsFramework:CreateTitleBar(promptFrame, "Prompt!")
 		detailsFramework:ApplyStandardBackdrop(promptFrame)
@@ -2374,6 +2394,8 @@ function detailsFramework:ShowPromptPanel(message, trueCallback, falseCallback, 
 	else
 		detailsFramework.promtp_panel:SetWidth(400)
 	end
+
+	detailsFramework.promtp_panel.promptName = promptName
 
 	detailsFramework.promtp_panel.prompt:SetText(message)
 	detailsFramework.promtp_panel.button_true.true_function = trueCallback
