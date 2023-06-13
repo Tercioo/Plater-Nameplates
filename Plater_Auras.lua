@@ -1866,10 +1866,9 @@ end
 		
 		--> reset auras
 		if resetDebuffs or not DB_AURA_SEPARATE_BUFFS then
-			if not DB_AURA_SEPARATE_BUFFS then
-				wipe (self.unitFrame.GhostAuraCache) -- ghost and extra are on aura frame 1, needs to be cleared.
-				platerInternal.ExtraAuras.WipeCache(self.unitFrame)
-			end
+			wipe (self.unitFrame.GhostAuraCache) -- ghost and extra are on aura frame 1, needs to be cleared.
+			platerInternal.ExtraAuras.WipeCache(self.unitFrame)
+			
 			wipe (self.AuraCache)
 			self.HasBuff = false
 			self.HasDebuff = false
@@ -1879,10 +1878,6 @@ end
 		
 		--> second buff anchor
 		if resetBuffs then
-			if DB_AURA_SEPARATE_BUFFS then
-				wipe (self.unitFrame.GhostAuraCache) -- ghost and extra are on aura frame 1, needs to be cleared.
-				platerInternal.ExtraAuras.WipeCache(self.unitFrame)
-			end
 			wipe (self.BuffFrame2.AuraCache)
 			self.BuffFrame2.HasBuff = false 
 			self.BuffFrame2.HasDebuff = false

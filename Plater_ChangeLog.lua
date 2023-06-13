@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 			
+			{1686034099,  "Bug Fix", "June 13th, 2023", "Fixing an issue with Ghost Auras not working properly.", "cont1nuity"},
 			{1686034099,  "Bug Fix", "June 12th, 2023", "Fixing personal bar auras showing buffs of other players unintentionally.", "cont1nuity"},
 			{1686034099,  "Backend Change", "June 6th, 2023", "Keep auras in default sort order of not sorted by time.", "cont1nuity"},
 			{1686034099,  "Backend Change", "June 6th, 2023", "Possibility to change audio cues channel.", "cont1nuity"},
