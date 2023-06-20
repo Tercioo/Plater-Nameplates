@@ -2510,6 +2510,7 @@ end
 		end
 
 		auraOptionsFrame:SetScript ("OnShow", function()
+			--Plater.DisableAuraTest = not Plater.db.profile.aura_enabled
 			if (not Plater.DisableAuraTest) then
 				auraOptionsFrame.EnableAuraTest()
 			end

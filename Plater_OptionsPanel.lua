@@ -1600,7 +1600,7 @@ local debuff_options = {
 			Plater.DisableAuraTest = value
 			if (value) then
 				auraOptionsFrame.DisableAuraTest()
-			else
+			elseif Plater.db.profile.aura_enabled then
 				auraOptionsFrame.EnableAuraTest()
 			end
 		end,
@@ -1621,6 +1621,8 @@ local debuff_options = {
 			Plater.UpdateAllPlates()
 			
 			if (not value) then
+				Plater.DisableAuraTest = true
+				auraOptionsFrame.DisableAuraTest()
 				for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 					for _, frame in ipairs (plateFrame.unitFrame.BuffFrame.PlaterBuffList) do
 						frame:Hide()
@@ -1629,7 +1631,11 @@ local debuff_options = {
 						frame:Hide()
 					end
 				end
+			else
+				Plater.DisableAuraTest = false
+				auraOptionsFrame.EnableAuraTest()
 			end
+			auraOptionsFrame:RefreshOptions()
 		end,
 		name = "OPTIONS_ENABLED",
 		desc = "OPTIONS_ENABLED",
