@@ -80,7 +80,7 @@ local LDB = LibStub ("LibDataBroker-1.1", true)
 local LDBIcon = LDB and LibStub ("LibDBIcon-1.0", true)
 
 local addonId, platerInternal = ...
-_ = nil
+local _ = nil
 
 --localization
 local LOC = DF.Language.GetLanguageTable(addonId)
@@ -2211,7 +2211,7 @@ Plater.AnchorNamesByPhraseId = {
 	}
 	
 	--keep this separate for now, with only stuff that NEEDS restoring in order
-	function cvar_restore_order(v1, v2)
+	local function cvar_restore_order(v1, v2)
 		local restoreOrder = {
 			["nameplateShowFriends"] = 1,
 			["nameplateShowFriendlyNPCs"] = 2,
