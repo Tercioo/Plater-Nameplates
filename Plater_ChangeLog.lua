@@ -8,12 +8,13 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 			
-			{1686034099,  "Bug Fix", "June 21st, 2023", "Fixing an issue with missing aura icons and aura consolidation in WotLK.", "cont1nuity"},
-			{1686034099,  "Bug Fix", "June 20th, 2023", "Fixing an issue with test auras not working properly when auras are being disabled.", "cont1nuity"},
-			{1686034099,  "Bug Fix", "June 13th, 2023", "Fixing an issue with Ghost Auras not working properly.", "cont1nuity"},
-			{1686034099,  "Bug Fix", "June 12th, 2023", "Fixing personal bar auras showing buffs of other players unintentionally.", "cont1nuity"},
-			{1686034099,  "Backend Change", "June 6th, 2023", "Keep auras in default sort order of not sorted by time.", "cont1nuity"},
-			{1686034099,  "Backend Change", "June 6th, 2023", "Possibility to change audio cues channel.", "cont1nuity"},
+			{1687376666,  "New Feature", "June 21st, 2023", "Adding option for the soft-target forced nameplate blizzard setting.", "cont1nuity"},
+			{1687376666,  "Bug Fix", "June 21st, 2023", "Fixing an issue with missing aura icons and aura consolidation in WotLK.", "cont1nuity"},
+			{1687376666,  "Bug Fix", "June 20th, 2023", "Fixing an issue with test auras not working properly when auras are being disabled.", "cont1nuity"},
+			{1687376666,  "Bug Fix", "June 13th, 2023", "Fixing an issue with Ghost Auras not working properly.", "cont1nuity"},
+			{1687376666,  "Bug Fix", "June 12th, 2023", "Fixing personal bar auras showing buffs of other players unintentionally.", "cont1nuity"},
+			{1687376666,  "Backend Change", "June 6th, 2023", "Keep auras in default sort order of not sorted by time.", "cont1nuity"},
+			{1687376666,  "Backend Change", "June 6th, 2023", "Possibility to change audio cues channel.", "cont1nuity"},
 			
 			{1685613078,  "Bug Fix", "June 1st, 2023", "Fixing an issue with aura updates not being done properly in some cases.", "cont1nuity"},
 			{1685613078,  "New Feature", "June 1st, 2023", "Adding auto-toggle for 'Hide Blizzard Healthbars' based on combat state.", "cont1nuity"},

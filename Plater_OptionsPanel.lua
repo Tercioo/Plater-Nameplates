@@ -13667,6 +13667,19 @@ end
 		
 		{
 			type = "toggle",
+			get = function() return GetCVarBool ("SoftTargetNameplateInteract") end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("SoftTargetNameplateInteract", value and "1" or "0")
+				else
+					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+				end
+			end,
+			name = "Force nameplates on soft-interact target",
+			desc = "Force show the nameplate on your soft-interact target.",
+		},
+		{
+			type = "toggle",
 			get = function() return Plater.db.profile.show_healthbars_on_softinteract end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.show_healthbars_on_softinteract = value
