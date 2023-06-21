@@ -793,7 +793,7 @@ end
 			local iconFrame = iconFrameContainer [i]
 			local icon = iconFrame.texture
 			local spellName = iconFrame.SpellName
-			local index = spellName .. icon
+			local index = spellName .. (icon or spellName or math.random(1, 1000000))
 
 			if (aurasDuplicated [index]) then
 				tinsert (aurasDuplicated [index], {iconFrame, iconFrame.RemainingTime})

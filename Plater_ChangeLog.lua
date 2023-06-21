@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 			
+			{1686034099,  "Bug Fix", "June 21st, 2023", "Fixing an issue with missing aura icons and aura consolidation in WotLK.", "cont1nuity"},
 			{1686034099,  "Bug Fix", "June 20th, 2023", "Fixing an issue with test auras not working properly when auras are being disabled.", "cont1nuity"},
 			{1686034099,  "Bug Fix", "June 13th, 2023", "Fixing an issue with Ghost Auras not working properly.", "cont1nuity"},
 			{1686034099,  "Bug Fix", "June 12th, 2023", "Fixing personal bar auras showing buffs of other players unintentionally.", "cont1nuity"},
