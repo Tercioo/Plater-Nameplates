@@ -375,14 +375,14 @@ detailsFramework.ScriptHookMixin = {
 				local isRemoval = false
 				for i = #self.HookList[hookType], 1, -1 do
 					if (self.HookList[hookType][i] == func) then
-						tremove(self.HookList[hookType], i)
+						table.remove(self.HookList[hookType], i)
 						isRemoval = true
 						break
 					end
 				end
 
 				if (not isRemoval) then
-					tinsert(self.HookList[hookType], func)
+					table.insert(self.HookList[hookType], func)
 				end
 			else
 				if (detailsFramework.debug) then
@@ -717,6 +717,24 @@ detailsFramework.SortFunctions = {
 	end
 }
 
+---@class df_data : table
+---@field _dataInfo {data: table, dataCurrentIndex: number, callbacks: function[]}
+---@field callbacks table<function, any[]>
+---@field dataCurrentIndex number
+---@field DataConstructor fun(self: df_data)
+---@field AddDataChangeCallback fun(self: df_data, callback: function, ...: any)
+---@field RemoveDataChangeCallback fun(self: df_data, callback: function)
+---@field GetData fun(self: df_data)
+---@field GetDataSize fun(self: df_data) : number
+---@field GetDataFirstValue fun(self: df_data) : any
+---@field GetDataLastValue fun(self: df_data) : any
+---@field GetDataMinMaxValues fun(self: df_data) : number, number
+---@field GetDataMinMaxValueFromSubTable fun(self: df_data, key: string) : number, number when data uses sub tables, get the min max values from a specific index or key, if the value stored is number, return the min and max values
+---@field SetData fun(self: df_data, data: table, anyValue: any)
+---@field SetDataRaw fun(self: df_data, data: table) set the data without triggering callback
+---@field GetDataNextValue fun(self: df_data) : any
+---@field ResetDataIndex fun(self: df_data)
+
 ---mixin to use with DetailsFramework:Mixin(table, detailsFramework.DataMixin)
 ---add 'data' to a table, this table can be used to store data for the object
 ---@class DetailsFramework.DataMixin
@@ -750,17 +768,27 @@ detailsFramework.DataMixin = {
 		allCallbacks[func] = nil
 	end,
 
+	---set the data without callback
+	---@param self table
+	---@param data table
+	SetDataRaw = function(self, data)
+		assert(type(data) == "table", "invalid table for SetData.")
+		self._dataInfo.data = data
+		self:ResetDataIndex()
+	end,
+
 	---set the data table
 	---@param self table
 	---@param data table
-	SetData = function(self, data)
+	---@param anyValue any @any value to pass to the callback functions before the payload is added
+	SetData = function(self, data, anyValue)
 		assert(type(data) == "table", "invalid table for SetData.")
 		self._dataInfo.data = data
 		self:ResetDataIndex()
 
 		local allCallbacks = self._dataInfo.callbacks
 		for	func, payload in pairs(allCallbacks) do
-			xpcall(func, geterrorhandler(), data, unpack(payload))
+			xpcall(func, geterrorhandler(), data, anyValue, unpack(payload))
 		end
 	end,
 
@@ -781,6 +809,7 @@ detailsFramework.DataMixin = {
 	end,
 
 	---reset the data index, making GetDataNextValue() return the first value again
+	---@param self table
 	ResetDataIndex = function(self)
 		self._dataInfo.dataCurrentIndex = 1
 	end,
@@ -808,6 +837,7 @@ detailsFramework.DataMixin = {
 	end,
 
 	---get the min and max values from the data table, if the value stored is number, return the min and max values
+	---could be used together with SetMinMaxValues from the df_value mixin
 	---@param self table
 	---@return number, number
 	GetDataMinMaxValues = function(self)
@@ -851,45 +881,85 @@ detailsFramework.DataMixin = {
 	end,
 }
 
+---@class df_value : table
+---@field minValue number
+---@field maxValue number
+---@field ValueConstructor fun(self: df_value)
+---@field SetMinMaxValues fun(self: df_value, minValue: number, maxValue: number)
+---@field GetMinMaxValues fun(self: df_value) : number, number
+---@field GetMinValue fun(self: df_value) : number
+---@field GetMaxValue fun(self: df_value) : number
+---@field SetMinValue fun(self: df_value, minValue: number)
+---@field SetMinValueIfLower fun(self: df_value, ...: number)
+---@field SetMaxValue fun(self: df_value, maxValue: number)
+---@field SetMaxValueIfBigger fun(self: df_value, ...: number)
+
 ---mixin to use with DetailsFramework:Mixin(table, detailsFramework.ValueMixin)
 ---add support to min value and max value into a table or object
 ---@class DetailsFramework.ValueMixin
 detailsFramework.ValueMixin = {
+	---initialize the value table
+	---@param self table
 	ValueConstructor = function(self)
 		self.minValue = 0
 		self.maxValue = 1
 	end,
 
+	---set the min and max values
+	---@param self table
+	---@param minValue number
+	---@param maxValue number
 	SetMinMaxValues = function(self, minValue, maxValue)
 		self.minValue = minValue
 		self.maxValue = maxValue
 	end,
 
+	---get the min and max values
+	---@param self table
+	---@return number, number
 	GetMinMaxValues = function(self)
 		return self.minValue, self.maxValue
 	end,
 
+	---get the min value
+	---@param self table
+	---@return number
 	GetMinValue = function(self)
 		return self.minValue
 	end,
 
+	---get the max value
+	---@param self table
+	---@return number
 	GetMaxValue = function(self)
 		return self.maxValue
 	end,
 
+	---set the min value
+	---@param self table
+	---@param minValue number
 	SetMinValue = function(self, minValue)
 		self.minValue = minValue
 	end,
 
+	---set the min value if one of the values passed is lower than the current min value
+	---@param self table
+	---@param ... number
 	SetMinValueIfLower = function(self, ...)
-		self.minValue = min(self.minValue, ...)
+		self.minValue = math.min(self.minValue, ...)
 	end,
 
+	---set the max value
+	---@param self table
+	---@param maxValue number
 	SetMaxValue = function(self, maxValue)
 		self.maxValue = maxValue
 	end,
 
+	---set the max value if one of the values passed is bigger than the current max value
+	---@param self table
+	---@param ... number
 	SetMaxValueIfBigger = function(self, ...)
-		self.maxValue = max(self.maxValue, ...)
+		self.maxValue = math.max(self.maxValue, ...)
 	end,
 }
