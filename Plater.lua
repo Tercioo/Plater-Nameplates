@@ -36,22 +36,19 @@ if (UIErrorsFrame) then
 	UIErrorsFrame:EnableMouse (false)
 end
 
---> blend nameplates with the worldframe
-local AlphaBlending = ALPHA_BLEND_AMOUNT + 0.0654785
-
 --> locals
 local unpack = unpack
 local ipairs = ipairs
---local rawset = rawset  --200 locals limit
+local rawset = rawset
 local rawget = rawget
-local setfenv = setfenv
---local pcall = pcall --200 locals limit
+--local setfenv = setfenv --200 locals limit
+local xpcall = xpcall
 local InCombatLockdown = InCombatLockdown
 local UnitIsPlayer = UnitIsPlayer
 local UnitClassification = UnitClassification
 local UnitDetailedThreatSituation = UnitDetailedThreatSituation
 local UnitCanAttack = UnitCanAttack
-local IsSpellInRange = IsSpellInRange
+--local IsSpellInRange = IsSpellInRange --200 locals limit
 local abs = math.abs
 local format = string.format
 local GetSpellInfo = GetSpellInfo
@@ -5070,12 +5067,11 @@ function Plater.OnInit() --private --~oninit ~init
 			Plater.UpdateResourceFrame()
 		end
 		
-		local on_personal_bar_update = function (self)
-			return Plater.UpdatePersonalBar (self)
-		end
 		--can also hook 'ClassNameplateBar:ShowNameplateBar()' which will show and call NamePlateDriverFrame:SetClassNameplateBar(self); which will call SetupClassNameplateBars()
 		if IS_WOW_PROJECT_MAINLINE then
-			hooksecurefunc (NamePlateDriverFrame, "SetupClassNameplateBars", on_personal_bar_update)
+			hooksecurefunc (NamePlateDriverFrame, "SetupClassNameplateBars", function (self)
+				return Plater.UpdatePersonalBar (self)
+			end)
 		end
 
 		--update the resource location and anchor
@@ -6555,7 +6551,7 @@ end
 		local curTime = GetTime()
 		local curFPSData = Plater.FPSData
 		if (curFPSData.startTime + 0.25) < curTime then
-			curFPSData.curFPS = math.max(curFPSData.frames / (curTime - curFPSData.startTime), 1)
+			curFPSData.curFPS = max(curFPSData.frames / (curTime - curFPSData.startTime), 1)
 			curFPSData.platesToUpdatePerFrame = math.ceil(NUM_NAMEPLATES_ON_SCREEN / DB_TICK_THROTTLE / curFPSData.curFPS)
 			
 			--ViragDevTool_AddData({curFPSData=curFPSData, NUM_NAMEPLATES_ON_SCREEN = NUM_NAMEPLATES_ON_SCREEN}, "Plater_FPS")
@@ -9089,11 +9085,7 @@ end
 	end
 
 	function Plater.GetPlateAlpha (plateFrame)
-		if (UnitIsUnit (plateFrame.unitFrame [MEMBER_UNITID], "target")) then
-			return 1
-		else
-			return AlphaBlending
-		end
+		return plateFrame and plateFrame.unitFrame and plateFrame.unitFrame:GetAlpha() or -1
 	end
 
 	local widget_set_alpha = function (widget, value)
@@ -9324,8 +9316,8 @@ end
 
 	function Plater.AnimateRightWithAccel (self, deltaTime)
 		local distance = (self.AnimationEnd - self.AnimationStart) / self.CurrentHealthMax * 100	--scale 1 - 100 basis
-		local minTravel = math.min (distance / 10, 3) -- 10 = trigger distance to max speed 3 = speed scale on max travel
-		local maxTravel = math.max (minTravel, 0.45) -- 0.45 = min scale speed on low travel speed
+		local minTravel = min (distance / 10, 3) -- 10 = trigger distance to max speed 3 = speed scale on max travel
+		local maxTravel = max (minTravel, 0.45) -- 0.45 = min scale speed on low travel speed
 		local calcAnimationSpeed = (self.CurrentHealthMax * (deltaTime * DB_ANIMATION_TIME_DILATATION)) * maxTravel --re-scale back to unit health, scale with delta time and scale with the travel speed
 		
 		self.AnimationStart = self.AnimationStart + (calcAnimationSpeed)
@@ -11040,7 +11032,7 @@ end
 	---@param unitFrame table unitFrame
 	---@return boolean bIsUnitInTankRole
 	function Plater.IsUnitTank(unitFrame)
-		return TANK_CACHE[unitFrame.unitNameInternal] or TANK_CACHE[lower(unitFrame.unitNameInternal)]
+		return TANK_CACHE[unitFrame.unitNameInternal]
 	end
 	
 	---check the player role and role specialization and return if it is in the tank role
@@ -11673,6 +11665,7 @@ end
 			["HookScriptsDesc"] = true,
 			["IncreaseHookBuildID"] = true,
 			["IncreaseRefreshID"] = true,
+			["IncreaseRefreshID_Auras"] = true,
 			["SpecList"] = true,
 			["UpdateSettingsCache"] = true,
 			["ActorTypeSettingsCache"] = true,
@@ -12549,7 +12542,7 @@ end
 				
 				--if is a unit name, make it be in lower case
 				if (type(triggerId) == "string") then
-					triggerId = lower(triggerId)
+					triggerId = triggerId:lower()
 				end
 			end
 
@@ -13822,7 +13815,7 @@ end
 		Plater.DebugColorAnimation_Timer = C_Timer.NewTicker (0.5, function() --~animationtest
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 				--make the bar jump from green to pink - pink to green
-				Plater.ChangeHealthBarColor_Internal (plateFrame.unitFrame.healthBar, math.abs (math.sin (GetTime())), math.abs (math.cos (GetTime())), math.abs (math.sin (GetTime())), 1)
+				Plater.ChangeHealthBarColor_Internal (plateFrame.unitFrame.healthBar, abs (math.sin (GetTime())), abs (math.cos (GetTime())), abs (math.sin (GetTime())), 1)
 			end
 		end)
 
