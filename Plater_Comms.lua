@@ -1,7 +1,8 @@
 local Plater = _G.Plater
 local C_Timer = _G.C_Timer
 local addonName, platerInternal = ...
-local pcall = pcall
+local xpcall = xpcall
+local GetErrorHandler = platerInternal.GetErrorHandler
 local DF = DetailsFramework
 local LibAceSerializer = LibStub:GetLibrary ("AceSerializer-3.0")
 local LibDeflate = LibStub:GetLibrary ("LibDeflate")
@@ -104,9 +105,9 @@ end
         local func = platerInternal.Comms.CommHandler[prefix]
 
         if (func) then
-            local runOkay, errorMsg = pcall(func, prefix, unitName, realmName, unitGUID, encodedData, channel)
+            local runOkay, errorMsg = xpcall(func, GetErrorHandler("Plater COMM error: "), prefix, unitName, realmName, unitGUID, encodedData, channel)
             if (not runOkay) then
-                Plater:Msg("error on something")
+                --Plater:Msg("error on something")
             end
         end
     end

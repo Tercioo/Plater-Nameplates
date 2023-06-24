@@ -2,6 +2,7 @@
 local Plater = _G.Plater
 local addonName, platerInternal = ...
 local detailsFramework = DetailsFramework
+local GetErrorHandler = platerInternal.GetErrorHandler
 local _
 
 --create a namespace for plugins
@@ -62,7 +63,7 @@ do
 		local pluginObject = platerInternal.Plugins.GetPluginObjectByPluginUniqueName(pluginUniqueName)
 		if (pluginObject) then
 			if (pluginObject.OnEnable) then
-				xpcall(pluginObject.OnEnable, geterrorhandler(), pluginUniqueName)
+				xpcall(pluginObject.OnEnable, GetErrorHandler("Plater plugin enabled error for '" .. (pluginUniqueName or "ERROR: NO NAME").. "':"), pluginUniqueName)
 			end
 		else
 			error("Plater Plugins OnEnabled(): couldn't find plugin object for: " .. (pluginUniqueName or "-plugin name is nil"))
@@ -74,7 +75,7 @@ do
 		local pluginObject = platerInternal.Plugins.GetPluginObjectByPluginUniqueName(pluginUniqueName)
 		if (pluginObject) then
 			if (pluginObject.OnDisable) then
-				xpcall(pluginObject.OnDisable, geterrorhandler(), pluginUniqueName)
+				xpcall(pluginObject.OnDisable, GetErrorHandler("Plater plugin disabled error for '" .. (pluginUniqueName or "ERROR: NO NAME").. "':"), pluginUniqueName)
 			end
 		else
 			error("Plater Plugins OnDisable(): couldn't find plugin object for: " .. (pluginUniqueName or "-plugin name is nil"))

@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 			
+			{1687376666,  "New Feature", "June 24th, 2023", "Adding support for BugSack error tacking and throttling to same error messages.", "cont1nuity"},
 			{1687376666,  "New Feature", "June 21st, 2023", "Adding option for the soft-target forced nameplate blizzard setting.", "cont1nuity"},
 			{1687376666,  "Bug Fix", "June 21st, 2023", "Fixing an issue with missing aura icons and aura consolidation in WotLK.", "cont1nuity"},
 			{1687376666,  "Bug Fix", "June 20th, 2023", "Fixing an issue with test auras not working properly when auras are being disabled.", "cont1nuity"},

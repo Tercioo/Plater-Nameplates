@@ -8869,6 +8869,8 @@ end
 		if (profile.auto_toggle_combat_enabled and (combat ~= nil)) then
 			local onlyNamesEnabled = GetCVarBool("nameplateShowOnlyNames")
 			local onlyNamesEnabledRaw = GetCVar("nameplateShowOnlyNames")
+			
+			--NamePlateDriverFrame:UnregisterEvent("CVAR_UPDATE")
 			if combat then -- update this separately and only if needed
 				if onlyNamesEnabled ~= profile.auto_toggle_combat.blizz_healthbar_ic then
 					SetCVar("nameplateShowOnlyNames", profile.auto_toggle_combat.blizz_healthbar_ic and CVAR_ENABLED or CVAR_DISABLED)
@@ -8880,6 +8882,7 @@ end
 					--Plater.UpdateBaseNameplateOptions()
 				end
 			end
+			--NamePlateDriverFrame:RegisterEvent("CVAR_UPDATE")
 			
 			if combat then
 				SetCVar("nameplateShowFriends", profile.auto_toggle_combat.friendly_ic and CVAR_ENABLED or CVAR_DISABLED)
@@ -11176,6 +11179,32 @@ end
 		
 		return data
 	end
+	
+	--the mod/script error handler
+	local errorContext = nil
+	local prevErrors = {}
+	local ErrorHandler = function(errorMessage)
+		errorContext = errorContext or "Plater error: "
+		local msg = errorContext .. errorMessage
+		--throttle error messages a bit...
+		local lastTime = prevErrors[msg]
+		local curTime = GetTime()
+		if lastTime and curTime - lastTime < 1 then
+			return
+		end
+		prevErrors[msg] = curTime
+		if BugGrabber then
+			geterrorhandler()(errorContext .. "\n" .. Plater.fullVersionInfo .. "\n" .. errorMessage)
+		end
+		Plater:Msg (msg)
+		return errorMessage
+	end
+	local GetErrorHandler = function(context)
+		errorContext = context
+		return ErrorHandler
+	end
+	platerInternal.GetErrorHandler = GetErrorHandler
+
 
 	--scripts mixin - these functions are mixed in with castbar, unitframe and aura icons
 	Plater.ScriptMetaFunctions = {
@@ -11220,10 +11249,11 @@ end
 				if (globalScriptObject.HasConstructor and (not scriptInfo.Initialized or forceHotReload)) then
 					local modName = scriptInfo.GlobalScriptObject.DBScriptObject.Name
 					Plater.StartLogPerformance("Mod-RunHooks", modName, "Constructor")
-					local okay, errortext = pcall (globalScriptObject.Constructor, self, self.displayedUnit or self.unit or self:GetParent()[MEMBER_UNITID], self, scriptInfo.Env, PLATER_GLOBAL_MOD_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId])
+					local okay, errortext = xpcall (globalScriptObject.Constructor, GetErrorHandler("Mod |cFFAAAA22" .. modName .. "|r Constructor error: "), self, self.displayedUnit or self.unit or self:GetParent()[MEMBER_UNITID], self, scriptInfo.Env, PLATER_GLOBAL_MOD_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId])
 					Plater.EndLogPerformance("Mod-RunHooks", modName, "Constructor")
 					if (not okay) then
-						Plater:Msg ("Mod |cFFAAAA22" .. modName .. "|r Constructor error: " .. errortext)
+						--handled via error handler
+						--Plater:Msg ("Mod |cFFAAAA22" .. modName .. "|r Constructor error: " .. errortext)
 					end
 					scriptInfo.Initialized = true
 				end
@@ -11281,10 +11311,11 @@ end
 				local unitFrame = self.unitFrame or self
 				local scriptName = scriptInfo.GlobalScriptObject.DBScriptObject.Name
 				Plater.StartLogPerformance("Scripts", scriptName, "Constructor")
-				local okay, errortext = pcall (scriptInfo.GlobalScriptObject ["ConstructorCode"], self, unitFrame.displayedUnit or unitFrame.unit or unitFrame.PlateFrame[MEMBER_UNITID], unitFrame, scriptInfo.Env, PLATER_GLOBAL_SCRIPT_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId])
+				local okay, errortext = xpcall (scriptInfo.GlobalScriptObject ["ConstructorCode"], GetErrorHandler("Script |cFFAAAA22" .. scriptName .. "|r Constructor error: "), self, unitFrame.displayedUnit or unitFrame.unit or unitFrame.PlateFrame[MEMBER_UNITID], unitFrame, scriptInfo.Env, PLATER_GLOBAL_SCRIPT_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId])
 				Plater.EndLogPerformance("Scripts", scriptName, "Constructor")
 				if (not okay) then
-					Plater:Msg ("Script |cFFAAAA22" .. scriptName .. "|r Constructor error: " .. errortext)
+					--handled via error handler
+					--Plater:Msg ("Script |cFFAAAA22" .. scriptName .. "|r Constructor error: " .. errortext)
 				end
 			end
 		end,
@@ -11302,10 +11333,11 @@ end
 			local unitFrame = self.unitFrame or self
 			local scriptName = scriptInfo.GlobalScriptObject.DBScriptObject.Name
 			Plater.StartLogPerformance("Scripts", scriptName, "OnUpdate")
-			local okay, errortext = pcall (scriptInfo.GlobalScriptObject ["UpdateCode"], self, unitFrame.displayedUnit or unitFrame.unit or unitFrame.PlateFrame[MEMBER_UNITID], unitFrame, scriptInfo.Env, PLATER_GLOBAL_SCRIPT_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId])
+			local okay, errortext = xpcall (scriptInfo.GlobalScriptObject ["UpdateCode"], GetErrorHandler("Script |cFFAAAA22" .. scriptName .. "|r OnUpdate error: "), self, unitFrame.displayedUnit or unitFrame.unit or unitFrame.PlateFrame[MEMBER_UNITID], unitFrame, scriptInfo.Env, PLATER_GLOBAL_SCRIPT_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId])
 			Plater.EndLogPerformance("Scripts", scriptName, "OnUpdate")
 			if (not okay) then
-				Plater:Msg ("Script |cFFAAAA22" .. scriptName .. "|r OnUpdate error: " .. errortext)
+				--handled via error handler
+				--Plater:Msg ("Script |cFFAAAA22" .. scriptName .. "|r OnUpdate error: " .. errortext)
 			end
 		end,
 		
@@ -11321,11 +11353,12 @@ end
 
 			local func = scriptInfo.GlobalScriptObject["OnShowCode"]
 
-			local okay, errortext = pcall(func, self, unitFrame.displayedUnit or unitFrame.unit or unitFrame.PlateFrame[MEMBER_UNITID], unitFrame, scriptInfo.Env, PLATER_GLOBAL_SCRIPT_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId])
+			local okay, errortext = xpcall(func, GetErrorHandler("Script |cFFAAAA22" .. scriptName .. "|r OnShow error: "), self, unitFrame.displayedUnit or unitFrame.unit or unitFrame.PlateFrame[MEMBER_UNITID], unitFrame, scriptInfo.Env, PLATER_GLOBAL_SCRIPT_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId])
 			Plater.EndLogPerformance("Scripts", scriptName, "OnShow")
 
 			if (not okay) then
-				Plater:Msg ("Script |cFFAAAA22" .. scriptName .. "|r OnShow error: " .. errortext)
+				--handled via error handler
+				--Plater:Msg ("Script |cFFAAAA22" .. scriptName .. "|r OnShow error: " .. errortext)
 			end
 			
 			scriptInfo.IsActive = true
@@ -11338,10 +11371,11 @@ end
 			local unitFrame = self.unitFrame or self
 			local scriptName = scriptInfo.GlobalScriptObject.DBScriptObject.Name
 			Plater.StartLogPerformance("Scripts", scriptName, "OnHide")
-			local okay, errortext = pcall (scriptInfo.GlobalScriptObject ["OnHideCode"], self, unitFrame.displayedUnit or unitFrame.unit or unitFrame.PlateFrame[MEMBER_UNITID], unitFrame, scriptInfo.Env, PLATER_GLOBAL_SCRIPT_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId])
+			local okay, errortext = xpcall (scriptInfo.GlobalScriptObject ["OnHideCode"], GetErrorHandler("Script |cFFAAAA22" .. scriptName .. "|r OnHide error: "), self, unitFrame.displayedUnit or unitFrame.unit or unitFrame.PlateFrame[MEMBER_UNITID], unitFrame, scriptInfo.Env, PLATER_GLOBAL_SCRIPT_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId])
 			Plater.EndLogPerformance("Scripts", scriptName, "OnHide")
 			if (not okay) then
-				Plater:Msg ("Script |cFFAAAA22" .. scriptName .. "|r OnHide error: " .. errortext)
+				--handled via error handler
+				--Plater:Msg ("Script |cFFAAAA22" .. scriptName .. "|r OnHide error: " .. errortext)
 			end
 			
 			scriptInfo.IsActive = false
@@ -11353,20 +11387,22 @@ end
 			--dispatch the init script
 			local scriptName = globalScriptObject.DBScriptObject.Name
 			Plater.StartLogPerformance("Scripts", scriptName, "Initialization")
-			local okay, errortext = pcall (globalScriptObject ["Initialization"], PLATER_GLOBAL_SCRIPT_ENV [globalScriptObject.DBScriptObject.scriptId])
+			local okay, errortext = xpcall (globalScriptObject ["Initialization"], GetErrorHandler("Script |cFFAAAA22" .. scriptName .. "|r Initialization error: "), PLATER_GLOBAL_SCRIPT_ENV [globalScriptObject.DBScriptObject.scriptId])
 			Plater.EndLogPerformance("Scripts", scriptName, "Initialization")
 			if (not okay) then
-				Plater:Msg ("Script |cFFAAAA22" .. scriptName .. "|r Initialization error: " .. errortext)
+				--handled via error handler
+				--Plater:Msg ("Script |cFFAAAA22" .. scriptName .. "|r Initialization error: " .. errortext)
 			end
 		end,
 		
 		ScriptRunCommMessageHook = function(globalScriptObject, hookName, source, ...)
 			local modName = globalScriptObject.DBScriptObject.Name
 			Plater.StartLogPerformance("Mod-RunHooks", modName, hook)
-			local okay, errortext = pcall (globalScriptObject [hookName], PLATER_GLOBAL_MOD_ENV [globalScriptObject.DBScriptObject.scriptId], source, ...)
+			local okay, errortext = xpcall (globalScriptObject [hookName], GetErrorHandler("Mod |cFFAAAA22" .. modName .. "|r code for |cFFBB8800" .. hookName .. "|r error: "), PLATER_GLOBAL_MOD_ENV [globalScriptObject.DBScriptObject.scriptId], source, ...)
 			Plater.EndLogPerformance("Mod-RunHooks", modName, hookName)
 			if (not okay) then
-				Plater:Msg ("Mod |cFFAAAA22" .. modName .. "|r code for |cFFBB8800" .. hookName .. "|r error: " .. errortext)
+				--handled via error handler
+				--Plater:Msg ("Mod |cFFAAAA22" .. modName .. "|r code for |cFFBB8800" .. hookName .. "|r error: " .. errortext)
 			end
 		end,
 		
@@ -11375,10 +11411,11 @@ end
 			--at the moment, self is always the unit frame
 			local modName = scriptInfo.GlobalScriptObject.DBScriptObject.Name
 			Plater.StartLogPerformance("Mod-RunHooks", modName, hookName)
-			local okay, errortext = pcall (scriptInfo.GlobalScriptObject [hookName], frame or self, self.displayedUnit, self, scriptInfo.Env, PLATER_GLOBAL_MOD_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId], ...)
+			local okay, errortext = xpcall (scriptInfo.GlobalScriptObject [hookName], GetErrorHandler("Mod |cFFAAAA22" .. modName .. "|r code for |cFFBB8800" .. hookName .. "|r error: "), frame or self, self.displayedUnit, self, scriptInfo.Env, PLATER_GLOBAL_MOD_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId], ...)
 			Plater.EndLogPerformance("Mod-RunHooks", modName, hookName)
 			if (not okay) then
-				Plater:Msg ("Mod |cFFAAAA22" .. modName .. "|r code for |cFFBB8800" .. hookName .. "|r error: " .. errortext)
+				--handled via error handler
+				--Plater:Msg ("Mod |cFFAAAA22" .. modName .. "|r code for |cFFBB8800" .. hookName .. "|r error: " .. errortext)
 			end
 		end,
 		
@@ -11387,10 +11424,11 @@ end
 			local func = hookInfo [hookName]
 			local modName = hookInfo.DBScriptObject.Name
 			Plater.StartLogPerformance("Mod-RunHooks", modName, " -NoAttach- " .. hookName)
-			local okay, errortext = pcall (func, PLATER_GLOBAL_MOD_ENV [hookInfo.DBScriptObject.scriptId])
+			local okay, errortext = xpcall (func, GetErrorHandler("Mod |cFFAAAA22" .. modName .. "|r code for |cFFBB8800" .. hookName .. "|r error: "), PLATER_GLOBAL_MOD_ENV [hookInfo.DBScriptObject.scriptId])
 			Plater.EndLogPerformance("Mod-RunHooks", modName, " -NoAttach- " .. hookName)
 			if (not okay) then
-				Plater:Msg ("Mod |cFFAAAA22" .. modName .. "|r code for |cFFBB8800" .. hookName .. "|r error: " .. errortext)
+				--handled via error handler
+				--Plater:Msg ("Mod |cFFAAAA22" .. modName .. "|r code for |cFFBB8800" .. hookName .. "|r error: " .. errortext)
 			end
 		end,
 		
@@ -12147,9 +12185,10 @@ end
 						local scriptContainer = unitFrame:ScriptGetContainer()
 						local scriptInfo = unitFrame:HookGetInfo(globalScriptObject, scriptContainer, "Destructor")
 
-						local okay, errortext = pcall (func, unitFrame, unitFrame.displayedUnit, unitFrame, scriptInfo.Env, PLATER_GLOBAL_MOD_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId])
+						local okay, errortext = xpcall (func, GetErrorHandler("Mod: |cFFAAAA22" .. scriptInfo.GlobalScriptObject.DBScriptObject.Name .. "|r " .. scriptObject.Name .. " error: "), unitFrame, unitFrame.displayedUnit, unitFrame, scriptInfo.Env, PLATER_GLOBAL_MOD_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId])
 						if (not okay) then
-							Plater:Msg ("Mod: |cFFAAAA22" .. scriptInfo.GlobalScriptObject.DBScriptObject.Name .. "|r " .. scriptObject.Name .. " error: " .. errortext)
+							--handled via error handler
+							--Plater:Msg ("Mod: |cFFAAAA22" .. scriptInfo.GlobalScriptObject.DBScriptObject.Name .. "|r " .. scriptObject.Name .. " error: " .. errortext)
 						end
 					end
 				end
