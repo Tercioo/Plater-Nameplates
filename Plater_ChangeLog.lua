@@ -8,6 +8,10 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 			
+			{1689116618,  "Bug Fix", "July 12th, 2023", "Fixing 'CreateIconGlow' used in mods/scripts for 10.1.5 update.", "cont1nuity"},
+			{1689116618,  "Backend Change", "July 12th, 2023", "Toc update for 10.1.5 update.", "cont1nuity"},
+			{1689116618,  "Backend Change", "July 12th, 2023", "DetailsFramework updates.", "Terciob"},
+			
 			{1688464330,  "Bug Fix", "June 30th, 2023", "Fixing an issue with aura tracking on classic clients.", "cont1nuity"},
 			{1688464330,  "New Feature", "June 24th, 2023", "Adding support for BugSack error tacking and throttling to same error messages.", "cont1nuity"},
 			{1688464330,  "New Feature", "June 21st, 2023", "Adding option for the soft-target forced nameplate blizzard setting.", "cont1nuity"},

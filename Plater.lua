@@ -10810,8 +10810,8 @@ end
 	end
 
 	--create a glow around an icon
-	function Plater.CreateIconGlow (frame, color)
-		local f = Plater:CreateGlowOverlay (frame, color, color)
+	function Plater.CreateIconGlow (frame, color, color2)
+		local f = Plater:CreateGlowOverlay (frame, color, color2 or color)
 		return f
 	end
 
