@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 			
+			{1689116618,  "Bug Fix", "July 14th, 2023", "Fixing personal 'alternate power' bar anchoring/positioning (Stagger and Ebon Might).", "cont1nuity"},
 			{1689116618,  "Bug Fix", "July 12th, 2023", "Fixing 'CreateIconGlow' used in mods/scripts for 10.1.5 update.", "cont1nuity"},
 			{1689116618,  "Backend Change", "July 12th, 2023", "Toc update for 10.1.5 update.", "cont1nuity"},
 			{1689116618,  "Backend Change", "July 12th, 2023", "DetailsFramework updates.", "Terciob"},

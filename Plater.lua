@@ -5091,56 +5091,114 @@ function Plater.OnInit() --private --~oninit ~init
 			end
 			
 			local resourceFrame = NamePlateDriverFrame.classNamePlateMechanicFrame
-			if (not resourceFrame or resourceFrame:IsForbidden()) then
-				return
-			end
-			
-			if Plater.db.profile.resources_settings.global_settings.show then
-				resourceFrame:SetAlpha (0)
-				resourceFrame:Hide()
-				return
-			end
-			
-			--> set scale based on Plater user settings
-			resourceFrame:SetScale (Plater.db.profile.resources.scale)
-			resourceFrame:SetAlpha (Plater.db.profile.resources.alpha)
-			
-			--check if resources are placed on the current target
-			if (onCurrentTarget) then
-				--resource bar are placed on the current target nameplate
-				local targetPlateFrame = C_NamePlate.GetNamePlateForUnit ("target", false) -- don't attach to secure frames to avoid tainting!
-				if (targetPlateFrame) then
-					resourceFrame:Show()
-					resourceFrame:SetParent (targetPlateFrame.unitFrame)
-					resourceFrame:ClearAllPoints()
-					resourceFrame:SetPoint ("bottom", targetPlateFrame.unitFrame.healthBar, "top", 0, Plater.db.profile.resources.y_offset_target)
-					resourceFrame:SetFrameStrata(targetPlateFrame.unitFrame.healthBar:GetFrameStrata())
-					resourceFrame:SetFrameLevel(targetPlateFrame.unitFrame.healthBar:GetFrameLevel() + 25)
-					Plater.CurrentTargetResourceFrame = resourceFrame
-					
-					Plater.UpdateResourceFrameAnchor (targetPlateFrame.unitFrame.BuffFrame)
-				else
+			if (resourceFrame and not resourceFrame:IsForbidden()) then
+				if Plater.db.profile.resources_settings.global_settings.show then
+					resourceFrame:SetAlpha (0)
 					resourceFrame:Hide()
+					return
 				end
-			else
-				--resource bar are placed below the mana bar at the personal bar
-				local personalPlateFrame = C_NamePlate.GetNamePlateForUnit ("player", issecure())
-				if (personalPlateFrame) then
-					resourceFrame:Show()
-					resourceFrame:SetParent (personalPlateFrame.unitFrame)
-					resourceFrame:ClearAllPoints()
-					
-					--> attach to powerbar if shown
-					if (personalPlateFrame.unitFrame.powerBar:IsShown()) then
-						resourceFrame:SetPoint ("top", personalPlateFrame.unitFrame.powerBar, "bottom", 0, -3 + Plater.db.profile.resources.y_offset)
+				
+				--> set scale based on Plater user settings
+				resourceFrame:SetScale (Plater.db.profile.resources.scale * (isStaggerBar and 2 or 1))
+				resourceFrame:SetAlpha (Plater.db.profile.resources.alpha)
+				
+				--check if resources are placed on the current target
+				if (onCurrentTarget) then
+					--resource bar are placed on the current target nameplate
+					local targetPlateFrame = C_NamePlate.GetNamePlateForUnit ("target", false) -- don't attach to secure frames to avoid tainting!
+					if (targetPlateFrame) then
+						resourceFrame:Show()
+						resourceFrame:SetParent (targetPlateFrame.unitFrame)
+						resourceFrame:ClearAllPoints()
+						resourceFrame:SetPoint ("bottom", targetPlateFrame.unitFrame.healthBar, "top", 0, Plater.db.profile.resources.y_offset_target)
+						resourceFrame:SetFrameStrata(targetPlateFrame.unitFrame.healthBar:GetFrameStrata())
+						resourceFrame:SetFrameLevel(targetPlateFrame.unitFrame.healthBar:GetFrameLevel() + 25)
+						Plater.CurrentTargetResourceFrame = resourceFrame
+						
+						Plater.UpdateResourceFrameAnchor (targetPlateFrame.unitFrame.BuffFrame)
 					else
-						resourceFrame:SetPoint ("top", personalPlateFrame.unitFrame.healthBar, "bottom", 0, -3 + Plater.db.profile.resources.y_offset)
+						resourceFrame:Hide()
 					end
-					
-					resourceFrame:SetFrameStrata(personalPlateFrame.unitFrame.healthBar:GetFrameStrata())
-					resourceFrame:SetFrameLevel(personalPlateFrame.unitFrame.healthBar:GetFrameLevel() + 25)
 				else
-					resourceFrame:Hide()
+					--resource bar are placed below the mana bar at the personal bar
+					local personalPlateFrame = C_NamePlate.GetNamePlateForUnit ("player", issecure())
+					if (personalPlateFrame) then
+						resourceFrame:Show()
+						resourceFrame:SetParent (personalPlateFrame.unitFrame)
+						resourceFrame:ClearAllPoints()
+						
+						--> attach to powerbar if shown
+						if (personalPlateFrame.unitFrame.powerBar:IsShown()) then
+							resourceFrame:SetPoint ("top", personalPlateFrame.unitFrame.powerBar, "bottom", 0, -3 + Plater.db.profile.resources.y_offset)
+						else
+							resourceFrame:SetPoint ("top", personalPlateFrame.unitFrame.healthBar, "bottom", 0, -3 + Plater.db.profile.resources.y_offset)
+						end
+						
+						resourceFrame:SetFrameStrata(personalPlateFrame.unitFrame.healthBar:GetFrameStrata())
+						resourceFrame:SetFrameLevel(personalPlateFrame.unitFrame.healthBar:GetFrameLevel() + 25)
+					else
+						resourceFrame:Hide()
+					end
+				end
+			end
+			
+			local alternatePowerFrame = NamePlateDriverFrame.classNamePlateAlternatePowerBar
+			if (alternatePowerFrame and not alternatePowerFrame:IsForbidden()) then
+				if Plater.db.profile.resources_settings.global_settings.show then
+					alternatePowerFrame:SetAlpha (0)
+					alternatePowerFrame:Hide()
+					return
+				end
+				
+				--> set scale based on Plater user settings
+				alternatePowerFrame:SetScale (Plater.db.profile.resources.scale * 2)
+				alternatePowerFrame:SetAlpha (Plater.db.profile.resources.alpha)
+				
+				--check if resources are placed on the current target
+				if (onCurrentTarget) then
+					--resource bar are placed on the current target nameplate
+					local targetPlateFrame = C_NamePlate.GetNamePlateForUnit ("target", false) -- don't attach to secure frames to avoid tainting!
+					if (targetPlateFrame) then
+						alternatePowerFrame:Show()
+						alternatePowerFrame:SetParent (targetPlateFrame.unitFrame)
+						alternatePowerFrame:ClearAllPoints()
+						if resourceFrame then
+							alternatePowerFrame:SetPoint ("bottom", resourceFrame, "top", 0, 2)
+						else
+							resourceFrame:SetPoint ("bottom", targetPlateFrame.unitFrame.healthBar, "top", 0, Plater.db.profile.resources.y_offset_target)
+						end
+						alternatePowerFrame:SetFrameStrata(targetPlateFrame.unitFrame.healthBar:GetFrameStrata())
+						alternatePowerFrame:SetFrameLevel(targetPlateFrame.unitFrame.healthBar:GetFrameLevel() + 25)
+						Plater.CurrentTargetResourceFrame = resourceFrame or alternatePowerFrame
+						
+						Plater.UpdateResourceFrameAnchor (targetPlateFrame.unitFrame.BuffFrame)
+					else
+						alternatePowerFrame:Hide()
+					end
+				else
+					--resource bar are placed below the mana bar at the personal bar
+					local personalPlateFrame = C_NamePlate.GetNamePlateForUnit ("player", issecure())
+					if (personalPlateFrame) then
+						alternatePowerFrame:Show()
+						alternatePowerFrame:SetParent (personalPlateFrame.unitFrame)
+						alternatePowerFrame:ClearAllPoints()
+						
+						--> attach to powerbar if shown
+						if resourceFrame then
+							alternatePowerFrame:SetPoint ("top", resourceFrame, "bottom", 0, -2)
+						else
+							if (personalPlateFrame.unitFrame.powerBar:IsShown()) then
+								alternatePowerFrame:SetPoint ("top", personalPlateFrame.unitFrame.powerBar, "bottom", 0, -3 + Plater.db.profile.resources.y_offset)
+							else
+								alternatePowerFrame:SetPoint ("top", personalPlateFrame.unitFrame.healthBar, "bottom", 0, -3 + Plater.db.profile.resources.y_offset)
+							end
+						end
+						
+						alternatePowerFrame:SetFrameStrata(personalPlateFrame.unitFrame.healthBar:GetFrameStrata())
+						alternatePowerFrame:SetFrameLevel(personalPlateFrame.unitFrame.healthBar:GetFrameLevel() + 25)
+					else
+						alternatePowerFrame:Hide()
+					end
 				end
 			end
 		end
