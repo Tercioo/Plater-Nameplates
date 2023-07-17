@@ -5165,7 +5165,7 @@ function Plater.OnInit() --private --~oninit ~init
 						if resourceFrame then
 							alternatePowerFrame:SetPoint ("bottom", resourceFrame, "top", 0, 2)
 						else
-							resourceFrame:SetPoint ("bottom", targetPlateFrame.unitFrame.healthBar, "top", 0, Plater.db.profile.resources.y_offset_target)
+							alternatePowerFrame:SetPoint ("bottom", targetPlateFrame.unitFrame.healthBar, "top", 0, Plater.db.profile.resources.y_offset_target)
 						end
 						alternatePowerFrame:SetFrameStrata(targetPlateFrame.unitFrame.healthBar:GetFrameStrata())
 						alternatePowerFrame:SetFrameLevel(targetPlateFrame.unitFrame.healthBar:GetFrameLevel() + 25)
