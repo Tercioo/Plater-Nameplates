@@ -10868,8 +10868,23 @@ end
 	end
 
 	--create a glow around an icon
-	function Plater.CreateIconGlow (frame, color, color2)
+	function Plater.CreateIconGlow (frame, color, color2, useShowAnimation)
 		local f = Plater:CreateGlowOverlay (frame, color, color2 or color)
+		if not useShowAnimation and IS_WOW_PROJECT_MAINLINE then
+			f:SetScript("OnShow", nil) --reset
+			
+			local onShow = function(self)
+				if (self.ProcStartAnim) then
+					self.ProcStartAnim:Stop()
+					self.ProcStartFlipbook:Hide()
+					if (not self.ProcLoop:IsPlaying()) then
+						self.ProcLoop:Play()
+					end
+				end
+			end
+			
+			f:SetScript("OnShow", onShow)
+		end
 		return f
 	end
 
