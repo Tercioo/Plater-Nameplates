@@ -1,6 +1,6 @@
 
 
-local dversion = 448
+local dversion = 456
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary(major, minor)
 
@@ -40,7 +40,11 @@ DF.AuthorInfo = {
 }
 
 function DF:Msg(msg, ...)
-	print("|cFFFFFFAA" .. (self.__name or "FW Msg:") .. "|r ", msg, ...)
+	print("|cFFFFFFAA" .. (self.__name or "Details!Framework:") .. "|r ", msg, ...)
+end
+
+function DF:MsgWarning(msg, ...)
+	print("|cFFFFFFAA" .. (self.__name or "Details!Framework") .. "|r |cFFFFAA00[Warning]|r", msg, ...)
 end
 
 local PixelUtil = PixelUtil or DFPixelUtil
@@ -574,6 +578,32 @@ function DF.table.copytocompress(t1, t2)
 	return t1
 end
 
+---remove from table1 the values that are also on table2
+---@param table1 table the table to have the values removed
+---@param table2 table the reference table
+function DF.table.removeduplicate(table1, table2)
+    for key, value in pairs(table2) do
+        if (type(value) == "table") then
+            if (type(table1[key]) == "table") then
+                DF.table.removeduplicate(table1[key], value)
+				if (not next(table1[key])) then
+					table1[key] = nil
+				end
+            end
+        else
+			if (type(table1[key]) == "number" and type(value) == "number") then
+				if (DF:IsNearlyEqual(table1[key], value, 0.0001)) then
+					table1[key] = nil
+				end
+			else
+            	if (table1[key] == value) then
+	                table1[key] = nil
+            	end
+			end
+        end
+    end
+end
+
 ---add the indexes of table2 into the end of the table table1
 ---@param t1 table
 ---@param t2 table
@@ -592,10 +622,10 @@ end
 function DF.table.deploy(t1, t2)
 	for key, value in pairs(t2) do
 		if (type(value) == "table") then
-			t1 [key] = t1 [key] or {}
-			DF.table.deploy(t1 [key], t2 [key])
-		elseif (t1 [key] == nil) then
-			t1 [key] = value
+			t1[key] = t1[key] or {}
+			DF.table.deploy(t1[key], t2[key])
+		elseif (t1[key] == nil) then
+			t1[key] = value
 		end
 	end
 	return t1
@@ -787,6 +817,7 @@ else
 end
 
 ---format a number with commas
+---@param self table
 ---@param value number
 ---@return string
 function DF:CommaValue(value)
@@ -805,6 +836,7 @@ function DF:CommaValue(value)
 end
 
 ---call the function 'callback' for each group member passing the unitID and the extra arguments
+---@param self table
 ---@param callback function
 ---@vararg any
 function DF:GroupIterator(callback, ...)
@@ -825,6 +857,7 @@ function DF:GroupIterator(callback, ...)
 end
 
 ---get an integer an format it as string with the time format 16:45
+---@param self table
 ---@param value number
 ---@return string
 function DF:IntegerToTimer(value) --~formattime
@@ -832,6 +865,7 @@ function DF:IntegerToTimer(value) --~formattime
 end
 
 ---remove the realm name from a name
+---@param self table
 ---@param name string
 ---@return string, number
 function DF:RemoveRealmName(name)
@@ -839,6 +873,7 @@ function DF:RemoveRealmName(name)
 end
 
 ---remove the owner name of the pet or guardian
+---@param self table
 ---@param name string
 ---@return string, number
 function DF:RemoveOwnerName(name)
@@ -846,6 +881,7 @@ function DF:RemoveOwnerName(name)
 end
 
 ---remove realm and owner names also remove brackets from spell actors
+---@param self table
 ---@param name string
 ---@return string
 function DF:CleanUpName(name)
@@ -856,6 +892,7 @@ function DF:CleanUpName(name)
 end
 
 ---remove the realm name from a name
+---@param self table
 ---@param name string
 ---@return string, number
 function DF:RemoveRealName(name)
@@ -863,6 +900,7 @@ function DF:RemoveRealName(name)
 end
 
 ---get the UIObject of type 'FontString' named fontString and set the font size to the maximum value of the arguments
+---@param self table
 ---@param fontString fontstring
 ---@vararg number
 function DF:SetFontSize(fontString, ...)
@@ -871,6 +909,7 @@ function DF:SetFontSize(fontString, ...)
 end
 
 ---get the UIObject of type 'FontString' named fontString and set the font to the argument fontface
+---@param self table
 ---@param fontString fontstring
 ---@param fontface string
 function DF:SetFontFace(fontString, fontface)
@@ -884,24 +923,26 @@ function DF:SetFontFace(fontString, fontface)
 end
 
 ---get the FontString passed and set the font color
+---@param self table
 ---@param fontString fontstring
 ---@param r any
----@param g number|nil
----@param b number|nil
----@param a number|nil
+---@param g number?
+---@param b number?
+---@param a number?
 function DF:SetFontColor(fontString, r, g, b, a)
 	r, g, b, a = DF:ParseColors(r, g, b, a)
 	fontString:SetTextColor(r, g, b, a)
 end
 
 ---get the FontString passed and set the font shadow color and offset
+---@param self table
 ---@param fontString fontstring
----@param r number
----@param g number
----@param b number
----@param a number
----@param x number
----@param y number
+---@param r any
+---@param g number?
+---@param b number?
+---@param a number?
+---@param x number?
+---@param y number?
 function DF:SetFontShadow(fontString, r, g, b, a, x, y)
 	r, g, b, a = DF:ParseColors(r, g, b, a)
 	fontString:SetShadowColor(r, g, b, a)
@@ -914,6 +955,7 @@ function DF:SetFontShadow(fontString, r, g, b, a, x, y)
 end
 
 ---get the FontString object passed and set the rotation of the text shown
+---@param self table
 ---@param fontString fontstring
 ---@param degrees number
 function DF:SetFontRotation(fontString, degrees)
@@ -931,6 +973,7 @@ function DF:SetFontRotation(fontString, degrees)
 end
 
 ---receives a string and a color and return the string wrapped with the color using |c and |r scape codes
+---@param self table
 ---@param text string
 ---@param color any
 ---@return string
@@ -948,6 +991,7 @@ function DF:AddColorToText(text, color) --wrap text with a color
 end
 
 ---receives a string 'text' and a class name and return the string wrapped with the class color using |c and |r scape codes
+---@param self table
 ---@param text string
 ---@param className string
 ---@return string
@@ -970,6 +1014,7 @@ function DF:AddClassColorToText(text, className)
 end
 
 ---create a string with the spell icon and the spell name using |T|t scape codes to add the icon inside the string
+---@param self table
 ---@param spellId any
 ---@return string
 function DF:MakeStringFromSpellId(spellId)
@@ -3374,6 +3419,11 @@ end
 -----------------------------
 --animations
 
+---create an animation 'hub' which is an animationGroup but with some extra functions
+---@param parent uiobject
+---@param onPlay function?
+---@param onFinished function?
+---@return animationgroup
 function DF:CreateAnimationHub(parent, onPlay, onFinished)
 	local newAnimation = parent:CreateAnimationGroup()
 	newAnimation:SetScript("OnPlay", onPlay)
@@ -3416,6 +3466,38 @@ function DF:CreateAnimation(animation, animationType, order, duration, arg1, arg
 	return anim
 end
 
+---receives an uiobject, when its parent get hover overed, starts the fade in animation
+---start the fade out animation when the mouse leaves the parent
+---@param UIObject uiobject
+---@param fadeInTime number
+---@param fadeOutTime number
+---@param fadeInAlpha number
+---@param fadeOutAlpha number
+function DF:CreateFadeAnimation(UIObject, fadeInTime, fadeOutTime, fadeInAlpha, fadeOutAlpha)
+	fadeInTime = fadeInTime or 0.1
+	fadeOutTime = fadeOutTime or 0.1
+	fadeInAlpha = fadeInAlpha or 1
+	fadeOutAlpha = fadeOutAlpha or 0
+
+	local fadeInAnimationHub = DF:CreateAnimationHub(UIObject, function() UIObject:Show(); UIObject:SetAlpha(fadeOutAlpha) end, function() UIObject:SetAlpha(fadeInAlpha) end)
+	local fadeIn = DF:CreateAnimation(fadeInAnimationHub, "Alpha", 1, fadeInTime, fadeOutAlpha, fadeInAlpha)
+
+	local fadeOutAnimationHub = DF:CreateAnimationHub(UIObject, nil, function() UIObject:Hide(); UIObject:SetAlpha(0) end)
+	local fadeOut = DF:CreateAnimation(fadeOutAnimationHub, "Alpha", 2, fadeOutTime, fadeInAlpha, fadeOutAlpha)
+
+	local scriptFrame
+	--hook the parent OnEnter and OnLeave
+	if (UIObject:IsObjectType("FontString") or UIObject:IsObjectType("Texture")) then
+		scriptFrame = UIObject:GetParent()
+	else
+		scriptFrame = UIObject
+	end
+
+	---@cast scriptFrame frame
+	scriptFrame:HookScript("OnEnter", function() fadeOutAnimationHub:Stop(); fadeInAnimationHub:Play() end)
+	scriptFrame:HookScript("OnLeave", function() fadeInAnimationHub:Stop(); fadeOutAnimationHub:Play() end)
+end
+
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --frame shakes
 
@@ -3447,7 +3529,6 @@ FrameshakeUpdateFrame:SetScript("OnUpdate", function(self, deltaTime)
 		end
 	end
 end)
-
 
 local frameshake_ShakeFinished = function(parent, shakeObject)
 	if (shakeObject.IsPlaying) then
@@ -3518,7 +3599,6 @@ frameshake_DoUpdate = function(parent, shakeObject, deltaTime)
 		local scaleShake = min(shakeObject.IsFadingIn and (shakeObject.IsFadingInTime / shakeObject.FadeInTime) or 1, shakeObject.IsFadingOut and (1 - shakeObject.IsFadingOutTime / shakeObject.FadeOutTime) or 1)
 
 		if (scaleShake > 0) then
-
 			--delate the time by the frequency on both X and Y offsets
 			shakeObject.XSineOffset = shakeObject.XSineOffset + (deltaTime * shakeObject.Frequency)
 			shakeObject.YSineOffset = shakeObject.YSineOffset + (deltaTime * shakeObject.Frequency)
@@ -3550,12 +3630,9 @@ frameshake_DoUpdate = function(parent, shakeObject, deltaTime)
 
 				elseif (#anchor == 5) then
 					local anchorName1, anchorTo, anchorName2, point1, point2 = unpack(anchor)
-					--parent:ClearAllPoints()
-
 					parent:SetPoint(anchorName1, anchorTo, anchorName2, point1 + newX, point2 + newY)
 				end
 			end
-
 		end
 	else
 		frameshake_ShakeFinished(parent, shakeObject)
@@ -3639,7 +3716,7 @@ local frameshake_play = function(parent, shakeObject, scaleDirection, scaleAmpli
 	frameshake_DoUpdate(parent, shakeObject)
 end
 
-local frameshake_SetConfig = function(parent, shakeObject, duration, amplitude, frequency, absoluteSineX, absoluteSineY, scaleX, scaleY, fadeInTime, fadeOutTime, anchorPoints)
+local frameshake_SetConfig = function(parent, shakeObject, duration, amplitude, frequency, absoluteSineX, absoluteSineY, scaleX, scaleY, fadeInTime, fadeOutTime)
 	shakeObject.Amplitude = amplitude or shakeObject.Amplitude
 	shakeObject.Frequency = frequency or shakeObject.Frequency
 	shakeObject.Duration = duration or shakeObject.Duration
@@ -3663,8 +3740,41 @@ local frameshake_SetConfig = function(parent, shakeObject, duration, amplitude, 
 	shakeObject.OriginalDuration = shakeObject.Duration
 end
 
-function DF:CreateFrameShake(parent, duration, amplitude, frequency, absoluteSineX, absoluteSineY, scaleX, scaleY, fadeInTime, fadeOutTime, anchorPoints)
+---@class frameshake : table
+---@field Amplitude number
+---@field Frequency number
+---@field Duration number
+---@field FadeInTime number
+---@field FadeOutTime number
+---@field ScaleX number
+---@field ScaleY number
+---@field AbsoluteSineX boolean
+---@field AbsoluteSineY boolean
+---@field IsPlaying boolean
+---@field TimeLeft number
+---@field OriginalScaleX number
+---@field OriginalScaleY number
+---@field OriginalFrequency number
+---@field OriginalAmplitude number
+---@field OriginalDuration number
+---@field PlayFrameShake fun(parent:uiobject, shakeObject:frameshake, scaleDirection:number?, scaleAmplitude:number?, scaleFrequency:number?, scaleDuration:number?)
+---@field StopFrameShake fun(parent:uiobject, shakeObject:frameshake)
+---@field SetFrameShakeSettings fun(parent:uiobject, shakeObject:frameshake, duration:number?, amplitude:number?, frequency:number?, absoluteSineX:boolean?, absoluteSineY:boolean?, scaleX:number?, scaleY:number?, fadeInTime:number?, fadeOutTime:number?)
 
+---create a frame shake object
+---@param parent uiobject
+---@param duration number?
+---@param amplitude number?
+---@param frequency number?
+---@param absoluteSineX boolean?
+---@param absoluteSineY boolean?
+---@param scaleX number?
+---@param scaleY number?
+---@param fadeInTime number?
+---@param fadeOutTime number?
+---@param anchorPoints table?
+---@return frameshake
+function DF:CreateFrameShake(parent, duration, amplitude, frequency, absoluteSineX, absoluteSineY, scaleX, scaleY, fadeInTime, fadeOutTime, anchorPoints)
 	--create the shake table
 	local frameShake = {
 		Amplitude = amplitude or 2,

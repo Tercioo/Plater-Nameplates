@@ -1,0 +1,16 @@
+
+---@class detailsframework
+---@field OptionsFunctions df_optionsmixin
+---@field RoundedCornerPanelMixin df_roundedcornermixin
+---@field GetDefaultBackdropColor fun(self:table) : red, green, blue, alpha return a standard backdrop color
+---@field Msg fun(self:table, message:string, ...) show a message in the chat frame
+---@field MsgWarning fun(self:table, message:string, ...) show a warning message in the chat frame
+---@field CreateCloseButton fun(self:table, parent:frame, frameName:string?) : df_closebutton
+---@field CreateTabButton fun(self:table, parent:frame, frameName:string?) : df_tabbutton
+---@field CreateRoundedPanel fun(self:table, parent:frame, frameName:string?, optionsTable:df_roundedpanel_options?) : df_roundedpanel
+---@field CreateScaleBar fun(self:table, parent:frame, config:table<scale,number>) : df_scalebar
+---@field AddRoundedCornersToFrame fun(self:table, frame:frame, optionsTable:df_roundedpanel_preset?)
+---@field ParseColors fun(self:table, red:any, green:number?, blue:number?, alpha:number?) : red, green, blue, alpha
+---@field Mixin fun(self:table, target:table, ...) : table
+---@field SetButtonTexture fun(self:table, button:button|df_button, texture:atlasname|texturepath|textureid)
+---@field CreateFadeAnimation fun(self:table, UIObject:uiobject, fadeInTime:number?, fadeOutTime:number?, fadeInAlpha:number?, fadeOutAlpha:number?)
