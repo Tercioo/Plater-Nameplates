@@ -5099,7 +5099,7 @@ function Plater.OnInit() --private --~oninit ~init
 				end
 				
 				--> set scale based on Plater user settings
-				resourceFrame:SetScale (Plater.db.profile.resources.scale * (isStaggerBar and 2 or 1))
+				resourceFrame:SetScale (Plater.db.profile.resources.scale)
 				resourceFrame:SetAlpha (Plater.db.profile.resources.alpha)
 				
 				--check if resources are placed on the current target
@@ -5151,7 +5151,7 @@ function Plater.OnInit() --private --~oninit ~init
 				end
 				
 				--> set scale based on Plater user settings
-				alternatePowerFrame:SetScale (Plater.db.profile.resources.scale * 2)
+				alternatePowerFrame:SetScale (Plater.db.profile.resources.scale * (resourceFrame and 1 or 2)) --augvoker bar smaller, stagger larger
 				alternatePowerFrame:SetAlpha (Plater.db.profile.resources.alpha)
 				
 				--check if resources are placed on the current target
