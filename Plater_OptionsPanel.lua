@@ -6739,6 +6739,34 @@ local targetOptions = {
 		
 		{
 			type = "range",
+			get = function() return tonumber (GetCVar ("nameplateOtherBottomInset")) end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					if (value == 0) then
+						SetCVar ("nameplateOtherBottomInset", -1)
+						SetCVar ("nameplateLargeBottomInset", -1)
+						
+					else
+						SetCVar ("nameplateOtherBottomInset", value)
+						SetCVar ("nameplateLargeBottomInset", value)
+						
+					end
+				else
+					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+				end
+			end,
+			min = 0.000,
+			max = 0.1,
+			step = 0.005,
+			thumbscale = 1.7,
+			usedecimals = true,
+			name = "Lock to Screen (Bottom Side)|cFFFF7700*|r",
+			desc = "Min space between the nameplate and the bottom of the screen. Increase this if some part of the nameplate are going out of the screen.\n\n|cFFFFFFFFDefault: 0.065|r\n\n|cFFFFFF00 Important |r: if you're having issue, manually set using these macros:\n/run SetCVar ('nameplateOtherBottomInset', '0.1')\n/run SetCVar ('nameplateLargeBottomInset', '0.15')\n\n|cFFFFFF00 Important |r: setting to 0 disables this feature.\n\n|cFFFF7700[*]|r |cFFa0a0a0CVar, saved within Plater profile and restored when loading the profile.|r",
+			nocombat = true,
+		},
+		
+		{
+			type = "range",
 			get = function() return tonumber (GetCVar ("nameplateTargetBehindMaxDistance")) end,
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
@@ -13746,6 +13774,34 @@ end
 			usedecimals = true,
 			name = "Lock to Screen (Top Side)" .. CVarIcon,
 			desc = "Min space between the nameplate and the top of the screen. Increase this if some part of the nameplate are going out of the screen.\n\n|cFFFFFFFFDefault: 0.065|r\n\n" .. ImportantText .. "if you're having issue, manually set using these macros:\n/run SetCVar ('nameplateOtherTopInset', '0.065')\n/run SetCVar ('nameplateLargeTopInset', '0.065')\n\n" .. ImportantText .. "setting to 0 disables this feature." .. CVarDesc,
+			nocombat = true,
+		},
+		
+		{
+			type = "range",
+			get = function() return tonumber (GetCVar ("nameplateOtherBottomInset")) end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					if (value == 0) then
+						SetCVar ("nameplateOtherBottomInset", -1)
+						SetCVar ("nameplateLargeBottomInset", -1)
+						
+					else
+						SetCVar ("nameplateOtherBottomInset", value)
+						SetCVar ("nameplateLargeBottomInset", value)
+						
+					end
+				else
+					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+				end
+			end,
+			min = 0.000,
+			max = 0.1,
+			step = 0.005,
+			thumbscale = 1.7,
+			usedecimals = true,
+			name = "Lock to Screen (Bottom Side)|cFFFF7700*|r",
+			desc = "Min space between the nameplate and the bottom of the screen. Increase this if some part of the nameplate are going out of the screen.\n\n|cFFFFFFFFDefault: 0.065|r\n\n|cFFFFFF00 Important |r: if you're having issue, manually set using these macros:\n/run SetCVar ('nameplateOtherBottomInset', '0.1')\n/run SetCVar ('nameplateLargeBottomInset', '0.15')\n\n|cFFFFFF00 Important |r: setting to 0 disables this feature.\n\n|cFFFF7700[*]|r |cFFa0a0a0CVar, saved within Plater profile and restored when loading the profile.|r",
 			nocombat = true,
 		},
 		
