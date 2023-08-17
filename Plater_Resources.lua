@@ -845,6 +845,10 @@ end
             if (resourceFrame and not resourceFrame:IsForbidden()) then
                 resourceFrame:Hide()
             end
+            local alternatePowerFrame = NamePlateDriverFrame and NamePlateDriverFrame.classNamePlateAlternatePowerBar
+            if (alternatePowerFrame and not alternatePowerFrame:IsForbidden()) then
+                alternatePowerFrame:Hide()
+            end
         end
 
         if (DB_PLATER_RESOURCE_SHOW_DEPLETED) then
