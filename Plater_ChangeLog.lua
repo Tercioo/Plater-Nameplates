@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 			
+			{1690323862,  "New Feature", "August 20th, 2023", "NPC Colors tab can now be searched by npcID as well.", "cont1nuity"},
 			{1690323862,  "New Feature", "August 16th, 2023", "Adding option for 'Lock to Screen (Bottom Side)'.", "cont1nuity"},
 			{1690323862,  "Bug Fix", "August 16th, 2023", "Fixing AugVoker Ebon Might and Monk Stagger bar scaling being off.", "cont1nuity"},
 			{1690323862,  "Backend Change", "August 11th, 2023", "Framework updates.", "Tercioo"},

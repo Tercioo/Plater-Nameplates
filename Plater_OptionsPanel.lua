@@ -3110,6 +3110,7 @@ Plater.CreateAuraTesting()
 							local selectedColorName = DB_NPCID_COLORS[npcID] and DB_NPCID_COLORS[npcID][3]
 						
 							if (
+								(tostring(npcID) or ""):find(IsSearchingFor) or
 								npcName:lower():find(IsSearchingFor) or
 							 	zoneName:lower():find(IsSearchingFor) or
 							 	(rename and rename:find(IsSearchingFor)) or
