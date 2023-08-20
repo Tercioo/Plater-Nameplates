@@ -892,6 +892,18 @@ function Plater.OpenOptionsPanel()
 					end
 				end
 				
+				---@type renamednpcsdb
+				local renamedNPCs = Plater.db.profile.npcs_renamed
+				---@type renamednpcsdb
+				local renamedNPCsTemp = DetailsFramework.table.copy({}, renamedNPCs)
+				
+				for npcId, renamedName in pairs(renamedNPCsTemp) do
+					if tonumber(npcId) then 
+						renamedNPCs[npcId] = nil
+						renamedNPCs[tonumber(npcId)] = renamedName 
+					end
+				end
+				
 				---@type audiocuedb
 				local audioCues = Plater.db.profile.cast_audiocues
 				---@type audiocuedb

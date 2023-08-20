@@ -1076,6 +1076,26 @@ do
 			end
 		end,
 	})
+	
+	--#30 cleanup of renamed npcs string-indexed values
+	tinsert (PlaterPatchLibrary, {
+		NotEssential = false,
+		
+		Notes = {
+			"- Cleanup wrong indexes in npcs_renamed."
+		},
+		Func = function()
+			local renamedNPCs = Plater.db.profile.npcs_renamed
+			local renamedNPCsTemp = DetailsFramework.table.copy({}, renamedNPCs)
+			
+			for npcId, renamedName in pairs(renamedNPCsTemp) do
+				if tonumber(npcId) then 
+					renamedNPCs[tonumber(npcId)] = renamedNPCs[npcId] or renamedName -- ensure not to overwrite already existing (changed) after import
+					renamedNPCs[npcId] = nil
+				end
+			end
+		end
+	})
 
 	--to tag an update as non-essential, add "NotEssential = true," to the table
 	--/run Plater.db.profile.patch_version = 27

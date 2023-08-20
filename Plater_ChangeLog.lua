@@ -8,11 +8,12 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 			
-			{1690323862,  "New Feature", "August 20th, 2023", "NPC Colors tab can now be searched by npcID as well.", "cont1nuity"},
-			{1690323862,  "New Feature", "August 16th, 2023", "Adding option for 'Lock to Screen (Bottom Side)'.", "cont1nuity"},
-			{1690323862,  "Bug Fix", "August 16th, 2023", "Fixing AugVoker Ebon Might and Monk Stagger bar scaling being off.", "cont1nuity"},
-			{1690323862,  "Backend Change", "August 11th, 2023", "Framework updates.", "Tercioo"},
-			{1690323862,  "Backend Change", "July 26th, 2023", "CreateIconGlow' won't use the show-animation by default, fourth parameter enables it.", "cont1nuity"},
+			{1692562862,  "Bug Fix", "August 20th, 2023", "Fixing profile imports not adding renamed NPCs properly.", "cont1nuity"},
+			{1692562862,  "New Feature", "August 20th, 2023", "NPC Colors tab can now be searched by npcID as well.", "cont1nuity"},
+			{1692562862,  "New Feature", "August 16th, 2023", "Adding option for 'Lock to Screen (Bottom Side)'.", "cont1nuity"},
+			{1692562862,  "Bug Fix", "August 16th, 2023", "Fixing AugVoker Ebon Might and Monk Stagger bar scaling being off.", "cont1nuity"},
+			{1692562862,  "Backend Change", "August 11th, 2023", "Framework updates.", "Tercioo"},
+			{1692562862,  "Backend Change", "July 26th, 2023", "CreateIconGlow' won't use the show-animation by default, fourth parameter enables it.", "cont1nuity"},
 			
 			{1689116618,  "Bug Fix", "July 14th, 2023", "Fixing personal 'alternate power' bar anchoring/positioning (Stagger and Ebon Might).", "cont1nuity"},
 			{1689116618,  "Bug Fix", "July 12th, 2023", "Fixing 'CreateIconGlow' used in mods/scripts for 10.1.5 update.", "cont1nuity"},
