@@ -62,11 +62,6 @@ function detailsFramework.SavedVars.GetProfile(addonObject, bCreateIfNotFound, p
     local profileId = savedVariables.profile_ids[playerGUID] --get the profile name from the player guid
     local profileTable = savedVariables.profiles[profileId]
 
-    PlaterUnitFramesDebugDB.exitlog[#PlaterUnitFramesDebugDB.exitlog+1] = "SaveProfile: GetProfile playerGUID " .. (playerGUID and playerGUID or "no")
-    PlaterUnitFramesDebugDB.exitlog[#PlaterUnitFramesDebugDB.exitlog+1] = "SaveProfile: GetProfile savedVariables " .. (savedVariables and "yes" or "no")
-    PlaterUnitFramesDebugDB.exitlog[#PlaterUnitFramesDebugDB.exitlog+1] = "SaveProfile: GetProfile profileId " .. (profileId and profileId or "no")
-    PlaterUnitFramesDebugDB.exitlog[#PlaterUnitFramesDebugDB.exitlog+1] = "SaveProfile: GetProfile profileTable " .. (profileTable and "yes" or "no")
-
     if (not profileTable and bCreateIfNotFound) then
         profileTable = {}
 
@@ -99,8 +94,6 @@ function detailsFramework.SavedVars.SetProfile(addonObject, profileName, bCopyFr
     --save the current profile
     if (addonObject.profile) then
         detailsFramework.SavedVars.SaveProfile(addonObject)
-    else
-        PlaterUnitFramesDebugDB.exitlog[#PlaterUnitFramesDebugDB.exitlog+1] = "SetProfile: currentProfile is nil"
     end
 
     --set the new profile
@@ -122,27 +115,18 @@ end
 
 ---@param addonObject df_addon the addon frame created by detailsFramework:CreateNewAddOn()
 function detailsFramework.SavedVars.SaveProfile(addonObject)
-    PlaterUnitFramesDebugDB.exitlog[#PlaterUnitFramesDebugDB.exitlog+1] = "SaveProfile: starting to save profile"
-
     assert(type(addonObject) == "table", "SaveProfile: addonObject must be a table.")
-
-    PlaterUnitFramesDebugDB.exitlog[#PlaterUnitFramesDebugDB.exitlog+1] = "SaveProfile: addonname> " .. addonObject.__name
 
     --the current profile in use
     local profileTable = rawget(addonObject, "profile")
     if (profileTable) then
         if (profileTable.__loaded) then
-            PlaterUnitFramesDebugDB.exitlog[#PlaterUnitFramesDebugDB.exitlog+1] = "has profile and __loaded"
-
             --profile template (default profile)
             local profileTemplate = addonObject.__savedVarsDefaultTemplate
-
-            PlaterUnitFramesDebugDB.exitlog[#PlaterUnitFramesDebugDB.exitlog+1] = "SaveProfile: has template?" .. (profileTemplate and "yes" or "no")
 
             --if the addon has a default template, remove the keys which are the same as the default template
             --these keys haven't been changed by the user, hence doesn't need to save them
             if (profileTemplate) then
-                PlaterUnitFramesDebugDB.exitlog[#PlaterUnitFramesDebugDB.exitlog+1] = "SaveProfile: removing duplicates"
                 detailsFramework.table.removeduplicate(profileTable, addonObject.__savedVarsDefaultTemplate)
             end
 
@@ -152,11 +136,6 @@ function detailsFramework.SavedVars.SaveProfile(addonObject)
             local playerGUID = UnitGUID("player")
             local playerProfileId = savedVariables.profile_ids[playerGUID] --"default" by default
             savedVariables.profiles[playerProfileId] = profileTable
-            PlaterUnitFramesDebugDB.exitlog[#PlaterUnitFramesDebugDB.exitlog+1] = "SaveProfile: profile saved to savedVariables.profiles[" .. (playerProfileId or "NOPNIOP") .. "]"
-        else
-            PlaterUnitFramesDebugDB.exitlog[#PlaterUnitFramesDebugDB.exitlog+1] = "SaveProfile: not __loaded"
         end
-    else
-        PlaterUnitFramesDebugDB.exitlog[#PlaterUnitFramesDebugDB.exitlog+1] = "SaveProfile: failed to get profile"
     end
 end

@@ -28,6 +28,8 @@ local GetUnitPowerBarInfoByID = GetUnitPowerBarInfoByID
 local IsInGroup = IsInGroup
 local UnitPowerType = UnitPowerType
 local UnitIsConnected = UnitIsConnected
+local UnitPlayerControlled = UnitPlayerControlled
+local UnitIsTapDenied = UnitIsTapDenied
 local max = math.max
 local min = math.min
 local abs = math.abs
@@ -59,6 +61,40 @@ local cleanfunction = function() end
 	healthBar:SetTexture(texture)
 --]=]
 
+---@class df_healthbarsettings : table
+---@field CanTick boolean
+---@field ShowHealingPrediction boolean
+---@field ShowShields boolean
+---@field BackgroundColor table
+---@field Texture texturepath|textureid|atlasname
+---@field ShieldIndicatorTexture texturepath|textureid|atlasname
+---@field ShieldGlowTexture texturepath|textureid|atlasname
+---@field ShieldGlowWidth number
+---@field DontSetStatusBarTexture boolean
+---@field Width number
+---@field Height number
+
+---@class df_healthbar : statusbar, df_scripthookmixin, df_statusbarmixin
+---@field unit unit
+---@field displayedUnit unit
+---@field oldHealth number
+---@field currentHealth number
+---@field currentHealthMax number
+---@field WidgetType string
+---@field Settings df_healthbarsettings
+---@field background texture
+---@field incomingHealIndicator texture
+---@field shieldAbsorbIndicator texture
+---@field healAbsorbIndicator texture
+---@field shieldAbsorbGlow texture
+---@field barTexture texture
+---@field SetUnit fun(self:df_healthbar, unit:unit?, displayedUnit:unit)
+---@field GetTexture fun(self:df_healthbar) : texture
+---@field SetTexture fun(self:df_healthbar, texture:texturepath|textureid|atlasname)
+---@field SetColor fun(self:df_healthbar, red:number, green:number, blue:number, alpha:number)
+---@field UpdateHealPrediction fun(self:df_healthbar)
+---@field UpdateHealth fun(self:df_healthbar)
+---@field UpdateMaxHealth fun(self:df_healthbar)
 
 --healthBar meta prototype
 	local healthBarMetaPrototype = {
@@ -69,7 +105,7 @@ local cleanfunction = function() end
 	--check if there's a metaPrototype already existing
 	if (_G[detailsFramework.GlobalWidgetControlNames["healthBar"]]) then
 		--get the already existing metaPrototype
-		local oldMetaPrototype = _G[detailsFramework.GlobalWidgetControlNames ["healthBar"]]
+		local oldMetaPrototype = _G[detailsFramework.GlobalWidgetControlNames["healthBar"]]
 		--check if is older
 		if ( (not oldMetaPrototype.dversion) or (oldMetaPrototype.dversion < detailsFramework.dversion) ) then
 			--the version is older them the currently loading one
@@ -106,6 +142,7 @@ local cleanfunction = function() end
 		CanTick = false, --if true calls the method 'OnTick' every tick, the function needs to be overloaded, it receives self and deltaTime as parameters
 		ShowHealingPrediction = true, --when casting a healing pass, show the amount of health that spell will heal
 		ShowShields = true, --indicator of the amount of damage absortion the unit has
+		DontSetStatusBarTexture = false,
 
 		--appearance
 		BackgroundColor = detailsFramework:CreateColorTable (.2, .2, .2, .8),
@@ -132,7 +169,6 @@ local cleanfunction = function() end
 	--setup the castbar to be used by another unit
 	healthBarMetaFunctions.SetUnit = function(self, unit, displayedUnit)
 		if (self.unit ~= unit or self.displayedUnit ~= displayedUnit or unit == nil) then
-
 			self.unit = unit
 			self.displayedUnit = displayedUnit or unit
 
@@ -142,11 +178,11 @@ local cleanfunction = function() end
 				self.currentHealthMax = UnitHealthMax(unit) or 0
 
 				for _, eventTable in ipairs(self.HealthBarEvents) do
-					local event = eventTable [1]
-					local isUnitEvent = eventTable [2]
+					local event = eventTable[1]
+					local isUnitEvent = eventTable[2]
 					if event then
 						if (isUnitEvent) then
-							self:RegisterUnitEvent (event, self.displayedUnit, self.unit)
+							self:RegisterUnitEvent(event, self.displayedUnit, self.unit)
 						else
 							self:RegisterEvent(event)
 						end
@@ -155,16 +191,16 @@ local cleanfunction = function() end
 
 				--check for settings and update some events
 				if (not self.Settings.ShowHealingPrediction) then
-					self:UnregisterEvent ("UNIT_HEAL_PREDICTION")
+					self:UnregisterEvent("UNIT_HEAL_PREDICTION")
 					if IS_WOW_PROJECT_MAINLINE then
-						self:UnregisterEvent ("UNIT_HEAL_ABSORB_AMOUNT_CHANGED")
+						self:UnregisterEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED")
 					end
 					self.incomingHealIndicator:Hide()
 					self.healAbsorbIndicator:Hide()
 				end
 				if (not self.Settings.ShowShields) then
 					if IS_WOW_PROJECT_MAINLINE then
-						self:UnregisterEvent ("UNIT_ABSORB_AMOUNT_CHANGED")
+						self:UnregisterEvent("UNIT_ABSORB_AMOUNT_CHANGED")
 					end
 					self.shieldAbsorbIndicator:Hide()
 					self.shieldAbsorbGlow:Hide()
@@ -177,13 +213,13 @@ local cleanfunction = function() end
 					self:SetScript("OnUpdate", self.OnTick)
 				end
 
-				self:PLAYER_ENTERING_WORLD (self.unit, self.displayedUnit)
+				self:PLAYER_ENTERING_WORLD(self.unit, self.displayedUnit)
 			else
 				--remove all registered events
 				for _, eventTable in ipairs(self.HealthBarEvents) do
-					local event = eventTable [1]
+					local event = eventTable[1]
 					if event then
-						self:UnregisterEvent (event)
+						self:UnregisterEvent(event)
 					end
 				end
 
@@ -196,7 +232,7 @@ local cleanfunction = function() end
 	end
 
 	healthBarMetaFunctions.Initialize = function(self)
-		PixelUtil.SetWidth (self, self.Settings.Width, 1)
+		PixelUtil.SetWidth(self, self.Settings.Width, 1)
 		PixelUtil.SetHeight(self, self.Settings.Height, 1)
 
 		self:SetTexture(self.Settings.Texture)
@@ -218,6 +254,9 @@ local cleanfunction = function() end
 		self.shieldAbsorbGlow:Hide()
 
 		self:SetUnit(nil)
+
+		self.currentHealth = 1
+		self.currentHealthMax = 2
 	end
 
 	--call every tick
@@ -225,25 +264,29 @@ local cleanfunction = function() end
 
 	--when an event happen for this unit, send it to the apropriate function
 	healthBarMetaFunctions.OnEvent = function(self, event, ...)
-		local eventFunc = self [event]
+		local eventFunc = self[event]
 		if (eventFunc) then
 			--the function doesn't receive which event was, only 'self' and the parameters
-			eventFunc (self, ...)
+			eventFunc(self, ...)
 		end
 	end
 
 	--when the unit max health is changed
 	healthBarMetaFunctions.UpdateMaxHealth = function(self)
-		local maxHealth = UnitHealthMax (self.displayedUnit)
+		local maxHealth = UnitHealthMax(self.displayedUnit)
 		self:SetMinMaxValues(0, maxHealth)
 		self.currentHealthMax = maxHealth
 
-		self:RunHooksForWidget("OnHealthMaxChange", self, self.displayedUnit)
+		if (self.OnHealthMaxChange) then --direct call
+			self.OnHealthMaxChange(self, self.displayedUnit)
+		else
+			self:RunHooksForWidget("OnHealthMaxChange", self, self.displayedUnit)
+		end
 	end
 
 	healthBarMetaFunctions.UpdateHealth = function(self)
 		-- update max health regardless to avoid weird wrong values on UpdateMaxHealth sometimes
-		-- local maxHealth = UnitHealthMax (self.displayedUnit)
+		-- local maxHealth = UnitHealthMax(self.displayedUnit)
 		-- self:SetMinMaxValues(0, maxHealth)
 		-- self.currentHealthMax = maxHealth
 
@@ -252,7 +295,11 @@ local cleanfunction = function() end
 		self.currentHealth = health
 		PixelUtil.SetStatusBarValue(self, health)
 
-		self:RunHooksForWidget("OnHealthChange", self, self.displayedUnit)
+		if (self.OnHealthChange) then --direct call
+			self.OnHealthChange(self, self.displayedUnit)
+		else
+			self:RunHooksForWidget("OnHealthChange", self, self.displayedUnit)
+		end
 	end
 
 	--health and absorbs prediction
@@ -332,7 +379,13 @@ local cleanfunction = function() end
 			self:UpdateHealPrediction()
 		end
 
-		healthBarMetaFunctions.UNIT_HEALTH = function(self, ...)
+		healthBarMetaFunctions.UNIT_HEALTH = function(self, unitId)
+			self:UpdateHealth()
+			self:UpdateHealPrediction()
+		end
+
+		healthBarMetaFunctions.UNIT_MAXHEALTH = function(self, unitId)
+			self:UpdateMaxHealth()
 			self:UpdateHealth()
 			self:UpdateHealPrediction()
 		end
@@ -341,13 +394,6 @@ local cleanfunction = function() end
 			self:UpdateHealth()
 			self:UpdateHealPrediction()
 		end
-
-		healthBarMetaFunctions.UNIT_MAXHEALTH = function(self, ...)
-			self:UpdateMaxHealth()
-			self:UpdateHealth()
-			self:UpdateHealPrediction()
-		end
-
 
 		healthBarMetaFunctions.UNIT_HEAL_PREDICTION = function(self, ...)
 			self:UpdateMaxHealth()
@@ -368,8 +414,13 @@ local cleanfunction = function() end
 		end
 
 -- ~healthbar
-function detailsFramework:CreateHealthBar (parent, name, settingsOverride)
 
+---comment
+---@param parent frame
+---@param name string?
+---@param settingsOverride table?  a table with key/value pairs to override the default settings
+---@return df_healthbar
+function detailsFramework:CreateHealthBar(parent, name, settingsOverride)
 	assert(name or parent:GetName(), "DetailsFramework:CreateHealthBar parameter 'name' omitted and parent has no name.")
 
 	local healthBar = CreateFrame("StatusBar", name or (parent:GetName() .. "HealthBar"), parent, "BackdropTemplate")
@@ -393,7 +444,6 @@ function detailsFramework:CreateHealthBar (parent, name, settingsOverride)
 			healthBar.shieldAbsorbGlow:SetDrawLayer("artwork", 7)
 			--statusbar texture
 			healthBar.barTexture = healthBar:CreateTexture(nil, "artwork")
-			healthBar:SetStatusBarTexture(healthBar.barTexture)
 		end
 
 	--mixins
@@ -409,6 +459,12 @@ function detailsFramework:CreateHealthBar (parent, name, settingsOverride)
 		detailsFramework.table.copy(settings, settingsOverride)
 	end
 	healthBar.Settings = settings
+
+	if (healthBar.Settings.DontSetStatusBarTexture) then
+		healthBar.barTexture:SetAllPoints()
+	else
+		healthBar:SetStatusBarTexture(healthBar.barTexture)
+	end
 
 	--hook list
 	healthBar.HookList = detailsFramework.table.copy({}, healthBarMetaFunctions.HookList)
@@ -429,6 +485,29 @@ end
 	@name = absolute name of the frame, if omitted it uses the parent's name .. "PPowerBar"
 	@settingsOverride = table with keys and values to replace the defaults from the framework
 --]=]
+
+---@class df_powerbarsettings : table
+---@field ShowAlternatePower boolean
+---@field ShowPercentText boolean
+---@field HideIfNoPower boolean
+---@field CanTick boolean
+---@field BackgroundColor table
+---@field Texture texturepath|textureid|atlasname
+---@field Width number
+---@field Height number
+
+---@class df_powerbar : statusbar, df_scripthookmixin, df_statusbarmixin
+---@field unit string
+---@field displayedUnit string
+---@field WidgetType string
+---@field currentPower number
+---@field currentPowerMax number
+---@field powerType number
+---@field minPower number
+---@field Settings df_powerbarsettings
+---@field background texture
+---@field percentText fontstring
+---@field SetUnit fun(self:df_healthbar, unit:unit?, displayedUnit:unit?)
 
 detailsFramework.PowerFrameFunctions = {
 	WidgetType = "powerBar",
@@ -473,11 +552,11 @@ detailsFramework.PowerFrameFunctions = {
 			--register events
 			if (unit) then
 				for _, eventTable in ipairs(self.PowerBarEvents) do
-					local event = eventTable [1]
-					local isUnitEvent = eventTable [2]
+					local event = eventTable[1]
+					local isUnitEvent = eventTable[2]
 
 					if (isUnitEvent) then
-						self:RegisterUnitEvent (event, self.displayedUnit)
+						self:RegisterUnitEvent(event, self.displayedUnit)
 					else
 						self:RegisterEvent(event)
 					end
@@ -495,8 +574,8 @@ detailsFramework.PowerFrameFunctions = {
 			else
 				--remove all registered events
 				for _, eventTable in ipairs(self.PowerBarEvents) do
-					local event = eventTable [1]
-					self:UnregisterEvent (event)
+					local event = eventTable[1]
+					self:UnregisterEvent(event)
 				end
 
 				--remove scripts
@@ -522,7 +601,7 @@ detailsFramework.PowerFrameFunctions = {
 
 			detailsFramework:SetFontSize(self.percentText, 9)
 			detailsFramework:SetFontColor(self.percentText, "white")
-			detailsFramework:SetFontOutline (self.percentText, "OUTLINE")
+			detailsFramework:SetFontOutline(self.percentText, "OUTLINE")
 		else
 			self.percentText:Hide()
 		end
@@ -535,10 +614,10 @@ detailsFramework.PowerFrameFunctions = {
 
 	--when an event happen for this unit, send it to the apropriate function
 	OnEvent = function(self, event, ...)
-		local eventFunc = self [event]
+		local eventFunc = self[event]
 		if (eventFunc) then
 			--the function doesn't receive which event was, only 'self' and the parameters
-			eventFunc (self, ...)
+			eventFunc(self, ...)
 		end
 	end,
 
@@ -558,9 +637,10 @@ detailsFramework.PowerFrameFunctions = {
 			self:Hide()
 		end
 	end,
+
 	UpdatePower = function(self)
 		self.currentPower = UnitPower(self.displayedUnit, self.powerType)
-		PixelUtil.SetStatusBarValue (self, self.currentPower)
+		PixelUtil.SetStatusBarValue(self, self.currentPower)
 
 		if (self.Settings.ShowPercentText) then
 			self.percentText:SetText(floor(self.currentPower / self.currentPowerMax * 100) .. "%")
@@ -598,20 +678,20 @@ detailsFramework.PowerFrameFunctions = {
 			return
 		end
 
-		local powerColor = PowerBarColor [self.powerType] --don't appear to be, but PowerBarColor is a global table with all power colors /run Details:Dump (PowerBarColor)
+		local powerColor = PowerBarColor[self.powerType] --don't appear to be, but PowerBarColor is a global table with all power colors /run Details:Dump (PowerBarColor)
 		if (powerColor) then
 			self:SetStatusBarColor(powerColor.r, powerColor.g, powerColor.b)
 			return
 		end
 
-		local _, _, r, g, b = UnitPowerType (self.displayedUnit)
+		local _, _, r, g, b = UnitPowerType(self.displayedUnit)
 		if (r) then
 			self:SetStatusBarColor(r, g, b)
 			return
 		end
 
 		--if everything else fails, tint as rogue energy
-		powerColor = PowerBarColor ["ENERGY"]
+		powerColor = PowerBarColor["ENERGY"]
 		self:SetStatusBarColor(powerColor.r, powerColor.g, powerColor.b)
 	end,
 
@@ -644,6 +724,12 @@ detailsFramework.PowerFrameFunctions = {
 detailsFramework:Mixin(detailsFramework.PowerFrameFunctions, detailsFramework.ScriptHookMixin)
 
 -- ~powerbar
+
+---create a power bar
+---@param parent frame
+---@param name string?
+---@param settingsOverride table? a table with key/value pairs to override the default settings
+---@return df_powerbar
 function detailsFramework:CreatePowerBar(parent, name, settingsOverride)
 	assert(name or parent:GetName(), "DetailsFramework:CreatePowerBar parameter 'name' omitted and parent has no name.")
 
@@ -694,6 +780,96 @@ end
 	@name = absolute name of the frame, if omitted it uses the parent's name .. "CastBar"
 	@settingsOverride = table with keys and values to replace the defaults from the framework
 --]=]
+
+---@class df_castbarsettings : table
+---@field NoFadeEffects  boolean if true it won't play fade effects when a cast if finished
+---@field ShowTradeSkills boolean if true, it shows cast for trade skills, e.g. creating an icon with blacksmith
+---@field ShowShield boolean if true, shows the shield above the spell icon for non interruptible casts
+---@field CanTick boolean if true it will run its OnTick function every tick.
+---@field ShowCastTime boolean if true, show the remaining time to finish the cast, lazy tick must be enabled
+---@field FadeInTime number amount of time in seconds to go from zero to 100% alpha when starting to cast
+---@field FadeOutTime number amount of time in seconds to go from 100% to zero alpha when the cast finishes
+---@field CanLazyTick boolean if true, it'll execute the lazy tick function, it ticks in a much slower pace comparece with the regular tick
+---@field LazyUpdateCooldown number amount of time to wait for the next lazy update, this updates non critical things like the cast timer
+---@field ShowEmpoweredDuration boolean full hold time for empowered spells
+---@field FillOnInterrupt boolean
+---@field HideSparkOnInterrupt boolean
+---@field Width number
+---@field Height number
+---@field Colors df_castcolors
+---@field BackgroundColor table
+---@field Texture texturepath|textureid
+---@field BorderShieldWidth number
+---@field BorderShieldHeight number
+---@field BorderShieldCoords table
+---@field BorderShieldTexture number
+---@field SpellIconWidth number
+---@field SpellIconHeight number
+---@field ShieldIndicatorTexture texturepath|textureid
+---@field ShieldGlowTexture texturepath|textureid
+---@field SparkTexture texturepath|textureid
+---@field SparkWidth number
+---@field SparkHeight number
+---@field SparkOffset number
+
+---@alias caststage_color
+---| "Casting"
+---| "Channeling"
+---| "Interrupted"
+---| "Failed"
+---| "NotInterruptable"
+---| "Finished"
+
+---@class df_castcolors : table
+---@field Casting table
+---@field Channeling table
+---@field Interrupted table
+---@field Failed table
+---@field NotInterruptable table
+---@field Finished table
+
+---@class df_castbar : statusbar, df_scripthookmixin, df_statusbarmixin
+---@field unit string
+---@field displayedUnit string
+---@field WidgetType string
+---@field value number
+---@field maxValue number
+---@field spellStartTime number
+---@field spellEndTime number
+---@field empowered boolean
+---@field curStage number
+---@field numStages number
+---@field empStages {start:number, finish:number}[]
+---@field stagePips texture[]
+---@field holdAtMaxTime number
+---@field casting boolean
+---@field channeling boolean
+---@field interrupted boolean
+---@field failed boolean
+---@field finished boolean
+---@field canInterrupt boolean
+---@field spellID spellid
+---@field castID number
+---@field spellName spellname
+---@field spellTexture textureid
+---@field Colors df_castcolors
+---@field Settings df_castbarsettings
+---@field background texture
+---@field extraBackground texture
+---@field Text fontstring
+---@field BorderShield texture
+---@field Icon texture
+---@field Spark texture
+---@field percentText fontstring
+---@field barTexture texture
+---@field flashTexture texture
+---@field fadeOutAnimation animationgroup
+---@field fadeInAnimation animationgroup
+---@field flashAnimation animationgroup
+---@field SetUnit fun(self:df_castbar, unit:string?)
+---@field SetDefaultColor fun(self:df_castbar, colorType: caststage_color, red:any, green:number?, blue:number?, alpha:number?)
+---@field UpdateCastColor fun(self:df_castbar) after setting a new color, call this function to update the bar color (while casting or channeling)
+---@field GetCastColor fun(self:df_castbar) return a table with the color values for the current state of the casting process
 
 detailsFramework.CastFrameFunctions = {
 	WidgetType = "castBar",
@@ -807,7 +983,7 @@ detailsFramework.CastFrameFunctions = {
 
 	SetDefaultColor = function(self, colorType, r, g, b, a)
 		assert(type(colorType) == "string", "DetailsFramework: CastBar:SetDefaultColor require a string in the first argument.")
-		self.Colors [colorType]:SetColor (r, g, b, a)
+		self.Colors[colorType]:SetColor(r, g, b, a)
 	end,
 
 	--this get a color suggestion based on the type of cast being shown in the cast bar
@@ -835,7 +1011,7 @@ detailsFramework.CastFrameFunctions = {
 	--update all colors of the cast bar
 	UpdateCastColor = function(self)
 		local castColor = self:GetCastColor()
-		self:SetColor (castColor) --SetColor handles with ParseColors()
+		self:SetColor(castColor) --SetColor handles with ParseColors()
 	end,
 
 	--initial checks to know if this is a valid cast and should show the cast bar, if this fails the cast bar won't show
@@ -869,7 +1045,6 @@ detailsFramework.CastFrameFunctions = {
 
 	--this check if the cast did reach 100% in the statusbar, mostly called from OnTick
 	CheckCastIsDone = function(self, event, isFinished)
-
 		--check max value
 		if (not isFinished and not self.finished) then
 			if (self.casting) then
@@ -894,10 +1069,10 @@ detailsFramework.CastFrameFunctions = {
 		--the cast is finished
 		if (isFinished) then
 			if (self.casting) then
-				self.UNIT_SPELLCAST_STOP (self, self.unit, self.unit, self.castID, self.spellID)
+				self.UNIT_SPELLCAST_STOP(self, self.unit, self.unit, self.castID, self.spellID)
 
 			elseif (self.channeling) then
-				self.UNIT_SPELLCAST_CHANNEL_STOP (self, self.unit, self.unit, self.castID, self.spellID)
+				self.UNIT_SPELLCAST_CHANNEL_STOP(self, self.unit, self.unit, self.castID, self.spellID)
 			end
 
 			return true
@@ -918,12 +1093,12 @@ detailsFramework.CastFrameFunctions = {
 			--register events
 			if (unit) then
 				for _, eventTable in ipairs(self.CastBarEvents) do
-					local event = eventTable [1]
-					local isUnitEvent = eventTable [2]
+					local event = eventTable[1]
+					local isUnitEvent = eventTable[2]
 
 					if event then
 						if (isUnitEvent) then
-							self:RegisterUnitEvent (event, unit)
+							self:RegisterUnitEvent(event, unit)
 						else
 							self:RegisterEvent(event)
 						end
@@ -950,13 +1125,13 @@ detailsFramework.CastFrameFunctions = {
 				self:CancelScheduleToHide()
 
 				--self:PLAYER_ENTERING_WORLD (unit, unit)
-				self:OnEvent ("PLAYER_ENTERING_WORLD", unit, unit)
+				self:OnEvent("PLAYER_ENTERING_WORLD", unit, unit)
 
 			else
 				for _, eventTable in ipairs(self.CastBarEvents) do
-					local event = eventTable [1]
+					local event = eventTable[1]
 					if event then
-						self:UnregisterEvent (event)
+						self:UnregisterEvent(event)
 					end
 				end
 
@@ -1029,7 +1204,7 @@ detailsFramework.CastFrameFunctions = {
 
 		if (self.unit) then
 			if (self.casting) then
-				local name, text, texture, startTime = CastInfo.UnitCastingInfo (self.unit)
+				local name, text, texture, startTime = CastInfo.UnitCastingInfo(self.unit)
 				if (name) then
 					--[[if not self.spellStartTime then
 						self:UpdateCastingInfo(self.unit)
@@ -1040,7 +1215,7 @@ detailsFramework.CastFrameFunctions = {
 				self:RunHooksForWidget("OnShow", self, self.unit)
 
 			elseif (self.channeling) then
-				local name, text, texture, endTime = CastInfo.UnitChannelInfo (self.unit)
+				local name, text, texture, endTime = CastInfo.UnitChannelInfo(self.unit)
 				if (name) then
 					--[[if not self.spellEndTime then
 						self:UpdateChannelInfo(self.unit)
@@ -1141,7 +1316,7 @@ detailsFramework.CastFrameFunctions = {
 
 	OnTick = function(self, deltaTime)
 		if (self.casting) then
-			if (not self:OnTick_Casting (deltaTime)) then
+			if (not self:OnTick_Casting(deltaTime)) then
 				return
 			end
 
@@ -1153,7 +1328,7 @@ detailsFramework.CastFrameFunctions = {
 			end
 
 		elseif (self.channeling) then
-			if (not self:OnTick_Channeling (deltaTime)) then
+			if (not self:OnTick_Channeling(deltaTime)) then
 				return
 			end
 
@@ -1192,7 +1367,7 @@ detailsFramework.CastFrameFunctions = {
 
 	--animation calls
 	Animation_FadeOut = function(self)
-		self:ScheduleToHide (false)
+		self:ScheduleToHide(false)
 
 		if (self.fadeInAnimation:IsPlaying()) then
 			self.fadeInAnimation:Stop()
@@ -1236,8 +1411,8 @@ detailsFramework.CastFrameFunctions = {
 	end,
 
 	PLAYER_ENTERING_WORLD = function(self, unit, arg1)
-		local isChannel = CastInfo.UnitChannelInfo (unit)
-		local isRegularCast = CastInfo.UnitCastingInfo (unit)
+		local isChannel = CastInfo.UnitChannelInfo(unit)
+		local isRegularCast = CastInfo.UnitCastingInfo(unit)
 
 		if (isChannel) then
 			self.channeling = true
@@ -1261,10 +1436,10 @@ detailsFramework.CastFrameFunctions = {
 	end,
 
 	UpdateCastingInfo = function(self, unit)
-		local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, spellID = CastInfo.UnitCastingInfo (unit)
+		local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, spellID = CastInfo.UnitCastingInfo(unit)
 
 		--is valid?
-		if (not self:IsValid (unit, name, isTradeSkill, true)) then
+		if (not self:IsValid(unit, name, isTradeSkill, true)) then
 			return
 		end
 
@@ -1320,13 +1495,10 @@ detailsFramework.CastFrameFunctions = {
 
 		--update the interrupt cast border
 		self:UpdateInterruptState()
-
 	end,
 
 	UNIT_SPELLCAST_START = function(self, unit)
-
 		self:UpdateCastingInfo(unit)
-
 		self:RunHooksForWidget("OnCastStart", self, self.unit, "UNIT_SPELLCAST_START")
 	end,
 
@@ -1352,8 +1524,7 @@ detailsFramework.CastFrameFunctions = {
 			local curDuration = curEndTime - curStartTime
 			local offset = width * curEndTime / (endTime - startTime) * 1000
 			if curDuration > -1 then
-
-				stagePip = self.stagePips[i]
+				local stagePip = self.stagePips[i]
 				if not stagePip then
 					stagePip = self:CreateTexture(nil, "overlay", nil, 2)
 					stagePip:SetBlendMode("ADD")
@@ -1395,7 +1566,6 @@ detailsFramework.CastFrameFunctions = {
 				self.holdAtMaxTime = GetUnitEmpowerHoldAtMaxTime(self.unit)
 				self.empowered = true
 				self.numStages = numStages
-
 
 				local lastStageEndTime = 0
 				for i = 1, numStages do
@@ -1473,9 +1643,7 @@ detailsFramework.CastFrameFunctions = {
 	end,
 
 	UNIT_SPELLCAST_CHANNEL_START = function(self, unit, ...)
-
 		self:UpdateChannelInfo(unit, ...)
-
 		self:RunHooksForWidget("OnCastStart", self, self.unit, "UNIT_SPELLCAST_CHANNEL_START")
 	end,
 
@@ -1613,12 +1781,12 @@ detailsFramework.CastFrameFunctions = {
 			end
 
 			local castColor = self:GetCastColor()
-			self:SetColor (castColor) --SetColor handles with ParseColors()
+			self:SetColor(castColor) --SetColor handles with ParseColors()
 
 			self.percentText:Hide()
 			self.Text:SetText(INTERRUPTED) --auto locale within the global namespace
 
-			self:ScheduleToHide (1)
+			self:ScheduleToHide(1)
 		end
 	end,
 
@@ -1640,7 +1808,7 @@ detailsFramework.CastFrameFunctions = {
 	UNIT_SPELLCAST_CHANNEL_UPDATE = function(self, unit, ...)
 		local name, text, texture, startTime, endTime, isTradeSkill, notInterruptible, spellID, _, numStages = CastInfo.UnitChannelInfo (unit)
 
-		if (not self:IsValid (unit, name, isTradeSkill)) then
+		if (not self:IsValid(unit, name, isTradeSkill)) then
 			return
 		end
 
@@ -1671,13 +1839,17 @@ detailsFramework.CastFrameFunctions = {
 		self:UpdateCastColor()
 		self:UpdateInterruptState()
 	end,
-
 }
 
 detailsFramework:Mixin(detailsFramework.CastFrameFunctions, detailsFramework.ScriptHookMixin)
 
 -- ~castbar
 
+---create a castbar widget
+---@param parent frame
+---@param name string?
+---@param settingsOverride table? a table with key/value pairs to override the default settings
+---@return df_castbar
 function detailsFramework:CreateCastBar(parent, name, settingsOverride)
 	assert(name or parent:GetName(), "DetailsFramework:CreateCastBar parameter 'name' omitted and parent has no name.")
 
@@ -1716,11 +1888,11 @@ function detailsFramework:CreateCastBar(parent, name, settingsOverride)
 			castBar:SetStatusBarTexture(castBar.barTexture)
 
 			--animations fade in and out
-			local fadeOutAnimationHub = detailsFramework:CreateAnimationHub (castBar, detailsFramework.CastFrameFunctions.Animation_FadeOutStarted, detailsFramework.CastFrameFunctions.Animation_FadeOutFinished)
+			local fadeOutAnimationHub = detailsFramework:CreateAnimationHub(castBar, detailsFramework.CastFrameFunctions.Animation_FadeOutStarted, detailsFramework.CastFrameFunctions.Animation_FadeOutFinished)
 			fadeOutAnimationHub.alpha1 = detailsFramework:CreateAnimation(fadeOutAnimationHub, "ALPHA", 1, 1, 1, 0)
 			castBar.fadeOutAnimation = fadeOutAnimationHub
 
-			local fadeInAnimationHub = detailsFramework:CreateAnimationHub (castBar, detailsFramework.CastFrameFunctions.Animation_FadeInStarted, detailsFramework.CastFrameFunctions.Animation_FadeInFinished)
+			local fadeInAnimationHub = detailsFramework:CreateAnimationHub(castBar, detailsFramework.CastFrameFunctions.Animation_FadeInStarted, detailsFramework.CastFrameFunctions.Animation_FadeInFinished)
 			fadeInAnimationHub.alpha1 = detailsFramework:CreateAnimation(fadeInAnimationHub, "ALPHA", 1, 0.150, 0, 1)
 			castBar.fadeInAnimation = fadeInAnimationHub
 
@@ -1733,7 +1905,7 @@ function detailsFramework:CreateCastBar(parent, name, settingsOverride)
 			flashTexture:SetBlendMode("ADD")
 			castBar.flashTexture = flashTexture
 
-			local flashAnimationHub = detailsFramework:CreateAnimationHub (flashTexture, function() flashTexture:Show() end, function() flashTexture:Hide() end)
+			local flashAnimationHub = detailsFramework:CreateAnimationHub(flashTexture, function() flashTexture:Show() end, function() flashTexture:Hide() end)
 			detailsFramework:CreateAnimation(flashAnimationHub, "ALPHA", 1, 0.2, 0, 0.8)
 			detailsFramework:CreateAnimation(flashAnimationHub, "ALPHA", 2, 0.2, 1, 0)
 			castBar.flashAnimation = flashAnimationHub
@@ -1781,6 +1953,7 @@ end
 
 --]=]
 
+
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --unit frame
 
@@ -1788,6 +1961,32 @@ end
 	local isUnitTapDenied = function(unit)
 		return unit and not UnitPlayerControlled(unit) and UnitIsTapDenied(unit)
 	end
+
+	---@class df_unitframesettings : table
+	---@field ClearUnitOnHide boolean true
+	---@field ShowCastBar boolean true
+	---@field ShowPowerBar boolean true
+	---@field ShowUnitName boolean true
+	---@field ShowBorder boolean true
+	---@field CanModifyHealhBarColor boolean true
+	---@field ColorByAggro boolean false
+	---@field FixedHealthColor boolean false
+	---@field UseFriendlyClassColor boolean true
+	---@field UseEnemyClassColor boolean true
+	---@field ShowTargetOverlay boolean true
+	---@field BorderColor table
+	---@field CanTick boolean
+	---@field Width number
+	---@field Height number
+	---@field PowerBarHeight number
+	---@field CastBarHeight number
+
+	---@class df_unitframemixin
+	---@field WidgetType string
+	---@field Settings df_unitframesettings
+	---@field SetHealthBarColor fun(self:df_unitframe, r:number, g:number?, b:number?, a:number?)
+	---@field SetUnit fun(self:df_unitframe, unit:string?) sets the unit to be shown in the unit frame
+	---@field OnTick fun(self:df_unitframe, deltaTime:number?) if CanTick is true, this function will be called every frame
 
 	detailsFramework.UnitFrameFunctions = {
 		WidgetType = "unitFrame",
@@ -1809,7 +2008,7 @@ end
 
 			--misc
 			ShowTargetOverlay = true, --shows a highlighht for the player current target
-			BorderColor = detailsFramework:CreateColorTable (0, 0, 0, 1), --border color, set to alpha zero for no border
+			BorderColor = detailsFramework:CreateColorTable(0, 0, 0, 1), --border color, set to alpha zero for no border
 			CanTick = false, --if true it'll run the OnTick event
 
 			--size
@@ -1846,9 +2045,9 @@ end
 		},
 
 		Initialize = function(self)
-			self.border:SetBorderColor (self.Settings.BorderColor)
+			self.border:SetBorderColor(self.Settings.BorderColor)
 
-			PixelUtil.SetWidth (self, self.Settings.Width, 1)
+			PixelUtil.SetWidth(self, self.Settings.Width, 1)
 			PixelUtil.SetHeight(self, self.Settings.Height, 1)
 
 			PixelUtil.SetPoint(self.powerBar, "bottomleft", self, "bottomleft", 0, 0, 1, 1)
@@ -1862,7 +2061,7 @@ end
 		end,
 
 		SetHealthBarColor = function(self, r, g, b, a)
-			self.healthBar:SetColor (r, g, b, a)
+			self.healthBar:SetColor(r, g, b, a)
 		end,
 
 		--register all events which will be used by the unit frame
@@ -1895,7 +2094,7 @@ end
 		UnregisterEvents = function(self)
 			for index, eventTable in ipairs(self.UnitFrameEvents) do
 				local event, firstUnit, secondUnit = unpack(eventTable)
-				self:UnregisterEvent (event)
+				self:UnregisterEvent(event)
 			end
 
 			self:SetScript("OnEvent", nil)
@@ -1909,17 +2108,17 @@ end
 		--when an event happen for this unit, send it to the apropriate function
 		OnEvent = function(self, event, ...)
 			--run the function for this event
-			local eventFunc = self [event]
+			local eventFunc = self[event]
 			if (eventFunc) then
 				--is this event an unit event?
-				if (self.IsUnitEvent [event]) then
+				if (self.IsUnitEvent[event]) then
 					local unit = ...
 					--check if is for this unit (even if the event is registered only for the unit)
 					if (unit == self.unit or unit == self.displayedUnit) then
-						eventFunc (self, ...)
+						eventFunc(self, ...)
 					end
 				else
-					eventFunc (self, ...)
+					eventFunc(self, ...)
 				end
 			end
 		end,
@@ -2033,7 +2232,7 @@ end
 					r, g, b = detailsFramework:ParseColors(r)
 				end
 
-				self:SetHealthBarColor (r, g, b)
+				self:SetHealthBarColor(r, g, b)
 				return
 			end
 
@@ -2041,15 +2240,15 @@ end
 			if (self.Settings.FixedHealthColor) then
 				local FixedHealthColor = self.Settings.FixedHealthColor
 				r, g, b = FixedHealthColor.r, FixedHealthColor.g, FixedHealthColor.b
-				self:SetHealthBarColor (r, g, b)
+				self:SetHealthBarColor(r, g, b)
 				return
 			end
 
 			--check if the unit is a player
-			if (UnitIsPlayer (unit)) then
+			if (UnitIsPlayer(unit)) then
 				--check if the unit is disconnected (in case it is a player
-				if (not UnitIsConnected (unit)) then
-					self:SetHealthBarColor (.5, .5, .5)
+				if (not UnitIsConnected(unit)) then
+					self:SetHealthBarColor(.5, .5, .5)
 					return
 				end
 
@@ -2058,50 +2257,50 @@ end
 					if (self.Settings.UseFriendlyClassColor) then
 						local _, className = UnitClass(unit)
 						if (className) then
-							local classColor = RAID_CLASS_COLORS [className]
+							local classColor = RAID_CLASS_COLORS[className]
 							if (classColor) then
-								self:SetHealthBarColor (classColor.r, classColor.g, classColor.b)
+								self:SetHealthBarColor(classColor.r, classColor.g, classColor.b)
 								return
 							end
 						end
 					else
-						self:SetHealthBarColor (0, 1, 0)
+						self:SetHealthBarColor(0, 1, 0)
 						return
 					end
 				else
 					if (self.Settings.UseEnemyClassColor) then
 						local _, className = UnitClass(unit)
 						if (className) then
-							local classColor = RAID_CLASS_COLORS [className]
+							local classColor = RAID_CLASS_COLORS[className]
 							if (classColor) then
-								self:SetHealthBarColor (classColor.r, classColor.g, classColor.b)
+								self:SetHealthBarColor(classColor.r, classColor.g, classColor.b)
 								return
 							end
 						end
 					else
-						self:SetHealthBarColor (1, 0, 0)
+						self:SetHealthBarColor(1, 0, 0)
 						return
 					end
 				end
 			end
 
 			--is tapped?
-			if (isUnitTapDenied (unit)) then
-				self:SetHealthBarColor (.6, .6, .6)
+			if (isUnitTapDenied(unit)) then
+				self:SetHealthBarColor(.6, .6, .6)
 				return
 			end
 
 			--is this is a npc attacking the player?
 			if (self.Settings.ColorByAggro) then
-				local _, threatStatus = UnitDetailedThreatSituation ("player", unit)
+				local _, threatStatus = UnitDetailedThreatSituation("player", unit)
 				if (threatStatus) then
-					self:SetHealthBarColor (1, 0, 0)
+					self:SetHealthBarColor(1, 0, 0)
 					return
 				end
 			end
 
 			-- get the regular color by selection
-			r, g, b = UnitSelectionColor (unit)
+			r, g, b = UnitSelectionColor(unit)
 			self:SetHealthBarColor (r, g, b)
 		end,
 
@@ -2112,7 +2311,7 @@ end
 			end
 
 			--unit name without realm names by default
-			local name = UnitName (self.unit)
+			local name = UnitName(self.unit)
 			self.unitName:SetText(name)
 			self.unitName:Show()
 		end,
@@ -2206,15 +2405,41 @@ end
 				self:UpdateUnitFrame()
 			end
 		end,
+
 		PARTY_MEMBER_ENABLE = function(self, ...)
-			if (UnitIsConnected (self.unit)) then
+			if (UnitIsConnected(self.unit)) then
 				self:UpdateName()
 			end
 		end,
 	}
 
--- ~unitframe
+---@class df_unitframe : button, df_unitframemixin
+---@field unit string
+---@field displayedUnit string
+---@field guid guid
+---@field class class
+---@field name actorname
+---@field unitInVehicle boolean
+---@field border frame
+---@field overlayFrame frame
+---@field unitName fontstring
+---@field healthBar df_healthbar
+---@field castBar df_castbar
+---@field powerBar df_powerbar
+---@field targetOverlay texture
+---@field Settings df_unitframesettings
+
 local globalBaseFrameLevel = 1 -- to be increased + used across each new plate
+
+-- ~unitframe
+---create a unit frame with a health bar, cast bar and power bar
+---@param parent frame
+---@param name string?
+---@param unitFrameSettingsOverride table?
+---@param healthBarSettingsOverride table?
+---@param castBarSettingsOverride table?
+---@param powerBarSettingsOverride table?
+---@return df_unitframe
 function detailsFramework:CreateUnitFrame(parent, name, unitFrameSettingsOverride, healthBarSettingsOverride, castBarSettingsOverride, powerBarSettingsOverride)
 	local parentName = name or ("DetailsFrameworkUnitFrame" .. tostring(math.random(1, 100000000)))
 
@@ -2224,22 +2449,22 @@ function detailsFramework:CreateUnitFrame(parent, name, unitFrameSettingsOverrid
 	--base level
 	--local baseFrameLevel = f:GetFrameLevel()
 	local baseFrameLevel = globalBaseFrameLevel
-	globalBaseFrameLevel = globalBaseFrameLevel + 50
+	globalBaseFrameLevel = globalBaseFrameLevel + 10
 
 	mewUnitFrame:SetFrameLevel(baseFrameLevel)
 
 	--create the healthBar
-	local healthBar = detailsFramework:CreateHealthBar(mewUnitFrame, false, healthBarSettingsOverride)
+	local healthBar = detailsFramework:CreateHealthBar(mewUnitFrame, nil, healthBarSettingsOverride)
 	healthBar:SetFrameLevel(baseFrameLevel + 1)
 	mewUnitFrame.healthBar = healthBar
 
 	--create the power bar
-	local powerBar = detailsFramework:CreatePowerBar(mewUnitFrame, false, powerBarSettingsOverride)
+	local powerBar = detailsFramework:CreatePowerBar(mewUnitFrame, nil, powerBarSettingsOverride)
 	powerBar:SetFrameLevel(baseFrameLevel + 2)
 	mewUnitFrame.powerBar = powerBar
 
 	--create the castBar
-	local castBar = detailsFramework:CreateCastBar(mewUnitFrame, false, castBarSettingsOverride)
+	local castBar = detailsFramework:CreateCastBar(mewUnitFrame, nil, castBarSettingsOverride)
 	castBar:SetFrameLevel(baseFrameLevel + 3)
 	mewUnitFrame.castBar = castBar
 
