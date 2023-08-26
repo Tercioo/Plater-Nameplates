@@ -233,8 +233,8 @@ end
 
 ---return the role of the unit, this is safe to use for all versions of wow
 ---@param unitId string
----@param bUseSupport boolean
----@param specId number
+---@param bUseSupport boolean?
+---@param specId number?
 ---@return string
 function DF.UnitGroupRolesAssigned(unitId, bUseSupport, specId)
 	if (not DF.IsTimewalkWoW()) then --Was function exist check. TBC has function, returns NONE. -Flamanis 5/16/2022

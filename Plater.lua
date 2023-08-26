@@ -369,6 +369,7 @@ Plater.HookScripts = { --private
 	"Player Logon",
 	"Receive Comm Message",
 	"Send Comm Message",
+	"Option Changed",
 }
 
 Plater.HookScriptsDesc = { --private
@@ -400,6 +401,7 @@ Plater.HookScriptsDesc = { --private
 	["Player Logon"] = "Run when the player login into the game.\n\nUse to register textures, indicators, etc.\n\n|cFF44FF44Do not run on nameplates,\nrun only once after login\nor /reload|r.",
 	["Receive Comm Message"] = "Executed when a comm is received, a comm can be sent using Plater.SendComm(payload) in 'Send Comm Message' hook.",
 	["Send Comm Message"] = "Executed on an internal timer for each mod. Used to send comm data via Plater.SendComm(payload).",
+	["Option Changed"] = "Executed when a option in the options panel has changed",
 }
 
 -- ~hook (hook scripts are cached in the indexed part of these tales, for performance the member ScriptAmount caches the amount of scripts inside the indexed table)
@@ -426,6 +428,7 @@ local HOOK_MOD_INITIALIZATION = {ScriptAmount = 0}
 local HOOK_MOD_DEINITIALIZATION = {ScriptAmount = 0}
 local HOOK_COMM_RECEIVED_MESSAGE = {ScriptAmount = 0}
 local HOOK_COMM_SEND_MESSAGE = {ScriptAmount = 0}
+local HOOK_OPTION_CHANGED = {ScriptAmount = 0}
 local HOOK_NAMEPLATE_DESTRUCTOR = {ScriptAmount = 0}
 
 local PLATER_GLOBAL_MOD_ENV = {}  -- contains modEnv for each mod, identified by "<mod name>"
@@ -2718,6 +2721,7 @@ Plater.AnchorNamesByPhraseId = {
 			end
 		end	
 	end
+
 	function Plater.ScheduleZoneChangeHook()
 		if (Plater.ScheduledZoneChangeTriggerHook) then
 			Plater.ScheduledZoneChangeTriggerHook:Cancel()
@@ -2729,6 +2733,13 @@ Plater.AnchorNamesByPhraseId = {
 		for i = 1, HOOK_LOAD_SCREEN.ScriptAmount do
 			local hookInfo = HOOK_LOAD_SCREEN [i]
 			Plater.ScriptMetaFunctions.ScriptRunNoAttach (hookInfo, "Load Screen")
+		end
+	end
+
+	function platerInternal.OnOptionChanged()
+		for i = 1, HOOK_OPTION_CHANGED.ScriptAmount do
+			local hookInfo = HOOK_OPTION_CHANGED[i]
+			Plater.ScriptMetaFunctions.ScriptRunNoAttach(hookInfo, "Option Changed")
 		end
 	end
 	
@@ -12147,6 +12158,7 @@ end
 		HOOK_MOD_INITIALIZATION,
 		HOOK_COMM_RECEIVED_MESSAGE,
 		HOOK_COMM_SEND_MESSAGE,
+		HOOK_OPTION_CHANGED,
 		HOOK_NAMEPLATE_DESTRUCTOR,
 	}
 
@@ -12211,6 +12223,8 @@ end
 			return HOOK_COMM_RECEIVED_MESSAGE
 		elseif (hookName == "Send Comm Message") then
 			return HOOK_COMM_SEND_MESSAGE
+		elseif (hookName == "Option Changed") then
+			return HOOK_OPTION_CHANGED
 		elseif (hookName == "Destructor") then
 			return HOOK_NAMEPLATE_DESTRUCTOR
 		else

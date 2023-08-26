@@ -270,6 +270,9 @@ function Plater.OpenOptionsPanel()
 		Plater.IncreaseRefreshID()
 		Plater.RefreshDBUpvalues()
 		Plater.UpdateAllPlates()
+
+		--trigger the event "Options Changed" for mods
+		platerInternal.OnOptionChanged()
 	end
 
 	--make the tab button's text be aligned to left and fit the button's area
