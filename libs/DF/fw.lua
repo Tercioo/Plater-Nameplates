@@ -1,6 +1,6 @@
 
 
-local dversion = 460
+local dversion = 463
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary(major, minor)
 
@@ -2762,6 +2762,7 @@ end
 
 				elseif (widgetTable.type == "textentry") then
 					local textentry = DF:CreateTextEntry(parent, widgetTable.func or widgetTable.set, 120, 18, nil, "$parentWidget" .. index, nil, buttonTemplate)
+					textentry.align = widgetTable.align or "center"
 
 					local descPhraseId = getDescripttionPhraseID(widgetTable, languageAddonId, languageTable)
 					DetailsFramework.Language.RegisterTableKeyWithDefault(languageAddonId, textentry, "have_tooltip", descPhraseId, widgetTable.desc)

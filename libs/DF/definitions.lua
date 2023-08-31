@@ -21,6 +21,7 @@
 ---@field GetDefaultBackdropColor fun(self:table) : red, green, blue, alpha return the standard backdrop color used by blizzard on their own frames
 ---@field Msg fun(self:table, message:string, ...) show a message in the chat frame
 ---@field MsgWarning fun(self:table, message:string, ...) show a warning message in the chat frame
+---@field CreateButton fun(self:table, parent:frame, func:function, width:number, height:number, text:string?, param1:any, param2:any, texture:atlasname|texturepath|textureid|nil, member:string?, name:string?, shortMethod:any, buttonTemplate:table?, textTemplate:table?) : df_button
 ---@field CreateCloseButton fun(self:table, parent:frame, frameName:string?) : df_closebutton
 ---@field CreateTabButton fun(self:table, parent:frame, frameName:string?) : df_tabbutton
 ---@field CreateRoundedPanel fun(self:table, parent:frame, frameName:string?, optionsTable:df_roundedpanel_options?) : df_roundedpanel

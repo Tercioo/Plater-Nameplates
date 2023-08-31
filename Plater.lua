@@ -140,6 +140,7 @@ platerInternal.Frames = {}
 platerInternal.Data = {}
 platerInternal.Date = {}
 platerInternal.Logs = {}
+platerInternal.Audio = {}
 
 function platerInternal.Date.GetDateForLogs()
 	return date("%Y-%m-%d %H:%M:%S")
@@ -5605,26 +5606,6 @@ function Plater.OnInit() --private --~oninit ~init
 					--spell color
 					self.castColorTexture:Hide()
 
-					--play audio cue
-					local audioCue = profile.cast_audiocues[self.spellID]
-					if (audioCue) then
-						if (platerInternal.LatestHandleForAudioPlayed) then
-							StopSound(platerInternal.LatestHandleForAudioPlayed, 0.5)
-						end
-						local validChannels = {
-							["Master"] = "Master",
-							["Music"] = "Music",
-							["SFX"] = "SFX",
-							["Ambience"] = "Ambience",
-							["Dialog"] = "Dialog",
-						}
-						local channel = validChannels[profile.cast_audiocues_channel or "Master"] or "Master"
-						local willPlay, soundHandle = PlaySoundFile(audioCue, channel)
-						if (willPlay) then
-							platerInternal.LatestHandleForAudioPlayed = soundHandle
-						end
-					end
-
 					--cast color (from options tab Cast Colors)
 					local castColors = profile.cast_colors
 					local customColor = castColors[self.spellID]
@@ -9761,9 +9742,12 @@ end
 					end
 				end
 			end
+
 			if (spellName) then
 				Plater.LastCombat.spellNames[spellName] = true
 			end
+
+			platerInternal.Audio.PlaySoundForCastStart(spellID)
 		end,
 
 		SPELL_AURA_APPLIED = function (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical)

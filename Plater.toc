@@ -65,6 +65,7 @@ Plater_Docs.lua
 Plater_BossModsSupport.lua
 Plater_Animations.lua
 Plater_CastColorPanels.lua
+Plater_Audio.lua
 Plater_Profiling.lua
 Plater_Plugins.lua
 Plater_DebugFrames.lua
