@@ -24,6 +24,7 @@ local dropdownStatusBarColor = platerInternal.Defaults.dropdownStatusBarColor
 
 local colorNoValue = {1, 1, 1, 0.5}
 local dropdownIconColor = {1, 1, 1, .6}
+local scrollRefreshCallback
 
 local DB_CAST_COLORS
 local DB_CAST_AUDIOCUES
@@ -166,16 +167,16 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
     --header
     local headerTable = {
-        {text = "Enabled", width = 40},
-        {text = "Icon", width = 32},
-        {text = "Spell Id", width = 50},
-        {text = "Spell Name", width = 140},
-        {text = "Rename To", width = 110},
-        {text = "Npc Name", width = 110},
-        {text = "Send To Raid", width = 110},
-        {text = "Play Sound", width = 110},
-        {text = "Color", width = 110},
-        {text = "Add Animation", width = 270},
+        {text = "Enabled", width = 40}, --1
+        {text = "Icon", width = 32}, --2
+        {text = "Spell Id", width = 50}, --3
+        {text = "Spell Name", width = 140}, --4
+        {text = "Rename To", width = 110}, --5
+        {text = "Npc Name", width = 110}, --6
+        {text = "Send To Raid", width = 95}, --7
+        {text = "Play Sound", width = 110}, --8
+        {text = "Color", width = 110}, --9
+        {text = "Add Animation", width = 270}, --10
     }
 
     local headerOptions = {
@@ -644,11 +645,11 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
     local castBarPreviewTexture = [[Interface\AddOns\Plater\Images\cast_bar_scripts_preview]]
     local eachCastBarButtonHeight = PlaterOptionsPanelContainerCastColorManagementColorFrameScriptPreviewPanel:GetHeight() / #platerInternal.Scripts.DefaultCastScripts
-    
+
     local scriptsToShow = {}
     for i = 1, #platerInternal.Scripts.DefaultCastScripts do
         local scriptName = platerInternal.Scripts.DefaultCastScripts[i]
-        
+
         local scriptObject = platerInternal.Scripts.GetScriptObjectByName(scriptName)
         if (scriptObject) then
             scriptsToShow[#scriptsToShow + 1] = scriptName
@@ -657,7 +658,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
     for i = 1, #scriptsToShow do
         local scriptName = scriptsToShow[i]
-        
+
         local scriptObject = platerInternal.Scripts.GetScriptObjectByName(scriptName)
         if (scriptObject) then
 
@@ -757,7 +758,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                     castFrame.RefreshScroll()
                 end
             end)
-            
+
         end
     end
 
@@ -879,7 +880,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         --this should check if there's a any script running on any nameplate
         --technically this function shouldn't exists as all the functions above should clean up the
         --preview spellId from the trigger as it leave the preview button
-        --if the user press escape, it will call this and might remove the trigger while the 
+        --if the user press escape, it will call this and might remove the trigger while the
         --animation is still ongoing and cause the OnUpdate and OnHide scripts not triiger
         --thica cause issue of not hidding parts of the script animation
 
@@ -1289,9 +1290,22 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         GameCooltip:Show()
     end
 
+    local audioUpdateScheduled = {}
+    --local lastScrollRefreshTime = GetTime()
+    --local scrollRefreshSchedule
+
+    local updateAudioSelector = function(line, selectedAudioCue)
+        if (selectedAudioCue)then
+            --this spell has an audio cue
+            line.SelectAudioDropdown:Select(selectedAudioCue)
+        else
+            line.SelectAudioDropdown:Select(1, true)
+        end
+    end
+
     --refresh scroll
     local IsSearchingFor
-    local scroll_refresh = function (self, data, offset, totalLines)
+    scrollRefreshCallback = function (self, data, offset, totalLines)
         local dataInOrder = {}
 
         if (IsSearchingFor and IsSearchingFor ~= "") then
@@ -1424,16 +1438,14 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                     line.SelectAudioDropdown.spellId = spellId
                     line.SelectAudioDropdown:SetFixedParameter(spellId)
                     local selectedAudioCue = DB_CAST_AUDIOCUES[spellId]
-                    if (selectedAudioCue)then
-                        --this spell has an audio cue
-                        line.SelectAudioDropdown:Select(selectedAudioCue)
-                    else
-                        line.SelectAudioDropdown:Select(1, true)
+
+                    if (audioUpdateScheduled[line] and not audioUpdateScheduled[line]:IsCancelled()) then
+                        audioUpdateScheduled[line]:Cancel()
                     end
+                    audioUpdateScheduled[line] = DF.Schedules.NewTimer(0.085, updateAudioSelector, line, selectedAudioCue)
 
                     line.sendToRaidButton.spellId = spellId
                     line.sendToRaidButton:SetClickFunction(onSendToRaidButtonClicked, spellId)
-
                     line.spellRenameEntry.spellId = spellId
 
                     line.spellIconTexture:SetTexture(spellIcon)
@@ -1476,10 +1488,15 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
     end
 
     --create scroll
-    local spells_scroll = DF:CreateScrollBox (castFrame, "$parentColorsScroll", scroll_refresh, {}, scroll_width, scroll_height, scroll_lines, scroll_line_height)
-    DF:ReskinSlider (spells_scroll)
+    local spells_scroll = DF:CreateScrollBox (castFrame, "$parentColorsScroll", scrollRefreshCallback, {}, scroll_width, scroll_height, scroll_lines, scroll_line_height)
+    DF:ReskinSlider(spells_scroll)
     spells_scroll:SetPoint ("topleft", castFrame, "topleft", 5, scrollY)
     castFrame.spellsScroll = spells_scroll
+
+    spells_scroll.ScrollBar:SetPoint("TOPLEFT", spells_scroll, "TOPRIGHT", -236, -18)
+    spells_scroll.ScrollBar:SetPoint("BOTTOMLEFT", spells_scroll, "BOTTOMRIGHT", -236, 36)
+    spells_scroll.ScrollBar:SetFrameLevel(spells_scroll:GetFrameLevel()+10)
+    spells_scroll.ScrollBar.ThumbTexture:SetSize(14, 16)
 
     spells_scroll:SetScript("OnShow", function(self)
         if (self.LastRefresh and self.LastRefresh+0.5 > GetTime()) then
@@ -1530,7 +1547,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                 addedSpells[spellId] = true
             end
         end
-        
+
         -- add SPELLS as well, if not yet added.
         for spellId, spellTable in pairs(DB_CAPTURED_SPELLS) do
             local spellName, _, spellIcon, castTime = GetSpellInfo(spellId)
@@ -1695,7 +1712,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                                 DB_CAST_COLORS[spellId][CONST_INDEX_COLOR] = color
                                 DB_CAST_COLORS[spellId][CONST_INDEX_ENABLED] = true
                                 DB_CAST_COLORS[spellId][CONST_INDEX_NAME] = customSpellName
-                                
+
                                 DB_CAST_AUDIOCUES[spellId] = audioCue
 
                                 --add into the discoreved spell cache
