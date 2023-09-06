@@ -701,6 +701,62 @@ function getAllShownGUIDs()
 	return guids
 end
 
+function Plater.PauseBarIcon(name)
+	if not name then return end
+	local curTime = GetTime()
+	
+	for id,entry in pairs(Plater.BossModsTimeBarDBM) do
+		if entry.msg == name then
+			--print("yes", entry.paused, id)
+			if not entry.paused then
+				entry.paused = true
+				entry.pauseStartTime = curTime
+				--UNIT_BOSS_MOD_BARS [entry.guid][id].paused = true
+				--UNIT_BOSS_MOD_BARS [entry.guid][id].pauseStartTime = curTime
+			else
+				entry.paused = false
+				entry.start = entry.start + (curTime - entry.pauseStartTime)
+				entry.pauseStartTime = entry.start
+				--UNIT_BOSS_MOD_BARS [entry.guid][id].paused = false
+				--UNIT_BOSS_MOD_BARS [entry.guid][id].start = entry.start + (curTime - entry.pauseStartTime)
+				--UNIT_BOSS_MOD_BARS [entry.guid][id].pauseStartTime = entry.start
+			end
+			--print(name, entry.msg, entry.msg == name, entry.guid)
+			UNIT_BOSS_MOD_NEEDS_UPDATE_IN[entry.guid] = -1
+		end
+	end
+end
+function Plater.UpdateBarIcon(name, elapsed, totalTime)
+	if not name then return end
+	local curTime = GetTime()
+	
+	for id,entry in pairs(Plater.BossModsTimeBarDBM) do
+		if entry.msg == name then
+			entry.timer = totalTime
+			entry.start = curTime - elapsed
+			if entry.paused then
+				entry.pauseStartTime = curTime
+			end
+			
+			--print(name, entry.msg, entry.msg == name, entry.guid)
+			UNIT_BOSS_MOD_NEEDS_UPDATE_IN[entry.guid] = -1
+		end
+	end
+end
+function Plater.KeepBarIcon(name)
+	if not name then return end
+	
+	for id,entry in pairs(Plater.BossModsTimeBarDBM) do
+		if entry.msg == name then
+			entry.keep = not entry.keep
+			
+			--print(name, entry.msg, entry.msg == name, entry.guid)
+			UNIT_BOSS_MOD_NEEDS_UPDATE_IN[entry.guid] = -1
+		end
+	end
+end
+
+
 function Plater.RegisterBossModsBars()
 	local DBM = _G.DBM
 	local BigWigsLoader = _G.BigWigsLoader
