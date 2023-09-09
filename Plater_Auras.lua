@@ -1278,7 +1278,7 @@ end
 	local function AuraIconOnTick_UpdateCooldown (self, deltaTime)
 		local now = GetTime()
 		if (self.lastUpdateCooldown + 0.05) <= now then
-			self.RemainingTime = self.ExpirationTime - now
+			self.RemainingTime = (self.ExpirationTime - now) / (self.ModRate or 1)
 			if self.RemainingTime > 0 then
 				if self.formatWithDecimals then
 					self.Cooldown.Timer:SetText (Plater.FormatTimeDecimal (self.RemainingTime))
