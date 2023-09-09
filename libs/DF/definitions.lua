@@ -44,7 +44,7 @@
 ---@field CommaValue fun(self:table, value:number) : string convert a number to a string with commas, e.g. 1000000 -> 1,000,000
 ---@field SplitTextInLines fun(self:table, text:string) : string[] split a text into lines
 ---@field UnitGroupRolesAssigned fun(unitId: unit, bUseSupport:boolean, specId: specializationid) : string there's no self here
----@field 
+---@field SetAnchor fun(self:table, widget:uiobject, anchorTable:df_anchor, anchorTo:uiobject)
 ---@field 
 ---@field 
 ---@field 
