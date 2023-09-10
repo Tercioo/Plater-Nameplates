@@ -8,10 +8,13 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 			
-			{1692562862,  "Bug Fix", "August 31st, 2023", "Fixing Audi Cues not playing when nameplate was off screen.", "Terciob"},
-			{1692562862,  "Bug Fix", "August 31st, 2023", "Fixing mouse scroll lag on Cast Colors an Names tab.", "Terciob"},
-			{1692562862,  "Bug Fix", "August 27th, 2023", "Fixing code template for 'Options Changed' hook.", "cont1nuity"},
-			{1692562862,  "New Feature", "August 27th, 2023", "Adding 'Options Changed' hook for mods.", "Terciob"},
+			{1694324682,  "Bug Fix", "September 10th, 2023", "BugFix on Lib Update.", "cont1nuity"},
+			{1694324682,  "Backend Change", "September 10th, 2023", "Library updates.", "Terciob"},
+			{1694324682,  "Bug Fix", "September 9th, 2023", "Properly account for timeMod on aura timers.", "weswigham"},
+			{1694324682,  "Bug Fix", "August 31st, 2023", "Fixing Audi Cues not playing when nameplate was off screen.", "Terciob"},
+			{1694324682,  "Bug Fix", "August 31st, 2023", "Fixing mouse scroll lag on Cast Colors an Names tab.", "Terciob"},
+			{1694324682,  "Bug Fix", "August 27th, 2023", "Fixing code template for 'Options Changed' hook.", "cont1nuity"},
+			{1694324682,  "New Feature", "August 27th, 2023", "Adding 'Options Changed' hook for mods.", "Terciob"},
 			
 			{1692562862,  "Bug Fix", "August 20th, 2023", "Fixing profile imports not adding renamed NPCs properly.", "cont1nuity"},
 			{1692562862,  "New Feature", "August 20th, 2023", "NPC Colors tab can now be searched by npcID as well.", "cont1nuity"},
