@@ -370,6 +370,7 @@ detailsFramework.IconMixin = {
 			iconFrame.canStealOrPurge = canStealOrPurge
 			iconFrame.isBuff = isBuff
 			iconFrame.spellName = spellName
+			iconFrame.modRate = modRate
 
 			iconFrame.identifierKey = nil -- only used for "specific" add/remove
 
@@ -623,6 +624,7 @@ detailsFramework.IconMixin = {
 			iconFrame.canStealOrPurge = canStealOrPurge
 			iconFrame.isBuff = isBuff
 			iconFrame.spellName = spellName
+			iconFrame.modRate = modRate
 
 			if (startTime and duration and duration > 0) then
 				local endTime = startTime + duration
@@ -673,13 +675,13 @@ detailsFramework.IconMixin = {
 	---@param iconFrame df_icon
 	OnIconSimpleTick = function(iconFrame)
 		local now = GetTime()
-		local percent = (now - iconFrame.startTime) / iconFrame.duration
+		local percent = ((now - iconFrame.startTime) / (iconFrame.modRate or 1)) / (iconFrame.duration / (iconFrame.modRate or 1))
 		--percent = abs(percent - 1)
 
 		local newHeight = math.min(iconFrame.textureHeight * percent, iconFrame.textureHeight)
 		iconFrame.SimpleCooldownTexture:SetHeight(newHeight)
 
-		iconFrame.SimpleCountdownText:SetText(iconFrame.parentIconRow.FormatCooldownTime(iconFrame.duration - (now - iconFrame.startTime)))
+		iconFrame.SimpleCountdownText:SetText(iconFrame.parentIconRow.FormatCooldownTime((iconFrame.duration - (now - iconFrame.startTime)) / (iconFrame.modRate or 1)))
 		--self.SimpleCountdownText:Show()
 	end,
 
@@ -688,7 +690,7 @@ detailsFramework.IconMixin = {
 	OnIconTick = function(self, deltaTime)
 		local now = GetTime()
 		if (self.lastUpdateCooldown + 0.05) <= now then
-			self.timeRemaining = self.expirationTime - now
+			self.timeRemaining = (self.expirationTime - now) / (self.modRate or 1)
 			if self.timeRemaining > 0 then
 				if self.parentIconRow.options.decimal_timer then
 					self.CountdownText:SetText(self.parentIconRow.FormatCooldownTimeDecimal(self.timeRemaining))
@@ -797,12 +799,7 @@ detailsFramework.IconMixin = {
 			end
 		end
 
-		--if there's nothing to show, no need to align
-		if (iconsActive == 0) then
-			self:Hide()
-		else
-			self:AlignAuraIcons()
-		end
+		self:AlignAuraIcons() -- this is needed in any case, to ensure updated 'self.NextIcon'
 	end,
 
 	---@param self df_iconrow the parent frame
@@ -861,6 +858,10 @@ detailsFramework.IconMixin = {
 			end
 
 			self.shownAmount = shownAmount
+		end
+		
+		if countStillShown > 0 then
+			self:Show()
 		end
 
 		self.NextIcon = countStillShown + 1
