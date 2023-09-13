@@ -7,7 +7,8 @@ local _
 function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
-			
+			{1694324682,  "Frontend Change", "September 13th, 2023", "Added a search box at the 'General Settings' tab.", "Terciob"},
+
 			{1694324682,  "Bug Fix", "September 10th, 2023", "BugFix on Lib Update.", "cont1nuity"},
 			{1694324682,  "Backend Change", "September 10th, 2023", "Library updates.", "Terciob"},
 			{1694324682,  "Bug Fix", "September 9th, 2023", "Properly account for timeMod on aura timers.", "weswigham"},

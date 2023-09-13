@@ -7,10 +7,10 @@ end
 
 ---@class df_icongeneric : table, df_icon
 ---@field expirationTime number
----@field blendTexture texture
+---@field CooldownBrightnessTexture texture
 ---@field CooldownTexture texture
 ---@field CountdownText fontstring
----@field CooldownSwipe texture
+---@field CooldownEdge texture
 ---@field options table
 
 local unpack = unpack
@@ -44,11 +44,11 @@ detailsFramework.IconGenericMixin = {
         PixelUtil.SetPoint(newIcon.Texture, "bottomright", newIcon, "bottomright", -1, 1)
 
 		---@type texture
-        newIcon.blendTexture = newIcon:CreateTexture(nil, "artwork", nil, 2)
-		newIcon.blendTexture:SetBlendMode("ADD")
-		newIcon.blendTexture:SetAlpha(1)
-        PixelUtil.SetPoint(newIcon.blendTexture, "topleft", newIcon, "topleft", 0, 0)
-        PixelUtil.SetPoint(newIcon.blendTexture, "bottomright", newIcon, "bottomright", 0, 0)
+        newIcon.CooldownBrightnessTexture = newIcon:CreateTexture(nil, "artwork", nil, 2)
+		newIcon.CooldownBrightnessTexture:SetBlendMode("ADD")
+		newIcon.CooldownBrightnessTexture:SetAlpha(1)
+        PixelUtil.SetPoint(newIcon.CooldownBrightnessTexture, "topleft", newIcon, "topleft", 0, 0)
+        PixelUtil.SetPoint(newIcon.CooldownBrightnessTexture, "bottomright", newIcon, "bottomright", 0, 0)
 
 		---@type texture
         newIcon.Border = newIcon:CreateTexture(nil, "background")
@@ -71,13 +71,13 @@ detailsFramework.IconGenericMixin = {
 
         --create a overlay texture which will indicate the cooldown time
         newIcon.CooldownTexture = newIcon:CreateTexture(self:GetName() .. "CooldownTexture", "overlay", nil, 6)
-        newIcon.CooldownTexture:SetTexture([[Interface\Azerite\AzeriteTooltipBackground]], "CLAMP", "CLAMP", "NEAREST")
+        newIcon.CooldownTexture:SetColorTexture(1, 1, 1, 1)
         newIcon.CooldownTexture:SetPoint("bottomleft", newIcon.Texture, "bottomleft", 0, 0)
         newIcon.CooldownTexture:SetPoint("bottomright", newIcon.Texture, "bottomright", 0, 0)
         newIcon.CooldownTexture:SetHeight(1)
         newIcon.CooldownTexture:Hide()
 
-		newIcon.CooldownSwipe = newIcon:CreateTexture(self:GetName() .. "CooldownSwipe", "overlay", nil, 7)
+		newIcon.CooldownEdge = newIcon:CreateTexture(self:GetName() .. "CooldownEdge", "overlay", nil, 7)
 
         newIcon.CountdownText = newIcon:CreateFontString(self:GetName() .. "CooldownText", "overlay", "GameFontNormal")
         newIcon.CountdownText:SetPoint("center", newIcon, "center", 0, 0)
@@ -257,7 +257,8 @@ detailsFramework.IconGenericMixin = {
 				end
 
 				iconFrame.Texture.texture = spellIcon
-			else
+
+			elseif (not iconSettings.coords) then
 				if (self.options.texcoord ~= iconFrame.currentCoords) then
 					iconFrame.Texture:SetTexCoord(unpack(self.options.texcoord))
 					iconFrame.currentCoords = self.options.texcoord
@@ -315,16 +316,16 @@ detailsFramework.IconGenericMixin = {
 			iconFrame.height = iconFrame.textureHeight
 
 			--iconFrame.Texture:SetBlendMode("ADD")
-			iconFrame.blendTexture:SetTexture(iconFrame.Texture:GetTexture())
+			iconFrame.CooldownBrightnessTexture:SetTexture(iconFrame.Texture:GetTexture())
 			do
 				local left, top, c, bottom, right = iconFrame.Texture:GetTexCoord()
-				iconFrame.blendTexture:SetTexCoord(left, right, top, bottom)
-				iconFrame.blendTexture.cords = {left, right, top, bottom}
-				iconFrame.blendTexture.top = top
-				iconFrame.blendTexture.bottom = bottom
+				iconFrame.CooldownBrightnessTexture:SetTexCoord(left, right, top, bottom)
+				iconFrame.CooldownBrightnessTexture.cords = {left, right, top, bottom}
+				iconFrame.CooldownBrightnessTexture.top = top
+				iconFrame.CooldownBrightnessTexture.bottom = bottom
 			end
 
-			PixelUtil.SetPoint(iconFrame.blendTexture, "bottomright", iconFrame, "bottomright", -1, 1)
+			PixelUtil.SetPoint(iconFrame.CooldownBrightnessTexture, "bottomright", iconFrame, "bottomright", -1, 1)
 
 			--make information available
 			iconFrame.spellId = spellId
@@ -345,10 +346,12 @@ detailsFramework.IconGenericMixin = {
 				local now = GetTime()
 				if (endTime > now) then
 					iconFrame.CooldownTexture:Show()
+					iconFrame.CooldownBrightnessTexture:Show()
 					iconFrame.CooldownTexture:SetHeight(1)
 					self:SetCooldown(iconFrame)
 				end
 			else
+				iconFrame.CooldownBrightnessTexture:Hide()
 				iconFrame.CooldownTexture:Hide()
 			end
 
@@ -378,12 +381,24 @@ detailsFramework.IconGenericMixin = {
 
 		--iconFrame:SetScale(3) --debug
 
+		iconFrame.CooldownEdge:Hide()
+		iconFrame.CooldownEdge.texture = nil
+
 		detailsFramework:SetFontColor(iconFrame.CountdownText, self.options.text_color)
-		iconFrame.CooldownSwipe:SetAlpha(options.swipe_horizontal_alpha)
-		PixelUtil.SetSize(iconFrame.CooldownSwipe, iconFrame.CooldownTexture:GetWidth(), 2)
-		PixelUtil.SetPoint(iconFrame.CooldownSwipe, "topleft", iconFrame.CooldownTexture, "topleft", 0, 0)
-		PixelUtil.SetPoint(iconFrame.CooldownSwipe, "topright", iconFrame.CooldownTexture, "topright", 0, 0)
-		PixelUtil.SetHeight(iconFrame.CooldownSwipe, 2)
+
+		PixelUtil.SetSize(iconFrame.CooldownEdge, iconFrame.CooldownTexture:GetWidth(), 2)
+		PixelUtil.SetPoint(iconFrame.CooldownEdge, "topleft", iconFrame.CooldownTexture, "topleft", 0, 0)
+		PixelUtil.SetPoint(iconFrame.CooldownEdge, "topright", iconFrame.CooldownTexture, "topright", 0, 0)
+		PixelUtil.SetHeight(iconFrame.CooldownEdge, 2)
+
+		local swipe_brightness = options.swipe_brightness
+		iconFrame.CooldownBrightnessTexture:SetAlpha(swipe_brightness)
+
+		local swipe_darkness = options.swipe_alpha
+		iconFrame.CooldownTexture:SetAlpha(swipe_darkness)
+		iconFrame.CooldownTexture:SetVertexColor(unpack(options.swipe_color))
+
+		iconFrame.CooldownEdge:SetAlpha(0.834)
 
 		self.OnIconTick(iconFrame)
 
@@ -406,25 +421,24 @@ detailsFramework.IconGenericMixin = {
 		local newHeight = math.min(iconFrame.textureHeight * percent, iconFrame.textureHeight)
 		iconFrame.CooldownTexture:SetHeight(newHeight)
 
-		PixelUtil.SetPoint(iconFrame.blendTexture, "bottomright", iconFrame, "bottomright", 0, newHeight) --iconFrame.textureHeight - 
-		local left, right, top, bottom = unpack(iconFrame.blendTexture.cords)
-		local newBottomCord = Lerp(iconFrame.blendTexture.top, iconFrame.blendTexture.bottom, abs(percent - 1))
-		iconFrame.blendTexture:SetTexCoord(left, right, top, newBottomCord)
+		PixelUtil.SetPoint(iconFrame.CooldownBrightnessTexture, "bottomright", iconFrame, "bottomright", 0, newHeight) --iconFrame.textureHeight - 
+		local left, right, top, bottom = unpack(iconFrame.CooldownBrightnessTexture.cords)
+		local newBottomCord = Lerp(iconFrame.CooldownBrightnessTexture.top, iconFrame.CooldownBrightnessTexture.bottom, abs(percent - 1))
+		iconFrame.CooldownBrightnessTexture:SetTexCoord(left, right, top, newBottomCord)
 
-		--need optimizations
-		if (percent > options.swipe_horizontal_percent2) then
-			if (options.swipe_horizontal_red) then
-				iconFrame.CooldownSwipe:Show()
-				iconFrame.CooldownSwipe:SetTexture(options.swipe_horizontal_red)
+		if (percent > options.swipe_percent2) then
+			if (options.swipe_red and iconFrame.CooldownEdge.texture ~= options.swipe_red) then
+				iconFrame.CooldownEdge:Show()
+				iconFrame.CooldownEdge:SetTexture(options.swipe_red)
+				iconFrame.CooldownEdge.texture = options.swipe_red
 			end
 
-		elseif (percent > options.swipe_horizontal_percent1) then
-			if (options.swipe_horizontal_yellow) then
-				iconFrame.CooldownSwipe:Show()
-				iconFrame.CooldownSwipe:SetTexture(options.swipe_horizontal_yellow)
+		elseif (percent > options.swipe_percent1) then
+			if (options.swipe_yellow and iconFrame.CooldownEdge.texture ~= options.swipe_yellow) then
+				iconFrame.CooldownEdge:Show()
+				iconFrame.CooldownEdge:SetTexture(options.swipe_yellow)
+				iconFrame.CooldownEdge.texture = options.swipe_yellow
 			end
-		else
-			iconFrame.CooldownSwipe:Hide()
 		end
 
 		--iconFrame.CountdownText:SetText(iconFrame.parentIconRow.FormatCooldownTime(iconFrame.duration - (now - iconFrame.startTime))) --no mod rate
@@ -547,6 +561,8 @@ detailsFramework.IconGenericMixin = {
 
 			local width = 0
 			local growDirection = self:GetIconGrowDirection()
+			local nWhichSide = self.options.anchor.side
+			local bIsCenterAligned = detailsFramework.ShouldCenterAlign[nWhichSide]
 
 			--re-anchor not hidden
 			for i = 1, shownAmount do
@@ -569,14 +585,16 @@ detailsFramework.IconGenericMixin = {
 
 				if (growDirection == 1) then --grow to right
 					if (bIsFirstIcon) then
-						PixelUtil.SetPoint(iconFrame, "bottomleft", anchorTo, "bottomleft", 0, 0)
+						local attachSide = (bIsCenterAligned and "center") or (nWhichSide and not detailsFramework.SideIsCorner[nWhichSide] and "left") or "bottomleft"
+						PixelUtil.SetPoint(iconFrame, attachSide, anchorTo, attachSide, 0, 0)
 					else
 						PixelUtil.SetPoint(iconFrame, "left", anchorTo, "right", xPadding, 0)
 					end
 
 				elseif (growDirection == 2) then --grow to left
 					if (bIsFirstIcon) then
-						PixelUtil.SetPoint(iconFrame, "bottomright", anchorTo, "bottomright", 0, 0)
+						local attachSide = (bIsCenterAligned and "center") or (nWhichSide and not detailsFramework.SideIsCorner[nWhichSide] and "right") or "bottomright"
+						PixelUtil.SetPoint(iconFrame, attachSide, anchorTo, attachSide, 0, 0)
 					else
 						PixelUtil.SetPoint(iconFrame, "right", anchorTo, "left", xPadding, 0)
 					end
@@ -585,7 +603,7 @@ detailsFramework.IconGenericMixin = {
 				width = width + ((iconFrame.width or iconFrame:GetWidth()) * iconFrame:GetScale()) + 1
 			end
 
-			if (self.options.center_alignment) then
+			if (bIsCenterAligned) then
 				self:SetWidth(width)
 			end
 
@@ -661,11 +679,16 @@ local default_icon_row_options = {
 	cooldown_reverse = false,
 	cooldown_swipe_enabled = true,
 	cooldown_edge_texture = "Interface\\Cooldown\\edge",
-	swipe_horizontal_yellow = false,
-	swipe_horizontal_red = false,
-	swipe_horizontal_alpha = 0.5,
-	swipe_horizontal_percent1 = 0.75,
-	swipe_horizontal_percent2 = 0.90,
+
+	swipe_alpha = 0.5,
+	swipe_brightness = 0.5,
+	swipe_color = {0, 0, 0},
+	swipe_yellow = false,
+	swipe_red = false,
+	swipe_percent1 = 0.75,
+	swipe_percent2 = 0.90,
+
+	--first_icon_anchor = "auto",
 }
 
 ---@param parent frame

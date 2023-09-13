@@ -30,6 +30,23 @@ detailsFramework.GrowDirectionBySide = {
 	[17] = 2,
 }
 
+detailsFramework.ShouldCenterAlign = {
+	[9] = true,
+	[10] = true,
+	[12] = true,
+}
+
+detailsFramework.SideIsCorner = {
+	[1] = true,
+	[3] = true,
+	[5] = true,
+	[7] = true,
+	[14] = true,
+	[15] = true,
+	[16] = true,
+	[17] = true,
+}
+
 ---@class df_icon : frame
 ---@field spellId number
 ---@field startTime number

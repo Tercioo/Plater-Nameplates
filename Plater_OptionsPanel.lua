@@ -154,6 +154,7 @@ end
 
 local TAB_INDEX_UIPARENTING = 5
 local TAB_INDEX_PROFILES = 22
+local TAB_INDEX_SEARCH = 26
 
 -- ~options �ptions
 function Plater.OpenOptionsPanel()
@@ -14715,16 +14716,20 @@ end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	--~search panel
-	local searchLabel = DF:CreateLabel(searchFrame, "Search:")
 	local searchBox = DF:CreateTextEntry (searchFrame, function()end, 156, 20, "serachTextEntry", _, _, DF:GetTemplate ("dropdown", "PLATER_DROPDOWN_OPTIONS"))
+	searchBox:SetAsSearchBox()
 	searchBox:SetJustifyH("left")
+	searchBox:SetPoint(10, -145)
 
-	searchLabel:SetPoint(10, -130)
-	searchBox:SetPoint(10, -140)
+	--create a search box in the main tab
+	local mainSearchBox = DF:CreateTextEntry(frontPageFrame, function()end, 156, 20, "mainSearchTextEntry", _, _, DF:GetTemplate("dropdown", "PLATER_DROPDOWN_OPTIONS"))
+	mainSearchBox:SetAsSearchBox()
+	mainSearchBox:SetJustifyH("left")
+	mainSearchBox:SetPoint("topright", -220, -108)
 
 	local optionsWildCardFrame = CreateFrame("frame", "$parentWildCardOptionsFrame", searchFrame, BackdropTemplateMixin and "BackdropTemplate")
 	optionsWildCardFrame:SetAllPoints()
-	
+
 	--all settings tables
 	local allTabSettings = {
 		--interface_options, -- general
@@ -14803,7 +14808,7 @@ end
 			if (optionName:find(searchingText)) then
 				if optionData.header ~= lastTab then
 					if lastTab ~= nil then
-						options[#options+1] = {type = "label", get = function() return "" end, text_template = DF:GetTemplate ("font", "OPTIONS_FONT_TEMPLATE")} -- blank
+						options[#options+1] = {type = "label", get = function() return "" end, text_template = DF:GetTemplate("font", "OPTIONS_FONT_TEMPLATE")} -- blank
 					end
 					options[#options+1] = {type = "label", get = function() return optionData.header end, text_template = {color = "gold", size = 14, font = DF:GetBestFontForLanguage()}}
 					lastTab = optionData.header
@@ -14819,30 +14824,15 @@ end
 
 		options.always_boxfirst = true
 		options.language_addonId = addonId
-		DF:BuildMenuVolatile (searchFrame, options, startX, startY-30, heightSize+40, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
-
-		--[=[
-		if (searchFrame.widget_list) then
-			for i = 1, #searchFrame.widget_list do
-				searchFrame.widget_list[i]:Hide()
-				if (searchFrame.widget_list[i].hasLabel) then
-					searchFrame.widget_list[i].hasLabel:Hide()
-				end
-			end
-			wipe(searchFrame.widget_list)
-			searchFrame.widget_list = nil
-		end
-
-		if (searchFrame.widgetids) then
-			wipe(searchFrame.widgetids)
-			searchFrame.widgetids = nil
-		end
-
-		DF:BuildMenu (searchFrame, options, startX, startY-30, heightSize+40, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
-		--]=]
+		DF:BuildMenuVolatile(searchFrame, options, startX, startY-30, heightSize+40, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 	end)
 
-
+	mainSearchBox:SetHook("OnEnterPressed", function(self)
+		local searchText = mainSearchBox.text
+		searchBox:SetText(searchText)
+		searchBox:RunHooksForWidget("OnEnterPressed")
+		_G["PlaterOptionsPanelContainer"]:SelectTabByIndex(TAB_INDEX_SEARCH)
+	end)
 
 	--
 	Plater.CheckOptionsTab()
