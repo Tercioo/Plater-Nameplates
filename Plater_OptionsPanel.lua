@@ -177,6 +177,19 @@ function Plater.OpenOptionsPanel()
 	f:ClearAllPoints()
 	PixelUtil.SetPoint (f, "center", UIParent, "center", 2, 2, 1, 1)
 
+	--over the top frame
+	local OTTFrame = CreateFrame("frame", "PlaterNameplatesOverTheTopFrame", f)
+	OTTFrame:SetFrameLevel(2000)
+	OTTFrame:SetSize(1, 1)
+	OTTFrame:SetPoint("topright", f, "topright", -26, -110)
+
+	f:HookScript("OnShow", function()
+		OTTFrame:Show()
+	end)
+	f:HookScript("OnHide", function()
+		OTTFrame:Hide()
+	end)
+
 	-- version text
 	local versionText = DF:CreateLabel (f, Plater.fullVersionInfo, 11, "white")
 	versionText:SetPoint ("topright", f, "topright", -25, -7)
@@ -461,8 +474,8 @@ function Plater.OpenOptionsPanel()
 		local currentLanguage = PlaterLanguage.language
 
 		--addonId, parent, callback, defaultLanguage
-		local languageSelectorDropdown = DF.Language.CreateLanguageSelector(addonId, frontPageFrame, onLanguageChangedCallback, currentLanguage)
-		languageSelectorDropdown:SetPoint("topright", -21, -108)
+		local languageSelectorDropdown = DF.Language.CreateLanguageSelector(addonId, OTTFrame, onLanguageChangedCallback, currentLanguage)
+		languageSelectorDropdown:SetPoint("topright", 0, 0)
 	--end of languages
 
 	--> on profile change
@@ -14722,10 +14735,10 @@ end
 	searchBox:SetPoint(10, -145)
 
 	--create a search box in the main tab
-	local mainSearchBox = DF:CreateTextEntry(frontPageFrame, function()end, 156, 20, "mainSearchTextEntry", _, _, DF:GetTemplate("dropdown", "PLATER_DROPDOWN_OPTIONS"))
+	local mainSearchBox = DF:CreateTextEntry(OTTFrame, function()end, 156, 20, "mainSearchTextEntry", _, _, DF:GetTemplate("dropdown", "PLATER_DROPDOWN_OPTIONS"))
 	mainSearchBox:SetAsSearchBox()
 	mainSearchBox:SetJustifyH("left")
-	mainSearchBox:SetPoint("topright", -220, -108)
+	mainSearchBox:SetPoint("topright", -220, 0)
 
 	local optionsWildCardFrame = CreateFrame("frame", "$parentWildCardOptionsFrame", searchFrame, BackdropTemplateMixin and "BackdropTemplate")
 	optionsWildCardFrame:SetAllPoints()
