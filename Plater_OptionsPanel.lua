@@ -13733,8 +13733,8 @@ end
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 				end
 			end,
-			name = "Force nameplates on soft-interact target",
-			desc = "Force show the nameplate on your soft-interact target.",
+			name = "Force nameplates on soft-interact target" .. CVarIcon,
+			desc = "Force show the nameplate on your soft-interact target." .. CVarDesc,
 		},
 		{
 			type = "toggle",
