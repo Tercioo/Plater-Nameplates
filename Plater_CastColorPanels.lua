@@ -5,6 +5,8 @@ local DF = DetailsFramework
 local GetSpellInfo = GetSpellInfo
 local _
 
+local bitAnd = bit.band
+
 local unpack = table.unpack or _G.unpack
 
 --localization
@@ -46,6 +48,60 @@ local CONST_CASTINFO_NPCID = 7
 local CONST_CASTINFO_NPCLOCATION = 8
 local CONST_CASTINFO_ENCOUNTERNAME = 9
 local CONST_CASTINFO_CUSTOMSPELLNAME = 10
+
+local spellIndicators = {
+    ["edited_name"] = {
+		texture = [[Interface\AddOns\Plater\images\spell_indicators_1]],
+		coords = {0, 0.125, 0, 1},
+		scale = 1,
+		shown = false,
+		id = "edited_name",
+		width = 12,
+		height = 12,
+		name = "Name Changed Indicator",
+		alpha = 1,
+		type = "spell_indicators",
+	},
+
+    ["edited_audio"] = {
+		texture = [[Interface\AddOns\Plater\images\spell_indicators_1]],
+		coords = {0.125, 0.25, 0, 1},
+		scale = 1,
+		shown = false,
+		id = "edited_audio",
+		width = 12,
+		height = 12,
+		name = "Audio Changed Indicator",
+		alpha = 1,
+		type = "spell_indicators",
+	},
+
+    ["edited_color"] = {
+		texture = [[Interface\AddOns\Plater\images\spell_indicators_1]],
+		coords = {0.25, 0.375, 0, 1},
+		scale = 1,
+		shown = false,
+		id = "edited_color",
+		width = 12,
+		height = 12,
+		name = "Color Changed Indicator",
+		alpha = 1,
+		type = "spell_indicators",
+	},
+
+    ["edited_script"] = {
+		texture = [[Interface\AddOns\Plater\images\spell_indicators_1]],
+		coords = {0.375, 0.5, 0, 1},
+		scale = 1,
+		shown = false,
+		id = "edited_script",
+		width = 12,
+		height = 12,
+		name = "Script Changed Indicator",
+		alpha = 1,
+		type = "spell_indicators",
+	},
+}
 
 local on_refresh_db = function()
 	local profile = Plater.db.profile
@@ -167,13 +223,13 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
     --header
     local headerTable = {
-        {text = "Enabled", width = 40}, --1
-        {text = "Icon", width = 32}, --2
+        {text = "", width = 40}, --1
+        {text = "", width = 20}, --2
         {text = "Spell Id", width = 50}, --3
         {text = "Spell Name", width = 140}, --4
         {text = "Rename To", width = 110}, --5
         {text = "Npc Name", width = 110}, --6
-        {text = "Send To Raid", width = 95}, --7
+        {text = "Send To Raid", width = 80}, --7
         {text = "Play Sound", width = 110}, --8
         {text = "Color", width = 110}, --9
         {text = "Add Animation", width = 270}, --10
@@ -274,6 +330,8 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         DB_CAST_AUDIOCUES[spellId] = audioFilePath
     end
 
+    local audioFileNameToCueName = {}
+
     local createAudioCueList = function(fullRefresh)
         if (castFrame.AudioCueListCache and not fullRefresh) then
             --return
@@ -301,6 +359,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         local audioListInOrder = {}
         for cueName, cueFile in pairs(audioCues) do
             audioListInOrder[#audioListInOrder+1] = {cueName, cueFile, cueName:lower(), cuesInUse[cueFile] or false}
+            audioFileNameToCueName[cueFile] = cueName
         end
 
         table.sort(audioListInOrder, function(t1, t2) --alphabetical
@@ -483,17 +542,21 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
         DF:Mixin (line, DF.HeaderFunctions)
 
-        --enabled check box
-        local enabledCheckBox = DF:CreateSwitch(line, onToggleEnabled, true, _, _, _, _, "EnabledCheckbox", "$parentEnabledToggle" .. index, _, _, _, nil, DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"))
-        enabledCheckBox:SetAsCheckBox()
+        local indicatorsSettings = {
+            icon_width = 16,
+            icon_height = 16,
+            show_text = false,
+            stack_text = true,
+            cooldown_swipe_enabled = false,
+            surpress_blizzard_cd_timer = true,
+            show_cooldown = false,
+            stack_text_color = {1, 1, 0, 1},
+            swipe_brightness = 0,
+        }
 
-        --has animation icon
-        local hasAnimationIconTexture = DF:CreateImage(line, [[Interface\BUTTONS\UI-SpellbookIcon-NextPage-Up]], scroll_line_height-2, scroll_line_height-2)
-        hasAnimationIconTexture:Hide()
-        hasAnimationIconTexture:SetScale(1.1)
-        hasAnimationIconTexture:SetAlpha(0.82)
-        hasAnimationIconTexture:SetPoint("left", enabledCheckBox, "right", 2, 0)
-        line.hasAnimationIconTexture = hasAnimationIconTexture
+        local spellIndicatorsFrame = DF:CreateIconRowGeneric(line, "$parentIndicators", indicatorsSettings)
+        spellIndicatorsFrame:SetSize(16, 16)
+        line.IconRow = spellIndicatorsFrame
 
         --spell icon
         local spellIconTexture = DF:CreateImage(line, "", scroll_line_height-2, scroll_line_height-2)
@@ -547,7 +610,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         --local npcIdLabel = DF:CreateLabel(line, "", 10, "white", nil, "npcIdLabel")
 
         --send to raid button
-        local sendToRaidButton = DF:CreateButton(line, function()end, headerTable[7].width, 20, "Click to Select", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+        local sendToRaidButton = DF:CreateButton(line, function()end, headerTable[7].width - 15, 20, "Send to Raid", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
         line.sendToRaidButton = sendToRaidButton
 
         --location
@@ -557,8 +620,11 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         --encounter
         local encounterNameLabel = DF:CreateLabel(line, "", 10, "white", nil, "encounterNameLabel") --not in use, got replaced by spell name rename
 
-        --color
-        local colorDropdown = DF:CreateDropDown(line, line_refresh_color_dropdown, 1, headerTable[8].width - 1, 20, "ColorDropdown", nil, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+        --color enabled check box
+            local enabledCheckBox = DF:CreateSwitch(line, onToggleEnabled, true, _, _, _, _, "EnabledCheckbox", "$parentEnabledToggle" .. index, _, _, _, nil, DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"))
+            enabledCheckBox:SetAsCheckBox()
+        --color dropdown
+            local colorDropdown = DF:CreateDropDown(line, line_refresh_color_dropdown, 1, headerTable[8].width - 1, 20, "ColorDropdown", nil, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
 
         enabledCheckBox:SetHook ("OnEnter", widget_onenter)
         enabledCheckBox:SetHook ("OnLeave", widget_onleave)
@@ -573,7 +639,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         selectAudioDropdown:SetHook("OnEnter", widget_onenter)
         selectAudioDropdown:SetHook("OnLeave", widget_onleave)
 
-        line:AddFrameToHeaderAlignment (enabledCheckBox)
+        line:AddFrameToHeaderAlignment (spellIndicatorsFrame)
         line:AddFrameToHeaderAlignment (spellIconTexture)
         line:AddFrameToHeaderAlignment (spellIdEntry)
         line:AddFrameToHeaderAlignment (spellNameEntry)
@@ -583,7 +649,9 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         --line:AddFrameToHeaderAlignment (npcIdLabel)
         line:AddFrameToHeaderAlignment (selectAudioDropdown)
         --line:AddFrameToHeaderAlignment (encounterNameLabel)
-        line:AddFrameToHeaderAlignment (colorDropdown)
+        line:AddFrameToHeaderAlignment (enabledCheckBox)
+        colorDropdown:SetPoint("left", enabledCheckBox, "right", 2, 0)
+        --line:AddFrameToHeaderAlignment (colorDropdown)
 
         line:AlignWithHeader (castFrame.Header, "left")
 
@@ -679,7 +747,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             local widthEnd = 282/512
             local textureHeight = 46.54 --increasing reduces the preview texture height
 
-            local scriptPreviewTexture = previewFrame:CreateTexture(nil, "overlay")
+            local scriptPreviewTexture = previewFrame:CreateTexture(nil, "overlay", nil, 3)
             scriptPreviewTexture:SetTexture(castBarPreviewTexture)
             scriptPreviewTexture:SetTexCoord(0, widthEnd, textureHeight * (i-1) / 512, textureHeight * i / 512)
             scriptPreviewTexture:SetPoint("topleft", previewFrame, "topleft", 1, -1)
@@ -687,7 +755,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             scriptPreviewTexture:SetAlpha(1)
             --scriptPreviewTexture:SetBlendMode("ADD")
 
-            local scriptPreviewTexture2 = previewFrame:CreateTexture(nil, "overlay")
+            local scriptPreviewTexture2 = previewFrame:CreateTexture(nil, "overlay", nil, 2)
             scriptPreviewTexture2:SetTexture(castBarPreviewTexture)
             scriptPreviewTexture2:SetTexCoord(0, widthEnd, textureHeight * (i-1) / 512, textureHeight * i / 512)
             scriptPreviewTexture2:SetPoint("topleft", previewFrame, "topleft", 1, -1)
@@ -696,11 +764,10 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             scriptPreviewTexture2:SetBlendMode("ADD")
             previewFrame.selectedHighlight = scriptPreviewTexture2
 
-            local selectedScript = previewFrame:CreateTexture(nil, "overlay")
-            selectedScript:SetPoint("topright", previewFrame, "topleft", 0, -1)
-            selectedScript:SetPoint("bottomright", previewFrame, "bottomleft", 0, 1)
-            selectedScript:SetColorTexture(.8, .8, .8, 0.92)
-            selectedScript:SetWidth(7)
+            local selectedScript = previewFrame:CreateTexture(nil, "overlay", nil, 1)
+            selectedScript:SetPoint("topleft", previewFrame, "topleft", 0, 0)
+            selectedScript:SetPoint("bottomright", previewFrame, "bottomright", 0, 0)
+            selectedScript:SetTexture([[Interface\AddOns\Plater\images\overlay_indicator_3]])
             selectedScript:Hide()
             previewFrame.selectedScript = selectedScript
 
@@ -1240,6 +1307,10 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         return t1[4] < t2[4]
     end
 
+    local getPriority = function()
+
+    end
+
     --callback from have clicked in the 'Share With Raid' button
     local latestMenuClicked = false
     local onSendToRaidButtonClicked = function(self, button, spellId)
@@ -1330,36 +1401,56 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
                     local isTriggerOfAnyPreviewScript = hasScriptWithPreviewSpellId(spellId)
 
-                    if (spellName:lower():find(IsSearchingFor) or sourceName:lower():find(IsSearchingFor) or npcLocation:lower():find(IsSearchingFor) or encounterName:lower():find(IsSearchingFor)) then
-                        if (isEnabled) then
-                            enabledTable[#enabledTable+1] = {true, color, spellId, spellName, spellIcon, sourceName, npcId, npcLocation, encounterName, customSpellName, isTriggerOfAnyPreviewScript or false, DB_CAST_AUDIOCUES[spellId] or false}
-                        else
-                            dataInOrder[#dataInOrder+1] = {false, color, spellId, spellName, spellIcon, sourceName, npcId, npcLocation, encounterName, customSpellName, isTriggerOfAnyPreviewScript or false, DB_CAST_AUDIOCUES[spellId] or false}
+                    local priority = 0 + (isEnabled and 0x8 or 0) + (isTriggerOfAnyPreviewScript and 0x2 or 0) + (DB_CAST_AUDIOCUES[spellId] and 0x4 or 0) + (customSpellName and customSpellName ~= "" and 0x1 or 0)
+
+                    local bFoundBySpellName = spellName:lower():find(IsSearchingFor)
+                    local bFoundBySourceName = sourceName:lower():find(IsSearchingFor)
+                    local bFoundByNpcLocation = npcLocation:lower():find(IsSearchingFor)
+                    local bFoundByEncounterName = encounterName:lower():find(IsSearchingFor)
+                    local bFoundBySpellId = tostring(spellId):find(IsSearchingFor)
+
+                    local bFoundByAudioName
+                    if (DB_CAST_AUDIOCUES[spellId]) then --path
+                        local audioFileName = DB_CAST_AUDIOCUES[spellId]
+                        bFoundByAudioName = audioFileName:lower():find(IsSearchingFor)
+
+                        if (not bFoundByAudioName) then
+                            local audioName = audioFileNameToCueName[audioFileName]
+                            bFoundByAudioName = audioName:lower():find(IsSearchingFor)
                         end
+                    end
+
+                    local bFoundByCustomSpellName
+                    if (customSpellName and customSpellName ~= "") then
+                        bFoundByCustomSpellName = customSpellName:lower():find(IsSearchingFor)
+                    end
+
+                    if (bFoundBySpellName or bFoundBySourceName or bFoundByNpcLocation or bFoundByEncounterName or bFoundBySpellId or bFoundByCustomSpellName or bFoundByAudioName) then
+                        dataInOrder[#dataInOrder+1] = {
+                            isEnabled, --1
+                            color, --2
+                            spellId, --3
+                            spellName, --4
+                            spellIcon, --5
+                            sourceName, --6
+                            npcId, --7
+                            npcLocation, --8
+                            encounterName, --9
+                            customSpellName, --10
+                            isTriggerOfAnyPreviewScript or false, --11
+                            DB_CAST_AUDIOCUES[spellId] or false, --12
+                            priority --13
+                        }
                     end
                 end
 
-                table.sort (enabledTable, sort_enabled_colors) --sort by enabled state
-                table.sort (enabledTable, sort_enabled_animation) --is has a script trigger
-
-                table.sort (dataInOrder, sortOrder4R) --by spell name
-                table.sort (dataInOrder, sort_enabled_animation) --is has a script trigger
-                table.sort (dataInOrder, sort_has_audio_cue) --has an audio cue
-
-                --make the dropdown be bigger
-                --table.sort (enabledTable, sort_enabled_colors)
-                --table.sort (dataInOrder, sortOrder4R) --spell name
-
-                for i = #enabledTable, 1, -1 do
-                    tinsert (dataInOrder, 1, enabledTable[i])
-                end
-
+                table.sort(dataInOrder, function(t1, t2) return t1[13] > t2[13] end)
                 self.SearchCachedTable = dataInOrder
                 self.SearchCachedTable.SearchTerm = IsSearchingFor
             end
         else
             if (not self.CachedTable) then
-                local enabledTable = {}
+                local allSpells_WithPriority = {}
 
                 for i = 1, #data do
                     local thisData = data[i]
@@ -1377,25 +1468,27 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
                     local isTriggerOfAnyPreviewScript = hasScriptWithPreviewSpellId(spellId)
 
-                    if (isEnabled) then
-                        enabledTable[#enabledTable+1] = {true, color, spellId, spellName, spellIcon, sourceName, npcId, npcLocation, encounterName, customSpellName, isTriggerOfAnyPreviewScript or false, DB_CAST_AUDIOCUES[spellId]}
-                    else
-                        dataInOrder[#dataInOrder+1] = {false, color, spellId, spellName, spellIcon, sourceName, npcId, npcLocation, encounterName, customSpellName, isTriggerOfAnyPreviewScript or false, DB_CAST_AUDIOCUES[spellId]}
-                    end
+                    local priority = 0 + (isEnabled and 0x8 or 0) + (isTriggerOfAnyPreviewScript and 0x2 or 0) + (DB_CAST_AUDIOCUES[spellId] and 0x4 or 0) + (customSpellName and customSpellName ~= "" and 0x1 or 0)
+
+                    allSpells_WithPriority[#allSpells_WithPriority+1] = {
+                        isEnabled, --1
+                        color, --2
+                        spellId, --3
+                        spellName, --4
+                        spellIcon, --5
+                        sourceName, --6
+                        npcId, --7
+                        npcLocation, --8
+                        encounterName, --9
+                        customSpellName, --10
+                        isTriggerOfAnyPreviewScript or false, --11
+                        DB_CAST_AUDIOCUES[spellId], --12
+                        priority, --13
+                    }
                 end
 
-                self.CachedTable = dataInOrder
-
-                table.sort (enabledTable, sort_enabled_colors) --sort by enabled state
-                table.sort (enabledTable, sort_enabled_animation) --has a script trigger
-
-                table.sort (dataInOrder, sortOrder4R) --by spell name
-                table.sort (dataInOrder, sort_enabled_animation) --has a script trigger
-                table.sort (dataInOrder, sort_has_audio_cue) --has an audio cue
-
-                for i = #enabledTable, 1, -1 do
-                    tinsert (dataInOrder, 1, enabledTable[i])
-                end
+                self.CachedTable = allSpells_WithPriority
+                table.sort(allSpells_WithPriority, function(t1, t2) return t1[13] > t2[13] end)
             end
 
             dataInOrder = self.CachedTable
@@ -1457,8 +1550,6 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                     --line.npcLocationLabel:SetText(npcLocation)
                     line.encounterNameLabel:SetText(encounterName)
 
-                    line.hasAnimationIconTexture:SetShown(spellInfo[11])
-
                     castFrame.CheckBoxCache[spellId] = line.EnabledCheckbox
 
                     if (colorOption) then
@@ -1478,6 +1569,27 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
                         line:RefreshColor()
                     end
+
+                    local priority = spellInfo[13]
+                    line.IconRow:ClearIcons()
+
+                    if (priority > 0) then
+                        if (bitAnd(priority, 0x8) ~= 0) then
+                            line.IconRow:AddSpecificIconWithTemplate(spellIndicators.edited_color)
+                        end
+                        if (bitAnd(priority, 0x4) ~= 0) then
+                            line.IconRow:AddSpecificIconWithTemplate(spellIndicators.edited_audio)
+                        end
+                        if (bitAnd(priority, 0x2) ~= 0) then
+                            line.IconRow:AddSpecificIconWithTemplate(spellIndicators.edited_script)
+                        end
+                        if (bitAnd(priority, 0x1) ~= 0) then
+                            line.IconRow:AddSpecificIconWithTemplate(spellIndicators.edited_name)
+                        end
+                    end
+
+                    line.IconRow:Show()
+                    line.IconRow:AlignAuraIcons()
 
                     line.EnabledCheckbox:SetFixedParameter(spellId)
                 else
@@ -1607,7 +1719,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         aura_search_label:SetPoint("left", aura_search_textentry, "left", 4, 0)
         aura_search_label.fontcolor = "gray"
         aura_search_label.color = {.5, .5, .5, .3}
-        aura_search_textentry.tooltip = "- Spell Name\n- Npc Name\n- Zone Name\n- Encounter Name"
+        aura_search_textentry.tooltip = "- Spell Name\n- Npc Name\n- Zone Name\n- Encounter Name\n- SpellID\n- Custom Spell Name\n- Sound Name\n- Audio"
         aura_search_textentry:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
 
         --clear search button

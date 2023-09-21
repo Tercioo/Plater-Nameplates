@@ -181,7 +181,7 @@ function Plater.OpenOptionsPanel()
 	local OTTFrame = CreateFrame("frame", "PlaterNameplatesOverTheTopFrame", f)
 	OTTFrame:SetFrameLevel(2000)
 	OTTFrame:SetSize(1, 1)
-	OTTFrame:SetPoint("topright", f, "topright", -26, -110)
+	OTTFrame:SetPoint("topright", f, "topright", -22, -110)
 
 	f:HookScript("OnShow", function()
 		OTTFrame:Show()
