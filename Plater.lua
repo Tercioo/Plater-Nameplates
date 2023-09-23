@@ -9203,7 +9203,7 @@ end
 		highlightOverlay:Hide()
 		--highlightOverlay:SetFrameStrata ("TOOLTIP") --it'll use the same strata as the health bar now
 		
-		highlightOverlay.HighlightTexture = plateFrame.unitFrame.healthBar:CreateTexture (nil, "artwork")
+		highlightOverlay.HighlightTexture = plateFrame.unitFrame.healthBar:CreateTexture (nil, "overlay")
 		highlightOverlay.HighlightTexture:SetAllPoints()
 		highlightOverlay.HighlightTexture:SetColorTexture (1, 1, 1, 1)
 		highlightOverlay.HighlightTexture:SetAlpha (1)
