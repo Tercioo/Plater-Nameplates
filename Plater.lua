@@ -2376,6 +2376,9 @@ Plater.AnchorNamesByPhraseId = {
 
 			-- ensure resources are up to date
 			C_Timer.After (3, Plater.Resources.OnSpecChanged)
+			
+			-- translate NPC_CACHE entries if needed
+			--C_Timer.After (5, Plater.TranslateNPCCache)
 
 		end,
 		
@@ -8752,6 +8755,60 @@ end
 			OmniCC.Cooldown:ForAll("Refresh", true)
 		end
 	end
+	
+	-- tanslate the npc cache entries if needed, do so. can translate names only, but not zones.
+	function Plater.TranslateNPCCache()
+		if Plater.TranslateNPCCacheIsRunning then return end
+		Plater.TranslateNPCCacheIsRunning = true
+		
+		local function GetCreatureNameFromID(npcID)
+			if C_TooltipInfo then
+				local info = C_TooltipInfo.GetHyperlink(("unit:Creature-0-0-0-0-%d"):format(npcID))
+				local leftText = info and info.lines and info.lines[1] and info.lines[1].leftText
+				if leftText and leftText ~= "Unknown" then
+					return leftText
+				end
+			else
+				local tooltipFrame = GetCreatureNameFromIDFinderTooltip or CreateFrame ("GameTooltip", "GetCreatureNameFromIDFinderTooltip", nil, "GameTooltipTemplate")
+				tooltipFrame:SetOwner (WorldFrame, "ANCHOR_NONE")
+				tooltipFrame:SetHyperlink (("unit:Creature-0-0-0-0-%d"):format(npcID))
+				local petNameLine = _G ["GetCreatureNameFromIDFinderTooltipTextLeft1"]
+				return petNameLine and petNameLine:GetText()
+			end
+		end
+		
+		local translate_npc_cache = function()
+			if PLAYER_IN_COMBAT or not IS_IN_OPEN_WORLD then
+				C_Timer.After(5, translate_npc_cache)
+			end
+			
+			local count = 0
+			local leftOvers = false
+			for id, entry in pairs(DB_NPCIDS_CACHE) do
+				leftOvers = false
+				
+				if entry[3] ~= Plater.Locale then
+					local npcName = GetCreatureNameFromID(id)
+					if npcName then
+						entry[1] = npcName
+						entry[3] = Plater.Locale
+						count = count + 1
+					end
+				end
+				
+				if count > 10 then
+					leftOvers = true
+					break
+				else 
+				end
+			end
+			
+			if leftOvers and Plater.TranslateNPCCacheIsRunning then
+				C_Timer.After(1, translate_npc_cache)
+			end
+		end
+		translate_npc_cache()
+	end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> combat log reader  ~combatlog ~cleu
@@ -11110,6 +11167,7 @@ end
 			["StopAltCastBar"] = false,
 			["GetBossTimer"] = false,
 			["RegisterBossModsBars"] = false,
+			["TranslateNPCCache"] = true,
 		},
 		
 		["DetailsFramework"] = {
