@@ -1096,9 +1096,33 @@ do
 			end
 		end
 	})
+	
+	--#31 adjust level text and bar sizes for hardcore
+	tinsert (PlaterPatchLibrary, {
+		NotEssential = true,
+		
+		Notes = {
+			"- Adjust level text and bar sizes for hardcore realms."
+		},
+		Func = function()
+			if (C_GameRules and C_GameRules.IsHardcoreActive and C_GameRules.IsHardcoreActive()) then
+				Plater.db.profile.plate_config.enemyplayer.level_text_alpha = 1
+				Plater.db.profile.plate_config.enemynpc.level_text_alpha = 1
+				Plater.db.profile.plate_config.friendlyplayer.level_text_alpha = 1
+				Plater.db.profile.plate_config.friendlynpc.level_text_alpha = 1
+				
+				if (not Plater.db.profile.first_run3) then
+					Plater.db.profile.plate_config.enemynpc.health[1] = 90
+					Plater.db.profile.plate_config.enemynpc.health[2] = 10
+					Plater.db.profile.plate_config.enemynpc.health_incombat[1] = 100
+					Plater.db.profile.plate_config.enemynpc.health_incombat[2] = 12
+				end
+			end
+		end
+	})
 
 	--to tag an update as non-essential, add "NotEssential = true," to the table
-	--/run Plater.db.profile.patch_version = 27
+	--/run Plater.db.profile.patch_version = 30
 end --end of patch library
 
 local listOfTriggersToDeprecateOnExpansion = {
