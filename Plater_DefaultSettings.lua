@@ -217,7 +217,7 @@ PLATER_DEFAULT_SETTINGS = {
 				level_text_outline = "NONE",
 				level_text_shadow_color = {0, 0, 0, 1},
 				level_text_shadow_color_offset = {1, -1},
-				level_text_alpha = 0.3,
+				level_text_alpha = 0.7,
 				
 				percent_text_enabled = false,
 				percent_text_ooc = false,
@@ -288,7 +288,7 @@ PLATER_DEFAULT_SETTINGS = {
 				level_text_outline = "NONE",
 				level_text_shadow_color = {0, 0, 0, 1},
 				level_text_shadow_color_offset = {1, -1},
-				level_text_alpha = 0.3,
+				level_text_alpha = 0.7,
 				
 				percent_text_enabled = true,
 				percent_text_ooc = true,
@@ -371,7 +371,7 @@ PLATER_DEFAULT_SETTINGS = {
 				level_text_outline = "NONE",
 				level_text_shadow_color = {0, 0, 0, 1},
 				level_text_shadow_color_offset = {1, -1},
-				level_text_alpha = 0.3,
+				level_text_alpha = 0.7,
 				
 				percent_text_enabled = false,
 				percent_text_ooc = false,
@@ -456,7 +456,7 @@ PLATER_DEFAULT_SETTINGS = {
 				level_text_outline = "NONE",
 				level_text_shadow_color = {0, 0, 0, 1},
 				level_text_shadow_color_offset = {1, -1},
-				level_text_alpha = 0.3,
+				level_text_alpha = 0.7,
 				
 				percent_text_enabled = true,
 				percent_text_ooc = true,
@@ -547,7 +547,7 @@ PLATER_DEFAULT_SETTINGS = {
 				level_text_outline = "NONE",
 				level_text_shadow_color = {0, 0, 0, 1},
 				level_text_shadow_color_offset = {1, -1},
-				level_text_alpha = 0.3,
+				level_text_alpha = 0.7,
 				
 				percent_text_enabled = true,
 				percent_text_ooc = true,
