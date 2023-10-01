@@ -23,6 +23,7 @@
 ---@field RoundedCornerPanelMixin df_roundedcornermixin
 ---@field Schedules df_schedule
 ---@field HeaderFunctions df_headerfunctions
+---@field KeybindMixin df_keybindmixin
 ---@field Math df_math
 ---@field table df_table_functions
 ---@field Dispatch fun(self:table, callback:function, ...) : any dispatch a function call using xpcall
@@ -66,5 +67,7 @@
 ---@field CreateStatusBar fun(self:table, parent:frame, options:table?) : frame
 ---@field CreateScrollBox fun(self:table, parent:frame, name:string, refreshFunc:function, data:table, width:number, height:number, lineAmount:number, lineHeight:number, createLineFunc:function?, autoAmount:boolean?, noScroll:boolean?) : df_scrollbox
 ---@field GetTemplate fun(self:table, templateType:templatetype, templateName:string) : table
+---@field UpdateLoadConditionsTable fun(self:table, loadConditionsTable:table)
+---@field IconPick fun(self:table, callback:function, bCloseWhenSelect:boolean?, param1:any?, param2:any?)
+---@field OpenLoadConditionsPanel fun(self:table, optionsTable:table, callback:function, frameOptions:table?)
 ---@field 
-

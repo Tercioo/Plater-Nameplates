@@ -533,6 +533,19 @@ end
 
 ---@class df_textentry : table, frame
 ---@field SetTemplate fun(self:df_textentry, template:table)
+---@field Disable fun(self:df_textentry)
+---@field Enable fun(self:df_textentry)
+---@field SetCommitFunction fun(self:df_textentry, func:function)
+---@field SetNext fun(self:df_textentry, next:df_textentry)
+---@field SetLabelText fun(self:df_textentry, text:string)
+---@field SelectAll fun(self:df_textentry)
+---@field SetAutoSelectTextOnFocus fun(self:df_textentry, value:boolean)
+---@field Blink fun(self:df_textentry)
+---@field SetText fun(self:df_textentry, text:string)
+---@field GetText fun(self:df_textentry)
+---@field SetEnterFunction fun(self:df_textentry, func:function, param1:any, param2:any)
+---@field SetHook fun(self:df_textentry, hookName:string, func:function)
+---@field SetAsSearchBox fun(self:df_textentry)
 
 ---@param parent frame
 ---@param textChangedCallback function
