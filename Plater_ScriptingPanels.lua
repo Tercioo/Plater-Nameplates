@@ -3121,8 +3121,6 @@ function Plater.CreateScriptingPanel()
 	
 	--store all spells from the game in a hash table and also on the index table
 	--these are loaded on demand and cleared when the scripting frame is hided
-	scriptingFrame.SpellHashTable = {}
-	scriptingFrame.SpellIndexTable = {}
 	scriptingFrame.SearchString = ""
 	
 	scriptingFrame:SetScript ("OnShow", function()
@@ -3157,11 +3155,6 @@ function Plater.CreateScriptingPanel()
 		if (scriptObject) then
 			scriptingFrame.SaveScript()
 		end
-		
-		--clean the spell hash table
-		wipe (scriptingFrame.SpellHashTable)
-		wipe (scriptingFrame.SpellIndexTable)
-		collectgarbage()
 	end)
 	
 	-- scriptingFrame.ScriptNameTextEntry --name of the script (text entry)
@@ -3739,7 +3732,7 @@ function Plater.CreateScriptingPanel()
 			local spellId = tonumber (text)
 			if (not spellId or not GetSpellInfo (spellId)) then
 				--attempt to get the spellId from the hash table
-				spellId = scriptingFrame.SpellHashTable [string.lower (text)]
+				spellId = Plater.SpellHashTable [string.lower (text)]
 				--if still fail, stop here
 				if (not spellId) then
 					Plater:Msg ("Trigger requires a valid spell name or an ID of a spell")
@@ -3944,9 +3937,9 @@ function Plater.CreateScriptingPanel()
 			add_trigger_textentry:SetHook ("OnEditFocusGained", function (self, capsule)
 				--if ithe script is for aura or castbar and if the textentry box doesnt have an auto complete table yet
 				local scriptObject = scriptingFrame.GetCurrentScriptObject()
-				if ((scriptObject.ScriptType == 1 or scriptObject.ScriptType == 2) and (not add_trigger_textentry.SpellAutoCompleteList or not scriptingFrame.SpellIndexTable[1])) then
+				if ((scriptObject.ScriptType == 1 or scriptObject.ScriptType == 2) and (not add_trigger_textentry.SpellAutoCompleteList or not Plater.SpellIndexTable[1])) then
 					--load spell hash table
-					add_trigger_textentry.SpellAutoCompleteList = scriptingFrame.SpellIndexTable
+					add_trigger_textentry.SpellAutoCompleteList = Plater.SpellIndexTable
 					add_trigger_textentry:SetAsAutoComplete ("SpellAutoCompleteList", nil, true)
 				end
 			end)
