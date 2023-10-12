@@ -3147,6 +3147,8 @@ function Plater.CreateScriptingPanel()
 				tremove (Plater.db.profile.script_data_trash, i)
 			end
 		end
+
+		DF:LoadAllSpells(Plater.SpellHashTable, Plater.SpellIndexTable, Plater.SpellSameNameTable)
 	end)
 	
 	scriptingFrame:SetScript ("OnHide", function()
@@ -3255,14 +3257,6 @@ function Plater.CreateScriptingPanel()
 		end
 
 		return currentEditingScript
-	end
-	
-	function scriptingFrame.LoadGameSpells()
-		if (not next (scriptingFrame.SpellHashTable)) then
-			--load all spells in the game
-			DF:LoadAllSpells (scriptingFrame.SpellHashTable, scriptingFrame.SpellIndexTable)
-			return true
-		end
 	end
 	
 	--restore the values on the text fields and scroll boxes to the values on the object
@@ -3744,9 +3738,6 @@ function Plater.CreateScriptingPanel()
 			--cast the string to number
 			local spellId = tonumber (text)
 			if (not spellId or not GetSpellInfo (spellId)) then
-				--load spell hash table
-				scriptingFrame.LoadGameSpells()
-				
 				--attempt to get the spellId from the hash table
 				spellId = scriptingFrame.SpellHashTable [string.lower (text)]
 				--if still fail, stop here
@@ -3955,7 +3946,6 @@ function Plater.CreateScriptingPanel()
 				local scriptObject = scriptingFrame.GetCurrentScriptObject()
 				if ((scriptObject.ScriptType == 1 or scriptObject.ScriptType == 2) and (not add_trigger_textentry.SpellAutoCompleteList or not scriptingFrame.SpellIndexTable[1])) then
 					--load spell hash table
-					scriptingFrame.LoadGameSpells()
 					add_trigger_textentry.SpellAutoCompleteList = scriptingFrame.SpellIndexTable
 					add_trigger_textentry:SetAsAutoComplete ("SpellAutoCompleteList", nil, true)
 				end

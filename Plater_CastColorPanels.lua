@@ -328,6 +328,8 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
     --audio cues
     local line_select_audio_dropdown = function (self, spellId, audioFilePath)
         DB_CAST_AUDIOCUES[spellId] = audioFilePath
+        castFrame.spellsScroll.CachedTable = nil
+        castFrame.RefreshScroll(0)
     end
 
     local audioFileNameToCueName = {}
@@ -527,7 +529,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
     end
 
     --line
-    local scroll_createline = function (self, index)
+    local scroll_createline = function (self, index) --~create
 
         local line = CreateFrame ("button", "$parentLine" .. index, self, BackdropTemplateMixin and "BackdropTemplate")
         line:SetPoint ("topleft", self, "topleft", 1, -((index-1)*(scroll_line_height+1)) - 1)
@@ -699,11 +701,15 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
     local hasScriptWithPreviewSpellId = function(spellId)
         local previewSpellId = spellId or CONST_PREVIEW_SPELLID
-        for i = 1, #platerInternal.Scripts.DefaultCastScripts do
-            local scriptName = platerInternal.Scripts.DefaultCastScripts[i]
-            local scriptObject = platerInternal.Scripts.GetScriptObjectByName(scriptName)
+        local defaultCastScripts = platerInternal.Scripts.DefaultCastScripts
+        local GetScriptObjectByName = platerInternal.Scripts.GetScriptObjectByName
+        local find = DF.table.find
+
+        for i = 1, #defaultCastScripts do
+            local scriptName = defaultCastScripts[i]
+            local scriptObject = GetScriptObjectByName(scriptName)
             if (scriptObject) then
-                local index = DF.table.find(scriptObject.SpellIds, previewSpellId)
+                local index = find(scriptObject.SpellIds, previewSpellId)
                 if (index) then
                     return true
                 end
@@ -1466,8 +1472,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                     local encounterName = thisData[CONST_CASTINFO_ENCOUNTERNAME]
                     local customSpellName = thisData[CONST_CASTINFO_CUSTOMSPELLNAME]
 
-                    local isTriggerOfAnyPreviewScript = hasScriptWithPreviewSpellId(spellId)
-
+                    local isTriggerOfAnyPreviewScript = hasScriptWithPreviewSpellId(spellId) --123ms
                     local priority = 0 + (isEnabled and 0x8 or 0) + (isTriggerOfAnyPreviewScript and 0x2 or 0) + (DB_CAST_AUDIOCUES[spellId] and 0x4 or 0) + (customSpellName and customSpellName ~= "" and 0x1 or 0)
 
                     allSpells_WithPriority[#allSpells_WithPriority+1] = {
@@ -1488,7 +1493,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                 end
 
                 self.CachedTable = allSpells_WithPriority
-                table.sort(allSpells_WithPriority, function(t1, t2) return t1[13] > t2[13] end)
+                table.sort(allSpells_WithPriority, function(t1, t2) return t1[13] > t2[13] end) --21ms
             end
 
             dataInOrder = self.CachedTable

@@ -4430,16 +4430,6 @@ Plater.CreateAuraTesting()
 		specialAuraFrame:SetPoint ("topright", auraSpecialFrame, "topright", -10, startY)
 		--DF:ApplyStandardBackdrop (specialAuraFrame, false, 0.6)
 		
-		local LoadGameSpellsCalled = false
-		function specialAuraFrame.LoadGameSpells()
-			if (not next (Plater.SpellHashTable) and not LoadGameSpellsCalled) then
-				--load all spells in the game
-				DF:LoadAllSpells (Plater.SpellHashTable, Plater.SpellIndexTable)
-				LoadGameSpellsCalled = true
-				return true
-			end
-		end
-		
 		local scroll_width = 280
 		local scroll_height = 442
 		local scroll_lines = 21
@@ -4576,14 +4566,6 @@ Plater.CreateAuraTesting()
 					if not spellName then
 						-- if the player class does not know the spell, try checking the cache
 						-- avoids "unknown spell" in this case
-
-						if (not next (Plater.SpellHashTable)) then
-							local loaded = specialAuraFrame.LoadGameSpells()
-							if loaded then
-								DF.LoadingAuraAlertFrame:HookScript("OnHide", function() self:Refresh() end)
-							end
-							--C_Timer.After (1, function() self:Refresh() end)
-						end
 						local id = Plater.SpellHashTable[lower(aura)]
 						spellName, _, spellIcon = GetSpellInfo (id)
 					end
@@ -4633,7 +4615,6 @@ Plater.CreateAuraTesting()
 		new_buff_entry:SetJustifyH ("left")
 		
 		new_buff_entry:SetHook ("OnEditFocusGained", function (self, capsule)
-			specialAuraFrame.LoadGameSpells()
 			new_buff_entry.SpellAutoCompleteList = Plater.SpellIndexTable
 			new_buff_entry:SetAsAutoComplete ("SpellAutoCompleteList", nil, true)
 		end)
@@ -5288,44 +5269,11 @@ Plater.CreateAuraTesting()
 		
 		specialAuraFrame:SetScript ("OnShow", function()
 			special_auras_added:Refresh()
-			
-			--not working properly, auras stay "flying" in the screen
-			
-			--[=[
-			fff:SetScript ("OnUpdate", function()
-				
-				for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-					plateFrame.unitFrame.ExtraIconFrame:ClearIcons()
-					plateFrame.unitFrame.ExtraIconFrame:SetIcon (248441, false, GetTime() - 2, 8)
-					plateFrame.unitFrame.ExtraIconFrame:SetIcon (273769, false, GetTime() - 3, 12)
-					plateFrame.unitFrame.ExtraIconFrame:SetIcon (206589, false, GetTime() - 6, 16)
-					plateFrame.unitFrame.ExtraIconFrame:SetIcon (279565, false, GetTime() - 180, 360)
-
-					local spellName, _, spellIcon = GetSpellInfo (248441)
-					local auraIconFrame = Plater.GetAuraIcon (plateFrame.unitFrame.BuffFrame, 1)
-					Plater.AddAura (auraIconFrame, 1, spellName, spellIcon, 1, "BUFF", 8, GetTime()+5, "player", false, false, 248441, false, false, false, false)
-					auraIconFrame.InUse = true
-					
-					local spellName, _, spellIcon = GetSpellInfo (273769)
-					local auraIconFrame = Plater.GetAuraIcon (plateFrame.unitFrame.BuffFrame, 1)
-					Plater.AddAura (auraIconFrame, 2, spellName, spellIcon, 1, "BUFF", 12, GetTime()+2, "player", false, false, 273769, false, false, false, false)
-					auraIconFrame.InUse = true
-				end
-			end)
-			--]=]
+			DF:LoadAllSpells(Plater.SpellHashTable, Plater.SpellIndexTable, Plater.SpellSameNameTable)
 		end)
 		
 		specialAuraFrame:SetScript ("OnHide", function()
-			--[=[
-			fff:SetScript ("OnUpdate", nil)
-			
-			
-			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-				plateFrame.unitFrame.ExtraIconFrame:ClearIcons()
-				hide_non_used_auraFrames (plateFrame.unitFrame.BuffFrame, 1)
-			end
-			--]=]
-			
+
 		end)
 		
 		--create the description

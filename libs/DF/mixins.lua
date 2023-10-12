@@ -431,6 +431,12 @@ detailsFramework.ScriptHookMixin = {
 ---add methods to be used on scrollframes
 ---@class df_scrollboxmixin
 detailsFramework.ScrollBoxFunctions = {
+	--set a function to run right before the refresh function (scroll:Refresh())
+	--this function receives the same parameters as the refresh function
+	SetPreRefreshFunction = function(self, func)
+		self.pre_refresh_func = func
+	end,
+
 	---refresh the scrollbox by resetting all lines created with :CreateLine(), then calling the refresh_func which was set at :CreateScrollBox()
 	---@param self table
 	---@return table
@@ -448,6 +454,10 @@ detailsFramework.ScrollBoxFunctions = {
 		if (self.IsFauxScroll) then
 			self:UpdateFaux(#self.data, self.LineAmount, self.LineHeight)
 			offset = self:GetOffsetFaux()
+		end
+
+		if (self.pre_refresh_func) then
+			detailsFramework:CoreDispatch((self:GetName() or "ScrollBox") .. ":PreRefreshFunc()", self.pre_refresh_func, self, self.data, offset, self.LineAmount)
 		end
 
 		--call the refresh function
@@ -533,7 +543,13 @@ detailsFramework.ScrollBoxFunctions = {
 
 	SetData = function(self, data)
 		self.data = data
+		if (self.OnSetData) then
+			detailsFramework:CoreDispatch((self:GetName() or "ScrollBox") .. ":OnSetData()", self.OnSetData, self, self.data)
+		end
 	end,
+
+
+
 	GetData = function(self)
 		return self.data
 	end,
@@ -541,6 +557,7 @@ detailsFramework.ScrollBoxFunctions = {
 	GetFrames = function(self)
 		return self.Frames
 	end,
+
 	GetLines = function(self) --alias of GetFrames
 		return self.Frames
 	end,
@@ -612,14 +629,17 @@ detailsFramework.ScrollBoxFunctions = {
 	GetOffsetFaux = function(self)
 		return self.offset or 0
 	end,
-	OnVerticalScrollFaux = function(self, value, itemHeight, updateFunction)
-		local scrollbar = self:GetChildFramesFaux();
-		scrollbar:SetValue(value);
-		self.offset = math.floor((value / itemHeight) + 0.5);
+
+	OnVerticalScrollFaux = function(self, value, lineHeight, updateFunction)
+		local scrollbar = self:GetChildFramesFaux()
+		scrollbar:SetValue(value)
+		self.offset = math.floor((value / lineHeight) + 0.5)
+
 		if (updateFunction) then
 			updateFunction(self)
 		end
 	end,
+
 	GetChildFramesFaux = function(frame)
 		local frameName = frame:GetName();
 		if frameName then
@@ -628,6 +648,7 @@ detailsFramework.ScrollBoxFunctions = {
 			return frame.ScrollBar, frame.ScrollChildFrame, frame.ScrollBar.ScrollUpButton, frame.ScrollBar.ScrollDownButton;
 		end
 	end,
+
 	UpdateFaux = function(frame, numItems, numToDisplay, buttonHeight, button, smallWidth, bigWidth, highlightFrame, smallHighlightWidth, bigHighlightWidth, alwaysShowScrollBar)
 		local scrollBar, scrollChildFrame, scrollUpButton, scrollDownButton = frame:GetChildFramesFaux();
 		-- If more than one screen full of items then show the scrollbar
@@ -694,6 +715,7 @@ detailsFramework.ScrollBoxFunctions = {
 				end
 			end
 		end
+
 		return showScrollBar;
 	end,
 }

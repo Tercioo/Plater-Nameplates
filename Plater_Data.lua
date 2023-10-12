@@ -41,6 +41,7 @@ function platerInternal.CreateDataTables(Plater)
     --store spell cache. spell cache is loaded when adding new auras to track
     Plater.SpellHashTable = {}
     Plater.SpellIndexTable = {}
+    Plater.SpellSameNameTable = {}
 
     --export strings identification
     Plater.Export_CastColors = "CastColor"

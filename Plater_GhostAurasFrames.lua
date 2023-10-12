@@ -197,17 +197,9 @@ function Plater.Auras.BuildGhostAurasOptionsTab(frame)
 
     ghostAuraFrame:SetScript("OnShow", function()
         Plater.Auras.GhostAuras.SetSpec()
+        DF:LoadAllSpells(Plater.SpellHashTable, Plater.SpellIndexTable, Plater.SpellSameNameTable)
     end)
     --Plater.Auras.GhostAuras.SetSpec() --debug, will update then the plater options is opened instead when the tab is opened
-
-    --add a ghost aura
-    function ghostAuraFrame.LoadGameSpells()
-        if (not next (Plater.SpellHashTable)) then
-            --load all spells in the game
-            DF:LoadAllSpells(Plater.SpellHashTable, Plater.SpellIndexTable)
-            return true
-        end
-    end
 
     local newAuraLabel = DF:CreateLabel(ghostAuraFrame, "Add Ghost Aura", DF:GetTemplate("font", "ORANGE_FONT_TEMPLATE"))
     DF:SetFontSize(newAuraLabel, 12)
@@ -217,7 +209,6 @@ function Plater.Auras.BuildGhostAurasOptionsTab(frame)
     newAuraEntry:SetJustifyH("left")
 
     newAuraEntry:SetHook("OnEditFocusGained", function(self)
-        ghostAuraFrame.LoadGameSpells()
         newAuraEntry.SpellAutoCompleteList = Plater.SpellIndexTable
         newAuraEntry:SetAsAutoComplete("SpellAutoCompleteList", nil, true)
     end)
