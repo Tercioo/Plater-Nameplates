@@ -14,6 +14,8 @@ local lower = string.lower
 local GetSpellBookItemInfo = GetSpellBookItemInfo
 local unpack = unpack
 local CreateFrame = CreateFrame
+local GameTooltip = GameTooltip
+local tremove = tremove
 
 local CONST_MAX_SPELLS = 500000
 
@@ -54,6 +56,10 @@ local defaultTextForAuraFrame = {
 local spellsHashMap
 local spellsIndexTable
 local spellsWithSameName
+
+function DF:GetSpellCaches()
+	return spellsHashMap, spellsIndexTable, spellsWithSameName
+end
 
 local lazyLoadAllSpells = function(payload, iterationCount, maxIterations)
 	local startPoint = payload.nextIndex
@@ -156,15 +162,15 @@ local onProfileChangedCallback = function(self, newdb)
 	self.db = newdb
 
 	--automatic
-	self.buff_ignored:DoSetData(newdb.aura_tracker.buff_banned)
-	self.debuff_ignored:DoSetData(newdb.aura_tracker.debuff_banned)
-	self.buff_tracked:DoSetData(newdb.aura_tracker.buff_tracked)
-	self.debuff_tracked:DoSetData(newdb.aura_tracker.debuff_tracked)
+	self.buff_ignored:SetData(newdb.aura_tracker.buff_banned)
+	self.debuff_ignored:SetData(newdb.aura_tracker.debuff_banned)
+	self.buff_tracked:SetData(newdb.aura_tracker.buff_tracked)
+	self.debuff_tracked:SetData(newdb.aura_tracker.debuff_tracked)
 
-	self.buff_ignored:DoRefresh()
-	self.debuff_ignored:DoRefresh()
-	self.buff_tracked:DoRefresh()
-	self.debuff_tracked:DoRefresh()
+	self.buff_ignored:Refresh()
+	self.debuff_ignored:Refresh()
+	self.buff_tracked:Refresh()
+	self.debuff_tracked:Refresh()
 
 	--manual
 	self.buffs_added:SetData(newdb.aura_tracker.buff)
@@ -349,23 +355,6 @@ function DF:CreateAuraConfigPanel(parent, name, db, changeCallback, options, tex
 		debuffNameBlacklistEntry.tooltip = "Enter the debuff name using lower case letters."
 		auraPanel_Auto.AddDebuffBlacklistTextBox = debuffNameBlacklistEntry
 
-		local addSpellWithSameNameFunc = function(spellID, profileTable)
-			local spellName = GetSpellInfo(spellID)
-			if (spellName) then
-				spellName = lower(spellName)
-				local spellWithSameName = spellsWithSameName[spellName]
-				if (spellWithSameName) then
-					if (profileTable) then
-						profileTable[spellName] = DF.table.copy({}, spellWithSameName)
-					else
-						db.aura_cache_by_name[spellName] = DF.table.copy({}, spellWithSameName)
-					end
-				end
-			end
-		end
-
-		DF.AddSpellWithSameName = addSpellWithSameNameFunc
-
 		local getSpellIDFromSpellName = function(spellName)
 			--check if the user entered a spell ID
 			local bIsSpellId = tonumber(spellName)
@@ -403,12 +392,9 @@ function DF:CreateAuraConfigPanel(parent, name, db, changeCallback, options, tex
 				newAuraPanel.db.aura_tracker.buff_banned [spellId] = true
 
 				--refresh the buff blacklist frame
-				newAuraPanel.buff_ignored:DoRefresh()
+				newAuraPanel.buff_ignored:Refresh()
 
 				DF:QuickDispatch(changeCallback)
-
-				--add to spells with the same name cache
-				addSpellWithSameNameFunc(spellId)
 			end
 
 		end, textEntryWidth/2 -3, 20, "By Name", nil, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", options.button_text_template))
@@ -434,12 +420,9 @@ function DF:CreateAuraConfigPanel(parent, name, db, changeCallback, options, tex
 				newAuraPanel.db.aura_tracker.buff_banned [spellId] = false
 
 				--refresh the buff blacklist frame
-				newAuraPanel.buff_ignored:DoRefresh()
+				newAuraPanel.buff_ignored:Refresh()
 
 				DF:QuickDispatch(changeCallback)
-
-				--add to spells with the same name cache
-				addSpellWithSameNameFunc(spellId)
 			end
 
 		end, textEntryWidth/2 -3, 20, "By ID", nil, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", options.button_text_template))
@@ -461,12 +444,9 @@ function DF:CreateAuraConfigPanel(parent, name, db, changeCallback, options, tex
 				newAuraPanel.db.aura_tracker.debuff_banned [spellId] = true
 
 				--refresh the buff blacklist frame
-				newAuraPanel.debuff_ignored:DoRefresh()
+				newAuraPanel.debuff_ignored:Refresh()
 
 				DF:QuickDispatch(changeCallback)
-
-				--add to spells with the same name cache
-				addSpellWithSameNameFunc(spellId)
 			end
 		end, textEntryWidth/2 -3, 20, "By Name", nil, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", options.button_text_template))
 
@@ -491,12 +471,9 @@ function DF:CreateAuraConfigPanel(parent, name, db, changeCallback, options, tex
 				newAuraPanel.db.aura_tracker.debuff_banned [spellId] = false
 
 				--refresh the buff blacklist frame
-				newAuraPanel.debuff_ignored:DoRefresh()
+				newAuraPanel.debuff_ignored:Refresh()
 
 				DF:QuickDispatch(changeCallback)
-
-				--add to spells with the same name cache
-				addSpellWithSameNameFunc(spellId)
 			end
 		end, textEntryWidth/2 -3, 20, "By ID", nil, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", options.button_text_template))
 
@@ -534,12 +511,9 @@ function DF:CreateAuraConfigPanel(parent, name, db, changeCallback, options, tex
 				newAuraPanel.db.aura_tracker.debuff_tracked [spellId] = true
 
 				--refresh the buff blacklist frame
-				newAuraPanel.debuff_tracked:DoRefresh()
+				newAuraPanel.debuff_tracked:Refresh()
 
 				DF:QuickDispatch(changeCallback)
-
-				--add to spells with the same name cache
-				addSpellWithSameNameFunc(spellId)
 			end
 		end, textEntryWidth/2 -3, 20, "By Name", nil, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", options.button_text_template))
 
@@ -563,12 +537,9 @@ function DF:CreateAuraConfigPanel(parent, name, db, changeCallback, options, tex
 				newAuraPanel.db.aura_tracker.debuff_tracked [spellId] = false
 
 				--refresh the buff blacklist frame
-				newAuraPanel.debuff_tracked:DoRefresh()
+				newAuraPanel.debuff_tracked:Refresh()
 
 				DF:QuickDispatch(changeCallback)
-
-				--add to spells with the same name cache
-				addSpellWithSameNameFunc(spellId)
 			end
 		end, textEntryWidth/2 -3, 20, "By ID", nil, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", options.button_text_template))
 
@@ -589,13 +560,10 @@ function DF:CreateAuraConfigPanel(parent, name, db, changeCallback, options, tex
 				newAuraPanel.db.aura_tracker.buff_tracked [spellId] = true
 
 				--refresh the buff tracklist frame
-				newAuraPanel.buff_tracked:DoRefresh()
+				newAuraPanel.buff_tracked:Refresh()
 
 				--callback the addon
 				DF:QuickDispatch(changeCallback)
-
-				--add to spells with the same name cache
-				addSpellWithSameNameFunc(spellId)
 			end
 
 		end, textEntryWidth/2 -3, 20, "By Name", nil, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", options.button_text_template))
@@ -621,13 +589,10 @@ function DF:CreateAuraConfigPanel(parent, name, db, changeCallback, options, tex
 				newAuraPanel.db.aura_tracker.buff_tracked [spellId] = false
 
 				--refresh the buff tracklist frame
-				newAuraPanel.buff_tracked:DoRefresh()
+				newAuraPanel.buff_tracked:Refresh()
 
 				--callback the addon
 				DF:QuickDispatch(changeCallback)
-
-				--add to spells with the same name cache
-				addSpellWithSameNameFunc(spellId)
 			end
 		end, textEntryWidth/2 -3, 20, "By ID", nil, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", options.button_text_template))
 
@@ -662,6 +627,22 @@ function DF:CreateAuraConfigPanel(parent, name, db, changeCallback, options, tex
 	--options passed to the create aura panel
 	local width, height, row_height = options.width, options.height, options.row_height
 
+	local scrollWidth = 208
+
+do --deprecated, using a scrollbox tempate from scrollbox.lua
+	local scrollHeight = 343
+	local lineAmount = 18
+	local lineHeight = 18
+	local backdropColor = {.8, .8, .8, 0.2}
+	local backdropColor_OnEnter = {.8, .8, .8, 0.4}
+
+	--aura scroll box default settings
+	local auraScrollDefaultSettings = {
+		show_spell_tooltip = false,
+		line_height = 18,
+		line_amount = 18,
+	}
+
 	local autoTrackList_LineOnEnter = function(self, capsule, value)
 		local flag = self.Flag
 		value = value or self.SpellID
@@ -677,34 +658,26 @@ function DF:CreateAuraConfigPanel(parent, name, db, changeCallback, options, tex
 				GameCooltip2:AddIcon(spellIcon, 1, 1, 14, 14, .1, .9, .1, .9)
 			end
 			GameCooltip2:Show()
+
 		else
+			local spellName, _, spellIcon = GetSpellInfo(value)
+			if (spellName and spellsWithSameName) then
+				local spellNameLower = spellName:lower()
+				local sameNameSpells = spellsWithSameName[spellNameLower]
 
-			local spellName = GetSpellInfo(value)
-			if (spellName) then
-
-				local spellsWithSameName = db.aura_cache_by_name [lower(spellName)]
-				if (not spellsWithSameName) then
-					addSpellWithSameNameFunc(value)
-					spellsWithSameName = db.aura_cache_by_name [lower(spellName)]
-				end
-
-				if (spellsWithSameName) then
+				if (sameNameSpells) then
 					GameCooltip2:Preset(2)
 					GameCooltip2:SetOwner(self, "left", "right", 2, 0)
 					GameCooltip2:SetOption("TextSize", 10)
 
-					for i, spellID in ipairs(spellsWithSameName) do
-						local spellName, _, spellIcon = GetSpellInfo(spellID)
-						if (spellName) then
-							GameCooltip2:AddLine(spellName .. "(" .. spellID .. ")")
-							GameCooltip2:AddIcon(spellIcon, 1, 1, 14, 14, .1, .9, .1, .9)
-						end
+					for i, spellId in ipairs(sameNameSpells) do
+						GameCooltip2:AddLine(spellName .. " (" .. spellId .. ")")
+						GameCooltip2:AddIcon(spellIcon, 1, 1, 14, 14, .1, .9, .1, .9)
 					end
 
 					GameCooltip2:Show()
 				end
 			end
-
 		end
 	end
 
@@ -712,19 +685,6 @@ function DF:CreateAuraConfigPanel(parent, name, db, changeCallback, options, tex
 		GameCooltip2:Hide()
 	end
 
-	local scrollWidth = 208
-	local scrollHeight = 343
-	local lineAmount = 18
-	local lineHeight = 18
-	local backdropColor = {.8, .8, .8, 0.2}
-	local backdropColor_OnEnter = {.8, .8, .8, 0.4}
-
-	--aura scroll box default settings
-	local auraScrollDefaultSettings = {
-		show_spell_tooltip = false,
-		line_height = 18,
-		line_amount = 18,
-	}
 
 	local createAuraScrollBox = function(scrollBoxParent, scrollBoxName, scrollBoxParentKey, scrollBoxTitle, databaseTable, removeAuraFunc, options)
 		local scrollOptions = {}
@@ -776,7 +736,7 @@ function DF:CreateAuraConfigPanel(parent, name, db, changeCallback, options, tex
 			local spellId = self:GetParent().SpellID
 			databaseTable[spellId] = nil
 			databaseTable["" .. (spellId or "")] = nil -- cleanup...
-			scrollBoxParent[scrollBoxParentKey]:DoRefresh()
+			scrollBoxParent[scrollBoxParentKey]:Refresh()
 			if (removeAuraFunc) then --upvalue
 				detailsFramework:QuickDispatch(removeAuraFunc)
 			end
@@ -823,7 +783,7 @@ function DF:CreateAuraConfigPanel(parent, name, db, changeCallback, options, tex
 		scrollBoxParent[scrollBoxParentKey] = auraScrollBox
 		auraScrollBox.OriginalData = databaseTable
 
-		function auraScrollBox:DoRefresh()
+		function auraScrollBox:Refresh()
 			local t = {}
 			local added = {}
 			for spellID, flag in pairs(auraScrollBox.OriginalData) do
@@ -843,8 +803,12 @@ function DF:CreateAuraConfigPanel(parent, name, db, changeCallback, options, tex
 
 		function auraScrollBox:DoSetData(newDB)
 			self:SetData(newDB)
-			auraScrollBox.OriginalData = newDB
-			self:DoRefresh()
+			self.OriginalData = newDB
+			if (self.Refresh) then
+				self:Refresh()
+			else
+				self:Refresh()
+			end
 		end
 
 		local titleLabel = DF:CreateLabel(scrollBoxParent, scrollBoxTitle)
@@ -856,50 +820,51 @@ function DF:CreateAuraConfigPanel(parent, name, db, changeCallback, options, tex
 			auraScrollBox:CreateLine(createLineFunc)
 		end
 
-		auraScrollBox:DoRefresh()
+		auraScrollBox:Refresh()
 		return auraScrollBox
 	end
+end
 
-	local buff_tracked = createAuraScrollBox(auraPanel_Auto, "$parentBuffTracked", "BuffTrackerScroll", newAuraPanel.LocTexts.BUFFS_TRACKED, newAuraPanel.db.aura_tracker.buff_tracked, function()
+	local onAuraRemoveCallback = function()
 		if (changeCallback) then
 			DF:QuickDispatch(changeCallback)
 		end
-	end)
-	local debuff_tracked = createAuraScrollBox(auraPanel_Auto, "$parentDebuffTracked", "DebuffTrackerScroll", newAuraPanel.LocTexts.DEBUFFS_TRACKED, newAuraPanel.db.aura_tracker.debuff_tracked, function()
-		if (changeCallback) then
-			DF:QuickDispatch(changeCallback)
-		end
-	end)
+	end
 
-	local buff_ignored = createAuraScrollBox(auraPanel_Auto, "$parentBuffIgnored", "BuffIgnoredScroll", newAuraPanel.LocTexts.BUFFS_IGNORED, newAuraPanel.db.aura_tracker.buff_banned, function()
-		if (changeCallback) then
-			DF:QuickDispatch(changeCallback)
-		end
-	end)
-	local debuff_ignored = createAuraScrollBox(auraPanel_Auto, "$parentDebuffIgnored", "DebuffIgnoredScroll", newAuraPanel.LocTexts.DEBUFFS_IGNORED, newAuraPanel.db.aura_tracker.debuff_banned, function()
-		if (changeCallback) then
-			DF:QuickDispatch(changeCallback)
-		end
-	end)
+	options.title_text = texts.DEBUFFS_TRACKED or defaultTextForAuraFrame.DEBUFFS_TRACKED
+	local debuffTrackedAuraScrollBox = detailsFramework:CreateAuraScrollBox(auraPanel_Auto, "$parentDebuffTracked", newAuraPanel.db.aura_tracker.debuff_tracked, onAuraRemoveCallback, options)
+	auraPanel_Auto.DebuffTrackerScroll = debuffTrackedAuraScrollBox
+
+	options.title_text = texts.BUFFS_IGNORED or defaultTextForAuraFrame.BUFFS_IGNORED
+	local buffIgnoredAuraScrollBox = detailsFramework:CreateAuraScrollBox(auraPanel_Auto, "$parentBuffIgnored", newAuraPanel.db.aura_tracker.buff_banned, onAuraRemoveCallback, options)
+	auraPanel_Auto.BuffIgnoredScroll = buffIgnoredAuraScrollBox
+
+	options.title_text = texts.DEBUFFS_IGNORED or defaultTextForAuraFrame.DEBUFFS_IGNORED
+	local debuffIgnoredAuraScrollBox = detailsFramework:CreateAuraScrollBox(auraPanel_Auto, "$parentDebuffIgnored", newAuraPanel.db.aura_tracker.debuff_banned, onAuraRemoveCallback, options)
+	auraPanel_Auto.DebuffIgnoredScroll = debuffIgnoredAuraScrollBox
+
+	options.title_text = texts.BUFFS_TRACKED or defaultTextForAuraFrame.BUFFS_TRACKED
+	local buffTrackedAuraScrollBox = detailsFramework:CreateAuraScrollBox(auraPanel_Auto, "$parentBuffTracked", newAuraPanel.db.aura_tracker.buff_tracked, onAuraRemoveCallback, options)
+	auraPanel_Auto.BuffTrackerScroll = buffTrackedAuraScrollBox
 
 	local xLocation = 140
 	scrollWidth = scrollWidth + 20
 
-	debuff_ignored:SetPoint("topleft", auraPanel_Auto, "topleft", 0 + xLocation, y)
-	buff_ignored:SetPoint("topleft", auraPanel_Auto, "topleft", 8 + scrollWidth + xLocation, y)
-	debuff_tracked:SetPoint("topleft", auraPanel_Auto, "topleft", 16 +(scrollWidth * 2) + xLocation, y)
-	buff_tracked:SetPoint("topleft", auraPanel_Auto, "topleft", 24 +(scrollWidth * 3) + xLocation, y)
+	debuffIgnoredAuraScrollBox:SetPoint("topleft", auraPanel_Auto, "topleft", 0 + xLocation, y)
+	buffIgnoredAuraScrollBox:SetPoint("topleft", auraPanel_Auto, "topleft", 8 + scrollWidth + xLocation, y)
+	debuffTrackedAuraScrollBox:SetPoint("topleft", auraPanel_Auto, "topleft", 16 +(scrollWidth * 2) + xLocation, y)
+	buffTrackedAuraScrollBox:SetPoint("topleft", auraPanel_Auto, "topleft", 24 +(scrollWidth * 3) + xLocation, y)
 
-	newAuraPanel.buff_ignored = buff_ignored
-	newAuraPanel.debuff_ignored = debuff_ignored
-	newAuraPanel.buff_tracked = buff_tracked
-	newAuraPanel.debuff_tracked = debuff_tracked
+	newAuraPanel.buff_ignored = buffIgnoredAuraScrollBox
+	newAuraPanel.debuff_ignored = debuffIgnoredAuraScrollBox
+	newAuraPanel.buff_tracked = buffTrackedAuraScrollBox
+	newAuraPanel.debuff_tracked = debuffTrackedAuraScrollBox
 
 	auraPanel_Auto:SetScript("OnShow", function()
-		buff_tracked:DoRefresh()
-		debuff_tracked:DoRefresh()
-		buff_ignored:DoRefresh()
-		debuff_ignored:DoRefresh()
+		buffTrackedAuraScrollBox:Refresh()
+		debuffTrackedAuraScrollBox:Refresh()
+		buffIgnoredAuraScrollBox:Refresh()
+		debuffIgnoredAuraScrollBox:Refresh()
 	end)
 	auraPanel_Auto:SetScript("OnHide", function()
 		--
