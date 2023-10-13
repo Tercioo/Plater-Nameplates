@@ -1206,24 +1206,6 @@ end
 
 
 ------------------------------------------------------------------------------------------------------------
---selector button
---a button which can be used to select a value from a list of values, has a text and an icon
-
----@class df_selectorbutton_options : df_button
----@field icon texture
----@field text string
----@field width number
----@field height number
-
----@class df_selectorbutton : df_button
-
-function detailsFramework:CreateSelectorButton(parent, onClickCallback, options)
-	local button = detailsFramework:CreateButton(parent, onClickCallback, 1, 1, "", false, false, "", nil, nil, false)
-	
-
-end
-
-------------------------------------------------------------------------------------------------------------
 --tab button
 
 ---@class df_tabbutton : button

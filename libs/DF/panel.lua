@@ -758,8 +758,8 @@ local add_row = function(self, t, need_update)
 	text:SetPoint("left", thisrow, "left", 2, 0)
 	text:SetText(t.name)
 
-	tinsert(self._raw_rows, t)
-	tinsert(self.rows, thisrow)
+	table.insert(self._raw_rows, t)
+	table.insert(self.rows, thisrow)
 
 	if (need_update) then
 		self:AlignRows()
@@ -792,12 +792,12 @@ local align_rows = function(self)
 					row.width = row_width
 				end
 				row:SetPoint("topleft", self, "topleft", cur_width, -1)
-				tinsert(self._anchors, cur_width)
+				table.insert(self._anchors, cur_width)
 				cur_width = cur_width + row_width + 1
 			else
 				row:SetPoint("topleft", self, "topleft", cur_width, -1)
 				row.width = self._raw_rows [index].width
-				tinsert(self._anchors, cur_width)
+				table.insert(self._anchors, cur_width)
 				cur_width = cur_width + self._raw_rows [index].width + 1
 			end
 
@@ -813,7 +813,7 @@ local align_rows = function(self)
 						self:CreateRowText (line)
 						text = tremove(line.text_available)
 					end
-					tinsert(line.text_inuse, text)
+					table.insert(line.text_inuse, text)
 					text:SetPoint("left", line, "left", self._anchors [#self._anchors], 0)
 					text:SetWidth(row.width)
 
@@ -828,7 +828,7 @@ local align_rows = function(self)
 						self:CreateRowEntry (line)
 						entry = tremove(line.entry_available)
 					end
-					tinsert(line.entry_inuse, entry)
+					table.insert(line.entry_inuse, entry)
 					entry:SetPoint("left", line, "left", self._anchors [#self._anchors], 0)
 					if (sindex == rows_shown) then
 						entry:SetWidth(row.width - 25)
@@ -857,7 +857,7 @@ local align_rows = function(self)
 						checkbox = tremove(line.checkbox_available)
 					end
 
-					tinsert(line.checkbox_inuse, checkbox)
+					table.insert(line.checkbox_inuse, checkbox)
 
 					checkbox:SetPoint("left", line, "left", self._anchors [#self._anchors] + ((row.width - 20) / 2), 0)
 					if (sindex == rows_shown) then
@@ -879,7 +879,7 @@ local align_rows = function(self)
 						self:CreateRowButton (line)
 						button = tremove(line.button_available)
 					end
-					tinsert(line.button_inuse, button)
+					table.insert(line.button_inuse, button)
 					button:SetPoint("left", line, "left", self._anchors [#self._anchors], 0)
 					if (sindex == rows_shown) then
 						button:SetWidth(row.width - 25)
@@ -925,7 +925,7 @@ local align_rows = function(self)
 						self:CreateRowIcon (line)
 						icon = tremove(line.icon_available)
 					end
-					tinsert(line.icon_inuse, icon)
+					table.insert(line.icon_inuse, icon)
 					icon:SetPoint("left", line, "left", self._anchors [#self._anchors] + ( ((row.width or 22) - 22) / 2), 0)
 					icon.func = row.func
 				end
@@ -938,7 +938,7 @@ local align_rows = function(self)
 						self:CreateRowTexture (line)
 						texture = tremove(line.texture_available)
 					end
-					tinsert(line.texture_inuse, texture)
+					table.insert(line.texture_inuse, texture)
 					texture:SetPoint("left", line, "left", self._anchors [#self._anchors] + ( ((row.width or 22) - 22) / 2), 0)
 				end
 
@@ -1001,42 +1001,42 @@ local update_rows = function(self, updated_rows)
 
 	for index, row in ipairs(self.scrollframe.lines) do
 		for i = #row.text_inuse, 1, -1 do
-			tinsert(row.text_available, tremove(row.text_inuse, i))
+			table.insert(row.text_available, tremove(row.text_inuse, i))
 		end
 		for i = 1, #row.text_available do
 			row.text_available[i]:Hide()
 		end
 
 		for i = #row.entry_inuse, 1, -1 do
-			tinsert(row.entry_available, tremove(row.entry_inuse, i))
+			table.insert(row.entry_available, tremove(row.entry_inuse, i))
 		end
 		for i = 1, #row.entry_available do
 			row.entry_available[i]:Hide()
 		end
 
 		for i = #row.button_inuse, 1, -1 do
-			tinsert(row.button_available, tremove(row.button_inuse, i))
+			table.insert(row.button_available, tremove(row.button_inuse, i))
 		end
 		for i = 1, #row.button_available do
 			row.button_available[i]:Hide()
 		end
 
 		for i = #row.checkbox_inuse, 1, -1 do
-			tinsert(row.checkbox_available, tremove(row.checkbox_inuse, i))
+			table.insert(row.checkbox_available, tremove(row.checkbox_inuse, i))
 		end
 		for i = 1, #row.checkbox_available do
 			row.checkbox_available[i]:Hide()
 		end
 
 		for i = #row.icon_inuse, 1, -1 do
-			tinsert(row.icon_available, tremove(row.icon_inuse, i))
+			table.insert(row.icon_available, tremove(row.icon_inuse, i))
 		end
 		for i = 1, #row.icon_available do
 			row.icon_available[i]:Hide()
 		end
 
 		for i = #row.texture_inuse, 1, -1 do
-			tinsert(row.texture_available, tremove(row.texture_inuse, i))
+			table.insert(row.texture_available, tremove(row.texture_inuse, i))
 		end
 		for i = 1, #row.texture_available do
 			row.texture_available[i]:Hide()
@@ -1052,7 +1052,7 @@ end
 local create_panel_text = function(self, row)
 	row.text_total = row.text_total + 1
 	local text = detailsFramework:NewLabel(row, nil, self._name .. "$parentLabel" .. row.text_total, "text" .. row.text_total)
-	tinsert(row.text_available, text)
+	table.insert(row.text_available, text)
 end
 
 local create_panel_entry = function(self, row)
@@ -1083,7 +1083,7 @@ local create_panel_entry = function(self, row)
 	editbox:SetTemplate(detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
 	editbox:SetBackdropColor(.2, .2, .2, 0.7)
 
-	tinsert(row.entry_available, editbox)
+	table.insert(row.entry_available, editbox)
 end
 
 local create_panel_checkbox = function(self, row)
@@ -1094,7 +1094,7 @@ local create_panel_checkbox = function(self, row)
 	switch:SetAsCheckBox()
 	switch:SetTemplate(detailsFramework:GetTemplate("switch", "OPTIONS_CHECKBOX_TEMPLATE"))
 
-	tinsert(row.checkbox_available, switch)
+	table.insert(row.checkbox_available, switch)
 end
 
 local create_panel_button = function(self, row)
@@ -1111,7 +1111,7 @@ local create_panel_button = function(self, row)
 	button:SetHook("OnEnter", button_on_enter)
 	button:SetHook("OnLeave", button_on_leave)
 
-	tinsert(row.button_available, button)
+	table.insert(row.button_available, button)
 end
 
 local icon_onclick = function(texture, iconbutton)
@@ -1136,13 +1136,13 @@ local create_panel_icon = function(self, row)
 
 	icon:SetPoint("center", iconbutton, "center", 0, 0)
 
-	tinsert(row.icon_available, iconbutton)
+	table.insert(row.icon_available, iconbutton)
 end
 
 local create_panel_texture = function(self, row)
 	row.texture_total = row.texture_total + 1
 	local texture = detailsFramework:NewImage(row, nil, 20, 20, "artwork", nil, "_icon" .. row.texture_total, "$parentIcon" .. row.texture_total)
-	tinsert(row.texture_available, texture)
+	table.insert(row.texture_available, texture)
 end
 
 local set_fill_function = function(self, func)
@@ -1439,7 +1439,7 @@ function detailsFramework:NewFillPanel(parent, rows, name, member, w, h, total_l
 
 			row:SetPoint("topleft", scrollframe, "topleft", 0, (i-1) * size * -1)
 			row:SetPoint("topright", scrollframe, "topright", 0, (i-1) * size * -1)
-			tinsert(scrollframe.lines, row)
+			table.insert(scrollframe.lines, row)
 
 			row.text_available = {}
 			row.text_inuse = {}
@@ -1518,7 +1518,7 @@ function detailsFramework:IconPick (callback, close_when_select, param1, param2)
 		local string_lower = string.lower
 
 		detailsFramework.IconPickFrame = CreateFrame("frame", "DetailsFrameworkIconPickFrame", UIParent, "BackdropTemplate")
-		tinsert(UISpecialFrames, "DetailsFrameworkIconPickFrame")
+		table.insert(UISpecialFrames, "DetailsFrameworkIconPickFrame")
 		detailsFramework.IconPickFrame:SetFrameStrata("FULLSCREEN")
 
 		detailsFramework.IconPickFrame:SetPoint("center", UIParent, "center")
@@ -2081,7 +2081,7 @@ function detailsFramework:CreateSimplePanel(parent, width, height, title, frameN
 	simplePanel.DontRightClickClose = panelOptions.DontRightClickClose
 
 	if (not panelOptions.NoTUISpecialFrame) then
-		tinsert(UISpecialFrames, frameName)
+		table.insert(UISpecialFrames, frameName)
 	end
 
 	if (panelOptions.UseStatusBar and not panelOptions.RoundedCorners) then
@@ -2274,7 +2274,7 @@ function detailsFramework:Create1PxPanel(parent, width, height, title, name, con
 	newFrame:SetPoint("center", UIParent, "center", 0, 0)
 
 	if (name and not noSpecialFrame) then
-		tinsert(UISpecialFrames, name)
+		table.insert(UISpecialFrames, name)
 	end
 
 	newFrame:SetScript("OnMouseDown", simple_panel_mouse_down)
@@ -2483,7 +2483,7 @@ function detailsFramework:ShowTextPromptPanel(message, callback)
 		promptFrame:SetScript("OnDragStart", function() promptFrame:StartMoving() end)
 		promptFrame:SetScript("OnDragStop", function() promptFrame:StopMovingOrSizing() end)
 		promptFrame:SetScript("OnMouseDown", function(self, button) if (button == "RightButton") then promptFrame.EntryBox:ClearFocus() promptFrame:Hide() end end)
-		tinsert(UISpecialFrames, "DetailsFrameworkPrompt")
+		table.insert(UISpecialFrames, "DetailsFrameworkPrompt")
 
 		detailsFramework:CreateTitleBar (promptFrame, "Prompt!")
 		detailsFramework:ApplyStandardBackdrop(promptFrame)
@@ -2828,7 +2828,7 @@ local draw_overlay = function(self, this_overlay, overlayData, color)
 		local this_block = this_overlay [index]
 		if (not this_block) then
 			this_block = self.Graphic:CreateTexture(nil, "border")
-			tinsert(this_overlay, this_block)
+			table.insert(this_overlay, this_block)
 		end
 		this_block:SetHeight(self.Graphic:GetHeight())
 
@@ -2859,12 +2859,12 @@ local chart_panel_add_overlay = function(self, overlayData, color, name, icon)
 		local this_overlay = self.Overlays [self.OverlaysAmount]
 		if (not this_overlay) then
 			this_overlay = {}
-			tinsert(self.Overlays, this_overlay)
+			table.insert(self.Overlays, this_overlay)
 		end
 
 		draw_overlay (self, this_overlay, overlayData, color)
 
-		tinsert(self.OData, {overlayData, color or line_default_color})
+		table.insert(self.OData, {overlayData, color or line_default_color})
 		if (name and self.HeaderShowOverlays) then
 			self:AddLabel (color or line_default_color, name, "overlay", #self.OData)
 		end
@@ -3007,10 +3007,10 @@ local chart_panel_add_data = function(self, graphicData, color, name, elapsedTim
 	local content = graphicData
 
 	--smooth the start and end of the chart
-	tinsert(content, 1, 0)
-	tinsert(content, 1, 0)
-	tinsert(content, #content+1, 0)
-	tinsert(content, #content+1, 0)
+	table.insert(content, 1, 0)
+	table.insert(content, 1, 0)
+	table.insert(content, #content+1, 0)
+	table.insert(content, #content+1, 0)
 
 	local index = 3
 	local graphMaxDps = math.max(LibGraphChartFrame.max_value, maxValue)
@@ -3094,7 +3094,7 @@ local chart_panel_add_data = function(self, graphicData, color, name, elapsedTim
 		chartPanel:SetScale(maxValue)
 	end
 
-	tinsert(chartPanel.GData, {builtData, color or line_default_color, lineTexture, maxValue, elapsedTime})
+	table.insert(chartPanel.GData, {builtData, color or line_default_color, lineTexture, maxValue, elapsedTime})
 	if (name) then
 		chartPanel:AddLabel(color or line_default_color, name, "graphic", #chartPanel.GData)
 	end
@@ -3403,7 +3403,7 @@ local gframe_reset = function(self)
 	if (self.GraphLib_Lines_Used) then
 		for i = #self.GraphLib_Lines_Used, 1, -1 do
 			local line = tremove(self.GraphLib_Lines_Used)
-			tinsert(self.GraphLib_Lines, line)
+			table.insert(self.GraphLib_Lines, line)
 			line:Hide()
 		end
 	end
@@ -3572,7 +3572,7 @@ local simple_list_box_GetOrCreateWidget = function(self)
 			widget.XButton:Hide()
 		end
 
-		tinsert(self.widgets, widget)
+		table.insert(self.widgets, widget)
 	end
 	self.nextWidget = self.nextWidget + 1
 	return widget
@@ -3738,8 +3738,11 @@ end
 ---@field ReajustNumFrames boolean?
 ---@field DontHideChildrenOnPreRefresh boolean
 ---@field refresh_func fun(self:df_scrollbox, data:table, offset:number, numlines:number)
+---@field Refresh fun(self:df_scrollbox, data:table, offset:number, numlines:number)
 ---@field CreateLineFunc fun(self:df_scrollbox, index:number)?
 ---@field CreateLine fun(self:df_scrollbox, func:function)
+---@field SetData fun(self:df_scrollbox, data:table)
+---@field GetData fun(self:df_scrollbox): table
 ---@field OnSetData fun(self:df_scrollbox, data:table)? if exists, this function is called after the SetData with the same parameters
 ---@field
 
@@ -4275,7 +4278,7 @@ detailsFramework.DataScrollFunctions = {
 			for i = 1, #data do
 				for o = 1, #data[i] do
 					if (data[i][o]:find(filter)) then
-						tinsert(currentData, data[i])
+						table.insert(currentData, data[i])
 						break
 					end
 				end
@@ -4634,7 +4637,7 @@ function detailsFramework:CreateBorderFrame(parent, name)
 		local leftBorder = f:CreateTexture(nil, "overlay")
 		leftBorder:SetDrawLayer("overlay", 7)
 		leftBorder:SetColorTexture(1, 1, 1, 1)
-		tinsert(f.allTextures, leftBorder)
+		table.insert(f.allTextures, leftBorder)
 		f.leftBorder = leftBorder
 		PixelUtil.SetPoint(leftBorder, "topright", f, "topleft", 0, 1, 0, 1)
 		PixelUtil.SetPoint(leftBorder, "bottomright", f, "bottomleft", 0, -1, 0, -1)
@@ -4644,7 +4647,7 @@ function detailsFramework:CreateBorderFrame(parent, name)
 		local rightBorder = f:CreateTexture(nil, "overlay")
 		rightBorder:SetDrawLayer("overlay", 7)
 		rightBorder:SetColorTexture(1, 1, 1, 1)
-		tinsert(f.allTextures, rightBorder)
+		table.insert(f.allTextures, rightBorder)
 		f.rightBorder = rightBorder
 		PixelUtil.SetPoint(rightBorder, "topleft", f, "topright", 0, 1, 0, 1)
 		PixelUtil.SetPoint(rightBorder, "bottomleft", f, "bottomright", 0, -1, 0, -1)
@@ -4654,7 +4657,7 @@ function detailsFramework:CreateBorderFrame(parent, name)
 		local topBorder = f:CreateTexture(nil, "overlay")
 		topBorder:SetDrawLayer("overlay", 7)
 		topBorder:SetColorTexture(1, 1, 1, 1)
-		tinsert(f.allTextures, topBorder)
+		table.insert(f.allTextures, topBorder)
 		f.topBorder = topBorder
 		PixelUtil.SetPoint(topBorder, "bottomleft", f, "topleft", 0, 0, 0, 0)
 		PixelUtil.SetPoint(topBorder, "bottomright", f, "topright", 0, 0, 0, 0)
@@ -4664,7 +4667,7 @@ function detailsFramework:CreateBorderFrame(parent, name)
 		local bottomBorder = f:CreateTexture(nil, "overlay")
 		bottomBorder:SetDrawLayer("overlay", 7)
 		bottomBorder:SetColorTexture(1, 1, 1, 1)
-		tinsert(f.allTextures, bottomBorder)
+		table.insert(f.allTextures, bottomBorder)
 		f.bottomBorder = bottomBorder
 		PixelUtil.SetPoint(bottomBorder, "topleft", f, "bottomleft", 0, 0, 0, 0)
 		PixelUtil.SetPoint(bottomBorder, "topright", f, "bottomright", 0, 0, 0, 0)
@@ -5364,7 +5367,7 @@ function detailsFramework:ShowErrorMessage (errorMessage, titleText)
 		f:SetScript("OnDragStart", function() f:StartMoving() end)
 		f:SetScript("OnDragStop", function() f:StopMovingOrSizing() end)
 		f:SetScript("OnMouseDown", function(self, button) if (button == "RightButton") then f:Hide() end end)
-		tinsert(UISpecialFrames, "DetailsFrameworkErrorMessagePanel")
+		table.insert(UISpecialFrames, "DetailsFrameworkErrorMessagePanel")
 		detailsFramework.ErrorMessagePanel = f
 
 		detailsFramework:CreateTitleBar (f, "Details! Framework Error!")
@@ -5483,9 +5486,9 @@ detailsFramework.ListboxFunctions = {
 		local data = frameCanvas.data
 		local newEntry = {}
 		for i = 1, frameCanvas.headerLength do
-			tinsert(newEntry, "")
+			table.insert(newEntry, "")
 		end
-		tinsert(data, newEntry)
+		table.insert(data, newEntry)
 		frameCanvas.scrollBox:Refresh()
 	end,
 
@@ -5537,7 +5540,7 @@ detailsFramework.ListboxFunctions = {
 					local dataTable = textEntry.dataTable
 					dataTable[textEntry.dataTableIndex] = text
 				end)
-				tinsert(line.widgets, textEntry)
+				table.insert(line.widgets, textEntry)
 				line:AddFrameToHeaderAlignment(textEntry)
 			end
 		end
@@ -5609,8 +5612,8 @@ function detailsFramework:CreateListBox(parent, name, data, options, headerTable
 		frameCanvas.headerLength = #headerTable
 
 		--add the detele line column into the header frame
-		tinsert(headerTable, 1, {text = "#", width = 20, isIndex = true}) --isDelete signals the createScrollLine() to make the delete button for the line
-		tinsert(headerTable, {text = "Delete", width = 50, isDelete = true}) --isDelete signals the createScrollLine() to make the delete button for the line
+		table.insert(headerTable, 1, {text = "#", width = 20, isIndex = true}) --isDelete signals the createScrollLine() to make the delete button for the line
+		table.insert(headerTable, {text = "Delete", width = 50, isDelete = true}) --isDelete signals the createScrollLine() to make the delete button for the line
 
 		local header = detailsFramework:CreateHeader(frameCanvas, headerTable, headerOptions)
 		--set the header point
