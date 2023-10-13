@@ -3146,7 +3146,7 @@ function Plater.CreateScriptingPanel()
 			end
 		end
 
-		DF:LoadAllSpells(Plater.SpellHashTable, Plater.SpellIndexTable, Plater.SpellSameNameTable)
+		DF:LoadSpellCache(Plater.SpellHashTable, Plater.SpellIndexTable, Plater.SpellSameNameTable)
 	end)
 	
 	scriptingFrame:SetScript ("OnHide", function()
@@ -3155,6 +3155,8 @@ function Plater.CreateScriptingPanel()
 		if (scriptObject) then
 			scriptingFrame.SaveScript()
 		end
+
+		DF:UnloadSpellCache()
 	end)
 	
 	-- scriptingFrame.ScriptNameTextEntry --name of the script (text entry)

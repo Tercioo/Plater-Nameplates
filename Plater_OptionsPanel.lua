@@ -2647,6 +2647,13 @@ Plater.CreateAuraTesting()
 	}
 	
 	auraFilterFrame:SetSize (f:GetWidth(), f:GetHeight() + startY)
+
+	auraFilterFrame:SetScript("OnShow", function()
+		DF:LoadSpellCache(Plater.SpellHashTable, Plater.SpellIndexTable, Plater.SpellSameNameTable)
+	end)
+	auraFilterFrame:SetScript("OnHide", function()
+		DF:UnloadSpellCache()
+	end)
 	
 	local auraConfigPanel = DF:CreateAuraConfigPanel (auraFilterFrame, "$parentAuraConfig", Plater.db.profile, method_change_callback, aura_options, debuff_panel_texts)
 	auraConfigPanel:SetPoint ("topleft", auraFilterFrame, "topleft", 10, startY)
@@ -3496,7 +3503,7 @@ Plater.CreateAuraTesting()
 						colorsFrame.ImportEditor.editbox:SetFocus (true)
 					end)
 				end
-				local import_button = DF:CreateButton (colorsFrame, import_func, 70, 20, "import", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				local import_button = DF:CreateButton (colorsFrame, import_func, 70, 20, L["IMPORT"], -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 				import_button:SetPoint ("right", refresh_button, "left", -2, 0)
 				import_button:SetFrameLevel (colorsFrame.Header:GetFrameLevel() + 20)
 				
@@ -3561,7 +3568,7 @@ Plater.CreateAuraTesting()
 					
 					--check if there's at least 1 npc
 					if (#exportedTable < 1) then
-						Plater:Msg ("There's nothing to export.")
+						Plater:Msg(L["OPTIONS_NOTHING_TO_EXPORT"])
 						return
 					end
 					
@@ -3582,9 +3589,9 @@ Plater.CreateAuraTesting()
 					end)
 				end
 				
-				local export_button = DF:CreateButton (colorsFrame, export_func, 70, 20, "export", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
-				export_button:SetPoint ("right", import_button, "left", -2, 0)
-				export_button:SetFrameLevel (colorsFrame.Header:GetFrameLevel() + 20)
+				local exportButton = DF:CreateButton(colorsFrame, export_func, 70, 20, L["EXPORT"], -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+				exportButton:SetPoint("right", import_button, "left", -2, 0)
+				exportButton:SetFrameLevel(colorsFrame.Header:GetFrameLevel() + 20)
 			
 			--disable all button
 				local disableAllColors = function()
@@ -5269,11 +5276,10 @@ Plater.CreateAuraTesting()
 		
 		specialAuraFrame:SetScript ("OnShow", function()
 			special_auras_added:Refresh()
-			DF:LoadAllSpells(Plater.SpellHashTable, Plater.SpellIndexTable, Plater.SpellSameNameTable)
+			DF:LoadSpellCache(Plater.SpellHashTable, Plater.SpellIndexTable, Plater.SpellSameNameTable)
 		end)
-		
 		specialAuraFrame:SetScript ("OnHide", function()
-
+			DF:UnloadSpellCache()
 		end)
 		
 		--create the description

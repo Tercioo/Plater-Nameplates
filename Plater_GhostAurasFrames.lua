@@ -197,8 +197,12 @@ function Plater.Auras.BuildGhostAurasOptionsTab(frame)
 
     ghostAuraFrame:SetScript("OnShow", function()
         Plater.Auras.GhostAuras.SetSpec()
-        DF:LoadAllSpells(Plater.SpellHashTable, Plater.SpellIndexTable, Plater.SpellSameNameTable)
+        DF:LoadSpellCache(Plater.SpellHashTable, Plater.SpellIndexTable, Plater.SpellSameNameTable)
     end)
+    ghostAuraFrame:SetScript("OnHide", function()
+        DF:UnloadSpellCache()
+    end)
+
     --Plater.Auras.GhostAuras.SetSpec() --debug, will update then the plater options is opened instead when the tab is opened
 
     local newAuraLabel = DF:CreateLabel(ghostAuraFrame, "Add Ghost Aura", DF:GetTemplate("font", "ORANGE_FONT_TEMPLATE"))
