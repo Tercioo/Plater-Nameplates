@@ -661,7 +661,7 @@ function Plater.GetBossTimer(spellId)
 	end
 end
 
-function getDBTColor(colorId)
+local function getDBTColor(colorId)
 	if DBT and DBT.Options then
 		local barOptions = DBT.Options
 		local barStartRed, barStartGreen, barStartBlue
@@ -766,7 +766,7 @@ function Plater.RegisterBossModsBars()
 		--timer start
 		local timerStartCallback = function(event, id, msg, timer, icon, barType, spellId, colorId, modId, keep, fade, name, guid)
 			if (id and guid) then
-				color = getDBTColor(colorId)
+				local color = getDBTColor(colorId)
 				local display = DF:CleanTruncateUTF8String(strsub(string.match(name or msg or "", "^%s*(.-)%s*$" ), 1, Plater.db.profile.bossmod_support_bars_text_max_len or 7))
 				--local display = string.match(name or msg or "", "^%s*(.-)%s*$" )
 				local curTime =  GetTime()
@@ -798,7 +798,7 @@ function Plater.RegisterBossModsBars()
 			elseif id and not guid and barsTestMode then
 				for _, guid in pairs(getAllShownGUIDs()) do
 					id = id .. guid
-					color = getDBTColor(colorId)
+					local color = getDBTColor(colorId)
 					local display = DF:CleanTruncateUTF8String(strsub(string.match(name or msg or "", "^%s*(.-)%s*$" ), 1, Plater.db.profile.bossmod_support_bars_text_max_len or 7))
 					--local display = string.match(name or msg or "", "^%s*(.-)%s*$" )
 					local curTime =  GetTime()
