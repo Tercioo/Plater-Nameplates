@@ -26,5 +26,4 @@ locales/zhTW.lua
 *.afdesign
 *.json
 *.pdn
-*.png
 *.afphoto
