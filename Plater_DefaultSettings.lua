@@ -909,22 +909,6 @@ PLATER_DEFAULT_SETTINGS = {
 			crowdcontrol = {.3, .2, .2, 1},
 		},
 		
-		--store a table with spell name keys and with a value of a table with all spell IDs that has that exact name
-		aura_cache_by_name = {
-			["banner of the horde"] = {
-				61574,
-			},
-			["challenger's might"] = {
-				206150,
-			},
-			["banner of the alliance"] = {
-				61573,
-			},
-			["breath of coldheart"] = {
-				333553,
-			},
-		},
-		
 		aura_tracker = {
 			buff = {},
 			debuff = {},

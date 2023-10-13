@@ -571,13 +571,11 @@ function Plater.OpenOptionsPanel()
 				C_Timer.After (.1, function()
 					--do not export cache data, these data can be rebuild at run time
 					local captured_spells = Plater.db.profile.captured_spells
-					local aura_cache_by_name = Plater.db.profile.aura_cache_by_name
 					local captured_casts = Plater.db.profile.captured_casts -- ? local DB ?
 					local npc_cache = Plater.db.profile.npc_cache
 					local cvars_caller_cache = Plater.db.profile.saved_cvars_last_change
 
 					Plater.db.profile.captured_spells = {}
-					Plater.db.profile.aura_cache_by_name = {}
 					Plater.db.profile.captured_casts = {}
 					Plater.db.profile.npc_cache = {}
 					Plater.db.profile.saved_cvars_last_change = {}
@@ -610,7 +608,6 @@ function Plater.OpenOptionsPanel()
 					
 					--set back again the cache data
 					Plater.db.profile.captured_spells = captured_spells
-					Plater.db.profile.aura_cache_by_name = aura_cache_by_name
 					Plater.db.profile.captured_casts = captured_casts
 					Plater.db.profile.npc_cache = npc_cache
 					Plater.db.profile.saved_cvars_last_change = cvars_caller_cache
@@ -2626,10 +2623,11 @@ Plater.CreateAuraTesting()
 -- ~aura ~bufftracking ~debuff ~tracking
 	
 	local aura_options = {
-		height = 330, 
-		row_height = 16,
 		width = 200,
+		height = 343, 
+		row_height = 16,
 		button_text_template = "PLATER_BUTTON", --text template
+		font_size = 11,
 	}
 	
 	local method_change_callback = function()
@@ -4445,25 +4443,24 @@ Plater.CreateAuraTesting()
 		local backdrop_color_on_enter = {.8, .8, .8, 0.4}
 		local y = startY
 		
-		local showSpellWithSameName = function (self, spellID) 
-			local spellName = GetSpellInfo (spellID)
+		local showSpellWithSameName = function (self, spellId) 
+			local spellName = GetSpellInfo(spellId)
 			if (spellName) then
-				local spellsWithSameName = Plater.db.profile.aura_cache_by_name [lower (spellName)]
-				if (not spellsWithSameName) then
-					DF.AddSpellWithSameName (spellID, Plater.db.profile.aura_cache_by_name)
-					spellsWithSameName = Plater.db.profile.aura_cache_by_name [lower (spellName)]
-				end
+				--replace here with the cache
+				local spellNameLower = spellName:lower()
+				local spellsWithSameNameCache = Plater.SpellSameNameTable
+				local spellsWithSameName = spellsWithSameNameCache[spellNameLower]
 				
 				if (spellsWithSameName) then
-					GameCooltip2:Preset (2)
-					GameCooltip2:SetOwner (self, "left", "right", 2, 0)
-					GameCooltip2:SetOption ("TextSize", 10)
+					GameCooltip2:Preset(2)
+					GameCooltip2:SetOwner(self, "left", "right", 2, 0)
+					GameCooltip2:SetOption("TextSize", 10)
 					
-					for i, spellID in ipairs (spellsWithSameName) do
-						local spellName, _, spellIcon = GetSpellInfo (spellID)
+					for i, spellID in ipairs(spellsWithSameName) do
+						local spellName, _, spellIcon = GetSpellInfo(spellID)
 						if (spellName) then
-							GameCooltip2:AddLine (spellName .. " (" .. spellID .. ")")
-							GameCooltip2:AddIcon (spellIcon, 1, 1, 14, 14, .1, .9, .1, .9)
+							GameCooltip2:AddLine(spellName .. " (" .. spellID .. ")")
+							GameCooltip2:AddIcon(spellIcon, 1, 1, 14, 14, .1, .9, .1, .9)
 						end
 					end
 					
