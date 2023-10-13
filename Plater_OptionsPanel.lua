@@ -2629,7 +2629,7 @@ Plater.CreateAuraTesting()
 		button_text_template = "PLATER_BUTTON", --text template
 		font_size = 11,
 	}
-	
+	 
 	local method_change_callback = function()
 		Plater.RefreshDBUpvalues()
 	end
