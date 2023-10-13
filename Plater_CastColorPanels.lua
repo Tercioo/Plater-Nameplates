@@ -15,11 +15,11 @@ local LOC = DF.Language.GetLanguageTable(addonId)
 local LibSharedMedia = LibStub:GetLibrary("LibSharedMedia-3.0")
 
 --get templates
-local options_text_template = DF:GetTemplate ("font", "OPTIONS_FONT_TEMPLATE")
-local options_dropdown_template = DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE")
-local options_switch_template = DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_TEMPLATE")
-local options_slider_template = DF:GetTemplate ("slider", "OPTIONS_SLIDER_TEMPLATE")
-local options_button_template = DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE")
+local options_text_template = DF:GetTemplate("font", "OPTIONS_FONT_TEMPLATE")
+local options_dropdown_template = DF:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE")
+local options_switch_template = DF:GetTemplate("switch", "OPTIONS_CHECKBOX_TEMPLATE")
+local options_slider_template = DF:GetTemplate("slider", "OPTIONS_SLIDER_TEMPLATE")
+local options_button_template = DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE")
 
 local dropdownStatusBarTexture = platerInternal.Defaults.dropdownStatusBarTexture
 local dropdownStatusBarColor = platerInternal.Defaults.dropdownStatusBarColor
@@ -566,16 +566,16 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         line.spellIconTexture = spellIconTexture
 
         --spell Id
-        local spellIdEntry = DF:CreateTextEntry(line, function()end, headerTable[3].width, 20, "spellIdEntry", nil, nil, DF:GetTemplate ("dropdown", "PLATER_DROPDOWN_OPTIONS"))
+        local spellIdEntry = DF:CreateTextEntry(line, function()end, headerTable[3].width, 20, "spellIdEntry", nil, nil, DF:GetTemplate("dropdown", "PLATER_DROPDOWN_OPTIONS"))
         spellIdEntry:SetHook ("OnEditFocusGained", oneditfocusgained_spellid)
         spellIdEntry:SetJustifyH("left")
 
         --spell Name
-        local spellNameEntry = DF:CreateTextEntry(line, function()end, headerTable[4].width, 20, "spellNameEntry", nil, nil, DF:GetTemplate ("dropdown", "PLATER_DROPDOWN_OPTIONS"))
+        local spellNameEntry = DF:CreateTextEntry(line, function()end, headerTable[4].width, 20, "spellNameEntry", nil, nil, DF:GetTemplate("dropdown", "PLATER_DROPDOWN_OPTIONS"))
         spellNameEntry:SetHook("OnEditFocusGained", oneditfocusgained_spellid)
         spellNameEntry:SetJustifyH("left")
 
-        local spellRenameEntry = DF:CreateTextEntry(line, function()end, headerTable[5].width, 20, "spellRenameEntry", nil, nil, DF:GetTemplate ("dropdown", "PLATER_DROPDOWN_OPTIONS"))
+        local spellRenameEntry = DF:CreateTextEntry(line, function()end, headerTable[5].width, 20, "spellRenameEntry", nil, nil, DF:GetTemplate("dropdown", "PLATER_DROPDOWN_OPTIONS"))
         spellRenameEntry:SetHook("OnEditFocusGained", oneditfocusgained_spellid)
         spellRenameEntry:SetJustifyH("left")
 
@@ -612,21 +612,21 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         --local npcIdLabel = DF:CreateLabel(line, "", 10, "white", nil, "npcIdLabel")
 
         --send to raid button
-        local sendToRaidButton = DF:CreateButton(line, function()end, headerTable[7].width - 15, 20, "Send to Raid", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+        local sendToRaidButton = DF:CreateButton(line, function()end, headerTable[7].width - 15, 20, "Send to Raid", -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
         line.sendToRaidButton = sendToRaidButton
 
         --location
         --local npcLocationLabel = DF:CreateLabel(line, "", 10, "white", nil, "npcLocationLabel")
-        local selectAudioDropdown = DF:CreateDropDown(line, line_refresh_audio_dropdown, 1, headerTable[8].width - 1, 20, "SelectAudioDropdown", nil, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+        local selectAudioDropdown = DF:CreateDropDown(line, line_refresh_audio_dropdown, 1, headerTable[8].width - 1, 20, "SelectAudioDropdown", nil, DF:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
 
         --encounter
         local encounterNameLabel = DF:CreateLabel(line, "", 10, "white", nil, "encounterNameLabel") --not in use, got replaced by spell name rename
 
         --color enabled check box
-            local enabledCheckBox = DF:CreateSwitch(line, onToggleEnabled, true, _, _, _, _, "EnabledCheckbox", "$parentEnabledToggle" .. index, _, _, _, nil, DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"))
+            local enabledCheckBox = DF:CreateSwitch(line, onToggleEnabled, true, _, _, _, _, "EnabledCheckbox", "$parentEnabledToggle" .. index, _, _, _, nil, DF:GetTemplate("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"))
             enabledCheckBox:SetAsCheckBox()
         --color dropdown
-            local colorDropdown = DF:CreateDropDown(line, line_refresh_color_dropdown, 1, headerTable[8].width - 1, 20, "ColorDropdown", nil, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+            local colorDropdown = DF:CreateDropDown(line, line_refresh_color_dropdown, 1, headerTable[8].width - 1, 20, "ColorDropdown", nil, DF:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
 
         enabledCheckBox:SetHook ("OnEnter", widget_onenter)
         enabledCheckBox:SetHook ("OnLeave", widget_onleave)
@@ -1701,7 +1701,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
     --create lines
     for i = 1, scroll_lines do
-        spells_scroll:CreateLine (scroll_createline)
+        spells_scroll:CreateLine(scroll_createline)
     end
 
     --create search box
@@ -1715,25 +1715,13 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             spells_scroll:Refresh()
         end
 
-        local aura_search_textentry = DF:CreateTextEntry(castFrame, function()end, 150, 20, "AuraSearchTextEntry", _, _, options_dropdown_template)
-        aura_search_textentry:SetPoint("bottomright", castFrame, "topright", 0, -20)
-        aura_search_textentry:SetHook("OnChar", castFrame.OnSearchBoxTextChanged)
-        aura_search_textentry:SetHook("OnTextChanged", castFrame.OnSearchBoxTextChanged)
-
-        local aura_search_label = DF:CreateLabel(aura_search_textentry, "search", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
-        aura_search_label:SetPoint("left", aura_search_textentry, "left", 4, 0)
-        aura_search_label.fontcolor = "gray"
-        aura_search_label.color = {.5, .5, .5, .3}
-        aura_search_textentry.tooltip = "- Spell Name\n- Npc Name\n- Zone Name\n- Encounter Name\n- SpellID\n- Custom Spell Name\n- Sound Name\n- Audio"
-        aura_search_textentry:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
-
-        --clear search button
-        local clear_search_button = DF:CreateButton(castFrame, function() aura_search_textentry:SetText(""); aura_search_textentry:ClearFocus() end, 20, 20, "", -1)
-        clear_search_button:SetPoint("right", aura_search_textentry, "right", 5, 0)
-        clear_search_button:SetAlpha(.7)
-        clear_search_button:SetIcon([[Interface\Glues\LOGIN\Glues-CheckBox-Check]])
-        clear_search_button.icon:SetDesaturated(true)
-        clear_search_button:SetFrameLevel(castFrame.Header:GetFrameLevel() + 21)
+        local auraSearchTextEntry = DF:CreateTextEntry(castFrame, function()end, 150, 20, "AuraSearchTextEntry", _, _, options_dropdown_template)
+        auraSearchTextEntry:SetPoint("bottomright", castFrame, "topright", 14, -28)
+        auraSearchTextEntry:SetHook("OnChar", castFrame.OnSearchBoxTextChanged)
+        auraSearchTextEntry:SetHook("OnTextChanged", castFrame.OnSearchBoxTextChanged)
+        auraSearchTextEntry:SetAsSearchBox()
+        auraSearchTextEntry.tooltip = "- Spell Name\n- Npc Name\n- Zone Name\n- Encounter Name\n- SpellID\n- Custom Spell Name\n- Sound Name\n- Audio"
+        auraSearchTextEntry:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
 
         function castFrame.RefreshScroll(refreshSpeed)
             if (refreshSpeed and refreshSpeed == 0) then
@@ -1741,57 +1729,51 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                 spells_scroll:Show()
             else
                 spells_scroll:Hide()
-                C_Timer.After (refreshSpeed or .01, function() spells_scroll:Show() end)
+                C_Timer.After(refreshSpeed or .01, function() spells_scroll:Show() end)
             end
         end
 
-    --help button
-        local help_button = DF:CreateButton(castFrame, function()end, 70, 20, "help", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
-        help_button:SetPoint("right", aura_search_textentry, "left", -2, 0)
-        help_button.tooltip = "|cFFFFFF00Help:|r\n\n- Spell are filled as they are seen.\n\n- Colors set in scripts and hooks override colors set here.\n\n- |TInterface\\AddOns\\Plater\\media\\star_empty_64:16:16|t icon indicates the color is favorite, so you can use it across all spells to keep color consistency."
-        help_button:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
-
     --refresh button
-        local refresh_button = DF:CreateButton (castFrame, function() castFrame.RefreshScroll() end, 70, 20, "refresh", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
-        refresh_button:SetPoint("right", help_button, "left", -2, 0)
-        refresh_button:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
+        local refreshButton = DF:CreateButton(castFrame, function() castFrame.RefreshScroll() end, 70, 20, _G["REFRESH"] or "Refresh", -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
+        refreshButton:SetPoint("bottomleft", spells_scroll, "bottomleft", 1, 0)
+        refreshButton:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
 
-        local create_import_box = function (parent, mainFrame)
+        local createImportBox = function(parent, mainFrame)
             --create the text editor
-            local import_text_editor = DF:NewSpecialLuaEditorEntry(parent, edit_script_size[1], edit_script_size[2], "ImportEditor", "$parentImportEditor", true)
-            import_text_editor:SetBackdrop({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
-            import_text_editor:SetBackdropBorderColor(unpack (luaeditor_border_color))
-            import_text_editor:SetBackdropColor(.3, .3, .3, 1)
-            import_text_editor:Hide()
-            import_text_editor:SetFrameLevel(parent:GetFrameLevel()+100)
-            DF:ReskinSlider(import_text_editor.scroll)
+            local importTextEditor = DF:NewSpecialLuaEditorEntry(parent, edit_script_size[1], edit_script_size[2], "ImportEditor", "$parentImportEditor", true)
+            importTextEditor:SetBackdrop({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
+            importTextEditor:SetBackdropBorderColor(unpack (luaeditor_border_color))
+            importTextEditor:SetBackdropColor(.3, .3, .3, 1)
+            importTextEditor:Hide()
+            importTextEditor:SetFrameLevel(parent:GetFrameLevel()+100)
+            DF:ReskinSlider(importTextEditor.scroll)
 
             --background color
-            local bg = import_text_editor:CreateTexture(nil, "background")
+            local bg = importTextEditor:CreateTexture(nil, "background")
             bg:SetColorTexture(0.1, 0.1, 0.1, .9)
             bg:SetAllPoints()
 
-            local block_mouse_frame = CreateFrame("frame", nil, import_text_editor, BackdropTemplateMixin and "BackdropTemplate")
-            block_mouse_frame:SetFrameLevel(block_mouse_frame:GetFrameLevel()-5)
-            block_mouse_frame:SetAllPoints()
-            block_mouse_frame:SetScript("OnMouseDown", function()
-                import_text_editor:SetFocus(true)
+            local blockMouseFrame = CreateFrame("frame", nil, importTextEditor, BackdropTemplateMixin and "BackdropTemplate")
+            blockMouseFrame:SetFrameLevel(blockMouseFrame:GetFrameLevel()-5)
+            blockMouseFrame:SetAllPoints()
+            blockMouseFrame:SetScript("OnMouseDown", function()
+                importTextEditor:SetFocus(true)
             end)
 
-            mainFrame.ImportTextEditor = import_text_editor
+            mainFrame.ImportTextEditor = importTextEditor
 
             --import button
-            local okay_import_button = DF:CreateButton(import_text_editor, mainFrame.ImportColors, buttons_size[1], buttons_size[2], "Okay", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
-            okay_import_button:SetIcon([[Interface\BUTTONS\UI-Panel-BiggerButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
-            okay_import_button:SetPoint("topright", import_text_editor, "bottomright", 0, 1)
+            local okayImportButton = DF:CreateButton(importTextEditor, mainFrame.ImportColors, buttons_size[1], buttons_size[2], "Okay", -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
+            okayImportButton:SetIcon([[Interface\BUTTONS\UI-Panel-BiggerButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
+            okayImportButton:SetPoint("topright", importTextEditor, "bottomright", 0, 1)
 
             --cancel button
-            local cancel_import_button = DF:CreateButton(import_text_editor, function() mainFrame.ImportTextEditor:Hide() end, buttons_size[1], buttons_size[2], "Cancel", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
-            cancel_import_button:SetIcon([[Interface\BUTTONS\UI-Panel-MinimizeButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
-            cancel_import_button:SetPoint("right", okay_import_button, "left", -2, 0)
+            local cancelImportButton = DF:CreateButton(importTextEditor, function() mainFrame.ImportTextEditor:Hide() end, buttons_size[1], buttons_size[2], "Cancel", -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
+            cancelImportButton:SetIcon([[Interface\BUTTONS\UI-Panel-MinimizeButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
+            cancelImportButton:SetPoint("right", okayImportButton, "left", -2, 0)
 
-            import_text_editor.OkayButton = okay_import_button
-            import_text_editor.CancelButton = cancel_import_button
+            importTextEditor.OkayButton = okayImportButton
+            importTextEditor.CancelButton = cancelImportButton
         end
 
         -- ~importcolor
@@ -1866,9 +1848,9 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         end
 
     --import and export buttons
-        local import_func = function()
+        local importColorsFunc = function()
             if (not castFrame.ImportEditor) then
-                create_import_box(castFrame, castFrame)
+                createImportBox(castFrame, castFrame)
             end
 
             castFrame.IsExporting = nil
@@ -1885,13 +1867,14 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             end)
         end
 
-        local import_button = DF:CreateButton(castFrame, import_func, 70, 20, "import", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
-        import_button:SetPoint("right", refresh_button, "left", -2, 0)
-        import_button:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
+        local importButton = DF:CreateButton(castFrame, importColorsFunc, 70, 20, LOC["IMPORT_CAST_COLORS"], -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
+        importButton:SetPoint("right", auraSearchTextEntry, "left", -2, 0)
+        importButton:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
+        importButton:SetIcon([[Interface\AddOns\Plater\images\import_indicators_1.png]], 15, 14, "overlay", {0.25, 0.375, 0, 1})
 
-        local export_func = function()
+        local exportColorsFunc = function()
             if (not castFrame.ImportEditor) then
-                create_import_box(castFrame, castFrame)
+                createImportBox(castFrame, castFrame)
             end
 
             --build the list of colors to be exported
@@ -1966,7 +1949,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
             --check if there's at least 1 color being exported
             if (#exportedTable < 1) then
-                Plater:Msg ("There's nothing to export.")
+                Plater:Msg(LOC["OPTIONS_NOTHING_TO_EXPORT"])
                 return
             end
 
@@ -1981,35 +1964,16 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             local data = Plater.CompressData(exportedTable, "print")
             castFrame.ImportEditor:SetText(data or "failed to export color table")
 
-            C_Timer.After (.1, function()
+            C_Timer.After(.1, function()
                 castFrame.ImportEditor.editbox:HighlightText()
                 castFrame.ImportEditor.editbox:SetFocus(true)
             end)
         end
 
-        local export_button = DF:CreateButton(castFrame, export_func, 70, 20, "export", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
-        export_button:SetPoint("right", import_button, "left", -2, 0)
-        export_button:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
-
-        castFrame.showingScriptSelection = true
-        local toggleScriptSelectionAndOptionsFrame = function()
-            if (castFrame.showingScriptSelection) then
-                spFrame:Hide()
-                optionsFrame:Show()
-                castFrame.toggleOptionsButton:SetText("Show Scripts")
-            else
-                spFrame:Show()
-                optionsFrame:Hide()
-                castFrame.toggleOptionsButton:SetText("Show Options")
-            end
-
-            castFrame.showingScriptSelection = not castFrame.showingScriptSelection
-        end
-
-        local toggleOptionsButton = DF:CreateButton(castFrame, toggleScriptSelectionAndOptionsFrame, 70, 20, "Show Options", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
-        toggleOptionsButton:SetPoint("right", export_button, "left", -2, 0)
-        toggleOptionsButton:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
-        castFrame.toggleOptionsButton = toggleOptionsButton
+        local exportColorsButton = DF:CreateButton(castFrame, exportColorsFunc, 70, 20, LOC["EXPORT_CAST_COLORS"], -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
+        exportColorsButton:SetPoint("right", importButton, "left", -2, 0)
+        exportColorsButton:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
+        exportColorsButton:SetIcon([[Interface\AddOns\Plater\images\import_indicators_1.png]], 15, 14, "overlay", {0.5, 0.625, 0, 1})
 
     --disable all button
         local disableAllColors = function()
@@ -2019,9 +1983,30 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             castFrame.RefreshScroll()
         end
 
-        local disableall_button = DF:CreateButton(castFrame, disableAllColors, 140, 20, "Disable All Colors", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
-        disableall_button:SetPoint("bottomleft", spells_scroll, "bottomleft", 1, 0)
-        disableall_button:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
+        local disableAllColorsButton = DF:CreateButton(castFrame, disableAllColors, 140, 20, LOC["OPTIONS_CASTCOLORS_DISABLECOLORS"], -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
+        disableAllColorsButton:SetPoint("left", refreshButton, "right", 2, 0)
+        disableAllColorsButton:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
+
+    --toggle options button
+        castFrame.showingScriptSelection = true
+        local toggleScriptSelectionAndOptionsFrame = function()
+            if (castFrame.showingScriptSelection) then
+                spFrame:Hide()
+                optionsFrame:Show()
+                castFrame.toggleOptionsButton:SetText(LOC["OPTIONS_SHOWSCRIPTS"])
+            else
+                spFrame:Show()
+                optionsFrame:Hide()
+                castFrame.toggleOptionsButton:SetText(LOC["OPTIONS_SHOWOPTIONS"])
+            end
+
+            castFrame.showingScriptSelection = not castFrame.showingScriptSelection
+        end
+
+        local toggleOptionsButton = DF:CreateButton(castFrame, toggleScriptSelectionAndOptionsFrame, 70, 20, LOC["OPTIONS_SHOWOPTIONS"], -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
+        toggleOptionsButton:SetPoint("left", disableAllColorsButton, "right", 2, 0)
+        toggleOptionsButton:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
+        castFrame.toggleOptionsButton = toggleOptionsButton
 
     -- buttons backdrop
         local backdropFoot = CreateFrame("frame", nil, spells_scroll, BackdropTemplateMixin and "BackdropTemplate")

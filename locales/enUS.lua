@@ -5,8 +5,16 @@ do
 
     --add to curseforge
 
-
     --on curseforge
+    L["OPTIONS_NOTHING_TO_EXPORT"] = "There's nothing to export."
+    L["IMPORT"] = "Import"
+    L["EXPORT"] = "Export"
+    L["IMPORT_CAST_COLORS"] = "Import Colors"
+    L["EXPORT_CAST_COLORS"] = "Export Colors"
+    L["OPTIONS_SHOWOPTIONS"] = "Show Options"
+    L["OPTIONS_SHOWSCRIPTS"] = "Show Scripts"
+    L["OPTIONS_CASTCOLORS_DISABLECOLORS"] = "Disable All Colors"
+
     L["OPTIONS_NOESSENTIAL_TITLE"] = "Skip Non Essential Script Patches"
     L["OPTIONS_NOESSENTIAL_NAME"] = "Disable non-essential script updates during Plater version upgrades."
     L["OPTIONS_NOESSENTIAL_DESC"] = "On updating Plater, it is common for the new version to also update scripts from the scripts tab.\nThis may sometimes overwrite changes made by the creator of the profile. The option below prevents Plater from modifying scripts when the addon receives an update.\n\nNote: During major patches and bug fixes, Plater may still update scripts."
