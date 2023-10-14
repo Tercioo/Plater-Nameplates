@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1694324682,  "Bug Fix", "October 15th, 2023", "BugFix custom power bar sizes.", "cont1nuity"},
+			{1694324682,  "Backend Change", "October 12th, 2023", "Framework Updates.", "Terciob"},
 			{1694324682,  "Frontend Change", "October 1st, 2023", "Added a search box at the 'General Settings' tab.", "cont1nuity"},
 			{1694324682,  "Frontend Change", "September 23rd, 2023", "Mouseover glow is now working properly and more prominent.", "cont1nuity"},
 			{1694324682,  "Frontend Change", "September 21st, 2023", "Improvements to the 'Cast Colors and Names' tab.", "Terciob"},

@@ -5490,7 +5490,7 @@ end
 
 		local healthBarWidth, healthBarHeight = unitFrame.customHealthBarWidth or plateConfigs [healthBarConfigKey][1], unitFrame.customHealthBarHeight or plateConfigs [healthBarConfigKey][2]
 		local castBarWidth, castBarHeight = unitFrame.customCastBarWidth or plateConfigs [castBarConfigKey][1], unitFrame.customCastBarHeight or plateConfigs [castBarConfigKey][2]
-		local powerBarWidth, powerBarHeight = unitFrame.customPowerBarHeight or plateConfigs [manaConfigKey][1], unitFrame.customPowerBarHeight or plateConfigs [manaConfigKey][2]
+		local powerBarWidth, powerBarHeight = unitFrame.customPowerBarWidth or plateConfigs [manaConfigKey][1], unitFrame.customPowerBarHeight or plateConfigs [manaConfigKey][2]
 		
 		local castBarOffSetX = plateConfigs.castbar_offset_x
 		local castBarOffSetXRel = (healthBarWidth - castBarWidth) / 2
