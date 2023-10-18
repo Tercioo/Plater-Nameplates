@@ -546,7 +546,7 @@ function detailsFramework:CreateAuraScrollBox(parent, name, data, onAuraRemoveCa
 	end
 
     local onClickAuraRemoveButton = function(self)
-        local spellId = self:GetParent().SpellID
+        local spellId = tonumber(self:GetParent().SpellID)
         if (spellId and type(spellId) == "number") then
             --button > line > scrollbox
             local scrollBox = self:GetParent():GetParent()
