@@ -5490,7 +5490,7 @@ end
 
 		local healthBarWidth, healthBarHeight = unitFrame.customHealthBarWidth or plateConfigs [healthBarConfigKey][1], unitFrame.customHealthBarHeight or plateConfigs [healthBarConfigKey][2]
 		local castBarWidth, castBarHeight = unitFrame.customCastBarWidth or plateConfigs [castBarConfigKey][1], unitFrame.customCastBarHeight or plateConfigs [castBarConfigKey][2]
-		local powerBarWidth, powerBarHeight = unitFrame.customPowerBarHeight or plateConfigs [manaConfigKey][1], unitFrame.customPowerBarHeight or plateConfigs [manaConfigKey][2]
+		local powerBarWidth, powerBarHeight = unitFrame.customPowerBarWidth or plateConfigs [manaConfigKey][1], unitFrame.customPowerBarHeight or plateConfigs [manaConfigKey][2]
 		
 		local castBarOffSetX = plateConfigs.castbar_offset_x
 		local castBarOffSetXRel = (healthBarWidth - castBarWidth) / 2
@@ -10411,53 +10411,6 @@ end
 	
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> scripting ~scripting
-
-
-	function Plater.ExportProfileToString()
-		local profile = Plater.db.profile
-		
-		--store current profile name
-		profile.profile_name = Plater.db:GetCurrentProfile()
-		
-		--temp store the animations on another table
-		local spellAnimations = profile.spell_animation_list
-		--remove the animation list from the profile
-		profile.spell_animation_list = nil
-		
-		--temp store trashcans
-		local trashcanScripts = profile.script_data_trash
-		local trashcanHooks = profile.hook_data_trash
-		--clear the trash can
-		profile.script_data_trash = {}
-		profile.hook_data_trash = {}
-
-		--temp store plugin data
-		local pluginData = profile.plugins_data
-		profile.plugins_data = {}
-		
-		--cleanup mods HooksTemp (for good)
-		for i = #Plater.db.profile.hook_data, 1, -1 do
-			local scriptObject = Plater.db.profile.hook_data [i]
-			scriptObject.HooksTemp = {}
-		end
-		
-		--convert the profile to string
-		local data = Plater.CompressData (profile, "print")
-		if (not data) then
-			Plater:Msg ("failed to compress the profile")
-		end
-		
-		--restore the profile animations and trashcan
-		profile.spell_animation_list = spellAnimations
-		profile.script_data_trash = trashcanScripts
-		profile.hook_data_trash = trashcanHooks
-		profile.plugins_data = pluginData
-		
-		--reset profile_name
-		profile.profile_name = nil
-		
-		return data
-	end
 	
 	--the mod/script error handler
 	local errorContext = nil
@@ -10939,7 +10892,6 @@ end
 			["ScriptMetaFunctions"] = true,
 			["DecompressData"] = true,
 			["CompressData"] = true,
-			["ExportProfileToString"] = true,
 			["WipeAndRecompileAllScripts"] = true,
 			["AllHookGlobalContainers"] = true,
 			["WipeHookContainers"] = true,
