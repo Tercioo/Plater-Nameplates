@@ -3285,6 +3285,9 @@ Plater.AnchorNamesByPhraseId = {
 			--so when this nameplate is reclycled to be in a proteecteed nameplate, it was causing taints
 			--plateFrame [MEMBER_UNITID] = unitID --causing taints
 			
+			-- add private aura anchors
+			Plater.HandlePrivateAuraAnchors(plateFrame.unitFrame) -- requires namePlateUnitToken
+			
 			plateFrame.QuestAmountCurrent = nil
 			plateFrame.QuestAmountTotal = nil
 			plateFrame.QuestText = nil
@@ -3705,6 +3708,9 @@ Plater.AnchorNamesByPhraseId = {
 			
 			--tell the framework to execute a cleanup on the unit frame, this is required since Plater set .ClearUnitOnHide to false
 			plateFrame.unitFrame:SetUnit (nil)
+			
+			--remove private aura anchors
+			Plater.HandlePrivateAuraAnchors(plateFrame.unitFrame)
 			
 			-- remove widgets
 			if IS_WOW_PROJECT_MAINLINE and plateFrame.unitFrame.WidgetContainer then
