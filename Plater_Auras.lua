@@ -373,7 +373,7 @@ function Plater.HandlePrivateAuraAnchors(unitFrame, maxIndex)
 		local privateAnchorArgs = {
 			unitToken = unit,
 			auraIndex = index,
-			parent = unitFrame.BuffFrame,
+			parent = unitFrame,
 			showCountdownFrame = true,
 			showCountdownNumbers = true,
 			iconInfo = {
@@ -381,17 +381,17 @@ function Plater.HandlePrivateAuraAnchors(unitFrame, maxIndex)
 					point = relIconPoint,
 					relativeTo = unitFrame.BuffFrame,
 					relativePoint = relIconPointTo,
-					offsetX = ((Plater.db.profile.aura_width * Plater.db.profile.ui_parent_scale_tune * (index - 1)) + DB_AURA_PADDING * (index -1)) * paddingMult,
+					offsetX = ((Plater.db.profile.aura_width * (index - 1)) + DB_AURA_PADDING * (index -1)) * paddingMult, --((Plater.db.profile.aura_width * Plater.db.profile.ui_parent_scale_tune * (index - 1)) + DB_AURA_PADDING * (index -1)) * paddingMult,
 					offsetY = Plater.db.profile.aura_breakline_space,
 				},
-				iconWidth = Plater.db.profile.aura_width * Plater.db.profile.ui_parent_scale_tune,
-				iconHeight = Plater.db.profile.aura_height * Plater.db.profile.ui_parent_scale_tune,
+				iconWidth = Plater.db.profile.aura_width, -- * Plater.db.profile.ui_parent_scale_tune,
+				iconHeight = Plater.db.profile.aura_height, -- * Plater.db.profile.ui_parent_scale_tune,
 			},
 			durationAnchor = {
 				point = relIconPoint,
 				relativeTo = unitFrame.BuffFrame,
 				relativePoint = relIconPointTo,
-				offsetX = ((Plater.db.profile.aura_width * Plater.db.profile.ui_parent_scale_tune * (index - 1)) + DB_AURA_PADDING * (index -1)) * paddingMult,
+				offsetX = ((Plater.db.profile.aura_width * (index - 1)) + DB_AURA_PADDING * (index -1)) * paddingMult, --((Plater.db.profile.aura_width * Plater.db.profile.ui_parent_scale_tune * (index - 1)) + DB_AURA_PADDING * (index -1)) * paddingMult,
 				offsetY = Plater.db.profile.aura_breakline_space,
 			},
 		}
@@ -1202,16 +1202,12 @@ end
 				
 			end
 			
-			if (not firstIcon) then
-				return
-			end
-			
 			if curRowLength > horizontalLength then
 				horizontalLength = curRowLength
 			end
 			
 			--remove 1 icon padding value
-			horizontalLength = horizontalLength - DB_AURA_PADDING
+			horizontalLength = (horizontalLength > 1) and (horizontalLength - DB_AURA_PADDING) or 1
 			--set the size of the buff frame
 			self:SetWidth (horizontalLength)
 			self:SetHeight (verticalHeight)
