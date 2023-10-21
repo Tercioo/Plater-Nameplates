@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1697883002,  "Backend Change", "October 21st, 2023", "Safer profile exports while retaining more useful cached data.", "cont1nuity"},
 			{1697883002,  "Bug Fix", "October 21st, 2023", "Fix search returning everything when searching for empty string.", "cont1nuity"},
 			{1697883002,  "Bug Fix", "October 15th, 2023", "Fix custom power bar sizes.", "cont1nuity"},
 			{1697883002,  "Backend Change", "October 12th, 2023", "Framework Updates.", "Terciob"},
