@@ -14766,23 +14766,25 @@ end
 
 		local lastTab = nil
 		local lastLabel = nil
-		for i = 1, #allOptions do
-			local optionData = allOptions[i]
-			local optionName = string.lower(optionData.setting.name)
-			if (optionName:find(searchingText)) then
-				if optionData.header ~= lastTab then
-					if lastTab ~= nil then
-						options[#options+1] = {type = "label", get = function() return "" end, text_template = DF:GetTemplate("font", "OPTIONS_FONT_TEMPLATE")} -- blank
+		if searchingText and searchingText ~= "" then
+			for i = 1, #allOptions do
+				local optionData = allOptions[i]
+				local optionName = string.lower(optionData.setting.name)
+				if (optionName:find(searchingText)) then
+					if optionData.header ~= lastTab then
+						if lastTab ~= nil then
+							options[#options+1] = {type = "label", get = function() return "" end, text_template = DF:GetTemplate("font", "OPTIONS_FONT_TEMPLATE")} -- blank
+						end
+						options[#options+1] = {type = "label", get = function() return optionData.header end, text_template = {color = "gold", size = 14, font = DF:GetBestFontForLanguage()}}
+						lastTab = optionData.header
+						lastLabel = nil
 					end
-					options[#options+1] = {type = "label", get = function() return optionData.header end, text_template = {color = "gold", size = 14, font = DF:GetBestFontForLanguage()}}
-					lastTab = optionData.header
-					lastLabel = nil
+					if optionData.label ~= lastLabel then
+						options[#options+1] = optionData.label
+						lastLabel = optionData.label
+					end
+					options[#options+1] = optionData.setting
 				end
-				if optionData.label ~= lastLabel then
-					options[#options+1] = optionData.label
-					lastLabel = optionData.label
-				end
-				options[#options+1] = optionData.setting
 			end
 		end
 
