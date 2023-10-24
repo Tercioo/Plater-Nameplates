@@ -258,7 +258,7 @@ local class_specs_coords = {
 	
 	[1467] = {256/512, 320/512, 256/512, 320/512}, --> evoker devastation
 	[1468] = {320/512, 384/512, 256/512, 320/512}, --> evoker preservation
-	[1473] = {320/512, 384/512, 256/512, 320/512}, --> evoker augmentation
+	[1473] = {384/512, 448/512, 256/512, 320/512}, --> evoker augmentation
 }
 
 --localization

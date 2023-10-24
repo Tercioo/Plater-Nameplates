@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1697883002,  "Bug Fix", "October 24th, 2023", "Fixing Augmentation Evoker spec icon.", "cont1nuity"},
 			{1697883002,  "Frontend Change", "October 21st, 2023", "Adding basic support for Private Auras.", "cont1nuity"},
 			{1697883002,  "Backend Change", "October 21st, 2023", "Safer profile exports while retaining more useful cached data.", "cont1nuity"},
 			{1697883002,  "Bug Fix", "October 21st, 2023", "Fix search returning names showing the option name in upper case surounded by two @.", "Terciob"},
