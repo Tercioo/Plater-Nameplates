@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1697883002,  "Bug Fix", "October 27th, 2023", "Fixing classic druid combo points not showing.", "cont1nuity"},
+			{1697883002,  "Backend Change", "October 26th, 2023", "Test mode for DBM timer bars.", "cont1nuity"},
 			{1697883002,  "Bug Fix", "October 24th, 2023", "Fixing Augmentation Evoker spec icon.", "cont1nuity"},
 			{1697883002,  "Frontend Change", "October 21st, 2023", "Adding basic support for Private Auras.", "cont1nuity"},
 			{1697883002,  "Backend Change", "October 21st, 2023", "Safer profile exports while retaining more useful cached data.", "cont1nuity"},
