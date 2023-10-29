@@ -930,13 +930,13 @@ end
 							local spellIcon, spellId = spellTable[1], spellTable[2]
 							local auraIconFrame = Plater.GetAuraIcon(buffFrame) -- show on debuff frame
 							auraIconFrame.InUse = true --don't play animation
-							Plater.AddAura(buffFrame, auraIconFrame, -1, spellName.."_player_ghost", spellIcon, 1, "DEBUFF", 0, 0, "player", false, false, spellId, false, false, false, false, "DEBUFF", 1)
+							Plater.AddAura(buffFrame, auraIconFrame, -1, spellName.."_player_ghost", spellIcon, 1, "DEBUFF", 0, 0, "player", false, false, -spellId, false, false, false, false, "DEBUFF", 1)
 							auraIconFrame:EnableMouse (false) --don't use tooltips, as there is no real aura
 							if IS_WOW_PROJECT_MAINLINE then
 								auraIconFrame:EnableMouseMotion (false) --don't use tooltips, as there is no real aura
 							end
 							auraIconFrame.IsGhostAura = true
-							Plater.Auras.GhostAuras.ApplyAppearance(auraIconFrame, spellName.."_player_ghost", spellIcon, spellId)
+							Plater.Auras.GhostAuras.ApplyAppearance(auraIconFrame, spellName.."_player_ghost", spellIcon, -spellId)
 							nameplateGhostAuraCache[spellName.."_player_ghost"] = true --this is shown as ghost aura
 						end
 					else
