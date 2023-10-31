@@ -24,7 +24,7 @@ local UNIT_BOSS_MOD_NEEDS_UPDATE_IN = {} -- timestamp for next update!
 local HOSTILE_ENABLED = false
 local IS_REGISTERED = false
 
---local barsTestMode = true
+local DBM_TIMER_BARS_TEST_MODE = false --can be changed via callback. will disable after 30sec
 
 -- core functions
 local function ShowNameplateAura(guid, texture, duration, desaturate)
@@ -763,8 +763,17 @@ function Plater.RegisterBossModsBars()
 
 	--check if Deadly Boss Mods is installed
 	if (DBM) then
+		--test mode start
+		local testModeStartCallback = function(event, timer)
+			if event ~= "DBM_TestModStarted" then return end
+			DBM_TIMER_BARS_TEST_MODE = true
+			C_Timer.After (tonumber(timer) or 10, function() DBM_TIMER_BARS_TEST_MODE = false end)
+		end
+		DBM:RegisterCallback("DBM_TestModStarted", testModeStartCallback)
+		
 		--timer start
 		local timerStartCallback = function(event, id, msg, timer, icon, barType, spellId, colorId, modId, keep, fade, name, guid)
+			if event ~= "DBM_TimerStart" then return end
 			if (id and guid) then
 				local color = getDBTColor(colorId)
 				local display = DF:CleanTruncateUTF8String(strsub(string.match(name or msg or "", "^%s*(.-)%s*$" ), 1, Plater.db.profile.bossmod_support_bars_text_max_len or 7))
@@ -795,7 +804,7 @@ function Plater.RegisterBossModsBars()
 				UNIT_BOSS_MOD_BARS [guid][id] = barData
 
 				UNIT_BOSS_MOD_NEEDS_UPDATE_IN[guid] = -1
-			elseif id and not guid and barsTestMode then
+			elseif id and not guid and DBM_TIMER_BARS_TEST_MODE then
 				for _, guid in pairs(getAllShownGUIDs()) do
 					id = id .. guid
 					local color = getDBTColor(colorId)
@@ -833,6 +842,8 @@ function Plater.RegisterBossModsBars()
 		DBM:RegisterCallback("DBM_TimerStart", timerStartCallback)
 
 		local timerUpdateCallback = function(event, id, elapsed, totalTime)
+			if event ~= "DBM_TimerUpdate" then return end
+			
 			if not id or not elapsed or not totalTime then return end
 			local entry = id and Plater.BossModsTimeBarDBM[id] or nil
 			local guid = entry and entry.guid
@@ -850,6 +861,8 @@ function Plater.RegisterBossModsBars()
 		DBM:RegisterCallback("DBM_TimerUpdate", timerUpdateCallback)
 
 		local timerPauseCallback = function(event, id)
+			if event ~= "DBM_TimerPause" then return end
+			
 			if not id then return end
 			local entry = id and Plater.BossModsTimeBarDBM[id] or nil
 			local guid = entry and entry.guid
@@ -867,6 +880,8 @@ function Plater.RegisterBossModsBars()
 		DBM:RegisterCallback("DBM_TimerPause", timerPauseCallback)
 
 		local timerResumeCallback = function(event, id)
+			if event ~= "DBM_TimerResume" then return end
+			
 			if not id then return end
 			local entry = id and Plater.BossModsTimeBarDBM[id] or nil
 			local guid = entry and entry.guid
@@ -885,6 +900,8 @@ function Plater.RegisterBossModsBars()
 
 		--timer stop
 		local timerEndCallback = function (event, id)
+			if event ~= "DBM_TimerStop" then return end
+			
 			if not id then return end
 			local guid = Plater.BossModsTimeBarDBM[id] and Plater.BossModsTimeBarDBM[id].guid
 			Plater.BossModsTimeBarDBM[id] = nil
@@ -893,7 +910,7 @@ function Plater.RegisterBossModsBars()
 				UNIT_BOSS_MOD_BARS [guid][id] = nil
 
 				UNIT_BOSS_MOD_NEEDS_UPDATE_IN[guid] = -1
-			elseif not guid and barsTestMode then
+			elseif not guid and DBM_TIMER_BARS_TEST_MODE then
 				for _, guid in pairs(getAllShownGUIDs()) do
 					UNIT_BOSS_MOD_BARS [guid] = UNIT_BOSS_MOD_BARS [guid] or {}
 					UNIT_BOSS_MOD_BARS [guid][id] = nil

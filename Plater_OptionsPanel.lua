@@ -2709,7 +2709,7 @@ Plater.CreateAuraTesting()
 		DF:LoadSpellCache(Plater.SpellHashTable, Plater.SpellIndexTable, Plater.SpellSameNameTable)
 	end)
 	auraFilterFrame:SetScript("OnHide", function()
-		DF:UnloadSpellCache()
+		--DF:UnloadSpellCache()
 	end)
 	
 	local auraConfigPanel = DF:CreateAuraConfigPanel (auraFilterFrame, "$parentAuraConfig", Plater.db.profile, method_change_callback, aura_options, debuff_panel_texts)
@@ -4618,6 +4618,7 @@ Plater.CreateAuraTesting()
 		end
 
 		local scroll_refresh = function (self, data, offset, total_lines)
+			local needsRefresh
 			for i = 1, total_lines do
 				local index = i + offset
 				local aura = data [index]
@@ -4643,8 +4644,12 @@ Plater.CreateAuraTesting()
 						line.name:SetText ("unknown aura")
 						line.icon:SetTexture ("")
 						line.icon:SetTexture ([[Interface\InventoryItems\WoWUnknownItem01]])
+						needsRefresh = true
 					end
 				end
+			end
+			if needsRefresh then
+				C_Timer.After(1, function() self:Refresh() end)
 			end
 		end
 		
@@ -5335,7 +5340,7 @@ Plater.CreateAuraTesting()
 			DF:LoadSpellCache(Plater.SpellHashTable, Plater.SpellIndexTable, Plater.SpellSameNameTable)
 		end)
 		specialAuraFrame:SetScript ("OnHide", function()
-			DF:UnloadSpellCache()
+			--DF:UnloadSpellCache()
 		end)
 		
 		--create the description
