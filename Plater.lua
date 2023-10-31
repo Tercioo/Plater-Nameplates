@@ -12881,6 +12881,13 @@ local cvarDiagList = {
 }
 
 function SlashCmdList.PLATER (msg, editbox)
+
+	local optionsTabNumber = tonumber(msg)
+	if (optionsTabNumber) then
+		Plater.OpenOptionsPanel(optionsTabNumber)
+		return
+	end
+
 	if (msg == "version") then
 		Plater.GetVersionInfo(true)
 		return
