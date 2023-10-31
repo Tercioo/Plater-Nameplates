@@ -14,11 +14,6 @@ local IS_WOW_PROJECT_CLASSIC_WRATH = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpa
 
 local PixelUtil = PixelUtil or DFPixelUtil
 
---credits text -- ~todo - take colaborators character names?
-local creditsText = [=[
-Space reserved to castbar options
-]=]
-
 --templates
 local options_text_template = DF:GetTemplate ("font", "OPTIONS_FONT_TEMPLATE")
 local options_dropdown_template = DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE")
@@ -159,15 +154,32 @@ local TAB_INDEX_PROFILES = 22
 local TAB_INDEX_SEARCH = 26
 
 -- ~options �ptions
-function Plater.OpenOptionsPanel()
+function Plater.OpenOptionsPanel(pageNumber)
 	--localization
 	local L = DF.Language.GetLanguageTable(addonId)
 
 	if (PlaterOptionsPanelFrame) then
 		PlaterOptionsPanelFrame:Show()
 		Plater.CheckOptionsTab()
+
+		if (pageNumber) then
+			C_Timer.After(1, function()
+				---@type df_tabcontainer
+				local tabContainer = _G["PlaterOptionsPanelContainer"]
+				tabContainer:SelectTabByIndex(pageNumber)
+			end)
+		end
+
 		return true
 	end
+
+	if (pageNumber) then
+		C_Timer.After(0, function()
+			---@type df_tabcontainer
+			local tabContainer = _G["PlaterOptionsPanelContainer"]
+			tabContainer:SelectTabByIndex(pageNumber)
+		end)
+	end	
 	
 	Plater.db.profile.OptionsPanelDB = Plater.db.profile.OptionsPanelDB or {}
 	

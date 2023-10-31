@@ -4,13 +4,15 @@ do
     local L = languageTable
 
     --add to curseforge
-
     --on curseforge
+
+    L["IMPORT_CAST_SOUNDS"] = "Import Sounds"
+    L["EXPORT_CAST_SOUNDS"] = "Share Sounds"
     L["OPTIONS_NOTHING_TO_EXPORT"] = "There's nothing to export."
     L["IMPORT"] = "Import"
     L["EXPORT"] = "Export"
     L["IMPORT_CAST_COLORS"] = "Import Colors"
-    L["EXPORT_CAST_COLORS"] = "Export Colors"
+    L["EXPORT_CAST_COLORS"] = "Share Colors"
     L["OPTIONS_SHOWOPTIONS"] = "Show Options"
     L["OPTIONS_SHOWSCRIPTS"] = "Show Scripts"
     L["OPTIONS_CASTCOLORS_DISABLECOLORS"] = "Disable All Colors"
@@ -234,7 +236,7 @@ do
     L["OPTIONS_POWERBAR_HEIGHT"] = "Height of the power bar."
     L["OPTIONS_POWERBAR_WIDTH"] = "Width of the power bar."
     L["OPTIONS_PROFILE_CONFIG_EXPORTINGTASK"] = "Plater is exporting the current profile"
-    L["OPTIONS_PROFILE_CONFIG_EXPORTPROFILE"] = "Export Profile"
+    L["OPTIONS_PROFILE_CONFIG_EXPORTPROFILE"] = "Share Profile"
     L["OPTIONS_PROFILE_CONFIG_IMPORTPROFILE"] = "Import Profile"
     L["OPTIONS_PROFILE_CONFIG_MOREPROFILES"] = "Get more profiles at Wago.io"
     L["OPTIONS_PROFILE_CONFIG_OPENSETTINGS"] = "Open Profile Settings"

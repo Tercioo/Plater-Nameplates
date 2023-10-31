@@ -5,6 +5,9 @@ local DF = DetailsFramework
 local GetSpellInfo = GetSpellInfo
 local _
 
+---@alias spellid number
+---@alias soundpath string
+
 local bitAnd = bit.band
 
 local unpack = table.unpack or _G.unpack
@@ -29,6 +32,7 @@ local dropdownIconColor = {1, 1, 1, .6}
 local scrollRefreshCallback
 
 local DB_CAST_COLORS
+---@type table<spellid, soundpath>
 local DB_CAST_AUDIOCUES
 local DB_NPCIDS_CACHE
 local DB_CAPTURED_SPELLS
@@ -213,7 +217,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
     ----platerInternal.optionsYStart or
 
     local luaeditor_border_color = {0, 0, 0, 1}
-    local edit_script_size = {620, 300}
+    local importbox_size = {620, 300}
     local buttons_size = {120, 20}
 
     DB_CAST_COLORS = Plater.db.profile.cast_colors
@@ -1018,14 +1022,14 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 ------------------------------------------------------------------------------------------------------------
         --> build the ~options panel
         local optionsFrame = CreateFrame("frame", castFrame:GetName() .. "OptionsPanel", castFrame, "BackdropTemplate")
-        optionsFrame:SetPoint("topright", castFrame, "topright", -5, -56)
-        optionsFrame:SetPoint("bottomright", castFrame, "bottomright", 0, 35)
-        optionsFrame:SetWidth(270)
-        optionsFrame:SetFrameLevel(castFrame:GetFrameLevel()+10)
+        optionsFrame:SetPoint("topright", castFrame, "topright", 28, -56)
+        optionsFrame:SetPoint("bottomright", castFrame, "bottomright", 0, 18)
+        optionsFrame:SetWidth(250)
+        optionsFrame:SetFrameLevel(castFrame:GetFrameLevel()+20)
         optionsFrame:Hide() --hidden by default
 
         DF:ApplyStandardBackdrop(optionsFrame)
-        optionsFrame:SetBackdropBorderColor(0, 0, 0, 0)
+        --optionsFrame:SetBackdropBorderColor(0, 0, 0, 0)
         optionsFrame:EnableMouse(true)
 
         local onChangeOption = function()
@@ -1157,7 +1161,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
         }
 
-        local startX, startY, heightSize = 10, -10, optionsFrame:GetHeight()
+        local startX, startY, heightSize = 2, -10, optionsFrame:GetHeight()
         _G.C_Timer.After(0.5, function() --~delay
             DF:BuildMenu(optionsFrame, optionsTable, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, onChangeOption)
         end)
@@ -1165,14 +1169,14 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
     -->  ~preview window (not in use as the script choise frame is over this one)
         local previewWindow = CreateFrame("frame", optionsFrame:GetName() .. "previewWindown", optionsFrame, "BackdropTemplate")
         previewWindow:SetSize(250, 40)
-        previewWindow:SetPoint("topleft", optionsFrame, "topleft", 10, -240)
-        previewWindow:SetBackdrop({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
-        previewWindow:SetBackdropBorderColor(0, 0, 0, .6)
-        previewWindow:SetBackdropColor(0.1, 0.1, 0.1, 0.4)
+        previewWindow:SetPoint("topleft", optionsFrame, "topleft", 0, -240)
+        --previewWindow:SetBackdrop({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
+        --previewWindow:SetBackdropBorderColor(0, 0, 0, .6)
+        --previewWindow:SetBackdropColor(0.1, 0.1, 0.1, 0.4)
 
-        local previewLabel = Plater:CreateLabel(previewWindow, "Quick Preview")
+        local previewLabel = Plater:CreateLabel(previewWindow, "Quick Preview", 10)
         previewLabel:SetPoint("bottomleft", previewWindow, "topleft", 0, 14)
-        local castLabel = Plater:CreateLabel(previewWindow, "Cast a spell, refresh, than add a color for it")
+        local castLabel = Plater:CreateLabel(previewWindow, "Cast a spell, refresh, than add a color for it", 10)
         castLabel:SetPoint("topleft", previewLabel, "bottomleft", 0, -2)
 
         previewLabel.textcolor = "gray"
@@ -1189,7 +1193,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         optionsFrame.previewCastBar = previewCastBar
         castColorFrame.optionsFrame = optionsFrame
 
-        previewCastBar:SetSize(190, 20)
+        previewCastBar:SetSize(230, 20)
         previewCastBar:SetPoint("center", previewWindow, "center", 0, 0)
         previewCastBar:SetUnit("player")
         previewCastBar:Show()
@@ -1740,13 +1744,23 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
         local createImportBox = function(parent, mainFrame)
             --create the text editor
-            local importTextEditor = DF:NewSpecialLuaEditorEntry(parent, edit_script_size[1], edit_script_size[2], "ImportEditor", "$parentImportEditor", true)
+            local importTextEditor = DF:NewSpecialLuaEditorEntry(parent, importbox_size[1], importbox_size[2], "ImportEditor", "$parentImportEditor", true)
             importTextEditor:SetBackdrop({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
             importTextEditor:SetBackdropBorderColor(unpack (luaeditor_border_color))
             importTextEditor:SetBackdropColor(.3, .3, .3, 1)
             importTextEditor:Hide()
             importTextEditor:SetFrameLevel(parent:GetFrameLevel()+100)
             DF:ReskinSlider(importTextEditor.scroll)
+
+            --background to for the Cancel and Okay buttons
+            local footerFrame = CreateFrame("frame", "$parentFooter", importTextEditor)
+            footerFrame:SetPoint("topleft", importTextEditor, "bottomleft", 0, 0)
+            footerFrame:SetPoint("topright", importTextEditor, "bottomright", 0, 0)
+            footerFrame:SetHeight(20)
+            footerFrame:SetFrameLevel(importTextEditor:GetFrameLevel()+1)
+            footerFrame.Texture = footerFrame:CreateTexture(nil, "overlay")
+            footerFrame.Texture:SetAllPoints()
+            footerFrame.Texture:SetColorTexture(.03, .03, .03, 1)
 
             --background color
             local bg = importTextEditor:CreateTexture(nil, "background")
@@ -1763,17 +1777,61 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             mainFrame.ImportTextEditor = importTextEditor
 
             --import button
-            local okayImportButton = DF:CreateButton(importTextEditor, mainFrame.ImportColors, buttons_size[1], buttons_size[2], "Okay", -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
+            local okayImportButton = DF:CreateButton(footerFrame, mainFrame.ImportColors, buttons_size[1], buttons_size[2], "Okay", -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
             okayImportButton:SetIcon([[Interface\BUTTONS\UI-Panel-BiggerButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
             okayImportButton:SetPoint("topright", importTextEditor, "bottomright", 0, 1)
+            mainFrame.OkayImportButton = okayImportButton
 
             --cancel button
-            local cancelImportButton = DF:CreateButton(importTextEditor, function() mainFrame.ImportTextEditor:Hide() end, buttons_size[1], buttons_size[2], "Cancel", -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
+            local cancelImportButton = DF:CreateButton(footerFrame, function() mainFrame.ImportTextEditor:Hide() end, buttons_size[1], buttons_size[2], "Cancel", -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
             cancelImportButton:SetIcon([[Interface\BUTTONS\UI-Panel-MinimizeButton-Up]], 20, 20, "overlay", {0.1, .9, 0.1, .9})
             cancelImportButton:SetPoint("right", okayImportButton, "left", -2, 0)
 
             importTextEditor.OkayButton = okayImportButton
             importTextEditor.CancelButton = cancelImportButton
+        end
+
+        -- ~import sounds
+        function castFrame.ImportCastSounds()
+            --get the sounds from the text field and code it to import
+
+            if (castFrame.IsImporting) then
+                local text = castFrame.ImportEditor:GetText()
+                text = DF:Trim(text)
+                local soundData = Plater.DecompressData(text, "print")
+
+                --exported cast colors has this member to identify the exported data
+                if (soundData and soundData[Plater.Export_CastSoundAlerts]) then
+                    --the uncompressed table is a numeric table of tables
+                    for i, soundTable in pairs(soundData) do
+                        --check integrity
+                        if (type(soundTable) == "table") then
+                            local spellId, audioName = unpack(soundTable)
+
+                            --check integrity
+                            spellId = tonumber(spellId)
+                            audioName = tostring(audioName) -- may be nil
+
+                            if (spellId) then
+                                --add into the audio data
+                                local filePath = LibSharedMedia:Fetch("sound", audioName)
+                                if (filePath and type(filePath) == "string") then
+                                    DB_CAST_AUDIOCUES[spellId] = filePath
+                                else
+                                    Plater:Msg("Audio not installed:", audioName)
+                                end
+                            end
+                        end
+                    end
+
+                    castFrame.RefreshScroll()
+                    Plater:Msg("data imported.")
+                else
+                    Plater.SendScriptTypeErrorMsg(soundData)
+                end
+            end
+
+            castFrame.ImportEditor:Hide()
         end
 
         -- ~importcolor
@@ -1858,19 +1916,22 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
             castFrame.ImportEditor:Show()
             castFrame.ImportEditor:SetPoint("topleft", castFrame.Header, "topleft")
-            castFrame.ImportEditor:SetPoint("bottomright", castFrame, "bottomright", -17, 37)
+            castFrame.ImportEditor:SetPoint("bottomright", castFrame, "bottomright", 25, 37)
+            --castFrame.ImportEditor.scroll:SetAlpha(0)
 
             castFrame.ImportEditor:SetText("")
             C_Timer.After(.1, function()
                 castFrame.ImportEditor.editbox:HighlightText()
                 castFrame.ImportEditor.editbox:SetFocus(true)
             end)
+
+            castFrame.OkayImportButton:SetClickFunction(castFrame.ImportColors)
         end
 
-        local importButton = DF:CreateButton(castFrame, importColorsFunc, 70, 20, LOC["IMPORT_CAST_COLORS"], -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
-        importButton:SetPoint("right", auraSearchTextEntry, "left", -2, 0)
-        importButton:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
-        importButton:SetIcon([[Interface\AddOns\Plater\images\import_indicators_1.png]], 15, 14, "overlay", {0.25, 0.375, 0, 1})
+        local importColorsButton = DF:CreateButton(castFrame, importColorsFunc, 70, 20, LOC["IMPORT_CAST_COLORS"], -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
+        importColorsButton:SetPoint("right", auraSearchTextEntry, "left", -2, 0)
+        importColorsButton:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
+        importColorsButton:SetIcon([[Interface\AddOns\Plater\images\import_indicators_1.png]], 15, 14, "overlay", {0.25, 0.375, 0, 1})
 
         local exportColorsFunc = function()
             if (not castFrame.ImportEditor) then
@@ -1958,11 +2019,12 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
             castFrame.ImportEditor:Show()
             castFrame.ImportEditor:SetPoint("topleft", castFrame.Header, "topleft")
-            castFrame.ImportEditor:SetPoint("bottomright", castFrame, "bottomright", -17, 37)
+            castFrame.ImportEditor:SetPoint("bottomright", castFrame, "bottomright", 25, 37)
+            --castFrame.ImportEditor.scroll:SetAlpha(1)
 
             --compress data and show it in the text editor
             local data = Plater.CompressData(exportedTable, "print")
-            castFrame.ImportEditor:SetText(data or "failed to export color table")
+            castFrame.ImportEditor:SetText(data or "failed to export.")
 
             C_Timer.After(.1, function()
                 castFrame.ImportEditor.editbox:HighlightText()
@@ -1971,9 +2033,95 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         end
 
         local exportColorsButton = DF:CreateButton(castFrame, exportColorsFunc, 70, 20, LOC["EXPORT_CAST_COLORS"], -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
-        exportColorsButton:SetPoint("right", importButton, "left", -2, 0)
+        exportColorsButton:SetPoint("right", importColorsButton, "left", -2, 0)
         exportColorsButton:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
         exportColorsButton:SetIcon([[Interface\AddOns\Plater\images\import_indicators_1.png]], 15, 14, "overlay", {0.5, 0.625, 0, 1})
+
+        --import cast sounds button
+        local importCastSoundsFunc = function()
+            if (not castFrame.ImportEditor) then
+                createImportBox(castFrame, castFrame)
+            end
+
+            castFrame.IsExporting = nil
+            castFrame.IsImporting = true
+
+            castFrame.ImportEditor:Show()
+            castFrame.ImportEditor:SetPoint("topleft", castFrame.Header, "topleft")
+            castFrame.ImportEditor:SetPoint("bottomright", castFrame, "bottomright", 25, 37)
+            --castFrame.ImportEditor.scroll:SetAlpha(0)
+
+            castFrame.ImportEditor:SetText("")
+            C_Timer.After(.1, function()
+                castFrame.ImportEditor.editbox:HighlightText()
+                castFrame.ImportEditor.editbox:SetFocus(true)
+            end)
+
+            castFrame.OkayImportButton:SetClickFunction(castFrame.ImportCastSounds)
+        end
+
+        local importCastSoundsButton = DF:CreateButton(castFrame, importCastSoundsFunc, 70, 20, LOC["IMPORT_CAST_SOUNDS"], -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
+        importCastSoundsButton:SetPoint("right", exportColorsButton, "left", -2, 0)
+        importCastSoundsButton:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
+        importCastSoundsButton:SetIcon([[Interface\AddOns\Plater\images\import_indicators_1.png]], 15, 14, "overlay", {0.125, 0.25, 0, 1})
+
+        --export cast sounds button
+        local exportCastSoundsFunc = function()
+            if (not castFrame.ImportEditor) then
+                createImportBox(castFrame, castFrame)
+            end
+            --~exportsound ~export sound table to string
+            local exportedTable = {
+                [Plater.Export_CastSoundAlerts] = true, --identify this table as a cast color table
+            }
+
+            local allSounds = LibSharedMedia:HashTable("sound")
+
+            for spellId, audioPath in pairs(DB_CAST_AUDIOCUES) do
+                --find the sound name
+                local soundName
+
+                for thisSoundName, path in pairs(allSounds) do
+                    if (path == audioPath) then
+                        soundName = thisSoundName
+                    end
+                end
+
+                if (soundName) then
+                    table.insert(exportedTable, {spellId, soundName})
+                end
+            end
+
+            dumpt(exportedTable)
+
+            --check if there's at least 1 color being exported
+            if (#exportedTable < 1) then
+                Plater:Msg(LOC["OPTIONS_NOTHING_TO_EXPORT"])
+                return
+            end
+
+            castFrame.IsExporting = true
+            castFrame.IsImporting = nil
+
+            castFrame.ImportEditor:Show()
+            castFrame.ImportEditor:SetPoint("topleft", castFrame.Header, "topleft")
+            castFrame.ImportEditor:SetPoint("bottomright", castFrame, "bottomright", 25, 37)
+            --castFrame.ImportEditor.scroll:SetAlpha(1)
+
+            --compress data and show it in the text editor
+            local data = Plater.CompressData(exportedTable, "print")
+            castFrame.ImportEditor:SetText(data or "failed to export.")
+
+            C_Timer.After(.1, function()
+                castFrame.ImportEditor.editbox:HighlightText()
+                castFrame.ImportEditor.editbox:SetFocus(true)
+            end)
+        end
+
+        local exportCastSoundsButton = DF:CreateButton(castFrame, exportCastSoundsFunc, 70, 20, LOC["EXPORT_CAST_SOUNDS"], -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
+        exportCastSoundsButton:SetPoint("right", importCastSoundsButton, "left", -2, 0)
+        exportCastSoundsButton:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
+        exportCastSoundsButton:SetIcon([[Interface\AddOns\Plater\images\import_indicators_1.png]], 15, 14, "overlay", {0.625, 0.75, 0, 1})
 
     --disable all button
         local disableAllColors = function()

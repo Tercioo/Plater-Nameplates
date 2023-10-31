@@ -938,6 +938,16 @@ function DF:GroupIterator(callback, ...)
 	end
 end
 
+---receives an object and a percent amount, then calculate the return value by multiplying the min value of the object width or height by the percent received
+---@param uiObject uiobject
+---@param percent number
+---@return number
+function DF:GetSizeFromPercent(uiObject, percent)
+	local width, height = uiObject:GetSize()
+	local minValue = math.min(width, height)
+	return minValue * percent
+end
+
 ---get an integer an format it as string with the time format 16:45
 ---@param self table
 ---@param value number

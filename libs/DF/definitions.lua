@@ -121,6 +121,6 @@
 ---@field CreateScrollBox fun(self:table, parent:frame, name:string, refreshFunc:function, data:table, width:number, height:number, lineAmount:number, lineHeight:number, createLineFunc:function?, autoAmount:boolean?, noScroll:boolean?, noBackdrop:boolean?) : df_scrollbox
 ---@field CreateAuraScrollBox fun(self:table, parent:frame, name:string?, data:table?, onRemoveCallback:function?, options:table?) : df_aurascrollbox
 ---@field CreateGridScrollBox fun(self:table, parent:frame, name:string?, refreshFunc:function, data:table?, createColumnFrameFunc:function, options:table?) : df_gridscrollbox
----@field 
+---@field GetSizeFromPercent fun(self:table, uiObject:uiobject, percent:number) : number get the min size of a uiObject and multiply it by the percent passed
 ---@field 
 ---@field 

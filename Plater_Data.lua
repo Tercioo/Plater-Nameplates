@@ -45,6 +45,7 @@ function platerInternal.CreateDataTables(Plater)
 
     --export strings identification
     Plater.Export_CastColors = "CastColor"
+    Plater.Export_CastSoundAlerts = "CastSounds"
     Plater.Export_NpcColors = "NpcColor"
 
     --these tables store all bars created by boss mods
