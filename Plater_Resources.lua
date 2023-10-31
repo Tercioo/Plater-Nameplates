@@ -711,7 +711,7 @@ end
 
         local playerClass = PlayerClass
         if (IS_WOW_PROJECT_NOT_MAINLINE) then
-            local formId = 1 + (IsSpellKnown(5487) and 1 or 0) + (IsSpellKnown(1066) and 1 or 0)
+            local formId = 1 + ((IsSpellKnown(5487) or IsSpellKnown(9634)) and 1 or 0) + (IsSpellKnown(1066) and 1 or 0)
             if (playerClass == "ROGUE" or playerClass == "DEATHKNIGHT" or (playerClass == "DRUID" and IsSpellKnown(768) and (GetShapeshiftForm() == formId or Plater.db.profile.resources_settings.druid_show_always))) then
                 Plater.EndLogPerformanceCore("Plater-Resources", "Update", "CanUsePlaterResourceFrame")
                 return true

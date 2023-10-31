@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1698612658,  "Bug Fix", "October 27th, 2023", "Fixing classic druid combo points not showing in some cases (again).", "cont1nuity"},
 			{1698612658,  "Bug Fix", "October 29th, 2023", "Auto-refresh Buff Special list to ensure auras are loaded.", "cont1nuity"},
 			{1698612658,  "Bug Fix", "October 29th, 2023", "Changing Ghost Aura spellIDs to be negative internally for better identification.", "cont1nuity"},
 			{1698612658,  "Bug Fix", "October 27th, 2023", "Fixing classic druid combo points not showing.", "cont1nuity"},
