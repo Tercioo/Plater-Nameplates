@@ -4797,7 +4797,7 @@ function Plater.OnInit() --private --~oninit ~init
 					end
 					
 					-- in some occasions channeled casts don't have a CLEU entry... check this here
-					if (event == "UNIT_SPELLCAST_CHANNEL_START" and not DB_CAPTURED_SPELLS[self.spellID] or DB_CAPTURED_SPELLS[self.spellID].isChanneled == nil) then
+					if (event == "UNIT_SPELLCAST_CHANNEL_START" and (not DB_CAPTURED_SPELLS[self.spellID] or DB_CAPTURED_SPELLS[self.spellID].isChanneled == nil)) then
 						parserFunctions.SPELL_CAST_SUCCESS (nil, "SPELL_CAST_SUCCESS", nil, unitFrame[MEMBER_GUID], unitFrame.unitNameInternal, 0x00000000, nil, nil, nil, nil, nil, self.spellID, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 					end
 
