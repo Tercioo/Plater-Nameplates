@@ -3735,8 +3735,8 @@ Plater.AnchorNamesByPhraseId = {
 		
 		UNIT_INVENTORY_CHANGED = function()
 			UpdatePlayerTankState()
-			Plater.UpdateAllNameplateColors()
-			Plater.UpdateAllPlates()
+			--Plater.UpdateAllNameplateColors()
+			--Plater.UpdateAllPlates()
 		end,
 		
 		UPDATE_SHAPESHIFT_FORM = function()
