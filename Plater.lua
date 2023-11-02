@@ -8946,6 +8946,9 @@ end
 					end
 					if (npcId and npcId ~= 0) then
 						DB_CAPTURED_SPELLS[spellID] = {event = token, source = sourceName, npcID = npcId, encounterID = Plater.CurrentEncounterID, encounterName = Plater.CurrentEncounterName, isChanneled = isChanneled}
+						if isChanneled and not DB_CAPTURED_CASTS[spellID] then
+							DB_CAPTURED_CASTS[spellID] = {event = token, source = sourceName, npcID = npcId, encounterID = Plater.CurrentEncounterID, encounterName = Plater.CurrentEncounterName, isChanneled = isChanneled}
+						end
 					end
 				end
 			end
