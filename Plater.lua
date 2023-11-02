@@ -4719,12 +4719,13 @@ function Plater.OnInit() --private --~oninit ~init
 						self:OnHideWidget()
 					end
 					
+					local curTime = GetTime()
 					--local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, spellId = UnitCastingInfo (unitCast)
 					self.SpellName = 		self.spellName
 					self.SpellID = 		self.spellID
 					self.SpellTexture = 	self.spellTexture
-					self.SpellStartTime = 	self.spellStartTime or GetTime()
-					self.SpellEndTime = 	self.spellEndTime or GetTime()
+					self.SpellStartTime = 	self.spellStartTime or curTime
+					self.SpellEndTime = 	self.spellEndTime or curTime
 					
 					local notInterruptible = not self.canInterrupt
 					
@@ -4794,6 +4795,10 @@ function Plater.OnInit() --private --~oninit ~init
 								self.castColorTexture:SetHeight(self:GetHeight() + profile.cast_color_settings.height_offset)
 							end
 						end
+					end
+					
+					if (self.channeling and (self.SpellStartTime + 0.25 > curTime)) then
+						platerInternal.Audio.PlaySoundForCastStart(self.spellID) --fallback for edge cases. should not double play
 					end
 					
 					-- in some occasions channeled casts don't have a CLEU entry... check this here
