@@ -1421,12 +1421,12 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
                     local bFoundByAudioName
                     if (DB_CAST_AUDIOCUES[spellId]) then --path
-                        local audioFileName = tostring(DB_CAST_AUDIOCUES[spellId])
-                        bFoundByAudioName = audioFileName:lower():find(IsSearchingFor)
+                        local audioFileName = DB_CAST_AUDIOCUES[spellId]
+                        bFoundByAudioName = tostring(audioFileName):lower():find(IsSearchingFor)
 
                         if (not bFoundByAudioName) then
-                            local audioName = audioFileNameToCueName[audioFileName]
-                            bFoundByAudioName = audioName:lower():find(IsSearchingFor)
+                            local audioNameString = tostring(audioFileNameToCueName[audioFileName])
+                            bFoundByAudioName = audioNameString:lower():find(IsSearchingFor)
                         end
                     end
 
