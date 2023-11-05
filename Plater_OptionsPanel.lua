@@ -1519,6 +1519,7 @@ end)
 
 interface_options.always_boxfirst = true
 interface_options.language_addonId = addonId
+
 DF:BuildMenu (frontPageFrame, interface_options, startX, startY-20, 300 + 60, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 
 function frontPageFrame.OpenNewsWindow()
@@ -1891,6 +1892,155 @@ local debuff_options = {
 		desc = "OPTIONS_AURA_HEIGHT",
 	},
 	
+	{type = "blank"},
+
+	{type = "label", get = function() return "Automatic Aura Tracking:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+
+	{
+		type = "toggle",
+		boxfirst = true,
+		get = function() return Plater.db.profile.aura_show_aura_by_the_player end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_aura_by_the_player = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Auras Casted by You",
+		desc = "Show Auras Casted by You.",
+	},
+	
+	{
+		type = "toggle",
+		boxfirst = true,
+		get = function() return Plater.db.profile.aura_show_aura_by_other_players end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_aura_by_other_players = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Auras Casted by other Players",
+		desc = "Show Auras Casted by other Players.\n\n" .. ImportantText .. "This may cause a lot of auras to show!",
+	},
+
+	{type = "blank"},
+	
+	{
+		type = "toggle",
+		boxfirst = true,
+		get = function() return Plater.db.profile.aura_show_important end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_important = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Important Auras",
+		desc = "Show buffs and debuffs which the game tag as important.",
+	},
+	
+	{
+		type = "toggle",
+		boxfirst = true,
+		get = function() return Plater.db.profile.aura_show_dispellable end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_dispellable = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Dispellable Buffs",
+		desc = "Show auras which can be dispelled or stolen.",
+	},
+	
+	{
+		type = "toggle",
+		boxfirst = true,
+		get = function() return Plater.db.profile.aura_show_only_short_dispellable_on_players end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_only_short_dispellable_on_players = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Only short Dispellable Buffs on Players",
+		desc = "Show auras which can be dispelled or stolen on players if they are below 120sec duration (only applicable when 'Show Dispellable Buffs' is enabled).",
+	},
+	
+	{
+		type = "toggle",
+		boxfirst = true,
+		get = function() return Plater.db.profile.aura_show_enrage end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_enrage = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Enrage Buffs",
+		desc = "Show auras which are in the enrage category.",
+	},
+	
+	{
+		type = "toggle",
+		boxfirst = true,
+		get = function() return Plater.db.profile.aura_show_magic end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_magic = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Magic Buffs",
+		desc = "Show auras which are in the magic type category.",
+	},
+	
+	{
+		type = "toggle",
+		boxfirst = true,
+		get = function() return Plater.db.profile.aura_show_crowdcontrol end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_crowdcontrol = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Crowd Control",
+		desc = "Show crowd control effects.",
+	},
+	
+	{type = "blank"},
+	
+	{
+		type = "toggle",
+		boxfirst = true,
+		get = function() return Plater.db.profile.aura_show_buff_by_the_unit end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_buff_by_the_unit = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Buffs Casted by the Unit",
+		desc = "Show Buffs Casted by the Unit it self",
+	},
+	{
+		type = "toggle",
+		boxfirst = true,
+		get = function() return Plater.db.profile.aura_show_offensive_cd end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_offensive_cd = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show offensive player CDs",
+		desc = "Show offensive CDs on enemy/friendly players.",
+	},
+	
+	{
+		type = "toggle",
+		boxfirst = true,
+		get = function() return Plater.db.profile.aura_show_defensive_cd end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_defensive_cd = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show defensive player CDs",
+		desc = "Show defensive CDs on enemy/friendly players.",
+	},
 	
 	{type = "breakline"},
 	{type = "label", get = function() return "Aura Frame 1:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
@@ -2111,6 +2261,133 @@ local debuff_options = {
 		name = "OPTIONS_YOFFSET",
 		desc = "OPTIONS_YOFFSET_DESC",
 	},
+
+	{type = "blank"},
+
+	{type = "label", get = function() return "Aura Border Colors:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+	{
+		type = "color",
+		boxfirst = true,
+		get = function()
+			local color = Plater.db.profile.aura_border_colors.is_show_all
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_border_colors.is_show_all
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = "Important Auras Border Color",
+		desc = "Important Auras Border Color",
+	},
+	{
+		type = "color",
+		boxfirst = true,
+		get = function()
+			local color = Plater.db.profile.aura_border_colors.steal_or_purge
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_border_colors.steal_or_purge
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = "Dispellable Buffs Border Color",
+		desc = "Dispellable Buffs Border Color",
+	},
+	{
+		type = "color",
+		boxfirst = true,
+		get = function()
+			local color = Plater.db.profile.aura_border_colors.enrage
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_border_colors.enrage
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = "Enrage Buffs Border Color",
+		desc = "Enrage Buffs Border Color",
+	},
+	--border color is buff
+	{
+		type = "color",
+		boxfirst = true,
+		get = function()
+			local color = Plater.db.profile.aura_border_colors.is_buff
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_border_colors.is_buff
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = "Buffs Border Color",
+		desc = "Buffs Border Color",
+	},
+	--border color is offensive
+	{
+		type = "color",
+		boxfirst = true,
+		get = function()
+			local color = Plater.db.profile.aura_border_colors.crowdcontrol
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_border_colors.crowdcontrol
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = "Crowd Control Border Color",
+		desc = "Crowd Control Border Color",
+	},
+	--border color is offensive
+	{
+		type = "color",
+		boxfirst = true,
+		get = function()
+			local color = Plater.db.profile.aura_border_colors.offensive
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_border_colors.offensive
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = "Offensive CD Border Color",
+		desc = "Offensive CD Border Color",
+	},
+	--border color is offensive
+	{
+		type = "color",
+		boxfirst = true,
+		get = function()
+			local color = Plater.db.profile.aura_border_colors.defensive
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_border_colors.defensive
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = "Defensive CD Border Color",
+		desc = "Defensive CD Border Color",
+	},
+	
+	{
+		type = "toggle",
+		boxfirst = true,
+		get = function() return Plater.db.profile.aura_border_colors_by_type end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_border_colors_by_type = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+			Plater.RefreshAuras()
+		end,
+		name = "Use type based aura border colors",
+		desc = "Use the Blizzard debuff type colors for borders",
+	},	
 	
 	{type = "breakline"},
 	
@@ -2334,290 +2611,25 @@ local debuff_options = {
 		name = "Swipe Closure Inverted",
 		desc = "If enabled the swipe closure texture is applied as the swipe moves instead.",
 	},
-	
-	{type = "breakline"},
-
-	{type = "label", get = function() return "Automatic Aura Tracking:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-
-	{
-		type = "toggle",
-		boxfirst = true,
-		get = function() return Plater.db.profile.aura_show_aura_by_the_player end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_show_aura_by_the_player = value
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Show Auras Casted by You",
-		desc = "Show Auras Casted by You.",
-	},
-	
-	{
-		type = "toggle",
-		boxfirst = true,
-		get = function() return Plater.db.profile.aura_show_aura_by_other_players end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_show_aura_by_other_players = value
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Show Auras Casted by other Players",
-		desc = "Show Auras Casted by other Players.\n\n" .. ImportantText .. "This may cause a lot of auras to show!",
-	},
-
-	{type = "blank"},
-	
-	{
-		type = "toggle",
-		boxfirst = true,
-		get = function() return Plater.db.profile.aura_show_important end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_show_important = value
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Show Important Auras",
-		desc = "Show buffs and debuffs which the game tag as important.",
-	},
-	
-	{
-		type = "toggle",
-		boxfirst = true,
-		get = function() return Plater.db.profile.aura_show_dispellable end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_show_dispellable = value
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Show Dispellable Buffs",
-		desc = "Show auras which can be dispelled or stolen.",
-	},
-	
-	{
-		type = "toggle",
-		boxfirst = true,
-		get = function() return Plater.db.profile.aura_show_only_short_dispellable_on_players end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_show_only_short_dispellable_on_players = value
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Only short Dispellable Buffs on Players",
-		desc = "Show auras which can be dispelled or stolen on players if they are below 120sec duration (only applicable when 'Show Dispellable Buffs' is enabled).",
-	},
-	
-	{
-		type = "toggle",
-		boxfirst = true,
-		get = function() return Plater.db.profile.aura_show_enrage end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_show_enrage = value
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Show Enrage Buffs",
-		desc = "Show auras which are in the enrage category.",
-	},
-	
-	{
-		type = "toggle",
-		boxfirst = true,
-		get = function() return Plater.db.profile.aura_show_magic end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_show_magic = value
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Show Magic Buffs",
-		desc = "Show auras which are in the magic type category.",
-	},
-	
-	{
-		type = "toggle",
-		boxfirst = true,
-		get = function() return Plater.db.profile.aura_show_crowdcontrol end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_show_crowdcontrol = value
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Show Crowd Control",
-		desc = "Show crowd control effects.",
-	},
-	
-	{type = "blank"},
-	
-	{
-		type = "toggle",
-		boxfirst = true,
-		get = function() return Plater.db.profile.aura_show_buff_by_the_unit end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_show_buff_by_the_unit = value
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Show Buffs Casted by the Unit",
-		desc = "Show Buffs Casted by the Unit it self",
-	},
-	{
-		type = "toggle",
-		boxfirst = true,
-		get = function() return Plater.db.profile.aura_show_offensive_cd end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_show_offensive_cd = value
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Show offensive player CDs",
-		desc = "Show offensive CDs on enemy/friendly players.",
-	},
-	
-	{
-		type = "toggle",
-		boxfirst = true,
-		get = function() return Plater.db.profile.aura_show_defensive_cd end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_show_defensive_cd = value
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Show defensive player CDs",
-		desc = "Show defensive CDs on enemy/friendly players.",
-	},
-	
-	{type = "blank"},
-
-	{type = "label", get = function() return "Aura Border Colors:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-	{
-		type = "color",
-		boxfirst = true,
-		get = function()
-			local color = Plater.db.profile.aura_border_colors.is_show_all
-			return {color[1], color[2], color[3], color[4]}
-		end,
-		set = function (self, r, g, b, a) 
-			local color = Plater.db.profile.aura_border_colors.is_show_all
-			color[1], color[2], color[3], color[4] = r, g, b, a
-			Plater.UpdateAllPlates()
-		end,
-		name = "Important Auras Border Color",
-		desc = "Important Auras Border Color",
-	},
-	{
-		type = "color",
-		boxfirst = true,
-		get = function()
-			local color = Plater.db.profile.aura_border_colors.steal_or_purge
-			return {color[1], color[2], color[3], color[4]}
-		end,
-		set = function (self, r, g, b, a) 
-			local color = Plater.db.profile.aura_border_colors.steal_or_purge
-			color[1], color[2], color[3], color[4] = r, g, b, a
-			Plater.UpdateAllPlates()
-		end,
-		name = "Dispellable Buffs Border Color",
-		desc = "Dispellable Buffs Border Color",
-	},
-	{
-		type = "color",
-		boxfirst = true,
-		get = function()
-			local color = Plater.db.profile.aura_border_colors.enrage
-			return {color[1], color[2], color[3], color[4]}
-		end,
-		set = function (self, r, g, b, a) 
-			local color = Plater.db.profile.aura_border_colors.enrage
-			color[1], color[2], color[3], color[4] = r, g, b, a
-			Plater.UpdateAllPlates()
-		end,
-		name = "Enrage Buffs Border Color",
-		desc = "Enrage Buffs Border Color",
-	},
-	--border color is buff
-	{
-		type = "color",
-		boxfirst = true,
-		get = function()
-			local color = Plater.db.profile.aura_border_colors.is_buff
-			return {color[1], color[2], color[3], color[4]}
-		end,
-		set = function (self, r, g, b, a) 
-			local color = Plater.db.profile.aura_border_colors.is_buff
-			color[1], color[2], color[3], color[4] = r, g, b, a
-			Plater.UpdateAllPlates()
-		end,
-		name = "Buffs Border Color",
-		desc = "Buffs Border Color",
-	},
-	--border color is offensive
-	{
-		type = "color",
-		boxfirst = true,
-		get = function()
-			local color = Plater.db.profile.aura_border_colors.crowdcontrol
-			return {color[1], color[2], color[3], color[4]}
-		end,
-		set = function (self, r, g, b, a) 
-			local color = Plater.db.profile.aura_border_colors.crowdcontrol
-			color[1], color[2], color[3], color[4] = r, g, b, a
-			Plater.UpdateAllPlates()
-		end,
-		name = "Crowd Control Border Color",
-		desc = "Crowd Control Border Color",
-	},
-	--border color is offensive
-	{
-		type = "color",
-		boxfirst = true,
-		get = function()
-			local color = Plater.db.profile.aura_border_colors.offensive
-			return {color[1], color[2], color[3], color[4]}
-		end,
-		set = function (self, r, g, b, a) 
-			local color = Plater.db.profile.aura_border_colors.offensive
-			color[1], color[2], color[3], color[4] = r, g, b, a
-			Plater.UpdateAllPlates()
-		end,
-		name = "Offensive CD Border Color",
-		desc = "Offensive CD Border Color",
-	},
-	--border color is offensive
-	{
-		type = "color",
-		boxfirst = true,
-		get = function()
-			local color = Plater.db.profile.aura_border_colors.defensive
-			return {color[1], color[2], color[3], color[4]}
-		end,
-		set = function (self, r, g, b, a) 
-			local color = Plater.db.profile.aura_border_colors.defensive
-			color[1], color[2], color[3], color[4] = r, g, b, a
-			Plater.UpdateAllPlates()
-		end,
-		name = "Defensive CD Border Color",
-		desc = "Defensive CD Border Color",
-	},
-	
-	{
-		type = "toggle",
-		boxfirst = true,
-		get = function() return Plater.db.profile.aura_border_colors_by_type end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_border_colors_by_type = value
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-			Plater.RefreshAuras()
-		end,
-		name = "Use type based aura border colors",
-		desc = "Use the Blizzard debuff type colors for borders",
-	},
-
 }
 
 _G.C_Timer.After(0.850, function() --~delay
 	debuff_options.always_boxfirst = true
 	debuff_options.language_addonId = addonId
-	DF:BuildMenu (auraOptionsFrame, debuff_options, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
+
+	debuff_options.align_as_pairs = true
+	debuff_options.align_as_pairs_string_space = 185
+	debuff_options.widget_width = 150
+
+    local canvasFrame = DF:CreateCanvasScrollBox(auraOptionsFrame)
+    canvasFrame:SetPoint("topleft", auraOptionsFrame, "topleft", 0, platerInternal.optionsYStart)
+    canvasFrame:SetPoint("bottomright", auraOptionsFrame, "bottomright", -26, 25)
+
+	debuff_options.use_scrollframe = true
+
+	DF:BuildMenu(canvasFrame, debuff_options, startX, 0, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
+
+	--DF:DebugVisibility(canvasFrame:GetScrollChild())
 end)
 
 auraOptionsFrame.AuraTesting = {
