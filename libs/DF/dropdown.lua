@@ -989,6 +989,10 @@ end
 function DF:BuildDropDownFontList(onClick, icon, iconTexcoord, iconSize)
 	local fontTable = {}
 
+	if (type(iconSize) ~= "table") then
+		iconSize = {iconSize or 16, iconSize or 16}
+	end
+
 	local SharedMedia = LibStub:GetLibrary("LibSharedMedia-3.0")
 	for name, fontPath in pairs(SharedMedia:HashTable("font")) do
 		fontTable[#fontTable+1] = {value = name, label = name, onclick = onClick, icon = icon, iconsize = iconSize, texcoord = iconTexcoord, font = fontPath, descfont = "abcdefg ABCDEFG"}
@@ -1006,10 +1010,10 @@ function DropDownMetaFunctions:SetTemplate(template)
 	self.template = template
 
 	if (template.width) then
-		self:SetWidth(template.width)
+		PixelUtil.SetWidth(self.dropdown, template.width)
 	end
 	if (template.height) then
-		self:SetHeight(template.height)
+		PixelUtil.SetWidth(self.dropdown, template.height)
 	end
 
 	if (template.backdrop) then
@@ -1137,9 +1141,10 @@ function DF:CreateOutlineListGenerator(callback)
 	local newGenerator = function()
 		local dropdownOptions = {}
 
-		for outlineName in pairs(DF.FontOutlineFlags) do
+		for i, outlineInfo in ipairs(DF.FontOutlineFlags) do
+			local outlineName, outlineLoc = unpack(outlineInfo)
 			table.insert(dropdownOptions, {
-				label = outlineName,
+				label = outlineLoc,
 				value = outlineName,
 				onclick = callback
 			})
@@ -1252,8 +1257,7 @@ function DF:NewDropDown(parent, container, name, member, width, height, func, de
 	end
 
 	dropDownObject.dropdown = DF:CreateNewDropdownFrame(parent, name)
-	dropDownObject.dropdown:SetWidth(width)
-	dropDownObject.dropdown:SetHeight(height)
+	PixelUtil.SetSize(dropDownObject.dropdown, width, height)
 
 	dropDownObject.container = container
 	dropDownObject.widget = dropDownObject.dropdown

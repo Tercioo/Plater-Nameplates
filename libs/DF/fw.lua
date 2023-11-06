@@ -1,6 +1,6 @@
 
 
-local dversion = 480
+local dversion = 482
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary(major, minor)
 
@@ -514,6 +514,8 @@ function DF.table.getfrompath(t, path)
 		end
 
 		return value
+	else
+		return t[path] or t[tonumber(path)]
 	end
 end
 
@@ -539,7 +541,12 @@ function DF.table.setfrompath(t, path, value)
 			lastTable[lastKey] = value
 			return true
 		end
+	else
+		t[path] = value
+		return true
 	end
+
+	return false
 end
 
 ---find the value inside the table, and it it's not found, add it
@@ -1295,9 +1302,12 @@ local ValidOutlines = {
 }
 
 DF.FontOutlineFlags = {
-	["NONE"] = true,
-	["OUTLINE"] = true,
-	["THICKOUTLINE"] = true,
+	{"NONE", "None"},
+	{"MONOCHROME", "Monochrome"},
+	{"OUTLINE", "Outline"},
+	{"THICKOUTLINE", "Thick Outline"},
+	{"OUTLINEMONOCHROME", "Outline & Monochrome"},
+	{"THICKOUTLINEMONOCHROME", "Thick Outline & Monochrome"},
 }
 
 ---set the outline of a fontstring, outline is a black border around the text, can be "NONE", "MONOCHROME", "OUTLINE" or "THICKOUTLINE"

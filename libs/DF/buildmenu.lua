@@ -8,6 +8,7 @@ local unpack = unpack
 local C_Timer = C_Timer
 local InCombatLockdown = InCombatLockdown
 local CreateFrame = CreateFrame
+local PixelUtil = PixelUtil
 local _
 
 ---@class df_menu_table : table
@@ -109,19 +110,28 @@ end
 local createOptionHighlightTexture = function(frame, label, widgetWidth)
     frame = frame.widget or frame
     label = label.widget or label
+
     local highlightFrame = CreateFrame("frame", nil, frame)
     highlightFrame:EnableMouse(true)
-    highlightFrame:SetWidth(widgetWidth)
-    highlightFrame:SetHeight(frame:GetHeight() + 2)
     highlightFrame:SetFrameLevel(frame:GetFrameLevel()-1)
-    highlightFrame:SetPoint("topleft", label, "topleft", -2, 6)
+
+    PixelUtil.SetSize(highlightFrame, widgetWidth, frame:GetHeight() + 1)
+    PixelUtil.SetPoint(highlightFrame, "topleft", label, "topleft", -2, 5)
+
     highlightFrame:SetScript("OnEnter", onEnterHighlight)
     highlightFrame:SetScript("OnLeave", onLeaveHighlight)
 
     local highlightTexture = highlightFrame:CreateTexture(nil, "overlay")
     highlightTexture:SetColorTexture(1, 1, 1, 0.1)
-    highlightTexture:SetAllPoints()
+    PixelUtil.SetPoint(highlightTexture, "topleft", highlightFrame, "topleft", 0, 0)
+    PixelUtil.SetPoint(highlightTexture, "bottomright", highlightFrame, "bottomright", 0, 0)
     highlightTexture:Hide()
+
+    local backgroundTexture = highlightFrame:CreateTexture(nil, "artwork")
+    backgroundTexture:SetColorTexture(1, 1, 1)
+    backgroundTexture:SetVertexColor(.25, .25, .25, 0.5)
+    PixelUtil.SetPoint(backgroundTexture, "topleft", highlightFrame, "topleft", 0, 0)
+    PixelUtil.SetPoint(backgroundTexture, "bottomright", highlightFrame, "bottomright", 0, 0)
 
     highlightFrame.highlightTexture = highlightTexture
     highlightFrame.parent = frame
@@ -995,20 +1005,22 @@ end
 
 					assert(widgetTable.get, "DetailsFramework:BuildMenu(): .get not found in the widget table for 'select'")
 
+                    local defaultHeight = 18
+
 					local dropdown
 					if (widgetTable.type == "selectfont") then
-						dropdown = detailsFramework:CreateFontDropDown(parent, widgetTable.set, widgetTable.get(), widgetWidth or 140, widgetHeight or 18, nil, "$parentWidget" .. index, dropdownTemplate)
+						dropdown = detailsFramework:CreateFontDropDown(parent, widgetTable.set, widgetTable.get(), widgetWidth or 140, widgetHeight or defaultHeight, nil, "$parentWidget" .. index, dropdownTemplate)
 
 					elseif (widgetTable.type == "selectcolor") then
-                        dropdown = detailsFramework:CreateColorDropDown(parent, widgetTable.set, widgetTable.get(), widgetWidth or 140, widgetHeight or 18, nil, "$parentWidget" .. index, dropdownTemplate)
+                        dropdown = detailsFramework:CreateColorDropDown(parent, widgetTable.set, widgetTable.get(), widgetWidth or 140, widgetHeight or defaultHeight, nil, "$parentWidget" .. index, dropdownTemplate)
 
 					elseif (widgetTable.type == "selectanchor") then
-						dropdown = detailsFramework:CreateAnchorPointDropDown(parent, widgetTable.set, widgetTable.get(), widgetWidth or 140, widgetHeight or 18, nil, "$parentWidget" .. index, dropdownTemplate)
+						dropdown = detailsFramework:CreateAnchorPointDropDown(parent, widgetTable.set, widgetTable.get(), widgetWidth or 140, widgetHeight or defaultHeight, nil, "$parentWidget" .. index, dropdownTemplate)
 
 					elseif (widgetTable.type == "selectoutline") then
-						dropdown = detailsFramework:CreateOutlineDropDown(parent, widgetTable.set, widgetTable.get(), widgetWidth or 140, widgetHeight or 18, nil, "$parentWidget" .. index, dropdownTemplate)
+						dropdown = detailsFramework:CreateOutlineDropDown(parent, widgetTable.set, widgetTable.get(), widgetWidth or 140, widgetHeight or defaultHeight, nil, "$parentWidget" .. index, dropdownTemplate)
 					else
-						dropdown = detailsFramework:NewDropDown(parent, nil, "$parentWidget" .. index, nil, widgetWidth or 140, widgetHeight or 18, widgetTable.values, widgetTable.get(), dropdownTemplate)
+						dropdown = detailsFramework:NewDropDown(parent, nil, "$parentWidget" .. index, nil, widgetWidth or 140, widgetHeight or defaultHeight, widgetTable.values, widgetTable.get(), dropdownTemplate)
 					end
 
 					local descPhraseId = getDescripttionPhraseID(widgetTable, languageAddonId, languageTable)
@@ -1028,8 +1040,8 @@ end
 					end
 
                     if (bAlignAsPairs) then
-                        label:SetPoint(currentXOffset, currentYOffset)
-                        dropdown:SetPoint("left", label, "left", nAlignAsPairsLength, 0)
+                        PixelUtil.SetPoint(label.widget, "topleft", dropdown:GetParent(), "topleft", currentXOffset, currentYOffset)
+                        PixelUtil.SetPoint(dropdown.widget, "left", label.widget, "left", nAlignAsPairsLength, 0)
                         createOptionHighlightTexture(dropdown, label, (widgetWidth or 140) + nAlignAsPairsLength + 5)
                     else
                         dropdown:SetPoint("left", label, "right", 2, 0)
@@ -1098,10 +1110,10 @@ end
 					end
 
 					if (widgetTable.width) then
-						switch:SetWidth(widgetTable.width)
+                        PixelUtil.SetWidth(switch.widget, widgetTable.width)
 					end
 					if (widgetTable.height) then
-						switch:SetHeight(widgetTable.height)
+                        PixelUtil.SetHeight(switch.widget, widgetTable.height)
 					end
 
 					local label = detailsFramework:NewLabel(parent, nil, "$parentLabel" .. index, nil, "", "GameFontNormal", widgetTable.text_template or textTemplate or 12)
@@ -1110,8 +1122,8 @@ end
 					DetailsFramework.Language.RegisterObjectWithDefault(languageAddonId, label.widget, namePhraseId, formatOptionNameWithColon(widgetTable.name, useColon))
 
                     if (bAlignAsPairs) then
-                        label:SetPoint(currentXOffset, currentYOffset)
-                        switch:SetPoint("left", label, "left", nAlignAsPairsLength, 0)
+                        PixelUtil.SetPoint(label.widget, "topleft", switch:GetParent(), "topleft", currentXOffset, currentYOffset)
+                        PixelUtil.SetPoint(switch.widget, "left", label.widget, "left", nAlignAsPairsLength, 0)
                         createOptionHighlightTexture(switch, label, (widgetWidth or 140) + nAlignAsPairsLength + 5)
                     else
                         if (widgetTable.boxfirst or bUseBoxFirstOnAllWidgets) then
@@ -1156,7 +1168,7 @@ end
 
 					assert(widgetTable.get, "DetailsFramework:BuildMenu(): .get not found in the widget table for 'range'")
 					local bIsDecimals = widgetTable.usedecimals
-					local slider = detailsFramework:NewSlider(parent, nil, "$parentWidget" .. index, nil, widgetWidth or 140, widgetHeight or 20, widgetTable.min, widgetTable.max, widgetTable.step, widgetTable.get(),  bIsDecimals, nil, nil, sliderTemplate)
+					local slider = detailsFramework:NewSlider(parent, nil, "$parentWidget" .. index, nil, widgetWidth or 140, widgetHeight or 18, widgetTable.min, widgetTable.max, widgetTable.step, widgetTable.get(),  bIsDecimals, nil, nil, sliderTemplate)
 
 					local descPhraseId = getDescripttionPhraseID(widgetTable, languageAddonId, languageTable)
 					DetailsFramework.Language.RegisterTableKeyWithDefault(languageAddonId, slider, "have_tooltip", descPhraseId, widgetTable.desc)
@@ -1187,8 +1199,8 @@ end
 					DetailsFramework.Language.RegisterObjectWithDefault(languageAddonId, label.widget, namePhraseId, formatOptionNameWithColon(widgetTable.name, useColon))
 
                     if (bAlignAsPairs) then
-                        label:SetPoint(currentXOffset, currentYOffset)
-                        slider:SetPoint("left", label, "left", nAlignAsPairsLength, 0)
+                        PixelUtil.SetPoint(label.widget, "topleft", slider:GetParent(), "topleft", currentXOffset, currentYOffset)
+                        PixelUtil.SetPoint(slider.widget, "left", label.widget, "left", nAlignAsPairsLength, 0)
                         createOptionHighlightTexture(slider, label, (widgetWidth or 140) + nAlignAsPairsLength + 5)
                     else
 					    slider:SetPoint("left", label, "right", 2)

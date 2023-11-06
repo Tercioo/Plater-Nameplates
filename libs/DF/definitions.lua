@@ -56,7 +56,7 @@
 ---@field EditorMixin df_editormixin
 ---@field ClassCache {ID:number, Name:string, FileString:string, Texture:string, TexCoord:number[]}[] only available after calling GetClassList()
 ---@field Math df_math
----@field FontOutlineFlags table<outline, boolean>
+---@field FontOutlineFlags {key1:outline, key2:string}[]
 ---@field table df_table_functions
 ---@field AnchorPoints string[]
 ---@field ClassFileNameToIndex table<string, number> engClass -> classIndex
