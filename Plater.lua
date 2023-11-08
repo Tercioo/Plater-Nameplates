@@ -6133,7 +6133,7 @@ end
 	
 	local set_aggro_color = function (self, r, g, b, a) --self = unitName
 		if (DB_AGGRO_CHANGE_HEALTHBAR_COLOR) then
-			if (not unitFrame.DenyColorChange) then --tagged from a script
+			if (not self.DenyColorChange) then --tagged from a script
 				Plater.ChangeHealthBarColor_Internal (self.healthBar, r, g, b, a)
 			end
 		end
