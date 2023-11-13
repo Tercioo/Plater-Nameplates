@@ -1721,7 +1721,9 @@ local debuff_options = {
 				Plater.DisableAuraTest = false
 				auraOptionsFrame.EnableAuraTest()
 			end
-			auraOptionsFrame:RefreshOptions()
+
+			--refresh the aura options panel, as the canvasFrame was passed to BuildMenu() it require here to get the scrollChild to call RefreshOptions()
+			auraOptionsFrame.canvasFrame:GetScrollChild():RefreshOptions()
 		end,
 		name = "OPTIONS_ENABLED",
 		desc = "OPTIONS_ENABLED",
@@ -2624,6 +2626,7 @@ _G.C_Timer.After(0.850, function() --~delay
     local canvasFrame = DF:CreateCanvasScrollBox(auraOptionsFrame)
     canvasFrame:SetPoint("topleft", auraOptionsFrame, "topleft", 0, platerInternal.optionsYStart)
     canvasFrame:SetPoint("bottomright", auraOptionsFrame, "bottomright", -26, 25)
+	auraOptionsFrame.canvasFrame = canvasFrame
 
 	debuff_options.use_scrollframe = true
 
@@ -2766,8 +2769,6 @@ Plater.CreateAuraTesting()
 	buffTrackList.bottomTexture:SetBlendMode("ADD")
 	buffTrackList.bottomTexture:SetTexCoord(0, 1, 1, 0)
 	buffTrackList.bottomTexture:SetVertexColor(0, .1, 1, 0.2)
-
-	
 	
 	function auraFilterFrame.RefreshOptions()
 		auraConfigPanel:OnProfileChanged (Plater.db.profile)
