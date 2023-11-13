@@ -1120,6 +1120,36 @@ do
 			end
 		end
 	})
+	
+	--#32 Cleanup Ghost Auras indexes to be numbers again and remove trash.
+	tinsert (PlaterPatchLibrary, {
+		NotEssential = false,
+		
+		Notes = {
+			"- Cleanup and repair Ghost Auras data."
+		},
+		Func = function()
+			--cleanup is needed for proper number indexing. will remove crap as well.
+			
+			local ghostAuras = Plater.db.profile.ghost_auras.auras
+			local ghostAurasTemp = DetailsFramework.table.copy({}, ghostAuras)
+			local ghostAurasDefault = PLATER_DEFAULT_SETTINGS.profile.ghost_auras.auras
+			
+			for class, specs in pairs(ghostAurasTemp) do
+				for specID, specData in pairs(specs) do
+					ghostAuras[class][specID] = nil
+					if ghostAurasDefault[class][tonumber(specID)] then
+						ghostAuras[class][tonumber(specID)] = ghostAuras[class][tonumber(specID)] or {}
+						for spellId, enabled in pairs(specData) do
+							if tonumber(spellId) then
+								ghostAuras[class][tonumber(specID)][tonumber(spellId)] = enabled 
+							end
+						end
+					end
+				end
+			end
+		end
+	})
 
 	--to tag an update as non-essential, add "NotEssential = true," to the table
 	--/run Plater.db.profile.patch_version = 30

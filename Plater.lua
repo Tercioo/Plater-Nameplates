@@ -5910,9 +5910,7 @@ end
 			--check aggro if is in combat
 			if (PLAYER_IN_COMBAT) then
 				if (unitFrame.CanCheckAggro) then
-					if (not unitFrame.DenyColorChange) then --tagged from a script
-						Plater.UpdateNameplateThread (unitFrame)
-					end
+					Plater.UpdateNameplateThread (unitFrame)
 				end
 			end
 			
@@ -6134,8 +6132,10 @@ end
 	end
 	
 	local set_aggro_color = function (self, r, g, b, a) --self = unitName
-		if (DB_AGGRO_CHANGE_HEALTHBAR_COLOR) then	
-			Plater.ChangeHealthBarColor_Internal (self.healthBar, r, g, b, a)
+		if (DB_AGGRO_CHANGE_HEALTHBAR_COLOR) then
+			if (not self.DenyColorChange) then --tagged from a script
+				Plater.ChangeHealthBarColor_Internal (self.healthBar, r, g, b, a)
+			end
 		end
 		
 		if (DB_AGGRO_CHANGE_BORDER_COLOR) then

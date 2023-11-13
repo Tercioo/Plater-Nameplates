@@ -978,6 +978,26 @@ function Plater.OpenOptionsPanel(pageNumber)
 					end
 				end
 				
+				---@type ghostauras
+				local ghostAuras = Plater.db.profile.ghost_auras.auras
+				---@type ghostauras
+				local ghostAurasTemp = DetailsFramework.table.copy({}, ghostAuras)
+				local ghostAurasDefault = PLATER_DEFAULT_SETTINGS.profile.ghost_auras.auras
+				--cleanup is needed for proper number indexing. will remove crap as well.
+				for class, specs in pairs(ghostAurasTemp) do
+					for specID, specData in pairs(specs) do
+						ghostAuras[class][specID] = nil
+						if ghostAurasDefault[class][tonumber(specID)] then
+							ghostAuras[class][tonumber(specID)] = ghostAuras[class][tonumber(specID)] or {}
+							for spellId, enabled in pairs(specData) do
+								if tonumber(spellId) then
+									ghostAuras[class][tonumber(specID)][tonumber(spellId)] = enabled 
+								end
+							end
+						end
+					end
+				end
+				
 				-- cleanup captured_spells
 				for spellId, data in pairs(Plater.db.profile.captured_spells) do
 					DB_CAPTURED_SPELLS[spellId] = DB_CAPTURED_SPELLS[spellId] or data --retain original
