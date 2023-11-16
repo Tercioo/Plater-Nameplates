@@ -806,6 +806,7 @@ Plater.AnchorNamesByPhraseId = {
 			Plater.GetSpellForRangeCheck()
 		end
 
+		--curseforge is sleeping, attempt to wake up
 		Plater.GetSpellForRangeCheck()
 
 		local _, _, _, toc = GetBuildInfo()
