@@ -806,6 +806,19 @@ Plater.AnchorNamesByPhraseId = {
 			Plater.GetSpellForRangeCheck()
 		end
 
+		Plater.GetSpellForRangeCheck()
+
+		local _, _, _, toc = GetBuildInfo()
+
+		local rangeChecker = function() --emergency fix for range check 2023.11.16
+			if (toc >= 100200) then
+				--print(Plater.RangeCheckRangeEnemy, plateFrame[MEMBER_UNITID], "InRange:", IsSpellInRange(Plater.RangeCheckRangeEnemy, plateFrame[MEMBER_UNITID]))
+				if (IsSpellInRange(Plater.RangeCheckRangeEnemy, plateFrame[MEMBER_UNITID]) == 1) then
+					return true
+				end
+			end
+		end
+
 		--this unit is target
 		local unitIsTarget = unitFrame.isSoftInteract -- default to softinteract
 		local notTheTarget = false
@@ -999,15 +1012,79 @@ Plater.AnchorNamesByPhraseId = {
 		Plater.RangeCheckFunctionEnemy = nil
 		Plater.RangeCheckFunctionFriendly = nil
 
+		local emergencialSpellRangeCheckList = {
+			[1467] = 361500, --> augmentation evoker - living flame
+			[1468] = 361500, --> augmentation evoker - living flame
+			[1473] = 361500, --> augmentation evoker - living flame
+
+			[577] = 198013, --> havoc demon hunter - Eye-Beam
+			[581] = 185245, --> vengeance demon hunter - Torment
+		
+			[250] = 56222, --> blood dk - dark command
+			[251] = 56222, --> frost dk - dark command
+			[252] = 56222, --> unholy dk - dark command
+			
+			[102] = 164815, -->  druid balance - Sunfire
+			[103] = 6795, -->  druid feral - Growl
+			[104] = 6795, -->  druid guardian - Growl
+			[105] = 5176, -->  druid resto - Solar Wrath
+		
+			[253] = 193455, -->  hunter bm - Cobra Shot
+			[254] = 19434, --> hunter marks - Aimed Shot
+			[255] = 271788, --> hunter survivor - Serpent Sting
+			
+			[62] = 227170, --> mage arcane - arcane blast
+			[63] = 133, --> mage fire - fireball
+			[64] = 228597, --> mage frost - frostbolt
+			
+			[268] = 115546 , --> monk bm - Provoke
+			[269] = 115546, --> monk ww - Provoke
+			[270] = 115546, --> monk mw - Provoke
+			
+			[65] = 62124, --> paladin holy - Hand of Reckoning
+			[66] = 62124, --> paladin protect - Hand of Reckoning
+			[70] = 62124, --> paladin ret - Hand of Reckoning
+			
+			[256] = 585, --> priest disc - Smite
+			[257] = 585, --> priest holy - Smite
+			[258] = 8092, --> priest shadow - Mind Blast
+			
+			[259] = 185565, --> rogue assassination - Poisoned Knife
+			[260] = 185763, --> rogue combat - Pistol Shot
+			[261] = 36554, --> rogue sub - Shadowstep
+		
+			[262] = 403, --> shaman elemental - Lightning Bolt
+			[263] = 51514, --> shamel enhancement - Hex
+			[264] = 403, --> shaman resto - Lightning Bolt
+		
+			[265] = 980, --> warlock aff - Agony
+			[266] = 686, --> warlock demo - Shadow Bolt
+			[267] = 116858, --> warlock destro - Chaos Bolt
+			
+			[71] = 355, --> warrior arms - Taunt
+			[72] = 355, --> warrior fury - Taunt
+			[73] = 355, --> warrior protect - Taunt
+		}
+
 		local specIndex = (IS_WOW_PROJECT_MAINLINE) and GetSpecialization() or 0
 		if (specIndex) then
 			local specID = (IS_WOW_PROJECT_MAINLINE) and GetSpecializationInfo (specIndex) or select (3, UnitClass ("player"))
 			if (specID and specID ~= 0) then
 				--the local character saved variable hold the spell name used for the range check
 				Plater.RangeCheckRangeFriendly = PlaterDBChr.spellRangeCheckRangeFriendly [specID] or Plater.DefaultSpellRangeListF [specID] or 40
-				Plater.RangeCheckRangeEnemy = PlaterDBChr.spellRangeCheckRangeEnemy [specID] or Plater.DefaultSpellRangeList [specID] or 40
-				Plater.RangeCheckFunctionFriendly = LibRangeCheck:GetFriendMaxChecker(Plater.RangeCheckRangeFriendly)
-				Plater.RangeCheckFunctionEnemy = LibRangeCheck:GetHarmMaxChecker(Plater.RangeCheckRangeEnemy)
+
+				local _, _, _, toc = GetBuildInfo()
+				if (toc >= 100200) then --emergency fix for range check 2023.11.16
+					Plater.RangeCheckRangeEnemy = emergencialSpellRangeCheckList[specID] or Plater.DefaultSpellRangeList [specID] or 40
+					Plater.RangeCheckRangeEnemy = GetSpellInfo(Plater.RangeCheckRangeEnemy)
+					Plater.RangeCheckFunctionFriendly = function() return true end --LibRangeCheck:GetFriendMaxChecker(Plater.RangeCheckRangeFriendly)
+					Plater.RangeCheckFunctionEnemy = function() return true end --LibRangeCheck:GetHarmMaxChecker(Plater.RangeCheckRangeEnemy)
+				else
+					Plater.RangeCheckRangeEnemy = PlaterDBChr.spellRangeCheckRangeEnemy [specID] or Plater.DefaultSpellRangeList [specID] or 40
+					Plater.RangeCheckFunctionFriendly = LibRangeCheck:GetFriendMaxChecker(Plater.RangeCheckRangeFriendly)
+					Plater.RangeCheckFunctionEnemy = LibRangeCheck:GetHarmMaxChecker(Plater.RangeCheckRangeEnemy)
+				end
+				
 				tryingToUpdateRangeChecker = false
 			else
 				tryingToUpdateRangeChecker = true
@@ -1664,7 +1741,7 @@ Plater.AnchorNamesByPhraseId = {
 
 	--a patch is a function stored in the Plater_ScriptLibrary file and are executed only once to change a profile setting, remove or add an aura into the tracker or modify a script
 	--patch versions are stored within the profile, so importing or creating a new profile will apply all patches that wasn't applyed into it yet
-	function Plater.ApplyPatches() --private ~updates ~scriptupdates
+	function Plater.ApplyPatches() --private ~updates ~scriptupdates ~patch ~patches
 		if (PlaterPatchLibrary) then
 			local currentPatch = Plater.db.profile.patch_version
 			local bSkipNonEssentialPatches = PlaterDB.SkipNonEssentialPatches
