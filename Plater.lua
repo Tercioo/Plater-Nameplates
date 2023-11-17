@@ -1028,7 +1028,7 @@ Plater.AnchorNamesByPhraseId = {
 			[102] = 164815, -->  druid balance - Sunfire
 			[103] = 6795, -->  druid feral - Growl
 			[104] = 6795, -->  druid guardian - Growl
-			[105] = 5176, -->  druid resto - Solar Wrath
+			[105] = 8936, -->  druid resto - Reju
 		
 			[253] = 193455, -->  hunter bm - Cobra Shot
 			[254] = 19434, --> hunter marks - Aimed Shot
@@ -1054,9 +1054,9 @@ Plater.AnchorNamesByPhraseId = {
 			[260] = 185763, --> rogue combat - Pistol Shot
 			[261] = 36554, --> rogue sub - Shadowstep
 		
-			[262] = 403, --> shaman elemental - Lightning Bolt
+			[262] = 8042, --> shaman elemental - earth shock
 			[263] = 51514, --> shamel enhancement - Hex
-			[264] = 403, --> shaman resto - Lightning Bolt
+			[264] = 61295, --> shaman resto - riptide
 		
 			[265] = 980, --> warlock aff - Agony
 			[266] = 686, --> warlock demo - Shadow Bolt
