@@ -783,7 +783,7 @@ Plater.AnchorNamesByPhraseId = {
 			castBar_rangeCheckAlpha = profile.range_check_cast_bar_alpha
 			buffFrames_rangeCheckAlpha = profile.range_check_buffs_alpha
 			powerBar_rangeCheckAlpha = profile.range_check_power_bar_alpha
-			rangeChecker = Plater.RangeCheckFunctionEnemy or LibRangeCheck:GetHarmMaxChecker(Plater.RangeCheckRangeEnemy or 40)
+			rangeChecker = Plater.RangeCheckFunctionEnemy or LibRangeCheck:GetHarmMaxChecker(Plater.RangeCheckRangeEnemy or 40, true)
 			rangeCheckRange = Plater.RangeCheckRangeEnemy
 			
 		else
@@ -794,7 +794,7 @@ Plater.AnchorNamesByPhraseId = {
 			castBar_rangeCheckAlpha = profile.range_check_cast_bar_alpha_friendlies
 			buffFrames_rangeCheckAlpha = profile.range_check_buffs_alpha_friendlies
 			powerBar_rangeCheckAlpha = profile.range_check_power_bar_alpha_friendlies
-			rangeChecker = Plater.RangeCheckFunctionFriendly or LibRangeCheck:GetFriendMaxChecker(Plater.RangeCheckRangeFriendly or 40)
+			rangeChecker = Plater.RangeCheckFunctionFriendly or LibRangeCheck:GetFriendMaxChecker(Plater.RangeCheckRangeFriendly or 40, true)
 			rangeCheckRange = Plater.RangeCheckRangeFriendly
 		end
 		
@@ -807,7 +807,7 @@ Plater.AnchorNamesByPhraseId = {
 		end
 
 		---------------------------------
-		if (IS_WOW_PROJECT_MAINLINE and InCombatLockdown()) then --emergency fix for range check 2023.11.16
+		if (false and IS_WOW_PROJECT_MAINLINE and InCombatLockdown()) then --emergency fix for range check 2023.11.16
 			rangeChecker = function(unit)
 				local min, max = LibRangeCheck:GetRange(unit, false, true)
 				if (max or rangeCheckRange + 1) <= (rangeCheckRange or 40) then
@@ -1017,8 +1017,8 @@ Plater.AnchorNamesByPhraseId = {
 				--the local character saved variable hold the spell name used for the range check
 				Plater.RangeCheckRangeFriendly = PlaterDBChr.spellRangeCheckRangeFriendly [specID] or Plater.DefaultSpellRangeListF [specID] or 40
 				Plater.RangeCheckRangeEnemy = PlaterDBChr.spellRangeCheckRangeEnemy [specID] or Plater.DefaultSpellRangeList [specID] or 40
-				Plater.RangeCheckFunctionFriendly = LibRangeCheck:GetFriendMaxChecker(Plater.RangeCheckRangeFriendly)
-				Plater.RangeCheckFunctionEnemy = LibRangeCheck:GetHarmMaxChecker(Plater.RangeCheckRangeEnemy)
+				Plater.RangeCheckFunctionFriendly = LibRangeCheck:GetFriendMaxChecker(Plater.RangeCheckRangeFriendly, true)
+				Plater.RangeCheckFunctionEnemy = LibRangeCheck:GetHarmMaxChecker(Plater.RangeCheckRangeEnemy, true)
 				
 				tryingToUpdateRangeChecker = false
 			else

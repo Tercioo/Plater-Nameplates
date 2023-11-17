@@ -40,7 +40,7 @@ License: MIT
 -- @class file
 -- @name LibRangeCheck-3.0
 local MAJOR_VERSION = "LibRangeCheck-3.0"
-local MINOR_VERSION = 1
+local MINOR_VERSION = 3
 
 local lib, oldminor = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then
@@ -49,6 +49,13 @@ end
 
 local isRetail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local isWrath = WOW_PROJECT_ID == WOW_PROJECT_WRATH_CLASSIC
+
+local InCombatLockdownRestriction
+if isRetail then
+  InCombatLockdownRestriction = InCombatLockdown
+else
+  InCombatLockdownRestriction = function() return false end
+end
 
 local _G = _G
 local next = next
@@ -522,11 +529,6 @@ local friendItemRequests
 local harmItemRequests
 local lastUpdate = 0
 
--- minRangeCheck is a function to check if spells with minimum range are really out of range, or fail due to range < minRange. See :init() for its setup
-local minRangeCheck = function(unit)
-  return CheckInteractDistance(unit, 2)
-end
-
 local checkers_Spell = setmetatable({}, {
   __index = function(t, spellIdx)
     local func = function(unit)
@@ -538,23 +540,33 @@ local checkers_Spell = setmetatable({}, {
     return func
   end,
 })
-local checkers_SpellWithMin = setmetatable({}, {
-  __index = function(t, spellIdx)
-    local func = function(unit)
-      if IsSpellInRange(spellIdx, BOOKTYPE_SPELL, unit) == 1 then
-        return true
-      elseif minRangeCheck(unit) then
-        return true, true
+local function createCheckers_SpellWithMin(fallbackSpell)
+  local checkers_SpellWithMin = setmetatable({}, {
+    __index = function(t, spellIdx)
+      local func = function(unit)
+        if IsSpellInRange(spellIdx, BOOKTYPE_SPELL, unit) == 1 then
+          return true
+        elseif fallbackSpell and IsSpellInRange(fallbackSpell, BOOKTYPE_SPELL, unit) == 1 then
+          return true, true
+        else
+          return false
+        end
       end
-    end
-    t[spellIdx] = func
-    return func
-  end,
-})
+      t[spellIdx] = func
+      return func
+    end,
+  })
+  return checkers_SpellWithMin
+end
+
 local checkers_Item = setmetatable({}, {
   __index = function(t, item)
     local func = function(unit)
-      return IsItemInRange(item, unit)
+      if InCombatLockdownRestriction() then
+        return nil
+      else
+        return IsItemInRange(item, unit) or nil
+      end
     end
     t[item] = func
     return func
@@ -563,8 +575,10 @@ local checkers_Item = setmetatable({}, {
 local checkers_Interact = setmetatable({}, {
   __index = function(t, index)
     local func = function(unit)
-      if CheckInteractDistance(unit, index) then
-        return true
+      if InCombatLockdownRestriction() then
+        return nil
+      else
+        return CheckInteractDistance(unit, index) and true or false
       end
     end
     t[index] = func
@@ -631,7 +645,7 @@ local function addChecker(t, range, minRange, checker, info)
 end
 
 local function createCheckerList(spellList, itemList, interactList)
-  local res = {}
+  local res, resInCombat = {}, {}
   if itemList then
     for range, items in pairs(itemList) do
       for i = 1, #items do
@@ -645,6 +659,25 @@ local function createCheckerList(spellList, itemList, interactList)
   end
 
   if spellList then
+    local spellIdWithOutMinRange
+    -- Some spells have a minimum range, IsSpellInRange returns false for both being
+    -- too near and too far. To distinguish between those two cases, we determine a spell
+    -- without a min range and use that as a fallback
+    for i = 1, #spellList do
+      local sid = spellList[i]
+      local name, _, _, _, minRange, range = GetSpellInfo(sid)
+      local spellIdx = findSpellIdx(name)
+      if spellIdx and range then
+        minRange = math_floor(minRange + 0.5)
+        if minRange == 0 then
+          spellIdWithOutMinRange = spellIdx
+          break;
+        end
+      end
+    end
+
+    local checkers_SpellWithMin = createCheckers_SpellWithMin(spellIdWithOutMinRange)
+
     for i = 1, #spellList do
       local sid = spellList[i]
       local name, _, _, _, minRange, range = GetSpellInfo(sid)
@@ -665,8 +698,10 @@ local function createCheckerList(spellList, itemList, interactList)
 
         if minRange then
           addChecker(res, range, minRange, checkers_SpellWithMin[spellIdx], "spell:" .. sid .. ":" .. tostring(name))
+          addChecker(resInCombat, range, minRange, checkers_SpellWithMin[spellIdx], "spell:" .. sid .. ":" .. tostring(name))
         else
           addChecker(res, range, minRange, checkers_Spell[spellIdx], "spell:" .. sid .. ":" .. tostring(name))
+          addChecker(resInCombat, range, minRange, checkers_Spell[spellIdx], "spell:" .. sid .. ":" .. tostring(name))
         end
       end
     end
@@ -678,7 +713,7 @@ local function createCheckerList(spellList, itemList, interactList)
     end
   end
 
-  return res
+  return res, resInCombat
 end
 
 local rangeCache = {}
@@ -709,7 +744,9 @@ local function getRangeWithCheckerList(unit, checkerList)
       hi = mid - 1
     end
   end
-  if lo > #checkerList then
+  if #checkerList == 0 then
+    return nil, nil
+  elseif lo > #checkerList then
     return 0, checkerList[#checkerList].range
   elseif lo <= 1 then
     return checkerList[1].range, nil
@@ -722,25 +759,42 @@ local function getRange(unit, noItems)
   local canAssist = UnitCanAssist("player", unit)
   if UnitIsDeadOrGhost(unit) then
     if canAssist then
-      return getRangeWithCheckerList(unit, lib.resRC)
+      return getRangeWithCheckerList(unit, InCombatLockdownRestriction() and lib.resRCInCombat or lib.resRC)
     else
-      return getRangeWithCheckerList(unit, lib.miscRC)
+      return getRangeWithCheckerList(unit, InCombatLockdownRestriction() and lib.miscRCInCombat or lib.miscRC)
     end
   end
 
   if UnitCanAttack("player", unit) then
-    return getRangeWithCheckerList(unit, noItems and lib.harmNoItemsRC or lib.harmRC)
-  elseif UnitIsUnit("pet", unit) then
-    local minRange, maxRange = getRangeWithCheckerList(unit, noItems and lib.friendNoItemsRC or lib.friendRC)
-    if minRange or maxRange then
-      return minRange, maxRange
+    if InCombatLockdownRestriction() then
+      return getRangeWithCheckerList(unit, noItems and lib.harmNoItemsRCInCombat or lib.harmRCInCombat)
     else
-      return getRangeWithCheckerList(unit, lib.petRC)
+      return getRangeWithCheckerList(unit, noItems and lib.harmNoItemsRC or lib.harmRC)
+    end
+  elseif UnitIsUnit("pet", unit) then
+    if InCombatLockdownRestriction() then
+      local minRange, maxRange = getRangeWithCheckerList(unit, noItems and lib.friendNoItemsRCInCombat or lib.friendRCInCombat)
+      if minRange or maxRange then
+        return minRange, maxRange
+      else
+        return getRangeWithCheckerList(unit, lib.petRCInCombat)
+      end
+    else
+      local minRange, maxRange = getRangeWithCheckerList(unit, noItems and lib.friendNoItemsRC or lib.friendRC)
+      if minRange or maxRange then
+        return minRange, maxRange
+      else
+        return getRangeWithCheckerList(unit, lib.petRC)
+      end
     end
   elseif canAssist then
-    return getRangeWithCheckerList(unit, noItems and lib.friendNoItemsRC or lib.friendRC)
+    if InCombatLockdownRestriction() then
+      return getRangeWithCheckerList(unit, noItems and lib.friendNoItemsRCInCombat or lib.friendRCInCombat)
+    else
+      return getRangeWithCheckerList(unit, noItems and lib.friendNoItemsRC or lib.friendRC)
+    end
   else
-    return getRangeWithCheckerList(unit, lib.miscRC)
+    return getRangeWithCheckerList(unit, InCombatLockdownRestriction() and lib.miscRC or lib.miscRCInCombat)
   end
 end
 
@@ -769,7 +823,7 @@ local function getCachedRange(unit, noItems, maxCacheAge)
   return result.minRange, result.maxRange
 end
 
-local function updateCheckers(origList, newList)
+local function updateList(origList, newList)
   if #origList ~= #newList then
     wipe(origList)
     copyTable(newList, origList)
@@ -782,6 +836,12 @@ local function updateCheckers(origList, newList)
       return true
     end
   end
+end
+
+local function updateCheckers(origList, origList2, newList, newList2)
+  local changed = updateList(origList, newList)
+  changed = updateList(origList2, newList2) or changed
+  return changed
 end
 
 local function rcIterator(checkerList)
@@ -866,25 +926,24 @@ end
 lib.checkerCache_Spell = lib.checkerCache_Spell or {}
 lib.checkerCache_Item = lib.checkerCache_Item or {}
 lib.miscRC = createCheckerList(nil, nil, DefaultInteractList)
+lib.miscRCInCombat = {}
 lib.friendRC = createCheckerList(nil, nil, DefaultInteractList)
+lib.friendRCInCombat = {}
 lib.harmRC = createCheckerList(nil, nil, DefaultInteractList)
+lib.harmRCInCombat = {}
 lib.resRC = createCheckerList(nil, nil, DefaultInteractList)
+lib.resRCInCombat = {}
 lib.petRC = createCheckerList(nil, nil, DefaultInteractList)
+lib.petRCInCombat = {}
 lib.friendNoItemsRC = createCheckerList(nil, nil, DefaultInteractList)
+lib.friendNoItemsRCInCombat = {}
 lib.harmNoItemsRC = createCheckerList(nil, nil, DefaultInteractList)
+lib.harmNoItemsRCInCombat = {}
 
 lib.failedItemRequests = {}
 
 -- << Public API
 
---@do-not-package@
--- this is here just for .docmeta
---- A checker function. This type of function is returned by the various Get*Checker() calls.
--- @param unit the unit to check range to.
--- @return **true** if the unit is within the range for this checker.
-local function checker(unit) end
-
---@end-do-not-package@
 --- The callback name that is fired when checkers are changed.
 -- @field
 lib.CHECKERS_CHANGED = "CHECKERS_CHANGED"
@@ -923,52 +982,28 @@ function lib:init(forced)
   local _, playerClass = UnitClass("player")
   local _, playerRace = UnitRace("player")
 
-  minRangeCheck = nil
-
-  -- first try to find a nice item we can use for minRangeCheck
-  local harmItems = HarmItems[15]
-  if harmItems then
-    for i = 1, #harmItems do
-      local minCheck = minItemChecker(harmItems[i])
-      if minCheck then
-        minRangeCheck = minCheck
-        break
-      end
-    end
-  end
-
-  if not minRangeCheck then -- fall back to interact distance checks
-    if playerClass == "HUNTER" or playerRace == "Tauren" then
-      -- for Hunters: use interact4 as it's safer
-      -- for Tauren: interact4 is actually closer than 25yd and interact3 is closer than 8yd, so we can't use that
-      minRangeCheck = checkers_Interact[4]
-    else
-      minRangeCheck = checkers_Interact[3]
-    end
-  end
-
   local interactList = InteractLists[playerRace] or DefaultInteractList
   self.handSlotItem = GetInventoryItemLink("player", HandSlotId)
   local changed = false
-  if updateCheckers(self.friendRC, createCheckerList(FriendSpells[playerClass], FriendItems, interactList)) then
+  if updateCheckers(self.friendRC, self.friendRCInCombat, createCheckerList(FriendSpells[playerClass], FriendItems, interactList)) then
     changed = true
   end
-  if updateCheckers(self.harmRC, createCheckerList(HarmSpells[playerClass], HarmItems, interactList)) then
+  if updateCheckers(self.harmRC, self.harmRCInCombat, createCheckerList(HarmSpells[playerClass], HarmItems, interactList)) then
     changed = true
   end
-  if updateCheckers(self.friendNoItemsRC, createCheckerList(FriendSpells[playerClass], nil, interactList)) then
+  if updateCheckers(self.friendNoItemsRC, self.friendNoItemsRCInCombat, createCheckerList(FriendSpells[playerClass], nil, interactList)) then
     changed = true
   end
-  if updateCheckers(self.harmNoItemsRC, createCheckerList(HarmSpells[playerClass], nil, interactList)) then
+  if updateCheckers(self.harmNoItemsRC, self.harmNoItemsRCInCombat, createCheckerList(HarmSpells[playerClass], nil, interactList)) then
     changed = true
   end
-  if updateCheckers(self.miscRC, createCheckerList(nil, nil, interactList)) then
+  if updateCheckers(self.miscRC, self.miscRCInCombat, createCheckerList(nil, nil, interactList)) then
     changed = true
   end
-  if updateCheckers(self.resRC, createCheckerList(ResSpells[playerClass], nil, interactList)) then
+  if updateCheckers(self.resRC, self.resRCInCombat, createCheckerList(ResSpells[playerClass], nil, interactList)) then
     changed = true
   end
-  if updateCheckers(self.petRC, createCheckerList(PetSpells[playerClass], nil, interactList)) then
+  if updateCheckers(self.petRC, self.petRCInCombat, createCheckerList(PetSpells[playerClass], nil, interactList)) then
     changed = true
   end
   if changed and self.callbacks then
@@ -977,103 +1012,157 @@ function lib:init(forced)
 end
 
 --- Return an iterator for checkers usable on friendly units as (**range**, **checker**) pairs.
-function lib:GetFriendCheckers()
-  return rcIterator(self.friendRC)
+-- @param inCombat if true, only checkers that can be used in combat ar returned
+function lib:GetFriendCheckers(inCombat)
+  return rcIterator(inCombat and self.friendRCInCombat or self.friendRC)
 end
+
+--- Return an iterator for checkers usable on friendly units as (**range**, **checker**) pairs.
+-- @param inCombat if true, only checkers that can be used in combat ar returned
+function lib:GetFriendCheckersNoItems(inCombat)
+  return rcIterator(inCombat and self.friendNoItemsRCInCombat or self.friendNoItemsRC)
+end
+
 
 --- Return an iterator for checkers usable on enemy units as (**range**, **checker**) pairs.
-function lib:GetHarmCheckers()
-  return rcIterator(self.harmRC)
+-- @param inCombat if true, only checkers that can be used in combat ar returned
+function lib:GetHarmCheckers(inCombat)
+  return rcIterator(inCombat and self.harmRCInCombat or self.harmRC)
 end
 
+
+--- Return an iterator for checkers usable on enemy units as (**range**, **checker**) pairs.
+-- @param inCombat if true, only checkers that can be used in combat ar returned
+function lib:GetHarmCheckersNoItems(inCombat)
+  return rcIterator(inCombat and self.harmNoItemsRCInCombat or self.harmNoItemsRC)
+end
+
+
 --- Return an iterator for checkers usable on miscellaneous units as (**range**, **checker**) pairs.  These units are neither enemy nor friendly, such as people in sanctuaries or corpses.
-function lib:GetMiscCheckers()
-  return rcIterator(self.miscRC)
+-- @param inCombat if true, only checkers that can be used in combat ar returned
+function lib:GetMiscCheckers(inCombat)
+  return rcIterator(inCombat and self.miscRCInCombat or self.miscRC)
 end
 
 --- Return a checker suitable for out-of-range checking on friendly units, that is, a checker whose range is equal or larger than the requested range.
 -- @param range the range to check for.
+-- @param inCombat if true, only checkers that can be used in combat ar returned
 -- @return **checker**, **range** pair or **nil** if no suitable checker is available. **range** is the actual range the returned **checker** checks for.
-function lib:GetFriendMinChecker(range)
-  return getMinChecker(self.friendRC, range)
+function lib:GetFriendMinChecker(range, inCombat)
+  return getMinChecker(inCombat and self.friendRCInCombat or self.friendRC , range)
 end
 
 --- Return a checker suitable for out-of-range checking on enemy units, that is, a checker whose range is equal or larger than the requested range.
 -- @param range the range to check for.
+-- @param inCombat if true, only checkers that can be used in combat ar returned
 -- @return **checker**, **range** pair or **nil** if no suitable checker is available. **range** is the actual range the returned **checker** checks for.
-function lib:GetHarmMinChecker(range)
-  return getMinChecker(self.harmRC, range)
+function lib:GetHarmMinChecker(range, inCombat)
+  return getMinChecker(inCombat and self.harmRCInCombat or self.harmRC, range)
 end
 
 --- Return a checker suitable for out-of-range checking on miscellaneous units, that is, a checker whose range is equal or larger than the requested range.
 -- @param range the range to check for.
+-- @param inCombat if true, only checkers that can be used in combat ar returned
 -- @return **checker**, **range** pair or **nil** if no suitable checker is available. **range** is the actual range the returned **checker** checks for.
-function lib:GetMiscMinChecker(range)
-  return getMinChecker(self.miscRC, range)
+function lib:GetMiscMinChecker(range, inCombat)
+  return getMinChecker(inCombat and self.miscRCInCombat or self.miscRC, range)
 end
 
 --- Return a checker suitable for in-range checking on friendly units, that is, a checker whose range is equal or smaller than the requested range.
 -- @param range the range to check for.
+-- @param inCombat if true, only checkers that can be used in combat ar returned
 -- @return **checker**, **range** pair or **nil** if no suitable checker is available. **range** is the actual range the returned **checker** checks for.
-function lib:GetFriendMaxChecker(range)
-  return getMaxChecker(self.friendRC, range)
+function lib:GetFriendMaxChecker(range, inCombat)
+  return getMaxChecker(inCombat and self.friendRCInCombat or self.friendRC, range)
 end
 
 --- Return a checker suitable for in-range checking on enemy units, that is, a checker whose range is equal or smaller than the requested range.
 -- @param range the range to check for.
+-- @param inCombat if true, only checkers that can be used in combat ar returned
 -- @return **checker**, **range** pair or **nil** if no suitable checker is available. **range** is the actual range the returned **checker** checks for.
-function lib:GetHarmMaxChecker(range)
-  return getMaxChecker(self.harmRC, range)
+function lib:GetHarmMaxChecker(range, inCombat)
+  return getMaxChecker(inCombat and self.harmRCInCombat or self.harmRC, range)
 end
 
 --- Return a checker suitable for in-range checking on miscellaneous units, that is, a checker whose range is equal or smaller than the requested range.
 -- @param range the range to check for.
+-- @param inCombat if true, only checkers that can be used in combat ar returned
 -- @return **checker**, **range** pair or **nil** if no suitable checker is available. **range** is the actual range the returned **checker** checks for.
-function lib:GetMiscMaxChecker(range)
-  return getMaxChecker(self.miscRC, range)
+function lib:GetMiscMaxChecker(range, inCombat)
+  return getMaxChecker(inCombat and self.miscRCInCombat and self.miscRC, range)
 end
 
 --- Return a checker for the given range for friendly units.
 -- @param range the range to check for.
+-- @param inCombat if true, only checkers that can be used in combat ar returned
 -- @return **checker** function or **nil** if no suitable checker is available.
-function lib:GetFriendChecker(range)
-  return getChecker(self.friendRC, range)
+function lib:GetFriendChecker(range, inCombat)
+  return getChecker(inCombat and self.friendRCInCombat or self.friendRC, range)
 end
 
 --- Return a checker for the given range for enemy units.
 -- @param range the range to check for.
+-- @param inCombat if true, only checkers that can be used in combat ar returned
 -- @return **checker** function or **nil** if no suitable checker is available.
-function lib:GetHarmChecker(range)
-  return getChecker(self.harmRC, range)
+function lib:GetHarmChecker(range, inCombat)
+  return getChecker(inCombat and self.harmRCInCombat or self.harmRC, range)
 end
 
 --- Return a checker for the given range for miscellaneous units.
 -- @param range the range to check for.
+-- @param inCombat if true, only checkers that can be used in combat ar returned
 -- @return **checker** function or **nil** if no suitable checker is available.
-function lib:GetMiscChecker(range)
-  return getChecker(self.miscRC, range)
+function lib:GetMiscChecker(range, inCombat)
+  return getChecker(inCombat and self.miscRCInCombat or self.miscRC, range)
 end
 
 --- Return a checker suitable for out-of-range checking that checks the unit type and calls the appropriate checker (friend/harm/misc).
 -- @param range the range to check for.
+-- @param inCombat if true, only checkers that can be used in combat ar returned
 -- @return **checker** function.
-function lib:GetSmartMinChecker(range)
-  return createSmartChecker(getMinChecker(self.friendRC, range), getMinChecker(self.harmRC, range), getMinChecker(self.miscRC, range))
+function lib:GetSmartMinChecker(range, inCombat)
+  if inCombat then
+    return createSmartChecker(getMinChecker(self.friendRCInCombat, range),
+                              getMinChecker(self.harmRCInCombat, range),
+                              getMinChecker(self.miscRCInCombat, range))
+  else
+    return createSmartChecker(getMinChecker(self.friendRC, range),
+                              getMinChecker(self.harmRC, range),
+                              getMinChecker(self.miscRC, range))
+  end
 end
 
 --- Return a checker suitable for in-range checking that checks the unit type and calls the appropriate checker (friend/harm/misc).
 -- @param range the range to check for.
+-- @param inCombat if true, only checkers that can be used in combat ar returned
 -- @return **checker** function.
-function lib:GetSmartMaxChecker(range)
-  return createSmartChecker(getMaxChecker(self.friendRC, range), getMaxChecker(self.harmRC, range), getMaxChecker(self.miscRC, range))
+function lib:GetSmartMaxChecker(range, inCombat)
+  if inCombat then
+    return createSmartChecker(getMaxChecker(self.friendRCInCombat, range),
+                              getMaxChecker(self.harmRCInCombat, range),
+                              getMaxChecker(self.miscRCInCombat, range))
+  else
+    return createSmartChecker(getMaxChecker(self.friendRC, range),
+                              getMaxChecker(self.harmRC, range),
+                              getMaxChecker(self.miscRC, range))
+  end
 end
 
 --- Return a checker for the given range that checks the unit type and calls the appropriate checker (friend/harm/misc).
 -- @param range the range to check for.
 -- @param fallback optional fallback function that gets called as fallback(unit) if a checker is not available for the given type (friend/harm/misc) at the requested range. The default fallback function return nil.
+-- @param inCombat if true, only checkers that can be used in combat ar returned
 -- @return **checker** function.
-function lib:GetSmartChecker(range, fallback)
-  return createSmartChecker(getChecker(self.friendRC, range) or fallback, getChecker(self.harmRC, range) or fallback, getChecker(self.miscRC, range) or fallback)
+function lib:GetSmartChecker(range, fallback, inCombat)
+  if inCombat then
+    return createSmartChecker(getChecker(self.friendRCInCombat, range) or fallback,
+                              getChecker(self.harmRCInCombat, range) or fallback,
+                              getChecker(self.miscRCInCombat, range) or fallback)
+  else
+    return createSmartChecker(getChecker(self.friendRC, range) or fallback,
+                              getChecker(self.harmRC, range) or fallback,
+                              getChecker(self.miscRC, range) or fallback)
+  end
 end
 
 --- Get a range estimate as **minRange**, **maxRange**.
@@ -1239,327 +1328,6 @@ function lib:scheduleAuraCheck()
   self.frame:Show()
 end
 
---@do-not-package@
--- << DEBUG STUFF
-
-local function pairsByKeys(t, f)
-  local a = {}
-  for n in pairs(t) do
-    tinsert(a, n)
-  end
-  sort(a, f)
-  local i = 0
-  local iter = function()
-    i = i + 1
-    if a[i] == nil then
-      return nil
-    else
-      return a[i], t[a[i]]
-    end
-  end
-  return iter
-end
-
-function lib:cacheAllItems()
-  if (not self.initialized) or harmItemRequests then
-    print(MAJOR_VERSION .. ": init hasn't finished yet")
-    return
-  end
-  print(MAJOR_VERSION .. ": starting item cache")
-  initItemRequests(true)
-  self.frame:Show()
-end
-
-function lib:startMeasurement(unit, resultTable)
-  if (not self.initialized) or harmItemRequests then
-    print(MAJOR_VERSION .. ": init hasn't finished yet")
-    return
-  end
-  if self.measurements then
-    print(MAJOR_VERSION .. ": measurements already running")
-    return
-  end
-  print(MAJOR_VERSION .. ": starting measurements")
-  local _, playerClass = UnitClass("player")
-  local spellList
-  local itemList
-  if UnitCanAttack("player", unit) then
-    spellList = HarmSpells[playerClass]
-    itemList = HarmItems
-  elseif UnitCanAssist("player", unit) then
-    spellList = FriendSpells[playerClass]
-    itemList = FriendItems
-  end
-  self.spellsToMeasure = {}
-  if spellList then
-    for i = 1, #spellList do
-      local sid = spellList[i]
-      local name = GetSpellInfo(sid)
-      local spellIdx = findSpellIdx(name)
-      if spellIdx then
-        self.spellsToMeasure[name] = spellIdx
-      end
-    end
-  end
-  self.itemsToMeasure = {}
-  if itemList then
-    for range, items in pairs(itemList) do
-      for i = 1, #items do
-        local item = items[i]
-        local name = GetItemInfo(item)
-        if name then
-          self.itemsToMeasure[name] = item
-        end
-      end
-    end
-  end
-  self.measurements = resultTable
-  self.measurementUnit = unit
-  self.measurementStart = GetTime()
-  self.lastMeasurements = {}
-  self:updateMeasurements()
-  self.frame:SetScript("OnUpdate", function(frame, elapsed)
-    self:updateMeasurements()
-  end)
-  self.frame:Show()
-end
-
-function lib:stopMeasurement()
-  print(MAJOR_VERSION .. ": stopping measurements")
-  self.frame:Hide()
-  self.frame:SetScript("OnUpdate", function(frame, elapsed)
-    lastUpdate = lastUpdate + elapsed
-    if lastUpdate < UpdateDelay then
-      return
-    end
-    lastUpdate = 0
-    self:initialOnUpdate()
-  end)
-  self.measurements = nil
-end
-
-function lib:checkItems(itemList, verbose, color)
-  if not itemList then
-    return
-  end
-  color = color or "ffffffff"
-  for range, items in pairsByKeys(itemList) do
-    for i = 1, #items do
-      local item = items[i]
-      local name = GetItemInfo(item)
-      if not name then
-        print(MAJOR_VERSION .. ": |c" .. color .. tostring(item) .. "|r: " .. tostring(range) .. "yd: |cffeda500not in cache|r")
-      else
-        local res = IsItemInRange(item, "target")
-        if res == nil or verbose then
-          if res == nil then
-            res = "|cffed0000nil|r"
-          end
-          print(MAJOR_VERSION .. ": |c" .. color .. tostring(item) .. ": " .. tostring(name) .. "|r: " .. tostring(range) .. "yd: " .. tostring(res))
-        end
-      end
-    end
-  end
-end
-
-function lib:checkSpells(spellList, verbose, color)
-  if not spellList then
-    return
-  end
-  color = color or "ffffffff"
-  for i = 1, #spellList do
-    local sid = spellList[i]
-    local name, _, _, _, minRange, range = GetSpellInfo(sid)
-    if (not name) or (name == "") or not range then
-      print(MAJOR_VERSION .. ": |c" .. color .. tostring(sid) .. "|r: " .. tostring(range) .. "yd: |cffeda500invalid spell id|r")
-    else
-      local spellIdx = self:findSpellIndex(sid)
-      if not spellIdx then
-        print(
-          MAJOR_VERSION
-            .. ": |c"
-            .. color
-            .. tostring(sid)
-            .. ": "
-            .. tostring(name)
-            .. "|r: "
-            .. tostring(minRange)
-            .. "-"
-            .. tostring(range)
-            .. "yd: |cffeda500not in spellbook|r"
-        )
-      else
-        local res = IsSpellInRange(spellIdx, BOOKTYPE_SPELL, "target")
-        if res == nil or verbose then
-          if res == nil then
-            res = "|cffed0000nil|r"
-          end
-          print(MAJOR_VERSION .. ": |c" .. color .. tostring(sid) .. ": " .. tostring(name) .. "|r: " .. tostring(minRange) .. "-" .. tostring(range) .. "yd: " .. tostring(res))
-        end
-      end
-    end
-  end
-end
-
-function lib:checkAllItems()
-  print(MAJOR_VERSION .. ": Checking FriendItems...")
-  self:checkItems(FriendItems, true, FriendColor)
-  print(MAJOR_VERSION .. ": Checking HarmItems...")
-  self:checkItems(HarmItems, true, HarmColor)
-end
-
-function lib:checkAllSpells()
-  local _, playerClass = UnitClass("player")
-  print(MAJOR_VERSION .. ": Checking FriendSpells: " .. playerClass)
-  self:checkSpells(FriendSpells[playerClass], true, FriendColor)
-  print(MAJOR_VERSION .. ": Checking HarmSpells..." .. playerClass)
-  self:checkSpells(HarmSpells[playerClass], true, HarmColor)
-end
-
-local function dumpCheckerList(checkerList)
-  for _, rc in ipairs(checkerList) do
-    if rc.minRange then
-      print(rc.minRange .. "-" .. rc.range .. ": " .. rc.info)
-    else
-      print(rc.range .. ": " .. rc.info)
-    end
-  end
-end
-
-function lib:checkAllCheckers()
-  if not UnitExists("target") then
-    print(MAJOR_VERSION .. ": Invalid unit, cannot check")
-    return
-  end
-  local _, playerClass = UnitClass("player")
-  if UnitCanAttack("player", "target") then
-    print(MAJOR_VERSION .. ": Harm checker list: " .. playerClass)
-    dumpCheckerList(self.harmRC)
-    print(MAJOR_VERSION .. ": Checking HarmCheckers: " .. playerClass)
-    self:checkItems(HarmItems)
-    self:checkSpells(HarmSpells[playerClass])
-  elseif UnitCanAssist("player", "target") then
-    print(MAJOR_VERSION .. ": Friend checker list: " .. playerClass)
-    dumpCheckerList(self.friendRC)
-    print(MAJOR_VERSION .. ": Checking FriendCheckers: ")
-    self:checkItems(FriendItems)
-    self:checkSpells(FriendSpells[playerClass])
-  else
-    print(MAJOR_VERSION .. ": Misc checker list: " .. playerClass)
-    dumpCheckerList(self.miscRC)
-    print(MAJOR_VERSION .. ": Misc unit, cannot check")
-    return
-  end
-  print(MAJOR_VERSION .. ": done.")
-end
-
-local function logMeasurementChange(t, t0, key, last, curr)
-  local d = 0
-  local scale = 1240
-  if t0 then
-    local dx = scale * (t.x - t0.x)
-    local dy = scale * (t.y - t0.y)
-    d = _G.sqrt(dx * dx + dy * dy)
-  end
-  print(MAJOR_VERSION .. ": t=" .. ("%.4f"):format(t.stamp) .. ": d=" .. ("%.4f"):format(d) .. ": " .. tostring(key) .. ": " .. tostring(last) .. " ->  " .. tostring(curr))
-end
-
-local GetPlayerMapPosition = GetPlayerMapPosition
-  or function(unit)
-    local map = C_Map.GetBestMapForUnit(unit)
-    local pos = C_Map.GetPlayerMapPosition(map, unit)
-    return pos:GetXY()
-  end
-function lib:updateMeasurements()
-  local now = GetTime() - self.measurementStart
-  local x, y = GetPlayerMapPosition("player")
-  local t0 = self.measurements[0]
-  local t = self.measurements[now]
-  local unit = self.measurementUnit
-  for name, id in pairs(self.spellsToMeasure) do
-    local key = "spell: " .. name
-    local last = self.lastMeasurements[key]
-    local curr = (IsSpellInRange(id, BOOKTYPE_SPELL, unit) == 1) and true or false
-    if last == nil or last ~= curr then
-      if not t then
-        t = {}
-        t.x, t.y, t.stamp, t.states = x, y, now, {}
-        self.measurements[now] = t
-      end
-      logMeasurementChange(t, t0, key, last, curr)
-      t.states[key] = curr
-      self.lastMeasurements[key] = curr
-    end
-  end
-  for name, item in pairs(self.itemsToMeasure) do
-    local key = "item: " .. name
-    local last = self.lastMeasurements[key]
-    local curr = IsItemInRange(item, unit) and true or false
-    if last == nil or last ~= curr then
-      if not t then
-        t = {}
-        t.x, t.y, t.stamp, t.states = x, y, now, {}
-        self.measurements[now] = t
-      end
-      logMeasurementChange(t, t0, key, last, curr)
-      t.states[key] = curr
-      self.lastMeasurements[key] = curr
-    end
-  end
-  for i, v in pairs(DefaultInteractList) do
-    local key = "interact: " .. i
-    local last = self.lastMeasurements[key]
-    local curr = CheckInteractDistance(unit, i) and true or false
-    if last == nil or last ~= curr then
-      if not t then
-        t = {}
-        t.x, t.y, t.stamp, t.states = x, y, now, {}
-        self.measurements[now] = t
-      end
-      logMeasurementChange(t, t0, key, last, curr)
-      t.states[key] = curr
-      self.lastMeasurements[key] = curr
-    end
-  end
-end
-
-local debugprofilestop = debugprofilestop
-function lib:speedTest(numBatches, numIterationsPerBatch)
-  if not UnitExists("target") then
-    print(MAJOR_VERSION .. ": Invalid unit, cannot check")
-    return
-  end
-
-  numBatches = numBatches or 10000
-  numIterationsPerBatch = numIterationsPerBatch or 1
-
-  local min, max, total = 999999, 0, 0
-  for b = 1, numBatches do
-    resetRangeCache()
-    local start = debugprofilestop()
-    for i = 1, numIterationsPerBatch do
-      self:getRange("target")
-    end
-    local duration = debugprofilestop() - start
-
-    if duration < min then
-      min = duration
-    end
-    if duration > max then
-      max = duration
-    end
-    total = total + duration
-  end
-
-  local minRange, maxRange = self:getRange("target")
-
-  print(string.format("SpeedTest: numBatches = %d, numIterationsPerBatch = %d", numBatches, numIterationsPerBatch))
-  print(string.format("  Range: min = %d, max = %d", minRange, maxRange))
-  print(string.format("  Time per batch: min = %f, max = %f, total = %f, avg = %f", min, max, total, total / numBatches))
-end
-
--- >> DEBUG STUFF
---@end-do-not-package@
 
 -- << load-time initialization
 

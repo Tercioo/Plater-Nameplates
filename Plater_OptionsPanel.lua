@@ -7620,7 +7620,7 @@ local relevance_options = {
 							Plater.GetSpellForRangeCheck()
 						end
 						local t = {}
-						local checkers = LibRangeCheck:GetHarmCheckers()
+						local checkers = LibRangeCheck:GetHarmCheckers(true)
 						for range, checker in checkers do
 							tinsert (t, {label = range, onclick = onSelectFunc, value = range})
 						end
@@ -7643,7 +7643,7 @@ local relevance_options = {
 					Plater.GetSpellForRangeCheck()
 				end
 				local t = {}
-				local checkers = LibRangeCheck:GetHarmCheckers()
+				local checkers = LibRangeCheck:GetHarmCheckers(true)
 				for range, checker in checkers do
 					tinsert (t, {label = range, onclick = onSelectFunc, value = range})
 				end
@@ -7681,7 +7681,7 @@ local relevance_options = {
 							Plater.GetSpellForRangeCheck()
 						end
 						local t = {}
-						local checkers = LibRangeCheck:GetFriendCheckers()
+						local checkers = LibRangeCheck:GetFriendCheckers(true)
 						for range, checker in checkers do
 							tinsert (t, {label = range, onclick = onSelectFunc, value = range})
 						end
@@ -7703,7 +7703,7 @@ local relevance_options = {
 					Plater.GetSpellForRangeCheck()
 				end
 				local t = {}
-				local checkers = LibRangeCheck:GetFriendCheckers()
+				local checkers = LibRangeCheck:GetFriendCheckers(true)
 				for range, checker in checkers do
 					tinsert (t, {label = range, onclick = onSelectFunc, value = range})
 				end
