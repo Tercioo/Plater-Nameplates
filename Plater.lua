@@ -806,19 +806,16 @@ Plater.AnchorNamesByPhraseId = {
 			Plater.GetSpellForRangeCheck()
 		end
 
-		--curseforge is sleeping, attempt to wake up
-		Plater.GetSpellForRangeCheck()
-
-		local _, _, _, toc = GetBuildInfo()
-
-		local rangeChecker = function() --emergency fix for range check 2023.11.16
-			if (toc >= 100200) then
-				--print(Plater.RangeCheckRangeEnemy, plateFrame[MEMBER_UNITID], "InRange:", IsSpellInRange(Plater.RangeCheckRangeEnemy, plateFrame[MEMBER_UNITID]))
+		---------------------------------
+		if (IS_WOW_PROJECT_MAINLINE) then --emergency fix for range check 2023.11.16
+			Plater.GetSpellForRangeCheck()
+			local rangeChecker = function()
 				if (IsSpellInRange(Plater.RangeCheckRangeEnemy, plateFrame[MEMBER_UNITID]) == 1) then
 					return true
 				end
 			end
 		end
+		---------------------------------
 
 		--this unit is target
 		local unitIsTarget = unitFrame.isSoftInteract -- default to softinteract
@@ -1074,8 +1071,7 @@ Plater.AnchorNamesByPhraseId = {
 				--the local character saved variable hold the spell name used for the range check
 				Plater.RangeCheckRangeFriendly = PlaterDBChr.spellRangeCheckRangeFriendly [specID] or Plater.DefaultSpellRangeListF [specID] or 40
 
-				local _, _, _, toc = GetBuildInfo()
-				if (toc >= 100200) then --emergency fix for range check 2023.11.16
+				if (IS_WOW_PROJECT_MAINLINE) then --emergency fix for range check 2023.11.16
 					Plater.RangeCheckRangeEnemy = emergencialSpellRangeCheckList[specID] or Plater.DefaultSpellRangeList [specID] or 40
 					Plater.RangeCheckRangeEnemy = GetSpellInfo(Plater.RangeCheckRangeEnemy)
 					Plater.RangeCheckFunctionFriendly = function() return true end --LibRangeCheck:GetFriendMaxChecker(Plater.RangeCheckRangeFriendly)
