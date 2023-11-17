@@ -801,16 +801,16 @@ Plater.AnchorNamesByPhraseId = {
 		if not rangeChecker then
 			rangeChecker = function (unit)
 				Plater.EndLogPerformanceCore("Plater-Core", "Update", "CheckRange")
-				return (LibRangeCheck:GetRange(unit) or 0) < (rangeCheckRange or 40)
+				return (LibRangeCheck:GetRange(unit) or 0) <= (rangeCheckRange or 40)
 			end
 			Plater.GetSpellForRangeCheck()
 		end
 
 		---------------------------------
-		if (IS_WOW_PROJECT_MAINLINE) then --emergency fix for range check 2023.11.16
-			Plater.GetSpellForRangeCheck()
-			local rangeChecker = function()
-				if (IsSpellInRange(Plater.RangeCheckRangeEnemy, plateFrame[MEMBER_UNITID]) == 1) then
+		if (IS_WOW_PROJECT_MAINLINE and InCombatLockdown()) then --emergency fix for range check 2023.11.16
+			rangeChecker = function(unit)
+				local min, max = LibRangeCheck:GetRange(unit, false, true)
+				if (max or rangeCheckRange + 1) <= (rangeCheckRange or 40) then
 					return true
 				end
 			end
@@ -1010,77 +1010,15 @@ Plater.AnchorNamesByPhraseId = {
 		Plater.RangeCheckFunctionEnemy = nil
 		Plater.RangeCheckFunctionFriendly = nil
 
-		local emergencialSpellRangeCheckList = {
-			[1467] = 361500, --> augmentation evoker - living flame
-			[1468] = 361500, --> augmentation evoker - living flame
-			[1473] = 361500, --> augmentation evoker - living flame
-
-			[577] = 198013, --> havoc demon hunter - Eye-Beam
-			[581] = 185245, --> vengeance demon hunter - Torment
-		
-			[250] = 56222, --> blood dk - dark command
-			[251] = 56222, --> frost dk - dark command
-			[252] = 56222, --> unholy dk - dark command
-			
-			[102] = 164815, -->  druid balance - Sunfire
-			[103] = 6795, -->  druid feral - Growl
-			[104] = 6795, -->  druid guardian - Growl
-			[105] = 8936, -->  druid resto - Reju
-		
-			[253] = 193455, -->  hunter bm - Cobra Shot
-			[254] = 19434, --> hunter marks - Aimed Shot
-			[255] = 271788, --> hunter survivor - Serpent Sting
-			
-			[62] = 227170, --> mage arcane - arcane blast
-			[63] = 133, --> mage fire - fireball
-			[64] = 228597, --> mage frost - frostbolt
-			
-			[268] = 115546 , --> monk bm - Provoke
-			[269] = 115546, --> monk ww - Provoke
-			[270] = 115546, --> monk mw - Provoke
-			
-			[65] = 62124, --> paladin holy - Hand of Reckoning
-			[66] = 62124, --> paladin protect - Hand of Reckoning
-			[70] = 62124, --> paladin ret - Hand of Reckoning
-			
-			[256] = 585, --> priest disc - Smite
-			[257] = 585, --> priest holy - Smite
-			[258] = 8092, --> priest shadow - Mind Blast
-			
-			[259] = 185565, --> rogue assassination - Poisoned Knife
-			[260] = 185763, --> rogue combat - Pistol Shot
-			[261] = 36554, --> rogue sub - Shadowstep
-		
-			[262] = 8042, --> shaman elemental - earth shock
-			[263] = 51514, --> shamel enhancement - Hex
-			[264] = 61295, --> shaman resto - riptide
-		
-			[265] = 980, --> warlock aff - Agony
-			[266] = 686, --> warlock demo - Shadow Bolt
-			[267] = 116858, --> warlock destro - Chaos Bolt
-			
-			[71] = 355, --> warrior arms - Taunt
-			[72] = 355, --> warrior fury - Taunt
-			[73] = 355, --> warrior protect - Taunt
-		}
-
 		local specIndex = (IS_WOW_PROJECT_MAINLINE) and GetSpecialization() or 0
 		if (specIndex) then
 			local specID = (IS_WOW_PROJECT_MAINLINE) and GetSpecializationInfo (specIndex) or select (3, UnitClass ("player"))
 			if (specID and specID ~= 0) then
 				--the local character saved variable hold the spell name used for the range check
 				Plater.RangeCheckRangeFriendly = PlaterDBChr.spellRangeCheckRangeFriendly [specID] or Plater.DefaultSpellRangeListF [specID] or 40
-
-				if (IS_WOW_PROJECT_MAINLINE) then --emergency fix for range check 2023.11.16
-					Plater.RangeCheckRangeEnemy = emergencialSpellRangeCheckList[specID] or Plater.DefaultSpellRangeList [specID] or 40
-					Plater.RangeCheckRangeEnemy = GetSpellInfo(Plater.RangeCheckRangeEnemy)
-					Plater.RangeCheckFunctionFriendly = function() return true end --LibRangeCheck:GetFriendMaxChecker(Plater.RangeCheckRangeFriendly)
-					Plater.RangeCheckFunctionEnemy = function() return true end --LibRangeCheck:GetHarmMaxChecker(Plater.RangeCheckRangeEnemy)
-				else
-					Plater.RangeCheckRangeEnemy = PlaterDBChr.spellRangeCheckRangeEnemy [specID] or Plater.DefaultSpellRangeList [specID] or 40
-					Plater.RangeCheckFunctionFriendly = LibRangeCheck:GetFriendMaxChecker(Plater.RangeCheckRangeFriendly)
-					Plater.RangeCheckFunctionEnemy = LibRangeCheck:GetHarmMaxChecker(Plater.RangeCheckRangeEnemy)
-				end
+				Plater.RangeCheckRangeEnemy = PlaterDBChr.spellRangeCheckRangeEnemy [specID] or Plater.DefaultSpellRangeList [specID] or 40
+				Plater.RangeCheckFunctionFriendly = LibRangeCheck:GetFriendMaxChecker(Plater.RangeCheckRangeFriendly)
+				Plater.RangeCheckFunctionEnemy = LibRangeCheck:GetHarmMaxChecker(Plater.RangeCheckRangeEnemy)
 				
 				tryingToUpdateRangeChecker = false
 			else

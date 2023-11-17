@@ -8,6 +8,9 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1700249747,  "Hotfix", "November 17th, 2023", "Cleaning up hotfix.", "cont1nuity"},
+			{1700249747,  "Hotfix", "November 16th, 2023", "Fixes for broken range check API, which was prohibited in combat by Blizzard.", "Terciob"},
+			
 			{1699644993,  "Bug Fix", "November 8th, 2023", "Cleanup and repair of imported Ghost Aura data.", "cont1nuity"},
 			{1699644993,  "Backend Change", "November 7th, 2023", "Retail toc bump to 10.2.", "cont1nuity"},
 			{1699644993,  "Bug Fix", "November 7th, 2023", "Fix threat not being updated properly when scripts denied color change.", "cont1nuity"},
