@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1700257286,  "Backend Change", "November 19th, 2023", "Resetting range check ranges where they are no longer set properly due to backend changes.", "cont1nuity"},
 			{1700257286,  "Backend Change", "November 17th, 2023", "Switch to LibRangeCheck-3.0 with combat range detection.", "cont1nuity"},
 			{1700257286,  "Hotfix", "November 17th, 2023", "Cleaning up hotfix.", "cont1nuity"},
 			{1700257286,  "Hotfix", "November 16th, 2023", "Fixes for broken range check API, which was prohibited in combat by Blizzard.", "Terciob"},
