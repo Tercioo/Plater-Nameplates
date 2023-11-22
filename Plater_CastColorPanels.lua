@@ -180,20 +180,20 @@ function Plater.SetCastBarColorForScript(castBar, canUseScriptColor, scriptColor
     --user set cast bar color into the Cast Colors tab in the options panel
     local colorByUser = Plater.GetSpellCustomColor(envTable._SpellID)
     if (colorByUser) then
-        castBar:SetStatusBarColor(Plater:ParseColors(colorByUser))
+        castBar:SetColor(Plater:ParseColors(colorByUser))
         return
     end
 
     --don't change the color of non-interruptible casts
     if (not envTable._CanInterrupt) then
-        castBar:SetStatusBarColor(Plater:ParseColors(Plater.db.profile.cast_statusbar_color_nointerrupt))
+        castBar:SetColor(Plater:ParseColors(Plater.db.profile.cast_statusbar_color_nointerrupt))
         return
     end
 
     --if is interruptible and don't have a custom user color, set the script color
     if (canUseScriptColor and scriptColor) then
         if (type(scriptColor) == "table") then
-            castBar:SetStatusBarColor(Plater:ParseColors(scriptColor))
+            castBar:SetColor(Plater:ParseColors(scriptColor))
         end
     end
 end
@@ -610,7 +610,9 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         end)
 
         --npc name
-        local npcNameLabel = DF:CreateLabel(line, "", 10, "white", nil, "npcNameLabel")
+        local npcNameEntry = DF:CreateTextEntry(line, function()end, headerTable[6].width, 20, "npcNameEntry", nil, nil, DF:GetTemplate("dropdown", "PLATER_DROPDOWN_OPTIONS"))
+        npcNameEntry:SetHook("OnEditFocusGained", oneditfocusgained_spellid)
+        npcNameEntry:SetJustifyH("left")
 
         --npc Id
         --local npcIdLabel = DF:CreateLabel(line, "", 10, "white", nil, "npcIdLabel")
@@ -650,7 +652,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         line:AddFrameToHeaderAlignment (spellIdEntry)
         line:AddFrameToHeaderAlignment (spellNameEntry)
         line:AddFrameToHeaderAlignment (spellRenameEntry)
-        line:AddFrameToHeaderAlignment (npcNameLabel)
+        line:AddFrameToHeaderAlignment (npcNameEntry)
         line:AddFrameToHeaderAlignment (sendToRaidButton)
         --line:AddFrameToHeaderAlignment (npcIdLabel)
         line:AddFrameToHeaderAlignment (selectAudioDropdown)
@@ -1554,7 +1556,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                     line.spellIdEntry:SetText(spellId)
                     line.spellNameEntry:SetText(spellName)
                     line.spellRenameEntry:SetText(customSpellName)
-                    line.npcNameLabel:SetText(sourceName)
+                    line.npcNameEntry:SetText(sourceName)
                     --line.npcIdLabel:SetText(npcId)
                     --line.npcLocationLabel:SetText(npcLocation)
                     line.encounterNameLabel:SetText(encounterName)
@@ -1726,6 +1728,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         auraSearchTextEntry:SetAsSearchBox()
         auraSearchTextEntry.tooltip = "- Spell Name\n- Npc Name\n- Zone Name\n- Encounter Name\n- SpellID\n- Custom Spell Name\n- Sound Name\n- Audio"
         auraSearchTextEntry:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
+        auraSearchTextEntry:SetBackdropColor(0.1, 0.1, 0.1, 0.9)
 
         function castFrame.RefreshScroll(refreshSpeed)
             if (refreshSpeed and refreshSpeed == 0) then
@@ -2092,7 +2095,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                 end
             end
 
-            dumpt(exportedTable)
+            --dumpt(exportedTable)
 
             --check if there's at least 1 color being exported
             if (#exportedTable < 1) then
