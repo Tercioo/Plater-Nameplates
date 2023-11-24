@@ -806,17 +806,6 @@ Plater.AnchorNamesByPhraseId = {
 			Plater.GetSpellForRangeCheck()
 		end
 
-		---------------------------------
-		if (false and IS_WOW_PROJECT_MAINLINE and InCombatLockdown()) then --emergency fix for range check 2023.11.16
-			rangeChecker = function(unit)
-				local min, max = LibRangeCheck:GetRange(unit, false, true)
-				if (max or rangeCheckRange + 1) <= (rangeCheckRange or 40) then
-					return true
-				end
-			end
-		end
-		---------------------------------
-
 		--this unit is target
 		local unitIsTarget = unitFrame.isSoftInteract -- default to softinteract
 		local notTheTarget = false
@@ -1014,6 +1003,46 @@ Plater.AnchorNamesByPhraseId = {
 		if (specIndex) then
 			local specID = (IS_WOW_PROJECT_MAINLINE) and GetSpecializationInfo (specIndex) or select (3, UnitClass ("player"))
 			if (specID and specID ~= 0) then
+				--range check spells fallback update
+				local harmCheckers = {}
+				local maxHarm = 0
+				for range, func in LibRangeCheck:GetHarmCheckers(true) do
+					harmCheckers[range] = func
+					if maxHarm < range then maxHarm = range end
+				end
+				local friendCheckers = {}
+				local maxFriend = 0
+				for range, func in LibRangeCheck:GetFriendCheckers(true) do
+					friendCheckers[range] = func
+					if maxFriend < range then maxFriend = range end
+				end
+				if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
+					for specID, _ in pairs (Plater.SpecList [select (2, UnitClass ("player"))]) do
+						if harmCheckers then
+							if (PlaterDBChr.spellRangeCheckRangeEnemy [specID] == nil or not harmCheckers[PlaterDBChr.spellRangeCheckRangeEnemy [specID]]) then
+								PlaterDBChr.spellRangeCheckRangeEnemy [specID] = maxHarm --Plater.DefaultSpellRangeList [specID]
+							end
+						end
+						if friendCheckers then
+							if (PlaterDBChr.spellRangeCheckRangeFriendly [specID] == nil or not friendCheckers[PlaterDBChr.spellRangeCheckRangeFriendly [specID]]) then
+								PlaterDBChr.spellRangeCheckRangeFriendly [specID] = maxFriend --Plater.DefaultSpellRangeListF [specID]
+							end
+						end
+					end
+				else
+					local playerClass = select (3, UnitClass ("player"))
+					if harmCheckers then
+						if (PlaterDBChr.spellRangeCheckRangeEnemy [playerClass] == nil or not harmCheckers[PlaterDBChr.spellRangeCheckRangeEnemy [playerClass]]) then
+							PlaterDBChr.spellRangeCheckRangeEnemy [playerClass] = maxHarm --Plater.DefaultSpellRangeList [playerClass]
+						end
+					end
+					if friendCheckers then
+						if (PlaterDBChr.spellRangeCheckRangeFriendly [playerClass] == nil or not friendCheckers[PlaterDBChr.spellRangeCheckRangeFriendly [playerClass]]) then
+							PlaterDBChr.spellRangeCheckRangeFriendly [playerClass] = maxFriend --Plater.DefaultSpellRangeListF [playerClass]
+						end
+					end
+				end
+			
 				--the local character saved variable hold the spell name used for the range check
 				Plater.RangeCheckRangeFriendly = PlaterDBChr.spellRangeCheckRangeFriendly [specID] or Plater.DefaultSpellRangeListF [specID] or 40
 				Plater.RangeCheckRangeEnemy = PlaterDBChr.spellRangeCheckRangeEnemy [specID] or Plater.DefaultSpellRangeList [specID] or 40
@@ -4814,7 +4843,7 @@ function Plater.OnInit() --private --~oninit ~init
 					end
 					
 					-- in some occasions channeled casts don't have a CLEU entry... check this here
-					if (event == "UNIT_SPELLCAST_CHANNEL_START" and (not DB_CAPTURED_SPELLS[self.spellID] or DB_CAPTURED_SPELLS[self.spellID].isChanneled == nil)) then
+					if (unitFrame.ActorType == "enemynpc" and event == "UNIT_SPELLCAST_CHANNEL_START" and (not DB_CAPTURED_SPELLS[self.spellID] or DB_CAPTURED_SPELLS[self.spellID].isChanneled == nil)) then
 						parserFunctions.SPELL_CAST_SUCCESS (nil, "SPELL_CAST_SUCCESS", nil, unitFrame[MEMBER_GUID], unitFrame.unitNameInternal, 0x00000000, nil, nil, nil, nil, nil, self.spellID, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 					end
 

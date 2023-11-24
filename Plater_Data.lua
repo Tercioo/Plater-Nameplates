@@ -551,7 +551,7 @@ function platerInternal.CreateDataTables(Plater)
         [1] = 30, --Warrior
         [2] = 40, --Paladin
         [3] = 40, --Hunter
-        [4] = 30, --Rogue
+        [4] = 10, --Rogue
         [5] = 40, --Priest
         [6] = 30, --DeathKnight
         [7] = 40, --Shaman
@@ -593,9 +593,9 @@ function platerInternal.CreateDataTables(Plater)
         [257] = 40, --> priest holy
         [258] = 40, --> priest shadow
 
-        [259] = 30, --> rogue assassination
-        [260] = 20, --> rogue outlaw
-        [261] = 30, --> rogue sub
+        [259] = 10, --> rogue assassination
+        [260] = 10, --> rogue outlaw
+        [261] = 10, --> rogue sub
 
         [262] = 40, --> shaman elemental
         [263] = 40, --> shaman enhancement
