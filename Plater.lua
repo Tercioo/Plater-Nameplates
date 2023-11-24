@@ -1003,6 +1003,8 @@ Plater.AnchorNamesByPhraseId = {
 		if (specIndex) then
 			local specID = (IS_WOW_PROJECT_MAINLINE) and GetSpecializationInfo (specIndex) or select (3, UnitClass ("player"))
 			if (specID and specID ~= 0) then
+			
+			--[[ -- don't do that here, really. it will reset ranges with talent changes, etc. maybe only for current spec?
 				--range check spells fallback update
 				local harmCheckers = {}
 				local maxHarm = 0
@@ -1019,12 +1021,12 @@ Plater.AnchorNamesByPhraseId = {
 				if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
 					for specID, _ in pairs (Plater.SpecList [select (2, UnitClass ("player"))]) do
 						if harmCheckers then
-							if (PlaterDBChr.spellRangeCheckRangeEnemy [specID] == nil or not harmCheckers[PlaterDBChr.spellRangeCheckRangeEnemy [specID]]) then
+							if (PlaterDBChr.spellRangeCheckRangeEnemy [specID] == nil or not harmCheckers[PlaterDBChr.spellRangeCheckRangeEnemy [specID] ]) then
 								PlaterDBChr.spellRangeCheckRangeEnemy [specID] = maxHarm --Plater.DefaultSpellRangeList [specID]
 							end
 						end
 						if friendCheckers then
-							if (PlaterDBChr.spellRangeCheckRangeFriendly [specID] == nil or not friendCheckers[PlaterDBChr.spellRangeCheckRangeFriendly [specID]]) then
+							if (PlaterDBChr.spellRangeCheckRangeFriendly [specID] == nil or not friendCheckers[PlaterDBChr.spellRangeCheckRangeFriendly [specID] ]) then
 								PlaterDBChr.spellRangeCheckRangeFriendly [specID] = maxFriend --Plater.DefaultSpellRangeListF [specID]
 							end
 						end
@@ -1032,16 +1034,17 @@ Plater.AnchorNamesByPhraseId = {
 				else
 					local playerClass = select (3, UnitClass ("player"))
 					if harmCheckers then
-						if (PlaterDBChr.spellRangeCheckRangeEnemy [playerClass] == nil or not harmCheckers[PlaterDBChr.spellRangeCheckRangeEnemy [playerClass]]) then
+						if (PlaterDBChr.spellRangeCheckRangeEnemy [playerClass] == nil or not harmCheckers[PlaterDBChr.spellRangeCheckRangeEnemy [playerClass] ]) then
 							PlaterDBChr.spellRangeCheckRangeEnemy [playerClass] = maxHarm --Plater.DefaultSpellRangeList [playerClass]
 						end
 					end
 					if friendCheckers then
-						if (PlaterDBChr.spellRangeCheckRangeFriendly [playerClass] == nil or not friendCheckers[PlaterDBChr.spellRangeCheckRangeFriendly [playerClass]]) then
+						if (PlaterDBChr.spellRangeCheckRangeFriendly [playerClass] == nil or not friendCheckers[PlaterDBChr.spellRangeCheckRangeFriendly [playerClass] ]) then
 							PlaterDBChr.spellRangeCheckRangeFriendly [playerClass] = maxFriend --Plater.DefaultSpellRangeListF [playerClass]
 						end
 					end
 				end
+				]]--
 			
 				--the local character saved variable hold the spell name used for the range check
 				Plater.RangeCheckRangeFriendly = PlaterDBChr.spellRangeCheckRangeFriendly [specID] or Plater.DefaultSpellRangeListF [specID] or 40
