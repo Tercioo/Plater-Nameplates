@@ -12,6 +12,7 @@ function platerInternal.CreatePerformanceUnits(Plater)
 		[167999] = true, --Echo of Sin (shadowlands, Castle Nathria, Sire Denathrius)
 		[176920] = true, --Domination Arrow (shadowlands, Sanctum of Domination, Sylvanas)
 		[196642] = true, --Hungry Lasher (dragonflight, Algeth'ar Academy, Overgrown Ancient)
+		[211306] = true, --Fiery Vines (dragonflight, Amirdrassil, Tindral Sageswift)
 	}
 
 	--setter
