@@ -41,101 +41,103 @@ local attributes = {
             label = "Text",
             widget = "textentry",
             default = "font string text",
-            setter = function(widget, value) widget:SetText(value) end,
         },
         {
             name = "size",
             label = "Size",
             widget = "range",
+            --default = 10,
             minvalue = 5,
             maxvalue = 120,
-            setter = function(widget, value) widget:SetFont(widget:GetFont(), value, select(3, widget:GetFont())) end
         },
         {
             name = "font",
             label = "Font",
             widget = "fontdropdown",
-            setter = function(widget, value)
-                local font = LibStub:GetLibrary("LibSharedMedia-3.0"):Fetch("font", value)
-                widget:SetFont(font, select(2, widget:GetFont()))
-            end
+            --default = "Friz Quadrata TT",
         },
         {
             name = "color",
             label = "Color",
             widget = "colordropdown",
-            setter = function(widget, value) widget:SetTextColor(unpack(value)) end
+            --default = "white",
         },
         {
             name = "alpha",
             label = "Alpha",
             widget = "range",
-            setter = function(widget, value) widget:SetAlpha(value) end
+            --default = 1,
         },
         {
             name = "shadow",
             label = "Draw Shadow",
             widget = "toggle",
-            setter = function(widget, value) widget:SetShadowColor(widget:GetShadowColor(), select(2, widget:GetShadowColor()), select(3, widget:GetShadowColor()), value and 0.5 or 0) end
+            --default = true,
         },
         {
             name = "shadowcolor",
             label = "Shadow Color",
             widget = "colordropdown",
-            setter = function(widget, value) widget:SetShadowColor(unpack(value)) end
+            --default = "black",
         },
         {
             name = "shadowoffsetx",
             label = "Shadow X Offset",
             widget = "range",
+            --default = 1,
             minvalue = -10,
             maxvalue = 10,
-            setter = function(widget, value) widget:SetShadowOffset(value, select(2, widget:GetShadowOffset())) end
         },
         {
             name = "shadowoffsety",
             label = "Shadow Y Offset",
             widget = "range",
+            --default = -1,
             minvalue = -10,
             maxvalue = 10,
-            setter = function(widget, value) widget:SetShadowOffset(widget:GetShadowOffset(), value) end
         },
         {
             name = "outline",
             label = "Outline",
             widget = "outlinedropdown",
-            setter = function(widget, value) widget:SetFont(widget:GetFont(), select(2, widget:GetFont()), value) end
+            --default = "NONE",
+        },
+        {
+            name = "monochrome",
+            label = "Monochrome",
+            widget = "toggle",
+            --default = false,
         },
         {
             name = "anchor",
             label = "Anchor",
             widget = "anchordropdown",
-            setter = function(widget, value) detailsFramework:SetAnchor(widget, value, widget:GetParent()) end
+            --default = {side = 1, x = 0, y = 0},
         },
         {
             name = "anchoroffsetx",
             label = "Anchor X Offset",
             widget = "range",
+            --default = 0,
             minvalue = -20,
             maxvalue = 20,
-            setter = function(widget, value) detailsFramework:SetAnchor(widget, value, widget:GetParent()) end
         },
         {
             name = "anchoroffsety",
             label = "Anchor Y Offset",
             widget = "range",
+            --default = 0,
             minvalue = -20,
             maxvalue = 20,
-            setter = function(widget, value) detailsFramework:SetAnchor(widget, value, widget:GetParent()) end
         },
         {
             name = "rotation",
             label = "Rotation",
             widget = "range",
+            --default = 0,
             usedecimals = true,
             minvalue = 0,
-            maxvalue = math.pi*2,
-            setter = function(widget, value) widget:SetRotation(value) end
+            maxvalue = math.pi*2
         },
     }
 }
@@ -261,23 +263,10 @@ detailsFramework.EditorMixin = {
             --if the key contains a dot or a bracket, it means it's a table path, example: "text_settings[1].width"
             if (profileKey and (profileKey:match("%.") or profileKey:match("%["))) then
                 value = detailsFramework.table.getfrompath(profileTable, profileKey)
-            else
-                value = profileTable[profileKey]
             end
 
             --if no value is found, attempt to get a default
             value = value or option.default
-
-            local minValue = option.minvalue
-            local maxValue = option.maxvalue
-
-            if (option.name == "anchoroffsetx") then
-                minValue = -object:GetParent():GetWidth()/2
-                maxValue = object:GetParent():GetWidth()/2
-            elseif (option.name == "anchoroffsety") then
-                minValue = -object:GetParent():GetHeight()/2
-                maxValue = object:GetParent():GetHeight()/2
-            end
 
             if (value) then
                 menuOptions[#menuOptions+1] = {
@@ -285,22 +274,14 @@ detailsFramework.EditorMixin = {
                     name = option.label,
                     get = function() return value end,
                     set = function(widget, fixedValue, newValue)
-                        detailsFramework.table.setfrompath(profileTable, profileKey, newValue)
+                        profileTable[profileKey] = newValue
 
                         if (self:GetOnEditCallback()) then
                             self:GetOnEditCallback()(object, option.name, newValue, profileTable, profileKey)
                         end
-
-                        if (option.name == "anchor" or option.name == "anchoroffsetx" or option.name == "anchoroffsety") then
-                            local path = profileKey:gsub("%.[^.]*$", "")
-                            local anchorTable = detailsFramework.table.getfrompath(profileTable, path)
-                            option.setter(object, anchorTable)
-                        else
-                            option.setter(object, newValue)
-                        end
                     end,
-                    min = minValue,
-                    max = maxValue,
+                    min = option.minvalue,
+                    max = option.maxvalue,
                     step = option.step,
                     usedecimals = option.usedecimals,
                 }
