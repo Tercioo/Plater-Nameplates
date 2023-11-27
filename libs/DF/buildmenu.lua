@@ -93,6 +93,10 @@ local _
 ---@field nocombat boolean can't edit when in combat
 ---@field spacement boolean gives a little of more space from the next widget
 
+detailsFramework.OptionsFrameMixin = {
+    
+}
+
 local onEnterHighlight = function(self)
     self.highlightTexture:Show()
     if (self.parent:GetScript("OnEnter")) then
@@ -139,7 +143,68 @@ local createOptionHighlightTexture = function(frame, label, widgetWidth)
     return highlightTexture
 end
 
+local refresh_options = function(self)
+    for _, widget in ipairs(self.widget_list) do
+        if (widget._get) then
+            if (widget.widget_type == "label") then
+                if (widget._get() and not widget.languageAddonId) then
+                    widget:SetText(widget._get())
+                end
 
+            elseif (widget.widget_type == "select") then
+                widget:Select(widget._get())
+
+            elseif (widget.widget_type == "toggle" or widget.widget_type == "range") then
+                widget:SetValue(widget._get())
+
+            elseif (widget.widget_type == "textentry") then
+                widget:SetText(widget._get())
+
+            elseif (widget.widget_type == "color") then
+                local default_value, g, b, a = widget._get()
+                if (type(default_value) == "table") then
+                    widget:SetColor (unpack(default_value))
+
+                else
+                    widget:SetColor (default_value, g, b, a)
+                end
+            end
+        end
+    end
+end
+
+detailsFramework.internalFunctions.RefreshOptionsPanel = refresh_options
+
+local getFrameById = function(self, id)
+    return self.widgetids[id]
+end
+
+function detailsFramework:ClearOptionsPanel(frame)
+    for i = 1, #frame.widget_list do
+        frame.widget_list[i]:Hide()
+        if (frame.widget_list[i].hasLabel) then
+            frame.widget_list[i].hasLabel:SetText("")
+        end
+    end
+    table.wipe(frame.widgetids)
+end
+
+function detailsFramework:SetAsOptionsPanel(frame)
+    --print("refresh_options", refresh_options)
+    frame.RefreshOptions = refresh_options
+    frame.widget_list = {}
+    frame.widget_list_by_type = {
+        ["dropdown"] = {}, -- "select"
+        ["switch"] = {}, -- "toggle"
+        ["slider"] = {}, -- "range"
+        ["color"] = {}, -- 
+        ["button"] = {}, -- "execute"
+        ["textentry"] = {}, --
+        ["label"] = {}, --"text"
+    }
+    frame.widgetids = {}
+    frame.GetWidgetById = getFrameById
+end
 
 local formatOptionNameWithColon = function(text, useColon)
     if (text) then
@@ -928,17 +993,17 @@ end
         local bUseScrollFrame = menuOptions.use_scrollframe
         local biggestColumnHeight = 0 --used to resize the scrollbox child when a scrollbox is passed
 
-        if (not bUseScrollFrame) then
+        if (bUseScrollFrame) then
+            local width, height = parent:GetSize()
+            parent = parent:GetScrollChild()
+            parent:SetSize(width, height)
+        else
             if (height and type(height) == "number") then
                 height = math.abs((height or parent:GetHeight()) - math.abs(yOffset) + 20)
                 height = height * -1
             else
                 height = parent:GetHeight()
             end
-        else
-            local width, height = parent:GetSize()
-            parent = parent:GetScrollChild()
-            parent:SetSize(width, height)
         end
 
 		local languageAddonId = menuOptions.language_addonId
