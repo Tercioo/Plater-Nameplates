@@ -41,24 +41,20 @@ local attributes = {
             label = "Text",
             widget = "textentry",
             default = "font string text",
-            setter = function(widget, value) widget:SetText(value) end,
         },
         {
             name = "size",
             label = "Size",
             widget = "range",
+            --default = 10,
             minvalue = 5,
             maxvalue = 120,
-            setter = function(widget, value) widget:SetFont(widget:GetFont(), value, select(3, widget:GetFont())) end
         },
         {
             name = "font",
             label = "Font",
             widget = "fontdropdown",
-            setter = function(widget, value)
-                local font = LibStub:GetLibrary("LibSharedMedia-3.0"):Fetch("font", value)
-                widget:SetFont(font, select(2, widget:GetFont()))
-            end
+            --default = "Friz Quadrata TT",
         },
         {
             name = "color",
@@ -70,14 +66,14 @@ local attributes = {
             name = "alpha",
             label = "Alpha",
             widget = "range",
-            setter = function(widget, value) widget:SetAlpha(value) end
+            --default = 1,
         },
         {widget = "blank"},
         {
             name = "shadow",
             label = "Draw Shadow",
             widget = "toggle",
-            setter = function(widget, value) widget:SetShadowColor(widget:GetShadowColor(), select(2, widget:GetShadowColor()), select(3, widget:GetShadowColor()), value and 0.5 or 0) end
+            --default = true,
         },
         {
             name = "shadowcolor",
@@ -89,30 +85,36 @@ local attributes = {
             name = "shadowoffsetx",
             label = "Shadow X Offset",
             widget = "range",
+            --default = 1,
             minvalue = -10,
             maxvalue = 10,
-            setter = function(widget, value) widget:SetShadowOffset(value, select(2, widget:GetShadowOffset())) end
         },
         {
             name = "shadowoffsety",
             label = "Shadow Y Offset",
             widget = "range",
+            --default = -1,
             minvalue = -10,
             maxvalue = 10,
-            setter = function(widget, value) widget:SetShadowOffset(widget:GetShadowOffset(), value) end
         },
         {
             name = "outline",
             label = "Outline",
             widget = "outlinedropdown",
-            setter = function(widget, value) widget:SetFont(widget:GetFont(), select(2, widget:GetFont()), value) end
+            --default = "NONE",
+        },
+        {
+            name = "monochrome",
+            label = "Monochrome",
+            widget = "toggle",
+            --default = false,
         },
         {widget = "blank"},
         {
             name = "anchor",
             label = "Anchor",
             widget = "anchordropdown",
-            setter = function(widget, value) detailsFramework:SetAnchor(widget, value, widget:GetParent()) end
+            --default = {side = 1, x = 0, y = 0},
         },
         {
             name = "anchoroffsetx",
@@ -134,10 +136,10 @@ local attributes = {
             name = "rotation",
             label = "Rotation",
             widget = "range",
+            --default = 0,
             usedecimals = true,
             minvalue = 0,
-            maxvalue = math.pi*2,
-            setter = function(widget, value) widget:SetRotation(value) end
+            maxvalue = math.pi*2
         },
     }
 }

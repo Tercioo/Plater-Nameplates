@@ -516,8 +516,6 @@ function DF.table.getfrompath(t, path)
 		end
 
 		return value
-	else
-		return t[path] or t[tonumber(path)]
 	end
 end
 
@@ -543,12 +541,7 @@ function DF.table.setfrompath(t, path, value)
 			lastTable[lastKey] = value
 			return true
 		end
-	else
-		t[path] = value
-		return true
 	end
-
-	return false
 end
 
 ---find the value inside the table, and it it's not found, add it
@@ -1304,12 +1297,9 @@ local ValidOutlines = {
 }
 
 DF.FontOutlineFlags = {
-	{"NONE", "None"},
-	{"MONOCHROME", "Monochrome"},
-	{"OUTLINE", "Outline"},
-	{"THICKOUTLINE", "Thick Outline"},
-	{"OUTLINEMONOCHROME", "Outline & Monochrome"},
-	{"THICKOUTLINEMONOCHROME", "Thick Outline & Monochrome"},
+	["NONE"] = true,
+	["OUTLINE"] = true,
+	["THICKOUTLINE"] = true,
 }
 
 ---set the outline of a fontstring, outline is a black border around the text, can be "NONE", "MONOCHROME", "OUTLINE" or "THICKOUTLINE"
@@ -1329,7 +1319,7 @@ function DF:SetFontOutline(fontString, outline)
 			outline = "OUTLINE"
 
 		elseif (type(outline) == "boolean" and not outline) then
-			outline = "NONE"
+			outline = "" --"NONE"
 
 		elseif (outline == 1) then
 			outline = "OUTLINE"
@@ -1338,6 +1328,7 @@ function DF:SetFontOutline(fontString, outline)
 			outline = "THICKOUTLINE"
 		end
 	end
+	outline = (not outline or outline == "NONE") and "" or outline
 
 	fontString:SetFont(font, fontSize, outline)
 end
