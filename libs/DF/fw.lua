@@ -1,6 +1,6 @@
 
 
-local dversion = 483
+local dversion = 484
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary(major, minor)
 
@@ -516,6 +516,8 @@ function DF.table.getfrompath(t, path)
 		end
 
 		return value
+	else
+		return t[path] or t[tonumber(path)]
 	end
 end
 
@@ -541,7 +543,12 @@ function DF.table.setfrompath(t, path, value)
 			lastTable[lastKey] = value
 			return true
 		end
+	else
+		t[path] = value
+		return true
 	end
+
+	return false
 end
 
 ---find the value inside the table, and it it's not found, add it
@@ -1297,9 +1304,12 @@ local ValidOutlines = {
 }
 
 DF.FontOutlineFlags = {
-	["NONE"] = true,
-	["OUTLINE"] = true,
-	["THICKOUTLINE"] = true,
+	{"NONE", "None"},
+	{"MONOCHROME", "Monochrome"},
+	{"OUTLINE", "Outline"},
+	{"THICKOUTLINE", "Thick Outline"},
+	{"OUTLINEMONOCHROME", "Outline & Monochrome"},
+	{"THICKOUTLINEMONOCHROME", "Thick Outline & Monochrome"},
 }
 
 ---set the outline of a fontstring, outline is a black border around the text, can be "NONE", "MONOCHROME", "OUTLINE" or "THICKOUTLINE"
@@ -1319,7 +1329,7 @@ function DF:SetFontOutline(fontString, outline)
 			outline = "OUTLINE"
 
 		elseif (type(outline) == "boolean" and not outline) then
-			outline = "" --"NONE"
+			outline = "NONE"
 
 		elseif (outline == 1) then
 			outline = "OUTLINE"
@@ -1328,7 +1338,6 @@ function DF:SetFontOutline(fontString, outline)
 			outline = "THICKOUTLINE"
 		end
 	end
-	outline = (not outline or outline == "NONE") and "" or outline
 
 	fontString:SetFont(font, fontSize, outline)
 end
@@ -1888,7 +1897,7 @@ local anchoringFunctions = {
 ---set the anchor point using a df_anchor table
 ---@param widget uiobject
 ---@param anchorTable df_anchor
----@param anchorTo uiobject
+---@param anchorTo uiobject?
 function DF:SetAnchor(widget, anchorTable, anchorTo)
 	anchorTo = anchorTo or widget:GetParent()
 	anchoringFunctions[anchorTable.side](widget, anchorTo, anchorTable.x, anchorTable.y)
