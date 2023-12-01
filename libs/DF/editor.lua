@@ -659,6 +659,10 @@ detailsFramework.EditorMixin = {
 
         localizedLabel = type(localizedLabel) == "string" and localizedLabel or "invalid label"
 
+        --a button to select the widget
+        local selectButton = CreateFrame("button", "$parentSelectButton" .. id, object:GetParent())
+        selectButton:SetAllPoints(object)
+
         ---@type df_editor_objectinfo
         local objectRegistered = {
             object = object,
@@ -669,7 +673,12 @@ detailsFramework.EditorMixin = {
             extraoptions = extraOptions or {},
             callback = callback,
             options = options,
+            selectButton = selectButton,
         }
+
+        selectButton:SetScript("OnClick", function()
+            self:EditObject(objectRegistered)
+        end)
 
         registeredObjects[#registeredObjects+1] = objectRegistered
         self.registeredObjectsByID[id] = objectRegistered
@@ -853,6 +862,7 @@ local editorDefaultOptions = {
 ---@field extraoptions table
 ---@field callback function
 ---@field options df_editobjectoptions
+---@field selectButton button
 
 function detailsFramework:CreateEditor(parent, name, options)
     name = name or ("DetailsFrameworkEditor" .. math.random(100000, 10000000))

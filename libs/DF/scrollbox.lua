@@ -725,9 +725,7 @@ function detailsFramework:CreateCanvasScrollBox(parent, child, name, options)
 	canvasScrollBox.scrollStep = 20
 	canvasScrollBox.minValue = 0
 
-	canvasScrollBox:SetScript("OnMouseWheel", function(self, value)
-
-	end)
+	canvasScrollBox:SetScript("OnMouseWheel", detailsFramework.CanvasScrollBoxMixin.OnVerticalScroll)
 
 	detailsFramework:Mixin(canvasScrollBox, detailsFramework.CanvasScrollBoxMixin)
 	detailsFramework:Mixin(canvasScrollBox, detailsFramework.OptionsFunctions)
