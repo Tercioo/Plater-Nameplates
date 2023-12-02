@@ -363,8 +363,11 @@ DF:Mixin(DFSliderMetaFunctions, DF.ScriptHookMixin)
 	local sliderButtonsParentFrame = DetailsFrameworkSliderButtons1 or CreateFrame("frame", "DetailsFrameworkSliderButtons1", UIParent, "BackdropTemplate")
 	sliderButtonsParentFrame:Hide()
 	sliderButtonsParentFrame:SetHeight(18) --width is set by setpoint
+
 	C_Timer.After(0, function()
-		DetailsFramework:ApplyStandardBackdrop(sliderButtonsParentFrame) --ApplyStandardBackdrop loads after this file
+		if (not sliderButtonsParentFrame.__background) then
+			DetailsFramework:ApplyStandardBackdrop(sliderButtonsParentFrame) --ApplyStandardBackdrop loads after this file
+		end
 		sliderButtonsParentFrame:SetBackdropBorderColor(0, 0, 0, 0)
 		sliderButtonsParentFrame:SetBackdropColor(.05, .05, .05, .9)
 	end)
@@ -420,8 +423,8 @@ DF:Mixin(DFSliderMetaFunctions, DF.ScriptHookMixin)
 		sliderButtonsParentFrame:SetScript("OnUpdate", onUpdateTimeToHide)
 	end
 
-	local buttonPlus = CreateFrame("button", "DetailsFrameworkSliderButtonsPlusButton", sliderButtonsParentFrame, "BackdropTemplate")
-	local buttonMinor = CreateFrame("button", "DetailsFrameworkSliderButtonsMinorButton", sliderButtonsParentFrame, "BackdropTemplate")
+	local buttonPlus = DetailsFrameworkSliderButtonsPlusButton or CreateFrame("button", "DetailsFrameworkSliderButtonsPlusButton", sliderButtonsParentFrame, "BackdropTemplate")
+	local buttonMinor = DetailsFrameworkSliderButtonsMinorButton or CreateFrame("button", "DetailsFrameworkSliderButtonsMinorButton", sliderButtonsParentFrame, "BackdropTemplate")
 	buttonPlus:SetFrameStrata(sliderButtonsParentFrame:GetFrameStrata())
 	buttonMinor:SetFrameStrata(sliderButtonsParentFrame:GetFrameStrata())
 	sliderButtonsParentFrame.buttonPlus = buttonPlus
