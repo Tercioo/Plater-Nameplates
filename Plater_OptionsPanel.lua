@@ -2642,6 +2642,7 @@ _G.C_Timer.After(0.850, function() --~delay
 	debuff_options.align_as_pairs = true
 	debuff_options.align_as_pairs_string_space = 181
 	debuff_options.widget_width = 150
+	debuff_options.slider_buttons_to_left = true
 
     local canvasFrame = DF:CreateCanvasScrollBox(auraOptionsFrame)
     canvasFrame:SetPoint("topleft", auraOptionsFrame, "topleft", 0, platerInternal.optionsYStart)
