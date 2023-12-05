@@ -125,6 +125,21 @@ function platerInternal.CreateDataTables(Plater)
 		[203812] = true, --Voice From Beyond
 		[100818] = true, -- Bellowing Idol
 		[92538] = true, -- Tarspitter Grub
+        [136330] = true, -- Soul Thorns
+        [136541] = true, -- Bile Oozeling
+        [133361] = true, -- Wasting Servant
+        [99664] = true, -- Restless Soul
+        [101008] = true, -- Stinging Swarm
+        [213219] = true, -- Bubbling Ooze
+        [214117] = true, -- Stormflurry Totem
+        [84400] = true, -- Flourishing Ancient
+        [100991] = true, -- Strangling Roots
+        [131009] = true, -- Spirit of Gold
+        [127315] = true, -- Reanimation Totem
+        [127315] = true, -- Reanimation Totem
+        [125828] = true, -- Soulspawn
+        [205212] = true, -- Infinite Keeper
+        [205265] = true, -- Time-Displaced Trooper
 	}
 
     --textures used in the cooldown animation, scripts can add more values to it, profile holds only the path to it

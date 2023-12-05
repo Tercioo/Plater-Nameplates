@@ -8,6 +8,11 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1701784522,  "Backend Change", "December 5th, 2023", "Adding more 10.2 units to 'forced in combat'.", "cont1nuity"},
+			{1701784522,  "Backend Change", "December 2nd, 2023", "Fixes for broken cast bars in classic.", "cont1nuity"},
+			{1701784522,  "Backend Change", "November 24th, 2023", "Fixes for broken range checks.", "cont1nuity"},
+			{1701784522,  "Backend Change", "November 22th, 2023", "Adding cast animations for 10.2.", "Terciob"},
+			
 			{1700257286,  "Backend Change", "November 19th, 2023", "Resetting range check ranges where they are no longer set properly due to backend changes.", "cont1nuity"},
 			{1700257286,  "Backend Change", "November 17th, 2023", "Switch to LibRangeCheck-3.0 with combat range detection.", "cont1nuity"},
 			{1700257286,  "Hotfix", "November 17th, 2023", "Cleaning up hotfix.", "cont1nuity"},
