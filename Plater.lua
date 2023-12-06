@@ -1103,6 +1103,20 @@ Plater.AnchorNamesByPhraseId = {
 						playerIsTank = true
 					  end
 					end
+				elseif playerClass == "WARLOCK" then
+					for i=1,40 do
+					  local spellId = select(10, UnitBuff("player",i))
+					  if spellId == 403789 then
+						playerIsTank = true
+					  end
+					end
+				elseif playerClass == "SHAMAN" then
+					for i=1,40 do
+					  local spellId = select(10, UnitBuff("player",i))
+					  if spellId == 408680 then
+						playerIsTank = true
+					  end
+					end
 				end
 			end
 			
