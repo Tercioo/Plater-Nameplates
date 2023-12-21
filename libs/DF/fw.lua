@@ -1,6 +1,6 @@
 
 
-local dversion = 491
+local dversion = 495
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary(major, minor)
 
@@ -313,23 +313,51 @@ function DF.GetSpecializationRole(...)
 	return nil
 end
 
+--[=[ dump of C_EncounterJournal
+	["GetEncountersOnMap"] = function,
+	["SetPreviewMythicPlusLevel"] = function,
+	["GetLootInfoByIndex"] = function,
+	["GetSlotFilter"] = function,
+	["IsEncounterComplete"] = function,
+	["SetTab"] = function,
+	["ResetSlotFilter"] = function,
+	["OnOpen"] = function,
+	["InstanceHasLoot"] = function,
+	["GetSectionIconFlags"] = function,
+	["SetPreviewPvpTier"] = function,
+	["GetEncounterJournalLink"] = function,
+	["GetInstanceForGameMap"] = function,
+	["GetSectionInfo"] = function,
+	["GetLootInfo"] = function,
+	["GetDungeonEntrancesForMap"] = function,
+	["OnClose"] = function,
+	["SetSlotFilter"] = function,
+--]=]
+
 --build dummy encounter journal functions if they doesn't exists
 --this is done for compatibility with classic and if in the future EJ_ functions are moved to C_
+---@class EncounterJournal : table
+---@field EJ_GetInstanceForMap fun(mapId: number)
+---@field EJ_GetInstanceInfo fun(journalInstanceID: number)
+---@field EJ_SelectInstance fun(journalInstanceID: number)
+---@field EJ_GetEncounterInfoByIndex fun(index: number, journalInstanceID: number?)
+---@field EJ_GetEncounterInfo fun(journalEncounterID: number)
+---@field EJ_SelectEncounter fun(journalEncounterID: number)
+---@field EJ_GetSectionInfo fun(sectionID: number)
+---@field EJ_GetCreatureInfo fun(index: number, journalEncounterID: number?)
+---@field EJ_SetDifficulty fun(difficultyID: number)
+---@field EJ_GetNumLoot fun(): number
 DF.EncounterJournal = {
-	EJ_GetCurrentInstance = EJ_GetCurrentInstance or function() return nil end,
 	EJ_GetInstanceForMap = EJ_GetInstanceForMap or function() return nil end,
 	EJ_GetInstanceInfo = EJ_GetInstanceInfo or function() return nil end,
 	EJ_SelectInstance = EJ_SelectInstance or function() return nil end,
-
 	EJ_GetEncounterInfoByIndex = EJ_GetEncounterInfoByIndex or function() return nil end,
 	EJ_GetEncounterInfo = EJ_GetEncounterInfo or function() return nil end,
 	EJ_SelectEncounter = EJ_SelectEncounter or function() return nil end,
-
 	EJ_GetSectionInfo = EJ_GetSectionInfo or function() return nil end,
 	EJ_GetCreatureInfo = EJ_GetCreatureInfo or function() return nil end,
 	EJ_SetDifficulty = EJ_SetDifficulty or function() return nil end,
 	EJ_GetNumLoot = EJ_GetNumLoot or function() return 0 end,
-	EJ_GetLootInfoByIndex = EJ_GetLootInfoByIndex or function() return nil end,
 }
 
 --will always give a very random name for our widgets
@@ -495,13 +523,69 @@ function DF.table.find(t, value)
 	end
 end
 
+function DF:GetParentKeyPath(object)
+	local parentKey = object:GetParentKey()
+	if (not parentKey) then
+		return ""
+	end
+
+	local path = "" .. parentKey
+	local parent = object:GetParent()
+
+	while (parent) do
+		parentKey = parent:GetParentKey()
+
+		if (parentKey) then
+			path = parentKey .. "." .. path
+		else
+			return path
+		end
+
+		parent = parent:GetParent()
+	end
+
+	return path
+end
+
+function DF:GetParentNamePath(object)
+	local parent = object
+	local path = ""
+	while (parent) do
+		local parentName = parent:GetName()
+
+		if (not parentName) then
+			local parentOfParent = parent:GetParent()
+			if (parentOfParent) then
+				local parentKey = parentOfParent:GetParentKey()
+				if (parentKey) then
+					parentName = parentKey
+				else
+					return path:gsub("%.$", "")
+				end
+			end
+		end
+
+		if (parentName) then
+			path = parentName .. "." .. path
+		else
+			return path:gsub("%.$", "")
+		end
+
+		parent = parent:GetParent()
+	end
+
+	return path:gsub("%.$", "")
+end
+
 ---get a value from a table using a path, e.g. getfrompath(tbl, "a.b.c") is the same as tbl.a.b.c
 ---@param t table
 ---@param path string
+---@param subOffset number?
 ---@return any
-function DF.table.getfrompath(t, path)
+function DF.table.getfrompath(t, path, subOffset)
 	if (path:match("%.") or path:match("%[")) then
 		local value
+		local offset = 0
 
 		for key in path:gmatch("[%w_]+") do
 			value = t[key] or t[tonumber(key)]
@@ -513,6 +597,11 @@ function DF.table.getfrompath(t, path)
 
 			--update t for the next iteration
 			t = value
+			offset = offset + 1
+
+			if (subOffset == offset) then
+				return value
+			end
 		end
 
 		return value

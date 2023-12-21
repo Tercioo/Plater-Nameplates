@@ -4052,6 +4052,9 @@ function Plater.OnInit() --private --~oninit ~init
 		--C_Timer.After (1, Plater.GetSpellForRangeCheck)
 		C_Timer.After (4, Plater.GetHealthCutoffValue)
 	
+	--Mythic Dungeon Tools
+		platerInternal.InstallMDTHooks()
+
 	--hooking scripts has load conditions, here it creates a load filter for plater
 	--so when a load condition is changed it reload hooks
 		function Plater.HookLoadCallback (encounterID) --private

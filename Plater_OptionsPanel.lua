@@ -186,7 +186,7 @@ function Plater.OpenOptionsPanel(pageNumber)
 	--controi o menu principal
 	local f = DF:CreateSimplePanel (UIParent, optionsWidth, optionsHeight, "Plater |cFFFF8822[|r|cFFFFFFFFNameplates|r|cFFFF8822]|r: professional addon for hardcore gamers", "PlaterOptionsPanelFrame", {UseScaleBar = true}, Plater.db.profile.OptionsPanelDB)
 	f.Title:SetAlpha (.75)
-	f:SetFrameStrata ("HIGH")
+	f:SetFrameStrata ("DIALOG")
 	DF:ApplyStandardBackdrop (f)
 	f:ClearAllPoints()
 	PixelUtil.SetPoint (f, "center", UIParent, "center", 2, 2, 1, 1)
@@ -385,8 +385,8 @@ function Plater.OpenOptionsPanel(pageNumber)
 	local friendlyPCsFrame		= mainFrame.AllFrames [16]
 	
 	--3rd row
-	local colorsFrame			= mainFrame.AllFrames [17]
-	local castColorsFrame		= mainFrame.AllFrames [18]
+	local colorsFrame			= mainFrame.AllFrames [17]; platerInternal.NpcColorsFrameIndex = 17;
+	local castColorsFrame		= mainFrame.AllFrames [18]; platerInternal.CastColorsFrameIndex = 18; platerInternal.CastColorsCreationDelay = 0.1;
 	local auraLastEventFrame	= mainFrame.AllFrames [19]
 	local animationFrame		= mainFrame.AllFrames [20] --when this index is changed, need to also change the index on Plater_AnimationEditor.lua
 	local autoFrame				= mainFrame.AllFrames [21]
@@ -416,7 +416,7 @@ function Plater.OpenOptionsPanel(pageNumber)
 
 	C_Timer.After(0.1, function() Plater.Resources.BuildResourceOptionsTab(resourceFrame) end)
 	C_Timer.After(0.1, function() Plater.Auras.BuildGhostAurasOptionsTab(ghostAuras) end)
-	C_Timer.After(0.1, function() Plater.CreateCastColorOptionsFrame(castColorsFrame) end)
+	C_Timer.After(platerInternal.CastColorsCreationDelay, function() Plater.CreateCastColorOptionsFrame(castColorsFrame) end)
 	C_Timer.After(0.1, function() platerInternal.Plugins.CreatePluginsOptionsTab(pluginsFrame) end)
 	
 	local generalOptionsAnchor = CreateFrame ("frame", "$parentOptionsAnchor", frontPageFrame, BackdropTemplateMixin and "BackdropTemplate")
