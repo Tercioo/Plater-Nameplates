@@ -3080,6 +3080,7 @@ Plater.CreateAuraTesting()
 				GameCooltip:AddLine("$div")
 				bAutoAccept = true
 
+				--[=[
 				--send npc color to raid auto accept
 				GameCooltip:AddMenu(1, platerInternal.Comms.SendNpcInfoToGroup, bAutoAccept, "npccolor", "", "Send Color (auto accept)", nil, true)
 				GameCooltip:AddIcon([[Interface\BUTTONS\JumpUpArrow]], 1, 1, 14, 14)
@@ -3091,6 +3092,7 @@ Plater.CreateAuraTesting()
 				--send a signal to set the color and rename to default
 				GameCooltip:AddMenu(1, platerInternal.Comms.SendNpcInfoToGroup, bAutoAccept, "resetnpc", "", "Send Reset (auto accept)", nil, true)
 				GameCooltip:AddIcon([[Interface\BUTTONS\UI-GROUPLOOT-PASS-DOWN]], 1, 1, 14, 14)
+				--]=]
 
 				--GameCooltip:AddLine("$div")
 
@@ -3163,9 +3165,6 @@ Plater.CreateAuraTesting()
 				--send to raid button
 				local sendToRaidButton = DF:CreateButton(line, onSendToRaidButtonClicked, headerTable[7].width, 20, "Click to Select", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
 				line.sendToRaidButton = sendToRaidButton
-				if (GetRealmName() ~= "Azralon") then --debug among friends
-					sendToRaidButton:Disable()
-				end
 
 				--set hooks
 				enabledCheckBox:SetHook ("OnEnter", widget_onenter)
