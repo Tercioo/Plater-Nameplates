@@ -410,17 +410,41 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
     --cast color
     local line_select_color_dropdown = function (self, spellId, color)
-        if (not DB_CAST_COLORS[spellId]) then
-            DB_CAST_COLORS[spellId] = {true, "blue", ""}
-        end
+        local bNeedRefresh = false
 
-        DB_CAST_COLORS[spellId][CONST_INDEX_ENABLED] = true
-        DB_CAST_COLORS[spellId][CONST_INDEX_COLOR] = color
+        if (color == "!removecolor") then
+            if (DB_CAST_COLORS[spellId]) then
+                DB_CAST_COLORS[spellId] = nil
+                local enableColorCheckbox = castFrame.CheckBoxCache[spellId]
+                if (enableColorCheckbox) then
+                    enableColorCheckbox:SetValue(false)
+                end
+            end
+        else
+            if (not DB_CAST_COLORS[spellId]) then
+                DB_CAST_COLORS[spellId] = {true, "blue", ""}
+            end
 
-        --o que é este checkbox cache
-        local checkBox = castFrame.CheckBoxCache[spellId]
-        if (checkBox) then
-            checkBox:SetValue(true)
+            local bOldColorWasEnabled = self.colorTable and self.colorTable[1]
+            local oldColorName = self.colorTable and self.colorTable[2]
+
+            DB_CAST_COLORS[spellId][CONST_INDEX_ENABLED] = true
+            DB_CAST_COLORS[spellId][CONST_INDEX_COLOR] = color
+
+            --if the shift key is pressed, change the color of all castbars with this color
+            if (IsShiftKeyDown() and bOldColorWasEnabled and type(oldColorName) == "string") then
+                for thisSpellId, castColorTable in pairs(DB_CAST_COLORS) do
+                    if (castColorTable[1] and castColorTable[2] == oldColorName) then
+                        castColorTable[2] = color
+                        bNeedRefresh = true
+                    end
+                end
+            end
+
+            local enableColorCheckbox = castFrame.CheckBoxCache[spellId]
+            if (enableColorCheckbox) then
+                enableColorCheckbox:SetValue(true)
+            end
         end
 
         --clean the refresh scroll cache
@@ -439,115 +463,17 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         castFrame.RefreshScroll(0)
         castColorFrame.latestSpellId = spellId
         castColorFrame.optionsFrame.previewCastBar.UpdateAppearance()
-    end
 
-    local function hex (num)
-        local hexstr = '0123456789abcdef'
-        local s = ''
-        while num > 0 do
-            local mod = math.fmod(num, 16)
-            s = string.sub(hexstr, mod+1, mod+1) .. s
-            num = math.floor(num / 16)
+        if (bNeedRefresh) then
+            --refresh the scrollbox showing all the spell colors
+            castFrame.spellsScroll:Refresh()
         end
-        if s == '' then s = '00' end
-        if (string.len (s) == 1) then
-            s = "0"..s
-        end
-        return s
-    end
-
-    local sortBrightness = function(colorTable)
-        return 0.2126 * colorTable[1] + 0.7152 * colorTable[2] + 0.0722 * colorTable[3]
-    end
-    local function hue(color)
-        local r, g, b = color[1], color[2], color[3]
-        local max, min = math.max(r, g, b), math.min(r, g, b)
-
-        if max == min then
-            return 0
-        elseif max == r then
-            return (g - b) / (max - min) % 6
-        elseif max == g then
-            return (b - r) / (max - min) + 2
-        else
-            return (r - g) / (max - min) + 4
-        end
-    end
-    local function sort_color (t1, t2)
-        return hue(t1[1]) > hue(t2[1])
-        --return sortBrightness(t1[1]) > sortBrightness(t2[1])
     end
 
     local line_refresh_color_dropdown = function(self)
-        if (not self.spellId) then
-            return {}
-        end
-
-        if (not castFrame.cachedColorTable) then
-            local dropdownColorsList = {}
-            local colorsAlreadyAdded = {}
-            local t = {}
-
-            --add colors already in use first
-            --get colors that are already in use and pull them to be the first colors in the dropdown
-            for spellId, castColorTable in pairs(DB_CAST_COLORS) do
-                local color = castColorTable[CONST_INDEX_COLOR]
-                if (not colorsAlreadyAdded[color]) then
-                    colorsAlreadyAdded[color] = true
-                    local r, g, b = DF:ParseColors(color)
-                    tinsert(dropdownColorsList, {{r, g, b}, color, hex (r * 255) .. hex (g * 255) .. hex (b * 255)})
-                end
-            end
-            --table.sort (colorsAddedT, sort_color) --this make the list be listed from the brightness color to the darkness
-
-            for index, colorTable in ipairs (dropdownColorsList) do
-                local colortable = colorTable[1]
-                local colorname = colorTable[2]
-                tinsert (t, {label = " " .. colorname, value = colorname, color = colortable, onclick = line_select_color_dropdown,
-                statusbar = [[Interface\Tooltips\UI-Tooltip-Background]],
-                icon = [[Interface\AddOns\Plater\media\star_empty_64]],
-                iconcolor = {1, 1, 1, .6},
-                })
-            end
-
-            --all colors
-            local allColors = {}
-            for colorName, colorTable in pairs (DF:GetDefaultColorList()) do
-                if (not colorsAlreadyAdded [colorName]) then
-                    tinsert (allColors, {colorTable, colorName, hex (colorTable[1]*255) .. hex (colorTable[2]*255) .. hex (colorTable[3]*255)})
-                end
-            end
-
-            table.sort (allColors, sort_color)
-
-            for index, colorTable in ipairs (allColors) do
-                local colortable = colorTable[1]
-                local colorname = colorTable[2]
-                tinsert (t, {
-                    label = colorname,
-                    value = colorname,
-                    color = colortable,
-                    statusbar = dropdownStatusBarTexture,
-                    statusbarcolor = dropdownStatusBarColor,
-                    onclick = line_select_color_dropdown
-                })
-            end
-
-            tinsert(t, 1, {
-                label = "no color",
-                value = "white",
-                color = colorNoValue,
-                statusbar = dropdownStatusBarTexture,
-                statusbarcolor = dropdownStatusBarColor,
-                iconcolor = dropdownIconColor,
-                onclick = line_select_color_dropdown
-            }) --localize-me
-
-            castFrame.cachedColorTable = t
-            return t
-        else
-            return castFrame.cachedColorTable
-        end
+        local colorEnabledIndexOnDB = 1
+        local colorIndexOnDB = 2
+        return platerInternal.RefreshColorDropdown(castFrame, self, DB_CAST_COLORS, line_select_color_dropdown, "spellId", colorEnabledIndexOnDB, colorIndexOnDB)
     end
 
     --line
@@ -642,6 +568,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         --location
         --local npcLocationLabel = DF:CreateLabel(line, "", 10, "white", nil, "npcLocationLabel")
         local selectAudioDropdown = DF:CreateDropDown(line, line_refresh_audio_dropdown, 1, headerTable[8].width - 1, 20, "SelectAudioDropdown", nil, DF:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+        selectAudioDropdown:SetFrameLevel(line:GetFrameLevel()+2)
 
         --encounter
         local encounterNameLabel = DF:CreateLabel(line, "", 10, "white", nil, "encounterNameLabel") --not in use, got replaced by spell name rename
@@ -651,6 +578,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             enabledCheckBox:SetAsCheckBox()
         --color dropdown
             local colorDropdown = DF:CreateDropDown(line, line_refresh_color_dropdown, 1, headerTable[8].width - 1, 20, "ColorDropdown", nil, DF:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+            colorDropdown:SetFrameLevel(line:GetFrameLevel()+2)
 
         enabledCheckBox:SetHook ("OnEnter", widget_onenter)
         enabledCheckBox:SetHook ("OnLeave", widget_onleave)
@@ -1586,6 +1514,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                         --Select: is calling a dispatch making it to rebuild the entire color table, may be caching the color table might save performance
                         line.EnabledCheckbox:SetValue(isEnabled)
                         line.ColorDropdown:Select(color)
+                        line.ColorDropdown.colorTable = {isEnabled, color}
 
                         if (isEnabled) then
                             line:RefreshColor(color)
@@ -1594,8 +1523,8 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                         end
                     else
                         line.EnabledCheckbox:SetValue(false)
-                        line.ColorDropdown:Select("white")
-
+                        line.ColorDropdown.colorTable = nil
+                        line.ColorDropdown:Select(platerInternal.NoColor)
                         line:RefreshColor()
                     end
 
@@ -1668,7 +1597,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                 --build the castInfo table for this spell
                 local npcId = spellTable.npcID
                 local isEnabled = DB_CAST_COLORS[spellId] and DB_CAST_COLORS[spellId][CONST_INDEX_ENABLED] or false
-                local color = DB_CAST_COLORS[spellId] and DB_CAST_COLORS[spellId][CONST_INDEX_COLOR] or "white"
+                local color = DB_CAST_COLORS[spellId] and DB_CAST_COLORS[spellId][CONST_INDEX_COLOR] or platerInternal.NoColor
                 local customSpellName = DB_CAST_COLORS[spellId] and DB_CAST_COLORS[spellId][CONST_INDEX_NAME] or ""
 
                 local castInfo = {

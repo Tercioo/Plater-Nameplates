@@ -49,6 +49,7 @@ Plater_DefaultSettings.lua
 Plater_Data.lua
 Plater_Logs.lua
 Plater_PerformanceUnits.lua
+Plater_Util.lua
 Plater.lua
 Plater_Comms.lua
 Plater_Auras.lua

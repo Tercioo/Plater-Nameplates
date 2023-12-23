@@ -2951,19 +2951,44 @@ Plater.CreateAuraTesting()
 			end
 			
 			local line_select_color_dropdown = function (self, npcID, color)
-				if (not DB_NPCID_COLORS [npcID]) then
-					DB_NPCID_COLORS [npcID] = {true, false, "blue"}
+				local bNeedRefresh = false
+
+				if (color == "!removecolor") then
+					if (DB_NPCID_COLORS[npcID]) then
+						DB_NPCID_COLORS[npcID] = nil
+						local enableColorCheckbox = colorsFrame.CheckBoxCache[npcID]
+						if (enableColorCheckbox) then
+							enableColorCheckbox:SetValue(false)
+						end
+					end
+				else
+					if (not DB_NPCID_COLORS [npcID]) then
+						DB_NPCID_COLORS [npcID] = {true, false, "blue"}
+					end
+					
+					local bOldColorWasEnabled = self.colorTable and self.colorTable[1]
+					local oldColorName = self.colorTable and self.colorTable[3]
+
+					DB_NPCID_COLORS [npcID][1] = true
+					DB_NPCID_COLORS [npcID][3] = color
+					
+					--if the shift key is pressed, change the color of all npcs with this color
+					if (IsShiftKeyDown() and bOldColorWasEnabled and type(oldColorName) == "string") then
+						for npcID, npcColorTable in pairs(DB_NPCID_COLORS) do
+							if (npcColorTable[1] and npcColorTable[3] == oldColorName) then
+								npcColorTable[3] = color
+								bNeedRefresh = true
+							end
+						end
+					end
+
+					local checkBox = colorsFrame.CheckBoxCache[npcID]
+					if (checkBox) then
+						checkBox:SetValue(true)
+					end
 				end
-				
-				DB_NPCID_COLORS [npcID][1] = true
-				DB_NPCID_COLORS [npcID][3] = color
-				
-				local checkBox = colorsFrame.CheckBoxCache [npcID]
-				if (checkBox) then
-					checkBox:SetValue (true)
-				end
-				
-				self:GetParent():RefreshColor (color)
+
+				self:GetParent():RefreshColor(color)
 				
 				Plater.RefreshDBLists()
 				Plater.ForceTickOnAllNameplates()
@@ -2971,96 +2996,17 @@ Plater.CreateAuraTesting()
 				colorsFrame.cachedColorTable = nil
 				colorsFrame.cachedColorTableNameplate = nil
 				colorsFrame.RefreshDropdowns()
-			end
-			
-			local function hex(num)
-				local hexstr = '0123456789abcdef'
-				local s = ''
-				while num > 0 do
-					local mod = math.fmod(num, 16)
-					s = string.sub(hexstr, mod+1, mod+1) .. s
-					num = math.floor(num / 16)
+
+				if (bNeedRefresh) then
+					--refresh the scrollbox showing all the npc colors
+					colorsFrame.SpellsScroll:Refresh()
 				end
-				if s == '' then s = '00' end
-				if (string.len (s) == 1) then
-					s = "0"..s
-				end
-				return s
-			end
-			
-			local sortBrightness = function(colorTable)
-				return 0.2126 * colorTable[1] + 0.7152 * colorTable[2] + 0.0722 * colorTable[3]
-			end
-			local function hue(color)
-				local r, g, b = color[1], color[2], color[3]
-				local max, min = math.max(r, g, b), math.min(r, g, b)
-			
-				if max == min then
-					return 0
-				elseif max == r then
-					return (g - b) / (max - min) % 6
-				elseif max == g then
-					return (b - r) / (max - min) + 2
-				else
-					return (r - g) / (max - min) + 4
-				end
-			end
-			local function sort_color (t1, t2)
-				return hue(t1[1]) > hue(t2[1])
-				--return sortBrightness(t1[1]) > sortBrightness(t2[1])
 			end
 			
 			local line_refresh_color_dropdown = function (self)
-				if (not self.npcID) then
-					return {}
-				end
-				
-				if (not colorsFrame.cachedColorTable) then
-					local dropdownOptionsList = {}
-					local colorsAlreadyAdded = {}
-					local t = {}
-					
-					--add colors already in use first
-					--get colors that are already in use and pull them to be the first colors in the dropdown
-					for npcID, npcColorTable in pairs (DB_NPCID_COLORS) do
-						local color = npcColorTable [3]
-						if (not colorsAlreadyAdded [color]) then
-							colorsAlreadyAdded [color] = true
-							local r, g, b = DF:ParseColors (color)
-							tinsert (dropdownOptionsList, {{r, g, b}, color, hex (r * 255) .. hex (g * 255) .. hex (b * 255)})
-						end
-					end
-					
-					for index, colorTable in ipairs (dropdownOptionsList) do
-						local colortable = colorTable [1]
-						local colorname = colorTable [2]
-						tinsert (t, {label = " " .. colorname, value = colorname, color = colortable, onclick = line_select_color_dropdown, 
-						statusbar = [[Interface\Tooltips\UI-Tooltip-Background]],
-						icon = [[Interface\AddOns\Plater\media\star_empty_64]],
-						iconcolor = {1, 1, 1, .6},
-						})
-					end
-				
-					--all colors
-					local allColors = {}
-					for colorName, colorTable in pairs (DF:GetDefaultColorList()) do
-						if (not colorsAlreadyAdded [colorName]) then
-							tinsert (allColors, {colorTable, colorName, hex (colorTable[1]*255) .. hex (colorTable[2]*255) .. hex (colorTable[3]*255)})
-						end
-					end
-					table.sort (allColors, sort_color)
-					
-					for index, colorTable in ipairs (allColors) do
-						local colortable = colorTable [1]
-						local colorname = colorTable [2]
-						tinsert (t, {label = colorname, value = colorname, color = colortable, onclick = line_select_color_dropdown})
-					end
-					
-					colorsFrame.cachedColorTable = t
-					return t
-				else
-					return colorsFrame.cachedColorTable
-				end
+				local colorEnabledIndexOnDB = 1
+				local colorIndexOnDB = 3
+				return platerInternal.RefreshColorDropdown(colorsFrame, self, DB_NPCID_COLORS, line_select_color_dropdown, "npcID", colorEnabledIndexOnDB, colorIndexOnDB)
 			end
 
 			--callback from have clicked in the 'Send To Raid' button
@@ -3136,10 +3082,6 @@ Plater.CreateAuraTesting()
 				local enabledCheckBox = DF:CreateSwitch (line, onToggleEnabled, true, _, _, _, _, "EnabledCheckbox", "$parentEnabledToggle" .. index, _, _, _, nil, DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"))
 				enabledCheckBox:SetAsCheckBox()
 				
-				--bypass checkbox
-				local forScriptCheckBox = DF:CreateSwitch (line, onToggleForScripts, true, _, _, _, _, "ForScriptsCheckbox", "$parentForScriptsToggle" .. index, _, _, _, nil, DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"))
-				forScriptCheckBox:SetAsCheckBox()
-				
 				--npc ID
 				local npcIDEntry = DF:CreateTextEntry (line, function()end, headerTable[2].width, 20, "NpcIDEntry", nil, nil, DF:GetTemplate ("dropdown", "PLATER_DROPDOWN_OPTIONS"))
 				npcIDEntry:SetHook ("OnEditFocusGained", oneditfocusgained_spellid)			
@@ -3178,6 +3120,7 @@ Plater.CreateAuraTesting()
 				
 				--color
 				local colorDropdown = DF:CreateDropDown (line, line_refresh_color_dropdown, 1, headerTable[6].width, 20, "ColorDropdown", nil, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+				colorDropdown:SetFrameLevel(line:GetFrameLevel()+2)
 				
 				--send to raid button
 				local sendToRaidButton = DF:CreateButton(line, onSendToRaidButtonClicked, headerTable[7].width, 20, "Click to Select", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
@@ -3186,8 +3129,6 @@ Plater.CreateAuraTesting()
 				--set hooks
 				enabledCheckBox:SetHook ("OnEnter", widget_onenter)
 				enabledCheckBox:SetHook ("OnLeave", widget_onleave)
-				forScriptCheckBox:SetHook ("OnEnter", widget_onenter)
-				forScriptCheckBox:SetHook ("OnLeave", widget_onleave)
 				npcIDEntry:SetHook ("OnEnter", widget_onenter)
 				npcIDEntry:SetHook ("OnLeave", widget_onleave)
 				npcNameEntry:SetHook ("OnEnter", widget_onenter)
@@ -3198,7 +3139,6 @@ Plater.CreateAuraTesting()
 				colorDropdown:SetHook ("OnLeave", widget_onleave)
 				
 				line:AddFrameToHeaderAlignment (enabledCheckBox)
-				--line:AddFrameToHeaderAlignment (forScriptCheckBox)
 				line:AddFrameToHeaderAlignment (npcIDEntry)
 				line:AddFrameToHeaderAlignment (npcNameEntry)
 				line:AddFrameToHeaderAlignment (npcRenameEntry)
@@ -3363,8 +3303,9 @@ Plater.CreateAuraTesting()
 							if (colorOption) then
 								--causing lag in the scroll - might be an issue with dropdown:Select
 								--Select: is calling a dispatch making it to rebuild the entire color table, may be caching the color table might save performance
+								--it is caching now, performance fixed
 								line.EnabledCheckbox:SetValue (colorOption [1])
-								--line.ForScriptsCheckbox:SetValue (colorOption [2])
+								line.ColorDropdown.colorTable = colorOption
 								line.ColorDropdown:Select (colorOption [3])
 								
 								if (colorOption [1]) then
@@ -3374,8 +3315,8 @@ Plater.CreateAuraTesting()
 								end
 							else
 								line.EnabledCheckbox:SetValue (false)
-								--line.ForScriptsCheckbox:SetValue (false)
-								line.ColorDropdown:Select ("white")
+								line.ColorDropdown.colorTable = nil
+								line.ColorDropdown:Select(platerInternal.NoColor)
 								
 								line:RefreshColor()
 
@@ -3399,6 +3340,7 @@ Plater.CreateAuraTesting()
 			local spells_scroll = DF:CreateScrollBox (colorsFrame, "$parentColorsScroll", scroll_refresh, {}, scroll_width, scroll_height, scroll_lines, scroll_line_height) --name is ColorsScroll but variable is spells_scroll
 			DF:ReskinSlider (spells_scroll)
 			spells_scroll:SetPoint ("topleft", colorsFrame, "topleft", 10, scrollY)
+			colorsFrame.SpellsScroll = spells_scroll
 			
 			colorsFrame.ModelFrame:SetFrameLevel (spells_scroll:GetFrameLevel() + 20)
 			
@@ -3857,7 +3799,7 @@ Plater.CreateAuraTesting()
 						if (not self:GetParent() [MEMBER_NPCID]) then
 							return {}
 						end
-						
+						--dropdrop down below a nameplate when the Npc Colors tab is open
 						if (not colorsFrame.cachedColorTableNameplate) then
 							local colorsAdded = {}
 							local colorsAddedT = {}
