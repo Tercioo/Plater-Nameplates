@@ -3415,6 +3415,7 @@ Plater.CreateAuraTesting()
 			end
 			
 			--create search box
+				local latestSearchUpdate = 0
 				function colorsFrame.OnSearchBoxTextChanged()
 					local text = colorsFrame.AuraSearchTextEntry:GetText()
 					if (text and string.len (text) > 0) then
@@ -3422,6 +3423,14 @@ Plater.CreateAuraTesting()
 					else
 						IsSearchingFor = nil
 					end
+
+					if (latestSearchUpdate + 0.01 > GetTime()) then
+						return
+					end
+
+					latestSearchUpdate = GetTime()
+					spells_scroll.offset = 0
+					spells_scroll:OnVerticalScroll(spells_scroll.offset)
 					spells_scroll:Refresh()
 				end
 
