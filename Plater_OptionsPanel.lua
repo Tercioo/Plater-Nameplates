@@ -3553,33 +3553,44 @@ Plater.CreateAuraTesting()
 					if (colorsFrame.IsImporting) then
 						local text = colorsFrame.ImportEditor:GetText()
 						text = DF:Trim (text)
-						local colorData = Plater.DecompressData (text, "print")
+						local importedColorData = Plater.DecompressData (text, "print")
 					
 						--exported npc colors has this member to identify the exported data
-						if (colorData and colorData.NpcColor) then
-							--store which npcs has a color enabled
+						if (importedColorData and importedColorData.NpcColor) then
+							--this variable stores which npcs has a color enabled
 							local dbColors = Plater.db.profile.npc_colors
 							--table storing all npcs already detected inside dungeons and raids
 							local allNpcsDetectedTable = Plater.db.profile.npc_cache
 							local allNpcsRenamed = Plater.db.profile.npcs_renamed
 
 							--the uncompressed table is a numeric table of tables
-							for i, colorTable in pairs (colorData) do
+							for i, colorTable in pairs (importedColorData) do
 								--check integrity
 								if (type (colorTable) == "table") then
-									local npcID, scriptOnly, colorID, npcName, zoneName, renamedName = unpack (colorTable)
-									if (npcID and colorID and npcName and zoneName) then
-										if (type (colorID) == "string" and type (npcName) == "string" and type (zoneName) == "string") then
+									local npcID, scriptOnly, colorName, npcName, zoneName, renamedName = unpack (colorTable)
+									--check values integrity
+									if (npcID and colorName and npcName and zoneName) then
+										if (type (colorName) == "string" and type (npcName) == "string" and type (zoneName) == "string") then
 											if (type (npcID) == "number" and type (scriptOnly) == "boolean") then
-												dbColors [npcID] = dbColors [npcID] or {}
+												local colorTable = dbColors[npcID]
+												if (not colorTable) then
+													colorTable = {}
+													dbColors[npcID] = colorTable
+												end
+												
 												dbColors [npcID] [1] = true --the color for the npc is enabled
-												dbColors [npcID] [2] = scriptOnly --the color is only used in scripts
-												dbColors [npcID] [3] = colorID --string with the color name
+												dbColors [npcID] [2] = false --the color is only used in scripts (deprecated)
+												dbColors [npcID] [3] = colorName --string with the color name
 												
 												--add this npcs in the npcs detected table as well
-												allNpcsDetectedTable [npcID] = allNpcsDetectedTable [npcID] or {}
-												allNpcsDetectedTable [npcID] [1] = npcName
-												allNpcsDetectedTable [npcID] [2] = zoneName
+												local npcInfoTable = allNpcsDetectedTable[npcID]
+												if (not npcInfoTable) then
+													npcInfoTable = {}
+													allNpcsDetectedTable[npcID] = npcInfoTable
+												end
+
+												allNpcsDetectedTable[npcID][1] = allNpcsDetectedTable[npcID][1] or npcName
+												allNpcsDetectedTable[npcID][2] = allNpcsDetectedTable[npcID][2] or zoneName
 												
 												allNpcsRenamed [npcID] = renamedName
 											end
@@ -3592,7 +3603,7 @@ Plater.CreateAuraTesting()
 							Plater:Msg ("npc colors imported.")
 
 						else
-							Plater.SendScriptTypeErrorMsg(colorData)
+							Plater.SendScriptTypeErrorMsg(importedColorData)
 						end
 					end
 					

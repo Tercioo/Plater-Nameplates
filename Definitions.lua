@@ -115,6 +115,11 @@
 ---@field yourQuest boolean
 ---@field isCampaignQuest boolean
 
+---@class npccolor : table
+---@field key1 boolean if true, the color is enabled
+---@field key2 boolean if true, the color is only used in scripts (deprecated)
+---@field key3 string color name
+
 ---@class classspeccoords : {key1: number, key2: number, key3: number, key4: number} texcoords
 
 ---@class plater : table
