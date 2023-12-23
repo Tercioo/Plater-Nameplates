@@ -2988,8 +2988,26 @@ Plater.CreateAuraTesting()
 				return s
 			end
 			
+			local sortBrightness = function(colorTable)
+				return 0.2126 * colorTable[1] + 0.7152 * colorTable[2] + 0.0722 * colorTable[3]
+			end
+			local function hue(color)
+				local r, g, b = color[1], color[2], color[3]
+				local max, min = math.max(r, g, b), math.min(r, g, b)
+			
+				if max == min then
+					return 0
+				elseif max == r then
+					return (g - b) / (max - min) % 6
+				elseif max == g then
+					return (b - r) / (max - min) + 2
+				else
+					return (r - g) / (max - min) + 4
+				end
+			end
 			local function sort_color (t1, t2)
-				return t1[1][3] > t2[1][3]
+				return hue(t1[1]) > hue(t2[1])
+				--return sortBrightness(t1[1]) > sortBrightness(t2[1])
 			end
 			
 			local line_refresh_color_dropdown = function (self)
@@ -2998,23 +3016,22 @@ Plater.CreateAuraTesting()
 				end
 				
 				if (not colorsFrame.cachedColorTable) then
-					local colorsAdded = {}
-					local colorsAddedT = {}
+					local dropdownOptionsList = {}
+					local colorsAlreadyAdded = {}
 					local t = {}
 					
 					--add colors already in use first
 					--get colors that are already in use and pull them to be the first colors in the dropdown
 					for npcID, npcColorTable in pairs (DB_NPCID_COLORS) do
 						local color = npcColorTable [3]
-						if (not colorsAdded [color]) then
-							colorsAdded [color] = true
+						if (not colorsAlreadyAdded [color]) then
+							colorsAlreadyAdded [color] = true
 							local r, g, b = DF:ParseColors (color)
-							tinsert (colorsAddedT, {{r, g, b}, color, hex (r * 255) .. hex (g * 255) .. hex (b * 255)})
+							tinsert (dropdownOptionsList, {{r, g, b}, color, hex (r * 255) .. hex (g * 255) .. hex (b * 255)})
 						end
 					end
-					--table.sort (colorsAddedT, sort_color)
 					
-					for index, colorTable in ipairs (colorsAddedT) do
+					for index, colorTable in ipairs (dropdownOptionsList) do
 						local colortable = colorTable [1]
 						local colorname = colorTable [2]
 						tinsert (t, {label = " " .. colorname, value = colorname, color = colortable, onclick = line_select_color_dropdown, 
@@ -3027,11 +3044,11 @@ Plater.CreateAuraTesting()
 					--all colors
 					local allColors = {}
 					for colorName, colorTable in pairs (DF:GetDefaultColorList()) do
-						if (not colorsAdded [colorName]) then
+						if (not colorsAlreadyAdded [colorName]) then
 							tinsert (allColors, {colorTable, colorName, hex (colorTable[1]*255) .. hex (colorTable[2]*255) .. hex (colorTable[3]*255)})
 						end
 					end
-					--table.sort (allColors, sort_color)
+					table.sort (allColors, sort_color)
 					
 					for index, colorTable in ipairs (allColors) do
 						local colortable = colorTable [1]

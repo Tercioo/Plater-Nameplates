@@ -456,8 +456,26 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         return s
     end
 
+    local sortBrightness = function(colorTable)
+        return 0.2126 * colorTable[1] + 0.7152 * colorTable[2] + 0.0722 * colorTable[3]
+    end
+    local function hue(color)
+        local r, g, b = color[1], color[2], color[3]
+        local max, min = math.max(r, g, b), math.min(r, g, b)
+
+        if max == min then
+            return 0
+        elseif max == r then
+            return (g - b) / (max - min) % 6
+        elseif max == g then
+            return (b - r) / (max - min) + 2
+        else
+            return (r - g) / (max - min) + 4
+        end
+    end
     local function sort_color (t1, t2)
-        return t1[1][CONST_INDEX_COLOR] > t2[1][CONST_INDEX_COLOR]
+        return hue(t1[1]) > hue(t2[1])
+        --return sortBrightness(t1[1]) > sortBrightness(t2[1])
     end
 
     local line_refresh_color_dropdown = function(self)
@@ -466,23 +484,23 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         end
 
         if (not castFrame.cachedColorTable) then
-            local colorsAdded = {}
-            local colorsAddedT = {}
+            local dropdownColorsList = {}
+            local colorsAlreadyAdded = {}
             local t = {}
 
             --add colors already in use first
             --get colors that are already in use and pull them to be the first colors in the dropdown
             for spellId, castColorTable in pairs(DB_CAST_COLORS) do
                 local color = castColorTable[CONST_INDEX_COLOR]
-                if (not colorsAdded[color]) then
-                    colorsAdded[color] = true
+                if (not colorsAlreadyAdded[color]) then
+                    colorsAlreadyAdded[color] = true
                     local r, g, b = DF:ParseColors(color)
-                    tinsert(colorsAddedT, {{r, g, b}, color, hex (r * 255) .. hex (g * 255) .. hex (b * 255)})
+                    tinsert(dropdownColorsList, {{r, g, b}, color, hex (r * 255) .. hex (g * 255) .. hex (b * 255)})
                 end
             end
             --table.sort (colorsAddedT, sort_color) --this make the list be listed from the brightness color to the darkness
 
-            for index, colorTable in ipairs (colorsAddedT) do
+            for index, colorTable in ipairs (dropdownColorsList) do
                 local colortable = colorTable[1]
                 local colorname = colorTable[2]
                 tinsert (t, {label = " " .. colorname, value = colorname, color = colortable, onclick = line_select_color_dropdown,
@@ -495,12 +513,12 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             --all colors
             local allColors = {}
             for colorName, colorTable in pairs (DF:GetDefaultColorList()) do
-                if (not colorsAdded [colorName]) then
+                if (not colorsAlreadyAdded [colorName]) then
                     tinsert (allColors, {colorTable, colorName, hex (colorTable[1]*255) .. hex (colorTable[2]*255) .. hex (colorTable[3]*255)})
                 end
             end
 
-            --table.sort (allColors, sort_color) --this make the list be listed from the brightness color to the darkness
+            table.sort (allColors, sort_color)
 
             for index, colorTable in ipairs (allColors) do
                 local colortable = colorTable[1]
