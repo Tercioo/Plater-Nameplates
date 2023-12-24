@@ -13,6 +13,9 @@ platerInternal.Date = {}
 platerInternal.Logs = {}
 platerInternal.Audio = {}
 
+platerInternal.RemoveColor = "!removecolor"
+platerInternal.NoColor = "no color"
+
 platerInternal.Defaults = {
     dropdownStatusBarTexture = [[Interface\Tooltips\UI-Tooltip-Background]],
     dropdownStatusBarColor = {.1, .1, .1, .8},

@@ -413,7 +413,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
     local line_select_color_dropdown = function (self, spellId, color)
         local bNeedRefresh = false
 
-        if (color == "!removecolor") then
+        if (color == platerInternal.RemoveColor) then
             if (DB_CAST_COLORS[spellId]) then
                 DB_CAST_COLORS[spellId] = nil
                 local enableColorCheckbox = castFrame.CheckBoxCache[spellId]

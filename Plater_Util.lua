@@ -26,8 +26,6 @@ local ignoredColors = {
     ["none"] = true,
 }
 
-platerInternal.NoColor = "!removecolor"
-
 local colorNoValue = {1, 1, 1, 0.5}
 local dropdownStatusBarTexture = platerInternal.Defaults.dropdownStatusBarTexture
 local dropdownStatusBarColor = platerInternal.Defaults.dropdownStatusBarColor
@@ -104,7 +102,7 @@ function platerInternal.RefreshColorDropdown(frame, dropdown, dbColors, onSelect
 
         table.insert(dropdownOptions, 1, {
             label = "no color",
-            value = platerInternal.NoColor,
+            value = platerInternal.RemoveColor,
             color = colorNoValue,
             statusbar = dropdownStatusBarTexture,
             statusbarcolor = dropdownStatusBarColor,
