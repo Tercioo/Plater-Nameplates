@@ -24,34 +24,11 @@ function Plater.DebugTargetNameplate()
     end
 end
 
-
-function platerInternal.InstallMDTHooks()
-    --first check if Mythic Dungeon Tools is installed
-    if (not MDT) then
-        return
-    end
-
-    --this function open the plater options panel and search for the npcId under the tab 'Npc Color and Names'
-    local fSeeNpcOnPlater = function(self, fixedParameter, npcId)
-        Plater.OpenOptionsPanel(platerInternal.NpcColorsFrameIndex)
-
-        --due to lazy loading, the panel might not be loaded yet
-        local npcColorFrame = PlaterOptionsPanelContainerColorManagement
-        if (not npcColorFrame) then
-            C_Timer.After(1.5, function()
-                Plater.OpenOptionsPanel(platerInternal.NpcColorsFrameIndex)
-                npcColorFrame = PlaterOptionsPanelContainerColorManagement
-                npcColorFrame.AuraSearchTextEntry:SetText(npcId)
-                npcColorFrame.OnSearchBoxTextChanged()
-            end)
-        else
-            npcColorFrame.AuraSearchTextEntry:SetText(npcId)
-            npcColorFrame.OnSearchBoxTextChanged()
-        end
-    end
-
-    --this function open the plater options panel and search for the spellId under the tab 'Cast Color and Names'
-    local fSeeSpellOnPlater = function(self, fixedParameter, spellId)
+    ---open the options panel and select the cast colors tab
+    ---searchString is optional, if provided, it will be used to search for a spellId, npcId, spellName, npcName, zoneName, sound name, and encounterName.
+    ---@param searchString string
+    ---@return nil
+    function Plater.OpenCastColorsPanel(searchString)
         --ColorFrame
         Plater.OpenOptionsPanel(platerInternal.CastColorsFrameIndex)
 
@@ -61,13 +38,47 @@ function platerInternal.InstallMDTHooks()
             C_Timer.After(platerInternal.CastColorsCreationDelay + 0.1, function()
                 Plater.OpenOptionsPanel(platerInternal.CastColorsFrameIndex)
                 castColorFrame = PlaterOptionsPanelContainerCastColorManagementColorFrame
-                castColorFrame.AuraSearchTextEntry:SetText(spellId)
+                castColorFrame.AuraSearchTextEntry:SetText(searchString)
                 castColorFrame.OnSearchBoxTextChanged()
             end)
         else
-            castColorFrame.AuraSearchTextEntry:SetText(spellId)
+            castColorFrame.AuraSearchTextEntry:SetText(searchString)
             castColorFrame.OnSearchBoxTextChanged()
         end
+    end
+
+    function Plater.OpenNpcColorsPanel(searchString) --/run Plater.OpenNpcColorsPanel("")
+        Plater.OpenOptionsPanel(platerInternal.NpcColorsFrameIndex)
+
+        --due to lazy loading, the panel might not be loaded yet
+        local npcColorFrame = PlaterOptionsPanelContainerColorManagement
+        if (not npcColorFrame or not npcColorFrame.Header) then
+            C_Timer.After(platerInternal.NpcColorsCreationDelay + 0.1, function()
+                Plater.OpenOptionsPanel(platerInternal.NpcColorsFrameIndex)
+                npcColorFrame = PlaterOptionsPanelContainerColorManagement
+                npcColorFrame.AuraSearchTextEntry:SetText(searchString)
+                npcColorFrame.OnSearchBoxTextChanged()
+            end)
+        else
+            npcColorFrame.AuraSearchTextEntry:SetText(searchString)
+            npcColorFrame.OnSearchBoxTextChanged()
+        end
+    end
+
+function platerInternal.InstallMDTHooks()
+    --first check if Mythic Dungeon Tools is installed
+    if (not MDT) then
+        return
+    end
+
+    --this function open the plater options panel and search for the npcId under the tab 'Npc Color and Names'
+    local fSeeNpcOnPlater = function(self, fixedParameter, npcId)
+        Plater.OpenNpcColorsPanel(npcId)
+    end
+
+    --this function open the plater options panel and search for the spellId under the tab 'Cast Color and Names'
+    local fSeeSpellOnPlater = function(self, fixedParameter, spellId)
+        Plater.OpenCastColorsPanel(spellId)
     end
 
     if (not MDT.UpdateEnemyInfoFrame) then

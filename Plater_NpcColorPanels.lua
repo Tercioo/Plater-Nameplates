@@ -42,6 +42,7 @@ local headerTable = {
     {text = "Zone Name", width = 142},
     {text = "Select Color", width = 110},
     {text = "Send to Raid", width = 100},
+    {text = "Casts", width = 30},
     {text = "", width = 270}, --filler
 }
 
@@ -63,7 +64,7 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
     colorsFrame.Header:SetPoint("topleft", colorsFrame, "topleft", 10, headerY)
 
     colorsFrame.ModelFrame = CreateFrame("PlayerModel", nil, colorsFrame, "ModelWithControlsTemplate, BackdropTemplate")
-    colorsFrame.ModelFrame:SetSize(250, 440) --199
+    colorsFrame.ModelFrame:SetSize(250, 440)
     colorsFrame.ModelFrame:EnableMouse(true)
     colorsFrame.ModelFrame:SetPoint("topleft", colorsFrame.Header, "topright", -265, -scroll_line_height - 1)
     colorsFrame.ModelFrame:SetBackdrop({bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
@@ -312,6 +313,13 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
         --send to raid button
         local sendToRaidButton = DF:CreateButton(line, onSendToRaidButtonClicked, headerTable[7].width, 20, "Click to Select", -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
         line.sendToRaidButton = sendToRaidButton
+
+        --this button select the casts colors tab and search for the npc name there
+        local gotoCastColorsTab = DF:CreateButton(line, function()
+            Plater.OpenOptionsPanel(PlaterOptionsPanelCastColors)
+            PlaterOptionsPanelCastColors.AuraSearchTextEntry:SetText(npcNameEntry:GetText())
+            PlaterOptionsPanelCastColors.AuraSearchTextEntry:ClearFocus()
+        end, headerTable[8].width, 20, "Casts", -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
 
         --set hooks
         enabledCheckBox:SetHook("OnEnter", widgetOnEnter)
