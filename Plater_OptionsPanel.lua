@@ -3383,6 +3383,7 @@ Plater.CreateAuraTesting()
 					end
 
 					if (latestSearchUpdate + 0.01 > GetTime()) then
+						DF.Schedules.AfterById(0.05, colorsFrame.OnSearchBoxTextChanged, "colorsFrame.OnSearchBoxTextChanged")
 						return
 					end
 

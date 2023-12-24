@@ -1,6 +1,7 @@
 local Plater = Plater
 local addonId, platerInternal = ...
 local GameCooltip = GameCooltip2
+---@type detailsframework
 local DF = DetailsFramework
 local GetSpellInfo = GetSpellInfo
 local _
@@ -1668,6 +1669,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             end
 
             if (latestSearchUpdate + 0.01 > GetTime()) then
+                DF.Schedules.AfterById(0.05, castFrame.OnSearchBoxTextChanged, "castFrame.OnSearchBoxTextChanged")
                 return
             end
 
