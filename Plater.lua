@@ -3566,9 +3566,21 @@ Plater.AnchorNamesByPhraseId = {
 							--includes neutral npcs
 							
 							--add the npc in the npcid cache
-							if (not DB_NPCIDS_CACHE [plateFrame [MEMBER_NPCID]] and (Plater.ZoneInstanceType == "raid" or Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "scenario") and plateFrame [MEMBER_NPCID]) then
-								if (UNKNOWN ~= plateFrame [MEMBER_NAME]) then --UNKNOWN is the global string from blizzard
-									DB_NPCIDS_CACHE [plateFrame [MEMBER_NPCID]] = {plateFrame [MEMBER_NAME], Plater.ZoneName or "UNKNOWN", Plater.Locale or "enUS"}
+							if (Plater.ZoneInstanceType == "raid" or Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "scenario") then
+								if (plateFrame[MEMBER_NPCID] and plateFrame[MEMBER_NAME] ~= UNKNOWN) then --UNKNOWN is the global string from blizzard
+									--npcCacheInfo: [1] npc name [2] zone name [3] language
+									local npcCacheInfo = DB_NPCIDS_CACHE[plateFrame[MEMBER_NPCID]]
+									if (not npcCacheInfo) then
+										DB_NPCIDS_CACHE[plateFrame[MEMBER_NPCID]] = {plateFrame[MEMBER_NAME], Plater.ZoneName or "UNKNOWN", Plater.Locale or "enUS"}
+									else
+										--the npc is already cached, check if the language is different
+										if (npcCacheInfo[3] ~= Plater.Locale) then
+											--the npc is cached but the language is different, update the name
+											npcCacheInfo[1] = plateFrame[MEMBER_NAME]
+											npcCacheInfo[2] = Plater.ZoneName or "UNKNOWN"
+											npcCacheInfo[3] = Plater.Locale
+										end
+									end
 								end
 							end
 							

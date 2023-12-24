@@ -64,6 +64,8 @@
 
 ---@class audiocuedb : {[number]: string} dictionary of strings with the path for the audio to play indexed by spellId
 
+---@class npccacheinfo : {key1: string, key2: string, key3: string} [1] npc name [2] zone name [3] language
+
 ---@class dbmtimerbar : table
 ---@field msg string
 ---@field display string
