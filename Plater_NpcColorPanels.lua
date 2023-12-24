@@ -2,6 +2,7 @@
 local addonId, platerInternal = ...
 
 local Plater = Plater
+---@type detailsframework
 local DF = DetailsFramework
 local _
 
@@ -255,7 +256,7 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
     local scrollBox_CreateLine = function(self, index)
         local line = CreateFrame("button", "$parentLine" .. index, self, BackdropTemplateMixin and "BackdropTemplate")
         line:SetPoint("topleft", self, "topleft", 1, -((index-1) * (scroll_line_height+1)) - 1)
-        line:SetSize(scroll_width - 3 - colorsFrame.ModelFrame:GetWidth(), scroll_line_height)
+        line:SetSize(scroll_width - colorsFrame.ModelFrame:GetWidth() + 19, scroll_line_height)
         line:SetScript("OnEnter", lineOnEnter)
         line:SetScript("OnLeave", lineOnLeave)
 
@@ -315,11 +316,9 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
         line.sendToRaidButton = sendToRaidButton
 
         --this button select the casts colors tab and search for the npc name there
-        local gotoCastColorsTab = DF:CreateButton(line, function()
-            Plater.OpenOptionsPanel(PlaterOptionsPanelCastColors)
-            PlaterOptionsPanelCastColors.AuraSearchTextEntry:SetText(npcNameEntry:GetText())
-            PlaterOptionsPanelCastColors.AuraSearchTextEntry:ClearFocus()
-        end, headerTable[8].width, 20, "Casts", -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
+        local gotoCastColorsTab = DF:CreateButton(line, function(self, fixedParameter, param1) Plater.OpenCastColorsPanel(param1) end, 20, 20)
+        gotoCastColorsTab:SetIcon([[Interface\Buttons\UI-Panel-BiggerButton-Up]], 18, 18, "overlay", {0.2, 0.8, 0.2, 0.8}, {1, 1, 1, 0.834})
+        line.gotoCastColorsTab = gotoCastColorsTab
 
         --set hooks
         enabledCheckBox:SetHook("OnEnter", widgetOnEnter)
@@ -340,6 +339,7 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
         line:AddFrameToHeaderAlignment(zoneNameLabel)
         line:AddFrameToHeaderAlignment(colorDropdown)
         line:AddFrameToHeaderAlignment(sendToRaidButton)
+        line:AddFrameToHeaderAlignment(gotoCastColorsTab)
 
         line:AlignWithHeader(colorsFrame.Header, "left")
 
@@ -360,7 +360,7 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
 
     --refresh scroll
     local sSearchingFor
-    local scrollBox_Refresh = function(self, data, offset, total_lines)
+    local scrollBox_Refresh = function(self, data, offset, total_lines) --~refresh
         --data has all npcIDs from dungeons
         local dataInOrder = {}
 
@@ -490,6 +490,8 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
 
                     line.sendToRaidButton.npcId = npcID
                     line.sendToRaidButton:SetClickFunction(onSendToRaidButtonClicked, npcID)
+
+                    line.gotoCastColorsTab.param1 = npcName
 
                     colorsFrame.CheckBoxCache[npcID] = line.EnabledCheckbox
 

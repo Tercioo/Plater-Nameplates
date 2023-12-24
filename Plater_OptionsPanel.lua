@@ -153,6 +153,8 @@ local TAB_INDEX_UIPARENTING = 5
 local TAB_INDEX_PROFILES = 22
 local TAB_INDEX_SEARCH = 26
 
+local bIsOptionsPanelFullyLoaded = false
+
 -- ~options �ptions
 function Plater.OpenOptionsPanel(pageNumber)
 	--localization
@@ -163,11 +165,17 @@ function Plater.OpenOptionsPanel(pageNumber)
 		Plater.CheckOptionsTab()
 
 		if (pageNumber) then
-			C_Timer.After(1, function()
+			if (not bIsOptionsPanelFullyLoaded) then
+				C_Timer.After(1.5, function()
+					---@type df_tabcontainer
+					local tabContainer = _G["PlaterOptionsPanelContainer"]
+					tabContainer:SelectTabByIndex(pageNumber)
+				end)
+			else
 				---@type df_tabcontainer
 				local tabContainer = _G["PlaterOptionsPanelContainer"]
 				tabContainer:SelectTabByIndex(pageNumber)
-			end)
+			end
 		end
 
 		return true
@@ -183,7 +191,9 @@ function Plater.OpenOptionsPanel(pageNumber)
 	
 	Plater.db.profile.OptionsPanelDB = Plater.db.profile.OptionsPanelDB or {}
 	
-	--controi o menu principal
+	C_Timer.After(2, function() bIsOptionsPanelFullyLoaded = true end)
+	
+	--build the main frame
 	local f = DF:CreateSimplePanel (UIParent, optionsWidth, optionsHeight, "Plater |cFFFF8822[|r|cFFFFFFFFNameplates|r|cFFFF8822]|r: professional addon for hardcore gamers", "PlaterOptionsPanelFrame", {UseScaleBar = true}, Plater.db.profile.OptionsPanelDB)
 	f.Title:SetAlpha (.75)
 	f:SetFrameStrata ("DIALOG")
