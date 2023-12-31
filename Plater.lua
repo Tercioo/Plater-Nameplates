@@ -4575,12 +4575,12 @@ function Plater.OnInit() --private --~oninit ~init
 					
 					if (Plater.IsShowingCastBarTest) then
 						--run another cycle
-						C_Timer.After(.5, function()
-							Plater.StartCastBarTest(Plater.CastBarTestFrame.castNoInterrupt, Plater.CastBarTestFrame.castTime, true)
+						Plater.CastBarTestFrame.ScheduleNewCycle = C_Timer.NewTimer(0.5, function()
+							if (Plater.IsShowingCastBarTest) then
+								Plater.StartCastBarTest(Plater.CastBarTestFrame.castNoInterrupt, Plater.CastBarTestFrame.castTime, true)
+							end
 						end)
-					end
-
-					if (not Plater.IsShowingCastBarTest) then
+					else
 						--don't run another cycle
 						Plater.CastBarTestFrame:SetScript("OnUpdate", nil)
 						Plater.IsTestRunning = nil
@@ -4592,7 +4592,23 @@ function Plater.OnInit() --private --~oninit ~init
 		end
 		
 		function Plater.StopCastBarTest()
+			for _, plateFrame in ipairs(Plater.GetAllShownPlates()) do
+				local castBar = plateFrame.unitFrame.castBar
+				if (castBar:IsShown()) then
+					Plater.CastBarOnEvent_Hook(castBar, "UNIT_SPELLCAST_STOP", plateFrame.unitFrame.unit, plateFrame.unitFrame.unit)
+					castBar.playedFinishedTest = true
+					castBar:Hide()
+				end
+			end
+
+			if (Plater.CastBarTestFrame.ScheduleNewCycle and not Plater.CastBarTestFrame.ScheduleNewCycle:IsCancelled()) then
+				Plater.CastBarTestFrame.ScheduleNewCycle:Cancel()
+				Plater.CastBarTestFrame.ScheduleNewCycle = nil
+			end
+
+			Plater.IsTestRunning = nil
 			Plater.IsShowingCastBarTest = false
+			Plater.CastBarTestFrame:SetScript("OnUpdate", nil)
 		end
 	
 		--> when the option to show the target of the cast is enabled, this function update the text settings but not the target name
@@ -4894,10 +4910,8 @@ function Plater.OnInit() --private --~oninit ~init
 					if (unitCast ~= self.unit) then
 						return
 					end
-					
+
 					self:OnHideWidget()
-					--self.IsInterrupted = true
-					
 				end
 				
 				--hooks
