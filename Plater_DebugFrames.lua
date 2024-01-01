@@ -52,17 +52,10 @@ end
 
         --due to lazy loading, the panel might not be loaded yet
         local npcColorFrame = PlaterOptionsPanelContainerColorManagement
-        if (not npcColorFrame or not npcColorFrame.Header) then
-            C_Timer.After(platerInternal.NpcColorsCreationDelay + 0.1, function()
-                Plater.OpenOptionsPanel(platerInternal.NpcColorsFrameIndex)
-                npcColorFrame = PlaterOptionsPanelContainerColorManagement
-                npcColorFrame.AuraSearchTextEntry:SetText(searchString)
-                npcColorFrame.OnSearchBoxTextChanged()
-            end)
-        else
-            npcColorFrame.AuraSearchTextEntry:SetText(searchString)
-            npcColorFrame.OnSearchBoxTextChanged()
-        end
+        Plater.OpenOptionsPanel(platerInternal.NpcColorsFrameIndex, true)
+        npcColorFrame.AuraSearchTextEntry:SetText(searchString)
+        npcColorFrame.OnSearchBoxTextChanged()
+        --C_Timer.After(0, function() Plater.OpenOptionsPanel(platerInternal.NpcColorsFrameIndex) print("selected tab") end)
     end
 
 function platerInternal.InstallMDTHooks()
