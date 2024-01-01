@@ -456,6 +456,13 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
 
         data = dataInOrder
 
+        if (#data == 1) then
+            local npcId = data[1][5]
+            if (npcId) then
+                colorsFrame.ModelFrame:SetCreature(npcId)
+            end
+        end
+
         local npcsRenamed = Plater.db.profile.npcs_renamed
 
         for i = 1, total_lines do
