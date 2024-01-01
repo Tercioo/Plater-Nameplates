@@ -153,6 +153,16 @@ Plater.LastCombat = {
 	spellNames = {},
 }
 
+Plater.MDTSettings = {
+	button_width = 18, --button and icon width
+	button_height = 18,
+	enemyinfo_button_point = {"topright", "topright", 4.682, -21.361},
+	spellinfo_button_point = {"bottomright", "bottomright", -12, 2},
+	icon_texture = [[Interface\Buttons\UI-Panel-BiggerButton-Up]],
+	icon_coords = {0.2, 0.8, 0.2, 0.8},
+	alpha = 0.834, --button alpha
+}
+
 -- ~hook (hook scripts are cached in the indexed part of these tales, for performance the member ScriptAmount caches the amount of scripts inside the indexed table)
 local HOOK_NAMEPLATE_ADDED = {ScriptAmount = 0}
 local HOOK_NAMEPLATE_CREATED = {ScriptAmount = 0}

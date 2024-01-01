@@ -92,10 +92,7 @@ function platerInternal.InstallMDTHooks()
                 local containerFrame = midContainerChildren[i]
                 if (containerFrame.idEditBox) then
                     if (not containerFrame.GoToPlaterButton) then
-                        containerFrame.GoToPlaterButton = DF:CreateButton(containerFrame.frame, fSeeNpcOnPlater, 20, 20, "")
-                        containerFrame.GoToPlaterButton:SetPoint("topright", containerFrame.frame, "topright", 4.682, -21.361)
-                        containerFrame.GoToPlaterButton:SetIcon([[Interface\Buttons\UI-Panel-BiggerButton-Up]], 18, 18, "overlay", {0.2, 0.8, 0.2, 0.8})
-                        containerFrame.GoToPlaterButton:SetAlpha(0.834)
+                        containerFrame.GoToPlaterButton = DF:CreateButton(containerFrame.frame, fSeeNpcOnPlater, 1, 1, "")
                         containerFrame.GoToPlaterButton.tooltip = "Setup this npc on Plater"
                         --DF:ApplyStandardBackdrop(containerFrame.GoToPlaterButton) --debug button size
                         --DF:ApplyStandardBackdrop(containerFrame.frame) --debug container size
@@ -107,6 +104,13 @@ function platerInternal.InstallMDTHooks()
                     if (npcId and npcId > 1) then
                         containerFrame.GoToPlaterButton.param1 = npcId
                         --/dump MDT.EnemyInfoFrame.midContainer.children[2].healthEditBox
+
+                        local point1 = Plater.MDTSettings.enemyinfo_button_point
+                        containerFrame.GoToPlaterButton:ClearAllPoints()
+                        containerFrame.GoToPlaterButton:SetPoint(point1[1], containerFrame.frame, point1[2], point1[3], point1[4])
+                        containerFrame.GoToPlaterButton:SetSize(Plater.MDTSettings.button_width, Plater.MDTSettings.button_height)
+                        containerFrame.GoToPlaterButton:SetIcon(Plater.MDTSettings.icon_texture, Plater.MDTSettings.button_width, Plater.MDTSettings.button_height, "overlay", Plater.MDTSettings.icon_coords)
+                        containerFrame.GoToPlaterButton:SetAlpha(Plater.MDTSettings.alpha)
                     else
                         containerFrame.GoToPlaterButton:Hide()
                     end
@@ -128,15 +132,18 @@ function platerInternal.InstallMDTHooks()
 
                     if (castTime and castTime > 0) then
                         if (not spellButton.GoToPlaterButton) then
-                            spellButton.GoToPlaterButton = DF:CreateButton(spellButton, fSeeSpellOnPlater, 20, 20, "", spellId)
-                            spellButton.GoToPlaterButton:SetPoint("bottomright", spellButton, "bottomright", -12, 2)
-                            spellButton.GoToPlaterButton:SetIcon([[Interface\Buttons\UI-Panel-BiggerButton-Up]], 18, 18, "overlay", {0.2, 0.8, 0.2, 0.8})
-                            spellButton.GoToPlaterButton:SetAlpha(0.834)
+                            spellButton.GoToPlaterButton = DF:CreateButton(spellButton, fSeeSpellOnPlater, 1, 1, "", spellId)
                             spellButton.GoToPlaterButton.tooltip = "Setup this spell on Plater"
                             --DF:ApplyStandardBackdrop(spellButton.GoToPlaterButton) --debug button size
                         end
 
                         spellButton.GoToPlaterButton.param1 = spellId
+                        local point1 = Plater.MDTSettings.spellinfo_button_point
+                        spellButton.GoToPlaterButton:ClearAllPoints()
+                        spellButton.GoToPlaterButton:SetPoint(point1[1], spellButton, point1[2], point1[3], point1[4])
+                        spellButton.GoToPlaterButton:SetSize(Plater.MDTSettings.button_width, Plater.MDTSettings.button_height)
+                        spellButton.GoToPlaterButton:SetIcon(Plater.MDTSettings.icon_texture, Plater.MDTSettings.button_width, Plater.MDTSettings.button_height, "overlay", Plater.MDTSettings.icon_coords)
+                        spellButton.GoToPlaterButton:SetAlpha(Plater.MDTSettings.alpha)
                     else
                         if (spellButton.GoToPlaterButton) then
                             spellButton.GoToPlaterButton:Hide()
