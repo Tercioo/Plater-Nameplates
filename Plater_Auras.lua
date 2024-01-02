@@ -1375,7 +1375,7 @@ end
 			curBuffFrame = 2
 		end
 		
-		local i = self.NextAuraIcon
+		local i = self.NextAuraIcon or 1
 		
 		if (not self.PlaterBuffList[i]) then
 			local newFrameIcon = platerInternal.CreateAuraIcon (self, self.unitFrame:GetName() .. "Plater" .. self.Name .. "AuraIcon" .. i)
