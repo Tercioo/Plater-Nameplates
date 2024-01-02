@@ -11,6 +11,8 @@
 -- local healthBar = unitFrame.healthBar
 -- local castBar = unitFrame.castBar
 
+-- update localization
+
 -- navigate within the code using search tags: ~color ~border, etc...
 
  if (true) then
