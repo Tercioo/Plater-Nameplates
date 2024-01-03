@@ -8988,6 +8988,16 @@ end
 			name = "Module Enabled",
 			desc = "Enable Plater nameplates for friendly NPCs.\n\n" .. ImportantText .. "Forces a /reload on change.\nThis option is dependent on the client`s nameplate state (on/off)",
 		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.plate_config.friendlynpc.follow_blizzard_npc_option end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.friendlynpc.follow_blizzard_npc_option = value
+			end,
+			nocombat = true,
+			name = "Follow Blizzard 'NPC Names' Option",
+			desc = "Hides npc nameplates for untis that would not show a name according to blizzard UI settings.",
+		},
 
 		{
 			type = "select",

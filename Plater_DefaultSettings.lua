@@ -325,6 +325,7 @@ PLATER_DEFAULT_SETTINGS = {
 				relevance_state = 4,
 				enabled = true,
 				module_enabled = true,
+				follow_blizzard_npc_option = false,
 				
 				health = {112, 12},
 				cast = {112, 10},

@@ -4463,8 +4463,8 @@ function Plater.OnInit() --private --~oninit ~init
 		--this function is declared inside 'NamePlateDriverMixin' at Blizzard_NamePlates.lua
 		hooksecurefunc (NamePlateDriverFrame, "UpdateNamePlateOptions", function()
 			Plater.UpdateSelfPlate()
-			Plater.UpdatePlateClickSpace()
 			Plater.UpdateBaseNameplateOptions()
+			Plater.UpdatePlateClickSpace()
 		end)
 		
 
@@ -7508,6 +7508,14 @@ end
 					plateFrame.IsNpcWithoutHealthBar = false
 				end
 			
+			elseif (DB_PLATE_CONFIG [actorType].follow_blizzard_npc_option and not (unitFrame.isSoftInteract or plateFrame [MEMBER_TARGET]) and not UnitShouldDisplayName(plateFrame [MEMBER_UNITID])) then
+				-- hide if following blizzard naming
+				healthBar:Hide()
+				buffFrame:Hide()
+				buffFrame2:Hide()
+				nameFrame:Hide()
+				plateFrame.IsNpcWithoutHealthBar = false
+				
 			elseif (IS_IN_OPEN_WORLD and DB_PLATE_CONFIG [actorType].quest_enabled and Plater.IsQuestObjective (plateFrame)) then
 				if (DB_PLATE_CONFIG [actorType].quest_color_enabled) then
 					Plater.ChangeHealthBarColor_Internal (healthBar, unpack (DB_PLATE_CONFIG [actorType].quest_color))
