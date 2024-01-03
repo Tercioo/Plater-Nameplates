@@ -52,17 +52,10 @@ end
 
         --due to lazy loading, the panel might not be loaded yet
         local npcColorFrame = PlaterOptionsPanelContainerColorManagement
-        if (not npcColorFrame or not npcColorFrame.Header) then
-            C_Timer.After(platerInternal.NpcColorsCreationDelay + 0.1, function()
-                Plater.OpenOptionsPanel(platerInternal.NpcColorsFrameIndex)
-                npcColorFrame = PlaterOptionsPanelContainerColorManagement
-                npcColorFrame.AuraSearchTextEntry:SetText(searchString)
-                npcColorFrame.OnSearchBoxTextChanged()
-            end)
-        else
-            npcColorFrame.AuraSearchTextEntry:SetText(searchString)
-            npcColorFrame.OnSearchBoxTextChanged()
-        end
+        Plater.OpenOptionsPanel(platerInternal.NpcColorsFrameIndex, true)
+        npcColorFrame.AuraSearchTextEntry:SetText(searchString)
+        npcColorFrame.OnSearchBoxTextChanged()
+        --C_Timer.After(0, function() Plater.OpenOptionsPanel(platerInternal.NpcColorsFrameIndex) print("selected tab") end)
     end
 
 function platerInternal.InstallMDTHooks()
@@ -86,23 +79,40 @@ function platerInternal.InstallMDTHooks()
     end
 
     hooksecurefunc(MDT, "UpdateEnemyInfoFrame", function()
-        local midContainerChildren = MDT.EnemyInfoFrame.midContainer.children
-        if (not midContainerChildren) then
-            return
-        end
+        local midContainerChildren = MDT.EnemyInfoFrame and MDT.EnemyInfoFrame.midContainer and MDT.EnemyInfoFrame.midContainer.children
+        if (midContainerChildren) then
+            for i = 1, #midContainerChildren do
+                local containerFrame = midContainerChildren[i]
+                if (containerFrame.idEditBox) then
+                    if (not containerFrame.GoToPlaterButton) then
+                        containerFrame.GoToPlaterButton = DF:CreateButton(containerFrame.frame, fSeeNpcOnPlater, 1, 1, "")
+                        containerFrame.GoToPlaterButton.tooltip = "Setup this npc on Plater"
+                        --DF:ApplyStandardBackdrop(containerFrame.GoToPlaterButton) --debug button size
+                        --DF:ApplyStandardBackdrop(containerFrame.frame) --debug container size
+                        --DF:DebugVisibility(containerFrame.frame)
+                    end
 
-        --MDT npc info section
-        local countEditFrame
-        if (midContainerChildren[1] and midContainerChildren[1].countEditBox) then
-            countEditFrame = midContainerChildren[1].countEditBox
-        elseif (midContainerChildren[2] and midContainerChildren[2].countEditBox) then
-            countEditFrame = midContainerChildren[1].countEditBox
+                    local npcId = containerFrame.idEditBox:GetText()
+                    npcId = tonumber(npcId)
+                    if (npcId and npcId > 1) then
+                        containerFrame.GoToPlaterButton.param1 = npcId
+                        --/dump MDT.EnemyInfoFrame.midContainer.children[2].healthEditBox
+
+                        local point1 = Plater.MDTSettings.enemyinfo_button_point
+                        containerFrame.GoToPlaterButton:ClearAllPoints()
+                        containerFrame.GoToPlaterButton:SetPoint(point1[1], containerFrame.frame, point1[2], point1[3], point1[4])
+                        containerFrame.GoToPlaterButton:SetSize(Plater.MDTSettings.button_width, Plater.MDTSettings.button_height)
+                        containerFrame.GoToPlaterButton:SetIcon(Plater.MDTSettings.icon_texture, Plater.MDTSettings.button_width, Plater.MDTSettings.button_height, "overlay", Plater.MDTSettings.icon_coords)
+                        containerFrame.GoToPlaterButton:SetAlpha(Plater.MDTSettings.alpha)
+                    else
+                        containerFrame.GoToPlaterButton:Hide()
+                    end
+                end
+            end
         end
-        --Enemy Forces (Teeming) is overlapping with our frame
-        --todo: currently waiting on nnoggie, to provide more space in the middle section, to add a npc color dropdown and a npc rename text entry
 
         --MDT spells info section
-        local spellScrollChildren = MDT.EnemyInfoFrame.spellScroll.children --.children is an array of tables, each table has a frame and a spellId
+        local spellScrollChildren = MDT.EnemyInfoFrame and MDT.EnemyInfoFrame.spellScroll and MDT.EnemyInfoFrame.spellScroll.children --.children is an array of tables, each table has a frame and a spellId
         if (spellScrollChildren) then
             for i = 1, #spellScrollChildren do
                 ---@type table
@@ -111,18 +121,22 @@ function platerInternal.InstallMDTHooks()
                     local spellButton = spellFrameTable.frame
                     local spellId = spellFrameTable.spellId
 
-                    local _, _, _, castTime = GetSpellInfo(spellId)
+                    local _, _, _, castTime = GetSpellInfo(spellId or 1)
 
                     if (castTime and castTime > 0) then
                         if (not spellButton.GoToPlaterButton) then
-                            spellButton.GoToPlaterButton = DF:CreateButton(spellButton, fSeeSpellOnPlater, 20, 20, "", spellId)
-                            spellButton.GoToPlaterButton:SetPoint("bottomright", spellButton, "bottomright", -12, 2)
-                            spellButton.GoToPlaterButton:SetIcon([[Interface\Buttons\UI-Panel-BiggerButton-Up]], 18, 18, "overlay", {0.2, 0.8, 0.2, 0.8})
+                            spellButton.GoToPlaterButton = DF:CreateButton(spellButton, fSeeSpellOnPlater, 1, 1, "", spellId)
                             spellButton.GoToPlaterButton.tooltip = "Setup this spell on Plater"
                             --DF:ApplyStandardBackdrop(spellButton.GoToPlaterButton) --debug button size
-                        else
-                            spellButton.GoToPlaterButton.param1 = spellId
                         end
+
+                        spellButton.GoToPlaterButton.param1 = spellId
+                        local point1 = Plater.MDTSettings.spellinfo_button_point
+                        spellButton.GoToPlaterButton:ClearAllPoints()
+                        spellButton.GoToPlaterButton:SetPoint(point1[1], spellButton, point1[2], point1[3], point1[4])
+                        spellButton.GoToPlaterButton:SetSize(Plater.MDTSettings.button_width, Plater.MDTSettings.button_height)
+                        spellButton.GoToPlaterButton:SetIcon(Plater.MDTSettings.icon_texture, Plater.MDTSettings.button_width, Plater.MDTSettings.button_height, "overlay", Plater.MDTSettings.icon_coords)
+                        spellButton.GoToPlaterButton:SetAlpha(Plater.MDTSettings.alpha)
                     else
                         if (spellButton.GoToPlaterButton) then
                             spellButton.GoToPlaterButton:Hide()

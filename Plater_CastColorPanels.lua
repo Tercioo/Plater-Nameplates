@@ -613,40 +613,24 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         return line
     end
 
-        local onChangeOption = function()
-            --when a setting if changed
-            Plater.RefreshDBUpvalues()
-            Plater.UpdateAllPlates()
-            --optionsspFrameFrame.previewCastBar.UpdateAppearance()
-        end
+    local onChangeOption = function()
+        --when a setting if changed
+        Plater.RefreshDBUpvalues()
+        Plater.UpdateAllPlates()
+        --optionsspFrameFrame.previewCastBar.UpdateAppearance()
+    end
 
-        --> build scripts preview to add the cast to a script
-        local scriptPreviewFrame = CreateFrame("frame", castFrame:GetName() .. "ScriptPreviewPanel", castFrame, "BackdropTemplate")
-        local spFrame = scriptPreviewFrame
-        spFrame:SetPoint("topright", castFrame, "topright", 23, -56)
-        spFrame:SetPoint("bottomright", castFrame, "bottomright", -10, 35)
-        spFrame:SetWidth(250)
-        spFrame:SetFrameLevel(castFrame:GetFrameLevel()+10)
+    --> build scripts preview to add the cast to a script
+    local scriptPreviewFrame = CreateFrame("frame", castFrame:GetName() .. "ScriptPreviewPanel", castFrame, "BackdropTemplate")
+    local spFrame = scriptPreviewFrame
+    spFrame:SetPoint("topright", castFrame, "topright", 23, -56)
+    spFrame:SetPoint("bottomright", castFrame, "bottomright", -10, 35)
+    spFrame:SetWidth(250)
+    spFrame:SetFrameLevel(castFrame:GetFrameLevel()+10)
 
-        DF:ApplyStandardBackdrop(spFrame)
-        spFrame:SetBackdropBorderColor(0, 0, 0, 0)
-        spFrame:EnableMouse(true)
-
-        local onChangeOption = function()
-            --when a setting if changed
-            Plater.RefreshDBUpvalues()
-            Plater.UpdateAllPlates()
-            --optionsspFrameFrame.previewCastBar.UpdateAppearance()
-        end
-
-        local settingsOverride = {
-            FadeInTime = 0.02,
-            FadeOutTime = 0.66,
-            SparkHeight = 20,
-            LazyUpdateCooldown = 0.1,
-            FillOnInterrupt = false,
-            HideSparkOnInterrupt = false,
-        }
+    DF:ApplyStandardBackdrop(spFrame)
+    spFrame:SetBackdropBorderColor(0, 0, 0, 0)
+    spFrame:EnableMouse(true)
 
     local CONST_PREVIEW_SPELLID = 116
     local allPreviewFrames = {}
@@ -758,10 +742,6 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                 GameCooltip:Hide()
                 previewFrame:SetBackdropBorderColor(0, 0, 0, 0)
                 spFrame.StopCastBarPreview(previewFrame)
-                if (spFrame.StopPreviewTimer and not spFrame.StopPreviewTimer:IsCancelled()) then
-                    spFrame.StopPreviewTimer:Cancel()
-                end
-                spFrame.StopPreviewTimer = C_Timer.NewTimer(4, spFrame.ForceStopPreview)
             end)
 
             previewFrame:SetScript("OnClick", function() --~onclick õnclick
@@ -784,7 +764,6 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                     castFrame.RefreshScroll()
                 end
             end)
-
         end
     end
 
@@ -824,64 +803,21 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         end
     end
 
-    function spFrame.ForceStopPreview()
-        if (not spFrame.HasPreviewButtonHover()) then
+    function spFrame.StartCastBarPreview(previewFrame)
+        if (Plater.IsTestRunning) then
             Plater.StopCastBarTest()
         end
-    end
 
-    function spFrame.HasPreviewButtonHover()
-        for i = 1, #allPreviewFrames do
-            local button = allPreviewFrames[i]
-            if (button:IsMouseOver()) then
-                return button
-            end
-        end
-    end
-
-    function spFrame.CheckIfNoAnimationsArePlaying()
-        if (hasScriptWithPreviewSpellId()) then
-            return
-        else
-            --the spellId is free to be used on another script
-            local previewFrame = spFrame.HasPreviewButtonHover()
-            if (previewFrame) then
-                spFrame.StartCastBarPreview(previewFrame)
-                spFrame.checkQueueToPlayNextAnimation:Cancel()
-            end
-        end
-    end
-
-    function spFrame.StartCastBarPreview(previewFrame)
-        if (hasScriptWithPreviewSpellId()) then
-            if (not spFrame.checkQueueToPlayNextAnimation or spFrame.checkQueueToPlayNextAnimation:IsCancelled()) then
-                spFrame.checkQueueToPlayNextAnimation = C_Timer.NewTicker(0.4, spFrame.CheckIfNoAnimationsArePlaying)
-                return
-            end
-        end
-
-        if (Plater.IsTestRunning) then
-            return
-        end
-
-        --it's still fuckup
         local scriptName = previewFrame.scriptName
         local scriptObject = platerInternal.Scripts.GetScriptObjectByName(scriptName)
+
         if (scriptObject) then
-            if (scriptPreviewFrame.TimerToRemoveTriggers) then
-                if (not scriptPreviewFrame.TimerToRemoveTriggers:IsCancelled()) then
-                    scriptPreviewFrame.TimerToRemoveTriggers:Cancel()
-                end
-            end
+            spFrame.RemovePreviewTriggerFromAllScripts()
 
-            spFrame.RemoveTriggerFromAllScripts()
             platerInternal.Scripts.AddSpellToScriptTriggers(scriptObject, CONST_PREVIEW_SPELLID)
-
-            scriptPreviewFrame.NextAnimationCooldown = GetTime() + 2.05
 
             Plater.StartCastBarTest(true, 2)
         end
-
     end
 
     --on leave castBar area
@@ -895,30 +831,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             return
         end
 
-        scriptPreviewFrame.TimerToRemoveTriggers = C_Timer.NewTimer(2.1, function()
-            if (not Plater.IsTestRunning) then
-                spFrame.RemoveTriggerFromAllScripts()
-            end
-        end)
-    end
-
-    function spFrame.RemoveTriggerFromAllScripts()
-        --this should check if there's a any script running on any nameplate
-        --technically this function shouldn't exists as all the functions above should clean up the
-        --preview spellId from the trigger as it leave the preview button
-        --if the user press escape, it will call this and might remove the trigger while the
-        --animation is still ongoing and cause the OnUpdate and OnHide scripts not triiger
-        --thica cause issue of not hidding parts of the script animation
-
-        local previewFrame = spFrame.HasPreviewButtonHover()
-        if (previewFrame and spFrame.checkQueueToPlayNextAnimation and not spFrame.checkQueueToPlayNextAnimation:IsCancelled()) then
-            spFrame.RemoveTriggerFromAllScriptsOnLeave()
-            --will check if there's a button being hovered over
-            spFrame.CheckIfNoAnimationsArePlaying()
-            return
-        end
-
-        spFrame.RemoveTriggerFromAllScriptsOnLeave()
+        spFrame.RemovePreviewTriggerFromAllScripts()
     end
 
     function spFrame.RemoveTriggerFromAllScriptsBySpellID(spellId)
@@ -936,17 +849,13 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         end
     end
 
-    function spFrame.RemoveTriggerFromAllScriptsOnLeave()
+    function spFrame.RemovePreviewTriggerFromAllScripts()
         for i = 1, #platerInternal.Scripts.DefaultCastScripts do
             local scriptName = platerInternal.Scripts.DefaultCastScripts[i]
             local scriptObject = platerInternal.Scripts.GetScriptObjectByName(scriptName)
             if (scriptObject) then
                 platerInternal.Scripts.RemoveSpellFromScriptTriggers(scriptObject, CONST_PREVIEW_SPELLID)
             end
-        end
-
-        if (spFrame.checkQueueToPlayNextAnimation and not spFrame.checkQueueToPlayNextAnimation:IsCancelled()) then
-            spFrame.checkQueueToPlayNextAnimation:Cancel()
         end
     end
 
@@ -960,7 +869,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         if (Plater.IsTestRunning) then
             C_Timer.After(0.05, spFrame.OnHide)
         else
-            spFrame.RemoveTriggerFromAllScriptsOnLeave()
+            spFrame.RemovePreviewTriggerFromAllScripts()
         end
     end
 

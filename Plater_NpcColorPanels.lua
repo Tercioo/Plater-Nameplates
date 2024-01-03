@@ -145,7 +145,6 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
             self:GetParent():RefreshColor()
             --disable only for scripts
             DB_NPCID_COLORS[npcID][2] = false
-            self:GetParent().ForScriptsCheckbox:SetValue(false)
         end
 
         Plater.RefreshDBLists()
@@ -457,6 +456,13 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
 
         data = dataInOrder
 
+        if (#data == 1) then
+            local npcId = data[1][5]
+            if (npcId) then
+                colorsFrame.ModelFrame:SetCreature(npcId)
+            end
+        end
+
         local npcsRenamed = Plater.db.profile.npcs_renamed
 
         for i = 1, total_lines do
@@ -522,8 +528,6 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
                     end
 
                     line.EnabledCheckbox:SetFixedParameter(npcID)
-                    --line.ForScriptsCheckbox:SetFixedParameter(npcID)
-
                 else
                     line:Hide()
                 end
@@ -911,28 +915,24 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
     colorsFrame.TitleDescText = Plater:CreateLabel(colorsFrame, "For raid and dungeon npcs, they are added into the list after you see them for the first time", 10, "silver")
     colorsFrame.TitleDescText:SetPoint("bottomleft", spells_scroll, "topleft", 0, 26)
 
-    colorsFrame:SetScript("OnShow", function()
+    function colorsFrame.RefreshDropdowns()
+        colorsFrame.cachedColorTable = nil
+        colorsFrame.cachedColorTableNameplate = nil
 
-        local refresh_all_dropdowns = function()
-
-            colorsFrame.cachedColorTable = nil
-            colorsFrame.cachedColorTableNameplate = nil
-
-            for _, plateFrame in ipairs(Plater.GetAllShownPlates()) do
-                if (plateFrame.unitFrame.colorSelectionDropdown) then
-                    --if (Plater.ZoneInstanceType ~= "party" and Plater.ZoneInstanceType ~= "raid") then
-                    --	plateFrame.unitFrame.colorSelectionDropdown:Hide()
-                    --else
-                        local npcID = plateFrame.unitFrame.colorSelectionDropdown:GetParent()[MEMBER_NPCID]
-                        plateFrame.unitFrame.colorSelectionDropdown:Select(DB_NPCID_COLORS[npcID] and DB_NPCID_COLORS[npcID][1] and DB_NPCID_COLORS[npcID][3] or "white")
-                        plateFrame.unitFrame.colorSelectionDropdown:Show()
-                    --end
-                end
+        for _, plateFrame in ipairs(Plater.GetAllShownPlates()) do
+            if (plateFrame.unitFrame.colorSelectionDropdown) then
+                --if (Plater.ZoneInstanceType ~= "party" and Plater.ZoneInstanceType ~= "raid") then
+                --	plateFrame.unitFrame.colorSelectionDropdown:Hide()
+                --else
+                    local npcID = plateFrame.unitFrame.colorSelectionDropdown:GetParent()[MEMBER_NPCID]
+                    plateFrame.unitFrame.colorSelectionDropdown:Select(DB_NPCID_COLORS[npcID] and DB_NPCID_COLORS[npcID][1] and DB_NPCID_COLORS[npcID][3] or "white")
+                    plateFrame.unitFrame.colorSelectionDropdown:Show()
+                --end
             end
         end
+    end
 
-        colorsFrame.RefreshDropdowns = refresh_all_dropdowns
-
+    colorsFrame:SetScript("OnShow", function()
         local function hex(num)
             local hexstr = '0123456789abcdef'
             local s = ''
@@ -986,7 +986,7 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
                     Plater.RefreshDBLists()
                     Plater.ForceTickOnAllNameplates()
 
-                    refresh_all_dropdowns()
+                    colorsFrame.RefreshDropdowns()
 
                     colorsFrame.RefreshScroll()
                 end
@@ -1075,7 +1075,6 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
                     local checkBox = colorsFrame.CheckBoxCache[npcID]
                     if (checkBox) then
                         checkBox:SetValue(false)
-                        checkBox:GetParent().ForScriptsCheckbox:SetValue(false)
                         checkBox:GetParent():RefreshColor()
                     end
 
@@ -1086,7 +1085,7 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
                     Plater.ForceTickOnAllNameplates()
                     Plater.UpdateAllNameplateColors()
 
-                    refresh_all_dropdowns()
+                    colorsFrame.RefreshDropdowns()
 
                     dropdown:Select("white")
 
@@ -1106,7 +1105,7 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
             end
         end
 
-        refresh_all_dropdowns()
+        colorsFrame.RefreshDropdowns()
 
         colorsFrame:SetScript("OnEvent", function(self, event, unitBarId)
             local plateFrame = C_NamePlate.GetNamePlateForUnit(unitBarId)

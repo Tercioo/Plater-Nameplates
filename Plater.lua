@@ -11,6 +11,8 @@
 -- local healthBar = unitFrame.healthBar
 -- local castBar = unitFrame.castBar
 
+-- update localization
+
 -- navigate within the code using search tags: ~color ~border, etc...
 
  if (true) then
@@ -151,6 +153,16 @@ end
 Plater.LastCombat = {
 	npcNames = {},
 	spellNames = {},
+}
+
+Plater.MDTSettings = {
+	button_width = 18, --button and icon width
+	button_height = 18,
+	enemyinfo_button_point = {"topright", "topright", 4.682, -21.361},
+	spellinfo_button_point = {"bottomright", "bottomright", -12, 2},
+	icon_texture = [[Interface\Buttons\UI-Panel-BiggerButton-Up]],
+	icon_coords = {0.2, 0.8, 0.2, 0.8},
+	alpha = 0.834, --button alpha
 }
 
 -- ~hook (hook scripts are cached in the indexed part of these tales, for performance the member ScriptAmount caches the amount of scripts inside the indexed table)
@@ -4575,12 +4587,12 @@ function Plater.OnInit() --private --~oninit ~init
 					
 					if (Plater.IsShowingCastBarTest) then
 						--run another cycle
-						C_Timer.After(.5, function()
-							Plater.StartCastBarTest(Plater.CastBarTestFrame.castNoInterrupt, Plater.CastBarTestFrame.castTime, true)
+						Plater.CastBarTestFrame.ScheduleNewCycle = C_Timer.NewTimer(0.5, function()
+							if (Plater.IsShowingCastBarTest) then
+								Plater.StartCastBarTest(Plater.CastBarTestFrame.castNoInterrupt, Plater.CastBarTestFrame.castTime, true)
+							end
 						end)
-					end
-
-					if (not Plater.IsShowingCastBarTest) then
+					else
 						--don't run another cycle
 						Plater.CastBarTestFrame:SetScript("OnUpdate", nil)
 						Plater.IsTestRunning = nil
@@ -4592,7 +4604,23 @@ function Plater.OnInit() --private --~oninit ~init
 		end
 		
 		function Plater.StopCastBarTest()
+			for _, plateFrame in ipairs(Plater.GetAllShownPlates()) do
+				local castBar = plateFrame.unitFrame.castBar
+				if (castBar:IsShown()) then
+					Plater.CastBarOnEvent_Hook(castBar, "UNIT_SPELLCAST_STOP", plateFrame.unitFrame.unit, plateFrame.unitFrame.unit)
+					castBar.playedFinishedTest = true
+					castBar:Hide()
+				end
+			end
+
+			if (Plater.CastBarTestFrame.ScheduleNewCycle and not Plater.CastBarTestFrame.ScheduleNewCycle:IsCancelled()) then
+				Plater.CastBarTestFrame.ScheduleNewCycle:Cancel()
+				Plater.CastBarTestFrame.ScheduleNewCycle = nil
+			end
+
+			Plater.IsTestRunning = nil
 			Plater.IsShowingCastBarTest = false
+			Plater.CastBarTestFrame:SetScript("OnUpdate", nil)
 		end
 	
 		--> when the option to show the target of the cast is enabled, this function update the text settings but not the target name
@@ -4894,10 +4922,8 @@ function Plater.OnInit() --private --~oninit ~init
 					if (unitCast ~= self.unit) then
 						return
 					end
-					
+
 					self:OnHideWidget()
-					--self.IsInterrupted = true
-					
 				end
 				
 				--hooks

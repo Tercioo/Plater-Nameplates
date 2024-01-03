@@ -156,7 +156,7 @@ local TAB_INDEX_SEARCH = 26
 local bIsOptionsPanelFullyLoaded = false
 
 -- ~options �ptions
-function Plater.OpenOptionsPanel(pageNumber)
+function Plater.OpenOptionsPanel(pageNumber, bIgnoreLazyLoad)
 	--localization
 	local L = DF.Language.GetLanguageTable(addonId)
 
@@ -165,7 +165,7 @@ function Plater.OpenOptionsPanel(pageNumber)
 		Plater.CheckOptionsTab()
 
 		if (pageNumber) then
-			if (not bIsOptionsPanelFullyLoaded) then
+			if (not bIsOptionsPanelFullyLoaded and not bIgnoreLazyLoad) then
 				C_Timer.After(1.5, function()
 					---@type df_tabcontainer
 					local tabContainer = _G["PlaterOptionsPanelContainer"]
@@ -427,7 +427,8 @@ function Plater.OpenOptionsPanel(pageNumber)
 	C_Timer.After(0.1, function() Plater.Resources.BuildResourceOptionsTab(resourceFrame) end)
 	C_Timer.After(0.1, function() Plater.Auras.BuildGhostAurasOptionsTab(ghostAuras) end)
 	C_Timer.After(platerInternal.CastColorsCreationDelay, function() Plater.CreateCastColorOptionsFrame(castColorsFrame) end)
-	C_Timer.After(platerInternal.NpcColorsCreationDelay, function() Plater.CreateNpcColorOptionsFrame(npcColorsFrame) end)
+	--C_Timer.After(platerInternal.NpcColorsCreationDelay, function() Plater.CreateNpcColorOptionsFrame(npcColorsFrame) end)
+	Plater.CreateNpcColorOptionsFrame(npcColorsFrame)
 	C_Timer.After(0.1, function() platerInternal.Plugins.CreatePluginsOptionsTab(pluginsFrame) end)
 	
 	local generalOptionsAnchor = CreateFrame ("frame", "$parentOptionsAnchor", frontPageFrame, BackdropTemplateMixin and "BackdropTemplate")
