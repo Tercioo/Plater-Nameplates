@@ -3790,6 +3790,10 @@ Plater.AnchorNamesByPhraseId = {
 			
 			plateFrame.unitFrame.PlaterOnScreen = nil
 			
+			--reset auras
+			Plater.ResetAuraContainer (plateFrame.unitFrame.BuffFrame, true, true)
+			Plater.HideNonUsedAuraIcons (plateFrame.unitFrame.BuffFrame)
+			
 			--remove private aura anchors
 			Plater.HandlePrivateAuraAnchors(plateFrame.unitFrame)
 			
