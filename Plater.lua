@@ -1331,7 +1331,7 @@ Plater.AnchorNamesByPhraseId = {
 	---@param scheduleTime number|nil
 	function Plater.ScheduleUpdateForNameplate (plateFrame, passedUnitId, scheduleTime) --private
 		local unitId = passedUnitId or plateFrame [MEMBER_UNITID]
-		if not unitId then -- well... fuck.
+		if not unitId and plateFrame.HasUpdateScheduled then -- well... fuck.
 			plateFrame.HasUpdateScheduled:Cancel()
 			return
 		end
@@ -2097,7 +2097,7 @@ Plater.AnchorNamesByPhraseId = {
 
 			PLAYER_IN_COMBAT = false
 			
-			Plater.RefreshAutoToggle(PLAYER_IN_COMBAT)
+			Plater.RefreshAutoToggle(PLAYER_IN_COMBAT, true)
 			
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 				---@cast plateFrame plateframe
@@ -4483,6 +4483,19 @@ function Plater.OnInit() --private --~oninit ~init
 			Plater.UpdatePlateClickSpace()
 		end)
 		
+		--this might come in useful
+		--[[
+		hooksecurefunc(NamePlateDriverFrame.namePlateSetInsetFunctions, "friendly", function()
+			C_NamePlate.SetNamePlateFriendlyPreferredClickInsets (0, 0, 0, 0)
+		end)
+		hooksecurefunc(NamePlateDriverFrame.namePlateSetInsetFunctions, "enemy", function()
+			C_NamePlate.SetNamePlateEnemyPreferredClickInsets (0, 0, 0, 0)
+		end)
+		hooksecurefunc(NamePlateDriverFrame.namePlateSetInsetFunctions, "player", function()
+			C_NamePlate.SetNamePlateSelfPreferredClickInsets (0, 0, 0, 0)
+		end)
+		]]--
+		
 
 	--> cast frame ~castbar
 	
@@ -5829,6 +5842,10 @@ end
 		
 		local width, height = Plater.db.profile.click_space[1], Plater.db.profile.click_space[2]
 		C_NamePlate.SetNamePlateEnemySize (width, height) --classic: {132, 32}, retail: {110, 45},
+		
+		--C_NamePlate.SetNamePlateSelfPreferredClickInsets (0, 0, 0, 0)
+		--C_NamePlate.SetNamePlateFriendlyPreferredClickInsets (0, 0, 0, 0)
+		--C_NamePlate.SetNamePlateEnemyPreferredClickInsets (0, 0, 0, 0)
 		
 		C_NamePlate.SetNamePlateFriendlyClickThrough (Plater.db.profile.plate_config.friendlyplayer.click_through) 
 		
@@ -8191,8 +8208,21 @@ end
 --> misc stuff - general functions ~misc
 
 	--auto toggle the show friendly players, and other stuff.
-	function Plater.RefreshAutoToggle(combat) --private
+	function Plater.RefreshAutoToggle(combat, leavingCombat) --private
 
+		if leavingCombat then
+			if Plater.HasRefreshAutoToggleScheduled then
+				Plater.HasRefreshAutoToggleScheduled:Cancel()
+			end
+			
+			Plater.HasRefreshAutoToggleScheduled = C_Timer.NewTimer (1.5, function() Plater.RefreshAutoToggle(combat) end) --schedule
+			return
+			
+		elseif not leavingCombat and Plater.HasRefreshAutoToggleScheduled then
+			Plater.HasRefreshAutoToggleScheduled:Cancel()
+			Plater.HasRefreshAutoToggleScheduled = nil
+		end
+		
 		if ((combat == nil) and InCombatLockdown()) then
 			C_Timer.After (0.5, function() Plater.RefreshAutoToggle() end)
 			return
