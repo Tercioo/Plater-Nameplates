@@ -2331,6 +2331,8 @@ Plater.AnchorNamesByPhraseId = {
 			--create the frame to hold the plater resoruce bar
 			Plater.Resources.CreateMainResourceFrame() --~resource
 			
+			Plater.RefreshAutoToggle(PLAYER_IN_COMBAT) -- refresh this
+			
 			--run hooks on load screen
 			if (HOOK_LOAD_SCREEN.ScriptAmount > 0) then
 				Plater.PlayerEnteringWorld = true
@@ -8210,17 +8212,20 @@ end
 	--auto toggle the show friendly players, and other stuff.
 	function Plater.RefreshAutoToggle(combat, leavingCombat) --private
 
-		if leavingCombat then
+		if Plater.HasRefreshAutoToggleScheduled and combat == nil then
+			return
+		elseif leavingCombat then
 			if Plater.HasRefreshAutoToggleScheduled then
 				Plater.HasRefreshAutoToggleScheduled:Cancel()
 			end
 			
-			Plater.HasRefreshAutoToggleScheduled = C_Timer.NewTimer (1.5, function() Plater.RefreshAutoToggle(combat) end) --schedule
+			Plater.HasRefreshAutoToggleScheduled = C_Timer.NewTimer (1.5, function() Plater.RefreshAutoToggle(false) end) --schedule
 			return
 			
 		elseif not leavingCombat and Plater.HasRefreshAutoToggleScheduled then
-			Plater.HasRefreshAutoToggleScheduled:Cancel()
-			Plater.HasRefreshAutoToggleScheduled = nil
+			--Plater.HasRefreshAutoToggleScheduled:Cancel()
+			--Plater.HasRefreshAutoToggleScheduled = nil
+			return
 		end
 		
 		if ((combat == nil) and InCombatLockdown()) then
@@ -11138,6 +11143,7 @@ end
 			["UpdatePlateBorders"] = true,
 			["UpdateRaidMarkersOnAllNameplates"] = true,
 			["RefreshAutoToggle"] = true,
+			["HasRefreshAutoToggleScheduled"] = true,
 			["ParseHealthSettingForPlayer"] = true,
 			["CreateAlphaAnimation"] = true,
 			["CreateHighlightNameplate"] = true,
