@@ -2331,8 +2331,6 @@ Plater.AnchorNamesByPhraseId = {
 			--create the frame to hold the plater resoruce bar
 			Plater.Resources.CreateMainResourceFrame() --~resource
 			
-			Plater.RefreshAutoToggle(PLAYER_IN_COMBAT) -- refresh this
-			
 			--run hooks on load screen
 			if (HOOK_LOAD_SCREEN.ScriptAmount > 0) then
 				Plater.PlayerEnteringWorld = true
@@ -2350,6 +2348,11 @@ Plater.AnchorNamesByPhraseId = {
 			C_Timer.After (0.2, Plater.RestoreProfileCVars)
 
 			C_Timer.After (0.3, Plater.UpdatePlateClickSpace)
+			
+			C_Timer.After (0.4, function() 
+				Plater.RefreshAutoToggle(PLAYER_IN_COMBAT) -- refresh this
+				Plater.UpdateBaseNameplateOptions()
+			end)
 			
 			-- hook CVar saving
 			hooksecurefunc('SetCVar', Plater.SaveConsoleVariables)
