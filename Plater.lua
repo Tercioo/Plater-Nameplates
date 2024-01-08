@@ -4964,6 +4964,8 @@ function Plater.OnInit() --private --~oninit ~init
 					if (unitCast ~= self.unit) then
 						return
 					end
+
+					--self:Hide()
 					
 					-- this is called in SPELL_INTERRUPT event
 					--self:OnHideWidget()
@@ -4976,6 +4978,10 @@ function Plater.OnInit() --private --~oninit ~init
 					end
 
 					self:OnHideWidget()
+
+					if (Plater.db.profile.cast_statusbar_quickhide) then
+						self:Hide()
+					end
 				end
 				
 				--hooks

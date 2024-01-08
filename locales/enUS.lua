@@ -66,6 +66,8 @@ do
     L["OPTIONS_INTERRUPT_SHOW_AUTHOR"] = "Show Interrupt Author"
     L["OPTIONS_INTERRUPT_SHOW_ANIM"] = "Play Interrupt Animation"
     L["OPTIONS_INTERRUPT_FILLBAR"] = "Fill Cast Bar On Interrupt"
+    L["OPTIONS_CASTBAR_QUICKHIDE"] = "Quick Hide Cast Bar"
+    L["OPTIONS_CASTBAR_QUICKHIDE_DESC"] = "After the cast finishes, immediately hide the cast bar."
     L["OPTIONS_CASTBAR_HIDE_FRIENDLY"] = "Hide Friendly Cast Bar"
     L["OPTIONS_CASTBAR_HIDE_ENEMY"] = "Hide Enemy Cast Bar"
     L["OPTIONS_CASTBAR_TOGGLE_TEST"] = "Toggle Cast Bar Test"

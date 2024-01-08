@@ -11640,8 +11640,25 @@ end
 	}
 
 	local castBar_options = {
-		--cast bar options
 		{type = "breakline"},
+
+		--cast bar options
+		{
+			type = "execute",
+			func = function() 
+				if (Plater.IsShowingCastBarTest) then
+					Plater.StopCastBarTest()
+					Plater:Msg ("Test loop for cast bar stopped.")
+				else
+					Plater.StartCastBarTest()
+				end
+			end,
+			name = "OPTIONS_CASTBAR_TOGGLE_TEST",
+			desc = "OPTIONS_CASTBAR_TOGGLE_TEST_DESC",
+		},
+
+		{type = "blank"},
+
 		{type = "label", get = function() return "Cast Bar Appearance:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
@@ -11701,6 +11718,17 @@ end
 			name = "OPTIONS_INTERRUPT_FILLBAR",
 			desc = "OPTIONS_INTERRUPT_FILLBAR",
 		},
+
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.cast_statusbar_quickhide end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.cast_statusbar_quickhide = value
+			end,
+			name = "Quick Hide Cast Bar",
+			desc = "After the cast finished, immediately hide the cast bar.",
+		},
+		
 
 		{
 			type = "toggle",
@@ -11765,23 +11793,8 @@ end
 			desc = "OPTIONS_CASTBAR_FADE_ANIM_TIME_END_DESC" ,
 		},		
 
-		{type = "blank"},
+		{type = "breakline"},
 
-		{
-			type = "execute",
-			func = function() 
-				if (Plater.IsShowingCastBarTest) then
-					Plater.StopCastBarTest()
-					Plater:Msg ("Test loop for cast bar stopped.")
-				else
-					Plater.StartCastBarTest()
-				end
-			end,
-			name = "OPTIONS_CASTBAR_TOGGLE_TEST",
-			desc = "OPTIONS_CASTBAR_TOGGLE_TEST_DESC",
-		},
-		
-		{type = "blank"},
 		{type = "label", get = function() return "Spark Settings" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 
 		{
@@ -11868,8 +11881,7 @@ end
 			desc = "OPTIONS_ALPHA",
 		},
 		
-		{type = "breakline"},
-		
+		{type = "blank"},
 		{type = "label", get = function() return "Cast Bar Colors:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
@@ -11964,7 +11976,7 @@ end
 			desc = "OPTIONS_COLOR_BACKGROUND",
 		},
 		
-		{type = "blank"},
+		{type = "breakline"},
 		--toggle cast bar target
 		{type = "label", get = function() return "Cast Bar Target Name:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
