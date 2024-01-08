@@ -3985,6 +3985,28 @@ function Plater.OnInit() --private --~oninit ~init
 		end)
 	end
 
+	PlaterDB.InterruptableSpells = PlaterDB.InterruptableSpells or {}
+
+	--check if details is loaded and if the version has support for mythic+ overall event
+	if (Details and Details.RegistredEvents["COMBAT_MYTHICPLUS_OVERALL_READY"]) then
+		platerInternal.DetailsEvents = Details:CreateEventListener()
+		platerInternal.DetailsEvents:RegisterEvent("COMBAT_MYTHICPLUS_OVERALL_READY", function()
+			local interruptableSpells = {}
+			local combatObject = Details:GetCurrentCombat()
+			if (combatObject:GetCombatType() == DETAILS_SEGMENTTYPE_MYTHICDUNGEON_OVERALL) then
+				local utilityContainer = combatObject:GetContainer(DETAILS_ATTRIBUTE_MISC)
+				for index, actorObject in utilityContainer:ListActors() do
+					local interrupttedSpells = actorObject:GetSpellContainer("interruptwhat")
+					if (interrupttedSpells) then
+						for spellId in pairs(interrupttedSpells) do
+							PlaterDB.InterruptableSpells[spellId] = true --~interrupt ~interruptable
+						end
+					end
+				end
+			end
+		end)
+	end
+
 	--Plater:BossModsLink()
 	
 	--character settings
@@ -4804,6 +4826,14 @@ function Plater.OnInit() --private --~oninit ~init
 				end
 			end
 			return false
+		end
+
+		---return true if the spell can be interrupted
+		---the function can only return results for spells that the addon observed being interrupted.
+		---@param spellId number
+		---@return boolean|nil
+		function Plater.IsSpellInterruptable(spellId)
+			return PlaterDB.InterruptableSpells[spellId]
 		end
 
 		--hook for all castbar events --~cast
@@ -9021,6 +9051,10 @@ end
 		end,
 		
 		SPELL_INTERRUPT = function (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical)
+			if (IS_IN_INSTANCE) then
+				PlaterDB.InterruptableSpells[spellID] = true
+			end
+
 			if (not Plater.db.profile.show_interrupt_author) then
 				return
 			end
