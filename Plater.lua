@@ -8222,7 +8222,10 @@ end
 				Plater.HasRefreshAutoToggleScheduled:Cancel()
 			end
 			
-			Plater.HasRefreshAutoToggleScheduled = C_Timer.NewTimer (1.5, function() Plater.RefreshAutoToggle(false) end) --schedule
+			Plater.HasRefreshAutoToggleScheduled = C_Timer.NewTimer (1.5, function()
+					Plater.HasRefreshAutoToggleScheduled = nil
+					Plater.RefreshAutoToggle(false) 
+				end) --schedule
 			return
 			
 		elseif not leavingCombat and Plater.HasRefreshAutoToggleScheduled then
