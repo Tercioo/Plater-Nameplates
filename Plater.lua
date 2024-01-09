@@ -8265,9 +8265,12 @@ end
 			return
 			
 		elseif not leavingCombat and Plater.HasRefreshAutoToggleScheduled then
-			--Plater.HasRefreshAutoToggleScheduled:Cancel()
-			--Plater.HasRefreshAutoToggleScheduled = nil
-			return
+			if combat then
+				Plater.HasRefreshAutoToggleScheduled:Cancel()
+				Plater.HasRefreshAutoToggleScheduled = nil
+			else
+				return
+			end
 		end
 		
 		if ((combat == nil) and InCombatLockdown()) then
@@ -8308,18 +8311,30 @@ end
 		end
 
 		-- dungeon/raid toggle pets/totems
-		if (profile.auto_inside_raid_dungeon.hide_enemy_player_pets) then
-			if (zoneType == "party" or zoneType == "raid") then
-				SetCVar("nameplateShowEnemyPets", CVAR_DISABLED)
-			else
-				SetCVar("nameplateShowEnemyPets", CVAR_ENABLED)
+		if not combat then -- just do this out of combat to counter some weird errors
+			if (profile.auto_inside_raid_dungeon.hide_enemy_player_pets) then
+				local showEnemyPets = GetCVarBool("nameplateShowEnemyPets")
+				if (zoneType == "party" or zoneType == "raid") then
+					if showEnemyPets ~= CVAR_DISABLED then
+						SetCVar("nameplateShowEnemyPets", CVAR_DISABLED)
+					end
+				else
+					if showEnemyPets ~= CVAR_ENABLED then
+						SetCVar("nameplateShowEnemyPets", CVAR_ENABLED)
+					end
+				end
 			end
-		end
-		if (profile.auto_inside_raid_dungeon.hide_enemy_player_totems) then
-			if (zoneType == "party" or zoneType == "raid") then
-				SetCVar("nameplateShowEnemyTotems", CVAR_DISABLED)
-			else
-				SetCVar("nameplateShowEnemyTotems", CVAR_ENABLED)
+			if (profile.auto_inside_raid_dungeon.hide_enemy_player_totems) then
+				local showEnemyTotems = GetCVarBool("nameplateShowEnemyTotems")
+				if (zoneType == "party" or zoneType == "raid") then
+					if showEnemyTotems ~= CVAR_DISABLED then
+						SetCVar("nameplateShowEnemyTotems", CVAR_DISABLED)
+					end
+				else
+					if showEnemyTotems ~= CVAR_ENABLED then
+						SetCVar("nameplateShowEnemyTotems", CVAR_ENABLED)
+					end
+				end
 			end
 		end
 		
