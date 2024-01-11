@@ -11648,7 +11648,6 @@ end
 			func = function() 
 				if (Plater.IsShowingCastBarTest) then
 					Plater.StopCastBarTest()
-					Plater:Msg ("Test loop for cast bar stopped.")
 				else
 					Plater.StartCastBarTest()
 				end
@@ -11659,7 +11658,7 @@ end
 
 		{type = "blank"},
 
-		{type = "label", get = function() return "Cast Bar Appearance:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return "OPTIONS_CASTBAR_APPEARANCE" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "select",
@@ -11675,6 +11674,9 @@ end
 			name = "OPTIONS_TEXTURE_BACKGROUND",
 			desc = "OPTIONS_TEXTURE_BACKGROUND",
 		},
+
+		{type = "blank"},
+
 		{
 			type = "toggle",
 			get = function() return Plater.db.profile.no_spellname_length_limit end,
@@ -11725,11 +11727,10 @@ end
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.cast_statusbar_quickhide = value
 			end,
-			name = "Quick Hide Cast Bar",
-			desc = "After the cast finished, immediately hide the cast bar.",
+			name = "OPTIONS_CASTBAR_QUICKHIDE",
+			desc = "OPTIONS_CASTBAR_QUICKHIDE_DESC",
 		},
 		
-
 		{
 			type = "toggle",
 			get = function() return Plater.db.profile.hide_friendly_castbars end,
@@ -11795,7 +11796,7 @@ end
 
 		{type = "breakline"},
 
-		{type = "label", get = function() return "Spark Settings" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return "OPTIONS_CASTBAR_SPARK_SETTINGS" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 
 		{
 			type = "select",
@@ -11882,7 +11883,7 @@ end
 		},
 		
 		{type = "blank"},
-		{type = "label", get = function() return "Cast Bar Colors:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return "OPTIONS_CASTBAR_COLORS" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "color",
@@ -12101,7 +12102,7 @@ end
 
 		{type = "breakline"},
 		--toggle cast bar target
-		{type = "label", get = function() return "Spell Icon:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return "OPTIONS_CASTBAR_SPELLICON" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
 			get = function() return Plater.db.profile.castbar_icon_customization_enabled end,
@@ -12155,7 +12156,7 @@ end
 		},
 		
 		{type = "blank"},
-		{type = "label", get = function() return "Blizzard Cast Bar:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return "OPTIONS_CASTBAR_BLIZZCASTBAR" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		--hide castbar from blizzard
 		{

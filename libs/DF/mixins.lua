@@ -63,6 +63,7 @@ detailsFramework.TooltipHandlerMixin = {
 		if (tooltipText) then
 			GameCooltip:Preset(2)
 			GameCooltip:AddLine(tooltipText)
+			GameCooltip:ShowRoundedCorner()
 			GameCooltip:ShowCooltip(getFrame(self), "tooltip")
 		end
 	end,

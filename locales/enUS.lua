@@ -4,7 +4,15 @@ do
     local L = languageTable
 
     --add to curseforge
+
+L["OPTIONS_"] = ""
+
     --on curseforge
+    L["OPTIONS_CASTBAR_APPEARANCE"] = "Cast Bar Appearance"
+    L["OPTIONS_CASTBAR_SPARK_SETTINGS"] = "Spark Settings"
+    L["OPTIONS_CASTBAR_COLORS"] = "Cast Bar Colors"
+    L["OPTIONS_CASTBAR_SPELLICON"] = "Spell Icon"
+    L["OPTIONS_CASTBAR_BLIZZCASTBAR"] = "Blizzard Cast Bar"
 
     L["IMPORT_CAST_SOUNDS"] = "Import Sounds"
     L["EXPORT_CAST_SOUNDS"] = "Share Sounds"
