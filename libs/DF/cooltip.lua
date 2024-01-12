@@ -2758,6 +2758,8 @@ function DF:CreateCoolTip()
 	function gameCooltip:AddMenu(menuType, func, param1, param2, param3, leftText, leftIcon, indexUp)
 		menuType = gameCooltip:ParseMenuType(menuType)
 
+		gameCooltip:SetType("menu")
+
 		if (leftText and indexUp and (menuType == CONST_MENU_TYPE_MAINMENU)) then
 			gameCooltip.Indexes = gameCooltip.Indexes + 1
 			if (not gameCooltip.IndexesSub[gameCooltip.Indexes]) then
