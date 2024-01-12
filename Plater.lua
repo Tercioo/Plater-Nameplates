@@ -4511,17 +4511,31 @@ function Plater.OnInit() --private --~oninit ~init
 		end)
 		
 		--this might come in useful
-		--[[
+		function Plater.SetNamePlatePreferredClickInsets(nameplateType, left, right, top, bottom)
+			if not InCombatLockdown() then
+				if nameplateType == "friendly" then
+					C_NamePlate.SetNamePlateFriendlyPreferredClickInsets (left or 0, right or 0, top or 0, bottom or 0)
+				elseif nameplateType == "enemy" then
+					C_NamePlate.SetNamePlateEnemyPreferredClickInsets (left or 0, right or 0, top or 0, bottom or 0)
+				elseif nameplateType == "player" then
+					C_NamePlate.SetNamePlateSelfPreferredClickInsets (left or 0, right or 0, top or 0, bottom or 0)
+				end
+			else
+				C_Timer.After(1, function() Plater.SetNamePlatePreferredClickInsets(nameplateType, left, right, top, bottom) end)
+			end
+		end
 		hooksecurefunc(NamePlateDriverFrame.namePlateSetInsetFunctions, "friendly", function()
-			C_NamePlate.SetNamePlateFriendlyPreferredClickInsets (0, 0, 0, 0)
+			--C_NamePlate.SetNamePlateFriendlyPreferredClickInsets (0, 0, 0, 0)
+			Plater.SetNamePlatePreferredClickInsets("friendly", 0, 0, 0, 0)
 		end)
 		hooksecurefunc(NamePlateDriverFrame.namePlateSetInsetFunctions, "enemy", function()
-			C_NamePlate.SetNamePlateEnemyPreferredClickInsets (0, 0, 0, 0)
+			--C_NamePlate.SetNamePlateEnemyPreferredClickInsets (0, 0, 0, 0)
+			Plater.SetNamePlatePreferredClickInsets("enemy", 0, 0, 0, 0)
 		end)
 		hooksecurefunc(NamePlateDriverFrame.namePlateSetInsetFunctions, "player", function()
-			C_NamePlate.SetNamePlateSelfPreferredClickInsets (0, 0, 0, 0)
+			--C_NamePlate.SetNamePlateSelfPreferredClickInsets (0, 0, 0, 0)
+			Plater.SetNamePlatePreferredClickInsets("player", 0, 0, 0, 0)
 		end)
-		]]--
 		
 
 	--> cast frame ~castbar
@@ -8287,7 +8301,7 @@ end
 			local onlyNamesEnabledRaw = GetCVar("nameplateShowOnlyNames")
 			
 			--NamePlateDriverFrame:UnregisterEvent("CVAR_UPDATE")
-			if combat then -- update this separately and only if needed
+			if combat or InCombatLockdown() then -- update this separately and only if needed
 				if onlyNamesEnabled ~= profile.auto_toggle_combat.blizz_healthbar_ic then
 					SetCVar("nameplateShowOnlyNames", profile.auto_toggle_combat.blizz_healthbar_ic and CVAR_ENABLED or CVAR_DISABLED)
 					Plater.UpdateBaseNameplateOptions()
@@ -11190,6 +11204,7 @@ end
 			["UpdateAllPlates"] = true,
 			["FullRefreshAllPlates"] = true,
 			["UpdatePlateClickSpace"] = true,
+			["SetNamePlatePreferredClickInsets"] = true,
 			["EveryFrameFPSCheck"] = true,
 			["NameplateTick"] = true,
 			["OnPlayerTargetChanged"] = true,
