@@ -2443,7 +2443,7 @@ Plater.AnchorNamesByPhraseId = {
 			--check addons incompatibility
 			--> Plater has issues with ElvUI due to be using the same namespace for unitFrame and healthBar
 			C_Timer.After (15, function()
-				if (IsAddOnLoaded ("ElvUI")) then
+				if ((IsAddOnLoaded or C_AddOns.IsAddOnLoaded) ("ElvUI")) then
 					if (ElvUI[1] and ElvUI[1].private and ElvUI[1].private.nameplates and ElvUI[1].private.nameplates.enable) then
 						Plater:Msg ("'ElvUI Nameplates' and 'Plater Nameplates' are enabled and both nameplates won't work together.")
 						Plater:Msg ("You may disable ElvUI Nameplates at /elvui > Nameplates section or you may disable Plater at the addon control panel.")
