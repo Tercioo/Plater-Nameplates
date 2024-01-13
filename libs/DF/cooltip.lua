@@ -15,7 +15,7 @@ local max = math.max
 
 --api locals
 local PixelUtil = PixelUtil or DFPixelUtil
-local version = 18
+local version = 19
 
 local CONST_MENU_TYPE_MAINMENU = "main"
 local CONST_MENU_TYPE_SUBMENU = "sub"
@@ -238,9 +238,11 @@ function DF:CreateCoolTip()
 		self:SetSize(500, 500)
 		self:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
 
-		DF:AddRoundedCornersToFrame(self, gameCooltip.RoundedFramePreset)
-		self:DisableRoundedCorners()
-		self.HaveRoundedCorners = true
+		if (not self.HaveRoundedCorners) then
+			DF:AddRoundedCornersToFrame(self, gameCooltip.RoundedFramePreset)
+			self:DisableRoundedCorners()
+			self.HaveRoundedCorners = true
+		end
 
 		self:SetBackdrop(defaultBackdrop)
 		self:SetBackdropColor(DF:ParseColors(defaultBackdropColor))
