@@ -4532,10 +4532,12 @@ function Plater.OnInit() --private --~oninit ~init
 			--C_NamePlate.SetNamePlateEnemyPreferredClickInsets (0, 0, 0, 0)
 			Plater.SetNamePlatePreferredClickInsets("enemy", 0, 0, 0, 0)
 		end)
-		hooksecurefunc(NamePlateDriverFrame.namePlateSetInsetFunctions, "player", function()
-			--C_NamePlate.SetNamePlateSelfPreferredClickInsets (0, 0, 0, 0)
-			Plater.SetNamePlatePreferredClickInsets("player", 0, 0, 0, 0)
-		end)
+		if IS_WOW_PROJECT_MAINLINE then
+			hooksecurefunc(NamePlateDriverFrame.namePlateSetInsetFunctions, "player", function()
+				--C_NamePlate.SetNamePlateSelfPreferredClickInsets (0, 0, 0, 0)
+				Plater.SetNamePlatePreferredClickInsets("player", 0, 0, 0, 0)
+			end)
+		end
 		
 
 	--> cast frame ~castbar
