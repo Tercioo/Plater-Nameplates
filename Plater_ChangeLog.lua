@@ -8,16 +8,17 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
-			
-			{1705060116, "Bug Fix", "January 12th, 2024", "Improvements to Auto toggle feature to mitigate some errors and sizing issues.", "cont1nuity"},
-			{1705060116, "Bug Fix", "January 12th, 2024", "Improvements to clickable area sizes.", "cont1nuity"},
-			{1705060116, "New Feature", "January 8th, 2024", "Adding 'Quick-Hide Cast Bar' option.", "Terciob"},
-			{1705060116, "New Feature", "January 8th, 2024", "Adding 'Plater.IsSpellInterruptable(spellId)' API (supported through Details).", "Terciob"},
-			{1705060116, "Bug Fix", "January 6th, 2024", "Fixing DBM 'no duration' nameplate auras not showing.", "cont1nuity"},
-			{1705060116, "Bug Fix", "January 4th, 2024", "Resetting shown auras when hiding the unit to counter them showing by accident on performance units.", "cont1nuity"},
-			{1705060116, "Bug Fix", "January 3rd, 2024", "Fixing bad channeled casts in classic.", "cont1nuity"},
-			{1705060116, "Bug Fix", "January 3rd, 2024", "Fixing a rare bug with aura frames not initializing properly.", "cont1nuity"},
-			{1705060116, "New Feature", "January 3rd, 2024", "Adding option to follow blizzards UI NPC Names option for friendly NPCs and not show nameplates for those.", "cont1nuity"},
+			{1705431310, "Backend Change", "January 13th, 2024", "DetailsFramework updates.", "Terciob"},
+			{1705431310, "Backend Change", "January 12th, 2024", "Updates for future deprecated API.", "cont1nuity"},
+			{1705431310, "Bug Fix", "January 12th, 2024", "Improvements to Auto toggle feature to mitigate some errors and sizing issues.", "cont1nuity"},
+			{1705431310, "Bug Fix", "January 12th, 2024", "Improvements to clickable area sizes.", "cont1nuity"},
+			{1705431310, "New Feature", "January 8th, 2024", "Adding 'Quick-Hide Cast Bar' option.", "Terciob"},
+			{1705431310, "New Feature", "January 8th, 2024", "Adding 'Plater.IsSpellInterruptable(spellId)' API (supported through Details).", "Terciob"},
+			{1705431310, "Bug Fix", "January 6th, 2024", "Fixing DBM 'no duration' nameplate auras not showing.", "cont1nuity"},
+			{1705431310, "Bug Fix", "January 4th, 2024", "Resetting shown auras when hiding the unit to counter them showing by accident on performance units.", "cont1nuity"},
+			{1705431310, "Bug Fix", "January 3rd, 2024", "Fixing bad channeled casts in classic.", "cont1nuity"},
+			{1705431310, "Bug Fix", "January 3rd, 2024", "Fixing a rare bug with aura frames not initializing properly.", "cont1nuity"},
+			{1705431310, "New Feature", "January 3rd, 2024", "Adding option to follow blizzards UI NPC Names option for friendly NPCs and not show nameplates for those.", "cont1nuity"},
 			
 			{1704128313, "New Feature", "January 1st, 2024", "Added, on Mythic Dungeon Tools (Nnoggie), options to edit the Npc and Spell on Plater Nameplates.", "Terciob"},
 			{1704128313, "New Feature", "January 1st, 2024", "Added in the Npc Colors editor, a button, to see which spells the npc casts, in the Cast Colors editor.", "Terciob"},
