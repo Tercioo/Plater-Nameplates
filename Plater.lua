@@ -566,7 +566,7 @@ Plater.AnchorNamesByPhraseId = {
 	-- ~execute
 	---update if can use execute indicators - this function needs to be updated when a new execute spell is added, removed, modified
 	---in scripts you can use Plater.SetExecuteRange or override this function completelly
-	function Plater.GetHealthCutoffValue()
+	function Plater.GetHealthCutoffValue(getOnly)
 		Plater.SetExecuteRange (false)
 		
 		local lowerEnabled, upperEnabled = Plater.db.profile.health_cutoff, Plater.db.profile.health_cutoff_upper
@@ -701,7 +701,9 @@ Plater.AnchorNamesByPhraseId = {
 		
 		end
 		
-		Plater.SetExecuteRange (true, lowerEnabled and lowExecute or nil, upperEnabled and highExecute or nil)
+		if not getOnly then
+			Plater.SetExecuteRange (true, lowerEnabled and lowExecute or nil, upperEnabled and highExecute or nil)
+		end
 		return lowerEnabled and lowExecute or nil, upperEnabled and highExecute or nil
 	end	
 
