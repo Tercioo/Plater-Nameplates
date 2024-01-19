@@ -702,6 +702,7 @@ Plater.AnchorNamesByPhraseId = {
 		end
 		
 		Plater.SetExecuteRange (true, lowerEnabled and lowExecute or nil, upperEnabled and highExecute or nil)
+		return lowerEnabled and lowExecute or nil, upperEnabled and highExecute or nil
 	end	
 
 	---range check ~range
