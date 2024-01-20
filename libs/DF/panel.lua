@@ -1484,7 +1484,7 @@ end
 
 ------------color pick
 local _, _, _, toc = GetBuildInfo()
-if (toc >= 100205) then
+if ((ColorPickerFrame and ColorPickerFrame.SetupColorPickerAndShow) or toc >= 100205) then -- maybe fallback to only check CPF in the future
 	local color_pick_func = function(...)
 		local r, g, b = ColorPickerFrame:GetColorRGB()
 		local a = ColorPickerFrame:GetColorAlpha()
@@ -1536,12 +1536,14 @@ else
 	local color_pick_func = function()
 		local r, g, b = ColorPickerFrame:GetColorRGB()
 		local a = OpacitySliderFrame:GetValue()
+		a = math.abs(a - 1)
 		ColorPickerFrame:dcallback (r, g, b, a, ColorPickerFrame.dframe)
 	end
 	local color_pick_func_cancel = function()
 		ColorPickerFrame:SetColorRGB (unpack(ColorPickerFrame.previousValues))
 		local r, g, b = ColorPickerFrame:GetColorRGB()
 		local a = OpacitySliderFrame:GetValue()
+		a = math.abs(a - 1)
 		ColorPickerFrame:dcallback (r, g, b, a, ColorPickerFrame.dframe)
 	end
 
@@ -1557,6 +1559,7 @@ else
 		ColorPickerFrame.opacityFunc = color_pick_func
 		ColorPickerFrame.cancelFunc = color_pick_func_cancel
 
+		alpha = math.abs(alpha - 1)
 		ColorPickerFrame.opacity = alpha
 		ColorPickerFrame.hasOpacity = alpha and true
 
