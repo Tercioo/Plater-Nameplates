@@ -6636,10 +6636,11 @@ end
 	
 	function Plater.UpdateSoftInteractTarget(plateFrame, updateText)
 		local unitFrame = plateFrame.unitFrame
+		local unitID = plateFrame [MEMBER_UNITID]
 		
-		local isSoftInteract = UnitIsUnit(plateFrame [MEMBER_UNITID], "softinteract")
-		local reaction = UnitReaction (plateFrame [MEMBER_UNITID], "player")
-		local isObject = (IS_WOW_PROJECT_MAINLINE and UnitIsGameObject(plateFrame [MEMBER_UNITID])) or reaction == nil
+		local isSoftInteract = UnitIsUnit(unitID, "softinteract")
+		local reaction = UnitReaction (unitID, "player")
+		local isObject = (IS_WOW_PROJECT_MAINLINE and UnitIsGameObject(unitID)) or reaction == nil
 		local isSoftInteractObject = isObject and isSoftInteract
 		plateFrame.isSoftInteract = isSoftInteract
 		unitFrame.isSoftInteract = isSoftInteract
@@ -6651,10 +6652,10 @@ end
 		local isLooseTarget = IsTargetLoose()
 		unitFrame.isLooseTarget = isLooseTarget
 		unitFrame.PlateFrame.isLooseTarget = isLooseTarget
-		local isSoftEnemy = UnitIsUnit(tickFrame.unit, "softenemy")
+		local isSoftEnemy = UnitIsUnit(unitID, "softenemy")
 		unitFrame.isSoftEnemy = isSoftEnemy
 		unitFrame.PlateFrame.isSoftEnemy = isSoftEnemy
-		local isSoftFriend = UnitIsUnit(tickFrame.unit, "softfriend")
+		local isSoftFriend = UnitIsUnit(unitID, "softfriend")
 		unitFrame.isSoftFriend = isSoftFriend
 		unitFrame.PlateFrame.isSoftFriend = isSoftFriend
 		
