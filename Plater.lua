@@ -572,7 +572,9 @@ Plater.AnchorNamesByPhraseId = {
 		local lowerEnabled, upperEnabled = Plater.db.profile.health_cutoff, Plater.db.profile.health_cutoff_upper
 			
 		if (not (lowerEnabled or upperEnabled)) then
-			return
+			if not getOnly then
+				return
+			end
 		end
 		
 		local lowExecute, highExecute = nil, nil
