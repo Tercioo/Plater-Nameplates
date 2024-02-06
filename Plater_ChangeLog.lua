@@ -8,10 +8,11 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
-			{1706311997, "Bug Fix", "February 6th, 2024", "Fixing DK rune visuals not updating properly when on cooldown.", "cont1nuity"},
-			{1706311997, "Backend Change", "January 19th, 2024", "Adding 'isLooseTarget', 'isSoftEnemy' and 'isSoftFriend' to 'unitFrame'.", "cont1nuity"},
-			{1706311997, "Backend Change", "January 19th, 2024", "Adding more cast animations for 10.2.", "cont1nuity"},
-			{1706311997, "Backend Change", "January 19th, 2024", "'Plater.GetHealthCutoffValue(getOnly)' now returns 'lower' and 'upper' execute range", "cont1nuity"},
+			{1707250945, "Bug Fix", "February 6th, 2024", "Fixing SoD nameplate aura bugs.", "cont1nuity"},
+			{1707250945, "Bug Fix", "February 6th, 2024", "Fixing DK rune visuals not updating properly when on cooldown.", "cont1nuity"},
+			{1707250945, "Backend Change", "January 19th, 2024", "Adding 'isLooseTarget', 'isSoftEnemy' and 'isSoftFriend' to 'unitFrame'.", "cont1nuity"},
+			{1707250945, "Backend Change", "January 19th, 2024", "Adding more cast animations for 10.2.", "cont1nuity"},
+			{1707250945, "Backend Change", "January 19th, 2024", "'Plater.GetHealthCutoffValue(getOnly)' now returns 'lower' and 'upper' execute range", "cont1nuity"},
 			
 			{1705431310, "Bug Fix", "January 18th, 2024", "Fixing Mod Load Conditions panel.", "cont1nuity"},
 			{1705431310, "Backend Change", "January 13th, 2024", "DetailsFramework updates.", "Terciob"},
