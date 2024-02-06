@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1706311997, "Bug Fix", "February 6th, 2024", "Fixing DK rune visuals not updating properly when on cooldown.", "cont1nuity"},
 			{1706311997, "Backend Change", "January 19th, 2024", "Adding 'isLooseTarget', 'isSoftEnemy' and 'isSoftFriend' to 'unitFrame'.", "cont1nuity"},
 			{1706311997, "Backend Change", "January 19th, 2024", "Adding more cast animations for 10.2.", "cont1nuity"},
 			{1706311997, "Backend Change", "January 19th, 2024", "'Plater.GetHealthCutoffValue(getOnly)' now returns 'lower' and 'upper' execute range", "cont1nuity"},
