@@ -1213,33 +1213,33 @@ end
 
 			if not runeReady then
 				resourceBar.runesOnCooldown[index] = runeIndex
-				if start then
+				if start and start > 0 then
 					cooldown:SetAlpha(1)
 					cooldown:SetCooldown(start, duration)
-				else
-					cooldown:SetAlpha(0)
 				end
 				if not DB_PLATER_RESOURCE_SHOW_DEPLETED then
 					cooldown:SetAlpha(0)
 				end
 				runeButton.ShowAnimation:Stop()
-				runeButton.texture:SetAlpha(0)
-				--runeButton.energize:Stop()
+				--runeButton.texture:SetAlpha(0)
+				runeButton.texture:Hide()
 			else
 				--runeButton.texture:SetAtlas("DK-"..Plater.Resources.GetRuneKeyBySpec(specIndex).."-Rune-Ready")
 				if (resourceBar.runesOnCooldown[index]) then
 					local _, _, runeReadyNow = GetRuneCooldown(resourceBar.runesOnCooldown[index])
 					if (runeReadyNow) then
-						--runeButton.energize.RuneFade:SetDuration(0.2)
-						--runeButton.energize.RuneFade:SetDuration(tonumber(GetCVar("runeFadeTime")) or 0.2)
-						--runeButton.energize:Play()
 						resourceBar.runesOnCooldown[index] = nil
 						
 						runeButton.ShowAnimation:Play()
-						runeButton.texture:SetAlpha(1)
+						--runeButton.texture:SetAlpha(1)
+						runeButton.texture:Show()
+					else
+						--runeButton.texture:SetAlpha(0)
+						runeButton.texture:Hide()
 					end
 				else
-					runeButton.texture:SetAlpha(1)
+					--runeButton.texture:SetAlpha(1)
+					runeButton.texture:Show()
 				end
 
 				cooldown:SetAlpha(0)

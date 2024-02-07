@@ -8,6 +8,9 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1707348260, "Bug Fix", "February 8th, 2024", "Fixing DK rune visuals not updating properly when on cooldown (for real this time).", "cont1nuity"},
+			{1707348260, "Bug Fix", "February 7th, 2024", "Fixing backup range check error in SoD.", "cont1nuity"},
+			
 			{1707250945, "Bug Fix", "February 6th, 2024", "Fixing SoD nameplate aura bugs.", "cont1nuity"},
 			{1707250945, "Bug Fix", "February 6th, 2024", "Fixing DK rune visuals not updating properly when on cooldown.", "cont1nuity"},
 			{1707250945, "Backend Change", "January 19th, 2024", "Adding 'isLooseTarget', 'isSoftEnemy' and 'isSoftFriend' to 'unitFrame'.", "cont1nuity"},
