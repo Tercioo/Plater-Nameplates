@@ -28,11 +28,15 @@ jobs:
     steps:
     
       - name: Clone project
-        uses: actions/checkout@v1
+        uses: actions/checkout@v4
         #with:
         #  fetch-depth: 100 # for automated history
 
-      - uses: leafo/gh-actions-lua@v8.0.0
+#      - name: Hack around https://github.com/actions/checkout/issues/290
+#        run: |
+#          git fetch --tags --force
+
+      - uses: leafo/gh-actions-lua@v10.0.0
 
       - name: Create Changelog
         run: lua Plater_ChangeLog.lua latest >> CHANGELOG.md
