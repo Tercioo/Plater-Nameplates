@@ -14,7 +14,7 @@ jobs:
       - name: Update TOC Interface version
         uses: p3lim/toc-interface-updater@v3
         with:
-          flavor: retail # this is the default
+          flavor: classic # this is the default
           future: false   # this is optional
 
       - name: Update TOC Interface version
@@ -26,7 +26,7 @@ jobs:
       - name: Update TOC Interface version
         uses: p3lim/toc-interface-updater@v3
         with:
-          flavor: classic # this is the default
+          flavor: retail # this is the default
           future: false   # this is optional
 
       - name: Create pull request
