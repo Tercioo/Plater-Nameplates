@@ -1,7 +1,7 @@
 ## Interface: 100205
 ## Interface-Mainline: 100205
 ## Interface-Wrath: 30403
-## Interface-Classic: 11501
+## Interface-Vanilla: 11501
 ## Title: Plater
 ## Notes: Nameplate addon designed for advanced users.
 ## SavedVariables: PlaterDB, PlaterLanguage, PlaterLogs
@@ -18,7 +18,7 @@
 ## Version: @project-version@-Wrath
 #@end-version-wrath@
 #@version-classic@
-## Version: @project-version@-Classic
+## Version: @project-version@-Vanilla
 #@end-version-classic@
 ## X-Curse-Project-ID: 100547
 ## X-Wago-ID: kRNLep6o
