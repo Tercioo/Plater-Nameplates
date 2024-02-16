@@ -3,9 +3,9 @@ name: Update TOC Interface version(s)
 on:
   schedule:
     - cron: 0 12 * * *
-  push:
-    branches:
-      - master
+#  push:
+#    branches:
+#      - master
 
 jobs:
   run:
@@ -14,21 +14,21 @@ jobs:
       - name: Clone project
         uses: actions/checkout@v4
 
-      - name: Update TOC Interface version
+      - name: Update TOC Interface version classic
         uses: cont1nuity/toc-interface-updater@master
         with:
           flavor: classic # this is the default
           future: false   # this is optional
           replaceflavor: true # this is optional
 
-      - name: Update TOC Interface version
+      - name: Update TOC Interface version classic_era
         uses: cont1nuity/toc-interface-updater@master
         with:
           flavor: classic_era # this is the default
           future: false   # this is optional
           replaceflavor: true # this is optional
 
-      - name: Update TOC Interface version
+      - name: Update TOC Interface version retail
         uses: cont1nuity/toc-interface-updater@master
         with:
           flavor: retail # this is the default
