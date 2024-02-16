@@ -30,7 +30,7 @@ jobs:
           future: false   # this is optional
 
       - name: Create pull request
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v6
         with:
           title: Update Interface version
           commit-message: Update Interface version
