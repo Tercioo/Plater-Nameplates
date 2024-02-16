@@ -3,6 +3,9 @@ name: Update TOC Interface version(s)
 on:
   schedule:
     - cron: 0 12 * * *
+  push:
+    branches:
+      - master
 
 jobs:
   run:
@@ -12,22 +15,25 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Update TOC Interface version
-        uses: p3lim/toc-interface-updater@v3
+        uses: cont1nuity/toc-interface-updater@master
         with:
           flavor: classic # this is the default
           future: false   # this is optional
+          replaceflavor: true # this is optional
 
       - name: Update TOC Interface version
-        uses: p3lim/toc-interface-updater@v3
+        uses: cont1nuity/toc-interface-updater@master
         with:
           flavor: classic_era # this is the default
           future: false   # this is optional
+          replaceflavor: true # this is optional
 
       - name: Update TOC Interface version
-        uses: p3lim/toc-interface-updater@v3
+        uses: cont1nuity/toc-interface-updater@master
         with:
           flavor: retail # this is the default
           future: false   # this is optional
+          replaceflavor: true # this is optional
 
       - name: Create pull request
         uses: peter-evans/create-pull-request@v6
