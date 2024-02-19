@@ -32,9 +32,9 @@ jobs:
         #with:
         #  fetch-depth: 100 # for automated history
 
-#      - name: Hack around https://github.com/actions/checkout/issues/290
-#        run: |
-#          git fetch --tags --force
+      - name: Hack around https://github.com/actions/checkout/issues/290
+        run: |
+          git fetch --tags --force
 
       - uses: leafo/gh-actions-lua@v10.0.0
 
