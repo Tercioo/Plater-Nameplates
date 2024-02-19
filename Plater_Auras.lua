@@ -891,14 +891,19 @@ end
 					table.sort (iconFramesTable, DF.SortOrder2)
 				end
 				
-				local totalStacks = iconFramesTable [1][1].Stacks > 0 and iconFramesTable [1][1].Stacks or 1
+				local totalStacks = 0
 				
 				--hide all auras except for the first occurrence of this aura
-				for i = 2, amountOfSimilarAuras do
+				for i = 1, amountOfSimilarAuras do
 					local iconFrame = iconFramesTable [i][1]
-					iconFrame.ShowAnimation:Stop()
-					iconFrame:Hide()
-					iconFrame.InUse = false
+					if i == 1 then --ensure the sorted icon is always shown
+						iconFrame:Show()
+						iconFrame.InUse = true
+					else --hide other icons
+						iconFrame.ShowAnimation:Stop()
+						iconFrame:Hide()
+						iconFrame.InUse = false
+					end
 					
 					totalStacks = totalStacks + (iconFrame.Stacks > 0 and iconFrame.Stacks or 1)
 					
