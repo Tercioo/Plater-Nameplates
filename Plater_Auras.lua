@@ -880,10 +880,6 @@ end
 		end
 
 		for index, iconFramesTable in pairs (aurasDuplicated) do
-			--how many auras with the same name the unit has
-			local amountOfSimilarAuras = #iconFramesTable
-			local totalStacks = iconFramesTable [1][1].Stacks > 0 and iconFramesTable [1][1].Stacks or 1
-			
 			if (amountOfSimilarAuras > 1) then
 				--sort order: the aura with the least time left is shown by default
 				if (Plater.db.profile.aura_consolidate_timeleft_lower) then
@@ -891,6 +887,10 @@ end
 				else
 					table.sort (iconFramesTable, DF.SortOrder2)
 				end
+				
+				--how many auras with the same name the unit has
+				local amountOfSimilarAuras = #iconFramesTable
+				local totalStacks = iconFramesTable [1][1].Stacks > 0 and iconFramesTable [1][1].Stacks or 1
 				
 				--hide all auras except for the first occurrence of this aura
 				for i = 2, amountOfSimilarAuras do
