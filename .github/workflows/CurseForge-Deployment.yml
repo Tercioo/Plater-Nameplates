@@ -29,8 +29,8 @@ jobs:
     
       - name: Clone project
         uses: actions/checkout@v4
-        #with:
-        #  fetch-depth: 100 # for automated history
+        with:
+          fetch-depth: 0 # for automated history and tags
 
       - name: Hack around https://github.com/actions/checkout/issues/290
         run: |
