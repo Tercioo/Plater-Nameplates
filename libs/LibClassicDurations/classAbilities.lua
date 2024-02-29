@@ -186,9 +186,16 @@ end
 ------------------
 
 -- World Buffs incl. Chronoboon IDs
+Spell(349981, { duration = INFINITY }) -- World effect suspended
 Spell({ 355363, 22888 }, { duration = 7200 }) -- Rallying Cry of the Dragonslayer
 Spell({ 355365, 24425 }, { duration = 7200 }) -- Spirit of Zandalar
 Spell({ 355366, 16609 }, { duration = 3600 }) -- Warchief's Blessing
+
+-- Atiesh Buffs
+Spell( 28142, { duration = INFINITY, type = "BUFF" }) -- Power of the Guardian
+Spell( 28143, { duration = INFINITY, type = "BUFF" }) -- Power of the Guardian
+Spell( 28144, { duration = INFINITY, type = "BUFF" }) -- Power of the Guardian
+Spell( 28145, { duration = INFINITY, type = "BUFF" }) -- Power of the Guardian
 
 Spell( 2479, { duration = 30 }) -- Honorless Target
 Spell(1604, { duration = 4 }) -- Common Daze

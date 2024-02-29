@@ -13,6 +13,7 @@ function platerInternal.CreatePerformanceUnits(Plater)
 		[176920] = true, --Domination Arrow (shadowlands, Sanctum of Domination, Sylvanas)
 		[196642] = true, --Hungry Lasher (dragonflight, Algeth'ar Academy, Overgrown Ancient)
 		[211306] = true, --Fiery Vines (dragonflight, Amirdrassil, Tindral Sageswift)
+		[214441] = true, --Scorched Treant (dragonflight, Amirdrassil, Tindral Sageswift)
 	}
 
 	--setter
