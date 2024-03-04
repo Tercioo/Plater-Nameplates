@@ -28,12 +28,13 @@ local UnitIsUnit = _G.UnitIsUnit
 local UnitGUID = _G.UnitGUID
 local GetSpellInfo = _G.GetSpellInfo
 local floor = _G.floor
-local UnitAuraSlots = _G.UnitAuraSlots or (C_UnitAuras and C_UnitAuras.GetAuraSlots)
 local UnitAuraBySlot = _G.UnitAuraBySlot or (C_UnitAuras and (function(...) local auraData = C_UnitAuras.GetAuraDataBySlot(...); if not auraData then return nil; end; return AuraUtil.UnpackAuraData(auraData); end))
 local UnitAura = _G.UnitAura or (C_UnitAuras and (function(...) local auraData = C_UnitAuras.GetAuraDataByIndex(unitToken, index, filter); if not auraData then return nil; end; return AuraUtil.UnpackAuraData(auraData); end))
 local GetAuraDataBySlot = _G.C_UnitAuras and _G.C_UnitAuras.GetAuraDataBySlot
+local GetAuraSlots = _G.C_UnitAuras and _G.C_UnitAuras.GetAuraSlots
+local GetAuraDataByAuraInstanceID = _G.C_UnitAuras and _G.C_UnitAuras.GetAuraDataByAuraInstanceID
 local BackdropTemplateMixin = _G.BackdropTemplateMixin
-local BUFF_MAX_DISPLAY = _G.BUFF_MAX_DISPLAY
+local BUFF_MAX_DISPLAY = (not IS_NEW_UNIT_AURA_AVAILABLE and _G.BUFF_MAX_DISPLAY) or (IS_NEW_UNIT_AURA_AVAILABLE and nil) -- why limit it in this case?
 
 local DB_AURA_GROW_DIRECTION
 local DB_AURA_GROW_DIRECTION2
@@ -658,7 +659,7 @@ local function getUnitAuras(unit, filter)
 			local tmpDebuffs = {}
 			for auraInstanceID, aura in pairs (unitCacheData.debuffs) do
 				if aura.requriresUpdate then
-					tmpDebuffs[auraInstanceID] = C_UnitAuras.GetAuraDataByAuraInstanceID(unit, auraInstanceID)
+					tmpDebuffs[auraInstanceID] = GetAuraDataByAuraInstanceID(unit, auraInstanceID)
 				else
 					tmpDebuffs[auraInstanceID] = aura
 				end
@@ -672,7 +673,7 @@ local function getUnitAuras(unit, filter)
 			local tmpBuffs = {}
 			for auraInstanceID, aura in pairs (unitCacheData.buffs) do
 				if aura.requriresUpdate then
-					tmpBuffs[auraInstanceID] = C_UnitAuras.GetAuraDataByAuraInstanceID(unit, auraInstanceID)
+					tmpBuffs[auraInstanceID] = GetAuraDataByAuraInstanceID(unit, auraInstanceID)
 				else
 					tmpBuffs[auraInstanceID] = aura
 				end
@@ -701,7 +702,7 @@ local function getUnitAuras(unit, filter)
 		local numSlots = 0
 		local slots
 		if IS_NEW_UNIT_AURA_AVAILABLE then
-			slots = { UnitAuraSlots(unit, filter, BUFF_MAX_DISPLAY, continuationToken) }
+			slots = { GetAuraSlots(unit, filter, BUFF_MAX_DISPLAY, continuationToken) }
 			continuationToken = slots[1]
 			numSlots = #slots
 		else
@@ -711,20 +712,14 @@ local function getUnitAuras(unit, filter)
 		for i=2, numSlots do
 			if IS_NEW_UNIT_AURA_AVAILABLE then
 				local slot = slots[i]
-				local aura = C_UnitAuras.GetAuraDataBySlot(unit, slot)
+				local aura = GetAuraDataBySlot(unit, slot)
 				if aura then
 					filterCache[aura.auraInstanceID] = aura
 				end
 			else
-				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications
-				if IS_NEW_UNIT_AURA_AVAILABLE then
-					local slot = slots[i]
-					name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = UnitAuraBySlot(unit, slot)
-				else
-					name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = UnitAura(unit, i-1, filter)
-					if not name then
-						break
-					end
+				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = UnitAura(unit, i-1, filter)
+				if not name then
+					break
 				end
 				
 				debuffIndex = debuffIndex + 1
@@ -2309,7 +2304,7 @@ end
 
 		local continuationToken
 		repeat
-			local slots = { UnitAuraSlots(unitId, "HELPFUL", BUFF_MAX_DISPLAY, continuationToken) }
+			local slots = { GetAuraSlots(unitId, "HELPFUL", BUFF_MAX_DISPLAY, continuationToken) }
 			continuationToken = slots[1]
 			for i=2, #slots do
 				local slot = slots[i];
@@ -2324,7 +2319,7 @@ end
 
 		local continuationToken
 		repeat
-			local slots = { UnitAuraSlots(unitId, "HARMFUL", BUFF_MAX_DISPLAY, continuationToken) }
+			local slots = { GetAuraSlots(unitId, "HARMFUL", BUFF_MAX_DISPLAY, continuationToken) }
 			continuationToken = slots[1]
 			for i=2, #slots do
 				local slot = slots[i];
