@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1709675079, "Bug Fix", "March 5th, 2024", "Fixing an issue with Ghost Auras on performance units.", "cont1nuity"},
+			
 			{1708341442, "Bug Fix", "February 19th, 2024", "Fixing interrupt animation being enabled to break following cast bars.", "cont1nuity"},
 			{1708341442, "Bug Fix", "February 19th, 2024", "Fixing consolidated auras sometimes not showing properly when sorting for longest duration.", "cont1nuity"},
 			{1708341442, "Bug Fix", "February 8th, 2024", "Fixing DK rune visuals not updating properly when on cooldown (for real this time).", "cont1nuity"},
