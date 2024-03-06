@@ -34,7 +34,8 @@ local GetAuraDataBySlot = _G.C_UnitAuras and _G.C_UnitAuras.GetAuraDataBySlot
 local GetAuraSlots = _G.C_UnitAuras and _G.C_UnitAuras.GetAuraSlots
 local GetAuraDataByAuraInstanceID = _G.C_UnitAuras and _G.C_UnitAuras.GetAuraDataByAuraInstanceID
 local BackdropTemplateMixin = _G.BackdropTemplateMixin
-local BUFF_MAX_DISPLAY = (not IS_NEW_UNIT_AURA_AVAILABLE and _G.BUFF_MAX_DISPLAY) or (IS_NEW_UNIT_AURA_AVAILABLE and nil) -- why limit it in this case?
+local BUFF_MAX_DISPLAY = _G.BUFF_MAX_DISPLAY
+local BUFF_MAX_DISPLAY_PLATER = (not IS_NEW_UNIT_AURA_AVAILABLE and _G.BUFF_MAX_DISPLAY) or (IS_NEW_UNIT_AURA_AVAILABLE and nil) -- why limit it in this case?
 
 local DB_AURA_GROW_DIRECTION
 local DB_AURA_GROW_DIRECTION2
@@ -702,11 +703,11 @@ local function getUnitAuras(unit, filter)
 		local numSlots = 0
 		local slots
 		if IS_NEW_UNIT_AURA_AVAILABLE then
-			slots = { GetAuraSlots(unit, filter, BUFF_MAX_DISPLAY, continuationToken) }
+			slots = { GetAuraSlots(unit, filter, BUFF_MAX_DISPLAY_PLATER, continuationToken) }
 			continuationToken = slots[1]
 			numSlots = #slots
 		else
-			numSlots = BUFF_MAX_DISPLAY + 1
+			numSlots = (BUFF_MAX_DISPLAY or 32) + 1
 		end
 		
 		for i=2, numSlots do
@@ -2305,7 +2306,7 @@ end
 
 		local continuationToken
 		repeat
-			local slots = { GetAuraSlots(unitId, "HELPFUL", BUFF_MAX_DISPLAY, continuationToken) }
+			local slots = { GetAuraSlots(unitId, "HELPFUL", BUFF_MAX_DISPLAY_PLATER, continuationToken) }
 			continuationToken = slots[1]
 			for i=2, #slots do
 				local slot = slots[i];
@@ -2320,7 +2321,7 @@ end
 
 		local continuationToken
 		repeat
-			local slots = { GetAuraSlots(unitId, "HARMFUL", BUFF_MAX_DISPLAY, continuationToken) }
+			local slots = { GetAuraSlots(unitId, "HARMFUL", BUFF_MAX_DISPLAY_PLATER, continuationToken) }
 			continuationToken = slots[1]
 			for i=2, #slots do
 				local slot = slots[i];
