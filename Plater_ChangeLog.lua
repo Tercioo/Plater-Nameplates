@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1709675079, "Backend Change", "March 8th, 2024", "Reworking aura updates for classic era.", "cont1nuity"},
 			{1709675079, "Bug Fix", "March 8th, 2024", "Fixing an issue with aura updates in classic era.", "cont1nuity"},
 			{1709675079, "Bug Fix", "March 5th, 2024", "Fixing an issue with Ghost Auras on performance units.", "cont1nuity"},
 			
