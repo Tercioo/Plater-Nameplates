@@ -718,7 +718,8 @@ local function getUnitAuras(unit, filter)
 					filterCache[aura.auraInstanceID] = aura
 				end
 			else
-				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = UnitAura(unit, i-1, filter)
+				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, shouldConsolidate  = UnitAura(unit, i-1, filter)
+				--DevTool:AddData({name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, shouldConsolidate }, "UnitAura")
 				if not name then
 					break
 				end
