@@ -918,6 +918,7 @@ local set_as_checkbok = function(self)
 
 	self.SetCheckedTexture = setCheckedTexture
 	self.SetChecked = switch_set_value
+	self.GetChecked = switch_get_value
 
 	self._thumb:Hide()
 	self._text:Hide()
@@ -940,7 +941,7 @@ local set_as_checkbok = function(self)
 	end
 end
 
----@class df_checkbox : df_button
+---@class df_checkbox : df_button, df_widgets
 ---@field OnSwitch fun(self:df_checkbox, fixedValue:any, value:boolean)
 ---@field SetValue fun(self:df_button, value:boolean)
 ---@field GetValue fun(self:df_button):boolean
@@ -991,6 +992,7 @@ function DF:NewSwitch(parent, container, name, member, width, height, leftText, 
 
 	local slider = DF:NewButton(parent, container, name, member, width, height)
 	slider.HookList.OnSwitch = {}
+	slider.type = "switch"
 
 	slider.switch_func = switch_func
 	slider.return_func = return_func
@@ -1055,13 +1057,7 @@ function DF:NewSwitch(parent, container, name, member, width, height, leftText, 
 end
 
 function DFSliderMetaFunctions:SetTemplate(template)
-	if (type(template) == "string") then
-		local templateName = template
-		template = DF:GetTemplate("switch", templateName)
-		if (not template) then
-			print("no template found", templateName)
-		end
-	end
+	template = DF:ParseTemplate(self.type, template)
 
 	--slider e switch
 	if (template.width) then
@@ -1096,9 +1092,29 @@ function DFSliderMetaFunctions:SetTemplate(template)
 
 	if (template.thumbtexture) then
 		if (self.thumb) then
-			self.thumb:SetTexture(template.thumbtexture)
+			DF:SetAtlas(self.thumb, template.thumbtexture)
 		end
 	end
+
+	if (template.slider_left) then
+		if (self.slider_left) then
+			DF:SetAtlas(self.slider_left, template.slider_left)
+		end
+	end
+
+	if (template.slider_right) then
+		if (self.slider_right) then
+			DF:SetAtlas(self.slider_right, template.slider_right)
+		end
+	end
+
+	if (template.slider_middle) then
+		if (self.slider_middle) then
+			self:SetBackdrop(nil)
+			DF:SetAtlas(self.slider_middle, template.slider_middle)
+		end
+	end
+
 	if (template.thumbwidth) then
 		if (self.thumb) then
 			self.thumb:SetWidth(template.thumbwidth)
@@ -1114,6 +1130,18 @@ function DFSliderMetaFunctions:SetTemplate(template)
 			local r, g, b, a = DF:ParseColors(template.thumbcolor)
 			self.thumb:SetVertexColor(r, g, b, a)
 		end
+	end
+
+	if (template.amount_color) then
+		DF:SetFontColor(self.amt, template.amount_color)
+	end
+
+	if (template.amount_outline) then
+		DF:SetFontOutline(self.amt, template.amount_outline)
+	end
+
+	if (template.amount_size) then
+		DF:SetFontSize(self.amt, template.amount_size)
 	end
 
 	--switch only
@@ -1141,7 +1169,7 @@ end
 --DF:Mixin(DFSliderMetaFunctions, DF.FrameMixin)
 --DF:Mixin(DFSliderMetaFunctions, DF.TooltipHandlerMixin)
 
----@class df_slider : slider, df_scripthookmixin
+---@class df_slider : slider, df_scripthookmixin, df_widgets
 ---@field widget slider
 ---@field slider slider
 ---@field type string
@@ -1188,7 +1216,7 @@ function DF:NewSlider (parent, container, name, member, width, height, minValue,
 	end
 
 	if (name:find("$parent")) then
-		local parentName = DF.GetParentName(parent)
+		local parentName = DF:GetParentName(parent)
 		name = name:gsub("$parent", parentName)
 	end
 
@@ -1227,6 +1255,7 @@ function DF:NewSlider (parent, container, name, member, width, height, minValue,
 		SliderObject.slider:SetValueStep(0.01)
 	else
 		SliderObject.slider:SetValueStep(step)
+		SliderObject.slider:SetObeyStepOnDrag(true)
 	end
 
 	if (not APISliderFunctions) then
@@ -1260,6 +1289,22 @@ function DF:NewSlider (parent, container, name, member, width, height, minValue,
 	SliderObject.thumb:SetAlpha(0.7)
 	SliderObject.slider:SetThumbTexture (SliderObject.thumb)
 	SliderObject.slider.thumb = SliderObject.thumb
+
+	SliderObject.slider_left = SliderObject.slider:CreateTexture("$parentLeft", "artwork")
+	SliderObject.slider_left:SetPoint("topright", SliderObject.slider, "topleft", 0, 0)
+	SliderObject.slider_left:SetPoint("bottomright", SliderObject.slider, "bottomleft", 0, 0)
+	SliderObject.slider_left:SetWidth(11)
+
+	SliderObject.slider_right = SliderObject.slider:CreateTexture("$parentRight", "artwork")
+	SliderObject.slider_right:SetPoint("topleft", SliderObject.slider, "topright", 0, 0)
+	SliderObject.slider_right:SetPoint("bottomleft", SliderObject.slider, "bottomright", 0, 0)
+	SliderObject.slider_right:SetWidth(11)
+
+	SliderObject.slider_middle = SliderObject.slider:CreateTexture("$parentMiddle", "artwork")
+	SliderObject.slider_middle:SetPoint("topleft", SliderObject.slider_left, "topright", 0, 0)
+	SliderObject.slider_middle:SetPoint("bottomleft", SliderObject.slider_left, "bottomright", 0, 0)
+	SliderObject.slider_middle:SetPoint("topright", SliderObject.slider_right, "topleft", 0, 0)
+	SliderObject.slider_middle:SetPoint("bottomright", SliderObject.slider_right, "bottomleft", 0, 0)
 
 	if (not isSwitch) then
 		SliderObject.have_tooltip = "Right Click to Type the Value"

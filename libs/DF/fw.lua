@@ -1,6 +1,6 @@
 
 
-local dversion = 516
+local dversion = 523
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary(major, minor)
 
@@ -13,17 +13,14 @@ _G["DetailsFramework"] = DF
 
 ---@cast DF detailsframework
 
+local detailsFramework = DF
+
 DetailsFrameworkCanLoad = true
 local SharedMedia = LibStub:GetLibrary("LibSharedMedia-3.0")
 
 local _
 local type = type
 local unpack = unpack
-local upper = string.upper
-local string_match = string.match
-local tinsert = table.insert
-local abs = _G.abs
-local tremove = _G.tremove
 
 local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_NOT_MAINLINE = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
@@ -33,6 +30,8 @@ local UnitIsTapDenied = UnitIsTapDenied
 
 SMALL_NUMBER = 0.000001
 ALPHA_BLEND_AMOUNT = 0.8400251
+
+local _, _, _, buildInfo = GetBuildInfo()
 
 DF.dversion = dversion
 
@@ -80,61 +79,103 @@ function DF:GetDefaultBackdropColor()
 	return 0.1215, 0.1176, 0.1294, 0.8
 end
 
+---return if the wow version the player is playing is dragonflight
+---@return boolean
+function DF.IsDragonflight()
+	if (buildInfo < 110000 and buildInfo >= 100000) then return true end
+	return false
+end
+
 ---return if the wow version the player is playing is dragonflight or an expansion after it
 ---@return boolean
 function DF.IsDragonflightAndBeyond()
 	return select(4, GetBuildInfo()) >= 100000
 end
 
----return if the wow version the player is playing is dragonflight
----@return boolean
-function DF.IsDragonflight()
-	local _, _, _, buildInfo = GetBuildInfo()
-	if (buildInfo < 110000 and buildInfo >= 100000) then
-		return true
-	end
-	return false
-end
-
 ---return if the wow version the player is playing is a classic version of wow
 ---@return boolean
 function DF.IsTimewalkWoW()
-    local _, _, _, buildInfo = GetBuildInfo()
-    if (buildInfo < 40000) then
-        return true
-    end
+    if (buildInfo < 40000) then        return true    end
 	return false
 end
 
 ---return if the wow version the player is playing is the vanilla version of wow
 ---@return boolean
 function DF.IsClassicWow()
-    local _, _, _, buildInfo = GetBuildInfo()
-    if (buildInfo < 20000) then
-        return true
-    end
+    if (buildInfo < 20000) then        return true    end
 	return false
 end
 
 ---return true if the player is playing in the TBC version of wow
 ---@return boolean
 function DF.IsTBCWow()
-    local _, _, _, buildInfo = GetBuildInfo()
-    if (buildInfo < 30000 and buildInfo >= 20000) then
-        return true
-    end
+    if (buildInfo < 30000 and buildInfo >= 20000) then        return true    end
 	return false
 end
 
 ---return true if the player is playing in the WotLK version of wow
 ---@return boolean
 function DF.IsWotLKWow()
-    local _, _, _, buildInfo = GetBuildInfo()
-    if (buildInfo < 40000 and buildInfo >= 30000) then
-        return true
-    end
+    if (buildInfo < 40000 and buildInfo >= 30000) then        return true    end
 	return false
 end
+
+---return true if the player is playing in the Cataclysm version of wow
+---@return boolean
+function DF.IsCataWow()
+    if (buildInfo < 50000 and buildInfo >= 40000) then        return true    end
+	return false
+end
+
+---return true if the player is playing in the Mists version of wow
+---@return boolean
+function DF.IsPandaWow()
+    if (buildInfo < 60000 and buildInfo >= 50000) then        return true    end
+	return false
+end
+
+---return true if the player is playing in the Warlords of Draenor version of wow
+---@return boolean
+function DF.IsWarlordsWow()
+    if (buildInfo < 70000 and buildInfo >= 60000) then        return true    end
+	return false
+end
+
+---return true if the player is playing in the Legion version of wow
+---@return boolean
+function DF.IsLegionWow()
+	if (buildInfo < 80000 and buildInfo >= 70000) then		return true	end
+	return false
+end
+
+---return true if the player is playing in the BFA version of wow
+---@return boolean
+function DF.IsBFAWow()
+	if (buildInfo < 90000 and buildInfo >= 80000) then		return true	end
+	return false
+end
+
+---return true if the player is playing in the Shadowlands version of wow
+---@return boolean
+function DF.IsShadowlandsWow()
+	if (buildInfo < 100000 and buildInfo >= 90000) then		return true	end
+	return false
+end
+
+---return if the wow version the player is playing is dragonflight
+---@return boolean
+function DF.IsDragonflightWow()
+	if (buildInfo < 110000 and buildInfo >= 100000) then		return true	end
+	return false
+end
+
+---return if the wow version the player is playing is the war within
+---@return boolean
+function DF.IsWarWow()
+	if (buildInfo < 120000 and buildInfo >= 110000) then		return true	end
+	return false
+end
+
 
 ---return true if the player is playing in the WotLK version of wow with the retail api
 ---@return boolean
@@ -218,7 +259,7 @@ function DF:GetRoleByClassicTalentTree()
 			--tab information
 			local name, iconTexture, pointsSpent, fileName = GetTalentTabInfo(i)
 			if (name) then
-				tinsert(pointsPerSpec, {name, pointsSpent, fileName})
+				table.insert(pointsPerSpec, {name, pointsSpent, fileName})
 			end
 		end
 	end
@@ -458,7 +499,6 @@ local embedFunctions = {
 	"NewSpecialLuaEditorEntry",
 	"ShowPromptPanel",
 	"ShowTextPromptPanel",
-	"www_icons",
 	"GetTemplate",
 	"InstallTemplate",
 	"GetFrameworkFolder",
@@ -557,7 +597,11 @@ function DF.table.findsubtable(t, index, value)
 	end
 end
 
-
+---Loop through parent of the passed object, making a string with parentKeys separated by a dot.
+---The loop continues until a parentKey is not found or if the frame has no parent (reach UIParent).
+---@param self table
+---@param object any
+---@return string
 function DF:GetParentKeyPath(object)
 	local parentKey = object:GetParentKey()
 	if (not parentKey) then
@@ -582,6 +626,11 @@ function DF:GetParentKeyPath(object)
 	return path
 end
 
+---Loop through the parent of the passed object, creating a string with parent names and parent keys separated by dots, if the object has no name.
+---The loop continues until a parentName is not found or if the frame has no parent (reach UIParent).
+---@param self table
+---@param object any
+---@return string
 function DF:GetParentNamePath(object)
 	local parent = object
 	local path = ""
@@ -595,7 +644,8 @@ function DF:GetParentNamePath(object)
 				if (parentKey) then
 					parentName = parentKey
 				else
-					return path:gsub("%.$", "")
+					local result = path:gsub("%.$", "")
+					return result
 				end
 			end
 		end
@@ -603,13 +653,15 @@ function DF:GetParentNamePath(object)
 		if (parentName) then
 			path = parentName .. "." .. path
 		else
-			return path:gsub("%.$", "")
+			local result = path:gsub("%.$", "")
+			return result
 		end
 
 		parent = parent:GetParent()
 	end
 
-	return path:gsub("%.$", "")
+	local result = path:gsub("%.$", "")
+	return result
 end
 
 ---get a value from a table using a path, e.g. getfrompath(tbl, "a.b.c") is the same as tbl.a.b.c
@@ -692,7 +744,7 @@ function DF.table.addunique(t, index, value)
 		end
 	end
 
-	tinsert(t, index, value)
+	table.insert(t, index, value)
 	return true
 end
 
@@ -902,53 +954,7 @@ end
 ---@param deep integer
 ---@return string
 function DF.table.dump(t, resultString, deep)
-
-	if true then return tableToStringSafe(t) end
-
-	resultString = resultString or ""
-	deep = deep or 0
-	local space = ""
-	for i = 1, deep do
-		space = space .. "   "
-	end
-
-	for key, value in pairs(t) do
-		local valueType = type(value)
-
-		if (type(key) == "function") then
-			key = "#function#"
-		elseif (type(key) == "table") then
-			key = "#table#"
-		end
-
-		if (type(key) ~= "string" and type(key) ~= "number") then
-			key = "unknown?"
-		end
-
-		if (valueType == "table") then
-			if (type(key) == "number") then
-				resultString = resultString .. space .. "[" .. key .. "] = |cFFa9ffa9 {|r\n"
-			else
-				resultString = resultString .. space .. "[\"" .. key .. "\"] = |cFFa9ffa9 {|r\n"
-			end
-			resultString = resultString .. DF.table.dump (value, nil, deep+1)
-			resultString = resultString .. space .. "|cFFa9ffa9},|r\n"
-
-		elseif (valueType == "string") then
-			resultString = resultString .. space .. "[\"" .. key .. "\"] = \"|cFFfff1c1" .. value .. "|r\",\n"
-
-		elseif (valueType == "number") then
-			resultString = resultString .. space .. "[\"" .. key .. "\"] = |cFFffc1f4" .. value .. "|r,\n"
-
-		elseif (valueType == "function") then
-			resultString = resultString .. space .. "[\"" .. key .. "\"] = function()end,\n"
-
-		elseif (valueType == "boolean") then
-			resultString = resultString .. space .. "[\"" .. key .. "\"] = |cFF99d0ff" .. (value and "true" or "false") .. "|r,\n"
-		end
-	end
-
-	return resultString
+	return tableToStringSafe(t)
 end
 
 ---grab a text and split it into lines adding each line to an array table
@@ -961,14 +967,14 @@ function DF:SplitTextInLines(text)
 
 	while (startScope) do
 		if (startScope ~= 1) then
-			tinsert(lines, text:sub(position, startScope-1))
+			table.insert(lines, text:sub(position, startScope-1))
 		end
 		position = endScope + 1
 		startScope, endScope = text:find("\n", position, true)
 	end
 
 	if (position <= #text) then
-		tinsert(lines, text:sub(position))
+		table.insert(lines, text:sub(position))
 	end
 
 	return lines
@@ -1010,13 +1016,6 @@ function DF.strings.stringtotable(thisString, bDoCompression)
 	local newTable = {strsplit(",", thisString)}
 	return newTable
 end
-
-DF.www_icons = {
-	texture = "feedback_sites",
-	wowi = {0, 0.7890625, 0, 37/128},
-	curse = {0, 0.7890625, 38/123, 79/128},
-	mmoc = {0, 0.7890625, 80/123, 123/128},
-}
 
 local symbol_1K, symbol_10K, symbol_1B
 if (GetLocale() == "koKR") then
@@ -1099,7 +1098,7 @@ function DF:CommaValue(value)
 	end
 
 	--source http://richard.warburton.it
-	local left, num, right = string_match (value, '^([^%d]*%d)(%d*)(.-)$')
+	local left, num, right = string.match(value, '^([^%d]*%d)(%d*)(.-)$')
 	return left .. (num:reverse():gsub('(%d%d%d)','%1,'):reverse()) .. right
 end
 
@@ -1193,6 +1192,11 @@ end
 ---@param fontString fontstring
 ---@param fontface string
 function DF:SetFontFace(fontString, fontface)
+	if (fontface == "DEFAULT") then
+		DF:SetFontDefault(fontString)
+		return
+	end
+
 	local font = SharedMedia:Fetch("font", fontface, true)
 	if (font) then
 		fontface = font
@@ -1200,6 +1204,17 @@ function DF:SetFontFace(fontString, fontface)
 
 	local _, size, flags = fontString:GetFont()
 	return fontString:SetFont(fontface, size, flags)
+end
+
+local dummyFontString = UIParent:CreateFontString(nil, "background", "GameFontNormal")
+local defaultFontFile = dummyFontString:GetFont()
+
+---get the UIObject of type 'FontString' and set the default game font into it
+---@param self table
+---@param fontString fontstring
+function DF:SetFontDefault(fontString)
+	local _, size, flags = fontString:GetFont()
+	return fontString:SetFont(defaultFontFile, size, flags)
 end
 
 ---get the FontString passed and set the font color
@@ -1359,7 +1374,7 @@ function DF:AddClassIconToText(text, playerName, englishClassName, useSpec, icon
 	return text
 end
 
----create a table with information about a texture
+---create a table with information about a texture (deprecated, use: DetailsFramework:CreateAtlas())
 ---@param texture any
 ---@param textureWidth any
 ---@param textureHeight any
@@ -1435,7 +1450,7 @@ local ValidOutlines = {
 }
 
 DF.FontOutlineFlags = {
-	{"NONE", "None"},
+	{"", "None"},
 	{"MONOCHROME", "Monochrome"},
 	{"OUTLINE", "Outline"},
 	{"THICKOUTLINE", "Thick Outline"},
@@ -1445,33 +1460,34 @@ DF.FontOutlineFlags = {
 
 ---set the outline of a fontstring, outline is a black border around the text, can be "NONE", "MONOCHROME", "OUTLINE" or "THICKOUTLINE"
 ---@param fontString table
----@param outline any
+---@param outline outline
 function DF:SetFontOutline(fontString, outline)
-	local font, fontSize = fontString:GetFont()
-	if (outline) then
-		if (type(outline) == "string") then
-			outline = outline:upper()
-		end
+    local font, fontSize = fontString:GetFont()
+    if (outline) then
+        if (type(outline) == "string") then
+            outline = outline:upper()
+        end
 
-		if (ValidOutlines[outline]) then
-			outline = outline
+        if (ValidOutlines[outline]) then
+            outline = outline
 
-		elseif (type(outline) == "boolean" and outline) then
-			outline = "OUTLINE"
+        elseif (type(outline) == "boolean" and outline) then
+            outline = "OUTLINE"
 
-		elseif (type(outline) == "boolean" and not outline) then
-			outline = "" --"NONE"
+        elseif (type(outline) == "boolean" and not outline) then
+            outline = "" --"NONE"
 
-		elseif (outline == 1) then
-			outline = "OUTLINE"
+        elseif (outline == 1) then
+            outline = "OUTLINE"
 
-		elseif (outline == 2) then
-			outline = "THICKOUTLINE"
-		end
-	end
-	outline = (not outline or outline == "NONE") and "" or outline
+        elseif (outline == 2) then
+            outline = "THICKOUTLINE"
+        end
+    end
 
-	fontString:SetFont(font, fontSize, outline)
+    outline = (not outline or outline == "NONE") and "" or outline
+
+    fontString:SetFont(font, fontSize, outline)
 end
 
 ---remove spaces from the start and end of the string
@@ -1526,6 +1542,67 @@ function DF:TruncateText(fontString, maxWidth)
 
 	text = DF:CleanTruncateUTF8String(text)
 	fontString:SetText(text)
+end
+
+---truncate removing text through a binary search with a max of 10 iterations
+---@param fontString table
+---@param maxWidth number
+function DF:TruncateTextSafeBinarySearch(fontString, maxWidth)
+	local text = fontString:GetText()
+	if text == nil or text == '' then return end
+
+	if fontString:GetUnboundedStringWidth() > maxWidth then
+		local left = 1
+		local right = #text
+		local numIterations = 10
+
+		while left <= right and numIterations > 0 do
+			local middle = math.floor((left + right) * 0.5)
+			local substring = strsub(text, 1, middle)
+			fontString:SetText(substring)
+
+			if fontString:GetUnboundedStringWidth() <= maxWidth then
+				left = middle + 1
+			else
+				right = middle - 1
+			end
+
+			numIterations = numIterations - 1
+		end
+
+		text = strsub(text, 1, right)
+	end
+
+	fontString:SetText(DF:CleanTruncateUTF8String(text))
+end
+
+---truncate removing characters from the string until the maxWidth is reach
+---@param fontString table
+---@param maxWidth number
+function DF:TruncateTextBinarySearch(fontString, maxWidth)
+	local text = fontString:GetText()
+	if text == nil or text == '' then return end
+
+	if fontString:GetUnboundedStringWidth() > maxWidth then
+		local left = 1
+		local right = #text
+
+		while left <= right do
+			local middle = math.floor((left + right) * 0.5)
+			local substring = strsub(text, 1, middle)
+			fontString:SetText(substring)
+
+			if fontString:GetUnboundedStringWidth() <= maxWidth then
+				left = middle + 1
+			else
+				right = middle - 1
+			end
+		end
+
+		text = strsub(text, 1, right)
+	end
+
+	fontString:SetText(DF:CleanTruncateUTF8String(text))
 end
 
 ---@param text string
@@ -2082,8 +2159,8 @@ end
 	---* b (number|nil): The blue component of the color. This is optional if r is a string.
 	---* a (number|nil): The alpha component of the color. This is optional and defaults to 1 if not provided.
 	---* decimalsAmount (number|nil): The number of decimal places to round the color components to. This is optional and defaults to 4 if not provided.
-	---* The function returns the color in the new format. The return type depends on the newFormat parameter. It can be a string, a table, or four separate number values (for the "numbers" format). 
-	---* For the "hex" format, it returns a string representing the color in hexadecimal format.	
+	---* The function returns the color in the new format. The return type depends on the newFormat parameter. It can be a string, a table, or four separate number values (for the "numbers" format).
+	---* For the "hex" format, it returns a string representing the color in hexadecimal format.
 	---@param newFormat string
 	---@param r number|string
 	---@param g number|nil
@@ -2284,12 +2361,12 @@ end
 		TutorialAlertFrame:Show()
 	end
 
-	function DF:CreateOptionsFrame(name, title, template)
+	function DF:CreateOptionsFrame(name, title, template) --deprecated?
 		template = template or 1
 
 		if (template == 2) then
 			local newOptionsFrame = CreateFrame("frame", name, UIParent, "ButtonFrameTemplate")
-			tinsert(UISpecialFrames, name)
+			table.insert(UISpecialFrames, name)
 
 			newOptionsFrame:SetSize(500, 200)
 			newOptionsFrame.RefreshOptions = DF.internalFunctions.RefreshOptionsPanel
@@ -2327,7 +2404,7 @@ end
 
 		elseif (template == 1) then
 			local newOptionsFrame = CreateFrame("frame", name, UIParent)
-			tinsert(UISpecialFrames, name)
+			table.insert(UISpecialFrames, name)
 
 			newOptionsFrame:SetSize(500, 200)
 			newOptionsFrame.RefreshOptions = DF.internalFunctions.RefreshOptionsPanel
@@ -2417,13 +2494,8 @@ end
 
 DF.ClientLanguage = clientLanguage
 
-function DF:DetectTextLanguage(text)
-	for i = 1, #text do
-		--or not
-	end
-end
-
---returns which region the language the client is running, return "western", "russia" or "asia"
+---returns which region the language the client is running, return "western", "russia" or "asia"
+---@return string
 function DF:GetClientRegion()
 	if (clientLanguage == "zhCN" or clientLanguage == "koKR" or clientLanguage == "zhTW") then
 		return "asia"
@@ -2435,7 +2507,11 @@ function DF:GetClientRegion()
 end
 
 DF.registeredFontPaths = DF.registeredFontPaths or {}
+
 -- ~language ~locale ~fontpath
+---get a font path to be used for a specific language
+---@param languageId string enUS, deDE, esES, esMX, frFR, itIT, ptBR, ruRU, zhCN, zhTW, koKR
+---@return string
 function DF:GetBestFontPathForLanguage(languageId)
 	local fontPath = DF.registeredFontPaths[languageId]
 	if (fontPath) then
@@ -2463,11 +2539,21 @@ function DF:GetBestFontPathForLanguage(languageId)
 	return [[Fonts\FRIZQT__.TTF]]
 end
 
+---return true if the language paren is latin: enUS, deDE, esES, esMX, frFR, itIT, ptBR
+---@param languageId string
+---@return boolean
 function DF:IsLatinLanguage(languageId)
 	return latinLanguageIdsMap[languageId]
 end
 
---return the best font to use for the client language
+---return a font name to use for the client language
+---@param self table
+---@param languageId string?
+---@param western string?
+---@param cyrillic string?
+---@param china string?
+---@param korean string?
+---@param taiwan string?
 function DF:GetBestFontForLanguage(languageId, western, cyrillic, china, korean, taiwan)
 	if (not languageId) then
 		languageId = DF.ClientLanguage
@@ -2487,6 +2573,137 @@ function DF:GetBestFontForLanguage(languageId, western, cyrillic, china, korean,
 
 	elseif (languageId == "zhTW") then
 		return taiwan or "AR CrystalzcuheiGBK Demibold"
+	end
+end
+
+
+local templateOnEnter = function(frame)
+	if (frame.onenter_backdrop) then
+		local r, g, b, a = detailsFramework:ParseColors(frame.onenter_backdrop)
+		frame:SetBackdropColor(r, g, b, a)
+	end
+	if (frame.onenter_backdrop_border_color) then
+		local r, g, b, a = detailsFramework:ParseColors(frame.onenter_backdrop_border_color)
+		frame:SetBackdropBorderColor(r, g, b, a)
+	end
+end
+
+local templateOnLeave = function(frame)
+	if (frame.onleave_backdrop) then
+		local r, g, b, a = detailsFramework:ParseColors(frame.onleave_backdrop)
+		frame:SetBackdropColor(r, g, b, a)
+	end
+	if (frame.onleave_backdrop_border_color) then
+		local r, g, b, a = detailsFramework:ParseColors(frame.onleave_backdrop_border_color)
+		frame:SetBackdropBorderColor(r, g, b, a)
+	end
+end
+
+---set a details framework template into a regular frame
+---@param self table
+---@param frame uiobject
+---@param template string
+function detailsFramework:SetTemplate(frame, template)
+	template = detailsFramework:ParseTemplate("button", template)
+
+	if (frame.SetWidth) then
+		if (template.width) then
+			PixelUtil.SetWidth(frame, template.width)
+		end
+
+		if (template.height) then
+			PixelUtil.SetHeight(frame, template.height)
+		end
+	end
+
+	if (frame.SetBackdrop) then
+		if (template.backdrop) then
+			frame:SetBackdrop(template.backdrop)
+		end
+
+		if (template.backdropcolor) then
+			local r, g, b, a = detailsFramework:ParseColors(template.backdropcolor)
+			frame:SetBackdropColor(r, g, b, a)
+			frame.onleave_backdrop = {r, g, b, a}
+		end
+
+		if (template.backdropbordercolor) then
+			local r, g, b, a = detailsFramework:ParseColors(template.backdropbordercolor)
+			frame:SetBackdropBorderColor(r, g, b, a)
+			frame.onleave_backdrop_border_color = {r, g, b, a}
+		end
+
+		if (template.onentercolor) then
+			local r, g, b, a = detailsFramework:ParseColors(template.onentercolor)
+			frame.onenter_backdrop = {r, g, b, a}
+			frame:HookScript("OnEnter", templateOnEnter)
+			frame.__has_onentercolor_script = true
+		end
+
+		if (template.onleavecolor) then
+			local r, g, b, a = detailsFramework:ParseColors(template.onleavecolor)
+			frame.onleave_backdrop = {r, g, b, a}
+			frame:HookScript("OnLeave", templateOnLeave)
+			frame.__has_onleavecolor_script = true
+		end
+
+		if (template.onenterbordercolor) then
+			local r, g, b, a = detailsFramework:ParseColors(template.onenterbordercolor)
+			frame.onenter_backdrop_border_color = {r, g, b, a}
+			if (not frame.__has_onentercolor_script) then
+				frame:HookScript("OnEnter", templateOnEnter)
+			end
+		end
+
+		if (template.onleavebordercolor) then
+			local r, g, b, a = detailsFramework:ParseColors(template.onleavebordercolor)
+			frame.onleave_backdrop_border_color = {r, g, b, a}
+			if (not frame.__has_onleavecolor_script) then
+				frame:HookScript("OnLeave", templateOnLeave)
+			end
+		end
+
+	elseif (frame.SetColorTexture) then
+		if (template.backdropcolor) then
+			local r, g, b, a = detailsFramework:ParseColors(template.backdropcolor)
+			frame:SetColorTexture(r, g, b, a)
+		end
+	end
+
+	if (frame.SetIcon) then
+		if (template.icon) then
+			local iconInfo = template.icon
+			frame:SetIcon(iconInfo.texture, iconInfo.width, iconInfo.height, iconInfo.layout, iconInfo.texcoord, iconInfo.color, iconInfo.textdistance, iconInfo.leftpadding)
+		end
+	end
+
+	if (frame.SetTextColor) then
+		if (template.textsize) then
+			detailsFramework:SetFontSize(frame, template.textsize)
+		end
+
+		if (template.textfont) then
+			detailsFramework:SetFontFace(frame, template.textfont)
+		end
+
+		if (template.textcolor) then
+			detailsFramework:SetFontColor(frame, template.textcolor)
+		end
+
+		--horizontal alignment
+		if (template.textalign and frame.SetJustifyH) then
+			template.textalign = string.lower(template.textalign)
+
+			if (template.textalign == "left" or template.textalign == "<") then
+				frame:SetJustifyH("LEFT")
+
+			elseif (template.textalign == "center" or template.textalign == "|") then
+				frame:SetJustifyH("CENTER")
+
+			elseif (template.textalign == "right" or template.textalign == ">") then
+				frame:SetJustifyH("RIGHT")
+			end
+		end
 	end
 end
 
@@ -2619,6 +2836,14 @@ DF.button_templates["OPTIONS_BUTTON_GOLDENBORDER_TEMPLATE"] = {
 	backdropbordercolor = {1, 0.785, 0, 1},
 }
 
+DF.button_templates["STANDARD_GRAY"] = {
+	backdrop = {edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true},
+	backdropcolor = {0.2, 0.2, 0.2, 0.502},
+	backdropbordercolor = {0, 0, 0, 0.5},
+	onentercolor = {0.4, 0.4, 0.4, 0.502},
+
+}
+
 --sliders
 DF.slider_templates = DF.slider_templates or {}
 DF.slider_templates["OPTIONS_SLIDER_TEMPLATE"] = {
@@ -2633,18 +2858,80 @@ DF.slider_templates["OPTIONS_SLIDER_TEMPLATE"] = {
 	thumbcolor = {0, 0, 0, 0.5},
 }
 
----install a template
----@param widgetType string
+DF.slider_templates["MODERN_SLIDER_TEMPLATE"] = {
+	thumbtexture = "Minimal_SliderBar_Button", --atlas name
+	thumbwidth = 20,
+	thumbheight = 19,
+	thumbcolor = {1, 1, 1, 0.924},
+	slider_left = "Minimal_SliderBar_Left",
+	slider_right = "Minimal_SliderBar_Right",
+	slider_middle = "_Minimal_SliderBar_Middle",
+	amount_color = "white",
+	amount_size = 12,
+	amount_outline = "outline",
+}
+
+local templateTables = {DF.dropdown_templates, DF.button_templates, DF.switch_templates, DF.slider_templates, DF.font_templates}
+
+---template categories: "font", "dropdown", "button", "switch", "slider"
+---receives a template category and a template name or table
+---if a template name has been passed, the function will iterate over all template tables to find a template with the name passed
+---@param self table
+---@param templateCategory templatecategory
+---@param template string|table
+---@return table
+function DF:ParseTemplate(templateCategory, template)
+	if (type(template) == "string") then
+		local objectType = templateCategory
+
+		if (objectType == "label") then
+			templateCategory = "font"
+
+		elseif (objectType == "dropdown") then
+			templateCategory = "dropdown"
+
+		elseif (objectType == "button") then
+			templateCategory = "button"
+
+		elseif (objectType == "switch") then
+			templateCategory = "switch"
+
+		elseif (objectType == "slider") then
+			templateCategory = "slider"
+		end
+
+		local templateTable = DF:GetTemplate(templateCategory, template)
+		if (templateTable) then
+			return templateTable
+		end
+
+		--iterate over all template tables to find a template with the name passed
+		for i = 1, #templateTables do
+			local tTable = templateTables[i]
+			if (tTable[template]) then
+				return tTable[template]
+			end
+		end
+	else
+		return template
+	end
+
+	---@cast template table
+	return template
+end
+
+---register a new template to be used with SetTemplate calls
+---@param templateCategory templatecategory
 ---@param templateName string
 ---@param template table
 ---@param parentName any
 ---@return table
-function DF:InstallTemplate(widgetType, templateName, template, parentName)
+function DF:InstallTemplate(templateCategory, templateName, template, parentName)
 	local newTemplate = {}
 
 	--if has a parent, just copy the parent to the new template
 	if (parentName and type(parentName) == "string") then
-		local parentTemplate = DF:GetTemplate(widgetType, parentName)
+		local parentTemplate = DF:GetTemplate(templateCategory, parentName)
 		if (parentTemplate) then
 			DF.table.copy(newTemplate, parentTemplate)
 		end
@@ -2653,10 +2940,10 @@ function DF:InstallTemplate(widgetType, templateName, template, parentName)
 	--copy the template passed into the new template
 	DF.table.copy(newTemplate, template)
 
-	widgetType = string.lower(widgetType)
+	templateCategory = string.lower(templateCategory)
 
 	local templateTable
-	if (widgetType == "font") then
+	if (templateCategory == "font") then
 		templateTable = DF.font_templates
 
 		local font = template.font
@@ -2666,16 +2953,16 @@ function DF:InstallTemplate(widgetType, templateName, template, parentName)
 			font = DF:GetBestFontForLanguage(nil, font)
 		end
 
-	elseif (widgetType == "dropdown") then
+	elseif (templateCategory == "dropdown") then
 		templateTable = DF.dropdown_templates
 
-	elseif (widgetType == "button") then
+	elseif (templateCategory == "button") then
 		templateTable = DF.button_templates
 
-	elseif (widgetType == "switch") then
+	elseif (templateCategory == "switch") then
 		templateTable = DF.switch_templates
 
-	elseif (widgetType == "slider") then
+	elseif (templateCategory == "slider") then
 		templateTable = DF.slider_templates
 	end
 
@@ -2706,7 +2993,10 @@ function DF:GetTemplate(widgetType, templateName)
 	return templateTable[templateName]
 end
 
-function DF.GetParentName(frame)
+---get the name of the parent of the passed frame
+---@param frame frame
+---@return string
+function DF:GetParentName(frame)
 	local parentName = frame:GetName()
 	if (not parentName) then
 		error("Details! FrameWork: called $parent but parent was no name.", 2)
@@ -2714,7 +3004,7 @@ function DF.GetParentName(frame)
 	return parentName
 end
 
-function DF:Error (errortext)
+function DF:Error(errortext)
 	print("|cFFFF2222Details! Framework Error|r:", errortext, self.GetName and self:GetName(), self.WidgetType, debugstack (2, 3, 0))
 end
 
@@ -3076,13 +3366,13 @@ frameshake_DoUpdate = function(parent, shakeObject, deltaTime)
 			local newX, newY
 			if (shakeObject.AbsoluteSineX) then
 				--absoluting only the sine wave, passing a negative scale will reverse the absolute direction
-				newX = shakeObject.Amplitude * abs(math.sin(shakeObject.XSineOffset)) * scaleShake * shakeObject.ScaleX
+				newX = shakeObject.Amplitude * math.abs(math.sin(shakeObject.XSineOffset)) * scaleShake * shakeObject.ScaleX
 			else
 				newX = shakeObject.Amplitude * math.sin(shakeObject.XSineOffset) * scaleShake * shakeObject.ScaleX
 			end
 
 			if (shakeObject.AbsoluteSineY) then
-				newY = shakeObject.Amplitude * abs(math.sin(shakeObject.YSineOffset)) * scaleShake * shakeObject.ScaleY
+				newY = shakeObject.Amplitude * math.abs(math.sin(shakeObject.YSineOffset)) * scaleShake * shakeObject.ScaleY
 			else
 				newY = shakeObject.Amplitude * math.sin(shakeObject.YSineOffset) * scaleShake * shakeObject.ScaleY
 			end
@@ -3287,7 +3577,7 @@ function DF:CreateFrameShake(parent, duration, amplitude, frequency, absoluteSin
 		FrameshakeUpdateFrame.RegisterFrame (parent)
 	end
 
-	tinsert(parent.__frameshakes, frameShake)
+	table.insert(parent.__frameshakes, frameShake)
 
 	return frameShake
 end
@@ -3364,23 +3654,29 @@ local glow_overlay_setcolor = function(self, antsColor, glowColor)
 end
 
 local glow_overlay_onshow = function(self)
-	glow_overlay_play (self)
+	glow_overlay_play(self)
 end
 
 local glow_overlay_onhide = function(self)
-	glow_overlay_stop (self)
+	glow_overlay_stop(self)
 end
 
---this is most copied from the wow client code, few changes applied to customize it
-function DF:CreateGlowOverlay (parent, antsColor, glowColor)
-	local pName = parent:GetName()
-	local fName = pName and (pName.."Glow2") or "OverlayActionGlow" .. math.random(1, 10000000)
-	if fName and string.len(fName) > 50 then -- shorten to work around too long names
-		fName = strsub(fName, string.len(fName)-49)
+---create a glow overlay around a frame, return a frame and also add parent.overlay to the parent frame
+---@param self table
+---@param parent frame
+---@param antsColor any
+---@param glowColor any
+function DF:CreateGlowOverlay(parent, antsColor, glowColor)
+	local parentName = parent:GetName()
+	local frameName = parentName and (parentName .. "Glow2") or "OverlayActionGlow" .. math.random(1, 10000000)
+
+	if (frameName and string.len(frameName) > 50) then --shorten to work around too long names
+		frameName = string.sub(frameName, string.len(frameName)-49)
 	end
-	local glowFrame = CreateFrame("frame", fName, parent, "ActionBarButtonSpellActivationAlert")
-	glowFrame:HookScript ("OnShow", glow_overlay_onshow)
-	glowFrame:HookScript ("OnHide", glow_overlay_onhide)
+
+	local glowFrame = CreateFrame("frame", frameName, parent, "ActionBarButtonSpellActivationAlert")
+	glowFrame:HookScript("OnShow", glow_overlay_onshow)
+	glowFrame:HookScript("OnHide", glow_overlay_onhide)
 
 	glowFrame.Play = glow_overlay_play
 	glowFrame.Stop = glow_overlay_stop
@@ -3395,23 +3691,24 @@ function DF:CreateGlowOverlay (parent, antsColor, glowColor)
 
 	local scale = 1.4
 
-	--Make the height/width available before the next frame:
-	parent.overlay:SetSize(frameWidth * scale, frameHeight * scale)
-	parent.overlay:SetPoint("TOPLEFT", parent, "TOPLEFT", -frameWidth * 0.32, frameHeight * 0.36)
-	parent.overlay:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", frameWidth * 0.32, -frameHeight * 0.36)
+	--make the height/width available before the next frame:
+	glowFrame:SetSize(frameWidth * scale, frameHeight * scale)
+	glowFrame:SetPoint("topleft", parent, "topleft", -frameWidth * 0.32, frameHeight * 0.36)
+	glowFrame:SetPoint("bottomright", parent, "bottomright", frameWidth * 0.32, -frameHeight * 0.36)
 
 	if (glowFrame.outerGlow) then
 		glowFrame.outerGlow:SetScale(1.2)
 	end
+
 	if (glowFrame.ProcStartFlipbook) then
 		glowFrame.ProcStartAnim:Stop()
 		glowFrame.ProcStartFlipbook:ClearAllPoints()
-		--glowFrame.ProcStartFlipbook:SetAllPoints()
-		--glowFrame.ProcStartFlipbook:SetSize(frameWidth * scale, frameHeight * scale)
 		glowFrame.ProcStartFlipbook:SetPoint("TOPLEFT", glowFrame, "TOPLEFT", -frameWidth * scale, frameHeight * scale)
 		glowFrame.ProcStartFlipbook:SetPoint("BOTTOMRIGHT", glowFrame, "BOTTOMRIGHT", frameWidth * scale, -frameHeight * scale)
 	end
+
 	glowFrame:EnableMouse(false)
+
 	return glowFrame
 end
 
@@ -3427,32 +3724,41 @@ local ants_set_texture_offset = function(self, leftOffset, rightOffset, topOffse
 	self:SetPoint("bottomright", rightOffset, bottomOffset)
 end
 
-function DF:CreateAnts (parent, antTable, leftOffset, rightOffset, topOffset, bottomOffset, antTexture)
+
+---create an "ant" animation around the frame, the name "ant" comes from the animation looking like small bright dots moving around the frame
+---@param parent frame
+---@param antTable df_anttable
+---@param leftOffset number?
+---@param rightOffset number?
+---@param topOffset number?
+---@param bottomOffset number?
+---@return frame
+function DF:CreateAnts(parent, antTable, leftOffset, rightOffset, topOffset, bottomOffset)
 	leftOffset = leftOffset or 0
 	rightOffset = rightOffset or 0
 	topOffset = topOffset or 0
 	bottomOffset = bottomOffset or 0
 
-	local f = CreateFrame("frame", nil, parent)
-	f:SetPoint("topleft", leftOffset, topOffset)
-	f:SetPoint("bottomright", rightOffset, bottomOffset)
+	local antsFrame = CreateFrame("frame", nil, parent)
+	antsFrame:SetPoint("topleft", leftOffset, topOffset)
+	antsFrame:SetPoint("bottomright", rightOffset, bottomOffset)
 
-	f.SetOffset = ants_set_texture_offset
+	antsFrame.SetOffset = ants_set_texture_offset
 
-	local t = f:CreateTexture(nil, "overlay")
-	t:SetAllPoints()
-	t:SetTexture(antTable.Texture)
-	t:SetBlendMode(antTable.BlendMode or "ADD")
-	t:SetVertexColor(DF:ParseColors(antTable.Color or "white"))
-	f.Texture = t
+	local texture = antsFrame:CreateTexture(nil, "overlay")
+	texture:SetAllPoints()
+	texture:SetTexture(antTable.Texture)
+	texture:SetBlendMode(antTable.BlendMode or "ADD")
+	texture:SetVertexColor(DF:ParseColors(antTable.Color or "white"))
+	antsFrame.Texture = texture
 
-	f.AntTable = antTable
+	antsFrame.AntTable = antTable
 
-	f:SetScript("OnUpdate", function(self, deltaTime)
-		AnimateTexCoords (t, self.AntTable.TextureWidth, self.AntTable.TextureHeight, self.AntTable.TexturePartsWidth, self.AntTable.TexturePartsHeight, self.AntTable.AmountParts, deltaTime, self.AntTable.Throttle or 0.025)
+	antsFrame:SetScript("OnUpdate", function(self, deltaTime)
+		AnimateTexCoords(texture, self.AntTable.TextureWidth, self.AntTable.TextureHeight, self.AntTable.TexturePartsWidth, self.AntTable.TexturePartsHeight, self.AntTable.AmountParts, deltaTime, self.AntTable.Throttle or 0.025)
 	end)
 
-	return f
+	return antsFrame
 end
 
 --[=[ --test ants
@@ -3498,18 +3804,25 @@ end
 
 local SetLayerVisibility = function(self, layer1Shown, layer2Shown, layer3Shown)
 	for _, texture in ipairs(self.Borders.Layer1) do
-		texture:SetShown (layer1Shown)
+		texture:SetShown(layer1Shown)
 	end
 
 	for _, texture in ipairs(self.Borders.Layer2) do
-		texture:SetShown (layer2Shown)
+		texture:SetShown(layer2Shown)
 	end
 
 	for _, texture in ipairs(self.Borders.Layer3) do
-		texture:SetShown (layer3Shown)
+		texture:SetShown(layer3Shown)
 	end
 end
 
+---create a border using three textures for each side of the frame, each texture has a different transparency creating a smooth gradient effect
+---the parent frame receives three new methods: SetBorderAlpha(a1, a2, a3), SetBorderColor(r, g, b), SetLayerVisibility(layer1Shown, layer2Shown, layer3Shown)
+---@param self table
+---@param parent frame
+---@param alpha1 number?
+---@param alpha2 number?
+---@param alpha3 number?
 function DF:CreateBorder(parent, alpha1, alpha2, alpha3)
 	parent.Borders = {
 		Layer1 = {},
@@ -3524,73 +3837,89 @@ function DF:CreateBorder(parent, alpha1, alpha2, alpha3)
 	parent.SetBorderColor = SetBorderColor
 	parent.SetLayerVisibility = SetLayerVisibility
 
-	local border1 = parent:CreateTexture(nil, "background")
-	PixelUtil.SetPoint(border1, "topleft", parent, "topleft", -1, 1)
-	PixelUtil.SetPoint(border1, "bottomleft", parent, "bottomleft", -1, -1)
-	border1:SetColorTexture(0, 0, 0, alpha1 or default_border_color1)
-	local border2 = parent:CreateTexture(nil, "background")
-	PixelUtil.SetPoint(border2, "topleft", parent, "topleft", -2, 2)
-	PixelUtil.SetPoint(border2, "bottomleft", parent, "bottomleft", -2, -2)
-	border2:SetColorTexture(0, 0, 0, alpha2 or default_border_color2)
-	local border3 = parent:CreateTexture(nil, "background")
-	PixelUtil.SetPoint(border3, "topleft", parent, "topleft", -3, 3)
-	PixelUtil.SetPoint(border3, "bottomleft", parent, "bottomleft", -3, -3)
-	border3:SetColorTexture(0, 0, 0, alpha3 or default_border_color3)
+	do
+		local leftBorder1 = parent:CreateTexture(nil, "background")
+		PixelUtil.SetPoint(leftBorder1, "topleft", parent, "topleft", -1, 1)
+		PixelUtil.SetPoint(leftBorder1, "bottomleft", parent, "bottomleft", -1, -1)
+		leftBorder1:SetColorTexture(0, 0, 0, alpha1 or default_border_color1)
 
-	tinsert(parent.Borders.Layer1, border1)
-	tinsert(parent.Borders.Layer2, border2)
-	tinsert(parent.Borders.Layer3, border3)
+		local leftBorder2 = parent:CreateTexture(nil, "background")
+		PixelUtil.SetPoint(leftBorder2, "topleft", parent, "topleft", -2, 2)
+		PixelUtil.SetPoint(leftBorder2, "bottomleft", parent, "bottomleft", -2, -2)
+		leftBorder2:SetColorTexture(0, 0, 0, alpha2 or default_border_color2)
 
-	local border1 = parent:CreateTexture(nil, "background")
-	PixelUtil.SetPoint(border1, "topleft", parent, "topleft", 0, 1)
-	PixelUtil.SetPoint(border1, "topright", parent, "topright", 1, 1)
-	border1:SetColorTexture(0, 0, 0, alpha1 or default_border_color1)
-	local border2 = parent:CreateTexture(nil, "background")
-	PixelUtil.SetPoint(border2, "topleft", parent, "topleft", -1, 2)
-	PixelUtil.SetPoint(border2, "topright", parent, "topright", 2, 2)
-	border2:SetColorTexture(0, 0, 0, alpha2 or default_border_color2)
-	local border3 = parent:CreateTexture(nil, "background")
-	PixelUtil.SetPoint(border3, "topleft", parent, "topleft", -2, 3)
-	PixelUtil.SetPoint(border3, "topright", parent, "topright", 3, 3)
-	border3:SetColorTexture(0, 0, 0, alpha3 or default_border_color3)
+		local leftBorder3 = parent:CreateTexture(nil, "background")
+		PixelUtil.SetPoint(leftBorder3, "topleft", parent, "topleft", -3, 3)
+		PixelUtil.SetPoint(leftBorder3, "bottomleft", parent, "bottomleft", -3, -3)
+		leftBorder3:SetColorTexture(0, 0, 0, alpha3 or default_border_color3)
 
-	tinsert(parent.Borders.Layer1, border1)
-	tinsert(parent.Borders.Layer2, border2)
-	tinsert(parent.Borders.Layer3, border3)
+		table.insert(parent.Borders.Layer1, leftBorder1)
+		table.insert(parent.Borders.Layer2, leftBorder2)
+		table.insert(parent.Borders.Layer3, leftBorder3)
+	end
 
-	local border1 = parent:CreateTexture(nil, "background")
-	PixelUtil.SetPoint(border1, "topright", parent, "topright", 1, 0)
-	PixelUtil.SetPoint(border1, "bottomright", parent, "bottomright", 1, -1)
-	border1:SetColorTexture(0, 0, 0, alpha1 or default_border_color1)
-	local border2 = parent:CreateTexture(nil, "background")
-	PixelUtil.SetPoint(border2, "topright", parent, "topright", 2, 1)
-	PixelUtil.SetPoint(border2, "bottomright", parent, "bottomright", 2, -2)
-	border2:SetColorTexture(0, 0, 0, alpha2 or default_border_color2)
-	local border3 = parent:CreateTexture(nil, "background")
-	PixelUtil.SetPoint(border3, "topright", parent, "topright", 3, 2)
-	PixelUtil.SetPoint(border3, "bottomright", parent, "bottomright", 3, -3)
-	border3:SetColorTexture(0, 0, 0, alpha3 or default_border_color3)
+	do
+		local topBorder1 = parent:CreateTexture(nil, "background")
+		PixelUtil.SetPoint(topBorder1, "topleft", parent, "topleft", 0, 1)
+		PixelUtil.SetPoint(topBorder1, "topright", parent, "topright", 1, 1)
+		topBorder1:SetColorTexture(0, 0, 0, alpha1 or default_border_color1)
 
-	tinsert(parent.Borders.Layer1, border1)
-	tinsert(parent.Borders.Layer2, border2)
-	tinsert(parent.Borders.Layer3, border3)
+		local topBorder2 = parent:CreateTexture(nil, "background")
+		PixelUtil.SetPoint(topBorder2, "topleft", parent, "topleft", -1, 2)
+		PixelUtil.SetPoint(topBorder2, "topright", parent, "topright", 2, 2)
+		topBorder2:SetColorTexture(0, 0, 0, alpha2 or default_border_color2)
 
-	local border1 = parent:CreateTexture(nil, "background")
-	PixelUtil.SetPoint(border1, "bottomleft", parent, "bottomleft", 0, -1)
-	PixelUtil.SetPoint(border1, "bottomright", parent, "bottomright", 0, -1)
-	border1:SetColorTexture(0, 0, 0, alpha1 or default_border_color1)
-	local border2 = parent:CreateTexture(nil, "background")
-	PixelUtil.SetPoint(border2, "bottomleft", parent, "bottomleft", -1, -2)
-	PixelUtil.SetPoint(border2, "bottomright", parent, "bottomright", 1, -2)
-	border2:SetColorTexture(0, 0, 0, alpha2 or default_border_color2)
-	local border3 = parent:CreateTexture(nil, "background")
-	PixelUtil.SetPoint(border3, "bottomleft", parent, "bottomleft", -2, -3)
-	PixelUtil.SetPoint(border3, "bottomright", parent, "bottomright", 2, -3)
-	border3:SetColorTexture(0, 0, 0, alpha3 or default_border_color3)
+		local topBorder3 = parent:CreateTexture(nil, "background")
+		PixelUtil.SetPoint(topBorder3, "topleft", parent, "topleft", -2, 3)
+		PixelUtil.SetPoint(topBorder3, "topright", parent, "topright", 3, 3)
+		topBorder3:SetColorTexture(0, 0, 0, alpha3 or default_border_color3)
 
-	tinsert(parent.Borders.Layer1, border1)
-	tinsert(parent.Borders.Layer2, border2)
-	tinsert(parent.Borders.Layer3, border3)
+		table.insert(parent.Borders.Layer1, topBorder1)
+		table.insert(parent.Borders.Layer2, topBorder2)
+		table.insert(parent.Borders.Layer3, topBorder3)
+	end
+
+	do
+		local rightBorder1 = parent:CreateTexture(nil, "background")
+		PixelUtil.SetPoint(rightBorder1, "topright", parent, "topright", 1, 0)
+		PixelUtil.SetPoint(rightBorder1, "bottomright", parent, "bottomright", 1, -1)
+		rightBorder1:SetColorTexture(0, 0, 0, alpha1 or default_border_color1)
+
+		local rightBorder2 = parent:CreateTexture(nil, "background")
+		PixelUtil.SetPoint(rightBorder2, "topright", parent, "topright", 2, 1)
+		PixelUtil.SetPoint(rightBorder2, "bottomright", parent, "bottomright", 2, -2)
+		rightBorder2:SetColorTexture(0, 0, 0, alpha2 or default_border_color2)
+
+		local rightBorder3 = parent:CreateTexture(nil, "background")
+		PixelUtil.SetPoint(rightBorder3, "topright", parent, "topright", 3, 2)
+		PixelUtil.SetPoint(rightBorder3, "bottomright", parent, "bottomright", 3, -3)
+		rightBorder3:SetColorTexture(0, 0, 0, alpha3 or default_border_color3)
+
+		table.insert(parent.Borders.Layer1, rightBorder1)
+		table.insert(parent.Borders.Layer2, rightBorder2)
+		table.insert(parent.Borders.Layer3, rightBorder3)
+	end
+
+	do
+		local bottomBorder1 = parent:CreateTexture(nil, "background")
+		PixelUtil.SetPoint(bottomBorder1, "bottomleft", parent, "bottomleft", 0, -1)
+		PixelUtil.SetPoint(bottomBorder1, "bottomright", parent, "bottomright", 0, -1)
+		bottomBorder1:SetColorTexture(0, 0, 0, alpha1 or default_border_color1)
+
+		local bottomBorder2 = parent:CreateTexture(nil, "background")
+		PixelUtil.SetPoint(bottomBorder2, "bottomleft", parent, "bottomleft", -1, -2)
+		PixelUtil.SetPoint(bottomBorder2, "bottomright", parent, "bottomright", 1, -2)
+		bottomBorder2:SetColorTexture(0, 0, 0, alpha2 or default_border_color2)
+
+		local bottomBorder3 = parent:CreateTexture(nil, "background")
+		PixelUtil.SetPoint(bottomBorder3, "bottomleft", parent, "bottomleft", -2, -3)
+		PixelUtil.SetPoint(bottomBorder3, "bottomright", parent, "bottomright", 2, -3)
+		bottomBorder3:SetColorTexture(0, 0, 0, alpha3 or default_border_color3)
+
+		table.insert(parent.Borders.Layer1, bottomBorder1)
+		table.insert(parent.Borders.Layer2, bottomBorder2)
+		table.insert(parent.Borders.Layer3, bottomBorder3)
+	end
 end
 
 --DFNamePlateBorder as copy from "NameplateFullBorderTemplate" -> DF:CreateFullBorder (name, parent)
@@ -3656,7 +3985,7 @@ function DF:CreateFullBorder (name, parent)
 	left:SetPoint("TOPRIGHT", border, "TOPLEFT", 0, 1.0)
 	left:SetPoint("BOTTOMRIGHT", border, "BOTTOMLEFT", 0, -1.0)
 	border.Left = left
-	tinsert(border.Textures, left)
+	table.insert(border.Textures, left)
 
 	local right = border:CreateTexture("$parentRight", "BACKGROUND", nil, -8)
 	--right:SetDrawLayer("BACKGROUND", -8)
@@ -3665,7 +3994,7 @@ function DF:CreateFullBorder (name, parent)
 	right:SetPoint("TOPLEFT", border, "TOPRIGHT", 0, 1.0)
 	right:SetPoint("BOTTOMLEFT", border, "BOTTOMRIGHT", 0, -1.0)
 	border.Right = right
-	tinsert(border.Textures, right)
+	table.insert(border.Textures, right)
 
 	local bottom = border:CreateTexture("$parentBottom", "BACKGROUND", nil, -8)
 	--bottom:SetDrawLayer("BACKGROUND", -8)
@@ -3674,7 +4003,7 @@ function DF:CreateFullBorder (name, parent)
 	bottom:SetPoint("TOPLEFT", border, "BOTTOMLEFT", 0, 0)
 	bottom:SetPoint("TOPRIGHT", border, "BOTTOMRIGHT", 0, 0)
 	border.Bottom = bottom
-	tinsert(border.Textures, bottom)
+	table.insert(border.Textures, bottom)
 
 	local top = border:CreateTexture("$parentTop", "BACKGROUND", nil, -8)
 	--top:SetDrawLayer("BACKGROUND", -8)
@@ -3683,7 +4012,7 @@ function DF:CreateFullBorder (name, parent)
 	top:SetPoint("BOTTOMLEFT", border, "TOPLEFT", 0, 0)
 	top:SetPoint("BOTTOMRIGHT", border, "TOPRIGHT", 0, 0)
 	border.Top = top
-	tinsert(border.Textures, top)
+	table.insert(border.Textures, top)
 
 	return border
 end
@@ -3729,9 +4058,9 @@ function DF:CreateBorderWithSpread(parent, alpha1, alpha2, alpha3, size, spread)
 	border3:SetColorTexture(0, 0, 0, alpha3 or default_border_color3)
 	PixelUtil.SetWidth (border3, size, minPixels)
 
-	tinsert(parent.Borders.Layer1, border1)
-	tinsert(parent.Borders.Layer2, border2)
-	tinsert(parent.Borders.Layer3, border3)
+	table.insert(parent.Borders.Layer1, border1)
+	table.insert(parent.Borders.Layer2, border2)
+	table.insert(parent.Borders.Layer3, border3)
 
 	--top
 	local border1 = parent:CreateTexture(nil, "background")
@@ -3752,9 +4081,9 @@ function DF:CreateBorderWithSpread(parent, alpha1, alpha2, alpha3, size, spread)
 	border3:SetColorTexture(0, 0, 0, alpha3 or default_border_color3)
 	PixelUtil.SetHeight(border3, size, minPixels)
 
-	tinsert(parent.Borders.Layer1, border1)
-	tinsert(parent.Borders.Layer2, border2)
-	tinsert(parent.Borders.Layer3, border3)
+	table.insert(parent.Borders.Layer1, border1)
+	table.insert(parent.Borders.Layer2, border2)
+	table.insert(parent.Borders.Layer3, border3)
 
 	--right
 	local border1 = parent:CreateTexture(nil, "background")
@@ -3775,9 +4104,9 @@ function DF:CreateBorderWithSpread(parent, alpha1, alpha2, alpha3, size, spread)
 	border3:SetColorTexture(0, 0, 0, alpha3 or default_border_color3)
 	PixelUtil.SetWidth (border3, size, minPixels)
 
-	tinsert(parent.Borders.Layer1, border1)
-	tinsert(parent.Borders.Layer2, border2)
-	tinsert(parent.Borders.Layer3, border3)
+	table.insert(parent.Borders.Layer1, border1)
+	table.insert(parent.Borders.Layer2, border2)
+	table.insert(parent.Borders.Layer3, border3)
 
 	local border1 = parent:CreateTexture(nil, "background")
 	PixelUtil.SetPoint(border1, "bottomleft", parent, "bottomleft", 0 + spread, -1 + spread)
@@ -3797,9 +4126,9 @@ function DF:CreateBorderWithSpread(parent, alpha1, alpha2, alpha3, size, spread)
 	border3:SetColorTexture(0, 0, 0, alpha3 or default_border_color3)
 	PixelUtil.SetHeight(border3, size, minPixels)
 
-	tinsert(parent.Borders.Layer1, border1)
-	tinsert(parent.Borders.Layer2, border2)
-	tinsert(parent.Borders.Layer3, border3)
+	table.insert(parent.Borders.Layer1, border1)
+	table.insert(parent.Borders.Layer2, border2)
+	table.insert(parent.Borders.Layer3, border3)
 
 end
 
@@ -4002,11 +4331,60 @@ local specs_per_class = {
 }
 
 
+---return an array table with the spec ids the class can have
+---@param engClass string
+---@return table
 function DF:GetClassSpecIDs(engClass)
 	return specs_per_class[engClass]
 end
 function DF:GetClassSpecIds(engClass) --naming conventions
 	return DF:GetClassSpecIDs(engClass)
+end
+
+local getDragonflightTalents = function()
+	if (not ClassTalentFrame) then
+		ClassTalentFrame_LoadUI()
+	end
+
+	if (not DF.TalentExporter) then
+    	local talentExporter = CreateFromMixins(ClassTalentImportExportMixin)
+		DF.TalentExporter = talentExporter
+	end
+
+	local exportStream = ExportUtil.MakeExportDataStream()
+
+	local configId = C_ClassTalents.GetActiveConfigID()
+	if (not configId) then
+		return ""
+	end
+
+	local configInfo = C_Traits.GetConfigInfo(configId)
+	if (not configInfo) then
+		return ""
+	end
+
+	local currentSpecID = PlayerUtil.GetCurrentSpecID()
+
+	local treeInfo = C_Traits.GetTreeInfo(configId, configInfo.treeIDs[1])
+	local treeHash = C_Traits.GetTreeHash(treeInfo.ID)
+	local serializationVersion = C_Traits.GetLoadoutSerializationVersion()
+
+	DF.TalentExporter:WriteLoadoutHeader(exportStream, serializationVersion, currentSpecID, treeHash)
+	DF.TalentExporter:WriteLoadoutContent(exportStream, configId, treeInfo.ID)
+
+	return exportStream:GetExportString()
+end
+
+--/dump DetailsFramework:GetDragonlightTalentString()
+function DF:GetDragonlightTalentString()
+	local runOkay, errorText = pcall(getDragonflightTalents)
+	if (not runOkay) then
+		DF:Msg("error 0x4517", errorText)
+		return ""
+	else
+		local talentString = errorText
+		return talentString
+	end
 end
 
 local dispatch_error = function(context, errortext)
@@ -4185,13 +4563,13 @@ function DF:GetCharacterRaceList()
 	for i = 1, 100 do
 		local raceInfo = C_CreatureInfo.GetRaceInfo(i)
 		if (raceInfo and DF.RaceList [raceInfo.raceID]) then
-			tinsert(DF.RaceCache, {Name = raceInfo.raceName, FileString = raceInfo.clientFileString, ID = raceInfo.raceID})
+			table.insert(DF.RaceCache, {Name = raceInfo.raceName, FileString = raceInfo.clientFileString, ID = raceInfo.raceID})
 		end
 
 		if IS_WOW_PROJECT_MAINLINE then
 			local alliedRaceInfo = C_AlliedRaces.GetRaceInfoByID(i)
 			if (alliedRaceInfo and DF.AlliedRaceList [alliedRaceInfo.raceID]) then
-				tinsert(DF.RaceCache, {Name = alliedRaceInfo.maleName, FileString = alliedRaceInfo.raceFileString, ID = alliedRaceInfo.raceID})
+				table.insert(DF.RaceCache, {Name = alliedRaceInfo.maleName, FileString = alliedRaceInfo.raceFileString, ID = alliedRaceInfo.raceID})
 			end
 		end
 	end
@@ -4284,7 +4662,7 @@ function DF:GetCharacterPvPTalents(onlySelected, onlySelectedHash)
 			if (onlySelectedHash) then
 				talentList [talentID] = true
 			else
-				tinsert(talentList, {Name = talentName, ID = talentID, Texture = texture, IsSelected = true})
+				table.insert(talentList, {Name = talentName, ID = talentID, Texture = texture, IsSelected = true})
 			end
 		end
 		return talentList
@@ -4298,7 +4676,7 @@ function DF:GetCharacterPvPTalents(onlySelected, onlySelectedHash)
 				for _, talentID in ipairs(slotInfo.availableTalentIDs) do
 					if (not alreadyAdded [talentID]) then
 						local _, talentName, texture, selected = GetPvpTalentInfoByID (talentID)
-						tinsert(talentList, {Name = talentName, ID = talentID, Texture = texture, IsSelected = selected})
+						table.insert(talentList, {Name = talentName, ID = talentID, Texture = texture, IsSelected = selected})
 						alreadyAdded [talentID] = true
 					end
 				end
@@ -4803,9 +5181,9 @@ end
 
 do
     local get = function(self)
-        local object = tremove(self.notUse, #self.notUse)
+        local object = table.remove(self.notUse, #self.notUse)
         if (object) then
-            tinsert(self.inUse, object)
+            table.insert(self.inUse, object)
 			if (self.onAcquire) then
 				DF:QuickDispatch(self.onAcquire, object)
 			end
@@ -4814,7 +5192,7 @@ do
             --need to create the new object
             local newObject = self.newObjectFunc(self, unpack(self.payload))
             if (newObject) then
-				tinsert(self.inUse, newObject)
+				table.insert(self.inUse, newObject)
 				if (self.onAcquire) then
 					DF:QuickDispatch(self.onAcquire, newObject)
 				end
@@ -4830,8 +5208,8 @@ do
     local release = function(self, object)
         for i = #self.inUse, 1, -1 do
             if (self.inUse[i] == object) then
-                tremove(self.inUse, i)
-                tinsert(self.notUse, object)
+                table.remove(self.inUse, i)
+                table.insert(self.notUse, object)
 
 				if (self.onRelease) then
 					DF:QuickDispatch(self.onRelease, object)
@@ -4843,8 +5221,8 @@ do
 
     local reset = function(self)
         for i = #self.inUse, 1, -1 do
-            local object = tremove(self.inUse, i)
-            tinsert(self.notUse, object)
+            local object = table.remove(self.inUse, i)
+            table.insert(self.notUse, object)
 
 			if (self.onReset) then
 				DF:QuickDispatch(self.onReset, object)
@@ -5085,15 +5463,27 @@ function _G.__benchmark(bNotPrintResult)
 end
 
 function DF:PreviewTexture(texture, left, right, top, bottom)
+	if (texture and type(texture) == "table" and texture.GetObjectType and texture:GetObjectType() == "Texture") then
+		DF:Msg("PreviewTexture: you have passed a texture object (uiobject) instead of the texture atlas, filename or id.")
+	end
+
 	local preview = DetailsFrameworkTexturePreview or CreateFrame("frame", "DetailsFrameworkTexturePreview", UIParent)
 	preview:SetSize(200, 200)
 	preview:SetPoint("center")
 	preview.texture = DetailsFrameworkTexturePreviewTexture or preview:CreateTexture("DetailsFrameworkTexturePreviewTexture", "artwork")
 	preview.texture:SetAllPoints()
+	preview.fontString = DetailsFrameworkTexturePreviewFontString or preview:CreateFontString("DetailsFrameworkTexturePreviewFontString", "artwork", "GameFontNormal")
+	preview.fontString:SetPoint("center", preview, "center", 0, 0)
+
+	preview.texture:SetTexture("")
+	preview.fontString:SetText("")
 
 	--check if the texture passed is an atlas
 	if (type(texture) == "string" and C_Texture.GetAtlasInfo(texture)) then
 		preview.texture:SetAtlas(texture)
+
+	elseif (type(texture) == "string" and texture:find("|T")) then
+		preview.fontString:SetText(texture)
 
 	elseif (type(texture) == "table") then
 		preview.texture:SetTexture(texture.file or texture.filename)
