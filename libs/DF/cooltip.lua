@@ -1202,7 +1202,11 @@ function DF:CreateCoolTip()
 			if (leftIconSettings[10]) then
 				menuButton.leftIconMask:SetTexture(leftIconSettings[10])
 			else
-				menuButton.leftIconMask:SetTexture([[Interface\COMMON\common-iconmask]])
+				if (DF.IsDragonflightAndBeyond()) then
+					menuButton.leftIconMask:SetTexture([[Interface\COMMON\common-iconmask]])
+				else
+					menuButton.leftIconMask:SetTexture([[Interface\CHATFRAME\chatframebackground]])
+				end
 			end
 
 			local colorRed, colorGreen, colorBlue, colorAlpha = DF:ParseColors(leftIconSettings[8])
