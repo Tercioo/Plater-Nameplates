@@ -1,6 +1,7 @@
 ## Interface: 100205
 ## Interface-Mainline: 100205
 ## Interface-Wrath: 30403
+## Interface-Cata: 40400
 ## Interface-Vanilla: 11501
 ## Title: Plater
 ## Notes: Nameplate addon designed for advanced users.
@@ -17,6 +18,9 @@
 #@version-wrath@
 ## Version: @project-version@-Wrath
 #@end-version-wrath@
+#@version-cata@
+## Version: @project-version@-Cata
+#@end-version-cata@
 #@version-classic@
 ## Version: @project-version@-Vanilla
 #@end-version-classic@
