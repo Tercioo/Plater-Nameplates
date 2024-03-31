@@ -1122,6 +1122,13 @@ Plater.AnchorNamesByPhraseId = {
 						playerIsTank = true
 					  end
 					end
+				elseif playerClass == "ROGUE" then
+					for i=1,40 do
+					  local spellId = select(10, UnitBuff("player",i))
+					  if spellId == 400015 or spellId == 400016 then
+						playerIsTank = true
+					  end
+					end
 				elseif playerClass == "WARLOCK" then
 					for i=1,40 do
 					  local spellId = select(10, UnitBuff("player",i))
@@ -1137,6 +1144,7 @@ Plater.AnchorNamesByPhraseId = {
 					  end
 					end
 				end
+				
 			end
 			
 			-- if the player is assigned as MAINTANK, then treat him as one:
