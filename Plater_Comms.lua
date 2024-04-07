@@ -498,6 +498,7 @@ end
 		--check if the npc_cache has the npc name and zone, if not add them to the database
 		if (not Plater.db.profile.npc_cache[npcId]) then
 			Plater.db.profile.npc_cache[npcId] = {npcName, npcZone}
+			Plater.TranslateNPCCache()
 		end
 
 		local npcsRenamed = Plater.db.profile.npcs_renamed

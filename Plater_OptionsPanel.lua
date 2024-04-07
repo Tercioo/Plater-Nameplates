@@ -6823,6 +6823,17 @@ local relevance_options = {
 			desc = "OPTIONS_EXECUTERANGE_HIGH_HEALTH_DESC",
 			hidden = IS_WOW_PROJECT_NOT_MAINLINE,
 		},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.health_cutoff_extra_glow end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.health_cutoff_extra_glow = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Add Extra Glow to Execute Range",
+			desc = "Add Extra Glow to Execute Range",
+		},
 
 		{
 			type = "toggle",
@@ -13318,16 +13329,6 @@ end
 			name = "Show Shield Prediction",
 			desc = "Show an extra bar for shields (e.g. Power Word: Shield from priests) absorption.",
 		},
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.health_cutoff_extra_glow end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.health_cutoff_extra_glow = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Add Extra Glow to Execute Range",
-			desc = "Add Extra Glow to Execute Range",
-		},
 		
 		{
 			type = "toggle",
@@ -13370,6 +13371,16 @@ end
 			end,
 			name = "Opt-Out of automatically accepting NPC Colors",
 			desc = "Will not automatically accepd npc colors sent by raid-leaders but prompt instead.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_translate_npc_names end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_translate_npc_names = value
+				Plater.TranslateNPCCache()
+			end,
+			name = "Automatically translate NPC names on the NPC Colors tab.",
+			desc = "Will automatically translate the names to the current game locale.",
 		},
 	
 		{type = "blank"},

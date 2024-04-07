@@ -2470,7 +2470,7 @@ Plater.AnchorNamesByPhraseId = {
 			C_Timer.After (3, Plater.Resources.OnSpecChanged)
 			
 			-- translate NPC_CACHE entries if needed
-			--C_Timer.After (5, Plater.TranslateNPCCache)
+			C_Timer.After (10, Plater.TranslateNPCCache)
 
 		end,
 		
@@ -9057,8 +9057,11 @@ end
 	
 	-- tanslate the npc cache entries if needed, do so. can translate names only, but not zones.
 	function Plater.TranslateNPCCache()
+		if not Plater.db.profile.auto_translate_npc_names then return end
 		if Plater.TranslateNPCCacheIsRunning then return end
 		Plater.TranslateNPCCacheIsRunning = true
+		local maxPerFrame = 10
+		local translateTimer = 0.1
 		
 		local function GetCreatureNameFromID(npcID)
 			if C_TooltipInfo then
@@ -9076,34 +9079,39 @@ end
 			end
 		end
 		
-		local translate_npc_cache = function()
-			if PLAYER_IN_COMBAT or not IS_IN_OPEN_WORLD then
+		local translate_npc_cache
+		translate_npc_cache	= function()
+			if not Plater.db.profile.auto_translate_npc_names then return end
+			if PLAYER_IN_COMBAT then --or not IS_IN_OPEN_WORLD then
 				C_Timer.After(5, translate_npc_cache)
 			end
 			
 			local count = 0
 			local leftOvers = false
 			for id, entry in pairs(DB_NPCIDS_CACHE) do
-				leftOvers = false
 				
 				if entry[3] ~= Plater.Locale then
 					local npcName = GetCreatureNameFromID(id)
 					if npcName then
+						--DevTool:AddData(npcName, "translated")
 						entry[1] = npcName
 						entry[3] = Plater.Locale
 						count = count + 1
+					else
+						--DevTool:AddData(id .. " - " .. entry[1], "not translated")
 					end
 				end
 				
-				if count > 10 then
+				if count >= maxPerFrame then
 					leftOvers = true
 					break
-				else 
 				end
 			end
 			
 			if leftOvers and Plater.TranslateNPCCacheIsRunning then
-				C_Timer.After(1, translate_npc_cache)
+				C_Timer.After(translateTimer, translate_npc_cache)
+			else
+				Plater.TranslateNPCCacheIsRunning = false
 			end
 		end
 		translate_npc_cache()

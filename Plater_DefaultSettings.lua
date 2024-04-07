@@ -650,6 +650,7 @@ PLATER_DEFAULT_SETTINGS = {
 		use_player_combat_state = false,
 		
 		opt_out_auto_accept_npc_colors = true,
+		auto_translate_npc_names = false, -- one day default to true
 		
 		shadowMode = 1,
 		
