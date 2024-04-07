@@ -9,6 +9,7 @@ function Plater.GetChangelogTable()
 		Plater.ChangeLogTable = {
 
 			{1709675079, "Backend Change", "April 7th, 2024", "Adding option to automatically translate NPC names on the 'NPC Colors and Names' tab.", "cont1nuity"},
+			{1709675079, "Backend Change", "March 31st, 2024", "Adding tank states for Rogues on SoD.", "Thunderz"},
 			{1709675079, "Backend Change", "March 14th, 2024", "Maintenance on libraries.", "cont1nuity"},
 			{1709675079, "Backend Change", "March 14th, 2024", "Adding support for Cataclysm classic.", "cont1nuity"},
 			{1709675079, "Backend Change", "March 8th, 2024", "Reworking aura updates for classic era.", "cont1nuity"},
