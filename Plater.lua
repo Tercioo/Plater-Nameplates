@@ -1115,7 +1115,7 @@ Plater.AnchorNamesByPhraseId = {
 					local stance = GetShapeshiftFormID() --18 is def, 24 is glad
 					playerIsTank = stance == 18 or ((not stance == 24) and IsEquippedItemType("Shields")) -- Defensive Stance or shield (and not glad)
 				elseif playerClass == "DRUID" then
-					playerIsTank = GetShapeshiftForm() == 1 -- Bear Form
+					playerIsTank = GetShapeshiftFormID() == 5 -- Bear Form
 				elseif playerClass == "PALADIN" then
 					for i=1,40 do
 					  local spellId = select(10, UnitBuff("player",i))
@@ -1985,7 +1985,7 @@ Plater.AnchorNamesByPhraseId = {
 	end
 	
 	--store all functions for all events that will be registered inside OnInit
-	local last_GetShapeshiftForm = GetShapeshiftForm()
+	local last_GetShapeshiftFormID = GetShapeshiftFormID()
 	local eventFunctions = {
 
 		--when a unit from unatackable change its state, this event triggers several times, a schedule is used to only update once
@@ -3871,10 +3871,10 @@ Plater.AnchorNamesByPhraseId = {
 		UPDATE_SHAPESHIFT_FORM = function()
 			local curTime = GetTime()
 			--this is to work around UPDATE_SHAPESHIFT_FORM firing for all units and not just the player... causing lag...
-			if last_GetShapeshiftForm == GetShapeshiftForm() then
+			if last_GetShapeshiftFormID == GetShapeshiftFormID() then
 				return
 			end
-			last_GetShapeshiftForm = GetShapeshiftForm()
+			last_GetShapeshiftFormID = GetShapeshiftFormID()
 			
 			UpdatePlayerTankState()
 			Plater.UpdateAllNameplateColors()
