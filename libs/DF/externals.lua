@@ -94,6 +94,7 @@ function detailsFramework:LoadLCC(LibCC)
 	end
 end
 
+DevTool:AddData(LibStub("LibClassicCasterino", true))
 if IS_WOW_PROJECT_CLASSIC_ERA and false then --disable this for now, as it appears to be working now through API changes...
 	local LibCC = LibStub("LibClassicCasterino", true)
 	if (LibCC and not _G.DetailsFrameworkLCCLoaded) then
@@ -109,6 +110,8 @@ else -- end classic era
 	detailsFramework.CastInfo.UnitCastingInfo = UnitCastingInfo
 	detailsFramework.CastInfo.UnitChannelInfo = UnitChannelInfo
 end
+DevTool:AddData(_G.DetailsFrameworkLCCLoaded)
+DevTool:AddData(detailsFramework.CastInfo)
 
 
 if (not DetailsFrameworkCanLoad) then
