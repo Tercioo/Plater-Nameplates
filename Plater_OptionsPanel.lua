@@ -2678,15 +2678,15 @@ _G.C_Timer.After(0.850, function() --~delay
 	debuff_options.align_as_pairs = true
 	debuff_options.align_as_pairs_string_space = 181
 	debuff_options.widget_width = 150
-	debuff_options.slider_buttons_to_left = true
 
-    local canvasFrame = DF:CreateCanvasScrollBox(auraOptionsFrame)
+    local canvasFrame = DF:CreateCanvasScrollBox(auraOptionsFrame, nil, "PlaterOptionsPanelCanvasAuraSettings")
     canvasFrame:SetPoint("topleft", auraOptionsFrame, "topleft", 0, platerInternal.optionsYStart)
     canvasFrame:SetPoint("bottomright", auraOptionsFrame, "bottomright", -26, 25)
 	auraOptionsFrame.canvasFrame = canvasFrame
 
 	debuff_options.use_scrollframe = true
 
+	--when passing a canvas frame for BuildMenu, it automatically get its childscroll and use as parent for the widgets
 	DF:BuildMenu(canvasFrame, debuff_options, startX, 0, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 
 	--DF:DebugVisibility(canvasFrame:GetScrollChild())
