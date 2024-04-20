@@ -1760,6 +1760,9 @@ local debuff_options = {
 		end,
 		name = "OPTIONS_ENABLED",
 		desc = "OPTIONS_ENABLED",
+		childrenids = {"auras_general_tooltip", "auras_general_alpha", "auras_general_iconspacing", "auras_general_icon_row_spacing", "auras_general_stack_similar_aura", "auras_general_stack_auratime"},
+		children_follow_enabled = true,
+		--children_follow_reverse = true, --if the children should be enabled when the toogle is disabled, for cases like "do this automatically" if not, set manually
 	},
 	
 	{
@@ -1772,6 +1775,7 @@ local debuff_options = {
 		end,
 		name = "OPTIONS_SHOWTOOLTIP",
 		desc = "OPTIONS_SHOWTOOLTIP_DESC",
+		id = "auras_general_tooltip",
 	},
 	
 	{
@@ -1788,6 +1792,7 @@ local debuff_options = {
 		thumbscale = 1.8,
 		name = "OPTIONS_ALPHA",
 		desc = "OPTIONS_ALPHA",
+		id = "auras_general_alpha",
 	},
 	
 	{
@@ -1804,6 +1809,7 @@ local debuff_options = {
 		thumbscale = 1.8,
 		name = "OPTIONS_ICONSPACING",
 		desc = "OPTIONS_ICONSPACING",
+		id = "auras_general_iconspacing",
 	},
 	
 	{
@@ -1820,6 +1826,7 @@ local debuff_options = {
 		thumbscale = 1.8,
 		name = "OPTIONS_ICONROWSPACING",
 		desc = "OPTIONS_ICONROWSPACING",
+		id = "auras_general_icon_row_spacing",
 	},
 	
 	{
@@ -1832,6 +1839,7 @@ local debuff_options = {
 		end,
 		name = "OPTIONS_STACK_SIMILAR_AURAS",
 		desc = "OPTIONS_STACK_SIMILAR_AURAS_DESC",
+		id = "auras_general_stack_similar_aura",
 	},
 	{
 		type = "toggle",
@@ -1843,6 +1851,7 @@ local debuff_options = {
 		end,
 		name = "OPTIONS_STACK_AURATIME",
 		desc = "OPTIONS_STACK_AURATIME_DESC",
+		id = "auras_general_stack_auratime",
 	},
 	
 	{type = "blank"},
