@@ -712,8 +712,7 @@ end
 
 		local playerClass = PlayerClass
 		if (IS_WOW_PROJECT_NOT_MAINLINE) then
-			local formId = 1 + ((IsSpellKnown(5487) or IsSpellKnown(9634)) and 1 or 0) + (IsSpellKnown(1066) and 1 or 0)
-			if (playerClass == "ROGUE" or playerClass == "DEATHKNIGHT" or (playerClass == "DRUID" and IsSpellKnown(768) and (GetShapeshiftForm() == formId or Plater.db.profile.resources_settings.druid_show_always))) then
+			if (playerClass == "ROGUE" or playerClass == "DEATHKNIGHT" or (playerClass == "DRUID" and (GetShapeshiftFormID() == 1 or Plater.db.profile.resources_settings.druid_show_always))) then
 				Plater.EndLogPerformanceCore("Plater-Resources", "Update", "CanUsePlaterResourceFrame")
 				return true
 			end
@@ -726,7 +725,7 @@ end
 			if (specId) then
 				local doesSpecIdUseResource = doesSpecUseResource(specId)
 				--player maybe in guardian spec but is using feral form
-				local isInFeralForm = PlayerClass == "DRUID" and (GetShapeshiftForm() == 2 or Plater.db.profile.resources_settings.druid_show_always)
+				local isInFeralForm = PlayerClass == "DRUID" and (GetShapeshiftFormID() == 1 or Plater.db.profile.resources_settings.druid_show_always)
 				if (doesSpecIdUseResource or isInFeralForm) then --TODO: Druid can use it in all specs. stance check needed! (implementing)
 
 					--get the resource bar

@@ -8,9 +8,16 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1709675079, "Bug Fix", "April 9th, 2024", "Ensuring Gladiator Stance is not considered tanking in SoD.", "cont1nuity"},
+			
+			{1709675079, "Backend Change", "April 7th, 2024", "Adding option to automatically translate NPC names on the 'NPC Colors and Names' tab.", "cont1nuity"},
+			{1709675079, "Backend Change", "March 31st, 2024", "Adding tank states for Rogues on SoD.", "Thunderz"},
+			{1709675079, "Backend Change", "March 14th, 2024", "Maintenance on libraries.", "cont1nuity"},
+			{1709675079, "Backend Change", "March 14th, 2024", "Adding support for Cataclysm classic.", "cont1nuity"},
 			{1709675079, "Backend Change", "March 8th, 2024", "Reworking aura updates for classic era.", "cont1nuity"},
 			{1709675079, "Bug Fix", "March 8th, 2024", "Fixing an issue with aura updates in classic era.", "cont1nuity"},
 			{1709675079, "Bug Fix", "March 5th, 2024", "Fixing an issue with Ghost Auras on performance units.", "cont1nuity"},
+			{1709675079, "Backend Change", "February 27th, 2024", "Maintenance on libraries.", "Terciob"},
 			
 			{1708341442, "Bug Fix", "February 19th, 2024", "Fixing interrupt animation being enabled to break following cast bars.", "cont1nuity"},
 			{1708341442, "Bug Fix", "February 19th, 2024", "Fixing consolidated auras sometimes not showing properly when sorting for longest duration.", "cont1nuity"},
