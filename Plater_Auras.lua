@@ -26,7 +26,7 @@ local UnitName = _G.UnitName
 local wipe = _G.wipe
 local UnitIsUnit = _G.UnitIsUnit
 local UnitGUID = _G.UnitGUID
-local GetSpellInfo = _G.GetSpellInfo
+local GetSpellInfo = GetSpellInfo or function(spellID) if not spellID then return nil end local si = C_Spell.GetSpellInfo(spellID) if si then return si.name, nil, si.iconID, si.castTime, si.minRange, si.maxRange, si.spellID, si.originalIconID end end
 local floor = _G.floor
 local UnitAuraBySlot = _G.UnitAuraBySlot or (C_UnitAuras and (function(...) local auraData = C_UnitAuras.GetAuraDataBySlot(...); if not auraData then return nil; end; return AuraUtil.UnpackAuraData(auraData); end))
 local UnitAura = _G.UnitAura or (C_UnitAuras and (function(...) local auraData = C_UnitAuras.GetAuraDataByIndex(unitToken, index, filter); if not auraData then return nil; end; return AuraUtil.UnpackAuraData(auraData); end))

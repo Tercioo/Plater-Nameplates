@@ -6,6 +6,7 @@ local GetErrorHandler = platerInternal.GetErrorHandler
 local DF = DetailsFramework
 local LibAceSerializer = LibStub:GetLibrary ("AceSerializer-3.0")
 local LibDeflate = LibStub:GetLibrary ("LibDeflate")
+local GetSpellInfo = GetSpellInfo or function(spellID) if not spellID then return nil end local si = C_Spell.GetSpellInfo(spellID) if si then return si.name, nil, si.iconID, si.castTime, si.minRange, si.maxRange, si.spellID, si.originalIconID end end
 
 local CONST_THROTTLE_HOOK_COMMS = 0.500 --2 comms per second per mod
 local CONST_COLORNPC_SHARING_CHANNEL = "GUILD"

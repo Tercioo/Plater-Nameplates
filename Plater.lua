@@ -53,7 +53,7 @@ local UnitCanAttack = UnitCanAttack
 --local IsSpellInRange = IsSpellInRange --200 locals limit
 local abs = math.abs
 local format = string.format
-local GetSpellInfo = GetSpellInfo
+local GetSpellInfo = GetSpellInfo or function(spellID) if not spellID then return nil end local si = C_Spell.GetSpellInfo(spellID) if si then return si.name, nil, si.iconID, si.castTime, si.minRange, si.maxRange, si.spellID, si.originalIconID end end
 local UnitIsUnit = UnitIsUnit
 local type = type
 local select = select
@@ -2273,7 +2273,7 @@ Plater.AnchorNamesByPhraseId = {
 			
 			Plater.CurrentEncounterID = nil
 			
-			local pvpType, isFFA, faction = GetZonePVPInfo()
+			local pvpType, isFFA, faction = (GetZonePVPInfo or C_PvP.GetZonePVPInfo)()
 			Plater.ZonePvpType = pvpType
 			Plater.UpdateBgPlayerRoleCache()
 			
@@ -2324,7 +2324,7 @@ Plater.AnchorNamesByPhraseId = {
 				C_Timer.After (10, delayed_guildname_check)
 			end
 			
-			local pvpType, isFFA, faction = GetZonePVPInfo()
+			local pvpType, isFFA, faction = (GetZonePVPInfo or C_PvP.GetZonePVPInfo)()
 			Plater.ZonePvpType = pvpType
 			
 			local name, instanceType, difficultyID, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, instanceMapID, instanceGroupSize = GetInstanceInfo()

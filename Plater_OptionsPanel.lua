@@ -88,6 +88,7 @@ local UNITREACTION_NEUTRAL = 4
 local UNITREACTION_FRIENDLY = 5
 
 local lower = string.lower
+local GetSpellInfo = GetSpellInfo or function(spellID) if not spellID then return nil end local si = C_Spell.GetSpellInfo(spellID) if si then return si.name, nil, si.iconID, si.castTime, si.minRange, si.maxRange, si.spellID, si.originalIconID end end
 
 --db upvalues
 local DB_CAPTURED_SPELLS

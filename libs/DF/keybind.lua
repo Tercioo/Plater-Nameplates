@@ -26,7 +26,7 @@ local IsShiftKeyDown = _G["IsShiftKeyDown"]
 local IsControlKeyDown = _G["IsControlKeyDown"]
 local IsAltKeyDown = _G["IsAltKeyDown"]
 local CreateFrame = _G["CreateFrame"]
-local GetSpellInfo = _G["GetSpellInfo"]
+local GetSpellInfo = _G["GetSpellInfo"] or function(spellID) if not spellID then return nil end local si = C_Spell.GetSpellInfo(spellID) if si then return si.name, nil, si.iconID, si.castTime, si.minRange, si.maxRange, si.spellID, si.originalIconID end end
 local unpack = unpack ---@diagnostic disable-line
 
 ---@alias actionidentifier string a string in the format of "spell-spellId" or "macro-macroName" or "system-target", etc, used to pass information about the action more easily

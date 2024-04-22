@@ -8,6 +8,7 @@ local unpack = _G.unpack
 local tremove = _G.tremove
 local CreateFrame = _G.CreateFrame
 local tinsert = _G.tinsert
+local GetSpellInfo = GetSpellInfo or function(spellID) if not spellID then return nil end local si = C_Spell.GetSpellInfo(spellID) if si then return si.name, nil, si.iconID, si.castTime, si.minRange, si.maxRange, si.spellID, si.originalIconID end end
 
 --sort scripts
 function Plater.SortScripts (t1, t2)

@@ -4,6 +4,7 @@ local Plater = Plater
 local GameCooltip = GameCooltip2
 local DF = DetailsFramework
 local _
+local GetSpellInfo = GetSpellInfo or function(spellID) if not spellID then return nil end local si = C_Spell.GetSpellInfo(spellID) if si then return si.name, nil, si.iconID, si.castTime, si.minRange, si.maxRange, si.spellID, si.originalIconID end end
 
 --get templates
 local options_text_template = DF:GetTemplate ("font", "OPTIONS_FONT_TEMPLATE")
