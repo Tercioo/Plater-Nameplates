@@ -8,7 +8,10 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
-			{1709675079, "Bug Fix", "April 9th, 2024", "Ensuring Gladiator Stance is not considered tanking in SoD.", "cont1nuity"},
+			{1713856200, "Bug Fix", "April 23rd, 2024", "Fixing options alignment issue with Cata.", "cont1nuity"},
+			{1713856200, "Backend Change", "April 22nd, 2024", "Base support for TWW.", "cont1nuity"},
+			{1713856200, "Backend Change", "April 19nd, 2024", "Backend changes to options layout.", "Terciob"},
+			{1713856200, "Bug Fix", "April 9th, 2024", "Ensuring Gladiator Stance is not considered tanking in SoD.", "cont1nuity"},
 			
 			{1709675079, "Backend Change", "April 7th, 2024", "Adding option to automatically translate NPC names on the 'NPC Colors and Names' tab.", "cont1nuity"},
 			{1709675079, "Backend Change", "March 31st, 2024", "Adding tank states for Rogues on SoD.", "Thunderz"},
