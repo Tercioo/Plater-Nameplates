@@ -1614,7 +1614,7 @@ function Plater.CreateGoToTabFrame(parent, text, index)
 	local labelgoToTab = DF:CreateLabel(goToTab, text, 10, "orange")
 	labelgoToTab.width = 220
 	labelgoToTab.height = 50
-	labelgoToTab.valign = "center"
+	labelgoToTab.valign = "middle"
 	labelgoToTab.align = "center"
 	labelgoToTab:SetPoint("center", goToTab, "center", 0, 0)
 
