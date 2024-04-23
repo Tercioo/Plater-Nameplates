@@ -366,8 +366,8 @@ end
 				local npcZone = nextDataToApprove[4]
 				local senderName = nextDataToApprove[6]
 				
-				npcName = string.gsub(npcName, "@C@", ","))
-				npcZone = string.gsub(npcZone, "@C@", ","))
+				npcName = string.gsub(npcName, "@C@", ",")
+				npcZone = string.gsub(npcZone, "@C@", ",")
 
 				frame.Text1:SetText("From: " .. senderName)
 
@@ -384,7 +384,7 @@ end
 
 				elseif (whichInfo == "npcrename") then
 					local newName = nextDataToApprove[5]
-					newName = string.gsub(newName, "@C@", ","))
+					newName = string.gsub(newName, "@C@", ",")
 					
 					frame.Text2:SetText("Rename: |cFFFFDD00" .. npcName .. "|r to: |cFFFFDD00" .. newName)
 
@@ -808,8 +808,8 @@ end
 			return
 		end
 		
-		npcName = string.gsub(npcName, ",", "@C@"))
-		npcZone = string.gsub(npcZone, ",", "@C@"))
+		npcName = string.gsub(npcName, ",", "@C@")
+		npcZone = string.gsub(npcZone, ",", "@C@")
 
 		local dataToSend
 
@@ -831,7 +831,7 @@ end
 				return
 			end
 			
-			npcNameRenamed = string.gsub(npcNameRenamed, ",", "@C@"))
+			npcNameRenamed = string.gsub(npcNameRenamed, ",", "@C@")
 
 			dataToSend = whichInfo .. "," .. npcId .. "," .. npcName .. "," .. npcZone .. "," .. (autoAccept and "1" or "0") .. "," .. npcNameRenamed
 
