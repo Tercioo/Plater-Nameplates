@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1713856200, "Bug Fix", "April 23rd, 2024", "Sending NPC information to other players would not work if the name contained a ','.", "cont1nuity"},
 			{1713856200, "Bug Fix", "April 23rd, 2024", "Fixing options alignment issue with Cata.", "cont1nuity"},
 			{1713856200, "Backend Change", "April 22nd, 2024", "Base support for TWW.", "cont1nuity"},
 			{1713856200, "Backend Change", "April 19nd, 2024", "Backend changes to options layout.", "Terciob"},
