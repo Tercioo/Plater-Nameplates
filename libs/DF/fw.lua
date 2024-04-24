@@ -1,6 +1,6 @@
 
 
-local dversion = 530
+local dversion = 531
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary(major, minor)
 
@@ -1355,6 +1355,10 @@ function DF:AddClassIconToText(text, playerName, englishClassName, useSpec, icon
 					spec = spec
 				end
 			end
+		else
+			if (type(useSpec) == "number") then
+				local specId, specName = GetSpecializationInfoByID(useSpec)
+			end
 		end
 	end
 
@@ -1379,6 +1383,33 @@ function DF:AddClassIconToText(text, playerName, englishClassName, useSpec, icon
 	end
 
 	return text
+end
+
+function DF:AddClassIconToString(text, engClass, size)
+	size = size or 16
+	local tcoords = CLASS_ICON_TCOORDS[engClass]
+	if (tcoords) then
+		local l, r, t, b = unpack(tcoords)
+		return "|TInterface\\Glues\\CharacterCreate\\UI-CharacterCreate-Classes:" .. size .. ":" .. size .. ":0:0:256:256:" .. (l * 256) .. ":" .. (r * 256) .. ":" .. (t * 256) .. ":" .. (b * 256) .. "|t " .. text
+	end
+end
+
+function DF:AddSpecIconToString(text, specId, size)
+	size = size or 16
+
+	if (not specId) then
+		--get the player specId
+		local specIndex = GetSpecialization()
+		specId = GetSpecializationInfo(specIndex)
+		if (not specId) then
+			return
+		end
+	end
+
+	local id, name, description, icon = GetSpecializationInfoByID(specId)
+	if (id) then
+		return "|T" .. icon .. ":" .. size .. ":" .. size .. ":0:0|t " .. text
+	end
 end
 
 ---create a table with information about a texture (deprecated, use: DetailsFramework:CreateAtlas())
