@@ -1115,7 +1115,8 @@ Plater.AnchorNamesByPhraseId = {
 					local stance = GetShapeshiftFormID() --18 is def, 24 is glad
 					playerIsTank = stance == 18 or ((not stance == 24) and IsEquippedItemType("Shields")) -- Defensive Stance or shield (and not glad)
 				elseif playerClass == "DRUID" then
-					playerIsTank = GetShapeshiftFormID() == 5 -- Bear Form
+					local formId = GetShapeshiftFormID()
+					playerIsTank = (formId == 5) or (formId == 8) -- Bear Form or Dire Bear Form...
 				elseif playerClass == "PALADIN" then
 					for i=1,40 do
 					  local spellId = select(10, UnitBuff("player",i))
