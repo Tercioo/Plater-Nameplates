@@ -291,6 +291,7 @@ detailsFramework.EditorMixin = {
         local objectRegistered = self:GetObjectById(id)
         assert(type(objectRegistered) == "table", "EditObjectById() object not found.")
         self:EditObject(objectRegistered)
+        self.objectSelector:RefreshMe()
     end,
 
     EditObjectByIndex = function(self, index)
@@ -298,6 +299,7 @@ detailsFramework.EditorMixin = {
         local objectRegistered = self:GetObjectByIndex(index)
         assert(type(objectRegistered) == "table", "EditObjectById() object not found.")
         self:EditObject(objectRegistered)
+        self.objectSelector:RefreshMe()
     end,
 
     ---@param self df_editor
