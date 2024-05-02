@@ -1,6 +1,5 @@
 ## Interface: 100206
 ## Interface-Mainline: 100206
-## Interface-Wrath: 30403
 ## Interface-Cata: 40400
 ## Interface-Vanilla: 11502
 ## Title: Plater
