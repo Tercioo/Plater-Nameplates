@@ -10314,7 +10314,7 @@ end
 			options.glowType = "button"
 		end
 		
-		Plater.StartGlow(frame, options.color, options, options.key)
+		Plater.StartGlow(frame, color or options.color, options, options.key)
 	end
 	
 	-- creates an ants glow effect
@@ -10335,7 +10335,7 @@ end
 			options.glowType = "ants"
 		end
 		
-		Plater.StartGlow(frame, options.color, options, options.key)
+		Plater.StartGlow(frame, color or options.color, options, options.key)
 	end
 	
 	-- creates a pixel glow effect
@@ -10358,7 +10358,7 @@ end
 			options.glowType = "pixel"
 		end
 		
-		Plater.StartGlow(frame, options.color, options, options.key)
+		Plater.StartGlow(frame, color or options.color, options, options.key)
 	end
 	
 	-- stop LibCustomGlow effects on the frame, if existing
