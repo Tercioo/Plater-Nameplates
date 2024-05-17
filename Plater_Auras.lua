@@ -1667,10 +1667,12 @@ end
 			auraIconFrame.CountFrame.Count:Hide()
 		end
 		
+		auraIconFrame.IsShowingBuff = isBuff
+		auraIconFrame.CanStealOrPurge = isStealable
+		
 		--border colors
 		if (isStealable) then
 			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.steal_or_purge))
-			auraIconFrame.CanStealOrPurge = true
 		
 		elseif (Plater.db.profile.aura_border_colors_by_type) then
 			-- use Blizzards color global 'DebuffTypeColor' for the actual color:
@@ -1688,18 +1690,17 @@ end
 		elseif (DEFENSIVE_AURA_IDS [spellId]) then 
 			--> defensive CDs
 			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.defensive))
+
+		elseif (dispelName == AURA_TYPE_ENRAGE) then 
+			--> enrage effects
+			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.enrage))
 			
 		elseif (isBuff) then
 			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.is_buff))
-			auraIconFrame.IsShowingBuff = true
 		
 		elseif (isDebuff) then
 			--> for debuffs on the player for the personal bar
 			auraIconFrame:SetBackdropBorderColor (1, 0, 0, 1)
-		
-		elseif (dispelName == AURA_TYPE_ENRAGE) then 
-			--> enrage effects
-			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.enrage))
 		
 		elseif (isShowAll) then
 			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.is_show_all))
