@@ -197,11 +197,12 @@ function Plater.OpenOptionsPanel(pageNumber, bIgnoreLazyLoad)
 	
 	--build the main frame
 	local f = DF:CreateSimplePanel (UIParent, optionsWidth, optionsHeight, "Plater |cFFFF8822[|r|cFFFFFFFFNameplates|r|cFFFF8822]|r: professional addon for hardcore gamers", "PlaterOptionsPanelFrame", {UseScaleBar = true}, Plater.db.profile.OptionsPanelDB)
-	f.Title:SetAlpha (.75)
-	f:SetFrameStrata ("DIALOG")
-	DF:ApplyStandardBackdrop (f)
+	f.Title:SetAlpha(.75)
+	f:SetFrameStrata("DIALOG")
+	f:SetTopLevel(true)
+	DF:ApplyStandardBackdrop(f)
 	f:ClearAllPoints()
-	PixelUtil.SetPoint (f, "center", UIParent, "center", 2, 2, 1, 1)
+	PixelUtil.SetPoint(f, "center", UIParent, "center", 2, 2, 1, 1)
 
 	--over the top frame
 	local OTTFrame = CreateFrame("frame", "PlaterNameplatesOverTheTopFrame", f)
