@@ -153,4 +153,72 @@ end
 
 
 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--> debuggers ~debug
 
+function Plater.DebugColorAnimation()
+    if (Plater.DebugColorAnimation_Timer) then
+        return
+    end
+
+    Plater.DebugColorAnimation_Timer = C_Timer.NewTicker (0.5, function() --~animationtest
+        for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+            --make the bar jump from green to pink - pink to green
+            Plater.ChangeHealthBarColor_Internal (plateFrame.unitFrame.healthBar, abs (math.sin (GetTime())), abs (math.cos (GetTime())), abs (math.sin (GetTime())), 1)
+        end
+    end)
+
+    C_Timer.After (10, function()
+        if (Plater.DebugColorAnimation_Timer) then
+            Plater.DebugColorAnimation_Timer:Cancel()
+            Plater.DebugColorAnimation_Timer = nil
+            Plater:Msg ("stopped the animation test.")
+            Plater.UpdateAllPlates()
+        end
+    end)
+
+    Plater:Msg ("is now animating color nameplates in your screen for test purposes.")
+end
+
+function Plater.DebugHealthAnimation()
+    if (Plater.DebugHealthAnimation_Timer) then
+        return
+    end
+
+    Plater.DebugHealthAnimation_Timer = C_Timer.NewTicker (1.5, function() --~animationtest
+        for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+            local self = plateFrame.unitFrame
+
+            if (self.healthBar.CurrentHealth == 0) then
+                self.healthBar.AnimationStart = 0
+                self.healthBar.AnimationEnd = UnitHealthMax (self [MEMBER_UNITID])
+            else
+                self.healthBar.AnimationStart = UnitHealthMax (self [MEMBER_UNITID])
+                self.healthBar.AnimationEnd = 0
+            end
+
+            self.healthBar:SetValue (self.healthBar.CurrentHealth)
+            self.healthBar.CurrentHealthMax = UnitHealthMax (self [MEMBER_UNITID])
+
+            self.healthBar.IsAnimating = true
+
+            if (self.healthBar.AnimationEnd > self.healthBar.AnimationStart) then
+                self.healthBar.AnimateFunc = Plater.AnimateRightWithAccel
+            else
+                self.healthBar.AnimateFunc = Plater.AnimateLeftWithAccel
+            end
+
+        end
+    end)
+
+    C_Timer.After (10, function()
+        if (Plater.DebugHealthAnimation_Timer) then
+            Plater.DebugHealthAnimation_Timer:Cancel()
+            Plater.DebugHealthAnimation_Timer = nil
+            Plater:Msg ("stopped the animation test.")
+            Plater.UpdateAllPlates()
+        end
+    end)
+
+    Plater:Msg ("is now animating nameplates in your screen for test purposes.")
+end
