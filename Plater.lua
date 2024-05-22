@@ -680,7 +680,7 @@ Plater.AnchorNamesByPhraseId = {
 				elseif (class == "WARLOCK") then
 					-- Decimation
 					if IsPlayerSpell(63156) or IsPlayerSpell(63158) then
-						lowExecute = 0.35
+						lowExecute = 0.25
 					else
 						lowExecute = 0.25
 					end
