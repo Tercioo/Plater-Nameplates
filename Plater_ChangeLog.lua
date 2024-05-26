@@ -8,6 +8,13 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1716759062, "Bug Fix", "May 22nd, 2024", "Fixing Questie support.", "cont1nuity"},
+			{1716759062, "Bug Fix", "May 17th, 2024", "Fixing glow color override.", "cont1nuity"},
+			{1716759062, "Bug Fix", "May 17th, 2024", "Fixing aura border color priority.", "cont1nuity"},
+			{1716759062, "Bug Fix", "May 9th, 2024", "Fixing Priest execute for Cata.", "cont1nuity"},
+			{1716759062, "Bug Fix", "May 8th, 2024", "Updating for 10.2.7.", "cont1nuity"},
+			{1716759062, "Backend Change", "May 8th, 2024", "Maintenance on libraries.", "Terciob"},
+			
 			{1715123551, "Bug Fix", "May 8th, 2024", "Updating for 10.2.7.", "cont1nuity"},
 			{1715123551, "Bug Fix", "May 6th, 2024", "Fixing SoD tank recognition for druid 'Dire Bear Form'.", "cont1nuity"},
 			{1715123551, "Bug Fix", "April 26th, 2024", "Fixing SoD tank recognition for druid 'Dire Bear Form'.", "cont1nuity"},
