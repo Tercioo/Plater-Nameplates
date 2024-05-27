@@ -169,10 +169,11 @@ function platerInternal.Plugins.CreatePluginsOptionsTab(pluginsFrame)
 
     local showOptionsFrameForPlugin = function(pluginUniqueName)
 		local pluginFrame = platerInternal.Plugins.GetPluginFrameByPluginUniqueName(pluginUniqueName)
+
+		pluginFrame:SetParent(PlaterOptionsPanelContainerPluginsFramePluginOptionsArea)
+		pluginFrame:SetAllPoints(PlaterOptionsPanelContainerPluginsFramePluginOptionsArea)
+
 		pluginFrame:Show()
-		local optionsFrame = platerInternal.Plugins.GetPluginAreaFrame()
-		pluginFrame:ClearAllPoints()
-		pluginFrame:SetAllPoints(optionsFrame)
     end
 
     local checkBoxCallback = function(checkBox)
