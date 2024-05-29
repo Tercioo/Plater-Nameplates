@@ -1,6 +1,6 @@
 
 
-local dversion = 535
+local dversion = 537
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary(major, minor)
 
@@ -187,6 +187,9 @@ function DF.IsWarWow()
 	return false
 end
 
+function DF.IsTWWWow()
+	return DF.IsWarWow()
+end
 
 ---return true if the player is playing in the WotLK version of wow with the retail api
 ---@return boolean
@@ -198,6 +201,10 @@ function DF.IsNonRetailWowWithRetailAPI()
 	return false
 end
 DF.IsWotLKWowWithRetailAPI = DF.IsNonRetailWowWithRetailAPI -- this is still in use
+
+function DF.ExpansionHasAugEvoker()
+	return DF.IsDragonflightWow() or DF.IsWarWow()
+end
 
 ---for classic wow, get the role using the texture from the talents frame
 local roleBySpecTextureName = {
@@ -4488,6 +4495,7 @@ function DF:GetClassSpecIds(engClass) --naming conventions
 	return DF:GetClassSpecIDs(engClass)
 end
 
+--kinda deprecated
 local getDragonflightTalents = function()
 	if (not ClassTalentFrame) then
 		ClassTalentFrame_LoadUI()
@@ -4522,9 +4530,17 @@ local getDragonflightTalents = function()
 	return exportStream:GetExportString()
 end
 
+local getDragonflightTalentsEasy = function()
+	local activeConfigID = C_ClassTalents.GetActiveConfigID()
+	if (activeConfigID and activeConfigID > 0) then
+		return C_Traits.GenerateImportString(activeConfigID)
+	end
+	return ""
+end
+
 --/dump DetailsFramework:GetDragonlightTalentString()
 function DF:GetDragonlightTalentString()
-	local runOkay, errorText = pcall(getDragonflightTalents)
+	local runOkay, errorText = pcall(getDragonflightTalentsEasy)
 	if (not runOkay) then
 		DF:Msg("error 0x4517", errorText)
 		return ""
