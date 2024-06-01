@@ -37,6 +37,9 @@ function platerInternal.CreateDataTables(Plater)
         UNITREACTION_FRIENDLY = 5,
     }
 
+    --declaring the performance units within the plater namespace
+    Plater.PerformanceUnits = {}
+
     --namespaces
     Plater.Resources = {}
     Plater.Auras = {}

@@ -51,9 +51,9 @@ Plater_DefaultSettings.lua
 
 Plater_Data.lua
 Plater_Logs.lua
-Plater_PerformanceUnits.lua
 Plater_Util.lua
 Plater.lua
+Plater_PerformanceUnits.lua
 Plater_ColorFrame.lua
 Plater_SlashCMD.lua
 Plater_ImportExport.lua

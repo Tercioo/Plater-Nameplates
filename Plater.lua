@@ -133,7 +133,6 @@ function Plater.IncreaseRefreshID() --private
 end
 
 platerInternal.CreateDataTables(Plater)
-platerInternal.CreatePerformanceUnits(Plater)
 
 Plater.ForceBlizzardNameplateUnits = {
 	--
@@ -3983,6 +3982,9 @@ function Plater.InitializeSavedVariables()
 	PlaterDB.captured_casts = PlaterDB.captured_casts or {}
 	--table to store auras and any spell cast
 	PlaterDB.captured_spells = PlaterDB.captured_spells or {}
+
+	--table to store npcIds of performance units
+	PlaterDB.performance_units = PlaterDB.performance_units or {}
 end
 
 function Plater.OnInit() --private --~oninit ~init
@@ -4004,6 +4006,10 @@ function Plater.OnInit() --private --~oninit ~init
 
 	Plater.InitializeSavedVariables()
 	Plater.RefreshDBUpvalues()
+
+	C_Timer.After(0, function()
+		platerInternal.CreatePerformanceUnits(Plater)
+	end)
 	
 	Plater.UpdateBlizzardNameplateFonts()
 	
