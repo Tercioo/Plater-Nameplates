@@ -1269,7 +1269,7 @@ do
 		end,
 	})
 
-	--[=[
+	--[=
 	--#36 triggers for 10.3.7 season 4 dragonflight m+ dungeons
 	tinsert (PlaterPatchLibrary, {
 		NotEssential = true,
@@ -1279,8 +1279,10 @@ do
 		},
 		Func = function()
 			local addTriggers = {
-				["Cast - Ultra Important [P]"] = {253544},
-				["Cast - Very Important [Plater]"] = {253517},
+				--script name			  trigger list
+				["Add - Important [P]"] = {194745, 190426, npc = true}, --Rotfang Hyena, Decay Totem
+				["Explosion Affix M+ [Plater]"] = {389446}, --Nullifying Pulse, 
+				["Cast - Very Important [Plater]"] = {377488}, --Icy Bindings
 			}
 
 			for scriptName, triggerList in pairs(addTriggers) do
