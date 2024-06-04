@@ -4003,6 +4003,13 @@ function Plater.CreateScriptingPanel()
 					scriptingFrame.UpdateOverlapButton()
 				end
 			
+			-- 3d model for the units
+				local npc3DFrame = CreateFrame ("playermodel", "", nil, "ModelWithControlsTemplate")
+				npc3DFrame:SetSize (200, 250)
+				npc3DFrame:EnableMouse (false)
+				npc3DFrame:EnableMouseWheel (false)
+				npc3DFrame:Hide()
+			
 			--when the user hover over a scrollbox line
 				local onenter_trigger_line = function (self)
 					if (self.SpellID) then
@@ -4011,13 +4018,18 @@ function Plater.CreateScriptingPanel()
 						GameTooltip:AddLine (" ")
 						GameTooltip:Show()
 					elseif self.NpcID then
+						local npcID = tonumber(self.NpcID)
 						GameTooltip:SetOwner (self, "ANCHOR_RIGHT")
-						GameTooltip:SetHyperlink (("unit:Creature-0-0-0-0-%d"):format(self.NpcID))
+						GameTooltip:SetHyperlink (("unit:Creature-0-0-0-0-%d"):format(npcID))
 						GameTooltip:AddLine (" ")
-						if tonumber(self.NpcID) and Plater.db.profile.npc_cache[tonumber(self.NpcID)] then
-							GameTooltip:AddLine (Plater.db.profile.npc_cache[tonumber(self.NpcID)][2] or "???")
+						if npcID and Plater.db.profile.npc_cache[npcID] then
+							GameTooltip:AddLine (Plater.db.profile.npc_cache[npcID][2] or "???")
 							GameTooltip:AddLine (" ")
 						end
+						npc3DFrame:SetCreature(npcID)
+						npc3DFrame:SetParent(GameTooltip)
+						npc3DFrame:SetPoint ("top", GameTooltip, "bottom", 0, -10)
+						npc3DFrame:Show()
 						GameTooltip:Show()
 					end
 					self:SetBackdropColor (.3, .3, .3, 0.7)
@@ -4025,6 +4037,9 @@ function Plater.CreateScriptingPanel()
 			
 			--when the user leaves a scrollbox line from a hover over
 				local onleave_trigger_line = function (self)
+					npc3DFrame:SetParent(nil)
+					npc3DFrame:ClearAllPoints()
+					npc3DFrame:Hide()
 					GameTooltip:Hide()
 					self:SetBackdropColor (unpack (scrollbox_line_backdrop_color))
 				end
