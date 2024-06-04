@@ -4014,6 +4014,10 @@ function Plater.CreateScriptingPanel()
 						GameTooltip:SetOwner (self, "ANCHOR_RIGHT")
 						GameTooltip:SetHyperlink (("unit:Creature-0-0-0-0-%d"):format(self.NpcID))
 						GameTooltip:AddLine (" ")
+						if tonumber(self.NpcID) and Plater.db.profile.npc_cache[tonumber(self.NpcID)] then
+							GameTooltip:AddLine (Plater.db.profile.npc_cache[tonumber(self.NpcID)][2] or "???")
+							GameTooltip:AddLine (" ")
+						end
 						GameTooltip:Show()
 					end
 					self:SetBackdropColor (.3, .3, .3, 0.7)
