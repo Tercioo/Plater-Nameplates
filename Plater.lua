@@ -9082,15 +9082,15 @@ end
 			if C_TooltipInfo then
 				local info = C_TooltipInfo.GetHyperlink(("unit:Creature-0-0-0-0-%d"):format(npcID))
 				local leftText = info and info.lines and info.lines[1] and info.lines[1].leftText
-				if leftText and leftText ~= "Unknown" then
+				if leftText and leftText ~= _G.UNKNOWN then
 					return leftText
 				end
 			else
 				local tooltipFrame = GetCreatureNameFromIDFinderTooltip or CreateFrame ("GameTooltip", "GetCreatureNameFromIDFinderTooltip", nil, "GameTooltipTemplate")
 				tooltipFrame:SetOwner (WorldFrame, "ANCHOR_NONE")
 				tooltipFrame:SetHyperlink (("unit:Creature-0-0-0-0-%d"):format(npcID))
-				local petNameLine = _G ["GetCreatureNameFromIDFinderTooltipTextLeft1"]
-				return petNameLine and petNameLine:GetText()
+				local npcNameLine = _G ["GetCreatureNameFromIDFinderTooltipTextLeft1"]
+				return npcNameLine and npcNameLine:GetText()
 			end
 		end
 		
@@ -9099,6 +9099,7 @@ end
 			if not Plater.db.profile.auto_translate_npc_names then return end
 			if PLAYER_IN_COMBAT then --or not IS_IN_OPEN_WORLD then
 				C_Timer.After(5, translate_npc_cache)
+				return
 			end
 			
 			local count = 0
