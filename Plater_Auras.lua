@@ -16,7 +16,19 @@ local tinsert = _G.tinsert
 local min = _G.min
 local max = _G.max
 local abs = _G.abs
-local CreateFrame = _G.CreateFrame
+local G_CreateFrame = _G.CreateFrame
+
+
+local CreateFrame = function (frameType , name, parent, template, id)
+	local frame = G_CreateFrame(frameType , name, parent, template, id)
+	DF:Mixin(frame, DF.FrameFunctions)
+	
+	if frame.ApplyBackdrop then
+		NineSliceUtil.DisableSharpening(frame)
+	end
+	
+	return frame
+end
 local unpack = _G.unpack
 local CooldownFrame_Set = _G.CooldownFrame_Set
 local GetTime = _G.GetTime
@@ -1260,7 +1272,8 @@ end
 	end
 
 	function platerInternal.CreateAuraIcon (parent, name) --private ~createicon ~icon
-		local newIcon = CreateFrame ("Button", name, parent, BackdropTemplateMixin and "BackdropTemplate")
+		--local newIcon = CreateFrame ("Button", name, parent, BackdropTemplateMixin and "BackdropTemplate")
+		local newIcon = CreateFrame ("Button", name, parent)
 		newIcon:Hide()
 		newIcon:SetSize (20, 16)
 		
@@ -1269,19 +1282,50 @@ end
 		
 		newIcon:SetMouseClickEnabled (false)
 		
-		newIcon.Border = newIcon:CreateTexture (nil, "background")
-		newIcon.Border:SetAllPoints()
-		newIcon.Border:SetColorTexture (0, 0, 0)
+		--newIcon.Border = newIcon:CreateTexture (nil, "background")
+		--newIcon.Border:SetAllPoints()
+		--newIcon.Border:SetColorTexture (0, 0, 0)
+		
+		-- switch to proper border, keep compatibility
+		newIcon.Border = DF:CreateFullBorder("$parentBorder", newIcon)
+		local iconOffset = -1 * UIParent:GetScale()
+		PixelUtil.SetPoint (newIcon.Border, "TOPLEFT", newIcon, "TOPLEFT", -iconOffset, iconOffset)
+		PixelUtil.SetPoint (newIcon.Border, "TOPRIGHT", newIcon, "TOPRIGHT", iconOffset, iconOffset)
+		PixelUtil.SetPoint (newIcon.Border, "BOTTOMLEFT", newIcon, "BOTTOMLEFT", -iconOffset, -iconOffset)
+		PixelUtil.SetPoint (newIcon.Border, "BOTTOMRIGHT", newIcon, "BOTTOMRIGHT", iconOffset, -iconOffset)
+		newIcon.SetBackdropBorderColor = function(self, r, g, b, a)
+			self.Border:SetVertexColor(r, g, b, a)
+		end
+		newIcon.Border.SetBorderSize = function(self, size)
+			local borderSize = (size or 1) * UIParent:GetScale()
+			self:SetBorderSizes(borderSize, 1, borderSize, 0)
+			self:UpdateSizes()
+		end
+		newIcon.SetBorderSize = function(self, size)
+			self.Border:SetBorderSize(size)
+		end
+		newIcon.SetBackdrop = function(self, options)
+			local borderSize = options.edgeSize or 1
+			self.Border:SetBorderSize(borderSize)
+		end
+		newIcon.GetBackdropBorderColor = function(self)
+			return self.Border:GetVertexColor()
+		end
 
-		newIcon.BorderMask = newIcon:CreateMaskTexture(nil, "artwork")
-		newIcon.BorderMask:SetAllPoints()
-		newIcon.BorderMask:SetTexture([[Interface/addons/plater/masks/rounded_square_32x32]])
-		newIcon.Border:AddMaskTexture(newIcon.BorderMask)
-		newIcon.BorderMask:Hide()
+		--newIcon.BorderMask = newIcon:CreateMaskTexture(nil, "artwork")
+		--newIcon.BorderMask:SetAllPoints()
+		--newIcon.BorderMask:SetTexture([[Interface/addons/plater/masks/rounded_square_32x32]])
+		--newIcon.Border:AddMaskTexture(newIcon.BorderMask)
+		--newIcon.BorderMask:Hide()
 
 		newIcon.Icon = newIcon:CreateTexture (nil, "BORDER")
-		newIcon.Icon:SetSize (18, 12)
-		newIcon.Icon:SetPoint ("center")
+		--newIcon.Icon:SetSize (18, 12)
+		--newIcon.Icon:SetPoint ("center")
+		iconOffset = -1
+		PixelUtil.SetPoint (newIcon.Icon, "TOPLEFT", newIcon, "TOPLEFT", -iconOffset, iconOffset)
+		PixelUtil.SetPoint (newIcon.Icon, "TOPRIGHT", newIcon, "TOPRIGHT", iconOffset, iconOffset)
+		PixelUtil.SetPoint (newIcon.Icon, "BOTTOMLEFT", newIcon, "BOTTOMLEFT", -iconOffset, -iconOffset)
+		PixelUtil.SetPoint (newIcon.Icon, "BOTTOMRIGHT", newIcon, "BOTTOMRIGHT", iconOffset, -iconOffset)
 		newIcon.Icon:SetTexCoord (.05, .95, .1, .6)
 
 		newIcon.IconMask = newIcon:CreateMaskTexture(nil, "artwork")
@@ -1291,8 +1335,12 @@ end
 		newIcon.IconMask:Hide()
 		
 		newIcon.Cooldown = CreateFrame ("cooldown", "$parentCooldown", newIcon, "CooldownFrameTemplate, BackdropTemplate")
-		newIcon.Cooldown:SetPoint ("center", 0, -1)
-		newIcon.Cooldown:SetAllPoints()
+		--newIcon.Cooldown:SetPoint ("center", 0, -1)
+		--newIcon.Cooldown:SetAllPoints()
+		PixelUtil.SetPoint (newIcon.Cooldown, "TOPLEFT", newIcon, "TOPLEFT", 0, 0)
+		PixelUtil.SetPoint (newIcon.Cooldown, "TOPRIGHT", newIcon, "TOPRIGHT", 0, 0)
+		PixelUtil.SetPoint (newIcon.Cooldown, "BOTTOMLEFT", newIcon, "BOTTOMLEFT", 0, 0)
+		PixelUtil.SetPoint (newIcon.Cooldown, "BOTTOMRIGHT", newIcon, "BOTTOMRIGHT", 0, 0)
 		newIcon.Cooldown:EnableMouse (false)
 		if newIcon.Cooldown.EnableMouseMotion then
 			newIcon.Cooldown:EnableMouseMotion (false)
@@ -1423,7 +1471,10 @@ end
 			
 			self.PlaterBuffList[i] = newFrameIcon
 			
-			newFrameIcon:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
+			--newFrameIcon:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
+			--newFrameIcon.Border:SetBorderSize (1)
+			newFrameIcon:SetBorderSize (1)
+			
 		
 			local auraWidth
 			local auraHeight
@@ -1435,7 +1486,7 @@ end
 			    auraHeight = Plater.db.profile.aura_height
 			end
 			newFrameIcon:SetSize (auraWidth, auraHeight)
-			newFrameIcon.Icon:SetSize (auraWidth-2, auraHeight-2)
+			--newFrameIcon.Icon:SetSize (auraWidth-2, auraHeight-2)
 			
 			--mixin the meta functions for scripts
 			DF:Mixin (newFrameIcon, Plater.ScriptMetaFunctions)
@@ -1459,7 +1510,8 @@ end
 						Normal = nil, --false,
 						Disabled = nil, --false,
 						Checked = nil, --false,
-						Border = nil, --newFrameIcon.Border,
+						--Border = nil, --newFrameIcon.Border,
+						Border = newFrameIcon.Border,
 						AutoCastable = nil, --false,
 						Highlight = nil, --false,
 						HotKey = nil, --false,
@@ -1468,7 +1520,7 @@ end
 						Duration = false,
 						Shine = nil, --false,
 					}
-					newFrameIcon.Border:Hide() --let Masque handle the border...
+					--newFrameIcon.Border:Hide() --let Masque handle the border...
 					Plater.Masque.AuraFrame1:AddButton (newFrameIcon, t, "AuraButtonTemplate", true)
 					Plater.Masque.AuraFrame1:ReSkin(newFrameIcon)
 					
@@ -1482,7 +1534,8 @@ end
 						Normal = nil, --false,
 						Disabled = nil, --false,
 						Checked = nil, --false,
-						Border = nil, --newFrameIcon.Border,
+						--Border = nil, --newFrameIcon.Border,
+						Border = newFrameIcon.Border,
 						AutoCastable = nil, --false,
 						Highlight = nil, --false,
 						HotKey = nil, --false,
@@ -1491,7 +1544,7 @@ end
 						Duration = false,
 						Shine = nil, --false,
 					}
-					newFrameIcon.Border:Hide() --let Masque handle the border...
+					--newFrameIcon.Border:Hide() --let Masque handle the border...
 					Plater.Masque.AuraFrame2:AddButton (newFrameIcon, t, "AuraButtonTemplate", true)
 					Plater.Masque.AuraFrame2:ReSkin(newFrameIcon)
 					
