@@ -8,6 +8,14 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1717708967, "Bug Fix", "June 6th, 2024", "Workaround to support TWW beta.", "cont1nuity"},
+			{1717708967, "Backend Change", "June 6th, 2024", "Better pixel perfect implementation all around on borders.", "cont1nuity"},
+			{1717708967, "New Feature", "June 4th, 2024", "Adding unit names to the unit script trigger lists and their zones and 3d model to tooltip (if available).", "cont1nuity"},
+			{1717708967, "Backend Change", "June 4th, 2024", "Patch for S4 scripts.", "Terciob"},
+			{1717708967, "Backend Change", "June 1st, 2024", "Backend changes on performance units.", "Terciob"},
+			{1717708967, "Bug Fix", "May 28th, 2024", "Fixing default mod code for 'Mod Option Changed' hook.", "cont1nuity"},
+			{1717708967, "Backend Change", "May 27th, 2024", "Maintenance on plugin handling.", "Terciob"},
+			
 			{1716759062, "Bug Fix", "May 22nd, 2024", "Fixing Questie support.", "cont1nuity"},
 			{1716759062, "Bug Fix", "May 17th, 2024", "Fixing glow color override.", "cont1nuity"},
 			{1716759062, "Bug Fix", "May 17th, 2024", "Fixing aura border color priority.", "cont1nuity"},
