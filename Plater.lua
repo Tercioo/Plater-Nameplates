@@ -3342,17 +3342,6 @@ Plater.AnchorNamesByPhraseId = {
 				unitFrame.ShowUIParentAnimation:Play()
 			end
 			
-			--if (not plateFrame.UnitFrame.HasPlaterHooksRegistered) then
-			if not HOOKED_BLIZZARD_PLATEFRAMES[tostring(plateFrame.UnitFrame)] then
-				--print(HOOKED_BLIZZARD_PLATEFRAMES[tostring(plateFrame.UnitFrame)], tostring(plateFrame.UnitFrame), plateFrame.UnitFrame.HasPlaterHooksRegistered)
-				--hook the retail nameplate
-				--plateFrame.UnitFrame:HookScript("OnShow", Plater.OnRetailNamePlateShow)
-				hooksecurefunc(plateFrame.UnitFrame, "Show", Plater.OnRetailNamePlateShow)
-				--plateFrame.UnitFrame.HasPlaterHooksRegistered = true
-				HOOKED_BLIZZARD_PLATEFRAMES[tostring(plateFrame.UnitFrame)] = true
-				
-			end
-			
 			unitFrame.nameplateScaleAdjust = 1
 			
 			if (DB_USE_UIPARENT) then
@@ -3940,6 +3929,30 @@ Plater.AnchorNamesByPhraseId = {
 		end
 		
 		self:Hide()
+		if self:IsProtected() then
+			self:ClearAllPoints()
+			self:SetParent(nil)
+			for _, f in pairs(self:GetChildren() or {}) do
+				DevTool:AddData(f, "child")
+				if type(f) == "table" and f.IsProtected then
+					local p, ep = f:IsProtected()
+					DevTool:AddData({p, ep, f}, "protected?")
+					if ep then
+						DevTool:AddData(f, "protected!")
+						f:ClearAllPoints()
+						f:SetParent(nil)
+					end
+				end
+			end
+			if not self:IsProtected() then
+				self:Hide()
+			elseif DevTool then
+				DevTool:AddData(self)
+			end
+		else
+			self:Hide()
+		end
+		
 		
 		if not SUPPORT_BLIZZARD_PLATEFRAMES then
 			-- should be done if events are not needed
@@ -4419,6 +4432,29 @@ function Plater.OnInit() --private --~oninit ~init
 			hooksecurefunc (NamePlateDriverFrame, "SetupClassNameplateBars", function (self)
 				return Plater.UpdatePersonalBar (self)
 			end)
+			
+			--[[ -- fuck things up a bit...
+			hooksecurefunc (NamePlateBaseMixin, "OnAdded", function(self, namePlateUnitToken, driverFrame)
+				local plateFrame = C_NamePlate.GetNamePlateForUnit (namePlateUnitToken)
+				Plater.OnRetailNamePlateShow(plateFrame.UnitFrame)
+			end)
+			
+			hooksecurefunc (NamePlateDriverFrame, "OnNamePlateAdded", function(self, namePlateUnitToken)
+				if not ENABLED_BLIZZARD_PLATEFRAMES[tostring(frame)] then
+					local plateFrame = C_NamePlate.GetNamePlateForUnit (namePlateUnitToken)
+					DevTool:AddData(plateFrame, "OnNamePlateAdded")
+					C_Timer.After(0, function() Plater.OnRetailNamePlateShow(plateFrame.UnitFrame) end)
+				end
+			end)
+			hooksecurefunc ("DefaultCompactNamePlateFrameSetupInternal", function(frame)
+				DevTool:AddData(frame, "DefaultCompactNamePlateFrameSetupInternal")
+				if not ENABLED_BLIZZARD_PLATEFRAMES[tostring(frame)] then
+					
+					--Plater.OnRetailNamePlateShow (frame)
+				end
+			end)
+			--]]
+			
 		end
 
 		--update the resource location and anchor
