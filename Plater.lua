@@ -3933,12 +3933,12 @@ Plater.AnchorNamesByPhraseId = {
 			self:ClearAllPoints()
 			self:SetParent(nil)
 			for _, f in pairs(self:GetChildren() or {}) do
-				DevTool:AddData(f, "child")
+				--DevTool:AddData(f, "child")
 				if type(f) == "table" and f.IsProtected then
 					local p, ep = f:IsProtected()
-					DevTool:AddData({p, ep, f}, "protected?")
+					--DevTool:AddData({p, ep, f}, "protected?")
 					if ep then
-						DevTool:AddData(f, "protected!")
+						--DevTool:AddData(f, "protected!")
 						f:ClearAllPoints()
 						f:SetParent(nil)
 					end
@@ -3947,7 +3947,7 @@ Plater.AnchorNamesByPhraseId = {
 			if not self:IsProtected() then
 				self:Hide()
 			elseif DevTool then
-				DevTool:AddData(self)
+				DevTool:AddData(self, "protected")
 			end
 		else
 			self:Hide()
