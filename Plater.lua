@@ -4144,11 +4144,19 @@ function Plater.OnInit() --private --~oninit ~init
 		local Masque = LibStub ("Masque", true)
 		if (Masque and Plater.db.profile.enable_masque_support) then
 			Plater.Masque = {}
+			Plater.Masque.Callback = function(group, option, value)
+				group:ReSkin(true)
+			end
 			Plater.Masque.AuraFrame1 = Masque:Group ("Plater Nameplates", "Aura Frame 1")
+			Plater.Masque.AuraFrame1:RegisterCallback(Plater.Masque.Callback)
 			Plater.Masque.AuraFrame2 = Masque:Group ("Plater Nameplates", "Aura Frame 2")
+			Plater.Masque.AuraFrame2:RegisterCallback(Plater.Masque.Callback)
 			Plater.Masque.BuffSpecial = Masque:Group ("Plater Nameplates", "Buff Special")
+			Plater.Masque.BuffSpecial:RegisterCallback(Plater.Masque.Callback)
 			Plater.Masque.BossModIconFrame = Masque:Group ("Plater Nameplates", "Boss Mod Icons")
+			Plater.Masque.BossModIconFrame:RegisterCallback(Plater.Masque.Callback)
 			Plater.Masque.CastIcon = Masque:Group ("Plater Nameplates", "Cast Bar Icons")
+			Plater.Masque.CastIcon:RegisterCallback(Plater.Masque.Callback)
 		end
 	
 	--set some cvars that we want to set

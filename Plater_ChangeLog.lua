@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1717708967, "Bug Fix", "June 8th, 2024", "Fixing pixel perfect aura borders and Masque support.", "cont1nuity"},
 			{1717708967, "Bug Fix", "June 6th, 2024", "Workaround to support TWW beta.", "cont1nuity"},
 			{1717708967, "Backend Change", "June 6th, 2024", "Better pixel perfect implementation all around on borders.", "cont1nuity"},
 			{1717708967, "New Feature", "June 4th, 2024", "Adding unit names to the unit script trigger lists and their zones and 3d model to tooltip (if available).", "cont1nuity"},

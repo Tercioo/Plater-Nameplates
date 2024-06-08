@@ -1288,7 +1288,7 @@ end
 		
 		-- switch to proper border, keep compatibility
 		newIcon.Border = DF:CreateFullBorder("$parentBorder", newIcon)
-		local iconOffset = -1 * UIParent:GetScale()
+		local iconOffset = -1 * UIParent:GetEffectiveScale() * (Plater.db.profile.use_ui_parent_just_enabled and Plater.db.profile.ui_parent_scale_tune or 1)
 		PixelUtil.SetPoint (newIcon.Border, "TOPLEFT", newIcon, "TOPLEFT", -iconOffset, iconOffset)
 		PixelUtil.SetPoint (newIcon.Border, "TOPRIGHT", newIcon, "TOPRIGHT", iconOffset, iconOffset)
 		PixelUtil.SetPoint (newIcon.Border, "BOTTOMLEFT", newIcon, "BOTTOMLEFT", -iconOffset, -iconOffset)
@@ -1297,7 +1297,7 @@ end
 			self.Border:SetVertexColor(r, g, b, a)
 		end
 		newIcon.Border.SetBorderSize = function(self, size)
-			local borderSize = (size or 1) * UIParent:GetScale()
+			local borderSize = (size or 1) * UIParent:GetEffectiveScale() * (Plater.db.profile.use_ui_parent_just_enabled and Plater.db.profile.ui_parent_scale_tune or 1)
 			self:SetBorderSizes(borderSize, 1, borderSize, 0)
 			self:UpdateSizes()
 		end
@@ -1318,10 +1318,10 @@ end
 		--newIcon.Border:AddMaskTexture(newIcon.BorderMask)
 		--newIcon.BorderMask:Hide()
 
-		newIcon.Icon = newIcon:CreateTexture (nil, "BORDER")
+		newIcon.Icon = newIcon:CreateTexture (nil, "artwork")
 		--newIcon.Icon:SetSize (18, 12)
 		--newIcon.Icon:SetPoint ("center")
-		iconOffset = -1
+		iconOffset = -1 * UIParent:GetEffectiveScale() * (Plater.db.profile.use_ui_parent_just_enabled and Plater.db.profile.ui_parent_scale_tune or 1)
 		PixelUtil.SetPoint (newIcon.Icon, "TOPLEFT", newIcon, "TOPLEFT", -iconOffset, iconOffset)
 		PixelUtil.SetPoint (newIcon.Icon, "TOPRIGHT", newIcon, "TOPRIGHT", iconOffset, iconOffset)
 		PixelUtil.SetPoint (newIcon.Icon, "BOTTOMLEFT", newIcon, "BOTTOMLEFT", -iconOffset, -iconOffset)
@@ -1486,6 +1486,7 @@ end
 			    auraHeight = Plater.db.profile.aura_height
 			end
 			newFrameIcon:SetSize (auraWidth, auraHeight)
+			--PixelUtil.SetSize(newFrameIcon, auraWidth, auraHeight)
 			--newFrameIcon.Icon:SetSize (auraWidth-2, auraHeight-2)
 			
 			--mixin the meta functions for scripts
@@ -1510,8 +1511,7 @@ end
 						Normal = nil, --false,
 						Disabled = nil, --false,
 						Checked = nil, --false,
-						--Border = nil, --newFrameIcon.Border,
-						Border = newFrameIcon.Border,
+						Border = nil, --newFrameIcon.Border,
 						AutoCastable = nil, --false,
 						Highlight = nil, --false,
 						HotKey = nil, --false,
@@ -1520,9 +1520,14 @@ end
 						Duration = false,
 						Shine = nil, --false,
 					}
-					--newFrameIcon.Border:Hide() --let Masque handle the border...
-					Plater.Masque.AuraFrame1:AddButton (newFrameIcon, t, "AuraButtonTemplate", true)
+					local mOptions = Plater.Masque.AuraFrame1:GetOptions()
+					DevTool:AddData(mOptions)
+					if mOptions and mOptions.Disable and mOptions.Disable.get and not mOptions.Disable.get() then
+						newFrameIcon.Border:Hide() --let Masque handle the border...
+					end
+					Plater.Masque.AuraFrame1:AddButton (newFrameIcon, t, "Aura", true)
 					Plater.Masque.AuraFrame1:ReSkin(newFrameIcon)
+					newFrameIcon.Masqued = true
 					
 				elseif (self.Name == "Secondary") then
 					local t = {
@@ -1534,8 +1539,7 @@ end
 						Normal = nil, --false,
 						Disabled = nil, --false,
 						Checked = nil, --false,
-						--Border = nil, --newFrameIcon.Border,
-						Border = newFrameIcon.Border,
+						Border = nil, --newFrameIcon.Border,
 						AutoCastable = nil, --false,
 						Highlight = nil, --false,
 						HotKey = nil, --false,
@@ -1544,9 +1548,14 @@ end
 						Duration = false,
 						Shine = nil, --false,
 					}
-					--newFrameIcon.Border:Hide() --let Masque handle the border...
-					Plater.Masque.AuraFrame2:AddButton (newFrameIcon, t, "AuraButtonTemplate", true)
+					local mOptions = Plater.Masque.AuraFrame2:GetOptions()
+					DevTool:AddData(mOptions)
+					if mOptions and mOptions.Disable and mOptions.Disable.get and not mOptions.Disable.get() then
+						newFrameIcon.Border:Hide() --let Masque handle the border...
+					end
+					Plater.Masque.AuraFrame2:AddButton (newFrameIcon, t, "Aura", true)
 					Plater.Masque.AuraFrame2:ReSkin(newFrameIcon)
+					newFrameIcon.Masqued = true
 					
 				end
 			end
@@ -1650,18 +1659,21 @@ end
 				local auraWidth = profile.aura_width_personal
 				local auraHeight = profile.aura_height_personal
 				auraIconFrame:SetSize (auraWidth, auraHeight)
-				auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
+				--PixelUtil.SetSize(auraIconFrame, auraWidth, auraHeight)
+				--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 			else
 				if curBuffFrame == 2 then
 					local auraWidth = profile.aura_width2
 					local auraHeight = profile.aura_height2
 					auraIconFrame:SetSize (auraWidth, auraHeight)
-					auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
+					--PixelUtil.SetSize(auraIconFrame, auraWidth, auraHeight)
+					--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 				else
 					local auraWidth = profile.aura_width
 					local auraHeight = profile.aura_height
 					auraIconFrame:SetSize (auraWidth, auraHeight)
-					auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
+					--PixelUtil.SetSize(auraIconFrame, auraWidth, auraHeight)
+					--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 				end
 			end
 			
@@ -1691,18 +1703,21 @@ end
 				local auraWidth = profile.aura_width_personal
 				local auraHeight = profile.aura_height_personal
 				auraIconFrame:SetSize (auraWidth, auraHeight)
-				auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
+				--PixelUtil.SetSize(auraIconFrame, auraWidth, auraHeight)
+				--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 			else
 				if curBuffFrame == 2 then
 					local auraWidth = profile.aura_width2
 					local auraHeight = profile.aura_height2
 					auraIconFrame:SetSize (auraWidth, auraHeight)
-					auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
+					--PixelUtil.SetSize(auraIconFrame, auraWidth, auraHeight)
+					--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 				else
 					local auraWidth = profile.aura_width
 					local auraHeight = profile.aura_height
 					auraIconFrame:SetSize (auraWidth, auraHeight)
-					auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
+					--PixelUtil.SetSize(auraIconFrame, auraWidth, auraHeight)
+					--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 				end
 			end
 			
@@ -1809,7 +1824,13 @@ end
 		auraIconFrame.isBuff = isBuff
 		auraIconFrame:Show()
 		
-		--Plater.Masque.AuraFrame1:ReSkin()
+		if (Plater.Masque and auraIconFrame.Masqued) then
+			if (self.Name == "Main") then
+				Plater.Masque.AuraFrame1:ReSkin(auraIconFrame)
+			elseif (self.Name == "Secondary") then
+				Plater.Masque.AuraFrame2:ReSkin(auraIconFrame)
+			end
+		end
 
 		--auraIconFrame.Icon:Hide()
 		--auraIconFrame.Cooldown:SetBackdrop (nil)
@@ -1985,6 +2006,41 @@ end
 			end
 		end
 		
+		if (not iconFrame.platerSkinned) then
+			iconFrame:ClearBackdrop()
+			iconFrame.Border:Hide()
+			
+			iconFrame.Border = DF:CreateFullBorder("$parentBorder", iconFrame)
+			local iconOffset = -1 * UIParent:GetEffectiveScale() * (Plater.db.profile.use_ui_parent_just_enabled and Plater.db.profile.ui_parent_scale_tune or 1)
+			PixelUtil.SetPoint (iconFrame.Border, "TOPLEFT", iconFrame, "TOPLEFT", -iconOffset, iconOffset)
+			PixelUtil.SetPoint (iconFrame.Border, "TOPRIGHT", iconFrame, "TOPRIGHT", iconOffset, iconOffset)
+			PixelUtil.SetPoint (iconFrame.Border, "BOTTOMLEFT", iconFrame, "BOTTOMLEFT", -iconOffset, -iconOffset)
+			PixelUtil.SetPoint (iconFrame.Border, "BOTTOMRIGHT", iconFrame, "BOTTOMRIGHT", iconOffset, -iconOffset)
+			iconFrame.SetBackdropBorderColor = function(self, r, g, b, a)
+				self.Border:SetVertexColor(r, g, b, a)
+			end
+			iconFrame.Border.SetBorderSize = function(self, size)
+				local borderSize = (size or 1) * UIParent:GetEffectiveScale() * (Plater.db.profile.use_ui_parent_just_enabled and Plater.db.profile.ui_parent_scale_tune or 1)
+				self:SetBorderSizes(borderSize, 1, borderSize, 0)
+				self:UpdateSizes()
+			end
+			iconFrame.SetBorderSize = function(self, size)
+				self.Border:SetBorderSize(size)
+			end
+			iconFrame.SetBackdrop = function(self, options)
+				local borderSize = options.edgeSize or 1
+				self.Border:SetBorderSize(borderSize)
+			end
+			iconFrame.GetBackdropBorderColor = function(self)
+				return self.Border:GetVertexColor()
+			end
+			
+			
+			iconFrame:SetBackdropBorderColor(DF:ParseColors(borderColor))
+			iconFrame:SetBorderSize(1)
+			iconFrame.platerSkinned = true
+		end
+		
 		--check if Masque is enabled on Plater and reskin the aura icon
 		if (Plater.Masque and not iconFrame.Masqued) then
 			local t = {
@@ -1993,7 +2049,7 @@ end
 				Cooldown = iconFrame.Cooldown,
 				Flash = nil, --false,
 				Pushed = nil, --false,
-				Normal = false,
+				Normal = nil, --false
 				Disabled = nil, --false,
 				Checked = nil, --false,
 				Border = nil, --iconFrame.Border,
@@ -2005,10 +2061,18 @@ end
 				Duration = false,
 				Shine = nil, --false,
 			}
-			iconFrame.Border:Hide() --let Masque handle the border...
-			Plater.Masque.BuffSpecial:AddButton (iconFrame, t, "AuraButtonTemplate", true)
-			Plater.Masque.BuffSpecial:ReSkin(iconFrame)
+			local mOptions = Plater.Masque.BuffSpecial:GetOptions()
+			DevTool:AddData(mOptions)
+			if mOptions and mOptions.Disable and mOptions.Disable.get and not mOptions.Disable.get() then
+				iconFrame.Border:Hide() --let Masque handle the border...
+			end
+			Plater.Masque.BuffSpecial:AddButton (iconFrame, t, "Aura", true)
+			--Plater.Masque.BuffSpecial:ReSkin(iconFrame)
 			iconFrame.Masqued = true
+		end
+		
+		if (Plater.Masque and iconFrame.Masqued) then
+			Plater.Masque.BuffSpecial:ReSkin(iconFrame)
 		end
 		
 		Plater.EndLogPerformanceCore("Plater-Core", "Update", "UpdateAuras - AddExtraIcon")
