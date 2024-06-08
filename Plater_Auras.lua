@@ -2062,7 +2062,7 @@ end
 				Shine = nil, --false,
 			}
 			local mOptions = Plater.Masque.BuffSpecial:GetOptions()
-			DevTool:AddData(mOptions)
+			--DevTool:AddData(mOptions)
 			if mOptions and mOptions.Disable and mOptions.Disable.get and not mOptions.Disable.get() then
 				iconFrame.Border:Hide() --let Masque handle the border...
 			end
