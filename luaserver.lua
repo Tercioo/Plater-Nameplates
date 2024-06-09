@@ -13,7 +13,7 @@
 
 ---This table contains documentation for functions inside C_ChallengeMode.
 ---@class blizzard_documentation : table
----@field Name string the name of the field, can be 
+---@field Name string the name of the field, can be
 ---@field Type string most of the time the type is "Function"
 ---@field Arguments blizzard_documentation_arguments[]? a table containing the arguments of the function
 ---@field Returns blizzard_documentation_returns[]? a table containing the returns of the function, the the type is table, it may have "InnerType" which is the type of the elements inside the table
@@ -258,6 +258,46 @@ function LibStub:IterateLibraries()end
 ---| "OUT"
 ---| "IN_OUT"
 ---| "NONE"
+
+---@alias aurafilter : table
+---| "HELPFUL"
+---| "HARMFUL"
+---| "PLAYER"
+---| "RAID"
+---| "CANCELABLE"
+---| "NOT_CANCELABLE"
+---| "INCLUDE_NAME_PLATE_ONLY"
+---| "MAW"
+
+---@class privateaura_anchor : table
+---@field unitToken unit
+---@field auraIndex number
+---@field parent frame
+---@field showCountdownFrame boolean
+---@field showCountdownNumbers boolean
+---@field iconInfo privateaura_iconinfo?
+---@field durationAnchor privateaura_anchorbinding?
+
+---@class privateaura_iconinfo : table
+---@field iconAnchor privateaura_anchorbinding
+---@field iconWidth number
+---@field iconHeight number
+
+---@class privateaura_anchorbinding : table
+---@field point anchorpoint
+---@field relativeTo uiobject
+---@field relativePoint anchorpoint
+---@field offsetX number
+---@field offsetY number
+
+---@class privateaura_appliedsoundinfo : table
+---@field unitToken unit
+---@field spellID spellid
+---@field soundFileName string? 	
+---@field soundFileID number? 	
+---@field outputChannel audiochannels?
+
+---@class privateaura_soundid : number
 
 ---@class aurainfo : table
 ---@field applications number
@@ -749,6 +789,201 @@ LE_PARTY_CATEGORY_INSTANCE = true
 
 --functions
 C_ChatInfo = true
+
+C_Item = {}
+function C_Item.PickupItem() end
+function C_Item.IsBoundToAccountUntilEquip() end
+function C_Item.LockItem() end
+function C_Item.DoesItemMatchTargetEnchantingSpell() end
+function C_Item.IsItemCorruptionRelated() end
+function C_Item.GetItemIconByID() end
+function C_Item.ConfirmOnUse() end
+function C_Item.GetItemIDForItemInfo() end
+function C_Item.IsCorruptedItem() end
+function C_Item.GetBaseItemTransmogInfo() end
+function C_Item.GetItemMaxStackSize() end
+function C_Item.ConfirmNoRefundOnUse() end
+function C_Item.GetFirstTriggeredSpellForItem() end
+function C_Item.GetItemInventorySlotInfo() end
+function C_Item.GetItemNameByID() end
+function C_Item.IsItemCorrupted() end
+function C_Item.ActionBindsItem() end
+function C_Item.GetCurrentItemTransmogInfo() end
+function C_Item.RequestLoadItemDataByID() end
+function C_Item.GetItemSetInfo() end
+function C_Item.GetItemCreationContext() end
+function C_Item.IsEquippedItem() end
+function C_Item.IsItemDataCachedByID() end
+function C_Item.ItemHasRange() end
+function C_Item.ConfirmBindOnUse() end
+function C_Item.GetItemSpecInfo() end
+function C_Item.EndBoundTradeable() end
+function C_Item.EndRefund() end
+function C_Item.UseItemByName() end
+function C_Item.IsDressableItemByID() end
+function C_Item.GetItemGUID() end
+function C_Item.GetItemInventoryTypeByID() end
+function C_Item.UnlockItem() end
+function C_Item.RequestLoadItemData() end
+function C_Item.IsItemInRange() end
+function C_Item.IsItemConvertibleAndValidForPlayer() end
+function C_Item.DoesItemExist() end
+function C_Item.EquipItemByName() end
+function C_Item.ReplaceTradeEnchant() end
+function C_Item.UnlockItemByGUID() end
+function C_Item.DoesItemExistByID() end
+function C_Item.LockItemByGUID() end
+function C_Item.GetItemQualityColor() end
+function C_Item.GetItemIDByGUID() end
+function C_Item.IsLocked() end
+function C_Item.GetItemLocation() end
+function C_Item.IsItemSpecificToPlayerClass() end
+function C_Item.GetItemNumAddedSockets() end
+function C_Item.IsItemKeystoneByID() end
+function C_Item.IsConsumableItem() end
+function C_Item.GetItemStats() end
+function C_Item.IsCurioItem() end
+function C_Item.GetItemStatDelta() end
+function C_Item.IsItemDataCached() end
+function C_Item.IsItemConduit() end
+function C_Item.GetItemNumSockets() end
+function C_Item.GetAppliedItemTransmogInfo() end
+function C_Item.IsHelpfulItem() end
+function C_Item.GetItemClassInfo() end
+function C_Item.GetItemUniquenessByID() end
+function C_Item.GetItemGemID() end
+function C_Item.IsHarmfulItem() end
+function C_Item.GetItemIcon() end
+function C_Item.DropItemOnUnit() end
+function C_Item.GetDetailedItemLevelInfo() end
+function C_Item.IsEquippedItemType() end
+function C_Item.GetItemFamily() end
+function C_Item.GetLimitedCurrencyItemInfo() end
+function C_Item.GetItemInventorySlotKey() end
+function C_Item.IsEquippableItem() end
+function C_Item.GetItemConversionOutputIcon() end
+function C_Item.ReplaceEnchant() end
+function C_Item.GetItemLearnTransmogSet() end
+function C_Item.IsCurrentItem() end
+function C_Item.IsItemGUIDInInventory() end
+function C_Item.GetItemGem() end
+function C_Item.IsBound() end
+function C_Item.IsCosmeticItem() end
+function C_Item.IsArtifactPowerItem() end
+function C_Item.IsAnimaItemByID() end
+function C_Item.ReplaceTradeskillEnchant() end
+function C_Item.GetItemUniqueness() end
+function C_Item.GetSetBonusesForSpecializationByItemID() end
+function C_Item.GetItemCooldown() end
+function C_Item.GetItemSpell() end
+function C_Item.GetItemID() end
+function C_Item.DoesItemMatchBonusTreeReplacement() end
+function C_Item.IsUsableItem() end
+function C_Item.GetCurrentItemLevel() end
+function C_Item.DoesItemContainSpec() end
+function C_Item.CanItemTransmogAppearance() end
+function C_Item.GetItemQualityByID() end
+function C_Item.GetItemLinkByGUID() end
+function C_Item.BindEnchant() end
+function C_Item.GetItemQuality() end
+function C_Item.IsItemCorruptionResistant() end
+function C_Item.CanViewItemPowers() end
+function C_Item.GetItemChildInfo() end
+function C_Item.GetItemLink() end
+function C_Item.CanScrapItem() end
+function C_Item.GetItemInfo() end
+function C_Item.GetItemName() end
+function C_Item.GetItemSubClassInfo() end
+function C_Item.GetItemInventoryType() end
+function C_Item.GetItemMaxStackSizeByID() end
+function C_Item.DoesItemMatchTrackJump() end
+function C_Item.GetItemCount() end
+function C_Item.GetItemInfoInstant() end
+function C_Item.GetStackCount() end
+
+C_UnitAuras = {}
+
+---@param privateAuraAnchor privateaura_anchor
+function C_UnitAuras.AddPrivateAuraAnchor(privateAuraAnchor)end
+
+---@param privateAuraAnchor privateaura_anchor
+---@return number
+function C_UnitAuras.AddPrivateAuraAppliedSound(privateAuraAnchor) return 0 end
+
+---@param spellID spellid
+---@return boolean
+function C_UnitAuras.AuraIsPrivate(spellID) return true end
+
+---@param parent uiobject
+---@param anchor privateaura_anchorbinding
+function C_UnitAuras.SetPrivateWarningTextAnchor(parent, anchor) end
+
+---@param anchorID number
+function C_UnitAuras.RemovePrivateAuraAnchor(anchorID) end
+
+---@param privateAuraSoundID number
+function C_UnitAuras.RemovePrivateAuraAppliedSound(privateAuraSoundID) end
+
+---@param unitToken unit
+---@param auraInstanceID number
+---@return aurainfo
+function C_UnitAuras.GetAuraDataByAuraInstanceID(unitToken, auraInstanceID) return {} end
+
+---@param unitToken unit
+---@param auraIndex number
+---@param filter aurafilter?
+---@return aurainfo
+function C_UnitAuras.GetAuraDataByIndex(unitToken, auraIndex, filter) return {} end
+
+---@param unitToken unit
+---@param auraSlot number
+---@return aurainfo
+function C_UnitAuras.GetAuraDataBySlot(unitToken, auraSlot) return {} end
+
+---@param unitToken unit
+---@param spellName spellname
+---@param filter aurafilter?
+---@return aurainfo
+function C_UnitAuras.GetAuraDataBySpellName(unitToken, spellName, filter) return {} end
+
+---@param unitToken unit
+---@param filter aurafilter
+---@param maxSlots number
+---@param continuationToken number
+---@return number outContinuationToken
+---@return ...
+function C_UnitAuras.GetAuraSlots(unitToken, filter, maxSlots, continuationToken) return 0, 0 end
+
+---@param unitToken unit
+---@param index number
+---@param filter aurafilter?
+---@return aurainfo
+function C_UnitAuras.GetBuffDataByIndex(unitToken, index, filter) return {} end
+
+---@param unitToken unit
+---@param index number
+---@param filter aurafilter?
+---@return aurainfo
+function C_UnitAuras.GetDebuffDataByIndex(unitToken, index, filter) return {} end
+
+---@param spellID spellid
+---@return spellid
+function C_UnitAuras.GetCooldownAuraBySpellID(spellID) return 0 end
+
+---@param spellID spellid
+---@return aurainfo
+function C_UnitAuras.GetPlayerAuraBySpellID(spellID) return {} end
+
+---@param unitToken unit
+---@param auraInstanceID number
+---@param filterString aurafilter
+---@return boolean
+function C_UnitAuras.IsAuraFilteredOutByInstanceID(unitToken, auraInstanceID, filterString) return true end
+
+---@param unitToken unit
+---@return boolean
+function C_UnitAuras.WantsAlteredForm(unitToken) return true end
+
 
 
 ---linearly interpolates between two values. Example: Lerp(1, 2, 0.5) return 1.5
@@ -4879,7 +5114,7 @@ ShowingCloak = function() return true end
 ShowingHelm = function() return true end
 
 ---@param settings table
-UploadSettings = function(settings) 
+UploadSettings = function(settings)
     return true
 end
 
