@@ -1772,7 +1772,7 @@ end
 			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.is_show_all))
 				
 		else
-			auraIconFrame:SetBackdropBorderColor (0, 0, 0, 0)
+			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.default))
 			
 		end
 

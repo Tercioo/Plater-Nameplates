@@ -2420,6 +2420,22 @@ local debuff_options = {
 		name = "Defensive CD Border Color",
 		desc = "Defensive CD Border Color",
 	},
+	--border color is default
+	{
+		type = "color",
+		boxfirst = true,
+		get = function()
+			local color = Plater.db.profile.aura_border_colors.default
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_border_colors.default
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = "Default Border Color",
+		desc = "Default Border Color",
+	},
 	
 	{
 		type = "toggle",

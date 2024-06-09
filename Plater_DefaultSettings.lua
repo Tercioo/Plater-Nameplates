@@ -910,6 +910,7 @@ PLATER_DEFAULT_SETTINGS = {
 			defensive = {.85, .45, .1, 1},
 			offensive = {0, .65, .1, 1},
 			crowdcontrol = {.3, .2, .2, 1},
+			default = {0, 0, 0, 1},
 		},
 		
 		aura_tracker = {
