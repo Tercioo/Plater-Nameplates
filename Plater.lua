@@ -3928,7 +3928,7 @@ Plater.AnchorNamesByPhraseId = {
 			return
 		end
 		
-		self:Hide()
+		--self:Hide()
 		if self:IsProtected() then
 			self:ClearAllPoints()
 			self:SetParent(nil)
