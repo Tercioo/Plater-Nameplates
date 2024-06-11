@@ -3847,6 +3847,12 @@ Plater.AnchorNamesByPhraseId = {
 				plateFrame.unitFrame.WidgetContainer:SetPoint('TOP', plateFrame.castBar, 'BOTTOM')
 			end
 			
+			--if plateFrame.UnitFrame and plateFrame.UnitFrame.HealthBarsContainerOrigParent then
+			--	DevTool:AddData("removing")
+			--	plateFrame.UnitFrame.HealthBarsContainer:SetParent(plateFrame.UnitFrame.HealthBarsContainerOrigParent)
+			--	plateFrame.UnitFrame.HealthBarsContainerOrigParent = nil
+			--end
+			
 			--community patch by Ariani#0960 (discord)
 			--make the unitFrame be parented to UIParent allowing frames to be moved between strata levels
 			--March 3rd, 2019
@@ -3929,21 +3935,30 @@ Plater.AnchorNamesByPhraseId = {
 		end
 		
 		--self:Hide()
+		
 		if self:IsProtected() then
 			self:ClearAllPoints()
 			self:SetParent(nil)
-			for _, f in pairs(self:GetChildren() or {}) do
-				--DevTool:AddData(f, "child")
-				if type(f) == "table" and f.IsProtected then
-					local p, ep = f:IsProtected()
-					--DevTool:AddData({p, ep, f}, "protected?")
-					if ep then
-						--DevTool:AddData(f, "protected!")
-						f:ClearAllPoints()
-						f:SetParent(nil)
-					end
-				end
+			
+			if self.HealthBarsContainer then
+				self.HealthBarsContainerOrigParent = self.HealthBarsContainer:GetParent() or self.HealthBarsContainerOrigParent
+				self.HealthBarsContainer:ClearAllPoints()
+				self.HealthBarsContainer:SetParent(nil)
 			end
+			
+			--for _, f in pairs(self:GetChildren() or {}) do
+			--	--DevTool:AddData(f, "child")
+			--	if type(f) == "table" and f.IsProtected then
+			--		local p, ep = f:IsProtected()
+			--		--DevTool:AddData({p, ep, f}, "protected?")
+			--		if ep then
+			--			--DevTool:AddData(f, "protected!")
+			--			f:ClearAllPoints()
+			--			f:SetParent(nil)
+			--			f:Hide()
+			--		end
+			--	end
+			--end
 			if not self:IsProtected() then
 				self:Hide()
 			elseif DevTool then
