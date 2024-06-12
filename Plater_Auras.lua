@@ -1674,7 +1674,7 @@ end
 					--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 				end
 			end
-			local sizeMod = UIParent:GetEffectiveScale() * (Plater.db.profile.use_ui_parent_just_enabled and Plater.db.profile.ui_parent_scale_tune or 1)
+			local sizeMod = 1 --UIParent:GetEffectiveScale() * (Plater.db.profile.use_ui_parent_just_enabled and Plater.db.profile.ui_parent_scale_tune or 1)
 			PixelUtil.SetSize(auraIconFrame, auraWidth * sizeMod, auraHeight * sizeMod)
 			
 			auraIconFrame.Cooldown:SetEdgeTexture (profile.aura_cooldown_edge_texture)
@@ -1719,7 +1719,7 @@ end
 					--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 				end
 			end
-			local sizeMod = UIParent:GetEffectiveScale() * (Plater.db.profile.use_ui_parent_just_enabled and Plater.db.profile.ui_parent_scale_tune or 1)
+			local sizeMod = 1 --UIParent:GetEffectiveScale() * (Plater.db.profile.use_ui_parent_just_enabled and Plater.db.profile.ui_parent_scale_tune or 1)
 			PixelUtil.SetSize(auraIconFrame, auraWidth * sizeMod, auraHeight * sizeMod)
 			
 			Plater.UpdateIconAspecRatio (auraIconFrame)
