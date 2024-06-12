@@ -1657,19 +1657,19 @@ end
 			local auraWidth
 			local auraHeight
 			if (isPersonal) then
-				local auraWidth = profile.aura_width_personal
-				local auraHeight = profile.aura_height_personal
+				auraWidth = profile.aura_width_personal
+				auraHeight = profile.aura_height_personal
 				--auraIconFrame:SetSize (auraWidth, auraHeight)
 				--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 			else
 				if curBuffFrame == 2 then
-					local auraWidth = profile.aura_width2
-					local auraHeight = profile.aura_height2
+					auraWidth = profile.aura_width2
+					auraHeight = profile.aura_height2
 					--auraIconFrame:SetSize (auraWidth, auraHeight)
 					--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 				else
-					local auraWidth = profile.aura_width
-					local auraHeight = profile.aura_height
+					auraWidth = profile.aura_width
+					auraHeight = profile.aura_height
 					--auraIconFrame:SetSize (auraWidth, auraHeight)
 					--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 				end
