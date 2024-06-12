@@ -1485,9 +1485,10 @@ end
 				auraWidth = Plater.db.profile.aura_width
 			    auraHeight = Plater.db.profile.aura_height
 			end
-			newFrameIcon:SetSize (auraWidth, auraHeight)
-			--PixelUtil.SetSize(newFrameIcon, auraWidth, auraHeight)
+			--newFrameIcon:SetSize (auraWidth, auraHeight)
 			--newFrameIcon.Icon:SetSize (auraWidth-2, auraHeight-2)
+			local sizeMod = newFrameIcon:GetEffectiveScale() * (Plater.db.profile.use_ui_parent_just_enabled and Plater.db.profile.ui_parent_scale_tune or 1)
+			PixelUtil.SetSize(newFrameIcon, auraWidth * sizeMod, auraHeight * sizeMod)
 			
 			--mixin the meta functions for scripts
 			DF:Mixin (newFrameIcon, Plater.ScriptMetaFunctions)
@@ -1653,27 +1654,28 @@ end
 			auraIconFrame.RefreshID = PLATER_REFRESH_ID
 			
 			--icon size
+			local auraWidth
+			local auraHeight
 			if (isPersonal) then
 				local auraWidth = profile.aura_width_personal
 				local auraHeight = profile.aura_height_personal
-				auraIconFrame:SetSize (auraWidth, auraHeight)
-				--PixelUtil.SetSize(auraIconFrame, auraWidth, auraHeight)
+				--auraIconFrame:SetSize (auraWidth, auraHeight)
 				--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 			else
 				if curBuffFrame == 2 then
 					local auraWidth = profile.aura_width2
 					local auraHeight = profile.aura_height2
-					auraIconFrame:SetSize (auraWidth, auraHeight)
-					--PixelUtil.SetSize(auraIconFrame, auraWidth, auraHeight)
+					--auraIconFrame:SetSize (auraWidth, auraHeight)
 					--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 				else
 					local auraWidth = profile.aura_width
 					local auraHeight = profile.aura_height
-					auraIconFrame:SetSize (auraWidth, auraHeight)
-					--PixelUtil.SetSize(auraIconFrame, auraWidth, auraHeight)
+					--auraIconFrame:SetSize (auraWidth, auraHeight)
 					--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 				end
 			end
+			local sizeMod = auraIconFrame:GetEffectiveScale() * (Plater.db.profile.use_ui_parent_just_enabled and Plater.db.profile.ui_parent_scale_tune or 1)
+			PixelUtil.SetSize(auraIconFrame, auraWidth * sizeMod, auraHeight * sizeMod)
 			
 			auraIconFrame.Cooldown:SetEdgeTexture (profile.aura_cooldown_edge_texture)
 			auraIconFrame.Cooldown:SetReverse (profile.aura_cooldown_reverse)
@@ -1697,27 +1699,28 @@ end
 		--when it changes the isPersonal flag it change locally without increasing the refresh ID
 		--> update the icon size depending on where it is shown
 		if (auraIconFrame.IsPersonal ~= isPersonal or auraIconFrame.BuffFrame ~= curBuffFrame or auraIconFrame.IsGhostAura) then
+			local auraWidth
+			local auraHeight
 			if (isPersonal) then
-				local auraWidth = profile.aura_width_personal
-				local auraHeight = profile.aura_height_personal
-				auraIconFrame:SetSize (auraWidth, auraHeight)
-				--PixelUtil.SetSize(auraIconFrame, auraWidth, auraHeight)
+				auraWidth = profile.aura_width_personal
+				auraHeight = profile.aura_height_personal
+				--auraIconFrame:SetSize (auraWidth, auraHeight)
 				--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 			else
 				if curBuffFrame == 2 then
-					local auraWidth = profile.aura_width2
-					local auraHeight = profile.aura_height2
-					auraIconFrame:SetSize (auraWidth, auraHeight)
-					--PixelUtil.SetSize(auraIconFrame, auraWidth, auraHeight)
+					auraWidth = profile.aura_width2
+					auraHeight = profile.aura_height2
+					--auraIconFrame:SetSize (auraWidth, auraHeight)
 					--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 				else
-					local auraWidth = profile.aura_width
-					local auraHeight = profile.aura_height
-					auraIconFrame:SetSize (auraWidth, auraHeight)
-					--PixelUtil.SetSize(auraIconFrame, auraWidth, auraHeight)
+					auraWidth = profile.aura_width
+					auraHeight = profile.aura_height
+					--auraIconFrame:SetSize (auraWidth, auraHeight)
 					--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 				end
 			end
+			local sizeMod = auraIconFrame:GetEffectiveScale() * (Plater.db.profile.use_ui_parent_just_enabled and Plater.db.profile.ui_parent_scale_tune or 1)
+			PixelUtil.SetSize(auraIconFrame, auraWidth * sizeMod, auraHeight * sizeMod)
 			
 			Plater.UpdateIconAspecRatio (auraIconFrame)
 		end
