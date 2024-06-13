@@ -20,7 +20,7 @@
 	<Script file="LibDataBroker-1.1\LibDataBroker-1.1.lua"/>
 	<Script file="LibDBIcon-1.0\LibDBIcon-1.0.lua"/>
 	<Script file="indent.lua"/>
-	<Script file="LibRangeCheck-2.0\LibRangeCheck-2.0.lua"/>
+	<Script file="LibRangeCheck-3.0\LibRangeCheck-3.0.lua"/>
 	
 	<Script file="LibClassicCasterino\LibClassicCasterino.lua"/>
 	<Include file="LibClassicDurations\LibClassicDurations.xml"/>

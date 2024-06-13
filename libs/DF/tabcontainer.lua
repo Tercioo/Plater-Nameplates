@@ -9,7 +9,7 @@ local unpack = unpack
 local CreateFrame = CreateFrame
 local PixelUtil = PixelUtil
 
----@class df_tabinfotable : {name: string, text: string}
+---@class df_tabinfotable : {name: string, text: string, createOnDemandFunc:function?}
 
 ---@class df_tabcontainer : frame
 ---@field AllFrames df_tabcontainerframe[]
@@ -229,6 +229,24 @@ detailsFramework.TabContainerFrameMixin = {
     end,
 }
 
+---@class df_tabcontaineroptions : table
+---@field width number?
+---@field height number?
+---@field button_border_color table?
+---@field button_selected_border_color table?
+---@field right_click_y number?
+---@field hide_click_label boolean?
+---@field close_text_alpha number?
+---@field rightbutton_always_close boolean?
+---@field right_click_interact boolean?
+---@field y_offset number?
+---@field button_width number?
+---@field button_height number?
+---@field button_x number?
+---@field button_y number?
+---@field button_text_size number?
+---@field container_width_offset number?
+
 ---creates a frame called tabContainer which is used as base for the tab container object
 ---the function receives a table called tabList which contains sub tables with two keys 'name' and 'text', name is the frame name and text is the text displayed on the button
 ---then the function iterate amongst the tabList and create a frame and a button for each entry using the value of the 'text' key as the text for the button and 'name' for the name of the frame
@@ -237,8 +255,8 @@ detailsFramework.TabContainerFrameMixin = {
 ---@param title string a string to use as the title of the tab container, the title is always shown
 ---@param frameName string the frame name to pass into the CreateFrame function
 ---@param tabList df_tabinfotable[] the list of tabs to create, each entry has a 'name' and 'text' keys
----@param optionsTable {button_border_color: table, button_selected_border_color: table, right_click_y: number, hide_click_label: boolean, close_text_alpha: number, rightbutton_always_close: boolean, right_click_interact: boolean, y_offset: number, button_width: number, button_height: number, button_x: number, button_y: number, button_text_size: number, container_width_offset: number}|nil
----@param hookList table<string, function>|nil
+---@param optionsTable df_tabcontaineroptions?
+---@param hookList table<string, function>?
 ---@param languageInfo any
 ---@return df_tabcontainer
 function detailsFramework:CreateTabContainer(parent, title, frameName, tabList, optionsTable, hookList, languageInfo)
@@ -253,10 +271,13 @@ function detailsFramework:CreateTabContainer(parent, title, frameName, tabList, 
 	local buttonTextSize = optionsTable.button_text_size or 10
 	local containerWidthOffset = optionsTable.container_width_offset or 0
 
+    local bFirstTabIsCreateOnDemand = false
+
     --create the base frame
     ---@type df_tabcontainer
 	local tabContainer = CreateFrame("frame", frameName, parent["widget"] or parent, "BackdropTemplate")
     tabContainer.hookList = hookList or {}
+    tabContainer:SetSize(optionsTable.width or 750, optionsTable.height or 450)
 
 	detailsFramework:Mixin(tabContainer, detailsFramework.TabContainerMixin)
 
@@ -295,6 +316,19 @@ function detailsFramework:CreateTabContainer(parent, title, frameName, tabList, 
 		tabFrame:SetScript("OnMouseUp", tabFrame.OnMouseUp)
         tabFrame.tabIndex = tabIndex
         tabFrame:Hide()
+
+        if (tabInfo.createOnDemandFunc) then
+            tabFrame:SetScript("OnShow", function()
+                if (tabInfo.createOnDemandFunc) then
+                    detailsFramework:Dispatch(tabInfo.createOnDemandFunc, tabFrame, tabContainer, parent)
+                    tabInfo.createOnDemandFunc = nil
+                end
+            end)
+
+            if (tabIndex == 1) then
+                bFirstTabIsCreateOnDemand = true
+            end
+        end
 
 		--attempt to get the localized text from the language system using the addonId and the frameInfo.text
 		local phraseId = tabInfo.text
@@ -377,7 +411,12 @@ function detailsFramework:CreateTabContainer(parent, title, frameName, tabList, 
 	tabContainer:SetScript("OnShow", tabContainer.OnShow)
 	--select the first frame
     local defaultTab = 1
-	tabContainer:SelectTabByIndex(defaultTab)
+
+    if (bFirstTabIsCreateOnDemand) then
+        C_Timer.After(0, function() tabContainer:SelectTabByIndex(defaultTab) end)
+    else
+        tabContainer:SelectTabByIndex(defaultTab)
+    end
 
 	return tabContainer
 end

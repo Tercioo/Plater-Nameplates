@@ -243,6 +243,7 @@ DF.CooldownsBySpec = {
 			[231895] = 1, --Crusade (talent)
 			[205191] = 2, --Eye for an Eye (talent)
 			[184662] = 2, --Shield of Vengeance
+			[403876] = 2, --Divine Protection
 			[642] = 2, --Divine Shield
 			[1022] = 3, --Blessing of Protection
 			[6940] = 3, --Blessing of Sacrifice
@@ -957,6 +958,7 @@ DF.CrowdControlSpells = {
 	[15487] = "PRIEST", --Silence
 	
 	[2094] = "ROGUE", --Blind
+	[427773] = "ROGUE", --Blind (AoE)
 	[1833] = "ROGUE", --Cheap Shot
 	[408] = "ROGUE", --Kidney Shot
 	[1766] = "ROGUE", --Kick
@@ -1413,8 +1415,8 @@ elseif (DF.IsWotLKWow()) then
 	}
 	DF.FeastIDs = {}
 	DF.RuneIDs = {}
-
-elseif (DF.IsClassicWow()) then
+--~Cata temp
+elseif (DF.IsClassicWow() or DF.IsCataWow()) then
 	DF.PotionIDs = {}
 	DF.FeastIDs = {}
 	DF.RuneIDs = {}

@@ -15,6 +15,13 @@ local floor = math.floor --lua local
 local loadstring = loadstring --lua local
 local CreateFrame = CreateFrame
 
+-- TWW compatibility:
+local GetSpellInfo = GetSpellInfo or function(spellID) if not spellID then return nil end local si = C_Spell.GetSpellInfo(spellID) if si then return si.name, nil, si.iconID, si.castTime, si.minRange, si.maxRange, si.spellID, si.originalIconID end end
+local GetNumSpellTabs = GetNumSpellTabs or C_SpellBook.GetNumSpellBookSkillLines
+local GetSpellTabInfo = GetSpellTabInfo or function(tabLine) local skillLine = C_SpellBook.GetSpellBookSkillLineInfo(tabLine) if skillLine then return skillLine.name, skillLine.iconID, skillLine.itemIndexOffset, skillLine.numSpellBookItems, skillLine.isGuild, skillLine.offSpecID end end
+local SpellBookItemTypeMap = Enum.SpellBookItemType and {[Enum.SpellBookItemType.Spell] = "SPELL", [Enum.SpellBookItemType.None] = "NONE", [Enum.SpellBookItemType.Flyout] = "FLYOUT", [Enum.SpellBookItemType.FutureSpell] = "FUTURESPELL", [Enum.SpellBookItemType.PetAction] = "PETACTION" } or {}
+local GetSpellBookItemInfo = GetSpellBookItemInfo or function(...) local si = C_SpellBook.GetSpellBookItemInfo(...) if si then return SpellBookItemTypeMap[si.itemType] or "NONE", si.spellID end end
+
 local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_NOT_MAINLINE = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_CLASSIC_ERA = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
@@ -56,6 +63,24 @@ local PanelMetaFunctions = _G[detailsFramework.GlobalWidgetControlNames["panel"]
 detailsFramework:Mixin(PanelMetaFunctions, detailsFramework.ScriptHookMixin)
 
 --default options for the frame layout
+---@class df_framelayout_options : table
+---@field amount_per_line number? 4
+---@field start_x number? 2
+---@field start_y number? -2
+---@field is_vertical boolean? true if vertical, false if horizontal
+---@field grow_right boolean? true to grow right, false to grow left
+---@field grow_down boolean? true to grow down, false to grow up
+---@field anchor_to_child boolean? true to anchor to the previous frame instead of coordinate
+---@field anchor_point df_framelayout_point? "topleft"
+---@field anchor_relative df_framelayout_point? "topleft"
+---@field offset_x number? 100
+---@field offset_y number? 20
+---@field width number? 0
+---@field min_width number? 0
+---@field height number? 0
+---@field break_if_hidden boolean? true to stop if encounters a hidden frame
+---@field use__width boolean? if true it'll use the __width from the widget as the offset_x
+
 local default_framelayout_options = {
 	amount_per_line = 4,
 	start_x = 2,
@@ -67,11 +92,24 @@ local default_framelayout_options = {
 	anchor_point = "topleft",
 	anchor_relative = "topleft",
 	offset_x = 100,
+	use__width = false, --__width from the widget
 	offset_y = 20,
-	width = 0, --if bigger than 0, it will set the value
-	height = 0,
+	width = 1,
+	min_width = 0,
+	height = 1,
 	break_if_hidden = true, --stop if encounters a hidden frame
 }
+
+---@alias df_framelayout_point
+---| "top"
+---| "bottom"
+---| "left"
+---| "right"
+
+---@class df_framelayout : table
+---@field AnchorTo fun(self:uiobject, anchor:uiobject, point:df_framelayout_point, x:number?, y:number?)
+---@field ArrangeFrames fun(self:uiobject, frameList:table<uiobject>[], options:df_framelayout_options?)
+
 
 --mixin for frame layout
 detailsFramework.LayoutFrame = {
@@ -146,16 +184,25 @@ detailsFramework.LayoutFrame = {
 					end
 
 					thisFrame:SetPoint(anchorPoint, self, anchorAt, currentX, currentY)
-					currentY = currentY - offsetY
+
+					if (options.use__height) then --use the childframe.__width
+						currentY = currentY - thisFrame.__height
+
+					elseif (options.min_height) then
+						currentY = currentY - math.max(options.min_height, offsetY)
+					else
+						currentY = currentY - offsetY
+					end
 				end
 			end
 
 		else
 			for i = 1, #frameList do
-				local thisFrame =  frameList [i]
+				local thisFrame =  frameList[i]
 				if (options.break_if_hidden and not thisFrame:IsShown()) then
 					break
 				end
+
 				thisFrame:ClearAllPoints()
 
 				if (options.anchor_to_child) then
@@ -186,7 +233,15 @@ detailsFramework.LayoutFrame = {
 					end
 
 					thisFrame:SetPoint(anchorPoint, self, anchorAt, currentX, currentY)
-					currentX = currentX + offsetX
+
+					if (options.use__width) then --use the childframe.__width
+						currentX = currentX + thisFrame.__width
+
+					elseif (options.min_width) then
+						currentX = currentX + math.max(options.min_width, offsetX)
+					else
+						currentX = currentX + offsetX
+					end
 				end
 			end
 		end
@@ -627,6 +682,7 @@ function detailsFramework:NewPanel(parent, container, name, member, w, h, backdr
 	PanelObject.frame:SetBackdrop({bgFile = [[Interface\DialogFrame\UI-DialogBox-Background]], edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border", edgeSize = 10, tileSize = 64, tile = true})
 
 	PanelObject.widget = PanelObject.frame
+	PanelObject.frame.MyObject = PanelObject
 
 	if (not APIFrameFunctions) then
 		APIFrameFunctions = {}
@@ -643,8 +699,6 @@ function detailsFramework:NewPanel(parent, container, name, member, w, h, backdr
 
 	PanelObject.frame:SetWidth(w or 100)
 	PanelObject.frame:SetHeight(h or 100)
-
-	PanelObject.frame.MyObject = PanelObject
 
 	PanelObject.HookList = {
 		OnEnter = {},
@@ -719,8 +773,8 @@ local add_row = function(self, t, need_update)
 	text:SetPoint("left", thisrow, "left", 2, 0)
 	text:SetText(t.name)
 
-	tinsert(self._raw_rows, t)
-	tinsert(self.rows, thisrow)
+	table.insert(self._raw_rows, t)
+	table.insert(self.rows, thisrow)
 
 	if (need_update) then
 		self:AlignRows()
@@ -753,12 +807,12 @@ local align_rows = function(self)
 					row.width = row_width
 				end
 				row:SetPoint("topleft", self, "topleft", cur_width, -1)
-				tinsert(self._anchors, cur_width)
+				table.insert(self._anchors, cur_width)
 				cur_width = cur_width + row_width + 1
 			else
 				row:SetPoint("topleft", self, "topleft", cur_width, -1)
 				row.width = self._raw_rows [index].width
-				tinsert(self._anchors, cur_width)
+				table.insert(self._anchors, cur_width)
 				cur_width = cur_width + self._raw_rows [index].width + 1
 			end
 
@@ -774,7 +828,7 @@ local align_rows = function(self)
 						self:CreateRowText (line)
 						text = tremove(line.text_available)
 					end
-					tinsert(line.text_inuse, text)
+					table.insert(line.text_inuse, text)
 					text:SetPoint("left", line, "left", self._anchors [#self._anchors], 0)
 					text:SetWidth(row.width)
 
@@ -789,7 +843,7 @@ local align_rows = function(self)
 						self:CreateRowEntry (line)
 						entry = tremove(line.entry_available)
 					end
-					tinsert(line.entry_inuse, entry)
+					table.insert(line.entry_inuse, entry)
 					entry:SetPoint("left", line, "left", self._anchors [#self._anchors], 0)
 					if (sindex == rows_shown) then
 						entry:SetWidth(row.width - 25)
@@ -818,7 +872,7 @@ local align_rows = function(self)
 						checkbox = tremove(line.checkbox_available)
 					end
 
-					tinsert(line.checkbox_inuse, checkbox)
+					table.insert(line.checkbox_inuse, checkbox)
 
 					checkbox:SetPoint("left", line, "left", self._anchors [#self._anchors] + ((row.width - 20) / 2), 0)
 					if (sindex == rows_shown) then
@@ -840,7 +894,7 @@ local align_rows = function(self)
 						self:CreateRowButton (line)
 						button = tremove(line.button_available)
 					end
-					tinsert(line.button_inuse, button)
+					table.insert(line.button_inuse, button)
 					button:SetPoint("left", line, "left", self._anchors [#self._anchors], 0)
 					if (sindex == rows_shown) then
 						button:SetWidth(row.width - 25)
@@ -886,7 +940,7 @@ local align_rows = function(self)
 						self:CreateRowIcon (line)
 						icon = tremove(line.icon_available)
 					end
-					tinsert(line.icon_inuse, icon)
+					table.insert(line.icon_inuse, icon)
 					icon:SetPoint("left", line, "left", self._anchors [#self._anchors] + ( ((row.width or 22) - 22) / 2), 0)
 					icon.func = row.func
 				end
@@ -899,7 +953,7 @@ local align_rows = function(self)
 						self:CreateRowTexture (line)
 						texture = tremove(line.texture_available)
 					end
-					tinsert(line.texture_inuse, texture)
+					table.insert(line.texture_inuse, texture)
 					texture:SetPoint("left", line, "left", self._anchors [#self._anchors] + ( ((row.width or 22) - 22) / 2), 0)
 				end
 
@@ -962,42 +1016,42 @@ local update_rows = function(self, updated_rows)
 
 	for index, row in ipairs(self.scrollframe.lines) do
 		for i = #row.text_inuse, 1, -1 do
-			tinsert(row.text_available, tremove(row.text_inuse, i))
+			table.insert(row.text_available, tremove(row.text_inuse, i))
 		end
 		for i = 1, #row.text_available do
 			row.text_available[i]:Hide()
 		end
 
 		for i = #row.entry_inuse, 1, -1 do
-			tinsert(row.entry_available, tremove(row.entry_inuse, i))
+			table.insert(row.entry_available, tremove(row.entry_inuse, i))
 		end
 		for i = 1, #row.entry_available do
 			row.entry_available[i]:Hide()
 		end
 
 		for i = #row.button_inuse, 1, -1 do
-			tinsert(row.button_available, tremove(row.button_inuse, i))
+			table.insert(row.button_available, tremove(row.button_inuse, i))
 		end
 		for i = 1, #row.button_available do
 			row.button_available[i]:Hide()
 		end
 
 		for i = #row.checkbox_inuse, 1, -1 do
-			tinsert(row.checkbox_available, tremove(row.checkbox_inuse, i))
+			table.insert(row.checkbox_available, tremove(row.checkbox_inuse, i))
 		end
 		for i = 1, #row.checkbox_available do
 			row.checkbox_available[i]:Hide()
 		end
 
 		for i = #row.icon_inuse, 1, -1 do
-			tinsert(row.icon_available, tremove(row.icon_inuse, i))
+			table.insert(row.icon_available, tremove(row.icon_inuse, i))
 		end
 		for i = 1, #row.icon_available do
 			row.icon_available[i]:Hide()
 		end
 
 		for i = #row.texture_inuse, 1, -1 do
-			tinsert(row.texture_available, tremove(row.texture_inuse, i))
+			table.insert(row.texture_available, tremove(row.texture_inuse, i))
 		end
 		for i = 1, #row.texture_available do
 			row.texture_available[i]:Hide()
@@ -1013,7 +1067,7 @@ end
 local create_panel_text = function(self, row)
 	row.text_total = row.text_total + 1
 	local text = detailsFramework:NewLabel(row, nil, self._name .. "$parentLabel" .. row.text_total, "text" .. row.text_total)
-	tinsert(row.text_available, text)
+	table.insert(row.text_available, text)
 end
 
 local create_panel_entry = function(self, row)
@@ -1044,7 +1098,7 @@ local create_panel_entry = function(self, row)
 	editbox:SetTemplate(detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
 	editbox:SetBackdropColor(.2, .2, .2, 0.7)
 
-	tinsert(row.entry_available, editbox)
+	table.insert(row.entry_available, editbox)
 end
 
 local create_panel_checkbox = function(self, row)
@@ -1055,7 +1109,7 @@ local create_panel_checkbox = function(self, row)
 	switch:SetAsCheckBox()
 	switch:SetTemplate(detailsFramework:GetTemplate("switch", "OPTIONS_CHECKBOX_TEMPLATE"))
 
-	tinsert(row.checkbox_available, switch)
+	table.insert(row.checkbox_available, switch)
 end
 
 local create_panel_button = function(self, row)
@@ -1072,7 +1126,7 @@ local create_panel_button = function(self, row)
 	button:SetHook("OnEnter", button_on_enter)
 	button:SetHook("OnLeave", button_on_leave)
 
-	tinsert(row.button_available, button)
+	table.insert(row.button_available, button)
 end
 
 local icon_onclick = function(texture, iconbutton)
@@ -1097,13 +1151,13 @@ local create_panel_icon = function(self, row)
 
 	icon:SetPoint("center", iconbutton, "center", 0, 0)
 
-	tinsert(row.icon_available, iconbutton)
+	table.insert(row.icon_available, iconbutton)
 end
 
 local create_panel_texture = function(self, row)
 	row.texture_total = row.texture_total + 1
 	local texture = detailsFramework:NewImage(row, nil, 20, 20, "artwork", nil, "_icon" .. row.texture_total, "$parentIcon" .. row.texture_total)
-	tinsert(row.texture_available, texture)
+	table.insert(row.texture_available, texture)
 end
 
 local set_fill_function = function(self, func)
@@ -1400,7 +1454,7 @@ function detailsFramework:NewFillPanel(parent, rows, name, member, w, h, total_l
 
 			row:SetPoint("topleft", scrollframe, "topleft", 0, (i-1) * size * -1)
 			row:SetPoint("topright", scrollframe, "topright", 0, (i-1) * size * -1)
-			tinsert(scrollframe.lines, row)
+			table.insert(scrollframe.lines, row)
 
 			row.text_available = {}
 			row.text_inuse = {}
@@ -1436,40 +1490,97 @@ end
 
 
 ------------color pick
-local color_pick_func = function()
-	local r, g, b = ColorPickerFrame:GetColorRGB()
-	local a = OpacitySliderFrame:GetValue()
-	ColorPickerFrame:dcallback (r, g, b, a, ColorPickerFrame.dframe)
+local _, _, _, toc = GetBuildInfo()
+if ((ColorPickerFrame and ColorPickerFrame.SetupColorPickerAndShow) or toc >= 100205) then -- maybe fallback to only check CPF in the future
+	local color_pick_func = function(...)
+		local r, g, b = ColorPickerFrame:GetColorRGB()
+		local a = ColorPickerFrame:GetColorAlpha()
+		ColorPickerFrame:dcallback (r, g, b, a, ColorPickerFrame.dframe)
+	end
+
+	local color_pick_func_cancel = function()
+		local r, g, b, a = ColorPickerFrame.previousValues.r, ColorPickerFrame.previousValues.g, ColorPickerFrame.previousValues.b, ColorPickerFrame.previousValues.a
+		ColorPickerFrame.Content.ColorPicker:SetColorRGB(r, g, b)
+		ColorPickerFrame:dcallback (r, g, b, a, ColorPickerFrame.dframe)
+	end
+
+	function detailsFramework:ColorPick(frame, r, g, b, alpha, callback)
+
+		ColorPickerFrame:ClearAllPoints()
+		ColorPickerFrame:SetPoint("bottomleft", frame, "topright", 0, 0)
+
+		ColorPickerFrame.dcallback = callback
+		ColorPickerFrame.dframe = frame
+
+		ColorPickerFrame.func = color_pick_func
+		ColorPickerFrame.opacityFunc = color_pick_func
+		ColorPickerFrame.cancelFunc = color_pick_func_cancel
+
+		ColorPickerFrame.opacity = alpha
+		ColorPickerFrame.hasOpacity = alpha and true
+
+		ColorPickerFrame.previousValues = {r, g, b}
+		ColorPickerFrame.previousAlpha = alpha
+		ColorPickerFrame:SetParent(UIParent)
+		ColorPickerFrame:SetFrameStrata("tooltip")
+
+		local info = {
+			swatchFunc = color_pick_func,
+			hasOpacity = alpha and true,
+			opacityFunc = color_pick_func,
+			opacity = alpha,
+			previousValues = {r = r, g = g, b = b, a = alpha},
+			cancelFunc = color_pick_func_cancel,
+			r = r,
+			g = g,
+			b = b,
+		}
+		--OpenColorPicker(info)
+		ColorPickerFrame:SetupColorPickerAndShow(info)
+
+	end
+else
+	local color_pick_func = function()
+		local r, g, b = ColorPickerFrame:GetColorRGB()
+		local a = OpacitySliderFrame:GetValue()
+		a = math.abs(a - 1)
+		ColorPickerFrame:dcallback (r, g, b, a, ColorPickerFrame.dframe)
+	end
+	local color_pick_func_cancel = function()
+		ColorPickerFrame:SetColorRGB (unpack(ColorPickerFrame.previousValues))
+		local r, g, b = ColorPickerFrame:GetColorRGB()
+		local a = OpacitySliderFrame:GetValue()
+		a = math.abs(a - 1)
+		ColorPickerFrame:dcallback (r, g, b, a, ColorPickerFrame.dframe)
+	end
+
+	function detailsFramework:ColorPick (frame, r, g, b, alpha, callback)
+
+		ColorPickerFrame:ClearAllPoints()
+		ColorPickerFrame:SetPoint("bottomleft", frame, "topright", 0, 0)
+
+		ColorPickerFrame.dcallback = callback
+		ColorPickerFrame.dframe = frame
+
+		ColorPickerFrame.func = color_pick_func
+		ColorPickerFrame.opacityFunc = color_pick_func
+		ColorPickerFrame.cancelFunc = color_pick_func_cancel
+
+		alpha = math.abs(alpha - 1)
+		ColorPickerFrame.opacity = alpha
+		ColorPickerFrame.hasOpacity = alpha and true
+
+		ColorPickerFrame.previousValues = {r, g, b}
+		ColorPickerFrame:SetParent(UIParent)
+		ColorPickerFrame:SetFrameStrata("tooltip")
+		ColorPickerFrame:SetColorRGB (r, g, b)
+		ColorPickerFrame:Show()
+	end
 end
-local color_pick_func_cancel = function()
-	ColorPickerFrame:SetColorRGB (unpack(ColorPickerFrame.previousValues))
-	local r, g, b = ColorPickerFrame:GetColorRGB()
-	local a = OpacitySliderFrame:GetValue()
-	ColorPickerFrame:dcallback (r, g, b, a, ColorPickerFrame.dframe)
-end
 
-function detailsFramework:ColorPick (frame, r, g, b, alpha, callback)
 
-	ColorPickerFrame:ClearAllPoints()
-	ColorPickerFrame:SetPoint("bottomleft", frame, "topright", 0, 0)
 
-	ColorPickerFrame.dcallback = callback
-	ColorPickerFrame.dframe = frame
 
-	ColorPickerFrame.func = color_pick_func
-	ColorPickerFrame.opacityFunc = color_pick_func
-	ColorPickerFrame.cancelFunc = color_pick_func_cancel
-
-	ColorPickerFrame.opacity = alpha
-	ColorPickerFrame.hasOpacity = alpha and true
-
-	ColorPickerFrame.previousValues = {r, g, b}
-	ColorPickerFrame:SetParent(UIParent)
-	ColorPickerFrame:SetFrameStrata("tooltip")
-	ColorPickerFrame:SetColorRGB (r, g, b)
-	ColorPickerFrame:Show()
-
-end
 
 ------------icon pick
 function detailsFramework:IconPick (callback, close_when_select, param1, param2)
@@ -1479,7 +1590,7 @@ function detailsFramework:IconPick (callback, close_when_select, param1, param2)
 		local string_lower = string.lower
 
 		detailsFramework.IconPickFrame = CreateFrame("frame", "DetailsFrameworkIconPickFrame", UIParent, "BackdropTemplate")
-		tinsert(UISpecialFrames, "DetailsFrameworkIconPickFrame")
+		table.insert(UISpecialFrames, "DetailsFrameworkIconPickFrame")
 		detailsFramework.IconPickFrame:SetFrameStrata("FULLSCREEN")
 
 		detailsFramework.IconPickFrame:SetPoint("center", UIParent, "center")
@@ -1882,11 +1993,11 @@ local SimplePanel_frame_backdrop_border_color = {0, 0, 0, 1}
 --the slider was anchoring to with_label and here here were anchoring the slider again
 ---@class df_scalebar : slider
 ---@field thumb texture
-function detailsFramework:CreateScaleBar(frame, config) --~scale
+function detailsFramework:CreateScaleBar(frame, config, bNoRightClick) --~scale
 	---@type df_scalebar
 	local scaleBar, text = detailsFramework:CreateSlider(frame, 120, 14, 0.6, 1.6, 0.1, config.scale, true, "ScaleBar", nil, "Scale:", detailsFramework:GetTemplate("slider", "OPTIONS_SLIDER_TEMPLATE"), detailsFramework:GetTemplate("font", "ORANGE_FONT_TEMPLATE"))
 	scaleBar.thumb:SetWidth(24)
-	scaleBar:SetValueStep(0.1)
+	scaleBar:SetValueStep(0.05)
 	scaleBar:SetObeyStepOnDrag(true)
 	scaleBar.mouseDown = false
 	rawset(scaleBar, "lockdown", true)
@@ -1919,26 +2030,32 @@ function detailsFramework:CreateScaleBar(frame, config) --~scale
 	end)
 
 	editbox:SetScript("OnEscapePressed", function()
+		if (bNoRightClick) then
+			return
+		end
 		editbox:ClearFocus()
 		editbox:Hide()
 		editbox:SetText(editbox.defaultValue)
 	end)
 
 	scaleBar:SetScript("OnMouseDown", function(_, mouseButton)
-		if (mouseButton == "RightButton") then
+		if (mouseButton == "LeftButton" or (mouseButton == "RightButton" and bNoRightClick)) then
+			scaleBar.mouseDown  = true
+
+		elseif (mouseButton == "RightButton") then
+			if (bNoRightClick) then
+				return
+			end
 			editbox:Show()
 			editbox:SetAllPoints()
 			editbox:SetText(config.scale)
 			editbox:SetFocus(true)
 			editbox.defaultValue = config.scale
-
-		elseif (mouseButton == "LeftButton") then
-			scaleBar.mouseDown  = true
 		end
 	end)
 
 	scaleBar:SetScript("OnMouseUp", function(_, mouseButton)
-		if (mouseButton == "LeftButton") then
+		if (mouseButton == "LeftButton" or (mouseButton == "RightButton" and bNoRightClick)) then
 			scaleBar.mouseDown  = false
 			frame:SetScale(config.scale)
 			editbox.defaultValue = config.scale
@@ -1980,18 +2097,19 @@ local no_options = {}
 ---UseStatusBar = false, --if true, creates a status bar at the bottom of the frame (frame.StatusBar)
 ---NoCloseButton = false, --if true, won't show the close button
 ---NoTitleBar = false, --if true, don't create the title bar
----@class simplepanel
+---RoundedCorners = false, --use rounded corners if true
+---@class simplepanel : frame
 ---@field TitleBar frame
 ---@field Title fontstring
 ---@field Close button
 ---@field SetTitle fun(self: simplepanel, title: string)
 ---@param parent frame the parent frame
----@param width number|nil the width of the panel
----@param height number|nil the height of the panel
----@param title string|nil a string to show in the title bar
----@param frameName string|nil the name of the frame
----@param panelOptions table|nil a table with options described above
----@param savedVariableTable table|nil a table to save the scale of the panel
+---@param width number? the width of the panel
+---@param height number? the height of the panel
+---@param title string? a string to show in the title bar
+---@param frameName string? the name of the frame
+---@param panelOptions table? a table with options described above
+---@param savedVariableTable table? a table to save the scale of the panel
 ---@return frame
 function detailsFramework:CreateSimplePanel(parent, width, height, title, frameName, panelOptions, savedVariableTable)
 	--create a saved variable table if the savedVariableTable has been not passed within the function call
@@ -2024,29 +2142,48 @@ function detailsFramework:CreateSimplePanel(parent, width, height, title, frameN
 	simplePanel:SetMovable(true)
 
 	--set the backdrop
-	simplePanel:SetBackdrop(SimplePanel_frame_backdrop)
-	simplePanel:SetBackdropColor(unpack(SimplePanel_frame_backdrop_color))
-	simplePanel:SetBackdropBorderColor(unpack(SimplePanel_frame_backdrop_border_color))
+	if (panelOptions.RoundedCorners) then
+		local tRoundedCornerPreset = {
+			roundness = 3,
+			color = {.1, .1, .1, 0.98},
+			border_color = {.05, .05, .05, 0.834},
+			use_titlebar = true,
+			titlebar_height = 26,
+		}
+		detailsFramework:AddRoundedCornersToFrame(simplePanel, tRoundedCornerPreset)
+	else
+		simplePanel:SetBackdrop(SimplePanel_frame_backdrop)
+		simplePanel:SetBackdropColor(unpack(SimplePanel_frame_backdrop_color))
+		simplePanel:SetBackdropBorderColor(unpack(SimplePanel_frame_backdrop_border_color))
+	end
 
 	simplePanel.DontRightClickClose = panelOptions.DontRightClickClose
 
 	if (not panelOptions.NoTUISpecialFrame) then
-		tinsert(UISpecialFrames, frameName)
+		table.insert(UISpecialFrames, frameName)
 	end
 
-	if (panelOptions.UseStatusBar) then
+	if (panelOptions.UseStatusBar and not panelOptions.RoundedCorners) then
 		local statusBar = detailsFramework:CreateStatusBar(simplePanel)
 		simplePanel.StatusBar = statusBar
 	end
 
-	local titleBar = CreateFrame("frame", frameName .. "TitleBar", simplePanel,"BackdropTemplate")
-	titleBar:SetPoint("topleft", simplePanel, "topleft", 2, -3)
-	titleBar:SetPoint("topright", simplePanel, "topright", -2, -3)
-	titleBar:SetHeight(20)
-	titleBar:SetBackdrop(SimplePanel_frame_backdrop)
-	titleBar:SetBackdropColor(.2, .2, .2, 1)
-	titleBar:SetBackdropBorderColor(0, 0, 0, 1)
-	simplePanel.TitleBar = titleBar
+	local titleBar = CreateFrame("frame", frameName .. "TitleBar", simplePanel, "BackdropTemplate")
+
+	if (panelOptions.RoundedCorners) then
+		--a key named "TitleBar" is created by the rounded corners function
+		simplePanel.TitleBar:SetColor(.2, .2, .2, 0.4)
+		simplePanel.TitleBar:SetBorderCornerColor(0, 0, 0, 0)
+
+	else
+		simplePanel.TitleBar = titleBar
+		titleBar:SetPoint("topleft", simplePanel, "topleft", 2, -3)
+		titleBar:SetPoint("topright", simplePanel, "topright", -2, -3)
+		titleBar:SetHeight(20)
+		titleBar:SetBackdrop(SimplePanel_frame_backdrop)
+		titleBar:SetBackdropColor(.2, .2, .2, 1)
+		titleBar:SetBackdropBorderColor(0, 0, 0, 1)
+	end
 
 	local close = CreateFrame("button", frameName and frameName .. "CloseButton", titleBar)
 	close:SetFrameLevel(detailsFramework.FRAMELEVEL_OVERLAY)
@@ -2069,15 +2206,15 @@ function detailsFramework:CreateSimplePanel(parent, width, height, title, frameN
 	titleText:SetText(title or "")
 	simplePanel.Title = titleText
 
-	if (panelOptions.UseScaleBar and savedVariableTable [frameName]) then
-		detailsFramework:CreateScaleBar (simplePanel, savedVariableTable [frameName])
-		simplePanel:SetScale(savedVariableTable [frameName].scale)
+	if (panelOptions.UseScaleBar and savedVariableTable and savedVariableTable[frameName]) then
+		detailsFramework:CreateScaleBar(simplePanel, savedVariableTable[frameName])
+		simplePanel:SetScale(savedVariableTable[frameName].scale)
 	end
 
 	simplePanel.Title:SetPoint("center", titleBar, "center")
 	simplePanel.Close:SetPoint("right", titleBar, "right", -2, 0)
 
-	if (panelOptions.NoCloseButton) then
+	if (panelOptions.NoCloseButton or panelOptions.RoundedCorners) then
 		simplePanel.Close:Hide()
 	end
 
@@ -2216,7 +2353,7 @@ function detailsFramework:Create1PxPanel(parent, width, height, title, name, con
 	newFrame:SetPoint("center", UIParent, "center", 0, 0)
 
 	if (name and not noSpecialFrame) then
-		tinsert(UISpecialFrames, name)
+		table.insert(UISpecialFrames, name)
 	end
 
 	newFrame:SetScript("OnMouseDown", simple_panel_mouse_down)
@@ -2316,7 +2453,7 @@ function detailsFramework:ShowPromptPanel(message, trueCallback, falseCallback, 
 	if (not DetailsFrameworkPromptSimple) then
 		local promptFrame = CreateFrame("frame", "DetailsFrameworkPromptSimple", UIParent, "BackdropTemplate")
 		promptFrame:SetSize(400, 80)
-		promptFrame:SetFrameStrata("DIALOG")
+		promptFrame:SetFrameStrata("FULLSCREEN")
 		promptFrame:SetPoint("center", UIParent, "center", 0, 300)
 		detailsFramework:ApplyStandardBackdrop(promptFrame)
 		table.insert(UISpecialFrames, "DetailsFrameworkPromptSimple")
@@ -2425,7 +2562,7 @@ function detailsFramework:ShowTextPromptPanel(message, callback)
 		promptFrame:SetScript("OnDragStart", function() promptFrame:StartMoving() end)
 		promptFrame:SetScript("OnDragStop", function() promptFrame:StopMovingOrSizing() end)
 		promptFrame:SetScript("OnMouseDown", function(self, button) if (button == "RightButton") then promptFrame.EntryBox:ClearFocus() promptFrame:Hide() end end)
-		tinsert(UISpecialFrames, "DetailsFrameworkPrompt")
+		table.insert(UISpecialFrames, "DetailsFrameworkPrompt")
 
 		detailsFramework:CreateTitleBar (promptFrame, "Prompt!")
 		detailsFramework:ApplyStandardBackdrop(promptFrame)
@@ -2443,7 +2580,7 @@ function detailsFramework:ShowTextPromptPanel(message, callback)
 		textbox:SetPoint("topleft", promptFrame, "topleft", 10, -60)
 		promptFrame.EntryBox = textbox
 
-		local buttonTrue = detailsFramework:CreateButton(promptFrame, nil, 60, 20, "Okey", nil, nil, nil, nil, nil, nil, options_dropdown_template)
+		local buttonTrue = detailsFramework:CreateButton(promptFrame, nil, 60, 20, "Okay", nil, nil, nil, nil, nil, nil, options_dropdown_template)
 		buttonTrue:SetPoint("bottomright", promptFrame, "bottomright", -10, 5)
 		promptFrame.button_true = buttonTrue
 
@@ -2770,7 +2907,7 @@ local draw_overlay = function(self, this_overlay, overlayData, color)
 		local this_block = this_overlay [index]
 		if (not this_block) then
 			this_block = self.Graphic:CreateTexture(nil, "border")
-			tinsert(this_overlay, this_block)
+			table.insert(this_overlay, this_block)
 		end
 		this_block:SetHeight(self.Graphic:GetHeight())
 
@@ -2801,12 +2938,12 @@ local chart_panel_add_overlay = function(self, overlayData, color, name, icon)
 		local this_overlay = self.Overlays [self.OverlaysAmount]
 		if (not this_overlay) then
 			this_overlay = {}
-			tinsert(self.Overlays, this_overlay)
+			table.insert(self.Overlays, this_overlay)
 		end
 
 		draw_overlay (self, this_overlay, overlayData, color)
 
-		tinsert(self.OData, {overlayData, color or line_default_color})
+		table.insert(self.OData, {overlayData, color or line_default_color})
 		if (name and self.HeaderShowOverlays) then
 			self:AddLabel (color or line_default_color, name, "overlay", #self.OData)
 		end
@@ -2949,10 +3086,10 @@ local chart_panel_add_data = function(self, graphicData, color, name, elapsedTim
 	local content = graphicData
 
 	--smooth the start and end of the chart
-	tinsert(content, 1, 0)
-	tinsert(content, 1, 0)
-	tinsert(content, #content+1, 0)
-	tinsert(content, #content+1, 0)
+	table.insert(content, 1, 0)
+	table.insert(content, 1, 0)
+	table.insert(content, #content+1, 0)
+	table.insert(content, #content+1, 0)
 
 	local index = 3
 	local graphMaxDps = math.max(LibGraphChartFrame.max_value, maxValue)
@@ -3036,7 +3173,7 @@ local chart_panel_add_data = function(self, graphicData, color, name, elapsedTim
 		chartPanel:SetScale(maxValue)
 	end
 
-	tinsert(chartPanel.GData, {builtData, color or line_default_color, lineTexture, maxValue, elapsedTime})
+	table.insert(chartPanel.GData, {builtData, color or line_default_color, lineTexture, maxValue, elapsedTime})
 	if (name) then
 		chartPanel:AddLabel(color or line_default_color, name, "graphic", #chartPanel.GData)
 	end
@@ -3345,7 +3482,7 @@ local gframe_reset = function(self)
 	if (self.GraphLib_Lines_Used) then
 		for i = #self.GraphLib_Lines_Used, 1, -1 do
 			local line = tremove(self.GraphLib_Lines_Used)
-			tinsert(self.GraphLib_Lines, line)
+			table.insert(self.GraphLib_Lines, line)
 			line:Hide()
 		end
 	end
@@ -3514,7 +3651,7 @@ local simple_list_box_GetOrCreateWidget = function(self)
 			widget.XButton:Hide()
 		end
 
-		tinsert(self.widgets, widget)
+		table.insert(self.widgets, widget)
 	end
 	self.nextWidget = self.nextWidget + 1
 	return widget
@@ -3669,6 +3806,26 @@ end
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- ~scrollbox
 
+---@class df_scrollbox : scrollframe, df_sortmixin, df_scrollboxmixin
+---@field data table
+---@field Header df_headerframe?
+---@field LineAmount number
+---@field LineHeight number
+---@field IsFauxScroll boolean?
+---@field HideScrollBar boolean?
+---@field Frames frame[]
+---@field ReajustNumFrames boolean?
+---@field DontHideChildrenOnPreRefresh boolean
+---@field refresh_func fun(self:df_scrollbox, data:table, offset:number, numlines:number)
+---@field Refresh fun(self:df_scrollbox)
+---@field CreateLineFunc fun(self:df_scrollbox, index:number)?
+---@field CreateLine fun(self:df_scrollbox, func:function)
+---@field SetData fun(self:df_scrollbox, data:table)
+---@field GetData fun(self:df_scrollbox): table
+---@field OnSetData fun(self:df_scrollbox, data:table)? if exists, this function is called after the SetData with the same parameters
+---@field ScrollBar statusbar
+---@field
+
 ---create a scrollbox with the methods :Refresh() :SetData() :CreateLine()
 ---@param parent table
 ---@param name string
@@ -3678,16 +3835,20 @@ end
 ---@param height number
 ---@param lineAmount number
 ---@param lineHeight number
----@param createLineFunc function|nil
----@param autoAmount boolean|nil
----@param noScroll boolean|nil
----@return table
-function detailsFramework:CreateScrollBox(parent, name, refreshFunc, data, width, height, lineAmount, lineHeight, createLineFunc, autoAmount, noScroll)
+---@param createLineFunc function?
+---@param autoAmount boolean?
+---@param noScroll boolean?
+---@param noBackdrop boolean?
+---@return df_scrollbox
+function detailsFramework:CreateScrollBox(parent, name, refreshFunc, data, width, height, lineAmount, lineHeight, createLineFunc, autoAmount, noScroll, noBackdrop)
 	--create the scrollframe, it is the base of the scrollbox
+	---@type df_scrollbox
 	local scroll = CreateFrame("scrollframe", name, parent, "FauxScrollFrameTemplate, BackdropTemplate")
 
 	--apply the standard background color
-	detailsFramework:ApplyStandardBackdrop(scroll)
+	if (not noBackdrop) then
+		detailsFramework:ApplyStandardBackdrop(scroll)
+	end
 
 	scroll:SetSize(width, height)
 	scroll.LineAmount = lineAmount
@@ -3765,581 +3926,16 @@ function detailsFramework:CreateResizeGrips(parent, options, leftResizerName, ri
 end
 
 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- ~keybind
-
-
---------------------------------
---keybind frame ~key
-
-
-local ignoredKeys = {
-	["LSHIFT"] = true,
-	["RSHIFT"] = true,
-	["LCTRL"] = true,
-	["RCTRL"] = true,
-	["LALT"] = true,
-	["RALT"] = true,
-	["UNKNOWN"] = true,
-}
-
-local mouseKeys = {
-	["LeftButton"] = "type1",
-	["RightButton"] = "type2",
-	["MiddleButton"] = "type3",
-	["Button4"] = "type4",
-	["Button5"] = "type5",
-	["Button6"] = "type6",
-	["Button7"] = "type7",
-	["Button8"] = "type8",
-	["Button9"] = "type9",
-	["Button10"] = "type10",
-	["Button11"] = "type11",
-	["Button12"] = "type12",
-	["Button13"] = "type13",
-	["Button14"] = "type14",
-	["Button15"] = "type15",
-	["Button16"] = "type16",
-}
-
-local keysToMouse = {
-	["type1"] = "LeftButton",
-	["type2"] = "RightButton",
-	["type3"] = "MiddleButton",
-	["type4"] = "Button4",
-	["type5"] = "Button5",
-	["type6"] = "Button6",
-	["type7"] = "Button7",
-	["type8"] = "Button8",
-	["type9"] = "Button9",
-	["type10"] = "Button10",
-	["type11"] = "Button11",
-	["type12"] = "Button12",
-	["type13"] = "Button13",
-	["type14"] = "Button14",
-	["type15"] = "Button15",
-	["type16"] = "Button16",
-}
-
-local keybind_set_data = function(self, new_data_table)
-	self.Data = new_data_table
-	self.keybindScroll:UpdateScroll()
-end
-
-function detailsFramework:CreateKeybindBox (parent, name, data, callback, width, height, line_amount, line_height)
-
-	local options_text_template = detailsFramework:GetTemplate("font", "OPTIONS_FONT_TEMPLATE")
-	local options_dropdown_template = detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE")
-	local options_switch_template = detailsFramework:GetTemplate("switch", "OPTIONS_CHECKBOX_TEMPLATE")
-	local options_slider_template = detailsFramework:GetTemplate("slider", "OPTIONS_SLIDER_TEMPLATE")
-	local options_button_template = detailsFramework:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE")
-
-	local SCROLL_ROLL_AMOUNT = line_amount
-
-	--keybind set frame
-	local new_keybind_frame = CreateFrame("frame", name, parent, "BackdropTemplate")
-	new_keybind_frame:SetSize(width, height)
-
-	-- keybind scrollframe
-	local keybindScroll = CreateFrame("scrollframe", "$parentScrollFrame", new_keybind_frame, "FauxScrollFrameTemplate, BackdropTemplate")
-	keybindScroll:SetSize(1019, 348)
-	keybindScroll.Frames = {}
-	new_keybind_frame.keybindScroll = keybindScroll
-
-	--waiting the player to press a key
-	new_keybind_frame.IsListening = false
-
-	--check for valid data table
-	if (type(data) ~= "table") then
-		print("error: data must be a table. DF > CreateKeybindBox()")
-		return
-	end
-
-	if (not next (data)) then
-		--build data table for the character class
-		local _, unitClass = UnitClass("player")
-		if (unitClass) then
-			local specIds = detailsFramework:GetClassSpecIDs(unitClass)
-			if (specIds) then
-				for _, specId in ipairs(specIds) do
-					data [specId] = {}
-				end
-			end
-		end
-	end
-
-	new_keybind_frame.Data = data
-	new_keybind_frame.SetData = keybind_set_data
-
-	new_keybind_frame.EditingSpec = detailsFramework:GetCurrentSpec()
-	new_keybind_frame.CurrentKeybindEditingSet = new_keybind_frame.Data [new_keybind_frame.EditingSpec]
-
-	local allSpecButtons = {}
-	local switch_spec = function(self, button, specID)
-		new_keybind_frame.EditingSpec = specID
-		new_keybind_frame.CurrentKeybindEditingSet = new_keybind_frame.Data [specID]
-
-		for _, button in ipairs(allSpecButtons) do
-			button.selectedTexture:Hide()
-		end
-		self.MyObject.selectedTexture:Show()
-
-		--feedback ao jogador uma vez que as keybinds podem ter o mesmo valor
-		C_Timer.After(.04, function() new_keybind_frame:Hide() end)
-		C_Timer.After(.06, function() new_keybind_frame:Show() end)
-
-		--atualiza a scroll
-		keybindScroll:UpdateScroll()
-	end
-
-	--choose which spec to use
-	local spec1 = detailsFramework:CreateButton(new_keybind_frame, switch_spec, 160, 20, "Spec1 Placeholder Text", 1, _, _, "SpecButton1", _, 0, options_button_template, options_text_template)
-	local spec2 = detailsFramework:CreateButton(new_keybind_frame, switch_spec, 160, 20, "Spec2 Placeholder Text", 1, _, _, "SpecButton2", _, 0, options_button_template, options_text_template)
-	local spec3 = detailsFramework:CreateButton(new_keybind_frame, switch_spec, 160, 20, "Spec3 Placeholder Text", 1, _, _, "SpecButton3", _, 0, options_button_template, options_text_template)
-	local spec4 = detailsFramework:CreateButton(new_keybind_frame, switch_spec, 160, 20, "Spec4 Placeholder Text", 1, _, _, "SpecButton4", _, 0, options_button_template, options_text_template)
-
-	--format the button label and icon with the spec information
-	local className, class = UnitClass("player")
-	local i = 1
-	local specIds = detailsFramework:GetClassSpecIDs(class)
-
-	for index, specId in ipairs(specIds) do
-		local button = new_keybind_frame ["SpecButton" .. index]
-		local spec_id, spec_name, spec_description, spec_icon, spec_background, spec_role, spec_class = DetailsFramework.GetSpecializationInfoByID (specId)
-		button.text = spec_name
-		button:SetClickFunction(switch_spec, specId)
-		button:SetIcon (spec_icon)
-		button.specID = specId
-
-		local selectedTexture = button:CreateTexture(nil, "background")
-		selectedTexture:SetAllPoints()
-		selectedTexture:SetColorTexture(1, 1, 1, 0.5)
-		if (specId ~= new_keybind_frame.EditingSpec) then
-			selectedTexture:Hide()
-		end
-		button.selectedTexture = selectedTexture
-
-		tinsert(allSpecButtons, button)
-		i = i + 1
-	end
-
-	local specsTitle = detailsFramework:CreateLabel(new_keybind_frame, "Config keys for spec:", 12, "silver")
-	specsTitle:SetPoint("topleft", new_keybind_frame, "topleft", 10, mainStartY)
-
-	keybindScroll:SetPoint("topleft", specsTitle.widget, "bottomleft", 0, -120)
-
-	spec1:SetPoint("topleft", specsTitle, "bottomleft", 0, -10)
-	spec2:SetPoint("topleft", specsTitle, "bottomleft", 0, -30)
-	spec3:SetPoint("topleft", specsTitle, "bottomleft", 0, -50)
-	if (class == "DRUID") then
-		spec4:SetPoint("topleft", specsTitle, "bottomleft", 0, -70)
-	end
-
-	local enter_the_key = CreateFrame("frame", nil, new_keybind_frame, "BackdropTemplate")
-	enter_the_key:SetFrameStrata("tooltip")
-	enter_the_key:SetSize(200, 60)
-	enter_the_key:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", tile = true, tileSize = 16, edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
-	enter_the_key:SetBackdropColor(0, 0, 0, 1)
-	enter_the_key:SetBackdropBorderColor(1, 1, 1, 1)
-	enter_the_key.text = detailsFramework:CreateLabel(enter_the_key, "- Press a keyboard key to bind.\n- Click to bind a mouse button.\n- Press escape to cancel.", 11, "orange")
-	enter_the_key.text:SetPoint("center", enter_the_key, "center")
-	enter_the_key:Hide()
-
-	local registerKeybind = function(self, key)
-		if (ignoredKeys [key]) then
-			return
-		end
-		if (key == "ESCAPE") then
-			enter_the_key:Hide()
-			new_keybind_frame.IsListening = false
-			new_keybind_frame:SetScript("OnKeyDown", nil)
-			return
-		end
-
-		local bind = (IsShiftKeyDown() and "SHIFT-" or "") .. (IsControlKeyDown() and "CTRL-" or "") .. (IsAltKeyDown() and "ALT-" or "")
-		bind = bind .. key
-
-		--adiciona para a tabela de keybinds
-		local keybind = new_keybind_frame.CurrentKeybindEditingSet [self.keybindIndex]
-		keybind.key = bind
-
-		new_keybind_frame.IsListening = false
-		new_keybind_frame:SetScript("OnKeyDown", nil)
-
-		enter_the_key:Hide()
-		new_keybind_frame.keybindScroll:UpdateScroll()
-
-		detailsFramework:QuickDispatch(callback)
-	end
-
-	local set_keybind_key = function(self, button, keybindIndex)
-		if (new_keybind_frame.IsListening) then
-			key = mouseKeys [button] or button
-			return registerKeybind (new_keybind_frame, key)
-		end
-		new_keybind_frame.IsListening = true
-		new_keybind_frame.keybindIndex = keybindIndex
-		new_keybind_frame:SetScript("OnKeyDown", registerKeybind)
-
-		enter_the_key:Show()
-		enter_the_key:SetPoint("bottom", self, "top")
-	end
-
-	local new_key_bind = function(self, button, specID)
-		tinsert(new_keybind_frame.CurrentKeybindEditingSet, {key = "-none-", action = "_target", actiontext = ""})
-		FauxScrollFrame_SetOffset (new_keybind_frame.keybindScroll, max(#new_keybind_frame.CurrentKeybindEditingSet-SCROLL_ROLL_AMOUNT, 0))
-		new_keybind_frame.keybindScroll:UpdateScroll()
-	end
-
-	local set_action_text = function(keybindIndex, _, text)
-		local keybind = new_keybind_frame.CurrentKeybindEditingSet [keybindIndex]
-		keybind.actiontext = text
-		detailsFramework:QuickDispatch(callback)
-	end
-
-	local set_action_on_espace_press = function(textentry, capsule)
-		capsule = capsule or textentry.MyObject
-		local keybind = new_keybind_frame.CurrentKeybindEditingSet [capsule.CurIndex]
-		textentry:SetText(keybind.actiontext)
-		detailsFramework:QuickDispatch(callback)
-	end
-
-	local lock_textentry = {
-		["_target"] = true,
-		["_taunt"] = true,
-		["_interrupt"] = true,
-		["_dispel"] = true,
-		["_spell"] = false,
-		["_macro"] = false,
-	}
-
-	local change_key_action = function(self, keybindIndex, value)
-		local keybind = new_keybind_frame.CurrentKeybindEditingSet [keybindIndex]
-		keybind.action = value
-		new_keybind_frame.keybindScroll:UpdateScroll()
-		detailsFramework:QuickDispatch(callback)
-	end
-	local fill_action_dropdown = function()
-
-		local locClass, class = UnitClass("player")
-
-		local taunt = ""
-		local interrupt = ""
-		local dispel = ""
-
-		if (type(dispel) == "table") then
-			local dispelString = "\n"
-			for specID, spellid in pairs(dispel) do
-				local specid, specName = DetailsFramework.GetSpecializationInfoByID (specID)
-				local spellName = GetSpellInfo(spellid)
-				dispelString = dispelString .. "|cFFE5E5E5" .. (specName or "") .. "|r: |cFFFFFFFF" .. spellName .. "\n"
-			end
-			dispel = dispelString
-		else
-			dispel = ""
-		end
-
-		return {
-			--{value = "_target", label = "Target", onclick = change_key_action, desc = "Target the unit"},
-			--{value = "_taunt", label = "Taunt", onclick = change_key_action, desc = "Cast the taunt spell for your class\n\n|cFFFFFFFFSpell: " .. taunt},
-			--{value = "_interrupt", label = "Interrupt", onclick = change_key_action, desc = "Cast the interrupt spell for your class\n\n|cFFFFFFFFSpell: " .. interrupt},
-			--{value = "_dispel", label = "Dispel", onclick = change_key_action, desc = "Cast the interrupt spell for your class\n\n|cFFFFFFFFSpell: " .. dispel},
-			{value = "_spell", label = "Cast Spell", onclick = change_key_action, desc = "Type the spell name in the text box"},
-			{value = "_macro", label = "Run Macro", onclick = change_key_action, desc = "Type your macro in the text box"},
-		}
-	end
-
-	local copy_keybind = function(self, button, keybindIndex)
-		local keybind = new_keybind_frame.CurrentKeybindEditingSet [keybindIndex]
-		for specID, t in pairs(new_keybind_frame.Data) do
-			if (specID ~= new_keybind_frame.EditingSpec) then
-				local key = CopyTable (keybind)
-				local specid, specName = DetailsFramework.GetSpecializationInfoByID (specID)
-				tinsert(new_keybind_frame.Data [specID], key)
-				detailsFramework:Msg("Keybind copied to " .. (specName or ""))
-			end
-		end
-		detailsFramework:QuickDispatch(callback)
-	end
-
-	local delete_keybind = function(self, button, keybindIndex)
-		tremove(new_keybind_frame.CurrentKeybindEditingSet, keybindIndex)
-		new_keybind_frame.keybindScroll:UpdateScroll()
-		detailsFramework:QuickDispatch(callback)
-	end
-
-	local newTitle = detailsFramework:CreateLabel(new_keybind_frame, "Create a new Keybind:", 12, "silver")
-	newTitle:SetPoint("topleft", new_keybind_frame, "topleft", 200, mainStartY)
-	local createNewKeybind = detailsFramework:CreateButton(new_keybind_frame, new_key_bind, 160, 20, "New Key Bind", 1, _, _, "NewKeybindButton", _, 0, options_button_template, options_text_template)
-	createNewKeybind:SetPoint("topleft", newTitle, "bottomleft", 0, -10)
-	--createNewKeybind:SetIcon ([[Interface\Buttons\UI-GuildButton-PublicNote-Up]])
-
-	local update_keybind_list = function(self)
-
-		local keybinds = new_keybind_frame.CurrentKeybindEditingSet
-		FauxScrollFrame_Update (self, #keybinds, SCROLL_ROLL_AMOUNT, 21)
-		local offset = FauxScrollFrame_GetOffset (self)
-
-		for i = 1, SCROLL_ROLL_AMOUNT do
-			local index = i + offset
-			local f = self.Frames [i]
-			local data = keybinds [index]
-
-			if (data) then
-				--index
-				f.Index.text = index
-				--keybind
-				local keyBindText = keysToMouse [data.key] or data.key
-
-				keyBindText = keyBindText:gsub("type1", "LeftButton")
-				keyBindText = keyBindText:gsub("type2", "RightButton")
-				keyBindText = keyBindText:gsub("type3", "MiddleButton")
-
-				f.KeyBind.text = keyBindText
-				f.KeyBind:SetClickFunction(set_keybind_key, index, nil, "left")
-				f.KeyBind:SetClickFunction(set_keybind_key, index, nil, "right")
-				--action
-				f.ActionDrop:SetFixedParameter(index)
-				f.ActionDrop:Select(data.action)
-				--action text
-				f.ActionText.text = data.actiontext
-				f.ActionText:SetEnterFunction (set_action_text, index)
-				f.ActionText.CurIndex = index
-
-				if (lock_textentry [data.action]) then
-					f.ActionText:Disable()
-				else
-					f.ActionText:Enable()
-				end
-
-				--copy
-				f.Copy:SetClickFunction(copy_keybind, index)
-				--delete
-				f.Delete:SetClickFunction(delete_keybind, index)
-
-				f:Show()
-			else
-				f:Hide()
-			end
-		end
-
-		self:Show()
-	end
-
-
-
-	keybindScroll:SetScript("OnVerticalScroll", function(self, offset)
-		FauxScrollFrame_OnVerticalScroll (self, offset, 21, update_keybind_list)
-	end)
-	keybindScroll.UpdateScroll = update_keybind_list
-
-	local backdropColor = {.3, .3, .3, .3}
-	local backdropColorOnEnter = {.6, .6, .6, .6}
-	local on_enter = function(self)
-		self:SetBackdropColor(unpack(backdropColorOnEnter))
-	end
-	local on_leave = function(self)
-		self:SetBackdropColor(unpack(backdropColor))
-	end
-
-	local font = "GameFontHighlightSmall"
-
-	for i = 1, SCROLL_ROLL_AMOUNT do
-		local f = CreateFrame("frame", "$KeyBindFrame" .. i, keybindScroll, "BackdropTemplate")
-		f:SetSize(1009, 20)
-		f:SetPoint("topleft", keybindScroll, "topleft", 0, -(i-1)*29)
-		f:SetBackdrop({bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
-		f:SetBackdropColor(unpack(backdropColor))
-		f:SetScript("OnEnter", on_enter)
-		f:SetScript("OnLeave", on_leave)
-		tinsert(keybindScroll.Frames, f)
-
-		f.Index = detailsFramework:CreateLabel(f, "1")
-		f.KeyBind = detailsFramework:CreateButton(f, set_key_bind, 100, 20, "", _, _, _, "SetNewKeybindButton", _, 0, options_button_template, options_text_template)
-		f.ActionDrop = detailsFramework:CreateDropDown (f, fill_action_dropdown, 0, 120, 20, "ActionDropdown", _, options_dropdown_template)
-		f.ActionText = detailsFramework:CreateTextEntry(f, function()end, 660, 20, "TextBox", _, _, options_dropdown_template)
-		f.Copy = detailsFramework:CreateButton(f, copy_keybind, 20, 20, "", _, _, _, "CopyKeybindButton", _, 0, options_button_template, options_text_template)
-		f.Delete = detailsFramework:CreateButton(f, delete_keybind, 16, 20, "", _, _, _, "DeleteKeybindButton", _, 2, options_button_template, options_text_template)
-
-		f.Index:SetPoint("left", f, "left", 10, 0)
-		f.KeyBind:SetPoint("left", f, "left", 43, 0)
-		f.ActionDrop:SetPoint("left", f, "left", 150, 0)
-		f.ActionText:SetPoint("left", f, "left", 276, 0)
-		f.Copy:SetPoint("left", f, "left", 950, 0)
-		f.Delete:SetPoint("left", f, "left", 990, 0)
-
-		f.Copy:SetIcon ([[Interface\Buttons\UI-GuildButton-PublicNote-Up]], nil, nil, nil, nil, nil, nil, 4)
-		f.Delete:SetIcon ([[Interface\Buttons\UI-StopButton]], nil, nil, nil, nil, nil, nil, 4)
-
-		f.Copy.tooltip = "copy this keybind to other specs"
-		f.Delete.tooltip = "erase this keybind"
-
-		--editbox
-		f.ActionText:SetJustifyH("left")
-		f.ActionText:SetHook("OnEscapePressed", set_action_on_espace_press)
-		f.ActionText:SetHook("OnEditFocusGained", function()
-			local playerSpells = {}
-			local tab, tabTex, offset, numSpells = GetSpellTabInfo (2)
-			for i = 1, numSpells do
-				local index = offset + i
-				local spellType, spellId = GetSpellBookItemInfo (index, "player")
-				if (spellType == "SPELL") then
-					local spellName = GetSpellInfo(spellId)
-					tinsert(playerSpells, spellName)
-				end
-			end
-			f.ActionText.WordList = playerSpells
-		end)
-
-		f.ActionText:SetAsAutoComplete ("WordList")
-	end
-
-	local header = CreateFrame("frame", "$parentOptionsPanelFrameHeader", keybindScroll, "BackdropTemplate")
-	header:SetPoint("bottomleft", keybindScroll, "topleft", 0, 2)
-	header:SetPoint("bottomright", keybindScroll, "topright", 0, 2)
-	header:SetHeight(16)
-
-	header.Index = detailsFramework:CreateLabel  (header, "Index", detailsFramework:GetTemplate("font", "OPTIONS_FONT_TEMPLATE"))
-	header.Key = detailsFramework:CreateLabel  (header, "Key", detailsFramework:GetTemplate("font", "OPTIONS_FONT_TEMPLATE"))
-	header.Action = detailsFramework:CreateLabel  (header, "Action", detailsFramework:GetTemplate("font", "OPTIONS_FONT_TEMPLATE"))
-	header.Macro = detailsFramework:CreateLabel  (header, "Spell Name / Macro", detailsFramework:GetTemplate("font", "OPTIONS_FONT_TEMPLATE"))
-	header.Copy = detailsFramework:CreateLabel  (header, "Copy", detailsFramework:GetTemplate("font", "OPTIONS_FONT_TEMPLATE"))
-	header.Delete = detailsFramework:CreateLabel  (header, "Delete", detailsFramework:GetTemplate("font", "OPTIONS_FONT_TEMPLATE"))
-
-	header.Index:SetPoint("left", header, "left", 10, 0)
-	header.Key:SetPoint("left", header, "left", 43, 0)
-	header.Action:SetPoint("left", header, "left", 150, 0)
-	header.Macro:SetPoint("left", header, "left", 276, 0)
-	header.Copy:SetPoint("left", header, "left", 950, 0)
-	header.Delete:SetPoint("left", header, "left", 990, 0)
-
-	new_keybind_frame:SetScript("OnShow", function()
-
-		--new_keybind_frame.EditingSpec = EnemyGrid.CurrentSpec
-		--new_keybind_frame.CurrentKeybindEditingSet = EnemyGrid.CurrentKeybindSet
-
-		for _, button in ipairs(allSpecButtons) do
-			if (new_keybind_frame.EditingSpec ~= button.specID) then
-				button.selectedTexture:Hide()
-			else
-				button.selectedTexture:Show()
-			end
-		end
-
-		keybindScroll:UpdateScroll()
-	end)
-
-	new_keybind_frame:SetScript("OnHide", function()
-		if (new_keybind_frame.IsListening) then
-			new_keybind_frame.IsListening = false
-			new_keybind_frame:SetScript("OnKeyDown", nil)
-		end
-	end)
-
-	return new_keybind_frame
-end
-
-function detailsFramework:BuildKeybindFunctions (data, prefix)
-
-	--~keybind
-	local classLoc, class = UnitClass("player")
-	local bindingList = data
-
-	local bindString = "self:ClearBindings()"
-	local bindKeyBindTypeFunc = [[local unitFrame = ...]]
-	local bindMacroTextFunc = [[local unitFrame = ...]]
-	local isMouseBinding
-
-	for i = 1, #bindingList do
-		local bind = bindingList [i]
-		local bindType
-
-		--which button to press
-		if (bind.key:find("type")) then
-			local keyNumber = tonumber(bind.key:match ("%d"))
-			bindType = keyNumber
-			isMouseBinding = true
-		else
-			bindType = prefix .. "" .. i
-			bindString = bindString .. "self:SetBindingClick (0, '" .. bind.key .. "', self:GetName(), '" .. bindType .. "')"
-			bindType = "-" .. prefix .. "" .. i
-			isMouseBinding = nil
-		end
-
-		--keybind type
-		local shift, alt, ctrl = bind.key:match ("SHIFT"), bind.key:match ("ALT"), bind.key:match ("CTRL")
-		local CommandKeys = alt and alt .. "-" or ""
-		CommandKeys = ctrl and CommandKeys .. ctrl .. "-" or CommandKeys
-		CommandKeys = shift and CommandKeys .. shift .. "-" or CommandKeys
-
-		local keyBindType
-		if (isMouseBinding) then
-			keyBindType = [[unitFrame:SetAttribute ("@COMMANDtype@BINDTYPE", "macro")]]
-		else
-			keyBindType = [[unitFrame:SetAttribute ("type@BINDTYPE", "macro")]]
-		end
-
-		keyBindType = keyBindType:gsub("@BINDTYPE", bindType)
-		keyBindType = keyBindType:gsub("@COMMAND", CommandKeys)
-		bindKeyBindTypeFunc = bindKeyBindTypeFunc .. keyBindType
-
-		--spell or macro
-		if (bind.action == "_spell") then
-			local macroTextLine
-			if (isMouseBinding) then
-				macroTextLine = [[unitFrame:SetAttribute ("@COMMANDmacrotext@BINDTYPE", "/cast [@mouseover] @SPELL")]]
-			else
-				macroTextLine = [[unitFrame:SetAttribute ("macrotext@BINDTYPE", "/cast [@mouseover] @SPELL")]]
-			end
-			macroTextLine = macroTextLine:gsub("@BINDTYPE", bindType)
-			macroTextLine = macroTextLine:gsub("@SPELL", bind.actiontext)
-			macroTextLine = macroTextLine:gsub("@COMMAND", CommandKeys)
-			bindMacroTextFunc = bindMacroTextFunc .. macroTextLine
-
-		elseif (bind.action == "_macro") then
-			local macroTextLine
-			if (isMouseBinding) then
-				macroTextLine = [[unitFrame:SetAttribute ("@COMMANDmacrotext@BINDTYPE", "@MACRO")]]
-			else
-				macroTextLine = [[unitFrame:SetAttribute ("macrotext@BINDTYPE", "@MACRO")]]
-			end
-			macroTextLine = macroTextLine:gsub("@BINDTYPE", bindType)
-			macroTextLine = macroTextLine:gsub("@MACRO", bind.actiontext)
-			macroTextLine = macroTextLine:gsub("@COMMAND", CommandKeys)
-			bindMacroTextFunc = bindMacroTextFunc .. macroTextLine
-
-		end
-	end
-
-	--~key
-	local bindTypeFuncLoaded = loadstring (bindKeyBindTypeFunc)
-	local bindMacroFuncLoaded = loadstring (bindMacroTextFunc)
-
-	if (not bindMacroFuncLoaded or not bindTypeFuncLoaded) then
-		return
-	end
-
-	return bindString, bindTypeFuncLoaded, bindMacroFuncLoaded
-end
-
-
-function detailsFramework:SetKeybindsOnProtectedFrame (frame, bind_string, bind_type_func, bind_macro_func)
-
-	bind_type_func (frame)
-	bind_macro_func (frame)
-	frame:SetAttribute ("_onenter", bind_string)
-
-end
-
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- ~standard backdrop
 ---this is the standard backdrop for detailsframework, it's a dark-ish color semi transparent with a thin opaque black border
 ---for the background it uses UI-Tooltip-Background with detailsFramework:GetDefaultBackdropColor() color
 ---for the border it uses Interface\Buttons\WHITE8X8
 ---also creates an additional texture frame.__background = texture with the same setting of the backdrop background
----@param frame table
----@param bUseSolidColor any
----@param alphaScale number
+---@param self table
+---@param frame frame
+---@param bUseSolidColor boolean?
+---@param alphaScale number?
 function detailsFramework:ApplyStandardBackdrop(frame, bUseSolidColor, alphaScale)
 	alphaScale = alphaScale or 0.95
 
@@ -4351,7 +3947,6 @@ function detailsFramework:ApplyStandardBackdrop(frame, bUseSolidColor, alphaScal
 	local red, green, blue, alpha = detailsFramework:GetDefaultBackdropColor()
 
 	if (bUseSolidColor) then
-		local colorDeviation = 0.05
 		frame:SetBackdrop({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Buttons\WHITE8X8]], tileSize = 32, tile = true})
 		frame:SetBackdropColor(red, green, blue, 0.872)
 		frame:SetBackdropBorderColor(0, 0, 0, 0.95)
@@ -4460,43 +4055,77 @@ local default_radiogroup_options = {
 	backdrop_color = {0, 0, 0, 0.2},
 	backdrop_border_color = {0.1, 0.1, 0.1, .2},
 	is_radio = false,
+	text_color = {1, 0.8196, 0, 1},
+	text_size = 10,
+	text_outline = "NONE",
 }
 
+---@class df_radiogroup_checkbox : df_checkbox
+---@field Label df_label
+---@field Icon texture
+---@field _optionid number
+---@field _set function
+---@field _callback function
+---@field _param any
+---@field __width number
+---@field __height number
+
+---@class df_radiogroupmixin : table
+---@field allCheckBoxes df_radiogroup_checkbox[]
+---@field SetFadeState fun(self:df_checkboxgroup, state:boolean)
+---@field Disable fun(self:df_checkboxgroup)
+---@field Enable fun(self:df_checkboxgroup)
+---@field DeselectAll fun(self:df_checkboxgroup)
+---@field Select fun(self:df_checkboxgroup, checkboxId:number)
+---@field GetSelected fun(self:df_checkboxgroup):number
+---@field FadeIn fun(self:df_checkboxgroup)
+---@field FadeOut fun(self:df_checkboxgroup)
+---@field GetAllCheckboxes fun(self:df_checkboxgroup):df_radiogroup_checkbox[]
+---@field GetCheckbox fun(self:df_checkboxgroup, checkboxId:number):df_radiogroup_checkbox
+---@field CreateCheckbox fun(self:df_checkboxgroup):df_radiogroup_checkbox
+---@field ResetAllCheckboxes fun(self:df_checkboxgroup)
+---@field RadioOnClick fun(checkbox:df_radiogroup_checkbox, fixedParam:any, value:boolean)
+---@field RefreshCheckbox fun(self:df_checkboxgroup, checkbox:df_radiogroup_checkbox, optionTable:table, optionId:number)
+
+local radio_checkbox_onclick_extraspace = function(self)
+	self:GetParent():GetObject():OnSwitch() --as the parent of self is a Switch object from DetailsFramework, it need to run :GetObject() to get the capsule object
+end
+
+---@type df_radiogroupmixin
 detailsFramework.RadioGroupCoreFunctions = {
+	allCheckBoxes = {},
+
 	Disable = function(self)
-		local frameList = self:GetAllCheckboxes()
-		for _, checkbox in ipairs(frameList) do
-			checkbox = checkbox.GetCapsule and checkbox:GetCapsule() or checkbox
+		local checkBoxList = self:GetAllCheckboxes()
+		for _, checkbox in ipairs(checkBoxList) do
 			checkbox:Disable()
 		end
 	end,
 
 	Enable = function(self)
-		local frameList = self:GetAllCheckboxes()
-		for _, checkbox in ipairs(frameList) do
-			checkbox = checkbox.GetCapsule and checkbox:GetCapsule() or checkbox
+		local checkBoxList = self:GetAllCheckboxes()
+		for _, checkbox in ipairs(checkBoxList) do
 			checkbox:Enable()
 		end
 	end,
 
 	DeselectAll = function(self)
-		local frameList = self:GetAllCheckboxes()
-		for _, checkbox in ipairs(frameList) do
-			checkbox = checkbox.GetCapsule and checkbox:GetCapsule() or checkbox
+		local checkBoxList = self:GetAllCheckboxes()
+		for _, checkbox in ipairs(checkBoxList) do
 			checkbox:SetValue(false)
 		end
 	end,
 
 	FadeIn = function(self)
-		local frameList = self:GetAllCheckboxes()
-		for _, checkbox in ipairs(frameList) do
+		local checkBoxList = self:GetAllCheckboxes()
+		for _, checkbox in ipairs(checkBoxList) do
 			checkbox:SetAlpha(1)
 		end
 	end,
 
 	FadeOut = function(self)
-		local frameList = self:GetAllCheckboxes()
-		for _, checkbox in ipairs(frameList) do
+		local checkBoxList = self:GetAllCheckboxes()
+		for _, checkbox in ipairs(checkBoxList) do
 			checkbox:SetAlpha(.7)
 		end
 	end,
@@ -4510,7 +4139,7 @@ detailsFramework.RadioGroupCoreFunctions = {
 	end,
 
 	GetAllCheckboxes = function(self)
-		return {self:GetChildren()}
+		return self.allCheckBoxes
 	end,
 
 	GetCheckbox = function(self, checkboxId)
@@ -4523,10 +4152,33 @@ detailsFramework.RadioGroupCoreFunctions = {
 	end,
 
 	CreateCheckbox = function(self)
-		local checkbox = detailsFramework:CreateSwitch(self, function()end, false, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, detailsFramework:GetTemplate("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"))
+		local checkbox = detailsFramework:CreateSwitch(self, function()end, false)
+		checkbox:SetTemplate(detailsFramework:GetTemplate("switch", "OPTIONS_CHECKBOX_BRIGHT_TEMPLATE"))
 		checkbox:SetAsCheckBox()
+
+		local extraSpaceToClick = CreateFrame("button", "$parentExtraSpaceToClick", checkbox.widget)
+		extraSpaceToClick:SetPoint("topleft", checkbox.widget, "topright", 0, 0)
+		extraSpaceToClick:SetPoint("bottomleft", checkbox.widget, "bottomright", 0, 0)
+		extraSpaceToClick:SetScript("OnClick", radio_checkbox_onclick_extraspace)
+		checkbox.extraSpaceToClick = extraSpaceToClick
+
+		if (self.options.rounded_corner_preset) then
+			checkbox:SetBackdrop(nil)
+			detailsFramework:AddRoundedCornersToFrame(checkbox, self.options.rounded_corner_preset)
+		end
+
+		if (self.options.checked_texture) then
+			checkbox:SetCheckedTexture(self.options.checked_texture, self.options.checked_texture_offset_x, self.options.checked_texture_offset_y)
+		end
+
 		checkbox.Icon = detailsFramework:CreateImage(checkbox, "", 16, 16)
 		checkbox.Label = detailsFramework:CreateLabel(checkbox, "")
+		self.allCheckBoxes[#self.allCheckBoxes + 1] = checkbox
+
+		if (self.options.on_create_checkbox) then
+			--use dispatch
+			detailsFramework:QuickDispatch(self.options.on_create_checkbox, self, checkbox)
+		end
 
 		return checkbox
 	end,
@@ -4542,7 +4194,9 @@ detailsFramework.RadioGroupCoreFunctions = {
 	--if the list of checkboxes are a radio group
 	RadioOnClick = function(checkbox, fixedParam, value)
 		--turn off all checkboxes
-		checkbox:GetParent():DeselectAll()
+		---@type df_checkboxgroup
+		local radioGroup = checkbox:GetParent()
+		radioGroup:DeselectAll()
 
 		--turn on the clicked checkbox
 		checkbox:SetValue(true)
@@ -4551,53 +4205,152 @@ detailsFramework.RadioGroupCoreFunctions = {
 		if (checkbox._callback) then
 			detailsFramework:QuickDispatch(checkbox._callback, fixedParam, checkbox._optionid)
 		end
+
+		if (radioGroup.options.on_click_option) then
+			detailsFramework:QuickDispatch(radioGroup.options.on_click_option, radioGroup, checkbox, checkbox._param, checkbox._optionid)
+		end
 	end,
 
 	RefreshCheckbox = function(self, checkbox, optionTable, optionId)
 		checkbox = checkbox.GetCapsule and checkbox:GetCapsule() or checkbox
+		---@cast checkbox df_radiogroup_checkbox
+
+		local width, height = optionTable.width or 20, optionTable.height or 20
+		checkbox:SetSize(width, height)
 
 		local setFunc = self.options.is_radio and self.RadioOnClick or optionTable.set
 		checkbox:SetSwitchFunction(setFunc)
 		checkbox._callback = optionTable.callback
 		checkbox._set = self.options.is_radio and optionTable.callback or optionTable.set
 		checkbox._optionid = optionId
+		checkbox._param = optionTable.param or optionId
 		checkbox:SetFixedParameter(optionTable.param or optionId)
 
-		local isChecked = type(optionTable.get) == "function" and detailsFramework:Dispatch(optionTable.get) or false
-		checkbox:SetValue(isChecked)
+		local bIsChecked = (type(optionTable.selected) == "boolean" and optionTable.selected) or (type(optionTable.get) == "function" and detailsFramework:Dispatch(optionTable.get)) or false
+		checkbox:SetValue(bIsChecked)
 
-		checkbox.Label:SetText(optionTable.name)
+		checkbox.Label.text = optionTable.name
+		checkbox.Label.textsize = optionTable.text_size or self.options.text_size
+		checkbox.Label.textcolor = self.options.text_color
+		checkbox.Label.outline = self.options.text_outline
+
+		checkbox.Label:ClearAllPoints()
 
 		if (optionTable.texture) then
 			checkbox.Icon:SetTexture(optionTable.texture)
-			checkbox.Icon:SetPoint("left", checkbox, "right", 2, 0)
-			checkbox.Label:SetPoint("left", checkbox.Icon, "right", 2, 0)
+			checkbox.Icon:SetSize(width, height)
+			checkbox.Icon:SetPoint("left", checkbox, "right", self.AnchorOptions.icon_offset_x, 0)
+
+			if (self.options.text_padding) then
+				checkbox.Label:SetPoint("left", checkbox.Icon, "right", self.options.text_padding, 0)
+			else
+				checkbox.Label:SetPoint("left", checkbox.Icon, "right", 2, 0)
+			end
+
+			checkbox.tooltip = optionTable.tooltip
 
 			if (optionTable.texcoord) then
 				checkbox.Icon:SetTexCoord(unpack(optionTable.texcoord))
 			else
 				checkbox.Icon:SetTexCoord(0, 1, 0, 1)
 			end
+
+			if (optionTable.mask) then
+				if (not checkbox.Icon.Mask) then
+					checkbox.Icon.Mask = checkbox:CreateMaskTexture(nil, "overlay")
+					checkbox.Icon.Mask:SetAllPoints(checkbox.Icon.widget)
+					checkbox.Icon.Mask:SetTexture(optionTable.mask)
+					checkbox.Icon:AddMaskTexture(checkbox.Icon.Mask)
+				end
+				checkbox.Icon.Mask:SetTexture(optionTable.mask)
+			else
+				--checkbox.Icon:SetMask("")
+				if (checkbox.Icon.Mask) then
+					checkbox.Icon.Mask:SetTexture("")
+				end
+			end
 		else
 			checkbox.Icon:SetTexture("")
-			checkbox.Label:SetPoint("left", checkbox, "right", 2, 0)
+			if (self.options.text_padding) then
+				checkbox.Label:SetPoint("left", checkbox, "right", self.options.text_padding, 0)
+			else
+				checkbox.Label:SetPoint("left", checkbox, "right", 2, 0)
+			end
+		end
+
+		checkbox.__width = width + (checkbox.Icon:IsShown() and (checkbox.Icon:GetWidth() + 2)) + (checkbox.Label:GetStringWidth()) + 2
+		checkbox.widget.__width = checkbox.__width
+
+		checkbox.__height = height + (checkbox.Icon:IsShown() and (checkbox.Icon:GetHeight() + 2))
+		checkbox.widget.__height = checkbox.__height
+
+		if (optionTable.checkbox_template) then
+			checkbox:SetTemplate(optionTable.checkbox_template)
 		end
 	end,
 
 	Refresh = function(self)
 		self:ResetAllCheckboxes()
 		local radioOptions = self:GetOptions()
-		local radioCheckboxes = self:GetAllCheckboxes()
+		local totalWidth = 0
+		local maxHeight = 0
 
 		for optionId, optionsTable in ipairs(radioOptions) do
 			local checkbox = self:GetCheckbox(optionId)
 			checkbox.OptionID = optionId
 			checkbox:Show()
 			self:RefreshCheckbox(checkbox, optionsTable, optionId)
+			totalWidth = totalWidth + checkbox.__width
+
+			checkbox.extraSpaceToClick:SetWidth(checkbox.__width)
+
+			if (checkbox:GetHeight() > maxHeight) then
+				maxHeight = checkbox:GetHeight()
+			end
 		end
+
+		if (self.AnchorOptions.min_width) then
+			totalWidth = math.max(self.AnchorOptions.min_width * #radioOptions, totalWidth)
+		end
+
+		if (not self.AnchorOptions.width) then
+			self:SetWidth(totalWidth)
+		else
+			self:SetWidth(self.AnchorOptions.width)
+		end
+
+		if (not self.AnchorOptions.height) then
+			self:SetHeight(maxHeight)
+		else
+			self:SetHeight(self.AnchorOptions.height)
+		end
+
+		self.AnchorOptions.start_y = -5
 
 		--sending false to automatically use the radio group children
 		self:ArrangeFrames(false, self.AnchorOptions)
+	end,
+
+	Select = function(self, option)
+		local allCheckBoxes = self:GetAllCheckboxes()
+		local thisCheckbox = allCheckBoxes[option]
+		if (thisCheckbox) then
+			local callbackFunc = thisCheckbox:GetSwitchFunction()
+			if (callbackFunc) then
+				detailsFramework.RadioGroupCoreFunctions.RadioOnClick(thisCheckbox, thisCheckbox:GetFixedParameter(), true)
+			end
+		end
+	end,
+
+	GetSelected = function(self)
+		local allCheckBoxes = self:GetAllCheckboxes()
+		for i = 1, #allCheckBoxes do
+			local thisCheckbox = allCheckBoxes[i]
+			if (thisCheckbox:GetValue()) then
+				return thisCheckbox._optionid, thisCheckbox:GetFixedParameter()
+			end
+		end
+		return 0
 	end,
 
 	SetOptions = function(self, radioOptions)
@@ -4610,6 +4363,24 @@ detailsFramework.RadioGroupCoreFunctions = {
 	end,
 }
 
+---@class df_radiooptions : table
+---@field name string|table can be a regular string or a locTable
+---@field get fun():any?
+---@field set fun(self:df_radiooptions, param, value)
+---@field param any?
+---@field texture string?
+---@field texcoord table?
+---@field mask any?
+---@field width number?
+---@field height number?
+---@field text_size number?
+---@field callback fun()?
+---@field backdrop table?
+---@field backdrop_color table?
+---@field backdrop_border_color table?
+---@field checkbox_template string?
+---@field on_click_option fun(self:df_checkboxgroup, checkbox:df_radiogroup_checkbox, param:any, optionId:number)
+
 --[=[
 	radionOptions: an index table with options for the radio group {name = "", set = func (self, param, value), param = value, get = func, texture = "", texcoord = {}}
 		set function receives as self the checkbox, use :GetParent() to get the radion group frame
@@ -4618,36 +4389,48 @@ detailsFramework.RadioGroupCoreFunctions = {
 	options: override options for default_radiogroup_options table
 	anchorOptions: override options for default_framelayout_options table
 --]=]
+
+---@class df_checkboxgroup : frame, df_optionsmixin, df_radiogroupmixin, df_framelayout
+
+---@param parent frame
+---@param radioOptions table
+---@param name string?
+---@param options table?
+---@param anchorOptions table?
+---@return df_checkboxgroup
 function detailsFramework:CreateCheckboxGroup(parent, radioOptions, name, options, anchorOptions)
-	local f = CreateFrame("frame", name, parent, "BackdropTemplate")
+	local newCheckboxGroup = CreateFrame("frame", name, parent, "BackdropTemplate")
 
-	detailsFramework:Mixin(f, detailsFramework.OptionsFunctions)
-	detailsFramework:Mixin(f, detailsFramework.RadioGroupCoreFunctions)
-	detailsFramework:Mixin(f, detailsFramework.LayoutFrame)
+	detailsFramework:Mixin(newCheckboxGroup, detailsFramework.OptionsFunctions)
+	detailsFramework:Mixin(newCheckboxGroup, detailsFramework.RadioGroupCoreFunctions)
+	detailsFramework:Mixin(newCheckboxGroup, detailsFramework.LayoutFrame)
 
-	f:BuildOptionsTable (default_radiogroup_options, options)
+	newCheckboxGroup.allCheckBoxes = {}
 
-	f:SetSize(f.options.width, f.options.height)
-	f:SetBackdrop(f.options.backdrop)
-	f:SetBackdropColor(unpack(f.options.backdrop_color))
-	f:SetBackdropBorderColor(unpack(f.options.backdrop_border_color))
+	newCheckboxGroup:BuildOptionsTable(default_radiogroup_options, options)
 
-	f.AnchorOptions = anchorOptions or {}
+	newCheckboxGroup:SetBackdrop(newCheckboxGroup.options.backdrop)
+	newCheckboxGroup:SetBackdropColor(unpack(newCheckboxGroup.options.backdrop_color))
+	newCheckboxGroup:SetBackdropBorderColor(unpack(newCheckboxGroup.options.backdrop_border_color))
 
-	if (f.options.title) then
-		local titleLabel = detailsFramework:CreateLabel(f, f.options.title, detailsFramework:GetTemplate("font", "ORANGE_FONT_TEMPLATE"))
-		titleLabel:SetPoint("bottomleft", f, "topleft", 0, 2)
-		f.Title = titleLabel
+	newCheckboxGroup.AnchorOptions = anchorOptions or {}
+
+	if (newCheckboxGroup.options.title) then
+		local titleLabel = detailsFramework:CreateLabel(newCheckboxGroup, newCheckboxGroup.options.title, detailsFramework:GetTemplate("font", "ORANGE_FONT_TEMPLATE"))
+		titleLabel:SetPoint("bottomleft", newCheckboxGroup, "topleft", 0, 2)
+		newCheckboxGroup.Title = titleLabel
 	end
 
-	f:SetOptions (radioOptions)
+	newCheckboxGroup:SetOptions(radioOptions)
 
-	return f
+	return newCheckboxGroup
 end
 
 function detailsFramework:CreateRadionGroup(parent, radioOptions, name, options, anchorOptions) --alias for miss spelled old function
 	return detailsFramework:CreateRadioGroup(parent, radioOptions, name, options, anchorOptions)
 end
+
+---@class df_radiogroup : frame, df_optionsmixin, df_radiogroupmixin, df_framelayout
 
 function detailsFramework:CreateRadioGroup(parent, radioOptions, name, options, anchorOptions)
 	options = options or {}
@@ -4656,745 +4439,6 @@ function detailsFramework:CreateRadioGroup(parent, radioOptions, name, options, 
 end
 
 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
---load conditions panel
-
---this is the table prototype to hold load conditions settings
-local default_load_conditions = {
-	class = {},
-	spec = {},
-	race = {},
-	talent = {},
-	pvptalent = {},
-	group = {},
-	role = {},
-	affix = {},
-	encounter_ids = {},
-	map_ids = {},
-}
-
-local default_load_conditions_frame_options = {
-	title = "Details! Framework: Load Conditions",
-	name = "Object",
-}
-
-function detailsFramework:CreateLoadFilterParser (callback)
-	local f = CreateFrame("frame")
-	f:RegisterEvent("PLAYER_ENTERING_WORLD")
-	if IS_WOW_PROJECT_MAINLINE then
-		f:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
-		f:RegisterEvent("PLAYER_TALENT_UPDATE")
-	end
-	f:RegisterEvent("PLAYER_ROLES_ASSIGNED")
-	f:RegisterEvent("ZONE_CHANGED_NEW_AREA")
-	if IS_WOW_PROJECT_MAINLINE then
-		f:RegisterEvent("CHALLENGE_MODE_START")
-	end
-	f:RegisterEvent("ENCOUNTER_START")
-	f:RegisterEvent("PLAYER_REGEN_ENABLED")
-
-	f:SetScript("OnEvent", function(self, event, ...)
-		if (event == "ENCOUNTER_START") then
-			local encounterID = ...
-			f.EncounterIDCached = encounterID
-
-		elseif (event == "ENCOUNTER_END") then
-			f.EncounterIDCached = nil
-
-		elseif (event == "PLAYER_REGEN_ENABLED") then
-			--f.EncounterIDCached = nil
-			--when the player dies during an encounter, the game is triggering regen enabled
-
-		elseif (event == "PLAYER_SPECIALIZATION_CHANGED") then
-			if (DetailsFrameworkLoadConditionsPanel and DetailsFrameworkLoadConditionsPanel:IsShown()) then
-				DetailsFrameworkLoadConditionsPanel:Refresh()
-			end
-
-			local unit = ...
-			if (not unit or not UnitIsUnit("player", unit)) then
-				return
-			end
-
-		elseif (event == "PLAYER_ROLES_ASSIGNED") then
-			local assignedRole = UnitGroupRolesAssigned("player")
-			if (assignedRole == "NONE") then
-				local spec = DetailsFramework.GetSpecialization()
-				if (spec) then
-					assignedRole = DetailsFramework.GetSpecializationRole (spec)
-				end
-			end
-
-			if (detailsFramework.CurrentPlayerRole == assignedRole) then
-				return
-			end
-
-			detailsFramework.CurrentPlayerRole = assignedRole
-		end
-
-		--print("Plater Script Update:", event, ...)
-
-		detailsFramework:QuickDispatch(callback, f.EncounterIDCached)
-	end)
-end
-
-function detailsFramework:PassLoadFilters(loadTable, encounterID)
-	--class
-	local passLoadClass
-	if (loadTable.class.Enabled) then
-		local _, classFileName = UnitClass("player")
-		if (not loadTable.class[classFileName]) then
-			return false
-		else
-			passLoadClass = true
-		end
-	end
-
-	--spec
-	if (IS_WOW_PROJECT_MAINLINE and loadTable.spec.Enabled) then
-		local canCheckTalents = true
-
-		if (passLoadClass) then
-			--if is allowed to load on this class, check if the talents isn't from another class
-			local _, classFileName = UnitClass("player")
-			local specsForThisClass = detailsFramework:GetClassSpecIDs(classFileName)
-
-			canCheckTalents = false
-
-			for _, specID in ipairs(specsForThisClass) do
-				if (loadTable.spec[specID] or loadTable.spec[specID..""]) then
-					--theres a talent for this class
-					canCheckTalents = true
-					break
-				end
-			end
-		end
-
-		if (canCheckTalents) then
-			local specIndex = DetailsFramework.GetSpecialization()
-			if (specIndex) then
-				local specID = DetailsFramework.GetSpecializationInfo(specIndex)
-				if not specID or (not loadTable.spec[specID] and not loadTable.spec[specID .. ""]) then
-					return false
-				end
-			else
-				return false
-			end
-		end
-	end
-
-	--race
-	if (loadTable.race.Enabled) then
-		local raceName, raceFileName, raceID = UnitRace ("player")
-		if (not loadTable.race [raceFileName]) then
-			return false
-		end
-	end
-
-	--talents
-	if (IS_WOW_PROJECT_MAINLINE and loadTable.talent.Enabled) then
-		local talentsInUse = detailsFramework:GetCharacterTalents (false, true)
-		local hasTalent
-		for talentID, _ in pairs(talentsInUse) do
-			if talentID and (loadTable.talent [talentID] or loadTable.talent [talentID .. ""]) then
-				hasTalent =  true
-				break
-			end
-		end
-		if (not hasTalent) then
-			return false
-		end
-	end
-
-	--pvptalent
-	if (IS_WOW_PROJECT_MAINLINE and loadTable.pvptalent.Enabled) then
-		local talentsInUse = detailsFramework:GetCharacterPvPTalents (false, true)
-		local hasTalent
-		for talentID, _ in pairs(talentsInUse) do
-			if talentID and (loadTable.pvptalent [talentID] or loadTable.pvptalent [talentID .. ""]) then
-				hasTalent =  true
-				break
-			end
-		end
-		if (not hasTalent) then
-			return false
-		end
-	end
-
-	--group
-	if (loadTable.group.Enabled) then
-		local _, zoneType = GetInstanceInfo()
-		if (not loadTable.group [zoneType]) then
-			return
-		end
-	end
-
-	--role
-	if (loadTable.role.Enabled) then
-		local assignedRole = UnitGroupRolesAssigned("player")
-		if (assignedRole == "NONE") then
-			local spec = DetailsFramework.GetSpecialization()
-			if (spec) then
-				assignedRole = DetailsFramework.GetSpecializationRole (spec)
-			end
-		end
-		if (not loadTable.role [assignedRole]) then
-			return false
-		end
-	end
-
-	--affix
-	if (IS_WOW_PROJECT_MAINLINE and loadTable.affix.Enabled) then
-		local isInMythicDungeon = C_ChallengeMode.IsChallengeModeActive()
-		if (not isInMythicDungeon) then
-			return false
-		end
-
-		local level, affixes, wasEnergized = C_ChallengeMode.GetActiveKeystoneInfo()
-		local hasAffix = false
-		for _, affixID in ipairs(affixes) do
-			if affixID and (loadTable.affix [affixID] or loadTable.affix [affixID .. ""]) then
-				hasAffix = true
-				break
-			end
-		end
-
-		if (not hasAffix) then
-			return false
-		end
-	end
-
-	--encounter id
-	if (loadTable.encounter_ids.Enabled) then
-		if (not encounterID) then
-			return
-		end
-		local hasEncounter
-		for _, ID in pairs(loadTable.encounter_ids) do
-			if (ID == encounterID) then
-				hasEncounter = true
-				break
-			end
-			if (not hasEncounter) then
-				return false
-			end
-		end
-	end
-
-	--map id
-	if (loadTable.map_ids.Enabled) then
-		local _, _, _, _, _, _, _, zoneMapID = GetInstanceInfo()
-		local uiMapID = C_Map.GetBestMapForUnit ("player")
-
-		local hasMapID
-		for _, ID in pairs(loadTable.map_ids) do
-			if (ID == zoneMapID or ID == uiMapID) then
-				hasMapID = true
-				break
-			end
-			if (not hasMapID) then
-				return false
-			end
-		end
-	end
-
-	return true
-end
-
---this func will deploy the default values from the prototype into the config table
-function detailsFramework:UpdateLoadConditionsTable(configTable)
-	configTable = configTable or {}
-	detailsFramework.table.deploy(configTable, default_load_conditions)
-	return configTable
-end
-
---/run Plater.OpenOptionsPanel()PlaterOptionsPanelContainer:SelectIndex (Plater, 14)
-
-function detailsFramework:OpenLoadConditionsPanel(optionsTable, callback, frameOptions)
-	frameOptions = frameOptions or {}
-	detailsFramework.table.deploy(frameOptions, default_load_conditions_frame_options)
-
-	detailsFramework:UpdateLoadConditionsTable(optionsTable)
-
-	if (not DetailsFrameworkLoadConditionsPanel) then
-		local loadConditionsFrame = detailsFramework:CreateSimplePanel(UIParent, 970, 505, "Load Conditions", "DetailsFrameworkLoadConditionsPanel")
-		loadConditionsFrame:SetBackdropColor(0, 0, 0, 1)
-		loadConditionsFrame.AllRadioGroups = {}
-		loadConditionsFrame.AllTextEntries = {}
-		loadConditionsFrame.OptionsTable = optionsTable
-
-		detailsFramework:ApplyStandardBackdrop(loadConditionsFrame, false, 1.1)
-
-		local xStartAt = 10
-		local x2StartAt = 500
-		local anchorPositions = {
-			class = {xStartAt, -70},
-			spec = {xStartAt, -170},
-			race = {xStartAt, -210},
-			role = {xStartAt, -310},
-			talent = {xStartAt, -350},
-			pvptalent = {x2StartAt, -70},
-			group = {x2StartAt, -210},
-			affix = {x2StartAt, -270},
-			encounter_ids = {x2StartAt, -420},
-			map_ids = {x2StartAt, -460},
-		}
-
-		local editingLabel = detailsFramework:CreateLabel(loadConditionsFrame, "Load Conditions For:")
-		local editingWhatLabel = detailsFramework:CreateLabel(loadConditionsFrame, "")
-		editingLabel:SetPoint("topleft", loadConditionsFrame, "topleft", 10, -35)
-		editingWhatLabel:SetPoint("left", editingLabel, "right", 2, 0)
-
-		--this label store the name of what is being edited
-		loadConditionsFrame.EditingLabel = editingWhatLabel
-
-		--when the user click on an option, run the callback
-			loadConditionsFrame.RunCallback = function()
-				detailsFramework:Dispatch (loadConditionsFrame.CallbackFunc)
-			end
-
-		--when the user click on an option or when the panel is opened
-		--check if there's an option enabled and fadein all options, fadeout otherwise
-			loadConditionsFrame.OnRadioStateChanged = function(radioGroup, subConfigTable)
-				subConfigTable.Enabled = nil
-				subConfigTable.Enabled = next (subConfigTable) and true or nil
-				radioGroup:SetFadeState (subConfigTable.Enabled)
-			end
-
-		--create the radio group for character class
-			loadConditionsFrame.OnRadioCheckboxClick = function(self, key, value)
-				--hierarchy: DBKey ["class"] key ["HUNTER"] value TRUE
-				local DBKey = self:GetParent().DBKey
-				loadConditionsFrame.OptionsTable [DBKey] [key and key .. ""] = value and true or nil
-				if not value then -- cleanup "number" type values
-					loadConditionsFrame.OptionsTable [DBKey] [key] = nil
-				end
-				loadConditionsFrame.OnRadioStateChanged (self:GetParent(), loadConditionsFrame.OptionsTable [DBKey])
-				loadConditionsFrame.RunCallback()
-			end
-
-		--create the radio group for classes
-			local classes = {}
-			for _, classTable in pairs(detailsFramework:GetClassList()) do
-				tinsert(classes, {
-					name = classTable.Name,
-					set = loadConditionsFrame.OnRadioCheckboxClick,
-					param = classTable.FileString,
-					get = function() return loadConditionsFrame.OptionsTable.class[classTable.FileString] end,
-					texture = classTable.Texture,
-					texcoord = classTable.TexCoord,
-				})
-			end
-
-			local classGroup = detailsFramework:CreateCheckboxGroup (loadConditionsFrame, classes, name, {width = 200, height = 200, title = "Character Class"}, {offset_x = 130, amount_per_line = 3})
-			classGroup:SetPoint("topleft", loadConditionsFrame, "topleft", anchorPositions.class[1], anchorPositions.class[2])
-			classGroup.DBKey = "class"
-			tinsert(loadConditionsFrame.AllRadioGroups, classGroup)
-
-		--create the radio group for character spec
-			if IS_WOW_PROJECT_MAINLINE then
-				local specs = {}
-				for _, specID in ipairs(detailsFramework:GetClassSpecIDs(select(2, UnitClass("player")))) do
-					local specID, specName, specDescription, specIcon, specBackground, specRole, specClass = DetailsFramework.GetSpecializationInfoByID (specID)
-					tinsert(specs, {
-						name = specName,
-						set = loadConditionsFrame.OnRadioCheckboxClick,
-						param = specID,
-						get = function() return loadConditionsFrame.OptionsTable.spec[specID] or loadConditionsFrame.OptionsTable.spec[specID..""] end,
-						texture = specIcon,
-					})
-				end
-				local specGroup = detailsFramework:CreateCheckboxGroup (loadConditionsFrame, specs, name, {width = 200, height = 200, title = "Character Spec"}, {offset_x = 130, amount_per_line = 4})
-				specGroup:SetPoint("topleft", loadConditionsFrame, "topleft", anchorPositions.spec[1], anchorPositions.spec[2])
-				specGroup.DBKey = "spec"
-				tinsert(loadConditionsFrame.AllRadioGroups, specGroup)
-			end
-
-		--create radio group for character races
-			local raceList = {}
-			for _, raceTable in ipairs(detailsFramework:GetCharacterRaceList()) do
-				tinsert(raceList, {
-					name = raceTable.Name,
-					set = loadConditionsFrame.OnRadioCheckboxClick,
-					param = raceTable.FileString,
-					get = function() return loadConditionsFrame.OptionsTable.race [raceTable.FileString] end,
-				})
-			end
-			local raceGroup = detailsFramework:CreateCheckboxGroup (loadConditionsFrame, raceList, name, {width = 200, height = 200, title = "Character Race"})
-			raceGroup:SetPoint("topleft", loadConditionsFrame, "topleft", anchorPositions.race [1], anchorPositions.race [2])
-			raceGroup.DBKey = "race"
-			tinsert(loadConditionsFrame.AllRadioGroups, raceGroup)
-
-		--create radio group for talents
-			if IS_WOW_PROJECT_MAINLINE then
-				local talentList = {}
-				for _, talentTable in ipairs(detailsFramework:GetCharacterTalents()) do
-					if talentTable.ID then
-						tinsert(talentList, {
-							name = talentTable.Name,
-							set = loadConditionsFrame.OnRadioCheckboxClick,
-							param = talentTable.ID,
-							get = function() return loadConditionsFrame.OptionsTable.talent [talentTable.ID] or loadConditionsFrame.OptionsTable.talent [talentTable.ID .. ""] end,
-							texture = talentTable.Texture,
-						})
-					end
-				end
-				local talentGroup = detailsFramework:CreateCheckboxGroup (loadConditionsFrame, talentList, name, {width = 200, height = 200, title = "Characer Talents"}, {offset_x = 150, amount_per_line = 3})
-				talentGroup:SetPoint("topleft", loadConditionsFrame, "topleft", anchorPositions.talent [1], anchorPositions.talent [2])
-				talentGroup.DBKey = "talent"
-				tinsert(loadConditionsFrame.AllRadioGroups, talentGroup)
-				loadConditionsFrame.TalentGroup = talentGroup
-
-				do
-					--create a frame to show talents selected in other specs or characters
-					local otherTalents = CreateFrame("frame", nil, loadConditionsFrame, "BackdropTemplate")
-					otherTalents:SetSize(26, 26)
-					otherTalents:SetPoint("left", talentGroup.Title.widget, "right", 10, -2)
-					otherTalents.Texture = detailsFramework:CreateImage(otherTalents, [[Interface\BUTTONS\AdventureGuideMicrobuttonAlert]], 24, 24)
-					otherTalents.Texture:SetAllPoints()
-
-					local removeTalent = function(_, _, talentID)
-						loadConditionsFrame.OptionsTable.talent [talentID] = nil
-						GameCooltip2:Hide()
-						loadConditionsFrame.OnRadioStateChanged (talentGroup, loadConditionsFrame.OptionsTable [talentGroup.DBKey])
-						loadConditionsFrame.CanShowTalentWarning()
-					end
-
-					local buildTalentMenu = function()
-						local playerTalents = detailsFramework:GetCharacterTalents()
-						local indexedTalents = {}
-						for _, talentTable in ipairs(playerTalents) do
-							tinsert(indexedTalents, talentTable.ID)
-						end
-
-						--talents selected to load
-						GameCooltip2:AddLine("select a talent to remove it (added from a different spec or character)", "", 1, "orange", "orange", 9)
-						GameCooltip2:AddLine("$div", nil, nil, -1, -1)
-
-						for talentID, _ in pairs(loadConditionsFrame.OptionsTable.talent) do
-							if (type(talentID) == "number" and not detailsFramework.table.find (indexedTalents, talentID)) then
-								local talentID, name, texture, selected, available = GetTalentInfoByID (talentID)
-								if (name) then
-									GameCooltip2:AddLine(name)
-									GameCooltip2:AddIcon (texture, 1, 1, 16, 16, .1, .9, .1, .9)
-									GameCooltip2:AddMenu (1, removeTalent, talentID)
-								end
-							end
-						end
-					end
-
-					otherTalents.CoolTip = {
-						Type = "menu",
-						BuildFunc = buildTalentMenu,
-						OnEnterFunc = function(self) end,
-						OnLeaveFunc = function(self) end,
-						FixedValue = "none",
-						ShowSpeed = 0.05,
-						Options = function()
-							GameCooltip2:SetOption("TextFont", "Friz Quadrata TT")
-							GameCooltip2:SetOption("TextColor", "orange")
-							GameCooltip2:SetOption("TextSize", 12)
-							GameCooltip2:SetOption("FixedWidth", 220)
-							GameCooltip2:SetOption("ButtonsYMod", -4)
-							GameCooltip2:SetOption("YSpacingMod", -4)
-							GameCooltip2:SetOption("IgnoreButtonAutoHeight", true)
-
-							GameCooltip2:SetColor (1, 0.5, 0.5, 0.5, 0)
-
-							local preset2_backdrop = {bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], edgeFile = [[Interface\Buttons\WHITE8X8]], tile = true, edgeSize = 1, tileSize = 16, insets = {left = 0, right = 0, top = 0, bottom = 0}}
-							local gray_table = {0.37, 0.37, 0.37, 0.95}
-							local black_table = {0.2, 0.2, 0.2, 1}
-							GameCooltip2:SetBackdrop(1, preset2_backdrop, gray_table, black_table)
-							GameCooltip2:SetBackdrop(2, preset2_backdrop, gray_table, black_table)
-						end,
-					}
-					GameCooltip2:CoolTipInject (otherTalents)
-
-					function loadConditionsFrame.CanShowTalentWarning()
-						local playerTalents = detailsFramework:GetCharacterTalents()
-						local indexedTalents = {}
-						for _, talentTable in ipairs(playerTalents) do
-							tinsert(indexedTalents, talentTable.ID)
-						end
-						for talentID, _ in pairs(loadConditionsFrame.OptionsTable.talent) do
-							if (type(talentID) == "number" and not detailsFramework.table.find (indexedTalents, talentID)) then
-								otherTalents:Show()
-								return
-							end
-						end
-						otherTalents:Hide()
-					end
-				end
-			end
-
-		--create radio group for pvp talents
-			if IS_WOW_PROJECT_MAINLINE then
-				local pvpTalentList = {}
-				for _, talentTable in ipairs(detailsFramework:GetCharacterPvPTalents()) do
-					tinsert(pvpTalentList, {
-						name = talentTable.Name,
-						set = loadConditionsFrame.OnRadioCheckboxClick,
-						param = talentTable.ID,
-						get = function() return loadConditionsFrame.OptionsTable.pvptalent [talentTable.ID] or loadConditionsFrame.OptionsTable.pvptalent [talentTable.ID .. ""] end,
-						texture = talentTable.Texture,
-					})
-				end
-				local pvpTalentGroup = detailsFramework:CreateCheckboxGroup (loadConditionsFrame, pvpTalentList, name, {width = 200, height = 200, title = "Characer PvP Talents"}, {offset_x = 150, amount_per_line = 3})
-				pvpTalentGroup:SetPoint("topleft", loadConditionsFrame, "topleft", anchorPositions.pvptalent [1], anchorPositions.pvptalent [2])
-				pvpTalentGroup.DBKey = "pvptalent"
-				tinsert(loadConditionsFrame.AllRadioGroups, pvpTalentGroup)
-				loadConditionsFrame.PvPTalentGroup = pvpTalentGroup
-
-				do
-					--create a frame to show talents selected in other specs or characters
-					local otherTalents = CreateFrame("frame", nil, loadConditionsFrame, "BackdropTemplate")
-					otherTalents:SetSize(26, 26)
-					otherTalents:SetPoint("left", pvpTalentGroup.Title.widget, "right", 10, -2)
-					otherTalents.Texture = detailsFramework:CreateImage(otherTalents, [[Interface\BUTTONS\AdventureGuideMicrobuttonAlert]], 24, 24)
-					otherTalents.Texture:SetAllPoints()
-
-					local removeTalent = function(_, _, talentID)
-						loadConditionsFrame.OptionsTable.pvptalent [talentID] = nil
-						GameCooltip2:Hide()
-						loadConditionsFrame.OnRadioStateChanged (pvpTalentGroup, loadConditionsFrame.OptionsTable [pvpTalentGroup.DBKey])
-						loadConditionsFrame.CanShowPvPTalentWarning()
-					end
-
-					local buildTalentMenu = function()
-						local playerTalents = detailsFramework:GetCharacterPvPTalents()
-						local indexedTalents = {}
-						for _, talentTable in ipairs(playerTalents) do
-							tinsert(indexedTalents, talentTable.ID)
-						end
-
-						--talents selected to load
-						GameCooltip2:AddLine("select a talent to remove it (added from a different spec or character)", "", 1, "orange", "orange", 9)
-						GameCooltip2:AddLine("$div", nil, nil, -1, -1)
-
-						for talentID, _ in pairs(loadConditionsFrame.OptionsTable.pvptalent) do
-							if (type(talentID) == "number" and not detailsFramework.table.find (indexedTalents, talentID)) then
-								local _, name, texture = GetPvpTalentInfoByID (talentID)
-								if (name) then
-									GameCooltip2:AddLine(name)
-									GameCooltip2:AddIcon (texture, 1, 1, 16, 16, .1, .9, .1, .9)
-									GameCooltip2:AddMenu (1, removeTalent, talentID)
-								end
-							end
-						end
-					end
-
-					otherTalents.CoolTip = {
-						Type = "menu",
-						BuildFunc = buildTalentMenu,
-						OnEnterFunc = function(self) end,
-						OnLeaveFunc = function(self) end,
-						FixedValue = "none",
-						ShowSpeed = 0.05,
-						Options = function()
-							GameCooltip2:SetOption("TextFont", "Friz Quadrata TT")
-							GameCooltip2:SetOption("TextColor", "orange")
-							GameCooltip2:SetOption("TextSize", 12)
-							GameCooltip2:SetOption("FixedWidth", 220)
-							GameCooltip2:SetOption("ButtonsYMod", -4)
-							GameCooltip2:SetOption("YSpacingMod", -4)
-							GameCooltip2:SetOption("IgnoreButtonAutoHeight", true)
-
-							GameCooltip2:SetColor (1, 0.5, 0.5, 0.5, 0)
-
-							local preset2_backdrop = {edgeFile = [[Interface\Buttons\WHITE8X8]], edgeFile = [[Interface\Buttons\WHITE8X8]], tile = true, edgeSize = 1, tileSize = 16, insets = {left = 0, right = 0, top = 0, bottom = 0}}
-							local gray_table = {0.37, 0.37, 0.37, 0.95}
-							local black_table = {0.2, 0.2, 0.2, 1}
-							GameCooltip2:SetBackdrop(1, preset2_backdrop, gray_table, black_table)
-							GameCooltip2:SetBackdrop(2, preset2_backdrop, gray_table, black_table)
-						end,
-					}
-					GameCooltip2:CoolTipInject (otherTalents)
-
-					function loadConditionsFrame.CanShowPvPTalentWarning()
-						local playerTalents = detailsFramework:GetCharacterPvPTalents()
-						local indexedTalents = {}
-						for _, talentTable in ipairs(playerTalents) do
-							tinsert(indexedTalents, talentTable.ID)
-						end
-						for talentID, _ in pairs(loadConditionsFrame.OptionsTable.pvptalent) do
-							if (type(talentID) == "number" and not detailsFramework.table.find (indexedTalents, talentID)) then
-								otherTalents:Show()
-								return
-							end
-						end
-						otherTalents:Hide()
-					end
-				end
-			end
-
-		--create radio for group types
-			local groupTypes = {}
-			for _, groupTable in ipairs(detailsFramework:GetGroupTypes()) do
-				tinsert(groupTypes, {
-					name = groupTable.Name,
-					set = loadConditionsFrame.OnRadioCheckboxClick,
-					param = groupTable.ID,
-					get = function() return loadConditionsFrame.OptionsTable.group [groupTable.ID] or loadConditionsFrame.OptionsTable.group [groupTable.ID .. ""] end,
-				})
-			end
-			local groupTypesGroup = detailsFramework:CreateCheckboxGroup (loadConditionsFrame, groupTypes, name, {width = 200, height = 200, title = "Group Types"})
-			groupTypesGroup:SetPoint("topleft", loadConditionsFrame, "topleft", anchorPositions.group [1], anchorPositions.group [2])
-			groupTypesGroup.DBKey = "group"
-			tinsert(loadConditionsFrame.AllRadioGroups, groupTypesGroup)
-
-		--create radio for character roles
-			local roleTypes = {}
-			for _, roleTable in ipairs(detailsFramework:GetRoleTypes()) do
-				tinsert(roleTypes, {
-					name = roleTable.Texture .. " " .. roleTable.Name,
-					set = loadConditionsFrame.OnRadioCheckboxClick,
-					param = roleTable.ID,
-					get = function() return loadConditionsFrame.OptionsTable.role [roleTable.ID] or loadConditionsFrame.OptionsTable.role [roleTable.ID .. ""] end,
-				})
-			end
-			local roleTypesGroup = detailsFramework:CreateCheckboxGroup (loadConditionsFrame, roleTypes, name, {width = 200, height = 200, title = "Role Types"})
-			roleTypesGroup:SetPoint("topleft", loadConditionsFrame, "topleft", anchorPositions.role [1], anchorPositions.role [2])
-			roleTypesGroup.DBKey = "role"
-			tinsert(loadConditionsFrame.AllRadioGroups, roleTypesGroup)
-
-		--create radio group for mythic+ affixes
-			if IS_WOW_PROJECT_MAINLINE then
-				local affixes = {}
-				for i = 2, 1000 do
-					local affixName, desc, texture = C_ChallengeMode.GetAffixInfo (i)
-					if (affixName) then
-						tinsert(affixes, {
-							name = affixName,
-							set = loadConditionsFrame.OnRadioCheckboxClick,
-							param = i,
-							get = function() return loadConditionsFrame.OptionsTable.affix [i] or loadConditionsFrame.OptionsTable.affix [i .. ""] end,
-							texture = texture,
-						})
-					end
-				end
-				local affixTypesGroup = detailsFramework:CreateCheckboxGroup (loadConditionsFrame, affixes, name, {width = 200, height = 200, title = "M+ Affixes"})
-				affixTypesGroup:SetPoint("topleft", loadConditionsFrame, "topleft", anchorPositions.affix [1], anchorPositions.affix [2])
-				affixTypesGroup.DBKey = "affix"
-				tinsert(loadConditionsFrame.AllRadioGroups, affixTypesGroup)
-			end
-
-		--text entries functions
-			local textEntryRefresh = function(self)
-				local idList = loadConditionsFrame.OptionsTable [self.DBKey]
-				self:SetText("")
-				for _, id in pairs(idList) do
-					if tonumber(id) then
-						self:SetText(self:GetText() .. " " .. id)
-					end
-				end
-				self:SetText(self:GetText():gsub("^ ", ""))
-			end
-
-			local textEntryOnEnterPressed = function(_, self)
-				wipe (loadConditionsFrame.OptionsTable [self.DBKey])
-				local text = self:GetText()
-
-				for _, ID in ipairs({strsplit(" ", text)}) do
-					ID = detailsFramework:trim (ID)
-					ID = tonumber(ID)
-					if (ID) then
-						tinsert(loadConditionsFrame.OptionsTable [self.DBKey], ID)
-						loadConditionsFrame.OptionsTable [self.DBKey].Enabled = true
-					end
-				end
-			end
-
-		--create the text entry to type the encounter ID
-			local encounterIDLabel = detailsFramework:CreateLabel(loadConditionsFrame, "Encounter ID", detailsFramework:GetTemplate("font", "ORANGE_FONT_TEMPLATE"))
-			local encounterIDEditbox = detailsFramework:CreateTextEntry(loadConditionsFrame, function()end, 200, 20, "EncounterEditbox", _, _, detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
-			encounterIDLabel:SetPoint("topleft", loadConditionsFrame, "topleft", anchorPositions.encounter_ids [1], anchorPositions.encounter_ids [2])
-			encounterIDEditbox:SetPoint("topleft", encounterIDLabel, "bottomleft", 0, -2)
-			encounterIDEditbox.DBKey = "encounter_ids"
-			encounterIDEditbox.Refresh = textEntryRefresh
-			encounterIDEditbox.tooltip = "Enter multiple IDs separating with a whitespace.\nExample: 35 45 95\n\nSanctum of Domination:\n"
-			for _, encounterTable in ipairs(detailsFramework:GetCLEncounterIDs()) do
-				encounterIDEditbox.tooltip = encounterIDEditbox.tooltip .. encounterTable.ID .. " - " .. encounterTable.Name .. "\n"
-			end
-			encounterIDEditbox:SetHook("OnEnterPressed", textEntryOnEnterPressed)
-			tinsert(loadConditionsFrame.AllTextEntries, encounterIDEditbox)
-
-		--create the text entry for map ID
-			local mapIDLabel = detailsFramework:CreateLabel(loadConditionsFrame, "Map ID", detailsFramework:GetTemplate("font", "ORANGE_FONT_TEMPLATE"))
-			local mapIDEditbox = detailsFramework:CreateTextEntry(loadConditionsFrame, function()end, 200, 20, "MapEditbox", _, _, detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
-			mapIDLabel:SetPoint("topleft", loadConditionsFrame, "topleft", anchorPositions.map_ids [1], anchorPositions.map_ids [2])
-			mapIDEditbox:SetPoint("topleft", mapIDLabel, "bottomleft", 0, -2)
-			mapIDEditbox.DBKey = "map_ids"
-			mapIDEditbox.Refresh = textEntryRefresh
-			mapIDEditbox.tooltip = "Enter multiple IDs separating with a whitespace\nExample: 35 45 95"
-			mapIDEditbox:SetHook("OnEnterPressed", textEntryOnEnterPressed)
-			tinsert(loadConditionsFrame.AllTextEntries, mapIDEditbox)
-
-		function loadConditionsFrame.Refresh (self)
-			if IS_WOW_PROJECT_MAINLINE then
-				--update the talents (might have changed if the player changed its specializationid)
-				local talentList = {}
-				for _, talentTable in ipairs(detailsFramework:GetCharacterTalents()) do
-					if talentTable.ID then
-						tinsert(talentList, {
-							name = talentTable.Name,
-							set = DetailsFrameworkLoadConditionsPanel.OnRadioCheckboxClick,
-							param = talentTable.ID,
-							get = function() return DetailsFrameworkLoadConditionsPanel.OptionsTable.talent [talentTable.ID] or DetailsFrameworkLoadConditionsPanel.OptionsTable.talent [talentTable.ID .. ""] end,
-							texture = talentTable.Texture,
-						})
-					end
-				end
-				DetailsFrameworkLoadConditionsPanel.TalentGroup:SetOptions (talentList)
-			end
-
-			if IS_WOW_PROJECT_MAINLINE then
-				local pvpTalentList = {}
-				for _, talentTable in ipairs(detailsFramework:GetCharacterPvPTalents()) do
-					tinsert(pvpTalentList, {
-						name = talentTable.Name,
-						set = DetailsFrameworkLoadConditionsPanel.OnRadioCheckboxClick,
-						param = talentTable.ID,
-						get = function() return DetailsFrameworkLoadConditionsPanel.OptionsTable.pvptalent [talentTable.ID] or DetailsFrameworkLoadConditionsPanel.OptionsTable.pvptalent [talentTable.ID .. ""] end,
-						texture = talentTable.Texture,
-					})
-				end
-				DetailsFrameworkLoadConditionsPanel.PvPTalentGroup:SetOptions (pvpTalentList)
-			end
-
-			--refresh the radio group
-			for _, radioGroup in ipairs(DetailsFrameworkLoadConditionsPanel.AllRadioGroups) do
-				radioGroup:Refresh()
-				DetailsFrameworkLoadConditionsPanel.OnRadioStateChanged (radioGroup, DetailsFrameworkLoadConditionsPanel.OptionsTable [radioGroup.DBKey])
-			end
-
-			--refresh text entries
-			for _, textEntry in ipairs(DetailsFrameworkLoadConditionsPanel.AllTextEntries) do
-				textEntry:Refresh()
-			end
-
-			if IS_WOW_PROJECT_MAINLINE then
-				DetailsFrameworkLoadConditionsPanel.CanShowTalentWarning()
-				DetailsFrameworkLoadConditionsPanel.CanShowPvPTalentWarning()
-			end
-		end
-
-	end
-
-	--set the options table
-	DetailsFrameworkLoadConditionsPanel.OptionsTable = optionsTable
-
-	--set the callback func
-	DetailsFrameworkLoadConditionsPanel.CallbackFunc = callback
-	DetailsFrameworkLoadConditionsPanel.OptionsTable = optionsTable
-
-	--set title
-	DetailsFrameworkLoadConditionsPanel.EditingLabel:SetText(frameOptions.name)
-	DetailsFrameworkLoadConditionsPanel.Title:SetText(frameOptions.title)
-
-	--show the panel to the user
-	DetailsFrameworkLoadConditionsPanel:Show()
-
-	DetailsFrameworkLoadConditionsPanel:Refresh()
-end
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -5408,7 +4452,7 @@ detailsFramework.DataScrollFunctions = {
 			for i = 1, #data do
 				for o = 1, #data[i] do
 					if (data[i][o]:find(filter)) then
-						tinsert(currentData, data[i])
+						table.insert(currentData, data[i])
 						break
 					end
 				end
@@ -5724,1981 +4768,6 @@ end
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
---statusbar mixin
-
---[=[
-	collection of functions to embed into a statusbar
-	statusBar:GetTexture()
-	statusBar:SetTexture(texture)
-	statusBar:SetColor (unparsed color)
-	statusBar:GetColor()
-	statusBar:
-	statusBar:
-
---]=]
-
-detailsFramework.StatusBarFunctions = {
-	SetTexture = function(self, texture, isTemporary)
-		self.barTexture:SetTexture(texture)
-		if (not isTemporary) then
-			self.barTexture.currentTexture = texture
-		end
-	end,
-
-	ResetTexture = function(self)
-		self.barTexture:SetTexture(self.barTexture.currentTexture)
-	end,
-
-	GetTexture = function(self)
-		return self.barTexture:GetTexture()
-	end,
-
-	SetAtlas = function(self, atlasName)
-		self.barTexture:SetAtlas(atlasName)
-	end,
-
-	GetAtlas = function(self)
-		self.barTexture:GetAtlas()
-	end,
-
-	SetTexCoord = function(self, ...)
-		return self.barTexture:SetTexCoord(...)
-	end,
-
-	GetTexCoord = function(self)
-		return self.barTexture:GetTexCoord()
-	end,
-
-	SetColor = function(self, r, g, b, a)
-		r, g, b, a = detailsFramework:ParseColors(r, g, b, a)
-		self:SetStatusBarColor(r, g, b, a)
-	end,
-
-	GetColor = function(self)
-		return self:GetStatusBarColor()
-	end,
-
-	SetMaskTexture = function(self, ...)
-		if (not self:HasTextureMask()) then
-			return
-		end
-		self.barTextureMask:SetTexture(...)
-	end,
-
-	GetMaskTexture = function(self)
-		if (not self:HasTextureMask()) then
-			return
-		end
-		self.barTextureMask:GetTexture()
-	end,
-
-	--SetMaskTexCoord = function(self, ...) --MaskTexture doesn't not support texcoord
-	--	if (not self:HasTextureMask()) then
-	--		return
-	--	end
-	--	self.barTextureMask:SetTexCoord(...)
-	--end,
-
-	--GetMaskTexCoord = function(self, ...)
-	--	if (not self:HasTextureMask()) then
-	--		return
-	--	end
-	--	self.barTextureMask:GetTexCoord()
-	--end,
-
-	SetMaskAtlas = function(self, atlasName)
-		if (not self:HasTextureMask()) then
-			return
-		end
-		self.barTextureMask:SetAtlas(atlasName)
-	end,
-
-	GetMaskAtlas = function(self)
-		if (not self:HasTextureMask()) then
-			return
-		end
-		self.barTextureMask:GetAtlas()
-	end,
-
-	AddMaskTexture = function(self, object)
-		if (not self:HasTextureMask()) then
-			return
-		end
-		if (object.GetObjectType and object:GetObjectType() == "Texture") then
-			object:AddMaskTexture(self.barTextureMask)
-		else
-			detailsFramework:Msg("Invalid 'Texture' to object:AddMaskTexture(Texture)", debugstack())
-		end
-	end,
-
-	CreateTextureMask = function(self)
-		local barTexture = self:GetStatusBarTexture() or self.barTexture
-		if (not barTexture) then
-			detailsFramework:Msg("Object doesn't not have a statubar texture, create one and object:SetStatusBarTexture(textureObject)", debugstack())
-			return
-		end
-
-		if (self.barTextureMask) then
-			return self.barTextureMask
-		end
-
-		--statusbar texture mask
-		self.barTextureMask = self:CreateMaskTexture(nil, "artwork")
-		self.barTextureMask:SetAllPoints()
-		self.barTextureMask:SetTexture([[Interface\CHATFRAME\CHATFRAMEBACKGROUND]])
-
-		--border texture
-		self.barBorderTextureForMask = self:CreateTexture(nil, "overlay", nil, 7)
-		self.barBorderTextureForMask:SetAllPoints()
-		--self.barBorderTextureForMask:SetPoint("topleft", self, "topleft", -1, 1)
-		--self.barBorderTextureForMask:SetPoint("bottomright", self, "bottomright", 1, -1)
-		self.barBorderTextureForMask:Hide()
-
-		barTexture:AddMaskTexture(self.barTextureMask)
-
-		return self.barTextureMask
-	end,
-
-	HasTextureMask = function(self)
-		if (not self.barTextureMask) then
-			detailsFramework:Msg("Object doesn't not have a texture mask, create one using object:CreateTextureMask()", debugstack())
-			return false
-		end
-		return true
-	end,
-
-	SetBorderTexture = function(self, texture)
-		if (not self:HasTextureMask()) then
-			return
-		end
-
-		texture = texture or ""
-
-		self.barBorderTextureForMask:SetTexture(texture)
-
-		if (texture == "") then
-			self.barBorderTextureForMask:Hide()
-		else
-			self.barBorderTextureForMask:Show()
-		end
-	end,
-
-	GetBorderTexture = function(self)
-		if (not self:HasTextureMask()) then
-			return
-		end
-		return self.barBorderTextureForMask:GetTexture()
-	end,
-
-	SetBorderColor = function(self, r, g, b, a)
-		r, g, b, a = detailsFramework:ParseColors(r, g, b, a)
-
-		if (self.barBorderTextureForMask and self.barBorderTextureForMask:IsShown()) then
-			self.barBorderTextureForMask:SetVertexColor(r, g, b, a)
-
-			--if there's a square border on the widget, remove its color
-			if (self.border and self.border.UpdateSizes and self.border.SetVertexColor) then
-				self.border:SetVertexColor(0, 0, 0, 0)
-			end
-
-			return
-		end
-
-		if (self.border and self.border.UpdateSizes and self.border.SetVertexColor) then
-			self.border:SetVertexColor(r, g, b, a)
-
-			--adjust the mask border texture ask well in case the user set the mask color texture before setting a texture on it
-			if (self.barBorderTextureForMask) then
-				self.barBorderTextureForMask:SetVertexColor(r, g, b, a)
-			end
-			return
-		end
-	end,
-
-	GetBorderColor = function(self)
-		if (self.barBorderTextureForMask and self.barBorderTextureForMask:IsShown()) then
-			return self.barBorderTextureForMask:GetVertexColor()
-		end
-
-		if (self.border and self.border.UpdateSizes and self.border.GetVertexColor) then
-			return self.border:GetVertexColor()
-		end
-	end,
-}
-
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
---health bar frame
-
---[=[
-	DF:CreateHealthBar (parent, name, settingsOverride)
-	creates a health bar to show an unit health
-	@parent = frame to pass for the CreateFrame function
-	@name = absolute name of the frame, if omitted it uses the parent's name .. "HealthBar"
-	@settingsOverride = table with keys and values to replace the defaults from the framework
-
-	methods:
-	healthbar:SetUnit(unit)
-	healthBar:GetTexture()
-	healthBar:SetTexture(texture)
---]=]
-
---debug performance isn't placed anywhere
---how to use debug performance: I don't remember
-
-	--Details:Dump (debugPerformance)
-
-	local debugPerformance = {
-		eventCall = {},
-		unitCall = {},
-		functionCall = {},
-		CPUUsageByFunction = {},
-	}
-
-	local function CalcPerformance (type, data)
-		if (type == "event") then
-			debugPerformance.eventCall [data] = (debugPerformance.eventCall [data] or 0) + 1
-
-		elseif (type == "unit") then
-			debugPerformance.unitCall [data] = (debugPerformance.unitCall [data] or 0) + 1
-
-		elseif (type == "call") then
-			debugPerformance.functionCall [data] = (debugPerformance.functionCall [data] or 0) + 1
-
-		end
-	end
-
-	function DF_CalcCpuUsage (name)
-		local cpu = debugPerformance.CPUUsageByFunction [name] or {usage = 0, last = 0, active = false}
-		debugPerformance.CPUUsageByFunction [name] = cpu
-
-		if (cpu.active) then
-			cpu.active = false
-			local diff = debugprofilestop() - cpu.last
-			cpu.usage = cpu.usage + diff
-		else
-			cpu.active = true
-			cpu.last = debugprofilestop()
-		end
-	end
-
-	function UnitFrameStats()
-		for functionName, functionTable in pairs(debugPerformance.CPUUsageByFunction) do
-			debugPerformance.CPUUsageByFunction [functionName] = floor(functionTable.usage)
-		end
-
-		for functionName, functionTable in pairs(debugPerformance.CPUUsageByFunction) do
-			debugPerformance.CPUUsageByFunction [functionName] = {usage = 0, last = 0, active = false}
-		end
-	end
---end of performance calcs
-
---healthBar meta prototype
-	local healthBarMetaPrototype = {
-		WidgetType = "healthBar",
-		dversion = detailsFramework.dversion,
-	}
-
-	--check if there's a metaPrototype already existing
-	if (_G[detailsFramework.GlobalWidgetControlNames["healthBar"]]) then
-		--get the already existing metaPrototype
-		local oldMetaPrototype = _G[detailsFramework.GlobalWidgetControlNames ["healthBar"]]
-		--check if is older
-		if ( (not oldMetaPrototype.dversion) or (oldMetaPrototype.dversion < detailsFramework.dversion) ) then
-			--the version is older them the currently loading one
-			--copy the new values into the old metatable
-			for funcName, _ in pairs(healthBarMetaPrototype) do
-				oldMetaPrototype[funcName] = healthBarMetaPrototype[funcName]
-			end
-		end
-	else
-		--first time loading the framework
-		_G[detailsFramework.GlobalWidgetControlNames["healthBar"]] = healthBarMetaPrototype
-	end
-
-	local healthBarMetaFunctions = _G[detailsFramework.GlobalWidgetControlNames["healthBar"]]
-	detailsFramework:Mixin(healthBarMetaFunctions, detailsFramework.ScriptHookMixin)
-
---hook list
-	local defaultHooksForHealthBar = {
-		OnHide = {},
-		OnShow = {},
-		OnHealthChange = {},
-		OnHealthMaxChange = {},
-	}
-
-	--use the hook already existing
-	healthBarMetaFunctions.HookList = healthBarMetaFunctions.HookList or defaultHooksForHealthBar
-	--copy the non existing values from a new version to the already existing hook table
-	detailsFramework.table.deploy(healthBarMetaFunctions.HookList, defaultHooksForHealthBar)
-
---Health Bar Meta Functions
-
-	--health bar settings
-	healthBarMetaFunctions.Settings = {
-		CanTick = false, --if true calls the method 'OnTick' every tick, the function needs to be overloaded, it receives self and deltaTime as parameters
-		ShowHealingPrediction = true, --when casting a healing pass, show the amount of health that spell will heal
-		ShowShields = true, --indicator of the amount of damage absortion the unit has
-
-		--appearance
-		BackgroundColor = detailsFramework:CreateColorTable (.2, .2, .2, .8),
-		Texture = [[Interface\RaidFrame\Raid-Bar-Hp-Fill]],
-		ShieldIndicatorTexture = [[Interface\RaidFrame\Shield-Fill]],
-		ShieldGlowTexture = [[Interface\RaidFrame\Shield-Overshield]],
-		ShieldGlowWidth = 16,
-
-		--default size
-		Width = 100,
-		Height = 20,
-	}
-
-	healthBarMetaFunctions.HealthBarEvents = {
-		{"PLAYER_ENTERING_WORLD"},
-		{"UNIT_HEALTH", true},
-		{"UNIT_MAXHEALTH", true},
-		{(IS_WOW_PROJECT_NOT_MAINLINE) and "UNIT_HEALTH_FREQUENT", true}, -- this one is classic-only...
-		{"UNIT_HEAL_PREDICTION", true},
-		{(IS_WOW_PROJECT_MAINLINE) and "UNIT_ABSORB_AMOUNT_CHANGED", true},
-		{(IS_WOW_PROJECT_MAINLINE) and "UNIT_HEAL_ABSORB_AMOUNT_CHANGED", true},
-	}
-
-	--setup the castbar to be used by another unit
-	healthBarMetaFunctions.SetUnit = function(self, unit, displayedUnit)
-		if (self.unit ~= unit or self.displayedUnit ~= displayedUnit or unit == nil) then
-
-			self.unit = unit
-			self.displayedUnit = displayedUnit or unit
-
-			--register events
-			if (unit) then
-				self.currentHealth = UnitHealth (unit) or 0
-				self.currentHealthMax = UnitHealthMax (unit) or 0
-
-				for _, eventTable in ipairs(self.HealthBarEvents) do
-					local event = eventTable [1]
-					local isUnitEvent = eventTable [2]
-					if event then
-						if (isUnitEvent) then
-							self:RegisterUnitEvent (event, self.displayedUnit, self.unit)
-						else
-							self:RegisterEvent(event)
-						end
-					end
-				end
-
-				--check for settings and update some events
-				if (not self.Settings.ShowHealingPrediction) then
-					self:UnregisterEvent ("UNIT_HEAL_PREDICTION")
-					if IS_WOW_PROJECT_MAINLINE then
-						self:UnregisterEvent ("UNIT_HEAL_ABSORB_AMOUNT_CHANGED")
-					end
-					self.incomingHealIndicator:Hide()
-					self.healAbsorbIndicator:Hide()
-				end
-				if (not self.Settings.ShowShields) then
-					if IS_WOW_PROJECT_MAINLINE then
-						self:UnregisterEvent ("UNIT_ABSORB_AMOUNT_CHANGED")
-					end
-					self.shieldAbsorbIndicator:Hide()
-					self.shieldAbsorbGlow:Hide()
-				end
-
-				--set scripts
-				self:SetScript("OnEvent", self.OnEvent)
-
-				if (self.Settings.CanTick) then
-					self:SetScript("OnUpdate", self.OnTick)
-				end
-
-				self:PLAYER_ENTERING_WORLD (self.unit, self.displayedUnit)
-			else
-				--remove all registered events
-				for _, eventTable in ipairs(self.HealthBarEvents) do
-					local event = eventTable [1]
-					if event then
-						self:UnregisterEvent (event)
-					end
-				end
-
-				--remove scripts
-				self:SetScript("OnEvent", nil)
-				self:SetScript("OnUpdate", nil)
-				self:Hide()
-			end
-		end
-	end
-
-	healthBarMetaFunctions.Initialize = function(self)
-		PixelUtil.SetWidth (self, self.Settings.Width, 1)
-		PixelUtil.SetHeight(self, self.Settings.Height, 1)
-
-		self:SetTexture(self.Settings.Texture)
-
-		self.background:SetAllPoints()
-		self.background:SetColorTexture(self.Settings.BackgroundColor:GetColor())
-
-		--setpoint of these widgets are set inside the function that updates the incoming heal
-		self.incomingHealIndicator:SetTexture(self:GetTexture())
-		self.healAbsorbIndicator:SetTexture(self:GetTexture())
-		self.healAbsorbIndicator:SetVertexColor(.1, .8, .8)
-		self.shieldAbsorbIndicator:SetTexture(self.Settings.ShieldIndicatorTexture, true, true)
-
-		self.shieldAbsorbGlow:SetWidth(self.Settings.ShieldGlowWidth)
-		self.shieldAbsorbGlow:SetTexture(self.Settings.ShieldGlowTexture)
-		self.shieldAbsorbGlow:SetBlendMode("ADD")
-		self.shieldAbsorbGlow:SetPoint("topright", self, "topright", 8, 0)
-		self.shieldAbsorbGlow:SetPoint("bottomright", self, "bottomright", 8, 0)
-		self.shieldAbsorbGlow:Hide()
-
-		self:SetUnit(nil)
-	end
-
-	--call every tick
-	healthBarMetaFunctions.OnTick = function(self, deltaTime) end --if overrided, set 'CanTick' to true on the settings table
-
-	--when an event happen for this unit, send it to the apropriate function
-	healthBarMetaFunctions.OnEvent = function(self, event, ...)
-		local eventFunc = self [event]
-		if (eventFunc) then
-			--the function doesn't receive which event was, only 'self' and the parameters
-			eventFunc (self, ...)
-		end
-	end
-
-	--when the unit max health is changed
-	healthBarMetaFunctions.UpdateMaxHealth = function(self)
-		local maxHealth = UnitHealthMax (self.displayedUnit)
-		self:SetMinMaxValues(0, maxHealth)
-		self.currentHealthMax = maxHealth
-
-		self:RunHooksForWidget("OnHealthMaxChange", self, self.displayedUnit)
-	end
-
-	healthBarMetaFunctions.UpdateHealth = function(self)
-		-- update max health regardless to avoid weird wrong values on UpdateMaxHealth sometimes
-		-- local maxHealth = UnitHealthMax (self.displayedUnit)
-		-- self:SetMinMaxValues(0, maxHealth)
-		-- self.currentHealthMax = maxHealth
-
-		self.oldHealth = self.currentHealth
-		local health = UnitHealth(self.displayedUnit)
-		self.currentHealth = health
-		PixelUtil.SetStatusBarValue(self, health)
-
-		self:RunHooksForWidget("OnHealthChange", self, self.displayedUnit)
-	end
-
-	--health and absorbs prediction
-	healthBarMetaFunctions.UpdateHealPrediction = function(self)
-		local currentHealth = self.currentHealth
-		local currentHealthMax = self.currentHealthMax
-		local healthPercent = currentHealth / currentHealthMax
-
-		if (not currentHealthMax or currentHealthMax <= 0) then
-			return
-		end
-
-		--order is: the health of the unit > damage absorb > heal absorb > incoming heal
-		local width = self:GetWidth()
-
-		if (self.Settings.ShowHealingPrediction) then
-			--incoming heal on the unit from all sources
-			local unitHealIncoming = self.displayedUnit and UnitGetIncomingHeals (self.displayedUnit) or 0
-			--heal absorbs
-			local unitHealAbsorb = IS_WOW_PROJECT_MAINLINE and self.displayedUnit and UnitGetTotalHealAbsorbs (self.displayedUnit) or 0
-
-			if (unitHealIncoming > 0) then
-				--calculate what is the percent of health incoming based on the max health the player has
-				local incomingPercent = unitHealIncoming / currentHealthMax
-				self.incomingHealIndicator:Show()
-				self.incomingHealIndicator:SetWidth(max(1, min (width * incomingPercent, abs(healthPercent - 1) * width)))
-				self.incomingHealIndicator:SetPoint("topleft", self, "topleft", width * healthPercent, 0)
-				self.incomingHealIndicator:SetPoint("bottomleft", self, "bottomleft", width * healthPercent, 0)
-			else
-				self.incomingHealIndicator:Hide()
-			end
-
-			if (unitHealAbsorb > 0) then
-				local healAbsorbPercent = unitHealAbsorb / currentHealthMax
-				self.healAbsorbIndicator:Show()
-				self.healAbsorbIndicator:SetWidth(max(1, min (width * healAbsorbPercent, abs(healthPercent - 1) * width)))
-				self.healAbsorbIndicator:SetPoint("topleft", self, "topleft", width * healthPercent, 0)
-				self.healAbsorbIndicator:SetPoint("bottomleft", self, "bottomleft", width * healthPercent, 0)
-			else
-				self.healAbsorbIndicator:Hide()
-			end
-		end
-
-		if (self.Settings.ShowShields and IS_WOW_PROJECT_MAINLINE) then
-			--damage absorbs
-			local unitDamageAbsorb = self.displayedUnit and UnitGetTotalAbsorbs (self.displayedUnit) or 0
-
-			if (unitDamageAbsorb > 0) then
-				local damageAbsorbPercent = unitDamageAbsorb / currentHealthMax
-				self.shieldAbsorbIndicator:Show()
-				--set the width where the max width size is what is lower: the absorb size or the missing amount of health in the health bar
-				--/dump NamePlate1PlaterUnitFrameHealthBar.shieldAbsorbIndicator:GetSize()
-				self.shieldAbsorbIndicator:SetWidth(max(1, min (width * damageAbsorbPercent, abs(healthPercent - 1) * width)))
-				self.shieldAbsorbIndicator:SetPoint("topleft", self, "topleft", width * healthPercent, 0)
-				self.shieldAbsorbIndicator:SetPoint("bottomleft", self, "bottomleft", width * healthPercent, 0)
-
-				--if the absorb percent pass 100%, show the glow
-				if ((healthPercent + damageAbsorbPercent) > 1) then
-					self.shieldAbsorbGlow:Show()
-				else
-					self.shieldAbsorbGlow:Hide()
-				end
-			else
-				self.shieldAbsorbIndicator:Hide()
-				self.shieldAbsorbGlow:Hide()
-			end
-		else
-			self.shieldAbsorbIndicator:Hide()
-			self.shieldAbsorbGlow:Hide()
-		end
-	end
-
-	--Health Events
-		healthBarMetaFunctions.PLAYER_ENTERING_WORLD = function(self, ...)
-			self:UpdateMaxHealth()
-			self:UpdateHealth()
-			self:UpdateHealPrediction()
-		end
-
-		healthBarMetaFunctions.UNIT_HEALTH = function(self, ...)
-			self:UpdateHealth()
-			self:UpdateHealPrediction()
-		end
-
-		healthBarMetaFunctions.UNIT_HEALTH_FREQUENT = function(self, ...)
-			self:UpdateHealth()
-			self:UpdateHealPrediction()
-		end
-
-		healthBarMetaFunctions.UNIT_MAXHEALTH = function(self, ...)
-			self:UpdateMaxHealth()
-			self:UpdateHealth()
-			self:UpdateHealPrediction()
-		end
-
-
-		healthBarMetaFunctions.UNIT_HEAL_PREDICTION = function(self, ...)
-			self:UpdateMaxHealth()
-			self:UpdateHealth()
-			self:UpdateHealPrediction()
-		end
-
-		healthBarMetaFunctions.UNIT_ABSORB_AMOUNT_CHANGED = function(self, ...)
-			self:UpdateMaxHealth()
-			self:UpdateHealth()
-			self:UpdateHealPrediction()
-		end
-
-		healthBarMetaFunctions.UNIT_HEAL_ABSORB_AMOUNT_CHANGED = function(self, ...)
-			self:UpdateMaxHealth()
-			self:UpdateHealth()
-			self:UpdateHealPrediction()
-		end
-
--- ~healthbar
-function detailsFramework:CreateHealthBar (parent, name, settingsOverride)
-
-	assert(name or parent:GetName(), "DetailsFramework:CreateHealthBar parameter 'name' omitted and parent has no name.")
-
-	local healthBar = CreateFrame("StatusBar", name or (parent:GetName() .. "HealthBar"), parent, "BackdropTemplate")
-		do --layers
-			--background
-			healthBar.background = healthBar:CreateTexture(nil, "background")
-			healthBar.background:SetDrawLayer("background", -6)
-
-			--artwork
-			--healing incoming
-			healthBar.incomingHealIndicator = healthBar:CreateTexture(nil, "artwork")
-			healthBar.incomingHealIndicator:SetDrawLayer("artwork", 4)
-			--current shields on the unit
-			healthBar.shieldAbsorbIndicator =  healthBar:CreateTexture(nil, "artwork")
-			healthBar.shieldAbsorbIndicator:SetDrawLayer("artwork", 5)
-			--debuff absorbing heal
-			healthBar.healAbsorbIndicator = healthBar:CreateTexture(nil, "artwork")
-			healthBar.healAbsorbIndicator:SetDrawLayer("artwork", 6)
-			--the shield fills all the bar, show that cool glow
-			healthBar.shieldAbsorbGlow = healthBar:CreateTexture(nil, "artwork")
-			healthBar.shieldAbsorbGlow:SetDrawLayer("artwork", 7)
-			--statusbar texture
-			healthBar.barTexture = healthBar:CreateTexture(nil, "artwork")
-			healthBar:SetStatusBarTexture(healthBar.barTexture)
-		end
-
-	--mixins
-	detailsFramework:Mixin(healthBar, healthBarMetaFunctions)
-	detailsFramework:Mixin(healthBar, detailsFramework.StatusBarFunctions)
-
-	healthBar:CreateTextureMask()
-	healthBar:SetTexture([[Interface\WorldStateFrame\WORLDSTATEFINALSCORE-HIGHLIGHT]])
-
-	--settings and hooks
-	local settings = detailsFramework.table.copy({}, healthBarMetaFunctions.Settings)
-	if (settingsOverride) then
-		detailsFramework.table.copy(settings, settingsOverride)
-	end
-	healthBar.Settings = settings
-
-	--hook list
-	healthBar.HookList = detailsFramework.table.copy({}, healthBarMetaFunctions.HookList)
-
-	--initialize the cast bar
-	healthBar:Initialize()
-
-	return healthBar
-end
-
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
---power bar frame
-
---[=[
-	DF:CreatePowerBar (parent, name, settingsOverride)
-	creates statusbar frame to show the unit power bar
-	@parent = frame to pass for the CreateFrame function
-	@name = absolute name of the frame, if omitted it uses the parent's name .. "PPowerBar"
-	@settingsOverride = table with keys and values to replace the defaults from the framework
---]=]
-
-detailsFramework.PowerFrameFunctions = {
-	WidgetType = "powerBar",
-
-	HookList = {
-		OnHide = {},
-		OnShow = {},
-	},
-
-	Settings = {
-		--misc
-		ShowAlternatePower = true, --if true it'll show alternate power over the regular power the unit uses
-		ShowPercentText = true, --if true show a text with the current energy percent
-		HideIfNoPower = true, --if true and the UnitMaxPower returns zero, it'll hide the power bar with self:Hide()
-		CanTick = false, --if it calls the OnTick function every tick
-
-		--appearance
-		BackgroundColor = detailsFramework:CreateColorTable (.2, .2, .2, .8),
-		Texture = [[Interface\RaidFrame\Raid-Bar-Resource-Fill]],
-
-		--default size
-		Width = 100,
-		Height = 20,
-	},
-
-	PowerBarEvents = {
-		{"PLAYER_ENTERING_WORLD"},
-		{"UNIT_DISPLAYPOWER", true},
-		{"UNIT_POWER_BAR_SHOW", true},
-		{"UNIT_POWER_BAR_HIDE", true},
-		{"UNIT_MAXPOWER", true},
-		{"UNIT_POWER_UPDATE", true},
-		{"UNIT_POWER_FREQUENT", true},
-	},
-
-	--setup the castbar to be used by another unit
-	SetUnit = function(self, unit, displayedUnit)
-		if (self.unit ~= unit or self.displayedUnit ~= displayedUnit or unit == nil) then
-			self.unit = unit
-			self.displayedUnit = displayedUnit or unit
-
-			--register events
-			if (unit) then
-				for _, eventTable in ipairs(self.PowerBarEvents) do
-					local event = eventTable [1]
-					local isUnitEvent = eventTable [2]
-
-					if (isUnitEvent) then
-						self:RegisterUnitEvent (event, self.displayedUnit)
-					else
-						self:RegisterEvent(event)
-					end
-				end
-
-				--set scripts
-				self:SetScript("OnEvent", self.OnEvent)
-
-				if (self.Settings.CanTick) then
-					self:SetScript("OnUpdate", self.OnTick)
-				end
-
-				self:Show()
-				self:UpdatePowerBar()
-			else
-				--remove all registered events
-				for _, eventTable in ipairs(self.PowerBarEvents) do
-					local event = eventTable [1]
-					self:UnregisterEvent (event)
-				end
-
-				--remove scripts
-				self:SetScript("OnEvent", nil)
-				self:SetScript("OnUpdate", nil)
-				self:Hide()
-			end
-		end
-	end,
-
-	Initialize = function(self)
-		PixelUtil.SetWidth (self, self.Settings.Width)
-		PixelUtil.SetHeight(self, self.Settings.Height)
-
-		self:SetTexture(self.Settings.Texture)
-
-		self.background:SetAllPoints()
-		self.background:SetColorTexture(self.Settings.BackgroundColor:GetColor())
-
-		if (self.Settings.ShowPercentText) then
-			self.percentText:Show()
-			PixelUtil.SetPoint(self.percentText, "center", self, "center", 0, 0)
-
-			detailsFramework:SetFontSize(self.percentText, 9)
-			detailsFramework:SetFontColor(self.percentText, "white")
-			detailsFramework:SetFontOutline (self.percentText, "OUTLINE")
-		else
-			self.percentText:Hide()
-		end
-
-		self:SetUnit(nil)
-	end,
-
-	--call every tick
-	OnTick = function(self, deltaTime) end, --if overrided, set 'CanTick' to true on the settings table
-
-	--when an event happen for this unit, send it to the apropriate function
-	OnEvent = function(self, event, ...)
-		local eventFunc = self [event]
-		if (eventFunc) then
-			--the function doesn't receive which event was, only 'self' and the parameters
-			eventFunc (self, ...)
-		end
-	end,
-
-	UpdatePowerBar = function(self)
-		self:UpdatePowerInfo()
-		self:UpdateMaxPower()
-		self:UpdatePower()
-		self:UpdatePowerColor()
-	end,
-
-	--power update
-	UpdateMaxPower = function(self)
-		self.currentPowerMax = UnitPowerMax (self.displayedUnit, self.powerType)
-		self:SetMinMaxValues(self.minPower, self.currentPowerMax)
-
-		if (self.currentPowerMax == 0 and self.Settings.HideIfNoPower) then
-			self:Hide()
-		end
-	end,
-	UpdatePower = function(self)
-		self.currentPower = UnitPower (self.displayedUnit, self.powerType)
-		PixelUtil.SetStatusBarValue (self, self.currentPower)
-
-		if (self.Settings.ShowPercentText) then
-			self.percentText:SetText(floor(self.currentPower / self.currentPowerMax * 100) .. "%")
-		end
-	end,
-
-	--when a event different from unit_power_update is triggered, update which type of power the unit should show
-	UpdatePowerInfo = function(self)
-		if (IS_WOW_PROJECT_MAINLINE and self.Settings.ShowAlternatePower) then -- not available in classic
-			local barID = UnitPowerBarID(self.displayedUnit)
-			local barInfo = GetUnitPowerBarInfoByID(barID)
-			--local name, tooltip, cost = GetUnitPowerBarStringsByID(barID);
-			--barInfo.barType,barInfo.minPower, barInfo.startInset, barInfo.endInset, barInfo.smooth, barInfo.hideFromOthers, barInfo.showOnRaid, barInfo.opaqueSpark, barInfo.opaqueFlash, barInfo.anchorTop, name, tooltip, cost, barInfo.ID, barInfo.forcePercentage, barInfo.sparkUnderFrame;
-			if (barInfo and barInfo.showOnRaid and IsInGroup()) then
-				self.powerType = ALTERNATE_POWER_INDEX
-				self.minPower = barInfo.minPower
-				return
-			end
-		end
-
-		self.powerType = UnitPowerType (self.displayedUnit)
-		self.minPower = 0
-	end,
-
-	--tint the bar with the color of the power, e.g. blue for a mana bar
-	UpdatePowerColor = function(self)
-		if (not UnitIsConnected (self.unit)) then
-			self:SetStatusBarColor(.5, .5, .5)
-			return
-		end
-
-		if (self.powerType == ALTERNATE_POWER_INDEX) then
-			--don't change this, keep the same color as the game tints on CompactUnitFrame.lua
-			self:SetStatusBarColor(0.7, 0.7, 0.6)
-			return
-		end
-
-		local powerColor = PowerBarColor [self.powerType] --don't appear to be, but PowerBarColor is a global table with all power colors /run Details:Dump (PowerBarColor)
-		if (powerColor) then
-			self:SetStatusBarColor(powerColor.r, powerColor.g, powerColor.b)
-			return
-		end
-
-		local _, _, r, g, b = UnitPowerType (self.displayedUnit)
-		if (r) then
-			self:SetStatusBarColor(r, g, b)
-			return
-		end
-
-		--if everything else fails, tint as rogue energy
-		powerColor = PowerBarColor ["ENERGY"]
-		self:SetStatusBarColor(powerColor.r, powerColor.g, powerColor.b)
-	end,
-
-	--events
-	PLAYER_ENTERING_WORLD = function(self, ...)
-		self:UpdatePowerBar()
-	end,
-	UNIT_DISPLAYPOWER  = function(self, ...)
-		self:UpdatePowerBar()
-	end,
-	UNIT_POWER_BAR_SHOW = function(self, ...)
-		self:UpdatePowerBar()
-	end,
-	UNIT_POWER_BAR_HIDE = function(self, ...)
-		self:UpdatePowerBar()
-	end,
-
-	UNIT_MAXPOWER = function(self, ...)
-		self:UpdateMaxPower()
-		self:UpdatePower()
-	end,
-	UNIT_POWER_UPDATE = function(self, ...)
-		self:UpdatePower()
-	end,
-	UNIT_POWER_FREQUENT = function(self, ...)
-		self:UpdatePower()
-	end,
-}
-
-detailsFramework:Mixin(detailsFramework.PowerFrameFunctions, detailsFramework.ScriptHookMixin)
-
--- ~powerbar
-function detailsFramework:CreatePowerBar(parent, name, settingsOverride)
-	assert(name or parent:GetName(), "DetailsFramework:CreatePowerBar parameter 'name' omitted and parent has no name.")
-
-	local powerBar = CreateFrame("StatusBar", name or (parent:GetName() .. "PowerBar"), parent, "BackdropTemplate")
-		do --layers
-			--background
-			powerBar.background = powerBar:CreateTexture(nil, "background")
-			powerBar.background:SetDrawLayer("background", -6)
-
-			--artwork
-			powerBar.barTexture = powerBar:CreateTexture(nil, "artwork")
-			powerBar:SetStatusBarTexture(powerBar.barTexture)
-
-			--overlay
-			powerBar.percentText = powerBar:CreateFontString(nil, "overlay", "GameFontNormal")
-		end
-
-	--mixins
-	detailsFramework:Mixin(powerBar, detailsFramework.PowerFrameFunctions)
-	detailsFramework:Mixin(powerBar, detailsFramework.StatusBarFunctions)
-
-	powerBar:CreateTextureMask()
-	powerBar:SetTexture([[Interface\WorldStateFrame\WORLDSTATEFINALSCORE-HIGHLIGHT]])
-
-	--settings and hooks
-	local settings = detailsFramework.table.copy({}, detailsFramework.PowerFrameFunctions.Settings)
-	if (settingsOverride) then
-		detailsFramework.table.copy(settings, settingsOverride)
-	end
-	powerBar.Settings = settings
-
-	local hookList = detailsFramework.table.copy({}, detailsFramework.PowerFrameFunctions.HookList)
-	powerBar.HookList = hookList
-
-	--initialize the cast bar
-	powerBar:Initialize()
-
-	return powerBar
-end
-
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
---cast bar frame
-
---[=[
-	DF:CreateCastBar (parent, name, settingsOverride)
-	creates a cast bar to show an unit cast
-	@parent = frame to pass for the CreateFrame function
-	@name = absolute name of the frame, if omitted it uses the parent's name .. "CastBar"
-	@settingsOverride = table with keys and values to replace the defaults from the framework
---]=]
-
-detailsFramework.CastFrameFunctions = {
-	WidgetType = "castBar",
-
-	HookList = {
-		OnHide = {},
-		OnShow = {},
-
-		--can be regular cast or channel
-		OnCastStart = {},
-	},
-
-	CastBarEvents = {
-		{"UNIT_SPELLCAST_INTERRUPTED"},
-		{"UNIT_SPELLCAST_DELAYED"},
-		{"UNIT_SPELLCAST_CHANNEL_START"},
-		{"UNIT_SPELLCAST_CHANNEL_UPDATE"},
-		{"UNIT_SPELLCAST_CHANNEL_STOP"},
-		{(IS_WOW_PROJECT_MAINLINE) and "UNIT_SPELLCAST_EMPOWER_START"},
-		{(IS_WOW_PROJECT_MAINLINE) and "UNIT_SPELLCAST_EMPOWER_UPDATE"},
-		{(IS_WOW_PROJECT_MAINLINE) and "UNIT_SPELLCAST_EMPOWER_STOP"},
-		{(IS_WOW_PROJECT_MAINLINE) and "UNIT_SPELLCAST_INTERRUPTIBLE"},
-		{(IS_WOW_PROJECT_MAINLINE) and "UNIT_SPELLCAST_NOT_INTERRUPTIBLE"},
-		{"PLAYER_ENTERING_WORLD"},
-		{"UNIT_SPELLCAST_START", true},
-		{"UNIT_SPELLCAST_STOP", true},
-		{"UNIT_SPELLCAST_FAILED", true},
-	},
-
-	Settings = {
-		NoFadeEffects = false, --if true it won't play fade effects when a cast if finished
-		ShowTradeSkills = false, --if true, it shows cast for trade skills, e.g. creating an icon with blacksmith
-		ShowShield = true, --if true, shows the shield above the spell icon for non interruptible casts
-		CanTick = true, --if true it will run its OnTick function every tick.
-		ShowCastTime = true, --if true, show the remaining time to finish the cast, lazy tick must be enabled
-		FadeInTime = 0.1, --amount of time in seconds to go from zero to 100% alpha when starting to cast
-		FadeOutTime = 0.5, --amount of time in seconds to go from 100% to zero alpha when the cast finishes
-		CanLazyTick = true, --if true, it'll execute the lazy tick function, it ticks in a much slower pace comparece with the regular tick
-		LazyUpdateCooldown = 0.2, --amount of time to wait for the next lazy update, this updates non critical things like the cast timer
-
-		ShowEmpoweredDuration = true, --full hold time for empowered spells
-
-		FillOnInterrupt = true,
-		HideSparkOnInterrupt = true,
-
-		--default size
-		Width = 100,
-		Height = 20,
-
-		--colour the castbar statusbar by the type of the cast
-		Colors = {
-			Casting = detailsFramework:CreateColorTable (1, 0.73, .1, 1),
-			Channeling = detailsFramework:CreateColorTable (1, 0.73, .1, 1),
-			Finished = detailsFramework:CreateColorTable (0, 1, 0, 1),
-			NonInterruptible = detailsFramework:CreateColorTable (.7, .7, .7, 1),
-			Failed = detailsFramework:CreateColorTable (.4, .4, .4, 1),
-			Interrupted = detailsFramework:CreateColorTable (.965, .754, .154, 1),
-		},
-
-		--appearance
-		BackgroundColor = detailsFramework:CreateColorTable (.2, .2, .2, .8),
-		Texture = [[Interface\TargetingFrame\UI-StatusBar]],
-		BorderShieldWidth = 10,
-		BorderShieldHeight = 12,
-		BorderShieldCoords = {0.26171875, 0.31640625, 0.53125, 0.65625},
-		BorderShieldTexture = 1300837,
-		SpellIconWidth = 10,
-		SpellIconHeight = 10,
-		ShieldIndicatorTexture = [[Interface\RaidFrame\Shield-Fill]],
-		ShieldGlowTexture = [[Interface\RaidFrame\Shield-Overshield]],
-		SparkTexture = [[Interface\CastingBar\UI-CastingBar-Spark]],
-		SparkWidth = 16,
-		SparkHeight = 16,
-		SparkOffset = 0,
-	},
-
-	Initialize = function(self)
-		self.unit = "unutilized unit"
-		self.lazyUpdateCooldown = self.Settings.LazyUpdateCooldown
-		self.Colors = self.Settings.Colors
-
-		self:SetUnit(nil)
-		PixelUtil.SetWidth (self, self.Settings.Width)
-		PixelUtil.SetHeight(self, self.Settings.Height)
-
-		self.background:SetColorTexture(self.Settings.BackgroundColor:GetColor())
-		self.background:SetAllPoints()
-		self.extraBackground:SetColorTexture(0, 0, 0, 1)
-		self.extraBackground:SetVertexColor(self.Settings.BackgroundColor:GetColor())
-		self.extraBackground:SetAllPoints()
-
-		self:SetTexture(self.Settings.Texture)
-
-		self.BorderShield:SetPoint("center", self, "left", 0, 0)
-		self.BorderShield:SetTexture(self.Settings.BorderShieldTexture)
-		self.BorderShield:SetTexCoord(unpack(self.Settings.BorderShieldCoords))
-		self.BorderShield:SetSize(self.Settings.BorderShieldWidth, self.Settings.BorderShieldHeight)
-
-		self.Icon:SetPoint("center", self, "left", 2, 0)
-		self.Icon:SetSize(self.Settings.SpellIconWidth, self.Settings.SpellIconHeight)
-
-		self.Spark:SetTexture(self.Settings.SparkTexture)
-		self.Spark:SetSize(self.Settings.SparkWidth, self.Settings.SparkHeight)
-
-		self.percentText:SetPoint("right", self, "right", -2, 0)
-		self.percentText:SetJustifyH("right")
-
-		self.fadeOutAnimation.alpha1:SetDuration(self.Settings.FadeOutTime)
-		self.fadeInAnimation.alpha1:SetDuration(self.Settings.FadeInTime)
-	end,
-
-	SetDefaultColor = function(self, colorType, r, g, b, a)
-		assert(type(colorType) == "string", "DetailsFramework: CastBar:SetDefaultColor require a string in the first argument.")
-		self.Colors [colorType]:SetColor (r, g, b, a)
-	end,
-
-	--this get a color suggestion based on the type of cast being shown in the cast bar
-	GetCastColor = function(self)
-		if (not self.canInterrupt) then
-			return self.Colors.NonInterruptible
-
-		elseif (self.channeling) then
-			return self.Colors.Channeling
-
-		elseif (self.failed) then
-			return self.Colors.Failed
-
-		elseif (self.interrupted) then
-			return self.Colors.Interrupted
-
-		elseif (self.finished) then
-			return self.Colors.Finished
-
-		else
-			return self.Colors.Casting
-		end
-	end,
-
-	--update all colors of the cast bar
-	UpdateCastColor = function(self)
-		local castColor = self:GetCastColor()
-		self:SetColor (castColor) --SetColor handles with ParseColors()
-	end,
-
-	--initial checks to know if this is a valid cast and should show the cast bar, if this fails the cast bar won't show
-	IsValid = function(self, unit, castName, isTradeSkill, ignoreVisibility)
-		if (not ignoreVisibility and not self:IsShown()) then
-			return false
-		end
-
-		if (not self.Settings.ShowTradeSkills) then
-			if (isTradeSkill) then
-				return false
-			end
-		end
-
-		if (not castName) then
-			return false
-		end
-
-		return true
-	end,
-
-	--handle the interrupt state of the cast
-	--this does not change the cast bar color because this function is called inside the start cast where is already handles the cast color
-	UpdateInterruptState = function(self)
-		if (self.Settings.ShowShield and not self.canInterrupt) then
-			self.BorderShield:Show()
-		else
-			self.BorderShield:Hide()
-		end
-	end,
-
-	--this check if the cast did reach 100% in the statusbar, mostly called from OnTick
-	CheckCastIsDone = function(self, event, isFinished)
-
-		--check max value
-		if (not isFinished and not self.finished) then
-			if (self.casting) then
-				if (self.value >= self.maxValue) then
-					isFinished = true
-				end
-
-			elseif (self.channeling) then
-				if (self.value > self.maxValue or self.value <= 0) then
-					isFinished = true
-				end
-			end
-
-			--check if passed an event (not begin used at the moment)
-			if (event) then
-				if (event == UNIT_SPELLCAST_STOP or event == UNIT_SPELLCAST_CHANNEL_STOP) then
-					isFinished = true
-				end
-			end
-		end
-
-		--the cast is finished
-		if (isFinished) then
-			if (self.casting) then
-				self.UNIT_SPELLCAST_STOP (self, self.unit, self.unit, self.castID, self.spellID)
-
-			elseif (self.channeling) then
-				self.UNIT_SPELLCAST_CHANNEL_STOP (self, self.unit, self.unit, self.castID, self.spellID)
-			end
-
-			return true
-		end
-	end,
-
-	--setup the castbar to be used by another unit
-	SetUnit = function(self, unit, displayedUnit)
-		if (self.unit ~= unit or self.displayedUnit ~= displayedUnit or unit == nil) then
-			self.unit = unit
-			self.displayedUnit = displayedUnit or unit
-
-			--reset the cast bar
-			self.casting = nil
-			self.channeling = nil
-			self.caninterrupt = nil
-
-			--register events
-			if (unit) then
-				for _, eventTable in ipairs(self.CastBarEvents) do
-					local event = eventTable [1]
-					local isUnitEvent = eventTable [2]
-
-					if event then
-						if (isUnitEvent) then
-							self:RegisterUnitEvent (event, unit)
-						else
-							self:RegisterEvent(event)
-						end
-					end
-				end
-
-				--set scripts
-				self:SetScript("OnEvent", self.OnEvent)
-				self:SetScript("OnShow", self.OnShow)
-				self:SetScript("OnHide", self.OnHide)
-
-				if (self.Settings.CanTick) then
-					self:SetScript("OnUpdate", self.OnTick)
-				end
-
-				--check is can show the cast time text
-				if (self.Settings.ShowCastTime and self.Settings.CanLazyTick) then
-					self.percentText:Show()
-				else
-					self.percentText:Hide()
-				end
-
-				--setup animtions
-				self:CancelScheduleToHide()
-
-				--self:PLAYER_ENTERING_WORLD (unit, unit)
-				self:OnEvent ("PLAYER_ENTERING_WORLD", unit, unit)
-
-			else
-				for _, eventTable in ipairs(self.CastBarEvents) do
-					local event = eventTable [1]
-					if event then
-						self:UnregisterEvent (event)
-					end
-				end
-
-				--register main events
-				self:SetScript("OnUpdate", nil)
-				self:SetScript("OnEvent", nil)
-				self:SetScript("OnShow", nil)
-				self:SetScript("OnHide", nil)
-
-				self:Hide()
-			end
-		end
-	end,
-
-	--executed after a scheduled to hide timer is done
-	DoScheduledHide = function(timerObject)
-		timerObject.castBar.scheduledHideTime = nil
-
-		--just to make sure it isn't casting
-		if (not timerObject.castBar.casting and not timerObject.castBar.channeling) then
-			if (not timerObject.castBar.Settings.NoFadeEffects) then
-				timerObject.castBar:Animation_FadeOut()
-			else
-				timerObject.castBar:Hide()
-			end
-		end
-	end,
-
-	HasScheduledHide = function(self)
-		return self.scheduledHideTime and not self.scheduledHideTime:IsCancelled()
-	end,
-
-	CancelScheduleToHide = function(self)
-		if (self:HasScheduledHide()) then
-			self.scheduledHideTime:Cancel()
-		end
-	end,
-
-	--after an interrupt, do not immediately hide the cast bar, let it up for short amount of time to give feedback to the player
-	ScheduleToHide = function(self, delay)
-		if (not delay) then
-			if (self.scheduledHideTime and not self.scheduledHideTime:IsCancelled()) then
-				self.scheduledHideTime:Cancel()
-			end
-
-			self.scheduledHideTime = nil
-			return
-		end
-
-		--already have a scheduled timer?
-		if (self.scheduledHideTime and not self.scheduledHideTime:IsCancelled()) then
-			self.scheduledHideTime:Cancel()
-		end
-
-		self.scheduledHideTime = C_Timer.NewTimer(delay, self.DoScheduledHide)
-		self.scheduledHideTime.castBar = self
-	end,
-
-	OnHide = function(self)
-		--just in case some other effects made it have a different alpha since SetUnit won't load if the unit is the same.
-		self:SetAlpha(1)
-		--cancel any timer to hide scheduled
-		self:CancelScheduleToHide()
-	end,
-
-	--just update the current value if a spell is being cast since it wasn't running its tick function during the hide state
-	--everything else should be in the correct state
-	OnShow = function(self)
-		self.flashTexture:Hide()
-
-		if (self.unit) then
-			if (self.casting) then
-				local name, text, texture, startTime = CastInfo.UnitCastingInfo (self.unit)
-				if (name) then
-					--[[if not self.spellStartTime then
-						self:UpdateCastingInfo(self.unit)
-					end]]--
-					self.value = GetTime() - self.spellStartTime
-				end
-
-				self:RunHooksForWidget("OnShow", self, self.unit)
-
-			elseif (self.channeling) then
-				local name, text, texture, endTime = CastInfo.UnitChannelInfo (self.unit)
-				if (name) then
-					--[[if not self.spellEndTime then
-						self:UpdateChannelInfo(self.unit)
-					end]]--
-					self.value = self.empowered and (GetTime() - self.spellStartTime) or (self.spellEndTime - GetTime())
-				end
-
-				self:RunHooksForWidget("OnShow", self, self.unit)
-			end
-		end
-	end,
-
-	--it's triggering several events since it's not registered for the unit with RegisterUnitEvent
-	OnEvent = function(self, event, ...)
-		local arg1 = ...
-		local unit = self.unit
-
-		if (event == "PLAYER_ENTERING_WORLD") then
-			local newEvent = self.PLAYER_ENTERING_WORLD (self, unit, ...)
-			if (newEvent) then
-				self.OnEvent (self, newEvent, unit)
-				return
-			end
-
-		elseif (arg1 ~= unit) then
-			return
-		end
-
-		local eventFunc = self [event]
-		if (eventFunc) then
-			eventFunc (self, unit, ...)
-		end
-	end,
-
-	OnTick_LazyTick = function(self)
-		--run the lazy tick if allowed
-		if (self.Settings.CanLazyTick) then
-			--update the cast time
-			if (self.Settings.ShowCastTime) then
-				if (self.casting) then
-					self.percentText:SetText(format("%.1f", abs(self.value - self.maxValue)))
-
-				elseif (self.channeling) then
-					local remainingTime = self.empowered and abs(self.value - self.maxValue) or abs(self.value)
-					if (remainingTime > 999) then
-						self.percentText:SetText("")
-					else
-						self.percentText:SetText(format("%.1f", remainingTime))
-					end
-				else
-					self.percentText:SetText("")
-				end
-			end
-
-			return true
-		else
-			return false
-		end
-	end,
-
-	--tick function for regular casts
-	OnTick_Casting = function(self, deltaTime)
-		self.value = self.value + deltaTime
-
-		if (self:CheckCastIsDone()) then
-			return
-		else
-			self:SetValue(self.value)
-		end
-
-		--update spark position
-		local sparkPosition = self.value / self.maxValue * self:GetWidth()
-		self.Spark:SetPoint("center", self, "left", sparkPosition + self.Settings.SparkOffset, 0)
-		
-
-		--in order to allow the lazy tick run, it must return true, it tell that the cast didn't finished
-		return true
-	end,
-
-	--tick function for channeling casts
-	OnTick_Channeling = function(self, deltaTime)
-		self.value = self.empowered and self.value + deltaTime or self.value - deltaTime
-
-		if (self:CheckCastIsDone()) then
-			return
-		else
-			self:SetValue(self.value)
-		end
-
-		--update spark position
-		local sparkPosition = self.value / self.maxValue * self:GetWidth()
-		self.Spark:SetPoint("center", self, "left", sparkPosition + self.Settings.SparkOffset, 0)
-		
-		self:CreateOrUpdateEmpoweredPips()
-
-		return true
-	end,
-
-	OnTick = function(self, deltaTime)
-		if (self.casting) then
-			if (not self:OnTick_Casting (deltaTime)) then
-				return
-			end
-
-			--lazy tick
-			self.lazyUpdateCooldown = self.lazyUpdateCooldown - deltaTime
-			if (self.lazyUpdateCooldown < 0) then
-				self:OnTick_LazyTick()
-				self.lazyUpdateCooldown = self.Settings.LazyUpdateCooldown
-			end
-
-		elseif (self.channeling) then
-			if (not self:OnTick_Channeling (deltaTime)) then
-				return
-			end
-
-			--lazy tick
-			self.lazyUpdateCooldown = self.lazyUpdateCooldown - deltaTime
-			if (self.lazyUpdateCooldown < 0) then
-				self:OnTick_LazyTick()
-				self.lazyUpdateCooldown = self.Settings.LazyUpdateCooldown
-			end
-		end
-	end,
-
-	--animation start script
-	Animation_FadeOutStarted = function(self)
-
-	end,
-
-	--animation finished script
-	Animation_FadeOutFinished = function(self)
-		local castBar = self:GetParent()
-		castBar:SetAlpha(1)
-		castBar:Hide()
-	end,
-
-	--animation start script
-	Animation_FadeInStarted = function(self)
-
-	end,
-
-	--animation finished script
-	Animation_FadeInFinished = function(self)
-		local castBar = self:GetParent()
-		castBar:Show()
-		castBar:SetAlpha(1)
-	end,
-
-	--animation calls
-	Animation_FadeOut = function(self)
-		self:ScheduleToHide (false)
-
-		if (self.fadeInAnimation:IsPlaying()) then
-			self.fadeInAnimation:Stop()
-		end
-
-		if (not self.fadeOutAnimation:IsPlaying()) then
-			self.fadeOutAnimation:Play()
-		end
-	end,
-
-	Animation_FadeIn = function(self)
-		self:ScheduleToHide (false)
-
-		if (self.fadeOutAnimation:IsPlaying()) then
-			self.fadeOutAnimation:Stop()
-		end
-
-		if (not self.fadeInAnimation:IsPlaying()) then
-			self.fadeInAnimation:Play()
-		end
-	end,
-
-	Animation_Flash = function(self)
-		if (not self.flashAnimation:IsPlaying()) then
-			self.flashAnimation:Play()
-		end
-	end,
-
-	Animation_StopAllAnimations = function(self)
-		if (self.flashAnimation:IsPlaying()) then
-			self.flashAnimation:Stop()
-		end
-
-		if (self.fadeOutAnimation:IsPlaying()) then
-			self.fadeOutAnimation:Stop()
-		end
-
-		if (self.fadeInAnimation:IsPlaying()) then
-			self.fadeInAnimation:Stop()
-		end
-	end,
-
-	PLAYER_ENTERING_WORLD = function(self, unit, arg1)
-		local isChannel = CastInfo.UnitChannelInfo (unit)
-		local isRegularCast = CastInfo.UnitCastingInfo (unit)
-
-		if (isChannel) then
-			self.channeling = true
-			self:UpdateChannelInfo(unit)
-			return self.unit == arg1 and "UNIT_SPELLCAST_CHANNEL_START"
-
-		elseif (isRegularCast) then
-			self.casting = true
-			self:UpdateCastingInfo(unit)
-			return self.unit == arg1 and "UNIT_SPELLCAST_START"
-
-		else
-			self.casting = nil
-			self.channeling = nil
-			self.failed = nil
-			self.finished = nil
-			self.interrupted = nil
-			self.Spark:Hide()
-			self:Hide()
-		end
-	end,
-
-	UpdateCastingInfo = function(self, unit)
-		local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, spellID = CastInfo.UnitCastingInfo (unit)
-
-		--is valid?
-		if (not self:IsValid (unit, name, isTradeSkill, true)) then
-			return
-		end
-		
-		--empowered? no!
-			self.holdAtMaxTime = nil
-			self.empowered = false
-			self.curStage = nil
-			self.numStages = nil
-			self.empStages = nil
-			self:CreateOrUpdateEmpoweredPips()
-
-		--setup cast
-			self.casting = true
-			self.channeling = nil
-			self.interrupted = nil
-			self.failed = nil
-			self.finished = nil
-			self.canInterrupt = not notInterruptible
-			self.spellID = spellID
-			self.castID = castID
-			self.spellName = name
-			self.spellTexture = texture
-			self.spellStartTime = startTime / 1000
-			self.spellEndTime = endTime / 1000
-			self.value = GetTime() - self.spellStartTime
-			self.maxValue = self.spellEndTime - self.spellStartTime
-
-			self:SetMinMaxValues(0, self.maxValue)
-			self:SetValue(self.value)
-			self:SetAlpha(1)
-			self.Icon:SetTexture(texture)
-			self.Icon:Show()
-			self.Text:SetText(text or name)
-
-			if (self.Settings.ShowCastTime and self.Settings.CanLazyTick) then
-				self.percentText:Show()
-			end
-
-			self.flashTexture:Hide()
-			self:Animation_StopAllAnimations()
-
-			self:SetAlpha(1)
-
-			--set the statusbar color
-			self:UpdateCastColor()
-
-			if (not self:IsShown() and not self.Settings.NoFadeEffects) then
-				self:Animation_FadeIn()
-			end
-
-			self.Spark:Show()
-			self:Show()
-
-		--update the interrupt cast border
-		self:UpdateInterruptState()
-
-	end,
-
-	UNIT_SPELLCAST_START = function(self, unit)
-
-		self:UpdateCastingInfo(unit)
-
-		self:RunHooksForWidget("OnCastStart", self, self.unit, "UNIT_SPELLCAST_START")
-	end,
-	
-	CreateOrUpdateEmpoweredPips = function(self, unit, numStages, startTime, endTime)
-		unit = unit or self.unit
-		numStages = numStages or self.numStages
-		startTime = startTime or ((self.spellStartTime or 0) * 1000)
-		endTime = endTime or ((self.spellEndTime or 0) * 1000)
-		
-		if not self.empStages or not numStages or numStages <= 0 then
-			self.stagePips = self.stagePips or {}
-			for i, stagePip in pairs(self.stagePips) do
-				stagePip:Hide()
-			end
-			return
-		end
-		
-		local width = self:GetWidth()
-		local height = self:GetHeight()
-		for i = 1, numStages, 1 do
-			local curStartTime = self.empStages[i] and self.empStages[i].start
-			local curEndTime = self.empStages[i] and self.empStages[i].finish
-			local curDuration = curEndTime - curStartTime
-			local offset = width * curEndTime / (endTime - startTime) * 1000
-			if curDuration > -1 then
-				
-				stagePip = self.stagePips[i]
-				if not stagePip then
-					stagePip = self:CreateTexture(nil, "overlay", nil, 2)
-					stagePip:SetBlendMode("ADD")
-					stagePip:SetTexture([[Interface\CastingBar\UI-CastingBar-Spark]])
-					stagePip:SetTexCoord(11/32,18/32,9/32,23/32)
-					stagePip:SetSize(2, height)
-					--stagePip = CreateFrame("FRAME", nil, self, "CastingBarFrameStagePipTemplate")
-					self.stagePips[i] = stagePip
-				end
-				
-				stagePip:ClearAllPoints()
-				--stagePip:SetPoint("TOP", self, "TOPLEFT", offset, -1)
-				--stagePip:SetPoint("BOTTOM", self, "BOTTOMLEFT", offset, 1)
-				--stagePip.BasePip:SetVertexColor(1, 1, 1, 1)
-				stagePip:SetPoint("CENTER", self, "LEFT", offset, 0)
-				stagePip:SetVertexColor(1, 1, 1, 1)
-				stagePip:Show()
-			end
-		end
-	end,
-
-	UpdateChannelInfo = function(self, unit, ...)
-		local unitID, castID, spellID = ...
-		local name, text, texture, startTime, endTime, isTradeSkill, notInterruptible, spellID, _, numStages = CastInfo.UnitChannelInfo (unit)
-
-		--is valid?
-		if (not self:IsValid (unit, name, isTradeSkill, true)) then
-			return
-		end
-		
-		--empowered?
-			self.empStages = {}
-			self.stagePips = self.stagePips or {}
-			for i, stagePip in pairs(self.stagePips) do
-				stagePip:Hide()
-			end
-			
-			if numStages and numStages > 0 then
-				self.holdAtMaxTime = GetUnitEmpowerHoldAtMaxTime(self.unit)
-				self.empowered = true
-				self.numStages = numStages
-				
-
-				local lastStageEndTime = 0
-				for i = 1, numStages do
-					self.empStages[i] = {
-						start = lastStageEndTime,
-						finish = lastStageEndTime + GetUnitEmpowerStageDuration(unit, i - 1) / 1000,
-					}
-					lastStageEndTime = self.empStages[i].finish
-					
-					if startTime / 1000 + lastStageEndTime <= GetTime() then
-						self.curStage = i
-					end
-				end
-				
-				if (self.Settings.ShowEmpoweredDuration) then
-					endTime = endTime + self.holdAtMaxTime
-				end
-				
-				--create/update pips
-				self:CreateOrUpdateEmpoweredPips(unit, numStages, startTime, endTime)
-			else
-				self.holdAtMaxTime = nil
-				self.empowered = false
-				self.curStage = nil
-				self.numStages = nil
-			end
-
-		--setup cast
-			self.casting = nil
-			self.channeling = true
-			self.interrupted = nil
-			self.failed = nil
-			self.finished = nil
-			self.canInterrupt = not notInterruptible
-			self.spellID = spellID
-			self.castID = castID
-			self.spellName = name
-			self.spellTexture = texture
-			self.spellStartTime = startTime / 1000
-			self.spellEndTime = endTime / 1000
-			self.value = self.empowered and (GetTime() - self.spellStartTime) or (self.spellEndTime - GetTime())
-			self.maxValue = self.spellEndTime - self.spellStartTime
-			self.reverseChanneling = self.empowered
-
-			self:SetMinMaxValues(0, self.maxValue)
-			self:SetValue(self.value)
-
-			self:SetAlpha(1)
-			self.Icon:SetTexture(texture)
-			self.Icon:Show()
-			self.Text:SetText(text)
-
-			if (self.Settings.ShowCastTime and self.Settings.CanLazyTick) then
-				self.percentText:Show()
-			end
-
-			self.flashTexture:Hide()
-			self:Animation_StopAllAnimations()
-
-			self:SetAlpha(1)
-
-			--set the statusbar color
-			self:UpdateCastColor()
-
-			if (not self:IsShown() and not self.Settings.NoFadeEffects) then
-				self:Animation_FadeIn()
-			end
-
-			self.Spark:Show()
-			self:Show()
-
-		--update the interrupt cast border
-		self:UpdateInterruptState()
-
-	end,
-
-	UNIT_SPELLCAST_CHANNEL_START = function(self, unit, ...)
-
-		self:UpdateChannelInfo(unit, ...)
-
-		self:RunHooksForWidget("OnCastStart", self, self.unit, "UNIT_SPELLCAST_CHANNEL_START")
-	end,
-
-	UNIT_SPELLCAST_STOP = function(self, unit, ...)
-		local unitID, castID, spellID = ...
-		if (self.castID == castID) then
-			if (self.interrupted) then
-				if (self.Settings.HideSparkOnInterrupt) then
-					self.Spark:Hide()
-				end
-			else
-				self.Spark:Hide()
-			end
-
-			self.percentText:Hide()
-
-			local value = self:GetValue()
-			local _, maxValue = self:GetMinMaxValues()
-
-			if (self.interrupted) then
-				if (self.Settings.FillOnInterrupt) then
-					self:SetValue(self.maxValue or maxValue or 1)
-				end
-			else
-				self:SetValue(self.maxValue or maxValue or 1)
-			end
-
-			self.casting = nil
-			self.channeling = nil
-			self.finished = true
-			self.castID = nil
-
-			if (not self:HasScheduledHide()) then
-				--check if settings has no fade option or if its parents are not visible
-				if (not self:IsVisible()) then
-					self:Hide()
-
-				elseif (self.Settings.NoFadeEffects) then
-					self:ScheduleToHide (0.3)
-
-				else
-					self:Animation_Flash()
-					self:Animation_FadeOut()
-				end
-			end
-
-			self:UpdateCastColor()
-		end
-	end,
-
-	UNIT_SPELLCAST_CHANNEL_STOP = function(self, unit, ...)
-		local unitID, castID, spellID = ...
-
-		if (self.channeling and castID == self.castID) then
-			self.Spark:Hide()
-			self.percentText:Hide()
-
-			local value = self:GetValue()
-			local _, maxValue = self:GetMinMaxValues()
-			self:SetValue(self.maxValue or maxValue or 1)
-
-			self.casting = nil
-			self.channeling = nil
-			self.finished = true
-			self.castID = nil
-
-			if (not self:HasScheduledHide()) then
-				--check if settings has no fade option or if its parents are not visible
-				if (not self:IsVisible()) then
-					self:Hide()
-
-				elseif (self.Settings.NoFadeEffects) then
-					self:ScheduleToHide (0.3)
-
-				else
-					self:Animation_Flash()
-					self:Animation_FadeOut()
-				end
-			end
-
-			self:UpdateCastColor()
-		end
-	end,
-	
-	UNIT_SPELLCAST_EMPOWER_START = function(self, unit, ...)
-		self:UNIT_SPELLCAST_CHANNEL_START(unit, ...)
-	end,
-	
-	UNIT_SPELLCAST_EMPOWER_UPDATE = function(self, unit, ...)
-		self:UNIT_SPELLCAST_CHANNEL_UPDATE(unit, ...)
-	end,
-	
-	UNIT_SPELLCAST_EMPOWER_STOP = function(self, unit, ...)
-		self:UNIT_SPELLCAST_CHANNEL_STOP(unit, ...)
-	end,
-
-	UNIT_SPELLCAST_FAILED = function(self, unit, ...)
-		local unitID, castID, spellID = ...
-
-		if ((self.casting or self.channeling) and castID == self.castID and not self.fadeOut) then
-			self.casting = nil
-			self.channeling = nil
-			self.failed = true
-			self.finished = true
-			self.castID = nil
-			self:SetValue(self.maxValue or select(2, self:GetMinMaxValues()) or 1)
-
-			--set the statusbar color
-			self:UpdateCastColor()
-
-			self.Spark:Hide()
-			self.percentText:Hide()
-			self.Text:SetText(FAILED) --auto locale within the global namespace
-
-			self:ScheduleToHide (1)
-		end
-	end,
-
-	UNIT_SPELLCAST_INTERRUPTED = function(self, unit, ...)
-		local unitID, castID, spellID = ...
-
-		if ((self.casting or self.channeling) and castID == self.castID and not self.fadeOut) then
-			self.casting = nil
-			self.channeling = nil
-			self.interrupted = true
-			self.finished = true
-			self.castID = nil
-
-			if (self.Settings.FillOnInterrupt) then
-				self:SetValue(self.maxValue or select(2, self:GetMinMaxValues()) or 1)
-			end
-
-			if (self.Settings.HideSparkOnInterrupt) then
-				self.Spark:Hide()
-			end
-
-			local castColor = self:GetCastColor()
-			self:SetColor (castColor) --SetColor handles with ParseColors()
-
-			self.percentText:Hide()
-			self.Text:SetText(INTERRUPTED) --auto locale within the global namespace
-
-			self:ScheduleToHide (1)
-		end
-	end,
-
-	UNIT_SPELLCAST_DELAYED = function(self, unit, ...)
-		local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible = CastInfo.UnitCastingInfo (unit)
-
-		if (not self:IsValid (unit, name, isTradeSkill)) then
-			return
-		end
-
-		--update the cast time
-		self.spellStartTime = startTime / 1000
-		self.spellEndTime = endTime / 1000
-		self.value = GetTime() - self.spellStartTime
-		self.maxValue = self.spellEndTime - self.spellStartTime
-		self:SetMinMaxValues(0, self.maxValue)
-	end,
-
-	UNIT_SPELLCAST_CHANNEL_UPDATE = function(self, unit, ...)
-		local name, text, texture, startTime, endTime, isTradeSkill, notInterruptible, spellID, _, numStages = CastInfo.UnitChannelInfo (unit)
-
-		if (not self:IsValid (unit, name, isTradeSkill)) then
-			return
-		end
-
-		--update the cast time
-		self.spellStartTime = startTime / 1000
-		self.spellEndTime = endTime / 1000
-		self.value = self.empowered and (GetTime() - self.spellStartTime) or (self.spellEndTime - GetTime())
-		self.maxValue = self.spellEndTime - self.spellStartTime
-
-		if (self.value < 0 or self.value > self.maxValue) then
-			self.value = 0
-		end
-
-		self:SetMinMaxValues(0, self.maxValue)
-		self:SetValue(self.value)
-	end,
-
-	--cast changed its state to interruptable
-	UNIT_SPELLCAST_INTERRUPTIBLE = function(self, unit, ...)
-		self.canInterrupt = true
-		self:UpdateCastColor()
-		self:UpdateInterruptState()
-	end,
-
-	--cast changed its state to non interruptable
-	UNIT_SPELLCAST_NOT_INTERRUPTIBLE = function(self, unit, ...)
-		self.canInterrupt = false
-		self:UpdateCastColor()
-		self:UpdateInterruptState()
-	end,
-
-}
-
-detailsFramework:Mixin(detailsFramework.CastFrameFunctions, detailsFramework.ScriptHookMixin)
-
--- ~castbar
-
-function detailsFramework:CreateCastBar(parent, name, settingsOverride)
-	assert(name or parent:GetName(), "DetailsFramework:CreateCastBar parameter 'name' omitted and parent has no name.")
-
-	local castBar = CreateFrame("StatusBar", name or (parent:GetName() .. "CastBar"), parent, "BackdropTemplate")
-
-		do --layers
-
-			--these widgets was been made with back compatibility in mind
-			--they are using the same names as the retail game uses on the nameplate castbar
-			--this should make Plater core and Plater scripts made by users compatible with the new unit frame made on the framework
-
-			--background
-			castBar.background = castBar:CreateTexture(nil, "background", nil, -6)
-			castBar.extraBackground = castBar:CreateTexture(nil, "background", nil, -5)
-
-			--overlay
-			castBar.Text = castBar:CreateFontString(nil, "overlay", "SystemFont_Shadow_Small")
-			castBar.Text:SetDrawLayer("overlay", 1)
-			castBar.Text:SetPoint("center", 0, 0)
-
-			castBar.BorderShield = castBar:CreateTexture(nil, "overlay", nil, 5)
-			castBar.BorderShield:Hide()
-
-			castBar.Icon = castBar:CreateTexture(nil, "overlay", nil, 4)
-			castBar.Icon:Hide()
-
-			castBar.Spark = castBar:CreateTexture(nil, "overlay", nil, 3)
-			castBar.Spark:SetBlendMode("ADD")
-
-			--time left on the cast
-			castBar.percentText = castBar:CreateFontString(nil, "overlay", "SystemFont_Shadow_Small")
-			castBar.percentText:SetDrawLayer("overlay", 7)
-
-			--statusbar texture
-			castBar.barTexture = castBar:CreateTexture(nil, "artwork", nil, -6)
-			castBar:SetStatusBarTexture(castBar.barTexture)
-
-			--animations fade in and out
-			local fadeOutAnimationHub = detailsFramework:CreateAnimationHub (castBar, detailsFramework.CastFrameFunctions.Animation_FadeOutStarted, detailsFramework.CastFrameFunctions.Animation_FadeOutFinished)
-			fadeOutAnimationHub.alpha1 = detailsFramework:CreateAnimation(fadeOutAnimationHub, "ALPHA", 1, 1, 1, 0)
-			castBar.fadeOutAnimation = fadeOutAnimationHub
-
-			local fadeInAnimationHub = detailsFramework:CreateAnimationHub (castBar, detailsFramework.CastFrameFunctions.Animation_FadeInStarted, detailsFramework.CastFrameFunctions.Animation_FadeInFinished)
-			fadeInAnimationHub.alpha1 = detailsFramework:CreateAnimation(fadeInAnimationHub, "ALPHA", 1, 0.150, 0, 1)
-			castBar.fadeInAnimation = fadeInAnimationHub
-
-			--animatios flash
-			local flashTexture = castBar:CreateTexture(nil, "overlay", nil, 7)
-			flashTexture:SetColorTexture(1, 1, 1, 1)
-			flashTexture:SetAllPoints()
-			flashTexture:SetAlpha(0)
-			flashTexture:Hide()
-			flashTexture:SetBlendMode("ADD")
-			castBar.flashTexture = flashTexture
-
-			local flashAnimationHub = detailsFramework:CreateAnimationHub (flashTexture, function() flashTexture:Show() end, function() flashTexture:Hide() end)
-			detailsFramework:CreateAnimation(flashAnimationHub, "ALPHA", 1, 0.2, 0, 0.8)
-			detailsFramework:CreateAnimation(flashAnimationHub, "ALPHA", 2, 0.2, 1, 0)
-			castBar.flashAnimation = flashAnimationHub
-		end
-
-	--mixins
-	detailsFramework:Mixin(castBar, detailsFramework.CastFrameFunctions)
-	detailsFramework:Mixin(castBar, detailsFramework.StatusBarFunctions)
-
-	castBar:CreateTextureMask()
-	castBar:AddMaskTexture(castBar.flashTexture)
-	castBar:AddMaskTexture(castBar.background)
-	castBar:AddMaskTexture(castBar.extraBackground)
-
-	castBar:SetTexture([[Interface\WorldStateFrame\WORLDSTATEFINALSCORE-HIGHLIGHT]])
-
-	--settings and hooks
-	local settings = detailsFramework.table.copy({}, detailsFramework.CastFrameFunctions.Settings)
-	if (settingsOverride) then
-		detailsFramework.table.copy(settings, settingsOverride)
-	end
-	castBar.Settings = settings
-
-	local hookList = detailsFramework.table.copy({}, detailsFramework.CastFrameFunctions.HookList)
-	castBar.HookList = hookList
-
-	--initialize the cast bar
-	castBar:Initialize()
-
-	return castBar
-end
-
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --border frame
 
 --[=[
@@ -7727,10 +4796,11 @@ detailsFramework.BorderFunctions = {
 }
 
 -- ~borderframe
-function detailsFramework:CreateBorderFrame (parent, name)
-	local parentName = name or "DetailsFrameworkBorderFrame" .. tostring(math.random(1, 100000000))
+function detailsFramework:CreateBorderFrame(parent, name)
+	local parentName = name or ("DetailsFrameworkBorderFrame" .. tostring(math.random(1, 100000000)))
 
 	local f = CreateFrame("frame", parentName, parent, "BackdropTemplate")
+	detailsFramework:Mixin(f, detailsFramework.FrameFunctions)
 	f:SetFrameLevel(f:GetFrameLevel()+1)
 	f:SetAllPoints()
 
@@ -7742,7 +4812,7 @@ function detailsFramework:CreateBorderFrame (parent, name)
 		local leftBorder = f:CreateTexture(nil, "overlay")
 		leftBorder:SetDrawLayer("overlay", 7)
 		leftBorder:SetColorTexture(1, 1, 1, 1)
-		tinsert(f.allTextures, leftBorder)
+		table.insert(f.allTextures, leftBorder)
 		f.leftBorder = leftBorder
 		PixelUtil.SetPoint(leftBorder, "topright", f, "topleft", 0, 1, 0, 1)
 		PixelUtil.SetPoint(leftBorder, "bottomright", f, "bottomleft", 0, -1, 0, -1)
@@ -7752,7 +4822,7 @@ function detailsFramework:CreateBorderFrame (parent, name)
 		local rightBorder = f:CreateTexture(nil, "overlay")
 		rightBorder:SetDrawLayer("overlay", 7)
 		rightBorder:SetColorTexture(1, 1, 1, 1)
-		tinsert(f.allTextures, rightBorder)
+		table.insert(f.allTextures, rightBorder)
 		f.rightBorder = rightBorder
 		PixelUtil.SetPoint(rightBorder, "topleft", f, "topright", 0, 1, 0, 1)
 		PixelUtil.SetPoint(rightBorder, "bottomleft", f, "bottomright", 0, -1, 0, -1)
@@ -7762,7 +4832,7 @@ function detailsFramework:CreateBorderFrame (parent, name)
 		local topBorder = f:CreateTexture(nil, "overlay")
 		topBorder:SetDrawLayer("overlay", 7)
 		topBorder:SetColorTexture(1, 1, 1, 1)
-		tinsert(f.allTextures, topBorder)
+		table.insert(f.allTextures, topBorder)
 		f.topBorder = topBorder
 		PixelUtil.SetPoint(topBorder, "bottomleft", f, "topleft", 0, 0, 0, 0)
 		PixelUtil.SetPoint(topBorder, "bottomright", f, "topright", 0, 0, 0, 0)
@@ -7772,7 +4842,7 @@ function detailsFramework:CreateBorderFrame (parent, name)
 		local bottomBorder = f:CreateTexture(nil, "overlay")
 		bottomBorder:SetDrawLayer("overlay", 7)
 		bottomBorder:SetColorTexture(1, 1, 1, 1)
-		tinsert(f.allTextures, bottomBorder)
+		table.insert(f.allTextures, bottomBorder)
 		f.bottomBorder = bottomBorder
 		PixelUtil.SetPoint(bottomBorder, "topleft", f, "bottomleft", 0, 0, 0, 0)
 		PixelUtil.SetPoint(bottomBorder, "topright", f, "bottomright", 0, 0, 0, 0)
@@ -7780,524 +4850,6 @@ function detailsFramework:CreateBorderFrame (parent, name)
 
 	return f
 end
-
-
-
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
---unit frame
-
---[=[
-	DF:CreateUnitFrame(parent, name, settingsOverride)
-	creates a very basic unit frame with a healthbar, castbar and power bar
-	each unit frame has a .Settings table which isn't shared among other unit frames created with this method
-	all members names are the same as the unit frame from the retail game
-
-	@parent = frame to pass for the CreateFrame function
-	@name = absolute name of the frame, if omitted a random name is created
-	@settingsOverride = table with keys and values to replace the defaults from the framework
-
---]=]
-
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
---unit frame
-
-	--return true if the unit has been claimed by another player (health bar is gray)
-	local isUnitTapDenied = function(unit)
-		return unit and not UnitPlayerControlled(unit) and UnitIsTapDenied(unit)
-	end
-
-	detailsFramework.UnitFrameFunctions = {
-		WidgetType = "unitFrame",
-
-		Settings = {
-			--unit frames
-			ClearUnitOnHide = true, --if tue it'll set the unit to nil when the unit frame is set to hide
-			ShowCastBar = true, --if this is false, the cast bar for the unit won't be shown
-			ShowPowerBar = true, --if true it'll show the power bar for the unit, e.g. the mana bar
-			ShowUnitName = true, --if false, the unit name won't show
-			ShowBorder = true, --if false won't show the border frame
-
-			--health bar color
-			CanModifyHealhBarColor = true, --if false it won't change the color of the health bar
-			ColorByAggro = false, --if true it'll color the healthbar with red color when the unit has aggro on player
-			FixedHealthColor = false, --color override with a table {r=1, g=1, b=1}
-			UseFriendlyClassColor = true, --make the healthbar class color for friendly players
-			UseEnemyClassColor = true, --make the healthbar class color for enemy players
-
-			--misc
-			ShowTargetOverlay = true, --shows a highlighht for the player current target
-			BorderColor = detailsFramework:CreateColorTable (0, 0, 0, 1), --border color, set to alpha zero for no border
-			CanTick = false, --if true it'll run the OnTick event
-
-			--size
-			Width = 100,
-			Height = 20,
-			PowerBarHeight = 4,
-			CastBarHeight = 8,
-		},
-
-		UnitFrameEvents = {
-			--run for all units
-			{"PLAYER_ENTERING_WORLD"},
-			{"PARTY_MEMBER_DISABLE"},
-			{"PARTY_MEMBER_ENABLE"},
-			{"PLAYER_TARGET_CHANGED"},
-
-			--run for one unit
-			{"UNIT_NAME_UPDATE", true},
-			{"UNIT_CONNECTION", true},
-			{"UNIT_ENTERED_VEHICLE", true},
-			{"UNIT_EXITED_VEHICLE", true},
-			{"UNIT_PET", true},
-			{"UNIT_THREAT_LIST_UPDATE", true},
-		},
-
-		--used when a event is triggered to quickly check if is a unit event
-		IsUnitEvent = {
-			["UNIT_NAME_UPDATE"] = true,
-			["UNIT_CONNECTION"] = true,
-			["UNIT_ENTERED_VEHICLE"] = true,
-			["UNIT_EXITED_VEHICLE"] = true,
-			["UNIT_PET"] = true,
-			["UNIT_THREAT_LIST_UPDATE"] = true,
-		},
-
-		Initialize = function(self)
-			self.border:SetBorderColor (self.Settings.BorderColor)
-
-			PixelUtil.SetWidth (self, self.Settings.Width, 1)
-			PixelUtil.SetHeight(self, self.Settings.Height, 1)
-
-			PixelUtil.SetPoint(self.powerBar, "bottomleft", self, "bottomleft", 0, 0, 1, 1)
-			PixelUtil.SetPoint(self.powerBar, "bottomright", self, "bottomright", 0, 0, 1, 1)
-			PixelUtil.SetHeight(self.powerBar, self.Settings.PowerBarHeight, 1)
-
-			--make the castbar overlap the powerbar
-			PixelUtil.SetPoint(self.castBar, "bottomleft", self, "bottomleft", 0, 0, 1, 1)
-			PixelUtil.SetPoint(self.castBar, "bottomright", self, "bottomright", 0, 0, 1, 1)
-			PixelUtil.SetHeight(self.castBar, self.Settings.CastBarHeight, 1)
-		end,
-
-		SetHealthBarColor = function(self, r, g, b, a)
-			self.healthBar:SetColor (r, g, b, a)
-		end,
-
-		--register all events which will be used by the unit frame
-		RegisterEvents = function(self)
-			--register events
-			for index, eventTable in ipairs(self.UnitFrameEvents) do
-				local event, isUnitEvent = unpack(eventTable)
-				if (not isUnitEvent) then
-					self:RegisterEvent(event)
-				else
-					self:RegisterUnitEvent (event, self.unit, self.displayedUnit ~= unit and self.displayedUnit or nil)
-				end
-			end
-
-			--check settings and unregister events for disabled features
-			if (not self.Settings.ColorByAggro) then
-				self:UnregisterEvent ("UNIT_THREAT_LIST_UPDATE")
-			end
-
-			--set scripts
-			self:SetScript("OnEvent", self.OnEvent)
-			self:SetScript("OnHide", self.OnHide)
-
-			if (self.Settings.CanTick) then
-				self:SetScript("OnUpdate", self.OnTick)
-			end
-		end,
-
-		--unregister events, called when this unit frame losses its unit
-		UnregisterEvents = function(self)
-			for index, eventTable in ipairs(self.UnitFrameEvents) do
-				local event, firstUnit, secondUnit = unpack(eventTable)
-				self:UnregisterEvent (event)
-			end
-
-			self:SetScript("OnEvent", nil)
-			self:SetScript("OnUpdate", nil)
-			self:SetScript("OnHide", nil)
-		end,
-
-		--call every tick
-		OnTick = function(self, deltaTime) end, --if overrided, set 'CanTick' to true on the settings table
-
-		--when an event happen for this unit, send it to the apropriate function
-		OnEvent = function(self, event, ...)
-			--run the function for this event
-			local eventFunc = self [event]
-			if (eventFunc) then
-				--is this event an unit event?
-				if (self.IsUnitEvent [event]) then
-					local unit = ...
-					--check if is for this unit (even if the event is registered only for the unit)
-					if (unit == self.unit or unit == self.displayedUnit) then
-						eventFunc (self, ...)
-					end
-				else
-					eventFunc (self, ...)
-				end
-			end
-		end,
-
-		OnHide = function(self)
-			if (self.Settings.ClearUnitOnHide) then
-				self:SetUnit(nil)
-			end
-		end,
-
-		--run if the unit currently shown is different than the new one
-		SetUnit = function(self, unit)
-			if (unit ~= self.unit or unit == nil) then
-				self.unit = unit --absolute unit
-				self.displayedUnit = unit --~todo rename to 'displayedUnit' for back compatibility with older scripts in Plater
-				self.unitInVehicle = nil --true when the unit is in a vehicle
-
-				if (unit) then
-					self:RegisterEvents()
-
-					self.healthBar:SetUnit(unit, self.displayedUnit)
-
-					--is using castbars?
-					if (self.Settings.ShowCastBar) then
-						self.castBar:SetUnit(unit, self.displayedUnit)
-					else
-						self.castBar:SetUnit(nil)
-					end
-
-					--is using powerbars?
-					if (self.Settings.ShowPowerBar) then
-						self.powerBar:SetUnit(unit, self.displayedUnit)
-					else
-						self.powerBar:SetUnit(nil)
-					end
-
-					--is using the border?
-					if (self.Settings.ShowBorder) then
-						self.border:Show()
-					else
-						self.border:Hide()
-					end
-
-					if (not self.Settings.ShowUnitName) then
-						self.unitName:Hide()
-					end
-				else
-					self:UnregisterEvents()
-					self.healthBar:SetUnit(nil)
-					self.castBar:SetUnit(nil)
-					self.powerBar:SetUnit(nil)
-				end
-
-				self:UpdateUnitFrame()
-			end
-		end,
-
-		--if the unit is controlling a vehicle, need to show the vehicle instead
-		--.unit and .displayedUnit is always the same execept when the unit is controlling a vehicle, then .displayedUnit is the unitID for the vehicle
-		--todo: see what 'UnitTargetsVehicleInRaidUI' is, there's a call for this in the CompactUnitFrame.lua but zero documentation
-		CheckVehiclePossession = function(self)
-			--this unit is possessing a vehicle?
-			local unitPossessVehicle = (IS_WOW_PROJECT_MAINLINE) and UnitHasVehicleUI(self.unit)	or false
-			if (unitPossessVehicle) then
-				if (not self.unitInVehicle) then
-					if (UnitIsUnit("player", self.unit)) then
-						self.displayedUnit = "vehicle"
-						self.unitInVehicle = true
-						self:RegisterEvents()
-						self:UpdateAllWidgets()
-						return true
-					end
-
-					local prefix, id, suffix = string.match(self.unit, "([^%d]+)([%d]*)(.*)") --CompactUnitFrame.lua
-					local vehicleUnitID = prefix .. "pet" .. id .. suffix
-					if (UnitExists(vehicleUnitID)) then
-						self.displayedUnit = vehicleUnitID
-						self.unitInVehicle = true
-						self:RegisterEvents()
-						self:UpdateAllWidgets()
-						return true
-					end
-				end
-			end
-
-			if (self.unitInVehicle) then
-				self.displayedUnit = self.unit
-				self.unitInVehicle = nil
-				self:RegisterEvents()
-				self:UpdateAllWidgets()
-			end
-		end,
-
-		--find a color for the health bar, if a color has been passed in the arguments use it instead, 'CanModifyHealhBarColor' must be true for this function run
-		UpdateHealthColor = function(self, r, g, b)
-			--check if color changes is disabled
-			if (not self.Settings.CanModifyHealhBarColor) then
-				return
-			end
-
-			local unit = self.displayedUnit
-
-			--check if a color has been passed within the parameters
-			if (r) then
-				--check if passed a special color
-				if (type(r) ~= "number") then
-					r, g, b = detailsFramework:ParseColors(r)
-				end
-
-				self:SetHealthBarColor (r, g, b)
-				return
-			end
-
-			--check if there is a color override in the settings
-			if (self.Settings.FixedHealthColor) then
-				local FixedHealthColor = self.Settings.FixedHealthColor
-				r, g, b = FixedHealthColor.r, FixedHealthColor.g, FixedHealthColor.b
-				self:SetHealthBarColor (r, g, b)
-				return
-			end
-
-			--check if the unit is a player
-			if (UnitIsPlayer (unit)) then
-				--check if the unit is disconnected (in case it is a player
-				if (not UnitIsConnected (unit)) then
-					self:SetHealthBarColor (.5, .5, .5)
-					return
-				end
-
-				--is a friendly or enemy player?
-				if (UnitIsFriend ("player", unit)) then
-					if (self.Settings.UseFriendlyClassColor) then
-						local _, className = UnitClass(unit)
-						if (className) then
-							local classColor = RAID_CLASS_COLORS [className]
-							if (classColor) then
-								self:SetHealthBarColor (classColor.r, classColor.g, classColor.b)
-								return
-							end
-						end
-					else
-						self:SetHealthBarColor (0, 1, 0)
-						return
-					end
-				else
-					if (self.Settings.UseEnemyClassColor) then
-						local _, className = UnitClass(unit)
-						if (className) then
-							local classColor = RAID_CLASS_COLORS [className]
-							if (classColor) then
-								self:SetHealthBarColor (classColor.r, classColor.g, classColor.b)
-								return
-							end
-						end
-					else
-						self:SetHealthBarColor (1, 0, 0)
-						return
-					end
-				end
-			end
-
-			--is tapped?
-			if (isUnitTapDenied (unit)) then
-				self:SetHealthBarColor (.6, .6, .6)
-				return
-			end
-
-			--is this is a npc attacking the player?
-			if (self.Settings.ColorByAggro) then
-				local _, threatStatus = UnitDetailedThreatSituation ("player", unit)
-				if (threatStatus) then
-					self:SetHealthBarColor (1, 0, 0)
-					return
-				end
-			end
-
-			-- get the regular color by selection
-			r, g, b = UnitSelectionColor (unit)
-			self:SetHealthBarColor (r, g, b)
-		end,
-
-		--misc
-		UpdateName = function(self)
-			if (not self.Settings.ShowUnitName) then
-				return
-			end
-
-			--unit name without realm names by default
-			local name = UnitName (self.unit)
-			self.unitName:SetText(name)
-			self.unitName:Show()
-		end,
-
-		--this runs when the player it self changes its target, need to update the current target overlay
-		--todo: add focus overlay
-		UpdateTargetOverlay = function(self)
-			if (not self.Settings.ShowTargetOverlay) then
-				self.targetOverlay:Hide()
-				return
-			end
-
-			if (UnitIsUnit(self.displayedUnit, "target")) then
-				self.targetOverlay:Show()
-			else
-				self.targetOverlay:Hide()
-			end
-		end,
-
-		UpdateAllWidgets = function(self)
-			if (UnitExists(self.displayedUnit)) then
-				local unit = self.unit
-				local displayedUnit = self.displayedUnit
-
-				self:SetUnit(unit, displayedUnit)
-
-				--is using castbars?
-				if (self.Settings.ShowCastBar) then
-					self.castBar:SetUnit(unit, displayedUnit)
-				end
-
-				--is using powerbars?
-				if (self.Settings.ShowPowerBar) then
-					self.powerBar:SetUnit(unit, displayedUnit)
-				end
-
-				self:UpdateName()
-				self:UpdateTargetOverlay()
-				self:UpdateHealthColor()
-			end
-		end,
-
-		--update the unit frame and its widgets
-		UpdateUnitFrame = function(self)
-			local unitInVehicle = self:CheckVehiclePossession()
-
-			--if the unit is inside a vehicle, the vehicle possession function will call an update on all widgets
-			if (not unitInVehicle) then
-				self:UpdateAllWidgets()
-			end
-		end,
-
-		--event handles
-		PLAYER_ENTERING_WORLD = function(self, ...)
-			self:UpdateUnitFrame()
-		end,
-
-		--update overlays when the player changes its target
-		PLAYER_TARGET_CHANGED = function(self, ...)
-			self:UpdateTargetOverlay()
-		end,
-
-		--unit received a name update
-		UNIT_NAME_UPDATE = function(self, ...)
-			self:UpdateName()
-		end,
-
-		--this is registered only if .settings.ColorByAggro is true
-		UNIT_THREAT_LIST_UPDATE = function(self, ...)
-			if (self.Settings.ColorByAggro) then
-				self:UpdateHealthColor()
-			end
-		end,
-
-		--vehicle
-		UNIT_ENTERED_VEHICLE = function(self, ...)
-			self:UpdateUnitFrame()
-		end,
-		UNIT_EXITED_VEHICLE = function(self, ...)
-			self:UpdateUnitFrame()
-		end,
-
-		--pet
-		UNIT_PET = function(self, ...)
-			self:UpdateUnitFrame()
-		end,
-
-		--player connection
-		UNIT_CONNECTION = function(self, ...)
-			if (UnitIsConnected (self.unit)) then
-				self:UpdateUnitFrame()
-			end
-		end,
-		PARTY_MEMBER_ENABLE = function(self, ...)
-			if (UnitIsConnected (self.unit)) then
-				self:UpdateName()
-			end
-		end,
-	}
-
--- ~unitframe
-local globalBaseFrameLevel = 1 -- to be increased + used across each new plate
-function detailsFramework:CreateUnitFrame(parent, name, unitFrameSettingsOverride, healthBarSettingsOverride, castBarSettingsOverride, powerBarSettingsOverride)
-	local parentName = name or ("DetailsFrameworkUnitFrame" .. tostring(math.random(1, 100000000)))
-
-	--create the main unit frame
-	local mewUnitFrame = CreateFrame("button", parentName, parent, "BackdropTemplate")
-
-	--base level
-	--local baseFrameLevel = f:GetFrameLevel()
-	local baseFrameLevel = globalBaseFrameLevel
-	globalBaseFrameLevel = globalBaseFrameLevel + 50
-
-	mewUnitFrame:SetFrameLevel(baseFrameLevel)
-
-	--create the healthBar
-	local healthBar = detailsFramework:CreateHealthBar(mewUnitFrame, false, healthBarSettingsOverride)
-	healthBar:SetFrameLevel(baseFrameLevel + 1)
-	mewUnitFrame.healthBar = healthBar
-
-	--create the power bar
-	local powerBar = detailsFramework:CreatePowerBar(mewUnitFrame, false, powerBarSettingsOverride)
-	powerBar:SetFrameLevel(baseFrameLevel + 2)
-	mewUnitFrame.powerBar = powerBar
-
-	--create the castBar
-	local castBar = detailsFramework:CreateCastBar(mewUnitFrame, false, castBarSettingsOverride)
-	castBar:SetFrameLevel(baseFrameLevel + 3)
-	mewUnitFrame.castBar = castBar
-
-	--border frame
-	local borderFrame = detailsFramework:CreateBorderFrame(mewUnitFrame, mewUnitFrame:GetName() .. "Border")
-	borderFrame:SetFrameLevel(mewUnitFrame:GetFrameLevel() + 5)
-	mewUnitFrame.border = borderFrame
-
-	--overlay frame (widgets that need to stay above the unit frame)
-	local overlayFrame = CreateFrame("frame", "$parentOverlayFrame", mewUnitFrame, "BackdropTemplate")
-	overlayFrame:SetFrameLevel(mewUnitFrame:GetFrameLevel() + 6)
-	mewUnitFrame.overlayFrame = overlayFrame
-
-	--unit frame layers
-		do
-			--artwork
-			mewUnitFrame.unitName = mewUnitFrame:CreateFontString(nil, "artwork", "GameFontHighlightSmall")
-			PixelUtil.SetPoint(mewUnitFrame.unitName, "topleft", healthBar, "topleft", 2, -2, 1, 1)
-
-			--target overlay - it's parented in the healthbar so other widgets won't get the overlay
-			mewUnitFrame.targetOverlay = overlayFrame:CreateTexture(nil, "artwork")
-			mewUnitFrame.targetOverlay:SetTexture(healthBar:GetTexture())
-			mewUnitFrame.targetOverlay:SetBlendMode("ADD")
-			mewUnitFrame.targetOverlay:SetAlpha(.5)
-			mewUnitFrame.targetOverlay:SetAllPoints(healthBar)
-		end
-
-	--mixins
-		--inject mixins
-		detailsFramework:Mixin(mewUnitFrame, detailsFramework.UnitFrameFunctions)
-
-		--create the settings table and copy the overrides into it, the table is set into the frame after the mixin
-		local unitFrameSettings = detailsFramework.table.copy({}, detailsFramework.UnitFrameFunctions.Settings)
-		if (unitFrameSettingsOverride) then
-			unitFrameSettings = detailsFramework.table.copy(unitFrameSettings, unitFrameSettingsOverride)
-		end
-		mewUnitFrame.Settings = unitFrameSettings
-
-	--initialize scripts
-		--unitframe
-		mewUnitFrame:Initialize()
-
-	return mewUnitFrame
-end
-
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --horizontal scroll frame
@@ -8990,7 +5542,7 @@ function detailsFramework:ShowErrorMessage (errorMessage, titleText)
 		f:SetScript("OnDragStart", function() f:StartMoving() end)
 		f:SetScript("OnDragStop", function() f:StopMovingOrSizing() end)
 		f:SetScript("OnMouseDown", function(self, button) if (button == "RightButton") then f:Hide() end end)
-		tinsert(UISpecialFrames, "DetailsFrameworkErrorMessagePanel")
+		table.insert(UISpecialFrames, "DetailsFrameworkErrorMessagePanel")
 		detailsFramework.ErrorMessagePanel = f
 
 		detailsFramework:CreateTitleBar (f, "Details! Framework Error!")
@@ -9109,9 +5661,9 @@ detailsFramework.ListboxFunctions = {
 		local data = frameCanvas.data
 		local newEntry = {}
 		for i = 1, frameCanvas.headerLength do
-			tinsert(newEntry, "")
+			table.insert(newEntry, "")
 		end
-		tinsert(data, newEntry)
+		table.insert(data, newEntry)
 		frameCanvas.scrollBox:Refresh()
 	end,
 
@@ -9163,7 +5715,7 @@ detailsFramework.ListboxFunctions = {
 					local dataTable = textEntry.dataTable
 					dataTable[textEntry.dataTableIndex] = text
 				end)
-				tinsert(line.widgets, textEntry)
+				table.insert(line.widgets, textEntry)
 				line:AddFrameToHeaderAlignment(textEntry)
 			end
 		end
@@ -9235,8 +5787,8 @@ function detailsFramework:CreateListBox(parent, name, data, options, headerTable
 		frameCanvas.headerLength = #headerTable
 
 		--add the detele line column into the header frame
-		tinsert(headerTable, 1, {text = "#", width = 20, isIndex = true}) --isDelete signals the createScrollLine() to make the delete button for the line
-		tinsert(headerTable, {text = "Delete", width = 50, isDelete = true}) --isDelete signals the createScrollLine() to make the delete button for the line
+		table.insert(headerTable, 1, {text = "#", width = 20, isIndex = true}) --isDelete signals the createScrollLine() to make the delete button for the line
+		table.insert(headerTable, {text = "Delete", width = 50, isDelete = true}) --isDelete signals the createScrollLine() to make the delete button for the line
 
 		local header = detailsFramework:CreateHeader(frameCanvas, headerTable, headerOptions)
 		--set the header point

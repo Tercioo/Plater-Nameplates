@@ -4,6 +4,8 @@ if (not DF or not DetailsFrameworkCanLoad) then
 	return
 end
 
+local detailsFramework = DF
+
 local SharedMedia = LibStub:GetLibrary("LibSharedMedia-3.0")
 local _
 
@@ -13,9 +15,13 @@ local wipe = table.wipe
 local insert = table.insert
 local max = math.max
 
+local GetSpellInfo = GetSpellInfo or function(spellID) if not spellID then return nil end local si = C_Spell.GetSpellInfo(spellID) if si then return si.name, nil, si.iconID, si.castTime, si.minRange, si.maxRange, si.spellID, si.originalIconID end end
+local SPELLBOOK_BANK_PLAYER = Enum.SpellBookSpellBank and Enum.SpellBookSpellBank.Player or "player"
+local IsPassiveSpell = IsPassiveSpell or C_Spell.IsSpellPassive
+
 --api locals
 local PixelUtil = PixelUtil or DFPixelUtil
-local version = 17
+local version = 24
 
 local CONST_MENU_TYPE_MAINMENU = "main"
 local CONST_MENU_TYPE_SUBMENU = "sub"
@@ -34,6 +40,7 @@ function DF:CreateCoolTip()
 	tile = true, tileSize = 16, insets = {left = 0, right = 0, top = 0, bottom = 0}}
 	local defaultBackdropColor = {0.1215, 0.1176, 0.1294, 0.8000}
 	local defaultBackdropBorderColor = {0.05, 0.05, 0.05, 1}
+	local defaultTexCoord = {0, 1, 0, 1}
 
 	--initialize
 	local gameCooltip = {
@@ -48,6 +55,10 @@ function DF:CreateCoolTip()
 			print("|cFFFFFF00Cooltip|r:", ...)
 			print(debugstack())
 		end
+	end
+
+	function gameCooltip:Msg(...)
+		print("|cFFFFFF00Cooltip|r:", ...)
 	end
 
 	function gameCooltip:SetDebug(bDebugState)
@@ -99,7 +110,7 @@ function DF:CreateCoolTip()
 
 	--options table
 	gameCooltip.OptionsList = {
-		["RightTextMargin"] = true,
+		["RightTextMargin"] = true, --offset between the right text to the right icon, default: -3
 		["IconSize"] = true,
 		["HeightAnchorMod"] = true,
 		["WidthAnchorMod"] = true,
@@ -115,10 +126,10 @@ function DF:CreateCoolTip()
 		["TextHeightMod"] = true,
 		["ButtonHeightMod"] = true,
 		["ButtonHeightModSub"] = true,
-		["YSpacingMod"] = true,
+		["YSpacingMod"] = true, --space between each line, does not work with 'IgnoreButtonAutoHeight' and 'AlignAsBlizzTooltip'
 		["YSpacingModSub"] = true,
-		["ButtonsYMod"] = true,
-		["ButtonsYModSub"] = true,
+		["ButtonsYMod"] = true, --amount of space to leave between the top border and the first line of the tooltip, default: 0
+		["ButtonsYModSub"] = true, --amount of space to leave between the top border and the first line of the tooltip, default: 0
 		["IconHeightMod"] = true,
 		["StatusBarHeightMod"] = true,
 		["StatusBarTexture"] = true,
@@ -137,8 +148,8 @@ function DF:CreateCoolTip()
 		["RelativeAnchor"] = true,
 		["NoLastSelectedBar"] = true,
 		["SubMenuIsTooltip"] = true,
-		["LeftBorderSize"] = true,
-		["RightBorderSize"] = true,
+		["LeftBorderSize"] = true, --offset between the left border and the left icon, default: 10 + offset
+		["RightBorderSize"] = true, --offset between the right border and the right icon, default: -10 + offset
 		["HeighMod"] = true,
 		["HeighModSub"] = true,
 		["IconBlendMode"] = true,
@@ -185,7 +196,7 @@ function DF:CreateCoolTip()
 
 		--move each line in the Y axis (vertical offsett)
 		["LineYOffset"] = "ButtonsYMod",
-		["VerticalOffset"] = "ButtonsYMod",
+		["VerticalOffset"] = "ButtonsYMod", --amount of space to leave between the top border and the first line of the tooltip, default: 0
 		["LineYOffsetSub"] = "ButtonsYModSub",
 		["VerticalOffsetSub"] = "ButtonsYModSub",
 	}
@@ -223,10 +234,24 @@ function DF:CreateCoolTip()
 
 	gameCooltip.defaultFont = DF:GetBestFontForLanguage()
 
+	gameCooltip.RoundedFramePreset = {
+		color = {.075, .075, .075, 1},
+		border_color = {.3, .3, .3, 1},
+		roundness = 8,
+	}
+
 	--create frames, self is frame1 or frame2
 	local createTooltipFrames = function(self)
 		self:SetSize(500, 500)
 		self:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+
+		if (not self.HaveRoundedCorners) then
+			self:SetBackdrop(nil)
+			DF:AddRoundedCornersToFrame(self, gameCooltip.RoundedFramePreset)
+			self:DisableRoundedCorners()
+			self.HaveRoundedCorners = true
+		end
+
 		self:SetBackdrop(defaultBackdrop)
 		self:SetBackdropColor(DF:ParseColors(defaultBackdropColor))
 		self:SetBackdropBorderColor(DF:ParseColors(defaultBackdropBorderColor))
@@ -343,6 +368,39 @@ function DF:CreateCoolTip()
 		if (not frame2.FlashAnimation) then
 			DF:CreateFlashAnimation(frame2)
 		end
+
+	function GameCooltip:ShowRoundedCorner()
+		if (not frame1.HaveRoundedCorners) then
+			return
+		end
+
+		frame1:EnableRoundedCorners()
+		frame2:EnableRoundedCorners()
+
+		frame1:SetBackdrop(nil)
+		frame2:SetBackdrop(nil)
+
+		frame1.frameBackgroundTexture:Hide()
+		frame2.frameBackgroundTexture:Hide()
+
+		frame1.gradientTexture:Hide()
+		frame2.gradientTexture:Hide()
+	end
+
+	function GameCooltip:HideRoundedCorner()
+		if (not frame1.HaveRoundedCorners) then
+			return
+		end
+
+		frame1:DisableRoundedCorners()
+		frame2:DisableRoundedCorners()
+
+		frame1.frameBackgroundTexture:Show()
+		frame2.frameBackgroundTexture:Show()
+
+		frame1.gradientTexture:Show()
+		frame2.gradientTexture:Show()
+	end
 
 	gameCooltip.frame1 = frame1
 	gameCooltip.frame2 = frame2
@@ -565,9 +623,17 @@ function DF:CreateCoolTip()
 		statusbar.leftIcon:SetSize(16, 16)
 		statusbar.leftIcon:SetPoint("LEFT", statusbar, "LEFT", 0, 0)
 
+		statusbar.leftIconMask = statusbar:CreateMaskTexture("$parent_LeftIconMask", "artwork")
+		statusbar.leftIconMask:SetAllPoints(statusbar.leftIcon)
+		statusbar.leftIcon:AddMaskTexture(statusbar.leftIconMask)
+
 		statusbar.rightIcon = statusbar:CreateTexture("$parent_RightIcon", "OVERLAY")
 		statusbar.rightIcon:SetSize(16, 16)
 		statusbar.rightIcon:SetPoint("RIGHT", statusbar, "RIGHT", 0, 0)
+
+		statusbar.rightIconMask = statusbar:CreateMaskTexture("$parent_RightIconMask", "artwork")
+		statusbar.rightIconMask:SetAllPoints(statusbar.rightIcon)
+		statusbar.rightIcon:AddMaskTexture(statusbar.rightIconMask)
 
 		statusbar.spark2 = statusbar:CreateTexture("$parent_Spark2", "OVERLAY")
 		statusbar.spark2:SetSize(32, 32)
@@ -611,6 +677,8 @@ function DF:CreateCoolTip()
 		self:RegisterForClicks("LeftButtonDown")
 		self.leftIcon = self.statusbar.leftIcon
 		self.rightIcon = self.statusbar.rightIcon
+		self.leftIconMask = self.statusbar.leftIconMask
+		self.rightIconMask = self.statusbar.rightIconMask
 		self.texture = self.statusbar.texture
 		self.spark = self.statusbar.spark
 		self.spark2 = self.statusbar.spark2
@@ -889,7 +957,7 @@ function DF:CreateCoolTip()
 		if (gameCooltip.FunctionsTableMain[self.index]) then
 			local parameterTable = gameCooltip.ParametersTableMain[self.index]
 			local func = gameCooltip.FunctionsTableMain[self.index]
-			local okay, errortext = pcall(func, gameCooltip.Host, gameCooltip.FixedValue, parameterTable[1], parameterTable[2], parameterTable[3], button)
+			local okay, errortext = xpcall(func, geterrorhandler(), gameCooltip.Host, gameCooltip.FixedValue, parameterTable[1], parameterTable[2], parameterTable[3], button)
 			if (not okay) then
 				print("Cooltip OnClick Error:", errortext)
 			end
@@ -903,7 +971,7 @@ function DF:CreateCoolTip()
 		if (gameCooltip.FunctionsTableSub[self.mainIndex] and gameCooltip.FunctionsTableSub[self.mainIndex][self.index]) then
 			local parameterTable = gameCooltip.ParametersTableSub[self.mainIndex][self.index]
 			local func = gameCooltip.FunctionsTableSub[self.mainIndex][self.index]
-			local okay, errortext = pcall(func, gameCooltip.Host, gameCooltip.FixedValue, parameterTable[1], parameterTable[2], parameterTable[3], button)
+			local okay, errortext = xpcall(func, geterrorhandler(), gameCooltip.Host, gameCooltip.FixedValue, parameterTable[1], parameterTable[2], parameterTable[3], button)
 			if (not okay) then
 				print("Cooltip OnClick Error:", errortext)
 			end
@@ -1135,6 +1203,16 @@ function DF:CreateCoolTip()
 			textureObject:SetHeight(leftIconSettings[3])
 			textureObject:SetTexCoord(leftIconSettings[4], leftIconSettings[5], leftIconSettings[6], leftIconSettings[7])
 
+			if (leftIconSettings[10]) then
+				menuButton.leftIconMask:SetTexture(leftIconSettings[10])
+			else
+				if (DF.IsDragonflightAndBeyond()) then
+					menuButton.leftIconMask:SetTexture([[Interface\COMMON\common-iconmask]])
+				else
+					menuButton.leftIconMask:SetTexture([[Interface\CHATFRAME\chatframebackground]])
+				end
+			end
+
 			local colorRed, colorGreen, colorBlue, colorAlpha = DF:ParseColors(leftIconSettings[8])
 			textureObject:SetVertexColor(colorRed, colorGreen, colorBlue, colorAlpha)
 
@@ -1191,6 +1269,12 @@ function DF:CreateCoolTip()
 			menuButton.rightIcon:SetWidth(rightIconSettings[2])
 			menuButton.rightIcon:SetHeight(rightIconSettings[3])
 			menuButton.rightIcon:SetTexCoord(rightIconSettings[4], rightIconSettings[5], rightIconSettings[6], rightIconSettings[7])
+
+			if (rightIconSettings[10]) then
+				menuButton.rightIconMask:SetTexture(rightIconSettings[10])
+			else
+				menuButton.rightIconMask:SetTexture([[Interface\COMMON\common-iconmask]])
+			end
 
 			local colorRed, colorGreen, colorBlue, colorAlpha = DF:ParseColors(rightIconSettings[8])
 			menuButton.rightIcon:SetVertexColor(colorRed, colorGreen, colorBlue, colorAlpha)
@@ -1262,6 +1346,19 @@ function DF:CreateCoolTip()
 		local height = max(menuButton.leftIcon:GetHeight(), menuButton.rightIcon:GetHeight(), menuButton.leftText:GetStringHeight(), menuButton.rightText:GetStringHeight())
 		if (height > frame.hHeight) then
 			frame.hHeight = height
+		end
+
+		--override the text width if this line has a custom width
+		if (type(leftTextSettings[9]) == "number") then
+			menuButton.leftText:SetWidth(leftTextSettings[9])
+			--print("width", leftTextSettings[9])
+			--/dump GameCooltipSecButton2_StatusBar_LeftText:GetSize()
+		end
+
+		--override the text height if this line has a custom height
+		if (type(leftTextSettings[10]) == "number") then
+			menuButton.leftText:SetHeight(leftTextSettings[10])
+			--print("height", leftTextSettings[10])
 		end
 	end
 
@@ -1438,6 +1535,9 @@ function DF:CreateCoolTip()
 			wallpaper:SetDesaturated(true)
 		else
 			wallpaper:SetDesaturated(false)
+			if (wallpaperTable[8]) then
+				wallpaper:SetDesaturation(wallpaperTable[8])
+			end
 		end
 
 		wallpaper:Show()
@@ -1840,6 +1940,84 @@ function DF:CreateCoolTip()
 		end
 	end
 
+	function gameCooltip:SetSpellByID(spellId, bShowDescriptionOnly) --~spell
+		if (type(spellId) == "number") then
+			spellId = C_SpellBook.GetOverrideSpell(spellId)
+			local spellName, spellRank, spellIcon, castTime, minRange, maxRange = GetSpellInfo(spellId)
+			--castTime zero represents an instant cast or a channeled cast
+			if (spellName) then
+				local spellDescription = GetSpellDescription(spellId)
+				local cooldownTime, globalCooldown = GetSpellBaseCooldown(spellId)
+				--local cooldown = cooldownTime / 1000
+				local bIsPassive = IsPassiveSpell(spellId, SPELLBOOK_BANK_PLAYER)
+				local chargesAvailable, maxCharges, chargeCooldownStart, rechargeTime, chargeModRate = GetSpellCharges(spellId)
+
+				local tResourceCost = GetSpellPowerCost(spellId)
+				--[=[
+					hasRequiredAura=false,
+					type=0,
+					name="MANA",
+					cost=7000,
+					minCost=7000,
+					requiredAuraID=0,
+					costPercent=3,
+					costPerSec=0
+				  }
+				--]=]
+
+				gameCooltip:Preset(2)
+				gameCooltip:SetOption("FixedWidth", 250)
+
+				gameCooltip:AddLine(spellName, nil, 1, 1, 1, 1, nil, 12)
+				gameCooltip:AddIcon(spellIcon, 1, 1, 20, 20, .1, .9, .1, .9)
+
+				if (not bShowDescriptionOnly) then
+					if (tResourceCost.cost and tResourceCost.cost > 0) then
+						if (maxRange and maxRange > 0) then
+							gameCooltip:AddLine(tResourceCost.cost .. " " .. (_G[tResourceCost.name] or tResourceCost.name), string.format(_G.SPELL_RANGE, math.floor(maxRange)), 1, 1, 1, 1, nil, 12)
+						else
+							gameCooltip:AddLine(tResourceCost.cost .. " " .. (_G[tResourceCost.name] or tResourceCost.name), nil, 1, 1, 1, 1, nil, 12)
+						end
+					else
+						if (maxRange and maxRange > 0) then
+							gameCooltip:AddLine(string.format(_G.SPELL_RANGE, math.floor(maxRange)), nil, 1, 1, 1, 1, nil, 12)
+						end
+					end
+
+					--SPELL_CAST_CHANNELED
+
+					if (castTime and castTime > 0) then
+						castTime = castTime / 1000
+						--recharge or cooldown time
+						if (cooldownTime and cooldownTime > 0) then
+							gameCooltip:AddLine(string.format(_G.SPELL_CAST_TIME_SEC, castTime), string.format(_G.SPELL_RECAST_TIME_SEC, cooldownTime), 1, 1, 1, 1, nil, 12)
+						elseif (rechargeTime and rechargeTime > 0) then
+							gameCooltip:AddLine(string.format(_G.SPELL_CAST_TIME_SEC, castTime), string.format(_G.SPELL_RECAST_TIME_CHARGES_SEC, rechargeTime), 1, 1, 1, 1, nil, 12)
+						else
+							gameCooltip:AddLine(string.format(_G.SPELL_CAST_TIME_SEC, castTime), nil, 1, 1, 1, 1, nil, 12)
+						end
+
+					elseif (castTime == 0) then --spell is instant (has no cast time)
+						if (cooldownTime and cooldownTime > 0) then
+							gameCooltip:AddLine(_G.SPELL_CAST_TIME_INSTANT, string.format(_G.SPELL_RECAST_TIME_SEC, cooldownTime/1000), 1, 1, 1, 1, nil, 12)
+						elseif (rechargeTime and rechargeTime > 0) then
+							gameCooltip:AddLine(_G.SPELL_CAST_TIME_INSTANT, string.format(_G.SPELL_RECAST_TIME_CHARGES_SEC, rechargeTime), 1, 1, 1, 1, nil, 12)
+						else
+							gameCooltip:AddLine(_G.SPELL_CAST_TIME_INSTANT, nil, 1, 1, 1, 1, nil, 12)
+						end
+					end
+				end
+
+				gameCooltip:AddLine(spellDescription, nil, 1, 1, 1, 1, nil, 12)
+
+				--mana    range
+				--instant    cooldown
+
+				gameCooltip:ShowRoundedCorner()
+			end
+		end
+	end
+
 	--~inicio ~start ~tooltip
 	function gameCooltip:BuildTooltip() --~refresh
 		--hide select bar
@@ -2200,6 +2378,9 @@ function DF:CreateCoolTip()
 		frame1:ClearAllPoints()
 		PixelUtil.SetPoint(frame1, gameCooltip.OptionsTable.MyAnchor, anchor, gameCooltip.OptionsTable.RelativeAnchor, 0 + moveX + gameCooltip.OptionsTable.WidthAnchorMod, 10 + gameCooltip.OptionsTable.HeightAnchorMod + moveY)
 
+		local bHadXPositionOutOfScreen = false
+		local bHadYPositionOutOfScreen = false
+
 		if (not xOffset) then
 			--check if cooltip is out of screen bounds
 			local centerX = frame1:GetCenter()
@@ -2212,13 +2393,17 @@ function DF:CreateCoolTip()
 					--out of right side
 					local moveLeftOffset = (centerX + halfScreenWidth) - screenWidth
 					gameCooltip.internal_x_mod = -moveLeftOffset
-					return gameCooltip:SetMyPoint(host, -moveLeftOffset, 0)
+					xOffset = -moveLeftOffset
+					bHadXPositionOutOfScreen = true
+					--return gameCooltip:SetMyPoint(host, -moveLeftOffset, 0)
 
 				elseif (centerX - halfScreenWidth < 0) then
 					--out of left side
 					local moveRightOffset = centerX - halfScreenWidth
 					gameCooltip.internal_x_mod = moveRightOffset * -1
-					return gameCooltip:SetMyPoint(host, moveRightOffset * -1, 0)
+					xOffset = moveRightOffset * -1
+					bHadXPositionOutOfScreen = true
+					--return gameCooltip:SetMyPoint(host, moveRightOffset * -1, 0)
 				end
 			end
 		end
@@ -2234,15 +2419,23 @@ function DF:CreateCoolTip()
 					--out of top side
 					local moveDownOffset = (centerY + helpScreenHeight) - screenHeight
 					gameCooltip.internal_y_mod = -moveDownOffset
-					return gameCooltip:SetMyPoint(host, 0, -moveDownOffset)
+					yOffset = -moveDownOffset
+					bHadYPositionOutOfScreen = true
+					--return gameCooltip:SetMyPoint(host, 0, -moveDownOffset)
 
 				elseif (centerY - helpScreenHeight < 0) then
 					--out of bottom side
 					local moveUpOffset = centerY - helpScreenHeight
 					gameCooltip.internal_y_mod = moveUpOffset * -1
-					return gameCooltip:SetMyPoint(host, 0, moveUpOffset * -1)
+					yOffset = moveUpOffset * -1
+					bHadYPositionOutOfScreen = true
+					--return gameCooltip:SetMyPoint(host, 0, moveUpOffset * -1)
 				end
 			end
+		end
+
+		if (bHadXPositionOutOfScreen or bHadYPositionOutOfScreen) then
+			return gameCooltip:SetMyPoint(host, bHadXPositionOutOfScreen and xOffset or 0, bHadYPositionOutOfScreen and yOffset or 0)
 		end
 
 		if (frame2:IsShown() and not gameCooltip.overlap_checked) then
@@ -2520,6 +2713,10 @@ function DF:CreateCoolTip()
 		gameCooltip:HideSelectedTexture(frame1)
 		gameCooltip:HideSelectedTexture(frame2)
 
+		gameCooltip:HideRoundedCorner()
+		GameCooltip.frame1:SetBorderCornerColor(unpack(gameCooltip.RoundedFramePreset.border_color))
+		GameCooltip.frame2:SetBorderCornerColor(unpack(gameCooltip.RoundedFramePreset.border_color))
+
 		gameCooltip.FixedValue = nil
 		gameCooltip.HaveSubMenu = false
 		gameCooltip.SelectedIndexMain = nil
@@ -2596,6 +2793,8 @@ function DF:CreateCoolTip()
 		if (not fromPreset) then
 			gameCooltip:Preset(3, true)
 		end
+
+		GameCooltip:SetType("tooltip")
 	end
 
 ----------------------------------------------------------------------
@@ -2603,6 +2802,8 @@ function DF:CreateCoolTip()
 	local defaultWhiteColor = {1, 1, 1}
 	function gameCooltip:AddMenu(menuType, func, param1, param2, param3, leftText, leftIcon, indexUp)
 		menuType = gameCooltip:ParseMenuType(menuType)
+
+		gameCooltip:SetType("menu")
 
 		if (leftText and indexUp and (menuType == CONST_MENU_TYPE_MAINMENU)) then
 			gameCooltip.Indexes = gameCooltip.Indexes + 1
@@ -2842,7 +3043,16 @@ function DF:CreateCoolTip()
 
 	frame1.frameWallpaper:Hide()
 	frame2.frameWallpaper:Hide()
-	function gameCooltip:SetWallpaper(menuType, texture, texcoord, color, desaturate)
+
+	---set an image as wallpaper for the cooltip frame
+	---@param menuType any
+	---@param texture any
+	---@param texcoord table
+	---@param color any
+	---@param bDesaturated boolean?
+	---@param desaturation number?
+	---@return nil
+	function gameCooltip:SetWallpaper(menuType, texture, texcoord, color, bDesaturated, desaturation)
 		if (gameCooltip.Indexes == 0) then
 			return gameCooltip:PrintDebug("SetWallpaper() requires an already added line (Cooltip:AddLine()).")
 		end
@@ -2865,20 +3075,18 @@ function DF:CreateCoolTip()
 			wallpaperTable = subMenuContainerWallpapers
 		end
 
-		wallpaperTable[1] = texture
-		if (texcoord) then
-			wallpaperTable[2] = texcoord[1]
-			wallpaperTable[3] = texcoord[2]
-			wallpaperTable[4] = texcoord[3]
-			wallpaperTable[5] = texcoord[4]
-		else
-			wallpaperTable[2] = 0
-			wallpaperTable[3] = 1
-			wallpaperTable[4] = 0
-			wallpaperTable[5] = 1
-		end
-		wallpaperTable[6] = color
-		wallpaperTable[7] = desaturate
+		texcoord = texcoord or defaultTexCoord
+
+		--parse the texure
+		local iconTexture, iconWidth, iconHeight, leftCoord, rightCoord, topCoord, bottomCoord, red, green, blue, alpha = detailsFramework:ParseTexture(texture, 1, 1, texcoord[1], texcoord[2], texcoord[3], texcoord[4], color)
+		wallpaperTable[1] = iconTexture
+		wallpaperTable[2] = leftCoord
+		wallpaperTable[3] = rightCoord
+		wallpaperTable[4] = topCoord
+		wallpaperTable[5] = bottomCoord
+		wallpaperTable[6] = {red, green, blue, alpha}
+		wallpaperTable[7] = bDesaturated or false
+		wallpaperTable[8] = desaturation
 	end
 
 	function gameCooltip:SetBannerText(menuType, index, text, anchor, color, fontSize, fontFace, fontFlag)
@@ -3014,14 +3222,24 @@ function DF:CreateCoolTip()
 		return gameCooltip:AddIcon(iconTexture, menuType, side, iconWidth, iconHeight, leftCoord, rightCoord, topCoord, bottomCoord, overlayColor, point, desaturated)
 	end
 
-	function gameCooltip:AddIcon(iconTexture, menuType, side, iconWidth, iconHeight, leftCoord, rightCoord, topCoord, bottomCoord, overlayColor, point, desaturated)
+	function gameCooltip:AddIcon(iconTexture, menuType, side, iconWidth, iconHeight, leftCoord, rightCoord, topCoord, bottomCoord, overlayColor, point, desaturated, mask)
 		--need a previous line
 		if (gameCooltip.Indexes == 0) then
 			return gameCooltip:PrintDebug("AddIcon() requires an already added line (Cooltip:AddLine()).")
 		end
+
 		--check data integrity
-		if ((type(iconTexture) ~= "string" and type(iconTexture) ~= "number") and (type(iconTexture) ~= "table" or not iconTexture.GetObjectType or iconTexture:GetObjectType() ~= "Texture")) then
-			return gameCooltip:PrintDebug("AddIcon() invalid parameters.")
+		local bCheckTextureObject = true
+		if (not detailsFramework:IsTexture(iconTexture, bCheckTextureObject)) then
+			return gameCooltip:PrintDebug("AddIcon() invalid texture.")
+		end
+
+		--parse the texure
+		local red, green, blue, alpha
+		iconTexture, iconWidth, iconHeight, leftCoord, rightCoord, topCoord, bottomCoord, red, green, blue, alpha = detailsFramework:ParseTexture(iconTexture, iconWidth, iconHeight, leftCoord, rightCoord, topCoord, bottomCoord, overlayColor)
+
+		if (not overlayColor and red) then
+			overlayColor = {red, green, blue, alpha}
 		end
 
 		side = side or 1
@@ -3066,6 +3284,7 @@ function DF:CreateCoolTip()
 				gameCooltip.TopIconTableSub[gameCooltip.Indexes][7] = bottomCoord or 1
 				gameCooltip.TopIconTableSub[gameCooltip.Indexes][8] = overlayColor or defaultWhiteColor
 				gameCooltip.TopIconTableSub[gameCooltip.Indexes][9] = desaturated
+				gameCooltip.TopIconTableSub[gameCooltip.Indexes][10] = mask
 				return
 			end
 
@@ -3098,6 +3317,7 @@ function DF:CreateCoolTip()
 		iconTable[7] = bottomCoord or 1 --default 1
 		iconTable[8] = overlayColor or defaultWhiteColor --default 1, 1, 1
 		iconTable[9] = desaturated
+		iconTable[10] = mask
 
 		return true
 	end
@@ -3115,13 +3335,13 @@ function DF:CreateCoolTip()
 	--adds a line.
 	--only works with cooltip type1 and 2 (tooltip and tooltip with bars)
 	--parameters: left text, right text[, L color R, L color G, L color B, L color A[, R color R, R color G, R color B, R color A[, wrap]]] 
-	function gameCooltip:AddDoubleLine (leftText, rightText, menuType, ColorR1, ColorG1, ColorB1, ColorA1, ColorR2, ColorG2, ColorB2, ColorA2, fontSize, fontFace, fontFlag)
-		return gameCooltip:AddLine(leftText, rightText, menuType, ColorR1, ColorG1, ColorB1, ColorA1, ColorR2, ColorG2, ColorB2, ColorA2, fontSize, fontFace, fontFlag)
+	function gameCooltip:AddDoubleLine (leftText, rightText, menuType, ColorR1, ColorG1, ColorB1, ColorA1, ColorR2, ColorG2, ColorB2, ColorA2, fontSize, fontFace, fontFlag, textWidth, textHeight) --ãddline ~addline
+		return gameCooltip:AddLine(leftText, rightText, menuType, ColorR1, ColorG1, ColorB1, ColorA1, ColorR2, ColorG2, ColorB2, ColorA2, fontSize, fontFace, fontFlag, textWidth, textHeight)
 	end
 
 	--adds a line for tooltips
 	--AddLine creates a new line on the tooltip
-	function gameCooltip:AddLine(leftText, rightText, menuType, ColorR1, ColorG1, ColorB1, ColorA1, ColorR2, ColorG2, ColorB2, ColorA2, fontSize, fontFace, fontFlag)
+	function gameCooltip:AddLine(leftText, rightText, menuType, ColorR1, ColorG1, ColorB1, ColorA1, ColorR2, ColorG2, ColorB2, ColorA2, fontSize, fontFace, fontFlag, textWidth, textHeight)
 		--check data integrity
 		local leftTextType = type(leftText)
 		if (leftTextType ~= "string") then
@@ -3142,7 +3362,7 @@ function DF:CreateCoolTip()
 		end
 
 		if (type(ColorR1) ~= "number") then
-			ColorR2, ColorG2, ColorB2, ColorA2, fontSize, fontFace, fontFlag = ColorG1, ColorB1, ColorA1, ColorR2, ColorG2, ColorB2, ColorA2
+			ColorR2, ColorG2, ColorB2, ColorA2, fontSize, fontFace, fontFlag, textWidth, textHeight = ColorG1, ColorB1, ColorA1, ColorR2, ColorG2, ColorB2, ColorA2, fontSize, fontFace
 			if (type(ColorR1) == "boolean" or not ColorR1) then
 				ColorR1, ColorG1, ColorB1, ColorA1 = 0, 0, 0, 0
 			else
@@ -3151,7 +3371,7 @@ function DF:CreateCoolTip()
 		end
 
 		if (type(ColorR2) ~= "number") then
-			fontSize, fontFace, fontFlag = ColorG2, ColorB2, ColorA2
+			fontSize, fontFace, fontFlag, textWidth, textHeight = ColorG2, ColorB2, ColorA2, fontSize, fontFace
 			if (type(ColorR2) == "boolean" or not ColorR2) then
 				ColorR2, ColorG2, ColorB2, ColorA2 = 0, 0, 0, 0
 			else
@@ -3250,6 +3470,8 @@ function DF:CreateCoolTip()
 		lineTable_Left[6] = fontSize
 		lineTable_Left[7] = fontFace
 		lineTable_Left[8] = fontFlag
+		lineTable_Left[9] = textWidth
+		lineTable_Left[10] = textHeight
 
 		lineTable_Right[1] = rightText
 		lineTable_Right[2] = ColorR2
@@ -3259,6 +3481,8 @@ function DF:CreateCoolTip()
 		lineTable_Right[6] = fontSize
 		lineTable_Right[7] = fontFace
 		lineTable_Right[8] = fontFlag
+		lineTable_Right[9] = textWidth
+		lineTable_Right[10] = textHeight
 	end
 
 	function gameCooltip:AddSpecial(widgetType, index, subIndex, ...)
@@ -3459,7 +3683,7 @@ function DF:CreateCoolTip()
 
 		local okay, errortext = pcall(host.CoolTip.BuildFunc, host, host.CoolTip and host.CoolTip.FixedValue)
 		if (not okay) then
-			gameCooltip:PrintDebug("ExecFunc() injected function error:", errortext)
+			gameCooltip:Msg("ExecFunc() injected function error:", errortext)
 		end
 
 		gameCooltip:SetOwner(host, host.CoolTip.MyAnchor, host.CoolTip.HisAnchor, host.CoolTip.X, host.CoolTip.Y)

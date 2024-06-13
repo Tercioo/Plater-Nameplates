@@ -217,7 +217,7 @@ PLATER_DEFAULT_SETTINGS = {
 				level_text_outline = "NONE",
 				level_text_shadow_color = {0, 0, 0, 1},
 				level_text_shadow_color_offset = {1, -1},
-				level_text_alpha = 0.3,
+				level_text_alpha = 0.7,
 				
 				percent_text_enabled = false,
 				percent_text_ooc = false,
@@ -288,7 +288,7 @@ PLATER_DEFAULT_SETTINGS = {
 				level_text_outline = "NONE",
 				level_text_shadow_color = {0, 0, 0, 1},
 				level_text_shadow_color_offset = {1, -1},
-				level_text_alpha = 0.3,
+				level_text_alpha = 0.7,
 				
 				percent_text_enabled = true,
 				percent_text_ooc = true,
@@ -325,6 +325,7 @@ PLATER_DEFAULT_SETTINGS = {
 				relevance_state = 4,
 				enabled = true,
 				module_enabled = true,
+				follow_blizzard_npc_option = false,
 				
 				health = {112, 12},
 				cast = {112, 10},
@@ -371,7 +372,7 @@ PLATER_DEFAULT_SETTINGS = {
 				level_text_outline = "NONE",
 				level_text_shadow_color = {0, 0, 0, 1},
 				level_text_shadow_color_offset = {1, -1},
-				level_text_alpha = 0.3,
+				level_text_alpha = 0.7,
 				
 				percent_text_enabled = false,
 				percent_text_ooc = false,
@@ -456,7 +457,7 @@ PLATER_DEFAULT_SETTINGS = {
 				level_text_outline = "NONE",
 				level_text_shadow_color = {0, 0, 0, 1},
 				level_text_shadow_color_offset = {1, -1},
-				level_text_alpha = 0.3,
+				level_text_alpha = 0.7,
 				
 				percent_text_enabled = true,
 				percent_text_ooc = true,
@@ -547,7 +548,7 @@ PLATER_DEFAULT_SETTINGS = {
 				level_text_outline = "NONE",
 				level_text_shadow_color = {0, 0, 0, 1},
 				level_text_shadow_color_offset = {1, -1},
-				level_text_alpha = 0.3,
+				level_text_alpha = 0.7,
 				
 				percent_text_enabled = true,
 				percent_text_ooc = true,
@@ -649,6 +650,7 @@ PLATER_DEFAULT_SETTINGS = {
 		use_player_combat_state = false,
 		
 		opt_out_auto_accept_npc_colors = true,
+		auto_translate_npc_names = false, -- one day default to true
 		
 		shadowMode = 1,
 		
@@ -792,6 +794,7 @@ PLATER_DEFAULT_SETTINGS = {
 		aura_cooldown_edge_texture = [[Interface\AddOns\Plater\images\cooldown_edge_2]],
 		
 		aura_enabled = true,
+		auras_experimental_update_classic_era = true,
 		aura_show_tooltip = false,
 		aura_width = 26,
 		aura_height = 16,
@@ -907,22 +910,7 @@ PLATER_DEFAULT_SETTINGS = {
 			defensive = {.85, .45, .1, 1},
 			offensive = {0, .65, .1, 1},
 			crowdcontrol = {.3, .2, .2, 1},
-		},
-		
-		--store a table with spell name keys and with a value of a table with all spell IDs that has that exact name
-		aura_cache_by_name = {
-			["banner of the horde"] = {
-				61574,
-			},
-			["challenger's might"] = {
-				206150,
-			},
-			["banner of the alliance"] = {
-				61573,
-			},
-			["breath of coldheart"] = {
-				333553,
-			},
+			default = {0, 0, 0, 1},
 		},
 		
 		aura_tracker = {
@@ -3003,6 +2991,7 @@ PLATER_DEFAULT_SETTINGS = {
 		health_statusbar_bgtexture = "PlaterBackground 2",
 		health_statusbar_bgcolor = {0.113725, 0.113725, 0.113725, 0.89000000},
 		
+		cast_statusbar_quickhide = false,
 		cast_statusbar_texture = "Details Flat",
 		cast_statusbar_bgtexture = "PlaterBackground 2",
 		cast_statusbar_bgcolor = {0.113725, 0.113725, 0.113725, 0.891240},

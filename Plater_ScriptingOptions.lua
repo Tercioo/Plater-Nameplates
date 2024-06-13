@@ -1032,6 +1032,13 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                 local scriptObject = mainFrame.GetCurrentScriptObject()
                 if (scriptObject) then
                     Plater.RecompileScript(scriptObject)
+
+                    if (platerInternal.HOOK_MOD_OPTION_CHANGED.ScriptAmount > 0) then
+                        for i = 1, platerInternal.HOOK_MOD_OPTION_CHANGED.ScriptAmount do
+                            local hookInfo = platerInternal.HOOK_MOD_OPTION_CHANGED[i]
+                            Plater.ScriptMetaFunctions.ScriptRunNoAttach(hookInfo, "Mod Option Changed")
+                        end
+                    end
                 end
             end
 

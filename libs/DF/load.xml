@@ -7,6 +7,7 @@
 	<Script file="header.lua"/>
 	<Script file="containers.lua"/>
 	<Script file="iteminfo.lua"/>
+	<Script file="savedvars.lua"/>
 	<Script file="addon.lua"/>
 	<Script file="colors.lua"/>
 	<Script file="help.lua"/>
@@ -17,13 +18,12 @@
 	<Script file="scrollbar.lua"/>
 	<Script file="spells.lua"/>
 	<Script file="math.lua"/>
-	<Script file="savedvars.lua"/>
 	<Script file="languages.lua"/>
 	<Script file="timebar.lua"/>
 	<Script file="charts.lua"/>
 	<Script file="scripting.lua"/>
 	<Script file="externals.lua"/>
-	<Script file="frames.lua"/>
+	<Script file="rounded_panel.lua"/>
 	
 	<Include file="tutorial_alert.xml"/>
 	<Include file="split_bar.xml"/>
@@ -32,10 +32,17 @@
 	<Include file="cooltip.xml"/>
 	<Include file="dropdown.xml"/>
 	<Include file="normal_bar.xml"/>
+	<Script file="scrollbox.lua"/>
 	<Include file="panel.xml"/>
 
+	<Script file="buildmenu.lua"/>
+	<Script file="loadconditions.lua"/>
+	<Include file="unitframe.lua"/>
 	<Script file="icon.lua"/>
+	<Script file="icongeneric.lua"/>
 	<Script file="pictureedit.lua"/>
 	<Script file="auras.lua"/>
 	<Script file="tabcontainer.lua"/>
+	<Script file="editor.lua"/>
+	<Script file="keybind.lua"/>
 </Ui>

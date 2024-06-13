@@ -60,9 +60,10 @@ detailsFramework.TooltipHandlerMixin = {
 			end
 		end
 
-		if (tooltipText) then
+		if (tooltipText and tooltipText ~= "") then
 			GameCooltip:Preset(2)
 			GameCooltip:AddLine(tooltipText)
+			GameCooltip:ShowRoundedCorner()
 			GameCooltip:ShowCooltip(getFrame(self), "tooltip")
 		end
 	end,
@@ -166,7 +167,7 @@ detailsFramework.FrameMixin = {
 
 	SetBackdropBorderColor = function(self, ...)
 		self = getFrame(self)
-		getFrame(self):SetBackdropBorderColor(...)
+		self:SetBackdropBorderColor(...)
 	end,
 }
 
@@ -269,6 +270,7 @@ detailsFramework.SetPointMixin = {
 
 ---mixin for options
 ---@class df_optionsmixin
+---@field options table
 ---@field SetOption fun(self, optionName: string, optionValue: any)
 ---@field GetOption fun(self, optionName: string):any
 ---@field GetAllOptions fun(self):table
@@ -350,7 +352,13 @@ detailsFramework.PayloadMixin = {
 
 ---mixin to use with DetailsFramework:Mixin(table, detailsFramework.ScriptHookMixin)
 ---
----@class DetailsFramework.ScriptHookMixin
+---@class df_scripthookmixin
+---@field HookList table
+---@field SetHook fun(self: table, hookType: string, func: function)
+---@field HasHook fun(self: table, hookType: string, func: function)
+---@field RunHooksForWidget fun(self: table, event: string, ...)
+---@field ClearHooks fun(self: table)
+
 detailsFramework.ScriptHookMixin = {
 	RunHooksForWidget = function(self, event, ...)
 		local hooks = self.HookList[event]
@@ -420,277 +428,6 @@ detailsFramework.ScriptHookMixin = {
 	end,
 }
 
----mixin to use with DetailsFramework:Mixin(table, detailsFramework.SortFunctions)
----add methods to be used on scrollframes
----@class df_scrollboxmixin
-detailsFramework.ScrollBoxFunctions = {
-	---refresh the scrollbox by resetting all lines created with :CreateLine(), then calling the refresh_func which was set at :CreateScrollBox()
-	---@param self table
-	---@return table
-	Refresh = function(self)
-		--hide all frames and tag as not in use
-		self._LinesInUse = 0
-		for index, frame in ipairs(self.Frames) do
-			if (not self.DontHideChildrenOnPreRefresh) then
-				frame:Hide()
-			end
-			frame._InUse = nil
-		end
-
-		local offset = 0
-		if (self.IsFauxScroll) then
-			self:UpdateFaux(#self.data, self.LineAmount, self.LineHeight)
-			offset = self:GetOffsetFaux()
-		end
-
-		--call the refresh function
-		detailsFramework:CoreDispatch((self:GetName() or "ScrollBox") .. ":Refresh()", self.refresh_func, self, self.data, offset, self.LineAmount)
-
-		--hide all frames that are not in use
-		for index, frame in ipairs(self.Frames) do
-			if (not frame._InUse) then
-				frame:Hide()
-			else
-				frame:Show()
-			end
-		end
-
-		self:Show()
-
-		local frameName = self:GetName()
-		if (frameName) then
-			if (self.HideScrollBar) then
-				local scrollBar = _G[frameName .. "ScrollBar"]
-				if (scrollBar) then
-					scrollBar:Hide()
-				end
-			else
-				--[=[ --maybe in the future I visit this again
-				local scrollBar = _G[frameName .. "ScrollBar"]
-				local height = self:GetHeight()
-				local totalLinesRequired = #self.data
-				local linesShown = self._LinesInUse
-
-				local percent = linesShown / totalLinesRequired
-				local thumbHeight = height * percent
-				scrollBar.ThumbTexture:SetSize(12, thumbHeight)
-				print("thumbHeight:", thumbHeight)
-				--]=]
-			end
-		end
-		return self.Frames
-	end,
-
-	OnVerticalScroll = function(self, offset)
-		self:OnVerticalScrollFaux(offset, self.LineHeight, self.Refresh)
-		return true
-	end,
-
-	---create a line within the scrollbox
-	---@param self table is the scrollbox
-	---@param func function|nil function to create the line object, this function will receive the line index as argument and return a table with the line object
-	---@return table line object (table)
-	CreateLine = function(self, func)
-		if (not func) then
-			func = self.CreateLineFunc
-		end
-
-		local okay, newLine = pcall(func, self, #self.Frames+1)
-		if (okay) then
-			if (not newLine) then
-				error("ScrollFrame:CreateLine() function did not returned a line, use: 'return line'")
-			end
-			tinsert(self.Frames, newLine)
-			newLine.Index = #self.Frames
-			return newLine
-		else
-			error("ScrollFrame:CreateLine() error on creating a line: " .. newLine)
-		end
-	end,
-
-	CreateLines = function(self, callback, lineAmount)
-		for i = 1, lineAmount do
-			self:CreateLine(callback)
-		end
-	end,
-
-	GetLine = function(self, lineIndex)
-		local line = self.Frames[lineIndex]
-		if (line) then
-			line._InUse = true
-		end
-
-		self._LinesInUse = self._LinesInUse + 1
-		return line
-	end,
-
-	SetData = function(self, data)
-		self.data = data
-	end,
-	GetData = function(self)
-		return self.data
-	end,
-
-	GetFrames = function(self)
-		return self.Frames
-	end,
-	GetLines = function(self) --alias of GetFrames
-		return self.Frames
-	end,
-
-	GetNumFramesCreated = function(self)
-		return #self.Frames
-	end,
-
-	GetNumFramesShown = function(self)
-		return self.LineAmount
-	end,
-
-	SetNumFramesShown = function(self, newAmount)
-		--hide frames which won't be used
-		if (newAmount < #self.Frames) then
-			for i = newAmount+1, #self.Frames do
-				self.Frames[i]:Hide()
-			end
-		end
-		--set the new amount
-		self.LineAmount = newAmount
-	end,
-
-	SetFramesHeight = function(self, height)
-		self.LineHeight = height
-		self:OnSizeChanged()
-		self:Refresh()
-	end,
-
-	OnSizeChanged = function(self)
-		if (self.ReajustNumFrames) then
-			--how many lines the scroll can show
-			local amountOfFramesToShow = floor(self:GetHeight() / self.LineHeight)
-
-			--how many lines the scroll already have
-			local totalFramesCreated = self:GetNumFramesCreated()
-
-			--how many lines are current shown
-			local totalFramesShown = self:GetNumFramesShown()
-
-			--the amount of frames increased
-			if (amountOfFramesToShow > totalFramesShown) then
-				for i = totalFramesShown+1, amountOfFramesToShow do
-					--check if need to create a new line
-					if (i > totalFramesCreated) then
-						self:CreateLine(self.CreateLineFunc)
-					end
-				end
-
-			--the amount of frames decreased
-			elseif (amountOfFramesToShow < totalFramesShown) then
-				--hide all frames above the new amount to show
-				for i = totalFramesCreated, amountOfFramesToShow, -1 do
-					if (self.Frames[i]) then
-						self.Frames[i]:Hide()
-					end
-				end
-			end
-
-			--set the new amount of frames
-			self:SetNumFramesShown(amountOfFramesToShow)
-			--refresh lines
-			self:Refresh()
-		end
-	end,
-
-	--moved functions from blizzard faux scroll that are called from insecure code environment
-	--this reduces the amount of taints while using the faux scroll frame
-	GetOffsetFaux = function(self)
-		return self.offset or 0
-	end,
-	OnVerticalScrollFaux = function(self, value, itemHeight, updateFunction)
-		local scrollbar = self:GetChildFramesFaux();
-		scrollbar:SetValue(value);
-		self.offset = math.floor((value / itemHeight) + 0.5);
-		if (updateFunction) then
-			updateFunction(self)
-		end
-	end,
-	GetChildFramesFaux = function(frame)
-		local frameName = frame:GetName();
-		if frameName then
-			return _G[ frameName.."ScrollBar" ], _G[ frameName.."ScrollChildFrame" ], _G[ frameName.."ScrollBarScrollUpButton" ], _G[ frameName.."ScrollBarScrollDownButton" ];
-		else
-			return frame.ScrollBar, frame.ScrollChildFrame, frame.ScrollBar.ScrollUpButton, frame.ScrollBar.ScrollDownButton;
-		end
-	end,
-	UpdateFaux = function(frame, numItems, numToDisplay, buttonHeight, button, smallWidth, bigWidth, highlightFrame, smallHighlightWidth, bigHighlightWidth, alwaysShowScrollBar)
-		local scrollBar, scrollChildFrame, scrollUpButton, scrollDownButton = frame:GetChildFramesFaux();
-		-- If more than one screen full of items then show the scrollbar
-		local showScrollBar;
-		if ( numItems > numToDisplay or alwaysShowScrollBar ) then
-			frame:Show();
-			showScrollBar = 1;
-		else
-			scrollBar:SetValue(0);
-			frame:Hide();
-		end
-		if ( frame:IsShown() ) then
-			local scrollFrameHeight = 0;
-			local scrollChildHeight = 0;
-
-			if ( numItems > 0 ) then
-				scrollFrameHeight = (numItems - numToDisplay) * buttonHeight;
-				scrollChildHeight = numItems * buttonHeight;
-				if ( scrollFrameHeight < 0 ) then
-					scrollFrameHeight = 0;
-				end
-				scrollChildFrame:Show();
-			else
-				scrollChildFrame:Hide();
-			end
-			local maxRange = (numItems - numToDisplay) * buttonHeight;
-			if (maxRange < 0) then
-				maxRange = 0;
-			end
-			scrollBar:SetMinMaxValues(0, maxRange);
-			scrollBar:SetValueStep(buttonHeight);
-			scrollBar:SetStepsPerPage(numToDisplay-1);
-			scrollChildFrame:SetHeight(scrollChildHeight);
-
-			-- Arrow button handling
-			if ( scrollBar:GetValue() == 0 ) then
-				scrollUpButton:Disable();
-			else
-				scrollUpButton:Enable();
-			end
-			if ((scrollBar:GetValue() - scrollFrameHeight) == 0) then
-				scrollDownButton:Disable();
-			else
-				scrollDownButton:Enable();
-			end
-
-			-- Shrink because scrollbar is shown
-			if ( highlightFrame ) then
-				highlightFrame:SetWidth(smallHighlightWidth);
-			end
-			if ( button ) then
-				for i=1, numToDisplay do
-					_G[button..i]:SetWidth(smallWidth);
-				end
-			end
-		else
-			-- Widen because scrollbar is hidden
-			if ( highlightFrame ) then
-				highlightFrame:SetWidth(bigHighlightWidth);
-			end
-			if ( button ) then
-				for i=1, numToDisplay do
-					_G[button..i]:SetWidth(bigWidth);
-				end
-			end
-		end
-		return showScrollBar;
-	end,
-}
-
 --back compatibility, can be removed in the future (28/04/2023)
 ---@class DetailsFramework.ScrollBoxFunctions : df_scrollboxmixin
 
@@ -704,7 +441,8 @@ end
 
 ---mixin to use with DetailsFramework:Mixin(table, detailsFramework.SortFunctions)
 ---adds the method Sort() to a table, this method can be used to sort another table by a member, can't sort itself
----@class DetailsFramework.SortFunctions
+
+---@class df_sortmixin
 detailsFramework.SortFunctions = {
 	---sort a table by a member
 	---@param self table
@@ -972,5 +710,257 @@ detailsFramework.ValueMixin = {
 	---@param ... number
 	SetMaxValueIfBigger = function(self, ...)
 		self.maxValue = math.max(self.maxValue, ...)
+	end,
+}
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--statusbar mixin
+
+--[=[
+	collection of functions to embed into a statusbar
+	the statusBar need to have a member called 'barTexture' for the texture set on SetStatusBarTexture
+	statusBar:GetTexture()
+	statusBar:SetTexture(texture)
+	statusBar:SetColor (unparsed color)
+	statusBar:GetColor()
+	statusBar:
+	statusBar:
+--]=]
+
+---@class df_statusbarmixin : table
+---@field SetTexture fun(self: table, texture: string, isTemporary: boolean)
+---@field ResetTexture fun(self: table)
+---@field GetTexture fun(self: table) : string
+---@field SetAtlas fun(self: table, atlasName: string)
+---@field GetAtlas fun(self: table) : string
+---@field SetTexCoord fun(self: table, ...)
+---@field GetTexCoord fun(self: table) : number, number, number, number
+---@field SetColor fun(self: table, ...)
+---@field GetColor fun(self: table) : number, number, number, number
+---@field SetMaskTexture fun(self: table, texture: string)
+---@field GetMaskTexture fun(self: table) : string
+---@field SetMaskTexCoord fun(self: table, ...)
+---@field GetMaskTexCoord fun(self: table) : number, number, number, number
+---@field SetMaskAtlas fun(self: table, atlasName: string)
+---@field GetMaskAtlas fun(self: table) : string
+---@field AddMaskTexture fun(self: table, texture: string)
+---@field SetBorderTexture fun(self: table, texture: string)
+---@field GetBorderTexture fun(self: table) : string
+---@field SetBorderColor fun(self: table, ...)
+---@field GetBorderColor fun(self: table) : number, number, number, number
+---@field SetDesaturated fun(self: table, bIsDesaturated: boolean)
+---@field IsDesaturated fun(self: table) : boolean
+---@field SetVertexColor fun(self: table, red: any, green: number?, blue: number?, alpha: number?)
+---@field GetVertexColor fun(self: table) : number, number, number, number
+
+detailsFramework.StatusBarFunctions = {
+	SetTexture = function(self, texture, isTemporary)
+		self.barTexture:SetTexture(texture)
+		if (not isTemporary) then
+			self.barTexture.currentTexture = texture
+		end
+	end,
+
+	ResetTexture = function(self)
+		self.barTexture:SetTexture(self.barTexture.currentTexture)
+	end,
+
+	GetTexture = function(self)
+		return self.barTexture:GetTexture()
+	end,
+
+	SetDesaturated = function(self, bIsDesaturated)
+		self.barTexture:SetDesaturated(bIsDesaturated)
+	end,
+
+	SetDesaturation = function(self, desaturationAmount)
+		self.barTexture:SetDesaturation(desaturationAmount)
+	end,
+
+	IsDesaturated = function(self)
+		return self.barTexture:IsDesaturated()
+	end,
+
+	SetVertexColor = function(self, red, green, blue, alpha)
+		red, green, blue, alpha = detailsFramework:ParseColors(red, green, blue, alpha)
+		self.barTexture:SetVertexColor(red, green, blue, alpha)
+	end,
+
+	GetVertexColor = function(self)
+		return self.barTexture:GetVertexColor()
+	end,
+
+	SetAtlas = function(self, atlasName)
+		self.barTexture:SetAtlas(atlasName)
+	end,
+
+	GetAtlas = function(self)
+		self.barTexture:GetAtlas()
+	end,
+
+	SetTexCoord = function(self, ...)
+		local left, right, top, bottom = ...
+		return self.barTexture:SetTexCoord(...)
+	end,
+
+	GetTexCoord = function(self)
+		return self.barTexture:GetTexCoord()
+	end,
+
+	SetColor = function(self, r, g, b, a)
+		r, g, b, a = detailsFramework:ParseColors(r, g, b, a)
+		self:SetStatusBarColor(r, g, b, a)
+	end,
+
+	GetColor = function(self)
+		return self:GetStatusBarColor()
+	end,
+
+	SetMaskTexture = function(self, ...)
+		if (not self:HasTextureMask()) then
+			return
+		end
+		self.barTextureMask:SetTexture(...)
+	end,
+
+	GetMaskTexture = function(self)
+		if (not self:HasTextureMask()) then
+			return
+		end
+		self.barTextureMask:GetTexture()
+	end,
+
+	SetMaskAtlas = function(self, atlasName)
+		if (not self:HasTextureMask()) then
+			return
+		end
+		self.barTextureMask:SetAtlas(atlasName)
+	end,
+
+	GetMaskAtlas = function(self)
+		if (not self:HasTextureMask()) then
+			return
+		end
+		self.barTextureMask:GetAtlas()
+	end,
+
+	AddMaskTexture = function(self, object)
+		if (not self:HasTextureMask()) then
+			return
+		end
+		if (object.GetObjectType and object:GetObjectType() == "Texture") then
+			object:AddMaskTexture(self.barTextureMask)
+		else
+			detailsFramework:Msg("Invalid 'Texture' to object:AddMaskTexture(Texture)", debugstack())
+		end
+	end,
+
+	CreateTextureMask = function(self)
+		local barTexture = self:GetStatusBarTexture() or self.barTexture
+		if (not barTexture) then
+			detailsFramework:Msg("Object doesn't not have a statubar texture, create one and object:SetStatusBarTexture(textureObject)", debugstack())
+			return
+		end
+
+		if (self.barTextureMask) then
+			return self.barTextureMask
+		end
+
+		--statusbar texture mask
+		self.barTextureMask = self:CreateMaskTexture(nil, "artwork")
+		self.barTextureMask:SetAllPoints()
+		self.barTextureMask:SetTexture([[Interface\CHATFRAME\CHATFRAMEBACKGROUND]])
+
+		--border texture
+		self.barBorderTextureForMask = self:CreateTexture(nil, "overlay", nil, 7)
+		self.barBorderTextureForMask:SetAllPoints()
+		--self.barBorderTextureForMask:SetPoint("topleft", self, "topleft", -1, 1)
+		--self.barBorderTextureForMask:SetPoint("bottomright", self, "bottomright", 1, -1)
+		self.barBorderTextureForMask:Hide()
+
+		barTexture:AddMaskTexture(self.barTextureMask)
+
+		return self.barTextureMask
+	end,
+
+	HasTextureMask = function(self)
+		if (not self.barTextureMask) then
+			detailsFramework:Msg("Object doesn't not have a texture mask, create one using object:CreateTextureMask()", debugstack())
+			return false
+		end
+		return true
+	end,
+
+	SetBorderTexture = function(self, texture)
+		if (not self:HasTextureMask()) then
+			return
+		end
+
+		texture = texture or ""
+
+		self.barBorderTextureForMask:SetTexture(texture)
+
+		if (texture == "") then
+			self.barBorderTextureForMask:Hide()
+		else
+			self.barBorderTextureForMask:Show()
+		end
+	end,
+
+	GetBorderTexture = function(self)
+		if (not self:HasTextureMask()) then
+			return
+		end
+		return self.barBorderTextureForMask:GetTexture()
+	end,
+
+	SetBorderColor = function(self, r, g, b, a)
+		r, g, b, a = detailsFramework:ParseColors(r, g, b, a)
+
+		if (self.barBorderTextureForMask and self.barBorderTextureForMask:IsShown()) then
+			self.barBorderTextureForMask:SetVertexColor(r, g, b, a)
+
+			--if there's a square border on the widget, remove its color
+			if (self.border and self.border.UpdateSizes and self.border.SetVertexColor) then
+				self.border:SetVertexColor(0, 0, 0, 0)
+			end
+
+			return
+		end
+
+		if (self.border and self.border.UpdateSizes and self.border.SetVertexColor) then
+			self.border:SetVertexColor(r, g, b, a)
+
+			--adjust the mask border texture ask well in case the user set the mask color texture before setting a texture on it
+			if (self.barBorderTextureForMask) then
+				self.barBorderTextureForMask:SetVertexColor(r, g, b, a)
+			end
+			return
+		end
+	end,
+
+	GetBorderColor = function(self)
+		if (self.barBorderTextureForMask and self.barBorderTextureForMask:IsShown()) then
+			return self.barBorderTextureForMask:GetVertexColor()
+		end
+
+		if (self.border and self.border.UpdateSizes and self.border.GetVertexColor) then
+			return self.border:GetVertexColor()
+		end
+	end,
+}
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--frame mixin
+local createTexture = CreateFrame('Frame').CreateTexture -- need a local "original" CreateFrame
+
+detailsFramework.FrameFunctions = {
+	CreateTexture = function(self, name, drawLayer, templateName, subLevel)
+		local texture = createTexture(self, name, drawLayer, templateName, subLevel)
+        -- pixel perfection
+        texture:SetTexelSnappingBias(0)
+        texture:SetSnapToPixelGrid(false)
+        return texture
 	end,
 }

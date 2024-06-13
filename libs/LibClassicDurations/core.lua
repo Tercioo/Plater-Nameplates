@@ -19,7 +19,7 @@ Usage example 1:
 --]================]
 if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then return end
 
-local MAJOR, MINOR = "LibClassicDurations", 69
+local MAJOR, MINOR = "LibClassicDurations", 71
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -764,20 +764,17 @@ end
 -- ENEMY BUFFS
 ---------------------------
 local makeBuffInfo = function(spellID, applicationTable, dstGUID, srcGUID)
-    local name, rank, icon, castTime, minRange, maxRange, _spellId = GetSpellInfo(spellID)
-    local durationFunc, startTime, auraType, comboPoints = unpack(applicationTable)
-    local duration = cleanDuration(durationFunc, spellID, srcGUID, comboPoints) -- srcGUID isn't needed actually
-    -- no DRs on buffs
-    local expirationTime = startTime + duration
-    if duration == INFINITY then
-        duration = 0
-        expirationTime = 0
+    local spellName = GetSpellInfo(spellID)
+    local icon = GetSpellTexture(spellID)
+    local opts = spells[spellID]
+    local buffInfo = { spellName, icon, 0, (opts and opts.buffType), 0, 0, nil, nil, nil, spellID, false, false, false, false, 1 }
+    local isStacking = opts and opts.stacking
+    local duration, expirationTime = GetGUIDAuraTime(dstGUID, spellName, spellID, srcGUID, isStacking)
+    if duration then
+        buffInfo[5] = duration
+        buffInfo[6] = expirationTime
     end
-    local now = GetTime()
-    if expirationTime > now then
-        local buffType = spells[spellID] and spells[spellID].buffType
-        return { name, icon, 0, buffType, duration, expirationTime, nil, nil, nil, spellID, false, false, false, false, 1 }
-    end
+    return buffInfo
 end
 
 local shouldDisplayAura = function(auraTable)
@@ -794,6 +791,33 @@ local scanTip = lib.scanTip
 scanTip:SetOwner(WorldFrame, "ANCHOR_NONE")
 local function RegenerateBuffList(unit, dstGUID)
     local buffs = {}
+
+
+    local guidTable = guids[dstGUID]
+    if not guidTable then
+        return
+    end
+
+    for spellID, t in pairs(guidTable) do
+        if t.applications then
+            for srcGUID, auraTable in pairs(t.applications) do
+                if auraTable[3] == "BUFF" then
+                    local buffInfo = makeBuffInfo(spellID, auraTable, dstGUID, nil)
+                    if buffInfo then
+                        tinsert(buffs, buffInfo)
+                    end
+                end
+            end
+        else
+            if t[3] == "BUFF" then
+                local buffInfo = makeBuffInfo(spellID, t, dstGUID, nil)
+                if buffInfo then
+                    tinsert(buffs, buffInfo)
+                end
+            end
+        end
+    end
+    --[[
     local spellName
     for i=1, 32 do
         scanTip:ClearLines()
@@ -819,6 +843,7 @@ local function RegenerateBuffList(unit, dstGUID)
             break
         end
     end
+    ]]
 
     buffCache[dstGUID] = buffs
     buffCacheValid[dstGUID] = GetTime() + BUFF_CACHE_EXPIRATION_TIME -- Expiration timestamp

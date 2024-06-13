@@ -8,6 +8,7 @@ local unpack = _G.unpack
 local tremove = _G.tremove
 local CreateFrame = _G.CreateFrame
 local tinsert = _G.tinsert
+local GetSpellInfo = GetSpellInfo or function(spellID) if not spellID then return nil end local si = C_Spell.GetSpellInfo(spellID) if si then return si.name, nil, si.iconID, si.castTime, si.minRange, si.maxRange, si.spellID, si.originalIconID end end
 
 --sort scripts
 function Plater.SortScripts (t1, t2)
@@ -461,7 +462,7 @@ end
 				end
 				
 				if promptToOverwrite then
-					DF:ShowPromptPanel ("This Mod/Script already exists. Do you want to overwrite it?\nClicking 'No' will create a copy instead.\nTo cancel close this window wiht the 'x'.", function() do_script_or_hook_import (text, scriptType, false) end, function() do_script_or_hook_import (text, scriptType, true) end, true, 550)
+					DF:ShowPromptPanel ("This Mod/Script already exists. Do you want to overwrite it?\nClicking 'No' will create a copy instead.\nTo cancel close this window with the 'x'.", function() do_script_or_hook_import (text, scriptType, false) end, function() do_script_or_hook_import (text, scriptType, true) end, true, 550)
 				else
 					do_script_or_hook_import (text, scriptType, true)
 				end
@@ -714,7 +715,7 @@ end
 					end
 					
 					if promptToOverwrite then
-						DF:ShowPromptPanel ("This Mod/Script already exists. Do you want to overwrite it?\nClicking 'No' will create a copy instead.\nTo cancel close this window wiht the 'x'.", function() do_script_or_hook_import (encoded, scriptType, false) end, function() do_script_or_hook_import (encoded, scriptType, true) end, true, 550)
+						DF:ShowPromptPanel ("This Mod/Script already exists. Do you want to overwrite it?\nClicking 'No' will create a copy instead.\nTo cancel close this window with the 'x'.", function() do_script_or_hook_import (encoded, scriptType, false) end, function() do_script_or_hook_import (encoded, scriptType, true) end, true, 550)
 					else
 						do_script_or_hook_import (encoded, scriptType, true)
 					end
@@ -2513,7 +2514,7 @@ function Plater.CreateHookingPanel()
 		--add the hook to the script object
 		if (not scriptObject.Hooks [hookName]) then
 			local defaultScript
-			if (hookName == "Load Screen" or hookName == "Player Logon" or hookName == "Initialization" or hookName == "Deinitialization") then
+			if (hookName == "Load Screen" or hookName == "Player Logon" or hookName == "Initialization" or hookName == "Deinitialization" or hookName == "Option Changed" or hookName == "Mod Option Changed") then
 				defaultScript = hookFrame.DefaultScriptNoNameplate
 
 			elseif (hookName == "Player Power Update") then
@@ -3121,8 +3122,6 @@ function Plater.CreateScriptingPanel()
 	
 	--store all spells from the game in a hash table and also on the index table
 	--these are loaded on demand and cleared when the scripting frame is hided
-	scriptingFrame.SpellHashTable = {}
-	scriptingFrame.SpellIndexTable = {}
 	scriptingFrame.SearchString = ""
 	
 	scriptingFrame:SetScript ("OnShow", function()
@@ -3147,6 +3146,8 @@ function Plater.CreateScriptingPanel()
 				tremove (Plater.db.profile.script_data_trash, i)
 			end
 		end
+
+		DF:LoadSpellCache(Plater.SpellHashTable, Plater.SpellIndexTable, Plater.SpellSameNameTable)
 	end)
 	
 	scriptingFrame:SetScript ("OnHide", function()
@@ -3155,11 +3156,8 @@ function Plater.CreateScriptingPanel()
 		if (scriptObject) then
 			scriptingFrame.SaveScript()
 		end
-		
-		--clean the spell hash table
-		wipe (scriptingFrame.SpellHashTable)
-		wipe (scriptingFrame.SpellIndexTable)
-		collectgarbage()
+
+		DF:UnloadSpellCache()
 	end)
 	
 	-- scriptingFrame.ScriptNameTextEntry --name of the script (text entry)
@@ -3255,14 +3253,6 @@ function Plater.CreateScriptingPanel()
 		end
 
 		return currentEditingScript
-	end
-	
-	function scriptingFrame.LoadGameSpells()
-		if (not next (scriptingFrame.SpellHashTable)) then
-			--load all spells in the game
-			DF:LoadAllSpells (scriptingFrame.SpellHashTable, scriptingFrame.SpellIndexTable)
-			return true
-		end
 	end
 	
 	--restore the values on the text fields and scroll boxes to the values on the object
@@ -3744,11 +3734,8 @@ function Plater.CreateScriptingPanel()
 			--cast the string to number
 			local spellId = tonumber (text)
 			if (not spellId or not GetSpellInfo (spellId)) then
-				--load spell hash table
-				scriptingFrame.LoadGameSpells()
-				
 				--attempt to get the spellId from the hash table
-				spellId = scriptingFrame.SpellHashTable [string.lower (text)]
+				spellId = Plater.SpellHashTable [string.lower (text)]
 				--if still fail, stop here
 				if (not spellId) then
 					Plater:Msg ("Trigger requires a valid spell name or an ID of a spell")
@@ -3953,10 +3940,9 @@ function Plater.CreateScriptingPanel()
 			add_trigger_textentry:SetHook ("OnEditFocusGained", function (self, capsule)
 				--if ithe script is for aura or castbar and if the textentry box doesnt have an auto complete table yet
 				local scriptObject = scriptingFrame.GetCurrentScriptObject()
-				if ((scriptObject.ScriptType == 1 or scriptObject.ScriptType == 2) and (not add_trigger_textentry.SpellAutoCompleteList or not scriptingFrame.SpellIndexTable[1])) then
+				if ((scriptObject.ScriptType == 1 or scriptObject.ScriptType == 2) and (not add_trigger_textentry.SpellAutoCompleteList or not Plater.SpellIndexTable[1])) then
 					--load spell hash table
-					scriptingFrame.LoadGameSpells()
-					add_trigger_textentry.SpellAutoCompleteList = scriptingFrame.SpellIndexTable
+					add_trigger_textentry.SpellAutoCompleteList = Plater.SpellIndexTable
 					add_trigger_textentry:SetAsAutoComplete ("SpellAutoCompleteList", nil, true)
 				end
 			end)
@@ -4017,6 +4003,13 @@ function Plater.CreateScriptingPanel()
 					scriptingFrame.UpdateOverlapButton()
 				end
 			
+			-- 3d model for the units
+				local npc3DFrame = CreateFrame ("playermodel", "", nil, "ModelWithControlsTemplate")
+				npc3DFrame:SetSize (200, 250)
+				npc3DFrame:EnableMouse (false)
+				npc3DFrame:EnableMouseWheel (false)
+				npc3DFrame:Hide()
+			
 			--when the user hover over a scrollbox line
 				local onenter_trigger_line = function (self)
 					if (self.SpellID) then
@@ -4024,12 +4017,29 @@ function Plater.CreateScriptingPanel()
 						GameTooltip:SetSpellByID (self.SpellID)
 						GameTooltip:AddLine (" ")
 						GameTooltip:Show()
+					elseif self.NpcID then
+						local npcID = tonumber(self.NpcID)
+						GameTooltip:SetOwner (self, "ANCHOR_RIGHT")
+						GameTooltip:SetHyperlink (("unit:Creature-0-0-0-0-%d"):format(npcID))
+						GameTooltip:AddLine (" ")
+						if npcID and Plater.db.profile.npc_cache[npcID] then
+							GameTooltip:AddLine (Plater.db.profile.npc_cache[npcID][2] or "???")
+							GameTooltip:AddLine (" ")
+						end
+						npc3DFrame:SetCreature(npcID)
+						npc3DFrame:SetParent(GameTooltip)
+						npc3DFrame:SetPoint ("top", GameTooltip, "bottom", 0, -10)
+						npc3DFrame:Show()
+						GameTooltip:Show()
 					end
 					self:SetBackdropColor (.3, .3, .3, 0.7)
 				end
 			
 			--when the user leaves a scrollbox line from a hover over
 				local onleave_trigger_line = function (self)
+					npc3DFrame:SetParent(nil)
+					npc3DFrame:ClearAllPoints()
+					npc3DFrame:Hide()
 					GameTooltip:Hide()
 					self:SetBackdropColor (unpack (scrollbox_line_backdrop_color))
 				end
@@ -4046,6 +4056,7 @@ function Plater.CreateScriptingPanel()
 					self.Icon:SetDesaturated (false)
 					self.Icon:SetAlpha (1)
 					self.SpellID = trigger
+					self.NpcID = nil
 					self.TriggerName:SetText (spellName)
 					self.TriggerID:SetText (trigger)
 					
@@ -4056,8 +4067,16 @@ function Plater.CreateScriptingPanel()
 					self.Icon:SetDesaturated (true)
 					self.Icon:SetAlpha (0.5)
 					self.SpellID = nil
-					self.TriggerName:SetText (trigger)
-					self.TriggerID:SetText ("")
+					self.NpcID = trigger
+					
+					local npcData = tonumber(trigger) and Plater.db.profile.npc_cache[tonumber(trigger)]
+					if npcData and npcData[1] then
+						self.TriggerName:SetText (npcData[1])
+						self.TriggerID:SetText (trigger)
+					else
+						self.TriggerName:SetText (trigger)
+						self.TriggerID:SetText ("")
+					end
 				end
 				
 				self.TriggerId = trigger_id

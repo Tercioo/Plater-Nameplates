@@ -1,7 +1,7 @@
-## Interface: 100105
-## Interface-Mainline: 100105
-## Interface-Wrath: 30402
-## Interface-Classic: 11403
+## Interface: 100207
+## Interface-Mainline: 100207
+## Interface-Cata: 40400
+## Interface-Vanilla: 11502
 ## Title: Plater
 ## Notes: Nameplate addon designed for advanced users.
 ## SavedVariables: PlaterDB, PlaterLanguage, PlaterLogs
@@ -17,8 +17,11 @@
 #@version-wrath@
 ## Version: @project-version@-Wrath
 #@end-version-wrath@
+#@version-cata@
+## Version: @project-version@-Cata
+#@end-version-cata@
 #@version-classic@
-## Version: @project-version@-Classic
+## Version: @project-version@-Vanilla
 #@end-version-classic@
 ## X-Curse-Project-ID: 100547
 ## X-Wago-ID: kRNLep6o
@@ -46,7 +49,14 @@ Definitions.lua
 
 Plater_DefaultSettings.lua
 
+Plater_Data.lua
+Plater_Logs.lua
+Plater_Util.lua
 Plater.lua
+Plater_PerformanceUnits.lua
+Plater_ColorFrame.lua
+Plater_SlashCMD.lua
+Plater_ImportExport.lua
 Plater_Comms.lua
 Plater_Auras.lua
 Plater_Resources.lua
@@ -64,7 +74,9 @@ Plater_ChangeLog.lua
 Plater_Docs.lua
 Plater_BossModsSupport.lua
 Plater_Animations.lua
+Plater_NpcColorPanels.lua
 Plater_CastColorPanels.lua
+Plater_Audio.lua
 Plater_Profiling.lua
 Plater_Plugins.lua
 Plater_DebugFrames.lua

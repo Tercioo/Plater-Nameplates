@@ -16,7 +16,19 @@ local tinsert = _G.tinsert
 local min = _G.min
 local max = _G.max
 local abs = _G.abs
-local CreateFrame = _G.CreateFrame
+local G_CreateFrame = _G.CreateFrame
+
+
+local CreateFrame = function (frameType , name, parent, template, id)
+	local frame = G_CreateFrame(frameType , name, parent, template, id)
+	DF:Mixin(frame, DF.FrameFunctions)
+	
+	if frame.ApplyBackdrop then
+		NineSliceUtil.DisableSharpening(frame)
+	end
+	
+	return frame
+end
 local unpack = _G.unpack
 local CooldownFrame_Set = _G.CooldownFrame_Set
 local GetTime = _G.GetTime
@@ -26,14 +38,16 @@ local UnitName = _G.UnitName
 local wipe = _G.wipe
 local UnitIsUnit = _G.UnitIsUnit
 local UnitGUID = _G.UnitGUID
-local GetSpellInfo = _G.GetSpellInfo
+local GetSpellInfo = GetSpellInfo or function(spellID) if not spellID then return nil end local si = C_Spell.GetSpellInfo(spellID) if si then return si.name, nil, si.iconID, si.castTime, si.minRange, si.maxRange, si.spellID, si.originalIconID end end
 local floor = _G.floor
-local UnitAuraSlots = _G.UnitAuraSlots
-local UnitAuraBySlot = _G.UnitAuraBySlot
-local UnitAura = _G.UnitAura
+local UnitAuraBySlot = _G.UnitAuraBySlot or (C_UnitAuras and (function(...) local auraData = C_UnitAuras.GetAuraDataBySlot(...); if not auraData then return nil; end; return AuraUtil.UnpackAuraData(auraData); end))
+local UnitAura = _G.UnitAura or (C_UnitAuras and (function(...) local auraData = C_UnitAuras.GetAuraDataByIndex(unitToken, index, filter); if not auraData then return nil; end; return AuraUtil.UnpackAuraData(auraData); end))
 local GetAuraDataBySlot = _G.C_UnitAuras and _G.C_UnitAuras.GetAuraDataBySlot
+local GetAuraSlots = _G.C_UnitAuras and _G.C_UnitAuras.GetAuraSlots
+local GetAuraDataByAuraInstanceID = _G.C_UnitAuras and _G.C_UnitAuras.GetAuraDataByAuraInstanceID
 local BackdropTemplateMixin = _G.BackdropTemplateMixin
 local BUFF_MAX_DISPLAY = _G.BUFF_MAX_DISPLAY
+local BUFF_MAX_DISPLAY_PLATER = (not IS_NEW_UNIT_AURA_AVAILABLE and _G.BUFF_MAX_DISPLAY) or (IS_NEW_UNIT_AURA_AVAILABLE and nil) -- why limit it in this case?
 
 local DB_AURA_GROW_DIRECTION
 local DB_AURA_GROW_DIRECTION2
@@ -86,8 +100,6 @@ local AURA_TYPE_DISEASE = "Disease"
 local AURA_TYPE_POISON = "Poison"
 local AURA_TYPE_CURSE = "Curse"
 local AURA_TYPE_UNKNOWN = nil
-
-local MEMBER_UNITID = "namePlateUnitToken"
 
 local PLATER_REFRESH_ID = 1
 function Plater.IncreaseRefreshID_Auras()
@@ -324,11 +336,90 @@ local function CreatePlaterNamePlateAuraTooltip()
 		nineSlice:ApplyBackdrop(...)
 	end
 	
+	--This is a fallback to save tooltips in classic... can't have nice things.
+	--IS_NEW_UNIT_AURA_AVAILABLE = tooltip.SetUnitBuffByAuraInstanceID and true or false --disable this for now. might work.
+	
 	return tooltip
 end
 
 local NamePlateTooltip = _G.NamePlateTooltip -- can be removed later
 local PlaterNamePlateAuraTooltip = CreatePlaterNamePlateAuraTooltip()
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--> Private Aura handling
+
+function Plater.HandlePrivateAuraAnchors(unitFrame, maxIndex)
+	if true then return end -- disable for now...
+	if not unitFrame then return end
+	if not C_UnitAuras or not C_UnitAuras.RemovePrivateAuraAnchor then return end
+
+	if unitFrame.privateAuraAnchors then
+		for index, anchorID in pairs(unitFrame.privateAuraAnchors) do
+			C_UnitAuras.RemovePrivateAuraAnchor(anchorID)
+		end
+		table.wipe(unitFrame.privateAuraAnchors)
+	else
+		unitFrame.privateAuraAnchors = {}
+	end
+	
+	if not unitFrame.PlaterOnScreen then return end
+	
+	--anchor building
+	local anchorSide = Plater.db.profile.aura_frame1_anchor.side
+	local rowGrowthDirectionUp = (anchorSide < 3 or anchorSide > 5)
+	local maxIndex = maxIndex or 2
+	local relIconPoint = "bottom"
+	local relIconPointTo = "top"
+	local paddingMult = 1
+	
+	-- --> left to right
+	if (DB_AURA_GROW_DIRECTION == 3) then
+		relIconPoint = rowGrowthDirectionUp and "bottomleft" or "topleft"
+		relIconPointTo = rowGrowthDirectionUp and "topleft" or "bottomleft"
+		paddingMult = 1
+		
+	-- <-- right to left
+	elseif (DB_AURA_GROW_DIRECTION == 1) then
+		relIconPoint = rowGrowthDirectionUp and "bottomright" or "topright"
+		relIconPointTo = rowGrowthDirectionUp and "topright" or "bottomright"
+		paddingMult = -1
+	end
+	
+	local unit = unitFrame.IsSelf and "player" or unitFrame[MEMBER_UNITID]
+	
+	for index = 1, maxIndex do
+		local privateAnchorArgs = {
+			unitToken = unit,
+			auraIndex = index,
+			parent = unitFrame,
+			showCountdownFrame = true,
+			showCountdownNumbers = true,
+			iconInfo = {
+				iconAnchor = {
+					point = relIconPoint,
+					relativeTo = unitFrame.BuffFrame,
+					relativePoint = relIconPointTo,
+					offsetX = ((Plater.db.profile.aura_width * (index - 1)) + DB_AURA_PADDING * (index -1)) * paddingMult, --((Plater.db.profile.aura_width * Plater.db.profile.ui_parent_scale_tune * (index - 1)) + DB_AURA_PADDING * (index -1)) * paddingMult,
+					offsetY = Plater.db.profile.aura_breakline_space,
+				},
+				iconWidth = Plater.db.profile.aura_width, -- * Plater.db.profile.ui_parent_scale_tune,
+				iconHeight = Plater.db.profile.aura_height, -- * Plater.db.profile.ui_parent_scale_tune,
+			},
+			durationAnchor = {
+				point = relIconPoint,
+				relativeTo = unitFrame.BuffFrame,
+				relativePoint = relIconPointTo,
+				offsetX = ((Plater.db.profile.aura_width * (index - 1)) + DB_AURA_PADDING * (index -1)) * paddingMult, --((Plater.db.profile.aura_width * Plater.db.profile.ui_parent_scale_tune * (index - 1)) + DB_AURA_PADDING * (index -1)) * paddingMult,
+				offsetY = Plater.db.profile.aura_breakline_space,
+			},
+		}
+		
+		unitFrame.privateAuraAnchors[index] = C_UnitAuras.AddPrivateAuraAnchor(privateAnchorArgs)
+	end
+	--anchored, so we should 'show' the buffframe as anchor point. TODO: how to handle this for name only and other stuff?... might need separate anchor frame
+	unitFrame.BuffFrame:Show()
+	unitFrame.BuffFrame:SetSize(1,1)
+end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> UNIT_AURA event handling
@@ -348,7 +439,7 @@ local ValidateAuraForUpdate = function (unit, aura)
 	
 	local name, spellId = aura.name, aura.spellId
 	
-	--ViragDevTool_AddData({blacklist = (DB_BUFF_BANNED[name] or DB_BUFF_BANNED[spellId] or DB_DEBUFF_BANNED[name] or DB_DEBUFF_BANNED[spellId]) or false, spellId = spellId, name = name}, "UnitAura-Check: "..name)
+	--DevTool:AddData({blacklist = (DB_BUFF_BANNED[name] or DB_BUFF_BANNED[spellId] or DB_DEBUFF_BANNED[name] or DB_DEBUFF_BANNED[spellId]) or false, spellId = spellId, name = name}, "UnitAura-Check: "..name)
 	
 	hasBuff = aura.isHelpful or hasBuff
 	hasDebuff = aura.isHarmful or hasDebuff
@@ -387,13 +478,13 @@ local ValidateAuraForUpdate = function (unit, aura)
 		needsUpdate = hasBuff or hasDebuff or false
 	end
 
-	--ViragDevTool_AddData({needsUpdate=needsUpdate, hasBuff=hasBuff, hasDebuff=hasDebuff}, "Plater_UNIT_AURA return")
+	--DevTool:AddData({needsUpdate=needsUpdate, hasBuff=hasBuff, hasDebuff=hasDebuff}, "Plater_UNIT_AURA return")
 	return needsUpdate, hasBuff, hasDebuff
 	
 end
 
 local UnitAuraEventHandlerValidation = function (unit, isFullUpdate, updatedAuras)
-	--ViragDevTool_AddData({unit = unit, isFullUpdate = isFullUpdate, updatedAuras = updatedAuras}, "Plater_UNIT_AURA")
+	--DevTool:AddData({unit = unit, isFullUpdate = isFullUpdate, updatedAuras = updatedAuras}, "Plater_UNIT_AURA")
 	if isFullUpdate ~= false or not updatedAuras then
 		return true, true, true --update all
 	end
@@ -413,7 +504,7 @@ local UnitAuraEventHandlerValidation = function (unit, isFullUpdate, updatedAura
 	hasBuff = not DB_AURA_SEPARATE_BUFFS and (hasBuff or hasDebuff) or hasBuff 
 	hasDebuff = not DB_AURA_SEPARATE_BUFFS and (hasBuff or hasDebuff) or hasDebuff
 	
-	--ViragDevTool_AddData({unit = unit, needsUpdate=needsUpdate, hasBuff=hasBuff, hasDebuff=hasDebuff}, "Plater_UNIT_AURA return")
+	--DevTool:AddData({unit = unit, needsUpdate=needsUpdate, hasBuff=hasBuff, hasDebuff=hasDebuff}, "Plater_UNIT_AURA return")
 	return needsUpdate, hasBuff, hasDebuff
 end
 
@@ -462,11 +553,11 @@ local UpdateUnitAuraCacheData
 local UnitAuraEventHandlerFrame = CreateFrame ("frame") --private
 local UnitAuraEventHandler = function (_, event, arg1, arg2, arg3, ...)
 	Plater.StartLogPerformanceCore("Plater-Core", "Events", event)
-	
+	--DevTool:AddData({event = event, arg1 = arg1, arg2 = arg2}, "Plater_UnitAuraEventHandler - " .. (event or "N/A"))
 	if event == "UNIT_AURA" then
 		if IS_NEW_UNIT_AURA_AVAILABLE then --for 10.0
 			local unit, updatedAuras = arg1, arg2
-			--ViragDevTool_AddData({unit = unit, updatedAuras = updatedAuras}, "Plater_UNIT_AURA - " .. unit)
+			--DevTool:AddData({unit = unit, updatedAuras = updatedAuras, valid = UnitAuraEventHandlerValidUnits[unit]}, "Plater_UNIT_AURA - " .. unit)
 			if unit and UnitAuraEventHandlerValidUnits[unit] then
 				UpdateUnitAuraCacheData(unit, updatedAuras)
 			end
@@ -475,7 +566,7 @@ local UnitAuraEventHandler = function (_, event, arg1, arg2, arg3, ...)
 			local unit, isFullUpdate, updatedAuras = arg1, arg2, arg3
 			if unit and UnitAuraEventHandlerValidUnits[unit] then
 				local needsUpdate, hasBuff, hasDebuff = UnitAuraEventHandlerValidation(unit, isFullUpdate, updatedAuras)
-				--ViragDevTool_AddData({unit = unit, isFullUpdate = isFullUpdate, updatedAuras = updatedAuras, needsUpdate = needsUpdate, hasBuff = hasBuff, hasDebuff = hasDebuff, existing=CopyTable(UnitAuraEventHandlerData[unit] or {})}, "Plater_UNIT_AURA_AFTER")
+				--DevTool:AddData({unit = unit, isFullUpdate = isFullUpdate, updatedAuras = updatedAuras, needsUpdate = needsUpdate, hasBuff = hasBuff, hasDebuff = hasDebuff, existing=CopyTable(UnitAuraEventHandlerData[unit] or {})}, "Plater_UNIT_AURA_AFTER")
 				if needsUpdate then
 					local existingData = UnitAuraEventHandlerData[unit] or { hasBuff = false, hasDebuff = false }
 					UpdateUnitAuraCacheData(unit, nil)
@@ -506,6 +597,7 @@ end
 
 
 UpdateUnitAuraCacheData = function (unit, updatedAuras)
+	--DevTool:AddData({unit = unit, updatedAuras = updatedAuras}, "Plater_UpdateUnitAuraCacheData - " .. (unit or "N/A"))
 	local unitCacheData = UnitAuraCacheData[unit]
 	if not unitCacheData then
 		unitCacheData = {}
@@ -525,6 +617,8 @@ UpdateUnitAuraCacheData = function (unit, updatedAuras)
 		UnitAuraEventHandlerData[unit] = { hasBuff = true, hasDebuff = true }
 		return
 	end
+	
+	unitCacheData.tbd = {}
 	
 	for _, aura in ipairs(updatedAuras.addedAuras or {}) do
 		local needsUpdate = ValidateAuraForUpdate(unit, aura)
@@ -546,6 +640,9 @@ UpdateUnitAuraCacheData = function (unit, updatedAuras)
 		elseif unitCacheData.buffs[auraInstanceID] ~= nil then
 			unitCacheData.buffs[auraInstanceID].requriresUpdate = true
 			unitCacheData.buffsChanged = true
+		else
+			unitCacheData.tbd[auraInstanceID] = true
+			unitCacheData.tbdChanged = true
 		end
 	end
 	
@@ -556,8 +653,29 @@ UpdateUnitAuraCacheData = function (unit, updatedAuras)
 		elseif unitCacheData.buffs[auraInstanceID] ~= nil then
 			unitCacheData.buffs[auraInstanceID] = nil
 			unitCacheData.buffsChanged = true
+		else
+			unitCacheData.tbd[auraInstanceID] = true
+			unitCacheData.tbdChanged = true
 		end
 	end
+	
+	if unitCacheData.tbdChanged then
+		for index, _ in pairs(unitCacheData.tbd) do
+			local aura = C_UnitAuras.GetAuraDataByAuraInstanceID(unit, index)
+			if aura then
+				if aura.isHarmful then
+					unitCacheData.debuffs[aura.auraInstanceID] = aura
+					unitCacheData.debuffsChanged = true
+				elseif aura.isHelpful then
+					unitCacheData.buffs[aura.auraInstanceID] = aura
+					unitCacheData.buffsChanged = true
+				end
+			end
+		end
+	end
+	
+	unitCacheData.tbd = nil
+	unitCacheData.tbdChanged = nil
 	
 	local existingData = UnitAuraEventHandlerData[unit] or { hasBuff = false, hasDebuff = false }
 	local hasDebuff = existingData.hasDebuff or unitCacheData.debuffsChanged or not DB_AURA_SEPARATE_BUFFS or false
@@ -572,7 +690,7 @@ local function getUnitAuras(unit, filter)
 	local isHelpful = string.find(filter or "HELPFUL", "HELPFUL") and true or false
 	
 	local unitCacheData = UnitAuraCacheData[unit]
-	--ViragDevTool_AddData({unitCacheData, filter = filter, isFullUpdateHarm = unitCacheData.isFullUpdateHarm, isFullUpdateHelp = unitCacheData.isFullUpdateHelp, update = ((isHarmful and  not unitCacheData.isFullUpdateHarm) or (isHelpful and not unitCacheData.isFullUpdateHelp))}, "getUnitAuras - " .. unit)
+	--DevTool:AddData({unitCacheData, filter = filter, isFullUpdateHarm = unitCacheData.isFullUpdateHarm, isFullUpdateHelp = unitCacheData.isFullUpdateHelp, update = ((isHarmful and  not unitCacheData.isFullUpdateHarm) or (isHelpful and not unitCacheData.isFullUpdateHelp))}, "getUnitAuras - " .. unit)
 	
 	if unitCacheData and ((isHarmful and  not unitCacheData.isFullUpdateHarm) or (isHelpful and not unitCacheData.isFullUpdateHelp)) then --new aura event
 		Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdateAuras - getUnitAuras - short")
@@ -581,7 +699,7 @@ local function getUnitAuras(unit, filter)
 			local tmpDebuffs = {}
 			for auraInstanceID, aura in pairs (unitCacheData.debuffs) do
 				if aura.requriresUpdate then
-					tmpDebuffs[auraInstanceID] = C_UnitAuras.GetAuraDataByAuraInstanceID(unit, auraInstanceID)
+					tmpDebuffs[auraInstanceID] = GetAuraDataByAuraInstanceID(unit, auraInstanceID)
 				else
 					tmpDebuffs[auraInstanceID] = aura
 				end
@@ -595,7 +713,7 @@ local function getUnitAuras(unit, filter)
 			local tmpBuffs = {}
 			for auraInstanceID, aura in pairs (unitCacheData.buffs) do
 				if aura.requriresUpdate then
-					tmpBuffs[auraInstanceID] = C_UnitAuras.GetAuraDataByAuraInstanceID(unit, auraInstanceID)
+					tmpBuffs[auraInstanceID] = GetAuraDataByAuraInstanceID(unit, auraInstanceID)
 				else
 					tmpBuffs[auraInstanceID] = aura
 				end
@@ -623,31 +741,27 @@ local function getUnitAuras(unit, filter)
 	repeat -- until continuationToken == nil
 		local numSlots = 0
 		local slots
-		if IS_WOW_PROJECT_MAINLINE then
-			slots = { UnitAuraSlots(unit, filter, BUFF_MAX_DISPLAY, continuationToken) }
+		if IS_NEW_UNIT_AURA_AVAILABLE then
+			slots = { GetAuraSlots(unit, filter, BUFF_MAX_DISPLAY_PLATER, continuationToken) }
 			continuationToken = slots[1]
 			numSlots = #slots
 		else
-			numSlots = BUFF_MAX_DISPLAY + 1
+			numSlots = (BUFF_MAX_DISPLAY or 32) + 1
 		end
 		
 		for i=2, numSlots do
 			if IS_NEW_UNIT_AURA_AVAILABLE then
 				local slot = slots[i]
-				local aura = C_UnitAuras.GetAuraDataBySlot(unit, slot)
+				local aura = GetAuraDataBySlot(unit, slot)
 				if aura then
+					--DevTool:AddData({unit = unit, aura = aura, slot = slot}, "GetAuraDataBySlot")
 					filterCache[aura.auraInstanceID] = aura
 				end
 			else
-				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications
-				if IS_WOW_PROJECT_MAINLINE then
-					local slot = slots[i]
-					name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = UnitAuraBySlot(unit, slot)
-				else
-					name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = UnitAura(unit, i-1, filter)
-					if not name then
-						break
-					end
+				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, shouldConsolidate  = UnitAura(unit, i-1, filter)
+				--DevTool:AddData({name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, shouldConsolidate }, "UnitAura")
+				if not name then
+					break
 				end
 				
 				debuffIndex = debuffIndex + 1
@@ -748,7 +862,8 @@ end
                 setFunction(PlaterNamePlateAuraTooltip, iconFrame:GetParent().unit, iconFrame:GetID(), iconFrame.filter)
             end 
         else
-            PlaterNamePlateAuraTooltip:SetUnitAura (iconFrame:GetParent().unit, iconFrame:GetID(), iconFrame.filter)
+			PlaterNamePlateAuraTooltip:SetSpellByID(iconFrame.spellId)
+            --PlaterNamePlateAuraTooltip:SetUnitAura (iconFrame:GetParent().unit, iconFrame:GetID(), iconFrame.filter)
         end
 		PlaterNamePlateAuraTooltip:ApplyOwnBackdrop()
 		iconFrame.UpdateTooltip = Plater.OnEnterAura
@@ -805,7 +920,6 @@ end
 		for index, iconFramesTable in pairs (aurasDuplicated) do
 			--how many auras with the same name the unit has
 			local amountOfSimilarAuras = #iconFramesTable
-			local totalStacks = iconFramesTable [1][1].Stacks > 0 and iconFramesTable [1][1].Stacks or 1
 			
 			if (amountOfSimilarAuras > 1) then
 				--sort order: the aura with the least time left is shown by default
@@ -815,12 +929,19 @@ end
 					table.sort (iconFramesTable, DF.SortOrder2)
 				end
 				
+				local totalStacks = 0
+				
 				--hide all auras except for the first occurrence of this aura
-				for i = 2, amountOfSimilarAuras do
+				for i = 1, amountOfSimilarAuras do
 					local iconFrame = iconFramesTable [i][1]
-					iconFrame.ShowAnimation:Stop()
-					iconFrame:Hide()
-					iconFrame.InUse = false
+					if i == 1 then --ensure the sorted icon is always shown
+						iconFrame:Show()
+						iconFrame.InUse = true
+					else --hide other icons
+						iconFrame.ShowAnimation:Stop()
+						iconFrame:Hide()
+						iconFrame.InUse = false
+					end
 					
 					totalStacks = totalStacks + (iconFrame.Stacks > 0 and iconFrame.Stacks or 1)
 					
@@ -847,9 +968,10 @@ end
 	--this function is guaranteed to run after all auras been processed
 	function Plater.ShowGhostAuras(buffFrame)
 		if (DB_AURA_GHOSTAURA_ENABLED) then
-			if ((buffFrame.unitFrame.namePlateUnitReaction < 5) and buffFrame.unitFrame.InCombat and not buffFrame.unitFrame.IsSelf and InCombatLockdown()) then
-				local nameplateAuraCache = buffFrame.unitFrame.AuraCache --active auras currently shown in the nameplate
-				local nameplateGhostAuraCache = buffFrame.unitFrame.GhostAuraCache --active ghost auras currently shown in the nameplate
+			local unitFrame = buffFrame.unitFrame
+			if ((unitFrame.namePlateUnitReaction < 5) and unitFrame.InCombat and not unitFrame.IsSelf and not unitFrame.isPerformanceUnit and InCombatLockdown()) then
+				local nameplateAuraCache = unitFrame.AuraCache --active auras currently shown in the nameplate
+				local nameplateGhostAuraCache = unitFrame.GhostAuraCache --active ghost auras currently shown in the nameplate
 				for spellName, spellTable in pairs(GHOSTAURAS) do
 					if (not nameplateAuraCache[spellName.."_player"]) then
 						if (not nameplateGhostAuraCache[spellName.."_player_ghost"]) then --the ghost aura isn't in the nameplate
@@ -857,13 +979,13 @@ end
 							local spellIcon, spellId = spellTable[1], spellTable[2]
 							local auraIconFrame = Plater.GetAuraIcon(buffFrame) -- show on debuff frame
 							auraIconFrame.InUse = true --don't play animation
-							Plater.AddAura(buffFrame, auraIconFrame, -1, spellName.."_player_ghost", spellIcon, 1, "DEBUFF", 0, 0, "player", false, false, spellId, false, false, false, false, "DEBUFF", 1)
+							Plater.AddAura(buffFrame, auraIconFrame, -1, spellName.."_player_ghost", spellIcon, 1, "DEBUFF", 0, 0, "player", false, false, -spellId, false, false, false, false, "DEBUFF", 1)
 							auraIconFrame:EnableMouse (false) --don't use tooltips, as there is no real aura
-							if IS_WOW_PROJECT_MAINLINE then
+							if auraIconFrame.EnableMouseMotion then
 								auraIconFrame:EnableMouseMotion (false) --don't use tooltips, as there is no real aura
 							end
 							auraIconFrame.IsGhostAura = true
-							Plater.Auras.GhostAuras.ApplyAppearance(auraIconFrame, spellName.."_player_ghost", spellIcon, spellId)
+							Plater.Auras.GhostAuras.ApplyAppearance(auraIconFrame, spellName.."_player_ghost", spellIcon, -spellId)
 							nameplateGhostAuraCache[spellName.."_player_ghost"] = true --this is shown as ghost aura
 						end
 					else
@@ -1129,16 +1251,12 @@ end
 				
 			end
 			
-			if (not firstIcon) then
-				return
-			end
-			
 			if curRowLength > horizontalLength then
 				horizontalLength = curRowLength
 			end
 			
 			--remove 1 icon padding value
-			horizontalLength = horizontalLength - DB_AURA_PADDING
+			horizontalLength = (horizontalLength > 1) and (horizontalLength - DB_AURA_PADDING) or 1
 			--set the size of the buff frame
 			self:SetWidth (horizontalLength)
 			self:SetHeight (verticalHeight)
@@ -1154,7 +1272,8 @@ end
 	end
 
 	function platerInternal.CreateAuraIcon (parent, name) --private ~createicon ~icon
-		local newIcon = CreateFrame ("Button", name, parent, BackdropTemplateMixin and "BackdropTemplate")
+		--local newIcon = CreateFrame ("Button", name, parent, BackdropTemplateMixin and "BackdropTemplate")
+		local newIcon = CreateFrame ("Button", name, parent)
 		newIcon:Hide()
 		newIcon:SetSize (20, 16)
 		
@@ -1163,19 +1282,50 @@ end
 		
 		newIcon:SetMouseClickEnabled (false)
 		
-		newIcon.Border = newIcon:CreateTexture (nil, "background")
-		newIcon.Border:SetAllPoints()
-		newIcon.Border:SetColorTexture (0, 0, 0)
+		--newIcon.Border = newIcon:CreateTexture (nil, "background")
+		--newIcon.Border:SetAllPoints()
+		--newIcon.Border:SetColorTexture (0, 0, 0)
+		
+		-- switch to proper border, keep compatibility
+		newIcon.Border = DF:CreateFullBorder("$parentBorder", newIcon)
+		local iconOffset = -1 * UIParent:GetEffectiveScale() * (Plater.db.profile.use_ui_parent_just_enabled and Plater.db.profile.ui_parent_scale_tune or 1)
+		PixelUtil.SetPoint (newIcon.Border, "TOPLEFT", newIcon, "TOPLEFT", -iconOffset, iconOffset)
+		PixelUtil.SetPoint (newIcon.Border, "TOPRIGHT", newIcon, "TOPRIGHT", iconOffset, iconOffset)
+		PixelUtil.SetPoint (newIcon.Border, "BOTTOMLEFT", newIcon, "BOTTOMLEFT", -iconOffset, -iconOffset)
+		PixelUtil.SetPoint (newIcon.Border, "BOTTOMRIGHT", newIcon, "BOTTOMRIGHT", iconOffset, -iconOffset)
+		newIcon.SetBackdropBorderColor = function(self, r, g, b, a)
+			self.Border:SetVertexColor(r, g, b, a)
+		end
+		newIcon.Border.SetBorderSize = function(self, size)
+			local borderSize = (size or 1) * UIParent:GetEffectiveScale() * (Plater.db.profile.use_ui_parent_just_enabled and Plater.db.profile.ui_parent_scale_tune or 1)
+			self:SetBorderSizes(borderSize, 1, borderSize, 0)
+			self:UpdateSizes()
+		end
+		newIcon.SetBorderSize = function(self, size)
+			self.Border:SetBorderSize(size)
+		end
+		newIcon.SetBackdrop = function(self, options)
+			local borderSize = options.edgeSize or 1
+			self.Border:SetBorderSize(borderSize)
+		end
+		newIcon.GetBackdropBorderColor = function(self)
+			return self.Border:GetVertexColor()
+		end
 
-		newIcon.BorderMask = newIcon:CreateMaskTexture(nil, "artwork")
-		newIcon.BorderMask:SetAllPoints()
-		newIcon.BorderMask:SetTexture([[Interface/addons/plater/masks/rounded_square_32x32]])
-		newIcon.Border:AddMaskTexture(newIcon.BorderMask)
-		newIcon.BorderMask:Hide()
+		--newIcon.BorderMask = newIcon:CreateMaskTexture(nil, "artwork")
+		--newIcon.BorderMask:SetAllPoints()
+		--newIcon.BorderMask:SetTexture([[Interface/addons/plater/masks/rounded_square_32x32]])
+		--newIcon.Border:AddMaskTexture(newIcon.BorderMask)
+		--newIcon.BorderMask:Hide()
 
-		newIcon.Icon = newIcon:CreateTexture (nil, "BORDER")
-		newIcon.Icon:SetSize (18, 12)
-		newIcon.Icon:SetPoint ("center")
+		newIcon.Icon = newIcon:CreateTexture (nil, "artwork")
+		--newIcon.Icon:SetSize (18, 12)
+		--newIcon.Icon:SetPoint ("center")
+		iconOffset = -1 * UIParent:GetEffectiveScale() * (Plater.db.profile.use_ui_parent_just_enabled and Plater.db.profile.ui_parent_scale_tune or 1)
+		PixelUtil.SetPoint (newIcon.Icon, "TOPLEFT", newIcon, "TOPLEFT", -iconOffset, iconOffset)
+		PixelUtil.SetPoint (newIcon.Icon, "TOPRIGHT", newIcon, "TOPRIGHT", iconOffset, iconOffset)
+		PixelUtil.SetPoint (newIcon.Icon, "BOTTOMLEFT", newIcon, "BOTTOMLEFT", -iconOffset, -iconOffset)
+		PixelUtil.SetPoint (newIcon.Icon, "BOTTOMRIGHT", newIcon, "BOTTOMRIGHT", iconOffset, -iconOffset)
 		newIcon.Icon:SetTexCoord (.05, .95, .1, .6)
 
 		newIcon.IconMask = newIcon:CreateMaskTexture(nil, "artwork")
@@ -1185,10 +1335,14 @@ end
 		newIcon.IconMask:Hide()
 		
 		newIcon.Cooldown = CreateFrame ("cooldown", "$parentCooldown", newIcon, "CooldownFrameTemplate, BackdropTemplate")
-		newIcon.Cooldown:SetPoint ("center", 0, -1)
-		newIcon.Cooldown:SetAllPoints()
+		--newIcon.Cooldown:SetPoint ("center", 0, -1)
+		--newIcon.Cooldown:SetAllPoints()
+		PixelUtil.SetPoint (newIcon.Cooldown, "TOPLEFT", newIcon, "TOPLEFT", 0, 0)
+		PixelUtil.SetPoint (newIcon.Cooldown, "TOPRIGHT", newIcon, "TOPRIGHT", 0, 0)
+		PixelUtil.SetPoint (newIcon.Cooldown, "BOTTOMLEFT", newIcon, "BOTTOMLEFT", 0, 0)
+		PixelUtil.SetPoint (newIcon.Cooldown, "BOTTOMRIGHT", newIcon, "BOTTOMRIGHT", 0, 0)
 		newIcon.Cooldown:EnableMouse (false)
-		if IS_WOW_PROJECT_MAINLINE then
+		if newIcon.Cooldown.EnableMouseMotion then
 			newIcon.Cooldown:EnableMouseMotion (false)
 		end
 		newIcon.Cooldown:SetHideCountdownNumbers (true)
@@ -1218,7 +1372,7 @@ end
 		newIcon.CountFrame = CreateFrame ("frame", "$parentCountFrame", newIcon, BackdropTemplateMixin and "BackdropTemplate")
 		newIcon.CountFrame:SetAllPoints()
 		newIcon.CountFrame:EnableMouse (false)
-		if IS_WOW_PROJECT_MAINLINE then
+		if newIcon.CountFrame.EnableMouseMotion then
 			newIcon.CountFrame:EnableMouseMotion (false)
 		end
 		newIcon.CountFrame.Count = newIcon.CountFrame:CreateFontString (nil, "artwork", "NumberFontNormalSmall")
@@ -1278,7 +1432,7 @@ end
 	local function AuraIconOnTick_UpdateCooldown (self, deltaTime)
 		local now = GetTime()
 		if (self.lastUpdateCooldown + 0.05) <= now then
-			self.RemainingTime = self.ExpirationTime - now
+			self.RemainingTime = (self.ExpirationTime - now) / (self.ModRate or 1)
 			if self.RemainingTime > 0 then
 				if self.formatWithDecimals then
 					self.Cooldown.Timer:SetText (Plater.FormatTimeDecimal (self.RemainingTime))
@@ -1305,7 +1459,7 @@ end
 			curBuffFrame = 2
 		end
 		
-		local i = self.NextAuraIcon
+		local i = self.NextAuraIcon or 1
 		
 		if (not self.PlaterBuffList[i]) then
 			local newFrameIcon = platerInternal.CreateAuraIcon (self, self.unitFrame:GetName() .. "Plater" .. self.Name .. "AuraIcon" .. i)
@@ -1317,7 +1471,10 @@ end
 			
 			self.PlaterBuffList[i] = newFrameIcon
 			
-			newFrameIcon:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
+			--newFrameIcon:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
+			--newFrameIcon.Border:SetBorderSize (1)
+			newFrameIcon:SetBorderSize (1)
+			
 		
 			local auraWidth
 			local auraHeight
@@ -1328,8 +1485,10 @@ end
 				auraWidth = Plater.db.profile.aura_width
 			    auraHeight = Plater.db.profile.aura_height
 			end
-			newFrameIcon:SetSize (auraWidth, auraHeight)
-			newFrameIcon.Icon:SetSize (auraWidth-2, auraHeight-2)
+			--newFrameIcon:SetSize (auraWidth, auraHeight)
+			--newFrameIcon.Icon:SetSize (auraWidth-2, auraHeight-2)
+			local sizeMod = UIParent:GetEffectiveScale() * (Plater.db.profile.use_ui_parent_just_enabled and Plater.db.profile.ui_parent_scale_tune or 1)
+			PixelUtil.SetSize(newFrameIcon, auraWidth * sizeMod, auraHeight * sizeMod)
 			
 			--mixin the meta functions for scripts
 			DF:Mixin (newFrameIcon, Plater.ScriptMetaFunctions)
@@ -1362,9 +1521,13 @@ end
 						Duration = false,
 						Shine = nil, --false,
 					}
-					newFrameIcon.Border:Hide() --let Masque handle the border...
-					Plater.Masque.AuraFrame1:AddButton (newFrameIcon, t, "AuraButtonTemplate", true)
+					local mOptions = Plater.Masque.AuraFrame1:GetOptions()
+					if mOptions and mOptions.Disable and mOptions.Disable.get and not mOptions.Disable.get() then
+						newFrameIcon.Border:Hide() --let Masque handle the border...
+					end
+					Plater.Masque.AuraFrame1:AddButton (newFrameIcon, t, "Aura", true)
 					Plater.Masque.AuraFrame1:ReSkin(newFrameIcon)
+					newFrameIcon.Masqued = true
 					
 				elseif (self.Name == "Secondary") then
 					local t = {
@@ -1385,16 +1548,20 @@ end
 						Duration = false,
 						Shine = nil, --false,
 					}
-					newFrameIcon.Border:Hide() --let Masque handle the border...
-					Plater.Masque.AuraFrame2:AddButton (newFrameIcon, t, "AuraButtonTemplate", true)
+					local mOptions = Plater.Masque.AuraFrame2:GetOptions()
+					if mOptions and mOptions.Disable and mOptions.Disable.get and not mOptions.Disable.get() then
+						newFrameIcon.Border:Hide() --let Masque handle the border...
+					end
+					Plater.Masque.AuraFrame2:AddButton (newFrameIcon, t, "Aura", true)
 					Plater.Masque.AuraFrame2:ReSkin(newFrameIcon)
+					newFrameIcon.Masqued = true
 					
 				end
 			end
 		end
 		
 		local auraIconFrame = self.PlaterBuffList [i]
-		self.NextAuraIcon = self.NextAuraIcon + 1
+		self.NextAuraIcon = (self.NextAuraIcon or 1) + 1
 		
 		auraIconFrame:SetAlpha(1)
 		auraIconFrame.Icon:SetDesaturated(false)
@@ -1487,24 +1654,28 @@ end
 			auraIconFrame.RefreshID = PLATER_REFRESH_ID
 			
 			--icon size
+			local auraWidth
+			local auraHeight
 			if (isPersonal) then
-				local auraWidth = profile.aura_width_personal
-				local auraHeight = profile.aura_height_personal
-				auraIconFrame:SetSize (auraWidth, auraHeight)
-				auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
+				auraWidth = profile.aura_width_personal
+				auraHeight = profile.aura_height_personal
+				--auraIconFrame:SetSize (auraWidth, auraHeight)
+				--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 			else
 				if curBuffFrame == 2 then
-					local auraWidth = profile.aura_width2
-					local auraHeight = profile.aura_height2
-					auraIconFrame:SetSize (auraWidth, auraHeight)
-					auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
+					auraWidth = profile.aura_width2
+					auraHeight = profile.aura_height2
+					--auraIconFrame:SetSize (auraWidth, auraHeight)
+					--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 				else
-					local auraWidth = profile.aura_width
-					local auraHeight = profile.aura_height
-					auraIconFrame:SetSize (auraWidth, auraHeight)
-					auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
+					auraWidth = profile.aura_width
+					auraHeight = profile.aura_height
+					--auraIconFrame:SetSize (auraWidth, auraHeight)
+					--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 				end
 			end
+			local sizeMod = 1 --UIParent:GetEffectiveScale() * (Plater.db.profile.use_ui_parent_just_enabled and Plater.db.profile.ui_parent_scale_tune or 1)
+			PixelUtil.SetSize(auraIconFrame, auraWidth * sizeMod, auraHeight * sizeMod)
 			
 			auraIconFrame.Cooldown:SetEdgeTexture (profile.aura_cooldown_edge_texture)
 			auraIconFrame.Cooldown:SetReverse (profile.aura_cooldown_reverse)
@@ -1516,8 +1687,8 @@ end
 		end
 		
 		--ensure proper state:
-		--auraIconFrame:EnableMouse (profile.aura_show_tooltip)
-		if IS_WOW_PROJECT_MAINLINE then
+		if auraIconFrame.EnableMouseMotion then
+			auraIconFrame:EnableMouse (false)
 			auraIconFrame:EnableMouseMotion (profile.aura_show_tooltip)
 		else
 			auraIconFrame:EnableMouse (profile.aura_show_tooltip)
@@ -1528,24 +1699,28 @@ end
 		--when it changes the isPersonal flag it change locally without increasing the refresh ID
 		--> update the icon size depending on where it is shown
 		if (auraIconFrame.IsPersonal ~= isPersonal or auraIconFrame.BuffFrame ~= curBuffFrame or auraIconFrame.IsGhostAura) then
+			local auraWidth
+			local auraHeight
 			if (isPersonal) then
-				local auraWidth = profile.aura_width_personal
-				local auraHeight = profile.aura_height_personal
-				auraIconFrame:SetSize (auraWidth, auraHeight)
-				auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
+				auraWidth = profile.aura_width_personal
+				auraHeight = profile.aura_height_personal
+				--auraIconFrame:SetSize (auraWidth, auraHeight)
+				--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 			else
 				if curBuffFrame == 2 then
-					local auraWidth = profile.aura_width2
-					local auraHeight = profile.aura_height2
-					auraIconFrame:SetSize (auraWidth, auraHeight)
-					auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
+					auraWidth = profile.aura_width2
+					auraHeight = profile.aura_height2
+					--auraIconFrame:SetSize (auraWidth, auraHeight)
+					--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 				else
-					local auraWidth = profile.aura_width
-					local auraHeight = profile.aura_height
-					auraIconFrame:SetSize (auraWidth, auraHeight)
-					auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
+					auraWidth = profile.aura_width
+					auraHeight = profile.aura_height
+					--auraIconFrame:SetSize (auraWidth, auraHeight)
+					--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 				end
 			end
+			local sizeMod = 1 --UIParent:GetEffectiveScale() * (Plater.db.profile.use_ui_parent_just_enabled and Plater.db.profile.ui_parent_scale_tune or 1)
+			PixelUtil.SetSize(auraIconFrame, auraWidth * sizeMod, auraHeight * sizeMod)
 			
 			Plater.UpdateIconAspecRatio (auraIconFrame)
 		end
@@ -1561,10 +1736,12 @@ end
 			auraIconFrame.CountFrame.Count:Hide()
 		end
 		
+		auraIconFrame.IsShowingBuff = isBuff
+		auraIconFrame.CanStealOrPurge = isStealable
+		
 		--border colors
 		if (isStealable) then
 			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.steal_or_purge))
-			auraIconFrame.CanStealOrPurge = true
 		
 		elseif (Plater.db.profile.aura_border_colors_by_type) then
 			-- use Blizzards color global 'DebuffTypeColor' for the actual color:
@@ -1582,24 +1759,23 @@ end
 		elseif (DEFENSIVE_AURA_IDS [spellId]) then 
 			--> defensive CDs
 			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.defensive))
+
+		elseif (dispelName == AURA_TYPE_ENRAGE) then 
+			--> enrage effects
+			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.enrage))
 			
 		elseif (isBuff) then
 			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.is_buff))
-			auraIconFrame.IsShowingBuff = true
 		
 		elseif (isDebuff) then
 			--> for debuffs on the player for the personal bar
 			auraIconFrame:SetBackdropBorderColor (1, 0, 0, 1)
 		
-		elseif (dispelName == AURA_TYPE_ENRAGE) then 
-			--> enrage effects
-			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.enrage))
-		
 		elseif (isShowAll) then
 			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.is_show_all))
 				
 		else
-			auraIconFrame:SetBackdropBorderColor (0, 0, 0, 0)
+			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.default))
 			
 		end
 
@@ -1649,7 +1825,13 @@ end
 		auraIconFrame.isBuff = isBuff
 		auraIconFrame:Show()
 		
-		--Plater.Masque.AuraFrame1:ReSkin()
+		if (Plater.Masque and auraIconFrame.Masqued) then
+			if (self.Name == "Main") then
+				Plater.Masque.AuraFrame1:ReSkin(auraIconFrame)
+			elseif (self.Name == "Secondary") then
+				Plater.Masque.AuraFrame2:ReSkin(auraIconFrame)
+			end
+		end
 
 		--auraIconFrame.Icon:Hide()
 		--auraIconFrame.Cooldown:SetBackdrop (nil)
@@ -1810,8 +1992,7 @@ end
 			iconFrame.filter = filter
 			iconFrame:SetScript ("OnEnter", Plater.OnEnterAura)
 			iconFrame:SetScript ("OnLeave", Plater.OnLeaveAura)
-			--iconFrame:EnableMouse (profile.aura_show_tooltip)
-			if IS_WOW_PROJECT_MAINLINE then
+			if iconFrame.EnableMouseMotion then
 				iconFrame:EnableMouse (false)
 				iconFrame:EnableMouseMotion (profile.aura_show_tooltip)
 			else
@@ -1821,9 +2002,44 @@ end
 			iconFrame:SetScript ("OnEnter", nil)
 			iconFrame:SetScript ("OnLeave", nil)
 			iconFrame:EnableMouse (false)
-			if IS_WOW_PROJECT_MAINLINE then
+			if iconFrame.EnableMouseMotion then
 				iconFrame:EnableMouseMotion (false)
 			end
+		end
+		
+		if (not iconFrame.platerSkinned) then
+			iconFrame:ClearBackdrop()
+			iconFrame.Border:Hide()
+			
+			iconFrame.Border = DF:CreateFullBorder("$parentBorder", iconFrame)
+			local iconOffset = -1 * UIParent:GetEffectiveScale() * (Plater.db.profile.use_ui_parent_just_enabled and Plater.db.profile.ui_parent_scale_tune or 1)
+			PixelUtil.SetPoint (iconFrame.Border, "TOPLEFT", iconFrame, "TOPLEFT", -iconOffset, iconOffset)
+			PixelUtil.SetPoint (iconFrame.Border, "TOPRIGHT", iconFrame, "TOPRIGHT", iconOffset, iconOffset)
+			PixelUtil.SetPoint (iconFrame.Border, "BOTTOMLEFT", iconFrame, "BOTTOMLEFT", -iconOffset, -iconOffset)
+			PixelUtil.SetPoint (iconFrame.Border, "BOTTOMRIGHT", iconFrame, "BOTTOMRIGHT", iconOffset, -iconOffset)
+			iconFrame.SetBackdropBorderColor = function(self, r, g, b, a)
+				self.Border:SetVertexColor(r, g, b, a)
+			end
+			iconFrame.Border.SetBorderSize = function(self, size)
+				local borderSize = (size or 1) * UIParent:GetEffectiveScale() * (Plater.db.profile.use_ui_parent_just_enabled and Plater.db.profile.ui_parent_scale_tune or 1)
+				self:SetBorderSizes(borderSize, 1, borderSize, 0)
+				self:UpdateSizes()
+			end
+			iconFrame.SetBorderSize = function(self, size)
+				self.Border:SetBorderSize(size)
+			end
+			iconFrame.SetBackdrop = function(self, options)
+				local borderSize = options.edgeSize or 1
+				self.Border:SetBorderSize(borderSize)
+			end
+			iconFrame.GetBackdropBorderColor = function(self)
+				return self.Border:GetVertexColor()
+			end
+			
+			
+			iconFrame:SetBackdropBorderColor(DF:ParseColors(borderColor))
+			iconFrame:SetBorderSize(1)
+			iconFrame.platerSkinned = true
 		end
 		
 		--check if Masque is enabled on Plater and reskin the aura icon
@@ -1834,7 +2050,7 @@ end
 				Cooldown = iconFrame.Cooldown,
 				Flash = nil, --false,
 				Pushed = nil, --false,
-				Normal = false,
+				Normal = nil, --false
 				Disabled = nil, --false,
 				Checked = nil, --false,
 				Border = nil, --iconFrame.Border,
@@ -1846,10 +2062,17 @@ end
 				Duration = false,
 				Shine = nil, --false,
 			}
-			iconFrame.Border:Hide() --let Masque handle the border...
-			Plater.Masque.BuffSpecial:AddButton (iconFrame, t, "AuraButtonTemplate", true)
-			Plater.Masque.BuffSpecial:ReSkin(iconFrame)
+			local mOptions = Plater.Masque.BuffSpecial:GetOptions()
+			if mOptions and mOptions.Disable and mOptions.Disable.get and not mOptions.Disable.get() then
+				iconFrame.Border:Hide() --let Masque handle the border...
+			end
+			Plater.Masque.BuffSpecial:AddButton (iconFrame, t, "Aura", true)
+			--Plater.Masque.BuffSpecial:ReSkin(iconFrame)
 			iconFrame.Masqued = true
+		end
+		
+		if (Plater.Masque and iconFrame.Masqued) then
+			Plater.Masque.BuffSpecial:ReSkin(iconFrame)
 		end
 		
 		Plater.EndLogPerformanceCore("Plater-Core", "Update", "UpdateAuras - AddExtraIcon")
@@ -1858,7 +2081,7 @@ end
 	--> reset both buff frames to make them ready to receive an aura update
 	function Plater.ResetAuraContainer (self, resetBuffs, resetDebuffs)
 		Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdateAuras - ResetAuraContainer")
-		--ViragDevTool_AddData({resetBuffs, resetDebuffs}, "ResetAuraContainer")
+		--DevTool:AddData({resetBuffs, resetDebuffs}, "ResetAuraContainer")
 		-- ensure reset is happening if nil
 		resetBuffs = resetBuffs ~= false
 		resetDebuffs = resetDebuffs ~= false
@@ -1912,7 +2135,7 @@ end
 			local unitAuras = getUnitAuras(unit, "HELPFUL") or {}
 			
 			for id, aura in pairs(unitAuras.buffs or {}) do
-				--ViragDevTool_AddData({i, aura})
+				--DevTool:AddData({i, aura})
 				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = 
 					aura.name, aura.icon, aura.applications, aura.dispelName, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
 					aura.isBossAura, aura.isFromPlayerOrPlayerPet, aura.nameplateShowAll, aura.timeMod, aura.applications
@@ -1954,7 +2177,7 @@ end
 			local unitAuras = getUnitAuras(unit, "HARMFUL") or {}
 			
 			for id, aura in pairs(unitAuras.debuffs or {}) do
-				--ViragDevTool_AddData({i, aura})
+				--DevTool:AddData({i, aura})
 				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = 
 					aura.name, aura.icon, aura.applications, aura.dispelName, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
 					aura.isBossAura, aura.isFromPlayerOrPlayerPet, aura.nameplateShowAll, aura.timeMod, aura.applications
@@ -2036,13 +2259,13 @@ end
 		
 		Plater.ResetAuraContainer (self, unitAuraEventData.hasBuff, unitAuraEventData.hasDebuff)
 		local unitAuraCache = self.unitFrame.AuraCache
-		--ViragDevTool_AddData({unitAuraEventData.hasBuff, unitAuraEventData.hasDebuff}, "UpdateAuras_Automatic")
+		--DevTool:AddData({unitAuraEventData.hasBuff, unitAuraEventData.hasDebuff}, "UpdateAuras_Automatic")
 		--> debuffs
 		if unitAuraEventData.hasDebuff then
 			local unitAuras = getUnitAuras(unit, "HARMFUL") or {}
 			
 			for id, aura in pairs(unitAuras.debuffs or {}) do
-				--ViragDevTool_AddData({i, aura})
+				--DevTool:AddData({i, aura})
 				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = 
 					aura.name, aura.icon, aura.applications, aura.dispelName, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
 					aura.isBossAura, aura.isFromPlayerOrPlayerPet, aura.nameplateShowAll, aura.timeMod, aura.applications
@@ -2111,10 +2334,10 @@ end
 		--> buffs
 		if unitAuraEventData.hasBuff then
 			local unitAuras = getUnitAuras(unit, "HELPFUL") or {}
-			--ViragDevTool_AddData(unitAuras, "HELPFUL")
+			--DevTool:AddData(unitAuras, "HELPFUL")
 			
 			for id, aura in pairs(unitAuras.buffs or {}) do
-				--ViragDevTool_AddData({i, aura})
+				--DevTool:AddData({i, aura})
 				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = 
 					aura.name, aura.icon, aura.applications, aura.dispelName, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
 					aura.isBossAura, aura.isFromPlayerOrPlayerPet, aura.nameplateShowAll, aura.timeMod, aura.applications
@@ -2231,7 +2454,7 @@ end
 
 		local continuationToken
 		repeat
-			local slots = { UnitAuraSlots(unitId, "HELPFUL", BUFF_MAX_DISPLAY, continuationToken) }
+			local slots = { GetAuraSlots(unitId, "HELPFUL", BUFF_MAX_DISPLAY_PLATER, continuationToken) }
 			continuationToken = slots[1]
 			for i=2, #slots do
 				local slot = slots[i];
@@ -2246,7 +2469,7 @@ end
 
 		local continuationToken
 		repeat
-			local slots = { UnitAuraSlots(unitId, "HARMFUL", BUFF_MAX_DISPLAY, continuationToken) }
+			local slots = { GetAuraSlots(unitId, "HARMFUL", BUFF_MAX_DISPLAY_PLATER, continuationToken) }
 			continuationToken = slots[1]
 			for i=2, #slots do
 				local slot = slots[i];
@@ -2270,7 +2493,7 @@ end
 			return
 		end
 		
-		--ViragDevTool_AddData({unitAuraEventData.hasBuff, unitAuraEventData.hasDebuff}, "UpdateAuras_Self_Automatic")
+		--DevTool:AddData({unitAuraEventData.hasBuff, unitAuraEventData.hasDebuff}, "UpdateAuras_Self_Automatic")
 		
 		Plater.ResetAuraContainer (self, unitAuraEventData.hasBuff, unitAuraEventData.hasDebuff)
 		local unitAuraCache = self.unitFrame.AuraCache
@@ -2279,10 +2502,10 @@ end
 		--> debuffs
 		if (Plater.db.profile.aura_show_debuffs_personal and unitAuraEventData.hasDebuff) then
 			local unitAuras = getUnitAuras(unit, "HARMFUL") or {}
-			--ViragDevTool_AddData(unitAuras)
+			--DevTool:AddData(unitAuras)
 			
 			for id, aura in pairs(unitAuras.debuffs or {}) do
-				--ViragDevTool_AddData({i, aura})
+				--DevTool:AddData({i, aura})
 				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = 
 					aura.name, aura.icon, aura.applications, aura.dispelName, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
 					aura.isBossAura, aura.isFromPlayerOrPlayerPet, aura.nameplateShowAll, aura.timeMod, aura.applications
@@ -2320,10 +2543,10 @@ end
 		--> buffs
 		if (Plater.db.profile.aura_show_buffs_personal and unitAuraEventData.hasBuff) then
 			local unitAuras = getUnitAuras(unit, "HELPFUL|PLAYER") or {}
-			--ViragDevTool_AddData(unitAuras)
+			--DevTool:AddData(unitAuras)
 			
 			for id, aura in pairs(unitAuras.buffs or {}) do
-				--ViragDevTool_AddData({i, aura})
+				--DevTool:AddData({i, aura})
 				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = 
 					aura.name, aura.icon, aura.applications, aura.dispelName, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
 					aura.isBossAura, aura.isFromPlayerOrPlayerPet, aura.nameplateShowAll, aura.timeMod, aura.applications
@@ -2624,6 +2847,10 @@ end
 		DB_TRACK_METHOD = profile.aura_tracker.track_method
 
 		Plater.MaxAurasPerRow = floor(profile.plate_config.enemynpc.health_incombat[1] / (profile.aura_width + DB_AURA_PADDING))
+		
+		if IS_WOW_PROJECT_CLASSIC_ERA then
+			IS_NEW_UNIT_AURA_AVAILABLE = Plater.db.profile.auras_experimental_update_classic_era
+		end
     end
 
 	local function re_UpdateGhostAurasCache()

@@ -270,10 +270,14 @@ local OnUpdateFunc = function(self, deltaTime)
 
     if (not self.dontShowSpark) then
         if (self.direction == "right") then
-            local pct = abs((timeNow - endTime) / (endTime - startTime))
-            pct = abs(1 - pct)
-            spark:SetPoint("left", self, "left", (self:GetWidth() * pct) - 16, 0)
-            spark:Show()
+            if (endTime - startTime > 0) then
+                local pct = abs((timeNow - endTime) / (endTime - startTime))
+                pct = abs(1 - pct)
+                spark:SetPoint("left", self, "left", (self:GetWidth() * pct) - 16, 0)
+                spark:Show()
+            else
+                spark:Hide()
+            end
         else
             spark:SetPoint("right", self, "right", self:GetWidth() * (timeNow/self.endTime), 0)
         end
@@ -365,7 +369,7 @@ function DF:CreateTimeBar(parent, texture, width, height, value, member, name)
 	end
 
 	if (name:find("$parent")) then
-		local parentName = DF.GetParentName(parent)
+		local parentName = DF:GetParentName(parent)
 		name = name:gsub("$parent", parentName)
 	end
 

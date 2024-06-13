@@ -5,8 +5,26 @@ do
 
     --add to curseforge
 
+L["OPTIONS_"] = ""
 
     --on curseforge
+    L["OPTIONS_CASTBAR_APPEARANCE"] = "Cast Bar Appearance"
+    L["OPTIONS_CASTBAR_SPARK_SETTINGS"] = "Spark Settings"
+    L["OPTIONS_CASTBAR_COLORS"] = "Cast Bar Colors"
+    L["OPTIONS_CASTBAR_SPELLICON"] = "Spell Icon"
+    L["OPTIONS_CASTBAR_BLIZZCASTBAR"] = "Blizzard Cast Bar"
+
+    L["IMPORT_CAST_SOUNDS"] = "Import Sounds"
+    L["EXPORT_CAST_SOUNDS"] = "Share Sounds"
+    L["OPTIONS_NOTHING_TO_EXPORT"] = "There's nothing to export."
+    L["IMPORT"] = "Import"
+    L["EXPORT"] = "Export"
+    L["IMPORT_CAST_COLORS"] = "Import Colors"
+    L["EXPORT_CAST_COLORS"] = "Share Colors"
+    L["OPTIONS_SHOWOPTIONS"] = "Show Options"
+    L["OPTIONS_SHOWSCRIPTS"] = "Show Scripts"
+    L["OPTIONS_CASTCOLORS_DISABLECOLORS"] = "Disable All Colors"
+
     L["OPTIONS_NOESSENTIAL_TITLE"] = "Skip Non Essential Script Patches"
     L["OPTIONS_NOESSENTIAL_NAME"] = "Disable non-essential script updates during Plater version upgrades."
     L["OPTIONS_NOESSENTIAL_DESC"] = "On updating Plater, often the new version also updates scripts from the scripts tab.\nThis may sometimes overwrite changes made by the profile author. The option below prevents Plater from modifying scripts when the addon receives an update.\n\nNote: During major patches and bug fixes, Plater may still update scripts."
@@ -56,6 +74,8 @@ do
     L["OPTIONS_INTERRUPT_SHOW_AUTHOR"] = "Show Interrupt Author"
     L["OPTIONS_INTERRUPT_SHOW_ANIM"] = "Play Interrupt Animation"
     L["OPTIONS_INTERRUPT_FILLBAR"] = "Fill Cast Bar On Interrupt"
+    L["OPTIONS_CASTBAR_QUICKHIDE"] = "Quick Hide Cast Bar"
+    L["OPTIONS_CASTBAR_QUICKHIDE_DESC"] = "After the cast finishes, immediately hide the cast bar."
     L["OPTIONS_CASTBAR_HIDE_FRIENDLY"] = "Hide Friendly Cast Bar"
     L["OPTIONS_CASTBAR_HIDE_ENEMY"] = "Hide Hostile Target Cast Bar"
     L["OPTIONS_CASTBAR_TOGGLE_TEST"] = "Toggle Cast Bar Test"
@@ -226,7 +246,7 @@ do
     L["OPTIONS_POWERBAR_HEIGHT"] = "Height of the power bar."
     L["OPTIONS_POWERBAR_WIDTH"] = "Width of the power bar."
     L["OPTIONS_PROFILE_CONFIG_EXPORTINGTASK"] = "Plater is exporting the current profile"
-    L["OPTIONS_PROFILE_CONFIG_EXPORTPROFILE"] = "Export Profile"
+    L["OPTIONS_PROFILE_CONFIG_EXPORTPROFILE"] = "Share Profile"
     L["OPTIONS_PROFILE_CONFIG_IMPORTPROFILE"] = "Import Profile"
     L["OPTIONS_PROFILE_CONFIG_MOREPROFILES"] = "Get more profiles at Wago.io"
     L["OPTIONS_PROFILE_CONFIG_OPENSETTINGS"] = "Open Profile Settings"
