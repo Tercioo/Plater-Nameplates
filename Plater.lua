@@ -1918,16 +1918,16 @@ Plater.AnchorNamesByPhraseId = {
 				return format ("%.1f", number)
 			else
 				if (number > 999999999) then
-					return format ("%.2f", number/1000000000) .. "B"
+					return format ("%.2fB", number/1000000000)
 					
 				elseif (number > 999999) then
-					return format ("%.2f", number/1000000) .. "M"
+					return format ("%.2fM", number/1000000)
 					
 				elseif (number > 99999) then
 					return floor (number/1000) .. "K"
 					
 				elseif (number > 999) then
-					return format ("%.1f", (number/1000)) .. "K"
+					return format ("%.1fK", (number/1000))
 					
 				end
 				
@@ -7433,15 +7433,15 @@ end
 			
 			if (showDecimals) then
 				if (percent < 10) then
-					healthBar.lifePercent:SetText (Plater.FormatNumber (currentHealth) .. " (" .. format ("%.2f", percent) .. "%)")
+					healthBar.lifePercent:SetText (Plater.FormatNumber (currentHealth) .. format (" (%.2f%%)", percent))
 					
 				elseif (percent < 99.9) then
-					healthBar.lifePercent:SetText (Plater.FormatNumber (currentHealth) .. " (" .. format ("%.1f", percent) .. "%)")
+					healthBar.lifePercent:SetText (Plater.FormatNumber (currentHealth) .. format (" (%.1f%%)", percent))
 				else
 					healthBar.lifePercent:SetText (Plater.FormatNumber (currentHealth) .. " (100%)")
 				end
 			else
-				healthBar.lifePercent:SetText (Plater.FormatNumber (currentHealth) .. " (" .. floor (percent) .. "%)")
+				healthBar.lifePercent:SetText (Plater.FormatNumber (currentHealth) ..  format (" (%d%%)", percent))
 			end
 			
 		elseif (showHealthAmount) then
@@ -7452,15 +7452,15 @@ end
 			
 			if (showDecimals) then
 				if (percent < 10) then
-					healthBar.lifePercent:SetText (format ("%.2f", percent) .. "%")
+					healthBar.lifePercent:SetText (format ("%.2f%%", percent))
 					
 				elseif (percent < 99.9) then
-					healthBar.lifePercent:SetText (format ("%.1f", percent) .. "%")
+					healthBar.lifePercent:SetText (format ("%.1f%%", percent))
 				else
 					healthBar.lifePercent:SetText ("100%")
 				end
 			else
-				healthBar.lifePercent:SetText (floor (percent) .. "%")
+				healthBar.lifePercent:SetText (format ("%d%%", percent))
 			end
 		
 		else
