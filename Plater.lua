@@ -4210,8 +4210,12 @@ function Plater.OnInit() --private --~oninit ~init
 	--hooking scripts has load conditions, here it creates a load filter for plater
 	--so when a load condition is changed it reload hooks
 		function Plater.HookLoadCallback (encounterID) --private
+			Plater.StartLogPerformanceCore("Plater-Core", "Mod/Script", "HookLoadCallback")
+			
 			Plater.EncounterID = encounterID
 			Plater.WipeAndRecompileAllScripts ("hook", true) --sending true to not dispatch a hotReload in the scripts
+			
+			Plater.EndLogPerformanceCore("Plater-Core", "Mod/Script", "HookLoadCallback")
 		end
 		DF:CreateLoadFilterParser (Plater.HookLoadCallback)
 	
@@ -11671,14 +11675,22 @@ end
 
 	function Plater.WipeAndRecompileAllScripts (scriptType, noHotReload)
 		if (scriptType == "script") then
+			Plater.StartLogPerformanceCore("Plater-Core", "Mod/Script", "WipeAndRecompileAllScripts - script")
+			
 			table.wipe(SCRIPT_AURA_TRIGGER_CACHE)
 			table.wipe(SCRIPT_CASTBAR_TRIGGER_CACHE)
 			table.wipe(SCRIPT_UNIT_TRIGGER_CACHE)
 			Plater.CompileAllScripts (scriptType, noHotReload)
 			
+			Plater.EndLogPerformanceCore("Plater-Core", "Mod/Script", "WipeAndRecompileAllScripts - script")
+			
 		elseif (scriptType == "hook") then
+			Plater.StartLogPerformanceCore("Plater-Core", "Mod/Script", "WipeAndRecompileAllScripts - hook")
+			
 			Plater.WipeHookContainers (noHotReload)
 			Plater.CompileAllScripts (scriptType, noHotReload)
+			
+			Plater.EndLogPerformanceCore("Plater-Core", "Mod/Script", "WipeAndRecompileAllScripts - hook")
 		end
 	end
 
@@ -11885,9 +11897,11 @@ end
 	
 	--compile scripts from the Hooking tab
 	function Plater.CompileHook (scriptObject, noHotReload)
+		Plater.StartLogPerformanceCore("Plater-Core", "Mod/Script", "CompileHook")
 		
 		--check if the script is valid and if is enabled
 		if (not scriptObject) then
+			Plater.EndLogPerformanceCore("Plater-Core", "Mod/Script", "CompileHook")
 			return
 		end
 		
@@ -11904,17 +11918,20 @@ end
 			end
 			--clear env when disabling/disabled
 			PLATER_GLOBAL_MOD_ENV [scriptObject.scriptId] = nil
+			Plater.EndLogPerformanceCore("Plater-Core", "Mod/Script", "CompileHook")
 			return
 		end
 		
 		do --check integrity
 			if (not scriptObject.Name) then
 				Plater:Msg ("fail to load mod: " .. (scriptObject.Name or "") .. ".")
+				Plater.EndLogPerformanceCore("Plater-Core", "Mod/Script", "CompileHook")
 				return
 			end
 
 			if (not scriptObject.LoadConditions) then
 				Plater:Msg ("fail to load mod: " .. (scriptObject.Name or "") .. ".")
+				Plater.EndLogPerformanceCore("Plater-Core", "Mod/Script", "CompileHook")
 				return
 			end
 			
@@ -11931,11 +11948,13 @@ end
 				not scriptObject.LoadConditions.map_ids
 			) then
 				Plater:Msg ("fail to load mod: " .. (scriptObject.Name or "") .. ".")
+				Plater.EndLogPerformanceCore("Plater-Core", "Mod/Script", "CompileHook")
 				return
 			end
 
 			if (not scriptObject.Hooks) then
 				Plater:Msg ("fail to load mod: " .. (scriptObject.Name or "") .. ".")
+				Plater.EndLogPerformanceCore("Plater-Core", "Mod/Script", "CompileHook")
 				return
 			end
 		end
@@ -11952,6 +11971,7 @@ end
 				--clear env if needed
 				PLATER_GLOBAL_MOD_ENV [scriptObject.scriptId] = nil
 			end
+			Plater.EndLogPerformanceCore("Plater-Core", "Mod/Script", "CompileHook")
 			return
 		else
 			Plater.CurrentlyLoadedHooks [scriptObject.scriptId] = true
@@ -12028,6 +12048,7 @@ end
 			
 			if (type (code) ~= "string") then
 				Plater:Msg ("fail to load mod: " .. (scriptObject.Name or "") .. ".")
+				Plater.EndLogPerformanceCore("Plater-Core", "Mod/Script", "CompileHook")
 				return
 			end
 			
@@ -12078,14 +12099,19 @@ end
 			end
 		end
 		
+		Plater.EndLogPerformanceCore("Plater-Core", "Mod/Script", "CompileHook")
 	end
 
 	--compile scripts from the Scripting tab
 	function Plater.CompileScript(scriptObject, noHotReload, ...)
+		Plater.StartLogPerformanceCore("Plater-Core", "Mod/Script", "CompileScript")
+		
 		--check if the script is valid and if is enabled
 		if (not scriptObject) then
+			Plater.EndLogPerformanceCore("Plater-Core", "Mod/Script", "CompileScript")
 			return
 		elseif (not scriptObject.Enabled) then
+			Plater.EndLogPerformanceCore("Plater-Core", "Mod/Script", "CompileScript")
 			return
 		end
 		
@@ -12272,6 +12298,7 @@ end
 			end
 		end
 		
+		Plater.EndLogPerformanceCore("Plater-Core", "Mod/Script", "CompileScript")
 	end
 
 	--check all triggers of all scripts for overlaps
