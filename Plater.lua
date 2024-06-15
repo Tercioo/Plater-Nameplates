@@ -3946,16 +3946,30 @@ Plater.AnchorNamesByPhraseId = {
 		--self:Hide()
 		
 		if self:IsProtected() then
-			self:ClearAllPoints()
-			self:SetParent(nil)
+			--self:ClearAllPoints()
+			--self:SetParent(nil)
+			--self:SetAlpha(0)
+			--self:SetShown(false)
 			
-			if self.HealthBarsContainer then
-				self.HealthBarsContainerOrigParent = self.HealthBarsContainer:GetParent() or self.HealthBarsContainerOrigParent
-				self.HealthBarsContainer:ClearAllPoints()
-				self.HealthBarsContainer:SetParent(nil)
+			for _, f in pairs(self:GetChildren() or {}) do
+				--DevTool:AddData(f, "child")
+				if type(f) == "table" and f.IsProtected then
+					local p, ep = f:IsProtected()
+					--DevTool:AddData({p, ep, f}, "protected?")
+					if ep then
+						--DevTool:AddData(f, "protected!")
+						f:ClearAllPoints()
+						f:SetParent(nil)
+						f:Hide()
+					elseif not p then
+						f:Hide()
+					else
+						f:SetAlpha(0)
+					end
+				end
 			end
 			
-			--for _, f in pairs(self:GetChildren() or {}) do
+			--for _, f in pairs(self) do
 			--	--DevTool:AddData(f, "child")
 			--	if type(f) == "table" and f.IsProtected then
 			--		local p, ep = f:IsProtected()
@@ -3965,12 +3979,26 @@ Plater.AnchorNamesByPhraseId = {
 			--			f:ClearAllPoints()
 			--			f:SetParent(nil)
 			--			f:Hide()
+			--		elseif not p then
+			--			f:Hide()
+			--		else
+			--			f:SetAlpha(0)
 			--		end
 			--	end
 			--end
+			
+			--if self.HealthBarsContainer then
+			--	self.HealthBarsContainerOrigParent = self.HealthBarsContainer:GetParent() or self.HealthBarsContainerOrigParent
+			--	self.HealthBarsContainer:ClearAllPoints()
+			--	self.HealthBarsContainer:SetParent(nil)
+			--	self.HealthBarsContainer:SetAlpha(0)
+			--	--self.HealthBarsContainer:Hide() -- can't...
+			--end
+			
 			if not self:IsProtected() then
 				self:Hide()
 			elseif DevTool then
+				self:SetAlpha(0)
 				DevTool:AddData(self, "protected")
 			end
 		else
