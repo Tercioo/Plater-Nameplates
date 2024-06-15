@@ -8,6 +8,12 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1718484617, "New Feature", "June 15th, 2024", "Adding aura border thickness options.", "cont1nuity"},
+			{1718484617, "Backend Change", "June 14th, 2024", "Some improvements for TWW handling (still a mess with default nameplates, though).", "cont1nuity"},
+			{1718484617, "Backend Change", "June 14th, 2024", "More profiling for mods/scripts.", "cont1nuity"},
+			{1718484617, "Backend Change", "June 14th, 2024", "Some slight improvements to health text handling.", "cont1nuity"},
+			{1718484617, "Backend Change", "June 12th, 2024", "Improvements to pixel perfect aura borders.", "cont1nuity"},
+			
 			{1717955490, "Bug Fix", "June 9th, 2024", "Fixing pixel perfect aura borders and Masque support.", "cont1nuity"},
 			{1717955490, "New Feature", "June 9th, 2024", "Addind default aura border color option.", "cont1nuity"},
 			{1717955490, "Bug Fix", "June 8th, 2024", "Fixing pixel perfect aura borders and Masque support.", "cont1nuity"},
