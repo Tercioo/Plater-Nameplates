@@ -2,6 +2,8 @@ local addonName, platerInternal = ...
 
 local Plater = Plater
 local GameCooltip = GameCooltip2
+
+---@type detailsframework
 local DF = DetailsFramework
 local _
 local unpack = _G.unpack
@@ -1700,6 +1702,19 @@ end
 		add_FW_dropdown:SetPoint ("right", add_API_label, "left", -10, 0)
 		add_FW_label:SetPoint ("right", add_FW_dropdown, "left", -2, 0)
 		
+		---@type df_button
+		local toggleCastBarButton = DF:CreateButton(parent,
+			function()
+				if (Plater.IsShowingCastBarTest) then
+					Plater.StopCastBarTest()
+				else
+					Plater.StartCastBarTest()
+				end
+			end, 
+			100, 20, DF.Language.CreateLocTable(addonName, "OPTIONS_CASTBAR_TOGGLE_TEST", true), 0, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
+		toggleCastBarButton:SetPoint ("right", add_FW_dropdown, "left", -117, 38)
+
+
 		--error text
 		local errortext_frame = CreateFrame ("frame", nil, code_editor, BackdropTemplateMixin and "BackdropTemplate")
 		errortext_frame:SetPoint ("bottomleft", code_editor, "bottomleft", 1, 1)

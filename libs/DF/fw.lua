@@ -1,6 +1,6 @@
 
 
-local dversion = 539
+local dversion = 540
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary(major, minor)
 
@@ -38,6 +38,8 @@ local GetSpellBookItemInfo = GetSpellBookItemInfo or function(...) local si = C_
 local SPELLBOOK_BANK_PLAYER = Enum.SpellBookSpellBank and Enum.SpellBookSpellBank.Player or "player"
 local SPELLBOOK_BANK_PET = Enum.SpellBookSpellBank and Enum.SpellBookSpellBank.Pet or "pet"
 local IsPassiveSpell = IsPassiveSpell or C_Spell.IsSpellPassive
+local GetOverrideSpell = C_SpellBook and C_SpellBook.GetOverrideSpell or C_Spell.GetOverrideSpell or GetOverrideSpell
+local HasPetSpells = HasPetSpells or C_SpellBook.HasPetSpells
 
 SMALL_NUMBER = 0.000001
 ALPHA_BLEND_AMOUNT = 0.8400251
@@ -739,6 +741,17 @@ function DF.table.setfrompath(t, path, value)
 	end
 
 	return false
+end
+
+---return the amount of keys in a table
+---@param t table
+---@return number
+function DF.table.countkeys(t)
+	local count = 0
+	for _ in pairs(t) do
+		count = count + 1
+	end
+	return count
 end
 
 ---find the value inside the table, and it it's not found, add it
@@ -1832,7 +1845,7 @@ function DF:GetAvailableSpells()
             if (raceId) then
                 if (type(raceId) == "table") then
                     if (raceId[playerRaceId]) then
-                        spellId = C_SpellBook.GetOverrideSpell(spellId)
+                        spellId = GetOverrideSpell(spellId)
                         local spellName = GetSpellInfo(spellId)
                         local bIsPassive = IsPassiveSpell(spellId, SPELLBOOK_BANK_PLAYER)
                         if (spellName and not bIsPassive) then
@@ -1842,7 +1855,7 @@ function DF:GetAvailableSpells()
 
                 elseif (type(raceId) == "number") then
                     if (raceId == playerRaceId) then
-                        spellId = C_SpellBook.GetOverrideSpell(spellId)
+                        spellId = GetOverrideSpell(spellId)
                         local spellName = GetSpellInfo(spellId)
                         local bIsPassive = IsPassiveSpell(spellId, SPELLBOOK_BANK_PLAYER)
                         if (spellName and not bIsPassive) then
@@ -1865,7 +1878,7 @@ function DF:GetAvailableSpells()
 			local spellType, spellId = GetSpellBookItemInfo(entryOffset, SPELLBOOK_BANK_PLAYER)
 			if (spellId) then
 				if (spellType == "SPELL") then
-					spellId = C_SpellBook.GetOverrideSpell(spellId)
+					spellId = GetOverrideSpell(spellId)
 					local spellName = GetSpellInfo(spellId)
 					local bIsPassive = IsPassiveSpell(spellId, SPELLBOOK_BANK_PLAYER)
 					if (spellName and not bIsPassive) then
@@ -1886,7 +1899,7 @@ function DF:GetAvailableSpells()
         local spellType, spellId = GetSpellBookItemInfo(entryOffset, "player")
         if (spellId) then
             if (spellType == "SPELL") then
-                spellId = C_SpellBook.GetOverrideSpell(spellId)
+                spellId = GetOverrideSpell(spellId)
                 local spellName = GetSpellInfo(spellId)
                 local bIsPassive = IsPassiveSpell(spellId, "player")
 
@@ -1909,7 +1922,7 @@ function DF:GetAvailableSpells()
         for i = 1, numPetSpells do
             local spellName, _, unmaskedSpellId = GetSpellBookItemName(i, SPELLBOOK_BANK_PET)
             if (unmaskedSpellId) then
-                unmaskedSpellId = C_SpellBook.GetOverrideSpell(unmaskedSpellId)
+                unmaskedSpellId = GetOverrideSpell(unmaskedSpellId)
                 local bIsPassive = IsPassiveSpell(unmaskedSpellId, SPELLBOOK_BANK_PET)
                 if (spellName and not bIsPassive) then
                     completeListOfSpells[unmaskedSpellId] = true
