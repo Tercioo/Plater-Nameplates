@@ -1473,18 +1473,21 @@ end
 			
 			--newFrameIcon:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
 			--newFrameIcon.Border:SetBorderSize (1)
-			newFrameIcon:SetBorderSize (1)
 			
 		
 			local auraWidth
 			local auraHeight
+			local borderThickness
 			if curBuffFrame == 2 then
 				auraWidth = Plater.db.profile.aura_width2
 				auraHeight = Plater.db.profile.aura_height2
+				borderThickness = Plater.db.profile.aura_border_thickness2
 			else
 				auraWidth = Plater.db.profile.aura_width
 			    auraHeight = Plater.db.profile.aura_height
+				borderThickness = Plater.db.profile.aura_border_thickness
 			end
+			newFrameIcon:SetBorderSize (borderThickness)
 			--newFrameIcon:SetSize (auraWidth, auraHeight)
 			--newFrameIcon.Icon:SetSize (auraWidth-2, auraHeight-2)
 			local sizeMod = UIParent:GetEffectiveScale() * (Plater.db.profile.use_ui_parent_just_enabled and Plater.db.profile.ui_parent_scale_tune or 1)
@@ -1656,24 +1659,29 @@ end
 			--icon size
 			local auraWidth
 			local auraHeight
+			local borderThickness
 			if (isPersonal) then
 				auraWidth = profile.aura_width_personal
 				auraHeight = profile.aura_height_personal
+				borderThickness = profile.aura_border_thickness_personal
 				--auraIconFrame:SetSize (auraWidth, auraHeight)
 				--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 			else
 				if curBuffFrame == 2 then
 					auraWidth = profile.aura_width2
 					auraHeight = profile.aura_height2
+					borderThickness = profile.aura_border_thickness2
 					--auraIconFrame:SetSize (auraWidth, auraHeight)
 					--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 				else
 					auraWidth = profile.aura_width
 					auraHeight = profile.aura_height
+					borderThickness = profile.aura_border_thickness
 					--auraIconFrame:SetSize (auraWidth, auraHeight)
 					--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 				end
 			end
+			auraIconFrame:SetBorderSize (borderThickness)
 			local sizeMod = 1 --UIParent:GetEffectiveScale() * (Plater.db.profile.use_ui_parent_just_enabled and Plater.db.profile.ui_parent_scale_tune or 1)
 			PixelUtil.SetSize(auraIconFrame, auraWidth * sizeMod, auraHeight * sizeMod)
 			
@@ -1701,24 +1709,29 @@ end
 		if (auraIconFrame.IsPersonal ~= isPersonal or auraIconFrame.BuffFrame ~= curBuffFrame or auraIconFrame.IsGhostAura) then
 			local auraWidth
 			local auraHeight
+			local borderThickness
 			if (isPersonal) then
 				auraWidth = profile.aura_width_personal
 				auraHeight = profile.aura_height_personal
+				borderThickness = profile.aura_border_thickness_personal
 				--auraIconFrame:SetSize (auraWidth, auraHeight)
 				--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 			else
 				if curBuffFrame == 2 then
 					auraWidth = profile.aura_width2
 					auraHeight = profile.aura_height2
+					borderThickness = profile.aura_border_thickness2
 					--auraIconFrame:SetSize (auraWidth, auraHeight)
 					--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 				else
 					auraWidth = profile.aura_width
 					auraHeight = profile.aura_height
+					borderThickness = profile.aura_border_thickness
 					--auraIconFrame:SetSize (auraWidth, auraHeight)
 					--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 				end
 			end
+			auraIconFrame:SetBorderSize (borderThickness)
 			local sizeMod = 1 --UIParent:GetEffectiveScale() * (Plater.db.profile.use_ui_parent_just_enabled and Plater.db.profile.ui_parent_scale_tune or 1)
 			PixelUtil.SetSize(auraIconFrame, auraWidth * sizeMod, auraHeight * sizeMod)
 			
