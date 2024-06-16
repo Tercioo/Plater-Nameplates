@@ -4041,6 +4041,9 @@ function Plater.OnInit() --private --~oninit ~init
 		DF.Language.SetCurrentLanguage(addonId, PlaterLanguage.language)
 	end
 
+	--PlaterBackup is a table to store data that has been removed by the player might want to restore in another time
+	PlaterBackup = PlaterBackup or {}
+
 	Plater.InitializeSavedVariables()
 	Plater.RefreshDBUpvalues()
 
