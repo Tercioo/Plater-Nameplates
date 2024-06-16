@@ -78,15 +78,15 @@ local dotTextureOnUpdateFunc = function(self, deltaTime)
     self.textureInfo.throttle)
 end
 
---play an animation with dots around the nameplate
---@frame: parent frame
---@textureId: which dot texture to use, goes from 1 to 5
---@color: accept color name "yellow", rgba{1, .7, .2, 1}, {r = 1, g = 1, b = 1, a = 1}
---@xOffset: adjust the left and right padding
---@yOffset: adjust the bottom and top padding
---@blendMode: default "ADD", shouldn't be changed
---@throttleOverride: override the animation speed, default 0.016
---this function return a frame to be used on StopDotsAnimation()
+---play an animation with dots around the nameplate
+---@param frame frame parent frame
+---@param textureId any which dot texture to use, goes from 1 to 5
+---@param color any accept color name "yellow", rgba{1, .7, .2, 1}, {r = 1, g = 1, b = 1, a = 1}
+---@param xOffset number? adjust the left and right padding
+---@param yOffset number? adjust the bottom and top padding
+---@param blendMode string? default "ADD", shouldn't be changed
+---@param throttleOverride number? override the animation speed, default 0.016
+---this function return a frame to be used on StopDotsAnimation()
 function Plater.PlayDotAnimation(frame, textureId, color, xOffset, yOffset, blendMode, throttleOverride)
     --stores all dot animations active in the frame
     frame.dotTextureAnimations = frame.dotTextureAnimations or {}

@@ -1,4 +1,8 @@
 
+---@alias scriptname string
+
+
+
 ---@class ctimer : table
 ---@field Cancelled fun(self: ctimer) : boolean if true this timer was cancelled or finished
 ---@field Cancel fun(self: ctimer) cancel the timer
@@ -146,3 +150,43 @@
 ---@field RemoveForceBlizzardNameplateUnits fun(npcId: number)
 ---@field GetHealthCutoffValue fun() update the execute range by the class, spec and talents the player is using
 ---@field CheckRange fun(plateFrame: table, onAdded: boolean) check if the nameplate is in range and update the alpha
+
+---@class scriptoption : table
+---@field Type number
+---@field Name string
+---@field Value any value can be a number, string, boolean or a table
+---@field Key string
+---@field Icon string
+---@field Desc string
+---@field Fraction boolean
+---@field Min number
+---@field Max number
+
+---@class scriptdata : table
+---@field ScriptType number
+---@field Name string
+---@field Desc string
+---@field Author string
+---@field Revision number
+---@field Time number
+---@field version number
+---@field semver string
+---@field url string
+---@field Icon string
+---@field Prio number
+---@field Enabled boolean
+---@field NpcNames string[]
+---@field SpellIds number[]
+---@field Initialization string
+---@field Temp_Initialization string
+---@field ConstructorCode string
+---@field Temp_ConstructorCode string
+---@field UpdateCode string
+---@field Temp_UpdateCode string
+---@field OnShowCode string
+---@field Temp_OnShowCode string
+---@field OnHideCode string
+---@field Temp_OnHideCode string
+---@field Options scriptoption[]
+---@field OptionsValues table<string, any> store the values of the options
+---@field PlaterCore number
