@@ -27,3 +27,5 @@ locales/zhTW.lua
 *.json
 *.pdn
 *.afphoto
+images/cast_bar_debuff.afphoto~lock~
+*.afphoto~lock~

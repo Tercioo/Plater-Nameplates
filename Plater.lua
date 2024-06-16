@@ -5075,6 +5075,10 @@ function Plater.OnInit() --private --~oninit ~init
 					local profile = Plater.db.profile
 					local isInCombat = profile.use_player_combat_state and PLAYER_IN_COMBAT or unitFrame.InCombat
 					
+					--reset spark color and size
+					self.Spark:SetVertexColor(unpack(profile.cast_statusbar_spark_color))
+					PixelUtil.SetSize(self.Spark, profile.cast_statusbar_spark_width, self:GetHeight())
+
 					--cut the spell name text to fit within the castbar
 					Plater.UpdateSpellNameSize (self.Text, unitFrame.ActorType, nil, isInCombat)
 
