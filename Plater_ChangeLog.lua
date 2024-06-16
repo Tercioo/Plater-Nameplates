@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1718484617, "Backend Change", "June 16th, 2024", "Adding memory profiling.", "cont1nuity"},
 			{1718484617, "New Feature", "June 15th, 2024", "Adding aura border thickness options.", "cont1nuity"},
 			{1718484617, "Backend Change", "June 14th, 2024", "Some improvements for TWW handling (still a mess with default nameplates, though).", "cont1nuity"},
 			{1718484617, "Backend Change", "June 14th, 2024", "More profiling for mods/scripts.", "cont1nuity"},
