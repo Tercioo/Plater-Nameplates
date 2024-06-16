@@ -29,3 +29,4 @@ locales/zhTW.lua
 *.afphoto
 images/cast_bar_debuff.afphoto~lock~
 *.afphoto~lock~
+/.tmp.driveupload
