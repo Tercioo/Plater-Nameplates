@@ -541,6 +541,8 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
     spells_scroll:SetPoint("topleft", colorsFrame, "topleft", 10, scrollY)
     colorsFrame.SpellsScroll = spells_scroll
 
+    ---244.999 PlaterOptionsPanelContainerColorManagementColorsScrollScrollBarScrollUpButton
+
     colorsFrame.ModelFrame:SetFrameLevel(spells_scroll:GetFrameLevel() + 20)
 
     spells_scroll:SetScript("OnShow", function(self)
