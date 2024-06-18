@@ -7452,7 +7452,7 @@ end
 					healthBar.lifePercent:SetText (Plater.FormatNumber (currentHealth) .. " (100%)")
 				end
 			else
-				healthBar.lifePercent:SetText (Plater.FormatNumber (currentHealth) ..  format (" (%d%%)", percent))
+				healthBar.lifePercent:SetText (Plater.FormatNumber (currentHealth) ..  format (" (%d%%)", floor(percent)))
 			end
 			
 		elseif (showHealthAmount) then
@@ -7471,7 +7471,7 @@ end
 					healthBar.lifePercent:SetText ("100%")
 				end
 			else
-				healthBar.lifePercent:SetText (format ("%d%%", percent))
+				healthBar.lifePercent:SetText (format ("%d%%", floor(percent)))
 			end
 		
 		else
