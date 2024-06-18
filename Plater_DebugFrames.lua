@@ -6,6 +6,8 @@ local addonName, platerInternal = ...
 ---@type detailsframework
 local DF = DetailsFramework
 
+local MEMBER_UNITID = "namePlateUnitToken"
+
 local GetSpellInfo = GetSpellInfo or function(spellID) if not spellID then return nil end local si = C_Spell.GetSpellInfo(spellID) if si then return si.name, nil, si.iconID, si.castTime, si.minRange, si.maxRange, si.spellID, si.originalIconID end end
 
 function Plater.DebugNameplate()
@@ -191,14 +193,14 @@ function Plater.DebugHealthAnimation()
 
             if (self.healthBar.CurrentHealth == 0) then
                 self.healthBar.AnimationStart = 0
-                self.healthBar.AnimationEnd = UnitHealthMax (self [MEMBER_UNITID])
+                self.healthBar.AnimationEnd = UnitHealthMax(self [MEMBER_UNITID])
             else
-                self.healthBar.AnimationStart = UnitHealthMax (self [MEMBER_UNITID])
+                self.healthBar.AnimationStart = UnitHealthMax(self [MEMBER_UNITID])
                 self.healthBar.AnimationEnd = 0
             end
 
             self.healthBar:SetValue (self.healthBar.CurrentHealth)
-            self.healthBar.CurrentHealthMax = UnitHealthMax (self [MEMBER_UNITID])
+            self.healthBar.CurrentHealthMax = UnitHealthMax(self [MEMBER_UNITID])
 
             self.healthBar.IsAnimating = true
 
