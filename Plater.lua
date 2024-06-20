@@ -5424,8 +5424,9 @@ function Plater.OnInit() --private --~oninit ~init
 	function Plater.OnUpdateHealthMax (self)
 		Plater.StartLogPerformanceCore("Plater-Core", "Health", "OnUpdateHealthMax")
 		
-		--the framework already set the min max values
-		self.CurrentHealthMax = self.currentHealthMax
+		-- ensure updated values...
+		Plater.QuickHealthUpdate (self.unitFrame)
+		
 		Plater.CheckLifePercentText (self.unitFrame)
 		
 		Plater.EndLogPerformanceCore("Plater-Core", "Health", "OnUpdateHealthMax")
@@ -7452,7 +7453,7 @@ end
 					healthBar.lifePercent:SetText (Plater.FormatNumber (currentHealth) .. " (100%)")
 				end
 			else
-				healthBar.lifePercent:SetText (Plater.FormatNumber (currentHealth) ..  format (" (%d%%)", floor(percent)))
+				healthBar.lifePercent:SetText (Plater.FormatNumber (currentHealth) ..  format (" (%d%%)", percent))
 			end
 			
 		elseif (showHealthAmount) then
@@ -7471,7 +7472,7 @@ end
 					healthBar.lifePercent:SetText ("100%")
 				end
 			else
-				healthBar.lifePercent:SetText (format ("%d%%", floor(percent)))
+				healthBar.lifePercent:SetText (format ("%d%%", percent))
 			end
 		
 		else
