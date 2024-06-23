@@ -2137,6 +2137,12 @@ Plater.AnchorNamesByPhraseId = {
 			
 			Plater.UpdateAllNameplateColors()
 			Plater.UpdateAllPlates()
+			
+			if (platerInternal.OpenOptionspanelAfterCombat) then
+				local OpenOptionspanelAfterCombat = platerInternal.OpenOptionspanelAfterCombat
+				platerInternal.OpenOptionspanelAfterCombat = nil
+				C_Timer.NewTimer (1.5, function() Plater.OpenOptionsPanel(unpack(OpenOptionspanelAfterCombat)) end )
+			end
 		end,
 
 		FRIENDLIST_UPDATE = function()
@@ -3952,7 +3958,7 @@ Plater.AnchorNamesByPhraseId = {
 			if self.HealthBarsContainer then
 				self.HealthBarsContainerOrigParent = self.HealthBarsContainer:GetParent() or self.HealthBarsContainerOrigParent
 				self.HealthBarsContainer:ClearAllPoints()
-				self.HealthBarsContainer:SetParent(nil)
+				--self.HealthBarsContainer:SetParent(nil)
 			end
 			
 			--for _, f in pairs(self:GetChildren() or {}) do
@@ -3971,7 +3977,7 @@ Plater.AnchorNamesByPhraseId = {
 			if not self:IsProtected() then
 				self:Hide()
 			elseif DevTool then
-				DevTool:AddData(self, "protected")
+				DevTool:AddData(self, "protected nameplate...")
 			end
 		else
 			self:Hide()

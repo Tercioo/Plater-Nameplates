@@ -159,6 +159,8 @@ local bIsOptionsPanelFullyLoaded = false
 
 -- ~options �ptions
 function Plater.OpenOptionsPanel(pageNumber, bIgnoreLazyLoad)
+	platerInternal.OpenOptionspanelAfterCombat = nil
+	
 	--localization
 	local L = DF.Language.GetLanguageTable(addonId)
 
@@ -181,6 +183,12 @@ function Plater.OpenOptionsPanel(pageNumber, bIgnoreLazyLoad)
 		end
 
 		return true
+	end
+	
+	if (InCombatLockdown()) then
+		Plater:Msg ("Optionspanel not loaded and cannot open during combat. It will open automatically after combat ends.")
+		platerInternal.OpenOptionspanelAfterCombat = {pageNumber, bIgnoreLazyLoad}
+		return
 	end
 
 	if (pageNumber) then
