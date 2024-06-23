@@ -8,12 +8,15 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
-			{1718484617, "Backend Change", "June 16th, 2024", "Adding memory profiling.", "cont1nuity"},
-			{1718484617, "New Feature", "June 15th, 2024", "Adding aura border thickness options.", "cont1nuity"},
-			{1718484617, "Backend Change", "June 14th, 2024", "Some improvements for TWW handling (still a mess with default nameplates, though).", "cont1nuity"},
-			{1718484617, "Backend Change", "June 14th, 2024", "More profiling for mods/scripts.", "cont1nuity"},
-			{1718484617, "Backend Change", "June 14th, 2024", "Some slight improvements to health text handling.", "cont1nuity"},
-			{1718484617, "Backend Change", "June 12th, 2024", "Improvements to pixel perfect aura borders.", "cont1nuity"},
+			{1719181362, "Backend Change", "June 24th, 2024", "First load of the options menu will only take place out of combat now and be triggered automatically when combat ends.", "cont1nuity"},
+			{1719181362, "Bug Fix", "June 20th, 2024", "Fixing an issue with out of order health updates.", "cont1nuity"},
+			{1719181362, "Backend Change", "June 17th, 2024", "Updates and preparations for scripts for TWW.", "Terciob"},
+			{1719181362, "Backend Change", "June 16th, 2024", "Adding memory profiling.", "cont1nuity"},
+			{1719181362, "New Feature", "June 15th, 2024", "Adding aura border thickness options.", "cont1nuity"},
+			{1719181362, "Backend Change", "June 14th, 2024", "Some improvements for TWW handling (still a mess with default nameplates, though).", "cont1nuity"},
+			{1719181362, "Backend Change", "June 14th, 2024", "More profiling for mods/scripts.", "cont1nuity"},
+			{1719181362, "Backend Change", "June 14th, 2024", "Some slight improvements to health text handling.", "cont1nuity"},
+			{1719181362, "Backend Change", "June 12th, 2024", "Improvements to pixel perfect aura borders.", "cont1nuity"},
 			
 			{1717955490, "Bug Fix", "June 9th, 2024", "Fixing pixel perfect aura borders and Masque support.", "cont1nuity"},
 			{1717955490, "New Feature", "June 9th, 2024", "Addind default aura border color option.", "cont1nuity"},
