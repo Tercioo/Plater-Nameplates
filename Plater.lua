@@ -3001,6 +3001,12 @@ Plater.AnchorNamesByPhraseId = {
 					castIconFrame:SetParent(dummyMasqueIconButton)
 					castIconFrame:SetPoint("TOPLEFT")
 					castIconFrame:SetPoint("BOTTOMRIGHT")
+					
+					dummyMasqueIconButton:EnableMouse (false)
+					if dummyMasqueIconButton.EnableMouseMotion then
+						dummyMasqueIconButton:EnableMouseMotion (false)
+					end
+					
 					castIconFrame:Show()
 					
 					--overwrite original and keep a reference
