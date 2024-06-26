@@ -602,13 +602,14 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
             spells_scroll:Refresh()
         end
 
-        local aura_search_textentry = DF:CreateTextEntry(colorsFrame, function()end, 150, 20, "AuraSearchTextEntry", _, _, options_dropdown_template)
-        aura_search_textentry:SetPoint("bottomright", colorsFrame.ModelFrame, "topright", 1, 21) --offset the x in 1 pixel to account the border size of the scrollframe
-        aura_search_textentry:SetHook("OnChar",		colorsFrame.OnSearchBoxTextChanged)
-        aura_search_textentry:SetHook("OnTextChanged", 	colorsFrame.OnSearchBoxTextChanged)
-        aura_search_textentry:SetAsSearchBox()
-        aura_search_textentry.tooltip = "|cFFFFFF00Npc Name|r or |cFFFFFF00Zone Name|r"
-        aura_search_textentry:SetFrameLevel(colorsFrame.Header:GetFrameLevel() + 20)
+        local auraSearchTextEntry = DF:CreateTextEntry(colorsFrame, function()end, 150, 20, "AuraSearchTextEntry", _, _, options_dropdown_template)
+        auraSearchTextEntry:SetPoint("bottomright", colorsFrame.ModelFrame, "topright", 1, 21) --offset the x in 1 pixel to account the border size of the scrollframe
+        auraSearchTextEntry:SetHook("OnChar",		colorsFrame.OnSearchBoxTextChanged)
+        auraSearchTextEntry:SetHook("OnTextChanged", 	colorsFrame.OnSearchBoxTextChanged)
+        auraSearchTextEntry:SetAsSearchBox()
+        auraSearchTextEntry.tooltip = "|cFFFFFF00Npc Name|r or |cFFFFFF00Zone Name|r"
+        auraSearchTextEntry:SetFrameLevel(colorsFrame.Header:GetFrameLevel() + 20)
+        auraSearchTextEntry:SetBackdropColor(0.1, 0.1, 0.1, 0.9)
 
         function colorsFrame.RefreshScroll(refreshSpeed)
             spells_scroll:Hide()
@@ -617,7 +618,7 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
 
     --help button
         local help_button = DF:CreateButton(colorsFrame, function()end, 90, 20, "Help", -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
-        help_button:SetPoint("right", aura_search_textentry, "left", -2, 0)
+        help_button:SetPoint("right", auraSearchTextEntry, "left", -2, 0)
         help_button.tooltip = "|cFFFFFF00Help:|r\n\n- Run dungeons and raids to fill the npc list.\n\n- |cFFFFEE00Scripts Only|r aren't automatically applied, scripts can import the color set here using |cFFFFEE00local colorTable = Plater.GetNpcColor(unitFrame)|r.\n\n- Colors set here override threat colors.\n\n- Colors set in scripts override colors set here.\n\n- |TInterface\\AddOns\\Plater\\media\\star_empty_64:16:16|t icon indicates the color is favorite, so you can use it across dungeons to keep color consistency."
         help_button:SetFrameLevel(colorsFrame.Header:GetFrameLevel() + 20)
         help_button:SetIcon([[Interface\AddOns\Plater\images\circle_icon_help.png]], 16, 16, "overlay", {0, 1, 0, 1}, nil, nil, nil, nil, nil, "TRILINEAR")
