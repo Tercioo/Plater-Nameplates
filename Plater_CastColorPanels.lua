@@ -1588,6 +1588,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             spells_scroll:Refresh()
         end
 
+        --~search
         local auraSearchTextEntry = DF:CreateTextEntry(castFrame, function()end, 150, 20, "AuraSearchTextEntry", _, _, options_dropdown_template)
         auraSearchTextEntry:SetPoint("bottomright", castFrame, "topright", 14, -28)
         auraSearchTextEntry:SetHook("OnChar", castFrame.OnSearchBoxTextChanged)

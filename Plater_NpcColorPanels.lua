@@ -606,20 +606,9 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
         aura_search_textentry:SetPoint("bottomright", colorsFrame.ModelFrame, "topright", 1, 21) --offset the x in 1 pixel to account the border size of the scrollframe
         aura_search_textentry:SetHook("OnChar",		colorsFrame.OnSearchBoxTextChanged)
         aura_search_textentry:SetHook("OnTextChanged", 	colorsFrame.OnSearchBoxTextChanged)
-        local aura_search_label = DF:CreateLabel(aura_search_textentry, "search", DF:GetTemplate("font", "ORANGE_FONT_TEMPLATE"))
-        aura_search_label:SetPoint("left", aura_search_textentry, "left", 4, 0)
-        aura_search_label.fontcolor = "gray"
-        aura_search_label.color = {.5, .5, .5, .3}
+        aura_search_textentry:SetAsSearchBox()
         aura_search_textentry.tooltip = "|cFFFFFF00Npc Name|r or |cFFFFFF00Zone Name|r"
         aura_search_textentry:SetFrameLevel(colorsFrame.Header:GetFrameLevel() + 20)
-
-        --clear search button
-        local clear_search_button = DF:CreateButton(colorsFrame, function() aura_search_textentry:SetText(""); aura_search_textentry:ClearFocus() end, 20, 20, "", -1)
-        clear_search_button:SetPoint("right", aura_search_textentry, "right", 5, 0)
-        clear_search_button:SetAlpha(.7)
-        clear_search_button:SetIcon([[Interface\Glues\LOGIN\Glues-CheckBox-Check]])
-        clear_search_button.icon:SetDesaturated(true)
-        clear_search_button:SetFrameLevel(colorsFrame.Header:GetFrameLevel() + 21)
 
         function colorsFrame.RefreshScroll(refreshSpeed)
             spells_scroll:Hide()
