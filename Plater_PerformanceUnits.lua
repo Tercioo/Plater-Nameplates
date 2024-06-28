@@ -27,12 +27,12 @@ function platerInternal.CreatePerformanceUnits(Plater)
 	local perfUnits = PlaterDB.performance_units
 
 	--list of default performance units, being in this list means they are added everytime Plater loads
-	perfUnits[189707] = true --chaotic essence (shadowlands season 4 raid affixes) --these are the multiple spawns from the above
-	perfUnits[167999] = true --Echo of Sin (shadowlands, Castle Nathria, Sire Denathrius)
-	perfUnits[176920] = true --Domination Arrow (shadowlands, Sanctum of Domination, Sylvanas)
-	perfUnits[196642] = true --Hungry Lasher (dragonflight, Algeth'ar Academy, Overgrown Ancient)
-	perfUnits[211306] = true --Fiery Vines (dragonflight, Amirdrassil, Tindral Sageswift)
-	perfUnits[214441] = true --Scorched Treant (dragonflight, Amirdrassil, Tindral Sageswift)
+	perfUnits[189707] = perfUnits[189707] == nil and true or perfUnits[189707] --chaotic essence (shadowlands season 4 raid affixes) --these are the multiple spawns from the above
+	perfUnits[167999] = perfUnits[167999] == nil and true or perfUnits[167999] --Echo of Sin (shadowlands, Castle Nathria, Sire Denathrius)
+	perfUnits[176920] = perfUnits[176920] == nil and true or perfUnits[176920] --Domination Arrow (shadowlands, Sanctum of Domination, Sylvanas)
+	perfUnits[196642] = perfUnits[196642] == nil and true or perfUnits[196642] --Hungry Lasher (dragonflight, Algeth'ar Academy, Overgrown Ancient)
+	perfUnits[211306] = perfUnits[211306] == nil and true or perfUnits[211306] --Fiery Vines (dragonflight, Amirdrassil, Tindral Sageswift)
+	perfUnits[214441] = perfUnits[214441] == nil and true or perfUnits[214441] --Scorched Treant (dragonflight, Amirdrassil, Tindral Sageswift)
 
 	--transfer npcs ids directly added into Plater.PerformanceUnits table before Plater.OnInit() call
 	for npcId in pairs(Plater.PerformanceUnits) do
@@ -55,7 +55,7 @@ function platerInternal.CreatePerformanceUnits(Plater)
 
 	Plater.RemovePerformanceUnits = function (npcID)
 		if type(npcID) == "number" then
-			Plater.PerformanceUnits[npcID] = nil
+			Plater.PerformanceUnits[npcID] = false
 		end
 	end
 end
