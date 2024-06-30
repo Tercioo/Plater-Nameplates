@@ -7,6 +7,8 @@ do
 
 L["OPTIONS_"] = ""
 
+
+
     --on curseforge
     L["OPTIONS_CASTBAR_APPEARANCE"] = "Cast Bar Appearance"
     L["OPTIONS_CASTBAR_SPARK_SETTINGS"] = "Spark Settings"
@@ -276,6 +278,7 @@ L["OPTIONS_"] = ""
     Character specific setting!]=]
     L["OPTIONS_SCALE"] = "Scale"
     L["OPTIONS_SCRIPTING_REAPPLY"] = "Re-Apply Default Values"
+    L["OPTIONS_SCRIPTING_ADDOPTION"] = "Select which option to add"
     L["OPTIONS_SETTINGS_COPIED"] = "settings copied."
     L["OPTIONS_SETTINGS_FAIL_COPIED"] = "failed to get the settings for the current selected tab."
     L["OPTIONS_SHADOWCOLOR"] = "Shadow Color"
