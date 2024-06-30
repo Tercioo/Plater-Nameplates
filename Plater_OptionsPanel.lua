@@ -185,7 +185,7 @@ function Plater.OpenOptionsPanel(pageNumber, bIgnoreLazyLoad)
 		return true
 	end
 	
-	if (InCombatLockdown()) then
+	if (InCombatLockdown() and not Plater.IsInOpenWorld()) then
 		Plater:Msg ("Optionspanel not loaded and cannot open during combat. It will open automatically after combat ends.")
 		platerInternal.OpenOptionspanelAfterCombat = {pageNumber, bIgnoreLazyLoad}
 		return
