@@ -692,7 +692,7 @@ local function getUnitAuras(unit, filter)
 	local unitCacheData = UnitAuraCacheData[unit]
 	--DevTool:AddData({unitCacheData, filter = filter, isFullUpdateHarm = unitCacheData.isFullUpdateHarm, isFullUpdateHelp = unitCacheData.isFullUpdateHelp, update = ((isHarmful and  not unitCacheData.isFullUpdateHarm) or (isHelpful and not unitCacheData.isFullUpdateHelp))}, "getUnitAuras - " .. unit)
 	
-	if unitCacheData and ((isHarmful and  not unitCacheData.isFullUpdateHarm) or (isHelpful and not unitCacheData.isFullUpdateHelp)) then --new aura event
+	if unitCacheData and ((isHarmful and not unitCacheData.isFullUpdateHarm) or (isHelpful and not unitCacheData.isFullUpdateHelp)) then --new aura event
 		Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdateAuras - getUnitAuras - short")
 		-- debuffs
 		if unitCacheData.debuffsChanged then
@@ -2303,17 +2303,19 @@ end
 							can_show_this_debuff = true
 						end
 					end
+					
+					local sourceIsPlayer = sourceUnit and (UnitIsUnit (sourceUnit, "player") or UnitIsUnit (sourceUnit, "pet") or Plater.PlayerPetCache[UnitGUID(sourceUnit)]) and true
 			
 					--> important aura
-					if (DB_AURA_SHOW_IMPORTANT and (nameplateShowAll or isBossAura)) then
+					if (DB_AURA_SHOW_IMPORTANT and (nameplateShowAll or isBossAura or (nameplateShowPersonal and sourceIsPlayer))) then
 						can_show_this_debuff = true
 					
 					--> is casted by the player
-					elseif (DB_AURA_SHOW_BYPLAYER and sourceUnit and (UnitIsUnit (sourceUnit, "player") or UnitIsUnit (sourceUnit, "pet") or Plater.PlayerPetCache[UnitGUID(sourceUnit)])) then
+					elseif (DB_AURA_SHOW_BYPLAYER and sourceIsPlayer) then
 						can_show_this_debuff = true
 						
 					--> is casted by other players
-					elseif (DB_AURA_SHOW_BYOTHERPLAYERS and isFromPlayerOrPlayerPet and sourceUnit and not UnitIsUnit (sourceUnit, "player")) then
+					elseif (DB_AURA_SHOW_BYOTHERPLAYERS and isFromPlayerOrPlayerPet and sourceUnit and not sourceIsPlayer) then
 						can_show_this_debuff = true	
 						
 					--> user added this buff to track in the buff tracking tab
@@ -2385,7 +2387,9 @@ end
 						Plater.AddExtraIcon (self, name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, true, "HELPFUL", id, timeMod)
 					else
 						--> important aura
-						if (DB_AURA_SHOW_IMPORTANT and (nameplateShowAll or isBossAura)) then
+						local sourceIsPlayer = sourceUnit and (UnitIsUnit (sourceUnit, "player") or UnitIsUnit (sourceUnit, "pet") or Plater.PlayerPetCache[UnitGUID(sourceUnit)]) and true
+						
+						if (DB_AURA_SHOW_IMPORTANT and (nameplateShowAll or isBossAura or (nameplateShowPersonal and sourceIsPlayer))) then
 							local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
 							Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, true, true, nil, nil, dispelName, timeMod)
 						
@@ -2415,12 +2419,12 @@ end
 							Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, true, nil, nil, nil, dispelName, timeMod)
 						
 						--> is casted by the player
-						elseif (DB_AURA_SHOW_BYPLAYER and sourceUnit and UnitIsUnit (sourceUnit, "player")) then
+						elseif (DB_AURA_SHOW_BYPLAYER and sourceIsPlayer) then
 							local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
 							Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, true, nil, nil, nil, dispelName, timeMod)
 							
 						--> is casted by other players
-						elseif (DB_AURA_SHOW_BYOTHERPLAYERS and isFromPlayerOrPlayerPet and sourceUnit and not UnitIsUnit (sourceUnit, "player")) then
+						elseif (DB_AURA_SHOW_BYOTHERPLAYERS and isFromPlayerOrPlayerPet and sourceUnit and not sourceIsPlayer) then
 							local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
 							Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, true, nil, nil, nil, dispelName, timeMod)
 							
