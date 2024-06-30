@@ -5028,6 +5028,9 @@ function Plater.OnInit() --private --~oninit ~init
 					if (globalScriptObject and (self.casting or self.channeling) and not self.IsInterrupted) then
 						self:OnHideWidget()
 					end
+
+					--reset the visibility of the spell name text
+					self.Text:Show()
 					
 					local curTime = GetTime()
 					--local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, spellId = UnitCastingInfo (unitCast)

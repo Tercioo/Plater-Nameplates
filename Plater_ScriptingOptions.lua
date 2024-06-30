@@ -312,6 +312,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                 elseif (selectedOptionType == 6) then --black space
                     newOptionObject.Value = 0
                     newOptionObject.Icon = iconList[selectedOptionType]
+                    newOptionObject.Name = "blank space"
 
                 elseif (selectedOptionType == 7) then --list
                     newOptionObject.Value = {}
@@ -346,7 +347,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
             local t = {}
             for i = 1, #listOfAvailableOptions do
                 local option = listOfAvailableOptions[i]
-                t [#t + 1] = {label = option, value = i, onclick = function()end, desc = "Select which option to add", tooltipwidth = 300, icon = iconList[i]}
+                t [#t + 1] = {label = option, value = i, onclick = function()end, desc = "OPTIONS_SCRIPTING_ADDOPTION", tooltipwidth = 300, icon = iconList[i], addonId = addonId}
             end
             return t
         end
