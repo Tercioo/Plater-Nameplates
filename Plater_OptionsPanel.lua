@@ -35,6 +35,8 @@ local highlightColorLastCombat = {1, 1, .2, .25}
 local dropdownStatusBarTexture = platerInternal.Defaults.dropdownStatusBarTexture
 local dropdownStatusBarColor = platerInternal.Defaults.dropdownStatusBarColor
 
+local CONST_DELAY_TO_CREATE_SPELLLISTTAB = 0.15
+
 --when opening the options after an encounter, open at the tab "spell list", it shows the spells used on the encounter
 local CONST_LASTEVENTS_TAB_INDEX = 19
 
@@ -145,7 +147,9 @@ function Plater.CheckOptionsTab()
 		if (Plater.LatestEncounter + 60 > time()) then
 			---@type df_tabcontainer
 			local tabContainer = _G["PlaterOptionsPanelContainer"]
-			tabContainer:SelectTabByIndex(CONST_LASTEVENTS_TAB_INDEX)
+			C_Timer.After(CONST_DELAY_TO_CREATE_SPELLLISTTAB+0.050, function()
+				tabContainer:SelectTabByIndex(CONST_LASTEVENTS_TAB_INDEX)
+			end)
 		end
 	end
 	update_wago_update_icons()
@@ -161,6 +165,8 @@ local bIsOptionsPanelFullyLoaded = false
 function Plater.OpenOptionsPanel(pageNumber, bIgnoreLazyLoad)
 	platerInternal.OpenOptionspanelAfterCombat = nil
 	
+	--__benchmark() --~perf
+
 	--localization
 	local L = DF.Language.GetLanguageTable(addonId)
 
@@ -439,10 +445,16 @@ function Plater.OpenOptionsPanel(pageNumber, bIgnoreLazyLoad)
 	C_Timer.After(0.1, function() Plater.Auras.BuildGhostAurasOptionsTab(ghostAuras) end)
 	C_Timer.After(platerInternal.CastColorsCreationDelay, function() Plater.CreateCastColorOptionsFrame(castColorsFrame) end)
 	--C_Timer.After(platerInternal.NpcColorsCreationDelay, function() Plater.CreateNpcColorOptionsFrame(npcColorsFrame) end)
-	Plater.CreateNpcColorOptionsFrame(npcColorsFrame)
-	Plater.CreateAuraLastEventOptionsFrame(auraLastEventFrame)
+
+	C_Timer.After(CONST_DELAY_TO_CREATE_SPELLLISTTAB, function() 
+		Plater.CreateAuraLastEventOptionsFrame(auraLastEventFrame)
+	end)
+
+	C_Timer.After(0.20, function() 
+		Plater.CreateNpcColorOptionsFrame(npcColorsFrame)
+	end)
+
 	C_Timer.After(0.1, function() platerInternal.Plugins.CreatePluginsOptionsTab(pluginsFrame) end)
-	
 	local generalOptionsAnchor = CreateFrame ("frame", "$parentOptionsAnchor", frontPageFrame, BackdropTemplateMixin and "BackdropTemplate")
 	generalOptionsAnchor:SetSize (1, 1)
 	generalOptionsAnchor:SetPoint ("topleft", frontPageFrame, "topleft", startX, startY)
@@ -564,6 +576,7 @@ function Plater.OpenOptionsPanel(pageNumber, bIgnoreLazyLoad)
 		{label = L["OPTIONS_TABNAME_NPCFRIENDLY"], value = "friendlynpc", onclick = f.CopySettings},
 		{label = L["OPTIONS_TABNAME_PLAYERFRIENDLY"], value = "friendlyplayer", onclick = f.CopySettings},
 	}
+
 	
 ------------------------------------------------------------------------------------------------------------
 --> profile frame ~profile
@@ -1344,6 +1357,8 @@ function Plater.OpenOptionsPanel(pageNumber, bIgnoreLazyLoad)
 			scriptUpdatesCheckBoxLabel.width = 180
 
 	end
+
+
 -------------------------
 -- fun��es gerais dos dropdowns ~dropdowns
 	local textures = LibSharedMedia:HashTable ("statusbar")
@@ -1563,7 +1578,7 @@ end)
 
 interface_options.always_boxfirst = true
 interface_options.language_addonId = addonId
-
+interface_options.Name = "Interface Options"
 DF:BuildMenu (frontPageFrame, interface_options, startX, startY-20, 300 + 60, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 
 function frontPageFrame.OpenNewsWindow()
@@ -2744,6 +2759,7 @@ _G.C_Timer.After(0.850, function() --~delay
 	debuff_options.use_scrollframe = true
 
 	--when passing a canvas frame for BuildMenu, it automatically get its childscroll and use as parent for the widgets
+	debuff_options.Name = "Debuff Options"
 	DF:BuildMenu(canvasFrame, debuff_options, startX, 0, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 
 	--DF:DebugVisibility(canvasFrame:GetScrollChild())
@@ -3749,6 +3765,7 @@ Plater.CreateAuraTesting()
 		_G.C_Timer.After(0.6, function() --~delay
 			especial_aura_settings.always_boxfirst = true
 			especial_aura_settings.language_addonId = addonId
+			especial_aura_settings.Name = "Special Auras Options"
 			DF:BuildMenu (fff, especial_aura_settings, 330, startY - 27, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 		end)
 
@@ -4960,6 +4977,7 @@ do
 	_G.C_Timer.After(1.3, function() --~delay
 		options_personal.always_boxfirst = true
 		options_personal.language_addonId = addonId
+		options_personal.Name = "Personal Options"
 		DF:BuildMenu (personalPlayerFrame, options_personal, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 	end)
 end
@@ -5399,6 +5417,7 @@ local targetOptions = {
 _G.C_Timer.After(1.20, function() --~delay
 	targetOptions.always_boxfirst = true
 	targetOptions.language_addonId = addonId
+	targetOptions.Name = "Target Options"
 	DF:BuildMenu (targetFrame, targetOptions, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 end)
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -6581,6 +6600,7 @@ local relevance_options = {
 	end
 	options_table1.always_boxfirst = true
 	options_table1.language_addonId = addonId
+	options_table1.Name = "General Options"
 	DF:BuildMenu (generalOptionsAnchor, options_table1, 0, 0, mainHeightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 
 local checkBoxDivisionByTwo = generalOptionsAnchor:GetWidgetById("transparency_division")
@@ -7596,6 +7616,7 @@ end
 	_G.C_Timer.After(1.420, function() --~delay
 		options_table3.always_boxfirst = true
 		options_table3.language_addonId = addonId
+		options_table3.Name = "Friendly PCs Options"
 		DF:BuildMenu (friendlyPCsFrame, options_table3, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 	end)
 --------------------------------
@@ -8499,6 +8520,7 @@ end
 	_G.C_Timer.After(0.720, function() --~delay
 		options_table4.always_boxfirst = true
 		options_table4.language_addonId = addonId
+		options_table4.Name = "Enemy PCs Options"
 		DF:BuildMenu (enemyPCsFrame, options_table4, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 	end)
 -----------------------------------------------	
@@ -9579,6 +9601,7 @@ end
 	_G.C_Timer.After(0.780, function() --~delay
 		friendly_npc_options_table.always_boxfirst = true
 		friendly_npc_options_table.language_addonId = addonId
+		friendly_npc_options_table.Name = "Friendly NPCs Options"
 		DF:BuildMenu (friendlyNPCsFrame, friendly_npc_options_table, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 	end)
 
@@ -10642,6 +10665,7 @@ end
 		_G.C_Timer.After(0.900, function() --~delay
 			options_table2.always_boxfirst = true
 			options_table2.language_addonId = addonId
+			options_table2.Name = "Enemy NPCs Options"
 			DF:BuildMenu (enemyNPCsFrame, options_table2, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 		end)
 	end
@@ -10895,6 +10919,7 @@ end
 	_G.C_Timer.After(1.5, function() --~delay
 		experimental_options.always_boxfirst = true
 		experimental_options.language_addonId = addonId
+		experimental_options.Name = "UI Parent Options"
 		DF:BuildMenu (uiParentFeatureFrame, experimental_options, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)	
 	end)
 	
@@ -11214,6 +11239,7 @@ end
 	_G.C_Timer.After(1.2, function() --~delay
 		auto_options.always_boxfirst = true
 		auto_options.language_addonId = addonId
+		auto_options.Name = "Auto Options"
 		DF:BuildMenu (autoFrame, auto_options, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)	
 	end)
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -11774,6 +11800,7 @@ end
 		--the -30 is to fix an annomaly where the options for castbars starts 30 pixels to the right, dunno why (tercio)
 		castBar_options.always_boxfirst = true
 		castBar_options.language_addonId = addonId
+		castBar_options.Name = "Cast Bar Options"
 		DF:BuildMenu (castBarFrame, castBar_options, startX-20, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)	
 	end)
 
@@ -12132,6 +12159,7 @@ end
 	_G.C_Timer.After(0.990, function() --~delay
 		thread_options.always_boxfirst = true
 		thread_options.language_addonId = addonId
+		thread_options.Name = "Threat Options"
 		DF:BuildMenu (threatFrame, thread_options, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 	end)
 	
@@ -13211,6 +13239,7 @@ end
 	_G.C_Timer.After(1.4, function() --~delay
 		advanced_options.language_addonId = addonId
 		advanced_options.always_boxfirst = true
+		advanced_options.Name = "Advanced Options"
 		DF:BuildMenu (advancedFrame, advanced_options, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 	end)
 
@@ -13328,6 +13357,7 @@ end
 
 		options.always_boxfirst = true
 		options.language_addonId = addonId
+		options.Name = "Plater Search Options"
 		DF:BuildMenuVolatile(searchFrame, options, startX, startY-30, heightSize+40, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 	end)
 
@@ -13340,6 +13370,8 @@ end
 
 	--
 	Plater.CheckOptionsTab()
+
+	--__benchmark() --~perf
 end
 
 
