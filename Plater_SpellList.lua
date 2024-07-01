@@ -18,6 +18,8 @@ local DB_AURA_ALPHA
 local DB_AURA_ENABLED
 local DB_AURA_SEPARATE_BUFFS
 
+local GetSpellInfo = GetSpellInfo or function(spellID) if not spellID then return nil end local si = C_Spell.GetSpellInfo(spellID) if si then return si.name, nil, si.iconID, si.castTime, si.minRange, si.maxRange, si.spellID, si.originalIconID end end
+
 local on_refresh_db = function()
 	local profile = Plater.db.profile
 	DB_CAPTURED_SPELLS = PlaterDB.captured_spells
