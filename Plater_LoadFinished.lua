@@ -9,7 +9,14 @@ local _
 --run after all Plater Nameplates files has been loaded
 
 --store a boolean informing if a portion of the addon that is load on demand has already been loaded
+---@type table<string, boolean>
 platerInternal.LoadOnDemand_IsLoaded = {
 	CastOptions = false,
-	CastOptions_LoadFunc = platerInternal.CreateCastBarOptions,
+	SearchOptions = false,
+}
+
+---@type table<string, function>
+platerInternal.LoadOnDemand_LoadFunc = {
+	CastOptions = platerInternal.CreateCastBarOptions,
+	SearchOptions = platerInternal.CreateSearchOptions,
 }

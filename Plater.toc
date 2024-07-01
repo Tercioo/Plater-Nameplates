@@ -83,6 +83,7 @@ Plater_Plugins.lua
 Plater_DebugFrames.lua
 Plater_API.lua
 
+options/Plater_O_Search.lua
 options/Plater_O_CastBar.lua
 
 Plater_LoadFinished.lua

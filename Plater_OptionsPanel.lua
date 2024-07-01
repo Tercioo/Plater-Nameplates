@@ -157,7 +157,6 @@ end
 
 local TAB_INDEX_UIPARENTING = 5
 local TAB_INDEX_PROFILES = 22
-local TAB_INDEX_SEARCH = 26
 
 local bIsOptionsPanelFullyLoaded = false
 
@@ -312,7 +311,7 @@ function Plater.OpenOptionsPanel(pageNumber, bIgnoreLazyLoad)
 		{name = "resourceFrame",			text = "OPTIONS_TABNAME_COMBOPOINTS"},
 
 		{name = "WagoIo", text = "Wago Imports"}, --wago_imports --localize-me
-		{name = "SearchFrame", text = "OPTIONS_TABNAME_SEARCH"},
+		{name = "SearchFrame", text = "OPTIONS_TABNAME_SEARCH", createOnDemandFunc = platerInternal.CreateSearchOptions},
 		{name = "PluginsFrame", text = "Plugins"}, --localize-me
 		
 	}, 
@@ -12644,25 +12643,7 @@ end
 		DF:BuildMenu (advancedFrame, advanced_options, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 	end)
 
-
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-	--~search panel
-	local searchBox = DF:CreateTextEntry (searchFrame, function()end, 156, 20, "serachTextEntry", _, _, DF:GetTemplate ("dropdown", "PLATER_DROPDOWN_OPTIONS"))
-	searchBox:SetAsSearchBox()
-	searchBox:SetJustifyH("left")
-	searchBox:SetPoint(10, -145)
-
-	--create a search box in the main tab
-	local mainSearchBox = DF:CreateTextEntry(OTTFrame, function()end, 156, 20, "mainSearchTextEntry", _, _, DF:GetTemplate("dropdown", "PLATER_DROPDOWN_OPTIONS"))
-	mainSearchBox:SetAsSearchBox()
-	mainSearchBox:SetJustifyH("left")
-	mainSearchBox:SetPoint("topright", -220, 0)
-
-	local optionsWildCardFrame = CreateFrame("frame", "$parentWildCardOptionsFrame", searchFrame, BackdropTemplateMixin and "BackdropTemplate")
-	optionsWildCardFrame:SetAllPoints()
-
-	--all settings tables
-	local allTabSettings = {
+	PlaterOptionsPanelFrame.AllSettingsTable = {
 		--interface_options, -- general
 		options_table1, -- general
 		thread_options, -- threat & aggro
@@ -12682,91 +12663,6 @@ end
 		advanced_options, -- advanced
 		--resources
 	}
-	
-	local allTabHeaders = { --~changeindex2
-		mainFrame.AllButtons [1].button.text:GetText(), -- general
-		mainFrame.AllButtons [2].button.text:GetText(), -- threat & aggro
-		mainFrame.AllButtons [3].button.text:GetText(), -- target
-		mainFrame.AllButtons [4].button.text:GetText(), -- cast bar
-		mainFrame.AllButtons [5].button.text:GetText(), -- level & strata
-		mainFrame.AllButtons [8].button.text:GetText(), -- personal bar
-		mainFrame.AllButtons [9].button.text:GetText(), -- buff settings
-		--10 aura filter
-		mainFrame.AllButtons [11].button.text:GetText(), -- buff special
-		--mainFrame.AllButtons [12].button.text:GetText(), -- ghost auras
-		mainFrame.AllButtons [13].button.text:GetText(), -- enemy npc
-		mainFrame.AllButtons [14].button.text:GetText(), -- enemy player
-		mainFrame.AllButtons [15].button.text:GetText(), -- friendly npc
-		mainFrame.AllButtons [16].button.text:GetText(), -- friendly player
-		--17 18 19 has no options (npc colors, cast colors, aura list)
-		--mainFrame.AllButtons [20].button.text:GetText(), -- spell feedback (animations)
-		mainFrame.AllButtons [21].button.text:GetText(), -- auto
-		--22 profiles
-		mainFrame.AllButtons [23].button.text:GetText(), -- advanced
-		--mainFrame.AllButtons [24].button.text:GetText(), -- resources
-		--25 search
-	}
-
-	--this table will hold all options
-	local allOptions = {}
-	--start the fill process filling 'allOptions' with each individual option from each tab
-	for i = 1, #allTabSettings do
-		local tabSettings = allTabSettings[i]
-		local lastLabel = nil
-		for k, setting in pairs(tabSettings) do
-			if (type(setting) == "table") then
-				if (setting.type == "label") then
-					lastLabel = setting
-				end
-				if (setting.name) then
-					allOptions[#allOptions+1] = {setting = setting, label = lastLabel, header = allTabHeaders[i] }
-				end
-			end
-		end
-	end
-
-	searchBox:SetHook("OnEnterPressed", function(self)
-		local options = {}
-
-		local searchingText = string.lower(searchBox.text)
-		searchBox:SetFocus(false)
-
-		local lastTab = nil
-		local lastLabel = nil
-		if searchingText and searchingText ~= "" then
-			for i = 1, #allOptions do
-				local optionData = allOptions[i]
-				local optionName = string.lower(optionData.setting.name)
-				if (optionName:find(searchingText)) then
-					if optionData.header ~= lastTab then
-						if lastTab ~= nil then
-							options[#options+1] = {type = "label", get = function() return "" end, text_template = DF:GetTemplate("font", "OPTIONS_FONT_TEMPLATE")} -- blank
-						end
-						options[#options+1] = {type = "label", get = function() return optionData.header end, text_template = {color = "gold", size = 14, font = DF:GetBestFontForLanguage()}}
-						lastTab = optionData.header
-						lastLabel = nil
-					end
-					if optionData.label ~= lastLabel then
-						options[#options+1] = optionData.label
-						lastLabel = optionData.label
-					end
-					options[#options+1] = optionData.setting
-				end
-			end
-		end
-
-		options.always_boxfirst = true
-		options.language_addonId = addonId
-		options.Name = "Plater Search Options"
-		DF:BuildMenuVolatile(searchFrame, options, startX, startY-30, heightSize+40, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
-	end)
-
-	mainSearchBox:SetHook("OnEnterPressed", function(self)
-		local searchText = mainSearchBox.text
-		searchBox:SetText(searchText)
-		searchBox:RunHooksForWidget("OnEnterPressed")
-		_G["PlaterOptionsPanelContainer"]:SelectTabByIndex(TAB_INDEX_SEARCH)
-	end)
 
 	--
 	Plater.CheckOptionsTab()
