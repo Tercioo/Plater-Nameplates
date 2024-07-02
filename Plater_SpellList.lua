@@ -2,15 +2,24 @@
 local addonId, platerInternal = ...
 
 local Plater = Plater
+
 ---@type detailsframework
-local DF = DetailsFramework
+local detailsFramework = DetailsFramework
+
 local _
+
+---@class spelllist_scrolldata : table
+---@field [1] spellid
+---@field [2] plater_spelldata
 
 local startX, startY, heightSize = 10, platerInternal.optionsYStart, 755
 local highlightColorLastCombat = {1, 1, .2, .25}
 
+local GameTooltip = GameTooltip
+
 --db upvalues
-local DB_CAPTURED_SPELLS
+---@type plater_spelldata[]
+local DB_CAPTURED_SPELLS = {}
 local DB_CAPTURED_CASTS
 local DB_NPCID_CACHE
 local DB_NPCID_COLORS
@@ -50,11 +59,11 @@ function Plater.CreateAuraLastEventOptionsFrame(auraLastEventFrame)
     local scrollY = headerY - 20
 
     --templates
-    local options_text_template = DF:GetTemplate ("font", "OPTIONS_FONT_TEMPLATE")
-    local options_dropdown_template = DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE")
-    local options_switch_template = DF:GetTemplate ("switch", "OPTIONS_CHECKBOX_TEMPLATE")
-    local options_slider_template = DF:GetTemplate ("slider", "OPTIONS_SLIDER_TEMPLATE")
-    local options_button_template = DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE")
+    local options_text_template = detailsFramework:GetTemplate("font", "OPTIONS_FONT_TEMPLATE")
+    local options_dropdown_template = detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE")
+    local options_switch_template = detailsFramework:GetTemplate("switch", "OPTIONS_CHECKBOX_TEMPLATE")
+    local options_slider_template = detailsFramework:GetTemplate("slider", "OPTIONS_SLIDER_TEMPLATE")
+    local options_button_template = detailsFramework:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE")
 
     --header
     local headerTable = {
@@ -73,27 +82,27 @@ function Plater.CreateAuraLastEventOptionsFrame(auraLastEventFrame)
         padding = 2,
     }
 
-    auraLastEventFrame.Header = DF:CreateHeader (auraLastEventFrame, headerTable, headerOptions)
-    auraLastEventFrame.Header:SetPoint ("topleft", auraLastEventFrame, "topleft", 10, headerY)
+    auraLastEventFrame.Header = detailsFramework:CreateHeader(auraLastEventFrame, headerTable, headerOptions)
+    auraLastEventFrame.Header:SetPoint("topleft", auraLastEventFrame, "topleft", 10, headerY)
 
     --line scripts
-    local line_onenter = function (self)
+    local lineOnEnter = function(self)
         if (self.hasHighlight) then
             local r, g, b, a = unpack(highlightColorLastCombat)
             self:SetBackdropColor(r, g, b, a+0.2)
         else
-            self:SetBackdropColor (unpack (backdrop_color_on_enter))
+            self:SetBackdropColor(unpack(backdrop_color_on_enter))
         end
 
         if (self.SpellID) then
-            GameTooltip:SetOwner (self, "ANCHOR_TOPLEFT")
-            GameTooltip:SetSpellByID (self.SpellID)
-            GameTooltip:AddLine (" ")
+            GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
+            GameTooltip:SetSpellByID(self.SpellID)
+            GameTooltip:AddLine(" ")
             GameTooltip:Show()
         end
     end
 
-    local line_onleave = function (self)
+    local lineOnLeave = function(self)
         if (self.hasHighlight) then
             self:SetBackdropColor(unpack(highlightColorLastCombat))
         else
@@ -102,217 +111,213 @@ function Plater.CreateAuraLastEventOptionsFrame(auraLastEventFrame)
         GameTooltip:Hide()
     end
 
-    local widget_onenter = function (self)
+    local widgetOnEnter = function(self)
         local line = self:GetParent()
-        line:GetScript ("OnEnter")(line)
+        line:GetScript("OnEnter")(line)
     end
-    local widget_onleave = function (self)
+    local widgetOnLeave = function(self)
         local line = self:GetParent()
-        line:GetScript ("OnLeave")(line)
+        line:GetScript("OnLeave")(line)
     end
 
-    local line_add_tracklist = function (self)
+    local lineAddTracklist = function(self)
         self = self:GetCapsule()
 
         if (self.AuraType == "BUFF") then
             if (Plater.db.profile.aura_tracker.track_method == 0x1) then
                 Plater.db.profile.aura_tracker.buff_tracked [self.SpellID] = true
-                Plater:Msg ("Aura added to buff tracking.")
+                Plater:Msg("Aura added to buff tracking.")
 
             elseif (Plater.db.profile.aura_tracker.track_method == 0x2) then
-                local added = DF.table.addunique (Plater.db.profile.aura_tracker.buff, self.SpellID)
+                local added = detailsFramework.table.addunique(Plater.db.profile.aura_tracker.buff, self.SpellID)
                 if (added) then
-                    Plater:Msg ("Aura added to manual buff tracking.")
+                    Plater:Msg("Aura added to manual buff tracking.")
                 else
-                    Plater:Msg ("Aura not added: already on track.")
+                    Plater:Msg("Aura not added: already on track.")
                 end
-
             end
 
         elseif (self.AuraType == "DEBUFF") then
             if (Plater.db.profile.aura_tracker.track_method == 0x1) then
                 Plater.db.profile.aura_tracker.debuff_tracked [self.SpellID] = true
-                Plater:Msg ("Aura added to debuff tracking.")
+                Plater:Msg("Aura added to debuff tracking.")
 
             elseif (Plater.db.profile.aura_tracker.track_method == 0x2) then
-                local added = DF.table.addunique (Plater.db.profile.aura_tracker.debuff, self.SpellID)
+                local added = detailsFramework.table.addunique(Plater.db.profile.aura_tracker.debuff, self.SpellID)
                 if (added) then
-                    Plater:Msg ("Aura added to manual debuff tracking.")
+                    Plater:Msg("Aura added to manual debuff tracking.")
                 else
-                    Plater:Msg ("Aura not added: already on track.")
+                    Plater:Msg("Aura not added: already on track.")
                 end
-
             end
         end
     end
 
-    local line_add_ignorelist = function (self)
+    local lineAddIgnorelist = function(self)
         self = self:GetCapsule()
 
         if (self.AuraType == "BUFF") then
             if (Plater.db.profile.aura_tracker.track_method == 0x1) then
                 Plater.db.profile.aura_tracker.buff_banned [self.SpellID] = true
-                Plater:Msg ("Aura added to buff blacklist.")
+                Plater:Msg("Aura added to buff blacklist.")
             end
 
         elseif (self.AuraType == "DEBUFF") then
             if (Plater.db.profile.aura_tracker.track_method == 0x1) then
                 Plater.db.profile.aura_tracker.debuff_banned [self.SpellID] = true
-                Plater:Msg ("Aura added to debuff blacklist.")
+                Plater:Msg("Aura added to debuff blacklist.")
             end
         end
     end
 
-    local line_add_special = function (self)
+    local lineAddSpecial = function(self)
         self = self:GetCapsule()
 
-        local added = DF.table.addunique (Plater.db.profile.extra_icon_auras, self.SpellID)
+        local added = detailsFramework.table.addunique(Plater.db.profile.extra_icon_auras, self.SpellID)
         if (added) then
-            Plater:Msg ("Aura added to the special aura container.")
+            Plater:Msg("Aura added to the special aura container.")
         else
-            Plater:Msg ("Aura not added: already on the special container.")
+            Plater:Msg("Aura not added: already on the special container.")
         end
     end
 
-    local line_onclick_trigger_dropdown = function (self, fixedValue, scriptID)
-        local scriptObject = Plater.GetScriptObject (scriptID, "script")
-        local spellName = GetSpellInfo (self.SpellID)
+    local lineOnClickTriggerDropdownOption = function(self, fixedValue, scriptID)
+        local scriptObject = Plater.GetScriptObject(scriptID, "script")
+        local spellName = GetSpellInfo(self.SpellID)
 
         if (scriptObject and spellName) then
             if (scriptObject.ScriptType == 1 or scriptObject.ScriptType == 2) then
                 --add the trigger
-                local added = DF.table.addunique (scriptObject.SpellIds, self.SpellID)
+                local added = detailsFramework.table.addunique(scriptObject.SpellIds, self.SpellID)
                 if (added) then
                     --reload all scripts
-                    Plater.WipeAndRecompileAllScripts ("script")
-                    Plater:Msg ("Trigger added to script.")
+                    Plater.WipeAndRecompileAllScripts("script")
+                    Plater:Msg("Trigger added to script.")
                 else
-                    Plater:Msg ("Script already have this trigger.")
+                    Plater:Msg("Script already have this trigger.")
                 end
 
                 --refresh and select no option
                 self:Refresh()
-                self:Select (0, true)
+                self:Select(0, true)
             end
         end
     end
 
-    local line_refresh_trigger_dropdown = function (self)
+    local lineRefreshTriggerDropdown = function(self)
         if (not self.SpellID) then
             return {}
         end
 
-        local t = {}
-        local spellName = GetSpellInfo (self.SpellID)
+        local listOfOptions = {}
 
-        local scripts = Plater.GetAllScripts ("script")
+        local scripts = Plater.GetAllScripts("script")
         for i = 1, #scripts do
-            local scriptObject = scripts [i]
+            local scriptObject = scripts[i]
             if (scriptObject.ScriptType == 1 or scriptObject.ScriptType == 2) then
-                tinsert (t, {0, 0, scriptObject.Name, scriptObject.Enabled and 1 or 0, 0, label = scriptObject.Name, value = i, color = scriptObject.Enabled and "white" or "red", onclick = line_onclick_trigger_dropdown, desc = scriptObject.Desc})
+                tinsert(listOfOptions, {0, 0, scriptObject.Name, scriptObject.Enabled and 1 or 0, 0, label = scriptObject.Name, value = i, color = scriptObject.Enabled and "white" or "red", onclick = lineOnClickTriggerDropdownOption, desc = scriptObject.Desc})
             end
         end
 
-        table.sort (t, Plater.SortScripts)
-        return t
+        table.sort(listOfOptions, Plater.SortScripts)
+        return listOfOptions
     end
 
-    local line_create_aura = function (self)
+    local lineCreateAura = function(self)
         self = self:GetCapsule()
 
         if (Details) then
-            local spellName, _, spellIcon = GetSpellInfo (self.SpellID)
+            local spellName, _, spellIcon = GetSpellInfo(self.SpellID)
             local encounterID = self.EncounterID
 
-            Details:OpenAuraPanel (self.SpellID, spellName, spellIcon, encounterID, self.AuraType == "BUFF" and 5 or self.AuraType == "DEBUFF" and 1 or self.IsCast and 7 or 2, 1)
+            Details:OpenAuraPanel(self.SpellID, spellName, spellIcon, encounterID, self.AuraType == "BUFF" and 5 or self.AuraType == "DEBUFF" and 1 or self.IsCast and 7 or 2, 1)
             PlaterOptionsPanelFrame:Hide()
         else
-            Plater:Msg ("Details! Damage Meter not found, install it from the Twitch App!")
+            Plater:Msg("Details! Damage Meter not found, install it from the Twitch App!")
         end
     end
 
-    local oneditfocusgained_spellid = function (self, capsule)
-        self:HighlightText (0)
+    local onEditFocusGained_SpellIdEntry = function(self, capsule)
+        self:HighlightText(0)
     end
 
     --line
-    local scroll_createline = function (self, index)
+    local scrollCreateLine = function(self, index)
+        local line = CreateFrame("button", "$parentLine" .. index, self, BackdropTemplateMixin and "BackdropTemplate")
+        line:SetPoint("topleft", self, "topleft", 1, -((index-1)*(scroll_line_height+1)) - 1)
+        line:SetSize(scroll_width - 2, scroll_line_height)
+        line:SetScript("OnEnter", lineOnEnter)
+        line:SetScript("OnLeave", lineOnLeave)
 
-        local line = CreateFrame ("button", "$parentLine" .. index, self, BackdropTemplateMixin and "BackdropTemplate")
-        line:SetPoint ("topleft", self, "topleft", 1, -((index-1)*(scroll_line_height+1)) - 1)
-        line:SetSize (scroll_width - 2, scroll_line_height)
-        line:SetScript ("OnEnter", line_onenter)
-        line:SetScript ("OnLeave", line_onleave)
+        line:SetBackdrop({bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
+        line:SetBackdropColor(unpack(backdrop_color))
 
-        line:SetBackdrop ({bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
-        line:SetBackdropColor (unpack (backdrop_color))
+        detailsFramework:Mixin(line, detailsFramework.HeaderFunctions)
 
-        DF:Mixin (line, DF.HeaderFunctions)
+        local icon = line:CreateTexture("$parentSpellIcon", "overlay")
+        icon:SetSize(scroll_line_height - 2, scroll_line_height - 2)
 
-        local icon = line:CreateTexture ("$parentSpellIcon", "overlay")
-        icon:SetSize (scroll_line_height - 2, scroll_line_height - 2)
+        local spellIdTextEntry = detailsFramework:CreateTextEntry(line, function()end, headerTable[2].width, 20, nil, nil, nil, detailsFramework:GetTemplate("dropdown", "PLATER_DROPDOWN_OPTIONS"))
+        spellIdTextEntry:SetHook("OnEditFocusGained", onEditFocusGained_SpellIdEntry)
+        spellIdTextEntry:SetJustifyH("left")
 
-        local spell_id = DF:CreateTextEntry (line, function()end, headerTable[2].width, 20, nil, nil, nil, DF:GetTemplate ("dropdown", "PLATER_DROPDOWN_OPTIONS"))
-        spell_id:SetHook ("OnEditFocusGained", oneditfocusgained_spellid)
-        spell_id:SetJustifyH("left")
+        local spellNameLabel = detailsFramework:CreateLabel(line, "", detailsFramework:GetTemplate("font", "PLATER_SCRIPTS_NAME"))
+        local sourceNameLabel = detailsFramework:CreateLabel(line, "", detailsFramework:GetTemplate("font", "PLATER_SCRIPTS_NAME"))
+        local spellTypeLabel = detailsFramework:CreateLabel(line, "", detailsFramework:GetTemplate("font", "PLATER_SCRIPTS_NAME"))
 
-        local spell_name = DF:CreateLabel (line, "", DF:GetTemplate ("font", "PLATER_SCRIPTS_NAME"))
-        local source_name = DF:CreateLabel (line, "", DF:GetTemplate ("font", "PLATER_SCRIPTS_NAME"))
-        local spell_type = DF:CreateLabel (line, "", DF:GetTemplate ("font", "PLATER_SCRIPTS_NAME"))
+        local addTracklistButton = detailsFramework:CreateButton(line, lineAddTracklist, headerTable[6].width, 20, "Add", -1, nil, nil, nil, nil, nil, detailsFramework:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), detailsFramework:GetTemplate("font", "PLATER_BUTTON"))
+        local addIgnorelistButton = detailsFramework:CreateButton(line, lineAddIgnorelist, headerTable[7].width, 20, "Add", -1, nil, nil, nil, nil, nil, detailsFramework:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), detailsFramework:GetTemplate("font", "PLATER_BUTTON"))
+        local addSpecialButton = detailsFramework:CreateButton(line, lineAddSpecial, headerTable[8].width, 20, "Add", -1, nil, nil, nil, nil, nil, detailsFramework:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), detailsFramework:GetTemplate("font", "PLATER_BUTTON"))
 
-        local add_tracklist = DF:CreateButton (line, line_add_tracklist, headerTable[6].width, 20, "Add", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
-        local add_ignorelist = DF:CreateButton (line, line_add_ignorelist, headerTable[7].width, 20, "Add", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
-        local add_special = DF:CreateButton (line, line_add_special, headerTable[8].width, 20, "Add", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+        local addScriptTriggerDropdown = detailsFramework:CreateDropDown(line, lineRefreshTriggerDropdown, 1, headerTable[9].width, 20, nil, nil, detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
 
-        local add_script_trigger = DF:CreateDropDown (line, line_refresh_trigger_dropdown, 1, headerTable[9].width, 20, nil, nil, DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+        local createAuraButton = detailsFramework:CreateButton(line, lineCreateAura, headerTable[10].width, 20, "Create", -1, nil, nil, nil, nil, nil, detailsFramework:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), detailsFramework:GetTemplate("font", "PLATER_BUTTON"))
 
-        local create_aura = DF:CreateButton (line, line_create_aura, headerTable[10].width, 20, "Create", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
+        local fromLastCombatLabel = detailsFramework:CreateLabel(line, "", detailsFramework:GetTemplate("font", "PLATER_SCRIPTS_NAME"))
 
-        local fromLastCombat = DF:CreateLabel (line, "", DF:GetTemplate ("font", "PLATER_SCRIPTS_NAME"))
+        spellIdTextEntry:SetHook("OnEnter", widgetOnEnter)
+        spellIdTextEntry:SetHook("OnLeave", widgetOnLeave)
 
-        spell_id:SetHook ("OnEnter", widget_onenter)
-        spell_id:SetHook ("OnLeave", widget_onleave)
+        addTracklistButton:SetHook("OnEnter", widgetOnEnter)
+        addTracklistButton:SetHook("OnLeave", widgetOnLeave)
 
-        add_tracklist:SetHook ("OnEnter", widget_onenter)
-        add_tracklist:SetHook ("OnLeave", widget_onleave)
+        addIgnorelistButton:SetHook("OnEnter", widgetOnEnter)
+        addIgnorelistButton:SetHook("OnLeave", widgetOnLeave)
 
-        add_ignorelist:SetHook ("OnEnter", widget_onenter)
-        add_ignorelist:SetHook ("OnLeave", widget_onleave)
+        addSpecialButton:SetHook("OnEnter", widgetOnEnter)
+        addSpecialButton:SetHook("OnLeave", widgetOnLeave)
 
-        add_special:SetHook ("OnEnter", widget_onenter)
-        add_special:SetHook ("OnLeave", widget_onleave)
+        addScriptTriggerDropdown:SetHook("OnEnter", widgetOnEnter)
+        addScriptTriggerDropdown:SetHook("OnLeave", widgetOnLeave)
 
-        add_script_trigger:SetHook ("OnEnter", widget_onenter)
-        add_script_trigger:SetHook ("OnLeave", widget_onleave)
+        createAuraButton:SetHook("OnEnter", widgetOnEnter)
+        createAuraButton:SetHook("OnLeave", widgetOnLeave)
 
-        create_aura:SetHook ("OnEnter", widget_onenter)
-        create_aura:SetHook ("OnLeave", widget_onleave)
+        line:AddFrameToHeaderAlignment(icon)
+        line:AddFrameToHeaderAlignment(spellIdTextEntry)
+        line:AddFrameToHeaderAlignment(spellNameLabel)
+        line:AddFrameToHeaderAlignment(sourceNameLabel)
+        line:AddFrameToHeaderAlignment(spellTypeLabel)
+        line:AddFrameToHeaderAlignment(addTracklistButton)
+        line:AddFrameToHeaderAlignment(addIgnorelistButton)
+        line:AddFrameToHeaderAlignment(addSpecialButton)
+        line:AddFrameToHeaderAlignment(addScriptTriggerDropdown)
+        line:AddFrameToHeaderAlignment(fromLastCombatLabel)
+        --line:AddFrameToHeaderAlignment(create_aura)
 
-        line:AddFrameToHeaderAlignment (icon)
-        line:AddFrameToHeaderAlignment (spell_id)
-        line:AddFrameToHeaderAlignment (spell_name)
-        line:AddFrameToHeaderAlignment (source_name)
-        line:AddFrameToHeaderAlignment (spell_type)
-        line:AddFrameToHeaderAlignment (add_tracklist)
-        line:AddFrameToHeaderAlignment (add_ignorelist)
-        line:AddFrameToHeaderAlignment (add_special)
-        line:AddFrameToHeaderAlignment (add_script_trigger)
-        line:AddFrameToHeaderAlignment (fromLastCombat)
-        --line:AddFrameToHeaderAlignment (create_aura)
-
-        line:AlignWithHeader (auraLastEventFrame.Header, "left")
+        line:AlignWithHeader(auraLastEventFrame.Header, "left")
 
         line.Icon = icon
-        line.SpellIDEntry = spell_id
-        line.SpellName = spell_name
-        line.SourceName = source_name
-        line.SpellType = spell_type
-        line.AddTrackList = add_tracklist
-        line.AddIgnoreList = add_ignorelist
-        line.AddSpecial = add_special
-        line.AddTrigger = add_script_trigger
-        line.CreateAura = create_aura
-        line.FromLastCombat = fromLastCombat
+        line.SpellIDEntry = spellIdTextEntry
+        line.SpellName = spellNameLabel
+        line.SourceName = sourceNameLabel
+        line.SpellType = spellTypeLabel
+        line.AddTrackList = addTracklistButton
+        line.AddIgnoreList = addIgnorelistButton
+        line.AddSpecial = addSpecialButton
+        line.AddTrigger = addScriptTriggerDropdown
+        line.CreateAura = createAuraButton
+        line.FromLastCombat = fromLastCombatLabel
 
         return line
     end
@@ -323,36 +328,47 @@ function Plater.CreateAuraLastEventOptionsFrame(auraLastEventFrame)
         return t1[4] > t2[4]
     end
 
-    local IsSearchingFor
-    local scroll_refresh = function (self, data, offset, total_lines)
+    local sIsSearchingFor
 
+    ---@param self df_scrollbox
+    ---@param data spelllist_scrolldata[]
+    ---@param offset number
+    ---@param totalLines number
+    local scrollRefresh = function(self, data, offset, totalLines)
         local dataInOrder = {}
         --buff list tab
         local lastCombatNpcs = Plater.LastCombat.npcNames or {}
 
-        if (IsSearchingFor and IsSearchingFor ~= "") then
-            if (self.SearchCachedTable and IsSearchingFor == self.SearchCachedTable.SearchTerm) then
+        if (sIsSearchingFor and sIsSearchingFor ~= "") then
+            if (self.SearchCachedTable and sIsSearchingFor == self.SearchCachedTable.SearchTerm) then
                 dataInOrder = self.SearchCachedTable
             else
                 for i = 1, #data do
-                    local spellID = data[i] [1]
-                    local spellName, _, spellIcon = GetSpellInfo (spellID)
-                    local spellTable = data[i][2]
+                    local thisData = data[i]
+                    local spellID = thisData[1]
+                    local spellName = GetSpellInfo(spellID)
+                    local spellTable = thisData[2]
+
                     if (spellName) then
-                        if (spellName:lower():find (IsSearchingFor)) then
-                            dataInOrder [#dataInOrder+1] = {i, data[i], spellName, lastCombatNpcs[spellTable.source] and 2 or 0}
+                        if (spellName:lower():find(sIsSearchingFor)) then
+                            dataInOrder [#dataInOrder+1] = {
+                                i,
+                                data[i],
+                                spellName,
+                                lastCombatNpcs[spellTable.source] and 2 or 0
+                            }
                         end
                     end
                 end
 
                 self.SearchCachedTable = dataInOrder
-                self.SearchCachedTable.SearchTerm = IsSearchingFor
+                self.SearchCachedTable.SearchTerm = sIsSearchingFor
             end
         else
             if (not self.CachedTable) then
                 for i = 1, #data do
                     local spellID = data[i] [1]
-                    local spellName, _, spellIcon = GetSpellInfo (spellID)
+                    local spellName = GetSpellInfo(spellID)
                     local spellTable = data[i][2]
                     if (spellName) then
                         dataInOrder [#dataInOrder+1] = {i, data[i], spellName, lastCombatNpcs[spellTable.source] and 2 or 0}
@@ -364,21 +380,22 @@ function Plater.CreateAuraLastEventOptionsFrame(auraLastEventFrame)
             dataInOrder = self.CachedTable
         end
 
-        table.sort (dataInOrder, DF.SortOrder3R)
-        table.sort (dataInOrder, sortOrder4)
+        table.sort(dataInOrder, detailsFramework.SortOrder3R)
+        table.sort(dataInOrder, sortOrder4)
 
         data = dataInOrder
 
-        for i = 1, total_lines do
+        for i = 1, totalLines do
             local index = i + offset
             local spellTable = data [index] and data [index] [2]
 
             if (spellTable) then
-                local line = self:GetLine (i)
-                local spellID = spellTable [1]
-                local spellData = spellTable [2]
+                local line = self:GetLine(i)
+                local spellID = spellTable[1]
+                ---@type plater_spelldata
+                local spellData = spellTable[2]
 
-                local spellName, _, spellIcon = GetSpellInfo (spellID)
+                local spellName, _, spellIcon = GetSpellInfo(spellID)
 
                 local fullData = data[index]
                 local isFromLastSegment = fullData[4] == 2
@@ -395,11 +412,11 @@ function Plater.CreateAuraLastEventOptionsFrame(auraLastEventFrame)
                 line.value = spellTable
 
                 if (spellName) then
-                    line.Icon:SetTexture (spellIcon)
-                    line.Icon:SetTexCoord (.1, .9, .1, .9)
+                    line.Icon:SetTexture(spellIcon)
+                    line.Icon:SetTexCoord(.1, .9, .1, .9)
 
-                    line.SpellName:SetTextTruncated (spellName, headerTable [3].width)
-                    line.SourceName:SetTextTruncated (spellData.source, headerTable [4].width)
+                    line.SpellName:SetTextTruncated(spellName, headerTable [3].width)
+                    line.SourceName:SetTextTruncated(spellData.source, headerTable [4].width)
 
                     local isCast = spellData.event == "SPELL_CAST_START" or spellData.event == "SPELL_CAST_SUCCESS"
 
@@ -416,10 +433,10 @@ function Plater.CreateAuraLastEventOptionsFrame(auraLastEventFrame)
 
                     line.SpellID = spellID
 
-                    line.SpellIDEntry:SetText (spellID)
+                    line.SpellIDEntry:SetText(spellID)
 
-                    --{event = token, source = sourceName, type = auraType, npcID = Plater:GetNpcIdFromGuid (sourceGUID or "")}
-                    line.SpellType:SetText (isCast and "Spell Cast" or spellData.event == "SPELL_AURA_APPLIED" and spellData.type)
+                    --{event = token, source = sourceName, type = auraType, npcID = Plater:GetNpcIdFromGuid(sourceGUID or "")}
+                    line.SpellType:SetText(isCast and "Spell Cast" or spellData.event == "SPELL_AURA_APPLIED" and spellData.type)
 
                     line.AddTrackList.SpellID = spellID
                     line.AddTrackList.AuraType = spellData.type
@@ -470,32 +487,36 @@ function Plater.CreateAuraLastEventOptionsFrame(auraLastEventFrame)
     end
 
     --create scroll
-    local spells_scroll = DF:CreateScrollBox (auraLastEventFrame, "$parentSpellScroll", scroll_refresh, {}, scroll_width, scroll_height, scroll_lines, scroll_line_height)
-    DF:ReskinSlider (spells_scroll)
-    spells_scroll:SetPoint ("topleft", auraLastEventFrame, "topleft", 10, scrollY)
+    local latestSpellsScroll = detailsFramework:CreateScrollBox(auraLastEventFrame, "$parentSpellScroll", scrollRefresh, {}, scroll_width, scroll_height, scroll_lines, scroll_line_height)
+    detailsFramework:ReskinSlider(latestSpellsScroll)
+    latestSpellsScroll:SetPoint("topleft", auraLastEventFrame, "topleft", 10, scrollY)
 
-    spells_scroll:SetScript ("OnShow", function (self)
+    latestSpellsScroll:SetScript("OnShow", function(self)
         if (self.LastRefresh and self.LastRefresh+0.5 > GetTime()) then
             return
         end
         self.LastRefresh = GetTime()
 
+        ---@type spelllist_scrolldata[]
         local newData = {}
 
-        for spellID, spellTable in pairs (DB_CAPTURED_SPELLS) do
-            tinsert (newData, {spellID, spellTable})
+        for spellID, spellTable in pairs(DB_CAPTURED_SPELLS) do
+            tinsert(newData, {spellID, spellTable})
         end
+
+        --if spellTable has 'isChanneled' entry, it means is a cast or channeling
+        --if spellTable has 'type' entry, it means if a buff or debuff
 
         self.CachedTable = nil
         self.SearchCachedTable = nil
 
-        self:SetData (newData)
+        self:SetData(newData)
         self:Refresh()
     end)
 
     --create lines
     for i = 1, scroll_lines do
-        spells_scroll:CreateLine (scroll_createline)
+        latestSpellsScroll:CreateLine(scrollCreateLine)
     end
 
     --create button to open spell list on Details!
@@ -506,45 +527,49 @@ function Plater.CreateAuraLastEventOptionsFrame(auraLastEventFrame)
             --select all spells in the details! all spells panel
             if (DetailsForgePanel and DetailsForgePanel.SelectModule) then
                 -- module 2 is the All Spells
-                DetailsForgePanel.SelectModule (_, _, 1)
+                DetailsForgePanel.SelectModule(_, _, 1)
             end
         else
-            Plater:Msg ("Details! Damage Meter is required and isn't installed, get it on Twitch App!")
+            Plater:Msg("Details! Damage Meter is required and isn't installed, get it on Twitch App!")
         end
     end
 
-    local open_spell_list_button = DF:CreateButton (auraLastEventFrame, openDetailsSpellList, 160, 20, "Open Full Spell List", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
-    open_spell_list_button:SetPoint ("bottomright", spells_scroll, "topright", 0, 24)
+    ---@type df_button
+    local openSpellListButton = detailsFramework:CreateButton(auraLastEventFrame, openDetailsSpellList, 160, 20, "Open Full Spell List", -1, nil, nil, nil, nil, nil, detailsFramework:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), detailsFramework:GetTemplate("font", "PLATER_BUTTON"))
+    openSpellListButton:SetPoint("bottomright", latestSpellsScroll, "topright", 0, 24)
 
     --create the clean list button
-        local wipe_spell_list = function()
-            wipe (DB_CAPTURED_SPELLS)
-            spells_scroll:Hide()
-            C_Timer.After (0.016, function() spells_scroll:Show(); spells_scroll:Refresh() end)
-        end
-        local clear_list_button = DF:CreateButton (auraLastEventFrame, wipe_spell_list, 160, 20, "Clear List", -1, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate ("font", "PLATER_BUTTON"))
-        clear_list_button:SetPoint ("right", open_spell_list_button, "left", -6, 0)
+    local wipeSpellList = function()
+        wipe(DB_CAPTURED_SPELLS)
+        latestSpellsScroll:Hide()
+        C_Timer.After(0.016, function() latestSpellsScroll:Show(); latestSpellsScroll:Refresh() end)
+    end
+
+    ---@type df_button
+    local clearListButton = detailsFramework:CreateButton(auraLastEventFrame, wipeSpellList, 160, 20, "Clear List", -1, nil, nil, nil, nil, nil, detailsFramework:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), detailsFramework:GetTemplate("font", "PLATER_BUTTON"))
+    clearListButton:SetPoint("right", openSpellListButton, "left", -6, 0)
 
     --create search box
-        function auraLastEventFrame.OnSearchBoxTextChanged()
-            local text = auraLastEventFrame.AuraSearchTextEntry:GetText()
-            if (text and string.len (text) > 0) then
-                IsSearchingFor = text:lower()
-            else
-                IsSearchingFor = nil
-            end
-            spells_scroll:Refresh()
+    function auraLastEventFrame.OnSearchBoxTextChanged()
+        local text = auraLastEventFrame.AuraSearchTextEntry:GetText()
+        if (text and string.len(text) > 0) then
+            sIsSearchingFor = text:lower()
+        else
+            sIsSearchingFor = nil
         end
+        latestSpellsScroll:Refresh()
+    end
 
-        local aura_search_textentry = DF:CreateTextEntry (auraLastEventFrame, function()end, 160, 20, "AuraSearchTextEntry", _, _, options_dropdown_template)
-        aura_search_textentry:SetPoint ("right", clear_list_button, "left", -6, 0)
-        aura_search_textentry:SetHook ("OnChar",		auraLastEventFrame.OnSearchBoxTextChanged)
-        aura_search_textentry:SetHook ("OnTextChanged", 	auraLastEventFrame.OnSearchBoxTextChanged)
-        local aura_search_label = DF:CreateLabel (auraLastEventFrame, "Search:", DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"))
-        aura_search_label:SetPoint ("right", aura_search_textentry, "left", -2, 0)
+    local auraSearchTextentry = detailsFramework:CreateTextEntry(auraLastEventFrame, function()end, 160, 20, "AuraSearchTextEntry", _, _, options_dropdown_template)
+    auraSearchTextentry:SetPoint("right", clearListButton, "left", -6, 0)
+    auraSearchTextentry:SetHook("OnChar",		auraLastEventFrame.OnSearchBoxTextChanged)
+    auraSearchTextentry:SetHook("OnTextChanged", 	auraLastEventFrame.OnSearchBoxTextChanged)
+    auraSearchTextentry:SetAsSearchBox()
+
+    local auraSearchLabel = detailsFramework:CreateLabel(auraLastEventFrame, "Search:", detailsFramework:GetTemplate("font", "ORANGE_FONT_TEMPLATE"))
+    auraSearchLabel:SetPoint("right", auraSearchTextentry, "left", -2, 0)
 
     --create the description
-    auraLastEventFrame.TitleDescText = Plater:CreateLabel (auraLastEventFrame, "Quick way to manage auras from a recent raid boss or dungeon run", 10, "silver")
-    auraLastEventFrame.TitleDescText:SetPoint ("bottomleft", spells_scroll, "topleft", 0, 26)
-
+    auraLastEventFrame.TitleDescText = Plater:CreateLabel(auraLastEventFrame, "Quick way to manage auras from a recent raid boss or dungeon run.", 10, "silver")
+    auraLastEventFrame.TitleDescText:SetPoint("bottomleft", latestSpellsScroll, "topleft", 0, 26)
 end
