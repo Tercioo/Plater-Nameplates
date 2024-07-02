@@ -371,7 +371,10 @@ Plater.AnchorNamesByPhraseId = {
 	local DB_CASTBAR_HIDE_ENEMIES
 	local DB_CASTBAR_HIDE_FRIENDLY
 
+	---@type plater_spelldata[]
 	local DB_CAPTURED_SPELLS = {}
+
+	---@type plater_spelldata[]
 	local DB_CAPTURED_CASTS = {}
 
 	--store the aggro color table for tanks and dps
@@ -410,6 +413,7 @@ Plater.AnchorNamesByPhraseId = {
 	local TANK_CACHE = {}
 
 	--store pet GUIDs
+	---@type plater_petinfo[]
 	local PET_CACHE = {}
 	--store pets summoned by the player it self
 	Plater.PlayerPetCache = {}
@@ -9236,6 +9240,7 @@ end
 
 	-- defined local above
 	parserFunctions = {
+		--todo: if animations are disabled, SPELL_DAMAGE doesn't need to be read
 		SPELL_DAMAGE = function (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical)
 			if (SPELL_WITH_ANIMATIONS [spellName] and sourceGUID == Plater.PlayerGUID) then
 				for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
@@ -9260,8 +9265,14 @@ end
 			end
 		--]=]
 
-			local entry = {ownerGUID = sourceGUID, ownerName = sourceName, petName = targetName, time = time}
-			PET_CACHE [targetGUID] = entry
+			---@type plater_petinfo
+			local entry = {
+				ownerGUID = sourceGUID,
+				ownerName = sourceName,
+				petName = targetName,
+				time = time
+			}
+			PET_CACHE[targetGUID] = entry
 			
 			if (sourceGUID == Plater.PlayerGUID) then
 				Plater.PlayerPetCache [targetGUID] = entry
@@ -9353,10 +9364,30 @@ end
 							isChanneled = true
 						end 
 					end
+
 					if (npcId and npcId ~= 0) then
-						DB_CAPTURED_SPELLS[spellID] = {event = token, source = sourceName, npcID = npcId, encounterID = Plater.CurrentEncounterID, encounterName = Plater.CurrentEncounterName, isChanneled = isChanneled}
+						---@type plater_spelldata
+						local spellData = {
+							event = token,
+							source = sourceName,
+							npcID = npcId,
+							encounterID = Plater.CurrentEncounterID,
+							encounterName = Plater.CurrentEncounterName,
+							isChanneled = isChanneled
+						}
+						DB_CAPTURED_SPELLS[spellID] = spellData
+
 						if isChanneled and not DB_CAPTURED_CASTS[spellID] then
-							DB_CAPTURED_CASTS[spellID] = {event = token, source = sourceName, npcID = npcId, encounterID = Plater.CurrentEncounterID, encounterName = Plater.CurrentEncounterName, isChanneled = isChanneled}
+							---@type plater_spelldata
+							local spellData = {
+								event = token,
+								source = sourceName,
+								npcID = npcId,
+								encounterID = Plater.CurrentEncounterID,
+								encounterName = Plater.CurrentEncounterName,
+								isChanneled = isChanneled
+							}
+							DB_CAPTURED_CASTS[spellID] = spellData
 						end
 					end
 				end
@@ -9368,7 +9399,15 @@ end
 				if (not sourceFlag or bit.band(sourceFlag, 0x00000400) == 0) then --not a player
 					local npcId = Plater:GetNpcIdFromGuid(sourceGUID or "")
 					if (npcId and npcId ~= 0) then
-						DB_CAPTURED_CASTS[spellID] = {event = token, source = sourceName, npcID = npcId, encounterID = Plater.CurrentEncounterID, encounterName = Plater.CurrentEncounterName}
+						---@type plater_spelldata
+						local spellData = {
+							event = token,
+							source = sourceName,
+							npcID = npcId,
+							encounterID = Plater.CurrentEncounterID,
+							encounterName = Plater.CurrentEncounterName
+						}
+						DB_CAPTURED_CASTS[spellID] = spellData
 					end
 				end
 			end
@@ -9386,7 +9425,16 @@ end
 					local npcId = Plater:GetNpcIdFromGuid(sourceGUID or "")
 					if (npcId and npcId ~= 0) then
 						local auraType = amount
-						DB_CAPTURED_SPELLS [spellID] = {event = token, source = sourceName, type = auraType, npcID = npcId, encounterID = Plater.CurrentEncounterID, encounterName = Plater.CurrentEncounterName}
+						---@type plater_spelldata
+						local spellData = {
+							event = token,
+							source = sourceName,
+							type = auraType,
+							npcID = npcId,
+							encounterID = Plater.CurrentEncounterID,
+							encounterName = Plater.CurrentEncounterName
+						}
+						DB_CAPTURED_SPELLS[spellID] = spellData
 					end
 				end
 			end

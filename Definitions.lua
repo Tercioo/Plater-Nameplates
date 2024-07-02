@@ -55,6 +55,21 @@
 ---@field UnitFrame frame unit frame from blizzard
 ---@field unitFramePlater table backup the unit frame address so we can restore it in case a script messes up and override the unit frame
 
+---@class plater_petinfo : table
+---@field ownerGUID string
+---@field ownerName string
+---@field petName string
+---@field time number
+
+---@class plater_spelldata : table
+---@field event string
+---@field source string
+---@field npcID number
+---@field type number?
+---@field isChanneled any
+---@field encounterID number?
+---@field encounterName string?
+
 ---@class unitframe : table
 ---@field healthBar table
 ---@field castBar table
