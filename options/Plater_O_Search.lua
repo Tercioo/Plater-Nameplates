@@ -182,6 +182,4 @@ function platerInternal.CreateSearchOptions()
 	end)
 
     platerInternal.LoadOnDemand_IsLoaded.SearchOptions = true
-
-    print("99- finished loading the search tab.")
 end
