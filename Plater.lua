@@ -9287,6 +9287,7 @@ end
 			if (not Plater.db.profile.show_interrupt_author) then
 				return
 			end
+
 			--~interrupt
 			local name = sourceName
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
@@ -9355,12 +9356,12 @@ end
 		
 		SPELL_CAST_SUCCESS = function (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical)
 			if ((tonumber(spellID) or 0) > 0 and (not DB_CAPTURED_SPELLS[spellID] or DB_CAPTURED_SPELLS[spellID].isChanneled == nil)) then -- check isChanneled to ensure update of already existing data
-				if (not sourceFlag or bit.band(sourceFlag, 0x00000400) == 0) then --not a player
+				if (not sourceFlag or bit.band(sourceFlag, 0x60) ~= 0) then --is neutral or hostile
 					local npcId = Plater:GetNpcIdFromGuid(sourceGUID or "")
 					local isChanneled = false
 					if sourceGUID and UnitTokenFromGUID then -- this is the only proper way to check for channeled spells...
 						local unit = UnitTokenFromGUID(sourceGUID)
-						if unit and UnitChannelInfo (unit) then
+						if unit and UnitChannelInfo(unit) then
 							isChanneled = true
 						end 
 					end
@@ -9396,7 +9397,7 @@ end
 		
 		SPELL_CAST_START = function (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical)
 			if (not DB_CAPTURED_CASTS[spellID]) then
-				if (not sourceFlag or bit.band(sourceFlag, 0x00000400) == 0) then --not a player
+				if (not sourceFlag or bit.band(sourceFlag, 0x60) ~= 0) then --is neutral or hostile
 					local npcId = Plater:GetNpcIdFromGuid(sourceGUID or "")
 					if (npcId and npcId ~= 0) then
 						---@type plater_spelldata
@@ -9419,12 +9420,11 @@ end
 			platerInternal.Audio.PlaySoundForCastStart(spellID)
 		end,
 
-		SPELL_AURA_APPLIED = function (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical)
+		SPELL_AURA_APPLIED = function (time, token, hidding, sourceGUID, sourceName,   sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2,      spellID, spellName, spellType, auraType, overKill, school, resisted, blocked, absorbed, isCritical)
 			if (not DB_CAPTURED_SPELLS[spellID]) then
-				if (not sourceFlag or bit.band(sourceFlag, 0x00000400) == 0) then --not a player
+				if (not sourceFlag or bit.band(sourceFlag, 0x60) ~= 0) then --is neutral or hostile
 					local npcId = Plater:GetNpcIdFromGuid(sourceGUID or "")
 					if (npcId and npcId ~= 0) then
-						local auraType = amount
 						---@type plater_spelldata
 						local spellData = {
 							event = token,

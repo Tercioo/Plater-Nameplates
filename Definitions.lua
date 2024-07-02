@@ -65,7 +65,7 @@
 ---@field event string
 ---@field source string
 ---@field npcID number
----@field type number?
+---@field type string?
 ---@field isChanneled any
 ---@field encounterID number?
 ---@field encounterName string?
