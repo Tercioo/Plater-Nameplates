@@ -12,6 +12,22 @@ local _
 ---@field [1] spellid
 ---@field [2] plater_spelldata
 
+---@class plater_spelllist_line : frame, df_headerfunctions
+---@field value spelllist_scrolldata
+---@field hasHighlight boolean
+---@field SpellID number
+---@field Icon texture
+---@field SpellIDEntry df_textentry
+---@field SpellName df_label
+---@field SourceName df_label
+---@field SpellType df_label
+---@field AddTrackList df_button
+---@field AddIgnoreList df_button
+---@field AddSpecial df_button
+---@field AddTrigger df_dropdown
+---@field CreateAura df_button
+---@field FromLastCombat df_label
+
 local startX, startY, heightSize = 10, platerInternal.optionsYStart, 755
 local highlightColorLastCombat = {1, 1, .2, .25}
 
@@ -243,6 +259,7 @@ function Plater.CreateAuraLastEventOptionsFrame(auraLastEventFrame)
 
     --line
     local scrollCreateLine = function(self, index)
+        ---@type plater_spelllist_line
         local line = CreateFrame("button", "$parentLine" .. index, self, BackdropTemplateMixin and "BackdropTemplate")
         line:SetPoint("topleft", self, "topleft", 1, -((index-1)*(scroll_line_height+1)) - 1)
         line:SetSize(scroll_width - 2, scroll_line_height)
@@ -391,6 +408,8 @@ function Plater.CreateAuraLastEventOptionsFrame(auraLastEventFrame)
 
             if (spellTable) then
                 local line = self:GetLine(i)
+                ---@cast line plater_spelllist_line
+
                 local spellID = spellTable[1]
                 ---@type plater_spelldata
                 local spellData = spellTable[2]
@@ -501,11 +520,16 @@ function Plater.CreateAuraLastEventOptionsFrame(auraLastEventFrame)
         local newData = {}
 
         for spellID, spellTable in pairs(DB_CAPTURED_SPELLS) do
-            tinsert(newData, {spellID, spellTable})
+            --if spellTable has 'isChanneled' entry, it means is a cast or channeling
+            --if spellTable has 'type' entry, it means if a buff or debuff
+            local sortWeight = spellTable.isChanneled ~= nil and 2 or 0
+            sortWeight = sortWeight + (spellTable.type == "BUFF" and 1 or 0)
+            tinsert(newData, {spellID, spellTable, sortWeight})
         end
 
-        --if spellTable has 'isChanneled' entry, it means is a cast or channeling
-        --if spellTable has 'type' entry, it means if a buff or debuff
+        table.sort(newData, function(t1, t2)
+            return t1[3] > t2[3]
+        end)
 
         self.CachedTable = nil
         self.SearchCachedTable = nil

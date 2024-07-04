@@ -2114,10 +2114,38 @@ Plater.AnchorNamesByPhraseId = {
 			Plater.CombatTime = GetTime()
 
 			--store names and casts from 'last' combat, this is used when showing Npcs Colors and Cast Colors to bump up stuff from the last combat
-			Plater.LastCombat = {
-				npcNames = {},
-				spellNames = {},
-			}
+			table.wipe(Plater.LastCombat.npcNames)
+			table.wipe(Plater.LastCombat.spellNames)
+
+			--store player and pet guids for friendly affiliation
+			local unitCachePlayers
+			local unitCachePets
+
+			if (IsInRaid()) then
+				unitCachePlayers = platerInternal.UnitIdCache.Raid --raid1, raid2, raid3
+				unitCachePets = platerInternal.UnitIdCache.RaidPet --raidpet1, raidpet2, raidpet3
+			else
+				unitCachePlayers = platerInternal.UnitIdCache.Party --player, party1, party2
+				unitCachePets = platerInternal.UnitIdCache.PartyPet --partypet1, partypet2
+			end
+
+			table.wipe(platerInternal.HasFriendlyAffiliation)
+
+			for i = 1, #unitCachePlayers do
+				local unitGuid = UnitGUID(unitCachePlayers[i])
+				if (unitGuid) then
+					platerInternal.HasFriendlyAffiliation[unitGuid] = true
+				else
+					break
+				end
+			end
+
+			for i = 1, #unitCachePets do
+				local unitGuid = UnitGUID(unitCachePets[i])
+				if (unitGuid) then
+					platerInternal.HasFriendlyAffiliation[unitGuid] = true
+				end
+			end
 		end,
 
 		PLAYER_REGEN_ENABLED = function()
@@ -9251,6 +9279,7 @@ end
 			end
 		end,
 		
+		--~summon
 		SPELL_SUMMON = function (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical)
 		--[=[ --some actors are not having the pet flag 0x3000, so we are directly adding all target summons into the cache
 			print ("Summon", targetFlag, bit.band (targetFlag, 0x00003000) ~= 0)
@@ -9276,6 +9305,11 @@ end
 			
 			if (sourceGUID == Plater.PlayerGUID) then
 				Plater.PlayerPetCache [targetGUID] = entry
+			end
+
+			--check if the summoner has friendly affiliation, if it is friendly, add it to the friendly affiliation cache
+			if ((sourceFlag and bit.band(sourceFlag, 0x10) ~= 0) or (targetFlag and bit.band(targetFlag, 0x10) ~= 0)) then --0x10 = affiliation friendly
+				platerInternal.HasFriendlyAffiliation[targetGUID] = true
 			end
 		end,
 		
@@ -9356,29 +9390,18 @@ end
 		
 		SPELL_CAST_SUCCESS = function (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical)
 			if ((tonumber(spellID) or 0) > 0 and (not DB_CAPTURED_SPELLS[spellID] or DB_CAPTURED_SPELLS[spellID].isChanneled == nil)) then -- check isChanneled to ensure update of already existing data
-				if (not sourceFlag or bit.band(sourceFlag, 0x60) ~= 0) then --is neutral or hostile
-					local npcId = Plater:GetNpcIdFromGuid(sourceGUID or "")
-					local isChanneled = false
-					if sourceGUID and UnitTokenFromGUID then -- this is the only proper way to check for channeled spells...
-						local unit = UnitTokenFromGUID(sourceGUID)
-						if unit and UnitChannelInfo(unit) then
-							isChanneled = true
-						end 
-					end
+				if (not platerInternal.HasFriendlyAffiliation[sourceGUID]) then
+					if (not sourceFlag or bit.band(sourceFlag, 0x60) ~= 0) then --is neutral or hostile
+						local npcId = Plater:GetNpcIdFromGuid(sourceGUID or "")
+						local isChanneled = false
+						if sourceGUID and UnitTokenFromGUID then -- this is the only proper way to check for channeled spells...
+							local unit = UnitTokenFromGUID(sourceGUID)
+							if unit and UnitChannelInfo(unit) then
+								isChanneled = true
+							end 
+						end
 
-					if (npcId and npcId ~= 0) then
-						---@type plater_spelldata
-						local spellData = {
-							event = token,
-							source = sourceName,
-							npcID = npcId,
-							encounterID = Plater.CurrentEncounterID,
-							encounterName = Plater.CurrentEncounterName,
-							isChanneled = isChanneled
-						}
-						DB_CAPTURED_SPELLS[spellID] = spellData
-
-						if isChanneled and not DB_CAPTURED_CASTS[spellID] then
+						if (npcId and npcId ~= 0) then
 							---@type plater_spelldata
 							local spellData = {
 								event = token,
@@ -9388,7 +9411,21 @@ end
 								encounterName = Plater.CurrentEncounterName,
 								isChanneled = isChanneled
 							}
-							DB_CAPTURED_CASTS[spellID] = spellData
+							--print("added DB_CAPTURED_SPELLS 1:", sourceName, spellID, spellName)
+							DB_CAPTURED_SPELLS[spellID] = spellData
+
+							if isChanneled and not DB_CAPTURED_CASTS[spellID] then
+								---@type plater_spelldata
+								local spellData = {
+									event = token,
+									source = sourceName,
+									npcID = npcId,
+									encounterID = Plater.CurrentEncounterID,
+									encounterName = Plater.CurrentEncounterName,
+									isChanneled = isChanneled
+								}
+								DB_CAPTURED_CASTS[spellID] = spellData
+							end
 						end
 					end
 				end
@@ -9396,7 +9433,7 @@ end
 		end,
 		
 		SPELL_CAST_START = function (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical)
-			if (not DB_CAPTURED_CASTS[spellID]) then
+			if (not DB_CAPTURED_CASTS[spellID] and not platerInternal.HasFriendlyAffiliation[sourceGUID]) then
 				if (not sourceFlag or bit.band(sourceFlag, 0x60) ~= 0) then --is neutral or hostile
 					local npcId = Plater:GetNpcIdFromGuid(sourceGUID or "")
 					if (npcId and npcId ~= 0) then
@@ -9420,8 +9457,8 @@ end
 			platerInternal.Audio.PlaySoundForCastStart(spellID)
 		end,
 
-		SPELL_AURA_APPLIED = function (time, token, hidding, sourceGUID, sourceName,   sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2,      spellID, spellName, spellType, auraType, overKill, school, resisted, blocked, absorbed, isCritical)
-			if (not DB_CAPTURED_SPELLS[spellID]) then
+		SPELL_AURA_APPLIED = function (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, auraType, overKill, school, resisted, blocked, absorbed, isCritical)
+			if (not DB_CAPTURED_SPELLS[spellID] and not platerInternal.HasFriendlyAffiliation[sourceGUID]) then
 				if (not sourceFlag or bit.band(sourceFlag, 0x60) ~= 0) then --is neutral or hostile
 					local npcId = Plater:GetNpcIdFromGuid(sourceGUID or "")
 					if (npcId and npcId ~= 0) then
@@ -9434,6 +9471,7 @@ end
 							encounterID = Plater.CurrentEncounterID,
 							encounterName = Plater.CurrentEncounterName
 						}
+						--print("added DB_CAPTURED_SPELLS 2:", sourceName, spellID, spellName, sourceFlag)
 						DB_CAPTURED_SPELLS[spellID] = spellData
 					end
 				end

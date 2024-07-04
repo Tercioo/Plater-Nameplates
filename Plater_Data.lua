@@ -1,4 +1,7 @@
 
+--this file load after Plater_DefaultSettings.lua and before Plater.lua
+--_G.Plater doesn't exists yet
+
 local _
 local addonName, platerInternal = ...
 
@@ -12,6 +15,8 @@ platerInternal.Data = {}
 platerInternal.Date = {}
 platerInternal.Logs = {}
 platerInternal.Audio = {}
+---@type table<guid, boolean>
+platerInternal.HasFriendlyAffiliation = {}
 
 platerInternal.RemoveColor = "!removecolor"
 platerInternal.NoColor = "no color"
@@ -20,6 +25,37 @@ platerInternal.Defaults = {
     dropdownStatusBarTexture = [[Interface\Tooltips\UI-Tooltip-Background]],
     dropdownStatusBarColor = {.1, .1, .1, .8},
 }
+
+platerInternal.UnitIdCache = {}
+platerInternal.UnitIdCache.Party = {"player"}
+platerInternal.UnitIdCache.PartyPet = {"playetpet"}
+for i = 1, 4 do
+	table.insert(platerInternal.UnitIdCache.Party, "party" .. i)
+	table.insert(platerInternal.UnitIdCache.PartyPet, "partypet" .. i)
+end
+
+--cache unitIds so string unitId manipulating are no longer required
+platerInternal.UnitIdCache.Raid = {}
+platerInternal.UnitIdCache.RaidPet = {}
+for i = 1, 40 do
+	platerInternal.UnitIdCache.Raid[i] = "raid" .. i
+	platerInternal.UnitIdCache.RaidPet[i] = "raidpet" .. i
+end
+
+platerInternal.UnitIdCache.Boss = {}
+for i = 1, 9 do
+	platerInternal.UnitIdCache.Boss[i] = "boss" .. i
+end
+
+platerInternal.UnitIdCache.Nameplate = {}
+for i = 1, 40 do
+	platerInternal.UnitIdCache.Nameplate[i] = "nameplate" .. i
+end
+
+platerInternal.UnitIdCache.Arena = {}
+for i = 1, 5 do
+	platerInternal.UnitIdCache.Arena[i] = "arena" .. i
+end
 
 function platerInternal.CreateDataTables(Plater)
     --addon comm
