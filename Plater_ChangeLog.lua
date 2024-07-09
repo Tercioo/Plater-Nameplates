@@ -8,6 +8,16 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1720561758, "Bug Fix", "July 9th, 2024", "Fixing an issue BigWigs BossMod support.", "cont1nuity"},
+			{1720561758, "Backend Change", "July 2nd, 2024", "Spell caching now filters out friendly units.", "Terciob"},
+			{1720561758, "Backend Change", "July 1st, 2024", "Options panel improvements.", "Terciob"},
+			{1720561758, "Backend Change", "July 1st, 2024", "Delay opening options menu when in combat to open after combat ends.", "cont1nuity"},
+			{1720561758, "Bug Fix", "July 1st, 2024", "Fixing 'important' aura tracking.", "cont1nuity"},
+			{1720561758, "Backend Change", "June 28th, 2024", "Performance units can now be disabled instead of removed.", "cont1nuity"},
+			{1720561758, "Backend Change", "June 26th, 2024", "Preparations for scripts for TWW.", "Terciob"},
+			{1720561758, "Backend Change", "June 26th, 2024", "Backend changes to NPC Colors tab.", "Terciob"},
+			{1720561758, "Bug Fix", "June 25th, 2024", "Fixing an issue with mouse inputs on masqued cast icons.", "cont1nuity"},
+			
 			{1719181362, "Backend Change", "June 24th, 2024", "First load of the options menu will only take place out of combat now and be triggered automatically when combat ends.", "cont1nuity"},
 			{1719181362, "Bug Fix", "June 20th, 2024", "Fixing an issue with out of order health updates.", "cont1nuity"},
 			{1719181362, "Backend Change", "June 17th, 2024", "Updates and preparations for scripts for TWW.", "Terciob"},
