@@ -1,7 +1,7 @@
 ## Interface: 100207
 ## Interface-Mainline: 100207
 ## Interface-Cata: 40400
-## Interface-Vanilla: 11502
+## Interface-Vanilla: 11503
 ## Title: Plater
 ## Notes: Nameplate addon designed for advanced users.
 ## SavedVariables: PlaterDB, PlaterLanguage, PlaterLogs, PlaterBackup
