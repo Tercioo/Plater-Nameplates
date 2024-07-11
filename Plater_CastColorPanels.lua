@@ -332,14 +332,30 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
     --audio cues
     local line_select_audio_dropdown = function (self, spellId, audioFilePath)
-        DB_CAST_AUDIOCUES[spellId] = audioFilePath
-        castFrame.spellsScroll.CachedTable = nil
-        castFrame.RefreshScroll(0)
+        --current audio selected for this spellId
+        if (IsShiftKeyDown()) then
+            local oldAudioFilePath = DB_CAST_AUDIOCUES[spellId]
+            if (oldAudioFilePath and oldAudioFilePath ~= audioFilePath) then
+                --if the shift key is pressed, change the audio of all casts with its old audio the new audio selected
+                for thisSpellId, filePathForSpellId in pairs(DB_CAST_AUDIOCUES) do
+                    if (filePathForSpellId == oldAudioFilePath) then
+                        DB_CAST_AUDIOCUES[thisSpellId] = audioFilePath
+                    end
+                end
+                castFrame.spellsScroll.CachedTable = nil
+                castFrame.RefreshScroll(0)
+            end
+        else
+            DB_CAST_AUDIOCUES[spellId] = audioFilePath
+            castFrame.spellsScroll.CachedTable = nil
+            castFrame.RefreshScroll(0)
+        end
     end
 
     local audioFileNameToCueName = {}
 
-    local createAudioCueList = function(fullRefresh)
+    ---@param self df_dropdown
+    local createAudioCueList = function(self, fullRefresh)
         if (castFrame.AudioCueListCache and not fullRefresh) then
             --return
         end
@@ -386,8 +402,24 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         --table.sort(audioListInOrder, function(t1, t2) return t1[3] < t2[3] end) --alphabetical
         --table.sort(audioListInOrder, function(t1, t2) return t1[4] > t2[4] end) --in use
 
+        local currentSelected = self:GetValue()
+        if (type(currentSelected) == "string") then
+            currentSelected = currentSelected
+        else
+            currentSelected = nil
+        end
+
         for i = 1, #audioListInOrder do
             local cueName, cueFile, lowerName, cueInUse = unpack(audioListInOrder[i])
+
+            local desc
+            if (currentSelected) then
+                local currentSelectedCueName = audioFileNameToCueName[currentSelected]
+                desc = "Hold Shift to change the sound of all casts with the audio |cFFFFFF00" .. currentSelectedCueName .. "|r to |cFFFFDD00" .. cueName .. "|r."
+            else
+                desc = nil
+            end
+
             audioCueList[#audioCueList+1] = {
                 label = " " .. cueName,
                 value = cueFile,
@@ -398,6 +430,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                 iconcolor = dropdownIconColor,
                 icon = [[Interface\AddOns\Plater\media\audio_cue_icon]],
                 onclick = line_select_audio_dropdown,
+                desc = desc, --
             }
         end
 
@@ -405,7 +438,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
     end
 
     local line_refresh_audio_dropdown = function(self)
-        createAudioCueList(true)
+        createAudioCueList(self, true)
         return castFrame.AudioCueListCache
     end
 
