@@ -302,7 +302,6 @@ Plater.TriggerDefaultMembers = {
 }
 
 function platerInternal.Scripts.GetDefaultScriptForSpellId(spellId)
-	--platerInternal.Scripts.DefaultCastScripts
 	local allScripts = Plater.db.profile.script_data
 	for i = 1, #allScripts do
 		local scriptObject = allScripts[i]

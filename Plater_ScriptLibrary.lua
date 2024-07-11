@@ -11,6 +11,7 @@ local detailsFramework = DetailsFramework
 
 local GetExpansionLevel = GetExpansionLevel
 
+--this list of scripts are used at the Cast Colors and Names tab to previre which script the spell is using and also to select a script for the spell
 platerInternal.Scripts.DefaultCastScripts = {
 	"Cast - Small Alert [Plater]",
 	"Cast - Frontal Cone [Plater]",
@@ -23,7 +24,6 @@ platerInternal.Scripts.DefaultCastScripts = {
 	"Explosion Affix M+ [Plater]",
 	"Cast - Circle AoE [P]",
 	"Cast - Very Important [Plater]",
-
 }
 
 do
@@ -36,7 +36,7 @@ do
 --]=]
 
 --new scripts for v11
-if (GetExpansionLevel() == 10) then
+if (GetExpansionLevel() == 10) then --World of Warcraft 11 has the expansion level 10
 	detailsFramework.table.remove(platerInternal.Scripts.DefaultCastScripts, "Cast - Stop Casting [P]")
 	detailsFramework.table.remove(platerInternal.Scripts.DefaultCastScripts, "Cast - Glowing [P]")
 	detailsFramework.table.remove(platerInternal.Scripts.DefaultCastScripts, "Cast - Big Alert [Plater]")
@@ -58,8 +58,8 @@ if (GetExpansionLevel() == 10) then
 	table.insert(platerInternal.Scripts.DefaultCastScripts, "Cast - Spark Color [P]")
 	table.insert(platerInternal.Scripts.DefaultCastScripts, "Cast - Special Ability [P]")
 	table.insert(platerInternal.Scripts.DefaultCastScripts, "Cast - Shining Green [P]")
-	table.insert(platerInternal.Scripts.DefaultCastScripts, "Aura - Is Cast Bar [P]")
-	table.insert(platerInternal.Scripts.DefaultCastScripts, "Cast - Watch Step [P]")
+	--table.insert(platerInternal.Scripts.DefaultCastScripts, "Aura - Is Cast Bar [P]")
+	table.insert(platerInternal.Scripts.DefaultCastScripts, "Cast - Voidzone [P]")
 
 	PlaterScriptLibrary["Aura - Is Cast Bar [P]"] = { --2024 June 30
 		Revision = 1,
@@ -77,10 +77,10 @@ if (GetExpansionLevel() == 10) then
 		OverrideTriggers = "merge",
 	}
 
-	PlaterScriptLibrary ["Cast - Watch Step [P]"] = { --2024 June 30
-		Revision = 1,
+	PlaterScriptLibrary ["Cast - Voidzone [P]"] = { --2024 June 30
+		Revision = 2,
 		ScriptType = "script",
-		String = "TRvBVPnsq4)lOt6msfKx)UJ0Ds0K2R0gbrXO2p0uhm4fWsoEr2MKl90XV9BM1GX8IXRZrttoDqezz98m7SpZm7SM1Ue3bUoS5PbSOeOzp(3h84CQBpDxNEE3rDD6ZV8YHexNp7fUa6XHMMgennz5WjS4LdtNrxo0lk4oVmbNh69i1F5WhMrJwD1XEjPWNXuVukal5oVWWLdVNfaI9Dwe2xWAzNgZwe53215t0hxBCWy3Dmlc(mkLgpXBm9Mo((9JsU5QqqLX3ad(uAYnzsFBO3iAORZf0KXUoUPWBNu247PXjWvHzjrgE56457J6mtfUoe3EkGG4S3jzCCWCaMAgR0ttx20sdfaAs0uuD7b)PPPBrW)N1u1cPTEAQwg6qtdSPQLg0LjcZWWg6YIRbvBqP2Gsu0SrLrKX2Qeufe4sQAYel46efSFdzfOpCKuvK1nX2AyBIPfGJOJYRBW1dmcQQQAMiwtSTMMj0hXIJ10e0hbUMIUPLf0wbWRb2GmGfhdnfdv0GvWjQIIIk2F2mvxdjiCQQyzcYdSdqxNZ9STwo8ZGZeDLlh(1R(MRJEL(kmM42rEX3E)kKTNhn11rdyCq1MqCinECaBKRJb3h9igKTvGwLbyho0c)Ihi9dbOm(EO5acnzLq8WxiS2NrtI(vqU7y3tHWrGYDMSiAC2ylLqdN8MLdxefK21FvJ3hdzmqBA09d8gfInZcK4FR5YpUC4Q35TYH1(TuV4bXEZ7SEcY7(mizZj47ujcOmsZAa88qO)oHHxXcIstKAwVXKJsQXyk6eBSZ8Rq3QYWhgQ1u7oJ9cPsYT1RlNCggiiTfkk4r)yvVb3herUS7YUfDHB7B6IVB1kikHgJbtmFiAygnMU(Az)pB8666GPrqUKdMYAsSHekBi1XbstFEJtodwCBEjCcyokNoZPeYzpJfZLKIyPfn7b0)mDrm9lEPJN5KsN3KNUfva(EQz)5(Ukz5WFdut8cQiQjKbrDfwaHRsUgoNVUb)7snMG)ddTJcclsqnfzm2VNwT(DGoHYLHBxLexlAEPg5ODDYC70BNmCUzNlYFGAuQbcnTiuE)noG5pA)ijA6Lm2CWALA0RFV31OPWtXhc8Nsttotma15vn8TH0jP4mc7Qm(AvmKuJFzUxmSo2AmR6h98n6C9GV0)6pDOP)AXrUATQ(6xROwxaS5LBx7yUvbR09TVvHYVi27HlXsrs5MdyAYvGAV1T3Md2EX7wAwcOYSYpY4c9WNvtjNZyX(86vYTLL571cErGnzqukRtI4bA5tO17)m3PlsCYkzBhZs3KxTFIWoPwsnUU)God62V3XcjYvkNi8IH8bP1xtuy9J9bporuXVyrCMbk3MyRBJV0Sm1efUtkesEbfRPk3wLd320Ga7QvyvCbDAmLMi1Yww85yW0aGthXstz3XJQRim8fU7Y4zYDTMR)Hs1EHZN5jkp35YR(qNgvQUAYW5yeGEZL9jWT5yFFm7Uo4xoEM3M5cltA5M)ul3bo3z1UExoibl4Ll)pKkEBPDXl5TfSAvZtwenwzjprRnTXdjGkYf(KUC3(ATq2y(ffgy5fOoS8INwEy81Revj2WXw3SSPPOlC(kYRz8S51o(UcoDu(PPy1o6R2mTa1RoGWpfowWkwhAc9YOK1iglnPoLR4akwQ6T9V(I3D9bVFwu06xLkzgJMuAbQCLwO40ktOKOZCe17EXSW7ftv)ykKxwshZk0)3uukZhiaCUGNOCSc6Qq(fV3QLU8Io7iyHCkvcpNYsZuJOia0nzuYcy(SYt(Ye9uwmyBnkm9jwz79LTajQyBWVrDvOCRPqG3QEnjRETLLSPTSy4xx5qtwW5vwrJQ3Gxgwy7OrjH1YZm46o9CUScNtb9kS)zhmv5I2r8cEj9SYh6gevzBlHhVjtsaB0qfx9rv91lLP8eOmznJv)guw2Ahj08WCgszVIjm1NDcRvwq2Rxkt7)JXQhHP)Ilg7fZ(ymQ3(ywDVbMw6AkQ1zFmeX3hZpR7ky)J1C1E3t4oQ)A9p92BkCpnVz1S4VfrDD2)0(25aaRJsoC0Zt7Gbp4PV5Wp3vPg9JWd6g3oZ6ZUv6qEOYUrHJ4upmKzSheza2CspccOWVQwgIYKCpnrJ8BEcOX3hefKmJ6)0OYpe4tRfVikGn8szi4Z)tDqf(Kc8FbMOgmYMEYEOio8ZnIRdH889Csu8XZaFaUCtDD)N)",
+		String = "TRvBVPnsq4)lOt6msf0U(DhP7KOjTxtBeefJA)qtDWGxal54fz7KCPNo(TFZSgmMxmSohnn50fIGL1ZZS78mZSZAw7r9675YNLfYJtHMDfFV)JZyEDn8C)e7XLxL65(z)O7yEUUSSSW4jPZhmMNmFq2u28b(XH36JInFWSi)hzbZh8Wuw8IRoYpndEpH5NXayP36hfnFW98qqSVZJX(cxk7Ke(DXbT9C76Flmy9MLRvy4pFepgEpoJLm2Fe76obb9ItV(YiqRjxdJ)ew615t2BI8hYI8CpJLoYZ1ldE5MXhDpljfUkyLucHO656heG6mxfEUuVUqNzO17MokjCgatlNv6QBqSS1rbGMuDvnVUW)66g2u8Z8MA2iT1vxZ20aAAIn1S1HUSqyMMoqx2cnO5ak1buIQUdQmkbBRrrvqHlPPtO2W1PQy)MevOpCK0ujgwyBDSn1YgWrnq5nmf6bgbnnnDleRf2wx3c6JAlWAzb6Jcxt1WY2gARc41H5abWIJHUQPgoHvrdvvvvd7p3sn0rccnvvBlH8cB1XWWbjyG6ov4OBnFWNbFl6zNp4Rx(npxJd63WqKBg6NCZ9lq2Ew8epxDG9bvBbXKSKrH8HEUMc)1Jym3AXDhmEB3rA4x8bPFieLjWhNoGqJxiKiAgIYd4S04FfK7w(9mi6eOF3X3fpkFSvszrJFZ8b3fhMDEWIgVpbIGH2S4777pmcBMhuj(wZ5FC(GfVkAvaR9Bz(j9t8N1zPbk6(ei3Zn87mfkOmAZAa80iO)orrxYdJZsvAwVXuGsPXig6eBSH9vQBnc8MPwn1U7i)iMcPTrD5KtWabL1qXap6hp0lW9brKZpF(5LDHR7BohF1QvyCklbdM4bq0WuwcB51Y)mF8o3ZftPGCjxm91sLq0OowWGaPSpVXjNal0nRcobMoQhVPtfKZwtwmxsjMNvEA3N9Nz3LW(IF2OPUzSznfPBXLGVLA2223ujZh8BGAsUJjJAI4quxPfqeQuOHtfRBi(UsJX4hyODCyuzcQPmJX290Q1Vd0ju9mA9IM4ArZQCsoCtNSyE6VrgUyAxiYFGAuPbcnRmur)n2X0F42rsSSl48zWSvPr3EDFxJMsBIpegmHLLEICaQZF1W3gXgNHwe2vv81IyiLg)Ym)eyDSLyw0p65B05Q(FP3vFAxM)sXrUAPQ(6xpqTUqyJm3S0XCJkwP7BF7ak)Se)hUalfPumDGPg5aO2AD715G1x8ULUTeQmV8dbxOhE)WuYPCEsGOEfPnHG77c)JcB4GQwvNu5d0kmOLBhTWPltCYczBNWZwLxTDIWgPwknUQx)o9pVx39fsuOubr4Na5dklVMSW6LeaECQSIF2Dj5tqsBQJHd(NUTLUSWDZGqYZyynvsBnbChltkSdxPvXzSjjmwQslhI82y4KqGthYZY43kIQpqy4lC3L5ZK7Ajx)dLQ9JMn1xwEUZfx(HonoO6QjdxGrc6Tq2Na3wG99j8B7GFz)zERSfEU0KM)ul3bo3P1UExbijl4vi)pKkERPD5l5TgSAvZJiJgpyjpzRnTYdjHkke(OUC32ATu2yXfLgy1fO2T8YNwUB81RevfZH9TUzvMPSlC(kYRz(S512)UcoEu(XPy1g6R2mTe1R2HWpfowYkw7YGEzuYAiNNLwNYvcaLlv92ExD27UAN3plkA9RsLoLZsRSavHslvCAXuOIOZce17EXSX7ftZyFkuuwYaZkm(3uuk3hibCHGhPCSs6Qu(LO3dlD1fD2qWs5uAuroLTULovvcORYOism95vN8Ll6XSyW6AuA6tUY2BlBjsu1XuCJ6Aq5wlPaVw9AAE9ABBILdro8lRCOtK0UYlAC4n4LJf2oACAuT8m9VQtx3loGZPKEL2)SbMd5I2q8sEjJ8YhgMunIJT0J34XPWC0udx9rt71lLP(eOmIU5IFdkBh99eAUBodPSxXeM2ZoH1kpi71lLP))Xy1JWmEXfJ9IzFmM1BFmlU3alBdDvT6SpgQ87J5N1DfS9XAUyV7Pch1FT8NE7nLUNM3SWk(BzuxNTpTVnoaW6OKDh980oyWDE6BUIZDvPrVy8GUXTZS8SBv2LhQQBuypo1Ddzk)bzgGvN0JKak9RQLJOkj3stS4GMhbA89HXHPtzbpnQ8dHbSAXlYcyfVufcH9FSdQWNuG)lWe1Grw1t(dfXUFUr8CP0NVNtIYpEg4dZLxMN3)8d",
 		Enabled = true,
 		OverrideTriggers = "merge",
 	}

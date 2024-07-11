@@ -687,7 +687,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         end
     end
 
-    local castBarPreviewTexture = [[Interface\AddOns\Plater\Images\cast_bar_scripts_preview]]
+    local castBarPreviewTexture = "" --[[Interface\AddOns\Plater\Images\cast_bar_scripts_preview]]
     local eachCastBarButtonHeight = PlaterOptionsPanelContainerCastColorManagementColorFrameScriptPreviewPanel:GetHeight() / #platerInternal.Scripts.DefaultCastScripts
 
     local scriptsToShow = {}
@@ -703,9 +703,9 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
     for i = 1, #scriptsToShow do
         local scriptName = scriptsToShow[i]
 
+        ---@type scriptdata
         local scriptObject = platerInternal.Scripts.GetScriptObjectByName(scriptName)
         if (scriptObject) then
-
             local previewFrame = CreateFrame("button", nil, spFrame, BackdropTemplateMixin and "BackdropTemplate")
             previewFrame:SetSize(spFrame:GetWidth()-5, eachCastBarButtonHeight) --270
             previewFrame:SetPoint("topleft", spFrame, "topleft", 5, (-eachCastBarButtonHeight * (i - 1)) -5)
@@ -716,7 +716,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             scriptNameText:SetPoint("topright", previewFrame, "topright", -2, -1)
             scriptNameText:SetJustifyH("right")
             scriptNameText:SetText(scriptName)
-            scriptNameText:SetAlpha(0.5)
+            scriptNameText:SetAlpha(0.75)
             DF:SetFontSize(scriptNameText, 9)
             previewFrame.scriptNameText = scriptNameText
 
@@ -724,10 +724,14 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             local textureHeight = 46.54 --increasing reduces the preview texture height
 
             local scriptPreviewTexture = previewFrame:CreateTexture(nil, "overlay", nil, 3)
-            scriptPreviewTexture:SetTexture(castBarPreviewTexture)
-            scriptPreviewTexture:SetTexCoord(0, widthEnd, textureHeight * (i-1) / 512, textureHeight * i / 512)
+            --scriptPreviewTexture:SetTexture(castBarPreviewTexture)
+            scriptPreviewTexture:SetTexture(scriptObject.Icon)
+            --scriptPreviewTexture:SetTexCoord(0, widthEnd, textureHeight * (i-1) / 512, textureHeight * i / 512)
             scriptPreviewTexture:SetPoint("topleft", previewFrame, "topleft", 1, -1)
-            scriptPreviewTexture:SetPoint("bottomright", previewFrame, "bottomright", -1, 1)
+            scriptPreviewTexture:SetSize(100, eachCastBarButtonHeight)
+            scriptPreviewTexture:SetTexCoord(0.1, 0.9, 0.1, 0.9)
+
+            --scriptPreviewTexture:SetPoint("bottomright", previewFrame, "bottomright", -1, 1)
             scriptPreviewTexture:SetAlpha(1)
             --scriptPreviewTexture:SetBlendMode("ADD")
 
@@ -744,6 +748,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             selectedScript:SetPoint("topleft", previewFrame, "topleft", 0, 0)
             selectedScript:SetPoint("bottomright", previewFrame, "bottomright", 0, 0)
             selectedScript:SetTexture([[Interface\AddOns\Plater\images\overlay_indicator_3]])
+            selectedScript:SetAlpha(0.3)
             selectedScript:Hide()
             previewFrame.selectedScript = selectedScript
 
@@ -817,7 +822,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                             foundScriptWithThisSpellId = true
                         else
                             previewFrame.selectedScript:Hide()
-                            previewFrame.scriptNameText:SetAlpha(0.5)
+                            previewFrame.scriptNameText:SetAlpha(0.75)
                             previewFrame.selectedHighlight:Hide()
                         end
                     end
@@ -830,7 +835,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             for o = 1, #allPreviewFrames do
                 local previewFrame = allPreviewFrames[o]
                 previewFrame.selectedScript:Hide()
-                previewFrame.scriptNameText:SetAlpha(0.5)
+                previewFrame.scriptNameText:SetAlpha(0.75)
                 previewFrame.selectedHighlight:Hide()
             end
         end
