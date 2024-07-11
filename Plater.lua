@@ -12001,7 +12001,8 @@ end
 		[4] = true, -- Toggle
 		[5] = false, -- Label
 		[6] = false, -- Blank Line
-		[7] = true -- Texture
+		[7] = true, -- List
+		[8] = true, -- Audio
 	}
 	
 	--compile scripts from the Hooking tab
@@ -12127,7 +12128,8 @@ end
 			if (options_for_config_table[thisOption.Type]) then
 				if (type(scriptOptionsValues[thisOption.Key]) == "boolean") then
 					PLATER_GLOBAL_MOD_ENV [scriptObject.scriptId].config[thisOption.Key] = scriptOptionsValues[thisOption.Key]
-				elseif (thisOption.Type == 7) then
+
+				elseif (thisOption.Type == 7) then --list type
 					--check if the options is a list
 					
 					--build default values if needed
@@ -12275,7 +12277,6 @@ end
 		for i = 1, #scriptOptions do
 			local thisOption = scriptOptions[i]
 			if (options_for_config_table[thisOption.Type]) then
-
 				if (type(scriptOptionsValues[thisOption.Key]) == "boolean") then
 					PLATER_GLOBAL_SCRIPT_ENV [scriptObject.scriptId].config[thisOption.Key] = scriptOptionsValues[thisOption.Key]
 

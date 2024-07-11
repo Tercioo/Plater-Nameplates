@@ -65,6 +65,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
         "Interface\\AddOns\\Plater\\images\\option_label", --5
         "Interface\\AddOns\\Plater\\images\\option_blank", --6
         "Interface\\AddOns\\Plater\\images\\option_list", --7 list
+        "Interface\\AddOns\\Plater\\images\\options_audio_dropdown.png", --8 audio dropdown
     }
 
     --> admin script options (this frame is used to configurate the options which the script has)
@@ -317,6 +318,10 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                 elseif (selectedOptionType == 7) then --list
                     newOptionObject.Value = {}
                     newOptionObject.Icon = iconList[selectedOptionType]
+
+                elseif (selectedOptionType == 8) then --audio
+                    newOptionObject.Value = ""
+                    newOptionObject.Icon = iconList[selectedOptionType]
                 end
 
                 --add it
@@ -342,6 +347,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
             "Label", --a text to name a section in the options
             "Blank Line", --an empty line to separate two sections
             "List Panel", --a panel to add values to a list
+            "Audio", --dropdown with audio files
         }
         local getListOfAvailableOptions = function()
             local t = {}
@@ -716,7 +722,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                 if (scriptObject) then
                     local scriptOptions = scriptObject.Options
                     local currentOption = scriptOptions[mainFrame.optionSelected]
-                    
+
                     if key == "Key" then --ensure moving options...
                         local curKeyValue = currentOption[key]
                         local optionsValues = scriptObject.OptionsValues
@@ -995,24 +1001,33 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                 end)
 
 
-        --> option: texture (not in use at the moment)
-            local textureOptionsFrame = CreateFrame("frame", "$parentTextureOptions", adminFrame, BackdropTemplateMixin and "BackdropTemplate")
-            textureOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
-            textureOptionsFrame:SetBackdropColor (0, 0, 0, 0.2)
-            textureOptionsFrame:SetBackdropBorderColor (0, 0, 0, 1)
-            textureOptionsFrame:SetPoint("topleft", sharedOptionsFrame, "bottomleft", 0, -5)
-            textureOptionsFrame:SetSize(options_frame_width, options_frame_widget_options_height)
-            mainFrame.TypeFrames[#mainFrame.TypeFrames+1] = textureOptionsFrame
+        --> option: audio dropdown
+            local dropdownOptionsFrame = CreateFrame("frame", "$parentAudioDropdownOptions", adminFrame, BackdropTemplateMixin and "BackdropTemplate")
+            dropdownOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
+            dropdownOptionsFrame:SetBackdropColor (0, 0, 0, 0.2)
+            dropdownOptionsFrame:SetBackdropBorderColor (0, 0, 0, 1)
+            dropdownOptionsFrame:SetPoint("topleft", sharedOptionsFrame, "bottomleft", 0, -5)
+            dropdownOptionsFrame:SetSize(options_frame_width, options_frame_widget_options_height)
+            mainFrame.TypeFrames[#mainFrame.TypeFrames+1] = dropdownOptionsFrame
 
             local textureOptionsMenu = {
                 always_boxfirst = true,
 
-                {type = "label", get = function() return "Settings for Texture:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+                {type = "label", get = function() return "Settings for Audio Selection:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
                 --value
-                {type = "label", get = function() return "under construction:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+                { --this is the option within the option editor
+                    type = "audiodropdown",
+                    get = function() return mainFrame.getOptionValue("Value", "none") end,
+                    set = function(self, fixedparam, value)
+                        setOptionValue("Value", value, "none")
+                    end,
+                    name = "Audio File Name",
+                    desc = "Audio",
+                },
             }
             textureOptionsMenu.always_boxfirst = true
-            DF:BuildMenuVolatile(textureOptionsFrame, textureOptionsMenu, 5, -5, options_frame_shared_height, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+            DF:BuildMenuVolatile(dropdownOptionsFrame, textureOptionsMenu, 5, -5, options_frame_shared_height, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+
 
         --refresh the panel where the player can adjust the options for the script
         function Plater.RefreshUserScriptOptions(mainFrame)
@@ -1129,6 +1144,24 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                         end
                         tinsert(listFramesNeeded, {thisOptionsValues[thisOption.Key], thisOption.Name, thisOption.Value})
 
+                    elseif (thisOption.Type == 8) then --audio selector
+                        newOption.type = "audiodropdown"
+                        newOption.get = function()
+                            local value = thisOptionsValues[thisOption.Key]
+                            if (not value) then
+                                value = thisOption.Value
+                            end
+
+                            if (not value) then
+                                value = thisOptionsValues[thisOption.Key]
+                            end
+
+                            return value
+                        end
+
+                        newOption.set = function (self, fixedparam, value)
+                            thisOptionsValues[thisOption.Key] = value
+                        end
                     end
 
                     if thisOption.Type ~= 7 then --lists are rendered separately

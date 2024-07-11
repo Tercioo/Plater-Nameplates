@@ -19,15 +19,20 @@ local defaultAudioChannel = "Master"
 
 platerInternal.LatestTimeForAudioPlayedByID = {}
 
+function platerInternal.Audio.GetAudioCueForSpell(spellId)
+    return Plater.db.profile.cast_audiocues[spellId]
+end
+
 ---player an audio cue for a cast bar
 ---@param spellId number
-function platerInternal.Audio.PlaySoundForCastStart(spellId)
-    local audioCue = Plater.db.profile.cast_audiocues[spellId]
+---@param audioFilePath string?
+function platerInternal.Audio.PlaySoundForCastStart(spellId, audioFilePath)
+    local audioCue = audioFilePath or platerInternal.Audio.GetAudioCueForSpell(spellId)
     if (audioCue) then
         if (((platerInternal.LatestTimeForAudioPlayedByID[spellId] or 0) + 0.25) > GetTime()) then
             return -- do not play, was played already within the last quarter of a second...
         end
-        
+
         if (platerInternal.LatestHandleForAudioPlayed) then
             StopSound(platerInternal.LatestHandleForAudioPlayed, 500)
         end
@@ -39,5 +44,23 @@ function platerInternal.Audio.PlaySoundForCastStart(spellId)
             platerInternal.LatestHandleForAudioPlayed = soundHandle
             platerInternal.LatestTimeForAudioPlayedByID[spellId] = GetTime()
         end
+    end
+end
+
+--priority for user audio >> play defined in the cast colors tab >> player defined in the script
+function Plater.PlayAudioForScript(canUseScriptAudio, audioFilePath, envTable) --exposed
+    --user set an audio to play into the Cast Colors tab in the options panel
+    local spellId = envTable._SpellID
+
+    --audio set in the cast colors tab, if there are an audio set there for this spell, play it
+    local audioByUser = platerInternal.Audio.GetAudioCueForSpell(envTable._SpellID)
+    if (audioByUser) then
+        platerInternal.Audio.PlaySoundForCastStart(spellId)
+        return
+    end
+
+    --audio set in the script
+    if (canUseScriptAudio and audioFilePath and type(audioFilePath) == "string") then
+        platerInternal.Audio.PlaySoundForCastStart(spellId, audioFilePath)
     end
 end
