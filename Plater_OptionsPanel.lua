@@ -3235,6 +3235,19 @@ Plater.CreateAuraTesting()
 				name = "OPTIONS_HEIGHT",
 				desc = "OPTIONS_HEIGHT",
 			},
+			--border size
+			{
+				type = "range",
+				get = function() return Plater.db.profile.extra_icon_border_size end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.extra_icon_border_size = value
+				end,
+				min = 0,
+				max = 10,
+				step = 1,
+				name = "OPTIONS_BORDER_THICKNESS",
+				desc = "Border Thickness" .. CVarNeedReload,
+			},
 			--wide icons
 			{
 				type = "toggle",

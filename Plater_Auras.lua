@@ -2051,7 +2051,7 @@ end
 			
 			
 			iconFrame:SetBackdropBorderColor(DF:ParseColors(borderColor))
-			iconFrame:SetBorderSize(1)
+			iconFrame:SetBorderSize(profile.extra_icon_border_size or 1)
 			iconFrame.platerSkinned = true
 		end
 		

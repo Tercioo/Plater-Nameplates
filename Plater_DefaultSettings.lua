@@ -869,6 +869,7 @@ PLATER_DEFAULT_SETTINGS = {
 		extra_icon_stack_outline = "NONE",
 		extra_icon_backdrop_color = {0, 0, 0, 0.612853},
 		extra_icon_border_color = {0, 0, 0, 1},
+		extra_icon_border_size = 1,
 		
 		debuff_show_cc = true, --extra frame show cc
 		debuff_show_cc_border = {.3, .2, .2, 1},
