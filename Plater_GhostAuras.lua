@@ -29,10 +29,17 @@ end
 
 function Plater.Auras.GhostAuras.GetAuraListForCurrentSpec()
     local specIndex, specId, specName, playerClass = Plater.Auras.GhostAuras.GetPlayerSpecInfo()
+    
+    if not playerClass or not specIndex then return nil end
 
     --get the aura list from db, format: [spellId] = true
     local profile = Plater.db.profile
     local auraList = profile.ghost_auras.auras[playerClass][specIndex]
+    
+    if not auraList then --fallback create for spec if needed
+        profile.ghost_auras.auras[playerClass][specIndex] = {}
+        auraList = profile.ghost_auras.auras[playerClass][specIndex]
+    end
 
     return auraList
 end
