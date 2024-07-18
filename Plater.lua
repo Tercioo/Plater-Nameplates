@@ -5099,6 +5099,7 @@ function Plater.OnInit() --private --~oninit ~init
 					
 					--reset spark color and size
 					self.Spark:SetVertexColor(unpack(profile.cast_statusbar_spark_color))
+					self.Spark:SetAlpha (profile.cast_statusbar_spark_alpha)
 					PixelUtil.SetSize(self.Spark, profile.cast_statusbar_spark_width, self:GetHeight())
 
 					--cut the spell name text to fit within the castbar
@@ -5934,6 +5935,7 @@ end
 			PixelUtil.SetHeight (castBar, castBarHeight)
 			--PixelUtil.SetSize (castBar.BorderShield, castBarHeight * 1.4, castBarHeight * 1.4)
 			PixelUtil.SetSize (castBar.Spark, profile.cast_statusbar_spark_width, castBarHeight)
+			castBar.Spark:SetAlpha (profile.cast_statusbar_spark_alpha)
 			Plater.UpdateCastbarIcon(castBar)
 
 			castBar._points = {{"topleft", healthBar, "bottomleft", castBarOffSetXRel + castBarOffSetX, castBarOffSetY},

@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1721168654, "Bug Fix", "July 18th, 2024", "Fixing an issue with the cast bar spark not using the correct alpha value in some cases.", "cont1nuity"},
 			{1721168654, "Bug Fix", "July 17th, 2024", "Fixing an issue with Ghost Auras on low-level players.", "cont1nuity"},
 			{1721168654, "New Feature", "July 15th, 2024", "Adding option for Buff Special border thickness.", "cont1nuity"},
 			{1721168654, "New Feature", "July 12th, 2024", "Added script  and mod option to select an audio to play.", "Terciob"},
