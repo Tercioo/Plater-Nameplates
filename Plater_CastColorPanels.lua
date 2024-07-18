@@ -669,6 +669,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
     local allPreviewFrames = {}
     castColorFrame.allPreviewFrames = allPreviewFrames
 
+    --receives a spellId and verify if this spellId is a trigger of any script
     local hasScriptWithPreviewSpellId = function(spellId)
         local previewSpellId = spellId or CONST_PREVIEW_SPELLID
         local defaultCastScripts = platerInternal.Scripts.DefaultCastScripts
@@ -677,6 +678,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
         for i = 1, #defaultCastScripts do
             local scriptName = defaultCastScripts[i]
+            ---@type scriptdata
             local scriptObject = GetScriptObjectByName(scriptName)
             if (scriptObject) then
                 local index = find(scriptObject.SpellIds, previewSpellId)
@@ -1291,6 +1293,25 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             else
                 local enabledTable = {}
 
+                --to allow the user to search for spells using a script, we need to get all the script names
+                ---@type table<string, boolean>
+                local scriptNames = {}
+
+                ---@type scriptdata[]
+                local profileScripts = Plater.db.profile.script_data
+                for i = 1, #profileScripts do
+                    local scriptObject = profileScripts[i]
+                    local scriptName = scriptObject.Name:lower()
+                    for word in scriptName:gmatch("%a+") do
+                        --add each word of the script name in the table
+                        scriptNames[word] = true
+                    end
+                end
+
+                scriptNames["p"] = nil
+                scriptNames["plater"] = nil
+                --dumpt(scriptNames)
+
                 for i = 1, #data do
                     local thisData = data[i]
 
@@ -1314,6 +1335,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                     local bFoundByNpcLocation = npcLocation:lower():find(IsSearchingFor)
                     local bFoundByEncounterName = encounterName:lower():find(IsSearchingFor)
                     local bFoundBySpellId = tostring(spellId):find(IsSearchingFor)
+                    local bFoundByScriptName = scriptNames[IsSearchingFor] --bugged, when matching it is showing all the spells like if there's no filter at all
 
                     local bFoundByAudioName
                     if (DB_CAST_AUDIOCUES[spellId]) then --path
@@ -1331,7 +1353,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                         bFoundByCustomSpellName = customSpellName:lower():find(IsSearchingFor)
                     end
 
-                    if (bFoundBySpellName or bFoundBySourceName or bFoundByNpcLocation or bFoundByEncounterName or bFoundBySpellId or bFoundByCustomSpellName or bFoundByAudioName) then
+                    if (bFoundBySpellName or bFoundBySourceName or bFoundByNpcLocation or bFoundByEncounterName or bFoundBySpellId or bFoundByCustomSpellName or bFoundByAudioName or bFoundByScriptName) then
                         dataInOrder[#dataInOrder+1] = {
                             isEnabled, --1
                             color, --2
@@ -1505,7 +1527,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         end
     end
 
-    --create scroll
+    --create scroll ~scroll
     local spells_scroll = DF:CreateScrollBox (castFrame, "$parentColorsScroll", scrollRefreshCallback, {}, scroll_width, scroll_height, scroll_lines, scroll_line_height)
     DF:ReskinSlider(spells_scroll)
     spells_scroll:SetPoint ("topleft", castFrame, "topleft", 5, scrollY)
