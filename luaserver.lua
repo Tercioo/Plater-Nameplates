@@ -269,6 +269,15 @@ function LibStub:IterateLibraries()end
 ---| "INCLUDE_NAME_PLATE_ONLY"
 ---| "MAW"
 
+---@class spellinfo : table
+---@field name string
+---@field iconID number
+---@field castTime number
+---@field mimRange number
+---@field maxRange number
+---@field spellID number
+---@field originalIconID number
+
 ---@class privateaura_anchor : table
 ---@field unitToken unit
 ---@field auraIndex number
@@ -348,6 +357,7 @@ function LibStub:IterateLibraries()end
 ---@alias encounterid number encounter ID number received by the event ENCOUNTER_START and ENCOUNTER_END
 ---@alias encounterejid number encounter ID number used by the encounter journal
 ---@alias encountername string encounter name received by the event ENCOUNTER_START and ENCOUNTER_END also used by the encounter journal
+---@alias encounterdifficulty number difficulty of the encounter received by the event ENCOUNTER_START and ENCOUNTER_END
 ---@alias instancename string localized name of an instance (e.g. "The Nighthold")
 ---@alias spellid number each spell in the game has a unique spell id, this id can be used to identify a spell.
 ---@alias unitname string name of a unit
@@ -360,6 +370,8 @@ function LibStub:IterateLibraries()end
 ---@alias actorid string unique id of a unit (GUID)
 ---@alias serial string unique id of a unit (GUID)
 ---@alias guid string unique id of a unit (GUID)
+---@alias guildname string name of the guild
+---@alias date string date in the format "YYYY-MM-DD"
 ---@alias keylevel number the level of a mythic dungeon key
 ---@alias mapid number each map in the game has a unique map id, this id can be used to identify a map.
 ---@alias challengemapid number each challenge mode map in the game has a unique map id, this id can be used to identify a challenge mode map.
@@ -378,6 +390,7 @@ function LibStub:IterateLibraries()end
 ---@alias unixtime number a number that represents the number of seconds that have elapsed since 00:00:00 Coordinated Universal Time (UTC), Thursday, 1 January 1970, not counting leap seconds.
 ---@alias timestring string refers to a string showing a time value, such as "1:23" or "1:23:45".
 ---@alias combattime number elapsed time of a combat or time in seconds that a unit has been in combat.
+---@alias servertime number unixtime on the server
 ---@alias auraduration number
 ---@alias gametime number number of seconds that have elapsed since the start of the game session.
 ---@alias milliseconds number a number in milliseconds, usually need to divide by 1000 to get the seconds.
@@ -397,6 +410,9 @@ function LibStub:IterateLibraries()end
 ---@field UnitName fun(unit: string): string
 ---@field GetCursorPosition fun(): number, number return the position of the cursor on the screen, in pixels, relative to the bottom left corner of the screen.
 ---@field C_Timer C_Timer
+
+---table containing backdrop functions
+BackdropTemplateMixin = {}
 
 ---@class timer : table
 ---@field Cancel fun(self: timer)
@@ -783,6 +799,9 @@ function LibStub:IterateLibraries()end
 ---@field SetThumbTexture fun(self: slider, texture: textureid|texturepath)
 ---@field SetStepsPerPage fun(self: slider, steps: number)
 
+---@return number
+function debugprofilestop() return 0 end
+
 INVSLOT_FIRST_EQUIPPED = true
 INVSLOT_LAST_EQUIPPED = true
 LE_PARTY_CATEGORY_INSTANCE = true
@@ -855,7 +874,13 @@ function C_Item.GetItemGemID() end
 function C_Item.IsHarmfulItem() end
 function C_Item.GetItemIcon() end
 function C_Item.DropItemOnUnit() end
-function C_Item.GetDetailedItemLevelInfo() end
+
+---@param itemInfo number|string
+---@return number actualItemLevel
+---@return number previewLevel
+---@return number sparseItemLevel
+function C_Item.GetDetailedItemLevelInfo(itemInfo) return 0, 0, 0 end
+
 function C_Item.IsEquippedItemType() end
 function C_Item.GetItemFamily() end
 function C_Item.GetLimitedCurrencyItemInfo() end
@@ -891,7 +916,26 @@ function C_Item.CanViewItemPowers() end
 function C_Item.GetItemChildInfo() end
 function C_Item.GetItemLink() end
 function C_Item.CanScrapItem() end
-function C_Item.GetItemInfo() end
+
+---@return string itemName
+---@return string itemLink
+---@return number itemQuality
+---@return number itemLevel
+---@return number itemMinLevel
+---@return string itemType
+---@return string itemSubType
+---@return number itemStackCount
+---@return string itemEquipLoc
+---@return number itemTexture
+---@return number sellPrice
+---@return number classID
+---@return number subclassID
+---@return number bindType
+---@return number expansionID
+---@return number setID
+---@return boolean isCraftingReagent
+function C_Item.GetItemInfo() return "", "", 0, 0, 0, "", "", 0, "", 0, 0, 0, 0, 0, 0, 0, true end
+
 function C_Item.GetItemName() end
 function C_Item.GetItemSubClassInfo() end
 function C_Item.GetItemInventoryType() end
@@ -1630,6 +1674,9 @@ function bit.rol(x, y) return 0 end
 ---@return number The bitwise rotate right of the number.
 function bit.ror(x, y) return 0 end
 
+---return the epoch time in seconds from the server.
+---@return number
+function GetServerTime() return 0 end
 
 
 C_Timer = {}
@@ -3489,8 +3536,9 @@ GetGuildCharterCost = function() return 0 end
 ---@return string, string, number, number, number, boolean, boolean, string, string
 GetGuildEventInfo = function(index) return "", "", 0, 0, 0, true, true, "", "" end
 
+---@param unit string
 ---@return string, string, number, number, number, number, string, string, number, string
-GetGuildInfo = function() return "", "", 0, 0, 0, 0, "", "", 0, "" end
+GetGuildInfo = function(unit) return "", "", 0, 0, 0, 0, "", "", 0, "" end
 
 ---@return string
 GetGuildInfoText = function() return "" end
@@ -4019,8 +4067,8 @@ GetItemFamily = function(itemID) return 0 end
 GetItemIcon = function(itemID) return "" end
 
 ---@param itemID number
----@return string, string, string, number
-GetItemInfo = function(itemID) return "", "", "", 0 end
+---@return string, string, number, number
+GetItemInfo = function(itemID) return "", "", 0, 0 end
 
 ---@param quality number
 ---@return table
@@ -5184,7 +5232,7 @@ GetSpellInfo = function(spellNameOrID) return "", 0, 0, 0, 0, 0, 0, 0 end
 GetSpellLink = function(spellID) return "" end
 
 ---@param tabIndex number
----@param isFlyout boolean
+---@param isFlyout boolean?
 ---@return string, string, number, number
 GetSpellTabInfo = function(tabIndex, isFlyout) return "", "", 0, 0 end
 
@@ -5254,14 +5302,18 @@ ToggleSpellAutocast = function() end
 ---@return string, string, number, number, boolean, string
 UnitCastingInfo = function() return "", "", 0, 0, false, "" end
 
+---@param unit string
 ---@return string, string, number, number, boolean, string
-UnitChannelInfo = function() return "", "", 0, 0, false, "" end
+UnitChannelInfo = function(unit) return "", "", 0, 0, false, "" end
 
 ---@param command string
 ConsoleExec = function(command) end
 
----@return string, string, string, string
-GetBuildInfo = function() return "", "", "", "" end
+---@return string game version
+---@return string buildId
+---@return string compileDate
+---@return number buildNumber
+GetBuildInfo = function() return "", "", "", 0 end
 
 ---@return number
 GetFramerate = function() return 0 end
@@ -5514,8 +5566,8 @@ function GetTalentLink(tabIndex, talentIndex, isInspect) return "" end
 function GetTalentPrereqs(tabIndex, talentIndex, isInspect) return 0 end
 
 ---@param tabIndex number
----@return string, string, number, number, number, number
-function GetTalentTabInfo(tabIndex) return "", "", 0, 0, 0, 0 end
+---@return number, string, string, number, number, string, number, boolean
+function GetTalentTabInfo(tabIndex) return 0, "", "", 0, 0, "", 0, false end
 
 ---@param tabIndex number
 ---@param talentIndex number

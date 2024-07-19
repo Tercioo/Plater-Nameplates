@@ -723,7 +723,7 @@ function platerInternal.CreateCastBarOptions()
     castBar_options.always_boxfirst = true
     castBar_options.language_addonId = addonId
     castBar_options.Name = "Cast Bar Options"
-    DF:BuildMenu (castBarFrame, castBar_options, startX-20, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
+    DF:BuildMenu (castBarFrame, castBar_options, startX-20, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, platerInternal.OptionsGlobalCallback)
 
     platerInternal.LoadOnDemand_IsLoaded.CastOptions = true
     table.insert(PlaterOptionsPanelFrame.AllSettingsTable, castBar_options)
