@@ -73,6 +73,13 @@ DF:InstallTemplate ("dropdown", "PLATER_DROPDOWN_OPTIONS", {
 })
 
 
+DF:InstallTemplate ("button", "PLATER_BUTTON_DARK", {
+	backdrop = {edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 8, tile = true},
+	backdropcolor = {0.05, 0.05, 0.05, .7},
+	backdropbordercolor = {0, 0, 0, 1},
+})
+
+
 -- those two may be removed, as they are covered by settings now
 DF:NewColor ("PLATER_FRIEND", .71, 1, 1, 1)
 DF:NewColor ("PLATER_GUILD", 0.498039, 1, .2, 1)
@@ -130,6 +137,7 @@ PLATER_DEFAULT_SETTINGS = {
 		--format: [SpellID] = filePath
 		cast_audiocues = {},
 		cast_audiocues_channel = "Master",
+		cast_audiocue_cooldown = 0.25,
 
 		--store the cast colors customized by the user
 		cast_colors = {}, --[spellId] = {[1] = color, [2] = enabled, [3] = custom spell name}
