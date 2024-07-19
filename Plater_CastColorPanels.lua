@@ -1302,15 +1302,35 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                 for i = 1, #profileScripts do
                     local scriptObject = profileScripts[i]
                     local scriptName = scriptObject.Name:lower()
+                    local spellIds = scriptObject.SpellIds
+                    local npcNames = scriptObject.NpcNames
                     for word in scriptName:gmatch("%a+") do
                         --add each word of the script name in the table
-                        scriptNames[word] = true
+                        scriptNames[word] = scriptNames[word] or {}
+                        for _,  name in pairs(npcNames or {}) do
+                            name = tonumber(name) or name
+                            scriptNames[word][name] = true
+                            local cacheEntry = Plater.db.profile.npc_cache[name] --can be npcID
+                            if cacheEntry then
+                                local npcName = cacheEntry[1]
+                                scriptNames[word][npcName:lower()] = true -- add npc name
+                            end
+                        end
+                        for _, spell in pairs(spellIds or {}) do
+                            spell = tonumber(spell) or spell
+                            scriptNames[word][spell] = true
+                            local spellName = GetSpellInfo(spell)
+                            if spellName then
+                                scriptNames[word][spellName:lower()] = true -- add spellName
+                            end
+                        end
                     end
                 end
 
                 scriptNames["p"] = nil
                 scriptNames["plater"] = nil
                 --dumpt(scriptNames)
+                DevTool:AddData(scriptNames)
 
                 for i = 1, #data do
                     local thisData = data[i]
@@ -1335,7 +1355,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                     local bFoundByNpcLocation = npcLocation:lower():find(IsSearchingFor)
                     local bFoundByEncounterName = encounterName:lower():find(IsSearchingFor)
                     local bFoundBySpellId = tostring(spellId):find(IsSearchingFor)
-                    local bFoundByScriptName = scriptNames[IsSearchingFor] --bugged, when matching it is showing all the spells like if there's no filter at all
+                    local bFoundByScriptName = scriptNames[IsSearchingFor] and (scriptNames[IsSearchingFor][spellName:lower()] or scriptNames[IsSearchingFor][sourceName:lower()] or scriptNames[IsSearchingFor][npcId] or scriptNames[IsSearchingFor][spellId])
 
                     local bFoundByAudioName
                     if (DB_CAST_AUDIOCUES[spellId]) then --path
