@@ -1293,62 +1293,12 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             else
                 --to allow the user to search for spells using a script, we need to get all the script names
                 ---@type table
-                local scriptNames = {}
+                local scriptNames = self.ScriptNamesCache --{}
+                scriptNames["p"] = nil
+                scriptNames["plater"] = nil
 
                 ---@type scriptdata[]
                 local allScriptData = Plater.db.profile.script_data
-                for i = 1, #allScriptData do
-                    --add each word of the script name in the table
-                    local scriptObject = allScriptData[i]
-                    local scriptName = scriptObject.Name:lower()
-                    local spellIds = scriptObject.SpellIds
-                    local npcNames = scriptObject.NpcNames
-                    local spellIds = scriptObject.SpellIds
-                    local npcNames = scriptObject.NpcNames
-                    for word in scriptName:gmatch("%a+") do
-                        --add each word of the script name in the table
-                        scriptNames[word] = scriptNames[word] or {}
-                        for _,  name in pairs(npcNames or {}) do
-                            name = tonumber(name) or name
-                            scriptNames[word][name] = true
-                            local cacheEntry = Plater.db.profile.npc_cache[name] --can be npcID
-                            if cacheEntry then
-                                local npcName = cacheEntry[1]
-                                scriptNames[word][npcName:lower()] = true -- add npc name
-                            end
-                        end
-                        for _, spell in pairs(spellIds or {}) do
-                            spell = tonumber(spell) or spell
-                            scriptNames[word][spell] = true
-                            local spellName = GetSpellInfo(spell)
-                            if spellName then
-                                scriptNames[word][spellName:lower()] = true -- add spellName
-                            end
-                        end
-                        scriptNames[word] = scriptNames[word] or {}
-                        for _,  name in pairs(npcNames or {}) do
-                            name = tonumber(name) or name
-                            scriptNames[word][name] = true
-                            local cacheEntry = Plater.db.profile.npc_cache[name] --can be npcID
-                            if cacheEntry then
-                                local npcName = cacheEntry[1]
-                                scriptNames[word][npcName:lower()] = true -- add npc name
-                            end
-                        end
-                        for _, spell in pairs(spellIds or {}) do
-                            spell = tonumber(spell) or spell
-                            scriptNames[word][spell] = true
-                            local spellName = GetSpellInfo(spell)
-                            if spellName then
-                                scriptNames[word][spellName:lower()] = true -- add spellName
-                            end
-                        end
-                    end
-                end
-
-                scriptNames["p"] = nil
-                scriptNames["plater"] = nil
-                --dumpt(scriptNames)
 
                 local nFoundResults = 0
                 ---@type table<any, any>
@@ -1738,6 +1688,64 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                 tinsert(newData, castInfo)
             end
         end
+
+        --cache the script data
+        ---@type table<string, table<string, boolean>>
+        local scriptNames = {}
+        ---@type scriptdata[]
+        local allScriptData = Plater.db.profile.script_data
+        for i = 1, #allScriptData do
+            --add each word of the script name in the table
+            local scriptObject = allScriptData[i]
+            local scriptName = scriptObject.Name:lower()
+            local spellIds = scriptObject.SpellIds
+            local npcNames = scriptObject.NpcNames
+            local spellIds = scriptObject.SpellIds
+            local npcNames = scriptObject.NpcNames
+
+            for word in scriptName:gmatch("%a+") do
+                --add each word of the script name in the table
+                scriptNames[word] = scriptNames[word] or {}
+                for _,  name in pairs(npcNames or {}) do
+                    name = tonumber(name) or name
+                    scriptNames[word][name] = true
+                    local cacheEntry = Plater.db.profile.npc_cache[name] --can be npcID
+                    if cacheEntry then
+                        local npcName = cacheEntry[1]
+                        scriptNames[word][npcName:lower()] = true -- add npc name
+                    end
+                end
+                for _, spell in pairs(spellIds or {}) do
+                    spell = tonumber(spell) or spell
+                    scriptNames[word][spell] = true
+                    local spellName = GetSpellInfo(spell)
+                    if spellName then
+                        scriptNames[word][spellName:lower()] = true -- add spellName
+                    end
+                end
+                scriptNames[word] = scriptNames[word] or {}
+                for _,  name in pairs(npcNames or {}) do
+                    ---@cast name any
+                    name = tonumber(name) or name
+                    scriptNames[word][name] = true
+                    local cacheEntry = Plater.db.profile.npc_cache[name] --can be npcID
+                    if cacheEntry then
+                        local npcName = cacheEntry[1]
+                        scriptNames[word][npcName:lower()] = true -- add npc name
+                    end
+                end
+                for _, spell in pairs(spellIds or {}) do
+                    spell = tonumber(spell) or spell
+                    scriptNames[word][spell] = true
+                    local spellName = GetSpellInfo(spell)
+                    if spellName then
+                        scriptNames[word][spellName:lower()] = true -- add spellName
+                    end
+                end
+            end
+        end
+
+        self.ScriptNamesCache = scriptNames
 
         self.CachedTable = nil
         self.SearchCachedTable = nil
