@@ -1303,8 +1303,28 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                     local scriptName = scriptObject.Name:lower()
                     local spellIds = scriptObject.SpellIds
                     local npcNames = scriptObject.NpcNames
+                    local spellIds = scriptObject.SpellIds
+                    local npcNames = scriptObject.NpcNames
                     for word in scriptName:gmatch("%a+") do
                         --add each word of the script name in the table
+                        scriptNames[word] = scriptNames[word] or {}
+                        for _,  name in pairs(npcNames or {}) do
+                            name = tonumber(name) or name
+                            scriptNames[word][name] = true
+                            local cacheEntry = Plater.db.profile.npc_cache[name] --can be npcID
+                            if cacheEntry then
+                                local npcName = cacheEntry[1]
+                                scriptNames[word][npcName:lower()] = true -- add npc name
+                            end
+                        end
+                        for _, spell in pairs(spellIds or {}) do
+                            spell = tonumber(spell) or spell
+                            scriptNames[word][spell] = true
+                            local spellName = GetSpellInfo(spell)
+                            if spellName then
+                                scriptNames[word][spellName:lower()] = true -- add spellName
+                            end
+                        end
                         scriptNames[word] = scriptNames[word] or {}
                         for _,  name in pairs(npcNames or {}) do
                             name = tonumber(name) or name
