@@ -1291,26 +1291,48 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             if (self.SearchCachedTable and IsSearchingFor == self.SearchCachedTable.SearchTerm) then
                 dataInOrder = self.SearchCachedTable
             else
-                local enabledTable = {}
-
                 --to allow the user to search for spells using a script, we need to get all the script names
-                ---@type table<string, boolean>
+                ---@type table
                 local scriptNames = {}
 
                 ---@type scriptdata[]
-                local profileScripts = Plater.db.profile.script_data
-                for i = 1, #profileScripts do
-                    local scriptObject = profileScripts[i]
+                local allScriptData = Plater.db.profile.script_data
+                for i = 1, #allScriptData do
+                    --add each word of the script name in the table
+                    local scriptObject = allScriptData[i]
                     local scriptName = scriptObject.Name:lower()
+                    local spellIds = scriptObject.SpellIds
+                    local npcNames = scriptObject.NpcNames
                     for word in scriptName:gmatch("%a+") do
                         --add each word of the script name in the table
-                        scriptNames[word] = true
+                        scriptNames[word] = scriptNames[word] or {}
+                        for _,  name in pairs(npcNames or {}) do
+                            name = tonumber(name) or name
+                            scriptNames[word][name] = true
+                            local cacheEntry = Plater.db.profile.npc_cache[name] --can be npcID
+                            if cacheEntry then
+                                local npcName = cacheEntry[1]
+                                scriptNames[word][npcName:lower()] = true -- add npc name
+                            end
+                        end
+                        for _, spell in pairs(spellIds or {}) do
+                            spell = tonumber(spell) or spell
+                            scriptNames[word][spell] = true
+                            local spellName = GetSpellInfo(spell)
+                            if spellName then
+                                scriptNames[word][spellName:lower()] = true -- add spellName
+                            end
+                        end
                     end
                 end
 
                 scriptNames["p"] = nil
                 scriptNames["plater"] = nil
                 --dumpt(scriptNames)
+
+                local nFoundResults = 0
+                ---@type table<any, any>
+                local tFoundResults = {}
 
                 for i = 1, #data do
                     local thisData = data[i]
@@ -1327,30 +1349,85 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                     local customSpellName = thisData[CONST_CASTINFO_CUSTOMSPELLNAME]
 
                     local isTriggerOfAnyPreviewScript = hasScriptWithPreviewSpellId(spellId)
+                    local bFoundResults = false
 
                     local priority = 0 + (isEnabled and 0x8 or 0) + (isTriggerOfAnyPreviewScript and 0x2 or 0) + (DB_CAST_AUDIOCUES[spellId] and 0x4 or 0) + (customSpellName and customSpellName ~= "" and 0x1 or 0)
 
                     local bFoundBySpellName = spellName:lower():find(IsSearchingFor)
+                    if (bFoundBySpellName and not bFoundResults and nFoundResults <= 10) then
+                        tFoundResults[spellId] = "spellid" --using spellId as it's better to get the spellInfo
+                        nFoundResults = nFoundResults + 1
+                        bFoundResults = true
+                    end
+
                     local bFoundBySourceName = sourceName:lower():find(IsSearchingFor)
+                    if (bFoundBySourceName and not bFoundResults and nFoundResults <= 10) then
+                        tFoundResults[sourceName] = "Source"
+                        nFoundResults = nFoundResults + 1
+                        bFoundResults = true
+                    end
+
                     local bFoundByNpcLocation = npcLocation:lower():find(IsSearchingFor)
+                    if (bFoundByNpcLocation and not bFoundResults and nFoundResults <= 10) then
+                        tFoundResults[npcLocation] = "Location"
+                        nFoundResults = nFoundResults + 1
+                        bFoundResults = true
+                    end
+
                     local bFoundByEncounterName = encounterName:lower():find(IsSearchingFor)
+                    if (bFoundByEncounterName and not bFoundResults and nFoundResults <= 10) then
+                        tFoundResults[encounterName] = "Encounter"
+                        nFoundResults = nFoundResults + 1
+                        bFoundResults = true
+                    end
+
                     local bFoundBySpellId = tostring(spellId):find(IsSearchingFor)
-                    local bFoundByScriptName = scriptNames[IsSearchingFor] --bugged, when matching it is showing all the spells like if there's no filter at all
+                    if (bFoundBySpellId and not bFoundResults and nFoundResults <= 10) then
+                        tFoundResults[spellId] = "spellid"
+                        nFoundResults = nFoundResults + 1
+                        bFoundResults = true
+                    end
+
+                    --local bFoundByScriptName = scriptNames[IsSearchingFor] --bugged, when matching it is showing all the spells like if there's no filter at all
+                    local bFoundByScriptName = scriptNames[IsSearchingFor] and (scriptNames[IsSearchingFor][spellName:lower()] or scriptNames[IsSearchingFor][sourceName:lower()] or scriptNames[IsSearchingFor][npcId] or scriptNames[IsSearchingFor][spellId])
+                    if (bFoundByScriptName and not bFoundResults and nFoundResults <= 10) then
+                        for idx = 1, #allScriptData do
+                            local scriptObject = allScriptData[idx]
+                            local scriptName = scriptObject.Name:lower()
+                            if (scriptName:find(IsSearchingFor) and not tFoundResults[scriptName]) then
+                                tFoundResults[scriptName] = "Script"
+                                nFoundResults = nFoundResults + 1
+                                bFoundResults = true
+                            end
+                        end
+                    end
 
                     local bFoundByAudioName
                     if (DB_CAST_AUDIOCUES[spellId]) then --path
                         local audioFileName = DB_CAST_AUDIOCUES[spellId]
+                        local audioNameString = tostring(audioFileNameToCueName[audioFileName])
                         bFoundByAudioName = tostring(audioFileName):lower():find(IsSearchingFor)
 
                         if (not bFoundByAudioName) then
-                            local audioNameString = tostring(audioFileNameToCueName[audioFileName])
                             bFoundByAudioName = audioNameString:lower():find(IsSearchingFor)
+                        end
+
+                        if (bFoundByAudioName and not bFoundResults and nFoundResults <= 10) then
+                            tFoundResults[audioNameString] = "Audio"
+                            nFoundResults = nFoundResults + 1
+                            bFoundResults = true
                         end
                     end
 
                     local bFoundByCustomSpellName
                     if (customSpellName and customSpellName ~= "") then
                         bFoundByCustomSpellName = customSpellName:lower():find(IsSearchingFor)
+
+                        if (bFoundByCustomSpellName and not bFoundResults and nFoundResults <= 10) then
+                            tFoundResults[customSpellName] = "Custom"
+                            nFoundResults = nFoundResults + 1
+                            bFoundResults = true
+                        end
                     end
 
                     if (bFoundBySpellName or bFoundBySourceName or bFoundByNpcLocation or bFoundByEncounterName or bFoundBySpellId or bFoundByCustomSpellName or bFoundByAudioName or bFoundByScriptName) then
@@ -1369,13 +1446,40 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                             DB_CAST_AUDIOCUES[spellId] or false, --12
                             priority --13
                         }
+                    end --end of the verification of all the booleans
+
+                    if (bFoundResults) then
+                        GameCooltip:Show()
                     end
+                end --end of looping through all data
+
+                if (nFoundResults > 0) then
+                    GameCooltip:Reset()
+                    GameCooltip:Preset(2)
+                    GameCooltip:SetOption("FixedWidth", 320)
+                    GameCooltip:SetOption("TextSize", 10)
+                    GameCooltip:AddLine("Matching:")
+                    GameCooltip:SetOwner(castFrame.AuraSearchTextEntry.widget)
+
+                    for k, v in pairs(tFoundResults) do
+                        if (v == "spellid") then
+                            local spellName, _, spellIcon = GetSpellInfo(k)
+                            GameCooltip:AddLine(spellName)
+                            GameCooltip:AddIcon(spellIcon)
+                        else
+                            GameCooltip:AddLine(v .. ": " .. k)
+                        end
+                    end
+
+                    GameCooltip:Show()
+                else
+                    GameCooltip:Hide()
                 end
 
                 table.sort(dataInOrder, function(t1, t2) return t1[13] > t2[13] end)
                 self.SearchCachedTable = dataInOrder
                 self.SearchCachedTable.SearchTerm = IsSearchingFor
-            end
+            end --end of the verification of the cached data
         else
             if (not self.CachedTable) then
                 local allSpells_WithPriority = {}
@@ -1654,7 +1758,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         auraSearchTextEntry:SetHook("OnChar", castFrame.OnSearchBoxTextChanged)
         auraSearchTextEntry:SetHook("OnTextChanged", castFrame.OnSearchBoxTextChanged)
         auraSearchTextEntry:SetAsSearchBox()
-        auraSearchTextEntry.tooltip = "- Spell Name\n- Npc Name\n- Zone Name\n- Encounter Name\n- SpellID\n- Custom Spell Name\n- Sound Name\n- Audio"
+        auraSearchTextEntry.tooltip = "- Spell Name\n- Npc Name\n- Zone Name\n- Encounter Name\n- SpellID\n- Custom Spell Name\n- Sound Name\n- Audio\n- Script Name"
         auraSearchTextEntry:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
         auraSearchTextEntry:SetBackdropColor(0.1, 0.1, 0.1, 0.9)
 
