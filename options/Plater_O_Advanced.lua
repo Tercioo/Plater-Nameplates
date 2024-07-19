@@ -460,6 +460,84 @@ function platerInternal.CreateAdvancedOptions()
             nocombat = true,
         },
 
+        {type = "label", get = function() return "Enemy Box Selection Space:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {
+            type = "range",
+            get = function() return Plater.db.profile.click_space[1] end,
+            set = function (self, fixedparam, value)
+                Plater.db.profile.click_space[1] = value
+                Plater.UpdatePlateClickSpace (nil, true)
+            end,
+            min = 1,
+            max = 300,
+            step = 1,
+            name = "OPTIONS_WIDTH",
+            nocombat = true,
+            desc = "OPTIONS_CLICK_SPACE_WIDTH",
+        },
+
+        {
+            type = "range",
+            get = function() return Plater.db.profile.click_space[2] end,
+            set = function (self, fixedparam, value)
+                Plater.db.profile.click_space[2] = value
+                Plater.UpdatePlateClickSpace (nil, true)
+            end,
+            min = 1,
+            max = 100,
+            step = 1,
+            name = "OPTIONS_HEIGHT",
+            nocombat = true,
+            desc = "OPTIONS_CLICK_SPACE_HEIGHT",
+        },
+
+        {type = "blank"},
+
+        {type = "label", get = function() return "Friendly Box Selection Space:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {
+            type = "range",
+            get = function() return Plater.db.profile.click_space_friendly[1] end,
+            set = function (self, fixedparam, value)
+                Plater.db.profile.click_space_friendly[1] = value
+                Plater.UpdatePlateClickSpace (nil, true)
+            end,
+            min = 1,
+            max = 300,
+            step = 1,
+            name = "OPTIONS_WIDTH",
+            nocombat = true,
+            desc = "OPTIONS_CLICK_SPACE_WIDTH",
+        },
+
+        {
+            type = "range",
+            get = function() return Plater.db.profile.click_space_friendly[2] end,
+            set = function (self, fixedparam, value)
+                Plater.db.profile.click_space_friendly[2] = value
+                Plater.UpdatePlateClickSpace (nil, true)
+            end,
+            min = 1,
+            max = 100,
+            step = 1,
+            name = "OPTIONS_HEIGHT",
+            nocombat = true,
+            desc = "OPTIONS_CLICK_SPACE_HEIGHT",
+        },
+
+        {type = "blank"},
+
+        {
+            type = "toggle",
+            get = function() return Plater.db.profile.click_space_always_show end,
+            set = function (self, fixedparam, value)
+                Plater.db.profile.click_space_always_show = value
+                Plater.UpdateAllPlates()
+            end,
+            nocombat = true,
+            name = "OPTIONS_BACKGROUND_ALWAYSSHOW",
+            desc = "OPTIONS_BACKGROUND_ALWAYSSHOW_DESC",
+        },
+
         {type = "breakline"},
         {type = "label", get = function() return "Unit types:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 
@@ -687,86 +765,7 @@ function platerInternal.CreateAdvancedOptions()
             desc = "Outline" .. CVarNeedReload,
         },
 
-
-        {type = "breakline"},
-
-        {type = "label", get = function() return "Enemy Box Selection Space:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-        {
-            type = "range",
-            get = function() return Plater.db.profile.click_space[1] end,
-            set = function (self, fixedparam, value)
-                Plater.db.profile.click_space[1] = value
-                Plater.UpdatePlateClickSpace (nil, true)
-            end,
-            min = 1,
-            max = 300,
-            step = 1,
-            name = "OPTIONS_WIDTH",
-            nocombat = true,
-            desc = "OPTIONS_CLICK_SPACE_WIDTH",
-        },
-
-        {
-            type = "range",
-            get = function() return Plater.db.profile.click_space[2] end,
-            set = function (self, fixedparam, value)
-                Plater.db.profile.click_space[2] = value
-                Plater.UpdatePlateClickSpace (nil, true)
-            end,
-            min = 1,
-            max = 100,
-            step = 1,
-            name = "OPTIONS_HEIGHT",
-            nocombat = true,
-            desc = "OPTIONS_CLICK_SPACE_HEIGHT",
-        },
-
-        {type = "blank"},
-
-        {type = "label", get = function() return "Friendly Box Selection Space:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-        {
-            type = "range",
-            get = function() return Plater.db.profile.click_space_friendly[1] end,
-            set = function (self, fixedparam, value)
-                Plater.db.profile.click_space_friendly[1] = value
-                Plater.UpdatePlateClickSpace (nil, true)
-            end,
-            min = 1,
-            max = 300,
-            step = 1,
-            name = "OPTIONS_WIDTH",
-            nocombat = true,
-            desc = "OPTIONS_CLICK_SPACE_WIDTH",
-        },
-
-        {
-            type = "range",
-            get = function() return Plater.db.profile.click_space_friendly[2] end,
-            set = function (self, fixedparam, value)
-                Plater.db.profile.click_space_friendly[2] = value
-                Plater.UpdatePlateClickSpace (nil, true)
-            end,
-            min = 1,
-            max = 100,
-            step = 1,
-            name = "OPTIONS_HEIGHT",
-            nocombat = true,
-            desc = "OPTIONS_CLICK_SPACE_HEIGHT",
-        },
-
-        {type = "blank"},
-
-        {
-            type = "toggle",
-            get = function() return Plater.db.profile.click_space_always_show end,
-            set = function (self, fixedparam, value)
-                Plater.db.profile.click_space_always_show = value
-                Plater.UpdateAllPlates()
-            end,
-            nocombat = true,
-            name = "OPTIONS_BACKGROUND_ALWAYSSHOW",
-            desc = "OPTIONS_BACKGROUND_ALWAYSSHOW_DESC",
-        },
+        --{type = "breakline"},
 
         {type = "blank"},
 
@@ -865,7 +864,7 @@ function platerInternal.CreateAdvancedOptions()
             usedecimals = true,
         },
 
-        {type = "blank"},
+        {type = "breakline"},
         {type = "label", get = function() return "Region:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 
         {
@@ -876,7 +875,6 @@ function platerInternal.CreateAdvancedOptions()
             desc = "OPTIONS_FORMAT_NUMBER",
         },
 
-        {type = "breakline"},
         {type = "label", get = function() return "Misc:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 
         {
@@ -1201,14 +1199,30 @@ function platerInternal.CreateAdvancedOptions()
         },
     }
 
+    ---@diagnostic disable-next-line: undefined-global
     local advancedFrame = PlaterOptionsPanelContainerAdvancedConfig
 
+	advanced_options.align_as_pairs = true
+	advanced_options.align_as_pairs_string_space = 181
+	advanced_options.widget_width = 150
+	advanced_options.use_scrollframe = true
     advanced_options.language_addonId = addonId
     advanced_options.always_boxfirst = true
     advanced_options.Name = "Advanced Options"
+
+    local canvasFrame = DF:CreateCanvasScrollBox(advancedFrame, nil, "PlaterOptionsPanelCanvasAdvancedSettings")
+    canvasFrame:SetPoint("topleft", advancedFrame, "topleft", 0, platerInternal.optionsYStart)
+    canvasFrame:SetPoint("bottomright", advancedFrame, "bottomright", -26, 25)
+	advancedFrame.canvasFrame = canvasFrame
+
+	--when passing a canvas frame for BuildMenu, it automatically get its childscroll and use as parent for the widgets
+	--DF:BuildMenu(canvasFrame, debuff_options, startX, 0, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
+
     local startX, startY, heightSize = 10, platerInternal.optionsYStart, 755
-    DF:BuildMenu (advancedFrame, advanced_options, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, platerInternal.OptionsGlobalCallback)
+    --DF:BuildMenu (advancedFrame, advanced_options, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, platerInternal.OptionsGlobalCallback)
+    DF:BuildMenu (canvasFrame, advanced_options, startX, 0, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, platerInternal.OptionsGlobalCallback)
 
     platerInternal.LoadOnDemand_IsLoaded.AdvancedOptions = true
+    ---@diagnostic disable-next-line: undefined-global
     table.insert(PlaterOptionsPanelFrame.AllSettingsTable, advanced_options)
 end
