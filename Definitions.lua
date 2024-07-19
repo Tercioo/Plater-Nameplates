@@ -165,6 +165,29 @@
 ---@field RemoveForceBlizzardNameplateUnits fun(npcId: number)
 ---@field GetHealthCutoffValue fun() update the execute range by the class, spec and talents the player is using
 ---@field CheckRange fun(plateFrame: table, onAdded: boolean) check if the nameplate is in range and update the alpha
+---@field PlayAudioForScript fun(canUseScriptAudio: boolean, audioFilePath: string, envTable: scriptenv) play an audio for a script
+
+---@class scriptenv : table
+---@field _SpellID number
+---@field _UnitID string
+---@field _SpellName string
+---@field _Texture string
+---@field _Caster string
+---@field _StackCount number
+---@field _Duration number
+---@field _StartTime number
+---@field _EndTime number
+---@field _RemainingTime number
+---@field _CastPercent number
+---@field _CanInterrupt boolean
+---@field _NpcID number
+---@field _UnitName string
+---@field _UnitGUID string
+---@field _HealthPercent number
+---@field _CanStealOrPurge boolean
+---@field _AuraType string
+---@field _AuraAmount number
+---@field _CastBarHeight number
 
 ---@class scriptoption : table
 ---@field Type number

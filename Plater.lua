@@ -3779,6 +3779,12 @@ Plater.AnchorNamesByPhraseId = {
 			
 			-- add private aura anchors
 			Plater.HandlePrivateAuraAnchors(plateFrame.unitFrame) -- requires namePlateUnitToken, PlaterOnScreen and IsSelf to be set
+
+			--check if the cast bar test is enabled
+			if (Plater.IsShowingCastBarTest) then
+				--start a castbar test for this unit
+				platerInternal.CastBar.StartTestCastBarForNameplate(plateFrame)
+			end
 		end,
 
 		-- ~removed
@@ -4734,85 +4740,91 @@ function Plater.OnInit() --private --~oninit ~init
 
 			Plater.IsTestRunning = true
 		end
+
+		function platerInternal.CastBar.StartTestCastBarForNameplate(plateFrame)
+			local castTime = Plater.CastBarTestFrame.castTime
+			---@cast plateFrame plateframe
+			if plateFrame.unitFrame.PlaterOnScreen then
+				local castBar = plateFrame.unitFrame.castBar
+				
+				local spellName, _, spellIcon = GetSpellInfo(116)
+
+				castBar.Text:SetText(spellName)
+				castBar.Icon:SetTexture(spellIcon)
+				castBar.Icon:SetAlpha(1)
+				castBar.Icon:Show()
+				castBar.percentText:Show()
+				castBar:SetMinMaxValues(0, (castTime or 3))
+				castBar:SetValue(0)
+				castBar.Spark:Show()
+				castBar.casting = true
+				castBar.finished = false
+				castBar.value = 0
+				castBar.maxValue = (castTime or 3)
+				castBar.canInterrupt = castNoInterrupt or math.random (1, 2) == 1
+				--castBar.canInterrupt = true
+				--castBar.channeling = true
+				castBar:UpdateCastColor()
+
+				castBar.spellName = 		spellName
+				castBar.spellID = 			116
+				castBar.spellTexture = 		spellIcon
+				castBar.spellStartTime = 	GetTime()
+				castBar.spellEndTime = 		GetTime() + (castTime or 3)
+				
+				castBar.SpellStartTime = 	GetTime()
+				castBar.SpellEndTime = 		GetTime() + (castTime or 3)
+				
+				castBar.playedFinishedTest = nil
+				
+				castBar.flashTexture:Hide()
+				castBar:Animation_StopAllAnimations()
+
+				if (castBar.channeling) then
+					Plater.CastBarOnEvent_Hook(castBar, "UNIT_SPELLCAST_CHANNEL_START", plateFrame.unitFrame.unit, plateFrame.unitFrame.unit)
+				else
+					Plater.CastBarOnEvent_Hook(castBar, "UNIT_SPELLCAST_START", plateFrame.unitFrame.unit, plateFrame.unitFrame.unit)
+				end
+
+				platerInternal.Audio.PlaySoundForCastStart(castBar.spellID)
+				
+				if (not castBar:IsShown()) then
+					castBar:Animation_FadeIn()
+					castBar:Show()
+				end
+
+				Plater.UpdateCastbarTargetText(castBar)
+				local textString = castBar.FrameOverlay.TargetName
+				textString:Show()
+				textString:SetText("Target Name")
+			end
+		end
 		
 		function Plater.DoCastBarTest (castNoInterrupt, castTime)
-
 			Plater.CastBarTestFrame.castTime = castTime or 3
 			
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-				---@cast plateFrame plateframe
-				if plateFrame.unitFrame.PlaterOnScreen then
-					local castBar = plateFrame.unitFrame.castBar
-					
-					local spellName, _, spellIcon = GetSpellInfo(116)
-
-					castBar.Text:SetText(spellName)
-					castBar.Icon:SetTexture(spellIcon)
-					castBar.Icon:SetAlpha(1)
-					castBar.Icon:Show()
-					castBar.percentText:Show()
-					castBar:SetMinMaxValues(0, (castTime or 3))
-					castBar:SetValue(0)
-					castBar.Spark:Show()
-					castBar.casting = true
-					castBar.finished = false
-					castBar.value = 0
-					castBar.maxValue = (castTime or 3)
-					castBar.canInterrupt = castNoInterrupt or math.random (1, 2) == 1
-					--castBar.canInterrupt = true
-					--castBar.channeling = true
-					castBar:UpdateCastColor()
-
-					castBar.spellName = 		spellName
-					castBar.spellID = 			116
-					castBar.spellTexture = 		spellIcon
-					castBar.spellStartTime = 	GetTime()
-					castBar.spellEndTime = 		GetTime() + (castTime or 3)
-					
-					castBar.SpellStartTime = 	GetTime()
-					castBar.SpellEndTime = 		GetTime() + (castTime or 3)
-					
-					castBar.playedFinishedTest = nil
-					
-					castBar.flashTexture:Hide()
-					castBar:Animation_StopAllAnimations()
-
-					if (castBar.channeling) then
-						Plater.CastBarOnEvent_Hook(castBar, "UNIT_SPELLCAST_CHANNEL_START", plateFrame.unitFrame.unit, plateFrame.unitFrame.unit)
-					else
-						Plater.CastBarOnEvent_Hook(castBar, "UNIT_SPELLCAST_START", plateFrame.unitFrame.unit, plateFrame.unitFrame.unit)
-					end
-					
-					if (not castBar:IsShown()) then
-						castBar:Animation_FadeIn()
-						castBar:Show()
-					end
-
-					Plater.UpdateCastbarTargetText(castBar)
-					local textString = castBar.FrameOverlay.TargetName
-					textString:Show()
-					textString:SetText("Target Name")
-				end
+				platerInternal.CastBar.StartTestCastBarForNameplate(plateFrame)
 			end
 			
 			local totalTime = 0
+			local checkEachSeconds = 0.4 --0.4 default
 			local forward = true
 
 			Plater.CastBarTestFrame:SetScript ("OnUpdate", function (self, deltaTime)
-				if (totalTime >= (Plater.CastBarTestFrame.castTime + 0.1)) then
+				if (totalTime >= checkEachSeconds) then --(Plater.CastBarTestFrame.castTime + 0.1)
 					totalTime = 0
 
 					for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 						---@cast plateFrame plateframe
 						if plateFrame.unitFrame.PlaterOnScreen then
 							local castBar = plateFrame.unitFrame.castBar
-							local textString = castBar.FrameOverlay.TargetName
-							textString:Show()
-							textString:SetText("Target Name")
+							--local textString = castBar.FrameOverlay.TargetName
+							--textString:Show()
+							--textString:SetText("Target Name")
 
 							if (castBar.finished and not castBar.playedFinishedTest) then
 								Plater.CastBarOnEvent_Hook (castBar, "UNIT_SPELLCAST_STOP", plateFrame.unitFrame.unit, plateFrame.unitFrame.unit)
-								--castBar:Hide()
 								castBar.playedFinishedTest = true
 							end
 						end
@@ -4820,11 +4832,18 @@ function Plater.OnInit() --private --~oninit ~init
 					
 					if (Plater.IsShowingCastBarTest) then
 						--run another cycle
-						Plater.CastBarTestFrame.ScheduleNewCycle = C_Timer.NewTimer(0.5, function()
-							if (Plater.IsShowingCastBarTest) then
-								Plater.StartCastBarTest(Plater.CastBarTestFrame.castNoInterrupt, Plater.CastBarTestFrame.castTime, true)
-							end
-						end)
+						if (not Plater.CastBarTestFrame.ScheduleNewCycle) then
+							Plater.CastBarTestFrame.ScheduleNewCycle = C_Timer.NewTimer(0.5, function()
+								if (Plater.IsShowingCastBarTest) then
+									for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+										if (not plateFrame.unitFrame.castBar:IsShown()) then
+											platerInternal.CastBar.StartTestCastBarForNameplate(plateFrame)
+										end
+									end
+								end
+								Plater.CastBarTestFrame.ScheduleNewCycle = nil
+							end)
+						end
 					else
 						--don't run another cycle
 						Plater.CastBarTestFrame:SetScript("OnUpdate", nil)

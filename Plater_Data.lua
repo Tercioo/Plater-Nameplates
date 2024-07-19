@@ -7,6 +7,7 @@ local addonName, platerInternal = ...
 
 --namespaces
 platerInternal.Scripts = {}
+platerInternal.CastBar = {}
 platerInternal.Mods = {}
 platerInternal.Events = {}
 platerInternal.Comms = {}
