@@ -1793,9 +1793,10 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         end
 
     --refresh button
-        local refreshButton = DF:CreateButton(castFrame, function() castFrame.RefreshScroll() end, 70, 20, _G["REFRESH"] or "Refresh", -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
-        refreshButton:SetPoint("bottomleft", spells_scroll, "bottomleft", 1, 0)
+        local refreshButton = DF:CreateButton(castFrame, function() castFrame.RefreshScroll() end, 150, 20, _G["REFRESH"] or "Refresh", -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "PLATER_BUTTON_DARK"), DF:GetTemplate("font", "PLATER_BUTTON"))
+        refreshButton:SetPoint("bottomleft", spells_scroll, "bottomleft", 0, 0)
         refreshButton:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
+        refreshButton:SetIcon([[Interface\AddOns\Plater\images\circle_icon_refresh.png]], 16,    16,     "overlay", {0, 1, 0, 1}, nil,     nil,          nil,         nil,        nil,         "TRILINEAR")
 
         local createImportBox = function(parent, mainFrame)
             --create the text editor
@@ -2186,9 +2187,10 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             castFrame.RefreshScroll()
         end
 
-        local disableAllColorsButton = DF:CreateButton(castFrame, disableAllColors, 140, 20, LOC["OPTIONS_CASTCOLORS_DISABLECOLORS"], -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
+        local disableAllColorsButton = DF:CreateButton(castFrame, disableAllColors, 150, 20, LOC["OPTIONS_CASTCOLORS_DISABLECOLORS"], -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "PLATER_BUTTON_DARK"), DF:GetTemplate("font", "PLATER_BUTTON"))
         disableAllColorsButton:SetPoint("left", refreshButton, "right", 2, 0)
         disableAllColorsButton:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
+        disableAllColorsButton:SetIcon([[Interface\AddOns\Plater\images\color_cancel.png]], 16,    16,     "overlay", {0, 1, 0, 1}, nil,     nil,          nil,         nil,        nil,         "TRILINEAR")
 
     --toggle options button
         castFrame.showingScriptSelection = true
@@ -2206,10 +2208,13 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             castFrame.showingScriptSelection = not castFrame.showingScriptSelection
         end
 
-        local toggleOptionsButton = DF:CreateButton(castFrame, toggleScriptSelectionAndOptionsFrame, 70, 20, LOC["OPTIONS_SHOWOPTIONS"], -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
+        local toggleOptionsButton = DF:CreateButton(castFrame, toggleScriptSelectionAndOptionsFrame, 150, 20, LOC["OPTIONS_SHOWOPTIONS"], -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "PLATER_BUTTON_DARK"), DF:GetTemplate("font", "PLATER_BUTTON"))
         toggleOptionsButton:SetPoint("left", disableAllColorsButton, "right", 2, 0)
         toggleOptionsButton:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
+        toggleOptionsButton:SetIcon([[Interface\AddOns\Plater\images\config_icon.png]], 16,    16,     "overlay", {0, 1, 0, 1}, nil,     nil,          nil,         nil,        nil,         "TRILINEAR")
         castFrame.toggleOptionsButton = toggleOptionsButton
+
+        
 
     -- buttons backdrop
         local backdropFoot = CreateFrame("frame", nil, spells_scroll, BackdropTemplateMixin and "BackdropTemplate")
