@@ -526,7 +526,7 @@ function platerInternal.CreateAdvancedOptions()
 
         {type = "blank"},
 
-        {
+        { --always show background
             type = "toggle",
             get = function() return Plater.db.profile.click_space_always_show end,
             set = function (self, fixedparam, value)

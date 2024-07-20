@@ -646,13 +646,6 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         return line
     end
 
-    local onChangeOption = function()
-        --when a setting if changed
-        Plater.RefreshDBUpvalues()
-        Plater.UpdateAllPlates()
-        --optionsspFrameFrame.previewCastBar.UpdateAppearance()
-    end
-
     --> build scripts preview to add the cast to a script
     local scriptPreviewFrame = CreateFrame("frame", castFrame:GetName() .. "ScriptPreviewPanel", castFrame, "BackdropTemplate")
     local spFrame = scriptPreviewFrame
@@ -919,7 +912,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
 ------------------------------------------------------------------------------------------------------------
         --> build the ~options panel
-        local optionsFrame = CreateFrame("frame", castFrame:GetName() .. "OptionsPanel", castFrame, "BackdropTemplate")
+        local optionsFrame = CreateFrame("frame", "PlaterCCastsOptionsPanel", castFrame, "BackdropTemplate")
         optionsFrame:SetPoint("topright", castFrame, "topright", 28, -56)
         optionsFrame:SetPoint("bottomright", castFrame, "bottomright", 0, 18)
         optionsFrame:SetWidth(250)
@@ -985,6 +978,8 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                 end,
                 name = "Enable Original Cast Color",
                 desc = "Show a small indicator showing the original color of the cast.",
+                childrenids = {"alpha", "width", "height_offset", "layer", "anchor", "x", "y"},
+                children_follow_enabled = true,
             },
             {
                 type = "range",
@@ -997,6 +992,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                 step = 0.1,
                 usedecimals = true,
                 name = "Alpha",
+                id = "alpha",
             },
             {
                 type = "range",
@@ -1008,6 +1004,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                 max = 200,
                 step = 1,
                 name = "Width",
+                id = "width",
             },
             {
                 type = "range",
@@ -1019,18 +1016,21 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                 max = 30,
                 step = 1,
                 name = "Height Offset",
+                id = "height_offset",
             },
             {
                 type = "select",
                 get = function() return Plater.db.profile.cast_color_settings.layer end,
                 values = function() return buildLayerMenu() end,
                 name = "Layer",
+                id = "layer",
             },
             {
                 type = "select",
                 get = function() return Plater.db.profile.cast_color_settings.anchor.side end,
                 values = function() return build_anchor_side_table() end,
                 name = LOC["OPTIONS_ANCHOR"],
+                id = "anchor",
             },
             {
                 type = "range",
@@ -1043,6 +1043,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                 step = 1,
                 usedecimals = true,
                 name = LOC["OPTIONS_XOFFSET"],
+                id = "x",
             },
             {
                 type = "range",
@@ -1055,13 +1056,28 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
                 step = 1,
                 usedecimals = true,
                 name = LOC["OPTIONS_YOFFSET"],
+                id = "y",
             },
-
         }
 
         local startX, startY, heightSize = 2, -10, optionsFrame:GetHeight()
-        _G.C_Timer.After(0.5, function() --~delay
-            DF:BuildMenu(optionsFrame, optionsTable, startX, startY, heightSize, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, onChangeOption)
+        optionsTable.always_boxfirst = true
+        optionsTable.language_addonId = addonId
+        --optionsTable.align_as_pairs = true
+        --optionsTable.align_as_pairs_string_space = 181
+        --optionsTable.widget_width = 150
+
+        --local canvasFrame = DF:CreateCanvasScrollBox(optionsFrame, nil, "PlaterCCastFrameCanvas1")
+        --canvasFrame:SetPoint("topleft", optionsFrame, "topleft", 0, 0)
+        --canvasFrame:SetPoint("bottomright", optionsFrame, "bottomright", -26, 25)
+        --optionsFrame.canvasFrame = canvasFrame
+
+        --optionsTable.use_scrollframe = true
+        --optionsTable.Name = "Cast Options"
+
+        _G.C_Timer.After(1.5, function() --~delay
+            DF:BuildMenu(optionsFrame, optionsTable, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, onChangeOption)
+            --canvasFrame.child:SetHeight(heightSize)
         end)
 
     -->  ~preview window (not in use as the script choise frame is over this one)
@@ -1248,23 +1264,6 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
         GameCooltip:AddMenu(1, platerInternal.Comms.SendCastInfoToGroup, bAutoAccept, "resetcast", "", "Send Reset", nil, true)
         GameCooltip:AddIcon([[Interface\BUTTONS\UI-MicroStream-Red]], 1, 1, 14, 14)
-
-        GameCooltip:AddLine("$div")
-        bAutoAccept = true
-
-        GameCooltip:AddMenu(1, platerInternal.Comms.SendCastInfoToGroup, bAutoAccept, "castcolor", "", "Send Color (auto accept)", nil, true)
-        GameCooltip:AddIcon([[Interface\BUTTONS\JumpUpArrow]], 1, 1, 14, 14)
-
-        GameCooltip:AddMenu(1, platerInternal.Comms.SendCastInfoToGroup, bAutoAccept, "castrename", "", "Send Rename (auto accept)", nil, true)
-        GameCooltip:AddIcon([[Interface\BUTTONS\JumpUpArrow]], 1, 1, 14, 14)
-
-        GameCooltip:AddMenu(1, platerInternal.Comms.SendCastInfoToGroup, bAutoAccept, "castscript", "", "Send Script (auto accept)", nil, true)
-        GameCooltip:AddIcon([[Interface\BUTTONS\JumpUpArrow]], 1, 1, 14, 14)
-
-        GameCooltip:AddMenu(1, platerInternal.Comms.SendCastInfoToGroup, bAutoAccept, "resetcast", "", "Send Reset (auto accept)", nil, true)
-        GameCooltip:AddIcon([[Interface\BUTTONS\UI-MicroStream-Red]], 1, 1, 14, 14)
-
-        --GameCooltip:AddLine("$div")
 
         GameCooltip:Show()
     end
