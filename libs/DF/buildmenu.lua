@@ -467,6 +467,8 @@ local setRangeProperties = function(parent, widget, widgetTable, currentXOffset,
             local highlightFrame = createOptionHighlightFrame(widget, label, (widgetWidth or 140) + nAlignAsPairsLength + 5)
             widget.highlightFrame = highlightFrame
         end
+
+        widget.bAttachButtonsToLeft = true
     else
         widget:SetPoint("left", label, "right", 2, 0)
         label:SetPoint("topleft", parent, "topleft", currentXOffset, currentYOffset)
