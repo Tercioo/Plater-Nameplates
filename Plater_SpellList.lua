@@ -18,10 +18,11 @@ local _
 ---@field SpellID number
 ---@field Icon texture
 ---@field SpellIDEntry df_textentry
----@field SpellName df_label
----@field SourceName df_label
+---@field SpellName df_textentry
+---@field SourceName df_textentry
 ---@field SpellType df_label
 ---@field AddTrackList df_button
+---@field SelectAudioDropdown df_dropdown
 ---@field AddIgnoreList df_button
 ---@field AddSpecial df_button
 ---@field AddTrigger df_dropdown
@@ -42,6 +43,7 @@ local DB_NPCID_COLORS
 local DB_AURA_ALPHA
 local DB_AURA_ENABLED
 local DB_AURA_SEPARATE_BUFFS
+local DB_CAST_AUDIOCUES
 
 local GetSpellInfo = GetSpellInfo or function(spellID) if not spellID then return nil end local si = C_Spell.GetSpellInfo(spellID) if si then return si.name, nil, si.iconID, si.castTime, si.minRange, si.maxRange, si.spellID, si.originalIconID end end
 
@@ -54,6 +56,7 @@ local on_refresh_db = function()
 	DB_AURA_ALPHA = profile.aura_alpha
 	DB_AURA_ENABLED = profile.aura_enabled
 	DB_AURA_SEPARATE_BUFFS = Plater.db.profile.buffs_on_aura2
+    DB_CAST_AUDIOCUES = profile.cast_audiocues
 end
 
 Plater.RegisterRefreshDBCallback(on_refresh_db)
@@ -83,16 +86,16 @@ function Plater.CreateAuraLastEventOptionsFrame(auraLastEventFrame)
 
     --header
     local headerTable = {
-        {text = "Icon", width = 32},
-        {text = "Spell ID", width = 74},
-        {text = "Spell Name", width = 162},
+        {text = "", width = 20},
+        {text = "Spell ID", width = 54},
+        {text = "Spell Name", width = 130},
         {text = "Source", width = 130},
-        {text = "Spell Type", width = 70},
-        {text = "Add to Tracklist", width = 100},
+        {text = "Spell Type", width = 75},
+        {text = "", width = 140},
         {text = "Add to Blacklist", width = 100},
         {text = "Add to Special Auras", width = 120},
         {text = "Add to Script", width = 120},
-        {text = "From Last Combat", width = 120}, --, icon = _G.WeakAuras and [[Interface\AddOns\WeakAuras\Media\Textures\icon]] or ""
+        {text = "From Last Combat", width = 100}, --, icon = _G.WeakAuras and [[Interface\AddOns\WeakAuras\Media\Textures\icon]] or ""
     }
     local headerOptions = {
         padding = 2,
@@ -257,6 +260,95 @@ function Plater.CreateAuraLastEventOptionsFrame(auraLastEventFrame)
         self:HighlightText(0)
     end
 
+    --audio cues - this is a copy paste from the dropdown existing in the Cast Colors Panels
+    local line_select_audio_dropdown = function (self, spellId, audioFilePath)
+        DB_CAST_AUDIOCUES[spellId] = audioFilePath
+        auraLastEventFrame.spellsScroll.CachedTable = nil
+        auraLastEventFrame.spellsScroll:Refresh()
+    end
+
+    local audioFileNameToCueName = {}
+    local colorNoValue = {1, 1, 1, 0.5}
+
+    local audioCueSort = function(t1, t2)
+        if (t1[4] and not t2[4]) then
+            return true
+
+        elseif (not t1[4] and t2[4]) then
+            return false
+
+        elseif (t1[4] and t2[4]) then
+            return t1[3] < t2[3]
+        else
+            return t1[3] < t2[3]
+        end
+    end
+
+    local dropdownIconColor = {1, 1, 1, .6}
+
+    ---@param self df_dropdown
+    local createAudioCueList = function(self, fullRefresh)
+        local audioCueList = {
+            {
+                label = " select audio",
+                value = nil,
+                color = colorNoValue,
+                statusbar = [[Interface\Tooltips\UI-Tooltip-Background]],
+                statusbarcolor = {.1, .1, .1, .92},
+                icon = [[Interface\AddOns\Plater\media\audio_cue_icon]],
+                iconcolor = {1, 1, 1, .4},
+                onclick = line_select_audio_dropdown
+            }
+        }
+
+        local cuesInUse = {}
+        for spellId, cueFile in pairs(DB_CAST_AUDIOCUES) do
+            cuesInUse[cueFile] = true
+        end
+
+        local audioCues = _G.LibStub:GetLibrary("LibSharedMedia-3.0"):HashTable("sound")
+        local audioListInOrder = {}
+        for cueName, cueFile in pairs(audioCues) do
+            audioListInOrder[#audioListInOrder+1] = {cueName, cueFile, cueName:lower(), cuesInUse[cueFile] or false}
+            audioFileNameToCueName[cueFile] = cueName
+        end
+
+        table.sort(audioListInOrder, audioCueSort)
+
+        --table.sort(audioListInOrder, function(t1, t2) return t1[3] < t2[3] end) --alphabetical
+        --table.sort(audioListInOrder, function(t1, t2) return t1[4] > t2[4] end) --in use
+
+        local currentSelected = self:GetValue()
+        if (type(currentSelected) == "string") then
+            currentSelected = currentSelected
+        else
+            currentSelected = nil
+        end
+
+        for i = 1, #audioListInOrder do
+            local cueName, cueFile, lowerName, cueInUse = unpack(audioListInOrder[i])
+            audioCueList[#audioCueList+1] = {
+                label = " " .. cueName,
+                value = cueFile,
+                audiocue = cueFile,
+                color = "white",
+                statusbar = platerInternal.Defaults.dropdownStatusBarTexture,
+                statusbarcolor = cueInUse and {.3, .3, .3, .8} or platerInternal.Defaults.dropdownStatusBarColor,
+                iconcolor = dropdownIconColor,
+                icon = [[Interface\AddOns\Plater\media\audio_cue_icon]],
+                onclick = line_select_audio_dropdown,
+                --desc = desc, --
+            }
+        end
+
+        auraLastEventFrame.AudioCueListCache = audioCueList
+    end
+
+    local line_refresh_audio_dropdown = function(self)
+        createAudioCueList(self, true)
+        return auraLastEventFrame.AudioCueListCache
+    end
+
     --line
     local scrollCreateLine = function(self, index)
         ---@type plater_spelllist_line
@@ -278,13 +370,33 @@ function Plater.CreateAuraLastEventOptionsFrame(auraLastEventFrame)
         spellIdTextEntry:SetHook("OnEditFocusGained", onEditFocusGained_SpellIdEntry)
         spellIdTextEntry:SetJustifyH("left")
 
-        local spellNameLabel = detailsFramework:CreateLabel(line, "", detailsFramework:GetTemplate("font", "PLATER_SCRIPTS_NAME"))
-        local sourceNameLabel = detailsFramework:CreateLabel(line, "", detailsFramework:GetTemplate("font", "PLATER_SCRIPTS_NAME"))
+        local spellNameEntry = detailsFramework:CreateTextEntry(line, function()end, headerTable[4].width, 20, "spellNameEntry", nil, nil, detailsFramework:GetTemplate("dropdown", "PLATER_DROPDOWN_OPTIONS"))
+        spellNameEntry:SetHook("OnEditFocusGained", onEditFocusGained_SpellIdEntry)
+        spellNameEntry:SetJustifyH("left")
+        --local spellNameLabel = detailsFramework:CreateLabel(line, "", detailsFramework:GetTemplate("font", "PLATER_SCRIPTS_NAME"))
+
+        local sourceNameEntry = detailsFramework:CreateTextEntry(line, function()end, headerTable[4].width, 20, "spellSourceEntry", nil, nil, detailsFramework:GetTemplate("dropdown", "PLATER_DROPDOWN_OPTIONS"))
+        sourceNameEntry:SetHook("OnEditFocusGained", onEditFocusGained_SpellIdEntry)
+        sourceNameEntry:SetJustifyH("left")
+        --local sourceNameLabel = detailsFramework:CreateLabel(line, "", detailsFramework:GetTemplate("font", "PLATER_SCRIPTS_NAME"))
+
         local spellTypeLabel = detailsFramework:CreateLabel(line, "", detailsFramework:GetTemplate("font", "PLATER_SCRIPTS_NAME"))
 
-        local addTracklistButton = detailsFramework:CreateButton(line, lineAddTracklist, headerTable[6].width, 20, "Add", -1, nil, nil, nil, nil, nil, detailsFramework:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), detailsFramework:GetTemplate("font", "PLATER_BUTTON"))
-        local addIgnorelistButton = detailsFramework:CreateButton(line, lineAddIgnorelist, headerTable[7].width, 20, "Add", -1, nil, nil, nil, nil, nil, detailsFramework:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), detailsFramework:GetTemplate("font", "PLATER_BUTTON"))
-        local addSpecialButton = detailsFramework:CreateButton(line, lineAddSpecial, headerTable[8].width, 20, "Add", -1, nil, nil, nil, nil, nil, detailsFramework:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), detailsFramework:GetTemplate("font", "PLATER_BUTTON"))
+        --these are the three buttons shown when the spell is an aura
+        local addTracklistButton = detailsFramework:CreateButton(line, lineAddTracklist, headerTable[6].width, 20, "Track Aura", -1, nil, nil, nil, nil, nil, detailsFramework:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), detailsFramework:GetTemplate("font", "PLATER_BUTTON"))
+        local addIgnorelistButton = detailsFramework:CreateButton(line, lineAddIgnorelist, headerTable[7].width, 20, "Blacklist Aura", -1, nil, nil, nil, nil, nil, detailsFramework:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), detailsFramework:GetTemplate("font", "PLATER_BUTTON"))
+        local addSpecialButton = detailsFramework:CreateButton(line, lineAddSpecial, headerTable[8].width, 20, "Add To Buff Special", -1, nil, nil, nil, nil, nil, detailsFramework:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), detailsFramework:GetTemplate("font", "PLATER_BUTTON"))
+
+        --select audio dropdown when the spell is a cast
+        local selectAudioDropdown = detailsFramework:CreateDropDown(line, line_refresh_audio_dropdown, 1, headerTable[6].width - 1, 20, "SelectAudioDropdown", nil, detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+        selectAudioDropdown:SetFrameLevel(line:GetFrameLevel()+2)
+        selectAudioDropdown:Hide() --hide by default, only show when the spell is a cast, need to hide the addTracklistButton when this dropdown is shown
+
+        --trick: the dropdown cannot be inserted in the header, so it's inserted in the line and aligned with the header
+        --to get the xOffSet, the sum of all widths of the previous headers is used
+        local xOffSet = headerTable[1].width + headerTable[2].width + headerTable[3].width + headerTable[4].width + headerTable[5].width
+        xOffSet = xOffSet + 10 --padding
+        selectAudioDropdown:SetPoint("topleft", line, "topleft", xOffSet, 0)
 
         local addScriptTriggerDropdown = detailsFramework:CreateDropDown(line, lineRefreshTriggerDropdown, 1, headerTable[9].width, 20, nil, nil, detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
 
@@ -312,8 +424,8 @@ function Plater.CreateAuraLastEventOptionsFrame(auraLastEventFrame)
 
         line:AddFrameToHeaderAlignment(icon)
         line:AddFrameToHeaderAlignment(spellIdTextEntry)
-        line:AddFrameToHeaderAlignment(spellNameLabel)
-        line:AddFrameToHeaderAlignment(sourceNameLabel)
+        line:AddFrameToHeaderAlignment(spellNameEntry)
+        line:AddFrameToHeaderAlignment(sourceNameEntry)
         line:AddFrameToHeaderAlignment(spellTypeLabel)
         line:AddFrameToHeaderAlignment(addTracklistButton)
         line:AddFrameToHeaderAlignment(addIgnorelistButton)
@@ -326,10 +438,11 @@ function Plater.CreateAuraLastEventOptionsFrame(auraLastEventFrame)
 
         line.Icon = icon
         line.SpellIDEntry = spellIdTextEntry
-        line.SpellName = spellNameLabel
-        line.SourceName = sourceNameLabel
+        line.SpellName = spellNameEntry
+        line.SourceName = sourceNameEntry
         line.SpellType = spellTypeLabel
         line.AddTrackList = addTracklistButton
+        line.SelectAudioDropdown = selectAudioDropdown
         line.AddIgnoreList = addIgnorelistButton
         line.AddSpecial = addSpecialButton
         line.AddTrigger = addScriptTriggerDropdown
@@ -345,13 +458,23 @@ function Plater.CreateAuraLastEventOptionsFrame(auraLastEventFrame)
         return t1[4] > t2[4]
     end
 
+    local audioUpdateScheduled = {}
+    local updateAudioSelector = function(line, selectedAudioCue)
+        if (selectedAudioCue)then
+            --this spell has an audio cue
+            line.SelectAudioDropdown:Select(selectedAudioCue)
+        else
+            line.SelectAudioDropdown:Select(1, true)
+        end
+    end
+
     local sIsSearchingFor
 
     ---@param self df_scrollbox
     ---@param data spelllist_scrolldata[]
     ---@param offset number
     ---@param totalLines number
-    local scrollRefresh = function(self, data, offset, totalLines)
+    local scrollRefresh = function(self, data, offset, totalLines) --~refresh
         local dataInOrder = {}
         --buff list tab
         local lastCombatNpcs = Plater.LastCombat.npcNames or {}
@@ -404,17 +527,17 @@ function Plater.CreateAuraLastEventOptionsFrame(auraLastEventFrame)
 
         for i = 1, totalLines do
             local index = i + offset
-            local spellTable = data [index] and data [index] [2]
+            local spellTable = data[index] and data[index][2]
 
             if (spellTable) then
                 local line = self:GetLine(i)
                 ---@cast line plater_spelllist_line
 
-                local spellID = spellTable[1]
+                local spellId = spellTable[1]
                 ---@type plater_spelldata
                 local spellData = spellTable[2]
 
-                local spellName, _, spellIcon = GetSpellInfo(spellID)
+                local spellName, _, spellIcon = GetSpellInfo(spellId)
 
                 local fullData = data[index]
                 local isFromLastSegment = fullData[4] == 2
@@ -434,10 +557,12 @@ function Plater.CreateAuraLastEventOptionsFrame(auraLastEventFrame)
                     line.Icon:SetTexture(spellIcon)
                     line.Icon:SetTexCoord(.1, .9, .1, .9)
 
-                    line.SpellName:SetTextTruncated(spellName, headerTable [3].width)
-                    line.SourceName:SetTextTruncated(spellData.source, headerTable [4].width)
+                    --line.SpellName:SetTextTruncated(spellName, headerTable [3].width)
+                    line.SpellName:SetText(spellName)
+                    --line.SourceName:SetTextTruncated(spellData.source, headerTable [4].width)
+                    line.SourceName:SetText(spellData.source)
 
-                    local isCast = spellData.event == "SPELL_CAST_START" or spellData.event == "SPELL_CAST_SUCCESS"
+                    local bIsCast = spellData.event == "SPELL_CAST_START" or spellData.event == "SPELL_CAST_SUCCESS"
 
                     if (spellData.type == "BUFF") then
                         line.SpellType.color = "PLATER_BUFF"
@@ -445,46 +570,64 @@ function Plater.CreateAuraLastEventOptionsFrame(auraLastEventFrame)
                     elseif (spellData.type == "DEBUFF") then
                         line.SpellType.color = "PLATER_DEBUFF"
 
-                    elseif (isCast) then
+                    elseif (bIsCast) then
                         line.SpellType.color = "PLATER_CAST"
 
                     end
 
-                    line.SpellID = spellID
+                    line.SpellID = spellId
 
-                    line.SpellIDEntry:SetText(spellID)
+                    line.SpellIDEntry:SetText(spellId)
 
                     --{event = token, source = sourceName, type = auraType, npcID = Plater:GetNpcIdFromGuid(sourceGUID or "")}
-                    line.SpellType:SetText(isCast and "Spell Cast" or spellData.event == "SPELL_AURA_APPLIED" and spellData.type)
+                    line.SpellType:SetText(bIsCast and "Spell Cast" or spellData.event == "SPELL_AURA_APPLIED" and spellData.type or "")
 
-                    line.AddTrackList.SpellID = spellID
+                    line.AddTrackList.SpellID = spellId
                     line.AddTrackList.AuraType = spellData.type
                     line.AddTrackList.EncounterID = spellData.encounterID
 
-                    line.AddIgnoreList.SpellID = spellID
+                    line.AddIgnoreList.SpellID = spellId
                     line.AddIgnoreList.AuraType = spellData.type
                     line.AddIgnoreList.EncounterID = spellData.encounterID
 
-                    line.AddSpecial.SpellID = spellID
+                    line.AddSpecial.SpellID = spellId
                     line.AddSpecial.AuraType = spellData.type
                     line.AddSpecial.EncounterID = spellData.encounterID
 
-                    if (spellData.type) then
+                    if (bIsCast) then
+                        line.AddTrackList:Hide()
+                        line.AddIgnoreList:Disable()
+                        line.AddSpecial:Disable()
+                        line.SelectAudioDropdown:Show()
+                        line.SelectAudioDropdown.spellId = spellId
+                        line.SelectAudioDropdown:SetFixedParameter(spellId)
+                        local selectedAudioCue = DB_CAST_AUDIOCUES[spellId]
+
+                        if (audioUpdateScheduled[line] and not audioUpdateScheduled[line]:IsCancelled()) then
+                            audioUpdateScheduled[line]:Cancel()
+                        end
+                        audioUpdateScheduled[line] = detailsFramework.Schedules.NewTimer(0.085, updateAudioSelector, line, selectedAudioCue)
+
+                    elseif (spellData.type) then
+                        line.SelectAudioDropdown:Hide()
+                        line.AddTrackList:Show()
                         line.AddTrackList:Enable()
                         line.AddIgnoreList:Enable()
                         line.AddSpecial:Enable()
                     else
+                        line.SelectAudioDropdown:Hide()
+                        line.AddTrackList:Show()
                         line.AddTrackList:Disable()
                         line.AddIgnoreList:Disable()
                         line.AddSpecial:Disable()
                     end
 
-                    line.CreateAura.SpellID = spellID
+                    line.CreateAura.SpellID = spellId
                     line.CreateAura.AuraType = spellData.type
                     line.CreateAura.IsCast = spellData.event == "SPELL_CAST_START"
                     line.CreateAura.EncounterID = spellData.encounterID
 
-                    line.AddTrigger.SpellID = spellID
+                    line.AddTrigger.SpellID = spellId
                     line.AddTrigger:Refresh()
 
                     --manual tracking doesn't have a black list
@@ -509,6 +652,7 @@ function Plater.CreateAuraLastEventOptionsFrame(auraLastEventFrame)
     local latestSpellsScroll = detailsFramework:CreateScrollBox(auraLastEventFrame, "$parentSpellScroll", scrollRefresh, {}, scroll_width, scroll_height, scroll_lines, scroll_line_height)
     detailsFramework:ReskinSlider(latestSpellsScroll)
     latestSpellsScroll:SetPoint("topleft", auraLastEventFrame, "topleft", 10, scrollY)
+    auraLastEventFrame.spellsScroll = latestSpellsScroll
 
     latestSpellsScroll:SetScript("OnShow", function(self)
         if (self.LastRefresh and self.LastRefresh+0.5 > GetTime()) then

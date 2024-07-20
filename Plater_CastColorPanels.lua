@@ -354,6 +354,20 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
     local audioFileNameToCueName = {}
 
+    local audioCueSort = function(t1, t2)
+        if (t1[4] and not t2[4]) then
+            return true
+
+        elseif (not t1[4] and t2[4]) then
+            return false
+
+        elseif (t1[4] and t2[4]) then
+            return t1[3] < t2[3]
+        else
+            return t1[3] < t2[3]
+        end
+    end
+
     ---@param self df_dropdown
     local createAudioCueList = function(self, fullRefresh)
         if (castFrame.AudioCueListCache and not fullRefresh) then
@@ -385,19 +399,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             audioFileNameToCueName[cueFile] = cueName
         end
 
-        table.sort(audioListInOrder, function(t1, t2) --alphabetical
-            if (t1[4] and not t2[4]) then
-                return true
-
-            elseif (not t1[4] and t2[4]) then
-                return false
-
-            elseif (t1[4] and t2[4]) then
-                return t1[3] < t2[3]
-            else
-                return t1[3] < t2[3]
-            end
-        end)
+        table.sort(audioListInOrder, audioCueSort)
 
         --table.sort(audioListInOrder, function(t1, t2) return t1[3] < t2[3] end) --alphabetical
         --table.sort(audioListInOrder, function(t1, t2) return t1[4] > t2[4] end) --in use
