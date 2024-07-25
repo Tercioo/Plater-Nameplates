@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1721933574, "Bug Fix", "July 25th, 2024", "Fixing Mage execute range.", "cont1nuity"},
+			
 			{1721651703, "Backend Change", "July 20th, 2024", "Adding audio selection to Spell List tab.", "Terciob"},
 			{1721651703, "Backend Change", "July 19th, 2024", "Castbar tests now has individual cast times.", "Terciob"},
 			{1721651703, "Backend Change", "July 18th, 2024", "Cast Color search will now be able to search for script names and show assigned spells.", "Terciob"},
