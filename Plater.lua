@@ -610,7 +610,7 @@ Plater.AnchorNamesByPhraseId = {
 							lowExecute = 0.35
 						end
 					end
-					if isTalentLearned(205026) then --Firestarter
+					if IsPlayerSpell(205026) then --Firestarter
 						highExecute = 0.9
 					end
 					if IsPlayerSpell(384581) then -- Arcane Bombardment
