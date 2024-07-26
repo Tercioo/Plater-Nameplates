@@ -604,7 +604,7 @@ Plater.AnchorNamesByPhraseId = {
 					end
 					
 				elseif (class == "MAGE") then
-					if isTalentLearned(2948) then -- Scorch
+					if IsPlayerSpell(2948) then -- Scorch
 						lowExecute = 0.3
 						if isTalentLearned(449349) then --Sunfury Execution (for Scorch)
 							lowExecute = 0.35
