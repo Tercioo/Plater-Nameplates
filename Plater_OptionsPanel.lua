@@ -3669,8 +3669,19 @@ Plater.CreateAuraTesting()
 				name = "OPTIONS_YOFFSET",
 				desc = "OPTIONS_YOFFSET_DESC",
 			},
+			--text enabled
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.bossmod_support_bars_text_enabled end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.bossmod_support_bars_text_enabled = value
+					Plater.UpdateAllPlates()
+				end,
+				name = "Icon text enabled",
+				desc = "Enable Bar Text.",
+			},
 			
-			{type = "blank"},
+			--{type = "blank"},
 			
 			{type = "label", get = function() return "Cooldown Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			{

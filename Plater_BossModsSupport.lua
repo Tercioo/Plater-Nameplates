@@ -200,6 +200,7 @@ function Plater.UpdateBossModAuras(unitFrame)
 
 	--timer bars
 	if Plater.db.profile.bossmod_support_bars_enabled and UNIT_BOSS_MOD_BARS [guid] then
+		local textEnabled = Plater.db.profile.bossmod_support_bars_text_enabled
 		local sortedAuras = {}
 		for id, data in pairs(UNIT_BOSS_MOD_BARS [guid]) do
 			tinsert(sortedAuras, data)
@@ -232,7 +233,7 @@ function Plater.UpdateBossModAuras(unitFrame)
 					timer = nil
 				end
 				--print(timer, start, data.name, data.msg, data.colorId)
-				local icon = iconFrame:SetIcon(-1, data.color, timer and start, timer, data.icon, {text = data.display, text_color = data.color})
+				local icon = iconFrame:SetIcon(-1, data.color, timer and start, timer, data.icon, textEnabled and {text = data.display, text_color = data.color} or nil)
 				--							spellId, borderColor, startTime, duration, forceTexture, descText, count, debuffType, caster, canStealOrPurge, spellName, isBuff
 				--DF:TruncateText(icon.Desc, Plater.db.profile.bossmod_aura_width)
 				if data.paused then

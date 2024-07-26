@@ -8,6 +8,9 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1722023393, "New Feature", "July 27th, 2024", "Adding option to disable text on DMB timer icons.", "cont1nuity"},
+			{1722023393, "Bug Fix", "July 27th, 2024", "Fixing Mage execute range.", "cont1nuity"},
+			
 			{1722023393, "Bug Fix", "July 26th, 2024", "Fixing issues with range checks on certain classes/specs.", "cont1nuity"},
 			{1722023393, "Bug Fix", "July 25th, 2024", "Fixing Mage execute range.", "cont1nuity"},
 			
