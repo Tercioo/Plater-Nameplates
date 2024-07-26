@@ -1,15 +1,29 @@
+--[[
+This library contains work of Hendrick "nevcairiel" Leppkes
+https://www.wowace.com/projects/libbuttonglow-1-0
+]]
+
+-- luacheck: globals CreateFromMixins ObjectPoolMixin CreateTexturePool CreateFramePool
+
 local MAJOR_VERSION = "LibCustomGlow-1.0"
-local MINOR_VERSION = 14
+local MINOR_VERSION = 19
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib, oldversion = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
 local Masque = LibStub("Masque", true)
 
+local isRetail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local textureList = {
-    ["empty"] = [[Interface\AdventureMap\BrokenIsles\AM_29]],
-    ["white"] = [[Interface\BUTTONS\WHITE8X8]],
-    ["shine"] = [[Interface\Artifacts\Artifacts]]
+    empty = [[Interface\AdventureMap\BrokenIsles\AM_29]],
+    white = [[Interface\BUTTONS\WHITE8X8]],
+    shine = [[Interface\ItemSocketingFrame\UI-ItemSockets]]
 }
+
+local shineCoords = {0.3984375, 0.4453125, 0.40234375, 0.44921875}
+if isRetail then
+    textureList.shine = [[Interface\Artifacts\Artifacts]]
+    shineCoords = {0.8115234375,0.9169921875,0.8798828125,0.9853515625}
+end
 
 function lib.RegisterTextures(texture,id)
     textureList[id] = texture
@@ -20,24 +34,54 @@ lib.startList = {}
 lib.stopList = {}
 
 local GlowParent = UIParent
-
-local GlowMaskPool = CreateFromMixins(ObjectPoolMixin)
-lib.GlowMaskPool = GlowMaskPool
-local function MaskPoolFactory(maskPool)
-    return maskPool.parent:CreateMaskTexture()
-end
-
-local MaskPoolResetter = function(maskPool,mask)
-    mask:Hide()
-    mask:ClearAllPoints()
-end
-
-ObjectPoolMixin.OnLoad(GlowMaskPool,MaskPoolFactory,MaskPoolResetter)
-GlowMaskPool.parent =  GlowParent
+local GlowMaskPool = {
+    createFunc = function(self)
+        return self.parent:CreateMaskTexture()
+    end,
+    resetFunc = function(self, mask)
+        mask:Hide()
+        mask:ClearAllPoints()
+    end,
+    AddObject = function(self, object)
+        local dummy = true
+        self.activeObjects[object] = dummy
+        self.activeObjectCount = self.activeObjectCount + 1
+    end,
+    ReclaimObject = function(self, object)
+        tinsert(self.inactiveObjects, object)
+        self.activeObjects[object] = nil
+        self.activeObjectCount = self.activeObjectCount - 1
+    end,
+    Release = function(self, object)
+        local active = self.activeObjects[object] ~= nil
+        if active then
+            self:resetFunc(object)
+            self:ReclaimObject(object)
+        end
+        return active
+    end,
+    Acquire = function(self)
+        local object = tremove(self.inactiveObjects)
+        local new = object == nil
+        if new then
+            object = self:createFunc()
+            self:resetFunc(object, new)
+        end
+        self:AddObject(object)
+        return object, new
+    end,
+    Init = function(self, parent)
+        self.activeObjects = {}
+        self.inactiveObjects = {}
+        self.activeObjectCount = 0
+        self.parent = parent
+    end
+}
+GlowMaskPool:Init(GlowParent)
 
 local TexPoolResetter = function(pool,tex)
     local maskNum = tex:GetNumMaskTextures()
-    for i = maskNum,1 do
+    for i = maskNum , 1, -1 do
         tex:RemoveMaskTexture(tex:GetMaskTexture(i))
     end
     tex:Hide()
@@ -77,15 +121,16 @@ end
 local GlowFramePool = CreateFramePool("Frame",GlowParent,nil,FramePoolResetter)
 lib.GlowFramePool = GlowFramePool
 
-local function addFrameAndTex(r,color,name,key,N,xOffset,yOffset,texture,texCoord,desaturated)
+local function addFrameAndTex(r,color,name,key,N,xOffset,yOffset,texture,texCoord,desaturated,frameLevel)
     key = key or ""
+	frameLevel = frameLevel or 8
     if not r[name..key] then
         r[name..key] = GlowFramePool:Acquire()
         r[name..key]:SetParent(r)
-        r[name..key]:SetFrameLevel(r:GetFrameLevel()+8)
         r[name..key].name = name..key
     end
     local f = r[name..key]
+	f:SetFrameLevel(r:GetFrameLevel()+frameLevel)
     f:SetPoint("TOPLEFT",r,"TOPLEFT",-xOffset+0.05,yOffset+0.05)
     f:SetPoint("BOTTOMRIGHT",r,"BOTTOMRIGHT",xOffset,-yOffset+0.05)
     f:Show()
@@ -97,11 +142,14 @@ local function addFrameAndTex(r,color,name,key,N,xOffset,yOffset,texture,texCoor
     for i=1,N do
         if not f.textures[i] then
             f.textures[i] = GlowTexPool:Acquire()
-            f.textures[i]: SetTexture(texture)
-            f.textures[i]: SetTexCoord(texCoord[1],texCoord[2],texCoord[3],texCoord[4])
-            f.textures[i]: SetDesaturated(desaturated)
-            f.textures[i]: SetParent(f)
-            f.textures[i]: SetDrawLayer("ARTWORK",7)
+            f.textures[i]:SetTexture(texture)
+            f.textures[i]:SetTexCoord(texCoord[1],texCoord[2],texCoord[3],texCoord[4])
+            f.textures[i]:SetDesaturated(desaturated)
+            f.textures[i]:SetParent(f)
+            f.textures[i]:SetDrawLayer("ARTWORK",7)
+            if not isRetail and name == "_AutoCastGlow" then
+                f.textures[i]:SetBlendMode("ADD")
+            end
         end
         f.textures[i]:SetVertexColor(color[1],color[2],color[3],color[4])
         f.textures[i]:Show()
@@ -204,7 +252,7 @@ local  pUpdate = function(self,elapsed)
     end
 end
 
-function lib.PixelGlow_Start(r,color,N,frequency,length,th,xOffset,yOffset,border,key)
+function lib.PixelGlow_Start(r,color,N,frequency,length,th,xOffset,yOffset,border,key,frameLevel)
     if not r then
         return
     end
@@ -234,7 +282,7 @@ function lib.PixelGlow_Start(r,color,N,frequency,length,th,xOffset,yOffset,borde
     yOffset = yOffset or 0
     key = key or ""
 
-    addFrameAndTex(r,color,"_PixelGlow",key,N,xOffset,yOffset,textureList.white,{0,1,0,1},nil)
+    addFrameAndTex(r,color,"_PixelGlow",key,N,xOffset,yOffset,textureList.white,{0,1,0,1},nil,frameLevel)
     local f = r["_PixelGlow"..key]
     if not f.masks then
         f.masks = {}
@@ -287,6 +335,7 @@ function lib.PixelGlow_Start(r,color,N,frequency,length,th,xOffset,yOffset,borde
         f.info.width = nil
         f.info.length = length
     end
+    pUpdate(f, 0)
     f:SetScript("OnUpdate",pUpdate)
 end
 
@@ -307,10 +356,11 @@ lib.startList["Pixel Glow"] = lib.PixelGlow_Start
 lib.stopList["Pixel Glow"] = lib.PixelGlow_Stop
 
 
---Autocast Glow Funcitons--
+--Autocast Glow Functions--
 local function acUpdate(self,elapsed)
     local width,height = self:GetSize()
     if width ~= self.info.width or height ~= self.info.height then
+        if width*height == 0 then return end -- Avoid division by zero
         self.info.width = width
         self.info.height = height
         self.info.perimeter = 2*(width+height)
@@ -341,7 +391,7 @@ local function acUpdate(self,elapsed)
     end
 end
 
-function lib.AutoCastGlow_Start(r,color,N,frequency,scale,xOffset,yOffset,key)
+function lib.AutoCastGlow_Start(r,color,N,frequency,scale,xOffset,yOffset,key,frameLevel)
     if not r then
         return
     end
@@ -369,7 +419,7 @@ function lib.AutoCastGlow_Start(r,color,N,frequency,scale,xOffset,yOffset,key)
     yOffset = yOffset or 0
     key = key or ""
 
-    addFrameAndTex(r,color,"_AutoCastGlow",key,N*4,xOffset,yOffset,textureList.shine,{0.8115234375,0.9169921875,0.8798828125,0.9853515625},true)
+    addFrameAndTex(r,color,"_AutoCastGlow",key,N*4,xOffset,yOffset,textureList.shine,shineCoords, true, frameLevel)
     local f = r["_AutoCastGlow"..key]
     local sizes = {7,6,5,4}
     for k,size in pairs(sizes) do
@@ -589,11 +639,19 @@ end
 
 local ButtonGlowTextures = {["spark"] = true,["innerGlow"] = true,["innerGlowOver"] = true,["outerGlow"] = true,["outerGlowOver"] = true,["ants"] = true}
 
-function lib.ButtonGlow_Start(r,color,frequency)
+local function noZero(num)
+    if num == 0 then
+        return 0.001
+    else
+        return num
+    end
+end
+
+function lib.ButtonGlow_Start(r,color,frequency,frameLevel)
     if not r then
         return
     end
-
+	frameLevel = frameLevel or 8;
     local throttle
     if frequency and frequency > 0 then
         throttle = 0.25/frequency*0.01
@@ -603,21 +661,23 @@ function lib.ButtonGlow_Start(r,color,frequency)
     if r._ButtonGlow then
         local f = r._ButtonGlow
         local width,height = r:GetSize()
+        f:SetFrameLevel(r:GetFrameLevel()+frameLevel)
         f:SetSize(width*1.4 , height*1.4)
         f:SetPoint("TOPLEFT", r, "TOPLEFT", -width * 0.2, height * 0.2)
         f:SetPoint("BOTTOMRIGHT", r, "BOTTOMRIGHT", width * 0.2, -height * 0.2)
-        f.ants:SetSize(width*1.4*0.85, height*1.4*0.85)		
+        f.ants:SetSize(width*1.4*0.85, height*1.4*0.85)
 		AnimIn_OnFinished(f.animIn)
 		if f.animOut:IsPlaying() then
             f.animOut:Stop()
             f.animIn:Play()
         end
-		
+
         if not(color) then
             for texture in pairs(ButtonGlowTextures) do
                 f[texture]:SetDesaturated(nil)
                 f[texture]:SetVertexColor(1,1,1)
-                f[texture]:SetAlpha(f[texture]:GetAlpha()/(f.color and f.color[4] or 1))
+                local alpha = math.min(f[texture]:GetAlpha()/noZero(f.color and f.color[4] or 1), 1)
+                f[texture]:SetAlpha(alpha)
                 updateAlphaAnim(f, 1)
             end
             f.color = false
@@ -625,7 +685,8 @@ function lib.ButtonGlow_Start(r,color,frequency)
             for texture in pairs(ButtonGlowTextures) do
                 f[texture]:SetDesaturated(1)
                 f[texture]:SetVertexColor(color[1],color[2],color[3])
-                f[texture]:SetAlpha(f[texture]:GetAlpha()/(f.color and f.color[4] or 1)*color[4])
+                local alpha = math.min(f[texture]:GetAlpha()/noZero(f.color and f.color[4] or 1)*color[4], 1)
+                f[texture]:SetAlpha(alpha)
                 updateAlphaAnim(f,color and color[4] or 1)
             end
             f.color = color
@@ -641,7 +702,7 @@ function lib.ButtonGlow_Start(r,color,frequency)
         r._ButtonGlow = f
         local width,height = r:GetSize()
         f:SetParent(r)
-        f:SetFrameLevel(r:GetFrameLevel()+8)
+        f:SetFrameLevel(r:GetFrameLevel()+frameLevel)
         f:SetSize(width * 1.4, height * 1.4)
         f:SetPoint("TOPLEFT", r, "TOPLEFT", -width * 0.2, height * 0.2)
         f:SetPoint("BOTTOMRIGHT", r, "BOTTOMRIGHT", width * 0.2, -height * 0.2)
@@ -688,3 +749,191 @@ end
 table.insert(lib.glowList, "Action Button Glow")
 lib.startList["Action Button Glow"] = lib.ButtonGlow_Start
 lib.stopList["Action Button Glow"] = lib.ButtonGlow_Stop
+
+
+-- ProcGlow
+
+local function ProcGlowResetter(framePool, frame)
+    frame:Hide()
+    frame:ClearAllPoints()
+    frame:SetScript("OnShow", nil)
+    frame:SetScript("OnHide", nil)
+    local parent = frame:GetParent()
+    if frame.key and parent[frame.key] then
+        parent[frame.key] = nil
+    end
+end
+
+local ProcGlowPool = CreateFramePool("Frame", GlowParent, nil, ProcGlowResetter)
+lib.ProcGlowPool = ProcGlowPool
+
+local function InitProcGlow(f)
+    f.ProcStart = f:CreateTexture(nil, "ARTWORK")
+    f.ProcStart:SetBlendMode("ADD")
+    f.ProcStart:SetAtlas("UI-HUD-ActionBar-Proc-Start-Flipbook")
+    f.ProcStart:SetAlpha(1)
+    f.ProcStart:SetSize(150, 150)
+    f.ProcStart:SetPoint("CENTER")
+
+    f.ProcLoop = f:CreateTexture(nil, "ARTWORK")
+    f.ProcLoop:SetAtlas("UI-HUD-ActionBar-Proc-Loop-Flipbook")
+    f.ProcLoop:SetAlpha(0)
+    f.ProcLoop:SetAllPoints()
+
+    f.ProcLoopAnim = f:CreateAnimationGroup()
+    f.ProcLoopAnim:SetLooping("REPEAT")
+    f.ProcLoopAnim:SetToFinalAlpha(true)
+
+    local alphaRepeat = f.ProcLoopAnim:CreateAnimation("Alpha")
+    alphaRepeat:SetChildKey("ProcLoop")
+    alphaRepeat:SetFromAlpha(1)
+    alphaRepeat:SetToAlpha(1)
+    alphaRepeat:SetDuration(.001)
+    alphaRepeat:SetOrder(0)
+    f.ProcLoopAnim.alphaRepeat = alphaRepeat
+
+    local flipbookRepeat = f.ProcLoopAnim:CreateAnimation("FlipBook")
+    flipbookRepeat:SetChildKey("ProcLoop")
+    flipbookRepeat:SetDuration(1)
+    flipbookRepeat:SetOrder(0)
+    flipbookRepeat:SetFlipBookRows(6)
+    flipbookRepeat:SetFlipBookColumns(5)
+    flipbookRepeat:SetFlipBookFrames(30)
+    flipbookRepeat:SetFlipBookFrameWidth(0)
+    flipbookRepeat:SetFlipBookFrameHeight(0)
+    f.ProcLoopAnim.flipbookRepeat = flipbookRepeat
+
+    f.ProcStartAnim = f:CreateAnimationGroup()
+    f.ProcStartAnim:SetToFinalAlpha(true)
+
+    local flipbookStartAlphaIn = f.ProcStartAnim:CreateAnimation("Alpha")
+    flipbookStartAlphaIn:SetChildKey("ProcStart")
+    flipbookStartAlphaIn:SetDuration(.001)
+    flipbookStartAlphaIn:SetOrder(0)
+    flipbookStartAlphaIn:SetFromAlpha(1)
+    flipbookStartAlphaIn:SetToAlpha(1)
+
+    local flipbookStart = f.ProcStartAnim:CreateAnimation("FlipBook")
+    flipbookStart:SetChildKey("ProcStart")
+    flipbookStart:SetDuration(0.7)
+    flipbookStart:SetOrder(1)
+    flipbookStart:SetFlipBookRows(6)
+    flipbookStart:SetFlipBookColumns(5)
+    flipbookStart:SetFlipBookFrames(30)
+    flipbookStart:SetFlipBookFrameWidth(0)
+    flipbookStart:SetFlipBookFrameHeight(0)
+
+    local flipbookStartAlphaOut = f.ProcStartAnim:CreateAnimation("Alpha")
+    flipbookStartAlphaOut:SetChildKey("ProcStart")
+    flipbookStartAlphaOut:SetDuration(.001)
+    flipbookStartAlphaOut:SetOrder(2)
+    flipbookStartAlphaOut:SetFromAlpha(1)
+    flipbookStartAlphaOut:SetToAlpha(0)
+
+    f.ProcStartAnim.flipbookStart = flipbookStart
+    f.ProcStartAnim:SetScript("OnFinished", function(self)
+        self:GetParent().ProcLoopAnim:Play()
+        self:GetParent().ProcLoop:Show()
+    end)
+
+end
+
+local function SetupProcGlow(f, options)
+    f.key = "_ProcGlow" .. options.key -- for resetter
+    f:SetScript("OnHide", function(self)
+        if self.ProcStartAnim:IsPlaying() then
+            self.ProcStartAnim:Stop()
+        end
+        if self.ProcLoopAnim:IsPlaying() then
+            self.ProcLoopAnim:Stop()
+        end
+    end)
+    f:SetScript("OnShow", function(self)
+        if self.startAnim then
+            if not self.ProcStartAnim:IsPlaying() and not self.ProcLoopAnim:IsPlaying() then
+                --[[
+to future me:
+i wish you'r ok, if you wonder where are this constants coming from, check:
+https://github.com/Gethe/wow-ui-source/blob/eb4459c679a1bd8919cad92934ea83c4f5e77e8b/Interface/FrameXML/ActionButton.lua#L816
+https://github.com/Gethe/wow-ui-source/blob/d8e8ebf572c3b28237cf83e8fc5c0583b5453a2b/Interface/FrameXML/ActionButtonTemplate.xml#L5-L14
+                ]]
+                local width, height = self:GetSize()
+                self.ProcStart:SetSize((width / 42 * 150) / 1.4, (height / 42 * 150) / 1.4)
+                self.ProcStart:Show()
+                self.ProcLoop:Hide()
+                self.ProcStartAnim:Play()
+            end
+        else
+            if not self.ProcLoopAnim:IsPlaying() then
+                self.ProcStart:Hide()
+                self.ProcLoop:Show()
+                self.ProcLoopAnim:Play()
+            end
+        end
+    end)
+    if not options.color then
+        f.ProcStart:SetDesaturated(nil)
+        f.ProcStart:SetVertexColor(1, 1, 1, 1)
+        f.ProcLoop:SetDesaturated(nil)
+        f.ProcLoop:SetVertexColor(1, 1, 1, 1)
+    else
+        f.ProcStart:SetDesaturated(1)
+        f.ProcStart:SetVertexColor(options.color[1], options.color[2], options.color[3], options.color[4])
+        f.ProcLoop:SetDesaturated(1)
+        f.ProcLoop:SetVertexColor(options.color[1], options.color[2], options.color[3], options.color[4])
+    end
+    f.ProcLoopAnim.flipbookRepeat:SetDuration(options.duration)
+    f.startAnim = options.startAnim
+end
+
+local ProcGlowDefaults = {
+    frameLevel = 8,
+    color = nil,
+    startAnim = true,
+    xOffset = 0,
+    yOffset = 0,
+    duration = 1,
+    key = ""
+}
+
+function lib.ProcGlow_Start(r, options)
+    if not r then
+        return
+    end
+    options = options or {}
+    setmetatable(options, { __index = ProcGlowDefaults })
+    local key = "_ProcGlow" .. options.key
+    local f, new
+    if r[key] then
+        f = r[key]
+    else
+        f, new = ProcGlowPool:Acquire()
+        if new then
+            InitProcGlow(f)
+        end
+        r[key] = f
+    end
+    f:SetParent(r)
+    f:SetFrameLevel(r:GetFrameLevel() + options.frameLevel)
+
+    local width, height = r:GetSize()
+    local xOffset = options.xOffset + width * 0.2
+    local yOffset = options.yOffset + height * 0.2
+    f:SetPoint("TOPLEFT", r, "TOPLEFT", -xOffset, yOffset)
+    f:SetPoint("BOTTOMRIGHT", r, "BOTTOMRIGHT", xOffset, -yOffset)
+
+    SetupProcGlow(f, options)
+    f:Show()
+end
+
+function lib.ProcGlow_Stop(r, key)
+    key = key or ""
+    local f = r["_ProcGlow" .. key]
+    if f then
+        ProcGlowPool:Release(f)
+    end
+end
+
+table.insert(lib.glowList, "Proc Glow")
+lib.startList["Proc Glow"] = lib.ProcGlow_Start
+lib.stopList["Proc Glow"] = lib.ProcGlow_Stop
