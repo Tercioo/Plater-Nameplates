@@ -2223,7 +2223,26 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         toggleOptionsButton:SetIcon([[Interface\AddOns\Plater\images\config_icon.png]], 16,    16,     "overlay", {0, 1, 0, 1}, nil,     nil,          nil,         nil,        nil,         "TRILINEAR")
         castFrame.toggleOptionsButton = toggleOptionsButton
 
-        
+    --cast_audiocue_cooldown
+    --create a slider to set the cooldown for the audio cue
+    local onAudioCueCooldownChanged = function(self, fixedValue, value)
+        Plater.db.profile.cast_audiocue_cooldown = value
+    end
+    local audioSliderWidth = 150
+    local audioSliderHeight = 20
+    local bIsDecimals = true
+
+    ---@type df_slider
+    local audioCueCooldownSlider = DF:CreateSlider(castFrame, audioSliderWidth, audioSliderHeight, 0, 0.4, 0.05, Plater.db.profile.cast_audiocue_cooldown, bIsDecimals, "audioCueCooldownSlider", "$parentAudioCueCooldownSlider", nil, DF:GetTemplate("slider", "OPTIONS_SLIDERDARK_TEMPLATE"))
+    audioCueCooldownSlider:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
+    audioCueCooldownSlider:SetHook("OnValueChanged", onAudioCueCooldownChanged)
+    audioCueCooldownSlider.tooltip = LOC["OPTIONS_AUDIOCUE_COOLDOWN_DESC"]
+
+    --create a label with the text "audio cooldown", set its point to the same as the slider below
+    local audioCueCooldownLabel = DF:CreateLabel(audioCueCooldownSlider, LOC["OPTIONS_AUDIOCUE_COOLDOWN"])
+    audioCueCooldownLabel:SetTemplate(DF:GetTemplate("font", "PLATER_BUTTON"))
+    audioCueCooldownLabel:SetPoint("left", toggleOptionsButton, "right", 50, 0)
+    audioCueCooldownSlider:SetPoint("left", audioCueCooldownLabel, "right", 2, 0)
 
     -- buttons backdrop
         local backdropFoot = CreateFrame("frame", nil, spells_scroll, BackdropTemplateMixin and "BackdropTemplate")
