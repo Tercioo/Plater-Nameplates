@@ -1541,13 +1541,11 @@ Plater.AnchorNamesByPhraseId = {
 				if not caller then
 					caller, line = callstack:match("in function <([^:%[>]+):(%d+)>")
 				end
+				
+				--print((caller and caller .. ":" .. line) or callstack)
+				local isCVarUtil = (caller and caller:lower():find("[\\/]sharedxml[\\/]cvarutil%.lua"))
+				cvarLastChangedTable [cvar] = not isCVarUtil and (caller and (caller .. ":" .. line)) or callstack or "N/A"
 			end
-
-			--print((caller and caller .. ":" .. line) or callstack)
-			
-			local isCVarUtil = (caller and caller:lower():find("[\\/]sharedxml[\\/]cvarutil%.lua"))
-			
-			cvarLastChangedTable [cvar] = not isCVarUtil and (caller and (caller .. ":" .. line)) or callstack or "N/A"
 		end
 		
 	end
