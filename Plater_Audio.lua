@@ -29,7 +29,8 @@ end
 function platerInternal.Audio.PlaySoundForCastStart(spellId, audioFilePath)
     local audioCue = audioFilePath or platerInternal.Audio.GetAudioCueForSpell(spellId)
     if (audioCue) then
-        if (((platerInternal.LatestTimeForAudioPlayedByID[spellId] or 0) + Plater.db.profile.cast_audiocue_cooldown) > GetTime()) then
+        local bCheckCooldown = Plater.db.profile.cast_audiocue_cooldown > 0
+        if (bCheckCooldown and ((platerInternal.LatestTimeForAudioPlayedByID[spellId] or 0) + Plater.db.profile.cast_audiocue_cooldown) > GetTime()) then
             return -- do not play, was played already within the last x seconds, defined on Plater.db.profile.cast_audiocue_cooldown
         end
 

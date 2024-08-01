@@ -7,7 +7,8 @@ do
 
 L["OPTIONS_"] = ""
 
-
+    L["OPTIONS_AUDIOCUE_COOLDOWN"] = "Audio Cooldown"
+    L["OPTIONS_AUDIOCUE_COOLDOWN_DESC"] = "Amount of time in milliseconds to wait before playing the SAME audio again.\n\nPrevents loud sounds from playing when two or more casts are happening at the same time.\n\nSet to 0 to disable this feature."
 
     --on curseforge
     L["OPTIONS_CASTBAR_APPEARANCE"] = "Cast Bar Appearance"
