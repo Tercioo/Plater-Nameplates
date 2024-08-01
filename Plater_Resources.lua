@@ -357,7 +357,9 @@ end
 --> functions for class and specs resources
 	resourceBarCreateFuncByEnumName[CONST_ENUMNAME_CHI] = function(mainResourceFrame)
 		local resourceWidgetCreationFunc = Plater.Resources.GetCreateResourceWidgetFunctionForSpecId(CONST_SPECID_MONK_WINDWALKER)
-		local newResourceBar = createResourceBar(mainResourceFrame, "$parentMonk2Resource", resourceWidgetCreationFunc) --windwalker chi
+		local newResourceBar = createResourceBar(mainResourceFrame, "$parentMonk2Resource", resourceWidgetCreationFunc, 25, 25) --windwalker chi
+		mainResourceFrame.widgetWidth = 25
+		mainResourceFrame.widgetHeight = 25
 		mainResourceFrame.resourceBars[CONST_SPECID_MONK_WINDWALKER] = newResourceBar
 		newResourceBar.resourceId = SPELL_POWER_CHI
 		newResourceBar.updateResourceFunc = resourceWidgetsFunctions.OnResourceChanged

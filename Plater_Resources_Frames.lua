@@ -46,11 +46,15 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 
         --> create background
             local backgroundTexture = parent:CreateTexture (nil, "BORDER")
-            backgroundTexture:SetAtlas("MonkUI-OrbOff")
+            backgroundTexture:SetAtlas("uf-chi-bg", true)
+			backgroundTexture:SetTexelSnappingBias(0.0)
+			backgroundTexture:SetSnapToPixelGrid(false)
             backgroundTexture:SetDrawLayer("BORDER", 1)
             backgroundTexture:SetPoint("center", widgetFrame, "center", 0, 0)
-            backgroundTexture:SetSize(20, 20)
-            backgroundTexture:SetVertexColor(0.98431158065796, 0.99215465784073, 0.99999779462814, 0.99999779462814)
+			--backgroundTexture:SetPoint("center", widgetFrame, "center", 0, -2.5)
+            --backgroundTexture:SetSize(20, 20)
+			--backgroundTexture:SetSize(21, 21)
+            --backgroundTexture:SetVertexColor(0.98431158065796, 0.99215465784073, 0.99999779462814, 0.99999779462814)
             parent.widgetsBackground[#parent.widgetsBackground + 1] = backgroundTexture
 
         --> single animation group
@@ -63,34 +67,39 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         ----------------------------------------------
 
         local BallTexture  = widgetFrame:CreateTexture (nil, "ARTWORK")
-        BallTexture:SetAtlas ("MonkUI-LightOrb")
+        BallTexture:SetAtlas ("uf-chi-icon", true)
+		BallTexture:SetTexelSnappingBias(0.0)
+		BallTexture:SetSnapToPixelGrid(false)
         BallTexture:SetDrawLayer ("ARTWORK", 0)
-        BallTexture:SetPoint ("center", widgetFrame, "center", 0, 0)
+        --BallTexture:SetPoint ("center", widgetFrame, "center", 0, 0)
+		BallTexture:SetPoint ("center", widgetFrame, "center", 0, 2)
         --BallTexture:SetSize (20 * 0.90, 20 * 0.90)
-		BallTexture:SetSize (20, 20)
+		--BallTexture:SetSize (21, 21)
 
         --> animations for BallTexture
 
-        BallTexture.scale = DF:CreateAnimation (MainAnimationGroup, "SCALE", 1, 0.195999994874, 0, 0, 1, 1)
-        BallTexture.scale:SetTarget (BallTexture)
-        BallTexture.scale2 = DF:CreateAnimation (MainAnimationGroup, "SCALE", 2, 0.046000000089407, 1, 1, 1.1999999284744, 1.1999999284744)
-        BallTexture.scale2:SetTarget (BallTexture)
-        BallTexture.scale3 = DF:CreateAnimation (MainAnimationGroup, "SCALE", 3, 0.016000000759959, 1.1999999284744, 1.1999999284744, 1, 1)
-        BallTexture.scale3:SetTarget (BallTexture)
+        --BallTexture.scale = DF:CreateAnimation (MainAnimationGroup, "SCALE", 1, 0.195999994874, 0, 0, 1, 1)
+        --BallTexture.scale:SetTarget (BallTexture)
+        --BallTexture.scale2 = DF:CreateAnimation (MainAnimationGroup, "SCALE", 2, 0.046000000089407, 1, 1, 1.1999999284744, 1.1999999284744)
+        --BallTexture.scale2:SetTarget (BallTexture)
+        --BallTexture.scale3 = DF:CreateAnimation (MainAnimationGroup, "SCALE", 3, 0.016000000759959, 1.1999999284744, 1.1999999284744, 1, 1)
+        --BallTexture.scale3:SetTarget (BallTexture)
 
         ----------------------------------------------
 
         local UpSpark  = widgetFrame:CreateTexture (nil, "OVERLAY")
-        UpSpark:SetTexture ([[Interface\QUESTFRAME\ObjectiveTracker]])
+        UpSpark:SetAtlas ("uf-chi-outerglow", true)
+		UpSpark:SetBlendMode("BLEND")
         UpSpark:SetDrawLayer ("OVERLAY", 0)
-        UpSpark:SetPoint ("center", widgetFrame, "center", 0, 0)
-        UpSpark:SetSize (20 * 0.89, 20 * 0.89)
-        UpSpark:SetTexCoord (0.7108479309082, 0.83905952453613, 0.0010000000149012, 0.12888721466064)
+        --UpSpark:SetPoint ("center", widgetFrame, "center", 0, 0)
+		UpSpark:SetPoint ("center", widgetFrame, "center", 0, 2)
+        --UpSpark:SetSize (20 * 0.89, 20 * 0.89)
+        --UpSpark:SetTexCoord (0.7108479309082, 0.83905952453613, 0.0010000000149012, 0.12888721466064)
 
         --> animations for UpSpark
 
-        UpSpark.scale = DF:CreateAnimation (MainAnimationGroup, "SCALE", 1, 0.195999994874, 0, 0, 1, 1)
-        UpSpark.scale:SetTarget (UpSpark)
+        --UpSpark.scale = DF:CreateAnimation (MainAnimationGroup, "SCALE", 1, 0.195999994874, 0, 0, 1, 1)
+        --UpSpark.scale:SetTarget (UpSpark)
         UpSpark.alpha = DF:CreateAnimation (MainAnimationGroup, "ALPHA", 1, 0.195999994874, 0, 1)
         UpSpark.alpha:SetTarget (UpSpark)
         UpSpark.rotation = DF:CreateAnimation (MainAnimationGroup, "ROTATION", 1, 0.195999994874, 60)
@@ -107,11 +116,12 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         ----------------------------------------------
 
         local BackgroundSpark  = widgetFrame:CreateTexture (nil, "BACKGROUND")
-        BackgroundSpark:SetTexture ([[Interface\PVPFrame\PvPHonorSystem]])
+        BackgroundSpark:SetAtlas ("uf-chi-fx-bgglow", true)
         BackgroundSpark:SetDrawLayer ("BACKGROUND", 0)
         BackgroundSpark:SetPoint ("center", widgetFrame, "center", 0, 0)
-        BackgroundSpark:SetSize (20 * 1.39, 20 * 1.39)
-        BackgroundSpark:SetTexCoord (0.0096916198730469, 0.1160000038147, 0.43700000762939, 0.54200000762939)
+		--BackgroundSpark:SetPoint ("center", widgetFrame, "center", 0, -1)
+        --BackgroundSpark:SetSize (20 * 1.39, 20 * 1.39)
+        --BackgroundSpark:SetTexCoord (0.0096916198730469, 0.1160000038147, 0.43700000762939, 0.54200000762939)
 
         --> animations for BackgroundSpark
 
