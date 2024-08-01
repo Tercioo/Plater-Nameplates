@@ -1059,7 +1059,7 @@ function Plater.OpenOptionsPanel(pageNumber, bIgnoreLazyLoad)
 				f:Hide()
 				if SettingsPanel then
 					if not Plater.ProfileFrame then
-						Plater.ProfileFrame = LibStub ("AceConfig-3.0"):RegisterOptionsTable ("Plater", LibStub ("AceDBOptions-3.0"):GetOptionsTable (Plater.db))
+						Plater.ProfileFrame = LibStub ("AceConfig-3.0"):RegisterOptionsTable ("Plater", LibStub ("AceDBOptions-3.0"):GetOptionsTable (Plater.db, true))
 					end
 					LibStub ("AceConfigDialog-3.0"):Open("Plater")
 				else

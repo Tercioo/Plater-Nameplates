@@ -4076,6 +4076,8 @@ function Plater.InitializeSavedVariables()
 end
 
 function Plater.OnInit() --private --~oninit ~init
+	LibStub ("AceDBOptions-3.0"):GetOptionsTable (Plater.db, true) -- register this now, to ensure no default "realm", "char - realm" profiles are shown in profiles management
+	
 	do
 		local languageCurrentVersion = 1
 		if (not PlaterLanguage) then
