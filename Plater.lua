@@ -9204,10 +9204,12 @@ end
 					end
 				end
 			end
-			
-			DF.table.addunique (platerRules.patterns, "PlaterMainAuraIcon")
-			DF.table.addunique (platerRules.patterns, "PlaterSecondaryAuraIcon")
-			DF.table.addunique (platerRules.patterns, "ExtraIconRowIcon")
+
+			if platerRules.patterns then
+				DF.table.addunique (platerRules.patterns, "PlaterMainAuraIcon")
+				DF.table.addunique (platerRules.patterns, "PlaterSecondaryAuraIcon")
+				DF.table.addunique (platerRules.patterns, "ExtraIconRowIcon")
+			end
 			
 			if (Plater.db.profile.disable_omnicc_on_auras) then
 				platerTheme.enableText = false
