@@ -1,6 +1,7 @@
 local addonId, platerInternal = ...
 
 local Plater = Plater
+---@type detailsframework
 local DF = DetailsFramework
 local LibSharedMedia = LibStub:GetLibrary ("LibSharedMedia-3.0")
 local LibRangeCheck = LibStub:GetLibrary ("LibRangeCheck-3.0")
