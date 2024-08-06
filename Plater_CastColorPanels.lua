@@ -292,6 +292,10 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         self:HighlightText (0)
     end
 
+    local oneditfocuslost = function(self)
+        self:HighlightText(0, 0)
+    end
+
     local refresh_line_color = function(self, color)
         color = color or backdrop_color
         local r, g, b = DF:ParseColors(color)
@@ -551,12 +555,14 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
         --spell Id
         local spellIdEntry = DF:CreateTextEntry(line, function()end, headerTable[3].width, 20, "spellIdEntry", nil, nil, DF:GetTemplate("dropdown", "PLATER_DROPDOWN_OPTIONS"))
-        spellIdEntry:SetHook ("OnEditFocusGained", oneditfocusgained_spellid)
+        spellIdEntry:SetHook("OnEditFocusGained", oneditfocusgained_spellid)
+        spellIdEntry:SetHook("OnEditFocusLost", oneditfocuslost)
         spellIdEntry:SetJustifyH("left")
 
         --spell Name
         local spellNameEntry = DF:CreateTextEntry(line, function()end, headerTable[4].width, 20, "spellNameEntry", nil, nil, DF:GetTemplate("dropdown", "PLATER_DROPDOWN_OPTIONS"))
         spellNameEntry:SetHook("OnEditFocusGained", oneditfocusgained_spellid)
+        spellNameEntry:SetHook("OnEditFocusLost", oneditfocuslost)
         spellNameEntry:SetJustifyH("left")
 
         local spellRenameEntry = DF:CreateTextEntry(line, function()end, headerTable[5].width, 20, "spellRenameEntry", nil, nil, DF:GetTemplate("dropdown", "PLATER_DROPDOWN_OPTIONS"))
@@ -592,6 +598,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         --npc name
         local npcNameEntry = DF:CreateTextEntry(line, function()end, headerTable[6].width, 20, "npcNameEntry", nil, nil, DF:GetTemplate("dropdown", "PLATER_DROPDOWN_OPTIONS"))
         npcNameEntry:SetHook("OnEditFocusGained", oneditfocusgained_spellid)
+        npcNameEntry:SetHook("OnEditFocusLost", oneditfocuslost)
         npcNameEntry:SetJustifyH("left")
 
         --npc Id

@@ -122,6 +122,10 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
         self:HighlightText(0)
     end
 
+    local oneditfocuslost = function(self)
+        self:HighlightText(0, 0)
+    end
+
     local refreshLineColor = function(self, color)
         color = color or backdrop_color
         local r, g, b = DF:ParseColors(color)
@@ -277,11 +281,13 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
         --npc ID
         local npcIDEntry = DF:CreateTextEntry(line, function()end, headerTable[2].width, 20, "NpcIDEntry", nil, nil, DF:GetTemplate("dropdown", "PLATER_DROPDOWN_OPTIONS"))
         npcIDEntry:SetHook("OnEditFocusGained", onEditFocusGained_SpellId)
+        npcIDEntry:SetHook("OnEditFocusLost", oneditfocuslost)
         npcIDEntry:SetJustifyH("left")
 
         --npc Name
         local npcNameEntry = DF:CreateTextEntry(line, function()end, headerTable[3].width, 20, "NpcNameEntry", nil, nil, DF:GetTemplate("dropdown", "PLATER_DROPDOWN_OPTIONS"))
         npcNameEntry:SetHook("OnEditFocusGained", onEditFocusGained_SpellId)
+        npcNameEntry:SetHook("OnEditFocusLost", oneditfocuslost)
         npcNameEntry:SetJustifyH("left")
 
         --rename box
