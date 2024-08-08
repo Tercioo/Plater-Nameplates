@@ -2412,7 +2412,7 @@ Plater.AnchorNamesByPhraseId = {
 			C_Timer.After (0.3, Plater.UpdatePlateClickSpace)
 			
 			C_Timer.After (0.4, function() 
-				Plater.RefreshAutoToggle(PLAYER_IN_COMBAT) -- refresh this
+				Plater.RefreshAutoToggle(InCombatLockdown()) -- refresh this
 				Plater.UpdateBaseNameplateOptions()
 			end)
 			
