@@ -2197,10 +2197,13 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
     --disable all button
         local disableAllColors = function()
-            for spellId, colorTable in pairs(Plater.db.profile.cast_colors) do
-                colorTable[CONST_INDEX_ENABLED] = false
-            end
-            castFrame.RefreshScroll()
+            DF:ShowPromptPanel(LOC["OPTIONS_CASTCOLORS_DISABLECOLORS_CONFIRM"], function()
+                for _, colorTable in pairs(Plater.db.profile.cast_colors) do
+                    colorTable[CONST_INDEX_ENABLED] = false
+                end
+                castFrame.RefreshScroll()
+            end,
+            function()end, true, 400, "PLATER_DISABLE_ALL_COLORS")
         end
 
         local disableAllColorsButton = DF:CreateButton(castFrame, disableAllColors, 150, 20, LOC["OPTIONS_CASTCOLORS_DISABLECOLORS"], -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "PLATER_BUTTON_DARK"), DF:GetTemplate("font", "PLATER_BUTTON"))
