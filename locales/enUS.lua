@@ -28,6 +28,8 @@ L["OPTIONS_"] = ""
     L["OPTIONS_SHOWSCRIPTS"] = "Show Scripts"
     L["OPTIONS_CASTCOLORS_DISABLECOLORS"] = "Disable All Colors"
     L["OPTIONS_CASTCOLORS_DISABLECOLORS_CONFIRM"] = "Confirm disable all cast colors?"
+    L["OPTIONS_CASTCOLORS_DISABLE_SOUNDS"] = "Remove All Sounds"
+    L["OPTIONS_CASTCOLORS_DISABLE_SOUNDS_CONFIRM"] = "Are you sure you want to remove all configured cast sounds?"
 
     L["OPTIONS_NOESSENTIAL_TITLE"] = "Skip Non Essential Script Patches"
     L["OPTIONS_NOESSENTIAL_NAME"] = "Disable non-essential script updates during Plater version upgrades."
