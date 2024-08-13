@@ -2225,7 +2225,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         local disableAllSoundsButton = DF:CreateButton(castFrame, disableAllSounds, 150, 20, LOC["OPTIONS_CASTCOLORS_DISABLE_SOUNDS"], -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "PLATER_BUTTON_DARK"), DF:GetTemplate("font", "PLATER_BUTTON"))
         disableAllSoundsButton:SetPoint("left", disableAllColorsButton, "right", 2, 0)
         disableAllSoundsButton:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
-        disableAllSoundsButton:SetIcon([[Interface\AddOns\Plater\images\color_cancel.png]], 16, 16, "overlay", {0, 1, 0, 1}, nil, nil, nil, nil, nil, "TRILINEAR")
+        disableAllSoundsButton:SetIcon([[Interface\AddOns\Plater\images\audio_cancel.png]], 16, 16, "overlay", {0, 1, 0, 1}, nil, nil, nil, nil, nil, "TRILINEAR")
 
     --toggle options button
         castFrame.showingScriptSelection = true
