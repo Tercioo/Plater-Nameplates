@@ -191,7 +191,8 @@ function platerInternal.CreateAdvancedOptions()
         {
             type = "toggle",
             boxfirst = true,
-            get = function() return GetCVarBool ("SoftTargetIconGameObject") and tonumber(GetCVar("SoftTargetInteract") or 0) == 3 end,
+            --get = function() return GetCVarBool ("SoftTargetIconGameObject") and tonumber(GetCVar("SoftTargetInteract") or 0) == 3 end,
+            get = function() return tonumber(GetCVar("SoftTargetInteract") or 0) == 3 end,
             set = function (self, fixedparam, value)
                 if (not InCombatLockdown()) then
 
