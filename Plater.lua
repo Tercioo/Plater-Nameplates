@@ -1468,6 +1468,11 @@ Plater.AnchorNamesByPhraseId = {
 		["SoftTargetNameplateInteract"] = (IS_WOW_PROJECT_MAINLINE),
 	}
 	
+	local cvars_to_store_lower = {}
+	for CVarName in pairs (cvars_to_store) do
+		cvars_to_store_lower[lower(CVarName)] = CVarName
+	end
+	
 	--keep this separate for now, with only stuff that NEEDS restoring in order
 	local function cvar_restore_order(v1, v2)
 		local restoreOrder = {
@@ -1533,18 +1538,22 @@ Plater.AnchorNamesByPhraseId = {
 					cvarTable [CVarName] = Plater.ParseCVarValue(GetCVar (CVarName))
 				end
 			end
-		elseif cvars_to_store [cvar] then
-			cvarTable [cvar] = Plater.ParseCVarValue(value)
-			local callstack = debugstack(2) -- starts at "SetCVar" or caller
-			if callstack then
-				local caller, line = callstack:match("\"@([^\"]+)\"%]:(%d+)")
-				if not caller then
-					caller, line = callstack:match("in function <([^:%[>]+):(%d+)>")
+		else
+			-- make this case insensitive, but ensure original case is stored
+			cvar = cvars_to_store_lower[lower(cvar) or "N/A"] -- get right case for storage
+			if cvars_to_store[cvar] then
+				cvarTable [cvar] = Plater.ParseCVarValue(value)
+				local callstack = debugstack(2) -- starts at "SetCVar" or caller
+				if callstack then
+					local caller, line = callstack:match("\"@([^\"]+)\"%]:(%d+)")
+					if not caller then
+						caller, line = callstack:match("in function <([^:%[>]+):(%d+)>")
+					end
+					
+					--print((caller and caller .. ":" .. line) or callstack)
+					local isCVarUtil = (caller and caller:lower():find("[\\/]sharedxml[\\/]cvarutil%.lua"))
+					cvarLastChangedTable [cvar] = not isCVarUtil and (caller and (caller .. ":" .. line)) or callstack or "N/A"
 				end
-				
-				--print((caller and caller .. ":" .. line) or callstack)
-				local isCVarUtil = (caller and caller:lower():find("[\\/]sharedxml[\\/]cvarutil%.lua"))
-				cvarLastChangedTable [cvar] = not isCVarUtil and (caller and (caller .. ":" .. line)) or callstack or "N/A"
 			end
 		end
 		
