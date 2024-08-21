@@ -40,7 +40,7 @@ License: MIT
 -- @class file
 -- @name LibRangeCheck-3.0
 local MAJOR_VERSION = "LibRangeCheck-3.0"
-local MINOR_VERSION = 21
+local MINOR_VERSION = 24
 
 ---@class lib
 local lib, oldminor = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
@@ -90,8 +90,8 @@ local GetSpellBookItemInfo = _G.GetSpellBookItemInfo or function(index, spellBan
     spellBank = (spellBank == "spell") and Enum.SpellBookSpellBank.Player or Enum.SpellBookSpellBank.Pet;
   end
   local info = C_SpellBook.GetSpellBookItemInfo(index, spellBank)
-  -- we are looking for "Spell" and "FutureSpell", but not passives here
-  if info and not info.isPassive and (info.itemType == Enum.SpellBookItemType.Spell or info.itemType == Enum.SpellBookItemType.FutureSpell) then
+  -- we are looking for "Spell" here, as "FutureSpell" and passives are not working with C_Spell.IsSpellInRange
+  if info and not info.isPassive and info.itemType == Enum.SpellBookItemType.Spell then
     return info.itemType, info.spellID
   end
 end
@@ -325,9 +325,12 @@ if not isRetail then
 end
 
 -- Warlocks
-tinsert(FriendSpells.WARLOCK, 132) -- Detect Invisibility (30 yards, level 26)
+if isEra then
+  tinsert(FriendSpells.WARLOCK, 132) -- Detect Invisibility (30 yards, level 26)
+else
+  tinsert(FriendSpells.WARLOCK, 20707) -- Soulstone (40 yards) ~ this can be precasted so leave it in friendly as well as res
+end
 tinsert(FriendSpells.WARLOCK, 5697) -- Unending Breath (30 yards)
-tinsert(FriendSpells.WARLOCK, 20707) -- Soulstone (40 yards) ~ this can be precasted so leave it in friendly as well as res
 
 if isRetail then
   tinsert(HarmSpells.WARLOCK, 234153) -- Drain Life (40 yards, level 9)
@@ -339,14 +342,19 @@ else
   tinsert(HarmSpells.WARLOCK, 17877) -- Shadowburn (Destruction) (20/22/24 yards, rank 1)
   tinsert(HarmSpells.WARLOCK, 18223) -- Curse of Exhaustion (Affliction) (30/33/36/35/38/42 yards)
   tinsert(HarmSpells.WARLOCK, 689) -- Drain Life (Affliction) (20/22/24 yards, level 14, rank 1)
+end
+if isEra then
   tinsert(HarmSpells.WARLOCK, 403677) -- Master Channeler (Affliction) (20/22/24 yards, level 14, rank 1)
+  tinsert(HarmSpells.WARLOCK, 426320) -- Shadowflame (30/33/36/39/42 yards, level 14, rank 1)
 end
 
 tinsert(HarmSpells.WARLOCK, 5019) -- Shoot (30 yards)
 tinsert(HarmSpells.WARLOCK, 686) -- Shadow Bolt (Demonology, Affliction) (40 yards)
 tinsert(HarmSpells.WARLOCK, 5782) -- Fear (30 yards)
 
-tinsert(ResSpells.WARLOCK, 20707) -- Soulstone (40 yards)
+if not isEra then
+  tinsert(ResSpells.WARLOCK, 20707) -- Soulstone (40 yards)
+end
 
 tinsert(PetSpells.WARLOCK, 755) -- Health Funnel (45 yards)
 
@@ -632,6 +640,9 @@ end
 
 local function getNumSpells()
   local _, _, offset, numSpells = GetSpellTabInfo(GetNumSpellTabs())
+  if not offset or not numSpells then
+    return 0
+  end
   return offset + numSpells
 end
 
@@ -644,9 +655,9 @@ local function findSpellIdx(spellName)
     local spell = GetSpellBookItemName(i, BOOKTYPE_SPELL)
     if spell == spellName then
       local spellType, spellID = GetSpellBookItemInfo(i, BOOKTYPE_SPELL)
-      if spellType == "SPELL" or spellType == "FUTURESPELL"  then -- classic/era
+      if spellType == "SPELL" then -- classic/era
         return i
-      elseif Enum.SpellBookItemType and (spellType == Enum.SpellBookItemType.Spell or spellType == Enum.SpellBookItemType.FutureSpell) then -- retail
+      elseif Enum.SpellBookItemType and spellType == Enum.SpellBookItemType.Spell then -- retail
         return spellID
       end
     end
