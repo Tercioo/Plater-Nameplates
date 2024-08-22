@@ -646,8 +646,9 @@ function Plater.CreateSpellAnimationPanel()
 	end
 
 	function animationFrame.DoImportAnimation (animationObject)
-		local spellID = animationObject.info.spellid
+		local spellID = tonumber(animationObject.info.spellid)
 		local spellName = GetSpellInfo (spellID)
+		if not spellName then return end
 
 		local db = Plater.db.profile.spell_animation_list
 		db [spellID] = animationObject
@@ -677,7 +678,7 @@ function Plater.CreateSpellAnimationPanel()
 
 		if (animationObject) then
 			local db = Plater.db.profile.spell_animation_list
-			local spellID = animationObject.info.spellid
+			local spellID = tonumber(animationObject.info.spellid)
 
 			if (not spellID) then
 				Plater:Msg ("invalid animation.")

@@ -1450,6 +1450,26 @@ do
 			end
 		end,
 	})
+	
+	--#37 cleanup of spell animation IDs
+	tinsert (PlaterPatchLibrary, {
+		NotEssential = false,
+		
+		Notes = {
+			"- Cleanup wrong indexes in spell_animation_list."
+		},
+		Func = function()
+			local spellAnimations = Plater.db.profile.spell_animation_list
+			local spellAnimationsTemp = DetailsFramework.table.copy({}, spellAnimations)
+
+			for spellId, animation in pairs(spellAnimationsTemp) do
+				if tonumber(spellId) then 
+					spellAnimations[spellId] = nil
+					spellAnimations[tonumber(spellId)] = animation 
+				end
+			end
+		end
+	})
 
 	--[=[
 	tinsert (PlaterPatchLibrary, {

@@ -295,6 +295,18 @@ function Plater.ImportAndSwitchProfile(profileName, profile, bIsUpdate, bKeepMod
 		end
 	end
 	
+	---@type spellanimationdb
+	local spellAnimations = Plater.db.profile.spell_animation_list
+	---@type spellanimationdb
+	local spellAnimationsTemp = DetailsFramework.table.copy({}, spellAnimations)
+
+	for spellId, animation in pairs(spellAnimationsTemp) do
+		if tonumber(spellId) then 
+			spellAnimations[spellId] = nil
+			spellAnimations[tonumber(spellId)] = animation 
+		end
+	end
+	
 	---@type ghostauras
 	local ghostAuras = Plater.db.profile.ghost_auras.auras
 	---@type ghostauras

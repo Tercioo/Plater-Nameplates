@@ -1714,6 +1714,10 @@ Plater.AnchorNamesByPhraseId = {
 		
 		if (profile.spell_animations) then
 			for spellId, animations in pairs (profile.spell_animation_list) do
+				if type(spellId) == "string" and tonumber(spellId) then
+					profile.spell_animation_list[tonumber(spellId)] = animations
+					profile.spell_animation_list[spellId] = nil
+				end
 				local frameAnimations = {}
 				local spellName = GetSpellInfo (spellId)
 				if (spellName) then
