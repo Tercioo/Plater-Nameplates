@@ -40,7 +40,7 @@ License: MIT
 -- @class file
 -- @name LibRangeCheck-3.0
 local MAJOR_VERSION = "LibRangeCheck-3.0"
-local MINOR_VERSION = 24
+local MINOR_VERSION = 25
 
 ---@class lib
 local lib, oldminor = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
@@ -85,14 +85,15 @@ local IsSpellBookItemInRange = _G.IsSpellInRange or function(index, spellBank, u
   end
   return nil
 end
+local spellTypes = {"SPELL", "FUTURESPELL", "PETACTION", "FLYOUT"}
 local GetSpellBookItemInfo = _G.GetSpellBookItemInfo or function(index, spellBank)
   if type(spellBank) == "string" then
     spellBank = (spellBank == "spell") and Enum.SpellBookSpellBank.Player or Enum.SpellBookSpellBank.Pet;
   end
   local info = C_SpellBook.GetSpellBookItemInfo(index, spellBank)
-  -- we are looking for "Spell" here, as "FutureSpell" and passives are not working with C_Spell.IsSpellInRange
-  if info and not info.isPassive and info.itemType == Enum.SpellBookItemType.Spell then
-    return info.itemType, info.spellID
+  --map spell-type
+  if info and spellTypes[info.itemType or 0] then
+    return spellTypes[info.itemType or 0] or "None", info.spellID, info
   end
 end
 local UnitClass = UnitClass
@@ -654,11 +655,13 @@ local function findSpellIdx(spellName)
   for i = 1, getNumSpells() do
     local spell = GetSpellBookItemName(i, BOOKTYPE_SPELL)
     if spell == spellName then
-      local spellType, spellID = GetSpellBookItemInfo(i, BOOKTYPE_SPELL)
-      if spellType == "SPELL" then -- classic/era
+      local spellType, spellID, spellInfo = GetSpellBookItemInfo(i, BOOKTYPE_SPELL)
+      if spellInfo then -- new API output available
+        if Enum.SpellBookItemType and spellInfo.itemType == Enum.SpellBookItemType.Spell and not spellInfo.isOffSpec then -- retail - filter for only active spec "SPELL"
+          return spellID
+        end
+      elseif spellType == "SPELL" then -- classic/era
         return i
-      elseif Enum.SpellBookItemType and spellType == Enum.SpellBookItemType.Spell then -- retail
-        return spellID
       end
     end
   end
