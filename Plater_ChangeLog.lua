@@ -8,6 +8,12 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1724396217, "Bug Fix", "Aug 23rd, 2024", "Fixing range checks for some specs through updates in LibRangeCheck.", "cont1nuity"},
+			{1724396217, "Bug Fix", "Aug 22nd, 2024", "Fixing an issue with stored spell animation data which was doubling up or could not be removed.", "cont1nuity"},
+			{1724396217, "Bug Fix", "Aug 20th, 2024", "Fixing an issue with CVar storing and restoring.", "cont1nuity"},
+			{1724396217, "Backend Change", "Aug 19th, 2024", "Adjustments to new profile import API.", "cont1nuity"},
+			{1724396217, "Bug Fix", "Aug 15th, 2024", "Fixes to default scripts.", "Terciob"},
+			
 			{1723752649, "New Feature", "Aug 13th, 2024", "Adding 'remove all sounds' button.", "Linaori"},
 			{1723752649, "Bug Fix", "Aug 2nd, 2024", "Fixes to default scripts.", "Terciob"},
 			{1723752649, "Backend Change", "Aug 2nd, 2024", "New profile import API.", "cont1nuity"},
