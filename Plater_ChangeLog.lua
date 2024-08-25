@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1724396217, "Bug Fix", "Aug 25th, 2024", "Fixing range checks for some specs hero talents through updates in LibRangeCheck.", "cont1nuity"},
 			{1724396217, "Bug Fix", "Aug 23rd, 2024", "Fixing issue with talent load conditions.", "cont1nuity"},
 			{1724396217, "Bug Fix", "Aug 23rd, 2024", "Fixing range checks for some specs through updates in LibRangeCheck.", "cont1nuity"},
 			{1724396217, "Bug Fix", "Aug 22nd, 2024", "Fixing an issue with stored spell animation data which was doubling up or could not be removed.", "cont1nuity"},

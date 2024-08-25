@@ -40,7 +40,7 @@ License: MIT
 -- @class file
 -- @name LibRangeCheck-3.0
 local MAJOR_VERSION = "LibRangeCheck-3.0"
-local MINOR_VERSION = 25
+local MINOR_VERSION = 26
 
 ---@class lib
 local lib, oldminor = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
@@ -168,6 +168,7 @@ end
 -- Evoker
 tinsert(HarmSpells.EVOKER, 362969) -- Azure Strike (25 yards)
 
+tinsert(FriendSpells.EVOKER, 355913) -- Emerald Blossom (25 yards)
 tinsert(FriendSpells.EVOKER, 361469) -- Living Flame (25 yards)
 tinsert(FriendSpells.EVOKER, 360823) -- Naturalize (Preservation) (30 yards)
 
@@ -271,6 +272,7 @@ tinsert(FriendSpells.PRIEST, 527) -- Purify / Dispel Magic (40 yards retail, 30 
 tinsert(FriendSpells.PRIEST, 2061) -- Flash Heal (40 yards, level 3 retail, level 20 tbc)
 
 tinsert(HarmSpells.PRIEST, 589) -- Shadow Word: Pain (40 yards)
+tinsert(HarmSpells.PRIEST, 8092) -- Mind Blast (40 yards)
 tinsert(HarmSpells.PRIEST, 585) -- Smite (40 yards)
 tinsert(HarmSpells.PRIEST, 5019) -- Shoot (30 yards)
 
@@ -306,6 +308,8 @@ if not isRetail then
 end
 
 tinsert(HarmSpells.SHAMAN, 370) -- Purge (30 yards)
+tinsert(HarmSpells.SHAMAN, 8042) -- Earth Shock (40 yards)
+tinsert(HarmSpells.SHAMAN, 117014) -- Elemental Blast (40 yards)
 tinsert(HarmSpells.SHAMAN, 188196) -- Lightning Bolt (40 yards)
 tinsert(HarmSpells.SHAMAN, 73899) -- Primal Strike (Melee Range)
 

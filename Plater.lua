@@ -831,9 +831,9 @@ Plater.AnchorNamesByPhraseId = {
 		
 		if not rangeChecker then
 			rangeChecker = function (unit)
-				local range = (LibRangeCheck:GetRange(unit, nil, true) or 0) <= (rangeCheckRange or 40)
+				local minRange, maxRange = (LibRangeCheck:GetRange(unit, nil, true) or 0) <= (rangeCheckRange or 40)
 				Plater.EndLogPerformanceCore("Plater-Core", "Update", "CheckRange")
-				return range
+				return maxRange or minRange
 			end
 			Plater.GetSpellForRangeCheck()
 		end
