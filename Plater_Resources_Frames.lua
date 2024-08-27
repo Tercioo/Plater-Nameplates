@@ -148,12 +148,15 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 
         --> create background
         local backgroundTexture = parent:CreateTexture("$parenttopCircleTexture", "BACKGROUND")
-		backgroundTexture:SetAtlas("ComboPoints-PointBg")
+		backgroundTexture:SetAtlas("uf-roguecp-bg", true)
+		backgroundTexture:SetTexelSnappingBias(0.0)
+		backgroundTexture:SetSnapToPixelGrid(false)
+		--backgroundTexture:SetAtlas("ComboPoints-PointBg")
         --backgroundTexture:SetAtlas("ClassOverlay-ComboPoint-Off")
         backgroundTexture:SetDrawLayer("OVERLAY", 1)
         backgroundTexture:SetPoint("center", widgetFrame, "center", 0, 0)
-        backgroundTexture:SetSize(13, 13)
-        backgroundTexture:SetVertexColor(0.96470373868942, 0.99999779462814, 0.98823314905167, 0.99999779462814)
+        --backgroundTexture:SetSize(13, 13)
+        --backgroundTexture:SetVertexColor(0.96470373868942, 0.99999779462814, 0.98823314905167, 0.99999779462814)
         widgetFrame.background = backgroundTexture
         parent.widgetsBackground[#parent.widgetsBackground + 1] = backgroundTexture
 
@@ -165,11 +168,15 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         ----------------------------------------------
 
         local comboPointTexture  = widgetFrame:CreateTexture("$parentcomboPointTextureTexture", "ARTWORK")
-        comboPointTexture:SetAtlas("ComboPoints-ComboPoint")
+		comboPointTexture:SetAtlas("uf-roguecp-icon-red", true)
+		comboPointTexture:SetTexelSnappingBias(0.0)
+		comboPointTexture:SetSnapToPixelGrid(false)
+        comboPointTexture:SetDrawLayer ("ARTWORK", 0)
+        --comboPointTexture:SetAtlas("ComboPoints-ComboPoint")
 		--comboPointTexture:SetAtlas("ClassOverlay-ComboPoint")
-        comboPointTexture:SetDrawLayer("BORDER", 0)
+        --comboPointTexture:SetDrawLayer("BORDER", 0)
         comboPointTexture:SetPoint("center", widgetFrame, "center", 0, 0)
-        comboPointTexture:SetSize(13, 13)
+        --comboPointTexture:SetSize(13, 13)
         
         widgetFrame.texture = comboPointTexture
 
@@ -187,6 +194,25 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         comboPointTexture.alpha2:SetDuration(0.096000000834465)
         comboPointTexture.alpha2:SetFromAlpha(0.69999998807907)
         comboPointTexture.alpha2:SetToAlpha(1)
+		
+		local BackgroundSpark  = widgetFrame:CreateTexture (nil, "BACKGROUND")
+        BackgroundSpark:SetAtlas ("uf-roguecp-frame-glow", true)
+        BackgroundSpark:SetDrawLayer ("BACKGROUND", 0)
+        BackgroundSpark:SetPoint ("center", widgetFrame, "center", 0, 0)
+		--BackgroundSpark:SetPoint ("center", widgetFrame, "center", 0, -1)
+        --BackgroundSpark:SetSize (20 * 1.39, 20 * 1.39)
+        --BackgroundSpark:SetTexCoord (0.0096916198730469, 0.1160000038147, 0.43700000762939, 0.54200000762939)
+
+        --> animations for BackgroundSpark
+
+        BackgroundSpark.alpha = DF:CreateAnimation (MainAnimationGroup, "ALPHA", 1, 0.195999994874, 0, 1)
+        BackgroundSpark.alpha:SetTarget (BackgroundSpark)
+        BackgroundSpark.rotation = DF:CreateAnimation (MainAnimationGroup, "ROTATION", 1, 0.195999994874, 2)
+        BackgroundSpark.rotation:SetTarget (BackgroundSpark)
+        BackgroundSpark.alpha2 = DF:CreateAnimation (MainAnimationGroup, "ALPHA", 2, 0.195999994874, 0.34612736105919, 0.24995632469654)
+        BackgroundSpark.alpha2:SetTarget (BackgroundSpark)
+        BackgroundSpark.alpha3 = DF:CreateAnimation (MainAnimationGroup, "ALPHA", 3, 0.195999994874, 0.25, 0)
+        BackgroundSpark.alpha3:SetTarget (BackgroundSpark)
 
         --> test the animation
         --MainAnimationGroup:Play()

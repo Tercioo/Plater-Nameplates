@@ -381,9 +381,9 @@ end
 
 	resourceBarCreateFuncByEnumName[CONST_ENUMNAME_COMBOPOINT] = function(mainResourceFrame)
 		local resourceWidgetCreationFunc = Plater.Resources.GetCreateResourceWidgetFunctionForSpecId(CONST_SPECID_ROGUE_OUTLAW)
-		local newResourceBar = createResourceBar(mainResourceFrame, "$parentRogueResource", resourceWidgetCreationFunc, 13, 13)
-		mainResourceFrame.widgetWidth = 13
-		mainResourceFrame.widgetHeight = 13
+		local newResourceBar = createResourceBar(mainResourceFrame, "$parentRogueResource", resourceWidgetCreationFunc, 20, 20)
+		mainResourceFrame.widgetWidth = 20
+		mainResourceFrame.widgetHeight = 20
 		mainResourceFrame.resourceBars[CONST_SPECID_ROGUE_ASSASSINATION] = newResourceBar
 		mainResourceFrame.resourceBars[CONST_SPECID_ROGUE_OUTLAW] = newResourceBar
 		mainResourceFrame.resourceBars[CONST_SPECID_ROGUE_SUBTLETY] = newResourceBar
@@ -1146,12 +1146,14 @@ end
 				if (widget.isCharged ~= isCharged) then
 					widget.isCharged = isCharged
 					if (isCharged) then
-						widget.texture:SetAtlas("ComboPoints-ComboPoint-Kyrian")
-						widget.background:SetAtlas("ComboPoints-PointBg-Kyrian")
+						widget.texture:SetAtlas("uf-roguecp-icon-blue")
+						--widget.texture:SetAtlas("ComboPoints-ComboPoint-Kyrian")
+						--widget.background:SetAtlas("ComboPoints-PointBg-Kyrian")
 						widget.ShowAnimation:Play()
 					else
-						widget.texture:SetAtlas("ComboPoints-ComboPoint")
-						widget.background:SetAtlas("ComboPoints-PointBg")
+						widget.texture:SetAtlas("uf-roguecp-icon-red")
+						--widget.texture:SetAtlas("ComboPoints-ComboPoint")
+						--widget.background:SetAtlas("ComboPoints-PointBg")
 					end
 				end
 			end
