@@ -5153,6 +5153,7 @@ function Plater.OnInit() --private --~oninit ~init
 					--cast color (from options tab Cast Colors)
 					local castColors = profile.cast_colors
 					local customColor = castColors[self.spellID]
+					local customRenamed = false
 					if (customColor) then
 						local isEnabled, color, customSpellName = customColor[1], customColor[2], customColor[3]
 						if (color and isEnabled) then
@@ -5168,6 +5169,7 @@ function Plater.OnInit() --private --~oninit ~init
 
 							if (customSpellName and customSpellName ~= "") then
 								self.Text:SetText(customSpellName)
+								customRenamed = true
 							end
 
 							--check if the original cast color is enabled
@@ -5179,6 +5181,13 @@ function Plater.OnInit() --private --~oninit ~init
 								self.castColorTexture:SetColorTexture(r, g, b)
 								self.castColorTexture:SetHeight(self:GetHeight() + profile.cast_color_settings.height_offset)
 							end
+						end
+					end
+					
+					if not customRenamed and Plater.db.profile.bossmod_bw_castrename_enabled and BigWigsAPI and BigWigsAPI.GetSpellRename then
+						local bwSpellName = BigWigsAPI.GetSpellRename(self.spellID)
+						if bwSpellName then
+							self.Text:SetText(bwSpellName)
 						end
 					end
 					

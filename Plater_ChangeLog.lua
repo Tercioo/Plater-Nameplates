@@ -8,6 +8,9 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1724783240, "Bug Fix", "Aug 27th, 2024", "Fixing rogue combo points layout.", "cont1nuity"},
+			{1724783240, "New Feature", "Aug 27th, 2024", "Adding option to rename casts based on BigWigs renamed spells.", "cont1nuity"},
+			
 			{1724396217, "Bug Fix", "Aug 25th, 2024", "Fixing range checks for some specs hero talents through updates in LibRangeCheck.", "cont1nuity"},
 			{1724396217, "Bug Fix", "Aug 23rd, 2024", "Fixing issue with talent load conditions.", "cont1nuity"},
 			{1724396217, "Bug Fix", "Aug 23rd, 2024", "Fixing range checks for some specs through updates in LibRangeCheck.", "cont1nuity"},

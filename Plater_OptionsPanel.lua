@@ -3598,7 +3598,7 @@ Plater.CreateAuraTesting()
 		
 			{type = "blank"},
 			--{type = "blank"},
-			{type = "label", get = function() return "DBM / BigWigs Icon-Support:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{type = "label", get = function() return "DBM / BigWigs Support:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 
 			{
 				type = "toggle",
@@ -3613,6 +3613,17 @@ Plater.CreateAuraTesting()
 			
 			{
 				type = "toggle",
+				get = function() return Plater.db.profile.bossmod_bw_castrename_enabled end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.bossmod_bw_castrename_enabled = value
+					--Plater.UpdateAllPlates()
+				end,
+				name = "Enable BigWigs cast spell renaming",
+				desc = "Enable cast rename based on BigWigs spell names.",
+			},
+			
+			{
+				type = "toggle",
 				get = function() return Plater.db.profile.bossmod_support_bars_enabled end,
 				set = function (self, fixedparam, value) 
 					Plater.db.profile.bossmod_support_bars_enabled = value
@@ -3622,7 +3633,7 @@ Plater.CreateAuraTesting()
 				desc = "Enable the boss mod bar support for DBM, to show timer bars as icons on the nameplates.",
 			},
 			
-			{type = "blank"},
+			--{type = "blank"},
 			
 			{type = "label", get = function() return "Icon Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			
