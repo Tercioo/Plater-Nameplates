@@ -390,7 +390,7 @@ function Plater.Resources.BuildResourceOptionsTab(frame)
                 --call update on the resource bar
 				Plater.UpdateAllPlates()
 			end,
-			min = 0.6,
+			min = 0.25,
 			max = 2,
 			step = 0.1,
 			usedecimals = true,
