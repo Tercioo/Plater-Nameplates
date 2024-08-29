@@ -338,6 +338,20 @@ function platerInternal.CreateCastBarOptions()
             name = "OPTIONS_CASTBAR_FADE_ANIM_TIME_END",
             desc = "OPTIONS_CASTBAR_FADE_ANIM_TIME_END_DESC" ,
         },
+        
+        {type = "blank"},
+        {type = "label", get = function() return "Boss-Mod Support:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        
+        {
+            type = "toggle",
+            get = function() return Plater.db.profile.bossmod_bw_castrename_enabled end,
+            set = function (self, fixedparam, value) 
+                Plater.db.profile.bossmod_bw_castrename_enabled = value
+                --Plater.UpdateAllPlates()
+            end,
+            name = "Enable BigWigs cast spell renaming",
+            desc = "Enable cast rename based on BigWigs spell names.",
+        },
 
         {type = "breakline"},
 
