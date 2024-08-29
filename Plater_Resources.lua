@@ -1148,11 +1148,13 @@ end
 					widget.isCharged = isCharged
 					if (isCharged) then
 						widget.texture:SetAtlas("uf-roguecp-icon-blue")
+						widget.background:SetAtlas("uf-roguecp-bg-anima")
 						--widget.texture:SetAtlas("ComboPoints-ComboPoint-Kyrian")
 						--widget.background:SetAtlas("ComboPoints-PointBg-Kyrian")
 						widget.ShowAnimation:Play()
 					else
 						widget.texture:SetAtlas("uf-roguecp-icon-red")
+						widget.background:SetAtlas("uf-roguecp-bg")
 						--widget.texture:SetAtlas("ComboPoints-ComboPoint")
 						--widget.background:SetAtlas("ComboPoints-PointBg")
 					end
