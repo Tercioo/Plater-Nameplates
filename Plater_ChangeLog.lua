@@ -8,7 +8,9 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
-			{1724783240, "Bug Fix", "Aug 29th, 2024", "Fixing combo points for classic.", "Terciob"},
+			{1725041423, "Bug Fix", "Aug 30th, 2024", "Fixing error in default script.", "Terciob"},
+			{1725041423, "Bug Fix", "Aug 29th, 2024", "Fixing combo points for classic.", "cont1nuity"},
+			{1725041423, "New Feature", "Aug 29th, 2024", "Consolidating option to rename casts based on DMB or BigWigs renamed spells.", "cont1nuity"},
 			
 			{1724783240, "Bug Fix", "Aug 29th, 2024", "Fixing error in default script.", "Terciob"},
 			{1724783240, "Bug Fix", "Aug 28th, 2024", "Allowing resource scaling to be smaller.", "cont1nuity"},
