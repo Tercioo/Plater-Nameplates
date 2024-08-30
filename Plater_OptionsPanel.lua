@@ -3613,13 +3613,13 @@ Plater.CreateAuraTesting()
 			
 			{
 				type = "toggle",
-				get = function() return Plater.db.profile.bossmod_bw_castrename_enabled end,
+				get = function() return Plater.db.profile.bossmod_castrename_enabled end,
 				set = function (self, fixedparam, value) 
-					Plater.db.profile.bossmod_bw_castrename_enabled = value
+					Plater.db.profile.bossmod_castrename_enabled = value
 					--Plater.UpdateAllPlates()
 				end,
-				name = "Enable BigWigs cast spell renaming",
-				desc = "Enable cast rename based on BigWigs spell names.",
+				name = "Enable boss-mod cast spell renaming",
+				desc = "Enable cast rename based on BigWigs or DBM spell names.",
 			},
 			
 			{

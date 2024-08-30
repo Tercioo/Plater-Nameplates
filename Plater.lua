@@ -5184,10 +5184,10 @@ function Plater.OnInit() --private --~oninit ~init
 						end
 					end
 					
-					if not customRenamed and Plater.db.profile.bossmod_bw_castrename_enabled and BigWigsAPI and BigWigsAPI.GetSpellRename then
-						local bwSpellName = BigWigsAPI.GetSpellRename(self.spellID)
-						if bwSpellName then
-							self.Text:SetText(bwSpellName)
+					if not customRenamed and Plater.db.profile.bossmod_castrename_enabled then
+						local bmSpellName = (DBM and DBM.GetAltSpellName and DBM:GetAltSpellName(self.spellID)) or (BigWigsAPI and BigWigsAPI.GetSpellRename and BigWigsAPI.GetSpellRename(self.spellID)) or nil
+						if bmSpellName then
+							self.Text:SetText(bmSpellName)
 						end
 					end
 					
