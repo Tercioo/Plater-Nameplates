@@ -4055,6 +4055,14 @@ function Plater.CreateScriptingPanel()
 						GameTooltip:Show()
 					elseif self.NpcID then
 						local npcID = tonumber(self.NpcID)
+						if not npcID then -- assume name -> search
+							for id, data in pairs(Plater.db.profile.npc_cache) do
+								if data[1] == self.NpcID then
+									npcID = id
+									break
+								end
+							end
+						end
 						GameTooltip:SetOwner (self, "ANCHOR_RIGHT")
 						GameTooltip:SetHyperlink (("unit:Creature-0-0-0-0-%d"):format(npcID))
 						GameTooltip:AddLine (" ")
@@ -4062,11 +4070,13 @@ function Plater.CreateScriptingPanel()
 							GameTooltip:AddLine (Plater.db.profile.npc_cache[npcID][2] or "???")
 							GameTooltip:AddLine (" ")
 						end
-						npc3DFrame:SetCreature(npcID)
-						npc3DFrame:SetParent(GameTooltip)
-						npc3DFrame:SetPoint ("top", GameTooltip, "bottom", 0, -10)
-						npc3DFrame:Show()
-						GameTooltip:Show()
+						if npcID then
+							npc3DFrame:SetCreature(npcID)
+							npc3DFrame:SetParent(GameTooltip)
+							npc3DFrame:SetPoint ("top", GameTooltip, "bottom", 0, -10)
+							npc3DFrame:Show()
+							GameTooltip:Show()
+						end
 					end
 					self:SetBackdropColor (.3, .3, .3, 0.7)
 				end
