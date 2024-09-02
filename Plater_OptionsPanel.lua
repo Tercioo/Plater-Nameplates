@@ -505,6 +505,7 @@ function Plater.OpenOptionsPanel(pageNumber, bIgnoreLazyLoad)
 		{name = "WagoIo", text = "Wago Imports"}, --wago_imports --localize-me
 		{name = "SearchFrame", text = "OPTIONS_TABNAME_SEARCH", createOnDemandFunc = platerInternal.CreateSearchOptions},
 		{name = "PluginsFrame", text = "Plugins"}, --localize-me
+		{name = "BossModConfig", text = "Boss-Mods", createOnDemandFunc = platerInternal.CreateBossModOptions}, --localize-me
 		
 	}, 
 	frame_options, hookList, languageInfo)
@@ -619,6 +620,7 @@ function Plater.OpenOptionsPanel(pageNumber, bIgnoreLazyLoad)
 	local wagoIoFrame 			= mainFrame.AllFrames [25] --wago_imports
 	local searchFrame			= mainFrame.AllFrames [26]
 	local pluginsFrame			= mainFrame.AllFrames [27]
+	local bossModFrame			= mainFrame.AllFrames [28]
 
 	local scriptButton		= mainFrame.AllButtons [6] --also need update on ~changeindex1 and ~changeindex2
 	local modButton		 	= mainFrame.AllButtons [7]
@@ -727,6 +729,8 @@ function Plater.OpenOptionsPanel(pageNumber, bIgnoreLazyLoad)
 		for _, frame in ipairs (f.AllMenuFrames) do
 			if (frame.RefreshOptions) then
 				frame:RefreshOptions()
+			elseif (frame.canvasFrame and frame.canvasFrame.child and frame.canvasFrame.child.RefreshOptions) then
+				frame.canvasFrame.child.RefreshOptions() -- new scroll menus
 			end
 		end
 		Plater.UpdateMaxCastbarTextLength()
@@ -3594,155 +3598,6 @@ Plater.CreateAuraTesting()
 				end,
 				name = "Defensive Border Color",
 				desc = "Defensive Border Color",
-			},
-		
-			{type = "blank"},
-			--{type = "blank"},
-			{type = "label", get = function() return "DBM / BigWigs Support:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-
-			{
-				type = "toggle",
-				get = function() return Plater.db.profile.bossmod_support_enabled end,
-				set = function (self, fixedparam, value) 
-					Plater.db.profile.bossmod_support_enabled = value
-					Plater.UpdateAllPlates()
-				end,
-				name = "OPTIONS_ENABLED",
-				desc = "Enable the boss mod icon support for BigWigs and DBM.",
-			},
-			
-			{
-				type = "toggle",
-				get = function() return Plater.db.profile.bossmod_castrename_enabled end,
-				set = function (self, fixedparam, value) 
-					Plater.db.profile.bossmod_castrename_enabled = value
-					--Plater.UpdateAllPlates()
-				end,
-				name = "Enable boss-mod cast spell renaming",
-				desc = "Enable cast rename based on BigWigs or DBM spell names.",
-			},
-			
-			{
-				type = "toggle",
-				get = function() return Plater.db.profile.bossmod_support_bars_enabled end,
-				set = function (self, fixedparam, value) 
-					Plater.db.profile.bossmod_support_bars_enabled = value
-					Plater.UpdateAllPlates()
-				end,
-				name = "DBM CD-Bar Icons enabled",
-				desc = "Enable the boss mod bar support for DBM, to show timer bars as icons on the nameplates.",
-			},
-			
-			--{type = "blank"},
-			
-			{type = "label", get = function() return "Icon Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-			
-			--width
-			{
-				type = "range",
-				get = function() return Plater.db.profile.bossmod_aura_width end,
-				set = function (self, fixedparam, value) 
-					Plater.db.profile.bossmod_aura_width = value
-					Plater.UpdateAllPlates()
-				end,
-				min = 8,
-				max = 64,
-				step = 1,
-				name = "OPTIONS_WIDTH",
-				desc = "OPTIONS_WIDTH",
-			},
-			--height
-			{
-				type = "range",
-				get = function() return Plater.db.profile.bossmod_aura_height end,
-				set = function (self, fixedparam, value) 
-					Plater.db.profile.bossmod_aura_height = value
-					Plater.UpdateAllPlates()
-				end,
-				min = 8,
-				max = 64,
-				step = 1,
-				name = "OPTIONS_HEIGHT",
-				desc = "OPTIONS_HEIGHT",
-			},
-			
-			--anchor
-			{
-			type = "select",
-			get = function() return Plater.db.profile.bossmod_icons_anchor.side end,
-			values = function() return build_anchor_side_table (nil, "bossmod_icons_anchor") end,
-			name = "OPTIONS_ANCHOR",
-			desc = "Which side of the nameplate the icons should attach to.",
-			},
-			--x offset
-			{
-				type = "range",
-				get = function() return Plater.db.profile.bossmod_icons_anchor.x end,
-				set = function (self, fixedparam, value) 
-					Plater.db.profile.bossmod_icons_anchor.x = value
-					Plater.UpdateAllPlates()
-				end,
-				min = -40,
-				max = 40,
-				step = 1,
-				usedecimals = true,
-				name = "OPTIONS_XOFFSET",
-				desc = "OPTIONS_XOFFSET_DESC",
-			},
-			--y offset
-			{
-				type = "range",
-				get = function() return Plater.db.profile.bossmod_icons_anchor.y end,
-				set = function (self, fixedparam, value) 
-					Plater.db.profile.bossmod_icons_anchor.y = value
-					Plater.UpdateAllPlates()
-				end,
-				min = -60,
-				max = 60,
-				step = 1,
-				usedecimals = true,
-				name = "OPTIONS_YOFFSET",
-				desc = "OPTIONS_YOFFSET_DESC",
-			},
-			--text enabled
-			{
-				type = "toggle",
-				get = function() return Plater.db.profile.bossmod_support_bars_text_enabled end,
-				set = function (self, fixedparam, value) 
-					Plater.db.profile.bossmod_support_bars_text_enabled = value
-					Plater.UpdateAllPlates()
-				end,
-				name = "Icon text enabled",
-				desc = "Enable Bar Text.",
-			},
-			
-			--{type = "blank"},
-			
-			{type = "label", get = function() return "Cooldown Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-			{
-				type = "toggle",
-				get = function() return Plater.db.profile.bossmod_cooldown_text_enabled end,
-				set = function (self, fixedparam, value) 
-					Plater.db.profile.bossmod_cooldown_text_enabled = value
-					Plater.UpdateAllPlates()
-				end,
-				name = "OPTIONS_ENABLED",
-				desc = "Enable Cooldown Text.",
-			},
-			--cd text size
-			{
-				type = "range",
-				get = function() return Plater.db.profile.bossmod_cooldown_text_size end,
-				set = function (self, fixedparam, value) 
-					Plater.db.profile.bossmod_cooldown_text_size = value
-					Plater.RefreshAuras()
-					Plater.UpdateAllPlates()
-				end,
-				min = 6,
-				max = 32,
-				step = 1,
-				name = "OPTIONS_SIZE",
-				desc = "Size",
 			},
 		}
 		
