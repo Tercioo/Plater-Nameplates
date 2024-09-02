@@ -955,6 +955,8 @@ PLATER_DEFAULT_SETTINGS = {
 		bossmod_cooldown_text_size = 16,
 		bossmod_cooldown_text_enabled = true,
 		bossmod_icons_anchor = {side = 8, x = 0, y = 30},
+		bossmod_aura_glow_important_only = true,
+		bossmod_aura_glow_expiring = true,
 		
 		not_affecting_combat_enabled = false,
 		not_affecting_combat_alpha = 0.6,

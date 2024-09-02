@@ -16,6 +16,7 @@ local Plater = _G.Plater
 local C_Timer = _G.C_Timer
 local C_NamePlate = _G.C_NamePlate
 local GetTime = _G.GetTime
+local LCG = LibStub:GetLibrary("LibCustomGlow-1.0")
 
 local UNIT_BOSS_MOD_AURAS_ACTIVE = {} --contains for each [GUID] a list of {texture, duration, desaturate}
 local UNIT_BOSS_MOD_AURAS_TO_BE_REMOVED = {} --contains for each [GUID] a list of texture-ids to be removed
@@ -27,8 +28,8 @@ local IS_REGISTERED = false
 local DBM_TIMER_BARS_TEST_MODE = false --can be changed via callback. will disable after 30sec
 
 -- core functions
-local function ShowNameplateAura(guid, texture, duration, desaturate)
-	--print("ShowNameplateAura", guid, texture, duration, desaturate, HOSTILE_ENABLED)
+local function ShowNameplateAura(guid, texture, duration, desaturate, isPriority)
+	--print("ShowNameplateAura", guid, texture, duration, desaturate, isPriority, HOSTILE_ENABLED)
 	if not HOSTILE_ENABLED then return end
 	if not guid or not texture then return end
 
@@ -36,6 +37,7 @@ local function ShowNameplateAura(guid, texture, duration, desaturate)
 		texture = texture,
 		duration = duration,
 		desaturate = desaturate,
+		isPriority = isPriority,
 		starttime = GetTime(),
 	}
 
@@ -102,6 +104,46 @@ function Plater.CreateBossModAuraFrame(unitFrame)
 	unitFrame.BossModIconFrame:SetOption ("anchor", Plater.db.profile.bossmod_icons_anchor or {side = 8, x = 0, y = 30})
 	unitFrame.BossModIconFrame:SetOption ("grow_direction", unitFrame.ExtraIconFrame:GetIconGrowDirection())
 	Plater.SetAnchor (unitFrame.BossModIconFrame, Plater.db.profile.bossmod_icons_anchor or {side = 8, x = 0, y = 30})
+	
+	unitFrame.BossModIconFrame.OnIconTick = function(self, deltaTime) -- override to add glow effects
+		local now = GetTime()
+		if (self.lastUpdateCooldown + 0.05) <= now then
+			self.timeRemaining = (self.expirationTime - now) / (self.modRate or 1)
+			if self.timeRemaining > 0 then
+				if self.parentIconRow.options.decimal_timer then
+					self.CountdownText:SetText(self.parentIconRow.FormatCooldownTimeDecimal(self.timeRemaining))
+				else
+					self.CountdownText:SetText(self.parentIconRow.FormatCooldownTime(self.timeRemaining))
+				end
+			else
+				self.CountdownText:SetText("")
+			end
+			
+			local profile = Plater.db.profile
+			local canGlow = profile.bossmod_aura_glow_expiring and (not profile.bossmod_aura_glow_important_only or profile.bossmod_aura_glow_important_only and self.bmData and self.bmData.isPriority) and self.timeRemaining < 4 and self.timeRemaining > 0
+			if canGlow and not self.isGlowing then
+				local options = {
+					glowType = "pixel",
+					color = self.bmData.color, -- all plater color types accepted, from lib: {r,g,b,a}, color of lines and opacity, from 0 to 1. Defaul value is {0.95, 0.95, 0.32, 1}
+					N = 8, -- number of lines. Defaul value is 8;
+					frequency = 0.25, -- frequency, set to negative to inverse direction of rotation. Default value is 0.25;
+					length = 3, -- length of lines. Default value depends on region size and number of lines;
+					th = 3, -- thickness of lines. Default value is 2;
+					xOffset = 0,
+					yOffset = 0, -- offset of glow relative to region border;
+					border = false, -- set to true to create border under lines;
+					key = "BM_ImportantIconGlow", -- key of glow, allows for multiple glows on one frame;
+				}
+				Plater.StartPixelGlow(self, self.bmData.color or "orange", options, "BM_ImportantIconGlow")
+				self.isGlowing = true
+			elseif not canGlow and self.isGlowing then
+				Plater.StopPixelGlow(self, "BM_ImportantIconGlow")
+				self.isGlowing = false
+			end
+			
+			self.lastUpdateCooldown = now
+		end
+	end
 
 end
 
@@ -162,6 +204,9 @@ function Plater.UpdateBossModAuras(unitFrame)
 				local icon = iconFrame:SetIcon(-1, nil, values.duration and values.duration > 0 and values.starttime, values.duration, values.texture)
 				--							spellId, borderColor, startTime, duration, forceTexture, descText, count, debuffType, caster, canStealOrPurge, spellName, isBuff
 				icon.Texture:SetDesaturated(values.desaturate)
+				icon.bmData = values
+				icon.isGlowing = icon.isGlowing and true or false
+				iconFrame.OnIconTick(icon)
 				--icon.Cooldown:SetDesaturated(values.desaturate)
 
 				local endTime = values.duration and values.duration > 0 and (values.starttime + values.duration) or nil
@@ -236,6 +281,9 @@ function Plater.UpdateBossModAuras(unitFrame)
 				local icon = iconFrame:SetIcon(-1, data.color, timer and start, timer, data.icon, textEnabled and {text = data.display, text_color = data.color} or nil)
 				--							spellId, borderColor, startTime, duration, forceTexture, descText, count, debuffType, caster, canStealOrPurge, spellName, isBuff
 				--DF:TruncateText(icon.Desc, Plater.db.profile.bossmod_aura_width)
+				icon.bmData = data
+				icon.isGlowing = icon.isGlowing and true or false
+				iconFrame.OnIconTick(icon)
 				if data.paused then
 					icon:SetScript("OnUpdate", nil)
 					icon.Cooldown:Pause()
@@ -294,9 +342,9 @@ function Plater.UpdateBossModAuras(unitFrame)
 end
 
 --callbacks
-local function Callback_DBM_ShowAura(_, is_guid, unit, texture, duration, desaturate)
+local function Callback_DBM_ShowAura(_, is_guid, unit, texture, duration, desaturate, isPriority)
 	local guid = (is_guid == true or is_guid == 'guid') and unit or UnitGUID(unit)
-	ShowNameplateAura(guid, texture, duration, desaturate)
+	ShowNameplateAura(guid, texture, duration, desaturate, isPriority)
 end
 
 local function Callback_DBM_HideNameplateAura(_, is_guid, unit, texture)
@@ -314,7 +362,7 @@ end
 
 
 local function Callback_BW_ShowAura(guid, texture, duration, desaturate)
-	ShowNameplateAura(guid, texture, duration, desaturate)
+	ShowNameplateAura(guid, texture, duration, desaturate, isPriority)
 end
 
 local function Callback_BW_HideNameplateAura(guid, texture)
@@ -792,7 +840,7 @@ function Plater.RegisterBossModsBars()
 		DBM:RegisterCallback("DBM_TestModStarted", testModeStartCallback)
 		
 		--timer start
-		local timerStartCallback = function(event, id, msg, timer, icon, barType, spellId, colorId, modId, keep, fade, name, guid)
+		local timerStartCallback = function(event, id, msg, timer, icon, barType, spellId, colorId, modId, keep, fade, name, guid, timerCount, isPriority)
 			if event ~= "DBM_TimerStart" then return end
 			if (id and guid) then
 				local color = getDBTColor(colorId)
@@ -817,6 +865,8 @@ function Plater.RegisterBossModsBars()
 					fade = fade,
 					name = name,
 					guid = guid,
+					timerCount = timerCount,
+					isPriority = isPriority,
 					paused = false,
 				}
 				Plater.BossModsTimeBarDBM[id] = barData
@@ -849,6 +899,8 @@ function Plater.RegisterBossModsBars()
 						fade = fade,
 						name = name,
 						guid = guid,
+						timerCount = timerCount,
+						isPriority = isPriority,
 						paused = false,
 					}
 					Plater.BossModsTimeBarDBM[id] = barData
