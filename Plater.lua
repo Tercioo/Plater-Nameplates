@@ -11579,7 +11579,6 @@ end
 			["StartLogPerformance"] = false,
 			["EndLogPerformance"] = false,
 			["StartLogPerformanceCore"] = false,
-			["StartLogPerformanceCore"] = false,
 			["EndLogPerformanceCore"] = false,
 			["DumpPerformance"] = true,
 			["ShowPerfData"] = true,
@@ -11724,7 +11723,6 @@ end
 		--block run code inside code
 		["RunScript"] = true,
 		["securecall"] = true,
-		["getfenv"] = true,
 		["getfenv"] = true,
 		["loadstring"] = true,
 		["pcall"] = true,
