@@ -9527,7 +9527,7 @@ end
 				-- paladin tank buff tracking
 				local playerGUID = Plater.PlayerGUID
 				if sourceGUID == playerGUID and targetGUID == playerGUID then
-					spellId = select(7, GetSpellInfo(spellName))
+					local spellId = select(7, GetSpellInfo(spellName))
 					if spellId == 25780 or spellId == 407627 then
 						UpdatePlayerTankState(true)
 						--Plater.RefreshTankCache()
@@ -9548,7 +9548,7 @@ end
 				-- paladin tank buff tracking
 				local playerGUID = Plater.PlayerGUID
 				if sourceGUID == playerGUID and targetGUID == playerGUID then
-					spellId = select(7, GetSpellInfo(spellName))
+					local spellId = select(7, GetSpellInfo(spellName))
 					if spellId == 25780 or spellId == 407627 then
 						UpdatePlayerTankState(false)
 						--Plater.RefreshTankCache()
