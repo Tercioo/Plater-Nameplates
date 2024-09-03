@@ -10562,20 +10562,6 @@ end
 	if (Plater.db.profile.use_ui_parent) then
 		uiParentFeatureFrame.disabledOverlayFrame:Hide()
 	end
-
-	local on_select_strata_level = function (self, fixedParameter, value)
-		Plater.db.profile.ui_parent_base_strata = value
-		Plater.RefreshDBUpvalues()
-		Plater.UpdateAllPlates()
-	end
-
-	local strataTable = {
-		{value = "BACKGROUND", label = "Background", onclick = on_select_strata_level, icon = [[Interface\Buttons\UI-MicroStream-Green]], iconcolor = {0, .5, 0, .8}, texcoord = nil}, --Interface\Buttons\UI-MicroStream-Green UI-MicroStream-Red UI-MicroStream-Yellow
-		{value = "LOW", label = "Low", onclick = on_select_strata_level, icon = [[Interface\Buttons\UI-MicroStream-Green]] , texcoord = nil}, --Interface\Buttons\UI-MicroStream-Green UI-MicroStream-Red UI-MicroStream-Yellow
-		{value = "MEDIUM", label = "Medium", onclick = on_select_strata_level, icon = [[Interface\Buttons\UI-MicroStream-Yellow]] , texcoord = nil}, --Interface\Buttons\UI-MicroStream-Green UI-MicroStream-Red UI-MicroStream-Yellow
-		{value = "HIGH", label = "High", onclick = on_select_strata_level, icon = [[Interface\Buttons\UI-MicroStream-Yellow]] , iconcolor = {1, .7, 0, 1}, texcoord = nil}, --Interface\Buttons\UI-MicroStream-Green UI-MicroStream-Red UI-MicroStream-Yellow
-		{value = "DIALOG", label = "Dialog", onclick = on_select_strata_level, icon = [[Interface\Buttons\UI-MicroStream-Red]] , iconcolor = {1, 0, 0, 1},  texcoord = nil}, --Interface\Buttons\UI-MicroStream-Green UI-MicroStream-Red UI-MicroStream-Yellow
-	}
 	
 	--anchor table
 	local frame_levels = {"BACKGROUND", "LOW", "MEDIUM", "HIGH", "DIALOG"}
