@@ -759,7 +759,7 @@ local function getDBTColor(colorId)
 	return {1, 1, 1, 1}
 end
 
-function getAllShownGUIDs()
+local function getAllShownGUIDs()
 	local guids = {}
 	for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 		if plateFrame.unitFrame.PlaterOnScreen then
