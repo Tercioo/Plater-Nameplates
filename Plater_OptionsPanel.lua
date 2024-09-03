@@ -1359,7 +1359,7 @@ function Plater.OpenOptionsPanel(pageNumber, bIgnoreLazyLoad)
 			
 		--profile options (this is the panel in the right side of the profile tab)
 			local scriptUpdatesTitleLocTable = DetailsFramework.Language.CreateLocTable(addonId, "OPTIONS_NOESSENTIAL_TITLE")
-			local scriptUpdatesTitle = DF:CreateLabel(profilesFrame, scriptUpdatesTitleLocTableL, DF:GetTemplate("font", "YELLOW_FONT_TEMPLATE"))
+			local scriptUpdatesTitle = DF:CreateLabel(profilesFrame, scriptUpdatesTitleLocTable, DF:GetTemplate("font", "YELLOW_FONT_TEMPLATE"))
 			scriptUpdatesTitle:SetPoint("topleft", profilesFrame, "topright", -235, startY)
 			scriptUpdatesTitle.textsize = 9
 
