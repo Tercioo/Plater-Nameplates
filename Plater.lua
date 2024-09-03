@@ -10106,9 +10106,9 @@ end
 					return assignedRole
 				end
 			end
-			if GetPartyAssignment("MAINTANK", unit) then
+			if GetPartyAssignment("MAINTANK", unitFrame.unit) then
 				return "MAINTANK"
-			elseif GetPartyAssignment("MAINASSIST", unit) then
+			elseif GetPartyAssignment("MAINASSIST", unitFrame.unit) then
 				return "MAINASSIST"
 			end
 		end
