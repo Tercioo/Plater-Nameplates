@@ -361,7 +361,7 @@ local function Callback_DBM_EnableHostile()
 end
 
 
-local function Callback_BW_ShowAura(guid, texture, duration, desaturate)
+local function Callback_BW_ShowAura(guid, texture, duration, desaturate, isPriority)
 	ShowNameplateAura(guid, texture, duration, desaturate, isPriority)
 end
 
