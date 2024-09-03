@@ -179,7 +179,6 @@ function platerInternal.CreateDataTables(Plater)
         [100991] = true, -- Strangling Roots
         [131009] = true, -- Spirit of Gold
         [127315] = true, -- Reanimation Totem
-        [127315] = true, -- Reanimation Totem
         [125828] = true, -- Soulspawn
         [205212] = true, -- Infinite Keeper
         [205265] = true, -- Time-Displaced Trooper
