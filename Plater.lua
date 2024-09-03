@@ -4961,6 +4961,7 @@ function Plater.OnInit() --private --~oninit ~init
 						elseif (profile.castbar_icon_size == "same as castbar plus healthbar") then
 							local actorType = unitFrame.actorType
 							local plateConfigs = DB_PLATE_CONFIG [actorType]
+							local isInCombat = profile.use_player_combat_state and PLAYER_IN_COMBAT or unitFrame.InCombat
 							local castBarConfigKey, healthBarConfigKey, manaConfigKey = Plater.GetHashKey (isInCombat)
 
 							local healthBarHeight = unitFrame.customHealthBarHeight or (plateConfigs and plateConfigs [healthBarConfigKey][2]) or 0
@@ -4987,6 +4988,7 @@ function Plater.OnInit() --private --~oninit ~init
 						elseif (profile.castbar_icon_size == "same as castbar plus healthbar") then
 							local actorType = unitFrame.actorType
 							local plateConfigs = DB_PLATE_CONFIG [actorType]
+							local isInCombat = profile.use_player_combat_state and PLAYER_IN_COMBAT or unitFrame.InCombat
 							local castBarConfigKey, healthBarConfigKey, manaConfigKey = Plater.GetHashKey (isInCombat)
 
 							local healthBarHeight = unitFrame.customHealthBarHeight or (plateConfigs and plateConfigs [healthBarConfigKey][2]) or 0
