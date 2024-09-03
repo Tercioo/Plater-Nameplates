@@ -11726,6 +11726,7 @@ end
 		["RunScript"] = true,
 		["securecall"] = true,
 		["getfenv"] = true,
+		["setfenv"] = true,
 		["loadstring"] = true,
 		["pcall"] = true,
 		["xpcall"] = true,
