@@ -4762,7 +4762,7 @@ function Plater.OnInit() --private --~oninit ~init
 			---@cast plateFrame plateframe
 			if plateFrame.unitFrame.PlaterOnScreen then
 				local castBar = plateFrame.unitFrame.castBar
-				
+				local castNoInterrupt = Plater.CastBarTestFrame.castNoInterrupt
 				local spellName, _, spellIcon = GetSpellInfo(116)
 
 				castBar.Text:SetText(spellName)
