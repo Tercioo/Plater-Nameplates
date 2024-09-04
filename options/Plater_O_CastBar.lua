@@ -7,6 +7,8 @@ local DF = DetailsFramework
 local _
 
 function platerInternal.CreateCastBarOptions()
+    if platerInternal.LoadOnDemand_IsLoaded.CastOptions then return end
+
     local startX, startY, heightSize = 10, platerInternal.optionsYStart, 755
     local highlightColorLastCombat = {1, 1, .2, .25}
 
@@ -741,4 +743,5 @@ function platerInternal.CreateCastBarOptions()
 
     platerInternal.LoadOnDemand_IsLoaded.CastOptions = true
     table.insert(PlaterOptionsPanelFrame.AllSettingsTable, castBar_options)
+    platerInternal.CreateCastBarOptions = function() end
 end

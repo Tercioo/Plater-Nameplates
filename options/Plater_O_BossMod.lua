@@ -15,6 +15,8 @@ local on_select_blizzard_nameplate_large_font = function (_, _, value)
 end
 
 function platerInternal.CreateBossModOptions()
+	if platerInternal.LoadOnDemand_IsLoaded.BossModOptions then return end -- already loaded
+	
     --templates
     local options_text_template = DF:GetTemplate ("font", "OPTIONS_FONT_TEMPLATE")
     local options_dropdown_template = DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE")
@@ -156,7 +158,7 @@ function platerInternal.CreateBossModOptions()
         
         --anchor
         {
-        type = "select",
+			type = "select",
             get = function() return Plater.db.profile.bossmod_icons_anchor.side end,
             values = function() return build_anchor_side_table (nil, "bossmod_icons_anchor") end,
             name = "OPTIONS_ANCHOR",
@@ -294,4 +296,5 @@ function platerInternal.CreateBossModOptions()
     platerInternal.LoadOnDemand_IsLoaded.BossModOptions = true
     ---@diagnostic disable-next-line: undefined-global
     table.insert(PlaterOptionsPanelFrame.AllSettingsTable, bossmod_options)
+	platerInternal.CreateBossModOptions = function() end
 end

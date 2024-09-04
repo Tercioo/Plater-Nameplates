@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1725050765, "Bug Fix", "Nov 4th, 2024", "Fixing issue with options tabs loading in twice sometimes.", "cont1nuity"},
 			{1725050765, "Backend Change", "Nov 4th, 2024", "Use reaction name coloring for 'name only' enemy NPCs instead of fixed color.", "cont1nuity"},
 			{1725050765, "Backend Change", "Aug 31st, 2024", "Glow API documentation.", "cont1nuity"},
 			{1725050765, "Bug Fix", "Aug 30th, 2024", "Fixing issue with unit trigger tooltips not showing on entries as name.", "cont1nuity"},

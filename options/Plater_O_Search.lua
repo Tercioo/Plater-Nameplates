@@ -117,7 +117,10 @@ function platerInternal.CreateSearchOptions()
 		--22 profiles
 		mainFrame.AllButtons [23].button.text:GetText(), -- advanced
 		--mainFrame.AllButtons [24].button.text:GetText(), -- resources
-		--25 search
+		--25 wago imports
+		--26 search
+		--27 plugins
+		mainFrame.AllButtons [28].button.text:GetText(), -- bossmods
 	}
 
 	--this table will hold all options
@@ -182,4 +185,5 @@ function platerInternal.CreateSearchOptions()
 	end)
 
     platerInternal.LoadOnDemand_IsLoaded.SearchOptions = true
+	platerInternal.CreateSearchOptions = function() end
 end
