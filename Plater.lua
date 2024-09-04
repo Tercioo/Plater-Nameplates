@@ -7284,6 +7284,8 @@ end
 							g = g + 0.1
 							b = b + 0.1
 						end
+					--elseif plateFrame.isObject then
+					--	r, g, b, a = 1, 1, 1, 1 -- do white maybe?
 					elseif not r then -- use UnitSelectionColor instead, if available. fallback otherwise
 						r, g, b, a = 1, 1, 0, 1 --neutral
 						if (plateFrame [MEMBER_REACTION] <= 3) then
