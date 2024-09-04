@@ -31,6 +31,9 @@ externals:
 move-folders:
   Plater/libs/LibRangeCheck-3.0/LibRangeCheck-3.0: Plater/libs/LibRangeCheck-3.0
 
+ignore:
+  - luaserver.lua
+
 manual-changelog:
   filename: CHANGELOG.md
   markup-type: text
