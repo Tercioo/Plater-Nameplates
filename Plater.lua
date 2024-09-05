@@ -4762,7 +4762,7 @@ function Plater.OnInit() --private --~oninit ~init
 			---@cast plateFrame plateframe
 			if plateFrame.unitFrame.PlaterOnScreen then
 				local castBar = plateFrame.unitFrame.castBar
-				
+				local castNoInterrupt = Plater.CastBarTestFrame.castNoInterrupt
 				local spellName, _, spellIcon = GetSpellInfo(116)
 
 				castBar.Text:SetText(spellName)
@@ -4961,6 +4961,7 @@ function Plater.OnInit() --private --~oninit ~init
 						elseif (profile.castbar_icon_size == "same as castbar plus healthbar") then
 							local actorType = unitFrame.actorType
 							local plateConfigs = DB_PLATE_CONFIG [actorType]
+							local isInCombat = profile.use_player_combat_state and PLAYER_IN_COMBAT or unitFrame.InCombat
 							local castBarConfigKey, healthBarConfigKey, manaConfigKey = Plater.GetHashKey (isInCombat)
 
 							local healthBarHeight = unitFrame.customHealthBarHeight or (plateConfigs and plateConfigs [healthBarConfigKey][2]) or 0
@@ -4987,6 +4988,7 @@ function Plater.OnInit() --private --~oninit ~init
 						elseif (profile.castbar_icon_size == "same as castbar plus healthbar") then
 							local actorType = unitFrame.actorType
 							local plateConfigs = DB_PLATE_CONFIG [actorType]
+							local isInCombat = profile.use_player_combat_state and PLAYER_IN_COMBAT or unitFrame.InCombat
 							local castBarConfigKey, healthBarConfigKey, manaConfigKey = Plater.GetHashKey (isInCombat)
 
 							local healthBarHeight = unitFrame.customHealthBarHeight or (plateConfigs and plateConfigs [healthBarConfigKey][2]) or 0
@@ -9529,7 +9531,7 @@ end
 				-- paladin tank buff tracking
 				local playerGUID = Plater.PlayerGUID
 				if sourceGUID == playerGUID and targetGUID == playerGUID then
-					spellId = select(7, GetSpellInfo(spellName))
+					local spellId = select(7, GetSpellInfo(spellName))
 					if spellId == 25780 or spellId == 407627 then
 						UpdatePlayerTankState(true)
 						--Plater.RefreshTankCache()
@@ -9550,7 +9552,7 @@ end
 				-- paladin tank buff tracking
 				local playerGUID = Plater.PlayerGUID
 				if sourceGUID == playerGUID and targetGUID == playerGUID then
-					spellId = select(7, GetSpellInfo(spellName))
+					local spellId = select(7, GetSpellInfo(spellName))
 					if spellId == 25780 or spellId == 407627 then
 						UpdatePlayerTankState(false)
 						--Plater.RefreshTankCache()
@@ -10106,9 +10108,9 @@ end
 					return assignedRole
 				end
 			end
-			if GetPartyAssignment("MAINTANK", unit) then
+			if GetPartyAssignment("MAINTANK", unitFrame.unit) then
 				return "MAINTANK"
-			elseif GetPartyAssignment("MAINASSIST", unit) then
+			elseif GetPartyAssignment("MAINASSIST", unitFrame.unit) then
 				return "MAINASSIST"
 			end
 		end
@@ -11581,7 +11583,6 @@ end
 			["StartLogPerformance"] = false,
 			["EndLogPerformance"] = false,
 			["StartLogPerformanceCore"] = false,
-			["StartLogPerformanceCore"] = false,
 			["EndLogPerformanceCore"] = false,
 			["DumpPerformance"] = true,
 			["ShowPerfData"] = true,
@@ -11727,7 +11728,7 @@ end
 		["RunScript"] = true,
 		["securecall"] = true,
 		["getfenv"] = true,
-		["getfenv"] = true,
+		["setfenv"] = true,
 		["loadstring"] = true,
 		["pcall"] = true,
 		["xpcall"] = true,

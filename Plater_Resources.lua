@@ -462,7 +462,7 @@ end
 		mainResourceFrame.resourceBars[CONST_SPECID_EVOKER_DEVASTATION] = newResourceBar
 		mainResourceFrame.resourceBars[CONST_SPECID_EVOKER_PRESERVATION] = newResourceBar
 		mainResourceFrame.resourceBars[CONST_SPECID_EVOKER_AUGMENTATION] = newResourceBar
-		newResourceBar.resourceId = SPELL_POWER_ESSEMCE
+		newResourceBar.resourceId = SPELL_POWER_ESSENCE
 		newResourceBar.updateResourceFunc = resourceWidgetsFunctions.OnEssenceChanged
 		tinsert(mainResourceFrame.allResourceBars, newResourceBar)
 		mainResourceFrame.resourceBarsByEnumName[CONST_ENUMNAME_ESSENCE] = newResourceBar
