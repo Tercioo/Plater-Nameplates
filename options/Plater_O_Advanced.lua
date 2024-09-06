@@ -253,6 +253,19 @@ function platerInternal.CreateAdvancedOptions()
             desc = "Hide Plater names game objects, such as soft-interact targets.",
         },
         {
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.name_on_game_object_color
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a)
+				local color = Plater.db.profile.name_on_game_object_color
+				color[1], color[2], color[3], color[4] = r, g, b, a
+			end,
+			name = "OPTIONS_INTERACT_OBJECT_NAME_COLOR",
+			desc = "OPTIONS_INTERACT_OBJECT_NAME_COLOR_DESC",
+		},
+        {
             type = "toggle",
             get = function() return Plater.db.profile.show_softinteract_icons end,
             set = function (self, fixedparam, value)
