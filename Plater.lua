@@ -1859,6 +1859,7 @@ Plater.AnchorNamesByPhraseId = {
 			
 			--strata
 			unitFrame:SetFrameStrata (profile.ui_parent_base_strata)
+			unitFrame.healthBar:SetFrameStrata (profile.ui_parent_base_strata)
 			castBar:SetFrameStrata (profile.ui_parent_cast_strata)
 			buffFrame1:SetFrameStrata (profile.ui_parent_buff_strata)
 			buffFrame2:SetFrameStrata (profile.ui_parent_buff2_strata)
@@ -1892,6 +1893,7 @@ Plater.AnchorNamesByPhraseId = {
 			--move all frames to target strata
 			local targetStrata = Plater.db.profile.ui_parent_target_strata
 			unitFrame:SetFrameStrata (targetStrata)
+			unitFrame.healthBar:SetFrameStrata (targetStrata)
 			unitFrame.castBar:SetFrameStrata (targetStrata)
 			unitFrame.BuffFrame:SetFrameStrata (targetStrata)
 			unitFrame.BuffFrame2:SetFrameStrata (targetStrata)
