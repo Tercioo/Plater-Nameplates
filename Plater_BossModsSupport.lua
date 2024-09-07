@@ -105,6 +105,7 @@ function Plater.CreateBossModAuraFrame(unitFrame)
 	unitFrame.BossModIconFrame:SetOption ("grow_direction", unitFrame.ExtraIconFrame:GetIconGrowDirection())
 	Plater.SetAnchor (unitFrame.BossModIconFrame, Plater.db.profile.bossmod_icons_anchor or {side = 8, x = 0, y = 30})
 	
+	unitFrame.BossModIconFrame.lastUpdateCooldown = 0 -- never so far
 	unitFrame.BossModIconFrame.OnIconTick = function(self, deltaTime) -- override to add glow effects
 		local now = GetTime()
 		if (self.lastUpdateCooldown + 0.05) <= now then
