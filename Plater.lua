@@ -1849,55 +1849,85 @@ Plater.AnchorNamesByPhraseId = {
 	--this reset the UIParent levels to user default set on the UIParent tab
 	--there's an api that calls this function called Plater.RefreshNameplateStrata()
 	function Plater.UpdateUIParentLevels (unitFrame) --private
+		--setup frame strata and levels
+		local profile = Plater.db.profile
+		local healthBar = unitFrame.healthBar
+		local castBar = unitFrame.castBar
+		local buffFrame1 = unitFrame.BuffFrame
+		local buffFrame2 = unitFrame.BuffFrame2
+		local buffSpecial = unitFrame.ExtraIconFrame
+
 		if (DB_USE_UIPARENT) then
-			--setup frame strata and levels
-			local profile = Plater.db.profile
-			local castBar = unitFrame.castBar
-			local buffFrame1 = unitFrame.BuffFrame
-			local buffFrame2 = unitFrame.BuffFrame2
-			local buffSpecial = unitFrame.ExtraIconFrame
-			
 			--strata
 			unitFrame:SetFrameStrata (profile.ui_parent_base_strata)
-			unitFrame.healthBar:SetFrameStrata (profile.ui_parent_base_strata)
+			healthBar:SetFrameStrata (profile.ui_parent_base_strata)
 			castBar:SetFrameStrata (profile.ui_parent_cast_strata)
 			buffFrame1:SetFrameStrata (profile.ui_parent_buff_strata)
 			buffFrame2:SetFrameStrata (profile.ui_parent_buff2_strata)
 			buffSpecial:SetFrameStrata (profile.ui_parent_buff_special_strata)
-			
-			--level
-			local baseLevel = unitFrame:GetFrameLevel()
-			
-			local tmplevel = baseLevel + profile.ui_parent_cast_level + 3
-			castBar:SetFrameLevel ((tmplevel > 0) and tmplevel or 0)
-			
-			tmplevel = baseLevel + profile.ui_parent_buff_level + 3
-			buffFrame1:SetFrameLevel ((tmplevel > 0) and tmplevel or 0)
-			
-			tmplevel = baseLevel + profile.ui_parent_buff2_level + 10
-			buffFrame2:SetFrameLevel ((tmplevel > 0) and tmplevel or 0)
-			
-			tmplevel = baseLevel + profile.ui_parent_buff_special_level + 10
-			buffSpecial:SetFrameLevel ((tmplevel > 0) and tmplevel or 0)
-			
-			--raid-target marker adjust:
-			unitFrame.PlaterRaidTargetFrame:SetFrameStrata(unitFrame.healthBar:GetFrameStrata())
-			unitFrame.PlaterRaidTargetFrame:SetFrameLevel(unitFrame.healthBar:GetFrameLevel() + 25)
 		end
+
+		--level
+		local baseLevel = unitFrame:GetFrameLevel()
+		healthBar:SetFrameLevel ((baseLevel > 0) and baseLevel or 0)
+			
+		local tmplevel = baseLevel + profile.ui_parent_cast_level + 3
+		castBar:SetFrameLevel ((tmplevel > 0) and tmplevel or 0)
+		
+		tmplevel = baseLevel + profile.ui_parent_buff_level + 3
+		buffFrame1:SetFrameLevel ((tmplevel > 0) and tmplevel or 0)
+		
+		tmplevel = baseLevel + profile.ui_parent_buff2_level + 10
+		buffFrame2:SetFrameLevel ((tmplevel > 0) and tmplevel or 0)
+		
+		tmplevel = baseLevel + profile.ui_parent_buff_special_level + 10
+		buffSpecial:SetFrameLevel ((tmplevel > 0) and tmplevel or 0)
+		
+		--raid-target marker adjust:
+		unitFrame.PlaterRaidTargetFrame:SetFrameStrata(unitFrame.healthBar:GetFrameStrata())
+		unitFrame.PlaterRaidTargetFrame:SetFrameLevel(unitFrame.healthBar:GetFrameLevel() + 25)
 	end	
 	
 	--move the target nameplate to its strata
 	--also need to move other frame components of this nameplate as well so the entire nameplate is up front
 	function Plater.UpdateUIParentTargetLevels (unitFrame) --private
+	--setup frame strata and levels
+		local profile = Plater.db.profile
+		local healthBar = unitFrame.healthBar
+		local castBar = unitFrame.castBar
+		local buffFrame1 = unitFrame.BuffFrame
+		local buffFrame2 = unitFrame.BuffFrame2
+		local buffSpecial = unitFrame.ExtraIconFrame
 		if (DB_USE_UIPARENT) then
 			--move all frames to target strata
 			local targetStrata = Plater.db.profile.ui_parent_target_strata
 			unitFrame:SetFrameStrata (targetStrata)
-			unitFrame.healthBar:SetFrameStrata (targetStrata)
-			unitFrame.castBar:SetFrameStrata (targetStrata)
-			unitFrame.BuffFrame:SetFrameStrata (targetStrata)
-			unitFrame.BuffFrame2:SetFrameStrata (targetStrata)
+			healthBar:SetFrameStrata (targetStrata)
+			castBar:SetFrameStrata (targetStrata)
+			buffFrame1:SetFrameStrata (targetStrata)
+			buffFrame2:SetFrameStrata (targetStrata)
+			buffSpecial:SetFrameStrata (targetStrata)
 		end
+
+		--level
+		local baseLevel = max(unitFrame:GetFrameLevel() + 9500, 9500)
+		healthBar:SetFrameLevel ((baseLevel > 0) and baseLevel or 0)
+			
+		local tmplevel = max(baseLevel + profile.ui_parent_cast_level + 3, 10000)
+		castBar:SetFrameLevel ((tmplevel > 0) and tmplevel or 0)
+		
+		tmplevel = max(baseLevel + profile.ui_parent_buff_level + 3, 10000)
+		buffFrame1:SetFrameLevel ((tmplevel > 0) and tmplevel or 0)
+		
+		tmplevel = max(baseLevel + profile.ui_parent_buff2_level + 10, 10000)
+		buffFrame2:SetFrameLevel ((tmplevel > 0) and tmplevel or 0)
+		
+		tmplevel = max(baseLevel + profile.ui_parent_buff_special_level + 10, 10000)
+		buffSpecial:SetFrameLevel ((tmplevel > 0) and tmplevel or 0)
+		
+		--raid-target marker adjust:
+		unitFrame.PlaterRaidTargetFrame:SetFrameStrata(unitFrame.healthBar:GetFrameStrata())
+		unitFrame.PlaterRaidTargetFrame:SetFrameLevel(unitFrame.healthBar:GetFrameLevel() + 25)
 	end
 	
 	--> regional format numbers
@@ -6940,9 +6970,8 @@ end
 				unitFrame.targetOverlayTexture:Show()
 			end
 			
-			if (DB_USE_UIPARENT) then
-				Plater.UpdateUIParentTargetLevels (unitFrame)
-			end
+			
+			Plater.UpdateUIParentTargetLevels (unitFrame)
 			
 			Plater.UpdateResourceFrame()
 		else
@@ -6971,9 +7000,7 @@ end
 				plateFrame.Obscured:Hide()
 			end
 			
-			if (DB_USE_UIPARENT) then
-				Plater.UpdateUIParentLevels (unitFrame)
-			end
+			Plater.UpdateUIParentLevels (unitFrame)
 		end
 
 		Plater.CheckRange (plateFrame, true) --disabled on 2018-10-09 | enabled back on 2020-1-16

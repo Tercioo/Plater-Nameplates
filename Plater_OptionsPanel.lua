@@ -10553,7 +10553,7 @@ end
 	--overlay frame to indicate the feature is disabled
 	uiParentFeatureFrame.disabledOverlayFrame = CreateFrame ("frame", nil, uiParentFeatureFrame, BackdropTemplateMixin and "BackdropTemplate")
 	uiParentFeatureFrame.disabledOverlayFrame:SetPoint ("topleft", uiParentFeatureFrame, "topleft", 1, -175)
-	uiParentFeatureFrame.disabledOverlayFrame:SetPoint ("bottomright", uiParentFeatureFrame, "bottomright", -1, 21)
+	uiParentFeatureFrame.disabledOverlayFrame:SetPoint ("bottomright", uiParentFeatureFrame, "bottomright", -1, 275)
 	uiParentFeatureFrame.disabledOverlayFrame:SetBackdrop ({bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
 	uiParentFeatureFrame.disabledOverlayFrame:SetFrameLevel (uiParentFeatureFrame:GetFrameLevel() + 100)
 	uiParentFeatureFrame.disabledOverlayFrame:SetBackdropColor (.1, .1, .1, 1)
@@ -10590,7 +10590,7 @@ end
 			
 				if (value) then
 					--user is enabling the feature
-					DF:ShowPromptPanel ("Click okay to confirm using this feature (will force a /reload)", function()
+					DF:ShowPromptPanel ("Click 'yes' to confirm using this feature (will force a /reload)", function()
 					Plater.db.profile.use_ui_parent = true
 					Plater.db.profile.use_ui_parent_just_enabled = true
 					Plater.db.profile.reopoen_options_panel_on_tab = TAB_INDEX_UIPARENTING
@@ -10611,6 +10611,25 @@ end
 			end,
 			name = "Use Custom Strata Channels",
 			desc = "Allow nameplates to be placed in custom frame strata channels.\n\n" .. ImportantText .. "a /reload will be triggered on changing this setting.",
+		},
+
+		{type = "blank"},
+		{type = "label", get = function() return "Scaling:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		
+		{
+			type = "range",
+			get = function() return Plater.db.profile.ui_parent_scale_tune end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.ui_parent_scale_tune = value
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+			end,
+			min = -2.5,
+			max = 2.5,
+			step = 0.01,
+			usedecimals = true,
+			name = "Fine Tune Scale",
+			desc = "Slightly adjust the scale of the unit frame.",
 		},
 		
 		{type = "blank"},
@@ -10665,7 +10684,7 @@ end
 		},
 		
 		{type = "blank"},
-		{type = "label", get = function() return "Frame Levels:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return "Frame Levels adjustment:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "range",
@@ -10725,25 +10744,6 @@ end
 			step = 1,
 			name = "Buff Special Frame",
 			desc = "Move frames up or down within the strata channel.",
-		},
-		
-		{type = "blank"},
-		{type = "label", get = function() return "Scaling:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-		
-		{
-			type = "range",
-			get = function() return Plater.db.profile.ui_parent_scale_tune end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.ui_parent_scale_tune = value
-				Plater.RefreshDBUpvalues()
-				Plater.UpdateAllPlates()
-			end,
-			min = -2.5,
-			max = 2.5,
-			step = 0.01,
-			usedecimals = true,
-			name = "Fine Tune Scale",
-			desc = "Slightly adjust the scale of the unit frame.",
 		},
 	}
 
