@@ -8,11 +8,16 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
-			{1725050765, "Bug Fix", "Nov 4th, 2024", "Fixing issue with options tabs loading in twice sometimes.", "cont1nuity"},
-			{1725050765, "Backend Change", "Nov 4th, 2024", "Use reaction name coloring for 'name only' enemy NPCs instead of fixed color.", "cont1nuity"},
-			{1725050765, "Backend Change", "Aug 31st, 2024", "Glow API documentation.", "cont1nuity"},
-			{1725050765, "Bug Fix", "Aug 30th, 2024", "Fixing issue with unit trigger tooltips not showing on entries as name.", "cont1nuity"},
-			{1725050765, "New Feature", "Aug 30th, 2024", "Consolidating option to rename casts based on DMB or BigWigs renamed spells.", "cont1nuity"},
+			{1725871020, "Bug Fix", "Sept 9th, 2024", "Fixing manual buff tracking showing Buff Special auras on normal aura frames as well.", "cont1nuity"},
+			{1725871020, "Backend Change", "Sept 6th, 2024", "Level & Strata adjustment: levels can now be set with custom strata disabled and healthBar strata is set properly.", "cont1nuity"},
+			{1725871020, "Backend Change", "Sept 6th, 2024", "Improvements to aura borders.", "cont1nuity"},
+			{1725871020, "Bug Fix", "Sept 5th, 2024", "Fixing a lot of small code issues.", "DakJaniels"},
+			{1725871020, "Bug Fix", "Sept 4th, 2024", "Fixing issue with options tabs loading in twice sometimes.", "cont1nuity"},
+			{1725871020, "Backend Change", "Sept 4th, 2024", "Use reaction name coloring for 'name only' enemy NPCs instead of fixed color.", "cont1nuity"},
+			{1725871020, "New Feature", "Sept 2nd, 2024", "Adding glow support to DBM boss-mod timer icons and moving Boss-Mod options to their own options tab.", "cont1nuity"},
+			{1725871020, "Backend Change", "Aug 31st, 2024", "Glow API documentation.", "cont1nuity"},
+			{1725871020, "Bug Fix", "Aug 30th, 2024", "Fixing issue with unit trigger tooltips not showing on entries as name.", "cont1nuity"},
+			{1725871020, "New Feature", "Aug 30th, 2024", "Consolidating option to rename casts based on DMB or BigWigs renamed spells.", "cont1nuity"},
 			
 			{1725041423, "Bug Fix", "Aug 30th, 2024", "Fixing error in default script.", "Terciob"},
 			{1725041423, "Bug Fix", "Aug 29th, 2024", "Fixing combo points for classic.", "cont1nuity"},
