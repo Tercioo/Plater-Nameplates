@@ -4539,8 +4539,6 @@ function Plater.OnInit() --private --~oninit ~init
 						Plater.SetAnchor (textString, plateConfigs.power_percent_text_anchor)
 						textString:SetAlpha (plateConfigs.power_percent_text_alpha)
 						
-						powerBar.border:SetVertexColor (0, 0, 0, 1) --hardcoded color
-						
 						Plater.SetFontOutlineAndShadow (textString, plateConfigs.power_percent_text_outline, plateConfigs.power_percent_text_shadow_color, plateConfigs.power_percent_text_shadow_color_offset[1], plateConfigs.power_percent_text_shadow_color_offset[2])
 					else
 						unitFrame.powerBar.Settings.ShowPercentText = false
