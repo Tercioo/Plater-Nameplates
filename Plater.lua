@@ -10978,7 +10978,7 @@ end
 	--if the spell name is passed, it just return the result without modifying the nameplate attributes
 	function Plater.NameplateInRange (unitFrame, spellName)
 		if (spellName) then
-			return IsSpellInRange (spellName, unitFrame [MEMBER_UNITID]) == 1
+			return C_Spell.IsSpellInRange (spellName, unitFrame [MEMBER_UNITID])
 
 		else
 			local rangeChecker
