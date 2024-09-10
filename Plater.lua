@@ -1868,7 +1868,7 @@ Plater.AnchorNamesByPhraseId = {
 		end
 
 		--level
-		local baseLevel = unitFrame:GetFrameLevel()
+		local baseLevel = unitFrame.baseFrameLevel or unitFrame:GetFrameLevel()
 		healthBar:SetFrameLevel ((baseLevel > 0) and baseLevel or 0)
 			
 		local tmplevel = baseLevel + profile.ui_parent_cast_level + 3
@@ -1910,19 +1910,20 @@ Plater.AnchorNamesByPhraseId = {
 		end
 
 		--level
-		local baseLevel = max(unitFrame:GetFrameLevel() + 9500, 9500)
+		local baseLevel = unitFrame.baseFrameLevel or unitFrame:GetFrameLevel()
+		baseLevel = max(baseLevel + 5000, 5000)
 		healthBar:SetFrameLevel ((baseLevel > 0) and baseLevel or 0)
 			
-		local tmplevel = max(baseLevel + profile.ui_parent_cast_level + 3, 10000)
+		local tmplevel = min(baseLevel + profile.ui_parent_cast_level + 3, 10000)
 		castBar:SetFrameLevel ((tmplevel > 0) and tmplevel or 0)
 		
-		tmplevel = max(baseLevel + profile.ui_parent_buff_level + 3, 10000)
+		tmplevel = min(baseLevel + profile.ui_parent_buff_level + 3, 10000)
 		buffFrame1:SetFrameLevel ((tmplevel > 0) and tmplevel or 0)
 		
-		tmplevel = max(baseLevel + profile.ui_parent_buff2_level + 10, 10000)
+		tmplevel = min(baseLevel + profile.ui_parent_buff2_level + 10, 10000)
 		buffFrame2:SetFrameLevel ((tmplevel > 0) and tmplevel or 0)
 		
-		tmplevel = max(baseLevel + profile.ui_parent_buff_special_level + 10, 10000)
+		tmplevel = min(baseLevel + profile.ui_parent_buff_special_level + 10, 10000)
 		buffSpecial:SetFrameLevel ((tmplevel > 0) and tmplevel or 0)
 		
 		--raid-target marker adjust:
@@ -2677,6 +2678,8 @@ Plater.AnchorNamesByPhraseId = {
 				else
 					newUnitFrame = DF:CreateUnitFrame (plateFrame, plateFrame:GetName() .. "PlaterUnitFrame", unitFrameOptions, healthBarOptions, castBarOptions, powerBarOptions)
 				end
+				
+				newUnitFrame.baseFrameLevel = newUnitFrame:GetFrameLevel()
 
 				plateFrame.unitFrame = newUnitFrame
 				--plateFrame.unitFrame:SetPoint("center", plateFrame)
