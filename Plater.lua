@@ -7806,6 +7806,7 @@ end
 		actorType = actorType or plateFrame.actorType
 		
 		if (not actorType or not plateFrame.unitFrame.PlaterOnScreen) then
+			Plater.EndLogPerformanceCore("Plater-Core", "Update", "UpdatePlateFrame")
 			return
 		end
 		
@@ -11177,10 +11178,9 @@ end
 			scriptInfo.Env._DefaultHeight = self:GetHeight()
 
 			local scriptName = scriptInfo.GlobalScriptObject.DBScriptObject.Name
-			Plater.StartLogPerformance("Scripts", scriptName, "OnShow")
-
 			local func = scriptInfo.GlobalScriptObject["OnShowCode"]
-
+			
+			Plater.StartLogPerformance("Scripts", scriptName, "OnShow")
 			local okay, errortext = xpcall(func, GetErrorHandler("Plater Script |cFFAAAA22" .. scriptName .. "|r OnShow error: ", scriptInfo.GlobalScriptObject.DBScriptObject), self, unitFrame.displayedUnit or unitFrame.unit or unitFrame.PlateFrame[MEMBER_UNITID], unitFrame, scriptInfo.Env, PLATER_GLOBAL_SCRIPT_ENV [scriptInfo.GlobalScriptObject.DBScriptObject.scriptId])
 			Plater.EndLogPerformance("Scripts", scriptName, "OnShow")
 
