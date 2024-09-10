@@ -3721,7 +3721,7 @@ Plater.AnchorNamesByPhraseId = {
 									--npcCacheInfo: [1] npc name [2] zone name [3] language
 									local npcCacheInfo = DB_NPCIDS_CACHE[plateFrame[MEMBER_NPCID]]
 									if (not npcCacheInfo) then
-										DB_NPCIDS_CACHE[plateFrame[MEMBER_NPCID]] = {plateFrame[MEMBER_NAME], Plater.ZoneName or "UNKNOWN", Plater.Locale or "enUS"}
+										DB_NPCIDS_CACHE[plateFrame[MEMBER_NPCID]] = {plateFrame.unitNameInternal, Plater.ZoneName or "UNKNOWN", Plater.Locale or "enUS"}
 									else
 										--the npc is already cached, check if the language is different
 										if (npcCacheInfo[3] ~= Plater.Locale) then
