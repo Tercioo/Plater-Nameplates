@@ -184,13 +184,13 @@ function Plater.DecompressData (data, dataType)
             return false
         end
 
-        local okay, data = LibAceSerializer:Deserialize (dataSerialized)
+        local okay, dataDecompressed = LibAceSerializer:Deserialize (dataSerialized)
         if (not okay) then
             Plater:Msg ("couldn't unserialize the data.")
             return false
         end
 
-        return data
+        return dataDecompressed
     end
 end
 
