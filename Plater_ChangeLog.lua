@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1725871020, "Backend Change", "Sept 10th, 2024", "Validate imported profile data passed to import API.", "cont1nuity"},
 			{1725871020, "New Feature", "Sept 9th, 2024", "Allow setting a custom name color for interactable game objects.", "Linaori"},
 			{1725871020, "Bug Fix", "Sept 9th, 2024", "Fixing manual buff tracking showing Buff Special auras on normal aura frames as well.", "cont1nuity"},
 			{1725871020, "Backend Change", "Sept 6th, 2024", "Level & Strata adjustment: levels can now be set with custom strata disabled and healthBar strata is set properly.", "cont1nuity"},

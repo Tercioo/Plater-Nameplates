@@ -157,7 +157,7 @@ function Plater.CompressDataWithoutSerialization(data, dataType)
 end
 
 
-function Plater.DecompressData (data, dataType)
+function Plater.DecompressData (data, dataType, silent)
 
     if (LibDeflate and LibAceSerializer) then
 
@@ -166,27 +166,27 @@ function Plater.DecompressData (data, dataType)
         if (dataType == "print") then
             dataCompressed = LibDeflate:DecodeForPrint (data)
             if (not dataCompressed) then
-                Plater:Msg ("couldn't decode the data.")
+                if not silent then Plater:Msg ("couldn't decode the data.") end
                 return false
             end
 
         elseif (dataType == "comm") then
             dataCompressed = LibDeflate:DecodeForWoWAddonChannel (data)
             if (not dataCompressed) then
-                Plater:Msg ("couldn't decode the data.")
+                if not silent then Plater:Msg ("couldn't decode the data.") end
                 return false
             end
         end
 
         local dataSerialized = LibDeflate:DecompressDeflate (dataCompressed)
         if (not dataSerialized) then
-            Plater:Msg ("couldn't uncompress the data.")
+            if not silent then Plater:Msg ("couldn't uncompress the data.") end
             return false
         end
 
         local okay, dataDecompressed = LibAceSerializer:Deserialize (dataSerialized)
         if (not okay) then
-            Plater:Msg ("couldn't unserialize the data.")
+            if not silent then Plater:Msg ("couldn't unserialize the data.") end
             return false
         end
 
