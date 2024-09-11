@@ -1,6 +1,6 @@
 
 
-local dversion = 567
+local dversion = 569
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary(major, minor)
 
@@ -4999,11 +4999,12 @@ end
 
 function DF:AddRoleIconToText(text, role, size)
 	if (role and type(role) == "string") then
-		local coords = GetTexCoordsForRole(role)
+		local coords = roleTexcoord2[role]
 		if (coords) then
 			if (type(text) == "string" and role ~= "NONE") then
 				size = size or 14
-				text = "|TInterface\\LFGFRAME\\UI-LFG-ICON-ROLES:" .. size .. ":" .. size .. ":0:0:256:256:" .. roleTexcoord[role] .. "|t " .. text
+				local coordsToString = floor(coords[1]*256) .. ":" .. floor(coords[2]*256) .. ":" .. floor(coords[3]*256) .. ":" .. floor(coords[4]*256)
+				text = "|TInterface\\LFGFRAME\\UI-LFG-ICON-ROLES:" .. size .. ":" .. size .. ":0:0:256:256:" .. coordsToString .. "|t " .. text
 				return text
 			end
 		end
@@ -5723,6 +5724,10 @@ function _G.__benchmark(bNotPrintResult)
 		print("Elapsed Time:", elapsed)
 		return elapsed
 	end
+end
+
+function DF:DebugTexture(texture, left, right, top, bottom)
+	return DF:PreviewTexture(texture, left, right, top, bottom)
 end
 
 function DF:PreviewTexture(texture, left, right, top, bottom)

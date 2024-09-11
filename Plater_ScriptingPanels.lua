@@ -1742,7 +1742,7 @@ end
 				end
 			end, 
 			100, 20, DF.Language.CreateLocTable(addonName, "OPTIONS_CASTBAR_TOGGLE_TEST", true), 0, nil, nil, nil, nil, nil, options_button_template, DF:GetTemplate ("font", "PLATER_BUTTON"))
-		toggleCastBarButton:SetPoint ("right", add_FW_dropdown, "left", -117, 38)
+		toggleCastBarButton:SetPoint ("right", add_FW_dropdown, "left", -10, 38)
 
 
 		--error text
