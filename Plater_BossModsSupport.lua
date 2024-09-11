@@ -108,7 +108,7 @@ function Plater.CreateBossModAuraFrame(unitFrame)
 	unitFrame.BossModIconFrame.OnIconTick = function(self, deltaTime) -- override to add glow effects
 		local now = GetTime()
 		if (self.lastUpdateCooldown + 0.05) <= now then
-			self.timeRemaining = (self.expirationTime - now) / (self.modRate or 1)
+			self.timeRemaining = ((self.expirationTime or now) - now) / (self.modRate or 1)
 			if self.timeRemaining > 0 then
 				if self.parentIconRow.options.decimal_timer then
 					self.CountdownText:SetText(self.parentIconRow.FormatCooldownTimeDecimal(self.timeRemaining))
