@@ -3506,7 +3506,7 @@ Plater.CreateAuraTesting()
 				name = "Magic",
 				desc = "When the unit has a magic buff on it, show it.",
 			},
-			--show offensive CDs
+			--show offensive player CDs
 			{
 				type = "toggle",
 				get = function() return Plater.db.profile.extra_icon_show_offensive end,

@@ -2808,22 +2808,44 @@ end
         
 		--build the offensive cd list
 		if (profile.extra_icon_show_offensive) then
-			for spellId, _ in pairs (DF.CooldownsAttack) do
-				local spellName = GetSpellInfo (spellId)
-				if (spellName) then
-					SPECIAL_AURAS_AUTO_ADDED [spellId] = true
-					OFFENSIVE_AURA_IDS [spellId] = true
+			--pull from the openraid library
+			local cooldownList = LIB_OPEN_RAID_COOLDOWNS_INFO
+			if (cooldownList) then
+				for spellId, cooldownInfo in pairs(cooldownList) do
+					if (cooldownInfo.type == 1) then --offense cooldown
+						SPECIAL_AURAS_AUTO_ADDED[spellId] = true
+						OFFENSIVE_AURA_IDS[spellId] = true
+					end
+				end
+			else
+				for spellId, _ in pairs (DF.CooldownsAttack) do
+					local spellName = GetSpellInfo (spellId)
+					if (spellName) then
+						SPECIAL_AURAS_AUTO_ADDED [spellId] = true
+						OFFENSIVE_AURA_IDS [spellId] = true
+					end
 				end
 			end
         end
         
 		--build the defensive cd list
 		if (profile.extra_icon_show_defensive) then
-			for spellId, _ in pairs (DF.CooldownsAllDeffensive) do
-				local spellName = GetSpellInfo (spellId)
-				if (spellName) then
-					SPECIAL_AURAS_AUTO_ADDED [spellId] = true
-					DEFENSIVE_AURA_IDS [spellId] = true
+			--pull from the openraid library
+			local cooldownList = LIB_OPEN_RAID_COOLDOWNS_INFO
+			if (cooldownList) then
+				for spellId, cooldownInfo in pairs(cooldownList) do
+					if (cooldownInfo.type == 2 or cooldownInfo.type == 3 or cooldownInfo.type == 4) then --personal, targeted or raidwide defense cooldown
+						SPECIAL_AURAS_AUTO_ADDED[spellId] = true
+						DEFENSIVE_AURA_IDS[spellId] = true
+					end
+				end
+			else
+				for spellId, _ in pairs (DF.CooldownsAllDeffensive) do
+					local spellName = GetSpellInfo (spellId)
+					if (spellName) then
+						SPECIAL_AURAS_AUTO_ADDED [spellId] = true
+						DEFENSIVE_AURA_IDS [spellId] = true
+					end
 				end
 			end
         end
