@@ -57,8 +57,17 @@ end
         --due to lazy loading, the panel might not be loaded yet
         local npcColorFrame = PlaterOptionsPanelContainerColorManagement
         Plater.OpenOptionsPanel(platerInternal.NpcColorsFrameIndex, true)
-        npcColorFrame.AuraSearchTextEntry:SetText(searchString)
-        npcColorFrame.OnSearchBoxTextChanged()
+
+        --first time loading the options panel
+        if (not npcColorFrame.AuraSearchTextEntry) then
+            C_Timer.After(0.25, function()
+                npcColorFrame.AuraSearchTextEntry:SetText(searchString)
+                npcColorFrame.OnSearchBoxTextChanged()
+            end)
+        else
+            npcColorFrame.AuraSearchTextEntry:SetText(searchString)
+            npcColorFrame.OnSearchBoxTextChanged()
+        end
         --C_Timer.After(0, function() Plater.OpenOptionsPanel(platerInternal.NpcColorsFrameIndex) print("selected tab") end)
     end
 
