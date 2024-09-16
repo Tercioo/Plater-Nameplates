@@ -8,6 +8,12 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1726136224, "Backend Change", "Sept 16th, 2024", "Frame-Level is now only adjusted for targets if custom strata is disabled.", "cont1nuity"},
+			{1726136224, "Backend Change", "Sept 16th, 2024", "Power-Bar strata and frame level is now properly set.", "cont1nuity"},
+			{1726136224, "Bug Fix", "Sept 16th, 2024", "Disabling Boss-Mod support will now disable renaming as well.", "cont1nuity"},
+			{1726136224, "Backend Change", "Sept 16th, 2024", "Delves are considered instanced content for auto-toggle feature.", "cont1nuity"},
+			{1726136224, "Bug Fix", "Sept 13th, 2024", "Build offensive/defensive CDs from LibOpenRaid if available.", "Terciob"},
+			
 			{1726136224, "Bug Fix", "Sept 11th, 2024", "Fixing an error in profiling.", "cont1nuity"},
 			{1726136224, "Backend Change", "Sept 10th, 2024", "Validate imported profile data passed to import API.", "cont1nuity"},
 			{1726136224, "New Feature", "Sept 9th, 2024", "Allow setting a custom name color for interactable game objects.", "Linaori"},
