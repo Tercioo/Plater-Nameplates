@@ -1853,6 +1853,7 @@ Plater.AnchorNamesByPhraseId = {
 		local profile = Plater.db.profile
 		local healthBar = unitFrame.healthBar
 		local castBar = unitFrame.castBar
+		local powerBar = unitFrame.powerBar
 		local buffFrame1 = unitFrame.BuffFrame
 		local buffFrame2 = unitFrame.BuffFrame2
 		local buffSpecial = unitFrame.ExtraIconFrame
@@ -1861,6 +1862,7 @@ Plater.AnchorNamesByPhraseId = {
 			--strata
 			unitFrame:SetFrameStrata (profile.ui_parent_base_strata)
 			healthBar:SetFrameStrata (profile.ui_parent_base_strata)
+			powerBar:SetFrameStrata (profile.ui_parent_base_strata)
 			castBar:SetFrameStrata (profile.ui_parent_cast_strata)
 			buffFrame1:SetFrameStrata (profile.ui_parent_buff_strata)
 			buffFrame2:SetFrameStrata (profile.ui_parent_buff2_strata)
@@ -1870,6 +1872,7 @@ Plater.AnchorNamesByPhraseId = {
 		--level
 		local baseLevel = unitFrame.baseFrameLevel or unitFrame:GetFrameLevel()
 		healthBar:SetFrameLevel ((baseLevel > 0) and baseLevel or 0)
+		powerBar:SetFrameLevel (((baseLevel > 0) and baseLevel or 0) + 2)
 			
 		local tmplevel = baseLevel + profile.ui_parent_cast_level + 3
 		castBar:SetFrameLevel ((tmplevel > 0) and tmplevel or 0)
@@ -1895,6 +1898,7 @@ Plater.AnchorNamesByPhraseId = {
 		local profile = Plater.db.profile
 		local healthBar = unitFrame.healthBar
 		local castBar = unitFrame.castBar
+		local powerBar = unitFrame.powerBar
 		local buffFrame1 = unitFrame.BuffFrame
 		local buffFrame2 = unitFrame.BuffFrame2
 		local buffSpecial = unitFrame.ExtraIconFrame
@@ -1903,6 +1907,7 @@ Plater.AnchorNamesByPhraseId = {
 			local targetStrata = Plater.db.profile.ui_parent_target_strata
 			unitFrame:SetFrameStrata (targetStrata)
 			healthBar:SetFrameStrata (targetStrata)
+			powerBar:SetFrameStrata (targetStrata)
 			castBar:SetFrameStrata (targetStrata)
 			buffFrame1:SetFrameStrata (targetStrata)
 			buffFrame2:SetFrameStrata (targetStrata)
@@ -1913,6 +1918,7 @@ Plater.AnchorNamesByPhraseId = {
 		local baseLevel = unitFrame.baseFrameLevel or unitFrame:GetFrameLevel()
 		baseLevel = max(baseLevel + 5000, 5000)
 		healthBar:SetFrameLevel ((baseLevel > 0) and baseLevel or 0)
+		powerBar:SetFrameLevel (((baseLevel > 0) and baseLevel or 0) + 2)
 			
 		local tmplevel = min(baseLevel + profile.ui_parent_cast_level + 3, 10000)
 		castBar:SetFrameLevel ((tmplevel > 0) and tmplevel or 0)
