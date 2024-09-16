@@ -1916,7 +1916,7 @@ Plater.AnchorNamesByPhraseId = {
 
 		--level
 		local baseLevel = unitFrame.baseFrameLevel or unitFrame:GetFrameLevel()
-		baseLevel = max(baseLevel + 5000, 5000)
+		baseLevel = DB_USE_UIPARENT and max(baseLevel + 5000, 5000) or baseLevel
 		healthBar:SetFrameLevel ((baseLevel > 0) and baseLevel or 0)
 		powerBar:SetFrameLevel (((baseLevel > 0) and baseLevel or 0) + 2)
 			
