@@ -8579,7 +8579,8 @@ end
 			return
 		end
 		
-		local zoneName, zoneType = GetInstanceInfo()
+		local zoneName, zoneType, difficultyID = GetInstanceInfo()
+		zoneType = (difficultyID == 208 and "party") or zoneType -- delves are party content.
 		local profile = Plater.db.profile
 		
 		-- combat toggle
