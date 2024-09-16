@@ -6164,11 +6164,17 @@ end
 		
 		Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdatePlateClickSpace")
 		
+		-- ensure we support the "large nameplate" setting properly
+		local namePlateVerticalScale = GetCVarNumberOrDefault("NamePlateVerticalScale")
+		local zeroBasedScale = namePlateVerticalScale - 1.0
+		local clampedZeroBasedScale = Saturate(zeroBasedScale)
+		local horizontalScale = GetCVarNumberOrDefault("NamePlateHorizontalScale")
+		
 		local width, height = Plater.db.profile.click_space_friendly[1], Plater.db.profile.click_space_friendly[2]
-		C_NamePlate.SetNamePlateFriendlySize (width, height) --classic: {132, 32}, retail: {110, 45},
+		C_NamePlate.SetNamePlateFriendlySize (width * horizontalScale, height * Lerp(1.0, 1.25, zeroBasedScale)) --classic: {132, 32}, retail: {110, 45},
 		
 		local width, height = Plater.db.profile.click_space[1], Plater.db.profile.click_space[2]
-		C_NamePlate.SetNamePlateEnemySize (width, height) --classic: {132, 32}, retail: {110, 45},
+		C_NamePlate.SetNamePlateEnemySize (width * horizontalScale, height * Lerp(1.0, 1.25, zeroBasedScale)) --classic: {132, 32}, retail: {110, 45},
 		
 		--C_NamePlate.SetNamePlateSelfPreferredClickInsets (0, 0, 0, 0)
 		--C_NamePlate.SetNamePlateFriendlyPreferredClickInsets (0, 0, 0, 0)
