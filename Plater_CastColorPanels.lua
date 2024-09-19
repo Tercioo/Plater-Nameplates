@@ -204,6 +204,10 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
     castFrame:SetPoint("topleft", castColorFrame, "topleft", 5, -140)
     castFrame:SetSize(1060, 495)
 
+    castColorFrame:HookScript("OnHide", function()
+        GameCooltip:Hide()
+    end)
+
     --options
     local scroll_width = 1050
     local scroll_height = 442
@@ -256,6 +260,8 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         if (castColorFrame.lastLineEntered) then
             castColorFrame.lastLineEntered:SetBackdropColor(unpack (castColorFrame.lastLineEntered.backdrop_color or backdrop_color))
         end
+
+        GameCooltip:Hide()
 
         self:SetBackdropColor (unpack (backdrop_color_on_enter or backdrop_color))
         if (self.spellId) then
