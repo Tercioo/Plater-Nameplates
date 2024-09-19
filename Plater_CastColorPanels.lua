@@ -1301,7 +1301,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             else
                 --to allow the user to search for spells using a script, we need to get all the script names
                 ---@type table
-                local scriptNames = self.ScriptNamesCache --{}
+                local scriptNames = self.ScriptNamesCache or {} --{}
                 scriptNames["p"] = nil
                 scriptNames["plater"] = nil
 
