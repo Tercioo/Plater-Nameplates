@@ -651,7 +651,11 @@ Plater.AnchorNamesByPhraseId = {
 				
 				elseif (class == "WARLOCK") then				
 					if IsPlayerSpell(17877) then --Shadowburn
-						lowExecute = 0.20
+						if IsPlayerSpell(456939) then -- Blistering Atrophy
+							lowExecute = 0.30
+						else
+							lowExecute = 0.20
+						end
 					elseif IsSpellKnownOrOverridesKnown(198590) then --Drain Soul
 						lowExecute = 0.20
 					end
