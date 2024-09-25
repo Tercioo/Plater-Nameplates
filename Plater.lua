@@ -3729,7 +3729,7 @@ Plater.AnchorNamesByPhraseId = {
 							--includes neutral npcs
 							
 							--add the npc in the npcid cache
-							if (Plater.ZoneInstanceType == "raid" or Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "scenario") then
+							if (not isObject and (Plater.ZoneInstanceType == "raid" or Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "scenario")) then
 								if (plateFrame[MEMBER_NPCID] and plateFrame[MEMBER_NAME] ~= UNKNOWN) then --UNKNOWN is the global string from blizzard
 									--npcCacheInfo: [1] npc name [2] zone name [3] language
 									local npcCacheInfo = DB_NPCIDS_CACHE[plateFrame[MEMBER_NPCID]]
