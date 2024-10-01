@@ -1467,9 +1467,9 @@ Plater.AnchorNamesByPhraseId = {
 		["nameplateMinAlpha"] = true,
 		["nameplateMinAlphaDistance"] = true,
 		["nameplateShowDebuffsOnFriendly"] = true,
-		["SoftTargetIconGameObject"] = (IS_WOW_PROJECT_MAINLINE),
-		["SoftTargetInteract"] = (IS_WOW_PROJECT_MAINLINE),
-		["SoftTargetNameplateInteract"] = (IS_WOW_PROJECT_MAINLINE),
+		["SoftTargetIconGameObject"] = true,
+		["SoftTargetInteract"] = true,
+		["SoftTargetNameplateInteract"] = true,
 	}
 	
 	local cvars_to_store_lower = {}
