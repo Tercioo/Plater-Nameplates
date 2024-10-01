@@ -8543,7 +8543,7 @@ end
 			local attachTo = plateFrame.IconIndicators [plateFrame.IconIndicators.Next - 1]
 			--se for menor que 4 ele deve crescer para o lado da esquerda, nos outros casos vai para a direita
 			if (Plater.db.profile.indicator_anchor.side < 4) then
-				PixelUtil.SetPoint (thisIndicator, "right", attachTo, "left", -2, 0)
+				PixelUtil.SetPoint (thisIndicator, "right", attachTo, "left", -1, 0)
 			else
 				PixelUtil.SetPoint (thisIndicator, "left", attachTo, "right", 1, 0)
 			end
