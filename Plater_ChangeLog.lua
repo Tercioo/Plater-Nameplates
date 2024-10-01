@@ -8,11 +8,16 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
-			{1726136224, "Backend Change", "Sept 16th, 2024", "Frame-Level is now only adjusted for targets if custom strata is disabled.", "cont1nuity"},
-			{1726136224, "Backend Change", "Sept 16th, 2024", "Power-Bar strata and frame level is now properly set.", "cont1nuity"},
-			{1726136224, "Bug Fix", "Sept 16th, 2024", "Disabling Boss-Mod support will now disable renaming as well.", "cont1nuity"},
-			{1726136224, "Backend Change", "Sept 16th, 2024", "Delves are considered instanced content for auto-toggle feature.", "cont1nuity"},
-			{1726136224, "Bug Fix", "Sept 13th, 2024", "Build offensive/defensive CDs from LibOpenRaid if available.", "Terciob"},
+			{1727794055, "Bug Fix", "Oct 1st, 2024", "Ensure soft-interact options work on all client versions now.", "cont1nuity"},
+			{1727794055, "Bug Fix", "Sept 25th, 2024", "Don't cache game objects in the npc-cache.", "cont1nuity"},
+			{1727794055, "Bug Fix", "Sept 25th, 2024", "Fix Warlock execute.", "cont1nuity"},
+			{1727794055, "Bug Fix", "Sept 19th, 2024", "Fixes for MDT integration.", "Terciob"},
+			{1727794055, "Backend Change", "Sept 16th, 2024", "Support 'Larger Nameplates' option and base scaling in a better way.", "cont1nuity"},
+			{1727794055, "Backend Change", "Sept 16th, 2024", "Frame-Level is now only adjusted for targets if custom strata is disabled.", "cont1nuity"},
+			{1727794055, "Backend Change", "Sept 16th, 2024", "Power-Bar strata and frame level is now properly set.", "cont1nuity"},
+			{1727794055, "Bug Fix", "Sept 16th, 2024", "Disabling Boss-Mod support will now disable renaming as well.", "cont1nuity"},
+			{1727794055, "Backend Change", "Sept 16th, 2024", "Delves are considered instanced content for auto-toggle feature.", "cont1nuity"},
+			{1727794055, "Bug Fix", "Sept 13th, 2024", "Build offensive/defensive CDs from LibOpenRaid if available.", "Terciob"},
 			
 			{1726136224, "Bug Fix", "Sept 11th, 2024", "Fixing an error in profiling.", "cont1nuity"},
 			{1726136224, "Backend Change", "Sept 10th, 2024", "Validate imported profile data passed to import API.", "cont1nuity"},
