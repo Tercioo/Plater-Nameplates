@@ -56,62 +56,62 @@ local CONST_CASTINFO_CUSTOMSPELLNAME = 10
 
 local spellIndicators = {
     ["edited_name"] = {
-		texture = [[Interface\AddOns\Plater\images\spell_indicators_1]],
-		coords = {0, 0.125, 0, 1},
-		scale = 1,
-		shown = false,
-		id = "edited_name",
-		width = 12,
-		height = 12,
-		name = "Name Changed Indicator",
-		alpha = 1,
-		type = "spell_indicators",
-	},
+        texture = [[Interface\AddOns\Plater\images\spell_indicators_1]],
+        coords = {0, 0.125, 0, 1},
+        scale = 1,
+        shown = false,
+        id = "edited_name",
+        width = 12,
+        height = 12,
+        name = "Name Changed Indicator",
+        alpha = 1,
+        type = "spell_indicators",
+    },
 
     ["edited_audio"] = {
-		texture = [[Interface\AddOns\Plater\images\spell_indicators_1]],
-		coords = {0.125, 0.25, 0, 1},
-		scale = 1,
-		shown = false,
-		id = "edited_audio",
-		width = 12,
-		height = 12,
-		name = "Audio Changed Indicator",
-		alpha = 1,
-		type = "spell_indicators",
-	},
+        texture = [[Interface\AddOns\Plater\images\spell_indicators_1]],
+        coords = {0.125, 0.25, 0, 1},
+        scale = 1,
+        shown = false,
+        id = "edited_audio",
+        width = 12,
+        height = 12,
+        name = "Audio Changed Indicator",
+        alpha = 1,
+        type = "spell_indicators",
+    },
 
     ["edited_color"] = {
-		texture = [[Interface\AddOns\Plater\images\spell_indicators_1]],
-		coords = {0.25, 0.375, 0, 1},
-		scale = 1,
-		shown = false,
-		id = "edited_color",
-		width = 12,
-		height = 12,
-		name = "Color Changed Indicator",
-		alpha = 1,
-		type = "spell_indicators",
-	},
+        texture = [[Interface\AddOns\Plater\images\spell_indicators_1]],
+        coords = {0.25, 0.375, 0, 1},
+        scale = 1,
+        shown = false,
+        id = "edited_color",
+        width = 12,
+        height = 12,
+        name = "Color Changed Indicator",
+        alpha = 1,
+        type = "spell_indicators",
+    },
 
     ["edited_script"] = {
-		texture = [[Interface\AddOns\Plater\images\spell_indicators_1]],
-		coords = {0.375, 0.5, 0, 1},
-		scale = 1,
-		shown = false,
-		id = "edited_script",
-		width = 12,
-		height = 12,
-		name = "Script Changed Indicator",
-		alpha = 1,
-		type = "spell_indicators",
-	},
+        texture = [[Interface\AddOns\Plater\images\spell_indicators_1]],
+        coords = {0.375, 0.5, 0, 1},
+        scale = 1,
+        shown = false,
+        id = "edited_script",
+        width = 12,
+        height = 12,
+        name = "Script Changed Indicator",
+        alpha = 1,
+        type = "spell_indicators",
+    },
 }
 
 local on_refresh_db = function()
-	local profile = Plater.db.profile
-	DB_CAST_AUDIOCUES = profile.cast_audiocues
-	DB_CAST_COLORS = profile.cast_colors
+    local profile = Plater.db.profile
+    DB_CAST_AUDIOCUES = profile.cast_audiocues
+    DB_CAST_COLORS = profile.cast_colors
     DB_NPCIDS_CACHE = profile.npc_cache
     DB_CAPTURED_SPELLS = PlaterDB.captured_spells
     DB_CAPTURED_CASTS = PlaterDB.captured_casts
@@ -2024,12 +2024,12 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             }
 
             --[=[
-			["cast_colors"] = {
-				[325727] = {
-					true, -- [1]
-					"greenyellow", -- [2]
-				},
-			},
+            ["cast_colors"] = {
+                [325727] = {
+                    true, -- [1]
+                    "greenyellow", -- [2]
+                },
+            },
             --]=]
             --check if the user is searching npcs, build the export table only using the cast colors shown in the result
             if (IsSearchingFor and IsSearchingFor ~= "" and spells_scroll.SearchCachedTable) then

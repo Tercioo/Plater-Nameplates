@@ -31,31 +31,31 @@ platerInternal.UnitIdCache = {}
 platerInternal.UnitIdCache.Party = {"player"}
 platerInternal.UnitIdCache.PartyPet = {"playetpet"}
 for i = 1, 4 do
-	table.insert(platerInternal.UnitIdCache.Party, "party" .. i)
-	table.insert(platerInternal.UnitIdCache.PartyPet, "partypet" .. i)
+    table.insert(platerInternal.UnitIdCache.Party, "party" .. i)
+    table.insert(platerInternal.UnitIdCache.PartyPet, "partypet" .. i)
 end
 
 --cache unitIds so string unitId manipulating are no longer required
 platerInternal.UnitIdCache.Raid = {}
 platerInternal.UnitIdCache.RaidPet = {}
 for i = 1, 40 do
-	platerInternal.UnitIdCache.Raid[i] = "raid" .. i
-	platerInternal.UnitIdCache.RaidPet[i] = "raidpet" .. i
+    platerInternal.UnitIdCache.Raid[i] = "raid" .. i
+    platerInternal.UnitIdCache.RaidPet[i] = "raidpet" .. i
 end
 
 platerInternal.UnitIdCache.Boss = {}
 for i = 1, 9 do
-	platerInternal.UnitIdCache.Boss[i] = "boss" .. i
+    platerInternal.UnitIdCache.Boss[i] = "boss" .. i
 end
 
 platerInternal.UnitIdCache.Nameplate = {}
 for i = 1, 40 do
-	platerInternal.UnitIdCache.Nameplate[i] = "nameplate" .. i
+    platerInternal.UnitIdCache.Nameplate[i] = "nameplate" .. i
 end
 
 platerInternal.UnitIdCache.Arena = {}
 for i = 1, 5 do
-	platerInternal.UnitIdCache.Arena[i] = "arena" .. i
+    platerInternal.UnitIdCache.Arena[i] = "arena" .. i
 end
 
 function platerInternal.CreateDataTables(Plater)
@@ -105,69 +105,69 @@ function platerInternal.CreateDataTables(Plater)
     --auras
     Plater.MaxAurasPerRow = 10 --can change during runtime
 
-	Plater.ForceInCombatUnits = {
-		--[] = true, --
-		[168326] = true, --Shattered Visage, Mueh'zala De Other Side
-		[170927] = true, --Erupting Ooze, Doctor Ickus Plaguefall
-		[171887] = true, --Slimy Smorgasbord, Globgrog Plaguefall
-		[164362] = true, --Slimy Morsel, Globgrog Plaguefall
-		[169159] = true, --Unstable Canister, Plaguefall
-		[168394] = true, --Slimy Morsel, Plaguefall
-		[176581] = true, --Spiked Ball, Painsmith Raznal SoD
-		[176920] = true, --Domination Arrow, Sylvanas SoD
-		[178008] = true, --Decrepit Orb, Sylvanas SoD
-		[179963] = true, --Terror Orb, Sylvanas SoD
-		[175861] = true, --Glacial Spike, Kel'Thusad SoD
-		[182778] = true, --Collapsing Quasar, Rygelon SotFO
-		[182823] = true, --Cosmic Core, Rygelon SotFO
-		[183945] = true, --Unstable Matter, Rygelon SotFO
-		[183745] = true, --Protoform Schematic, Lihuvim SotFO
-		[188302] = true, --Reconfiguration Emitter, Shadowlands S4 Fated affix
-		[188703] = true, --Protoform Barrier, Shadowlands S4 Fated affix
-		[176026] = true, --Dancing Fools, Council of Blood CN
-		[195318] = true,
-		[195580] = true,
-		[195820] = true,
-		[196642] = true,
-		[189886] = true,
-		[192955] = true,
-		[194806] = true,
-		[196548] = true,
-		[197398] = true,
-		[112668] = true,
-		[96608] = true,
-		[102019] = true,
-		[189893] = true, --187894?
-		[75966] = true, --75451?
-		[75899] = true,
-		[76518] = true,
-		[56792] = true,
-		[196559] = true,
-		[190187] = true,
-		[195138] = true,
-		[195821] = true,
-		[99922] = true,
-		[104822] = true,
-		[120651] = true, --explosives (M+)
-		[190381] = true, --Rotburst Totem
-		[130896] = true, --Blackout Barrel
-		[129758] = true, --Irontide Grenadier
-		[196712] = true, --Nullification Device
-		[195399] = true, --Curious Swoglet
-		[196043] = true, --Primalist Infuser
-		[97720] = true, --Blightshard Skitter
-		[98081] = true, --Bellowing Idol
-		[101075] = true, --Wormspeaker Devout
-		[101476] = true, --Molten Charskin
-		[192464] = true, --Raging Ember
-		[186696] = true, --Quaking Totem
-		[186107] = true, --Vault Keeper
-		[413263] = true, --Skyfall Nova
-		[202824] = true, --Erratic Remnant
-		[203230] = true, --Dragonfire Golem
-		[203812] = true, --Voice From Beyond
-		[100818] = true, -- Bellowing Idol
-		[92538] = true, -- Tarspitter Grub
+    Plater.ForceInCombatUnits = {
+        --[] = true, --
+        [168326] = true, --Shattered Visage, Mueh'zala De Other Side
+        [170927] = true, --Erupting Ooze, Doctor Ickus Plaguefall
+        [171887] = true, --Slimy Smorgasbord, Globgrog Plaguefall
+        [164362] = true, --Slimy Morsel, Globgrog Plaguefall
+        [169159] = true, --Unstable Canister, Plaguefall
+        [168394] = true, --Slimy Morsel, Plaguefall
+        [176581] = true, --Spiked Ball, Painsmith Raznal SoD
+        [176920] = true, --Domination Arrow, Sylvanas SoD
+        [178008] = true, --Decrepit Orb, Sylvanas SoD
+        [179963] = true, --Terror Orb, Sylvanas SoD
+        [175861] = true, --Glacial Spike, Kel'Thusad SoD
+        [182778] = true, --Collapsing Quasar, Rygelon SotFO
+        [182823] = true, --Cosmic Core, Rygelon SotFO
+        [183945] = true, --Unstable Matter, Rygelon SotFO
+        [183745] = true, --Protoform Schematic, Lihuvim SotFO
+        [188302] = true, --Reconfiguration Emitter, Shadowlands S4 Fated affix
+        [188703] = true, --Protoform Barrier, Shadowlands S4 Fated affix
+        [176026] = true, --Dancing Fools, Council of Blood CN
+        [195318] = true,
+        [195580] = true,
+        [195820] = true,
+        [196642] = true,
+        [189886] = true,
+        [192955] = true,
+        [194806] = true,
+        [196548] = true,
+        [197398] = true,
+        [112668] = true,
+        [96608] = true,
+        [102019] = true,
+        [189893] = true, --187894?
+        [75966] = true, --75451?
+        [75899] = true,
+        [76518] = true,
+        [56792] = true,
+        [196559] = true,
+        [190187] = true,
+        [195138] = true,
+        [195821] = true,
+        [99922] = true,
+        [104822] = true,
+        [120651] = true, --explosives (M+)
+        [190381] = true, --Rotburst Totem
+        [130896] = true, --Blackout Barrel
+        [129758] = true, --Irontide Grenadier
+        [196712] = true, --Nullification Device
+        [195399] = true, --Curious Swoglet
+        [196043] = true, --Primalist Infuser
+        [97720] = true, --Blightshard Skitter
+        [98081] = true, --Bellowing Idol
+        [101075] = true, --Wormspeaker Devout
+        [101476] = true, --Molten Charskin
+        [192464] = true, --Raging Ember
+        [186696] = true, --Quaking Totem
+        [186107] = true, --Vault Keeper
+        [413263] = true, --Skyfall Nova
+        [202824] = true, --Erratic Remnant
+        [203230] = true, --Dragonfire Golem
+        [203812] = true, --Voice From Beyond
+        [100818] = true, -- Bellowing Idol
+        [92538] = true, -- Tarspitter Grub
         [136330] = true, -- Soul Thorns
         [136541] = true, -- Bile Oozeling
         [133361] = true, -- Wasting Servant
@@ -182,7 +182,7 @@ function platerInternal.CreateDataTables(Plater)
         [125828] = true, -- Soulspawn
         [205212] = true, -- Infinite Keeper
         [205265] = true, -- Time-Displaced Trooper
-	}
+    }
 
     --textures used in the cooldown animation, scripts can add more values to it, profile holds only the path to it
     Plater.CooldownEdgeTextures = {

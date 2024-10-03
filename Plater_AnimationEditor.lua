@@ -830,9 +830,9 @@ function Plater.CreateSpellAnimationPanel()
         line:SetSize (scrollbox_size[1]-2, scrollbox_line_height)
         line:RegisterForClicks ("LeftButtonDown", "RightButtonDown")
 
-        line:SetScript ("OnEnter",	animationFrame.OnEnterScrollSelectionLine)
-        line:SetScript ("OnLeave",	animationFrame.OnLeaveScrollSelectionLine)
-        line:SetScript ("OnClick",	animationFrame.OnClickScrollSelectionLine)
+        line:SetScript ("OnEnter", animationFrame.OnEnterScrollSelectionLine)
+        line:SetScript ("OnLeave", animationFrame.OnLeaveScrollSelectionLine)
+        line:SetScript ("OnClick", animationFrame.OnClickScrollSelectionLine)
 
         line.CoolTip = cooltipInjectionTable_ScrollLine
         GameCooltip:CoolTipInject (line)

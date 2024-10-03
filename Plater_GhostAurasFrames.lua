@@ -67,18 +67,18 @@ function Plater.Auras.GhostAuras.ApplyAppearance(auraIconFrame, spellName, spell
 
     if (ghostAurasSettings.width ~= 0) then
         auraIconFrame:SetWidth(ghostAurasSettings.width)
-		auraIconFrame.Icon:SetWidth (ghostAurasSettings.width-2)
+        auraIconFrame.Icon:SetWidth (ghostAurasSettings.width-2)
     else
         auraIconFrame:SetWidth(profile.aura_width)
-		auraIconFrame.Icon:SetWidth (profile.aura_width-2)
+        auraIconFrame.Icon:SetWidth (profile.aura_width-2)
     end
 
     if (ghostAurasSettings.height ~= 0) then
         auraIconFrame:SetHeight(ghostAurasSettings.height)
-		auraIconFrame.Icon:SetHeight(ghostAurasSettings.height-2)
+        auraIconFrame.Icon:SetHeight(ghostAurasSettings.height-2)
     else
         auraIconFrame:SetHeight(profile.aura_height)
-		auraIconFrame.Icon:SetHeight(profile.aura_height-2)
+        auraIconFrame.Icon:SetHeight(profile.aura_height-2)
     end
 
     auraIconFrame:SetAlpha(ghostAurasSettings.alpha)
@@ -130,18 +130,18 @@ function Plater.Auras.BuildGhostAurasOptionsTab(frame)
     --spellScrollBox:SetBackdrop(nil)
     spellScrollBox.__background:SetAlpha(0.4)
 
-	local onRemoveSpellMouseDown = function(self)
-		self:GetNormalTexture():SetPoint("center", 1, -1)
-	end
-	local onRemoveSpellMouseUp = function(self)
-		self:GetNormalTexture():SetPoint("center", 0, 0)
-	end
-	local onClickRemoveSpell = function(self)
-		local spellId = self.spellId
+    local onRemoveSpellMouseDown = function(self)
+        self:GetNormalTexture():SetPoint("center", 1, -1)
+    end
+    local onRemoveSpellMouseUp = function(self)
+        self:GetNormalTexture():SetPoint("center", 0, 0)
+    end
+    local onClickRemoveSpell = function(self)
+        local spellId = self.spellId
         Plater.Auras.GhostAuras.RemoveGhostAura(spellId)
         --refresh the scroll frame
         Plater.Auras.GhostAuras.SetSpec()
-	end
+    end
     local onEnterLine = function(self)
         self:SetBackdropColor(unpack(scrollbox_line_backdrop_color_hightlight))
     end
@@ -174,15 +174,15 @@ function Plater.Auras.BuildGhostAurasOptionsTab(frame)
         DF:SetFontSize(spellName, 11)
 
         --remove spell button
-		local removeButton = CreateFrame("button", nil, line, "BackdropTemplate")
-		removeButton:SetPoint("right", line, "right", -3, 0)
-		removeButton:SetSize(16, 16)
-		removeButton:SetScript("OnClick", onClickRemoveSpell)
-		removeButton:SetScript("OnMouseDown", onRemoveSpellMouseDown)
-		removeButton:SetScript("OnMouseUp", onRemoveSpellMouseUp)
-		removeButton:SetNormalTexture([[Interface\GLUES\LOGIN\Glues-CheckBox-Check]])
-		removeButton:GetNormalTexture():ClearAllPoints()
-		removeButton:GetNormalTexture():SetPoint("center", 0, 0)
+        local removeButton = CreateFrame("button", nil, line, "BackdropTemplate")
+        removeButton:SetPoint("right", line, "right", -3, 0)
+        removeButton:SetSize(16, 16)
+        removeButton:SetScript("OnClick", onClickRemoveSpell)
+        removeButton:SetScript("OnMouseDown", onRemoveSpellMouseDown)
+        removeButton:SetScript("OnMouseUp", onRemoveSpellMouseUp)
+        removeButton:SetNormalTexture([[Interface\GLUES\LOGIN\Glues-CheckBox-Check]])
+        removeButton:GetNormalTexture():ClearAllPoints()
+        removeButton:GetNormalTexture():SetPoint("center", 0, 0)
 
         line.spellIcon = spellIcon
         line.spellName = spellName
@@ -270,71 +270,71 @@ function Plater.Auras.BuildGhostAurasOptionsTab(frame)
 
         {type = "label", get = function() return "General Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")}, --localize-me
 
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.ghost_auras.enabled end,
-			set = function (self, fixedparam, value)
-				Plater.db.profile.ghost_auras.enabled = value
+        {
+            type = "toggle",
+            get = function() return Plater.db.profile.ghost_auras.enabled end,
+            set = function (self, fixedparam, value)
+                Plater.db.profile.ghost_auras.enabled = value
                 Plater.RefreshAuraCache()
                 Plater.UpdateAuraCache()
-				--call an update on auras to remove the ghost auras currently shown
-			end,
-			name = "Enabled",
-			desc = "Enabled",
-		},
+                --call an update on auras to remove the ghost auras currently shown
+            end,
+            name = "Enabled",
+            desc = "Enabled",
+        },
 
         {type = "blank"},
 
-		{
-			type = "range",
-			get = function() return Plater.db.profile.ghost_auras.width end,
-			set = function (self, fixedparam, value)
-				Plater.db.profile.ghost_auras.width = value
-			end,
-			min = 0,
-			max = 32,
-			step = 1,
-			name = "Width",
-			desc = "Use zero to match the size of other auras",
-		},
+        {
+            type = "range",
+            get = function() return Plater.db.profile.ghost_auras.width end,
+            set = function (self, fixedparam, value)
+                Plater.db.profile.ghost_auras.width = value
+            end,
+            min = 0,
+            max = 32,
+            step = 1,
+            name = "Width",
+            desc = "Use zero to match the size of other auras",
+        },
 
-		{
-			type = "range",
-			get = function() return Plater.db.profile.ghost_auras.height end,
-			set = function (self, fixedparam, value)
-				Plater.db.profile.ghost_auras.height = value
-			end,
-			min = 0,
-			max = 32,
-			step = 1,
-			name = "Height",
-			desc = "Use zero to match the size of other auras",
-		},
+        {
+            type = "range",
+            get = function() return Plater.db.profile.ghost_auras.height end,
+            set = function (self, fixedparam, value)
+                Plater.db.profile.ghost_auras.height = value
+            end,
+            min = 0,
+            max = 32,
+            step = 1,
+            name = "Height",
+            desc = "Use zero to match the size of other auras",
+        },
 
-		{
-			type = "range",
-			get = function() return Plater.db.profile.ghost_auras.alpha end,
-			set = function (self, fixedparam, value)
-				Plater.db.profile.ghost_auras.alpha = value
-			end,
-			min = 0,
-			max = 1,
-			step = 0.1,
+        {
+            type = "range",
+            get = function() return Plater.db.profile.ghost_auras.alpha end,
+            set = function (self, fixedparam, value)
+                Plater.db.profile.ghost_auras.alpha = value
+            end,
+            min = 0,
+            max = 1,
+            step = 0.1,
             usedecimals = true,
-			name = "Alpha",
-			desc = "Alpha",
-		},
+            name = "Alpha",
+            desc = "Alpha",
+        },
 
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.ghost_auras.desaturated end,
-			set = function (self, fixedparam, value)
-				Plater.db.profile.ghost_auras.desaturated = value
-				--call an update on auras to remove the ghost auras currently shown
-			end,
-			name = "Desaturated",
-			desc = "Desaturated",
-		},
+        {
+            type = "toggle",
+            get = function() return Plater.db.profile.ghost_auras.desaturated end,
+            set = function (self, fixedparam, value)
+                Plater.db.profile.ghost_auras.desaturated = value
+                --call an update on auras to remove the ghost auras currently shown
+            end,
+            name = "Desaturated",
+            desc = "Desaturated",
+        },
 
 
     }
