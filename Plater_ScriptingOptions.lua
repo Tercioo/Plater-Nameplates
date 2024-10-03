@@ -126,7 +126,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                 userFrame.listFrames[i]:Hide()
             end
             userFrame.nextListFrameIndex = 0
-			userFrame.listScrollFrame:Hide()
+            userFrame.listScrollFrame:Hide()
         end
 
         function userFrame.GetListFrame()
@@ -445,12 +445,12 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                 if (scriptObject) then
                     local scriptOptions = scriptObject.Options
                     local option = scriptOptions[optionIndex]
-                    
+
                     tremove(scriptOptions, optionIndex)
-                    
+
                     local optionsValues = scriptObject.OptionsValues
                     optionsValues[option.Key] = nil
-                    
+
                     mainFrame.ScriptOptionsScrollBox:Refresh()
                 end
             end
@@ -908,7 +908,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
 
             boolOptionsMenu.always_boxfirst = true
             DF:BuildMenuVolatile(booleanOptionsFrame, boolOptionsMenu, 5, -5, options_frame_shared_height, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
-        
+
         --> option: label
             local labelOptionsFrame = CreateFrame("frame", "$parentLabelOptions", adminFrame, BackdropTemplateMixin and "BackdropTemplate")
             labelOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
@@ -1186,7 +1186,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                     local posY = i - 1
                     listFrame:SetPoint("topright", mainFrame.ScriptOptionsPanelUser.listScrollFrame.scrollChild, "topright", -25, (-posY*205) - 21)
                     listFrame.titleText:SetText(title)
-					mainFrame.ScriptOptionsPanelUser.listScrollFrame:Show()
+                    mainFrame.ScriptOptionsPanelUser.listScrollFrame:Show()
                 end
                 mainFrame.ScriptOptionsPanelUser.listScrollFrame.scrollChild:SetSize(mainFrame.ScriptOptionsPanelUser.listScrollFrame:GetWidth(), #listFramesNeeded * 205 + 21)
 

@@ -309,8 +309,8 @@ function LibStub:IterateLibraries()end
 ---@class privateaura_appliedsoundinfo : table
 ---@field unitToken unit
 ---@field spellID spellid
----@field soundFileName string? 	
----@field soundFileID number? 	
+---@field soundFileName string?
+---@field soundFileID number?
 ---@field outputChannel audiochannels?
 
 ---@class privateaura_soundid : number

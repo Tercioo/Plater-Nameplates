@@ -432,15 +432,15 @@ function Plater.BuildScriptObjectFromIndexTable(indexTable, scriptType)
         end
 
         local scriptObject = {}
-        scriptObject.Enabled 		= true --imported scripts are always enabled
-        scriptObject.Name		    = indexTable ["1"]
-        scriptObject.Icon			= indexTable ["2"]
-        scriptObject.Desc		    = indexTable ["3"]
-        scriptObject.Author		    = indexTable ["4"]
-        scriptObject.Time			= indexTable ["5"]
-        scriptObject.Revision		= indexTable ["6"]
-        scriptObject.PlaterCore		= indexTable ["7"]
-        scriptObject.LoadConditions	= indexTable ["8"]
+        scriptObject.Enabled        = true --imported scripts are always enabled
+        scriptObject.Name           = indexTable ["1"]
+        scriptObject.Icon           = indexTable ["2"]
+        scriptObject.Desc           = indexTable ["3"]
+        scriptObject.Author         = indexTable ["4"]
+        scriptObject.Time           = indexTable ["5"]
+        scriptObject.Revision       = indexTable ["6"]
+        scriptObject.PlaterCore     = indexTable ["7"]
+        scriptObject.LoadConditions = indexTable ["8"]
 
         scriptObject.Hooks = {}
         scriptObject.HooksTemp = {}
@@ -469,19 +469,19 @@ function Plater.BuildScriptObjectFromIndexTable(indexTable, scriptType)
 
         local scriptObject = {}
 
-        scriptObject.Enabled 		= true --imported scripts are always enabled
-        scriptObject.ScriptType 	= indexTable ["1"]
-        scriptObject.Name  		    = indexTable ["2"]
-        scriptObject.SpellIds  		= indexTable ["3"]
-        scriptObject.NpcNames  	    = indexTable ["4"]
-        scriptObject.Icon  		    = indexTable ["5"]
-        scriptObject.Desc  		    = indexTable ["6"]
-        scriptObject.Author  		= indexTable ["7"]
-        scriptObject.Time  		    = indexTable ["8"]
-        scriptObject.Revision  		= indexTable ["9"]
-        scriptObject.PlaterCore  	= indexTable ["10"]
+        scriptObject.Enabled        = true --imported scripts are always enabled
+        scriptObject.ScriptType     = indexTable ["1"]
+        scriptObject.Name           = indexTable ["2"]
+        scriptObject.SpellIds       = indexTable ["3"]
+        scriptObject.NpcNames       = indexTable ["4"]
+        scriptObject.Icon           = indexTable ["5"]
+        scriptObject.Desc           = indexTable ["6"]
+        scriptObject.Author         = indexTable ["7"]
+        scriptObject.Time           = indexTable ["8"]
+        scriptObject.Revision       = indexTable ["9"]
+        scriptObject.PlaterCore     = indexTable ["10"]
         scriptObject.Options        = indexTable.options
-        scriptObject.url  	        = indexTable.url or ""
+        scriptObject.url            = indexTable.url or ""
         scriptObject.version        = indexTable.version or -1
         scriptObject.semver         = indexTable.semver or ""
 

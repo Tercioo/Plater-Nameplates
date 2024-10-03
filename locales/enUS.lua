@@ -5,7 +5,7 @@ do
 
     --add to curseforge
 
-L["OPTIONS_"] = ""
+    L["OPTIONS_"] = ""
 
     L["OPTIONS_AUDIOCUE_COOLDOWN"] = "Audio Cooldown"
     L["OPTIONS_AUDIOCUE_COOLDOWN_DESC"] = "Amount of time in milliseconds to wait before playing the SAME audio again.\n\nPrevents loud sounds from playing when two or more casts are happening at the same time.\n\nSet to 0 to disable this feature."
@@ -72,7 +72,7 @@ L["OPTIONS_"] = ""
     L["OPTIONS_THREAT_USE_AGGRO_GLOW_DESC"] = "Enables the healthbar glow on the nameplates when gaining aggro as dps or losing aggro as tank."
     L["OPTIONS_THREAT_USE_AGGRO_FLASH"] = "Enable aggro flash"
     L["OPTIONS_THREAT_USE_AGGRO_FLASH_DESC"] = "Enables the -AGGRO- flash animation on the nameplates when gaining aggro as dps."
-    
+
     L["OPTIONS_CASTBAR_ICON_CUSTOM_ENABLE"] = "Enable Icon Customization"
     L["OPTIONS_CASTBAR_ICON_CUSTOM_ENABLE_DESC"] = "If this option is disabled, Plater won't modify the spell icon, leaving it for scripts to do."
     L["OPTIONS_CASTBAR_NO_SPELLNAME_LIMIT"] = "No Spell Name Length Limitation"
@@ -146,22 +146,22 @@ L["OPTIONS_"] = ""
     L["OPTIONS_COLOR"] = "Color"
     L["OPTIONS_CVAR_ENABLE_PERSONAL_BAR"] = "Personal Health and Mana Bars|cFFFF7700*|r"
     L["OPTIONS_CVAR_ENABLE_PERSONAL_BAR_DESC"] = [=[Shows a mini health and mana bars under your character.
-    
+
     |cFFFF7700[*]|r |cFFa0a0a0CVar, saved within Plater profile and restored when loading the profile.|r]=]
     L["OPTIONS_CVAR_NAMEPLATES_ALWAYSSHOW"] = "Always Show Nameplates|cFFFF7700*|r"
     L["OPTIONS_CVAR_NAMEPLATES_ALWAYSSHOW_DESC"] = [=[Show nameplates for all units near you. If disabled only show relevant units when you are in combat.
-    
+
     |cFFFF7700[*]|r |cFFa0a0a0CVar, saved within Plater profile and restored when loading the profile.|r]=]
     L["OPTIONS_ENABLED"] = "Enabled"
     L["OPTIONS_ERROR_CVARMODIFY"] = "cvars cannot be changed while in combat."
     L["OPTIONS_ERROR_EXPORTSTRINGERROR"] = "failed to export"
     L["OPTIONS_EXECUTERANGE"] = "Execute Range"
     L["OPTIONS_EXECUTERANGE_DESC"] = [=[Show an indicator when the target unit is in 'execute' range.
-    
+
     If the detection does not work after a patch, communicate at Discord.]=]
     L["OPTIONS_EXECUTERANGE_HIGH_HEALTH"] = "Execute Range (high heal)"
     L["OPTIONS_EXECUTERANGE_HIGH_HEALTH_DESC"] = [=[Show the execute indicator for the high portion of the health.
-    
+
     If the detection does not work after a patch, communicate at Discord.]=]
     L["OPTIONS_FONT"] = "Font"
     L["OPTIONS_FORMAT_NUMBER"] = "Number Format"
@@ -177,7 +177,7 @@ L["OPTIONS_"] = ""
     L["OPTIONS_HEALTHBAR"] = "Health Bar"
     L["OPTIONS_HEALTHBAR_HEIGHT"] = "Health Bar Height"
     L["OPTIONS_HEALTHBAR_SIZE_GLOBAL_DESC"] = [=[Change the size of Enemy and Friendly nameplates for players and npcs in combat and out of combat.
-    
+
     Each one of these options can be changed individually on Enemy Npc, Enemy Player tabs.]=]
     L["OPTIONS_HEALTHBAR_WIDTH"] = "Health Bar Width"
     L["OPTIONS_HEIGHT"] = "Height"
@@ -206,40 +206,40 @@ L["OPTIONS_"] = ""
     L["OPTIONS_NAMEPLATE_HIDE_FRIENDLY_HEALTH"] = "Hide Blizzard Health Bars|cFFFF7700*|r"
     L["OPTIONS_NAMEPLATE_HIDE_FRIENDLY_HEALTH_DESC"] = [=[While in dungeons or raids, if friendly nameplates are enabled it'll show only the player name.
     If any Plater module is disabled, this will affect these nameplates as well.
-    
+
     |cFFFF7700[*]|r |cFFa0a0a0CVar, saved within Plater profile and restored when loading the profile.|r
-    
+
     |cFFFF2200[*]|r |cFFa0a0a0A /reload may be required to take effect.|r]=]
     L["OPTIONS_NAMEPLATE_OFFSET"] = "Slightly adjust the entire nameplate."
     L["OPTIONS_NAMEPLATE_SHOW_ENEMY"] = "Show Enemy Nameplates|cFFFF7700*|r"
     L["OPTIONS_NAMEPLATE_SHOW_ENEMY_DESC"] = [=[Show nameplate for enemy and neutral units.
-    
+
     |cFFFF7700[*]|r |cFFa0a0a0CVar, saved within Plater profile and restored when loading the profile.|r]=]
     L["OPTIONS_NAMEPLATE_SHOW_FRIENDLY"] = "Show Friendly Nameplates|cFFFF7700*|r"
     L["OPTIONS_NAMEPLATE_SHOW_FRIENDLY_DESC"] = [=[Show nameplate for friendly players.
-    
+
     |cFFFF7700[*]|r |cFFa0a0a0CVar, saved within Plater profile and restored when loading the profile.|r]=]
     L["OPTIONS_NAMEPLATES_OVERLAP"] = "Nameplate Overlap (V)|cFFFF7700*|r"
     L["OPTIONS_NAMEPLATES_OVERLAP_DESC"] = [=[The space between each nameplate vertically when stacking is enabled.
-    
+
     |cFFFFFFFFDefault: 1.10|r
-    
+
     |cFFFF7700[*]|r |cFFa0a0a0CVar, saved within Plater profile and restored when loading the profile.|r
-    
+
     |cFFFFFF00Important |r: if you find issues with this setting, use:
     |cFFFFFFFF/run SetCVar ('nameplateOverlapV', '1.6')|r]=]
     L["OPTIONS_NAMEPLATES_STACKING"] = "Stacking Nameplates|cFFFF7700*|r"
     L["OPTIONS_NAMEPLATES_STACKING_DESC"] = [=[If enabled, nameplates won't overlap with each other.
-    
+
     |cFFFF7700[*]|r |cFFa0a0a0CVar, saved within Plater profile and restored when loading the profile.|r
-    
+
     |cFFFFFF00Important |r: to set the amount of space between each nameplate see '|cFFFFFFFFNameplate Vertical Padding|r' option below.
     Please check the Auto tab settings to setup automatic toggling of this option.]=]
     L["OPTIONS_NEUTRAL"] = "Neutral"
     L["OPTIONS_NOCOMBATALPHA_AMOUNT_DESC"] = "Amount of transparency for 'No Combat Alpha'."
     L["OPTIONS_NOCOMBATALPHA_ENABLED"] = "Use No Combat Alpha"
     L["OPTIONS_NOCOMBATALPHA_ENABLED_DESC"] = [=[Changes the nameplate alpha when you are in combat and the unit isn't.
-    
+
     |cFFFFFF00 Important |r:If the unit isn't in combat, it overrides the alpha from the range check.]=]
     L["OPTIONS_OKAY"] = "Okay"
     L["OPTIONS_OUTLINE"] = "Outline"
@@ -260,12 +260,12 @@ L["OPTIONS_"] = ""
     L["OPTIONS_PROFILE_CONFIG_OPENSETTINGS"] = "Open Profile Settings"
     L["OPTIONS_PROFILE_CONFIG_PROFILENAME"] = "New Profile Name"
     L["OPTIONS_PROFILE_CONFIG_PROFILENAME_DESC"] = [=[A new profile is created with the imported string.
-    
+
     Inserting the name of a profile that already exists will overwrite it.]=]
     L["OPTIONS_PROFILE_ERROR_PROFILENAME"] = "Invalid profile name"
     L["OPTIONS_PROFILE_ERROR_STRINGINVALID"] = "Invalid profile file."
     L["OPTIONS_PROFILE_ERROR_WRONGTAB"] = [=[Invalid profile data.
-    
+
     Import scripts or mods at the scripting or modding tab.]=]
     L["OPTIONS_PROFILE_IMPORT_OVERWRITE"] = "Profile '%s' already exists, overwrite it?"
     L["OPTIONS_RANGECHECK_NONE"] = "Nothing"
@@ -280,7 +280,7 @@ L["OPTIONS_"] = ""
     L["OPTIONS_RESOURCES_TARGET"] = "Show Resources on Target"
     L["OPTIONS_RESOURCES_TARGET_DESC"] = [=[Shows your resource such as combo points above your current target.
     Uses Blizzard default resources and disables Platers own resources.
-    
+
     Character specific setting!]=]
     L["OPTIONS_SCALE"] = "Scale"
     L["OPTIONS_SCRIPTING_REAPPLY"] = "Re-Apply Default Values"
@@ -343,7 +343,7 @@ L["OPTIONS_"] = ""
     L["OPTIONS_THREAT_COLOR_DPS_ONYOU_SOLID_DESC"] = "The unit is attacking you."
     L["OPTIONS_THREAT_COLOR_OVERRIDE_ANCHOR_TITLE"] = "Override Default Colors"
     L["OPTIONS_THREAT_COLOR_OVERRIDE_DESC"] = [=[Modify the default colors set by the game for neutral, hostile and friendly units.
-    
+
     During combat, these colors will be override as well if threat colors are allowed to change health bar color.]=]
     L["OPTIONS_THREAT_COLOR_TANK_ANCHOR_TITLE"] = "Color When Playing as TANK"
     L["OPTIONS_THREAT_COLOR_TANK_ANOTHERTANK_DESC"] = "The unit is being tanked by another tank in your group."
@@ -361,27 +361,27 @@ L["OPTIONS_"] = ""
     L["OPTIONS_WIDTH"] = "Width"
     L["OPTIONS_XOFFSET"] = "X Offset"
     L["OPTIONS_XOFFSET_DESC"] = [=[Adjust the position on the X axis.
-    
+
     *right click to type the value.]=]
     L["OPTIONS_YOFFSET"] = "Y Offset"
     L["OPTIONS_YOFFSET_DESC"] = [=[Adjust the position on the Y axis.
-    
+
     *right click to type the value.]=]
     L["TARGET_CVAR_ALWAYSONSCREEN"] = "Target Always on the Screen|cFFFF7700*|r"
     L["TARGET_CVAR_ALWAYSONSCREEN_DESC"] = [=[When enabled, the nameplate of your target is always shown even when the enemy isn't in the screen.
-    
+
     |cFFFF7700[*]|r |cFFa0a0a0CVar, saved within Plater profile and restored when loading the profile.|r]=]
     L["TARGET_CVAR_LOCKTOSCREEN"] = "Lock to Screen (Top Side)|cFFFF7700*|r"
     L["TARGET_CVAR_LOCKTOSCREEN_DESC"] = [=[Min space between the nameplate and the top of the screen. Increase this if some part of the nameplate are going out of the screen.
-    
+
     |cFFFFFFFFDefault: 0.065|r
-    
+
     |cFFFFFF00 Important |r: if you're having issue, manually set using these macros:
     /run SetCVar ('nameplateOtherTopInset', '0.065')
     /run SetCVar ('nameplateLargeTopInset', '0.065')
-    
+
     |cFFFFFF00 Important |r: setting to 0 disables this feature.
-    
+
     |cFFFF7700[*]|r |cFFa0a0a0CVar, saved within Plater profile and restored when loading the profile.|r]=]
     L["TARGET_HIGHLIGHT"] = "Target Highlight"
     L["TARGET_HIGHLIGHT_ALPHA"] = "Target Highlight Alpha"

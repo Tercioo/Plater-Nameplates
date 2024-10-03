@@ -55,8 +55,8 @@ local headerOptions = {
 
 local onRefreshDBCallback = function()
     local profile = Plater.db.profile
-	DB_NPCID_CACHE = profile.npc_cache
-	DB_NPCID_COLORS = profile.npc_colors
+    DB_NPCID_CACHE = profile.npc_cache
+    DB_NPCID_COLORS = profile.npc_colors
 end
 Plater.RegisterRefreshDBCallback(onRefreshDBCallback)
 
@@ -610,8 +610,8 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
 
         local auraSearchTextEntry = DF:CreateTextEntry(colorsFrame, function()end, 150, 20, "AuraSearchTextEntry", _, _, options_dropdown_template)
         auraSearchTextEntry:SetPoint("bottomright", colorsFrame.ModelFrame, "topright", 1, 21) --offset the x in 1 pixel to account the border size of the scrollframe
-        auraSearchTextEntry:SetHook("OnChar",		colorsFrame.OnSearchBoxTextChanged)
-        auraSearchTextEntry:SetHook("OnTextChanged", 	colorsFrame.OnSearchBoxTextChanged)
+        auraSearchTextEntry:SetHook("OnChar", colorsFrame.OnSearchBoxTextChanged)
+        auraSearchTextEntry:SetHook("OnTextChanged", colorsFrame.OnSearchBoxTextChanged)
         auraSearchTextEntry:SetAsSearchBox()
         auraSearchTextEntry.tooltip = "|cFFFFFF00Npc Name|r or |cFFFFFF00Zone Name|r"
         auraSearchTextEntry:SetFrameLevel(colorsFrame.Header:GetFrameLevel() + 20)
@@ -938,9 +938,9 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
 
         for _, plateFrame in ipairs(Plater.GetAllShownPlates()) do
             if (plateFrame.unitFrame.colorSelectionDropdown) then
-                --if (Plater.ZoneInstanceType ~= "party" and Plater.ZoneInstanceType ~= "raid") then
-                --	plateFrame.unitFrame.colorSelectionDropdown:Hide()
-                --else
+                -- if (Plater.ZoneInstanceType ~= "party" and Plater.ZoneInstanceType ~= "raid") then
+                --     plateFrame.unitFrame.colorSelectionDropdown:Hide()
+                -- else
                     local npcID = plateFrame.unitFrame.colorSelectionDropdown:GetParent()[MEMBER_NPCID]
                     plateFrame.unitFrame.colorSelectionDropdown:Select(DB_NPCID_COLORS[npcID] and DB_NPCID_COLORS[npcID][1] and DB_NPCID_COLORS[npcID][3] or "white")
                     plateFrame.unitFrame.colorSelectionDropdown:Show()

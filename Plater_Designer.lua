@@ -5,7 +5,7 @@ local DF = DetailsFramework
 local _
 
 function Plater.UpdateCustomDesign(unitFrame)
-    
+
     local settings = Plater.db.profile.customdesign
 
     local healthBar = unitFrame.healthBar
@@ -49,8 +49,8 @@ function Plater.UpdateCustomDesign(unitFrame)
         --castbar texture
         if (settings.castbar_file) then
             castBar:SetStatusBarTexture (settings.castbar_file)
-			castBar.background:SetTexture (settings.castbar_file)
-			castBar.background:SetVertexColor (unpack (Plater.db.profile.cast_statusbar_bgcolor))
+            castBar.background:SetTexture (settings.castbar_file)
+            castBar.background:SetVertexColor (unpack (Plater.db.profile.cast_statusbar_bgcolor))
         end
 
         --borderTexture
@@ -78,8 +78,8 @@ function Plater.UpdateCustomDesign(unitFrame)
         --castbar texture
         if (settings.healthbar_file) then
             unitFrame.powerBar:SetTexture (settings.healthbar_file)
-			castBar.background:SetTexture (settings.healthbar_file)
-			castBar.background:SetVertexColor (unpack (Plater.db.profile.cast_statusbar_bgcolor))
+            castBar.background:SetTexture (settings.healthbar_file)
+            castBar.background:SetVertexColor (unpack (Plater.db.profile.cast_statusbar_bgcolor))
         end
 
         --borderTexture
@@ -99,7 +99,7 @@ function Plater.UpdateCustomDesign(unitFrame)
         if (settings.healthbar_border_color) then
             healthBar.customborder.texture:SetVertexColor(DF:ParseColors(settings.healthbar_border_color))
         end
-    end    
+    end
 
 
 end

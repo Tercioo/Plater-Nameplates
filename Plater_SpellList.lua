@@ -48,14 +48,14 @@ local DB_CAST_AUDIOCUES
 local GetSpellInfo = GetSpellInfo or function(spellID) if not spellID then return nil end local si = C_Spell.GetSpellInfo(spellID) if si then return si.name, nil, si.iconID, si.castTime, si.minRange, si.maxRange, si.spellID, si.originalIconID end end
 
 local on_refresh_db = function()
-	local profile = Plater.db.profile
-	DB_CAPTURED_SPELLS = PlaterDB.captured_spells
-	DB_CAPTURED_CASTS = PlaterDB.captured_casts
-	DB_NPCID_CACHE = profile.npc_cache
-	DB_NPCID_COLORS = profile.npc_colors
-	DB_AURA_ALPHA = profile.aura_alpha
-	DB_AURA_ENABLED = profile.aura_enabled
-	DB_AURA_SEPARATE_BUFFS = Plater.db.profile.buffs_on_aura2
+    local profile = Plater.db.profile
+    DB_CAPTURED_SPELLS = PlaterDB.captured_spells
+    DB_CAPTURED_CASTS = PlaterDB.captured_casts
+    DB_NPCID_CACHE = profile.npc_cache
+    DB_NPCID_COLORS = profile.npc_colors
+    DB_AURA_ALPHA = profile.aura_alpha
+    DB_AURA_ENABLED = profile.aura_enabled
+    DB_AURA_SEPARATE_BUFFS = Plater.db.profile.buffs_on_aura2
     DB_CAST_AUDIOCUES = profile.cast_audiocues
 end
 
@@ -730,8 +730,8 @@ function Plater.CreateAuraLastEventOptionsFrame(auraLastEventFrame)
 
     local auraSearchTextentry = detailsFramework:CreateTextEntry(auraLastEventFrame, function()end, 160, 20, "AuraSearchTextEntry", _, _, options_dropdown_template)
     auraSearchTextentry:SetPoint("right", clearListButton, "left", -6, 0)
-    auraSearchTextentry:SetHook("OnChar",		auraLastEventFrame.OnSearchBoxTextChanged)
-    auraSearchTextentry:SetHook("OnTextChanged", 	auraLastEventFrame.OnSearchBoxTextChanged)
+    auraSearchTextentry:SetHook("OnChar", auraLastEventFrame.OnSearchBoxTextChanged)
+    auraSearchTextentry:SetHook("OnTextChanged", auraLastEventFrame.OnSearchBoxTextChanged)
     auraSearchTextentry:SetAsSearchBox()
 
     local auraSearchLabel = detailsFramework:CreateLabel(auraLastEventFrame, "Search:", detailsFramework:GetTemplate("font", "ORANGE_FONT_TEMPLATE"))
