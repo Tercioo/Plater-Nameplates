@@ -40,46 +40,46 @@ function platerInternal.CreateAdvancedOptions()
     ---@diagnostic disable-next-line: undefined-global
     local IS_WOW_PROJECT_NOT_MAINLINE = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
 
-	local CVarDesc = "\n\n|cFFFF7700[*]|r |cFFa0a0a0CVar, saved within Plater profile and restored when loading the profile.|r"
-	local CVarIcon = "|cFFFF7700*|r"
-	local CVarNeedReload = "\n\n|cFFFF2200[*]|r |cFFa0a0a0A /reload may be required to take effect.|r"
-	local ImportantText = "|cFFFFFF00 Important |r: "
+    local CVarDesc = "\n\n|cFFFF7700[*]|r |cFFa0a0a0CVar, saved within Plater profile and restored when loading the profile.|r"
+    local CVarIcon = "|cFFFF7700*|r"
+    local CVarNeedReload = "\n\n|cFFFF2200[*]|r |cFFa0a0a0A /reload may be required to take effect.|r"
+    local ImportantText = "|cFFFFFF00 Important |r: "
 
     local dropdownStatusBarTexture = platerInternal.Defaults.dropdownStatusBarTexture
     local dropdownStatusBarColor = platerInternal.Defaults.dropdownStatusBarColor
 
     local L = DF.Language.GetLanguageTable(addonId)
 
-	--outline table
-	local outline_modes = {"NONE", "MONOCHROME", "OUTLINE", "THICKOUTLINE", "MONOCHROME, OUTLINE", "MONOCHROME, THICKOUTLINE"}
-	local outline_modes_names = {"None", "Monochrome", "Outline", "Thick Outline", "Monochrome Outline", "Monochrome Thick Outline"}
-	local build_outline_modes_table = function (actorType, member)
-		local t = {}
-		for i = 1, #outline_modes do
-			local value = outline_modes[i]
-			local label = outline_modes_names[i]
-			tinsert (t, {
-				label = label,
-				value = value,
+    --outline table
+    local outline_modes = {"NONE", "MONOCHROME", "OUTLINE", "THICKOUTLINE", "MONOCHROME, OUTLINE", "MONOCHROME, THICKOUTLINE"}
+    local outline_modes_names = {"None", "Monochrome", "Outline", "Thick Outline", "Monochrome Outline", "Monochrome Thick Outline"}
+    local build_outline_modes_table = function (actorType, member)
+        local t = {}
+        for i = 1, #outline_modes do
+            local value = outline_modes[i]
+            local label = outline_modes_names[i]
+            tinsert (t, {
+                label = label,
+                value = value,
                 statusbar = dropdownStatusBarTexture,
                 statusbarcolor = dropdownStatusBarColor,
-				onclick = function (_, _, value)
-					if (actorType) then
-						Plater.db.profile.plate_config [actorType][member] = value
-						Plater.RefreshDBUpvalues()
-						Plater.UpdateAllPlates()
-						Plater.UpdateAllNames()
-					else
-						Plater.db.profile [member] = value
-						Plater.RefreshDBUpvalues()
-						Plater.UpdateAllPlates()
-						Plater.UpdateAllNames()
-					end
-				end
-			})
-		end
-		return t
-	end
+                onclick = function (_, _, value)
+                    if (actorType) then
+                        Plater.db.profile.plate_config [actorType][member] = value
+                        Plater.RefreshDBUpvalues()
+                        Plater.UpdateAllPlates()
+                        Plater.UpdateAllNames()
+                    else
+                        Plater.db.profile [member] = value
+                        Plater.RefreshDBUpvalues()
+                        Plater.UpdateAllPlates()
+                        Plater.UpdateAllNames()
+                    end
+                end
+            })
+        end
+        return t
+    end
 
     local build_number_format_options = function()
         local number_format_options = {"Western (1K - 1KK)"}
@@ -111,38 +111,38 @@ function platerInternal.CreateAdvancedOptions()
         return t
     end
 
-	--anchor table
-	local build_anchor_side_table = function (actorType, member)
-		local anchorOptions = {}
-		local phraseIdTable = Plater.AnchorNamesByPhraseId
-		local languageId = DF.Language.GetLanguageIdForAddonId(addonId)
+    --anchor table
+    local build_anchor_side_table = function (actorType, member)
+        local anchorOptions = {}
+        local phraseIdTable = Plater.AnchorNamesByPhraseId
+        local languageId = DF.Language.GetLanguageIdForAddonId(addonId)
 
-		for i = 1, 13 do
-			tinsert (anchorOptions, {
-				label = DF.Language.GetText(addonId, phraseIdTable[i]),
-				languageId = languageId,
-				phraseId = phraseIdTable[i],
-				value = i,
+        for i = 1, 13 do
+            tinsert (anchorOptions, {
+                label = DF.Language.GetText(addonId, phraseIdTable[i]),
+                languageId = languageId,
+                phraseId = phraseIdTable[i],
+                value = i,
                 statusbar = dropdownStatusBarTexture,
                 statusbarcolor = dropdownStatusBarColor,
-				onclick = function (_, _, value)
-					if (actorType) then
-						Plater.db.profile.plate_config [actorType][member].side = value
-						Plater.RefreshDBUpvalues()
+                onclick = function (_, _, value)
+                    if (actorType) then
+                        Plater.db.profile.plate_config [actorType][member].side = value
+                        Plater.RefreshDBUpvalues()
 
-						Plater.UpdateAllPlates()
-						Plater.UpdateAllNames()
-					else
-						Plater.db.profile [member].side = value
-						Plater.RefreshDBUpvalues()
-						Plater.UpdateAllPlates()
-						Plater.UpdateAllNames()
-					end
-				end
-			})
-		end
-		return anchorOptions
-	end
+                        Plater.UpdateAllPlates()
+                        Plater.UpdateAllNames()
+                    else
+                        Plater.db.profile [member].side = value
+                        Plater.RefreshDBUpvalues()
+                        Plater.UpdateAllPlates()
+                        Plater.UpdateAllNames()
+                    end
+                end
+            })
+        end
+        return anchorOptions
+    end
 
     local advanced_options = {
         {type = "label", get = function() return "General Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
@@ -1218,10 +1218,10 @@ function platerInternal.CreateAdvancedOptions()
     ---@diagnostic disable-next-line: undefined-global
     local advancedFrame = PlaterOptionsPanelContainerAdvancedConfig
 
-	advanced_options.align_as_pairs = true
-	advanced_options.align_as_pairs_string_space = 181
-	advanced_options.widget_width = 150
-	advanced_options.use_scrollframe = true
+    advanced_options.align_as_pairs = true
+    advanced_options.align_as_pairs_string_space = 181
+    advanced_options.widget_width = 150
+    advanced_options.use_scrollframe = true
     advanced_options.language_addonId = addonId
     advanced_options.always_boxfirst = true
     advanced_options.Name = "Advanced Options"
@@ -1229,10 +1229,10 @@ function platerInternal.CreateAdvancedOptions()
     local canvasFrame = DF:CreateCanvasScrollBox(advancedFrame, nil, "PlaterOptionsPanelCanvasAdvancedSettings")
     canvasFrame:SetPoint("topleft", advancedFrame, "topleft", 0, platerInternal.optionsYStart)
     canvasFrame:SetPoint("bottomright", advancedFrame, "bottomright", -26, 25)
-	advancedFrame.canvasFrame = canvasFrame
+    advancedFrame.canvasFrame = canvasFrame
 
-	--when passing a canvas frame for BuildMenu, it automatically get its childscroll and use as parent for the widgets
-	--DF:BuildMenu(canvasFrame, debuff_options, startX, 0, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
+    --when passing a canvas frame for BuildMenu, it automatically get its childscroll and use as parent for the widgets
+    --DF:BuildMenu(canvasFrame, debuff_options, startX, 0, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
 
     local startX, startY, heightSize = 10, platerInternal.optionsYStart, 755
     --DF:BuildMenu (advancedFrame, advanced_options, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, platerInternal.OptionsGlobalCallback)

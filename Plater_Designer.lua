@@ -49,8 +49,8 @@ function Plater.UpdateCustomDesign(unitFrame)
         --castbar texture
         if (settings.castbar_file) then
             castBar:SetStatusBarTexture (settings.castbar_file)
-			castBar.background:SetTexture (settings.castbar_file)
-			castBar.background:SetVertexColor (unpack (Plater.db.profile.cast_statusbar_bgcolor))
+            castBar.background:SetTexture (settings.castbar_file)
+            castBar.background:SetVertexColor (unpack (Plater.db.profile.cast_statusbar_bgcolor))
         end
 
         --borderTexture
@@ -78,8 +78,8 @@ function Plater.UpdateCustomDesign(unitFrame)
         --castbar texture
         if (settings.healthbar_file) then
             unitFrame.powerBar:SetTexture (settings.healthbar_file)
-			castBar.background:SetTexture (settings.healthbar_file)
-			castBar.background:SetVertexColor (unpack (Plater.db.profile.cast_statusbar_bgcolor))
+            castBar.background:SetTexture (settings.healthbar_file)
+            castBar.background:SetVertexColor (unpack (Plater.db.profile.cast_statusbar_bgcolor))
         end
 
         --borderTexture

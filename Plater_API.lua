@@ -9,20 +9,20 @@ local _
 --when adding new functions, they may or may not be added here
 
 Plater.API_Description = {
-	addon = "Plater Nameplates",
-	namespaces = {
-		{
-			name = "Plater",
-			order = 1,
-			api = {},
-		}
-	},
+    addon = "Plater Nameplates",
+    namespaces = {
+        {
+            name = "Plater",
+            order = 1,
+            api = {},
+        }
+    },
 }
 
 tinsert(Plater.API_Description.namespaces[1].api, {
-	name = "IsCampaignQuest",
-	desc = "Query if a quest is part of a campaign quest list.",
-	parameters = {
+    name = "IsCampaignQuest",
+    desc = "Query if a quest is part of a campaign quest list.",
+    parameters = {
         {
             name = "questName",
             type = "string",
@@ -30,14 +30,14 @@ tinsert(Plater.API_Description.namespaces[1].api, {
             desc = "A quest name to query if the quest is part of a campaign quest.",
         },
     },
-	returnValues = {
-		{
-			name = "isCampaignQuest",
-			type = "boolean",
-			desc = "true if the quest is a campaign quest.",
-		}
-	},
-	type = 0,
+    returnValues = {
+        {
+            name = "isCampaignQuest",
+            type = "boolean",
+            desc = "true if the quest is a campaign quest.",
+        }
+    },
+    type = 0,
 })
 
 function Plater.IsCampaignQuest(questName)

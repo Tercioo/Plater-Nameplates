@@ -11,16 +11,16 @@ local _
 --store a boolean informing if a portion of the addon that is loaded on demand has already been loaded
 ---@type table<string, boolean>
 platerInternal.LoadOnDemand_IsLoaded = {
-	CastOptions = false,
-	SearchOptions = false,
-	AdvancedOptions = false,
-	BossModOptions = false,
+    CastOptions = false,
+    SearchOptions = false,
+    AdvancedOptions = false,
+    BossModOptions = false,
 }
 
 ---@type table<string, function>
 platerInternal.LoadOnDemand_LoadFunc = {
-	CastOptions = platerInternal.CreateCastBarOptions,
-	SearchOptions = platerInternal.CreateSearchOptions,
-	AdvancedOptions = platerInternal.CreateAdvancedOptions,
-	BossModOptions = platerInternal.CreateBossModOptions,
+    CastOptions = platerInternal.CreateCastBarOptions,
+    SearchOptions = platerInternal.CreateSearchOptions,
+    AdvancedOptions = platerInternal.CreateAdvancedOptions,
+    BossModOptions = platerInternal.CreateBossModOptions,
 }

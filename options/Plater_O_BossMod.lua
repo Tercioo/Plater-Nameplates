@@ -15,7 +15,7 @@ local on_select_blizzard_nameplate_large_font = function (_, _, value)
 end
 
 function platerInternal.CreateBossModOptions()
-	if platerInternal.LoadOnDemand_IsLoaded.BossModOptions then return end -- already loaded
+    if platerInternal.LoadOnDemand_IsLoaded.BossModOptions then return end -- already loaded
 
     --templates
     local options_text_template = DF:GetTemplate ("font", "OPTIONS_FONT_TEMPLATE")
@@ -34,69 +34,69 @@ function platerInternal.CreateBossModOptions()
 
     local L = DF.Language.GetLanguageTable(addonId)
 
-	--outline table
-	local outline_modes = {"NONE", "MONOCHROME", "OUTLINE", "THICKOUTLINE", "MONOCHROME, OUTLINE", "MONOCHROME, THICKOUTLINE"}
-	local outline_modes_names = {"None", "Monochrome", "Outline", "Thick Outline", "Monochrome Outline", "Monochrome Thick Outline"}
-	local build_outline_modes_table = function (actorType, member)
-		local t = {}
-		for i = 1, #outline_modes do
-			local value = outline_modes[i]
-			local label = outline_modes_names[i]
-			tinsert (t, {
-				label = label,
-				value = value,
+    --outline table
+    local outline_modes = {"NONE", "MONOCHROME", "OUTLINE", "THICKOUTLINE", "MONOCHROME, OUTLINE", "MONOCHROME, THICKOUTLINE"}
+    local outline_modes_names = {"None", "Monochrome", "Outline", "Thick Outline", "Monochrome Outline", "Monochrome Thick Outline"}
+    local build_outline_modes_table = function (actorType, member)
+        local t = {}
+        for i = 1, #outline_modes do
+            local value = outline_modes[i]
+            local label = outline_modes_names[i]
+            tinsert (t, {
+                label = label,
+                value = value,
                 statusbar = dropdownStatusBarTexture,
                 statusbarcolor = dropdownStatusBarColor,
-				onclick = function (_, _, value)
-					if (actorType) then
-						Plater.db.profile.plate_config [actorType][member] = value
-						Plater.RefreshDBUpvalues()
-						Plater.UpdateAllPlates()
-						Plater.UpdateAllNames()
-					else
-						Plater.db.profile [member] = value
-						Plater.RefreshDBUpvalues()
-						Plater.UpdateAllPlates()
-						Plater.UpdateAllNames()
-					end
-				end
-			})
-		end
-		return t
-	end
+                onclick = function (_, _, value)
+                    if (actorType) then
+                        Plater.db.profile.plate_config [actorType][member] = value
+                        Plater.RefreshDBUpvalues()
+                        Plater.UpdateAllPlates()
+                        Plater.UpdateAllNames()
+                    else
+                        Plater.db.profile [member] = value
+                        Plater.RefreshDBUpvalues()
+                        Plater.UpdateAllPlates()
+                        Plater.UpdateAllNames()
+                    end
+                end
+            })
+        end
+        return t
+    end
 
-	--anchor table
-	local build_anchor_side_table = function (actorType, member)
-		local anchorOptions = {}
-		local phraseIdTable = Plater.AnchorNamesByPhraseId
-		local languageId = DF.Language.GetLanguageIdForAddonId(addonId)
+    --anchor table
+    local build_anchor_side_table = function (actorType, member)
+        local anchorOptions = {}
+        local phraseIdTable = Plater.AnchorNamesByPhraseId
+        local languageId = DF.Language.GetLanguageIdForAddonId(addonId)
 
-		for i = 1, 13 do
-			tinsert (anchorOptions, {
-				label = DF.Language.GetText(addonId, phraseIdTable[i]),
-				languageId = languageId,
-				phraseId = phraseIdTable[i],
-				value = i,
+        for i = 1, 13 do
+            tinsert (anchorOptions, {
+                label = DF.Language.GetText(addonId, phraseIdTable[i]),
+                languageId = languageId,
+                phraseId = phraseIdTable[i],
+                value = i,
                 statusbar = dropdownStatusBarTexture,
                 statusbarcolor = dropdownStatusBarColor,
-				onclick = function (_, _, value)
-					if (actorType) then
-						Plater.db.profile.plate_config [actorType][member].side = value
-						Plater.RefreshDBUpvalues()
+                onclick = function (_, _, value)
+                    if (actorType) then
+                        Plater.db.profile.plate_config [actorType][member].side = value
+                        Plater.RefreshDBUpvalues()
 
-						Plater.UpdateAllPlates()
-						Plater.UpdateAllNames()
-					else
-						Plater.db.profile [member].side = value
-						Plater.RefreshDBUpvalues()
-						Plater.UpdateAllPlates()
-						Plater.UpdateAllNames()
-					end
-				end
-			})
-		end
-		return anchorOptions
-	end
+                        Plater.UpdateAllPlates()
+                        Plater.UpdateAllNames()
+                    else
+                        Plater.db.profile [member].side = value
+                        Plater.RefreshDBUpvalues()
+                        Plater.UpdateAllPlates()
+                        Plater.UpdateAllNames()
+                    end
+                end
+            })
+        end
+        return anchorOptions
+    end
 
     local bossmod_options = {
         {type = "label", get = function() return "DBM / BigWigs Support:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
@@ -158,7 +158,7 @@ function platerInternal.CreateBossModOptions()
 
         --anchor
         {
-			type = "select",
+            type = "select",
             get = function() return Plater.db.profile.bossmod_icons_anchor.side end,
             values = function() return build_anchor_side_table (nil, "bossmod_icons_anchor") end,
             name = "OPTIONS_ANCHOR",
@@ -275,10 +275,10 @@ function platerInternal.CreateBossModOptions()
     ---@diagnostic disable-next-line: undefined-global
     local bossmodFrame = PlaterOptionsPanelContainerBossModConfig
 
-	--bossmod_options.align_as_pairs = true
-	--bossmod_options.align_as_pairs_string_space = 181
-	--bossmod_options.widget_width = 150
-	--bossmod_options.use_scrollframe = true
+    --bossmod_options.align_as_pairs = true
+    --bossmod_options.align_as_pairs_string_space = 181
+    --bossmod_options.widget_width = 150
+    --bossmod_options.use_scrollframe = true
     bossmod_options.language_addonId = addonId
     bossmod_options.always_boxfirst = true
     bossmod_options.Name = "Boss-Mods"
@@ -286,7 +286,7 @@ function platerInternal.CreateBossModOptions()
     --local canvasFrame = DF:CreateCanvasScrollBox(bossmodFrame, nil, "PlaterOptionsPanelCanvasBossModConfig")
     --canvasFrame:SetPoint("topleft", bossmodFrame, "topleft", 0, platerInternal.optionsYStart)
     --canvasFrame:SetPoint("bottomright", bossmodFrame, "bottomright", -26, 25)
-	--bossmodFrame.canvasFrame = canvasFrame
+    --bossmodFrame.canvasFrame = canvasFrame
 
     local startX, startY, heightSize = 10, platerInternal.optionsYStart, 755
     --DF:BuildMenu (canvasFrame, bossmod_options, startX, 0, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, platerInternal.OptionsGlobalCallback)
@@ -296,5 +296,5 @@ function platerInternal.CreateBossModOptions()
     platerInternal.LoadOnDemand_IsLoaded.BossModOptions = true
     ---@diagnostic disable-next-line: undefined-global
     table.insert(PlaterOptionsPanelFrame.AllSettingsTable, bossmod_options)
-	platerInternal.CreateBossModOptions = function() end
+    platerInternal.CreateBossModOptions = function() end
 end
