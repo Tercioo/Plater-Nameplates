@@ -365,7 +365,7 @@ end
 				local npcName = nextDataToApprove[3]
 				local npcZone = nextDataToApprove[4]
 				local senderName = nextDataToApprove[6]
-				
+
 				npcName = string.gsub(npcName, "@C@", ",")
 				npcZone = string.gsub(npcZone, "@C@", ",")
 
@@ -385,7 +385,7 @@ end
 				elseif (whichInfo == "npcrename") then
 					local newName = nextDataToApprove[5]
 					newName = string.gsub(newName, "@C@", ",")
-					
+
 					frame.Text2:SetText("Rename: |cFFFFDD00" .. npcName .. "|r to: |cFFFFDD00" .. newName)
 
 					frame.AcceptButton:SetClickFunction(function()
@@ -807,7 +807,7 @@ end
 			Plater:Msg("npcInfo not found.")
 			return
 		end
-		
+
 		npcName = string.gsub(npcName, ",", "@C@")
 		npcZone = string.gsub(npcZone, ",", "@C@")
 
@@ -830,7 +830,7 @@ end
 				Plater:Msg("npc does not have a custom name.")
 				return
 			end
-			
+
 			npcNameRenamed = string.gsub(npcNameRenamed, ",", "@C@")
 
 			dataToSend = whichInfo .. "," .. npcId .. "," .. npcName .. "," .. npcZone .. "," .. (autoAccept and "1" or "0") .. "," .. npcNameRenamed

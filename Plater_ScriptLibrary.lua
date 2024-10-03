@@ -1062,7 +1062,7 @@ do
 			end
 		end
 	})
-	
+
 	--#22 cleanup of cast_colors, cast_audiocues of string-indexed values
 	tinsert (PlaterPatchLibrary, {
 		Notes = {
@@ -1073,18 +1073,18 @@ do
 			local castColors = Plater.db.profile.cast_colors
 			local castColorsTemp = DetailsFramework.table.copy({}, castColors)
 			for n, v in pairs(castColorsTemp) do
-				if tonumber(n) then 
+				if tonumber(n) then
 					castColors[n] = nil
-					castColors[tonumber(n)] = v 
+					castColors[tonumber(n)] = v
 				end
 			end
 
 			local audioCues = Plater.db.profile.cast_audiocues
 			local audioCuesTemp = DetailsFramework.table.copy({}, audioCues)
 			for n, v in pairs(audioCuesTemp) do
-				if tonumber(n) then 
+				if tonumber(n) then
 					audioCues[n] = nil
-					audioCues[tonumber(n)] = v 
+					audioCues[tonumber(n)] = v
 				end
 			end
 		end
@@ -1214,7 +1214,7 @@ do
 			end
 		end
 	})
-	
+
 	--#29 ensure auto-function for "hide blizzard healthbars" is setup properly
 	tinsert (PlaterPatchLibrary, {
 		NotEssential = false,
@@ -1229,31 +1229,31 @@ do
 			end
 		end,
 	})
-	
+
 	--#30 cleanup of renamed npcs string-indexed values
 	tinsert (PlaterPatchLibrary, {
 		NotEssential = false,
-		
+
 		Notes = {
 			"- Cleanup wrong indexes in npcs_renamed."
 		},
 		Func = function()
 			local renamedNPCs = Plater.db.profile.npcs_renamed
 			local renamedNPCsTemp = DetailsFramework.table.copy({}, renamedNPCs)
-			
+
 			for npcId, renamedName in pairs(renamedNPCsTemp) do
-				if tonumber(npcId) then 
+				if tonumber(npcId) then
 					renamedNPCs[tonumber(npcId)] = renamedNPCs[npcId] or renamedName -- ensure not to overwrite already existing (changed) after import
 					renamedNPCs[npcId] = nil
 				end
 			end
 		end
 	})
-	
+
 	--#31 adjust level text and bar sizes for hardcore
 	tinsert (PlaterPatchLibrary, {
 		NotEssential = true,
-		
+
 		Notes = {
 			"- Adjust level text and bar sizes for hardcore realms."
 		},
@@ -1263,7 +1263,7 @@ do
 				Plater.db.profile.plate_config.enemynpc.level_text_alpha = 1
 				Plater.db.profile.plate_config.friendlyplayer.level_text_alpha = 1
 				Plater.db.profile.plate_config.friendlynpc.level_text_alpha = 1
-				
+
 				if (not Plater.db.profile.first_run3) then
 					Plater.db.profile.plate_config.enemynpc.health[1] = 90
 					Plater.db.profile.plate_config.enemynpc.health[2] = 10
@@ -1273,21 +1273,21 @@ do
 			end
 		end
 	})
-	
+
 	--#32 Cleanup Ghost Auras indexes to be numbers again and remove trash.
 	tinsert (PlaterPatchLibrary, {
 		NotEssential = false,
-		
+
 		Notes = {
 			"- Cleanup and repair Ghost Auras data."
 		},
 		Func = function()
 			--cleanup is needed for proper number indexing. will remove crap as well.
-			
+
 			local ghostAuras = Plater.db.profile.ghost_auras.auras
 			local ghostAurasTemp = DetailsFramework.table.copy({}, ghostAuras)
 			local ghostAurasDefault = PLATER_DEFAULT_SETTINGS.profile.ghost_auras.auras
-			
+
 			for class, specs in pairs(ghostAurasTemp) do
 				for specID, specData in pairs(specs) do
 					ghostAuras[class][specID] = nil
@@ -1295,7 +1295,7 @@ do
 						ghostAuras[class][tonumber(specID)] = ghostAuras[class][tonumber(specID)] or {}
 						for spellId, enabled in pairs(specData) do
 							if tonumber(spellId) then
-								ghostAuras[class][tonumber(specID)][tonumber(spellId)] = enabled 
+								ghostAuras[class][tonumber(specID)][tonumber(spellId)] = enabled
 							end
 						end
 					end
@@ -1303,18 +1303,18 @@ do
 			end
 		end
 	})
-	
+
 	--#33 Reset range check values if necessary....
 	tinsert (PlaterPatchLibrary, {
 		NotEssential = false,
-		
+
 		Notes = {
 			"- Reset range check distance settings if necessary."
 		},
 		Func = function()
 			--range check spells
 			local LibRangeCheck = LibStub:GetLibrary ("LibRangeCheck-3.0")
-			LibRangeCheck.RegisterCallback(PlaterPatchLibrary, LibRangeCheck.CHECKERS_CHANGED, function() 
+			LibRangeCheck.RegisterCallback(PlaterPatchLibrary, LibRangeCheck.CHECKERS_CHANGED, function()
 				local harmCheckers = {}
 				for range, func in LibRangeCheck:GetHarmCheckers(true) do
 					harmCheckers[range] = func
@@ -1433,7 +1433,7 @@ do
 			local addTriggers = {
 				--script name			  trigger list
 				["Add - Important [P]"] = {194745, 190426, npc = true}, --Rotfang Hyena, Decay Totem
-				["Explosion Affix M+ [Plater]"] = {389446}, --Nullifying Pulse, 
+				["Explosion Affix M+ [Plater]"] = {389446}, --Nullifying Pulse,
 				["Cast - Very Important [Plater]"] = {377488}, --Icy Bindings
 			}
 
@@ -1450,11 +1450,11 @@ do
 			end
 		end,
 	})
-	
+
 	--#37 cleanup of spell animation IDs
 	tinsert (PlaterPatchLibrary, {
 		NotEssential = false,
-		
+
 		Notes = {
 			"- Cleanup wrong indexes in spell_animation_list."
 		},
@@ -1463,9 +1463,9 @@ do
 			local spellAnimationsTemp = DetailsFramework.table.copy({}, spellAnimations)
 
 			for spellId, animation in pairs(spellAnimationsTemp) do
-				if tonumber(spellId) then 
+				if tonumber(spellId) then
 					spellAnimations[spellId] = nil
-					spellAnimations[tonumber(spellId)] = animation 
+					spellAnimations[tonumber(spellId)] = animation
 				end
 			end
 		end
@@ -1520,14 +1520,14 @@ local listOfScriptsToDeprecateOnExpasion = {
 
 local listOfTriggersToDeprecateOnExpansionAsArray = { --v10 deprecated triggers
 	194895, 105703, 59598, 58319, 200388, 189299, 131402, 135052, 197697, 59544, 186227, 184020, 91005, 196548, 195580, 195820, 195821, 189886, 75966, 102019, 187159, 194897, 104251, 101326, 189669, 192464, 190381, 92538, 192464, 131009, 127315, 133361, 136330, 214117, 212483, 101008, 194745, 190426,
-	194622, 190205, 197398, 77006, 190187, 189893, 99922, 104822, 129758, 186696, 101075, 100818, 98081, 52019, 398151, 377738, 378149, 372743, 372749, 384933, 350421, 355787, 348513, 396640, 372743, 377389, 396812, 388392, 387955, 386546, 377503, 384808, 386024, 387615, 387606, 225100, 211401, 211470, 215433, 192563, 198959, 152818, 156776, 398206, 153524, 396073, 396018, 345202, 377950, 372223, 350421, 352158, 349985, 329239, 328400, 384194, 392451, 392924, 397889, 209413, 207980, 257397, 257736, 382787, 374699, 377402, 369602, 369465, 369400, 381593, 265091, 265433, 382791, 376780, 225573, 278444, 164887, 168082, 76813, 227913, 265368, 
+	194622, 190205, 197398, 77006, 190187, 189893, 99922, 104822, 129758, 186696, 101075, 100818, 98081, 52019, 398151, 377738, 378149, 372743, 372749, 384933, 350421, 355787, 348513, 396640, 372743, 377389, 396812, 388392, 387955, 386546, 377503, 384808, 386024, 387615, 387606, 225100, 211401, 211470, 215433, 192563, 198959, 152818, 156776, 398206, 153524, 396073, 396018, 345202, 377950, 372223, 350421, 352158, 349985, 329239, 328400, 384194, 392451, 392924, 397889, 209413, 207980, 257397, 257736, 382787, 374699, 377402, 369602, 369465, 369400, 381593, 265091, 265433, 382791, 376780, 225573, 278444, 164887, 168082, 76813, 227913, 265368,
 	385916, 386063, 388822, 373087, 397785, 106864, 193660, 198263, 387910, 370766, 375591, 384336, 209404, 209378, 210875, 396001, 397899, 386559, 382555, 258672, 258777, 257756, 257784, 256405, 256589, 393793, 388046, 375079, 390290, 369811, 369703, 226287, 410999, 372561, 256882, 172578, 412063,
 	375943, 385958, 388623, 377034, 374361, 381525, 386660, 385578, 384699, 153501, 153686, 154442, 192018, 219488, 372087, 391726, 391723, 377383, 388976, 370764, 387067, 391118, 391136, 382233, 209027, 212031, 207261, 207979, 198888, 199805, 199050, 191508, 152792, 153395, 352833, 330403, 209495, 257426, 255952, 257870, 413147, 383107, 377559, 388060, 376170, 384524, 375351, 390111, 369791, 369573, 369563, 369335, 369061, 375727, 265016, 265019, 260793, 260292, 272457, 272609, 269843, 183465, 226296, 188169, 183088, 410873, 411012, 88308, 382708, 375251, 375439, 372311, 373742, 372201, 374533, 377204, 201226, 204667, 198379, 200768, 253239, 250258, 255567, 194956, 427510, 426645, 412505, 412129, 419351, 401482, 404916, 200345, 200261, 198641, 265372, 271174, 264694, 264923,
 	376644, 386781, 384823, 385536, 392398, 375596, 387135, 360850, 212784, 199033, 199034, 200969, 394512, 397881, 396020, 374430, 384353, 265376, 193941, 411002, 169445,
 	388886, 209676, 377912, 392640, 397888, 209033, 385029, 374563, 377341, 369675, 369365, 369411, 278961, 202108, 88186, 255824, 252781, 250096, 200248, 197797, 264520, 418202, 201839, 412012, 411958, 373688, 391050,
-	376851, 396044, 381517, 373932, 397801, 208165, 392576, 198750, 387843, 387411, 211299, 198595, 198934, 198962, 156722, 350554, 348513, 351779, 328180, 319898, 281420, 274383, 259092, 367521, 374544, 385039, 382474, 369823, 377500, 260879, 186269, 378818, 371875, 372225, 200658, 266036, 265407, 164965, 429176, 428526, 418200, 407124, 200630, 415437, 264050, 267824, 
-	377004, 381516, 196543, 199726, 200291, 268202, 383823, 382670, 388537, 372851, 200682, 192307, 196838, 193827, 194043, 209410, 211464, 361180, 156718, 395859, 358320, 374045, 386757, 367500, 370225, 376200, 372107, 388923, 376934, 384899, 373960, 374724, 385551, 259732, 373424, 373084, 87618, 255041, 428926, 76634, 200050, 197546, 198079, 199193, 266181, 253544, 
-	373046, 372863, 164686, 153072, 153680, 196497, 388886, 387145, 384365, 152964, 398150, 152801, 397878, 397914, 183263, 3636, 376171, 350687, 372735, 373017, 350687, 392488, 257732, 256060, 257899, 384633, 374339, 395694, 391634, 372701, 369328, 265487, 413044, 183526, 88194, 87762, 413385, 411001, 378282, 384161, 259572, 255371, 427460, 429172, 426500, 413607, 412922, 417481, 201399, 411994, 415770, 260907, 260703, 260741, 265876, 263959, 266225, 253517, 377488, 
+	376851, 396044, 381517, 373932, 397801, 208165, 392576, 198750, 387843, 387411, 211299, 198595, 198934, 198962, 156722, 350554, 348513, 351779, 328180, 319898, 281420, 274383, 259092, 367521, 374544, 385039, 382474, 369823, 377500, 260879, 186269, 378818, 371875, 372225, 200658, 266036, 265407, 164965, 429176, 428526, 418200, 407124, 200630, 415437, 264050, 267824,
+	377004, 381516, 196543, 199726, 200291, 268202, 383823, 382670, 388537, 372851, 200682, 192307, 196838, 193827, 194043, 209410, 211464, 361180, 156718, 395859, 358320, 374045, 386757, 367500, 370225, 376200, 372107, 388923, 376934, 384899, 373960, 374724, 385551, 259732, 373424, 373084, 87618, 255041, 428926, 76634, 200050, 197546, 198079, 199193, 266181, 253544,
+	373046, 372863, 164686, 153072, 153680, 196497, 388886, 387145, 384365, 152964, 398150, 152801, 397878, 397914, 183263, 3636, 376171, 350687, 372735, 373017, 350687, 392488, 257732, 256060, 257899, 384633, 374339, 395694, 391634, 372701, 369328, 265487, 413044, 183526, 88194, 87762, 413385, 411001, 378282, 384161, 259572, 255371, 427460, 429172, 426500, 413607, 412922, 417481, 201399, 411994, 415770, 260907, 260703, 260741, 265876, 263959, 266225, 253517, 377488,
 	164427, 164414, 164185, 164567, 165408, 240446, 385339, 198077, 210261, 360857, 389446, 165560, 426662, 426663, 164406, 164407, 162100, 162099, 162329, 164558, 195138, 192955, 190294, 76518, 163520, 163618, 164506, 163520, 163618, 164506,
 }
 

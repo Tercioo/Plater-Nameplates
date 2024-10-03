@@ -5,7 +5,7 @@ local DF = DetailsFramework
 local _
 
 function Plater.UpdateCustomDesign(unitFrame)
-    
+
     local settings = Plater.db.profile.customdesign
 
     local healthBar = unitFrame.healthBar
@@ -99,7 +99,7 @@ function Plater.UpdateCustomDesign(unitFrame)
         if (settings.healthbar_border_color) then
             healthBar.customborder.texture:SetVertexColor(DF:ParseColors(settings.healthbar_border_color))
         end
-    end    
+    end
 
 
 end

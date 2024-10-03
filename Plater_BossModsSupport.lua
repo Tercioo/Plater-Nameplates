@@ -104,7 +104,7 @@ function Plater.CreateBossModAuraFrame(unitFrame)
 	unitFrame.BossModIconFrame:SetOption ("anchor", Plater.db.profile.bossmod_icons_anchor or {side = 8, x = 0, y = 30})
 	unitFrame.BossModIconFrame:SetOption ("grow_direction", unitFrame.ExtraIconFrame:GetIconGrowDirection())
 	Plater.SetAnchor (unitFrame.BossModIconFrame, Plater.db.profile.bossmod_icons_anchor or {side = 8, x = 0, y = 30})
-	
+
 	unitFrame.BossModIconFrame.OnIconTick = function(self, deltaTime) -- override to add glow effects
 		local now = GetTime()
 		if (self.lastUpdateCooldown + 0.05) <= now then
@@ -118,7 +118,7 @@ function Plater.CreateBossModAuraFrame(unitFrame)
 			else
 				self.CountdownText:SetText("")
 			end
-			
+
 			local profile = Plater.db.profile
 			local canGlow = profile.bossmod_aura_glow_expiring and (not profile.bossmod_aura_glow_important_only or profile.bossmod_aura_glow_important_only and self.bmData and self.bmData.isPriority) and self.timeRemaining < 4 and self.timeRemaining > 0
 			if canGlow and not self.isGlowing then
@@ -140,7 +140,7 @@ function Plater.CreateBossModAuraFrame(unitFrame)
 				Plater.StopPixelGlow(self, "BM_ImportantIconGlow")
 				self.isGlowing = false
 			end
-			
+
 			self.lastUpdateCooldown = now
 		end
 	end
@@ -774,7 +774,7 @@ end
 function Plater.PauseBarIcon(name)
 	if not name then return end
 	local curTime = GetTime()
-	
+
 	for id,entry in pairs(Plater.BossModsTimeBarDBM) do
 		if entry.msg == name then
 			--print("yes", entry.paused, id)
@@ -799,7 +799,7 @@ end
 function Plater.UpdateBarIcon(name, elapsed, totalTime)
 	if not name then return end
 	local curTime = GetTime()
-	
+
 	for id,entry in pairs(Plater.BossModsTimeBarDBM) do
 		if entry.msg == name then
 			entry.timer = totalTime
@@ -807,7 +807,7 @@ function Plater.UpdateBarIcon(name, elapsed, totalTime)
 			if entry.paused then
 				entry.pauseStartTime = curTime
 			end
-			
+
 			--print(name, entry.msg, entry.msg == name, entry.guid)
 			UNIT_BOSS_MOD_NEEDS_UPDATE_IN[entry.guid] = -1
 		end
@@ -815,11 +815,11 @@ function Plater.UpdateBarIcon(name, elapsed, totalTime)
 end
 function Plater.KeepBarIcon(name)
 	if not name then return end
-	
+
 	for id,entry in pairs(Plater.BossModsTimeBarDBM) do
 		if entry.msg == name then
 			entry.keep = not entry.keep
-			
+
 			--print(name, entry.msg, entry.msg == name, entry.guid)
 			UNIT_BOSS_MOD_NEEDS_UPDATE_IN[entry.guid] = -1
 		end
@@ -840,7 +840,7 @@ function Plater.RegisterBossModsBars()
 			C_Timer.After (tonumber(timer) or 10, function() DBM_TIMER_BARS_TEST_MODE = false end)
 		end
 		DBM:RegisterCallback("DBM_TestModStarted", testModeStartCallback)
-		
+
 		--timer start
 		local timerStartCallback = function(event, id, msg, timer, icon, barType, spellId, colorId, modId, keep, fade, name, guid, timerCount, isPriority)
 			if event ~= "DBM_TimerStart" then return end
@@ -917,7 +917,7 @@ function Plater.RegisterBossModsBars()
 
 		local timerUpdateCallback = function(event, id, elapsed, totalTime)
 			if event ~= "DBM_TimerUpdate" then return end
-			
+
 			if not id or not elapsed or not totalTime then return end
 			local entry = id and Plater.BossModsTimeBarDBM[id] or nil
 			local guid = entry and entry.guid
@@ -936,7 +936,7 @@ function Plater.RegisterBossModsBars()
 
 		local timerPauseCallback = function(event, id)
 			if event ~= "DBM_TimerPause" then return end
-			
+
 			if not id then return end
 			local entry = id and Plater.BossModsTimeBarDBM[id] or nil
 			local guid = entry and entry.guid
@@ -955,7 +955,7 @@ function Plater.RegisterBossModsBars()
 
 		local timerResumeCallback = function(event, id)
 			if event ~= "DBM_TimerResume" then return end
-			
+
 			if not id then return end
 			local entry = id and Plater.BossModsTimeBarDBM[id] or nil
 			local guid = entry and entry.guid
@@ -975,7 +975,7 @@ function Plater.RegisterBossModsBars()
 		--timer stop
 		local timerEndCallback = function (event, id)
 			if event ~= "DBM_TimerStop" then return end
-			
+
 			if not id then return end
 			local guid = Plater.BossModsTimeBarDBM[id] and Plater.BossModsTimeBarDBM[id].guid
 			Plater.BossModsTimeBarDBM[id] = nil

@@ -268,7 +268,7 @@ function platerInternal.Plugins.CreatePluginsOptionsTab(pluginsFrame)
 		--create a new line
 		local line = CreateFrame("button", "$parentLine" .. index, self, BackdropTemplateMixin and "BackdropTemplate")
 
-		--set its parameters 
+		--set its parameters
 		line:SetPoint("topleft", self, "topleft", 1, -((index-1) *(scrollbox_line_height+1)) - 1)
 		line:SetSize(scrollbox_size[1]-2, scrollbox_line_height)
 		line:RegisterForClicks("LeftButtonDown", "RightButtonDown")

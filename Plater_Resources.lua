@@ -333,7 +333,7 @@ end
 
 		return resourceBar
 	end
-	
+
 	local function updateWotLKDKRuneTextures(resourceBar)
 		if IS_WOW_PROJECT_NOT_MAINLINE then
 			--wrath classic
@@ -436,13 +436,13 @@ end
 		mainResourceFrame.resourceBars[CONST_SPECID_DK_FROST] = newResourceBar
 		mainResourceFrame.resourceBars[CONST_SPECID_DK_BLOOD] = newResourceBar
 		newResourceBar.resourceId = SPELL_POWER_RUNES
-		
+
 		-- for rune sorting
 		newResourceBar.runeIndexes = {};
 		for i = 1, #newResourceBar.widgets do
-			tinsert(newResourceBar.runeIndexes, i); 
+			tinsert(newResourceBar.runeIndexes, i);
 		end
-		
+
 		if IS_WOW_PROJECT_MAINLINE then
 			newResourceBar.updateResourceFunc = resourceWidgetsFunctions.OnRunesChanged
 		else
@@ -453,7 +453,7 @@ end
 		mainResourceFrame.resourceBarsByEnumName[CONST_ENUMNAME_RUNES] = newResourceBar
 		return newResourceBar
 	end
-	
+
 	resourceBarCreateFuncByEnumName[CONST_ENUMNAME_ESSENCE] = function(mainResourceFrame)
 		local resourceWidgetCreationFunc = Plater.Resources.GetCreateResourceWidgetFunctionForSpecId(CONST_SPECID_EVOKER_DEVASTATION)
 		local newResourceBar = createResourceBar(mainResourceFrame, "$parentEvokerResource", resourceWidgetCreationFunc, 24, 24)
@@ -623,7 +623,7 @@ end
 		if (PlayerClass == "DRUID") then
 			mainResourceFrame:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
 		end
-		
+
 		if (PlayerClass == "DEATHKNIGHT") then
 			mainResourceFrame:RegisterEvent("RUNE_POWER_UPDATE")
 			if IS_WOW_PROJECT_NOT_MAINLINE then
@@ -685,8 +685,8 @@ end
 				updateWotLKDKRuneTextures(resourceBar)
 			end
 		end
-		
-		
+
+
 		Plater.Resources.CanUsePlaterResourceFrame()
 	end
 
@@ -773,7 +773,7 @@ end
 			Plater.EndLogPerformanceCore("Plater-Resources", "Update", "UpdateMainResourceFrame")
 			return
 		end
-		
+
 		if (not plateFrame) then
 			Plater.Resources.HidePlaterResourceFrame()
 			Plater.EndLogPerformanceCore("Plater-Resources", "Update", "UpdateMainResourceFrame")
@@ -868,28 +868,28 @@ end
 --on this type, the location of each resource icon is depending on the amount shown
 	function Plater.Resources.UpdateResourcesFor_HideDepleted(mainResourceFrame, resourceBar)
 		Plater.StartLogPerformanceCore("Plater-Resources", "Update", "UpdateResourcesFor_HideDepleted")
-		
+
 		--get the table with the widgets created
 		local widgetTable = resourceBar.widgets
 		--fallback if it is not implemented/created
 		if (not widgetTable[1]) then
 			return
 		end
-		
+
 		--store the amount of widgets currently in use - as we are hiding before update: 0
 		resourceBar.widgetsInUseAmount = 0
 		--set the amount of resources the player has - 0 before update
 		resourceBar.lastResourceAmount = 0
-		
+
 		for i = 1, CONST_NUM_RESOURCES_WIDGETS do
 			local thisResourceWidget = widgetTable[i]
 			thisResourceWidget.inUse = false
 			thisResourceWidget:Hide()
 			resourceBar.widgetsBackground[i]:Hide()
 		end
-		
+
 		mainResourceFrame.currentResourceBarShown.updateResourceFunc(mainResourceFrame, mainResourceFrame.currentResourceBarShown, true)
-		
+
 		Plater.EndLogPerformanceCore("Plater-Resources", "Update", "UpdateResourcesFor_HideDepleted")
 	end
 
@@ -1136,7 +1136,7 @@ end
 		if IS_WOW_PROJECT_MAINLINE and (event == "UNIT_POWER_POINT_CHARGE" or forcedRefresh) then
 			--fallback if it is not implemented/created
 			if (not resourceBar.widgets[1]) then return end
-			
+
 			--charges changed
 			local chargedPowerPoints = GetUnitChargedPowerPoints("player")
 			--chargedPowerPoints = {[1] = random(1,2), [2] = random(3,5)} --testing
@@ -1190,7 +1190,7 @@ end
 			Plater.Resources.UpdateResources_NoDepleted(resourceBar, currentResources)
 		end
 	end
-	
+
 	--DK runes update
 	local function RuneComparison(runeAIndex, runeBIndex)
 		local runeAStart, runeADuration, runeARuneReady = GetRuneCooldown(runeAIndex)
@@ -1208,9 +1208,9 @@ end
 	end
 	function resourceWidgetsFunctions.OnRunesChanged(mainResourceFrame, resourceBar, forcedRefresh, event)
 		resourceBar.runesOnCooldown = resourceBar.runesOnCooldown or {}
-		
+
 		table.sort(resourceBar.runeIndexes, RuneComparison);
-		
+
 		for index, runeIndex in ipairs(resourceBar.runeIndexes) do
 			local runeButton = resourceBar.widgets[index]
 			runeButton:Show()
@@ -1236,7 +1236,7 @@ end
 					local _, _, runeReadyNow = GetRuneCooldown(resourceBar.runesOnCooldown[index])
 					if (runeReadyNow) then
 						resourceBar.runesOnCooldown[index] = nil
-						
+
 						runeButton.ShowAnimation:Play()
 						--runeButton.texture:SetAlpha(1)
 						runeButton.texture:Show()
@@ -1256,12 +1256,12 @@ end
 	end
 	function resourceWidgetsFunctions.OnRunesChangedWotLK(mainResourceFrame, resourceBar, forcedRefresh, event)
 		resourceBar.runesOnCooldown = resourceBar.runesOnCooldown or {}
-		
+
 		if (event and event == "RUNE_TYPE_UPDATE") then
 			updateWotLKDKRuneTextures(resourceBar)
 			return
 		end
-		
+
 		for index = 1, 6 do
 			local runeButton = resourceBar.widgets[index]
 			--runeButton.background:Hide()
@@ -1286,7 +1286,7 @@ end
 					local _, _, runeReadyNow = GetRuneCooldown(index)
 					if (runeReadyNow) then
 						resourceBar.runesOnCooldown[index] = nil
-						
+
 						runeButton.ShowAnimation:Play()
 						runeButton.texture:SetAlpha(1)
 					end
@@ -1299,7 +1299,7 @@ end
 			end
 		end
 	end
-	
+
 	--WL soul chards
 	local widthByFillAmount = {
 		[0] = 0,
@@ -1315,22 +1315,22 @@ end
 		[10] = 0,
 	};
 	function resourceWidgetsFunctions.OnSoulChardsChanged(mainResourceFrame, resourceBar, forcedRefresh, event, unit, powerType)
-		
+
 		if (event == "UNIT_MAXPOWER" and DB_PLATER_RESOURCE_SHOW_DEPLETED) then
 			Plater.Resources.UpdateResourcesFor_ShowDepleted(mainResourceFrame, resourceBar)
 			forcedRefresh = true
 		end
-		
+
 		-- ensure to only update for proper power type or if forced
 		if not forcedRefresh and powerType and powerType ~= classPowerTypes[PlayerClass] then
 			return
 		end
-		
+
 		--amount of resources the player has now
 		local shardPower = UnitPower("player", Plater.Resources.playerResourceId, true)
 		local shardModifier = UnitPowerDisplayMod(Enum.PowerType.SoulShards)
 		local currentResources = (shardModifier ~= 0) and (shardPower / shardModifier) or 0
-		
+
 		-- how to handle partial?
 		local actualResources = currentResources
 		local isDestro = GetSpecialization() == SPEC_WARLOCK_DESTRUCTION
@@ -1351,9 +1351,9 @@ end
 		else
 			Plater.Resources.UpdateResources_NoDepleted(resourceBar, currentResources)
 		end
-		
+
 		resourceBar.lastResourceAmount = actualResources
-		
+
 		for i = 1, resourceBar.widgetsInUseAmount do
 			local widget = resourceBar.widgets[i]
 			local fillAmount = Saturate(actualResources - i + 1)
@@ -1374,9 +1374,9 @@ end
 			end
 		end
 	end
-	
+
 	--Evoker Essence
-	local FillingAnimationTime = 5.0; 
+	local FillingAnimationTime = 5.0;
 	local evokerEssenceOnUpdate = function(self, elapsed)
 	   	local pace,interrupted = GetPowerRegenForPowerType(Plater.Resources.playerResourceId)
 		if (pace == nil or pace == 0) then
@@ -1406,38 +1406,38 @@ end
 		if (pace == nil or pace == 0) then
 			pace = 0.2
 		end
-		
+
 		--resources amount got updated?
 		if (currentResources == resourceBar.lastResourceAmount and not forcedRefresh) then
 			--return --this somehow fucks up because UnitPartialPower returns weird shit.
 		end
-		
+
 		--which update method to use
 		if (DB_PLATER_RESOURCE_SHOW_DEPLETED) then
 			Plater.Resources.UpdateResources_WithDepleted(resourceBar, currentResources + (isAtMaxPoints and 0 or 1))
 		else
 			Plater.Resources.UpdateResources_NoDepleted(resourceBar, currentResources + (isAtMaxPoints and 0 or 1))
 		end
-		
+
 		resourceBar.lastResourceAmount = currentResources
-		
+
 		for i = 1, min(currentResources, resourceBar.widgetsInUseAmount) do
 			local widget = resourceBar.widgets[i]
-			
+
 			--widget.EssenceFull:Show()
 			widget.EssenceFull:Hide()
-			
+
 			if not widget.EssenceFillDone:IsShown() then
 				widget.EssenceFillDone:Show()
 				widget.EssenceFillDone.AnimInOrig:Play()
 			end
-			
+
 			widget.EssenceFilling.FillingAnim:Stop()
 			widget.EssenceFilling.CircleAnim:Stop()
 			widget.EssenceFilling:Hide()
 
 			--widget.EssenceFillDone:Show()
-			
+
 			widget.EssenceEmpty:Hide()
 			widget:SetScript("OnUpdate", nil)
 			widget:Show()
@@ -1473,12 +1473,12 @@ end
 			widget.EssenceEmpty:Hide()
 			widget.EssenceFillDone:Hide()
 			widget.EssenceFull:Hide()
-			
+
 			local partial = UnitPartialPower("player", Plater.Resources.playerResourceId) / 1000.0
 			if partial == 0 then
 			   partial = 0.001
 			end
-			
+
 			widget.EssenceFilling.FillingAnim:SetAnimationSpeedMultiplier(animationSpeedMultiplier)
 			widget.EssenceFilling.CircleAnim:SetAnimationSpeedMultiplier(animationSpeedMultiplier)
 			widget.EssenceFilling.FillingAnim:Restart(false, partial *  widget.EssenceFilling.FillingAnim:GetDuration())

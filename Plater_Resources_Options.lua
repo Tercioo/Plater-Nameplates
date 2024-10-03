@@ -102,7 +102,7 @@ function Plater.Resources.GetResourceIdForPlayer()
 
     elseif (playerClass == "PALADIN") then
         return Enum.PowerType[CONST_ENUMNAME_HOLYPOWER]
-		
+
 	elseif (playerClass == "EVOKER") then
         return Enum.PowerType[CONST_ENUMNAME_ESSENCE]
     end
@@ -230,7 +230,7 @@ function Plater.Resources.BuildResourceOptionsTab(frame)
 	end
 
     selectResourceScrollBox:Refresh()
-	
+
 	--hide for now and move other settings over ~TODO
 	selectResourceLabel:Hide()
 	selectResourceScrollBox:Hide()
@@ -354,7 +354,7 @@ function Plater.Resources.BuildResourceOptionsTab(frame)
 		{
 			type = "range",
 			get = function() return Plater.db.profile.resources_settings.global_settings.anchor.x end,
-			set = function (self, fixedparam, value) 
+			set = function (self, fixedparam, value)
 				Plater.db.profile.resources_settings.global_settings.anchor.x = value
 				Plater.UpdateAllPlates()
 			end,
@@ -369,7 +369,7 @@ function Plater.Resources.BuildResourceOptionsTab(frame)
 		{
 			type = "range",
 			get = function() return Plater.db.profile.resources_settings.global_settings.anchor.y end,
-			set = function (self, fixedparam, value) 
+			set = function (self, fixedparam, value)
 				Plater.db.profile.resources_settings.global_settings.anchor.y = value
 				Plater.UpdateAllPlates()
 			end,

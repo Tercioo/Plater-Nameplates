@@ -16,7 +16,7 @@ end
 
 function platerInternal.CreateBossModOptions()
 	if platerInternal.LoadOnDemand_IsLoaded.BossModOptions then return end -- already loaded
-	
+
     --templates
     local options_text_template = DF:GetTemplate ("font", "OPTIONS_FONT_TEMPLATE")
     local options_dropdown_template = DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE")
@@ -104,34 +104,34 @@ function platerInternal.CreateBossModOptions()
         {
             type = "toggle",
             get = function() return Plater.db.profile.bossmod_support_enabled end,
-            set = function (self, fixedparam, value) 
+            set = function (self, fixedparam, value)
                 Plater.db.profile.bossmod_support_enabled = value
                 Plater.UpdateAllPlates()
             end,
             name = "OPTIONS_ENABLED",
             desc = "Enable the boss mod icon support for BigWigs and DBM.",
         },
-        
+
         {
             type = "toggle",
             get = function() return Plater.db.profile.bossmod_castrename_enabled end,
-            set = function (self, fixedparam, value) 
+            set = function (self, fixedparam, value)
                 Plater.db.profile.bossmod_castrename_enabled = value
                 --Plater.UpdateAllPlates()
             end,
             name = "Enable boss-mod cast spell renaming",
             desc = "Enable cast rename based on BigWigs or DBM spell names.",
         },
-        
+
         {type = "blank"},
-        
+
         {type = "label", get = function() return "Global Icon Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-        
+
         --width
         {
             type = "range",
             get = function() return Plater.db.profile.bossmod_aura_width end,
-            set = function (self, fixedparam, value) 
+            set = function (self, fixedparam, value)
                 Plater.db.profile.bossmod_aura_width = value
                 Plater.UpdateAllPlates()
             end,
@@ -145,7 +145,7 @@ function platerInternal.CreateBossModOptions()
         {
             type = "range",
             get = function() return Plater.db.profile.bossmod_aura_height end,
-            set = function (self, fixedparam, value) 
+            set = function (self, fixedparam, value)
                 Plater.db.profile.bossmod_aura_height = value
                 Plater.UpdateAllPlates()
             end,
@@ -155,7 +155,7 @@ function platerInternal.CreateBossModOptions()
             name = "OPTIONS_HEIGHT",
             desc = "OPTIONS_HEIGHT",
         },
-        
+
         --anchor
         {
 			type = "select",
@@ -168,7 +168,7 @@ function platerInternal.CreateBossModOptions()
         {
             type = "range",
             get = function() return Plater.db.profile.bossmod_icons_anchor.x end,
-            set = function (self, fixedparam, value) 
+            set = function (self, fixedparam, value)
                 Plater.db.profile.bossmod_icons_anchor.x = value
                 Plater.UpdateAllPlates()
             end,
@@ -183,7 +183,7 @@ function platerInternal.CreateBossModOptions()
         {
             type = "range",
             get = function() return Plater.db.profile.bossmod_icons_anchor.y end,
-            set = function (self, fixedparam, value) 
+            set = function (self, fixedparam, value)
                 Plater.db.profile.bossmod_icons_anchor.y = value
                 Plater.UpdateAllPlates()
             end,
@@ -194,28 +194,28 @@ function platerInternal.CreateBossModOptions()
             name = "OPTIONS_YOFFSET",
             desc = "OPTIONS_YOFFSET_DESC",
         },
-        
+
         {type = "blank"},
         {type = "label", get = function() return "Icon Spell-Name Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
         --text enabled
         {
             type = "toggle",
             get = function() return Plater.db.profile.bossmod_support_bars_text_enabled end,
-            set = function (self, fixedparam, value) 
+            set = function (self, fixedparam, value)
                 Plater.db.profile.bossmod_support_bars_text_enabled = value
                 Plater.UpdateAllPlates()
             end,
             name = "Icon text enabled",
             desc = "Enable Bar Text (Spell-Name).",
         },
-        
+
         {type = "blank"},
-        
+
         {type = "label", get = function() return "Icon Cooldown Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
         {
             type = "toggle",
             get = function() return Plater.db.profile.bossmod_cooldown_text_enabled end,
-            set = function (self, fixedparam, value) 
+            set = function (self, fixedparam, value)
                 Plater.db.profile.bossmod_cooldown_text_enabled = value
                 Plater.UpdateAllPlates()
             end,
@@ -226,7 +226,7 @@ function platerInternal.CreateBossModOptions()
         {
             type = "range",
             get = function() return Plater.db.profile.bossmod_cooldown_text_size end,
-            set = function (self, fixedparam, value) 
+            set = function (self, fixedparam, value)
                 Plater.db.profile.bossmod_cooldown_text_size = value
                 Plater.RefreshAuras()
                 Plater.UpdateAllPlates()
@@ -237,13 +237,13 @@ function platerInternal.CreateBossModOptions()
             name = "OPTIONS_SIZE",
             desc = "Size",
         },
-        
+
         {type = "breakline"},
         {type = "label", get = function() return "DBM Options:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
         {
             type = "toggle",
             get = function() return Plater.db.profile.bossmod_support_bars_enabled end,
-            set = function (self, fixedparam, value) 
+            set = function (self, fixedparam, value)
                 Plater.db.profile.bossmod_support_bars_enabled = value
                 Plater.UpdateAllPlates()
             end,
@@ -253,7 +253,7 @@ function platerInternal.CreateBossModOptions()
         {
             type = "toggle",
             get = function() return Plater.db.profile.bossmod_aura_glow_expiring end,
-            set = function (self, fixedparam, value) 
+            set = function (self, fixedparam, value)
                 Plater.db.profile.bossmod_aura_glow_expiring = value
                 Plater.UpdateAllPlates()
             end,
@@ -263,7 +263,7 @@ function platerInternal.CreateBossModOptions()
         {
             type = "toggle",
             get = function() return Plater.db.profile.bossmod_aura_glow_important_only end,
-            set = function (self, fixedparam, value) 
+            set = function (self, fixedparam, value)
                 Plater.db.profile.bossmod_aura_glow_important_only = value
                 Plater.UpdateAllPlates()
             end,
@@ -291,7 +291,7 @@ function platerInternal.CreateBossModOptions()
     local startX, startY, heightSize = 10, platerInternal.optionsYStart, 755
     --DF:BuildMenu (canvasFrame, bossmod_options, startX, 0, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, platerInternal.OptionsGlobalCallback)
     DF:BuildMenu (bossmodFrame, bossmod_options, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, platerInternal.OptionsGlobalCallback)
-    
+
 
     platerInternal.LoadOnDemand_IsLoaded.BossModOptions = true
     ---@diagnostic disable-next-line: undefined-global

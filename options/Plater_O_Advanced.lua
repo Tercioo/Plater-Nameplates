@@ -16,7 +16,7 @@ end
 
 function platerInternal.CreateAdvancedOptions()
     if platerInternal.LoadOnDemand_IsLoaded.AdvancedOptions then return end -- already loaded
-    
+
     --templates
     local options_text_template = DF:GetTemplate ("font", "OPTIONS_FONT_TEMPLATE")
     local options_dropdown_template = DF:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE")

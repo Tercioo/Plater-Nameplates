@@ -340,14 +340,14 @@ function platerInternal.CreateCastBarOptions()
             name = "OPTIONS_CASTBAR_FADE_ANIM_TIME_END",
             desc = "OPTIONS_CASTBAR_FADE_ANIM_TIME_END_DESC" ,
         },
-        
+
         {type = "blank"},
         {type = "label", get = function() return "Boss-Mod Support:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-        
+
         {
             type = "toggle",
             get = function() return Plater.db.profile.bossmod_castrename_enabled end,
-            set = function (self, fixedparam, value) 
+            set = function (self, fixedparam, value)
                 Plater.db.profile.bossmod_castrename_enabled = value
                 --Plater.UpdateAllPlates()
             end,

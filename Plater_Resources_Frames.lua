@@ -177,7 +177,7 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         --comboPointTexture:SetDrawLayer("BORDER", 0)
         comboPointTexture:SetPoint("center", widgetFrame, "center", 0, 0)
         --comboPointTexture:SetSize(13, 13)
-        
+
         widgetFrame.texture = comboPointTexture
 
         --> animations for comboPointTexture
@@ -194,7 +194,7 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         comboPointTexture.alpha2:SetDuration(0.096000000834465)
         comboPointTexture.alpha2:SetFromAlpha(0.69999998807907)
         comboPointTexture.alpha2:SetToAlpha(1)
-		
+
 		if IS_WOW_PROJECT_MAINLINE then
 			local BackgroundSpark  = widgetFrame:CreateTexture (nil, "BACKGROUND")
 			BackgroundSpark:SetAtlas ("uf-roguecp-frame-glow", true)
@@ -222,7 +222,7 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         widgetFrame.ShowAnimation = MainAnimationGroup
         return widgetFrame
     end
-	
+
 	if not IS_WOW_PROJECT_MAINLINE and false then
 		comboPointFunc = function(parent, frameName)
 			--> create the main frame
@@ -259,7 +259,7 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 			comboPointTexture:SetDrawLayer("BORDER", 0)
 			comboPointTexture:SetPoint("center", widgetFrame, "center", 0, 0)
 			comboPointTexture:SetSize(13, 13)
-			
+
 			widgetFrame.texture = comboPointTexture
 
 			--> animations for comboPointTexture
@@ -276,7 +276,7 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 			comboPointTexture.alpha2:SetDuration(0.096000000834465)
 			comboPointTexture.alpha2:SetFromAlpha(0.69999998807907)
 			comboPointTexture.alpha2:SetToAlpha(1)
-			
+
 			--local BackgroundSpark  = widgetFrame:CreateTexture (nil, "BACKGROUND")
 			--BackgroundSpark:SetAtlas ("uf-roguecp-frame-glow", true)
 			--BackgroundSpark:SetDrawLayer ("BACKGROUND", 0)
@@ -393,7 +393,7 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 		else
 			comboPointOn:SetAtlas("nameplates-holypower" .. curWidtgetNum .. "-on")
 		end
-		
+
         comboPointOn:SetDrawLayer("ARTWORK", 0)
         comboPointOn:SetPoint("center", widgetFrame, "center", 0, 0)
         comboPointOn:SetSize(25, 19)
@@ -411,7 +411,7 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         widgetFrame.ShowAnimation = MainAnimationGroup
         return widgetFrame
     end
-	
+
 	local warlockChargesFunc = function(parent, frameName)
         --> create the main frame
         local widgetFrame = CreateFrame("frame", frameName, parent)
@@ -438,17 +438,17 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         comboPointTexture:SetDrawLayer("BORDER", 0)
         comboPointTexture:SetPoint("center", widgetFrame, "center", 0, 0)
         comboPointTexture:SetSize(17, 22)
-		
+
 		widgetFrame.texture = comboPointTexture
-		
+
 		local glowTexture  = widgetFrame:CreateTexture("$parentglowTextureTexture", "ARTWORK")
 		glowTexture:SetAtlas("Warlock-Shard-Spark")
         glowTexture:SetDrawLayer("BORDER", 0)
         glowTexture:SetPoint("center", widgetFrame, "center", 0, 0)
         glowTexture:SetSize(17, 22)
-		
+
 		widgetFrame.glowtexture = glowTexture
-		
+
 		--Warlock-FillShard
 		local fillBar = CreateFrame("StatusBar", "$parentFillBar", widgetFrame)
 		fillBar:SetAllPoints()
@@ -462,10 +462,10 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 		fillBar:SetAlpha(0.7)
 		fillBar:SetPoint("TOPLEFT", comboPointTexture, "TOPLEFT", 0, 0)
 		fillBar:SetPoint("BOTTOMRIGHT", comboPointTexture, "BOTTOMRIGHT", 0, 0)
-		
+
 		widgetFrame.fillBar = fillBar
-		
-		
+
+
 		comboPointTexture.scale = DF:CreateAnimation (MainAnimationGroup, "SCALE", 1, 0.096000000834465, 0, 0, 1, 1)
         comboPointTexture.scale:SetTarget(comboPointTexture)
         comboPointTexture.alpha = DF:CreateAnimation (MainAnimationGroup, "ALPHA", 1, 0.096000000834465, 0, 1)
@@ -479,7 +479,7 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         widgetFrame.ShowAnimation = MainAnimationGroup
         return widgetFrame
     end
-	
+
 	--helper from blizz
 	local RUNE_KEY_BY_SPEC = {
 		[1] = "Blood",
@@ -497,18 +497,18 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 	function Plater.Resources.GetCDEdgeBySpec(specIndex)
 		return CD_EDGE_BY_SPEC[specIndex] or "BloodUnholy";
 	end
-	
+
 	local deathknightChargesFunc = function(parent, frameName)
 		local specIndex = GetSpecialization()
-		
+
         --> create the main frame
         --local widgetFrame = CreateFrame("Button", frameName, parent, "ClassNameplateBarDeathKnightRuneButton")
 		local widgetFrame = CreateFrame("Button", frameName, parent)
 		widgetFrame:SetSize(16,16)
-		
+
 		local comboPointTexture
-		local test = nil 
-		
+		local test = nil
+
 		--rune cd
 		local cooldown = CreateFrame("Cooldown", "$parentCooldown", widgetFrame, "CooldownFrameTemplate")
 		cooldown:SetPoint("center", widgetFrame, "center", 0, 0)
@@ -522,7 +522,7 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 		cooldown:SetEdgeTexture("Interface\\PlayerFrame\\DK-"..Plater.Resources.GetCDEdgeBySpec(specIndex).."-Rune-CDSpark")
 		--cooldown:SetFrameLevel(widgetFrame:GetFrameLevel() + 5)
 		--cooldown:SetFrameStrata(widgetFrame:GetFrameStrata())
-		
+
 		widgetFrame.cooldown = cooldown
 
 		--> create background
@@ -546,9 +546,9 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 		comboPointTexture:SetSize(16, 16)
 		comboPointTexture:SetTexelSnappingBias(0.0)
 		comboPointTexture:SetSnapToPixelGrid(false)
-		
+
 		widgetFrame.texture = comboPointTexture
-		
+
 		--[[
 		local glowTexture  = widgetFrame:CreateTexture("$parentglowTextureTexture", "OVERLAY")
 		glowTexture:SetAtlas("DK-Rune-Glow")
@@ -557,10 +557,10 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 		glowTexture:SetSize(16, 16)
 		glowTexture:SetTexelSnappingBias(0.0);
 		glowTexture:SetSnapToPixelGrid(false);
-		
+
 		widgetFrame.glowtexture = glowTexture
 		]]--
-		
+
 		--> animation group on icon to work around cooldown texts behaving weird...
 		local MainAnimationGroup = DF:CreateAnimationHub (comboPointTexture)
 		MainAnimationGroup:SetLooping("NONE")
@@ -578,14 +578,14 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         widgetFrame.ShowAnimation = MainAnimationGroup
         return widgetFrame
     end
-	
+
 	local deathknightChargesFuncWotLK = function(parent, frameName)
-		
+
         --> create the main frame
         --local widgetFrame = CreateFrame("Button", frameName, parent, "ClassNameplateBarDeathKnightRuneButton")
 		local widgetFrame = CreateFrame("Button", frameName, parent)
 		widgetFrame:SetSize(18,18)
-		
+
 		--rune cd
 		local cooldown = CreateFrame("Cooldown", "$parentCooldown", widgetFrame, "CooldownFrameTemplate")
         cooldown:ClearAllPoints()
@@ -596,7 +596,7 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 		cooldown:SetHideCountdownNumbers(true)
 		cooldown:SetUseCircularEdge(true)
 		cooldown:SetDrawEdge(true)
-		
+
 		widgetFrame.cooldown = cooldown
 
 		--> create background
@@ -620,9 +620,9 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 		comboPointTexture:SetTexelSnappingBias(0.0)
 		comboPointTexture:SetSnapToPixelGrid(false)
 		comboPointTexture:SetDrawLayer("OVERLAY", 0)
-		
+
 		widgetFrame.texture = comboPointTexture
-		
+
 		--[[
 		local glowTexture  = widgetFrame:CreateTexture("$parentglowTextureTexture", "OVERLAY")
 		glowTexture:SetAtlas("DK-Rune-Glow")
@@ -631,10 +631,10 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
 		glowTexture:SetSize(16, 16)
 		glowTexture:SetTexelSnappingBias(0.0);
 		glowTexture:SetSnapToPixelGrid(false);
-		
+
 		widgetFrame.glowtexture = glowTexture
 		]]--
-		
+
 		--> animation group on icon to work around cooldown texts behaving weird...
 		local MainAnimationGroup = DF:CreateAnimationHub (comboPointTexture)
 		MainAnimationGroup:SetLooping("NONE")
@@ -652,21 +652,21 @@ local resourceCreationFunctions = Plater.Resources.GetResourceWidgetCreationTabl
         widgetFrame.ShowAnimation = MainAnimationGroup
         return widgetFrame
     end
-	
+
 	local evokerChargesFunc = function(parent, frameName)
 		--> create the main frame
         --local widgetFrame = CreateFrame("Button", frameName, parent, "ClassNameplateBarDeathKnightRuneButton")
 		local widgetFrame = CreateFrame("Button", frameName, parent, "EssencePointButtonTemplate")
 		widgetFrame:SetSize(24,24)
-		
+
         widgetFrame.background = widgetFrame.EssenceEmpty
 		parent.widgetsBackground[#parent.widgetsBackground + 1] = widgetFrame.EssenceEmpty
-        
+
 		widgetFrame.EssenceFillDone.AnimInOrig = widgetFrame.EssenceFillDone.AnimIn
 		widgetFrame.EssenceFillDone.AnimIn = {Play = function() end, Stop = function() end}
-		
+
 		widgetFrame.ShowAnimation = {Play = function() end, Stop = function() end}
-		
+
         return widgetFrame
 	end
 

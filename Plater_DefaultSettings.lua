@@ -96,9 +96,9 @@ local UNITREACTION_FRIENDLY = 5
 platerInternal.optionsYStart = -150
 
 PLATER_DEFAULT_SETTINGS = {
-	
+
 	profile = {
-	
+
 		--> save some cvars values so it can restore when a new character login using Plater
 		saved_cvars = {},
 		saved_cvars_last_change = {},
@@ -155,17 +155,17 @@ PLATER_DEFAULT_SETTINGS = {
 		click_space_always_show = false,
 		hide_friendly_castbars = false,
 		hide_enemy_castbars = false,
-		
+
 		--> offset of the whole nameplate
 		global_offset_y = 0,
 		global_offset_x = 0,
-		
+
 		--> number format, auto detect the region when logging for the first time in the profile
 		number_region = "western",
 		number_region_first_run = false,
-		
+
 		reopoen_options_panel_on_tab = false,
-		
+
 		plate_config  = {
 			friendlyplayer = {
 				enabled = true,
@@ -174,9 +174,9 @@ PLATER_DEFAULT_SETTINGS = {
 				only_thename = false,
 				click_through = true,
 				show_guild_name = false,
-				
+
 				fixed_class_color = {0, 1, 0, 1},
-				
+
 				health = {70, 2},
 				health_incombat = {70, 2},
 				cast = {80, 8},
@@ -186,7 +186,7 @@ PLATER_DEFAULT_SETTINGS = {
 				buff_frame_y_offset = 10,
 				castbar_offset_x = 0,
 				castbar_offset = 0,
-				
+
 				actorname_text_spacing = 10,
 				actorname_text_size = 10,
 				actorname_text_font = "Arial Narrow",
@@ -200,7 +200,7 @@ PLATER_DEFAULT_SETTINGS = {
 				actorname_text_shadow_color = {0, 0, 0, 1},
 				actorname_text_shadow_color_offset = {1, -1},
 				actorname_text_anchor = {side = 8, x = 0, y = 0},
-				
+
 				spellname_text_size = 10,
 				spellname_text_font = "Arial Narrow",
 				spellname_text_color = {1, 1, 1, 1},
@@ -208,7 +208,7 @@ PLATER_DEFAULT_SETTINGS = {
 				spellname_text_shadow_color = {0, 0, 0, 1},
 				spellname_text_shadow_color_offset = {1, -1},
 				spellname_text_anchor = {side = 9, x = 0, y = 0},
-				
+
 				spellpercent_text_enabled = false,
 				spellpercent_text_size = 10,
 				spellpercent_text_font = "Arial Narrow",
@@ -217,7 +217,7 @@ PLATER_DEFAULT_SETTINGS = {
 				spellpercent_text_shadow_color = {0, 0, 0, 1},
 				spellpercent_text_shadow_color_offset = {1, -1},
 				spellpercent_text_anchor = {side = 11, x = -2, y = 0},
-				
+
 				level_text_enabled = false,
 				level_text_anchor = {side = 7, x = 0, y = 1},
 				level_text_size = 10,
@@ -226,7 +226,7 @@ PLATER_DEFAULT_SETTINGS = {
 				level_text_shadow_color = {0, 0, 0, 1},
 				level_text_shadow_color_offset = {1, -1},
 				level_text_alpha = 0.7,
-				
+
 				percent_text_enabled = false,
 				percent_text_ooc = false,
 				percent_show_percent = true,
@@ -241,27 +241,27 @@ PLATER_DEFAULT_SETTINGS = {
 				percent_text_anchor = {side = 9, x = 0, y = 0},
 				percent_text_alpha = 1,
 			},
-			
+
 			enemyplayer = {
 				enabled = true,
 				module_enabled = true,
 				show_guild_name = false,
-				
+
 				use_playerclass_color = true,
 				fixed_class_color = {1, .4, .1, 1},
-				
+
 				health = {112, 12},
 				cast = {112, 10},
 				mana = {100, 4},
-				
+
 				health_incombat = {120, 16},
 				cast_incombat = {120, 12},
 				mana_incombat = {100, 4},
-				
+
 				buff_frame_y_offset = 0,
 				castbar_offset_x = 0,
 				castbar_offset = 0,
-				
+
 				actorname_text_spacing = 12,
 				actorname_text_size = 12,
 				actorname_text_font = "Arial Narrow",
@@ -271,7 +271,7 @@ PLATER_DEFAULT_SETTINGS = {
 				actorname_text_shadow_color = {0, 0, 0, 1},
 				actorname_text_shadow_color_offset = {1, -1},
 				actorname_text_anchor = {side = 4, x = 0, y = 0},
-				
+
 				spellname_text_size = 10,
 				spellname_text_font = "Arial Narrow",
 				spellname_text_color = {1, 1, 1, 1},
@@ -279,7 +279,7 @@ PLATER_DEFAULT_SETTINGS = {
 				spellname_text_shadow_color = {0, 0, 0, 1},
 				spellname_text_shadow_color_offset = {1, -1},
 				spellname_text_anchor = {side = 9, x = 0, y = 0},
-				
+
 				spellpercent_text_enabled = true,
 				spellpercent_text_size = 10,
 				spellpercent_text_font = "Arial Narrow",
@@ -288,7 +288,7 @@ PLATER_DEFAULT_SETTINGS = {
 				spellpercent_text_shadow_color = {0, 0, 0, 1},
 				spellpercent_text_shadow_color_offset = {1, -1},
 				spellpercent_text_anchor = {side = 11, x = -2, y = 0},
-				
+
 				level_text_enabled = true,
 				level_text_anchor = {side = 7, x = 0, y = 1},
 				level_text_size = 10,
@@ -297,7 +297,7 @@ PLATER_DEFAULT_SETTINGS = {
 				level_text_shadow_color = {0, 0, 0, 1},
 				level_text_shadow_color_offset = {1, -1},
 				level_text_alpha = 0.7,
-				
+
 				percent_text_enabled = true,
 				percent_text_ooc = true,
 				percent_show_percent = true,
@@ -311,14 +311,14 @@ PLATER_DEFAULT_SETTINGS = {
 				percent_text_color = {.9, .9, .9, 1},
 				percent_text_anchor = {side = 9, x = 0, y = 0},
 				percent_text_alpha = 1,
-				
+
 				big_actortitle_text_size = 11,
 				big_actortitle_text_font = "Arial Narrow",
 				big_actortitle_text_color = {1, .8, .0},
 				big_actortitle_text_outline = "OUTLINE",
 				big_actortitle_text_shadow_color = {0, 0, 0, 1},
 				big_actortitle_text_shadow_color_offset = {1, -1},
-				
+
 				big_actorname_text_size = 9,
 				big_actorname_text_font = "Arial Narrow",
 				big_actorname_text_color = {.5, 1, .5},
@@ -334,19 +334,19 @@ PLATER_DEFAULT_SETTINGS = {
 				enabled = true,
 				module_enabled = true,
 				follow_blizzard_npc_option = false,
-				
+
 				health = {112, 12},
 				cast = {112, 10},
 				mana = {100, 4},
-				
+
 				health_incombat = {120, 16},
 				cast_incombat = {120, 12},
 				mana_incombat = {100, 4},
-				
+
 				buff_frame_y_offset = 0,
 				castbar_offset_x = 0,
 				castbar_offset = 0,
-				
+
 				actorname_text_spacing = 10,
 				actorname_text_size = 10,
 				actorname_text_font = "Arial Narrow",
@@ -355,7 +355,7 @@ PLATER_DEFAULT_SETTINGS = {
 				actorname_text_shadow_color = {0, 0, 0, 1},
 				actorname_text_shadow_color_offset = {1, -1},
 				actorname_text_anchor = {side = 8, x = 0, y = 0},
-				
+
 				spellname_text_size = 10,
 				spellname_text_font = "Arial Narrow",
 				spellname_text_color = {1, 1, 1, 1},
@@ -363,7 +363,7 @@ PLATER_DEFAULT_SETTINGS = {
 				spellname_text_shadow_color = {0, 0, 0, 1},
 				spellname_text_shadow_color_offset = {1, -1},
 				spellname_text_anchor = {side = 9, x = 0, y = 0},
-				
+
 				spellpercent_text_enabled = false,
 				spellpercent_text_size = 10,
 				spellpercent_text_font = "Arial Narrow",
@@ -372,7 +372,7 @@ PLATER_DEFAULT_SETTINGS = {
 				spellpercent_text_shadow_color = {0, 0, 0, 1},
 				spellpercent_text_shadow_color_offset = {1, -1},
 				spellpercent_text_anchor = {side = 11, x = -2, y = 0},
-				
+
 				level_text_enabled = false,
 				level_text_anchor = {side = 7, x = 0, y = 1},
 				level_text_size = 10,
@@ -381,7 +381,7 @@ PLATER_DEFAULT_SETTINGS = {
 				level_text_shadow_color = {0, 0, 0, 1},
 				level_text_shadow_color_offset = {1, -1},
 				level_text_alpha = 0.7,
-				
+
 				percent_text_enabled = false,
 				percent_text_ooc = false,
 				percent_show_percent = true,
@@ -395,18 +395,18 @@ PLATER_DEFAULT_SETTINGS = {
 				percent_text_color = {.9, .9, .9, 1},
 				percent_text_anchor = {side = 9, x = 0, y = 0},
 				percent_text_alpha = 1,
-				
+
 				quest_enabled = true,
 				quest_color_enabled = true,
 				quest_color = {.5, 1, 0, 1},
-				
+
 				big_actortitle_text_size = 11,
 				big_actortitle_text_font = "Arial Narrow",
 				big_actortitle_text_color = {1, .8, .0},
 				big_actortitle_text_outline = "OUTLINE",
 				big_actortitle_text_shadow_color = {0, 0, 0, 1},
 				big_actortitle_text_shadow_color_offset = {1, -1},
-				
+
 				big_actorname_text_size = 9,
 				big_actorname_text_font = "Arial Narrow",
 				big_actorname_text_color = {.5, 1, .5},
@@ -414,24 +414,24 @@ PLATER_DEFAULT_SETTINGS = {
 				big_actorname_text_shadow_color = {0, 0, 0, 1},
 				big_actorname_text_shadow_color_offset = {1, -1},
 			},
-			
+
 			enemynpc = {
 				enabled = true,
 				module_enabled = true,
 				all_names = true,
-				
+
 				health = {112, 12},
 				cast = {112, 10},
 				mana = {100, 4},
-				
+
 				health_incombat = {120, 16},
 				cast_incombat = {120, 14},
 				mana_incombat = {100, 4},
-				
+
 				buff_frame_y_offset = 0,
 				castbar_offset_x = 0,
 				castbar_offset = 0,
-				
+
 				actorname_text_spacing = 10,
 				actorname_text_size = 11,
 				actorname_text_font = "Arial Narrow",
@@ -440,7 +440,7 @@ PLATER_DEFAULT_SETTINGS = {
 				actorname_text_shadow_color = {0, 0, 0, 1},
 				actorname_text_shadow_color_offset = {1, -1},
 				actorname_text_anchor = {side = 4, x = 0, y = 0},
-				
+
 				spellname_text_size = 12,
 				spellname_text_font = "Arial Narrow",
 				spellname_text_color = {1, 1, 1, 1},
@@ -448,7 +448,7 @@ PLATER_DEFAULT_SETTINGS = {
 				spellname_text_shadow_color = {0, 0, 0, 1},
 				spellname_text_shadow_color_offset = {1, -1},
 				spellname_text_anchor = {side = 9, x = 0, y = 0},
-				
+
 				spellpercent_text_enabled = true,
 				spellpercent_text_size = 11,
 				spellpercent_text_font = "Arial Narrow",
@@ -457,7 +457,7 @@ PLATER_DEFAULT_SETTINGS = {
 				spellpercent_text_shadow_color = {0, 0, 0, 1},
 				spellpercent_text_shadow_color_offset = {1, -1},
 				spellpercent_text_anchor = {side = 11, x = -2, y = 0},
-				
+
 				level_text_enabled = true,
 				level_text_anchor = {side = 7, x = 0, y = 1},
 				level_text_size = 8,
@@ -466,7 +466,7 @@ PLATER_DEFAULT_SETTINGS = {
 				level_text_shadow_color = {0, 0, 0, 1},
 				level_text_shadow_color_offset = {1, -1},
 				level_text_alpha = 0.7,
-				
+
 				percent_text_enabled = true,
 				percent_text_ooc = true,
 				percent_show_percent = true,
@@ -480,12 +480,12 @@ PLATER_DEFAULT_SETTINGS = {
 				percent_text_color = {.9, .9, .9, 1},
 				percent_text_anchor = {side = 9, x = 0, y = 0},
 				percent_text_alpha = 1,
-				
+
 				quest_enabled = true,
 				quest_color_enabled = true,
 				quest_color_enemy = {1, .369, 0, 1},
 				quest_color_neutral = {1, .65, 0, 1},
-				
+
 				--no color / it'll auto colour by the reaction
 				big_actortitle_text_size = 10,
 				big_actortitle_text_font = "Arial Narrow",
@@ -493,7 +493,7 @@ PLATER_DEFAULT_SETTINGS = {
 				big_actortitle_text_shadow_color = {0, 0, 0, 1},
 				big_actortitle_text_shadow_color_offset = {1, -1},
 				--big_actortitle_text_color = {1, .8, .0},
-				
+
 				big_actorname_text_size = 10,
 				big_actorname_text_font = "Arial Narrow",
 				big_actorname_text_outline = "OUTLINE",
@@ -518,11 +518,11 @@ PLATER_DEFAULT_SETTINGS = {
 				healthbar_color_by_hp = false,
 				castbar_offset_x = 0,
 				castbar_offset = 0, --not used?
-				
+
 				castbar_enabled = true,
 				cast = {150, 10},
 				cast_incombat = {150, 10},
-				
+
 				actorname_text_spacing = 10,
 				actorname_text_size = 10,
 				actorname_text_font = "Arial Narrow",
@@ -531,7 +531,7 @@ PLATER_DEFAULT_SETTINGS = {
 				actorname_text_shadow_color = {0, 0, 0, 1},
 				actorname_text_shadow_color_offset = {1, -1},
 				actorname_text_anchor = {side = 8, x = 0, y = 0},
-				
+
 				spellname_text_size = 10,
 				spellname_text_font = "Arial Narrow",
 				spellname_text_color = {1, 1, 1, 1},
@@ -539,7 +539,7 @@ PLATER_DEFAULT_SETTINGS = {
 				spellname_text_shadow_color = {0, 0, 0, 1},
 				spellname_text_shadow_color_offset = {1, -1},
 				spellname_text_anchor = {side = 9, x = 0, y = 0},
-				
+
 				spellpercent_text_enabled = true,
 				spellpercent_text_size = 10,
 				spellpercent_text_font = "Arial Narrow",
@@ -548,7 +548,7 @@ PLATER_DEFAULT_SETTINGS = {
 				spellpercent_text_shadow_color = {0, 0, 0, 1},
 				spellpercent_text_shadow_color_offset = {1, -1},
 				spellpercent_text_anchor = {side = 11, x = -2, y = 0},
-				
+
 				level_text_enabled = false,
 				level_text_anchor = {side = 7, x = 0, y = 1},
 				level_text_size = 10,
@@ -557,7 +557,7 @@ PLATER_DEFAULT_SETTINGS = {
 				level_text_shadow_color = {0, 0, 0, 1},
 				level_text_shadow_color_offset = {1, -1},
 				level_text_alpha = 0.7,
-				
+
 				percent_text_enabled = true,
 				percent_text_ooc = true,
 				percent_show_percent = true,
@@ -571,7 +571,7 @@ PLATER_DEFAULT_SETTINGS = {
 				percent_text_color = {.9, .9, .9, 1},
 				percent_text_anchor = {side = 9, x = 0, y = 0},
 				percent_text_alpha = 1,
-				
+
 				power_enabled = true,
 				power_percent_text_enabled = true,
 				power_percent_text_size = 9,
@@ -639,36 +639,36 @@ PLATER_DEFAULT_SETTINGS = {
 		transparency_behavior_on_enemies = true,
 		honor_blizzard_plate_alpha = false,
 		focus_as_target_alpha = false,
-		
-		
+
+
 		transparency_behavior_on_friendlies = false,
-		
+
 		quick_hide = false, --hide the nameplate when the unit hits 0 health points | making disabled by default, this maybe is bugging hunters FD
-		
+
 		show_healthbars_on_not_attackable = false,
 		show_healthbars_on_softinteract = true,
 		ignore_softinteract_objects = false,
 		hide_name_on_game_objects = true,
 		name_on_game_object_color = {1, 1, 1, 1},
 		show_softinteract_icons = true,
-		
+
 		enable_masque_support = false,
-		
+
 		use_name_translit = false,
-		
+
 		use_player_combat_state = false,
-		
+
 		opt_out_auto_accept_npc_colors = true,
 		auto_translate_npc_names = false, -- one day default to true
-		
+
 		shadowMode = 1,
-		
+
 		last_news_time = 0,
 		disable_omnicc_on_auras = false,
-		
+
 		show_health_prediction = true,
 		show_shield_prediction = true,
-		
+
 		show_interrupt_author = true,
 
 		customdesign = {
@@ -690,10 +690,10 @@ PLATER_DEFAULT_SETTINGS = {
 			powerbar_border_distance = 0,
 			powerbar_border_color = "silver",
 		},
-		
+
 		--allow scripts to store default values of cvars when they perform automatically changes
 		cvar_default_cache = {},
-		
+
 		--experimental settings for the UIParent parenting
 		use_ui_parent = false,
 		use_ui_parent_just_enabled = false,
@@ -708,7 +708,7 @@ PLATER_DEFAULT_SETTINGS = {
 		ui_parent_buff_special_level = 0,
 		ui_parent_cast_level = 0,
 		ui_parent_scale_tune = 0, --testing, a slider to change the unit frame scale / goal is to have a fine tune knob to adjust the overall size when using this feature
-		
+
 		--blizzard default nameplate fonts
 		blizzard_nameplate_font_override_enabled = false,
 		blizzard_nameplate_font = "Arial Narrow",
@@ -717,7 +717,7 @@ PLATER_DEFAULT_SETTINGS = {
 		blizzard_nameplate_large_font = "Arial Narrow",
 		blizzard_nameplate_large_font_outline = "OUTLINE",
 		blizzard_nameplate_large_font_size = 11,
-		
+
 		resources = {
 			alpha = 1,
 			scale = 0.8,
@@ -725,19 +725,19 @@ PLATER_DEFAULT_SETTINGS = {
 			y_offset_target = 8,
 			y_offset_target_withauras = 26,
 		},
-		
+
 		--> special unit
 		pet_width_scale = 0.95,
 		pet_height_scale = 0.95,
 		minor_width_scale = 0.9,
 		minor_height_scale = 0.95,
-		
+
 		--> widget settings
 		widget_bar_scale = 0.75,
 		widget_bar_anchor = {side = 4, x = 0, y = 0},
-		
+
 		no_spellname_length_limit = false,
-		
+
 		--> castbar target name
 		castbar_target_show = false,
 		castbar_target_notank = false,
@@ -755,8 +755,8 @@ PLATER_DEFAULT_SETTINGS = {
 		castbar_icon_attach_to_side = "left", --"right"
 		castbar_icon_size = "same as castbar", --"same as castbar plus healthbar"
 		castbar_icon_x_offset = 0,
-		
-		
+
+
 		--> store spells from the latest event the player has been into
 		captured_spells = {},
 		captured_casts = {},
@@ -766,42 +766,42 @@ PLATER_DEFAULT_SETTINGS = {
 		script_data_trash = {}, --deleted scripts are placed here, they can be restored in 30 days
 		script_auto_imported = {}, --store the name and revision of scripts imported from the Plater script library
 		script_banned_user = {}, --players banned from sending scripts to this player
-		
+
 		--hooking tab
 		hook_data = {},
 		hook_data_trash = {}, --deleted scripts are placed here, they can be restored in 30 days
 		hook_auto_imported = {}, --store the name and revision of scripts imported from the Plater script library
-		
+
 		patch_version = 0,
 		patch_version_profile = 0,
-		
+
 		health_cutoff = true,
 		health_cutoff_upper = true,
 		health_cutoff_extra_glow = false,
 		health_cutoff_hide_divisor = false,
-		
+
 		update_throttle = 0.120,
 		culling_distance = 100,
 		use_playerclass_color = true, --friendly player
-		
+
 		use_health_animation = false,
 		health_animation_time_dilatation = 2.615321,
-		
+
 		use_color_lerp = false,
 		color_lerp_speed = 12,
-		
+
 		--removed on march 10, 2019, can be cleaned up:
 		--options for this feature also got removed from the options panel
 		--plater.lua got full cleanup on this feature as well
 		--healthbar_framelevel = 0,
 		--castbar_framelevel = 0,
-		
+
 		hide_blizzard_castbar = false,
-		
+
 		aura_cooldown_reverse = true,
 		aura_cooldown_show_swipe = true,
 		aura_cooldown_edge_texture = [[Interface\AddOns\Plater\images\cooldown_edge_2]],
-		
+
 		aura_enabled = true,
 		auras_experimental_update_classic_era = true,
 		aura_show_tooltip = false,
@@ -814,29 +814,29 @@ PLATER_DEFAULT_SETTINGS = {
 		auras_per_row_auto = true,
 		auras_per_row_amount = 10,
 		auras_per_row_amount2 = 10,
-		
+
 		--> aura frame 1
 		--aura_x_offset = 0,
 		--aura_y_offset = 5,
 		aura_grow_direction = 2, --> center
 		aura_frame1_anchor = {side = 8, x = 0, y = 5}, -- in sync with aura_x_offset and aura_y_offset to be compatible to scripts...
 		aura_breakline_space = 12, --space between the first and second line when the aura break line
-		
+
 		--> aura frame 2
 		buffs_on_aura2 = false,
 		--aura2_x_offset = 0,
 		--aura2_y_offset = 5,
 		aura2_grow_direction = 2, --> center
 		aura_frame2_anchor = {side = 8, x = 0, y = 5}, -- in sync with aura_x_offset and aura_y_offset to be compatible to scripts...
-		
+
 		aura_padding = 1, --space between each icon
 		aura_consolidate = false, --aura icons shown with the same name is stacked into only one
 		aura_consolidate_timeleft_lower = true, --when stacking auras with the same name, show the time left for the aura with the lesser remaining time
 		aura_sort = false, -- sort auras via sort function -> default by time left
-		
+
 		aura_alpha = 0.85,
 		aura_custom = {},
-		
+
 		aura_timer = true,
 		aura_timer_decimals = false,
 		aura_timer_text_size = 15,
@@ -854,7 +854,7 @@ PLATER_DEFAULT_SETTINGS = {
 		aura_stack_shadow_color = {0, 0, 0, 1},
 		aura_stack_shadow_color_offset = {1, -1},
 		aura_stack_color = {1, 1, 1, 1},
-		
+
 		extra_icon_anchor = {side = 6, x = -4, y = 0},
 		extra_icon_show_timer = true,
 		extra_icon_timer_decimals = false,
@@ -879,7 +879,7 @@ PLATER_DEFAULT_SETTINGS = {
 		extra_icon_backdrop_color = {0, 0, 0, 0.612853},
 		extra_icon_border_color = {0, 0, 0, 1},
 		extra_icon_border_size = 1,
-		
+
 		debuff_show_cc = true, --extra frame show cc
 		debuff_show_cc_border = {.3, .2, .2, 1},
 		extra_icon_show_purge = false, --extra frame show purge
@@ -891,17 +891,17 @@ PLATER_DEFAULT_SETTINGS = {
 		extra_icon_show_offensive_border = {0, .65, .1, 1},
 		extra_icon_show_defensive = false,
 		extra_icon_show_defensive_border = {.85, .45, .1, 1},
-		
+
 		extra_icon_auras = {}, --auras for buff special tab
 		extra_icon_auras_mine = {}, --auras in the buff special that are only cast by the player
-		
+
 		aura_width_personal = 32,
 		aura_height_personal = 20,
 		aura_border_thickness_personal = 1,
 		aura_show_buffs_personal = false,
 		aura_show_debuffs_personal = true,
 		aura_show_all_duration_buffs_personal = false,
-		
+
 		aura_show_important = true,
 		aura_show_dispellable = true,
 		aura_show_only_short_dispellable_on_players = false,
@@ -914,7 +914,7 @@ PLATER_DEFAULT_SETTINGS = {
 		aura_show_crowdcontrol = false,
 		aura_show_offensive_cd = false,
 		aura_show_defensive_cd = false,
-		
+
 		aura_border_colors = {
 			steal_or_purge = {0, .5, .98, 1},
 			enrage = {0.85, 0.2, 0.1, 1},
@@ -925,7 +925,7 @@ PLATER_DEFAULT_SETTINGS = {
 			crowdcontrol = {.3, .2, .2, 1},
 			default = {0, 0, 0, 1},
 		},
-		
+
 		aura_tracker = {
 			buff = {},
 			debuff = {},
@@ -946,7 +946,7 @@ PLATER_DEFAULT_SETTINGS = {
 			buff_tracked = {},
 			debuff_tracked = {},
 		},
-		
+
 		bossmod_support_enabled = true,
 		bossmod_castrename_enabled = true,
 		bossmod_support_bars_enabled = false,
@@ -958,7 +958,7 @@ PLATER_DEFAULT_SETTINGS = {
 		bossmod_icons_anchor = {side = 8, x = 0, y = 30},
 		bossmod_aura_glow_important_only = true,
 		bossmod_aura_glow_expiring = true,
-		
+
 		not_affecting_combat_enabled = false,
 		not_affecting_combat_alpha = 0.6,
 
@@ -968,29 +968,29 @@ PLATER_DEFAULT_SETTINGS = {
 		range_check_cast_bar_alpha = 1,
 		range_check_buffs_alpha = 1,
 		range_check_power_bar_alpha = 1,
-		range_check_in_range_or_target_alpha = 0.9, 
-		
+		range_check_in_range_or_target_alpha = 0.9,
+
 		range_check_alpha_friendlies = 0.65, --overall as it set in the unitFrame
 		range_check_health_bar_alpha_friendlies = 1,
 		range_check_cast_bar_alpha_friendlies = 1,
 		range_check_buffs_alpha_friendlies = 1,
 		range_check_power_bar_alpha_friendlies = 1,
 		range_check_in_range_or_target_alpha_friendlies = 0.9,
-		
+
 		target_highlight = true,
 		target_highlight_alpha = 0.75,
 		target_highlight_height = 14,
 		target_highlight_color = {0, 0.521568, 1, 1},
 		target_highlight_texture = [[Interface\AddOns\Plater\images\selection_indicator3]],
-		
+
 		target_shady_alpha = 0.6,
 		target_shady_enabled = true,
 		target_shady_combat_only = true,
-		
+
 		hover_highlight = true,
 		highlight_on_hover_unit_model = false,
 		hover_highlight_alpha = .30,
-		
+
 		auto_toggle_friendly_enabled = false,
 		auto_toggle_friendly = {
 			["party"] = false,
@@ -999,7 +999,7 @@ PLATER_DEFAULT_SETTINGS = {
 			["world"] =  true,
 			["cities"] = true,
 		},
-		
+
 		auto_toggle_enemy_enabled = false,
 		auto_toggle_enemy = {
 			["party"] = true,
@@ -1008,9 +1008,9 @@ PLATER_DEFAULT_SETTINGS = {
 			["world"] =  true,
 			["cities"] = false,
 		},
-		
+
 		stacking_nameplates_enabled = true,
-		
+
 		auto_toggle_stacking_enabled = false,
 		auto_toggle_stacking = {
 			["party"] = true,
@@ -1024,7 +1024,7 @@ PLATER_DEFAULT_SETTINGS = {
 			hide_enemy_player_pets = false,
 			hide_enemy_player_totems = false,
 		},
-		
+
 		auto_toggle_combat_enabled = false,
 		auto_toggle_combat = {
 			friendly_ic = false,
@@ -1219,7 +1219,7 @@ PLATER_DEFAULT_SETTINGS = {
 					spellid = 27285,
 				}
 			},
-			
+
 			--hand of guldan
 			[86040] = {
 				{
@@ -1243,7 +1243,7 @@ PLATER_DEFAULT_SETTINGS = {
 					spellid = 86040,
 				}
 			},
-			
+
 			--demonbolt
 			[264178] = {
 				{
@@ -1289,9 +1289,9 @@ PLATER_DEFAULT_SETTINGS = {
 					desc = "",
 					class = "WARLOCK",
 					spellid = 196278,
-				}			
+				}
 			},
-			
+
 			--Secret Technique (Rogue)
 			[280720] = {
 			   [1] = {
@@ -1316,7 +1316,7 @@ PLATER_DEFAULT_SETTINGS = {
 			      ["desc"] = "",
 			   },
 			},
-			
+
 			--Shadowstrike (Rogue)
 			[185438] = {
 			   [1] = {
@@ -1351,7 +1351,7 @@ PLATER_DEFAULT_SETTINGS = {
 			      ["desc"] = "",
 			   },
 			},
-			
+
 			--sinister strike (outlaw)
 			[197834] = {
 				{
@@ -1373,9 +1373,9 @@ PLATER_DEFAULT_SETTINGS = {
 					desc = "",
 					class = "ROGUE",
 					spellid = 197834,
-				}				
+				}
 			},
-			
+
 			--Eviscerate (Rogue)
 			[196819] = {
 			   [1] = {
@@ -1513,7 +1513,7 @@ PLATER_DEFAULT_SETTINGS = {
 			   },
 			},
 
-			
+
 			--Between the Eyes (Rogue)
 			[199804] =  {
 			   [1] =  {
@@ -1549,7 +1549,7 @@ PLATER_DEFAULT_SETTINGS = {
 			   },
 			},
 
-			
+
 			--mutilate (assassination)
 			[5374] = {
 				{
@@ -1607,7 +1607,7 @@ PLATER_DEFAULT_SETTINGS = {
 					spellid = 245388,
 				}
 			},
-			
+
 			--arcane blast (mage)
 			[30451] = {
 				{
@@ -1631,7 +1631,7 @@ PLATER_DEFAULT_SETTINGS = {
 					spellid = 30451,
 				}
 			},
-			
+
 			--arcane missiles (mage)
 			[7268] = {
 				{
@@ -1655,7 +1655,7 @@ PLATER_DEFAULT_SETTINGS = {
 					spellid = 7268,
 				}
 			},
-			
+
 			--arcane barrage (mage)
 			[44425] = {
 				{
@@ -1679,7 +1679,7 @@ PLATER_DEFAULT_SETTINGS = {
 					spellid = 44425,
 				}
 			},
-			
+
 			--glacial spike (frost mage)
 			[228600] = {
 				{
@@ -1704,7 +1704,7 @@ PLATER_DEFAULT_SETTINGS = {
 					spellid = 228600,
 				}
 			},
-			
+
 			--flurry (frost mage)
 			[228354] = {
 				{
@@ -1728,7 +1728,7 @@ PLATER_DEFAULT_SETTINGS = {
 					spellid = 228354,
 				}
 			},
-			
+
 			--ice lance (frost mage)
 			[228598] = {
 				{
@@ -1752,7 +1752,7 @@ PLATER_DEFAULT_SETTINGS = {
 					spellid = 228598,
 				}
 			},
-			
+
 			--pyro (fire mage)
 			[11366] = {
 				{
@@ -1787,7 +1787,7 @@ PLATER_DEFAULT_SETTINGS = {
 					spellid = 11366,
 				}
 			},
-			
+
 			--dragon's breath (fire mage)
 			[31661] = {
 				{
@@ -1811,7 +1811,7 @@ PLATER_DEFAULT_SETTINGS = {
 					spellid = 31661,
 				}
 			},
-			
+
 			--fire blast (fire mage)
 			[108853] = {
 				{
@@ -1835,7 +1835,7 @@ PLATER_DEFAULT_SETTINGS = {
 					spellid = 108853,
 				}
 			},
-			
+
 			--Blade of Justice (paladin)
 			[184575] = {
 				{
@@ -1870,7 +1870,7 @@ PLATER_DEFAULT_SETTINGS = {
 					spellid = 184575,
 				}
 			},
-			
+
 			--Hammer of the Righteous (paladin)
 			[53595] = {
 				{
@@ -1905,7 +1905,7 @@ PLATER_DEFAULT_SETTINGS = {
 					spellid = 53595,
 				}
 			},
-			
+
 			--Crusader Strike (paladin)
 			[35395] = {
 				{
@@ -1928,8 +1928,8 @@ PLATER_DEFAULT_SETTINGS = {
 					class = "PALADIN",
 					spellid = 35395,
 				}
-			}, 
-			
+			},
+
 			--Avenger's Shield (paladin)
 			[31935] = {
 				{
@@ -1964,7 +1964,7 @@ PLATER_DEFAULT_SETTINGS = {
 					spellid = 31935,
 				}
 			},
-			
+
 			--Judgment (paladin)
 			[275779] = {
 				{
@@ -1988,7 +1988,7 @@ PLATER_DEFAULT_SETTINGS = {
 					spellid = 275779,
 				}
 			},
-			
+
 			--Thunder Clap (warrior)
 			[6343] = {
 				{
@@ -2012,7 +2012,7 @@ PLATER_DEFAULT_SETTINGS = {
 					spellid = 6343,
 				}
 			},
-			
+
 			--Heroic Leap (warrior)
 			[52174] = {
 				{
@@ -2046,8 +2046,8 @@ PLATER_DEFAULT_SETTINGS = {
 					class = "WARRIOR",
 					spellid = 52174,
 				}
-			}, 
-			
+			},
+
 			--Devastate (warrior)
 			[20243] = {
 				{
@@ -2071,7 +2071,7 @@ PLATER_DEFAULT_SETTINGS = {
 					spellid = 20243,
 				}
 			},
-			
+
 			--Shockwave (warrior)
 			[46968] = {
 				{
@@ -2095,7 +2095,7 @@ PLATER_DEFAULT_SETTINGS = {
 					spellid = 46968,
 				}
 			},
-			
+
 			--Death Strike (dk)
 			[49998] = {
 				[1] =  {
@@ -2119,7 +2119,7 @@ PLATER_DEFAULT_SETTINGS = {
 				   ["desc"] = "",
 				},
 			},
-			
+
 			--Frost Strike (dk)
 			[222026] =  {
 				[1] =  {
@@ -2153,7 +2153,7 @@ PLATER_DEFAULT_SETTINGS = {
 				   ["desc"] = "",
 				},
 			},
-			
+
 			--breath of sindragosa
 			[155166] = {
 				{
@@ -2177,7 +2177,7 @@ PLATER_DEFAULT_SETTINGS = {
 					spellid = 155166,
 				}
 			},
-			
+
 			--Obliterate (dk)
 			[222024] = {
 				[1] =  {
@@ -2237,7 +2237,7 @@ PLATER_DEFAULT_SETTINGS = {
 				   ["desc"] = "",
 				},
 			},
-			
+
 			--Festering Strike (dk)
 			[85948] = {
 				[1] =  {
@@ -2370,7 +2370,7 @@ PLATER_DEFAULT_SETTINGS = {
 			      ["desc"] = "",
 			   },
 			},
-			
+
 			--Blackout Kick (Monk)
 			[100784] =  {
 			   [1] =  {
@@ -2447,7 +2447,7 @@ PLATER_DEFAULT_SETTINGS = {
 			   },
 			},
 
-			
+
 			--Rising Sun Kick (Monk)
 			[185099] =  {
 			   [1] =  {
@@ -2472,7 +2472,7 @@ PLATER_DEFAULT_SETTINGS = {
 			      ["desc"] = "",
 			   },
 			},
-			
+
 			--Blade Dance (Demon Hunter)
 			[199552] =  {
 			   [1] =  {
@@ -2998,16 +2998,16 @@ PLATER_DEFAULT_SETTINGS = {
 			},
 
 		},
-		
+
 		health_statusbar_texture = "You Are Beautiful!",
-		
+
 		health_selection_overlay = "Details Flat",
 		health_selection_overlay_alpha = 0.1,
 		health_selection_overlay_color = {1, 1, 1, 1},
-		
+
 		health_statusbar_bgtexture = "PlaterBackground 2",
 		health_statusbar_bgcolor = {0.113725, 0.113725, 0.113725, 0.89000000},
-		
+
 		cast_statusbar_quickhide = false,
 		cast_statusbar_texture = "Details Flat",
 		cast_statusbar_bgtexture = "PlaterBackground 2",
@@ -3030,7 +3030,7 @@ PLATER_DEFAULT_SETTINGS = {
 		cast_statusbar_spark_color = {1, 1, 1, 1},
 
 		cast_statusbar_interrupt_anim = true,
-		
+
 		indicator_faction = true,
 		indicator_friendlyfaction = false,
 		indicator_spec = true,
@@ -3046,41 +3046,41 @@ PLATER_DEFAULT_SETTINGS = {
 		indicator_anchor = {side = 2, x = -2, y = 0},
 		indicator_scale = 1,
 		indicator_shield = false,
-		
+
 		indicator_extra_raidmark = true,
 		indicator_raidmark_scale = 1,
 		indicator_raidmark_anchor = {side = 2, x = -1, y = 0},
-		
+
 		target_indicator = "Silver",
-		
+
 		color_override = true,
 		color_override_colors = {
 			[UNITREACTION_HOSTILE] = {0.9176470, 0.1294117, 0.0705882, 1},
 			[UNITREACTION_NEUTRAL] = {0.9254901, 0.8, 0.2666666, 1},
 			[UNITREACTION_FRIENDLY] = {0.023529, 0.823529, 0.023518, 1},
 		},
-		
+
 		border_color = {0, 0, 0, .834},
 		border_thickness = 1,
-		
+
 		focus_indicator_enabled = true,
 		focus_color = {0, 0, 0, 0.5},
 		focus_texture = "PlaterFocus",
-		
+
 		tap_denied_color = {.9, .9, .9, 1},
-		
+
 		aggro_modifies = {
 			health_bar_color = true,
 			border_color = false,
 			actor_name_color = false,
 		},
-		
+
 		aggro_can_check_notank = false,
 		tank_threat_colors = false,
-		
+
 		show_aggro_flash = false,
 		show_aggro_glow = true,
-		
+
 		tank = {
 			colors = {
 				aggro = {.5, .5, 1, 1},
@@ -3091,7 +3091,7 @@ PLATER_DEFAULT_SETTINGS = {
 				pulling_from_tank = {1, .7, 0, 1}, --color when a tank is pulling the aggro from another tank
 			},
 		},
-		
+
 		dps = {
 			colors = {
 				aggro = {1, 0.109803, 0, 1},
@@ -3102,7 +3102,7 @@ PLATER_DEFAULT_SETTINGS = {
 			},
 			use_aggro_solo = false,
 		},
-		
+
 		news_frame = {},
 		first_run2 = false,
 	}

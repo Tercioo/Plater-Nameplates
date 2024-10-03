@@ -445,12 +445,12 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
                 if (scriptObject) then
                     local scriptOptions = scriptObject.Options
                     local option = scriptOptions[optionIndex]
-                    
+
                     tremove(scriptOptions, optionIndex)
-                    
+
                     local optionsValues = scriptObject.OptionsValues
                     optionsValues[option.Key] = nil
-                    
+
                     mainFrame.ScriptOptionsScrollBox:Refresh()
                 end
             end
@@ -908,7 +908,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
 
             boolOptionsMenu.always_boxfirst = true
             DF:BuildMenuVolatile(booleanOptionsFrame, boolOptionsMenu, 5, -5, options_frame_shared_height, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
-        
+
         --> option: label
             local labelOptionsFrame = CreateFrame("frame", "$parentLabelOptions", adminFrame, BackdropTemplateMixin and "BackdropTemplate")
             labelOptionsFrame:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})

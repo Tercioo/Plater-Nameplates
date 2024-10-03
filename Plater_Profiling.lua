@@ -22,7 +22,7 @@ local garbageCalls = {}
 local function traceGarbage(var)
 	if not profilingEnabled then return end
 	if var and var ~= "collect" then return end
-	
+
 	local trace = debugstack(2)
 	local source, lineNum = trace:match("\"@([^\"]+)\"%]:(%d+)")
 	if not source then
@@ -77,7 +77,7 @@ local function sumUpMemUsage(memValues)
 	local lastMem
 	for _, val in pairs(memValues or {}) do
 		local curMem = (val - (lastMem or val))
-		if curMem < 0 then 
+		if curMem < 0 then
 			curMem = 0
 			gcCount = gcCount + 1
 		end
@@ -90,11 +90,11 @@ end
 local function getFPSValuesFromTimes(times)
 	local values = {}
 	if not times then return values end
-	
+
 	for _, ftime in pairs(times) do
 		tinsert(values, round(1000/ftime))
 	end
-	
+
 	return values
 end
 
@@ -114,7 +114,7 @@ local function getModeTime(times, dec)
 		v = round(v * (dec or 1000))/(dec or 1000)
 		tmpData[v] = (tmpData[v] or 0) + 1
 	end
-	
+
 	local val, amount = 0, 0
 	for k, v in pairs(tmpData) do
 		if v > amount then
@@ -150,13 +150,13 @@ local function everyFrameEventLog()
 		PlaterDBChr.perfEventLog = nil -- reset this.
 		return
 	end
-	
+
 	C_Timer.After( 0, everyFrameEventLog )
-	
+
 	if everyFrameLogSkipFirst then
 		everyFrameLogSkipFirst = false
 	end
-	
+
 	local curTime = debugprofilestop()
 	tinsert(loggedEvents, {pType = "Game-Core", event = "Frame Tick", subType = "Frame Tick Internal", timestamp = curTime, startEvent = false, endEvent = false, isFrameTick = true, curFPS = FPSData.curFPS, curMem = collectgarbage("count")})
 end
@@ -167,8 +167,8 @@ end
 function Plater.StartLogPerformanceCore()
 end
 local function StartLogPerformance(pType, event, subType)
-	if not profilingEnabled or not pType or not event or not subType then return end	
-	
+	if not profilingEnabled or not pType or not event or not subType then return end
+
 	local startTime = debugprofilestop()
 	tinsert(loggedEvents, {pType = pType, event = event, subType = subType, timestamp = startTime, startEvent = true, endEvent = false, curFPS = FPSData.curFPS, curMem = collectgarbage("count")})
 end
@@ -179,35 +179,35 @@ function Plater.EndLogPerformanceCore()
 end
 local function EndLogPerformance(pType, event, subType)
 	if not profilingEnabled or not pType or not event or not subType then return end
-	
+
 	local stopTime = debugprofilestop()
 	tinsert(loggedEvents, {pType = pType, event = event, subType = subType, timestamp = stopTime, startEvent = false, endEvent = true, curFPS = FPSData.curFPS, curMem = collectgarbage("count")})
 end
 
 function Plater.EnableProfiling(core)
 	profilingEnabled = true
-	
+
 	profStartTime = debugprofilestop()
 	profEndTime = nil
 	memEnd = nil
-	
+
 	loggedEvents = {}
-	
+
 	garbageCalls = {}
-	
+
 	Plater.StartLogPerformance = StartLogPerformance
 	Plater.EndLogPerformance = EndLogPerformance
-	
+
 	if core then
 		Plater.StartLogPerformanceCore = StartLogPerformance
 		Plater.EndLogPerformanceCore = EndLogPerformance
 	end
-	
+
 	everyFrameLogSkipFirst = true
 	C_Timer.After( 0, everyFrameEventLog )
-	
+
 	Plater:Msg("Plater started profiling.")
-	
+
 	collectgarbage("restart")
 	collectgarbage("stop")
 	memStart = collectgarbage("count")
@@ -215,23 +215,23 @@ end
 
 function Plater.DisableProfiling()
 	if not profilingEnabled then return end
-	
+
 	memEnd = collectgarbage("count")
 	collectgarbage("restart")
-	
+
 	profilingEnabled = false
-	
+
 	profEndTime = debugprofilestop()
-	
+
 	Plater.StartLogPerformance = function() end
 	Plater.EndLogPerformance = function() end
-	
+
 	Plater.StartLogPerformanceCore = function() end
 	Plater.EndLogPerformanceCore = function() end
-	
+
 	--Plater.DumpPerformance(true) -- for VDT mainly atm
 	Plater:Msg("Plater stopped profiling.")
-	
+
 	if PlaterPerformanceProfilingResultPanel and PlaterPerformanceProfilingResultPanel:IsVisible() then
 		Plater.ShowPerfData()
 	end
@@ -246,18 +246,18 @@ local function getAdvancedPerfData()
 	profData.memFrameTicks = {}
 	local prevEventStack = {}
 	local prevEventForType = {}
-	
+
 	--consolidate events
 	for _, logEntry in pairs(loggedEvents) do
 		--{pType, event, subType, timestamp, startEvent, endEvent, curFPS, curMem}
-		
+
 		local curPTypeData = profData.data[logEntry.pType]
 		if not curPTypeData then
 			profData.data[logEntry.pType] = {}
 			profData.data[logEntry.pType].eventData = {}
 			curPTypeData = profData.data[logEntry.pType]
 		end
-		
+
 		local curEventData = curPTypeData.eventData[logEntry.event]
 		if not curEventData then
 			curPTypeData.eventData[logEntry.event] = {}
@@ -267,7 +267,7 @@ local function getAdvancedPerfData()
 			curPTypeData.eventData[logEntry.event].memValues = {}
 			curEventData = curPTypeData.eventData[logEntry.event]
 		end
-		
+
 		local curSubTypeData = curEventData.subTypeData[logEntry.subType]
 		if not curSubTypeData then
 			curEventData.subTypeData[logEntry.subType] = {}
@@ -281,25 +281,25 @@ local function getAdvancedPerfData()
 			tinsert(prevEventStack, logEntry)
 			curEventData.startTime = logEntry.timestamp
 			curEventData.curMem = logEntry.curMem
-			
+
 			if #prevEventStack == 1 then
 				curEventData.curStartTime = logEntry.timestamp
 				curEventData.curStartMem = logEntry.curMem
 			end
-			
+
 			curSubTypeData.curStartTime = logEntry.timestamp
 			curSubTypeData.curStartMem = logEntry.curMem
 			curSubTypeData.curFPS = logEntry.curFPS
 			curSubTypeData.curMem = logEntry.curMem
-			
+
 			tinsert(profData.fpsValues, logEntry.curFPS)
 			tinsert(profData.memValues, logEntry.curMem)
-			
+
 		elseif logEntry.endEvent then
 			local prevLogEntry = tremove(prevEventStack)
-			
+
 			curEventData.count = (curEventData.count or 0) + 1
-			
+
 			local usedMem
 			local stopTime = logEntry.timestamp
 			local curSTime = (stopTime - prevLogEntry.timestamp)
@@ -325,16 +325,16 @@ local function getAdvancedPerfData()
 				curEventData.totalMem = (curEventData.totalMem or 0) + usedMem
 				tinsert(curEventData.times, curETime)
 			end
-			
+
 			curSubTypeData.curStartTime = nil
-			
+
 			tinsert(curSubTypeData.times, curSTime)
-			
+
 			-- add to event subType
 			curSubTypeData.totalTime = (curSubTypeData.totalTime or 0) + curSTime
 			curSubTypeData.count = (curSubTypeData.count or 0) + 1
 			curSubTypeData.totalMem = (curSubTypeData.totalMem or 0) + usedMem
-			
+
 			-- min/max values
 			if (curSubTypeData.minTime or 9999999) > curSTime then
 				curSubTypeData.minTime = curSTime
@@ -342,32 +342,32 @@ local function getAdvancedPerfData()
 			if (curSubTypeData.maxTime or 0) < curSTime then
 				curSubTypeData.maxTime = curSTime
 			end
-			
+
 			if (curEventData.minTime or 9999999) > curETime then
 				curEventData.minTime = curETime
 			end
 			if (curEventData.maxTime or 0) < curETime then
 				curEventData.maxTime = curETime
 			end
-			
+
 			tinsert(profData.memValues, logEntry.curMem)
-			
+
 		elseif logEntry.isFrameTick then
 			local key = "FrameTick_Internal"
 			local lastTime = prevEventForType[key] and prevEventForType[key].timestamp
 			if lastTime then -- ignore start to first frame
 				local curETime = logEntry.timestamp - lastTime
-				
+
 				curEventData.subTypeData = {} -- don't want this
-				
+
 				curEventData.count = (curEventData.count or 0) + 1
 				curEventData.totalTime = (curEventData.totalTime or 0) + curETime
 				curEventData.totalMem = (curEventData.totalMem or 0) + 0 -- don't count here
-				
+
 				tinsert(curEventData.times, curETime)
 				tinsert(profData.fpsTimes, curETime)
 				tinsert(profData.memFrameTicks, logEntry.curMem)
-				
+
 				if (curEventData.minTime or 9999999) > curETime then
 					curEventData.minTime = curETime
 				end
@@ -375,7 +375,7 @@ local function getAdvancedPerfData()
 					curEventData.maxTime = curETime
 				end
 			end
-			
+
 			prevEventForType[key] = logEntry
 		else
 			--single event (ping), no timeframe -> count from last event.
@@ -383,7 +383,7 @@ local function getAdvancedPerfData()
 			local lastTime = prevEventForType[key] and prevEventForType[key].timestamp or profStartTime
 			local curMem = logEntry.curMem - (prevEventForType[key] and prevEventForType[key].curMem or memStart)
 			local curETime = logEntry.timestamp - lastTime
-			
+
 			curEventData.totalTime = (curEventData.totalTime or 0) + curETime
 			curEventData.count = (curEventData.count or 0) + 1
 			curEventData.totalMem = (curEventData.totalMem or 0) + curMem
@@ -391,10 +391,10 @@ local function getAdvancedPerfData()
 			curSubTypeData.count = (curSubTypeData.count or 0) + 1
 			curSubTypeData.curFPS = logEntry.curFPS
 			curSubTypeData.totalMem = (curSubTypeData.totalMem or 0) + curMem
-			
+
 			tinsert(curEventData.times, curETime)
 			tinsert(curSubTypeData.times, curETime)
-			
+
 			-- min/max values
 			if (curSubTypeData.minTime or 9999999) > curETime then
 				curSubTypeData.minTime = curETime
@@ -408,11 +408,11 @@ local function getAdvancedPerfData()
 			if (curEventData.maxTime or 0) < curETime then
 				curEventData.maxTime = curETime
 			end
-			
+
 			prevEventForType[key] = logEntry
 		end
 	end
-	
+
 	if ViragDevTool_AddData then
 		--ViragDevTool_AddData(profData,"Plater Profiling TMP Data")
 		--ViragDevTool_AddData(prevEventStack,"Plater Profiling TMP Data - Stack")
@@ -421,8 +421,8 @@ local function getAdvancedPerfData()
 		--DevTool:AddData(profData,"Plater Profiling TMP Data")
 		--DevTool:AddData(prevEventStack,"Plater Profiling TMP Data - Stack")
 	end
-	
-	
+
+
 	local perfTable = {}
 	local printStr = ""
 	local sumTimePTypes = 0
@@ -431,12 +431,12 @@ local function getAdvancedPerfData()
 	local totalGlobalTime = (profEndTime or debugprofilestop()) - (profStartTime or debugprofilestop())
 	--local totalGlobalMem = (memEnd or collectgarbage("count")) - (memStart or collectgarbage("count"))
 	local totalGlobalMem, gcCount = sumUpMemUsage(profData.memValues)
-	
+
 	--do sort
 	local dataKeys = {}
 	for k in pairs(profData.data) do table.insert(dataKeys, k) end
 	table.sort(dataKeys)
-	
+
 	for _, dataKey in pairs(dataKeys) do
 		local pType, data = dataKey, profData.data[dataKey]
 
@@ -447,17 +447,17 @@ local function getAdvancedPerfData()
 		local pTypeSubLogMem = 0
 		local printStrPType = ""
 		local pTypeMem = 0
-		
+
 		--do sort
 		local eventKeys = {}
 		for k in pairs(data.eventData) do table.insert(eventKeys, k) end
 		table.sort(eventKeys)
-		
+
 		for _, eventKey in pairs(eventKeys) do
 			local event, pData = eventKey, data.eventData[eventKey]
 			perfTable[pType][event] = {}
 			pData.count = pData.count or 0
-			local modeVal, modeAmount, modeTotal = getModeTime(pData.times) 
+			local modeVal, modeAmount, modeTotal = getModeTime(pData.times)
 			local modeData = roundTime(modeVal).." ("..modeAmount.."/"..modeTotal..")"
 			perfTable[pType][event].total =  "count: " .. pData.count .. " - total: " .. roundTime(pData.totalTime) .. "ms - (direct: " .. roundTime(pData.totalTime - (pData.subLogTime or 0)) .. "ms, sub-log: " .. roundTime(pData.subLogTime or 0) .. "ms)\n" .. "min/max/avg/med/mod (ms): " .. roundTime(pData.minTime) .. " / " .. roundTime(pData.maxTime) .. " / " .. roundTime(pData.totalTime / pData.count) .. " / " .. roundTime(getMedianTime(pData.times)) .. " / " .. modeData .. "\nmemory: " .. getRoundMem(pData.totalMem)
 			pTypeTime = pTypeTime + pData.totalTime
@@ -466,13 +466,13 @@ local function getAdvancedPerfData()
 			pTypeExec = pTypeExec + pData.count
 			pTypeMem = pTypeMem + pData.totalMem
 			printStrPType = printStrPType .. PRT_INDENT .. event .. ":" .. "\n" .. PRT_INDENT .. PRT_INDENT .. "Total:\n" .. PRT_INDENT .. PRT_INDENT .. PRT_INDENT .. string.gsub(perfTable[pType][event].total, "\n", "\n" .. PRT_INDENT .. PRT_INDENT .. PRT_INDENT) .. "\n\n"
-			
+
 			perfTable[pType][event]._subTypeData = {}
 			local pTypeSufTime = 0
 			local pTypeSufMem = 0
 			local pTypeSufExec = 0
 			if pData.subTypeData and #pData.subTypeData > 0 then printStrPType = printStrPType .. PRT_INDENT .. PRT_INDENT .. "Sub-Events:" .. "\n" end
-			
+
 			--do sort
 			local subTypeDataKeys = {}
 			for k in pairs(pData.subTypeData) do table.insert(subTypeDataKeys, k) end
@@ -480,7 +480,7 @@ local function getAdvancedPerfData()
 			for _, sufDataKey in pairs(subTypeDataKeys) do
 				local subType, sufData = sufDataKey, pData.subTypeData[sufDataKey]
 				if sufData.totalTime then -- sanity check for bad data
-					local modeVal, modeAmount, modeTotal = getModeTime(sufData.times) 
+					local modeVal, modeAmount, modeTotal = getModeTime(sufData.times)
 					local modeData = roundTime(modeVal).." ("..modeAmount.."/"..modeTotal..")"
 					perfTable[pType][event]._subTypeData[subType] = "count: " .. sufData.count .. " - total: " .. roundTime(sufData.totalTime) .. "ms\n" .. "min/max/avg/med/mod (ms): " .. roundTime(sufData.minTime) .. " / " .. roundTime(sufData.maxTime) .. " / " .. roundTime(sufData.totalTime / sufData.count) .. " / " .. roundTime(getMedianTime(sufData.times)) .. " / " .. modeData .. "\nmemory: " .. getRoundMem(sufData.totalMem)
 					pTypeSufTime = pTypeSufTime + sufData.totalTime
@@ -495,7 +495,7 @@ local function getAdvancedPerfData()
 			perfTable[pType][event].pTypeSufTime = pTypeSufTime
 			perfTable[pType][event].pTypeSufMem = pTypeSufMem
 			perfTable[pType][event].pTypeSufExec = pTypeSufExec
-			
+
 			printStrPType = printStrPType .. "\n"
 		end
 		perfTable[pType].pTypeTime = pTypeTime
@@ -512,19 +512,19 @@ local function getAdvancedPerfData()
 		sumTimePTypes = sumTimePTypes + pTypeTime
 		sumExecPTypes = sumExecPTypes + pTypeExec
 		sumMemPTypes = sumMemPTypes + pTypeMem
-		
+
 		printStr = printStr .. pType .. ":" .. "\n" .. PRT_INDENT .. "Total -> count: " .. pTypeExec .. " - time: "  .. roundTime(pTypeTime) .. "ms (direct: " .. roundTime(pTypeTime - pTypeSubLog) .. "ms/" .. roundPercent(perfTable[pType].pTypeGlobalPercentDirect) .. "%, sub-log: " .. roundTime(pTypeSubLog) .. "ms/" .. roundPercent(perfTable[pType].pTypeGlobalPercentSubLog) .. "%) - memory: " .. getRoundMem(sumMemPTypes) .. "\n\n" .. printStrPType
-		
+
 		printStr = printStr .. "\n"
 	end
-	
+
 	local fpsValues = getFPSValuesFromTimes(profData.fpsTimes) --profData.fpsValues
 	local fpsAverage = getAverageTime(fpsValues)
 	local minFPS, maxFPS = getMinMax(fpsValues)
 	local medFPS = getMedianTime(fpsValues)
-	local modeVal, modeAmount, modeTotal = getModeTime(fpsValues, 10) 
+	local modeVal, modeAmount, modeTotal = getModeTime(fpsValues, 10)
 	local modFPS = round(modeVal*10)/10 .." ("..modeAmount.."/"..modeTotal..")"
-	
+
 	perfTable.timeInPlaterProfile = (profData.totalTimeInPlater or 0) --sumTimePTypes
 	perfTable.totalLoggedEvents = sumExecPTypes
 	perfTable.totalAveragePerEvent = perfTable.timeInPlaterProfile / sumExecPTypes
@@ -544,11 +544,11 @@ local function getAdvancedPerfData()
 	printStrHeader = printStrHeader .. PRT_INDENT .. "% of global time: " .. roundPercent(perfTable.percentGlobalInPlater) .. "%" .. "\n"
 	printStrHeader = printStrHeader .. PRT_INDENT .. "% of global memory: " .. roundPercent(perfTable.percentGlobalMemInPlater) .. "%" .. "\n"
 	printStrHeader = printStrHeader .. PRT_INDENT .. "FPS (min/max/avg/med/mod): " .. round(minFPS*10)/10 .. " / " .. round(maxFPS*10)/10 .. " / " .. round(fpsAverage*10)/10 .. " / " .. round(medFPS*10)/10 .. " / " .. modFPS .. "\n\n"
-	
+
 	printStr = printStrHeader .. printStr
-	
+
 	printStr = printStr .. "Plater Version: " .. Plater.GetVersionInfo()
-	
+
 	local gcHeaderPrinted = false
 	for name, count in pairs(garbageCalls or {}) do
 		if not gcHeaderPrinted then
@@ -557,7 +557,7 @@ local function getAdvancedPerfData()
 		end
 		printStr = printStr .. PRT_INDENT .. "'" .. name .. "': " .. count .. "\n"
 	end
-	
+
 	return perfTable, printStr
 end
 
@@ -576,13 +576,13 @@ function Plater.DumpPerformance(noPrintOut)
 	if not noPrintOut then
 		print(printStr)
 	end
-	
+
 	return perfTable, printStr
 
 end
 
 local function createResultsPanel()
-	local f = CreateFrame ("frame", "PlaterPerformanceProfilingResultPanel", UIParent, "BackdropTemplate") 
+	local f = CreateFrame ("frame", "PlaterPerformanceProfilingResultPanel", UIParent, "BackdropTemplate")
 	f:SetSize (900, 700)
 	f:EnableMouse (true)
 	f:SetMovable (true)
@@ -596,10 +596,10 @@ local function createResultsPanel()
 	f:SetBackdropColor (0, 0, 0, 0.8)
 	f:SetBackdropBorderColor (0, 0, 0, 1)
 	tinsert (UISpecialFrames, "PlaterPerformanceProfilingResultPanel")
-	
+
 	DF:CreateTitleBar (f, "Plater Performance Profiling")
 	DF:ApplyStandardBackdrop (f)
-	
+
 	local luaeditor_backdrop_color = {.2, .2, .2, .5}
 	local luaeditor_border_color = {0, 0, 0, 1}
 	local textField = DF:NewSpecialLuaEditorEntry (f, 875, 670, "TextField", "$parentTextField", true, false)
@@ -611,35 +611,35 @@ local function createResultsPanel()
 	textField:SetBackdropColor (unpack (luaeditor_backdrop_color))
 	DF:ReskinSlider (textField.scroll)
 	f.TextField = textField
-	
+
 	f:Hide()
 	Plater.PlaterPerformanceProfilingResultPanel = f
 end
 
 function Plater.ShowPerfData()
 	local perfTable, printStr = getAdvancedPerfData()
-	
+
 	if (not PlaterPerformanceProfilingResultPanel) then
 		createResultsPanel()
 	end
-	
+
 	Plater.PlaterPerformanceProfilingResultPanel.TextField:SetText (printStr)
-	
+
 	Plater.PlaterPerformanceProfilingResultPanel:Show()
-	
+
 end
 
 function Plater.ShowPerfDataSpec()
 	local perfTable, printStr = getAdvancedPerfData()
-	
+
 	if (not PlaterPerformanceProfilingResultPanel) then
 		createResultsPanel()
 	end
-	
+
 	Plater.PlaterPerformanceProfilingResultPanel.TextField:SetText (printStr)
-	
+
 	Plater.PlaterPerformanceProfilingResultPanel:Show()
-	
+
 end
 
 function Plater.StoreEventLogData()
@@ -653,10 +653,10 @@ function Plater.StoreEventLogData()
 			tinsert(eventLogData, '\n    {"ph":"I","name":"vsync","ts":'..(event.timestamp * 1000)..',"pid":1}')
 		end
 	end
-	
+
 	local eventLogStr = "[" .. table.concat(eventLogData, ",") .. "]"
-	
+
 	PlaterDBChr.perfEventLog = eventLogStr
-	
+
 	ReloadUI()
 end
