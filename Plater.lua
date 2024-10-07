@@ -2053,7 +2053,8 @@ Plater.AnchorNamesByPhraseId = {
 	end
 	
 	--store all functions for all events that will be registered inside OnInit
-	local last_GetShapeshiftFormID = GetShapeshiftFormID()
+	platerInternal.last_GetShapeshiftFormID = GetShapeshiftFormID()
+	platerInternal.last_GROUP_ROSTER_UPDATE = GetTime()
 	local eventFunctions = {
 
 		--when a unit from unatackable change its state, this event triggers several times, a schedule is used to only update once
@@ -2137,6 +2138,8 @@ Plater.AnchorNamesByPhraseId = {
 		end,
 		
 		GROUP_ROSTER_UPDATE = function()
+			if (platerInternal.last_GROUP_ROSTER_UPDATE + 2) > GetTime() then return end
+			platerInternal.last_GROUP_ROSTER_UPDATE = GetTime()
 			Plater.RefreshTankCache()
 		end,
 		
@@ -3989,12 +3992,11 @@ Plater.AnchorNamesByPhraseId = {
 		end,
 		
 		UPDATE_SHAPESHIFT_FORM = function()
-			local curTime = GetTime()
 			--this is to work around UPDATE_SHAPESHIFT_FORM firing for all units and not just the player... causing lag...
-			if last_GetShapeshiftFormID == GetShapeshiftFormID() then
+			if platerInternal.last_GetShapeshiftFormID == GetShapeshiftFormID() then
 				return
 			end
-			last_GetShapeshiftFormID = GetShapeshiftFormID()
+			platerInternal.last_GetShapeshiftFormID = GetShapeshiftFormID()
 			
 			UpdatePlayerTankState()
 			Plater.UpdateAllNameplateColors()
