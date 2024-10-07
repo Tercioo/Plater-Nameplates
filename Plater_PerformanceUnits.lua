@@ -33,6 +33,8 @@ function platerInternal.CreatePerformanceUnits(Plater)
 	perfUnits[196642] = perfUnits[196642] == nil and true or perfUnits[196642] --Hungry Lasher (dragonflight, Algeth'ar Academy, Overgrown Ancient)
 	perfUnits[211306] = perfUnits[211306] == nil and true or perfUnits[211306] --Fiery Vines (dragonflight, Amirdrassil, Tindral Sageswift)
 	perfUnits[214441] = perfUnits[214441] == nil and true or perfUnits[214441] --Scorched Treant (dragonflight, Amirdrassil, Tindral Sageswift)
+	perfUnits[219746] = perfUnits[219746] == nil and true or perfUnits[219746] --Silken Tomb (TWW, Nerub-ar Palace, Queen Ansurek)
+	perfUnits[216205] = perfUnits[216205] == nil and true or perfUnits[216205] --Scorched Treant (TWW, Nerub-ar Palace, Broodtwister Ovi'nax)
 
 	--transfer npcs ids directly added into Plater.PerformanceUnits table before Plater.OnInit() call
 	for npcId in pairs(Plater.PerformanceUnits) do
