@@ -8,9 +8,6 @@ local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_NOT_MAINLINE = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_CLASSIC_ERA = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
 
---preparation for 10.0
-local IS_NEW_UNIT_AURA_AVAILABLE = C_UnitAuras and C_UnitAuras.GetAuraDataBySlot and true
-
 --stop yellow lines on my editor
 local tinsert = _G.tinsert
 local min = _G.min
@@ -41,13 +38,11 @@ local UnitGUID = _G.UnitGUID
 local GetSpellInfo = GetSpellInfo or function(spellID) if not spellID then return nil end local si = C_Spell.GetSpellInfo(spellID) if si then return si.name, nil, si.iconID, si.castTime, si.minRange, si.maxRange, si.spellID, si.originalIconID end end
 local floor = _G.floor
 local UnitAuraBySlot = _G.UnitAuraBySlot or (C_UnitAuras and (function(...) local auraData = C_UnitAuras.GetAuraDataBySlot(...); if not auraData then return nil; end; return AuraUtil.UnpackAuraData(auraData); end))
-local UnitAura = _G.UnitAura or (C_UnitAuras and (function(...) local auraData = C_UnitAuras.GetAuraDataByIndex(...); if not auraData then return nil; end; return AuraUtil.UnpackAuraData(auraData); end))
 local GetAuraDataBySlot = _G.C_UnitAuras and _G.C_UnitAuras.GetAuraDataBySlot
 local GetAuraSlots = _G.C_UnitAuras and _G.C_UnitAuras.GetAuraSlots
 local GetAuraDataByAuraInstanceID = _G.C_UnitAuras and _G.C_UnitAuras.GetAuraDataByAuraInstanceID
 local BackdropTemplateMixin = _G.BackdropTemplateMixin
-local BUFF_MAX_DISPLAY = _G.BUFF_MAX_DISPLAY
-local BUFF_MAX_DISPLAY_PLATER = (not IS_NEW_UNIT_AURA_AVAILABLE and _G.BUFF_MAX_DISPLAY) or (IS_NEW_UNIT_AURA_AVAILABLE and nil) -- why limit it in this case?
+local BUFF_MAX_DISPLAY_PLATER = nil -- don't limit.
 
 local DB_AURA_GROW_DIRECTION
 local DB_AURA_GROW_DIRECTION2
@@ -328,9 +323,6 @@ local function CreatePlaterNamePlateAuraTooltip()
 		nineSlice:ApplyBackdrop(...)
 	end
 	
-	--This is a fallback to save tooltips in classic... can't have nice things.
-	--IS_NEW_UNIT_AURA_AVAILABLE = tooltip.SetUnitBuffByAuraInstanceID and true or false --disable this for now. might work.
-	
 	return tooltip
 end
 
@@ -443,7 +435,7 @@ local ValidateAuraForUpdate = function (unit, aura)
 			--manual tracking
 			
 			if DB_SHOW_PURGE_IN_EXTRA_ICONS or DB_SHOW_ENRAGE_IN_EXTRA_ICONS or DB_SHOW_MAGIC_IN_EXTRA_ICONS
-				or (aura.sourceUnit == "player" and ( MANUAL_TRACKING_BUFFS[name] or MANUAL_TRACKING_BUFFS[spellId] or MANUAL_TRACKING_DEBUFFS[name] or MANUAL_TRACKING_DEBUFFS[spellId] ))
+				or (aura.sourceUnit == "player" and ( MANUAL_TRACKING_BUFFS[name] or MANUAL_TRACKING_BUFFS[spellId] ) or MANUAL_TRACKING_DEBUFFS[name] or MANUAL_TRACKING_DEBUFFS[spellId] )
 				then -- only player buffs in manual tracking
 				needsUpdate = true
 			end
@@ -473,31 +465,6 @@ local ValidateAuraForUpdate = function (unit, aura)
 	--DevTool:AddData({needsUpdate=needsUpdate, hasBuff=hasBuff, hasDebuff=hasDebuff}, "Plater_UNIT_AURA return")
 	return needsUpdate, hasBuff, hasDebuff
 	
-end
-
-local UnitAuraEventHandlerValidation = function (unit, isFullUpdate, updatedAuras)
-	--DevTool:AddData({unit = unit, isFullUpdate = isFullUpdate, updatedAuras = updatedAuras}, "Plater_UNIT_AURA")
-	if isFullUpdate ~= false or not updatedAuras then
-		return true, true, true --update all
-	end
-	
-	local needsUpdate = false
-	local hasBuff = false
-	local hasDebuff = false
-	
-	for _, aura in pairs(updatedAuras) do
-		local nU, hB, hD = ValidateAuraForUpdate(unit, aura)
-		needsUpdate = needsUpdate or nU
-		hasBuff = hasBuff or hB
-		hasDebuff = hasDebuff or hD
-	end
-	
-	--resets buffs and debuffs if not using aura frame 2 (for now, until partial clear is implemented)
-	hasBuff = not DB_AURA_SEPARATE_BUFFS and (hasBuff or hasDebuff) or hasBuff 
-	hasDebuff = not DB_AURA_SEPARATE_BUFFS and (hasBuff or hasDebuff) or hasDebuff
-	
-	--DevTool:AddData({unit = unit, needsUpdate=needsUpdate, hasBuff=hasBuff, hasDebuff=hasDebuff}, "Plater_UNIT_AURA return")
-	return needsUpdate, hasBuff, hasDebuff
 end
 
 --[[
@@ -547,24 +514,10 @@ local UnitAuraEventHandler = function (_, event, arg1, arg2, arg3, ...)
 	Plater.StartLogPerformanceCore("Plater-Core", "Events", event)
 	--DevTool:AddData({event = event, arg1 = arg1, arg2 = arg2}, "Plater_UnitAuraEventHandler - " .. (event or "N/A"))
 	if event == "UNIT_AURA" then
-		if IS_NEW_UNIT_AURA_AVAILABLE then --for 10.0
-			local unit, updatedAuras = arg1, arg2
-			--DevTool:AddData({unit = unit, updatedAuras = updatedAuras, valid = UnitAuraEventHandlerValidUnits[unit]}, "Plater_UNIT_AURA - " .. unit)
-			if unit and UnitAuraEventHandlerValidUnits[unit] then
-				UpdateUnitAuraCacheData(unit, updatedAuras)
-			end
-			
-		else --old code
-			local unit, isFullUpdate, updatedAuras = arg1, arg2, arg3
-			if unit and UnitAuraEventHandlerValidUnits[unit] then
-				local needsUpdate, hasBuff, hasDebuff = UnitAuraEventHandlerValidation(unit, isFullUpdate, updatedAuras)
-				--DevTool:AddData({unit = unit, isFullUpdate = isFullUpdate, updatedAuras = updatedAuras, needsUpdate = needsUpdate, hasBuff = hasBuff, hasDebuff = hasDebuff, existing=CopyTable(UnitAuraEventHandlerData[unit] or {})}, "Plater_UNIT_AURA_AFTER")
-				if needsUpdate then
-					local existingData = UnitAuraEventHandlerData[unit] or { hasBuff = false, hasDebuff = false }
-					UpdateUnitAuraCacheData(unit, nil)
-					UnitAuraEventHandlerData[unit] = { hasBuff = existingData.hasBuff or hasBuff or false, hasDebuff = existingData.hasDebuff or hasDebuff or false }
-				end
-			end
+		local unit, updatedAuras = arg1, arg2
+		--DevTool:AddData({unit = unit, updatedAuras = updatedAuras, valid = UnitAuraEventHandlerValidUnits[unit]}, "Plater_UNIT_AURA - " .. unit)
+		if unit and UnitAuraEventHandlerValidUnits[unit] then
+			UpdateUnitAuraCacheData(unit, updatedAuras)
 		end
 	end
 	
@@ -731,58 +684,17 @@ local function getUnitAuras(unit, filter)
 	local continuationToken
 	local debuffIndex = 0
 	repeat -- until continuationToken == nil
-		local numSlots = 0
-		local slots
-		if IS_NEW_UNIT_AURA_AVAILABLE then
-			slots = { GetAuraSlots(unit, filter, BUFF_MAX_DISPLAY_PLATER, continuationToken) }
-			continuationToken = slots[1]
-			numSlots = #slots
-		else
-			numSlots = (BUFF_MAX_DISPLAY or 32) + 1
-		end
+		local slots = { GetAuraSlots(unit, filter, BUFF_MAX_DISPLAY_PLATER, continuationToken) }
+		continuationToken = slots[1]
+		local numSlots = #slots
 		
 		for i=2, numSlots do
-			if IS_NEW_UNIT_AURA_AVAILABLE then
-				local slot = slots[i]
-				local aura = GetAuraDataBySlot(unit, slot)
-				if aura then
-					--DevTool:AddData({unit = unit, aura = aura, slot = slot}, "GetAuraDataBySlot")
-					filterCache[aura.auraInstanceID] = aura
-				end
-			else
-				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, shouldConsolidate  = UnitAura(unit, i-1, filter)
-				--DevTool:AddData({name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, shouldConsolidate }, "UnitAura")
-				if not name then
-					break
-				end
-				
-				debuffIndex = debuffIndex + 1
-				
-				filterCache[debuffIndex] = {
-					applications = applications,
-					auraInstanceID = debuffIndex,
-					canApplyAura = canApplyAura,
-					dispelName = dispelName,
-					duration = duration,
-					expirationTime = expirationTime,
-					icon = icon,
-					isBossAura = isBossAura,
-					isFromPlayerOrPlayerPet = isFromPlayerOrPlayerPet,
-					isHarmful = isHarmful,
-					isHelpful = isHelpful,
-					isNameplateOnly = false,
-					isRaid = false,
-					isStealable = isStealable,
-					name = name,
-					nameplateShowAll = nameplateShowAll,
-					nameplateShowPersonal = nameplateShowPersonal,
-					points = {},
-					sourceUnit = sourceUnit,
-					spellId = spellId,
-					timeMod = timeMod,
-				}
+			local slot = slots[i]
+			local aura = GetAuraDataBySlot(unit, slot)
+			if aura then
+				--DevTool:AddData({unit = unit, aura = aura, slot = slot}, "GetAuraDataBySlot")
+				filterCache[aura.auraInstanceID] = aura
 			end
-			
 		end
 	until continuationToken == nil
 	
@@ -824,7 +736,7 @@ auras = {
 
 --]]
 function Plater.GetUnitAurasForUnitID(unitID)
-	if not IS_NEW_UNIT_AURA_AVAILABLE or not unitID or not UnitAuraCacheData[unitID] then
+	if not unitID or not UnitAuraCacheData[unitID] then
 		return nil
 	end
 
@@ -1086,23 +998,21 @@ end
 			local amountFramesShown = #iconFrameContainer
 			
 			
-			if IS_NEW_UNIT_AURA_AVAILABLE then
-				-- still sort by auraInstanceID for some consistency
-				local iconFrameContainerCopy = {}
-				local index = 0
-				for _, icon in pairs(iconFrameContainer) do
-					if icon:IsShown() then
-						index = index + 1
-						iconFrameContainerCopy[index] = icon
-					end
+			-- still sort by auraInstanceID for some consistency
+			local iconFrameContainerCopy = {}
+			local index = 0
+			for _, icon in pairs(iconFrameContainer) do
+				if icon:IsShown() then
+					index = index + 1
+					iconFrameContainerCopy[index] = icon
 				end
-				iconFrameContainer = iconFrameContainerCopy
-				table.sort (iconFrameContainer, function(aura1, aura2) 
-					return (aura1.auraInstanceID or 0) < (aura2.auraInstanceID or 0)
-				end)
-				--when sorted, this is reliable
-				amountFramesShown = index
 			end
+			iconFrameContainer = iconFrameContainerCopy
+			table.sort (iconFrameContainer, function(aura1, aura2) 
+				return (aura1.auraInstanceID or 0) < (aura2.auraInstanceID or 0)
+			end)
+			--when sorted, this is reliable
+			amountFramesShown = index
 			
 			if (profile.aura_sort) then
 				-- this needs to be done in addition. the above is just to keep them consistent in order
@@ -2891,10 +2801,6 @@ end
 		DB_TRACK_METHOD = profile.aura_tracker.track_method
 
 		Plater.MaxAurasPerRow = floor(profile.plate_config.enemynpc.health_incombat[1] / (profile.aura_width + DB_AURA_PADDING))
-		
-		if IS_WOW_PROJECT_CLASSIC_ERA then
-			IS_NEW_UNIT_AURA_AVAILABLE = Plater.db.profile.auras_experimental_update_classic_era
-		end
     end
 
 	local function re_UpdateGhostAurasCache()
