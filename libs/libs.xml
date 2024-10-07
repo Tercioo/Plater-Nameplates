@@ -23,7 +23,6 @@
 	<Script file="LibRangeCheck-3.0\LibRangeCheck-3.0.lua"/>
 	
 	<Script file="LibClassicCasterino\LibClassicCasterino.lua"/>
-	<Include file="LibClassicDurations\LibClassicDurations.xml"/>
 	
 	<Include file="LibTranslit-1.0\LibTranslit-1.0.xml"/>
 	<Include file="DF\load.xml"/>

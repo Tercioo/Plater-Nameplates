@@ -270,14 +270,6 @@ function platerInternal.ExtraAuras.ClearExpired()
 	end
 end
 
--- support for LibClassicDurations from https://github.com/rgd87/LibClassicDurations by d87
-local LCD = LibStub:GetLibrary("LibClassicDurations", true)
-if IS_WOW_PROJECT_CLASSIC_ERA and LCD then
-	LCD:Register(Plater)
-	LCD.RegisterCallback(Plater, "UNIT_BUFF", function(event, unit)end)
-	UnitAura = LCD.UnitAuraWithBuffs
-end
-
 local function CreatePlaterNamePlateAuraTooltip()
 	local tooltip = CreateFrame("GameTooltip", "PlaterNamePlateAuraTooltip", UIParent, "GameTooltipTemplate")
 	
