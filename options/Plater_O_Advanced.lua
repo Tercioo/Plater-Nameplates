@@ -476,6 +476,90 @@ function platerInternal.CreateAdvancedOptions()
             nocombat = true,
         },
 
+        {type = "label", get = function() return "Selection Space Scaling:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {
+            type = "toggle",
+            get = function()
+                local hScale = GetCVarNumberOrDefault("NamePlateHorizontalScale");
+                local vScale = GetCVarNumberOrDefault("NamePlateVerticalScale");
+                local cScale = GetCVarNumberOrDefault("NamePlateClassificationScale");
+                return not (ApproximatelyEqual(hScale, 1) and ApproximatelyEqual(vScale, 1) and ApproximatelyEqual(cScale, 1));
+            end,
+            set = function (self, fixedparam, value)
+                if value then
+                    SetCVar("NamePlateHorizontalScale", 1.4);
+                    SetCVar("NamePlateVerticalScale", 2.7);
+                    SetCVar("NamePlateClassificationScale", 1.25);
+                else
+                    SetCVar("NamePlateHorizontalScale", 1);
+                    SetCVar("NamePlateVerticalScale", 1);
+                    SetCVar("NamePlateClassificationScale", 1);
+                end
+                PlaterOptionsPanelFrame.RefreshOptionsFrame()
+            end,
+            name = "Larger Nameplates" .. CVarIcon,
+            desc = "Increases the blizzard base nameplate scaling (which is impacting the selection space and default blizzard nameplate size)." .. CVarDesc,
+            nocombat = true,
+        },
+        {
+            type = "range",
+            get = function() return tonumber (GetCVar ("NamePlateVerticalScale")) end,
+            set = function (self, fixedparam, value)
+                if (not InCombatLockdown()) then
+                    SetCVar ("NamePlateVerticalScale", value)
+                else
+                    Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+                end
+            end,
+            min = 0.3,
+            max = 3,
+            step = 0.1,
+            thumbscale = 1.7,
+            usedecimals = true,
+            name = "Base Vertical Scale" .. CVarIcon,
+            desc = "Increases the blizzard base nameplate scaling height (which is impacting the selection space and default blizzard nameplate size)." .. CVarDesc,
+            nocombat = true,
+        },
+        {
+            type = "range",
+            get = function() return tonumber (GetCVar ("NamePlateHorizontalScale")) end,
+            set = function (self, fixedparam, value)
+                if (not InCombatLockdown()) then
+                    SetCVar ("NamePlateHorizontalScale", value)
+                else
+                    Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+                end
+            end,
+            min = 0.3,
+            max = 2,
+            step = 0.1,
+            thumbscale = 1.7,
+            usedecimals = true,
+            name = "Base Horizontal Scale" .. CVarIcon,
+            desc = "Increases the blizzard base nameplate scaling height (which is impacting the selection space and default blizzard nameplate size)." .. CVarDesc,
+            nocombat = true,
+        },
+        {
+            type = "range",
+            get = function() return tonumber (GetCVar ("NamePlateClassificationScale")) end,
+            set = function (self, fixedparam, value)
+                if (not InCombatLockdown()) then
+                    SetCVar ("NamePlateClassificationScale", value)
+                else
+                    Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+                end
+            end,
+            min = 0.3,
+            max = 1.5,
+            step = 0.1,
+            thumbscale = 1.7,
+            usedecimals = true,
+            name = "Base Classification Scale" .. CVarIcon,
+            desc = "Increases the blizzard base nameplate classification scaling (which is impacting the selection space and default blizzard nameplate size)." .. CVarDesc,
+            nocombat = true,
+        },
+        
+        
         {type = "label", get = function() return "Enemy Box Selection Space:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
         {
             type = "range",

@@ -8,6 +8,12 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1728421735, "New Feature", "Oct 8th, 2024", "Adding 'Larger Nameplates' and the corresponding base nameplate scale optiosn to the advanced tab.", "cont1nuity"},
+			{1728421735, "Backend Change", "Oct 7th, 2024", "Cleanup of old unused aura update code.", "cont1nuity"},
+			{1728421735, "Backend Change", "Oct 7th, 2024", "Removing LibClassicDuration as it was no longer in use.", "cont1nuity"},
+			{1728421735, "Backend Change", "Oct 7th, 2024", "Less frequent group unit updates for tank scanning against event spam.", "cont1nuity"},
+			{1728421735, "Backend Change", "Oct 7th, 2024", "Adding additional performance units for Palace.", "cont1nuity"},
+			
 			{1727794055, "Bug Fix", "Oct 1st, 2024", "Ensure soft-interact options work on all client versions now.", "cont1nuity"},
 			{1727794055, "Bug Fix", "Sept 25th, 2024", "Don't cache game objects in the npc-cache.", "cont1nuity"},
 			{1727794055, "Bug Fix", "Sept 25th, 2024", "Fix Warlock execute.", "cont1nuity"},
