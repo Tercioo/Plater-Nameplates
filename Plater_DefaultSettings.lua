@@ -803,7 +803,6 @@ PLATER_DEFAULT_SETTINGS = {
 		aura_cooldown_edge_texture = [[Interface\AddOns\Plater\images\cooldown_edge_2]],
 		
 		aura_enabled = true,
-		auras_experimental_update_classic_era = true,
 		aura_show_tooltip = false,
 		aura_width = 26,
 		aura_height = 16,

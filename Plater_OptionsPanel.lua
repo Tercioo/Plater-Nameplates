@@ -2704,20 +2704,6 @@ local debuff_options = {
 	},
 }
 
-if IS_WOW_PROJECT_CLASSIC_ERA then
-	tinsert(debuff_options, 5, {
-		type = "toggle",
-		boxfirst = true,
-		get = function() return Plater.db.profile.auras_experimental_update_classic_era end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.auras_experimental_update_classic_era = value
-			Plater.RefreshAuraCache()
-		end,
-		name = "Enable experimental aura updates",
-		desc = "Enable experimental aura updates for classic era.\nMight help in tracking enemy buffs that are applied while the nameplate is visible.",
-	})
-end
-
 _G.C_Timer.After(0.850, function() --~delay
 	debuff_options.always_boxfirst = true
 	debuff_options.language_addonId = addonId
