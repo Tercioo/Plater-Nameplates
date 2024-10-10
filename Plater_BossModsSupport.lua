@@ -59,8 +59,16 @@ local function HideNameplateAura(guid, texture)
 	if not HOSTILE_ENABLED then return end
 	if not guid or not texture then return end
 
-	UNIT_BOSS_MOD_AURAS_TO_BE_REMOVED [guid] = UNIT_BOSS_MOD_AURAS_TO_BE_REMOVED [guid] or {}
-	tinsert(UNIT_BOSS_MOD_AURAS_TO_BE_REMOVED [guid], texture)
+	-- force direct removal when called for to ensure a new instance can directly be shown after
+	for activeIndex, activeData in pairs(UNIT_BOSS_MOD_AURAS_ACTIVE [guid] or {}) do
+		if texture == activeData.texture then
+			tremove(UNIT_BOSS_MOD_AURAS_ACTIVE [guid], activeIndex)
+		end
+	end
+
+	-- keep the old way for now
+	--UNIT_BOSS_MOD_AURAS_TO_BE_REMOVED [guid] = UNIT_BOSS_MOD_AURAS_TO_BE_REMOVED [guid] or {}
+	--tinsert(UNIT_BOSS_MOD_AURAS_TO_BE_REMOVED [guid], texture)
 
 	UNIT_BOSS_MOD_NEEDS_UPDATE_IN[guid] = -1
 end
