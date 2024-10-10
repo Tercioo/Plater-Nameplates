@@ -11037,7 +11037,7 @@ end
 			return
 		end
 		prevErrors[msg] = curTime
-		DevTool:AddData(errorContext)
+		if DevTool then DevTool:AddData(errorContext) end
 		local modscriptInfo = errorContext.modscript and errorContext.modscript.url and ("Mod/Script URL: " .. errorContext.modscript.url .. "\n") or nil
 		if BugGrabber then
 			geterrorhandler()(errorContext.message .. "\n" .. (modscriptInfo or "") .. Plater.fullVersionInfo .. "\n" .. errorMessage)
