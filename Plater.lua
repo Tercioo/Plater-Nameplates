@@ -2138,7 +2138,7 @@ Plater.AnchorNamesByPhraseId = {
 		end,
 		
 		GROUP_ROSTER_UPDATE = function()
-			if (platerInternal.last_GROUP_ROSTER_UPDATE + 2) > GetTime() then
+			if (platerInternal.last_GROUP_ROSTER_UPDATE + 2) > GetTime() or platerInternal.has_GROUP_ROSTER_UPDATE_Scheduled then
 				if not platerInternal.has_GROUP_ROSTER_UPDATE_Scheduled then
 					platerInternal.has_GROUP_ROSTER_UPDATE_Scheduled = C_Timer.NewTimer (2.5, function()
 						platerInternal.last_GROUP_ROSTER_UPDATE = GetTime()
