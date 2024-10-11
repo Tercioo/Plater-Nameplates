@@ -199,24 +199,28 @@ function Plater.DebugHealthAnimation()
     Plater.DebugHealthAnimation_Timer = C_Timer.NewTicker (1.5, function() --~animationtest
         for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
             local self = plateFrame.unitFrame
+            
+            if self and self.PlaterOnScreen then
 
-            if (self.healthBar.CurrentHealth == 0) then
-                self.healthBar.AnimationStart = 0
-                self.healthBar.AnimationEnd = UnitHealthMax(self [MEMBER_UNITID])
-            else
-                self.healthBar.AnimationStart = UnitHealthMax(self [MEMBER_UNITID])
-                self.healthBar.AnimationEnd = 0
-            end
+                if (self.healthBar.CurrentHealth == 0) then
+                    self.healthBar.AnimationStart = 0
+                    self.healthBar.AnimationEnd = UnitHealthMax(self [MEMBER_UNITID])
+                else
+                    self.healthBar.AnimationStart = UnitHealthMax(self [MEMBER_UNITID])
+                    self.healthBar.AnimationEnd = 0
+                end
 
-            self.healthBar:SetValue (self.healthBar.CurrentHealth)
-            self.healthBar.CurrentHealthMax = UnitHealthMax(self [MEMBER_UNITID])
+                self.healthBar:SetValue (self.healthBar.CurrentHealth)
+                self.healthBar.CurrentHealthMax = UnitHealthMax(self [MEMBER_UNITID])
 
-            self.healthBar.IsAnimating = true
+                self.healthBar.IsAnimating = true
 
-            if (self.healthBar.AnimationEnd > self.healthBar.AnimationStart) then
-                self.healthBar.AnimateFunc = Plater.AnimateRightWithAccel
-            else
-                self.healthBar.AnimateFunc = Plater.AnimateLeftWithAccel
+                if (self.healthBar.AnimationEnd > self.healthBar.AnimationStart) then
+                    self.healthBar.AnimateFunc = Plater.AnimateRightWithAccel
+                else
+                    self.healthBar.AnimateFunc = Plater.AnimateLeftWithAccel
+                end
+            
             end
 
         end

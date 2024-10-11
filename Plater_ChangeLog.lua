@@ -8,12 +8,14 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
-			{1728548182, "Bug Fix", "Oct 10th, 2024", "Fixing show/remove of DBM timer icons not working properly in some conidtions.", "cont1nuity"},
-			{1728548182, "New Feature", "Oct 8th, 2024", "Adding 'Larger Nameplates' and the corresponding base nameplate scale optiosn to the advanced tab.", "cont1nuity"},
-			{1728548182, "Backend Change", "Oct 7th, 2024", "Cleanup of old unused aura update code.", "cont1nuity"},
-			{1728548182, "Backend Change", "Oct 7th, 2024", "Removing LibClassicDuration as it was no longer in use.", "cont1nuity"},
-			{1728548182, "Backend Change", "Oct 7th, 2024", "Less frequent group unit updates for tank scanning against event spam.", "cont1nuity"},
-			{1728548182, "Backend Change", "Oct 7th, 2024", "Adding additional performance units for Palace.", "cont1nuity"},
+			{1728642912, "Bug Fix", "Oct 11th, 2024", "Fixing error on health animations preview.", "cont1nuity"},
+			{1728642912, "Bug Fix", "Oct 10th, 2024", "Fixing mod/script error handling.", "cont1nuity"},
+			{1728642912, "Bug Fix", "Oct 10th, 2024", "Fixing show/remove of DBM timer icons not working properly in some conidtions.", "cont1nuity"},
+			{1728642912, "New Feature", "Oct 8th, 2024", "Adding 'Larger Nameplates' and the corresponding base nameplate scale optiosn to the advanced tab.", "cont1nuity"},
+			{1728642912, "Backend Change", "Oct 7th, 2024", "Cleanup of old unused aura update code.", "cont1nuity"},
+			{1728642912, "Backend Change", "Oct 7th, 2024", "Removing LibClassicDuration as it was no longer in use.", "cont1nuity"},
+			{1728642912, "Backend Change", "Oct 7th, 2024", "Less frequent group unit updates for tank scanning against event spam.", "cont1nuity"},
+			{1728642912, "Backend Change", "Oct 7th, 2024", "Adding additional performance units for Palace.", "cont1nuity"},
 			
 			{1727794055, "Bug Fix", "Oct 1st, 2024", "Ensure soft-interact options work on all client versions now.", "cont1nuity"},
 			{1727794055, "Bug Fix", "Sept 25th, 2024", "Don't cache game objects in the npc-cache.", "cont1nuity"},
