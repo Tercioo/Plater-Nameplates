@@ -2054,7 +2054,7 @@ Plater.AnchorNamesByPhraseId = {
 	
 	--store all functions for all events that will be registered inside OnInit
 	platerInternal.last_GetShapeshiftFormID = GetShapeshiftFormID()
-	platerInternal.last_GROUP_ROSTER_UPDATE = GetTime()
+	platerInternal.last_GROUP_ROSTER_UPDATE = 0
 	local eventFunctions = {
 
 		--when a unit from unatackable change its state, this event triggers several times, a schedule is used to only update once
@@ -2138,8 +2138,18 @@ Plater.AnchorNamesByPhraseId = {
 		end,
 		
 		GROUP_ROSTER_UPDATE = function()
-			if (platerInternal.last_GROUP_ROSTER_UPDATE + 2) > GetTime() then return end
+			if (platerInternal.last_GROUP_ROSTER_UPDATE + 2) > GetTime() then
+				if not platerInternal.has_GROUP_ROSTER_UPDATE_Scheduled then
+					platerInternal.has_GROUP_ROSTER_UPDATE_Scheduled = C_Timer.NewTimer (2.5, function()
+						platerInternal.last_GROUP_ROSTER_UPDATE = GetTime()
+						platerInternal.has_GROUP_ROSTER_UPDATE_Scheduled = nil
+						Plater.RefreshTankCache()
+					end)
+				end
+				return
+			end
 			platerInternal.last_GROUP_ROSTER_UPDATE = GetTime()
+			platerInternal.has_GROUP_ROSTER_UPDATE_Scheduled = nil
 			Plater.RefreshTankCache()
 		end,
 		
