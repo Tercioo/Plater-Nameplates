@@ -2699,11 +2699,22 @@ end
 
 		--build the crowd control list
 		if (profile.debuff_show_cc) then
-			for spellId, _ in pairs (DF.CrowdControlSpells) do
-				local spellName = GetSpellInfo (spellId)
-				if (spellName) then
-					SPECIAL_AURAS_AUTO_ADDED [spellId] = true
-					CROWDCONTROL_AURA_IDS [spellId] = true
+			local ccList = LIB_OPEN_RAID_CROWDCONTROL
+			if (ccList) then
+				for spellId, _ in pairs (ccList) do
+					local spellName = GetSpellInfo (spellId)
+					if (spellName) then
+						SPECIAL_AURAS_AUTO_ADDED [spellId] = true
+						CROWDCONTROL_AURA_IDS [spellId] = true
+					end
+				end
+			else
+				for spellId, _ in pairs (DF.CrowdControlSpells) do
+					local spellName = GetSpellInfo (spellId)
+					if (spellName) then
+						SPECIAL_AURAS_AUTO_ADDED [spellId] = true
+						CROWDCONTROL_AURA_IDS [spellId] = true
+					end
 				end
 			end
         end
