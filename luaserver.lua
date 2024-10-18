@@ -24,6 +24,8 @@ function LibStub:NewLibrary(major, minor)end
 function LibStub:GetLibrary(major, silent)end
 function LibStub:IterateLibraries()end
 
+CLASS_ICON_TCOORDS = {}
+
 --uiobject: is an object that represents a UI element, such as a frame, a texture, or a button. UIObjects are the base class for all UI elements in the WoW API.
 --3D World: is an object which is placed behind|below all UI elements, cannot be parent of any object, in the 3D World object is where the game world is rendered
 --size: corresponds to the height and height of an object, it is measure in pixels, must be bigger than zero.
@@ -269,6 +271,13 @@ function LibStub:IterateLibraries()end
 ---| "INCLUDE_NAME_PLATE_ONLY"
 ---| "MAW"
 
+---@class backdrop : table
+---@field bgFile string?
+---@field edgeFile string?
+---@field tile boolean?
+---@field edgeSize number?
+---@field insets table?
+
 ---@class spellinfo : table
 ---@field name string
 ---@field iconID number
@@ -459,6 +468,10 @@ BackdropTemplateMixin = {}
 ---@field GetParent fun(self: uiobject) : any
 ---@field GetPoint fun(self: uiobject, index: number): string, frame, string, number, number
 ---@field GetCenter fun(self: uiobject): number, number
+---@field GetLeft fun(self: uiobject): number
+---@field GetRight fun(self: uiobject): number
+---@field GetTop fun(self: uiobject): number
+---@field GetBottom fun(self: uiobject): number
 ---@field SetPoint fun(self: uiobject, point: anchorpoint, relativeFrame: uiobject, relativePoint: anchorpoint, xOffset: number, yOffset: number)
 ---@field ClearAllPoints fun(self: uiobject)
 ---@field CreateAnimationGroup fun(self: uiobject, name: string|nil, templateName: string|nil) : animationgroup
@@ -566,8 +579,10 @@ BackdropTemplateMixin = {}
 ---@field SetToplevel fun(self: frame, toplevel: boolean)
 ---@field SetPropagateKeyboardInput fun(self: frame, propagate: boolean)
 ---@field SetPropagateGamepadInput fun(self: frame, propagate: boolean)
+---@field SetMouseClickEnabled fun(self: frame, enabled: boolean)
 ---@field StartMoving fun(self: frame)
 ---@field IsMovable fun(self: frame) : boolean
+---@field IsMouseEnabled fun(self: frame) : boolean
 ---@field StartSizing fun(self: frame, sizingpoint: sizingpoint?)
 ---@field StopMovingOrSizing fun(self: frame)
 ---@field GetAttribute fun(self: frame, name: string) : any
@@ -729,7 +744,7 @@ BackdropTemplateMixin = {}
 ---@field AddMaskTexture fun(self: texture, maskTexture: texture)
 ---@field SetDrawLayer fun(self: texture, layer: drawlayer, subLayer: number?)
 ---@field GetTexture fun(self: texture) : any
----@field SetTexture fun(self: texture, path: textureid|texturepath, horizontalWrap: texturewrap?, verticalWrap: texturewrap?, filter: texturefilter?)
+---@field SetTexture fun(self: texture, path: textureid|texturepath?, horizontalWrap: texturewrap?, verticalWrap: texturewrap?, filter: texturefilter?)
 ---@field SetAtlas fun(self: texture, atlas: string, useAtlasSize: boolean?, filterMode: texturefilter?, resetTexCoords: boolean?)
 ---@field SetColorTexture fun(self: texture, r: red|number, g: green|number, b: blue|number, a: alpha|number?)
 ---@field SetDesaturated fun(self: texture, desaturate: boolean)
@@ -4996,9 +5011,10 @@ GetRealNumRaidMembers = function() return 0 end
 ---@return string, string
 GetPartyAssignment = function(unit) return "", "" end
 
+---return name, rank, subgroup, level, class, fileName, zone, online, isDead, role, isML, combatRole
 ---@param raidID number
----@return string, string
-GetRaidRosterInfo = function(raidID) return "", "" end
+---@return string, string, number, number, string, string, string, boolean, boolean, string, boolean, string
+GetRaidRosterInfo = function(raidID) return "", "", 0, 0, "", "", "", true, true, "", true, "" end
 
 ---@param unit string
 ---@return number
@@ -5302,7 +5318,7 @@ GetSpellLink = function(spellID) return "" end
 ---@return string, string, number, number
 GetSpellTabInfo = function(tabIndex, isFlyout) return "", "", 0, 0 end
 
----@param spellName string
+---@param spellName string|number
 ---@return string
 GetSpellTexture = function(spellName) return "" end
 

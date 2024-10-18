@@ -1,6 +1,6 @@
 
 
-local dversion = 572
+local dversion = 574
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary(major, minor)
 
@@ -14,6 +14,20 @@ _G["DetailsFramework"] = DF
 ---@cast DF detailsframework
 
 local detailsFramework = DF
+
+--store functions to call when the PLAYER_LOGIN event is triggered
+detailsFramework.OnLoginSchedules = {}
+local dfFrame = CreateFrame("frame")
+dfFrame:RegisterEvent("PLAYER_LOGIN")
+dfFrame:SetScript("OnEvent", function(self, event, ...)
+	if (event == "PLAYER_LOGIN") then
+		C_Timer.After(0, function()
+			for _, func in ipairs(detailsFramework.OnLoginSchedules) do
+				func()
+			end
+		end)
+	end
+end)
 
 DetailsFrameworkCanLoad = true
 local SharedMedia = LibStub:GetLibrary("LibSharedMedia-3.0")
@@ -40,6 +54,7 @@ local SPELLBOOK_BANK_PET = Enum.SpellBookSpellBank and Enum.SpellBookSpellBank.P
 local IsPassiveSpell = IsPassiveSpell or C_Spell.IsSpellPassive
 local GetOverrideSpell = C_SpellBook and C_SpellBook.GetOverrideSpell or C_Spell.GetOverrideSpell or GetOverrideSpell
 local HasPetSpells = HasPetSpells or C_SpellBook.HasPetSpells
+local spellBookPetEnum = Enum.SpellBookSpellBank and Enum.SpellBookSpellBank.Pet or "pet"
 
 SMALL_NUMBER = 0.000001
 ALPHA_BLEND_AMOUNT = 0.8400251
@@ -929,8 +944,11 @@ end
 function DF.table.deploy(t1, t2)
 	for key, value in pairs(t2) do
 		if (type(value) == "table") then
-			t1[key] = t1[key] or {}
-			DF.table.deploy(t1[key], t2[key])
+			--check the t1 type as sometimes the key isn't the same type on both tables
+			if (t1[key] == nil or type(t1[key]) == "table") then
+				t1[key] = t1[key] or {}
+				DF.table.deploy(t1[key], t2[key])
+			end
 		elseif (t1[key] == nil) then
 			t1[key] = value
 		end
@@ -1350,7 +1368,7 @@ end
 ---receives a string 'text' and a class name and return the string wrapped with the class color using |c and |r scape codes
 ---@param self table
 ---@param text string
----@param className string
+---@param className class
 ---@return string
 function DF:AddClassColorToText(text, className)
 	if (type(className) ~= "string") then
@@ -1865,7 +1883,7 @@ function DF:GetAvailableSpells()
     local completeListOfSpells = {}
 
     --this line might not be compatible with classic
-    --local specId, specName, _, specIconTexture = GetSpecializationInfo(GetSpecialization())
+    local specId, specName, _, specIconTexture = GetSpecializationInfo(GetSpecialization())
     --local classNameLoc, className, classId = UnitClass("player") --not in use
     local locPlayerRace, playerRace, playerRaceId = UnitRace("player")
 
@@ -1904,44 +1922,50 @@ function DF:GetAvailableSpells()
         end
     end
 
+	local spellBookPlayerEnum = Enum.SpellBookSpellBank and Enum.SpellBookSpellBank.Player or "player"
+
 	--get spells from the Spec spellbook
-	local amountOfTabs = GetNumSpellTabs()
-    for i = 2, amountOfTabs-1 do --starting at index 2 to ignore the general tab
+	for i = 1, GetNumSpellTabs() do --called "lines" in new v11 api
         local tabName, tabTexture, offset, numSpells, isGuild, offSpecId, shouldHide, specID = GetSpellTabInfo(i)
-		local bIsOffSpec = offSpecId ~= 0
-		offset = offset + 1
-		local tabEnd = offset + numSpells
-		for entryOffset = offset, tabEnd - 1 do
-			local spellType, spellId = GetSpellBookItemInfo(entryOffset, SPELLBOOK_BANK_PLAYER)
-			if (spellId) then
-				if (spellType == "SPELL") then
-					spellId = GetOverrideSpell(spellId)
-					local spellName = GetSpellInfo(spellId)
-					local bIsPassive = IsPassiveSpell(spellId, SPELLBOOK_BANK_PLAYER)
-					if (spellName and not bIsPassive) then
-						completeListOfSpells[spellId] = bIsOffSpec == false
+		if (tabTexture == specIconTexture) then
+			offset = offset + 1
+			local tabEnd = offset + numSpells
+			--local bIsOffSpec = offSpecId ~= 0
+			for entryOffset = offset, tabEnd - 1 do
+				local spellType, spellId = GetSpellBookItemInfo(entryOffset, spellBookPlayerEnum)
+				if (spellId) then
+					if (spellType == "SPELL" or spellType == 1) then
+						spellId = GetOverrideSpell(spellId)
+						local spellName = GetSpellInfo(spellId)
+						local bIsPassive = IsPassiveSpell(entryOffset, spellBookPlayerEnum)
+						if (spellName and not bIsPassive) then
+							completeListOfSpells[spellId] = true --bIsOffSpec == false
+						end
 					end
 				end
 			end
 		end
     end
 
+	local CONST_SPELLBOOK_CLASSSPELLS_TABID = 2
+	local CONST_SPELLBOOK_GENERAL_TABID = 1
+
     --get class shared spells from the spell book
-	--[=[
-    local tabName, tabTexture, offset, numSpells, isGuild, offSpecId = GetSpellTabInfo(2)
-	local bIsOffSpec = offSpecId ~= 0
+	--[=
+    local tabName, tabTexture, offset, numSpells, isGuild, offSpecId = GetSpellTabInfo(CONST_SPELLBOOK_CLASSSPELLS_TABID)
     offset = offset + 1
     local tabEnd = offset + numSpells
+	--local bIsOffSpec = offSpecId ~= 0
     for entryOffset = offset, tabEnd - 1 do
-        local spellType, spellId = GetSpellBookItemInfo(entryOffset, "player")
+        local spellType, spellId = GetSpellBookItemInfo(entryOffset, spellBookPlayerEnum)
         if (spellId) then
-            if (spellType == "SPELL") then
+            if (spellType == "SPELL" or spellType == 1) then
                 spellId = GetOverrideSpell(spellId)
                 local spellName = GetSpellInfo(spellId)
-                local bIsPassive = IsPassiveSpell(spellId, "player")
+                local bIsPassive = IsPassiveSpell(spellId, spellBookPlayerEnum)
 
 				if (spellName and not bIsPassive) then
-                    completeListOfSpells[spellId] = bIsOffSpec == false
+                    completeListOfSpells[spellId] = true --bIsOffSpec == false
                 end
             end
         end
@@ -1957,10 +1981,10 @@ function DF:GetAvailableSpells()
     local numPetSpells = getNumPetSpells()
     if (numPetSpells) then
         for i = 1, numPetSpells do
-            local spellName, _, unmaskedSpellId = GetSpellBookItemName(i, SPELLBOOK_BANK_PET)
+            local spellName, _, unmaskedSpellId = GetSpellBookItemName(i, spellBookPetEnum)
             if (unmaskedSpellId) then
                 unmaskedSpellId = GetOverrideSpell(unmaskedSpellId)
-                local bIsPassive = IsPassiveSpell(unmaskedSpellId, SPELLBOOK_BANK_PET)
+                local bIsPassive = IsPassiveSpell(i, spellBookPetEnum)
                 if (spellName and not bIsPassive) then
                     completeListOfSpells[unmaskedSpellId] = true
                 end
@@ -2925,7 +2949,7 @@ DF.font_templates["ORANGE_FONT_TEMPLATE"] = {color = {1, 0.8235, 0, 1}, size = 1
 --DF.font_templates["OPTIONS_FONT_TEMPLATE"] = {color = "yellow", size = 9.6, font = DF:GetBestFontForLanguage()}
 DF.font_templates["OPTIONS_FONT_TEMPLATE"] = {color = {1, 1, 1, 0.9}, size = 9.6, font = DF:GetBestFontForLanguage()}
 DF.font_templates["SMALL_SILVER"] = {color = "silver", size = 9, font = DF:GetBestFontForLanguage()}
-
+--~templates
 --dropdowns
 DF.dropdown_templates = DF.dropdown_templates or {}
 DF.dropdown_templates["OPTIONS_DROPDOWN_TEMPLATE"] = {
@@ -4658,13 +4682,7 @@ function DF:QuickDispatch(func, ...)
 		return
 	end
 
-	local okay, errortext = xpcall(func, geterrorhandler(), ...)
-
-	if (not okay) then
-		--trigger an error msg
-		dispatch_error(_, errortext)
-		return
-	end
+	xpcall(func, geterrorhandler(), ...)
 
 	return true
 end
@@ -5467,7 +5485,15 @@ do
 	end
 
 	local get_all_inuse = function(self)
-		return self.inUse;
+		return self.inUse
+	end
+
+	local sort = function(self, func)
+		if (not func) then
+			table.sort(self.inUse, self.sortFunc)
+		elseif (func) then
+			table.sort(self.inUse, func)
+		end
 	end
 
     local release = function(self, object)
@@ -5519,6 +5545,7 @@ do
 	---@field inUse table[] --objects in use
 	---@field notUse table[] --objects not in use
 	---@field payload table --payload to be sent to the newObjectFunc
+	---@field sortFunc fun(a:table, b:table):boolean --sort function
 	---@field onRelease fun(object:table) --function to be called when an object is released
 	---@field onReset fun(object:table) --function to be called when the pool is reset
 	---@field onAcquire fun(object:table) --function to be called when an object is acquired
@@ -5540,6 +5567,7 @@ do
 	---@field SetOnAcquire fun(self:df_pool, func:fun(object:table)) --set a function to be called when an object is acquired
 	---@field SetCallbackOnGet fun(self:df_pool, func:fun(object:table)) --alias for :SetOnAcquire()
 	---@field RunForInUse fun(self:df_pool, func:fun(object:table)) --run a function for each object in use
+	---@field Sort fun(self:df_pool, func:function?) --sort the objects in use
     local poolMixin = {
 		Get = get,
 		GetAllInUse = get_all_inuse,
@@ -5550,6 +5578,11 @@ do
 		Hide = hide,
 		Show = show,
 		GetAmount = getamount,
+		Sort = sort,
+
+		SetSortFunction = function(self, func)
+			self.sortFunc = func
+		end,
 
 		SetOnRelease = function(self, func)
 			self.onRelease = func
@@ -5590,6 +5623,7 @@ do
 
 	DF.PoolMixin = poolMixin
 
+	--~pool
     function DF:CreatePool(func, ...)
         local newPool = {}
         DetailsFramework:Mixin(newPool, poolMixin)
@@ -5602,6 +5636,162 @@ do
 		return DF:CreatePool(func, ...)
 	end
 end
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+---bossmobs
+
+DETAILSFRAMEWORK_TIMEBARCACHE = {}
+
+--register phase
+function DF:RegisterEncounterPhaseChange(func, ...)
+	if (not DETAILSFRAMEWORK_PHASECALLBACKS) then
+		DETAILSFRAMEWORK_PHASECALLBACKS = {}
+	end
+	table.insert(DETAILSFRAMEWORK_PHASECALLBACKS, {callback = func, payload = {...}})
+end
+
+--DF:RegisterEncounterPhaseChange(function(...)print("PHASE CHANGED", ...)end, "my payload!")
+
+--unregister phase
+function DF:UnregisterEncounterPhaseChange(func)
+	if (DETAILSFRAMEWORK_PHASECALLBACKS) then
+		for i = #DETAILSFRAMEWORK_PHASECALLBACKS, 1, -1 do
+			if (DETAILSFRAMEWORK_PHASECALLBACKS[i].callback == func) then
+				table.remove(DETAILSFRAMEWORK_PHASECALLBACKS, i)
+			end
+		end
+	end
+end
+
+local sendPhaseNotification = function(phaseId)
+	if (DETAILSFRAMEWORK_PHASECALLBACKS) then
+		for _, data in ipairs(DETAILSFRAMEWORK_PHASECALLBACKS) do
+			DF:Dispatch(data.callback, phaseId, unpack(data.payload))
+		end
+	end
+end
+
+--register time bar
+function DF:RegisterEncounterTimeBar(func, ...)
+	if (not DETAILSFRAMEWORK_TIMEBARCALLBACKS) then
+		DETAILSFRAMEWORK_TIMEBARCALLBACKS = {}
+	end
+	table.insert(DETAILSFRAMEWORK_TIMEBARCALLBACKS, {callback = func, payload = {...}})
+end
+
+--DF:RegisterEncounterTimeBar(function(...) DETAILSFRAMEWORK_TIMEBARCACHE[#DETAILSFRAMEWORK_TIMEBARCACHE+1] = {...} end)
+
+--[=[
+bigwigs
+table: 0000019DA5382410 BigWigs_StartBar table: 0000019EF3E5B910 441362 Volatile Concoction: Jieon* 8 136227 false nil
+table: 0000019DA5382410 BigWigs_StartBar table: 0000019EF3E5B910 443274 Swirls (30) 7.5 538040 false nil
+]=]
+
+--unregister time bar
+function DF:UnregisterEncounterTimeBar(func)
+	if (DETAILSFRAMEWORK_TIMEBARCALLBACKS) then
+		for i = #DETAILSFRAMEWORK_TIMEBARCALLBACKS, 1, -1 do
+			if (DETAILSFRAMEWORK_TIMEBARCALLBACKS[i].callback == func) then
+				table.remove(DETAILSFRAMEWORK_TIMEBARCALLBACKS, i)
+			end
+		end
+	end
+end
+
+local sendTimeBarNotification = function(token, barType, id, msg, timer, icon, spellId, colorId, modid)
+	if (DETAILSFRAMEWORK_TIMEBARCALLBACKS) then
+		for _, data in ipairs(DETAILSFRAMEWORK_TIMEBARCALLBACKS) do
+			DF:Dispatch(data.callback, token, barType, id, msg, timer, icon, spellId, colorId, modid, unpack(data.payload))
+		end
+	end
+end
+
+local createBossModsCallback = function()
+    if (_G.DBM) then
+        local DBM = _G.DBM
+
+		--phase change
+        local phaseChangeCallback = function(event, mod, modId, phase, encounterId, stageTotal)
+            sendPhaseNotification(phase)
+        end
+		DBM:RegisterCallback("DBM_SetStage", phaseChangeCallback)
+
+		--time bars
+        local timerChangeCallback = function(bar_type, id, msg, timer, icon, bartype, spellId, colorId, modid)
+            local currentCombat = Details:GetCurrentCombat()
+            if (not currentCombat.__destroyed) then --async events, need to check for combat destruction
+                ---@type combattime
+                local combatTime = currentCombat:GetCombatTime()
+                table.insert(currentCombat.bossTimers, {"dbm", combatTime, bar_type, id, msg, timer, icon, bartype, spellId, colorId, modid})
+                --print("dbm event", bar_type, id, msg, timer, icon, bartype, spellId, colorId, modid)
+
+                local spell = tostring(spellId)
+                if (spell and not current_table_dbm[spell]) then
+                    current_table_dbm[spell] = {spell, id, msg, timer, icon, bartype, spellId, colorId, modid}
+                end
+            end
+        end
+
+        DBM:RegisterCallback("DBM_TimerStart", timerChangeCallback)
+    end
+
+	local BigWigsLoader = BigWigsLoader
+
+    if (BigWigsLoader and not _G.DBM) then
+        --Bigwigs change the phase of an encounter
+        if (BigWigsLoader.RegisterMessage) then
+			local t = {}
+			t.BigWigs_SetStage = function(self, event, module, phase)
+				phase = tonumber(phase)
+				sendPhaseNotification(phase)
+			end
+            BigWigsLoader.RegisterMessage(t, "BigWigs_SetStage")
+		end
+
+		if (BigWigsLoader.RegisterMessage) then
+			local t = {}
+			t.BigWigs_StartBar = function(self, event, module, spellId, barText, barTime, iconTexture, ...)
+				--table: 0000019DA5382410 BigWigs_StartBar table: 0000019EF3E5B910 441362 Volatile Concoction (14) 20 136227 false nil
+				--print("START", self, event, module, spellId, ...)
+				sendTimeBarNotification("START", spellId, barText, barTime, iconTexture, ...)
+			end
+
+			t.BigWigs_StopBar = function(self, event, module, spellId, ...)
+				--print("BW STOP BAR", self, event, module, spellId, ...)
+				sendTimeBarNotification("STOP", spellId)
+			end
+
+			t.BigWigs_StopBars = function(self, event, module, ...)
+				--print("BW STOP BARS", self, event, module, ...)
+				sendTimeBarNotification("STOPALL")
+			end
+
+			t.BigWigs_PauseBar = function(self, event, module, spellId, ...)
+				--print("BW PAUSE BAR", self, event, module, spellId, ...)
+				sendTimeBarNotification("PAUSE", spellId)
+			end
+
+			t.BigWigs_ResumeBar = function(self, event, module, spellId, ...)
+				--print("BW RESUME BAR", self, event, module, spellId, ...)
+				sendTimeBarNotification("RESUME", spellId)
+			end
+
+			BigWigsLoader.RegisterMessage(t, "BigWigs_StartBar")
+			BigWigsLoader.RegisterMessage(t, "BigWigs_StopBar")
+			BigWigsLoader.RegisterMessage(t, "BigWigs_StopBars")
+			BigWigsLoader.RegisterMessage(t, "BigWigs_PauseBar")
+			BigWigsLoader.RegisterMessage(t, "BigWigs_ResumeBar")
+
+			--self:RegisterMessage("BigWigs_StopBars", "StopModuleBars")
+        end
+    end
+end
+
+
+
+detailsFramework.OnLoginSchedules[#detailsFramework.OnLoginSchedules+1] = createBossModsCallback
+
 
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
