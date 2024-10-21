@@ -2157,7 +2157,7 @@ Plater.AnchorNamesByPhraseId = {
 			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 				---@cast plateFrame plateframe
 				if plateFrame.unitFrame and plateFrame.unitFrame.PlaterOnScreen then
-					if not plateFrame.unitFrame.isPerformanceUnit then
+					if not plateFrame.unitFrame.isPerformanceUnitAura then
 						Plater.AddToAuraUpdate(plateFrame.unitFrame.unit) -- force aura update
 					end
 					Plater.ScheduleUpdateForNameplate (plateFrame)
@@ -3498,14 +3498,26 @@ Plater.AnchorNamesByPhraseId = {
 			
 			--reset performance unit
 			unitFrame.isPerformanceUnit = nil
+			unitFrame.isPerformanceUnitAura = nil
+			unitFrame.isPerformanceUnitThreat = nil
+			unitFrame.isPerformanceUnitCast = nil
 			unitFrame.healthBar.isPerformanceUnit = nil
 			
 			if (Plater.PerformanceUnits[plateFrame[MEMBER_NPCID]]) then
+				local perfUnitData = tonumer(Plater.PerformanceUnits[plateFrame[MEMBER_NPCID]]) or 0
 				--print("perf", plateFrame[MEMBER_NPCID])
-				unitFrame.castBar:SetUnit(nil) -- no casts
-				Plater.RemoveFromAuraUpdate (unitID) -- no auras
 				unitFrame.isPerformanceUnit = true
+				unitFrame.isPerformanceUnitAura = bit.band(perfUnitData, platerInternal.PERF_UNIT_OVERRIDES_BIT.AURA) == 0 and true or false
+				unitFrame.isPerformanceUnitThreat = bit.band(perfUnitData, platerInternal.PERF_UNIT_OVERRIDES_BIT.THREAT) == 0 and true or false
+				unitFrame.isPerformanceUnitCast = bit.band(perfUnitData, platerInternal.PERF_UNIT_OVERRIDES_BIT.CAST) == 0 and true or false
 				unitFrame.healthBar.isPerformanceUnit = true
+				
+				if unitFrame.isPerformanceUnitCast then
+					unitFrame.castBar:SetUnit(nil) -- no casts
+				end
+				if unitFrame.isPerformanceUnitAura then
+					Plater.RemoveFromAuraUpdate (unitID) -- no auras
+				end
 			end
 			
 			--show unit name, the frame work will hide it due to ShowUnitName is set to false
@@ -3812,7 +3824,7 @@ Plater.AnchorNamesByPhraseId = {
 			end
 			
 			--can check aggro
-			unitFrame.CanCheckAggro = unitFrame.displayedUnit == unitID and actorType == ACTORTYPE_ENEMY_NPC and not unitFrame.isPerformanceUnit
+			unitFrame.CanCheckAggro = unitFrame.displayedUnit == unitID and actorType == ACTORTYPE_ENEMY_NPC and not unitFrame.isPerformanceUnitThreat
 			
 			--tick-setup
 			plateFrame.OnTickFrame.ThrottleUpdate = DB_TICK_THROTTLE
@@ -5893,10 +5905,8 @@ end
 		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 			---@cast plateFrame plateframe
 			if plateFrame.unitFrame and plateFrame.unitFrame.PlaterOnScreen then
-				if not plateFrame.unitFrame.isPerformanceUnit then
-					if not IS_WOW_PROJECT_CLASSIC_ERA or (IS_WOW_PROJECT_CLASSIC_ERA and plateFrame.actorType ~= ACTORTYPE_ENEMY_PLAYER) then -- don't force update in classic
-						Plater.AddToAuraUpdate(plateFrame.unitFrame.unit) -- force aura update
-					end
+				if not plateFrame.unitFrame.isPerformanceUnitAura then
+					Plater.AddToAuraUpdate(plateFrame.unitFrame.unit) -- force aura update
 				end
 				
 				Plater.UpdatePlateFrame (plateFrame, nil, forceUpdate, justAdded, regenDisabled)
@@ -11702,6 +11712,11 @@ end
 			["GetUnitAuras"] = false,
 			["GetUnitAurasForUnitID"] = false,
 			["PerformanceUnits"] = true,
+			["PERF_UNIT_OVERRIDES_BIT"] = {
+				["AURA"] = false,
+				["THREAT"] = false,
+				["CAST"] = false,
+			},
 			["ForceBlizzardNameplateUnits"] = true,
 			["COMM_PLATER_PREFIX"] = true,
 			["COMM_SCRIPT_GROUP_EXPORTED"] = true,

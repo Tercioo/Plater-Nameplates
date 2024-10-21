@@ -7,15 +7,46 @@ local addonName, platerInternal = ...
 --backwards compatibility with code that add performance units before plater loads its database
 local performanceUnitsAddedBeforeDBLoad = {}
 
-Plater.AddPerformanceUnits = function(npcID)
+platerInternal.PERF_UNIT_OVERRIDES_BIT = { -- disable if this flag is set!
+	["THREAT"] = 0x1,
+	["CAST"] = 0x2,
+	["AURA"] = 0x4,
+}
+platerInternal.PERF_UNIT_OVERRIDES_BITS_ALL = 0
+for _, flag in pairs(platerInternal.PERF_UNIT_OVERRIDES_BIT) do
+	platerInternal.PERF_UNIT_OVERRIDES_BITS_ALL = bit.bor(platerInternal.PERF_UNIT_OVERRIDES_BITS_ALL, flag)
+end
+
+Plater.PERF_UNIT_OVERRIDES_BIT = platerInternal.PERF_UNIT_OVERRIDES_BIT
+Plater.PERF_UNIT_OVERRIDES_BITS_ALL = platerInternal.PERF_UNIT_OVERRIDES_BITS_ALL
+
+Plater.AddPerformanceUnits = function(npcID, overrideFlags)
 	if (type(npcID) == "number") then
-		performanceUnitsAddedBeforeDBLoad[npcID] = true
+		performanceUnitsAddedBeforeDBLoad[npcID] = bit.bor(tonumber(performanceUnitsAddedBeforeDBLoad[npcID]) or 0, tonumber(overrideFlags) or 0)
 	end
 end
 
 Plater.RemovePerformanceUnits = function(npcID)
 	if (type(npcID) == "number") then
 		performanceUnitsAddedBeforeDBLoad[npcID] = nil
+	end
+end
+
+Plater.PerformanceUnitsSetOverride = function(npcID, overrideFlags)
+	if (type(npcID) == "number") then
+		performanceUnitsAddedBeforeDBLoad[npcID] = bit.bor(tonumber(performanceUnitsAddedBeforeDBLoad[npcID]) or 0, tonumber(overrideFlags) or 0)
+	end
+end
+
+Plater.PerformanceUnitsRemoveOverride = function(npcID, overrideFlags)
+	if (type(npcID) == "number") then
+		performanceUnitsAddedBeforeDBLoad[npcID] = bit.band(tonumber(performanceUnitsAddedBeforeDBLoad[npcID]) or 0, bit.bxor(platerInternal.PERF_UNIT_OVERRIDES_BITS_ALL, tonumber(overrideFlags) or 0))
+	end
+end
+
+Plater.PerformanceUnitsGetOverride = function(npcID, overrideFlags)
+	if (type(npcID) == "number") then
+		return bit.band(tonumber(performanceUnitsAddedBeforeDBLoad[npcID]) or 0, bit.band(platerInternal.PERF_UNIT_OVERRIDES_BITS_ALL, tonumber(overrideFlags) or 0))
 	end
 end
 
@@ -42,22 +73,40 @@ function platerInternal.CreatePerformanceUnits(Plater)
 	end
 
 	--add the npc ids added before plater db loads through API calls
-	for npcId in pairs(performanceUnitsAddedBeforeDBLoad) do
-		perfUnits[npcId] = true
+	for npcId, value in pairs(performanceUnitsAddedBeforeDBLoad) do
+		perfUnits[npcId] = value
 	end
 
 	Plater.PerformanceUnits = perfUnits
 
 	--setter
-	Plater.AddPerformanceUnits = function (npcID)
+	Plater.AddPerformanceUnits = function (npcID, overrideFlags)
 		if type(npcID) == "number" then
-			Plater.PerformanceUnits[npcID] = true
+			Plater.PerformanceUnits[npcID] = bit.bor(tonumber(Plater.PerformanceUnits[npcID]) or 0, tonumber(overrideFlags) or 0)
 		end
 	end
 
 	Plater.RemovePerformanceUnits = function (npcID)
 		if type(npcID) == "number" then
 			Plater.PerformanceUnits[npcID] = false
+		end
+	end
+	
+	Plater.PerformanceUnitsSetOverride = function(npcID, overrideFlags)
+		if (type(npcID) == "number") then
+			Plater.PerformanceUnits[npcID] = bit.bor(tonumber(Plater.PerformanceUnits[npcID]) or 0, tonumber(overrideFlags) or 0)
+		end
+	end
+	
+	Plater.PerformanceUnitsRemoveOverride = function(npcID, overrideFlags)
+		if (type(npcID) == "number") then
+			Plater.PerformanceUnits[npcID] = bit.band(tonumber(Plater.PerformanceUnits[npcID]) or 0, bit.bxor(platerInternal.PERF_UNIT_OVERRIDES_BITS_ALL, tonumber(overrideFlags) or 0))
+		end
+	end
+	
+	Plater.PerformanceUnitsGetOverride = function(npcID, overrideFlags)
+		if (type(npcID) == "number") then
+			return bit.band(tonumber(Plater.PerformanceUnits[npcID]) or 0, bit.band(platerInternal.PERF_UNIT_OVERRIDES_BITS_ALL, tonumber(overrideFlags) or 0))
 		end
 	end
 end
