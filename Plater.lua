@@ -10599,12 +10599,14 @@ end
 		end
 		
 		if options.glowType == "button" then
-			LCG.ButtonGlow_Start(frame.__PlaterGlowFrame, options.color, options.frequency)
+			LCG.ButtonGlow_Start(frame.__PlaterGlowFrame, options.color, options.frequency, options.framelevel)
 		elseif options.glowType == "pixel" then
 			if not options.border then options.border = false end
-			LCG.PixelGlow_Start(frame.__PlaterGlowFrame, options.color, options.N, options.frequency, options.length, options.th, options.xOffset, options.yOffset, options.border, options.key or "")
+			LCG.PixelGlow_Start(frame.__PlaterGlowFrame, options.color, options.N, options.frequency, options.length, options.th, options.xOffset, options.yOffset, options.border, options.key or "", options.framelevel)
 		elseif options.glowType == "ants" then
-			LCG.AutoCastGlow_Start(frame.__PlaterGlowFrame, options.color, options.N, options.frequency, options.scale, options.xOffset, options.yOffset, options.key or "")
+			LCG.AutoCastGlow_Start(frame.__PlaterGlowFrame, options.color, options.N, options.frequency, options.scale, options.xOffset, options.yOffset, options.key or "", options.framelevel)
+		elseif options.glowType == "proc" then
+			LCG.ProcGlow_Start(frame.__PlaterGlowFrame, options.color, options.frequency, options.framelevel)
 		end
 	end
 	
@@ -10669,6 +10671,27 @@ end
 		Plater.StartGlow(frame, color or options.color, options, options.key)
 	end
 	
+	-- creates a proc glow effect
+	function Plater.StartProcGlow(frame, color, options, key)
+		-- type "proc"
+		if not options then
+			options = {
+				glowType = "proc",
+				color = color,
+				--frameLevel = 8,
+				startAnim = true,
+				xOffset = 0,
+				yOffset = 0,
+				duration = 1,
+				key = key,
+			}
+		else
+			options.glowType = "proc"
+		end
+		
+		Plater.StartGlow(frame, color or options.color, options, options.key)
+	end
+	
 	-- stop LibCustomGlow effects on the frame, if existing
 	-- if glowType (and key) are given, stop one glow. if not, stop all.
 	function Plater.StopGlow(frame, glowType, key)
@@ -10682,11 +10705,14 @@ end
 				LCG.PixelGlow_Stop(frame.__PlaterGlowFrame, key or "")
 			elseif glowType == "ants" then
 				LCG.AutoCastGlow_Stop(frame.__PlaterGlowFrame, key or "")
+			elseif glowType == "proc" then
+				LCG.ProcGlow_Stop(frame.__PlaterGlowFrame, key or "")
 			end
 		else
 			LCG.ButtonGlow_Stop(frame.__PlaterGlowFrame, key or "")
 			LCG.PixelGlow_Stop(frame.__PlaterGlowFrame, key or "")
 			LCG.AutoCastGlow_Stop(frame.__PlaterGlowFrame, key or "")
+			LCG.ProcGlow_Stop(frame.__PlaterGlowFrame, key or "")
 		end
 	end
 	
@@ -10703,6 +10729,11 @@ end
 	-- stop an ants glow
 	function Plater.StopAntsGlow(frame, key)
 		Plater.StopGlow(frame, "ants", key)
+	end
+	
+	-- stop a proc glow
+	function Plater.StopAntsGlow(frame, key)
+		Plater.StopGlow(frame, "proc", key)
 	end
 
 	--create a glow around an icon
