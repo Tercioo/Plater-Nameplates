@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1729585511, "Bug Fix", "Oct 22nd, 2024", "Fixing DBM integration.", "cont1nuity"},
 			{1729585511, "Bug Fix", "Oct 22nd, 2024", "Fixing default 'Countdown' and 'Fixate on you' scripts.", "cont1nuity"},
 			{1729585511, "New Feature", "Oct 21st, 2024", "Adding LibCustomGlow 'proc' glow support.", "cont1nuity"},
 			{1729585511, "New Feature", "Oct 21st, 2024", "Adding override flags for performance units to re-enable specific updates (threat, casts, auras).", "cont1nuity"},
