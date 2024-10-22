@@ -10732,7 +10732,7 @@ end
 	end
 	
 	-- stop a proc glow
-	function Plater.StopAntsGlow(frame, key)
+	function Plater.StopProcGlow(frame, key)
 		Plater.StopGlow(frame, "proc", key)
 	end
 
