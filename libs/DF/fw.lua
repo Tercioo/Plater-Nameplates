@@ -1365,6 +1365,19 @@ function DF:AddColorToText(text, color) --wrap text with a color
 	return text
 end
 
+function DF:GetClassColorByClassId(classId)
+	local classInfo = C_CreatureInfo.GetClassInfo(classId)
+	if (classInfo) then
+		local color = RAID_CLASS_COLORS[classInfo.classFile]
+		if (color) then
+			return color.r, color.g, color.b
+		else
+			return 1, 1, 1
+		end
+	end
+	return 1, 1, 1
+end
+
 ---receives a string 'text' and a class name and return the string wrapped with the class color using |c and |r scape codes
 ---@param self table
 ---@param text string
@@ -4739,6 +4752,7 @@ DF.ClassIndexToFileName = {
 	[13] = "EVOKER",
 }
 
+--GetNumClasses()
 
 DF.ClassFileNameToIndex = {
 	["WARRIOR"] = 1,

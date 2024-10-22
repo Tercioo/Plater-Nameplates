@@ -137,7 +137,9 @@
 ---@field ScriptHookMixin df_scripthookmixin
 ---@field EditorMixin df_editormixin
 ---@field PoolMixin df_pool
+---@field LineIndicatorMixin df_lineindicator
 ---@field ScrollBoxFunctions df_scrollboxmixin
+---@field LayoutFrame df_framelayout
 ---@field ClassCache {ID:number, Name:string, FileString:string, Texture:string, TexCoord:number[]}[] only available after calling GetClassList()
 ---@field Math df_math
 ---@field FontOutlineFlags table<outline, boolean>
@@ -357,6 +359,7 @@
 ---@field CreateTimeLineFrame fun(self:table, parent:frame, name:string, timelineOptions:df_timeline_options, elapsedtimeOptions:df_elapsedtime_options) : df_timeline
 ---@field CreateElapsedTimeFrame fun(self:table, parent:frame, name:string?, options:df_elapsedtime_options?) : df_elapsedtime
 ---@field GetClassTCoordsAndTexture fun(self:table, class:string) : number, number, number, number, string return the class icon texture coordinates and texture file path
+---@field GetClassColorByClassId fun(self:table, classId:number) : number, number, number return the class color by classId
 ---@field MakeStringFromSpellId fun(self:table, spellId:any) : string return a string with the spell icon and name using escape codes
 ---@field AddClassIconToText fun(self:table, text:string, playerName:string, englishClassName:string, useSpec:boolean?, iconSize:number?) : string wrap 'text' with the class icon of 'playerName' using |T|t scape codes
 ---@field RemoveRealNameFromName fun(self:table, name:string) : string remove the realm name from a name string

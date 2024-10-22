@@ -5673,6 +5673,7 @@ function Plater.OnInit() --private --~oninit ~init
 		for classID = 1, MAX_CLASSES do
 			local _, classFile = GetClassInfo(classID)
 			CLASS_INFO_CACHE[classFile] = {}
+			local GetNumSpecializationsForClassID = GetNumSpecializationsForClassID or C_SpecializationInfo.GetNumSpecializationsForClassID --10.0.5
 			for i = 1, GetNumSpecializationsForClassID(classID) do
 				local specID, maleName, _, iconID, role = GetSpecializationInfoForClassID(classID, i, 2) -- male
 				local _, femaleName, _, iconID, role = GetSpecializationInfoForClassID(classID, i, 3) -- female
@@ -10101,7 +10102,8 @@ end
 		if IS_WOW_PROJECT_MAINLINE then
 			local mapId = C_Map.GetBestMapForUnit ("player")
 			if (mapId) then
-				local worldQuests = C_TaskQuest.GetQuestsForPlayerByMapID (mapId)
+				local GetQuestsForPlayerByMapID = C_TaskQuest.GetQuestsForPlayerByMapID or C_TaskQuest.GetQuestsOnMap
+				local worldQuests = GetQuestsForPlayerByMapID(mapId)
 				if (type (worldQuests) == "table") then
 					for i, questTable in ipairs (worldQuests) do
 						local x, y, floor, numObjectives, questId, inProgress = questTable.x, questTable.y, questTable.floor, questTable.numObjectives, questTable.questId, questTable.inProgress

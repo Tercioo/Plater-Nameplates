@@ -831,6 +831,16 @@ LE_PARTY_CATEGORY_INSTANCE = true
 --functions
 C_ChatInfo = true
 
+---@class classinfo : table
+---@field classID number
+---@field className string
+---@field classFile string
+
+C_CreatureInfo = {}
+---@param classId number
+---@return classinfo
+function C_CreatureInfo.GetClassInfo(classId) return {} end
+
 C_Item = {}
 function C_Item.PickupItem() end
 function C_Item.IsBoundToAccountUntilEquip() end
