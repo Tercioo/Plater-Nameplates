@@ -3504,7 +3504,7 @@ Plater.AnchorNamesByPhraseId = {
 			unitFrame.healthBar.isPerformanceUnit = nil
 			
 			if (Plater.PerformanceUnits[plateFrame[MEMBER_NPCID]]) then
-				local perfUnitData = tonumer(Plater.PerformanceUnits[plateFrame[MEMBER_NPCID]]) or 0
+				local perfUnitData = tonumber(Plater.PerformanceUnits[plateFrame[MEMBER_NPCID]]) or 0
 				--print("perf", plateFrame[MEMBER_NPCID])
 				unitFrame.isPerformanceUnit = true
 				unitFrame.isPerformanceUnitAura = bit.band(perfUnitData, platerInternal.PERF_UNIT_OVERRIDES_BIT.AURA) == 0 and true or false
@@ -6965,7 +6965,7 @@ end
 
 		local profile = Plater.db.profile
 		local unitFrame = plateFrame.unitFrame
-		if UnitIsUnit (unitFrame [MEMBER_UNITID], "focus") then
+		if UnitIsUnit (unitFrame [MEMBER_UNITID] or "party69", "focus") then
 			if profile.focus_indicator_enabled then
 				--this is a rare call, no need to cache these values
 				local texture = LibSharedMedia:Fetch ("statusbar", Plater.db.profile.focus_texture)
