@@ -630,6 +630,10 @@ Plater.AnchorNamesByPhraseId = {
 					if IsPlayerSpell(53351) or IsPlayerSpell(320976) then -- Kill Shot
 						lowExecute = 0.2
 					end
+					if IsPlayerSpell(466930) then --> Black Arrow
+						lowExecute = 0.2
+						highExecute = 0.8
+					end
 					if IsPlayerSpell(273887) then --> is using killer instinct?
 						lowExecute = 0.35
 					end
