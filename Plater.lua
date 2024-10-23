@@ -1881,7 +1881,7 @@ Plater.AnchorNamesByPhraseId = {
 		local tmplevel = baseLevel + profile.ui_parent_cast_level + 3
 		castBar:SetFrameLevel ((tmplevel > 0) and tmplevel or 0)
 		
-		tmplevel = baseLevel + profile.ui_parent_buff_level + 3
+		tmplevel = baseLevel + profile.ui_parent_buff_level + 10
 		buffFrame1:SetFrameLevel ((tmplevel > 0) and tmplevel or 0)
 		
 		tmplevel = baseLevel + profile.ui_parent_buff2_level + 10
@@ -1927,7 +1927,7 @@ Plater.AnchorNamesByPhraseId = {
 		local tmplevel = min(baseLevel + profile.ui_parent_cast_level + 3, 10000)
 		castBar:SetFrameLevel ((tmplevel > 0) and tmplevel or 0)
 		
-		tmplevel = min(baseLevel + profile.ui_parent_buff_level + 3, 10000)
+		tmplevel = min(baseLevel + profile.ui_parent_buff_level + 10, 10000)
 		buffFrame1:SetFrameLevel ((tmplevel > 0) and tmplevel or 0)
 		
 		tmplevel = min(baseLevel + profile.ui_parent_buff2_level + 10, 10000)
@@ -6965,7 +6965,7 @@ end
 
 		local profile = Plater.db.profile
 		local unitFrame = plateFrame.unitFrame
-		if UnitIsUnit (unitFrame [MEMBER_UNITID] or "party69", "focus") then
+		if UnitIsUnit (unitFrame [MEMBER_UNITID], "focus") then
 			if profile.focus_indicator_enabled then
 				--this is a rare call, no need to cache these values
 				local texture = LibSharedMedia:Fetch ("statusbar", Plater.db.profile.focus_texture)
