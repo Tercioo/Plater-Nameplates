@@ -1407,6 +1407,17 @@ Plater.AnchorNamesByPhraseId = {
 		
 		Plater.UpdateSettingsCache()
 	end
+				
+	function Plater:RefreshConfigProfileReset() --private
+		Plater:RefreshConfig()
+		
+		Plater.db.profile.use_ui_parent = true
+		Plater.db.profile.use_ui_parent_just_enabled = false
+		Plater.db.profile.ui_parent_scale_tune = 1 / UIParent:GetEffectiveScale()
+		
+		--call the user to /reload his UI
+		DF:ShowPromptPanel ("Plater profile reset, do you want /reload now (recommended)?", function() ReloadUI() end, function() end, true, 500)
+	end
 	
 	function Plater:RefreshConfigProfileChanged() --private
 		Plater:RefreshConfig()
@@ -2533,13 +2544,9 @@ Plater.AnchorNamesByPhraseId = {
 			if (Plater.db.profile.use_ui_parent_just_enabled) then
 				Plater.db.profile.use_ui_parent_just_enabled = false
 				if (Plater.db.profile.ui_parent_scale_tune == 0) then
-					--@Ariani - march 9
 					Plater.db.profile.ui_parent_scale_tune = 1 / UIParent:GetEffectiveScale()
-					
-					--@Tercio:
-					--if (UIParent:GetEffectiveScale() < 1) then
-					--	Plater.db.profile.ui_parent_scale_tune = 1 - UIParent:GetEffectiveScale()
-					--end
+					Plater.RefreshDBUpvalues()
+					Plater.UpdateAllPlates()
 				end
 			end
 			
@@ -4380,9 +4387,14 @@ function Plater.OnInit() --private --~oninit ~init
 				
 				--enable UIParent nameplates for new installs of Plater
 				--this setting is disabled by default and will be enabled for new people
-				Plater.db.profile.use_ui_parent = true
-				--adjust the fine tune to player's screen scale
-				Plater.db.profile.ui_parent_scale_tune = 1 / UIParent:GetEffectiveScale()
+				if not Plater.db.profile.use_ui_parent or Plater.db.profile.ui_parent_scale_tune == 0 then
+					Plater.db.profile.use_ui_parent = true
+					--adjust the fine tune to player's screen scale
+					Plater.db.profile.ui_parent_scale_tune = 1 / UIParent:GetEffectiveScale()
+					Plater.db.profile.use_ui_parent_just_enabled = false
+					Plater.RefreshDBUpvalues()
+					Plater.UpdateAllPlates()
+				end
 				
 			elseif (not PlaterDBChr.first_run3 [UnitGUID ("player")]) then
 				--do not run cvars for individual characters
@@ -5618,7 +5630,7 @@ function Plater.OnInit() --private --~oninit ~init
 	--> profile changes and refreshes ~db
 		Plater.db.RegisterCallback (Plater, "OnProfileChanged", "RefreshConfigProfileChanged")
 		Plater.db.RegisterCallback (Plater, "OnProfileCopied", "RefreshConfig")
-		Plater.db.RegisterCallback (Plater, "OnProfileReset", "RefreshConfig")
+		Plater.db.RegisterCallback (Plater, "OnProfileReset", "RefreshConfigProfileReset")
 		--Plater.db.RegisterCallback (Plater, "OnDatabaseShutdown", "SaveConsoleVariables")
 		
 		function Plater.OnProfileCreated()
@@ -5626,11 +5638,15 @@ function Plater.OnInit() --private --~oninit ~init
 				Plater:Msg ("new profile created, applying patches and adding default scripts.")
 				platerInternal.Scripts.UpdateFromLibrary()
 				
-				--enable UIParent nameplates for new installs of Plater
 				--this setting is disabled by default and will be enabled for new users and new profiles
-				Plater.db.profile.use_ui_parent = true
-				--adjust the fine tune to player's screen scale
-				Plater.db.profile.ui_parent_scale_tune = 1 / UIParent:GetEffectiveScale()
+				if not Plater.db.profile.use_ui_parent or Plater.db.profile.ui_parent_scale_tune == 0 then
+					--enable UIParent nameplates for new installs of Plater
+					Plater.db.profile.use_ui_parent = true
+					--adjust the fine tune to player's screen scale
+					Plater.db.profile.ui_parent_scale_tune = 1 / UIParent:GetEffectiveScale()
+					Plater.RefreshDBUpvalues()
+					Plater.UpdateAllPlates()
+				end
 				
 				--call major refresh
 				Plater:RefreshConfig()

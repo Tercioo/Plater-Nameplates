@@ -611,11 +611,13 @@ do
 			"- Adjusting new value for UIParent Scale Fine Tune if the UIParent feature is enabled.",
 		},
 		Func = function()
-			if (Plater.db.profile.use_ui_parent) then
-				--@Ariani - march 9
-				Plater.db.profile.ui_parent_scale_tune = 1 / UIParent:GetEffectiveScale()
-				Plater:Msg ("Scale Fine Tune adjusted to " .. Plater.db.profile.ui_parent_scale_tune)
-			end
+			-- disable this, as it leads to issues with profile resets!
+			
+			--if (Plater.db.profile.use_ui_parent) then
+			--	--@Ariani - march 9
+			--	Plater.db.profile.ui_parent_scale_tune = 1 / UIParent:GetEffectiveScale()
+			--	Plater:Msg ("Scale Fine Tune adjusted to " .. Plater.db.profile.ui_parent_scale_tune)
+			--end
 		end
 	})
 

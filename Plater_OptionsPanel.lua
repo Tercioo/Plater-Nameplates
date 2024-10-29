@@ -10623,7 +10623,7 @@ end
 				Plater.RefreshDBUpvalues()
 				Plater.UpdateAllPlates()
 			end,
-			min = -2.5,
+			min = 0.3,
 			max = 2.5,
 			step = 0.01,
 			usedecimals = true,
