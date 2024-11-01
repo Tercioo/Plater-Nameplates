@@ -1848,6 +1848,7 @@ Plater.AnchorNamesByPhraseId = {
 	function Plater.UpdateUIParentScale (self, w, h) --private
 		local unitFrame = self.unitFrame
 		if (unitFrame) then
+			local defaultScale = self:GetEffectiveScale() / self:GetScale()
 			local defaultScale = self:GetEffectiveScale()
 			--local defaultScale = UIParent:GetEffectiveScale()
 			
