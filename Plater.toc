@@ -6,6 +6,7 @@
 ## Notes: Nameplate addon designed for advanced users.
 ## SavedVariables: PlaterDB, PlaterLanguage, PlaterLogs, PlaterBackup
 ## SavedVariablesPerCharacter: PlaterDBChr
+## OptionalDeps: Masque
 ## IconTexture-blank: 982414
 ## IconTexture: Interface\AddOns\Plater\images\cast_bar
 #@version-retail@
