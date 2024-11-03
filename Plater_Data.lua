@@ -190,7 +190,7 @@ function platerInternal.CreateDataTables(Plater)
         [[Interface\AddOns\Plater\images\cooldown_edge_2]],
         "Interface\\Cooldown\\edge",
         "Interface\\Cooldown\\edge-LoC",
-        "Interface\\GLUES\\loadingOld",
+        [[Interface\AddOns\Plater\images\transparent]],
     }
 
     --textures used in the castbar, scripts can add more values to it, profile holds only the path to it
