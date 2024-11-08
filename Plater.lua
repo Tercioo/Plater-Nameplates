@@ -5188,6 +5188,7 @@ function Plater.OnInit() --private --~oninit ~init
 					local curTime = GetTime()
 					--local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, spellId = UnitCastingInfo (unitCast)
 					self.SpellName = 		self.spellName
+					self.SpellNameRenamed = self.spellName
 					self.SpellID = 		self.spellID
 					self.SpellTexture = 	self.spellTexture
 					self.SpellStartTime = 	self.spellStartTime or curTime
@@ -5239,7 +5240,6 @@ function Plater.OnInit() --private --~oninit ~init
 					--cast color (from options tab Cast Colors)
 					local castColors = profile.cast_colors
 					local customColor = castColors[self.spellID]
-					local customRenamed = false
 					if (customColor) then
 						local isEnabled, color, customSpellName = customColor[1], customColor[2], customColor[3]
 						if (color and isEnabled) then
@@ -5254,8 +5254,7 @@ function Plater.OnInit() --private --~oninit ~init
 							end
 
 							if (customSpellName and customSpellName ~= "") then
-								self.Text:SetText(customSpellName)
-								customRenamed = true
+								self.SpellNameRenamed = customSpellName
 							end
 
 							--check if the original cast color is enabled
@@ -5270,16 +5269,18 @@ function Plater.OnInit() --private --~oninit ~init
 						end
 					end
 					
-					if not customRenamed and Plater.db.profile.bossmod_support_enabled and Plater.db.profile.bossmod_castrename_enabled then
+					if self.SpellNameRenamed == self.SpellName and Plater.db.profile.bossmod_support_enabled and Plater.db.profile.bossmod_castrename_enabled then
 						local bmSpellName = ((BigWigsAPI and BigWigsAPI.GetSpellRename and BigWigsAPI.GetSpellRename(self.spellID)) or (DBM and DBM.GetAltSpellName and DBM:GetAltSpellName(self.spellID))) or nil
 						if bmSpellName then
-							self.Text:SetText(bmSpellName)
+							self.SpellNameRenamed = bmSpellName
 						end
 					end
 					
 					if (self.channeling and (self.SpellStartTime + 0.25 > curTime)) then
 						platerInternal.Audio.PlaySoundForCastStart(self.spellID) --fallback for edge cases. should not double play
 					end
+
+					self.Text:SetText(self.SpellNameRenamed)
 					
 					-- in some occasions channeled casts don't have a CLEU entry... check this here
 					if (unitFrame.ActorType == "enemynpc" and event == "UNIT_SPELLCAST_CHANNEL_START" and (not DB_CAPTURED_SPELLS[self.spellID] or DB_CAPTURED_SPELLS[self.spellID].isChanneled == nil)) then

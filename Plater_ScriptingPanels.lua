@@ -257,6 +257,7 @@ Plater.NameplateComponents = {
 		"unit",
 		"ThrottleUpdate",
 		"SpellName",
+		"SpellNameRenamed",
 		"SpellID",
 		"SpellTexture",
 		"SpellStartTime",
