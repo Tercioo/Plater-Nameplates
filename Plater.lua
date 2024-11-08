@@ -5253,10 +5253,6 @@ function Plater.OnInit() --private --~oninit ~init
 								self:SetColor(color)
 							end
 
-							if (customSpellName and customSpellName ~= "") then
-								self.SpellNameRenamed = customSpellName
-							end
-
 							--check if the original cast color is enabled
 							if (originalCastColor) then
 								--get the original cast color
@@ -5266,6 +5262,10 @@ function Plater.OnInit() --private --~oninit ~init
 								self.castColorTexture:SetColorTexture(r, g, b)
 								self.castColorTexture:SetHeight(self:GetHeight() + profile.cast_color_settings.height_offset)
 							end
+						end
+						
+						if (customSpellName and customSpellName ~= "") then
+							self.SpellNameRenamed = customSpellName
 						end
 					end
 					
