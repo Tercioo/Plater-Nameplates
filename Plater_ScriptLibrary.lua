@@ -1472,6 +1472,20 @@ do
 			end
 		end
 	})
+	
+	--#38 fix aura swipe
+	tinsert (PlaterPatchLibrary, {
+		NotEssential = false,
+		
+		Notes = {
+			"- Fix broken aura swipe texture."
+		},
+		Func = function()
+			if Plater.db.profile.aura_cooldown_edge_texture == "Interface\\GLUES\\loadingOld" then
+				Plater.db.profile.aura_cooldown_edge_texture = [[Interface\AddOns\Plater\images\transparent]]
+			end
+		end
+	})
 
 	--[=[
 	tinsert (PlaterPatchLibrary, {
