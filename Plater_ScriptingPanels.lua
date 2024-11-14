@@ -264,6 +264,8 @@ Plater.NameplateComponents = {
 		"SpellEndTime",
 		"CanInterrupt",
 		"IsInterrupted",
+		"InterruptSourceName",
+		"InterruptSourceGUID",
 	},
 	
 	["castBar - Frames"] = {
