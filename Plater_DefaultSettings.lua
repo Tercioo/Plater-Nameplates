@@ -780,7 +780,7 @@ PLATER_DEFAULT_SETTINGS = {
 		health_cutoff_extra_glow = false,
 		health_cutoff_hide_divisor = false,
 		
-		update_throttle = 0.120,
+		update_throttle = 0.25,
 		culling_distance = 100,
 		use_playerclass_color = true, --friendly player
 		
