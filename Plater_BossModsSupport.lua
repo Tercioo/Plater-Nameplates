@@ -276,8 +276,8 @@ function Plater.UpdateBossModAuras(unitFrame)
 				icon.Texture:SetDesaturated(values.desaturate)
 				icon.bmData = values
 				icon.lastUpdateCooldown = icon.lastUpdateCooldown or 0
-				if self.isGlowing ~= false then
-					StopGlow(self, self.isGlowing)
+				if icon.isGlowing ~= false then
+					StopGlow(icon, icon.isGlowing)
 				end
 				iconFrame.OnIconTick(icon)
 				--icon.Cooldown:SetDesaturated(values.desaturate)
