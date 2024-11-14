@@ -272,13 +272,13 @@ function platerInternal.CreateBossModOptions()
         },
         {
             type = "toggle",
-            get = function() return Plater.db.profile.bossmod_aura_glow_expiring end,
+            get = function() return Plater.db.profile.bossmod_aura_glow_cooldown end,
             set = function (self, fixedparam, value) 
-                Plater.db.profile.bossmod_aura_glow_expiring = value
+                Plater.db.profile.bossmod_aura_glow_cooldown = value
                 Plater.UpdateAllPlates()
             end,
-            name = "Expiring Icon Glow",
-            desc = "Enable glow on expiring timer icons.",
+            name = "Cooldown Icon Glow",
+            desc = "Enable glow on expiring cooldown timer icons.",
         },
         {
             type = "toggle",
@@ -287,22 +287,32 @@ function platerInternal.CreateBossModOptions()
                 Plater.db.profile.bossmod_aura_glow_important_only = value
                 Plater.UpdateAllPlates()
             end,
-            name = "Expiring Icon Glow (important only)",
-            desc = "Enable glow on important expiring timer icons.",
+            name = "Glow only important cooldowns",
+            desc = "Enable glow on important expiring timer icons only.",
+        },
+		{
+            type = "toggle",
+            get = function() return Plater.db.profile.bossmod_aura_glow_casts end,
+            set = function (self, fixedparam, value) 
+                Plater.db.profile.bossmod_aura_glow_casts = value
+                Plater.UpdateAllPlates()
+            end,
+            name = "Cast Icon Glow",
+            desc = "Enable glow on expiring cast timer icons.",
         },
 		{
 			type = "select",
-			get = function() return Plater.db.profile.bossmod_aura_glow_expiring_glow_type end,
-			values = function() return build_glow_types_table ("bossmod_aura_glow_expiring_glow_type") end,
-			name = "Expiring Icon Glow Type",
-            desc = "Select glow type for expiring timer icons.",
+			get = function() return Plater.db.profile.bossmod_aura_glow_cooldown_glow_type end,
+			values = function() return build_glow_types_table ("bossmod_aura_glow_cooldown_glow_type") end,
+			name = "Cooldown Icon Glow Type",
+            desc = "Select glow type for important expiring timer icons.",
 		},
 		{
 			type = "select",
-			get = function() return Plater.db.profile.bossmod_aura_glow_important_glow_type end,
-			values = function() return build_glow_types_table ("bossmod_aura_glow_important_glow_type") end,
-			name = "Important Icon Glow Type",
-            desc = "Select glow type for important expiring timer icons.",
+			get = function() return Plater.db.profile.bossmod_aura_glow_casts_glow_type end,
+			values = function() return build_glow_types_table ("bossmod_aura_glow_casts_glow_type") end,
+			name = "Cast Icon Glow Type",
+            desc = "Select glow type for expiring timer icons.",
 		},
     }
 

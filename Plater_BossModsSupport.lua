@@ -138,10 +138,10 @@ local function StartGlow(self, glowType)
 		}
 		Plater.StartButtonGlow(self, self.bmData.color or "orange", options, "BM_ImportantIconGlow")
 	end
-	self.isGlowing = true
 end
 
 local function StopGlow(self, glowType)
+	--print("StopGlow", glowType)
 	if not glowType then
 		Plater.StopGlow(self, "BM_ImportantIconGlow")
 	elseif glowType == 1 then
@@ -153,7 +153,6 @@ local function StopGlow(self, glowType)
 	elseif glowType == 4 then
 		Plater.StopButtonGlow(self, "BM_ImportantIconGlow")
 	end
-	self.isGlowing = false
 end
 
 function Plater.CreateBossModAuraFrame(unitFrame)
@@ -195,14 +194,21 @@ function Plater.CreateBossModAuraFrame(unitFrame)
 			end
 			
 			local profile = Plater.db.profile
-			local canGlow = profile.bossmod_aura_glow_expiring and (not profile.bossmod_aura_glow_important_only or profile.bossmod_aura_glow_important_only and self.bmData and self.bmData.isPriority) and self.timeRemaining < 4 and self.timeRemaining > 0
-			local stopGlow = self.timeRemaining < 0
-			local glowType = self.bmData and self.bmData.isPriority and profile.bossmod_aura_glow_important_glow_type or profile.bossmod_aura_glow_expiring_glow_type
+			local bmData = self.bmData or {}
+			local canGlow = false
+			if bmData.barType ~= "castnp" and (profile.bossmod_aura_glow_cooldown and (not bossmod_aura_glow_important_only or bmData.isPriority)) and self.timeRemaining < 4 and self.timeRemaining > 0 then
+				canGlow = true
+			elseif bmData.barType == "castnp" and profile.bossmod_aura_glow_casts and self.timeRemaining < 4 and self.timeRemaining > 0 then
+				canGlow = true
+			end
+			local glowType = bmData.barType == "castnp" and profile.bossmod_aura_glow_casts_glow_type or profile.bossmod_aura_glow_cooldown_glow_type
 			--print(canGlow, self.isGlowing)
 			if canGlow and not self.isGlowing then
 				StartGlow(self, glowType)
-			elseif not canGlow and self.isGlowing or stopGlow then
-				StopGlow(self, glowType)
+				self.isGlowing = glowType
+			elseif not canGlow and self.isGlowing ~= false or self.timeRemaining < 0 then
+				StopGlow(self, self.isGlowing)
+				self.isGlowing = false
 			end
 			
 			self.lastUpdateCooldown = now
@@ -269,8 +275,10 @@ function Plater.UpdateBossModAuras(unitFrame)
 				--							spellId, borderColor, startTime, duration, forceTexture, descText, count, debuffType, caster, canStealOrPurge, spellName, isBuff
 				icon.Texture:SetDesaturated(values.desaturate)
 				icon.bmData = values
-				icon.isGlowing = icon.isGlowing and true or false
 				icon.lastUpdateCooldown = icon.lastUpdateCooldown or 0
+				if self.isGlowing ~= false then
+					StopGlow(self, self.isGlowing)
+				end
 				iconFrame.OnIconTick(icon)
 				--icon.Cooldown:SetDesaturated(values.desaturate)
 
@@ -347,7 +355,6 @@ function Plater.UpdateBossModAuras(unitFrame)
 				--							spellId, borderColor, startTime, duration, forceTexture, descText, count, debuffType, caster, canStealOrPurge, spellName, isBuff
 				--DF:TruncateText(icon.Desc, Plater.db.profile.bossmod_aura_width)
 				icon.bmData = data
-				icon.isGlowing = icon.isGlowing and true or false
 				icon.lastUpdateCooldown = icon.lastUpdateCooldown or 0
 				iconFrame.OnIconTick(icon)
 				if data.paused then
