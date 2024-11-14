@@ -10630,7 +10630,7 @@ end
 		elseif options.glowType == "ants" then
 			LCG.AutoCastGlow_Start(frame.__PlaterGlowFrame, options.color, options.N, options.frequency, options.scale, options.xOffset, options.yOffset, options.key or "", options.framelevel)
 		elseif options.glowType == "proc" then
-			LCG.ProcGlow_Start(frame.__PlaterGlowFrame, options.color, options.frequency, options.framelevel)
+			LCG.ProcGlow_Start(frame.__PlaterGlowFrame, options)
 		end
 	end
 	

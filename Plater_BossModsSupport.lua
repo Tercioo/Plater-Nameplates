@@ -119,7 +119,7 @@ local function StartGlow(self, glowType)
 	elseif glowType == 3 then
 		local options = {
 			glowType = "ants",
-			color = aura_tbl.color,
+			color = self.bmData.color,
 			N = 4, -- number of particle groups. Default value is 4
 			frequency = 0.125, -- frequency, set to negative to inverse direction of rotation. Default value is 0.125
 			scale = 1,-- scale of particles.
@@ -142,11 +142,16 @@ local function StartGlow(self, glowType)
 end
 
 local function StopGlow(self, glowType)
-	if not glowType or glowType == 1 then
+	if not glowType then
+		Plater.StopGlow(self, "BM_ImportantIconGlow")
+	elseif glowType == 1 then
 		Plater.StopPixelGlow(self, "BM_ImportantIconGlow")
 	elseif glowType == 2 then
+		Plater.StopProcGlow(self, "BM_ImportantIconGlow")
 	elseif glowType == 3 then
+		Plater.StopAntsGlow(self, "BM_ImportantIconGlow")
 	elseif glowType == 4 then
+		Plater.StopButtonGlow(self, "BM_ImportantIconGlow")
 	end
 	self.isGlowing = false
 end
@@ -191,9 +196,12 @@ function Plater.CreateBossModAuraFrame(unitFrame)
 			
 			local profile = Plater.db.profile
 			local canGlow = profile.bossmod_aura_glow_expiring and (not profile.bossmod_aura_glow_important_only or profile.bossmod_aura_glow_important_only and self.bmData and self.bmData.isPriority) and self.timeRemaining < 4 and self.timeRemaining > 0
+			local stopGlow = self.timeRemaining < 0
+			local glowType = self.bmData and self.bmData.isPriority and profile.bossmod_aura_glow_important_glow_type or profile.bossmod_aura_glow_expiring_glow_type
+			--print(canGlow, self.isGlowing)
 			if canGlow and not self.isGlowing then
 				StartGlow(self, glowType)
-			elseif not canGlow and self.isGlowing then
+			elseif not canGlow and self.isGlowing or stopGlow then
 				StopGlow(self, glowType)
 			end
 			

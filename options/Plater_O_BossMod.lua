@@ -97,6 +97,26 @@ function platerInternal.CreateBossModOptions()
 		end
 		return anchorOptions
 	end
+	
+	-- glow types
+	local glow_types = { "Pixel", "Proc", "Ants", "Button"}
+	local build_glow_types_table = function (option)
+		local glow_types_table = {}
+
+		for index, name in ipairs (glow_types) do
+			tinsert (glow_types_table, {
+				label = name,
+				value = index,
+				onclick = function (_, _, value)
+					if (option) then
+						Plater.db.profile [option] = value
+						Plater.UpdateAllPlates()
+					end
+				end
+			})
+		end
+		return glow_types_table
+	end
 
     local bossmod_options = {
         {type = "label", get = function() return "DBM / BigWigs Support:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
@@ -270,6 +290,20 @@ function platerInternal.CreateBossModOptions()
             name = "Expiring Icon Glow (important only)",
             desc = "Enable glow on important expiring timer icons.",
         },
+		{
+			type = "select",
+			get = function() return Plater.db.profile.bossmod_aura_glow_expiring_glow_type end,
+			values = function() return build_glow_types_table ("bossmod_aura_glow_expiring_glow_type") end,
+			name = "Expiring Icon Glow Type",
+            desc = "Select glow type for expiring timer icons.",
+		},
+		{
+			type = "select",
+			get = function() return Plater.db.profile.bossmod_aura_glow_important_glow_type end,
+			values = function() return build_glow_types_table ("bossmod_aura_glow_important_glow_type") end,
+			name = "Important Icon Glow Type",
+            desc = "Select glow type for important expiring timer icons.",
+		},
     }
 
     ---@diagnostic disable-next-line: undefined-global
