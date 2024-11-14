@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1729585511, "Backend Change", "Nov 14th, 2024", "Changed default values for DBM boss mod support and enabled it by default.", "cont1nuity"},
 			{1729585511, "New Feature", "Nov 14th, 2024", "Added glow options for expiring DBM boss mod icons.", "cont1nuity"},
 			{1729585511, "New Feature", "Nov 7th, 2024", "Added castBar.SpellNameRenamed, which contains either the customized or boss mods spell rename.", "Linaori"},
 			{1729585511, "Bug Fix", "Nov 3rd, 2024", "Fixing issue with aura swipe texture in cata high-res.", "cont1nuity"},
