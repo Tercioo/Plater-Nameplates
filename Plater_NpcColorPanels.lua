@@ -1110,10 +1110,12 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
                 end
             end
 
-            local clear_color_button = DF:CreateButton(dropdown, function() reset() end, 20, 20, "", -1)
-            clear_color_button:SetPoint("left", dropdown, "right", 0, 0)
+            local clear_color_button = CreateFrame("button", nil, dropdown.widget)
+            clear_color_button:SetSize(20, 20)
+            clear_color_button:SetPoint("left", dropdown.widget, "right", 0, 0)
             clear_color_button:SetAlpha(.8)
-            clear_color_button:SetIcon([[Interface\Glues\LOGIN\Glues-CheckBox-Check]])
+            clear_color_button:SetNormalTexture([[Interface\Glues\LOGIN\Glues-CheckBox-Check]])
+            clear_color_button:SetScript("OnClick", function() reset() end)
         end
 
         for _, plateFrame in ipairs(Plater.GetAllShownPlates()) do
