@@ -7732,7 +7732,7 @@ end
 			end
 		end
 		
-		while (nameString:GetStringWidth() > maxLength) do
+		while (nameString:GetUnboundedStringWidth() > maxLength) do
 			spellName = strsub (spellName, 1, #spellName - 1)
 			nameString:SetText (spellName)
 			if (string.len (spellName) <= 1) then
@@ -7781,7 +7781,7 @@ end
 			return
 		end
 		
-		while (nameString:GetStringWidth() > stringSize) do
+		while (nameString:GetUnboundedStringWidth() > stringSize) do
 			name = strsub (name, 1, #name-1)
 			nameString:SetText (name)
 			if (string.len (name) <= 1) then
@@ -10493,7 +10493,7 @@ end
 			return
 		end
 		
-		while (fontString:GetStringWidth() > maxWidth) do
+		while (fontString:GetUnboundedStringWidth() > maxWidth) do
 			text = strsub (text, 1, #text - 1)
 			fontString:SetText (text)
 			if (string.len (text) <= 1) then
