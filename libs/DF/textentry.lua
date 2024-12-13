@@ -540,6 +540,12 @@ detailsFramework.TextEntryCounter = detailsFramework.TextEntryCounter or 1
 ------------------------------------------------------------------------------------------------------------
 
 function TextEntryMetaFunctions:SetTemplate(template)
+	template = detailsFramework:ParseTemplate(self.type, template) --"textentry"
+
+	if (template.multiline) then
+		self.editbox:SetMultiLine(true)
+	end
+
 	if (template.width) then
 		self.editbox:SetWidth(template.width)
 	end
@@ -617,7 +623,8 @@ end
 ---@field param1 any
 ---@field param2 any
 ---@field ShouldOptimizeAutoComplete boolean?
----@field SetTemplate fun(self:df_textentry, template:table)
+---@field AutoComplete_StopOnEnterPress boolean?
+---@field SetTemplate fun(self:df_textentry, template:table|string)
 ---@field Disable fun(self:df_textentry)
 ---@field Enable fun(self:df_textentry)
 ---@field SetCommitFunction fun(self:df_textentry, func:function)
@@ -627,7 +634,7 @@ end
 ---@field SelectAll fun(self:df_textentry)
 ---@field SetAutoSelectTextOnFocus fun(self:df_textentry, value:boolean)
 ---@field Blink fun(self:df_textentry)
----@field SetText fun(self:df_textentry, text:string)
+---@field SetText fun(self:df_textentry, text:string|number)
 ---@field GetText fun(self:df_textentry)
 ---@field SetEnterFunction fun(self:df_textentry, func:function, param1:any, param2:any)
 ---@field SetHook fun(self:df_textentry, hookName:string, func:function)
@@ -943,6 +950,9 @@ local AutoComplete_OnEnterPressed = function(editboxWidget)
 	end
 	capsule.lastword = ""
 
+	if (capsule.AutoComplete_StopOnEnterPress) then
+		editboxWidget:ClearFocus()
+	end
 end
 
 local AutoComplete_OnEditFocusGained = function(editboxWidget)
