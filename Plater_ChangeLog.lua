@@ -8,6 +8,11 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1734100705, "Bug Fix", "Dec 4th, 2024", "Reset Boss-Mod integration icon glow properly.", "cont1nuity"},
+			{1734100705, "Backend Change", "Dec 13th, 2024", "Framework updates.", "Terciob"},
+			{1734100705, "Bug Fix", "Dec 4th, 2024", "Fixing an issue with spell-name truncation.", "cont1nuity"},
+			{1734100705, "Backend Change", "Nov 20th, 2024", "Toc bump for classic.", "cont1nuity"},
+			
 			{1732096266, "Bug Fix", "Nov 19th, 2024", "Fixing erros on the cast npc color dropdowns.", "Terciob"},
 			{1732096266, "Bug Fix", "Nov 15th, 2024", "Added missing references to castBar.InterruptSourceName and castBar.InterruptSourceGUID in scripting panels.", "Linaori"},
 			{1732096266, "Backend Change", "Nov 14th, 2024", "Changed default values for DBM boss mod support and enabled it by default.", "cont1nuity"},
