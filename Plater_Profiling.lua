@@ -1,5 +1,8 @@
 -- profiling support (WIP)
 
+local addonId, platerInternal = ...
+local _ = nil
+
 local Plater = _G.Plater
 local FPSData = Plater.FPSData
 local DF = _G.DetailsFramework
@@ -16,6 +19,22 @@ local profilingEnabled = false
 local everyFrameLogSkipFirst = true
 
 local PRT_INDENT = "    "
+
+
+local addonMetrics = {
+	"SessionAverageTime",
+	"RecentAverageTime",
+	"EncounterAverageTime",
+	"LastTime",
+	"PeakTime",
+	"CountTimeOver1Ms",
+	"CountTimeOver5Ms",
+	"CountTimeOver10Ms",
+	"CountTimeOver50Ms",
+	"CountTimeOver100Ms",
+	"CountTimeOver500Ms",
+	"CountTimeOver1000Ms",
+}
 
 -- trace gargbage
 local garbageCalls = {}
@@ -158,7 +177,12 @@ local function everyFrameEventLog()
 	end
 	
 	local curTime = debugprofilestop()
-	tinsert(loggedEvents, {pType = "Game-Core", event = "Frame Tick", subType = "Frame Tick Internal", timestamp = curTime, startEvent = false, endEvent = false, isFrameTick = true, curFPS = FPSData.curFPS, curMem = collectgarbage("count")})
+	tinsert(loggedEvents, {pType = "Game-Core", event = "Frame Tick", subType = "Frame Tick Full", timestamp = curTime, startEvent = false, endEvent = false, isFrameTick = true, isMetric = false, curFPS = FPSData.curFPS, curMem = collectgarbage("count")})
+	
+	if C_AddOnProfiler then
+		local metricLastTime = C_AddOnProfiler.GetAddOnMetric(addonId, Enum.AddOnProfilerMetric.LastTime)
+		tinsert(loggedEvents, {pType = "Game-Core", event = "Plater Tick", subType = "Frame Tick Plater", timestamp = metricLastTime, startEvent = false, endEvent = false, isFrameTick = false, isMetric = true, curFPS = FPSData.curFPS, curMem = collectgarbage("count")})
+	end
 end
 C_Timer.After( 0, everyFrameEventLog )
 
@@ -377,6 +401,26 @@ local function getAdvancedPerfData()
 			end
 			
 			prevEventForType[key] = logEntry
+		elseif logEntry.isMetric then
+			local key = "FrameTick_Plater"
+			local curETime = logEntry.timestamp
+				
+			curEventData.subTypeData = {} -- don't want this
+				
+			curEventData.count = (curEventData.count or 0) + 1
+			curEventData.totalTime = (curEventData.totalTime or 0) + curETime
+			curEventData.totalMem = (curEventData.totalMem or 0) + 0 -- don't count here
+				
+			tinsert(curEventData.times, curETime)
+				
+			if (curEventData.minTime or 9999999) > curETime then
+				curEventData.minTime = curETime
+			end
+			if (curEventData.maxTime or 0) < curETime then
+				curEventData.maxTime = curETime
+			end
+			
+			prevEventForType[key] = logEntry
 		else
 			--single event (ping), no timeframe -> count from last event.
 			local key = (logEntry.pType or "") .. "-|-" .. (logEntry.event or "") .. "-|-" .. (logEntry.subType or "")
@@ -533,6 +577,7 @@ local function getAdvancedPerfData()
 	perfTable.totalAverageMemPerEvent = perfTable.memInPlaterProfile / sumExecPTypes
 	perfTable.percentGlobalMemInPlater = perfTable.memInPlaterProfile / totalGlobalMem * 100
 	local printStrHeader = ""
+	printStrHeader = printStrHeader .. "Plater Version: " .. Plater.GetVersionInfo() .. "\n\n"
 	printStrHeader = printStrHeader .. "Plater profiling totals:\n"
 	printStrHeader = printStrHeader .. PRT_INDENT .. "Profiling time: " .. roundTime(totalGlobalTime / 100000)*100 .. "s" .. "\n"
 	printStrHeader = printStrHeader .. PRT_INDENT .. "Global Memory: " .. getRoundMem(totalGlobalMem) .. " (" .. gcCount .. " GCs)\n"
@@ -545,9 +590,17 @@ local function getAdvancedPerfData()
 	printStrHeader = printStrHeader .. PRT_INDENT .. "% of global memory: " .. roundPercent(perfTable.percentGlobalMemInPlater) .. "%" .. "\n"
 	printStrHeader = printStrHeader .. PRT_INDENT .. "FPS (min/max/avg/med/mod): " .. round(minFPS*10)/10 .. " / " .. round(maxFPS*10)/10 .. " / " .. round(fpsAverage*10)/10 .. " / " .. round(medFPS*10)/10 .. " / " .. modFPS .. "\n\n"
 	
-	printStr = printStrHeader .. printStr
+	if C_AddOnProfiler then
+		printStrHeader = printStrHeader .. "\n\n" .. "Blizzard Addon Metrics:\n"
+		for _, metric in pairs(addonMetrics) do
+			printStrHeader = printStrHeader .. PRT_INDENT .. metric .. ": " .. roundTime(C_AddOnProfiler.GetAddOnMetric(addonId, Enum.AddOnProfilerMetric[metric])) .. "\n"
+		end
+	end
 	
-	printStr = printStr .. "Plater Version: " .. Plater.GetVersionInfo()
+	printStrHeader = printStrHeader .. "\n\n"
+	
+	
+	printStr = printStrHeader .. printStr
 	
 	local gcHeaderPrinted = false
 	for name, count in pairs(garbageCalls or {}) do
