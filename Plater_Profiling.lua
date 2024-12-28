@@ -15,18 +15,32 @@ local profStartTime = 0
 local memStart = 0
 local memEnd = 0
 local profEndTime = 0
+local addonMetricsAtStart = {}
+local addonMetricsAtEnd = {}
 local profilingEnabled = false
 local everyFrameLogSkipFirst = true
 
 local PRT_INDENT = "    "
 
 
-local addonMetrics = {
+local addonMetricsNames = {
 	"SessionAverageTime",
 	"RecentAverageTime",
 	"EncounterAverageTime",
 	"LastTime",
 	"PeakTime",
+	"CountTimeOver1Ms",
+	"CountTimeOver5Ms",
+	"CountTimeOver10Ms",
+	"CountTimeOver50Ms",
+	"CountTimeOver100Ms",
+	"CountTimeOver500Ms",
+	"CountTimeOver1000Ms",
+}
+
+local addonMetricsNamesForSession = {
+	--"SessionAverageTime",
+	--"RecentAverageTime",
 	"CountTimeOver1Ms",
 	"CountTimeOver5Ms",
 	"CountTimeOver10Ms",
@@ -226,6 +240,17 @@ function Plater.EnableProfiling(core)
 		Plater.StartLogPerformanceCore = StartLogPerformance
 		Plater.EndLogPerformanceCore = EndLogPerformance
 	end
+
+	addonMetricsAtStart = {}
+	addonMetricsAtStart.global = {}
+	addonMetricsAtStart.Plater = {}
+	for _, metric in pairs(addonMetricsNames) do
+		addonMetricsAtStart.Plater[metric] = C_AddOnProfiler.GetAddOnMetric(addonId, Enum.AddOnProfilerMetric[metric])
+	end
+	for _, metric in pairs(addonMetricsNames) do
+		addonMetricsAtStart.global[metric] = C_AddOnProfiler.GetOverallMetric(Enum.AddOnProfilerMetric[metric])
+	end
+	
 	
 	everyFrameLogSkipFirst = true
 	C_Timer.After( 0, everyFrameEventLog )
@@ -252,6 +277,16 @@ function Plater.DisableProfiling()
 	
 	Plater.StartLogPerformanceCore = function() end
 	Plater.EndLogPerformanceCore = function() end
+	
+	addonMetricsAtEnd = {}
+	addonMetricsAtEnd.global = {}
+	addonMetricsAtEnd.Plater = {}
+	for _, metric in pairs(addonMetricsNames) do
+		addonMetricsAtEnd.Plater[metric] = C_AddOnProfiler.GetAddOnMetric(addonId, Enum.AddOnProfilerMetric[metric])
+	end
+	for _, metric in pairs(addonMetricsNames) do
+		addonMetricsAtEnd.global[metric] = C_AddOnProfiler.GetOverallMetric(Enum.AddOnProfilerMetric[metric])
+	end
 	
 	--Plater.DumpPerformance(true) -- for VDT mainly atm
 	Plater:Msg("Plater stopped profiling.")
@@ -591,10 +626,38 @@ local function getAdvancedPerfData()
 	printStrHeader = printStrHeader .. PRT_INDENT .. "FPS (min/max/avg/med/mod): " .. round(minFPS*10)/10 .. " / " .. round(maxFPS*10)/10 .. " / " .. round(fpsAverage*10)/10 .. " / " .. round(medFPS*10)/10 .. " / " .. modFPS .. "\n\n"
 	
 	if C_AddOnProfiler then
-		printStrHeader = printStrHeader .. "\n\n" .. "Blizzard Addon Metrics:\n"
-		for _, metric in pairs(addonMetrics) do
-			printStrHeader = printStrHeader .. PRT_INDENT .. metric .. ": " .. roundTime(C_AddOnProfiler.GetAddOnMetric(addonId, Enum.AddOnProfilerMetric[metric])) .. "\n"
+		local currentMetrics = {}
+		currentMetrics.global = {}
+		currentMetrics.Plater = {}
+		printStrHeader = printStrHeader .. "\n\nAddon Metrics since Start:"
+		printStrHeader = printStrHeader .. "\n\n" .. PRT_INDENT .. "Overall Addon Metrics:\n"
+		for _, metric in pairs(addonMetricsNames) do
+			currentMetrics.global[metric] = C_AddOnProfiler.GetOverallMetric(Enum.AddOnProfilerMetric[metric])
+			printStrHeader = printStrHeader .. PRT_INDENT .. PRT_INDENT .. metric .. ": " .. roundTime(currentMetrics.global[metric]) .. "\n"
 		end
+		
+		printStrHeader = printStrHeader .. "\n\n" .. PRT_INDENT .. "Plater Addon Metrics:\n"
+		for _, metric in pairs(addonMetricsNames) do
+			currentMetrics.Plater[metric] = C_AddOnProfiler.GetAddOnMetric(addonId, Enum.AddOnProfilerMetric[metric])
+			printStrHeader = printStrHeader .. PRT_INDENT .. PRT_INDENT .. metric .. ": " .. roundTime(currentMetrics.Plater[metric]) .. " (" .. roundPercent(currentMetrics.Plater[metric]/currentMetrics.global[metric]*100) .. "%)\n"
+		end
+		
+		local profilingMetrics = {}
+		profilingMetrics.global = {}
+		profilingMetrics.Plater = {}
+		printStrHeader = printStrHeader .. "\n\nAddon Metrics for profiling session:"
+		printStrHeader = printStrHeader .. "\n\n" .. PRT_INDENT .. "Overall Addon Metrics:\n"
+		for _, metric in pairs(addonMetricsNamesForSession) do
+			profilingMetrics.global[metric] = addonMetricsAtEnd.global[metric] - addonMetricsAtStart.global[metric]
+			printStrHeader = printStrHeader .. PRT_INDENT .. PRT_INDENT .. metric .. ": " .. roundTime(profilingMetrics.global[metric]) .. "\n"
+		end
+		
+		printStrHeader = printStrHeader .. "\n\n" .. PRT_INDENT .. "Plater Addon Metrics:\n"
+		for _, metric in pairs(addonMetricsNamesForSession) do
+			profilingMetrics.Plater[metric] = addonMetricsAtEnd.Plater[metric] - addonMetricsAtStart.Plater[metric]
+			printStrHeader = printStrHeader .. PRT_INDENT .. PRT_INDENT .. metric .. ": " .. roundTime(profilingMetrics.Plater[metric]) .. " (" .. roundPercent(profilingMetrics.Plater[metric]/profilingMetrics.global[metric]*100) .. "%)\n"
+		end
+		
 	end
 	
 	printStrHeader = printStrHeader .. "\n\n"
