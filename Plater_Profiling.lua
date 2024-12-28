@@ -633,13 +633,17 @@ local function getAdvancedPerfData()
 		printStrHeader = printStrHeader .. "\n\n" .. PRT_INDENT .. "Overall Addon Metrics:\n"
 		for _, metric in pairs(addonMetricsNames) do
 			currentMetrics.global[metric] = C_AddOnProfiler.GetOverallMetric(Enum.AddOnProfilerMetric[metric])
-			printStrHeader = printStrHeader .. PRT_INDENT .. PRT_INDENT .. metric .. ": " .. roundTime(currentMetrics.global[metric]) .. "\n"
+			if currentMetrics.global[metric] > 0 then
+				printStrHeader = printStrHeader .. PRT_INDENT .. PRT_INDENT .. metric .. ": " .. roundTime(currentMetrics.global[metric]) .. "\n"
+			end
 		end
 		
 		printStrHeader = printStrHeader .. "\n\n" .. PRT_INDENT .. "Plater Addon Metrics:\n"
 		for _, metric in pairs(addonMetricsNames) do
 			currentMetrics.Plater[metric] = C_AddOnProfiler.GetAddOnMetric(addonId, Enum.AddOnProfilerMetric[metric])
-			printStrHeader = printStrHeader .. PRT_INDENT .. PRT_INDENT .. metric .. ": " .. roundTime(currentMetrics.Plater[metric]) .. " (" .. roundPercent(currentMetrics.Plater[metric]/currentMetrics.global[metric]*100) .. "%)\n"
+			if currentMetrics.Plater[metric] > 0 then
+				printStrHeader = printStrHeader .. PRT_INDENT .. PRT_INDENT .. metric .. ": " .. roundTime(currentMetrics.Plater[metric]) .. " (" .. roundPercent(currentMetrics.Plater[metric]/currentMetrics.global[metric]*100) .. "%)\n"
+			end
 		end
 		
 		local profilingMetrics = {}
@@ -649,13 +653,17 @@ local function getAdvancedPerfData()
 		printStrHeader = printStrHeader .. "\n\n" .. PRT_INDENT .. "Overall Addon Metrics:\n"
 		for _, metric in pairs(addonMetricsNamesForSession) do
 			profilingMetrics.global[metric] = addonMetricsAtEnd.global[metric] - addonMetricsAtStart.global[metric]
-			printStrHeader = printStrHeader .. PRT_INDENT .. PRT_INDENT .. metric .. ": " .. roundTime(profilingMetrics.global[metric]) .. "\n"
+			if profilingMetrics.global[metric] > 0 then
+				printStrHeader = printStrHeader .. PRT_INDENT .. PRT_INDENT .. metric .. ": " .. roundTime(profilingMetrics.global[metric]) .. "\n"
+			end
 		end
 		
 		printStrHeader = printStrHeader .. "\n\n" .. PRT_INDENT .. "Plater Addon Metrics:\n"
 		for _, metric in pairs(addonMetricsNamesForSession) do
 			profilingMetrics.Plater[metric] = addonMetricsAtEnd.Plater[metric] - addonMetricsAtStart.Plater[metric]
-			printStrHeader = printStrHeader .. PRT_INDENT .. PRT_INDENT .. metric .. ": " .. roundTime(profilingMetrics.Plater[metric]) .. " (" .. roundPercent(profilingMetrics.Plater[metric]/profilingMetrics.global[metric]*100) .. "%)\n"
+			if profilingMetrics.Plater[metric] > 0 then
+				printStrHeader = printStrHeader .. PRT_INDENT .. PRT_INDENT .. metric .. ": " .. roundTime(profilingMetrics.Plater[metric]) .. " (" .. roundPercent(profilingMetrics.Plater[metric]/profilingMetrics.global[metric]*100) .. "%)\n"
+			end
 		end
 		
 	end
