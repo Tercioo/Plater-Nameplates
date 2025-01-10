@@ -5517,15 +5517,13 @@ function Plater.OnInit() --private --~oninit ~init
 		local currentHealth = self.currentHealth
 		local currentHealthMax = self.currentHealthMax
 		local unitFrame = self.unitFrame
-		local oldHealth = self.CurrentHealth
+		local oldHealth = self.CurrentHealth or currentHealth
 		
 		--> exposed values to scripts
 		self.CurrentHealth = currentHealth
 		self.CurrentHealthMax = currentHealthMax
 	
 		if (plateFrame.IsSelf) then
-			self.CurrentHealth = currentHealth
-			self.CurrentHealthMax = currentHealthMax
 		
 			--> flash if low health
 			if (currentHealth / currentHealthMax < 0.27) then
@@ -5565,9 +5563,6 @@ function Plater.OnInit() --private --~oninit ~init
 			
 			if (DB_DO_ANIMATIONS) then
 				--do healthbar animation ~animation ~healthbar
-				oldHealth = oldHealth or self.CurrentHealth
-				
-				self.CurrentHealthMax = currentHealthMax
 				self.AnimationStart = oldHealth
 				self.AnimationEnd = currentHealth
 
@@ -5580,9 +5575,6 @@ function Plater.OnInit() --private --~oninit ~init
 				else
 					self.AnimateFunc = Plater.AnimateLeftWithAccel
 				end
-			else
-				self.CurrentHealth = currentHealth
-				self.CurrentHealthMax = currentHealthMax
 			end
 			
 			if (plateFrame.actorType == ACTORTYPE_FRIENDLY_PLAYER) then
