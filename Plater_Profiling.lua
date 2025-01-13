@@ -241,6 +241,7 @@ function Plater.EnableProfiling(core)
 		Plater.EndLogPerformanceCore = EndLogPerformance
 	end
 
+	addonMetricsAtEnd = {} -- reset
 	addonMetricsAtStart = {}
 	addonMetricsAtStart.global = {}
 	addonMetricsAtStart.Plater = {}
@@ -646,9 +647,24 @@ local function getAdvancedPerfData()
 			end
 		end
 		
+		local resetEndMetrics = false -- in case "stop" was not used, show current snapshot
+		if not addonMetricsAtEnd.global then
+			addonMetricsAtEnd = {}
+			addonMetricsAtEnd.global = {}
+			addonMetricsAtEnd.Plater = {}
+			for _, metric in pairs(addonMetricsNames) do
+				addonMetricsAtEnd.Plater[metric] = C_AddOnProfiler.GetAddOnMetric(addonId, Enum.AddOnProfilerMetric[metric])
+			end
+			for _, metric in pairs(addonMetricsNames) do
+				addonMetricsAtEnd.global[metric] = C_AddOnProfiler.GetOverallMetric(Enum.AddOnProfilerMetric[metric])
+			end
+			resetEndMetrics = true
+		end
+		
 		local profilingMetrics = {}
 		profilingMetrics.global = {}
 		profilingMetrics.Plater = {}
+		
 		printStrHeader = printStrHeader .. "\n\nAddon Metrics for profiling session:"
 		printStrHeader = printStrHeader .. "\n\n" .. PRT_INDENT .. "Overall Addon Metrics:\n"
 		for _, metric in pairs(addonMetricsNamesForSession) do
@@ -664,6 +680,10 @@ local function getAdvancedPerfData()
 			if profilingMetrics.Plater[metric] > 0 then
 				printStrHeader = printStrHeader .. PRT_INDENT .. PRT_INDENT .. metric .. ": " .. roundTime(profilingMetrics.Plater[metric]) .. " (" .. roundPercent(profilingMetrics.Plater[metric]/profilingMetrics.global[metric]*100) .. "%)\n"
 			end
+		end
+		
+		if resetEndMetrics then
+			addonMetricsAtEnd = {}
 		end
 		
 	end
