@@ -729,7 +729,7 @@ end
 				local doesSpecIdUseResource = doesSpecUseResource(specId)
 				--player maybe in guardian spec but is using feral form
 				local isInFeralForm = PlayerClass == "DRUID" and (GetShapeshiftFormID() == 1 or Plater.db.profile.resources_settings.druid_show_always)
-				if (doesSpecIdUseResource or isInFeralForm) then --TODO: Druid can use it in all specs. stance check needed! (implementing)
+				if (doesSpecIdUseResource or isInFeralForm or playerClass == "ROGUE") then --TODO: Druid can use it in all specs. stance check needed! (implementing)
 
 					--get the resource bar
 					local resourceBar =  Plater.Resources.GetResourceBarInUse()

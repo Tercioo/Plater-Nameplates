@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1737465972, "Bug Fix", "Feb 3rd, 2024", "Fixing Combo Points for low level rogues.", "cont1nuity"},
 			{1737465972, "Bug Fix", "Jan 29th, 2024", "Fixing execute recognition for Hunter Black Arrow.", "cont1nuity"},
 			{1737465972, "Bug Fix", "Jan 21st, 2024", "Fixing several issues on the Mod Load Conditions panel.", "cont1nuity"},
 			{1737465972, "Bug Fix", "Jan 13th, 2024", "Fixing an issue with profiling if stop was not used but results should be shown.", "cont1nuity"},
