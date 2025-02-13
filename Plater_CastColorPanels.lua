@@ -200,7 +200,7 @@ function Plater.SetCastBarColorForScript(castBar, canUseScriptColor, scriptColor
 end
 
 --priority for user cast color >> can't interrupt script color >> script color
-function Plater.SetCastBarColorsForScript(castBar, canUseScriptColor, scriptColor0, scriptColor1, envTable) --exposed
+function Plater.SetCastBarColorsForScript(castBar, canUseScriptColor, scriptColor, scriptNoInterruptColor, envTable) --exposed
     --user set cast bar color into the Cast Colors tab in the options panel
     local colorByUser = Plater.GetSpellCustomColor(envTable._SpellID)
     if (colorByUser) then
@@ -210,9 +210,9 @@ function Plater.SetCastBarColorsForScript(castBar, canUseScriptColor, scriptColo
 
     if (not envTable._CanInterrupt) then
         --if is uninterruptible and don't have a custom user color, set the script color
-        if (canUseScriptColor and scriptColor1) then
-            if (type(scriptColor1) == "table" or (type(scriptColor1) == "string") and DF:IsHtmlColor(scriptColor1)) then
-                castBar:SetColor(Plater:ParseColors(scriptColor1))
+        if (canUseScriptColor and scriptNoInterruptColor) then
+            if (type(scriptNoInterruptColor) == "table" or (type(scriptNoInterruptColor) == "string") and DF:IsHtmlColor(scriptNoInterruptColor)) then
+                castBar:SetColor(Plater:ParseColors(scriptNoInterruptColor))
                 return
             end
         end
@@ -224,8 +224,8 @@ function Plater.SetCastBarColorsForScript(castBar, canUseScriptColor, scriptColo
 
     --if is interruptible and don't have a custom user color, set the script color
     if (canUseScriptColor and scriptColor0) then
-        if (type(scriptColor0) == "table" or (type(scriptColor0) == "string") and DF:IsHtmlColor(scriptColor0)) then
-            castBar:SetColor(Plater:ParseColors(scriptColor0))
+        if (type(scriptColor) == "table" or (type(scriptColor) == "string") and DF:IsHtmlColor(scriptColor)) then
+            castBar:SetColor(Plater:ParseColors(scriptColor))
         end
     end
 end
