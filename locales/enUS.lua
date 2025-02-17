@@ -8,6 +8,7 @@ do
 
 
     --on curseforge
+L["DISABLE_TESTING_AURAS"] = "Disable Testing Auras"
 L["A /reload may be required to take effect."] = "A /reload may be required to take effect."
 L["CVar, saved within Plater profile and restored when loading the profile."] = "CVar, saved within Plater profile and restored when loading the profile."
 L["EXPORT"] = "Export"
