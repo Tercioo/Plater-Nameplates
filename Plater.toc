@@ -1,6 +1,6 @@
 ## Interface: 110007
 ## Interface-Mainline: 110007
-## Interface-Cata: 40401
+## Interface-Cata: 40402
 ## Interface-Vanilla: 11506
 ## Title: Plater
 ## Notes: Nameplate addon designed for advanced users.
