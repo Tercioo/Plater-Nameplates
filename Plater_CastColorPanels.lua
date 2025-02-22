@@ -697,9 +697,6 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         end
     end
 
-    local castBarPreviewTexture = "" --[[Interface\AddOns\Plater\Images\cast_bar_scripts_preview]]
-    local eachCastBarButtonHeight = PlaterOptionsPanelContainerCastColorManagementColorFrameScriptPreviewPanel:GetHeight() / #platerInternal.Scripts.DefaultCastScripts
-
     local scriptsToShow = {}
     for i = 1, #platerInternal.Scripts.DefaultCastScripts do
         local scriptName = platerInternal.Scripts.DefaultCastScripts[i]
@@ -709,6 +706,11 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             scriptsToShow[#scriptsToShow + 1] = scriptName
         end
     end
+
+    table.sort(scriptsToShow)
+
+    local castBarPreviewTexture = "" --[[Interface\AddOns\Plater\Images\cast_bar_scripts_preview]]
+    local eachCastBarButtonHeight = PlaterOptionsPanelContainerCastColorManagementColorFrameScriptPreviewPanel:GetHeight() / math.max(#scriptsToShow, 12)
 
     for i = 1, #scriptsToShow do
         local scriptName = scriptsToShow[i]
