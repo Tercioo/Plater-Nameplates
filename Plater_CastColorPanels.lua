@@ -427,7 +427,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             local desc
             if (currentSelected) then
                 local currentSelectedCueName = audioFileNameToCueName[currentSelected]
-                desc = "Hold Shift to change the sound of all casts with the audio |cFFFFFF00" .. currentSelectedCueName .. "|r to |cFFFFDD00" .. cueName .. "|r."
+                desc = string.format(L["Hold Shift to change the sound of all casts with the audio %s to %s"], "|cFFFFFF00" .. currentSelectedCueName .. "|r", "|cFFFFDD00" .. cueName .. "|r.")
             else
                 desc = nil
             end
