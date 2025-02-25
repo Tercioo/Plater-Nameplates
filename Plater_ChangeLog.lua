@@ -8,10 +8,11 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
-			{1737465972, "Bug Fix", "Feb 3rd, 2024", "Fixing Combo Points for low level rogues.", "cont1nuity"},
-			{1737465972, "Bug Fix", "Jan 29th, 2024", "Fixing execute recognition for Hunter Black Arrow.", "cont1nuity"},
-			{1737465972, "Bug Fix", "Jan 21st, 2024", "Fixing several issues on the Mod Load Conditions panel.", "cont1nuity"},
-			{1737465972, "Bug Fix", "Jan 13th, 2024", "Fixing an issue with profiling if stop was not used but results should be shown.", "cont1nuity"},
+			{1740518781, "Backend Change", "Feb 25th, 2024", "Locale updates and preparation.", "cont1nuity"},
+			{1740518781, "Bug Fix", "Feb 3rd, 2024", "Fixing Combo Points for low level rogues.", "cont1nuity"},
+			{1740518781, "Bug Fix", "Jan 29th, 2024", "Fixing execute recognition for Hunter Black Arrow.", "cont1nuity"},
+			{1740518781, "Bug Fix", "Jan 21st, 2024", "Fixing several issues on the Mod Load Conditions panel.", "cont1nuity"},
+			{1740518781, "Bug Fix", "Jan 13th, 2024", "Fixing an issue with profiling if stop was not used but results should be shown.", "cont1nuity"},
 			
 			{1736722279, "Bug Fix", "Jan 11th, 2024", "Fixing broken nameplate anchoring for WAs on forced blizzard nameplates (via LibGetFrame).", "cont1nuity"},
 			{1736722279, "Bug Fix", "Jan 10th, 2024", "Fixing range check for Dark Ranger hunters (via LibRangeCheck).", "cont1nuity"},
