@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1740518781, "Backend Change", "Feb 27th, 2024", "Fixing an issue with green texutures in the options (through DetailsFramework update).", "cont1nuity"},
+			
 			{1740518781, "Backend Change", "Feb 25th, 2024", "Locale updates and preparation.", "cont1nuity"},
 			{1740518781, "Bug Fix", "Feb 3rd, 2024", "Fixing Combo Points for low level rogues.", "cont1nuity"},
 			{1740518781, "Bug Fix", "Jan 29th, 2024", "Fixing execute recognition for Hunter Black Arrow.", "cont1nuity"},
