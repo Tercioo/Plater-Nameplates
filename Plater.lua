@@ -70,6 +70,9 @@ local IS_WOW_PROJECT_CLASSIC_ERA = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
 local IS_WOW_PROJECT_CLASSIC_WRATH = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_WRATH_OF_THE_LICH_KING and ClassicExpansionAtLeast(LE_EXPANSION_WRATH_OF_THE_LICH_KING)
 --local IS_WOW_PROJECT_CLASSIC_CATACLYSM = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_CATACLYSM and ClassicExpansionAtLeast(LE_EXPANSION_CATACLYSM)
 
+--frostbolt
+local CONST_PREVIEW_SPELLID = 116
+
 local PixelUtil = PixelUtil or DFPixelUtil
 
 local parserFunctions --reference needed
@@ -4847,7 +4850,7 @@ function Plater.OnInit() --private --~oninit ~init
 			if plateFrame.unitFrame.PlaterOnScreen then
 				local castBar = plateFrame.unitFrame.castBar
 				local castNoInterrupt = Plater.CastBarTestFrame.castNoInterrupt
-				local spellName, _, spellIcon = GetSpellInfo(116)
+				local spellName, _, spellIcon = GetSpellInfo(CONST_PREVIEW_SPELLID)
 
 				castBar.Text:SetText(spellName)
 				castBar.Icon:SetTexture(spellIcon)
@@ -4861,13 +4864,13 @@ function Plater.OnInit() --private --~oninit ~init
 				castBar.finished = false
 				castBar.value = 0
 				castBar.maxValue = (castTime or 3)
-				castBar.canInterrupt = castNoInterrupt or math.random (1, 2) == 1
+				castBar.canInterrupt = not castNoInterrupt or math.random (1, 2) == 1
 				--castBar.canInterrupt = true
 				--castBar.channeling = true
 				castBar:UpdateCastColor()
 
 				castBar.spellName = 		spellName
-				castBar.spellID = 			116
+				castBar.spellID = 			CONST_PREVIEW_SPELLID
 				castBar.spellTexture = 		spellIcon
 				castBar.spellStartTime = 	GetTime()
 				castBar.spellEndTime = 		GetTime() + (castTime or 3)
@@ -11963,6 +11966,7 @@ end
 			table.wipe(SCRIPT_AURA_TRIGGER_CACHE)
 			table.wipe(SCRIPT_CASTBAR_TRIGGER_CACHE)
 			table.wipe(SCRIPT_UNIT_TRIGGER_CACHE)
+			table.wipe(platerInternal.Scripts.DefaultCastScripts)
 			Plater.CompileAllScripts (scriptType, noHotReload)
 			
 			Plater.EndLogPerformanceCore("Plater-Core", "Mod/Script", "WipeAndRecompileAllScripts - script")
@@ -12496,6 +12500,15 @@ end
 
 				--extract the function
 				scriptFunctions[scriptType] = compiledScript()
+			end
+		end
+
+		--add castbar scripts to the default list for previews
+		if (scriptObject.ScriptType == 2) then
+			local defaultScripts = platerInternal.Scripts.DefaultCastScripts
+			local index = DF.table.find(defaultScripts, scriptObject.Name)
+			if (not index) then
+				table.insert(defaultScripts, scriptObject.Name)
 			end
 		end
 		
