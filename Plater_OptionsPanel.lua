@@ -1649,7 +1649,7 @@ function Plater.CreateGoToTabFrame(parent, text, index)
 		platerOptionsPanelContainer:SelectTabByIndex(index)
 	end
 
-	local buttonGo = DF:CreateButton (parent, goTo, 20, 1, "", false, false, "", false, false, false, options_button_template)
+	local buttonGo = DF:CreateButton (parent, goTo, 20, 1, "", false, false, nil, false, false, false, options_button_template)
 	buttonGo:SetPoint("topleft", goToTab, "topright", 1, 0)
 	buttonGo:SetPoint("bottomleft", goToTab, "bottomright", 1, 0)
 	DF:ApplyStandardBackdrop (buttonGo, false, 0.8)
