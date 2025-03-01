@@ -3415,13 +3415,13 @@ Plater.AnchorNamesByPhraseId = {
 			--if (not plateFrame.UnitFrame.HasPlaterHooksRegistered) then
 			if not HOOKED_BLIZZARD_PLATEFRAMES[blizzardPlateFrameID] then
 				--print(HOOKED_BLIZZARD_PLATEFRAMES[tostring(plateFrame.UnitFrame)], tostring(plateFrame.UnitFrame), plateFrame.UnitFrame.HasPlaterHooksRegistered)
-                --hook the retail nameplate
-                --plateFrame.UnitFrame:HookScript("OnShow", Plater.OnRetailNamePlateShow)
+				--hook the retail nameplate
+				--plateFrame.UnitFrame:HookScript("OnShow", Plater.OnRetailNamePlateShow)
 				hooksecurefunc(plateFrame.UnitFrame, "Show", Plater.OnRetailNamePlateShow)
-                --plateFrame.UnitFrame.HasPlaterHooksRegistered = true
+				--plateFrame.UnitFrame.HasPlaterHooksRegistered = true
 				HOOKED_BLIZZARD_PLATEFRAMES[blizzardPlateFrameID] = true
 				
-            end
+			end
 			
 			-- we should clear stuff here, tbh...
 			
@@ -8831,20 +8831,20 @@ end
 	
 	-- anchor sides as comprehensive table.
 	Plater.AnchorSides = {
-        TOP_LEFT = 1,
-        LEFT = 2,
-        BOTTOM_LEFT = 3,
-        BOTTOM = 4,
-        BOTTOM_RIGHT = 5,
-        RIGHT = 6,
-        TOP_RIGHT = 7,
-        TOP = 8,
-        CENTER = 9,
-        INNER_LEFT = 10,
-        INNER_RIGHT = 11,
-        INNER_TOP = 12,
-        INNER_BOTTOM = 13,
-    }
+		TOP_LEFT = 1,
+		LEFT = 2,
+		BOTTOM_LEFT = 3,
+		BOTTOM = 4,
+		BOTTOM_RIGHT = 5,
+		RIGHT = 6,
+		TOP_RIGHT = 7,
+		TOP = 8,
+		CENTER = 9,
+		INNER_LEFT = 10,
+		INNER_RIGHT = 11,
+		INNER_TOP = 12,
+		INNER_BOTTOM = 13,
+	}
 
 	--check the setting 'only_damaged' and 'only_thename' for player characters. not critical code, can run slow
 	function Plater.ParseHealthSettingForPlayer (plateFrame, force) --private
@@ -10441,27 +10441,27 @@ end
 	end
 
 	--pass some colors and return the first valid color
-    function Plater.GetColorByPriority(unitFrame, color1, color2, color3)
-        if (unitFrame) then
+	function Plater.GetColorByPriority(unitFrame, color1, color2, color3)
+		if (unitFrame) then
 			--from the Npc Colors and Names
-            local npcColor = Plater.GetNpcColor(unitFrame)
-            if (npcColor) then
-                return npcColor
-            end
-        end
-        
-        if (color1) then
-            return color1
-        end
-        
-        if (color2) then
-            return color2
-        end
+			local npcColor = Plater.GetNpcColor(unitFrame)
+			if (npcColor) then
+				return npcColor
+			end
+		end
+		
+		if (color1) then
+			return color1
+		end
+		
+		if (color2) then
+			return color2
+		end
 
 		if (color3) then
-            return color3
-        end
-    end
+			return color3
+		end
+	end
 
 	--return which raid mark the namepalte has
 	function Plater.GetRaidMark (unitFrame)

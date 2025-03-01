@@ -1009,9 +1009,11 @@ end
 		buttonObject.text_overlay = _G[name .. "_Text"]
 		buttonObject.disabled_overlay = _G[name .. "_TextureDisabled"]
 
+		-- "dungeons/textures/common/transparent.blp", an epmty texture as default.
+		-- emptystring seems to cause weird issues (GREEEEEEN!) under unknown circumstances
+		texture = texture ~= "" and texture or 982414
+		
 		--check for atlas
-		texture = texture or ""
-
 		local bSetTexture = false
 		if (type(texture) == "string") then
 			local isAtlas = C_Texture.GetAtlasInfo(texture)

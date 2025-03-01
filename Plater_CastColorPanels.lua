@@ -6,6 +6,8 @@ local DF = DetailsFramework
 local GetSpellInfo = GetSpellInfo or function(spellID) if not spellID then return nil end local si = C_Spell.GetSpellInfo(spellID) if si then return si.name, nil, si.iconID, si.castTime, si.minRange, si.maxRange, si.spellID, si.originalIconID end end
 local _
 
+local L = DF.Language.GetLanguageTable(addonId)
+
 ---@alias spellid number
 ---@alias soundpath string
 
@@ -458,7 +460,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
             local desc
             if (currentSelected) then
                 local currentSelectedCueName = audioFileNameToCueName[currentSelected]
-                desc = "Hold Shift to change the sound of all casts with the audio |cFFFFFF00" .. currentSelectedCueName .. "|r to |cFFFFDD00" .. cueName .. "|r."
+                desc = string.format(L["Hold Shift to change the sound of all casts with the audio %s to %s"], "|cFFFFFF00" .. currentSelectedCueName .. "|r", "|cFFFFDD00" .. cueName .. "|r.")
             else
                 desc = nil
             end

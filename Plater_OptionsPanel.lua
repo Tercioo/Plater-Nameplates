@@ -442,12 +442,9 @@ function Plater.OpenOptionsPanel(pageNumber, bIgnoreLazyLoad)
 
 	local profile = Plater.db.profile
 	
-	--local CVarDesc = "\n\n|cFFFF7700[*]|r |cFFa0a0a0CVar, not saved within Plater profile and is a Per-Character setting.|r"
-	local CVarDesc = "\n\n|cFFFF7700[*]|r |cFFa0a0a0CVar, saved within Plater profile and restored when loading the profile.|r"
+	local CVarDesc = "\n\n|cFFFF7700[*]|r |cFFa0a0a0" .. L["CVar, saved within Plater profile and restored when loading the profile."] .. "|r"
 	local CVarIcon = "|cFFFF7700*|r"
-	local CVarNeedReload = "\n\n|cFFFF2200[*]|r |cFFa0a0a0A /reload may be required to take effect.|r"
-	local ImportantText = "|cFFFFFF00 Important |r: "
-	local SliderRightClickDesc = "\n\n" .. ImportantText .. "right click to type the value."
+	local CVarNeedReload = "\n\n|cFFFF2200[*]|r |cFFa0a0a0" .. L["A /reload may be required to take effect."] .. "|r"
 	
 	local hookList = {
 		---@param tabContainer df_tabcontainer
@@ -1652,7 +1649,7 @@ function Plater.CreateGoToTabFrame(parent, text, index)
 		platerOptionsPanelContainer:SelectTabByIndex(index)
 	end
 
-	local buttonGo = DF:CreateButton (parent, goTo, 20, 1, "", false, false, "", false, false, false, options_button_template)
+	local buttonGo = DF:CreateButton (parent, goTo, 20, 1, "", false, false, nil, false, false, false, options_button_template)
 	buttonGo:SetPoint("topleft", goToTab, "topright", 1, 0)
 	buttonGo:SetPoint("bottomleft", goToTab, "bottomright", 1, 0)
 	DF:ApplyStandardBackdrop (buttonGo, false, 0.8)
@@ -1724,7 +1721,7 @@ local debuff_options = {
 				auraOptionsFrame.EnableAuraTest()
 			end
 		end,
-		name = "|TInterface\\GossipFrame\\AvailableQuestIcon:0|tDisable Testing Auras",
+		name = string.format("|TInterface\\GossipFrame\\AvailableQuestIcon:0|t%s", "@DISABLE_TESTING_AURAS@"),
 		desc = "OPTIONS_AURAS_ENABLETEST",
 	},
 	
@@ -1994,7 +1991,7 @@ local debuff_options = {
 			Plater.UpdateAllPlates()
 		end,
 		name = "Show Auras Casted by other Players",
-		desc = "Show Auras Casted by other Players.\n\n" .. ImportantText .. "This may cause a lot of auras to show!",
+		desc = "Show Auras Casted by other Players.\n\n|cFFFFFF00 Important |r: This may cause a lot of auras to show!",
 	},
 
 	{type = "blank"},
@@ -2126,7 +2123,7 @@ local debuff_options = {
 		get = function() return Plater.db.profile.aura_grow_direction end,
 		values = function() return build_grow_direction_options ("aura_grow_direction") end,
 		name = "Grow Direction",
-		desc = "To which side aura icons should grow.\n\n" .. ImportantText .. "debuffs are added first, buffs after.",
+		desc = "To which side aura icons should grow.\n\n|cFFFFFF00 Important |r: debuffs are added first, buffs after.",
 	},
 	
 	{
@@ -2565,7 +2562,7 @@ local debuff_options = {
 			Plater.RefreshOmniCCGroup()
 		end,
 		name = "Hide OmniCC/TullaCC Timer",
-		desc = "OmniCC/TullaCC timers won't show in the aura.\n\n" .. ImportantText .. "require /reload when toggling this feature.",
+		desc = "OmniCC/TullaCC timers won't show in the aura.\n\n|cFFFFFF00 Important |r: require /reload when toggling this feature.",
 	},
 	
 	{
@@ -3693,7 +3690,7 @@ do
 			end,
 			nocombat = true,
 			name = "Module Enabled",
-			desc = "Enable Plater nameplates for the personal bar.\n\n" .. ImportantText .. "Forces a /reload on change.\nThis option is dependent on the client`s nameplate state (on/off)",
+			desc = "Enable Plater nameplates for the personal bar.\n\n|cFFFFFF00 Important |r: Forces a /reload on change.\nThis option is dependent on the client`s nameplate state (on/off)",
 		},
 		
 		{
@@ -3718,7 +3715,7 @@ do
 			end,
 			nocombat = true,
 			name = "Always Show" .. CVarIcon,
-			desc = "If enabled, the personal health bar is always shown.\n\n" .. ImportantText .. "'Personal Health and Mana Bars' (in the Main Menu tab) must be enabled." .. CVarDesc,
+			desc = "If enabled, the personal health bar is always shown.\n\n|cFFFFFF00 Important |r: 'Personal Health and Mana Bars' (in the Main Menu tab) must be enabled." .. CVarDesc,
 		},
 
 		{
@@ -3733,7 +3730,7 @@ do
 			end,
 			nocombat = true,
 			name = "Show When you Have a Target" .. CVarIcon,
-			desc = "If enabled, show the personal bar when you have a target.\n\n" .. ImportantText .. "'Personal Health and Mana Bars' (in the Main Menu tab) must be enabled." .. CVarDesc,
+			desc = "If enabled, show the personal bar when you have a target.\n\n|cFFFFFF00 Important |r: 'Personal Health and Mana Bars' (in the Main Menu tab) must be enabled." .. CVarDesc,
 		},
 		{
 			type = "toggle",
@@ -3747,7 +3744,7 @@ do
 			end,
 			nocombat = true,
 			name = "Show In Combat" .. CVarIcon,
-			desc = "If enabled, show the personal bar when you are in combat.\n\n" .. ImportantText .. "'Personal Health and Mana Bars' (in the Main Menu tab) must be enabled." .. CVarDesc,
+			desc = "If enabled, show the personal bar when you are in combat.\n\n|cFFFFFF00 Important |r: 'Personal Health and Mana Bars' (in the Main Menu tab) must be enabled." .. CVarDesc,
 		},
 		{
 			type = "range",
@@ -5356,7 +5353,7 @@ local relevance_options = {
 
 				Plater.UpdateBaseNameplateOptions()
 			end,
-			name = "OPTIONS_NAMEPLATE_HIDE_FRIENDLY_HEALTH", --"Hide Blizzard Health Bars"
+			name = "OPTIONS_NAMEPLATE_HIDE_FRIENDLY_HEALTH",
 			desc = "OPTIONS_NAMEPLATE_HIDE_FRIENDLY_HEALTH_DESC",
 			nocombat = true,
 		},
@@ -5897,7 +5894,7 @@ local relevance_options = {
 						return t
 					end,
 					--the string between two '@' make the framework to consider it a PhraseID for the language system
-					name = "|T" .. specIcon .. ":16:16|t " .. "@OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK@",
+					name = string.format("|T%s:16:16|t @OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK@", specIcon),
 					desc = "OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK_SPEC_DESC",
 				})
 			end
@@ -5957,7 +5954,7 @@ local relevance_options = {
 						end
 						return t
 					end,
-					name = "|T" .. spec_icon .. ":16:16|t " .. "@OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK@",
+					name = string.format("|T%s:16:16|t @OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK@", spec_icon),
 					desc = "OPTIONS_GENERALSETTINGS_TRANSPARENCY_RANGECHECK_SPEC_DESC",
 				})
 			end
@@ -6532,7 +6529,7 @@ end
 			end,
 			nocombat = true,
 			name = "Module Enabled",
-			desc = "Enable Plater nameplates for friendly players.\n\n" .. ImportantText .. "Forces a /reload on change.\nThis option is dependent on the client`s nameplate state (on/off)",
+			desc = "Enable Plater nameplates for friendly players.\n\n|cFFFFFF00 Important |r: Forces a /reload on change.\nThis option is dependent on the client`s nameplate state (on/off)",
 		},
 		
 		{
@@ -6577,7 +6574,7 @@ end
 				Plater.UpdateAllPlates()
 			end,
 			name = "Only Show Player Name",
-			desc = "Hide the health bar, only show the character name.\n\n" .. ImportantText .. "If 'Only Damaged Players' is selected and the player is damaged, this setting will be overwritten and the health bar will be shown.",
+			desc = "Hide the health bar, only show the character name.\n\n|cFFFFFF00 Important |r: If 'Only Damaged Players' is selected and the player is damaged, this setting will be overwritten and the health bar will be shown.",
 		},
 		{
 			type = "toggle",
@@ -6597,7 +6594,7 @@ end
 				Plater.UpdatePlateClickSpace (nil, true)
 			end,
 			name = "Click Through",
-			desc = "Friendly player nameplates won't receive mouse clicks.\n\n" .. ImportantText .. "also affects friendly npcs and can affect some neutral npcs too.",
+			desc = "Friendly player nameplates won't receive mouse clicks.\n\n|cFFFFFF00 Important |r: also affects friendly npcs and can affect some neutral npcs too.",
 		},		
 
 		{type = "blank"},
@@ -7511,7 +7508,7 @@ end
 			end,
 			nocombat = true,
 			name = "Module Enabled",
-			desc = "Enable Plater nameplates for enemy players.\n\n" .. ImportantText .. "Forces a /reload on change.\nThis option is dependent on the client`s nameplate state (on/off)",
+			desc = "Enable Plater nameplates for enemy players.\n\n|cFFFFFF00 Important |r: Forces a /reload on change.\nThis option is dependent on the client`s nameplate state (on/off)",
 		},
 		
 		{
@@ -8436,7 +8433,7 @@ end
 			end,
 			nocombat = true,
 			name = L["OPTIONS_ENABLED"] .. CVarIcon,
-			desc = "Show nameplate for friendly npcs.\n\n" .. ImportantText .. "This option is dependent on the client`s nameplate state (on/off).\n\n" .. ImportantText .. "when disabled but enabled on the client through (" .. (GetBindingKey ("FRIENDNAMEPLATES") or "") .. ") the healthbar isn't visible but the nameplate is still clickable." .. CVarDesc,
+			desc = string.format(L["Show nameplate for friendly npcs.\n\n|cFFFFFF00 Important |r: This option is dependent on the client`s nameplate state (on/off).\n\n|cFFFFFF00 Important |r: when disabled but enabled on the client through (%s), the healthbar isn't visible but the nameplate is still clickable."] .. CVarDesc,  (GetBindingKey ("FRIENDNAMEPLATES") or "")),
 		},
 		{
 			type = "toggle",
@@ -8453,7 +8450,7 @@ end
 			end,
 			nocombat = true,
 			name = "Module Enabled",
-			desc = "Enable Plater nameplates for friendly NPCs.\n\n" .. ImportantText .. "Forces a /reload on change.\nThis option is dependent on the client`s nameplate state (on/off)",
+			desc = "Enable Plater nameplates for friendly NPCs.\n\n|cFFFFFF00 Important |r: Forces a /reload on change.\nThis option is dependent on the client`s nameplate state (on/off)",
 		},
 		{
 			type = "toggle",
@@ -8471,7 +8468,7 @@ end
 			get = function() return Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].relevance_state end,
 			values = function() return relevance_options end,
 			name = "Show",
-			desc = "Modify the way friendly npcs are shown.\n\n" .. ImportantText .. "This option is dependent on the client`s nameplate state (on/off).",
+			desc = "Modify the way friendly npcs are shown.\n\n|cFFFFFF00 Important |r: This option is dependent on the client`s nameplate state (on/off).",
 		},
 		
 		{type = "blank"},
@@ -9151,7 +9148,7 @@ end
 		
 		{type = "blank"},
 		
-		{type = "label", get = function() return "Npc Name Text When no Health Bar Shown:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return "Npc Name Text (Name Only):" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--text size
 		{
 			type = "range",
@@ -9375,7 +9372,7 @@ end
 		},
 		
 		{type = "blank"},
-		{type = "label", get = function() return "Npc Title Text When no Health Bar Shown:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return "Npc Title Text (Name Only):" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--profession text size
 		{
 			type = "range",
@@ -9505,7 +9502,7 @@ end
 				end,
 				nocombat = true,
 				name = "Module Enabled",
-				desc = "Enable Plater nameplates for enemy NPCs.\n\n" .. ImportantText .. "Forces a /reload on change.\nThis option is dependent on the client`s nameplate state (on/off)",
+				desc = "Enable Plater nameplates for enemy NPCs.\n\n|cFFFFFF00 Important |r: Forces a /reload on change.\nThis option is dependent on the client`s nameplate state (on/off)",
 			},
 			
 			{type = "blank"},
@@ -9560,7 +9557,7 @@ end
 			
 			{type = "blank"},
 			
-			{type = "label", get = function() return "Npc Name Text When no Health Bar Shown:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{type = "label", get = function() return "Npc Name Text (Name Only):" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			--profession text size
 			{
 				type = "range",
@@ -9644,7 +9641,7 @@ end
 			--]=]
 			
 			{type = "blank"},
-			{type = "label", get = function() return "Npc Title Text When no Health Bar Shown:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{type = "label", get = function() return "Npc Title Text (Name Only):" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			--profession text size
 			{
 				type = "range",
@@ -10609,7 +10606,7 @@ end
 				Plater:Msg ("this setting require a /reload to take effect.")
 			end,
 			name = "Use Custom Strata Channels",
-			desc = "Allow nameplates to be placed in custom frame strata channels.\n\n" .. ImportantText .. "a /reload will be triggered on changing this setting.",
+			desc = "Allow nameplates to be placed in custom frame strata channels.\n\n|cFFFFFF00 Important |r: a /reload will be triggered on changing this setting.",
 		},
 
 		{type = "blank"},
@@ -10987,7 +10984,7 @@ end
 				Plater.RefreshAutoToggle()
 			end,
 			name = "OPTIONS_ENABLED",
-			desc = "When enabled, Plater will enable or disable stacking nameplates based on the settings below.\n\n" .. ImportantText .. "only toggle on if 'Stacking Nameplates' is enabled in the General Settings tab.",
+			desc = "When enabled, Plater will enable or disable stacking nameplates based on the settings below.\n\n|cFFFFFF00 Important |r: only toggle on if 'Stacking Nameplates' is enabled in the General Settings tab.",
 		},
 		
 		{

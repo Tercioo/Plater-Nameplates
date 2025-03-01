@@ -1,9 +1,13 @@
-## Interface: 110007
-## Interface-Mainline: 110007
-## Interface-Cata: 40401
+## Interface: 110100
+## Interface-Mainline: 110100
+## Interface-Cata: 40402
 ## Interface-Vanilla: 11506
 ## Title: Plater
 ## Notes: Nameplate addon designed for advanced users.
+## Notes-esES: Addon de placa de nombre diseñado para usuarios avanzados
+## Notes-esMX: Addon de placa de nombre diseñado para usuarios avanzados
+## Notes-frFR: Add-on de plaque de nom conçu pour les utilisateurs avancés
+## Notes-ptBR: Addon de placa de nome projetado para usuários avançados
 ## SavedVariables: PlaterDB, PlaterLanguage, PlaterLogs, PlaterBackup
 ## SavedVariablesPerCharacter: PlaterDBChr
 ## OptionalDeps: Masque
