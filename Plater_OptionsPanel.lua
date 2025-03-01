@@ -2085,9 +2085,36 @@ local debuff_options = {
 			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
-		name = "Show Buffs Casted by the Unit",
-		desc = "Show Buffs Casted by the Unit it self",
+		name = "Show Buffs Casted by the NPC",
+		desc = "Show Buffs Casted by the NPC itself",
 	},
+	{
+		type = "toggle",
+		boxfirst = true,
+		get = function() return Plater.db.profile.aura_show_debuff_by_the_unit end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_debuff_by_the_unit = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Debuffs Casted by the NPC",
+		desc = "Show Debuffs Casted by the NPC itself",
+	},
+	{
+		type = "toggle",
+		boxfirst = true,
+		get = function() return Plater.db.profile.aura_show_aura_by_other_npcs end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_aura_by_other_npcs = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Auras Casted by other NPCs",
+		desc = "Show Auras Casted not from players and not from the unit itself.\n\n|cFFFFFF00 Important |r: This may cause a lot of auras to show!",
+	},
+	
+	{type = "blank"},
+	
 	{
 		type = "toggle",
 		boxfirst = true,
