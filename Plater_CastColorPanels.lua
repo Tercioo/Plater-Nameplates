@@ -223,7 +223,7 @@ function Plater.SetCastBarColorsForScript(castBar, canUseScriptColor, scriptColo
     end
 
     --if is interruptible and don't have a custom user color, set the script color
-    if (canUseScriptColor and scriptColor0) then
+    if (canUseScriptColor and scriptColor) then
         if (type(scriptColor) == "table" or (type(scriptColor) == "string") and DF:IsHtmlColor(scriptColor)) then
             castBar:SetColor(Plater:ParseColors(scriptColor))
         end
