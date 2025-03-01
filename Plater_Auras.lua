@@ -2236,7 +2236,7 @@ end
 						can_show_this_debuff = true
 						
 					--> is casted by other npcs
-					elseif (DB_AURA_SHOW_BYOTHERNPCS and not isFromPlayerOrPlayerPet and sourceUnit and sourceUnit ~= unit) then
+					elseif (DB_AURA_SHOW_BYOTHERNPCS and not isFromPlayerOrPlayerPet and (not sourceUnit or (sourceUnit and not UnitIsUnit (sourceUnit, unit)))) then
 						can_show_this_debuff = true
 						
 					--> is casted by the unit it self
@@ -2354,7 +2354,7 @@ end
 							Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, true, nil, nil, nil, dispelName, timeMod)
 												
 						--> is casted by other nopcs
-						elseif (DB_AURA_SHOW_BYOTHERNPCS and not isFromPlayerOrPlayerPet and sourceUnit and sourceUnit ~= unit) then
+						elseif (DB_AURA_SHOW_BYOTHERNPCS and not isFromPlayerOrPlayerPet and (not sourceUnit or (sourceUnit and not UnitIsUnit (sourceUnit, unit)))) then
 							local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
 							Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, true, nil, nil, nil, dispelName, timeMod)
 							
@@ -2818,7 +2818,7 @@ end
 		DB_AURA_SHOW_BYOTHERPLAYERS = profile.aura_show_aura_by_other_players
 		DB_AURA_SHOW_BYOTHERNPCS = profile.aura_show_aura_by_other_npcs
 		DB_AURA_SHOW_BUFFBYUNIT = profile.aura_show_buff_by_the_unit
-		DB_AURA_SHOW_DEBUFF_BYUNIT = aura_show_debuff_by_the_unit
+		DB_AURA_SHOW_DEBUFFBYUNIT = profile.aura_show_debuff_by_the_unit
 		DB_AURA_PADDING = profile.aura_padding
 
 		DB_AURA_GROW_DIRECTION = profile.aura_grow_direction
