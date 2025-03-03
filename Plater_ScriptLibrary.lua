@@ -61,6 +61,14 @@ if (GetExpansionLevel() == 10) then --World of Warcraft 11 has the expansion lev
 	--table.insert(platerInternal.Scripts.DefaultCastScripts, "Aura - Is Cast Bar [P]")
 	table.insert(platerInternal.Scripts.DefaultCastScripts, "Cast - Voidzone [P]")
 
+	PlaterScriptLibrary["Cast - Tankbuster [P]"] = { --2025 March 03
+		Revision = 1,
+		ScriptType = "script",
+		String = "vNvBZPTow4)l8LctduBJXaDM8bcjKW9MazQt7D2TPoiSfG3AKzLTtA2Dw(TVNJSKXa2qst7oZo02RSS051NZJoYxhDN7CSdxf7hYIGHJepF3ZROoJSCS)t6ZQ3Q7y)fsqcmVMJ9iYsQJ9zbe23xp5AFg8Wq3qg8VSykFgXLEFppVXSO7VnGaZCV)sYCA09PI6HP4gDSpNg56y7e7mYyJwBTLwnuA1(wEOxIlnA9eY6jSWyY0a66j0zZOUXRN4ZwpjEbmHljcECkHVEYtlOmXQJwrdcwpzgpCPCvV7oU)85uE07G3gt4XGyJdt3DdL7nwybRNy86CUaYuAqENRzzoxZmN7cuYsBtATmWgwpjKlNy45WdZKlXoDjzonyoRNiDjW5d)b42myQf(qSOc82k75unFJoLzz4eZsXj2RaT8gbkT2OwtPAtIO9H0gKY7hgeYvQ)mL27lqeNHicXcwp5cgcE8ELMsyywa4VeilAQyobGnliS5i0CxiOlQWtqd3AJHRlnC3cSArfi(hdNbT7QByO1wtZQPgmOJZS6TSq40Go6DnB3Pv7oDT0A3TzB5BmXDgxMF)6Cx30TK6VY4wg(lZdBGUw7YGcT)Dsz0zJwHc0Bi)qeyZNFYzQQACSEywajAX6jCYkFVGNHShX7FKGlAr4tWBfRpBD0OgRNiCcysqal9dc8JOGH7fb1u34ZaNRHMQUwSNZt4e0M349nalBaN4kM9SxNJZswoLYvXVbPgFMkGar3cceAQiXqMlNsIkcBUG6pFb(WZ47qN7XuYOuNkhifWqxjwC(8zM)m9T4p5aPxjTNBc9q3c8HxDc(eXCC67spLiAjbPjJwq(onhBjYSUcnTtuoEeno2NnpclyzX8WGijAiiKnpfnedYixgxvdlK9VZeUDQXNpHRRxugplLFfA4rGximDvIxyOk73iV13B5Qa)4epAM5BSJYZTIFghjhsbTEJ9T(oBB8P1GBmBOSl8Xnr)TI9d40)zcL5(CM1RRTJ5NBjVzZhkbIdDFe6CaNbsfAIipXZdfCQCCSf832XOpAh5Y9xbBRPKB3OJMLMjUaiuO3YeYMaLUySMvlbjEZM6n1TWd7g10qZY0ejwHz1A1XcPBHzB2sVfYbcdnHJaqwGrMnnB3UPiaaJnmm6kWkW4UAn1fr(rMTBcBfgdRZSv32DX1aY30cprbgJwGvlllqrOjyAzP3fKNoOvtZoMDG3RdRZ0W0e3NExX8O1a(OHQGUo0ocWxpf4vXos(6TFZXU1rd8yP8da30dXz7TXk2ChBSzdq8W5j3r5U(HaLdCstVP(aS0h52WDsHgEcv14Oea8cyI2ZsyUP98unIgmdk6ty(Xd9KdG07sKjGYE8o88CyyAkt8uT1)X6jYFzJQxhY2VdCt6pOUjX0u9oLehhqNZdtGZgKnGr4qtcrB2PpCcAvO511ts98gdJSbIgG7PFkp7D0O4AcFGLtZ53TCJ)9qgDidO9yUuSyA9Ktpf61tOWkP9nE4vU6XvVO1XGPRuQjP(XPXj8cEpfIc)rHpCOWPVQrdGM(zeaH0yIWwwY9GX0BfBdrGvRvQPVRjxQ1HgrwBdegawf3wk)otHongKeeajrXH0FenIQLGFY2HBchYyXQZ(onhMSH8O3pEjv((YKghanHCFKVxeF8OZijb4PI()lQk4GKG(CSijYhYWPNQrcGUd8EgFlkI8NsUW3JQkfQTt0oZ8hd35WNrcsTVsd1yD3hTPzUz5c44zdFzhn73qJWBZwzqOljytxoNkTIcdMLyoIDjfqb2YEELsxVpNe7NV)jG1RWuOe4cYsU8Zc5EuUSTBfTLo83ggQ)rRHzHYkd)iaGIrYZb3e13mBjikOHiv8TSw)tVWShH)DKfbV)dOHqwWZPyexcsjkauGRXtwb8Z1YRIuFgGGjOCKk0pktJcPRaYzxLNrFAVw(yH48iYg3dGK3iRht7CNatmMDfGOBSV3UnI(H(e2qLjFyM4Cht0a6RyM)8g7Cx0JsBQGq2XK4KOZizP80OZhVLWbjIZfL3i3sh1(5yD3dZjK2GqUTWTuGUJ7KfVi3TxHY0leVL5xNrC)E6bOhJcDpwYg2RaO4MYXQhKhDlzMgGEb)G(jATD)ef2OaYrfr5Xiug5qXBKSJ(CSX(UmGUPSXMUABQRzA0Xc6SfAm73qhlVT(o(5735)Z7CPaKQ3lcnw8HDpCEkF2Eh2Tf1BC4QmU2LuorDjOcy4H7IS6NIHV4owqXv4XI7wxU7c)FwDjuFy8RR(OEDjlv2HovtpO5ihEvipCAlghMiS4mUSZsp5v83RfM(Jhny4LpCwV()5LFA8NhD(ddUUN9vpC(N)uV7goEuzAERpgvXQMGF44ToQepcTKVuuX(F(MBoumiBDfBjytDiZcrD9Fv)2tHR(VNjDyGSWmk5n5On6luPCEfsc)yEYETQ80c)yKb5yg821PtMfY39lnvKbNRU9uLn9rPnLVMopKUGy7wFbQdSKSpIZbwt2xk5emleerZ9F1KrfzasRb(GmscvW3gc1kr5n3AhpWft)bq(krDjrQyhjl7pLUWN5vE6xwHmf4NUCd)0DkXUBCDi(Dg2KR)6xZ9bj6F1Wl(Yf3CXO7g8PE3CX9FEy9EUl8PpsxcxqREVa4e96xge(03(2jBUlXF57fVOAT3BPDY(xW49TWzRmnJ9Sc84)gNZut7dT0nuH12AFWOL1)jxaRypcPrpla4fVr0yr1k9o)CuMTFr78Co5PRXlgxTY4VCXNUU3F7LVxr6f1OlfdzvKEl6EYzoUyW(VREeqHirNDhBG6jzAk6yryGchS7nXrtraBPh)ORTPg27LByhKiMEkLCfAivl2ZojVVO(PoKQATY79OS4n0Aw1IBR)KFPkAVmsrT58sYyVLusJzepO9TdMzYwt5jO8D)SZUruAVRV9QEvKCyh7e1pOQmB0UvTxShiQXKeXvpUkEvxfsOIXjXhpkjw0Bpmz8sdtIZeQ969KFfrRCFiTsU64HwISl29K6lF0wDOc9MQ)R8UBzcheSw6)NDD(Vp",
+		Enabled = true,
+		OverrideTriggers = "merge",
+	}
+
 	PlaterScriptLibrary["Aura - Is Cast Bar [P]"] = { --2024 June 30
 		Revision = 1,
 		ScriptType = "script",
@@ -1485,6 +1493,48 @@ do
 				Plater.db.profile.aura_cooldown_edge_texture = [[Interface\AddOns\Plater\images\transparent]]
 			end
 		end
+	})
+
+	--#39 add spell to wow 11.1
+	tinsert (PlaterPatchLibrary, {
+		NotEssential = true,
+
+		Notes = {
+			"- Added spells to 11.1 dungeons."
+		},
+		Func = function()
+			local addTriggers = {
+				--script name			  trigger list
+				["Add - Explode on Die [P]"] = {130653, 231497, npc = true},
+				["Add - Important [P]"] = {152033, 170234, 220368, 231176, 213751, npc = true},
+				["Aura - Buff Alert [Plater]"] = {282801},
+				["Cast - AoE Hit All [P]"] = {258622, 269429, 271456, 1215102, 1215409, 291946, 297128, 1215741, 330716, 463206, 442995, 435622, 465827, 460156, 1218117, 428266, 427404, 1214628, 424431, 448791},
+				["Cast - AoE With Range [P]"] = {267354, 1214754, 260280, 293861, 285454, 317605, 339415, 331223, 318406, 442589, 423501, 440652, 424621},
+				["Cast - Frontal Cone [Plater]"] = {1217279, 267551, 275907, 259940, 283421, 293986, 291865, 292264, 1215738, 334023, 317231, 320729, 333294, 330614, 323608, 432198, 441119, 448619, 436592, 473220, 472452, 465682, 465754, 473114, 1217496, 422122, 426261, 421277, 427025, 426893, 474018, 1214546, 445457, 447270},
+				["Cast - Heal Cut [P]"] = {293729, 341902, 341977, 441351, 441627, 463058, 471733, 425536, 427356, 424419, 423051},
+				["Cast - Important Target [P]"] = {270042, 260813},
+				["Cast - Shining Green [P]"] = {268702, 268797, 330562, 330868, 341969, 440687, 1214780, 1214468, 426295, 422541, 427011, 427157, 427601, 424420, 444743},
+				["Cast - Simple Interrupt [P]"] = {269302, 263215, 342675, 453909, 462771, 424322, 426145, 427260},
+				["Cast - Small Alert [Plater]"] = {271579, 301088, 423479},
+				["Cast - Special Ability [P]"] = {282801, 1215412, 474298, 339573, 468841, 444034},
+				["Cast - Voidzone [P]"] = {472041, 473168, 473304, 1216431, 320182, 1215850, 331237, 434706, 434998, 439365, 473070, 427484, 424462, 424429, 423062},
+				["Fixate On You [Plater]"] = {129802, 133482, 235631, 231014, npc = true},
+				--[""] = {},
+				--[""] = {},
+			}
+
+			for scriptName, triggerList in pairs(addTriggers) do
+				if (triggerList.npc) then
+					for _, npcId in ipairs(triggerList) do
+						Plater.AddTriggerToScript(npcId, "npc", scriptName)
+					end
+				else
+					for _, spellId in ipairs(triggerList) do
+						Plater.AddTriggerToScript(spellId, "cast", scriptName)
+					end
+				end
+			end
+		end,
 	})
 
 	--[=[
