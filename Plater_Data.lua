@@ -785,10 +785,6 @@ function platerInternal.CreateDataTables(Plater)
         UpdateIconAspecRatio = true, --adjust the icon texcoords depending on its size
         FormatTime = true, --get a number and return it formated into time, e.g. 63 return "1m" 1 minute
         FormatTimeDecimal = true, --get a number and return it formated into time with decimals below 10sec, e.g. 9.5 return "9.5s"
-        GetAuraIcon = true, --return an icon to be use to show an aura
-        AddAura = true, --adds an aura into the nameplate, require all the aura data and an icon
-        AddExtraIcon = true, --adds an aura into the extra buff row of icons, require the aura data
-        HideNonUsedAuraIcons = true, --after an aura refresh, hide all non used icons in the aura container
         ResetAuraContainer = true, --reset the aura container to be ready to a refresh
         TrackSpecificAuras = true, --refresh the aura container using a list of auras to track
         UpdateAuras_Manual = true, --start an aura refresh for manual aura tracking
