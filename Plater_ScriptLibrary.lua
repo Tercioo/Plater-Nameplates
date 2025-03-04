@@ -26,6 +26,8 @@ platerInternal.Scripts.DefaultCastScripts = {
 	"Cast - Very Important [Plater]",
 }
 
+platerInternal.Scripts.CurrentCastScripts = {}
+
 do
 	PlaterScriptLibrary = {}
 

@@ -12126,7 +12126,7 @@ end
 			table.wipe(SCRIPT_AURA_TRIGGER_CACHE)
 			table.wipe(SCRIPT_CASTBAR_TRIGGER_CACHE)
 			table.wipe(SCRIPT_UNIT_TRIGGER_CACHE)
-			table.wipe(platerInternal.Scripts.DefaultCastScripts)
+			table.wipe(platerInternal.Scripts.CurrentCastScripts)
 			Plater.CompileAllScripts (scriptType, noHotReload)
 			
 			Plater.EndLogPerformanceCore("Plater-Core", "Mod/Script", "WipeAndRecompileAllScripts - script")
@@ -12663,13 +12663,10 @@ end
 			end
 		end
 
-		--add castbar scripts to the default list for previews
+		--add castbar scripts to the current list for previews
 		if (scriptObject.ScriptType == 2) then
-			local defaultScripts = platerInternal.Scripts.DefaultCastScripts
-			local index = DF.table.find(defaultScripts, scriptObject.Name)
-			if (not index) then
-				table.insert(defaultScripts, scriptObject.Name)
-			end
+			local currentScripts = platerInternal.Scripts.CurrentCastScripts
+			DF.table.addunique(currentScripts, scriptObject.Name)
 		end
 		
 		--trigger container is the table with spellIds for auras and/or spellcast
