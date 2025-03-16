@@ -8715,6 +8715,28 @@ end
 			end
 		end
 		
+		--"always show" toggle: nameplateShowAll
+		if (profile.auto_toggle_always_show_enabled) then
+			--discover which is the map type the player is in
+			if (zoneType == "party") then
+				SetCVar ("nameplateShowAll", profile.auto_toggle_always_show ["party"] and CVAR_ENABLED or CVAR_DISABLED)
+				
+			elseif (zoneType == "raid") then
+				SetCVar ("nameplateShowAll", profile.auto_toggle_always_show ["raid"] and CVAR_ENABLED or CVAR_DISABLED)
+				
+			elseif (zoneType == "arena" or zoneType == "pvp") then
+				SetCVar ("nameplateShowAll", profile.auto_toggle_always_show ["arena"] and CVAR_ENABLED or CVAR_DISABLED)
+				
+			else
+				--if the player is resting, consider inside a major city
+				if (IsResting()) then
+					SetCVar ("nameplateShowAll", profile.auto_toggle_always_show ["cities"] and CVAR_ENABLED or CVAR_DISABLED)
+				else
+					SetCVar ("nameplateShowAll", profile.auto_toggle_always_show ["world"] and CVAR_ENABLED or CVAR_DISABLED)
+				end
+			end
+		end
+		
 		if combat then return end
 
 		--friendly nameplate toggle

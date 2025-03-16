@@ -11064,6 +11064,74 @@ end
 			name = "In Open World",
 			desc = "Set stacking on when at any place not listed on the other options.",
 		},
+		
+		{type = "blank"},
+		{type = "label", get = function() return "Auto Toggle 'Always Show Nameplates':" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_always_show_enabled end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_always_show_enabled = value
+				
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+				Plater.RefreshAutoToggle()
+			end,
+			name = "OPTIONS_ENABLED",
+			desc = "When enabled, Plater will enable or disable 'always show nameplates' based on the settings below.",
+		},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_always_show ["party"] end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_always_show ["party"] = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "In Dungeons",
+			desc = "Set 'always show nameplates' on when inside dungeons.",
+		},	
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_always_show ["raid"] end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_always_show ["raid"] = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "In Raid",
+			desc = "Set 'always show nameplates' on when inside raids.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_always_show ["arena"] end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_always_show ["arena"] = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "In Arena / BG",
+			desc = "Set 'always show nameplates' on when inside arena or battleground.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_always_show ["cities"] end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_always_show ["cities"] = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "In Major Cities",
+			desc = "Set 'always show nameplates' on when inside a major city.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_always_show ["world"] end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_always_show ["world"] = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "In Open World",
+			desc = "Set 'always show nameplates' on when at any place not listed on the other options.",
+		},
 
 		{type = "blank"},
 		{type = "label", get = function() return "Raid and Party:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},

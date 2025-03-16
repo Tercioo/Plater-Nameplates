@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1740861648, "New Feature", "Mar 16th, 2024", "Adding auto toggle option for 'always show nameplates'.", "cont1nuity"},
 			{1740861648, "New Feature", "Mar 1st, 2024", "Adding aura auto tracking options for 'debuffs by the npc' and 'auras from other NPCs'.", "cont1nuity"},
 			
 			{1740518781, "Backend Change", "Feb 27th, 2024", "Fixing an issue with green texutures in the options (through DetailsFramework update).", "cont1nuity"},

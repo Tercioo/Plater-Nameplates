@@ -1023,6 +1023,15 @@ PLATER_DEFAULT_SETTINGS = {
 			["world"] =  true,
 			["cities"] = false,
 		},
+		
+		auto_toggle_always_show_enabled = false,
+		auto_toggle_always_show = {
+			["party"] = true,
+			["raid"] = true,
+			["arena"] = true,
+			["world"] =  true,
+			["cities"] = true,
+		},
 
 		auto_inside_raid_dungeon = {
 			hide_enemy_player_pets = false,
