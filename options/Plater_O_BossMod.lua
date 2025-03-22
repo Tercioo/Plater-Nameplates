@@ -143,6 +143,17 @@ function platerInternal.CreateBossModOptions()
             desc = "Enable cast rename based on BigWigs or DBM spell names.",
         },
         
+        {
+            type = "toggle",
+            get = function() return Plater.db.profile.bossmod_castrename_priority end,
+            set = function (self, fixedparam, value) 
+                Plater.db.profile.bossmod_castrename_priority = value
+                --Plater.UpdateAllPlates()
+            end,
+            name = "Prioritize boss-mod cast renaming",
+            desc = "Prioritize cast rename based on BigWigs or DBM spell names over Plater cast names.",
+        },
+        
         {type = "blank"},
         
         {type = "label", get = function() return "Global Icon Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
