@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1742823589, "Backend Change", "Mar 24th, 2024", "Re-enabling LibClassicCasterino support to track channelled spells.", "cont1nuity"},
 			{1742823589, "Bug Fix", "Mar 24th, 2024", "Improving tracking of chanelled spells for the Cast Colors tab.", "cont1nuity"},
 			{1742823589, "New Feature", "Mar 16th, 2024", "Adding auto toggle option for 'always show nameplates'.", "cont1nuity"},
 			{1742823589, "New Feature", "Mar 1st, 2024", "Adding aura auto tracking options for 'debuffs by the npc' and 'auras from other NPCs'.", "cont1nuity"},
