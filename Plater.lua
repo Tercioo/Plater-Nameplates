@@ -5283,8 +5283,8 @@ function Plater.OnInit() --private --~oninit ~init
 					Plater.UpdateSpellNameSize (self.Text, unitFrame.ActorType, nil, isInCombat)
 					
 					-- in some occasions channeled casts don't have a CLEU entry... check this here
-					if (unitFrame.ActorType == "enemynpc" and event == "UNIT_SPELLCAST_CHANNEL_START" and (not DB_CAPTURED_SPELLS[self.spellID] or DB_CAPTURED_SPELLS[self.spellID].isChanneled == nil)) then
-						parserFunctions.SPELL_CAST_SUCCESS (nil, "SPELL_CAST_SUCCESS", nil, unitFrame[MEMBER_GUID], unitFrame.unitNameInternal, 0x00000000, nil, nil, nil, nil, nil, self.spellID, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+					if (unitFrame.ActorType == "enemynpc" and event == "UNIT_SPELLCAST_CHANNEL_START" and (not DB_CAPTURED_SPELLS[spellID] or DB_CAPTURED_SPELLS[spellID].isChanneled == nil or not DB_CAPTURED_CASTS[spellID] or DB_CAPTURED_CASTS[spellID].isChanneled == nil)) then
+						parserFunctions.SPELL_CAST_SUCCESS (nil, "SPELL_CAST_SUCCESS", nil, unitFrame[MEMBER_GUID], unitFrame.unitNameInternal, 0x00000040, nil, nil, nil, nil, nil, self.spellID, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 					end
 
 				elseif (event == "UNIT_SPELLCAST_INTERRUPTED") then
@@ -9546,19 +9546,20 @@ end
 		end,
 		
 		SPELL_CAST_SUCCESS = function (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical)
-			if ((tonumber(spellID) or 0) > 0 and (not DB_CAPTURED_SPELLS[spellID] or DB_CAPTURED_SPELLS[spellID].isChanneled == nil)) then -- check isChanneled to ensure update of already existing data
+			if ((tonumber(spellID) or 0) > 0 and (not DB_CAPTURED_SPELLS[spellID] or DB_CAPTURED_SPELLS[spellID].isChanneled == nil or not DB_CAPTURED_CASTS[spellID] or DB_CAPTURED_CASTS[spellID].isChanneled == nil)) then -- check isChanneled to ensure update of already existing data
 				if (not platerInternal.HasFriendlyAffiliation[sourceGUID]) then
 					if (not sourceFlag or bit.band(sourceFlag, 0x60) ~= 0) then --is neutral or hostile
 						local npcId = Plater:GetNpcIdFromGuid(sourceGUID or "")
 						local isChanneled = false
-						if sourceGUID and UnitTokenFromGUID then -- this is the only proper way to check for channeled spells...
-							local unit = UnitTokenFromGUID(sourceGUID)
-							if unit and UnitChannelInfo(unit) then
-								isChanneled = true
-							end 
-						end
 
 						if (npcId and npcId ~= 0) then
+							if sourceGUID and UnitTokenFromGUID then -- this is the only proper way to check for channeled spells...
+								local unit = UnitTokenFromGUID(sourceGUID)
+								if unit and UnitChannelInfo(unit) then
+									isChanneled = true
+								end 
+							end
+							
 							---@type plater_spelldata
 							local spellData = {
 								event = token,
