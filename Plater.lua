@@ -9550,14 +9550,18 @@ end
 				if (not platerInternal.HasFriendlyAffiliation[sourceGUID]) then
 					if (not sourceFlag or bit.band(sourceFlag, 0x60) ~= 0) then --is neutral or hostile
 						local npcId = Plater:GetNpcIdFromGuid(sourceGUID or "")
-						local isChanneled = false
 
 						if (npcId and npcId ~= 0) then
+							local isChanneled, isCasting = false, false
 							if sourceGUID and UnitTokenFromGUID then -- this is the only proper way to check for channeled spells...
 								local unit = UnitTokenFromGUID(sourceGUID)
-								if unit and UnitChannelInfo(unit) then
-									isChanneled = true
-								end 
+								if unit then
+									if UnitChannelInfo(unit) then
+										isChanneled = true
+									elseif UnitCastingInfo(unit) then
+										isCasting = true
+									end
+								end
 							end
 							
 							---@type plater_spelldata
@@ -9572,7 +9576,7 @@ end
 							--print("added DB_CAPTURED_SPELLS 1:", sourceName, spellID, spellName)
 							DB_CAPTURED_SPELLS[spellID] = spellData
 
-							if isChanneled and not DB_CAPTURED_CASTS[spellID] then
+							if (isChanneled or isCasting) and not DB_CAPTURED_CASTS[spellID] then
 								---@type plater_spelldata
 								local spellData = {
 									event = token,
@@ -9580,7 +9584,7 @@ end
 									npcID = npcId,
 									encounterID = Plater.CurrentEncounterID,
 									encounterName = Plater.CurrentEncounterName,
-									isChanneled = isChanneled
+									isChanneled = isChanneled,
 								}
 								DB_CAPTURED_CASTS[spellID] = spellData
 							end
