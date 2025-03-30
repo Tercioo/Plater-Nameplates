@@ -2522,7 +2522,6 @@ Plater.AnchorNamesByPhraseId = {
 		end,
 		
 		ADDON_LOADED = function(_, addOnName, containsBindings)
-			DevTool:AddData(addOnName)
 			if addonName == "BigWigs" or addonName == "DBM-Core" then
 				Plater.RegisterBossModAuras()
 			end
