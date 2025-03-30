@@ -267,11 +267,11 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
     local headerTable = {
         {text = "", width = 40}, --1
         {text = "", width = 20}, --2
-        {text = "Spell Id", width = 50}, --3
-        {text = "Spell Name", width = 140}, --4
-        {text = "Rename To", width = 110}, --5
-        {text = "Npc Name", width = 110}, --6
-        {text = "Send To Raid", width = 80}, --7
+        {text = "Spell Id", width = 60}, --3
+        {text = "Spell Name", width = 120}, --4
+        {text = "Rename To", width = 120}, --5
+        {text = "Npc Name", width = 120}, --6
+        {text = "Send To Raid", width = 75}, --7
         {text = "Play Sound", width = 110}, --8
         {text = "Color", width = 110}, --9
         {text = "Add Animation", width = 270}, --10
