@@ -2521,6 +2521,13 @@ Plater.AnchorNamesByPhraseId = {
 			
 		end,
 		
+		ADDON_LOADED = function(_, addOnName, containsBindings)
+			DevTool:AddData(addOnName)
+			if addonName == "BigWigs" or addonName == "DBM-Core" then
+				Plater.RegisterBossModAuras()
+			end
+		end,
+		
 		--many times at saved variables load the spell database isn't loaded yet
 		PLAYER_LOGIN = function()			
 			
@@ -4490,6 +4497,8 @@ function Plater.OnInit() --private --~oninit ~init
 		
 		Plater.EventHandlerFrame:RegisterEvent ("PLAYER_LOGIN")
 		Plater.EventHandlerFrame:RegisterEvent ("VARIABLES_LOADED")
+		
+		Plater.EventHandlerFrame:RegisterEvent ("ADDON_LOADED")
 
 		--power update for hooking scripts
 		local hookPowerEventFrame = CreateFrame ("frame")
