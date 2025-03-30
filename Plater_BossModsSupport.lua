@@ -461,6 +461,7 @@ function Plater.RegisterBossModAuras()
 			DBM:RegisterCallback('BossMod_HideNameplateAura',Callback_DBM_HideNameplateAura)
 			DBM:RegisterCallback('BossMod_EnableHostileNameplates',Callback_DBM_EnableHostile)
 			DBM:RegisterCallback('BossMod_DisableHostileNameplates',Callback_DBM_DisableHostile)
+			IS_REGISTERED = true
 		end
 
 		if BigWigsLoader and BigWigsLoader.RegisterMessage then
@@ -476,10 +477,9 @@ function Plater.RegisterBossModAuras()
 			BigWigsLoader.RegisterMessage(Plater,'BigWigs_RemoveNameplateIcon', Callback_BW_HideNameplateAura)
 			BigWigsLoader.RegisterMessage(Plater,'BigWigs_EnableHostileNameplates', Callback_BW_EnableHostile)
 			BigWigsLoader.RegisterMessage(Plater,'BigWigs_DisableHostileNameplates', Callback_BW_DisableHostile)
+			IS_REGISTERED = true
 		end
 	end
-
-	IS_REGISTERED = true
 end
 
 
