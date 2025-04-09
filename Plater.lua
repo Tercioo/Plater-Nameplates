@@ -4227,7 +4227,13 @@ function Plater.OnInit() --private --~oninit ~init
 		platerInternal.CreatePerformanceUnits(Plater)
 	end)
 	
-	Plater.UpdateBlizzardNameplateFonts()
+	Plater.UpdateBlizzardNameplateFonts(true)
+	hooksecurefunc(LibSharedMedia, 'Register', function(_, mediaType, key, data)
+		if not mediaType or type(mediaType) ~= 'string' then return end
+		if mediaType:lower() == 'font' then
+			Plater.UpdateBlizzardNameplateFonts(key)
+		end
+	end)
 	
 	-- do we need to support blizzard frames?
 	SUPPORT_BLIZZARD_PLATEFRAMES = (not DB_PLATE_CONFIG [ACTORTYPE_PLAYER].module_enabled) or (not DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].module_enabled) or (not DB_PLATE_CONFIG [ACTORTYPE_ENEMY_PLAYER].module_enabled) or (not DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_NPC].module_enabled) or (not DB_PLATE_CONFIG [ACTORTYPE_ENEMY_NPC].module_enabled)
@@ -7862,9 +7868,9 @@ end
 	end
 	
 	--Blizzard default font settings
-	function Plater.UpdateBlizzardNameplateFonts()
+	function Plater.UpdateBlizzardNameplateFonts(updateFont)
 		local profile = Plater.db.profile
-		if profile.blizzard_nameplate_font_override_enabled then
+		if profile.blizzard_nameplate_font_override_enabled and (updateFont == true or profile.blizzard_nameplate_font == updateFont or profile.blizzard_nameplate_large_font == updateFont)then
 			DF:SetFontFace (_G.SystemFont_NamePlate, profile.blizzard_nameplate_font)
 			DF:SetFontOutline (_G.SystemFont_NamePlate, profile.blizzard_nameplate_font_outline)
 			DF:SetFontSize (_G.SystemFont_NamePlate, profile.blizzard_nameplate_font_size)
