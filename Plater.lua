@@ -4070,7 +4070,28 @@ Plater.AnchorNamesByPhraseId = {
 	end
 
 	Plater.EventHandlerFrame:SetScript ("OnEvent", Plater.EventHandler)
+	--events
 	Plater.EventHandlerFrame:RegisterEvent ("PLAYER_ENTERING_WORLD")
+	Plater.EventHandlerFrame:RegisterEvent ("NAME_PLATE_CREATED")
+	Plater.EventHandlerFrame:RegisterEvent ("NAME_PLATE_UNIT_ADDED")
+	Plater.EventHandlerFrame:RegisterEvent ("FORBIDDEN_NAME_PLATE_UNIT_ADDED")
+	Plater.EventHandlerFrame:RegisterEvent ("NAME_PLATE_UNIT_REMOVED")
+	
+	Plater.EventHandlerFrame:RegisterEvent ("PLAYER_TARGET_CHANGED")
+	Plater.EventHandlerFrame:RegisterEvent ("PLAYER_FOCUS_CHANGED")
+	if IS_WOW_PROJECT_MAINLINE then
+		Plater.EventHandlerFrame:RegisterEvent ("PLAYER_SOFT_INTERACT_CHANGED")
+		Plater.EventHandlerFrame:RegisterEvent ("PLAYER_SOFT_FRIEND_CHANGED")
+		Plater.EventHandlerFrame:RegisterEvent ("PLAYER_SOFT_ENEMY_CHANGED")
+	end
+	
+	Plater.EventHandlerFrame:RegisterEvent ("PLAYER_REGEN_DISABLED")
+	Plater.EventHandlerFrame:RegisterEvent ("PLAYER_REGEN_ENABLED")
+	
+	Plater.EventHandlerFrame:RegisterEvent ("PLAYER_LOGIN")
+	Plater.EventHandlerFrame:RegisterEvent ("VARIABLES_LOADED")	
+	Plater.EventHandlerFrame:RegisterEvent ("ADDON_LOADED")
+	
 	
 	function Plater.RunFunctionForEvent (event, ...) --private
 		Plater.EventHandler (nil, event, ...)
@@ -4422,21 +4443,21 @@ function Plater.OnInit() --private --~oninit ~init
 		Plater.UpdateSettingsCache()
 	
 	--events
-		Plater.EventHandlerFrame:RegisterEvent ("NAME_PLATE_CREATED")
-		Plater.EventHandlerFrame:RegisterEvent ("NAME_PLATE_UNIT_ADDED")
-		Plater.EventHandlerFrame:RegisterEvent ("FORBIDDEN_NAME_PLATE_UNIT_ADDED")
-		Plater.EventHandlerFrame:RegisterEvent ("NAME_PLATE_UNIT_REMOVED")
+--		Plater.EventHandlerFrame:RegisterEvent ("NAME_PLATE_CREATED")
+--		Plater.EventHandlerFrame:RegisterEvent ("NAME_PLATE_UNIT_ADDED")
+--		Plater.EventHandlerFrame:RegisterEvent ("FORBIDDEN_NAME_PLATE_UNIT_ADDED")
+--		Plater.EventHandlerFrame:RegisterEvent ("NAME_PLATE_UNIT_REMOVED")
 		
-		Plater.EventHandlerFrame:RegisterEvent ("PLAYER_TARGET_CHANGED")
-		Plater.EventHandlerFrame:RegisterEvent ("PLAYER_FOCUS_CHANGED")
-		if IS_WOW_PROJECT_MAINLINE then
-			Plater.EventHandlerFrame:RegisterEvent ("PLAYER_SOFT_INTERACT_CHANGED")
-			Plater.EventHandlerFrame:RegisterEvent ("PLAYER_SOFT_FRIEND_CHANGED")
-			Plater.EventHandlerFrame:RegisterEvent ("PLAYER_SOFT_ENEMY_CHANGED")
-		end
+--		Plater.EventHandlerFrame:RegisterEvent ("PLAYER_TARGET_CHANGED")
+--		Plater.EventHandlerFrame:RegisterEvent ("PLAYER_FOCUS_CHANGED")
+--		if IS_WOW_PROJECT_MAINLINE then
+--			Plater.EventHandlerFrame:RegisterEvent ("PLAYER_SOFT_INTERACT_CHANGED")
+--			Plater.EventHandlerFrame:RegisterEvent ("PLAYER_SOFT_FRIEND_CHANGED")
+--			Plater.EventHandlerFrame:RegisterEvent ("PLAYER_SOFT_ENEMY_CHANGED")
+--		end
 		
-		Plater.EventHandlerFrame:RegisterEvent ("PLAYER_REGEN_DISABLED")
-		Plater.EventHandlerFrame:RegisterEvent ("PLAYER_REGEN_ENABLED")
+--		Plater.EventHandlerFrame:RegisterEvent ("PLAYER_REGEN_DISABLED")
+--		Plater.EventHandlerFrame:RegisterEvent ("PLAYER_REGEN_ENABLED")
 		
 		Plater.EventHandlerFrame:RegisterEvent ("ZONE_CHANGED_NEW_AREA")
 		Plater.EventHandlerFrame:RegisterEvent ("ZONE_CHANGED_INDOORS")
@@ -4494,10 +4515,10 @@ function Plater.OnInit() --private --~oninit ~init
 			Plater.EventHandlerFrame:RegisterEvent ("UPDATE_SHAPESHIFT_FORM")
 		end
 		
-		Plater.EventHandlerFrame:RegisterEvent ("PLAYER_LOGIN")
-		Plater.EventHandlerFrame:RegisterEvent ("VARIABLES_LOADED")
-		
-		Plater.EventHandlerFrame:RegisterEvent ("ADDON_LOADED")
+--		Plater.EventHandlerFrame:RegisterEvent ("PLAYER_LOGIN")
+--		Plater.EventHandlerFrame:RegisterEvent ("VARIABLES_LOADED")
+--		
+--		Plater.EventHandlerFrame:RegisterEvent ("ADDON_LOADED")
 
 		--power update for hooking scripts
 		local hookPowerEventFrame = CreateFrame ("frame")
