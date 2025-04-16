@@ -8,25 +8,25 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
-			{1743358777, "Backend Change", "Mar 30th, 2024", "Ensure to register DBM / BW events on the fly when loaded and ensure registration happens.", "cont1nuity"},
-			{1743358777, "Backend Change", "Mar 30th, 2024", "Resizing the column sizes on the Cast Colors and Names tab for better readability.", "cont1nuity"},
-			{1743358777, "Backend Change", "Mar 30th, 2024", "Execute indicator is now showing on the exact percentage.", "cont1nuity"},
-			{1743358777, "Backend Change", "Mar 24th, 2024", "Re-enabling LibClassicCasterino support to track channelled spells.", "cont1nuity"},
-			{1743358777, "Bug Fix", "Mar 24th, 2024", "Improving tracking of chanelled spells for the Cast Colors tab.", "cont1nuity"},
-			{1743358777, "New Feature", "Mar 16th, 2024", "Adding auto toggle option for 'always show nameplates'.", "cont1nuity"},
-			{1743358777, "New Feature", "Mar 1st, 2024", "Adding aura auto tracking options for 'debuffs by the npc' and 'auras from other NPCs'.", "cont1nuity"},
+			{1744789951, "Backend Change", "Mar 30th, 2025", "Ensure to register DBM / BW events on the fly when loaded and ensure registration happens.", "cont1nuity"},
+			{1744789951, "Backend Change", "Mar 30th, 2025", "Resizing the column sizes on the Cast Colors and Names tab for better readability.", "cont1nuity"},
+			{1744789951, "Backend Change", "Mar 30th, 2025", "Execute indicator is now showing on the exact percentage.", "cont1nuity"},
+			{1744789951, "Backend Change", "Mar 24th, 2025", "Re-enabling LibClassicCasterino support to track channelled spells.", "cont1nuity"},
+			{1744789951, "Bug Fix", "Mar 24th, 2025", "Improving tracking of chanelled spells for the Cast Colors tab.", "cont1nuity"},
+			{1744789951, "New Feature", "Mar 16th, 2025", "Adding auto toggle option for 'always show nameplates'.", "cont1nuity"},
+			{1744789951, "New Feature", "Mar 1st, 2025", "Adding aura auto tracking options for 'debuffs by the npc' and 'auras from other NPCs'.", "cont1nuity"},
 			
-			{1740518781, "Backend Change", "Feb 27th, 2024", "Fixing an issue with green texutures in the options (through DetailsFramework update).", "cont1nuity"},
+			{1740518781, "Backend Change", "Feb 27th, 2025", "Fixing an issue with green texutures in the options (through DetailsFramework update).", "cont1nuity"},
 			
-			{1740518781, "Backend Change", "Feb 25th, 2024", "Locale updates and preparation.", "cont1nuity"},
-			{1740518781, "Bug Fix", "Feb 3rd, 2024", "Fixing Combo Points for low level rogues.", "cont1nuity"},
-			{1740518781, "Bug Fix", "Jan 29th, 2024", "Fixing execute recognition for Hunter Black Arrow.", "cont1nuity"},
-			{1740518781, "Bug Fix", "Jan 21st, 2024", "Fixing several issues on the Mod Load Conditions panel.", "cont1nuity"},
-			{1740518781, "Bug Fix", "Jan 13th, 2024", "Fixing an issue with profiling if stop was not used but results should be shown.", "cont1nuity"},
+			{1740518781, "Backend Change", "Feb 25th, 2025", "Locale updates and preparation.", "cont1nuity"},
+			{1740518781, "Bug Fix", "Feb 3rd, 2025", "Fixing Combo Points for low level rogues.", "cont1nuity"},
+			{1740518781, "Bug Fix", "Jan 29th, 2025", "Fixing execute recognition for Hunter Black Arrow.", "cont1nuity"},
+			{1740518781, "Bug Fix", "Jan 21st, 2025", "Fixing several issues on the Mod Load Conditions panel.", "cont1nuity"},
+			{1740518781, "Bug Fix", "Jan 13th, 2025", "Fixing an issue with profiling if stop was not used but results should be shown.", "cont1nuity"},
 			
-			{1736722279, "Bug Fix", "Jan 11th, 2024", "Fixing broken nameplate anchoring for WAs on forced blizzard nameplates (via LibGetFrame).", "cont1nuity"},
-			{1736722279, "Bug Fix", "Jan 10th, 2024", "Fixing range check for Dark Ranger hunters (via LibRangeCheck).", "cont1nuity"},
-			{1736722279, "Bug Fix", "Jan 10th, 2024", "Fixing range check for cases when no range can be selected.", "cont1nuity"},
+			{1736722279, "Bug Fix", "Jan 11th, 2025", "Fixing broken nameplate anchoring for WAs on forced blizzard nameplates (via LibGetFrame).", "cont1nuity"},
+			{1736722279, "Bug Fix", "Jan 10th, 2025", "Fixing range check for Dark Ranger hunters (via LibRangeCheck).", "cont1nuity"},
+			{1736722279, "Bug Fix", "Jan 10th, 2025", "Fixing range check for cases when no range can be selected.", "cont1nuity"},
 			
 			{1735420632, "Backend Change", "Dec 19th, 2024", "Framework updates.", "Terciob"},
 			{1735420632, "Backend Change", "Dec 18th, 2024", "Retail TOC update.", "cont1nuity"},
