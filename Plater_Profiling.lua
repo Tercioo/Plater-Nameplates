@@ -72,7 +72,7 @@ local function traceGarbage(var)
 		garbageCalls[source .. ":" .. lineNum] = (garbageCalls[source .. ":" .. lineNum] or 0) + 1
 	end
 end
-hooksecurefunc("collectgarbage", traceGarbage)
+--hooksecurefunc("collectgarbage", traceGarbage) --apparently this is no longer possible in 11.1.5
 
 -- helper
 local function round(x)
