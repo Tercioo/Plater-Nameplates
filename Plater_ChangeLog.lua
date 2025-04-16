@@ -9,13 +9,17 @@ function Plater.GetChangelogTable()
 		Plater.ChangeLogTable = {
 
 			{1744789951, "Bug Fix", "Apr, 2025", "Fixing an issue with wrong mods/scripts being retained in some cases when updating through companion apps.", "cont1nuity"},
-			{1744789951, "Backend Change", "Mar 30th, 2025", "Ensure to register DBM / BW events on the fly when loaded and ensure registration happens.", "cont1nuity"},
-			{1744789951, "Backend Change", "Mar 30th, 2025", "Resizing the column sizes on the Cast Colors and Names tab for better readability.", "cont1nuity"},
-			{1744789951, "Backend Change", "Mar 30th, 2025", "Execute indicator is now showing on the exact percentage.", "cont1nuity"},
-			{1744789951, "Backend Change", "Mar 24th, 2025", "Re-enabling LibClassicCasterino support to track channelled spells.", "cont1nuity"},
-			{1744789951, "Bug Fix", "Mar 24th, 2025", "Improving tracking of chanelled spells for the Cast Colors tab.", "cont1nuity"},
-			{1744789951, "New Feature", "Mar 16th, 2025", "Adding auto toggle option for 'always show nameplates'.", "cont1nuity"},
-			{1744789951, "New Feature", "Mar 1st, 2025", "Adding aura auto tracking options for 'debuffs by the npc' and 'auras from other NPCs'.", "cont1nuity"},
+			{1744789951, "Backend Change", "Apr 9th, 2025", "Ensure blizzard nameplate font override is applying properly.", "cont1nuity"},
+			{1744789951, "Backend Change", "Apr 9th, 2025", "Register some nameplate events earlier.", "cont1nuity"},
+			{1744789951, "Backend Change", "Apr 5th, 2025", "Framework updates.", "Terciob"},
+			
+			{1743358777, "Backend Change", "Mar 30th, 2025", "Ensure to register DBM / BW events on the fly when loaded and ensure registration happens.", "cont1nuity"},
+			{1743358777, "Backend Change", "Mar 30th, 2025", "Resizing the column sizes on the Cast Colors and Names tab for better readability.", "cont1nuity"},
+			{1743358777, "Backend Change", "Mar 30th, 2025", "Execute indicator is now showing on the exact percentage.", "cont1nuity"},
+			{1743358777, "Backend Change", "Mar 24th, 2025", "Re-enabling LibClassicCasterino support to track channelled spells.", "cont1nuity"},
+			{1743358777, "Bug Fix", "Mar 24th, 2025", "Improving tracking of chanelled spells for the Cast Colors tab.", "cont1nuity"},
+			{1743358777, "New Feature", "Mar 16th, 2025", "Adding auto toggle option for 'always show nameplates'.", "cont1nuity"},
+			{1743358777, "New Feature", "Mar 1st, 2025", "Adding aura auto tracking options for 'debuffs by the npc' and 'auras from other NPCs'.", "cont1nuity"},
 			
 			{1740518781, "Backend Change", "Feb 27th, 2025", "Fixing an issue with green texutures in the options (through DetailsFramework update).", "cont1nuity"},
 			
