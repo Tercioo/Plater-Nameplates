@@ -806,7 +806,7 @@ end
 		wipe(stashData)
 		
 		for slug, entry in pairs(stash) do
-			local isAlreadyImported = is_wago_stash_slug_already_imported(slug)
+			local isAlreadyImported, isScipt, isMod, isProfile = is_wago_stash_slug_already_imported(slug)
 			
 			if not isAlreadyImported then
 				local newScriptObject = { -- Dummy data --~prototype ~new ~create ñew
