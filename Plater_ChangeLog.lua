@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1744789951, "Bug Fix", "Apr, 2025", "Fixing an issue with wrong mods/scripts being retained in some cases when updating through companion apps.", "cont1nuity"},
 			{1744789951, "Backend Change", "Mar 30th, 2025", "Ensure to register DBM / BW events on the fly when loaded and ensure registration happens.", "cont1nuity"},
 			{1744789951, "Backend Change", "Mar 30th, 2025", "Resizing the column sizes on the Cast Colors and Names tab for better readability.", "cont1nuity"},
 			{1744789951, "Backend Change", "Mar 30th, 2025", "Execute indicator is now showing on the exact percentage.", "cont1nuity"},
