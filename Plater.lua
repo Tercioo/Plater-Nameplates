@@ -9137,7 +9137,7 @@ end
 	function Plater.AnimateLeftWithAccel (self, deltaTime)
 		local distance = (self.AnimationStart - self.AnimationEnd) / self.CurrentHealthMax -- % travel
 		local fps = Plater.FPSData.curFPS or 60
-		local calcAnimationSpeed = (distance / fps * DB_ANIMATION_TIME_DILATATION) --scale with fps
+		local calcAnimationSpeed = (distance / fps * 2 * DB_ANIMATION_TIME_DILATATION) --scale with fps
 		
 		self.AnimationStart = self.CurrentHealthMax == 0 and 1 or self.AnimationStart - (self.CurrentHealthMax * calcAnimationSpeed)
 		self:SetValue (self.AnimationStart)
@@ -9159,9 +9159,9 @@ end
 	end
 
 	function Plater.AnimateRightWithAccel (self, deltaTime)
-		local distance = (self.AnimationStart - self.AnimationEnd) / self.CurrentHealthMax -- % travel
+		local distance = (self.AnimationEnd - self.AnimationStart) / self.CurrentHealthMax -- % travel
 		local fps = Plater.FPSData.curFPS or 60
-		local calcAnimationSpeed = (distance / fps * DB_ANIMATION_TIME_DILATATION) --scale with fps
+		local calcAnimationSpeed = (distance / fps * 2 * DB_ANIMATION_TIME_DILATATION) --scale with fps
 		
 		self.AnimationStart = self.AnimationStart + (self.CurrentHealthMax * calcAnimationSpeed)
 		self:SetValue (self.AnimationStart)
