@@ -184,6 +184,7 @@ function platerInternal.CreateDataTables(Plater)
         [205265] = true, -- Time-Displaced Trooper
         [213751] = true, -- Dynamite Mine Cart in Darkflame Cleft
         [233623] = true, -- Pyrotechnics add on Rik Reverb
+        [237967] = true, -- Discharged Giga Bomb on Gallywix myhtic
 	}
 
     --textures used in the cooldown animation, scripts can add more values to it, profile holds only the path to it
