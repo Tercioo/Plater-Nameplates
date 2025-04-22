@@ -8,7 +8,10 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
-			{1744789951, "Bug Fix", "Apr, 2025", "Fixing an issue with wrong mods/scripts being retained in some cases when updating through companion apps.", "cont1nuity"},
+			{1745324223, "Bug Fix", "Apr 22nd, 2025", "Fixing healthbar animation.", "cont1nuity"},
+			{1745324223, "Backend Change", "Apr 16th, 2025", "Disable garbage collection profiling in preparation for 11.1.5.", "cont1nuity"},
+			
+			{1744789951, "Bug Fix", "Apr 16th, 2025", "Fixing an issue with wrong mods/scripts being retained in some cases when updating through companion apps.", "cont1nuity"},
 			{1744789951, "Backend Change", "Apr 9th, 2025", "Ensure blizzard nameplate font override is applying properly.", "cont1nuity"},
 			{1744789951, "Backend Change", "Apr 9th, 2025", "Register some nameplate events earlier.", "cont1nuity"},
 			{1744789951, "Backend Change", "Apr 5th, 2025", "Framework updates.", "Terciob"},
