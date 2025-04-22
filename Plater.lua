@@ -5598,7 +5598,8 @@ function Plater.OnInit() --private --~oninit ~init
 				end
 			end
 			
-			if (DB_DO_ANIMATIONS) then
+			--if (DB_DO_ANIMATIONS and unitFrame.PlaterOnScreen and oldHealth ~= currentHealth) then
+			if (DB_DO_ANIMATIONS and unitFrame.PlaterOnScreen) then
 				--do healthbar animation ~animation ~healthbar
 				self.AnimationStart = oldHealth
 				self.AnimationEnd = currentHealth
