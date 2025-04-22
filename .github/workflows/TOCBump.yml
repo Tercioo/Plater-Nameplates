@@ -17,22 +17,22 @@ jobs:
       - name: Update TOC Interface version classic
         uses: cont1nuity/toc-interface-updater@master
         with:
-          flavor: classic # this is the default
-          future: false   # this is optional
+          flavor: classic
+          future: true   # this is optional
           replaceflavor: true # this is optional
 
       - name: Update TOC Interface version classic_era
         uses: cont1nuity/toc-interface-updater@master
         with:
-          flavor: classic_era # this is the default
-          future: false   # this is optional
+          flavor: classic_era
+          future: true   # this is optional
           replaceflavor: true # this is optional
 
       - name: Update TOC Interface version retail
         uses: cont1nuity/toc-interface-updater@master
         with:
-          flavor: retail # this is the default
-          future: false   # this is optional
+          flavor: retail
+          future: true   # this is optional
           replaceflavor: true # this is optional
 
       - name: Create pull request
