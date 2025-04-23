@@ -1,5 +1,5 @@
-## Interface: 110100
-## Interface-Mainline: 110100
+## Interface: 110105
+## Interface-Mainline: 110105
 ## Interface-Cata: 40402
 ## Interface-Vanilla: 11507
 ## Title: Plater
