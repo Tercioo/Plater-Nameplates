@@ -24,7 +24,13 @@ dispatchSendCommEvents() -- can be done immediately
 local decompressReceivedData = function(data)
 	local dataCompressed = LibDeflate:DecodeForWoWAddonChannel(data)
 	if (dataCompressed) then
-		local dataDecompressed = LibDeflate:DecompressDeflate(dataCompressed)
+		local dataDecompressed
+		--use native api where available
+		if C_EncodingUtil and C_EncodingUtil.DecompressString then
+			dataDecompressed = C_EncodingUtil.DecompressString(dataCompressed)
+		else
+			dataDecompressed = LibDeflate:DecompressDeflate (dataCompressed)
+		end
 		if (type(dataDecompressed) == "string") then
 			return dataDecompressed
 		end
@@ -124,7 +130,14 @@ function Plater.CompressData (data, dataType)
     if (LibDeflate and LibAceSerializer) then
         local dataSerialized = LibAceSerializer:Serialize (data)
         if (dataSerialized) then
-            local dataCompressed = LibDeflate:CompressDeflate (dataSerialized, {level = 9})
+			local dataCompressed
+			--use native api where available
+			if C_EncodingUtil and C_EncodingUtil.CompressString then
+				dataCompressed = C_EncodingUtil.CompressString (dataSerialized, Enum.CompressionMethod.Deflate, Enum.CompressionLevel.OptimizeForSize)
+			else
+				dataCompressed = LibDeflate:CompressDeflate (dataSerialized, {level = 9})
+			end
+			
             if (dataCompressed) then
                 if (dataType == "print") then
                     local dataEncoded = LibDeflate:EncodeForPrint (dataCompressed)
@@ -142,7 +155,13 @@ end
 -- ~compress ~zip ~export ~import ~deflate
 function Plater.CompressDataWithoutSerialization(data, dataType)
     if (LibDeflate) then
-		local dataCompressed = LibDeflate:CompressDeflate(data, {level = 9})
+		local dataCompressed
+		--use native api where available
+		if C_EncodingUtil and C_EncodingUtil.CompressString then
+			dataCompressed = C_EncodingUtil.CompressString (data, Enum.CompressionMethod.Deflate, Enum.CompressionLevel.OptimizeForSize)
+		else
+			dataCompressed = LibDeflate:CompressDeflate (data, {level = 9})
+		end
 		if (dataCompressed) then
 			if (dataType == "print") then
 				local dataEncoded = LibDeflate:EncodeForPrint(dataCompressed)
@@ -178,7 +197,13 @@ function Plater.DecompressData (data, dataType, silent)
             end
         end
 
-        local dataSerialized = LibDeflate:DecompressDeflate (dataCompressed)
+		local dataSerialized
+		--use native api where available
+		if C_EncodingUtil and C_EncodingUtil.DecompressString then
+			dataSerialized = C_EncodingUtil.DecompressString(dataCompressed)
+		else
+			dataSerialized = LibDeflate:DecompressDeflate (dataCompressed)
+		end
         if (not dataSerialized) then
             if not silent then Plater:Msg ("couldn't uncompress the data.") end
             return false
