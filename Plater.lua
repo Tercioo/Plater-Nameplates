@@ -5599,7 +5599,7 @@ function Plater.OnInit() --private --~oninit ~init
 			end
 			
 			--if (DB_DO_ANIMATIONS and unitFrame.PlaterOnScreen and oldHealth ~= currentHealth) then
-			if (DB_DO_ANIMATIONS and unitFrame.PlaterOnScreen) then
+			if (DB_DO_ANIMATIONS and unitFrame.PlaterOnScreen and oldHealth ~= currentHealth) then
 				--do healthbar animation ~animation ~healthbar
 				self.AnimationStart = oldHealth
 				self.AnimationEnd = currentHealth
@@ -9136,7 +9136,7 @@ end
 
 	--> animation with acceleration ~animation ~healthbaranimation
 	function Plater.AnimateLeftWithAccel (self, deltaTime)
-		local distance = (self.AnimationStart - self.AnimationEnd) / self.CurrentHealthMax -- % travel
+		local distance = max((self.AnimationStart - self.AnimationEnd) / self.CurrentHealthMax, 0.01) -- % travel, with min of 1%
 		local fps = Plater.FPSData.curFPS or 60
 		local calcAnimationSpeed = (distance / fps * 2 * DB_ANIMATION_TIME_DILATATION) --scale with fps
 		
@@ -9160,7 +9160,7 @@ end
 	end
 
 	function Plater.AnimateRightWithAccel (self, deltaTime)
-		local distance = (self.AnimationEnd - self.AnimationStart) / self.CurrentHealthMax -- % travel
+		local distance = max((self.AnimationEnd - self.AnimationStart) / self.CurrentHealthMax, 0.01) -- % travel, with min of 1%
 		local fps = Plater.FPSData.curFPS or 60
 		local calcAnimationSpeed = (distance / fps * 2 * DB_ANIMATION_TIME_DILATATION) --scale with fps
 		
