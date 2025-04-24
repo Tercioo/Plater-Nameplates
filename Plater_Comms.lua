@@ -10,9 +10,54 @@ local GetSpellInfo = GetSpellInfo or function(spellID) if not spellID then retur
 
 local CONST_THROTTLE_HOOK_COMMS = 0.500 --2 comms per second per mod
 local CONST_COLORNPC_SHARING_CHANNEL = "GUILD"
+local CONST_PLATER_DATA_TYPE_V2 = "!PLATER:2!"
+
+--Plater.FORCE_LIB_COMPRESSION = true -- forced fallback
+
+-- tmp helper method for analyzing export/import
+---@param o1 any|table First object to compare
+---@param o2 any|table Second object to compare
+function equals(o1, o2)
+	if o1 == o2 then return true end
+	local o1Type = type(o1)
+	local o2Type = type(o2)
+	if o1Type ~= o2Type then print("types", o1, o2, o1Type, o2Type) return false end
+	if o1Type == "number" then local ae = ApproximatelyEqual(o1, o2, 0.001) print("AE", o1, o2) return ae end
+	if o1Type ~= 'table' then print("o1 not table", o1, o2) return false end
+
+	local keySet = {}
+
+	for key1, value1 in pairs(o1) do
+		local value2 = o2[key1]
+		if value2 == nil then key1 = tonumber(key1) if key1 then value2 = o2[key1] end end --try sanitizing number indexes
+		if value2 == nil or equals(value1, value2) == false then
+			print("table not equal on", key1, value1, value2)
+			return false
+		end
+		keySet[key1] = true
+	end
+
+	for key2, _ in pairs(o2) do
+		if not keySet[key2..""] then local key2n = tonumber(key2) if key2n and not keySet[key2n] then print("key missing", key2, type(key2), tonumber(key2)) return false end end
+	end
+	return true
+end
+function compareAgainstProfile(import)
+	local existing = DF.table.copy({}, Plater.db.profile)
+	existing.semver = nil
+	existing.version = nil
+	existing.url = nil
+	existing.login_counter = nil
+	local imported = DF.table.copy({}, import)
+	imported.semver = nil
+	imported.version = nil
+	imported.url = nil
+	imported.login_counter = nil
+	print("imported profile is equal to current:", equals(imported, existing))
+end
 
 function Plater.CreateCommHeader(prefix, encodedString)
-    return LibAceSerializer:Serialize(prefix, UnitName("player"), GetRealmName(), UnitGUID("player"), encodedString)
+	return LibAceSerializer:Serialize(prefix, UnitName("player"), GetRealmName(), UnitGUID("player"), encodedString)
 end
 
 local function dispatchSendCommEvents()
@@ -41,64 +86,64 @@ function Plater.SendComm(scriptIndex, scriptId, uniqueId, ...)
 
 	if not Plater.VerifyScriptIdForComm(scriptIndex, scriptId, uniqueId) then return end -- block execution if verification fails
 
-    --create the payload, the first index is always the hook id
-    local arguments = {uniqueId, ...}
+	--create the payload, the first index is always the hook id
+	local arguments = {uniqueId, ...}
 
-    --compress the msg
-    local msgEncoded = Plater.CompressData(arguments, "comm")
-    if (not msgEncoded) then
-        return
-    end
+	--compress the msg
+	local msgEncoded = Plater.CompressData(arguments, "comm")
+	if (not msgEncoded) then
+		return
+	end
 
-    --create the comm header
-    local header = Plater.CreateCommHeader(Plater.COMM_SCRIPT_MSG, msgEncoded)
+	--create the comm header
+	local header = Plater.CreateCommHeader(Plater.COMM_SCRIPT_MSG, msgEncoded)
 
-    --send the message
-    if (IsInRaid()) then
-        Plater:SendCommMessage(Plater.COMM_PLATER_PREFIX, header, "RAID")
+	--send the message
+	if (IsInRaid()) then
+		Plater:SendCommMessage(Plater.COMM_PLATER_PREFIX, header, "RAID")
 
-    elseif (IsInGroup()) then
-        Plater:SendCommMessage(Plater.COMM_PLATER_PREFIX, header, "PARTY")
-    end
+	elseif (IsInGroup()) then
+		Plater:SendCommMessage(Plater.COMM_PLATER_PREFIX, header, "PARTY")
+	end
 
-    return true
+	return true
 end
 
 --when received a message from a script
 function Plater.MessageReceivedFromScript(prefix, source, playerRealm, playerGUID, message)
-    local data = Plater.DecompressData(message, "comm")
+	local data = Plater.DecompressData(message, "comm")
 
-    if (not data) then
-        return
-    end
+	if (not data) then
+		return
+	end
 
-    local scriptUID = tostring(data[1])
-    tremove(data, 1)
+	local scriptUID = tostring(data[1])
+	tremove(data, 1)
 
-    --trigger the event 'Comm Received'
-    Plater.DispatchCommReceivedMessageHookEvent(scriptUID, source, unpack(data))
+	--trigger the event 'Comm Received'
+	Plater.DispatchCommReceivedMessageHookEvent(scriptUID, source, unpack(data))
 end
 
 --> Plater comm handler
 	platerInternal.Comms.CommHandler = {
-        [Plater.COMM_SCRIPT_GROUP_EXPORTED] = Plater.ScriptReceivedFromGroup,
-        [Plater.COMM_SCRIPT_MSG] = Plater.MessageReceivedFromScript,
-    }
+		[Plater.COMM_SCRIPT_GROUP_EXPORTED] = Plater.ScriptReceivedFromGroup,
+		[Plater.COMM_SCRIPT_MSG] = Plater.MessageReceivedFromScript,
+	}
 
-    function Plater:CommReceived(commPrefix, dataReceived, channel, source)
-        local dataDeserialized = {LibAceSerializer:Deserialize(dataReceived)}
-        local successfulDeserialize = dataDeserialized[1]
+	function Plater:CommReceived(commPrefix, dataReceived, channel, source)
+		local dataDeserialized = {LibAceSerializer:Deserialize(dataReceived)}
+		local successfulDeserialize = dataDeserialized[1]
 
-        if (not successfulDeserialize) then
-            Plater:Msg("failed to deserialize a comm received.")
-            return
-        end
+		if (not successfulDeserialize) then
+			Plater:Msg("failed to deserialize a comm received.")
+			return
+		end
 
-        local prefix =  dataDeserialized[2]
-        local unitName = source
-        local realmName = dataDeserialized[4]
-        local unitGUID = dataDeserialized[5]
-        local encodedData = dataDeserialized[6]
+		local prefix =  dataDeserialized[2]
+		local unitName = source
+		local realmName = dataDeserialized[4]
+		local unitGUID = dataDeserialized[5]
+		local encodedData = dataDeserialized[6]
 
 		if (Plater.debugcomm) then
 			local stringDecompressed = decompressReceivedData(encodedData)
@@ -109,27 +154,46 @@ end
 			print("prefix", prefix, "func", func)
 		end
 
-        local func = platerInternal.Comms.CommHandler[prefix]
+		local func = platerInternal.Comms.CommHandler[prefix]
 
-        if (func) then
-            local runOkay, errorMsg = xpcall(func, GetErrorHandler("Plater COMM error: "), prefix, unitName, realmName, unitGUID, encodedData, channel)
-            if (not runOkay) then
-                --Plater:Msg("error on something")
-            end
-        end
-    end
+		if (func) then
+			local runOkay, errorMsg = xpcall(func, GetErrorHandler("Plater COMM error: "), prefix, unitName, realmName, unitGUID, encodedData, channel)
+			if (not runOkay) then
+				--Plater:Msg("error on something")
+			end
+		end
+	end
 
-    --register the comm
-    Plater:RegisterComm(Plater.COMM_PLATER_PREFIX, "CommReceived")
+	--register the comm
+	Plater:RegisterComm(Plater.COMM_PLATER_PREFIX, "CommReceived")
 
 
 
 
 -- ~compress ~zip ~export ~import ~deflate ~serialize
 function Plater.CompressData (data, dataType)
-    if (LibDeflate and LibAceSerializer) then
-        local dataSerialized = LibAceSerializer:Serialize (data)
-        if (dataSerialized) then
+	--native API support
+	if (Plater.TEST_COMPRESS and C_EncodingUtil and not Plater.FORCE_LIB_COMPRESSION) then
+		local dataSerialized = C_EncodingUtil.SerializeCBOR(data)
+		if (dataSerialized) then
+			local dataCompressed = C_EncodingUtil.CompressString (dataSerialized, Enum.CompressionMethod.Deflate, Enum.CompressionLevel.OptimizeForSize)
+			if (dataCompressed) then
+				if (dataType == "print") then
+					local dataEncoded = C_EncodingUtil.EncodeBase64(dataCompressed)
+					if dataEncoded then
+						return CONST_PLATER_DATA_TYPE_V2..dataEncoded
+					end
+				elseif (dataType == "comm" and LibDeflate) then
+					local dataEncoded = LibDeflate:EncodeForWoWAddonChannel (dataCompressed)
+					return CONST_PLATER_DATA_TYPE_V2..dataEncoded
+				end
+			end
+		end
+	end
+
+	if (LibDeflate and LibAceSerializer) then
+		local dataSerialized = LibAceSerializer:Serialize (data)
+		if (dataSerialized) then
 			local dataCompressed
 			--use native api where available
 			if C_EncodingUtil and C_EncodingUtil.CompressString then
@@ -138,23 +202,39 @@ function Plater.CompressData (data, dataType)
 				dataCompressed = LibDeflate:CompressDeflate (dataSerialized, {level = 9})
 			end
 			
-            if (dataCompressed) then
-                if (dataType == "print") then
-                    local dataEncoded = LibDeflate:EncodeForPrint (dataCompressed)
-                    return dataEncoded
+			if (dataCompressed) then
+				if (dataType == "print") then
+					local dataEncoded = LibDeflate:EncodeForPrint (dataCompressed)
+					return dataEncoded
 
-                elseif (dataType == "comm") then
-                    local dataEncoded = LibDeflate:EncodeForWoWAddonChannel (dataCompressed)
-                    return dataEncoded
-                end
-            end
-        end
-    end
+				elseif (dataType == "comm") then
+					local dataEncoded = LibDeflate:EncodeForWoWAddonChannel (dataCompressed)
+					return dataEncoded
+				end
+			end
+		end
+	end
 end
 
 -- ~compress ~zip ~export ~import ~deflate
 function Plater.CompressDataWithoutSerialization(data, dataType)
-    if (LibDeflate) then
+	--native API support
+	if (Plater.TEST_COMPRESS and C_EncodingUtil and not Plater.FORCE_LIB_COMPRESSION) then
+		local dataCompressed = C_EncodingUtil.CompressString (data, Enum.CompressionMethod.Deflate, Enum.CompressionLevel.OptimizeForSize)
+		if (dataCompressed) then
+			if (dataType == "print") then
+				local dataEncoded = C_EncodingUtil.EncodeBase64(dataCompressed)
+				if dataEncoded then
+					return CONST_PLATER_DATA_TYPE_V2..dataEncoded
+				end
+			elseif (dataType == "comm" and LibDeflate) then
+				local dataEncoded = LibDeflate:EncodeForWoWAddonChannel (dataCompressed)
+				return CONST_PLATER_DATA_TYPE_V2..dataEncoded
+			end
+		end
+	end
+
+	if (LibDeflate) then
 		local dataCompressed
 		--use native api where available
 		if C_EncodingUtil and C_EncodingUtil.CompressString then
@@ -172,30 +252,66 @@ function Plater.CompressDataWithoutSerialization(data, dataType)
 				return dataEncoded
 			end
 		end
-    end
+	end
 end
 
 
 function Plater.DecompressData (data, dataType, silent)
 
-    if (LibDeflate and LibAceSerializer) then
+	--native API support
+	if (string.match(data, '^'..CONST_PLATER_DATA_TYPE_V2)) then
+		if not C_EncodingUtil then Plater:Msg ("Cannot decode v2 data due to missing EncodingUtil in this game version.") end
+		local dataCompressed
+		if (dataType == "print") then
+			dataCompressed = C_EncodingUtil.DecodeBase64(string.gsub(data,CONST_PLATER_DATA_TYPE_V2,''))
+			if (not dataCompressed) then
+				if not silent then Plater:Msg ("couldn't decode the data.") end
+				return false
+			end
+		elseif (dataType == "comm") then
+			dataCompressed = LibDeflate:DecodeForWoWAddonChannel (data)
+			if (not dataCompressed) then
+				if not silent then Plater:Msg ("couldn't decode the data.") end
+				return false
+			end
+		end
+		local dataSerialized = C_EncodingUtil.DecompressString(dataCompressed)
+		if (not dataSerialized) then
+			if not silent then Plater:Msg ("couldn't uncompress the data.") end
+			return false
+		end
+		local dataDecompressed = C_EncodingUtil.DeserializeCBOR(dataSerialized)
+		if (not dataDecompressed) then
+			if not silent then Plater:Msg ("couldn't unserialize the data.") end
+			return false
+		end
+		
+		if (Plater.TEST_COMPRESS) then
+			-- compare
+			compareAgainstProfile(dataDecompressed)
+		end
+		
+		return dataDecompressed
+	end
+	
+	if (LibDeflate and LibAceSerializer) then
 
-        local dataCompressed
+		local dataCompressed
+		if (dataType == "print") then
+			
+			dataCompressed = LibDeflate:DecodeForPrint (data)
+			if (not dataCompressed) then
+				if not silent then Plater:Msg ("couldn't decode the data.") end
+				return false
+			end
 
-        if (dataType == "print") then
-            dataCompressed = LibDeflate:DecodeForPrint (data)
-            if (not dataCompressed) then
-                if not silent then Plater:Msg ("couldn't decode the data.") end
-                return false
-            end
-
-        elseif (dataType == "comm") then
-            dataCompressed = LibDeflate:DecodeForWoWAddonChannel (data)
-            if (not dataCompressed) then
-                if not silent then Plater:Msg ("couldn't decode the data.") end
-                return false
-            end
-        end
+		elseif (dataType == "comm") then
+			dataCompressed = LibDeflate:DecodeForWoWAddonChannel (data)
+			if (not dataCompressed) then
+				if not silent then Plater:Msg ("couldn't decode the data.") end
+				return false
+			end
+		end
 
 		local dataSerialized
 		--use native api where available
@@ -204,43 +320,48 @@ function Plater.DecompressData (data, dataType, silent)
 		else
 			dataSerialized = LibDeflate:DecompressDeflate (dataCompressed)
 		end
-        if (not dataSerialized) then
-            if not silent then Plater:Msg ("couldn't uncompress the data.") end
-            return false
-        end
+		if (not dataSerialized) then
+			if not silent then Plater:Msg ("couldn't uncompress the data.") end
+			return false
+		end
 
-        local okay, dataDecompressed = LibAceSerializer:Deserialize (dataSerialized)
-        if (not okay) then
-            if not silent then Plater:Msg ("couldn't unserialize the data.") end
-            return false
-        end
+		local okay, dataDecompressed = LibAceSerializer:Deserialize (dataSerialized)
+		if (not okay) then
+			if not silent then Plater:Msg ("couldn't unserialize the data.") end
+			return false
+		end
 
-        return dataDecompressed
-    end
+		if (Plater.TEST_COMPRESS) then
+			-- compare
+			compareAgainstProfile(dataDecompressed)
+		end
+
+		return dataDecompressed
+	end
 end
 
 --when an imported line is pasted in the wrong tab
 --send a message telling which tab is responsible for the data
 function Plater.SendScriptTypeErrorMsg(data)
-    if (data and type(data) == "table") then
-        if (data.type == "script") then
-            Plater:Msg ("this import look like Script, try importing in the Scripting tab.")
+	if (data and type(data) == "table") then
+		if (data.type == "script") then
+			Plater:Msg ("this import look like Script, try importing in the Scripting tab.")
 
-        elseif (data.type == "hook") then
-            Plater:Msg ("this import look like a Mod, try importing in the Modding tab.")
+		elseif (data.type == "hook") then
+			Plater:Msg ("this import look like a Mod, try importing in the Modding tab.")
 
-        elseif (data[Plater.Export_CastColors]) then
-            Plater:Msg ("this import look like a Cast Colors, try importing in the Cast Colors tab.")
+		elseif (data[Plater.Export_CastColors]) then
+			Plater:Msg ("this import look like a Cast Colors, try importing in the Cast Colors tab.")
 
-        elseif (data.NpcColor) then
-            Plater:Msg ("this import looks to be a Npc Colors import, try importing in the Npc Colors tab.")
+		elseif (data.NpcColor) then
+			Plater:Msg ("this import looks to be a Npc Colors import, try importing in the Npc Colors tab.")
 
-        elseif (data.plate_config) then
-            Plater:Msg ("this import looks like a profile, import profiles at the Profiles tab.")
-        end
-    end
+		elseif (data.plate_config) then
+			Plater:Msg ("this import looks like a profile, import profiles at the Profiles tab.")
+		end
+	end
 
-    Plater:Msg ("failed to import the data provided.")
+	Plater:Msg ("failed to import the data provided.")
 end
 
 
