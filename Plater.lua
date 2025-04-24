@@ -9178,7 +9178,7 @@ end
 		if (self.AnimationStart-1 <= self.AnimationEnd) then
 			self.AnimationStart = self.AnimationEnd
 			self:SetValue (self.AnimationEnd)
-			self.CurrentHealth = self.AnimationEnd
+			--self.CurrentHealth = self.AnimationEnd
 			self.IsAnimating = false
 			if (self.Spark) then
 				self.Spark:Hide()
@@ -9187,7 +9187,7 @@ end
 		end
 		
 		self:SetValue (self.AnimationStart)
-		self.CurrentHealth = self.AnimationStart
+		--self.CurrentHealth = self.AnimationStart
 		
 		if (self.Spark) then
 			self.Spark:SetPoint ("center", self, "left", self.AnimationStart / self.CurrentHealthMax * self:GetWidth(), 0)
@@ -9206,13 +9206,13 @@ end
 		if (self.AnimationStart+1 >= self.AnimationEnd) then
 			self.AnimationStart = self.AnimationEnd
 			self:SetValue (self.AnimationEnd)
-			self.CurrentHealth = self.AnimationEnd
+			--self.CurrentHealth = self.AnimationEnd
 			self.IsAnimating = false
 			return
 		end
 		
 		self:SetValue (self.AnimationStart)
-		self.CurrentHealth = self.AnimationStart
+		--self.CurrentHealth = self.AnimationStart
 	end	
 
 	function Plater.CreateScaleAnimation (plateFrame) --private
