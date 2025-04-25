@@ -3926,7 +3926,8 @@ Plater.AnchorNamesByPhraseId = {
 			Plater.RemoveFromAuraUpdate (unitBarId) -- ensure no updates
 			
 			plateFrame.PlaterAnchorFrame:ClearAllPoints()
-			plateFrame.PlaterAnchorFrame:SetSize(Plater.db.profile.plate_config.enemynpc.health[1] or 112, Plater.db.profile.plate_config.enemynpc.health[2] or 12)
+			local enemyHealthSize = Plater.db.profile.plate_config.enemynpc.health or {112, 12}
+			plateFrame.PlaterAnchorFrame:SetSize(enemyHealthSize[1] or 112, enemyHealthSize[2] or 12)
 			plateFrame.PlaterAnchorFrame:SetParent(plateFrame.UnitFrame and plateFrame.UnitFrame.healthBar or plateFrame)
 			
 			ENABLED_BLIZZARD_PLATEFRAMES[plateFrame.unitFrame.blizzardPlateFrameID] = true -- OnRetailNamePlateShow is called first. ensure the plate might show!
