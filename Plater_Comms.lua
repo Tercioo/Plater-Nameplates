@@ -12,7 +12,7 @@ local CONST_THROTTLE_HOOK_COMMS = 0.500 --2 comms per second per mod
 local CONST_COLORNPC_SHARING_CHANNEL = "GUILD"
 local CONST_PLATER_DATA_TYPE_V2 = "!PLATER:2!"
 
---Plater.FORCE_LIB_COMPRESSION = true -- forced fallback
+--Plater.FORCE_LIB_COMPRESSION = true -- forced fallback toggle
 
 -- tmp helper method for analyzing export/import
 ---@param o1 any|table First object to compare
@@ -173,7 +173,7 @@ end
 -- ~compress ~zip ~export ~import ~deflate ~serialize
 function Plater.CompressData (data, dataType)
 	--native API support
-	if (Plater.TEST_COMPRESS and C_EncodingUtil and not Plater.FORCE_LIB_COMPRESSION) then
+	if (C_EncodingUtil and not Plater.FORCE_LIB_COMPRESSION) then
 		local dataSerialized = C_EncodingUtil.SerializeCBOR(data)
 		if (dataSerialized) then
 			local dataCompressed = C_EncodingUtil.CompressString (dataSerialized, Enum.CompressionMethod.Deflate, Enum.CompressionLevel.OptimizeForSize)
@@ -219,7 +219,7 @@ end
 -- ~compress ~zip ~export ~import ~deflate
 function Plater.CompressDataWithoutSerialization(data, dataType)
 	--native API support
-	if (Plater.TEST_COMPRESS and C_EncodingUtil and not Plater.FORCE_LIB_COMPRESSION) then
+	if (C_EncodingUtil and not Plater.FORCE_LIB_COMPRESSION) then
 		local dataCompressed = C_EncodingUtil.CompressString (data, Enum.CompressionMethod.Deflate, Enum.CompressionLevel.OptimizeForSize)
 		if (dataCompressed) then
 			if (dataType == "print") then
