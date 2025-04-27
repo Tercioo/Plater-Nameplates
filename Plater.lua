@@ -5652,9 +5652,6 @@ function Plater.OnInit() --private --~oninit ~init
 				--Plater.UpdatePlateText (plateFrame, DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER], false)
 			end
 			
-			if self.IsAnimating then
-				self.AnimateFunc(self, 999)
-			end
 			Plater.CheckLifePercentText (unitFrame)
 		end
 		
@@ -9170,50 +9167,45 @@ end
 
 	--> animation with acceleration ~animation ~healthbaranimation
 	function Plater.AnimateLeftWithAccel (self, deltaTime)
-		local distance = max((self.AnimationStart - self.AnimationEnd) / self.CurrentHealthMax, 0.01) -- % travel, with min of 1%
-		local fps = Plater.FPSData.curFPS or 60
-		local calcAnimationSpeed = (distance / fps * 2 * DB_ANIMATION_TIME_DILATATION) --scale with fps
+		local distance = (self.AnimationStart - self.AnimationEnd) / self.CurrentHealthMax * 100	--scale 1 - 100
+		local minTravel = min (distance / 10, 3) -- 10 = trigger distance to max speed 3 = speed scale on max travel
+		local maxTravel = max (minTravel, 0.45) -- 0.45 = min scale speed on low travel speed
+		local calcAnimationSpeed = (self.CurrentHealthMax * (deltaTime * DB_ANIMATION_TIME_DILATATION)) * maxTravel --re-scale back to unit health, scale with delta time and scale with the travel speed
 		
-		self.AnimationStart = self.CurrentHealthMax == 0 and 1 or self.AnimationStart - (self.CurrentHealthMax * calcAnimationSpeed)
-		
-		if (self.AnimationStart-1 <= self.AnimationEnd) then
-			self.AnimationStart = self.AnimationEnd
-			self:SetValue (self.AnimationEnd)
-			--self.CurrentHealth = self.AnimationEnd
-			self.IsAnimating = false
-			if (self.Spark) then
-				self.Spark:Hide()
-			end
-			return
-		end
-		
+		self.AnimationStart = self.CurrentHealthMax == 0 and 1 or self.AnimationStart - calcAnimationSpeed
 		self:SetValue (self.AnimationStart)
-		--self.CurrentHealth = self.AnimationStart
+		self.CurrentHealth = self.AnimationStart
 		
 		if (self.Spark) then
 			self.Spark:SetPoint ("center", self, "left", self.AnimationStart / self.CurrentHealthMax * self:GetWidth(), 0)
 			self.Spark:Show()
 		end
+		
+		if (self.AnimationStart-1 <= self.AnimationEnd) then
+			self:SetValue (self.AnimationEnd)
+			self.CurrentHealth = self.AnimationEnd
+			self.IsAnimating = false
+			if (self.Spark) then
+				self.Spark:Hide()
+			end
+		end
 	end
 
 	function Plater.AnimateRightWithAccel (self, deltaTime)
-		if self.AnimationEnd > self.CurrentHealthMax then self.AnimationEnd = self.CurrentHealthMax end
-		local distance = max((self.AnimationEnd - self.AnimationStart) / self.CurrentHealthMax, 0.01) -- % travel, with min of 1%
-		local fps = Plater.FPSData.curFPS or 60
-		local calcAnimationSpeed = (distance / fps * 2 * DB_ANIMATION_TIME_DILATATION) --scale with fps
+		local distance = (self.AnimationEnd - self.AnimationStart) / self.CurrentHealthMax * 100	--scale 1 - 100 basis
+		local minTravel = min (distance / 10, 3) -- 10 = trigger distance to max speed 3 = speed scale on max travel
+		local maxTravel = max (minTravel, 0.45) -- 0.45 = min scale speed on low travel speed
+		local calcAnimationSpeed = (self.CurrentHealthMax * (deltaTime * DB_ANIMATION_TIME_DILATATION)) * maxTravel --re-scale back to unit health, scale with delta time and scale with the travel speed
 		
-		self.AnimationStart = self.AnimationStart + (self.CurrentHealthMax * calcAnimationSpeed)
+		self.AnimationStart = self.AnimationStart + (calcAnimationSpeed)
+		self:SetValue (self.AnimationStart)
+		self.CurrentHealth = self.AnimationStart
 		
 		if (self.AnimationStart+1 >= self.AnimationEnd) then
-			self.AnimationStart = self.AnimationEnd
 			self:SetValue (self.AnimationEnd)
-			--self.CurrentHealth = self.AnimationEnd
+			self.CurrentHealth = self.AnimationEnd
 			self.IsAnimating = false
-			return
 		end
-		
-		self:SetValue (self.AnimationStart)
-		--self.CurrentHealth = self.AnimationStart
 	end	
 
 	function Plater.CreateScaleAnimation (plateFrame) --private
