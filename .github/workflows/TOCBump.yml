@@ -8,6 +8,10 @@ on:
 #    branches:
 #      - master
 
+permissions:
+  pull-requests: write
+  contents: write
+
 jobs:
   update-toc:
     runs-on: ubuntu-latest
@@ -15,26 +19,11 @@ jobs:
       - name: Clone project
         uses: actions/checkout@v4
 
-      - name: Update TOC Interface version classic
+      - name: Update TOC Interface version
         uses: cont1nuity/toc-interface-updater@master
         with:
-          flavor: classic
-          future: true   # this is optional
-          replaceflavor: true # this is optional
-
-      - name: Update TOC Interface version classic_era
-        uses: cont1nuity/toc-interface-updater@master
-        with:
-          flavor: classic_era
-          future: true   # this is optional
-          replaceflavor: true # this is optional
-
-      - name: Update TOC Interface version retail
-        uses: cont1nuity/toc-interface-updater@master
-        with:
-          flavor: retail
-          future: true   # this is optional
-          replaceflavor: true # this is optional
+          beta: true     # this is optional
+          ptr: true      # this is optional
 
       - name: Create pull request
         uses: peter-evans/create-pull-request@v6
