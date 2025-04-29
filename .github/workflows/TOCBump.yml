@@ -22,7 +22,7 @@ jobs:
       - name: Update TOC Interface version
         uses: cont1nuity/toc-interface-updater@master
         with:
-#          beta: true     # this is optional
+          beta: true     # this is optional
           ptr: true      # this is optional
 
       - name: Create pull request
