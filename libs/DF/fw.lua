@@ -1,6 +1,6 @@
 
 
-local dversion = 600
+local dversion = 604
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary(major, minor)
 
@@ -144,7 +144,7 @@ end
 ---return if the wow version the player is playing is a classic version of wow
 ---@return boolean
 function DF.IsTimewalkWoW()
-    if (buildInfo < 50000) then        return true    end
+    if (buildInfo < 60000) then        return true    end
 	return false
 end
 
@@ -227,6 +227,10 @@ end
 
 function DF.IsTWWWow()
 	return DF.IsWarWow()
+end
+
+function DF.ExpHasRoleSupport()
+	return buildInfo >= 50000 --roles was implemented on mists of pandaria
 end
 
 ---return true if the player is playing in the WotLK version of wow with the retail api
@@ -376,14 +380,14 @@ end
 ---@param specId number?
 ---@return string
 function DF.UnitGroupRolesAssigned(unitId, bUseSupport, specId)
-	if (not DF.IsTimewalkWoW()) then --Was function exist check. TBC has function, returns NONE. -Flamanis 5/16/2022
+	if (DF.ExpHasRoleSupport()) then --classic is now mop which has role support, so use build > 50000 to check for role support
 		local role = UnitGroupRolesAssigned(unitId)
 
 		if (specId == 1473 and bUseSupport) then
 			return "SUPPORT"
 		end
 
-		if (role == "NONE" and UnitIsUnit(unitId, "player")) then
+		if (role == "NONE" and UnitIsUnit(unitId, "player") and GetSpecialization) then --mop does not have GetSpecialization
 			local specializationIndex = GetSpecialization() or 0
 			local id, name, description, icon, role, primaryStat = GetSpecializationInfo(specializationIndex)
 			if (id == 1473 and bUseSupport) then
@@ -3591,7 +3595,7 @@ function DF:CreateAnimation(animationGroup, animationType, order, duration, arg1
 		anim:SetToAlpha(arg2)
 
 	elseif (animationType == "SCALE") then
-		if (DF.IsDragonflight() or DF.IsNonRetailWowWithRetailAPI() or DF.IsWarWow()) then
+		if (DF.IsDragonflight() or DF.IsNonRetailWowWithRetailAPI() or DF.IsWarWow() or DF.IsPandaWow()) then
 			anim:SetScaleFrom(arg1, arg2)
 			anim:SetScaleTo(arg3, arg4)
 		else
@@ -4086,7 +4090,8 @@ function DF:CreateGlowOverlay(parent, antsColor, glowColor)
 		frameName = string.sub(frameName, string.len(frameName)-49)
 	end
 
-	local glowFrame = CreateFrame("frame", frameName, parent, "ActionBarButtonSpellActivationAlert")
+	--local glowFrame = CreateFrame("frame", frameName, parent, "ActionBarButtonSpellActivationAlert")
+	local glowFrame = CreateFrame("frame", frameName, parent)
 	glowFrame:HookScript("OnShow", glow_overlay_onshow)
 	glowFrame:HookScript("OnHide", glow_overlay_onhide)
 
@@ -4746,7 +4751,7 @@ function DF:GetCurrentSpecId()
 end
 
 local specs_per_class = {
-	["DEMONHUNTER"] = {577, 581},
+	["DEMONHUNTER"] = {577, 581}, --havoc, vengence
 	["DEATHKNIGHT"] = {250, 251, 252},
 	["WARRIOR"] = {71, 72, 73},
 	["MAGE"] = {62, 63, 64},
