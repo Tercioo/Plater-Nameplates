@@ -1120,7 +1120,7 @@ Plater.AnchorNamesByPhraseId = {
 			if assignedRole == "NONE" and UnitLevel ("player") >= 10 then
 				if (IS_WOW_PROJECT_CLASSIC_MOP) then
 					--this is the way to get the role assigned to the player in MOP
-					local specSelected = C_SpecializationInfo.GetActiveSpecGroup()
+					local specSelected = C_SpecializationInfo.GetSpecialization()
 					assignedRole = select(5, C_SpecializationInfo.GetSpecializationInfo(specSelected))
 				else
 					assignedRole = GetTalentGroupRole(GetActiveTalentGroup())
