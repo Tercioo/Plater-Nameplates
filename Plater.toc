@@ -17,15 +17,12 @@
 #@version-retail@
 ## Version: @project-version@-Retail
 #@end-version-retail@
-#@version-bcc@
-## Version: @project-version@-BCC
-#@end-version-bcc@
-#@version-wrath@
-## Version: @project-version@-Wrath
-#@end-version-wrath@
 #@version-cata@
 ## Version: @project-version@-Cata
 #@end-version-cata@
+#@version-mistst@
+## Version: @project-version@-Mists
+#@end-version-mistst@
 #@version-classic@
 ## Version: @project-version@-Vanilla
 #@end-version-classic@
