@@ -69,6 +69,7 @@ local IS_WOW_PROJECT_NOT_MAINLINE = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_CLASSIC_ERA = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
 local IS_WOW_PROJECT_CLASSIC_WRATH = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_WRATH_OF_THE_LICH_KING and ClassicExpansionAtLeast(LE_EXPANSION_WRATH_OF_THE_LICH_KING)
 --local IS_WOW_PROJECT_CLASSIC_CATACLYSM = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_CATACLYSM and ClassicExpansionAtLeast(LE_EXPANSION_CATACLYSM)
+local IS_WOW_PROJECT_CLASSIC_MOP = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_MISTS_OF_PANDARIA and ClassicExpansionAtLeast(LE_EXPANSION_MISTS_OF_PANDARIA)
 
 local PixelUtil = PixelUtil or DFPixelUtil
 
@@ -1117,7 +1118,13 @@ Plater.AnchorNamesByPhraseId = {
 		elseif IS_WOW_PROJECT_CLASSIC_WRATH then
 			local assignedRole = UnitGroupRolesAssigned ("player")
 			if assignedRole == "NONE" and UnitLevel ("player") >= 10 then
-				assignedRole = GetTalentGroupRole(GetActiveTalentGroup())
+				if (IS_WOW_PROJECT_CLASSIC_MOP) then
+					--this is the way to get the role assigned to the player in MOP
+					local specSelected = C_SpecializationInfo.GetActiveSpecGroup()
+					assignedRole = select(5, C_SpecializationInfo.GetSpecializationInfo(specSelected))
+				else
+					assignedRole = GetTalentGroupRole(GetActiveTalentGroup())
+				end
 			end
 			local playerIsTank = assignedRole == "TANK"
 			
