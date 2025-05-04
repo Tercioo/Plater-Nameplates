@@ -3933,7 +3933,7 @@ Plater.AnchorNamesByPhraseId = {
 			Plater.RemoveFromAuraUpdate (unitBarId) -- ensure no updates
 			
 			plateFrame.PlaterAnchorFrame:ClearAllPoints()
-			local enemyHealthSize = Plater.db.profile.plate_config.enemynpc.health or {112, 12}
+			local enemyHealthSize = Plater.db.profile.plate_config.enemynpc and Plater.db.profile.plate_config.enemynpc.health or {112, 12}
 			plateFrame.PlaterAnchorFrame:SetSize(enemyHealthSize[1] or 112, enemyHealthSize[2] or 12)
 			plateFrame.PlaterAnchorFrame:SetParent(plateFrame.UnitFrame and plateFrame.UnitFrame.healthBar or plateFrame)
 			
