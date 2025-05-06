@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1745417263, "Backend Change", "May 6th, 2025", "Enable 'Shadowburn' for WL execute in classic.", "cont1nuity"},
 			{1745417263, "Backend Change", "Apr 23rd, 2025", "Enable support for native compression API for import/export, when available.", "cont1nuity"},
 			
 			{1745324223, "Bug Fix", "Apr 22nd, 2025", "Fixing healthbar animation.", "cont1nuity"},
