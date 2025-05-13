@@ -11954,6 +11954,7 @@ end
 		["SendMail"]		= true,
 		["SetTradeMoney"]	= true,
 		["AddTradeMoney"]	= true,
+		["C_TradeInfo"]		= true,
 		["PickupTradeMoney"]	= true,
 		["PickupPlayerMoney"]	= true,
 		["AcceptTrade"]		= true,
