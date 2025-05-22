@@ -241,6 +241,10 @@ function SlashCmdList.PLATER (msg, editbox)
 	elseif (msg and msg:find("^cvar[s]?")) then
 		Plater.DebugCVars(msg:gsub("^cvar[s]? ?", ""))
 		return
+	
+	elseif (msg and msg:find("^resetcvar[s]?")) then
+		Plater.ResetCVars(msg:gsub("^cvar[s]? ?", ""))
+		return
 
 	elseif msg ~= "" then
 		local usage = "Usage Info:"
@@ -253,7 +257,8 @@ function SlashCmdList.PLATER (msg, editbox)
 		usage = usage .. "\n|cffffaeae/plater|r |cffffff33colors|r: Opens the Plater color palette"
 		usage = usage .. "\n|cffffaeae/plater|r |cffffff33minimap|r: Toggle the Plater minimap icon"
 		usage = usage .. "\n|cffffaeae/plater|r |compartment|r: Toggle the Plater addon compartment icon"
-		usage = usage .. "\n|cffffaeae/plater|r |cffffff33cvar <cvar name>|r: Print information about a cvar value stored in the profile."
+		usage = usage .. "\n|cffffaeae/plater|r |cffffff33cvar <cvar name>|r: Print information about a cvar value stored in the profile"
+		usage = usage .. "\n|cffffaeae/plater|r |cffffff33resetcvar(s) <cvar name>|r: Resets the given or all relevant cvars to default value for this session"
 		usage = usage .. "\n|cffffaeaeVersion:|r |cffffff33" .. Plater.GetVersionInfo() .. "|r"
 		Plater:Msg(usage)
 		return

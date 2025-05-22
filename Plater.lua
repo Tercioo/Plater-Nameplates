@@ -1615,6 +1615,20 @@ Plater.AnchorNamesByPhraseId = {
 		canSaveCVars = true --allow storing after restoring the first time
 	end
 	
+	function Plater.ResetCVars(cvar)
+		canSaveCVars = false
+		
+		if type(cvar) == "string" then
+			SetCVarToDefault(cvar)
+		else
+			for CVarName in pairs (cvars_to_store) do
+				SetCVarToDefault(CVarName)
+			end
+		end
+		
+		canSaveCVars = true
+	end
+	
 	function Plater.DebugCVars(cvar)
 		cvar = cvar and cvar:gsub(" ", "") or nil
 		if cvar and cvar ~= "" then
