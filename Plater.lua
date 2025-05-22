@@ -2756,7 +2756,6 @@ Plater.AnchorNamesByPhraseId = {
 				plateFrame.PlaterAnchorFrame:SetSize(Plater.db.profile.plate_config.enemynpc.health[1] or 112, Plater.db.profile.plate_config.enemynpc.health[2] or 12)
 				plateFrame.PlaterAnchorFrame:EnableMouse(false)
 				plateFrame.PlaterAnchorFrame:SetParent(plateFrame)
-				plateFrame.PlaterAnchorFrame:SetIgnoreParentScale(plateFrame)
 				
 				
 				--mix plater functions (most are for scripting support) into the unit frame
