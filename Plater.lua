@@ -2752,11 +2752,11 @@ Plater.AnchorNamesByPhraseId = {
 				plateFrame.unitFrame = newUnitFrame
 				plateFrame.unitFrame:EnableMouse(false)
 				
-				plateFrame.PlaterAnchorFrame = CreateFrame ("frame", newUnitFrame:GetName() .. "AnchorFrame", plateFrame)
+				plateFrame.PlaterAnchorFrame = CreateFrame ("Frame", newUnitFrame:GetName() .. "AnchorFrame", plateFrame)
 				plateFrame.PlaterAnchorFrame:SetSize(Plater.db.profile.plate_config.enemynpc.health[1] or 112, Plater.db.profile.plate_config.enemynpc.health[2] or 12)
 				plateFrame.PlaterAnchorFrame:EnableMouse(false)
-				-- healthbar size by default
-				plateFrame.PlaterAnchorFrame:SetParent(plateFrame.UnitFrame and plateFrame.UnitFrame.healthBar or plateFrame)
+				plateFrame.PlaterAnchorFrame:SetParent(plateFrame)
+				plateFrame.PlaterAnchorFrame:SetIgnoreParentScale(plateFrame)
 				
 				
 				--mix plater functions (most are for scripting support) into the unit frame
@@ -3474,14 +3474,22 @@ Plater.AnchorNamesByPhraseId = {
 				
 				local onlyNames = GetCVarBool ("nameplateShowOnlyNames") or Plater.db.profile.saved_cvars.nameplateShowOnlyNames == "1"
 				
-				plateFrame.PlaterAnchorFrame:ClearAllPoints()
-				if onlyNames then
-					plateFrame.PlaterAnchorFrame:SetParent(plateFrame.UnitFrame)
-				else
-					plateFrame.PlaterAnchorFrame:SetParent(plateFrame.UnitFrame.healthBar)
-				end
-				plateFrame.PlaterAnchorFrame:SetPoint("topright", plateFrame.UnitFrame.healthBar, "topright")
-				plateFrame.PlaterAnchorFrame:SetPoint("bottomleft", plateFrame.UnitFrame.healthBar, "bottomleft")
+				C_Timer.After(0.1, function()
+					if not plateFrame.UnitFrame then return end
+					plateFrame.PlaterAnchorFrame:ClearAllPoints()
+					if onlyNames then
+						plateFrame.PlaterAnchorFrame:SetParent(plateFrame)
+						plateFrame.PlaterAnchorFrame:Hide()
+					else
+						plateFrame.PlaterAnchorFrame:SetParent(plateFrame.UnitFrame.healthBar)
+						plateFrame.PlaterAnchorFrame:Show()
+					end
+					plateFrame.PlaterAnchorFrame:SetPoint("topright", plateFrame.UnitFrame.healthBar, "topright")
+					plateFrame.PlaterAnchorFrame:SetPoint("bottomleft", plateFrame.UnitFrame.healthBar, "bottomleft")
+					plateFrame.PlaterAnchorFrame:SetFrameStrata(plateFrame.UnitFrame.healthBar:GetFrameStrata())
+					plateFrame.PlaterAnchorFrame:SetFrameLevel(plateFrame.UnitFrame.healthBar:GetFrameLevel()+1)
+				end)
+				
 				
 				-- this is for classic cast bars on blizzard default nameplates and frame anchor
 				if (not IS_WOW_PROJECT_MAINLINE) then
@@ -3524,9 +3532,10 @@ Plater.AnchorNamesByPhraseId = {
 			local healthBar = unitFrame.healthBar
 
 			plateFrame.PlaterAnchorFrame:ClearAllPoints()
-			plateFrame.PlaterAnchorFrame:SetParent(unitFrame.healthBar)
+			plateFrame.PlaterAnchorFrame:SetParent(healthBar)
 			plateFrame.PlaterAnchorFrame:SetPoint("topright", healthBar, "topright")
 			plateFrame.PlaterAnchorFrame:SetPoint("bottomleft", healthBar, "bottomleft")
+			plateFrame.PlaterAnchorFrame:Show()
 
 			unitFrame.IsNeutralOrHostile = actorType == ACTORTYPE_ENEMY_NPC or actorType == ACTORTYPE_ENEMY_PLAYER
 			
@@ -3949,9 +3958,9 @@ Plater.AnchorNamesByPhraseId = {
 			Plater.RemoveFromAuraUpdate (unitBarId) -- ensure no updates
 			
 			plateFrame.PlaterAnchorFrame:ClearAllPoints()
+			plateFrame.PlaterAnchorFrame:SetParent(plateFrame)
 			local enemyHealthSize = Plater.db.profile.plate_config.enemynpc and Plater.db.profile.plate_config.enemynpc.health or {112, 12}
 			plateFrame.PlaterAnchorFrame:SetSize(enemyHealthSize[1] or 112, enemyHealthSize[2] or 12)
-			plateFrame.PlaterAnchorFrame:SetParent(plateFrame.UnitFrame and plateFrame.UnitFrame.healthBar or plateFrame)
 			
 			ENABLED_BLIZZARD_PLATEFRAMES[plateFrame.unitFrame.blizzardPlateFrameID] = true -- OnRetailNamePlateShow is called first. ensure the plate might show!
 			if not plateFrame.unitFrame.PlaterOnScreen then
@@ -6184,7 +6193,7 @@ end
 			healthBar:UpdateHealPrediction() -- ensure health prediction is updated properly
 		end
 		
-		plateFrame.PlaterAnchorFrame:SetSize(healthBar:GetSize())
+		--plateFrame.PlaterAnchorFrame:SetSize(healthBar:GetSize())
 		
 		Plater.UpdateUnitName (plateFrame)
 		
