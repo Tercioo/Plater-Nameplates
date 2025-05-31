@@ -8,7 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
-			{1746914849, "Backend Change", "May 22nd, 2025", "Adding 'resetcvar(s)' command.", "cont1nuity"},
+			{1748727178, "Backend Change", "May 31st, 2025", "Adding option to only show buffs on the personal bar which would show on the default one.", "cont1nuity"},
+			{1748727178, "Backend Change", "May 22nd, 2025", "Adding 'resetcvar(s)' command.", "cont1nuity"},
 			
 			{1746914849, "Backend Change", "May 6th, 2025", "Enable 'Shadowburn' for WL execute in classic.", "cont1nuity"},
 			{1746914849, "Backend Change", "Apr 27th, 2025", "Bug fixes for Mists and framework updates.", "Terciob"},

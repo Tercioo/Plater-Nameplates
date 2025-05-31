@@ -3852,7 +3852,20 @@ do
 				Plater.UpdateAllPlates()
 			end,
 			name = "Don't filter Buffs by Duration",
-			desc = "Show debuffs on you on the Personal Bar regardless of duration (show no-duration and >60sec).",
+			desc = "Show buffs on you on the Personal Bar regardless of duration (show no-duration and >60sec).",
+		},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.aura_show_only_important_buffs_personal end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.aura_show_only_important_buffs_personal = value
+				Plater.RefreshDBUpvalues()
+				Plater.RefreshAuras()
+				Plater.UpdateAllPlates()
+			end,
+			name = "Only important buffs",
+			desc = "Show only whitelisted buffs and those that would be shown on the default blizzard personal bar.",
 		},
 
 		{
@@ -3915,7 +3928,7 @@ do
 			desc = "OPTIONS_YOFFSET_DESC",
 		},
 		
-		{type = "blank"},
+		--{type = "blank"},
 	
 		{type = "label", get = function() return "Personal Bar Constrain:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		

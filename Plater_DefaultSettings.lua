@@ -900,6 +900,7 @@ PLATER_DEFAULT_SETTINGS = {
 		aura_show_buffs_personal = false,
 		aura_show_debuffs_personal = true,
 		aura_show_all_duration_buffs_personal = false,
+		aura_show_only_important_buffs_personal = false,
 		
 		aura_show_important = true,
 		aura_show_dispellable = true,
