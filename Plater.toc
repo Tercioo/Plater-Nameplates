@@ -20,9 +20,9 @@
 #@version-cata@
 ## Version: @project-version@-Cata
 #@end-version-cata@
-#@version-mistst@
+#@version-mists@
 ## Version: @project-version@-Mists
-#@end-version-mistst@
+#@end-version-mists@
 #@version-classic@
 ## Version: @project-version@-Vanilla
 #@end-version-classic@
