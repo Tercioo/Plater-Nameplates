@@ -10660,7 +10660,7 @@ end
 			Plater.AlignAuraFrames (buffFrame2)
 			--buffFrame2:SetAlpha (DB_AURA_ALPHA)
 		end
-		Plater.RunScriptTriggersForAuraIcons (unitFrame)
+		Plater.RunScriptTriggersForAuraIcons (self)
 	end
 	
 	--return the health bar and the unitname text
