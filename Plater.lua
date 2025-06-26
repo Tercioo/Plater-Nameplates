@@ -5650,7 +5650,7 @@ function Plater.OnInit() --private --~oninit ~init
 
 			--quick hide the nameplate if the unit doesn't exists or if the unit died
 			if (DB_USE_QUICK_HIDE and (IS_WOW_PROJECT_MAINLINE)) then
-				if (not UnitExists (unitFrame.unit) or self.CurrentHealth < 1) then
+				if ((not UnitExists (unitFrame.unit) and not UnitIsVisible(unitFrame.unit)) or self.CurrentHealth < 1) then
 					--the unit died!
 					unitFrame:Hide()
 					Plater.EndLogPerformanceCore("Plater-Core", "Health", "OnUpdateHealth")
@@ -6683,7 +6683,7 @@ end
 			end
 			
 			--check shield ~shield
-			if (IS_WOW_PROJECT_MAINLINE) then
+			if (UnitGetTotalAbsorbs) then
 				if (profile.indicator_shield) then
 					local amountAbsorb = UnitGetTotalAbsorbs(tickFrame.PlateFrame[MEMBER_UNITID])
 					if (amountAbsorb and amountAbsorb > 0) then
