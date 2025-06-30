@@ -679,7 +679,7 @@ Plater.AnchorNamesByPhraseId = {
 			end
 		
 		else
-			-- WotLK and classic
+			-- classic and such
 			local classLoc, class = UnitClass ("player")
 			if (class) then
 				if (class == "WARRIOR") then
@@ -723,6 +723,12 @@ Plater.AnchorNamesByPhraseId = {
 					if IsPlayerSpell(32379) then
 						lowExecute = 0.25
 					end
+				
+				elseif (class == "DEATHKNIGHT") then
+					if IsPlayerSpell(130735) or IsPlayerSpell(130736) or IsPlayerSpell(114866) then --Soul Reaper
+						lowExecute = 0.35
+					end
+				
 				end
 			end
 		
