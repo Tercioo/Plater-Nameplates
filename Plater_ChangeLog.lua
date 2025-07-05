@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1750963632, "Bug Fix", "July 5th, 2025", "Fixing an error in quest tracking for MoP for certain units.", "cont1nuity"},
 			{1750963632, "Backend Change", "July 4th, 2025", "Changing SW:D execute for MoP classic.", "cont1nuity"},
 			{1750963632, "Backend Change", "June 30th, 2025", "Adding 'Soul Reaper' as DK execute for MoP classic.", "cont1nuity"},
 			{1750963632, "Backend Change", "June 26th, 2025", "Enabling absorb shields when available (MoP classic prep).", "cont1nuity"},
