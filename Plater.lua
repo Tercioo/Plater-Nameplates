@@ -699,7 +699,7 @@ Plater.AnchorNamesByPhraseId = {
 					elseif IsPlayerSpell(17877) then
 						lowExecute = 0.2
 					else
-						lowExecute = 0.25
+						lowExecute = 0.20
 					end
 				elseif (class == "HUNTER") then
 					-- Kill Shot
