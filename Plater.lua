@@ -61,9 +61,13 @@ local lower = string.lower
 local max = math.max
 local min = math.min
 
-local function IsPlayerSpell(spellID)
-	local spellBank = Enum.SpellBookSpellBank.Player;
-	return C_SpellBook.IsSpellKnown(spellID, spellBank);
+local IsPlayerSpell = IsPlayerSpell
+
+if (not IsPlayerSpell) then
+	IsPlayerSpell = function(spellID)
+		local spellBank = Enum.SpellBookSpellBank.Player
+		return C_SpellBook.IsSpellKnown(spellID, spellBank)
+	end
 end
 
 local GetSpecialization = C_SpecializationInfo and C_SpecializationInfo.GetSpecialization or GetSpecialization
