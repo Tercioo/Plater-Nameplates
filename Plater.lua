@@ -1132,7 +1132,7 @@ Plater.AnchorNamesByPhraseId = {
 				return spec and GetSpecializationRole (spec) == "TANK"
 			end
 			return assignedRole == "TANK"
-		elseif IS_WOW_PROJECT_CLASSIC_WRATH then
+		elseif IS_WOW_PROJECT_CLASSIC_WRATH or IS_WOW_PROJECT_CLASSIC_MOP then
 			local assignedRole = UnitGroupRolesAssigned ("player")
 			if assignedRole == "NONE" and UnitLevel ("player") >= 10 then
 				if (IS_WOW_PROJECT_CLASSIC_MOP) then
@@ -1213,6 +1213,8 @@ Plater.AnchorNamesByPhraseId = {
 			else
 				return UnitGroupRolesAssigned (unit) == "TANK"
 			end
+		elseif IS_WOW_PROJECT_CLASSIC_MOP then
+			return UnitGroupRolesAssigned (unit) == "TANK"
 		else
 			return GetPartyAssignment("MAINTANK", unit)
 		end
@@ -1221,7 +1223,7 @@ Plater.AnchorNamesByPhraseId = {
 	
 	-- toggle Threat Color Mode between tank / dps (CLASSIC)
 	function Plater.ToggleThreatColorMode()
-		if IS_WOW_PROJECT_NOT_MAINLINE and not IS_WOW_PROJECT_CLASSIC_WRATH then
+		if IS_WOW_PROJECT_NOT_MAINLINE and not IS_WOW_PROJECT_CLASSIC_WRATH and not IS_WOW_PROJECT_CLASSIC_MOP then
 			Plater.db.profile.tank_threat_colors = not Plater.db.profile.tank_threat_colors
 			Plater.RefreshTankCache()
 			if Plater.PlayerIsTank then
@@ -1238,7 +1240,7 @@ Plater.AnchorNamesByPhraseId = {
 			Plater.PlayerIsTank = true
 		else
 			TANK_CACHE [UnitName ("player")] = false
-			if IS_WOW_PROJECT_MAINLINE or IS_WOW_PROJECT_CLASSIC_WRATH then
+			if IS_WOW_PROJECT_MAINLINE or IS_WOW_PROJECT_CLASSIC_WRATH or IS_WOW_PROJECT_CLASSIC_MOP then
 				Plater.PlayerIsTank = false
 			else
 				Plater.PlayerIsTank = false or Plater.db.profile.tank_threat_colors
@@ -4563,7 +4565,7 @@ function Plater.OnInit() --private --~oninit ~init
 		if IS_WOW_PROJECT_MAINLINE then
 			Plater.EventHandlerFrame:RegisterEvent ("PLAYER_SPECIALIZATION_CHANGED")
 			Plater.EventHandlerFrame:RegisterEvent (C_Traits and "TRAIT_CONFIG_UPDATED" or "PLAYER_TALENT_UPDATE")
-		elseif IS_WOW_PROJECT_CLASSIC_WRATH then
+		elseif IS_WOW_PROJECT_CLASSIC_WRATH or IS_WOW_PROJECT_CLASSIC_MOP then
 			Plater.EventHandlerFrame:RegisterEvent ("ACTIVE_TALENT_GROUP_CHANGED")
 			Plater.EventHandlerFrame:RegisterEvent ("PLAYER_TALENT_UPDATE")
 		end
@@ -4589,7 +4591,7 @@ function Plater.OnInit() --private --~oninit ~init
 		if IS_WOW_PROJECT_NOT_MAINLINE then -- tank spec detection
 			Plater.EventHandlerFrame:RegisterEvent ("UNIT_INVENTORY_CHANGED")
 			Plater.EventHandlerFrame:RegisterEvent ("UPDATE_SHAPESHIFT_FORM")
-			if IS_WOW_PROJECT_CLASSIC_WRATH then
+			if IS_WOW_PROJECT_CLASSIC_WRATH or IS_WOW_PROJECT_CLASSIC_MOP then
 				Plater.EventHandlerFrame:RegisterEvent ("TALENT_GROUP_ROLE_CHANGED")
 			end
 		elseif Plater.PlayerClass == "DRUID" then
@@ -10338,7 +10340,7 @@ end
 			return assignedRole
 			
 		else
-			if IS_WOW_PROJECT_CLASSIC_WRATH then
+			if IS_WOW_PROJECT_CLASSIC_WRATH or IS_WOW_PROJECT_CLASSIC_MOP then
 				local assignedRole = UnitGroupRolesAssigned (unitFrame.unit)
 				if (assignedRole and assignedRole ~= "NONE") then
 					return assignedRole
