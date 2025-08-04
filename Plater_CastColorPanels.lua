@@ -732,17 +732,20 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
 
     --we want to have all the default scripts show up last in the list, so temporarily put any default script into a separate table
     local currentCastScripts = platerInternal.Scripts.CurrentCastScripts
+    local defaultCastScripts = platerInternal.Scripts.DefaultCastScripts
+    local defaultCastScriptsNames = {}
     local scriptsDefault = {}
     local scriptsToShow = {}
 
-    for i = 1, #platerInternal.Scripts.CurrentCastScripts do
-        local scriptName = platerInternal.Scripts.CurrentCastScripts[i]
+    for i = 1, #defaultCastScripts do
+        defaultCastScriptsNames[defaultCastScripts[i]] = true
+    end
 
+    for i = 1, #currentCastScripts do
+        local scriptName = currentCastScripts[i]
         local scriptObject = platerInternal.Scripts.GetScriptObjectByName(scriptName)
         if (scriptObject and scriptObject.Enabled) then
-            --platerInternal.Scripts.DefaultCastScripts might not contain all the scripts tagged with [P] or [Plater], so just search for those strings directly
-            local lowerName = scriptName:lower()
-            if (string.find(lowerName, "%[p%]") or string.find(lowerName, "%[plater%]")) then
+            if (defaultCastScriptsNames[scriptName]) then
                 table.insert(scriptsDefault, scriptName)
             else
                 table.insert(scriptsToShow, scriptName)
