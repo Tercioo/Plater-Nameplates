@@ -890,6 +890,19 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
         disableall_button:SetPoint("bottomleft", spells_scroll, "bottomleft", 1, 0)
         disableall_button:SetFrameLevel(colorsFrame.Header:GetFrameLevel() + 20)
 
+    --remove all renames button
+        local removeAllRenames = function()
+            DF:ShowPromptPanel("Confirm remove all renames?", function()
+                Plater.db.profile.npcs_renamed = {}
+                colorsFrame.RefreshScroll()
+            end,
+            function()end, true, 400, "PLATER_REMOVE_ALL_RENAMES")
+        end
+
+        local removeAllRenamesButton = DF:CreateButton(colorsFrame, removeAllRenames, 140, 20, "Remove All Renames", -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
+        removeAllRenamesButton:SetPoint("left", disableall_button, "right", -2, 0)
+        removeAllRenamesButton:SetFrameLevel(colorsFrame.Header:GetFrameLevel() + 20)
+
     --set all scripts only
         local setAllAsScriptOnly = function()
             for npcId, colorTable in pairs(Plater.db.profile.npc_colors) do
