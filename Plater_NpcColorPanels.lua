@@ -893,10 +893,7 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
     --remove all renames button
         local removeAllRenames = function()
             DF:ShowPromptPanel("Confirm remove all renames?", function()
-                local npcs_renamed = Plater.db.profile.npcs_renamed
-                for npcId, _ in pairs(npcs_renamed) do
-                    npcs_renamed[npcId] = nil
-                end
+                Plater.db.profile.npcs_renamed = {}
                 colorsFrame.RefreshScroll()
             end,
             function()end, true, 400, "PLATER_REMOVE_ALL_RENAMES")
