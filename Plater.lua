@@ -80,9 +80,6 @@ local IS_WOW_PROJECT_CLASSIC_WRATH = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpa
 --local IS_WOW_PROJECT_CLASSIC_CATACLYSM = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_CATACLYSM and ClassicExpansionAtLeast(LE_EXPANSION_CATACLYSM)
 local IS_WOW_PROJECT_CLASSIC_MOP = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_MISTS_OF_PANDARIA and ClassicExpansionAtLeast(LE_EXPANSION_MISTS_OF_PANDARIA)
 
---frostbolt
-local CONST_PREVIEW_SPELLID = 116
-
 local PixelUtil = PixelUtil or DFPixelUtil
 
 local parserFunctions --reference needed
@@ -4964,7 +4961,7 @@ function Plater.OnInit() --private --~oninit ~init
 			if plateFrame.unitFrame.PlaterOnScreen then
 				local castBar = plateFrame.unitFrame.castBar
 				local castNoInterrupt = Plater.CastBarTestFrame.castNoInterrupt
-				local spellName, _, spellIcon = GetSpellInfo(CONST_PREVIEW_SPELLID)
+				local spellName, _, spellIcon = GetSpellInfo(116)
 
 				castBar.Text:SetText(spellName)
 				castBar.Icon:SetTexture(spellIcon)
@@ -4984,7 +4981,7 @@ function Plater.OnInit() --private --~oninit ~init
 				castBar:UpdateCastColor()
 
 				castBar.spellName = 		spellName
-				castBar.spellID = 			CONST_PREVIEW_SPELLID
+				castBar.spellID = 			116
 				castBar.spellTexture = 		spellIcon
 				castBar.spellStartTime = 	GetTime()
 				castBar.spellEndTime = 		GetTime() + (castTime or 3)
