@@ -610,7 +610,11 @@ Plater.AnchorNamesByPhraseId = {
 				if (class == "PRIEST") then
 					-- SW:D is available to all priest specs
 					if IsPlayerSpell(32379) then
-						lowExecute = 0.20
+						if IsPlayerSpell(392507) then
+							lowExecute = 0.35 -- Deathspeaker
+						else
+							lowExecute = 0.20
+						end
 					end
 					
 				elseif (class == "MAGE") then

@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1754345972, "Bug Fix", "Aug 9th, 2025", "Recognizing 'Deathspeaker' as 35% execute for priests.", "cont1nuity"},
 			{1754345972, "Backend Change", "Aug 5th, 2025", "NpcColorPanels: Add Remove All Renames Button.", "Wtz_LASR"},
 			{1754345972, "Backend Change", "Aug 5th, 2025", "Improve/fix the cast bar script previews.", "gareth3001"},
 			{1754345972, "Backend Change", "Aug 4th, 2025", "Updated the wording of the priority tooltip.", "Lynn"},
