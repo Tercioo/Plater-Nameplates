@@ -1,6 +1,6 @@
 
 
-local dversion = 613
+local dversion = 615
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary(major, minor)
 
@@ -1282,6 +1282,19 @@ end
 ---@return string
 function DF:IntegerToTimer(value) --~formattime
 	return "" .. math.floor(value/60) .. ":" .. string.format("%02.f", value%60)
+end
+
+--this function transform a number into a string showing the time format for cooldowns
+---@param self table
+---@param value number
+---@return string
+function DF:IntegerToCooldownTime(value) --~formattime
+	if (value >= 3600) then
+		return floor(value/3600) .. "H"
+	elseif (value > 60) then
+		return floor(value/60) .. "M"
+	end
+	return floor(value) .. "S"
 end
 
 ---remove the realm name from a name
