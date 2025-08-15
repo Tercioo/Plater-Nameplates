@@ -7103,7 +7103,7 @@ end
 
 		local profile = Plater.db.profile
 		local unitFrame = plateFrame.unitFrame
-		if UnitIsUnit (unitFrame [MEMBER_UNITID], "focus") then --2x Plater/Plater.lua:7106: bad argument #1 to 'UnitIsUnit' (Usage: local result = UnitIsUnit(unitName1, unitName2))
+		if UnitIsUnit (unitFrame [MEMBER_UNITID], "focus") then
 			if profile.focus_indicator_enabled then
 				--this is a rare call, no need to cache these values
 				local texture = LibSharedMedia:Fetch ("statusbar", Plater.db.profile.focus_texture)
