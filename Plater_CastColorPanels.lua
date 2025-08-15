@@ -1869,7 +1869,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         local refreshButton = DF:CreateButton(castFrame, function() castFrame.RefreshScroll() end, 150, 20, _G["REFRESH"] or "Refresh", -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "PLATER_BUTTON_DARK"), DF:GetTemplate("font", "PLATER_BUTTON"))
         refreshButton:SetPoint("bottomleft", spells_scroll, "bottomleft", 0, 0)
         refreshButton:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
-        refreshButton:SetIcon([[Interface\AddOns\Plater\images\circle_icon_refresh.png]], 16,    16,     "overlay", {0, 1, 0, 1}, nil,     nil,          nil,         nil,        nil,         "TRILINEAR")
+        refreshButton:SetIcon([[Interface\AddOns\Plater\images\circle_icon_refresh.tga]], 16,    16,     "overlay", {0, 1, 0, 1}, nil,     nil,          nil,         nil,        nil,         "TRILINEAR")
 
         local createImportBox = function(parent, mainFrame)
             --create the text editor
@@ -2060,7 +2060,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         local importColorsButton = DF:CreateButton(castFrame, importColorsFunc, 70, 20, LOC["IMPORT_CAST_COLORS"], -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
         importColorsButton:SetPoint("right", auraSearchTextEntry, "left", -2, 0)
         importColorsButton:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
-        importColorsButton:SetIcon([[Interface\AddOns\Plater\images\import_indicators_1.png]], 15, 14, "overlay", {0.25, 0.375, 0, 1})
+        importColorsButton:SetIcon([[Interface\AddOns\Plater\images\import_indicators_1.tga]], 15, 14, "overlay", {0.25, 0.375, 0, 1})
 
         local exportColorsFunc = function()
             if (not castFrame.ImportEditor) then
@@ -2164,7 +2164,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         local exportColorsButton = DF:CreateButton(castFrame, exportColorsFunc, 70, 20, LOC["EXPORT_CAST_COLORS"], -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
         exportColorsButton:SetPoint("right", importColorsButton, "left", -2, 0)
         exportColorsButton:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
-        exportColorsButton:SetIcon([[Interface\AddOns\Plater\images\import_indicators_1.png]], 15, 14, "overlay", {0.5, 0.625, 0, 1})
+        exportColorsButton:SetIcon([[Interface\AddOns\Plater\images\import_indicators_1.tga]], 15, 14, "overlay", {0.5, 0.625, 0, 1})
 
         --import cast sounds button
         local importCastSoundsFunc = function()
@@ -2192,7 +2192,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         local importCastSoundsButton = DF:CreateButton(castFrame, importCastSoundsFunc, 70, 20, LOC["IMPORT_CAST_SOUNDS"], -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
         importCastSoundsButton:SetPoint("right", exportColorsButton, "left", -2, 0)
         importCastSoundsButton:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
-        importCastSoundsButton:SetIcon([[Interface\AddOns\Plater\images\import_indicators_1.png]], 15, 14, "overlay", {0.125, 0.25, 0, 1})
+        importCastSoundsButton:SetIcon([[Interface\AddOns\Plater\images\import_indicators_1.tga]], 15, 14, "overlay", {0.125, 0.25, 0, 1})
 
         --export cast sounds button
         local exportCastSoundsFunc = function()
@@ -2250,7 +2250,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         local exportCastSoundsButton = DF:CreateButton(castFrame, exportCastSoundsFunc, 70, 20, LOC["EXPORT_CAST_SOUNDS"], -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
         exportCastSoundsButton:SetPoint("right", importCastSoundsButton, "left", -2, 0)
         exportCastSoundsButton:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
-        exportCastSoundsButton:SetIcon([[Interface\AddOns\Plater\images\import_indicators_1.png]], 15, 14, "overlay", {0.625, 0.75, 0, 1})
+        exportCastSoundsButton:SetIcon([[Interface\AddOns\Plater\images\import_indicators_1.tga]], 15, 14, "overlay", {0.625, 0.75, 0, 1})
 
     --disable all colors button
         local disableAllColors = function()
@@ -2266,7 +2266,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         local disableAllColorsButton = DF:CreateButton(castFrame, disableAllColors, 150, 20, LOC["OPTIONS_CASTCOLORS_DISABLECOLORS"], -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "PLATER_BUTTON_DARK"), DF:GetTemplate("font", "PLATER_BUTTON"))
         disableAllColorsButton:SetPoint("left", refreshButton, "right", 2, 0)
         disableAllColorsButton:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
-        disableAllColorsButton:SetIcon([[Interface\AddOns\Plater\images\color_cancel.png]], 16, 16, "overlay", {0, 1, 0, 1}, nil, nil, nil, nil, nil, "TRILINEAR")
+        disableAllColorsButton:SetIcon([[Interface\AddOns\Plater\images\color_cancel.tga]], 16, 16, "overlay", {0, 1, 0, 1}, nil, nil, nil, nil, nil, "TRILINEAR")
 
     --disable all sounds button
         local disableAllSounds = function()
@@ -2282,7 +2282,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         local disableAllSoundsButton = DF:CreateButton(castFrame, disableAllSounds, 150, 20, LOC["OPTIONS_CASTCOLORS_DISABLE_SOUNDS"], -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "PLATER_BUTTON_DARK"), DF:GetTemplate("font", "PLATER_BUTTON"))
         disableAllSoundsButton:SetPoint("left", disableAllColorsButton, "right", 2, 0)
         disableAllSoundsButton:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
-        disableAllSoundsButton:SetIcon([[Interface\AddOns\Plater\images\audio_cancel.png]], 16, 16, "overlay", {0, 1, 0, 1}, nil, nil, nil, nil, nil, "TRILINEAR")
+        disableAllSoundsButton:SetIcon([[Interface\AddOns\Plater\images\audio_cancel.tga]], 16, 16, "overlay", {0, 1, 0, 1}, nil, nil, nil, nil, nil, "TRILINEAR")
 
     --toggle options button
         castFrame.showingScriptSelection = true
@@ -2303,7 +2303,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         local toggleOptionsButton = DF:CreateButton(castFrame, toggleScriptSelectionAndOptionsFrame, 150, 20, LOC["OPTIONS_SHOWOPTIONS"], -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "PLATER_BUTTON_DARK"), DF:GetTemplate("font", "PLATER_BUTTON"))
         toggleOptionsButton:SetPoint("left", disableAllSoundsButton, "right", 2, 0)
         toggleOptionsButton:SetFrameLevel(castFrame.Header:GetFrameLevel() + 20)
-        toggleOptionsButton:SetIcon([[Interface\AddOns\Plater\images\config_icon.png]], 16,    16,     "overlay", {0, 1, 0, 1}, nil,     nil,          nil,         nil,        nil,         "TRILINEAR")
+        toggleOptionsButton:SetIcon([[Interface\AddOns\Plater\images\config_icon.tga]], 16,    16,     "overlay", {0, 1, 0, 1}, nil,     nil,          nil,         nil,        nil,         "TRILINEAR")
         castFrame.toggleOptionsButton = toggleOptionsButton
 
     --cast_audiocue_cooldown
