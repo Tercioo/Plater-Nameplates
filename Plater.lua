@@ -1209,7 +1209,7 @@ Plater.AnchorNamesByPhraseId = {
 
 	--return true if the unit is in tank role
 	local function IsUnitEffectivelyTank (unit)
-		if IS_WOW_PROJECT_MAINLINE then
+		if IS_WOW_PROJECT_MAINLINE or IS_WOW_PROJECT_CLASSIC_MOP then
 			return UnitGroupRolesAssigned (unit) == "TANK"
 		elseif IS_WOW_PROJECT_CLASSIC_WRATH then
 			if IsInRaid() then
@@ -1217,8 +1217,6 @@ Plater.AnchorNamesByPhraseId = {
 			else
 				return UnitGroupRolesAssigned (unit) == "TANK"
 			end
-		elseif IS_WOW_PROJECT_CLASSIC_MOP then
-			return UnitGroupRolesAssigned (unit) == "TANK"
 		else
 			return GetPartyAssignment("MAINTANK", unit)
 		end
