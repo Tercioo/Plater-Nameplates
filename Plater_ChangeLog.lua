@@ -9,6 +9,7 @@ function Plater.GetChangelogTable()
 		Plater.ChangeLogTable = {
 
 			{1755715831, "Backend Change", "Aug 3rd, 2025", "Correction to tank recognition adjustments for MoP.", "cont1nuity"},
+			{1755715831, "Bug Fix", "Aug 20th, 2025", "Recognizing 'Twist of Fate' as 35% execute for priests.", "cont1nuity"},
 			
 			{1754345972, "Backend Change", "Aug 10th, 2025", "MoP has spec specific ghost auras.", "cont1nuity"},
 			{1754345972, "Bug Fix", "Aug 9th, 2025", "Recognizing 'Deathspeaker' as 35% execute for priests.", "cont1nuity"},
