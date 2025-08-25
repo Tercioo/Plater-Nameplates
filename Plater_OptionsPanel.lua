@@ -696,21 +696,21 @@ function Plater.OpenOptionsPanel(pageNumber, bIgnoreLazyLoad)
 	
 	local updateIconScripts = scriptButton.button:CreateTexture ("$parentIcon", "overlay")
 	updateIconScripts:SetSize (16, 10)
-	updateIconScripts:SetTexture([[Interface\AddOns\Plater\images\wagologo.tga]])
+	updateIconScripts:SetTexture([[Interface\AddOns\Plater\images\wagologo]])
 	updateIconScripts:SetPoint("bottomright", scriptButton.button, "bottomright", -2, 2)
 	updateIconScripts:Hide()
 	scriptButton.updateIcon = updateIconScripts
 	
 	local updateIconMods = modButton.button:CreateTexture ("$parentIcon", "overlay")
 	updateIconMods:SetSize (16, 10)
-	updateIconMods:SetTexture([[Interface\AddOns\Plater\images\wagologo.tga]])
+	updateIconMods:SetTexture([[Interface\AddOns\Plater\images\wagologo]])
 	updateIconMods:SetPoint("bottomright", modButton.button, "bottomright", -2, 2)
 	updateIconMods:Hide()
 	modButton.updateIcon = updateIconMods
 	
 	local updateIconProfile = profileButton.button:CreateTexture ("$parentIcon", "overlay")
 	updateIconProfile:SetSize (16, 10)
-	updateIconProfile:SetTexture([[Interface\AddOns\Plater\images\wagologo.tga]])
+	updateIconProfile:SetTexture([[Interface\AddOns\Plater\images\wagologo]])
 	updateIconProfile:SetPoint("bottomright", profileButton.button, "bottomright", -2, 2)
 	updateIconProfile:Hide()
 	profileButton.updateIcon = updateIconProfile
@@ -1240,7 +1240,7 @@ function Plater.OpenOptionsPanel(pageNumber, bIgnoreLazyLoad)
 			
 			local updateIcon = updateProfileButton.button:CreateTexture ("$parentIcon", "overlay")
 			updateIcon:SetSize (16, 10)
-			updateIcon:SetTexture([[Interface\AddOns\Plater\images\wagologo.tga]])
+			updateIcon:SetTexture([[Interface\AddOns\Plater\images\wagologo]])
 			updateIcon:SetPoint("bottomright", updateProfileButton.button, "bottomright", -2, 2)
 			updateProfileButton.updateIcon = updateIcon
 			

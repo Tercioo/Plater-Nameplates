@@ -627,14 +627,14 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
         help_button:SetPoint("right", auraSearchTextEntry, "left", -2, 0)
         help_button.tooltip = "|cFFFFFF00Help:|r\n\n- Run dungeons and raids to fill the npc list.\n\n- |cFFFFEE00Scripts Only|r aren't automatically applied, scripts can import the color set here using |cFFFFEE00local colorTable = Plater.GetNpcColor(unitFrame)|r.\n\n- Colors set here override threat colors.\n\n- Colors set in scripts override colors set here.\n\n- |TInterface\\AddOns\\Plater\\media\\star_empty_64:16:16|t icon indicates the color is favorite, so you can use it across dungeons to keep color consistency."
         help_button:SetFrameLevel(colorsFrame.Header:GetFrameLevel() + 20)
-        help_button:SetIcon([[Interface\AddOns\Plater\images\circle_icon_help.png]], 16, 16, "overlay", {0, 1, 0, 1}, nil, nil, nil, nil, nil, "TRILINEAR")
+        help_button:SetIcon([[Interface\AddOns\Plater\images\circle_icon_help]], 16, 16, "overlay", {0, 1, 0, 1}, nil, nil, nil, nil, nil, "TRILINEAR")
 
     --refresh button
         local refresh_button = DF:CreateButton(colorsFrame, function() colorsFrame.RefreshScroll() end, 90, 20, "Refresh", -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
         refresh_button:SetPoint("right", help_button, "left", -2, 0)
         refresh_button.tooltip = "refresh the list the npcs"
         refresh_button:SetFrameLevel(colorsFrame.Header:GetFrameLevel() + 20)
-        refresh_button:SetIcon([[Interface\AddOns\Plater\images\circle_icon_refresh.png]], 16,    16,     "overlay", {0, 1, 0, 1}, nil,     nil,          nil,         nil,        nil,         "TRILINEAR")
+        refresh_button:SetIcon([[Interface\AddOns\Plater\images\circle_icon_refresh]], 16,    16,     "overlay", {0, 1, 0, 1}, nil,     nil,          nil,         nil,        nil,         "TRILINEAR")
                               --texture,                                                   width, height, layout,    texcoord,     overlay, textDistance, leftPadding, textHeight, shortMethod, filterMode
 
         local create_import_box = function(parent, mainFrame)
@@ -784,7 +784,7 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
         local import_button = DF:CreateButton(colorsFrame, import_func, 90, 20, L["IMPORT"], -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
         import_button:SetPoint("right", refresh_button, "left", -2, 0)
         import_button:SetFrameLevel(colorsFrame.Header:GetFrameLevel() + 20)
-        import_button:SetIcon([[Interface\AddOns\Plater\images\file_arrow_up.png]], 14, 18, "overlay", {0, 1, 0.115, 0.885}, nil, nil, nil, nil, nil, "TRILINEAR")
+        import_button:SetIcon([[Interface\AddOns\Plater\images\file_arrow_up]], 14, 18, "overlay", {0, 1, 0.115, 0.885}, nil, nil, nil, nil, nil, "TRILINEAR")
 
         local export_func = function()
             if (not colorsFrame.ImportEditor) then
@@ -871,7 +871,7 @@ function Plater.CreateNpcColorOptionsFrame(colorsFrame)
         local exportButton = DF:CreateButton(colorsFrame, export_func, 90, 20, L["EXPORT"], -1, nil, nil, nil, nil, nil, DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"), DF:GetTemplate("font", "PLATER_BUTTON"))
         exportButton:SetPoint("right", import_button, "left", -2, 0)
         exportButton:SetFrameLevel(colorsFrame.Header:GetFrameLevel() + 20)
-        exportButton:SetIcon([[Interface\AddOns\Plater\images\file_arrow_down.png]], 14, 18, "overlay", {0, 1, 0.115, 0.885}, nil, nil, nil, nil, nil, "TRILINEAR")
+        exportButton:SetIcon([[Interface\AddOns\Plater\images\file_arrow_down]], 14, 18, "overlay", {0, 1, 0.115, 0.885}, nil, nil, nil, nil, nil, "TRILINEAR")
         exportButton:SetIconFilterMode("TRILINEAR")
 
     --disable all colors button

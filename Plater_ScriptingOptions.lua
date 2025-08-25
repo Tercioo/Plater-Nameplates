@@ -65,7 +65,7 @@ function Plater.CreateScriptingOptionsPanel(parent, mainFrame)
         "Interface\\AddOns\\Plater\\images\\option_label", --5
         "Interface\\AddOns\\Plater\\images\\option_blank", --6
         "Interface\\AddOns\\Plater\\images\\option_list", --7 list
-        "Interface\\AddOns\\Plater\\images\\options_audio_dropdown.png", --8 audio dropdown
+        "Interface\\AddOns\\Plater\\images\\options_audio_dropdown", --8 audio dropdown
     }
 
     --> admin script options (this frame is used to configurate the options which the script has)
