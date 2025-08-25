@@ -67,17 +67,21 @@ end
 dispatchSendCommEvents() -- can be done immediately
 
 local decompressReceivedData = function(data)
-	local dataCompressed = LibDeflate:DecodeForWoWAddonChannel(data)
-	if (dataCompressed) then
-		local dataDecompressed
-		--use native api where available
-		if C_EncodingUtil and C_EncodingUtil.DecompressString then
-			dataDecompressed = C_EncodingUtil.DecompressString(dataCompressed)
-		else
-			dataDecompressed = LibDeflate:DecompressDeflate (dataCompressed)
+	if (string.match(data, '^'..CONST_PLATER_DATA_TYPE_V2)) then
+		local dataCompressed = LibDeflate:DecodeForWoWAddonChannel (string.gsub(data, CONST_PLATER_DATA_TYPE_V2, ''))
+		if (dataCompressed) then
+			local dataDecompressed = C_EncodingUtil.DecompressString(dataCompressed)
+			if (type(dataDecompressed) == "string") then
+				return dataDecompressed
+			end
 		end
-		if (type(dataDecompressed) == "string") then
-			return dataDecompressed
+	else
+		local dataCompressed = LibDeflate:DecodeForWoWAddonChannel(data)
+		if (dataCompressed) then
+			local dataDecompressed = LibDeflate:DecompressDeflate (dataCompressed)
+			if (type(dataDecompressed) == "string") then
+				return dataDecompressed
+			end
 		end
 	end
 end
@@ -269,7 +273,7 @@ function Plater.DecompressData (data, dataType, silent)
 				return false
 			end
 		elseif (dataType == "comm") then
-			dataCompressed = LibDeflate:DecodeForWoWAddonChannel (data)
+			dataCompressed = LibDeflate:DecodeForWoWAddonChannel (string.gsub(data, CONST_PLATER_DATA_TYPE_V2, ''))
 			if (not dataCompressed) then
 				if not silent then Plater:Msg ("couldn't decode the data.") end
 				return false
