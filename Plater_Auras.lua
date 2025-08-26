@@ -491,29 +491,8 @@ end
 
 --[[
 UNIT_AURA Payload:
-	- unit					-- the unit the aura update is applied to
-	- isFullUpdate			-- if there needs to be a full aura update (potentially empty updatedAuras)
-	- updatedAuras {		-- the table of updated aura information for this unit/event
-		[n] {
-			canApplyAura,
-			debuffType,
-			isBossAura,
-			isFromPlayerOrPlayerPet,
-			isHarmful,
-			isHelpful,
-			isNameplateOnly,
-			isRaid,
-			name,
-			nameplateShowAll,
-			nameplateShowPersonal,
-			shouldNeverShow,
-			sourceUnit,
-			spellId,
-		}
-
-In 10.0:
-	- unit
-	- UnitAuraUpdateInfo = {
+	- unit						-- the unit the aura update is applied to
+	- UnitAuraUpdateInfo = {	-- the table of updated aura information for this unit/event
 			addedAuras = AuraInstanceInfo[]?,
 			updatedAuraInstanceIDs = number[]?
 			removedAuraInstanceIDs = number[]?
@@ -521,10 +500,24 @@ In 10.0:
 		}
 
 with AuraInstanceInfo = {	
-		--FULL UnitAura return values plus:
+		canApplyAura,
+		debuffType,
+		isBossAura,
+		isFromPlayerOrPlayerPet,
+		isHarmful,
+		isHelpful,
+		isNameplateOnly,
+		isRaid,
+		name,
+		nameplateShowAll,
+		nameplateShowPersonal,
+		shouldNeverShow,
+		sourceUnit,
+		spellId,
+		
+		-- so, FULL UnitAura return values plus:
 		auraInstanceID = number,
-		-- "Magic" | "Curse" | "Disease" | "Poison"
-		dispelName = string,  
+		dispelName = string,  -- "Magic" | "Curse" | "Disease" | "Poison"
 	}
 ]]--
 local UnitAuraEventHandlerData = {}
