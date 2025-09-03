@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1756937766, "New Feature", "Sept 4th, 2025", "Adding possiblitly to add new NPCs via '/plater add <npcID>' with automatic name but 'UNKNOWN' zone.", "cont1nuity"},
 			{1756937766, "Bug Fix", "Sept 3rd, 2025", "Removing 'Twist of Fate' as 35% execute for priests. Use a mod if you need this.", "cont1nuity"},
 			
 			{1755715831, "Backend Change", "Aug 25th, 2025", "Fixing texture artifacts and unifying to tga.", "cont1nuity"},
