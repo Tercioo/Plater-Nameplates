@@ -610,8 +610,8 @@ Plater.AnchorNamesByPhraseId = {
 				if (class == "PRIEST") then
 					-- SW:D is available to all priest specs
 					if IsPlayerSpell(32379) then
-						if IsPlayerSpell(392507) or IsPlayerSpell(390972) then
-							lowExecute = 0.35 -- Deathspeaker or Twist of Fate
+						if IsPlayerSpell(392507) then
+							lowExecute = 0.35 -- Deathspeaker
 						else
 							lowExecute = 0.20
 						end
@@ -3856,8 +3856,8 @@ Plater.AnchorNamesByPhraseId = {
 										DB_NPCIDS_CACHE[plateFrame[MEMBER_NPCID]] = {plateFrame.unitNameInternal, Plater.ZoneName or "UNKNOWN", Plater.Locale or "enUS"}
 									else
 										--the npc is already cached, check if the language is different
-										if (npcCacheInfo[3] ~= Plater.Locale) then
-											--the npc is cached but the language is different, update the name
+										if (npcCacheInfo[3] ~= Plater.Locale or npcCacheInfo[2] == "UNKNOWN") then
+											--the npc is cached but the language is different or zone unknown -> update.
 											npcCacheInfo[1] = plateFrame[MEMBER_NAME]
 											npcCacheInfo[2] = Plater.ZoneName or "UNKNOWN"
 											npcCacheInfo[3] = Plater.Locale
