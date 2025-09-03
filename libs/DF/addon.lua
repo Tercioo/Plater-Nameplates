@@ -12,9 +12,10 @@ local CONST_DEFAULT_PROFILE_NAME = "default"
 ---@field __savedGlobalVarsName string the name of the global saved variables
 ---@field __savedVarsDefaultTemplate table the default template for the saved variables
 ---@field __frame frame a frame to use for events
----@field OnLoaded fun(addon:df_addon, profileTable:table) runs when the addon is loaded at event "ADDON_LOADED"
+---@field OnLoad fun(addon:df_addon, profileTable:table) runs when the addon is loaded at event "ADDON_LOADED"
 ---@field OnInit fun(addon:df_addon, profileTable:table) runs when the addon is initialized at event "PLAYER_LOGIN"
 ---@field OnProfileChanged fun(addon:df_addon, profileTable:table) runs when the profile is changed
+---@field SetLogoutLogTable fun(addon:df_addon, logTable:table) sets the logout log table
 
 --runs when the addon received addon_loaded
 local addonLoaded = function(addonFrame, event, addonName)
