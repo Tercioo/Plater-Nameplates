@@ -742,6 +742,10 @@ Plater.AnchorNamesByPhraseId = {
 						lowExecute = 0.35
 					end
 				
+				elseif  (class == "ROGUE") then
+					if IsPlayerSpell(111240) then --Dispatch
+						lowExecute = 0.35
+					end
 				end
 			end
 		
