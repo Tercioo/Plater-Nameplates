@@ -1,7 +1,7 @@
-## Interface: 110200, 110205
+## Interface: 
 ## Interface-Mainline: 110200, 110205
-## Interface-Mists: 50500, 50501
-## Interface-Vanilla: 11507
+## Interface-Mists: 
+## Interface-Vanilla: 
 ## Title: Plater
 ## Notes: Nameplate addon designed for advanced users.
 ## Notes-esES: Addon de placa de nombre diseñado para usuarios avanzados
