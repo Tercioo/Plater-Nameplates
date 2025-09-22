@@ -10798,144 +10798,6 @@ end
 	--autoFrame
 		
 	local auto_options = {
-		{type = "label", get = function() return "Auto Toggle Friendly Nameplates:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-		
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.auto_toggle_friendly_enabled end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.auto_toggle_friendly_enabled = value
-				
-				Plater.RefreshDBUpvalues()
-				Plater.UpdateAllPlates()
-				Plater.RefreshAutoToggle()
-			end,
-			name = "OPTIONS_ENABLED",
-			desc = "When enabled, Plater will enable or disable friendly plates based on the settings below.",
-		},
-		
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.auto_toggle_friendly ["party"] end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.auto_toggle_friendly ["party"] = value
-				Plater.RefreshAutoToggle()
-			end,
-			name = "In Dungeons",
-			desc = "Show friendly nameplates when inside dungeons.",
-		},	
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.auto_toggle_friendly ["raid"] end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.auto_toggle_friendly ["raid"] = value
-				Plater.RefreshAutoToggle()
-			end,
-			name = "In Raid",
-			desc = "Show friendly nameplates when inside raids.",
-		},
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.auto_toggle_friendly ["arena"] end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.auto_toggle_friendly ["arena"] = value
-				Plater.RefreshAutoToggle()
-			end,
-			name = "In Arena / BG",
-			desc = "Show friendly nameplates when inside arena or battleground.",
-		},
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.auto_toggle_friendly ["cities"] end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.auto_toggle_friendly ["cities"] = value
-				Plater.RefreshAutoToggle()
-			end,
-			name = "In Major Cities",
-			desc = "Show friendly nameplates when inside a major city.",
-		},
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.auto_toggle_friendly ["world"] end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.auto_toggle_friendly ["world"] = value
-				Plater.RefreshAutoToggle()
-			end,
-			name = "In Open World",
-			desc = "Show friendly nameplates when at any place not listed on the other options.",
-		},
-		
-		{type = "blank"},
-		
-		{type = "label", get = function() return "Auto Toggle Enemy Nameplates:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-		
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.auto_toggle_enemy_enabled end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.auto_toggle_enemy_enabled = value
-				
-				Plater.RefreshDBUpvalues()
-				Plater.UpdateAllPlates()
-				Plater.RefreshAutoToggle()
-			end,
-			name = L["OPTIONS_ENABLED"],
-			desc = "When enabled, Plater will enable or disable enemy plates based on the settings below.",
-		},
-		
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.auto_toggle_enemy ["party"] end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.auto_toggle_enemy ["party"] = value
-				Plater.RefreshAutoToggle()
-			end,
-			name = "In Dungeons",
-			desc = "Show enemy nameplates when inside dungeons.",
-		},	
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.auto_toggle_enemy ["raid"] end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.auto_toggle_enemy ["raid"] = value
-				Plater.RefreshAutoToggle()
-			end,
-			name = "In Raid",
-			desc = "Show enemy nameplates when inside raids.",
-		},
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.auto_toggle_enemy ["arena"] end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.auto_toggle_enemy ["arena"] = value
-				Plater.RefreshAutoToggle()
-			end,
-			name = "In Arena / BG",
-			desc = "Show enemy nameplates when inside arena or battleground.",
-		},
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.auto_toggle_enemy ["cities"] end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.auto_toggle_enemy ["cities"] = value
-				Plater.RefreshAutoToggle()
-			end,
-			name = "In Major Cities",
-			desc = "Show enemy nameplates when inside a major city.",
-		},
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.auto_toggle_enemy ["world"] end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.auto_toggle_enemy ["world"] = value
-				Plater.RefreshAutoToggle()
-			end,
-			name = "In Open World",
-			desc = "Show enemy nameplates when at any place not listed on the other options.",
-		},
-		
-		{type = "blank"},
-		
 		{type = "label", get = function() return "Combat toggle:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
@@ -11010,10 +10872,195 @@ end
 			name = "Hide Blizzard Healthbars out of combat",
 			desc = "Automatically enable / disable showing blizzard nameplate healthbars out of combat.",
 		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_combat.always_show_ic end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_combat.always_show_ic = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "Enable 'Always Show Nameplates' in combat",
+			desc = "Automatically enable / disable the 'always show' option in combat.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_combat.always_show_ooc end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_combat.always_show_ooc = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "Enable 'Always Show Nameplates' out of combat",
+			desc = "Automatically enable / disable the 'always show' option out of combat.",
+		},
+		
+		{type = "blank"},
+		
+		{type = "label", get = function() return "Raid and Party:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_inside_raid_dungeon.hide_enemy_player_pets end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_inside_raid_dungeon.hide_enemy_player_pets = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "Hide Enemy Pets",
+			desc = "Disable show enemy pets within a raid or a dungeon.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_inside_raid_dungeon.hide_enemy_player_totems end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_inside_raid_dungeon.hide_enemy_player_totems = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "Hide Enemy Totems",
+			desc = "Disable show enemy totems within a raid or a dungeon.",
+		},
 		
 		{type = "breakline"},
 		{type = "breakline"},
-		{type = "label", get = function() return "Auto Toggle Stacking Nameplates:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		
+		{type = "label", get = function() return "Friendly Nameplates:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_friendly_enabled end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_friendly_enabled = value
+				
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+				Plater.RefreshAutoToggle()
+			end,
+			name = "OPTIONS_ENABLED",
+			desc = "When enabled, Plater will enable or disable friendly plates based on the settings below.",
+		},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_friendly ["party"] end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_friendly ["party"] = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "In Dungeons",
+			desc = "Show friendly nameplates when inside dungeons.",
+		},	
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_friendly ["raid"] end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_friendly ["raid"] = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "In Raid",
+			desc = "Show friendly nameplates when inside raids.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_friendly ["arena"] end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_friendly ["arena"] = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "In Arena / BG",
+			desc = "Show friendly nameplates when inside arena or battleground.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_friendly ["cities"] end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_friendly ["cities"] = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "In Major Cities",
+			desc = "Show friendly nameplates when inside a major city.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_friendly ["world"] end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_friendly ["world"] = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "In Open World",
+			desc = "Show friendly nameplates when at any place not listed on the other options.",
+		},
+		
+		{type = "blank"},
+		
+		{type = "label", get = function() return "Enemy Nameplates:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_enemy_enabled end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_enemy_enabled = value
+				
+				Plater.RefreshDBUpvalues()
+				Plater.UpdateAllPlates()
+				Plater.RefreshAutoToggle()
+			end,
+			name = L["OPTIONS_ENABLED"],
+			desc = "When enabled, Plater will enable or disable enemy plates based on the settings below.",
+		},
+		
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_enemy ["party"] end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_enemy ["party"] = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "In Dungeons",
+			desc = "Show enemy nameplates when inside dungeons.",
+		},	
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_enemy ["raid"] end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_enemy ["raid"] = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "In Raid",
+			desc = "Show enemy nameplates when inside raids.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_enemy ["arena"] end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_enemy ["arena"] = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "In Arena / BG",
+			desc = "Show enemy nameplates when inside arena or battleground.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_enemy ["cities"] end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_enemy ["cities"] = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "In Major Cities",
+			desc = "Show enemy nameplates when inside a major city.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_enemy ["world"] end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.auto_toggle_enemy ["world"] = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = "In Open World",
+			desc = "Show enemy nameplates when at any place not listed on the other options.",
+		},
+		
+		{type = "breakline"},
+		{type = "breakline"},
+		
+		{type = "label", get = function() return "Stacking Nameplates:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "toggle",
@@ -11081,7 +11128,7 @@ end
 		},
 		
 		{type = "blank"},
-		{type = "label", get = function() return "Auto Toggle 'Always Show Nameplates':" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return "'Always Show Nameplates':" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "toggle",
@@ -11146,30 +11193,6 @@ end
 			end,
 			name = "In Open World",
 			desc = "Set 'always show nameplates' on when at any place not listed on the other options.",
-		},
-
-		{type = "blank"},
-		{type = "label", get = function() return "Raid and Party:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.auto_inside_raid_dungeon.hide_enemy_player_pets end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.auto_inside_raid_dungeon.hide_enemy_player_pets = value
-				Plater.RefreshAutoToggle()
-			end,
-			name = "Hide Enemy Pets",
-			desc = "Disable show enemy pets within a raid or a dungeon.",
-		},
-		{
-			type = "toggle",
-			get = function() return Plater.db.profile.auto_inside_raid_dungeon.hide_enemy_player_totems end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.auto_inside_raid_dungeon.hide_enemy_player_totems = value
-				Plater.RefreshAutoToggle()
-			end,
-			name = "Hide Enemy Totems",
-			desc = "Disable show enemy totems within a raid or a dungeon.",
 		},
 	}
 	

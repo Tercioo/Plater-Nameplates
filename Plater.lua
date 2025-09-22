@@ -8765,7 +8765,8 @@ end
 		-- combat toggle
 		if (profile.auto_toggle_combat_enabled and (combat ~= nil)) then
 			local onlyNamesEnabled = GetCVarBool("nameplateShowOnlyNames")
-			local onlyNamesEnabledRaw = GetCVar("nameplateShowOnlyNames")
+			--local onlyNamesEnabledRaw = GetCVar("nameplateShowOnlyNames")
+			local alwaysShow = GetCVarBool("nameplateShowAll")
 			
 			--NamePlateDriverFrame:UnregisterEvent("CVAR_UPDATE")
 			if combat or InCombatLockdown() then -- update this separately and only if needed
@@ -8773,10 +8774,16 @@ end
 					SetCVar("nameplateShowOnlyNames", profile.auto_toggle_combat.blizz_healthbar_ic and CVAR_ENABLED or CVAR_DISABLED)
 					Plater.UpdateBaseNameplateOptions()
 				end
+				if alwaysShow ~= profile.auto_toggle_combat.always_show_ic then
+					SetCVar("nameplateShowAll", profile.auto_toggle_combat.always_show_ic and CVAR_ENABLED or CVAR_DISABLED)
+				end
 			else
 				if onlyNamesEnabled ~= profile.auto_toggle_combat.blizz_healthbar_ooc then
 					SetCVar("nameplateShowOnlyNames", profile.auto_toggle_combat.blizz_healthbar_ooc and CVAR_ENABLED or CVAR_DISABLED)
 					--Plater.UpdateBaseNameplateOptions()
+				end
+				if alwaysShow ~= profile.auto_toggle_combat.always_show_ooc then
+					SetCVar("nameplateShowAll", profile.auto_toggle_combat.always_show_ooc and CVAR_ENABLED or CVAR_DISABLED)
 				end
 			end
 			--NamePlateDriverFrame:RegisterEvent("CVAR_UPDATE")
