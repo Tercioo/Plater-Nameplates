@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1758569637, "Bug Fix", "Sept 26th, 2025", "Fixing soft-interact icons on classic and era.", "cont1nuity"},
 			{1758569637, "New Feature", "Sept 22nd, 2025", "Adding combat auto toggle option for 'Always Show Nameplates'.", "cont1nuity"},
 			{1758569637, "Bug Fix", "Sept 14th, 2025", "Adding 'Dispatch' as rogue execute in MoP.", "cont1nuity"},
 			{1758569637, "New Feature", "Sept 4th, 2025", "Adding possiblitly to add new NPCs via '/plater add <npcID>' with automatic name but 'UNKNOWN' zone.", "cont1nuity"},

@@ -4162,11 +4162,10 @@ Plater.AnchorNamesByPhraseId = {
 	
 	Plater.EventHandlerFrame:RegisterEvent ("PLAYER_TARGET_CHANGED")
 	Plater.EventHandlerFrame:RegisterEvent ("PLAYER_FOCUS_CHANGED")
-	if IS_WOW_PROJECT_MAINLINE then
-		Plater.EventHandlerFrame:RegisterEvent ("PLAYER_SOFT_INTERACT_CHANGED")
-		Plater.EventHandlerFrame:RegisterEvent ("PLAYER_SOFT_FRIEND_CHANGED")
-		Plater.EventHandlerFrame:RegisterEvent ("PLAYER_SOFT_ENEMY_CHANGED")
-	end
+	
+	Plater.EventHandlerFrame:RegisterEvent ("PLAYER_SOFT_INTERACT_CHANGED")
+	Plater.EventHandlerFrame:RegisterEvent ("PLAYER_SOFT_FRIEND_CHANGED")
+	Plater.EventHandlerFrame:RegisterEvent ("PLAYER_SOFT_ENEMY_CHANGED")
 	
 	Plater.EventHandlerFrame:RegisterEvent ("PLAYER_REGEN_DISABLED")
 	Plater.EventHandlerFrame:RegisterEvent ("PLAYER_REGEN_ENABLED")
