@@ -27,7 +27,7 @@ local addonLoaded = function(addonFrame, event, addonName)
 
 	if (not addonObject.__savedGlobalVarsName) then
 		if (addonObject.OnLoad) then
-			detailsFramework:Dispatch(addonObject.OnLoad, addonObject)
+			xpcall(addonObject.OnLoad, geterrorhandler(), addonObject)
 		end
 		return
 	end
@@ -50,7 +50,7 @@ local addonLoaded = function(addonFrame, event, addonName)
 	addonObject.profile = profileTable
 
 	if (addonObject.OnLoad) then
-		detailsFramework:Dispatch(addonObject.OnLoad, addonObject, addonObject.profile, true)
+		xpcall(addonObject.OnLoad, geterrorhandler(), addonObject, addonObject.profile, true)
 	end
 end
 
@@ -59,7 +59,7 @@ local addonInit = function(addonFrame)
 	local addonObject = addonFrame.__addonObject
 
 	if (addonObject.OnInit) then
-		detailsFramework:Dispatch(addonObject.OnInit, addonObject, addonObject.profile)
+		xpcall(addonObject.OnInit, geterrorhandler(), addonObject, addonObject.profile)
 	end
 end
 
@@ -84,7 +84,7 @@ local addonEvents = {
 local addonOnEvent = function(addonFrame, event, ...)
 	local func = addonEvents[event]
 	if (func) then
-		func(addonFrame, event, ...)
+		xpcall(func, geterrorhandler(), addonFrame, event, ...)
 	else
 		--might be a registered event from the user
 		if (addonFrame[event]) then
