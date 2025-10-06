@@ -770,7 +770,7 @@ Plater.AnchorNamesByPhraseId = {
 		local occlusionAlpha = tonumber(GetCVar ("nameplateOccludedAlphaMult")) or 1
 		if DB_USE_UIPARENT and profile.honor_blizzard_plate_alpha then
 		--if DB_USE_UIPARENT end
-			nameplateAlpha = plateFrame:GetAlpha()
+			nameplateAlpha = onAdded and 1 or plateFrame:GetAlpha()
 		end
 		unitFrame.IsInRange = nil
 		
