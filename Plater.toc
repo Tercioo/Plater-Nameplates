@@ -1,5 +1,5 @@
-## Interface: 110200, 110205
-## Interface-Mainline: 110200, 110205
+## Interface: 110200, 110205, 120000
+## Interface-Mainline: 110200, 110205, 120000
 ## Interface-Mists: 50501
 ## Interface-Vanilla: 11507
 ## Title: Plater

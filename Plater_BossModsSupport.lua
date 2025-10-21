@@ -11,6 +11,9 @@ Plater.db.profile.bossmod_support_bars_enabled = false
 Plater.db.profile.bossmod_support_bars_text_max_len = 7
 ]]--
 
+local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
+local IS_WOW_PROJECT_MIDNIGHT = IS_WOW_PROJECT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_MIDNIGHT and ClassicExpansionAtLeast(LE_EXPANSION_MIDNIGHT)
+
 local DF = _G ["DetailsFramework"]
 local Plater = _G.Plater
 local C_Timer = _G.C_Timer
@@ -233,11 +236,12 @@ function Plater.UpdateBossModAuraFrameSettings(unitFrame, refreshID)
 end
 
 function Plater.EnsureUpdateBossModAuras(guid)
-	if not guid then return end
+	if IS_WOW_PROJECT_MIDNIGHT or not guid then return end
 	UNIT_BOSS_MOD_NEEDS_UPDATE_IN[guid] = -1
 end
 
 function Plater.UpdateBossModAuras(unitFrame)
+	if IS_WOW_PROJECT_MIDNIGHT then return end
 
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdateBossModAuras")
 
@@ -453,7 +457,7 @@ end
 
 
 function Plater.RegisterBossModAuras()
-	if IS_REGISTERED then return end
+	if IS_REGISTERED or IS_WOW_PROJECT_MIDNIGHT then return end
 
 	if Plater.db.profile.bossmod_support_enabled then
 		if DBM and DBM.RegisterCallback then

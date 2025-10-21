@@ -7,6 +7,7 @@ local _ = nil
 local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_NOT_MAINLINE = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_CLASSIC_ERA = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
+local IS_WOW_PROJECT_MIDNIGHT = IS_WOW_PROJECT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_MIDNIGHT and ClassicExpansionAtLeast(LE_EXPANSION_MIDNIGHT)
 
 --stop yellow lines on my editor
 local tinsert = _G.tinsert
@@ -412,6 +413,7 @@ end
 
 
 local function setAdditionalAuraFields(aura, unit, sourceIsSelf, sourceReaction, sourceIsPlayer)
+	if IS_WOW_PROJECT_MIDNIGHT then return end
 	if not aura or not unit then return end
 	aura.sourceIsSelf = sourceIsSelf or aura.sourceUnit and UnitIsUnit (aura.sourceUnit, unit) or false
 	aura.sourceReaction = sourceReaction or aura.sourceUnit and UnitReaction(aura.sourceUnit, "player") or 4
@@ -431,6 +433,7 @@ GetAuraDataBySlot = function (unit, slot)
 end
 
 local ValidateAuraForUpdate = function (unit, aura)
+	if IS_WOW_PROJECT_MIDNIGHT then return true, true, true end
 	local needsUpdate = false
 	local hasBuff = false
 	local hasDebuff = false
@@ -530,9 +533,14 @@ local UnitAuraEventHandler = function (_, event, arg1, arg2, arg3, ...)
 	--DevTool:AddData({event = event, arg1 = arg1, arg2 = arg2}, "Plater_UnitAuraEventHandler - " .. (event or "N/A"))
 	if event == "UNIT_AURA" then
 		local unit, updatedAuras = arg1, arg2
+		--print(issecretvalue(arg1), issecretvalue(arg2))
 		--DevTool:AddData({unit = unit, updatedAuras = updatedAuras, valid = UnitAuraEventHandlerValidUnits[unit]}, "Plater_UNIT_AURA - " .. unit)
 		if unit and UnitAuraEventHandlerValidUnits[unit] then
-			UpdateUnitAuraCacheData(unit, updatedAuras)
+			if IS_WOW_PROJECT_MIDNIGHT then
+				UpdateUnitAuraCacheData(unit, {isFullUpdate = true})
+			else
+				UpdateUnitAuraCacheData(unit, updatedAuras)
+			end
 		end
 	end
 	
@@ -552,7 +560,7 @@ function Plater.AddToAuraUpdate (unit)
 	if not unit then return end
 	UnitAuraEventHandlerValidUnits[unit] = true
 	UnitAuraEventHandlerData[unit] = { hasBuff = true, hasDebuff = true } --update at least once
-	UpdateUnitAuraCacheData(unit, nil)
+	UpdateUnitAuraCacheData(unit, {isFullUpdate = true})
 end
 
 
@@ -566,7 +574,16 @@ UpdateUnitAuraCacheData = function (unit, updatedAuras)
 		UnitAuraCacheData[unit] = unitCacheData
 	end
 	
-	if updatedAuras == nil or updatedAuras.isFullUpdate then
+	if IS_WOW_PROJECT_MIDNIGHT and type(updatedAuras) == nil then
+		UnitAuraCacheData[unit] = {}
+		UnitAuraCacheData[unit].buffs = {}
+		UnitAuraCacheData[unit].debuffs = {}
+		UnitAuraCacheData[unit].buffsChanged = true
+		UnitAuraCacheData[unit].debuffsChanged = true
+		UnitAuraCacheData[unit].isFullUpdateHelp = true
+		UnitAuraCacheData[unit].isFullUpdateHarm = true
+		UnitAuraEventHandlerData[unit] = { hasBuff = true, hasDebuff = true }
+	elseif not IS_WOW_PROJECT_MIDNIGHT and updatedAuras == nil or updatedAuras.isFullUpdate then
 		UnitAuraCacheData[unit] = {}
 		UnitAuraCacheData[unit].buffs = {}
 		UnitAuraCacheData[unit].debuffs = {}
@@ -707,9 +724,13 @@ local function getUnitAuras(unit, filter)
 		for i=2, numSlots do
 			local slot = slots[i]
 			local aura = GetAuraDataBySlot(unit, slot)
-			if aura then
+			if type(aura) ~= nil then
 				--DevTool:AddData({unit = unit, aura = aura, slot = slot}, "GetAuraDataBySlot")
-				filterCache[aura.auraInstanceID] = aura
+				if IS_WOW_PROJECT_MIDNIGHT then
+					filterCache[slot] = aura
+				else
+					filterCache[aura.auraInstanceID] = aura
+				end
 			end
 		end
 	until continuationToken == nil
@@ -717,8 +738,13 @@ local function getUnitAuras(unit, filter)
 	Plater.EndLogPerformanceCore("Plater-Core", "Update", "UpdateAuras - getUnitAuras - long")
 	
 	-- done the update?
-	if unitCacheData.isFullUpdateHelp and isHelpful then unitCacheData.isFullUpdateHelp = false end
-	if unitCacheData.isFullUpdateHarm and isHarmful then unitCacheData.isFullUpdateHarm = false end
+	if IS_WOW_PROJECT_MIDNIGHT then --MIDNIGHT!!
+		unitCacheData.isFullUpdateHelp = true
+		unitCacheData.isFullUpdateHarm = true
+	else
+		if unitCacheData.isFullUpdateHelp and isHelpful then unitCacheData.isFullUpdateHelp = false end
+		if unitCacheData.isFullUpdateHarm and isHarmful then unitCacheData.isFullUpdateHarm = false end
+	end
 	return unitCacheData
 end
 
@@ -922,6 +948,7 @@ end
 	--plater just add an icon for the spellId and show it until its duration expires
 	--this function is called on tick after Plater.ShowGhostAuras(tickFrame.BuffFrame) and platerInternal.ExtraAuras.ClearExpired()
 	function platerInternal.ExtraAuras.Show(buffFrame)
+		if IS_WOW_PROJECT_MIDNIGHT then return end -- MIDNIGHT!!
 		local unitFrame = buffFrame.unitFrame
 		--unitFrame.IsNeutralOrHostile count npcs and players
 		if (unitFrame.IsNeutralOrHostile and not unitFrame.IsSelf) then --and unitFrame.InCombat --removed for debug on training dummies
@@ -2071,6 +2098,7 @@ end
 			local unitAuras = getUnitAuras(unit, "HELPFUL") or {}
 			
 			for id, aura in pairs(unitAuras.buffs or {}) do
+				if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(aura) then return end --MIDNIGHT!!
 				--DevTool:AddData({i, aura})
 				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = 
 					aura.name, aura.icon, aura.applications, aura.dispelName, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
@@ -2117,6 +2145,7 @@ end
 			local unitAuras = getUnitAuras(unit, "HARMFUL") or {}
 			
 			for id, aura in pairs(unitAuras.debuffs or {}) do
+				if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(aura) then return end --MIDNIGHT!!
 				--DevTool:AddData({i, aura})
 				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = 
 					aura.name, aura.icon, aura.applications, aura.dispelName, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
@@ -2209,6 +2238,7 @@ end
 			local unitAuras = getUnitAuras(unit, "HARMFUL") or {}
 			
 			for id, aura in pairs(unitAuras.debuffs or {}) do
+				if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(aura) then return end --MIDNIGHT!!
 				--DevTool:AddData({i, aura})
 				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = 
 					aura.name, aura.icon, aura.applications, aura.dispelName, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
@@ -2291,6 +2321,7 @@ end
 			--DevTool:AddData(unitAuras, "HELPFUL")
 			
 			for id, aura in pairs(unitAuras.buffs or {}) do
+				if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(aura) then return end --MIDNIGHT!!
 				--DevTool:AddData({i, aura})
 				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = 
 					aura.name, aura.icon, aura.applications, aura.dispelName, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
@@ -2467,6 +2498,7 @@ end
 			--DevTool:AddData(unitAuras)
 			
 			for id, aura in pairs(unitAuras.debuffs or {}) do
+				if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(aura) then return end --MIDNIGHT!!
 				--DevTool:AddData({i, aura})
 				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = 
 					aura.name, aura.icon, aura.applications, aura.dispelName, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
@@ -2508,6 +2540,7 @@ end
 			--DevTool:AddData(unitAuras)
 			
 			for id, aura in pairs(unitAuras.buffs or {}) do
+				if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(aura) then return end --MIDNIGHT!!
 				--DevTool:AddData({i, aura})
 				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = 
 					aura.name, aura.icon, aura.applications, aura.dispelName, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 

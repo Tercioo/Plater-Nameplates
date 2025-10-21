@@ -5,6 +5,9 @@ local Plater = Plater
 local DF = DetailsFramework
 local _
 
+local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
+local IS_WOW_PROJECT_MIDNIGHT = IS_WOW_PROJECT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_MIDNIGHT and ClassicExpansionAtLeast(LE_EXPANSION_MIDNIGHT)
+
 --font select
 local on_select_blizzard_nameplate_font = function (_, _, value)
     Plater.db.profile.blizzard_nameplate_font = value
@@ -303,6 +306,7 @@ function platerInternal.CreateAdvancedOptions()
             name = "Lock to Screen (Top Side)" .. CVarIcon,
             desc = "Min space between the nameplate and the top of the screen. Increase this if some part of the nameplate are going out of the screen.\n\n|cFFFFFFFFDefault: 0.065|r\n\n|cFFFFFF00 Important |r: if you're having issue, manually set using these macros:\n/run SetCVar ('nameplateOtherTopInset', '0.065')\n/run SetCVar ('nameplateLargeTopInset', '0.065')\n\n|cFFFFFF00 Important |r: setting to 0 disables this feature." .. CVarDesc,
             nocombat = true,
+            hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
 
         {
@@ -331,6 +335,7 @@ function platerInternal.CreateAdvancedOptions()
             name = "Lock to Screen (Bottom Side)|cFFFF7700*|r",
             desc = "Min space between the nameplate and the bottom of the screen. Increase this if some part of the nameplate are going out of the screen.\n\n|cFFFFFFFFDefault: 0.065|r\n\n|cFFFFFF00 Important |r: if you're having issue, manually set using these macros:\n/run SetCVar ('nameplateOtherBottomInset', '0.1')\n/run SetCVar ('nameplateLargeBottomInset', '0.15')\n\n|cFFFFFF00 Important |r: setting to 0 disables this feature.\n\n|cFFFF7700[*]|r |cFFa0a0a0CVar, saved within Plater profile and restored when loading the profile.|r",
             nocombat = true,
+            hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
 
         {
@@ -473,18 +478,21 @@ function platerInternal.CreateAdvancedOptions()
             name = "Show Debuffs on Blizzard Health Bars" .. CVarIcon,
             desc = "While in dungeons or raids, if friendly nameplates are enabled it won't show debuffs on them.\nIf any Plater module is disabled, this will affect these nameplates as well." .. CVarDesc .. CVarNeedReload,
             nocombat = true,
+            hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
 
-        {type = "label", get = function() return "Selection Space Scaling:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {type = "label", get = function() return "Selection Space Scaling:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = IS_WOW_PROJECT_MIDNIGHT},
         {
             type = "toggle",
             get = function()
+                if IS_WOW_PROJECT_MIDNIGHT then return false end
                 local hScale = GetCVarNumberOrDefault("NamePlateHorizontalScale");
                 local vScale = GetCVarNumberOrDefault("NamePlateVerticalScale");
                 local cScale = GetCVarNumberOrDefault("NamePlateClassificationScale");
                 return not (ApproximatelyEqual(hScale, 1) and ApproximatelyEqual(vScale, 1) and ApproximatelyEqual(cScale, 1));
             end,
             set = function (self, fixedparam, value)
+                if IS_WOW_PROJECT_MIDNIGHT then return end
                 if value then
                     SetCVar("NamePlateHorizontalScale", 1.4);
                     SetCVar("NamePlateVerticalScale", 2.7);
@@ -499,11 +507,13 @@ function platerInternal.CreateAdvancedOptions()
             name = "Larger Nameplates" .. CVarIcon,
             desc = "Increases the blizzard base nameplate scaling (which is impacting the selection space and default blizzard nameplate size)." .. CVarDesc,
             nocombat = true,
+            hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
         {
             type = "range",
-            get = function() return tonumber (GetCVar ("NamePlateVerticalScale")) end,
+            get = function() return IS_WOW_PROJECT_MIDNIGHT and 1 or tonumber (GetCVar ("NamePlateVerticalScale")) end,
             set = function (self, fixedparam, value)
+                if IS_WOW_PROJECT_MIDNIGHT then return end
                 if (not InCombatLockdown()) then
                     SetCVar ("NamePlateVerticalScale", value)
                 else
@@ -518,11 +528,13 @@ function platerInternal.CreateAdvancedOptions()
             name = "Base Vertical Scale" .. CVarIcon,
             desc = "Increases the blizzard base nameplate scaling height (which is impacting the selection space and default blizzard nameplate size)." .. CVarDesc,
             nocombat = true,
+            hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
         {
             type = "range",
-            get = function() return tonumber (GetCVar ("NamePlateHorizontalScale")) end,
+            get = function() return IS_WOW_PROJECT_MIDNIGHT and 1 or tonumber (GetCVar ("NamePlateHorizontalScale")) end,
             set = function (self, fixedparam, value)
+                if IS_WOW_PROJECT_MIDNIGHT then return end
                 if (not InCombatLockdown()) then
                     SetCVar ("NamePlateHorizontalScale", value)
                 else
@@ -537,11 +549,13 @@ function platerInternal.CreateAdvancedOptions()
             name = "Base Horizontal Scale" .. CVarIcon,
             desc = "Increases the blizzard base nameplate scaling height (which is impacting the selection space and default blizzard nameplate size)." .. CVarDesc,
             nocombat = true,
+            hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
         {
             type = "range",
-            get = function() return tonumber (GetCVar ("NamePlateClassificationScale")) end,
+            get = function() return IS_WOW_PROJECT_MIDNIGHT and 1 or tonumber (GetCVar ("NamePlateClassificationScale")) end,
             set = function (self, fixedparam, value)
+                if IS_WOW_PROJECT_MIDNIGHT then return end
                 if (not InCombatLockdown()) then
                     SetCVar ("NamePlateClassificationScale", value)
                 else
@@ -556,6 +570,7 @@ function platerInternal.CreateAdvancedOptions()
             name = "Base Classification Scale" .. CVarIcon,
             desc = "Increases the blizzard base nameplate classification scaling (which is impacting the selection space and default blizzard nameplate size)." .. CVarDesc,
             nocombat = true,
+            hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
         
         
@@ -1049,7 +1064,7 @@ function platerInternal.CreateAdvancedOptions()
         },
 
         {type = "blank"},
-        {type = "label", get = function() return "Personal Bar Custom Position:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = IS_WOW_PROJECT_NOT_MAINLINE},
+        {type = "label", get = function() return "Personal Bar Custom Position:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = IS_WOW_PROJECT_NOT_MAINLINE or IS_WOW_PROJECT_MIDNIGHT},
         {
             type = "range",
             get = function() return tonumber (GetCVar ("nameplateSelfTopInset")*100) end,
@@ -1114,7 +1129,7 @@ function platerInternal.CreateAdvancedOptions()
             nocombat = true,
             name = "Top Constrain" .. CVarIcon,
             desc = "Adjust the top constrain position where the personal bar cannot pass.\n\n|cFFFFFFFFDefault: 50|r" .. CVarDesc,
-            hidden = IS_WOW_PROJECT_NOT_MAINLINE,
+            hidden = IS_WOW_PROJECT_NOT_MAINLINE or IS_WOW_PROJECT_MIDNIGHT,
         },
 
         {
@@ -1181,7 +1196,7 @@ function platerInternal.CreateAdvancedOptions()
             nocombat = true,
             name = "Bottom Constrain" .. CVarIcon,
             desc = "Adjust the bottom constrain position where the personal bar cannot pass.\n\n|cFFFFFFFFDefault: 20|r" .. CVarDesc,
-            hidden = IS_WOW_PROJECT_NOT_MAINLINE,
+            hidden = IS_WOW_PROJECT_NOT_MAINLINE or IS_WOW_PROJECT_MIDNIGHT,
         },
 
         {type = "blank"},
