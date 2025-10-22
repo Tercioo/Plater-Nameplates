@@ -2777,7 +2777,6 @@ Plater.AnchorNamesByPhraseId = {
 					LazyUpdateCooldown = 0.1,
 					FillOnInterrupt = false,
 					HideSparkOnInterrupt = false,
-					CanTick = IS_WOW_PROJECT_MIDNIGHT,
 				}
 				
 				local powerBarOptions = {
