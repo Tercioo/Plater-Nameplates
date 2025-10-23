@@ -1540,7 +1540,7 @@ end
 			
 			--> update the icon
 			--MIDNIGHT!!
-			if not issecretvalue(icon) then
+			if not IS_WOW_PROJECT_MIDNIGHT or (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(icon)) then
 				auraIconFrame.Icon:SetTexture (icon)
 			end
 			
@@ -1865,7 +1865,7 @@ end
 				
 				if auraIconFrame:IsShown() then
 					local spellName = auraIconFrame.SpellName
-					if not issecretvalue(spellName) then
+					if IS_WOW_PROJECT_MIDNIGHT or (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(spellName)) then
 						--get the script object of the aura which will be showing in this icon frame
 						local globalScriptObject = SCRIPT_AURA_TRIGGER_CACHE[spellName]
 						
@@ -2146,7 +2146,6 @@ end
 			local unitAuras = getUnitAuras(unit, "HELPFUL") or {}
 			
 			for id, aura in pairs(unitAuras.buffs or {}) do
-				if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(aura) then return end --MIDNIGHT!!
 				--DevTool:AddData({i, aura})
 				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = 
 					aura.name, aura.icon, aura.applications, aura.dispelName, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
@@ -2198,7 +2197,6 @@ end
 			local unitAuras = getUnitAuras(unit, "HARMFUL") or {}
 			
 			for id, aura in pairs(unitAuras.debuffs or {}) do
-				if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(aura) then return end --MIDNIGHT!!
 				--DevTool:AddData({i, aura})
 				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = 
 					aura.name, aura.icon, aura.applications, aura.dispelName, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
@@ -2296,7 +2294,6 @@ end
 			local unitAuras = getUnitAuras(unit, "HARMFUL") or {}
 			
 			for id, aura in pairs(unitAuras.debuffs or {}) do
-				if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(aura) then return end --MIDNIGHT!!
 				--DevTool:AddData({i, aura})
 				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = 
 					aura.name, aura.icon, aura.applications, aura.dispelName, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
@@ -2383,7 +2380,6 @@ end
 			--DevTool:AddData(unitAuras, "HELPFUL")
 			
 			for id, aura in pairs(unitAuras.buffs or {}) do
-				if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(aura) then return end --MIDNIGHT!!
 				--DevTool:AddData({i, aura})
 				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = 
 					aura.name, aura.icon, aura.applications, aura.dispelName, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
@@ -2565,7 +2561,6 @@ end
 			--DevTool:AddData(unitAuras)
 			
 			for id, aura in pairs(unitAuras.debuffs or {}) do
-				if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(aura) then return end --MIDNIGHT!!
 				--DevTool:AddData({i, aura})
 				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = 
 					aura.name, aura.icon, aura.applications, aura.dispelName, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
@@ -2612,7 +2607,6 @@ end
 			--DevTool:AddData(unitAuras)
 			
 			for id, aura in pairs(unitAuras.buffs or {}) do
-				if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(aura) then return end --MIDNIGHT!!
 				--DevTool:AddData({i, aura})
 				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = 
 					aura.name, aura.icon, aura.applications, aura.dispelName, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
