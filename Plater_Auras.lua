@@ -1520,7 +1520,6 @@ end
     end
     
 
-    	
 	--update the aura icon, this icon is getted with GetAuraIcon -
 	--dispelName is the UnitAura return value for the auraType ("" is enrage, nil/"none" for unspecified and "Disease", "Poison", "Curse", "Magic" for other types. -Continuity/Ariani
 	--self is .BuffFrame or .BuffFrame2
@@ -1537,10 +1536,13 @@ end
 		end
 		
 		--> check if the icon is showing a different aura
-		if (auraIconFrame.spellId ~= spellId) then
+		if IS_WOW_PROJECT_MIDNIGHT or (auraIconFrame.spellId ~= spellId) then
 			
 			--> update the icon
-			auraIconFrame.Icon:SetTexture (icon)
+			--MIDNIGHT!!
+			if not issecretvalue(icon) then
+				auraIconFrame.Icon:SetTexture (icon)
+			end
 			
 			--> update members
 			auraIconFrame.spellId = spellId
@@ -1548,7 +1550,9 @@ end
 			auraIconFrame.layoutIndex = auraIconFrame.ID
 			auraIconFrame.IsShowingBuff = false
 			auraIconFrame.CanStealOrPurge = false
-			auraIconFrame.AuraType = AURA_TYPES[dispelName] or "none"
+			if not IS_WOW_PROJECT_MIDNIGHT then
+				auraIconFrame.AuraType = AURA_TYPES[dispelName] or "none"
+			end
 			auraIconFrame.IsFromPlayer = isFromPlayerOrPlayerPet
 
 			if (auraType == "DEBUFF") then
@@ -1567,12 +1571,14 @@ end
 		--> caching the profile for performance
 		local profile = Plater.db.profile
 		
-		self.AuraCache [spellId] = true
-		self.AuraCache [spellName] = true
-		self.AuraCache [spellId.."_"..(sourceUnit or "N/A")] = true
-		self.AuraCache [spellName.."_"..(sourceUnit or "N/A")] = true
-		self.AuraCache.canStealOrPurge = self.AuraCache.canStealOrPurge or isStealable
-		self.AuraCache.hasEnrage = self.AuraCache.hasEnrage or dispelName == AURA_TYPE_ENRAGE
+		if not IS_WOW_PROJECT_MIDNIGHT then
+			self.AuraCache [spellId] = true
+			self.AuraCache [spellName] = true
+			self.AuraCache [spellId.."_"..(sourceUnit or "N/A")] = true
+			self.AuraCache [spellName.."_"..(sourceUnit or "N/A")] = true
+			self.AuraCache.canStealOrPurge = self.AuraCache.canStealOrPurge or isStealable
+			self.AuraCache.hasEnrage = self.AuraCache.hasEnrage or dispelName == AURA_TYPE_ENRAGE
+		end
 		
 		--> check if a full refresh is required
 		if (auraIconFrame.RefreshID < PLATER_REFRESH_ID) then
@@ -1686,60 +1692,101 @@ end
 		auraIconFrame.IsGhostAura = false
 		auraIconFrame.BuffFrame = self.Name == "Secondary" and 2 or 1
 
-		if (applications > 1) then
+		--MIDNIGHT!! curve?
+		if IS_WOW_PROJECT_MIDNIGHT then
 			local stackLabel = auraIconFrame.CountFrame.Count
+			--local showHideCurve = C_CurveUtil.CreateCurve()
+			--showHideCurve:SetType(Enum.LuaCurveType.Step)
+			--showHideCurve:AddPoint(0, 0)
+			--showHideCurve:AddPoint(1, 1)
+			--local alpha = showHideCurve:Evaluate(applications)
+			--print(alpha)
+			--auraIconFrame.CountFrame:SetAlpha(alpha)
 			stackLabel:SetText (applications)
-			stackLabel:Show()
-		else
+			--stackLabel:Show()
 			auraIconFrame.CountFrame.Count:Hide()
+		else
+			if (applications > 1) then
+				local stackLabel = auraIconFrame.CountFrame.Count
+				stackLabel:SetText (applications)
+				stackLabel:Show()
+			else
+				auraIconFrame.CountFrame.Count:Hide()
+			end
 		end
 		
 		auraIconFrame.IsShowingBuff = isBuff
 		auraIconFrame.CanStealOrPurge = isStealable
 		
 		--border colors
-		if (isStealable) then
-			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.steal_or_purge))
-		
-		elseif (Plater.db.profile.aura_border_colors_by_type) then
-			-- use Blizzards color global 'DebuffTypeColor' for the actual color:
-			local color = DebuffTypeColor[dispelName or "none"] or {r=0,b=0,g=0, a=0}
-			auraIconFrame:SetBackdropBorderColor (color.r, color.g, color.b, color.a or 1)
-		
-		elseif (CROWDCONTROL_AURA_IDS [spellId]) then 
-			--> CC effects
-			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.crowdcontrol))
-		
-		elseif (OFFENSIVE_AURA_IDS [spellId]) then 
-			--> offensive CDs
-			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.offensive))
-		
-		elseif (DEFENSIVE_AURA_IDS [spellId]) then 
-			--> defensive CDs
-			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.defensive))
-
-		elseif (dispelName == AURA_TYPE_ENRAGE) then 
-			--> enrage effects
-			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.enrage))
+		if not IS_WOW_PROJECT_MIDNIGHT then
+			if (isStealable) then
+				auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.steal_or_purge))
 			
-		elseif (isBuff) then
-			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.is_buff))
-		
-		elseif (isDebuff) then
-			--> for debuffs on the player for the personal bar
-			auraIconFrame:SetBackdropBorderColor (1, 0, 0, 1)
-		
-		elseif (isShowAll) then
-			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.is_show_all))
+			elseif (Plater.db.profile.aura_border_colors_by_type) then
+				-- use Blizzards color global 'DebuffTypeColor' for the actual color:
+				local color = DebuffTypeColor[dispelName or "none"] or {r=0,b=0,g=0, a=0}
+				auraIconFrame:SetBackdropBorderColor (color.r, color.g, color.b, color.a or 1)
+			
+			elseif (CROWDCONTROL_AURA_IDS [spellId]) then 
+				--> CC effects
+				auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.crowdcontrol))
+			
+			elseif (OFFENSIVE_AURA_IDS [spellId]) then 
+				--> offensive CDs
+				auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.offensive))
+			
+			elseif (DEFENSIVE_AURA_IDS [spellId]) then 
+				--> defensive CDs
+				auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.defensive))
+
+			elseif (dispelName == AURA_TYPE_ENRAGE) then 
+				--> enrage effects
+				auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.enrage))
 				
+			elseif (isBuff) then
+				auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.is_buff))
+			
+			elseif (isDebuff) then
+				--> for debuffs on the player for the personal bar
+				auraIconFrame:SetBackdropBorderColor (1, 0, 0, 1)
+			
+			elseif (isShowAll) then
+				auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.is_show_all))
+					
+			else
+				auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.default))
+				
+			end
 		else
 			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.default))
-			
 		end
 
-		modRate = modRate or 1
-		--CooldownFrame_Set(self, start, duration, enable, forceShowDrawEdge, modRate)
-		CooldownFrame_Set (auraIconFrame.Cooldown, expirationTime - duration, duration, duration > 0, true, modRate)
+		--MIDNIGHT!!
+		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(duration) then
+			--auraIconFrame.Cooldown:SetDrawEdge(true)
+			--auraIconFrame.Cooldown:SetCooldown(start, duration, modRate)
+			auraIconFrame.SpellName = spellName
+			auraIconFrame.SpellId = spellId
+			auraIconFrame.InUse = true
+			--auraIconFrame.RemainingTime = max (timeLeft, 0)
+			auraIconFrame.Duration = duration
+			auraIconFrame.Stacks = applications
+			auraIconFrame.ExpirationTime = expirationTime
+			auraIconFrame.Caster = sourceUnit
+			auraIconFrame.AuraAmount = applications
+			auraIconFrame.ModRate = modRate
+			auraIconFrame.isBuff = isBuff
+			auraIconFrame:Show()
+			auraIconFrame:SetScript("OnUpdate", nil)
+			auraIconFrame.Cooldown.Timer:Hide()
+			return
+		else
+			modRate = modRate or 1
+			--CooldownFrame_Set(self, start, duration, enable, forceShowDrawEdge, modRate)
+			CooldownFrame_Set (auraIconFrame.Cooldown, expirationTime - duration, duration, duration > 0, true, modRate)
+		end
+		
 		local now = GetTime()
 		local timeLeft = (expirationTime - now) / modRate
 		
@@ -1818,36 +1865,37 @@ end
 				
 				if auraIconFrame:IsShown() then
 					local spellName = auraIconFrame.SpellName
-					
-					--get the script object of the aura which will be showing in this icon frame
-					local globalScriptObject = SCRIPT_AURA_TRIGGER_CACHE[spellName]
-					
-					--check if this aura has a custom script
-					if (globalScriptObject) then
-						--stored information about scripts
-						local scriptContainer = auraIconFrame:ScriptGetContainer()
+					if not issecretvalue(spellName) then
+						--get the script object of the aura which will be showing in this icon frame
+						local globalScriptObject = SCRIPT_AURA_TRIGGER_CACHE[spellName]
 						
-						--get the info about this particularly script
-						local scriptInfo = auraIconFrame:ScriptGetInfo (globalScriptObject, scriptContainer)
-						
-						--set the aura information on the script env
-						local scriptEnv = scriptInfo.Env
-						scriptEnv._SpellID = auraIconFrame.spellId
-						scriptEnv._UnitID = auraIconFrame.Caster
-						scriptEnv._SpellName = auraIconFrame.SpellName
-						scriptEnv._Texture = auraIconFrame.texture
-						scriptEnv._Caster = auraIconFrame.Caster
-						scriptEnv._StackCount = auraIconFrame.Stacks
-						scriptEnv._Duration = auraIconFrame.Duration
-						scriptEnv._StartTime = auraIconFrame.ExpirationTime - auraIconFrame.Duration
-						scriptEnv._EndTime = auraIconFrame.ExpirationTime
-						scriptEnv._RemainingTime = max (auraIconFrame.ExpirationTime - now, 0)
-						scriptEnv._CanStealOrPurge = auraIconFrame.CanStealOrPurge
-						scriptEnv._AuraType = auraIconFrame.AuraType
-						scriptEnv._AuraAmount = auraIconFrame.AuraAmount
-						
-						--run onupdate script
-						auraIconFrame:ScriptRunOnUpdate (scriptInfo)
+						--check if this aura has a custom script
+						if (globalScriptObject) then
+							--stored information about scripts
+							local scriptContainer = auraIconFrame:ScriptGetContainer()
+							
+							--get the info about this particularly script
+							local scriptInfo = auraIconFrame:ScriptGetInfo (globalScriptObject, scriptContainer)
+							
+							--set the aura information on the script env
+							local scriptEnv = scriptInfo.Env
+							scriptEnv._SpellID = auraIconFrame.spellId
+							scriptEnv._UnitID = auraIconFrame.Caster
+							scriptEnv._SpellName = auraIconFrame.SpellName
+							scriptEnv._Texture = auraIconFrame.texture
+							scriptEnv._Caster = auraIconFrame.Caster
+							scriptEnv._StackCount = auraIconFrame.Stacks
+							scriptEnv._Duration = auraIconFrame.Duration
+							scriptEnv._StartTime = auraIconFrame.ExpirationTime - auraIconFrame.Duration
+							scriptEnv._EndTime = auraIconFrame.ExpirationTime
+							scriptEnv._RemainingTime = max (auraIconFrame.ExpirationTime - now, 0)
+							scriptEnv._CanStealOrPurge = auraIconFrame.CanStealOrPurge
+							scriptEnv._AuraType = auraIconFrame.AuraType
+							scriptEnv._AuraAmount = auraIconFrame.AuraAmount
+							
+							--run onupdate script
+							auraIconFrame:ScriptRunOnUpdate (scriptInfo)
+						end
 					end
 				end
 			
@@ -2104,12 +2152,14 @@ end
 					aura.name, aura.icon, aura.applications, aura.dispelName, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
 					aura.isBossAura, aura.isFromPlayerOrPlayerPet, aura.nameplateShowAll, aura.timeMod, aura.applications
 				
-				unitAuraCache[name] = true
-				unitAuraCache[spellId] = true
-				unitAuraCache[name.."_"..(sourceUnit or "N/A")] = true
-				unitAuraCache[spellId.."_"..(sourceUnit or "N/A")] = true
-				unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or isStealable
-				unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or dispelName == AURA_TYPE_ENRAGE
+				if not IS_WOW_PROJECT_MIDNIGHT then
+					unitAuraCache[name] = true
+					unitAuraCache[spellId] = true
+					unitAuraCache[name.."_"..(sourceUnit or "N/A")] = true
+					unitAuraCache[spellId.."_"..(sourceUnit or "N/A")] = true
+					unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or isStealable
+					unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or dispelName == AURA_TYPE_ENRAGE
+				end
 				
 				if ((show_buffs_personal and isPersonal) or not isPersonal) then
 				
@@ -2121,12 +2171,12 @@ end
 						--> check for special auras auto added by setting like 'show crowd control' or 'show dispellable'
 						--> SPECIAL_AURAS_AUTO_ADDED has a list of crowd control not do not have a list of dispellable, so check if isStealable.
 						--> in addition, we want to check if enrage tracking is enabled and show enrage effects
-						if (SPECIAL_AURAS_AUTO_ADDED [name] or SPECIAL_AURAS_AUTO_ADDED [spellId] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and isStealable) or (DB_SHOW_ENRAGE_IN_EXTRA_ICONS and dispelName == AURA_TYPE_ENRAGE) or (DB_SHOW_MAGIC_IN_EXTRA_ICONS and dispelName == AURA_TYPE_MAGIC)) then
+						if not IS_WOW_PROJECT_MIDNIGHT and (SPECIAL_AURAS_AUTO_ADDED [name] or SPECIAL_AURAS_AUTO_ADDED [spellId] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and isStealable) or (DB_SHOW_ENRAGE_IN_EXTRA_ICONS and dispelName == AURA_TYPE_ENRAGE) or (DB_SHOW_MAGIC_IN_EXTRA_ICONS and dispelName == AURA_TYPE_MAGIC)) then
 							Plater.AddExtraIcon (self, name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, true, "HELPFUL", id, timeMod)
 							isSpecial = true
 						
 						--> check for special auras added by the user it self
-						elseif (((SPECIAL_AURAS_USER_LIST [name] or SPECIAL_AURAS_USER_LIST [spellId]) and not (SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId])) or ((SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId]) and aura.sourceIsPlayer)) then
+						elseif not IS_WOW_PROJECT_MIDNIGHT and (((SPECIAL_AURAS_USER_LIST [name] or SPECIAL_AURAS_USER_LIST [spellId]) and not (SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId])) or ((SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId]) and aura.sourceIsPlayer)) then
 							Plater.AddExtraIcon (self, name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, true,"HELPFUL", id, timeMod)
 							isSpecial = true
 							
@@ -2134,7 +2184,10 @@ end
 					end
 					
 					--verify is this aura is in the table passed
-					if (not isSpecial and (aurasToCheck [name] or aurasToCheck [spellId])) then
+					if not IS_WOW_PROJECT_MIDNIGHT and (not isSpecial and (aurasToCheck [name] or aurasToCheck [spellId])) then
+						local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
+						Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isFromPlayerOrPlayerPet, isStealable, nameplateShowPersonal, spellId, true, false, false, isPersonal, dispelName, timeMod)
+					elseif IS_WOW_PROJECT_MIDNIGHT then
 						local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
 						Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isFromPlayerOrPlayerPet, isStealable, nameplateShowPersonal, spellId, true, false, false, isPersonal, dispelName, timeMod)
 					end
@@ -2151,12 +2204,14 @@ end
 					aura.name, aura.icon, aura.applications, aura.dispelName, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
 					aura.isBossAura, aura.isFromPlayerOrPlayerPet, aura.nameplateShowAll, aura.timeMod, aura.applications
 				
-				unitAuraCache[name] = true
-				unitAuraCache[spellId] = true
-				unitAuraCache[name.."_"..(sourceUnit or "N/A")] = true
-				unitAuraCache[spellId.."_"..(sourceUnit or "N/A")] = true
-				unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or isStealable
-				unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or dispelName == AURA_TYPE_ENRAGE
+				if not IS_WOW_PROJECT_MIDNIGHT then
+					unitAuraCache[name] = true
+					unitAuraCache[spellId] = true
+					unitAuraCache[name.."_"..(sourceUnit or "N/A")] = true
+					unitAuraCache[spellId.."_"..(sourceUnit or "N/A")] = true
+					unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or isStealable
+					unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or dispelName == AURA_TYPE_ENRAGE
+				end
 				
 				if ((show_debuffs_personal and isPersonal) or not isPersonal) then
 				
@@ -2168,12 +2223,12 @@ end
 						--> check for special auras auto added by setting like 'show crowd control' or 'show dispellable'
 						--> SPECIAL_AURAS_AUTO_ADDED has a list of crowd control not do not have a list of dispellable, so check if isStealable
 						--> in addition, we want to check if enrage tracking is enabled and show enrage effects
-						if (SPECIAL_AURAS_AUTO_ADDED [name] or SPECIAL_AURAS_AUTO_ADDED [spellId] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and isStealable) or (DB_SHOW_ENRAGE_IN_EXTRA_ICONS and dispelName == AURA_TYPE_ENRAGE)) then
+						if not IS_WOW_PROJECT_MIDNIGHT and (SPECIAL_AURAS_AUTO_ADDED [name] or SPECIAL_AURAS_AUTO_ADDED [spellId] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and isStealable) or (DB_SHOW_ENRAGE_IN_EXTRA_ICONS and dispelName == AURA_TYPE_ENRAGE)) then
 							Plater.AddExtraIcon (self, name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, false, "HARMFUL", id, timeMod)
 							isSpecial = true
 						
 						--> check for special auras added by the user it self
-						elseif (((SPECIAL_AURAS_USER_LIST [name] or SPECIAL_AURAS_USER_LIST [spellId]) and not (SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId])) or ((SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId]) and aura.sourceIsPlayer)) then
+						elseif not IS_WOW_PROJECT_MIDNIGHT and (((SPECIAL_AURAS_USER_LIST [name] or SPECIAL_AURAS_USER_LIST [spellId]) and not (SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId])) or ((SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId]) and aura.sourceIsPlayer)) then
 							Plater.AddExtraIcon (self, name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, false, "HARMFUL", id, timeMod)
 							isSpecial = true
 							
@@ -2182,8 +2237,11 @@ end
 					
 					--checking here if the debuff is placed by the player
 					--if (sourceUnit and aurasToCheck [name] and UnitIsUnit (sourceUnit, "player")) then --this doesn't track the pet, so auras like freeze from mage frost elemental won't show
-					if (not isSpecial and (aurasToCheck [name] or aurasToCheck [spellId]) and aura.sourceIsPlayer) then
+					if not IS_WOW_PROJECT_MIDNIGHT and (not isSpecial and (aurasToCheck [name] or aurasToCheck [spellId]) and aura.sourceIsPlayer) then
 					--if (aurasToCheck [name]) then
+						local auraIconFrame, buffFrame = Plater.GetAuraIcon (self)
+						Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isFromPlayerOrPlayerPet, isStealable, nameplateShowPersonal, spellId, false, false, false, isPersonal, dispelName, timeMod)
+					elseif IS_WOW_PROJECT_MIDNIGHT then
 						local auraIconFrame, buffFrame = Plater.GetAuraIcon (self)
 						Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isFromPlayerOrPlayerPet, isStealable, nameplateShowPersonal, spellId, false, false, false, isPersonal, dispelName, timeMod)
 					end
@@ -2248,15 +2306,17 @@ end
 				local can_show_this_debuff
 				local auraType = "DEBUFF"
 				
-				unitAuraCache[name] = true
-				unitAuraCache[spellId] = true
-				unitAuraCache[name.."_"..(sourceUnit or "N/A")] = true
-				unitAuraCache[spellId.."_"..(sourceUnit or "N/A")] = true
-				unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or isStealable
-				unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or dispelName == AURA_TYPE_ENRAGE
+				if not IS_WOW_PROJECT_MIDNIGHT then
+					unitAuraCache[name] = true
+					unitAuraCache[spellId] = true
+					unitAuraCache[name.."_"..(sourceUnit or "N/A")] = true
+					unitAuraCache[spellId.."_"..(sourceUnit or "N/A")] = true
+					unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or isStealable
+					unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or dispelName == AURA_TYPE_ENRAGE
+				end
 
 				--check if the debuff isn't filtered out
-				if (not DB_DEBUFF_BANNED [name] and not DB_DEBUFF_BANNED [spellId]) then
+				if not IS_WOW_PROJECT_MIDNIGHT and (not DB_DEBUFF_BANNED [name] and not DB_DEBUFF_BANNED [spellId]) then
 			
 					--> if true it'll show all auras - this can be called from scripts to debug aura things
 					if (Plater.DebugAuras) then
@@ -2299,10 +2359,12 @@ end
 						Plater.AddExtraIcon (self, name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, false, "HARMFUL", id, timeMod)
 						can_show_this_debuff = false
 					end
+				elseif IS_WOW_PROJECT_MIDNIGHT then
+					can_show_this_debuff = true
 				end
 				
 				--> check for special auras added by the user it self
-				if (can_show_this_debuff ~= false and (((SPECIAL_AURAS_USER_LIST [name] or SPECIAL_AURAS_USER_LIST [spellId]) and not (SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId])) or ((SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId]) and aura.sourceIsPlayer))) then
+				if not IS_WOW_PROJECT_MIDNIGHT and (can_show_this_debuff ~= false and (((SPECIAL_AURAS_USER_LIST [name] or SPECIAL_AURAS_USER_LIST [spellId]) and not (SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId])) or ((SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId]) and aura.sourceIsPlayer))) then
 					Plater.AddExtraIcon (self, name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, false, "HARMFUL", id, timeMod)
 					can_show_this_debuff = false
 				end
@@ -2329,18 +2391,20 @@ end
 				
 				local auraType = "BUFF"
 				
-				unitAuraCache[name] = true
-				unitAuraCache[spellId] = true
-				unitAuraCache[name.."_"..(sourceUnit or "N/A")] = true
-				unitAuraCache[spellId.."_"..(sourceUnit or "N/A")] = true
-				unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or isStealable
-				unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or dispelName == AURA_TYPE_ENRAGE
+				if not IS_WOW_PROJECT_MIDNIGHT then
+					unitAuraCache[name] = true
+					unitAuraCache[spellId] = true
+					unitAuraCache[name.."_"..(sourceUnit or "N/A")] = true
+					unitAuraCache[spellId.."_"..(sourceUnit or "N/A")] = true
+					unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or isStealable
+					unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or dispelName == AURA_TYPE_ENRAGE
+				end
 				
 				--> check for special auras added by the user it self
-				if (((SPECIAL_AURAS_USER_LIST [name] or SPECIAL_AURAS_USER_LIST [spellId]) and not (SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId])) or ((SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId]) and aura.sourceIsPlayer)) then
+				if not IS_WOW_PROJECT_MIDNIGHT and (((SPECIAL_AURAS_USER_LIST [name] or SPECIAL_AURAS_USER_LIST [spellId]) and not (SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId])) or ((SPECIAL_AURAS_USER_LIST_MINE [name] or SPECIAL_AURAS_USER_LIST_MINE [spellId]) and aura.sourceIsPlayer)) then
 					Plater.AddExtraIcon (self, name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, true, "HELPFUL", id, timeMod)
 					
-				elseif (not DB_BUFF_BANNED [name] and not DB_BUFF_BANNED [spellId]) then
+				elseif not IS_WOW_PROJECT_MIDNIGHT and (not DB_BUFF_BANNED [name] and not DB_BUFF_BANNED [spellId]) then
 					--> if true it'll show all auras - this can be called from scripts to debug aura things
 					if (Plater.DebugAuras) then
 						if (duration and duration < 60) then
@@ -2416,6 +2480,9 @@ end
 						end
 					end
 
+				elseif IS_WOW_PROJECT_MIDNIGHT then
+					local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
+					Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isFromPlayerOrPlayerPet, isStealable, nameplateShowPersonal, spellId, true, nil, nil, nil, dispelName, timeMod)
 				end
 			end
 		end
@@ -2507,14 +2574,16 @@ end
 				
 				local auraType = "DEBUFF"
 				
-				unitAuraCache[name] = true
-				unitAuraCache[spellId] = true
-				unitAuraCache[name.."_"..(sourceUnit or "N/A")] = true
-				unitAuraCache[spellId.."_"..(sourceUnit or "N/A")] = true
-				unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or isStealable
-				unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or dispelName == AURA_TYPE_ENRAGE
+				if not IS_WOW_PROJECT_MIDNIGHT then
+					unitAuraCache[name] = true
+					unitAuraCache[spellId] = true
+					unitAuraCache[name.."_"..(sourceUnit or "N/A")] = true
+					unitAuraCache[spellId.."_"..(sourceUnit or "N/A")] = true
+					unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or isStealable
+					unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or dispelName == AURA_TYPE_ENRAGE
+				end
 					
-				if (not DB_DEBUFF_BANNED [name] and not DB_DEBUFF_BANNED [spellId]) then
+				if not IS_WOW_PROJECT_MIDNIGHT and (not DB_DEBUFF_BANNED [name] and not DB_DEBUFF_BANNED [spellId]) then
 					local auraIconFrame, buffFrame = Plater.GetAuraIcon (self)
 					Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isFromPlayerOrPlayerPet, isStealable, nameplateShowPersonal, spellId, false, false, true, true, dispelName, timeMod)
 					
@@ -2524,6 +2593,9 @@ end
 					if (SPECIAL_AURAS_AUTO_ADDED [name] or SPECIAL_AURAS_AUTO_ADDED [spellId] or (DB_SHOW_PURGE_IN_EXTRA_ICONS and isStealable) or (DB_SHOW_ENRAGE_IN_EXTRA_ICONS and dispelName == AURA_TYPE_ENRAGE)) then
 						Plater.AddExtraIcon (self, name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, false, "HARMFUL", id, timeMod)
 					end
+				elseif IS_WOW_PROJECT_MIDNIGHT then
+					local auraIconFrame, buffFrame = Plater.GetAuraIcon (self)
+					Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isFromPlayerOrPlayerPet, isStealable, nameplateShowPersonal, spellId, false, false, true, true, dispelName, timeMod)
 				end
 				
 				--> check for special auras added by the user it self
@@ -2548,18 +2620,23 @@ end
 					
 				local auraType = "BUFF"
 
-				unitAuraCache[name] = true
-				unitAuraCache[spellId] = true
-				unitAuraCache[name.."_"..(sourceUnit or "N/A")] = true
-				unitAuraCache[spellId.."_"..(sourceUnit or "N/A")] = true
-				unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or isStealable
-				unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or dispelName == AURA_TYPE_ENRAGE
+				if not IS_WOW_PROJECT_MIDNIGHT then
+					unitAuraCache[name] = true
+					unitAuraCache[spellId] = true
+					unitAuraCache[name.."_"..(sourceUnit or "N/A")] = true
+					unitAuraCache[spellId.."_"..(sourceUnit or "N/A")] = true
+					unitAuraCache.canStealOrPurge = unitAuraCache.canStealOrPurge or isStealable
+					unitAuraCache.hasEnrage = unitAuraCache.hasEnrage or dispelName == AURA_TYPE_ENRAGE
+				end
 				
 				--> only show buffs casted by the player it self and less than 1 minute in duration
-				if ((not DB_BUFF_BANNED [name] and not DB_BUFF_BANNED [spellId]) and (noBuffDurationLimitation or (duration and (duration > 0 and duration < 60))) and (sourceUnit and UnitIsUnit (sourceUnit, "player") and ((onlyImportantBuffs and nameplateShowPersonal or (AUTO_TRACKING_EXTRA_BUFFS [name] or AUTO_TRACKING_EXTRA_BUFFS [spellId])) or not onlyImportantBuffs))) then
+				if not IS_WOW_PROJECT_MIDNIGHT and ((not DB_BUFF_BANNED [name] and not DB_BUFF_BANNED [spellId]) and (noBuffDurationLimitation or (duration and (duration > 0 and duration < 60))) and (sourceUnit and UnitIsUnit (sourceUnit, "player") and ((onlyImportantBuffs and nameplateShowPersonal or (AUTO_TRACKING_EXTRA_BUFFS [name] or AUTO_TRACKING_EXTRA_BUFFS [spellId])) or not onlyImportantBuffs))) then
 					local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
 					Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isFromPlayerOrPlayerPet, isStealable, nameplateShowPersonal, spellId, true, false, false, true, dispelName, timeMod)
 
+				elseif IS_WOW_PROJECT_MIDNIGHT then
+					local auraIconFrame, buffFrame = Plater.GetAuraIcon (self)
+					Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isFromPlayerOrPlayerPet, isStealable, nameplateShowPersonal, spellId, false, false, true, true, dispelName, timeMod)
 				end
 				
 				--> there is no special auras for buffs in the personal bar

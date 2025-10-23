@@ -3546,7 +3546,8 @@ Plater.AnchorNamesByPhraseId = {
 				local isSoftInteractObject = isObject and isSoftInteract
 				reaction = reaction or isSoftInteract and Plater.UnitReaction.UNITREACTION_NEUTRAL or Plater.UnitReaction.UNITREACTION_HOSTILE
 				reaction = reaction <= Plater.UnitReaction.UNITREACTION_HOSTILE and Plater.UnitReaction.UNITREACTION_HOSTILE or reaction >= Plater.UnitReaction.UNITREACTION_FRIENDLY and Plater.UnitReaction.UNITREACTION_FRIENDLY or Plater.UnitReaction.UNITREACTION_NEUTRAL
-			
+				
+				--[[
 				local fontName, _fontSize, fontFlags = plateFrame.UnitFrame.name:GetFont()
 				if not isPlayer and (reaction >= Plater.UnitReaction.UNITREACTION_FRIENDLY) then
 					--print("try hide")
@@ -3554,6 +3555,7 @@ Plater.AnchorNamesByPhraseId = {
 					plateFrame.UnitFrame.healthBar.LeftText:SetFont(fontName, 10, fontFlags)
 					plateFrame.UnitFrame.healthBar.RightText:SetFont(fontName, 10, fontFlags)
 				end
+				]]--
 			end
 			
 			-- we should clear stuff here, tbh...
