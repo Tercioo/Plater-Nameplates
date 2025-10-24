@@ -1903,8 +1903,11 @@ Plater.AnchorNamesByPhraseId = {
 	function Plater.UpdateUIParentScale (self, w, h) --private
 		local unitFrame = self.unitFrame
 		if (unitFrame) then
-			local defaultScale = self:GetEffectiveScale() / self:GetScale()
-			--local defaultScale = self:GetEffectiveScale()
+			--local defaultScale = self:GetEffectiveScale() / self:GetScale()
+			local defaultScale = self:GetEffectiveScale()
+			if IS_WOW_PROJECT_MIDNIGHT then
+				defaultScale = defaultScale / UIParent:GetEffectiveScale() --MIDNIGHT!! normalize for now
+			end
 			--local defaultScale = UIParent:GetEffectiveScale()
 			
 			if (defaultScale < 0.4) then
