@@ -538,6 +538,7 @@ local UnitAuraEventHandler = function (_, event, arg1, arg2, arg3, ...)
 		if unit and UnitAuraEventHandlerValidUnits[unit] then
 			if IS_WOW_PROJECT_MIDNIGHT then
 				UpdateUnitAuraCacheData(unit, {isFullUpdate = true})
+				--UpdateUnitAuraCacheData(unit, updatedAuras)
 			else
 				UpdateUnitAuraCacheData(unit, updatedAuras)
 			end
@@ -1050,13 +1051,15 @@ end
 				end
 			end
 			iconFrameContainer = iconFrameContainerCopy
-			table.sort (iconFrameContainer, function(aura1, aura2) 
-				return (aura1.auraInstanceID or 0) < (aura2.auraInstanceID or 0)
-			end)
+			if not IS_WOW_PROJECT_MIDNIGHT then
+				table.sort (iconFrameContainer, function(aura1, aura2) 
+					return (aura1.auraInstanceID or 0) < (aura2.auraInstanceID or 0)
+				end)
+			end
 			--when sorted, this is reliable
 			amountFramesShown = index
 			
-			if (profile.aura_sort) then
+			if not IS_WOW_PROJECT_MIDNIGHT and (profile.aura_sort) then
 				-- this needs to be done in addition. the above is just to keep them consistent in order
 				local iconFrameContainerCopy = {}
 				local index = 0
@@ -1376,15 +1379,21 @@ end
 	local function AuraIconOnTick_UpdateCooldown (self, deltaTime)
 		local now = GetTime()
 		if (self.lastUpdateCooldown + 0.05) <= now then
-			self.RemainingTime = (self.ExpirationTime - now) / (self.ModRate or 1)
-			if self.RemainingTime > 0 then
-				if self.formatWithDecimals then
-					self.Cooldown.Timer:SetText (Plater.FormatTimeDecimal (self.RemainingTime))
-				else
-					self.Cooldown.Timer:SetText (Plater.FormatTime (self.RemainingTime))
-				end
+			if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(self.ExpirationTime) then
+				self.RemainingTime = C_UnitAuras.GetAuraDurationRemainingByAuraInstanceID(self.unitFrame.namePlateUnitToken, self:GetID())
+				--print(self.RemainingTime, self.unitFrame.namePlateUnitToken, self:GetID())
+				self.Cooldown.Timer:SetText(self.RemainingTime)
 			else
-				self.Cooldown.Timer:SetText ("")
+				self.RemainingTime = (self.ExpirationTime - now) / (self.ModRate or 1)
+				if self.RemainingTime > 0 then
+					if self.formatWithDecimals then
+						self.Cooldown.Timer:SetText (Plater.FormatTimeDecimal (self.RemainingTime))
+					else
+						self.Cooldown.Timer:SetText (Plater.FormatTime (self.RemainingTime))
+					end
+				else
+					self.Cooldown.Timer:SetText ("")
+				end
 			end
 			self.lastUpdateCooldown = now
 		end
@@ -1542,6 +1551,8 @@ end
 			--MIDNIGHT!!
 			if not IS_WOW_PROJECT_MIDNIGHT or (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(icon)) then
 				auraIconFrame.Icon:SetTexture (icon)
+			else
+			auraIconFrame.Icon:SetTexture (nil)
 			end
 			
 			--> update members
@@ -1762,15 +1773,19 @@ end
 			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.default))
 		end
 
+		local now = GetTime()
 		--MIDNIGHT!!
 		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(duration) then
-			--auraIconFrame.Cooldown:SetDrawEdge(true)
+			local timeLeft = C_UnitAuras.GetAuraDurationRemainingByAuraInstanceID(auraIconFrame.unitFrame.namePlateUnitToken, i)
+			auraIconFrame.Cooldown:SetDrawEdge(true)
 			--auraIconFrame.Cooldown:SetCooldown(start, duration, modRate)
+			auraIconFrame.Cooldown:SetCooldownDuration(duration, modRate)
 			auraIconFrame.SpellName = spellName
 			auraIconFrame.SpellId = spellId
 			auraIconFrame.InUse = true
-			--auraIconFrame.RemainingTime = max (timeLeft, 0)
+			auraIconFrame.RemainingTime = timeLeft
 			auraIconFrame.Duration = duration
+			auraIconFrame.DurationRemaining = duration
 			auraIconFrame.Stacks = applications
 			auraIconFrame.ExpirationTime = expirationTime
 			auraIconFrame.Caster = sourceUnit
@@ -1778,8 +1793,11 @@ end
 			auraIconFrame.ModRate = modRate
 			auraIconFrame.isBuff = isBuff
 			auraIconFrame:Show()
-			auraIconFrame:SetScript("OnUpdate", nil)
-			auraIconFrame.Cooldown.Timer:Hide()
+
+			auraIconFrame.Cooldown.Timer:SetText (timeLeft)
+			auraIconFrame.lastUpdateCooldown = now
+			auraIconFrame:SetScript ("OnUpdate", auraIconFrame.UpdateCooldown)
+			auraIconFrame.Cooldown.Timer:Show()
 			return
 		else
 			modRate = modRate or 1
@@ -1787,7 +1805,6 @@ end
 			CooldownFrame_Set (auraIconFrame.Cooldown, expirationTime - duration, duration, duration > 0, true, modRate)
 		end
 		
-		local now = GetTime()
 		local timeLeft = (expirationTime - now) / modRate
 		
 		if (profile.aura_timer and timeLeft > 0) then
@@ -1809,7 +1826,7 @@ end
 		end
 		
 		--check if the aura icon frame is already shown
-		if (auraIconFrame:IsShown()) then
+		if (not IS_WOW_PROJECT_MIDNIGHT and auraIconFrame:IsShown()) then
 			--is was showing a different aura, simulate a OnHide()
 			if (auraIconFrame.SpellName ~= spellName) then
 				aura_icon_on_hide_callback(auraIconFrame)
@@ -1865,7 +1882,7 @@ end
 				
 				if auraIconFrame:IsShown() then
 					local spellName = auraIconFrame.SpellName
-					if IS_WOW_PROJECT_MIDNIGHT or (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(spellName)) then
+					if not IS_WOW_PROJECT_MIDNIGHT or (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(spellName)) then
 						--get the script object of the aura which will be showing in this icon frame
 						local globalScriptObject = SCRIPT_AURA_TRIGGER_CACHE[spellName]
 						
@@ -2151,6 +2168,10 @@ end
 					aura.name, aura.icon, aura.applications, aura.dispelName, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
 					aura.isBossAura, aura.isFromPlayerOrPlayerPet, aura.nameplateShowAll, aura.timeMod, aura.applications
 				
+				if IS_WOW_PROJECT_MIDNIGHT then
+					id = aura.auraInstanceID
+				end
+				
 				if not IS_WOW_PROJECT_MIDNIGHT then
 					unitAuraCache[name] = true
 					unitAuraCache[spellId] = true
@@ -2201,6 +2222,10 @@ end
 				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = 
 					aura.name, aura.icon, aura.applications, aura.dispelName, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
 					aura.isBossAura, aura.isFromPlayerOrPlayerPet, aura.nameplateShowAll, aura.timeMod, aura.applications
+				
+				if IS_WOW_PROJECT_MIDNIGHT then
+					id = aura.auraInstanceID
+				end
 				
 				if not IS_WOW_PROJECT_MIDNIGHT then
 					unitAuraCache[name] = true
@@ -2303,6 +2328,10 @@ end
 				local can_show_this_debuff
 				local auraType = "DEBUFF"
 				
+				if IS_WOW_PROJECT_MIDNIGHT then
+					id = aura.auraInstanceID
+				end
+				
 				if not IS_WOW_PROJECT_MIDNIGHT then
 					unitAuraCache[name] = true
 					unitAuraCache[spellId] = true
@@ -2386,6 +2415,10 @@ end
 					aura.isBossAura, aura.isFromPlayerOrPlayerPet, aura.nameplateShowAll, aura.timeMod, aura.applications
 				
 				local auraType = "BUFF"
+				
+				if IS_WOW_PROJECT_MIDNIGHT then
+					id = aura.auraInstanceID
+				end
 				
 				if not IS_WOW_PROJECT_MIDNIGHT then
 					unitAuraCache[name] = true
@@ -2569,6 +2602,10 @@ end
 				
 				local auraType = "DEBUFF"
 				
+				if IS_WOW_PROJECT_MIDNIGHT then
+					id = aura.auraInstanceID
+				end
+				
 				if not IS_WOW_PROJECT_MIDNIGHT then
 					unitAuraCache[name] = true
 					unitAuraCache[spellId] = true
@@ -2613,6 +2650,10 @@ end
 					aura.isBossAura, aura.isFromPlayerOrPlayerPet, aura.nameplateShowAll, aura.timeMod, aura.applications
 					
 				local auraType = "BUFF"
+
+				if IS_WOW_PROJECT_MIDNIGHT then
+					id = aura.auraInstanceID
+				end
 
 				if not IS_WOW_PROJECT_MIDNIGHT then
 					unitAuraCache[name] = true
