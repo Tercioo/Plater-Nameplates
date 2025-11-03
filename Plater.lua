@@ -8822,19 +8822,18 @@ end
 
 			--classification
 			local unitClassification = UnitClassification (plateFrame.unitFrame [MEMBER_UNITID]) --elite minus normal rare rareelite worldboss
-			if (unitClassification == "worldboss" and config.indicator_worldboss) then
-				Plater.AddIndicator (plateFrame, "worldboss")
-				
-			elseif (unitClassification == "rareelite" and (config.indicator_rare or config.indicator_elite)) then
+			-- The rare elite indicator is shown if either indicator is enabled
+			if (unitClassification == "rareelite" and (config.indicator_rare or config.indicator_elite)) then
+				Plater.AddIndicator (plateFrame, "rare-elite")
+			-- Blizzard uses the elite portrait for world bosses and the other icon is no longer available
+			elseif (unitClassification == "worldboss" and config.indicator_worldboss) then
 				Plater.AddIndicator (plateFrame, "elite")
-				Plater.AddIndicator (plateFrame, "rare")
-			else
-				if (unitClassification == "elite" and config.indicator_elite) then
+
+			elseif (unitClassification == "elite" and config.indicator_elite) then
 					Plater.AddIndicator (plateFrame, "elite")
-				end
-				if (unitClassification == "rare" and config.indicator_rare) then
+
+			elseif (unitClassification == "rare" and config.indicator_rare) then
 					Plater.AddIndicator (plateFrame, "rare")
-				end
 			end
 			
 			--quest boss
@@ -8886,23 +8885,27 @@ end
 			thisIndicator:SetTexture ([[Interface\PVPFrame\PVP-Currency-Alliance]])
 			thisIndicator:SetTexCoord (4/32, 29/32, 2/32, 30/32)
 			thisIndicator:SetSize (12, 12)
-			
+		-- silver dragon icon
+		elseif (indicator == "rare-elite") then
+			thisIndicator:SetTexture ([[Interface\TARGETINGFRAME\Nameplates]])
+			thisIndicator:SetTexCoord (0.00390625, 0.1484375, 0.5234375, 0.796875)
+			thisIndicator:SetSize (12, 12)
+		-- gold dragon icon
 		elseif (indicator == "elite") then
-			thisIndicator:SetTexture ([[Interface\GLUES\CharacterSelect\Glues-AddOn-Icons]])
-			thisIndicator:SetTexCoord (0.75, 1, 0, 1)
-			thisIndicator:SetVertexColor (1, .8, 0)
+			thisIndicator:SetTexture ([[Interface\TARGETINGFRAME\Nameplates]])
+			thisIndicator:SetTexCoord (0.00390625, 0.1484375, 0.234375, 0.5078125)
 			thisIndicator:SetSize (12, 12)
-			
+		-- white star in gold circle
 		elseif (indicator == "rare") then
-			thisIndicator:SetTexture ([[Interface\GLUES\CharacterSelect\Glues-AddOn-Icons]])
-			thisIndicator:SetTexCoord (0.75, 1, 0, 1)
+			thisIndicator:SetTexture ([[interface/hud/uiunitframeboss2x]])
+			thisIndicator:SetTexCoord (0.318359375, 0.419921875, 0.564453125, 0.666015625)
 			thisIndicator:SetSize (12, 12)
-			thisIndicator:SetDesaturated (true)
-			
+		-- hi-res exclamation point
 		elseif (indicator == "quest") then
-			thisIndicator:SetTexture ([[Interface\TARGETINGFRAME\PortraitQuestBadge]])
-			thisIndicator:SetTexCoord (2/32, 26/32, 1/32, 31/32)
-			
+			thisIndicator:SetTexture ([[interface/cursor/crosshair/uiquestcrosshair2x]])
+			thisIndicator:SetTexCoord (0.001953125, 0.189453125, 0.509765625, 0.697265625)
+			thisIndicator:SetSize (12, 12)
+
 		elseif (indicator == "classicon") then
 			local _, class = UnitClass (plateFrame.unitFrame [MEMBER_UNITID])
 			if (class) then
@@ -8914,9 +8917,6 @@ end
 			local texture, L, R, T, B = ...
 			thisIndicator:SetTexture (texture)
 			thisIndicator:SetTexCoord (L, R, T, B)
-		
-		elseif (indicator == "worldboss") then
-			thisIndicator:SetTexture ([[Interface\Scenarios\ScenarioIcon-Boss]])
 		
 		elseif (indicator == "custom") then
 			local texture, width, height, color, L, R, T, B = ...
