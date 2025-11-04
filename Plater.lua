@@ -8825,21 +8825,24 @@ end
 			-- The rare elite indicator is shown if either indicator is enabled
 			if (unitClassification == "rareelite" and (config.indicator_rare or config.indicator_elite)) then
 				Plater.AddIndicator (plateFrame, "rare-elite")
-			-- Blizzard uses the elite portrait for world bosses; the other icon is only available in MoP Classic
+
 			elseif (unitClassification == "worldboss" and config.indicator_worldboss) then
-                if IS_WOW_PROJECT_CLASSIC_MOP then
-               	    Plater.AddIndicator (plateFrame, "worldboss")
-                else
+				-- Blizzard uses the elite icon for world bosses in retail; the other icon isn't available anymore
+                if IS_WOW_PROJECT_MAINLINE then
                    	Plater.AddIndicator (plateFrame, "elite")
+                else
+               	    Plater.AddIndicator (plateFrame, "worldboss")
                 end
-			elseif (unitClassification == "elite" and config.indicator_elite) then
+
+            elseif (unitClassification == "elite" and config.indicator_elite) then
 					Plater.AddIndicator (plateFrame, "elite")
 
 			elseif (unitClassification == "rare" and config.indicator_rare) then
-			    if IS_WOW_PROJECT_CLASSIC_MOP then
-					Plater.AddIndicator (plateFrame, "rare-elite")
-				else
+			    -- The rare icon is new to retail
+			    if IS_WOW_PROJECT_MAINLINE then
 					Plater.AddIndicator (plateFrame, "rare")
+				else
+					Plater.AddIndicator (plateFrame, "rare-elite")
 				end
 			end
 			
