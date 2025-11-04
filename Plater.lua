@@ -8885,13 +8885,23 @@ end
 			thisIndicator:SetTexture ([[Interface\AddOns\Plater\images\peticon]])
 			
 		elseif (indicator == "Horde") then
-			thisIndicator:SetTexture ([[Interface\PVPFrame\PVP-Currency-Horde]])
-			thisIndicator:SetSize (12, 12)
+    		if IS_WOW_PROJECT_MAINLINE then
+    		    thisIndicator:SetTexture ([[Interface\PVPFrame\PVPCurrency-Honor-Horde]])
+    			thisIndicator:SetSize (12, 12)
+    		else
+    		    thisIndicator:SetTexture ([[Interface\PVPFrame\PVP-Currency-Horde]])
+    			thisIndicator:SetSize (12, 12)
+    		end
 
 		elseif (indicator == "Alliance") then
-			thisIndicator:SetTexture ([[Interface\PVPFrame\PVP-Currency-Alliance]])
-			thisIndicator:SetTexCoord (4/32, 29/32, 2/32, 30/32)
-			thisIndicator:SetSize (12, 12)
+    		if IS_WOW_PROJECT_MAINLINE then
+    		    thisIndicator:SetTexture ([[Interface\PVPFrame\PVPCurrency-Honor-Alliance]])
+                thisIndicator:SetSize (12, 12)
+    		else
+    			thisIndicator:SetTexture ([[Interface\PVPFrame\PVP-Currency-Alliance]])
+    			thisIndicator:SetTexCoord (4/32, 29/32, 2/32, 30/32)
+    			thisIndicator:SetSize (12, 12)
+    		end
 
 		-- silver dragon icon
 		elseif (indicator == "rare-elite") then
