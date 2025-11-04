@@ -8825,15 +8825,22 @@ end
 			-- The rare elite indicator is shown if either indicator is enabled
 			if (unitClassification == "rareelite" and (config.indicator_rare or config.indicator_elite)) then
 				Plater.AddIndicator (plateFrame, "rare-elite")
-			-- Blizzard uses the elite portrait for world bosses and the other icon is no longer available
+			-- Blizzard uses the elite portrait for world bosses; the other icon is only available in MoP Classic
 			elseif (unitClassification == "worldboss" and config.indicator_worldboss) then
-				Plater.AddIndicator (plateFrame, "elite")
-
+                if IS_WOW_PROJECT_CLASSIC_MOP then
+               	    Plater.AddIndicator (plateFrame, "worldboss")
+                else
+                   	Plater.AddIndicator (plateFrame, "elite")
+                end
 			elseif (unitClassification == "elite" and config.indicator_elite) then
 					Plater.AddIndicator (plateFrame, "elite")
 
 			elseif (unitClassification == "rare" and config.indicator_rare) then
+			    if IS_WOW_PROJECT_CLASSIC_MOP then
+					Plater.AddIndicator (plateFrame, "rare-elite")
+				else
 					Plater.AddIndicator (plateFrame, "rare")
+				end
 			end
 			
 			--quest boss
@@ -8885,26 +8892,51 @@ end
 			thisIndicator:SetTexture ([[Interface\PVPFrame\PVP-Currency-Alliance]])
 			thisIndicator:SetTexCoord (4/32, 29/32, 2/32, 30/32)
 			thisIndicator:SetSize (12, 12)
+
 		-- silver dragon icon
 		elseif (indicator == "rare-elite") then
-			thisIndicator:SetTexture ([[Interface\TARGETINGFRAME\Nameplates]])
-			thisIndicator:SetTexCoord (0.00390625, 0.1484375, 0.5234375, 0.796875)
-			thisIndicator:SetSize (12, 12)
-		-- gold dragon icon
+    		if IS_WOW_PROJECT_CLASSIC_MOP then
+                -- MoP Classic coords are different
+                thisIndicator:SetTexture([[Interface\TARGETINGFRAME\Nameplates]])
+                thisIndicator:SetTexCoord(0.00390625, 0.1484375, 0.640625, 0.9140625)
+                thisIndicator:SetSize(12, 12)
+            else
+    			thisIndicator:SetTexture ([[Interface\TARGETINGFRAME\Nameplates]])
+    			thisIndicator:SetTexCoord (0.00390625, 0.1484375, 0.5234375, 0.796875)
+    			thisIndicator:SetSize (12, 12)
+            end
+
+        -- gold dragon icon
 		elseif (indicator == "elite") then
-			thisIndicator:SetTexture ([[Interface\TARGETINGFRAME\Nameplates]])
-			thisIndicator:SetTexCoord (0.00390625, 0.1484375, 0.234375, 0.5078125)
-			thisIndicator:SetSize (12, 12)
-		-- white star in gold circle
+    		if IS_WOW_PROJECT_CLASSIC_MOP then
+                -- MoP Classic coords are different
+                thisIndicator:SetTexture([[Interface\TARGETINGFRAME\Nameplates]])
+                thisIndicator:SetTexCoord(0.00390625, 0.1484375, 0.3515625, 0.625)
+                thisIndicator:SetSize(12, 12)
+            else
+    			thisIndicator:SetTexture ([[Interface\TARGETINGFRAME\Nameplates]])
+    			thisIndicator:SetTexCoord (0.00390625, 0.1484375, 0.234375, 0.5078125)
+    			thisIndicator:SetSize (12, 12)
+            end
+
+        -- white star in gold circle (retail only)
 		elseif (indicator == "rare") then
 			thisIndicator:SetTexture ([[interface/hud/uiunitframeboss2x]])
 			thisIndicator:SetTexCoord (0.318359375, 0.419921875, 0.564453125, 0.666015625)
 			thisIndicator:SetSize (12, 12)
-		-- hi-res exclamation point
+
 		elseif (indicator == "quest") then
-			thisIndicator:SetTexture ([[interface/cursor/crosshair/uiquestcrosshair2x]])
-			thisIndicator:SetTexCoord (0.001953125, 0.189453125, 0.509765625, 0.697265625)
-			thisIndicator:SetSize (12, 12)
+		    if IS_WOW_PROJECT_MAINLINE then
+			    -- hi-res exclamation point (retail)
+    			thisIndicator:SetTexture ([[interface/cursor/crosshair/uiquestcrosshair2x]])
+    			thisIndicator:SetTexCoord (0.001953125, 0.189453125, 0.509765625, 0.697265625)
+    			thisIndicator:SetSize (12, 12)
+			else
+			    -- smaller exclamation point (MoP Classic)
+    			thisIndicator:SetTexture ([[interface/minimap/objecticonsatlas/QuestNormal]])
+    			thisIndicator:SetTexCoord (0.26171875, 0.32421875, 0.66015625, 0.72265625)
+    			thisIndicator:SetSize (12, 12)
+			end
 
 		elseif (indicator == "classicon") then
 			local _, class = UnitClass (plateFrame.unitFrame [MEMBER_UNITID])
@@ -8918,6 +8950,10 @@ end
 			thisIndicator:SetTexture (texture)
 			thisIndicator:SetTexCoord (L, R, T, B)
 		
+		-- skull icon (MoP Classic only)
+		elseif (indicator == "worldboss") then
+			thisIndicator:SetTexture ([[Interface\Scenarios\ScenarioIcon-Boss]])
+
 		elseif (indicator == "custom") then
 			local texture, width, height, color, L, R, T, B = ...
 			thisIndicator:SetTexture (texture)
