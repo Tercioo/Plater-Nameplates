@@ -8890,6 +8890,7 @@ end
 		elseif (indicator == "Horde") then
     		if IS_WOW_PROJECT_MAINLINE then
     		    thisIndicator:SetTexture ([[Interface\PVPFrame\PVPCurrency-Honor-Horde]])
+       			thisIndicator:SetTexCoord (6/48, 42/48, 6/48, 42/48)
     			thisIndicator:SetSize (12, 12)
     		else
     		    thisIndicator:SetTexture ([[Interface\PVPFrame\PVP-Currency-Horde]])
@@ -8899,6 +8900,7 @@ end
 		elseif (indicator == "Alliance") then
     		if IS_WOW_PROJECT_MAINLINE then
     		    thisIndicator:SetTexture ([[Interface\PVPFrame\PVPCurrency-Honor-Alliance]])
+       			thisIndicator:SetTexCoord (6/48, 42/48, 6/48, 42/48)
                 thisIndicator:SetSize (12, 12)
     		else
     			thisIndicator:SetTexture ([[Interface\PVPFrame\PVP-Currency-Alliance]])
