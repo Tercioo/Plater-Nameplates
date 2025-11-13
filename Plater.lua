@@ -8912,7 +8912,7 @@ end
 		elseif (indicator == "rare-elite") then
 		    if IS_WOW_PROJECT_MIDNIGHT then
 				thisIndicator:SetTexture ([[Interface\TARGETINGFRAME\Nameplates]])
-                thisIndicator:SetTexCoord (0.00390625, 0.31640625, 0.32421875, 0.63671875)
+                thisIndicator:SetTexCoord (0.32421875, 0.63671875, 0.00390625, 0.31640625)
                 thisIndicator:SetSize (12, 12)
 		    elseif IS_WOW_PROJECT_MAINLINE then
     			thisIndicator:SetTexture ([[Interface\TARGETINGFRAME\Nameplates]])
