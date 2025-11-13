@@ -8910,12 +8910,15 @@ end
 
 		-- silver dragon icon
 		elseif (indicator == "rare-elite") then
-		    if IS_WOW_PROJECT_MAINLINE then
+		    if IS_WOW_PROJECT_MIDNIGHT then
+				thisIndicator:SetTexture ([[Interface\TARGETINGFRAME\Nameplates]])
+                thisIndicator:SetTexCoord (0.00390625, 0.31640625, 0.32421875, 0.63671875)
+                thisIndicator:SetSize (12, 12)
+		    elseif IS_WOW_PROJECT_MAINLINE then
     			thisIndicator:SetTexture ([[Interface\TARGETINGFRAME\Nameplates]])
     			thisIndicator:SetTexCoord (0.00390625, 0.1484375, 0.5234375, 0.796875)
     			thisIndicator:SetSize (12, 12)
             else
-                -- Classic era and MoP Classic coords are different
                 thisIndicator:SetTexture([[Interface\TARGETINGFRAME\Nameplates]])
                 thisIndicator:SetTexCoord(0.00390625, 0.1484375, 0.640625, 0.9140625)
                 thisIndicator:SetSize(12, 12)
@@ -8923,8 +8926,11 @@ end
 
         -- gold dragon icon
 		elseif (indicator == "elite") then
-    		if IS_WOW_PROJECT_MAINLINE then
-                -- Classic era and MoP Classic coords are different
+            if IS_WOW_PROJECT_MIDNIGHT then
+                thisIndicator:SetTexture ([[Interface\TARGETINGFRAME\Nameplates]])
+                thisIndicator:SetTexCoord (0.00390625, 0.31640625, 0.00390625, 0.31640625)
+                thisIndicator:SetSize (12, 12)
+            elseif IS_WOW_PROJECT_MAINLINE then
     			thisIndicator:SetTexture ([[Interface\TARGETINGFRAME\Nameplates]])
     			thisIndicator:SetTexCoord (0.00390625, 0.1484375, 0.234375, 0.5078125)
     			thisIndicator:SetSize (12, 12)
