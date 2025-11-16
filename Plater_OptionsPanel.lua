@@ -1969,7 +1969,7 @@ local debuff_options = {
 	
 	{type = "blank"},
 
-	{type = "label", get = function() return "Automatic Aura Tracking:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+	{type = "label", get = function() return "Automatic Aura Tracking:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = IS_WOW_PROJECT_MIDNIGHT},
 
 	{
 		type = "toggle",
@@ -1982,6 +1982,7 @@ local debuff_options = {
 		end,
 		name = "Show Auras Casted by You",
 		desc = "Show Auras Casted by You.",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
 	{
@@ -1995,6 +1996,7 @@ local debuff_options = {
 		end,
 		name = "Show Auras Casted by other Players",
 		desc = "Show Auras Casted by other Players.\n\n|cFFFFFF00 Important |r: This may cause a lot of auras to show!",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 
 	{type = "blank"},
@@ -2010,6 +2012,7 @@ local debuff_options = {
 		end,
 		name = "Show Important Auras",
 		desc = "Show buffs and debuffs which the game tag as important.",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
 	{
@@ -2023,6 +2026,7 @@ local debuff_options = {
 		end,
 		name = "Show Dispellable Buffs",
 		desc = "Show auras which can be dispelled or stolen.",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
 	{
@@ -2036,6 +2040,7 @@ local debuff_options = {
 		end,
 		name = "Only short Dispellable Buffs on Players",
 		desc = "Show auras which can be dispelled or stolen on players if they are below 120sec duration (only applicable when 'Show Dispellable Buffs' is enabled).",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
 	{
@@ -2049,6 +2054,7 @@ local debuff_options = {
 		end,
 		name = "Show Enrage Buffs",
 		desc = "Show auras which are in the enrage category.",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
 	{
@@ -2062,6 +2068,7 @@ local debuff_options = {
 		end,
 		name = "Show Magic Buffs",
 		desc = "Show auras which are in the magic type category.",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
 	{
@@ -2075,6 +2082,7 @@ local debuff_options = {
 		end,
 		name = "Show Crowd Control",
 		desc = "Show crowd control effects.",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
 	{type = "blank"},
@@ -2090,6 +2098,7 @@ local debuff_options = {
 		end,
 		name = "Show Buffs Casted by the NPC",
 		desc = "Show Buffs Casted by the NPC itself",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	{
 		type = "toggle",
@@ -2102,6 +2111,7 @@ local debuff_options = {
 		end,
 		name = "Show Debuffs Casted by the NPC",
 		desc = "Show Debuffs Casted by the NPC itself",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	{
 		type = "toggle",
@@ -2114,6 +2124,7 @@ local debuff_options = {
 		end,
 		name = "Show Auras Casted by other NPCs",
 		desc = "Show Auras Casted not from players and not from the unit itself.\n\n|cFFFFFF00 Important |r: This may cause a lot of auras to show!",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
 	{type = "blank"},
@@ -2129,6 +2140,7 @@ local debuff_options = {
 		end,
 		name = "Show offensive player CDs",
 		desc = "Show offensive CDs on enemy/friendly players.",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
 	{
@@ -2142,6 +2154,7 @@ local debuff_options = {
 		end,
 		name = "Show defensive player CDs",
 		desc = "Show defensive CDs on enemy/friendly players.",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
 	{type = "breakline"},

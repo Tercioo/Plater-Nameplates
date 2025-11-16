@@ -5436,6 +5436,9 @@ function Plater.OnInit() --private --~oninit ~init
 					end
 					
 					local notInterruptible = not self.canInterrupt
+					if IS_WOW_PROJECT_MIDNIGHT then
+						notInterruptible = self.notInterruptible
+					end
 					
 					self.IsInterrupted = false
 					self.InterruptSourceName = nil
@@ -5443,15 +5446,20 @@ function Plater.OnInit() --private --~oninit ~init
 					self.ReUpdateNextTick = true
 					self.ThrottleUpdate = -1
 					
-					if (notInterruptible) then
-						self.BorderShield:Show()
+					if not IS_WOW_PROJECT_MIDNIGHT then
+						if (notInterruptible) then
+							self.BorderShield:Show()
+						else
+							self.BorderShield:Hide()
+						end
+
+						if (notInterruptible) then
+							self.CanInterrupt = false
+						else
+							self.CanInterrupt = true
+						end
 					else
 						self.BorderShield:Hide()
-					end
-
-					if (notInterruptible) then
-						self.CanInterrupt = false
-					else
 						self.CanInterrupt = true
 					end
 					
@@ -5517,7 +5525,7 @@ function Plater.OnInit() --private --~oninit ~init
 						end
 					end
 					
-					if (self.channeling and (self.SpellStartTime + 0.25 > curTime)) then
+					if not IS_WOW_PROJECT_MIDNIGHT and (self.channeling and (self.SpellStartTime + 0.25 > curTime)) then
 						platerInternal.Audio.PlaySoundForCastStart(self.spellID) --fallback for edge cases. should not double play
 					end
 
@@ -8680,7 +8688,7 @@ end
 		local index = GetRaidTargetIndex (plateFrame.unitFrame [MEMBER_UNITID])
 		local icon = plateFrame.unitFrame.PlaterRaidTargetFrame.RaidTargetIcon
 		
-		if (type(index) ~= "nil" and not plateFrame.IsSelf) then
+		if (index and not plateFrame.IsSelf) then
 			if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(index) then
 				--Plater.RaidTargetFontString = Plater.RaidTargetFontString or UIParent:CreateFontString(nil, nil, "GameFontNormal")
 				--Plater.RaidTargetFontString:SetFormattedText("Interface\\TargetingFrame\\UI-RaidTargetingIcon_%d.blp", index)
@@ -9238,7 +9246,7 @@ end
 			
 		elseif (DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_damaged) then
 			local healthBar = plateFrame.unitFrame.healthBar
-			if ((healthBar.currentHealth or 1) < (healthBar.currentHealthMax or 1)) then
+			if IS_WOW_PROJECT_MIDNIGHT or ((healthBar.currentHealth or 1) < (healthBar.currentHealthMax or 1)) then
 				if isFriendlyPlayerWithoutHealthBar or force then
 					Plater.ShowHealthBar (plateFrame.unitFrame)
 				end
@@ -10349,6 +10357,7 @@ end
 				local tooltipData = C_TooltipInfo.GetHyperlink ("unit:" .. guid)
 				if tooltipData then
 					for _, line in ipairs(tooltipData.lines or {}) do
+						if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(line.type) then break end
 						if line.type == Enum.TooltipDataLineType.QuestObjective or line.type == Enum.TooltipDataLineType.QuestTitle or line.type == Enum.TooltipDataLineType.QuestPlayer then
 							--only add actual quest tooltip lines
 							ScanQuestTextCache [#ScanQuestTextCache + 1] = line.leftText or ""
