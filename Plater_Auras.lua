@@ -1045,7 +1045,7 @@ end
 			local verticalHeight = 1
 			local firstIcon
 		
-			if (profile.aura_consolidate) then
+			if (profile.aura_consolidate) and not IS_WOW_PROJECT_MIDNIGHT then
 				Plater.ConsolidateAuraIcons (self)
 			end
 			
@@ -1067,6 +1067,15 @@ end
 			iconFrameContainer = iconFrameContainerCopy
 			if not IS_WOW_PROJECT_MIDNIGHT then
 				table.sort (iconFrameContainer, function(aura1, aura2) 
+					return (aura1.auraInstanceID or 0) < (aura2.auraInstanceID or 0)
+				end)
+			else
+				table.sort (iconFrameContainer, function(aura1, aura2)
+					local aFromPlayer = (aura1.sourceUnit ~= nil) and UnitIsUnit("player", aura1.sourceUnit) or false
+					local bFromPlayer = (aura2.sourceUnit ~= nil) and UnitIsUnit("player", aura2.sourceUnit) or false
+					if aFromPlayer ~= bFromPlayer then
+						return aFromPlayer
+					end
 					return (aura1.auraInstanceID or 0) < (aura2.auraInstanceID or 0)
 				end)
 			end
