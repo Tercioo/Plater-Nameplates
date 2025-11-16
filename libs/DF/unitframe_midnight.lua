@@ -682,7 +682,6 @@ detailsFramework.PowerFrameFunctions = {
 		--if (self.currentPowerMax == 0 and self.Settings.HideIfNoPower) then
 		--	self:Hide()
 		--end
-		--self:SetShown(self.currentPowerMax)
 	end,
 
 	UpdatePower = function(self)
@@ -1070,7 +1069,7 @@ detailsFramework.CastFrameFunctions = {
 		end
 
 		if (not self.Settings.ShowTradeSkills) then
-			if (isTradeSkill) then
+			if (not issecretvalue(isTradeSkill) and isTradeSkill) then
 				return false
 			end
 		end
@@ -1254,7 +1253,7 @@ detailsFramework.CastFrameFunctions = {
 		if (self.unit) then
 			if (self.casting) then
 				local name, text, texture, startTime = CastInfo.UnitCastingInfo(self.unit)
-				if (type(name) ~=  nil) then
+				if (name) then
 					--[[if not self.spellStartTime then
 						self:UpdateCastingInfo(self.unit)
 					end]]--
@@ -1265,7 +1264,7 @@ detailsFramework.CastFrameFunctions = {
 
 			elseif (self.channeling) then
 				local name, text, texture, endTime = CastInfo.UnitChannelInfo(self.unit)
-				if (type(name) ~= nil) then
+				if (name) then
 					--[[if not self.spellEndTime then
 						self:UpdateChannelInfo(self.unit)
 					end]]--
@@ -1549,7 +1548,8 @@ detailsFramework.CastFrameFunctions = {
 			self.interrupted = nil
 			self.failed = nil
 			self.finished = nil
-			--self.canInterrupt = not notInterruptible
+			self.canInterrupt = true --not notInterruptible
+			self.notInterruptible = notInterruptible
 			self.spellID = spellID
 			self.castID = castID
 			self.spellName = name
@@ -1713,7 +1713,8 @@ detailsFramework.CastFrameFunctions = {
 			self.interrupted = nil
 			self.failed = nil
 			self.finished = nil
-			self.canInterrupt = not notInterruptible
+			self.canInterrupt = true --not notInterruptible
+			self.notInterruptible = notInterruptible
 			self.spellID = spellID
 			self.castID = castID
 			self.spellName = name
