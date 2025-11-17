@@ -7915,7 +7915,8 @@ end
 		
 		
 		if IS_WOW_PROJECT_MIDNIGHT then
-			currentHealth = string.format("%.7s", BreakUpLargeNumbers(currentHealth, true))
+			--currentHealth = string.format("%.7s", BreakUpLargeNumbers(currentHealth, true))
+			currentHealth = AbbreviateNumbers(currentHealth)
 			if (showHealthAmount or showPercentAmount) then
 				healthBar.lifePercent:SetText(currentHealth)
 			else
@@ -7925,7 +7926,7 @@ end
 			if (showHealthAmount and showPercentAmount) then
 				local percent = currentHealthPercent
 				if (showDecimals) then
-					healthBar.lifePercent:SetText (format ("%s (%.3g%%)", currentHealth, percent))
+					healthBar.lifePercent:SetText (format ("%s (%.1f%%)", currentHealth, percent))
 				else
 					healthBar.lifePercent:SetText (format ("%s (%d%%)", currentHealth, percent))
 				end
@@ -7936,7 +7937,7 @@ end
 			elseif (showPercentAmount) then
 				local percent = currentHealthPercent
 				if (showDecimals) then
-					healthBar.lifePercent:SetText (format ("%.3g%%", percent))
+					healthBar.lifePercent:SetText (format ("%.1f%%", percent))
 				else
 					healthBar.lifePercent:SetText (format ("%d%%", percent))
 				end
