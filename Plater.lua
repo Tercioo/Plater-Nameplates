@@ -6883,6 +6883,7 @@ end
 			if (UnitGetTotalAbsorbs) then
 				if (profile.indicator_shield) then
 					local amountAbsorb = UnitGetTotalAbsorbs(tickFrame.PlateFrame[MEMBER_UNITID] or tickFrame.PlateFrame.unitFrame[MEMBER_UNITID])
+					if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(amountAbsorb) then amountAbsorb = 0 end --MIDNIGHT!!
 					if (amountAbsorb and amountAbsorb > 0) then
 						--update the total amount on the shield indicator
 						if (not healthBar.shieldIndicator.shieldTotal) then

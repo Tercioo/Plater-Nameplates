@@ -282,6 +282,23 @@ function platerInternal.CreateAdvancedOptions()
 
         {type = "label", get = function() return "Client Settings (CVars):" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
         {
+            type = "toggle",
+            get = function() return GetCVarBool ("nameplateShowOffscreen") end,
+            set = function (self, fixedparam, value)
+                if (not InCombatLockdown()) then
+                    SetCVar ("nameplateShowOffscreen", value and "1" or "0")
+                else
+                    Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+                    self:SetValue (GetCVarBool ("nameplateShowOffscreen"))
+                end
+            end,
+            name = "Keep Nameplates on Screen" .. CVarIcon,
+            desc = "Always keep nameplates on screen if the unit in combat with the player or a party member." .. CVarDesc,
+            nocombat = true,
+            hidden = not IS_WOW_PROJECT_MIDNIGHT,
+        },
+        
+        {
             type = "range",
             get = function() return tonumber (GetCVar ("nameplateOtherTopInset")) end,
             set = function (self, fixedparam, value)
