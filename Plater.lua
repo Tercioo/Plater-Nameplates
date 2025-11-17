@@ -3159,6 +3159,7 @@ Plater.AnchorNamesByPhraseId = {
 				obscuredTexture:SetTexture ("Interface\\Tooltips\\UI-Tooltip-Background")
 				obscuredTexture:SetVertexColor (0, 0, 0, 1)
 				plateFrame.Obscured = obscuredTexture
+				plateFrame.Obscured:Hide()
 
 				obscuredTexture.Mask = healthBar:CreateMaskTexture(nil, "artwork")
 				obscuredTexture.Mask:SetAllPoints(obscuredTexture)
