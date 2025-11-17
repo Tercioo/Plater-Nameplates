@@ -871,10 +871,16 @@ Plater.AnchorNamesByPhraseId = {
 		end
 		
 		if not rangeChecker then
-			rangeChecker = function (unit)
-				local minRange, maxRange = (LibRangeCheck:GetRange(unit, nil, true) or 0)
-				maxRange = maxRange or minRange or 0
-				return maxRange <= (rangeCheckRange or 40)
+			if IS_WOW_PROJECT_MIDNIGHT then
+				rangeChecker = function (unit)
+					return true --UnitInRange(unit) --MIDNIGHT!!
+				end
+			else
+				rangeChecker = function (unit)
+					local minRange, maxRange = (LibRangeCheck:GetRange(unit, nil, true) or 0)
+					maxRange = maxRange or minRange or 0
+					return maxRange <= (rangeCheckRange or 40)
+				end
 			end
 			Plater.GetSpellForRangeCheck()
 		end
@@ -3465,6 +3471,7 @@ Plater.AnchorNamesByPhraseId = {
 			local isBattlePet = (IS_WOW_PROJECT_MAINLINE) and UnitIsBattlePet(unitID) or false
 			local isPlayer = UnitIsPlayer (unitID)
 			local isSelf = UnitIsUnit (unitID, "player")
+			if IS_WOW_PROJECT_MIDNIGHT then isSelf = false end --MIDNIGHT!!
 			
 			plateFrame [MEMBER_NPCID] = nil
 			plateFrame.unitFrame [MEMBER_NPCID] = nil
@@ -6678,6 +6685,7 @@ end
 			end
 			
 			local isSoftInteract = UnitIsUnit(tickFrame.unit, "softinteract")
+			if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(isSoftInteract) then isSoftInteract = false end --MIDNIGHT!!
 			unitFrame.isSoftInteract = isSoftInteract
 			unitFrame.PlateFrame.isSoftInteract = isSoftInteract
 			unitFrame.isSoftInteractObject = isSoftInteract and (unitFrame.PlateFrame.isObject or unitFrame.isObject)
@@ -7165,6 +7173,7 @@ end
 							--check if can check for no tank aggro
 							if (DB_AGGRO_CAN_CHECK_NOTANKAGGRO) then
 								local unitTarget = UnitName (self.targetUnitID)
+								if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(unitTarget) then unitTarget = "N/A" end --MIDNIGHT!!
 								--check if the unit isn't attacking a tank comparing the target name with tank names
 								if (not TANK_CACHE [unitTarget]) then
 								
@@ -7220,6 +7229,7 @@ end
 		local unitID = plateFrame [MEMBER_UNITID] or unitFrame [MEMBER_UNITID]
 		
 		local isSoftInteract = UnitIsUnit(unitID, "softinteract")
+		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(isSoftInteract) then isSoftInteract = false end --MIDNIGHT!!
 		local reaction = UnitReaction (unitID, "player")
 		local isObject = (IS_WOW_PROJECT_MAINLINE and UnitIsGameObject(unitID)) or reaction == nil
 		local isSoftInteractObject = isObject and isSoftInteract
@@ -7270,6 +7280,7 @@ end
 
 		local profile = Plater.db.profile
 		local unitFrame = plateFrame.unitFrame
+		if IS_WOW_PROJECT_MIDNIGHT then return true end --MIDNIGHT!!
 		if UnitIsUnit (unitFrame [MEMBER_UNITID], "focus") then
 			if profile.focus_indicator_enabled then
 				--this is a rare call, no need to cache these values
@@ -7357,11 +7368,15 @@ end
 		Plater.PlayerCurrentTargetGUID = UnitGUID ("target")
 		--Plater.PlayerHasTarget = Plater.PlayerCurrentTargetGUID and true
 		Plater.PlayerHasTarget = type(Plater.PlayerCurrentTargetGUID) ~= nil
-		Plater.PlayerHasTargetNonSelf = Plater.PlayerHasTarget and not UnitIsUnit("player", "target")
+		local selfTarget = UnitIsUnit("player", "target")
+		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(selfTarget) then selfTarget = false end --MIDNIGHT!!
+		Plater.PlayerHasTargetNonSelf = Plater.PlayerHasTarget and not selfTarget
 		Plater.PlayerCurrentFocusTargetGUID = UnitGUID ("focus")
 		--Plater.PlayerHasFocusTarget = Plater.PlayerCurrentFocusTargetGUID and true
 		Plater.PlayerHasFocusTarget = type(Plater.PlayerCurrentFocusTargetGUID) ~= nil
-		Plater.PlayerHasFocusTargetNonSelf = Plater.PlayerHasFocusTarget and not UnitIsUnit("player", "focus") and true
+		local selfFocus = UnitIsUnit("player", "target")
+		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(selfFocus) then selfFocus = false end --MIDNIGHT!!
+		Plater.PlayerHasFocusTargetNonSelf = Plater.PlayerHasFocusTarget and not selfFocus and true
 		
 		for index, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 			if plateFrame.unitFrame.PlaterOnScreen then
@@ -8818,7 +8833,8 @@ end
 			--is a pet
 			if IS_WOW_PROJECT_MIDNIGHT then
 				local unitID = plateFrame.unitFrame [MEMBER_UNITID]
-				if UnitIsUnit("pet", unitID) then
+				local isPet = UnitIsUnit("pet", unitID)
+				if not issecretvalue(isPet) and isPet then --MIDNIGHT!!
 					if (config.indicator_pet) then
 						Plater.AddIndicator (plateFrame, "pet")
 					end
@@ -9304,6 +9320,7 @@ end
 	end
 
 	function Plater.CheckHighlight (self)
+		if IS_WOW_PROJECT_MIDNIGHT then return end --MIDNIGHT!!
 		if (UnitIsUnit ("mouseover", self.unit)) then
 			self.HighlightTexture:Show()
 		else
@@ -9625,14 +9642,14 @@ end
 	end
 
 	function Plater.GetNpcIDFromGUID (guid) --private
-		if IS_WOW_PROJECT_MIDNIGHT and InCombatLockdown() then return end
+		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(guid) then return 0 end --MIDNIGHT!!
 		local npcID = select (6, strsplit ("-", guid))
 		return tonumber (npcID or "0") or 0
 	end
 
 	function Plater.GetNpcID (plateFrame) --private
-		if IS_WOW_PROJECT_MIDNIGHT and InCombatLockdown() then return end
 		local npcId = plateFrame [MEMBER_GUID]
+		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(npcId) then return end --MIDNIGHT!!
 		if (npcId and npcId ~= "") then
 			npcId = select (6, strsplit ("-", npcId))
 			if (npcId) then
@@ -9660,7 +9677,9 @@ end
 			
 		elseif IS_WOW_PROJECT_MIDNIGHT then
 			local unitID = plateFrame.unitFrame [MEMBER_UNITID]
-			if UnitIsUnit("pet", unitID) then
+			local isPet = UnitIsUnit("pet", unitID)
+			if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(isPet) then return "normal" end --MIDNIGHT!!
+			if isPet then
 				return "pet"
 			end
 			
@@ -9928,6 +9947,7 @@ end
 		end,
 		
 		SPELL_CAST_SUCCESS = function (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical)
+			if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(spellID) then return end --MIDNIGHT!!
 			if ((tonumber(spellID) or 0) > 0 and (not DB_CAPTURED_SPELLS[spellID] or DB_CAPTURED_SPELLS[spellID].isChanneled == nil or not DB_CAPTURED_CASTS[spellID] or DB_CAPTURED_CASTS[spellID].isChanneled == nil)) then -- check isChanneled to ensure update of already existing data
 				if (not platerInternal.HasFriendlyAffiliation[sourceGUID]) then
 					if (not sourceFlag or bit.band(sourceFlag, 0x60) ~= 0) then --is neutral or hostile
