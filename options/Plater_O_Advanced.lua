@@ -590,8 +590,8 @@ function platerInternal.CreateAdvancedOptions()
             hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
         
-        
-        {type = "label", get = function() return "Enemy Box Selection Space:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {type = "blank", hidden = not IS_WOW_PROJECT_MIDNIGHT},
+        {type = "label", get = function() return "Nameplate Selection Space:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = not IS_WOW_PROJECT_MIDNIGHT},
         {
             type = "range",
             get = function() return Plater.db.profile.click_space[1] end,
@@ -605,6 +605,7 @@ function platerInternal.CreateAdvancedOptions()
             name = "OPTIONS_WIDTH",
             nocombat = true,
             desc = "OPTIONS_CLICK_SPACE_WIDTH",
+            hidden = not IS_WOW_PROJECT_MIDNIGHT,
         },
 
         {
@@ -620,11 +621,45 @@ function platerInternal.CreateAdvancedOptions()
             name = "OPTIONS_HEIGHT",
             nocombat = true,
             desc = "OPTIONS_CLICK_SPACE_HEIGHT",
+            hidden = not IS_WOW_PROJECT_MIDNIGHT,
+        },
+        
+        {type = "label", get = function() return "Enemy Box Selection Space:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = IS_WOW_PROJECT_MIDNIGHT},
+        {
+            type = "range",
+            get = function() return Plater.db.profile.click_space[1] end,
+            set = function (self, fixedparam, value)
+                Plater.db.profile.click_space[1] = value
+                Plater.UpdatePlateClickSpace (nil, true)
+            end,
+            min = 1,
+            max = 300,
+            step = 1,
+            name = "OPTIONS_WIDTH",
+            nocombat = true,
+            desc = "OPTIONS_CLICK_SPACE_WIDTH",
+            hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
 
-        {type = "blank"},
+        {
+            type = "range",
+            get = function() return Plater.db.profile.click_space[2] end,
+            set = function (self, fixedparam, value)
+                Plater.db.profile.click_space[2] = value
+                Plater.UpdatePlateClickSpace (nil, true)
+            end,
+            min = 1,
+            max = 100,
+            step = 1,
+            name = "OPTIONS_HEIGHT",
+            nocombat = true,
+            desc = "OPTIONS_CLICK_SPACE_HEIGHT",
+            hidden = IS_WOW_PROJECT_MIDNIGHT,
+        },
 
-        {type = "label", get = function() return "Friendly Box Selection Space:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {type = "blank", hidden = IS_WOW_PROJECT_MIDNIGHT},
+
+        {type = "label", get = function() return "Friendly Box Selection Space:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = IS_WOW_PROJECT_MIDNIGHT},
         {
             type = "range",
             get = function() return Plater.db.profile.click_space_friendly[1] end,
@@ -638,6 +673,7 @@ function platerInternal.CreateAdvancedOptions()
             name = "OPTIONS_WIDTH",
             nocombat = true,
             desc = "OPTIONS_CLICK_SPACE_WIDTH",
+            hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
 
         {
@@ -653,6 +689,7 @@ function platerInternal.CreateAdvancedOptions()
             name = "OPTIONS_HEIGHT",
             nocombat = true,
             desc = "OPTIONS_CLICK_SPACE_HEIGHT",
+            hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
 
         {type = "blank"},
