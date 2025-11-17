@@ -767,6 +767,7 @@ function platerInternal.CreateAdvancedOptions()
             name = "Show Friendly Guardians" .. CVarIcon,
             desc = "Show nameplates for friendly pets considered as guardian" .. CVarDesc,
             nocombat = true,
+            hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
 
         {
@@ -783,6 +784,7 @@ function platerInternal.CreateAdvancedOptions()
             name = "Show Friendly Minions" .. CVarIcon,
             desc = "Show nameplates for friendly units considered minions" .. CVarDesc,
             nocombat = true,
+            hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
 
         {
@@ -799,6 +801,7 @@ function platerInternal.CreateAdvancedOptions()
             name = "Show Friendly Pets" .. CVarIcon,
             desc = "Show nameplates for friendly pets" .. CVarDesc,
             nocombat = true,
+            hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
 
         {
@@ -815,6 +818,92 @@ function platerInternal.CreateAdvancedOptions()
             name = "Show Friendly Totems" .. CVarIcon,
             desc = "Show friendly totems" .. CVarDesc,
             nocombat = true,
+            hidden = IS_WOW_PROJECT_MIDNIGHT,
+        },
+        
+        {
+            type = "toggle",
+            get = function() return GetCVar ("nameplateShowFriendlyPlayers") == CVAR_ENABLED end,
+            set = function (self, fixedparam, value)
+                if (not InCombatLockdown()) then
+                    SetCVar ("nameplateShowFriendlyPlayers", math.abs (tonumber (GetCVar ("nameplateShowFriendlyPlayers"))-1))
+                else
+                    Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+                    self:SetValue (GetCVar ("nameplateShowFriendlyPlayers") == CVAR_ENABLED)
+                end
+            end,
+            name = "Show Friendly Players" .. CVarIcon,
+            desc = "Show nameplates for friendly players" .. CVarDesc,
+            nocombat = true,
+            hidden = not IS_WOW_PROJECT_MIDNIGHT,
+        },
+        
+        {
+            type = "toggle",
+            get = function() return GetCVar ("nameplateShowFriendlyPlayerGuardians") == CVAR_ENABLED end,
+            set = function (self, fixedparam, value)
+                if (not InCombatLockdown()) then
+                    SetCVar ("nameplateShowFriendlyPlayerGuardians", math.abs (tonumber (GetCVar ("nameplateShowFriendlyPlayerGuardians"))-1))
+                else
+                    Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+                    self:SetValue (GetCVar ("nameplateShowFriendlyPlayerGuardians") == CVAR_ENABLED)
+                end
+            end,
+            name = "Show Friendly Guardians" .. CVarIcon,
+            desc = "Show nameplates for friendly pets considered as guardian" .. CVarDesc,
+            nocombat = true,
+            hidden = not IS_WOW_PROJECT_MIDNIGHT,
+        },
+
+        {
+            type = "toggle",
+            get = function() return GetCVar ("nameplateShowFriendlyMinions") == CVAR_ENABLED end,
+            set = function (self, fixedparam, value)
+                if (not InCombatLockdown()) then
+                    SetCVar ("nameplateShowFriendlyPlayerMinions", math.abs (tonumber (GetCVar ("nameplateShowFriendlyPlayerMinions"))-1))
+                else
+                    Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+                    self:SetValue (GetCVar ("nameplateShowFriendlyPlayerMinions") == CVAR_ENABLED)
+                end
+            end,
+            name = "Show Friendly Minions" .. CVarIcon,
+            desc = "Show nameplates for friendly units considered minions" .. CVarDesc,
+            nocombat = true,
+            hidden = not IS_WOW_PROJECT_MIDNIGHT,
+        },
+
+        {
+            type = "toggle",
+            get = function() return GetCVar ("nameplateShowFriendlyPlayerPets") == CVAR_ENABLED end,
+            set = function (self, fixedparam, value)
+                if (not InCombatLockdown()) then
+                    SetCVar ("nameplateShowFriendlyPlayerPets", math.abs (tonumber (GetCVar ("nameplateShowFriendlyPlayerPets"))-1))
+                else
+                    Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+                    self:SetValue (GetCVar ("nameplateShowFriendlyPlayerPets") == CVAR_ENABLED)
+                end
+            end,
+            name = "Show Friendly Pets" .. CVarIcon,
+            desc = "Show nameplates for friendly pets" .. CVarDesc,
+            nocombat = true,
+            hidden = not IS_WOW_PROJECT_MIDNIGHT,
+        },
+
+        {
+            type = "toggle",
+            get = function() return GetCVar ("nameplateShowFriendlyPlayerTotems") == CVAR_ENABLED end,
+            set = function (self, fixedparam, value)
+                if (not InCombatLockdown()) then
+                    SetCVar ("nameplateShowFriendlyPlayerTotems", math.abs (tonumber (GetCVar ("nameplateShowFriendlyPlayerTotems"))-1))
+                else
+                    Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+                    self:SetValue (GetCVar ("nameplateShowFriendlyPlayerTotems") == CVAR_ENABLED)
+                end
+            end,
+            name = "Show Friendly Totems" .. CVarIcon,
+            desc = "Show friendly totems" .. CVarDesc,
+            nocombat = true,
+            hidden = not IS_WOW_PROJECT_MIDNIGHT,
         },
 
         {type = "blank"},
