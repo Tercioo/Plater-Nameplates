@@ -5769,8 +5769,8 @@ function Plater.OnInit() --private --~oninit ~init
 			unitFrame.healthBar.currentHealthMissing = UnitHealthMissing(unitFrame.unit, false)
 			unitFrame.healthBar.currentHealthPercent = UnitHealthPercent(unitFrame.unit, false, true)
 		else
-			unitFrame.healthBar.currentHealthMissing = currentHealthMax - currentHealth
-			unitFrame.healthBar.currentHealthPercent = currentHealth / currentHealthMax * 100
+			unitFrame.healthBar.currentHealthMissing = unitHealthMax - unitHealth
+			unitFrame.healthBar.currentHealthPercent = unitHealth / unitHealthMax * 100
 		end
 	end
 	
