@@ -5760,6 +5760,9 @@ function Plater.OnInit() --private --~oninit ~init
 		if IS_WOW_PROJECT_MIDNIGHT then
 			unitFrame.healthBar.currentHealthMissing = UnitHealthMissing(unitFrame.unit, false)
 			unitFrame.healthBar.currentHealthPercent = UnitHealthPercent(unitFrame.unit, false, true)
+		else
+			unitFrame.healthBar.currentHealthMissing = currentHealthMax - currentHealth
+			unitFrame.healthBar.currentHealthPercent = currentHealth / currentHealthMax * 100
 		end
 	end
 	
@@ -5801,6 +5804,9 @@ function Plater.OnInit() --private --~oninit ~init
 		if IS_WOW_PROJECT_MIDNIGHT then
 			self.currentHealthMissing = UnitHealthMissing(unitFrame.displayedUnit, false)
 			self.currentHealthPercent = UnitHealthPercent(unitFrame.displayedUnit, false, true)
+		else
+			self.currentHealthMissing = currentHealthMax - currentHealth
+			self.currentHealthPercent = currentHealth / currentHealthMax * 100
 		end
 		
 		--> exposed values to scripts
