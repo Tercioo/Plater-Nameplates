@@ -1712,7 +1712,7 @@ Plater.AnchorNamesByPhraseId = {
 		DB_LERP_COLOR = profile.use_color_lerp
 
 		--class colors
-		DB_CLASS_COLORS = profile.class_colors
+		DB_CLASS_COLORS = not IS_WOW_PROJECT_MIDNIGHT and profile.class_colors or false
 		--update colorStr
 		for className, colorTable in pairs(profile.class_colors) do
 			colorTable.colorStr = DetailsFramework:FormatColor("hex", colorTable.r, colorTable.g, colorTable.b, 1)
