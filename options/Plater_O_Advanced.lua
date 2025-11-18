@@ -1342,8 +1342,8 @@ function platerInternal.CreateAdvancedOptions()
             hidden = IS_WOW_PROJECT_NOT_MAINLINE or IS_WOW_PROJECT_MIDNIGHT,
         },
 
-        {type = "blank"},
-        {type = "label", get = function() return "Animations:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {type = "blank", hidden = IS_WOW_PROJECT_MIDNIGHT},
+        {type = "label", get = function() return "Animations:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = IS_WOW_PROJECT_MIDNIGHT},
 
         {
             type = "toggle",
@@ -1367,6 +1367,7 @@ function platerInternal.CreateAdvancedOptions()
             end,
             name = "Animate Color Transitions",
             desc = "Color changes does a smooth transition between the old and the new color.",
+            hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
         {
             type = "range",
@@ -1398,6 +1399,7 @@ function platerInternal.CreateAdvancedOptions()
             step = 1,
             name = "Color Animation Speed",
             desc = "How fast is the animation.",
+            hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
 
         {type = "blank"},

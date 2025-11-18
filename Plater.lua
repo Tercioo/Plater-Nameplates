@@ -3581,6 +3581,14 @@ Plater.AnchorNamesByPhraseId = {
 					plateFrame.UnitFrame.HitTestFrame:SetParent(plateFrame.UnitFrame)
 					plateFrame.UnitFrame.HitTestFrame:SetPoint("TOPLEFT", plateFrame.UnitFrame.healthBar, "TOPLEFT")
 					plateFrame.UnitFrame.HitTestFrame:SetPoint("BOTTOMRIGHT", plateFrame.UnitFrame.healthBar, "BOTTOMRIGHT")
+					--[[
+					hooksecurefunc(plateFrame.UnitFrame.healthBar, 'IsWidgetsOnlyMode', function(self)
+						TextureLoadingGroupMixin.AddTexture({ textures = self }, "widgetsOnly")
+						TextureLoadingGroupMixin.AddTexture({ textures = self }, "isDead")
+						TextureLoadingGroupMixin.RemoveTexture({ textures = self }, "isPlayer")
+					end)
+					plateFrame.UnitFrame.healthBar:UpdateShownState()
+					]]-- MIDNIGHT!! testing shenannigans
 				end
 				
 				plateFrame.unitFrame.PlaterOnScreen = false
