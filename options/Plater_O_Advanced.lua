@@ -1355,6 +1355,7 @@ function platerInternal.CreateAdvancedOptions()
             end,
             name = "Animate Health Bar",
             desc = "Do a smooth animation when the nameplate's health value changes.",
+            hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
         {
             type = "toggle",
@@ -1382,6 +1383,7 @@ function platerInternal.CreateAdvancedOptions()
             thumbscale = 1.7,
             name = "Health Bar Animation Speed",
             desc = "How fast is the animation.",
+            hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
         {
             type = "range",

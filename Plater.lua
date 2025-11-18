@@ -1722,7 +1722,7 @@ Plater.AnchorNamesByPhraseId = {
 		DB_PLATE_CONFIG = profile.plate_config
 		DB_TRACK_METHOD = profile.aura_tracker.track_method
 		
-		DB_DO_ANIMATIONS = profile.use_health_animation
+		DB_DO_ANIMATIONS = not IS_WOW_PROJECT_MIDNIGHT and profile.use_health_animation or false
 		DB_ANIMATION_TIME_DILATATION = profile.health_animation_time_dilatation
 		
 		DB_HOVER_HIGHLIGHT = profile.hover_highlight
@@ -6195,7 +6195,7 @@ end
 				local scriptContainer = unitFrame:ScriptGetContainer()
 				local scriptInfo = unitFrame:HookGetInfo(globalScriptObject, scriptContainer, "Nameplate Updated")
 				local scriptEnv = scriptInfo.Env
-				scriptEnv._HealthPercent = unitFrame.healthBar.CurrentHealth / unitFrame.healthBar.CurrentHealthMax * 100
+				scriptEnv._HealthPercent = unitFrame.healthBar.currentHealthPercent
 				
 				--run
 				unitFrame:ScriptRunHook (scriptInfo, "Nameplate Updated")
