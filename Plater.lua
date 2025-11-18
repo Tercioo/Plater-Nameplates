@@ -2972,6 +2972,7 @@ Plater.AnchorNamesByPhraseId = {
 				plateFrame.unitFrame.targetOverlayTexture:SetDrawLayer ("artwork", 2)
 				plateFrame.unitFrame.targetOverlayTexture:SetBlendMode ("ADD")
 				plateFrame.unitFrame.targetOverlayTexture:SetAllPoints()
+				plateFrame.unitFrame.targetOverlayTexture:Hide()
 			
 			--> create the highlight texture (when the mouse passes over the nameplate and receives a highlight)
 				Plater.CreateHighlightNameplate (plateFrame)
