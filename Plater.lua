@@ -1718,10 +1718,10 @@ Plater.AnchorNamesByPhraseId = {
 		DB_NUMBER_REGION_EAST_ASIA = Plater.db.profile.number_region == "eastasia"
 		
 		DB_TICK_THROTTLE = profile.update_throttle
-		DB_LERP_COLOR = profile.use_color_lerp
+		DB_LERP_COLOR = not IS_WOW_PROJECT_MIDNIGHT and profile.use_color_lerp or false
 
 		--class colors
-		DB_CLASS_COLORS = not IS_WOW_PROJECT_MIDNIGHT and profile.class_colors or false
+		DB_CLASS_COLORS = profile.class_colors
 		--update colorStr
 		for className, colorTable in pairs(profile.class_colors) do
 			colorTable.colorStr = DetailsFramework:FormatColor("hex", colorTable.r, colorTable.g, colorTable.b, 1)
@@ -2839,6 +2839,14 @@ Plater.AnchorNamesByPhraseId = {
 				plateFrame.PlaterAnchorFrame:EnableMouse(false)
 				plateFrame.PlaterAnchorFrame:SetParent(plateFrame)
 				
+				if IS_WOW_PROJECT_MIDNIGHT and DB_USE_UIPARENT then
+					--this tricks the client into using this frame as rect for the clickable area, as it is parented to the base frame
+					newUnitFrame.HitTestFrameDummy = newUnitFrame:CreateTexture()
+					newUnitFrame.HitTestFrameDummy:SetParent(plateFrame)
+					newUnitFrame.HitTestFrameDummy:SetPoint("TOPLEFT", newUnitFrame, "TOPLEFT")
+					newUnitFrame.HitTestFrameDummy:SetPoint("BOTTOMRIGHT", newUnitFrame, "BOTTOMRIGHT")
+					newUnitFrame.HitTestFrameDummy:SetColorTexture(1, 1, 1, 0) -- it needs to show something
+				end
 				
 				--mix plater functions (most are for scripting support) into the unit frame
 				DF:Mixin(newUnitFrame, Plater.ScriptMetaFunctions)
@@ -3546,6 +3554,18 @@ Plater.AnchorNamesByPhraseId = {
 				--hook the retail nameplate
 				--plateFrame.UnitFrame:HookScript("OnShow", Plater.OnRetailNamePlateShow)
 				hooksecurefunc(plateFrame.UnitFrame, "Show", Plater.OnRetailNamePlateShow)
+				
+				hooksecurefunc(NamePlateDriverFrame, "OnNamePlateRemoved", function(_, unitID)
+					local plateFrameUnitFrame = NAMEPLATES_ON_SCREEN_CACHE[unitID]
+					if plateFrameUnitFrame and plateFrameUnitFrame.HitTestFrame then
+						plateFrameUnitFrame.HitTestFrame:SetParent(plateFrameUnitFrame)
+						plateFrameUnitFrame.HitTestFrame:ClearAllPoints()
+						plateFrameUnitFrame.HitTestFrame:SetPoint("TOPLEFT", plateFrameUnitFrame.HealthBarsContainer.healthBar)
+						plateFrameUnitFrame.HitTestFrame:SetPoint("BOTTOMRIGHT", plateFrameUnitFrame.HealthBarsContainer.healthBar)
+						plateFrameUnitFrame.HitTestFrame:SetScale(1)
+					end
+				end)
+				
 				--plateFrame.UnitFrame.HasPlaterHooksRegistered = true
 				HOOKED_BLIZZARD_PLATEFRAMES[blizzardPlateFrameID] = true
 				
@@ -3554,9 +3574,10 @@ Plater.AnchorNamesByPhraseId = {
 			--MIDNIGHT TESTING
 			if IS_WOW_PROJECT_MIDNIGHT then
 				--TextureLoadingGroupMixin.AddTexture({ textures = plateFrame.UnitFrame.healthBar }, "capNumericDisplay") -- this is, luckily, baseline now.
+				C_NamePlateManager.SetNamePlateSimplified(unitID, false)
 				
-				plateFrame.UnitFrame.HitTestFrame:ClearAllPoints()
 				plateFrame.UnitFrame.HitTestFrame:SetParent(plateFrame.unitFrame)
+				plateFrame.UnitFrame.HitTestFrame:ClearAllPoints()
 				plateFrame.UnitFrame.HitTestFrame:SetPoint("TOPLEFT", plateFrame.unitFrame, "TOPLEFT")
 				plateFrame.UnitFrame.HitTestFrame:SetPoint("BOTTOMRIGHT", plateFrame.unitFrame, "BOTTOMRIGHT")
 				
@@ -3586,11 +3607,12 @@ Plater.AnchorNamesByPhraseId = {
 				
 			else
 				if IS_WOW_PROJECT_MIDNIGHT then
+					--[[
 					plateFrame.UnitFrame.HitTestFrame:ClearAllPoints()
 					plateFrame.UnitFrame.HitTestFrame:SetParent(plateFrame.UnitFrame)
 					plateFrame.UnitFrame.HitTestFrame:SetPoint("TOPLEFT", plateFrame.UnitFrame.healthBar, "TOPLEFT")
 					plateFrame.UnitFrame.HitTestFrame:SetPoint("BOTTOMRIGHT", plateFrame.UnitFrame.healthBar, "BOTTOMRIGHT")
-					--[[
+					
 					hooksecurefunc(plateFrame.UnitFrame.healthBar, 'IsWidgetsOnlyMode', function(self)
 						TextureLoadingGroupMixin.AddTexture({ textures = self }, "widgetsOnly")
 						TextureLoadingGroupMixin.AddTexture({ textures = self }, "isDead")
@@ -3637,7 +3659,7 @@ Plater.AnchorNamesByPhraseId = {
 			
 			local requiresScheduledUpdate = false
 			if not NAMEPLATES_ON_SCREEN_CACHE[unitID] then
-				NAMEPLATES_ON_SCREEN_CACHE[unitID] = true
+				NAMEPLATES_ON_SCREEN_CACHE[unitID] = plateFrame.UnitFrame
 				NUM_NAMEPLATES_ON_SCREEN = NUM_NAMEPLATES_ON_SCREEN + 1
 			else
 				requiresScheduledUpdate = true
@@ -9107,21 +9129,33 @@ end
 		--stacking toggle
 		if (profile.auto_toggle_stacking_enabled and profile.stacking_nameplates_enabled) then
 			--discover which is the map type the player is in
+			local function setStacking(state, stateFriendly)
+				if not IS_WOW_PROJECT_MIDNIGHT then
+					SetCVar ("nameplateMotion", state and CVAR_ENABLED or CVAR_DISABLED)
+				else
+					if stateFriendly == nil then
+						stateFriendly = C_CVar.GetCVarBitfield("nameplateStackingTypes", Enum.NamePlateStackType.Friendly)
+					end
+					C_CVar.SetCVarBitfield("nameplateStackingTypes", Enum.NamePlateStackType.Enemy, state and true or false)
+					C_CVar.SetCVarBitfield("nameplateStackingTypes", Enum.NamePlateStackType.Friendly, stateFriendly and true or false)
+				end
+			end
+			
 			if (zoneType == "party") then
-				SetCVar ("nameplateMotion", profile.auto_toggle_stacking ["party"] and CVAR_ENABLED or CVAR_DISABLED)
+				setStacking(profile.auto_toggle_stacking ["party"])
 				
 			elseif (zoneType == "raid") then
-				SetCVar ("nameplateMotion", profile.auto_toggle_stacking ["raid"] and CVAR_ENABLED or CVAR_DISABLED)
+				setStacking(profile.auto_toggle_stacking ["raid"])
 				
 			elseif (zoneType == "arena" or zoneType == "pvp") then
-				SetCVar ("nameplateMotion", profile.auto_toggle_stacking ["arena"] and CVAR_ENABLED or CVAR_DISABLED)
+				setStacking(profile.auto_toggle_stacking ["arena"])
 				
 			else
 				--if the player is resting, consider inside a major city
 				if (IsResting()) then
-					SetCVar ("nameplateMotion", profile.auto_toggle_stacking ["cities"] and CVAR_ENABLED or CVAR_DISABLED)
+					setStacking(profile.auto_toggle_stacking ["cities"])
 				else
-					SetCVar ("nameplateMotion", profile.auto_toggle_stacking ["world"] and CVAR_ENABLED or CVAR_DISABLED)
+					setStacking(profile.auto_toggle_stacking ["world"])
 				end
 			end
 		end
