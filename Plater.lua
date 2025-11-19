@@ -3581,6 +3581,8 @@ Plater.AnchorNamesByPhraseId = {
 				plateFrame.UnitFrame.HitTestFrame:SetPoint("TOPLEFT", plateFrame.unitFrame, "TOPLEFT")
 				plateFrame.UnitFrame.HitTestFrame:SetPoint("BOTTOMRIGHT", plateFrame.unitFrame, "BOTTOMRIGHT")
 				
+				plateFrame.unitFrame.HitTestFrameDummy:Show()
+				
 				local isPlayer = UnitIsPlayer (unitID)
 				local reaction = UnitReaction (unitID, "player")
 				local isSoftInteract = plateFrame.isSoftInteract
@@ -4244,6 +4246,10 @@ Plater.AnchorNamesByPhraseId = {
 			if (DB_USE_UIPARENT) then
 				-- need to explicitly hide the frame now, as it is not tethered to the blizz nameplate
 				plateFrame.unitFrame:Hide()
+				
+				if IS_WOW_PROJECT_MIDNIGHT then
+					plateFrame.unitFrame.HitTestFrameDummy:Hide()
+				end
 			end
 			--end of patch
 			
