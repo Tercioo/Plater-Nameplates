@@ -5672,10 +5672,16 @@ function Plater.OnInit() --private --~oninit ~init
 					if (self.unit and Plater.db.profile.castbar_target_show and not UnitIsUnit (self.unit, "player")) then
 						if IS_WOW_PROJECT_MIDNIGHT then
 							local targetName = UnitSpellTargetName(self.unit)
-							self.FrameOverlay.TargetName:SetText (targetName)
 							local classFilename = UnitSpellTargetClass(self.unit)
-							local r, g, b, _str = GetClassColor(classFilename)
-							self.FrameOverlay.TargetName:SetVertexColor(r, g, b)
+							if targetName then
+								if classFilename then
+									local color = C_ClassColor.GetClassColor(classFilename)
+									targetName = C_ColorUtil.WrapTextInColor(targetName, color)
+								end
+								self.FrameOverlay.TargetName:SetText(targetName)
+							else
+								self.FrameOverlay.TargetName:SetText(nil)
+							end
 						else
 							local targetName = UnitName (self.unit .. "target")
 							if (targetName) then
