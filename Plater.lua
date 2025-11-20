@@ -6788,7 +6788,6 @@ end
 			if (HEALTHCUTOFF_AT_DATA.healthCutOffActive and not unitFrame.IsSelf and not unitFrame.PlayerCannotAttack) then
 				-- setup
 				if HEALTHCUTOFF_AT_DATA.healthCutOffValue and HEALTHCUTOFF_AT_DATA.healthCutOffValue ~= healthBar.healthCutOffValue and HEALTHCUTOFF_AT_DATA.healthCutOffValue > 0 then
-					print("lower active update", HEALTHCUTOFF_AT_DATA.healthCutOffValue)
 					healthBar.healthCutOff:ClearAllPoints()
 					healthBar.healthCutOff:SetSize (healthBar:GetHeight(), healthBar:GetHeight())
 					healthBar.healthCutOff:SetPoint ("center", healthBar, "left", healthBar:GetWidth() * HEALTHCUTOFF_AT_DATA.healthCutOffValue, 0)
