@@ -5672,8 +5672,9 @@ function Plater.OnInit() --private --~oninit ~init
 					if (self.unit and Plater.db.profile.castbar_target_show and not UnitIsUnit (self.unit, "player")) then
 						if IS_WOW_PROJECT_MIDNIGHT then
 							local targetName = UnitSpellTargetName(self.unit)
-							local classFilename = UnitSpellTargetClass(self.unit)
 							if targetName then
+								--targetName = string.format("%.15s", targetName)
+								local classFilename = UnitSpellTargetClass(self.unit)
 								if classFilename then
 									local color = C_ClassColor.GetClassColor(classFilename)
 									targetName = C_ColorUtil.WrapTextInColor(targetName, color)
@@ -5809,8 +5810,8 @@ function Plater.OnInit() --private --~oninit ~init
 		unitFrame.healthBar.currentHealth = unitHealth
 		unitFrame.healthBar.currentHealthMax = unitHealthMax
 		if IS_WOW_PROJECT_MIDNIGHT then
-			unitFrame.healthBar.currentHealthMissing = UnitHealthMissing(unitFrame.unit, false)
-			unitFrame.healthBar.currentHealthPercent = UnitHealthPercent(unitFrame.unit, false, true)
+			unitFrame.healthBar.currentHealthMissing = UnitHealthMissing(unitFrame.unit, true)
+			unitFrame.healthBar.currentHealthPercent = UnitHealthPercent(unitFrame.unit, true, true)
 		else
 			unitFrame.healthBar.currentHealthMissing = unitHealthMax - unitHealth
 			unitFrame.healthBar.currentHealthPercent = unitHealth / unitHealthMax * 100
@@ -5853,8 +5854,8 @@ function Plater.OnInit() --private --~oninit ~init
 			oldHealth = oldHealth or currentHealth
 		end
 		if IS_WOW_PROJECT_MIDNIGHT then
-			self.currentHealthMissing = UnitHealthMissing(unitFrame.displayedUnit, false)
-			self.currentHealthPercent = UnitHealthPercent(unitFrame.displayedUnit, false, true)
+			self.currentHealthMissing = UnitHealthMissing(unitFrame.displayedUnit, true)
+			self.currentHealthPercent = UnitHealthPercent(unitFrame.displayedUnit, true, true)
 		else
 			self.currentHealthMissing = currentHealthMax - currentHealth
 			self.currentHealthPercent = currentHealth / currentHealthMax * 100
