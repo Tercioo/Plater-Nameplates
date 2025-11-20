@@ -7,6 +7,8 @@ local Plater = Plater
 local detailsFramework = _G.DetailsFramework
 local _
 
+do return end
+
 local designer = platerInternal.Designer
 
 local PixelUtil = PixelUtil
