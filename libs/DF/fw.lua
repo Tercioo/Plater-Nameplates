@@ -1,5 +1,5 @@
 
-local dversion = 630
+local dversion = 631
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary(major, minor)
 
@@ -239,6 +239,10 @@ end
 function DF.IsMidnightWow()
 	if (buildInfo < 130000 and buildInfo >= 120000) then		return true	end
 	return false
+end
+
+function DF.IsAddonApocalypseWow()
+	return buildInfo >= 120000
 end
 
 
@@ -762,6 +766,9 @@ function DF:GetParentNamePath(object)
 		end
 
 		if (parentName) then
+			if (type(parentName) == "table") then
+				parentName = tostring(parentName)
+			end
 			path = parentName .. "." .. path
 		else
 			local result = path:gsub("%.$", "")

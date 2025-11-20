@@ -54,6 +54,7 @@ Plater_Data.lua
 Plater_Logs.lua
 Plater_Util.lua
 Plater.lua
+Plater_ScriptHelpers.lua
 Plater_PerformanceUnits.lua
 Plater_ColorFrame.lua
 Plater_SlashCMD.lua
@@ -71,6 +72,7 @@ Plater_ScriptingPanels.lua
 Plater_ScriptLibrary.lua
 Plater_AnimationEditor.lua
 Plater_Designer.lua
+Plater_Designer_Objects.lua
 Plater_ChangeLog.lua
 Plater_Docs.lua
 Plater_BossModsSupport.lua
@@ -88,6 +90,8 @@ options/Plater_O_Search.lua
 options/Plater_O_CastBar.lua
 options/Plater_O_Advanced.lua
 options/Plater_O_BossMod.lua
+
+
 
 Plater_LoadFinished.lua
 

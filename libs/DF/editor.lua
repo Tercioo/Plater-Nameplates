@@ -620,9 +620,9 @@ detailsFramework.EditorMixin = {
                         moverFrame.MovingInfo.restingY = y
                         moverFrame:SetScript("OnUpdate", onTickNotMoving)
 
-                        local currentNinePoints = editorFrame.currentObjectNinePoints
-                        local startX, startY = moverFrame:GetCenter()
-                        local closestPoint = editorFrame.currentObjectNinePoints:GetClosestPoint(CreateVector2D(startX, startY))
+                        --local currentNinePoints = editorFrame.currentObjectNinePoints
+                        --local startX, startY = moverFrame:GetCenter()
+                        --local closestPoint = editorFrame.currentObjectNinePoints:GetClosestPoint(CreateVector2D(startX, startY))
                         --if (closestPoint ~= parentTable.side) then
                             --print("side is different", closestPoint, parentTable.side)
                         --end

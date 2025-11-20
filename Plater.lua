@@ -210,10 +210,41 @@ local HOOK_OPTION_CHANGED = {ScriptAmount = 0}
 local HOOK_MOD_OPTION_CHANGED = {ScriptAmount = 0}
 local HOOK_NAMEPLATE_DESTRUCTOR = {ScriptAmount = 0}
 
+platerInternal.VarSharing.HOOK_NAMEPLATE_ADDED = HOOK_NAMEPLATE_ADDED
+platerInternal.VarSharing.HOOK_NAMEPLATE_CREATED = HOOK_NAMEPLATE_CREATED
+platerInternal.VarSharing.HOOK_NAMEPLATE_REMOVED = HOOK_NAMEPLATE_REMOVED
+platerInternal.VarSharing.HOOK_NAMEPLATE_UPDATED = HOOK_NAMEPLATE_UPDATED
+platerInternal.VarSharing.HOOK_TARGET_CHANGED = HOOK_TARGET_CHANGED
+platerInternal.VarSharing.HOOK_CAST_START = HOOK_CAST_START
+platerInternal.VarSharing.HOOK_CAST_UPDATE = HOOK_CAST_UPDATE
+platerInternal.VarSharing.HOOK_CAST_STOP = HOOK_CAST_STOP
+platerInternal.VarSharing.HOOK_RAID_TARGET = HOOK_RAID_TARGET
+platerInternal.VarSharing.HOOK_COMBAT_ENTER = HOOK_COMBAT_ENTER
+platerInternal.VarSharing.HOOK_COMBAT_LEAVE = HOOK_COMBAT_LEAVE
+platerInternal.VarSharing.HOOK_NAMEPLATE_CONSTRUCTOR = HOOK_NAMEPLATE_CONSTRUCTOR
+platerInternal.VarSharing.HOOK_PLAYER_POWER_UPDATE = HOOK_PLAYER_POWER_UPDATE
+platerInternal.VarSharing.HOOK_PLAYER_TALENT_UPDATE = HOOK_PLAYER_TALENT_UPDATE
+platerInternal.VarSharing.HOOK_HEALTH_UPDATE = HOOK_HEALTH_UPDATE
+platerInternal.VarSharing.HOOK_ZONE_CHANGED = HOOK_ZONE_CHANGED
+platerInternal.VarSharing.HOOK_UNITNAME_UPDATE = HOOK_UNITNAME_UPDATE
+platerInternal.VarSharing.HOOK_LOAD_SCREEN = HOOK_LOAD_SCREEN
+platerInternal.VarSharing.HOOK_PLAYER_LOGON = HOOK_PLAYER_LOGON
+platerInternal.VarSharing.HOOK_MOD_INITIALIZATION = HOOK_MOD_INITIALIZATION
+platerInternal.VarSharing.HOOK_MOD_DEINITIALIZATION = HOOK_MOD_DEINITIALIZATION
+platerInternal.VarSharing.HOOK_COMM_RECEIVED_MESSAGE = HOOK_COMM_RECEIVED_MESSAGE
+platerInternal.VarSharing.HOOK_COMM_SEND_MESSAGE = HOOK_COMM_SEND_MESSAGE
+platerInternal.VarSharing.HOOK_OPTION_CHANGED = HOOK_OPTION_CHANGED
+platerInternal.VarSharing.HOOK_MOD_OPTION_CHANGED = HOOK_MOD_OPTION_CHANGED
+platerInternal.VarSharing.HOOK_NAMEPLATE_DESTRUCTOR = HOOK_NAMEPLATE_DESTRUCTOR
+
+
 platerInternal.HOOK_MOD_OPTION_CHANGED = HOOK_MOD_OPTION_CHANGED --triggered from Plater.ScriptingOptions.lua
 
 local PLATER_GLOBAL_MOD_ENV = {}  -- contains modEnv for each mod, identified by "<mod name>"
 local PLATER_GLOBAL_SCRIPT_ENV = {} -- contains modEnv for each script, identified by "<script name>"
+
+platerInternal.VarSharing.PLATER_GLOBAL_MOD_ENV = PLATER_GLOBAL_MOD_ENV
+platerInternal.VarSharing.PLATER_GLOBAL_SCRIPT_ENV = PLATER_GLOBAL_SCRIPT_ENV
 
 --> cvars just to make them easier to read
 local CVAR_ENABLED = "1"
@@ -2834,6 +2865,10 @@ Plater.AnchorNamesByPhraseId = {
 				plateFrame.unitFrame = newUnitFrame
 				plateFrame.unitFrame:EnableMouse(false)
 				
+
+				---@class plateanchorframe : frame
+				
+				---@type plateanchorframe
 				plateFrame.PlaterAnchorFrame = CreateFrame ("Frame", newUnitFrame:GetName() .. "AnchorFrame", plateFrame)
 				plateFrame.PlaterAnchorFrame:SetSize(Plater.db.profile.plate_config.enemynpc.health[1] or 112, Plater.db.profile.plate_config.enemynpc.health[2] or 12)
 				plateFrame.PlaterAnchorFrame:EnableMouse(false)
@@ -2888,32 +2923,46 @@ Plater.AnchorNamesByPhraseId = {
 			-- "PlaterMainAuraIcon"
 			-- "PlaterSecondaryAuraIcon"
 
+			---@class buffframe : frame
+			---@field amountAurasShown number
+			---@field PlaterBuffList table
+			---@field isNameplate boolean
+			---@field unitFrame unitframe
+			---@field healthBar df_healthbar
+			---@field AuraCache table
+			---@field Name string
+			---@field BuffFrame2 buffframe
+			---@field BuffFrame1 buffframe
+
 			--> buff frames
 				--main buff frame
-				plateFrame.unitFrame.BuffFrame = CreateFrame ("frame", plateFrame.unitFrame:GetName() .. "BuffFrame1", plateFrame.unitFrame, BackdropTemplateMixin and "BackdropTemplate")
-				plateFrame.unitFrame.BuffFrame.amountAurasShown = 0
-				plateFrame.unitFrame.BuffFrame.PlaterBuffList = {}
-				plateFrame.unitFrame.BuffFrame.isNameplate = true
-				plateFrame.unitFrame.BuffFrame.unitFrame = plateFrame.unitFrame --used on resource frame anchor update
-				plateFrame.unitFrame.BuffFrame.healthBar = plateFrame.unitFrame.healthBar
-				plateFrame.unitFrame.BuffFrame.AuraCache = {}
-				
+				local buffFrame = CreateFrame ("frame", plateFrame.unitFrame:GetName() .. "BuffFrame1", plateFrame.unitFrame, BackdropTemplateMixin and "BackdropTemplate")
+				buffFrame.amountAurasShown = 0
+				buffFrame.PlaterBuffList = {}
+				buffFrame.isNameplate = true
+				buffFrame.unitFrame = plateFrame.unitFrame --used on resource frame anchor update
+				buffFrame.healthBar = plateFrame.unitFrame.healthBar
+				buffFrame.AuraCache = {}
+				plateFrame.unitFrame.BuffFrame = buffFrame
+
 				--secondary buff frame
-				plateFrame.unitFrame.BuffFrame2 = CreateFrame ("frame", plateFrame.unitFrame:GetName() .. "BuffFrame2", plateFrame.unitFrame, BackdropTemplateMixin and "BackdropTemplate")
-				plateFrame.unitFrame.BuffFrame2.amountAurasShown = 0
-				plateFrame.unitFrame.BuffFrame2.PlaterBuffList = {}
-				plateFrame.unitFrame.BuffFrame2.isNameplate = true
-				plateFrame.unitFrame.BuffFrame2.unitFrame = plateFrame.unitFrame
-				plateFrame.unitFrame.BuffFrame2.healthBar = plateFrame.unitFrame.healthBar
-				plateFrame.unitFrame.BuffFrame2.AuraCache = {}
+				local buffFrame2 = CreateFrame ("frame", plateFrame.unitFrame:GetName() .. "BuffFrame2", plateFrame.unitFrame, BackdropTemplateMixin and "BackdropTemplate")
+				buffFrame2 = CreateFrame ("frame", plateFrame.unitFrame:GetName() .. "BuffFrame2", plateFrame.unitFrame, BackdropTemplateMixin and "BackdropTemplate")
+				buffFrame2.amountAurasShown = 0
+				buffFrame2.PlaterBuffList = {}
+				buffFrame2.isNameplate = true
+				buffFrame2.unitFrame = plateFrame.unitFrame
+				buffFrame2.healthBar = plateFrame.unitFrame.healthBar
+				buffFrame2.AuraCache = {}
+				plateFrame.unitFrame.BuffFrame2 = buffFrame2
 			
 			--> identify aura containers
-				plateFrame.unitFrame.BuffFrame.Name = "Main" --aura frame 1
-				plateFrame.unitFrame.BuffFrame2.Name = "Secondary" --aura frame 2
+				buffFrame.Name = "Main" --aura frame 1
+				buffFrame2.Name = "Secondary" --aura frame 2
 			
 			--> store the secondary anchor inside the regular buff container for speed
-			plateFrame.unitFrame.BuffFrame.BuffFrame2 = plateFrame.unitFrame.BuffFrame2
-			plateFrame.unitFrame.BuffFrame2.BuffFrame1 = plateFrame.unitFrame.BuffFrame
+			buffFrame.BuffFrame2 = buffFrame2
+			buffFrame2.BuffFrame1 = buffFrame
 			
 			--> unit aura cache
 			plateFrame.unitFrame.AuraCache = {}
@@ -3451,26 +3500,38 @@ Plater.AnchorNamesByPhraseId = {
 --			if (select (2, UnitClass (unitBarId)) == "HUNTER") then
 --				print ("nameplate added", UnitName (unitBarId))
 --			end
+
 		
 			local unitID = unitBarId
-
 			---@type plateframe
-			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitID)
-			if (not plateFrame) then
-				--try forbidden as well for hiding stuff
-				plateFrame = C_NamePlate.GetNamePlateForUnit (unitID, true)
-				if (plateFrame) then
-					if (not IS_WOW_PROJECT_MAINLINE) then
-						if GetCVarBool ("nameplateShowOnlyNames") or Plater.db.profile.saved_cvars.nameplateShowOnlyNames == "1" then
-							TextureLoadingGroupMixin.RemoveTexture({ textures = plateFrame.UnitFrame.CastBar }, "showCastbar")
-						else
-							TextureLoadingGroupMixin.AddTexture({ textures = plateFrame.UnitFrame.CastBar }, "showCastbar")
+			local plateFrame
+
+			local nameplateIsEditor = false
+
+			if (unitBarId == "preview") then
+				unitBarId = "player"
+				unitID = "player"
+				nameplateIsEditor = true
+				plateFrame = PlaterDesignerPlatePreview
+			else
+				plateFrame = C_NamePlate.GetNamePlateForUnit (unitID)
+				if (not plateFrame) then
+					--try forbidden as well for hiding stuff
+					plateFrame = C_NamePlate.GetNamePlateForUnit (unitID, true)
+					if (plateFrame) then
+						if (not IS_WOW_PROJECT_MAINLINE) then
+							if GetCVarBool ("nameplateShowOnlyNames") or Plater.db.profile.saved_cvars.nameplateShowOnlyNames == "1" then
+								TextureLoadingGroupMixin.RemoveTexture({ textures = plateFrame.UnitFrame.CastBar }, "showCastbar")
+							else
+								TextureLoadingGroupMixin.AddTexture({ textures = plateFrame.UnitFrame.CastBar }, "showCastbar")
+							end
 						end
 					end
+					return
 				end
-				return
 			end
-			
+
+
 			--> check the unit frame integrity, several times some weakaura or script mess with the unit frame
 			if (not plateFrame.unitFrame or not plateFrame.unitFrame.SetUnit) then
 				plateFrame.unitFrame = plateFrame.unitFramePlater
@@ -3488,8 +3549,8 @@ Plater.AnchorNamesByPhraseId = {
 			
 			local isWidgetOnlyMode = (IS_WOW_PROJECT_MAINLINE) and UnitNameplateShowsWidgetsOnly (unitID) or false
 			local isBattlePet = (IS_WOW_PROJECT_MAINLINE) and UnitIsBattlePet(unitID) or false
-			local isPlayer = UnitIsPlayer (unitID)
-			local isSelf = UnitIsUnit (unitID, "player")
+			local isPlayer = not nameplateIsEditor and UnitIsPlayer (unitID)
+			local isSelf = not nameplateIsEditor and UnitIsUnit (unitID, "player")
 			if IS_WOW_PROJECT_MIDNIGHT then isSelf = false end --MIDNIGHT!!
 			
 			plateFrame [MEMBER_NPCID] = nil
@@ -3591,6 +3652,10 @@ Plater.AnchorNamesByPhraseId = {
 				reaction = reaction or isSoftInteract and Plater.UnitReaction.UNITREACTION_NEUTRAL or Plater.UnitReaction.UNITREACTION_HOSTILE
 				reaction = reaction <= Plater.UnitReaction.UNITREACTION_HOSTILE and Plater.UnitReaction.UNITREACTION_HOSTILE or reaction >= Plater.UnitReaction.UNITREACTION_FRIENDLY and Plater.UnitReaction.UNITREACTION_FRIENDLY or Plater.UnitReaction.UNITREACTION_NEUTRAL
 				
+				if (nameplateIsEditor) then
+					reaction = Plater.UnitReaction.UNITREACTION_HOSTILE
+				end
+
 				--[[
 				local fontName, _fontSize, fontFlags = plateFrame.UnitFrame.name:GetFont()
 				if not isPlayer and (reaction >= Plater.UnitReaction.UNITREACTION_FRIENDLY) then
@@ -3846,7 +3911,7 @@ Plater.AnchorNamesByPhraseId = {
 			end
 			plateFrame ["namePlateClassification"] = UnitClassification (unitID)
 			plateFrame.unitNameInternal = unitName
-			
+
 			--clear name schedules
 			unitFrame.ScheduleNameUpdate = nil
 			
@@ -3902,7 +3967,7 @@ Plater.AnchorNamesByPhraseId = {
 			Plater.UpdateUIParentLevels (unitFrame)
 			
 			if (unitFrame.unit) then
-				
+
 				if (isSelf) then
 					--> personal health bar
 					plateFrame.isSelf = true
@@ -3929,17 +3994,16 @@ Plater.AnchorNamesByPhraseId = {
 					plateFrame.PlateConfig = DB_PLATE_CONFIG.player
 					Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_PLAYER, nil, true)
 					Plater.OnUpdateHealth (healthBar)
-					
+
 				else
 					--> regular nameplate
-					
 					plateFrame.PlayerCannotAttack = not UnitCanAttack ("player", unitID)
 					unitFrame.PlayerCannotAttack = plateFrame.PlayerCannotAttack --expose to scripts
 					
 					if (isPlayer) then
 						--unit is a player
 						plateFrame.playerGuildName = GetGuildInfo (unitID)
-						
+
 						if (reaction >= Plater.UnitReaction.UNITREACTION_FRIENDLY) then
 							plateFrame.NameAnchor = DB_NAME_PLAYERFRIENDLY_ANCHOR
 							plateFrame.PlateConfig = DB_PLATE_CONFIG.friendlyplayer
@@ -3965,8 +4029,8 @@ Plater.AnchorNamesByPhraseId = {
 						end
 					else
 						--the unit is a npc
-						 
-						if (reaction >= Plater.UnitReaction.UNITREACTION_FRIENDLY) then
+
+						if (reaction >= Plater.UnitReaction.UNITREACTION_FRIENDLY) then 
 							plateFrame.NameAnchor = DB_NAME_NPCFRIENDLY_ANCHOR
 							plateFrame.PlateConfig = DB_PLATE_CONFIG.friendlynpc
 							Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_FRIENDLY_NPC, nil, true)
@@ -3977,7 +4041,7 @@ Plater.AnchorNamesByPhraseId = {
 							elseif not castBarWasEnabled then
 								unitFrame.castBar:SetUnit (unitID, unitID)
 							end
-						elseif isBattlePet then
+						elseif isBattlePet then 
 							plateFrame.NameAnchor = DB_NAME_NPCFRIENDLY_ANCHOR
 							plateFrame.PlateConfig = DB_PLATE_CONFIG.friendlynpc
 							Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_FRIENDLY_NPC, nil, true)
@@ -4338,6 +4402,7 @@ Plater.AnchorNamesByPhraseId = {
 
 	--function for plateFrame.UnitFrame OnShow script
 	--it'll hide the retail nameplate when it shown
+	---@param self frame blizzard unitframe 'plateFrame.UnitFrame'
 	function Plater.OnRetailNamePlateShow (self) --private
 		if ENABLED_BLIZZARD_PLATEFRAMES[tostring(self)] then
 			-- do not hide
@@ -9300,7 +9365,26 @@ end
 		function (widget, config, attachTo, centered)--13 inner bottom
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "bottom", attachTo, "bottom", config.x, config.y, 0, 0)
-		end
+		end,
+		function (widget, config, attachTo, centered)--14 inner topleft
+			widget:ClearAllPoints()
+			PixelUtil.SetPoint (widget, "topleft", attachTo, "topleft", config.x, config.y, 0, 0)
+		end,
+		--15 inner bottom left
+		function (widget, config, attachTo, centered)
+			widget:ClearAllPoints()
+			PixelUtil.SetPoint (widget, "bottomleft", attachTo, "bottomleft", config.x, config.y, 0, 0)
+		end,
+		--16 inner bottom right
+		function (widget, config, attachTo, centered)
+			widget:ClearAllPoints()
+			PixelUtil.SetPoint (widget, "bottomright", attachTo, "bottomright", config.x, config.y, 0, 0)
+		end,
+		--17 inner top right
+		function (widget, config, attachTo, centered)
+			widget:ClearAllPoints()
+			PixelUtil.SetPoint (widget, "topright", attachTo, "topright", config.x, config.y, 0, 0)
+		end,
 	}
 
 	--auto set the point based on the table from the config, if attachTo isn't received, it'll use its parent
@@ -9324,6 +9408,10 @@ end
 		INNER_RIGHT = 11,
 		INNER_TOP = 12,
 		INNER_BOTTOM = 13,
+		INNER_TOP_LEFT = 14,
+		INNER_BOTTOM_LEFT = 15,
+		INNER_BOTTOM_RIGHT = 16,
+		INNER_TOP_RIGHT = 17,
 	}
 
 	--check the setting 'only_damaged' and 'only_thename' for player characters. not critical code, can run slow
@@ -13125,250 +13213,6 @@ end
 		end
 		
 		Plater.EndLogPerformanceCore("Plater-Core", "Mod/Script", "CompileScript")
-	end
-
-	--check all triggers of all scripts for overlaps
-	--where a same spellId, npcName or npcId is being used by two or more scripts
-	--return a table with the triggerId with a index table of all scripts using that trigger
-	function Plater.CheckScriptTriggerOverlap()
-		--store all triggers of all scripts in the format [triggerId] = {scripts using this trigger}
-		local allTriggers = {
-			Auras = {},
-			Casts = {},
-			Npcs = {},
-		}
-		
-		--build the table containinf all scripts and what scripts they trigger
-		for index, scriptObject in ipairs (Plater.GetAllScripts ("script")) do
-			if (scriptObject.Enabled) then
-				for _, spellId in ipairs (scriptObject.SpellIds) do
-					
-					if (scriptObject.ScriptType == 1) then
-						--> triggers auras
-						local triggerTable = allTriggers.Auras [spellId]
-						if (not triggerTable) then
-							allTriggers.Auras [spellId] = {scriptObject}
-						else
-							tinsert (triggerTable, scriptObject)
-						end
-					
-					elseif (scriptObject.ScriptType == 2) then
-						--> triggers cast
-						local triggerTable = allTriggers.Casts [spellId]
-						if (not triggerTable) then
-							allTriggers.Casts [spellId] = {scriptObject}
-						else
-							tinsert (triggerTable, scriptObject)
-						end
-
-					end
-				end
-				
-				for _, NpcId in ipairs (scriptObject.NpcNames) do
-					local triggerTable = allTriggers.Npcs [NpcId]
-					if (not triggerTable) then
-						allTriggers.Npcs [NpcId] = {scriptObject}
-					else
-						tinsert (triggerTable, scriptObject)
-					end
-				end
-			end
-		end
-		
-		--> store scripts with overlap
-		local scriptsWithOverlap = {
-			Auras = {},
-			Casts = {},
-			Npcs = {},
-		}
-		
-		local amount = 0
-		
-		--> check if there's more than 1 script for each trigger
-		for triggerId, scriptsTable in pairs (allTriggers.Auras) do
-			if (#scriptsTable > 1) then
-				--overlap found
-				scriptsWithOverlap.Auras [triggerId] = scriptsTable
-				amount = amount + 1
-			end
-		end
-		for triggerId, scriptsTable in pairs (allTriggers.Casts) do
-			if (#scriptsTable > 1) then
-				--overlap found
-				scriptsWithOverlap.Casts [triggerId] = scriptsTable
-				amount = amount + 1
-			end
-		end
-		for triggerId, scriptsTable in pairs (allTriggers.Npcs) do
-			if (#scriptsTable > 1) then
-				--overlap found
-				scriptsWithOverlap.Npcs [triggerId] = scriptsTable
-				amount = amount + 1
-			end
-		end
-		
-		return scriptsWithOverlap, amount
-	end
-
-	---add a trigger to a script
-	---@param triggerId number|string triggerId can be a npcId, npcName for NPCs or a spellId or spellName for auras and casts
-	---@param triggerType string|number there's 3 types of triggers: Auras, Casts and Npcs. Auras and Casts uses 'scriptObject.SpellIds' to store the triggerId and Npcs uses 'scriptObject.NpcNames'
-	---what define the type of trigger is the scriptObject.ScriptType, in other places of this project, triggerType can also be called scriptType
-	---triggerType expects: aura = 1, cast = 2, npc = 3
-	---@param scriptName string
-	---@return boolean 'true' if the trigger was added to the script, false if something went wrong
-	---@return string|nil message of error if the trigger wasn't added to the script
-	function Plater.AddTriggerToScript(triggerId, triggerType, scriptName)
-		--attempt to get the scriptObject for the passed scriptName
-		local scriptObject = Plater.GetScriptObject(scriptName, "script")
-		if (not scriptObject) then
-			return false, "script not found"
-		end
-		
-		--remove the trigger from any script to avoid overlaps (a trigger can only exists in one script at time)
-		platerInternal.Scripts.RemoveTriggerFromAnyScript(triggerId)
-
-		--check the triggerType to know in what table the script will store the triggerId
-		if (triggerType == 1 or triggerType == 2 or triggerType == "aura" or triggerType == "cast") then
-			--aura or cast
-			DF.table.addunique(scriptObject.SpellIds, triggerId)
-
-		elseif (triggerType == 3 or triggerType == "npc") then
-			--npc
-			DF.table.addunique(scriptObject.NpcNames, triggerId)
-
-		else
-			return false, "invalid triggerType"
-		end
-		
-		Plater.WipeAndRecompileAllScripts("script")
-
-		return true
-	end
-
-	function platerInternal.Scripts.RemoveTriggerFromAnyScript(triggerId)
-		local scriptObject = platerInternal.Scripts.IsTriggerOnAnyScript(triggerId)
-		if (scriptObject) then
-			platerInternal.Scripts.RemoveTriggerFromScript(scriptObject, triggerId)
-		end
-	end
-
-	function platerInternal.Scripts.IsTriggerOnAnyScript(triggerId)
-		local allScripts = Plater.db.profile.script_data
-		for i = 1, #allScripts do
-			local scriptObject = allScripts[i]
-			if (platerInternal.Scripts.DoesScriptHasTrigger(scriptObject, triggerId)) then
-				return scriptObject
-			end
-		end
-	end
-
-	function platerInternal.Scripts.GetScriptObjectByName(scriptName)
-		local allScripts = Plater.db.profile.script_data
-		for i = 1, #allScripts do
-			local scriptObject = allScripts[i]
-			if (scriptObject.Name == scriptName) then
-				return scriptObject
-			end
-		end
-	end
-
-	--add or remove a trigger without the need to pass through the scripting panel
-	function platerInternal.Scripts.AddSpellToScriptTriggers(scriptObject, spellId)
-		DF.table.addunique(scriptObject.SpellIds, spellId)
-		Plater.WipeAndRecompileAllScripts("script")
-	end
-
-	function platerInternal.Scripts.RemoveSpellFromScriptTriggers(scriptObject, spellId, noRecompile)
-		local index = DF.table.find(scriptObject.SpellIds, spellId)
-		if (index) then
-			tremove(scriptObject.SpellIds, index)
-
-			if (not noRecompile) then
-				Plater.WipeAndRecompileAllScripts("script")
-			end
-		end
-	end
-
-	function platerInternal.Scripts.DoesScriptHasTrigger(scriptObject, trigger)
-		local index = DF.table.find(scriptObject.SpellIds, trigger)
-		if (index) then
-			return true
-		end
-
-		local index = DF.table.find(scriptObject.NpcNames, trigger)
-		if (index) then
-			return true
-		end
-	end
-
-	function platerInternal.Scripts.RemoveTriggerFromScript(scriptObject, triggerId)
-		local index = DF.table.find(scriptObject.SpellIds, triggerId)
-		if (index) then
-			tremove(scriptObject.SpellIds, index)
-			Plater.WipeAndRecompileAllScripts("script")
-		end
-
-		local index = DF.table.find(scriptObject.NpcNames, triggerId)
-		if (index) then
-			tremove(scriptObject.NpcNames, index)
-			Plater.WipeAndRecompileAllScripts("script")
-		end
-	end
-
-	function platerInternal.Scripts.AddNpcToScriptTriggers(scriptObject, npcId)
-		DF.table.addunique(scriptObject.NpcNames, npcId)
-		Plater.WipeAndRecompileAllScripts("script")
-	end
-
-	function platerInternal.Scripts.RemoveNpcFromScriptTriggers(scriptObject, npcId)
-		local index = DF.table.find(scriptObject.NpcNames, npcId)
-		if (index) then
-			tremove(scriptObject.NpcNames, index)
-			Plater.WipeAndRecompileAllScripts("script")
-		end
-	end
-
-	---retrive the script object for a selected scriptId
-	---@param scriptID number|string if number scriptId is the index of the script in the db table, this index can change when a script is removed
-	---@param scriptType string is always "script" or "hook", hooks scripts are stored in a different table, ingame they are called "Mods"
-	function Plater.GetScriptObject (scriptID, scriptType)
-		if (type(scriptID) == "string" and scriptType == "script") then
-			return platerInternal.Scripts.GetScriptObjectByName(scriptID)
-		end
-
-		if (scriptType == "script") then
-			local script = Plater.db.profile.script_data [scriptID]
-			if (script) then
-				return script
-			end
-			
-		elseif (scriptType == "hook") then
-			local script = Plater.db.profile.hook_data [scriptID]
-			if (script) then
-				return script
-			end
-
-		end
-	end
-
-	--return the main db table for the script type
-	function Plater.GetScriptDB (scriptType)
-		if (scriptType == "script") then
-			return Plater.db.profile.script_data
-			
-		elseif (scriptType == "hook") then
-			return Plater.db.profile.hook_data
-		end
-	end
-
-	--if the type of a scriptObject is unknown
-	function Plater.GetScriptType (scriptObject)
-		if (scriptObject.Hooks) then
-			return "hook"
-		elseif (scriptObject.SpellIds) then
-			return "script"
-		end
 	end
 
 	function Plater.DispatchCommReceivedMessageHookEvent(scriptUID, source, ...)
