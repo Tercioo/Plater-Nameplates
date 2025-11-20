@@ -6787,7 +6787,8 @@ end
 			--health cutoff (execute range) - don't show if the nameplate is the personal bar
 			if (HEALTHCUTOFF_AT_DATA.healthCutOffActive and not unitFrame.IsSelf and not unitFrame.PlayerCannotAttack) then
 				-- setup
-				if HEALTHCUTOFF_AT_DATA.healthCutOffValue and HEALTHCUTOFF_AT_DATA.healthCutOffValue ~= healthBar.healthCutOffValue then
+				if HEALTHCUTOFF_AT_DATA.healthCutOffValue and HEALTHCUTOFF_AT_DATA.healthCutOffValue ~= healthBar.healthCutOffValue and HEALTHCUTOFF_AT_DATA.healthCutOffValue > 0 then
+					print("lower active update", HEALTHCUTOFF_AT_DATA.healthCutOffValue)
 					healthBar.healthCutOff:ClearAllPoints()
 					healthBar.healthCutOff:SetSize (healthBar:GetHeight(), healthBar:GetHeight())
 					healthBar.healthCutOff:SetPoint ("center", healthBar, "left", healthBar:GetWidth() * HEALTHCUTOFF_AT_DATA.healthCutOffValue, 0)
@@ -6801,7 +6802,7 @@ end
 					
 					healthBar.healthCutOffValue = HEALTHCUTOFF_AT_DATA.healthCutOffValue
 				end
-				if HEALTHCUTOFF_AT_DATA.healthCutOffUpperValue and HEALTHCUTOFF_AT_DATA.healthCutOffUpperValue ~= healthBar.healthCutOffUpperValue then
+				if HEALTHCUTOFF_AT_DATA.healthCutOffUpperValue and HEALTHCUTOFF_AT_DATA.healthCutOffUpperValue ~= healthBar.healthCutOffUpperValue and HEALTHCUTOFF_AT_DATA.healthCutOffUpperValue < 1 then
 					healthBar.healthCutOffUpper:ClearAllPoints()
 					healthBar.healthCutOffUpper:SetSize (healthBar:GetHeight(), healthBar:GetHeight())
 					healthBar.healthCutOffUpper:SetPoint ("center", healthBar, "right", - (healthBar:GetWidth() * (1-HEALTHCUTOFF_AT_DATA.healthCutOffUpperValue)), 0)
@@ -6818,61 +6819,62 @@ end
 				
 				
 				if IS_WOW_PROJECT_MIDNIGHT then
-					--TODO Curve
-					--[[
-					local ExecuteCurve = C_CurveUtil.CreateColorCurve()
-					ExecuteCurve:SetType(Enum.LuaCurveType.Step)
-					ExecuteCurve:AddPoint(0  , CreateColor(0, 0, 0, 1)) -- Visible    0% -  19%
-					ExecuteCurve:AddPoint(0.2, CreateColor(0, 0, 0, 0)) -- Invisible 20% - 100%
-					local _,_,_,Alpha = UnitHealthPercentColor("target", ExecuteCurve):GetRGBA()
-					ExecuteAlertTexture:SetAlpha(Alpha)
-					]]--
-					
-					-- Curve in this case!
-					local _,_,_,lowerAlpha = UnitHealthPercentColor("target", HEALTHCUTOFF_AT_DATA.healthCutOffValue):GetRGBA()
-					local _,_,_,upperAlpha = UnitHealthPercentColor("target", HEALTHCUTOFF_AT_DATA.healthCutOffUpperValue):GetRGBA()
-					
-					--lower
-					healthBar.healthCutOff:Show()
-					if (not profile.health_cutoff_hide_divisor) then
-						healthBar.healthCutOff:SetAlpha(lowerAlpha)
+					if HEALTHCUTOFF_AT_DATA.healthCutOffValue and HEALTHCUTOFF_AT_DATA.healthCutOffValue > 0 then
+						local _,_,_,lowerAlpha = UnitHealthPercentColor(unitFrame [MEMBER_UNITID], HEALTHCUTOFF_AT_DATA.healthCutOffValueCurve):GetRGBA()
+						--lower
+						healthBar.healthCutOff:Show()
+						if (not profile.health_cutoff_hide_divisor) then
+							healthBar.healthCutOff:SetAlpha(lowerAlpha)
+						else
+							healthBar.healthCutOff:Hide()
+							healthBar.healthCutOff:SetAlpha(0)
+						end
+						
+						healthBar.executeRange:Show()
+						healthBar.executeRange:SetAlpha(lowerAlpha)
+						
+						if (profile.health_cutoff_extra_glow) then
+							healthBar.ExecuteGlowUp:Show()
+							healthBar.ExecuteGlowDown:Show()
+							healthBar.ExecuteGlowUp:SetAlpha(lowerAlpha)
+							healthBar.ExecuteGlowDown:SetAlpha(lowerAlpha)
+						else
+							healthBar.ExecuteGlowUp:Hide()
+							healthBar.ExecuteGlowDown:Hide()
+						end
 					else
 						healthBar.healthCutOff:Hide()
-						healthBar.healthCutOff:SetAlpha(0)
-					end
-					
-					healthBar.executeRange:Show()
-					healthBar.executeRange:SetAlpha(lowerAlpha)
-					
-					if (profile.health_cutoff_extra_glow) then
-						healthBar.ExecuteGlowUp:Show()
-						healthBar.ExecuteGlowDown:Show()
-						healthBar.ExecuteGlowUp:SetAlpha(lowerAlpha)
-						healthBar.ExecuteGlowDown:SetAlpha(lowerAlpha)
-					else
+						healthBar.executeRange:Hide()
 						healthBar.ExecuteGlowUp:Hide()
 						healthBar.ExecuteGlowDown:Hide()
 					end
-					
-					
-					--upper
-					healthBar.healthCutOffUpper:Show()
-					if (not profile.health_cutoff_hide_divisor) then
-						healthBar.healthCutOffUpper:SetAlpha(lowerAlpha)
+						
+					if HEALTHCUTOFF_AT_DATA.healthCutOffUpperValue and HEALTHCUTOFF_AT_DATA.healthCutOffUpperValue < 1 then
+						--upper
+						local _,_,_,upperAlpha = UnitHealthPercentColor(unitFrame [MEMBER_UNITID], HEALTHCUTOFF_AT_DATA.healthCutOffUpperValueCurve):GetRGBA()
+						healthBar.healthCutOffUpper:Show()
+						if (not profile.health_cutoff_hide_divisor) then
+							healthBar.healthCutOffUpper:SetAlpha(upperAlpha)
+						else
+							healthBar.healthCutOffUpper:Hide()
+							healthBar.healthCutOffUpper:SetAlpha(0)
+						end
+						
+						healthBar.executeRangeUpper:Show()
+						healthBar.executeRangeUpper:SetAlpha(upperAlpha)
+						
+						if (profile.health_cutoff_extra_glow) then
+							healthBar.ExecuteGlowUpperUp:Show()
+							healthBar.ExecuteGlowUpperDown:Show()
+							healthBar.ExecuteGlowUpperUp:SetAlpha(upperAlpha)
+							healthBar.ExecuteGlowUpperDown:SetAlpha(upperAlpha)
+						else
+							healthBar.ExecuteGlowUpperUp:Hide()
+							healthBar.ExecuteGlowUpperDown:Hide()
+						end
 					else
 						healthBar.healthCutOffUpper:Hide()
-						healthBar.healthCutOffUpper:SetAlpha(0)
-					end
-					
-					healthBar.executeRangeUpper:Show()
-					healthBar.executeRangeUpper:SetAlpha(lowerAlpha)
-					
-					if (profile.health_cutoff_extra_glow) then
-						healthBar.ExecuteGlowUpperUp:Show()
-						healthBar.ExecuteGlowUpperDown:Show()
-						healthBar.ExecuteGlowUpperUp:SetAlpha(lowerAlpha)
-						healthBar.ExecuteGlowUpperDown:SetAlpha(lowerAlpha)
-					else
+						healthBar.executeRangeUpper:Hide()
 						healthBar.ExecuteGlowUpperUp:Hide()
 						healthBar.ExecuteGlowUpperDown:Hide()
 					end
@@ -11162,8 +11164,8 @@ end
 			HEALTHCUTOFF_AT_DATA.healthCutOffUpperValue = tonumber (healthAmountUpper) or 1.1
 			HEALTHCUTOFF_AT_DATA.healthCutOffUpperValueCurve = C_CurveUtil.CreateColorCurve()
 			HEALTHCUTOFF_AT_DATA.healthCutOffUpperValueCurve:SetType(Enum.LuaCurveType.Step)
-			HEALTHCUTOFF_AT_DATA.healthCutOffUpperValueCurve:AddPoint(0  , CreateColor(0, 0, 0, 0)) -- Invisible    0% -  89%
-			HEALTHCUTOFF_AT_DATA.healthCutOffUpperValueCurve:AddPoint(tonumber (healthAmountUpper) or 1.1, CreateColor(0, 0, 0, 1)) -- Invisible 90% - 100%
+			HEALTHCUTOFF_AT_DATA.healthCutOffUpperValueCurve:AddPoint(1  , CreateColor(0, 0, 0, 1)) -- Visible    90% -  100%
+			HEALTHCUTOFF_AT_DATA.healthCutOffUpperValueCurve:AddPoint(tonumber (healthAmountUpper) or 1.1, CreateColor(0, 0, 0, 0)) -- Invisible 0% - 89%
 		else
 			HEALTHCUTOFF_AT_DATA.healthCutOffValue = tonumber (healthAmountLower) or -0.1
 			HEALTHCUTOFF_AT_DATA.healthCutOffUpperValue = tonumber (healthAmountUpper) or 1.1
