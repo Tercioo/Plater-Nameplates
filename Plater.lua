@@ -432,9 +432,10 @@ Plater.AnchorNamesByPhraseId = {
 	--store if the no combat alpha is enabled
 	local DB_NOT_COMBAT_ALPHA_ENABLED
 	
-	local DB_USE_HEALTHCUTOFF = false
-	local DB_HEALTHCUTOFF_AT = 0.2
-	local DB_HEALTHCUTOFF_AT_UPPER = 0.8
+	local HEALTHCUTOFF_AT_DATA = {}
+	HEALTHCUTOFF_AT_DATA.healthCutOffActive = false
+	HEALTHCUTOFF_AT_DATA.healthCutOffValue = 0.2
+	HEALTHCUTOFF_AT_DATA.healthCutOffUpperValue = 0.8
 	
 	--store translit option
 	local DB_USE_NAME_TRANSLIT = false
@@ -3061,6 +3062,16 @@ Plater.AnchorNamesByPhraseId = {
 				healthCutOff:Hide()
 				healthBar.healthCutOff = healthCutOff
 				healthBar.ExecuteRangeHealthCutOff = healthCutOff --alias for scripting
+				
+				local healthCutOffUpper = healthBar:CreateTexture (nil, "overlay")
+				healthCutOffUpper:SetDrawLayer ("overlay", 7)
+				healthCutOffUpper:SetTexture ([[Interface\AddOns\Plater\images\health_bypass_indicator]])
+
+				healthCutOffUpper:SetBlendMode ("ADD")
+				healthCutOffUpper:Hide()
+				healthBar.healthCutOffUpper = healthCutOffUpper
+				healthBar.ExecuteRangeHealthCutOffUpper = healthCutOffUpper --alias for scripting
+				
 			
 				local cutoffAnimationOnPlay = function()
 					healthCutOff:Show()
@@ -3092,6 +3103,13 @@ Plater.AnchorNamesByPhraseId = {
 				healthBar.executeRange = executeRange
 				healthBar.ExecuteRangeBar = executeRange --alias for scripting
 				executeRange:Hide()
+				
+				local executeRangeUpper = healthBar:CreateTexture (nil, "border")
+				executeRangeUpper:SetTexture ([[Interface\AddOns\Plater\images\execute_bar]])
+				PixelUtil.SetPoint (executeRangeUpper, "left", healthBar, "left", 0, 0)
+				healthBar.executeRangeUpper = executeRange
+				healthBar.ExecuteRangeUpperBar = executeRangeUpper --alias for scripting
+				executeRangeUpper:Hide()
 
 				--two extra execute glow placed outside the healthbar (disabled by default)
 				local executeGlowUp = healthBar:CreateTexture (nil, "overlay")
@@ -3114,6 +3132,26 @@ Plater.AnchorNamesByPhraseId = {
 				PixelUtil.SetPoint (executeGlowDown, "topleft", healthBar, "bottomleft", 0, 0)
 				healthBar.ExecuteGlowDown = executeGlowDown
 				
+				local executeGlowUpperUp = healthBar:CreateTexture (nil, "overlay")
+				executeGlowUpperUp:SetTexture ([[Interface\AddOns\Plater\images\blue_neon]])
+				executeGlowUpperUp:SetTexCoord (0, 1, 0, 0.5)
+				executeGlowUpperUp:SetHeight (32)		
+				executeGlowUpperUp:SetBlendMode ("ADD")
+				executeGlowUpperUp:Hide()
+				PixelUtil.SetPoint (executeGlowUpperUp, "bottomright", healthBar, "topright", 0, 0)
+				PixelUtil.SetPoint (executeGlowUpperUp, "bottomleft", healthBar, "topleft", 0, 0)
+				healthBar.ExecuteGlowUpperUp = executeGlowUpperUp
+				
+				local executeGlowUpperDown = healthBar:CreateTexture (nil, "overlay")
+				executeGlowUpperDown:SetTexture ([[Interface\AddOns\Plater\images\blue_neon]])
+				executeGlowUpperDown:SetTexCoord (0, 1, 0.5, 1)
+				executeGlowUpperDown:SetHeight (32)
+				executeGlowUpperDown:SetBlendMode ("ADD")
+				executeGlowUpperDown:Hide()
+				PixelUtil.SetPoint (executeGlowUpperDown, "topright", healthBar, "bottomright", 0, 0)
+				PixelUtil.SetPoint (executeGlowUpperDown, "topleft", healthBar, "bottomleft", 0, 0)
+				healthBar.ExecuteGlowUpperDown = executeGlowUpperDown
+				
 				local executeGlowAnimationOnPlay = function (self)
 					self:GetParent():Show()
 				end
@@ -3128,6 +3166,14 @@ Plater.AnchorNamesByPhraseId = {
 				executeGlowDown.ShowAnimation = DF:CreateAnimationHub (executeGlowDown, executeGlowAnimationOnPlay, executeGlowAnimationOnStop)
 				DF:CreateAnimation (executeGlowDown.ShowAnimation, "Scale", 1, .2, 1, .1, 1, 1.2, "top", 0, 0)
 				DF:CreateAnimation (executeGlowDown.ShowAnimation, "Scale", 1, .2, 1, 1.1, 1, 1)
+				
+				executeGlowUpperUp.ShowAnimation = DF:CreateAnimationHub (executeGlowUpperUp, executeGlowAnimationOnPlay, executeGlowAnimationOnStop)
+				DF:CreateAnimation (executeGlowUpperUp.ShowAnimation, "Scale", 1, .2, 1, .1, 1, 1.2, "bottom", 0, 0)
+				DF:CreateAnimation (executeGlowUpperUp.ShowAnimation, "Scale", 1, .2, 1, 1, 1, 1)
+				
+				executeGlowUpperDown.ShowAnimation = DF:CreateAnimationHub (executeGlowUpperDown, executeGlowAnimationOnPlay, executeGlowAnimationOnStop)
+				DF:CreateAnimation (executeGlowUpperDown.ShowAnimation, "Scale", 1, .2, 1, .1, 1, 1.2, "top", 0, 0)
+				DF:CreateAnimation (executeGlowUpperDown.ShowAnimation, "Scale", 1, .2, 1, 1.1, 1, 1)
 
 			--> create the raid target widgets
 				--raid target inside the health bar
@@ -3957,7 +4003,9 @@ Plater.AnchorNamesByPhraseId = {
 			
 			--hide execute indicators
 			healthBar.healthCutOff:Hide()
+			healthBar.healthCutOffUpper:Hide()
 			healthBar.executeRange:Hide()
+			healthBar.executeRangeUpper:Hide()
 			healthBar.ExecuteGlowUp:Hide()
 			healthBar.ExecuteGlowDown:Hide()
 			
@@ -6737,78 +6785,162 @@ end
 			local actorTypeDBConfig = DB_PLATE_CONFIG [tickFrame.actorType]
 			
 			--health cutoff (execute range) - don't show if the nameplate is the personal bar
-			if (DB_USE_HEALTHCUTOFF and not unitFrame.IsSelf and not unitFrame.PlayerCannotAttack) then
-				local healthPercent = (healthBar.currentHealth or 1) / (healthBar.currentHealthMax or 1)
-				if (healthPercent <= DB_HEALTHCUTOFF_AT) then
-					if (not healthBar.healthCutOff:IsShown() or healthBar.healthCutOff.isUpper) then
-						healthBar.healthCutOff.isUpper = false
-						healthBar.healthCutOff.isLower = true
-						healthBar.healthCutOff:ClearAllPoints()
-						healthBar.healthCutOff:SetSize (healthBar:GetHeight(), healthBar:GetHeight())
-						healthBar.healthCutOff:SetPoint ("center", healthBar, "left", healthBar:GetWidth() * DB_HEALTHCUTOFF_AT, 0)
-						
-						if (not profile.health_cutoff_hide_divisor) then
-							healthBar.healthCutOff:Show()
-							healthBar.healthCutOff.ShowAnimation:Play()
-						else
-							healthBar.healthCutOff:Show()
-							healthBar.healthCutOff:SetAlpha (0)
-						end
-
-						healthBar.executeRange:Show()
-						healthBar.executeRange:SetTexCoord (0, DB_HEALTHCUTOFF_AT, 0, 1)
-						healthBar.executeRange:SetAlpha (0.2)
-						healthBar.executeRange:SetVertexColor (.3, .3, .3)
-						healthBar.executeRange:SetHeight (healthBar:GetHeight())
-						healthBar.executeRange:SetPoint ("right", healthBar.healthCutOff, "center")
-						healthBar.executeRange:SetPoint ("left", healthBar, "left")
-						
-						if (profile.health_cutoff_extra_glow) then
-							healthBar.ExecuteGlowUp.ShowAnimation:Play()
-							healthBar.ExecuteGlowDown.ShowAnimation:Play()
-						end
-					end
+			if (HEALTHCUTOFF_AT_DATA.healthCutOffActive and not unitFrame.IsSelf and not unitFrame.PlayerCannotAttack) then
+				-- setup
+				if HEALTHCUTOFF_AT_DATA.healthCutOffValue and HEALTHCUTOFF_AT_DATA.healthCutOffValue ~= healthBar.healthCutOffValue then
+					healthBar.healthCutOff:ClearAllPoints()
+					healthBar.healthCutOff:SetSize (healthBar:GetHeight(), healthBar:GetHeight())
+					healthBar.healthCutOff:SetPoint ("center", healthBar, "left", healthBar:GetWidth() * HEALTHCUTOFF_AT_DATA.healthCutOffValue, 0)
 					
-					unitFrame.InExecuteRange = true
-				elseif (healthPercent > DB_HEALTHCUTOFF_AT_UPPER and healthPercent < 0.999) then
-					if (not healthBar.healthCutOff:IsShown() or healthBar.healthCutOff.isLower) then
-						healthBar.healthCutOff.isUpper = true
-						healthBar.healthCutOff.isLower = false
-						healthBar.healthCutOff:ClearAllPoints()
-						healthBar.healthCutOff:SetSize (healthBar:GetHeight(), healthBar:GetHeight())
-						healthBar.healthCutOff:SetPoint ("center", healthBar, "right", - (healthBar:GetWidth() * (1-DB_HEALTHCUTOFF_AT_UPPER)), 0)
-						
-						if (not profile.health_cutoff_hide_divisor) then
-							healthBar.healthCutOff:Show()
-							healthBar.healthCutOff.ShowAnimation:Play()
-						else
-							healthBar.healthCutOff:Show()
-							healthBar.healthCutOff:SetAlpha (0)
-						end
-
-						healthBar.executeRange:Show()
-						healthBar.executeRange:SetTexCoord (0, 1-DB_HEALTHCUTOFF_AT_UPPER, 0, 1)
-						healthBar.executeRange:SetAlpha (0.2)
-						healthBar.executeRange:SetVertexColor (.3, .3, .3)
-						healthBar.executeRange:SetHeight (healthBar:GetHeight())
-						healthBar.executeRange:SetPoint ("left", healthBar.healthCutOff, "center")
-						healthBar.executeRange:SetPoint ("right", healthBar, "right")
-						
-						if (profile.health_cutoff_extra_glow) then
-							healthBar.ExecuteGlowUp.ShowAnimation:Play()
-							healthBar.ExecuteGlowDown.ShowAnimation:Play()
-						end
-					end
+					healthBar.executeRange:SetTexCoord (0, HEALTHCUTOFF_AT_DATA.healthCutOffValue, 0, 1)
+					healthBar.executeRange:SetAlpha (0.2)
+					healthBar.executeRange:SetVertexColor (.3, .3, .3)
+					healthBar.executeRange:SetHeight (healthBar:GetHeight())
+					healthBar.executeRange:SetPoint ("right", healthBar.healthCutOff, "center")
+					healthBar.executeRange:SetPoint ("left", healthBar, "left")
 					
-					unitFrame.InExecuteRange = true
-				else
-					healthBar.healthCutOff:Hide()
-					healthBar.executeRange:Hide()
-					healthBar.ExecuteGlowUp:Hide()
-					healthBar.ExecuteGlowDown:Hide()
-					
-					unitFrame.InExecuteRange = false
+					healthBar.healthCutOffValue = HEALTHCUTOFF_AT_DATA.healthCutOffValue
 				end
+				if HEALTHCUTOFF_AT_DATA.healthCutOffUpperValue and HEALTHCUTOFF_AT_DATA.healthCutOffUpperValue ~= healthBar.healthCutOffUpperValue then
+					healthBar.healthCutOffUpper:ClearAllPoints()
+					healthBar.healthCutOffUpper:SetSize (healthBar:GetHeight(), healthBar:GetHeight())
+					healthBar.healthCutOffUpper:SetPoint ("center", healthBar, "right", - (healthBar:GetWidth() * (1-HEALTHCUTOFF_AT_DATA.healthCutOffUpperValue)), 0)
+					
+					healthBar.executeRangeUpper:SetTexCoord (0, 1-HEALTHCUTOFF_AT_DATA.healthCutOffUpperValue, 0, 1)
+					healthBar.executeRangeUpper:SetAlpha (0.2)
+					healthBar.executeRangeUpper:SetVertexColor (.3, .3, .3)
+					healthBar.executeRangeUpper:SetHeight (healthBar:GetHeight())
+					healthBar.executeRangeUpper:SetPoint ("left", healthBar.healthCutOff, "center")
+					healthBar.executeRangeUpper:SetPoint ("right", healthBar, "right")
+					
+					healthBar.healthCutOffUpperValue = HEALTHCUTOFF_AT_DATA.healthCutOffUpperValue
+				end
+				
+				
+				if IS_WOW_PROJECT_MIDNIGHT then
+					--TODO Curve
+					--[[
+					local ExecuteCurve = C_CurveUtil.CreateColorCurve()
+					ExecuteCurve:SetType(Enum.LuaCurveType.Step)
+					ExecuteCurve:AddPoint(0  , CreateColor(0, 0, 0, 1)) -- Visible    0% -  19%
+					ExecuteCurve:AddPoint(0.2, CreateColor(0, 0, 0, 0)) -- Invisible 20% - 100%
+					local _,_,_,Alpha = UnitHealthPercentColor("target", ExecuteCurve):GetRGBA()
+					ExecuteAlertTexture:SetAlpha(Alpha)
+					]]--
+					
+					-- Curve in this case!
+					local _,_,_,lowerAlpha = UnitHealthPercentColor("target", HEALTHCUTOFF_AT_DATA.healthCutOffValue):GetRGBA()
+					local _,_,_,upperAlpha = UnitHealthPercentColor("target", HEALTHCUTOFF_AT_DATA.healthCutOffUpperValue):GetRGBA()
+					
+					--lower
+					healthBar.healthCutOff:Show()
+					if (not profile.health_cutoff_hide_divisor) then
+						healthBar.healthCutOff:SetAlpha(lowerAlpha)
+					else
+						healthBar.healthCutOff:Hide()
+						healthBar.healthCutOff:SetAlpha(0)
+					end
+					
+					healthBar.executeRange:Show()
+					healthBar.executeRange:SetAlpha(lowerAlpha)
+					
+					if (profile.health_cutoff_extra_glow) then
+						healthBar.ExecuteGlowUp:Show()
+						healthBar.ExecuteGlowDown:Show()
+						healthBar.ExecuteGlowUp:SetAlpha(lowerAlpha)
+						healthBar.ExecuteGlowDown:SetAlpha(lowerAlpha)
+					else
+						healthBar.ExecuteGlowUp:Hide()
+						healthBar.ExecuteGlowDown:Hide()
+					end
+					
+					
+					--upper
+					healthBar.healthCutOffUpper:Show()
+					if (not profile.health_cutoff_hide_divisor) then
+						healthBar.healthCutOffUpper:SetAlpha(lowerAlpha)
+					else
+						healthBar.healthCutOffUpper:Hide()
+						healthBar.healthCutOffUpper:SetAlpha(0)
+					end
+					
+					healthBar.executeRangeUpper:Show()
+					healthBar.executeRangeUpper:SetAlpha(lowerAlpha)
+					
+					if (profile.health_cutoff_extra_glow) then
+						healthBar.ExecuteGlowUpperUp:Show()
+						healthBar.ExecuteGlowUpperDown:Show()
+						healthBar.ExecuteGlowUpperUp:SetAlpha(lowerAlpha)
+						healthBar.ExecuteGlowUpperDown:SetAlpha(lowerAlpha)
+					else
+						healthBar.ExecuteGlowUpperUp:Hide()
+						healthBar.ExecuteGlowUpperDown:Hide()
+					end
+					
+				else
+					local healthPercent = (healthBar.currentHealth or 1) / (healthBar.currentHealthMax or 1)
+					if (healthPercent <= HEALTHCUTOFF_AT_DATA.healthCutOffValue) then
+						if (not healthBar.healthCutOff:IsShown()) then
+							if (not profile.health_cutoff_hide_divisor) then
+								healthBar.healthCutOff:Show()
+								healthBar.healthCutOff.ShowAnimation:Play()
+							else
+								healthBar.healthCutOff:Show()
+								healthBar.healthCutOff:SetAlpha (0)
+							end
+
+							healthBar.executeRange:Show()
+							
+							if (profile.health_cutoff_extra_glow) then
+								healthBar.ExecuteGlowUp.ShowAnimation:Play()
+								healthBar.ExecuteGlowDown.ShowAnimation:Play()
+							end
+						end
+						
+						unitFrame.InExecuteRange = true
+					elseif (healthPercent > HEALTHCUTOFF_AT_DATA.healthCutOffUpperValue and healthPercent < 0.999) then
+						if (not healthBar.healthCutOff:IsShown()) then
+							if (not profile.health_cutoff_hide_divisor) then
+								healthBar.healthCutOffUpper:Show()
+								healthBar.healthCutOffUpper.ShowAnimation:Play()
+							else
+								healthBar.healthCutOffUpper:Show()
+								healthBar.healthCutOffUpper:SetAlpha (0)
+							end
+
+							healthBar.executeRangeUpper:Show()
+							
+							if (profile.health_cutoff_extra_glow) then
+								healthBar.ExecuteGlowUpperUp.ShowAnimation:Play()
+								healthBar.ExecuteGlowUpperDown.ShowAnimation:Play()
+							end
+						end
+						
+						unitFrame.InExecuteRange = true
+					else
+						healthBar.healthCutOff:Hide()
+						healthBar.executeRange:Hide()
+						healthBar.healthCutOffUpper:Hide()
+						healthBar.executeRangeUpper:Hide()
+						healthBar.ExecuteGlowUp:Hide()
+						healthBar.ExecuteGlowDown:Hide()
+						healthBar.ExecuteGlowUpperUp:Hide()
+						healthBar.ExecuteGlowUpperDown:Hide()
+						
+						unitFrame.InExecuteRange = false
+					end
+				end
+			else
+				healthBar.healthCutOff:Hide()
+				healthBar.healthCutOffUpper:Hide()
+				healthBar.executeRange:Hide()
+				healthBar.executeRangeUpper:Hide()
+				healthBar.ExecuteGlowUp:Hide()
+				healthBar.ExecuteGlowDown:Hide()
+				healthBar.ExecuteGlowUpperUp:Hide()
+				healthBar.ExecuteGlowUpperDown:Hide()
+				
+				unitFrame.InExecuteRange = false
 			end
 			
 			local isSoftInteract = UnitIsUnit(tickFrame.unit, "softinteract")
@@ -11019,9 +11151,23 @@ end
 	--set if Plater will check for the execute range and what percent of life is require to enter in the execute range
 	--healthAmount is a floor com zero to one, example: 25% is 0.25
 	function Plater.SetExecuteRange (isExecuteEnabled, healthAmountLower, healthAmountUpper)
-		DB_USE_HEALTHCUTOFF = isExecuteEnabled and not IS_WOW_PROJECT_MIDNIGHT
-		DB_HEALTHCUTOFF_AT = tonumber (healthAmountLower) or -0.1
-		DB_HEALTHCUTOFF_AT_UPPER = tonumber (healthAmountUpper) or 1.1
+		HEALTHCUTOFF_AT_DATA.healthCutOffActive = isExecuteEnabled
+		if IS_WOW_PROJECT_MIDNIGHT then
+			HEALTHCUTOFF_AT_DATA.healthCutOffValue = tonumber (healthAmountLower) or -0.1
+			HEALTHCUTOFF_AT_DATA.healthCutOffValueCurve = C_CurveUtil.CreateColorCurve()
+			HEALTHCUTOFF_AT_DATA.healthCutOffValueCurve:SetType(Enum.LuaCurveType.Step)
+			HEALTHCUTOFF_AT_DATA.healthCutOffValueCurve:AddPoint(0  , CreateColor(0, 0, 0, 1)) -- Visible    0% -  19%
+			HEALTHCUTOFF_AT_DATA.healthCutOffValueCurve:AddPoint(tonumber (healthAmountLower) or -0.1, CreateColor(0, 0, 0, 0)) -- Invisible 20% - 100%
+			
+			HEALTHCUTOFF_AT_DATA.healthCutOffUpperValue = tonumber (healthAmountUpper) or 1.1
+			HEALTHCUTOFF_AT_DATA.healthCutOffUpperValueCurve = C_CurveUtil.CreateColorCurve()
+			HEALTHCUTOFF_AT_DATA.healthCutOffUpperValueCurve:SetType(Enum.LuaCurveType.Step)
+			HEALTHCUTOFF_AT_DATA.healthCutOffUpperValueCurve:AddPoint(0  , CreateColor(0, 0, 0, 0)) -- Invisible    0% -  89%
+			HEALTHCUTOFF_AT_DATA.healthCutOffUpperValueCurve:AddPoint(tonumber (healthAmountUpper) or 1.1, CreateColor(0, 0, 0, 1)) -- Invisible 90% - 100%
+		else
+			HEALTHCUTOFF_AT_DATA.healthCutOffValue = tonumber (healthAmountLower) or -0.1
+			HEALTHCUTOFF_AT_DATA.healthCutOffUpperValue = tonumber (healthAmountUpper) or 1.1
+		end
 	end
 	
 	--return the name of the unit guild
