@@ -2863,8 +2863,10 @@ Plater.AnchorNamesByPhraseId = {
 				newUnitFrame.baseFrameLevel = newUnitFrame:GetFrameLevel()
 
 				plateFrame.unitFrame = newUnitFrame
-				plateFrame.unitFrame:EnableMouse(false)
-				
+
+				local unitFrame = plateFrame.unitFrame
+
+				unitFrame:EnableMouse(false)
 
 				---@class plateanchorframe : frame
 				
@@ -2908,17 +2910,17 @@ Plater.AnchorNamesByPhraseId = {
 				
 				--set proprieties
 				plateFrame.Plater = true
-				plateFrame.unitFrame.Plater = true
+				unitFrame.Plater = true
 				
-				plateFrame.unitFrame.PlateFrame = plateFrame
+				unitFrame.PlateFrame = plateFrame
 				plateFrame.isNamePlate = true
-				plateFrame.unitFrame.isNamePlate = true
-				plateFrame.unitFrame.IsUnitNameplate = true
+				unitFrame.isNamePlate = true
+				unitFrame.IsUnitNameplate = true
 				
 				plateFrame.NameAnchor = 0
-				plateFrame.unitFrame.healthBar.isNamePlate = true
+				unitFrame.healthBar.isNamePlate = true
 			
-			plateFrame.unitFrame.RefreshID = 0
+			unitFrame.RefreshID = 0
 			
 			-- "PlaterMainAuraIcon"
 			-- "PlaterSecondaryAuraIcon"
@@ -2936,25 +2938,25 @@ Plater.AnchorNamesByPhraseId = {
 
 			--> buff frames
 				--main buff frame
-				local buffFrame = CreateFrame ("frame", plateFrame.unitFrame:GetName() .. "BuffFrame1", plateFrame.unitFrame, BackdropTemplateMixin and "BackdropTemplate")
+				local buffFrame = CreateFrame ("frame", unitFrame:GetName() .. "BuffFrame1", unitFrame, BackdropTemplateMixin and "BackdropTemplate")
 				buffFrame.amountAurasShown = 0
 				buffFrame.PlaterBuffList = {}
 				buffFrame.isNameplate = true
-				buffFrame.unitFrame = plateFrame.unitFrame --used on resource frame anchor update
-				buffFrame.healthBar = plateFrame.unitFrame.healthBar
+				buffFrame.unitFrame = unitFrame --used on resource frame anchor update
+				buffFrame.healthBar = unitFrame.healthBar
 				buffFrame.AuraCache = {}
-				plateFrame.unitFrame.BuffFrame = buffFrame
+				unitFrame.BuffFrame = buffFrame
 
 				--secondary buff frame
-				local buffFrame2 = CreateFrame ("frame", plateFrame.unitFrame:GetName() .. "BuffFrame2", plateFrame.unitFrame, BackdropTemplateMixin and "BackdropTemplate")
-				buffFrame2 = CreateFrame ("frame", plateFrame.unitFrame:GetName() .. "BuffFrame2", plateFrame.unitFrame, BackdropTemplateMixin and "BackdropTemplate")
+				local buffFrame2 = CreateFrame ("frame", unitFrame:GetName() .. "BuffFrame2", unitFrame, BackdropTemplateMixin and "BackdropTemplate")
+				buffFrame2 = CreateFrame ("frame", unitFrame:GetName() .. "BuffFrame2", unitFrame, BackdropTemplateMixin and "BackdropTemplate")
 				buffFrame2.amountAurasShown = 0
 				buffFrame2.PlaterBuffList = {}
 				buffFrame2.isNameplate = true
-				buffFrame2.unitFrame = plateFrame.unitFrame
-				buffFrame2.healthBar = plateFrame.unitFrame.healthBar
+				buffFrame2.unitFrame = unitFrame
+				buffFrame2.healthBar = unitFrame.healthBar
 				buffFrame2.AuraCache = {}
-				plateFrame.unitFrame.BuffFrame2 = buffFrame2
+				unitFrame.BuffFrame2 = buffFrame2
 			
 			--> identify aura containers
 				buffFrame.Name = "Main" --aura frame 1
@@ -2965,15 +2967,15 @@ Plater.AnchorNamesByPhraseId = {
 			buffFrame2.BuffFrame1 = buffFrame
 			
 			--> unit aura cache
-			plateFrame.unitFrame.AuraCache = {}
-			plateFrame.unitFrame.GhostAuraCache = {}
-			plateFrame.unitFrame.ExtraAuraCache = {}
+			unitFrame.AuraCache = {}
+			unitFrame.GhostAuraCache = {}
+			unitFrame.ExtraAuraCache = {}
 			
-			local healthBar = plateFrame.unitFrame.healthBar
+			local healthBar = unitFrame.healthBar
 			
 			--cache the unit frame within the health and cast bars, this avoid GetParent() calls
-			healthBar.unitFrame = plateFrame.unitFrame
-			plateFrame.unitFrame.castBar.unitFrame = plateFrame.unitFrame
+			healthBar.unitFrame = unitFrame
+			unitFrame.castBar.unitFrame = unitFrame
 			
 			--> pre create the scale animation used on animations for spell hits
 			Plater.CreateScaleAnimation (plateFrame)
@@ -2981,7 +2983,7 @@ Plater.AnchorNamesByPhraseId = {
 			Plater.CreateAlphaAnimation (plateFrame)
 			
 			--store custom indicators
-			plateFrame.unitFrame.CustomIndicators = {}
+			unitFrame.CustomIndicators = {}
 			
 			--> cliclable area debug
 				plateFrame.debugAreaTexture = plateFrame:CreateTexture (nil, "background")
@@ -3004,41 +3006,41 @@ Plater.AnchorNamesByPhraseId = {
 			
 			--> target indicators
 				--left and right target indicators
-				plateFrame.unitFrame.TargetTextures2Sides = {}
-				plateFrame.unitFrame.TargetTextures4Sides = {}
+				unitFrame.TargetTextures2Sides = {}
+				unitFrame.TargetTextures4Sides = {}
 				for i = 1, 2 do
 					local targetTexture = healthBar:CreateTexture (nil, "overlay")
 					targetTexture:SetDrawLayer ("overlay", 7)
-					tinsert (plateFrame.unitFrame.TargetTextures2Sides, targetTexture)
+					tinsert (unitFrame.TargetTextures2Sides, targetTexture)
 				end
 				for i = 1, 4 do
 					local targetTexture = healthBar:CreateTexture (nil, "overlay")
 					targetTexture:SetDrawLayer ("overlay", 7)
-					tinsert (plateFrame.unitFrame.TargetTextures4Sides, targetTexture)
+					tinsert (unitFrame.TargetTextures4Sides, targetTexture)
 				end
 				
 				--two extra target glow placed outside the healthbar, one above and another below the health bar
-				local TargetNeonUp = plateFrame.unitFrame:CreateTexture (nil, "overlay")
+				local TargetNeonUp = unitFrame:CreateTexture (nil, "overlay")
 				TargetNeonUp:SetDrawLayer ("overlay", 7)
 				TargetNeonUp:SetBlendMode ("ADD")
 				TargetNeonUp:Hide()
 				plateFrame.TargetNeonUp = TargetNeonUp
-				plateFrame.unitFrame.TargetNeonUp = TargetNeonUp
+				unitFrame.TargetNeonUp = TargetNeonUp
 				
-				local TargetNeonDown = plateFrame.unitFrame:CreateTexture (nil, "overlay")
+				local TargetNeonDown = unitFrame:CreateTexture (nil, "overlay")
 				TargetNeonDown:SetDrawLayer ("overlay", 7)
 				TargetNeonDown:SetBlendMode ("ADD")
 				TargetNeonDown:SetTexCoord (0, 1, 1, 0)
 				TargetNeonDown:Hide()
 				plateFrame.TargetNeonDown = TargetNeonDown
-				plateFrame.unitFrame.TargetNeonDown = TargetNeonDown
+				unitFrame.TargetNeonDown = TargetNeonDown
 				
 			--> target overlay (the texture added above the nameplate when the unit is selected)
-				plateFrame.unitFrame.targetOverlayTexture = healthBar:CreateTexture (nil, "artwork")
-				plateFrame.unitFrame.targetOverlayTexture:SetDrawLayer ("artwork", 2)
-				plateFrame.unitFrame.targetOverlayTexture:SetBlendMode ("ADD")
-				plateFrame.unitFrame.targetOverlayTexture:SetAllPoints()
-				plateFrame.unitFrame.targetOverlayTexture:Hide()
+				unitFrame.targetOverlayTexture = healthBar:CreateTexture (nil, "artwork")
+				unitFrame.targetOverlayTexture:SetDrawLayer ("artwork", 2)
+				unitFrame.targetOverlayTexture:SetBlendMode ("ADD")
+				unitFrame.targetOverlayTexture:SetAllPoints()
+				unitFrame.targetOverlayTexture:Hide()
 			
 			--> create the highlight texture (when the mouse passes over the nameplate and receives a highlight)
 				Plater.CreateHighlightNameplate (plateFrame)
@@ -3135,9 +3137,9 @@ Plater.AnchorNamesByPhraseId = {
 				healthBar.ExtraRaidMark = raidTarget --alias for scripting
 
 				--raid target outside the health bar
-				plateFrame.unitFrame.PlaterRaidTargetFrame = CreateFrame ("frame", nil, plateFrame.unitFrame, BackdropTemplateMixin and "BackdropTemplate")
-				--plateFrame.unitFrame.PlaterRaidTargetFrame = CreateFrame ("frame", nil, plateFrame.unitFrame.healthBar, BackdropTemplateMixin and "BackdropTemplate")
-				local targetFrame = plateFrame.unitFrame.PlaterRaidTargetFrame
+				unitFrame.PlaterRaidTargetFrame = CreateFrame ("frame", nil, unitFrame, BackdropTemplateMixin and "BackdropTemplate")
+				--unitFrame.PlaterRaidTargetFrame = CreateFrame ("frame", nil, unitFrame.healthBar, BackdropTemplateMixin and "BackdropTemplate")
+				local targetFrame = unitFrame.PlaterRaidTargetFrame
 				targetFrame:SetSize (22, 22)
 				PixelUtil.SetPoint (targetFrame, "right", healthBar, "left", -15, 0)
 				
@@ -3160,17 +3162,17 @@ Plater.AnchorNamesByPhraseId = {
 			--> tick frames (these frames are used for OnUpdate scripts)
 				local onTickFrame = CreateFrame ("frame", nil, plateFrame, BackdropTemplateMixin and "BackdropTemplate")
 				plateFrame.OnTickFrame = onTickFrame
-				onTickFrame.unit = plateFrame [MEMBER_UNITID] --or plateFrame.unitFrame [MEMBER_UNITID]
+				onTickFrame.unit = plateFrame [MEMBER_UNITID] --or unitFrame [MEMBER_UNITID]
 				onTickFrame.HealthBar = healthBar
 				onTickFrame.PlateFrame = plateFrame
-				onTickFrame.unitFrame = plateFrame.unitFrame
-				onTickFrame.BuffFrame = plateFrame.unitFrame.BuffFrame
-				onTickFrame.BuffFrame2 = plateFrame.unitFrame.BuffFrame2
+				onTickFrame.unitFrame = unitFrame
+				onTickFrame.BuffFrame = unitFrame.BuffFrame
+				onTickFrame.BuffFrame2 = unitFrame.BuffFrame2
 				
 				
 				--> create a second castbar
-				local castBar2 = DF:CreateCastBar (plateFrame.unitFrame, "$parentCastBar2")
-				plateFrame.unitFrame.castBar2 = castBar2
+				local castBar2 = DF:CreateCastBar (unitFrame, "$parentCastBar2")
+				unitFrame.castBar2 = castBar2
 				castBar2.Icon:ClearAllPoints()
 				castBar2.Icon:SetPoint("right", castBar2, "left", -1, 0)
 
@@ -3183,28 +3185,28 @@ Plater.AnchorNamesByPhraseId = {
 				--does have a border but its alpha is zero by default
 				castBar2.FrameOverlay:SetBackdrop ({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
 				castBar2.FrameOverlay:SetBackdropBorderColor (1, 1, 1, 0)
-				castBar2:SetPoint("topleft", plateFrame.unitFrame.castBar, "bottomleft", 0, -2)
-				castBar2:SetPoint("topright", plateFrame.unitFrame.castBar, "bottomright", 0, -2)
+				castBar2:SetPoint("topleft", unitFrame.castBar, "bottomleft", 0, -2)
+				castBar2:SetPoint("topright", unitFrame.castBar, "bottomright", 0, -2)
 
 			
 			--> unit name
 				--regular name
-				plateFrame.unitFrame.unitName:SetParent (healthBar) --the name is parented to unitFrame in the framework, parent it to health bar
-				healthBar.unitName = plateFrame.unitFrame.unitName
+				unitFrame.unitName:SetParent (healthBar) --the name is parented to unitFrame in the framework, parent it to health bar
+				healthBar.unitName = unitFrame.unitName
 				healthBar.PlateFrame = plateFrame
-				plateFrame.unitName = plateFrame.unitFrame.unitName
-				plateFrame.CurrentUnitNameString = plateFrame.unitFrame.unitName
+				plateFrame.unitName = unitFrame.unitName
+				plateFrame.CurrentUnitNameString = unitFrame.unitName
 				healthBar.unitName:SetDrawLayer ("overlay", 7)
 				
 				--special name and title
-				local ActorNameSpecial = plateFrame.unitFrame:CreateFontString (nil, "artwork", "GameFontNormal")
-				plateFrame.unitFrame.ActorNameSpecial = ActorNameSpecial --alias for scripts
+				local ActorNameSpecial = unitFrame:CreateFontString (nil, "artwork", "GameFontNormal")
+				unitFrame.ActorNameSpecial = ActorNameSpecial --alias for scripts
 				plateFrame.ActorNameSpecial = ActorNameSpecial
 				PixelUtil.SetPoint (plateFrame.ActorNameSpecial, "center", plateFrame, "center", 0, 0)
 				plateFrame.ActorNameSpecial:Hide()
 				
-				local ActorTitleSpecial = plateFrame.unitFrame:CreateFontString (nil, "artwork", "GameFontNormal")
-				plateFrame.unitFrame.ActorTitleSpecial = ActorTitleSpecial --alias for scripts
+				local ActorTitleSpecial = unitFrame:CreateFontString (nil, "artwork", "GameFontNormal")
+				unitFrame.ActorTitleSpecial = ActorTitleSpecial --alias for scripts
 				plateFrame.ActorTitleSpecial = ActorTitleSpecial
 				PixelUtil.SetPoint (plateFrame.ActorTitleSpecial, "top", ActorNameSpecial, "bottom", 0, -2)
 				plateFrame.ActorTitleSpecial:Hide()
@@ -3242,15 +3244,15 @@ Plater.AnchorNamesByPhraseId = {
 					show_text = true,
 				}
 				
-				plateFrame.unitFrame.ExtraIconFrame = DF:CreateIconRow (plateFrame.unitFrame, "$parentExtraIconRow", options)
-				plateFrame.unitFrame.ExtraIconFrame:ClearIcons()
-				plateFrame.unitFrame.ExtraIconFrame.RefreshID = 0
-				plateFrame.unitFrame.ExtraIconFrame.AuraCache = {}
+				unitFrame.ExtraIconFrame = DF:CreateIconRow (unitFrame, "$parentExtraIconRow", options)
+				unitFrame.ExtraIconFrame:ClearIcons()
+				unitFrame.ExtraIconFrame.RefreshID = 0
+				unitFrame.ExtraIconFrame.AuraCache = {}
 				--> cache the extra icon frame inside the buff frame for speed
-				plateFrame.unitFrame.BuffFrame.ExtraIconFrame = plateFrame.unitFrame.ExtraIconFrame
+				unitFrame.BuffFrame.ExtraIconFrame = unitFrame.ExtraIconFrame
 			
 			--> Support for DBM and BigWigs Nameplate Auras
-				Plater.CreateBossModAuraFrame(plateFrame.unitFrame)
+				Plater.CreateBossModAuraFrame(unitFrame)
 			
 			--> 3D model frame
 				plateFrame.Top3DFrame = CreateFrame ("playermodel", plateFrame:GetName() .. "3DFrame", plateFrame, "ModelWithControlsTemplate")
@@ -3259,7 +3261,7 @@ Plater.AnchorNamesByPhraseId = {
 				plateFrame.Top3DFrame:EnableMouse (false)
 				plateFrame.Top3DFrame:EnableMouseWheel (false)
 				plateFrame.Top3DFrame:Hide()
-				plateFrame.unitFrame.Top3DFrame = plateFrame.Top3DFrame
+				unitFrame.Top3DFrame = plateFrame.Top3DFrame
 			
 			--> castbar // create custom widgets for the cast bar
 				--[=[
@@ -3278,9 +3280,9 @@ Plater.AnchorNamesByPhraseId = {
 				--]=]
 			
 				--set a UnitFrame member so scripts can get a quick reference of the unit frame from the castbar without calling for GetParent()
-				local castBar = plateFrame.unitFrame.castBar
+				local castBar = unitFrame.castBar
 				castBar.PlateFrame = plateFrame
-				castBar.unitFrame = plateFrame.unitFrame
+				castBar.unitFrame = unitFrame
 				castBar.IsCastBar = true
 				castBar.isNamePlate = true
 				castBar.ThrottleUpdate = 0
@@ -3377,28 +3379,28 @@ Plater.AnchorNamesByPhraseId = {
 
 			--> border
 				--create a border using default borders from the retail game
-				local healthBarBorder = DF:CreateFullBorder(nil, plateFrame.unitFrame.healthBar)
+				local healthBarBorder = DF:CreateFullBorder(nil, unitFrame.healthBar)
 				local borderOffset = 0 -- -1 * (Plater.db.profile.use_ui_parent and (UIParent:GetEffectiveScale() * Plater.db.profile.ui_parent_scale_tune)) or 1
-				PixelUtil.SetPoint (healthBarBorder, "TOPLEFT", plateFrame.unitFrame.healthBar, "TOPLEFT", -borderOffset, borderOffset)
-				PixelUtil.SetPoint (healthBarBorder, "TOPRIGHT", plateFrame.unitFrame.healthBar, "TOPRIGHT", borderOffset, borderOffset)
-				PixelUtil.SetPoint (healthBarBorder, "BOTTOMLEFT", plateFrame.unitFrame.healthBar, "BOTTOMLEFT", -borderOffset, -borderOffset)
-				PixelUtil.SetPoint (healthBarBorder, "BOTTOMRIGHT", plateFrame.unitFrame.healthBar, "BOTTOMRIGHT", borderOffset, -borderOffset)
+				PixelUtil.SetPoint (healthBarBorder, "TOPLEFT", unitFrame.healthBar, "TOPLEFT", -borderOffset, borderOffset)
+				PixelUtil.SetPoint (healthBarBorder, "TOPRIGHT", unitFrame.healthBar, "TOPRIGHT", borderOffset, borderOffset)
+				PixelUtil.SetPoint (healthBarBorder, "BOTTOMLEFT", unitFrame.healthBar, "BOTTOMLEFT", -borderOffset, -borderOffset)
+				PixelUtil.SetPoint (healthBarBorder, "BOTTOMRIGHT", unitFrame.healthBar, "BOTTOMRIGHT", borderOffset, -borderOffset)
 				healthBarBorder.Left:SetDrawLayer("OVERLAY", 6)
 				healthBarBorder.Right:SetDrawLayer("OVERLAY", 6)
 				healthBarBorder.Top:SetDrawLayer("OVERLAY", 6)
 				healthBarBorder.Bottom:SetDrawLayer("OVERLAY", 6)
-				plateFrame.unitFrame.healthBar.border = healthBarBorder
+				unitFrame.healthBar.border = healthBarBorder
 				
-				local powerBarBorder = DF:CreateFullBorder(nil, plateFrame.unitFrame.powerBar)
-				PixelUtil.SetPoint (powerBarBorder, "TOPLEFT", plateFrame.unitFrame.powerBar, "TOPLEFT", -borderOffset, borderOffset)
-				PixelUtil.SetPoint (powerBarBorder, "TOPRIGHT", plateFrame.unitFrame.powerBar, "TOPRIGHT", borderOffset, borderOffset)
-				PixelUtil.SetPoint (powerBarBorder, "BOTTOMLEFT", plateFrame.unitFrame.powerBar, "BOTTOMLEFT", -borderOffset, -borderOffset)
-				PixelUtil.SetPoint (powerBarBorder, "BOTTOMRIGHT", plateFrame.unitFrame.powerBar, "BOTTOMRIGHT", borderOffset, -borderOffset)
+				local powerBarBorder = DF:CreateFullBorder(nil, unitFrame.powerBar)
+				PixelUtil.SetPoint (powerBarBorder, "TOPLEFT", unitFrame.powerBar, "TOPLEFT", -borderOffset, borderOffset)
+				PixelUtil.SetPoint (powerBarBorder, "TOPRIGHT", unitFrame.powerBar, "TOPRIGHT", borderOffset, borderOffset)
+				PixelUtil.SetPoint (powerBarBorder, "BOTTOMLEFT", unitFrame.powerBar, "BOTTOMLEFT", -borderOffset, -borderOffset)
+				PixelUtil.SetPoint (powerBarBorder, "BOTTOMRIGHT", unitFrame.powerBar, "BOTTOMRIGHT", borderOffset, -borderOffset)
 				powerBarBorder.Left:SetDrawLayer("OVERLAY", 6)
 				powerBarBorder.Right:SetDrawLayer("OVERLAY", 6)
 				powerBarBorder.Top:SetDrawLayer("OVERLAY", 6)
 				powerBarBorder.Bottom:SetDrawLayer("OVERLAY", 6)
-				plateFrame.unitFrame.powerBar.border = powerBarBorder
+				unitFrame.powerBar.border = powerBarBorder
 				powerBarBorder:SetVertexColor (0, 0, 0, 1)
 
 				--create custom border frame for modeling
@@ -3408,7 +3410,7 @@ Plater.AnchorNamesByPhraseId = {
 
 				--create custom border frame for modeling
 				if (Plater.CreateCustomDesignBorder) then
-					Plater.CreateCustomDesignBorder(plateFrame.unitFrame.powerBar)
+					Plater.CreateCustomDesignBorder(unitFrame.powerBar)
 				end
 			
 			--> focus indicator
@@ -3419,55 +3421,55 @@ Plater.AnchorNamesByPhraseId = {
 				focusIndicator:Hide()
 				healthBar.FocusIndicator = focusIndicator
 				plateFrame.FocusIndicator = focusIndicator
-				plateFrame.unitFrame.FocusIndicator = focusIndicator
+				unitFrame.FocusIndicator = focusIndicator
 			
 			--> low aggro warning
-				plateFrame.unitFrame.aggroGlowUpper = plateFrame:CreateTexture (nil, "background", nil, -4)
-				PixelUtil.SetPoint (plateFrame.unitFrame.aggroGlowUpper, "bottomleft", plateFrame.unitFrame.healthBar, "topleft", -3, 0)
-				PixelUtil.SetPoint (plateFrame.unitFrame.aggroGlowUpper, "bottomright", plateFrame.unitFrame.healthBar, "topright", 3, 0)
-				plateFrame.unitFrame.aggroGlowUpper:SetTexture ([[Interface\BUTTONS\UI-Panel-Button-Glow]])
-				plateFrame.unitFrame.aggroGlowUpper:SetTexCoord (0, 95/128, 0, 9/64)
-				plateFrame.unitFrame.aggroGlowUpper:SetBlendMode ("ADD")
-				plateFrame.unitFrame.aggroGlowUpper:SetHeight (4)
-				plateFrame.unitFrame.aggroGlowUpper:Hide()
+				unitFrame.aggroGlowUpper = plateFrame:CreateTexture (nil, "background", nil, -4)
+				PixelUtil.SetPoint (unitFrame.aggroGlowUpper, "bottomleft", unitFrame.healthBar, "topleft", -3, 0)
+				PixelUtil.SetPoint (unitFrame.aggroGlowUpper, "bottomright", unitFrame.healthBar, "topright", 3, 0)
+				unitFrame.aggroGlowUpper:SetTexture ([[Interface\BUTTONS\UI-Panel-Button-Glow]])
+				unitFrame.aggroGlowUpper:SetTexCoord (0, 95/128, 0, 9/64)
+				unitFrame.aggroGlowUpper:SetBlendMode ("ADD")
+				unitFrame.aggroGlowUpper:SetHeight (4)
+				unitFrame.aggroGlowUpper:Hide()
 				
-				plateFrame.unitFrame.aggroGlowLower = plateFrame:CreateTexture (nil, "background", nil, -4)
-				PixelUtil.SetPoint (plateFrame.unitFrame.aggroGlowLower, "topleft", plateFrame.unitFrame.healthBar, "bottomleft", -3, 0)
-				PixelUtil.SetPoint (plateFrame.unitFrame.aggroGlowLower, "topright", plateFrame.unitFrame.healthBar, "bottomright", 3, 0)
-				plateFrame.unitFrame.aggroGlowLower:SetTexture ([[Interface\BUTTONS\UI-Panel-Button-Glow]])
-				plateFrame.unitFrame.aggroGlowLower:SetTexCoord (0, 95/128, 30/64, 38/64)
-				plateFrame.unitFrame.aggroGlowLower:SetBlendMode ("ADD")
-				plateFrame.unitFrame.aggroGlowLower:SetHeight (4)
-				plateFrame.unitFrame.aggroGlowLower:Hide()
+				unitFrame.aggroGlowLower = plateFrame:CreateTexture (nil, "background", nil, -4)
+				PixelUtil.SetPoint (unitFrame.aggroGlowLower, "topleft", unitFrame.healthBar, "bottomleft", -3, 0)
+				PixelUtil.SetPoint (unitFrame.aggroGlowLower, "topright", unitFrame.healthBar, "bottomright", 3, 0)
+				unitFrame.aggroGlowLower:SetTexture ([[Interface\BUTTONS\UI-Panel-Button-Glow]])
+				unitFrame.aggroGlowLower:SetTexCoord (0, 95/128, 30/64, 38/64)
+				unitFrame.aggroGlowLower:SetBlendMode ("ADD")
+				unitFrame.aggroGlowLower:SetHeight (4)
+				unitFrame.aggroGlowLower:Hide()
 
 			--> soft-interact icon
-				plateFrame.unitFrame.softInteractIconFrame = CreateFrame ("frame",plateFrame.unitFrame:GetName() .. "softInteractIconFrame", plateFrame, BackdropTemplateMixin and "BackdropTemplate")
-				plateFrame.unitFrame.softInteractIcon = plateFrame.unitFrame.softInteractIconFrame:CreateTexture("$parentIcon", "OVERLAY")
-				plateFrame.unitFrame.softInteractIcon:SetParent(plateFrame)
-				plateFrame.unitFrame.softInteractIcon:SetTexture(136243)
-				plateFrame.unitFrame.softInteractIcon:Show()
-				plateFrame.unitFrame.softInteractIconFrame:SetFrameLevel(plateFrame.unitFrame.healthBar:GetFrameLevel() + 25)
-				plateFrame.unitFrame.softInteractIconFrame.Mask = plateFrame.unitFrame.softInteractIconFrame:CreateMaskTexture(nil, "OVERLAY", nil, 1)
-				plateFrame.unitFrame.softInteractIconFrame.Mask:Show()
-				plateFrame.unitFrame.softInteractIconFrame.Mask:SetAtlas("CircleMaskScalable", true)
-				--plateFrame.unitFrame.softInteractIconFrame.Mask:SetScale(1)
-				plateFrame.unitFrame.softInteractIcon:AddMaskTexture(plateFrame.unitFrame.softInteractIconFrame.Mask)
-				plateFrame.unitFrame.softInteractIconFrame.Mask:ClearAllPoints()
-				PixelUtil.SetPoint(plateFrame.unitFrame.softInteractIconFrame.Mask, "CENTER", plateFrame.unitFrame.softInteractIconFrame, "CENTER", 0, 0)
-				plateFrame.unitFrame.softInteractIconFrame.Mask:SetAllPoints(plateFrame.unitFrame.softInteractIcon)
-				plateFrame.unitFrame.softInteractIconFrame:Hide()
-				plateFrame.unitFrame.softInteractIcon.anchor = { side = 8, x = 0, y = 18, }
-				plateFrame.unitFrame.softInteractIcon.size = 24
-				--Plater.SetAnchor(plateFrame.unitFrame.softInteractIconFrame, plateFrame.unitFrame.softInteractIcon.anchor or { side = 8, x = 0, y = 18, }, plateFrame.unitFrame.healthBar)
-				--Plater.SetAnchor(plateFrame.unitFrame.softInteractIconFrame, plateFrame.unitFrame.softInteractIcon.anchor or { side = 8, x = 0, y = 18, }, plateFrame.unitFrame.PlateFrame)
+				unitFrame.softInteractIconFrame = CreateFrame ("frame",unitFrame:GetName() .. "softInteractIconFrame", plateFrame, BackdropTemplateMixin and "BackdropTemplate")
+				unitFrame.softInteractIcon = unitFrame.softInteractIconFrame:CreateTexture("$parentIcon", "OVERLAY")
+				unitFrame.softInteractIcon:SetParent(plateFrame)
+				unitFrame.softInteractIcon:SetTexture(136243)
+				unitFrame.softInteractIcon:Show()
+				unitFrame.softInteractIconFrame:SetFrameLevel(unitFrame.healthBar:GetFrameLevel() + 25)
+				unitFrame.softInteractIconFrame.Mask = unitFrame.softInteractIconFrame:CreateMaskTexture(nil, "OVERLAY", nil, 1)
+				unitFrame.softInteractIconFrame.Mask:Show()
+				unitFrame.softInteractIconFrame.Mask:SetAtlas("CircleMaskScalable", true)
+				--unitFrame.softInteractIconFrame.Mask:SetScale(1)
+				unitFrame.softInteractIcon:AddMaskTexture(unitFrame.softInteractIconFrame.Mask)
+				unitFrame.softInteractIconFrame.Mask:ClearAllPoints()
+				PixelUtil.SetPoint(unitFrame.softInteractIconFrame.Mask, "CENTER", unitFrame.softInteractIconFrame, "CENTER", 0, 0)
+				unitFrame.softInteractIconFrame.Mask:SetAllPoints(unitFrame.softInteractIcon)
+				unitFrame.softInteractIconFrame:Hide()
+				unitFrame.softInteractIcon.anchor = { side = 8, x = 0, y = 18, }
+				unitFrame.softInteractIcon.size = 24
+				--Plater.SetAnchor(unitFrame.softInteractIconFrame, unitFrame.softInteractIcon.anchor or { side = 8, x = 0, y = 18, }, unitFrame.healthBar)
+				--Plater.SetAnchor(unitFrame.softInteractIconFrame, unitFrame.softInteractIcon.anchor or { side = 8, x = 0, y = 18, }, unitFrame.PlateFrame)
 			
 			--> name plate created hook
 				if (HOOK_NAMEPLATE_CREATED.ScriptAmount > 0) then
 					for i = 1, HOOK_NAMEPLATE_CREATED.ScriptAmount do
 						local globalScriptObject = HOOK_NAMEPLATE_CREATED [i]
-						local scriptContainer = plateFrame.unitFrame:ScriptGetContainer()
-						local scriptInfo = plateFrame.unitFrame:HookGetInfo (globalScriptObject, scriptContainer, "Nameplate Created")
-						plateFrame.unitFrame:ScriptRunHook (scriptInfo, "Nameplate Created")
+						local scriptContainer = unitFrame:ScriptGetContainer()
+						local scriptInfo = unitFrame:HookGetInfo (globalScriptObject, scriptContainer, "Nameplate Created")
+						unitFrame:ScriptRunHook (scriptInfo, "Nameplate Created")
 					end
 				end
 		end,
