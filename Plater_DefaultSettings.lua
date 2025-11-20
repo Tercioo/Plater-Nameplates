@@ -7,6 +7,9 @@ if (not DF) then
 	return
 end
 
+--this table is used to share local variables between files
+platerInternal.VarSharing = {}
+
 local LibSharedMedia = LibStub:GetLibrary ("LibSharedMedia-3.0")
 
 LibSharedMedia:Register ("statusbar", "DGround", [[Interface\AddOns\Plater\images\bar_background]])
