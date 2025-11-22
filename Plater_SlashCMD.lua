@@ -141,7 +141,9 @@ function SlashCmdList.PLATER (msg, editbox)
 
 	elseif (msg == "npcs" or msg == "ids") then
 
-
+	elseif (msg == "editmode") then
+		Plater.ToggleDesignerWindow()
+		return
 
 	--elseif (msg == "add" or msg == "addnpc") then
 	elseif (msg and (msg:find("^add") or msg:find("^addnpc"))) then
