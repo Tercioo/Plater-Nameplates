@@ -5431,7 +5431,7 @@ local relevance_options = {
 			name = "OPTIONS_CVAR_ENABLE_PERSONAL_BAR",
 			desc = "OPTIONS_CVAR_ENABLE_PERSONAL_BAR_DESC",
 			nocombat = true,
-			hidden = IS_WOW_PROJECT_NOT_MAINLINE,
+			hidden = IS_WOW_PROJECT_NOT_MAINLINE or IS_WOW_PROJECT_MIDNIGHT,
 		},
 		{
 			type = "toggle",
@@ -5518,6 +5518,45 @@ local relevance_options = {
 			name = "OPTIONS_NAMEPLATES_STACKING",
 			desc = "OPTIONS_NAMEPLATES_STACKING_DESC",
 			nocombat = true,
+			hidden = IS_WOW_PROJECT_MIDNIGHT,
+		},
+		
+		{
+			type = "toggle",
+			boxfirst = true,
+			get = function() return C_CVar.GetCVarBitfield("nameplateStackingTypes", Enum.NamePlateStackType.Enemy) end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					C_CVar.SetCVarBitfield("nameplateStackingTypes", Enum.NamePlateStackType.Enemy, value and true or false)
+					Plater.db.profile.stacking_nameplates_enabled = C_CVar.GetCVarBitfield("nameplateStackingTypes", Enum.NamePlateStackType.Enemy) or C_CVar.GetCVarBitfield("nameplateStackingTypes", Enum.NamePlateStackType.Friendly)
+				else
+					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+					self:SetValue (C_CVar.GetCVarBitfield("nameplateStackingTypes", Enum.NamePlateStackType.Enemy))
+				end
+			end,
+			name = "Stacking Enemy Nameplates",
+			desc = "OPTIONS_NAMEPLATES_STACKING_DESC",
+			nocombat = true,
+			hidden = not IS_WOW_PROJECT_MIDNIGHT,
+		},
+		
+		{
+			type = "toggle",
+			boxfirst = true,
+			get = function() return C_CVar.GetCVarBitfield("nameplateStackingTypes", Enum.NamePlateStackType.Friendly) end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					C_CVar.SetCVarBitfield("nameplateStackingTypes", Enum.NamePlateStackType.Friendly, value and true or false)
+					Plater.db.profile.stacking_nameplates_enabled = C_CVar.GetCVarBitfield("nameplateStackingTypes", Enum.NamePlateStackType.Enemy) or C_CVar.GetCVarBitfield("nameplateStackingTypes", Enum.NamePlateStackType.Friendly)
+				else
+					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+					self:SetValue (C_CVar.GetCVarBitfield("nameplateStackingTypes", Enum.NamePlateStackType.Friendly))
+				end
+			end,
+			name = "Stacking Friendly Nameplates",
+			desc = "OPTIONS_NAMEPLATES_STACKING_DESC",
+			nocombat = true,
+			hidden = not IS_WOW_PROJECT_MIDNIGHT,
 		},
 		
 		{
@@ -5538,7 +5577,10 @@ local relevance_options = {
 			name = "OPTIONS_NAMEPLATES_OVERLAP",
 			desc = "OPTIONS_NAMEPLATES_OVERLAP_DESC",
 			nocombat = true,
+			hidden = IS_WOW_PROJECT_MIDNIGHT,
 		},
+		
+		{type = "blank", hidden = not IS_WOW_PROJECT_MIDNIGHT},
 		
 		{
 			type = "range",
