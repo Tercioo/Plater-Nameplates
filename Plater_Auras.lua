@@ -1795,6 +1795,7 @@ end
 		--MIDNIGHT!!
 		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(duration) then
 			local timeLeft = C_UnitAuras.GetAuraDurationRemainingByAuraInstanceID(auraIconFrame.unitFrame.namePlateUnitToken, i)
+			--local maxduration = C_UnitAuras.GetRefreshExtendedDuration(auraIconFrame.unitFrame.namePlateUnitToken, i)
 			auraIconFrame.Cooldown:SetDrawEdge(true)
 			--auraIconFrame.Cooldown:SetCooldown(start, duration, modRate)
 			auraIconFrame.Cooldown:SetCooldownDuration(duration, modRate)

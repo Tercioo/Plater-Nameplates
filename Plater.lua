@@ -1536,6 +1536,7 @@ Plater.AnchorNamesByPhraseId = {
 		["nameplateSelfBottomInset"] = (IS_WOW_PROJECT_MAINLINE),
 		["nameplateSelfScale"] = (IS_WOW_PROJECT_MAINLINE),
 		["nameplateSelfTopInset"] = (IS_WOW_PROJECT_MAINLINE),
+		["nameplateSimplifiedTypes"] = IS_WOW_PROJECT_MIDNIGHT,
 		["nameplateShowAll"] = true,
 		["nameplateShowEnemies"] = true,
 		["nameplateShowEnemyGuardians"] = true,
@@ -2877,13 +2878,8 @@ Plater.AnchorNamesByPhraseId = {
 				plateFrame.PlaterAnchorFrame:EnableMouse(false)
 				plateFrame.PlaterAnchorFrame:SetParent(plateFrame)
 				
-				if IS_WOW_PROJECT_MIDNIGHT and DB_USE_UIPARENT then
-					--this tricks the client into using this frame as rect for the clickable area, as it is parented to the base frame
+				if IS_WOW_PROJECT_MIDNIGHT then
 					newUnitFrame.HitTestFrameDummy = newUnitFrame:CreateTexture()
-					newUnitFrame.HitTestFrameDummy:SetParent(plateFrame)
-					newUnitFrame.HitTestFrameDummy:SetPoint("TOPLEFT", newUnitFrame, "TOPLEFT")
-					newUnitFrame.HitTestFrameDummy:SetPoint("BOTTOMRIGHT", newUnitFrame, "BOTTOMRIGHT")
-					newUnitFrame.HitTestFrameDummy:SetColorTexture(1, 1, 1, 0) -- it needs to show something
 				end
 				
 				--mix plater functions (most are for scripting support) into the unit frame
@@ -3548,7 +3544,8 @@ Plater.AnchorNamesByPhraseId = {
 --			if (select (2, UnitClass (unitBarId)) == "HUNTER") then
 --				print ("nameplate added", UnitName (unitBarId))
 --			end
-
+--print("test", CastSpellByName("This is a test", unitBarId))
+--print("test", CastSpellByID(355913, unitBarId))
 		
 			local unitID = unitBarId
 			---@type plateframe
@@ -3690,6 +3687,26 @@ Plater.AnchorNamesByPhraseId = {
 				plateFrame.UnitFrame.HitTestFrame:SetPoint("TOPLEFT", plateFrame.unitFrame, "TOPLEFT")
 				plateFrame.UnitFrame.HitTestFrame:SetPoint("BOTTOMRIGHT", plateFrame.unitFrame, "BOTTOMRIGHT")
 				
+				
+				--this tricks the client into using this frame as rect for the clickable area, as it is parented to the base frame
+				local width, height = Plater.db.profile.click_space[1], Plater.db.profile.click_space[2]
+				local widthScale, heightScale = Plater.db.profile.click_space_scale[1], Plater.db.profile.click_space_scale[2]
+		
+				local unitType = Plater.GetUnitType (plateFrame)
+				if (unitType == "pet") then
+					widthScale = widthScale * Plater.db.profile.click_space_scale_pet[1]
+					heightScale = heightScale * Plater.db.profile.click_space_scale_pet[2]
+				elseif (unitType == "minus") then
+					widthScale = widthScale * Plater.db.profile.click_space_scale_minor[1]
+					heightScale = heightScale * Plater.db.profile.click_space_scale_minor[2]
+				end
+				
+				local offsetW, offsetH = width * widthScale - width, height * heightScale - height
+				
+				plateFrame.unitFrame.HitTestFrameDummy:SetParent(plateFrame)
+				plateFrame.unitFrame.HitTestFrameDummy:SetPoint("TOPLEFT", plateFrame.unitFrame, "TOPLEFT", -offsetW, offsetH)
+				plateFrame.unitFrame.HitTestFrameDummy:SetPoint("BOTTOMRIGHT", plateFrame.unitFrame, "BOTTOMRIGHT", offsetW, -offsetH)
+				plateFrame.unitFrame.HitTestFrameDummy:SetColorTexture(1, 1, 1, 0) -- it needs to show something
 				plateFrame.unitFrame.HitTestFrameDummy:Show()
 				
 				local isPlayer = UnitIsPlayer (unitID)
@@ -4360,12 +4377,12 @@ Plater.AnchorNamesByPhraseId = {
 			if (DB_USE_UIPARENT) then
 				-- need to explicitly hide the frame now, as it is not tethered to the blizz nameplate
 				plateFrame.unitFrame:Hide()
-				
-				if IS_WOW_PROJECT_MIDNIGHT then
-					plateFrame.unitFrame.HitTestFrameDummy:Hide()
-				end
 			end
 			--end of patch
+			
+			if IS_WOW_PROJECT_MIDNIGHT then
+				plateFrame.unitFrame.HitTestFrameDummy:Hide()
+			end
 			
 		end,
 		
@@ -5784,7 +5801,7 @@ function Plater.OnInit() --private --~oninit ~init
 						self.ReUpdateNextTick = nil
 					end
 					
-					if (self.unit and Plater.db.profile.castbar_target_show and not UnitIsUnit (self.unit, "player")) then
+					if (self.unit and Plater.db.profile.castbar_target_show and not self.unitFrame.IsSelf) then
 						if IS_WOW_PROJECT_MIDNIGHT then
 							local targetName = UnitSpellTargetName(self.unit)
 							if targetName then
@@ -6671,8 +6688,30 @@ end
 		
 		if IS_WOW_PROJECT_MIDNIGHT then
 			local width, height = Plater.db.profile.click_space[1], Plater.db.profile.click_space[2]
+			local widthScale, heightScale = Plater.db.profile.click_space_scale[1], Plater.db.profile.click_space_scale[2]
+			
 			C_NamePlate.SetNamePlateSize(width, height)
-		
+			
+			if DB_USE_UIPARENT then
+				for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+					if plateFrame.unitFrame.PlaterOnScreen then
+						local unitType = Plater.GetUnitType (plateFrame)
+						if (unitType == "pet") then
+							widthScale = widthScale * Plater.db.profile.click_space_scale_pet[1]
+							heightScale = heightScale * Plater.db.profile.click_space_scale_pet[2]
+						elseif (unitType == "minus") then
+							widthScale = widthScale * Plater.db.profile.click_space_scale_minor[1]
+							heightScale = heightScale * Plater.db.profile.click_space_scale_minor[2]
+						end
+						
+						local offsetW, offsetH = width * widthScale - width, height * heightScale - height
+						
+						plateFrame.unitFrame.HitTestFrameDummy:SetPoint("TOPLEFT", plateFrame.unitFrame, "TOPLEFT", -offsetW, offsetH)
+						plateFrame.unitFrame.HitTestFrameDummy:SetPoint("BOTTOMRIGHT", plateFrame.unitFrame, "BOTTOMRIGHT", offsetW, -offsetH)
+					end
+				end
+			end
+			
 		else
 			-- ensure we support the "large nameplate" setting properly
 			local namePlateVerticalScale = GetCVarNumberOrDefault("NamePlateVerticalScale")

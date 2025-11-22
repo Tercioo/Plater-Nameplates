@@ -563,6 +563,7 @@ function platerInternal.CreateCastBarOptions()
             end,
             name = "OPTIONS_CAST_SHOW_TARGETNAME_TANK",
             desc = "OPTIONS_CAST_SHOW_TARGETNAME_TANK_DESC",
+            hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
 
         {
