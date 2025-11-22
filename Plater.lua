@@ -2489,7 +2489,6 @@ Plater.AnchorNamesByPhraseId = {
 						unitNameTranslit = LibTranslit:Transliterate(unitName, TRANSLIT_MARK)
 					end
 					plateFrame [MEMBER_NAME] = unitNameTranslit
-					if IS_WOW_PROJECT_MIDNIGHT then
 					plateFrame [MEMBER_NAMELOWER] = (IS_WOW_PROJECT_MIDNIGHT and plateFrame [MEMBER_NAME] or "") or lower (plateFrame [MEMBER_NAME])
 					plateFrame.unitNameInternal = unitName
 					unitFrame [MEMBER_NAME] = plateFrame [MEMBER_NAME]
