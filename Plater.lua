@@ -7606,8 +7606,10 @@ end
 
 		local profile = Plater.db.profile
 		local unitFrame = plateFrame.unitFrame
-		if IS_WOW_PROJECT_MIDNIGHT then return true end --MIDNIGHT!!
-		if UnitIsUnit (unitFrame [MEMBER_UNITID], "focus") then
+		--if IS_WOW_PROJECT_MIDNIGHT then return true end --MIDNIGHT!!
+		local isFocus = UnitIsUnit ("focus", unitFrame [MEMBER_UNITID])
+		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(isFocus) then isFocus = false end
+		if (isFocus) then
 			if profile.focus_indicator_enabled then
 				--this is a rare call, no need to cache these values
 				local texture = LibSharedMedia:Fetch ("statusbar", Plater.db.profile.focus_texture)
@@ -7621,7 +7623,9 @@ end
 			plateFrame.FocusIndicator:Hide()
 		end
 
-		if (UnitIsUnit (unitFrame [MEMBER_UNITID], "target")) then
+		local isTarget = UnitIsUnit ("target", unitFrame [MEMBER_UNITID])
+		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(isTarget) then isTarget = false end
+		if (isTarget) then
 			plateFrame [MEMBER_TARGET] = true
 			unitFrame [MEMBER_TARGET] = true
 			
@@ -7685,7 +7689,7 @@ end
 			Plater.UpdateUIParentLevels (unitFrame)
 		end
 
-		Plater.CheckRange (plateFrame, true) --disabled on 2018-10-09 | enabled back on 2020-1-16
+		Plater.CheckRange (plateFrame, false) --disabled on 2018-10-09 | enabled back on 2020-1-16
 
 	end
 
