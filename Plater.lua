@@ -21,6 +21,7 @@
 end
 
 --> details! framework
+---@type detailsframework
 local DF = _G ["DetailsFramework"]
 if (not DF) then
 	print ("|cFFFFAA00Plater: framework not found, if you just installed or updated the addon, please restart your client.|r")
@@ -262,12 +263,29 @@ local MEMBER_NAME = "namePlateUnitName"
 local MEMBER_NAMELOWER = "namePlateUnitNameLower"
 local MEMBER_TARGET = "namePlateIsTarget"
 
+platerInternal.VarSharing.MEMBER_UNITID = MEMBER_UNITID
+platerInternal.VarSharing.MEMBER_GUID = MEMBER_GUID
+platerInternal.VarSharing.MEMBER_NPCID = MEMBER_NPCID
+platerInternal.VarSharing.MEMBER_QUEST = MEMBER_QUEST
+platerInternal.VarSharing.MEMBER_REACTION = MEMBER_REACTION
+platerInternal.VarSharing.MEMBER_RANGE = MEMBER_RANGE
+platerInternal.VarSharing.MEMBER_NOCOMBAT = MEMBER_NOCOMBAT
+platerInternal.VarSharing.MEMBER_NAME = MEMBER_NAME
+platerInternal.VarSharing.MEMBER_NAMELOWER = MEMBER_NAMELOWER
+platerInternal.VarSharing.MEMBER_TARGET = MEMBER_TARGET
+
 --> cache nameplate types for better reading the code
 local ACTORTYPE_FRIENDLY_PLAYER = "friendlyplayer"
 local ACTORTYPE_FRIENDLY_NPC = "friendlynpc"
 local ACTORTYPE_ENEMY_PLAYER = "enemyplayer"
 local ACTORTYPE_ENEMY_NPC = "enemynpc"
 local ACTORTYPE_PLAYER = "player"
+
+platerInternal.VarSharing.ACTORTYPE_FRIENDLY_PLAYER = ACTORTYPE_FRIENDLY_PLAYER
+platerInternal.VarSharing.ACTORTYPE_FRIENDLY_NPC = ACTORTYPE_FRIENDLY_NPC
+platerInternal.VarSharing.ACTORTYPE_ENEMY_PLAYER = ACTORTYPE_ENEMY_PLAYER
+platerInternal.VarSharing.ACTORTYPE_ENEMY_NPC = ACTORTYPE_ENEMY_NPC
+platerInternal.VarSharing.ACTORTYPE_PLAYER = ACTORTYPE_PLAYER
 
 local class_specs_coords = {
 	[577] = {128/512, 192/512, 256/512, 320/512}, --> havoc demon hunter
@@ -1352,7 +1370,8 @@ Plater.AnchorNamesByPhraseId = {
 		return points
 	end
 
-	--> return an iterator with all namepaltes on the screen
+	---return an iterator with all namepaltes on the screen
+	---@return frame[]
 	function Plater.GetAllShownPlates() --private
 		return C_NamePlate.GetNamePlates()
 	end
@@ -1827,6 +1846,10 @@ Plater.AnchorNamesByPhraseId = {
 
 		--refresh resources
 		Plater.Resources.RefreshResourcesDBUpvalues() --Plater_Resources.lua
+
+		platerInternal.VarSharing.DB_NAME_NPCENEMY_ANCHOR = DB_NAME_NPCENEMY_ANCHOR
+		platerInternal.VarSharing.DB_PLATE_CONFIG = DB_PLATE_CONFIG
+		platerInternal.VarSharing.DB_CASTBAR_HIDE_ENEMIES = DB_CASTBAR_HIDE_ENEMIES
 	end
 	
 	function Plater.RefreshDBLists()
@@ -3813,8 +3836,11 @@ Plater.AnchorNamesByPhraseId = {
 			plateFrame.PreviousUnitType = plateFrame.actorType
 			
 			--caching frames
+			---@type unitframe
 			local unitFrame = plateFrame.unitFrame
+			---@type castbar
 			local castBar = unitFrame.castBar
+			---@type healthbar
 			local healthBar = unitFrame.healthBar
 
 			plateFrame.PlaterAnchorFrame:ClearAllPoints()
