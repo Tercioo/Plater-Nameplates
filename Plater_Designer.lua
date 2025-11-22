@@ -303,6 +303,7 @@ function designer.UpdatePreview()
     local reaction = 4 --enemy
 
     local unitID = "player"
+    unitFrame:SetUnit(unitID)
     unitFrame.unit = unitID
     unitFrame.namePlateUnitToken = unitID
     unitFrame.displayedUnit = unitID
