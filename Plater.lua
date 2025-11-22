@@ -2489,7 +2489,8 @@ Plater.AnchorNamesByPhraseId = {
 						unitNameTranslit = LibTranslit:Transliterate(unitName, TRANSLIT_MARK)
 					end
 					plateFrame [MEMBER_NAME] = unitNameTranslit
-					plateFrame [MEMBER_NAMELOWER] = lower (plateFrame [MEMBER_NAME])
+					if IS_WOW_PROJECT_MIDNIGHT then
+					plateFrame [MEMBER_NAMELOWER] = (IS_WOW_PROJECT_MIDNIGHT and plateFrame [MEMBER_NAME] or "") or lower (plateFrame [MEMBER_NAME])
 					plateFrame.unitNameInternal = unitName
 					unitFrame [MEMBER_NAME] = plateFrame [MEMBER_NAME]
 					unitFrame [MEMBER_NAMELOWER] = plateFrame [MEMBER_NAMELOWER]
@@ -3995,11 +3996,7 @@ Plater.AnchorNamesByPhraseId = {
 				unitNameTranslit = LibTranslit:Transliterate(unitName, TRANSLIT_MARK)
 			end
 			plateFrame [MEMBER_NAME] = unitNameTranslit
-			if not IS_WOW_PROJECT_MIDNIGHT then
-				plateFrame [MEMBER_NAMELOWER] = lower (plateFrame [MEMBER_NAME])
-			else
-				plateFrame [MEMBER_NAMELOWER] = plateFrame [MEMBER_NAME]
-			end
+			plateFrame [MEMBER_NAMELOWER] = (IS_WOW_PROJECT_MIDNIGHT and plateFrame [MEMBER_NAME] or "") or lower (plateFrame [MEMBER_NAME])
 			plateFrame ["namePlateClassification"] = UnitClassification (unitID)
 			plateFrame.unitNameInternal = unitName
 
@@ -8489,7 +8486,7 @@ end
 		local unitFrame = plateFrame.unitFrame
 		if (newNpcName) then
 			plateFrame [MEMBER_NAME] = newNpcName
-			plateFrame [MEMBER_NAMELOWER] = lower (newNpcName)
+			plateFrame [MEMBER_NAMELOWER] = (IS_WOW_PROJECT_MIDNIGHT and newNpcName or "") or lower (newNpcName)
 			unitFrame [MEMBER_NAME] = newNpcName
 			unitFrame [MEMBER_NAMELOWER] = plateFrame [MEMBER_NAMELOWER]
 			unitFrame.unitName:SetText(newNpcName)
@@ -8498,7 +8495,7 @@ end
 			if (unitFrame.unitName.isRenamed) then
 				newNpcName = UnitName(plateFrame [MEMBER_UNITID] or unitFrame [MEMBER_UNITID])
 				plateFrame [MEMBER_NAME] = newNpcName
-				plateFrame [MEMBER_NAMELOWER] = lower (newNpcName)
+				plateFrame [MEMBER_NAMELOWER] = (IS_WOW_PROJECT_MIDNIGHT and newNpcName or "") or lower (newNpcName)
 				unitFrame [MEMBER_NAME] = newNpcName
 				unitFrame [MEMBER_NAMELOWER] = plateFrame [MEMBER_NAMELOWER]
 				unitFrame.unitName:SetText(newNpcName)
