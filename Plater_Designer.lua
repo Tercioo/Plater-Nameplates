@@ -39,6 +39,7 @@ local MEMBER_TARGET = platerInternal.VarSharing.MEMBER_TARGET
 
 local plateFrame
 
+---profile.plate_config[enemynpc, friendlynpc, enemyplayer, friendlyplayer]
 local profileKey = "enemynpc"
 
 local getProfileTable = function()
@@ -101,7 +102,7 @@ function Plater.CreateDesignerWindow()
     --tab background using a rounded panel | need to make a preset for this, atm it is declaring each time the same table
     local roundedPanelOptions = {
         scale = 1,
-        width = 900,
+        width = 1300,
         height = 600,
         roundness = 8,
     }
@@ -110,12 +111,14 @@ function Plater.CreateDesignerWindow()
     local editorMainFrame = detailsFramework:CreateRoundedPanel(UIParent, gName, roundedPanelOptions)
     --local editorMainFrame = CreateFrame("frame", gName, UIParent)
 
+    --local 
+
     Plater.DesignerWindow = editorMainFrame
 
     detailsFramework:MakeDraggable(editorMainFrame)
     editorMainFrame:EnableMouse(true)
     createFrameTag(editorMainFrame, "editorMainFrame")
-    editorMainFrame:SetSize (900, 600)
+    editorMainFrame:SetSize (roundedPanelOptions.width, roundedPanelOptions.height)
     editorMainFrame:SetPoint ("center", UIParent, "center", -100, 0)
 
 
@@ -129,6 +132,7 @@ function Plater.CreateDesignerWindow()
         object_list_lines = 20,
         object_list_line_height = 20,
         text_template = editorOptionsTextTemplate,
+        no_anchor_points = true,
     }
 
     --Plater_Designer_Objects.lua
@@ -179,11 +183,25 @@ function Plater.CreateDesignerWindow()
     local unitFrame = plateFrame.unitFrame
     ---@type healthbar
     local healthBar = unitFrame.healthBar
+    ---@type castbar
+    local castBar = unitFrame.castBar
+
+    castBar:Show()
+    castBar:AdjustPointsOffset(0, -30)
+
+    --Plater_LayoutEditor
+    --Plater_LayoutEditorGuideFrame
+    --PlaterDesignerPlatePreview
+    --^ parenting stair
+
 
     ---@type fontstring
     local unitName = unitFrame.unitName
     ---@type fontstring
     local levelText = healthBar.actorLevel
+    ---@type fontstring
+    local spellName = castBar.Text
+    spellName:SetText("Blizzard")
 
     unitName:SetText("Unit Name")
     levelText:SetText("60")
@@ -211,6 +229,7 @@ function Plater.CreateDesignerWindow()
     --by registering the object within the editor, the the object will show up in the list of widgets to select
     layoutEditor:RegisterObject(unitName, "Unit Name", "UNITNAME", profile, profileKey, options.WidgetSettingsMapTables.UnitName, options.WidgetSettingsExtraOptions.UnitName, onSettingChanged, layoutOptions, healthBar)
     layoutEditor:RegisterObject(levelText, "Unit Level", "UNITLEVEL", profile, profileKey, options.WidgetSettingsMapTables.UnitLevel, options.WidgetSettingsExtraOptions.UnitLevel, onSettingChanged, layoutOptions, healthBar)
+    layoutEditor:RegisterObject(spellName, "Spell Name", "SPELLNAME", profile, profileKey, options.WidgetSettingsMapTables.SpellName, options.WidgetSettingsExtraOptions.SpellName, onSettingChanged, layoutOptions, castBar)
 
     local objectSelector = layoutEditor:GetObjectSelector()
     local optionsFrame = layoutEditor:GetOptionsFrame()
@@ -223,15 +242,14 @@ function Plater.CreateDesignerWindow()
 
     editorMainFrame:SetAlpha(1)
 
-
     local moveUpFrame = CreateFrame("frame", nil, editorMainFrame)
     moveUpFrame:SetScript("OnUpdate", function()
         plateFrame.unitFrame:SetFrameStrata("HIGH")
         plateFrame:SetFrameLevel(previewNameplateFrame:GetFrameLevel() + 100)
-        unitFrame:Show()
-        healthBar:Show()
+        --unitFrame:Show()
+        --healthBar:Show()
         --plateFrame.unitName:SetText()
-
+        --stops when the frame hides
         --dv(plateFrame)
     end)
 

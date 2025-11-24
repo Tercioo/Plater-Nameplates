@@ -37,6 +37,23 @@ function designer.CreateSettings(parentFrame)
             --classcolor = "name_classcolor",
         },
 
+        SpellName = {
+            --text = UnitName("player"),
+            size = "spellname_text_size",
+            font = "spellname_text_font",
+            color = "spellname_text_color",
+            outline = "spellname_text_outline",
+            shadowcolor = "spellname_text_shadow_color",
+            shadowoffsetx = "spellname_text_shadow_color_offset[1]",
+            shadowoffsety = "spellname_text_shadow_color_offset[2]",
+            anchor = "spellname_text_anchor.side",
+            anchoroffsetx = "spellname_text_anchor.x",
+            anchoroffsety = "spellname_text_anchor.y",
+            --name_attach_to_role_icon = "name_attach_to_role_icon",
+            --layer = "name_layer",
+            --classcolor = "name_classcolor",
+        },
+
         UnitLevel = {
             --text = "80",
             size = "level_text_size",
@@ -66,6 +83,8 @@ function designer.CreateSettings(parentFrame)
                 setter = function(widget, value) designer.UpdateAllNameplates() end,
             },
         },
+
+        SpellName = {},
 
         --[[
         UnitName = {
