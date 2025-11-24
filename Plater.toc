@@ -1,7 +1,7 @@
-## Interface: 110200, 110205, 120000
-## Interface-Mainline: 110200, 110205, 120000
-## Interface-Mists: 50501
-## Interface-Vanilla: 11507
+## Interface: 110205, 110207, 120000
+## Interface-Mainline: 110205, 110207, 120000
+## Interface-Mists: 50502, 50503
+## Interface-Vanilla: 11508, 20505
 ## Title: Plater
 ## Notes: Nameplate addon designed for advanced users.
 ## Notes-esES: Addon de placa de nombre diseñado para usuarios avanzados
@@ -96,3 +96,4 @@ options/Plater_O_BossMod.lua
 Plater_LoadFinished.lua
 
 #Plater_SpellPrediction.lua
+
