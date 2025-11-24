@@ -8,8 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
-			{1758569637, "Backend Change", "Oct 21st, 2025", "Initial support for Midnight (work in progress).", "cont1nuity"},
-			{1758569637, "Bug Fix", "Oct 22nd, 2025", "Fixing nameplate alpha for nameplates which are in the fade-in animation when being shown.", "cont1nuity"},
+			{1764011311, "Backend Change", "Oct 21st, 2025", "Initial support for Midnight (work in progress).", "cont1nuity"},
+			{1764011311, "Bug Fix", "Oct 22nd, 2025", "Fixing nameplate alpha for nameplates which are in the fade-in animation when being shown.", "cont1nuity"},
 			
 			{1758569637, "Bug Fix", "Sept 26th, 2025", "Fixing soft-interact icons on classic and era.", "cont1nuity"},
 			{1758569637, "New Feature", "Sept 22nd, 2025", "Adding combat auto toggle option for 'Always Show Nameplates'.", "cont1nuity"},

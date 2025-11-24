@@ -3106,6 +3106,13 @@ Plater.AnchorNamesByPhraseId = {
 				DF:CreateAnimation (healthCutOffShowAnimation, "Alpha", 2, .2, 1, .5)
 				healthCutOff.ShowAnimation = healthCutOffShowAnimation
 				
+				local healthCutOffUpperShowAnimation = DF:CreateAnimationHub (healthCutOffUpper, cutoffAnimationOnPlay, cutoffAnimationOnStop)
+				DF:CreateAnimation (healthCutOffUpperShowAnimation, "Scale", 1, .2, .3, .3, 1.2, 1.2)
+				DF:CreateAnimation (healthCutOffUpperShowAnimation, "Scale", 2, .2, 1.2, 1.2, 1, 1)
+				DF:CreateAnimation (healthCutOffUpperShowAnimation, "Alpha", 1, .2, .2, 1)
+				DF:CreateAnimation (healthCutOffUpperShowAnimation, "Alpha", 2, .2, 1, .5)
+				healthCutOffUpper.ShowAnimation = healthCutOffUpperShowAnimation
+				
 				--shield indicator
 				local shieldIndicator = healthBar:CreateTexture(nil, "overlay", nil, 7)
 				shieldIndicator:SetPoint("bottomleft", healthBar, "bottomleft", 0, 0)
