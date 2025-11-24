@@ -7,6 +7,9 @@ if (not DF) then
 	return
 end
 
+--this table is used to share local variables between files
+platerInternal.VarSharing = {}
+
 local LibSharedMedia = LibStub:GetLibrary ("LibSharedMedia-3.0")
 
 LibSharedMedia:Register ("statusbar", "DGround", [[Interface\AddOns\Plater\images\bar_background]])
@@ -151,6 +154,9 @@ PLATER_DEFAULT_SETTINGS = {
 		},
 
 		click_space = {140, 28}, --classic: {132, 32}, retail: {110, 45},
+		click_space_scale = {1, 1},
+		click_space_scale_minor = {1, 1},
+		click_space_scale_pet = {1, 1},
 		click_space_friendly = {140, 28}, --classic: {132, 32}, retail: {110, 45},
 		click_space_always_show = false,
 		hide_friendly_castbars = false,

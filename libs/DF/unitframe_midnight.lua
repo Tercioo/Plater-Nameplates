@@ -190,8 +190,8 @@ local cleanfunction = function() end
 			if (unit) then
 				self.currentHealth = UnitHealth(unit)
 				self.currentHealthMax = UnitHealthMax(unit)
-				self.currentHealthMissing = UnitHealthMissing(unit, false)
-				self.currentHealthPercent = UnitHealthPercent(unit, false, true)
+				self.currentHealthMissing = UnitHealthMissing(unit, true)
+				self.currentHealthPercent = UnitHealthPercent(unit, true, true)
 
 				for _, eventTable in ipairs(self.HealthBarEvents) do
 					local event = eventTable[1]
@@ -292,8 +292,8 @@ local cleanfunction = function() end
 		local maxHealth = UnitHealthMax(self.displayedUnit)
 		self:SetMinMaxValues(0, maxHealth)
 		self.currentHealthMax = maxHealth
-		self.currentHealthMissing = UnitHealthMissing(self.displayedUnit, false)
-		self.currentHealthPercent = UnitHealthPercent(self.displayedUnit, false, true)
+		self.currentHealthMissing = UnitHealthMissing(self.displayedUnit, true)
+		self.currentHealthPercent = UnitHealthPercent(self.displayedUnit, true, true)
 
 		if (self.OnHealthMaxChange) then --direct call
 			self.OnHealthMaxChange(self, self.displayedUnit)
@@ -311,8 +311,8 @@ local cleanfunction = function() end
 		self.oldHealth = self.currentHealth
 		local health = UnitHealth(self.displayedUnit)
 		self.currentHealth = health
-		self.currentHealthMissing = UnitHealthMissing(self.displayedUnit, false)
-		self.currentHealthPercent = UnitHealthPercent(self.displayedUnit, false, true)
+		self.currentHealthMissing = UnitHealthMissing(self.displayedUnit, true)
+		self.currentHealthPercent = UnitHealthPercent(self.displayedUnit, true, true)
 		self:SetValue(health)
 
 		if (self.OnHealthChange) then --direct call
@@ -682,7 +682,6 @@ detailsFramework.PowerFrameFunctions = {
 		--if (self.currentPowerMax == 0 and self.Settings.HideIfNoPower) then
 		--	self:Hide()
 		--end
-		--self:SetShown(self.currentPowerMax)
 	end,
 
 	UpdatePower = function(self)
@@ -1070,7 +1069,7 @@ detailsFramework.CastFrameFunctions = {
 		end
 
 		if (not self.Settings.ShowTradeSkills) then
-			if (isTradeSkill) then
+			if (not issecretvalue(isTradeSkill) and isTradeSkill) then
 				return false
 			end
 		end
@@ -1254,7 +1253,7 @@ detailsFramework.CastFrameFunctions = {
 		if (self.unit) then
 			if (self.casting) then
 				local name, text, texture, startTime = CastInfo.UnitCastingInfo(self.unit)
-				if (type(name) ~=  nil) then
+				if (name) then
 					--[[if not self.spellStartTime then
 						self:UpdateCastingInfo(self.unit)
 					end]]--
@@ -1265,7 +1264,7 @@ detailsFramework.CastFrameFunctions = {
 
 			elseif (self.channeling) then
 				local name, text, texture, endTime = CastInfo.UnitChannelInfo(self.unit)
-				if (type(name) ~= nil) then
+				if (name) then
 					--[[if not self.spellEndTime then
 						self:UpdateChannelInfo(self.unit)
 					end]]--
@@ -1549,7 +1548,8 @@ detailsFramework.CastFrameFunctions = {
 			self.interrupted = nil
 			self.failed = nil
 			self.finished = nil
-			--self.canInterrupt = not notInterruptible
+			self.canInterrupt = true --not notInterruptible
+			self.notInterruptible = notInterruptible
 			self.spellID = spellID
 			self.castID = castID
 			self.spellName = name
@@ -1713,7 +1713,8 @@ detailsFramework.CastFrameFunctions = {
 			self.interrupted = nil
 			self.failed = nil
 			self.finished = nil
-			self.canInterrupt = not notInterruptible
+			self.canInterrupt = true --not notInterruptible
+			self.notInterruptible = notInterruptible
 			self.spellID = spellID
 			self.castID = castID
 			self.spellName = name
@@ -1815,7 +1816,7 @@ detailsFramework.CastFrameFunctions = {
 	UNIT_SPELLCAST_CHANNEL_STOP = function(self, unit, ...)
 		local unitID, castID, spellID = ...
 
-		if (self.channeling and castID == self.castID) then
+		if (self.channeling) then --and castID == self.castID) then
 			self.Spark:Hide()
 			self.percentText:Hide()
 
@@ -1861,7 +1862,8 @@ detailsFramework.CastFrameFunctions = {
 	UNIT_SPELLCAST_FAILED = function(self, unit, ...)
 		local unitID, castID, spellID = ...
 
-		if ((self.casting or self.channeling) and castID == self.castID and not self.fadeOut) then
+		--if ((self.casting or self.channeling) and castID == self.castID and not self.fadeOut) then
+		if ((self.casting or self.channeling) and not self.fadeOut) then
 			self.casting = nil
 			self.channeling = nil
 			self.failed = true

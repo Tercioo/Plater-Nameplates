@@ -44,6 +44,8 @@ local GetAuraSlots = _G.C_UnitAuras and _G.C_UnitAuras.GetAuraSlots
 local GetAuraDataByAuraInstanceID = _G.C_UnitAuras and _G.C_UnitAuras.GetAuraDataByAuraInstanceID
 local BackdropTemplateMixin = _G.BackdropTemplateMixin
 local BUFF_MAX_DISPLAY_PLATER = nil -- don't limit.
+local HARM_BUFF_FILTER = "HARMFUL|PLAYER|INCLUDE_NAME_PLATE_ONLY"
+local HELP_BUFF_FILTER = "HELPFUL|PLAYER|INCLUDE_NAME_PLATE_ONLY|RAID"
 
 local DB_AURA_GROW_DIRECTION
 local DB_AURA_GROW_DIRECTION2
@@ -537,8 +539,8 @@ local UnitAuraEventHandler = function (_, event, arg1, arg2, arg3, ...)
 		--DevTool:AddData({unit = unit, updatedAuras = updatedAuras, valid = UnitAuraEventHandlerValidUnits[unit]}, "Plater_UNIT_AURA - " .. unit)
 		if unit and UnitAuraEventHandlerValidUnits[unit] then
 			if IS_WOW_PROJECT_MIDNIGHT then
-				UpdateUnitAuraCacheData(unit, {isFullUpdate = true})
-				--UpdateUnitAuraCacheData(unit, updatedAuras)
+				--UpdateUnitAuraCacheData(unit, {isFullUpdate = true})
+				UpdateUnitAuraCacheData(unit, updatedAuras)
 			else
 				UpdateUnitAuraCacheData(unit, updatedAuras)
 			end
@@ -575,7 +577,7 @@ UpdateUnitAuraCacheData = function (unit, updatedAuras)
 		UnitAuraCacheData[unit] = unitCacheData
 	end
 	
-	if IS_WOW_PROJECT_MIDNIGHT and type(updatedAuras) == nil then
+	if IS_WOW_PROJECT_MIDNIGHT and not updatedAuras then
 		UnitAuraCacheData[unit] = {}
 		UnitAuraCacheData[unit].buffs = {}
 		UnitAuraCacheData[unit].debuffs = {}
@@ -602,6 +604,15 @@ UpdateUnitAuraCacheData = function (unit, updatedAuras)
 		local needsUpdate = ValidateAuraForUpdate(unit, aura)
 		if needsUpdate then
 			setAdditionalAuraFields(aura, unit)
+			
+			if IS_WOW_PROJECT_MIDNIGHT then
+				--aura.isHarmful = not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, HARM_BUFF_FILTER)
+				--aura.isHelpful = not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, HELP_BUFF_FILTER)
+				aura.isHarmful = not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HARMFUL")
+				aura.isHelpful = not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HELPFUL")
+				--print(aura.isHarmful, aura.isHelpful)
+			end
+			
 			if aura.isHarmful then
 				unitCacheData.debuffs[aura.auraInstanceID] = aura
 				unitCacheData.debuffsChanged = true
@@ -642,6 +653,14 @@ UpdateUnitAuraCacheData = function (unit, updatedAuras)
 		for index, _ in pairs(unitCacheData.tbd) do
 			local aura = GetAuraDataByAuraInstanceID(unit, index)
 			if aura then
+				if IS_WOW_PROJECT_MIDNIGHT then
+					--aura.isHarmful = not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, HARM_BUFF_FILTER)
+					--aura.isHelpful = not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, HELP_BUFF_FILTER)
+					aura.isHarmful = not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HARMFUL")
+					aura.isHelpful = not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HELPFUL")
+					--print(aura.isHarmful, aura.isHelpful)
+				end
+			
 				if aura.isHarmful then
 					unitCacheData.debuffs[aura.auraInstanceID] = aura
 					unitCacheData.debuffsChanged = true
@@ -668,6 +687,10 @@ local function getUnitAuras(unit, filter)
 	local isHarmful = string.find(filter or "HARMFUL", "HARMFUL") and true or false
 	local isHelpful = string.find(filter or "HELPFUL", "HELPFUL") and true or false
 	
+	--if IS_WOW_PROJECT_MIDNIGHT then filter = (isHarmful and HARM_BUFF_FILTER or isHelpful and HELP_BUFF_FILTER or "") end
+	--if IS_WOW_PROJECT_MIDNIGHT then filter = "INCLUDE_NAME_PLATE_ONLY" end
+	--if IS_WOW_PROJECT_MIDNIGHT then filter = filter and (filter .. "|PLAYER") or "PLAYER" end
+	--print (filter)
 	local unitCacheData = UnitAuraCacheData[unit]
 	--DevTool:AddData({unitCacheData, filter = filter, isFullUpdateHarm = unitCacheData.isFullUpdateHarm, isFullUpdateHelp = unitCacheData.isFullUpdateHelp, update = ((isHarmful and  not unitCacheData.isFullUpdateHarm) or (isHelpful and not unitCacheData.isFullUpdateHelp))}, "getUnitAuras - " .. unit)
 	
@@ -725,13 +748,9 @@ local function getUnitAuras(unit, filter)
 		for i=2, numSlots do
 			local slot = slots[i]
 			local aura = GetAuraDataBySlot(unit, slot)
-			if type(aura) ~= nil then
+			if aura then
 				--DevTool:AddData({unit = unit, aura = aura, slot = slot}, "GetAuraDataBySlot")
-				if IS_WOW_PROJECT_MIDNIGHT then
-					filterCache[slot] = aura
-				else
-					filterCache[aura.auraInstanceID] = aura
-				end
+				filterCache[aura.auraInstanceID] = aura
 			end
 		end
 	until continuationToken == nil
@@ -739,13 +758,8 @@ local function getUnitAuras(unit, filter)
 	Plater.EndLogPerformanceCore("Plater-Core", "Update", "UpdateAuras - getUnitAuras - long")
 	
 	-- done the update?
-	if IS_WOW_PROJECT_MIDNIGHT then --MIDNIGHT!!
-		unitCacheData.isFullUpdateHelp = true
-		unitCacheData.isFullUpdateHarm = true
-	else
-		if unitCacheData.isFullUpdateHelp and isHelpful then unitCacheData.isFullUpdateHelp = false end
-		if unitCacheData.isFullUpdateHarm and isHarmful then unitCacheData.isFullUpdateHarm = false end
-	end
+	if unitCacheData.isFullUpdateHelp and isHelpful then unitCacheData.isFullUpdateHelp = false end
+	if unitCacheData.isFullUpdateHarm and isHarmful then unitCacheData.isFullUpdateHarm = false end
 	return unitCacheData
 end
 
@@ -1031,7 +1045,7 @@ end
 			local verticalHeight = 1
 			local firstIcon
 		
-			if (profile.aura_consolidate) then
+			if (profile.aura_consolidate) and not IS_WOW_PROJECT_MIDNIGHT then
 				Plater.ConsolidateAuraIcons (self)
 			end
 			
@@ -1053,6 +1067,15 @@ end
 			iconFrameContainer = iconFrameContainerCopy
 			if not IS_WOW_PROJECT_MIDNIGHT then
 				table.sort (iconFrameContainer, function(aura1, aura2) 
+					return (aura1.auraInstanceID or 0) < (aura2.auraInstanceID or 0)
+				end)
+			else
+				table.sort (iconFrameContainer, function(aura1, aura2)
+					local aFromPlayer = (aura1.sourceUnit ~= nil) and UnitIsUnit("player", aura1.sourceUnit) or false
+					local bFromPlayer = (aura2.sourceUnit ~= nil) and UnitIsUnit("player", aura2.sourceUnit) or false
+					if aFromPlayer ~= bFromPlayer then
+						return aFromPlayer
+					end
 					return (aura1.auraInstanceID or 0) < (aura2.auraInstanceID or 0)
 				end)
 			end
@@ -1382,7 +1405,7 @@ end
 			if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(self.ExpirationTime) then
 				self.RemainingTime = C_UnitAuras.GetAuraDurationRemainingByAuraInstanceID(self.unitFrame.namePlateUnitToken, self:GetID())
 				--print(self.RemainingTime, self.unitFrame.namePlateUnitToken, self:GetID())
-				self.Cooldown.Timer:SetText(self.RemainingTime)
+				self.Cooldown.Timer:SetText(string.format("%d",self.RemainingTime))
 			else
 				self.RemainingTime = (self.ExpirationTime - now) / (self.ModRate or 1)
 				if self.RemainingTime > 0 then
@@ -1548,12 +1571,7 @@ end
 		if IS_WOW_PROJECT_MIDNIGHT or (auraIconFrame.spellId ~= spellId) then
 			
 			--> update the icon
-			--MIDNIGHT!!
-			if not IS_WOW_PROJECT_MIDNIGHT or (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(icon)) then
-				auraIconFrame.Icon:SetTexture (icon)
-			else
-			auraIconFrame.Icon:SetTexture (nil)
-			end
+			auraIconFrame.Icon:SetTexture (icon)
 			
 			--> update members
 			auraIconFrame.spellId = spellId
@@ -1777,6 +1795,7 @@ end
 		--MIDNIGHT!!
 		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(duration) then
 			local timeLeft = C_UnitAuras.GetAuraDurationRemainingByAuraInstanceID(auraIconFrame.unitFrame.namePlateUnitToken, i)
+			--local maxduration = C_UnitAuras.GetRefreshExtendedDuration(auraIconFrame.unitFrame.namePlateUnitToken, i)
 			auraIconFrame.Cooldown:SetDrawEdge(true)
 			--auraIconFrame.Cooldown:SetCooldown(start, duration, modRate)
 			auraIconFrame.Cooldown:SetCooldownDuration(duration, modRate)
@@ -1794,7 +1813,7 @@ end
 			auraIconFrame.isBuff = isBuff
 			auraIconFrame:Show()
 
-			auraIconFrame.Cooldown.Timer:SetText (timeLeft)
+			auraIconFrame.Cooldown.Timer:SetText (string.format("%d",timeLeft))
 			auraIconFrame.lastUpdateCooldown = now
 			auraIconFrame:SetScript ("OnUpdate", auraIconFrame.UpdateCooldown)
 			auraIconFrame.Cooldown.Timer:Show()
@@ -2168,10 +2187,6 @@ end
 					aura.name, aura.icon, aura.applications, aura.dispelName, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
 					aura.isBossAura, aura.isFromPlayerOrPlayerPet, aura.nameplateShowAll, aura.timeMod, aura.applications
 				
-				if IS_WOW_PROJECT_MIDNIGHT then
-					id = aura.auraInstanceID
-				end
-				
 				if not IS_WOW_PROJECT_MIDNIGHT then
 					unitAuraCache[name] = true
 					unitAuraCache[spellId] = true
@@ -2222,10 +2237,6 @@ end
 				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = 
 					aura.name, aura.icon, aura.applications, aura.dispelName, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
 					aura.isBossAura, aura.isFromPlayerOrPlayerPet, aura.nameplateShowAll, aura.timeMod, aura.applications
-				
-				if IS_WOW_PROJECT_MIDNIGHT then
-					id = aura.auraInstanceID
-				end
 				
 				if not IS_WOW_PROJECT_MIDNIGHT then
 					unitAuraCache[name] = true
@@ -2328,10 +2339,6 @@ end
 				local can_show_this_debuff
 				local auraType = "DEBUFF"
 				
-				if IS_WOW_PROJECT_MIDNIGHT then
-					id = aura.auraInstanceID
-				end
-				
 				if not IS_WOW_PROJECT_MIDNIGHT then
 					unitAuraCache[name] = true
 					unitAuraCache[spellId] = true
@@ -2386,7 +2393,7 @@ end
 						can_show_this_debuff = false
 					end
 				elseif IS_WOW_PROJECT_MIDNIGHT then
-					can_show_this_debuff = true
+					can_show_this_debuff = not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, HARM_BUFF_FILTER)
 				end
 				
 				--> check for special auras added by the user it self
@@ -2415,10 +2422,6 @@ end
 					aura.isBossAura, aura.isFromPlayerOrPlayerPet, aura.nameplateShowAll, aura.timeMod, aura.applications
 				
 				local auraType = "BUFF"
-				
-				if IS_WOW_PROJECT_MIDNIGHT then
-					id = aura.auraInstanceID
-				end
 				
 				if not IS_WOW_PROJECT_MIDNIGHT then
 					unitAuraCache[name] = true
@@ -2510,8 +2513,10 @@ end
 					end
 
 				elseif IS_WOW_PROJECT_MIDNIGHT then
-					local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
-					Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isFromPlayerOrPlayerPet, isStealable, nameplateShowPersonal, spellId, true, nil, nil, nil, dispelName, timeMod)
+					if not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, HELP_BUFF_FILTER) then
+						local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
+						Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isFromPlayerOrPlayerPet, isStealable, nameplateShowPersonal, spellId, true, nil, nil, nil, dispelName, timeMod)
+					end
 				end
 			end
 		end
@@ -2602,10 +2607,6 @@ end
 				
 				local auraType = "DEBUFF"
 				
-				if IS_WOW_PROJECT_MIDNIGHT then
-					id = aura.auraInstanceID
-				end
-				
 				if not IS_WOW_PROJECT_MIDNIGHT then
 					unitAuraCache[name] = true
 					unitAuraCache[spellId] = true
@@ -2650,10 +2651,6 @@ end
 					aura.isBossAura, aura.isFromPlayerOrPlayerPet, aura.nameplateShowAll, aura.timeMod, aura.applications
 					
 				local auraType = "BUFF"
-
-				if IS_WOW_PROJECT_MIDNIGHT then
-					id = aura.auraInstanceID
-				end
 
 				if not IS_WOW_PROJECT_MIDNIGHT then
 					unitAuraCache[name] = true
