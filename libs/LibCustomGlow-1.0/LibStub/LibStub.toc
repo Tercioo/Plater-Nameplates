@@ -1,4 +1,4 @@
-## Interface: 80000
+## Interface: 110205, 110207, 120000
 ## Title: Lib: LibStub
 ## Notes: Universal Library Stub
 ## Credits: Kaelten, Cladhaire, ckknight, Mikk, Ammo, Nevcairiel
