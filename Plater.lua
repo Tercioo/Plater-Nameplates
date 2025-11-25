@@ -970,88 +970,32 @@ Plater.AnchorNamesByPhraseId = {
 				--unit is in rage
 				unitFrame.IsInRange = true
 				
-				if (onAdded) then
-					--plateFrame.FadedIn = true
-
-					unitFrame:SetAlpha (nameplateAlpha * inRangeAlpha * (notTheTarget and overallRangeCheckAlpha or 1))
-					healthBar:SetAlpha (inRangeAlpha * (notTheTarget and healthBar_rangeCheckAlpha or 1))
-					if not castBarFade then
-						castBar:SetAlpha (inRangeAlpha * (notTheTarget and castBar_rangeCheckAlpha or 1))
-					end
-					powerBar:SetAlpha (inRangeAlpha * (notTheTarget and powerBar_rangeCheckAlpha or 1))
-					buffFrame1:SetAlpha (inRangeAlpha * (notTheTarget and buffFrames_rangeCheckAlpha or 1))
-					buffFrame2:SetAlpha (inRangeAlpha * (notTheTarget and buffFrames_rangeCheckAlpha or 1))
-
-					plateFrame [MEMBER_RANGE] = true
-					plateFrame.unitFrame [MEMBER_RANGE] = true
-
-				else
-					local newAlpha = nameplateAlpha * inRangeAlpha * (notTheTarget and overallRangeCheckAlpha or 1)
-					if (not DF:IsNearlyEqual (unitFrame:GetAlpha(), newAlpha, 0.01)) then
-						--play animations (animation aren't while in development)
-						unitFrame:SetAlpha (nameplateAlpha * inRangeAlpha * (notTheTarget and overallRangeCheckAlpha or 1))
-						healthBar:SetAlpha (inRangeAlpha * (notTheTarget and healthBar_rangeCheckAlpha or 1))
-						if not castBarFade then
-							castBar:SetAlpha (inRangeAlpha * (notTheTarget and castBar_rangeCheckAlpha or 1))
-						end
-						powerBar:SetAlpha (inRangeAlpha * (notTheTarget and powerBar_rangeCheckAlpha or 1))
-						buffFrame1:SetAlpha (inRangeAlpha * (notTheTarget and buffFrames_rangeCheckAlpha or 1))
-						buffFrame2:SetAlpha (inRangeAlpha * (notTheTarget and buffFrames_rangeCheckAlpha or 1))
-					end
-
-					plateFrame [MEMBER_RANGE] = true
-					plateFrame.unitFrame [MEMBER_RANGE] = true
+				unitFrame:SetAlpha (nameplateAlpha * inRangeAlpha * (notTheTarget and overallRangeCheckAlpha or 1))
+				healthBar:SetAlpha (inRangeAlpha * (notTheTarget and healthBar_rangeCheckAlpha or 1))
+				if not castBarFade then
+					castBar:SetAlpha (inRangeAlpha * (notTheTarget and castBar_rangeCheckAlpha or 1))
 				end
+				powerBar:SetAlpha (inRangeAlpha * (notTheTarget and powerBar_rangeCheckAlpha or 1))
+				buffFrame1:SetAlpha (inRangeAlpha * (notTheTarget and buffFrames_rangeCheckAlpha or 1))
+				buffFrame2:SetAlpha (inRangeAlpha * (notTheTarget and buffFrames_rangeCheckAlpha or 1))
+
+				plateFrame [MEMBER_RANGE] = true
+				plateFrame.unitFrame [MEMBER_RANGE] = true
 			else
 				--unit is out of range
 				unitFrame.IsInRange = false
 				
-				if (onAdded) then
-					plateFrame.FadedIn = nil
-
---					unitFrame:SetAlpha (overallRangeCheckAlpha * (notTheTarget and overallRangeCheckAlpha or 1))
---					healthBar:SetAlpha (healthBar_rangeCheckAlpha * (notTheTarget and healthBar_rangeCheckAlpha or 1))
---					castBar:SetAlpha (castBar_rangeCheckAlpha * (notTheTarget and castBar_rangeCheckAlpha or 1))
---					powerBar:SetAlpha (powerBar_rangeCheckAlpha * (notTheTarget and powerBar_rangeCheckAlpha or 1))
---					buffFrame1:SetAlpha (buffFrames_rangeCheckAlpha * (notTheTarget and buffFrames_rangeCheckAlpha or 1))
---					buffFrame2:SetAlpha (buffFrames_rangeCheckAlpha * (notTheTarget and buffFrames_rangeCheckAlpha or 1))
-
-					unitFrame:SetAlpha ((unitIsTarget and inRangeAlpha or overallRangeCheckAlpha) * nameplateAlpha * (notTheTarget and alphaMultiplier or 1))
-					healthBar:SetAlpha ((unitIsTarget and inRangeAlpha or healthBar_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
-					if not castBarFade then
-						castBar:SetAlpha ((unitIsTarget and inRangeAlpha or castBar_rangeCheckAlpha) * (notTheTarget and alphaMultiplier  or 1))
-					end
-					powerBar:SetAlpha ((unitIsTarget and inRangeAlpha or powerBar_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
-					buffFrame1:SetAlpha ((unitIsTarget and inRangeAlpha or buffFrames_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
-					buffFrame2:SetAlpha ((unitIsTarget and inRangeAlpha or buffFrames_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
-
-					plateFrame [MEMBER_RANGE] = false
-					plateFrame.unitFrame [MEMBER_RANGE] = false
-
-				else
-					local newAlpha = nameplateAlpha * overallRangeCheckAlpha * (notTheTarget and alphaMultiplier or 1)
-					if (not DF:IsNearlyEqual (unitFrame:GetAlpha(), newAlpha, 0.01)) then
-						
-						--play animations (animation aren't while in development)
---						unitFrame:SetAlpha (overallRangeCheckAlpha * (notTheTarget and overallRangeCheckAlpha or 1))
---						healthBar:SetAlpha (healthBar_rangeCheckAlpha * (notTheTarget and healthBar_rangeCheckAlpha or 1))
---						castBar:SetAlpha (castBar_rangeCheckAlpha * (notTheTarget and castBar_rangeCheckAlpha or 1))
---						powerBar:SetAlpha (powerBar_rangeCheckAlpha * (notTheTarget and powerBar_rangeCheckAlpha or 1))
---						buffFrame1:SetAlpha (buffFrames_rangeCheckAlpha * (notTheTarget and buffFrames_rangeCheckAlpha or 1))
---						buffFrame2:SetAlpha (buffFrames_rangeCheckAlpha * (notTheTarget and buffFrames_rangeCheckAlpha or 1))
-						
-						unitFrame:SetAlpha ((unitIsTarget and inRangeAlpha or overallRangeCheckAlpha) * nameplateAlpha * (notTheTarget and alphaMultiplier or 1))
-						healthBar:SetAlpha ((unitIsTarget and inRangeAlpha or healthBar_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
-						if not castBarFade then
-							castBar:SetAlpha ((unitIsTarget and inRangeAlpha or castBar_rangeCheckAlpha) * (notTheTarget and alphaMultiplier  or 1))
-						end
-						powerBar:SetAlpha ((unitIsTarget and inRangeAlpha or powerBar_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
-						buffFrame1:SetAlpha ((unitIsTarget and inRangeAlpha or buffFrames_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
-						buffFrame2:SetAlpha ((unitIsTarget and inRangeAlpha or buffFrames_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
-					end
-					plateFrame [MEMBER_RANGE] = false
-					plateFrame.unitFrame [MEMBER_RANGE] = false
+				unitFrame:SetAlpha ((unitIsTarget and inRangeAlpha or overallRangeCheckAlpha) * nameplateAlpha * (notTheTarget and alphaMultiplier or 1))
+				healthBar:SetAlpha ((unitIsTarget and inRangeAlpha or healthBar_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
+				if not castBarFade then
+					castBar:SetAlpha ((unitIsTarget and inRangeAlpha or castBar_rangeCheckAlpha) * (notTheTarget and alphaMultiplier  or 1))
 				end
+				powerBar:SetAlpha ((unitIsTarget and inRangeAlpha or powerBar_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
+				buffFrame1:SetAlpha ((unitIsTarget and inRangeAlpha or buffFrames_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
+				buffFrame2:SetAlpha ((unitIsTarget and inRangeAlpha or buffFrames_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
+
+				plateFrame [MEMBER_RANGE] = false
+				plateFrame.unitFrame [MEMBER_RANGE] = false
 			end
 
 		--range check isnt enabled, check is no target alpha is
@@ -1071,7 +1015,6 @@ Plater.AnchorNamesByPhraseId = {
 						buffFrame1:SetAlpha (DB_AURA_ALPHA)
 						buffFrame2:SetAlpha (DB_AURA_ALPHA)
 					end
-					plateFrame.FadedIn = true
 
 				else
 					--this unit isnt the current player target
@@ -1085,11 +1028,9 @@ Plater.AnchorNamesByPhraseId = {
 						buffFrame1:SetAlpha (inRangeAlpha * buffFrames_rangeCheckAlpha)
 						buffFrame2:SetAlpha (inRangeAlpha * buffFrames_rangeCheckAlpha)
 					end
-					plateFrame.FadedIn = nil
 				end
 			else
 				--player does not have a target, so just set to regular alpha
-				plateFrame.FadedIn = true
 				unitFrame:SetAlpha (nameplateAlpha * inRangeAlpha)
 				healthBar:SetAlpha (1)
 				if not castBarFade then
@@ -1101,7 +1042,6 @@ Plater.AnchorNamesByPhraseId = {
 			end
 		else
 			-- no alpha settings, so just go to default
-			plateFrame.FadedIn = true
 			unitFrame:SetAlpha (nameplateAlpha * inRangeAlpha)
 			healthBar:SetAlpha (1)
 			if not castBarFade then
@@ -5635,12 +5575,12 @@ function Plater.OnInit() --private --~oninit ~init
 					self.SpellID = 		self.spellID
 					self.SpellTexture = 	self.spellTexture
 					if IS_WOW_PROJECT_MIDNIGHT then
-						if type(self.spellStartTime) ~= nil then
+						if type(self.spellStartTime) ~= "nil" then
 							self.SpellStartTime = self.spellStartTime
 						else
 							self.spellStartTime = GetTimePreciseSec() * 1000
 						end
-						if type(self.SpellEndTime) ~= nil then
+						if type(self.SpellEndTime) ~= "nil" then
 							self.SpellEndTime = self.spellEndTime
 						else
 							self.SpellEndTime = GetTimePreciseSec() * 1000
@@ -7700,13 +7640,13 @@ end
 	function Plater.OnPlayerTargetChanged() --private
 		Plater.PlayerCurrentTargetGUID = UnitGUID ("target")
 		--Plater.PlayerHasTarget = Plater.PlayerCurrentTargetGUID and true
-		Plater.PlayerHasTarget = type(Plater.PlayerCurrentTargetGUID) ~= nil
+		Plater.PlayerHasTarget = type(Plater.PlayerCurrentTargetGUID) ~= "nil"
 		local selfTarget = UnitIsUnit("player", "target")
 		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(selfTarget) then selfTarget = false end --MIDNIGHT!!
 		Plater.PlayerHasTargetNonSelf = Plater.PlayerHasTarget and not selfTarget
 		Plater.PlayerCurrentFocusTargetGUID = UnitGUID ("focus")
 		--Plater.PlayerHasFocusTarget = Plater.PlayerCurrentFocusTargetGUID and true
-		Plater.PlayerHasFocusTarget = type(Plater.PlayerCurrentFocusTargetGUID) ~= nil
+		Plater.PlayerHasFocusTarget = type(Plater.PlayerCurrentFocusTargetGUID) ~= "nil"
 		local selfFocus = UnitIsUnit("player", "target")
 		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(selfFocus) then selfFocus = false end --MIDNIGHT!!
 		Plater.PlayerHasFocusTargetNonSelf = Plater.PlayerHasFocusTarget and not selfFocus and true

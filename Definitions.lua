@@ -14,7 +14,6 @@
 ---@field CurrentUnitNameString fontstring
 ---@field debugAreaTexture texture
 ---@field debugAreaText fontstring
----@field FadedIn boolean
 ---@field FocusIndicator texture
 ---@field HasUpdateScheduled ctimer
 ---@field isFriend boolean
