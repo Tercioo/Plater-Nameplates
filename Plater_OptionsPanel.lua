@@ -6,6 +6,7 @@ local DF = DetailsFramework
 local LibSharedMedia = LibStub:GetLibrary ("LibSharedMedia-3.0")
 local LibRangeCheck = LibStub:GetLibrary ("LibRangeCheck-3.0")
 local _
+local IsBetaBuild = IsBetaBuild or function() return false end
 
 local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_NOT_MAINLINE = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
@@ -2852,7 +2853,9 @@ Plater.CreateAuraTesting()
 	auraFilterFrame:SetSize (f:GetWidth(), f:GetHeight() + startY)
 
 	auraFilterFrame:SetScript("OnShow", function()
-		DF:LoadSpellCache(Plater.SpellHashTable, Plater.SpellIndexTable, Plater.SpellSameNameTable)
+		if not IsBetaBuild() then
+			DF:LoadSpellCache(Plater.SpellHashTable, Plater.SpellIndexTable, Plater.SpellSameNameTable)
+		end
 	end)
 	auraFilterFrame:SetScript("OnHide", function()
 		--DF:UnloadSpellCache()
@@ -3665,7 +3668,9 @@ Plater.CreateAuraTesting()
 		
 		specialAuraFrame:SetScript ("OnShow", function()
 			special_auras_added:Refresh()
-			DF:LoadSpellCache(Plater.SpellHashTable, Plater.SpellIndexTable, Plater.SpellSameNameTable)
+			if not IsBetaBuild() then
+				DF:LoadSpellCache(Plater.SpellHashTable, Plater.SpellIndexTable, Plater.SpellSameNameTable)
+			end
 		end)
 		specialAuraFrame:SetScript ("OnHide", function()
 			--DF:UnloadSpellCache()

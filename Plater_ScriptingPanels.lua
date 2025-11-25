@@ -11,6 +11,7 @@ local tremove = _G.tremove
 local CreateFrame = _G.CreateFrame
 local tinsert = _G.tinsert
 local GetSpellInfo = GetSpellInfo or function(spellID) if not spellID then return nil end local si = C_Spell.GetSpellInfo(spellID) if si then return si.name, nil, si.iconID, si.castTime, si.minRange, si.maxRange, si.spellID, si.originalIconID end end
+local IsBetaBuild = IsBetaBuild or function() return false end
 
 ---@class searchdata : table
 ---@field [1] number data index within the profile.script_data table
@@ -3195,7 +3196,9 @@ function Plater.CreateScriptingPanel()
 			end
 		end
 
-		DF:LoadSpellCache(Plater.SpellHashTable, Plater.SpellIndexTable, Plater.SpellSameNameTable)
+		if not IsBetaBuild() then
+			DF:LoadSpellCache(Plater.SpellHashTable, Plater.SpellIndexTable, Plater.SpellSameNameTable)
+		end
 	end)
 	
 	scriptingFrame:SetScript ("OnHide", function()
