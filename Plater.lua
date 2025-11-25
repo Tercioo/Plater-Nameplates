@@ -1781,7 +1781,7 @@ Plater.AnchorNamesByPhraseId = {
 
 		DB_LERP_COLOR_SPEED = profile.color_lerp_speed
 		DB_PLATE_CONFIG = profile.plate_config
-		DB_TRACK_METHOD = profile.aura_tracker.track_method
+		DB_TRACK_METHOD = IS_WOW_PROJECT_MIDNIGHT and 1 or profile.aura_tracker.track_method
 		
 		DB_DO_ANIMATIONS = not IS_WOW_PROJECT_MIDNIGHT and profile.use_health_animation or false
 		DB_ANIMATION_TIME_DILATATION = profile.health_animation_time_dilatation
