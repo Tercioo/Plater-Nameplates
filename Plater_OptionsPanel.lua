@@ -1982,8 +1982,8 @@ local debuff_options = {
 			Plater.UpdateAllPlates()
 		end,
 		name = "Show Auras Casted by You",
-		desc = "Show Auras Casted by You.",
-		hidden = IS_WOW_PROJECT_MIDNIGHT,
+		desc = "Show Auras Casted by You and your pets.",
+		--hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
 	{
@@ -2013,7 +2013,7 @@ local debuff_options = {
 		end,
 		name = "Show Important Auras",
 		desc = "Show buffs and debuffs which the game tag as important.",
-		hidden = IS_WOW_PROJECT_MIDNIGHT,
+		--hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
 	{
