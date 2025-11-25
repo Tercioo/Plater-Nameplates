@@ -201,8 +201,10 @@ function Plater.CreateDesignerWindow()
     local levelText = healthBar.actorLevel
     ---@type fontstring
     local spellName = castBar.Text
-    spellName:SetText("Blizzard")
+    ---@type fontstring
+    local lifePercent = healthBar.lifePercent
 
+    spellName:SetText("Blizzard")
     unitName:SetText("Unit Name")
     levelText:SetText("60")
 
@@ -227,8 +229,13 @@ function Plater.CreateDesignerWindow()
     local layoutOptions = {}
 
     --by registering the object within the editor, the the object will show up in the list of widgets to select
+
+    --health bar
     layoutEditor:RegisterObject(unitName, "Unit Name", "UNITNAME", profile, profileKey, options.WidgetSettingsMapTables.UnitName, options.WidgetSettingsExtraOptions.UnitName, onSettingChanged, layoutOptions, healthBar)
     layoutEditor:RegisterObject(levelText, "Unit Level", "UNITLEVEL", profile, profileKey, options.WidgetSettingsMapTables.UnitLevel, options.WidgetSettingsExtraOptions.UnitLevel, onSettingChanged, layoutOptions, healthBar)
+    layoutEditor:RegisterObject(lifePercent, "Life Percent", "LIFEPERCENT", profile, profileKey, options.WidgetSettingsMapTables.LifePercent, options.WidgetSettingsExtraOptions.LifePercent, onSettingChanged, layoutOptions, healthBar)
+
+    --cast bar
     layoutEditor:RegisterObject(spellName, "Spell Name", "SPELLNAME", profile, profileKey, options.WidgetSettingsMapTables.SpellName, options.WidgetSettingsExtraOptions.SpellName, onSettingChanged, layoutOptions, castBar)
 
     local objectSelector = layoutEditor:GetObjectSelector()
@@ -242,6 +249,8 @@ function Plater.CreateDesignerWindow()
 
     editorMainFrame:SetAlpha(1)
 
+    local disabledAlpha = 0.2
+
     local moveUpFrame = CreateFrame("frame", nil, editorMainFrame)
     moveUpFrame:SetScript("OnUpdate", function()
         plateFrame.unitFrame:SetFrameStrata("HIGH")
@@ -251,6 +260,13 @@ function Plater.CreateDesignerWindow()
         --plateFrame.unitName:SetText()
         --stops when the frame hides
         --dv(plateFrame)
+
+        --check options
+        if (profile[profileKey].percent_text_enabled) then
+            lifePercent:SetAlpha(1)
+        else
+            lifePercent:SetAlpha(disabledAlpha)
+        end
     end)
 
 
@@ -450,14 +466,14 @@ function designer.UpdatePreview()
     Plater.NameplateTick (plateFrame.OnTickFrame, 999)
     unitFrame.PlaterOnScreen = true
 
-    dv(healthBar)
+    --dv(healthBar)
 
     local focusIndicator = unitFrame.FocusIndicator
 
     local anchorFrame = plateFrame.PlaterAnchorFrame
 
-    local actorLevel = healthBar.actorLevel
-    local lifePercent = healthBar.lifePercent
+    --local actorLevel = healthBar.actorLevel
+    
 
     local obscuredTexture = plateFrame.Obscured
 

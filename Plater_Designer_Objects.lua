@@ -37,6 +37,21 @@ function designer.CreateSettings(parentFrame)
             --classcolor = "name_classcolor",
         },
 
+        LifePercent = {
+            --text = "80",
+            size = "percent_text_size",
+            font = "percent_text_font",
+            color = "percent_text_color",
+            outline = "percent_text_outline",
+            percent_text_shadow_color = "percent_text_shadow_color",
+            shadowoffsetx = "percent_text_shadow_color_offset[1]",
+            shadowoffsety = "percent_text_shadow_color_offset[2]",
+            anchor = "percent_text_anchor.side",
+            anchoroffsetx = "percent_text_anchor.x",
+            anchoroffsety = "percent_text_anchor.y",
+            alpha = "percent_text_alpha",
+        },
+
         SpellName = {
             --text = UnitName("player"),
             size = "spellname_text_size",
@@ -75,6 +90,7 @@ function designer.CreateSettings(parentFrame)
 
     options.WidgetSettingsExtraOptions = {
         UnitName = {},
+
         UnitLevel = {
             {
                 key = "level_text_enabled", --the name of the option in the profile table
@@ -85,6 +101,40 @@ function designer.CreateSettings(parentFrame)
         },
 
         SpellName = {},
+
+        LifePercent = {
+            { --enabled
+                key = "percent_text_enabled", --the name of the option in the profile table
+                label = "Enabled",
+                widget = "toggle",
+                setter = function(widget, value) designer.UpdateAllNameplates() end,
+            },
+            {--out oc combat
+                key = "percent_text_ooc", --the name of the option in the profile table
+                label = "Show Out Of Combat",
+                widget = "toggle",
+                setter = function(widget, value) designer.UpdateAllNameplates() end,
+            },
+            {--show percent
+                key = "percent_show_percent", --the name of the option in the profile table
+                label = "Show Percent",
+                widget = "toggle",
+                setter = function(widget, value) designer.UpdateAllNameplates() end,
+            },
+            {--show decimals
+                key = "percent_text_show_decimals", --the name of the option in the profile table
+                label = "Show Decimals",
+                widget = "toggle",
+                setter = function(widget, value) designer.UpdateAllNameplates() end,
+            },
+            {--show health value
+                key = "percent_show_health", --the name of the option in the profile table
+                label = "Show Health Value",
+                widget = "toggle",
+                setter = function(widget, value) designer.UpdateAllNameplates() end,
+            },
+        },
+
 
         --[[
         UnitName = {
