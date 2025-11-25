@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Clone project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Update TOC Interface version
         uses: cont1nuity/toc-interface-updater@master
