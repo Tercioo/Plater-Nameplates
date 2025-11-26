@@ -2425,7 +2425,7 @@ Plater.AnchorNamesByPhraseId = {
 					local unitFrame = plateFrame.unitFrame
 					local unitName = UnitName (unitID)
 					local unitNameTranslit = unitName
-					if DB_USE_NAME_TRANSLIT and not IS_WOW_PROJECT_MIDNIGHT or (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(unitName)) then
+					if DB_USE_NAME_TRANSLIT and (not IS_WOW_PROJECT_MIDNIGHT or (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(unitName))) then
 						unitNameTranslit = LibTranslit:Transliterate(unitName, TRANSLIT_MARK)
 					end
 					plateFrame [MEMBER_NAME] = unitNameTranslit
@@ -3938,7 +3938,7 @@ Plater.AnchorNamesByPhraseId = {
 				unitName = unitName or ""
 			end
 			local unitNameTranslit = unitName
-			if DB_USE_NAME_TRANSLIT and not IS_WOW_PROJECT_MIDNIGHT or (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(unitName)) then
+			if DB_USE_NAME_TRANSLIT and (not IS_WOW_PROJECT_MIDNIGHT or (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(unitName))) then
 				unitNameTranslit = LibTranslit:Transliterate(unitName, TRANSLIT_MARK)
 			end
 			plateFrame [MEMBER_NAME] = unitNameTranslit
@@ -5797,7 +5797,7 @@ function Plater.OnInit() --private --~oninit ~init
 								end
 
 								if (canShowTargetName) then
-									if DB_USE_NAME_TRANSLIT and not IS_WOW_PROJECT_MIDNIGHT or (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(targetName)) then
+									if DB_USE_NAME_TRANSLIT and (not IS_WOW_PROJECT_MIDNIGHT or (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(targetName))) then
 										targetName = LibTranslit:Transliterate(targetName, TRANSLIT_MARK)
 									end
 									
@@ -10201,7 +10201,7 @@ end
 							name = petOwnerTable.ownerName or name
 							sourceGUID = petOwnerTable.ownerGUID or sourceGUID
 						end
-						if DB_USE_NAME_TRANSLIT and not IS_WOW_PROJECT_MIDNIGHT or (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(name)) then
+						if DB_USE_NAME_TRANSLIT and (not IS_WOW_PROJECT_MIDNIGHT or (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(name))) then
 							name = LibTranslit:Transliterate(name, TRANSLIT_MARK)
 						end
 						castBar.Text:SetText (INTERRUPTED .. " [" .. Plater.SetTextColorByClass (sourceGUID, name) .. "]")
