@@ -3944,6 +3944,7 @@ Plater.AnchorNamesByPhraseId = {
 			plateFrame [MEMBER_NAME] = unitNameTranslit
 			plateFrame [MEMBER_NAMELOWER] = (IS_WOW_PROJECT_MIDNIGHT and plateFrame [MEMBER_NAME] or "") or lower (plateFrame [MEMBER_NAME])
 			plateFrame ["namePlateClassification"] = UnitClassification (unitID)
+			plateFrame.namePlateIsBossMob = UnitIsBossMob(unitID)
 			plateFrame.unitNameInternal = unitName
 
 			--clear name schedules
@@ -3955,6 +3956,7 @@ Plater.AnchorNamesByPhraseId = {
 			unitFrame [MEMBER_NAME] = plateFrame [MEMBER_NAME]
 			unitFrame [MEMBER_NAMELOWER] = plateFrame [MEMBER_NAMELOWER]
 			unitFrame ["namePlateClassification"] = plateFrame ["namePlateClassification"]
+			unitFrame.namePlateIsBossMob = plateFrame.namePlateIsBossMob
 			unitFrame.unitNameInternal = unitName
 			unitFrame [MEMBER_UNITID] = unitID
 			unitFrame.namePlateThreatPercent = 0
@@ -5734,11 +5736,11 @@ function Plater.OnInit() --private --~oninit ~init
 							scriptEnv._SpellName = self.SpellName
 							scriptEnv._Texture = self.SpellTexture
 							scriptEnv._Caster = self.unit
-							scriptEnv._Duration = self.SpellEndTime - self.SpellStartTime
+							scriptEnv._Duration = not IS_WOW_PROJECT_MIDNIGHT and (self.SpellEndTime - self.SpellStartTime) or nil
 							scriptEnv._StartTime = self.SpellStartTime
 							scriptEnv._CanInterrupt = self.CanInterrupt
 							scriptEnv._EndTime = self.SpellEndTime
-							scriptEnv._RemainingTime = max (self.SpellEndTime - GetTime(), 0)
+							scriptEnv._RemainingTime = not IS_WOW_PROJECT_MIDNIGHT and max (self.SpellEndTime - GetTime(), 0) or nil
 							scriptEnv._CanStealOrPurge = self.CanStealOrPurge
 							scriptEnv._AuraType = self.AuraType
 							scriptEnv._CastBarHeight = unitFrame.castBar:GetHeight()
@@ -5841,11 +5843,11 @@ function Plater.OnInit() --private --~oninit ~init
 							scriptEnv._SpellName = self.SpellName
 							scriptEnv._Texture = self.SpellTexture
 							scriptEnv._Caster = self.unit
-							scriptEnv._Duration = self.SpellEndTime - self.SpellStartTime
+							scriptEnv._Duration = not IS_WOW_PROJECT_MIDNIGHT and (self.SpellEndTime - self.SpellStartTime) or nil
 							scriptEnv._StartTime = self.SpellStartTime
 							scriptEnv._CanInterrupt = self.CanInterrupt
 							scriptEnv._EndTime = self.SpellEndTime
-							--scriptEnv._RemainingTime = max (self.SpellEndTime - GetTime(), 0) MIDNIGHT!!
+							scriptEnv._RemainingTime = not IS_WOW_PROJECT_MIDNIGHT and max (self.SpellEndTime - GetTime(), 0) or nil
 							scriptEnv._CanStealOrPurge = self.CanStealOrPurge
 							scriptEnv._AuraType = self.AuraType
 							
@@ -8690,18 +8692,7 @@ end
 				buffFrame2:Show()
 				plateFrame.IsNpcWithoutHealthBar = false
 				
-				if unitFrame.IsSelf then
-					--refresh color
-					if (plateFrame.PlateConfig.healthbar_color_by_hp) then
-						local currentHealth = healthBar.currentHealth
-						local currentHealthMax = healthBar.currentHealthMax
-						local originalColor = plateFrame.PlateConfig.healthbar_color
-						local r, g, b = DF:LerpLinearColor (abs (currentHealth / currentHealthMax - 1), 1, originalColor[1], originalColor[2], originalColor[3], 1, .4, 0)
-						Plater.ChangeHealthBarColor_Internal (healthBar, r, g, b, (originalColor[4] or 1), true)
-					else
-						Plater.ChangeHealthBarColor_Internal (healthBar, unpack (DB_PLATE_CONFIG [actorType].healthbar_color))
-					end
-				else
+				if not unitFrame.IsSelf then
 					nameFrame:Show()
 					-- could be a pet
 					if IS_WOW_PROJECT_MIDNIGHT then
@@ -8830,7 +8821,14 @@ end
 		--personal player bar
 		if (plateFrame.IsSelf) then
 			Plater.UpdatePersonalBar (NamePlateDriverFrame)
-			if (not DB_PLATE_CONFIG [actorType].healthbar_color_by_hp) then
+			--refresh color
+			if (plateFrame.PlateConfig.healthbar_color_by_hp) then
+				local currentHealth = healthBar.currentHealth
+				local currentHealthMax = healthBar.currentHealthMax
+				local originalColor = plateFrame.PlateConfig.healthbar_color
+				local r, g, b = DF:LerpLinearColor (abs (currentHealth / currentHealthMax - 1), 1, originalColor[1], originalColor[2], originalColor[3], 1, .4, 0)
+				Plater.ChangeHealthBarColor_Internal (healthBar, r, g, b, (originalColor[4] or 1), true)
+			else
 				Plater.ChangeHealthBarColor_Internal (healthBar, unpack (DB_PLATE_CONFIG [actorType].healthbar_color))
 			end
 		end
@@ -9106,7 +9104,7 @@ end
 			--is a pet
 			if IS_WOW_PROJECT_MIDNIGHT then
 				local unitID = plateFrame.unitFrame [MEMBER_UNITID]
-				local isPet = UnitIsUnit("pet", unitID)
+				local isPet = UnitIsMinion(unitID) or UnitIsOtherPlayersPet(unitID) or UnitIsUnit("pet", unitID)
 				if not issecretvalue(isPet) and isPet then --MIDNIGHT!!
 					if (config.indicator_pet) then
 						Plater.AddIndicator (plateFrame, "pet")
@@ -9985,7 +9983,7 @@ end
 			
 		elseif IS_WOW_PROJECT_MIDNIGHT then
 			local unitID = plateFrame.unitFrame [MEMBER_UNITID]
-			local isPet = UnitIsUnit("pet", unitID)
+			local isPet = UnitIsMinion(unitID) or UnitIsOtherPlayersPet(unitID) or UnitIsUnit("pet", unitID)
 			if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(isPet) then return "normal" end --MIDNIGHT!!
 			if isPet then
 				return "pet"
