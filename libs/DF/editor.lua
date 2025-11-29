@@ -812,7 +812,7 @@ detailsFramework.EditorMixin = {
                 menuOptions[#menuOptions+1] = {type = "blank"}
             else
                 --get the key to be used on profile table
-                local profileKey = profileMap[option.key]
+                local profileKey = profileMap[option.key] or option.key
                 if profileKey then
                     local value
 
@@ -918,7 +918,7 @@ detailsFramework.EditorMixin = {
             end
         end
 
-        if (anchorSettings) then
+        if (anchorSettings and not self.options.no_anchor_points) then
             self.AnchorFrames:SetupAnchorsForObject(anchorSettings)
         end
 
@@ -1297,6 +1297,7 @@ detailsFramework.EditorMixin = {
 ---@field object_list_lines number
 ---@field object_list_line_height number
 ---@field text_template table
+---@field no_anchor_points boolean
 
 --editorFrame.options.text_template
 
@@ -1311,6 +1312,7 @@ local editorDefaultOptions = {
     object_list_lines = 20,
     object_list_line_height = 20,
     text_template = detailsFramework:GetTemplate("font", "OPTIONS_FONT_TEMPLATE"),
+    no_anchor_points = false,
 }
 
 function detailsFramework:CreateEditor(parent, name, options)

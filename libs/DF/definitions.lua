@@ -211,6 +211,7 @@ GameCooltipFrame2 = {}
 ---@field IsMidnightWow fun():boolean
 ---@field IsNotMidnightWow fun():boolean
 ---@field IsWarWowOrBelow fun():boolean
+---@field IsAddonApocalypseWow fun():boolean
 ---@field CreateFullBorder fun(self:table, name:string, parent:frame) : border_frame
 ---@field CreateButton fun(self:table, parent:frame, func:function, width:number, height:number, text:any, param1:any, param2:any, texture:atlasname|texturepath|textureid|nil, member:string?, name:string?, shortMethod:any, buttonTemplate:table?, textTemplate:table?) : df_button callback function(blizzButton, clickType, param1, param2) end
 ---@field CreateCloseButton fun(self:table, parent:frame, frameName:string?) : df_closebutton

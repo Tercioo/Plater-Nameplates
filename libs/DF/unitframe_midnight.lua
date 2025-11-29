@@ -679,9 +679,9 @@ detailsFramework.PowerFrameFunctions = {
 		self.currentPowerPercent = UnitPowerPercent(self.displayedUnit, self.powerType, false, true)
 		self:SetMinMaxValues(self.minPower, self.currentPowerMax)
 
-		--if (self.currentPowerMax == 0 and self.Settings.HideIfNoPower) then
-		--	self:Hide()
-		--end
+		if (not issecretvalue(self.currentPowerMax) and self.currentPowerMax == 0 and self.Settings.HideIfNoPower) then
+			self:Hide()
+		end
 	end,
 
 	UpdatePower = function(self)
