@@ -3944,7 +3944,7 @@ Plater.AnchorNamesByPhraseId = {
 			plateFrame [MEMBER_NAME] = unitNameTranslit
 			plateFrame [MEMBER_NAMELOWER] = (IS_WOW_PROJECT_MIDNIGHT and plateFrame [MEMBER_NAME] or "") or lower (plateFrame [MEMBER_NAME])
 			plateFrame ["namePlateClassification"] = UnitClassification (unitID)
-			plateFrame.namePlateIsBossMob = UnitIsBossMob(unitID)
+			plateFrame.namePlateIsBossMob = UnitIsBossMob and UnitIsBossMob(unitID)
 			plateFrame.unitNameInternal = unitName
 
 			--clear name schedules
