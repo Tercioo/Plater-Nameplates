@@ -4492,6 +4492,7 @@ Plater.AnchorNamesByPhraseId = {
 		
 		if (CompactUnitFrame_UnregisterEvents) then
 			CompactUnitFrame_UnregisterEvents (self)
+			--if self.castBar then CompactUnitFrame_UnregisterEvents (self.castBar) end
 		end
 	end
 	
@@ -5594,10 +5595,11 @@ function Plater.OnInit() --private --~oninit ~init
 						self.SpellEndTime = self.spellEndTime or curTime
 					end
 					
-					local notInterruptible = not self.canInterrupt
 					if IS_WOW_PROJECT_MIDNIGHT then
-						notInterruptible = self.notInterruptible
+						self.canInterrupt = unitFrame.PlateFrame.UnitFrame.castBar.barType ~= "uninterruptable"
+						self:UpdateCastColor() -- ensure this. one day we might disable the blizzard cast bar fully
 					end
+					local notInterruptible = not self.canInterrupt
 					
 					self.IsInterrupted = false
 					self.InterruptSourceName = nil
@@ -5605,20 +5607,15 @@ function Plater.OnInit() --private --~oninit ~init
 					self.ReUpdateNextTick = true
 					self.ThrottleUpdate = -1
 					
-					if not IS_WOW_PROJECT_MIDNIGHT then
-						if (notInterruptible) then
-							self.BorderShield:Show()
-						else
-							self.BorderShield:Hide()
-						end
-
-						if (notInterruptible) then
-							self.CanInterrupt = false
-						else
-							self.CanInterrupt = true
-						end
+					if (notInterruptible) then
+						self.BorderShield:Show()
 					else
 						self.BorderShield:Hide()
+					end
+
+					if (notInterruptible) then
+						self.CanInterrupt = false
+					else
 						self.CanInterrupt = true
 					end
 					
