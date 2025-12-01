@@ -9628,8 +9628,9 @@ end
 	end
 
 	function Plater.CheckHighlight (self)
-		if IS_WOW_PROJECT_MIDNIGHT then return end --MIDNIGHT!!
-		if (UnitIsUnit ("mouseover", self.unit)) then
+		local isMouseOver = UnitIsUnit ("mouseover", self.unit)
+		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(isMouseOver) then isMouseOver = false end
+		if (isMouseOver) then
 			self.HighlightTexture:Show()
 		else
 			self.HighlightTexture:Hide()
