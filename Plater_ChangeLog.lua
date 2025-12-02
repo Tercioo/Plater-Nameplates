@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1764718947, "Backend Change", "Dec 3rd, 2025", "More support for Midnight (work in progress).", "cont1nuity"},
+			
 			{1764011311, "Backend Change", "Oct 21st, 2025", "Initial support for Midnight (work in progress).", "cont1nuity"},
 			{1764011311, "Bug Fix", "Oct 22nd, 2025", "Fixing nameplate alpha for nameplates which are in the fade-in animation when being shown.", "cont1nuity"},
 			
