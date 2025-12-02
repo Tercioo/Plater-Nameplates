@@ -12,7 +12,7 @@ Plater.db.profile.bossmod_support_bars_text_max_len = 7
 ]]--
 
 local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
-local IS_WOW_PROJECT_MIDNIGHT = IS_WOW_PROJECT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_MIDNIGHT and ClassicExpansionAtLeast(LE_EXPANSION_MIDNIGHT)
+local IS_WOW_PROJECT_MIDNIGHT = IS_WOW_PROJECT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_MIDNIGHT and ClassicExpansionAtLeast(LE_EXPANSION_MIDNIGHT) and issecretvalue and true or false
 
 local DF = _G ["DetailsFramework"]
 local Plater = _G.Plater

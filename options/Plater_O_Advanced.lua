@@ -6,7 +6,7 @@ local DF = DetailsFramework
 local _
 
 local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
-local IS_WOW_PROJECT_MIDNIGHT = IS_WOW_PROJECT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_MIDNIGHT and ClassicExpansionAtLeast(LE_EXPANSION_MIDNIGHT)
+local IS_WOW_PROJECT_MIDNIGHT = IS_WOW_PROJECT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_MIDNIGHT and ClassicExpansionAtLeast(LE_EXPANSION_MIDNIGHT) and issecretvalue and true or false
 
 --font select
 local on_select_blizzard_nameplate_font = function (_, _, value)
