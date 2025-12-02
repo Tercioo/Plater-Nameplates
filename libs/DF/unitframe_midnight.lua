@@ -290,7 +290,7 @@ local cleanfunction = function() end
 	--when the unit max health is changed
 	healthBarMetaFunctions.UpdateMaxHealth = function(self)
 		local maxHealth = UnitHealthMax(self.displayedUnit)
-		self:SetMinMaxValues(0, maxHealth)
+		self:SetMinMaxValues(0, maxHealth, Enum.StatusBarInterpolation.ExponentialEaseOut)
 		self.currentHealthMax = maxHealth
 		self.currentHealthMissing = UnitHealthMissing(self.displayedUnit, true)
 		self.currentHealthPercent = UnitHealthPercent(self.displayedUnit, true, true)
@@ -313,7 +313,7 @@ local cleanfunction = function() end
 		self.currentHealth = health
 		self.currentHealthMissing = UnitHealthMissing(self.displayedUnit, true)
 		self.currentHealthPercent = UnitHealthPercent(self.displayedUnit, true, true)
-		self:SetValue(health)
+		self:SetValue(health, Enum.StatusBarInterpolation.ExponentialEaseOut)
 
 		if (self.OnHealthChange) then --direct call
 			self.OnHealthChange(self, self.displayedUnit)
