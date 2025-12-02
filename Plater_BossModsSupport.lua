@@ -11,15 +11,16 @@ Plater.db.profile.bossmod_support_bars_enabled = false
 Plater.db.profile.bossmod_support_bars_text_max_len = 7
 ]]--
 
-local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
-local IS_WOW_PROJECT_MIDNIGHT = IS_WOW_PROJECT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_MIDNIGHT and ClassicExpansionAtLeast(LE_EXPANSION_MIDNIGHT) and issecretvalue and true or false
-
 local DF = _G ["DetailsFramework"]
 local Plater = _G.Plater
 local C_Timer = _G.C_Timer
 local C_NamePlate = _G.C_NamePlate
 local GetTime = _G.GetTime
 local LCG = LibStub:GetLibrary("LibCustomGlow-1.0")
+
+
+local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
+local IS_WOW_PROJECT_MIDNIGHT = DF.IsAddonApocalypseWow()
 
 local UNIT_BOSS_MOD_AURAS_ACTIVE = {} --contains for each [GUID] a list of {texture, duration, desaturate}
 local UNIT_BOSS_MOD_AURAS_TO_BE_REMOVED = {} --contains for each [GUID] a list of texture-ids to be removed
