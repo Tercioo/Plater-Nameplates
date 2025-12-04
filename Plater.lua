@@ -5608,10 +5608,11 @@ function Plater.OnInit() --private --~oninit ~init
 					end
 					
 					if IS_WOW_PROJECT_MIDNIGHT then
-						self.canInterrupt = unitFrame.PlateFrame.UnitFrame.castBar.barType ~= "uninterruptable"
+						self.canInterrupt = unitFrame.PlateFrame.UnitFrame.castBar.barType ~= "uninterruptable" -- this will be fixed
+						self.notInterruptible = not self.canInterrupt
 						self:UpdateCastColor() -- ensure this. one day we might disable the blizzard cast bar fully
+						--self:UpdateInterruptState()
 					end
-					local notInterruptible = not self.canInterrupt
 					
 					self.IsInterrupted = false
 					self.InterruptSourceName = nil
@@ -5619,17 +5620,18 @@ function Plater.OnInit() --private --~oninit ~init
 					self.ReUpdateNextTick = true
 					self.ThrottleUpdate = -1
 					
-					if (notInterruptible) then
-						self.BorderShield:Show()
-					else
-						self.BorderShield:Hide()
-					end
-
-					if (notInterruptible) then
-						self.CanInterrupt = false
-					else
-						self.CanInterrupt = true
-					end
+					--if IS_WOW_PROJECT_MIDNIGHT then
+					--	self.BorderShield:Show()
+					--	self.BorderShieldParent:SetAlphaFromBoolean(self.notInterruptible, 1, 0)
+					--else
+						if (self.notInterruptible) then
+							self.BorderShield:Show()
+							self.CanInterrupt = false
+						else
+							self.BorderShield:Hide()
+							self.CanInterrupt = true
+						end
+					--end
 					
 					self.FrameOverlay:SetBackdropBorderColor (0, 0, 0, 0)
 					
