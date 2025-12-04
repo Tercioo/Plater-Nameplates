@@ -923,16 +923,10 @@ Plater.AnchorNamesByPhraseId = {
 		end
 		
 		if not rangeChecker then
-			if IS_WOW_PROJECT_MIDNIGHT then
-				rangeChecker = function (unit)
-					return UnitInRange(unit) --MIDNIGHT!!
-				end
-			else
-				rangeChecker = function (unit)
-					local minRange, maxRange = (LibRangeCheck:GetRange(unit, nil, true) or 0)
-					maxRange = maxRange or minRange or 0
-					return maxRange <= (rangeCheckRange or 40)
-				end
+			rangeChecker = function (unit)
+				local minRange, maxRange = (LibRangeCheck:GetRange(unit, nil, true) or 0)
+				maxRange = maxRange or minRange or 0
+				return maxRange <= (rangeCheckRange or 40)
 			end
 			Plater.GetSpellForRangeCheck()
 		end
