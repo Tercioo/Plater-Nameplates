@@ -925,7 +925,7 @@ Plater.AnchorNamesByPhraseId = {
 		if not rangeChecker then
 			if IS_WOW_PROJECT_MIDNIGHT then
 				rangeChecker = function (unit)
-					return true --UnitInRange(unit) --MIDNIGHT!!
+					return UnitInRange(unit) --MIDNIGHT!!
 				end
 			else
 				rangeChecker = function (unit)
@@ -967,8 +967,24 @@ Plater.AnchorNamesByPhraseId = {
 		if (DB_USE_RANGE_CHECK and rangeChecker) then
 			--check when the unit just has been added to the screen
 			local isInRange = rangeChecker (plateFrame [MEMBER_UNITID] or unitFrame [MEMBER_UNITID])
+			--print(isInRange, issecretvalue(isInRange))
 
-			if (isInRange) then
+			if (IS_WOW_PROJECT_MIDNIGHT and issecretvalue(isInRange)) then
+				unitFrame.IsInRange = isInRange -- this might complicate things...
+				
+				unitFrame:SetAlphaFromBoolean (isInRange, nameplateAlpha * inRangeAlpha * (notTheTarget and overallRangeCheckAlpha or 1), (unitIsTarget and inRangeAlpha or overallRangeCheckAlpha) * nameplateAlpha * (notTheTarget and alphaMultiplier or 1))
+				healthBar:SetAlphaFromBoolean (isInRange, inRangeAlpha * (notTheTarget and healthBar_rangeCheckAlpha or 1), (unitIsTarget and inRangeAlpha or healthBar_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
+				if not castBarFade then
+					castBar:SetAlphaFromBoolean (isInRange, inRangeAlpha * (notTheTarget and castBar_rangeCheckAlpha or 1), (unitIsTarget and inRangeAlpha or castBar_rangeCheckAlpha) * (notTheTarget and alphaMultiplier  or 1))
+				end
+				powerBar:SetAlphaFromBoolean (isInRange, inRangeAlpha * (notTheTarget and powerBar_rangeCheckAlpha or 1), (unitIsTarget and inRangeAlpha or powerBar_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
+				buffFrame1:SetAlphaFromBoolean (isInRange, inRangeAlpha * (notTheTarget and buffFrames_rangeCheckAlpha or 1), (unitIsTarget and inRangeAlpha or buffFrames_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
+				buffFrame2:SetAlphaFromBoolean (isInRange, inRangeAlpha * (notTheTarget and buffFrames_rangeCheckAlpha or 1), (unitIsTarget and inRangeAlpha or buffFrames_rangeCheckAlpha) * (notTheTarget and alphaMultiplier or 1))
+
+				plateFrame [MEMBER_RANGE] = isInRange
+				plateFrame.unitFrame [MEMBER_RANGE] = isInRange
+				
+			elseif (isInRange) then
 				--unit is in rage
 				unitFrame.IsInRange = true
 				
