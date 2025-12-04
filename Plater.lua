@@ -1023,29 +1023,25 @@ Plater.AnchorNamesByPhraseId = {
 			if (Plater.PlayerHasTargetNonSelf) then
 				--is this unit is the current player target?
 				if (unitIsTarget) then
-					if (not DF:IsNearlyEqual (unitFrame:GetAlpha(), nameplateAlpha * inRangeAlpha, 0.01)) then
-						unitFrame:SetAlpha (nameplateAlpha * inRangeAlpha)
-						healthBar:SetAlpha (inRangeAlpha)
-						if not castBarFade then
-							castBar:SetAlpha (inRangeAlpha)
-						end
-						powerBar:SetAlpha (inRangeAlpha)
-						buffFrame1:SetAlpha (DB_AURA_ALPHA)
-						buffFrame2:SetAlpha (DB_AURA_ALPHA)
+					unitFrame:SetAlpha (nameplateAlpha * inRangeAlpha)
+					healthBar:SetAlpha (inRangeAlpha)
+					if not castBarFade then
+						castBar:SetAlpha (inRangeAlpha)
 					end
+					powerBar:SetAlpha (inRangeAlpha)
+					buffFrame1:SetAlpha (DB_AURA_ALPHA)
+					buffFrame2:SetAlpha (DB_AURA_ALPHA)
 
 				else
 					--this unit isnt the current player target
-					if (not DF:IsNearlyEqual (unitFrame:GetAlpha(), nameplateAlpha * inRangeAlpha * overallRangeCheckAlpha, 0.01)) then
-						unitFrame:SetAlpha (nameplateAlpha * inRangeAlpha * overallRangeCheckAlpha)
-						healthBar:SetAlpha (inRangeAlpha * healthBar_rangeCheckAlpha)
-						if not castBarFade then
-							castBar:SetAlpha (inRangeAlpha * castBar_rangeCheckAlpha)
-						end
-						powerBar:SetAlpha (inRangeAlpha * powerBar_rangeCheckAlpha)
-						buffFrame1:SetAlpha (inRangeAlpha * buffFrames_rangeCheckAlpha)
-						buffFrame2:SetAlpha (inRangeAlpha * buffFrames_rangeCheckAlpha)
+					unitFrame:SetAlpha (nameplateAlpha * inRangeAlpha * overallRangeCheckAlpha)
+					healthBar:SetAlpha (inRangeAlpha * healthBar_rangeCheckAlpha)
+					if not castBarFade then
+						castBar:SetAlpha (inRangeAlpha * castBar_rangeCheckAlpha)
 					end
+					powerBar:SetAlpha (inRangeAlpha * powerBar_rangeCheckAlpha)
+					buffFrame1:SetAlpha (inRangeAlpha * buffFrames_rangeCheckAlpha)
+					buffFrame2:SetAlpha (inRangeAlpha * buffFrames_rangeCheckAlpha)
 				end
 			else
 				--player does not have a target, so just set to regular alpha
