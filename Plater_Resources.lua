@@ -1173,7 +1173,7 @@ end
 
 		--amount of resources the player has now
 		local currentResources
-		if Plater.PlayerHasTargetNonSelf then
+		if Plater.PlayerHasTargetNonSelf and IS_WOW_PROJECT_NOT_MAINLINE then
 			currentResources = GetComboPoints("player", "target")
 		else
 			currentResources = UnitPower("player", Plater.Resources.playerResourceId)
