@@ -1401,7 +1401,7 @@ end
 	-- cooldown timer update tick
 	local function AuraIconOnTick_UpdateCooldown (self, deltaTime)
 		local now = GetTime()
-		if (self.lastUpdateCooldown + 0.05) <= now then
+		if (self.lastUpdateCooldown + (IS_WOW_PROJECT_MIDNIGHT and 0.5 or 0.05)) <= now then
 			if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(self.ExpirationTime) then
 				self.RemainingTime = C_UnitAuras.GetAuraDurationRemainingByAuraInstanceID(self.unitFrame.namePlateUnitToken, self:GetID())
 				--print(self.RemainingTime, self.unitFrame.namePlateUnitToken, self:GetID())
@@ -1796,14 +1796,17 @@ end
 		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(duration) then
 			local timeLeft = C_UnitAuras.GetAuraDurationRemainingByAuraInstanceID(auraIconFrame.unitFrame.namePlateUnitToken, i)
 			--local maxduration = C_UnitAuras.GetRefreshExtendedDuration(auraIconFrame.unitFrame.namePlateUnitToken, i)
+			local maxduration = C_UnitAuras.GetAuraBaseDuration(auraIconFrame.unitFrame.namePlateUnitToken, i)
+			applications = C_StringUtil.TruncateWhenZero(applications)
 			auraIconFrame.Cooldown:SetDrawEdge(true)
 			--auraIconFrame.Cooldown:SetCooldown(start, duration, modRate)
-			auraIconFrame.Cooldown:SetCooldownDuration(duration, modRate)
+			--auraIconFrame.Cooldown:SetCooldownDuration(duration, modRate)
+			auraIconFrame.Cooldown:SetCooldownFromExpirationTime(expirationTime, duration, modRate)
 			auraIconFrame.SpellName = spellName
 			auraIconFrame.SpellId = spellId
 			auraIconFrame.InUse = true
 			auraIconFrame.RemainingTime = timeLeft
-			auraIconFrame.Duration = duration
+			auraIconFrame.Duration = maxduration
 			auraIconFrame.DurationRemaining = duration
 			auraIconFrame.Stacks = applications
 			auraIconFrame.ExpirationTime = expirationTime
