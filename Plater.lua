@@ -8385,26 +8385,34 @@ end
 	end
 
 	function Plater.UpdateUnitNameTextSize (plateFrame, nameString, maxWidth)
-		local stringSize = maxWidth or max (plateFrame.unitFrame.healthBar:GetWidth() - 6, 44)
-		local name = plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME] or ""
-		
-		nameString:SetText (name)
-		
-		if not name or name == "" then
-			return
-		end
-		
-		while (nameString:GetUnboundedStringWidth() > stringSize) do
-			name = strsub (name, 1, #name-1)
+		if IS_WOW_PROJECT_MIDNIGHT then
+			local name = plateFrame [MEMBER_NAME]
+			local fontSize = DB_PLATE_CONFIG [plateFrame.actorType].actorname_text_size
+			local nameLength = floor((maxWidth or max (plateFrame.unitFrame.healthBar:GetWidth() - 6, 44)) / fontSize * 2)
+			name = string.format("%." .. nameLength .. "s", name)
 			nameString:SetText (name)
-			if (string.len (name) <= 1) then
-				break
+		else
+			local stringSize = maxWidth or max (plateFrame.unitFrame.healthBar:GetWidth() - 6, 44)
+			local name = plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME] or ""
+			
+			nameString:SetText (name)
+			
+			if not name or name == "" then
+				return
 			end
+			
+			while (nameString:GetUnboundedStringWidth() > stringSize) do
+				name = strsub (name, 1, #name-1)
+				nameString:SetText (name)
+				if (string.len (name) <= 1) then
+					break
+				end
+			end
+			
+			-- cleanup utf8...
+			name = DF:CleanTruncateUTF8String(name)
+			nameString:SetText (name)
 		end
-		
-		-- cleanup utf8...
-		name = DF:CleanTruncateUTF8String(name)
-		nameString:SetText (name)
 	end
 
 	--updates the level text and the color
