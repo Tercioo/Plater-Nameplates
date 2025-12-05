@@ -8155,17 +8155,7 @@ end
 		--update health amount text
 		if (plateConfigs.percent_text_enabled) then
 			if (needReset) then
-				DF:SetFontSize (lifeString, plateConfigs.percent_text_size)
-				DF:SetFontFace (lifeString, plateConfigs.percent_text_font)
-
-				Plater.SetFontOutlineAndShadow (lifeString, plateConfigs.percent_text_outline, plateConfigs.percent_text_shadow_color, plateConfigs.percent_text_shadow_color_offset[1], plateConfigs.percent_text_shadow_color_offset[2])
-				
-				DF:SetFontColor (lifeString, plateConfigs.percent_text_color)
-
-				Plater.SetAnchor (lifeString, plateConfigs.percent_text_anchor)
-				PixelUtil.SetHeight (lifeString, lifeString:GetLineHeight())
-				
-				lifeString:SetAlpha (plateConfigs.percent_text_alpha)
+				platerInternal.UpdatePercentTextLayout(lifeString, plateConfigs)
 			end
 			
 			Plater.UpdateLifePercentText (plateFrame.unitFrame.healthBar, plateFrame.unitFrame [MEMBER_UNITID], plateConfigs.percent_show_health, plateConfigs.percent_show_percent, plateConfigs.percent_text_show_decimals)
@@ -8181,6 +8171,23 @@ end
 		return true
 	end
 	
+	---update the layout of the percent text, this avoid manipulating secrets and layout in a taint path
+	---@param fontString fontstring
+	---@param plateConfigs table
+	function platerInternal.UpdatePercentTextLayout(fontString, plateConfigs)
+		DF:SetFontSize(fontString, plateConfigs.percent_text_size)
+		DF:SetFontFace(fontString, plateConfigs.percent_text_font)
+
+		Plater.SetFontOutlineAndShadow(fontString, plateConfigs.percent_text_outline, plateConfigs.percent_text_shadow_color, plateConfigs.percent_text_shadow_color_offset[1], plateConfigs.percent_text_shadow_color_offset[2])
+		
+		DF:SetFontColor(fontString, plateConfigs.percent_text_color)
+
+		Plater.SetAnchor(fontString, plateConfigs.percent_text_anchor)
+		PixelUtil.SetHeight(fontString, fontString:GetLineHeight())
+		
+		fontString:SetAlpha(plateConfigs.percent_text_alpha)
+	end
+
 	--check if the life percent should be showing for this nameplate
 	--self is plateFrame
 	function Plater.UpdateLifePercentVisibility (self)
