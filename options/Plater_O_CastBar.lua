@@ -6,6 +6,9 @@ local Plater = Plater
 local DF = DetailsFramework
 local _
 
+local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
+local IS_WOW_PROJECT_MIDNIGHT = DF.IsAddonApocalypseWow()
+
 function platerInternal.CreateCastBarOptions()
     if platerInternal.LoadOnDemand_IsLoaded.CastOptions then return end
 
