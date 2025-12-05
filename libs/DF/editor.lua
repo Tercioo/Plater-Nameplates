@@ -666,8 +666,14 @@ detailsFramework.EditorMixin = {
                     end
                 end
 
-                self.ObjectBackgroundTexture:SetPoint("topleft", object, "topleft", 0, 0)
-                self.ObjectBackgroundTexture:SetSize(object:GetWidth(), object:GetHeight())
+
+                self.ObjectBackgroundTexture:SetPoint("topleft", object, "topleft", -2, 2)
+                self.ObjectBackgroundTexture:SetPoint("bottomright", object, "bottomright", 2, -2) --using points instead of size due to width height being secret values in some object
+
+                --local objectWidth = object:GetWidth()
+                --local objectHeight = object:GetHeight()
+                --print("object name:", object:GetName(), object:GetObjectType())
+                --self.ObjectBackgroundTexture:SetSize(objectWidth, objectHeight)
             end,
         }
 

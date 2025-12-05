@@ -1,5 +1,6 @@
 
 local addonName, platerInternal = ...
+---@diagnostic disable-next-line: undefined-field
 local Plater = _G.Plater
 local GameCooltip = GameCooltip2
 local detailsFramework = DetailsFramework
@@ -171,7 +172,7 @@ function Plater.CreateDesignerWindow()
     previewNameplateFrame:SetPoint("topright", editorMainFrame, "topright", -5, -5)
     previewNameplateFrame:SetFrameLevel(layoutEditor:GetFrameLevel() + 1)
 
-    local plateFrame = designer.CreatePreview(previewNameplateFrame)
+    plateFrame = designer.CreatePreview(previewNameplateFrame)
     createFrameTag(plateFrame, "nameplate")
     plateFrame:SetPoint("center", previewNameplateFrame, "center", 0, 0)
     plateFrame:SetScale(1.5)
@@ -185,6 +186,8 @@ function Plater.CreateDesignerWindow()
     local healthBar = unitFrame.healthBar
     ---@type castbar
     local castBar = unitFrame.castBar
+    castBar:SetMinMaxValues(0, 1)
+    castBar:SetValue(0.5)
 
     castBar:Show()
     castBar:AdjustPointsOffset(0, -30)
@@ -202,17 +205,30 @@ function Plater.CreateDesignerWindow()
     ---@type fontstring
     local spellName = castBar.Text
     ---@type fontstring
-    local lifePercent = healthBar.lifePercent
+    local lifePercent = healthBar.lifePercent_Safe
+    ---@type fontstring
+    local castPercentText = castBar.percentText
+    ---@type fontstring
+    local actorTitleSpecial = plateFrame.ActorTitleSpecial
+    ---@type fontstring
+    local actorNameSpecial = plateFrame.ActorNameSpecial
+    ---@type fontstring
+    local questOptions = unitFrame.QuestOptionsDummyFontString
+    ---@type fontstring
+    local castBarTargetName = castBar.TargetName
 
     spellName:SetText("Blizzard")
     unitName:SetText("Unit Name")
     levelText:SetText("60")
+    lifePercent:SetText("80%")
+    castPercentText:SetText("3.2s")
+    actorNameSpecial:SetText("Big Name")
+    actorTitleSpecial:SetText("Unit Title")
 
+    local onSettingChanged = function(editingObject, optionKey, newValue, profileTable, profileKey)
+        print("Changed!", optionKey, newValue, profileTable, profileKey)
 
-    local onSettingChanged = function(editingObject, optionName, newValue, profileTable, profileKey)
-        print("Changed!", optionName, newValue, profileTable, profileKey)
-
-        if (optionName == "anchor") then
+        if (optionKey == "anchor") then
             local anchorTable = detailsFramework.table.getfrompath(profileTable, profileKey, 1)
             anchorTable.x = 0
             anchorTable.y = 0
@@ -225,18 +241,75 @@ function Plater.CreateDesignerWindow()
         designer.UpdateAllNameplates()
     end
 
-    local profile = Plater.db.profile.plate_config
-    local layoutOptions = {}
+    local profileRoot = Plater.db.profile
+    local profile = profileRoot.plate_config
+    local rootKey = "" --as the settings are in the root of the profile table, there is no path to pass
+
+    ---@type df_editobjectoptions
+    local editObjectDefaultOptions = {
+        use_colon = false, --colon after the localizedLabel
+        can_move = true,
+        use_guide_lines = false,
+        text_template = detailsFramework:GetTemplate("font", "OPTIONS_FONT_TEMPLATE"),
+    }
+
+    local editObjectNoMoveOptions = detailsFramework.table.copy({}, editObjectDefaultOptions)
+    editObjectNoMoveOptions.can_move = false
+
+    actorNameSpecial:Show()
+    actorTitleSpecial:Show()
+    castBarTargetName:Show()
+    castBarTargetName:SetText("Target Name")
+
+    local previousCastbarTargetShow = Plater.db.profile.castbar_target_show
+    Plater.db.profile.castbar_target_show = true
+    Plater.UpdateCastbarTargetText(castBar)
+    Plater.db.profile.castbar_target_show = previousCastbarTargetShow
+
+    print(" == spell target name debug == ")
+    dv(castBarTargetName)
+    --dv(castBar.FrameOverlay)
+    print("text:", castBarTargetName:GetText())
+    local p = {castBarTargetName:GetPoint(1)}
+    print("point name:", p[2]:GetName())
+    print(" == end == ")
 
     --by registering the object within the editor, the the object will show up in the list of widgets to select
 
+    --pathstring: a string containing dots or brackets to reach the subtable where the settings are stored
+    --example: "nameplate.texts.colors.out_of_combat_color[1]" > would return the first value of the out_of_combat_color table
+
+    --[[
+        RegisterObject(self, object:uiobject, localizedLabel:string, id:string, profileTable:table, subTablePath:pathstring, profileKeyMap:table, extraOptions:table, callback:function, options:table, refFrame:uiobject)
+        object: the uiobject to be edited (error if invalid)
+        localizedLabel: the name shown in the list
+        id: a string with a unique id for the object, used with EditObjectById(ID)
+        profileTable: the table where the settings are stored
+        subTablePath: a pathstring within the profile table where the settings are stored, support pathstring
+        profileKeyMap: a table mapping the default editor options to the keys used in the profile table. see 'Plater_Designer_Objects.lua' file.
+        extraOptions: a table containing extra options to be added to the editor, see 'Plater_Designer_Objects.lua' file.
+        callback: a function called when a setting is changed, parameters are (UIObject, optionKey, newValue, profileTable:table, subTablePath:pathstring)
+        options: a table containing options for the registered object.
+        refFrame: a uiobject used as reference the anchor point.
+    ]]
+
+    --~register
+    layoutEditor:RegisterObject(questOptions, "Quest Options", "QUESTOPTIONS", profile, profileKey, options.WidgetSettingsMapTables.QuestOptions, options.WidgetSettingsExtraOptions.QuestOptions, onSettingChanged, editObjectDefaultOptions, unitFrame)
+
     --health bar
-    layoutEditor:RegisterObject(unitName, "Unit Name", "UNITNAME", profile, profileKey, options.WidgetSettingsMapTables.UnitName, options.WidgetSettingsExtraOptions.UnitName, onSettingChanged, layoutOptions, healthBar)
-    layoutEditor:RegisterObject(levelText, "Unit Level", "UNITLEVEL", profile, profileKey, options.WidgetSettingsMapTables.UnitLevel, options.WidgetSettingsExtraOptions.UnitLevel, onSettingChanged, layoutOptions, healthBar)
-    layoutEditor:RegisterObject(lifePercent, "Life Percent", "LIFEPERCENT", profile, profileKey, options.WidgetSettingsMapTables.LifePercent, options.WidgetSettingsExtraOptions.LifePercent, onSettingChanged, layoutOptions, healthBar)
+    layoutEditor:RegisterObject(unitName, "Unit Name", "UNITNAME", profile, profileKey, options.WidgetSettingsMapTables.UnitName, options.WidgetSettingsExtraOptions.UnitName, onSettingChanged, editObjectDefaultOptions, healthBar)
+    layoutEditor:RegisterObject(levelText, "Unit Level", "UNITLEVEL", profile, profileKey, options.WidgetSettingsMapTables.UnitLevel, options.WidgetSettingsExtraOptions.UnitLevel, onSettingChanged, editObjectDefaultOptions, healthBar)
+    layoutEditor:RegisterObject(lifePercent, "Life Percent", "LIFEPERCENT", profile, profileKey, options.WidgetSettingsMapTables.LifePercent, options.WidgetSettingsExtraOptions.LifePercent, onSettingChanged, editObjectDefaultOptions, healthBar)
+    platerInternal.UpdatePercentTextLayout(lifePercent, profile[profileKey])
+    --actor title and name special
+
+    layoutEditor:RegisterObject(actorNameSpecial, "Big Unit Name", "BIGUNITNAME", profile, profileKey, options.WidgetSettingsMapTables.BigUnitName, options.WidgetSettingsExtraOptions.BigUnitName, onSettingChanged, editObjectNoMoveOptions, plateFrame)
+    layoutEditor:RegisterObject(actorTitleSpecial, "Big Unit Title", "BIGUNITTITLE", profile, profileKey, options.WidgetSettingsMapTables.BigActorTitle, options.WidgetSettingsExtraOptions.BigActorTitle, onSettingChanged, editObjectNoMoveOptions, plateFrame)
 
     --cast bar
-    layoutEditor:RegisterObject(spellName, "Spell Name", "SPELLNAME", profile, profileKey, options.WidgetSettingsMapTables.SpellName, options.WidgetSettingsExtraOptions.SpellName, onSettingChanged, layoutOptions, castBar)
+    layoutEditor:RegisterObject(spellName, "Spell Name", "SPELLNAME", profile, profileKey, options.WidgetSettingsMapTables.SpellName, options.WidgetSettingsExtraOptions.SpellName, onSettingChanged, editObjectDefaultOptions, castBar)
+    layoutEditor:RegisterObject(castPercentText, "Spell Cast Time", "SPELLCASTTIME", profile, profileKey, options.WidgetSettingsMapTables.SpellCastTime, options.WidgetSettingsExtraOptions.SpellCastTime, onSettingChanged, editObjectDefaultOptions, castBar)
+    layoutEditor:RegisterObject(castBarTargetName, "Spell Target Name", "SPELLTARGETNAME", profileRoot, rootKey, options.WidgetSettingsMapTables.CastBarTargetName, options.WidgetSettingsExtraOptions.CastBarTargetName, onSettingChanged, editObjectDefaultOptions, castBar.FrameOverlay)
 
     local objectSelector = layoutEditor:GetObjectSelector()
     local optionsFrame = layoutEditor:GetOptionsFrame()
@@ -261,6 +334,10 @@ function Plater.CreateDesignerWindow()
         --stops when the frame hides
         --dv(plateFrame)
 
+        --castBarTargetName:Show()
+        castBarTargetName:SetText("Target Name")
+        castBarTargetName:Show()
+
         --check options
         if (profile[profileKey].percent_text_enabled) then
             lifePercent:SetAlpha(1)
@@ -274,14 +351,14 @@ function Plater.CreateDesignerWindow()
         previewNameplateFrame:Show()
         plateFrame:Show()
         layoutEditor:Show()
-        PlaterDesignerPlatePreview:Show()
+        plateFrame:Show()
     end)
 
     editorMainFrame:SetScript("OnHide", function()
         previewNameplateFrame:Hide()
         plateFrame:Hide()
         layoutEditor:Hide()
-        PlaterDesignerPlatePreview:Hide()
+        plateFrame:Hide()
     end)
 
     --/plater editmode
@@ -465,6 +542,18 @@ function designer.UpdatePreview()
 
     Plater.NameplateTick (plateFrame.OnTickFrame, 999)
     unitFrame.PlaterOnScreen = true
+
+    --create new fontstring to life percent to avoid issues with UnitHealth() returning a secret
+    ---@type fontstring
+    local newLifePercent = healthBar:CreateFontString(nil, "overlay", "GameFontNormal")
+    healthBar.lifePercent_Safe = newLifePercent
+    healthBar.lifePercent_Safe:SetPoint("center", healthBar, "center", 0, 0)
+    healthBar.lifePercent:Hide()
+
+    ---quest options dummy
+    ---@type fontstring
+    local questOptionsFontString = castBar:CreateFontString(nil, "overlay", "GameFontNormal")
+    unitFrame.QuestOptionsDummyFontString = questOptionsFontString
 
     --dv(healthBar)
 

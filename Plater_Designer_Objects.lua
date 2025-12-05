@@ -37,8 +37,21 @@ function designer.CreateSettings(parentFrame)
             --classcolor = "name_classcolor",
         },
 
+        CastBarTargetName = {
+            size = "castbar_target_text_size",
+            font = "castbar_target_font",
+            color = "castbar_target_color",
+            outline = "castbar_target_outline",
+            shadowcolor = "castbar_target_shadow_color",
+            shadowoffsetx = "castbar_target_shadow_color_offset[1]",
+            shadowoffsety = "castbar_target_shadow_color_offset[2]",
+            anchor = "castbar_target_anchor.side",
+            anchoroffsetx = "castbar_target_anchor.x",
+            anchoroffsety = "castbar_target_anchor.y",
+        },
+
         LifePercent = {
-            --text = "80",
+            text = "80",
             size = "percent_text_size",
             font = "percent_text_font",
             color = "percent_text_color",
@@ -86,14 +99,112 @@ function designer.CreateSettings(parentFrame)
             --layer = "name_layer",
             --classcolor = "name_classcolor",
         },
+
+        SpellCastTime = {
+            --text = "3.2s",
+            size = "spellpercent_text_size",
+            font = "spellpercent_text_font",
+            color = "spellpercent_text_color",
+            outline = "spellpercent_text_outline",
+            shadowcolor = "spellpercent_text_shadow_color",
+            shadowoffsetx = "spellpercent_text_shadow_color_offset[1]",
+            shadowoffsety = "spellpercent_text_shadow_color_offset[2]",
+            anchor = "spellpercent_text_anchor.side",
+            anchoroffsetx = "spellpercent_text_anchor.x",
+            anchoroffsety = "spellpercent_text_anchor.y",
+            --alpha = "spellpercent_text_alpha",
+        },
+
+        BigUnitName = {
+            can_move = false,
+            size = "big_actorname_text_size",
+            font = "big_actorname_text_font",
+            color = "big_actorname_text_color",
+            outline = "big_actorname_text_outline",
+            shadowcolor = "big_actorname_text_shadow_color",
+            shadowoffsetx = "big_actorname_text_shadow_color_offset[1]",
+            shadowoffsety = "big_actorname_text_shadow_color_offset[2]",
+        },
+
+        BigActorTitle = {
+            can_move = false,
+            size = "big_actortitle_text_size",
+            font = "big_actortitle_text_font",
+            outline = "big_actortitle_text_outline",
+            shadowcolor = "big_actortitle_text_shadow_color",
+            shadowoffsetx = "big_actortitle_text_shadow_color_offset[1]",
+            shadowoffsety = "big_actortitle_text_shadow_color_offset[2]",
+        },
+
+        QuestOptions = {},
+
+        CastBar = {},
     }
 
     options.WidgetSettingsExtraOptions = {
+        CastBar = {},
+
+
+        QuestOptions = {
+            {
+                key = "quest_enabled", --the name of the option in the profile table
+                label = "Enabled",
+                widget = "toggle",
+                setter = function(widget, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "quest_color_enabled", --the name of the option in the profile table
+                label = "Change Color",
+                widget = "toggle",
+                setter = function(widget, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "quest_color_enemy", --the name of the option in the profile table
+                label = "Enemy Quest Color",
+                widget = "color",
+                setter = function(widget, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "quest_color_neutral", --the name of the option in the profile table
+                label = "Neutral Quest Color",
+                widget = "color",
+                setter = function(widget, value) designer.UpdateAllNameplates() end,
+            },
+        },
+
         UnitName = {},
+
+        CastBarTargetName = {
+            {
+                key = "castbar_target_show", --the name of the option in the profile table
+                label = "Enabled",
+                widget = "toggle",
+                setter = function(widget, value) designer.UpdateAllNameplates() end,
+            },
+
+            {
+                key = "castbar_target_notank", --the name of the option in the profile table
+                label = "No Tank",
+                widget = "toggle",
+                setter = function(widget, value) designer.UpdateAllNameplates() end,
+            },
+        },
+
+        BigUnitName = {},
+        BigActorTitle = {},
 
         UnitLevel = {
             {
                 key = "level_text_enabled", --the name of the option in the profile table
+                label = "Enabled",
+                widget = "toggle",
+                setter = function(widget, value) designer.UpdateAllNameplates() end,
+            },
+        },
+
+        SpellCastTime = {
+            {
+                key = "spellpercent_text_enabled", --the name of the option in the profile table
                 label = "Enabled",
                 widget = "toggle",
                 setter = function(widget, value) designer.UpdateAllNameplates() end,
