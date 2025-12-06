@@ -5203,7 +5203,7 @@ function Plater.OnInit() --private --~oninit ~init
 		Plater.CastBarTestFrame = CreateFrame ("frame", nil, UIParent, BackdropTemplateMixin and "BackdropTemplate")
 		
 		function Plater.StartCastBarTest(castNoInterrupt, castTime, isLoop)
-			castTime = castTime or 3
+			castTime = (IS_WOW_PROJECT_MIDNIGHT and 1000 or 1) * (castTime or 3)
 
 			if (isLoop) then
 				Plater.CastBarTestFrame.castNoInterrupt = Plater.CastBarTestFrame.castNoInterrupt
@@ -5232,14 +5232,17 @@ function Plater.OnInit() --private --~oninit ~init
 				castBar.Icon:SetAlpha(1)
 				castBar.Icon:Show()
 				castBar.percentText:Show()
-				castBar:SetMinMaxValues(0, (castTime or 3))
-				castBar:SetValue(0)
 				castBar.Spark:Show()
 				castBar.casting = true
 				castBar.finished = false
-				castBar.value = 0
-				castBar.maxValue = (castTime or 3)
+				castBar.value = IS_WOW_PROJECT_MIDNIGHT and (GetTimePreciseSec() * 1000) or 0
+				castBar.minValue = castBar.value
+				castBar.maxValue = castBar.value + (castTime or 3)
 				castBar.canInterrupt = not castNoInterrupt or math.random (1, 2) == 1
+				
+				castBar:SetMinMaxValues(castBar.minValue, castBar.maxValue)
+				castBar:SetValue(castBar.minValue)
+				
 				--castBar.canInterrupt = true
 				--castBar.channeling = true
 				castBar:UpdateCastColor()
@@ -5247,11 +5250,11 @@ function Plater.OnInit() --private --~oninit ~init
 				castBar.spellName = 		spellName
 				castBar.spellID = 			116
 				castBar.spellTexture = 		spellIcon
-				castBar.spellStartTime = 	GetTime()
-				castBar.spellEndTime = 		GetTime() + (castTime or 3)
+				castBar.spellStartTime = 	castBar.minValue
+				castBar.spellEndTime = 		castBar.maxValue
 				
-				castBar.SpellStartTime = 	GetTime()
-				castBar.SpellEndTime = 		GetTime() + (castTime or 3)
+				castBar.SpellStartTime = 	castBar.minValue
+				castBar.SpellEndTime = 		castBar.maxValue
 				
 				castBar.playedFinishedTest = nil
 				
