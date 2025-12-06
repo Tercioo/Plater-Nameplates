@@ -6664,8 +6664,9 @@ end
 		
 		Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdatePlateClickSpace")
 		
+		local width, height = Plater.db.profile.click_space[1], Plater.db.profile.click_space[2]
+		
 		if IS_WOW_PROJECT_MIDNIGHT then
-			local width, height = Plater.db.profile.click_space[1], Plater.db.profile.click_space[2]
 			local widthScale, heightScale = Plater.db.profile.click_space_scale[1], Plater.db.profile.click_space_scale[2]
 			
 			C_NamePlate.SetNamePlateSize(width, height)
@@ -6697,7 +6698,6 @@ end
 			local clampedZeroBasedScale = Saturate(zeroBasedScale)
 			local horizontalScale = GetCVarNumberOrDefault("NamePlateHorizontalScale")
 			
-			local width, height = Plater.db.profile.click_space_friendly[1], Plater.db.profile.click_space_friendly[2]
 			C_NamePlate.SetNamePlateFriendlySize (width * horizontalScale, height * Lerp(1.0, 1.25, zeroBasedScale)) --classic: {132, 32}, retail: {110, 45},
 			
 			local width, height = Plater.db.profile.click_space[1], Plater.db.profile.click_space[2]
