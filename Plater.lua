@@ -5885,11 +5885,11 @@ function Plater.OnInit() --private --~oninit ~init
 							scriptEnv._SpellName = self.SpellName
 							scriptEnv._Texture = self.SpellTexture
 							scriptEnv._Caster = self.unit
-							scriptEnv._Duration = self.SpellEndTime - self.SpellStartTime
+							scriptEnv._Duration = not IS_WOW_PROJECT_MIDNIGHT and (self.SpellEndTime - self.SpellStartTime) or nil
 							scriptEnv._StartTime = self.SpellStartTime
 							scriptEnv._CanInterrupt = self.CanInterrupt
 							scriptEnv._EndTime = self.SpellEndTime
-							scriptEnv._RemainingTime = max (self.SpellEndTime - GetTime(), 0)
+							scriptEnv._RemainingTime = not IS_WOW_PROJECT_MIDNIGHT and max (self.SpellEndTime - GetTime(), 0) or nil
 							scriptEnv._CanStealOrPurge = self.CanStealOrPurge
 							scriptEnv._AuraType = self.AuraType
 							
