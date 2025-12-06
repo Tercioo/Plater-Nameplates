@@ -1095,14 +1095,16 @@ detailsFramework.CastFrameFunctions = {
 	CheckCastIsDone = function(self, event, isFinished)
 		--check max value
 		if (not isFinished and not self.finished) then
-			if (self.casting) then
-				if (self.value >= self.maxValue) then
-					isFinished = true
-				end
+			if not issecretvalue(self.value) and not issecretvalue(self.maxValue) then
+				if (self.casting) then
+					if (self.value >= self.maxValue) then
+						isFinished = true
+					end
 
-			elseif (self.channeling) then
-				if (self.value > self.maxValue or self.value <= 0) then
-					isFinished = true
+				elseif (self.channeling) then
+					if (self.value > self.maxValue or self.value <= 0) then
+						isFinished = true
+					end
 				end
 			end
 
@@ -1335,14 +1337,14 @@ detailsFramework.CastFrameFunctions = {
 		self.value = GetTimePreciseSec() * 1000
 		self:SetValue(self.value)
 		
---[[
-		self.value = self.value + deltaTime
-
 		if (self:CheckCastIsDone()) then
 			return
 		else
 			self:SetValue(self.value)
 		end
+		
+--[[
+		self.value = self.value + deltaTime
 
 		--update spark position
 		local sparkPosition = self.value / self.maxValue * self:GetWidth()
@@ -1358,14 +1360,14 @@ detailsFramework.CastFrameFunctions = {
 		self.value = GetTimePreciseSec() * 1000
 		self:SetValue(self.value)
 		
---[[
-		self.value = self.empowered and self.value + deltaTime or self.value - deltaTime
-
 		if (self:CheckCastIsDone()) then
 			return
 		else
 			self:SetValue(self.value)
 		end
+		
+--[[
+		self.value = self.empowered and self.value + deltaTime or self.value - deltaTime
 
 		--update spark position
 		local sparkPosition = self.value / self.maxValue * self:GetWidth()
@@ -1590,6 +1592,8 @@ detailsFramework.CastFrameFunctions = {
 
 			self.Spark:Show()
 			self:Show()
+			
+			self:SetReverseFill(false)
 
 		--update the interrupt cast border
 		self:UpdateInterruptState()
@@ -1756,6 +1760,8 @@ detailsFramework.CastFrameFunctions = {
 
 			self.Spark:Show()
 			self:Show()
+			
+			self:SetReverseFill(true)
 
 		--update the interrupt cast border
 		self:UpdateInterruptState()
