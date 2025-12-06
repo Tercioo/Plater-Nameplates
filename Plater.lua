@@ -11577,7 +11577,7 @@ end
 	local errorContext = {}
 	local prevErrors = {}
 	local ErrorHandler = function(errorMessage)
-		local secretError = errorMessage and string.find(errorMessage, "secret value") and true or false
+		local secretError = errorMessage and (string.find(errorMessage, "secret value") or string.find(errorMessage, "index is secret")) and true or false
 		if secretError and errorContext.globalScriptObject then
 			errorContext.globalScriptObject.tmpDisabled = true
 		end
