@@ -153,15 +153,32 @@ function designer.CreateSettings(parentFrame)
 
         CastBar = {
             --values from PlaterDB.profile.plate_config[unittype]
-            width =  "cast[1]",
-            height = "cast[2]",
-            anchoroffsetx = "castbar_offset_x",
-            anchoroffsety = "castbar_offset_y",
+            width = "plate_config.enemynpc.cast_incombat[1]",
+            height = "plate_config.enemynpc.cast_incombat[2]",
         },
     }
 
     options.WidgetSettingsExtraOptions = {
-        CastBar = {},
+        CastBar = {
+            {
+                key = "plate_config.enemynpc.castbar_offset_x", --the name of the option in the profile table
+                label = "Offset X",
+                widget = "slider",
+                setter = function(widget, value) designer.UpdateAllNameplates() end,
+                minvalue = -16,
+                maxvalue = 16,
+                step = 1,
+            },
+            {
+                key = "plate_config.enemynpc.castbar_offset", --without Y
+                label = "Offset Y",
+                widget = "slider",
+                setter = function(widget, value) designer.UpdateAllNameplates() end,
+                minvalue = -16,
+                maxvalue = 16,
+                step = 1,
+            }
+        },
 
         CastBarSpark = {
             {
@@ -180,7 +197,7 @@ function designer.CreateSettings(parentFrame)
                 key = "cast_statusbar_spark_offset", --the name of the option in the profile table
                 label = "Offset",
                 widget = "slider",
-                setter = function(widget, value) value = PixelUtil.GetNearestPixel(value); designer.UpdateAllNameplates() end,
+                setter = function(widget, value) designer.UpdateAllNameplates() end,
                 minvalue = -16,
                 maxvalue = 16,
                 step = 1,

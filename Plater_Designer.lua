@@ -105,6 +105,8 @@ function Plater.CreateDesignerWindow()
     local startY = -30
     local startX = 10
 
+    local isCastBarSelected = false
+
     --tab background using a rounded panel | need to make a preset for this, atm it is declaring each time the same table
     local roundedPanelOptions = {
         scale = 1,
@@ -116,8 +118,6 @@ function Plater.CreateDesignerWindow()
     ---@type df_roundedpanel
     local editorMainFrame = detailsFramework:CreateRoundedPanel(UIParent, gName, roundedPanelOptions)
     --local editorMainFrame = CreateFrame("frame", gName, UIParent)
-
-    --local 
 
     Plater.DesignerWindow = editorMainFrame
 
@@ -137,6 +137,16 @@ function Plater.CreateDesignerWindow()
         object_list_line_height = 20,
         text_template = editorOptionsTextTemplate,
         no_anchor_points = true,
+        start_editing_callback = function(layoutEditor, objectInfo)
+            if (objectInfo.id:match("^CAST")) then
+                isCastBarSelected = true
+                Plater.StartCastBarTest()
+            else
+                isCastBarSelected = false
+                Plater.StopCastBarTest()
+            end
+        end,
+        selection_texture = "Interface\\AddOns\\Plater\\images\\selection_corner.png",
     }
 
     --Plater_Designer_Objects.lua
@@ -162,7 +172,7 @@ function Plater.CreateDesignerWindow()
     end
 
     --create close button using the framework
-    local closeButton = detailsFramework:CreateCloseButton(editorMainFrame, function() editorMainFrame:Hide() end, -6, 6)
+    local closeButton = detailsFramework:CreateCloseButton(editorMainFrame)
     closeButton:SetPoint("topright", editorMainFrame, "topright", -3, -3)
 
     local canvasFrame = layoutEditor:GetCanvasScrollBox()
@@ -180,6 +190,12 @@ function Plater.CreateDesignerWindow()
 
     local onClickSelectPlateConfigOption = function(self, fixedParameter, newSubTablePath)
         subTablePath = newSubTablePath
+
+        --update the paths in the mapping tables
+        options.WidgetSettingsMapTables.CastBar.width = "plate_config." .. subTablePath .. ".cast_incombat[1]"
+        options.WidgetSettingsMapTables.CastBar.height = "plate_config." .. subTablePath .. ".cast_incombat[2]"
+        options.WidgetSettingsExtraOptions.CastBar.castbar_offset_x = "plate_config." .. subTablePath .. ".castbar_offset_x"
+        options.WidgetSettingsExtraOptions.CastBar.castbar_offset = "plate_config." .. subTablePath .. ".castbar_offset"
 
         for index, objectInfo in ipairs(plateConfigObjectsInfo) do
             layoutEditor:UpdateProfileSubTablePath(objectInfo, subTablePath)
@@ -255,6 +271,11 @@ function Plater.CreateDesignerWindow()
     castPercentText:SetText("3.2s")
     actorNameSpecial:SetText("Big Name")
     actorTitleSpecial:SetText("Unit Title")
+
+    actorNameSpecial:ClearAllPoints()
+    actorNameSpecial:SetPoint("bottomleft", previewNameplateFrame, "bottomleft", 5, 90)
+    actorTitleSpecial:ClearAllPoints()
+    actorTitleSpecial:SetPoint("top", actorNameSpecial, "bottom", 0, -2)
 
     local onSettingChanged = function(editingObject, optionKey, newValue, profileTable, profileKey)
         print("Changed!", optionKey, newValue, profileTable, profileKey)
@@ -356,17 +377,21 @@ function Plater.CreateDesignerWindow()
     plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
 
     --cast bar [no plate config]
-    objectInfo = layoutEditor:RegisterObject(castBar, "Cast Bar", "CASTBAR", profileRoot, rootKey, options.WidgetSettingsMapTables.CastBar, options.WidgetSettingsExtraOptions.CastBar, onSettingChanged, editObjectDefaultOptions, castBar)
+    --cast bar has settings both in plate_config and in the root file of profile
+    ---@type df_editobjectoptions
+    local castBarOptions = detailsFramework.table.copy({}, editObjectDefaultOptions)
+    castBarOptions.can_move = false
+    objectInfo = layoutEditor:RegisterObject(castBar, "Cast Bar", "CASTBAR", profileRoot, rootKey, options.WidgetSettingsMapTables.CastBar, options.WidgetSettingsExtraOptions.CastBar, onSettingChanged, castBarOptions, castBar)
 
-    objectInfo = layoutEditor:RegisterObject(spellName, "Cast Spell Name", "SPELLNAME", plateConfig, subTablePath, options.WidgetSettingsMapTables.SpellName, options.WidgetSettingsExtraOptions.SpellName, onSettingChanged, editObjectDefaultOptions, castBar)
+    objectInfo = layoutEditor:RegisterObject(spellName, "Cast Spell Name", "CASTSPELLNAME", plateConfig, subTablePath, options.WidgetSettingsMapTables.SpellName, options.WidgetSettingsExtraOptions.SpellName, onSettingChanged, editObjectDefaultOptions, castBar)
     plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
-    objectInfo = layoutEditor:RegisterObject(castPercentText, "Cast Time", "SPELLCASTTIME", plateConfig, subTablePath, options.WidgetSettingsMapTables.SpellCastTime, options.WidgetSettingsExtraOptions.SpellCastTime, onSettingChanged, editObjectDefaultOptions, castBar)
+    objectInfo = layoutEditor:RegisterObject(castPercentText, "Cast Time", "CASTSPELLTIME", plateConfig, subTablePath, options.WidgetSettingsMapTables.SpellCastTime, options.WidgetSettingsExtraOptions.SpellCastTime, onSettingChanged, editObjectDefaultOptions, castBar)
     plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
 
     --[no plate config]
-    objectInfo = layoutEditor:RegisterObject(castBarTargetName, "Cast Target Name", "SPELLTARGETNAME", profileRoot, rootKey, options.WidgetSettingsMapTables.CastBarTargetName, options.WidgetSettingsExtraOptions.CastBarTargetName, onSettingChanged, editObjectDefaultOptions, castBar.FrameOverlay)
+    objectInfo = layoutEditor:RegisterObject(castBarTargetName, "Cast Target Name", "CASTTARGETNAME", profileRoot, rootKey, options.WidgetSettingsMapTables.CastBarTargetName, options.WidgetSettingsExtraOptions.CastBarTargetName, onSettingChanged, editObjectDefaultOptions, castBar.FrameOverlay)
     --[no plate config]
-    objectInfo = layoutEditor:RegisterObject(castBarSpark, "Cast Spark", "SPARKTEXTURE", profileRoot, rootKey, options.WidgetSettingsMapTables.CastBarSpark, options.WidgetSettingsExtraOptions.CastBarSpark, onSettingChanged, editObjectDefaultOptions, castBar.FrameOverlay)
+    objectInfo = layoutEditor:RegisterObject(castBarSpark, "Cast Spark", "CASTSPARK", profileRoot, rootKey, options.WidgetSettingsMapTables.CastBarSpark, options.WidgetSettingsExtraOptions.CastBarSpark, onSettingChanged, editObjectDefaultOptions, castBar.FrameOverlay)
 
     --designer.RefreshLayout()
 
@@ -376,9 +401,10 @@ function Plater.CreateDesignerWindow()
     editorMainFrame:SetAlpha(1)
 
     local disabledAlpha = 0.2
+    local curCastBarValue = 0
 
     local moveUpFrame = CreateFrame("frame", nil, editorMainFrame)
-    moveUpFrame:SetScript("OnUpdate", function()
+    moveUpFrame:SetScript("OnUpdate", function(self, deltaTime)
         plateFrame.unitFrame:SetFrameStrata("HIGH")
         plateFrame:SetFrameLevel(previewNameplateFrame:GetFrameLevel() + 100)
         --unitFrame:Show()
@@ -388,6 +414,20 @@ function Plater.CreateDesignerWindow()
         --dv(plateFrame)
 
         --castBarTargetName:Show()
+        castBar:Show()
+        castBar:SetMinMaxValues(0, 3)
+        castBar:SetValue(isCastBarSelected and curCastBarValue or 0)
+
+        if (curCastBarValue >= 3) then
+            curCastBarValue = 0
+        else
+            if not isCastBarSelected then
+                curCastBarValue = 0
+            else
+                curCastBarValue = curCastBarValue + deltaTime
+            end
+        end
+
         castBarTargetName:SetText("Target Name")
         castBarTargetName:Show()
 
