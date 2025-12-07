@@ -1,5 +1,5 @@
 
-local dversion = 639
+local dversion = 640
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary(major, minor)
 
@@ -111,6 +111,17 @@ if (not PixelUtil) then
 		}
 	end
 end
+
+DF.FrameStrataLevels = {
+	"BACKGROUND",
+	"LOW",
+	"MEDIUM",
+	"HIGH",
+	"DIALOG",
+	"FULLSCREEN",
+	"FULLSCREEN_DIALOG",
+	"TOOLTIP",
+}
 
 ---return r, g, b, a for the default backdrop color used in addons
 ---@return number

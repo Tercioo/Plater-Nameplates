@@ -87,7 +87,7 @@ local attributes = {
         {
             key = "texture",
             label = "Texture",
-            widget = "textentry",
+            widget = "selectstatusbartexture",
             default = "",
             setter = function(widget, value) widget:SetTexture(value) end,
         },
@@ -107,6 +107,22 @@ local attributes = {
             maxvalue = 120,
             setter = function(widget, value) widget:SetHeight(value) end
         },
+        {
+            key = "vertexcolor",
+            label = "Color",
+            widget = "color",
+            setter = function(widget, value) widget:SetVertexColor(unpack(value)) end
+        },
+        {
+            key = "alpha",
+            label = "Alpha",
+            widget = "range",
+            minvalue = 0,
+            maxvalue = 1,
+            usedecimals = true,
+            setter = function(widget, value) widget:SetAlpha(value) end
+        },
+
         {widget = "blank"},
         {
             key = "anchor",
@@ -248,10 +264,73 @@ local attributes = {
             maxvalue = 2.5,
             setter = function(widget, value) widget:SetScale(value) end
         },
-    }
+    },
+
+    Frame = {
+        {
+            key = "width",
+            label = "Width",
+            widget = "range",
+            minvalue = 5,
+            maxvalue = 800,
+            setter = function(widget, value) widget:SetWidth(value) end
+        },
+        {
+            key = "height",
+            label = "Height",
+            widget = "range",
+            minvalue = 5,
+            maxvalue = 600,
+            setter = function(widget, value) widget:SetHeight(value) end
+        },
+        --alpha
+        {
+            key = "alpha",
+            label = "Alpha",
+            widget = "range",
+            minvalue = 0,
+            maxvalue = 1,
+            usedecimals = true,
+            setter = function(widget, value) widget:SetAlpha(value) end
+        },
+        --frame strata
+        {
+            key = "framestrata",
+            label = "Frame Strata",
+            widget = "selectframestrata",
+            setter = function(widget, value) widget:SetFrameStrata(value) end
+        },
+
+        {widget = "blank"},
+        {
+            key = "anchor",
+            label = "Anchor",
+            widget = "anchordropdown",
+            setter = function(widget, value) detailsFramework:SetAnchor(widget, value, widget:GetParent()) end
+        },
+        {
+            key = "anchoroffsetx",
+            label = "Anchor X Offset",
+            widget = "range",
+            minvalue = -400,
+            maxvalue = 400,
+            setter = function(widget, value) detailsFramework:SetAnchor(widget, value, widget:GetParent()) end
+        },
+        {
+            key = "anchoroffsety",
+            label = "Anchor Y Offset",
+            widget = "range",
+            minvalue = -300,
+            maxvalue = 300,
+            setter = function(widget, value) detailsFramework:SetAnchor(widget, value, widget:GetParent()) end
+        },
+    },
 }
 
 ---@class df_editormixin : table
+---@field CreateMoverGuideLines fun(self:df_editor)
+---@field CreateMoverFrames fun(self:df_editor):df_editor_mover[]
+---@field CreateObjectSelectionList fun(self:df_editor, scroll_width:number, scroll_height:number, scroll_lines:number, scroll_line_height:number):df_scrollbox
 ---@field GetAllRegisteredObjects fun(self:df_editor):df_editor_objectinfo[]
 ---@field GetEditingObject fun(self:df_editor):uiobject
 ---@field GetEditingObjectIndex fun(self:df_editor):number?
@@ -262,34 +341,36 @@ local attributes = {
 ---@field GetOptionsFrame fun(self:df_editor):df_menu
 ---@field GetCanvasScrollBox fun(self:df_editor):df_canvasscrollbox
 ---@field GetObjectSelector fun(self:df_editor):df_scrollbox
----@field EditObject fun(self:df_editor, object:uiobject, profileTable:table?, profileKeyMap:table?, extraOptions:table?, callback:function?, options:df_editobjectoptions?)
----@field PrepareObjectForEditing fun(self:df_editor)
----@field CreateMoverGuideLines fun(self:df_editor)
 ---@field GetOverTheTopFrame fun(self:df_editor):frame
----@field CreateMoverFrames fun(self:df_editor):df_editor_mover[]
 ---@field GetMoverFrames fun(self:df_editor):df_editor_move
----@field StartObjectMovement fun(self:df_editor, anchorSettings:df_anchor)
----@field StopObjectMovement fun(self:df_editor)
----@field RegisterObject fun(self:df_editor, object:uiobject, localizedLabel:string, id:any, profileTable:table, subTablePath:string, profileKeyMap:table, extraOptions:table?, callback:function?, options:df_editobjectoptions?, refFrame:frame):df_editor_objectinfo
----@field UnregisterObject fun(self:df_editor, object:uiobject)
----@field EditObjectById fun(self:df_editor, id:any)
----@field EditObjectByIndex fun(self:df_editor, index:number)
----@field UpdateGuideLinesAnchors fun(self:df_editor)
+---@field GetObjectById fun(self:df_editor, id:string):df_editor_objectinfo
 ---@field GetObjectByRef fun(self:df_editor, object:uiobject):df_editor_objectinfo
 ---@field GetObjectByIndex fun(self:df_editor, index:number):df_editor_objectinfo
----@field GetObjectById fun(self:df_editor, id:any):df_editor_objectinfo
+---@field GetObjectByObjectInfo fun(self:df_editor, objectInfo:df_editor_objectinfo):df_editor_objectinfo
 ---@field GetEditingRegisteredObject fun(self:df_editor):df_editor_objectinfo
----@field CreateObjectSelectionList fun(self:df_editor, scroll_width:number, scroll_height:number, scroll_lines:number, scroll_line_height:number):df_scrollbox
+---@field EditObject fun(self:df_editor, object:df_editor_objectinfo)
+---@field EditObjectById fun(self:df_editor, id:any)
+---@field EditObjectByIndex fun(self:df_editor, index:number)
+---@field PrepareObjectForEditing fun(self:df_editor)
+---@field StartObjectMovement fun(self:df_editor, anchorSettings:df_anchor)
+---@field StopObjectMovement fun(self:df_editor)
+---@field RegisterObject fun(self:df_editor, object:uiobject, localizedLabel:string, id:string, profileTable:table, subTablePath:string, profileKeyMap:table, extraOptions:table?, callback:function?, options:df_editobjectoptions?, refFrame:frame):df_editor_objectinfo
+---@field UnregisterObject fun(self:df_editor, object:uiobject)
 ---@field OnHide fun(self:df_editor)
 ---@field OnShow fun(self:df_editor)
----@field UpdateProfileTableOnAllRegisteredObjects fun(self:df_editor, profileTable:table)
 ---@field GetProfileTableFromObject fun(self:df_editor, object:df_editor_objectinfo):table
+---@field UpdateGuideLinesAnchors fun(self:df_editor)
+---@field UpdateProfileTableOnAllRegisteredObjects fun(self:df_editor, profileTable:table)
+---@field UpdateProfileTable fun(self:df_editor, identifier:any, profileTable:table):boolean change the profile table, identifier is the ID, index or object reference of the registered object info
+---@field UpdateProfileSubTablePath fun(self:df_editor, identifier:any, subTablePath:string) change the subTablePath, identifier is the ID, index, object reference of the registered object info
+---@field Refresh fun(self:df_editor) re-start editing the object that is currently being edited
 
 ---@class df_editobjectoptions : table
----@field use_colon boolean if true a colon is shown after the option name
----@field can_move boolean if true the object can be moved
----@field use_guide_lines boolean if true guide lines are shown when the object is being moved
+---@field use_colon boolean? if true a colon is shown after the option name
+---@field can_move boolean? if true the object can be moved
+---@field use_guide_lines boolean? if true guide lines are shown when the object is being moved
 ---@field text_template table
+---@field icon any atlasName atlasTable (from DF:CreateAtlas) or texture path|id
 
 ---@type df_editobjectoptions
 local editObjectDefaultOptions = {
@@ -312,10 +393,38 @@ local getParentTable = function(profileTable, profileKey)
     return parentTable
 end
 
+---@param self df_editor
+---@param identifier any
+---@return df_editor_objectinfo?
+local getRegisteredObject = function(self, identifier)
+    if (type(identifier) == "string") then
+        return self:GetObjectById(identifier)
+
+    elseif (type(identifier) == "number") then
+        return self:GetObjectByIndex(identifier)
+
+    elseif (type(identifier) == "table" and identifier.GetObjectType) then
+        return self:GetObjectByRef(identifier)
+
+    elseif (type(identifier) == "table" and identifier.refFrame) then
+        return self:GetObjectByObjectInfo(identifier)
+    end
+
+    return nil
+end
+
 detailsFramework.EditorMixin = {
     ---@param self df_editor
     GetEditingObject = function(self)
         return self.editingObject
+    end,
+
+    ---@param self df_editor
+    Refresh = function(self)
+        local registeredObject = self:GetEditingRegisteredObject()
+        if (registeredObject) then
+            self:EditObject(registeredObject)
+        end
     end,
 
     ---@param self df_editor
@@ -794,11 +903,13 @@ detailsFramework.EditorMixin = {
         if (extraOptions and #extraOptions > 0) then
             local attributeListWithExtraOptions = {}
 
-            for i = 1, #attributeList do
-                attributeListWithExtraOptions[#attributeListWithExtraOptions+1] = attributeList[i]
+            --only add the blank space if there's attributes before the extra options
+            if (#attributeList > 0) then
+                for i = 1, #attributeList do
+                    attributeListWithExtraOptions[#attributeListWithExtraOptions+1] = attributeList[i]
+                end
+                attributeListWithExtraOptions[#attributeListWithExtraOptions+1] = {widget = "blank", default = true}
             end
-
-            attributeListWithExtraOptions[#attributeListWithExtraOptions+1] = {widget = "blank", default = true}
 
             for i = 1, #extraOptions do
                 attributeListWithExtraOptions[#attributeListWithExtraOptions+1] = extraOptions[i]
@@ -1075,6 +1186,34 @@ detailsFramework.EditorMixin = {
         objectSelector:RefreshMe()
     end,
 
+    UpdateProfileSubTablePath = function(self, identifier, subTablePath)
+        assert(identifier, "UpdateProfileSubTablePath() expects a registered object identifier on #1 parameter.")
+        assert(type(subTablePath) == "string", "UpdateProfileSubTablePath() expects a pathstring or nil on #2 parameter.")
+
+        local objectRegistered = getRegisteredObject(self, identifier)
+        assert(type(objectRegistered) == "table", "UpdateProfileSubTablePath() registered object not found.")
+
+        objectRegistered.subtablepath = subTablePath
+
+        return true
+    end,
+
+    ---@param self df_editor
+    ---@param identifier any
+    ---@param profileTable table
+    ---@return boolean
+    UpdateProfileTable = function(self, identifier, profileTable)
+        assert(identifier, "UpdateProfileTable() expects a registered object identifier on #1 parameter.")
+        assert(type(profileTable) == "table", "UpdateProfileTable() expects a table on #2 parameter.")
+
+        local objectRegistered = getRegisteredObject(self, identifier)
+        assert(type(objectRegistered) == "table", "UpdateProfileTable() registered object not found.")
+
+        objectRegistered.profiletable = profileTable
+
+        return true
+    end,
+
     RegisterObject = function(self, object, localizedLabel, id, profileTable, subTablePath, profileKeyMap, extraOptions, callback, options, refFrame)
         assert(type(object) == "table", "RegisterObjectToEdit() expects an UIObject on #1 parameter.")
         assert(object.GetObjectType, "RegisterObjectToEdit() expects an UIObject on #1 parameter.")
@@ -1168,6 +1307,15 @@ detailsFramework.EditorMixin = {
         end
     end,
 
+    GetObjectByObjectInfo = function(self, objectInfo)
+        local registeredObjects = self:GetAllRegisteredObjects()
+        for i = 1, #registeredObjects do
+            local objectRegistered = registeredObjects[i]
+            if (objectRegistered == objectInfo) then
+                return objectRegistered
+            end
+        end
+    end,
 
     ---@param self df_editor
     ---@return df_editor_objectinfo
@@ -1201,7 +1349,24 @@ detailsFramework.EditorMixin = {
                     local line = self:GetLine(i)
                     line.index = index
 
-                    if (objectRegistered.object:GetObjectType() == "Texture") then
+                    local customIcon = objectRegistered.options.icon
+                    if (customIcon) then
+                        local isAtlas = C_Texture.GetAtlasInfo(customIcon)
+                        if (isAtlas) then
+                            line.Icon:SetAtlas(customIcon)
+
+                        elseif (type(customIcon) == "table") then
+                            local useAtlasSize = true
+                            local resetTexCoords = true
+                            detailsFramework:SetAtlas(line.Icon, customIcon, useAtlasSize, "TRILINEAR", resetTexCoords)
+
+                        else
+                            line.Icon:SetTexture(customIcon)
+                            line.Icon:SetTexCoord(0, 1, 0, 1)
+                            line.Icon:SetVertexColor(1, 1, 1, 1)
+                        end
+
+                    elseif (objectRegistered.object:GetObjectType() == "Texture") then
                         line.Icon:SetAtlas("AnimCreate_Icon_Texture")
 
                     elseif (objectRegistered.object:GetObjectType() == "FontString") then

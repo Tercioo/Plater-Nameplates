@@ -82,6 +82,19 @@ function designer.CreateSettings(parentFrame)
             --classcolor = "name_classcolor",
         },
 
+        CastBarSpark = {
+            texture = "cast_statusbar_spark_texture", --it'll need a feed of textures, perhaps a function
+            width = "cast_statusbar_spark_width",
+            vertexcolor = "cast_statusbar_spark_color",
+            alpha = "cast_statusbar_spark_alpha",
+            --["height"] = 0,
+            --["anchor"] = 0,
+            --["anchoroffsetx"] = 0,
+            --["anchoroffsety"] = 0,
+
+            --cast_statusbar_spark_texture = [[Interface\AddOns\Plater\images\spark1]],
+        },
+
         UnitLevel = {
             --text = "80",
             size = "level_text_size",
@@ -138,12 +151,41 @@ function designer.CreateSettings(parentFrame)
 
         QuestOptions = {},
 
-        CastBar = {},
+        CastBar = {
+            --values from PlaterDB.profile.plate_config[unittype]
+            width =  "cast[1]",
+            height = "cast[2]",
+            anchoroffsetx = "castbar_offset_x",
+            anchoroffsety = "castbar_offset_y",
+        },
     }
 
     options.WidgetSettingsExtraOptions = {
         CastBar = {},
 
+        CastBarSpark = {
+            {
+                key = "cast_statusbar_spark_hideoninterrupt", --the name of the option in the profile table
+                label = "Hide Spark On Interrupt",
+                widget = "toggle",
+                setter = function(widget, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "cast_statusbar_spark_half", --the name of the option in the profile table
+                label = "Half Spark",
+                widget = "toggle",
+                setter = function(widget, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "cast_statusbar_spark_offset", --the name of the option in the profile table
+                label = "Offset",
+                widget = "slider",
+                setter = function(widget, value) value = PixelUtil.GetNearestPixel(value); designer.UpdateAllNameplates() end,
+                minvalue = -16,
+                maxvalue = 16,
+                step = 1,
+            }
+        },
 
         QuestOptions = {
             {

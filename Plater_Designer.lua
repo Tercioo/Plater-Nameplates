@@ -3,6 +3,7 @@ local addonName, platerInternal = ...
 ---@diagnostic disable-next-line: undefined-field
 local Plater = _G.Plater
 local GameCooltip = GameCooltip2
+---@type detailsframework
 local detailsFramework = DetailsFramework
 local _
 
@@ -20,6 +21,10 @@ local editorOptionsTextTemplate = {
     size = 11,
     color = "gold",
 }
+
+--all objects that uses only settings that are within the plate_config table
+---@type df_editor_objectinfo[]
+local plateConfigObjectsInfo = {}
 
 local ACTORTYPE_FRIENDLY_PLAYER = platerInternal.VarSharing.ACTORTYPE_FRIENDLY_PLAYER
 local ACTORTYPE_FRIENDLY_NPC = platerInternal.VarSharing.ACTORTYPE_FRIENDLY_NPC
@@ -41,10 +46,10 @@ local MEMBER_TARGET = platerInternal.VarSharing.MEMBER_TARGET
 local plateFrame
 
 ---profile.plate_config[enemynpc, friendlynpc, enemyplayer, friendlyplayer]
-local profileKey = "enemynpc"
+local subTablePath = "enemynpc"
 
 local getProfileTable = function()
-    return Plater.db.profile.plate_config[profileKey]
+    return Plater.db.profile.plate_config[subTablePath]
 end
 
 local dv = function(f) detailsFramework:DebugVisibility(f) end
@@ -122,8 +127,6 @@ function Plater.CreateDesignerWindow()
     editorMainFrame:SetSize (roundedPanelOptions.width, roundedPanelOptions.height)
     editorMainFrame:SetPoint ("center", UIParent, "center", -100, 0)
 
-
-
     --create the widget editor
     local editorOptions = {
         width = editorMainFrame:GetWidth() - 10,
@@ -165,12 +168,38 @@ function Plater.CreateDesignerWindow()
     local canvasFrame = layoutEditor:GetCanvasScrollBox()
     canvasFrame:EnableMouse(false)
 
+    local objectSelector = layoutEditor:GetObjectSelector()
+    local optionsFrame = layoutEditor:GetOptionsFrame()
+
     --create a frame to guide the setting points on the empty area at the right side of the main frame, which is reserved for the preview
     local previewNameplateFrame = CreateFrame("Frame", "$parentGuideFrame", layoutEditor)
     createFrameTag(previewNameplateFrame, "previewPlateFrame")
     previewNameplateFrame:SetPoint("bottomleft", canvasFrame, "bottomright", 30, 0)
     previewNameplateFrame:SetPoint("topright", editorMainFrame, "topright", -5, -5)
     previewNameplateFrame:SetFrameLevel(layoutEditor:GetFrameLevel() + 1)
+
+    local onClickSelectPlateConfigOption = function(self, fixedParameter, newSubTablePath)
+        subTablePath = newSubTablePath
+
+        for index, objectInfo in ipairs(plateConfigObjectsInfo) do
+            layoutEditor:UpdateProfileSubTablePath(objectInfo, subTablePath)
+        end
+
+        layoutEditor:Refresh()
+    end
+
+    ---@type dropdownoption[]
+    local plateConfigOptions = {
+        {label = "Enemy NPC", value = "enemynpc", onclick = onClickSelectPlateConfigOption},
+        {label = "Friendly NPC", value = "friendlynpc", onclick = onClickSelectPlateConfigOption},
+        {label = "Enemy Player", value = "enemyplayer", onclick = onClickSelectPlateConfigOption},
+        {label = "Friendly Player", value = "friendlyplayer", onclick = onClickSelectPlateConfigOption},
+    }
+
+    --create df dropdown to select which plate config to edit
+    local plateConfigDropdown = detailsFramework:CreateDropDown(previewNameplateFrame, function() return plateConfigOptions end, subTablePath, 160, 20)
+    plateConfigDropdown:SetPoint("topleft", previewNameplateFrame, "topleft", 2, -13)
+    plateConfigDropdown:SetTemplate(detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
 
     plateFrame = designer.CreatePreview(previewNameplateFrame)
     createFrameTag(plateFrame, "nameplate")
@@ -213,9 +242,11 @@ function Plater.CreateDesignerWindow()
     ---@type fontstring
     local actorNameSpecial = plateFrame.ActorNameSpecial
     ---@type fontstring
-    local questOptions = unitFrame.QuestOptionsDummyFontString
+    local questOptionsFontString = unitFrame.QuestOptionsDummyFontString
     ---@type fontstring
     local castBarTargetName = castBar.TargetName
+    ---@type texture
+    local castBarSpark = castBar.Spark
 
     spellName:SetText("Blizzard")
     unitName:SetText("Unit Name")
@@ -241,9 +272,11 @@ function Plater.CreateDesignerWindow()
         designer.UpdateAllNameplates()
     end
 
+    --Plater.db.profile
     local profileRoot = Plater.db.profile
-    local profile = profileRoot.plate_config
     local rootKey = "" --as the settings are in the root of the profile table, there is no path to pass
+    --profileRoot.plate_config
+    local plateConfig = profileRoot.plate_config
 
     ---@type df_editobjectoptions
     local editObjectDefaultOptions = {
@@ -294,26 +327,46 @@ function Plater.CreateDesignerWindow()
     ]]
 
     --~register
-    layoutEditor:RegisterObject(questOptions, "Quest Options", "QUESTOPTIONS", profile, profileKey, options.WidgetSettingsMapTables.QuestOptions, options.WidgetSettingsExtraOptions.QuestOptions, onSettingChanged, editObjectDefaultOptions, unitFrame)
+
+    ---@type df_editor_objectinfo
+    local objectInfo
+
+    --plateConfig objects are objects where all settings are within the plate_config table
+
+    --quest options:
+    local questOptions = detailsFramework.table.copy({}, editObjectDefaultOptions)
+    questOptions.icon = "QuestNormal" --atlas name
+    objectInfo = layoutEditor:RegisterObject(questOptionsFontString, "Quest Options", "QUESTOPTIONS", plateConfig, subTablePath, options.WidgetSettingsMapTables.QuestOptions, options.WidgetSettingsExtraOptions.QuestOptions, onSettingChanged, questOptions, unitFrame)
+    plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
 
     --health bar
-    layoutEditor:RegisterObject(unitName, "Unit Name", "UNITNAME", profile, profileKey, options.WidgetSettingsMapTables.UnitName, options.WidgetSettingsExtraOptions.UnitName, onSettingChanged, editObjectDefaultOptions, healthBar)
-    layoutEditor:RegisterObject(levelText, "Unit Level", "UNITLEVEL", profile, profileKey, options.WidgetSettingsMapTables.UnitLevel, options.WidgetSettingsExtraOptions.UnitLevel, onSettingChanged, editObjectDefaultOptions, healthBar)
-    layoutEditor:RegisterObject(lifePercent, "Life Percent", "LIFEPERCENT", profile, profileKey, options.WidgetSettingsMapTables.LifePercent, options.WidgetSettingsExtraOptions.LifePercent, onSettingChanged, editObjectDefaultOptions, healthBar)
-    platerInternal.UpdatePercentTextLayout(lifePercent, profile[profileKey])
+    objectInfo = layoutEditor:RegisterObject(unitName, "Unit Name", "UNITNAME", plateConfig, subTablePath, options.WidgetSettingsMapTables.UnitName, options.WidgetSettingsExtraOptions.UnitName, onSettingChanged, editObjectDefaultOptions, healthBar)
+    plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
+
+    objectInfo = layoutEditor:RegisterObject(levelText, "Unit Level", "UNITLEVEL", plateConfig, subTablePath, options.WidgetSettingsMapTables.UnitLevel, options.WidgetSettingsExtraOptions.UnitLevel, onSettingChanged, editObjectDefaultOptions, healthBar)
+    plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
+    objectInfo = layoutEditor:RegisterObject(lifePercent, "Life Percent", "LIFEPERCENT", plateConfig, subTablePath, options.WidgetSettingsMapTables.LifePercent, options.WidgetSettingsExtraOptions.LifePercent, onSettingChanged, editObjectDefaultOptions, healthBar)
+    plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
+    platerInternal.UpdatePercentTextLayout(lifePercent, plateConfig[subTablePath])
+
     --actor title and name special
+    objectInfo = layoutEditor:RegisterObject(actorNameSpecial, "Big Unit Name", "BIGUNITNAME", plateConfig, subTablePath, options.WidgetSettingsMapTables.BigUnitName, options.WidgetSettingsExtraOptions.BigUnitName, onSettingChanged, editObjectNoMoveOptions, plateFrame)
+    plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
+    layoutEditor:RegisterObject(actorTitleSpecial, "Big Unit Title", "BIGUNITTITLE", plateConfig, subTablePath, options.WidgetSettingsMapTables.BigActorTitle, options.WidgetSettingsExtraOptions.BigActorTitle, onSettingChanged, editObjectNoMoveOptions, plateFrame)
+    plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
 
-    layoutEditor:RegisterObject(actorNameSpecial, "Big Unit Name", "BIGUNITNAME", profile, profileKey, options.WidgetSettingsMapTables.BigUnitName, options.WidgetSettingsExtraOptions.BigUnitName, onSettingChanged, editObjectNoMoveOptions, plateFrame)
-    layoutEditor:RegisterObject(actorTitleSpecial, "Big Unit Title", "BIGUNITTITLE", profile, profileKey, options.WidgetSettingsMapTables.BigActorTitle, options.WidgetSettingsExtraOptions.BigActorTitle, onSettingChanged, editObjectNoMoveOptions, plateFrame)
+    --cast bar [no plate config]
+    objectInfo = layoutEditor:RegisterObject(castBar, "Cast Bar", "CASTBAR", profileRoot, rootKey, options.WidgetSettingsMapTables.CastBar, options.WidgetSettingsExtraOptions.CastBar, onSettingChanged, editObjectDefaultOptions, castBar)
 
-    --cast bar
-    layoutEditor:RegisterObject(spellName, "Spell Name", "SPELLNAME", profile, profileKey, options.WidgetSettingsMapTables.SpellName, options.WidgetSettingsExtraOptions.SpellName, onSettingChanged, editObjectDefaultOptions, castBar)
-    layoutEditor:RegisterObject(castPercentText, "Spell Cast Time", "SPELLCASTTIME", profile, profileKey, options.WidgetSettingsMapTables.SpellCastTime, options.WidgetSettingsExtraOptions.SpellCastTime, onSettingChanged, editObjectDefaultOptions, castBar)
-    layoutEditor:RegisterObject(castBarTargetName, "Spell Target Name", "SPELLTARGETNAME", profileRoot, rootKey, options.WidgetSettingsMapTables.CastBarTargetName, options.WidgetSettingsExtraOptions.CastBarTargetName, onSettingChanged, editObjectDefaultOptions, castBar.FrameOverlay)
+    objectInfo = layoutEditor:RegisterObject(spellName, "Cast Spell Name", "SPELLNAME", plateConfig, subTablePath, options.WidgetSettingsMapTables.SpellName, options.WidgetSettingsExtraOptions.SpellName, onSettingChanged, editObjectDefaultOptions, castBar)
+    plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
+    objectInfo = layoutEditor:RegisterObject(castPercentText, "Cast Time", "SPELLCASTTIME", plateConfig, subTablePath, options.WidgetSettingsMapTables.SpellCastTime, options.WidgetSettingsExtraOptions.SpellCastTime, onSettingChanged, editObjectDefaultOptions, castBar)
+    plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
 
-    local objectSelector = layoutEditor:GetObjectSelector()
-    local optionsFrame = layoutEditor:GetOptionsFrame()
-    local canvasFrame = layoutEditor:GetCanvasScrollBox()
+    --[no plate config]
+    objectInfo = layoutEditor:RegisterObject(castBarTargetName, "Cast Target Name", "SPELLTARGETNAME", profileRoot, rootKey, options.WidgetSettingsMapTables.CastBarTargetName, options.WidgetSettingsExtraOptions.CastBarTargetName, onSettingChanged, editObjectDefaultOptions, castBar.FrameOverlay)
+    --[no plate config]
+    objectInfo = layoutEditor:RegisterObject(castBarSpark, "Cast Spark", "SPARKTEXTURE", profileRoot, rootKey, options.WidgetSettingsMapTables.CastBarSpark, options.WidgetSettingsExtraOptions.CastBarSpark, onSettingChanged, editObjectDefaultOptions, castBar.FrameOverlay)
 
     --designer.RefreshLayout()
 
@@ -338,8 +391,15 @@ function Plater.CreateDesignerWindow()
         castBarTargetName:SetText("Target Name")
         castBarTargetName:Show()
 
+        --[=[ spark debug
+        local np = NamePlate1
+        local npcastBar = np and np.unitFrame and np.unitFrame.castBar
+        local spark = npcastBar and npcastBar.Spark
+        dv(spark)
+        --]=]
+
         --check options
-        if (profile[profileKey].percent_text_enabled) then
+        if (plateConfig[subTablePath].percent_text_enabled) then
             lifePercent:SetAlpha(1)
         else
             lifePercent:SetAlpha(disabledAlpha)

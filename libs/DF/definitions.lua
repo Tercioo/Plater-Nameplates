@@ -151,6 +151,7 @@ GameCooltipFrame2 = {}
 ---@field RoleTypes roleinfo[]
 ---@field Language df_language
 ---@field Ejc df_ejc
+---@field FrameStrataLevels framestrata[] all available frame strata levels
 ---@field KeybindMixin df_keybindmixin
 ---@field ScriptHookMixin df_scripthookmixin
 ---@field EditorMixin df_editormixin
@@ -223,6 +224,10 @@ GameCooltipFrame2 = {}
 ---@field CreateLabel fun(self:table, parent:frame, text:any, size:any?, color:any?, font:string?, member:string?, name:string?, layer:drawlayer?) : df_label
 ---@field CreateDropDown fun(self:table, parent:frame, func:function, default:any, width:number?, height:number?, member:string?, name:string?, template:table?) : df_dropdown
 ---@field CreateDropDownWithText fun(self:table, parent:frame, func:function, default:any, width:number?, height:number?, member:string?, name:string?, template:table?) : df_dropdown_text
+---@field CreateStatusbarTextureDropDown fun(self:table, parent:frame, func:function, default:any, width:number?, height:number?, member:string?, name:string?, template:table?) : df_dropdown
+---@field CreateStatusbarTextureListGenerator fun(self:table, callback:function) : function return a function which when called returns a table filled with all statusbar textures available and ready to be used on dropdowns
+---@field CreateFrameStrataDropDown fun(self:table, parent:frame, callback:function, default:any, width:number?, height:number?, member:string?, name:string?, template:table?) : df_dropdown
+---@field CreateFrameStrataListGenerator fun(self:table, callback:function) : function return a function which when called returns a table filled with all frame strata levels available and ready to be used on dropdowns
 ---@field CreateFontDropDown fun(self:table, parent:frame, func:function, default:any, width:number?, height:number?, member:string?, name:string?, template:table?, bIncludeDefault:boolean?) : df_dropdown
 ---@field CreateColorDropDown fun(self:table, parent:frame, func:function, default:any, width:number?, height:number?, member:string?, name:string?, template:table?) : df_dropdown
 ---@field CreateOutlineDropDown fun(self:table, parent:frame, func:function, default:any, width:number?, height:number?, member:string?, name:string?, template:table?) : df_dropdown
@@ -388,6 +393,7 @@ GameCooltipFrame2 = {}
 ---@field ParseTemplate fun(self:table, templateCategory:string, template:string|table) : table
 ---@field GetParentName fun(self:table, frame:uiobject) : string
 ---@field IsLatinLanguage fun(self:table, languageId:string) : boolean
+---@field SetAsOptionsPanel fun(self:table, frame:frame) add the BuildMenu() members and methods to a frame, calling BuildMenu() on a frame will call this function
 ---@field PrintVersion fun(self:table) : nil print to chat the version of the framework
 ---@field GetParentKeyPath fun(self:table, object:uiobject) : string
 ---@field GetParentNamePath fun(self:table, object:uiobject) : string
