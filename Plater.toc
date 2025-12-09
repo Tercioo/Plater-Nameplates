@@ -1,4 +1,4 @@
-## Interface: 11508, 50502, 50503, 110207, 120000
+## Interface: 110207, 120000
 ## Interface-Mainline: 110205, 110207, 120000
 ## Interface-Mists: 50502, 50503
 ## Interface-Vanilla: 11508
