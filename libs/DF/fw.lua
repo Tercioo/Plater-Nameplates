@@ -1,5 +1,5 @@
 
-local dversion = 640
+local dversion = 642
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary(major, minor)
 
@@ -846,7 +846,12 @@ function DF.table.setfrompath(t, path, value)
 		end
 
 		if (lastTable and lastKey) then
-			lastTable[lastKey] = value
+			local numericKey = tonumber(lastKey)
+			if (numericKey) then
+				lastTable[numericKey] = value
+			else
+				lastTable[lastKey] = value
+			end
 			return true
 		end
 	else

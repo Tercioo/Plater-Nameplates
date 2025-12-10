@@ -392,6 +392,7 @@ GameCooltipFrame2 = {}
 ---@field SetTemplate fun(self:table, frame:uiobject, template:string)
 ---@field ParseTemplate fun(self:table, templateCategory:string, template:string|table) : table
 ---@field GetParentName fun(self:table, frame:uiobject) : string
+---@field SetTexture fun(self:table, object:texture, texture:any)
 ---@field IsLatinLanguage fun(self:table, languageId:string) : boolean
 ---@field SetAsOptionsPanel fun(self:table, frame:frame) add the BuildMenu() members and methods to a frame, calling BuildMenu() on a frame will call this function
 ---@field PrintVersion fun(self:table) : nil print to chat the version of the framework
