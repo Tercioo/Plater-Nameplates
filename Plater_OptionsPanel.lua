@@ -2395,6 +2395,7 @@ local debuff_options = {
 		end,
 		name = "Important Auras Border Color",
 		desc = "Important Auras Border Color",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	{
 		type = "color",
@@ -2410,6 +2411,7 @@ local debuff_options = {
 		end,
 		name = "Dispellable Buffs Border Color",
 		desc = "Dispellable Buffs Border Color",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	{
 		type = "color",
@@ -2425,6 +2427,7 @@ local debuff_options = {
 		end,
 		name = "Enrage Buffs Border Color",
 		desc = "Enrage Buffs Border Color",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	--border color is buff
 	{
@@ -2441,6 +2444,22 @@ local debuff_options = {
 		end,
 		name = "Buffs Border Color",
 		desc = "Buffs Border Color",
+	},
+		--border color is debuff
+	{
+		type = "color",
+		boxfirst = true,
+		get = function()
+			local color = Plater.db.profile.aura_border_colors.is_debuff
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a) 
+			local color = Plater.db.profile.aura_border_colors.is_debuff
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.UpdateAllPlates()
+		end,
+		name = "Debuffs Border Color",
+		desc = "Debuffs Border Color",
 	},
 	--border color is offensive
 	{
@@ -2473,6 +2492,7 @@ local debuff_options = {
 		end,
 		name = "Offensive CD Border Color",
 		desc = "Offensive CD Border Color",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	--border color is offensive
 	{
@@ -2489,6 +2509,7 @@ local debuff_options = {
 		end,
 		name = "Defensive CD Border Color",
 		desc = "Defensive CD Border Color",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	--border color is default
 	{
@@ -6166,6 +6187,7 @@ local relevance_options = {
 			name = "OPTIONS_POWERBAR",
 			desc = "OPTIONS_ALPHABYFRAME_ALPHAMULTIPLIER",
 			usedecimals = true,
+			hidden = IS_WOW_PROJECT_MIDNIGHT,
 		},
 		{
 			type = "range",
@@ -6276,6 +6298,7 @@ local relevance_options = {
 			name = "OPTIONS_POWERBAR",
 			desc = "OPTIONS_ALPHABYFRAME_ALPHAMULTIPLIER",
 			usedecimals = true,
+			hidden = IS_WOW_PROJECT_MIDNIGHT,
 		},
 		{
 			type = "range",

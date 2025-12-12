@@ -8,6 +8,8 @@ local _
 
 local L = DF.Language.GetLanguageTable(addonId)
 
+local IS_WOW_PROJECT_MIDNIGHT = DF.IsAddonApocalypseWow()
+
 ---@alias spellid number
 ---@alias soundpath string
 
@@ -1202,6 +1204,7 @@ function Plater.CreateCastColorOptionsFrame(castColorFrame)
         previewCastBar.castColorTexture = previewCastBar:CreateTexture("$parentCastColor", "background", nil, -6)
 
         local hookEventCast = function(self, event, unit, ...)
+            if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(self.spellID) then return end
             local isEnabled = DB_CAST_COLORS[self.spellID] and DB_CAST_COLORS[self.spellID][CONST_INDEX_ENABLED]
             if (isEnabled) then
                 previewCastBar.castColorTexture:SetColorTexture(unpack(Plater.db.profile.cast_statusbar_color))

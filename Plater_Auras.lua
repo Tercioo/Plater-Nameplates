@@ -92,6 +92,29 @@ local AURA_TYPES = {
 	["Curse"] = "curse",
 	["nil"] = "none",
 }
+local DEBUFF_DISPLAY_COLOR_INFO = {
+	[0] = DEBUFF_TYPE_NONE_COLOR,
+	[1] = DEBUFF_TYPE_MAGIC_COLOR,
+	[2] = DEBUFF_TYPE_CURSE_COLOR,
+	[3] = DEBUFF_TYPE_DISEASE_COLOR,
+	[4] = DEBUFF_TYPE_POISON_COLOR,
+	[9] = DEBUFF_TYPE_BLEED_COLOR, -- enrage
+	[11] = DEBUFF_TYPE_BLEED_COLOR,
+}
+local dispelColorCurve = C_CurveUtil and C_CurveUtil.CreateColorCurve() --TODO: correct colors! MIDNIGHT!!
+if dispelColorCurve then
+	dispelColorCurve:SetType(Enum.LuaCurveType.Step)
+	for i, c in pairs(DEBUFF_DISPLAY_COLOR_INFO) do
+		dispelColorCurve:AddPoint(i, c)
+	end
+end
+local pandemicColorCurve = C_CurveUtil and C_CurveUtil.CreateColorCurve()
+if pandemicColorCurve then
+	pandemicColorCurve:SetType(Enum.LuaCurveType.Step)
+	pandemicColorCurve:AddPoint(0, CreateColor(1, 0, 0, 1))
+	pandemicColorCurve:AddPoint(.15, CreateColor(1, 0.5, 0, 1))
+	pandemicColorCurve:AddPoint(.25, CreateColor(1, 1, 1, 1))
+end
 
 --> Aura types for usage in AddAura / AddExtraIcon checks
 local AURA_TYPE_ENRAGE = "" -- yes, 'enrage' is just empty string for Blizzard...
@@ -563,7 +586,8 @@ function Plater.AddToAuraUpdate (unit)
 	if not unit then return end
 	UnitAuraEventHandlerValidUnits[unit] = true
 	UnitAuraEventHandlerData[unit] = { hasBuff = true, hasDebuff = true } --update at least once
-	UpdateUnitAuraCacheData(unit, {isFullUpdate = true})
+	--UpdateUnitAuraCacheData(unit, {isFullUpdate = true})
+	UpdateUnitAuraCacheData(unit, nil)
 end
 
 
@@ -586,6 +610,7 @@ UpdateUnitAuraCacheData = function (unit, updatedAuras)
 		UnitAuraCacheData[unit].isFullUpdateHelp = true
 		UnitAuraCacheData[unit].isFullUpdateHarm = true
 		UnitAuraEventHandlerData[unit] = { hasBuff = true, hasDebuff = true }
+		return
 	elseif not IS_WOW_PROJECT_MIDNIGHT and updatedAuras == nil or updatedAuras.isFullUpdate then
 		UnitAuraCacheData[unit] = {}
 		UnitAuraCacheData[unit].buffs = {}
@@ -738,22 +763,28 @@ local function getUnitAuras(unit, filter)
 	
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdateAuras - getUnitAuras - long")
 	
-	local continuationToken
-	local debuffIndex = 0
-	repeat -- until continuationToken == nil
-		local slots = { GetAuraSlots(unit, filter, BUFF_MAX_DISPLAY_PLATER, continuationToken) }
-		continuationToken = slots[1]
-		local numSlots = #slots
-		
-		for i=2, numSlots do
-			local slot = slots[i]
-			local aura = GetAuraDataBySlot(unit, slot)
-			if aura then
-				--DevTool:AddData({unit = unit, aura = aura, slot = slot}, "GetAuraDataBySlot")
-				filterCache[aura.auraInstanceID] = aura
-			end
+	if C_UnitAuras.GetUnitAuras then
+		local auraData = C_UnitAuras.GetUnitAuras(unit, filter, nil, Plater.db.profile.aura_sort and Enum.UnitAuraSortRule.Expiration or Enum.UnitAuraSortRule.Unsorted)
+		for _, aura in pairs(auraData) do
+			filterCache[aura.auraInstanceID] = aura
 		end
-	until continuationToken == nil
+	else
+		local continuationToken
+		repeat -- until continuationToken == nil
+			local slots = { GetAuraSlots(unit, filter, BUFF_MAX_DISPLAY_PLATER, continuationToken) }
+			continuationToken = slots[1]
+			local numSlots = #slots
+			
+			for i=2, numSlots do
+				local slot = slots[i]
+				local aura = GetAuraDataBySlot(unit, slot)
+				if aura then
+					--DevTool:AddData({unit = unit, aura = aura, slot = slot}, "GetAuraDataBySlot")
+					filterCache[aura.auraInstanceID] = aura
+				end
+			end
+		until continuationToken == nil
+	end
 	
 	Plater.EndLogPerformanceCore("Plater-Core", "Update", "UpdateAuras - getUnitAuras - long")
 	
@@ -963,12 +994,12 @@ end
 	--plater just add an icon for the spellId and show it until its duration expires
 	--this function is called on tick after Plater.ShowGhostAuras(tickFrame.BuffFrame) and platerInternal.ExtraAuras.ClearExpired()
 	function platerInternal.ExtraAuras.Show(buffFrame)
-		if IS_WOW_PROJECT_MIDNIGHT then return end -- MIDNIGHT!!
 		local unitFrame = buffFrame.unitFrame
 		--unitFrame.IsNeutralOrHostile count npcs and players
 		if (unitFrame.IsNeutralOrHostile and not unitFrame.IsSelf) then --and unitFrame.InCombat --removed for debug on training dummies
 			if (InCombatLockdown()) then
 				local unitGUID = unitFrame[MEMBER_GUID]
+				if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(unitGUID) then return end
 				local unitExtraAurasSpellIds = EXTRAAURAS_GUIDS[unitGUID]
 
 				--does the mob shown in the nameplate has an extra aura added to it?
@@ -1070,6 +1101,8 @@ end
 					return (aura1.auraInstanceID or 0) < (aura2.auraInstanceID or 0)
 				end)
 			else
+				-- new aura sorting done via API, let's see...
+				--[[
 				table.sort (iconFrameContainer, function(aura1, aura2)
 					local aFromPlayer = (aura1.sourceUnit ~= nil) and UnitIsUnit("player", aura1.sourceUnit) or false
 					local bFromPlayer = (aura2.sourceUnit ~= nil) and UnitIsUnit("player", aura2.sourceUnit) or false
@@ -1078,6 +1111,7 @@ end
 					end
 					return (aura1.auraInstanceID or 0) < (aura2.auraInstanceID or 0)
 				end)
+				]]--
 			end
 			--when sorted, this is reliable
 			amountFramesShown = index
@@ -1403,12 +1437,17 @@ end
 		local now = GetTime()
 		if (self.lastUpdateCooldown + (IS_WOW_PROJECT_MIDNIGHT and 0.5 or 0.05)) <= now then
 			if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(self.ExpirationTime) then
-				self.RemainingTime = C_UnitAuras.GetAuraDurationRemainingByAuraInstanceID(self.unitFrame.namePlateUnitToken, self:GetID())
-				--print(self.RemainingTime, self.unitFrame.namePlateUnitToken, self:GetID())
+				--self.RemainingTime = C_UnitAuras.GetAuraDurationRemaining(self.unitFrame.namePlateUnitToken, self:GetID())
+				self.RemainingTime = self.durationObject and self.durationObject:GetRemainingDuration() -- or C_UnitAuras.GetAuraDurationRemaining(self.unitFrame.namePlateUnitToken, self:GetID())
 				self.Cooldown.Timer:SetText(string.format("%d",self.RemainingTime))
+				
+				--local pandemicColor = C_UnitAuras.GetAuraDurationRemainingColor(auraIconFrame.unitFrame.namePlateUnitToken, i , pandemicColorCurve)
+				local pandemicColor = self.durationObject:EvaluateRemainingPercent(pandemicColorCurve)
+				self.Cooldown.Timer:SetTextColor(pandemicColor:GetRGBA())
+				
 			else
 				self.RemainingTime = (self.ExpirationTime - now) / (self.ModRate or 1)
-				if self.RemainingTime > 0 then
+				if not self.noExpirationTime and self.RemainingTime > 0 then
 					if self.formatWithDecimals then
 						self.Cooldown.Timer:SetText (Plater.FormatTimeDecimal (self.RemainingTime))
 					else
@@ -1721,19 +1760,10 @@ end
 		auraIconFrame.IsGhostAura = false
 		auraIconFrame.BuffFrame = self.Name == "Secondary" and 2 or 1
 
-		--MIDNIGHT!! curve?
 		if IS_WOW_PROJECT_MIDNIGHT then
 			local stackLabel = auraIconFrame.CountFrame.Count
-			--local showHideCurve = C_CurveUtil.CreateCurve()
-			--showHideCurve:SetType(Enum.LuaCurveType.Step)
-			--showHideCurve:AddPoint(0, 0)
-			--showHideCurve:AddPoint(1, 1)
-			--local alpha = showHideCurve:Evaluate(applications)
-			--print(alpha)
-			--auraIconFrame.CountFrame:SetAlpha(alpha)
-			stackLabel:SetText (applications)
-			--stackLabel:Show()
-			auraIconFrame.CountFrame.Count:Hide()
+			stackLabel:SetText (C_StringUtil.TruncateWhenZero(applications))
+			stackLabel:Show()
 		else
 			if (applications > 1) then
 				local stackLabel = auraIconFrame.CountFrame.Count
@@ -1748,7 +1778,38 @@ end
 		auraIconFrame.CanStealOrPurge = isStealable
 		
 		--border colors
-		if not IS_WOW_PROJECT_MIDNIGHT then
+		if IS_WOW_PROJECT_MIDNIGHT then
+			if Plater.db.profile.aura_border_colors_by_type then
+				local color
+				if DB_AURA_ENABLED then --check for aura testing, so actual auras
+					color = C_UnitAuras.GetAuraDispelTypeColor(auraIconFrame.unitFrame.namePlateUnitToken, i, dispelColorCurve)
+				else
+					color = DEBUFF_DISPLAY_COLOR_INFO[dispelName or "none"]
+				end
+				
+				if color then
+					--auraIconFrame:SetBackdropBorderColor(color:GetRGBA())
+					auraIconFrame:SetBackdropBorderColor(color.r, color.g, color.b, color.a)
+				else
+					auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.is_debuff))
+				end
+				
+			elseif (isBuff) then
+				auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.is_buff))
+			
+			elseif (isDebuff) then
+				auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.is_debuff))
+				
+			elseif C_UnitAuras.IsAuraFilteredOutByInstanceID(auraIconFrame.unitFrame.namePlateUnitToken, i, "CROWDCONTROL") then
+				auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.crowdcontrol))
+				
+			else
+				auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.default))
+				
+			end
+			
+		else
+		
 			if (isStealable) then
 				auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.steal_or_purge))
 			
@@ -1787,21 +1848,23 @@ end
 				auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.default))
 				
 			end
-		else
-			auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.default))
 		end
 
 		local now = GetTime()
 		--MIDNIGHT!!
-		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(duration) then
-			local timeLeft = C_UnitAuras.GetAuraDurationRemainingByAuraInstanceID(auraIconFrame.unitFrame.namePlateUnitToken, i)
+		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(duration) then --TODO (lots of...) MIDNIGHT!!
+			local durationObject = C_UnitAuras.GetAuraDuration and C_UnitAuras.GetAuraDuration(auraIconFrame.unitFrame.namePlateUnitToken, i)
+			local timeLeft = durationObject and durationObject:GetRemainingDuration() or C_UnitAuras.GetAuraDurationRemaining(auraIconFrame.unitFrame.namePlateUnitToken, i)
 			--local maxduration = C_UnitAuras.GetRefreshExtendedDuration(auraIconFrame.unitFrame.namePlateUnitToken, i)
-			local maxduration = C_UnitAuras.GetAuraBaseDuration(auraIconFrame.unitFrame.namePlateUnitToken, i)
-			applications = C_StringUtil.TruncateWhenZero(applications)
+			local maxduration = durationObject and durationObject:GetTotalDuration() or C_UnitAuras.GetAuraBaseDuration(auraIconFrame.unitFrame.namePlateUnitToken, i)
 			auraIconFrame.Cooldown:SetDrawEdge(true)
 			--auraIconFrame.Cooldown:SetCooldown(start, duration, modRate)
 			--auraIconFrame.Cooldown:SetCooldownDuration(duration, modRate)
+			local noExpirationTime = durationObject:IsZero()--C_UnitAuras.DoesAuraHaveExpirationTime(auraIconFrame.unitFrame.namePlateUnitToken, i)
 			auraIconFrame.Cooldown:SetCooldownFromExpirationTime(expirationTime, duration, modRate)
+			auraIconFrame.Cooldown:SetAlphaFromBoolean(noExpirationTime, 0, 1)
+			
+			auraIconFrame.noExpirationTime = noExpirationTime
 			auraIconFrame.SpellName = spellName
 			auraIconFrame.SpellId = spellId
 			auraIconFrame.InUse = true
@@ -1814,12 +1877,19 @@ end
 			auraIconFrame.AuraAmount = applications
 			auraIconFrame.ModRate = modRate
 			auraIconFrame.isBuff = isBuff
+			auraIconFrame.durationObject = durationObject
 			auraIconFrame:Show()
 
 			auraIconFrame.Cooldown.Timer:SetText (string.format("%d",timeLeft))
 			auraIconFrame.lastUpdateCooldown = now
 			auraIconFrame:SetScript ("OnUpdate", auraIconFrame.UpdateCooldown)
 			auraIconFrame.Cooldown.Timer:Show()
+			
+				
+			--local pandemicColor = C_UnitAuras.GetAuraDurationRemainingColor(auraIconFrame.unitFrame.namePlateUnitToken, i , pandemicColorCurve)
+			local pandemicColor = durationObject:EvaluateRemainingPercent(pandemicColorCurve)
+			auraIconFrame.Cooldown.Timer:SetTextColor(pandemicColor:GetRGBA())
+
 			return
 		else
 			modRate = modRate or 1

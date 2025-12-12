@@ -155,8 +155,7 @@ PLATER_DEFAULT_SETTINGS = {
 
 		click_space = {140, 28}, --classic: {132, 32}, retail: {110, 45},
 		click_space_scale = {1, 1},
-		click_space_scale_minor = {1, 1},
-		click_space_scale_pet = {1, 1},
+		click_space_scale_friendly = {1, 1},
 		click_space_friendly = {140, 28}, --classic: {132, 32}, retail: {110, 45},
 		click_space_always_show = false,
 		hide_friendly_castbars = false,
@@ -927,6 +926,7 @@ PLATER_DEFAULT_SETTINGS = {
 			steal_or_purge = {0, .5, .98, 1},
 			enrage = {0.85, 0.2, 0.1, 1},
 			is_buff = {0, .65, .1, 1},
+			is_debuff = {1, 0, 0, 1},
 			is_show_all = {.7, .1, .1, 1},
 			defensive = {.85, .45, .1, 1},
 			offensive = {0, .65, .1, 1},
