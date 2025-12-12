@@ -764,7 +764,7 @@ local function getUnitAuras(unit, filter)
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdateAuras - getUnitAuras - long")
 	
 	if C_UnitAuras.GetUnitAuras then
-		local auraData = C_UnitAuras.GetUnitAuras(unit, filter, nil, Plater.db.profile.aura_sort and Enum.UnitAuraSortRule.Expiration or Enum.UnitAuraSortRule.Unsorted)
+		local auraData = C_UnitAuras.GetUnitAuras(unit, filter, nil, IS_WOW_PROJECT_MIDNIGHT and (Plater.db.profile.aura_sort and Enum.UnitAuraSortRule.Expiration or Enum.UnitAuraSortRule.Unsorted) or nil)
 		for _, aura in pairs(auraData) do
 			filterCache[aura.auraInstanceID] = aura
 		end
