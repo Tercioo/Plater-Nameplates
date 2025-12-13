@@ -766,6 +766,7 @@ local function getUnitAuras(unit, filter)
 	if C_UnitAuras.GetUnitAuras then
 		local auraData = C_UnitAuras.GetUnitAuras(unit, filter, nil, IS_WOW_PROJECT_MIDNIGHT and (Plater.db.profile.aura_sort and Enum.UnitAuraSortRule.Expiration or Enum.UnitAuraSortRule.Unsorted) or nil)
 		for _, aura in pairs(auraData) do
+			setAdditionalAuraFields(aura, unit)
 			filterCache[aura.auraInstanceID] = aura
 		end
 	else
@@ -1436,7 +1437,7 @@ end
 	local function AuraIconOnTick_UpdateCooldown (self, deltaTime)
 		local now = GetTime()
 		if (self.lastUpdateCooldown + (IS_WOW_PROJECT_MIDNIGHT and 0.5 or 0.05)) <= now then
-			if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(self.ExpirationTime) then
+			if IS_WOW_PROJECT_MIDNIGHT then
 				--self.RemainingTime = C_UnitAuras.GetAuraDurationRemaining(self.unitFrame.namePlateUnitToken, self:GetID())
 				self.RemainingTime = self.durationObject and self.durationObject:GetRemainingDuration() -- or C_UnitAuras.GetAuraDurationRemaining(self.unitFrame.namePlateUnitToken, self:GetID())
 				self.Cooldown.Timer:SetText(string.format("%d",self.RemainingTime))
