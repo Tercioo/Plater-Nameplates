@@ -6805,7 +6805,7 @@ end
 				
 				if IS_WOW_PROJECT_MIDNIGHT then
 					if HEALTHCUTOFF_AT_DATA.healthCutOffValue and HEALTHCUTOFF_AT_DATA.healthCutOffValue > 0 then
-						local _,_,_,lowerAlpha = UnitHealthPercentColor(unitFrame [MEMBER_UNITID], HEALTHCUTOFF_AT_DATA.healthCutOffValueCurve):GetRGBA()
+						local _,_,_,lowerAlpha = UnitHealthPercent(unitFrame [MEMBER_UNITID], true, HEALTHCUTOFF_AT_DATA.healthCutOffValueCurve):GetRGBA()
 						--lower
 						healthBar.healthCutOff:Show()
 						if (not profile.health_cutoff_hide_divisor) then
@@ -6836,7 +6836,7 @@ end
 						
 					if HEALTHCUTOFF_AT_DATA.healthCutOffUpperValue and HEALTHCUTOFF_AT_DATA.healthCutOffUpperValue < 1 then
 						--upper
-						local _,_,_,upperAlpha = UnitHealthPercentColor(unitFrame [MEMBER_UNITID], HEALTHCUTOFF_AT_DATA.healthCutOffUpperValueCurve):GetRGBA()
+						local _,_,_,upperAlpha = UnitHealthPercent(unitFrame [MEMBER_UNITID], true, HEALTHCUTOFF_AT_DATA.healthCutOffUpperValueCurve):GetRGBA()
 						healthBar.healthCutOffUpper:Show()
 						if (not profile.health_cutoff_hide_divisor) then
 							healthBar.healthCutOffUpper:SetAlpha(upperAlpha)
