@@ -438,13 +438,14 @@ end
 
 
 local function setAdditionalAuraFields(aura, unit, sourceIsSelf, sourceReaction, sourceIsPlayer)
-	if not aura or not unit or IS_WOW_PROJECT_MIDNIGHT then 
+	if not aura then return end
+	if IS_WOW_PROJECT_MIDNIGHT then 
 		aura.sourceIsSelf = false
 		aura.sourceReaction = 4
 		aura.sourceIsPlayer = false
 		return
 	end
-	aura.sourceIsSelf = sourceIsSelf or aura.sourceUnit and UnitIsUnit (aura.sourceUnit, unit) or false
+	aura.sourceIsSelf = sourceIsSelf or aura.sourceUnit and unit and UnitIsUnit (aura.sourceUnit, unit) or false
 	aura.sourceReaction = sourceReaction or aura.sourceUnit and UnitReaction(aura.sourceUnit, "player") or 4
 	aura.sourceIsPlayer = sourceIsPlayer or aura.sourceUnit and (UnitIsUnit (aura.sourceUnit, "player") or UnitIsUnit (aura.sourceUnit, "pet")) or false
 	--print(aura.name, aura.sourceUnit, aura.sourceIsSelf, aura.sourceReaction, aura.sourceIsPlayer)
