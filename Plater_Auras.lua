@@ -1858,7 +1858,7 @@ end
 
 		local now = GetTime()
 		--MIDNIGHT!!
-		if IS_WOW_PROJECT_MIDNIGHT and duration then --TODO (lots of...) MIDNIGHT!! --tercio: I guess is 'and'? remove this comment after review
+		if IS_WOW_PROJECT_MIDNIGHT then --TODO (lots of...) MIDNIGHT!!
 			local durationObject = C_UnitAuras.GetAuraDuration and C_UnitAuras.GetAuraDuration(auraIconFrame.unitFrame.namePlateUnitToken, i)
 			local timeLeft = durationObject and durationObject:GetRemainingDuration() or C_UnitAuras.GetAuraDurationRemaining(auraIconFrame.unitFrame.namePlateUnitToken, i)
 			--local maxduration = C_UnitAuras.GetRefreshExtendedDuration(auraIconFrame.unitFrame.namePlateUnitToken, i)
