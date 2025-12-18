@@ -11984,7 +11984,6 @@ end
 				else
 					return round(a.Prio or 99) > round(b.Prio or 99)
 				end
-				return false
 			end)
 		end
 		--table.foreach(scripts, function(index, self) if self then print(self.Prio, self.Name) else print("not self") end end)

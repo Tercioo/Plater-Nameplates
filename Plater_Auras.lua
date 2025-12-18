@@ -260,8 +260,6 @@ function platerInternal.ExtraAuras.Remove(spellId, unitGUID)
 			if (auraIconFrame.extraAuraSpellId == spellId and auraIconFrame.spellId == spellId) then
 				auraIconFrame.extraAuraSpellId = nil
 				auraIconFrame:Hide()
-			else
-				--I guess the aura will get cleaned by regular Plater.ResetAuraContainer()
 			end
 		end
 	end
@@ -1102,7 +1100,7 @@ end
 				end
 			end
 			iconFrameContainer = iconFrameContainerCopy
-			if not IS_WOW_PROJECT_MIDNIGHT then
+			if not IS_WOW_PROJECT_MIDNIGHT then -- new aura sorting done via API, let's see...
 				table.sort (iconFrameContainer, function(aura1, aura2) 
 					return (aura1.auraInstanceID or 0) < (aura2.auraInstanceID or 0)
 				end)
