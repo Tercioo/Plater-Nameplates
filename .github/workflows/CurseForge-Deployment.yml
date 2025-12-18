@@ -35,8 +35,8 @@ jobs:
 
       - name: Install and run Luacheck
         uses: nebularg/actions-luacheck@v1
-          with:
-            args: -g -u -r -a -s --no-max-line-length --exclude-files libs/**/* -q
+        with:
+          args: -g -u -r -a -s --no-max-line-length --exclude-files libs/**/* -q
 
       - name: Hack around https://github.com/actions/checkout/issues/290
         run: |
