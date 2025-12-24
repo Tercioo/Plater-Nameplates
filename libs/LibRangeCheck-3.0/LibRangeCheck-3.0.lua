@@ -40,7 +40,7 @@ License: MIT
 -- @class file
 -- @name LibRangeCheck-3.0
 local MAJOR_VERSION = "LibRangeCheck-3.0"
-local MINOR_VERSION = 30
+local MINOR_VERSION = 31
 
 ---@class lib
 local lib, oldminor = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
@@ -4595,7 +4595,9 @@ function lib:activate()
     self.frame = frame
 
     if not isMidnight then
-      frame:RegisterEvent("LEARNED_SPELL_IN_TAB")
+      if C_EventUtils and C_EventUtils.IsEventValid("LEARNED_SPELL_IN_TAB") then
+        frame:RegisterEvent("LEARNED_SPELL_IN_TAB")
+      end
     end
     frame:RegisterEvent("CHARACTER_POINTS_CHANGED")
     frame:RegisterEvent("SPELLS_CHANGED")
