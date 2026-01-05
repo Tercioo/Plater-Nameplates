@@ -117,6 +117,7 @@ function Plater.CreateDesignerWindow()
 
     ---@type df_roundedpanel
     local editorMainFrame = detailsFramework:CreateRoundedPanel(UIParent, gName, roundedPanelOptions)
+    --editorMainFrame:SetFrameStrata("FULLSCREEN")
     --local editorMainFrame = CreateFrame("frame", gName, UIParent)
 
     Plater.DesignerWindow = editorMainFrame
@@ -218,8 +219,8 @@ function Plater.CreateDesignerWindow()
     plateConfigDropdown:SetTemplate(detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
 
     plateFrame = designer.CreatePreview(previewNameplateFrame)
-    createFrameTag(plateFrame, "nameplate")
-    plateFrame:SetPoint("center", previewNameplateFrame, "center", 0, 0)
+    --createFrameTag(plateFrame, "nameplate")
+    plateFrame:SetPoint("center", previewNameplateFrame, "center", 0, 50)
     plateFrame:SetScale(1.5)
     plateFrame:SetSize(180, 60)
     plateFrame.unit = "player"
@@ -261,6 +262,8 @@ function Plater.CreateDesignerWindow()
     local questOptionsFontString = unitFrame.QuestOptionsDummyFontString
     ---@type fontstring
     local castBarTargetName = castBar.TargetName
+    ---@type fontstring
+    local newcastBarTargetName = castBar.NewCastBarTargetName
     ---@type texture
     local castBarSpark = castBar.Spark
 
@@ -278,7 +281,7 @@ function Plater.CreateDesignerWindow()
     actorTitleSpecial:SetPoint("top", actorNameSpecial, "bottom", 0, -2)
 
     local onSettingChanged = function(editingObject, optionKey, newValue, profileTable, profileKey)
-        print("Changed!", optionKey, newValue, profileTable, profileKey)
+        --print("Changed!", optionKey, newValue, profileTable, profileKey)
 
         if (optionKey == "anchor") then
             local anchorTable = detailsFramework.table.getfrompath(profileTable, profileKey, 1)
@@ -312,21 +315,15 @@ function Plater.CreateDesignerWindow()
 
     actorNameSpecial:Show()
     actorTitleSpecial:Show()
-    castBarTargetName:Show()
-    castBarTargetName:SetText("Target Name")
+    --castBarTargetName:Show()
 
     local previousCastbarTargetShow = Plater.db.profile.castbar_target_show
     Plater.db.profile.castbar_target_show = true
-    Plater.UpdateCastbarTargetText(castBar)
+    Plater.UpdateCastbarTargetText(castBar, newcastBarTargetName)
     Plater.db.profile.castbar_target_show = previousCastbarTargetShow
 
-    print(" == spell target name debug == ")
-    dv(castBarTargetName)
-    --dv(castBar.FrameOverlay)
-    print("text:", castBarTargetName:GetText())
-    local p = {castBarTargetName:GetPoint(1)}
-    print("point name:", p[2]:GetName())
-    print(" == end == ")
+    newcastBarTargetName:Show()
+    newcastBarTargetName:SetText("Target Name")
 
     --by registering the object within the editor, the the object will show up in the list of widgets to select
 
@@ -389,7 +386,7 @@ function Plater.CreateDesignerWindow()
     plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
 
     --[no plate config]
-    objectInfo = layoutEditor:RegisterObject(castBarTargetName, "Cast Target Name", "CASTTARGETNAME", profileRoot, rootKey, options.WidgetSettingsMapTables.CastBarTargetName, options.WidgetSettingsExtraOptions.CastBarTargetName, onSettingChanged, editObjectDefaultOptions, castBar.FrameOverlay)
+    objectInfo = layoutEditor:RegisterObject(newcastBarTargetName, "Cast Target Name", "CASTTARGETNAME", profileRoot, rootKey, options.WidgetSettingsMapTables.CastBarTargetName, options.WidgetSettingsExtraOptions.CastBarTargetName, onSettingChanged, editObjectDefaultOptions, castBar.FrameOverlay)
     --[no plate config]
     objectInfo = layoutEditor:RegisterObject(castBarSpark, "Cast Spark", "CASTSPARK", profileRoot, rootKey, options.WidgetSettingsMapTables.CastBarSpark, options.WidgetSettingsExtraOptions.CastBarSpark, onSettingChanged, editObjectDefaultOptions, castBar.FrameOverlay)
 
@@ -428,8 +425,8 @@ function Plater.CreateDesignerWindow()
             end
         end
 
-        castBarTargetName:SetText("Target Name")
-        castBarTargetName:Show()
+        --castBarTargetName:SetText("Target Name")
+        --castBarTargetName:Show()
 
         --[=[ spark debug
         local np = NamePlate1
@@ -662,7 +659,7 @@ function designer.UpdatePreview()
     local anchorFrame = plateFrame.PlaterAnchorFrame
 
     --local actorLevel = healthBar.actorLevel
-    
+
 
     local obscuredTexture = plateFrame.Obscured
 
@@ -672,6 +669,11 @@ function designer.UpdatePreview()
     local castBarText = castBar.Text
     local castBarPercentText = castBar.percentText
     local castBarTargetName = castBar.TargetName
+
+    --print(castBarTargetName:GetParent():GetName())
+
+    local newBarTargetName = castBar.FrameOverlay:CreateFontString(nil, "overlay", "GameFontNormal")
+    castBar.NewCastBarTargetName = newBarTargetName
 
     local buffFrame1 = unitFrame.BuffFrame
     local buffFrame2 = unitFrame.BuffFrame2

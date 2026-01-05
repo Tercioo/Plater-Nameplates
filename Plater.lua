@@ -5331,11 +5331,11 @@ function Plater.OnInit() --private --~oninit ~init
 		end
 	
 		--> when the option to show the target of the cast is enabled, this function update the text settings but not the target name
-		function Plater.UpdateCastbarTargetText (castBar)
+		function Plater.UpdateCastbarTargetText (castBar, targetFontString)
 			local profile = Plater.db.profile
 			
 			if (profile.castbar_target_show) then
-				local textString = castBar.FrameOverlay.TargetName
+				local textString = targetFontString or castBar.FrameOverlay.TargetName
 				textString:Show()
 				
 				DF:SetFontSize (textString, profile.castbar_target_text_size)
@@ -5348,6 +5348,9 @@ function Plater.OnInit() --private --~oninit ~init
 				
 				Plater.SetAnchor (textString, profile.castbar_target_anchor)
 			else
+				if targetFontString then
+					targetFontString:Hide()
+				end
 				castBar.FrameOverlay.TargetName:Hide()
 			end
 		end
