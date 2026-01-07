@@ -5232,6 +5232,12 @@ function Plater.OnInit() --private --~oninit ~init
 				
 				castBar.playedFinishedTest = nil
 				
+				if IS_WOW_PROJECT_MIDNIGHT then
+					local durationObject = C_DurationUtil.CreateDuration()
+					durationObject:SetTimeFromEnd(castBar.spellEndTime , castBar.maxValue, 1)
+					castBar.durationObject = durationObject
+				end
+				
 				castBar.flashTexture:Hide()
 				castBar:Animation_StopAllAnimations()
 
