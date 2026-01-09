@@ -25,6 +25,7 @@ jobs:
           flavor: |
             classic_era
             classic
+            tbc
             retail
           beta: true
           ptr: true
