@@ -1,5 +1,5 @@
-## Interface: 11508, 50503, 20505, 110207, 120000, 120001
-## Interface-Mainline: 110205, 110207, 120000
+## Interface: 110207, 120000, 120001
+## Interface-Mainline: 110207, 120000, 120001
 ## Interface-Mists: 50503
 ## Interface-TBC: 20505
 ## Interface-Vanilla: 11508
@@ -23,9 +23,9 @@
 #@version-mists@
 ## Version: @project-version@-Mists
 #@end-version-mists@
-#@version-tbc@
+#@version-bcc@
 ## Version: @project-version@-TBC
-#@end-version-tbc@
+#@end-version-bcc@
 #@version-classic@
 ## Version: @project-version@-Vanilla
 #@end-version-classic@
