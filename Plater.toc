@@ -23,6 +23,9 @@
 #@version-mists@
 ## Version: @project-version@-Mists
 #@end-version-mists@
+#@version-tbc@
+## Version: @project-version@-TBC
+#@end-version-tbc@
 #@version-classic@
 ## Version: @project-version@-Vanilla
 #@end-version-classic@
