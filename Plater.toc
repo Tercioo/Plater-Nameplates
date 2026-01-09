@@ -1,7 +1,7 @@
 ## Interface: 11508, 50503, 20505, 110207, 120000, 120001
 ## Interface-Mainline: 110205, 110207, 120000
 ## Interface-Mists: 50503
-## Interface-BCC: 20505
+## Interface-TBC: 20505
 ## Interface-Vanilla: 11508
 ## Title: Plater
 ## Notes: Nameplate addon designed for advanced users.
@@ -23,9 +23,9 @@
 #@version-mists@
 ## Version: @project-version@-Mists
 #@end-version-mists@
-#@version-bcc@
-## Version: @project-version@-BCC
-#@end-version-bcc@
+#@version-tbc@
+## Version: @project-version@-TBC
+#@end-version-tbc@
 #@version-classic@
 ## Version: @project-version@-Vanilla
 #@end-version-classic@
