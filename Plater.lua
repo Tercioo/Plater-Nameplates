@@ -2270,7 +2270,7 @@ Plater.AnchorNamesByPhraseId = {
 				---@cast plateFrame plateframe
 				if plateFrame.unitFrame and plateFrame.unitFrame.PlaterOnScreen then
 					if not plateFrame.unitFrame.isPerformanceUnitAura then
-						Plater.AddToAuraUpdate(plateFrame.unitFrame.unit) -- force aura update
+						Plater.AddToAuraUpdate(plateFrame.unitFrame.unit, plateFrame.unitFrame) -- force aura update
 					end
 					Plater.ScheduleUpdateForNameplate (plateFrame)
 				end
@@ -3762,7 +3762,7 @@ Plater.AnchorNamesByPhraseId = {
 			
 			plateFrame.unitFrame.PlaterOnScreen = true
 			
-			Plater.AddToAuraUpdate(unitID)
+			Plater.AddToAuraUpdate(unitID, plateFrame.unitFrame)
 			-- update DBM and BigWigs nameplate auras
 			Plater.EnsureUpdateBossModAuras(plateFrame [MEMBER_GUID])
 			
@@ -3838,7 +3838,7 @@ Plater.AnchorNamesByPhraseId = {
 					unitFrame.castBar:SetUnit(nil) -- no casts
 				end
 				if unitFrame.isPerformanceUnitAura then
-					Plater.RemoveFromAuraUpdate (unitID) -- no auras
+					Plater.RemoveFromAuraUpdate (unitID, unitFrame) -- no auras
 				end
 			end
 			
@@ -4207,7 +4207,7 @@ Plater.AnchorNamesByPhraseId = {
 			---@type plateframe
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId)
 			
-			Plater.RemoveFromAuraUpdate (unitBarId) -- ensure no updates
+			Plater.RemoveFromAuraUpdate (unitBarId, plateFrame.unitFrame) -- ensure no updates
 			
 			plateFrame.PlaterAnchorFrame:ClearAllPoints()
 			plateFrame.PlaterAnchorFrame:SetParent(plateFrame)
@@ -4660,7 +4660,7 @@ function Plater.OnInit() --private --~oninit ~init
 		Plater.PlayerClass = select (2, UnitClass ("player"))
 	
 	--track player auras
-		Plater.AddToAuraUpdate("player")
+		--Plater.AddToAuraUpdate("player")
 
 	--load scripts from the script library
 		platerInternal.Scripts.UpdateFromLibrary()

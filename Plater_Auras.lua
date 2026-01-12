@@ -552,42 +552,37 @@ with AuraInstanceInfo = {
 	}
 ]]--
 local UnitAuraEventHandlerData = {}
-local UnitAuraEventHandlerValidUnits = {} -- units on screen. set via Plater.RemoveFromAuraUpdate and Plater.AddToAuraUpdate from NAME_PLATE_UNIT_REMOVED and NAME_PLATE_UNIT_ADDED events
 local UnitAuraCacheData = {} --new unit aura event info data cache
 local UpdateUnitAuraCacheData
-local UnitAuraEventHandlerFrame = CreateFrame ("frame") --private
 local UnitAuraEventHandler = function (_, event, arg1, arg2, arg3, ...)
 	Plater.StartLogPerformanceCore("Plater-Core", "Events", event)
 	--DevTool:AddData({event = event, arg1 = arg1, arg2 = arg2}, "Plater_UnitAuraEventHandler - " .. (event or "N/A"))
 	if event == "UNIT_AURA" then
 		local unit, updatedAuras = arg1, arg2
 		--print(issecretvalue(arg1), issecretvalue(arg2))
-		--DevTool:AddData({unit = unit, updatedAuras = updatedAuras, valid = UnitAuraEventHandlerValidUnits[unit]}, "Plater_UNIT_AURA - " .. unit)
-		if unit and UnitAuraEventHandlerValidUnits[unit] then
-			if IS_WOW_PROJECT_MIDNIGHT then
-				--UpdateUnitAuraCacheData(unit, {isFullUpdate = true})
-				UpdateUnitAuraCacheData(unit, updatedAuras)
-			else
-				UpdateUnitAuraCacheData(unit, updatedAuras)
-			end
+		--DevTool:AddData({unit = unit, updatedAuras = updatedAuras}, "Plater_UNIT_AURA - " .. unit)
+		if unit then
+			UpdateUnitAuraCacheData(unit, updatedAuras)
 		end
 	end
 	
 	Plater.EndLogPerformanceCore("Plater-Core", "Events", event)
 end
-UnitAuraEventHandlerFrame:SetScript ("OnEvent", UnitAuraEventHandler)
-UnitAuraEventHandlerFrame:RegisterEvent ("UNIT_AURA")
 
-function Plater.RemoveFromAuraUpdate (unit)
-	if not unit then return end
-	UnitAuraEventHandlerValidUnits[unit] = nil
+function Plater.RemoveFromAuraUpdate (unit, unitFrame)
+	if not unit or not unitFrame then return end
+	unitFrame.UnitAuraEventHandlerFrame = unitFrame.UnitAuraEventHandlerFrame or CreateFrame ("frame")
+	unitFrame.UnitAuraEventHandlerFrame:UnregisterEvent("UNIT_AURA")
+	unitFrame.UnitAuraEventHandlerFrame:SetScript ("OnEvent", nil)
 	UnitAuraCacheData[unit] = nil
 	UnitAuraEventHandlerData[unit] = nil
 end
 
-function Plater.AddToAuraUpdate (unit)
-	if not unit then return end
-	UnitAuraEventHandlerValidUnits[unit] = true
+function Plater.AddToAuraUpdate (unit, unitFrame)
+	if not unit or not unitFrame then return end
+	unitFrame.UnitAuraEventHandlerFrame = unitFrame.UnitAuraEventHandlerFrame or CreateFrame ("frame")
+	unitFrame.UnitAuraEventHandlerFrame:SetScript ("OnEvent", UnitAuraEventHandler)
+	unitFrame.UnitAuraEventHandlerFrame:RegisterUnitEvent("UNIT_AURA", unit)
 	UnitAuraEventHandlerData[unit] = { hasBuff = true, hasDebuff = true } --update at least once
 	--UpdateUnitAuraCacheData(unit, {isFullUpdate = true})
 	UpdateUnitAuraCacheData(unit, nil)
@@ -853,8 +848,8 @@ end
 		if PlaterNamePlateAuraTooltip.SetUnitBuffByAuraInstanceID and DB_AURA_ENABLED then
             if(iconFrame.spellId and not iconFrame.auraInstanceID) then 
                 PlaterNamePlateAuraTooltip:SetSpellByID(iconFrame.spellId)
-            elseif(iconFrame.auraInstanceID) then 
-                local setFunction = iconFrame.isBuff and NamePlateTooltip.SetUnitBuffByAuraInstanceID or NamePlateTooltip.SetUnitDebuffByAuraInstanceID
+            elseif (iconFrame.auraInstanceID) then 
+                local setFunction = iconFrame.isBuff and PlaterNamePlateAuraTooltip.SetUnitBuffByAuraInstanceID or PlaterNamePlateAuraTooltip.SetUnitDebuffByAuraInstanceID
                 setFunction(PlaterNamePlateAuraTooltip, iconFrame:GetParent().unit, iconFrame:GetID(), iconFrame.filter)
             end 
         else
