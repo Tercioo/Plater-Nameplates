@@ -294,6 +294,11 @@ function SlashCmdList.PLATER (msg, editbox)
 	elseif (msg and msg:find("^resetcvar[s]?")) then
 		Plater.ResetCVars(msg:gsub("^cvar[s]? ?", ""))
 		return
+	
+	elseif (msg == "uninstall") then
+		Plater.ResetCVars()
+		C_AddOns.DisableAddOn("Plater", UnitName("player"))
+		ReloadUI()
 
 	elseif msg ~= "" then
 		local usage = "Usage Info:"
