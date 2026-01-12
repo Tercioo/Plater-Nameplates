@@ -3932,6 +3932,7 @@ Plater.AnchorNamesByPhraseId = {
 			plateFrame [MEMBER_NAMELOWER] = (IS_WOW_PROJECT_MIDNIGHT and plateFrame [MEMBER_NAME] or "") or lower (plateFrame [MEMBER_NAME])
 			plateFrame ["namePlateClassification"] = UnitClassification (unitID)
 			plateFrame.namePlateIsBossMob = UnitIsBossMob and UnitIsBossMob(unitID)
+			plateFrame.namePlateIsLieutenant = UnitIsLieutenant and UnitIsLieutenant(unitID)
 			plateFrame.unitNameInternal = unitName
 
 			--clear name schedules
@@ -3944,6 +3945,7 @@ Plater.AnchorNamesByPhraseId = {
 			unitFrame [MEMBER_NAMELOWER] = plateFrame [MEMBER_NAMELOWER]
 			unitFrame ["namePlateClassification"] = plateFrame ["namePlateClassification"]
 			unitFrame.namePlateIsBossMob = plateFrame.namePlateIsBossMob
+			unitFrame.namePlateIsLieutenant = plateFrame.namePlateIsLieutenant
 			unitFrame.unitNameInternal = unitName
 			unitFrame [MEMBER_UNITID] = unitID
 			unitFrame.namePlateThreatPercent = 0
@@ -3951,6 +3953,7 @@ Plater.AnchorNamesByPhraseId = {
 			unitFrame.namePlateThreatStatus = nil
 			unitFrame.namePlateThreatOffTankIsTanking = false
 			unitFrame.namePlateThreatOffTankName = nil
+			unitFrame.isGoodAggroState = true
 			
 			plateFrame [MEMBER_REACTION] = reaction
 			unitFrame [MEMBER_REACTION] = reaction
@@ -6277,7 +6280,31 @@ end
 			--check if is tapped
 			elseif (Plater.IsUnitTapDenied (unitID)) then
 				r, g, b, a = unpack (Plater.db.profile.tap_denied_color)
-
+				
+			elseif Plater.db.profile.unit_type_coloring_enabled and (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid") and unitFrame.isGoodAggroState then
+				local pLevel = UnitEffectiveLevel("player")
+                local uLevel = UnitEffectiveLevel(unitID)
+				if uLevel == pLevel + 2 or uLevel == -1 then
+					--boss
+					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_boss)
+				elseif uLevel == pLevel + 1 or unitFrame.namePlateIsBossMob or unitFrame.namePlateIsLieutenant then
+					--miniboss
+					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_miniboss)
+				elseif UnitClassBase(unitID) == "PALADIN" then
+					--caster
+					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_caster)
+				elseif unitFrame.namePlateClassification == "elite" or unitFrame.namePlateClassification == "rareelite" then
+					--elite
+					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_elite)
+				elseif (Plater.CanOverrideColor) then
+					Plater.ColorOverrider (unitFrame, forceRefresh)
+					return
+				else
+					r, g, b, a = UnitSelectionColor (unitID)
+				end
+				--maybe additional caster:
+                --local powerMax = UnitPowerMax(unitID, Enum.PowerType.Mana)
+                --local isCaster = UnitClassBase(unitID) == "PALADIN" or (not issecretvalue(powerMax) and powerMax > 0)
 			else
 				if (Plater.CanOverrideColor) then
 					Plater.ColorOverrider (unitFrame, forceRefresh)
@@ -6361,7 +6388,7 @@ end
 			---@cast plateFrame plateframe
 			if plateFrame.unitFrame and plateFrame.unitFrame.PlaterOnScreen then
 				if not plateFrame.unitFrame.isPerformanceUnitAura then
-					Plater.AddToAuraUpdate(plateFrame.unitFrame.unit) -- force aura update
+					Plater.AddToAuraUpdate(plateFrame.unitFrame.unit, plateFrame.unitFrame) -- force aura update
 				end
 				
 				Plater.UpdatePlateFrame (plateFrame, nil, forceUpdate, justAdded, regenDisabled)
@@ -7193,7 +7220,12 @@ end
 	local set_aggro_color = function (self, r, g, b, a) --self = unitName
 		if (DB_AGGRO_CHANGE_HEALTHBAR_COLOR) then
 			if (not self.DenyColorChange) then --tagged from a script
-				Plater.ChangeHealthBarColor_Internal (self.healthBar, r, g, b, a)
+				if (not self.isGoodAggroState and Plater.db.profile.unit_type_coloring_enabled or not Plater.db.profile.unit_type_coloring_enabled) then
+					Plater.ChangeHealthBarColor_Internal (self.healthBar, r, g, b, a)
+				elseif Plater.db.profile.unit_type_coloring_enabled and self.isGoodAggroState then
+					-- reset
+					Plater.FindAndSetNameplateColor (self)
+				end
 			end
 		end
 		
@@ -7229,6 +7261,7 @@ end
 		-- (3 = securely tanking, 2 = insecurely tanking, 1 = not tanking but higher threat than tank, 0 = not tanking and lower threat than tank)
 		self.namePlateThreatOffTankIsTanking = false
 		self.namePlateThreatOffTankName = nil
+		self.isGoodAggroState = false
 		
 		self.aggroGlowUpper:Hide()
 		self.aggroGlowLower:Hide()
@@ -7267,9 +7300,11 @@ end
 								if ((threatpct + 10) - otherThreatpct > 0) then
 									set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.pulling_from_tank))
 								else
+									self.isGoodAggroState = true
 									set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.anothertank))
 								end
 							else
+								self.isGoodAggroState = true
 								set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.anothertank))
 							end
 						else
@@ -7283,6 +7318,7 @@ end
 						end
 					else
 						--player isn't tanking this unit
+						self.isGoodAggroState = true
 						set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.noaggro))
 						
 						if (self.PlateFrame [MEMBER_NOCOMBAT]) then
@@ -7294,6 +7330,7 @@ end
 					--if isn't a quest mob
 					if (not self.PlateFrame [MEMBER_QUEST]) then
 						--there's no aggro, isn't in combat, isn't a quest mob
+						self.isGoodAggroState = true
 						if (self [MEMBER_REACTION] == 4) then
 							--do nothing if the mob is neutral
 							--set_aggro_color (self, 1, 1, 0) --ticket #185
@@ -7310,6 +7347,7 @@ end
 			else
 				--The player is tanking and:
 				if (threatStatus == 3) then --is tanking safely
+					self.isGoodAggroState = true
 					set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.aggro))
 					
 				elseif (threatStatus == 2) then --is tanking with risk of aggro loss
@@ -7352,6 +7390,7 @@ end
 				end
 			else 	
 				if (threatStatus == nil) then
+					self.isGoodAggroState = true
 					self.PlateFrame.playerHasAggro = false
 					
 					--> unit is in combat?
@@ -7421,6 +7460,7 @@ end
 							end
 							
 						elseif (threatStatus == 0) then
+							self.isGoodAggroState = true
 							colorToUse = DB_AGGRO_DPS_COLORS.noaggro
 							
 						end
@@ -7451,10 +7491,12 @@ end
 										set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.notontank))
 									else
 										--the unit isn't targeting a tank but a tank in the group has aggro on this unit
+										self.isGoodAggroState = true
 										set_aggro_color (self, unpack (colorToUse))
 									end
 								else
 									--the unit is targeting a tank
+									self.isGoodAggroState = true
 									set_aggro_color (self, unpack (colorToUse))
 								end
 							else
@@ -11342,13 +11384,14 @@ end
 				if (InCombatLockdown()) then
 					local unitReaction = unitFrame.PlateFrame [MEMBER_REACTION]
 					if (unitReaction == 4 and not unitFrame.InCombat) then
-						Plater.FindAndSetNameplateColor (unitFrame, true)
-					elseif (DB_AGGRO_CHANGE_HEALTHBAR_COLOR and unitFrame.CanCheckAggro and unitReaction <= 4) then
-						Plater.UpdateNameplateThread (unitFrame)
-					else
-						Plater.FindAndSetNameplateColor (unitFrame)
+						if (DB_AGGRO_CHANGE_HEALTHBAR_COLOR and unitFrame.CanCheckAggro and unitReaction <= 4) then
+							Plater.UpdateNameplateThread (unitFrame, dungeonColored)
+						else
+							Plater.FindAndSetNameplateColor (unitFrame, true)
+						end
 					end
 				else
+					
 					Plater.FindAndSetNameplateColor (unitFrame)
 				end
 			end

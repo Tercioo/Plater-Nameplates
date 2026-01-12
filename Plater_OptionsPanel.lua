@@ -11528,34 +11528,21 @@ end
 		
 		{type = "breakline"},
 	
-	}
-	
-	
-	if IS_WOW_PROJECT_NOT_MAINLINE and not IS_WOW_PROJECT_CLASSIC_WRATH then
-		local thread_options_tank = {
-			{type = "label", get = function() return "Tank or DPS Colors:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return "Tank or DPS Colors:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = not IS_WOW_PROJECT_NOT_MAINLINE},
 			
-			{
-				type = "toggle",
-				get = function() return Plater.db.profile.tank_threat_colors end,
-				set = function (self, fixedparam, value) 
-					Plater.db.profile.tank_threat_colors = value
-					Plater.RefreshTankCache()
-				end,
-				name = "OPTIONS_THREAT_CLASSIC_USE_TANK_COLORS",
-				desc = "OPTIONS_THREAT_CLASSIC_USE_TANK_COLORS",
-			},
-		
-			{type = "blank"},
-			
-		}
-		
-		for _, t in ipairs (thread_options_tank) do
-			tinsert (thread_options, t)
-		end
-	end
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.tank_threat_colors end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.tank_threat_colors = value
+				Plater.RefreshTankCache()
+			end,
+			name = "OPTIONS_THREAT_CLASSIC_USE_TANK_COLORS",
+			desc = "OPTIONS_THREAT_CLASSIC_USE_TANK_COLORS",
+			hidden = not IS_WOW_PROJECT_NOT_MAINLINE
+		},
 	
-	local thread_options2 = {
+		{type = "blank", hidden = not IS_WOW_PROJECT_NOT_MAINLINE},
 		
 		{type = "label", get = function() return "OPTIONS_THREAT_COLOR_OVERRIDE_ANCHOR_TITLE" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
@@ -11636,11 +11623,75 @@ end
 			desc = "OPTIONS_THREAT_USE_AGGRO_GLOW_DESC",
 		},
 		
+		{type = "breakline"},
+		
+		{type = "label", get = function() return "Unit Type Coloring" .. ":" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.unit_type_coloring_enabled end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.unit_type_coloring_enabled = value
+			end,
+			name = "OPTIONS_ENABLED",
+			desc = "Enable unit type coloring with the colors below.\nOnly active in dungeons and raids.\nBad threat states will override this color.",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.unit_type_coloring_boss
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.unit_type_coloring_boss
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllNameplateColors()
+			end,
+			name = "Boss",
+			desc = "Color for raid or dungeon bosses.",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.unit_type_coloring_miniboss
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.unit_type_coloring_miniboss
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllNameplateColors()
+			end,
+			name = "Miniboss",
+			desc = "Color for minibosses.",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.unit_type_coloring_caster
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.unit_type_coloring_caster
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllNameplateColors()
+			end,
+			name = "Caster",
+			desc = "Color for caster units.",
+		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.unit_type_coloring_elite
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.unit_type_coloring_elite
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllNameplateColors()
+			end,
+			name = "Elite",
+			desc = "Color for elite units.",
+		},
 	}
-	
-	for _, t in ipairs (thread_options2) do
-		tinsert (thread_options, t)
-	end
 	
 	_G.C_Timer.After(0.990, function() --~delay
 		thread_options.always_boxfirst = true
