@@ -587,7 +587,7 @@ function designer.UpdatePreview()
     Plater.OnRetailNamePlateShow(plateFrame.UnitFrame) --affecting blizz nameplate which the preview only a dummy
     unitFrame:Show()
     unitFrame.unitName:Show()
-    Plater.AddToAuraUpdate(unitID)
+    Plater.AddToAuraUpdate(unitID, unitFrame)
     Plater.EnsureUpdateBossModAuras(plateFrame[MEMBER_GUID])
 
     plateFrame.NameAnchor = DB_NAME_NPCENEMY_ANCHOR
