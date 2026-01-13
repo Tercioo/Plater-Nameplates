@@ -8402,14 +8402,7 @@ end
 	function Plater.UpdateUnitName (plateFrame)
 		local nameString = plateFrame.CurrentUnitNameString
 
-		if ( not (plateFrame.IsFriendlyPlayerWithoutHealthBar or plateFrame.IsNpcWithoutHealthBar) and plateFrame.NameAnchor >= 9) then
-			--remove some character from the unit name if the name is placed inside the nameplate
-			Plater.UpdateUnitNameTextSize (plateFrame, nameString)
-		elseif IS_WOW_PROJECT_MIDNIGHT then
-			nameString:SetText (plateFrame [MEMBER_NAME])
-		else
-			nameString:SetText (plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME] or "")
-		end
+		Plater.UpdateUnitNameTextSize (plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME] or "", nameString, nil, DB_PLATE_CONFIG [plateFrame.actorType].actorname_text_max_length or 99)
 		
 		--check if the player has a guild, this check is done when the nameplate is added
 		if (plateFrame.playerGuildName) then
@@ -8419,15 +8412,14 @@ end
 		end
 	end
 
-	function Plater.UpdateUnitNameTextSize (plateFrame, nameString, maxWidth)
-		if IS_WOW_PROJECT_MIDNIGHT then
 			local name = plateFrame [MEMBER_NAME]
+		if maxWidth then
 			local fontSize = DB_PLATE_CONFIG [plateFrame.actorType].actorname_text_size
-			local nameLength = floor((maxWidth or max (plateFrame.unitFrame.healthBar:GetWidth() - 6, 44)) / fontSize * 2)
+			local nameLength = floor(maxWidth / fontSize * 2)
 			name = string.format("%." .. nameLength .. "s", name)
 			nameString:SetText (name)
+			nameString:SetText (name)
 		else
-			local stringSize = maxWidth or max (plateFrame.unitFrame.healthBar:GetWidth() - 6, 44)
 			local name = plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME] or ""
 			
 			nameString:SetText (name)
