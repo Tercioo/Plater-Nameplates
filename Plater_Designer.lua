@@ -22,6 +22,10 @@ local editorOptionsTextTemplate = {
     color = "gold",
 }
 
+local editorOptionsSliderTemplate = {
+    thumbwidth = 20,
+}
+
 --all objects that uses only settings that are within the plate_config table
 ---@type df_editor_objectinfo[]
 local plateConfigObjectsInfo = {}
@@ -137,6 +141,7 @@ function Plater.CreateDesignerWindow()
         object_list_lines = 20,
         object_list_line_height = 20,
         text_template = editorOptionsTextTemplate,
+        slider_template = editorOptionsSliderTemplate,
         no_anchor_points = true,
         start_editing_callback = function(layoutEditor, objectInfo)
             if (objectInfo.id:match("^CAST")) then
@@ -181,6 +186,7 @@ function Plater.CreateDesignerWindow()
 
     local objectSelector = layoutEditor:GetObjectSelector()
     local optionsFrame = layoutEditor:GetOptionsFrame()
+    optionsFrame:AdjustPointsOffset(-2, 0)
 
     --create a frame to guide the setting points on the empty area at the right side of the main frame, which is reserved for the preview
     local previewNameplateFrame = CreateFrame("Frame", "$parentGuideFrame", layoutEditor)
@@ -189,14 +195,44 @@ function Plater.CreateDesignerWindow()
     previewNameplateFrame:SetPoint("topright", editorMainFrame, "topright", -5, -5)
     previewNameplateFrame:SetFrameLevel(layoutEditor:GetFrameLevel() + 1)
 
+    local findWidgetExtraOptionTable = function(sectionName, tableName)
+        local extraOptionsSection = options.WidgetSettingsExtraOptions[sectionName]
+        if (extraOptionsSection) then
+            for i = 1, #extraOptionsSection do
+                local widgetExtraOption = extraOptionsSection[i]
+                local optionCategoryName = widgetExtraOption.tableName
+                if (optionCategoryName == tableName) then
+                    return widgetExtraOption
+                end
+            end
+        end
+    end
+
     local onClickSelectPlateConfigOption = function(self, fixedParameter, newSubTablePath)
         subTablePath = newSubTablePath
 
         --update the paths in the mapping tables
-        options.WidgetSettingsMapTables.CastBar.width = "plate_config." .. subTablePath .. ".cast_incombat[1]"
-        options.WidgetSettingsMapTables.CastBar.height = "plate_config." .. subTablePath .. ".cast_incombat[2]"
-        options.WidgetSettingsExtraOptions.CastBar.castbar_offset_x = "plate_config." .. subTablePath .. ".castbar_offset_x"
-        options.WidgetSettingsExtraOptions.CastBar.castbar_offset = "plate_config." .. subTablePath .. ".castbar_offset"
+        --cast bar:
+        --options.WidgetSettingsMapTables.CastBar.width = "plate_config." .. subTablePath .. ".cast_incombat[1]"
+        --options.WidgetSettingsMapTables.CastBar.height = "plate_config." .. subTablePath .. ".cast_incombat[2]"
+        --local castOutOfCombatWidth = findWidgetExtraOptionTable("CastBar", "out_of_combat_cast_width")
+        --castOutOfCombatWidth.key = "plate_config." .. subTablePath .. ".cast[1]"
+        --local castOutOfCombatHeight = findWidgetExtraOptionTable("CastBar", "out_of_combat_cast_height")
+        --castOutOfCombatHeight.key = "plate_config." .. subTablePath .. ".cast[2]"
+        --local castBarOffsetX = findWidgetExtraOptionTable("CastBar", "castbar_offset_x")
+        --castBarOffsetX.key = "plate_config." .. subTablePath .. ".castbar_offset_x"
+        --local castBarOffsetY = findWidgetExtraOptionTable("CastBar", "castbar_offset_y")
+        --castBarOffsetY.key = "plate_config." .. subTablePath .. ".castbar_offset"
+
+        --health bar:
+        --options.WidgetSettingsMapTables.HealthBar.width = "plate_config." .. subTablePath .. ".health_incombat[1]"
+        --options.WidgetSettingsMapTables.HealthBar.height = "plate_config." .. subTablePath .. ".health_incombat[2]"
+        --local healthOutOfCombatWidth = findWidgetExtraOptionTable("HealthBar", "out_of_combat_health_width")
+        --healthOutOfCombatWidth.key = "plate_config." .. subTablePath .. ".health[1]"
+        --local healthOutOfCombatHeight = findWidgetExtraOptionTable("HealthBar", "out_of_combat_health_height")
+        --healthOutOfCombatHeight.key = "plate_config." .. subTablePath .. ".health[2]"
+
+        --
 
         for index, objectInfo in ipairs(plateConfigObjectsInfo) do
             layoutEditor:UpdateProfileSubTablePath(objectInfo, subTablePath)
@@ -221,7 +257,7 @@ function Plater.CreateDesignerWindow()
     plateFrame = designer.CreatePreview(previewNameplateFrame)
     --createFrameTag(plateFrame, "nameplate")
     plateFrame:SetPoint("center", previewNameplateFrame, "center", 0, 50)
-    plateFrame:SetScale(1.5)
+    plateFrame:SetScale(1.0)
     plateFrame:SetSize(180, 60)
     plateFrame.unit = "player"
     --platerInternal.Events.GetEventFunction("NAME_PLATE_UNIT_ADDED")("NAME_PLATE_UNIT_ADDED", "preview")
@@ -272,8 +308,11 @@ function Plater.CreateDesignerWindow()
     levelText:SetText("60")
     lifePercent:SetText("80%")
     castPercentText:SetText("3.2s")
-    actorNameSpecial:SetText("Big Name")
-    actorTitleSpecial:SetText("Unit Title")
+    actorNameSpecial:SetText("Unit Name When No Health Bar")
+    actorTitleSpecial:SetText("Unit Title When No Health Bar")
+
+    detailsFramework:SetFontSize(actorNameSpecial, Plater.db.profile.plate_config.enemynpc.big_actorname_text_size)
+    detailsFramework:SetFontSize(actorTitleSpecial, Plater.db.profile.plate_config.enemynpc.big_actortitle_text_size)
 
     actorNameSpecial:ClearAllPoints()
     actorNameSpecial:SetPoint("bottomleft", previewNameplateFrame, "bottomleft", 5, 90)
@@ -354,10 +393,16 @@ function Plater.CreateDesignerWindow()
     --quest options:
     local questOptions = detailsFramework.table.copy({}, editObjectDefaultOptions)
     questOptions.icon = "QuestNormal" --atlas name
+    questOptions.can_move = false
     objectInfo = layoutEditor:RegisterObject(questOptionsFontString, "Quest Options", "QUESTOPTIONS", plateConfig, subTablePath, options.WidgetSettingsMapTables.QuestOptions, options.WidgetSettingsExtraOptions.QuestOptions, onSettingChanged, questOptions, unitFrame)
     plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
 
     --health bar
+    ---@type df_editobjectoptions
+    local healthBarOptions = detailsFramework.table.copy({}, editObjectDefaultOptions)
+    healthBarOptions.can_move = false
+    objectInfo = layoutEditor:RegisterObject(healthBar, "Health Bar", "HEALTHBAR", plateConfig, subTablePath, options.WidgetSettingsMapTables.HealthBar, options.WidgetSettingsExtraOptions.HealthBar, onSettingChanged, healthBarOptions, healthBar)
+
     objectInfo = layoutEditor:RegisterObject(unitName, "Unit Name", "UNITNAME", plateConfig, subTablePath, options.WidgetSettingsMapTables.UnitName, options.WidgetSettingsExtraOptions.UnitName, onSettingChanged, editObjectDefaultOptions, healthBar)
     plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
 
@@ -378,7 +423,7 @@ function Plater.CreateDesignerWindow()
     ---@type df_editobjectoptions
     local castBarOptions = detailsFramework.table.copy({}, editObjectDefaultOptions)
     castBarOptions.can_move = false
-    objectInfo = layoutEditor:RegisterObject(castBar, "Cast Bar", "CASTBAR", profileRoot, rootKey, options.WidgetSettingsMapTables.CastBar, options.WidgetSettingsExtraOptions.CastBar, onSettingChanged, castBarOptions, castBar)
+    objectInfo = layoutEditor:RegisterObject(castBar, "Cast Bar", "CASTBAR", plateConfig, subTablePath, options.WidgetSettingsMapTables.CastBar, options.WidgetSettingsExtraOptions.CastBar, onSettingChanged, castBarOptions, castBar)
 
     objectInfo = layoutEditor:RegisterObject(spellName, "Cast Spell Name", "CASTSPELLNAME", plateConfig, subTablePath, options.WidgetSettingsMapTables.SpellName, options.WidgetSettingsExtraOptions.SpellName, onSettingChanged, editObjectDefaultOptions, castBar)
     plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
@@ -386,9 +431,12 @@ function Plater.CreateDesignerWindow()
     plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
 
     --[no plate config]
-    objectInfo = layoutEditor:RegisterObject(newcastBarTargetName, "Cast Target Name", "CASTTARGETNAME", profileRoot, rootKey, options.WidgetSettingsMapTables.CastBarTargetName, options.WidgetSettingsExtraOptions.CastBarTargetName, onSettingChanged, editObjectDefaultOptions, castBar.FrameOverlay)
+    ---@type df_editobjectoptions
+    local sparkOptions = detailsFramework.table.copy({}, editObjectDefaultOptions)
+    sparkOptions.can_move = false
+    objectInfo = layoutEditor:RegisterObject(newcastBarTargetName, "Cast Target Name", "CASTTARGETNAME", profileRoot, rootKey, options.WidgetSettingsMapTables.CastBarTargetName, options.WidgetSettingsExtraOptions.CastBarTargetName, onSettingChanged, sparkOptions, castBar.FrameOverlay)
     --[no plate config]
-    objectInfo = layoutEditor:RegisterObject(castBarSpark, "Cast Spark", "CASTSPARK", profileRoot, rootKey, options.WidgetSettingsMapTables.CastBarSpark, options.WidgetSettingsExtraOptions.CastBarSpark, onSettingChanged, editObjectDefaultOptions, castBar.FrameOverlay)
+    objectInfo = layoutEditor:RegisterObject(castBarSpark, "Cast Spark", "CASTSPARK", profileRoot, rootKey, options.WidgetSettingsMapTables.CastBarSpark, options.WidgetSettingsExtraOptions.CastBarSpark, onSettingChanged, sparkOptions, castBar.FrameOverlay)
 
     --designer.RefreshLayout()
 
@@ -488,7 +536,7 @@ function designer.CreatePreview(parent)
 
     plateFrame.UnitFrame = CreateFrame("frame") --blizzard's unit frame placeholder
 
-    plateFrame:SetScale(2)
+    plateFrame:SetScale(1.5)
 
     --simulate the creation of a game's nameplate, this creates the nameplate.unitFrame and its widgets
     platerInternal.Events.GetEventFunction("NAME_PLATE_CREATED")("NAME_PLATE_CREATED", plateFrame)

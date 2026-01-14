@@ -153,31 +153,66 @@ function designer.CreateSettings(parentFrame)
 
         CastBar = {
             --values from PlaterDB.profile.plate_config[unittype]
-            width = "plate_config.enemynpc.cast_incombat[1]",
-            height = "plate_config.enemynpc.cast_incombat[2]",
+            width = "cast_incombat[1]", --plate_config.enemynpc.
+            height = "cast_incombat[2]", --plate_config.enemynpc.
+        },
+
+        HealthBar = {
+            --values from PlaterDB.profile.plate_config[unittype]
+            width = "health_incombat[1]", --plate_config.enemynpc.
+            height = "health_incombat[2]", --plate_config.enemynpc.
         },
     }
 
     options.WidgetSettingsExtraOptions = {
+        HealthBar = {},
+
+        --tableName is not a field that is used by the designer in the framework
+        --it is here so the Plater_Designer can know which field to update in the profile table
+
         CastBar = {
             {
-                key = "plate_config.enemynpc.castbar_offset_x", --the name of the option in the profile table
+                key = "cast[1]", --the name of the option in the profile table
+                label = "Width Out of Combat",
+                widget = "slider",
+                setter = function(widget, value) designer.UpdateAllNameplates() end,
+                minvalue = 50,
+                maxvalue = 250,
+                step = 1,
+                tableName = "out_of_combat_cast_width",
+            },
+            {
+                key = "cast[2]", --the name of the option in the profile table
+                label = "Height Out of Combat",
+                widget = "slider",
+                setter = function(widget, value) designer.UpdateAllNameplates() end,
+                minvalue = 2,
+                maxvalue = 32,
+                step = 1,
+                tableName = "out_of_combat_cast_height",
+            },
+            {
+                key = "castbar_offset_x", --the name of the option in the profile table
                 label = "Offset X",
                 widget = "slider",
                 setter = function(widget, value) designer.UpdateAllNameplates() end,
                 minvalue = -16,
                 maxvalue = 16,
                 step = 1,
+                tableName = "castbar_offset_x",
             },
             {
-                key = "plate_config.enemynpc.castbar_offset", --without Y
+                key = "castbar_offset", --without Y
                 label = "Offset Y",
                 widget = "slider",
                 setter = function(widget, value) designer.UpdateAllNameplates() end,
                 minvalue = -16,
                 maxvalue = 16,
                 step = 1,
+                tableName = "castbar_offset_y",
             }
+
+
         },
 
         CastBarSpark = {
