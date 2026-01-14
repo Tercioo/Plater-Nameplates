@@ -42,6 +42,7 @@ local _
 ---@field objectSelector df_scrollbox
 ---@field moverObject moverobject
 ---@field canvasScrollBox df_canvasscrollbox
+---@field ObjectBackgroundTexture texture
 ---@field AnchorFrames df_editor_anchorframes
 ---@field undoHistory undostate[]
 ---@field redoHistory undostate[]
@@ -373,7 +374,6 @@ local attributes = {
 ---@field use_colon boolean? if true a colon is shown after the option name
 ---@field can_move boolean? if true the object can be moved
 ---@field use_guide_lines boolean? if true guide lines are shown when the object is being moved
----@field text_template table
 ---@field icon any atlasName atlasTable (from DF:CreateAtlas) or texture path|id
 
 ---@type df_editobjectoptions
@@ -381,7 +381,6 @@ local editObjectDefaultOptions = {
     use_colon = false,
     can_move = true,
     use_guide_lines = true,
-    text_template = detailsFramework:GetTemplate("font", "OPTIONS_FONT_TEMPLATE"),
 }
 
 ---@class df_editor_defaultoptions : table
@@ -394,12 +393,14 @@ local editObjectDefaultOptions = {
 ---@field object_list_lines number
 ---@field object_list_line_height number
 ---@field text_template table
+---@field dropdown_template table
+---@field switch_template table
+---@field button_template table
+---@field slider_template table
 ---@field no_anchor_points boolean
 ---@field start_editing_callback fun(editorFrame: df_editor, registeredObject: df_editor_objectinfo)?
 ---@field selection_texture string
 ---@field selection_size number
-
---editorFrame.options.text_template
 
 ---@type df_editor_defaultoptions
 local editorDefaultOptions = {
@@ -411,6 +412,10 @@ local editorDefaultOptions = {
     object_list_height = 420,
     object_list_lines = 20,
     object_list_line_height = 20,
+    dropdown_template = detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"),
+    switch_template = detailsFramework:GetTemplate("switch", "OPTIONS_CHECKBOX_TEMPLATE"),
+    button_template = detailsFramework:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE"),
+    slider_template = detailsFramework:GetTemplate("slider", "OPTIONS_SLIDER_TEMPLATE"),
     text_template = detailsFramework:GetTemplate("font", "OPTIONS_FONT_TEMPLATE"),
     no_anchor_points = false,
     start_editing_callback = nil,
@@ -809,7 +814,6 @@ detailsFramework.EditorMixin = {
     ---@field bIsMoving boolean
     ---@field lastMoveInfo table
     ---@field MoverFrame df_editor_mover
-    ---@field ObjectBackgroundTexture texture
     ---@field AddUndoState fun(self:moverobject) add a undo state into the editor object undo state manager
     ---@field Setup fun(self:moverobject, object:uiobject, registeredObject:df_editor_objectinfo, onTickWhileMoving:function, onTickNotMoving:function)
     ---@field Hide fun(self:moverobject)
@@ -821,7 +825,6 @@ detailsFramework.EditorMixin = {
     ---@field moved boolean
     ---@field anchorName string
     ---@field MovingInfo df_editor_mover_movinginfo
-    ---@field ObjectBackgroundTexture texture
     ---@field MoverIcon texture
     ---@field bIsMoving boolean
     ---@field OnTickWhileMoving fun(self:df_editor_mover, deltaTime:number)
@@ -930,9 +933,6 @@ detailsFramework.EditorMixin = {
                     moverFrame:GetScript("OnMouseUp")(moverFrame)
                     --moverFrame.moved = true
                 end
-
-                self.ObjectBackgroundTexture:SetPoint("topleft", object, "topleft", -2, 2)
-                self.ObjectBackgroundTexture:SetPoint("bottomright", object, "bottomright", 2, -2) --using points instead of size due to width height being secret values in some object
             end,
 
             Hide = function(self)
@@ -978,10 +978,6 @@ detailsFramework.EditorMixin = {
         moverFrame.MoverIcon:SetTexture([[Interface\CHATFRAME\CHATFRAMEBACKGROUND]])
         moverFrame.MoverIcon:SetSize(6, 6) --default: 6
         moverFrame.MoverIcon:SetPoint("center", moverFrame, "center", 0, 0)
-
-        --background below the selected object, its point is set when the movers are setup and set directly on the object being edited
-        moverObject.ObjectBackgroundTexture = moverObject.MoverFrame:CreateTexture("$parentMoverObjectBackground", "artwork")
-        moverObject.ObjectBackgroundTexture:SetColorTexture(1, 0, 1, 0.25)
 
         return moverObject
     end,
@@ -1054,6 +1050,9 @@ detailsFramework.EditorMixin = {
         if (not object or not profileTable) then
             return
         end
+
+        self.ObjectBackgroundTexture:SetPoint("topleft", object, "topleft", -2, 2)
+        self.ObjectBackgroundTexture:SetPoint("bottomright", object, "bottomright", 2, -2) --using points instead of size due to width height being secret values in some objects
 
         --get the object type
         local objectType = object:GetObjectType()
@@ -1188,6 +1187,9 @@ detailsFramework.EditorMixin = {
 
                                     if (editingOptions.can_move) then
                                         self:StartObjectMovement(anchorSettings)
+                                    else
+                                        --hide mover frame
+                                        self.moverObject:Hide()
                                     end
                                 else
                                     option.setter(object, newValue)
@@ -1236,17 +1238,20 @@ detailsFramework.EditorMixin = {
         optionsFrame:SetHeight(optionsFrameHeight)
 
         --templates
-        local options_text_template = self.options.text_template or detailsFramework:GetTemplate("font", "OPTIONS_FONT_TEMPLATE")
-        local options_dropdown_template = detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE")
-        local options_switch_template = detailsFramework:GetTemplate("switch", "OPTIONS_CHECKBOX_TEMPLATE")
-        local options_slider_template = detailsFramework:GetTemplate("slider", "OPTIONS_SLIDER_TEMPLATE")
-        local options_button_template = detailsFramework:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE")
+        local options_dropdown_template = self.options.dropdown_template
+        local options_switch_template = self.options.switch_template
+        local options_button_template = self.options.button_template
+        local options_slider_template = self.options.slider_template
+        local options_text_template = self.options.text_template
 
         --~build ~menu ~volatile
         detailsFramework:BuildMenuVolatile(optionsFrame, menuOptions, 2, -2, maxHeight, bUseColon, options_text_template, options_dropdown_template, options_switch_template, bSwitchIsCheckbox, options_slider_template, options_button_template)
 
         if (editingOptions.can_move) then
             self:StartObjectMovement(anchorSettings)
+        else
+            --hide mover frame
+            self.moverObject:Hide()
         end
 
         self:ShowSelectedTextures(object)
@@ -1708,6 +1713,10 @@ function detailsFramework:CreateEditor(parent, name, options)
         canvasFrame:SetPoint("topleft", editorFrame, "topleft", 2, -2)
         canvasFrame:SetPoint("bottomleft", editorFrame, "bottomleft", 2, 0)
     end
+
+    --background below the selected object, its point is set when the movers are setup and set directly on the object being edited
+    editorFrame.ObjectBackgroundTexture = editorFrame:CreateTexture("$parentMoverObjectBackground", "artwork")
+    editorFrame.ObjectBackgroundTexture:SetColorTexture(1, 0, 1, 0.25)
 
     --over the top frame is a frame that is always on top of everything else
     local OTTFrame = CreateFrame("frame", "$parentOTTFrame", UIParent)
