@@ -8412,15 +8412,18 @@ end
 		end
 	end
 
-			local name = plateFrame [MEMBER_NAME]
+	function Plater.UpdateUnitNameTextSize (name, nameString, maxWidth, maxLength)
+		if not name or not nameString then return end
 		if maxWidth then
 			local fontSize = DB_PLATE_CONFIG [plateFrame.actorType].actorname_text_size
 			local nameLength = floor(maxWidth / fontSize * 2)
 			name = string.format("%." .. nameLength .. "s", name)
 			nameString:SetText (name)
+		elseif maxLength then
+			name = string.format("%." .. maxLength .. "s", name)
 			nameString:SetText (name)
 		else
-			local name = plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME] or ""
+			local stringSize = max (plateFrame.unitFrame.healthBar:GetWidth() - 6, 44)
 			
 			nameString:SetText (name)
 			
