@@ -5216,6 +5216,7 @@ function Plater.OnInit() --private --~oninit ~init
 				castBar.minValue = castBar.value
 				castBar.maxValue = castTime or 3
 				castBar.canInterrupt = not castNoInterrupt or math.random (1, 2) == 1
+				castBar.notInterruptible = not castBar.canInterrupt
 				
 				castBar:SetMinMaxValues(castBar.minValue, castBar.maxValue)
 				castBar:SetValue(castBar.minValue)
@@ -5239,6 +5240,16 @@ function Plater.OnInit() --private --~oninit ~init
 					local durationObject = C_DurationUtil.CreateDuration()
 					durationObject:SetTimeFromEnd(castBar.spellEndTime , castBar.maxValue, 1)
 					castBar.durationObject = durationObject
+					if (castBar.channeling) then
+						castBar:SetTimerDuration(durationObject, Enum.StatusBarInterpolation.Immediate, Enum.StatusBarTimerDirection.RemainingTime)
+					else
+						castBar:SetTimerDuration(durationObject, Enum.StatusBarInterpolation.Immediate, Enum.StatusBarTimerDirection.ElapsedTime)
+					end
+					C_Timer.NewTimer(castBar.maxValue, function()
+						if (Plater.IsShowingCastBarTest) then
+							castBar:CheckCastIsDone(nil, true)
+						end
+					end)
 				end
 				
 				castBar.flashTexture:Hide()
@@ -5593,9 +5604,9 @@ function Plater.OnInit() --private --~oninit ~init
 					end
 					
 					if IS_WOW_PROJECT_MIDNIGHT then
-						self.canInterrupt = unitFrame.PlateFrame.UnitFrame.castBar.barType ~= "uninterruptable" -- this will be fixed
-						self.notInterruptible = not self.canInterrupt
-						self:UpdateCastColor() -- ensure this. one day we might disable the blizzard cast bar fully
+						--self.canInterrupt = unitFrame.PlateFrame.UnitFrame.castBar.barType ~= "uninterruptable" -- this will be fixed
+						--self.notInterruptible = not self.canInterrupt
+						--self:UpdateCastColor() -- ensure this. one day we might disable the blizzard cast bar fully
 						--self:UpdateInterruptState()
 					end
 					
@@ -5605,10 +5616,11 @@ function Plater.OnInit() --private --~oninit ~init
 					self.ReUpdateNextTick = true
 					self.ThrottleUpdate = -1
 					
-					--if IS_WOW_PROJECT_MIDNIGHT then
-					--	self.BorderShield:Show()
-					--	self.BorderShieldParent:SetAlphaFromBoolean(self.notInterruptible, 1, 0)
-					--else
+					if IS_WOW_PROJECT_MIDNIGHT then
+						self.BorderShield:Show()
+						self.BorderShield:SetAlphaFromBoolean(self.notInterruptible, 1, 0)
+						self.CanInterrupt = nil
+					else
 						if (self.notInterruptible) then
 							self.BorderShield:Show()
 							self.CanInterrupt = false
@@ -5616,7 +5628,7 @@ function Plater.OnInit() --private --~oninit ~init
 							self.BorderShield:Hide()
 							self.CanInterrupt = true
 						end
-					--end
+					end
 					
 					self.FrameOverlay:SetBackdropBorderColor (0, 0, 0, 0)
 					
@@ -5737,6 +5749,7 @@ function Plater.OnInit() --private --~oninit ~init
 							scriptEnv._Duration = not IS_WOW_PROJECT_MIDNIGHT and (self.SpellEndTime - self.SpellStartTime) or nil
 							scriptEnv._StartTime = self.SpellStartTime
 							scriptEnv._CanInterrupt = self.CanInterrupt
+							scriptEnv._CannotInterrupt = self.notInterruptible
 							scriptEnv._EndTime = self.SpellEndTime
 							scriptEnv._RemainingTime = not IS_WOW_PROJECT_MIDNIGHT and max (self.SpellEndTime - GetTime(), 0) or nil
 							scriptEnv._CanStealOrPurge = self.CanStealOrPurge
@@ -8781,6 +8794,9 @@ end
 			colors.NonInterruptible:SetColor (profile.cast_statusbar_color_nointerrupt)
 			colors.Interrupted:SetColor (profile.cast_statusbar_color_interrupted)
 			colors.Finished:SetColor (profile.cast_statusbar_color_finished)
+			if colors.Important then
+				colors.Important:SetColor (profile.cast_statusbar_color_important)
+			end
 			
 			castBar.Settings.FadeInTime = profile.cast_statusbar_fadein_time
 			castBar.Settings.FadeOutTime = profile.cast_statusbar_fadeout_time
