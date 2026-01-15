@@ -6377,6 +6377,7 @@ local relevance_options = {
 			end,
 			name = "OPTIONS_SHIELD_BAR",
 			desc = "OPTIONS_SHIELD_BAR",
+			hidden = IS_WOW_PROJECT_MIDNIGHT,
 		},
 		
 		{

@@ -4021,6 +4021,7 @@ Plater.AnchorNamesByPhraseId = {
 					
 					plateFrame.PlateConfig = DB_PLATE_CONFIG.player
 					Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_PLAYER, nil, true)
+					Plater.QuickHealthUpdate (unitFrame) -- ensure up to date, for good measure
 					Plater.OnUpdateHealth (healthBar)
 
 				else
@@ -5972,6 +5973,7 @@ function Plater.OnInit() --private --~oninit ~init
 	--> health frame
 
 	function Plater.QuickHealthUpdate (unitFrame)
+		Plater.StartLogPerformanceCore("Plater-Core", "Health", "QuickHealthUpdate")
 		local unitHealth = UnitHealth (unitFrame.unit)
 		local unitHealthMax = UnitHealthMax (unitFrame.unit)
 		unitFrame.healthBar:SetMinMaxValues (0, unitHealthMax, IS_WOW_PROJECT_MIDNIGHT and Enum.StatusBarInterpolation.ExponentialEaseOut)
@@ -5988,6 +5990,7 @@ function Plater.OnInit() --private --~oninit ~init
 			unitFrame.healthBar.currentHealthMissing = unitHealthMax - unitHealth
 			unitFrame.healthBar.currentHealthPercent = unitHealth / unitHealthMax * 100
 		end
+		Plater.EndLogPerformanceCore("Plater-Core", "Health", "QuickHealthUpdate")
 	end
 	
 	local run_on_health_change_hook = function (unitFrame)
@@ -6010,10 +6013,12 @@ function Plater.OnInit() --private --~oninit ~init
 		Plater.StartLogPerformanceCore("Plater-Core", "Health", "OnUpdateHealth")
 
 		-- update - for whatever weird reason max health event does not give proper values sometimes...
-		if self.displayedUnit then --failsafe?!
-			local maxHealth = UnitHealthMax (self.displayedUnit)
-			self:SetMinMaxValues (0, maxHealth)
-			self.currentHealthMax = maxHealth
+		if self.displayedUnit then --failsafe?! - do we really need this?
+			if not self.currentHealthMax then
+				local maxHealth = UnitHealthMax (self.displayedUnit)
+				self:SetMinMaxValues (0, maxHealth)
+				self.currentHealthMax = maxHealth
+			end
 		end
 
 		---@type plateframe
@@ -6026,8 +6031,9 @@ function Plater.OnInit() --private --~oninit ~init
 			oldHealth = oldHealth or currentHealth
 		end
 		if IS_WOW_PROJECT_MIDNIGHT then
-			self.currentHealthMissing = UnitHealthMissing(unitFrame.displayedUnit, true)
-			self.currentHealthPercent = UnitHealthPercent(unitFrame.displayedUnit, true, CurveConstants.ScaleTo100)
+			--these should be set already...
+			--self.currentHealthMissing = UnitHealthMissing(unitFrame.displayedUnit, true)
+			--self.currentHealthPercent = UnitHealthPercent(unitFrame.displayedUnit, true, CurveConstants.ScaleTo100)
 		else
 			self.currentHealthMissing = currentHealthMax - currentHealth
 			self.currentHealthPercent = currentHealth / currentHealthMax * 100
@@ -6075,8 +6081,7 @@ function Plater.OnInit() --private --~oninit ~init
 				end
 			end
 			
-			--if (DB_DO_ANIMATIONS and unitFrame.PlaterOnScreen and oldHealth ~= currentHealth) then
-			if (DB_DO_ANIMATIONS and unitFrame.PlaterOnScreen and oldHealth ~= currentHealth) then
+			if (DB_DO_ANIMATIONS and unitFrame.PlaterOnScreen and oldHealth ~= currentHealth) then -- hard disabled for midnight already
 				--do healthbar animation ~animation ~healthbar
 				self.AnimationStart = oldHealth
 				self.AnimationEnd = currentHealth
@@ -7236,10 +7241,9 @@ end
 			end
 			
 			--check shield ~shield
-			if (UnitGetTotalAbsorbs) then
+			if (UnitGetTotalAbsorbs and not IS_WOW_PROJECT_MIDNIGHT) then
 				if (profile.indicator_shield) then
 					local amountAbsorb = UnitGetTotalAbsorbs(tickFrame.PlateFrame[MEMBER_UNITID] or tickFrame.PlateFrame.unitFrame[MEMBER_UNITID])
-					if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(amountAbsorb) then amountAbsorb = 0 end --MIDNIGHT!!
 					if (amountAbsorb and amountAbsorb > 0) then
 						--update the total amount on the shield indicator
 						if (not healthBar.shieldIndicator.shieldTotal) then
@@ -8316,6 +8320,9 @@ end
 		
 		
 		if IS_WOW_PROJECT_MIDNIGHT then
+			--TODO: MIDNIGHT!!
+			--local currentAbsorb, currentAbsorbMaxHealth, currentAbsorbClamped, currentAbsorbIsClamped = healthBar.currentAbsorb, healthBar.currentAbsorbMaxHealth, healthBar.currentAbsorbClamped, healthBar.currentAbsorbIsClamped
+			
 			--currentHealth = string.format("%.7s", BreakUpLargeNumbers(currentHealth, true))
 			currentHealth = AbbreviateNumbers(currentHealth)
 			if (showHealthAmount or showPercentAmount) then
