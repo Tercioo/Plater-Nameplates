@@ -11802,8 +11802,8 @@ end
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.unit_type_coloring_enable_trivial = value
 			end,
-			name = "Don't override Threat colors",
-			desc = "Threat coloring will have priority over unit type colors.",
+			name = "Enable trivial",
+			desc = "Will override non-elite colors as 'trivial'.",
 		},
 	}
 	
