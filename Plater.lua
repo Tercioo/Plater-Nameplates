@@ -5541,6 +5541,7 @@ function Plater.OnInit() --private --~oninit ~init
 
 		function Plater.SetCastBarInterruptedState(unitFrame, sourceGUID, name)
 			if not unitFrame or not sourceGUID then return end
+			local castBar = unitFrame.castBar
 			
 			local coloredName
 			if IS_WOW_PROJECT_MIDNIGHT or not name then
