@@ -3138,7 +3138,9 @@ PLATER_DEFAULT_SETTINGS = {
 		unit_type_coloring_miniboss = {0, 0.086, 1, 1},
 		unit_type_coloring_caster = {0, 0.8196, 1, 1},
 		unit_type_coloring_elite = {1, 0.5961, 0.51373, 1},
-		--unit_type_coloring_trivial = {0, 0.086, 1, 1},
+		unit_type_coloring_trivial = {1, 0.5961, 0.51373, 1},
+		unit_type_coloring_trivial = {.5, .5, .5, 1},
+		unit_type_coloring_enable_trivial = false,
 		
 		news_frame = {},
 		first_run2 = false,

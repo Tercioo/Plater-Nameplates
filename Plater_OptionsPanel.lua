@@ -11782,6 +11782,29 @@ end
 			name = "Elite",
 			desc = "Color for elite units.",
 		},
+		{
+			type = "color",
+			get = function()
+				local color = Plater.db.profile.unit_type_coloring_trivial
+				return {color[1], color[2], color[3], color[4]}
+			end,
+			set = function (self, r, g, b, a) 
+				local color = Plater.db.profile.unit_type_coloring_trivial
+				color[1], color[2], color[3], color[4] = r, g, b, a
+				Plater.UpdateAllNameplateColors()
+			end,
+			name = "Trivial",
+			desc = "Color for non-elite/trivial units.",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.unit_type_coloring_enable_trivial end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.unit_type_coloring_enable_trivial = value
+			end,
+			name = "Don't override Threat colors",
+			desc = "Threat coloring will have priority over unit type colors.",
+		},
 	}
 	
 	_G.C_Timer.After(0.990, function() --~delay

@@ -6377,6 +6377,9 @@ end
 				elseif unitFrame.namePlateClassification == "elite" or unitFrame.namePlateClassification == "rareelite" then
 					--elite
 					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_elite)
+				elseif Plater.db.profile.unit_type_coloring_enable_trivial then
+					--trivial
+					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_trivial)
 				elseif (Plater.CanOverrideColor) then
 					Plater.ColorOverrider (unitFrame, forceRefresh)
 					return
@@ -7302,7 +7305,7 @@ end
 			if (not self.DenyColorChange) then --tagged from a script
 				if (not self.isGoodAggroState and Plater.db.profile.unit_type_coloring_enabled or Plater.db.profile.unit_type_coloring_no_override_threat or not Plater.db.profile.unit_type_coloring_enabled) then
 					Plater.ChangeHealthBarColor_Internal (self.healthBar, r, g, b, a)
-				elseif Plater.db.profile.unit_type_coloring_enabled and self.isGoodAggroState then
+				elseif Plater.db.profile.unit_type_coloring_enabled and self.isGoodAggroState and (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid") then
 					-- reset
 					Plater.FindAndSetNameplateColor (self)
 				else
