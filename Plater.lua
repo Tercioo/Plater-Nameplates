@@ -5538,6 +5538,68 @@ function Plater.OnInit() --private --~oninit ~init
 			return PlaterDB.InterruptableSpells[spellId]
 		end
 
+		function Plater.SetCastBarInterruptedState(unitFrame, sourceGUID, name)
+			if not unitFrame or not sourceGUID then return end
+			
+			local coloredName
+			if IS_WOW_PROJECT_MIDNIGHT or not name then
+				local _, class, _, race, _, name, realm = GetPlayerInfoByGUID(GUID)
+				if class then
+					local classColor = C_ClassColor.GetClassColor(class)
+					if classColor then
+						coloredName = classColor:WrapTextInColorCode(name)
+					end
+				end
+			else
+				coloredName = Plater.SetTextColorByClass (sourceGUID, name)
+			end
+			
+			castBar.Text:SetText (INTERRUPTED .. " [" .. coloredName .. "]")
+			castBar.IsInterrupted = true
+			castBar.InterruptSourceName = sourceName
+			castBar.InterruptSourceGUID = sourceGUID
+			
+			--interrupt animation
+			if (Plater.db.profile.cast_statusbar_interrupt_anim) then
+				local interruptAnim = castBar._interruptAnim
+				if (not interruptAnim) then
+					--scale animation
+					local duration = 0.05
+					local animationHub = DF:CreateAnimationHub(castBar)
+					animationHub.ScaleUp = DF:CreateAnimation(animationHub, "scale", 1, duration,	1, 	1, 	1, 	1.05)
+					animationHub.ScaleDown = DF:CreateAnimation(animationHub, "scale", 2, duration,	1, 	1.05, 	1, 	0.95)
+
+					--shake animattion
+					local duration = 0.36
+					local amplitude = 0.58
+					local frequency = 3.39
+					local absolute_sineX = false
+					local absolute_sineY = false
+					local scaleX = 0
+					local scaleY = 1.2
+					local fade_out = 0.33
+					local fade_in = 0.001
+					local cooldown = 0.5
+
+					local points = castBar._points
+					local frameShakeObject = DF:CreateFrameShake(castBar, duration, amplitude, frequency, absolute_sineX, absolute_sineY, scaleX, scaleY, fade_in, fade_out, points)
+
+					castBar._interruptAnim = {
+						Scale = animationHub,
+						Shake = frameShakeObject
+					}
+
+					interruptAnim = castBar._interruptAnim
+				end
+
+				interruptAnim.Scale:Play()
+				castBar:PlayFrameShake(interruptAnim.Shake)
+			end
+
+			castBar.FrameOverlay.TargetName:Hide() -- hide the target immediately
+			--> check and stop the casting script if any
+			castBar:OnHideWidget()
+		end
 		--hook for all castbar events --~cast
 		function Plater.CastBarOnEvent_Hook (self, event, unit, ...) --private
 	
@@ -5711,12 +5773,8 @@ function Plater.OnInit() --private --~oninit ~init
 					if (unitCast ~= self.unit) then
 						return
 					end
-
-					--self:Hide()
 					
-					-- this is called in SPELL_INTERRUPT event
-					--self:OnHideWidget()
-					--self.IsInterrupted = true
+					Plater.SetCastBarInterruptedState(unitFrame, self.interruptedBy)
 
 				elseif (event == "UNIT_SPELLCAST_STOP" or event == "UNIT_SPELLCAST_CHANNEL_STOP") then
 					local unitCast = unit
@@ -5724,10 +5782,14 @@ function Plater.OnInit() --private --~oninit ~init
 						return
 					end
 
-					self:OnHideWidget()
-
-					if (Plater.db.profile.cast_statusbar_quickhide) then
-						self:Hide()
+					if self.interruptedBy ~= nil then
+						Plater.SetCastBarInterruptedState(unitFrame, self.interruptedBy)
+						self.IsInterrupted = true
+					else
+						self:OnHideWidget()
+						if (Plater.db.profile.cast_statusbar_quickhide) then
+							self:Hide()
+						end
 					end
 				end
 				
@@ -10263,54 +10325,10 @@ end
 							name = petOwnerTable.ownerName or name
 							sourceGUID = petOwnerTable.ownerGUID or sourceGUID
 						end
-						if DB_USE_NAME_TRANSLIT and (not IS_WOW_PROJECT_MIDNIGHT or (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(name))) then
+						if DB_USE_NAME_TRANSLIT then
 							name = LibTranslit:Transliterate(name, TRANSLIT_MARK)
 						end
-						castBar.Text:SetText (INTERRUPTED .. " [" .. Plater.SetTextColorByClass (sourceGUID, name) .. "]")
-						castBar.IsInterrupted = true
-						castBar.InterruptSourceName = sourceName
-						castBar.InterruptSourceGUID = sourceGUID
-						
-						--interrupt animation
-						if (Plater.db.profile.cast_statusbar_interrupt_anim) then
-							local interruptAnim = castBar._interruptAnim
-							if (not interruptAnim) then
-								--scale animation
-								local duration = 0.05
-								local animationHub = DF:CreateAnimationHub(castBar)
-								animationHub.ScaleUp = DF:CreateAnimation(animationHub, "scale", 1, duration,	1, 	1, 	1, 	1.05)
-								animationHub.ScaleDown = DF:CreateAnimation(animationHub, "scale", 2, duration,	1, 	1.05, 	1, 	0.95)
-
-								--shake animattion
-								local duration = 0.36
-								local amplitude = 0.58
-								local frequency = 3.39
-								local absolute_sineX = false
-								local absolute_sineY = false
-								local scaleX = 0
-								local scaleY = 1.2
-								local fade_out = 0.33
-								local fade_in = 0.001
-								local cooldown = 0.5
-
-								local points = castBar._points
-								local frameShakeObject = DF:CreateFrameShake(castBar, duration, amplitude, frequency, absolute_sineX, absolute_sineY, scaleX, scaleY, fade_in, fade_out, points)
-
-								castBar._interruptAnim = {
-									Scale = animationHub,
-									Shake = frameShakeObject
-								}
-
-								interruptAnim = castBar._interruptAnim
-							end
-
-							interruptAnim.Scale:Play()
-							castBar:PlayFrameShake(interruptAnim.Shake)
-						end
-
-						castBar.FrameOverlay.TargetName:Hide() -- hide the target immediately
-						--> check and stop the casting script if any
-						castBar:OnHideWidget()
+						Plater.SetCastBarInterruptedState(unitFrame, sourceGUID, name)
 					end
 				end
 			end
