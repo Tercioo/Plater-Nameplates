@@ -3133,6 +3133,7 @@ PLATER_DEFAULT_SETTINGS = {
 		},
 		
 		unit_type_coloring_enabled = true,
+		unit_type_coloring_no_override_threat = true,
 		unit_type_coloring_boss = {0.294118, 0, 0.509804, 1},
 		unit_type_coloring_miniboss = {0, 0.086, 1, 1},
 		unit_type_coloring_caster = {0, 0.8196, 1, 1},

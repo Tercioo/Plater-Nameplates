@@ -5445,6 +5445,26 @@ local relevance_options = {
 		{
 			type = "toggle",
 			boxfirst = true,
+			get = function() return GetCVarBool ("nameplateUseClassColorForFriendlyPlayerUnitNames") end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateUseClassColorForFriendlyPlayerUnitNames", value and "1" or "0")
+				else
+					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+					self:SetValue (GetCVarBool ("nameplateUseClassColorForFriendlyPlayerUnitNames"))
+				end
+
+				Plater.UpdateBaseNameplateOptions()
+			end,
+			name = "Class-Color Blizzard Names",
+			desc = "Class coloring for blizzard nameplate names",
+			nocombat = true,
+			hidden = not IS_WOW_PROJECT_MIDNIGHT,
+		},
+		
+		{
+			type = "toggle",
+			boxfirst = true,
 			get = function() return GetCVar ("nameplateShowSelf") == CVAR_ENABLED end,
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
@@ -11694,6 +11714,16 @@ end
 			end,
 			name = "OPTIONS_ENABLED",
 			desc = "Enable unit type coloring with the colors below.\nOnly active in dungeons and raids.\nBad threat states will override this color.",
+		},
+		{type = "label", get = function() return "Unit Type Coloring" .. ":" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.unit_type_coloring_no_override_threat end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.unit_type_coloring_no_override_threat = value
+			end,
+			name = "Don't override Threat colors",
+			desc = "Threat coloring will have priority over unit type colors.",
 		},
 		{
 			type = "color",

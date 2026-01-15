@@ -7233,11 +7233,13 @@ end
 	local set_aggro_color = function (self, r, g, b, a) --self = unitName
 		if (DB_AGGRO_CHANGE_HEALTHBAR_COLOR) then
 			if (not self.DenyColorChange) then --tagged from a script
-				if (not self.isGoodAggroState and Plater.db.profile.unit_type_coloring_enabled or not Plater.db.profile.unit_type_coloring_enabled) then
+				if (not self.isGoodAggroState and Plater.db.profile.unit_type_coloring_enabled or Plater.db.profile.unit_type_coloring_no_override_threat or not Plater.db.profile.unit_type_coloring_enabled) then
 					Plater.ChangeHealthBarColor_Internal (self.healthBar, r, g, b, a)
 				elseif Plater.db.profile.unit_type_coloring_enabled and self.isGoodAggroState then
 					-- reset
 					Plater.FindAndSetNameplateColor (self)
+				else
+					Plater.ChangeHealthBarColor_Internal (self.healthBar, r, g, b, a) -- fallback, just in case
 				end
 			end
 		end
