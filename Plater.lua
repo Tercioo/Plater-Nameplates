@@ -5545,12 +5545,18 @@ function Plater.OnInit() --private --~oninit ~init
 			
 			local coloredName
 			if IS_WOW_PROJECT_MIDNIGHT or not name then
-				local _, class, _, race, _, name, realm = GetPlayerInfoByGUID(GUID)
+				local _, class, _, race, _, name, realm = GetPlayerInfoByGUID(sourceGUID)
+				local classColor
 				if class then
-					local classColor = C_ClassColor.GetClassColor(class)
-					if classColor then
-						coloredName = classColor:WrapTextInColorCode(name)
-					end
+					classColor = C_ClassColor.GetClassColor(class)
+				end
+				if not name then
+					name = UnitNameFromGUID(sourceGUID)
+				end
+				if classColor then
+					coloredName = classColor:WrapTextInColorCode(name)
+				else
+					coloredName = name
 				end
 			else
 				coloredName = Plater.SetTextColorByClass (sourceGUID, name)
