@@ -8490,7 +8490,7 @@ end
 	function Plater.UpdateUnitName (plateFrame)
 		local nameString = plateFrame.CurrentUnitNameString
 
-		Plater.UpdateUnitNameTextSize (plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME] or "", nameString, nil, DB_PLATE_CONFIG [plateFrame.actorType].actorname_text_max_length or 99)
+		Plater.UpdateUnitNameTextSize (plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME] or "", nameString, nil, DB_PLATE_CONFIG [plateFrame.actorType].actorname_text_max_length or 100)
 		
 		--check if the player has a guild, this check is done when the nameplate is added
 		if (plateFrame.playerGuildName) then
@@ -8508,7 +8508,9 @@ end
 			name = string.format("%." .. nameLength .. "s", name)
 			nameString:SetText (name)
 		elseif maxLength then
-			name = string.format("%." .. maxLength .. "s", name)
+			if maxLength < 100 then -- 100 -> don't limit; format max is 99
+				name = string.format("%." .. maxLength .. "s", name)
+			end
 			nameString:SetText (name)
 		else
 			local stringSize = max (plateFrame.unitFrame.healthBar:GetWidth() - 6, 44)

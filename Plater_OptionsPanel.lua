@@ -7089,11 +7089,11 @@ end
 				Plater.UpdateAllPlates()
 			end,
 			min = 0,
-			max = 99,
+			max = 100,
 			step = 1,
 			usedecimals = false,
 			name = "Max length",
-			desc = "Name text length limitation",
+			desc = "Name text length limitation.\n100 = no limit.",
 		},
 		
 		--cast text size
@@ -8009,11 +8009,11 @@ end
 				Plater.UpdateAllPlates()
 			end,
 			min = 0,
-			max = 99,
+			max = 100,
 			step = 1,
 			usedecimals = false,
 			name = "Max length",
-			desc = "Name text length limitation",
+			desc = "Name text length limitation.\n100 = no limit.",
 		},
 		
 		{type = "breakline"},
@@ -8934,11 +8934,11 @@ end
 				Plater.UpdateAllPlates()
 			end,
 			min = 0,
-			max = 99,
+			max = 100,
 			step = 1,
 			usedecimals = false,
 			name = "Max length",
-			desc = "Name text length limitation",
+			desc = "Name text length limitation.\n100 = no limit.",
 		},
 		
 		{type = "breakline"},
@@ -10130,11 +10130,11 @@ end
 					Plater.UpdateAllPlates()
 				end,
 				min = 0,
-				max = 99,
+				max = 100,
 				step = 1,
 				usedecimals = false,
 				name = "Max length",
-				desc = "Name text length limitation",
+				desc = "Name text length limitation.\n100 = no limit.",
 			},
 			
 			{type = "breakline"},
