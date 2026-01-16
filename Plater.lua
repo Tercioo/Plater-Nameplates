@@ -7379,10 +7379,8 @@ end
 							self.namePlateThreatOffTankIsTanking = true
 							self.namePlateThreatOffTankName = unitOffTank
 							--as the unit is being tanked by the off-tank, check if the player it self which is the other tank is about to accidently pull aggro just by hitting the mob
-							if (threatpct and otherThreatpct) then
-								--threatpct = player threat on the mob
-								--otherThreatpct = the aggro on the tank tanking the unit
-								if ((threatpct + 10) - otherThreatpct > 0) then
+							if (threatStatus and otherThreatStatus) then
+								if (threatStatus == 1 and otherThreatStatus >= 2) then
 									set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.pulling_from_tank))
 								else
 									self.isGoodAggroState = true
@@ -7403,7 +7401,6 @@ end
 						end
 					else
 						--player isn't tanking this unit
-						self.isGoodAggroState = true
 						set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.noaggro))
 						
 						if (self.PlateFrame [MEMBER_NOCOMBAT]) then
@@ -7415,11 +7412,11 @@ end
 					--if isn't a quest mob
 					if (not self.PlateFrame [MEMBER_QUEST]) then
 						--there's no aggro, isn't in combat, isn't a quest mob
-						self.isGoodAggroState = true
 						if (self [MEMBER_REACTION] == 4) then
 							--do nothing if the mob is neutral
 							--set_aggro_color (self, 1, 1, 0) --ticket #185
 						else
+							self.isGoodAggroState = true
 							set_aggro_color (self, unpack (DB_AGGRO_TANK_COLORS.nocombat))
 						end
 						
@@ -7458,6 +7455,7 @@ end
 			if (isTanking) then
 				--the player is tanking as dps
 				if profile.dps.use_aggro_solo and not IsInGroup() then
+					self.isGoodAggroState = true
 					set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.solo))
 				else
 					set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.aggro))
@@ -7576,12 +7574,10 @@ end
 										set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.notontank))
 									else
 										--the unit isn't targeting a tank but a tank in the group has aggro on this unit
-										self.isGoodAggroState = true
 										set_aggro_color (self, unpack (colorToUse))
 									end
 								else
 									--the unit is targeting a tank
-									self.isGoodAggroState = true
 									set_aggro_color (self, unpack (colorToUse))
 								end
 							else
