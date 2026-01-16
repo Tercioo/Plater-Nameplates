@@ -1954,7 +1954,7 @@ detailsFramework.CastFrameFunctions = {
 	end,
 
 	UNIT_SPELLCAST_CHANNEL_STOP = function(self, unit, ...)
-		local unitID, castID, spellID, castBarID, interruptedBy = ...
+		local unitID, castID, spellID, interruptedBy, castBarID = ...
 
 		if (self.channeling and castBarID == self.castBarID) then --and castID == self.castID) then
 			self.Spark:Hide()
@@ -1972,21 +1972,26 @@ detailsFramework.CastFrameFunctions = {
 			self.castBarID = nil
 			self.interruptedBy = interruptedBy
 
-			if (not self:HasScheduledHide()) then
-				--check if settings has no fade option or if its parents are not visible
-				if (not self:IsVisible()) then
-					self:Hide()
-
-				elseif (self.Settings.NoFadeEffects) then
-					self:ScheduleToHide (0.3)
-
-				else
-					self:Animation_Flash()
-					self:Animation_FadeOut()
-				end
-			end
-
 			self:UpdateCastColor()
+			if interruptedBy ~= nil then
+				self:UNIT_SPELLCAST_INTERRUPTED(unit, unitID, castID, spellID, interruptedBy, castBarID)
+			else
+				if (not self:HasScheduledHide()) then
+					--check if settings has no fade option or if its parents are not visible
+					if (not self:IsVisible()) then
+						self:Hide()
+
+					elseif (self.Settings.NoFadeEffects) then
+						self:ScheduleToHide (0.3)
+
+					else
+						self:Animation_Flash()
+						self:Animation_FadeOut()
+					end
+				end
+				
+				self:UpdateCastColor()
+			end
 		end
 	end,
 
@@ -2030,7 +2035,7 @@ detailsFramework.CastFrameFunctions = {
 	end,
 
 	UNIT_SPELLCAST_INTERRUPTED = function(self, unit, ...)
-		local unitID, castID, spellID, castBarID, interruptedBy = ...
+		local unitID, castID, spellID, interruptedBy, castBarID = ...
 
 		if ((self.casting or self.channeling) and castBarID == self.castBarID and not self.fadeOut) then
 			self.casting = nil
