@@ -26,8 +26,9 @@ local debugmode = false
 
 local PLATER_OPTIONS_ANIMATION_TAB = 20
 
-function Plater.CreateSpellAnimationPanel()
+local IS_WOW_PROJECT_MIDNIGHT = DF.IsAddonApocalypseWow()
 
+function Plater.CreateSpellAnimationPanel()
 	local f = PlaterOptionsPanelFrame
 	local mainFrame = PlaterOptionsPanelContainer
 	local animationFrame = mainFrame.AllFrames [PLATER_OPTIONS_ANIMATION_TAB]
@@ -46,6 +47,14 @@ function Plater.CreateSpellAnimationPanel()
 	local startX = 10
 	local startY = -220 --menu and settings panel
 	local startYGeneralSettings = -150
+	
+	if IS_WOW_PROJECT_MIDNIGHT then
+		local optionsTable = {
+			{type = "label", get = function() return "Not available in Midnight and onwards due to API limitations." end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		}
+		DF:BuildMenu (animationFrame, optionsTable, 10, startYGeneralSettings, 330, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, animationFrame.OnDataChange)
+		return
+	end
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -99,6 +108,7 @@ function Plater.CreateSpellAnimationPanel()
 	end
 
 	animationFrame:HookScript ("OnShow", function()
+		if IS_WOW_PROJECT_MIDNIGHT then return end -- well, no.
 		animationFrame.BuildAnimationDataForScroll()
 		CLEUFrame:RegisterEvent ("COMBAT_LOG_EVENT_UNFILTERED")
 		Plater.RefreshIsEditingAnimations (true)
