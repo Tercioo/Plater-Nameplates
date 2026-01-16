@@ -49,6 +49,7 @@ local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_NOT_MAINLINE = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_CLASSIC_ERA = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
 local IS_WOW_PROJECT_AT_LEAST_CLASSIC_MOP = IS_WOW_PROJECT_MAINLINE or (ClassicExpansionAtLeast and LE_EXPANSION_MISTS_OF_PANDARIA and ClassicExpansionAtLeast(LE_EXPANSION_MISTS_OF_PANDARIA))
+local IS_MIDNIGHT_PRE_PATCH = detailsFramework.Toc == 120000
 
 local CastInfo = detailsFramework.CastInfo
 
@@ -289,6 +290,14 @@ local cleanfunction = function() end
 	end
 	
 	healthBarMetaFunctions.UpdateAllHealth = function(self, updateMaxHealth)
+		
+		if IS_MIDNIGHT_PRE_PATCH then
+			self:UpdateMaxHealth()
+			self:UpdateHealth()
+			self:UpdateHealPrediction()
+			return
+		end
+	
 		local calculator = self.healCalculator
 		calculator:SetMaximumHealthMode(self.Settings.ShowShields and Enum.UnitMaximumHealthMode.WithAbsorbs or Enum.UnitMaximumHealthMode.Default)
 		UnitGetDetailedHealPrediction(self.displayedUnit, nil, calculator)
@@ -1894,7 +1903,7 @@ detailsFramework.CastFrameFunctions = {
 	end,
 
 	UNIT_SPELLCAST_STOP = function(self, unit, ...)
-		local unitID, castID, spellID, castBarID, interruptedBy = ...
+		local unitID, castID, spellID, castBarID = ...
 		if (castBarID == self.castBarID) then
 			if (self.interrupted) then
 				if (self.Settings.HideSparkOnInterrupt) then
@@ -1924,7 +1933,7 @@ detailsFramework.CastFrameFunctions = {
 			self.finished = true
 			self.castID = nil
 			self.castBarID = nil
-			self.interruptedBy = interruptedBy
+			self.interruptedBy = nil
 
 			if (not self:HasScheduledHide()) then
 				--check if settings has no fade option or if its parents are not visible
@@ -2004,7 +2013,7 @@ detailsFramework.CastFrameFunctions = {
 			self.finished = true
 			self.castID = nil
 			self.castBarID = nil
-			self.interruptedBy = interruptedBy
+			self.interruptedBy = nil
 			--local _, maxValue = self:GetMinMaxValues()
 			self:SetMinMaxValues(self.minValue, self.maxValue)
 			self:SetValue(self.maxValue)
