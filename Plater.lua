@@ -4464,8 +4464,6 @@ Plater.AnchorNamesByPhraseId = {
 			elseif DevTool then
 				DevTool:AddData(self, "protected nameplate...")
 			end
-		elseif IS_WOW_PROJECT_MIDNIGHT then
-			self:SetAlpha(0)
 		else
 			self:Hide()
 		end
@@ -4479,7 +4477,7 @@ Plater.AnchorNamesByPhraseId = {
 		
 		if (CompactUnitFrame_UnregisterEvents) then
 			CompactUnitFrame_UnregisterEvents (self)
-			--if self.castBar then CompactUnitFrame_UnregisterEvents (self.castBar) end
+			if self.castBar then CompactUnitFrame_UnregisterEvents (self.castBar) end
 		end
 	end
 	
