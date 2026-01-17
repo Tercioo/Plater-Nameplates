@@ -2062,46 +2062,83 @@ end
 	function Plater.AddExtraIcon (self, spellName, icon, applications, debuffType, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, isBuff, filter, id, modRate)
 		Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdateAuras - AddExtraIcon")
 		
-		local _, sourceUnitClass = UnitClass(sourceUnit or "")
 		local sourceUnitName
-		if (sourceUnitClass and UnitPlayerControlled(sourceUnit)) then
-			--adding only the name for players in case the player used a stun
-			sourceUnitName = UnitName(sourceUnit)
-		end
-
 		local borderColor
 		local profile = Plater.db.profile
+		local startTime
 
-		if (isStealable) then
-			borderColor = profile.extra_icon_show_purge_border
-
-		elseif (profile.extra_icon_use_blizzard_border_color) then
-			-- use blizzard border colors
-			local color = DebuffTypeColor[debuffType or "none"] or {r=0, b=0, g=0, a=0} --dispelName is a global? it have been not passed | dispelName is the 5th argument
-			borderColor = {color.r, color.g, color.b, color.a or 1}
-
-		elseif (CROWDCONTROL_AURA_IDS [spellId]) then
-			borderColor = profile.debuff_show_cc_border
-
-		elseif (DEFENSIVE_AURA_IDS [spellId]) then
-			--> defensive effects
-			borderColor = profile.extra_icon_show_defensive_border
-
-		elseif (OFFENSIVE_AURA_IDS [spellId]) then
-			--> offensive effects
-			borderColor = profile.extra_icon_show_offensive_border
-
-		elseif (debuffType == AURA_TYPE_ENRAGE) then
-			--> enrage effects
-			borderColor = profile.extra_icon_show_enrage_border
-
+		if IS_WOW_PROJECT_MIDNIGHT then
+			local durationObject = C_UnitAuras.GetAuraDuration and C_UnitAuras.GetAuraDuration(self.unitFrame.namePlateUnitToken, id)
+			startTime = durationObject:GetStartTime()
+			if sourceUnit ~= nil then
+				-- maybe one day colored...
+				--local sourceUnitGUID = UnitGUID(sourceUnit)
+				local _, class, _, race, _, name, realm --= GetPlayerInfoByGUID(sourceUnitGUID)
+				local classColor
+				if class then
+					classColor = C_ClassColor.GetClassColor(class)
+				end
+				if not name then
+					name = UnitName(sourceUnit)
+				end
+				if classColor then
+					coloredName = classColor:WrapTextInColorCode(name)
+				else
+					coloredName = name
+				end
+			end
+		
+			local color
+			--if DB_AURA_ENABLED then --check for aura testing, so actual auras
+			--	color = C_UnitAuras.GetAuraDispelTypeColor(sourceUnit, id, dispelColorCurve)
+			--else
+			--	color = DEBUFF_DISPLAY_COLOR_INFO[dispelName or "none"]
+			--end
+			
+			if color then
+				borderColor = {color.r, color.g, color.b, color.a}
+			else
+				borderColor = profile.aura_border_colors.debuff_show_cc_border
+			end
 		else
-			borderColor = profile.extra_icon_border_color
+			startTime = expirationTime - duration
+			local _, sourceUnitClass = UnitClass(sourceUnit or "")
+			if (sourceUnitClass and UnitPlayerControlled(sourceUnit)) then
+				--adding only the name for players in case the player used a stun
+				sourceUnitName = UnitName(sourceUnit)
+			end
+			
+			if (isStealable) then
+				borderColor = profile.extra_icon_show_purge_border
+
+			elseif (profile.extra_icon_use_blizzard_border_color) then
+				-- use blizzard border colors
+				local color = DebuffTypeColor[debuffType or "none"] or {r=0, b=0, g=0, a=0} --dispelName is a global? it have been not passed | dispelName is the 5th argument
+				borderColor = {color.r, color.g, color.b, color.a or 1}
+
+			elseif (CROWDCONTROL_AURA_IDS [spellId]) then
+				borderColor = profile.debuff_show_cc_border
+
+			elseif (DEFENSIVE_AURA_IDS [spellId]) then
+				--> defensive effects
+				borderColor = profile.extra_icon_show_defensive_border
+
+			elseif (OFFENSIVE_AURA_IDS [spellId]) then
+				--> offensive effects
+				borderColor = profile.extra_icon_show_offensive_border
+
+			elseif (debuffType == AURA_TYPE_ENRAGE) then
+				--> enrage effects
+				borderColor = profile.extra_icon_show_enrage_border
+
+			else
+				borderColor = profile.extra_icon_border_color
+			end
 		end
 
 		--spellId, borderColor, startTime, duration, forceTexture, descText
 		--calling SetIcon make the ExtraIconFrame call show() on it self
-		local iconFrame = self.ExtraIconFrame:SetIcon (spellId, borderColor, expirationTime - duration, duration, false, sourceUnitName and {text = sourceUnitName, text_color = sourceUnitClass} or false, applications, debuffType, sourceUnit, isStealable, spellName, isBuff, modRate)
+		local iconFrame = self.ExtraIconFrame:SetIcon (spellId, borderColor, startTime, duration, false, sourceUnitName and {text = sourceUnitName, text_color = sourceUnitClass} or false, applications, debuffType, sourceUnit, isStealable, spellName, isBuff, modRate)
 		iconFrame.Texture:SetDesaturated(false) -- ensure this
 
 		-- tooltip info
@@ -2410,7 +2447,6 @@ end
 				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = 
 					aura.name, aura.icon, aura.applications, aura.dispelName, aura.duration, aura.expirationTime, aura.sourceUnit, aura.isStealable, aura.nameplateShowPersonal, aura.spellId, aura.canApplyAura, 
 					aura.isBossAura, aura.isFromPlayerOrPlayerPet, aura.nameplateShowAll, aura.timeMod, aura.applications
-				
 				--start as false, during the checks can be changed to true, if is true this debuff is added on the nameplate
 				local can_show_this_debuff
 				local auraType = "DEBUFF"
@@ -2469,7 +2505,13 @@ end
 						can_show_this_debuff = false
 					end
 				elseif IS_WOW_PROJECT_MIDNIGHT then
-					--if DB_AURA_SHOW_IMPORTANT and not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HARMFUL|INCLUDE_NAME_PLATE_ONLY") and not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HARMFUL|PLAYER") then
+					--print(issecretvalue(C_UnitAuras.AuraIsBigDefensive(spellId)), C_UnitAuras.AuraIsBigDefensive(spellId), issecretvalue(C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "CROWDCONTROL")), C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "CROWDCONTROL"))
+					
+					-- TODO: MIDNIGHT!!
+					--if C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "CROWDCONTROL") then
+					--	Plater.AddExtraIcon (self, name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, false, "HARMFUL", id, timeMod)
+					--	can_show_this_debuff = false
+					--else
 					if DB_AURA_SHOW_IMPORTANT and not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HARMFUL|INCLUDE_NAME_PLATE_ONLY") then
 						--print(aura.name, unit, aura.auraInstanceID, aura.nameplateShowPersonal, C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HARMFUL|INCLUDE_NAME_PLATE_ONLY"), C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HARMFUL|PLAYER"))
 						--print("issecret", issecretvalue(aura.nameplateShowPersonal))
@@ -2598,6 +2640,9 @@ end
 
 				elseif IS_WOW_PROJECT_MIDNIGHT then
 					--if DB_AURA_SHOW_IMPORTANT and not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HELPFUL|INCLUDE_NAME_PLATE_ONLY") and not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HELPFUL|PLAYER") then
+					--C_UnitAuras.AuraIsBigDefensive(spellId)
+					--Plater.AddExtraIcon (self, name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, true, "HELPFUL", id, timeMod)
+					
 					if DB_AURA_SHOW_IMPORTANT and not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HELPFUL|INCLUDE_NAME_PLATE_ONLY") then
 						local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
 						Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isFromPlayerOrPlayerPet, isStealable, nameplateShowPersonal, spellId, true, nil, nil, nil, dispelName, timeMod)
