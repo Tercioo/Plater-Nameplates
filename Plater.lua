@@ -3647,7 +3647,7 @@ Plater.AnchorNamesByPhraseId = {
 			
 			--if (not plateFrame.UnitFrame.HasPlaterHooksRegistered) then
 			if not HOOKED_BLIZZARD_PLATEFRAMES[blizzardPlateFrameID] then
-				--print(HOOKED_BLIZZARD_PLATEFRAMES[tostring(plateFrame.UnitFrame)], tostring(plateFrame.UnitFrame), plateFrame.UnitFrame.HasPlaterHooksRegistered)
+				--print(GetTime(), HOOKED_BLIZZARD_PLATEFRAMES[tostring(plateFrame.UnitFrame)], tostring(plateFrame.UnitFrame), plateFrame.UnitFrame.HasPlaterHooksRegistered)
 				--hook the retail nameplate
 				--plateFrame.UnitFrame:HookScript("OnShow", Plater.OnRetailNamePlateShow)
 				hooksecurefunc(plateFrame.UnitFrame, "Show", Plater.OnRetailNamePlateShow)
@@ -3682,16 +3682,6 @@ Plater.AnchorNamesByPhraseId = {
 				if (nameplateIsEditor) then
 					reaction = Plater.UnitReaction.UNITREACTION_HOSTILE
 				end
-
-				--[[
-				local fontName, _fontSize, fontFlags = plateFrame.UnitFrame.name:GetFont()
-				if not isPlayer and (reaction >= Plater.UnitReaction.UNITREACTION_FRIENDLY) then
-					--print("try hide")
-				elseif not UnitIsPlayer (unitID) then
-					plateFrame.UnitFrame.healthBar.LeftText:SetFont(fontName, 10, fontFlags)
-					plateFrame.UnitFrame.healthBar.RightText:SetFont(fontName, 10, fontFlags)
-				end
-				]]--
 			end
 			
 			-- we should clear stuff here, tbh...
@@ -3700,17 +3690,6 @@ Plater.AnchorNamesByPhraseId = {
 				ENABLED_BLIZZARD_PLATEFRAMES[blizzardPlateFrameID] = false
 				
 			else
-				if IS_WOW_PROJECT_MIDNIGHT then
-					--[[
-					hooksecurefunc(plateFrame.UnitFrame.healthBar, 'IsWidgetsOnlyMode', function(self)
-						TextureLoadingGroupMixin.AddTexture({ textures = self }, "widgetsOnly")
-						TextureLoadingGroupMixin.AddTexture({ textures = self }, "isDead")
-						TextureLoadingGroupMixin.RemoveTexture({ textures = self }, "isPlayer")
-					end)
-					plateFrame.UnitFrame.healthBar:UpdateShownState()
-					]]-- MIDNIGHT!! testing shenannigans
-				end
-				
 				plateFrame.unitFrame.PlaterOnScreen = false
 				ENABLED_BLIZZARD_PLATEFRAMES[blizzardPlateFrameID] = true
 				plateFrame.unitFrame:Hide()
@@ -4429,6 +4408,7 @@ Plater.AnchorNamesByPhraseId = {
 	--it'll hide the retail nameplate when it shown
 	---@param self frame blizzard unitframe 'plateFrame.UnitFrame'
 	function Plater.OnRetailNamePlateShow (self) --private
+		--print(GetTime(), self.unit)
 		if ENABLED_BLIZZARD_PLATEFRAMES[tostring(self)] then
 			-- do not hide
 			return
@@ -4464,6 +4444,8 @@ Plater.AnchorNamesByPhraseId = {
 			elseif DevTool then
 				DevTool:AddData(self, "protected nameplate...")
 			end
+		elseif IS_WOW_PROJECT_MIDNIGHT then
+			self:SetAlpha(0)
 		else
 			self:Hide()
 		end
@@ -5669,13 +5651,6 @@ function Plater.OnInit() --private --~oninit ~init
 					else
 						self.SpellStartTime = self.spellStartTime or curTime
 						self.SpellEndTime = self.spellEndTime or curTime
-					end
-					
-					if IS_WOW_PROJECT_MIDNIGHT then
-						--self.canInterrupt = unitFrame.PlateFrame.UnitFrame.castBar.barType ~= "uninterruptable" -- this will be fixed
-						--self.notInterruptible = not self.canInterrupt
-						--self:UpdateCastColor() -- ensure this. one day we might disable the blizzard cast bar fully
-						--self:UpdateInterruptState()
 					end
 					
 					self.IsInterrupted = false
