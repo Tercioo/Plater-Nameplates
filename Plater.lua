@@ -4492,6 +4492,7 @@ Plater.AnchorNamesByPhraseId = {
 			-- should be done if events are not needed
 			-- CompactUnitFrame_UnregisterEvents only removes event hanlder functions
 			self:UnregisterAllEvents()
+			if self.castBar then self.castBar:UnregisterAllEvents() end
 		end
 		
 		if (CompactUnitFrame_UnregisterEvents) then
@@ -4995,6 +4996,8 @@ function Plater.OnInit() --private --~oninit ~init
 			hooksecurefunc (NamePlateDriverFrame, "SetupClassNameplateBars", function (self)
 				return Plater.UpdatePersonalBar (self)
 			end)
+				end)
+			end
 			
 			--[[ -- fuck things up a bit...
 			hooksecurefunc (NamePlateBaseMixin, "OnAdded", function(self, namePlateUnitToken, driverFrame)
@@ -5521,6 +5524,8 @@ function Plater.OnInit() --private --~oninit ~init
 			if castBar.Icon.Masqued then
 				Plater.Masque.CastIcon:ReSkin(castBar.Icon)
 			end
+			
+			castBar:UpdateInterruptState()
 		end
 		
 		
@@ -5697,8 +5702,8 @@ function Plater.OnInit() --private --~oninit ~init
 					self.ThrottleUpdate = -1
 					
 					if IS_WOW_PROJECT_MIDNIGHT then
-						self.BorderShield:Show()
-						self.BorderShield:SetAlphaFromBoolean(self.notInterruptible, 1, 0)
+						--self.BorderShield:Show()
+						--self.BorderShield:SetAlphaFromBoolean(self.notInterruptible, 1, 0)
 						self.CanInterrupt = nil
 					else
 						if (self.notInterruptible) then
