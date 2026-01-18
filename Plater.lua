@@ -2866,6 +2866,18 @@ Plater.AnchorNamesByPhraseId = {
 				plateFrame.PlaterAnchorFrame:EnableMouse(false)
 				plateFrame.PlaterAnchorFrame:SetParent(plateFrame)
 				
+				-- stacking size for midnight
+				if plateFrame.SetStackingBoundsFrame then
+					unitFrame.stackSizeFrame = CreateFrame("Frame", nil, unitFrame, "BackdropTemplate")
+					local tex = unitFrame.stackSizeFrame:CreateTexture()
+					tex:SetColorTexture(1, 0, 0, 0)
+					tex:SetAllPoints(unitFrame.stackSizeFrame)
+					
+					--unitFrame.stackSizeFrame:SetBackdrop ({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", tile = true, tileSize = 16, edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
+					--unitFrame.stackSizeFrame:SetBackdropColor (0, 0, 0, 0.5)
+					--unitFrame.stackSizeFrame:SetBackdropBorderColor (0, 0, 0, 1)
+				end
+				
 				--mix plater functions (most are for scripting support) into the unit frame
 				DF:Mixin(newUnitFrame, Plater.ScriptMetaFunctions)
 				
@@ -3682,6 +3694,31 @@ Plater.AnchorNamesByPhraseId = {
 				if (nameplateIsEditor) then
 					reaction = Plater.UnitReaction.UNITREACTION_HOSTILE
 				end
+			end
+			
+			if plateFrame.unitFrame.stackSizeFrame then --TODO: MIDNIGHT!!
+				plateFrame.unitFrame.stackSizeFrame:ClearAllPoints()
+				plateFrame.unitFrame.stackSizeFrame:SetParent(isPlateEnabled and plateFrame.unitFrame or plateFrame.UnitFrame)
+				plateFrame:SetStackingBoundsFrame(plateFrame.unitFrame.stackSizeFrame)
+				plateFrame.unitFrame.stackSizeFrame:SetAllPoints()
+				
+				--local width, height
+				--local widthScale, heightScale
+				--if actorType == ACTORTYPE_FRIENDLY_PLAYER or actorType == ACTORTYPE_FRIENDLY_NPC then
+				--	width, height = Plater.db.profile.click_space_friendly[1], Plater.db.profile.click_space_friendly[2]
+				--	widthScale, heightScale = Plater.db.profile.click_space_scale_friendly[1], Plater.db.profile.click_space_scale_friendly[2]
+				--else
+				--	width, height = Plater.db.profile.click_space[1], Plater.db.profile.click_space[2]
+				--	widthScale, heightScale = Plater.db.profile.click_space_scale[1], Plater.db.profile.click_space_scale[2]
+				--end
+				
+				--local offsetW, offsetH = (width - width * widthScale), (height - height * heightScale)
+				
+				--plateFrame.unitFrame.stackSizeFrame:SetPoint("CENTER", isPlateEnabled and plateFrame.unitFrame or plateFrame.UnitFrame, "CENTER", 0, 0)
+				--plateFrame.unitFrame.stackSizeFrame:SetSize(width * widthScale, height * heightScale)
+				--plateFrame.unitFrame.stackSizeFrame:ClearAllPoints()
+				--plateFrame.unitFrame.stackSizeFrame:SetPoint("TOPLEFT", isPlateEnabled and plateFrame.unitFrame or plateFrame.UnitFrame, "TOPLEFT", offsetW, -offsetH)
+				--plateFrame.unitFrame.stackSizeFrame:SetPoint("BOTTOMRIGHT", isPlateEnabled and plateFrame.unitFrame or plateFrame.UnitFrame, "BOTTOMRIGHT", -offsetW, offsetH)
 			end
 			
 			-- we should clear stuff here, tbh...
