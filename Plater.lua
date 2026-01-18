@@ -5418,6 +5418,8 @@ function Plater.OnInit() --private --~oninit ~init
 			local unitFrame = castBar.unitFrame
 			local borderShield = castBar.BorderShield
 			
+			castBar:UpdateInterruptState() -- ensure icon is shown as appropriate
+			
 			--icon:SetDrawLayer ("OVERLAY", 5)
 			--borderShield:SetDrawLayer ("OVERLAY", 6)
 			local castBarHeight = castBar:GetHeight()
@@ -5522,8 +5524,6 @@ function Plater.OnInit() --private --~oninit ~init
 			if castBar.Icon.Masqued then
 				Plater.Masque.CastIcon:ReSkin(castBar.Icon)
 			end
-			
-			castBar:UpdateInterruptState()
 		end
 		
 		
