@@ -4996,8 +4996,6 @@ function Plater.OnInit() --private --~oninit ~init
 			hooksecurefunc (NamePlateDriverFrame, "SetupClassNameplateBars", function (self)
 				return Plater.UpdatePersonalBar (self)
 			end)
-				end)
-			end
 			
 			--[[ -- fuck things up a bit...
 			hooksecurefunc (NamePlateBaseMixin, "OnAdded", function(self, namePlateUnitToken, driverFrame)
