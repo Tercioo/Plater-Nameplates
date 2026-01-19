@@ -3140,6 +3140,7 @@ PLATER_DEFAULT_SETTINGS = {
 		unit_type_coloring_elite = {1, 0.5961, 0.51373, 1},
 		unit_type_coloring_trivial = {1, 0.5961, 0.51373, 1},
 		unit_type_coloring_trivial = {.5, .5, .5, 1},
+		unit_type_coloring_enable_elite = false,
 		unit_type_coloring_enable_trivial = false,
 		
 		news_frame = {},

@@ -6384,24 +6384,31 @@ end
 			elseif Plater.db.profile.unit_type_coloring_enabled and (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid") and unitFrame.isGoodAggroState then
 				local pLevel = UnitEffectiveLevel("player")
                 local uLevel = UnitEffectiveLevel(unitID)
+
+				--boss
 				if uLevel == pLevel + 2 or uLevel == -1 then
-					--boss
 					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_boss)
+
+				--miniboss
 				elseif uLevel == pLevel + 1 or unitFrame.namePlateIsBossMob or unitFrame.namePlateIsLieutenant then
-					--miniboss
 					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_miniboss)
+
+				--caster
 				elseif UnitClassBase(unitID) == "PALADIN" then
-					--caster
 					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_caster)
-				elseif unitFrame.namePlateClassification == "elite" or unitFrame.namePlateClassification == "rareelite" then
-					--elite
+
+				--elite
+				elseif Plater.db.profile.unit_type_coloring_enable_elite and (unitFrame.namePlateClassification == "elite" or unitFrame.namePlateClassification == "rareelite") then
 					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_elite)
+
+				--trivial
 				elseif Plater.db.profile.unit_type_coloring_enable_trivial then
-					--trivial
 					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_trivial)
+
 				elseif (Plater.CanOverrideColor) then
 					Plater.ColorOverrider (unitFrame, forceRefresh)
 					return
+
 				else
 					r, g, b, a = UnitSelectionColor (unitID)
 				end

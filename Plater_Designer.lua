@@ -62,6 +62,7 @@ local dv = function(f) detailsFramework:DebugVisibility(f) end
 ---@param f frame
 ---@param n string
 local createFrameTag = function (f,n)
+    do return end
     local t = f:CreateTexture (nil, "overlay")
     local fs = f:CreateFontString (nil, "overlay", "GameFontNormalSmall")
 
@@ -103,34 +104,35 @@ a:SetScript("OnEvent", function(self, event, ...)
     self:UnregisterEvent("PLAYER_LOGIN")
 end)
 
-function Plater.CreateDesignerWindow()
+function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
     local gName = "PlaterDsgn"
 
-    local startY = -30
-    local startX = 10
-
     local isCastBarSelected = false
+
+    local startX, startY, heightSize = 10, platerInternal.optionsYStart, 755
 
     --tab background using a rounded panel | need to make a preset for this, atm it is declaring each time the same table
     local roundedPanelOptions = {
         scale = 1,
-        width = 1300,
-        height = 600,
+        width = tabFrame:GetWidth() - 4,
+        height = tabFrame:GetHeight() - 4 - math.abs(startY),
         roundness = 8,
     }
 
     ---@type df_roundedpanel
-    local editorMainFrame = detailsFramework:CreateRoundedPanel(UIParent, gName, roundedPanelOptions)
+    --local editorMainFrame = detailsFramework:CreateRoundedPanel(tabFrame, gName, roundedPanelOptions)
+    local editorMainFrame = CreateFrame("Frame", gName, tabFrame)
     --editorMainFrame:SetFrameStrata("FULLSCREEN")
     --local editorMainFrame = CreateFrame("frame", gName, UIParent)
 
     Plater.DesignerWindow = editorMainFrame
 
-    detailsFramework:MakeDraggable(editorMainFrame)
-    editorMainFrame:EnableMouse(true)
+    --detailsFramework:MakeDraggable(editorMainFrame)
+    --editorMainFrame:EnableMouse(true)
     createFrameTag(editorMainFrame, "editorMainFrame")
-    editorMainFrame:SetSize (roundedPanelOptions.width, roundedPanelOptions.height)
-    editorMainFrame:SetPoint ("center", UIParent, "center", -100, 0)
+    editorMainFrame:SetSize(roundedPanelOptions.width, roundedPanelOptions.height)
+    --editorMainFrame:SetPoint ("center", UIParent, "center", -100, 0)
+    editorMainFrame:SetPoint("topleft", tabFrame, "topleft", 0, startY + 24)
 
     --create the widget editor
     local editorOptions = {
@@ -161,13 +163,13 @@ function Plater.CreateDesignerWindow()
 
     --the frame in the middle of the tab, the the settings for the selected widget are placed
     ---@type df_editor
-    local layoutEditor = detailsFramework:CreateEditor(editorMainFrame, "Plater_LayoutEditor", editorOptions)
+    local layoutEditor = detailsFramework:CreateEditor(editorMainFrame, "Plater_LayoutEditor_", editorOptions)
     createFrameTag(layoutEditor, "layoutEditor")
     layoutEditor:SetPoint("topleft", editorMainFrame, "topleft", 5, -16)
     layoutEditor:SetPoint("bottomleft", editorMainFrame, "bottomleft", 5, 5)
     layoutEditor:EnableMouse(false)
     layoutEditor:SetFrameLevel(editorMainFrame:GetFrameLevel() + 10)
-    layoutEditor:SetFrameStrata("HIGH")
+    --layoutEditor:SetFrameStrata("HIGH")
 
     function designer.UpdateAllNameplates()
         for _, thisPlateFrame in ipairs(Plater.GetAllShownPlates()) do
@@ -178,8 +180,8 @@ function Plater.CreateDesignerWindow()
     end
 
     --create close button using the framework
-    local closeButton = detailsFramework:CreateCloseButton(editorMainFrame)
-    closeButton:SetPoint("topright", editorMainFrame, "topright", -3, -3)
+    --local closeButton = detailsFramework:CreateCloseButton(editorMainFrame)
+    --closeButton:SetPoint("topright", editorMainFrame, "topright", -3, -3)
 
     local canvasFrame = layoutEditor:GetCanvasScrollBox()
     canvasFrame:EnableMouse(false)
@@ -315,7 +317,7 @@ function Plater.CreateDesignerWindow()
     detailsFramework:SetFontSize(actorTitleSpecial, Plater.db.profile.plate_config.enemynpc.big_actortitle_text_size)
 
     actorNameSpecial:ClearAllPoints()
-    actorNameSpecial:SetPoint("bottomleft", previewNameplateFrame, "bottomleft", 5, 90)
+    actorNameSpecial:SetPoint("bottomleft", previewNameplateFrame, "bottomleft", 5, 40)
     actorTitleSpecial:ClearAllPoints()
     actorTitleSpecial:SetPoint("top", actorNameSpecial, "bottom", 0, -2)
 
@@ -450,7 +452,7 @@ function Plater.CreateDesignerWindow()
 
     local moveUpFrame = CreateFrame("frame", nil, editorMainFrame)
     moveUpFrame:SetScript("OnUpdate", function(self, deltaTime)
-        plateFrame.unitFrame:SetFrameStrata("HIGH")
+        --plateFrame.unitFrame:SetFrameStrata("HIGH")
         plateFrame:SetFrameLevel(previewNameplateFrame:GetFrameLevel() + 100)
         --unitFrame:Show()
         --healthBar:Show()
@@ -497,6 +499,14 @@ function Plater.CreateDesignerWindow()
         plateFrame:Show()
         layoutEditor:Show()
         plateFrame:Show()
+        actorTitleSpecial:Show()
+        actorNameSpecial:Show()
+        healthBar:Show()
+        plateFrame.unitFrame:SetUnit("player")
+        unitName:SetText("Unit Name")
+        unitName:Show()
+        unitFrame.BuffFrame:Show()
+        unitFrame.BuffFrame2:Show()
     end)
 
     editorMainFrame:SetScript("OnHide", function()
@@ -504,6 +514,17 @@ function Plater.CreateDesignerWindow()
         plateFrame:Hide()
         layoutEditor:Hide()
         plateFrame:Hide()
+        plateFrame.unitFrame:SetUnit(nil)
+
+        actorTitleSpecial:Hide()
+        actorNameSpecial:Hide()
+
+        C_Timer.After(1, function()
+            plateFrame:Hide()
+        end)
+
+        unitFrame.BuffFrame:Hide()
+        unitFrame.BuffFrame2:Hide()
     end)
 
     --/plater editmode
@@ -740,4 +761,8 @@ function designer.UpdatePreview()
 
     local raidTargetIcon = unitFrame.PlaterRaidTargetFrame.RaidTargetIcon
     local extraRaidMark = healthBar.ExtraRaidMark
+
+    plateFrame:SetParent(UIParent)
+    plateFrame:SetFrameStrata("FULLSCREEN")
+    plateFrame.unitFrame:SetFrameStrata("FULLSCREEN")
 end
