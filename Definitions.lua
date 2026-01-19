@@ -78,6 +78,7 @@
 ---@field isPerformanceUnitAura boolean
 ---@field isPerformanceUnitThreat boolean
 ---@field isPerformanceUnitCast boolean
+---@field hasUnitTypeColor boolean true when the unit frame is using a color from the unit type coloring feature in midnight
 ---@field DenyColorChange boolean
 ---@field IsSelf boolean
 ---@field isPlayer boolean

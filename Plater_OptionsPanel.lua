@@ -11715,6 +11715,7 @@ end
 			get = function() return Plater.db.profile.unit_type_coloring_enabled end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.unit_type_coloring_enabled = value
+				Plater.UpdateAllNameplateColors()
 			end,
 			name = "OPTIONS_ENABLED",
 			desc = "Enable unit type coloring with the colors below.\n\nOnly active in dungeons and raids.\n\nBad threat states will override this color.",
@@ -11724,6 +11725,7 @@ end
 			get = function() return Plater.db.profile.unit_type_coloring_no_override_threat end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.unit_type_coloring_no_override_threat = value
+				Plater.UpdateAllNameplateColors()
 			end,
 			name = "Don't override Threat colors",
 			desc = "Threat coloring will have priority over unit type colors.",
@@ -11786,6 +11788,7 @@ end
 				else
 					eliteColorPicker:Disable()
 				end
+				Plater.UpdateAllNameplateColors()
 			end,
 			name = "Enable elite",
 			desc = "Will override non-elite colors as 'elite'.",
@@ -11818,6 +11821,7 @@ end
 				else
 					trivialColorPicker:Disable()
 				end
+				Plater.UpdateAllNameplateColors()
 			end,
 			name = "Enable trivial",
 			desc = "Will override non-elite colors as 'trivial'.",

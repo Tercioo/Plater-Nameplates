@@ -6349,6 +6349,8 @@ end
 	function Plater.FindAndSetNameplateColor (unitFrame, forceRefresh)
 		local r, g, b, a = 1, 1, 1, 1
 		local unitID = unitFrame [MEMBER_UNITID]
+		unitFrame.hasUnitTypeColor = nil
+
 		if (unitFrame.IsSelf or not unitFrame.PlaterOnScreen) then
 			return
 			
@@ -6388,22 +6390,27 @@ end
 				--boss
 				if uLevel == pLevel + 2 or uLevel == -1 then
 					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_boss)
+					unitFrame.hasUnitTypeColor = true
 
 				--miniboss
 				elseif uLevel == pLevel + 1 or unitFrame.namePlateIsBossMob or unitFrame.namePlateIsLieutenant then
 					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_miniboss)
+					unitFrame.hasUnitTypeColor = true
 
 				--caster
 				elseif UnitClassBase(unitID) == "PALADIN" then
 					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_caster)
+					unitFrame.hasUnitTypeColor = true
 
 				--elite
 				elseif Plater.db.profile.unit_type_coloring_enable_elite and (unitFrame.namePlateClassification == "elite" or unitFrame.namePlateClassification == "rareelite") then
 					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_elite)
+					unitFrame.hasUnitTypeColor = true
 
 				--trivial
 				elseif Plater.db.profile.unit_type_coloring_enable_trivial then
 					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_trivial)
+					unitFrame.hasUnitTypeColor = true
 
 				elseif (Plater.CanOverrideColor) then
 					Plater.ColorOverrider (unitFrame, forceRefresh)
@@ -7326,14 +7333,19 @@ end
 		Plater.EndLogPerformanceCore("Plater-Core", "Update", "NameplateTick")
 	end
 	
-	local set_aggro_color = function (self, r, g, b, a) --self = unitName
+	local set_aggro_color = function (self, r, g, b, a) --self = unitFrame
 		if (DB_AGGRO_CHANGE_HEALTHBAR_COLOR) then
 			if (not self.DenyColorChange) then --tagged from a script
-				if (not self.isGoodAggroState and (Plater.db.profile.unit_type_coloring_enabled or Plater.db.profile.unit_type_coloring_no_override_threat or not Plater.db.profile.unit_type_coloring_enabled)) then
+				if not self.hasUnitTypeColor then
 					Plater.ChangeHealthBarColor_Internal (self.healthBar, r, g, b, a)
+
+				elseif (not self.isGoodAggroState and (Plater.db.profile.unit_type_coloring_enabled or Plater.db.profile.unit_type_coloring_no_override_threat or not Plater.db.profile.unit_type_coloring_enabled)) then
+					Plater.ChangeHealthBarColor_Internal (self.healthBar, r, g, b, a)
+
 				elseif Plater.db.profile.unit_type_coloring_enabled and self.isGoodAggroState and (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid") then
 					-- reset
 					Plater.FindAndSetNameplateColor (self)
+
 				else
 					Plater.ChangeHealthBarColor_Internal (self.healthBar, r, g, b, a) -- fallback, just in case
 				end
