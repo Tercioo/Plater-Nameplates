@@ -5425,6 +5425,23 @@ local relevance_options = {
 			desc = "OPTIONS_NAMEPLATE_SHOW_FRIENDLY_DESC",
 			nocombat = true,
 		},
+
+		{
+			type = "toggle",
+			boxfirst = true,
+			get = function() return GetCVarBool ("nameplateShowOnlyNameForFriendlyPlayerUnits") end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateShowOnlyNameForFriendlyPlayerUnits", value and "1" or "0")
+				else
+					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+					self:SetValue (GetCVarBool ("nameplateShowOnlyNameForFriendlyPlayerUnits"))
+				end
+			end,
+			name = "Hide Friendly Health Bar", --show friendly nameplates
+			desc = "Hide Friendly Health Bar",
+			nocombat = true,
+		},
 		
 		{
 			type = "toggle",
@@ -5514,38 +5531,6 @@ local relevance_options = {
 			end,
 			name = "OPTIONS_CVAR_NAMEPLATES_ALWAYSSHOW",
 			desc = "OPTIONS_CVAR_NAMEPLATES_ALWAYSSHOW_DESC",
-			nocombat = true,
-		},
-
-		{
-			type = "toggle",
-			boxfirst = true,
-			get = function() return Plater.db.profile.honor_blizzard_plate_alpha end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.honor_blizzard_plate_alpha = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Use Blizzard's Nameplate Alpha",
-			desc = "Use the 'occluded' and other blizzard nameplate alpha values from blizzard settings.\n\nThis setting only works with 'Use custom strata channels' enabled.",
-			id = "transparency_blizzard_alpha",
-		},
-		{
-			type = "range",
-			get = function() return tonumber (GetCVar ("nameplateOccludedAlphaMult")) end,
-			set = function (self, fixedparam, value) 
-				if (not InCombatLockdown()) then
-					SetCVar ("nameplateOccludedAlphaMult", value)
-				else
-					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
-				end
-			end,
-			min = 0,
-			max = 1,
-			step = 0.1,
-			thumbscale = 1.7,
-			usedecimals = true,
-			name = "Occluded Alpha Multiplier" .. CVarIcon,
-			desc = "Alpha multiplyer for 'occluded' plates (when they are not in line of sight)." .. CVarDesc,
 			nocombat = true,
 		},
 		
@@ -5963,6 +5948,42 @@ local relevance_options = {
 		},
 
 		{type = "blank"},
+
+		{
+			type = "toggle",
+			boxfirst = true,
+			get = function() return Plater.db.profile.honor_blizzard_plate_alpha end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.honor_blizzard_plate_alpha = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Use Blizzard's Nameplate Alpha",
+			desc = "Use the 'occluded' and other blizzard nameplate alpha values from blizzard settings.\n\nThis setting only works with 'Use custom strata channels' enabled.",
+			id = "transparency_blizzard_alpha",
+		},
+
+		{
+			type = "range",
+			get = function() return tonumber (GetCVar ("nameplateOccludedAlphaMult")) end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateOccludedAlphaMult", value)
+				else
+					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+				end
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			thumbscale = 1.7,
+			usedecimals = true,
+			name = "Occluded Alpha Multiplier" .. CVarIcon,
+			desc = "Alpha multiplyer for 'occluded' plates (when they are not in line of sight)." .. CVarDesc,
+			nocombat = true,
+		},		
+
+		{type = "blank"},
+
 		{type = "label", get = function() return "General:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
