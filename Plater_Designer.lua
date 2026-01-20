@@ -257,6 +257,53 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
     plateConfigDropdown:SetPoint("topleft", previewNameplateFrame, "topleft", 2, -13)
     plateConfigDropdown:SetTemplate(detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
 
+    local onSelectChangeAllFonts = function(self, fixedParameter, fontName)
+        local SharedMedia = LibStub:GetLibrary("LibSharedMedia-3.0")
+        local fontFile = SharedMedia:Fetch("font", fontName)
+
+        local plateConfigs = {"enemynpc", "friendlynpc", "enemyplayer", "friendlyplayer", "player"}
+
+        for i = 1, #plateConfigs do
+            local plateTable = Plater.db.profile.plate_config[plateConfigs[i]]
+            plateTable.actorname_text_font = fontName
+            plateTable.spellname_text_font = fontName
+            plateTable.spellpercent_text_font = fontName
+            plateTable.level_text_font = fontName
+            plateTable.percent_text_font = fontName
+            plateTable.big_actortitle_text_font = fontName
+            plateTable.big_actorname_text_font = fontName
+            plateTable.power_percent_text_font = fontName
+        end
+
+        local profile = Plater.db.profile
+        profile.castbar_target_font = fontName
+        profile.aura_timer_text_font = fontName
+        profile.aura_stack_font = fontName
+
+        --update the font on all nameplates
+        designer.UpdateAllNameplates()
+
+        --refreshes the current object being edited
+        layoutEditor:Refresh()
+
+        local registeredObjects = layoutEditor:GetAllRegisteredObjects()
+        for i = 1, #registeredObjects do
+            local objectInfo = registeredObjects[i]
+            local uiObject = objectInfo.object
+            if (uiObject.GetObjectType and uiObject:GetObjectType() == "FontString") then
+                ---@cast uiObject fontstring
+                detailsFramework:SetFontFace(uiObject, fontFile)
+            end
+        end
+    end
+
+    local selectFontDropdown = detailsFramework:CreateFontDropDown(previewNameplateFrame, onSelectChangeAllFonts, 0, 160, 20)
+    selectFontDropdown:SetPoint("topright", previewNameplateFrame, "topright", -2, -13)
+    selectFontDropdown:SetTemplate(detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+    selectFontDropdown.label:SetText("change all fonts")
+    selectFontDropdown.icon:SetTexture([[Interface\AnimCreate\AnimCreateIcons]])
+    selectFontDropdown.icon:SetTexCoord(0, 32/128, 64/128, 96/128)
+
     plateFrame = designer.CreatePreview(previewNameplateFrame)
     --createFrameTag(plateFrame, "nameplate")
     plateFrame:SetPoint("center", previewNameplateFrame, "center", 0, 50)
@@ -269,6 +316,8 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
     local unitFrame = plateFrame.unitFrame
     ---@type healthbar
     local healthBar = unitFrame.healthBar
+    healthBar:SetMinMaxValues(0, 1)
+    healthBar:SetValue(0.7)
     ---@type castbar
     local castBar = unitFrame.castBar
     castBar:SetMinMaxValues(0, 1)
@@ -420,6 +469,7 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
     questOptions.can_move = false
     objectInfo = layoutEditor:RegisterObject(questOptionsFontString, "Quest Options", "QUESTOPTIONS", plateConfig, subTablePath, options.WidgetSettingsMapTables.QuestOptions, options.WidgetSettingsExtraOptions.QuestOptions, onSettingChanged, questOptions, unitFrame)
     plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
+
 
     --health bar
     ---@type df_editobjectoptions
