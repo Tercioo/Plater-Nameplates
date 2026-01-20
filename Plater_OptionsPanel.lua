@@ -5439,7 +5439,7 @@ local relevance_options = {
 				end
 			end,
 			name = "Hide Friendly Health Bar", --show friendly nameplates
-			desc = "Hide Friendly Health Bar",
+			desc = "Hide Friendly Health Bar\nCVar: nameplateShowOnlyNameForFriendlyPlayerUnits",
 			nocombat = true,
 		},
 		
