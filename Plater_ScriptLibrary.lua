@@ -1556,6 +1556,48 @@ do
 		end,
 	})
 
+	--#41 midnight pre patch, remove all triggers from scripts
+	tinsert (PlaterPatchLibrary, {
+		NotEssential = false,
+
+		Notes = {
+			"- Remove all triggers from scripts to avoid secret conflicts."
+		},
+		Func = function()
+			if detailsFramework.IsAddonApocalypseWow() then
+				---@type scriptdata[]
+				local scriptList = Plater.db.profile.script_data
+				for i = 1, #scriptList do
+					local scriptObject = scriptList[i]
+					local npcIdTriggers = scriptObject.NpcNames
+					local spellIdTriggers = scriptObject.SpellIds
+					wipe(npcIdTriggers)
+					wipe(spellIdTriggers)
+				end
+				Plater.WipeAndRecompileAllScripts("hook")
+			end
+		end,
+	})
+
+	--#42 midnight pre patch, disable all mods to avoid conflicts
+	tinsert (PlaterPatchLibrary, {
+		NotEssential = false,
+
+		Notes = {
+			"- Disable all mods to avoid conflicts."
+		},
+		Func = function()
+			if detailsFramework.IsAddonApocalypseWow() then
+				local hookData = Plater.db.profile.hook_data
+				for i = 1, #hookData do
+					local hook = hookData[i]
+					hook.Enabled = false
+				end
+				Plater.WipeAndRecompileAllScripts("hook")
+			end
+		end,
+	})
+
 	--[=[
 	tinsert (PlaterPatchLibrary, {
 

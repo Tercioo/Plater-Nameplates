@@ -165,32 +165,22 @@ function designer.CreateSettings(parentFrame)
     }
 
     options.WidgetSettingsExtraOptions = {
-        HealthBar = {},
+        HealthBar = {
+            --[=[
+            {
+                key = "../../../health_statusbar_texture", --the name of the option in the profile table
+                label = "Texture",
+                widget = "selectstatusbartexture",
+                setter = function(widget, value) designer.UpdateAllNameplates() end,
+                tableName = "health_statusbar_texture",
+            },
+            --]=]
+        },
 
         --tableName is not a field that is used by the designer in the framework
         --it is here so the Plater_Designer can know which field to update in the profile table
 
         CastBar = {
-            {
-                key = "cast[1]", --the name of the option in the profile table
-                label = "Width Out of Combat",
-                widget = "slider",
-                setter = function(widget, value) designer.UpdateAllNameplates() end,
-                minvalue = 50,
-                maxvalue = 250,
-                step = 1,
-                tableName = "out_of_combat_cast_width",
-            },
-            {
-                key = "cast[2]", --the name of the option in the profile table
-                label = "Height Out of Combat",
-                widget = "slider",
-                setter = function(widget, value) designer.UpdateAllNameplates() end,
-                minvalue = 2,
-                maxvalue = 32,
-                step = 1,
-                tableName = "out_of_combat_cast_height",
-            },
             {
                 key = "castbar_offset_x", --the name of the option in the profile table
                 label = "Offset X",
