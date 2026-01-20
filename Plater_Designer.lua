@@ -210,6 +210,7 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
         end
     end
 
+    --plater only
     local onClickSelectPlateConfigOption = function(self, fixedParameter, newSubTablePath)
         subTablePath = newSubTablePath
 
@@ -276,11 +277,12 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
     castBar:Show()
     castBar:AdjustPointsOffset(0, -30)
 
+    --castBar:ClearAllPoints()
+
     --Plater_LayoutEditor
     --Plater_LayoutEditorGuideFrame
     --PlaterDesignerPlatePreview
     --^ parenting stair
-
 
     ---@type fontstring
     local unitName = unitFrame.unitName
@@ -321,8 +323,34 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
     actorTitleSpecial:ClearAllPoints()
     actorTitleSpecial:SetPoint("top", actorNameSpecial, "bottom", 0, -2)
 
+    --Plater.db.profile
+    local profileRoot = Plater.db.profile
+    local rootKey = "" --as the settings are in the root of the profile table, there is no path to pass
+    --profileRoot.plate_config
+    local plateConfig = profileRoot.plate_config
+
     local onSettingChanged = function(editingObject, optionKey, newValue, profileTable, profileKey)
-        --print("Changed!", optionKey, newValue, profileTable, profileKey)
+        --plater only, change the incombat and outofcombat settings together
+        if profileKey:find("health_incombat") then
+            if optionKey == "width" then
+                profileTable.health[1] = newValue
+            else
+                profileTable.health[2] = newValue
+            end
+        end
+
+        if profileKey:find("cast_incombat") then
+            if optionKey == "width" then
+                profileTable.cast[1] = newValue
+                local castBarOffSetX = plateConfig[subTablePath].castbar_offset_x
+                local castBarOffSetXRel = (healthBar:GetWidth() - newValue) / 2
+                --local castBarOffSetY = plateConfig.castbar_offset --override by -30 pixels
+                PixelUtil.SetPoint (castBar, "topleft", healthBar, "bottomleft", castBarOffSetXRel + castBarOffSetX, -30)
+                PixelUtil.SetPoint (castBar, "topright", healthBar, "bottomright", -castBarOffSetXRel + castBarOffSetX, -30)
+            else
+                profileTable.cast[2] = newValue
+            end
+        end
 
         if (optionKey == "anchor") then
             local anchorTable = detailsFramework.table.getfrompath(profileTable, profileKey, 1)
@@ -336,12 +364,6 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
 
         designer.UpdateAllNameplates()
     end
-
-    --Plater.db.profile
-    local profileRoot = Plater.db.profile
-    local rootKey = "" --as the settings are in the root of the profile table, there is no path to pass
-    --profileRoot.plate_config
-    local plateConfig = profileRoot.plate_config
 
     ---@type df_editobjectoptions
     local editObjectDefaultOptions = {
@@ -765,4 +787,6 @@ function designer.UpdatePreview()
     plateFrame:SetParent(UIParent)
     plateFrame:SetFrameStrata("FULLSCREEN")
     plateFrame.unitFrame:SetFrameStrata("FULLSCREEN")
+
+    Plater.UpdatePlateSize(plateFrame)
 end
