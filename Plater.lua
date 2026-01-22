@@ -6809,8 +6809,12 @@ end
 			offsetW, offsetH = hS * (width * widthScale - width), vS * (height * heightScale - height)
 			C_NamePlateManager.SetNamePlateHitTestInsets(Enum.NamePlateType.Friendly, offsetW, offsetW, offsetH, offsetH)
 			
+			if Plater.db.profile.plate_config.friendlyplayer.click_through then
+				C_NamePlateManager.SetNamePlateHitTestInsets(Enum.NamePlateType.Friendly, 10000, 10000, 10000, 10000)
+			else
+				C_NamePlateManager.SetNamePlateHitTestInsets(Enum.NamePlateType.Friendly, -10000, -10000, -10000, -10000)
+			end
 			C_NamePlateManager.SetNamePlateHitTestInsets(Enum.NamePlateType.Enemy, -10000, -10000, -10000, -10000)
-			C_NamePlateManager.SetNamePlateHitTestInsets(Enum.NamePlateType.Friendly, 10000, 10000, 10000, 10000)
 			
 		else
 			-- ensure we support the "large nameplate" setting properly
