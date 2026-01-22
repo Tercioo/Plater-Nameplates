@@ -1851,13 +1851,13 @@ Plater.AnchorNamesByPhraseId = {
 		if (Details and Details.plater) then
 			local detailsPlaterConfig = Details.plater
 			if (detailsPlaterConfig.realtime_dps_enabled) then
-				IS_USING_DETAILS_INTEGRATION = true
+				IS_USING_DETAILS_INTEGRATION = not IS_WOW_PROJECT_MIDNIGHT
 			elseif (detailsPlaterConfig.realtime_dps_player_enabled) then
-				IS_USING_DETAILS_INTEGRATION = true
+				IS_USING_DETAILS_INTEGRATION = not IS_WOW_PROJECT_MIDNIGHT
 			elseif (detailsPlaterConfig.damage_taken_enabled) then
-				IS_USING_DETAILS_INTEGRATION = true
+				IS_USING_DETAILS_INTEGRATION = not IS_WOW_PROJECT_MIDNIGHT
 			end
-		end	
+		end
 
 		--> build the list of npcs with special colors
 		wipe (DB_UNITCOLOR_CACHE) --regular color overrides the threat color
