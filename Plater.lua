@@ -9222,7 +9222,7 @@ end
 			end
 
 			--don't show spec icon during combat, it occupies a valuable space (terciob july 2022)
-			if (config.indicator_spec and (config.indicator_spec_always or (not InCombatLockdown() and not regenDisabled))) then
+			if (not IS_WOW_PROJECT_MIDNIGHT and config.indicator_spec and (config.indicator_spec_always or (not InCombatLockdown() and not regenDisabled))) then
 				-- use BG info if available
 				local texture, L, R, T, B = Plater.GetSpecIconForUnitFromBG(plateFrame.unitFrame [MEMBER_UNITID])
 				if texture then
@@ -9246,7 +9246,7 @@ end
 			if (config.indicator_friendlyclass) then
 				Plater.AddIndicator (plateFrame, "classicon")
 			end
-			if (config.indicator_friendlyspec) then
+			if (not IS_WOW_PROJECT_MIDNIGHT and config.indicator_friendlyspec) then
 				-- use BG info if available
 				local texture, L, R, T, B = Plater.GetSpecIconForUnitFromBG(plateFrame.unitFrame [MEMBER_UNITID])
 				if texture then

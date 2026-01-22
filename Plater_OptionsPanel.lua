@@ -6519,6 +6519,7 @@ local relevance_options = {
 			end,
 			name = "OPTIONS_ICON_ENEMYSPEC",
 			desc = "OPTIONS_ICON_ENEMYSPEC",
+			hidden = IS_WOW_PROJECT_MIDNIGHT,
 		},
 		{
 			type = "toggle",
@@ -6552,6 +6553,7 @@ local relevance_options = {
 			end,
 			name = "OPTIONS_ICON_FRIENDLY_SPEC",
 			desc = "OPTIONS_ICON_FRIENDLY_SPEC",
+			hidden = IS_WOW_PROJECT_MIDNIGHT,
 		},
 		{
 			type = "range",
