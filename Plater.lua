@@ -10578,7 +10578,7 @@ end
 		local isOtherPet = false
 		local ownerName = ""
 		
-		
+		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(text1) then return end
 		if (text1 and text1 ~= "") then
 			local pName = GetUnitName ("player", true)
 			local playerName = pName:gsub ("%-.*", "") --remove realm name
@@ -10593,6 +10593,7 @@ end
 			end
 		end
 		
+		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(petName) then return end
 		if (isPlayerPet or isOtherPet) and petName then
 			local entry = {ownerGUID = UnitGUID(ownerName), ownerName = ownerName, petName = petName, time = time()}
 			
