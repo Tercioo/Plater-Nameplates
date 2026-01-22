@@ -7339,7 +7339,7 @@ end
 				if not self.hasUnitTypeColor then
 					Plater.ChangeHealthBarColor_Internal (self.healthBar, r, g, b, a)
 
-				elseif (not self.isGoodAggroState and (Plater.db.profile.unit_type_coloring_enabled or Plater.db.profile.unit_type_coloring_no_override_threat or not Plater.db.profile.unit_type_coloring_enabled)) then
+				elseif (not self.isGoodAggroState and (Plater.db.profile.unit_type_coloring_enabled and Plater.db.profile.unit_type_coloring_no_override_threat or not Plater.db.profile.unit_type_coloring_enabled)) then
 					Plater.ChangeHealthBarColor_Internal (self.healthBar, r, g, b, a)
 
 				elseif Plater.db.profile.unit_type_coloring_enabled and self.isGoodAggroState and (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid") then
