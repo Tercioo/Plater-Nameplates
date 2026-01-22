@@ -146,7 +146,7 @@ Plater.UpdateOptionsTabUpdateState = update_wago_update_icons
 
 --check if a encounter has just ended and open the aura ease tab
 function Plater.CheckOptionsTab()
-	if (Plater.LatestEncounter) then
+	if (not IS_WOW_PROJECT_MIDNIGHT and Plater.LatestEncounter) then --don't need this anymore in midnight, unfortunately
 		if (Plater.LatestEncounter + 60 > time()) then
 			---@type df_tabcontainer
 			local tabContainer = _G["PlaterOptionsPanelContainer"]
