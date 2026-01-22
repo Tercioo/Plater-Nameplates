@@ -1348,7 +1348,10 @@ end
 		if newIcon.Cooldown.EnableMouseMotion then
 			newIcon.Cooldown:EnableMouseMotion (false)
 		end
-		newIcon.Cooldown:SetHideCountdownNumbers (true)
+		newIcon.Cooldown:SetHideCountdownNumbers (not IS_WOW_PROJECT_MIDNIGHT)
+		if IS_WOW_PROJECT_MIDNIGHT then
+			newIcon.Cooldown:SetCountdownAbbrevThreshold(60) --TODO: MIDNIGHT!!
+		end
 		newIcon.Cooldown:Hide()
 
 		--tested to change the texture used in the semi-transparent black overlay which get "cutted" by the edge texture
@@ -1385,8 +1388,12 @@ end
 		--expose to scripts
 		newIcon.StackText = newIcon.CountFrame.Count
 		
-		newIcon.Cooldown.Timer = newIcon.Cooldown:CreateFontString (nil, "overlay", "NumberFontNormal")
-		newIcon.Cooldown.Timer:SetPoint ("center")
+		if IS_WOW_PROJECT_MIDNIGHT then
+			newIcon.Cooldown.Timer = newIcon.Cooldown:GetRegions()
+		else
+			newIcon.Cooldown.Timer = newIcon.Cooldown:CreateFontString (nil, "overlay", "NumberFontNormal")
+			newIcon.Cooldown.Timer:SetPoint ("center")
+		end
 		newIcon.TimerText = newIcon.Cooldown.Timer
 
 		return newIcon
@@ -1438,7 +1445,7 @@ end
 			if IS_WOW_PROJECT_MIDNIGHT then
 				--self.RemainingTime = C_UnitAuras.GetAuraDurationRemaining(self.unitFrame.namePlateUnitToken, self:GetID())
 				self.RemainingTime = self.durationObject and self.durationObject:GetRemainingDuration() -- or C_UnitAuras.GetAuraDurationRemaining(self.unitFrame.namePlateUnitToken, self:GetID())
-				self.Cooldown.Timer:SetText(string.format("%d",self.RemainingTime))
+				--self.Cooldown.Timer:SetText(string.format("%d",self.RemainingTime))
 				
 				--local pandemicColor = C_UnitAuras.GetAuraDurationRemainingColor(auraIconFrame.unitFrame.namePlateUnitToken, i , pandemicColorCurve)
 				local pandemicColor = self.durationObject:EvaluateRemainingPercent(pandemicColorCurve)
@@ -1864,7 +1871,8 @@ end
 			--auraIconFrame.Cooldown:SetCooldown(start, duration, modRate)
 			--auraIconFrame.Cooldown:SetCooldownDuration(duration, modRate)
 			local noExpirationTime = durationObject:IsZero()--C_UnitAuras.DoesAuraHaveExpirationTime(auraIconFrame.unitFrame.namePlateUnitToken, i)
-			auraIconFrame.Cooldown:SetCooldownFromExpirationTime(expirationTime, duration, modRate)
+			--auraIconFrame.Cooldown:SetCooldownFromExpirationTime(expirationTime, duration, modRate)
+			auraIconFrame.Cooldown:SetCooldownFromDurationObject(durationObject)
 			auraIconFrame.Cooldown:SetAlphaFromBoolean(noExpirationTime, 0, 1)
 			
 			auraIconFrame.noExpirationTime = noExpirationTime
@@ -1883,7 +1891,7 @@ end
 			auraIconFrame.durationObject = durationObject
 			auraIconFrame:Show()
 
-			auraIconFrame.Cooldown.Timer:SetText (string.format("%d",timeLeft))
+			--auraIconFrame.Cooldown.Timer:SetText (string.format("%d",timeLeft))
 			auraIconFrame.lastUpdateCooldown = now
 			auraIconFrame:SetScript ("OnUpdate", auraIconFrame.UpdateCooldown)
 			auraIconFrame.Cooldown.Timer:Show()
