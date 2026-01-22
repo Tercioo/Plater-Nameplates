@@ -958,7 +958,7 @@ end
 	--update the ghost auras
 	--this function is guaranteed to run after all auras been processed
 	function Plater.ShowGhostAuras(buffFrame)
-		if (DB_AURA_GHOSTAURA_ENABLED) then
+		if (DB_AURA_GHOSTAURA_ENABLED and not IS_WOW_PROJECT_MIDNIGHT) then
 			local unitFrame = buffFrame.unitFrame
 			if ((unitFrame.namePlateUnitReaction < 5) and unitFrame.InCombat and not unitFrame.IsSelf and not unitFrame.isPerformanceUnit and InCombatLockdown()) then
 				local nameplateAuraCache = unitFrame.AuraCache --active auras currently shown in the nameplate

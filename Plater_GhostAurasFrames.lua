@@ -97,6 +97,14 @@ function Plater.Auras.BuildGhostAurasOptionsTab(frame)
 
     ghostAuraFrame = supportFrame
     ghostAuraFrame:SetBackdrop(nil)
+    
+    if IS_WOW_PROJECT_MIDNIGHT then
+        local optionsTable = {
+            {type = "label", get = function() return "Not available in Midnight and onwards due to API limitations." end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        }
+        DF:BuildMenu(ghostAuraFrame, optionsTable, 325, -157, 800, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+        return
+    end
 
     --text above the scroll frame
     ghostAuraFrame.auraScrollLabel = DF:CreateLabel(ghostAuraFrame, "Auras for specialization") --localize-me
