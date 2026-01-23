@@ -1507,8 +1507,8 @@ Plater.AnchorNamesByPhraseId = {
 		["nameplateOtherAtBase"] = true,
 		["nameplateOtherTopInset"] = not IS_WOW_PROJECT_MIDNIGHT,
 		["nameplateOtherBottomInset"] = not IS_WOW_PROJECT_MIDNIGHT,
-		["nameplateOverlapV"] = not IS_WOW_PROJECT_MIDNIGHT,
-		["nameplateOverlapH"] = not IS_WOW_PROJECT_MIDNIGHT,
+		["nameplateOverlapV"] = true,
+		["nameplateOverlapH"] = true,
 		["nameplatePersonalHideDelaySeconds"] = not IS_WOW_PROJECT_MIDNIGHT,
 		["nameplatePersonalShowAlways"] = not IS_WOW_PROJECT_MIDNIGHT,
 		["nameplatePersonalShowInCombat"] = not IS_WOW_PROJECT_MIDNIGHT,
@@ -1668,7 +1668,7 @@ Plater.AnchorNamesByPhraseId = {
 			table.sort(orderKeys, cvar_restore_order)
 			
 			for _, CVarName in pairs (orderKeys) do
-				local CVarValue = savedCVars [CVarName]
+				local CVarValue = cvars_to_store[CVarName] and savedCVars [CVarName]
 				if CVarValue then --only restore what we want to store/restore!
 					SetCVar (CVarName, Plater.ParseCVarValue(CVarValue))
 				end
