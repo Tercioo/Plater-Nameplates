@@ -8914,7 +8914,7 @@ end
 			castBar.flashTexture:SetTexture (DB_TEXTURE_CASTBAR)
 			castBar.Icon:SetTexCoord (0.078125, 0.921875, 0.078125, 0.921875)
 			
-			local colors = castBar.Settings.Colors
+			local colors = castBar.Colors
 			colors.Casting:SetColor (profile.cast_statusbar_color)
 			colors.Channeling:SetColor (profile.cast_statusbar_color_channeling)
 			colors.NonInterruptible:SetColor (profile.cast_statusbar_color_nointerrupt)
