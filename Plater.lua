@@ -3668,6 +3668,7 @@ Plater.AnchorNamesByPhraseId = {
 					if locked or self:IsForbidden() then
 						return
 					end
+					if ENABLED_BLIZZARD_PLATEFRAMES[tostring(self)] then return end
 					locked = true
 					self:SetAlpha(0)
 					locked = false
