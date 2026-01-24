@@ -5424,6 +5424,40 @@ local relevance_options = {
 			name = "OPTIONS_NAMEPLATE_SHOW_FRIENDLY", --show friendly nameplates
 			desc = "OPTIONS_NAMEPLATE_SHOW_FRIENDLY_DESC",
 			nocombat = true,
+			hidden = IS_WOW_PROJECT_MIDNIGHT,
+		},
+		{
+			type = "toggle",
+			boxfirst = true,
+			get = function() return GetCVarBool ("nameplateShowFriendlyPlayers") end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateShowFriendlyPlayers", value and "1" or "0")
+				else
+					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+					self:SetValue (GetCVarBool ("nameplateShowFriendlyPlayers"))
+				end
+			end,
+			name = "OPTIONS_NAMEPLATE_SHOW_FRIENDLY", --show friendly nameplates
+			desc = "OPTIONS_NAMEPLATE_SHOW_FRIENDLY_DESC",
+			nocombat = true,
+			hidden = not IS_WOW_PROJECT_MIDNIGHT,
+		},
+		{
+			type = "toggle",
+			get = function() return GetCVarBool ("nameplateShowFriendlyNPCs") end,
+			set = function (self, fixedparam, value) 
+				if (value) then
+					SetCVar ("nameplateShowFriendlyNpcs", CVAR_ENABLED)
+					Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].enabled = true
+				else
+					SetCVar ("nameplateShowFriendlyNpcs", CVAR_DISABLED)
+					Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].enabled = false
+				end
+			end,
+			nocombat = true,
+			name = L["OPTIONS_ENABLED"] .. CVarIcon,
+			desc = string.format(L["Show nameplate for friendly npcs.\n\n|cFFFFFF00 Important |r: This option is dependent on the client`s nameplate state (on/off).\n\n|cFFFFFF00 Important |r: when disabled but enabled on the client through (%s), the healthbar isn't visible but the nameplate is still clickable."] .. CVarDesc,  (GetBindingKey ("FRIENDNAMEPLATES") or "")),
 		},
 
 		{

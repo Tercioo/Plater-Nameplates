@@ -5866,7 +5866,12 @@ function Plater.OnInit() --private --~oninit ~init
 						if IS_WOW_PROJECT_MIDNIGHT then
 							local targetName = UnitSpellTargetName(self.unit)
 							if targetName then
-								--targetName = string.format("%.15s", targetName)
+								local targetNameShort = UnitName(targetName)
+								if targetNameShort then
+									targetName = targetNameShort
+								end
+								targetName = Plater.UpdateUnitNameTextSize (targetName or "", nil, nil, Plater.db.profile.castbar_target_text_max_length or 100)
+								
 								local classFilename = UnitSpellTargetClass(self.unit)
 								if classFilename then
 									local color = C_ClassColor.GetClassColor(classFilename)
@@ -8539,18 +8544,22 @@ end
 	end
 
 	function Plater.UpdateUnitNameTextSize (name, nameString, maxWidth, maxLength)
-		if not name or not nameString then return end
+		if not name then return end
 		if maxWidth then
 			local fontSize = DB_PLATE_CONFIG [plateFrame.actorType].actorname_text_size
 			local nameLength = floor(maxWidth / fontSize * 2)
 			name = string.format("%." .. nameLength .. "s", name)
-			nameString:SetText (name)
+			if nameString then
+				nameString:SetText (name)
+			end
 		elseif maxLength then
 			if maxLength < 100 then -- 100 -> don't limit; format max is 99
 				name = string.format("%." .. maxLength .. "s", name)
 			end
-			nameString:SetText (name)
-		else
+			if nameString then
+				nameString:SetText (name)
+			end
+		elseif nameString then
 			local stringSize = max (plateFrame.unitFrame.healthBar:GetWidth() - 6, 44)
 			
 			nameString:SetText (name)
@@ -8571,6 +8580,7 @@ end
 			name = DF:CleanTruncateUTF8String(name)
 			nameString:SetText (name)
 		end
+		return name
 	end
 
 	--updates the level text and the color

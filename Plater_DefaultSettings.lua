@@ -758,6 +758,7 @@ PLATER_DEFAULT_SETTINGS = {
 		castbar_target_shadow_color_offset = {1, -1},
 		castbar_target_color = {0.968627, 0.992156, 1, 1},
 		castbar_target_font = "Arial Narrow",
+		castbar_target_text_max_length = 100,
 
 		--> castbar icon
 		castbar_icon_customization_enabled = true,
