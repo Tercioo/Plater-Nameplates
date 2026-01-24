@@ -9485,7 +9485,7 @@ end
 			else
 				if onlyNamesEnabled ~= profile.auto_toggle_combat.blizz_healthbar_ooc then
 					if IS_WOW_PROJECT_MIDNIGHT then
-						SetCVar("nameplateShowOnlyNameForFriendlyPlayerUnits", profile.auto_toggle_combat.blizz_healthbar_ic and CVAR_ENABLED or CVAR_DISABLED)
+						SetCVar("nameplateShowOnlyNameForFriendlyPlayerUnits", profile.auto_toggle_combat.blizz_healthbar_ooc and CVAR_ENABLED or CVAR_DISABLED)
 					else
 						SetCVar("nameplateShowOnlyNames", profile.auto_toggle_combat.blizz_healthbar_ooc and CVAR_ENABLED or CVAR_DISABLED)
 						--Plater.UpdateBaseNameplateOptions()
@@ -9498,11 +9498,19 @@ end
 			--NamePlateDriverFrame:RegisterEvent("CVAR_UPDATE")
 			
 			if combat then
-				SetCVar("nameplateShowFriends", profile.auto_toggle_combat.friendly_ic and CVAR_ENABLED or CVAR_DISABLED)
+				if IS_WOW_PROJECT_MIDNIGHT then
+					SetCVar ("nameplateShowFriendlyPlayers",profile.auto_toggle_combat.friendly_ic and CVAR_ENABLED or CVAR_DISABLED)
+				else
+					SetCVar("nameplateShowFriends", profile.auto_toggle_combat.friendly_ic and CVAR_ENABLED or CVAR_DISABLED)
+				end
 				SetCVar("nameplateShowEnemies", profile.auto_toggle_combat.enemy_ic and CVAR_ENABLED or CVAR_DISABLED)
 				return
 			else
-				SetCVar("nameplateShowFriends", profile.auto_toggle_combat.friendly_ooc and CVAR_ENABLED or CVAR_DISABLED)
+				if IS_WOW_PROJECT_MIDNIGHT then
+					SetCVar("nameplateShowFriendlyPlayers", profile.auto_toggle_combat.friendly_ooc and CVAR_ENABLED or CVAR_DISABLED)
+				else
+					SetCVar("nameplateShowFriends", profile.auto_toggle_combat.friendly_ooc and CVAR_ENABLED or CVAR_DISABLED)
+				end
 				SetCVar("nameplateShowEnemies", profile.auto_toggle_combat.enemy_ooc and CVAR_ENABLED or CVAR_DISABLED)
 			end
 		end
