@@ -414,6 +414,7 @@ function platerInternal.CreateAdvancedOptions()
             name = "Movement Speed" .. CVarIcon,
             desc = "How fast the nameplate moves (when stacking is enabled).\n\n|cFFFFFFFFDefault: 0.025|r\n\n|cFFFFFFFFRecommended: >=0.02|r" .. CVarDesc,
             nocombat = true,
+            hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
         {
             type = "range",
