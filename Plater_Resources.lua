@@ -507,7 +507,14 @@ end
 					local updateResourceFunc = currentResourceBar.updateResourceFunc
 					if (updateResourceFunc) then
 						--check if the power type passes the filter
-						if (powerTypesFilter[powerType] or eventsFilter[event]) then
+						--if (powerTypesFilter[powerType] or eventsFilter[event]) then
+						local validPowerType
+						if IS_WOW_PROJECT_MIDNIGHT then
+							validPowerType = not issecretvalue(powerType) and powerTypesFilter[powerType] or issecretvalue(powerType)
+						else
+							validPowerType = powerTypesFilter[powerType]
+						end
+						if validPowerType or eventsFilter[event]) then
 							lastComboPointGainedTime = GetTime()
 							Plater.StartLogPerformanceCore("Plater-Resources", "Events", event)
 							updateResourceFunc(self, currentResourceBar, false, event, unit, powerType)
