@@ -3814,7 +3814,7 @@ Plater.AnchorNamesByPhraseId = {
 			unitFrame.nameplateScaleAdjust = 1
 			
 			if (DB_USE_UIPARENT) then
-				Plater.UpdateUIParentScale(plateFrame)
+				--Plater.UpdateUIParentScale(plateFrame) -- done later, actually, as well, in UpdatePlateSize
 			else
 				unitFrame:SetScale (1) --reset scale
 			end

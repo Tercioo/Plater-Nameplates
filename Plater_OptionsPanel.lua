@@ -5526,7 +5526,7 @@ local relevance_options = {
 
 				Plater.UpdateBaseNameplateOptions()
 			end,
-			name = "Class-Color Blizzard Names",
+			name = "Class-Color Blizzard Names|cFFFF7700*|r",
 			desc = "Class coloring for blizzard nameplate names",
 			nocombat = true,
 			hidden = not IS_WOW_PROJECT_MIDNIGHT,
