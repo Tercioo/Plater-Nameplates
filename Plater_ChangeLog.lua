@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1769439797, "Bug Fix", "Jan 27th, 2026", "Fixed issues regarding scaling and threat overrides for unit type coloring which were introduced with prior versions.", "cont1nuity"},
 			{1769439797, "Bug Fix", "Jan 26th, 2026", "Numerous fixes to address Midnight compatibility.", "cont1nuity"},
 			
 			{1768418220, "New Feature", "Jan 15th, 2026", "Unit type coloring option to not override threat colors.", "cont1nuity"},
