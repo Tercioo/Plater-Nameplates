@@ -1502,7 +1502,7 @@ Plater.AnchorNamesByPhraseId = {
 		["nameplateMinScale"] = true,
 		["nameplateMotion"] = not IS_WOW_PROJECT_MIDNIGHT,
 		["nameplateStackingTypes"] = IS_WOW_PROJECT_MIDNIGHT,
-		["nameplateMotionSpeed"] = true,
+		["nameplateMotionSpeed"] = not IS_WOW_PROJECT_MIDNIGHT,
 		["nameplateOccludedAlphaMult"] = true,
 		["nameplateOtherAtBase"] = true,
 		["nameplateOtherTopInset"] = not IS_WOW_PROJECT_MIDNIGHT,
@@ -1635,7 +1635,7 @@ Plater.AnchorNamesByPhraseId = {
 			cvar = cvars_to_store_lower[lower(cvar) or "N/A"] -- get right case for storage
 			if cvars_to_store[cvar] then
 				cvarTable [cvar] = Plater.ParseCVarValue(value)
-				local callstack = debugstack(2) -- starts at "SetCVar" or caller
+				local callstack = IS_WOW_PROJECT_MIDNIGHT and debugstack(2) or debugstack() -- starts at "SetCVar" or caller
 				if callstack then
 					local caller, line = callstack:match("\"@([^\"]+)\"%]:(%d+)")
 					if not caller then
@@ -3699,7 +3699,7 @@ Plater.AnchorNamesByPhraseId = {
 			
 			if plateFrame.unitFrame.stackSizeFrame then --TODO: MIDNIGHT!!
 				plateFrame.unitFrame.stackSizeFrame:ClearAllPoints()
-				plateFrame.unitFrame.stackSizeFrame:SetParent(isPlateEnabled and plateFrame.unitFrame or plateFrame.UnitFrame)
+				plateFrame.unitFrame.stackSizeFrame:SetParent(isPlateEnabled and plateFrame.unitFrame or plateFrame)
 				plateFrame:SetStackingBoundsFrame(plateFrame.unitFrame.stackSizeFrame)
 				plateFrame.unitFrame.stackSizeFrame:SetAllPoints()
 				
@@ -3718,8 +3718,8 @@ Plater.AnchorNamesByPhraseId = {
 				--plateFrame.unitFrame.stackSizeFrame:SetPoint("CENTER", isPlateEnabled and plateFrame.unitFrame or plateFrame.UnitFrame, "CENTER", 0, 0)
 				--plateFrame.unitFrame.stackSizeFrame:SetSize(width * widthScale, height * heightScale)
 				--plateFrame.unitFrame.stackSizeFrame:ClearAllPoints()
-				--plateFrame.unitFrame.stackSizeFrame:SetPoint("TOPLEFT", isPlateEnabled and plateFrame.unitFrame or plateFrame.UnitFrame, "TOPLEFT", offsetW, -offsetH)
-				--plateFrame.unitFrame.stackSizeFrame:SetPoint("BOTTOMRIGHT", isPlateEnabled and plateFrame.unitFrame or plateFrame.UnitFrame, "BOTTOMRIGHT", -offsetW, offsetH)
+				--plateFrame.unitFrame.stackSizeFrame:SetPoint("TOPLEFT", isPlateEnabled and plateFrame.unitFrame or plateFrame, "TOPLEFT", offsetW, -offsetH)
+				--plateFrame.unitFrame.stackSizeFrame:SetPoint("BOTTOMRIGHT", isPlateEnabled and plateFrame.unitFrame or plateFrame, "BOTTOMRIGHT", -offsetW, offsetH)
 			end
 			
 			-- we should clear stuff here, tbh...
@@ -3740,12 +3740,15 @@ Plater.AnchorNamesByPhraseId = {
 					if onlyNames then
 						plateFrame.PlaterAnchorFrame:SetParent(plateFrame)
 						plateFrame.PlaterAnchorFrame:Hide()
+						plateFrame.PlaterAnchorFrame:SetPoint("topright", plateFrame, "topright")
+						plateFrame.PlaterAnchorFrame:SetPoint("bottomleft", plateFrame, "bottomleft")
+
 					else
 						plateFrame.PlaterAnchorFrame:SetParent(plateFrame.UnitFrame.healthBar)
 						plateFrame.PlaterAnchorFrame:Show()
+						plateFrame.PlaterAnchorFrame:SetPoint("topright", plateFrame.UnitFrame.healthBar, "topright")
+						plateFrame.PlaterAnchorFrame:SetPoint("bottomleft", plateFrame.UnitFrame.healthBar, "bottomleft")
 					end
-					plateFrame.PlaterAnchorFrame:SetPoint("topright", plateFrame.UnitFrame.healthBar, "topright")
-					plateFrame.PlaterAnchorFrame:SetPoint("bottomleft", plateFrame.UnitFrame.healthBar, "bottomleft")
 					plateFrame.PlaterAnchorFrame:SetFrameStrata(plateFrame.UnitFrame.healthBar:GetFrameStrata())
 					plateFrame.PlaterAnchorFrame:SetFrameLevel(plateFrame.UnitFrame.healthBar:GetFrameLevel()+1)
 				end)
@@ -3765,7 +3768,7 @@ Plater.AnchorNamesByPhraseId = {
 			
 			local requiresScheduledUpdate = false
 			if not NAMEPLATES_ON_SCREEN_CACHE[unitID] then
-				NAMEPLATES_ON_SCREEN_CACHE[unitID] = plateFrame.UnitFrame
+				NAMEPLATES_ON_SCREEN_CACHE[unitID] = plateFrame.unitFrame
 				NUM_NAMEPLATES_ON_SCREEN = NUM_NAMEPLATES_ON_SCREEN + 1
 			else
 				requiresScheduledUpdate = true
@@ -4446,11 +4449,13 @@ Plater.AnchorNamesByPhraseId = {
 	--it'll hide the retail nameplate when it shown
 	---@param self frame blizzard unitframe 'plateFrame.UnitFrame'
 	function Plater.OnRetailNamePlateShow (self) --private
-		--print(GetTime(), self.unit)
 		if ENABLED_BLIZZARD_PLATEFRAMES[tostring(self)] then
 			-- do not hide
 			return
 		end
+		
+		--print(GetTime(), self.unit, SUPPORT_BLIZZARD_PLATEFRAMES, ENABLED_BLIZZARD_PLATEFRAMES[tostring(self)])
+		--DevTool:AddData({debugstack()})
 		
 		--self:Hide()
 		
@@ -4912,6 +4917,7 @@ function Plater.OnInit() --private --~oninit ~init
 		--self if the nameplate driver frame: _G.NamePlateDriverFrame
 		--at the moment self isn't being used ~personal
 		function Plater.UpdatePersonalBar (self)
+			if IS_WOW_PROJECT_MIDNIGHT then return end
 			local showSelf = GetCVarBool ("nameplateShowSelf") and Plater.db.profile.plate_config.player.module_enabled
 			if (not showSelf) then
 				if PlaterDBChr.resources_on_target then
@@ -5420,6 +5426,7 @@ function Plater.OnInit() --private --~oninit ~init
 			local borderShield = castBar.BorderShield
 			
 			castBar:UpdateInterruptState() -- ensure icon is shown as appropriate
+			borderShield:Show()
 			
 			--icon:SetDrawLayer ("OVERLAY", 5)
 			--borderShield:SetDrawLayer ("OVERLAY", 6)
@@ -5704,6 +5711,7 @@ function Plater.OnInit() --private --~oninit ~init
 						--self.BorderShield:Show()
 						--self.BorderShield:SetAlphaFromBoolean(self.notInterruptible, 1, 0)
 						self.CanInterrupt = nil
+						--print(self.SpellName, self.notInterruptible, self.BorderShield:IsShown(), self.BorderShield:IsVisible(), self.BorderShield:GetAlpha())
 					else
 						if (self.notInterruptible) then
 							self.BorderShield:Show()
