@@ -514,7 +514,7 @@ end
 						else
 							validPowerType = powerTypesFilter[powerType]
 						end
-						if validPowerType or eventsFilter[event]) then
+						if (validPowerType or eventsFilter[event]) then
 							lastComboPointGainedTime = GetTime()
 							Plater.StartLogPerformanceCore("Plater-Resources", "Events", event)
 							updateResourceFunc(self, currentResourceBar, false, event, unit, powerType)
