@@ -1938,7 +1938,7 @@ Plater.AnchorNamesByPhraseId = {
 	---@param h any
 	function Plater.UpdateUIParentScale (self, w, h) --private
 		local unitFrame = self.unitFrame
-		if (unitFrame) then
+		if (unitFrame and unitFrame.PlaterOnScreen) then
 			--local defaultScale = self:GetEffectiveScale() / self:GetScale()
 			local defaultScale = self:GetEffectiveScale()
 			if IS_WOW_PROJECT_MIDNIGHT then
