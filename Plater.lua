@@ -2855,6 +2855,8 @@ Plater.AnchorNamesByPhraseId = {
 				plateFrame.unitFrame = newUnitFrame
 
 				local unitFrame = plateFrame.unitFrame
+				
+				plateFrame:HookScript("OnSizeChanged", Plater.UpdateUIParentScale)
 
 				unitFrame:EnableMouse(false)
 
@@ -3691,10 +3693,10 @@ Plater.AnchorNamesByPhraseId = {
 				local isSoftInteractObject = isObject and isSoftInteract
 				reaction = reaction or isSoftInteract and Plater.UnitReaction.UNITREACTION_NEUTRAL or Plater.UnitReaction.UNITREACTION_HOSTILE
 				reaction = reaction <= Plater.UnitReaction.UNITREACTION_HOSTILE and Plater.UnitReaction.UNITREACTION_HOSTILE or reaction >= Plater.UnitReaction.UNITREACTION_FRIENDLY and Plater.UnitReaction.UNITREACTION_FRIENDLY or Plater.UnitReaction.UNITREACTION_NEUTRAL
-				
-				if (nameplateIsEditor) then
-					reaction = Plater.UnitReaction.UNITREACTION_HOSTILE
-				end
+			end
+			
+			if (nameplateIsEditor) then
+				reaction = Plater.UnitReaction.UNITREACTION_HOSTILE
 			end
 			
 			if plateFrame.unitFrame.stackSizeFrame then --TODO: MIDNIGHT!!
@@ -3812,7 +3814,6 @@ Plater.AnchorNamesByPhraseId = {
 			unitFrame.nameplateScaleAdjust = 1
 			
 			if (DB_USE_UIPARENT) then
-				plateFrame:HookScript("OnSizeChanged", Plater.UpdateUIParentScale)
 				Plater.UpdateUIParentScale(plateFrame)
 			else
 				unitFrame:SetScale (1) --reset scale
