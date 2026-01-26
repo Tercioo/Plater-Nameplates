@@ -2651,7 +2651,7 @@ Plater.AnchorNamesByPhraseId = {
 			if (Plater.db.profile.use_ui_parent_just_enabled) then
 				Plater.db.profile.use_ui_parent_just_enabled = false
 				if (Plater.db.profile.ui_parent_scale_tune == 0) then
-					Plater.db.profile.ui_parent_scale_tune = 1 / UIParent:GetEffectiveScale()
+					Plater.db.profile.ui_parent_scale_tune = 1 / (IS_WOW_PROJECT_MIDNIGHT and 1 or UIParent:GetEffectiveScale())
 					Plater.RefreshDBUpvalues()
 					Plater.UpdateAllPlates()
 				end
