@@ -6396,7 +6396,8 @@ end
 			elseif (Plater.IsUnitTapDenied (unitID)) then
 				r, g, b, a = unpack (Plater.db.profile.tap_denied_color)
 				
-			elseif Plater.db.profile.unit_type_coloring_enabled and (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid") and unitFrame.isGoodAggroState then
+			--elseif Plater.db.profile.unit_type_coloring_enabled and (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid") and unitFrame.isGoodAggroState then
+			elseif Plater.db.profile.unit_type_coloring_enabled and (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid") then
 				local pLevel = UnitEffectiveLevel("player")
                 local uLevel = UnitEffectiveLevel(unitID)
 
@@ -7356,7 +7357,7 @@ end
 				if not self.hasUnitTypeColor then
 					Plater.ChangeHealthBarColor_Internal (self.healthBar, r, g, b, a)
 
-				elseif (not self.isGoodAggroState and (Plater.db.profile.unit_type_coloring_enabled and Plater.db.profile.unit_type_coloring_no_override_threat or not Plater.db.profile.unit_type_coloring_enabled)) then
+				elseif not self.isGoodAggroState or (Plater.db.profile.unit_type_coloring_no_override_threat and self.isGoodAggroState) then
 					Plater.ChangeHealthBarColor_Internal (self.healthBar, r, g, b, a)
 
 				elseif Plater.db.profile.unit_type_coloring_enabled and self.isGoodAggroState and (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid") then
