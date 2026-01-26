@@ -2833,7 +2833,7 @@ Plater.AnchorNamesByPhraseId = {
 					newUnitFrame:SetAllPoints()
 					newUnitFrame:SetFrameStrata ("BACKGROUND")
 
-					--plateFrame:HookScript("OnSizeChanged", Plater.UpdateUIParentScale)
+					plateFrame:HookScript("OnSizeChanged", Plater.UpdateUIParentScale)
 					
 					--create a 33ms show animation played when the nameplate is added in the screen
 					--nevermind, unitFrame childs are kepping the last alpha value of the animation instead of reseting to their defaults
@@ -2855,8 +2855,6 @@ Plater.AnchorNamesByPhraseId = {
 				plateFrame.unitFrame = newUnitFrame
 
 				local unitFrame = plateFrame.unitFrame
-				
-				plateFrame:HookScript("OnSizeChanged", Plater.UpdateUIParentScale)
 
 				unitFrame:EnableMouse(false)
 
