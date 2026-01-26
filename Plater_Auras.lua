@@ -1891,15 +1891,18 @@ end
 			auraIconFrame.durationObject = durationObject
 			auraIconFrame:Show()
 
-			--auraIconFrame.Cooldown.Timer:SetText (string.format("%d",timeLeft))
-			auraIconFrame.lastUpdateCooldown = now
-			auraIconFrame:SetScript ("OnUpdate", auraIconFrame.UpdateCooldown)
-			auraIconFrame.Cooldown.Timer:Show()
+			auraIconFrame.Cooldown:SetHideCountdownNumbers(not Plater.db.profile.aura_timer)
+			if Plater.db.profile.aura_timer then
+				auraIconFrame.lastUpdateCooldown = now
+				auraIconFrame:SetScript ("OnUpdate", auraIconFrame.UpdateCooldown)
+				auraIconFrame.Cooldown.Timer:Show()
 			
-				
-			--local pandemicColor = C_UnitAuras.GetAuraDurationRemainingColor(auraIconFrame.unitFrame.namePlateUnitToken, i , pandemicColorCurve)
-			local pandemicColor = durationObject:EvaluateRemainingPercent(pandemicColorCurve)
-			auraIconFrame.Cooldown.Timer:SetTextColor(pandemicColor:GetRGBA())
+				local pandemicColor = durationObject:EvaluateRemainingPercent(pandemicColorCurve)
+				auraIconFrame.Cooldown.Timer:SetTextColor(pandemicColor:GetRGBA())
+			else
+				auraIconFrame:SetScript ("OnUpdate", nil)
+				auraIconFrame.Cooldown.Timer:Hide()
+			end
 
 			return
 		else
