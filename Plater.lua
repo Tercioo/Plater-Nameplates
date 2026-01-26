@@ -7362,10 +7362,10 @@ end
 				if not self.hasUnitTypeColor then
 					Plater.ChangeHealthBarColor_Internal (self.healthBar, r, g, b, a)
 
-				elseif not self.isGoodAggroState or (Plater.db.profile.unit_type_coloring_no_override_threat and self.isGoodAggroState) then
+				elseif self.InCombat and not self.isGoodAggroState or (Plater.db.profile.unit_type_coloring_no_override_threat and self.isGoodAggroState) then
 					Plater.ChangeHealthBarColor_Internal (self.healthBar, r, g, b, a)
 
-				elseif Plater.db.profile.unit_type_coloring_enabled and self.isGoodAggroState and (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid") then
+				elseif Plater.db.profile.unit_type_coloring_enabled and (self.isGoodAggroState or not self.InCombat) and (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid") then
 					-- reset
 					Plater.FindAndSetNameplateColor (self)
 
