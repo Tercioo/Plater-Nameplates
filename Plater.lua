@@ -2833,7 +2833,9 @@ Plater.AnchorNamesByPhraseId = {
 					newUnitFrame:SetAllPoints()
 					newUnitFrame:SetFrameStrata ("BACKGROUND")
 
-					plateFrame:HookScript("OnSizeChanged", Plater.UpdateUIParentScale)
+					if IS_WOW_PROJECT_MIDNIGHT then
+						plateFrame:HookScript("OnSizeChanged", Plater.UpdateUIParentScale)
+					end
 					
 					--create a 33ms show animation played when the nameplate is added in the screen
 					--nevermind, unitFrame childs are kepping the last alpha value of the animation instead of reseting to their defaults
@@ -3812,6 +3814,9 @@ Plater.AnchorNamesByPhraseId = {
 			unitFrame.nameplateScaleAdjust = 1
 			
 			if (DB_USE_UIPARENT) then
+				if not IS_WOW_PROJECT_MIDNIGHT then
+					plateFrame:HookScript("OnSizeChanged", Plater.UpdateUIParentScale)
+				end
 				Plater.UpdateUIParentScale(plateFrame)
 			else
 				unitFrame:SetScale (1) --reset scale
