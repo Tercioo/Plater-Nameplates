@@ -848,6 +848,7 @@ PLATER_DEFAULT_SETTINGS = {
 		aura_custom = {},
 		
 		aura_timer = true,
+		aura_timer_pandemic_color = true,
 		aura_timer_decimals = false,
 		aura_timer_text_size = 15,
 		aura_timer_text_font = "Arial Narrow",
