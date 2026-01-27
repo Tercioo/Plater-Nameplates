@@ -8485,21 +8485,23 @@ end
 		
 	function Plater.UpdateAllNames() --private
 		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-			if (plateFrame.actorType == ACTORTYPE_PLAYER) then
-				plateFrame.NameAnchor = 0
-				
-			elseif (plateFrame.actorType == Plater.UnitReaction.UNITREACTION_FRIENDLY) then
-				plateFrame.NameAnchor = DB_NAME_PLAYERFRIENDLY_ANCHOR
-				
-			elseif (plateFrame.actorType == ACTORTYPE_ENEMY_PLAYER) then
-				plateFrame.NameAnchor = DB_NAME_PLAYERENEMY_ANCHOR
-				
-			elseif (plateFrame.actorType == ACTORTYPE_FRIENDLY_NPC) then
-				plateFrame.NameAnchor = DB_NAME_NPCFRIENDLY_ANCHOR
-				
-			elseif (plateFrame.actorType == ACTORTYPE_ENEMY_NPC) then
-				plateFrame.NameAnchor = DB_NAME_NPCENEMY_ANCHOR
-				
+			if plateFrame.unitFrame.PlaterOnScreen then
+				if (plateFrame.actorType == ACTORTYPE_PLAYER) then
+					plateFrame.NameAnchor = 0
+					
+				elseif (plateFrame.actorType == Plater.UnitReaction.UNITREACTION_FRIENDLY) then
+					plateFrame.NameAnchor = DB_NAME_PLAYERFRIENDLY_ANCHOR
+					
+				elseif (plateFrame.actorType == ACTORTYPE_ENEMY_PLAYER) then
+					plateFrame.NameAnchor = DB_NAME_PLAYERENEMY_ANCHOR
+					
+				elseif (plateFrame.actorType == ACTORTYPE_FRIENDLY_NPC) then
+					plateFrame.NameAnchor = DB_NAME_NPCFRIENDLY_ANCHOR
+					
+				elseif (plateFrame.actorType == ACTORTYPE_ENEMY_NPC) then
+					plateFrame.NameAnchor = DB_NAME_NPCENEMY_ANCHOR
+					
+				end
 			end
 		
 			Plater.UpdateUnitName (plateFrame)
