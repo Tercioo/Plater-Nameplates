@@ -3108,7 +3108,7 @@ Plater.AnchorNamesByPhraseId = {
 				local executeRangeUpper = healthBar:CreateTexture (nil, "border")
 				executeRangeUpper:SetTexture ([[Interface\AddOns\Plater\images\execute_bar]])
 				PixelUtil.SetPoint (executeRangeUpper, "left", healthBar, "left", 0, 0)
-				healthBar.executeRangeUpper = executeRange
+				healthBar.executeRangeUpper = executeRangeUpper
 				healthBar.ExecuteRangeUpperBar = executeRangeUpper --alias for scripting
 				executeRangeUpper:Hide()
 
@@ -6656,7 +6656,9 @@ end
 		
 		--execute indicator
 			healthBar.healthCutOff:SetSize (healthBarHeight, healthBarHeight)
+			healthBar.healthCutOffUpper:SetSize (healthBarHeight, healthBarHeight)
 			healthBar.executeRange:SetHeight (healthBarHeight)
+			healthBar.executeRangeUpper:SetHeight (healthBarHeight)
 		
 		--cast bar - is set by default below the healthbar
 			castBar:ClearAllPoints()
