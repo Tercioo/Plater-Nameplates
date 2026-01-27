@@ -5572,6 +5572,7 @@ function Plater.OnInit() --private --~oninit ~init
 		end
 
 		function Plater.SetCastBarInterruptedState(unitFrame, sourceGUID, name)
+			if not Plater.db.profile.show_interrupt_author then return end
 			if not unitFrame or not sourceGUID then return end
 			local castBar = unitFrame.castBar
 			
