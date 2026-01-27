@@ -6975,7 +6975,7 @@ end
 					healthBar.executeRangeUpper:SetAlpha (0.2)
 					healthBar.executeRangeUpper:SetVertexColor (.3, .3, .3)
 					healthBar.executeRangeUpper:SetHeight (healthBar:GetHeight())
-					healthBar.executeRangeUpper:SetPoint ("left", healthBar.healthCutOff, "center")
+					healthBar.executeRangeUpper:SetPoint ("left", healthBar.healthCutOffUpper, "center")
 					healthBar.executeRangeUpper:SetPoint ("right", healthBar, "right")
 					
 					healthBar.healthCutOffUpperValue = HEALTHCUTOFF_AT_DATA.healthCutOffUpperValue
