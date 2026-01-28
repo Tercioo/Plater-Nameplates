@@ -4001,7 +4001,7 @@ Plater.AnchorNamesByPhraseId = {
 			wipe (unitFrame.CustomIndicators)
 			
 			--health amount
-			Plater.QuickHealthUpdate (unitFrame)
+			--Plater.QuickHealthUpdate (unitFrame)
 			healthBar.IsAnimating = false
 			
 			--hide execute indicators
@@ -4046,7 +4046,7 @@ Plater.AnchorNamesByPhraseId = {
 					
 					plateFrame.PlateConfig = DB_PLATE_CONFIG.player
 					Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_PLAYER, nil, true)
-					Plater.QuickHealthUpdate (unitFrame) -- ensure up to date, for good measure
+					--Plater.QuickHealthUpdate (unitFrame) -- ensure up to date, for good measure
 					Plater.OnUpdateHealth (healthBar)
 
 				else
@@ -6159,7 +6159,7 @@ function Plater.OnInit() --private --~oninit ~init
 		Plater.StartLogPerformanceCore("Plater-Core", "Health", "OnUpdateHealthMax")
 		
 		-- ensure updated values...
-		Plater.QuickHealthUpdate (self.unitFrame)
+		--Plater.QuickHealthUpdate (self.unitFrame)
 		
 		Plater.CheckLifePercentText (self.unitFrame)
 		
@@ -8985,7 +8985,7 @@ end
 			unitFrame.healthBar.Settings.ShowHealingPrediction = Plater.db.profile.show_health_prediction
 			unitFrame.healthBar.Settings.ShowShields = Plater.db.profile.show_shield_prediction
 			if (unitFrame.healthBar.unit) then
-				unitFrame.healthBar:UNIT_HEALTH()
+				--unitFrame.healthBar:UNIT_HEALTH() -- this should be fired with SetUnit
 			end
 			
 			if IS_WOW_PROJECT_MAINLINE and unitFrame.WidgetContainer then
