@@ -5798,7 +5798,8 @@ function Plater.OnInit() --private --~oninit ~init
 					--self.Text:SetText(self.SpellNameRenamed)
 					--cut the spell name text to fit within the castbar
 					--Plater.UpdateSpellNameSize (self.Text, unitFrame.ActorType, nil, isInCombat)
-					Plater.UpdateTextSize (self.SpellNameRenamed or "", self.Text, DB_PLATE_CONFIG [unitFrame.actorType].spellname_text_max_width or 0, nil)
+					local plateConfig = DB_PLATE_CONFIG [unitFrame.ActorType] or {}
+					Plater.UpdateTextSize (self.SpellNameRenamed or "", self.Text, plateConfig.spellname_text_max_width or 0, nil)
 					
 					-- in some occasions channeled casts don't have a CLEU entry... check this here
 					if (unitFrame.ActorType == "enemynpc" and event == "UNIT_SPELLCAST_CHANNEL_START" and (not DB_CAPTURED_SPELLS[spellID] or DB_CAPTURED_SPELLS[spellID].isChanneled == nil or not DB_CAPTURED_CASTS[spellID] or DB_CAPTURED_CASTS[spellID].isChanneled == nil)) then
