@@ -1419,6 +1419,7 @@ end
 		newIcon.StackText = newIcon.CountFrame.Count
 		
 		if IS_WOW_PROJECT_MIDNIGHT then
+			newIcon.Cooldown:SetMinimumCountdownDuration(0)
 			newIcon.Cooldown.Timer = newIcon.Cooldown:GetRegions()
 		else
 			newIcon.Cooldown.Timer = newIcon.Cooldown:CreateFontString (nil, "overlay", "NumberFontNormal")
