@@ -4370,7 +4370,7 @@ do
 			step = 1,
 			usedecimals = false,
 			name = "Max width",
-			desc = "Spell name text length limitation.",
+			desc = "Spell name text length limitation.\n 0 = no limitation",
 		},
 
 		
@@ -7184,7 +7184,7 @@ end
 			step = 1,
 			usedecimals = false,
 			name = "Max width",
-			desc = "Name text length limitation.",
+			desc = "Name text length limitation.\n 0 = no limitation",
 		},
 		
 		--cast text size
@@ -7305,7 +7305,7 @@ end
 			step = 1,
 			usedecimals = false,
 			name = "Max width",
-			desc = "Spell name text length limitation.",
+			desc = "Spell name text length limitation.\n 0 = no limitation",
 		},
 		
 		
@@ -8119,7 +8119,7 @@ end
 			step = 1,
 			usedecimals = false,
 			name = "Max width",
-			desc = "Name text length limitation.",
+			desc = "Name text length limitation.\n 0 = no limitation",
 		},
 		
 		{type = "breakline"},
@@ -8239,7 +8239,7 @@ end
 			step = 1,
 			usedecimals = false,
 			name = "Max width",
-			desc = "Spell name text length limitation.",
+			desc = "Spell name text length limitation.\n 0 = no limitation",
 		},
 		
 		--level text settings
@@ -9059,7 +9059,7 @@ end
 			step = 1,
 			usedecimals = false,
 			name = "Max width",
-			desc = "Name text length limitation.",
+			desc = "Name text length limitation.\n 0 = no limitation",
 		},
 		
 		{type = "breakline"},
@@ -9179,7 +9179,7 @@ end
 			step = 1,
 			usedecimals = false,
 			name = "Max width",
-			desc = "Spell name text length limitation.",
+			desc = "Spell name text length limitation.\n 0 = no limitation",
 		},
 
 		{type = "blank"},
@@ -10270,7 +10270,7 @@ end
 				step = 1,
 				usedecimals = false,
 				name = "Max width",
-				desc = "Name text length limitation.",
+				desc = "Name text length limitation.\n 0 = no limitation",
 			},
 			
 			{type = "breakline"},
@@ -10390,7 +10390,7 @@ end
 				step = 1,
 				usedecimals = false,
 				name = "Max width",
-				desc = "Spell name text length limitation.",
+				desc = "Spell name text length limitation.\n 0 = no limitation",
 			},
 			
 			{type = "blank"},

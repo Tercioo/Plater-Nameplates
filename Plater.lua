@@ -5398,6 +5398,7 @@ function Plater.OnInit() --private --~oninit ~init
 				DF:SetFontFace (textString, profile.castbar_target_font)
 				
 				Plater.SetAnchor (textString, profile.castbar_target_anchor)
+				Plater.SetTextAlignmentFromAnchor(textString, profile.castbar_target_anchor)
 			else
 				if targetFontString then
 					targetFontString:Hide()
@@ -8000,6 +8001,7 @@ end
 			DF:SetFontFace (spellnameString, plateConfigs.spellname_text_font)
 			DF:SetFontSize (spellnameString, plateConfigs.spellname_text_size)
 			Plater.SetAnchor (spellnameString, plateConfigs.spellname_text_anchor)
+			Plater.SetTextAlignmentFromAnchor(spellnameString, plateConfigs.spellname_text_anchor)
 		end
 
 		--update spell cast time
@@ -8243,6 +8245,7 @@ end
 			Plater.SetFontOutlineAndShadow (nameString, plateConfigs.actorname_text_outline, plateConfigs.actorname_text_shadow_color, plateConfigs.actorname_text_shadow_color_offset[1], plateConfigs.actorname_text_shadow_color_offset[2])
 
 			Plater.SetAnchor (nameString, plateConfigs.actorname_text_anchor)
+			Plater.SetTextAlignmentFromAnchor(nameString, plateConfigs.actorname_text_anchor)
 			--PixelUtil.SetHeight (nameString, nameString:GetLineHeight())
 		end
 		
@@ -8571,6 +8574,10 @@ end
 			text = string.format("%." .. textLength .. "s", text)
 			if fontString then
 				fontString:SetWordWrap(false)
+				fontString:SetWordWrap(false)
+				fontString:SetNonSpaceWrap(false)
+				fontString:SetSpacing(0)
+				
 				fontString:SetText (text)
 				
 				if not IS_WOW_PROJECT_MIDNIGHT then
@@ -8582,6 +8589,8 @@ end
 			
 		elseif fontString and maxWidth then
 			fontString:SetWordWrap(false)
+			fontString:SetNonSpaceWrap(false)
+			fontString:SetSpacing(0)
 			fontString:SetWidth(maxWidth)
 			fontString:SetText(text)	
 			
@@ -9662,65 +9671,79 @@ end
 	end
 
 	local anchor_functions = {
-		function (widget, config, attachTo, centered)--1 topleft
+		--1 topleft
+		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
 			local widgetRelative = centered and "bottom" or "bottomleft"
 			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "topleft", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--2 left
+		--2 left
+		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
 			local widgetRelative = centered and "center" or "right"
 			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "left", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--3 bottomleft
+		--3 bottomleft
+		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
 			local widgetRelative = centered and "top" or "topleft"
 			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "bottomleft", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--4 bottom
+		--4 bottom
+		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "top", attachTo, "bottom", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--5 bottomright
+		--5 bottomright
+		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
 			local widgetRelative = centered and "top" or "topright"
 			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "bottomright", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--6 right
+		--6 right
+		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
 			local widgetRelative = centered and "center" or "left"
 			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "right", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--7 topright
+		--7 topright
+		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
 			local widgetRelative = centered and "bottom" or "bottomright"
 			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "topright", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--8 top
+		--8 top
+		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "bottom", attachTo, "top", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--9 center
+		--9 center
+		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "center", attachTo, "center", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--10 inner left
+		--10 inner left
+		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "left", attachTo, "left", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--11 inner right
+		--11 inner right
+		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "right", attachTo, "right", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--12 inner top
+		--12 inner top
+		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "top", attachTo, "top", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--13 inner bottom
+		--13 inner bottom
+		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "bottom", attachTo, "bottom", config.x, config.y, 0, 0)
 		end,
-		function (widget, config, attachTo, centered)--14 inner topleft
+		--14 inner topleft
+		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
 			PixelUtil.SetPoint (widget, "topleft", attachTo, "topleft", config.x, config.y, 0, 0)
 		end,
@@ -9745,6 +9768,31 @@ end
 	function Plater.SetAnchor (widget, config, attachTo, centered) --private
 		attachTo = attachTo or widget:GetParent()
 		anchor_functions [config.side] (widget, config, attachTo, centered)
+	end
+	
+	function Plater.SetTextAlignmentFromAnchor(fontString, config)
+		local sideMap = {
+			[1] = "LEFT",
+			[2] = "LEFT",
+			[3] = "LEFT",
+			[4] = "CENTER",
+			[5] = "RIGHT",
+			[6] = "RIGHT",
+			[7] = "RIGHT",
+			[8] = "CENTER",
+			[9] = "CENTER",
+			[10] = "LEFT",
+			[11] = "RIGHT",
+			[12] = "CENTER",
+			[13] = "CENTER",
+			[14] = "LEFT",
+			[15] = "LEFT",
+			[16] = "RIGHT",
+			[17] = "RIGHT",
+		}
+		local side = config and config.side or 1
+		side = (side > 0 and side <= 17) and side or 1
+		fontString:SetJustifyH(sideMap[side])
 	end
 	
 	-- anchor sides as comprehensive table.

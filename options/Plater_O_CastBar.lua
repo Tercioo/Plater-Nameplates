@@ -611,7 +611,7 @@ function platerInternal.CreateCastBarOptions()
 			step = 1,
 			usedecimals = false,
 			name = "Max width",
-			desc = "Target text width limitation.",
+			desc = "Target text width limitation.\n 0 = no limitation",
 		},
         --text font
         {
