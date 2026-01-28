@@ -1411,7 +1411,7 @@ function platerInternal.CreateAdvancedOptions()
         },
 
         {type = "blank", hidden = IS_WOW_PROJECT_MIDNIGHT},
-        {type = "label", get = function() return "Animations:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = IS_WOW_PROJECT_MIDNIGHT},
+        {type = "label", get = function() return "Animations:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE") }, --, hidden = IS_WOW_PROJECT_MIDNIGHT},
 
         {
             type = "toggle",
@@ -1423,7 +1423,7 @@ function platerInternal.CreateAdvancedOptions()
             end,
             name = "Animate Health Bar",
             desc = "Do a smooth animation when the nameplate's health value changes.",
-            hidden = IS_WOW_PROJECT_MIDNIGHT,
+            --hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
         {
             type = "toggle",
