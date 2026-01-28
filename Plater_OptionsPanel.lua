@@ -4254,7 +4254,6 @@ do
 			desc = "OPTIONS_YOFFSET_DESC",
 		},
 		
-		{type = "blank"},
 		
 		--cast text size
 		{type = "label", get = function() return "Spell Name Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
@@ -4358,6 +4357,22 @@ do
 			name = "OPTIONS_YOFFSET",
 			desc = "OPTIONS_YOFFSET_DESC",
 		},
+		--spell name text length
+		{
+			type = "range",
+			get = function() return Plater.db.profile.plate_config.player.spellname_text_max_width end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.player.spellname_text_max_width = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 0,
+			max = 300,
+			step = 1,
+			usedecimals = false,
+			name = "Max width",
+			desc = "Spell name text length limitation.",
+		},
+
 		
 		{type = "breakline"},
 
@@ -7159,17 +7174,17 @@ end
 		--name text length
 		{
 			type = "range",
-			get = function() return Plater.db.profile.plate_config.friendlyplayer.actorname_text_max_length end,
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.actorname_text_max_width end,
 			set = function (self, fixedparam, value) 
-				Plater.db.profile.plate_config.friendlyplayer.actorname_text_max_length = value
+				Plater.db.profile.plate_config.friendlyplayer.actorname_text_max_width = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 0,
-			max = 100,
+			max = 300,
 			step = 1,
 			usedecimals = false,
-			name = "Max length",
-			desc = "Name text length limitation.\n100 = no limit.",
+			name = "Max width",
+			desc = "Name text length limitation.",
 		},
 		
 		--cast text size
@@ -7276,6 +7291,21 @@ end
 			usedecimals = true,
 			name = "OPTIONS_YOFFSET",
 			desc = "OPTIONS_YOFFSET_DESC",
+		},
+		--spell name text length
+		{
+			type = "range",
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.spellname_text_max_width end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.friendlyplayer.spellname_text_max_width = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 0,
+			max = 300,
+			step = 1,
+			usedecimals = false,
+			name = "Max width",
+			desc = "Spell name text length limitation.",
 		},
 		
 		
@@ -8079,17 +8109,17 @@ end
 		--name text length
 		{
 			type = "range",
-			get = function() return Plater.db.profile.plate_config.enemyplayer.actorname_text_max_length end,
+			get = function() return Plater.db.profile.plate_config.enemyplayer.actorname_text_max_width end,
 			set = function (self, fixedparam, value) 
-				Plater.db.profile.plate_config.enemyplayer.actorname_text_max_length = value
+				Plater.db.profile.plate_config.enemyplayer.actorname_text_max_width = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 0,
-			max = 100,
+			max = 300,
 			step = 1,
 			usedecimals = false,
-			name = "Max length",
-			desc = "Name text length limitation.\n100 = no limit.",
+			name = "Max width",
+			desc = "Name text length limitation.",
 		},
 		
 		{type = "breakline"},
@@ -8195,6 +8225,21 @@ end
 			usedecimals = true,
 			name = "OPTIONS_YOFFSET",
 			desc = "OPTIONS_YOFFSET_DESC",
+		},
+		--spell name text length
+		{
+			type = "range",
+			get = function() return Plater.db.profile.plate_config.enemyplayer.spellname_text_max_width end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.enemyplayer.spellname_text_max_width = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 0,
+			max = 300,
+			step = 1,
+			usedecimals = false,
+			name = "Max width",
+			desc = "Spell name text length limitation.",
 		},
 		
 		--level text settings
@@ -9004,17 +9049,17 @@ end
 		--name text length
 		{
 			type = "range",
-			get = function() return Plater.db.profile.plate_config.friendlynpc.actorname_text_max_length end,
+			get = function() return Plater.db.profile.plate_config.friendlynpc.actorname_text_max_width end,
 			set = function (self, fixedparam, value) 
-				Plater.db.profile.plate_config.friendlynpc.actorname_text_max_length = value
+				Plater.db.profile.plate_config.friendlynpc.actorname_text_max_width = value
 				Plater.UpdateAllPlates()
 			end,
 			min = 0,
-			max = 100,
+			max = 300,
 			step = 1,
 			usedecimals = false,
-			name = "Max length",
-			desc = "Name text length limitation.\n100 = no limit.",
+			name = "Max width",
+			desc = "Name text length limitation.",
 		},
 		
 		{type = "breakline"},
@@ -9120,6 +9165,21 @@ end
 			usedecimals = true,
 			name = "OPTIONS_YOFFSET",
 			desc = "OPTIONS_YOFFSET_DESC",
+		},
+		--spell name text length
+		{
+			type = "range",
+			get = function() return Plater.db.profile.plate_config.friendlynpc.spellname_text_max_width end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.friendlynpc.spellname_text_max_width = value
+				Plater.UpdateAllPlates()
+			end,
+			min = 0,
+			max = 300,
+			step = 1,
+			usedecimals = false,
+			name = "Max width",
+			desc = "Spell name text length limitation.",
 		},
 
 		{type = "blank"},
@@ -10200,17 +10260,17 @@ end
 			--name text length
 			{
 				type = "range",
-				get = function() return Plater.db.profile.plate_config.enemynpc.actorname_text_max_length end,
+				get = function() return Plater.db.profile.plate_config.enemynpc.actorname_text_max_width end,
 				set = function (self, fixedparam, value) 
-					Plater.db.profile.plate_config.enemynpc.actorname_text_max_length = value
+					Plater.db.profile.plate_config.enemynpc.actorname_text_max_width = value
 					Plater.UpdateAllPlates()
 				end,
 				min = 0,
-				max = 100,
+				max = 300,
 				step = 1,
 				usedecimals = false,
-				name = "Max length",
-				desc = "Name text length limitation.\n100 = no limit.",
+				name = "Max width",
+				desc = "Name text length limitation.",
 			},
 			
 			{type = "breakline"},
@@ -10316,6 +10376,21 @@ end
 				usedecimals = true,
 				name = "OPTIONS_YOFFSET",
 				desc = "OPTIONS_YOFFSET_DESC",
+			},
+			--spell name text length
+			{
+				type = "range",
+				get = function() return Plater.db.profile.plate_config.enemynpc.spellname_text_max_width end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.plate_config.enemynpc.spellname_text_max_width = value
+					Plater.UpdateAllPlates()
+				end,
+				min = 0,
+				max = 300,
+				step = 1,
+				usedecimals = false,
+				name = "Max width",
+				desc = "Spell name text length limitation.",
 			},
 			
 			{type = "blank"},

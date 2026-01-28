@@ -1748,7 +1748,7 @@ Plater.AnchorNamesByPhraseId = {
 		DB_PLATE_CONFIG = profile.plate_config
 		DB_TRACK_METHOD = IS_WOW_PROJECT_MIDNIGHT and 1 or profile.aura_tracker.track_method
 		
-		DB_DO_ANIMATIONS = not IS_WOW_PROJECT_MIDNIGHT and profile.use_health_animation or false
+		DB_DO_ANIMATIONS = not IS_WOW_PROJECT_MIDNIGHT and profile.use_health_animation or false -- done implicit in midnight
 		DB_ANIMATION_TIME_DILATATION = profile.health_animation_time_dilatation
 		
 		DB_HOVER_HIGHLIGHT = profile.hover_highlight
@@ -1938,6 +1938,7 @@ Plater.AnchorNamesByPhraseId = {
 	---@param h any
 	function Plater.UpdateUIParentScale (self, w, h) --private
 		local unitFrame = self.unitFrame
+		--DevTool:AddData({debugstack(), self:GetEffectiveScale(), unitFrame and unitFrame.PlaterOnScreen, unitFrame.PlateFrame.UnitFrame.unit, UnitName(unitFrame.PlateFrame.UnitFrame.unit)}, unitFrame.PlateFrame.UnitFrame.unit)
 		if (unitFrame and unitFrame.PlaterOnScreen) then
 			--local defaultScale = self:GetEffectiveScale() / self:GetScale()
 			local defaultScale = self:GetEffectiveScale()
@@ -5792,11 +5793,11 @@ function Plater.OnInit() --private --~oninit ~init
 					if not IS_WOW_PROJECT_MIDNIGHT and (self.channeling and (self.SpellStartTime + 0.25 > curTime)) then
 						platerInternal.Audio.PlaySoundForCastStart(self.spellID) --fallback for edge cases. should not double play
 					end
-
-					self.Text:SetText(self.SpellNameRenamed)
 					
+					--self.Text:SetText(self.SpellNameRenamed)
 					--cut the spell name text to fit within the castbar
-					Plater.UpdateSpellNameSize (self.Text, unitFrame.ActorType, nil, isInCombat)
+					--Plater.UpdateSpellNameSize (self.Text, unitFrame.ActorType, nil, isInCombat)
+					Plater.UpdateTextSize (self.SpellNameRenamed or "", self.Text, DB_PLATE_CONFIG [unitFrame.actorType].spellname_text_max_width or 300, nil, nil)					
 					
 					-- in some occasions channeled casts don't have a CLEU entry... check this here
 					if (unitFrame.ActorType == "enemynpc" and event == "UNIT_SPELLCAST_CHANNEL_START" and (not DB_CAPTURED_SPELLS[spellID] or DB_CAPTURED_SPELLS[spellID].isChanneled == nil or not DB_CAPTURED_CASTS[spellID] or DB_CAPTURED_CASTS[spellID].isChanneled == nil)) then
@@ -5884,14 +5885,14 @@ function Plater.OnInit() --private --~oninit ~init
 								if targetNameShort then
 									targetName = targetNameShort
 								end
-								targetName = Plater.UpdateUnitNameTextSize (targetName or "", nil, nil, Plater.db.profile.castbar_target_text_max_length or 100)
-								
 								local classFilename = UnitSpellTargetClass(self.unit)
 								if classFilename then
 									local color = C_ClassColor.GetClassColor(classFilename)
 									targetName = C_ColorUtil.WrapTextInColor(targetName, color)
 								end
-								self.FrameOverlay.TargetName:SetText(targetName)
+								
+								targetName = Plater.UpdateTextSize (targetName or "", self.FrameOverlay.TargetName, Plater.db.profile.castbar_target_text_max_width or 300, nil, nil)
+								
 							else
 								self.FrameOverlay.TargetName:SetText(nil)
 							end
@@ -8509,8 +8510,6 @@ end
 	end
 
 	function Plater.UpdateSpellNameSize (nameString, actorType, cutOff, inCombat)
-		if IS_WOW_PROJECT_MIDNIGHT then return end --MIDNIGHT!!
-		
 		local spellName = nameString:GetText()
 		
 		if not spellName or spellName == "" then
@@ -8528,18 +8527,21 @@ end
 			end
 		end
 		
-		while (nameString:GetUnboundedStringWidth() > maxLength) do
-			spellName = strsub (spellName, 1, #spellName - 1)
-			nameString:SetText (spellName)
-			if (string.len (spellName) <= 1) then
-				break
+		if IS_WOW_PROJECT_MIDNIGHT then
+			Plater.UpdateTextSize (spellName, nameString, maxWidth, nil, nil)
+		else		
+			while (nameString:GetUnboundedStringWidth() > maxLength) do
+				spellName = strsub (spellName, 1, #spellName - 1)
+				nameString:SetText (spellName)
+				if (string.len (spellName) <= 1) then
+					break
+				end
 			end
+			
+			-- cleanup utf8...
+			spellName = DF:CleanTruncateUTF8String(spellName)
+			nameString:SetText (spellName)
 		end
-		
-		-- cleanup utf8...
-		spellName = DF:CleanTruncateUTF8String(spellName)
-		nameString:SetText (spellName)
-		
 	end
 
 	function Plater.AddGuildNameToPlayerName (plateFrame)
@@ -8552,7 +8554,7 @@ end
 	function Plater.UpdateUnitName (plateFrame)
 		local nameString = plateFrame.CurrentUnitNameString
 
-		Plater.UpdateUnitNameTextSize (plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME] or "", nameString, nil, DB_PLATE_CONFIG [plateFrame.actorType].actorname_text_max_length or 100)
+		Plater.UpdateTextSize (plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME] or "", nameString, DB_PLATE_CONFIG [plateFrame.actorType].actorname_text_max_width or 300, nil, nil)
 		
 		--check if the player has a guild, this check is done when the nameplate is added
 		if (plateFrame.playerGuildName) then
@@ -8562,44 +8564,36 @@ end
 		end
 	end
 
-	function Plater.UpdateUnitNameTextSize (name, nameString, maxWidth, maxLength)
-		if not name then return end
-		if maxWidth then
-			local fontSize = DB_PLATE_CONFIG [plateFrame.actorType].actorname_text_size
-			local nameLength = floor(maxWidth / fontSize * 2)
-			name = string.format("%." .. nameLength .. "s", name)
-			if nameString then
-				nameString:SetText (name)
-			end
-		elseif maxLength then
-			if maxLength < 100 then -- 100 -> don't limit; format max is 99
-				name = string.format("%." .. maxLength .. "s", name)
-			end
-			if nameString then
-				nameString:SetText (name)
-			end
-		elseif nameString then
-			local stringSize = max (plateFrame.unitFrame.healthBar:GetWidth() - 6, 44)
-			
-			nameString:SetText (name)
-			
-			if not name or name == "" then
-				return
-			end
-			
-			while (nameString:GetUnboundedStringWidth() > stringSize) do
-				name = strsub (name, 1, #name-1)
-				nameString:SetText (name)
-				if (string.len (name) <= 1) then
-					break
+	function Plater.UpdateTextSize (text, fontString, maxWidth, maxLength, fontSize)
+		if not text then return end
+		if maxWidth and type(fontSize) == "number" then
+			local textLength = floor(maxWidth / fontSize * 2)
+			text = string.format("%." .. textLength .. "s", text)
+			if fontString then
+				fontString:SetWordWrap(false)
+				fontString:SetText (text)
+				
+				if not IS_WOW_PROJECT_MIDNIGHT then
+					-- cleanup utf8...
+					text = DF:CleanTruncateUTF8String(text)
+					textString:SetText (text)
 				end
 			end
 			
-			-- cleanup utf8...
-			name = DF:CleanTruncateUTF8String(name)
-			nameString:SetText (name)
+		elseif fontString and maxWidth then
+			fontString:SetWordWrap(false)
+			fontString:SetWidth(maxWidth)
+			fontString:SetText(text)	
+			
+		elseif maxLength then
+			if maxLength < 100 then -- 100 -> don't limit; format max is 99
+				text = string.format("%." .. maxLength .. "s", text)
+			end
+			if fontString then
+				fontString:SetText (text)
+			end
 		end
-		return name
+		return text
 	end
 
 	--updates the level text and the color
@@ -11438,9 +11432,11 @@ end
 			end
 		end	
 		
-		-- cleanup utf8...
-		text = DF:CleanTruncateUTF8String(text)
-		fontString:SetText (text)
+		if not IS_WOW_PROJECT_MIDNIGHT then
+			-- cleanup utf8...
+			text = DF:CleanTruncateUTF8String(text)
+			fontString:SetText (text)
+		end
 		
 	end
 	

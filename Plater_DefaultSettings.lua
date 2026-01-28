@@ -205,7 +205,7 @@ PLATER_DEFAULT_SETTINGS = {
 				actorname_text_shadow_color = {0, 0, 0, 1},
 				actorname_text_shadow_color_offset = {1, -1},
 				actorname_text_anchor = {side = 8, x = 0, y = 0},
-				actorname_text_max_length = 100,
+				actorname_text_max_width = 300,
 				
 				spellname_text_size = 10,
 				spellname_text_font = "Arial Narrow",
@@ -214,6 +214,7 @@ PLATER_DEFAULT_SETTINGS = {
 				spellname_text_shadow_color = {0, 0, 0, 1},
 				spellname_text_shadow_color_offset = {1, -1},
 				spellname_text_anchor = {side = 9, x = 0, y = 0},
+				spellname_text_max_width = 300,
 				
 				spellpercent_text_enabled = false,
 				spellpercent_text_size = 10,
@@ -277,7 +278,7 @@ PLATER_DEFAULT_SETTINGS = {
 				actorname_text_shadow_color = {0, 0, 0, 1},
 				actorname_text_shadow_color_offset = {1, -1},
 				actorname_text_anchor = {side = 4, x = 0, y = 0},
-				actorname_text_max_length = 100,
+				actorname_text_max_width = 300,
 				
 				spellname_text_size = 10,
 				spellname_text_font = "Arial Narrow",
@@ -286,6 +287,7 @@ PLATER_DEFAULT_SETTINGS = {
 				spellname_text_shadow_color = {0, 0, 0, 1},
 				spellname_text_shadow_color_offset = {1, -1},
 				spellname_text_anchor = {side = 9, x = 0, y = 0},
+				spellname_text_max_width = 300,
 				
 				spellpercent_text_enabled = true,
 				spellpercent_text_size = 10,
@@ -362,7 +364,7 @@ PLATER_DEFAULT_SETTINGS = {
 				actorname_text_shadow_color = {0, 0, 0, 1},
 				actorname_text_shadow_color_offset = {1, -1},
 				actorname_text_anchor = {side = 8, x = 0, y = 0},
-				actorname_text_max_length = 100,
+				actorname_text_max_width = 300,
 				
 				spellname_text_size = 10,
 				spellname_text_font = "Arial Narrow",
@@ -371,6 +373,7 @@ PLATER_DEFAULT_SETTINGS = {
 				spellname_text_shadow_color = {0, 0, 0, 1},
 				spellname_text_shadow_color_offset = {1, -1},
 				spellname_text_anchor = {side = 9, x = 0, y = 0},
+				spellname_text_max_width = 300,
 				
 				spellpercent_text_enabled = false,
 				spellpercent_text_size = 10,
@@ -448,7 +451,7 @@ PLATER_DEFAULT_SETTINGS = {
 				actorname_text_shadow_color = {0, 0, 0, 1},
 				actorname_text_shadow_color_offset = {1, -1},
 				actorname_text_anchor = {side = 4, x = 0, y = 0},
-				actorname_text_max_length = 100,
+				actorname_text_max_width = 300,
 				
 				spellname_text_size = 12,
 				spellname_text_font = "Arial Narrow",
@@ -457,6 +460,7 @@ PLATER_DEFAULT_SETTINGS = {
 				spellname_text_shadow_color = {0, 0, 0, 1},
 				spellname_text_shadow_color_offset = {1, -1},
 				spellname_text_anchor = {side = 9, x = 0, y = 0},
+				spellname_text_max_width = 300,
 				
 				spellpercent_text_enabled = true,
 				spellpercent_text_size = 11,
@@ -540,7 +544,7 @@ PLATER_DEFAULT_SETTINGS = {
 				actorname_text_shadow_color = {0, 0, 0, 1},
 				actorname_text_shadow_color_offset = {1, -1},
 				actorname_text_anchor = {side = 8, x = 0, y = 0},
-				actorname_text_max_length = 100,
+				actorname_text_max_width = 300,
 				
 				spellname_text_size = 10,
 				spellname_text_font = "Arial Narrow",
@@ -549,6 +553,7 @@ PLATER_DEFAULT_SETTINGS = {
 				spellname_text_shadow_color = {0, 0, 0, 1},
 				spellname_text_shadow_color_offset = {1, -1},
 				spellname_text_anchor = {side = 9, x = 0, y = 0},
+				spellname_text_max_width = 300,
 				
 				spellpercent_text_enabled = true,
 				spellpercent_text_size = 10,
@@ -758,7 +763,7 @@ PLATER_DEFAULT_SETTINGS = {
 		castbar_target_shadow_color_offset = {1, -1},
 		castbar_target_color = {0.968627, 0.992156, 1, 1},
 		castbar_target_font = "Arial Narrow",
-		castbar_target_text_max_length = 100,
+		castbar_target_text_max_width = 300,
 
 		--> castbar icon
 		castbar_icon_customization_enabled = true,
