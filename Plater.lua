@@ -6016,18 +6016,16 @@ function Plater.OnInit() --private --~oninit ~init
 
 	function Plater.QuickHealthUpdate (unitFrame)
 		Plater.StartLogPerformanceCore("Plater-Core", "Health", "QuickHealthUpdate")
-		local unitHealth = UnitHealth (unitFrame.unit)
-		local unitHealthMax = UnitHealthMax (unitFrame.unit)
-		unitFrame.healthBar:SetMinMaxValues (0, unitHealthMax, IS_WOW_PROJECT_MIDNIGHT and Enum.StatusBarInterpolation.ExponentialEaseOut)
-		unitFrame.healthBar:SetValue (unitHealth, IS_WOW_PROJECT_MIDNIGHT and Enum.StatusBarInterpolation.ExponentialEaseOut)
+		--local unitHealth = UnitHealth (unitFrame.unit)
+		--local unitHealthMax = UnitHealthMax (unitFrame.unit)
+		--unitFrame.healthBar:SetMinMaxValues (0, unitHealthMax, IS_WOW_PROJECT_MIDNIGHT and Enum.StatusBarInterpolation.ExponentialEaseOut)
+		--unitFrame.healthBar:SetValue (unitHealth, IS_WOW_PROJECT_MIDNIGHT and Enum.StatusBarInterpolation.ExponentialEaseOut)
 		
-		unitFrame.healthBar.CurrentHealth = unitHealth
-		unitFrame.healthBar.CurrentHealthMax = unitHealthMax
-		unitFrame.healthBar.currentHealth = unitHealth
-		unitFrame.healthBar.currentHealthMax = unitHealthMax
+		--unitFrame.healthBar.currentHealth = unitHealth
+		--unitFrame.healthBar.currentHealthMax = unitHealthMax
 		if IS_WOW_PROJECT_MIDNIGHT then
-			unitFrame.healthBar.currentHealthMissing = UnitHealthMissing(unitFrame.unit, true)
-			unitFrame.healthBar.currentHealthPercent = UnitHealthPercent(unitFrame.unit, true, CurveConstants.ScaleTo100)
+			--unitFrame.healthBar.currentHealthMissing = UnitHealthMissing(unitFrame.unit, true)
+			--unitFrame.healthBar.currentHealthPercent = UnitHealthPercent(unitFrame.unit, true, CurveConstants.ScaleTo100)
 		else
 			unitFrame.healthBar.currentHealthMissing = unitHealthMax - unitHealth
 			unitFrame.healthBar.currentHealthPercent = unitHealth / unitHealthMax * 100
@@ -6080,10 +6078,6 @@ function Plater.OnInit() --private --~oninit ~init
 			self.currentHealthMissing = currentHealthMax - currentHealth
 			self.currentHealthPercent = currentHealth / currentHealthMax * 100
 		end
-		
-		--> exposed values to scripts
-		self.CurrentHealth = currentHealth
-		self.CurrentHealthMax = currentHealthMax
 	
 		if (plateFrame.IsSelf) then
 		
@@ -6115,7 +6109,7 @@ function Plater.OnInit() --private --~oninit ~init
 
 			--quick hide the nameplate if the unit doesn't exists or if the unit died
 			if (DB_USE_QUICK_HIDE and (IS_WOW_PROJECT_MAINLINE)) then
-				if ((not UnitExists (unitFrame.unit) and not UnitIsVisible(unitFrame.unit)) or (not IS_WOW_PROJECT_MIDNIGHT and self.CurrentHealth < 1)) then
+				if ((not UnitExists (unitFrame.unit) and not UnitIsVisible(unitFrame.unit)) or (not IS_WOW_PROJECT_MIDNIGHT and self.currentHealth < 1)) then
 					--the unit died!
 					unitFrame:Hide()
 					Plater.EndLogPerformanceCore("Plater-Core", "Health", "OnUpdateHealth")
@@ -7228,7 +7222,7 @@ end
 					scriptEnv._NpcID = tickFrame.PlateFrame [MEMBER_NPCID]
 					scriptEnv._UnitName = tickFrame.PlateFrame [MEMBER_NAME]
 					scriptEnv._UnitGUID = tickFrame.PlateFrame [MEMBER_GUID]
-					scriptEnv._HealthPercent = healthBar.CurrentHealth / healthBar.CurrentHealthMax * 100
+					scriptEnv._HealthPercent = healthBar.currentHealth / healthBar.currentHealthMax * 100
 			
 					--run onupdate script
 					unitFrame:ScriptRunOnUpdate(scriptInfo)
@@ -10059,16 +10053,15 @@ end
 
 	--> animation with acceleration ~animation ~healthbaranimation
 	function Plater.AnimateLeftWithAccel (self, deltaTime)
-		local distance = max((self.AnimationStart - self.AnimationEnd) / self.CurrentHealthMax, 0.01) -- % travel, with min of 1%
+		local distance = max((self.AnimationStart - self.AnimationEnd) / self.currentHealthMax, 0.01) -- % travel, with min of 1%
 		local fps = Plater.FPSData.curFPS or 60
 		local calcAnimationSpeed = (distance / fps * 2 * DB_ANIMATION_TIME_DILATATION) --scale with fps
 		
-		self.AnimationStart = self.CurrentHealthMax == 0 and 1 or self.AnimationStart - (self.CurrentHealthMax * calcAnimationSpeed)
+		self.AnimationStart = self.currentHealthMax == 0 and 1 or self.AnimationStart - (self.currentHealthMax * calcAnimationSpeed)
 		
 		if (self.AnimationStart-1 <= self.AnimationEnd) then
 			self.AnimationStart = self.AnimationEnd
 			self:SetValue (self.AnimationEnd)
-			--self.CurrentHealth = self.AnimationEnd
 			self.IsAnimating = false
 			if (self.Spark) then
 				self.Spark:Hide()
@@ -10077,32 +10070,32 @@ end
 		end
 		
 		self:SetValue (self.AnimationStart)
-		--self.CurrentHealth = self.AnimationStart
+		--self.currentHealth = self.AnimationStart
 		
 		if (self.Spark) then
-			self.Spark:SetPoint ("center", self, "left", self.AnimationStart / self.CurrentHealthMax * self:GetWidth(), 0)
+			self.Spark:SetPoint ("center", self, "left", self.AnimationStart / self.currentHealthMax * self:GetWidth(), 0)
 			self.Spark:Show()
 		end
 	end
 
 	function Plater.AnimateRightWithAccel (self, deltaTime)
-		if self.AnimationEnd > self.CurrentHealthMax then self.AnimationEnd = self.CurrentHealthMax end
-		local distance = max((self.AnimationEnd - self.AnimationStart) / self.CurrentHealthMax, 0.01) -- % travel, with min of 1%
+		if self.AnimationEnd > self.currentHealthMax then self.AnimationEnd = self.currentHealthMax end
+		local distance = max((self.AnimationEnd - self.AnimationStart) / self.currentHealthMax, 0.01) -- % travel, with min of 1%
 		local fps = Plater.FPSData.curFPS or 60
 		local calcAnimationSpeed = (distance / fps * 2 * DB_ANIMATION_TIME_DILATATION) --scale with fps
 		
-		self.AnimationStart = self.AnimationStart + (self.CurrentHealthMax * calcAnimationSpeed)
+		self.AnimationStart = self.AnimationStart + (self.currentHealthMax * calcAnimationSpeed)
 		
 		if (self.AnimationStart+1 >= self.AnimationEnd) then
 			self.AnimationStart = self.AnimationEnd
 			self:SetValue (self.AnimationEnd)
-			--self.CurrentHealth = self.AnimationEnd
+			--self.currentHealth = self.AnimationEnd
 			self.IsAnimating = false
 			return
 		end
 		
 		self:SetValue (self.AnimationStart)
-		--self.CurrentHealth = self.AnimationStart
+		--self.currentHealth = self.AnimationStart
 	end	
 
 	function Plater.CreateScaleAnimation (plateFrame) --private
