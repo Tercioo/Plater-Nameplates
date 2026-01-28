@@ -596,6 +596,8 @@ UpdateUnitAuraCacheData = function (unit, updatedAuras)
 		unitCacheData = {}
 		unitCacheData.buffs = {}
 		unitCacheData.debuffs = {}
+		unitCacheData.buffsInOrder = {}
+		unitCacheData.debuffsInOrder = {}
 		UnitAuraCacheData[unit] = unitCacheData
 	end
 	
@@ -603,6 +605,8 @@ UpdateUnitAuraCacheData = function (unit, updatedAuras)
 		UnitAuraCacheData[unit] = {}
 		UnitAuraCacheData[unit].buffs = {}
 		UnitAuraCacheData[unit].debuffs = {}
+		UnitAuraCacheData[unit].buffsInOrder = {}
+		UnitAuraCacheData[unit].debuffsInOrder = {}
 		UnitAuraCacheData[unit].buffsChanged = true
 		UnitAuraCacheData[unit].debuffsChanged = true
 		UnitAuraCacheData[unit].isFullUpdateHelp = true
@@ -613,6 +617,8 @@ UpdateUnitAuraCacheData = function (unit, updatedAuras)
 		UnitAuraCacheData[unit] = {}
 		UnitAuraCacheData[unit].buffs = {}
 		UnitAuraCacheData[unit].debuffs = {}
+		UnitAuraCacheData[unit].buffsInOrder = {}
+		UnitAuraCacheData[unit].debuffsInOrder = {}
 		UnitAuraCacheData[unit].buffsChanged = true
 		UnitAuraCacheData[unit].debuffsChanged = true
 		UnitAuraCacheData[unit].isFullUpdateHelp = (updatedAuras == nil and true) or updatedAuras.isFullUpdate or false
@@ -729,6 +735,9 @@ local function getUnitAuras(unit, filter)
 					tmpDebuffs[auraInstanceID] = aura
 				end
 			end
+			if C_UnitAuras.GetUnitAuras then
+				unitCacheData.debuffsInOrder = C_UnitAuras.GetUnitAuras(unit, "HARMFUL", nil, IS_WOW_PROJECT_MIDNIGHT and (Plater.db.profile.aura_sort and Enum.UnitAuraSortRule.Expiration or Enum.UnitAuraSortRule.Unsorted) or nil)
+			end
 			unitCacheData.debuffs = tmpDebuffs
 			unitCacheData.debuffsChanged = false
 		end
@@ -743,6 +752,9 @@ local function getUnitAuras(unit, filter)
 					tmpBuffs[auraInstanceID] = aura
 				end
 			end
+			if C_UnitAuras.GetUnitAuras then
+				unitCacheData.buffsInOrder = C_UnitAuras.GetUnitAuras(unit, "HELPFUL", nil, IS_WOW_PROJECT_MIDNIGHT and (Plater.db.profile.aura_sort and Enum.UnitAuraSortRule.Expiration or Enum.UnitAuraSortRule.Unsorted) or nil)
+			end
 			unitCacheData.buffs = tmpBuffs
 			unitCacheData.buffsChanged = false
 		end
@@ -752,7 +764,7 @@ local function getUnitAuras(unit, filter)
 	end
 	
 	if not filter then return end --old code requires this.
-	unitCacheData = unitCacheData or {debuffs = {}, buffs = {}}
+	unitCacheData = unitCacheData or {debuffs = {}, buffs = {}, debuffsInOrder = {}, buffsInOrder = {}}
 	UnitAuraCacheData[unit] = unitCacheData
 	
 	-- full updates and old way here
@@ -766,6 +778,11 @@ local function getUnitAuras(unit, filter)
 		for _, aura in pairs(auraData) do
 			setAdditionalAuraFields(aura, unit)
 			filterCache[aura.auraInstanceID] = aura
+		end
+		if isHarmful then
+			unitCacheData.debuffsInOrder = auraData
+		elseif isHelpful then
+			unitCacheData.buffsInOrder = auraData
 		end
 	else
 		local continuationToken
@@ -828,8 +845,8 @@ function Plater.GetUnitAurasForUnitID(unitID)
 	end
 
 	local allAuras = {}
-	local aurasHelp = getUnitAuras(unitID, "HELPFUL") or {buffs = {}}
-	local aurasHarm = getUnitAuras(unitID, "HARMFUL") or {debuffs = {}}
+	local aurasHelp = getUnitAuras(unitID, "HELPFUL") or {buffs = {}, buffsInOrder = {}}
+	local aurasHarm = getUnitAuras(unitID, "HARMFUL") or {debuffs = {}, debuffsInOrder = {}}
 	DF.table.copy(allAuras, aurasHelp.buffs)
 	DF.table.copy(allAuras, aurasHarm.debuffs)
 	return allAuras
@@ -1115,20 +1132,33 @@ end
 			--when sorted, this is reliable
 			amountFramesShown = index
 			
-			if not IS_WOW_PROJECT_MIDNIGHT and (profile.aura_sort) then
-				-- this needs to be done in addition. the above is just to keep them consistent in order
-				local iconFrameContainerCopy = {}
-				local index = 0
-				for _, icon in pairs(iconFrameContainer) do
-					if icon:IsShown() then
-						index = index + 1
-						iconFrameContainerCopy[index] = icon
+			if (profile.aura_sort) then
+				if IS_WOW_PROJECT_MIDNIGHT then
+					local order = {}
+					for i, auraData in pairs (self.debuffsInOrder or {}) do
+						order[auraData.auraInstanceID] = i
 					end
+					for i, auraData in pairs (self.buffsInOrder or {}) do
+						order[auraData.auraInstanceID] = i
+					end
+					table.sort (iconFrameContainer, function(aura1, aura2) 
+						return (order[aura1.auraInstanceID] or 0) < (order[aura2.auraInstanceID] or 0)
+					end)
+				else
+					-- this needs to be done in addition. the above is just to keep them consistent in order
+					local iconFrameContainerCopy = {}
+					local index = 0
+					for _, icon in pairs(iconFrameContainer) do
+						if icon:IsShown() then
+							index = index + 1
+							iconFrameContainerCopy[index] = icon
+						end
+					end
+					iconFrameContainer = iconFrameContainerCopy
+					table.sort (iconFrameContainer, Plater.AuraIconsSortFunction)
+					--when sorted, this is reliable
+					amountFramesShown = index
 				end
-				iconFrameContainer = iconFrameContainerCopy
-				table.sort (iconFrameContainer, Plater.AuraIconsSortFunction)
-				--when sorted, this is reliable
-				amountFramesShown = index
 			end
 		
 			local growDirection
@@ -2315,6 +2345,7 @@ end
  
 		if (isBuff) then
 			local unitAuras = getUnitAuras(unit, "HELPFUL") or {}
+			self.buffsInOrder = unitAuras.buffsInOrder or {}
 			
 			for id, aura in pairs(unitAuras.buffs or {}) do
 				--DevTool:AddData({i, aura})
@@ -2366,6 +2397,7 @@ end
 		else
 			--> debuffs
 			local unitAuras = getUnitAuras(unit, "HARMFUL") or {}
+			self.debuffsInOrder = unitAuras.debuffsInOrder or {}
 			
 			for id, aura in pairs(unitAuras.debuffs or {}) do
 				--DevTool:AddData({i, aura})
@@ -2463,7 +2495,7 @@ end
 		--> debuffs
 		if unitAuraEventData.hasDebuff then
 			local unitAuras = getUnitAuras(unit, "HARMFUL") or {}
-			
+			self.debuffsInOrder = unitAuras.debuffsInOrder or {}
 			for id, aura in pairs(unitAuras.debuffs or {}) do
 				--DevTool:AddData({i, aura})
 				local name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, canApplyAura, isBossAura, isFromPlayerOrPlayerPet, nameplateShowAll, timeMod, applications = 
@@ -2561,6 +2593,7 @@ end
 		--> buffs
 		if unitAuraEventData.hasBuff then
 			local unitAuras = getUnitAuras(unit, "HELPFUL") or {}
+			self.buffsInOrder = unitAuras.buffsInOrder or {}
 			--DevTool:AddData(unitAuras, "HELPFUL")
 			
 			for id, aura in pairs(unitAuras.buffs or {}) do
@@ -2756,6 +2789,7 @@ end
 		--> debuffs
 		if (Plater.db.profile.aura_show_debuffs_personal and unitAuraEventData.hasDebuff) then
 			local unitAuras = getUnitAuras(unit, "HARMFUL") or {}
+			self.debuffsInOrder = unitAuras.debuffsInOrder or {}
 			--DevTool:AddData(unitAuras)
 			
 			for id, aura in pairs(unitAuras.debuffs or {}) do
@@ -2802,6 +2836,7 @@ end
 		--> buffs
 		if (Plater.db.profile.aura_show_buffs_personal and unitAuraEventData.hasBuff) then
 			local unitAuras = getUnitAuras(unit, "HELPFUL|PLAYER") or {}
+			self.buffsInOrder = unitAuras.buffsInOrder or {}
 			--DevTool:AddData(unitAuras)
 			
 			for id, aura in pairs(unitAuras.buffs or {}) do
