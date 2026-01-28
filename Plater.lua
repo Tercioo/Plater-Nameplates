@@ -3867,6 +3867,10 @@ Plater.AnchorNamesByPhraseId = {
 				end
 			end
 			
+			plateFrame.actorType = actorType
+			unitFrame.actorType = actorType
+			unitFrame.ActorType = actorType --exposed to scripts
+			
 			--show unit name, the frame work will hide it due to ShowUnitName is set to false
 			unitFrame.unitName:Show()
 			
@@ -4153,10 +4157,6 @@ Plater.AnchorNamesByPhraseId = {
 					end
 				end
 			end
-			
-			plateFrame.actorType = actorType
-			unitFrame.actorType = actorType
-			unitFrame.ActorType = actorType --exposed to scripts
 			
 			--sending true to force the color update when the color overrider is enabled
 			Plater.FindAndSetNameplateColor (unitFrame, true)
