@@ -8,6 +8,10 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1769591867, "Bug Fix", "Jan 28th, 2026", "Fixed aura sorting for Midnight.", "cont1nuity"},
+			{1769591867, "Backend Change", "Jan 28th, 2026", "Added option for health bar animation in Midnight.", "cont1nuity"},
+			{1769591867, "Backend Change", "Jan 28th, 2026", "Switched to 'Max width' for certain texts to cut off at the set width of the text.", "cont1nuity"},
+			
 			{1769439797, "Bug Fix", "Jan 27th, 2026", "Fixed issues regarding scaling and threat overrides for unit type coloring which were introduced with prior versions.", "cont1nuity"},
 			{1769439797, "Bug Fix", "Jan 26th, 2026", "Numerous fixes to address Midnight compatibility.", "cont1nuity"},
 			
