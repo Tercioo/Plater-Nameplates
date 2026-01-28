@@ -5798,7 +5798,7 @@ function Plater.OnInit() --private --~oninit ~init
 					--self.Text:SetText(self.SpellNameRenamed)
 					--cut the spell name text to fit within the castbar
 					--Plater.UpdateSpellNameSize (self.Text, unitFrame.ActorType, nil, isInCombat)
-					Plater.UpdateTextSize (self.SpellNameRenamed or "", self.Text, DB_PLATE_CONFIG [unitFrame.actorType].spellname_text_max_width or 300, nil, nil)					
+					Plater.UpdateTextSize (self.SpellNameRenamed or "", self.Text, DB_PLATE_CONFIG [unitFrame.actorType].spellname_text_max_width or 0, nil)
 					
 					-- in some occasions channeled casts don't have a CLEU entry... check this here
 					if (unitFrame.ActorType == "enemynpc" and event == "UNIT_SPELLCAST_CHANNEL_START" and (not DB_CAPTURED_SPELLS[spellID] or DB_CAPTURED_SPELLS[spellID].isChanneled == nil or not DB_CAPTURED_CASTS[spellID] or DB_CAPTURED_CASTS[spellID].isChanneled == nil)) then
@@ -5892,7 +5892,7 @@ function Plater.OnInit() --private --~oninit ~init
 									targetName = C_ColorUtil.WrapTextInColor(targetName, color)
 								end
 								
-								targetName = Plater.UpdateTextSize (targetName or "", self.FrameOverlay.TargetName, Plater.db.profile.castbar_target_text_max_width or 300, nil, nil)
+								targetName = Plater.UpdateTextSize (targetName or "", self.FrameOverlay.TargetName, Plater.db.profile.castbar_target_text_max_width or 0, nil)
 								
 							else
 								self.FrameOverlay.TargetName:SetText(nil)
@@ -8531,7 +8531,7 @@ end
 		end
 		
 		if IS_WOW_PROJECT_MIDNIGHT then
-			Plater.UpdateTextSize (spellName, nameString, maxWidth, nil, nil)
+			Plater.UpdateTextSize (spellName, nameString, maxWidth, nil)
 		else		
 			while (nameString:GetUnboundedStringWidth() > maxLength) do
 				spellName = strsub (spellName, 1, #spellName - 1)
@@ -8557,7 +8557,11 @@ end
 	function Plater.UpdateUnitName (plateFrame)
 		local nameString = plateFrame.CurrentUnitNameString
 
-		Plater.UpdateTextSize (plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME] or "", nameString, DB_PLATE_CONFIG [plateFrame.actorType].actorname_text_max_width or 300, nil, nil)
+		local maxWidth = DB_PLATE_CONFIG [plateFrame.actorType].actorname_text_max_width or 0
+		if plateFrame.IsFriendlyPlayerWithoutHealthBar or plateFrame.IsNpcWithoutHealthBar then
+			maxWidth = 0
+		end
+		Plater.UpdateTextSize (plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME] or "", nameString, maxWidth, nil)
 		
 		--check if the player has a guild, this check is done when the nameplate is added
 		if (plateFrame.playerGuildName) then
@@ -8567,30 +8571,36 @@ end
 		end
 	end
 
-	function Plater.UpdateTextSize (text, fontString, maxWidth, maxLength, fontSize)
+	function Plater.UpdateTextSize (text, fontString, maxWidth, maxLength)
 		if not text then return end
-		if maxWidth and type(fontSize) == "number" then
-			local textLength = floor(maxWidth / fontSize * 2)
-			text = string.format("%." .. textLength .. "s", text)
-			if fontString then
-				fontString:SetWordWrap(false)
+		--if maxWidth and type(fontSize) == "number" then
+		--	local textLength = floor(maxWidth / fontSize * 2)
+		--	text = string.format("%." .. textLength .. "s", text)
+		--	if fontString then
+		--		fontString:SetWordWrap(false)
+		--		fontString:SetNonSpaceWrap(false)
+		--		fontString:SetSpacing(0)
+		--		
+		--		fontString:SetText (text)
+		--		
+		--		if not IS_WOW_PROJECT_MIDNIGHT then
+		--			-- cleanup utf8...
+		--			text = DF:CleanTruncateUTF8String(text)
+		--			textString:SetText (text)
+		--		end
+		--	end
+		--	
+		--else
+		if fontString and maxWidth then
+			if maxWidth == 0 then
+				fontString:SetWordWrap(true)
+				fontString:SetNonSpaceWrap(true)
+				fontString:SetSpacing(0)
+			else
 				fontString:SetWordWrap(false)
 				fontString:SetNonSpaceWrap(false)
 				fontString:SetSpacing(0)
-				
-				fontString:SetText (text)
-				
-				if not IS_WOW_PROJECT_MIDNIGHT then
-					-- cleanup utf8...
-					text = DF:CleanTruncateUTF8String(text)
-					textString:SetText (text)
-				end
 			end
-			
-		elseif fontString and maxWidth then
-			fontString:SetWordWrap(false)
-			fontString:SetNonSpaceWrap(false)
-			fontString:SetSpacing(0)
 			fontString:SetWidth(maxWidth)
 			fontString:SetText(text)	
 			
