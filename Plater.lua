@@ -3839,7 +3839,11 @@ Plater.AnchorNamesByPhraseId = {
 			--ensure castBar is enabled properly when switching actorType or unit (with unit changing, it will be properly enabled)
 			local castBarWasEnabled = (unitFrame.Settings.ShowCastBar and (plateFrame.PreviousUnitType == actorType)) or (unitFrame.unit ~= unitID)
 			unitFrame.Settings.ShowCastBar = true -- reset to default, clearing later.
-		
+			
+			plateFrame.actorType = actorType
+			unitFrame.actorType = actorType
+			unitFrame.ActorType = actorType --exposed to scripts
+			
 			--set the unit
 			unitFrame:SetUnit (unitID)
 			
@@ -3866,10 +3870,6 @@ Plater.AnchorNamesByPhraseId = {
 					Plater.RemoveFromAuraUpdate (unitID, unitFrame) -- no auras
 				end
 			end
-			
-			plateFrame.actorType = actorType
-			unitFrame.actorType = actorType
-			unitFrame.ActorType = actorType --exposed to scripts
 			
 			--show unit name, the frame work will hide it due to ShowUnitName is set to false
 			unitFrame.unitName:Show()
