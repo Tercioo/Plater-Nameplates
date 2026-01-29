@@ -5513,7 +5513,7 @@ function Plater.OnInit() --private --~oninit ~init
 					end
 
 					--print(icon:GetHeight(), issecretvalue(icon:GetHeight()))
-					if IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(icon:GetHeight()) then
+					if IS_WOW_PROJECT_MIDNIGHT then-- and not issecretvalue(icon:GetHeight()) then
 						icon:SetWidth(icon:GetHeight())
 					else
 						icon:SetWidth(height)
