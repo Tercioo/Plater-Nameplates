@@ -1142,7 +1142,7 @@ end
 						order[auraData.auraInstanceID] = i
 					end
 					table.sort (iconFrameContainer, function(aura1, aura2) 
-						return (order[aura1.auraInstanceID] or 0) >= (order[aura2.auraInstanceID] or 0)
+						return (order[aura1.auraInstanceID] or 0) > (order[aura2.auraInstanceID] or 0)
 					end)
 				else
 					-- this needs to be done in addition. the above is just to keep them consistent in order
