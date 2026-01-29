@@ -119,7 +119,7 @@ function platerInternal.CreateBossModOptions()
 	end
 
     local bossmod_options = {
-        {type = "label", get = function() return "DBM / BigWigs Support:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {type = "label", name = "LABEL_DBM_BIGWIGS_SUPPORT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 
         {
             type = "toggle",
@@ -139,7 +139,7 @@ function platerInternal.CreateBossModOptions()
                 Plater.db.profile.bossmod_castrename_enabled = value
                 --Plater.UpdateAllPlates()
             end,
-            name = "Enable boss-mod cast spell renaming",
+            name = "OPTIONS_BOSSMOD_CAST_RENAME",
             desc = "Enable cast rename based on BigWigs or DBM spell names.",
         },
         
@@ -150,13 +150,13 @@ function platerInternal.CreateBossModOptions()
                 Plater.db.profile.bossmod_castrename_priority = value
                 --Plater.UpdateAllPlates()
             end,
-            name = "Prioritize boss-mod cast renaming",
+            name = "OPTIONS_BOSSMOD_CAST_RENAME_PRIORITY",
             desc = "Prioritize cast rename based on BigWigs or DBM spell names over Plater cast names.",
         },
         
         {type = "blank"},
         
-        {type = "label", get = function() return "Global Icon Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {type = "label", name = "LABEL_GLOBAL_ICON_SETTINGS", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
         
         --width
         {
@@ -227,7 +227,7 @@ function platerInternal.CreateBossModOptions()
         },
         
         {type = "blank"},
-        {type = "label", get = function() return "Icon Spell-Name Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {type = "label", name = "LABEL_ICON_SPELLNAME_TEXT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
         --text enabled
         {
             type = "toggle",
@@ -236,13 +236,13 @@ function platerInternal.CreateBossModOptions()
                 Plater.db.profile.bossmod_support_bars_text_enabled = value
                 Plater.UpdateAllPlates()
             end,
-            name = "Icon text enabled",
+            name = "OPTIONS_BOSSMOD_ICON_TEXT_ENABLED",
             desc = "Enable Bar Text (Spell-Name).",
         },
         
         {type = "blank"},
         
-        {type = "label", get = function() return "Icon Cooldown Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {type = "label", name = "LABEL_ICON_COOLDOWN_TEXT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
         {
             type = "toggle",
             get = function() return Plater.db.profile.bossmod_cooldown_text_enabled end,
@@ -270,7 +270,7 @@ function platerInternal.CreateBossModOptions()
         },
         
         {type = "breakline"},
-        {type = "label", get = function() return "DBM Options:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {type = "label", name = "LABEL_DBM_OPTIONS", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
         {
             type = "toggle",
             get = function() return Plater.db.profile.bossmod_support_bars_enabled end,
@@ -278,7 +278,7 @@ function platerInternal.CreateBossModOptions()
                 Plater.db.profile.bossmod_support_bars_enabled = value
                 Plater.UpdateAllPlates()
             end,
-            name = "DBM CD-Bar Icons enabled",
+            name = "OPTIONS_BOSSMOD_DBM_BAR_ICONS",
             desc = "Enable the boss mod bar support for DBM, to show timer bars as icons on the nameplates.",
         },
         {
@@ -288,7 +288,7 @@ function platerInternal.CreateBossModOptions()
                 Plater.db.profile.bossmod_aura_glow_cooldown = value
                 Plater.UpdateAllPlates()
             end,
-            name = "Cooldown Icon Glow",
+            name = "OPTIONS_BOSSMOD_COOLDOWN_ICON_GLOW",
             desc = "Enable glow on expiring cooldown timer icons.",
         },
         {

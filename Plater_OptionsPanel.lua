@@ -3,6 +3,7 @@ local addonId, platerInternal = ...
 local Plater = Plater
 ---@type detailsframework
 local DF = DetailsFramework
+local L = Plater.L
 local LibSharedMedia = LibStub:GetLibrary ("LibSharedMedia-3.0")
 local LibRangeCheck = LibStub:GetLibrary ("LibRangeCheck-3.0")
 local _
@@ -501,7 +502,7 @@ function Plater.OpenOptionsPanel(pageNumber, bIgnoreLazyLoad)
 		{name = "DebuffConfig",				text = "OPTIONS_TABNAME_BUFF_SETTINGS"},
 		{name = "DebuffBlacklist",			text = "OPTIONS_TABNAME_BUFF_TRACKING"},
 		{name = "DebuffSpecialContainer",	text = "OPTIONS_TABNAME_BUFF_SPECIAL"},
-		{name = "GhostAurasFrame",			text = "Ghost Auras"}, --localize-me
+		{name = "GhostAurasFrame",			text = "OPTIONS_TABNAME_GHOST_AURAS"}, --localize-me
 		{name = "EnemyNpc",					text = "OPTIONS_TABNAME_NPCENEMY"},
 		{name = "EnemyPlayer",				text = "OPTIONS_TABNAME_PLAYERENEMY"},
 		{name = "FriendlyNpc",				text = "OPTIONS_TABNAME_NPCFRIENDLY"},
@@ -516,11 +517,11 @@ function Plater.OpenOptionsPanel(pageNumber, bIgnoreLazyLoad)
 		{name = "AdvancedConfig",			text = "OPTIONS_TABNAME_ADVANCED", createOnDemandFunc = platerInternal.CreateAdvancedOptions},
 		{name = "resourceFrame",			text = "OPTIONS_TABNAME_COMBOPOINTS"},
 
-		{name = "WagoIo", text = "Wago Imports"}, --wago_imports --localize-me
+		{name = "WagoIo", text = "OPTIONS_TABNAME_WAGO"}, --wago_imports --localize-me
 		{name = "SearchFrame", text = "OPTIONS_TABNAME_SEARCH", createOnDemandFunc = platerInternal.CreateSearchOptions},
-		{name = "PluginsFrame", text = "Plugins"}, --localize-me
-		{name = "BossModConfig", text = "Boss-Mods", createOnDemandFunc = platerInternal.CreateBossModOptions}, --localize-me
-		{name = "Designer", text = "Designer", createOnDemandFunc = Plater.CreateDesignerWindow}, --localize-me
+		{name = "PluginsFrame", text = "OPTIONS_TABNAME_PLUGINS"}, --localize-me
+		{name = "BossModConfig", text = "OPTIONS_TABNAME_BOSSMODS", createOnDemandFunc = platerInternal.CreateBossModOptions}, --localize-me
+		{name = "OPTIONS_TABNAME_DESIGNER", text = "OPTIONS_TABNAME_DESIGNER", createOnDemandFunc = Plater.CreateDesignerWindow}, --localize-me
 		--{name = "ProfileSelector", text = "Templates", createOnDemandFunc = Plater.CreateDesignerWindow}, --localize-me
 		
 	}, 
@@ -1715,7 +1716,7 @@ end
 local debuff_options = {
 
 	--{type = "label", get = function() return "|TInterface\\GossipFrame\\AvailableLegendaryQuestIcon:0|tTest Auras:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
-	{type = "label", get = function() return "Test Auras:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+	{type = "label", name = "LABEL_TEST_AURAS", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	{
 		type = "toggle",
 		boxfirst = true,
@@ -1734,7 +1735,7 @@ local debuff_options = {
 	
 	{type = "blank"},
 	
-	{type = "label", get = function() return "General Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},	
+	{type = "label", name = "LABEL_GENERAL_SETTINGS", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},	
 	{
 		type = "toggle",
 		boxfirst = true,
@@ -1874,7 +1875,7 @@ local debuff_options = {
 	},
 	
 	{type = "blank"},
-	{type = "label", get = function() return "Aura Size (Frame 1):" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+	{type = "label", name = "LABEL_AURA_SIZE_FRAME1", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	
 	{
 		type = "range",
@@ -1923,7 +1924,7 @@ local debuff_options = {
 	},
 	
 	{type = "blank"},
-	{type = "label", get = function() return "Aura Size (Frame 2):" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+	{type = "label", name = "LABEL_AURA_SIZE_FRAME2", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	
 	{
 		type = "range",
@@ -1973,7 +1974,7 @@ local debuff_options = {
 	
 	{type = "blank"},
 
-	{type = "label", get = function() return "Automatic Aura Tracking:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = IS_WOW_PROJECT_MIDNIGHT},
+	{type = "label", name = "LABEL_AUTOMATIC_AURA_TRACKING", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = IS_WOW_PROJECT_MIDNIGHT},
 
 	{
 		type = "toggle",
@@ -1984,8 +1985,8 @@ local debuff_options = {
 			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
-		name = "Show Auras Casted by You",
-		desc = "Show Auras Casted by You and your pets.",
+		name = "OPTIONS_AURA_SHOW_YOURS",
+		desc = "OPTIONS_AURA_SHOW_YOURS_DESC",
 		--hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
@@ -1998,8 +1999,8 @@ local debuff_options = {
 			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
-		name = "Show Auras Casted by other Players",
-		desc = "Show Auras Casted by other Players.\n\n|cFFFFFF00 Important |r: This may cause a lot of auras to show!",
+		name = "OPTIONS_AURA_SHOW_OTHERS",
+		desc = "OPTIONS_AURA_SHOW_OTHERS_DESC",
 		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 
@@ -2014,8 +2015,8 @@ local debuff_options = {
 			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
-		name = "Show Important Auras",
-		desc = "Show buffs and debuffs which the game tag as important.",
+		name = "OPTIONS_AURA_SHOW_IMPORTANT",
+		desc = "OPTIONS_AURA_SHOW_IMPORTANT_DESC",
 		--hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
@@ -2028,8 +2029,8 @@ local debuff_options = {
 			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
-		name = "Show Dispellable Buffs",
-		desc = "Show auras which can be dispelled or stolen.",
+		name = "OPTIONS_AURA_SHOW_DISPELLABLE",
+		desc = "OPTIONS_AURA_SHOW_DISPELLABLE_DESC",
 		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
@@ -2042,8 +2043,8 @@ local debuff_options = {
 			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
-		name = "Only short Dispellable Buffs on Players",
-		desc = "Show auras which can be dispelled or stolen on players if they are below 120sec duration (only applicable when 'Show Dispellable Buffs' is enabled).",
+		name = "OPTIONS_AURA_SHORT_DISPELLABLE",
+		desc = "OPTIONS_SHOW_AURAS_WHICH_CAN_BE_DISPELLED_OR_STOLEN_ON_PLA_DESC",
 		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
@@ -2056,8 +2057,8 @@ local debuff_options = {
 			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
-		name = "Show Enrage Buffs",
-		desc = "Show auras which are in the enrage category.",
+		name = "OPTIONS_AURA_SHOW_ENRAGE",
+		desc = "OPTIONS_AURA_SHOW_ENRAGE_DESC",
 		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
@@ -2070,8 +2071,8 @@ local debuff_options = {
 			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
-		name = "Show Magic Buffs",
-		desc = "Show auras which are in the magic type category.",
+		name = "OPTIONS_AURA_SHOW_MAGIC",
+		desc = "OPTIONS_AURA_SHOW_MAGIC_DESC",
 		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
@@ -2084,8 +2085,8 @@ local debuff_options = {
 			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
-		name = "Show Crowd Control",
-		desc = "Show crowd control effects.",
+		name = "OPTIONS_AURA_SHOW_CC",
+		desc = "OPTIONS_AURA_SHOW_CC_DESC",
 		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
@@ -2100,8 +2101,8 @@ local debuff_options = {
 			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
-		name = "Show Buffs Casted by the NPC",
-		desc = "Show Buffs Casted by the NPC itself",
+		name = "OPTIONS_AURA_SHOW_NPC_BUFFS",
+		desc = "OPTIONS_AURA_SHOW_NPC_BUFFS_DESC",
 		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	{
@@ -2113,8 +2114,8 @@ local debuff_options = {
 			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
-		name = "Show Debuffs Casted by the NPC",
-		desc = "Show Debuffs Casted by the NPC itself",
+		name = "OPTIONS_AURA_SHOW_NPC_DEBUFFS",
+		desc = "OPTIONS_AURA_SHOW_NPC_DEBUFFS_DESC",
 		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	{
@@ -2126,8 +2127,8 @@ local debuff_options = {
 			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
-		name = "Show Auras Casted by other NPCs",
-		desc = "Show Auras Casted not from players and not from the unit itself.\n\n|cFFFFFF00 Important |r: This may cause a lot of auras to show!",
+		name = "OPTIONS_AURA_SHOW_OTHER_NPCS",
+		desc = "OPTIONS_SHOW_AURAS_CASTED_NOT_FROM_PLAYERS_AND_NOT_FROM_TH_DESC",
 		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
@@ -2142,8 +2143,8 @@ local debuff_options = {
 			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
-		name = "Show offensive player CDs",
-		desc = "Show offensive CDs on enemy/friendly players.",
+		name = "OPTIONS_AURA_SHOW_OFFENSIVE_CD",
+		desc = "OPTIONS_AURA_SHOW_OFFENSIVE_CD_DESC",
 		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
@@ -2156,21 +2157,21 @@ local debuff_options = {
 			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
-		name = "Show defensive player CDs",
-		desc = "Show defensive CDs on enemy/friendly players.",
+		name = "OPTIONS_AURA_SHOW_DEFENSIVE_CD",
+		desc = "OPTIONS_AURA_SHOW_DEFENSIVE_CD_DESC",
 		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
 	{type = "breakline"},
-	{type = "label", get = function() return "Aura Frame 1:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+	{type = "label", name = "LABEL_AURA_FRAME1", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	
 	--> grow direction
 	{
 		type = "select",
 		get = function() return Plater.db.profile.aura_grow_direction end,
 		values = function() return build_grow_direction_options ("aura_grow_direction") end,
-		name = "Grow Direction",
-		desc = "To which side aura icons should grow.\n\n|cFFFFFF00 Important |r: debuffs are added first, buffs after.",
+		name = "OPTIONS_AURA_GROW_DIRECTION",
+		desc = "OPTIONS_AURA_GROW_DIRECTION_DESC",
 	},
 	
 	{
@@ -2178,7 +2179,7 @@ local debuff_options = {
 		get = function() return Plater.db.profile.aura_frame1_anchor.side end,
 		values = function() return build_anchor_side_table (nil, "aura_frame1_anchor") end,
 		name = "OPTIONS_ANCHOR",
-		desc = "Which side of the nameplate this aura frame is attached to.",
+		desc = "OPTIONS_AURA_ANCHOR_DESC",
 	},
 	{
 		type = "range",
@@ -2214,7 +2215,7 @@ local debuff_options = {
 	},
 	
 	{type = "blank"},
-	{type = "label", get = function() return "Aura Frame 2:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+	{type = "label", name = "LABEL_AURA_FRAME2", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	
 	{
 		type = "toggle",
@@ -2226,15 +2227,15 @@ local debuff_options = {
 			Plater.UpdateAllPlates()
 		end,
 		name = "OPTIONS_ENABLED",
-		desc = "When enabled auras are separated: Buffs are placed on this second frame, Debuffs on the first.",
+		desc = "OPTIONS_AURA_SEPARATE_DESC",
 	},
 	--> grow direction
 	{
 		type = "select",
 		get = function() return Plater.db.profile.aura2_grow_direction end,
 		values = function() return build_grow_direction_options ("aura2_grow_direction") end,
-		name = "Grow Direction",
-		desc = "To which side aura icons should grow.",
+		name = "OPTIONS_AURA_GROW_DIRECTION",
+		desc = "OPTIONS_AURA_GROW_DIRECTION_DESC2",
 	},
 	--> offset
 	{
@@ -2242,7 +2243,7 @@ local debuff_options = {
 		get = function() return Plater.db.profile.aura_frame2_anchor.side end,
 		values = function() return build_anchor_side_table (nil, "aura_frame2_anchor") end,
 		name = "OPTIONS_ANCHOR",
-		desc = "Which side of the nameplate this aura frame is attached to.",
+		desc = "OPTIONS_AURA_ANCHOR_DESC",
 	},
 	{
 		type = "range",
@@ -2279,7 +2280,7 @@ local debuff_options = {
 	
 	{type = "blank"},
 
-	{type = "label", get = function() return "Stack Counter:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+	{type = "label", name = "LABEL_STACK_COUNTER", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 
 	{
 		type = "select",
@@ -2300,7 +2301,7 @@ local debuff_options = {
 		max = 24,
 		step = 1,
 		name = "OPTIONS_SIZE",
-		desc = "Size",
+		desc = "OPTIONS_DESC_SIZE",
 	},
 	
 	--text outline options
@@ -2342,14 +2343,14 @@ local debuff_options = {
 			Plater.UpdateAllPlates()
 		end,
 		name = "OPTIONS_COLOR",
-		desc = "Color",
+		desc = "OPTIONS_COLOR_DESC",
 	},
 	{
 		type = "select",
 		get = function() return Plater.db.profile.aura_stack_anchor.side end,
 		values = function() return build_anchor_side_table (nil, "aura_stack_anchor") end,
 		name = "OPTIONS_ANCHOR",
-		desc = "Which side of the buff icon the stack counter should attach to.",
+		desc = "OPTIONS_WHICH_SIDE_OF_THE_BUFF_ICON_THE_STACK_COUNTER_SHOU_DESC",
 	},
 	{
 		type = "range",
@@ -2383,7 +2384,7 @@ local debuff_options = {
 
 	{type = "blank"},
 
-	{type = "label", get = function() return "Aura Border Colors:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+	{type = "label", name = "LABEL_AURA_BORDER_COLORS", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	{
 		type = "color",
 		boxfirst = true,
@@ -2396,8 +2397,8 @@ local debuff_options = {
 			color[1], color[2], color[3], color[4] = r, g, b, a
 			Plater.UpdateAllPlates()
 		end,
-		name = "Important Auras Border Color",
-		desc = "Important Auras Border Color",
+		name = "OPTIONS_BORDER_IMPORTANT",
+		desc = "OPTIONS_IMPORTANT_AURAS_BORDER_COLOR_DESC",
 		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	{
@@ -2412,8 +2413,8 @@ local debuff_options = {
 			color[1], color[2], color[3], color[4] = r, g, b, a
 			Plater.UpdateAllPlates()
 		end,
-		name = "Dispellable Buffs Border Color",
-		desc = "Dispellable Buffs Border Color",
+		name = "OPTIONS_BORDER_DISPELLABLE",
+		desc = "OPTIONS_DISPELLABLE_BUFFS_BORDER_COLOR_DESC",
 		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	{
@@ -2428,8 +2429,8 @@ local debuff_options = {
 			color[1], color[2], color[3], color[4] = r, g, b, a
 			Plater.UpdateAllPlates()
 		end,
-		name = "Enrage Buffs Border Color",
-		desc = "Enrage Buffs Border Color",
+		name = "OPTIONS_BORDER_ENRAGE",
+		desc = "OPTIONS_ENRAGE_BUFFS_BORDER_COLOR_DESC",
 		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	--border color is buff
@@ -2445,8 +2446,8 @@ local debuff_options = {
 			color[1], color[2], color[3], color[4] = r, g, b, a
 			Plater.UpdateAllPlates()
 		end,
-		name = "Buffs Border Color",
-		desc = "Buffs Border Color",
+		name = "OPTIONS_BORDER_BUFFS",
+		desc = "OPTIONS_BUFFS_BORDER_COLOR_DESC",
 	},
 		--border color is debuff
 	{
@@ -2461,8 +2462,8 @@ local debuff_options = {
 			color[1], color[2], color[3], color[4] = r, g, b, a
 			Plater.UpdateAllPlates()
 		end,
-		name = "Debuffs Border Color",
-		desc = "Debuffs Border Color",
+		name = "OPTIONS_BORDER_DEBUFFS",
+		desc = "OPTIONS_DEBUFFS_BORDER_COLOR_DESC",
 	},
 	--border color is offensive
 	{
@@ -2477,8 +2478,8 @@ local debuff_options = {
 			color[1], color[2], color[3], color[4] = r, g, b, a
 			Plater.UpdateAllPlates()
 		end,
-		name = "Crowd Control Border Color",
-		desc = "Crowd Control Border Color",
+		name = "OPTIONS_BORDER_CC",
+		desc = "OPTIONS_CROWD_CONTROL_BORDER_COLOR_DESC",
 	},
 	--border color is offensive
 	{
@@ -2493,8 +2494,8 @@ local debuff_options = {
 			color[1], color[2], color[3], color[4] = r, g, b, a
 			Plater.UpdateAllPlates()
 		end,
-		name = "Offensive CD Border Color",
-		desc = "Offensive CD Border Color",
+		name = "OPTIONS_BORDER_OFFENSIVE",
+		desc = "OPTIONS_OFFENSIVE_C_BORDER_COLOR_DESC",
 		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	--border color is offensive
@@ -2510,8 +2511,8 @@ local debuff_options = {
 			color[1], color[2], color[3], color[4] = r, g, b, a
 			Plater.UpdateAllPlates()
 		end,
-		name = "Defensive CD Border Color",
-		desc = "Defensive CD Border Color",
+		name = "OPTIONS_BORDER_DEFENSIVE",
+		desc = "OPTIONS_DEFENSIVE_C_BORDER_COLOR_DESC",
 		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	--border color is default
@@ -2527,8 +2528,8 @@ local debuff_options = {
 			color[1], color[2], color[3], color[4] = r, g, b, a
 			Plater.UpdateAllPlates()
 		end,
-		name = "Default Border Color",
-		desc = "Default Border Color",
+		name = "OPTIONS_BORDER_DEFAULT",
+		desc = "OPTIONS_DEFAULT_BORDER_COLOR_DESC",
 	},
 	
 	{
@@ -2541,13 +2542,13 @@ local debuff_options = {
 			Plater.UpdateAllPlates()
 			Plater.RefreshAuras()
 		end,
-		name = "Use type based aura border colors",
-		desc = "Use the Blizzard debuff type colors for borders",
+		name = "OPTIONS_AURA_TYPE_COLORS",
+		desc = "OPTIONS_USE_THE_BLIZZARD_DEBUFF_TYPE_COLORS_FOR_BORDERS_DESC",
 	},	
 	
 	{type = "breakline"},
 	
-	{type = "label", get = function() return "Auras per Row:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+	{type = "label", name = "LABEL_AURAS_PER_ROW", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	{
 		type = "toggle",
 		boxfirst = true,
@@ -2558,8 +2559,8 @@ local debuff_options = {
 			Plater.RefreshAuras()
 			Plater.UpdateAllPlates()
 		end,
-		name = "Automatic",
-		desc = "When enabled auras are split into rows automatically according to healthbar width when growing left/right. Mods can overwrite the amount.",
+		name = "OPTIONS_AUTOMATIC",
+		desc = "OPTIONS_WHEN_ENABLED_AURAS_ARE_SPLIT_INTO_ROWS_AUTOMATICAL_DESC",
 	},
 	{
 		type = "range",
@@ -2573,8 +2574,8 @@ local debuff_options = {
 		min = 1,
 		max = 10,
 		step = 1,
-		name = "Auras per Row 1",
-		desc = "Auras per Row if auto-mode is disabled for Aura Frame 1.",
+		name = "OPTIONS_AURAS_PER_ROW1",
+		desc = "OPTIONS_AURAS_PER_ROW_IF_AUTOMODE_IS_DISABLED_FOR_AURA_FRA_DESC",
 	},
 		{
 		type = "range",
@@ -2588,12 +2589,12 @@ local debuff_options = {
 		min = 1,
 		max = 10,
 		step = 1,
-		name = "Auras per Row 2",
-		desc = "Auras per Row if auto-mode is disabled for Aura Frame 2.",
+		name = "OPTIONS_AURAS_PER_ROW2",
+		desc = "OPTIONS_AURAS_PER_ROW_IF_AUTOMODE_IS_DISABLED_FOR_AURA_FRA_DESC",
 	},
 	
 	{type = "break"},
-	{type = "label", get = function() return "Aura Timer:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+	{type = "label", name = "LABEL_AURA_TIMER", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	
 	{
 		type = "toggle",
@@ -2605,7 +2606,7 @@ local debuff_options = {
 			Plater.UpdateAllPlates()
 		end,
 		name = "OPTIONS_ENABLED",
-		desc = "Time left on buff or debuff.",
+		desc = "OPTIONS_TIME_LEFT_ON_BUFF_OR_DEBUFF_DESC",
 	},
 	
 	{
@@ -2617,8 +2618,8 @@ local debuff_options = {
 			Plater.RefreshAuras()
 			Plater.UpdateAllPlates()
 		end,
-		name = "Pandemic coloring",
-		desc = "Coloring the timer value based on duration left: >25%: default, <25%: orange, <15%: red.",
+		name = "OPTIONS_PANDEMIC_COLORING",
+		desc = "OPTIONS_COLORING_THE_TIMER_VALUE_BASED_ON_DURATION_LEFT_DE_DESC",
 		hidden = not IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
@@ -2631,8 +2632,8 @@ local debuff_options = {
 			Plater.RefreshAuras()
 			Plater.UpdateAllPlates()
 		end,
-		name = "Show Decimals",
-		desc = "Show decimals below 10s remaining time",
+		name = "OPTIONS_SHOW_DECIMALS",
+		desc = "OPTIONS_SHOW_DECIMALS_BELOW_S_REMAINING_TIME_DESC",
 		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 
@@ -2644,8 +2645,8 @@ local debuff_options = {
 			Plater.db.profile.disable_omnicc_on_auras = value
 			Plater.RefreshOmniCCGroup()
 		end,
-		name = "Hide OmniCC/TullaCC Timer",
-		desc = "OmniCC/TullaCC timers won't show in the aura.\n\n|cFFFFFF00 Important |r: require /reload when toggling this feature.",
+		name = "OPTIONS_HIDE_OMNICC",
+		desc = "OPTIONS_OMNI_CC_TULLA_C_TIMERS_WONT_SHOW_IN_THE_AURANN_IMP_DESC",
 	},
 	
 	{
@@ -2667,7 +2668,7 @@ local debuff_options = {
 		max = 40,
 		step = 1,
 		name = "OPTIONS_SIZE",
-		desc = "Size",
+		desc = "OPTIONS_DESC_SIZE",
 	},
 	
 	--text outline options
@@ -2710,14 +2711,14 @@ local debuff_options = {
 			Plater.UpdateAllPlates()
 		end,
 		name = "OPTIONS_COLOR",
-		desc = "Color",
+		desc = "OPTIONS_COLOR_DESC",
 	},
 	{
 		type = "select",
 		get = function() return Plater.db.profile.aura_timer_text_anchor.side end,
 		values = function() return build_anchor_side_table (nil, "aura_timer_text_anchor") end,
 		name = "OPTIONS_ANCHOR",
-		desc = "Which side of the buff icon the timer should attach to.",
+		desc = "OPTIONS_WHICH_SIDE_OF_THE_BUFF_ICON_THE_TIMER_SHOULD_ATTAC_DESC",
 	},
 	{
 		type = "range",
@@ -2750,13 +2751,13 @@ local debuff_options = {
 	},
 	
 	{type = "blank"},
-	{type = "label", get = function() return "Swipe Animation:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+	{type = "label", name = "LABEL_SWIPE_ANIMATION", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	{
 		type = "select",
 		get = function() return Plater.db.profile.aura_cooldown_edge_texture end,
 		values = function() return cooldown_edge_texture_selected_options end,
-		name = "Swipe Texture",
-		desc = "Texture in the form of a line which rotates within the aura icon following the aura remaining time.",
+		name = "OPTIONS_SWIPE_TEXTURE",
+		desc = "OPTIONS_TEXTURE_IN_THE_FORM_OF_A_LINE_WHICH_ROTATES_WITHIN_DESC",
 	},
 	{
 		type = "toggle",
@@ -2767,8 +2768,8 @@ local debuff_options = {
 			Plater.IncreaseRefreshID()
 			Plater.UpdateAllPlates()
 		end,
-		name = "Show Swipe Closure Texture",
-		desc = "Show a layer with a dark texture above the icon. This layer is applied or removed as the swipe moves.",
+		name = "OPTIONS_SHOW_SWIPE",
+		desc = "OPTIONS_SHOW_A_LAYER_WITH_A_DARK_TEXTURE_ABOVE_THE_ICON_TH_DESC",
 	},
 	{
 		type = "toggle",
@@ -2779,8 +2780,8 @@ local debuff_options = {
 			Plater.IncreaseRefreshID()
 			Plater.UpdateAllPlates()
 		end,
-		name = "Swipe Closure Inverted",
-		desc = "If enabled the swipe closure texture is applied as the swipe moves instead.",
+		name = "OPTIONS_SWIPE_INVERTED",
+		desc = "OPTIONS_IF_ENABLED_THE_SWIPE_CLOSURE_TEXTURE_IS_APPLIED_AS_DESC",
 	},
 }
 
@@ -3256,7 +3257,7 @@ Plater.CreateAuraTesting()
 			{type = "blank"},
 			{type = "blank"},
 			{type = "blank"},
-			{type = "label", get = function() return "Icon Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{type = "label", name = "LABEL_ICON_SETTINGS", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			--anchor
 			{
 				type = "select",
@@ -3278,7 +3279,7 @@ Plater.CreateAuraTesting()
 				step = 1,
 				usedecimals = true,
 				name = "OPTIONS_XOFFSET",
-				desc = "Slightly move horizontally.",
+				desc = "OPTIONS_SLIGHTLY_MOVE_HORIZONTALLY_DESC",
 			},
 			--y offset
 			{
@@ -3293,7 +3294,7 @@ Plater.CreateAuraTesting()
 				step = 1,
 				usedecimals = true,
 				name = "OPTIONS_YOFFSET",
-				desc = "Slightly move vertically.",
+				desc = "OPTIONS_SLIGHTLY_MOVE_VERTICALLY_DESC",
 			},
 			--width
 			{
@@ -3334,7 +3335,7 @@ Plater.CreateAuraTesting()
 				max = 10,
 				step = 1,
 				name = "OPTIONS_BORDER_THICKNESS",
-				desc = "Border Thickness" .. CVarNeedReload,
+				desc = "@OPTIONS_BORDER_THICKNESS_DESC@" .. CVarNeedReload,
 			},
 			--wide icons
 			{
@@ -3344,8 +3345,8 @@ Plater.CreateAuraTesting()
 					Plater.db.profile.extra_icon_wide_icon = value
 					Plater.UpdateAllPlates()
 				end,
-				name = "Wide Icons",
-				desc = "Wide Icons",
+				name = "OPTIONS_WIDE_ICONS",
+				desc = "OPTIONS_WIDE_ICONS_DESC",
 			},
 			--use blizzard border colors
 			{
@@ -3355,8 +3356,8 @@ Plater.CreateAuraTesting()
 					Plater.db.profile.extra_icon_use_blizzard_border_color = value
 					Plater.UpdateAllPlates()
 				end,
-				name = "Use Blizzard border colors",
-				desc = "Use Blizzard border colors if enabled or the below defined default border color if disabled.",
+				name = "OPTIONS_USE_BLIZZ_BORDER",
+				desc = "OPTIONS_USE_BLIZZARD_BORDER_COLORS_IF_ENABLED_OR_THE_BELOW_DESC",
 			},
 			--border color
 			{
@@ -3370,15 +3371,15 @@ Plater.CreateAuraTesting()
 					color[1], color[2], color[3], color[4] = r, g, b, a
 					Plater.UpdateAllPlates()
 				end,
-				name = "Default Border Color",
-				desc = "Default Border Color",
+				name = "OPTIONS_BORDER_DEFAULT",
+				desc = "OPTIONS_DEFAULT_BORDER_COLOR_DESC",
 			},
 			{
 				type = "select",
 				get = function() return Plater.db.profile.extra_icon_cooldown_edge_texture end,
 				values = function() return extra_icon_cooldown_edge_texture_selected_options end,
-				name = "Swipe Texture",
-				desc = "Texture in the form of a line which rotates within the aura icon following the aura remaining time.",
+				name = "OPTIONS_SWIPE_TEXTURE",
+				desc = "OPTIONS_TEXTURE_IN_THE_FORM_OF_A_LINE_WHICH_ROTATES_WITHIN_DESC",
 			},
 			{
 				type = "toggle",
@@ -3387,8 +3388,8 @@ Plater.CreateAuraTesting()
 					Plater.db.profile.extra_icon_show_swipe = value
 					Plater.UpdateAllPlates()
 				end,
-				name = "Show Swipe Closure Texture",
-				desc = "If enabled the swipe closure texture is applied as the swipe moves instead.",
+				name = "OPTIONS_SHOW_SWIPE",
+				desc = "OPTIONS_IF_ENABLED_THE_SWIPE_CLOSURE_TEXTURE_IS_APPLIED_AS_DESC",
 			},
 			{
 				type = "toggle",
@@ -3397,8 +3398,8 @@ Plater.CreateAuraTesting()
 					Plater.db.profile.extra_icon_cooldown_reverse = value
 					Plater.UpdateAllPlates()
 				end,
-				name = "Swipe Closure Inverted",
-				desc = "If enabled the swipe closure texture is applied as the swipe moves instead.",
+				name = "OPTIONS_SWIPE_INVERTED",
+				desc = "OPTIONS_IF_ENABLED_THE_SWIPE_CLOSURE_TEXTURE_IS_APPLIED_AS_DESC",
 			},
 			
 			{type = "breakline"},
@@ -3411,8 +3412,8 @@ Plater.CreateAuraTesting()
 					Plater.db.profile.extra_icon_show_timer = value
 					Plater.UpdateAllPlates()
 				end,
-				name = "Show Timer",
-				desc = "Show Timer",
+				name = "OPTIONS_SHOW_TIMER",
+				desc = "OPTIONS_SHOW_TIMER_DESC",
 			},
 			{
 				type = "toggle",
@@ -3421,8 +3422,8 @@ Plater.CreateAuraTesting()
 					Plater.db.profile.extra_icon_timer_decimals = value
 					Plater.UpdateAllPlates()
 				end,
-				name = "Show Decimals",
-				desc = "Show decimals below 10s remaining time",
+				name = "OPTIONS_SHOW_DECIMALS",
+				desc = "OPTIONS_SHOW_DECIMALS_BELOW_S_REMAINING_TIME_DESC",
 			},
 			{
 				type = "select",
@@ -3461,8 +3462,8 @@ Plater.CreateAuraTesting()
 					Plater.db.profile.extra_icon_caster_name = value
 					Plater.UpdateAllPlates()
 				end,
-				name = "Show Caster Name",
-				desc = "Show Caster Name (if player)",
+				name = "OPTIONS_SHOW_CASTER",
+				desc = "OPTIONS_SHOW_CASTER_NAME_IF_PLAYER_DESC",
 			},
 			{
 				type = "select",
@@ -3501,8 +3502,8 @@ Plater.CreateAuraTesting()
 					Plater.db.profile.extra_icon_show_stacks = value
 					Plater.UpdateAllPlates()
 				end,
-				name = "Show Stacks",
-				desc = "Show Stacks",
+				name = "OPTIONS_SHOW_STACKS",
+				desc = "OPTIONS_SHOW_STACKS_DESC",
 			},
 						{
 				type = "select",
@@ -3535,7 +3536,7 @@ Plater.CreateAuraTesting()
 			
 			{type = "blank"},
 			
-			{type = "label", get = function() return "Auto Add These Types of Auras:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{type = "label", name = "LABEL_AUTO_ADD_AURA_TYPES", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			
 			--show crowd control auras
 			{
@@ -3546,8 +3547,8 @@ Plater.CreateAuraTesting()
 					Plater.RefreshDBUpvalues()
 					Plater.UpdateAllPlates()
 				end,
-				name = "Crowd Control",
-				desc = "When the unit has a crowd control spell (such as Polymorph).",
+				name = "OPTIONS_CC",
+				desc = "OPTIONS_WHEN_THE_UNIT_HAS_A_CROWD_CONTROL_SPELL_SUCH_AS_PO_DESC",
 			},
 			--show purge icons
 			{
@@ -3558,8 +3559,8 @@ Plater.CreateAuraTesting()
 					Plater.RefreshDBUpvalues()
 					Plater.UpdateAllPlates()
 				end,
-				name = "Dispellable",
-				desc = "When the unit has an aura which can be dispellable or purge by you",
+				name = "OPTIONS_DISPELLABLE",
+				desc = "OPTIONS_WHEN_THE_UNIT_HAS_AN_AURA_WHICH_CAN_BE_DISPELLABLE_DESC",
 			},
 			--show enrages
 			{
@@ -3570,8 +3571,8 @@ Plater.CreateAuraTesting()
 					Plater.RefreshDBUpvalues()
 					Plater.UpdateAllPlates()
 				end,
-				name = "Enrage",
-				desc = "When the unit has an enrage effect on it, show it.",
+				name = "OPTIONS_ENRAGE",
+				desc = "OPTIONS_WHEN_THE_UNIT_HAS_AN_ENRAGE_EFFECT_ON_IT_SHOW_IT_DESC",
 			},
 			--show enrages
 			{
@@ -3582,8 +3583,8 @@ Plater.CreateAuraTesting()
 					Plater.RefreshDBUpvalues()
 					Plater.UpdateAllPlates()
 				end,
-				name = "Magic",
-				desc = "When the unit has a magic buff on it, show it.",
+				name = "OPTIONS_MAGIC",
+				desc = "OPTIONS_WHEN_THE_UNIT_HAS_A_MAGIC_BUFF_ON_IT_SHOW_IT_DESC",
 			},
 			--show offensive player CDs
 			{
@@ -3594,8 +3595,8 @@ Plater.CreateAuraTesting()
 					Plater.RefreshDBUpvalues()
 					Plater.UpdateAllPlates()
 				end,
-				name = "Offensive player CDs",
-				desc = "When the unit has an offensive effect on it, show it.",
+				name = "OPTIONS_OFFENSIVE_CDS",
+				desc = "OPTIONS_WHEN_THE_UNIT_HAS_AN_OFFENSIVE_EFFECT_ON_IT_SHOW_I_DESC",
 			},
 			--show defensive CDs
 			{
@@ -3606,13 +3607,13 @@ Plater.CreateAuraTesting()
 					Plater.RefreshDBUpvalues()
 					Plater.UpdateAllPlates()
 				end,
-				name = "Defensive player CDs",
-				desc = "When the unit has a defensive effect on it, show it.",
+				name = "OPTIONS_DEFENSIVE_CDS",
+				desc = "OPTIONS_WHEN_THE_UNIT_HAS_A_DEFENSIVE_EFFECT_ON_IT_SHOW_IT_DESC",
 			},
 			
 			{type = "breakline"},
 			
-			{type = "label", get = function() return "Aura Border Colors:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{type = "label", name = "LABEL_AURA_BORDER_COLORS", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			--cc border color
 			{
 				type = "color",
@@ -3625,8 +3626,8 @@ Plater.CreateAuraTesting()
 					color[1], color[2], color[3], color[4] = r, g, b, a
 					Plater.UpdateAllPlates()
 				end,
-				name = "Crowd Control Border Color",
-				desc = "Crowd Control Border Color",
+				name = "OPTIONS_BORDER_CC",
+				desc = "OPTIONS_CROWD_CONTROL_BORDER_COLOR_DESC",
 			},
 			--purge border color
 			{
@@ -3640,8 +3641,8 @@ Plater.CreateAuraTesting()
 					color[1], color[2], color[3], color[4] = r, g, b, a
 					Plater.UpdateAllPlates()
 				end,
-				name = "Dispellable Border Color",
-				desc = "Dispellable Border Color",
+				name = "OPTIONS_BORDER_DISPELLABLE2",
+				desc = "OPTIONS_DISPELLABLE_BORDER_COLOR_DESC",
 			},
 			--enrage border color
 			{
@@ -3655,8 +3656,8 @@ Plater.CreateAuraTesting()
 					color[1], color[2], color[3], color[4] = r, g, b, a
 					Plater.UpdateAllPlates()
 				end,
-				name = "Enrage Border Color",
-				desc = "Enrage Border Color",
+				name = "OPTIONS_BORDER_ENRAGE2",
+				desc = "OPTIONS_ENRAGE_BORDER_COLOR_DESC",
 			},
 			--offensive border color
 			{
@@ -3670,8 +3671,8 @@ Plater.CreateAuraTesting()
 					color[1], color[2], color[3], color[4] = r, g, b, a
 					Plater.UpdateAllPlates()
 				end,
-				name = "Offensive Border Color",
-				desc = "Offensive Border Color",
+				name = "OPTIONS_BORDER_OFFENSIVE2",
+				desc = "OPTIONS_OFFENSIVE_BORDER_COLOR_DESC",
 			},
 			--defensive border color
 			{
@@ -3685,8 +3686,8 @@ Plater.CreateAuraTesting()
 					color[1], color[2], color[3], color[4] = r, g, b, a
 					Plater.UpdateAllPlates()
 				end,
-				name = "Defensive Border Color",
-				desc = "Defensive Border Color",
+				name = "OPTIONS_BORDER_DEFENSIVE2",
+				desc = "OPTIONS_DEFENSIVE_BORDER_COLOR_DESC",
 			},
 		}
 		
@@ -3766,14 +3767,14 @@ do
 	
 	options_personal = {
 
-		{type = "label", get = function() return "General Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_GENERAL_SETTINGS", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "select",
 			get = function() return "player" end,
 			values = function() return copy_settings_options end,
-			name = "Copy",
-			desc = "Copy settings from another tab.\n\nWhen selecting an option a confirmation box is shown to confirm the copy.",
+			name = "OPTIONS_COPY",
+			desc = "OPTIONS_COPY_SETTINGS_FROM_ANOTHER_TABNN_WHEN_SELECTING_AN_DESC",
 		},
 		
 		{
@@ -3784,8 +3785,8 @@ do
 				ReloadUI()
 			end,
 			nocombat = true,
-			name = "Module Enabled",
-			desc = "Enable Plater nameplates for the personal bar.\n\n|cFFFFFF00 Important |r: Forces a /reload on change.\nThis option is dependent on the client`s nameplate state (on/off)",
+			name = "OPTIONS_MODULE_ENABLED",
+			desc = "OPTIONS_ENABLE_PLATER_NAMEPLATES_FOR_THE_PERSONAL_BARNN_IM_DESC",
 		},
 		
 		{
@@ -3795,8 +3796,8 @@ do
 				Plater.db.profile.plate_config.player.click_through = value
 				Plater.UpdateSelfPlate()
 			end,
-			name = "Click Through",
-			desc = "Player nameplate won't receive mouse clicks.",
+			name = "OPTIONS_CLICK_THROUGH",
+			desc = "OPTIONS_PLAYER_NAMEPLATE_WONT_RECEIVE_MOUSE_CLICKS_DESC",
 		},
 		{
 			type = "toggle",
@@ -3809,8 +3810,8 @@ do
 				end
 			end,
 			nocombat = true,
-			name = "Always Show" .. CVarIcon,
-			desc = "If enabled, the personal health bar is always shown.\n\n|cFFFFFF00 Important |r: 'Personal Health and Mana Bars' (in the Main Menu tab) must be enabled." .. CVarDesc,
+			name = "@OPTIONS_ALWAYS_SHOW@" .. CVarIcon,
+			desc = "@OPTIONS_IF_ENABLED_THE_PERSONAL_HEALTH_BAR_IS_ALWAYS_SHOWN_DESC@" .. CVarDesc,
 		},
 
 		{
@@ -3824,8 +3825,8 @@ do
 				end
 			end,
 			nocombat = true,
-			name = "Show When you Have a Target" .. CVarIcon,
-			desc = "If enabled, show the personal bar when you have a target.\n\n|cFFFFFF00 Important |r: 'Personal Health and Mana Bars' (in the Main Menu tab) must be enabled." .. CVarDesc,
+			name = "@OPTIONS_SHOW_WITH_TARGET@" .. CVarIcon,
+			desc = "@OPTIONS_IF_ENABLED_SHOW_THE_PERSONAL_BAR_WHEN_YOU_HAVE_A_T_DESC@" .. CVarDesc,
 		},
 		{
 			type = "toggle",
@@ -3838,8 +3839,8 @@ do
 				end
 			end,
 			nocombat = true,
-			name = "Show In Combat" .. CVarIcon,
-			desc = "If enabled, show the personal bar when you are in combat.\n\n|cFFFFFF00 Important |r: 'Personal Health and Mana Bars' (in the Main Menu tab) must be enabled." .. CVarDesc,
+			name = "@OPTIONS_SHOW_IN_COMBAT@" .. CVarIcon,
+			desc = "@OPTIONS_IF_ENABLED_SHOW_THE_PERSONAL_BAR_WHEN_YOU_ARE_IN_C_DESC@" .. CVarDesc,
 		},
 		{
 			type = "range",
@@ -3857,7 +3858,7 @@ do
 			thumbscale = 1.7,
 			usedecimals = true,
 			name = L["OPTIONS_ALPHA"] .. CVarIcon,
-			desc = "Alpha" .. CVarDesc,
+			desc = "@OPTIONS_ALPHA_DESC@" .. CVarDesc,
 			nocombat = true,
 		},
 		{
@@ -3875,13 +3876,13 @@ do
 			step = 0.1,
 			thumbscale = 1.7,
 			usedecimals = true,
-			name = "Scale" .. CVarIcon,
-			desc = "Scale" .. CVarDesc,
+			name = "@OPTIONS_SCALE_DESC@" .. CVarIcon,
+			desc = "@OPTIONS_SCALE_DESC@" .. CVarDesc,
 			nocombat = true,
 		},
 
 		{type = "blank"},
-		{type = "label", get = function() return "Aura Frame:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_AURA_FRAME", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
 			get = function() return Plater.db.profile.aura_show_buffs_personal end,
@@ -3917,8 +3918,8 @@ do
 				Plater.RefreshAuras()
 				Plater.UpdateAllPlates()
 			end,
-			name = "Don't filter Buffs by Duration",
-			desc = "Show buffs on you on the Personal Bar regardless of duration (show no-duration and >60sec).",
+			name = "OPTIONS_NO_DURATION_FILTER",
+			desc = "OPTIONS_SHOW_BUFFS_ON_YOU_ON_THE_PERSONAL_BAR_REGARDLESS_O_DESC",
 		},
 		
 		{
@@ -3930,8 +3931,8 @@ do
 				Plater.RefreshAuras()
 				Plater.UpdateAllPlates()
 			end,
-			name = "Only important buffs",
-			desc = "Show only whitelisted buffs and those that would be shown on the default blizzard personal bar.",
+			name = "OPTIONS_ONLY_IMPORTANT",
+			desc = "OPTIONS_SHOW_ONLY_WHITELISTED_BUFFS_AND_THOSE_THAT_WOULD_B_DESC",
 		},
 
 		{
@@ -3996,7 +3997,7 @@ do
 		
 		--{type = "blank"},
 	
-		{type = "label", get = function() return "Personal Bar Constrain:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = IS_WOW_PROJECT_MIDNIGHT},
+		{type = "label", name = "LABEL_PERSONAL_BAR_CONSTRAIN", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = IS_WOW_PROJECT_MIDNIGHT},
 		
 		{
 			type = "execute",
@@ -4004,8 +4005,8 @@ do
 				SetCVar ("nameplateSelfTopInset", 0.50)
 				SetCVar ("nameplateSelfBottomInset", 0.20)
 			end,
-			desc = "When using a fixed position and want to go back to Blizzard default." .. CVarDesc,
-			name = "Reset to Automatic Position" .. CVarIcon,
+			desc = "@OPTIONS_WHEN_USING_A_FIXED_POSITION_AND_WANT_TO_GO_BACK_TO_DESC@" .. CVarDesc,
+			name = "@OPTIONS_RESET_POSITION@" .. CVarIcon,
 			nocombat = true,
 			width = 140,
 			hidden = IS_WOW_PROJECT_MIDNIGHT,
@@ -4075,13 +4076,13 @@ do
 			max = 98,
 			step = 1,
 			nocombat = true,
-			name = "Fixed Position" .. CVarIcon,
-			desc = "With a fixed position, personal bar won't move.\n\nTo revert this, click the button above." .. CVarDesc,
+			name = "@OPTIONS_FIXED_POSITION@" .. CVarIcon,
+			desc = "@OPTIONS_WITH_A_FIXED_POSITION_PERSONAL_BAR_WONT_MOVENN_TO__DESC@" .. CVarDesc,
 			hidden = IS_WOW_PROJECT_MIDNIGHT,
 		},
 		
 		--{type = "blank"},
-		{type = "label", get = function() return "Blizzard Cast Bar:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_BLIZZARD_CAST_BAR", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		--hide castbar from blizzard
 		{
@@ -4097,7 +4098,7 @@ do
 		{type = "breakline"},
 		
 		--life size
-		{type = "label", get = function() return "Health Bar:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_HEALTH_BAR", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
 			get = function() return Plater.db.profile.plate_config.player.healthbar_enabled end,
@@ -4142,7 +4143,7 @@ do
 		
 		--energy bar settings
 		--{type = "blank"},
-		{type = "label", get = function() return "Power Bar:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_POWER_BAR", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "toggle",
@@ -4188,7 +4189,7 @@ do
 		
 		--cast bar settings
 		--{type = "blank"},
-		{type = "label", get = function() return "Cast Bar:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_CAST_BAR", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "toggle",
@@ -4264,7 +4265,7 @@ do
 		
 		
 		--cast text size
-		{type = "label", get = function() return "Spell Name Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_SPELL_NAME_TEXT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
 			get = function() return Plater.db.profile.plate_config.player.spellname_text_size end,
@@ -4377,14 +4378,14 @@ do
 			max = 300,
 			step = 1,
 			usedecimals = false,
-			name = "Max width",
-			desc = "Spell name text length limitation.\n 0 = no limitation",
+			name = "OPTIONS_MAX_WIDTH",
+			desc = "OPTIONS_SPELL_NAME_TEXT_LENGTH_LIMITATIONN_NO_LIMITATION_DESC",
 		},
 
 		
 		{type = "breakline"},
 
-		{type = "label", get = function() return "Spell Cast Time Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_SPELL_CAST_TIME_TEXT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
 			get = function() return Plater.db.profile.plate_config.player.spellpercent_text_enabled end,
@@ -4393,7 +4394,7 @@ do
 				Plater.UpdateAllPlates()
 			end,
 			name = "OPTIONS_ENABLED",
-			desc = "Show the cast time progress.",
+			desc = "OPTIONS_SHOW_THE_CAST_TIME_PROGRESS_DESC",
 		},
 		--cast time text
 		{
@@ -4502,7 +4503,7 @@ do
 		{type = "blank"},
 		
 		
-		{type = "label", get = function() return "Power Percent Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_POWER_PERCENT_TEXT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--enabled
 		{
 			type = "toggle",
@@ -4512,7 +4513,7 @@ do
 				Plater.UpdateAllPlates()
 			end,
 			name = "OPTIONS_ENABLED",
-			desc = "Show the percent text.",
+			desc = "OPTIONS_SHOW_THE_PERCENT_TEXT_DESC",
 		},
 		--percent text size
 		{
@@ -4546,8 +4547,8 @@ do
 				Plater.db.profile.plate_config.player.power_percent_text_outline = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Show Outline",
-			desc = "If the text has a black outline.",
+			name = "OPTIONS_SHOW_OUTLINE",
+			desc = "OPTIONS_IF_THE_TEXT_HAS_A_BLACK_OUTLINE_DESC",
 		},
 		--]=]
 		
@@ -4588,7 +4589,7 @@ do
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
-			name = "Text Color",
+			name = "OPTIONS_TEXT_COLOR2",
 			desc = "OPTIONS_TEXT_COLOR",
 		},
 		--percent text alpha
@@ -4603,7 +4604,7 @@ do
 			max = 1,
 			step = 0.1,
 			name = "OPTIONS_ALPHA",
-			desc = "Set the transparency of the text.",
+			desc = "OPTIONS_SET_THE_TRANSPARENCY_OF_THE_TEXT_DESC",
 			usedecimals = true,
 		},
 		--percent anchor
@@ -4648,7 +4649,7 @@ do
 		{type = "breakline"},
 
 		--percent text
-		{type = "label", get = function() return "Health Information:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_HEALTH_INFORMATION", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--enabled
 		{
 			type = "toggle",
@@ -4658,7 +4659,7 @@ do
 				Plater.UpdateAllPlates()
 			end,
 			name = "OPTIONS_ENABLED",
-			desc = "Show the percent text.",
+			desc = "OPTIONS_SHOW_THE_PERCENT_TEXT_DESC",
 		},
 		
 		{
@@ -4673,7 +4674,7 @@ do
 				Plater.UpdateAllPlates()
 			end,
 			name = "OPTIONS_COLOR",
-			desc = "Color",
+			desc = "OPTIONS_COLOR_DESC",
 		},
 		
 		{
@@ -4684,8 +4685,8 @@ do
 				Plater.UpdateSettingsCache()
 				Plater.UpdateAllPlates()
 			end,
-			name = "Color by Health",
-			desc = "Use the regular color when full health and change it to red as the health goes lower",
+			name = "OPTIONS_COLOR_BY_HEALTH",
+			desc = "OPTIONS_USE_THE_REGULAR_COLOR_WHEN_FULL_HEALTH_AND_CHANGE__DESC",
 		},
 		
 		--out of combat
@@ -4697,8 +4698,8 @@ do
 				Plater.UpdateSettingsCache()
 				Plater.UpdateAllPlates()
 			end,
-			name = "Out of Combat",
-			desc = "Show the percent even when isn't in combat.",
+			name = "OPTIONS_OUT_OF_COMBAT",
+			desc = "OPTIONS_SHOW_THE_PERCENT_EVEN_WHEN_ISNT_IN_COMBAT_DESC",
 		},
 		--percent amount
 		{
@@ -4708,8 +4709,8 @@ do
 				Plater.db.profile.plate_config.player.percent_show_percent = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Show Percent Amount",
-			desc = "Show Percent Amount",
+			name = "OPTIONS_SHOW_PERCENT",
+			desc = "OPTIONS_SHOW_PERCENT_AMOUNT_DESC",
 		},		
 		--health amount
 		{
@@ -4719,8 +4720,8 @@ do
 				Plater.db.profile.plate_config.player.percent_show_health = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Show Health Amount",
-			desc = "Show Health Amount",
+			name = "OPTIONS_SHOW_HEALTH_AMOUNT",
+			desc = "OPTIONS_SHOW_HEALTH_AMOUNT_DESC",
 		},
 		
 		--health decimals
@@ -4731,8 +4732,8 @@ do
 				Plater.db.profile.plate_config.player.percent_text_show_decimals = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Show Decimals",
-			desc = "Show Decimals",
+			name = "OPTIONS_SHOW_DECIMALS",
+			desc = "OPTIONS_SHOW_DECIMALS_DESC",
 		},			
 		
 		--percent text size
@@ -4810,7 +4811,7 @@ do
 			max = 1,
 			step = 0.1,
 			name = "OPTIONS_ALPHA",
-			desc = "Set the transparency of the text.",
+			desc = "OPTIONS_SET_THE_TRANSPARENCY_OF_THE_TEXT_DESC",
 			usedecimals = true,
 		},
 		--percent anchor
@@ -4854,7 +4855,7 @@ do
 		
 		--class resources
 		{type = "blank"},
-		{type = "label", get = function() return "Resources:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_RESOURCES", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "range",
@@ -4868,7 +4869,7 @@ do
 			step = 0.01,
 			usedecimals = true,
 			name = "OPTIONS_ALPHA",
-			desc = "Resource Alpha",
+			desc = "OPTIONS_RESOURCE_ALPHA_DESC",
 		},
 		
 		{
@@ -4883,8 +4884,8 @@ do
 			step = 0.01,
 			usedecimals = true,
 			nocombat = true,
-			name = "Resource Scale",
-			desc = "Resource Scale",
+			name = "OPTIONS_RESOURCE_SCALE",
+			desc = "OPTIONS_RESOURCE_SCALE_DESC",
 		},
 		
 		{
@@ -4900,7 +4901,7 @@ do
 			usedecimals = true,
 			nocombat = true,
 			name = "OPTIONS_YOFFSET",
-			desc = "Y Offset when resource bar are anchored to your personal bar",
+			desc = "OPTIONS_OFFSET_WHEN_RESOURCE_BAR_ARE_ANCHORED_TO_YOUR_PERS_DESC",
 		},
 		
 		{
@@ -4915,8 +4916,8 @@ do
 			step = 1,
 			usedecimals = true,
 			nocombat = true,
-			name = "Y OffSet on Target",
-			desc = "Y Offset when the resource are anchored on your current target",
+			name = "OPTIONS_Y_OFFSET_TARGET",
+			desc = "OPTIONS_OFFSET_WHEN_THE_RESOURCE_ARE_ANCHORED_ON_YOUR_CURR_DESC",
 		},	
 		
 		{
@@ -4931,15 +4932,15 @@ do
 			step = 1,
 			usedecimals = true,
 			nocombat = true,
-			name = "Offset if Buff is Shown",
-			desc = "Add this to 'Y OffSet on Target' if there is buffs or debuffs shown in the nameplate",
+			name = "OPTIONS_OFFSET_BUFF_SHOWN",
+			desc = "OPTIONS_ADD_THIS_TO_OFF_SET_ON_TARGET_IF_THERE_IS_BUFFS_OR_DESC",
 		},			
 		
 	}
 	
 	if IS_WOW_PROJECT_NOT_MAINLINE then
 		options_personal = {
-			{type = "label", get = function() return "Not available in WoW Classic." end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{type = "label", name = "LABEL_NOT_AVAILABLE_CLASSIC", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		}
 	end
 
@@ -4978,7 +4979,7 @@ table.sort (focus_indicator_texture_options, function (t1, t2) return t1.label <
 
 --targetFrame
 local targetOptions = {
-		{type = "label", get = function() return "Target:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_TARGET", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		--target texture
 		{
@@ -4986,7 +4987,7 @@ local targetOptions = {
 			get = function() return Plater.db.profile.health_selection_overlay end,
 			values = function() return health_selection_overlay_options end,
 			name = "TARGET_OVERLAY_TEXTURE",
-			desc = "TARGET_OVERLAY_TEXTURE_DESC",
+			desc = "OPTIONS_DESC_TARGETOVERLAYTEXTUREDESC",
 		},
 		{
 			type = "range",
@@ -4998,8 +4999,8 @@ local targetOptions = {
 			min = 0,
 			max = 1,
 			step = 0.1,
-			name = "TARGET_OVERLAY_ALPHA",
-			desc = "TARGET_OVERLAY_ALPHA",
+			name = "OPTIONS_DESC_TARGETOVERLAYALPHA",
+			desc = "OPTIONS_DESC_TARGETOVERLAYALPHA",
 			usedecimals = true,
 		},
 		{
@@ -5014,7 +5015,7 @@ local targetOptions = {
 				Plater.OnPlayerTargetChanged()
 			end,
 			name = L["OPTIONS_COLOR"],
-			desc = "Focus Color",
+			desc = "OPTIONS_FOCUS_COLOR_DESC",
 		},
 
 		{type = "blank"},
@@ -5027,14 +5028,14 @@ local targetOptions = {
 				Plater.UpdateAllPlates()
 			end,
 			name = "TARGET_HIGHLIGHT",
-			desc = "TARGET_HIGHLIGHT_DESC",
+			desc = "OPTIONS_DESC_TARGETHIGHLIGHTDESC",
 		},
 		{
 			type = "select",
 			get = function() return Plater.db.profile.target_highlight_texture end,
 			values = function() return target_selection_texture_selected_options end,
-			name = "TARGET_HIGHLIGHT_TEXTURE",
-			desc = "TARGET_HIGHLIGHT_TEXTURE",
+			name = "OPTIONS_DESC_TARGETHIGHLIGHTTEXTURE",
+			desc = "OPTIONS_DESC_TARGETHIGHLIGHTTEXTURE",
 		},
 		{
 			type = "range",
@@ -5046,8 +5047,8 @@ local targetOptions = {
 			min = 0,
 			max = 1,
 			step = 0.1,
-			name = "TARGET_HIGHLIGHT_ALPHA",
-			desc = "TARGET_HIGHLIGHT_ALPHA",
+			name = "OPTIONS_DESC_TARGETHIGHLIGHTALPHA",
+			desc = "OPTIONS_DESC_TARGETHIGHLIGHTALPHA",
 			usedecimals = true,
 		},
 		{
@@ -5060,8 +5061,8 @@ local targetOptions = {
 			min = 2,
 			max = 60,
 			step = 1,
-			name = "TARGET_HIGHLIGHT_SIZE",
-			desc = "TARGET_HIGHLIGHT_SIZE",
+			name = "OPTIONS_DESC_TARGETHIGHLIGHTSIZE",
+			desc = "OPTIONS_DESC_TARGETHIGHLIGHTSIZE",
 		},
 		{
 			type = "color",
@@ -5074,8 +5075,8 @@ local targetOptions = {
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.OnPlayerTargetChanged()
 			end,
-			name = "TARGET_HIGHLIGHT_COLOR",
-			desc = "TARGET_HIGHLIGHT_COLOR",
+			name = "OPTIONS_DESC_TARGETHIGHLIGHTCOLOR",
+			desc = "OPTIONS_DESC_TARGETHIGHLIGHTCOLOR",
 		},
 		
 		--target_highlight_texture
@@ -5091,7 +5092,7 @@ local targetOptions = {
 				Plater.FullRefreshAllPlates()
 			end,
 			name = "HIGHLIGHT_HOVEROVER",
-			desc = "HIGHLIGHT_HOVEROVER_DESC",
+			desc = "OPTIONS_DESC_HIGHLIGHTHOVEROVERDESC",
 		},
 		{
 			type = "range",
@@ -5103,8 +5104,8 @@ local targetOptions = {
 			min = 0,
 			max = 1,
 			step = 0.1,
-			name = "HIGHLIGHT_HOVEROVER_ALPHA",
-			desc = "HIGHLIGHT_HOVEROVER_ALPHA",
+			name = "OPTIONS_DESC_HIGHLIGHTHOVEROVERALPHA",
+			desc = "OPTIONS_DESC_HIGHLIGHTHOVEROVERALPHA",
 			usedecimals = true,
 		},		
 		
@@ -5114,8 +5115,8 @@ local targetOptions = {
 			type = "select",
 			get = function() return Plater.db.profile.target_indicator end,
 			values = function() return build_target_indicator_table() end,
-			name = "Target Bracket Indicator",
-			desc = "Target Bracket Indicator",
+			name = "OPTIONS_TARGET_BRACKET",
+			desc = "OPTIONS_TARGET_BRACKET_INDICATOR_DESC",
 		},
 		
 		{type = "blank"},
@@ -5130,8 +5131,8 @@ local targetOptions = {
 				Plater.OnPlayerTargetChanged()
 				--update
 			end,
-			name = "Target Shading",
-			desc = "Apply a layer of shadow above the nameplate when the unit is in range but isn't your current target.",
+			name = "OPTIONS_TARGET_SHADING",
+			desc = "OPTIONS_APPLY_A_LAYER_OF_SHADOW_ABOVE_THE_NAMEPLATE_WHEN_T_DESC",
 		},
 		{
 			type = "toggle",
@@ -5142,8 +5143,8 @@ local targetOptions = {
 				Plater.OnPlayerTargetChanged()
 				--update
 			end,
-			name = "Target Shading Only in Combat",
-			desc = "Apply target shading only when in combat.",
+			name = "OPTIONS_TARGET_SHADING_COMBAT",
+			desc = "OPTIONS_APPLY_TARGET_SHADING_ONLY_WHEN_IN_COMBAT_DESC",
 		},
 		{
 			type = "range",
@@ -5157,8 +5158,8 @@ local targetOptions = {
 			min = 0,
 			max = 1,
 			step = 0.1,
-			name = "Target Shading Amount",
-			desc = "Amount of shade to apply.",
+			name = "OPTIONS_TARGET_SHADING_AMOUNT",
+			desc = "OPTIONS_AMOUNT_OF_SHADE_TO_APPLY_DESC",
 			usedecimals = true,
 		},		
 		
@@ -5178,7 +5179,7 @@ local targetOptions = {
 			end,
 			nocombat = true,
 			name = "TARGET_CVAR_ALWAYSONSCREEN",
-			desc = "TARGET_CVAR_ALWAYSONSCREEN_DESC",
+			desc = "OPTIONS_DESC_TARGETCVARALWAYSONSCREENDESC",
 		},
 		
 		{
@@ -5205,7 +5206,7 @@ local targetOptions = {
 			thumbscale = 1.7,
 			usedecimals = true,
 			name = "TARGET_CVAR_LOCKTOSCREEN",
-			desc = "TARGET_CVAR_LOCKTOSCREEN_DESC",
+			desc = "OPTIONS_DESC_TARGETCVARLOCKTOSCREENDESC",
 			nocombat = true,
 		},
 		
@@ -5232,8 +5233,8 @@ local targetOptions = {
 			step = 0.005,
 			thumbscale = 1.7,
 			usedecimals = true,
-			name = "Lock to Screen (Bottom Side)|cFFFF7700*|r",
-			desc = "Min space between the nameplate and the bottom of the screen. Increase this if some part of the nameplate are going out of the screen.\n\n|cFFFFFFFFDefault: 0.065|r\n\n|cFFFFFF00 Important |r: if you're having issue, manually set using these macros:\n/run SetCVar ('nameplateOtherBottomInset', '0.1')\n/run SetCVar ('nameplateLargeBottomInset', '0.15')\n\n|cFFFFFF00 Important |r: setting to 0 disables this feature.\n\n|cFFFF7700[*]|r |cFFa0a0a0CVar, saved within Plater profile and restored when loading the profile.|r",
+			name = L["OPTIONS_CVAR_LOCKTOSCREEN_BOTTOM"],
+			desc = L["OPTIONS_MIN_SPACE_BETWEEN_THE_NAMEPLATE_AND_THE_BOTTOM_OF__DESC"],
 			nocombat = true,
 		},
 		
@@ -5251,8 +5252,8 @@ local targetOptions = {
 			max = 50,
 			step = 1,
 			thumbscale = 1.7,
-			name = "Target Behind You Distance" .. CVarIcon,
-			desc = "Max distance to allow show the nameplate of your target when the unit is behind you and not shown in the screen.\n\n|cFFFFFFFFDefault: 15|r" .. CVarDesc,
+			name = "@OPTIONS_TARGET_BEHIND_DISTANCE@" .. CVarIcon,
+			desc = "@OPTIONS_MAX_DISTANCE_TO_ALLOW_SHOW_THE_NAMEPLATE_OF_YOUR_T_DESC@" .. CVarDesc,
 			nocombat = true,
 		},
 		
@@ -5271,14 +5272,14 @@ local targetOptions = {
 			step = 0.1,
 			thumbscale = 1.7,
 			usedecimals = true,
-			name = "Target Scale" .. CVarIcon,
-			desc = "The nameplate size for the current target is multiplied by this value.\n\n|cFFFFFFFFDefault: 1|r\n\n|cFFFFFFFFRecommended: 1.15|r" .. CVarDesc,
+			name = "@OPTIONS_TARGET_SCALE@" .. CVarIcon,
+			desc = "@OPTIONS_THE_NAMEPLATE_SIZE_FOR_THE_CURRENT_TARGET_IS_MULTI_DESC@" .. CVarDesc,
 			nocombat = true,
 		},		
 		
 		{type = "breakline"},
 		
-		{type = "label", get = function() return "Focus:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_FOCUS", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "toggle",
@@ -5287,8 +5288,8 @@ local targetOptions = {
 				Plater.db.profile.focus_indicator_enabled = value
 				Plater.OnPlayerTargetChanged()
 			end,
-			name = "Show Focus Overlay",
-			desc = "Focus Indicator",
+			name = "OPTIONS_SHOW_FOCUS_OVERLAY",
+			desc = "OPTIONS_FOCUS_INDICATOR_DESC",
 		},
 		{
 			type = "color",
@@ -5302,18 +5303,18 @@ local targetOptions = {
 				Plater.OnPlayerTargetChanged()
 			end,
 			name = "OPTIONS_COLOR",
-			desc = "Focus Color",
+			desc = "OPTIONS_FOCUS_COLOR_DESC",
 		},
 		{
 			type = "select",
 			get = function() return Plater.db.profile.focus_texture end,
 			values = function() return focus_indicator_texture_options end,
 			name = "OPTIONS_TEXTURE",
-			desc = "Focus Texture",
+			desc = "OPTIONS_FOCUS_TEXTURE_DESC",
 		},
 
 		{type = "blank"},
-		{type = "label", get = function() return "Raid Mark:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_RAID_MARK", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "range",
@@ -5326,8 +5327,8 @@ local targetOptions = {
 			max = 2,
 			step = 0.1,
 			usedecimals = true,
-			name = "Scale",
-			desc = "Scale",
+			name = "OPTIONS_SCALE_DESC",
+			desc = "OPTIONS_SCALE_DESC",
 		},
 		
 		--indicator icon anchor
@@ -5351,7 +5352,7 @@ local targetOptions = {
 			step = 1,
 			usedecimals = true,
 			name = "OPTIONS_XOFFSET",
-			desc = "Slightly move horizontally.",
+			desc = "OPTIONS_SLIGHTLY_MOVE_HORIZONTALLY_DESC",
 		},
 		--indicator icon anchor y offset
 		{
@@ -5366,7 +5367,7 @@ local targetOptions = {
 			step = 1,
 			usedecimals = true,
 			name = "OPTIONS_YOFFSET",
-			desc = "Slightly move vertically.",
+			desc = "OPTIONS_SLIGHTLY_MOVE_VERTICALLY_DESC",
 		},
 		
 		{
@@ -5377,8 +5378,8 @@ local targetOptions = {
 				Plater.UpdateAllPlates()
 				Plater.UpdateRaidMarkersOnAllNameplates()
 			end,
-			name = "Extra Raid Mark",
-			desc = "Places an extra raid mark icon inside the health bar.",
+			name = "OPTIONS_EXTRA_RAID_MARK",
+			desc = "OPTIONS_PLACES_AN_EXTRA_RAID_MARK_ICON_INSIDE_THE_HEALTH_B_DESC",
 		},
 
 }
@@ -5429,7 +5430,7 @@ local relevance_options = {
 	--menu 1 ~general ~geral
 	local options_table1 = {
 
-		{type = "label", get = function() return "Interface Options (from the client):" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_INTERFACE_OPTIONS_CLIENT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
 			boxfirst = true,
@@ -5510,8 +5511,8 @@ local relevance_options = {
 					self:SetValue (GetCVarBool ("nameplateShowOnlyNameForFriendlyPlayerUnits"))
 				end
 			end,
-			name = "Hide Friendly Health Bar|cFFFF7700*|r", --show friendly nameplates
-			desc = "Hide Friendly Health Bar\nCVar: nameplateShowOnlyNameForFriendlyPlayerUnits",
+			name = "OPTIONS_CVAR_HIDE_FRIENDLY_HEALTHBAR", --show friendly nameplates
+			desc = "OPTIONS_HIDE_FRIENDLY_HEALTH_BARN_C_VAR_NAMEPLATE_SHOW_ONL_DESC",
 			nocombat = true,
 			hidden = not IS_WOW_PROJECT_MIDNIGHT,
 		},
@@ -5549,8 +5550,8 @@ local relevance_options = {
 
 				Plater.UpdateBaseNameplateOptions()
 			end,
-			name = "Class-Color Blizzard Names|cFFFF7700*|r",
-			desc = "Class coloring for blizzard nameplate names",
+			name = "OPTIONS_CVAR_CLASSCOLOR_BLIZZ_NAMES",
+			desc = "OPTIONS_CLASS_COLORING_FOR_BLIZZARD_NAMEPLATE_NAMES_DESC",
 			nocombat = true,
 			hidden = not IS_WOW_PROJECT_MIDNIGHT,
 		},
@@ -5641,7 +5642,7 @@ local relevance_options = {
 					self:SetValue (C_CVar.GetCVarBitfield("nameplateStackingTypes", Enum.NamePlateStackType.Enemy))
 				end
 			end,
-			name = "Stacking Enemy Nameplates",
+			name = "OPTIONS_STACKING_ENEMY",
 			desc = "OPTIONS_NAMEPLATES_STACKING_DESC",
 			nocombat = true,
 			hidden = not IS_WOW_PROJECT_MIDNIGHT,
@@ -5660,7 +5661,7 @@ local relevance_options = {
 					self:SetValue (C_CVar.GetCVarBitfield("nameplateStackingTypes", Enum.NamePlateStackType.Friendly))
 				end
 			end,
-			name = "Stacking Friendly Nameplates",
+			name = "OPTIONS_STACKING_FRIENDLY",
 			desc = "OPTIONS_NAMEPLATES_STACKING_DESC",
 			nocombat = true,
 			hidden = not IS_WOW_PROJECT_MIDNIGHT,
@@ -5702,8 +5703,8 @@ local relevance_options = {
 			min = IS_WOW_PROJECT_MAINLINE and 0 or 20, --20y for tbc and classic
 			max = (IS_WOW_PROJECT_MAINLINE and 60) or ((IS_WOW_PROJECT_CLASSIC_TBC or IS_WOW_PROJECT_CLASSIC_WRATH) and 41) or 20, --41y for tbc, 20y for classic era
 			step = 1,
-			name = "View Distance" .. CVarIcon,
-			desc = "How far you can see nameplates (in yards).\n\n|cFFFFFFFFCurrent limitations: Retail = 60y, TBC = 20-41y, Classic = 20y|r" .. CVarDesc,
+			name = "@OPTIONS_VIEW_DISTANCE@" .. CVarIcon,
+			desc = "@OPTIONS_HOW_FAR_YOU_CAN_SEE_NAMEPLATES_IN_YARDSNN_CURRENT__DESC@" .. CVarDesc,
 			nocombat = true,
 		},
 		
@@ -5720,14 +5721,14 @@ local relevance_options = {
 			min = 0,
 			max = (IS_WOW_PROJECT_MAINLINE and 60) or ((IS_WOW_PROJECT_CLASSIC_TBC or IS_WOW_PROJECT_CLASSIC_WRATH) and 0) or 0, --not available for classic/wrath
 			step = 1,
-			name = "Player View Distance" .. CVarIcon,
-			desc = "How far you can see player nameplates (in yards).\n\n|cFFFFFFFFLimitations: Retail = 60y, TBC/Classic: not available|r" .. CVarDesc,
+			name = "@OPTIONS_PLAYER_VIEW_DISTANCE@" .. CVarIcon,
+			desc = "@OPTIONS_HOW_FAR_YOU_CAN_SEE_PLAYER_NAMEPLATES_IN_YARDSNN_L_DESC@" .. CVarDesc,
 			nocombat = true,
 		},
 
 		{type = "blank"},
 
-		{type = "label", get = function() return "OPTIONS_GENERALSETTINGS_HEALTHBAR_ANCHOR_TITLE" end, text_template = DF:GetTemplate("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "OPTIONS_GENERALSETTINGS_HEALTHBAR_ANCHOR_TITLE", text_template = DF:GetTemplate("font", "ORANGE_FONT_TEMPLATE")},
 
 		{
 			type = "select",
@@ -5883,7 +5884,7 @@ local relevance_options = {
 
 		{type = "breakline"},
 		
-		{type = "label", get = function() return "OPTIONS_GENERALSETTINGS_TRANSPARENCY_ANCHOR_TITLE" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "OPTIONS_GENERALSETTINGS_TRANSPARENCY_ANCHOR_TITLE", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
 			get = function() return Plater.db.profile.transparency_behavior == 0x1 end,
@@ -6030,8 +6031,8 @@ local relevance_options = {
 				Plater.db.profile.honor_blizzard_plate_alpha = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Use Blizzard's Nameplate Alpha",
-			desc = "Use the 'occluded' and other blizzard nameplate alpha values from blizzard settings.\n\nThis setting only works with 'Use custom strata channels' enabled.",
+			name = "OPTIONS_USE_BLIZZ_ALPHA",
+			desc = "OPTIONS_USE_THE_OCCLUDED_AND_OTHER_BLIZZARD_NAMEPLATE_ALPH_DESC",
 			id = "transparency_blizzard_alpha",
 		},
 
@@ -6050,14 +6051,14 @@ local relevance_options = {
 			step = 0.1,
 			thumbscale = 1.7,
 			usedecimals = true,
-			name = "Occluded Alpha Multiplier" .. CVarIcon,
-			desc = "Alpha multiplyer for 'occluded' plates (when they are not in line of sight)." .. CVarDesc,
+			name = "@OPTIONS_OCCLUDED_ALPHA@" .. CVarIcon,
+			desc = "@OPTIONS_ALPHA_MULTIPLYER_FOR_OCCLUDED_PLATES_WHEN_THEY_ARE_DESC@" .. CVarDesc,
 			nocombat = true,
 		},		
 
 		{type = "blank"},
 
-		{type = "label", get = function() return "General:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_GENERAL", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
 			boxfirst = true,
@@ -6066,8 +6067,8 @@ local relevance_options = {
 				Plater.db.profile.focus_as_target_alpha = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Focus Target Alpha",
-			desc = "Use 'target alpha' for focus targets as well.",
+			name = "OPTIONS_FOCUS_ALPHA",
+			desc = "OPTIONS_USE_TARGET_ALPHA_FOR_FOCUS_TARGETS_AS_WELL_DESC",
 			id = "focus_target_alpha",
 		},
 		{
@@ -6078,8 +6079,8 @@ local relevance_options = {
 				Plater.db.profile.transparency_behavior_use_division = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Extra Contrast",
-			desc = "When the unit is out of range and isn't your target, alpha is greatly reduced.",
+			name = "OPTIONS_EXTRA_CONTRAST",
+			desc = "OPTIONS_WHEN_THE_UNIT_IS_OUT_OF_RANGE_AND_ISNT_YOUR_TARGET_DESC",
 			id = "transparency_division",
 		},
 
@@ -6112,7 +6113,7 @@ local relevance_options = {
 
 		{type = "blank"},
 		
-		{type = "label", get = function() return "Range Check By Yards - Enemy" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},		
+		{type = "label", name = "LABEL_RANGE_CHECK_ENEMY", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},		
 	}
 	
 	if IS_WOW_PROJECT_MAINLINE then
@@ -6168,7 +6169,7 @@ local relevance_options = {
 	
 		{type = "blank"},
 	
-		{type = "label", get = function() return "Range Check By Yards - Friendly" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_RANGE_CHECK_FRIENDLY", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 	}
 	
@@ -6229,7 +6230,7 @@ local relevance_options = {
 		{type = "breakline"},
 		--enemies
 		
-		{type = "label", get = function() return "OPTIONS_ALPHABYFRAME_TITLE_ENEMIES" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "OPTIONS_ALPHABYFRAME_TITLE_ENEMIES", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "toggle",
@@ -6340,7 +6341,7 @@ local relevance_options = {
 		{type = "break"},
 		--friendlies
 		
-		{type = "label", get = function() return "OPTIONS_ALPHABYFRAME_TITLE_FRIENDLY" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "OPTIONS_ALPHABYFRAME_TITLE_FRIENDLY", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "toggle",
@@ -6450,7 +6451,7 @@ local relevance_options = {
 
 		{type = "breakline"},
 
-		{type = "label", get = function() return "OPTIONS_INDICATORS" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "OPTIONS_INDICATORS", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "toggle",
@@ -6511,8 +6512,8 @@ local relevance_options = {
 				Plater.db.profile.health_cutoff_extra_glow = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Add Extra Glow to Execute Range",
-			desc = "Add Extra Glow to Execute Range",
+			name = "OPTIONS_EXTRA_GLOW_EXECUTE",
+			desc = "OPTIONS_ADD_EXTRA_GLOW_TO_EXECUTE_RANGE_DESC",
 		},
 
 		{
@@ -6758,14 +6759,14 @@ end
 	local options_table3 = {
 	
 	
-		{type = "label", get = function() return "General Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_GENERAL_SETTINGS", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "select",
 			get = function() return "player" end,
 			values = function() return copy_settings_options end,
-			name = "Copy",
-			desc = "Copy settings from another tab.\n\nWhen selecting an option a confirmation box is shown to confirm the copy.",
+			name = "OPTIONS_COPY",
+			desc = "OPTIONS_COPY_SETTINGS_FROM_ANOTHER_TABNN_WHEN_SELECTING_AN_DESC",
 		},
 		
 		{
@@ -6776,8 +6777,8 @@ end
 				ReloadUI()
 			end,
 			nocombat = true,
-			name = "Module Enabled",
-			desc = "Enable Plater nameplates for friendly players.\n\n|cFFFFFF00 Important |r: Forces a /reload on change.\nThis option is dependent on the client`s nameplate state (on/off)",
+			name = "OPTIONS_MODULE_ENABLED",
+			desc = "OPTIONS_ENABLE_PLATER_NAMEPLATES_FOR_FRIENDLY_PLAYERSNN_IM_DESC",
 		},
 		
 		{
@@ -6787,8 +6788,8 @@ end
 				Plater.db.profile.use_playerclass_color = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Use Class Colors",
-			desc = "Player name plates uses the player class color",
+			name = "OPTIONS_USE_CLASS_COLORS",
+			desc = "OPTIONS_PLAYER_NAME_PLATES_USES_THE_PLAYER_CLASS_COLOR_DESC",
 		},
 		{
 			type = "color",
@@ -6801,8 +6802,8 @@ end
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
-			name = "Fixed Color",
-			desc = "Use this color for health-bars and guild/friend text when not using class colors.\nGuild and friend colors for the name/guild texts can be overwritten with their respective color settings below.",
+			name = "OPTIONS_FIXED_COLOR",
+			desc = "OPTIONS_USE_THIS_COLOR_FOR_HEALTHBARS_AND_GUILDFRIEND_TEXT_DESC",
 		},
 		{
 			type = "toggle",
@@ -6811,8 +6812,8 @@ end
 				Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].only_damaged = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Only Damaged Players",
-			desc = "Hide the health bar when a friendly character has full health.",
+			name = "OPTIONS_ONLY_DAMAGED",
+			desc = "OPTIONS_HIDE_THE_HEALTH_BAR_WHEN_A_FRIENDLY_CHARACTER_HAS__DESC",
 		},
 		{
 			type = "toggle",
@@ -6821,8 +6822,8 @@ end
 				Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].only_thename = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Only Show Player Name",
-			desc = "Hide the health bar, only show the character name.\n\n|cFFFFFF00 Important |r: If 'Only Damaged Players' is selected and the player is damaged, this setting will be overwritten and the health bar will be shown.",
+			name = "OPTIONS_ONLY_PLAYER_NAME",
+			desc = "OPTIONS_HIDE_THE_HEALTH_BAR_ONLY_SHOW_THE_CHARACTER_NAMENN_DESC",
 		},
 		{
 			type = "toggle",
@@ -6831,8 +6832,8 @@ end
 				Plater.db.profile.plate_config.friendlyplayer.show_guild_name = value
 				Plater.UpdateAllPlates (true)
 			end,
-			name = "Show Guild Name",
-			desc = "Show Guild Name",
+			name = "OPTIONS_SHOW_GUILD_NAME",
+			desc = "OPTIONS_SHOW_GUILD_NAME_DESC",
 		},
 		{
 			type = "toggle",
@@ -6841,12 +6842,12 @@ end
 				Plater.db.profile.plate_config.friendlyplayer.click_through = value
 				Plater.UpdatePlateClickSpace (nil, true)
 			end,
-			name = "Click Through",
-			desc = "Friendly player nameplates won't receive mouse clicks.\n\n|cFFFFFF00 Important |r: also affects friendly npcs and can affect some neutral npcs too.",
+			name = "OPTIONS_CLICK_THROUGH",
+			desc = "OPTIONS_FRIENDLY_PLAYER_NAMEPLATES_WONT_RECEIVE_MOUSE_CLIC_DESC",
 		},		
 
 		{type = "blank"},
-		{type = "label", get = function() return "Aura Frame:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_AURA_FRAME", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--y offset
 		{
 			type = "range",
@@ -6863,7 +6864,7 @@ end
 			desc = "OPTIONS_YOFFSET_DESC",
 		},
 		
-		{type = "label", get = function() return "Cast Bar:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_CAST_BAR", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--x offset
 		{
 			type = "range",
@@ -6896,7 +6897,7 @@ end
 		},
 		
 		{type = "blank"},
-		{type = "label", get = function() return "Player Name Text Colors" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_PLAYER_NAME_TEXT_COLORS", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--player name color
 		{
 			type = "toggle",
@@ -6905,8 +6906,8 @@ end
 				Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_class_color = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Use Class Colors",
-			desc = "Player name/guild text uses the class color instead of the selected color. Guild or Friend colors will overwrite this, if used.",
+			name = "OPTIONS_USE_CLASS_COLORS",
+			desc = "OPTIONS_PLAYER_NAMEGUILD_TEXT_USES_THE_CLASS_COLOR_INSTEAD_DESC",
 		},
 		{
 			type = "toggle",
@@ -6915,8 +6916,8 @@ end
 				Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_friends_color = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Use Friends Colors",
-			desc = "Player name/guild text uses the selected friend color, if the player is on your friend list.",
+			name = "OPTIONS_USE_FRIENDS_COLORS",
+			desc = "OPTIONS_PLAYER_NAMEGUILD_TEXT_USES_THE_SELECTED_FRIEND_COL_DESC",
 		},
 		{
 			type = "toggle",
@@ -6925,8 +6926,8 @@ end
 				Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_guild_color = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Use Guild Colors",
-			desc = "Player name/guild text uses the selected guild color, if it is a guild mate.",
+			name = "OPTIONS_USE_GUILD_COLORS",
+			desc = "OPTIONS_PLAYER_NAMEGUILD_TEXT_USES_THE_SELECTED_GUILD_COLO_DESC",
 		},
 		{
 			type = "color",
@@ -6940,7 +6941,7 @@ end
 				Plater.UpdateAllPlates()
 			end,
 			name = "OPTIONS_COLOR",
-			desc = "The color of the text, if neither class, friend or guild colors are used.",
+			desc = "OPTIONS_DESC_THE_COLOR_OF_THE_TEXT",
 		},
 		{
 			type = "color",
@@ -6953,8 +6954,8 @@ end
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
-			name = "Friend Color",
-			desc = "Use this color for name/guild texts if the player is your friend.",
+			name = "OPTIONS_FRIEND_COLOR",
+			desc = "OPTIONS_DESC_USE_THIS_COLOR_FOR_NAMEGUILD",
 		},
 		{
 			type = "color",
@@ -6967,14 +6968,14 @@ end
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
-			name = "Guild Color",
-			desc = "Use this color for name/guild texts if the player is in your guild.",
+			name = "OPTIONS_GUILD_COLOR",
+			desc = "OPTIONS_DESC_USE_THIS_COLOR_FOR_NAMEGUILD_1",
 		},
 		
 		{type = "breakline"},
 	
 		--health bar size out of combat
-		{type = "label", get = function() return "Health Bar Size out of Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_HEALTH_BAR_SIZE_OOC", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
 			get = function() return Plater.db.profile.plate_config.friendlyplayer.health[1] end,
@@ -6986,7 +6987,7 @@ end
 			max = 300,
 			step = 1,
 			name = "OPTIONS_WIDTH",
-			desc = "Width of the health bar when out of combat.",
+			desc = "OPTIONS_DESC_WIDTH_OF_THE_HEALTH_BAR",
 		},
 		{
 			type = "range",
@@ -6999,11 +7000,11 @@ end
 			max = 100,
 			step = 1,
 			name = "OPTIONS_HEIGHT",
-			desc = "Height of the health bar when out of combat.",
+			desc = "OPTIONS_DESC_HEIGHT_OF_THE_HEALTH_BAR",
 		},
 		
 		--health bar size in combat
-		{type = "label", get = function() return "Health Bar Size in Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_HEALTH_BAR_SIZE_COMBAT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
 			get = function() return Plater.db.profile.plate_config.friendlyplayer.health_incombat[1] end,
@@ -7015,7 +7016,7 @@ end
 			max = 300,
 			step = 1,
 			name = "OPTIONS_WIDTH",
-			desc = "Width of the health bar when in combat.",
+			desc = "OPTIONS_DESC_WIDTH_OF_THE_HEALTH_BAR_1",
 		},
 		{
 			type = "range",
@@ -7028,13 +7029,13 @@ end
 			max = 100,
 			step = 1,
 			name = "OPTIONS_HEIGHT",
-			desc = "Height of the health bar when in combat.",
+			desc = "OPTIONS_DESC_HEIGHT_OF_THE_HEALTH_BAR_1",
 		},
 		
 		{type = "blank"},
 		
 		--cast bar size out of combat
-		{type = "label", get = function() return "Cast Bar Size out of Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_CAST_BAR_SIZE_OOC", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
 			get = function() return Plater.db.profile.plate_config.friendlyplayer.cast[1] end,
@@ -7046,7 +7047,7 @@ end
 			max = 300,
 			step = 1,
 			name = "OPTIONS_WIDTH",
-			desc = "Width of the cast bar when out of combat.",
+			desc = "OPTIONS_DESC_WIDTH_OF_THE_CAST_BAR",
 		},
 		{
 			type = "range",
@@ -7059,10 +7060,10 @@ end
 			max = 100,
 			step = 1,
 			name = "OPTIONS_HEIGHT",
-			desc = "Height of the cast bar when out of combat.",
+			desc = "OPTIONS_DESC_HEIGHT_OF_THE_CAST_BAR",
 		},
 		--cast bar size out of combat
-		{type = "label", get = function() return "Cast Bar Size in Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_CAST_BAR_SIZE_COMBAT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
 			get = function() return Plater.db.profile.plate_config.friendlyplayer.cast_incombat[1] end,
@@ -7074,7 +7075,7 @@ end
 			max = 300,
 			step = 1,
 			name = "OPTIONS_WIDTH",
-			desc = "Width of the cast bar when in combat.",
+			desc = "OPTIONS_DESC_WIDTH_OF_THE_CAST_BAR_1",
 		},
 		{
 			type = "range",
@@ -7087,12 +7088,12 @@ end
 			max = 100,
 			step = 1,
 			name = "OPTIONS_HEIGHT",
-			desc = "Height of the cast bar when in combat.",
+			desc = "OPTIONS_DESC_HEIGHT_OF_THE_CAST_BAR_1",
 		},
 		
 		{type = "blank"},
 		--player name size
-		{type = "label", get = function() return "Player Name Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_PLAYER_NAME_TEXT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
 			get = function() return Plater.db.profile.plate_config.friendlyplayer.actorname_text_size end,
@@ -7191,15 +7192,15 @@ end
 			max = 300,
 			step = 1,
 			usedecimals = false,
-			name = "Max width",
-			desc = "Name text length limitation.\n 0 = no limitation",
+			name = "OPTIONS_MAX_WIDTH",
+			desc = "OPTIONS_DESC_NAME_TEXT_LENGTH_LIMITATIONN_0",
 		},
 		
 		--cast text size
 		{type = "breakline"},
 		
 		--cast text size
-		{type = "label", get = function() return "Spell Name Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_SPELL_NAME_TEXT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
 			get = function() return Plater.db.profile.plate_config.friendlyplayer.spellname_text_size end,
@@ -7312,13 +7313,13 @@ end
 			max = 300,
 			step = 1,
 			usedecimals = false,
-			name = "Max width",
-			desc = "Spell name text length limitation.\n 0 = no limitation",
+			name = "OPTIONS_MAX_WIDTH",
+			desc = "OPTIONS_SPELL_NAME_TEXT_LENGTH_LIMITATIONN_NO_LIMITATION_DESC",
 		},
 		
 		
 		{type = "blank"},
-		{type = "label", get = function() return "Spell Cast Time Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_SPELL_CAST_TIME_TEXT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
 			get = function() return Plater.db.profile.plate_config.friendlyplayer.spellpercent_text_enabled end,
@@ -7327,7 +7328,7 @@ end
 				Plater.UpdateAllPlates()
 			end,
 			name = "OPTIONS_ENABLED",
-			desc = "Show the cast time progress.",
+			desc = "OPTIONS_SHOW_THE_CAST_TIME_PROGRESS_DESC",
 		},
 		--cast time text
 		{
@@ -7435,7 +7436,7 @@ end
 		{type = "breakline"},
 		
 		--percent text
-		{type = "label", get = function() return "Health Information:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_HEALTH_INFORMATION", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--enabled
 		{
 			type = "toggle",
@@ -7446,7 +7447,7 @@ end
 				Plater.UpdateAllPlates()
 			end,
 			name = "OPTIONS_ENABLED",
-			desc = "Show the percent text.",
+			desc = "OPTIONS_SHOW_THE_PERCENT_TEXT_DESC",
 		},
 		--out of combat
 		{
@@ -7457,8 +7458,8 @@ end
 				Plater.UpdateSettingsCache()
 				Plater.UpdateAllPlates()
 			end,
-			name = "Out of Combat",
-			desc = "Show the percent even when isn't in combat.",
+			name = "OPTIONS_OUT_OF_COMBAT",
+			desc = "OPTIONS_SHOW_THE_PERCENT_EVEN_WHEN_ISNT_IN_COMBAT_DESC",
 		},
 		--percent amount
 		{
@@ -7468,8 +7469,8 @@ end
 				Plater.db.profile.plate_config.friendlyplayer.percent_show_percent = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Show Percent Amount",
-			desc = "Show Percent Amount",
+			name = "OPTIONS_SHOW_PERCENT",
+			desc = "OPTIONS_SHOW_PERCENT_AMOUNT_DESC",
 		},		
 		--health amount
 		{
@@ -7479,8 +7480,8 @@ end
 				Plater.db.profile.plate_config.friendlyplayer.percent_show_health = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Show Health Amount",
-			desc = "Show Health Amount",
+			name = "OPTIONS_SHOW_HEALTH_AMOUNT",
+			desc = "OPTIONS_SHOW_HEALTH_AMOUNT_DESC",
 		},
 		--health decimals
 		{
@@ -7490,8 +7491,8 @@ end
 				Plater.db.profile.plate_config.friendlyplayer.percent_text_show_decimals = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Show Decimals",
-			desc = "Show Decimals",
+			name = "OPTIONS_SHOW_DECIMALS",
+			desc = "OPTIONS_SHOW_DECIMALS_DESC",
 		},
 		
 		--percent text size
@@ -7569,7 +7570,7 @@ end
 			max = 1,
 			step = 0.1,
 			name = "OPTIONS_ALPHA",
-			desc = "Set the transparency of the text.",
+			desc = "OPTIONS_SET_THE_TRANSPARENCY_OF_THE_TEXT_DESC",
 			usedecimals = true,
 		},
 		--percent anchor
@@ -7614,7 +7615,7 @@ end
 
 		--level text settings
 		{type = "breakline"},
-		{type = "label", get = function() return "Level Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_LEVEL_TEXT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--level enabled
 		{
 			type = "toggle",
@@ -7624,7 +7625,7 @@ end
 				Plater.UpdateAllPlates()
 			end,
 			name = "OPTIONS_ENABLED",
-			desc = "Check this box to show the level of the actor.",
+			desc = "OPTIONS_DESC_CHECK_THIS_BOX_TO_SHOW",
 		},
 		--level text size
 		{
@@ -7686,7 +7687,7 @@ end
 			max = 1,
 			step = 0.1,
 			name = "OPTIONS_ALPHA",
-			desc = "Set the transparency of the text.",
+			desc = "OPTIONS_SET_THE_TRANSPARENCY_OF_THE_TEXT_DESC",
 			usedecimals = true,
 		},
 		--level anchor
@@ -7767,14 +7768,14 @@ end
 	local options_table4 = {
 	
 		
-		{type = "label", get = function() return "General Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_GENERAL_SETTINGS", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "select",
 			get = function() return "player" end,
 			values = function() return copy_settings_options end,
-			name = "Copy",
-			desc = "Copy settings from another tab.\n\nWhen selecting an option a confirmation box is shown to confirm the copy.",
+			name = "OPTIONS_COPY",
+			desc = "OPTIONS_COPY_SETTINGS_FROM_ANOTHER_TABNN_WHEN_SELECTING_AN_DESC",
 		},
 		
 		{
@@ -7785,8 +7786,8 @@ end
 				ReloadUI()
 			end,
 			nocombat = true,
-			name = "Module Enabled",
-			desc = "Enable Plater nameplates for enemy players.\n\n|cFFFFFF00 Important |r: Forces a /reload on change.\nThis option is dependent on the client`s nameplate state (on/off)",
+			name = "OPTIONS_MODULE_ENABLED",
+			desc = "OPTIONS_DESC_ENABLE_PLATER_NAMEPLATES_FOR_ENEMY",
 		},
 		
 		{
@@ -7796,8 +7797,8 @@ end
 				Plater.db.profile.plate_config.enemyplayer.use_playerclass_color = value
 				Plater.UpdateAllPlates (true)
 			end,
-			name = "Use Class Colors",
-			desc = "Player name plates uses the player class color",
+			name = "OPTIONS_USE_CLASS_COLORS",
+			desc = "OPTIONS_PLAYER_NAME_PLATES_USES_THE_PLAYER_CLASS_COLOR_DESC",
 		},
 		{
 			type = "color",
@@ -7810,8 +7811,8 @@ end
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
-			name = "Fixed Color",
-			desc = "Use this color when not using class colors.",
+			name = "OPTIONS_FIXED_COLOR",
+			desc = "OPTIONS_DESC_USE_THIS_COLOR_WHEN_NOT",
 		},
 		{
 			type = "toggle",
@@ -7820,13 +7821,13 @@ end
 				Plater.db.profile.plate_config.enemyplayer.show_guild_name = value
 				Plater.UpdateAllPlates (true)
 			end,
-			name = "Show Guild Name",
-			desc = "Show Guild Name",
+			name = "OPTIONS_SHOW_GUILD_NAME",
+			desc = "OPTIONS_SHOW_GUILD_NAME_DESC",
 		},
 		
 		{type = "blank"},
 		
-		{type = "label", get = function() return "Aura Frame:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_AURA_FRAME", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--y offset
 		{
 			type = "range",
@@ -7843,7 +7844,7 @@ end
 			desc = "OPTIONS_YOFFSET_DESC",
 		},		
 		
-		{type = "label", get = function() return "Cast Bar:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_CAST_BAR", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--x offset
 		{
 			type = "range",
@@ -7877,7 +7878,7 @@ end
 		
 		{type = "blank" },
 		
-		{type = "label", get = function() return "Player Name Text Colors" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_PLAYER_NAME_TEXT_COLORS", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--player name color
 		{
 			type = "toggle",
@@ -7886,8 +7887,8 @@ end
 				Plater.db.profile.plate_config.enemyplayer.actorname_use_class_color = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Use Class Colors",
-			desc = "Player name text uses the class color instead of the selected color.",
+			name = "OPTIONS_USE_CLASS_COLORS",
+			desc = "OPTIONS_DESC_PLAYER_NAME_TEXT_USES_THE",
 		},
 		--player name color
 		{
@@ -7908,7 +7909,7 @@ end
 		{type = "breakline"},
 	
 		--health bar size out of combat
-		{type = "label", get = function() return "Health Bar Size out of Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_HEALTH_BAR_SIZE_OOC", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
 			get = function() return Plater.db.profile.plate_config.enemyplayer.health[1] end,
@@ -7920,7 +7921,7 @@ end
 			max = 300,
 			step = 1,
 			name = "OPTIONS_WIDTH",
-			desc = "Width of the health bar when out of combat.",
+			desc = "OPTIONS_DESC_WIDTH_OF_THE_HEALTH_BAR",
 		},
 		{
 			type = "range",
@@ -7933,11 +7934,11 @@ end
 			max = 100,
 			step = 1,
 			name = "OPTIONS_HEIGHT",
-			desc = "Height of the health bar when out of combat.",
+			desc = "OPTIONS_DESC_HEIGHT_OF_THE_HEALTH_BAR",
 		},
 		
 		--health bar size in combat
-		{type = "label", get = function() return "Health Bar Size in Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_HEALTH_BAR_SIZE_COMBAT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
 			get = function() return Plater.db.profile.plate_config.enemyplayer.health_incombat[1] end,
@@ -7949,7 +7950,7 @@ end
 			max = 300,
 			step = 1,
 			name = "OPTIONS_WIDTH",
-			desc = "Width of the health bar when in combat.",
+			desc = "OPTIONS_DESC_WIDTH_OF_THE_HEALTH_BAR_1",
 		},
 		{
 			type = "range",
@@ -7962,13 +7963,13 @@ end
 			max = 100,
 			step = 1,
 			name = "OPTIONS_HEIGHT",
-			desc = "Height of the health bar when in combat.",
+			desc = "OPTIONS_DESC_HEIGHT_OF_THE_HEALTH_BAR_1",
 		},
 		
 		{type = "blank"},
 		
 		--cast bar size out of combat
-		{type = "label", get = function() return "Cast Bar Size out of Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_CAST_BAR_SIZE_OOC", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
 			get = function() return Plater.db.profile.plate_config.enemyplayer.cast[1] end,
@@ -7980,7 +7981,7 @@ end
 			max = 300,
 			step = 1,
 			name = "OPTIONS_WIDTH",
-			desc = "Width of the cast bar when out of combat.",
+			desc = "OPTIONS_DESC_WIDTH_OF_THE_CAST_BAR",
 		},
 		{
 			type = "range",
@@ -7993,10 +7994,10 @@ end
 			max = 100,
 			step = 1,
 			name = "OPTIONS_HEIGHT",
-			desc = "Height of the cast bar when out of combat.",
+			desc = "OPTIONS_DESC_HEIGHT_OF_THE_CAST_BAR",
 		},
 		--cast bar size out of combat
-		{type = "label", get = function() return "Cast Bar Size in Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_CAST_BAR_SIZE_COMBAT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
 			get = function() return Plater.db.profile.plate_config.enemyplayer.cast_incombat[1] end,
@@ -8008,7 +8009,7 @@ end
 			max = 300,
 			step = 1,
 			name = "OPTIONS_WIDTH",
-			desc = "Width of the cast bar when in combat.",
+			desc = "OPTIONS_DESC_WIDTH_OF_THE_CAST_BAR_1",
 		},
 		{
 			type = "range",
@@ -8021,13 +8022,13 @@ end
 			max = 100,
 			step = 1,
 			name = "OPTIONS_HEIGHT",
-			desc = "Height of the cast bar when in combat.",
+			desc = "OPTIONS_DESC_HEIGHT_OF_THE_CAST_BAR_1",
 		},
 
 		{type = "blank"},
 		
 		--player name size
-		{type = "label", get = function() return "Player Name Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_PLAYER_NAME_TEXT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
 			get = function() return Plater.db.profile.plate_config.enemyplayer.actorname_text_size end,
@@ -8126,14 +8127,14 @@ end
 			max = 300,
 			step = 1,
 			usedecimals = false,
-			name = "Max width",
-			desc = "Name text length limitation.\n 0 = no limitation",
+			name = "OPTIONS_MAX_WIDTH",
+			desc = "OPTIONS_DESC_NAME_TEXT_LENGTH_LIMITATIONN_0",
 		},
 		
 		{type = "breakline"},
 		
 		--cast text size
-		{type = "label", get = function() return "Spell Name Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_SPELL_NAME_TEXT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
 			get = function() return Plater.db.profile.plate_config.enemyplayer.spellname_text_size end,
@@ -8246,14 +8247,14 @@ end
 			max = 300,
 			step = 1,
 			usedecimals = false,
-			name = "Max width",
-			desc = "Spell name text length limitation.\n 0 = no limitation",
+			name = "OPTIONS_MAX_WIDTH",
+			desc = "OPTIONS_SPELL_NAME_TEXT_LENGTH_LIMITATIONN_NO_LIMITATION_DESC",
 		},
 		
 		--level text settings
 		{type = "blank"},
 
-		{type = "label", get = function() return "Spell Cast Time Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_SPELL_CAST_TIME_TEXT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
 			get = function() return Plater.db.profile.plate_config.enemyplayer.spellpercent_text_enabled end,
@@ -8262,7 +8263,7 @@ end
 				Plater.UpdateAllPlates()
 			end,
 			name = "OPTIONS_ENABLED",
-			desc = "Show the cast time progress.",
+			desc = "OPTIONS_SHOW_THE_CAST_TIME_PROGRESS_DESC",
 		},
 		--cast time text
 		{
@@ -8370,7 +8371,7 @@ end
 		{type = "breakline"},
 		
 		--percent text
-		{type = "label", get = function() return "Health Information:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_HEALTH_INFORMATION", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--enabled
 		{
 			type = "toggle",
@@ -8381,7 +8382,7 @@ end
 				Plater.UpdateAllPlates()
 			end,
 			name = "OPTIONS_ENABLED",
-			desc = "Show the percent text.",
+			desc = "OPTIONS_SHOW_THE_PERCENT_TEXT_DESC",
 		},
 		--out of combat
 		{
@@ -8392,8 +8393,8 @@ end
 				Plater.UpdateSettingsCache()
 				Plater.UpdateAllPlates()
 			end,
-			name = "Out of Combat",
-			desc = "Show the percent even when isn't in combat.",
+			name = "OPTIONS_OUT_OF_COMBAT",
+			desc = "OPTIONS_SHOW_THE_PERCENT_EVEN_WHEN_ISNT_IN_COMBAT_DESC",
 		},
 		--percent amount
 		{
@@ -8403,8 +8404,8 @@ end
 				Plater.db.profile.plate_config.enemyplayer.percent_show_percent = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Show Percent Amount",
-			desc = "Show Percent Amount",
+			name = "OPTIONS_SHOW_PERCENT",
+			desc = "OPTIONS_SHOW_PERCENT_AMOUNT_DESC",
 		},
 		--health amount
 		{
@@ -8414,8 +8415,8 @@ end
 				Plater.db.profile.plate_config.enemyplayer.percent_show_health = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Show Health Amount",
-			desc = "Show Health Amount",
+			name = "OPTIONS_SHOW_HEALTH_AMOUNT",
+			desc = "OPTIONS_SHOW_HEALTH_AMOUNT_DESC",
 		},
 		
 		--health decimals
@@ -8426,8 +8427,8 @@ end
 				Plater.db.profile.plate_config.enemyplayer.percent_text_show_decimals = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Show Decimals",
-			desc = "Show Decimals",
+			name = "OPTIONS_SHOW_DECIMALS",
+			desc = "OPTIONS_SHOW_DECIMALS_DESC",
 		},
 		
 		--percent text size
@@ -8505,7 +8506,7 @@ end
 			max = 1,
 			step = 0.1,
 			name = "OPTIONS_ALPHA",
-			desc = "Set the transparency of the text.",
+			desc = "OPTIONS_SET_THE_TRANSPARENCY_OF_THE_TEXT_DESC",
 			usedecimals = true,
 		},
 		--percent anchor
@@ -8549,7 +8550,7 @@ end
 		
 		{type = "breakline"},
 		
-		{type = "label", get = function() return "Level Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_LEVEL_TEXT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--level enabled
 		{
 			type = "toggle",
@@ -8559,7 +8560,7 @@ end
 				Plater.UpdateAllPlates()
 			end,
 			name = "OPTIONS_ENABLED",
-			desc = "Check this box to show the level of the actor.",
+			desc = "OPTIONS_DESC_CHECK_THIS_BOX_TO_SHOW",
 		},
 		--level text size
 		{
@@ -8622,7 +8623,7 @@ end
 			max = 1,
 			step = 0.1,
 			name = "OPTIONS_ALPHA",
-			desc = "Set the transparency of the text.",
+			desc = "OPTIONS_SET_THE_TRANSPARENCY_OF_THE_TEXT_DESC",
 			usedecimals = true,
 		},
 		--level anchor
@@ -8718,14 +8719,14 @@ end
 	--menu 2
 	local friendly_npc_options_table = {
 	
-		{type = "label", get = function() return "General Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_GENERAL_SETTINGS", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "select",
 			get = function() return "player" end,
 			values = function() return copy_settings_options end,
-			name = "Copy",
-			desc = "Copy settings from another tab.\n\nWhen selecting an option a confirmation box is shown to confirm the copy.",
+			name = "OPTIONS_COPY",
+			desc = "OPTIONS_COPY_SETTINGS_FROM_ANOTHER_TABNN_WHEN_SELECTING_AN_DESC",
 		},
 		{
 			type = "toggle",
@@ -8757,8 +8758,8 @@ end
 				ReloadUI()
 			end,
 			nocombat = true,
-			name = "Module Enabled",
-			desc = "Enable Plater nameplates for friendly NPCs.\n\n|cFFFFFF00 Important |r: Forces a /reload on change.\nThis option is dependent on the client`s nameplate state (on/off)",
+			name = "OPTIONS_MODULE_ENABLED",
+			desc = "OPTIONS_DESC_ENABLE_PLATER_NAMEPLATES_FOR_FRIENDLY_1",
 		},
 		{
 			type = "toggle",
@@ -8767,21 +8768,21 @@ end
 				Plater.db.profile.plate_config.friendlynpc.follow_blizzard_npc_option = value
 			end,
 			nocombat = true,
-			name = "Follow Blizzard 'NPC Names' Option",
-			desc = "Hides npc nameplates for untis that would not show a name according to blizzard UI settings.",
+			name = "OPTIONS_FOLLOW_NPC_NAMES",
+			desc = "OPTIONS_DESC_HIDES_NPC_NAMEPLATES_FOR_UNTIS",
 		},
 
 		{
 			type = "select",
 			get = function() return Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_NPC].relevance_state end,
 			values = function() return relevance_options end,
-			name = "Show",
-			desc = "Modify the way friendly npcs are shown.\n\n|cFFFFFF00 Important |r: This option is dependent on the client`s nameplate state (on/off).",
+			name = "OPTIONS_SHOW",
+			desc = "OPTIONS_DESC_MODIFY_THE_WAY_FRIENDLY_NPCS",
 		},
 		
 		{type = "blank"},
 		
-		{type = "label", get = function() return "Aura Frame:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_AURA_FRAME", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--y offset
 		{
 			type = "range",
@@ -8798,7 +8799,7 @@ end
 			desc = "OPTIONS_YOFFSET_DESC",
 		},
 		
-		{type = "label", get = function() return "Cast Bar:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_CAST_BAR", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--x offset
 		{
 			type = "range",
@@ -8833,7 +8834,7 @@ end
 		{type = "breakline"},
 
 		--health bar size out of combat
-		{type = "label", get = function() return "Health Bar Size out of Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_HEALTH_BAR_SIZE_OOC", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
 			get = function() return Plater.db.profile.plate_config.friendlynpc.health[1] end,
@@ -8845,7 +8846,7 @@ end
 			max = 300,
 			step = 1,
 			name = "OPTIONS_WIDTH",
-			desc = "Width of the health bar when out of combat.",
+			desc = "OPTIONS_DESC_WIDTH_OF_THE_HEALTH_BAR",
 		},
 		{
 			type = "range",
@@ -8858,11 +8859,11 @@ end
 			max = 100,
 			step = 1,
 			name = "OPTIONS_HEIGHT",
-			desc = "Height of the health bar when out of combat.",
+			desc = "OPTIONS_DESC_HEIGHT_OF_THE_HEALTH_BAR",
 		},
 		
 		--health bar size in combat
-		{type = "label", get = function() return "Health Bar Size in Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_HEALTH_BAR_SIZE_COMBAT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
 			get = function() return Plater.db.profile.plate_config.friendlynpc.health_incombat[1] end,
@@ -8874,7 +8875,7 @@ end
 			max = 300,
 			step = 1,
 			name = "OPTIONS_WIDTH",
-			desc = "Width of the health bar when in combat.",
+			desc = "OPTIONS_DESC_WIDTH_OF_THE_HEALTH_BAR_1",
 		},
 		{
 			type = "range",
@@ -8887,13 +8888,13 @@ end
 			max = 100,
 			step = 1,
 			name = "OPTIONS_HEIGHT",
-			desc = "Height of the health bar when in combat.",
+			desc = "OPTIONS_DESC_HEIGHT_OF_THE_HEALTH_BAR_1",
 		},
 		
 		{type = "blank"},
 		
 		--cast bar size out of combat
-		{type = "label", get = function() return "Cast Bar Size out of Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_CAST_BAR_SIZE_OOC", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
 			get = function() return Plater.db.profile.plate_config.friendlynpc.cast[1] end,
@@ -8905,7 +8906,7 @@ end
 			max = 300,
 			step = 1,
 			name = "OPTIONS_WIDTH",
-			desc = "Width of the cast bar when out of combat.",
+			desc = "OPTIONS_DESC_WIDTH_OF_THE_CAST_BAR",
 		},
 		{
 			type = "range",
@@ -8918,10 +8919,10 @@ end
 			max = 100,
 			step = 1,
 			name = "OPTIONS_HEIGHT",
-			desc = "Height of the cast bar when out of combat.",
+			desc = "OPTIONS_DESC_HEIGHT_OF_THE_CAST_BAR",
 		},
 		--cast bar size out of combat
-		{type = "label", get = function() return "Cast Bar Size in Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_CAST_BAR_SIZE_COMBAT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
 			get = function() return Plater.db.profile.plate_config.friendlynpc.cast_incombat[1] end,
@@ -8933,7 +8934,7 @@ end
 			max = 300,
 			step = 1,
 			name = "OPTIONS_WIDTH",
-			desc = "Width of the cast bar when in combat.",
+			desc = "OPTIONS_DESC_WIDTH_OF_THE_CAST_BAR_1",
 		},
 		{
 			type = "range",
@@ -8946,13 +8947,13 @@ end
 			max = 100,
 			step = 1,
 			name = "OPTIONS_HEIGHT",
-			desc = "Height of the cast bar when in combat.",
+			desc = "OPTIONS_DESC_HEIGHT_OF_THE_CAST_BAR_1",
 		},
 		
 		--player name size
 		{type = "blank"},
 		
-		{type = "label", get = function() return "Npc Name Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_NPC_NAME_TEXT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
 			get = function() return Plater.db.profile.plate_config.friendlynpc.actorname_text_size end,
@@ -9066,14 +9067,14 @@ end
 			max = 300,
 			step = 1,
 			usedecimals = false,
-			name = "Max width",
-			desc = "Name text length limitation.\n 0 = no limitation",
+			name = "OPTIONS_MAX_WIDTH",
+			desc = "OPTIONS_DESC_NAME_TEXT_LENGTH_LIMITATIONN_0",
 		},
 		
 		{type = "breakline"},
 		
 		--cast text size
-		{type = "label", get = function() return "Spell Name Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_SPELL_NAME_TEXT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "range",
 			get = function() return Plater.db.profile.plate_config.friendlynpc.spellname_text_size end,
@@ -9186,12 +9187,12 @@ end
 			max = 300,
 			step = 1,
 			usedecimals = false,
-			name = "Max width",
-			desc = "Spell name text length limitation.\n 0 = no limitation",
+			name = "OPTIONS_MAX_WIDTH",
+			desc = "OPTIONS_SPELL_NAME_TEXT_LENGTH_LIMITATIONN_NO_LIMITATION_DESC",
 		},
 
 		{type = "blank"},
-		{type = "label", get = function() return "Spell Cast Time Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_SPELL_CAST_TIME_TEXT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
 			get = function() return Plater.db.profile.plate_config.friendlynpc.spellpercent_text_enabled end,
@@ -9200,7 +9201,7 @@ end
 				Plater.UpdateAllPlates()
 			end,
 			name = "OPTIONS_ENABLED",
-			desc = "Show the cast time progress.",
+			desc = "OPTIONS_SHOW_THE_CAST_TIME_PROGRESS_DESC",
 		},
 		--cast time text
 		{
@@ -9307,7 +9308,7 @@ end
 		{type = "breakline"},
 		
 		--percent text
-		{type = "label", get = function() return "Health Information:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_HEALTH_INFORMATION", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--enabled
 		{
 			type = "toggle",
@@ -9318,7 +9319,7 @@ end
 				Plater.UpdateAllPlates()
 			end,
 			name = "OPTIONS_ENABLED",
-			desc = "Show the percent text.",
+			desc = "OPTIONS_SHOW_THE_PERCENT_TEXT_DESC",
 		},
 		--out of combat
 		{
@@ -9329,8 +9330,8 @@ end
 				Plater.UpdateSettingsCache()
 				Plater.UpdateAllPlates()
 			end,
-			name = "Out of Combat",
-			desc = "Show the percent even when isn't in combat.",
+			name = "OPTIONS_OUT_OF_COMBAT",
+			desc = "OPTIONS_SHOW_THE_PERCENT_EVEN_WHEN_ISNT_IN_COMBAT_DESC",
 		},
 		--percent amount
 		{
@@ -9340,8 +9341,8 @@ end
 				Plater.db.profile.plate_config.friendlynpc.percent_show_percent = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Show Percent Amount",
-			desc = "Show Percent Amount",
+			name = "OPTIONS_SHOW_PERCENT",
+			desc = "OPTIONS_SHOW_PERCENT_AMOUNT_DESC",
 		},
 		--health amount
 		{
@@ -9351,8 +9352,8 @@ end
 				Plater.db.profile.plate_config.friendlynpc.percent_show_health = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Show Health Amount",
-			desc = "Show Health Amount",
+			name = "OPTIONS_SHOW_HEALTH_AMOUNT",
+			desc = "OPTIONS_SHOW_HEALTH_AMOUNT_DESC",
 		},		
 		
 		--health decimals
@@ -9363,8 +9364,8 @@ end
 				Plater.db.profile.plate_config.friendlynpc.percent_text_show_decimals = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Show Decimals",
-			desc = "Show Decimals",
+			name = "OPTIONS_SHOW_DECIMALS",
+			desc = "OPTIONS_SHOW_DECIMALS_DESC",
 		},
 		
 		--percent text size
@@ -9442,7 +9443,7 @@ end
 			max = 1,
 			step = 0.1,
 			name = "OPTIONS_ALPHA",
-			desc = "Set the transparency of the text.",
+			desc = "OPTIONS_SET_THE_TRANSPARENCY_OF_THE_TEXT_DESC",
 			usedecimals = true,
 		},
 		--percent anchor
@@ -9486,7 +9487,7 @@ end
 		
 		{type = "blank"},
 		
-		{type = "label", get = function() return "Npc Name Text (Name Only):" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_NPC_NAME_TEXT_NAMEONLY", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--text size
 		{
 			type = "range",
@@ -9554,7 +9555,7 @@ end
 		{type = "breakline"},
 		
 		--level text settings
-		{type = "label", get = function() return "Level Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_LEVEL_TEXT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--level enabled
 		{
 			type = "toggle",
@@ -9564,7 +9565,7 @@ end
 				Plater.UpdateAllPlates()
 			end,
 			name = "OPTIONS_ENABLED",
-			desc = "Check this box to show the level of the actor.",
+			desc = "OPTIONS_DESC_CHECK_THIS_BOX_TO_SHOW",
 		},
 		--level text size
 		{
@@ -9626,7 +9627,7 @@ end
 			max = 1,
 			step = 0.1,
 			name = "OPTIONS_ALPHA",
-			desc = "Set the transparency of the text.",
+			desc = "OPTIONS_SET_THE_TRANSPARENCY_OF_THE_TEXT_DESC",
 			usedecimals = true,
 		},
 		--level anchor
@@ -9669,7 +9670,7 @@ end
 		},
 		
 		{type = "blank"},
-		{type = "label", get = function() return "Quest Tracking Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_QUEST_TRACKING_SETTINGS", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
 			get = function() return Plater.db.profile.plate_config.friendlynpc.quest_enabled end,
@@ -9681,8 +9682,8 @@ end
 				--end
 				Plater.UpdateAllPlates()
 			end,
-			name = "Track Quests Progress",
-			desc = "Track Quests Progress on enemy npc units.",
+			name = "OPTIONS_TRACK_QUESTS",
+			desc = "OPTIONS_DESC_TRACK_QUESTS_PROGRESS_ON_ENEMY",
 		},
 		{
 			type = "toggle",
@@ -9691,8 +9692,8 @@ end
 				Plater.db.profile.plate_config.friendlynpc.quest_color_enabled = value
 				Plater.UpdateAllPlates()
 			end,
-			name = "Use Quest Color",
-			desc = "Enemy npc units which are objective of a quest have a different color.\nRequries 'Track Quests Progress' to be active.",
+			name = "OPTIONS_USE_QUEST_COLOR",
+			desc = "OPTIONS_DESC_ENEMY_NPC_UNITS_WHICH_ARE",
 		},
 		{
 			type = "color",
@@ -9705,12 +9706,12 @@ end
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
-			name = "Quest Color",
-			desc = "Nameplate has this color when a friendly npc unit is a quest objective.",
+			name = "OPTIONS_QUEST_COLOR",
+			desc = "OPTIONS_DESC_NAMEPLATE_HAS_THIS_COLOR_WHEN",
 		},
 		
 		{type = "blank"},
-		{type = "label", get = function() return "Npc Title Text (Name Only):" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_NPC_TITLE_TEXT_NAMEONLY", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		--profession text size
 		{
 			type = "range",
@@ -9771,8 +9772,8 @@ end
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllPlates()
 			end,
-			name = "Profession Text Color",
-			desc = "The color of the profession text below the npc name.",
+			name = "OPTIONS_PROFESSION_COLOR",
+			desc = "OPTIONS_DESC_THE_COLOR_OF_THE_PROFESSION",
 		},
 		
 	}
@@ -9821,14 +9822,14 @@ end
 		--menu 2 --enemy npc
 		options_table2 = {
 		
-			{type = "label", get = function() return "General Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{type = "label", name = "LABEL_GENERAL_SETTINGS", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			
 			{
 				type = "select",
 				get = function() return "player" end,
 				values = function() return copy_settings_options end,
-				name = "Copy",
-				desc = "Copy settings from another tab.\n\nWhen selecting an option a confirmation box is shown to confirm the copy.",
+				name = "OPTIONS_COPY",
+				desc = "OPTIONS_COPY_SETTINGS_FROM_ANOTHER_TABNN_WHEN_SELECTING_AN_DESC",
 			},
 			
 			{
@@ -9839,12 +9840,12 @@ end
 					ReloadUI()
 				end,
 				nocombat = true,
-				name = "Module Enabled",
-				desc = "Enable Plater nameplates for enemy NPCs.\n\n|cFFFFFF00 Important |r: Forces a /reload on change.\nThis option is dependent on the client`s nameplate state (on/off)",
+				name = "OPTIONS_MODULE_ENABLED",
+				desc = "OPTIONS_DESC_ENABLE_PLATER_NAMEPLATES_FOR_ENEMY_1",
 			},
 			
 			{type = "blank"},
-			{type = "label", get = function() return "Aura Frame:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{type = "label", name = "LABEL_AURA_FRAME", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			--y offset
 			{
 				type = "range",
@@ -9861,7 +9862,7 @@ end
 				desc = "OPTIONS_YOFFSET_DESC",
 			},
 			
-			{type = "label", get = function() return "Cast Bar:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{type = "label", name = "LABEL_CAST_BAR", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			--x offset
 			{
 				type = "range",
@@ -9895,7 +9896,7 @@ end
 			
 			{type = "blank"},
 			
-			{type = "label", get = function() return "Npc Name Text (Name Only):" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{type = "label", name = "LABEL_NPC_NAME_TEXT_NAMEONLY", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			--profession text size
 			{
 				type = "range",
@@ -9973,13 +9974,13 @@ end
 					color[1], color[2], color[3], color[4] = r, g, b, a
 					Plater.UpdateAllPlates()
 				end,
-				name = "Profession Text Color",
-				desc = "The color of the profession text below the npc name.",
+				name = "OPTIONS_PROFESSION_COLOR",
+				desc = "OPTIONS_DESC_THE_COLOR_OF_THE_PROFESSION",
 			},
 			--]=]
 			
 			{type = "blank"},
-			{type = "label", get = function() return "Npc Title Text (Name Only):" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{type = "label", name = "LABEL_NPC_TITLE_TEXT_NAMEONLY", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			--profession text size
 			{
 				type = "range",
@@ -10040,14 +10041,14 @@ end
 					color[1], color[2], color[3], color[4] = r, g, b, a
 					Plater.UpdateAllPlates()
 				end,
-				name = "Profession Text Color",
-				desc = "The color of the profession text below the npc name.",
+				name = "OPTIONS_PROFESSION_COLOR",
+				desc = "OPTIONS_DESC_THE_COLOR_OF_THE_PROFESSION",
 			},]]--
 			
 			{type = "breakline"},
 		
 			--health bar size out of combat
-			{type = "label", get = function() return "Health Bar Size out of Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{type = "label", name = "LABEL_HEALTH_BAR_SIZE_OOC", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			{
 				type = "range",
 				get = function() return Plater.db.profile.plate_config.enemynpc.health[1] end,
@@ -10059,7 +10060,7 @@ end
 				max = 300,
 				step = 1,
 				name = "OPTIONS_WIDTH",
-				desc = "Width of the health bar when out of combat.",
+				desc = "OPTIONS_DESC_WIDTH_OF_THE_HEALTH_BAR",
 			},
 			{
 				type = "range",
@@ -10072,11 +10073,11 @@ end
 				max = 100,
 				step = 1,
 				name = "OPTIONS_HEIGHT",
-				desc = "Height of the health bar when out of combat.",
+				desc = "OPTIONS_DESC_HEIGHT_OF_THE_HEALTH_BAR",
 			},
 			
 			--health bar size in combat
-			{type = "label", get = function() return "Health Bar Size in Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{type = "label", name = "LABEL_HEALTH_BAR_SIZE_COMBAT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			{
 				type = "range",
 				get = function() return Plater.db.profile.plate_config.enemynpc.health_incombat[1] end,
@@ -10088,7 +10089,7 @@ end
 				max = 300,
 				step = 1,
 				name = "OPTIONS_WIDTH",
-				desc = "Width of the health bar when in combat.",
+				desc = "OPTIONS_DESC_WIDTH_OF_THE_HEALTH_BAR_1",
 			},
 			{
 				type = "range",
@@ -10101,11 +10102,11 @@ end
 				max = 100,
 				step = 1,
 				name = "OPTIONS_HEIGHT",
-				desc = "Height of the health bar when in combat.",
+				desc = "OPTIONS_DESC_HEIGHT_OF_THE_HEALTH_BAR_1",
 			},
 			{type = "blank"},
 			--cast bar size out of combat
-			{type = "label", get = function() return "Cast Bar Size out of Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{type = "label", name = "LABEL_CAST_BAR_SIZE_OOC", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			{
 				type = "range",
 				get = function() return Plater.db.profile.plate_config.enemynpc.cast[1] end,
@@ -10117,7 +10118,7 @@ end
 				max = 300,
 				step = 1,
 				name = "OPTIONS_WIDTH",
-				desc = "Width of the cast bar when out of combat.",
+				desc = "OPTIONS_DESC_WIDTH_OF_THE_CAST_BAR",
 			},
 			{
 				type = "range",
@@ -10130,10 +10131,10 @@ end
 				max = 100,
 				step = 1,
 				name = "OPTIONS_HEIGHT",
-				desc = "Height of the cast bar when out of combat.",
+				desc = "OPTIONS_DESC_HEIGHT_OF_THE_CAST_BAR",
 			},
 			--cast bar size out of combat
-			{type = "label", get = function() return "Cast Bar Size in Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{type = "label", name = "LABEL_CAST_BAR_SIZE_COMBAT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			{
 				type = "range",
 				get = function() return Plater.db.profile.plate_config.enemynpc.cast_incombat[1] end,
@@ -10146,7 +10147,7 @@ end
 				max = 300,
 				step = 1,
 				name = "OPTIONS_WIDTH",
-				desc = "Width of the cast bar when in combat.",
+				desc = "OPTIONS_DESC_WIDTH_OF_THE_CAST_BAR_1",
 			},
 			{
 				type = "range",
@@ -10159,11 +10160,11 @@ end
 				max = 100,
 				step = 1,
 				name = "OPTIONS_HEIGHT",
-				desc = "Height of the cast bar when in combat.",
+				desc = "OPTIONS_DESC_HEIGHT_OF_THE_CAST_BAR_1",
 			},
 			{type = "blank"},
 			--player name size
-			{type = "label", get = function() return "Npc Name Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{type = "label", name = "LABEL_NPC_NAME_TEXT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			{
 				type = "range",
 				get = function() return Plater.db.profile.plate_config.enemynpc.actorname_text_size end,
@@ -10277,14 +10278,14 @@ end
 				max = 300,
 				step = 1,
 				usedecimals = false,
-				name = "Max width",
-				desc = "Name text length limitation.\n 0 = no limitation",
+				name = "OPTIONS_MAX_WIDTH",
+				desc = "OPTIONS_DESC_NAME_TEXT_LENGTH_LIMITATIONN_0",
 			},
 			
 			{type = "breakline"},
 			
 			--cast text size
-			{type = "label", get = function() return "Spell Name Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{type = "label", name = "LABEL_SPELL_NAME_TEXT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			{
 				type = "range",
 				get = function() return Plater.db.profile.plate_config.enemynpc.spellname_text_size end,
@@ -10397,12 +10398,12 @@ end
 				max = 300,
 				step = 1,
 				usedecimals = false,
-				name = "Max width",
-				desc = "Spell name text length limitation.\n 0 = no limitation",
+				name = "OPTIONS_MAX_WIDTH",
+				desc = "OPTIONS_SPELL_NAME_TEXT_LENGTH_LIMITATIONN_NO_LIMITATION_DESC",
 			},
 			
 			{type = "blank"},
-			{type = "label", get = function() return "Spell Cast Time Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{type = "label", name = "LABEL_SPELL_CAST_TIME_TEXT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			{
 				type = "toggle",
 				get = function() return Plater.db.profile.plate_config.enemynpc.spellpercent_text_enabled end,
@@ -10411,7 +10412,7 @@ end
 					Plater.UpdateAllPlates()
 				end,
 				name = "OPTIONS_ENABLED",
-				desc = "Show the cast time progress.",
+				desc = "OPTIONS_SHOW_THE_CAST_TIME_PROGRESS_DESC",
 			},
 			--cast time text
 			{
@@ -10520,7 +10521,7 @@ end
 			{type = "breakline"},
 			
 			--percent text
-			{type = "label", get = function() return "Health Information:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{type = "label", name = "LABEL_HEALTH_INFORMATION", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			--enabled
 			{
 				type = "toggle",
@@ -10531,7 +10532,7 @@ end
 					Plater.UpdateAllPlates()
 				end,
 				name = "OPTIONS_ENABLED",
-				desc = "Show the percent text.",
+				desc = "OPTIONS_SHOW_THE_PERCENT_TEXT_DESC",
 			},
 			--out of combat
 			{
@@ -10542,8 +10543,8 @@ end
 					Plater.UpdateSettingsCache()
 					Plater.UpdateAllPlates()
 				end,
-				name = "Out of Combat",
-				desc = "Show the percent even when isn't in combat.",
+				name = "OPTIONS_OUT_OF_COMBAT",
+				desc = "OPTIONS_SHOW_THE_PERCENT_EVEN_WHEN_ISNT_IN_COMBAT_DESC",
 			},
 			--percent amount
 			{
@@ -10553,8 +10554,8 @@ end
 					Plater.db.profile.plate_config.enemynpc.percent_show_percent = value
 					Plater.UpdateAllPlates()
 				end,
-				name = "Show Percent Amount",
-				desc = "Show Percent Amount",
+				name = "OPTIONS_SHOW_PERCENT",
+				desc = "OPTIONS_SHOW_PERCENT_AMOUNT_DESC",
 			},
 			--health amount
 			{
@@ -10564,8 +10565,8 @@ end
 					Plater.db.profile.plate_config.enemynpc.percent_show_health = value
 					Plater.UpdateAllPlates()
 				end,
-				name = "Show Health Amount",
-				desc = "Show Health Amount",
+				name = "OPTIONS_SHOW_HEALTH_AMOUNT",
+				desc = "OPTIONS_SHOW_HEALTH_AMOUNT_DESC",
 			},
 			
 			--health decimals
@@ -10576,8 +10577,8 @@ end
 					Plater.db.profile.plate_config.enemynpc.percent_text_show_decimals = value
 					Plater.UpdateAllPlates()
 				end,
-				name = "Show Decimals",
-				desc = "Show Decimals",
+				name = "OPTIONS_SHOW_DECIMALS",
+				desc = "OPTIONS_SHOW_DECIMALS_DESC",
 			},
 			
 			--percent text size
@@ -10656,7 +10657,7 @@ end
 				max = 1,
 				step = 0.1,
 				name = "OPTIONS_ALPHA",
-				desc = "Set the transparency of the text.",
+				desc = "OPTIONS_SET_THE_TRANSPARENCY_OF_THE_TEXT_DESC",
 				usedecimals = true,
 			},
 			--percent anchor
@@ -10700,7 +10701,7 @@ end
 
 			--level text settings
 			{type = "breakline"},
-			{type = "label", get = function() return "Level Text:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{type = "label", name = "LABEL_LEVEL_TEXT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			--level enabled
 			{
 				type = "toggle",
@@ -10710,7 +10711,7 @@ end
 					Plater.UpdateAllPlates()
 				end,
 				name = "OPTIONS_ENABLED",
-				desc = "Check this box to show the level of the actor.",
+				desc = "OPTIONS_DESC_CHECK_THIS_BOX_TO_SHOW",
 			},
 			--level text size
 			{
@@ -10772,7 +10773,7 @@ end
 				max = 1,
 				step = 0.1,
 				name = "OPTIONS_ALPHA",
-				desc = "Set the transparency of the text.",
+				desc = "OPTIONS_SET_THE_TRANSPARENCY_OF_THE_TEXT_DESC",
 				usedecimals = true,
 			},
 			--level anchor
@@ -10815,7 +10816,7 @@ end
 			},
 			
 			{type = "blank"},
-			{type = "label", get = function() return "Quest Tracking Settings:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+			{type = "label", name = "LABEL_QUEST_TRACKING_SETTINGS", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			{
 				type = "toggle",
 				get = function() return Plater.db.profile.plate_config.enemynpc.quest_enabled end,
@@ -10827,8 +10828,8 @@ end
 					--end
 					Plater.UpdateAllPlates()
 				end,
-				name = "Track Quests Progress",
-				desc = "Track Quests Progress on enemy npc units.",
+				name = "OPTIONS_TRACK_QUESTS",
+				desc = "OPTIONS_DESC_TRACK_QUESTS_PROGRESS_ON_ENEMY",
 			},
 			{
 				type = "toggle",
@@ -10837,8 +10838,8 @@ end
 					Plater.db.profile.plate_config.enemynpc.quest_color_enabled = value
 					Plater.UpdateAllPlates()
 				end,
-				name = "Use Quest Color",
-				desc = "Enemy npc units which are objective of a quest have a different color.\nRequries 'Track Quests Progress' to be active.",
+				name = "OPTIONS_USE_QUEST_COLOR",
+				desc = "OPTIONS_DESC_ENEMY_NPC_UNITS_WHICH_ARE",
 			},
 			{
 				type = "color",
@@ -10851,8 +10852,8 @@ end
 					color[1], color[2], color[3], color[4] = r, g, b, a
 					Plater.UpdateAllPlates()
 				end,
-				name = "Quest Color (hostile npc)",
-				desc = "Nameplate has this color when a hostile mob is a quest objective.",
+				name = "OPTIONS_QUEST_COLOR_HOSTILE",
+				desc = "OPTIONS_DESC_NAMEPLATE_HAS_THIS_COLOR_WHEN_1",
 			},
 			{
 				type = "color",
@@ -10865,8 +10866,8 @@ end
 					color[1], color[2], color[3], color[4] = r, g, b, a
 					Plater.UpdateAllPlates()
 				end,
-				name = "Quest Color (neutral npc)",
-				desc = "Nameplate has this color when a neutral mob is a quest objective.",
+				name = "OPTIONS_QUEST_COLOR_NEUTRAL",
+				desc = "OPTIONS_DESC_NAMEPLATE_HAS_THIS_COLOR_WHEN_2",
 			},
 
 		}
@@ -10973,12 +10974,12 @@ end
 
 				Plater:Msg ("this setting require a /reload to take effect.")
 			end,
-			name = "Use Custom Strata Channels",
-			desc = "Allow nameplates to be placed in custom frame strata channels.\n\n|cFFFFFF00 Important |r: a /reload will be triggered on changing this setting.",
+			name = "OPTIONS_CUSTOM_STRATA",
+			desc = "OPTIONS_DESC_ALLOW_NAMEPLATES_TO_BE_PLACED",
 		},
 
 		{type = "blank"},
-		{type = "label", get = function() return "Scaling:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_SCALING", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "range",
@@ -10992,63 +10993,63 @@ end
 			max = 2.5,
 			step = 0.01,
 			usedecimals = true,
-			name = "Fine Tune Scale",
-			desc = "Slightly adjust the scale of the unit frame.",
+			name = "OPTIONS_FINE_TUNE_SCALE",
+			desc = "OPTIONS_DESC_SLIGHTLY_ADJUST_THE_SCALE_OF",
 		},
 		
 		{type = "blank"},
-		{type = "label", get = function() return "Strata Channels:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_STRATA_CHANNELS", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "select",
 			get = function() return Plater.db.profile.ui_parent_target_strata end,
 			values = function() return build_framelevel_table ("ui_parent_target_strata") end,
-			name = "Current Target",
-			desc = "Which strata the nameplate of the current target is placed in.",
+			name = "OPTIONS_CURRENT_TARGET",
+			desc = "OPTIONS_DESC_WHICH_STRATA_THE_NAMEPLATE_OF",
 		},
 		
 		{
 			type = "select",
 			get = function() return Plater.db.profile.ui_parent_base_strata end,
 			values = function() return build_framelevel_table ("ui_parent_base_strata") end,
-			name = "Health Bar",
-			desc = "Which strata the unit frame will be placed in.",
+			name = "OPTIONS_HEALTH_BAR",
+			desc = "OPTIONS_DESC_WHICH_STRATA_THE_UNIT_FRAME",
 		},
 		
 		{
 			type = "select",
 			get = function() return Plater.db.profile.ui_parent_cast_strata end,
 			values = function() return build_framelevel_table ("ui_parent_cast_strata") end,
-			name = "Cast Bar",
-			desc = "Which strata the cast bar will be placed in.",
+			name = "OPTIONS_CAST_BAR",
+			desc = "OPTIONS_DESC_WHICH_STRATA_THE_CAST_BAR",
 		},
 		
 		{
 			type = "select",
 			get = function() return Plater.db.profile.ui_parent_buff_strata end,
 			values = function() return build_framelevel_table ("ui_parent_buff_strata") end,
-			name = "Aura Frame 1",
-			desc = "Which strata aura frame 1 will be placed in.",
+			name = "OPTIONS_AURA_FRAME1",
+			desc = "OPTIONS_DESC_WHICH_STRATA_AURA_FRAME_1",
 		},
 		
 		{
 			type = "select",
 			get = function() return Plater.db.profile.ui_parent_buff2_strata end,
 			values = function() return build_framelevel_table ("ui_parent_buff2_strata") end,
-			name = "Aura Frame 2",
-			desc = "Which strata aura frame 2 will be placed in.",
+			name = "OPTIONS_AURA_FRAME2",
+			desc = "OPTIONS_DESC_WHICH_STRATA_AURA_FRAME_2",
 		},
 		
 		{
 			type = "select",
 			get = function() return Plater.db.profile.ui_parent_buff_special_strata end,
 			values = function() return build_framelevel_table ("ui_parent_buff_special_strata") end,
-			name = "Buff Special Frame",
-			desc = "Which strata buff special frame frame will be placed in.",
+			name = "OPTIONS_BUFF_SPECIAL_FRAME",
+			desc = "OPTIONS_DESC_WHICH_STRATA_BUFF_SPECIAL_FRAME",
 		},
 		
 		{type = "blank"},
-		{type = "label", get = function() return "Frame Levels adjustment:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_FRAME_LEVELS", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "range",
@@ -11061,8 +11062,8 @@ end
 			min = -5000,
 			max = 5000,
 			step = 1,
-			name = "Cast Bar",
-			desc = "Move frames up or down within the strata channel.",
+			name = "OPTIONS_CAST_BAR",
+			desc = "OPTIONS_DESC_MOVE_FRAMES_UP_OR_DOWN",
 		},
 		
 		{
@@ -11076,8 +11077,8 @@ end
 			min = -5000,
 			max = 5000,
 			step = 1,
-			name = "Aura Frame 1",
-			desc = "Move frames up or down within the strata channel.",
+			name = "OPTIONS_AURA_FRAME1",
+			desc = "OPTIONS_DESC_MOVE_FRAMES_UP_OR_DOWN",
 		},
 		
 		{
@@ -11091,8 +11092,8 @@ end
 			min = -5000,
 			max = 5000,
 			step = 1,
-			name = "Aura Frame 2",
-			desc = "Move frames up or down within the strata channel.",
+			name = "OPTIONS_AURA_FRAME2",
+			desc = "OPTIONS_DESC_MOVE_FRAMES_UP_OR_DOWN",
 		},
 		
 		{
@@ -11106,8 +11107,8 @@ end
 			min = -5000,
 			max = 5000,
 			step = 1,
-			name = "Buff Special Frame",
-			desc = "Move frames up or down within the strata channel.",
+			name = "OPTIONS_BUFF_SPECIAL_FRAME",
+			desc = "OPTIONS_DESC_MOVE_FRAMES_UP_OR_DOWN",
 		},
 	}
 
@@ -11124,7 +11125,7 @@ end
 	--autoFrame
 		
 	local auto_options = {
-		{type = "label", get = function() return "Combat toggle:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_COMBAT_TOGGLE", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
 			get = function() return Plater.db.profile.auto_toggle_combat_enabled end,
@@ -11136,7 +11137,7 @@ end
 				Plater.RefreshAutoToggle()
 			end,
 			name = L["OPTIONS_ENABLED"],
-			desc = "When enabled, Plater will enable or disable nameplates and healthbars based on the settings below, when the player enters or leaves combat.",
+			desc = "OPTIONS_DESC_WHEN_ENABLED_PLATER_WILL_ENABLE",
 		},
 		{
 			type = "toggle",
@@ -11145,8 +11146,8 @@ end
 				Plater.db.profile.auto_toggle_combat.enemy_ic = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "Enemy Nameplates in combat",
-			desc = "Automatically enable / disable enemy nameplates in combat.",
+			name = "OPTIONS_AUTO_ENEMY_COMBAT",
+			desc = "OPTIONS_DESC_AUTOMATICALLY_ENABLE_DISABLE_ENEMY_NAMEPLATES",
 		},
 		{
 			type = "toggle",
@@ -11155,8 +11156,8 @@ end
 				Plater.db.profile.auto_toggle_combat.enemy_ooc = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "Enemy Nameplates out of combat",
-			desc = "Automatically enable / disable enemy nameplates out of combat.",
+			name = "OPTIONS_AUTO_ENEMY_OOC",
+			desc = "OPTIONS_DESC_AUTOMATICALLY_ENABLE_DISABLE_ENEMY_NAMEPLATES_1",
 		},
 		{
 			type = "toggle",
@@ -11165,8 +11166,8 @@ end
 				Plater.db.profile.auto_toggle_combat.friendly_ic = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "Friendly Nameplates in combat",
-			desc = "Automatically enable / disable friendly nameplates in combat.",
+			name = "OPTIONS_AUTO_FRIENDLY_COMBAT",
+			desc = "OPTIONS_DESC_AUTOMATICALLY_ENABLE_DISABLE_FRIENDLY_NAMEPLATES",
 		},
 		{
 			type = "toggle",
@@ -11175,8 +11176,8 @@ end
 				Plater.db.profile.auto_toggle_combat.friendly_ooc = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "Friendly Nameplates out of combat",
-			desc = "Automatically enable / disable friendly nameplates out of combat.",
+			name = "OPTIONS_AUTO_FRIENDLY_OOC",
+			desc = "OPTIONS_DESC_AUTOMATICALLY_ENABLE_DISABLE_FRIENDLY_NAMEPLATES_1",
 		},
 		{
 			type = "toggle",
@@ -11185,8 +11186,8 @@ end
 				Plater.db.profile.auto_toggle_combat.blizz_healthbar_ic = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "Hide Blizzard Healthbars in combat",
-			desc = "Automatically enable / disable showing blizzard nameplate healthbars in combat.",
+			name = "OPTIONS_HIDE_BLIZZ_COMBAT",
+			desc = "OPTIONS_DESC_AUTOMATICALLY_ENABLE_DISABLE_SHOWING_BLIZZARD",
 		},
 		{
 			type = "toggle",
@@ -11195,8 +11196,8 @@ end
 				Plater.db.profile.auto_toggle_combat.blizz_healthbar_ooc = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "Hide Blizzard Healthbars out of combat",
-			desc = "Automatically enable / disable showing blizzard nameplate healthbars out of combat.",
+			name = "OPTIONS_HIDE_BLIZZ_OOC",
+			desc = "OPTIONS_DESC_AUTOMATICALLY_ENABLE_DISABLE_SHOWING_BLIZZARD_1",
 		},
 		{
 			type = "toggle",
@@ -11205,8 +11206,8 @@ end
 				Plater.db.profile.auto_toggle_combat.always_show_ic = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "Enable 'Always Show Nameplates' in combat",
-			desc = "Automatically enable / disable the 'always show' option in combat.",
+			name = "OPTIONS_AUTO_ALWAYS_SHOW_COMBAT",
+			desc = "OPTIONS_DESC_AUTOMATICALLY_ENABLE_DISABLE_THE_ALWAYS",
 		},
 		{
 			type = "toggle",
@@ -11215,13 +11216,13 @@ end
 				Plater.db.profile.auto_toggle_combat.always_show_ooc = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "Enable 'Always Show Nameplates' out of combat",
-			desc = "Automatically enable / disable the 'always show' option out of combat.",
+			name = "OPTIONS_AUTO_ALWAYS_SHOW_OOC",
+			desc = "OPTIONS_DESC_AUTOMATICALLY_ENABLE_DISABLE_THE_ALWAYS_1",
 		},
 		
 		{type = "blank"},
 		
-		{type = "label", get = function() return "Raid and Party:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_RAID_AND_PARTY", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 
 		{
 			type = "toggle",
@@ -11230,8 +11231,8 @@ end
 				Plater.db.profile.auto_inside_raid_dungeon.hide_enemy_player_pets = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "Hide Enemy Pets",
-			desc = "Disable show enemy pets within a raid or a dungeon.",
+			name = "OPTIONS_HIDE_ENEMY_PETS",
+			desc = "OPTIONS_DESC_DISABLE_SHOW_ENEMY_PETS_WITHIN",
 		},
 		{
 			type = "toggle",
@@ -11240,14 +11241,14 @@ end
 				Plater.db.profile.auto_inside_raid_dungeon.hide_enemy_player_totems = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "Hide Enemy Totems",
-			desc = "Disable show enemy totems within a raid or a dungeon.",
+			name = "OPTIONS_HIDE_ENEMY_TOTEMS",
+			desc = "OPTIONS_DESC_DISABLE_SHOW_ENEMY_TOTEMS_WITHIN",
 		},
 		
 		{type = "breakline"},
 		{type = "breakline"},
 		
-		{type = "label", get = function() return "Friendly Nameplates:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_FRIENDLY_NAMEPLATES", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "toggle",
@@ -11260,7 +11261,7 @@ end
 				Plater.RefreshAutoToggle()
 			end,
 			name = "OPTIONS_ENABLED",
-			desc = "When enabled, Plater will enable or disable friendly plates based on the settings below.",
+			desc = "OPTIONS_DESC_WHEN_ENABLED_PLATER_WILL_ENABLE_1",
 		},
 		
 		{
@@ -11270,8 +11271,8 @@ end
 				Plater.db.profile.auto_toggle_friendly ["party"] = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "In Dungeons",
-			desc = "Show friendly nameplates when inside dungeons.",
+			name = "OPTIONS_IN_DUNGEONS",
+			desc = "OPTIONS_DESC_SHOW_FRIENDLY_NAMEPLATES_WHEN_INSIDE",
 		},	
 		{
 			type = "toggle",
@@ -11280,8 +11281,8 @@ end
 				Plater.db.profile.auto_toggle_friendly ["raid"] = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "In Raid",
-			desc = "Show friendly nameplates when inside raids.",
+			name = "OPTIONS_IN_RAID",
+			desc = "OPTIONS_DESC_SHOW_FRIENDLY_NAMEPLATES_WHEN_INSIDE_1",
 		},
 		{
 			type = "toggle",
@@ -11290,8 +11291,8 @@ end
 				Plater.db.profile.auto_toggle_friendly ["arena"] = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "In Arena / BG",
-			desc = "Show friendly nameplates when inside arena or battleground.",
+			name = "OPTIONS_IN_ARENA_BG",
+			desc = "OPTIONS_DESC_SHOW_FRIENDLY_NAMEPLATES_WHEN_INSIDE_2",
 		},
 		{
 			type = "toggle",
@@ -11300,8 +11301,8 @@ end
 				Plater.db.profile.auto_toggle_friendly ["cities"] = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "In Major Cities",
-			desc = "Show friendly nameplates when inside a major city.",
+			name = "OPTIONS_IN_CITIES",
+			desc = "OPTIONS_DESC_SHOW_FRIENDLY_NAMEPLATES_WHEN_INSIDE_3",
 		},
 		{
 			type = "toggle",
@@ -11310,13 +11311,13 @@ end
 				Plater.db.profile.auto_toggle_friendly ["world"] = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "In Open World",
-			desc = "Show friendly nameplates when at any place not listed on the other options.",
+			name = "OPTIONS_IN_OPEN_WORLD",
+			desc = "OPTIONS_DESC_SHOW_FRIENDLY_NAMEPLATES_WHEN_AT",
 		},
 		
 		{type = "blank"},
 		
-		{type = "label", get = function() return "Enemy Nameplates:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_ENEMY_NAMEPLATES", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "toggle",
@@ -11329,7 +11330,7 @@ end
 				Plater.RefreshAutoToggle()
 			end,
 			name = L["OPTIONS_ENABLED"],
-			desc = "When enabled, Plater will enable or disable enemy plates based on the settings below.",
+			desc = "OPTIONS_DESC_WHEN_ENABLED_PLATER_WILL_ENABLE_2",
 		},
 		
 		{
@@ -11339,8 +11340,8 @@ end
 				Plater.db.profile.auto_toggle_enemy ["party"] = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "In Dungeons",
-			desc = "Show enemy nameplates when inside dungeons.",
+			name = "OPTIONS_IN_DUNGEONS",
+			desc = "OPTIONS_DESC_SHOW_ENEMY_NAMEPLATES_WHEN_INSIDE",
 		},	
 		{
 			type = "toggle",
@@ -11349,8 +11350,8 @@ end
 				Plater.db.profile.auto_toggle_enemy ["raid"] = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "In Raid",
-			desc = "Show enemy nameplates when inside raids.",
+			name = "OPTIONS_IN_RAID",
+			desc = "OPTIONS_DESC_SHOW_ENEMY_NAMEPLATES_WHEN_INSIDE_1",
 		},
 		{
 			type = "toggle",
@@ -11359,8 +11360,8 @@ end
 				Plater.db.profile.auto_toggle_enemy ["arena"] = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "In Arena / BG",
-			desc = "Show enemy nameplates when inside arena or battleground.",
+			name = "OPTIONS_IN_ARENA_BG",
+			desc = "OPTIONS_DESC_SHOW_ENEMY_NAMEPLATES_WHEN_INSIDE_2",
 		},
 		{
 			type = "toggle",
@@ -11369,8 +11370,8 @@ end
 				Plater.db.profile.auto_toggle_enemy ["cities"] = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "In Major Cities",
-			desc = "Show enemy nameplates when inside a major city.",
+			name = "OPTIONS_IN_CITIES",
+			desc = "OPTIONS_DESC_SHOW_ENEMY_NAMEPLATES_WHEN_INSIDE_3",
 		},
 		{
 			type = "toggle",
@@ -11379,14 +11380,14 @@ end
 				Plater.db.profile.auto_toggle_enemy ["world"] = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "In Open World",
-			desc = "Show enemy nameplates when at any place not listed on the other options.",
+			name = "OPTIONS_IN_OPEN_WORLD",
+			desc = "OPTIONS_DESC_SHOW_ENEMY_NAMEPLATES_WHEN_AT",
 		},
 		
 		{type = "breakline"},
 		{type = "breakline"},
 		
-		{type = "label", get = function() return "Stacking Nameplates:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_STACKING_NAMEPLATES", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "toggle",
@@ -11399,7 +11400,7 @@ end
 				Plater.RefreshAutoToggle()
 			end,
 			name = "OPTIONS_ENABLED",
-			desc = "When enabled, Plater will enable or disable stacking nameplates based on the settings below.\n\n|cFFFFFF00 Important |r: only toggle on if 'Stacking Nameplates' is enabled in the General Settings tab.",
+			desc = "OPTIONS_DESC_WHEN_ENABLED_PLATER_WILL_ENABLE_3",
 		},
 		
 		{
@@ -11409,8 +11410,8 @@ end
 				Plater.db.profile.auto_toggle_stacking ["party"] = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "In Dungeons",
-			desc = "Set stacking on when inside dungeons.",
+			name = "OPTIONS_IN_DUNGEONS",
+			desc = "OPTIONS_DESC_SET_STACKING_ON_WHEN_INSIDE",
 		},	
 		{
 			type = "toggle",
@@ -11419,8 +11420,8 @@ end
 				Plater.db.profile.auto_toggle_stacking ["raid"] = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "In Raid",
-			desc = "Set stacking on when inside raids.",
+			name = "OPTIONS_IN_RAID",
+			desc = "OPTIONS_DESC_SET_STACKING_ON_WHEN_INSIDE_1",
 		},
 		{
 			type = "toggle",
@@ -11429,8 +11430,8 @@ end
 				Plater.db.profile.auto_toggle_stacking ["arena"] = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "In Arena / BG",
-			desc = "Set stacking on when inside arena or battleground.",
+			name = "OPTIONS_IN_ARENA_BG",
+			desc = "OPTIONS_DESC_SET_STACKING_ON_WHEN_INSIDE_2",
 		},
 		{
 			type = "toggle",
@@ -11439,8 +11440,8 @@ end
 				Plater.db.profile.auto_toggle_stacking ["cities"] = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "In Major Cities",
-			desc = "Set stacking on when inside a major city.",
+			name = "OPTIONS_IN_CITIES",
+			desc = "OPTIONS_DESC_SET_STACKING_ON_WHEN_INSIDE_3",
 		},
 		{
 			type = "toggle",
@@ -11449,12 +11450,12 @@ end
 				Plater.db.profile.auto_toggle_stacking ["world"] = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "In Open World",
-			desc = "Set stacking on when at any place not listed on the other options.",
+			name = "OPTIONS_IN_OPEN_WORLD",
+			desc = "OPTIONS_DESC_SET_STACKING_ON_WHEN_AT",
 		},
 		
 		{type = "blank"},
-		{type = "label", get = function() return "'Always Show Nameplates':" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_ALWAYS_SHOW_NAMEPLATES", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "toggle",
@@ -11467,7 +11468,7 @@ end
 				Plater.RefreshAutoToggle()
 			end,
 			name = "OPTIONS_ENABLED",
-			desc = "When enabled, Plater will enable or disable 'always show nameplates' based on the settings below.",
+			desc = "OPTIONS_DESC_WHEN_ENABLED_PLATER_WILL_ENABLE_4",
 		},
 		
 		{
@@ -11477,8 +11478,8 @@ end
 				Plater.db.profile.auto_toggle_always_show ["party"] = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "In Dungeons",
-			desc = "Set 'always show nameplates' on when inside dungeons.",
+			name = "OPTIONS_IN_DUNGEONS",
+			desc = "OPTIONS_DESC_SET_ALWAYS_SHOW_NAMEPLATES_ON",
 		},	
 		{
 			type = "toggle",
@@ -11487,8 +11488,8 @@ end
 				Plater.db.profile.auto_toggle_always_show ["raid"] = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "In Raid",
-			desc = "Set 'always show nameplates' on when inside raids.",
+			name = "OPTIONS_IN_RAID",
+			desc = "OPTIONS_DESC_SET_ALWAYS_SHOW_NAMEPLATES_ON_1",
 		},
 		{
 			type = "toggle",
@@ -11497,8 +11498,8 @@ end
 				Plater.db.profile.auto_toggle_always_show ["arena"] = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "In Arena / BG",
-			desc = "Set 'always show nameplates' on when inside arena or battleground.",
+			name = "OPTIONS_IN_ARENA_BG",
+			desc = "OPTIONS_DESC_SET_ALWAYS_SHOW_NAMEPLATES_ON_2",
 		},
 		{
 			type = "toggle",
@@ -11507,8 +11508,8 @@ end
 				Plater.db.profile.auto_toggle_always_show ["cities"] = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "In Major Cities",
-			desc = "Set 'always show nameplates' on when inside a major city.",
+			name = "OPTIONS_IN_CITIES",
+			desc = "OPTIONS_DESC_SET_ALWAYS_SHOW_NAMEPLATES_ON_3",
 		},
 		{
 			type = "toggle",
@@ -11517,8 +11518,8 @@ end
 				Plater.db.profile.auto_toggle_always_show ["world"] = value
 				Plater.RefreshAutoToggle()
 			end,
-			name = "In Open World",
-			desc = "Set 'always show nameplates' on when at any place not listed on the other options.",
+			name = "OPTIONS_IN_OPEN_WORLD",
+			desc = "OPTIONS_DESC_SET_ALWAYS_SHOW_NAMEPLATES_ON_4",
 		},
 	}
 	
@@ -11536,7 +11537,7 @@ end
 
 	local thread_options = {
 	
-		{type = "label", get = function() return "OPTIONS_THREAT_MODIFIERS_ANCHOR_TITLE" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "OPTIONS_THREAT_MODIFIERS_ANCHOR_TITLE", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	
 		{
 			type = "toggle",
@@ -11577,7 +11578,7 @@ end
 
 		{type = "blank"},
 	
-		{type = "label", get = function() return "OPTIONS_THREAT_COLOR_TANK_ANCHOR_TITLE" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "OPTIONS_THREAT_COLOR_TANK_ANCHOR_TITLE", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "color",
 			get = function()
@@ -11645,7 +11646,7 @@ end
 		},
 		
 		{type = "blank"},
-		{type = "label", get = function() return "OPTIONS_THREAT_COLOR_DPS_ANCHOR_TITLE" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "OPTIONS_THREAT_COLOR_DPS_ANCHOR_TITLE", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 
 		{
 			type = "color",
@@ -11768,7 +11769,7 @@ end
 		
 		{type = "breakline"},
 	
-		{type = "label", get = function() return "Tank or DPS Colors:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = not IS_WOW_PROJECT_NOT_MAINLINE},
+		{type = "label", name = "LABEL_TANK_DPS_COLORS", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = not IS_WOW_PROJECT_NOT_MAINLINE},
 			
 		{
 			type = "toggle",
@@ -11784,7 +11785,7 @@ end
 	
 		{type = "blank", hidden = not IS_WOW_PROJECT_NOT_MAINLINE},
 		
-		{type = "label", get = function() return "OPTIONS_THREAT_COLOR_OVERRIDE_ANCHOR_TITLE" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "OPTIONS_THREAT_COLOR_OVERRIDE_ANCHOR_TITLE", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "toggle",
@@ -11842,7 +11843,7 @@ end
 		
 		{type = "blank"},
 		
-		{type = "label", get = function() return "Misc" .. ":" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", name = "LABEL_MISC", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		
 		{
 			type = "toggle",
@@ -11865,7 +11866,7 @@ end
 		
 		{type = "breakline"},
 		
-		{type = "label", id = "UNIT_TYPE_COLORING_LABEL", get = function() return "Unit Type Coloring" .. ":" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", id = "UNIT_TYPE_COLORING_LABEL", name = "LABEL_UNIT_TYPE_COLORING", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
 			get = function() return Plater.db.profile.unit_type_coloring_enabled end,
@@ -11874,7 +11875,7 @@ end
 				Plater.UpdateAllNameplateColors()
 			end,
 			name = "OPTIONS_ENABLED",
-			desc = "Enable unit type coloring with the colors below.\n\nOnly active in dungeons and raids.\n\nBad threat states will override this color.",
+			desc = "OPTIONS_DESC_ENABLE_UNIT_TYPE_COLORING_WITH",
 		},
 		{
 			type = "toggle",
@@ -11883,8 +11884,8 @@ end
 				Plater.db.profile.unit_type_coloring_no_override_threat = value
 				Plater.UpdateAllNameplateColors()
 			end,
-			name = "Don't override Threat colors",
-			desc = "Threat coloring will have priority over unit type colors.",
+			name = "OPTIONS_NO_OVERRIDE_THREAT",
+			desc = "OPTIONS_DESC_THREAT_COLORING_WILL_HAVE_PRIORITY",
 		},
 		
 		{type = "blank"},
@@ -11900,8 +11901,8 @@ end
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllNameplateColors()
 			end,
-			name = "Boss",
-			desc = "Color for raid or dungeon bosses.",
+			name = "OPTIONS_UNIT_BOSS",
+			desc = "OPTIONS_DESC_COLOR_FOR_RAID_OR_DUNGEON",
 		},
 		{
 			type = "color",
@@ -11914,8 +11915,8 @@ end
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllNameplateColors()
 			end,
-			name = "Miniboss",
-			desc = "Color for minibosses.",
+			name = "OPTIONS_UNIT_MINIBOSS",
+			desc = "OPTIONS_DESC_COLOR_FOR_MINIBOSSES",
 		},
 		{
 			type = "color",
@@ -11928,8 +11929,8 @@ end
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllNameplateColors()
 			end,
-			name = "Caster",
-			desc = "Color for caster units.",
+			name = "OPTIONS_UNIT_CASTER",
+			desc = "OPTIONS_DESC_COLOR_FOR_CASTER_UNITS",
 		},
 
 		{type = "blank"},
@@ -11946,8 +11947,8 @@ end
 				end
 				Plater.UpdateAllNameplateColors()
 			end,
-			name = "Enable elite",
-			desc = "Will override non-elite colors as 'elite'.",
+			name = "OPTIONS_ENABLE_ELITE",
+			desc = "OPTIONS_DESC_WILL_OVERRIDE_NONELITE_COLORS_AS",
 		},
 		{
 			type = "color",
@@ -11960,8 +11961,8 @@ end
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllNameplateColors()
 			end,
-			name = "Elite",
-			desc = "Color for elite units.",
+			name = "OPTIONS_UNIT_ELITE",
+			desc = "OPTIONS_DESC_COLOR_FOR_ELITE_UNITS",
 			id = "UNIT_TYPE_ELITE_COLOR_PICKER",
 		},
 
@@ -11979,8 +11980,8 @@ end
 				end
 				Plater.UpdateAllNameplateColors()
 			end,
-			name = "Enable trivial",
-			desc = "Will override non-elite colors as 'trivial'.",
+			name = "OPTIONS_ENABLE_TRIVIAL",
+			desc = "OPTIONS_DESC_WILL_OVERRIDE_NONELITE_COLORS_AS_1",
 		},
 		{
 			type = "color",
@@ -11993,8 +11994,8 @@ end
 				color[1], color[2], color[3], color[4] = r, g, b, a
 				Plater.UpdateAllNameplateColors()
 			end,
-			name = "Trivial",
-			desc = "Color for non-elite/trivial units.",
+			name = "OPTIONS_UNIT_TRIVIAL",
+			desc = "OPTIONS_DESC_COLOR_FOR_NONELITETRIVIAL_UNITS",
 			id = "UNIT_TYPE_TRIVIAL_COLOR_PICKER",
 		},
 	}
