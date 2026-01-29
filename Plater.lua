@@ -6064,6 +6064,10 @@ function Plater.OnInit() --private --~oninit ~init
 			self.currentHealthMissing = currentHealthMax - currentHealth
 			self.currentHealthPercent = currentHealth / currentHealthMax * 100
 		end
+		
+		-- some backwards compatibility for older mods/scripts
+		self.CurrentHealth = self.currentHealth
+		self.CurrentHealthMax = self.currentHealthMax
 	
 		if (plateFrame.IsSelf) then
 		
@@ -6142,6 +6146,10 @@ function Plater.OnInit() --private --~oninit ~init
 		
 		-- ensure updated values...
 		--Plater.QuickHealthUpdate (self.unitFrame)
+		
+		-- some backwards compatibility for older mods/scripts
+		self.CurrentHealth = self.currentHealth
+		self.CurrentHealthMax = self.currentHealthMax
 		
 		Plater.CheckLifePercentText (self.unitFrame)
 		
