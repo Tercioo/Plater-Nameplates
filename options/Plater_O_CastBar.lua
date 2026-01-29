@@ -386,8 +386,6 @@ function platerInternal.CreateCastBarOptions()
             set = function (self, fixedparam, value)
                 Plater.db.profile.cast_statusbar_spark_half = value
                 Plater.UpdateAllPlates()
-
-                print("hald spark", value)
             end,
             name = "OPTIONS_CASTBAR_SPARK_HALF",
             desc = "OPTIONS_CASTBAR_SPARK_HALF_DESC",
