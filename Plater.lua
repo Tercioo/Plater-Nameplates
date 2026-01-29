@@ -8977,6 +8977,8 @@ end
 			end
 
 			castBar.Settings.SparkOffset = profile.cast_statusbar_spark_offset
+			castBar.Spark:SetPoint("CENTER", castBar.barTexture, "RIGHT", castBar.Settings.SparkOffset, 0)
+			
 			
 			--setup power bar
 			unitFrame.powerBar:SetTexture (DB_TEXTURE_HEALTHBAR)
