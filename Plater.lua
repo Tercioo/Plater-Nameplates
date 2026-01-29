@@ -5470,12 +5470,12 @@ function Plater.OnInit() --private --~oninit ~init
 							if castBarOffSetY > healthBarHeight then
 								icon:SetPoint("topright", castBar, "topleft", profile.castbar_icon_x_offset, 0)
 								icon:SetPoint("bottomright", unitFrame.healthBar, "bottomleft", profile.castbar_icon_x_offset, 0)
+								height = castBar:GetHeight() + unitFrame.healthBar:GetHeight() - castBarOffSetY
 							else
 								icon:SetPoint("topright", unitFrame.healthBar, "topleft", profile.castbar_icon_x_offset, 0)
 								icon:SetPoint("bottomright", castBar, "bottomleft", profile.castbar_icon_x_offset, 0)
+								height = castBar:GetHeight() + unitFrame.healthBar:GetHeight() + castBarOffSetY
 							end
-							
-							height = castBar:GetHeight() + unitFrame.healthBar:GetHeight()
 							
 							PixelUtil.SetPoint (borderShield, "center", castBar, "left", 0, 0)
 						end
@@ -5501,19 +5501,19 @@ function Plater.OnInit() --private --~oninit ~init
 							if castBarOffSetY > healthBarHeight then
 								icon:SetPoint("topleft", castBar, "topright", profile.castbar_icon_x_offset, 0)
 								icon:SetPoint("bottomleft", unitFrame.healthBar, "bottomright", profile.castbar_icon_x_offset, 0)
+								height = castBar:GetHeight() + unitFrame.healthBar:GetHeight() - castBarOffSetY
 							else
 								icon:SetPoint("topleft", unitFrame.healthBar, "topright", profile.castbar_icon_x_offset, 0)
 								icon:SetPoint("bottomleft", castBar, "bottomright", profile.castbar_icon_x_offset, 0)
+								height = castBar:GetHeight() + unitFrame.healthBar:GetHeight() + castBarOffSetY
 							end
-							
-							height = castBar:GetHeight() + unitFrame.healthBar:GetHeight()
 							
 							PixelUtil.SetPoint (borderShield, "center", castBar, "right", 0, 0)
 						end
 					end
 
 					--print(icon:GetHeight(), issecretvalue(icon:GetHeight()))
-					if IS_WOW_PROJECT_MIDNIGHT then-- and not issecretvalue(icon:GetHeight()) then
+					if IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(icon:GetHeight()) then
 						icon:SetWidth(icon:GetHeight())
 					else
 						icon:SetWidth(height)
