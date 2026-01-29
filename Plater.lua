@@ -2446,7 +2446,7 @@ Plater.AnchorNamesByPhraseId = {
 		--update the unit name, triggered when the client receives the rest of the information about an unit
 		UNIT_NAME_UPDATE = function (_, unitID)
 			if (unitID) then
-				if IS_WOW_PROJECT_MIDNIGHT and not string.match(unit, "nameplate%d%d?$") then return end
+				if IS_WOW_PROJECT_MIDNIGHT and not string.match(unitID, "nameplate%d%d?$") then return end
 				---@type plateframe
 				local plateFrame = C_NamePlate.GetNamePlateForUnit (unitID)
 				if (plateFrame and plateFrame.unitFrame.PlaterOnScreen) then
