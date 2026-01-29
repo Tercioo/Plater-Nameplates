@@ -11386,13 +11386,13 @@ end
 			HEALTHCUTOFF_AT_DATA.healthCutOffValue = tonumber (healthAmountLower) or -0.1
 			HEALTHCUTOFF_AT_DATA.healthCutOffValueCurve = C_CurveUtil.CreateColorCurve()
 			HEALTHCUTOFF_AT_DATA.healthCutOffValueCurve:SetType(Enum.LuaCurveType.Step)
-			HEALTHCUTOFF_AT_DATA.healthCutOffValueCurve:AddPoint(0  , CreateColor(0, 0, 0, 1)) -- Visible    0% -  19%
+			HEALTHCUTOFF_AT_DATA.healthCutOffValueCurve:AddPoint(0  , CreateColor(0, 0, 0, 0.2)) -- Visible    0% -  19%
 			HEALTHCUTOFF_AT_DATA.healthCutOffValueCurve:AddPoint(tonumber (healthAmountLower) or -0.1, CreateColor(0, 0, 0, 0)) -- Invisible 20% - 100%
 			
 			HEALTHCUTOFF_AT_DATA.healthCutOffUpperValue = tonumber (healthAmountUpper) or 1.1
 			HEALTHCUTOFF_AT_DATA.healthCutOffUpperValueCurve = C_CurveUtil.CreateColorCurve()
 			HEALTHCUTOFF_AT_DATA.healthCutOffUpperValueCurve:SetType(Enum.LuaCurveType.Step)
-			HEALTHCUTOFF_AT_DATA.healthCutOffUpperValueCurve:AddPoint(1  , CreateColor(0, 0, 0, 1)) -- Visible    90% -  100%
+			HEALTHCUTOFF_AT_DATA.healthCutOffUpperValueCurve:AddPoint(1  , CreateColor(0, 0, 0, 0.2)) -- Visible    90% -  100%
 			HEALTHCUTOFF_AT_DATA.healthCutOffUpperValueCurve:AddPoint(tonumber (healthAmountUpper) or 1.1, CreateColor(0, 0, 0, 0)) -- Invisible 0% - 89%
 		else
 			HEALTHCUTOFF_AT_DATA.healthCutOffValue = tonumber (healthAmountLower) or -0.1
