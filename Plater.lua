@@ -5795,9 +5795,7 @@ function Plater.OnInit() --private --~oninit ~init
 						platerInternal.Audio.PlaySoundForCastStart(self.spellID) --fallback for edge cases. should not double play
 					end
 					
-					--self.Text:SetText(self.SpellNameRenamed)
 					--cut the spell name text to fit within the castbar
-					--Plater.UpdateSpellNameSize (self.Text, unitFrame.ActorType, nil, isInCombat)
 					local plateConfig = DB_PLATE_CONFIG [unitFrame.ActorType] or {}
 					Plater.UpdateTextSize (self.SpellNameRenamed or "", self.Text, plateConfig.spellname_text_max_width or 0, nil)
 					
@@ -8526,7 +8524,7 @@ end
 		end
 		
 		if IS_WOW_PROJECT_MIDNIGHT then
-			Plater.UpdateTextSize (spellName, nameString, maxWidth, nil)
+			Plater.UpdateTextSize (spellName, nameString, maxWidth, maxLength)
 		else		
 			while (nameString:GetUnboundedStringWidth() > maxLength) do
 				spellName = strsub (spellName, 1, #spellName - 1)

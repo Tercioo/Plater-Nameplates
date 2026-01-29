@@ -751,8 +751,6 @@ PLATER_DEFAULT_SETTINGS = {
 		widget_bar_scale = 0.75,
 		widget_bar_anchor = {side = 4, x = 0, y = 0},
 		
-		no_spellname_length_limit = false,
-		
 		--> castbar target name
 		castbar_target_show = false,
 		castbar_target_notank = false,

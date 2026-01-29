@@ -229,18 +229,6 @@ function platerInternal.CreateCastBarOptions()
 
         {
             type = "toggle",
-            get = function() return Plater.db.profile.no_spellname_length_limit end,
-            set = function (self, fixedparam, value)
-                Plater.db.profile.no_spellname_length_limit = value
-                Plater.UpdateMaxCastbarTextLength()
-                Plater.UpdateAllPlates()
-            end,
-            name = "OPTIONS_CASTBAR_NO_SPELLNAME_LIMIT",
-            desc = "OPTIONS_CASTBAR_NO_SPELLNAME_LIMIT_DESC",
-        },
-
-        {
-            type = "toggle",
             get = function() return Plater.db.profile.show_interrupt_author end,
             set = function (self, fixedparam, value)
                 Plater.db.profile.show_interrupt_author = value
