@@ -503,72 +503,72 @@ function platerInternal.CreateAdvancedOptions()
         },
 
         {type = "blank", hidden = not IS_WOW_PROJECT_MIDNIGHT},
-        {type = "label", get = function() return "Selection Space Scaling:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {type = "label", get = function() return "Overlap Size Scaling:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
         {
             type = "range",
-            get = function() return Plater.db.profile.click_space_scale[1] end,
+            get = function() return Plater.db.profile.overlap_space_scale[1] end,
             set = function (self, fixedparam, value)
-                Plater.db.profile.click_space_scale[1] = value
+                Plater.db.profile.overlap_space_scale[1] = value
                 Plater.UpdatePlateClickSpace (nil, true)
             end,
-            min = 0.75,
-            max = 1.25,
+            min = 0.5,
+            max = 2,
             step = 0.1,
             thumbscale = 1.7,
             usedecimals = true,
             name = "Enemy Nameplate Overlap % (H)",
-            desc = "The space between each nameplate horizontally when stacking is enabled, relative to clickspace, for enemy units.",
+            desc = "Scaling for the space each nameplate occupies horizontally when stacking is enabled, relative to clickspace, for enemy units.",
             nocombat = true,
             hidden = not IS_WOW_PROJECT_MIDNIGHT,
         },
         {
             type = "range",
-            get = function() return  Plater.db.profile.click_space_scale[2] end,
+            get = function() return  Plater.db.profile.overlap_space_scale[2] end,
             set = function (self, fixedparam, value)
-                Plater.db.profile.click_space_scale[2] = value
+                Plater.db.profile.overlap_space_scale[2] = value
                 Plater.UpdatePlateClickSpace (nil, true)
             end,
-            min = 0.75,
-            max = 1.25,
+            min = 0.5,
+            max = 2,
             step = 0.1,
             thumbscale = 1.7,
             usedecimals = true,
             name = "Enemy Nameplate Overlap % (V)",
-            desc = "The space between each nameplate vertically when stacking is enabled, relative to clickspace, for enemy units.",
+            desc = "Scaling for the space each nameplate occupies vertically when stacking is enabled, relative to clickspace, for enemy units.",
             nocombat = true,
             hidden = not IS_WOW_PROJECT_MIDNIGHT,
         },
         {
             type = "range",
-            get = function() return Plater.db.profile.click_space_scale_friendly[1] end,
+            get = function() return Plater.db.profile.overlap_space_scale_friendly[1] end,
             set = function (self, fixedparam, value)
-                Plater.db.profile.click_space_scale_friendly[1] = value
+                Plater.db.profile.overlap_space_scale_friendly[1] = value
                 Plater.UpdatePlateClickSpace (nil, true)
             end,
             min = 0.0,
-            max = 1.25,
+            max = 2,
             step = 0.1,
             thumbscale = 1.7,
             usedecimals = true,
             name = "Friendly Nameplate Overlap % (H)",
-            desc = "The space between each nameplate horizontally when stacking is enabled, relative to clickspace, for friendly units.",
+            desc = "Scaling for the space each nameplate occupies horizontally when stacking is enabled, relative to clickspace, for friendly units.",
             nocombat = true,
             hidden = not IS_WOW_PROJECT_MIDNIGHT,
         },
         {
             type = "range",
-            get = function() return  Plater.db.profile.click_space_scale_friendly[2] end,
+            get = function() return  Plater.db.profile.overlap_space_scale_friendly[2] end,
             set = function (self, fixedparam, value)
-                Plater.db.profile.click_space_scale_friendly[2] = value
+                Plater.db.profile.overlap_space_scale_friendly[2] = value
                 Plater.UpdatePlateClickSpace (nil, true)
             end,
             min = 0.0,
-            max = 1.25,
+            max = 2,
             step = 0.1,
             thumbscale = 1.7,
             usedecimals = true,
             name = "Friendly Nameplate Overlap % (V)",
-            desc = "The space between each nameplate vertically when stacking is enabled, relative to clickspace, for friendly units.",
+            desc = "Scaling for the space each nameplate occupies vertically when stacking is enabled, relative to clickspace, for friendly units.",
             nocombat = true,
             hidden = not IS_WOW_PROJECT_MIDNIGHT,
         },

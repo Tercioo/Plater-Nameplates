@@ -2878,6 +2878,15 @@ Plater.AnchorNamesByPhraseId = {
 					tex:SetColorTexture(1, 0, 0, 0)
 					tex:SetAllPoints(unitFrame.stackSizeFrame)
 					
+					plateFrame.debugAreaTextureStacking = plateFrame:CreateTexture (nil, "background")
+					plateFrame.debugAreaTextureStacking:SetColorTexture (.1, .7, .1, .5)
+					plateFrame.debugAreaTextureStacking:SetAllPoints(unitFrame.stackSizeFrame)
+					plateFrame.debugAreaTextureStacking:Hide()
+					plateFrame.debugAreaTextStacking = plateFrame:CreateFontString (nil, "artwork", "GameFontNormal")
+					plateFrame.debugAreaTextStacking:SetPoint ("top", plateFrame.debugAreaTextureStacking, "bottom", 0, 1)
+					plateFrame.debugAreaTextStacking:SetText ("valid area for stacking")
+					plateFrame.debugAreaTextStacking:SetTextColor (.1, .7, .1)
+					plateFrame.debugAreaTextStacking:Hide()
 					--unitFrame.stackSizeFrame:SetBackdrop ({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", tile = true, tileSize = 16, edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1})
 					--unitFrame.stackSizeFrame:SetBackdropColor (0, 0, 0, 0.5)
 					--unitFrame.stackSizeFrame:SetBackdropBorderColor (0, 0, 0, 1)
@@ -2985,7 +2994,7 @@ Plater.AnchorNamesByPhraseId = {
 			
 			--> cliclable area debug
 				plateFrame.debugAreaTexture = plateFrame:CreateTexture (nil, "background")
-				plateFrame.debugAreaTexture:SetColorTexture (.1, .1, .1, .834)
+				plateFrame.debugAreaTexture:SetColorTexture (.1, .1, .1, .5)
 				plateFrame.debugAreaTexture:SetAllPoints()
 				plateFrame.debugAreaTexture:Hide()
 				plateFrame.debugAreaText = plateFrame:CreateFontString (nil, "artwork", "GameFontNormal")
@@ -3702,31 +3711,6 @@ Plater.AnchorNamesByPhraseId = {
 				reaction = Plater.UnitReaction.UNITREACTION_HOSTILE
 			end
 			
-			if plateFrame.unitFrame.stackSizeFrame then --TODO: MIDNIGHT!!
-				plateFrame.unitFrame.stackSizeFrame:ClearAllPoints()
-				plateFrame.unitFrame.stackSizeFrame:SetParent(isPlateEnabled and plateFrame.unitFrame or plateFrame)
-				plateFrame:SetStackingBoundsFrame(plateFrame.unitFrame.stackSizeFrame)
-				plateFrame.unitFrame.stackSizeFrame:SetAllPoints()
-				
-				--local width, height
-				--local widthScale, heightScale
-				--if actorType == ACTORTYPE_FRIENDLY_PLAYER or actorType == ACTORTYPE_FRIENDLY_NPC then
-				--	width, height = Plater.db.profile.click_space_friendly[1], Plater.db.profile.click_space_friendly[2]
-				--	widthScale, heightScale = Plater.db.profile.click_space_scale_friendly[1], Plater.db.profile.click_space_scale_friendly[2]
-				--else
-				--	width, height = Plater.db.profile.click_space[1], Plater.db.profile.click_space[2]
-				--	widthScale, heightScale = Plater.db.profile.click_space_scale[1], Plater.db.profile.click_space_scale[2]
-				--end
-				
-				--local offsetW, offsetH = (width - width * widthScale), (height - height * heightScale)
-				
-				--plateFrame.unitFrame.stackSizeFrame:SetPoint("CENTER", isPlateEnabled and plateFrame.unitFrame or plateFrame.UnitFrame, "CENTER", 0, 0)
-				--plateFrame.unitFrame.stackSizeFrame:SetSize(width * widthScale, height * heightScale)
-				--plateFrame.unitFrame.stackSizeFrame:ClearAllPoints()
-				--plateFrame.unitFrame.stackSizeFrame:SetPoint("TOPLEFT", isPlateEnabled and plateFrame.unitFrame or plateFrame, "TOPLEFT", offsetW, -offsetH)
-				--plateFrame.unitFrame.stackSizeFrame:SetPoint("BOTTOMRIGHT", isPlateEnabled and plateFrame.unitFrame or plateFrame, "BOTTOMRIGHT", -offsetW, offsetH)
-			end
-			
 			-- we should clear stuff here, tbh...
 			
 			if isPlateEnabled then
@@ -3736,6 +3720,8 @@ Plater.AnchorNamesByPhraseId = {
 				plateFrame.unitFrame.PlaterOnScreen = false
 				ENABLED_BLIZZARD_PLATEFRAMES[blizzardPlateFrameID] = true
 				plateFrame.unitFrame:Hide()
+				
+				Plater.UpdateStackingSize(plateFrame)
 				
 				local onlyNames = GetCVarBool ("nameplateShowOnlyNames") or Plater.db.profile.saved_cvars.nameplateShowOnlyNames == "1" or GetCVarBool("nameplateShowOnlyNameForFriendlyPlayerUnits") or Plater.db.profile.saved_cvars.nameplateShowOnlyNameForFriendlyPlayerUnits == "1"
 				
@@ -6739,10 +6725,18 @@ end
 
 	--debug to show the clickable area when adjusting the click space
 	function Plater.ShowClickSpace (plateFrame)
+		if plateFrame.debugAreaTextStacking then
+			plateFrame.debugAreaTextStacking:Show()
+			plateFrame.debugAreaTextureStacking:Show()
+		end
 		plateFrame.debugAreaText:Show()
 		plateFrame.debugAreaTexture:Show()
 	end
 	function Plater.HideClickSpace (plateFrame)
+		if plateFrame.debugAreaTextStacking then
+			plateFrame.debugAreaTextStacking:Hide()
+			plateFrame.debugAreaTextureStacking:Hide()
+		end
 		plateFrame.debugAreaText:Hide()
 		plateFrame.debugAreaTexture:Hide()
 	end
@@ -8384,9 +8378,8 @@ end
 		
 		if IS_WOW_PROJECT_MIDNIGHT then
 			--TODO: MIDNIGHT!!
-			--local currentAbsorb, currentAbsorbMaxHealth, currentAbsorbClamped, currentAbsorbIsClamped = healthBar.currentAbsorb, healthBar.currentAbsorbMaxHealth, healthBar.currentAbsorbClamped, healthBar.currentAbsorbIsClamped
+			--local currentAbsorb, currentAbsorbClamped, currentAbsorbIsClamped = healthBar.currentAbsorb, healthBar.currentAbsorbClamped, healthBar.currentAbsorbIsClamped
 			
-			--currentHealth = string.format("%.7s", BreakUpLargeNumbers(currentHealth, true))
 			currentHealth = AbbreviateNumbers(currentHealth)
 			if (showHealthAmount or showPercentAmount) then
 				healthBar.lifePercent:SetText(currentHealth)
@@ -8676,6 +8669,33 @@ end
 		end
 	end
 
+	function Plater.UpdateStackingSize(plateFrame, customWScale, customHScale)
+		if not plateFrame then return end
+		local unitFrame = plateFrame.unitFrame
+		if unitFrame.stackSizeFrame then --TODO: MIDNIGHT!!
+			unitFrame.stackSizeFrame:ClearAllPoints()
+			unitFrame.stackSizeFrame:SetParent(unitFrame.PlaterOnScreen and unitFrame or plateFrame)
+			plateFrame:SetStackingBoundsFrame(unitFrame.stackSizeFrame)
+			--unitFrame.stackSizeFrame:SetAllPoints()
+			
+			local width, height = Plater.db.profile.click_space[1], Plater.db.profile.click_space[2]
+			local widthScale, heightScale
+			if actorType == ACTORTYPE_FRIENDLY_PLAYER or actorType == ACTORTYPE_FRIENDLY_NPC then
+				widthScale, heightScale = Plater.db.profile.overlap_space_scale_friendly[1], Plater.db.profile.overlap_space_scale_friendly[2]
+			else
+				widthScale, heightScale = Plater.db.profile.overlap_space_scale[1], Plater.db.profile.overlap_space_scale[2]
+			end
+			
+			--local offsetW, offsetH = (width - width * widthScale), (height - height * heightScale)
+			
+			unitFrame.stackSizeFrame:SetPoint("CENTER", isPlateEnabled and unitFrame or plateFrame, "CENTER", 0, 0)
+			unitFrame.stackSizeFrame:SetSize(width * (customWScale or widthScale), height * (customHScale or heightScale))
+			--unitFrame.stackSizeFrame:ClearAllPoints()
+			--unitFrame.stackSizeFrame:SetPoint("TOPLEFT", unitFrame.PlaterOnScreen and unitFrame or plateFrame, "TOPLEFT", offsetW, -offsetH)
+			--unitFrame.stackSizeFrame:SetPoint("BOTTOMRIGHT", unitFrame.PlaterOnScreen and unitFrame or plateFrame, "BOTTOMRIGHT", -offsetW, offsetH)
+		end
+	end
+	
 	-- ~updateplate ~update ~updatenameplate
 	function Plater.UpdatePlateFrame (plateFrame, actorType, forceUpdate, justAdded, regenDisabled)
 		Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdatePlateFrame")
@@ -9026,6 +9046,9 @@ end
 		
 		--target indicator
 		Plater.UpdateTarget (plateFrame)
+		
+		--stacking
+		Plater.UpdateStackingSize(plateFrame)
 		
 		--personal player bar
 		if (plateFrame.IsSelf) then
@@ -12339,6 +12362,7 @@ end
 			["UpdateAllPlates"] = true,
 			["FullRefreshAllPlates"] = true,
 			["UpdatePlateClickSpace"] = true,
+			["UpdateStackingSize"] = false,
 			["SetNamePlatePreferredClickInsets"] = true,
 			["EveryFrameFPSCheck"] = true,
 			["NameplateTick"] = true,
