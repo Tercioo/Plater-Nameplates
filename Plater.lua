@@ -7378,11 +7378,11 @@ end
 		end
 		
 		if (DB_AGGRO_CHANGE_BORDER_COLOR) then
-			Plater.ForceChangeBorderColor (self, r, g, b)
+			Plater.ForceChangeBorderColor (self, r, g, b, a)
 		end
 		
 		if (DB_AGGRO_CHANGE_NAME_COLOR) then
-			self.unitName:SetTextColor (r, g, b)
+			self.unitName:SetTextColor (r, g, b, a)
 		end
 	end
 
@@ -9156,10 +9156,10 @@ end
 	--changes the border color, this call is used internally on Plater
 	--see Plater.SetBorderColor for scripting calls
 	--currently this is called for threat color changes (if enabled at the options panel)
-	function Plater.ForceChangeBorderColor (self, r, g, b) --private --self = unitFrame
+	function Plater.ForceChangeBorderColor (self, r, g, b, a) --private --self = unitFrame
 		--this call is from the retail game, file: blizzard_nameplates.lua
 		if (not self.customBorderColor) then
-			self.healthBar.border:SetVertexColor (r, g, b)
+			self.healthBar.border:SetVertexColor (r, g, b, a)
 			self.BorderIsAggroIndicator = true
 		end
 	end
