@@ -2903,7 +2903,15 @@ Plater.CreateAuraTesting()
 	local auraConfigPanel = DF:CreateAuraConfigPanel (auraFilterFrame, "$parentAuraConfig", Plater.db.profile, method_change_callback, aura_options, debuff_panel_texts)
 	auraConfigPanel:SetPoint ("topleft", auraFilterFrame, "topleft", 10, startY)
 	auraConfigPanel:SetSize (f:GetWidth() - 20, f:GetHeight() + startY)
-	auraConfigPanel:Show()
+	if IS_WOW_PROJECT_MIDNIGHT then
+		auraConfigPanel:Hide()
+		local optionsTable = {
+            {type = "label", get = function() return "Not available in Midnight and onwards due to API limitations." end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        }
+        DF:BuildMenu(auraFilterFrame, optionsTable, startX, startY, 800, true, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+	else
+		auraConfigPanel:Show()
+	end
 	auraFilterFrame.auraConfigPanel = auraConfigPanel
 	
 	--create bottom highlights
