@@ -521,7 +521,7 @@ function Plater.OpenOptionsPanel(pageNumber, bIgnoreLazyLoad)
 		{name = "SearchFrame", text = "OPTIONS_TABNAME_SEARCH", createOnDemandFunc = platerInternal.CreateSearchOptions},
 		{name = "PluginsFrame", text = "OPTIONS_TABNAME_PLUGINS"}, --localize-me
 		{name = "BossModConfig", text = "OPTIONS_TABNAME_BOSSMODS", createOnDemandFunc = platerInternal.CreateBossModOptions}, --localize-me
-		{name = "OPTIONS_TABNAME_DESIGNER", text = "OPTIONS_TABNAME_DESIGNER", createOnDemandFunc = Plater.CreateDesignerWindow}, --localize-me
+		{name = "Designer", text = "OPTIONS_TABNAME_DESIGNER", createOnDemandFunc = Plater.CreateDesignerWindow}, --localize-me
 		--{name = "ProfileSelector", text = "Templates", createOnDemandFunc = Plater.CreateDesignerWindow}, --localize-me
 		
 	}, 
@@ -5233,8 +5233,8 @@ local targetOptions = {
 			step = 0.005,
 			thumbscale = 1.7,
 			usedecimals = true,
-			name = L["OPTIONS_CVAR_LOCKTOSCREEN_BOTTOM"],
-			desc = L["OPTIONS_MIN_SPACE_BETWEEN_THE_NAMEPLATE_AND_THE_BOTTOM_OF__DESC"],
+			name = "@OPTIONS_CVAR_LOCKTOSCREEN_BOTTOM@",
+			desc = "@OPTIONS_MIN_SPACE_BETWEEN_THE_NAMEPLATE_AND_THE_BOTTOM_OF__DESC@",
 			nocombat = true,
 		},
 		
@@ -5511,8 +5511,8 @@ local relevance_options = {
 					self:SetValue (GetCVarBool ("nameplateShowOnlyNameForFriendlyPlayerUnits"))
 				end
 			end,
-			name = "OPTIONS_CVAR_HIDE_FRIENDLY_HEALTHBAR", --show friendly nameplates
-			desc = "OPTIONS_HIDE_FRIENDLY_HEALTH_BARN_C_VAR_NAMEPLATE_SHOW_ONL_DESC",
+			name = "@OPTIONS_CVAR_HIDE_FRIENDLY_HEALTHBAR@", --show friendly nameplates
+			desc = "@OPTIONS_HIDE_FRIENDLY_HEALTH_BARN_C_VAR_NAMEPLATE_SHOW_ONL_DESC@",
 			nocombat = true,
 			hidden = not IS_WOW_PROJECT_MIDNIGHT,
 		},
@@ -5550,8 +5550,8 @@ local relevance_options = {
 
 				Plater.UpdateBaseNameplateOptions()
 			end,
-			name = "OPTIONS_CVAR_CLASSCOLOR_BLIZZ_NAMES",
-			desc = "OPTIONS_CLASS_COLORING_FOR_BLIZZARD_NAMEPLATE_NAMES_DESC",
+			name = "@OPTIONS_CVAR_CLASSCOLOR_BLIZZ_NAMES@",
+			desc = "@OPTIONS_CLASS_COLORING_FOR_BLIZZARD_NAMEPLATE_NAMES_DESC@",
 			nocombat = true,
 			hidden = not IS_WOW_PROJECT_MIDNIGHT,
 		},
@@ -11642,7 +11642,7 @@ end
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
 			name = "OPTIONS_THREAT_PULL_FROM_ANOTHER_TANK",
-			desc = "OPTIONS_THREAT_PULL_FROM_ANOTHER_TANK_DESC",
+			desc = "OPTIONS_THREAT_PULL_FROM_ANOTHER_TANK_TANK",
 		},
 		
 		{type = "blank"},
