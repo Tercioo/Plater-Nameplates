@@ -208,7 +208,7 @@ function platerInternal.CreateCastBarOptions()
 
         {type = "blank"},
 
-        {type = "label", get = function() return "OPTIONS_CASTBAR_APPEARANCE" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {type = "label", name = "OPTIONS_CASTBAR_APPEARANCE", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 
         {
             type = "select",
@@ -333,7 +333,7 @@ function platerInternal.CreateCastBarOptions()
         },
         
         {type = "blank"},
-        {type = "label", get = function() return "Boss-Mod Support:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {type = "label", name = "LABEL_BOSSMOD_SUPPORT", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
         
         {
             type = "toggle",
@@ -342,13 +342,13 @@ function platerInternal.CreateCastBarOptions()
                 Plater.db.profile.bossmod_castrename_enabled = value
                 --Plater.UpdateAllPlates()
             end,
-            name = "Enable boss-mod cast spell renaming",
+            name = "OPTIONS_BOSSMOD_CAST_RENAME",
             desc = "Enable cast rename based on BigWigs or DBM spell names.",
         },
 
         {type = "breakline"},
 
-        {type = "label", get = function() return "OPTIONS_CASTBAR_SPARK_SETTINGS" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {type = "label", name = "OPTIONS_CASTBAR_SPARK_SETTINGS", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 
         {
             type = "select",
@@ -435,7 +435,7 @@ function platerInternal.CreateCastBarOptions()
         },
 
         {type = "blank"},
-        {type = "label", get = function() return "OPTIONS_CASTBAR_COLORS" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {type = "label", name = "OPTIONS_CASTBAR_COLORS", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 
         {
             type = "color",
@@ -547,7 +547,7 @@ function platerInternal.CreateCastBarOptions()
 
         {type = "breakline"},
         --toggle cast bar target
-        {type = "label", get = function() return "Cast Bar Target Name:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {type = "label", name = "LABEL_CASTBAR_TARGET_NAME", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
         {
             type = "toggle",
             get = function() return Plater.db.profile.castbar_target_show end,
@@ -686,7 +686,7 @@ function platerInternal.CreateCastBarOptions()
 
         {type = "breakline"},
         --toggle cast bar target
-        {type = "label", get = function() return "OPTIONS_CASTBAR_SPELLICON" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {type = "label", name = "OPTIONS_CASTBAR_SPELLICON", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
         {
             type = "toggle",
             get = function() return Plater.db.profile.castbar_icon_customization_enabled end,
@@ -740,7 +740,7 @@ function platerInternal.CreateCastBarOptions()
         },
 
         {type = "blank"},
-        {type = "label", get = function() return "OPTIONS_CASTBAR_BLIZZCASTBAR" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {type = "label", name = "OPTIONS_CASTBAR_BLIZZCASTBAR", text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 
         --hide castbar from blizzard
         {
