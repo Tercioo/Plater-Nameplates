@@ -1384,7 +1384,6 @@ L["OPTIONS_SHOW_HEALTHBARS_NOT_ATTACKABLE"] = "Show healthbars on not attackable
 L["OPTIONS_ALWAYS_SHOW_SOFT_INTERACT"] = "Always show soft-interact target"
 L["OPTIONS_USE_BLIZZARD_SOFT_INTERACT"] = "Use blizzard soft-interact for objects"
 L["OPTIONS_HIDE_PLATER_NAMES_OBJECTS"] = "Hide Plater names game objects"
-L["OPTIONS_INTERACT_OBJECT_NAME_COLOR"] = "OPTIONS_INTERACT_OBJECT_NAME_COLOR"
 L["OPTIONS_SHOW_SOFT_INTERACT_ICON"] = "Show soft-interact Icon"
 L["OPTIONS_KEEP_NAMEPLATES_ON_SCREEN"] = "Keep Nameplates on Screen"
 L["OPTIONS_LOCK_SCREEN_TOP"] = "Lock to Screen (Top Side)"
