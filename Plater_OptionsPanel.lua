@@ -11642,7 +11642,7 @@ end
 				color[1], color[2], color[3], color[4] = r, g, b, a
 			end,
 			name = "OPTIONS_THREAT_PULL_FROM_ANOTHER_TANK",
-			desc = "OPTIONS_THREAT_PULL_FROM_ANOTHER_TANK_TANK",
+			desc = "OPTIONS_THREAT_PULL_FROM_ANOTHER_TANK_DESC",
 		},
 		
 		{type = "blank"},
