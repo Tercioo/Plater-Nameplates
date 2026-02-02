@@ -2030,7 +2030,7 @@ end
 				
 				if auraIconFrame:IsShown() then
 					local spellName = auraIconFrame.SpellName
-					if not IS_WOW_PROJECT_MIDNIGHT or (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(spellName)) then
+					if not IS_WOW_PROJECT_MIDNIGHT or (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(spellName) and not issecretvalue(auraIconFrame.Duration)) then
 						--get the script object of the aura which will be showing in this icon frame
 						local globalScriptObject = SCRIPT_AURA_TRIGGER_CACHE[spellName]
 						
