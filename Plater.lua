@@ -8043,13 +8043,6 @@ end
 			--DF:SetFontOutline (nameFontString, plateConfigs.actorname_text_shadow)
 			Plater.SetFontOutlineAndShadow (nameFontString, plateConfigs.actorname_text_outline, plateConfigs.actorname_text_shadow_color, plateConfigs.actorname_text_shadow_color_offset[1], plateConfigs.actorname_text_shadow_color_offset[2])
 			
-			--check if the player has a guild, this check is done when the nameplate is added
-			if (plateFrame.playerGuildName) then
-				if (plateConfigs.show_guild_name) then
-					Plater.AddGuildNameToPlayerName (plateFrame)
-				end
-			end
-			
 			--set the point of the name and guild texts
 			nameFontString:ClearAllPoints()
 			PixelUtil.SetPoint (plateFrame.ActorNameSpecial, "center", plateFrame.unitFrame, "center", 0, 10)
@@ -8244,12 +8237,6 @@ end
 			Plater.SetAnchor (nameString, plateConfigs.actorname_text_anchor)
 			Plater.SetTextAlignmentFromAnchor(nameString, plateConfigs.actorname_text_anchor)
 			--PixelUtil.SetHeight (nameString, nameString:GetLineHeight())
-		end
-		
-		if (plateFrame.playerGuildName) then
-			if (plateConfigs.show_guild_name) then
-				Plater.AddGuildNameToPlayerName (plateFrame)
-			end
 		end
 		
 		if (Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_guild_color and plateFrame.playerGuildName == Plater.PlayerGuildName) then
@@ -8545,7 +8532,7 @@ end
 
 	function Plater.AddGuildNameToPlayerName (plateFrame)
 		local currentText = plateFrame.CurrentUnitNameString:GetText()
-		if (not currentText:find ("<")) then
+		if (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(currentText) or not currentText:find ("<")) then -- this might add more ofthen than needed
 			plateFrame.CurrentUnitNameString:SetText (currentText .. "\n" .. "<" .. plateFrame.playerGuildName .. ">")
 		end
 	end
@@ -8557,7 +8544,14 @@ end
 		if plateFrame.IsFriendlyPlayerWithoutHealthBar or plateFrame.IsNpcWithoutHealthBar then
 			maxWidth = 0
 		end
-		Plater.UpdateTextSize (plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME] or "", nameString, maxWidth, nil)
+		local name = plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME] or ""
+		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(name) then
+			-- do we try to refresh? is it worth?
+			unitFrame.unitName.isRenamed = nil
+			Plater.UpdateNameOnRenamedUnit(plateFrame)
+			name = plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME] or ""
+		end
+		Plater.UpdateTextSize (name, nameString, maxWidth, nil)
 		
 		--check if the player has a guild, this check is done when the nameplate is added
 		if (plateFrame.playerGuildName) then
@@ -8642,16 +8636,14 @@ end
 			unitFrame [MEMBER_NAMELOWER] = plateFrame [MEMBER_NAMELOWER]
 			unitFrame.unitName:SetText(newNpcName)
 			unitFrame.unitName.isRenamed = true
-		else
-			if (unitFrame.unitName.isRenamed) then
-				newNpcName = UnitName(plateFrame [MEMBER_UNITID] or unitFrame [MEMBER_UNITID])
-				plateFrame [MEMBER_NAME] = newNpcName
-				plateFrame [MEMBER_NAMELOWER] = (IS_WOW_PROJECT_MIDNIGHT and newNpcName or "") or lower (newNpcName)
-				unitFrame [MEMBER_NAME] = newNpcName
-				unitFrame [MEMBER_NAMELOWER] = plateFrame [MEMBER_NAMELOWER]
-				unitFrame.unitName:SetText(newNpcName)
-				unitFrame.unitName.isRenamed = nil
-			end
+		elseif (unitFrame.unitName.isRenamed) then
+			newNpcName = UnitName(plateFrame [MEMBER_UNITID] or unitFrame [MEMBER_UNITID])
+			plateFrame [MEMBER_NAME] = newNpcName
+			plateFrame [MEMBER_NAMELOWER] = (IS_WOW_PROJECT_MIDNIGHT and newNpcName or "") or lower (newNpcName)
+			unitFrame [MEMBER_NAME] = newNpcName
+			unitFrame [MEMBER_NAMELOWER] = plateFrame [MEMBER_NAMELOWER]
+			unitFrame.unitName:SetText(newNpcName)
+			unitFrame.unitName.isRenamed = nil
 		end
 	end
 	
