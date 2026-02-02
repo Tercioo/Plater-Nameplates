@@ -8532,7 +8532,7 @@ end
 
 	function Plater.AddGuildNameToPlayerName (plateFrame)
 		local currentText = plateFrame.CurrentUnitNameString:GetText()
-		if (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(currentText) or not currentText:find ("<")) then -- this might add more ofthen than needed
+		if ((IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(currentText) or not IS_WOW_PROJECT_MIDNIGHT) and not currentText:find ("<")) then -- this might add more ofthen than needed
 			plateFrame.CurrentUnitNameString:SetText (currentText .. "\n" .. "<" .. plateFrame.playerGuildName .. ">")
 		end
 	end
