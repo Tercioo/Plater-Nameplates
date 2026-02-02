@@ -1284,8 +1284,6 @@ detailsFramework.CastFrameFunctions = {
 						isFinished = true
 					end
 				end
-			elseif self.durationObject and self.durationObject:IsZero() then
-				isFinished = true
 			end
 
 			--check if passed an event (not begin used at the moment)
