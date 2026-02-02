@@ -1744,7 +1744,9 @@ detailsFramework.CastFrameFunctions = {
 	end,
 
 	CreateOrUpdateEmpoweredPips = function(self, unit, numStages, startTime, endTime)
+		--if issecretvalue(startTime) or issecretvalue(self.spellStartTime) then return end
 		unit = unit or self.unit
+		if unit ~= "player" then return end -- some day this might get work for enemy units
 		numStages = numStages or self.numStages
 		startTime = startTime or ((self.spellStartTime or 0) * 1000)
 		endTime = endTime or ((self.spellEndTime or 0) * 1000)
@@ -2065,7 +2067,6 @@ detailsFramework.CastFrameFunctions = {
 	UNIT_SPELLCAST_FAILED = function(self, unit, ...)
 		local unitID, castID, spellID, castBarID = ...
 
-		--if ((self.casting or self.channeling) and castID == self.castID and not self.fadeOut) then
 		if ((self.casting or self.channeling) and castBarID == self.castBarID and not self.fadeOut) then
 			self.casting = nil
 			self.channeling = nil
