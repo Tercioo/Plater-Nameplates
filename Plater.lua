@@ -8547,7 +8547,7 @@ end
 		local name = plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME] or ""
 		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(name) then
 			-- do we try to refresh? is it worth?
-			unitFrame.unitName.isRenamed = nil
+			plateFrame.unitFrame.unitName.isRenamed = nil
 			Plater.UpdateNameOnRenamedUnit(plateFrame)
 			name = plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME] or ""
 		end
