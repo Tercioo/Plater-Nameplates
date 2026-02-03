@@ -4910,9 +4910,8 @@ function Plater.OnInit() --private --~oninit ~init
 		--self if the nameplate driver frame: _G.NamePlateDriverFrame
 		--at the moment self isn't being used ~personal
 		function Plater.UpdatePersonalBar (self)
-			if IS_WOW_PROJECT_MIDNIGHT then return end
 			local showSelf = GetCVarBool ("nameplateShowSelf") and Plater.db.profile.plate_config.player.module_enabled
-			if (not showSelf) then
+			if (not showSelf or IS_WOW_PROJECT_MIDNIGHT) then
 				if PlaterDBChr.resources_on_target then
 					Plater.UpdateResourceFrame()
 				end
@@ -5023,7 +5022,6 @@ function Plater.OnInit() --private --~oninit ~init
 
 		--update the resource location and anchor
 		function Plater.UpdateResourceFrame()
-			if IS_WOW_PROJECT_NOT_MAINLINE then return end
 			--this holds a reference of the current resource frame anchored into the 'target' namepate
 			--it is used when checking if the unit has auras to move the resources up to make room for the auras
 			Plater.CurrentTargetResourceFrame = nil
@@ -5031,7 +5029,7 @@ function Plater.OnInit() --private --~oninit ~init
 			local showSelf = GetCVarBool ("nameplateShowSelf") and Plater.db.profile.plate_config.player.module_enabled
 			local onCurrentTarget = PlaterDBChr.resources_on_target
 			
-			if (not showSelf) then
+			if (not showSelf or IS_WOW_PROJECT_MIDNIGHT) then
 				if (not onCurrentTarget) then
 					return
 				end
