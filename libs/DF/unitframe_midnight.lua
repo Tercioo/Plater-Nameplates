@@ -1823,7 +1823,7 @@ detailsFramework.CastFrameFunctions = {
 				stagePip:Hide()
 			end
 
-			if numStages and numStages > 0 then
+			if numStages and numStages > 0 and unit == "player" then -- some day this might get work for enemy unitsthen
 				self.holdAtMaxTime = GetUnitEmpowerHoldAtMaxTime(self.unit)
 				self.empowered = true
 				self.numStages = numStages
