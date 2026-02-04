@@ -29,11 +29,40 @@ function platerInternal.CreateAdvancedOptions()
 
     local L = DF.Language.GetLanguageTable(addonId)
 
-    local nameplate_anchor_options = {
-        {label = L["OPTIONS_ADVANCED_NAMEPLATE_ANCHOR_HEAD"], value = 0, onclick = Plater.ChangeNameplateAnchor, desc = L["OPTIONS_ADVANCED_NAMEPLATE_ANCHOR_HEAD_DESC"]},
-        {label = L["OPTIONS_ADVANCED_NAMEPLATE_ANCHOR_HEAD_FEET"], value = 1, onclick = Plater.ChangeNameplateAnchor, desc = L["OPTIONS_ADVANCED_NAMEPLATE_ANCHOR_HEAD_FEET_DESC"]},
-        {label = L["OPTIONS_ADVANCED_NAMEPLATE_ANCHOR_FEET"], value = 2, onclick = Plater.ChangeNameplateAnchor, desc = L["OPTIONS_ADVANCED_NAMEPLATE_ANCHOR_FEET_DESC"]},
-    }
+    local build_nameplate_anchor_options = function()
+        local languageId = DF.Language.GetLanguageIdForAddonId(addonId)
+
+        local headLabelId = "OPTIONS_ADVANCED_NAMEPLATE_ANCHOR_HEAD"
+        local headFeetLabelId = "OPTIONS_ADVANCED_NAMEPLATE_ANCHOR_HEAD_FEET"
+        local feetLabelId = "OPTIONS_ADVANCED_NAMEPLATE_ANCHOR_FEET"
+
+        return {
+            {
+                label = DF.Language.GetText(addonId, headLabelId) or headLabelId,
+                languageId = languageId,
+                phraseId = headLabelId,
+                value = 0,
+                onclick = Plater.ChangeNameplateAnchor,
+                desc = DF.Language.GetText(addonId, "OPTIONS_ADVANCED_NAMEPLATE_ANCHOR_HEAD_DESC") or "OPTIONS_ADVANCED_NAMEPLATE_ANCHOR_HEAD_DESC",
+            },
+            {
+                label = DF.Language.GetText(addonId, headFeetLabelId) or headFeetLabelId,
+                languageId = languageId,
+                phraseId = headFeetLabelId,
+                value = 1,
+                onclick = Plater.ChangeNameplateAnchor,
+                desc = DF.Language.GetText(addonId, "OPTIONS_ADVANCED_NAMEPLATE_ANCHOR_HEAD_FEET_DESC") or "OPTIONS_ADVANCED_NAMEPLATE_ANCHOR_HEAD_FEET_DESC",
+            },
+            {
+                label = DF.Language.GetText(addonId, feetLabelId) or feetLabelId,
+                languageId = languageId,
+                phraseId = feetLabelId,
+                value = 2,
+                onclick = Plater.ChangeNameplateAnchor,
+                desc = DF.Language.GetText(addonId, "OPTIONS_ADVANCED_NAMEPLATE_ANCHOR_FEET_DESC") or "OPTIONS_ADVANCED_NAMEPLATE_ANCHOR_FEET_DESC",
+            },
+        }
+    end
 
     --cvars
     local CVAR_ENABLED = "1"
@@ -54,14 +83,18 @@ function platerInternal.CreateAdvancedOptions()
 
     --outline table
     local outline_modes = {"NONE", "MONOCHROME", "OUTLINE", "THICKOUTLINE", "MONOCHROME, OUTLINE", "MONOCHROME, THICKOUTLINE"}
-    local outline_modes_names = {L["OPTIONS_ADVANCED_OUTLINE_MODE_NONE"], L["OPTIONS_ADVANCED_OUTLINE_MODE_MONOCHROME"], L["OPTIONS_ADVANCED_OUTLINE_MODE_OUTLINE"], L["OPTIONS_ADVANCED_OUTLINE_MODE_THICK_OUTLINE"], L["OPTIONS_ADVANCED_OUTLINE_MODE_MONOCHROME_OUTLINE"], L["OPTIONS_ADVANCED_OUTLINE_MODE_MONOCHROME_THICK_OUTLINE"]}
+    local outline_modes_names_phraseIds = {"OPTIONS_ADVANCED_OUTLINE_MODE_NONE", "OPTIONS_ADVANCED_OUTLINE_MODE_MONOCHROME", "OPTIONS_ADVANCED_OUTLINE_MODE_OUTLINE", "OPTIONS_ADVANCED_OUTLINE_MODE_THICK_OUTLINE", "OPTIONS_ADVANCED_OUTLINE_MODE_MONOCHROME_OUTLINE", "OPTIONS_ADVANCED_OUTLINE_MODE_MONOCHROME_THICK_OUTLINE"}
     local build_outline_modes_table = function (actorType, member)
         local t = {}
+        local languageId = DF.Language.GetLanguageIdForAddonId(addonId)
         for i = 1, #outline_modes do
             local value = outline_modes[i]
-            local label = outline_modes_names[i]
+            local phraseId = outline_modes_names_phraseIds[i]
+            local label = DF.Language.GetText(addonId, phraseId) or phraseId
             tinsert (t, {
                 label = label,
+                languageId = languageId,
+                phraseId = phraseId,
                 value = value,
                 statusbar = dropdownStatusBarTexture,
                 statusbarcolor = dropdownStatusBarColor,
@@ -84,7 +117,9 @@ function platerInternal.CreateAdvancedOptions()
     end
 
     local build_number_format_options = function()
-        local number_format_options = {L["OPTIONS_ADVANCED_NUMBER_FORMAT_WESTERN"]}
+        local languageId = DF.Language.GetLanguageIdForAddonId(addonId)
+        local westernPhraseId = "OPTIONS_ADVANCED_NUMBER_FORMAT_WESTERN"
+        local number_format_options = {DF.Language.GetText(addonId, westernPhraseId) or westernPhraseId}
         local number_format_options_config = {"western", "eastasia"}
 
         local eastAsiaMyriads_1k, eastAsiaMyriads_10k, eastAsiaMyriads_1B
@@ -100,8 +135,11 @@ function platerInternal.CreateAdvancedOptions()
 
         local t = {}
         for i = 1, #number_format_options do
+            local phraseId = (i == 1) and westernPhraseId or nil
             tinsert (t, {
                 label = number_format_options [i],
+                languageId = phraseId and languageId or nil,
+                phraseId = phraseId,
                 value = number_format_options_config [i],
                 onclick = function (_, _, value)
                     Plater.db.profile.number_region = value
@@ -491,7 +529,7 @@ function platerInternal.CreateAdvancedOptions()
         {
             type = "select",
             get = function() return tonumber (GetCVar ("nameplateOtherAtBase")) end,
-            values = function() return nameplate_anchor_options end,
+            values = function() return build_nameplate_anchor_options() end,
             name = "@OPTIONS_ADVANCED_ANCHOR_POINT@" .. CVarIcon,
             descPhraseId = "@OPTIONS_ADVANCED_ANCHOR_POINT_DESC@" .. CVarDesc,
             desc = "@OPTIONS_ADVANCED_ANCHOR_POINT_DESC@" .. CVarDesc,
