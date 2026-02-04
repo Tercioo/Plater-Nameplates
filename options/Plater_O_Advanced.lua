@@ -147,7 +147,7 @@ function platerInternal.CreateAdvancedOptions()
     end
 
     local advanced_options = {
-        {type = "label", get = function() return L["OPTIONS_ADVANCED_HEADER_GENERAL_SETTINGS"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {type = "label", get = function() return "OPTIONS_ADVANCED_HEADER_GENERAL_SETTINGS" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 
         {
             type = "range",
@@ -206,8 +206,9 @@ function platerInternal.CreateAdvancedOptions()
                     Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
                 end
             end,
-            name = L["OPTIONS_ADVANCED_SHOW_SOFT_INTERACT_ON_GAME_OBJECTS"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_SHOW_SOFT_INTERACT_ON_GAME_OBJECTS_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_SHOW_SOFT_INTERACT_ON_GAME_OBJECTS@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_SHOW_SOFT_INTERACT_ON_GAME_OBJECTS_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_SHOW_SOFT_INTERACT_ON_GAME_OBJECTS_DESC@" .. CVarDesc,
             nocombat = true,
         },
 
@@ -221,8 +222,9 @@ function platerInternal.CreateAdvancedOptions()
                     Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
                 end
             end,
-            name = L["OPTIONS_ADVANCED_FORCE_NAMEPLATES_ON_SOFT_INTERACT_TARGET"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_FORCE_NAMEPLATES_ON_SOFT_INTERACT_TARGET_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_FORCE_NAMEPLATES_ON_SOFT_INTERACT_TARGET@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_FORCE_NAMEPLATES_ON_SOFT_INTERACT_TARGET_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_FORCE_NAMEPLATES_ON_SOFT_INTERACT_TARGET_DESC@" .. CVarDesc,
         },
         {
             type = "toggle",
@@ -280,7 +282,7 @@ function platerInternal.CreateAdvancedOptions()
 
         {type = "blank"},
 
-        {type = "label", get = function() return L["OPTIONS_ADVANCED_HEADER_CLIENT_SETTINGS_CVARS"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {type = "label", get = function() return "OPTIONS_ADVANCED_HEADER_CLIENT_SETTINGS_CVARS" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
         {
             type = "toggle",
             get = function() return GetCVarBool ("nameplateShowOffscreen") end,
@@ -292,8 +294,9 @@ function platerInternal.CreateAdvancedOptions()
                     self:SetValue (GetCVarBool ("nameplateShowOffscreen"))
                 end
             end,
-            name = L["OPTIONS_ADVANCED_KEEP_NAMEPLATES_ON_SCREEN"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_KEEP_NAMEPLATES_ON_SCREEN_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_KEEP_NAMEPLATES_ON_SCREEN@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_KEEP_NAMEPLATES_ON_SCREEN_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_KEEP_NAMEPLATES_ON_SCREEN_DESC@" .. CVarDesc,
             nocombat = true,
             hidden = not IS_WOW_PROJECT_MIDNIGHT,
         },
@@ -320,8 +323,9 @@ function platerInternal.CreateAdvancedOptions()
             step = 0.005,
             thumbscale = 1.7,
             usedecimals = true,
-            name = L["OPTIONS_ADVANCED_LOCK_TO_SCREEN_TOP_SIDE"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_LOCK_TO_SCREEN_TOP_SIDE_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_LOCK_TO_SCREEN_TOP_SIDE@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_LOCK_TO_SCREEN_TOP_SIDE_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_LOCK_TO_SCREEN_TOP_SIDE_DESC@" .. CVarDesc,
             nocombat = true,
             hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
@@ -349,8 +353,9 @@ function platerInternal.CreateAdvancedOptions()
             step = 0.005,
             thumbscale = 1.7,
             usedecimals = true,
-            name = L["OPTIONS_ADVANCED_LOCK_TO_SCREEN_BOTTOM_SIDE"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_LOCK_TO_SCREEN_BOTTOM_SIDE_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_LOCK_TO_SCREEN_BOTTOM_SIDE@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_LOCK_TO_SCREEN_BOTTOM_SIDE_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_LOCK_TO_SCREEN_BOTTOM_SIDE_DESC@" .. CVarDesc,
             nocombat = true,
             hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
@@ -370,8 +375,9 @@ function platerInternal.CreateAdvancedOptions()
             step = 0.05,
             thumbscale = 1.7,
             usedecimals = true,
-            name = L["OPTIONS_ADVANCED_NAMEPLATE_OVERLAP_V"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_NAMEPLATE_OVERLAP_V_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_NAMEPLATE_OVERLAP_V@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_NAMEPLATE_OVERLAP_V_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_NAMEPLATE_OVERLAP_V_DESC@" .. CVarDesc,
             nocombat = true,
             --hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
@@ -390,8 +396,9 @@ function platerInternal.CreateAdvancedOptions()
             step = 0.05,
             thumbscale = 1.7,
             usedecimals = true,
-            name = L["OPTIONS_ADVANCED_NAMEPLATE_OVERLAP_H"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_NAMEPLATE_OVERLAP_H_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_NAMEPLATE_OVERLAP_H@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_NAMEPLATE_OVERLAP_H_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_NAMEPLATE_OVERLAP_H_DESC@" .. CVarDesc,
             nocombat = true,
             --hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
@@ -411,8 +418,9 @@ function platerInternal.CreateAdvancedOptions()
             step = 0.005,
             thumbscale = 1.7,
             usedecimals = true,
-            name = L["OPTIONS_ADVANCED_MOVEMENT_SPEED"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_MOVEMENT_SPEED_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_MOVEMENT_SPEED@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_MOVEMENT_SPEED_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_MOVEMENT_SPEED_DESC@" .. CVarDesc,
             nocombat = true,
             hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
@@ -431,8 +439,9 @@ function platerInternal.CreateAdvancedOptions()
             step = 0.1,
             thumbscale = 1.7,
             usedecimals = true,
-            name = L["OPTIONS_ADVANCED_GLOBAL_SCALE"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_GLOBAL_SCALE_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_GLOBAL_SCALE@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_GLOBAL_SCALE_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_GLOBAL_SCALE_DESC@" .. CVarDesc,
             nocombat = true,
             hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
@@ -452,8 +461,9 @@ function platerInternal.CreateAdvancedOptions()
             step = 0.1,
             thumbscale = 1.7,
             usedecimals = true,
-            name = L["OPTIONS_ADVANCED_MIN_SCALE"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_MIN_SCALE_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_MIN_SCALE@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_MIN_SCALE_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_MIN_SCALE_DESC@" .. CVarDesc,
             nocombat = true,
         },
 
@@ -472,8 +482,9 @@ function platerInternal.CreateAdvancedOptions()
             step = 0.1,
             thumbscale = 1.7,
             usedecimals = true,
-            name = L["OPTIONS_ADVANCED_LARGER_SCALE"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_LARGER_SCALE_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_LARGER_SCALE@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_LARGER_SCALE_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_LARGER_SCALE_DESC@" .. CVarDesc,
             nocombat = true,
         },
 
@@ -481,8 +492,9 @@ function platerInternal.CreateAdvancedOptions()
             type = "select",
             get = function() return tonumber (GetCVar ("nameplateOtherAtBase")) end,
             values = function() return nameplate_anchor_options end,
-            name = L["OPTIONS_ADVANCED_ANCHOR_POINT"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_ANCHOR_POINT_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_ANCHOR_POINT@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_ANCHOR_POINT_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_ANCHOR_POINT_DESC@" .. CVarDesc,
             nocombat = true,
         },
         {
@@ -496,14 +508,15 @@ function platerInternal.CreateAdvancedOptions()
                     self:SetValue (GetCVarBool ("nameplateShowDebuffsOnFriendly"))
                 end
             end,
-            name = L["OPTIONS_ADVANCED_SHOW_DEBUFFS_ON_BLIZZARD_HEALTH_BARS"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_SHOW_DEBUFFS_ON_BLIZZARD_HEALTH_BARS_DESC"] .. CVarDesc .. CVarNeedReload,
+            name = "@OPTIONS_ADVANCED_SHOW_DEBUFFS_ON_BLIZZARD_HEALTH_BARS@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_SHOW_DEBUFFS_ON_BLIZZARD_HEALTH_BARS_DESC@" .. CVarDesc .. CVarNeedReload,
+            desc = "@OPTIONS_ADVANCED_SHOW_DEBUFFS_ON_BLIZZARD_HEALTH_BARS_DESC@" .. CVarDesc .. CVarNeedReload,
             nocombat = true,
             hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
 
         {type = "blank", hidden = not IS_WOW_PROJECT_MIDNIGHT},
-        {type = "label", get = function() return L["OPTIONS_ADVANCED_HEADER_OVERLAP_SIZE_SCALING"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {type = "label", get = function() return "OPTIONS_ADVANCED_HEADER_OVERLAP_SIZE_SCALING" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
         {
             type = "range",
             get = function() return Plater.db.profile.overlap_space_scale[1] end,
@@ -592,8 +605,9 @@ function platerInternal.CreateAdvancedOptions()
                 end
                 PlaterOptionsPanelFrame.RefreshOptionsFrame()
             end,
-            name = L["OPTIONS_ADVANCED_LARGER_NAMEPLATES"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_LARGER_NAMEPLATES_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_LARGER_NAMEPLATES@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_LARGER_NAMEPLATES_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_LARGER_NAMEPLATES_DESC@" .. CVarDesc,
             nocombat = true,
             hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
@@ -612,8 +626,9 @@ function platerInternal.CreateAdvancedOptions()
             step = 0.1,
             thumbscale = 1.7,
             usedecimals = true,
-            name = L["OPTIONS_ADVANCED_BASE_VERTICAL_SCALE"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_BASE_VERTICAL_SCALE_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_BASE_VERTICAL_SCALE@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_BASE_VERTICAL_SCALE_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_BASE_VERTICAL_SCALE_DESC@" .. CVarDesc,
             nocombat = true,
             hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
@@ -632,8 +647,9 @@ function platerInternal.CreateAdvancedOptions()
             step = 0.1,
             thumbscale = 1.7,
             usedecimals = true,
-            name = L["OPTIONS_ADVANCED_BASE_HORIZONTAL_SCALE"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_BASE_HORIZONTAL_SCALE_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_BASE_HORIZONTAL_SCALE@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_BASE_HORIZONTAL_SCALE_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_BASE_HORIZONTAL_SCALE_DESC@" .. CVarDesc,
             nocombat = true,
             hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
@@ -652,14 +668,15 @@ function platerInternal.CreateAdvancedOptions()
             step = 0.1,
             thumbscale = 1.7,
             usedecimals = true,
-            name = L["OPTIONS_ADVANCED_BASE_CLASSIFICATION_SCALE"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_BASE_CLASSIFICATION_SCALE_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_BASE_CLASSIFICATION_SCALE@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_BASE_CLASSIFICATION_SCALE_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_BASE_CLASSIFICATION_SCALE_DESC@" .. CVarDesc,
             nocombat = true,
             hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
         
         {type = "blank", hidden = not IS_WOW_PROJECT_MIDNIGHT},
-        {type = "label", get = function() return L["OPTIONS_ADVANCED_HEADER_NAMEPLATE_SELECTION_SPACE"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = not IS_WOW_PROJECT_MIDNIGHT},
+        {type = "label", get = function() return "OPTIONS_ADVANCED_HEADER_NAMEPLATE_SELECTION_SPACE" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = not IS_WOW_PROJECT_MIDNIGHT},
         {
             type = "range",
             get = function() return Plater.db.profile.click_space[1] end,
@@ -692,7 +709,7 @@ function platerInternal.CreateAdvancedOptions()
             hidden = not IS_WOW_PROJECT_MIDNIGHT,
         },
         
-        {type = "label", get = function() return L["OPTIONS_ADVANCED_HEADER_ENEMY_BOX_SELECTION_SPACE"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = IS_WOW_PROJECT_MIDNIGHT},
+        {type = "label", get = function() return "OPTIONS_ADVANCED_HEADER_ENEMY_BOX_SELECTION_SPACE" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = IS_WOW_PROJECT_MIDNIGHT},
         {
             type = "range",
             get = function() return Plater.db.profile.click_space[1] end,
@@ -727,7 +744,7 @@ function platerInternal.CreateAdvancedOptions()
 
         {type = "blank", hidden = IS_WOW_PROJECT_MIDNIGHT},
 
-        {type = "label", get = function() return L["OPTIONS_ADVANCED_HEADER_FRIENDLY_BOX_SELECTION_SPACE"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = IS_WOW_PROJECT_MIDNIGHT},
+        {type = "label", get = function() return "OPTIONS_ADVANCED_HEADER_FRIENDLY_BOX_SELECTION_SPACE" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = IS_WOW_PROJECT_MIDNIGHT},
         {
             type = "range",
             get = function() return Plater.db.profile.click_space_friendly[1] end,
@@ -775,7 +792,7 @@ function platerInternal.CreateAdvancedOptions()
         },
 
         {type = "breakline"},
-        {type = "label", get = function() return L["OPTIONS_ADVANCED_HEADER_UNIT_TYPES"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {type = "label", get = function() return "OPTIONS_ADVANCED_HEADER_UNIT_TYPES" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 
         {
             type = "toggle",
@@ -788,8 +805,9 @@ function platerInternal.CreateAdvancedOptions()
                     self:SetValue (GetCVar ("nameplateShowEnemyGuardians") == CVAR_ENABLED)
                 end
             end,
-            name = L["OPTIONS_ADVANCED_UNIT_SHOW_ENEMY_GUARDIANS"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_UNIT_SHOW_ENEMY_GUARDIANS_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_UNIT_SHOW_ENEMY_GUARDIANS@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_UNIT_SHOW_ENEMY_GUARDIANS_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_UNIT_SHOW_ENEMY_GUARDIANS_DESC@" .. CVarDesc,
             nocombat = true,
         },
 
@@ -804,8 +822,9 @@ function platerInternal.CreateAdvancedOptions()
                     self:SetValue (GetCVar ("nameplateShowEnemyMinions") == CVAR_ENABLED)
                 end
             end,
-            name = L["OPTIONS_ADVANCED_UNIT_SHOW_ENEMY_MINIONS"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_UNIT_SHOW_ENEMY_MINIONS_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_UNIT_SHOW_ENEMY_MINIONS@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_UNIT_SHOW_ENEMY_MINIONS_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_UNIT_SHOW_ENEMY_MINIONS_DESC@" .. CVarDesc,
             nocombat = true,
         },
 
@@ -820,8 +839,9 @@ function platerInternal.CreateAdvancedOptions()
                     self:SetValue (GetCVar ("nameplateShowEnemyMinus") == CVAR_ENABLED)
                 end
             end,
-            name = L["OPTIONS_ADVANCED_UNIT_SHOW_ENEMY_MINOR_UNITS"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_UNIT_SHOW_ENEMY_MINOR_UNITS_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_UNIT_SHOW_ENEMY_MINOR_UNITS@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_UNIT_SHOW_ENEMY_MINOR_UNITS_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_UNIT_SHOW_ENEMY_MINOR_UNITS_DESC@" .. CVarDesc,
             nocombat = true,
         },
 
@@ -836,8 +856,9 @@ function platerInternal.CreateAdvancedOptions()
                     self:SetValue (GetCVar ("nameplateShowEnemyPets") == CVAR_ENABLED)
                 end
             end,
-            name = L["OPTIONS_ADVANCED_UNIT_SHOW_ENEMY_PETS"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_UNIT_SHOW_ENEMY_PETS_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_UNIT_SHOW_ENEMY_PETS@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_UNIT_SHOW_ENEMY_PETS_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_UNIT_SHOW_ENEMY_PETS_DESC@" .. CVarDesc,
             nocombat = true,
         },
 
@@ -852,8 +873,9 @@ function platerInternal.CreateAdvancedOptions()
                     self:SetValue (GetCVar ("nameplateShowEnemyTotems") == CVAR_ENABLED)
                 end
             end,
-            name = L["OPTIONS_ADVANCED_UNIT_SHOW_ENEMY_TOTEMS"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_UNIT_SHOW_ENEMY_TOTEMS_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_UNIT_SHOW_ENEMY_TOTEMS@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_UNIT_SHOW_ENEMY_TOTEMS_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_UNIT_SHOW_ENEMY_TOTEMS_DESC@" .. CVarDesc,
             nocombat = true,
         },
 
@@ -870,8 +892,9 @@ function platerInternal.CreateAdvancedOptions()
                     self:SetValue (GetCVar ("nameplateShowFriendlyNPCs") == CVAR_ENABLED)
                 end
             end,
-            name = L["OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_NPCS"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_NPCS_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_NPCS@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_NPCS_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_NPCS_DESC@" .. CVarDesc,
             nocombat = true,
         },
 
@@ -886,8 +909,9 @@ function platerInternal.CreateAdvancedOptions()
                     self:SetValue (GetCVar ("nameplateShowFriendlyGuardians") == CVAR_ENABLED)
                 end
             end,
-            name = L["OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_GUARDIANS"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_GUARDIANS_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_GUARDIANS@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_GUARDIANS_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_GUARDIANS_DESC@" .. CVarDesc,
             nocombat = true,
             hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
@@ -903,8 +927,9 @@ function platerInternal.CreateAdvancedOptions()
                     self:SetValue (GetCVar ("nameplateShowFriendlyMinions") == CVAR_ENABLED)
                 end
             end,
-            name = L["OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_MINIONS"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_MINIONS_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_MINIONS@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_MINIONS_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_MINIONS_DESC@" .. CVarDesc,
             nocombat = true,
             hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
@@ -920,8 +945,9 @@ function platerInternal.CreateAdvancedOptions()
                     self:SetValue (GetCVar ("nameplateShowFriendlyPets") == CVAR_ENABLED)
                 end
             end,
-            name = L["OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_PETS"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_PETS_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_PETS@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_PETS_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_PETS_DESC@" .. CVarDesc,
             nocombat = true,
             hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
@@ -937,8 +963,9 @@ function platerInternal.CreateAdvancedOptions()
                     self:SetValue (GetCVar ("nameplateShowFriendlyTotems") == CVAR_ENABLED)
                 end
             end,
-            name = L["OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_TOTEMS"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_TOTEMS_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_TOTEMS@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_TOTEMS_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_TOTEMS_DESC@" .. CVarDesc,
             nocombat = true,
             hidden = IS_WOW_PROJECT_MIDNIGHT,
         },
@@ -954,8 +981,9 @@ function platerInternal.CreateAdvancedOptions()
                     self:SetValue (GetCVar ("nameplateShowFriendlyPlayers") == CVAR_ENABLED)
                 end
             end,
-            name = L["OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_PLAYERS"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_PLAYERS_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_PLAYERS@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_PLAYERS_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_PLAYERS_DESC@" .. CVarDesc,
             nocombat = true,
             hidden = not IS_WOW_PROJECT_MIDNIGHT,
         },
@@ -971,8 +999,9 @@ function platerInternal.CreateAdvancedOptions()
                     self:SetValue (GetCVar ("nameplateShowFriendlyPlayerGuardians") == CVAR_ENABLED)
                 end
             end,
-            name = L["OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_GUARDIANS"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_GUARDIANS_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_GUARDIANS@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_GUARDIANS_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_GUARDIANS_DESC@" .. CVarDesc,
             nocombat = true,
             hidden = not IS_WOW_PROJECT_MIDNIGHT,
         },
@@ -988,8 +1017,9 @@ function platerInternal.CreateAdvancedOptions()
                     self:SetValue (GetCVar ("nameplateShowFriendlyPlayerMinions") == CVAR_ENABLED)
                 end
             end,
-            name = L["OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_MINIONS"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_MINIONS_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_MINIONS@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_MINIONS_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_MINIONS_DESC@" .. CVarDesc,
             nocombat = true,
             hidden = not IS_WOW_PROJECT_MIDNIGHT,
         },
@@ -1005,8 +1035,9 @@ function platerInternal.CreateAdvancedOptions()
                     self:SetValue (GetCVar ("nameplateShowFriendlyPlayerPets") == CVAR_ENABLED)
                 end
             end,
-            name = L["OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_PETS"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_PETS_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_PETS@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_PETS_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_PETS_DESC@" .. CVarDesc,
             nocombat = true,
             hidden = not IS_WOW_PROJECT_MIDNIGHT,
         },
@@ -1022,14 +1053,15 @@ function platerInternal.CreateAdvancedOptions()
                     self:SetValue (GetCVar ("nameplateShowFriendlyPlayerTotems") == CVAR_ENABLED)
                 end
             end,
-            name = L["OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_TOTEMS"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_TOTEMS_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_TOTEMS@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_TOTEMS_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_UNIT_SHOW_FRIENDLY_TOTEMS_DESC@" .. CVarDesc,
             nocombat = true,
             hidden = not IS_WOW_PROJECT_MIDNIGHT,
         },
 
         {type = "blank"},
-        {type = "label", get = function() return L["OPTIONS_ADVANCED_HEADER_BLIZZARD_NAMEPLATE_FONTS"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {type = "label", get = function() return "OPTIONS_ADVANCED_HEADER_BLIZZARD_NAMEPLATE_FONTS" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
         {
             type = "toggle",
             get = function() return Plater.db.profile.blizzard_nameplate_font_override_enabled end,
@@ -1037,15 +1069,17 @@ function platerInternal.CreateAdvancedOptions()
                 Plater.db.profile.blizzard_nameplate_font_override_enabled = value
             end,
             name = L["OPTIONS_ENABLED"],
-            desc = L["OPTIONS_ADVANCED_ENABLE_BLIZZARD_NAMEPLATE_FONT_OVERRIDE_DESC"] .. CVarNeedReload,
+            descPhraseId = "@OPTIONS_ADVANCED_ENABLE_BLIZZARD_NAMEPLATE_FONT_OVERRIDE_DESC@" .. CVarNeedReload,
+            desc = "@OPTIONS_ADVANCED_ENABLE_BLIZZARD_NAMEPLATE_FONT_OVERRIDE_DESC@" .. CVarNeedReload,
         },
-        {type = "label", get = function() return L["OPTIONS_ADVANCED_HEADER_FONT_NORMAL"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {type = "label", get = function() return "OPTIONS_ADVANCED_HEADER_FONT_NORMAL" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
         {
             type = "select",
             get = function() return Plater.db.profile.blizzard_nameplate_font end,
             values = function() return DF:BuildDropDownFontList (on_select_blizzard_nameplate_font) end,
             name = L["OPTIONS_FONT"],
-            desc = L["OPTIONS_TEXT_FONT"] .. CVarNeedReload,
+            descPhraseId = "@OPTIONS_TEXT_FONT@" .. CVarNeedReload,
+            desc = "@OPTIONS_TEXT_FONT@" .. CVarNeedReload,
         },
         {
             type = "range",
@@ -1055,22 +1089,25 @@ function platerInternal.CreateAdvancedOptions()
             max = 24,
             step = 1,
             name = L["OPTIONS_SIZE"],
-            desc = L["OPTIONS_SIZE"] .. CVarNeedReload,
+            descPhraseId = "@OPTIONS_SIZE@" .. CVarNeedReload,
+            desc = "@OPTIONS_SIZE@" .. CVarNeedReload,
         },
         {
             type = "select",
             get = function() return Plater.db.profile.blizzard_nameplate_font_outline end,
             values = function() return build_outline_modes_table (nil, "blizzard_nameplate_font_outline") end,
             name = L["OPTIONS_OUTLINE"],
-            desc = L["OPTIONS_OUTLINE"] .. CVarNeedReload,
+            descPhraseId = "@OPTIONS_OUTLINE@" .. CVarNeedReload,
+            desc = "@OPTIONS_OUTLINE@" .. CVarNeedReload,
         },
-        {type = "label", get = function() return L["OPTIONS_ADVANCED_HEADER_FONT_LARGE"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {type = "label", get = function() return "OPTIONS_ADVANCED_HEADER_FONT_LARGE" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
         {
             type = "select",
             get = function() return Plater.db.profile.blizzard_nameplate_large_font end,
             values = function() return DF:BuildDropDownFontList (on_select_blizzard_nameplate_large_font) end,
             name = L["OPTIONS_FONT"],
-            desc = L["OPTIONS_TEXT_FONT"] .. CVarNeedReload,
+            descPhraseId = "@OPTIONS_TEXT_FONT@" .. CVarNeedReload,
+            desc = "@OPTIONS_TEXT_FONT@" .. CVarNeedReload,
         },
         {
             type = "range",
@@ -1080,14 +1117,16 @@ function platerInternal.CreateAdvancedOptions()
             max = 24,
             step = 1,
             name = L["OPTIONS_SIZE"],
-            desc = L["OPTIONS_SIZE"] .. CVarNeedReload,
+            descPhraseId = "@OPTIONS_SIZE@" .. CVarNeedReload,
+            desc = "@OPTIONS_SIZE@" .. CVarNeedReload,
         },
         {
             type = "select",
             get = function() return Plater.db.profile.blizzard_nameplate_large_font_outline end,
             values = function() return build_outline_modes_table (nil, "blizzard_nameplate_large_font_outline") end,
             name = L["OPTIONS_OUTLINE"],
-            desc = L["OPTIONS_OUTLINE"] .. CVarNeedReload,
+            descPhraseId = "@OPTIONS_OUTLINE@" .. CVarNeedReload,
+            desc = "@OPTIONS_OUTLINE@" .. CVarNeedReload,
         },
 
         --{type = "breakline"},
@@ -1096,7 +1135,7 @@ function platerInternal.CreateAdvancedOptions()
 
         --can't go up to 100 pixels deviation due to the clicable space from the plateFrame
         --if it goes more than the plateFrame area it generates areas where isn't clicable
-        {type = "label", get = function() return L["OPTIONS_ADVANCED_HEADER_GLOBAL_OFFSET"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {type = "label", get = function() return "OPTIONS_ADVANCED_HEADER_GLOBAL_OFFSET" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
         {
             type = "range",
             get = function() return Plater.db.profile.global_offset_x end,
@@ -1130,7 +1169,7 @@ function platerInternal.CreateAdvancedOptions()
 
         {type = "blank"},
 
-        {type = "label", get = function() return L["OPTIONS_ADVANCED_HEADER_SPECIAL_UNITS"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {type = "label", get = function() return "OPTIONS_ADVANCED_HEADER_SPECIAL_UNITS" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 
         {
             type = "range",
@@ -1190,7 +1229,7 @@ function platerInternal.CreateAdvancedOptions()
         },
 
         {type = "breakline"},
-        {type = "label", get = function() return L["OPTIONS_ADVANCED_HEADER_REGION"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {type = "label", get = function() return "OPTIONS_ADVANCED_HEADER_REGION" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 
         {
             type = "select",
@@ -1200,7 +1239,7 @@ function platerInternal.CreateAdvancedOptions()
             desc = "OPTIONS_FORMAT_NUMBER",
         },
 
-        {type = "label", get = function() return L["OPTIONS_ADVANCED_HEADER_MISC"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {type = "label", get = function() return "OPTIONS_ADVANCED_HEADER_MISC" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 
         {
             type = "toggle",
@@ -1275,7 +1314,7 @@ function platerInternal.CreateAdvancedOptions()
         },
 
         {type = "blank"},
-        {type = "label", get = function() return L["OPTIONS_ADVANCED_HEADER_PERSONAL_BAR_CUSTOM_POSITION"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = IS_WOW_PROJECT_NOT_MAINLINE or IS_WOW_PROJECT_MIDNIGHT},
+        {type = "label", get = function() return "OPTIONS_ADVANCED_HEADER_PERSONAL_BAR_CUSTOM_POSITION" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = IS_WOW_PROJECT_NOT_MAINLINE or IS_WOW_PROJECT_MIDNIGHT},
         {
             type = "range",
             get = function() return tonumber (GetCVar ("nameplateSelfTopInset")*100) end,
@@ -1338,8 +1377,9 @@ function platerInternal.CreateAdvancedOptions()
             max = 51,
             step = 1,
             nocombat = true,
-            name = L["OPTIONS_ADVANCED_TOP_CONSTRAIN"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_TOP_CONSTRAIN_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_TOP_CONSTRAIN@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_TOP_CONSTRAIN_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_TOP_CONSTRAIN_DESC@" .. CVarDesc,
             hidden = IS_WOW_PROJECT_NOT_MAINLINE or IS_WOW_PROJECT_MIDNIGHT,
         },
 
@@ -1405,13 +1445,14 @@ function platerInternal.CreateAdvancedOptions()
             max = 51,
             step = 1,
             nocombat = true,
-            name = L["OPTIONS_ADVANCED_BOTTOM_CONSTRAIN"] .. CVarIcon,
-            desc = L["OPTIONS_ADVANCED_BOTTOM_CONSTRAIN_DESC"] .. CVarDesc,
+            name = "@OPTIONS_ADVANCED_BOTTOM_CONSTRAIN@" .. CVarIcon,
+            descPhraseId = "@OPTIONS_ADVANCED_BOTTOM_CONSTRAIN_DESC@" .. CVarDesc,
+            desc = "@OPTIONS_ADVANCED_BOTTOM_CONSTRAIN_DESC@" .. CVarDesc,
             hidden = IS_WOW_PROJECT_NOT_MAINLINE or IS_WOW_PROJECT_MIDNIGHT,
         },
 
         {type = "blank", hidden = IS_WOW_PROJECT_MIDNIGHT},
-        {type = "label", get = function() return L["OPTIONS_ADVANCED_HEADER_ANIMATIONS"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE") }, --, hidden = IS_WOW_PROJECT_MIDNIGHT},
+        {type = "label", get = function() return "OPTIONS_ADVANCED_HEADER_ANIMATIONS" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE") }, --, hidden = IS_WOW_PROJECT_MIDNIGHT},
 
         {
             type = "toggle",
@@ -1472,7 +1513,7 @@ function platerInternal.CreateAdvancedOptions()
 
         {type = "blank"},
 
-        {type = "label", get = function() return L["OPTIONS_ADVANCED_HEADER_UNIT_WIDGET_BARS"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = IS_WOW_PROJECT_NOT_MAINLINE},
+        {type = "label", get = function() return "OPTIONS_ADVANCED_HEADER_UNIT_WIDGET_BARS" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = IS_WOW_PROJECT_NOT_MAINLINE},
         {
             type = "range",
             get = function() return Plater.db.profile.widget_bar_scale end,
