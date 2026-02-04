@@ -2028,7 +2028,7 @@ detailsFramework.CastFrameFunctions = {
 			if interruptedBy ~= nil then
 				self:UNIT_SPELLCAST_INTERRUPTED(unit, unitID, castID, spellID, interruptedBy, castBarID)
 			else
-				if not complete then
+				if issecretvalue(complete) or not complete then
 					self.Spark:Hide()
 					self.percentText:Hide()
 				end
