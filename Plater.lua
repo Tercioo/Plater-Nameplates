@@ -1548,6 +1548,7 @@ Plater.AnchorNamesByPhraseId = {
 		["nameplateShowFriendlyBuffs"] = true,
 		["nameplateShowOnlyNames"] = true,
 		["nameplateShowOnlyNameForFriendlyPlayerUnits"] = IS_WOW_PROJECT_MIDNIGHT,
+		["nameplateUseClassColorForFriendlyPlayerUnitNames"] = IS_WOW_PROJECT_MIDNIGHT,
 		["nameplateShowPersonalCooldowns"] = true,
 		["nameplateShowSelf"] = (IS_WOW_PROJECT_MAINLINE),
 		["nameplateTargetBehindMaxDistance"] = true,
