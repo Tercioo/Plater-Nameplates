@@ -1182,6 +1182,14 @@ Plater.AnchorNamesByPhraseId = {
 			
 			return playerIsTank
 		else
+			if UnitGroupRolesAssigned then
+				local assignedRole = UnitGroupRolesAssigned ("player")
+				local playerIsTank = assignedRole == "TANK"
+				if not playerIsTank and GetPartyAssignment then
+					playerIsTank = GetPartyAssignment("MAINTANK", "player") or false
+				end
+				return playerIsTank
+			end
 		
 			local playerIsTank = hasTankAura or false
 		
