@@ -1188,9 +1188,14 @@ Plater.AnchorNamesByPhraseId = {
 				if not playerIsTank and GetPartyAssignment then
 					playerIsTank = GetPartyAssignment("MAINTANK", "player") or false
 				end
+				if not playerIsTank and GetSpecialization and GetSpecializationRole then
+					local spec = GetSpecialization()
+					playerIsTank = spec and GetSpecializationRole (spec) == "TANK"
+				end
 				return playerIsTank
 			end
 		
+			--fallback
 			local playerIsTank = hasTankAura or false
 		
 			if not hasTankAura then
