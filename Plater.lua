@@ -1188,6 +1188,7 @@ Plater.AnchorNamesByPhraseId = {
 				if not playerIsTank and GetPartyAssignment then
 					playerIsTank = GetPartyAssignment("MAINTANK", "player") or false
 				end
+				if not playerIsTank and IS_WOW_PROJECT_CLASSIC_MOP and GetSpecialization and GetSpecializationRole then
 					local spec = GetSpecialization()
 					playerIsTank = spec and GetSpecializationRole (spec) == "TANK"
 				end
