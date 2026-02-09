@@ -359,7 +359,7 @@ local PlaterNamePlateAuraTooltip = CreatePlaterNamePlateAuraTooltip()
 --> Private Aura handling
 
 function Plater.HandlePrivateAuraAnchors(unitFrame, maxIndex)
-	if true then return end -- disable for now...
+	--if true then return end -- disable for now...
 	if not unitFrame then return end
 	if not C_UnitAuras or not C_UnitAuras.RemovePrivateAuraAnchor then return end
 
