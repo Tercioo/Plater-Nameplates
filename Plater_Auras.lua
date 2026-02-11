@@ -113,7 +113,7 @@ if pandemicColorCurve then
 	pandemicColorCurve:SetType(Enum.LuaCurveType.Step)
 	pandemicColorCurve:AddPoint(0, CreateColor(1, 0, 0, 1))
 	pandemicColorCurve:AddPoint(.15, CreateColor(1, 0.5, 0, 1))
-	pandemicColorCurve:AddPoint(.25, CreateColor(1, 1, 1, 1))
+	pandemicColorCurve:AddPoint(.3, CreateColor(1, 1, 1, 1))
 end
 
 --> Aura types for usage in AddAura / AddExtraIcon checks
