@@ -359,7 +359,7 @@ local PlaterNamePlateAuraTooltip = CreatePlaterNamePlateAuraTooltip()
 --> Private Aura handling
 
 function Plater.HandlePrivateAuraAnchors(unitFrame, maxIndex)
-	--if true then return end -- disable for now...
+	if true then return end -- disable for now...
 	if not unitFrame then return end
 	if not C_UnitAuras or not C_UnitAuras.RemovePrivateAuraAnchor then return end
 
@@ -414,6 +414,7 @@ function Plater.HandlePrivateAuraAnchors(unitFrame, maxIndex)
 				},
 				iconWidth = Plater.db.profile.aura_width, -- * Plater.db.profile.ui_parent_scale_tune,
 				iconHeight = Plater.db.profile.aura_height, -- * Plater.db.profile.ui_parent_scale_tune,
+				borderScale = min(Plater.db.profile.aura_width,  Plater.db.profile.aura_height) / 30,
 			},
 			durationAnchor = {
 				point = relIconPoint,
