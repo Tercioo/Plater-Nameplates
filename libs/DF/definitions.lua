@@ -213,6 +213,10 @@ GameCooltipFrame2 = {}
 ---@field IsNotMidnightWow fun():boolean
 ---@field IsWarWowOrBelow fun():boolean
 ---@field IsAddonApocalypseWow fun():boolean
+---@field CreateHealthBar fun(self:table, parent:frame, name:string, settingsOverride:table) : df_healthbar
+---@field CreateCastBar fun(self:table, parent:frame, name:string, settingsOverride:table) : df_castbar
+---@field CreateUnitFrame fun(self:table, parent:frame, name:string, settingsOverride:table) : df_unitframe
+---@field CreatePowerBar fun(self:table, parent:frame, name:string, settingsOverride:table) : df_powerbar
 ---@field CreateFullBorder fun(self:table, name:string, parent:frame) : border_frame
 ---@field CreateButton fun(self:table, parent:frame, func:function, width:number, height:number, text:any, param1:any, param2:any, texture:atlasname|texturepath|textureid|nil, member:string?, name:string?, shortMethod:any, buttonTemplate:table?, textTemplate:table?) : df_button callback function(blizzButton, clickType, param1, param2) end
 ---@field CreateCloseButton fun(self:table, parent:frame, frameName:string?) : df_closebutton
@@ -412,6 +416,8 @@ GameCooltipFrame2 = {}
 ---@field MakeStringFromSpellId fun(self:table, spellId:any) : string return a string with the spell icon and name using escape codes
 ---@field AddClassIconToText fun(self:table, text:string, playerName:string, englishClassName:string, useSpec:boolean?, iconSize:number?) : string wrap 'text' with the class icon of 'playerName' using |T|t scape codes
 ---@field RemoveRealNameFromName fun(self:table, name:string) : string remove the realm name from a name string
+---@field GetSpecInfoFromSpecId fun(self:table, specId:number) : specinfo
+---@field GetSpecInfoFromSpecIcon fun(self:table, specIcon:string) : specinfo
 
 
 --[=[
