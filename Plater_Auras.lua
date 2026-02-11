@@ -1168,16 +1168,15 @@ end
 				for i = 1, amountFramesShown - auraLimit do
 					iconFrameContainer[i]:Hide()
 				end
-				auraArrayStart = amountFramesShown - auraLimit + 1
+				auraArrayStart = max(amountFramesShown - auraLimit + 1, 1)
 				auraArrayEnd = amountFramesShown
 			elseif auraLimit < 0 then
 				auraLimit = abs(auraLimit)
 				for i = auraLimit + 1, amountFramesShown do
 					iconFrameContainer[i]:Hide()
 				end
-				amountFramesShown = min(auraLimit + 1, amountFramesShown)
 				auraArrayStart = 1
-				auraArrayEnd = auraLimit
+				auraArrayEnd = min(amountFramesShown, auraLimit)
 			end
 		
 			local growDirection
