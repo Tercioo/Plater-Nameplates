@@ -1896,12 +1896,16 @@ end
 		local now = GetTime()
 		--MIDNIGHT!!
 		if IS_WOW_PROJECT_MIDNIGHT then --TODO (lots of...) MIDNIGHT!!
-			local durationObject = C_UnitAuras.GetAuraDuration and C_UnitAuras.GetAuraDuration(auraIconFrame.unitFrame.namePlateUnitToken, i)
+			local durationObject = C_UnitAuras.GetAuraDuration(auraIconFrame.unitFrame.namePlateUnitToken, i)
 			if not DB_AURA_ENABLED then --aura testing
 				durationObject = C_DurationUtil.CreateDuration()
 				durationObject:SetTimeFromEnd(expirationTime, duration, modRate or 1)
+			elseif not durationObject then
+				-- fallback for 0 duration
+				durationObject = C_DurationUtil.CreateDuration()
+				durationObject:SetTimeFromEnd(0, 0, 1)
 			end
-			local timeLeft = durationObject and durationObject:GetRemainingDuration() or C_UnitAuras.GetAuraDurationRemaining(auraIconFrame.unitFrame.namePlateUnitToken, i)
+			local timeLeft = durationObject and durationObject:GetRemainingDuration()
 			--local maxduration = C_UnitAuras.GetRefreshExtendedDuration(auraIconFrame.unitFrame.namePlateUnitToken, i)
 			local maxduration = durationObject and durationObject:GetTotalDuration() or C_UnitAuras.GetAuraBaseDuration(auraIconFrame.unitFrame.namePlateUnitToken, i)
 			auraIconFrame.Cooldown:SetDrawEdge(true)
