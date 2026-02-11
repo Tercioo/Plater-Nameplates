@@ -2155,7 +2155,6 @@ local debuff_options = {
 		end,
 		name = "Show Crowd Control",
 		desc = "Show crowd control effects.",
-		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
 	{type = "blank"},
