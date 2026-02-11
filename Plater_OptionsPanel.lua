@@ -1872,6 +1872,21 @@ local debuff_options = {
 		name = "OPTIONS_AURAS_SORT",
 		desc = "OPTIONS_AURAS_SORT_DESC",
 	},
+	{
+		type = "range",
+		get = function() return Plater.db.profile.aura_max_shown_limit end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_max_shown_limit = value
+			Plater.RefreshDBUpvalues()
+		end,
+		min = -8,
+		max = 8,
+		step = 1,
+		usedecimals = false,
+		thumbscale = 1.8,
+		name = "Max auras shown",
+		desc = "Limit the amount of auras shown.\nNegative: filter shortest.\nPositive: filter longest.\n0 = no filtering",
+	},
 	
 	{type = "blank"},
 	{type = "label", get = function() return "Aura Size (Frame 1):" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},

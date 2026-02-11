@@ -1160,6 +1160,25 @@ end
 					amountFramesShown = index
 				end
 			end
+
+			local auraLimit = Plater.db.profile.aura_max_shown_limit or 0
+			local auraArrayStart = 1
+			local auraArrayEnd = amountFramesShown
+			if auraLimit > 0 then
+				for i = 1, amountFramesShown - auraLimit do
+					iconFrameContainer[i]:Hide()
+				end
+				auraArrayStart = amountFramesShown - auraLimit + 1
+				auraArrayEnd = amountFramesShown
+			elseif auraLimit < 0 then
+				auraLimit = abs(auraLimit)
+				for i = auraLimit + 1, amountFramesShown do
+					iconFrameContainer[i]:Hide()
+				end
+				amountFramesShown = min(auraLimit + 1, amountFramesShown)
+				auraArrayStart = 1
+				auraArrayEnd = auraLimit
+			end
 		
 			local growDirection
 			local anchorSide
@@ -1223,7 +1242,7 @@ end
 				end
 				
 				--iterate among all icon frames
-				for i = 1, amountFramesShown do
+				for i = auraArrayStart, auraArrayEnd do
 					--get the icon id from the icon frame container
 					local iconFrame = iconFrameContainer [i]
 					if (iconFrame:IsShown()) then
@@ -1262,7 +1281,7 @@ end
 				--iterate among all icons in the aura frame
 				--set the point of the first icon in the bottom left of the buff frame
 				--set the point of all other icons to the right of the previous icon and update the size of the buff frame
-				for i = 1, amountFramesShown do
+				for i = auraArrayStart, auraArrayEnd do
 					local iconFrame = iconFrameContainer [i]
 					if (iconFrame:IsShown()) then
 						curRowLength = curRowLength + iconFrame:GetWidth() + DB_AURA_PADDING
