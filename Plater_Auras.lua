@@ -2324,7 +2324,7 @@ end
 			PixelUtil.SetPoint (iconFrame.Texture, "BOTTOMLEFT", iconFrame, "BOTTOMLEFT", -iconOffset, -iconOffset)
 			PixelUtil.SetPoint (iconFrame.Texture, "BOTTOMRIGHT", iconFrame, "BOTTOMRIGHT", iconOffset, -iconOffset)
 			
-			iconFrame:SetBackdropBorderColor(DF:ParseColors(borderColor))
+			iconFrame:SetBackdropBorderColor(unpack(borderColor))
 			iconFrame:SetBorderSize(profile.extra_icon_border_size or 1)
 			iconFrame.platerSkinned = true
 		end
