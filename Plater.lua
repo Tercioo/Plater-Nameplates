@@ -12629,7 +12629,16 @@ end
 	--this allows full shadowing on 'Plater' global with the filter above
 	local function buildShadowTable(privateFunctionsTable, tableKey, shadowTable)
 		if not privateFunctionsTable then return end
-		shadowTable = shadowTable or {}
+		shadowTable = shadowTable or {
+			ColorMixin = ColorMixin,
+			Vector2DMixin = Vector2DMixin,
+			Vector3DMixin = Vector3DMixin,
+			ItemLocationMixin = ItemLocationMixin,
+			ItemTransmogInfoMixin = ItemTransmogInfoMixin,
+			TransmogPendingInfoMixin = TransmogPendingInfoMixin,
+			TransmogLocationMixin = TransmogLocationMixin,
+			PlayerLocationMixin = PlayerLocationMixin,
+		}
 		
 		--ViragDevTool_AddData({privateFunctionsTable, tableKey, shadowTable}, "buildShadowTable")
 		local shadowValuesTable = {}
