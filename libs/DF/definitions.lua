@@ -418,6 +418,7 @@ GameCooltipFrame2 = {}
 ---@field RemoveRealNameFromName fun(self:table, name:string) : string remove the realm name from a name string
 ---@field GetSpecInfoFromSpecId fun(self:table, specId:number) : specinfo
 ---@field GetSpecInfoFromSpecIcon fun(self:table, specIcon:string) : specinfo
+---@field GetSpecIdFromSpecIcon fun(self:table, specIcon:number) : number?
 
 
 --[=[

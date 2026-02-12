@@ -495,11 +495,6 @@ detailsFramework.IconMixin = {
 				iconFrame:Hide()
 				iconFrame:ClearAllPoints()
 				iconFrame.identifierKey = nil
-			else
-				self.AuraCache[iconFrame.spellId] = true
-				self.AuraCache[iconFrame.spellName] = true
-				self.AuraCache.canStealOrPurge = self.AuraCache.canStealOrPurge or iconFrame.canStealOrPurge
-				self.AuraCache.hasEnrage = self.AuraCache.hasEnrage or iconFrame.debuffType == "" --yes, enrages are empty-string...
 			end
 		end
 
@@ -510,7 +505,6 @@ detailsFramework.IconMixin = {
 	ClearIcons = function(self, resetBuffs, resetDebuffs)
 		resetBuffs = resetBuffs ~= false
 		resetDebuffs = resetDebuffs ~= false
-		table.wipe(self.AuraCache)
 
 		local iconPool = self.IconPool
 		local iconsActive = 0
@@ -530,10 +524,6 @@ detailsFramework.IconMixin = {
 				iconFrame:ClearAllPoints()
 
 			else
-				self.AuraCache[iconFrame.spellId] = true
-				self.AuraCache[iconFrame.spellName] = true
-				self.AuraCache.canStealOrPurge = self.AuraCache.canStealOrPurge or iconFrame.canStealOrPurge
-				self.AuraCache.hasEnrage = self.AuraCache.hasEnrage or iconFrame.debuffType == "" --yes, enrages are empty-string...
 				iconsActive = iconsActive + 1
 			end
 		end
