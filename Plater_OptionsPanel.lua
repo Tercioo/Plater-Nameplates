@@ -2175,6 +2175,19 @@ local debuff_options = {
 	{
 		type = "toggle",
 		boxfirst = true,
+		get = function() return Plater.db.profile.aura_show_buff_on_enemy_npc end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_buff_on_enemy_npc = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Buffs on enemy NPCs",
+		desc = "Show Buffs on enemy NPCs",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT,
+	},
+	{
+		type = "toggle",
+		boxfirst = true,
 		get = function() return Plater.db.profile.aura_show_debuff_by_the_unit end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_show_debuff_by_the_unit = value
