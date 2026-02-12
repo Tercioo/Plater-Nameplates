@@ -11222,6 +11222,8 @@ end
 	local BG_PLAYER_CACHE = {}
 	function Plater.UpdateBgPlayerRoleCache()
 		wipe(BG_PLAYER_CACHE)
+
+		if IS_WOW_PROJECT_MIDNIGHT then return end -- secret...
 	
 		if IS_WOW_PROJECT_MAINLINE then
 			if Plater.ZoneInstanceType == "pvp" then
