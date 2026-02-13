@@ -2007,14 +2007,28 @@ local debuff_options = {
 	{
 		type = "toggle",
 		boxfirst = true,
+		get = function() return Plater.db.profile.aura_show_debuff_as_blizzard_does end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_debuff_as_blizzard_does = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Debuffs Blizzard Nameplates show",
+		desc = "Show Debuffs as they would be shown on blizzard nameplates.\nIt is advised to disable all other debuff auto-trackers for best experience.",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT,
+	},
+
+	{
+		type = "toggle",
+		boxfirst = true,
 		get = function() return Plater.db.profile.aura_show_debuff_by_the_player end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_show_debuff_by_the_player = value
 			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
-		name = "Show Debuffs Casted by You",
-		desc = "Show Debuffs Casted by You and your pets.",
+		name = "Show ALL Debuffs Casted by You",
+		desc = "Show ALL Debuffs Casted by You and your pets.",
 		hidden = not IS_WOW_PROJECT_MIDNIGHT,
 	},
 

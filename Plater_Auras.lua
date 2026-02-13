@@ -60,6 +60,7 @@ local DB_AURA_SHOW_IMPORTANT_NEW
 local DB_AURA_SHOW_RAID
 local DB_AURA_SHOW_BYPLAYER
 local DB_AURA_SHOW_DEBUFF_BYPLAYER
+local DB_AURA_SHOW_AS_BLIZZARD
 local DB_AURA_SHOW_BUFF_BYPLAYER
 local DB_AURA_SHOW_BYOTHERPLAYERS
 local DB_AURA_SHOW_BYOTHERNPCS
@@ -813,6 +814,15 @@ local function getUnitAuras(unit, filter)
 	if unitCacheData.isFullUpdateHelp and isHelpful then unitCacheData.isFullUpdateHelp = false end
 	if unitCacheData.isFullUpdateHarm and isHarmful then unitCacheData.isFullUpdateHarm = false end
 	return unitCacheData
+end
+
+local function getBlizzardDebuffs(unitFrame)
+	local blizzDebuffFrawme = unitFrame.PlateFrame.UnitFrame.AurasFrame.DebuffListFrame
+	local blizzardDebuffs = {}
+	for _, child in ipairs(blizzDebuffFrawme:GetLayoutChildren()) do
+		blizzardDebuffs[child.auraInstanceID] = true
+	end
+	return blizzardDebuffs
 end
 
 --[[
@@ -2569,6 +2579,10 @@ end
 		--DevTool:AddData({unitAuraEventData.hasBuff, unitAuraEventData.hasDebuff}, "UpdateAuras_Automatic")
 		--> debuffs
 		if unitAuraEventData.hasDebuff then
+			local blizzardDebuffs = {}
+			if IS_WOW_PROJECT_MIDNIGHT and DB_AURA_SHOW_AS_BLIZZARD then
+				blizzardDebuffs = getBlizzardDebuffs(self.unitFrame)
+			end
 			local unitAuras = getUnitAuras(unit, "HARMFUL") or {}
 			self.debuffsInOrder = unitAuras.debuffsInOrder or {}
 			for id, aura in pairs(unitAuras.debuffs or {}) do
@@ -2644,6 +2658,8 @@ end
 					elseif DB_SHOW_PURGE_IN_EXTRA_ICONS and self.unitFrame.namePlateUnitReaction > 4 and not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HARMFUL|RAID_PLAYER_DISPELLABLE") then
 						Plater.AddExtraIcon (self, name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, false, "HARMFUL", id, timeMod)
 						can_show_this_debuff = false
+					elseif DB_AURA_SHOW_AS_BLIZZARD and blizzardDebuffs[id] then
+						can_show_this_debuff = true
 					elseif DB_AURA_SHOW_IMPORTANT_NEW and not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "IMPORTANT") then
 						can_show_this_debuff = true
 					elseif DB_AURA_SHOW_DISPELLABLE and self.unitFrame.namePlateUnitReaction > 4 and not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HARMFUL|RAID_PLAYER_DISPELLABLE") then -- this requires rework. shows wl curses on enemy nameplates
@@ -3258,6 +3274,7 @@ end
 		DB_AURA_SHOW_MAGIC = profile.aura_show_magic
 		DB_AURA_SHOW_BYPLAYER = profile.aura_show_aura_by_the_player
 		DB_AURA_SHOW_DEBUFF_BYPLAYER = profile.aura_show_debuff_by_the_player
+		DB_AURA_SHOW_AS_BLIZZARD = profile.aura_show_debuff_as_blizzard_does
 		DB_AURA_SHOW_BUFF_BYPLAYER = profile.aura_show_buff_by_the_player
 		DB_AURA_SHOW_BYOTHERPLAYERS = profile.aura_show_aura_by_other_players
 		DB_AURA_SHOW_BYOTHERNPCS = profile.aura_show_aura_by_other_npcs

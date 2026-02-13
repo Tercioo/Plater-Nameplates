@@ -4501,15 +4501,21 @@ Plater.AnchorNamesByPhraseId = {
 		end
 		
 		
-		if not SUPPORT_BLIZZARD_PLATEFRAMES then
+		if not SUPPORT_BLIZZARD_PLATEFRAMES then -- due to aura tracking currently not advised in midnight...
 			-- should be done if events are not needed
 			-- CompactUnitFrame_UnregisterEvents only removes event hanlder functions
-			self:UnregisterAllEvents()
+			if not Plater.db.profile.aura_show_debuff_as_blizzard_does then
+				self:UnregisterAllEvents()
+			end
+			if self.HealthBarsContainer.healthBar then self.HealthBarsContainer.healthBar:UnregisterAllEvents() end
 			if self.castBar then self.castBar:UnregisterAllEvents() end
 		end
 		
 		if (CompactUnitFrame_UnregisterEvents) then
-			CompactUnitFrame_UnregisterEvents (self)
+			if not Plater.db.profile.aura_show_debuff_as_blizzard_does then
+				CompactUnitFrame_UnregisterEvents (self)
+			end
+			if self.HealthBarsContainer.healthBar then CompactUnitFrame_UnregisterEvents(self.HealthBarsContainer.healthBar) end
 			if self.castBar then CompactUnitFrame_UnregisterEvents (self.castBar) end
 		end
 	end
