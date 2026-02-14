@@ -8,12 +8,15 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
-			{1769591867, "Backend Change", "Feb 11th, 2026", "General improvements and compatibility for Midnight.", "cont1nuity"},
-			{1769591867, "Backend Change", "Feb 11th, 2026", "Improvements for aura filters, aura colors and Buff Special in Midnight.", "cont1nuity"},
-			{1769591867, "Backend Change", "Feb 11th, 2026", "Basic absorb shield implemtation.", "cont1nuity"},
-			{1769591867, "Bug Fix", "Jan 28th, 2026", "Fixed aura sorting for Midnight.", "cont1nuity"},
-			{1769591867, "Backend Change", "Jan 28th, 2026", "Added option for health bar animation in Midnight.", "cont1nuity"},
-			{1769591867, "Backend Change", "Jan 28th, 2026", "Switched to 'Max width' for certain texts to cut off at the set width of the text.", "cont1nuity"},
+			{1771095494, "Backend Change", "Feb 13th, 2026", "Adding 'Blizzard Nameplate' type aura filter which copies blizzard nameplate behavior.", "cont1nuity"},
+			{1771095494, "Backend Change", "Feb 11th, 2026", "General improvements and compatibility for Midnight.", "cont1nuity"},
+			{1771095494, "Backend Change", "Feb 11th, 2026", "Improvements for aura filters, aura colors and Buff Special in Midnight.", "cont1nuity"},
+			{1771095494, "Backend Change", "Feb 11th, 2026", "Basic absorb shield implemtation.", "cont1nuity"},
+			{1771095494, "Bug Fix", "Feb 9th, 2026", "Fixed some errors related to non-retal game versions.", "cont1nuity"},
+			{1771095494, "Bug Fix", "Feb 7th, 2026", "Fixed an issue with tank role recognition in classic game versions.", "cont1nuity"},
+			{1771095494, "Bug Fix", "Jan 28th, 2026", "Fixed aura sorting for Midnight.", "cont1nuity"},
+			{1771095494, "Backend Change", "Jan 28th, 2026", "Added option for health bar animation in Midnight.", "cont1nuity"},
+			{1771095494, "Backend Change", "Jan 28th, 2026", "Switched to 'Max width' for certain texts to cut off at the set width of the text.", "cont1nuity"},
 			
 			{1769439797, "Bug Fix", "Jan 27th, 2026", "Fixed issues regarding scaling and threat overrides for unit type coloring which were introduced with prior versions.", "cont1nuity"},
 			{1769439797, "Bug Fix", "Jan 26th, 2026", "Numerous fixes to address Midnight compatibility.", "cont1nuity"},
