@@ -4507,7 +4507,7 @@ Plater.AnchorNamesByPhraseId = {
 			if not Plater.db.profile.aura_show_debuff_as_blizzard_does then
 				self:UnregisterAllEvents()
 			end
-			if self.HealthBarsContainer.healthBar then self.HealthBarsContainer.healthBar:UnregisterAllEvents() end
+			if self.HealthBarsContainer and self.HealthBarsContainer.healthBar then self.HealthBarsContainer.healthBar:UnregisterAllEvents() end
 			if self.castBar then self.castBar:UnregisterAllEvents() end
 		end
 		
@@ -4515,7 +4515,7 @@ Plater.AnchorNamesByPhraseId = {
 			if not Plater.db.profile.aura_show_debuff_as_blizzard_does then
 				CompactUnitFrame_UnregisterEvents (self)
 			end
-			if self.HealthBarsContainer.healthBar then CompactUnitFrame_UnregisterEvents(self.HealthBarsContainer.healthBar) end
+			if self.HealthBarsContainer and self.HealthBarsContainer.healthBar then CompactUnitFrame_UnregisterEvents(self.HealthBarsContainer.healthBar) end
 			if self.castBar then CompactUnitFrame_UnregisterEvents (self.castBar) end
 		end
 	end
