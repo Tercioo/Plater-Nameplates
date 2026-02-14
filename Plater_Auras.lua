@@ -819,7 +819,7 @@ end
 local function getBlizzardDebuffs(unitFrame)
 	local blizzDebuffFrame = unitFrame.PlateFrame.UnitFrame and unitFrame.PlateFrame.UnitFrame.AurasFrame and unitFrame.PlateFrame.UnitFrame.AurasFrame.DebuffListFrame
 	local blizzardDebuffs = {}
-	if blizzDebuffFrame ItemTextHasNextPage
+	if blizzDebuffFrame then
 		for _, child in ipairs(blizzDebuffFrame:GetLayoutChildren()) do
 			blizzardDebuffs[child.auraInstanceID] = true
 		end
