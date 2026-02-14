@@ -1395,6 +1395,8 @@ end
 		PixelUtil.SetPoint (newIcon.Icon, "BOTTOMLEFT", newIcon, "BOTTOMLEFT", -iconOffset, -iconOffset)
 		PixelUtil.SetPoint (newIcon.Icon, "BOTTOMRIGHT", newIcon, "BOTTOMRIGHT", iconOffset, -iconOffset)
 		newIcon.Icon:SetTexCoord (.05, .95, .1, .6)
+		newIcon.Icon:SetTexelSnappingBias(0.0)
+		newIcon.Icon:SetSnapToPixelGrid(false)
 
 		newIcon.IconMask = newIcon:CreateMaskTexture(nil, "artwork")
 		newIcon.IconMask:SetAllPoints()
