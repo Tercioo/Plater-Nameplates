@@ -5797,13 +5797,15 @@ function Plater.OnInit() --private --~oninit ~init
 						end
 					end
 					
-					if not IS_WOW_PROJECT_MIDNIGHT and (self.channeling and (self.SpellStartTime + 0.25 > curTime)) then
-						platerInternal.Audio.PlaySoundForCastStart(self.spellID) --fallback for edge cases. should not double play
+					if not IS_WOW_PROJECT_MIDNIGHT and self.channeling and self.SpellStartTime and self.spellID and (self.SpellStartTime + 0.25 > curTime) then
+    					platerInternal.Audio.PlaySoundForCastStart(self.spellID)
 					end
 					
 					--cut the spell name text to fit within the castbar
-					local plateConfig = DB_PLATE_CONFIG [unitFrame.ActorType] or {}
-					Plater.UpdateTextSize (self.SpellNameRenamed or "", self.Text, plateConfig.spellname_text_max_width or 0, nil)
+					local plateConfig = unitFrame.actorType and DB_PLATE_CONFIG[unitFrame.actorType]
+					local maxWidth = plateConfig and plateConfig.spellname_text_max_width or 0
+
+					Plater.UpdateTextSize(self.SpellNameRenamed or "", self.Text, (unitFrame.actorType and DB_PLATE_CONFIG[unitFrame.actorType] and DB_PLATE_CONFIG[unitFrame.actorType].spellname_text_max_width) or 0, nil)
 					
 					-- in some occasions channeled casts don't have a CLEU entry... check this here
 					if (unitFrame.ActorType == "enemynpc" and event == "UNIT_SPELLCAST_CHANNEL_START" and (not DB_CAPTURED_SPELLS[spellID] or DB_CAPTURED_SPELLS[spellID].isChanneled == nil or not DB_CAPTURED_CASTS[spellID] or DB_CAPTURED_CASTS[spellID].isChanneled == nil)) then
@@ -13438,6 +13440,7 @@ end
 			end
 		end
 	end	
+
 
 
 
