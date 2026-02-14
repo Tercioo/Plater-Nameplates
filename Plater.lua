@@ -5919,12 +5919,12 @@ function Plater.OnInit() --private --~oninit ~init
 										targetName = LibTranslit:Transliterate(targetName, TRANSLIT_MARK)
 									end
 									
+									targetName = Plater.UpdateTextSize (targetName or "", self.FrameOverlay.TargetName, Plater.db.profile.castbar_target_text_max_width or 0, nil)
+
 									local _, class = UnitClass (self.unit .. "target")
 									if (class) then 
-										self.FrameOverlay.TargetName:SetText (targetName)
 										self.FrameOverlay.TargetName:SetTextColor (DF:ParseColors (class))
 									else
-										self.FrameOverlay.TargetName:SetText (targetName)
 										DF:SetFontColor (self.FrameOverlay.TargetName, Plater.db.profile.castbar_target_color)
 									end
 								else
