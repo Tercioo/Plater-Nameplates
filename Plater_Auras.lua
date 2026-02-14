@@ -1947,8 +1947,7 @@ end
 				auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.is_buff))
 			
 			elseif (isDebuff) then
-				--> for debuffs on the player for the personal bar
-				auraIconFrame:SetBackdropBorderColor (1, 0, 0, 1)
+				auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.is_debuff))
 			
 			elseif (isShowAll) then
 				auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.is_show_all))
