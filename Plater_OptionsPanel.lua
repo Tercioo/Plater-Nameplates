@@ -2189,14 +2189,27 @@ local debuff_options = {
 	{
 		type = "toggle",
 		boxfirst = true,
+		get = function() return Plater.db.profile.aura_show_buff_as_blizzard_does end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_show_buff_as_blizzard_does = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Show Buffs Blizzard Nameplates show",
+		desc = "Show Buffs as they would be shown on blizzard nameplates.\nIt is advised to disable all other buff auto-trackers for best experience.",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT,
+	},
+	{
+		type = "toggle",
+		boxfirst = true,
 		get = function() return Plater.db.profile.aura_show_buff_on_enemy_npc end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_show_buff_on_enemy_npc = value
 			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
-		name = "Show Buffs on enemy NPCs",
-		desc = "Show Buffs on enemy NPCs",
+		name = "Show all Buffs on enemy NPCs",
+		desc = "Show all Buffs on enemy NPCs.",
 		hidden = not IS_WOW_PROJECT_MIDNIGHT,
 	},
 	{

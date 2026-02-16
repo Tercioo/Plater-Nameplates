@@ -61,6 +61,7 @@ local DB_AURA_SHOW_RAID
 local DB_AURA_SHOW_BYPLAYER
 local DB_AURA_SHOW_DEBUFF_BYPLAYER
 local DB_AURA_SHOW_AS_BLIZZARD
+local DB_AURA_SHOW_BUFFS_AS_BLIZZARD
 local DB_AURA_SHOW_BUFF_BYPLAYER
 local DB_AURA_SHOW_BYOTHERPLAYERS
 local DB_AURA_SHOW_BYOTHERNPCS
@@ -825,6 +826,16 @@ local function getBlizzardDebuffs(unitFrame)
 		end
 	end
 	return blizzardDebuffs
+end
+local function getBlizzardBuffs(unitFrame)
+	local blizzBuffFrame = unitFrame.PlateFrame.UnitFrame and unitFrame.PlateFrame.UnitFrame.AurasFrame and unitFrame.PlateFrame.UnitFrame.AurasFrame.BuffListFrame
+	local blizzardBuffs = {}
+	if blizzBuffFrame then
+		for _, child in ipairs(blizzBuffFrame:GetLayoutChildren()) do
+			blizzardBuffs[child.auraInstanceID] = true
+		end
+	end
+	return blizzardBuffs
 end
 
 --[[
@@ -2691,6 +2702,10 @@ end
 		
 		--> buffs
 		if unitAuraEventData.hasBuff then
+			local blizzardBuffs = {}
+			if IS_WOW_PROJECT_MIDNIGHT and DB_AURA_SHOW_BUFFS_AS_BLIZZARD then
+				blizzardBuffs = getBlizzardBuffs(self.unitFrame)
+			end
 			local unitAuras = getUnitAuras(unit, "HELPFUL") or {}
 			self.buffsInOrder = unitAuras.buffsInOrder or {}
 			--DevTool:AddData(unitAuras, "HELPFUL")
@@ -2802,6 +2817,9 @@ end
 					--print(C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HARMFUL|RAID_IN_COMBAT"), C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HARMFUL|RAID"), C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "IMPORTANT"))
 					if DB_SHOW_PURGE_IN_EXTRA_ICONS and self.unitFrame.namePlateUnitReaction < 4 and self.unitFrame.ActorType == "enemynpc" and not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HELPFUL|RAID_PLAYER_DISPELLABLE") then
 						Plater.AddExtraIcon (self, name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, true, "HELPFUL", id, timeMod)
+					elseif DB_AURA_SHOW_BUFFS_AS_BLIZZARD and blizzardBuffs[id] then
+						local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
+						Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isFromPlayerOrPlayerPet, isStealable, nameplateShowPersonal, spellId, true, nil, nil, nil, dispelName, timeMod)
 					elseif DB_AURA_SHOW_IMPORTANT_NEW and not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HELPFUL|IMPORTANT") then
 						local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
 						Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isFromPlayerOrPlayerPet, isStealable, nameplateShowPersonal, spellId, true, nil, nil, nil, dispelName, timeMod)
@@ -3278,6 +3296,7 @@ end
 		DB_AURA_SHOW_BYPLAYER = profile.aura_show_aura_by_the_player
 		DB_AURA_SHOW_DEBUFF_BYPLAYER = profile.aura_show_debuff_by_the_player
 		DB_AURA_SHOW_AS_BLIZZARD = profile.aura_show_debuff_as_blizzard_does
+		DB_AURA_SHOW_BUFFS_AS_BLIZZARD = profile.aura_show_buff_as_blizzard_does
 		DB_AURA_SHOW_BUFF_BYPLAYER = profile.aura_show_buff_by_the_player
 		DB_AURA_SHOW_BYOTHERPLAYERS = profile.aura_show_aura_by_other_players
 		DB_AURA_SHOW_BYOTHERNPCS = profile.aura_show_aura_by_other_npcs
