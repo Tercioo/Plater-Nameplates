@@ -9677,20 +9677,40 @@ end
 		if (profile.auto_toggle_friendly_enabled) then
 			--discover which is the map type the player is in
 			if (zoneType == "party") then
-				SetCVar ("nameplateShowFriends", profile.auto_toggle_friendly ["party"] and CVAR_ENABLED or CVAR_DISABLED)
+				if IS_WOW_PROJECT_MIDNIGHT then
+					SetCVar ("nameplateShowFriendlyPlayers", profile.auto_toggle_friendly ["party"] and CVAR_ENABLED or CVAR_DISABLED)
+				else
+					SetCVar ("nameplateShowFriends", profile.auto_toggle_friendly ["party"] and CVAR_ENABLED or CVAR_DISABLED)
+				end
 				
 			elseif (zoneType == "raid") then
-				SetCVar ("nameplateShowFriends", profile.auto_toggle_friendly ["raid"] and CVAR_ENABLED or CVAR_DISABLED)
+				if IS_WOW_PROJECT_MIDNIGHT then
+					SetCVar ("nameplateShowFriendlyPlayers", profile.auto_toggle_friendly ["raid"] and CVAR_ENABLED or CVAR_DISABLED)
+				else
+					SetCVar ("nameplateShowFriends", profile.auto_toggle_friendly ["raid"] and CVAR_ENABLED or CVAR_DISABLED)
+				end
 				
 			elseif (zoneType == "arena" or zoneType == "pvp") then
-				SetCVar ("nameplateShowFriends", profile.auto_toggle_friendly ["arena"] and CVAR_ENABLED or CVAR_DISABLED)
+				if IS_WOW_PROJECT_MIDNIGHT then
+					SetCVar ("nameplateShowFriendlyPlayers", profile.auto_toggle_friendly ["arena"] and CVAR_ENABLED or CVAR_DISABLED)
+				else
+					SetCVar ("nameplateShowFriends", profile.auto_toggle_friendly ["arena"] and CVAR_ENABLED or CVAR_DISABLED)
+				end
 				
 			else
 				--if the player is resting, consider inside a major city
 				if (IsResting()) then
-					SetCVar ("nameplateShowFriends", profile.auto_toggle_friendly ["cities"] and CVAR_ENABLED or CVAR_DISABLED)
+					if IS_WOW_PROJECT_MIDNIGHT then
+						SetCVar ("nameplateShowFriendlyPlayers", profile.auto_toggle_friendly ["cities"] and CVAR_ENABLED or CVAR_DISABLED)
+					else
+						SetCVar ("nameplateShowFriends", profile.auto_toggle_friendly ["cities"] and CVAR_ENABLED or CVAR_DISABLED)
+					end
 				else
-					SetCVar ("nameplateShowFriends", profile.auto_toggle_friendly ["world"] and CVAR_ENABLED or CVAR_DISABLED)
+					if IS_WOW_PROJECT_MIDNIGHT then
+						SetCVar ("nameplateShowFriendlyPlayers", profile.auto_toggle_friendly ["world"] and CVAR_ENABLED or CVAR_DISABLED)
+					else
+						SetCVar ("nameplateShowFriends", profile.auto_toggle_friendly ["world"] and CVAR_ENABLED or CVAR_DISABLED)
+					end
 				end
 			end
 		end
