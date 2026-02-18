@@ -6022,17 +6022,17 @@ function Plater.OnInit() --private --~oninit ~init
 
 	function Plater.QuickHealthUpdate (unitFrame)
 		Plater.StartLogPerformanceCore("Plater-Core", "Health", "QuickHealthUpdate")
-		--local unitHealth = UnitHealth (unitFrame.unit)
-		--local unitHealthMax = UnitHealthMax (unitFrame.unit)
-		--unitFrame.healthBar:SetMinMaxValues (0, unitHealthMax, IS_WOW_PROJECT_MIDNIGHT and Enum.StatusBarInterpolation.ExponentialEaseOut)
-		--unitFrame.healthBar:SetValue (unitHealth, IS_WOW_PROJECT_MIDNIGHT and Enum.StatusBarInterpolation.ExponentialEaseOut)
-		
-		--unitFrame.healthBar.currentHealth = unitHealth
-		--unitFrame.healthBar.currentHealthMax = unitHealthMax
 		if IS_WOW_PROJECT_MIDNIGHT then
 			--unitFrame.healthBar.currentHealthMissing = UnitHealthMissing(unitFrame.unit, true)
 			--unitFrame.healthBar.currentHealthPercent = UnitHealthPercent(unitFrame.unit, true, CurveConstants.ScaleTo100)
 		else
+			local unitHealth = UnitHealth (unitFrame.unit)
+			local unitHealthMax = UnitHealthMax (unitFrame.unit)
+			unitFrame.healthBar:SetMinMaxValues (0, unitHealthMax, IS_WOW_PROJECT_MIDNIGHT and Enum.StatusBarInterpolation.ExponentialEaseOut)
+			unitFrame.healthBar:SetValue (unitHealth, IS_WOW_PROJECT_MIDNIGHT and Enum.StatusBarInterpolation.ExponentialEaseOut)
+		
+			unitFrame.healthBar.currentHealth = unitHealth
+			unitFrame.healthBar.currentHealthMax = unitHealthMax
 			unitFrame.healthBar.currentHealthMissing = unitHealthMax - unitHealth
 			unitFrame.healthBar.currentHealthPercent = unitHealth / unitHealthMax * 100
 		end
