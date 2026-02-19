@@ -4147,7 +4147,7 @@ Plater.AnchorNamesByPhraseId = {
 							--get threat situation to expose it to scripts already in the nameplate added hook
 							local isTanking, threatStatus, threatpct, threatrawpct, threatValue = UnitDetailedThreatSituation ("player", unitID)
 							if IS_WOW_PROJECT_MIDNIGHT then
-								threatStatus = UnitThreatSituation ("player", self.displayedUnit)
+								threatStatus = UnitThreatSituation ("player", unitID)
 								isTanking = (threatStatus or 0) >= 2
 							end
 							unitFrame.namePlateThreatIsTanking = isTanking
@@ -7466,7 +7466,7 @@ end
 							if UnitExists(tank) and not UnitIsUnit("player", tank) then
 								otherIsTanking, otherThreatStatus, otherThreatpct = UnitDetailedThreatSituation (tank, self.displayedUnit)
 								if IS_WOW_PROJECT_MIDNIGHT then
-									local tmpOtherThreatStatus = UnitThreatSituation ("player", self.displayedUnit)
+									local tmpOtherThreatStatus = UnitThreatSituation (tank, self.displayedUnit)
 									if not issecretvalue (tmpOtherThreatStatus) then
 										otherThreatStatus = tmpOtherThreatStatus
 										otherIsTanking = (otherThreatStatus or 0) >= 2
