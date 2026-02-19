@@ -8,6 +8,12 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1771544564, "Bug Fix", "Feb 20th, 2026", "Fixed an issue with pet recognition erroring out in some cases.", "cont1nuity"},
+			{1771544564, "Bug Fix", "Feb 20th, 2026", "Fixed issues around blizzards new threat secrecy.", "cont1nuity"},
+			{1771544564, "Bug Fix", "Feb 16th, 2026", "Fixed a bug regarding health updates for non-retail clients.", "cont1nuity"},
+			{1771544564, "Bug Fix", "Feb 16th, 2026", "Fixed friendly player auto toggle.", "cont1nuity"},
+			{1771544564, "Backend Change", "Feb 16th, 2026", "Adding 'Blizzard Nameplate' type buff filter which copies blizzard nameplate behavior.", "cont1nuity"},
+
 			{1771095494, "Backend Change", "Feb 13th, 2026", "Adding 'Blizzard Nameplate' type aura filter which copies blizzard nameplate behavior.", "cont1nuity"},
 			{1771095494, "Backend Change", "Feb 11th, 2026", "General improvements and compatibility for Midnight.", "cont1nuity"},
 			{1771095494, "Backend Change", "Feb 11th, 2026", "Improvements for aura filters, aura colors and Buff Special in Midnight.", "cont1nuity"},
