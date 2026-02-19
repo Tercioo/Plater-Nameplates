@@ -4146,6 +4146,10 @@ Plater.AnchorNamesByPhraseId = {
 							
 							--get threat situation to expose it to scripts already in the nameplate added hook
 							local isTanking, threatStatus, threatpct, threatrawpct, threatValue = UnitDetailedThreatSituation ("player", unitID)
+							if IS_WOW_PROJECT_MIDNIGHT then
+								threatStatus = UnitThreatSituation ("player", self.displayedUnit)
+								isTanking = (threatStatus or 0) >= 2
+							end
 							unitFrame.namePlateThreatIsTanking = isTanking
 							unitFrame.namePlateThreatStatus = threatStatus
 							unitFrame.namePlateThreatPercent = threatpct or 0
@@ -7461,6 +7465,15 @@ end
 						for tank, _ in pairs(TANK_CACHE) do
 							if UnitExists(tank) and not UnitIsUnit("player", tank) then
 								otherIsTanking, otherThreatStatus, otherThreatpct = UnitDetailedThreatSituation (tank, self.displayedUnit)
+								if IS_WOW_PROJECT_MIDNIGHT then
+									local tmpOtherThreatStatus = UnitThreatSituation ("player", self.displayedUnit)
+									if not issecretvalue (tmpOtherThreatStatus) then
+										otherThreatStatus = tmpOtherThreatStatus
+										otherIsTanking = (otherThreatStatus or 0) >= 2
+									else
+										otherIsTanking = false -- well, shame
+									end
+								end
 								if otherIsTanking then
 									unitOffTank = tank
 									break
@@ -7652,13 +7665,15 @@ end
 								
 									--check if this isn't a false positive where the mob target another unit to cast a spell
 									local hasTankAggro = false
-									for tankName, _ in pairs (TANK_CACHE) do
-										if UnitExists(tankName) then
-											local threatStatus = UnitThreatSituation (tankName, self.displayedUnit)
-											if (threatStatus and threatStatus >= 2) then
-												--a tank has aggro on this unit, it is a false positive
-												hasTankAggro = true
-												break
+									if not IS_WOW_PROJECT_MIDNIGHT then
+										for tankName, _ in pairs (TANK_CACHE) do
+											if UnitExists(tankName) then
+												local threatStatus = UnitThreatSituation (tankName, self.displayedUnit)
+												if (threatStatus and threatStatus >= 2) then
+													--a tank has aggro on this unit, it is a false positive
+													hasTankAggro = true
+													break
+												end
 											end
 										end
 									end
