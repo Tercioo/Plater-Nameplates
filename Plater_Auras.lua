@@ -420,7 +420,7 @@ function Plater.HandlePrivateAuraAnchors(unitFrame, maxIndex)
 				},
 				iconWidth = Plater.db.profile.aura_width, -- * Plater.db.profile.ui_parent_scale_tune,
 				iconHeight = Plater.db.profile.aura_height, -- * Plater.db.profile.ui_parent_scale_tune,
-				borderScale = min(Plater.db.profile.aura_width,  Plater.db.profile.aura_height) / 30,
+				borderScale = -1, --min(Plater.db.profile.aura_width,  Plater.db.profile.aura_height) / 30,
 			},
 			durationAnchor = {
 				point = relIconPoint,
