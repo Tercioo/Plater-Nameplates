@@ -5436,12 +5436,12 @@ function Plater.OnInit() --private --~oninit ~init
 			local icon = castBar.Icon
 			local unitFrame = castBar.unitFrame
 			local borderShield = castBar.BorderShield
-			
-			borderShield:Show()
-			
+
 			--icon:SetDrawLayer ("OVERLAY", 5)
 			--borderShield:SetDrawLayer ("OVERLAY", 6)
 			local castBarHeight = castBar:GetHeight()
+
+			castBar:UpdateInterruptState() -- ensure icon is shown as appropriate
 			
 			if (profile.castbar_icon_customization_enabled) then
 
@@ -5540,8 +5540,6 @@ function Plater.OnInit() --private --~oninit ~init
 				PixelUtil.SetSize (borderShield, castBarHeight * 1.4, castBarHeight * 1.4)
 				borderShield:SetDesaturated (false)
 			end
-
-			castBar:UpdateInterruptState() -- ensure icon is shown as appropriate
 
 			if castBar.Icon.Masqued then
 				Plater.Masque.CastIcon:ReSkin(castBar.Icon)
@@ -5722,19 +5720,13 @@ function Plater.OnInit() --private --~oninit ~init
 					self.ReUpdateNextTick = true
 					self.ThrottleUpdate = -1
 					
+					--castbar icon
+					Plater.UpdateCastbarIcon(self)
+
 					if IS_WOW_PROJECT_MIDNIGHT then
-						--self.BorderShield:Show()
-						--self.BorderShield:SetAlphaFromBoolean(self.notInterruptible, 1, 0)
 						self.CanInterrupt = nil
-						--print(self.SpellName, self.notInterruptible, self.BorderShield:IsShown(), self.BorderShield:IsVisible(), self.BorderShield:GetAlpha())
 					else
-						if (self.notInterruptible) then
-							self.BorderShield:Show()
-							self.CanInterrupt = false
-						else
-							self.BorderShield:Hide()
-							self.CanInterrupt = true
-						end
+						self.CanInterrupt = not self.notInterruptible
 					end
 					
 					self.FrameOverlay:SetBackdropBorderColor (0, 0, 0, 0)
@@ -5748,9 +5740,6 @@ function Plater.OnInit() --private --~oninit ~init
 					PixelUtil.SetSize(self.Spark, profile.cast_statusbar_spark_width, self:GetHeight())
 
 					Plater.UpdateCastbarTargetText (self)
-
-					--castbar icon
-					Plater.UpdateCastbarIcon(self)
 
 					shouldRunCastStartHook = true
 
