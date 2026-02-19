@@ -7408,6 +7408,10 @@ end
 		local profile = Plater.db.profile
 		
 		local isTanking, threatStatus, threatpct, threatrawpct, threatValue = UnitDetailedThreatSituation ("player", self.displayedUnit)
+		if IS_WOW_PROJECT_MIDNIGHT then
+			threatStatus = UnitThreatSituation ("player", self.displayedUnit)
+			isTanking = threatStatus >= 2
+		end
 		
 		--expose all threat situation to scripts
 		self.namePlateThreatIsTanking = isTanking
