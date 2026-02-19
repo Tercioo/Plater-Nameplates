@@ -3631,11 +3631,7 @@ Plater.AnchorNamesByPhraseId = {
 			
 			plateFrame [MEMBER_NPCID] = nil
 			plateFrame.unitFrame [MEMBER_NPCID] = nil
-			if IS_WOW_PROJECT_MIDNIGHT then
-				plateFrame [MEMBER_GUID] = UnitGUID (unitID)
-			else
-				plateFrame [MEMBER_GUID] = UnitGUID (unitID) or ""
-			end
+			plateFrame [MEMBER_GUID] = UnitGUID (unitID) or ""
 			plateFrame.unitFrame [MEMBER_GUID] = plateFrame [MEMBER_GUID]
 			
 			if (not isPlayer) then
@@ -3691,16 +3687,18 @@ Plater.AnchorNamesByPhraseId = {
 				--hook the retail nameplate
 				--plateFrame.UnitFrame:HookScript("OnShow", Plater.OnRetailNamePlateShow)
 				hooksecurefunc(plateFrame.UnitFrame, "Show", Plater.OnRetailNamePlateShow)
-				local locked = false
-				hooksecurefunc(plateFrame.UnitFrame, "SetAlpha", function(self)
-					if locked or self:IsForbidden() then
-						return
-					end
-					if ENABLED_BLIZZARD_PLATEFRAMES[tostring(self)] then return end
-					locked = true
-					self:SetAlpha(0)
-					locked = false
-				end)
+				if IS_WOW_PROJECT_MIDNIGHT then
+					local locked = false
+					hooksecurefunc(plateFrame.UnitFrame, "SetAlpha", function(self)
+						if locked or self:IsForbidden() then
+							return
+						end
+						if ENABLED_BLIZZARD_PLATEFRAMES[tostring(self)] then return end
+						locked = true
+						self:SetAlpha(0)
+						locked = false
+					end)
+				end
 				
 				--plateFrame.UnitFrame.HasPlaterHooksRegistered = true
 				HOOKED_BLIZZARD_PLATEFRAMES[blizzardPlateFrameID] = true
@@ -4496,6 +4494,15 @@ Plater.AnchorNamesByPhraseId = {
 			end
 		elseif IS_WOW_PROJECT_MIDNIGHT then
 			self:SetAlpha(0)
+			local hiddenParent = platerInternal.hiddenParentFrame
+			self.AurasFrame.DebuffListFrame:SetParent(hiddenParent)
+			self.AurasFrame.BuffListFrame:SetParent(hiddenParent)
+			self.AurasFrame.CrowdControlListFrame:SetParent(hiddenParent)
+			self.AurasFrame.LossOfControlFrame:SetParent(hiddenParent)
+			for _, key in ipairs(platerInternal.blizzNameplateObjects) do
+				self[key]:SetParent(hiddenParent)
+			end
+			platerInternal.reparentedUnitFrames[self.unit] = self
 		else
 			self:Hide()
 		end
@@ -5016,27 +5023,38 @@ function Plater.OnInit() --private --~oninit ~init
 				return Plater.UpdatePersonalBar (self)
 			end)
 			
-			--[[ -- fuck things up a bit...
-			hooksecurefunc (NamePlateBaseMixin, "OnAdded", function(self, namePlateUnitToken, driverFrame)
-				local plateFrame = C_NamePlate.GetNamePlateForUnit (namePlateUnitToken)
-				Plater.OnRetailNamePlateShow(plateFrame.UnitFrame)
-			end)
-			
-			hooksecurefunc (NamePlateDriverFrame, "OnNamePlateAdded", function(self, namePlateUnitToken)
-				if not ENABLED_BLIZZARD_PLATEFRAMES[tostring(frame)] then
-					local plateFrame = C_NamePlate.GetNamePlateForUnit (namePlateUnitToken)
-					DevTool:AddData(plateFrame, "OnNamePlateAdded")
-					C_Timer.After(0, function() Plater.OnRetailNamePlateShow(plateFrame.UnitFrame) end)
-				end
-			end)
-			hooksecurefunc ("DefaultCompactNamePlateFrameSetupInternal", function(frame)
-				DevTool:AddData(frame, "DefaultCompactNamePlateFrameSetupInternal")
-				if not ENABLED_BLIZZARD_PLATEFRAMES[tostring(frame)] then
-					
-					--Plater.OnRetailNamePlateShow (frame)
-				end
-			end)
-			--]]
+			if IS_WOW_PROJECT_MIDNIGHT then -- MIDNIGHT!! fucking bullshit workaround for SetAlpha(0) instead of :Hide() until we have proper click-frame control...
+				platerInternal.reparentedUnitFrames = {}
+				platerInternal.hiddenParentFrame = CreateFrame("Frame")
+				platerInternal.hiddenParentFrame:Hide()
+				platerInternal.blizzNameplateObjects = {
+					"aggroHighlight",
+					"aggroHighlightAdditive",
+					"aggroHighlightBase",
+					"castBar",
+					"name",
+					"AurasFrame",
+					"ClassificationFrame",
+					"HealthBarsContainer",
+					"PlayerLevelDiffFrame",
+					"RaidTargetFrame",
+					"SoftTargetFrame",
+				}
+				-- the hidden parent is set in OnRetailNameplateShow
+				hooksecurefunc(NamePlateDriverFrame, "OnNamePlateRemoved", function(_, unit)
+					local blizzUnitFrame = platerInternal.reparentedUnitFrames[unit]
+					if blizzUnitFrame then
+						blizzUnitFrame.AurasFrame.DebuffListFrame:SetParent(blizzUnitFrame)
+						blizzUnitFrame.AurasFrame.BuffListFrame:SetParent(blizzUnitFrame)
+						blizzUnitFrame.AurasFrame.CrowdControlListFrame:SetParent(blizzUnitFrame)
+						blizzUnitFrame.AurasFrame.LossOfControlFrame:SetParent(blizzUnitFrame)
+						for _, key in ipairs(platerInternal.blizzNameplateObjects) do
+							blizzUnitFrame[key]:SetParent(blizzUnitFrame)
+						end
+						platerInternal.reparentedUnitFrames[unit] = nil
+					end
+				end)
+			end
 			
 		end
 
