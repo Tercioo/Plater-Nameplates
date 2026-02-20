@@ -166,8 +166,81 @@ function designer.CreateSettings(parentFrame)
 
     options.WidgetSettingsExtraOptions = {
         HealthBar = {
+            
             --[=[
-            {
+                {
+                add:
+                health bar 
+                health bar texture -> profile root -> profile.health_statusbar_texture
+		        use_health_animation = false, profile root
+                health_selection_overlay = "Details Flat",
+                health_selection_overlay_alpha = 0.1,
+                health_selection_overlay_color = {1, 1, 1, 1},    
+                		health_statusbar_bgtexture = "PlaterBackground 2",
+		health_statusbar_bgcolor = {0.113725, 0.113725, 0.113725, 0.89000000},  
+        		border_color = {0, 0, 0, .834},
+		border_thickness = 1,          
+
+                mouse hover highlight -> profile root
+            		hover_highlight = true,
+		            highlight_on_hover_unit_model = false,
+		            hover_highlight_alpha = .30,
+
+                health cut off (execute settings) -> profile root
+                    health_cutoff = true,
+                    health_cutoff_upper = true,
+                    health_cutoff_extra_glow = false,
+                    health_cutoff_hide_divisor = false,
+
+                border se0ttings
+		focus_indicator_enabled = true,
+		focus_color = {0, 0, 0, 0.5},
+		focus_texture = "PlaterFocus",
+                
+                aggro flash
+
+                new object for target settings
+
+                new object for raid target
+        target_highlight = true,
+		target_highlight_alpha = 0.75,
+		target_highlight_height = 14,
+		target_highlight_color = {0, 0.521568, 1, 1},
+		target_highlight_texture = [[Interface\AddOns\Plater\images\selection_indicator3]],
+		target_shady_alpha = 0.6,
+		target_shady_enabled = true,
+		target_shady_combat_only = true,
+
+
+
+                new object for indicators fro the main settings window
+        		indicator_faction = true,
+		indicator_friendlyfaction = false,
+		indicator_spec = true,
+		indicator_spec_always = false,
+		indicator_friendlyspec = false,
+		indicator_worldboss = true,
+		indicator_elite = true,
+		indicator_rare = true,
+		indicator_quest = true,
+		indicator_pet = true,
+		indicator_enemyclass = false,
+		indicator_friendlyclass = false,
+		indicator_anchor = {side = 2, x = -2, y = 0},
+		indicator_scale = 1,
+		indicator_shield = false,
+		indicator_extra_raidmark = true,
+		indicator_raidmark_scale = 1,
+		indicator_raidmark_anchor = {side = 2, x = -1, y = 0},
+        target_indicator = "Silver",
+
+                new object for theat colors.
+
+                new object for buff settings? there is way too much options there.
+
+
+                an object for range check and transparency control, those that are  in the main settings tab 
+
                 key = "../../../health_statusbar_texture", --the name of the option in the profile table
                 label = "Texture",
                 widget = "selectstatusbartexture",
