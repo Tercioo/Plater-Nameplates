@@ -125,6 +125,7 @@
 
 ---@class castbar : df_castbar
 ---@field TargetName fontstring
+---@field ThrottleUpdate number each tick update reduces this value by deltaTime, when it reaches 0 the castbar update is executed and this value is reset to the value of PlateFrame.OnTickFrame.ThrottleUpdate
 
 ---@class healthbar : df_healthbar
 ---@field A number?

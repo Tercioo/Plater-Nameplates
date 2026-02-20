@@ -5884,6 +5884,7 @@ function Plater.OnInit() --private --~oninit ~init
 		end
 		
 		Plater.CastBarOnTick_Hook = function (self, deltaTime) --private
+			---@cast self castbar
 			if (self.percentText) then --check if is a plater cast bar
 			
 				Plater.StartLogPerformanceCore("Plater-Core", "Update", "CastBarOnTick")
