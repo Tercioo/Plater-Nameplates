@@ -3631,11 +3631,7 @@ Plater.AnchorNamesByPhraseId = {
 			
 			plateFrame [MEMBER_NPCID] = nil
 			plateFrame.unitFrame [MEMBER_NPCID] = nil
-			if IS_WOW_PROJECT_MIDNIGHT then
-				plateFrame [MEMBER_GUID] = UnitGUID (unitID)
-			else
-				plateFrame [MEMBER_GUID] = UnitGUID (unitID) or ""
-			end
+			plateFrame [MEMBER_GUID] = UnitGUID (unitID) or ""
 			plateFrame.unitFrame [MEMBER_GUID] = plateFrame [MEMBER_GUID]
 			
 			if (not isPlayer) then
@@ -3691,16 +3687,18 @@ Plater.AnchorNamesByPhraseId = {
 				--hook the retail nameplate
 				--plateFrame.UnitFrame:HookScript("OnShow", Plater.OnRetailNamePlateShow)
 				hooksecurefunc(plateFrame.UnitFrame, "Show", Plater.OnRetailNamePlateShow)
-				local locked = false
-				hooksecurefunc(plateFrame.UnitFrame, "SetAlpha", function(self)
-					if locked or self:IsForbidden() then
-						return
-					end
-					if ENABLED_BLIZZARD_PLATEFRAMES[tostring(self)] then return end
-					locked = true
-					self:SetAlpha(0)
-					locked = false
-				end)
+				if IS_WOW_PROJECT_MIDNIGHT then
+					local locked = false
+					hooksecurefunc(plateFrame.UnitFrame, "SetAlpha", function(self)
+						if locked or self:IsForbidden() then
+							return
+						end
+						if ENABLED_BLIZZARD_PLATEFRAMES[tostring(self)] then return end
+						locked = true
+						self:SetAlpha(0)
+						locked = false
+					end)
+				end
 				
 				--plateFrame.UnitFrame.HasPlaterHooksRegistered = true
 				HOOKED_BLIZZARD_PLATEFRAMES[blizzardPlateFrameID] = true
@@ -4148,6 +4146,10 @@ Plater.AnchorNamesByPhraseId = {
 							
 							--get threat situation to expose it to scripts already in the nameplate added hook
 							local isTanking, threatStatus, threatpct, threatrawpct, threatValue = UnitDetailedThreatSituation ("player", unitID)
+							if IS_WOW_PROJECT_MIDNIGHT then
+								threatStatus = UnitThreatSituation ("player", unitID)
+								isTanking = (threatStatus or 0) >= 2
+							end
 							unitFrame.namePlateThreatIsTanking = isTanking
 							unitFrame.namePlateThreatStatus = threatStatus
 							unitFrame.namePlateThreatPercent = threatpct or 0
@@ -4496,6 +4498,17 @@ Plater.AnchorNamesByPhraseId = {
 			end
 		elseif IS_WOW_PROJECT_MIDNIGHT then
 			self:SetAlpha(0)
+			local hiddenParent = platerInternal.hiddenParentFrame
+			if self.AurasFrame then -- assume this suffices
+				self.AurasFrame.DebuffListFrame:SetParent(hiddenParent)
+				self.AurasFrame.BuffListFrame:SetParent(hiddenParent)
+				self.AurasFrame.CrowdControlListFrame:SetParent(hiddenParent)
+				self.AurasFrame.LossOfControlFrame:SetParent(hiddenParent)
+				for _, key in ipairs(platerInternal.blizzNameplateObjects) do
+					self[key]:SetParent(hiddenParent)
+				end
+				platerInternal.reparentedUnitFrames[self.unit] = self
+			end
 		else
 			self:Hide()
 		end
@@ -5016,27 +5029,38 @@ function Plater.OnInit() --private --~oninit ~init
 				return Plater.UpdatePersonalBar (self)
 			end)
 			
-			--[[ -- fuck things up a bit...
-			hooksecurefunc (NamePlateBaseMixin, "OnAdded", function(self, namePlateUnitToken, driverFrame)
-				local plateFrame = C_NamePlate.GetNamePlateForUnit (namePlateUnitToken)
-				Plater.OnRetailNamePlateShow(plateFrame.UnitFrame)
-			end)
-			
-			hooksecurefunc (NamePlateDriverFrame, "OnNamePlateAdded", function(self, namePlateUnitToken)
-				if not ENABLED_BLIZZARD_PLATEFRAMES[tostring(frame)] then
-					local plateFrame = C_NamePlate.GetNamePlateForUnit (namePlateUnitToken)
-					DevTool:AddData(plateFrame, "OnNamePlateAdded")
-					C_Timer.After(0, function() Plater.OnRetailNamePlateShow(plateFrame.UnitFrame) end)
-				end
-			end)
-			hooksecurefunc ("DefaultCompactNamePlateFrameSetupInternal", function(frame)
-				DevTool:AddData(frame, "DefaultCompactNamePlateFrameSetupInternal")
-				if not ENABLED_BLIZZARD_PLATEFRAMES[tostring(frame)] then
-					
-					--Plater.OnRetailNamePlateShow (frame)
-				end
-			end)
-			--]]
+			if IS_WOW_PROJECT_MIDNIGHT then -- MIDNIGHT!! fucking bullshit workaround for SetAlpha(0) instead of :Hide() until we have proper click-frame control...
+				platerInternal.reparentedUnitFrames = {}
+				platerInternal.hiddenParentFrame = CreateFrame("Frame")
+				platerInternal.hiddenParentFrame:Hide()
+				platerInternal.blizzNameplateObjects = {
+					"aggroHighlight",
+					"aggroHighlightAdditive",
+					"aggroHighlightBase",
+					"castBar",
+					"name",
+					"AurasFrame",
+					"ClassificationFrame",
+					"HealthBarsContainer",
+					"PlayerLevelDiffFrame",
+					"RaidTargetFrame",
+					"SoftTargetFrame",
+				}
+				-- the hidden parent is set in OnRetailNameplateShow
+				hooksecurefunc(NamePlateDriverFrame, "OnNamePlateRemoved", function(_, unit)
+					local blizzUnitFrame = platerInternal.reparentedUnitFrames[unit]
+					if blizzUnitFrame then
+						blizzUnitFrame.AurasFrame.DebuffListFrame:SetParent(blizzUnitFrame)
+						blizzUnitFrame.AurasFrame.BuffListFrame:SetParent(blizzUnitFrame)
+						blizzUnitFrame.AurasFrame.CrowdControlListFrame:SetParent(blizzUnitFrame)
+						blizzUnitFrame.AurasFrame.LossOfControlFrame:SetParent(blizzUnitFrame)
+						for _, key in ipairs(platerInternal.blizzNameplateObjects) do
+							blizzUnitFrame[key]:SetParent(blizzUnitFrame)
+						end
+						platerInternal.reparentedUnitFrames[unit] = nil
+					end
+				end)
+			end
 			
 		end
 
@@ -5436,12 +5460,12 @@ function Plater.OnInit() --private --~oninit ~init
 			local icon = castBar.Icon
 			local unitFrame = castBar.unitFrame
 			local borderShield = castBar.BorderShield
-			
-			borderShield:Show()
-			
+
 			--icon:SetDrawLayer ("OVERLAY", 5)
 			--borderShield:SetDrawLayer ("OVERLAY", 6)
 			local castBarHeight = castBar:GetHeight()
+
+			castBar:UpdateInterruptState() -- ensure icon is shown as appropriate
 			
 			if (profile.castbar_icon_customization_enabled) then
 
@@ -5540,8 +5564,6 @@ function Plater.OnInit() --private --~oninit ~init
 				PixelUtil.SetSize (borderShield, castBarHeight * 1.4, castBarHeight * 1.4)
 				borderShield:SetDesaturated (false)
 			end
-
-			castBar:UpdateInterruptState() -- ensure icon is shown as appropriate
 
 			if castBar.Icon.Masqued then
 				Plater.Masque.CastIcon:ReSkin(castBar.Icon)
@@ -5722,19 +5744,13 @@ function Plater.OnInit() --private --~oninit ~init
 					self.ReUpdateNextTick = true
 					self.ThrottleUpdate = -1
 					
+					--castbar icon
+					Plater.UpdateCastbarIcon(self)
+
 					if IS_WOW_PROJECT_MIDNIGHT then
-						--self.BorderShield:Show()
-						--self.BorderShield:SetAlphaFromBoolean(self.notInterruptible, 1, 0)
 						self.CanInterrupt = nil
-						--print(self.SpellName, self.notInterruptible, self.BorderShield:IsShown(), self.BorderShield:IsVisible(), self.BorderShield:GetAlpha())
 					else
-						if (self.notInterruptible) then
-							self.BorderShield:Show()
-							self.CanInterrupt = false
-						else
-							self.BorderShield:Hide()
-							self.CanInterrupt = true
-						end
+						self.CanInterrupt = not self.notInterruptible
 					end
 					
 					self.FrameOverlay:SetBackdropBorderColor (0, 0, 0, 0)
@@ -5748,9 +5764,6 @@ function Plater.OnInit() --private --~oninit ~init
 					PixelUtil.SetSize(self.Spark, profile.cast_statusbar_spark_width, self:GetHeight())
 
 					Plater.UpdateCastbarTargetText (self)
-
-					--castbar icon
-					Plater.UpdateCastbarIcon(self)
 
 					shouldRunCastStartHook = true
 
@@ -6022,17 +6035,17 @@ function Plater.OnInit() --private --~oninit ~init
 
 	function Plater.QuickHealthUpdate (unitFrame)
 		Plater.StartLogPerformanceCore("Plater-Core", "Health", "QuickHealthUpdate")
-		--local unitHealth = UnitHealth (unitFrame.unit)
-		--local unitHealthMax = UnitHealthMax (unitFrame.unit)
-		--unitFrame.healthBar:SetMinMaxValues (0, unitHealthMax, IS_WOW_PROJECT_MIDNIGHT and Enum.StatusBarInterpolation.ExponentialEaseOut)
-		--unitFrame.healthBar:SetValue (unitHealth, IS_WOW_PROJECT_MIDNIGHT and Enum.StatusBarInterpolation.ExponentialEaseOut)
-		
-		--unitFrame.healthBar.currentHealth = unitHealth
-		--unitFrame.healthBar.currentHealthMax = unitHealthMax
 		if IS_WOW_PROJECT_MIDNIGHT then
 			--unitFrame.healthBar.currentHealthMissing = UnitHealthMissing(unitFrame.unit, true)
 			--unitFrame.healthBar.currentHealthPercent = UnitHealthPercent(unitFrame.unit, true, CurveConstants.ScaleTo100)
 		else
+			local unitHealth = UnitHealth (unitFrame.unit)
+			local unitHealthMax = UnitHealthMax (unitFrame.unit)
+			unitFrame.healthBar:SetMinMaxValues (0, unitHealthMax, IS_WOW_PROJECT_MIDNIGHT and Enum.StatusBarInterpolation.ExponentialEaseOut)
+			unitFrame.healthBar:SetValue (unitHealth, IS_WOW_PROJECT_MIDNIGHT and Enum.StatusBarInterpolation.ExponentialEaseOut)
+		
+			unitFrame.healthBar.currentHealth = unitHealth
+			unitFrame.healthBar.currentHealthMax = unitHealthMax
 			unitFrame.healthBar.currentHealthMissing = unitHealthMax - unitHealth
 			unitFrame.healthBar.currentHealthPercent = unitHealth / unitHealthMax * 100
 		end
@@ -7419,6 +7432,10 @@ end
 		local profile = Plater.db.profile
 		
 		local isTanking, threatStatus, threatpct, threatrawpct, threatValue = UnitDetailedThreatSituation ("player", self.displayedUnit)
+		if IS_WOW_PROJECT_MIDNIGHT then
+			threatStatus = UnitThreatSituation ("player", self.displayedUnit)
+			isTanking = (threatStatus or 0) >= 2
+		end
 		
 		--expose all threat situation to scripts
 		self.namePlateThreatIsTanking = isTanking
@@ -7450,6 +7467,15 @@ end
 						for tank, _ in pairs(TANK_CACHE) do
 							if UnitExists(tank) and not UnitIsUnit("player", tank) then
 								otherIsTanking, otherThreatStatus, otherThreatpct = UnitDetailedThreatSituation (tank, self.displayedUnit)
+								if IS_WOW_PROJECT_MIDNIGHT then
+									local tmpOtherThreatStatus = UnitThreatSituation (tank, self.displayedUnit)
+									if not issecretvalue (tmpOtherThreatStatus) then
+										otherThreatStatus = tmpOtherThreatStatus
+										otherIsTanking = (otherThreatStatus or 0) >= 2
+									else
+										otherIsTanking = false -- well, shame
+									end
+								end
 								if otherIsTanking then
 									unitOffTank = tank
 									break
@@ -7641,13 +7667,15 @@ end
 								
 									--check if this isn't a false positive where the mob target another unit to cast a spell
 									local hasTankAggro = false
-									for tankName, _ in pairs (TANK_CACHE) do
-										if UnitExists(tankName) then
-											local threatStatus = UnitThreatSituation (tankName, self.displayedUnit)
-											if (threatStatus and threatStatus >= 2) then
-												--a tank has aggro on this unit, it is a false positive
-												hasTankAggro = true
-												break
+									if not IS_WOW_PROJECT_MIDNIGHT then
+										for tankName, _ in pairs (TANK_CACHE) do
+											if UnitExists(tankName) then
+												local threatStatus = UnitThreatSituation (tankName, self.displayedUnit)
+												if (threatStatus and threatStatus >= 2) then
+													--a tank has aggro on this unit, it is a false positive
+													hasTankAggro = true
+													break
+												end
 											end
 										end
 									end
@@ -10730,7 +10758,7 @@ end
 		
 		local isPlayerPet = false
 		local isOtherPet = false
-		local ownerName = ""
+		local ownerName
 		
 		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(text1) then return end
 		if (text1 and text1 ~= "") then
@@ -10749,7 +10777,7 @@ end
 		
 		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(petName) then return end
 		if (isPlayerPet or isOtherPet) and petName then
-			local entry = {ownerGUID = UnitGUID(ownerName), ownerName = ownerName, petName = petName, time = time()}
+			local entry = {ownerGUID = ownerName and UnitExists(ownerName) and UnitGUID(ownerName) or nil, ownerName = ownerName, petName = petName, time = time()}
 			
 			if (isPlayerPet) then
 				PET_CACHE [serial] = entry

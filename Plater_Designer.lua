@@ -384,7 +384,7 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
             if optionKey == "width" then
                 profileTable.health[1] = newValue
             else
-                profileTable.health[2] = newValue
+                profileTable.health[2] = newValue --height
             end
         end
 
@@ -397,7 +397,7 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
                 PixelUtil.SetPoint (castBar, "topleft", healthBar, "bottomleft", castBarOffSetXRel + castBarOffSetX, -30)
                 PixelUtil.SetPoint (castBar, "topright", healthBar, "bottomright", -castBarOffSetXRel + castBarOffSetX, -30)
             else
-                profileTable.cast[2] = newValue
+                profileTable.cast[2] = newValue --height
             end
         end
 
