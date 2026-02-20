@@ -779,7 +779,7 @@ function designer.UpdatePreview()
     Plater.Resources.UpdateResourceFramePosition()
 
     Plater.NameplateTick (plateFrame.OnTickFrame, 999)
-    plateFrame.OnTickFrame.OnTickFrame.ThrottleUpdate = 10^7
+    plateFrame.OnTickFrame.ThrottleUpdate = 10^7
     unitFrame.PlaterOnScreen = true
 
     --create new fontstring to life percent to avoid issues with UnitHealth() returning a secret
