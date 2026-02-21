@@ -216,6 +216,7 @@
 ---@class classspeccoords : {key1: number, key2: number, key3: number, key4: number} texcoords
 
 ---@class plater : table
+---@field db table
 ---@field versionString string version from the toc file
 ---@field fullVersionInfo string version from the toc file + framework version
 ---@field PerformanceUnits table<number, number> table with performance units: npcId = true

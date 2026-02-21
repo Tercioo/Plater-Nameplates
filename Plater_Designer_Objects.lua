@@ -6,7 +6,7 @@ local Plater = Plater
 ---@type detailsframework
 local detailsFramework = _G.DetailsFramework
 local _
-
+local LSM = LibStub:GetLibrary ("LibSharedMedia-3.0")
 local designer = platerInternal.Designer
 
 local PixelUtil = PixelUtil
@@ -157,7 +157,7 @@ function designer.CreateSettings(parentFrame)
             height = "cast_incombat[2]", --plate_config.enemynpc.
         },
 
-        HealthBar = {
+        NameplateSize = {
             --values from PlaterDB.profile.plate_config[unittype]
             width = "health_incombat[1]", --plate_config.enemynpc.
             height = "health_incombat[2]", --plate_config.enemynpc.
@@ -166,25 +166,122 @@ function designer.CreateSettings(parentFrame)
 
     options.WidgetSettingsExtraOptions = {
         HealthBar = {
-            
+            {
+                key = "health_statusbar_texture",
+                label = "Texture",
+                widget = "selectstatusbartexture",
+                default = Plater.db.profile.health_statusbar_texture,
+                setter = function(healthBar, value) healthBar:SetTexture(value); designer.UpdateAllNameplates() end,
+            },
+
+            {
+                key = "health_statusbar_bgcolor",
+                label = "Background Color",
+                widget = "color",
+                default = Plater.db.profile.health_statusbar_bgcolor,
+                setter = function(healthBar, color)
+                    local r, g, b, a = unpack(color)
+                    healthBar.background:SetVertexColor(r, g, b, a); designer.UpdateAllNameplates()
+                end,
+            },
+
+            {
+                key = "border_color",
+                label = "Border Color",
+                widget = "color",
+                default = Plater.db.profile.border_color,
+                setter = function(healthBar, color)
+                    local r, g, b, a = unpack(color)
+                    Plater.UpdatePlateBorders(healthBar.unitFrame.PlateFrame) designer.UpdateAllNameplates()
+                end,
+            },
+
+            {
+                key = "border_thickness",
+                label = "Border Thickness",
+                widget = "slider",
+                minvalue = 0,
+                maxvalue = 10,
+                step = 1,
+                default = Plater.db.profile.border_thickness,
+                setter = function(healthBar, value)
+                    Plater.UpdatePlateBorders(healthBar.unitFrame.PlateFrame) designer.UpdateAllNameplates()
+                end,
+            },
+
+            {
+                key = "health_selection_overlay",
+                label = "Target Overlay",
+                widget = "selectstatusbartexture",
+                default = Plater.db.profile.health_selection_overlay,
+                setter = function(healthBar, value)
+                    healthBar.unitFrame.targetOverlayTexture:SetTexture(LSM:Fetch("statusbar", Plater.db.profile.health_selection_overlay)); designer.UpdateAllNameplates()
+                end,
+            },
+            {
+                key = "health_selection_overlay_alpha",
+                label = "Target Overlay Alpha",
+                widget = "slider",
+                minvalue = 0,
+                maxvalue = 1,
+                step = 0.1,
+                usedecimals = true,
+                default = Plater.db.profile.health_selection_overlay_alpha,
+                setter = function(healthBar, value)
+                    healthBar.unitFrame.targetOverlayTexture:SetAlpha(Plater.db.profile.health_selection_overlay_alpha); designer.UpdateAllNameplates()
+                end,
+            },
+
+            --health_selection_overlay_color
+            {
+                key = "health_selection_overlay_color",
+                label = "Target Overlay Color",
+                widget = "color",
+                default = Plater.db.profile.health_selection_overlay_color,
+                setter = function(healthBar, color)
+                    local r, g, b, a = unpack(color)
+                    healthBar.unitFrame.targetOverlayTexture:SetVertexColor(r, g, b, a); designer.UpdateAllNameplates()
+                end,
+            },
+
+            --hover over hightlight
+
+            {
+                key = "hover_highlight",
+                label = "Mouse Hover Highlight",
+                widget = "toggle",
+                default = Plater.db.profile.hover_highlight,
+                setter = function(healthBar, value)
+                    if value then
+                        Plater.EnableHighlight(healthBar.unitFrame)
+                    else
+                        Plater.DisableHighlight(healthBar.unitFrame)
+                    end
+                    designer.UpdateAllNameplates()
+                end,
+            },
+
+                --mouse hover highlight -> profile root
+            	--hover_highlight = true,
+		        --highlight_on_hover_unit_model = false,
+		        --hover_highlight_alpha = .30,
+
+
             --[=[
                 {
                 add:
                 health bar 
-                health bar texture -> profile root -> profile.health_statusbar_texture
-		        use_health_animation = false, profile root
-                health_selection_overlay = "Details Flat",
-                health_selection_overlay_alpha = 0.1,
-                health_selection_overlay_color = {1, 1, 1, 1},    
-                		health_statusbar_bgtexture = "PlaterBackground 2",
-		health_statusbar_bgcolor = {0.113725, 0.113725, 0.113725, 0.89000000},  
-        		border_color = {0, 0, 0, .834},
-		border_thickness = 1,          
+                    +health bar texture -> profile root -> profile.
+                    +health_selection_overlay = "Details Flat",
+                    +health_selection_overlay_alpha = 0.1,
+                    +health_selection_overlay_color = {1, 1, 1, 1},    
+		            +health_statusbar_bgcolor = {0.113725, 0.113725, 0.113725, 0.89000000},  
+        		    +border_color = {0, 0, 0, .834},
+                    +border_thickness = 1,          
 
-                mouse hover highlight -> profile root
-            		hover_highlight = true,
-		            highlight_on_hover_unit_model = false,
-		            hover_highlight_alpha = .30,
+                    use_health_animation = false, profile root
+
+
 
                 health cut off (execute settings) -> profile root
                     health_cutoff = true,
