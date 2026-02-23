@@ -6925,6 +6925,7 @@ end
 			end,
 			name = "Only Damaged Players",
 			desc = "Hide the health bar when a friendly character has full health.",
+			hidden = IS_WOW_PROJECT_MIDNIGHT,
 		},
 		{
 			type = "toggle",

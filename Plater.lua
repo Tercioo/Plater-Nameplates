@@ -9918,12 +9918,13 @@ end
 	--check the setting 'only_damaged' and 'only_thename' for player characters. not critical code, can run slow
 	function Plater.ParseHealthSettingForPlayer (plateFrame, force) --private
 		local isFriendlyPlayerWithoutHealthBar = plateFrame.IsFriendlyPlayerWithoutHealthBar
-		if (DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_thename and not DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_damaged) then
+		local onlyDamaged = (not IS_WOW_PROJECT_MIDNIGHT and DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_damaged) or false
+		if (DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_thename and not onlyDamaged) then
 			if (not isFriendlyPlayerWithoutHealthBar) or force then
 				Plater.HideHealthBar (plateFrame.unitFrame, true)
 			end
 			
-		elseif (DB_PLATE_CONFIG [ACTORTYPE_FRIENDLY_PLAYER].only_damaged) then
+		elseif (onlyDamaged) then
 			local healthBar = plateFrame.unitFrame.healthBar
 			if IS_WOW_PROJECT_MIDNIGHT or ((healthBar.currentHealth or 1) < (healthBar.currentHealthMax or 1)) then
 				if isFriendlyPlayerWithoutHealthBar or force then
