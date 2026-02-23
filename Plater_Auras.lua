@@ -2682,6 +2682,8 @@ end
 						can_show_this_debuff = true
 					elseif DB_AURA_SHOW_DEBUFF_BYPLAYER and not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HARMFUL|PLAYER") then
 						can_show_this_debuff = true
+					elseif Plater.db.profile.aura_show_crowdcontrol and not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HARMFUL|CROWD_CONTROL") then
+						can_show_this_debuff = true
 					end
 					--can_show_this_debuff = not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, HARM_BUFF_FILTER)
 				end
