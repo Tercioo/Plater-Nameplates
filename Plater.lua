@@ -6991,7 +6991,7 @@ end
 					healthBar.healthCutOff:SetPoint ("center", healthBar, "left", healthBar:GetWidth() * HEALTHCUTOFF_AT_DATA.healthCutOffValue, 0)
 					
 					healthBar.executeRange:SetTexCoord (0, HEALTHCUTOFF_AT_DATA.healthCutOffValue, 0, 1)
-					healthBar.executeRange:SetAlpha (0.2)
+					healthBar.executeRange:SetAlpha (Plater.db.profile.health_cutoff_alpha or 0.3)
 					healthBar.executeRange:SetVertexColor (.3, .3, .3)
 					healthBar.executeRange:SetHeight (healthBar:GetHeight())
 					healthBar.executeRange:SetPoint ("right", healthBar.healthCutOff, "center")
@@ -7005,7 +7005,7 @@ end
 					healthBar.healthCutOffUpper:SetPoint ("center", healthBar, "right", - (healthBar:GetWidth() * (1-HEALTHCUTOFF_AT_DATA.healthCutOffUpperValue)), 0)
 					
 					healthBar.executeRangeUpper:SetTexCoord (0, 1-HEALTHCUTOFF_AT_DATA.healthCutOffUpperValue, 0, 1)
-					healthBar.executeRangeUpper:SetAlpha (0.2)
+					healthBar.executeRangeUpper:SetAlpha (Plater.db.profile.health_cutoff_alpha or 0.3)
 					healthBar.executeRangeUpper:SetVertexColor (.3, .3, .3)
 					healthBar.executeRangeUpper:SetHeight (healthBar:GetHeight())
 					healthBar.executeRangeUpper:SetPoint ("left", healthBar.healthCutOffUpper, "center")
@@ -11487,13 +11487,13 @@ end
 			HEALTHCUTOFF_AT_DATA.healthCutOffValue = tonumber (healthAmountLower) or -0.1
 			HEALTHCUTOFF_AT_DATA.healthCutOffValueCurve = C_CurveUtil.CreateColorCurve()
 			HEALTHCUTOFF_AT_DATA.healthCutOffValueCurve:SetType(Enum.LuaCurveType.Step)
-			HEALTHCUTOFF_AT_DATA.healthCutOffValueCurve:AddPoint(0  , CreateColor(0, 0, 0, 0.2)) -- Visible    0% -  19%
+			HEALTHCUTOFF_AT_DATA.healthCutOffValueCurve:AddPoint(0  , CreateColor(0, 0, 0, Plater.db.profile.health_cutoff_alpha or 0.3)) -- Visible    0% -  19%
 			HEALTHCUTOFF_AT_DATA.healthCutOffValueCurve:AddPoint(tonumber (healthAmountLower) or -0.1, CreateColor(0, 0, 0, 0)) -- Invisible 20% - 100%
 			
 			HEALTHCUTOFF_AT_DATA.healthCutOffUpperValue = tonumber (healthAmountUpper) or 1.1
 			HEALTHCUTOFF_AT_DATA.healthCutOffUpperValueCurve = C_CurveUtil.CreateColorCurve()
 			HEALTHCUTOFF_AT_DATA.healthCutOffUpperValueCurve:SetType(Enum.LuaCurveType.Step)
-			HEALTHCUTOFF_AT_DATA.healthCutOffUpperValueCurve:AddPoint(1  , CreateColor(0, 0, 0, 0.2)) -- Visible    90% -  100%
+			HEALTHCUTOFF_AT_DATA.healthCutOffUpperValueCurve:AddPoint(1  , CreateColor(0, 0, 0, Plater.db.profile.health_cutoff_alpha or 0.3)) -- Visible    90% -  100%
 			HEALTHCUTOFF_AT_DATA.healthCutOffUpperValueCurve:AddPoint(tonumber (healthAmountUpper) or 1.1, CreateColor(0, 0, 0, 0)) -- Invisible 0% - 89%
 		else
 			HEALTHCUTOFF_AT_DATA.healthCutOffValue = tonumber (healthAmountLower) or -0.1

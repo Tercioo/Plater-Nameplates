@@ -6794,6 +6794,24 @@ local relevance_options = {
 			name = "OPTIONS_YOFFSET",
 			desc = "OPTIONS_MOVE_VERTICAL",
 		},
+
+		{type = "blank"},
+
+		{
+		type = "range",
+		get = function() return Plater.db.profile.health_cutoff_alpha end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.health_cutoff_alpha = value
+			Plater.RefreshDBUpvalues()
+		end,
+		min = 0,
+		max = 1,
+		step = 0.01,
+		usedecimals = true,
+		thumbscale = 1.8,
+		name = "Execute Alpha",
+		desc = "Execute Alpha",
+	},
 	}
 
 	for _, t in ipairs (options_table1_continue2) do

@@ -795,6 +795,7 @@ PLATER_DEFAULT_SETTINGS = {
 		health_cutoff_upper = true,
 		health_cutoff_extra_glow = false,
 		health_cutoff_hide_divisor = false,
+		health_cutoff_alpha = 0.3,
 		
 		update_throttle = 0.25,
 		culling_distance = 100,
