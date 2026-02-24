@@ -10013,6 +10013,9 @@ end
 	function Plater.EnableHighlight (unitFrame)
 		unitFrame.HighlightFrame:Show()
 		unitFrame.HighlightFrame.HighlightTexture:Show()
+		unitFrame.HighlightFrame.HighlightTexture:SetTexture (DB_TEXTURE_HEALTHBAR)
+		unitFrame.HighlightFrame.HighlightTexture:SetBlendMode ("ADD")
+		unitFrame.HighlightFrame.HighlightTexture:SetAlpha (Plater.db.profile.hover_highlight_alpha)
 
 		unitFrame.HighlightFrame.unit = unitFrame [MEMBER_UNITID]
 		unitFrame.HighlightFrame:SetScript ("OnUpdate", Plater.CheckHighlight)
