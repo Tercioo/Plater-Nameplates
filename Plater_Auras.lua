@@ -1910,6 +1910,12 @@ end
 					r, g, b, a = SplitEvaluateColor(isCC, er, eg, eb, ea, r, g, b, a)
 				end
 
+				local isDefensive = not C_UnitAuras.IsAuraFilteredOutByInstanceID(auraIconFrame.unitFrame.namePlateUnitToken, i, "HELPFUL|BIG_DEFENSIVE") or not C_UnitAuras.IsAuraFilteredOutByInstanceID(auraIconFrame.unitFrame.namePlateUnitToken, i, "HELPFUL|EXTERNAL_DEFENSIVE")
+				if isDefensive ~= nil then
+					er, eg, eb, ea = unpack (profile.aura_border_colors.defensive)
+					r, g, b, a = SplitEvaluateColor(isCC, er, eg, eb, ea, r, g, b, a)
+				end
+
 				if isStealable ~= nil then
 					er, eg, eb, ea = unpack (profile.aura_border_colors.steal_or_purge)
 					r, g, b, a = SplitEvaluateColor(isStealable, er, eg, eb, ea, r, g, b, a)
@@ -2232,6 +2238,12 @@ end
 					if isCC ~= nil then
 						er, eg, eb, ea = unpack (profile.debuff_show_cc_border)
 						r, g, b, a = SplitEvaluateColor(isCC or false, er, eg, eb, ea, r, g, b, a)
+					end
+
+					local isDefensive = not C_UnitAuras.IsAuraFilteredOutByInstanceID(auraIconFrame.unitFrame.namePlateUnitToken, i, "HELPFUL|BIG_DEFENSIVE") or not C_UnitAuras.IsAuraFilteredOutByInstanceID(auraIconFrame.unitFrame.namePlateUnitToken, i, "HELPFUL|EXTERNAL_DEFENSIVE")
+					if isDefensive ~= nil then
+						er, eg, eb, ea = unpack (profile.extra_icon_show_defensive_border)
+						r, g, b, a = SplitEvaluateColor(isCC, er, eg, eb, ea, r, g, b, a)
 					end
 
 					if isStealable ~= nil then
@@ -2818,6 +2830,8 @@ end
 					-- TODO: MIDNIGHT!!
 					--print(C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HARMFUL|RAID_IN_COMBAT"), C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HARMFUL|RAID"), C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "IMPORTANT"))
 					if DB_SHOW_PURGE_IN_EXTRA_ICONS and self.unitFrame.namePlateUnitReaction < 4 and self.unitFrame.ActorType == "enemynpc" and not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HELPFUL|RAID_PLAYER_DISPELLABLE") then
+						Plater.AddExtraIcon (self, name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, true, "HELPFUL", id, timeMod)
+					elseif Plater.db.profile.extra_icon_show_defensive and (self.unitFrame.ActorType == "enemyplayer" or self.unitFrame.ActorType == "friendlyplayer") and (not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HELPFUL|BIG_DEFENSIVE") or not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HELPFUL|EXTERNAL_DEFENSIVE")) then
 						Plater.AddExtraIcon (self, name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, true, "HELPFUL", id, timeMod)
 					elseif DB_AURA_SHOW_BUFFS_AS_BLIZZARD and blizzardBuffs[id] then
 						local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
