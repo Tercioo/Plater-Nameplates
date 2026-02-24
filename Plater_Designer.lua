@@ -607,6 +607,11 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
 
         unitFrame.BuffFrame:Hide()
         unitFrame.BuffFrame2:Hide()
+
+        if isCastBarSelected then
+            isCastBarSelected = false
+            Plater.StopCastBarTest()
+        end
     end)
 
     --/plater editmode

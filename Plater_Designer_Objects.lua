@@ -245,7 +245,6 @@ function designer.CreateSettings(parentFrame)
             },
 
             --hover over hightlight
-
             {
                 key = "hover_highlight",
                 label = "Mouse Hover Highlight",
@@ -260,28 +259,26 @@ function designer.CreateSettings(parentFrame)
                     designer.UpdateAllNameplates()
                 end,
             },
-
-                --mouse hover highlight -> profile root
-            	--hover_highlight = true,
-		        --highlight_on_hover_unit_model = false,
-		        --hover_highlight_alpha = .30,
-
+            --hover_highlight_alpha
+            {
+                key = "hover_highlight_alpha",
+                label = "Mouse Hover Highlight Alpha",
+                widget = "slider",
+                minvalue = 0,
+                maxvalue = 1,
+                step = 0.1,
+                usedecimals = true,
+                default = Plater.db.profile.hover_highlight_alpha,
+                setter = function(healthBar, value)
+                    healthBar.unitFrame.HighlightFrame.HighlightTexture:SetAlpha(Plater.db.profile.hover_highlight_alpha); designer.UpdateAllNameplates()
+                end,
+            },
 
             --[=[
                 {
                 add:
                 health bar 
-                    +health bar texture -> profile root -> profile.
-                    +health_selection_overlay = "Details Flat",
-                    +health_selection_overlay_alpha = 0.1,
-                    +health_selection_overlay_color = {1, 1, 1, 1},    
-		            +health_statusbar_bgcolor = {0.113725, 0.113725, 0.113725, 0.89000000},  
-        		    +border_color = {0, 0, 0, .834},
-                    +border_thickness = 1,          
-
                     use_health_animation = false, profile root
-
-
 
                 health cut off (execute settings) -> profile root
                     health_cutoff = true,
