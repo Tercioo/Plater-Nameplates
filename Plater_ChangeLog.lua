@@ -8,6 +8,12 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1771965384, "Backend Change", "Feb 24th, 2026", "Adding option to select the execute range alpha value.", "cont1nuity"},
+			{1771965384, "Backend Change", "Feb 24th, 2026", "Adding option for 'Empowered' cast color.", "cont1nuity"},
+			{1771965384, "Backend Change", "Feb 23rd, 2026", "The 'Only Damaged' option for friendly players is no longer available in Midnight.", "cont1nuity"},
+			{1771965384, "Bug Fix", "Feb 23rd, 2026", "Fixing Midnight CC aura tracking filter option.", "cont1nuity"},
+			{1771965384, "Backend Change", "Feb 20th, 2026", "Additions and fixes for the Designer.", "Terciob"},
+			
 			{1771544564, "Bug Fix", "Feb 20th, 2026", "Fixed an issue with pet recognition erroring out in some cases.", "cont1nuity"},
 			{1771544564, "Bug Fix", "Feb 20th, 2026", "Fixed issues around blizzards new threat secrecy.", "cont1nuity"},
 			{1771544564, "Bug Fix", "Feb 16th, 2026", "Fixed a bug regarding health updates for non-retail clients.", "cont1nuity"},
