@@ -470,6 +470,22 @@ function platerInternal.CreateCastBarOptions()
         {
             type = "color",
             get = function()
+                local color = Plater.db.profile.cast_statusbar_color_empowered
+                return {color[1], color[2], color[3], color[4]}
+            end,
+            set = function (self, r, g, b, a)
+                local color = Plater.db.profile.cast_statusbar_color_empowered
+                color[1], color[2], color[3], color[4] = r, g, b, a
+                Plater.UpdateAllPlates()
+                Plater.DoCastBarTest()
+            end,
+            name = "Empowered",
+            desc = "Empowered",
+            hidden = not IS_WOW_PROJECT_MIDNIGHT,
+        },
+        {
+            type = "color",
+            get = function()
                 local color = Plater.db.profile.cast_statusbar_color_important
                 return {color[1], color[2], color[3], color[4]}
             end,

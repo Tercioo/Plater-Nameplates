@@ -9014,6 +9014,7 @@ end
 			local colors = castBar.Colors
 			colors.Casting:SetColor (profile.cast_statusbar_color)
 			colors.Channeling:SetColor (profile.cast_statusbar_color_channeling)
+			colors.Empowered:SetColor (profile.cast_statusbar_color_empowered)
 			colors.NonInterruptible:SetColor (profile.cast_statusbar_color_nointerrupt)
 			colors.Interrupted:SetColor (profile.cast_statusbar_color_interrupted)
 			colors.Finished:SetColor (profile.cast_statusbar_color_finished)
