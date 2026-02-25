@@ -475,6 +475,7 @@ function platerInternal.CreateAdvancedOptions()
             name = "Larger Scale" .. CVarIcon,
             desc = "Scale applied to important monsters (such as bosses).\n\n|cFFFFFFFFDefault: 1.2|r" .. CVarDesc,
             nocombat = true,
+            hidden = not IS_WOW_PROJECT_MIDNIGHT,
         },
 
         {
@@ -484,6 +485,7 @@ function platerInternal.CreateAdvancedOptions()
             name = "Anchor Point" .. CVarIcon,
             desc = "Where the nameplate is anchored to.\n\n|cFFFFFFFFDefault: Head|r" .. CVarDesc,
             nocombat = true,
+            hidden = not IS_WOW_PROJECT_MIDNIGHT,
         },
         {
             type = "toggle",
