@@ -3922,6 +3922,7 @@ do
 			nocombat = true,
 			name = "Always Show" .. CVarIcon,
 			desc = "If enabled, the personal health bar is always shown.\n\n|cFFFFFF00 Important |r: 'Personal Health and Mana Bars' (in the Main Menu tab) must be enabled." .. CVarDesc,
+			hidden = true,
 		},
 
 		{
@@ -3937,6 +3938,7 @@ do
 			nocombat = true,
 			name = "Show When you Have a Target" .. CVarIcon,
 			desc = "If enabled, show the personal bar when you have a target.\n\n|cFFFFFF00 Important |r: 'Personal Health and Mana Bars' (in the Main Menu tab) must be enabled." .. CVarDesc,
+			hidden = true,
 		},
 		{
 			type = "toggle",
@@ -3951,6 +3953,7 @@ do
 			nocombat = true,
 			name = "Show In Combat" .. CVarIcon,
 			desc = "If enabled, show the personal bar when you are in combat.\n\n|cFFFFFF00 Important |r: 'Personal Health and Mana Bars' (in the Main Menu tab) must be enabled." .. CVarDesc,
+			hidden = true,
 		},
 		{
 			type = "range",
@@ -3970,6 +3973,7 @@ do
 			name = L["OPTIONS_ALPHA"] .. CVarIcon,
 			desc = "Alpha" .. CVarDesc,
 			nocombat = true,
+			hidden = true,
 		},
 		{
 			type = "range",
@@ -3989,6 +3993,7 @@ do
 			name = "Scale" .. CVarIcon,
 			desc = "Scale" .. CVarDesc,
 			nocombat = true,
+			hidden = true,
 		},
 
 		{type = "blank"},
@@ -4119,7 +4124,7 @@ do
 			name = "Reset to Automatic Position" .. CVarIcon,
 			nocombat = true,
 			width = 140,
-			hidden = IS_WOW_PROJECT_MIDNIGHT,
+			hidden = true,
 		},
 		
 		{
@@ -4188,7 +4193,7 @@ do
 			nocombat = true,
 			name = "Fixed Position" .. CVarIcon,
 			desc = "With a fixed position, personal bar won't move.\n\nTo revert this, click the button above." .. CVarDesc,
-			hidden = IS_WOW_PROJECT_MIDNIGHT,
+			hidden = true,
 		},
 		
 		--{type = "blank"},

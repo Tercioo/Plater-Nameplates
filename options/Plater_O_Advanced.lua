@@ -1340,7 +1340,7 @@ function platerInternal.CreateAdvancedOptions()
             nocombat = true,
             name = "Top Constrain" .. CVarIcon,
             desc = "Adjust the top constrain position where the personal bar cannot pass.\n\n|cFFFFFFFFDefault: 50|r" .. CVarDesc,
-            hidden = IS_WOW_PROJECT_NOT_MAINLINE or IS_WOW_PROJECT_MIDNIGHT,
+            hidden = true,
         },
 
         {
@@ -1407,7 +1407,7 @@ function platerInternal.CreateAdvancedOptions()
             nocombat = true,
             name = "Bottom Constrain" .. CVarIcon,
             desc = "Adjust the bottom constrain position where the personal bar cannot pass.\n\n|cFFFFFFFFDefault: 20|r" .. CVarDesc,
-            hidden = IS_WOW_PROJECT_NOT_MAINLINE or IS_WOW_PROJECT_MIDNIGHT,
+            hidden = true,
         },
 
         {type = "blank", hidden = IS_WOW_PROJECT_MIDNIGHT},
