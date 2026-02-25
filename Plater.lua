@@ -7079,6 +7079,7 @@ end
 				else
 					local healthPercent = (healthBar.currentHealth or 1) / (healthBar.currentHealthMax or 1)
 					if (healthPercent <= HEALTHCUTOFF_AT_DATA.healthCutOffValue) then
+						if (not healthBar.executeRange:IsShown()) then
 							if (not profile.health_cutoff_hide_divisor) then
 								healthBar.healthCutOff:Show()
 								healthBar.healthCutOff.ShowAnimation:Play()
