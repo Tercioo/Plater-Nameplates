@@ -6802,6 +6802,7 @@ local relevance_options = {
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.health_cutoff_alpha = value
 			Plater.RefreshDBUpvalues()
+			Plater.GetHealthCutoffValue()
 		end,
 		min = 0,
 		max = 1,
