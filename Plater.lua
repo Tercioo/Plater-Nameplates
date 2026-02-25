@@ -1522,16 +1522,16 @@ Plater.AnchorNamesByPhraseId = {
 		["nameplateOtherBottomInset"] = not IS_WOW_PROJECT_MIDNIGHT,
 		["nameplateOverlapV"] = true,
 		["nameplateOverlapH"] = true,
-		["nameplatePersonalHideDelaySeconds"] = not IS_WOW_PROJECT_MIDNIGHT,
-		["nameplatePersonalShowAlways"] = not IS_WOW_PROJECT_MIDNIGHT,
-		["nameplatePersonalShowInCombat"] = not IS_WOW_PROJECT_MIDNIGHT,
-		["nameplatePersonalShowWithTarget"] = not IS_WOW_PROJECT_MIDNIGHT,
+		["nameplatePersonalHideDelaySeconds"] = (IS_WOW_PROJECT_MAINLINE and not IS_WOW_PROJECT_MIDNIGHT),
+		["nameplatePersonalShowAlways"] = (IS_WOW_PROJECT_MAINLINE and not IS_WOW_PROJECT_MIDNIGHT),
+		["nameplatePersonalShowInCombat"] = (IS_WOW_PROJECT_MAINLINE and not IS_WOW_PROJECT_MIDNIGHT),
+		["nameplatePersonalShowWithTarget"] = (IS_WOW_PROJECT_MAINLINE and not IS_WOW_PROJECT_MIDNIGHT),
 		["nameplateResourceOnTarget"] = (IS_WOW_PROJECT_MAINLINE),
 		["nameplateSelectedScale"] = true,
-		["nameplateSelfAlpha"] = (IS_WOW_PROJECT_MAINLINE),
-		["nameplateSelfBottomInset"] = (IS_WOW_PROJECT_MAINLINE),
-		["nameplateSelfScale"] = (IS_WOW_PROJECT_MAINLINE),
-		["nameplateSelfTopInset"] = (IS_WOW_PROJECT_MAINLINE),
+		["nameplateSelfAlpha"] = (IS_WOW_PROJECT_MAINLINE and not IS_WOW_PROJECT_MIDNIGHT),
+		["nameplateSelfBottomInset"] = (IS_WOW_PROJECT_MAINLINE and not IS_WOW_PROJECT_MIDNIGHT),
+		["nameplateSelfScale"] = (IS_WOW_PROJECT_MAINLINE and not IS_WOW_PROJECT_MIDNIGHT),
+		["nameplateSelfTopInset"] = (IS_WOW_PROJECT_MAINLINE and not IS_WOW_PROJECT_MIDNIGHT),
 		["nameplateSimplifiedTypes"] = IS_WOW_PROJECT_MIDNIGHT,
 		["nameplateShowAll"] = true,
 		["nameplateShowEnemies"] = true,
@@ -5209,8 +5209,6 @@ function Plater.OnInit() --private --~oninit ~init
 					C_NamePlate.SetNamePlateFriendlyPreferredClickInsets (left or 0, right or 0, top or 0, bottom or 0)
 				elseif nameplateType == "enemy" then
 					C_NamePlate.SetNamePlateEnemyPreferredClickInsets (left or 0, right or 0, top or 0, bottom or 0)
-				elseif nameplateType == "player" then
-					C_NamePlate.SetNamePlateSelfPreferredClickInsets (left or 0, right or 0, top or 0, bottom or 0)
 				end
 			else
 				C_Timer.After(1, function() Plater.SetNamePlatePreferredClickInsets(nameplateType, left, right, top, bottom) end)
@@ -5225,12 +5223,6 @@ function Plater.OnInit() --private --~oninit ~init
 				--C_NamePlate.SetNamePlateEnemyPreferredClickInsets (0, 0, 0, 0)
 				Plater.SetNamePlatePreferredClickInsets("enemy", 0, 0, 0, 0)
 			end)
-			if IS_WOW_PROJECT_MAINLINE then
-				hooksecurefunc(NamePlateDriverFrame.namePlateSetInsetFunctions, "player", function()
-					--C_NamePlate.SetNamePlateSelfPreferredClickInsets (0, 0, 0, 0)
-					Plater.SetNamePlatePreferredClickInsets("player", 0, 0, 0, 0)
-				end)
-			end
 		end
 		
 
@@ -6579,10 +6571,6 @@ end
 		if (InCombatLockdown()) then
 			return C_Timer.After (.3, re_update_self_plate)
 		end
-		C_NamePlate.SetNamePlateSelfClickThrough (DB_PLATE_CONFIG.player.click_through)
-		
-		--disabled due to modifying the player personal nameplate makes it be a little offset in the Y anchor making it to be in front of the player
-	--	C_NamePlate.SetNamePlateSelfSize (unpack (DB_PLATE_CONFIG.player.health))
 	end
 	
 	-- ~size ~updatesize
@@ -6884,7 +6872,6 @@ end
 			width, height = Plater.db.profile.click_space_friendly[1], Plater.db.profile.click_space_friendly[2]
 			C_NamePlate.SetNamePlateFriendlySize (width * horizontalScale, height * Lerp(1.0, 1.25, zeroBasedScale)) --classic: {132, 32}, retail: {110, 45},
 			
-			--C_NamePlate.SetNamePlateSelfPreferredClickInsets (0, 0, 0, 0)
 			--C_NamePlate.SetNamePlateFriendlyPreferredClickInsets (0, 0, 0, 0)
 			--C_NamePlate.SetNamePlateEnemyPreferredClickInsets (0, 0, 0, 0)
 			
@@ -10888,8 +10875,6 @@ function Plater.SetCVarsOnFirstRun()
 	--> movement speed of nameplates when using stacking, going above 0.5 this isn't recommended
 	SetCVar ("nameplateMotionSpeed", "0.025")
 
-	--> make the personal bar hide very fast
-	SetCVar ("nameplatePersonalHideDelaySeconds", 0.2)
 	
 	--> don't show debuffs on blizzard healthbars
 	SetCVar ("nameplateShowDebuffsOnFriendly", CVAR_DISABLED)
