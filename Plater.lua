@@ -7079,13 +7079,11 @@ end
 				else
 					local healthPercent = (healthBar.currentHealth or 1) / (healthBar.currentHealthMax or 1)
 					if (healthPercent <= HEALTHCUTOFF_AT_DATA.healthCutOffValue) then
-						if (not healthBar.healthCutOff:IsShown()) then
 							if (not profile.health_cutoff_hide_divisor) then
 								healthBar.healthCutOff:Show()
 								healthBar.healthCutOff.ShowAnimation:Play()
 							else
-								healthBar.healthCutOff:Show()
-								healthBar.healthCutOff:SetAlpha (0)
+								healthBar.healthCutOff:Hide()
 							end
 
 							healthBar.executeRange:Show()
@@ -7098,13 +7096,12 @@ end
 						
 						unitFrame.InExecuteRange = true
 					elseif (healthPercent > HEALTHCUTOFF_AT_DATA.healthCutOffUpperValue and healthPercent < 0.999) then
-						if (not healthBar.healthCutOff:IsShown()) then
+						if (not healthBar.executeRangeUpper:IsShown()) then
 							if (not profile.health_cutoff_hide_divisor) then
 								healthBar.healthCutOffUpper:Show()
 								healthBar.healthCutOffUpper.ShowAnimation:Play()
 							else
-								healthBar.healthCutOffUpper:Show()
-								healthBar.healthCutOffUpper:SetAlpha (0)
+								healthBar.healthCutOffUpper:Hide()
 							end
 
 							healthBar.executeRangeUpper:Show()
