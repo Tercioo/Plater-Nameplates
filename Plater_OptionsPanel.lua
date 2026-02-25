@@ -5651,6 +5651,7 @@ local relevance_options = {
 			name = "OPTIONS_NAMEPLATE_HIDE_FRIENDLY_HEALTH",
 			desc = "OPTIONS_NAMEPLATE_HIDE_FRIENDLY_HEALTH_DESC",
 			nocombat = true,
+			hidden = IS_WOW_PROJECT_MIDNIGHT,
 		},
 		
 		{

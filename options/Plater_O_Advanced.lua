@@ -981,7 +981,7 @@ function platerInternal.CreateAdvancedOptions()
 
         {
             type = "toggle",
-            get = function() return GetCVar ("nameplateShowFriendlyMinions") == CVAR_ENABLED end,
+            get = function() return GetCVar ("nameplateShowFriendlyPlayerMinions") == CVAR_ENABLED end,
             set = function (self, fixedparam, value)
                 if (not InCombatLockdown()) then
                     SetCVar ("nameplateShowFriendlyPlayerMinions", math.abs (tonumber (GetCVar ("nameplateShowFriendlyPlayerMinions"))-1))
