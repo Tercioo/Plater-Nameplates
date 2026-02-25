@@ -3719,7 +3719,6 @@ Plater.CreateAuraTesting()
 				end,
 				name = "Defensive player CDs",
 				desc = "When the unit has a defensive effect on it, show it.",
-				hidden = IS_WOW_PROJECT_MIDNIGHT,
 			},
 			
 			{type = "breakline"},
