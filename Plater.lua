@@ -10858,8 +10858,10 @@ function Plater.SetCVarsOnFirstRun()
 	SetCVar ("ShowClassColorInNameplate", CVAR_ENABLED)
 	
 	--> lock nameplates to screen
-	SetCVar ("nameplateOtherTopInset", "0.085")
-	SetCVar ("nameplateLargeTopInset", "0.085")
+	if not IS_WOW_PROJECT_MIDNIGHT then
+		SetCVar ("nameplateOtherTopInset", "0.085")
+		SetCVar ("nameplateLargeTopInset", "0.085")
+	end
 	SetCVar ("clampTargetNameplateToScreen", "1")
 	SetCVar ("nameplateTargetRadialPosition", "1")
 	SetCVar ("nameplateTargetBehindMaxDistance", "30")

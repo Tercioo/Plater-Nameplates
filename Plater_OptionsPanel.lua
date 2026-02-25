@@ -5323,6 +5323,7 @@ local targetOptions = {
 			name = "TARGET_CVAR_LOCKTOSCREEN",
 			desc = "TARGET_CVAR_LOCKTOSCREEN_DESC",
 			nocombat = true,
+			hidden = true,
 		},
 		
 		{
@@ -5351,6 +5352,7 @@ local targetOptions = {
 			name = "Lock to Screen (Bottom Side)|cFFFF7700*|r",
 			desc = "Min space between the nameplate and the bottom of the screen. Increase this if some part of the nameplate are going out of the screen.\n\n|cFFFFFFFFDefault: 0.065|r\n\n|cFFFFFF00 Important |r: if you're having issue, manually set using these macros:\n/run SetCVar ('nameplateOtherBottomInset', '0.1')\n/run SetCVar ('nameplateLargeBottomInset', '0.15')\n\n|cFFFFFF00 Important |r: setting to 0 disables this feature.\n\n|cFFFF7700[*]|r |cFFa0a0a0CVar, saved within Plater profile and restored when loading the profile.|r",
 			nocombat = true,
+			hidden = true,
 		},
 		
 		{
