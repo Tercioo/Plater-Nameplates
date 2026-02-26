@@ -7396,6 +7396,9 @@ end
 					Plater.ChangeHealthBarColor_Internal (self.healthBar, r, g, b, a) -- fallback, just in case
 				end
 			end
+		--elseif Plater.db.profile.unit_type_coloring_enabled and (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid") then
+		--	-- reset
+		--	Plater.FindAndSetNameplateColor (self)
 		end
 		
 		if (DB_AGGRO_CHANGE_BORDER_COLOR) then
@@ -11642,11 +11645,11 @@ end
 				if (InCombatLockdown()) then
 					local unitReaction = unitFrame.PlateFrame [MEMBER_REACTION]
 					if (unitReaction == 4 and not unitFrame.InCombat) then
-						if (DB_AGGRO_CHANGE_HEALTHBAR_COLOR and unitFrame.CanCheckAggro and unitReaction <= 4) then
-							Plater.UpdateNameplateThread (unitFrame, dungeonColored)
-						else
-							Plater.FindAndSetNameplateColor (unitFrame, true)
-						end
+						Plater.FindAndSetNameplateColor (unitFrame, true)
+					elseif (DB_AGGRO_CHANGE_HEALTHBAR_COLOR and unitFrame.CanCheckAggro and unitReaction <= 4) then
+						Plater.UpdateNameplateThread (unitFrame)
+					else
+						Plater.FindAndSetNameplateColor (unitFrame, true)
 					end
 				else
 					
