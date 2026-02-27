@@ -6172,6 +6172,7 @@ local relevance_options = {
 			name = "Occluded Alpha Multiplier" .. CVarIcon,
 			desc = "Alpha multiplyer for 'occluded' plates (when they are not in line of sight)." .. CVarDesc,
 			nocombat = true,
+			disableif = function() return not Plater.db.profile.honor_blizzard_plate_alpha end,
 		},		
 
 		{type = "blank"},
@@ -6227,6 +6228,7 @@ local relevance_options = {
 			name = "OPTIONS_AMOUNT", --No Combat Alpha Amount
 			desc = "OPTIONS_NOCOMBATALPHA_AMOUNT_DESC",
 			usedecimals = true,
+			disableif = function() return not Plater.db.profile.not_affecting_combat_enabled end,
 		},
 
 		{type = "blank"},
@@ -12024,6 +12026,7 @@ end
 			end,
 			name = "Don't override Threat colors",
 			desc = "Threat coloring will have priority over unit type colors.",
+			disableif = function() return not Plater.db.profile.unit_type_coloring_enabled end,
 		},
 		
 		{type = "blank"},
@@ -12041,6 +12044,7 @@ end
 			end,
 			name = "Boss",
 			desc = "Color for raid or dungeon bosses.",
+			disableif = function() return not Plater.db.profile.unit_type_coloring_enabled end,
 		},
 		{
 			type = "color",
@@ -12055,6 +12059,7 @@ end
 			end,
 			name = "Miniboss",
 			desc = "Color for minibosses.",
+			disableif = function() return not Plater.db.profile.unit_type_coloring_enabled end,
 		},
 		{
 			type = "color",
@@ -12069,6 +12074,7 @@ end
 			end,
 			name = "Caster",
 			desc = "Color for caster units.",
+			disableif = function() return not Plater.db.profile.unit_type_coloring_enabled end,
 		},
 
 		{type = "blank"},
@@ -12087,6 +12093,7 @@ end
 			end,
 			name = "Enable elite",
 			desc = "Will override non-elite colors as 'elite'.",
+			disableif = function() return not Plater.db.profile.unit_type_coloring_enabled end,
 		},
 		{
 			type = "color",
@@ -12102,6 +12109,7 @@ end
 			name = "Elite",
 			desc = "Color for elite units.",
 			id = "UNIT_TYPE_ELITE_COLOR_PICKER",
+			disableif = function() return not Plater.db.profile.unit_type_coloring_enabled end,
 		},
 
 		{type = "blank"},
@@ -12120,6 +12128,7 @@ end
 			end,
 			name = "Enable trivial",
 			desc = "Will override non-elite colors as 'trivial'.",
+			disableif = function() return not Plater.db.profile.unit_type_coloring_enabled end,
 		},
 		{
 			type = "color",
@@ -12135,6 +12144,7 @@ end
 			name = "Trivial",
 			desc = "Color for non-elite/trivial units.",
 			id = "UNIT_TYPE_TRIVIAL_COLOR_PICKER",
+			disableif = function() return not Plater.db.profile.unit_type_coloring_enabled end,
 		},
 	}
 	
