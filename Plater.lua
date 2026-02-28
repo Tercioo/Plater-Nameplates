@@ -1258,6 +1258,14 @@ Plater.AnchorNamesByPhraseId = {
 				return UnitGroupRolesAssigned (unit) == "TANK"
 			end
 		else
+			if UnitGroupRolesAssigned then
+				local assignedRole = UnitGroupRolesAssigned (unit)
+				local unitIsTank = assignedRole == "TANK"
+				if not unitIsTank and GetPartyAssignment then
+					unitIsTank = GetPartyAssignment("MAINTANK", unit) or false
+				end
+				return unitIsTank
+			end
 			return GetPartyAssignment("MAINTANK", unit)
 		end
 	end
