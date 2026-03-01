@@ -11744,6 +11744,7 @@ end
 			end,
 			name = "OPTIONS_THREAT_AGGROSTATE_ANOTHERTANK",
 			desc = "OPTIONS_THREAT_COLOR_TANK_ANOTHERTANK_DESC",
+			hidden = IS_WOW_PROJECT_MIDNIGHT,
 		},
 		{
 			type = "color",
@@ -11783,6 +11784,7 @@ end
 			end,
 			name = "OPTIONS_THREAT_PULL_FROM_ANOTHER_TANK",
 			desc = "OPTIONS_THREAT_PULL_FROM_ANOTHER_TANK_DESC",
+			hidden = IS_WOW_PROJECT_MIDNIGHT,
 		},
 		
 		{type = "blank"},
@@ -11861,6 +11863,7 @@ end
 			end,
 			name = "OPTIONS_THREAT_DPS_CANCHECKNOTANK",
 			desc = "OPTIONS_THREAT_DPS_CANCHECKNOTANK_DESC",
+			hidden = IS_WOW_PROJECT_MIDNIGHT,
 		},
 		{
 			type = "color",
@@ -11874,6 +11877,7 @@ end
 			end,
 			name = "OPTIONS_THREAT_AGGROSTATE_NOTANK",
 			desc = "OPTIONS_THREAT_COLOR_DPS_NOTANK_DESC",
+			hidden = IS_WOW_PROJECT_MIDNIGHT,
 		},		
 
 
