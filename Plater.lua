@@ -1510,8 +1510,8 @@ Plater.AnchorNamesByPhraseId = {
 	--~save ~cvar
 	local cvars_to_store = {
 		["NamePlateClassificationScale"] = true,
-		["NamePlateHorizontalScale"] = true,
-		["NamePlateVerticalScale"] = true,
+		["NamePlateHorizontalScale"] = not IS_WOW_PROJECT_MIDNIGHT,
+		["NamePlateVerticalScale"] = not IS_WOW_PROJECT_MIDNIGHT,
 		["ShowClassColorInNameplate"] = true,
 		["ShowNamePlateLoseAggroFlash"] = true,
 		["nameplateGlobalScale"] = not IS_WOW_PROJECT_MIDNIGHT,
@@ -10852,8 +10852,6 @@ function Plater.SetCVarsOnFirstRun()
 	
 	--scale when it is too far away from the camera
 	SetCVar ("nameplateMinScale", 1)
-	--scale of the nameplate for important units, default is 1.2 which makes the nameplate be too big with the 1.15 target scale
-	SetCVar ("nameplateLargerScale", 1.10)
 	if not IS_WOW_PROJECT_MIDNIGHT then
 		--scale of the nameplate for important units, default is 1.2 which makes the nameplate be too big with the 1.15 target scale
 		SetCVar ("nameplateLargerScale", 1.10)
@@ -10868,6 +10866,17 @@ function Plater.SetCVarsOnFirstRun()
 
 	if IS_WOW_PROJECT_MIDNIGHT then
 		--disable friendly minius nameplates
+		SetCVar ("nameplateShowFriendlyPlayerGuardians", CVAR_DISABLED)
+		SetCVar ("nameplateShowFriendlyPlayerPets", CVAR_DISABLED)
+		SetCVar ("nameplateShowFriendlyPlayerTotems", CVAR_DISABLED)
+		SetCVar ("nameplateShowFriendlyPlayerMinions", CVAR_DISABLED)
+	else
+		--disable friendly minius nameplates
+		SetCVar ("nameplateShowFriendlyGuardians", CVAR_DISABLED)
+		SetCVar ("nameplateShowFriendlyPets", CVAR_DISABLED)
+		SetCVar ("nameplateShowFriendlyTotems", CVAR_DISABLED)
+		SetCVar ("nameplateShowFriendlyMinions", CVAR_DISABLED)
+	end
 	
 	--> make it show the class color of players
 	SetCVar ("ShowClassColorInNameplate", CVAR_ENABLED)
@@ -10881,9 +10890,11 @@ function Plater.SetCVarsOnFirstRun()
 	SetCVar ("nameplateTargetRadialPosition", "1")
 	SetCVar ("nameplateTargetBehindMaxDistance", "30")
 
-	--> reset the horizontal and vertical scale
-	SetCVar ("NamePlateHorizontalScale", CVAR_ENABLED)
-	SetCVar ("NamePlateVerticalScale", CVAR_ENABLED)
+	if not IS_WOW_PROJECT_MIDNIGHT then
+		--> reset the horizontal and vertical scale
+		SetCVar ("NamePlateHorizontalScale", CVAR_ENABLED)
+		SetCVar ("NamePlateVerticalScale", CVAR_ENABLED)
+	end
 	if IS_WOW_PROJECT_MAINLINE then
 		SetCVar ("NamePlateClassificationScale", CVAR_ENABLED)
 	end
@@ -10891,8 +10902,10 @@ function Plater.SetCVarsOnFirstRun()
 	--> make the selection be a little bigger
 	SetCVar ("nameplateSelectedScale", "1.15")
 
-	--> movement speed of nameplates when using stacking, going above 0.5 this isn't recommended
-	SetCVar ("nameplateMotionSpeed", "0.025")
+	if not IS_WOW_PROJECT_MIDNIGHT then
+		--> movement speed of nameplates when using stacking, going above 0.5 this isn't recommended
+		SetCVar ("nameplateMotionSpeed", "0.025")
+	end
 
 	
 	--> don't show debuffs on blizzard healthbars
