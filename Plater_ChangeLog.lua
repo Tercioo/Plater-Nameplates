@@ -8,11 +8,15 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
-			{1771965384, "Backend Change", "Feb 24th, 2026", "Adding option to select the execute range alpha value.", "cont1nuity"},
-			{1771965384, "Backend Change", "Feb 24th, 2026", "Adding option for 'Empowered' cast color.", "cont1nuity"},
-			{1771965384, "Backend Change", "Feb 23rd, 2026", "The 'Only Damaged' option for friendly players is no longer available in Midnight.", "cont1nuity"},
-			{1771965384, "Bug Fix", "Feb 23rd, 2026", "Fixing Midnight CC aura tracking filter option.", "cont1nuity"},
-			{1771965384, "Backend Change", "Feb 20th, 2026", "Additions and fixes for the Designer.", "Terciob"},
+			{1772438164, "Bug Fix", "Mar 2nd, 2026", "Fixing an issue with now secret soft-interact information.", "cont1nuity"},
+			{1772438164, "Backend Change", "Mar 2nd, 2026", "Removing several no longer used options for Midnight from the options panel.", "cont1nuity"},
+			{1772438164, "Bug Fix", "Feb 28th, 2026", "Fixing an issue with tank recognition in TBC.", "cont1nuity"},
+			{1772438164, "Bug Fix", "Feb 26th, 2026", "Fixing some color refresh issues.", "cont1nuity"},
+			{1772438164, "Backend Change", "Feb 24th, 2026", "Adding option to select the execute range alpha value.", "cont1nuity"},
+			{1772438164, "Backend Change", "Feb 24th, 2026", "Adding option for 'Empowered' cast color.", "cont1nuity"},
+			{1772438164, "Backend Change", "Feb 23rd, 2026", "The 'Only Damaged' option for friendly players is no longer available in Midnight.", "cont1nuity"},
+			{1772438164, "Bug Fix", "Feb 23rd, 2026", "Fixing Midnight CC aura tracking filter option.", "cont1nuity"},
+			{1772438164, "Backend Change", "Feb 20th, 2026", "Additions and fixes for the Designer.", "Terciob"},
 			
 			{1771544564, "Bug Fix", "Feb 20th, 2026", "Fixed an issue with pet recognition erroring out in some cases.", "cont1nuity"},
 			{1771544564, "Bug Fix", "Feb 20th, 2026", "Fixed issues around blizzards new threat secrecy.", "cont1nuity"},
