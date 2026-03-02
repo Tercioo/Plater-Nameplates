@@ -2758,7 +2758,9 @@ Plater.AnchorNamesByPhraseId = {
 				---@cast plateFrame plateframe
 				if plateFrame.unitFrame.PlaterOnScreen then
 					local guid
-					if IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(plateFrame [MEMBER_GUID]) then
+					if IS_WOW_PROJECT_MIDNIGHT and (issecretvalue(arg1) or issecretvalue(arg2)) then
+						Plater.UpdateSoftInteractTarget(plateFrame, true) -- just update if any secret...
+					elseif IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(plateFrame [MEMBER_GUID]) then
 						guid = plateFrame [MEMBER_GUID]
 					elseif IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(plateFrame.unitFrame [MEMBER_GUID]) then
 						guid = plateFrame.unitFrame [MEMBER_GUID]
