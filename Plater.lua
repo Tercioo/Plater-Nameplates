@@ -6090,7 +6090,7 @@ function Plater.OnInit() --private --~oninit ~init
 		local currentHealth = self.currentHealth
 		local currentHealthMax = self.currentHealthMax
 		local unitFrame = self.unitFrame
-		local oldHealth = self.currentHealth
+		local oldHealth = self.oldHealth or currentHealth
 		if not IS_WOW_PROJECT_MIDNIGHT then
 			oldHealth = oldHealth or currentHealth
 		end
@@ -10854,6 +10854,10 @@ function Plater.SetCVarsOnFirstRun()
 	SetCVar ("nameplateMinScale", 1)
 	--scale of the nameplate for important units, default is 1.2 which makes the nameplate be too big with the 1.15 target scale
 	SetCVar ("nameplateLargerScale", 1.10)
+	if not IS_WOW_PROJECT_MIDNIGHT then
+		--scale of the nameplate for important units, default is 1.2 which makes the nameplate be too big with the 1.15 target scale
+		SetCVar ("nameplateLargerScale", 1.10)
+	end
 	
 	--enable enemy minus nameplates
 	SetCVar ("nameplateShowEnemyMinions", CVAR_ENABLED)
@@ -10861,11 +10865,9 @@ function Plater.SetCVarsOnFirstRun()
 	
 	--don't show friendly npcs
 	SetCVar ("nameplateShowFriendlyNPCs", 0)
-	--disable friendly minius nameplates
-	SetCVar ("nameplateShowFriendlyGuardians", CVAR_DISABLED)
-	SetCVar ("nameplateShowFriendlyPets", CVAR_DISABLED)
-	SetCVar ("nameplateShowFriendlyTotems", CVAR_DISABLED)
-	SetCVar ("nameplateShowFriendlyMinions", CVAR_DISABLED)
+
+	if IS_WOW_PROJECT_MIDNIGHT then
+		--disable friendly minius nameplates
 	
 	--> make it show the class color of players
 	SetCVar ("ShowClassColorInNameplate", CVAR_ENABLED)
