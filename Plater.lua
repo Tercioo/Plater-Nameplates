@@ -6090,7 +6090,7 @@ function Plater.OnInit() --private --~oninit ~init
 		local currentHealth = self.currentHealth
 		local currentHealthMax = self.currentHealthMax
 		local unitFrame = self.unitFrame
-		local oldHealth = self.oldHealth or currentHealth
+		local oldHealth = self.currentHealth
 		if not IS_WOW_PROJECT_MIDNIGHT then
 			oldHealth = oldHealth or currentHealth
 		end
