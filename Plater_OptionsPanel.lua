@@ -1845,6 +1845,7 @@ local debuff_options = {
 		name = "OPTIONS_STACK_SIMILAR_AURAS",
 		desc = "OPTIONS_STACK_SIMILAR_AURAS_DESC",
 		id = "auras_general_stack_similar_aura",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	{
 		type = "toggle",
@@ -1857,6 +1858,7 @@ local debuff_options = {
 		name = "OPTIONS_STACK_AURATIME",
 		desc = "OPTIONS_STACK_AURATIME_DESC",
 		id = "auras_general_stack_auratime",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
 	{type = "blank"},
