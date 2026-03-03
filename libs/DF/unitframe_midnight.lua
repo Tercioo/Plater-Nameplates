@@ -214,6 +214,8 @@ local cleanfunction = function() end
 					end
 					self.incomingHealIndicator:Hide()
 					self.healAbsorbIndicator:Hide()
+					self.incomingHealIndicatorBar:SetAlpha(0)
+					self.incomingHealIndicatorBar:Hide()
 				end
 				if (not self.Settings.ShowShields) then
 					if IS_WOW_PROJECT_MAINLINE then
@@ -222,6 +224,7 @@ local cleanfunction = function() end
 					self.shieldAbsorbIndicator:Hide()
 					self.shieldAbsorbGlow:Hide()
 					self.shieldAbsorbIndicatorBar:SetAlpha(0)
+					self.shieldAbsorbIndicatorBar:Hide()
 				end
 
 				--set scripts
@@ -293,19 +296,12 @@ local cleanfunction = function() end
 	end
 	
 	healthBarMetaFunctions.UpdateAllHealth = function(self, updateMaxHealth)
-		
-		if IS_MIDNIGHT_PRE_PATCH then
-			self:UpdateMaxHealth()
-			self:UpdateHealth()
-			self:UpdateHealPrediction()
-			return
-		end
 	
 		local calculator = self.healCalculator
 		UnitGetDetailedHealPrediction(self.displayedUnit, nil, calculator)
 		
-		--calculator:SetMaximumHealthMode(Enum.UnitMaximumHealthMode.Default)
-		calculator:SetMaximumHealthMode(self.Settings.ShowShields and Enum.UnitMaximumHealthMode.WithAbsorbs or Enum.UnitMaximumHealthMode.Default)
+		calculator:SetMaximumHealthMode(Enum.UnitMaximumHealthMode.Default) --use default, shield shows but is not accurate for now
+		--calculator:SetMaximumHealthMode(self.Settings.ShowShields and Enum.UnitMaximumHealthMode.WithAbsorbs or Enum.UnitMaximumHealthMode.Default)
 		self.currentHealthPercent = calculator:EvaluateCurrentHealthPercent(CurveConstants.ScaleTo100)
 		self.currentHealthMissingPercent = calculator:GetMissingHealthPercent()
 		self.currentHealth = calculator:GetCurrentHealth()
@@ -340,12 +336,33 @@ local cleanfunction = function() end
 			
 			self.shieldAbsorbIndicatorBar:SetMinMaxValues(0, self.currentHealthMaxWithAbsorb, self.Settings.AnimateHealth and Enum.StatusBarInterpolation.ExponentialEaseOut or Enum.StatusBarInterpolation.Immediate) --TODO
 			self.shieldAbsorbIndicatorBar:SetValue(absorb)
+		end
+
+		if (self.Settings.ShowHealingPrediction) then
+			--incoming heal on the unit from all sources
+			local unitHealIncoming = calculator:GetTotalIncomingHeals()
 			
-			self.nextShieldHook = self.nextShieldHook or 0
-			if (GetTime() >= self.nextShieldHook) then
-				self:RunHooksForWidget("OnAbsorbOverflow", self, self.displayedUnit, -1)
-				self.nextShieldHook = GetTime() + 0.2
-			end
+			self.incomingHealIndicatorBar:SetAlpha(unitHealIncoming)
+			
+			--self.incomingHealIndicator:Show()
+			--self.incomingHealIndicator:SetAlphaFromBoolean(clamp, 1, 0)
+
+			self.incomingHealIndicatorBar:SetMinMaxValues(0, self.currentHealthMax, self.Settings.AnimateHealth and Enum.StatusBarInterpolation.ExponentialEaseOut or Enum.StatusBarInterpolation.Immediate) --TODO
+			self.incomingHealIndicatorBar:SetValue(unitHealIncoming)
+
+
+
+			--heal absorbs
+			--local unitHealAbsorb = UnitGetTotalHealAbsorbs and self.displayedUnit and UnitGetTotalHealAbsorbs(self.displayedUnit)
+			--if (unitHealAbsorb > 0) then
+			--	local healAbsorbPercent = unitHealAbsorb / currentHealthMax
+			--	self.healAbsorbIndicator:Show()
+			--	self.healAbsorbIndicator:SetWidth(max(1, min (width * healAbsorbPercent, abs(healthPercent - 1) * width)))
+			--	self.healAbsorbIndicator:SetPoint("topleft", self, "topleft", width * healthPercent, 0)
+			--	self.healAbsorbIndicator:SetPoint("bottomleft", self, "bottomleft", width * healthPercent, 0)
+			--else
+			--	self.healAbsorbIndicator:Hide()
+			--end
 		end
 		
 		if updateMaxHealth then
@@ -361,175 +378,57 @@ local cleanfunction = function() end
 		else
 			self:RunHooksForWidget("OnHealthChange", self, self.displayedUnit)
 		end
-	end
-
-	--when the unit max health is changed
-	healthBarMetaFunctions.UpdateMaxHealth = function(self)
-		if not IS_MIDNIGHT_PRE_PATCH then
-			self:UpdateAllHealth(true)
-			return
-		end
-		local maxHealth = UnitHealthMax(self.displayedUnit)
-		self:SetMinMaxValues(0, maxHealth, Enum.StatusBarInterpolation.Immediate)
-		self.currentHealthMax = maxHealth
-		self.currentHealthMissing = UnitHealthMissing(self.displayedUnit, true)
-		self.currentHealthPercent = UnitHealthPercent(self.displayedUnit, true, CurveConstants.ScaleTo100)
-
-		if (self.OnHealthMaxChange) then --direct call
-			self.OnHealthMaxChange(self, self.displayedUnit)
-		else
-			self:RunHooksForWidget("OnHealthMaxChange", self, self.displayedUnit)
-		end
-	end
-
-	healthBarMetaFunctions.UpdateHealth = function(self)
-		if not IS_MIDNIGHT_PRE_PATCH then
-			self:UpdateAllHealth(true)
-			return
-		end
-		-- update max health regardless to avoid weird wrong values on UpdateMaxHealth sometimes
-		-- local maxHealth = UnitHealthMax(self.displayedUnit)
-		-- self:SetMinMaxValues(0, maxHealth)
-		-- self.currentHealthMax = maxHealth
-
-		local health = UnitHealth(self.displayedUnit)
-		self.currentHealth = health
-		self.currentHealthMissing = UnitHealthMissing(self.displayedUnit, true)
-		self.currentHealthPercent = UnitHealthPercent(self.displayedUnit, true, CurveConstants.ScaleTo100)
-		self:SetValue(health, self.Settings.AnimateHealth and Enum.StatusBarInterpolation.ExponentialEaseOut or Enum.StatusBarInterpolation.Immediate)
-
-		if (self.OnHealthChange) then --direct call
-			self.OnHealthChange(self, self.displayedUnit)
-		else
-			self:RunHooksForWidget("OnHealthChange", self, self.displayedUnit)
-		end
-	end
-
-	--health and absorbs prediction
-	healthBarMetaFunctions.UpdateHealPrediction = function(self)
-		if not IS_MIDNIGHT_PRE_PATCH then
-			self:UpdateAllHealth(true)
-			return
-		end
-		local calculator = self.healCalculator
-		UnitGetDetailedHealPrediction(self.displayedUnit, nil, calculator)
-		--print(self.displayedUnit, UnitHealth(self.displayedUnit), UnitHealthMax(self.displayedUnit), UnitGetTotalAbsorbs(self.displayedUnit), calculator:GetDamageAbsorbs())
 		
-		if (self.Settings.ShowShields) then
-			local absorb, clamp = calculator:GetDamageAbsorbs()
-			
-			--damage absorbs
-			local unitDamageAbsorb = UnitGetTotalAbsorbs (self.displayedUnit)
-			self.currentAbsorb = unitDamageAbsorb
-			self.currentAbsorbClamped = absorb
-			self.currentAbsorbIsClamped = clapmped
-			
-
-			self.shieldAbsorbIndicatorBar:SetAlpha(unitDamageAbsorb)
-			
-			self.shieldAbsorbGlow:Show()
-			self.shieldAbsorbGlow:SetAlphaFromBoolean(clamp, 1, 0)
-			
-			self.shieldAbsorbIndicatorBar:SetMinMaxValues(0, self.currentHealthMax, self.Settings.AnimateHealth and Enum.StatusBarInterpolation.ExponentialEaseOut or Enum.StatusBarInterpolation.Immediate)
-			self.shieldAbsorbIndicatorBar:SetValue(absorb)
-			
+		if self.Settings.ShowHealingPrediction or self.Settings.ShowShields then
 			self.nextShieldHook = self.nextShieldHook or 0
 			if (GetTime() >= self.nextShieldHook) then
 				self:RunHooksForWidget("OnAbsorbOverflow", self, self.displayedUnit, -1)
 				self.nextShieldHook = GetTime() + 0.2
 			end
 		end
-		
-		if true then return end --MIDNIGHT!!
-		
-		local currentHealth = self.currentHealth
-		local currentHealthMax = self.currentHealthMax
+	end
 
-		if (not currentHealthMax or currentHealthMax <= 0) then
-			return
-		end
+	--when the unit max health is changed
+	healthBarMetaFunctions.UpdateMaxHealth = function(self)
+		self:UpdateAllHealth(true)
+	end
 
-		local healthPercent = currentHealth / currentHealthMax
+	healthBarMetaFunctions.UpdateHealth = function(self)
+		self:UpdateAllHealth(false)
+	end
 
-		--order is: the health of the unit > damage absorb > heal absorb > incoming heal
-		local width = self:GetWidth()
-
-		if (self.Settings.ShowHealingPrediction) then
-			--incoming heal on the unit from all sources
-			local unitHealIncoming = UnitGetIncomingHeals and self.displayedUnit and UnitGetIncomingHeals(self.displayedUnit)
-			--heal absorbs
-			local unitHealAbsorb = UnitGetTotalHealAbsorbs and self.displayedUnit and UnitGetTotalHealAbsorbs(self.displayedUnit)
-
-			if (unitHealIncoming > 0) then
-				--calculate what is the percent of health incoming based on the max health the player has
-				local incomingPercent = unitHealIncoming / currentHealthMax
-				self.incomingHealIndicator:Show()
-				self.incomingHealIndicator:SetWidth(max(1, min (width * incomingPercent, abs(healthPercent - 1) * width)))
-				self.incomingHealIndicator:SetPoint("topleft", self, "topleft", width * healthPercent, 0)
-				self.incomingHealIndicator:SetPoint("bottomleft", self, "bottomleft", width * healthPercent, 0)
-			else
-				self.incomingHealIndicator:Hide()
-			end
-
-			if (unitHealAbsorb > 0) then
-				local healAbsorbPercent = unitHealAbsorb / currentHealthMax
-				self.healAbsorbIndicator:Show()
-				self.healAbsorbIndicator:SetWidth(max(1, min (width * healAbsorbPercent, abs(healthPercent - 1) * width)))
-				self.healAbsorbIndicator:SetPoint("topleft", self, "topleft", width * healthPercent, 0)
-				self.healAbsorbIndicator:SetPoint("bottomleft", self, "bottomleft", width * healthPercent, 0)
-			else
-				self.healAbsorbIndicator:Hide()
-			end
-		end
-
+	--health and absorbs prediction
+	healthBarMetaFunctions.UpdateHealPrediction = function(self)
+		self:UpdateAllHealth(false)
 	end
 
 	--Health Events
 		healthBarMetaFunctions.PLAYER_ENTERING_WORLD = function(self, ...)
 			self:UpdateAllHealth(true)
-			--self:UpdateMaxHealth()
-			--self:UpdateHealth()
-			--self:UpdateHealPrediction()
 		end
 
 		healthBarMetaFunctions.UNIT_HEALTH = function(self, unitId)
 			self:UpdateAllHealth(false)
-			--self:UpdateHealth()
-			--self:UpdateHealPrediction()
 		end
 
 		healthBarMetaFunctions.UNIT_MAXHEALTH = function(self, unitId)
 			self:UpdateAllHealth(true)
-			--self:UpdateMaxHealth()
-			--self:UpdateHealth()
-			--self:UpdateHealPrediction()
 		end
 
 		healthBarMetaFunctions.UNIT_HEALTH_FREQUENT = function(self, ...)
 			self:UpdateAllHealth(false)
-			--self:UpdateHealth()
-			--self:UpdateHealPrediction()
 		end
 
 		healthBarMetaFunctions.UNIT_HEAL_PREDICTION = function(self, ...)
 			self:UpdateAllHealth(true)
-			--self:UpdateMaxHealth()
-			--self:UpdateHealth()
-			--self:UpdateHealPrediction()
 		end
 
 		healthBarMetaFunctions.UNIT_ABSORB_AMOUNT_CHANGED = function(self, ...)
 			self:UpdateAllHealth(false)
-			--self:UpdateMaxHealth()
-			--self:UpdateHealth()
-			--self:UpdateHealPrediction()
 		end
 
 		healthBarMetaFunctions.UNIT_HEAL_ABSORB_AMOUNT_CHANGED = function(self, ...)
 			self:UpdateAllHealth(false)
-			--self:UpdateMaxHealth()
-			--self:UpdateHealth()
-			--self:UpdateHealPrediction()
 		end
 
 -- ~healthbar
@@ -555,6 +454,23 @@ function detailsFramework:CreateHealthBar(parent, name, settingsOverride)
 			--healing incoming
 			healthBar.incomingHealIndicator = healthBar:CreateTexture(nil, "artwork", nil, 5)
 			healthBar.incomingHealIndicator:SetDrawLayer("artwork", 4)
+
+			healthBar.incomingHealIndicatorBar = CreateFrame("StatusBar", name or (parent:GetName() .. "IncomingHealBar"), healthBar, "BackdropTemplate")
+			healthBar.incomingHealIndicatorBar.barTexture = healthBar.incomingHealIndicatorBar:CreateTexture(nil, "artwork", nil, 3)
+			healthBar.incomingHealIndicatorBar:SetStatusBarTexture(healthBar.incomingHealIndicatorBar.barTexture)
+			healthBar.incomingHealIndicatorBar.barTexture:SetTexture([[Interface\RaidFrame\Shield-Fill]])
+			healthBar.incomingHealIndicatorBar.barTexture:SetVertexColor(0, 0.9, 0, 1)
+			healthBar.incomingHealIndicatorBar:SetPoint ("topleft", healthBar.barTexture, "topright")
+			--healthBar.incomingHealIndicatorBar:SetPoint ("bottomright", healthBar, "bottomright")
+			healthBar.incomingHealIndicatorBar:SetPoint ("bottomleft", healthBar.barTexture, "bottomright")
+			hooksecurefunc(healthBar, 'SetWidth', function(self, w)
+				healthBar.incomingHealIndicatorBar:SetWidth(w)
+			end)
+			hooksecurefunc(healthBar, 'SetSize', function(self, h, w)
+				--healthBar.incomingHealIndicatorBar:SetSize(h, w)
+				healthBar.incomingHealIndicatorBar:SetWidth(w)
+			end)
+
 			--current shields on the unit
 			healthBar.shieldAbsorbIndicator =  healthBar:CreateTexture(nil, "artwork", nil, 3)
 			healthBar.shieldAbsorbIndicator:SetDrawLayer("artwork", 5)
@@ -562,9 +478,10 @@ function detailsFramework:CreateHealthBar(parent, name, settingsOverride)
 			healthBar.shieldAbsorbIndicatorBar = CreateFrame("StatusBar", name or (parent:GetName() .. "AbsorbBar"), healthBar, "BackdropTemplate")
 			healthBar.shieldAbsorbIndicatorBar.barTexture = healthBar.shieldAbsorbIndicatorBar:CreateTexture(nil, "artwork", nil, 3)
 			healthBar.shieldAbsorbIndicatorBar:SetStatusBarTexture(healthBar.shieldAbsorbIndicatorBar.barTexture)
-			healthBar.shieldAbsorbIndicatorBar.barTexture:SetTexture([[Interface\RaidFrame\Shield-Fill]])
+			healthBar.shieldAbsorbIndicatorBar.barTexture:SetTexture([[Interface\RaidFrame\Shield-Overlay]])
 			healthBar.shieldAbsorbIndicatorBar:SetPoint ("topleft", healthBar.barTexture, "topright")
 			healthBar.shieldAbsorbIndicatorBar:SetPoint ("bottomright", healthBar, "bottomright")
+			
 			-- the below would be better for proper scaling, but I don't want the bar to run out of the nameplate...
 			--healthBar.shieldAbsorbIndicatorBar:SetPoint ("bottomleft", healthBar.barTexture, "bottomright")
 			--hooksecurefunc(healthBar, 'SetWidth', function(self, w)
@@ -579,11 +496,13 @@ function detailsFramework:CreateHealthBar(parent, name, settingsOverride)
 			healthBar.SetFrameLevel = function(self, level)
 				self:SetFrameLevelOrig(level)
 				self.shieldAbsorbIndicatorBar:SetFrameLevel(level)
+				self.incomingHealIndicatorBar:SetFrameLevel(level)
 			end
 			healthBar.SetFrameStrataOrig = healthBar.SetFrameStrata
 			healthBar.SetFrameStrata = function(self, strata)
 				self:SetFrameStrataOrig(strata)
 				self.shieldAbsorbIndicatorBar:SetFrameStrata(strata)
+				self.incomingHealIndicatorBar:SetFrameStrata(strata)
 			end
 			
 			--debuff absorbing heal
