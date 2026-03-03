@@ -2268,7 +2268,6 @@ local debuff_options = {
 		end,
 		name = "Show defensive player CDs",
 		desc = "Show defensive CDs on enemy/friendly players.",
-		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
 	{type = "breakline"},
