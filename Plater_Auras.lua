@@ -1346,8 +1346,8 @@ end
 	--if the icon is more of a retangular shape, it'll cut the top and bottom sides of the icon giving a wide view
 	function Plater.UpdateIconAspecRatio (auraIconFrame)
 		local width, height = auraIconFrame:GetSize()
-		local ratio = width > height and min (max (abs (width / height - 2) + 0.05, 0.6), 1) or .95
-		auraIconFrame.Icon:SetTexCoord (.05, .95, .09, ratio)
+		local ratio = width > height and min (max (abs (width / height - 2) + 0.08, 0.6), 1) or .92
+		auraIconFrame.Icon:SetTexCoord (.08, .92, .08, ratio)
 	end
 
 	function platerInternal.CreateAuraIcon (parent, name) --private ~createicon ~icon
