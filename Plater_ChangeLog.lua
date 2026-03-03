@@ -8,6 +8,9 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1772438164, "Backend Change", "Mar 3rd, 2026", "Hiding Friendly NPCs healthbars works in dungeons now.", "cont1nuity"},
+			{1772438164, "Backend Change", "Mar 3rd, 2026", "Blizard font override is working now.", "cont1nuity"},
+
 			{1772438164, "Bug Fix", "Mar 2nd, 2026", "Fixing an issue with now secret soft-interact information.", "cont1nuity"},
 			{1772438164, "Backend Change", "Mar 2nd, 2026", "Removing several no longer used options for Midnight from the options panel.", "cont1nuity"},
 			{1772438164, "Bug Fix", "Feb 28th, 2026", "Fixing an issue with tank recognition in TBC.", "cont1nuity"},

@@ -71,11 +71,13 @@ function platerInternal.CreateAdvancedOptions()
                         Plater.RefreshDBUpvalues()
                         Plater.UpdateAllPlates()
                         Plater.UpdateAllNames()
+                        Plater.UpdateBlizzardNameplateFonts(true)
                     else
                         Plater.db.profile [member] = value
                         Plater.RefreshDBUpvalues()
                         Plater.UpdateAllPlates()
                         Plater.UpdateAllNames()
+                        Plater.UpdateBlizzardNameplateFonts(true)
                     end
                 end
             })
@@ -1045,14 +1047,17 @@ function platerInternal.CreateAdvancedOptions()
         {
             type = "select",
             get = function() return Plater.db.profile.blizzard_nameplate_font end,
-            values = function() return DF:BuildDropDownFontList (on_select_blizzard_nameplate_font) end,
+            values = function() return DF:BuildDropDownFontList (on_select_blizzard_nameplate_font, function() Plater.UpdateBlizzardNameplateFonts(true) end) end,
             name = L["OPTIONS_FONT"],
             desc = "Font of the text." .. CVarNeedReload,
         },
         {
             type = "range",
             get = function() return Plater.db.profile.blizzard_nameplate_font_size end,
-            set = function (self, fixedparam, value) Plater.db.profile.blizzard_nameplate_font_size = value end,
+            set = function (self, fixedparam, value)
+                Plater.db.profile.blizzard_nameplate_font_size = value
+                Plater.UpdateBlizzardNameplateFonts(true)
+            end,
             min = 6,
             max = 24,
             step = 1,
@@ -1070,14 +1075,17 @@ function platerInternal.CreateAdvancedOptions()
         {
             type = "select",
             get = function() return Plater.db.profile.blizzard_nameplate_large_font end,
-            values = function() return DF:BuildDropDownFontList (on_select_blizzard_nameplate_large_font) end,
+            values = function() return DF:BuildDropDownFontList (on_select_blizzard_nameplate_large_font, function() Plater.UpdateBlizzardNameplateFonts(true) end) end,
             name = L["OPTIONS_FONT"],
             desc = "Font of the text." .. CVarNeedReload,
         },
         {
             type = "range",
             get = function() return Plater.db.profile.blizzard_nameplate_large_font_size end,
-            set = function (self, fixedparam, value) Plater.db.profile.blizzard_nameplate_large_font_size = value end,
+            set = function (self, fixedparam, value)
+                Plater.db.profile.blizzard_nameplate_large_font_size = value
+                Plater.UpdateBlizzardNameplateFonts(true)
+            end,
             min = 6,
             max = 24,
             step = 1,

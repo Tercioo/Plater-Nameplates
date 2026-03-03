@@ -5072,6 +5072,63 @@ function Plater.OnInit() --private --~oninit ~init
 						platerInternal.reparentedUnitFrames[unit] = nil
 					end
 				end)
+				
+				--Nameplate base options tables: NamePlateFriendlyFrameOptions / NamePlateEnemyFrameOptions
+				hooksecurefunc(NamePlateDriverFrame, "OnNamePlateAdded", function(_, unit)
+					if not unit:match("^nameplate") then return end
+					local profile = Plater.db.profile
+					if not profile.blizzard_nameplate_font_override_enabled then return end
+					local plateFrame = C_NamePlate.GetNamePlateForUnit(unit, issecure())
+					if not plateFrame then
+						Plater.UpdateBlizzardNameplateFonts(true)
+					else
+						DF:SetFontFace (plateFrame.UnitFrame.name, profile.blizzard_nameplate_font)
+						DF:SetFontOutline (plateFrame.UnitFrame.name, profile.blizzard_nameplate_font_outline)
+						DF:SetFontSize (plateFrame.UnitFrame.name, profile.blizzard_nameplate_font_size)
+					end
+				end)
+				hooksecurefunc(NamePlatePreviewMixin, "ShowPreviewNamePlateCastBar", function()
+					if not Plater.db.profile.blizzard_nameplate_font_override_enabled then return end
+					Plater.UpdateBlizzardNameplateFonts(true)
+					C_Timer.After(0.1, function ()
+						Plater.UpdateBlizzardNameplateFonts(true)
+					end)
+				end)
+				hooksecurefunc(NamePlateDriverFrame, "UpdateNamePlateSize", function()
+					if not Plater.db.profile.blizzard_nameplate_font_override_enabled then return end
+					Plater.UpdateBlizzardNameplateFonts(true)
+					C_Timer.After(0.1, function ()
+						Plater.UpdateBlizzardNameplateFonts(true)
+					end)
+				end)
+				hooksecurefunc(NamePlateUnitFrameMixin, "UpdateNameClassColor", function(self)
+					local plateFrame = C_NamePlate.GetNamePlateForUnit(self.unit)
+					if not plateFrame then -- secure in dungeon
+						local onlyNamesEnabled = GetCVarBool("nameplateShowOnlyNames") or GetCVarBool("nameplateShowOnlyNameForFriendlyPlayerUnits")
+
+						if onlyNamesEnabled then
+							TextureLoadingGroupMixin.AddTexture({ textures = self.HealthBarsContainer.healthBar }, "showOnlyName")
+							TextureLoadingGroupMixin.AddTexture({ textures = self.castBar }, "showOnlyName")
+							--TextureLoadingGroupMixin.AddTexture({ textures = self.castBar }, "widgetsOnly")
+						end
+						TextureLoadingGroupMixin.AddTexture({ textures = self.optionTable }, "colorNameBySelection")
+					end
+				end)
+				hooksecurefunc(NamePlateUnitFrameMixin, "UpdateNameClassColor", function(self)
+					local plateFrame = C_NamePlate.GetNamePlateForUnit(self.unit)
+					if not plateFrame then -- secure in dungeon
+						TextureLoadingGroupMixin.AddTexture({ textures = self }, "explicitIsPlayer")
+					end
+				end)
+				hooksecurefunc(NamePlateUnitFrameMixin, "OnUnitSet", function(self)
+					if not self:IsPlayer() then
+						local onlyNamesEnabled = GetCVarBool("nameplateShowOnlyNames") or GetCVarBool("nameplateShowOnlyNameForFriendlyPlayerUnits")
+						if onlyNamesEnabled then
+							TextureLoadingGroupMixin.AddTexture({ textures = self.HealthBarsContainer.healthBar }, "showOnlyName")
+							TextureLoadingGroupMixin.AddTexture({ textures = self }, "showOnlyName")
+						end
+					end
+				end)
 			end
 			
 		end
@@ -5212,6 +5269,9 @@ function Plater.OnInit() --private --~oninit ~init
 			Plater.UpdateSelfPlate()
 			Plater.UpdateBaseNameplateOptions()
 			Plater.UpdatePlateClickSpace()
+			C_Timer.After(0.1, function ()
+				Plater.UpdateBlizzardNameplateFonts(true)
+			end)
 		end)
 		
 		--this might come in useful
@@ -6290,8 +6350,30 @@ function Plater.OnInit() --private --~oninit ~init
 	
 	-- hook to the InterfaceOptionsFrame and VideoOptionsFrame to update the nameplate sizes, as blizzard somehow messes things up there on hide...
 	if InterfaceOptionsFrame then
-		InterfaceOptionsFrame:HookScript('OnHide',Plater.UpdatePlateClickSpace)
-		VideoOptionsFrame:HookScript('OnHide',Plater.UpdatePlateClickSpace)
+		InterfaceOptionsFrame:HookScript('OnHide', function()
+			Plater.UpdatePlateClickSpace()
+			C_Timer.After(0.1, function ()
+				Plater.UpdateBlizzardNameplateFonts(true)
+			end)
+		end)
+		VideoOptionsFrame:HookScript('OnHide', function()
+			Plater.UpdatePlateClickSpace()
+			C_Timer.After(0.1, function ()
+				Plater.UpdateBlizzardNameplateFonts(true)
+			end)
+		end)
+		InterfaceOptionsFrame:HookScript('OnShow', function()
+			Plater.UpdatePlateClickSpace()
+			C_Timer.After(0.1, function ()
+				Plater.UpdateBlizzardNameplateFonts(true)
+			end)
+		end)
+		VideoOptionsFrame:HookScript('OnShow', function()
+			Plater.UpdatePlateClickSpace()
+			C_Timer.After(0.1, function ()
+				Plater.UpdateBlizzardNameplateFonts(true)
+			end)
+		end)
 	elseif SettingsPanel then
 		SettingsPanel:HookScript('OnHide',Plater.UpdatePlateClickSpace)
 	end
@@ -8538,9 +8620,8 @@ end
 					plateFrame.NameAnchor = DB_NAME_NPCENEMY_ANCHOR
 					
 				end
+				Plater.UpdateUnitName (plateFrame)
 			end
-		
-			Plater.UpdateUnitName (plateFrame)
 		end
 	end
 
@@ -8715,6 +8796,14 @@ end
 			DF:SetFontFace (_G.SystemFont_LargeNamePlateFixed, profile.blizzard_nameplate_large_font)
 			DF:SetFontOutline (_G.SystemFont_LargeNamePlateFixed, profile.blizzard_nameplate_large_font_outline)
 			DF:SetFontSize (_G.SystemFont_LargeNamePlateFixed, profile.blizzard_nameplate_large_font_size)
+
+			if IS_WOW_PROJECT_MIDNIGHT then
+				for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+					DF:SetFontFace (plateFrame.UnitFrame.name, profile.blizzard_nameplate_font)
+					DF:SetFontOutline (plateFrame.UnitFrame.name, profile.blizzard_nameplate_font_outline)
+					DF:SetFontSize (plateFrame.UnitFrame.name, profile.blizzard_nameplate_font_size)
+				end
+			end
 		end
 	end
 
