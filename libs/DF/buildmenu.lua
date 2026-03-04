@@ -974,7 +974,7 @@ local onMenuBuilt = function(parent)
     checkForDisableIF(parent)
 end
 
-local refreshOptions = function(self)
+local refreshOptions = function(self) --~refresh
     for _, widget in ipairs(self.widget_list) do
         if (widget._get) then
             if (widget.widget_type == "label") then
@@ -1262,6 +1262,11 @@ function detailsFramework:BuildMenuVolatile(parent, menuOptions, xOffset, yOffse
         if userValueChangeHook then
             userValueChangeHook()
         end
+
+        if menuOptions.no_refresh_on_change then
+            return
+        end
+
         if refreshTimer then
             return
         else
@@ -1600,6 +1605,11 @@ function detailsFramework:BuildMenu(parent, menuOptions, xOffset, yOffset, heigh
         if userValueChangeHook then
             userValueChangeHook()
         end
+
+        if menuOptions.no_refresh_on_change then
+            return
+        end
+
         if refreshTimer then
             return
         else

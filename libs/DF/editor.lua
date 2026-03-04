@@ -1147,7 +1147,7 @@ detailsFramework.EditorMixin = {
                         local optionTable = {
                             type = option.widget,
                             name = option.label,
-                            get = function() return value end,
+                            get = function() return value end, --need to get the value directly from the profile table
                             set = function(widget, fixedValue, newValue, ...)
                                 --color is a table with 4 indexes for each color plus alpha
                                 if (option.widget == "range" or option.widget == "slider") then
@@ -1247,6 +1247,7 @@ detailsFramework.EditorMixin = {
         local options_text_template = self.options.text_template
 
         --~build ~menu ~volatile
+        menuOptions.no_refresh_on_change = true --the editor .get functions just return a value instead of getting the value from the profile
         detailsFramework:BuildMenuVolatile(optionsFrame, menuOptions, 2, -2, maxHeight, bUseColon, options_text_template, options_dropdown_template, options_switch_template, bSwitchIsCheckbox, options_slider_template, options_button_template)
 
         if (editingOptions.can_move) then
