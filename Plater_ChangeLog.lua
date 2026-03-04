@@ -8,6 +8,9 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1772438164, "Bug Fix", "Mar 4th, 2026", "Fixing font override options not working correctly.", "cont1nuity"},
+			{1772438164, "Backend Change", "Mar 3rd, 2026", "Hiding unneeded or disabled options.", "cont1nuity"},
+						
 			{1772438164, "Backend Change", "Mar 3rd, 2026", "Hiding Friendly NPCs healthbars works in dungeons now.", "cont1nuity"},
 			{1772438164, "Backend Change", "Mar 3rd, 2026", "Blizard font override is working now.", "cont1nuity"},
 
