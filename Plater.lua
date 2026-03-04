@@ -4613,7 +4613,7 @@ function Plater.OnInit() --private --~oninit ~init
 	hooksecurefunc(LibSharedMedia, 'Register', function(_, mediaType, key, data)
 		if not mediaType or type(mediaType) ~= 'string' then return end
 		if mediaType:lower() == 'font' then
-			Plater.UpdateBlizzardNameplateFonts(key)
+			Plater.UpdateBlizzardNameplateFonts(key, true)
 		end
 	end)
 	
