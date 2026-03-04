@@ -8791,14 +8791,25 @@ end
 				--set fonts once with smaller to update
 				if not skipSmall then
 					local font = LibSharedMedia:Fetch("font", profile.blizzard_nameplate_font, true)
-					if not font then return end -- early exit
-					_G.SystemFont_NamePlate_Outlined:SetFont(font, profile.blizzard_nameplate_font_size -1, profile.blizzard_nameplate_font_outline)
-					_G.SystemFont_NamePlate:SetFont(font, profile.blizzard_nameplate_font_size -1, profile.blizzard_nameplate_font_outline)
-					_G.SystemFont_NamePlateFixed:SetFont(font, profile.blizzard_nameplate_font_size -1, profile.blizzard_nameplate_font_outline)
+					DF:SetFontFace (_G.SystemFont_NamePlate, profile.blizzard_nameplate_font)
+					DF:SetFontOutline (_G.SystemFont_NamePlate, profile.blizzard_nameplate_font_outline)
+					DF:SetFontSize (_G.SystemFont_NamePlate, profile.blizzard_nameplate_font_size - 1)
 					
-					font = LibSharedMedia:Fetch("font", profile.blizzard_nameplate_large_font, true)
-					_G.SystemFont_LargeNamePlate:SetFont(font, profile.blizzard_nameplate_large_font_size -1, profile.blizzard_nameplate_large_font_outline)
-					_G.SystemFont_LargeNamePlateFixed:SetFont(font, profile.blizzard_nameplate_large_font_size -1, profile.blizzard_nameplate_large_font_outline)
+					DF:SetFontFace (_G.SystemFont_NamePlateFixed, profile.blizzard_nameplate_font)
+					DF:SetFontOutline (_G.SystemFont_NamePlateFixed, profile.blizzard_nameplate_font_outline)
+					DF:SetFontSize (_G.SystemFont_NamePlateFixed, profile.blizzard_nameplate_font_size - 1)
+					
+					DF:SetFontFace (_G.SystemFont_LargeNamePlate, profile.blizzard_nameplate_large_font)
+					DF:SetFontOutline (_G.SystemFont_LargeNamePlate, profile.blizzard_nameplate_large_font_outline)
+					DF:SetFontSize (_G.SystemFont_LargeNamePlate, profile.blizzard_nameplate_large_font_size - 1)
+					
+					DF:SetFontFace (_G.SystemFont_LargeNamePlateFixed, profile.blizzard_nameplate_large_font)
+					DF:SetFontOutline (_G.SystemFont_LargeNamePlateFixed, profile.blizzard_nameplate_large_font_outline)
+					DF:SetFontSize (_G.SystemFont_LargeNamePlateFixed, profile.blizzard_nameplate_large_font_size - 1)
+
+					DF:SetFontFace (_G.SystemFont_NamePlate_Outlined, profile.blizzard_nameplate_font)
+					DF:SetFontOutline (_G.SystemFont_NamePlate_Outlined, profile.blizzard_nameplate_font_outline)
+					DF:SetFontSize (_G.SystemFont_NamePlate_Outlined, profile.blizzard_nameplate_font_size - 1)
 					
 					C_Timer.After(0.1, function() Plater.UpdateBlizzardNameplateFonts(true, true) end)
 					return
