@@ -8791,6 +8791,7 @@ end
 				--set fonts once with smaller to update
 				if not skipSmall then
 					local font = LibSharedMedia:Fetch("font", profile.blizzard_nameplate_font, true)
+					if not font then return end -- early exit
 					_G.SystemFont_NamePlate_Outlined:SetFont(font, profile.blizzard_nameplate_font_size -1, profile.blizzard_nameplate_font_outline)
 					_G.SystemFont_NamePlate:SetFont(font, profile.blizzard_nameplate_font_size -1, profile.blizzard_nameplate_font_outline)
 					_G.SystemFont_NamePlateFixed:SetFont(font, profile.blizzard_nameplate_font_size -1, profile.blizzard_nameplate_font_outline)
