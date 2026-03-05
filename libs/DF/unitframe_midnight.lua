@@ -302,6 +302,7 @@ local cleanfunction = function() end
 		
 		calculator:SetMaximumHealthMode(Enum.UnitMaximumHealthMode.Default) --use default, shield shows but is not accurate for now
 		--calculator:SetMaximumHealthMode(self.Settings.ShowShields and Enum.UnitMaximumHealthMode.WithAbsorbs or Enum.UnitMaximumHealthMode.Default)
+		calculator:SetDamageAbsorbClampMode(Enum.UnitDamageAbsorbClampMode.MaximumHealth)
 		self.currentHealthPercent = calculator:EvaluateCurrentHealthPercent(CurveConstants.ScaleTo100)
 		self.currentHealthMissingPercent = calculator:GetMissingHealthPercent()
 		self.currentHealth = calculator:GetCurrentHealth()
@@ -310,31 +311,36 @@ local cleanfunction = function() end
 		
 		--switch
 		--calculator:SetMaximumHealthMode(self.Settings.ShowShields and Enum.UnitMaximumHealthMode.WithAbsorbs or Enum.UnitMaximumHealthMode.Default)
-		
+		calculator:SetMaximumHealthMode(Enum.UnitMaximumHealthMode.WithAbsorbs)
+
 		self.currentHealthPercentWithAbsorb = calculator:EvaluateCurrentHealthPercent(CurveConstants.ScaleTo100)
 		self.currentHealthMissingPercentWithAbsorb = calculator:GetMissingHealthPercent()
 		self.currentHealthMissingWithAbsorb = calculator:GetMissingHealth()
 		self.currentHealthMaxWithAbsorb = calculator:GetMaximumDamageAbsorbs() --calculator:GetMaximumHealth()
 		
-		self:SetMinMaxValues(0, self.currentHealthMaxWithAbsorb, Enum.StatusBarInterpolation.Immediate)
+		--self:SetMinMaxValues(0, self.currentHealthMaxWithAbsorb, Enum.StatusBarInterpolation.Immediate)
+		self:SetMinMaxValues(0, self.currentHealthMax, Enum.StatusBarInterpolation.Immediate)
 
 		self:SetValue(self.currentHealth, (updateMaxHealth or not self.Settings.AnimateHealth) and Enum.StatusBarInterpolation.Immediate or Enum.StatusBarInterpolation.ExponentialEaseOut)
 		
 		if (self.Settings.ShowShields) then
+			calculator:SetDamageAbsorbClampMode(Enum.UnitDamageAbsorbClampMode.MissingHealthWithoutIncomingHeals)
 			local absorb, clamp = calculator:GetDamageAbsorbs()
 			
 			--damage absorbs
-			local unitDamageAbsorb = calculator:GetMaximumDamageAbsorbs() -- this is full life with all?
-			self.currentAbsorb = unitDamageAbsorb
-			self.currentAbsorbClamped = absorb
+			local unitDamageAbsorbMax = calculator:GetMaximumDamageAbsorbs() -- this is full life with all?
+			self.currentAbsorb = absorb
+			self.currentAbsorbMax = unitDamageAbsorbMax
 			self.currentAbsorbIsClamped = clamp
+			--print(self.currentHealth, self.currentHealthMissing, self.currentHealthMax, absorb, unitDamageAbsorbMax, clamp, self.currentHealthMissingWithAbsorb, self.currentHealthMaxWithAbsorb)
 
-			self.shieldAbsorbIndicatorBar:SetAlpha(unitDamageAbsorb)
+			self.shieldAbsorbIndicatorBar:Show()
+			self.shieldAbsorbIndicatorBar:SetAlpha(absorb)
 			
 			self.shieldAbsorbGlow:Show()
-			self.shieldAbsorbGlow:SetAlphaFromBoolean(clamp, 1, 0)
+			self.shieldAbsorbGlow:SetAlphaFromBoolean(false, 1, 0)
 			
-			self.shieldAbsorbIndicatorBar:SetMinMaxValues(0, self.currentHealthMaxWithAbsorb, self.Settings.AnimateHealth and Enum.StatusBarInterpolation.ExponentialEaseOut or Enum.StatusBarInterpolation.Immediate) --TODO
+			self.shieldAbsorbIndicatorBar:SetMinMaxValues(0, self.currentHealthMissing, self.Settings.AnimateHealth and Enum.StatusBarInterpolation.ExponentialEaseOut or Enum.StatusBarInterpolation.Immediate) --TODO
 			self.shieldAbsorbIndicatorBar:SetValue(absorb)
 		end
 
@@ -342,6 +348,7 @@ local cleanfunction = function() end
 			--incoming heal on the unit from all sources
 			local unitHealIncoming = calculator:GetTotalIncomingHeals()
 			
+			self.incomingHealIndicatorBar:Show()
 			self.incomingHealIndicatorBar:SetAlpha(unitHealIncoming)
 			
 			--self.incomingHealIndicator:Show()
@@ -478,7 +485,7 @@ function detailsFramework:CreateHealthBar(parent, name, settingsOverride)
 			healthBar.shieldAbsorbIndicatorBar = CreateFrame("StatusBar", name or (parent:GetName() .. "AbsorbBar"), healthBar, "BackdropTemplate")
 			healthBar.shieldAbsorbIndicatorBar.barTexture = healthBar.shieldAbsorbIndicatorBar:CreateTexture(nil, "artwork", nil, 3)
 			healthBar.shieldAbsorbIndicatorBar:SetStatusBarTexture(healthBar.shieldAbsorbIndicatorBar.barTexture)
-			healthBar.shieldAbsorbIndicatorBar.barTexture:SetTexture([[Interface\RaidFrame\Shield-Overlay]])
+			healthBar.shieldAbsorbIndicatorBar.barTexture:SetTexture([[Interface\RaidFrame\Shield-Fill]])
 			healthBar.shieldAbsorbIndicatorBar:SetPoint ("topleft", healthBar.barTexture, "topright")
 			healthBar.shieldAbsorbIndicatorBar:SetPoint ("bottomright", healthBar, "bottomright")
 			
@@ -539,6 +546,7 @@ function detailsFramework:CreateHealthBar(parent, name, settingsOverride)
 	--absorb calculator
 	healthBar.healCalculator = CreateUnitHealPredictionCalculator();
 	healthBar.healCalculator:SetDamageAbsorbClampMode(Enum.UnitDamageAbsorbClampMode.MaximumHealth)
+	--healthBar.healCalculator:SetDamageAbsorbClampMode(Enum.UnitDamageAbsorbClampMode.MissingHealthWithoutIncomingHeals)
 	healthBar.healCalculator:SetHealAbsorbClampMode(Enum.UnitHealAbsorbClampMode.MaximumHealth)
 	healthBar.healCalculator:SetHealAbsorbMode(Enum.UnitHealAbsorbMode.Total)
 	healthBar.healCalculator:SetIncomingHealClampMode(Enum.UnitIncomingHealClampMode.MissingHealth)

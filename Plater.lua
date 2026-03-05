@@ -8504,7 +8504,7 @@ end
 		
 		if IS_WOW_PROJECT_MIDNIGHT then
 			--TODO: MIDNIGHT!!
-			--local currentAbsorb, currentAbsorbClamped, currentAbsorbIsClamped = healthBar.currentAbsorb, healthBar.currentAbsorbClamped, healthBar.currentAbsorbIsClamped
+			--local currentAbsorb, currentAbsorbMax, currentAbsorbIsClamped = healthBar.currentAbsorb, healthBar.currentAbsorbMax, healthBar.currentAbsorbIsClamped
 			
 			currentHealth = AbbreviateNumbers(currentHealth)
 			if (showHealthAmount or showPercentAmount) then
