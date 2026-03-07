@@ -3566,7 +3566,9 @@ Plater.AnchorNamesByPhraseId = {
 		
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitID, true)
 			if (plateFrame) then -- and plateFrame.template == "ForbiddenNamePlateUnitFrameTemplate"
-			
+				if IS_WOW_PROJECT_MIDNIGHT then -- don't simplify
+					C_NamePlateManager.SetNamePlateSimplified(unitID, false)
+				end
 				if (not IS_WOW_PROJECT_MAINLINE) then
 					-- this is for classic cast bars on blizzard default nameplates
 					if GetCVarBool ("nameplateShowOnlyNames") or Plater.db.profile.saved_cvars.nameplateShowOnlyNames == "1" then
