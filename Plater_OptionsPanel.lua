@@ -5613,7 +5613,7 @@ local relevance_options = {
 				end
 			end,
 			nocombat = true,
-			name = L["OPTIONS_ENABLED"] .. CVarIcon,
+			name = "Show Friendly NPCs" .. CVarIcon,
 			desc = string.format(L["Show nameplate for friendly npcs.\n\n|cFFFFFF00 Important |r: This option is dependent on the client`s nameplate state (on/off).\n\n|cFFFFFF00 Important |r: when disabled but enabled on the client through (%s), the healthbar isn't visible but the nameplate is still clickable."] .. CVarDesc,  (GetBindingKey ("FRIENDNAMEPLATES") or "")),
 		},
 
