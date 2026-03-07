@@ -7749,7 +7749,7 @@ end
 								if (not TANK_CACHE [unitTarget]) then
 								
 									--check if this isn't a false positive where the mob target another unit to cast a spell
-									local hasTankAggro = false
+									local hasTankAggro = IS_WOW_PROJECT_MIDNIGHT -- true for midnight, as fallback
 									if not IS_WOW_PROJECT_MIDNIGHT then
 										for tankName, _ in pairs (TANK_CACHE) do
 											if UnitExists(tankName) then
