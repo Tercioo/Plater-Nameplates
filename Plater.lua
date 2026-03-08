@@ -5108,25 +5108,18 @@ function Plater.OnInit() --private --~oninit ~init
 					if not plateFrame then -- secure in dungeon
 						local onlyNamesEnabled = GetCVarBool("nameplateShowOnlyNames") or GetCVarBool("nameplateShowOnlyNameForFriendlyPlayerUnits")
 
-						if onlyNamesEnabled then
+						if onlyNamesEnabled and not self:IsPlayer() then
 							TextureLoadingGroupMixin.AddTexture({ textures = self.HealthBarsContainer.healthBar }, "showOnlyName")
 							TextureLoadingGroupMixin.AddTexture({ textures = self.castBar }, "showOnlyName")
-							--TextureLoadingGroupMixin.AddTexture({ textures = self.castBar }, "widgetsOnly")
+							TextureLoadingGroupMixin.AddTexture({ textures = self.castBar }, "widgetsOnly")
 						end
 						TextureLoadingGroupMixin.AddTexture({ textures = self.optionTable }, "colorNameBySelection")
-					end
-				end)
-				hooksecurefunc(NamePlateUnitFrameMixin, "UpdateNameClassColor", function(self)
-					local plateFrame = C_NamePlate.GetNamePlateForUnit(self.unit)
-					if not plateFrame then -- secure in dungeon
-						TextureLoadingGroupMixin.AddTexture({ textures = self }, "explicitIsPlayer")
 					end
 				end)
 				hooksecurefunc(NamePlateUnitFrameMixin, "OnUnitSet", function(self)
 					if not self:IsPlayer() then
 						local onlyNamesEnabled = GetCVarBool("nameplateShowOnlyNames") or GetCVarBool("nameplateShowOnlyNameForFriendlyPlayerUnits")
 						if onlyNamesEnabled then
-							TextureLoadingGroupMixin.AddTexture({ textures = self.HealthBarsContainer.healthBar }, "showOnlyName")
 							TextureLoadingGroupMixin.AddTexture({ textures = self }, "showOnlyName")
 						end
 					end
@@ -13633,7 +13626,6 @@ end
 			end
 		end
 	end	
-
 
 
 
