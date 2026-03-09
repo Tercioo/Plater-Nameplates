@@ -5531,8 +5531,6 @@ function Plater.OnInit() --private --~oninit ~init
 			--icon:SetDrawLayer ("OVERLAY", 5)
 			--borderShield:SetDrawLayer ("OVERLAY", 6)
 			local castBarHeight = castBar:GetHeight()
-
-			castBar:UpdateInterruptState() -- ensure icon is shown as appropriate
 			
 			if (profile.castbar_icon_customization_enabled) then
 
@@ -5544,6 +5542,14 @@ function Plater.OnInit() --private --~oninit ~init
 					borderShield:SetDesaturated (true)
 					PixelUtil.SetSize (borderShield, castBarHeight * 0.8, castBarHeight)
 
+					local actorType = unitFrame.actorType
+					local plateConfigs = DB_PLATE_CONFIG [actorType]
+					local isInCombat = profile.use_player_combat_state and PLAYER_IN_COMBAT or unitFrame.InCombat
+					local castBarConfigKey, healthBarConfigKey = Plater.GetHashKey (isInCombat)
+					local healthBarHeight = unitFrame.customHealthBarHeight or (plateConfigs and plateConfigs [healthBarConfigKey][2]) or 0
+					castBarHeight = unitFrame.customCastBarHeight or (plateConfigs and plateConfigs [castBarConfigKey][2]) or 0
+					local castBarOffSetY = plateConfigs and plateConfigs.castbar_offset or 0
+
 					local height
 					if (profile.castbar_icon_attach_to_side == "left") then
 						if (profile.castbar_icon_size == "same as castbar") then
@@ -5552,25 +5558,17 @@ function Plater.OnInit() --private --~oninit ~init
 							
 							PixelUtil.SetPoint (borderShield, "center", castBar, "left", 0, 0)
 							
-							height = castBar:GetHeight()
+							height = castBarHeight
 
 						elseif (profile.castbar_icon_size == "same as castbar plus healthbar") then
-							local actorType = unitFrame.actorType
-							local plateConfigs = DB_PLATE_CONFIG [actorType]
-							local isInCombat = profile.use_player_combat_state and PLAYER_IN_COMBAT or unitFrame.InCombat
-							local castBarConfigKey, healthBarConfigKey, manaConfigKey = Plater.GetHashKey (isInCombat)
-
-							local healthBarHeight = unitFrame.customHealthBarHeight or (plateConfigs and plateConfigs [healthBarConfigKey][2]) or 0
-							local castBarOffSetY = plateConfigs and plateConfigs.castbar_offset or 0
-							
 							if castBarOffSetY > healthBarHeight then
 								icon:SetPoint("topright", castBar, "topleft", profile.castbar_icon_x_offset, 0)
 								icon:SetPoint("bottomright", unitFrame.healthBar, "bottomleft", profile.castbar_icon_x_offset, 0)
-								height = castBar:GetHeight() + unitFrame.healthBar:GetHeight() - castBarOffSetY
+								height = castBarHeight + healthBarHeight - castBarOffSetY
 							else
 								icon:SetPoint("topright", unitFrame.healthBar, "topleft", profile.castbar_icon_x_offset, 0)
 								icon:SetPoint("bottomright", castBar, "bottomleft", profile.castbar_icon_x_offset, 0)
-								height = castBar:GetHeight() + unitFrame.healthBar:GetHeight() + castBarOffSetY
+								height = castBarHeight + healthBarHeight + castBarOffSetY
 							end
 							
 							PixelUtil.SetPoint (borderShield, "center", castBar, "left", 0, 0)
@@ -5583,25 +5581,17 @@ function Plater.OnInit() --private --~oninit ~init
 							
 							PixelUtil.SetPoint (borderShield, "center", castBar, "right", 0, 0)
 							
-							height = castBar:GetHeight()
+							height = castBarHeight
 
 						elseif (profile.castbar_icon_size == "same as castbar plus healthbar") then
-							local actorType = unitFrame.actorType
-							local plateConfigs = DB_PLATE_CONFIG [actorType]
-							local isInCombat = profile.use_player_combat_state and PLAYER_IN_COMBAT or unitFrame.InCombat
-							local castBarConfigKey, healthBarConfigKey, manaConfigKey = Plater.GetHashKey (isInCombat)
-
-							local healthBarHeight = unitFrame.customHealthBarHeight or (plateConfigs and plateConfigs [healthBarConfigKey][2]) or 0
-							local castBarOffSetY = plateConfigs and plateConfigs.castbar_offset or 0
-							
 							if castBarOffSetY > healthBarHeight then
 								icon:SetPoint("topleft", castBar, "topright", profile.castbar_icon_x_offset, 0)
 								icon:SetPoint("bottomleft", unitFrame.healthBar, "bottomright", profile.castbar_icon_x_offset, 0)
-								height = castBar:GetHeight() + unitFrame.healthBar:GetHeight() - castBarOffSetY
+								height = castBarHeight + healthBarHeight - castBarOffSetY
 							else
 								icon:SetPoint("topleft", unitFrame.healthBar, "topright", profile.castbar_icon_x_offset, 0)
 								icon:SetPoint("bottomleft", castBar, "bottomright", profile.castbar_icon_x_offset, 0)
-								height = castBar:GetHeight() + unitFrame.healthBar:GetHeight() + castBarOffSetY
+								height = castBarHeight + healthBarHeight + castBarOffSetY
 							end
 							
 							PixelUtil.SetPoint (borderShield, "center", castBar, "right", 0, 0)
@@ -5635,6 +5625,8 @@ function Plater.OnInit() --private --~oninit ~init
 			if castBar.Icon.Masqued then
 				Plater.Masque.CastIcon:ReSkin(castBar.Icon)
 			end
+
+			castBar:UpdateInterruptState() -- ensure icon is shown as appropriate
 		end
 		
 		
