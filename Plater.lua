@@ -4065,7 +4065,7 @@ Plater.AnchorNamesByPhraseId = {
 					plateFrame.PlateConfig = DB_PLATE_CONFIG.player
 					Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_PLAYER, nil, true)
 					--Plater.QuickHealthUpdate (unitFrame) -- ensure up to date, for good measure
-					Plater.OnUpdateHealth (healthBar)
+					Plater.OnUpdateHealth (healthBar, true)
 
 				else
 					--> regular nameplate
@@ -6123,11 +6123,12 @@ function Plater.OnInit() --private --~oninit ~init
 		end
 	end
 	
-	function Plater.OnUpdateHealth (self) --self is unitFrame.healthBar
+	function Plater.OnUpdateHealth (self, forceUpdate) --self is unitFrame.healthBar
 		if (not self.isNamePlate) then
 			--this is not a nameplate, perhaps another frame from the framework
 			return
 		end
+		if (not forceUpdate and not self.healthChanged) then return end
 		
 		Plater.StartLogPerformanceCore("Plater-Core", "Health", "OnUpdateHealth")
 
@@ -6250,21 +6251,25 @@ function Plater.OnInit() --private --~oninit ~init
 	end
 
 	function Plater.OnHealthChange (self, unitId) --~health
+		self.healthChanged = true
 		Plater.OnUpdateHealth (self)
 		
 		--> run on health changed hook
 		if (HOOK_HEALTH_UPDATE.ScriptAmount > 0) then
 			return run_on_health_change_hook (self.unitFrame)
 		end
+		self.healthChanged = false
 	end
 	
 	function Plater.OnHealthMaxChange (self, unitId)
+		self.healthChanged = true
 		Plater.OnUpdateHealthMax (self)
 		
 		--> run on health changed hook
 		if (HOOK_HEALTH_UPDATE.ScriptAmount > 0) then
 			return run_on_health_change_hook (self.unitFrame)
 		end
+		self.healthChanged = false
 	end
 	
 	--> profile changes and refreshes ~db
@@ -8489,7 +8494,8 @@ end
 	end
 	
 	function Plater.UpdateLifePercentText (healthBar, unitId, showHealthAmount, showPercentAmount, showDecimals) -- ~health
-		
+		Plater.StartLogPerformanceCore("Plater-Core", "Health", "UpdateLifePercentText")
+
 		--get the cached health amount for performance
 		local currentHealth, maxHealth, currentHealthMissing, currentHealthPercent = healthBar.currentHealth, healthBar.currentHealthMax, healthBar.currentHealthMissing, healthBar.currentHealthPercent
 		
@@ -8568,11 +8574,15 @@ end
 				healthBar.lifePercent:SetText ("")
 			end
 		end
+		Plater.EndLogPerformanceCore("Plater-Core", "Health", "UpdateLifePercentText")
 	end
 
 	-- this test if the percent life text can updated
-	function Plater.CheckLifePercentText (unitFrame) --private
+	function Plater.CheckLifePercentText (unitFrame, forceUpdate) --private
 		if (not unitFrame.actorType) then
+			return
+		end
+		if (not forceUpdate and not unitFrame.healthBar.healthChanged) then
 			return
 		end
 		
@@ -9206,7 +9216,7 @@ end
 		--update the visibility of the health text
 		Plater.UpdateLifePercentVisibility (plateFrame)
 		--update the health text
-		Plater.CheckLifePercentText (unitFrame)
+		Plater.CheckLifePercentText (unitFrame, true)
 		
 		--target indicator
 		Plater.UpdateTarget (plateFrame)
