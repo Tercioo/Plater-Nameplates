@@ -4065,7 +4065,7 @@ Plater.AnchorNamesByPhraseId = {
 					plateFrame.PlateConfig = DB_PLATE_CONFIG.player
 					Plater.UpdatePlateFrame (plateFrame, ACTORTYPE_PLAYER, nil, true)
 					--Plater.QuickHealthUpdate (unitFrame) -- ensure up to date, for good measure
-					Plater.OnUpdateHealth (healthBar)
+					Plater.OnUpdateHealth (healthBar, true)
 
 				else
 					--> regular nameplate
@@ -4585,6 +4585,33 @@ end
 function Plater.OnInit() --private --~oninit ~init
 	LibStub ("AceDBOptions-3.0"):GetOptionsTable (Plater.db, true) -- register this now, to ensure no default "realm", "char - realm" profiles are shown in profiles management
 	
+	-- Inspired by and mostly copied from https://github.com/Cidan/BetterBags/pull/934/, thanks Cidan
+	-- PatchWerk breaks WoW addons by patching _G functions and overwriting addon code.
+	-- Detect it early and force the user to disable it.
+	C_Timer.After(5, function()
+		if C_AddOns.IsAddOnLoaded("PatchWerk") then
+		StaticPopupDialogs["PLATER_PATCHWERK_CONFLICT"] = {
+			text = "Plater has detected that the addon |cFFFF4400PatchWerk|r is loaded.\n\nPatchWerk potentially breaks every WoW addon, even addons it is not configured to patch, by modifying available WoW base API.\nYou must disable PatchWerk entirely for Plater and other addons to work correctly.\n\nYou may ignore this warning at your own risk, in which case Plater will be disabled for compatibility issues with PatchWerk.\nYou may re-enable Plater in your Addons once you have disable PatchWerk.\n\nClick 'Disable & Reload' to disable PatchWerk and reload your UI or 'Ignore' to disable Plater.",
+			button1 = "Disable & Reload",
+			button2 = "Ignore",
+			timeout = 0,
+			whileDead = true,
+			hideOnEscape = false,
+			preferredIndex = 3,
+			OnAccept = function()
+				C_AddOns.DisableAddOn("!PatchWerk")
+				C_AddOns.DisableAddOn("PatchWerk")
+				ReloadUI()
+			end,
+			OnCancel = function()
+				C_AddOns.DisableAddOn("Plater")
+				ReloadUI()
+			end,
+		}
+		StaticPopup_Show("PLATER_PATCHWERK_CONFLICT")
+		end
+	end)
+
 	do
 		local languageCurrentVersion = 1
 		if (not PlaterLanguage) then
@@ -5108,25 +5135,26 @@ function Plater.OnInit() --private --~oninit ~init
 					if not plateFrame then -- secure in dungeon
 						local onlyNamesEnabled = GetCVarBool("nameplateShowOnlyNames") or GetCVarBool("nameplateShowOnlyNameForFriendlyPlayerUnits")
 
-						if onlyNamesEnabled then
+						if onlyNamesEnabled and not self:IsPlayer() then
 							TextureLoadingGroupMixin.AddTexture({ textures = self.HealthBarsContainer.healthBar }, "showOnlyName")
 							TextureLoadingGroupMixin.AddTexture({ textures = self.castBar }, "showOnlyName")
-							--TextureLoadingGroupMixin.AddTexture({ textures = self.castBar }, "widgetsOnly")
+							TextureLoadingGroupMixin.AddTexture({ textures = self.castBar }, "widgetsOnly")
 						end
 						TextureLoadingGroupMixin.AddTexture({ textures = self.optionTable }, "colorNameBySelection")
-					end
-				end)
-				hooksecurefunc(NamePlateUnitFrameMixin, "UpdateNameClassColor", function(self)
-					local plateFrame = C_NamePlate.GetNamePlateForUnit(self.unit)
-					if not plateFrame then -- secure in dungeon
 						TextureLoadingGroupMixin.AddTexture({ textures = self }, "explicitIsPlayer")
 					end
 				end)
+				hooksecurefunc(NamePlateUnitFrameMixin, "UpdateIsFriend", function(self)
+					local plateFrame = C_NamePlate.GetNamePlateForUnit(self.unit)
+					if not plateFrame and not self:IsFriend() then
+						TextureLoadingGroupMixin.RemoveTexture({ textures = self }, "isPlayer")
+					end
+				end)
 				hooksecurefunc(NamePlateUnitFrameMixin, "OnUnitSet", function(self)
-					if not self:IsPlayer() then
+					local plateFrame = C_NamePlate.GetNamePlateForUnit(self.unit)
+					if not plateFrame then -- secure in dungeon
 						local onlyNamesEnabled = GetCVarBool("nameplateShowOnlyNames") or GetCVarBool("nameplateShowOnlyNameForFriendlyPlayerUnits")
 						if onlyNamesEnabled then
-							TextureLoadingGroupMixin.AddTexture({ textures = self.HealthBarsContainer.healthBar }, "showOnlyName")
 							TextureLoadingGroupMixin.AddTexture({ textures = self }, "showOnlyName")
 						end
 					end
@@ -5530,8 +5558,6 @@ function Plater.OnInit() --private --~oninit ~init
 			--icon:SetDrawLayer ("OVERLAY", 5)
 			--borderShield:SetDrawLayer ("OVERLAY", 6)
 			local castBarHeight = castBar:GetHeight()
-
-			castBar:UpdateInterruptState() -- ensure icon is shown as appropriate
 			
 			if (profile.castbar_icon_customization_enabled) then
 
@@ -5543,6 +5569,14 @@ function Plater.OnInit() --private --~oninit ~init
 					borderShield:SetDesaturated (true)
 					PixelUtil.SetSize (borderShield, castBarHeight * 0.8, castBarHeight)
 
+					local actorType = unitFrame.actorType
+					local plateConfigs = DB_PLATE_CONFIG [actorType]
+					local isInCombat = profile.use_player_combat_state and PLAYER_IN_COMBAT or unitFrame.InCombat
+					local castBarConfigKey, healthBarConfigKey = Plater.GetHashKey (isInCombat)
+					local healthBarHeight = unitFrame.customHealthBarHeight or (plateConfigs and plateConfigs [healthBarConfigKey][2]) or 0
+					castBarHeight = unitFrame.customCastBarHeight or (plateConfigs and plateConfigs [castBarConfigKey][2]) or 0
+					local castBarOffSetY = plateConfigs and plateConfigs.castbar_offset or 0
+
 					local height
 					if (profile.castbar_icon_attach_to_side == "left") then
 						if (profile.castbar_icon_size == "same as castbar") then
@@ -5551,25 +5585,17 @@ function Plater.OnInit() --private --~oninit ~init
 							
 							PixelUtil.SetPoint (borderShield, "center", castBar, "left", 0, 0)
 							
-							height = castBar:GetHeight()
+							height = castBarHeight
 
 						elseif (profile.castbar_icon_size == "same as castbar plus healthbar") then
-							local actorType = unitFrame.actorType
-							local plateConfigs = DB_PLATE_CONFIG [actorType]
-							local isInCombat = profile.use_player_combat_state and PLAYER_IN_COMBAT or unitFrame.InCombat
-							local castBarConfigKey, healthBarConfigKey, manaConfigKey = Plater.GetHashKey (isInCombat)
-
-							local healthBarHeight = unitFrame.customHealthBarHeight or (plateConfigs and plateConfigs [healthBarConfigKey][2]) or 0
-							local castBarOffSetY = plateConfigs and plateConfigs.castbar_offset or 0
-							
 							if castBarOffSetY > healthBarHeight then
 								icon:SetPoint("topright", castBar, "topleft", profile.castbar_icon_x_offset, 0)
 								icon:SetPoint("bottomright", unitFrame.healthBar, "bottomleft", profile.castbar_icon_x_offset, 0)
-								height = castBar:GetHeight() + unitFrame.healthBar:GetHeight() - castBarOffSetY
+								height = castBarHeight + healthBarHeight - castBarOffSetY
 							else
 								icon:SetPoint("topright", unitFrame.healthBar, "topleft", profile.castbar_icon_x_offset, 0)
 								icon:SetPoint("bottomright", castBar, "bottomleft", profile.castbar_icon_x_offset, 0)
-								height = castBar:GetHeight() + unitFrame.healthBar:GetHeight() + castBarOffSetY
+								height = castBarHeight + healthBarHeight + castBarOffSetY
 							end
 							
 							PixelUtil.SetPoint (borderShield, "center", castBar, "left", 0, 0)
@@ -5582,25 +5608,17 @@ function Plater.OnInit() --private --~oninit ~init
 							
 							PixelUtil.SetPoint (borderShield, "center", castBar, "right", 0, 0)
 							
-							height = castBar:GetHeight()
+							height = castBarHeight
 
 						elseif (profile.castbar_icon_size == "same as castbar plus healthbar") then
-							local actorType = unitFrame.actorType
-							local plateConfigs = DB_PLATE_CONFIG [actorType]
-							local isInCombat = profile.use_player_combat_state and PLAYER_IN_COMBAT or unitFrame.InCombat
-							local castBarConfigKey, healthBarConfigKey, manaConfigKey = Plater.GetHashKey (isInCombat)
-
-							local healthBarHeight = unitFrame.customHealthBarHeight or (plateConfigs and plateConfigs [healthBarConfigKey][2]) or 0
-							local castBarOffSetY = plateConfigs and plateConfigs.castbar_offset or 0
-							
 							if castBarOffSetY > healthBarHeight then
 								icon:SetPoint("topleft", castBar, "topright", profile.castbar_icon_x_offset, 0)
 								icon:SetPoint("bottomleft", unitFrame.healthBar, "bottomright", profile.castbar_icon_x_offset, 0)
-								height = castBar:GetHeight() + unitFrame.healthBar:GetHeight() - castBarOffSetY
+								height = castBarHeight + healthBarHeight - castBarOffSetY
 							else
 								icon:SetPoint("topleft", unitFrame.healthBar, "topright", profile.castbar_icon_x_offset, 0)
 								icon:SetPoint("bottomleft", castBar, "bottomright", profile.castbar_icon_x_offset, 0)
-								height = castBar:GetHeight() + unitFrame.healthBar:GetHeight() + castBarOffSetY
+								height = castBarHeight + healthBarHeight + castBarOffSetY
 							end
 							
 							PixelUtil.SetPoint (borderShield, "center", castBar, "right", 0, 0)
@@ -5634,6 +5652,8 @@ function Plater.OnInit() --private --~oninit ~init
 			if castBar.Icon.Masqued then
 				Plater.Masque.CastIcon:ReSkin(castBar.Icon)
 			end
+
+			castBar:UpdateInterruptState() -- ensure icon is shown as appropriate
 		end
 		
 		
@@ -6130,11 +6150,12 @@ function Plater.OnInit() --private --~oninit ~init
 		end
 	end
 	
-	function Plater.OnUpdateHealth (self) --self is unitFrame.healthBar
+	function Plater.OnUpdateHealth (self, forceUpdate) --self is unitFrame.healthBar
 		if (not self.isNamePlate) then
 			--this is not a nameplate, perhaps another frame from the framework
 			return
 		end
+		if (not forceUpdate and not self.healthChanged) then return end
 		
 		Plater.StartLogPerformanceCore("Plater-Core", "Health", "OnUpdateHealth")
 
@@ -6257,21 +6278,25 @@ function Plater.OnInit() --private --~oninit ~init
 	end
 
 	function Plater.OnHealthChange (self, unitId) --~health
+		self.healthChanged = true
 		Plater.OnUpdateHealth (self)
 		
 		--> run on health changed hook
 		if (HOOK_HEALTH_UPDATE.ScriptAmount > 0) then
 			return run_on_health_change_hook (self.unitFrame)
 		end
+		self.healthChanged = false
 	end
 	
 	function Plater.OnHealthMaxChange (self, unitId)
+		self.healthChanged = true
 		Plater.OnUpdateHealthMax (self)
 		
 		--> run on health changed hook
 		if (HOOK_HEALTH_UPDATE.ScriptAmount > 0) then
 			return run_on_health_change_hook (self.unitFrame)
 		end
+		self.healthChanged = false
 	end
 	
 	--> profile changes and refreshes ~db
@@ -7016,8 +7041,8 @@ end
 		curFPS = 1,
 	}
 	
-	function Plater.EveryFrameFPSCheck()
-		-- calculate every .25sec
+	platerInternal.EveryFrameFPSCheck = CreateFrame("Frame")
+	platerInternal.EveryFrameFPSCheck:SetScript("OnUpdate", function()
 		local curTime = GetTime()
 		local curFPSData = Plater.FPSData
 		if (curFPSData.startTime + 0.25) < curTime then
@@ -7034,10 +7059,7 @@ end
 		
 		--ViragDevTool_AddData(curFPSData.platesUpdatedThisFrame, "platesUpdatedThisFrame")
 		curFPSData.platesUpdatedThisFrame = 0
-		
-		C_Timer.After( 0, Plater.EveryFrameFPSCheck )
-	end
-	C_Timer.After( 0, Plater.EveryFrameFPSCheck )
+	end)
 	
 	-- ~ontick ~onupdate ~tick
 	function Plater.NameplateTick (tickFrame, deltaTime) --private
@@ -7304,10 +7326,10 @@ end
 				platerInternal.ExtraAuras.Show(tickFrame.BuffFrame)
 				
 				--align icons in the aura frame
-				Plater.AlignAuraFrames (tickFrame.BuffFrame)
+				platerInternal.AlignAuraFrames (tickFrame.BuffFrame)
 				--update the alignment on the second aura frame as well if enabled
 				if (DB_AURA_SEPARATE_BUFFS) then
-					Plater.AlignAuraFrames (tickFrame.BuffFrame.BuffFrame2)
+					platerInternal.AlignAuraFrames (tickFrame.BuffFrame.BuffFrame2)
 				end
 				
 				Plater.RunScriptTriggersForAuraIcons (unitFrame)
@@ -8499,7 +8521,8 @@ end
 	end
 	
 	function Plater.UpdateLifePercentText (healthBar, unitId, showHealthAmount, showPercentAmount, showDecimals) -- ~health
-		
+		Plater.StartLogPerformanceCore("Plater-Core", "Health", "UpdateLifePercentText")
+
 		--get the cached health amount for performance
 		local currentHealth, maxHealth, currentHealthMissing, currentHealthPercent = healthBar.currentHealth, healthBar.currentHealthMax, healthBar.currentHealthMissing, healthBar.currentHealthPercent
 		
@@ -8578,11 +8601,15 @@ end
 				healthBar.lifePercent:SetText ("")
 			end
 		end
+		Plater.EndLogPerformanceCore("Plater-Core", "Health", "UpdateLifePercentText")
 	end
 
 	-- this test if the percent life text can updated
-	function Plater.CheckLifePercentText (unitFrame) --private
+	function Plater.CheckLifePercentText (unitFrame, forceUpdate) --private
 		if (not unitFrame.actorType) then
+			return
+		end
+		if (not forceUpdate and not unitFrame.healthBar.healthChanged) then
 			return
 		end
 		
@@ -9216,7 +9243,7 @@ end
 		--update the visibility of the health text
 		Plater.UpdateLifePercentVisibility (plateFrame)
 		--update the health text
-		Plater.CheckLifePercentText (unitFrame)
+		Plater.CheckLifePercentText (unitFrame, true)
 		
 		--target indicator
 		Plater.UpdateTarget (plateFrame)
@@ -11752,12 +11779,12 @@ end
 		
 		--update the buff layout and alpha
 		buffFrame.unit = self.unit
-		Plater.AlignAuraFrames (buffFrame)
+		platerInternal.AlignAuraFrames (buffFrame)
 		--buffFrame:SetAlpha (DB_AURA_ALPHA)
 		
 		if (DB_AURA_SEPARATE_BUFFS) then
 			buffFrame2.unit = self.unit
-			Plater.AlignAuraFrames (buffFrame2)
+			platerInternal.AlignAuraFrames (buffFrame2)
 			--buffFrame2:SetAlpha (DB_AURA_ALPHA)
 		end
 		Plater.RunScriptTriggersForAuraIcons (self)
@@ -13633,7 +13660,6 @@ end
 			end
 		end
 	end	
-
 
 
 

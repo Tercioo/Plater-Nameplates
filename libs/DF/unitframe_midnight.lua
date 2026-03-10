@@ -614,6 +614,7 @@ detailsFramework.PowerFrameFunctions = {
 		--default size
 		Width = 100,
 		Height = 20,
+		AnimatePower = false,
 	},
 
 	PowerBarEvents = {
@@ -729,7 +730,7 @@ detailsFramework.PowerFrameFunctions = {
 		self.currentPower = UnitPower(self.displayedUnit, self.powerType)
 		self.currentPowerMissing = UnitPowerMissing(self.displayedUnit, self.powerType)
 		self.currentPowerPercent = UnitPowerPercent(self.displayedUnit, self.powerType, false, CurveConstants.ScaleTo100)
-		self:SetValue(self.currentPower)
+		self:SetValue(self.currentPower, self.Settings.AnimatePower and Enum.StatusBarInterpolation.ExponentialEaseOut or Enum.StatusBarInterpolation.Immediate)
 
 		if (self.Settings.ShowPercentText) then
 			if (issecretvalue(self.currentPowerMax) or self.currentPowerMax > 0) then
@@ -1101,28 +1102,22 @@ detailsFramework.CastFrameFunctions = {
 				r, g, b, a = self.SplitEvaluateColor(self.casting, c.r, c.g, c.b, c.a, r, g, b, a)
 			end
 		end
+		if (self.channeling ~= nil) then
+			local c = self.Colors.Channeling
+			if c then
+				r, g, b, a = self.SplitEvaluateColor(self.channeling, c.r, c.g, c.b, c.a, r, g, b, a)
+			end
+		end
 		if (self.finished ~= nil) then
 			local c = self.Colors.Finished
 			if c then
 				r, g, b, a = self.SplitEvaluateColor(self.finished, c.r, c.g, c.b, c.a, r, g, b, a)
 			end
 		end
-		if (self.interrupted ~= nil) then
-			local c = self.Colors.Interrupted
-			if c then
-				r, g, b, a = self.SplitEvaluateColor(self.interrupted, c.r, c.g, c.b, c.a, r, g, b, a)
-			end
-		end
 		if (self.failed ~= nil) then
 			local c = self.Colors.Failed
 			if c then
 				r, g, b, a = self.SplitEvaluateColor(self.failed, c.r, c.g, c.b, c.a, r, g, b, a)
-			end
-		end
-		if (self.channeling ~= nil) then
-			local c = self.Colors.Channeling
-			if c then
-				r, g, b, a = self.SplitEvaluateColor(self.channeling, c.r, c.g, c.b, c.a, r, g, b, a)
 			end
 		end
 		if (self.empowered ~= nil) then
@@ -1141,6 +1136,12 @@ detailsFramework.CastFrameFunctions = {
 			local c = self.Colors.NonInterruptible
 			if c then
 				r, g, b, a = self.SplitEvaluateColor(self.notInterruptible, c.r, c.g, c.b, c.a, r, g, b, a)
+			end
+		end
+		if (self.interrupted ~= nil) then
+			local c = self.Colors.Interrupted
+			if c then
+				r, g, b, a = self.SplitEvaluateColor(self.interrupted, c.r, c.g, c.b, c.a, r, g, b, a)
 			end
 		end
 		
@@ -1201,6 +1202,7 @@ detailsFramework.CastFrameFunctions = {
 			self.BorderShield:Show()
 		else
 			self.BorderShield:Hide()
+			self.BorderShield:SetAlpha(0)
 		end
 		if self.notInterruptible ~= nil then
 			self.BorderShield:SetAlphaFromBoolean(self.notInterruptible, 1, 0)
@@ -1498,6 +1500,7 @@ detailsFramework.CastFrameFunctions = {
 		local castBar = self:GetParent()
 		castBar:SetAlpha(1)
 		castBar:Hide()
+		castBar:UpdateInterruptState() -- animations and alpha are a bit weird sometimes...
 	end,
 
 	--animation start script
@@ -1932,6 +1935,7 @@ detailsFramework.CastFrameFunctions = {
 			self.castID = nil
 			self.castBarID = nil
 			self.interruptedBy = nil
+			self.isImportant = nil
 
 			if (not self:HasScheduledHide()) then
 				--check if settings has no fade option or if its parents are not visible
@@ -1972,6 +1976,7 @@ detailsFramework.CastFrameFunctions = {
 				self.castID = nil
 				self.castBarID = nil
 				self.interruptedBy = interruptedBy
+				self.isImportant = nil
 
 				if (not self:HasScheduledHide()) then
 					--check if settings has no fade option or if its parents are not visible
@@ -2025,6 +2030,7 @@ detailsFramework.CastFrameFunctions = {
 				self.castID = nil
 				self.castBarID = nil
 				self.interruptedBy = interruptedBy
+				self.isImportant = nil
 
 				if (not self:HasScheduledHide()) then
 					--check if settings has no fade option or if its parents are not visible
@@ -2056,6 +2062,7 @@ detailsFramework.CastFrameFunctions = {
 			self.castID = nil
 			self.castBarID = nil
 			self.interruptedBy = nil
+			self.isImportant = nil
 			
 			local value = self.durationObject:GetElapsedDuration()
 			local minValue, maxValue = 0, self.durationObject:GetTotalDuration()
@@ -2084,6 +2091,7 @@ detailsFramework.CastFrameFunctions = {
 			self.castID = nil
 			self.castBarID = nil
 			self.interruptedBy = interruptedBy
+			self.isImportant = nil
 
 			local value = self.durationObject and self.durationObject:GetElapsedDuration() or 1
 			local minValue, maxValue = 0,  self.durationObject and self.durationObject:GetTotalDuration() or 1
