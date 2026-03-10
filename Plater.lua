@@ -4591,14 +4591,20 @@ function Plater.OnInit() --private --~oninit ~init
 	C_Timer.After(5, function()
 		if C_AddOns.IsAddOnLoaded("PatchWerk") then
 		StaticPopupDialogs["PLATER_PATCHWERK_CONFLICT"] = {
-			text = "Plater has detected that the addon |cFFFF4400PatchWerk|r is loaded.\n\nPatchWerk potentially breaks every WoW addon, even addons it is not configured to patch, by modifying baseline API calls.\nYou must disable PatchWerk entirely for Plater and other addons to work correctly.\n\nClick 'Disable & Reload' to disable PatchWerk and reload your UI.",
+			text = "Plater has detected that the addon |cFFFF4400PatchWerk|r is loaded.\n\nPatchWerk potentially breaks every WoW addon, even addons it is not configured to patch, by modifying available WoW base API.\nYou must disable PatchWerk entirely for Plater and other addons to work correctly.\n\nYou may ignore this warning at your own risk, in which case Plater will be disabled for compatibility issues with PatchWerk.\nYou may re-enable Plater in your Addons once you have disable PatchWerk.\n\nClick 'Disable & Reload' to disable PatchWerk and reload your UI or 'Ignore' to disable Plater.",
 			button1 = "Disable & Reload",
+			button2 = "Ignore",
 			timeout = 0,
 			whileDead = true,
 			hideOnEscape = false,
 			preferredIndex = 3,
 			OnAccept = function()
+				C_AddOns.DisableAddOn("!PatchWerk")
 				C_AddOns.DisableAddOn("PatchWerk")
+				ReloadUI()
+			end,
+			OnCancel = function()
+				C_AddOns.DisableAddOn("Plater")
 				ReloadUI()
 			end,
 		}
