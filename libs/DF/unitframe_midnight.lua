@@ -614,6 +614,7 @@ detailsFramework.PowerFrameFunctions = {
 		--default size
 		Width = 100,
 		Height = 20,
+		AnimatePower = false,
 	},
 
 	PowerBarEvents = {
@@ -729,7 +730,7 @@ detailsFramework.PowerFrameFunctions = {
 		self.currentPower = UnitPower(self.displayedUnit, self.powerType)
 		self.currentPowerMissing = UnitPowerMissing(self.displayedUnit, self.powerType)
 		self.currentPowerPercent = UnitPowerPercent(self.displayedUnit, self.powerType, false, CurveConstants.ScaleTo100)
-		self:SetValue(self.currentPower)
+		self:SetValue(self.currentPower, self.Settings.AnimatePower and Enum.StatusBarInterpolation.ExponentialEaseOut or Enum.StatusBarInterpolation.Immediate)
 
 		if (self.Settings.ShowPercentText) then
 			if (issecretvalue(self.currentPowerMax) or self.currentPowerMax > 0) then
