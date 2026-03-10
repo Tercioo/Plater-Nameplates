@@ -4585,6 +4585,27 @@ end
 function Plater.OnInit() --private --~oninit ~init
 	LibStub ("AceDBOptions-3.0"):GetOptionsTable (Plater.db, true) -- register this now, to ensure no default "realm", "char - realm" profiles are shown in profiles management
 	
+	-- Inspired by and mostly copied from https://github.com/Cidan/BetterBags/pull/934/, thanks Cidan
+	-- PatchWerk breaks WoW addons by patching _G functions and overwriting addon code.
+	-- Detect it early and force the user to disable it.
+	C_Timer.After(5, function()
+		if C_AddOns.IsAddOnLoaded("PatchWerk") then
+		StaticPopupDialogs["PLATER_PATCHWERK_CONFLICT"] = {
+			text = "Plater has detected that the addon |cFFFF4400PatchWerk|r is loaded.\n\nPatchWerk potentially breaks every WoW addon, even addons it is not configured to patch, by modifying baseline API calls.\nYou must disable PatchWerk entirely for Plater and other addons to work correctly.\n\nClick 'Disable & Reload' to disable PatchWerk and reload your UI.",
+			button1 = "Disable & Reload",
+			timeout = 0,
+			whileDead = true,
+			hideOnEscape = false,
+			preferredIndex = 3,
+			OnAccept = function()
+				C_AddOns.DisableAddOn("PatchWerk")
+				ReloadUI()
+			end,
+		}
+		StaticPopup_Show("PLATER_PATCHWERK_CONFLICT")
+		end
+	end)
+
 	do
 		local languageCurrentVersion = 1
 		if (not PlaterLanguage) then
