@@ -1111,7 +1111,7 @@ end
 	--hidden icons aren't in use and should be ignored
 	--self is the buff container
 	--~align
-	function Plater.AlignAuraFrames (self)
+	function platerInternal.AlignAuraFrames (self)
 
 		if (self.isNameplate) then
 			local profile = Plater.db.profile
@@ -1341,6 +1341,7 @@ end
 			self:SetHeight (verticalHeight)
 		end
 	end
+	Plater.AlignAuraFrames = platerInternal.AlignAuraFrames
 
 	--adjust the texcoord of the icon by the size of the icon
 	--if the icon is more of a retangular shape, it'll cut the top and bottom sides of the icon giving a wide view
@@ -3143,10 +3144,10 @@ end
 						end
 						
 						Plater.HideNonUsedAuraIcons (buffFrame)
-						Plater.AlignAuraFrames (buffFrame)
+						platerInternal.AlignAuraFrames (buffFrame)
 						
 						if (DB_AURA_SEPARATE_BUFFS) then
-							Plater.AlignAuraFrames (buffFrame.BuffFrame2)
+							platerInternal.AlignAuraFrames (buffFrame.BuffFrame2)
 						end
 					end
 				end

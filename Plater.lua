@@ -7009,8 +7009,8 @@ end
 		curFPS = 1,
 	}
 	
-	function Plater.EveryFrameFPSCheck()
-		-- calculate every .25sec
+	platerInternal.EveryFrameFPSCheck = CreateFrame("Frame")
+	platerInternal.EveryFrameFPSCheck:SetScript("OnUpdate", function()
 		local curTime = GetTime()
 		local curFPSData = Plater.FPSData
 		if (curFPSData.startTime + 0.25) < curTime then
@@ -7027,10 +7027,7 @@ end
 		
 		--ViragDevTool_AddData(curFPSData.platesUpdatedThisFrame, "platesUpdatedThisFrame")
 		curFPSData.platesUpdatedThisFrame = 0
-		
-		C_Timer.After( 0, Plater.EveryFrameFPSCheck )
-	end
-	C_Timer.After( 0, Plater.EveryFrameFPSCheck )
+	end)
 	
 	-- ~ontick ~onupdate ~tick
 	function Plater.NameplateTick (tickFrame, deltaTime) --private
@@ -7297,10 +7294,10 @@ end
 				platerInternal.ExtraAuras.Show(tickFrame.BuffFrame)
 				
 				--align icons in the aura frame
-				Plater.AlignAuraFrames (tickFrame.BuffFrame)
+				platerInternal.AlignAuraFrames (tickFrame.BuffFrame)
 				--update the alignment on the second aura frame as well if enabled
 				if (DB_AURA_SEPARATE_BUFFS) then
-					Plater.AlignAuraFrames (tickFrame.BuffFrame.BuffFrame2)
+					platerInternal.AlignAuraFrames (tickFrame.BuffFrame.BuffFrame2)
 				end
 				
 				Plater.RunScriptTriggersForAuraIcons (unitFrame)
@@ -11745,12 +11742,12 @@ end
 		
 		--update the buff layout and alpha
 		buffFrame.unit = self.unit
-		Plater.AlignAuraFrames (buffFrame)
+		platerInternal.AlignAuraFrames (buffFrame)
 		--buffFrame:SetAlpha (DB_AURA_ALPHA)
 		
 		if (DB_AURA_SEPARATE_BUFFS) then
 			buffFrame2.unit = self.unit
-			Plater.AlignAuraFrames (buffFrame2)
+			platerInternal.AlignAuraFrames (buffFrame2)
 			--buffFrame2:SetAlpha (DB_AURA_ALPHA)
 		end
 		Plater.RunScriptTriggersForAuraIcons (self)
