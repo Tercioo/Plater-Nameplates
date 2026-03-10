@@ -496,6 +496,10 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
     plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
     platerInternal.UpdatePercentTextLayout(lifePercent, plateConfig[subTablePath])
 
+    --execute range
+    objectInfo = layoutEditor:RegisterObject(healthBar.healthCutOff, "Execute Range", "EXECUTERANGE", profileRoot, rootKey, options.WidgetSettingsMapTables.ExecuteRange, options.WidgetSettingsExtraOptions.ExecuteRange, onSettingChanged, editObjectNoMoveOptions, healthBar)
+    plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
+
     --actor title and name special
     objectInfo = layoutEditor:RegisterObject(actorNameSpecial, "Big Unit Name", "BIGUNITNAME", plateConfig, subTablePath, options.WidgetSettingsMapTables.BigUnitName, options.WidgetSettingsExtraOptions.BigUnitName, onSettingChanged, editObjectNoMoveOptions, plateFrame)
     plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
@@ -547,6 +551,10 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
         castBar:SetMinMaxValues(0, 3)
         castBar:SetValue(isCastBarSelected and curCastBarValue or 0)
 
+        healthBar.healthCutOff:SetPoint("left", healthBar, "left", healthBar:GetWidth()*0.2, 0)
+        healthBar.healthCutOff:SetSize(healthBar:GetHeight(), healthBar:GetHeight())
+        healthBar.healthCutOff:Show()
+
         if (curCastBarValue >= 3) then
             curCastBarValue = 0
         else
@@ -567,12 +575,11 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
         dv(spark)
         --]=]
 
-        --check options
-        if (plateConfig[subTablePath].percent_text_enabled) then
-            lifePercent:SetAlpha(1)
-        else
-            lifePercent:SetAlpha(disabledAlpha)
-        end
+        --percent text disabled
+        --lifePercent:SetAlpha(plateConfig[subTablePath].percent_text_enabled and 1 or disabledAlpha)
+        --unit level disabled
+        --levelText:SetAlpha(plateConfig[subTablePath].level_text_enabled and 1 or disabledAlpha)
+
     end)
 
 

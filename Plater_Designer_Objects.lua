@@ -8,6 +8,7 @@ local detailsFramework = _G.DetailsFramework
 local _
 local LSM = LibStub:GetLibrary ("LibSharedMedia-3.0")
 local designer = platerInternal.Designer
+local L = detailsFramework.Language.GetLanguageTable(addonName)
 
 local PixelUtil = PixelUtil
 local CreateFrame = CreateFrame
@@ -83,7 +84,7 @@ function designer.CreateSettings(parentFrame)
         },
 
         CastBarSpark = {
-            texture = "cast_statusbar_spark_texture", --it'll need a feed of textures, perhaps a function
+            --texture = "cast_statusbar_spark_texture", --it'll need a feed of textures, perhaps a function
             width = "cast_statusbar_spark_width",
             vertexcolor = "cast_statusbar_spark_color",
             alpha = "cast_statusbar_spark_alpha",
@@ -162,6 +163,8 @@ function designer.CreateSettings(parentFrame)
             width = "health_incombat[1]", --plate_config.enemynpc.
             height = "health_incombat[2]", --plate_config.enemynpc.
         },
+
+        ExecuteRange = {},
     }
 
     options.WidgetSettingsExtraOptions = {
@@ -184,6 +187,8 @@ function designer.CreateSettings(parentFrame)
                     healthBar.background:SetVertexColor(r, g, b, a); designer.UpdateAllNameplates()
                 end,
             },
+
+            {type = "blank"},
 
             {
                 key = "border_color",
@@ -208,6 +213,8 @@ function designer.CreateSettings(parentFrame)
                     Plater.UpdatePlateBorders(healthBar.unitFrame.PlateFrame) designer.UpdateAllNameplates()
                 end,
             },
+
+            {type = "blank"},
 
             {
                 key = "health_selection_overlay",
@@ -244,6 +251,8 @@ function designer.CreateSettings(parentFrame)
                 end,
             },
 
+            {type = "blank"},
+
             --hover over hightlight
             {
                 key = "hover_highlight",
@@ -273,6 +282,44 @@ function designer.CreateSettings(parentFrame)
                     healthBar.unitFrame.HighlightFrame.HighlightTexture:SetAlpha(Plater.db.profile.hover_highlight_alpha); designer.UpdateAllNameplates()
                 end,
             },
+
+            {type = "blank"},
+
+
+        },
+
+        ExecuteRange = {
+            --execution range (health cutoff)
+            {
+                key = "health_cutoff",
+                label = L["OPTIONS_EXECUTERANGE"],
+                widget = "toggle",
+                default = Plater.db.profile.health_cutoff,
+                setter = function(healthBar, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "health_cutoff_upper",
+                label = L["OPTIONS_EXECUTERANGE_HIGH_HEALTH"],
+                widget = "toggle",
+                default = Plater.db.profile.health_cutoff_upper,
+                setter = function(healthBar, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "health_cutoff_extra_glow",
+                label = "Add Extra Glow to Execute Range",
+                widget = "toggle",
+                default = Plater.db.profile.health_cutoff_extra_glow,
+                setter = function(healthBar, value) designer.UpdateAllNameplates() end,
+            },
+        },
+
+            --{
+            --    key = "health_cutoff_hide_divisor",
+            --    label = L["OPTIONS_EXECUTERANGE_HIDE_DIVISOR"],
+            --    widget = "toggle",
+            --    default = Plater.db.profile.health_cutoff_hide_divisor,
+            --    setter = function(healthBar, value) designer.UpdateAllNameplates() end,
+            --},
 
             --[=[
                 {
@@ -342,7 +389,7 @@ function designer.CreateSettings(parentFrame)
                 tableName = "health_statusbar_texture",
             },
             --]=]
-        },
+        
 
         --tableName is not a field that is used by the designer in the framework
         --it is here so the Plater_Designer can know which field to update in the profile table
