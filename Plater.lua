@@ -3963,10 +3963,7 @@ Plater.AnchorNamesByPhraseId = {
 			end
 			
 			--cache values
-			local unitName = UnitName (unitID)
-			if not IS_WOW_PROJECT_MIDNIGHT then
-				unitName = unitName or ""
-			end
+			local unitName = UnitName (unitID) or ""
 			local unitNameTranslit = unitName
 			if DB_USE_NAME_TRANSLIT and (not IS_WOW_PROJECT_MIDNIGHT or (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(unitName))) then
 				unitNameTranslit = LibTranslit:Transliterate(unitName, TRANSLIT_MARK)
@@ -5631,8 +5628,11 @@ function Plater.OnInit() --private --~oninit ~init
 					else
 						icon:SetWidth(height)
 					end
+
+					castBar:UpdateInterruptState() -- ensure icon is shown as appropriate
 				else
 					icon:Hide()
+					borderShield:SetTexture (nil)
 					borderShield:Hide()
 				end
 			else
@@ -5641,19 +5641,20 @@ function Plater.OnInit() --private --~oninit ~init
 				PixelUtil.SetSize (icon, castBarHeight, castBarHeight)
 				
 				--setup non interruptible cast shield
-				borderShield:SetTexture ([[Interface\ACHIEVEMENTFRAME\UI-Achievement-Progressive-IconBorder]])
+				--borderShield:SetTexture ([[Interface\ACHIEVEMENTFRAME\UI-Achievement-Progressive-IconBorder]])
+				borderShield:SetTexture ([[Interface\GROUPFRAME\UI-GROUP-MAINTANKICON]])
 				borderShield:SetTexCoord (5/64, 37/64, 1/64, 36/64)
 				borderShield:ClearAllPoints()
 				borderShield:SetPoint ("center", castBar.Icon, "center")
 				PixelUtil.SetSize (borderShield, castBarHeight * 1.4, castBarHeight * 1.4)
 				borderShield:SetDesaturated (false)
+
+				castBar:UpdateInterruptState() -- ensure icon is shown as appropriate
 			end
 
 			if castBar.Icon.Masqued then
 				Plater.Masque.CastIcon:ReSkin(castBar.Icon)
 			end
-
-			castBar:UpdateInterruptState() -- ensure icon is shown as appropriate
 		end
 		
 		
@@ -8706,7 +8707,8 @@ end
 		local name = plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME] or ""
 		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(name) then
 			-- do we try to refresh? is it worth?
-			plateFrame.unitFrame.unitName.isRenamed = nil
+			plateFrame.unitFrame.unitName.isRenamed = true -- force it
+			nameString:ClearText()
 			Plater.UpdateNameOnRenamedUnit(plateFrame)
 			name = plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME] or ""
 		end
