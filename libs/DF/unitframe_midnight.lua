@@ -1932,10 +1932,13 @@ detailsFramework.CastFrameFunctions = {
 			self.casting = nil
 			self.channeling = nil
 			self.finished = true
+			self.spellID = nil
 			self.castID = nil
+			self.spellName = nil
 			self.castBarID = nil
 			self.interruptedBy = nil
 			self.isImportant = nil
+			self.notInterruptible = nil
 
 			if (not self:HasScheduledHide()) then
 				--check if settings has no fade option or if its parents are not visible
@@ -1973,10 +1976,13 @@ detailsFramework.CastFrameFunctions = {
 				self.casting = nil
 				self.channeling = nil
 				self.finished = true
+				self.spellID = nil
 				self.castID = nil
+				self.spellName = nil
 				self.castBarID = nil
 				self.interruptedBy = interruptedBy
 				self.isImportant = nil
+				self.notInterruptible = nil
 
 				if (not self:HasScheduledHide()) then
 					--check if settings has no fade option or if its parents are not visible
@@ -2027,10 +2033,13 @@ detailsFramework.CastFrameFunctions = {
 				self.casting = nil
 				self.channeling = nil
 				self.finished = true
+				self.spellID = nil
 				self.castID = nil
+				self.spellName = nil
 				self.castBarID = nil
 				self.interruptedBy = interruptedBy
 				self.isImportant = nil
+				self.notInterruptible = nil
 
 				if (not self:HasScheduledHide()) then
 					--check if settings has no fade option or if its parents are not visible
@@ -2059,10 +2068,13 @@ detailsFramework.CastFrameFunctions = {
 			self.channeling = nil
 			self.failed = true
 			self.finished = true
+			self.spellID = nil
 			self.castID = nil
+			self.spellName = nil
 			self.castBarID = nil
 			self.interruptedBy = nil
 			self.isImportant = nil
+			self.notInterruptible = nil
 			
 			local value = self.durationObject:GetElapsedDuration()
 			local minValue, maxValue = 0, self.durationObject:GetTotalDuration()
@@ -2088,10 +2100,13 @@ detailsFramework.CastFrameFunctions = {
 			self.channeling = nil
 			self.interrupted = true
 			self.finished = true
+			self.spellID = nil
 			self.castID = nil
+			self.spellName = nil
 			self.castBarID = nil
 			self.interruptedBy = interruptedBy
 			self.isImportant = nil
+			self.notInterruptible = nil
 
 			local value = self.durationObject and self.durationObject:GetElapsedDuration() or 1
 			local minValue, maxValue = 0,  self.durationObject and self.durationObject:GetTotalDuration() or 1
