@@ -717,17 +717,10 @@ detailsFramework.FrameContainerMixin = {
         end
 
         local neighborChildren = frameContainer:GetChildrenForResize(child, resizeSide)
-        local effectiveScale = frameContainer:GetEffectiveScale()
-        if (not effectiveScale or effectiveScale <= 0) then
-            effectiveScale = 1
-        end
+        local mouseX, mouseY = DF:GetCursorPosition()
 
-        local cursorX, cursorY = GetCursorPosition()
-        cursorX = cursorX / effectiveScale
-        cursorY = cursorY / effectiveScale
-
-        local startCursorRelativeX = cursorX - containerLeft
-        local startCursorRelativeY = containerTop - cursorY
+        local startCursorRelativeX = mouseX - containerLeft
+        local startCursorRelativeY = containerTop - mouseY
 
         frameContainer.activeChildResizeState = {
             resizer = resizerButton,
