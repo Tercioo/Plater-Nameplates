@@ -1594,18 +1594,17 @@ detailsFramework.CastFrameFunctions = {
 		castBarID = castBarID or uciCastBarID
 		local durationObject = UnitCastingDuration(unit)
 		
---[[
 		if spellID and (not name or not texture or not text) then
 			local siName, _, siIcon, siCastTime = GetSpellInfo(spellID)
 			texture = texture or siIcon
 			name = name or siName
 			text = text or siName
 			if not startTime then
-				startTime = GetTime()
-				endTime = startTime + siCastTime
+				startTime = 0
+				endTime = siCastTime
 			end
 		end
-]]--
+
 		--is valid?
 		if (not self:IsValid(unit, name, isTradeSkill, true)) then
 			return
@@ -1652,7 +1651,7 @@ detailsFramework.CastFrameFunctions = {
 			self.Icon:SetTexture(texture)
 			self.Icon:Show()
 			--self.Text:SetText(text or name)
-			self.Text:SetText(text)
+			self.Text:SetText(name or text or "")
 
 			if (self.Settings.ShowCastTime and self.Settings.CanLazyTick) then
 				self.percentText:Show()
@@ -1779,18 +1778,17 @@ detailsFramework.CastFrameFunctions = {
 		castBarID = castBarID or uciCastBarID
 		local durationObject = isEmpowered and UnitEmpoweredChannelDuration(unit, self.Settings.ShowEmpoweredDuration) or UnitChannelDuration(unit)
 		
---[[
 		if spellID and (not name or not texture or not text) then
 			local siName, _, siIcon, siCastTime = GetSpellInfo(spellID)
 			texture = texture or siIcon
 			name = name or siName
 			text = text or siName
 			if not startTime then
-				startTime = GetTime()
-				endTime = startTime + siCastTime
+				startTime = 0
+				endTime = siCastTime
 			end
 		end
-]]--
+
 		--is valid?
 		if (not self:IsValid (unit, name, isTradeSkill, true)) then
 			return
@@ -1870,7 +1868,7 @@ detailsFramework.CastFrameFunctions = {
 			end
 			self.Icon:SetTexture(texture)
 			self.Icon:Show()
-			self.Text:SetText(text)
+			self.Text:SetText(name or text or "")
 
 			if (self.Settings.ShowCastTime and self.Settings.CanLazyTick) then
 				self.percentText:Show()
