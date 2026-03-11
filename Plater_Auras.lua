@@ -1914,7 +1914,7 @@ end
 				local isDefensive = not C_UnitAuras.IsAuraFilteredOutByInstanceID(auraIconFrame.unitFrame.namePlateUnitToken, i, "HELPFUL|BIG_DEFENSIVE") or not C_UnitAuras.IsAuraFilteredOutByInstanceID(auraIconFrame.unitFrame.namePlateUnitToken, i, "HELPFUL|EXTERNAL_DEFENSIVE")
 				if isDefensive ~= nil then
 					er, eg, eb, ea = unpack (profile.aura_border_colors.defensive)
-					r, g, b, a = SplitEvaluateColor(isCC, er, eg, eb, ea, r, g, b, a)
+					r, g, b, a = SplitEvaluateColor(isDefensive, er, eg, eb, ea, r, g, b, a)
 				end
 
 				if isStealable ~= nil then
@@ -2238,13 +2238,13 @@ end
 					local isCC = not C_UnitAuras.IsAuraFilteredOutByInstanceID(self.unitFrame.namePlateUnitToken, id, "HARMFUL|CROWD_CONTROL")
 					if isCC ~= nil then
 						er, eg, eb, ea = unpack (profile.debuff_show_cc_border)
-						r, g, b, a = SplitEvaluateColor(isCC or false, er, eg, eb, ea, r, g, b, a)
+						r, g, b, a = SplitEvaluateColor(isCC, er, eg, eb, ea, r, g, b, a)
 					end
 
 					local isDefensive = not C_UnitAuras.IsAuraFilteredOutByInstanceID(self.unitFrame.namePlateUnitToken, id, "HELPFUL|BIG_DEFENSIVE") or not C_UnitAuras.IsAuraFilteredOutByInstanceID(self.unitFrame.namePlateUnitToken, id, "HELPFUL|EXTERNAL_DEFENSIVE")
 					if isDefensive ~= nil then
 						er, eg, eb, ea = unpack (profile.extra_icon_show_defensive_border)
-						r, g, b, a = SplitEvaluateColor(isCC, er, eg, eb, ea, r, g, b, a)
+						r, g, b, a = SplitEvaluateColor(isDefensive, er, eg, eb, ea, r, g, b, a)
 					end
 
 					if isStealable ~= nil then
