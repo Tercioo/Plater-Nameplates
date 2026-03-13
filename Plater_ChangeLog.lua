@@ -8,6 +8,14 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			
+			{1772438164, "Bug Fix", "Mar 13th, 2026", "Fixing shield indicators not showing correctly.", "httpsx"},
+			{1772438164, "Bug Fix", "Mar 11th, 2026", "Fixing incorrect aura border colors.", "cont1nuity"},
+			{1772438164, "Backend Change", "Mar 10th, 2026", "Additions and fixes for the Designer.", "Terciob"},
+			{1772438164, "Bug Fix", "Mar 9th, 2026", "Fixing cast bar icon size not adjusting correctly in some cases.", "cont1nuity"},
+			{1772438164, "Bug Fix", "Mar 9th, 2026", "Fixing cast bar shield icon for not interruptible casts not showing correctly.", "cont1nuity"},
+			{1772438164, "Bug Fix", "Mar 9th, 2026", "Additional fixes for font overrides.", "httpsx"},
+			{1772438164, "Bug Fix", "Mar 7th, 2026", "Fixing some cases of threat colors not showing correctly.", "cont1nuity"},
 			{1772438164, "Bug Fix", "Mar 4th, 2026", "Fixing font override options not working correctly.", "cont1nuity"},
 			{1772438164, "Backend Change", "Mar 3rd, 2026", "Hiding unneeded or disabled options.", "cont1nuity"},
 						
