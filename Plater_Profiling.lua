@@ -15,7 +15,7 @@ local profStartTime = 0
 local memStart = 0
 local memEnd = 0
 local profEndTime = 0
-local addonMetricsAtStart = {}
+local addonMetricsAtStart = { global = {}, Plater = {} }
 local addonMetricsAtEnd = {}
 local profilingEnabled = false
 local everyFrameLogSkipFirst = true
@@ -668,7 +668,7 @@ local function getAdvancedPerfData()
 		printStrHeader = printStrHeader .. "\n\nAddon Metrics for profiling session:"
 		printStrHeader = printStrHeader .. "\n\n" .. PRT_INDENT .. "Overall Addon Metrics:\n"
 		for _, metric in pairs(addonMetricsNamesForSession) do
-			profilingMetrics.global[metric] = addonMetricsAtEnd.global[metric] - addonMetricsAtStart.global[metric]
+			profilingMetrics.global[metric] = addonMetricsAtEnd.global[metric] - (addonMetricsAtStart.global[metric] or 0)
 			if profilingMetrics.global[metric] > 0 then
 				printStrHeader = printStrHeader .. PRT_INDENT .. PRT_INDENT .. metric .. ": " .. roundTime(profilingMetrics.global[metric]) .. "\n"
 			end
@@ -676,7 +676,7 @@ local function getAdvancedPerfData()
 		
 		printStrHeader = printStrHeader .. "\n\n" .. PRT_INDENT .. "Plater Addon Metrics:\n"
 		for _, metric in pairs(addonMetricsNamesForSession) do
-			profilingMetrics.Plater[metric] = addonMetricsAtEnd.Plater[metric] - addonMetricsAtStart.Plater[metric]
+			profilingMetrics.Plater[metric] = addonMetricsAtEnd.Plater[metric] - (addonMetricsAtStart.Plater[metric] or 0)
 			if profilingMetrics.Plater[metric] > 0 then
 				printStrHeader = printStrHeader .. PRT_INDENT .. PRT_INDENT .. metric .. ": " .. roundTime(profilingMetrics.Plater[metric]) .. " (" .. roundPercent(profilingMetrics.Plater[metric]/profilingMetrics.global[metric]*100) .. "%)\n"
 			end
