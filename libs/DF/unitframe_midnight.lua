@@ -318,8 +318,8 @@ local cleanfunction = function() end
 		self.currentHealthMissingWithAbsorb = calculator:GetMissingHealth()
 		self.currentHealthMaxWithAbsorb = calculator:GetMaximumDamageAbsorbs() --calculator:GetMaximumHealth()
 		
-		--self:SetMinMaxValues(0, self.currentHealthMaxWithAbsorb, Enum.StatusBarInterpolation.Immediate)
-		self:SetMinMaxValues(0, self.currentHealthMax, Enum.StatusBarInterpolation.Immediate)
+		self:SetMinMaxValues(0, self.currentHealthMaxWithAbsorb, Enum.StatusBarInterpolation.Immediate)
+		--self:SetMinMaxValues(0, self.currentHealthMax, Enum.StatusBarInterpolation.Immediate)
 
 		self:SetValue(self.currentHealth, (updateMaxHealth or not self.Settings.AnimateHealth) and Enum.StatusBarInterpolation.Immediate or Enum.StatusBarInterpolation.ExponentialEaseOut)
 		
@@ -340,7 +340,8 @@ local cleanfunction = function() end
 			self.shieldAbsorbGlow:Show()
 			self.shieldAbsorbGlow:SetAlphaFromBoolean(false, 1, 0)
 			
-			self.shieldAbsorbIndicatorBar:SetMinMaxValues(0, self.currentHealthMissing, self.Settings.AnimateHealth and Enum.StatusBarInterpolation.ExponentialEaseOut or Enum.StatusBarInterpolation.Immediate) --TODO
+			--self.shieldAbsorbIndicatorBar:SetMinMaxValues(0, self.currentHealthMissing, self.Settings.AnimateHealth and Enum.StatusBarInterpolation.ExponentialEaseOut or Enum.StatusBarInterpolation.Immediate) --TODO
+			self.shieldAbsorbIndicatorBar:SetMinMaxValues(0, self.currentHealthMaxWithAbsorb, self.Settings.AnimateHealth and Enum.StatusBarInterpolation.ExponentialEaseOut or Enum.StatusBarInterpolation.Immediate) --TODO
 			self.shieldAbsorbIndicatorBar:SetValue(absorb)
 		end
 
@@ -487,17 +488,17 @@ function detailsFramework:CreateHealthBar(parent, name, settingsOverride)
 			healthBar.shieldAbsorbIndicatorBar:SetStatusBarTexture(healthBar.shieldAbsorbIndicatorBar.barTexture)
 			healthBar.shieldAbsorbIndicatorBar.barTexture:SetTexture([[Interface\RaidFrame\Shield-Fill]])
 			healthBar.shieldAbsorbIndicatorBar:SetPoint ("topleft", healthBar.barTexture, "topright")
-			healthBar.shieldAbsorbIndicatorBar:SetPoint ("bottomright", healthBar, "bottomright")
+			--healthBar.shieldAbsorbIndicatorBar:SetPoint ("bottomright", healthBar, "bottomright")
 			
 			-- the below would be better for proper scaling, but I don't want the bar to run out of the nameplate...
-			--healthBar.shieldAbsorbIndicatorBar:SetPoint ("bottomleft", healthBar.barTexture, "bottomright")
-			--hooksecurefunc(healthBar, 'SetWidth', function(self, w)
-			--	healthBar.shieldAbsorbIndicatorBar:SetWidth(w)
-			--end)
-			--hooksecurefunc(healthBar, 'SetSize', function(self, h, w)
-			--	--healthBar.shieldAbsorbIndicatorBar:SetSize(h, w)
-			--	healthBar.shieldAbsorbIndicatorBar:SetWidth(w)
-			--end)
+			healthBar.shieldAbsorbIndicatorBar:SetPoint ("bottomleft", healthBar.barTexture, "bottomright")
+			hooksecurefunc(healthBar, 'SetWidth', function(self, w)
+				healthBar.shieldAbsorbIndicatorBar:SetWidth(w)
+			end)
+			hooksecurefunc(healthBar, 'SetSize', function(self, h, w)
+				--healthBar.shieldAbsorbIndicatorBar:SetSize(h, w)
+				healthBar.shieldAbsorbIndicatorBar:SetWidth(w)
+			end)
 			-- not so nice, but works in compatibility
 			healthBar.SetFrameLevelOrig = healthBar.SetFrameLevel
 			healthBar.SetFrameLevel = function(self, level)
@@ -518,6 +519,9 @@ function detailsFramework:CreateHealthBar(parent, name, settingsOverride)
 			--the shield fills all the bar, show that cool glow
 			healthBar.shieldAbsorbGlow = healthBar:CreateTexture(nil, "artwork", nil, 6)
 			healthBar.shieldAbsorbGlow:SetDrawLayer("artwork", 7)
+
+			healthBar.mask = healthBar:CreateMaskTexture()
+  			healthBar.mask:SetPoint("CENTER")
 		end
 
 	--mixins
