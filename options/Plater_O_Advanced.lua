@@ -53,8 +53,8 @@ function platerInternal.CreateAdvancedOptions()
     local dropdownStatusBarColor = platerInternal.Defaults.dropdownStatusBarColor
 
     --outline table
-    local outline_modes = {"NONE", "MONOCHROME", "OUTLINE", "THICKOUTLINE", "OUTLINEMONOCHROME", "THICKOUTLINEMONOCHROME"}
-    local outline_modes_names = {"None", "Monochrome", "Outline", "Thick Outline", "Monochrome Outline", "Monochrome Thick Outline"}
+    local outline_modes = {"NONE", "MONOCHROME", "OUTLINE", "THICKOUTLINE", "OUTLINEMONOCHROME", "THICKOUTLINEMONOCHROME", "SLUG", "OUTLINE, SLUG"}
+    local outline_modes_names = {"None", "Monochrome", "Outline", "Thick Outline", "Monochrome Outline", "Monochrome Thick Outline", "Slug", "Outline Slug"}
     local build_outline_modes_table = function (actorType, member)
         local t = {}
         for i = 1, #outline_modes do
