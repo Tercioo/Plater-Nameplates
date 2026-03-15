@@ -1494,7 +1494,7 @@ Plater.AnchorNamesByPhraseId = {
 		
 		Plater.db.profile.use_ui_parent = true
 		Plater.db.profile.use_ui_parent_just_enabled = false
-		Plater.db.profile.ui_parent_scale_tune = 1 / UIParent:GetEffectiveScale()
+		Plater.db.profile.ui_parent_scale_tune = 1 / (IS_WOW_PROJECT_MIDNIGHT and 1 or UIParent:GetEffectiveScale())
 		
 		--call the user to /reload his UI
 		DF:ShowPromptPanel ("Plater profile reset, do you want /reload now (recommended)?", function() ReloadUI() end, function() end, true, 500)
@@ -4834,7 +4834,7 @@ function Plater.OnInit() --private --~oninit ~init
 				if not Plater.db.profile.use_ui_parent or Plater.db.profile.ui_parent_scale_tune == 0 then
 					Plater.db.profile.use_ui_parent = true
 					--adjust the fine tune to player's screen scale
-					Plater.db.profile.ui_parent_scale_tune = 1 / UIParent:GetEffectiveScale()
+					Plater.db.profile.ui_parent_scale_tune = 1 / (IS_WOW_PROJECT_MIDNIGHT and 1 or UIParent:GetEffectiveScale())
 					Plater.db.profile.use_ui_parent_just_enabled = false
 					Plater.RefreshDBUpvalues()
 					Plater.UpdateAllPlates()
@@ -6316,7 +6316,7 @@ function Plater.OnInit() --private --~oninit ~init
 					--enable UIParent nameplates for new installs of Plater
 					Plater.db.profile.use_ui_parent = true
 					--adjust the fine tune to player's screen scale
-					Plater.db.profile.ui_parent_scale_tune = 1 / UIParent:GetEffectiveScale()
+					Plater.db.profile.ui_parent_scale_tune = 1 / (IS_WOW_PROJECT_MIDNIGHT and 1 or UIParent:GetEffectiveScale())
 					Plater.RefreshDBUpvalues()
 					Plater.UpdateAllPlates()
 				end
