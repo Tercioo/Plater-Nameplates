@@ -318,8 +318,7 @@ local cleanfunction = function() end
 		self.currentHealthMissingWithAbsorb = calculator:GetMissingHealth()
 		self.currentHealthMaxWithAbsorb = calculator:GetMaximumDamageAbsorbs() --calculator:GetMaximumHealth()
 		
-		self:SetMinMaxValues(0, self.currentHealthMaxWithAbsorb, Enum.StatusBarInterpolation.Immediate)
-		--self:SetMinMaxValues(0, self.currentHealthMax, Enum.StatusBarInterpolation.Immediate)
+		self:SetMinMaxValues(0, self.Settings.ShowShields and self.currentHealthMaxWithAbsorb or self.currentHealth, Enum.StatusBarInterpolation.Immediate)
 
 		self:SetValue(self.currentHealth, (updateMaxHealth or not self.Settings.AnimateHealth) and Enum.StatusBarInterpolation.Immediate or Enum.StatusBarInterpolation.ExponentialEaseOut)
 		
