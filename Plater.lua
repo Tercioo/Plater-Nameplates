@@ -5642,12 +5642,18 @@ function Plater.OnInit() --private --~oninit ~init
 				
 				--setup non interruptible cast shield
 				--borderShield:SetTexture ([[Interface\ACHIEVEMENTFRAME\UI-Achievement-Progressive-IconBorder]])
-				borderShield:SetTexture ([[Interface\GROUPFRAME\UI-GROUP-MAINTANKICON]])
-				borderShield:SetTexCoord (5/64, 37/64, 1/64, 36/64)
+				--borderShield:SetTexCoord (5/64, 37/64, 1/64, 36/64)
+				--borderShield:ClearAllPoints()
+				--borderShield:SetPoint ("center", castBar.Icon, "center")
+				--PixelUtil.SetSize (borderShield, castBarHeight * 1.4, castBarHeight * 1.4)
+				--borderShield:SetDesaturated (false)
+
 				borderShield:ClearAllPoints()
-				borderShield:SetPoint ("center", castBar.Icon, "center")
-				PixelUtil.SetSize (borderShield, castBarHeight * 1.4, castBarHeight * 1.4)
-				borderShield:SetDesaturated (false)
+				borderShield:SetTexture ([[Interface\GROUPFRAME\UI-GROUP-MAINTANKICON]])
+				borderShield:SetTexCoord (0, 1, 0, 1)
+				borderShield:SetDesaturated (true)
+				PixelUtil.SetSize (borderShield, castBarHeight * 0.8, castBarHeight)
+				PixelUtil.SetPoint (borderShield, "center", castBar, "left", 0, 0)
 
 				castBar:UpdateInterruptState() -- ensure icon is shown as appropriate
 			end
