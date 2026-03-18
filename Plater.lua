@@ -871,7 +871,7 @@ Plater.AnchorNamesByPhraseId = {
 			return
 		
 		--the unit is friendly or not using range check and non targets alpha
-		elseif ((not DB_USE_ALPHA_FRIENDLIES and plateFrame [MEMBER_REACTION] >= 5) or (not DB_USE_ALPHA_ENEMIES and plateFrame [MEMBER_REACTION] < 5) or (not DB_USE_RANGE_CHECK and not DB_USE_NON_TARGETS_ALPHA)) then
+		elseif ((not DB_USE_ALPHA_FRIENDLIES and plateFrame [MEMBER_REACTION] and plateFrame [MEMBER_REACTION] >= 5) or (not DB_USE_ALPHA_ENEMIES and plateFrame [MEMBER_REACTION] and plateFrame [MEMBER_REACTION] < 5) or (not DB_USE_RANGE_CHECK and not DB_USE_NON_TARGETS_ALPHA)) then
 			unitFrame:SetAlpha (nameplateAlpha)
 			unitFrame.healthBar:SetAlpha (1)
 			if not castBarFade then
@@ -6047,7 +6047,7 @@ function Plater.OnInit() --private --~oninit ~init
 						self.FrameOverlay.TargetName:SetText ("")
 					end
 					
-					self.ThrottleUpdate = self.unitFrame.PlateFrame.OnTickFrame.ThrottleUpdate + DB_TICK_THROTTLE
+					self.ThrottleUpdate = (self.unitFrame.PlateFrame.OnTickFrame.ThrottleUpdate or 0) + DB_TICK_THROTTLE
 
 					if not IS_WOW_PROJECT_MIDNIGHT or (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(self.SpellName)) then
 						--get the script object of the aura which will be showing in this icon frame
@@ -6130,8 +6130,13 @@ function Plater.OnInit() --private --~oninit ~init
 	function Plater.QuickHealthUpdate (unitFrame)
 		Plater.StartLogPerformanceCore("Plater-Core", "Health", "QuickHealthUpdate")
 		if IS_WOW_PROJECT_MIDNIGHT then
-			--unitFrame.healthBar.currentHealthMissing = UnitHealthMissing(unitFrame.unit, true)
-			--unitFrame.healthBar.currentHealthPercent = UnitHealthPercent(unitFrame.unit, true, CurveConstants.ScaleTo100)
+			local bar = unitFrame.healthBar
+			UnitGetDetailedHealPrediction(unitFrame.unit, nil, bar.healCalculator)
+			bar.healCalculator:SetMaximumHealthMode(Enum.UnitMaximumHealthMode.Default)
+			bar.currentHealth = bar.healCalculator:GetCurrentHealth()
+			bar.currentHealthMax = bar.healCalculator:GetMaximumDamageAbsorbs()
+			bar.currentHealthMissing = bar.healCalculator:GetMissingHealth()
+			bar.currentHealthPercent = UnitHealthPercent(unitFrame.unit, false, CurveConstants.ScaleTo100) or 0
 		else
 			local unitHealth = UnitHealth (unitFrame.unit)
 			local unitHealthMax = UnitHealthMax (unitFrame.unit)
@@ -6836,7 +6841,10 @@ end
 			Plater.SetAnchor (buffFrame2, {side = bf2Anchor.side, x = bf2Anchor.x, y = bf2Anchor.y + plateConfigs.buff_frame_y_offset}, unitFrame.healthBar, (Plater.db.profile.aura2_grow_direction or 2) == 2)
 			
 		if (Plater.db.profile.show_health_prediction or Plater.db.profile.show_shield_prediction) and healthBar.displayedUnit then
-			healthBar:UpdateHealPrediction() -- ensure health prediction is updated properly
+			-- In Midnight, UpdateAllHealth already handles heal/absorb display via SetAlpha.
+			if not IS_WOW_PROJECT_MIDNIGHT then
+				healthBar:UpdateHealPrediction()
+			end
 		end
 		
 		--plateFrame.PlaterAnchorFrame:SetSize(healthBar:GetSize())
@@ -7290,7 +7298,7 @@ end
 			
 			--if not in combat, check if can show the percent health out of combat
 			if (actorTypeDBConfig.percent_text_enabled and (((profile.use_player_combat_state and PLAYER_IN_COMBAT or unitFrame.InCombat)) or actorTypeDBConfig.percent_text_ooc)) then
-				Plater.UpdateLifePercentText (healthBar, unitFrame.unit, actorTypeDBConfig.percent_show_health, actorTypeDBConfig.percent_show_percent, actorTypeDBConfig.percent_text_show_decimals)
+				if IS_WOW_PROJECT_MIDNIGHT then Plater.UpdateLifePercentTextMidnight (healthBar, unitFrame.unit, actorTypeDBConfig.percent_show_health, actorTypeDBConfig.percent_show_percent) else Plater.UpdateLifePercentText (healthBar, unitFrame.unit, actorTypeDBConfig.percent_show_health, actorTypeDBConfig.percent_show_percent, actorTypeDBConfig.percent_text_show_decimals) end
 				healthBar.lifePercent:Show()
 			else
 				healthBar.lifePercent:Hide()
@@ -8269,7 +8277,7 @@ end
 				Plater.UpdateUnitName (plateFrame)
 				
 				--if this is an enemy or neutral npc
-				if (plateFrame [MEMBER_REACTION] <= 4) then
+				if (plateFrame [MEMBER_REACTION] and plateFrame [MEMBER_REACTION] <= 4) then
 				
 					local r, g, b, a = UnitSelectionColor(plateFrame.unitFrame [MEMBER_UNITID]) -- use this as default.
 					
@@ -8476,7 +8484,7 @@ end
 				platerInternal.UpdatePercentTextLayout(lifeString, plateConfigs)
 			end
 			
-			Plater.UpdateLifePercentText (plateFrame.unitFrame.healthBar, plateFrame.unitFrame [MEMBER_UNITID], plateConfigs.percent_show_health, plateConfigs.percent_show_percent, plateConfigs.percent_text_show_decimals)
+			if IS_WOW_PROJECT_MIDNIGHT then Plater.UpdateLifePercentTextMidnight (plateFrame.unitFrame.healthBar, plateFrame.unitFrame [MEMBER_UNITID], plateConfigs.percent_show_health, plateConfigs.percent_show_percent) else Plater.UpdateLifePercentText (plateFrame.unitFrame.healthBar, plateFrame.unitFrame [MEMBER_UNITID], plateConfigs.percent_show_health, plateConfigs.percent_show_percent, plateConfigs.percent_text_show_decimals) end
 		else
 			lifeString:Hide()
 		end
@@ -8510,7 +8518,7 @@ end
 	--self is plateFrame
 	function Plater.UpdateLifePercentVisibility (self)
 		local plateConfigs = Plater.GetSettings (self)
-		
+
 		if (plateConfigs.percent_text_enabled) then
 			--can show out of combat? or if the player is in combat
 			if ((Plater.db.profile.use_player_combat_state and PLAYER_IN_COMBAT or self.unitFrame.InCombat) or plateConfigs.percent_text_ooc) then
@@ -8530,47 +8538,36 @@ end
 		return self.PlateConfig
 	end
 	
+	-- Midnight-only health text updater. Kept as a separate function so that addon scripts which
+	-- override Plater.UpdateLifePercentText cannot break health display in Midnight.
+	-- All nameplate health values are secret in Midnight; we route them through C APIs
+	-- (AbbreviateLargeNumbers, C_StringUtil.RoundToNearestString) that accept secret values
+	-- and return plain strings — matching Platynator's approach.
+	function Plater.UpdateLifePercentTextMidnight (healthBar, unitId, showHealthAmount, showPercentAmount)
+		local healthText = AbbreviateLargeNumbers(UnitHealth(unitId))
+		local percentText = C_StringUtil.RoundToNearestString(UnitHealthPercent(unitId, true, CurveConstants.ScaleTo100)) .. "%"
+
+		if (showHealthAmount and showPercentAmount) then
+			healthBar.lifePercent:SetText (format ("%s (%s)", healthText, percentText))
+		elseif (showHealthAmount) then
+			healthBar.lifePercent:SetText (healthText)
+		elseif (showPercentAmount) then
+			healthBar.lifePercent:SetText (percentText)
+		else
+			healthBar.lifePercent:SetText ("")
+		end
+	end
+
 	function Plater.UpdateLifePercentText (healthBar, unitId, showHealthAmount, showPercentAmount, showDecimals) -- ~health
 		Plater.StartLogPerformanceCore("Plater-Core", "Health", "UpdateLifePercentText")
 
 		--get the cached health amount for performance
 		local currentHealth, maxHealth, currentHealthMissing, currentHealthPercent = healthBar.currentHealth, healthBar.currentHealthMax, healthBar.currentHealthMissing, healthBar.currentHealthPercent
-		
-		
+
 		if IS_WOW_PROJECT_MIDNIGHT then
-			--TODO: MIDNIGHT!!
-			--local currentAbsorb, currentAbsorbMax, currentAbsorbIsClamped = healthBar.currentAbsorb, healthBar.currentAbsorbMax, healthBar.currentAbsorbIsClamped
-			
-			currentHealth = AbbreviateNumbers(currentHealth)
-			if (showHealthAmount or showPercentAmount) then
-				healthBar.lifePercent:SetText(currentHealth)
-			else
-				healthBar.lifePercent:SetText("")
-			end
-			
-			if (showHealthAmount and showPercentAmount) then
-				local percent = currentHealthPercent
-				if (showDecimals) then
-					healthBar.lifePercent:SetText (format ("%s (%.1f%%)", currentHealth, percent))
-				else
-					healthBar.lifePercent:SetText (format ("%s (%d%%)", currentHealth, percent))
-				end
-				
-			elseif (showHealthAmount) then
-				healthBar.lifePercent:SetText (currentHealth)
-			
-			elseif (showPercentAmount) then
-				local percent = currentHealthPercent
-				if (showDecimals) then
-					healthBar.lifePercent:SetText (format ("%.1f%%", percent))
-				else
-					healthBar.lifePercent:SetText (format ("%d%%", percent))
-				end
-			
-			else
-				healthBar.lifePercent:SetText ("")
-			end
-			
+			Plater.UpdateLifePercentTextMidnight(healthBar, unitId, showHealthAmount, showPercentAmount)
+			Plater.EndLogPerformanceCore("Plater-Core", "Health", "UpdateLifePercentText")
+			return
 		else
 			if (showHealthAmount and showPercentAmount) then
 				local percent = maxHealth == 0 and 100 or (currentHealth / maxHealth * 100)
@@ -8626,14 +8623,14 @@ end
 		local actorTypeDBConfig = DB_PLATE_CONFIG [unitFrame.actorType]
 		if (Plater.db.profile.use_player_combat_state and PLAYER_IN_COMBAT or unitFrame.InCombat) then
 			if (actorTypeDBConfig.percent_text_enabled) then
-				Plater.UpdateLifePercentText (unitFrame.healthBar, unitFrame.unit, actorTypeDBConfig.percent_show_health, actorTypeDBConfig.percent_show_percent, actorTypeDBConfig.percent_text_show_decimals)
+				if IS_WOW_PROJECT_MIDNIGHT then Plater.UpdateLifePercentTextMidnight (unitFrame.healthBar, unitFrame.unit, actorTypeDBConfig.percent_show_health, actorTypeDBConfig.percent_show_percent) else Plater.UpdateLifePercentText (unitFrame.healthBar, unitFrame.unit, actorTypeDBConfig.percent_show_health, actorTypeDBConfig.percent_show_percent, actorTypeDBConfig.percent_text_show_decimals) end
 			else
 				unitFrame.healthBar.lifePercent:Hide()
 			end
 		else
 			--if not in combat, check if can show the percent health out of combat
 			if (actorTypeDBConfig.percent_text_enabled and actorTypeDBConfig.percent_text_ooc) then
-				Plater.UpdateLifePercentText (unitFrame.healthBar, unitFrame.unit, actorTypeDBConfig.percent_show_health, actorTypeDBConfig.percent_show_percent, actorTypeDBConfig.percent_text_show_decimals)
+				if IS_WOW_PROJECT_MIDNIGHT then Plater.UpdateLifePercentTextMidnight (unitFrame.healthBar, unitFrame.unit, actorTypeDBConfig.percent_show_health, actorTypeDBConfig.percent_show_percent) else Plater.UpdateLifePercentText (unitFrame.healthBar, unitFrame.unit, actorTypeDBConfig.percent_show_health, actorTypeDBConfig.percent_show_percent, actorTypeDBConfig.percent_text_show_decimals) end
 			else
 				unitFrame.healthBar.lifePercent:Hide()
 			end

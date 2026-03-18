@@ -303,17 +303,17 @@ local cleanfunction = function() end
 		calculator:SetMaximumHealthMode(Enum.UnitMaximumHealthMode.Default) --use default, shield shows but is not accurate for now
 		--calculator:SetMaximumHealthMode(self.Settings.ShowShields and Enum.UnitMaximumHealthMode.WithAbsorbs or Enum.UnitMaximumHealthMode.Default)
 		calculator:SetDamageAbsorbClampMode(Enum.UnitDamageAbsorbClampMode.MaximumHealth)
-		self.currentHealthPercent = calculator:EvaluateCurrentHealthPercent(CurveConstants.ScaleTo100)
+		self.currentHealthPercent = UnitHealthPercent(self.displayedUnit, false, CurveConstants.ScaleTo100) or 0
 		self.currentHealthMissingPercent = calculator:GetMissingHealthPercent()
 		self.currentHealth = calculator:GetCurrentHealth()
 		self.currentHealthMissing = calculator:GetMissingHealth()
 		self.currentHealthMax = calculator:GetMaximumDamageAbsorbs() --calculator:GetMaximumHealth()
-		
+
 		--switch
 		--calculator:SetMaximumHealthMode(self.Settings.ShowShields and Enum.UnitMaximumHealthMode.WithAbsorbs or Enum.UnitMaximumHealthMode.Default)
 		calculator:SetMaximumHealthMode(Enum.UnitMaximumHealthMode.WithAbsorbs)
 
-		self.currentHealthPercentWithAbsorb = calculator:EvaluateCurrentHealthPercent(CurveConstants.ScaleTo100)
+		self.currentHealthPercentWithAbsorb = UnitHealthPercent(self.displayedUnit, true, CurveConstants.ScaleTo100) or 0
 		self.currentHealthMissingPercentWithAbsorb = calculator:GetMissingHealthPercent()
 		self.currentHealthMissingWithAbsorb = calculator:GetMissingHealth()
 		self.currentHealthMaxWithAbsorb = calculator:GetMaximumDamageAbsorbs() --calculator:GetMaximumHealth()
@@ -372,7 +372,7 @@ local cleanfunction = function() end
 			--end
 		end
 		
-		if updateMaxHealth then
+	if updateMaxHealth then
 			if (self.OnHealthMaxChange) then --direct call
 				self.OnHealthMaxChange(self, self.displayedUnit)
 			else
