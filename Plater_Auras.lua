@@ -1465,7 +1465,7 @@ end
 		end
 		newIcon.TimerText = newIcon.Cooldown.Timer
 
-		newIcon.SetSizes = function()
+		newIcon.SetSizes = function(self)
 			local iconOffset = 0 --* UIParent:GetEffectiveScale() --* (Plater.db.profile.use_ui_parent and (Plater.db.profile.ui_parent_scale_tune) or 1)
 			self:ClearAllPoints()
 			PixelUtil.SetPoint (self.Border, "TOPLEFT", self, "TOPLEFT", -iconOffset, iconOffset)
@@ -1810,7 +1810,7 @@ end
 			auraIconFrame:SetBorderSize (borderThickness)
 			local sizeMod = 1 --UIParent:GetEffectiveScale() --* (Plater.db.profile.use_ui_parent and (Plater.db.profile.ui_parent_scale_tune) or 1)
 			PixelUtil.SetSize(auraIconFrame, auraWidth * sizeMod, auraHeight * sizeMod)
-			auraIconFrame:SetSizes()
+			--auraIconFrame:SetSizes()
 			
 			auraIconFrame.Cooldown:SetEdgeTexture (profile.aura_cooldown_edge_texture)
 			auraIconFrame.Cooldown:SetReverse (profile.aura_cooldown_reverse)
