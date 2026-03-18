@@ -8540,9 +8540,6 @@ end
 	
 	-- Midnight-only health text updater. Kept as a separate function so that addon scripts which
 	-- override Plater.UpdateLifePercentText cannot break health display in Midnight.
-	-- All nameplate health values are secret in Midnight; we route them through C APIs
-	-- (AbbreviateLargeNumbers, C_StringUtil.RoundToNearestString) that accept secret values
-	-- and return plain strings — matching Platynator's approach.
 	function Plater.UpdateLifePercentTextMidnight (healthBar, unitId, showHealthAmount, showPercentAmount)
 		local healthText = AbbreviateLargeNumbers(UnitHealth(unitId))
 		local percentText = C_StringUtil.RoundToNearestString(UnitHealthPercent(unitId, true, CurveConstants.ScaleTo100)) .. "%"
