@@ -771,6 +771,7 @@ PLATER_DEFAULT_SETTINGS = {
 		castbar_icon_attach_to_side = "left", --"right"
 		castbar_icon_size = "same as castbar", --"same as castbar plus healthbar"
 		castbar_icon_x_offset = 0,
+		castbar_icon_showshield = true,
 		
 		
 		--> store spells from the latest event the player has been into

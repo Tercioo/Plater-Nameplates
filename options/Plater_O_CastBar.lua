@@ -754,6 +754,16 @@ function platerInternal.CreateCastBarOptions()
             name = "OPTIONS_XOFFSET",
             desc = "OPTIONS_XOFFSET",
         },
+        {
+            type = "toggle",
+            get = function() return Plater.db.profile.castbar_icon_showshield end,
+            set = function (self, fixedparam, value)
+                Plater.db.profile.castbar_icon_showshield = value
+                Plater.RefreshDBUpvalues()
+            end,
+            name = "Show Shield",
+            desc = "Shows or hides the shield icon for not interruptible casts.",
+        },
 
         {type = "blank"},
         {type = "label", get = function() return "OPTIONS_CASTBAR_BLIZZCASTBAR" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},

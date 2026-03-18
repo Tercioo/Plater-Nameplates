@@ -8929,6 +8929,7 @@ end
 		
 		castBar.Settings.FillOnInterrupt = Plater.db.profile.cast_statusbar_spark_filloninterrupt
 		castBar.Settings.HideSparkOnInterrupt = Plater.db.profile.cast_statusbar_spark_hideoninterrupt
+		castBar.Settings.ShowShield = Plater.db.profile.castbar_icon_showshield
 
 		plateFrame.actorType = actorType
 		unitFrame.actorType = actorType
