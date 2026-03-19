@@ -11864,7 +11864,6 @@ end
 			end,
 			name = "OPTIONS_THREAT_DPS_CANCHECKNOTANK",
 			desc = "OPTIONS_THREAT_DPS_CANCHECKNOTANK_DESC",
-			hidden = IS_WOW_PROJECT_MIDNIGHT,
 		},
 		{
 			type = "color",
@@ -11878,7 +11877,6 @@ end
 			end,
 			name = "OPTIONS_THREAT_AGGROSTATE_NOTANK",
 			desc = "OPTIONS_THREAT_COLOR_DPS_NOTANK_DESC",
-			hidden = IS_WOW_PROJECT_MIDNIGHT,
 		},		
 
 

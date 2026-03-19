@@ -1288,11 +1288,15 @@ Plater.AnchorNamesByPhraseId = {
 		if (IsPlayerEffectivelyTank(hasAura)) then
 			if not IS_WOW_PROJECT_MIDNIGHT or not issecretvalue(UnitName ("player")) then --MIDNIGHT!!
 				TANK_CACHE [UnitName ("player")] = true
+			else
+				TANK_CACHE ["player"] = true
 			end
 			Plater.PlayerIsTank = true
 		else
 			if not IS_WOW_PROJECT_MIDNIGHT or not issecretvalue(UnitName ("player")) then
 				TANK_CACHE [UnitName ("player")] = false
+			else
+				TANK_CACHE ["player"] = true
 			end
 			if IS_WOW_PROJECT_MAINLINE or IS_WOW_PROJECT_CLASSIC_WRATH or IS_WOW_PROJECT_CLASSIC_MOP then
 				Plater.PlayerIsTank = false
@@ -1316,11 +1320,16 @@ Plater.AnchorNamesByPhraseId = {
 		--search for tanks in the raid
 		if (IsInRaid()) then
 			for i = 1, GetNumGroupMembers() do
-				if (IsUnitEffectivelyTank ("raid" .. i)) then
-					if (not UnitIsUnit ("raid" .. i, "player")) then
-						local unitName = UnitName ("raid" .. i)
-						if unitName ~= UNKNOWN then
-							TANK_CACHE [unitName] = true
+				local unit = "raid" .. i
+				if (IsUnitEffectivelyTank (unit)) then
+					if (not UnitIsUnit (unit, "player")) then
+						if IS_WOW_PROJECT_MIDNIGHT then
+							TANK_CACHE [unit] = true
+						else
+							local unitName = UnitName (unit)
+							if unitName ~= UNKNOWN then
+								TANK_CACHE [unitName] = true
+							end
 						end
 					end
 				end
@@ -1330,11 +1339,16 @@ Plater.AnchorNamesByPhraseId = {
 		--there's only one tank on dungeon but dps may see if a unit is not in the tank aggro
 		elseif (IsInGroup() and Plater.ZoneInstanceType == "party") then
 			for i = 1, GetNumGroupMembers() -1 do
-				if (IsUnitEffectivelyTank ("party" .. i)) then
-					if (not UnitIsUnit ("party" .. i, "player")) then
-						local unitName = UnitName ("party" .. i)
-						if unitName ~= UNKNOWN then
-							TANK_CACHE [unitName] = true
+				local unit = "party" .. i
+				if (IsUnitEffectivelyTank (unit)) then
+					if (not UnitIsUnit (unit, "player")) then
+						if IS_WOW_PROJECT_MIDNIGHT then
+							TANK_CACHE [unit] = true
+						else
+							local unitName = UnitName (unit)
+							if unitName ~= UNKNOWN then
+								TANK_CACHE [unitName] = true
+							end
 						end
 					end
 				end
@@ -7582,7 +7596,7 @@ end
 						local otherIsTanking, otherThreatStatus, otherThreatpct
 						--loop on all tanks in the group (tank_cache is updated on entering combat or when group roster is updated) 
 						for tank, _ in pairs(TANK_CACHE) do
-							if UnitExists(tank) and not UnitIsUnit("player", tank) then
+							if UnitExists(tank) and UnitIsVisible(tank) and not UnitIsUnit("player", tank) then
 								otherIsTanking, otherThreatStatus, otherThreatpct = UnitDetailedThreatSituation (tank, self.displayedUnit)
 								if IS_WOW_PROJECT_MIDNIGHT then
 									local tmpOtherThreatStatus = UnitThreatSituation (tank, self.displayedUnit)
@@ -7603,7 +7617,7 @@ end
 						--another tank is tanking the unit
 						if (unitOffTank) then
 							self.namePlateThreatOffTankIsTanking = true
-							self.namePlateThreatOffTankName = unitOffTank
+							self.namePlateThreatOffTankName = UnitName(unitOffTank)
 							--as the unit is being tanked by the off-tank, check if the player it self which is the other tank is about to accidently pull aggro just by hitting the mob
 							if (threatStatus and otherThreatStatus) then
 								if (threatStatus == 1 and otherThreatStatus >= 2) then
@@ -7777,17 +7791,33 @@ end
 						if (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid") then
 							--check if can check for no tank aggro
 							if (DB_AGGRO_CAN_CHECK_NOTANKAGGRO) then
-								local unitTarget = UnitName (self.targetUnitID)
-								if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(unitTarget) then unitTarget = "N/A" end --MIDNIGHT!!
-								--check if the unit isn't attacking a tank comparing the target name with tank names
-								if (not TANK_CACHE [unitTarget]) then
-								
-									--check if this isn't a false positive where the mob target another unit to cast a spell
-									local hasTankAggro = IS_WOW_PROJECT_MIDNIGHT -- true for midnight, as fallback
-									if not IS_WOW_PROJECT_MIDNIGHT then
-										for tankName, _ in pairs (TANK_CACHE) do
-											if UnitExists(tankName) then
-												local threatStatus = UnitThreatSituation (tankName, self.displayedUnit)
+								if IS_WOW_PROJECT_MIDNIGHT then
+									local hasTankAggro = false
+									local inRaid = IsInRaid()
+									for unit in pairs(TANK_CACHE or {}) do
+										if UnitIsVisible(unit) and not UnitIsUnit (unit, "player") then
+											local unitThreatLevel = UnitThreatSituation(unit, unitId)
+            								if unitThreatLevel and unitThreatLevel >= 2 then
+												hasTankAggro = true
+												break
+											end
+										end
+									end
+									if hasTankAggro then
+										set_aggro_color (self, unpack (colorToUse))
+									else
+										set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.notontank))
+									end			
+								else
+									local unitTarget = UnitName (self.targetUnitID)
+									--check if the unit isn't attacking a tank comparing the target name with tank names
+									if (not TANK_CACHE [unitTarget]) then
+									
+										--check if this isn't a false positive where the mob target another unit to cast a spell
+										local hasTankAggro = false
+										for tankUnit, _ in pairs (TANK_CACHE) do
+											if UnitExists(tankUnit) then
+												local threatStatus = UnitThreatSituation (tankUnit, self.displayedUnit)
 												if (threatStatus and threatStatus >= 2) then
 													--a tank has aggro on this unit, it is a false positive
 													hasTankAggro = true
@@ -7795,18 +7825,18 @@ end
 												end
 											end
 										end
-									end
-									
-									if (not hasTankAggro) then
-										--the unit isn't targeting a tank and no tank in the group has threat status of 2 or more, the unit might be attacking a dps or healer
-										set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.notontank))
+										
+										if (not hasTankAggro) then
+											--the unit isn't targeting a tank and no tank in the group has threat status of 2 or more, the unit might be attacking a dps or healer
+											set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.notontank))
+										else
+											--the unit isn't targeting a tank but a tank in the group has aggro on this unit
+											set_aggro_color (self, unpack (colorToUse))
+										end
 									else
-										--the unit isn't targeting a tank but a tank in the group has aggro on this unit
+										--the unit is targeting a tank
 										set_aggro_color (self, unpack (colorToUse))
 									end
-								else
-									--the unit is targeting a tank
-									set_aggro_color (self, unpack (colorToUse))
 								end
 							else
 								--isn't checking for 'no tank aggro'
@@ -13081,11 +13111,12 @@ end
 			else
 				--store the function to execute
 				--setfenv (compiledScript, functionFilter)
-				if (Plater.db.profile.shadowMode and Plater.db.profile.shadowMode == 0) then -- legacy mode
-					DF:SetEnvironment(compiledScript, nil, platerModEnvironment)
-				elseif (not Plater.db.profile.shadowMode or Plater.db.profile.shadowMode == 1) then
-					SetPlaterEnvironment(compiledScript)
-				end
+				--if (Plater.db.profile.shadowMode and Plater.db.profile.shadowMode == 0) then -- legacy mode
+				--	DF:SetEnvironment(compiledScript, nil, platerModEnvironment)
+				--elseif (not Plater.db.profile.shadowMode or Plater.db.profile.shadowMode == 1) then
+				--	SetPlaterEnvironment(compiledScript)
+				--end
+				SetPlaterEnvironment(compiledScript)
 				
 				local func = compiledScript()
 				
