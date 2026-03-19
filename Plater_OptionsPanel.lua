@@ -11785,7 +11785,6 @@ end
 			end,
 			name = "OPTIONS_THREAT_PULL_FROM_ANOTHER_TANK",
 			desc = "OPTIONS_THREAT_PULL_FROM_ANOTHER_TANK_DESC",
-			hidden = IS_WOW_PROJECT_MIDNIGHT,
 		},
 		
 		{type = "blank"},
