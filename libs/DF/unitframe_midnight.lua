@@ -341,7 +341,7 @@ local cleanfunction = function() end
 			
 			--self.shieldAbsorbIndicatorBar:SetMinMaxValues(0, self.currentHealthMissing, self.Settings.AnimateHealth and Enum.StatusBarInterpolation.ExponentialEaseOut or Enum.StatusBarInterpolation.Immediate) --TODO
 			self.shieldAbsorbIndicatorBar:SetMinMaxValues(0, self.currentHealthMaxWithAbsorb, self.Settings.AnimateHealth and Enum.StatusBarInterpolation.ExponentialEaseOut or Enum.StatusBarInterpolation.Immediate) --TODO
-			self.shieldAbsorbIndicatorBar:SetValue(absorb)
+			self.shieldAbsorbIndicatorBar:SetValue(absorb, self.Settings.AnimateHealth and Enum.StatusBarInterpolation.ExponentialEaseOut or Enum.StatusBarInterpolation.Immediate)
 		end
 
 		if (self.Settings.ShowHealingPrediction) then
