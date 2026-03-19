@@ -8,6 +8,12 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1773961544, "Bug Fix", "Mar 19th, 2026", "Fix 'no tank aggro' detection for Midnight.", "cont1nuity"},
+			{1773961544, "Bug Fix", "Mar 19th, 2026", "Adding option to hide cast bar border shield for unitnrerruptible casts.", "cont1nuity"},
+			{1773961544, "Bug Fix", "Mar 19th, 2026", "Fix the border on aura icons (a bit).", "cont1nuity"},
+			{1773961544, "Backend Change", "Mar 19th, 2026", "Hide realm names on friendly players in raids in Midnight.", "cont1nuity"},
+			{1773961544, "Bug Fix", "Mar 17th, 2026", "Fix cast bar border shield for unitnrerruptible casts.", "cont1nuity"},
+			{1773961544, "Backend Change", "Mar 14th, 2026", "Hide realm names on friendly players in raids.", "cont1nuity"},
 			
 			{1772438164, "Bug Fix", "Mar 13th, 2026", "Fixing shield indicators not showing correctly.", "httpsx"},
 			{1772438164, "Bug Fix", "Mar 11th, 2026", "Fixing incorrect aura border colors.", "cont1nuity"},
