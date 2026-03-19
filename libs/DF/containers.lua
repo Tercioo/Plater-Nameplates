@@ -53,6 +53,7 @@ local childResizerOptionBySide = {
 ---@field CheckMovableLockedState fun(frameContainer: df_framecontainer)
 ---@field CreateMover fun(frameContainer: df_framecontainer)
 ---@field CreateResizers fun(frameContainer: df_framecontainer)
+---@field RegisterChildForDrag fun(frameContainer: df_framecontainer, child: frame)
 ---@field RegisterChild fun(frameContainer: df_framecontainer, child: frame)
 ---@field UnregisterChild fun(frameContainer: df_framecontainer, child: frame)
 ---@field RefreshChildrenState fun(frameContainer: df_framecontainer)
@@ -1201,6 +1202,8 @@ function DF:CreateFrameContainer(parent, options, frameName)
 
     detailsFramework:Mixin(frameContainer, detailsFramework.FrameContainerMixin)
     detailsFramework:Mixin(frameContainer, detailsFramework.OptionsFunctions)
+
+    frameContainer.RegisterChildForDrag = detailsFramework.FrameContainerMixin.RegisterChild
 
     frameContainer:CreateResizers()
     frameContainer:CreateMover()
