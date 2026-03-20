@@ -2397,7 +2397,7 @@ end
 			iconFrame.platerSkinned = true
 		end
 
-		iconFrame.SetSizes()
+		iconFrame:SetSizes()
 		
 		--check if Masque is enabled on Plater and reskin the aura icon
 		if (Plater.Masque and not iconFrame.Masqued) then
