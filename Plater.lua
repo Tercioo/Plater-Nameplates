@@ -1295,9 +1295,10 @@ Plater.AnchorNamesByPhraseId = {
 		else
 			if not IS_WOW_PROJECT_MIDNIGHT then
 				TANK_CACHE [UnitName ("player")] = false
-			elseif IS_WOW_PROJECT_MIDNIGHT then
+			else
 				TANK_CACHE ["player"] = false
-			elseif IS_WOW_PROJECT_MAINLINE or IS_WOW_PROJECT_CLASSIC_WRATH or IS_WOW_PROJECT_CLASSIC_MOP then
+			end
+			if IS_WOW_PROJECT_MAINLINE or IS_WOW_PROJECT_CLASSIC_WRATH or IS_WOW_PROJECT_CLASSIC_MOP then
 				Plater.PlayerIsTank = false
 			else
 				Plater.PlayerIsTank = false or Plater.db.profile.tank_threat_colors
