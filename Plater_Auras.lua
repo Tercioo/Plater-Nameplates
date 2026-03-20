@@ -1439,7 +1439,9 @@ end
 
 		-- switch to proper border, keep compatibility
 		newIcon.Border = DF:CreateFullBorder("$parentBorder", newIcon)
-		newIcon.Border:SetFrameLevel(newIcon:GetFrameLevel() + 1)
+		for _, tex in pairs(newIcon.Border.Textures) do
+			tex:SetDrawLayer ("overlay", 7)
+		end
 		local iconOffset = -1
 		PixelUtil.SetPoint (newIcon.Border, "TOPLEFT", newIcon, "TOPLEFT", -iconOffset, iconOffset)
 		PixelUtil.SetPoint (newIcon.Border, "TOPRIGHT", newIcon, "TOPRIGHT", iconOffset, iconOffset)
@@ -1482,8 +1484,6 @@ end
 			PixelUtil.SetPoint (self.Cooldown, "TOPRIGHT", self, "TOPRIGHT", iconOffset, iconOffset)
 			PixelUtil.SetPoint (self.Cooldown, "BOTTOMLEFT", self, "BOTTOMLEFT", -iconOffset, -iconOffset)
 			PixelUtil.SetPoint (self.Cooldown, "BOTTOMRIGHT", self, "BOTTOMRIGHT", iconOffset, -iconOffset)
-
-			self.Border:SetFrameLevel(self:GetFrameLevel() + 1)
 		end
 
 		return newIcon
@@ -2342,7 +2342,6 @@ end
 			iconFrame.Border:Hide()
 			
 			iconFrame.Border = DF:CreateFullBorder("$parentBorder", iconFrame)
-			iconFrame.Border:SetFrameLevel(iconFrame:GetFrameLevel() + 1)
 			local iconOffset = -1
 			PixelUtil.SetPoint (iconFrame.Border, "TOPLEFT", iconFrame, "TOPLEFT", -iconOffset, iconOffset)
 			PixelUtil.SetPoint (iconFrame.Border, "TOPRIGHT", iconFrame, "TOPRIGHT", iconOffset, iconOffset)
@@ -2394,8 +2393,6 @@ end
 				PixelUtil.SetPoint (self.Cooldown, "TOPRIGHT", self, "TOPRIGHT", iconOffset, iconOffset)
 				PixelUtil.SetPoint (self.Cooldown, "BOTTOMLEFT", self, "BOTTOMLEFT", -iconOffset, -iconOffset)
 				PixelUtil.SetPoint (self.Cooldown, "BOTTOMRIGHT", self, "BOTTOMRIGHT", iconOffset, -iconOffset)
-
-				self.Border:SetFrameLevel(self:GetFrameLevel() + 1)
 			end
 
 			iconFrame.platerSkinned = true
