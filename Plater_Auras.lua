@@ -1482,6 +1482,8 @@ end
 			PixelUtil.SetPoint (self.Cooldown, "TOPRIGHT", self, "TOPRIGHT", iconOffset, iconOffset)
 			PixelUtil.SetPoint (self.Cooldown, "BOTTOMLEFT", self, "BOTTOMLEFT", -iconOffset, -iconOffset)
 			PixelUtil.SetPoint (self.Cooldown, "BOTTOMRIGHT", self, "BOTTOMRIGHT", iconOffset, -iconOffset)
+
+			self.Border:SetFrameLevel(self:GetFrameLevel() + 1)
 		end
 
 		return newIcon
@@ -2392,6 +2394,8 @@ end
 				PixelUtil.SetPoint (self.Cooldown, "TOPRIGHT", self, "TOPRIGHT", iconOffset, iconOffset)
 				PixelUtil.SetPoint (self.Cooldown, "BOTTOMLEFT", self, "BOTTOMLEFT", -iconOffset, -iconOffset)
 				PixelUtil.SetPoint (self.Cooldown, "BOTTOMRIGHT", self, "BOTTOMRIGHT", iconOffset, -iconOffset)
+
+				self.Border:SetFrameLevel(self:GetFrameLevel() + 1)
 			end
 
 			iconFrame.platerSkinned = true
