@@ -162,6 +162,8 @@ PLATER_DEFAULT_SETTINGS = {
 		click_space_always_show = false,
 		hide_friendly_castbars = false,
 		hide_enemy_castbars = false,
+
+		hide_realm_name_on_blizzard = true,
 		
 		--> offset of the whole nameplate
 		global_offset_y = 0,

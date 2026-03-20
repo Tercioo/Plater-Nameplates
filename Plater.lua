@@ -6915,8 +6915,12 @@ end
 	
 	-- default blizzard plate shenanigans
 	function Plater.UpdateBaseNameplateOptions()
-		if IS_WOW_PROJECT_MIDNIGHT then 
-			TextureLoadingGroupMixin.RemoveTexture({ textures = NamePlateFriendlyFrameOptions }, "updateNameUsesGetUnitName")
+		if IS_WOW_PROJECT_MIDNIGHT then
+			if Plater.db.profile.hide_realm_name_on_blizzard then
+				TextureLoadingGroupMixin.RemoveTexture({ textures = NamePlateFriendlyFrameOptions }, "updateNameUsesGetUnitName")
+			else
+				TextureLoadingGroupMixin.AddTexture({ textures = NamePlateFriendlyFrameOptions }, "updateNameUsesGetUnitName")
+			end
 			return 
 		end
 		if GetCVarBool ("nameplateShowOnlyNames") or Plater.db.profile.saved_cvars.nameplateShowOnlyNames == "1" then

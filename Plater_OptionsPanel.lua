@@ -5634,6 +5634,20 @@ local relevance_options = {
 			nocombat = true,
 			hidden = not IS_WOW_PROJECT_MIDNIGHT,
 		},
+
+		{
+			type = "toggle",
+			boxfirst = true,
+			get = function() return Plater.db.profile.hide_realm_name_on_blizzard end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.hide_realm_name_on_blizzard = value
+				Plater.UpdateBaseNameplateOptions()
+			end,
+			name = "Hide Realm Names.",
+			desc = "Hide realm names on blizzard nameplates.",
+			nocombat = true,
+			hidden = not IS_WOW_PROJECT_MIDNIGHT,
+		},
 		
 		{
 			type = "toggle",
