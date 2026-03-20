@@ -1440,7 +1440,7 @@ end
 		-- switch to proper border, keep compatibility
 		newIcon.Border = DF:CreateFullBorder("$parentBorder", newIcon)
 		newIcon.Border:SetFrameLevel(newIcon:GetFrameLevel() + 1)
-		local iconOffset = -1 --/ UIParent:GetEffectiveScale() --* (Plater.db.profile.use_ui_parent and (Plater.db.profile.ui_parent_scale_tune) or 1)
+		local iconOffset = -1
 		PixelUtil.SetPoint (newIcon.Border, "TOPLEFT", newIcon, "TOPLEFT", -iconOffset, iconOffset)
 		PixelUtil.SetPoint (newIcon.Border, "TOPRIGHT", newIcon, "TOPRIGHT", iconOffset, iconOffset)
 		PixelUtil.SetPoint (newIcon.Border, "BOTTOMLEFT", newIcon, "BOTTOMLEFT", -iconOffset, -iconOffset)
@@ -1465,23 +1465,23 @@ end
 		end
 
 		newIcon.SetSizes = function(self)
-			local iconOffset = -1 --* UIParent:GetEffectiveScale() --* (Plater.db.profile.use_ui_parent and (Plater.db.profile.ui_parent_scale_tune) or 1)
+			local iconOffset = -1
 			PixelUtil.SetPoint (self.Border, "TOPLEFT", self, "TOPLEFT", -iconOffset, iconOffset)
 			PixelUtil.SetPoint (self.Border, "TOPRIGHT", self, "TOPRIGHT", iconOffset, iconOffset)
 			PixelUtil.SetPoint (self.Border, "BOTTOMLEFT", self, "BOTTOMLEFT", -iconOffset, -iconOffset)
 			PixelUtil.SetPoint (self.Border, "BOTTOMRIGHT", self, "BOTTOMRIGHT", iconOffset, -iconOffset)
 
-			iconOffset = 0 --* UIParent:GetEffectiveScale()
+			iconOffset = 0
 			PixelUtil.SetPoint (self.Icon, "TOPLEFT", self, "TOPLEFT", -iconOffset, iconOffset)
 			PixelUtil.SetPoint (self.Icon, "TOPRIGHT", self, "TOPRIGHT", iconOffset, iconOffset)
 			PixelUtil.SetPoint (self.Icon, "BOTTOMLEFT", self, "BOTTOMLEFT", -iconOffset, -iconOffset)
 			PixelUtil.SetPoint (self.Icon, "BOTTOMRIGHT", self, "BOTTOMRIGHT", iconOffset, -iconOffset)
 
 			iconOffset = -1
-			PixelUtil.SetPoint (newIcon.Cooldown, "TOPLEFT", newIcon, "TOPLEFT", -iconOffset, iconOffset)
-			PixelUtil.SetPoint (newIcon.Cooldown, "TOPRIGHT", newIcon, "TOPRIGHT", iconOffset, iconOffset)
-			PixelUtil.SetPoint (newIcon.Cooldown, "BOTTOMLEFT", newIcon, "BOTTOMLEFT", -iconOffset, -iconOffset)
-			PixelUtil.SetPoint (newIcon.Cooldown, "BOTTOMRIGHT", newIcon, "BOTTOMRIGHT", iconOffset, -iconOffset)
+			PixelUtil.SetPoint (self.Cooldown, "TOPLEFT", self, "TOPLEFT", -iconOffset, iconOffset)
+			PixelUtil.SetPoint (self.Cooldown, "TOPRIGHT", self, "TOPRIGHT", iconOffset, iconOffset)
+			PixelUtil.SetPoint (self.Cooldown, "BOTTOMLEFT", self, "BOTTOMLEFT", -iconOffset, -iconOffset)
+			PixelUtil.SetPoint (self.Cooldown, "BOTTOMRIGHT", self, "BOTTOMRIGHT", iconOffset, -iconOffset)
 		end
 
 		return newIcon
@@ -1605,7 +1605,7 @@ end
 			newFrameIcon:SetBorderSize (borderThickness)
 			--newFrameIcon:SetSize (auraWidth, auraHeight)
 			--newFrameIcon.Icon:SetSize (auraWidth-2, auraHeight-2)
-			local sizeMod = 1 --UIParent:GetEffectiveScale() --* (Plater.db.profile.use_ui_parent and (Plater.db.profile.ui_parent_scale_tune) or 1)
+			local sizeMod = 1
 			PixelUtil.SetSize(newFrameIcon, auraWidth * sizeMod, auraHeight * sizeMod)
 			
 			--mixin the meta functions for scripts
@@ -1806,7 +1806,7 @@ end
 					--auraIconFrame.Icon:SetSize (auraWidth-2, auraHeight-2)
 				end
 			end
-			local sizeMod = 1 --UIParent:GetEffectiveScale() --* (Plater.db.profile.use_ui_parent and (Plater.db.profile.ui_parent_scale_tune) or 1)
+			local sizeMod = 1
 			PixelUtil.SetSize(auraIconFrame, auraWidth * sizeMod, auraHeight * sizeMod)
 			auraIconFrame:SetSizes()
 			auraIconFrame:SetBorderSize (borderThickness)
@@ -2340,7 +2340,8 @@ end
 			iconFrame.Border:Hide()
 			
 			iconFrame.Border = DF:CreateFullBorder("$parentBorder", iconFrame)
-			local iconOffset = -1 * UIParent:GetEffectiveScale() --* (Plater.db.profile.use_ui_parent and (Plater.db.profile.ui_parent_scale_tune) or 1)
+			iconFrame.Border:SetFrameLevel(iconFrame:GetFrameLevel() + 1)
+			local iconOffset = -1
 			PixelUtil.SetPoint (iconFrame.Border, "TOPLEFT", iconFrame, "TOPLEFT", -iconOffset, iconOffset)
 			PixelUtil.SetPoint (iconFrame.Border, "TOPRIGHT", iconFrame, "TOPRIGHT", iconOffset, iconOffset)
 			PixelUtil.SetPoint (iconFrame.Border, "BOTTOMLEFT", iconFrame, "BOTTOMLEFT", -iconOffset, -iconOffset)
@@ -2349,7 +2350,7 @@ end
 				self.Border:SetVertexColor(r, g, b, a)
 			end
 			iconFrame.Border.SetBorderSize = function(self, size)
-				local borderSize = (size or 1) * UIParent:GetEffectiveScale()-- * (Plater.db.profile.use_ui_parent and (Plater.db.profile.ui_parent_scale_tune) or 1)
+				local borderSize = (size or 1)
 				self:SetBorderSizes(borderSize, 1, borderSize, 0)
 				self:UpdateSizes()
 			end
@@ -2364,7 +2365,7 @@ end
 				return self.Border:GetVertexColor()
 			end
 			
-			iconOffset = -1 * UIParent:GetEffectiveScale() --* (Plater.db.profile.use_ui_parent and (Plater.db.profile.ui_parent_scale_tune) or 1)
+			iconOffset = 0
 			PixelUtil.SetPoint (iconFrame.Texture, "TOPLEFT", iconFrame, "TOPLEFT", -iconOffset, iconOffset)
 			PixelUtil.SetPoint (iconFrame.Texture, "TOPRIGHT", iconFrame, "TOPRIGHT", iconOffset, iconOffset)
 			PixelUtil.SetPoint (iconFrame.Texture, "BOTTOMLEFT", iconFrame, "BOTTOMLEFT", -iconOffset, -iconOffset)
@@ -2372,8 +2373,31 @@ end
 			
 			iconFrame:SetBackdropBorderColor(unpack(borderColor))
 			iconFrame:SetBorderSize(profile.extra_icon_border_size or 1)
+
+			iconFrame.SetSizes = function(self)
+				local iconOffset = -1
+				PixelUtil.SetPoint (self.Border, "TOPLEFT", self, "TOPLEFT", -iconOffset, iconOffset)
+				PixelUtil.SetPoint (self.Border, "TOPRIGHT", self, "TOPRIGHT", iconOffset, iconOffset)
+				PixelUtil.SetPoint (self.Border, "BOTTOMLEFT", self, "BOTTOMLEFT", -iconOffset, -iconOffset)
+				PixelUtil.SetPoint (self.Border, "BOTTOMRIGHT", self, "BOTTOMRIGHT", iconOffset, -iconOffset)
+
+				iconOffset = 0
+				PixelUtil.SetPoint (self.Texture, "TOPLEFT", self, "TOPLEFT", -iconOffset, iconOffset)
+				PixelUtil.SetPoint (self.Texture, "TOPRIGHT", self, "TOPRIGHT", iconOffset, iconOffset)
+				PixelUtil.SetPoint (self.Texture, "BOTTOMLEFT", self, "BOTTOMLEFT", -iconOffset, -iconOffset)
+				PixelUtil.SetPoint (self.Texture, "BOTTOMRIGHT", self, "BOTTOMRIGHT", iconOffset, -iconOffset)
+
+				iconOffset = -1
+				PixelUtil.SetPoint (self.Cooldown, "TOPLEFT", self, "TOPLEFT", -iconOffset, iconOffset)
+				PixelUtil.SetPoint (self.Cooldown, "TOPRIGHT", self, "TOPRIGHT", iconOffset, iconOffset)
+				PixelUtil.SetPoint (self.Cooldown, "BOTTOMLEFT", self, "BOTTOMLEFT", -iconOffset, -iconOffset)
+				PixelUtil.SetPoint (self.Cooldown, "BOTTOMRIGHT", self, "BOTTOMRIGHT", iconOffset, -iconOffset)
+			end
+
 			iconFrame.platerSkinned = true
 		end
+
+		iconFrame.SetSizes()
 		
 		--check if Masque is enabled on Plater and reskin the aura icon
 		if (Plater.Masque and not iconFrame.Masqued) then
