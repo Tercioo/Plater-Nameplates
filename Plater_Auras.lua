@@ -1449,7 +1449,7 @@ end
 			self.Border:SetVertexColor(r, g, b, a)
 		end
 		newIcon.Border.SetBorderSize = function(self, size)
-			local borderSize = (size or 1)
+			local borderSize = (size or 1) * UIParent:GetEffectiveScale()
 			self:SetBorderSizes(borderSize, 0, borderSize, 0)
 			self:UpdateSizes()
 		end
@@ -1465,7 +1465,7 @@ end
 		end
 
 		newIcon.SetSizes = function(self)
-			local iconOffset = -1
+			local iconOffset = -1 * UIParent:GetEffectiveScale()
 			PixelUtil.SetPoint (self.Border, "TOPLEFT", self, "TOPLEFT", -iconOffset, iconOffset)
 			PixelUtil.SetPoint (self.Border, "TOPRIGHT", self, "TOPRIGHT", iconOffset, iconOffset)
 			PixelUtil.SetPoint (self.Border, "BOTTOMLEFT", self, "BOTTOMLEFT", -iconOffset, -iconOffset)
@@ -1477,7 +1477,7 @@ end
 			PixelUtil.SetPoint (self.Icon, "BOTTOMLEFT", self, "BOTTOMLEFT", -iconOffset, -iconOffset)
 			PixelUtil.SetPoint (self.Icon, "BOTTOMRIGHT", self, "BOTTOMRIGHT", iconOffset, -iconOffset)
 
-			iconOffset = -1
+			iconOffset = -1 * UIParent:GetEffectiveScale()
 			PixelUtil.SetPoint (self.Cooldown, "TOPLEFT", self, "TOPLEFT", -iconOffset, iconOffset)
 			PixelUtil.SetPoint (self.Cooldown, "TOPRIGHT", self, "TOPRIGHT", iconOffset, iconOffset)
 			PixelUtil.SetPoint (self.Cooldown, "BOTTOMLEFT", self, "BOTTOMLEFT", -iconOffset, -iconOffset)
@@ -2350,7 +2350,7 @@ end
 				self.Border:SetVertexColor(r, g, b, a)
 			end
 			iconFrame.Border.SetBorderSize = function(self, size)
-				local borderSize = (size or 1)
+				local borderSize = (size or 1) * UIParent:GetEffectiveScale()
 				self:SetBorderSizes(borderSize, 1, borderSize, 0)
 				self:UpdateSizes()
 			end
@@ -2375,7 +2375,7 @@ end
 			iconFrame:SetBorderSize(profile.extra_icon_border_size or 1)
 
 			iconFrame.SetSizes = function(self)
-				local iconOffset = -1
+				local iconOffset = -1 * UIParent:GetEffectiveScale()
 				PixelUtil.SetPoint (self.Border, "TOPLEFT", self, "TOPLEFT", -iconOffset, iconOffset)
 				PixelUtil.SetPoint (self.Border, "TOPRIGHT", self, "TOPRIGHT", iconOffset, iconOffset)
 				PixelUtil.SetPoint (self.Border, "BOTTOMLEFT", self, "BOTTOMLEFT", -iconOffset, -iconOffset)
@@ -2387,7 +2387,7 @@ end
 				PixelUtil.SetPoint (self.Texture, "BOTTOMLEFT", self, "BOTTOMLEFT", -iconOffset, -iconOffset)
 				PixelUtil.SetPoint (self.Texture, "BOTTOMRIGHT", self, "BOTTOMRIGHT", iconOffset, -iconOffset)
 
-				iconOffset = -1
+				iconOffset = -1 * UIParent:GetEffectiveScale()
 				PixelUtil.SetPoint (self.Cooldown, "TOPLEFT", self, "TOPLEFT", -iconOffset, iconOffset)
 				PixelUtil.SetPoint (self.Cooldown, "TOPRIGHT", self, "TOPRIGHT", iconOffset, iconOffset)
 				PixelUtil.SetPoint (self.Cooldown, "BOTTOMLEFT", self, "BOTTOMLEFT", -iconOffset, -iconOffset)
