@@ -4248,7 +4248,7 @@ Plater.AnchorNamesByPhraseId = {
 			unitFrame.PlaterOnScreen = true
 			
 			-- add private aura anchors
-			Plater.HandlePrivateAuraAnchors(plateFrame.unitFrame) -- requires namePlateUnitToken, PlaterOnScreen and IsSelf to be set
+			Plater.HandlePrivateAuraAnchors(plateFrame) -- requires namePlateUnitToken, PlaterOnScreen and IsSelf to be set
 
 			--check if the cast bar test is enabled
 			if (Plater.IsShowingCastBarTest) then
@@ -4362,13 +4362,13 @@ Plater.AnchorNamesByPhraseId = {
 			end
 			
 			plateFrame.unitFrame.PlaterOnScreen = nil
+
+			--remove private aura anchors
+			Plater.HandlePrivateAuraAnchors(plateFrame)
 			
 			--reset auras
 			Plater.ResetAuraContainer (plateFrame.unitFrame.BuffFrame, true, true)
 			Plater.HideNonUsedAuraIcons (plateFrame.unitFrame.BuffFrame)
-			
-			--remove private aura anchors
-			Plater.HandlePrivateAuraAnchors(plateFrame.unitFrame)
 			
 			--tell the framework to execute a cleanup on the unit frame, this is required since Plater set .ClearUnitOnHide to false
 			plateFrame.unitFrame:SetUnit (nil)

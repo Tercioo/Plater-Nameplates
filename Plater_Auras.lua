@@ -364,26 +364,39 @@ local PlaterNamePlateAuraTooltip = CreatePlaterNamePlateAuraTooltip()
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> Private Aura handling
 
-function Plater.HandlePrivateAuraAnchors(unitFrame, maxIndex)
-	if true then return end -- disable for now...
-	if not unitFrame then return end
+function Plater.HandlePrivateAuraAnchors(plateFrame, maxIndex)
+	--if true then return end -- disable for now...
+	if not plateFrame then return end
 	if not C_UnitAuras or not C_UnitAuras.RemovePrivateAuraAnchor then return end
 
-	if unitFrame.privateAuraAnchors then
-		for index, anchorID in pairs(unitFrame.privateAuraAnchors) do
-			C_UnitAuras.RemovePrivateAuraAnchor(anchorID)
-		end
-		table.wipe(unitFrame.privateAuraAnchors)
-	else
-		unitFrame.privateAuraAnchors = {}
+	local unitFrame = plateFrame.unitFrame
+	if not unitFrame then return end
+
+	if not unitFrame.privateAuraAnchorsFrame then
+		unitFrame.privateAuraAnchorsFrame = CreateFrame ("frame", unitFrame:GetName() .. "PrivateAuraFrame", unitFrame)
+		unitFrame.privateAuraAnchorsFrame.icons = {}
+		unitFrame.privateAuraAnchorsFrame:SetParent(unitFrame)
+		unitFrame.privateAuraAnchorsFrame:SetSize(1, 1)
 	end
 	
-	if not unitFrame.PlaterOnScreen then return end
+	if not unitFrame.PlaterOnScreen then
+		if unitFrame.privateAuraAnchorsFrame.icons then
+			for _, icon in pairs(unitFrame.privateAuraAnchorsFrame.icons) do
+				if icon.anchorID then
+					C_UnitAuras.RemovePrivateAuraAnchor(icon.anchorID)
+				end
+				icon.anchorID = nil
+				icon:Hide()
+			end
+		end
+		unitFrame.privateAuraAnchorsFrame:Hide()
+		return
+	end
 	
 	--anchor building
 	local anchorSide = Plater.db.profile.aura_frame1_anchor.side
 	local rowGrowthDirectionUp = (anchorSide < 3 or anchorSide > 5)
-	local maxIndex = maxIndex or 2
+	maxIndex = maxIndex or 2
 	local relIconPoint = "bottom"
 	local relIconPointTo = "top"
 	local paddingMult = 1
@@ -403,39 +416,48 @@ function Plater.HandlePrivateAuraAnchors(unitFrame, maxIndex)
 	
 	local unit = unitFrame.IsSelf and "player" or unitFrame[MEMBER_UNITID]
 	
+	unitFrame.privateAuraAnchorsFrame:SetPoint(relIconPoint, unitFrame.BuffFrame, relIconPointTo, 0, Plater.db.profile.aura_breakline_space)
+
 	for index = 1, maxIndex do
+		local icon = unitFrame.privateAuraAnchorsFrame.icons[index]
+		if not icon then
+			icon = CreateFrame ("frame", unitFrame:GetName() .. "PAFI" .. index, unitFrame.privateAuraAnchorsFrame)
+			unitFrame.privateAuraAnchorsFrame.icons[index] = icon
+		end
+		icon:SetPoint(relIconPoint, unitFrame.privateAuraAnchorsFrame, relIconPointTo, ((Plater.db.profile.aura_width * (index - 1)) + DB_AURA_PADDING * (index -1)) * paddingMult, 0)
+		icon:SetSize(Plater.db.profile.aura_width, Plater.db.profile.aura_height)
+		icon:Show()
 		local privateAnchorArgs = {
 			unitToken = unit,
 			auraIndex = index,
-			parent = unitFrame,
+			parent = unitFrame.privateAuraAnchorsFrame,
 			showCountdownFrame = true,
 			showCountdownNumbers = true,
 			iconInfo = {
 				iconAnchor = {
-					point = relIconPoint,
-					relativeTo = unitFrame.BuffFrame,
-					relativePoint = relIconPointTo,
-					offsetX = ((Plater.db.profile.aura_width * (index - 1)) + DB_AURA_PADDING * (index -1)) * paddingMult, --((Plater.db.profile.aura_width * Plater.db.profile.ui_parent_scale_tune * (index - 1)) + DB_AURA_PADDING * (index -1)) * paddingMult,
-					offsetY = Plater.db.profile.aura_breakline_space,
+					point = "CENTER",
+					relativeTo = icon,
+					relativePoint = "CENTER",
+					offsetX = 0,
+					offsetY = 0,
 				},
-				iconWidth = Plater.db.profile.aura_width, -- * Plater.db.profile.ui_parent_scale_tune,
-				iconHeight = Plater.db.profile.aura_height, -- * Plater.db.profile.ui_parent_scale_tune,
-				borderScale = -1, --min(Plater.db.profile.aura_width,  Plater.db.profile.aura_height) / 30,
+				iconWidth = Plater.db.profile.aura_width,
+				iconHeight = Plater.db.profile.aura_height,
+				borderScale = -1000,
 			},
 			durationAnchor = {
-				point = relIconPoint,
-				relativeTo = unitFrame.BuffFrame,
-				relativePoint = relIconPointTo,
-				offsetX = ((Plater.db.profile.aura_width * (index - 1)) + DB_AURA_PADDING * (index -1)) * paddingMult, --((Plater.db.profile.aura_width * Plater.db.profile.ui_parent_scale_tune * (index - 1)) + DB_AURA_PADDING * (index -1)) * paddingMult,
-				offsetY = Plater.db.profile.aura_breakline_space,
+				point = "CENTER",
+				relativeTo = icon,
+				relativePoint = "CENTER",
+				offsetX = 0,
+				offsetY = 0,
 			},
 		}
 		
-		unitFrame.privateAuraAnchors[index] = C_UnitAuras.AddPrivateAuraAnchor(privateAnchorArgs)
+		icon.anchorID = C_UnitAuras.AddPrivateAuraAnchor(privateAnchorArgs)
+		--print("PAFI: ", index, " - ", icon.anchorID)
 	end
-	--anchored, so we should 'show' the buffframe as anchor point. TODO: how to handle this for name only and other stuff?... might need separate anchor frame
-	unitFrame.BuffFrame:Show()
-	unitFrame.BuffFrame:SetSize(1,1)
+	unitFrame.privateAuraAnchorsFrame:Show()
 end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
