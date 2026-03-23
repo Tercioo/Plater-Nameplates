@@ -1467,7 +1467,13 @@ end
 		end
 
 		newIcon.SetSizes = function(self)
-			local iconOffset = -1 * UIParent:GetEffectiveScale()
+			local extraBorderOffset = 0
+			if self.Name == "Secondary" then
+				extraBorderOffset = Plater.db.profile.aura_border_extraoffset2 or 0
+			else
+				extraBorderOffset = Plater.db.profile.aura_border_extraoffset or 0
+			end
+			local iconOffset = -1 * UIParent:GetEffectiveScale() + extraBorderOffset
 			PixelUtil.SetPoint (self.Border, "TOPLEFT", self, "TOPLEFT", -iconOffset, iconOffset)
 			PixelUtil.SetPoint (self.Border, "TOPRIGHT", self, "TOPRIGHT", iconOffset, iconOffset)
 			PixelUtil.SetPoint (self.Border, "BOTTOMLEFT", self, "BOTTOMLEFT", -iconOffset, -iconOffset)
