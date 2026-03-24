@@ -363,40 +363,81 @@ local PlaterNamePlateAuraTooltip = CreatePlaterNamePlateAuraTooltip()
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> Private Aura handling
+local privateAuraPool = {}
+local maxPAs = 2
+platerInternal.createPrivateAuraFrames = function()
+	for i=1,41 do
+		local unit = i == 41 and "player" or "nameplate" .. i
+		local newFrame = CreateFrame ("frame", "PlaterPrivateAuraFrame"..i)
+		newFrame.icons = {}
+		newFrame:SetSize(1, 1)
 
-function Plater.HandlePrivateAuraAnchors(plateFrame, maxIndex)
-	--if true then return end -- disable for now...
+		for j=1,maxPAs do
+			local icon = CreateFrame ("frame", newFrame:GetName() .. "PAFI" .. j, newFrame)
+			icon:Hide()
+
+			local privateAnchorArgs = {
+				unitToken = unit,
+				auraIndex = j,
+				parent = newFrame,
+				showCountdownFrame = true,
+				showCountdownNumbers = true,
+				iconInfo = {
+					iconAnchor = {
+						point = "CENTER",
+						relativeTo = icon,
+						relativePoint = "CENTER",
+						offsetX = 0,
+						offsetY = 0,
+					},
+					iconWidth = Plater.db.profile.aura_width,
+					iconHeight = Plater.db.profile.aura_height,
+					borderScale = -1000,
+				},
+				durationAnchor = {
+					point = "CENTER",
+					relativeTo = icon,
+					relativePoint = "CENTER",
+					offsetX = 0,
+					offsetY = 0,
+				},
+			}
+			icon.privateAnchorArgs = privateAnchorArgs
+			icon.anchorID = C_UnitAuras.AddPrivateAuraAnchor(privateAnchorArgs)
+
+			newFrame.icons[j] = icon
+		end
+		privateAuraPool[unit] = newFrame
+	end
+end
+
+function Plater.HandlePrivateAuraAnchors(plateFrame, remove)
+	if true then return end -- disable for now...
 	if not plateFrame then return end
 	if not C_UnitAuras or not C_UnitAuras.RemovePrivateAuraAnchor then return end
 
 	local unitFrame = plateFrame.unitFrame
 	if not unitFrame then return end
-
-	if not unitFrame.privateAuraAnchorsFrame then
-		unitFrame.privateAuraAnchorsFrame = CreateFrame ("frame", unitFrame:GetName() .. "PrivateAuraFrame", unitFrame)
-		unitFrame.privateAuraAnchorsFrame.icons = {}
-		unitFrame.privateAuraAnchorsFrame:SetParent(unitFrame)
-		unitFrame.privateAuraAnchorsFrame:SetSize(1, 1)
-	end
 	
-	if not unitFrame.PlaterOnScreen then
-		if unitFrame.privateAuraAnchorsFrame.icons then
-			for _, icon in pairs(unitFrame.privateAuraAnchorsFrame.icons) do
-				if icon.anchorID then
-					C_UnitAuras.RemovePrivateAuraAnchor(icon.anchorID)
-				end
-				icon.anchorID = nil
-				icon:Hide()
-			end
+	local unit = unitFrame.IsSelf and "player" or unitFrame[MEMBER_UNITID]
+	local paFrame = privateAuraPool[unit]
+
+	if not paFrame then return end
+
+	--if not unitFrame.PlaterOnScreen or remove then
+	if remove then
+		for _, icon in pairs(paFrame.icons) do
+			icon:Hide()
 		end
-		unitFrame.privateAuraAnchorsFrame:Hide()
+		paFrame:SetParent(UIParent)
+		paFrame:Hide()
 		return
 	end
 	
 	--anchor building
 	local anchorSide = Plater.db.profile.aura_frame1_anchor.side
 	local rowGrowthDirectionUp = (anchorSide < 3 or anchorSide > 5)
-	maxIndex = maxIndex or 2
+	local maxIndex = maxPAs -- option?
 	local relIconPoint = "bottom"
 	local relIconPointTo = "top"
 	local paddingMult = 1
@@ -414,50 +455,18 @@ function Plater.HandlePrivateAuraAnchors(plateFrame, maxIndex)
 		paddingMult = -1
 	end
 	
-	local unit = unitFrame.IsSelf and "player" or unitFrame[MEMBER_UNITID]
-	
-	unitFrame.privateAuraAnchorsFrame:SetPoint(relIconPoint, unitFrame.BuffFrame, relIconPointTo, 0, Plater.db.profile.aura_breakline_space)
+	paFrame:Show()
+	paFrame:SetParent(unitFrame)
+	paFrame:SetPoint(relIconPoint, unitFrame.BuffFrame, relIconPointTo, 0, Plater.db.profile.aura_breakline_space)
 
 	for index = 1, maxIndex do
-		local icon = unitFrame.privateAuraAnchorsFrame.icons[index]
-		if not icon then
-			icon = CreateFrame ("frame", unitFrame:GetName() .. "PAFI" .. index, unitFrame.privateAuraAnchorsFrame)
-			unitFrame.privateAuraAnchorsFrame.icons[index] = icon
-		end
-		icon:SetPoint(relIconPoint, unitFrame.privateAuraAnchorsFrame, relIconPointTo, ((Plater.db.profile.aura_width * (index - 1)) + DB_AURA_PADDING * (index -1)) * paddingMult, 0)
+		local icon = paFrame.icons[index]
+		icon:SetPoint(relIconPoint, paFrame, relIconPointTo, ((Plater.db.profile.aura_width * (index - 1)) + DB_AURA_PADDING * (index -1)) * paddingMult, 0)
 		icon:SetSize(Plater.db.profile.aura_width, Plater.db.profile.aura_height)
 		icon:Show()
-		local privateAnchorArgs = {
-			unitToken = unit,
-			auraIndex = index,
-			parent = unitFrame.privateAuraAnchorsFrame,
-			showCountdownFrame = true,
-			showCountdownNumbers = true,
-			iconInfo = {
-				iconAnchor = {
-					point = "CENTER",
-					relativeTo = icon,
-					relativePoint = "CENTER",
-					offsetX = 0,
-					offsetY = 0,
-				},
-				iconWidth = Plater.db.profile.aura_width,
-				iconHeight = Plater.db.profile.aura_height,
-				borderScale = -1000,
-			},
-			durationAnchor = {
-				point = "CENTER",
-				relativeTo = icon,
-				relativePoint = "CENTER",
-				offsetX = 0,
-				offsetY = 0,
-			},
-		}
-		
-		icon.anchorID = C_UnitAuras.AddPrivateAuraAnchor(privateAnchorArgs)
-		--print("PAFI: ", index, " - ", icon.anchorID)
 	end
-	unitFrame.privateAuraAnchorsFrame:Show()
+
+	--DevTool:AddData(paFrame, unit)
 end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
