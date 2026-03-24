@@ -7834,6 +7834,7 @@ end
 										
 										if (not hasTankAggro) then
 											--the unit isn't targeting a tank and no tank in the group has threat status of 2 or more, the unit might be attacking a dps or healer
+											self.isGoodAggroState = false
 											set_aggro_color (self, unpack (DB_AGGRO_DPS_COLORS.notontank))
 										else
 											--the unit isn't targeting a tank but a tank in the group has aggro on this unit

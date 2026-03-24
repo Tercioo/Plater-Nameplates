@@ -11759,7 +11759,6 @@ end
 			end,
 			name = "OPTIONS_THREAT_AGGROSTATE_ANOTHERTANK",
 			desc = "OPTIONS_THREAT_COLOR_TANK_ANOTHERTANK_DESC",
-			hidden = IS_WOW_PROJECT_MIDNIGHT,
 		},
 		{
 			type = "color",
