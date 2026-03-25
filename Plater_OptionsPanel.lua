@@ -195,7 +195,7 @@ function Plater.ImportAndSwitchProfile(profileName, profile, bIsUpdate, bKeepMod
 	--check if parent to UIParent is enabled and calculate the new scale
 	if (Plater.db.profile.use_ui_parent) then
 		if (not bIsUpdate or not bWasUsingUIParent and not keepScaleTune) then --only update if necessary
-			Plater.db.profile.ui_parent_scale_tune = 1 / UIParent:GetEffectiveScale()
+			Plater.db.profile.ui_parent_scale_tune = 1 / (IS_WOW_PROJECT_MIDNIGHT and 1 or UIParent:GetEffectiveScale())
 		end
 	else
 		Plater.db.profile.ui_parent_scale_tune = 0
