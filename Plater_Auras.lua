@@ -2413,7 +2413,8 @@ end
 			iconFrame:SetBorderSize(profile.extra_icon_border_size or 1)
 
 			iconFrame.SetSizes = function(self)
-				local iconOffset = -1 * UIParent:GetEffectiveScale()
+				local extraBorderOffset = Plater.db.profile.extra_icon_border_extraoffset or 0
+				local iconOffset = -1 * UIParent:GetEffectiveScale() + extraBorderOffset
 				PixelUtil.SetPoint (self.Border, "TOPLEFT", self, "TOPLEFT", -iconOffset, iconOffset)
 				PixelUtil.SetPoint (self.Border, "TOPRIGHT", self, "TOPRIGHT", iconOffset, iconOffset)
 				PixelUtil.SetPoint (self.Border, "BOTTOMLEFT", self, "BOTTOMLEFT", -iconOffset, -iconOffset)
@@ -2435,6 +2436,7 @@ end
 			iconFrame.platerSkinned = true
 		end
 
+		iconFrame:SetBorderSize(profile.extra_icon_border_size or 1)
 		iconFrame:SetSizes()
 		
 		--check if Masque is enabled on Plater and reskin the aura icon
