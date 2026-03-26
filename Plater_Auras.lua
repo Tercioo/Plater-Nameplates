@@ -2379,6 +2379,10 @@ end
 			iconFrame.Border:Hide()
 			
 			iconFrame.Border = DF:CreateFullBorder("$parentBorder", iconFrame)
+			for _, tex in pairs(iconFrame.Border.Textures) do
+				tex:SetDrawLayer ("overlay", 7)
+			end
+
 			local iconOffset = -1
 			PixelUtil.SetPoint (iconFrame.Border, "TOPLEFT", iconFrame, "TOPLEFT", -iconOffset, iconOffset)
 			PixelUtil.SetPoint (iconFrame.Border, "TOPRIGHT", iconFrame, "TOPRIGHT", iconOffset, iconOffset)
@@ -2408,9 +2412,6 @@ end
 			PixelUtil.SetPoint (iconFrame.Texture, "TOPRIGHT", iconFrame, "TOPRIGHT", iconOffset, iconOffset)
 			PixelUtil.SetPoint (iconFrame.Texture, "BOTTOMLEFT", iconFrame, "BOTTOMLEFT", -iconOffset, -iconOffset)
 			PixelUtil.SetPoint (iconFrame.Texture, "BOTTOMRIGHT", iconFrame, "BOTTOMRIGHT", iconOffset, -iconOffset)
-			
-			iconFrame:SetBackdropBorderColor(unpack(borderColor))
-			iconFrame:SetBorderSize(profile.extra_icon_border_size or 1)
 
 			iconFrame.SetSizes = function(self)
 				local extraBorderOffset = Plater.db.profile.extra_icon_border_extraoffset or 0
@@ -2436,6 +2437,7 @@ end
 			iconFrame.platerSkinned = true
 		end
 
+		iconFrame:SetBackdropBorderColor(unpack(borderColor))
 		iconFrame:SetBorderSize(profile.extra_icon_border_size or 1)
 		iconFrame:SetSizes()
 		
