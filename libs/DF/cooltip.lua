@@ -1114,6 +1114,9 @@ function DF:CreateCoolTip()
 					menuButton.leftText:SetFont(fontFace, fontSize, fontFlags)
 				end
 			else
+				--if Details222.IsPTR() then
+				--	print (gameCooltip.defaultFont, leftTextSettings[6] or gameCooltip.OptionsTable.TextSize or 10, leftTextSettings[8] or gameCooltip.OptionsTable.TextShadow)
+				--end
 				menuButton.leftText:SetFont(gameCooltip.defaultFont, leftTextSettings[6] or gameCooltip.OptionsTable.TextSize or 10, leftTextSettings[8] or gameCooltip.OptionsTable.TextShadow)
 			end
 
