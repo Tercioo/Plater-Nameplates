@@ -8888,7 +8888,7 @@ end
 					DF:SetFontOutline (_G.SystemFont_NamePlate_Outlined, profile.blizzard_nameplate_font_outline)
 					DF:SetFontSize (_G.SystemFont_NamePlate_Outlined, profile.blizzard_nameplate_font_size - 1)
 					
-					C_Timer.After(0.1, function() Plater.UpdateBlizzardNameplateFonts(true, true) end)
+					C_Timer.After(0, function() Plater.UpdateBlizzardNameplateFonts(true, true) end)
 					return
 				end
 			end
