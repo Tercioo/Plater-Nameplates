@@ -5144,15 +5144,22 @@ function Plater.OnInit() --private --~oninit ~init
 				hooksecurefunc(NamePlateUnitFrameMixin, "UpdateNameClassColor", function(self)
 					local plateFrame = C_NamePlate.GetNamePlateForUnit(self.unit)
 					if not plateFrame then -- secure in dungeon
-						local onlyNamesEnabled = GetCVarBool("nameplateShowOnlyNames") or GetCVarBool("nameplateShowOnlyNameForFriendlyPlayerUnits")
+						--local onlyNamesEnabled = GetCVarBool("nameplateShowOnlyNames") or GetCVarBool("nameplateShowOnlyNameForFriendlyPlayerUnits")
 
-						if onlyNamesEnabled and not self:IsPlayer() then
-							TextureLoadingGroupMixin.AddTexture({ textures = self.HealthBarsContainer.healthBar }, "showOnlyName")
-							TextureLoadingGroupMixin.AddTexture({ textures = self.castBar }, "showOnlyName")
-							TextureLoadingGroupMixin.AddTexture({ textures = self.castBar }, "widgetsOnly")
+						if not UnitIsPlayer(self.unit) then
+							if Plater.db.profile.hide_friendly_npc_healthbar then
+								TextureLoadingGroupMixin.AddTexture({ textures = self.HealthBarsContainer.healthBar }, "showOnlyName")
+								TextureLoadingGroupMixin.AddTexture({ textures = self.castBar }, "showOnlyName")
+								TextureLoadingGroupMixin.AddTexture({ textures = self.castBar }, "widgetsOnly")
+							else
+								TextureLoadingGroupMixin.RemoveTexture({ textures = self.HealthBarsContainer.healthBar }, "showOnlyName")
+								TextureLoadingGroupMixin.RemoveTexture({ textures = self.castBar }, "showOnlyName")
+								TextureLoadingGroupMixin.RemoveTexture({ textures = self.castBar }, "widgetsOnly")
+								--TextureLoadingGroupMixin.RemoveTexture({ textures = self }, "explicitIsPlayer")
+							end
+							--TextureLoadingGroupMixin.AddTexture({ textures = self }, "explicitIsPlayer")
 						end
 						TextureLoadingGroupMixin.AddTexture({ textures = self.optionTable }, "colorNameBySelection")
-						TextureLoadingGroupMixin.AddTexture({ textures = self }, "explicitIsPlayer")
 					end
 				end)
 				hooksecurefunc(NamePlateUnitFrameMixin, "UpdateIsFriend", function(self)

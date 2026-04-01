@@ -5629,8 +5629,21 @@ local relevance_options = {
 					self:SetValue (GetCVarBool ("nameplateShowOnlyNameForFriendlyPlayerUnits"))
 				end
 			end,
-			name = "Hide Friendly Health Bar|cFFFF7700*|r", --show friendly nameplates
-			desc = "Hide Friendly Health Bar\nCVar: nameplateShowOnlyNameForFriendlyPlayerUnits",
+			name = "OPTIONS_NAMEPLATE_HIDE_FRIENDLY_HEALTH",
+			desc = "OPTIONS_NAMEPLATE_HIDE_FRIENDLY_HEALTH_DESC",
+			nocombat = true,
+			hidden = not IS_WOW_PROJECT_MIDNIGHT,
+		},
+
+		{
+			type = "toggle",
+			boxfirst = true,
+			get = function() return Plater.db.profile.hide_friendly_npc_healthbar end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.hide_friendly_npc_healthbar = value
+			end,
+			name = "Hide Friendly NPCs Health Bar", --show friendly nameplates
+			desc = "Hide Friendly NPCs Health Bar\nWill require the healthbars to be hidden and shown again to take effect after changing.",
 			nocombat = true,
 			hidden = not IS_WOW_PROJECT_MIDNIGHT,
 		},
@@ -5643,7 +5656,7 @@ local relevance_options = {
 				Plater.db.profile.hide_realm_name_on_blizzard = value
 				Plater.UpdateBaseNameplateOptions()
 			end,
-			name = "Hide Realm Names.",
+			name = "Hide Realm Names",
 			desc = "Hide realm names on blizzard nameplates.",
 			nocombat = true,
 			hidden = not IS_WOW_PROJECT_MIDNIGHT,
@@ -5741,7 +5754,7 @@ local relevance_options = {
 			nocombat = true,
 		},
 		
-		{type = "blank"},
+		{type = "blank", hidden = IS_WOW_PROJECT_MIDNIGHT},
 		
 		{
 			type = "toggle",

@@ -164,6 +164,7 @@ PLATER_DEFAULT_SETTINGS = {
 		hide_enemy_castbars = false,
 
 		hide_realm_name_on_blizzard = true,
+		hide_friendly_npc_healthbar = false,
 		
 		--> offset of the whole nameplate
 		global_offset_y = 0,
