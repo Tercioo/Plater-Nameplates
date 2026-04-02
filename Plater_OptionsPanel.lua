@@ -11948,7 +11948,7 @@ end
 			end,
 			name = "OPTIONS_THREAT_CLASSIC_USE_TANK_COLORS",
 			desc = "OPTIONS_THREAT_CLASSIC_USE_TANK_COLORS",
-			hidden = not IS_WOW_PROJECT_NOT_MAINLINE
+			hidden = WOW_PROJECT_MAINLINE
 		},
 	
 		{type = "blank", hidden = not IS_WOW_PROJECT_NOT_MAINLINE},
