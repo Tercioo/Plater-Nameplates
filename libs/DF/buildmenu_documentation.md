@@ -1,4 +1,4 @@
---[=[
+
 buildmenu.lua documentation
 Part 1: widget type registry and core local helper functions
 
@@ -2125,4 +2125,4 @@ Notable patterns in this example
 =====================================================================
 End of Example 1
 =====================================================================
-]=]
+
