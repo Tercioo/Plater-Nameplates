@@ -511,7 +511,7 @@ function Plater.OpenOptionsPanel(pageNumber, bIgnoreLazyLoad)
 		{name = "CastColorManagement",		text = "OPTIONS_TABNAME_CASTCOLORS"},
 		{name = "DebuffLastEvent",			text = "OPTIONS_TABNAME_BUFF_LIST"},
 		{name = "AnimationPanel",			text = "OPTIONS_TABNAME_ANIMATIONS"},
-		{name = "Automation",				text = "OPTIONS_TABNAME_AUTO"},
+		{name = "Automation",				text = "OPTIONS_TABNAME_AUTO", createOnDemandFunc = platerInternal.CreateAutomationOptions},
 		{name = "ProfileManagement",		text = "OPTIONS_TABNAME_PROFILES"},
 		{name = "AdvancedConfig",			text = "OPTIONS_TABNAME_ADVANCED", createOnDemandFunc = platerInternal.CreateAdvancedOptions},
 		{name = "resourceFrame",			text = "OPTIONS_TABNAME_COMBOPOINTS"},

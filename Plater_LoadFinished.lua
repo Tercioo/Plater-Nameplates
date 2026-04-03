@@ -15,6 +15,7 @@ platerInternal.LoadOnDemand_IsLoaded = {
 	SearchOptions = false,
 	AdvancedOptions = false,
 	BossModOptions = false,
+	AutomationOptions = false,
 }
 
 ---@type table<string, function>
@@ -23,4 +24,5 @@ platerInternal.LoadOnDemand_LoadFunc = {
 	SearchOptions = platerInternal.CreateSearchOptions,
 	AdvancedOptions = platerInternal.CreateAdvancedOptions,
 	BossModOptions = platerInternal.CreateBossModOptions,
+	AutomationOptions = platerInternal.CreateAutomationOptions,
 }
