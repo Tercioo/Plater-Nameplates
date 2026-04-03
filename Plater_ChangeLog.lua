@@ -8,6 +8,11 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1775215167, "Backend Change", "Mar 19th, 2026", "Added option to hide blizzard friendly npc helathbars separately from players.", "cont1nuity"},
+			{1775215167, "Bug Fix", "Mar 19th, 2026", "Fixed a few missing options.", "cont1nuity"},
+			{1775215167, "Backend Change", "Mar 19th, 2026", "Added option to remove realm name on friendly players for blizzard default nameplates.", "cont1nuity"},
+			{1775215167, "Backend Change", "Mar 19th, 2026", "Improved aura border sizing.", "cont1nuity"},
+
 			{1773961544, "Bug Fix", "Mar 19th, 2026", "Fix 'no tank aggro' detection for Midnight.", "cont1nuity"},
 			{1773961544, "Bug Fix", "Mar 19th, 2026", "Adding option to hide cast bar border shield for unitnrerruptible casts.", "cont1nuity"},
 			{1773961544, "Bug Fix", "Mar 19th, 2026", "Fix the border on aura icons (a bit).", "cont1nuity"},
