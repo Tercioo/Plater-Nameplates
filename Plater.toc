@@ -94,6 +94,7 @@ options/Plater_O_Search.lua
 options/Plater_O_CastBar.lua
 options/Plater_O_Advanced.lua
 options/Plater_O_BossMod.lua
+options/Plater_O_Automation.lua
 
 
 

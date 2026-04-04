@@ -21,7 +21,37 @@ function platerInternal.CreateAutomationOptions()
     }
 
 	local auto_options = {
-		{type = "label", get = function() return L["OPTIONS_AUTO_SECTIONTITLE_COMBAT_TOGGLE"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		--group declaration
+		---@type df_menu_group
+		{
+			type = "group",
+			UseBackdrop = {bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", tileSize = 16, tile = true, tileEdge = true, edgeSize = 16, insets = {left = 3, right = 3, top = 3, bottom = 3}},
+			BackgroundColor = {0, 0, 0, .5},
+			BackdropBorderColor = {1, 1, 1, 1},
+			name = "one",
+			padding = 7,
+			width = 400,
+		},
+		---@type df_menu_group
+		{
+			type = "group",
+			UseBackdrop = {edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true},
+			BackgroundColor = {0, 0, 0, .5},
+			BackdropBorderColor = {1, 1, 1, 1},
+			name = "two",
+		},
+		---@type df_menu_group
+		{
+			type = "group",
+			UseBackdrop = {bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", tileSize = 16, tile = true, tileEdge = true, edgeSize = 16, insets = {left = 3, right = 3, top = 3, bottom = 3}},
+			BackgroundColor = {0, 0, 0, .5},
+			BackdropBorderColor = {1, 1, 1, 1},
+			name = "three",
+			padding = 2,
+			width = 400,
+		},
+
+		{type = "label", get = function() return L["OPTIONS_AUTO_SECTIONTITLE_COMBAT_TOGGLE"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), group = "two"},
 		{
 			type = "toggle",
 			get = function() return Plater.db.profile.auto_toggle_combat_enabled end,
@@ -34,6 +64,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_ENABLED"],
 			desc = L["OPTIONS_AUTO_TOGGLE_COMBAT_DESC"],
+			group = "two",
 		},
 		{
 			type = "toggle",
@@ -44,6 +75,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_ENEMY_NAMEPLATES_IC"],
 			desc = L["OPTIONS_AUTO_ENEMY_NAMEPLATES_IC_DESC"],
+			group = "two",
 		},
 		{
 			type = "toggle",
@@ -54,6 +86,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_ENEMY_NAMEPLATES_OOC"],
 			desc = L["OPTIONS_AUTO_ENEMY_NAMEPLATES_OOC_DESC"],
+			group = "two",
 		},
 		{
 			type = "toggle",
@@ -64,6 +97,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_FRIENDLY_NAMEPLATES_IC"],
 			desc = L["OPTIONS_AUTO_FRIENDLY_NAMEPLATES_IC_DESC"],
+			group = "two",
 		},
 		{
 			type = "toggle",
@@ -74,6 +108,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_FRIENDLY_NAMEPLATES_OOC"],
 			desc = L["OPTIONS_AUTO_FRIENDLY_NAMEPLATES_OOC_DESC"],
+			group = "two",
 		},
 		{
 			type = "toggle",
@@ -84,6 +119,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_HIDE_BLIZZARD_HEALTHBARS_IC"],
 			desc = L["OPTIONS_AUTO_HIDE_BLIZZARD_HEALTHBARS_IC_DESC"],
+			group = "two",
 		},
 		{
 			type = "toggle",
@@ -94,6 +130,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_HIDE_BLIZZARD_HEALTHBARS_OOC"],
 			desc = L["OPTIONS_AUTO_HIDE_BLIZZARD_HEALTHBARS_OOC_DESC"],
+			group = "two",
 		},
 		{
 			type = "toggle",
@@ -104,6 +141,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_SHOWNAMEPLATE_INCOMBAT"],
 			desc = L["OPTIONS_AUTO_SHOWNAMEPLATE_INCOMBAT_DESC"],
+			group = "two",
 		},
 		{
 			type = "toggle",
@@ -114,11 +152,12 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_SHOWNAMEPLATE_OUTOFCOMBAT"],
 			desc = L["OPTIONS_AUTO_SHOWNAMEPLATE_OUTOFCOMBAT_DESC"],
+			group = "two",
 		},
 
 		{type = "blank"},
 
-		{type = "label", get = function() return L["OPTIONS_AUTO_SECTIONTITLE_RAID_AND_PARTY"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return L["OPTIONS_AUTO_SECTIONTITLE_RAID_AND_PARTY"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), group = "two"},
 
 		{
 			type = "toggle",
@@ -129,6 +168,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_HIDE_ENEMY_PETS"],
 			desc = L["OPTIONS_AUTO_HIDE_ENEMY_PETS_DESC"],
+			group = "two",
 		},
 		{
 			type = "toggle",
@@ -139,12 +179,13 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_HIDE_ENEMY_TOTEMS"],
 			desc = L["OPTIONS_AUTO_HIDE_ENEMY_TOTEMS_DESC"],
+			group = "two",
 		},
 
 		{type = "breakline"},
 		{type = "breakline"},
 
-		{type = "label", get = function() return L["OPTIONS_AUTO_SECTIONTITLE_FRIENDLY_NAMEPLATES"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return L["OPTIONS_AUTO_SECTIONTITLE_FRIENDLY_NAMEPLATES"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), group = "two"},
 
 		{
 			type = "toggle",
@@ -158,6 +199,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = "OPTIONS_ENABLED",
 			desc = "When enabled, Plater will enable or disable friendly plates based on the settings below.",
+			group = "two",
 		},
 
 		{
@@ -169,6 +211,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_FRIENDLY_IN_DUNGEONS"],
 			desc = L["OPTIONS_AUTO_FRIENDLY_IN_DUNGEONS_DESC"],
+			group = "two",
 		},
 		{
 			type = "toggle",
@@ -179,6 +222,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_FRIENDLY_IN_RAID"],
 			desc = L["OPTIONS_AUTO_FRIENDLY_IN_RAID_DESC"],
+			group = "two",
 		},
 		{
 			type = "toggle",
@@ -189,6 +233,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_FRIENDLY_IN_ARENA_BG"],
 			desc = L["OPTIONS_AUTO_FRIENDLY_IN_ARENA_BG_DESC"],
+			group = "two",
 		},
 		{
 			type = "toggle",
@@ -199,6 +244,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_FRIENDLY_IN_MAJOR_CITIES"],
 			desc = L["OPTIONS_AUTO_FRIENDLY_IN_MAJOR_CITIES_DESC"],
+			group = "two",
 		},
 		{
 			type = "toggle",
@@ -209,11 +255,36 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_FRIENDLY_IN_OPEN_WORLD"],
 			desc = L["OPTIONS_AUTO_FRIENDLY_IN_OPEN_WORLD_DESC"],
+			group = "two",
+		},
+
+		--test
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_friendly ["cities"] end,
+			set = function (self, fixedparam, value)
+				Plater.db.profile.auto_toggle_friendly ["cities"] = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = L["OPTIONS_AUTO_FRIENDLY_IN_MAJOR_CITIES"],
+			desc = L["OPTIONS_AUTO_FRIENDLY_IN_MAJOR_CITIES_DESC"],
+			group = "two",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.auto_toggle_friendly ["world"] end,
+			set = function (self, fixedparam, value)
+				Plater.db.profile.auto_toggle_friendly ["world"] = value
+				Plater.RefreshAutoToggle()
+			end,
+			name = L["OPTIONS_AUTO_FRIENDLY_IN_OPEN_WORLD"],
+			desc = L["OPTIONS_AUTO_FRIENDLY_IN_OPEN_WORLD_DESC"],
+			group = "two",
 		},
 
 		{type = "blank"},
 
-		{type = "label", get = function() return L["OPTIONS_AUTO_SECTIONTITLE_ENEMY_NAMEPLATES"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return L["OPTIONS_AUTO_SECTIONTITLE_ENEMY_NAMEPLATES"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), group = "two",},
 
 		{
 			type = "toggle",
@@ -227,6 +298,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_ENABLED"],
 			desc = "When enabled, Plater will enable or disable enemy plates based on the settings below.",
+			group = "two",
 		},
 
 		{
@@ -238,6 +310,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_ENEMY_IN_DUNGEONS"],
 			desc = L["OPTIONS_AUTO_ENEMY_IN_DUNGEONS_DESC"],
+			group = "two",
 		},
 		{
 			type = "toggle",
@@ -248,6 +321,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_ENEMY_IN_RAID"],
 			desc = L["OPTIONS_AUTO_ENEMY_IN_RAID_DESC"],
+			group = "two",
 		},
 		{
 			type = "toggle",
@@ -258,6 +332,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_ENEMY_IN_ARENA_BG"],
 			desc = L["OPTIONS_AUTO_ENEMY_IN_ARENA_BG_DESC"],
+			group = "two",
 		},
 		{
 			type = "toggle",
@@ -268,6 +343,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_ENEMY_IN_MAJOR_CITIES"],
 			desc = L["OPTIONS_AUTO_ENEMY_IN_MAJOR_CITIES_DESC"],
+			group = "two",
 		},
 		{
 			type = "toggle",
@@ -278,12 +354,13 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_ENEMY_IN_OPEN_WORLD"],
 			desc = L["OPTIONS_AUTO_ENEMY_IN_OPEN_WORLD_DESC"],
+			group = "two",
 		},
 
 		{type = "breakline"},
 		{type = "breakline"},
 
-		{type = "label", get = function() return L["OPTIONS_AUTO_SECTIONTITLE_STACKING_NAMEPLATES"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return L["OPTIONS_AUTO_SECTIONTITLE_STACKING_NAMEPLATES"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), group = "three"},
 
 		{
 			type = "toggle",
@@ -297,6 +374,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = "OPTIONS_ENABLED",
 			desc = "When enabled, Plater will enable or disable stacking nameplates based on the settings below.\n\n|cFFFFFF00 Important |r: only toggle on if 'Stacking Nameplates' is enabled in the General Settings tab.",
+			group = "three",
 		},
 
 		{
@@ -308,6 +386,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_STACKING_IN_DUNGEONS"],
 			desc = L["OPTIONS_AUTO_STACKING_IN_DUNGEONS_DESC"],
+			group = "three",
 		},
 		{
 			type = "toggle",
@@ -318,6 +397,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_STACKING_IN_RAID"],
 			desc = L["OPTIONS_AUTO_STACKING_IN_RAID_DESC"],
+			group = "three",
 		},
 		{
 			type = "toggle",
@@ -328,6 +408,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_STACKING_IN_ARENA_BG"],
 			desc = L["OPTIONS_AUTO_STACKING_IN_ARENA_BG_DESC"],
+			group = "three",
 		},
 		{
 			type = "toggle",
@@ -338,6 +419,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_STACKING_IN_MAJOR_CITIES"],
 			desc = L["OPTIONS_AUTO_STACKING_IN_MAJOR_CITIES_DESC"],
+			group = "three",
 		},
 		{
 			type = "toggle",
@@ -348,10 +430,11 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_STACKING_IN_OPEN_WORLD"],
 			desc = L["OPTIONS_AUTO_STACKING_IN_OPEN_WORLD_DESC"],
+			group = "three",
 		},
 
 		{type = "blank"},
-		{type = "label", get = function() return L["OPTIONS_AUTO_SECTIONTITLE_ALWAYS_SHOW_NAMEPLATES"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		{type = "label", get = function() return L["OPTIONS_AUTO_SECTIONTITLE_ALWAYS_SHOW_NAMEPLATES"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), group = "one"},
 
 		{
 			type = "toggle",
@@ -365,6 +448,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = "OPTIONS_ENABLED",
 			desc = "When enabled, Plater will enable or disable 'always show nameplates' based on the settings below.",
+			group = "one",
 		},
 
 		{
@@ -376,6 +460,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_ALWAYS_SHOW_IN_DUNGEONS"],
 			desc = L["OPTIONS_AUTO_ALWAYS_SHOW_IN_DUNGEONS_DESC"],
+			group = "one",
 		},
 		{
 			type = "toggle",
@@ -386,6 +471,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_ALWAYS_SHOW_IN_RAID"],
 			desc = L["OPTIONS_AUTO_ALWAYS_SHOW_IN_RAID_DESC"],
+			group = "one",
 		},
 		{
 			type = "toggle",
@@ -396,6 +482,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_ALWAYS_SHOW_IN_ARENA_BG"],
 			desc = L["OPTIONS_AUTO_ALWAYS_SHOW_IN_ARENA_BG_DESC"],
+			group = "one",
 		},
 		{
 			type = "toggle",
@@ -406,6 +493,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_ALWAYS_SHOW_IN_MAJOR_CITIES"],
 			desc = L["OPTIONS_AUTO_ALWAYS_SHOW_IN_MAJOR_CITIES_DESC"],
+			group = "one",
 		},
 		{
 			type = "toggle",
@@ -416,6 +504,7 @@ function platerInternal.CreateAutomationOptions()
 			end,
 			name = L["OPTIONS_AUTO_ALWAYS_SHOW_IN_OPEN_WORLD"],
 			desc = L["OPTIONS_AUTO_ALWAYS_SHOW_IN_OPEN_WORLD_DESC"],
+			group = "one",
 		},
 	}
 
@@ -426,6 +515,7 @@ function platerInternal.CreateAutomationOptions()
     auto_options.language_addonId = addonId
     auto_options.Name = "Auto Options"
     local startX, startY, heightSize = 10, platerInternal.optionsYStart, 755
+
     DF:BuildMenu(automationFrame, auto_options, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, platerInternal.OptionsGlobalCallback)
 
     platerInternal.LoadOnDemand_IsLoaded.AutomationOptions = true

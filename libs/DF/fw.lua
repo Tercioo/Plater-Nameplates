@@ -1,5 +1,5 @@
 
-local dversion = 704
+local dversion = 706
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary(major, minor)
 
@@ -1444,6 +1444,10 @@ function DF:SetFontFace(fontString, fontface)
 	local font = SharedMedia:Fetch("font", fontface, true)
 	if (font) then
 		fontface = font
+	end
+
+	if _G[fontface] then
+		fontface = _G[fontface]:GetFont()
 	end
 
 	local _, size, flags = fontString:GetFont()
