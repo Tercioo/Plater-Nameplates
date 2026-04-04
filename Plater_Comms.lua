@@ -279,7 +279,7 @@ function Plater.DecompressData (data, dataType, silent)
 				return false
 			end
 		end
-		local ok, dataSerialized = pcall (C_EncodingUtil.DecompressString, platerInternal.GetErrorHandler(), dataCompressed)
+		local ok, dataSerialized = xpcall (C_EncodingUtil.DecompressString, platerInternal.GetErrorHandler(), dataCompressed)
 		--local dataSerialized = C_EncodingUtil.DecompressString(dataCompressed)
 		if (not ok or not dataSerialized) then
 			if not silent then Plater:Msg ("couldn't uncompress the data.") end
