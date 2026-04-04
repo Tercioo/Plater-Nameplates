@@ -35,20 +35,20 @@ function platerInternal.CreateAutomationOptions()
 		---@type df_menu_group
 		{
 			type = "group",
-			UseBackdrop = {edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true},
-			BackgroundColor = {0, 0, 0, .5},
-			BackdropBorderColor = {1, 1, 1, 1},
-			name = "two",
-		},
-		---@type df_menu_group
-		{
-			type = "group",
 			UseBackdrop = {bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", tileSize = 16, tile = true, tileEdge = true, edgeSize = 16, insets = {left = 3, right = 3, top = 3, bottom = 3}},
 			BackgroundColor = {0, 0, 0, .5},
 			BackdropBorderColor = {1, 1, 1, 1},
 			name = "three",
 			padding = 2,
 			width = 400,
+		},
+		---@type df_menu_group
+		{
+			type = "group",
+			UseBackdrop = {edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true},
+			BackgroundColor = {0, 0, 0, .5},
+			BackdropBorderColor = {1, 1, 1, 1},
+			name = "two",
 		},
 
 		{type = "label", get = function() return L["OPTIONS_AUTO_SECTIONTITLE_COMBAT_TOGGLE"] end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), group = "two"},
