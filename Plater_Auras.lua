@@ -433,6 +433,7 @@ function Plater.HandlePrivateAuraAnchors(plateFrame, maxIndex)
 			parent = unitFrame.privateAuraAnchorsFrame,
 			showCountdownFrame = true,
 			showCountdownNumbers = true,
+			isContainer = false,
 			iconInfo = {
 				iconAnchor = {
 					point = "CENTER",
