@@ -11532,7 +11532,7 @@ end
 		
 		{type = "breakline"},
 	
-		{type = "label", get = function() return "Tank or DPS Colors:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = not IS_WOW_PROJECT_NOT_MAINLINE},
+		{type = "label", get = function() return "Tank or DPS Colors:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = IS_WOW_PROJECT_MAINLINE},
 			
 		{
 			type = "toggle",
@@ -11543,7 +11543,7 @@ end
 			end,
 			name = "OPTIONS_THREAT_CLASSIC_USE_TANK_COLORS",
 			desc = "OPTIONS_THREAT_CLASSIC_USE_TANK_COLORS",
-			hidden = WOW_PROJECT_MAINLINE
+			hidden = IS_WOW_PROJECT_MAINLINE
 		},
 	
 		{type = "blank", hidden = not IS_WOW_PROJECT_NOT_MAINLINE},
