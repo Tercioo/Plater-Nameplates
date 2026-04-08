@@ -635,3 +635,49 @@ function Plater.ShowImportScriptConfirmation()
         Plater.ImportConfirm:Hide()
     end
 end
+
+-- Support for wago addon packs
+PlaterAPI = PlaterAPI or {}
+---@param profileKey string --the name of the profile to be exported
+---@return string --the encoded profile string that can be imported by other users
+function PlaterAPI:ExportProfile(profileKey)
+    return Plater.CompressData (Plater.db.profiles[profileKey], "print")
+end
+
+---@param profileString string --the encoded profile string to be imported
+---@param profileKey string --the name of the profile to be imported
+function PlaterAPI:ImportProfile(profileString, profileKey)
+    Plater.ImportAndSwitchProfile(profileKey, profileString, false, false, true, true)
+end
+
+---@param profileString string --the profile string to decode
+---@return table --the decoded profile data as a table
+function PlaterAPI:DecodeProfileString(profileString)
+    local deserialized = Plater.DecompressData (profileString, "print", true)
+    return deserialized
+end
+
+---@param profileKey string -- profileKey of an existing profile
+function PlaterAPI:SetProfile(profileKey)
+    Plater.db:SetProfile(profileKey)
+end
+
+---@return table<string, boolean>  -- a table of all available profile keys in the format [profileKey] = true
+function PlaterAPI:GetProfileKeys()
+    return Plater.db:GetProfiles()
+end
+
+---@return string --the profileKey of the currently active profile
+function PlaterAPI:GetCurrentProfileKey()
+    return Plater.db:GetCurrentProfile() or "Global"
+end
+
+function PlaterAPI:OpenConfig()
+    Plater.OpenOptionsPanel()
+end
+
+function PlaterAPI:CloseConfig()
+    if (PlaterOptionsPanelFrame and PlaterOptionsPanelFrame:IsShown()) then
+        PlaterOptionsPanelFrame:Hide()
+    end
+end

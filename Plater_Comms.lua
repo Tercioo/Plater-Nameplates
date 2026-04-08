@@ -176,6 +176,7 @@ end
 
 -- ~compress ~zip ~export ~import ~deflate ~serialize
 function Plater.CompressData (data, dataType)
+	if not data or not dataType then return nil end
 	--native API support
 	if (C_EncodingUtil and not Plater.FORCE_LIB_COMPRESSION) then
 		local dataSerialized = C_EncodingUtil.SerializeCBOR(data)
