@@ -5935,7 +5935,7 @@ function Plater.OnInit() --private --~oninit ~init
 					Plater.UpdateTextSize (self.SpellNameRenamed or "", self.Text, plateConfig.spellname_text_max_width or 0, nil)
 					
 					-- in some occasions channeled casts don't have a CLEU entry... check this here
-					if (unitFrame.ActorType == "enemynpc" and event == "UNIT_SPELLCAST_CHANNEL_START" and (not DB_CAPTURED_SPELLS[spellID] or DB_CAPTURED_SPELLS[spellID].isChanneled == nil or not DB_CAPTURED_CASTS[spellID] or DB_CAPTURED_CASTS[spellID].isChanneled == nil)) then
+					if not IS_WOW_PROJECT_MIDNIGHT and (unitFrame.ActorType == "enemynpc" and event == "UNIT_SPELLCAST_CHANNEL_START" and (not DB_CAPTURED_SPELLS[self.spellID] or DB_CAPTURED_SPELLS[self.spellID].isChanneled == nil or not DB_CAPTURED_CASTS[self.spellID] or DB_CAPTURED_CASTS[self.spellID].isChanneled == nil)) then
 						parserFunctions.SPELL_CAST_SUCCESS (nil, "SPELL_CAST_SUCCESS", nil, unitFrame[MEMBER_GUID], unitFrame.unitNameInternal, 0x00000040, nil, nil, nil, nil, nil, self.spellID, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 					end
 
