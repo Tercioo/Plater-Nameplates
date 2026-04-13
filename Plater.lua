@@ -80,6 +80,14 @@ end
 local GetSpecialization = C_SpecializationInfo and C_SpecializationInfo.GetSpecialization or GetSpecialization
 local GetSpecializationInfo = C_SpecializationInfo and C_SpecializationInfo.GetSpecializationInfo or GetSpecializationInfo
 
+--provide global shims for classic clients where these APIs don't exist, so third-party scripts don't error
+if not _G.GetSpecialization then
+	_G.GetSpecialization = function() return nil end
+end
+if not _G.GetSpecializationInfo then
+	_G.GetSpecializationInfo = function() return nil end
+end
+
 local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_NOT_MAINLINE = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_CLASSIC_ERA = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
