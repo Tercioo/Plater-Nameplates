@@ -1649,8 +1649,11 @@ Plater.AnchorNamesByPhraseId = {
 	
 	local canSaveCVars = false --only allow storing after plater has restored
 	--on logout or on profile change, or when they are actually set, save some important cvars inside the profile
-	function Plater.SaveConsoleVariables(cvar, value) --private
+	function Plater.SaveConsoleVariables(cvar, value, enumValue) --private
 		if not canSaveCVars then return end
+		if cvar and value and enumValue ~= nil then
+			value = C_CVar.GetCVar(cvar)
+		end
 		
 		--print("save cvars", cvar, value, debugstack())
 		local cvarTable = Plater.db.profile.saved_cvars
@@ -2644,6 +2647,9 @@ Plater.AnchorNamesByPhraseId = {
 			hooksecurefunc('SetCVar', Plater.SaveConsoleVariables)
 			if C_CVar and C_CVar.SetCVar then
 				hooksecurefunc(C_CVar, 'SetCVar', Plater.SaveConsoleVariables)
+			end
+			if C_CVar and C_CVar.SetCVarBitfield then
+				hooksecurefunc(C_CVar, 'SetCVarBitfield', Plater.SaveConsoleVariables)
 			end
 			hooksecurefunc('ConsoleExec', function(console)
 				local par1, par2, par3 = console:match('^(%S+)%s+(%S+)%s*(%S*)')
