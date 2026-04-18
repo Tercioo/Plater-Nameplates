@@ -6023,7 +6023,7 @@ function Plater.OnInit() --private --~oninit ~init
 						if IS_WOW_PROJECT_MIDNIGHT then
 							local targetName = UnitSpellTargetName(self.unit)
 							if targetName then
-								local targetNameShort = UnitName(targetName)
+								local targetNameShort = not issecretvalue(targetName) and UnitName(targetName)
 								if targetNameShort then
 									targetName = targetNameShort
 								end
