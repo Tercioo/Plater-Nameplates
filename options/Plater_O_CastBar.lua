@@ -615,6 +615,16 @@ function platerInternal.CreateCastBarOptions()
 			name = "Max width",
 			desc = "Target text width limitation.\n 0 = no limitation",
 		},
+        {
+            type = "toggle",
+            get = function() return Plater.db.profile.castbar_target_text_wrap  end,
+            set = function (self, fixedparam, value) 
+                Plater.db.profile.castbar_target_text_wrap  = value
+                Plater.UpdateAllPlates()
+            end,
+            name = "Text wrap",
+            desc = "Enables/Disables text wrapping to multi-line.",
+        },
         --text font
         {
             type = "select",

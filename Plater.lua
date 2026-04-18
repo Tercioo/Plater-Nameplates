@@ -5938,7 +5938,7 @@ function Plater.OnInit() --private --~oninit ~init
 					
 					--cut the spell name text to fit within the castbar
 					local plateConfig = DB_PLATE_CONFIG [unitFrame.ActorType] or {}
-					Plater.UpdateTextSize (self.SpellNameRenamed or "", self.Text, plateConfig.spellname_text_max_width or 0, nil)
+					Plater.UpdateTextSize (self.SpellNameRenamed or "", self.Text, plateConfig.spellname_text_max_width or 0, nil, plateConfig.spellname_text_wrap)
 					
 					-- in some occasions channeled casts don't have a CLEU entry... check this here
 					if not IS_WOW_PROJECT_MIDNIGHT and (unitFrame.ActorType == "enemynpc" and event == "UNIT_SPELLCAST_CHANNEL_START" and (not DB_CAPTURED_SPELLS[self.spellID] or DB_CAPTURED_SPELLS[self.spellID].isChanneled == nil or not DB_CAPTURED_CASTS[self.spellID] or DB_CAPTURED_CASTS[self.spellID].isChanneled == nil)) then
@@ -6033,7 +6033,7 @@ function Plater.OnInit() --private --~oninit ~init
 									targetName = C_ColorUtil.WrapTextInColor(targetName, color)
 								end
 								
-								targetName = Plater.UpdateTextSize (targetName or "", self.FrameOverlay.TargetName, Plater.db.profile.castbar_target_text_max_width or 0, nil)
+								targetName = Plater.UpdateTextSize (targetName or "", self.FrameOverlay.TargetName, Plater.db.profile.castbar_target_text_max_width or 0, nil, Plater.db.profile.castbar_target_text_wrap)
 								
 							else
 								self.FrameOverlay.TargetName:SetText(nil)
@@ -6055,7 +6055,7 @@ function Plater.OnInit() --private --~oninit ~init
 										targetName = LibTranslit:Transliterate(targetName, TRANSLIT_MARK)
 									end
 									
-									targetName = Plater.UpdateTextSize (targetName or "", self.FrameOverlay.TargetName, Plater.db.profile.castbar_target_text_max_width or 0, nil)
+									targetName = Plater.UpdateTextSize (targetName or "", self.FrameOverlay.TargetName, Plater.db.profile.castbar_target_text_max_width or 0, nil, Plater.db.profile.castbar_target_text_wrap)
 
 									local _, class = UnitClass (self.unit .. "target")
 									if (class) then 
@@ -8731,7 +8731,7 @@ end
 		end
 		
 		if IS_WOW_PROJECT_MIDNIGHT then
-			Plater.UpdateTextSize (spellName, nameString, maxWidth, maxLength)
+			Plater.UpdateTextSize (spellName, nameString, maxLength, nil)
 		else		
 			while (nameString:GetUnboundedStringWidth() > maxLength) do
 				spellName = strsub (spellName, 1, #spellName - 1)
@@ -8757,7 +8757,9 @@ end
 	function Plater.UpdateUnitName (plateFrame)
 		local nameString = plateFrame.CurrentUnitNameString
 
-		local maxWidth = DB_PLATE_CONFIG [plateFrame.actorType].actorname_text_max_width or 0
+		local plateConfig = DB_PLATE_CONFIG [plateFrame.actorType]
+		local maxWidth = plateConfig.actorname_text_max_width or 0
+		local wrap = plateConfig.actorname_text_wrap
 		if plateFrame.IsFriendlyPlayerWithoutHealthBar or plateFrame.IsNpcWithoutHealthBar then
 			maxWidth = 0
 		end
@@ -8769,7 +8771,7 @@ end
 			Plater.UpdateNameOnRenamedUnit(plateFrame)
 			name = plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME] or ""
 		end
-		Plater.UpdateTextSize (name, nameString, maxWidth, nil)
+		Plater.UpdateTextSize (name, nameString, maxWidth, nil, wrap)
 		
 		--check if the player has a guild, this check is done when the nameplate is added
 		if (plateFrame.playerGuildName) then
@@ -8779,7 +8781,7 @@ end
 		end
 	end
 
-	function Plater.UpdateTextSize (text, fontString, maxWidth, maxLength)
+	function Plater.UpdateTextSize (text, fontString, maxWidth, maxLength, wordWrap)
 		if not text then return end
 		--if maxWidth and type(fontSize) == "number" then
 		--	local textLength = floor(maxWidth / fontSize * 2)
@@ -8801,12 +8803,12 @@ end
 		--else
 		if fontString and maxWidth then
 			if maxWidth == 0 then
-				fontString:SetWordWrap(true)
-				fontString:SetNonSpaceWrap(true)
+				fontString:SetWordWrap(wordWrap == nil or wordWrap)
+				fontString:SetNonSpaceWrap(wordWrap == nil or wordWrap)
 				fontString:SetSpacing(0)
 			else
-				fontString:SetWordWrap(false)
-				fontString:SetNonSpaceWrap(false)
+				fontString:SetWordWrap(wordWrap or false)
+				fontString:SetNonSpaceWrap(wordWrap or false)
 				fontString:SetSpacing(0)
 			end
 			fontString:SetWidth(maxWidth)

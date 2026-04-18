@@ -4497,6 +4497,16 @@ do
 			name = "Max width",
 			desc = "Spell name text length limitation.\n 0 = no limitation",
 		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.plate_config.player.spellname_text_wrap end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.player.spellname_text_wrap = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Text wrap",
+			desc = "Enables/Disables text wrapping to multi-line.",
+		},
 
 		
 		{type = "breakline"},
@@ -7363,6 +7373,16 @@ end
 			name = "Max width",
 			desc = "Name text length limitation.\n 0 = no limitation",
 		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.actorname_text_wrap end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.friendlyplayer.actorname_text_wrap = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Text wrap",
+			desc = "Enables/Disables text wrapping to multi-line.",
+		},
 		
 		--cast text size
 		{type = "breakline"},
@@ -7483,6 +7503,16 @@ end
 			usedecimals = false,
 			name = "Max width",
 			desc = "Spell name text length limitation.\n 0 = no limitation",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.spellname_text_wrap end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.friendlyplayer.spellname_text_wrap = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Text wrap",
+			desc = "Enables/Disables text wrapping to multi-line.",
 		},
 		
 		
@@ -8298,6 +8328,16 @@ end
 			name = "Max width",
 			desc = "Name text length limitation.\n 0 = no limitation",
 		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.plate_config.enemyplayer.actorname_text_wrap end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.enemyplayer.actorname_text_wrap = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Text wrap",
+			desc = "Enables/Disables text wrapping to multi-line.",
+		},
 		
 		{type = "breakline"},
 		
@@ -8417,6 +8457,16 @@ end
 			usedecimals = false,
 			name = "Max width",
 			desc = "Spell name text length limitation.\n 0 = no limitation",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.plate_config.enemyplayer.spellname_text_wrap end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.enemyplayer.spellname_text_wrap = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Text wrap",
+			desc = "Enables/Disables text wrapping to multi-line.",
 		},
 		
 		--level text settings
@@ -9238,6 +9288,16 @@ end
 			name = "Max width",
 			desc = "Name text length limitation.\n 0 = no limitation",
 		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.plate_config.friendlynpc.actorname_text_wrap end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.friendlynpc.actorname_text_wrap = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Text wrap",
+			desc = "Enables/Disables text wrapping to multi-line.",
+		},
 		
 		{type = "breakline"},
 		
@@ -9357,6 +9417,16 @@ end
 			usedecimals = false,
 			name = "Max width",
 			desc = "Spell name text length limitation.\n 0 = no limitation",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.plate_config.friendlynpc.spellname_text_wrap end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.friendlynpc.spellname_text_wrap = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Text wrap",
+			desc = "Enables/Disables text wrapping to multi-line.",
 		},
 
 		{type = "blank"},
@@ -10449,6 +10519,16 @@ end
 				name = "Max width",
 				desc = "Name text length limitation.\n 0 = no limitation",
 			},
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.plate_config.enemynpc.actorname_text_wrap end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.plate_config.enemynpc.actorname_text_wrap = value
+					Plater.UpdateAllPlates()
+				end,
+				name = "Text wrap",
+				desc = "Enables/Disables text wrapping to multi-line.",
+			},
 			
 			{type = "breakline"},
 			
@@ -10568,6 +10648,16 @@ end
 				usedecimals = false,
 				name = "Max width",
 				desc = "Spell name text length limitation.\n 0 = no limitation",
+			},
+			{
+				type = "toggle",
+				get = function() return Plater.db.profile.plate_config.enemynpc.spellname_text_wrap end,
+				set = function (self, fixedparam, value) 
+					Plater.db.profile.plate_config.enemynpc.spellname_text_wrap = value
+					Plater.UpdateAllPlates()
+				end,
+				name = "Text wrap",
+				desc = "Enables/Disables text wrapping to multi-line.",
 			},
 			
 			{type = "blank"},
