@@ -10996,7 +10996,7 @@ end
 		
 		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(petName) then return end
 		if (isPlayerPet or isOtherPet) and petName then
-			local entry = {ownerGUID = ownerName and UnitExists(ownerName) and UnitGUID(ownerName) or nil, ownerName = ownerName, petName = petName, time = time()}
+			local entry = {ownerGUID = isPlayerPet and UnitGUID("player") or ownerName and UnitExists(ownerName) and UnitGUID(ownerName) or nil, ownerName = ownerName, petName = petName, time = time()}
 			
 			if (isPlayerPet) then
 				PET_CACHE [serial] = entry
