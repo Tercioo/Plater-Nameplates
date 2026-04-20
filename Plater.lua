@@ -9041,12 +9041,12 @@ end
 		
 			if IS_WOW_PROJECT_MIDNIGHT then
 				if not issecretvalue(plateFrame [MEMBER_GUID]) then
-					Plater.ForceFindPetOwner (plateFrame [MEMBER_GUID])
+					Plater.ForceFindPetOwner (plateFrame [MEMBER_GUID], unitFrame [MEMBER_UNITID])
 				elseif not issecretvalue(unitFrame [MEMBER_GUID]) then
-					Plater.ForceFindPetOwner (unitFrame [MEMBER_GUID])
+					Plater.ForceFindPetOwner (unitFrame [MEMBER_GUID], unitFrame [MEMBER_UNITID])
 				end
 			else
-				Plater.ForceFindPetOwner (plateFrame [MEMBER_GUID])
+				Plater.ForceFindPetOwner (plateFrame [MEMBER_GUID], unitFrame [MEMBER_UNITID])
 			end
 		
 			-- handle own pets separately, including nazjatar guardians
@@ -9183,12 +9183,12 @@ end
 					-- could be a pet
 					if IS_WOW_PROJECT_MIDNIGHT then
 						if not issecretvalue(plateFrame [MEMBER_GUID]) then
-							Plater.ForceFindPetOwner (plateFrame [MEMBER_GUID])
+							Plater.ForceFindPetOwner (plateFrame [MEMBER_GUID], unitFrame [MEMBER_UNITID])
 						elseif not issecretvalue(unitFrame [MEMBER_GUID]) then
-							Plater.ForceFindPetOwner (unitFrame [MEMBER_GUID])
+							Plater.ForceFindPetOwner (unitFrame [MEMBER_GUID], unitFrame [MEMBER_UNITID])
 						end
 					else
-						Plater.ForceFindPetOwner (plateFrame [MEMBER_GUID])
+						Plater.ForceFindPetOwner (plateFrame [MEMBER_GUID], unitFrame [MEMBER_UNITID])
 					end
 				end
 			end
@@ -10949,7 +10949,7 @@ end
 	end)
 
 	Plater.NpcBlackList = {} 
-	function Plater.ForceFindPetOwner (serial) --private
+	function Plater.ForceFindPetOwner (serial, unitID) --private
 		Plater.StartLogPerformanceCore("Plater-Core", "Update", "ForceFindPetOwner")
 		
 		local petName,text1
@@ -10996,7 +10996,7 @@ end
 		
 		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(petName) then return end
 		if (isPlayerPet or isOtherPet) and petName then
-			local entry = {ownerGUID = isPlayerPet and UnitGUID("player") or ownerName and UnitExists(ownerName) and UnitGUID(ownerName) or nil, ownerName = ownerName, petName = petName, time = time()}
+			local entry = {ownerGUID = IS_WOW_PROJECT_MIDNIGHT and UnitOwnerGUID(unitID) or isPlayerPet and UnitGUID("player") or ownerName and UnitExists(ownerName) and UnitGUID(ownerName) or nil, ownerName = ownerName, petName = petName, time = time()}
 			
 			if (isPlayerPet) then
 				PET_CACHE [serial] = entry
