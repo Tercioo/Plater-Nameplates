@@ -6979,7 +6979,7 @@ end
 		end
 		if not IS_WOW_PROJECT_MAINLINE then
 			for _, plateFrame in pairs(C_NamePlate.GetNamePlates(true)) do
-				if (plateFrame) then
+				if (plateFrame and plateFrame.UnitFrame and plateFrame.UnitFrame.CastBar) then
 					if GetCVarBool ("nameplateShowOnlyNames") or Plater.db.profile.saved_cvars.nameplateShowOnlyNames == "1" then
 						TextureLoadingGroupMixin.RemoveTexture({ textures = plateFrame.UnitFrame.CastBar }, "showCastbar")
 					else
