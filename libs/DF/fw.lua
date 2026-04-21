@@ -1,5 +1,5 @@
 
-local dversion = 712
+local dversion = 713
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary(major, minor)
 
@@ -1450,8 +1450,8 @@ function DF:SetFontFace(fontString, fontface)
 		fontface = _G[fontface]:GetFont()
 	end
 
-	local _, size, flags = fontString:GetFont()
-	return fontString:SetFont(fontface, size, flags)
+	local origFont, size, flags = fontString:GetFont()
+	pcall(fontString.SetFont, fontface, size, flags) -- silently fail this one
 end
 
 local dummyFontString = UIParent:CreateFontString(nil, "background", "GameFontNormal")
