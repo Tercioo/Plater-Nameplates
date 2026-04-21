@@ -3571,7 +3571,7 @@ Plater.CreateAuraTesting()
 					Plater.UpdateAllPlates()
 				end,
 				name = "Show Caster Name",
-				desc = "Show Caster Name (if player)",
+				desc = "Show Caster Name (if player).\nWill not work in Midnight, unfortunately.",
 			},
 			{
 				type = "select",
