@@ -8,6 +8,11 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1775215167, "Bug Fix", "Apr 18th, 2026", "Fixed a few bugs around stored CVars and secrets.", "cont1nuity"},
+			{1775215167, "Backend Change", "Apr 8th, 2026", "Adding public profile API for wago.", "cont1nuity"},
+			{1775215167, "Backend Change", "Apr 5th, 2026", "Re-adding missing options for classic client.", "cont1nuity"},
+			{1775215167, "Backend Change", "Apr 3rd, 2026", "Localizations for the Auto tab.", "Terciob"},
+			
 			{1775215167, "Backend Change", "Mar 19th, 2026", "Added option to hide blizzard friendly npc helathbars separately from players.", "cont1nuity"},
 			{1775215167, "Bug Fix", "Mar 19th, 2026", "Fixed a few missing options.", "cont1nuity"},
 			{1775215167, "Backend Change", "Mar 19th, 2026", "Added option to remove realm name on friendly players for blizzard default nameplates.", "cont1nuity"},
