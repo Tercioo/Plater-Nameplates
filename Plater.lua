@@ -5319,14 +5319,16 @@ function Plater.OnInit() --private --~oninit ~init
 		Plater.UpdateBaseNameplateOptions()
 		
 		--this function is declared inside 'NamePlateDriverMixin' at Blizzard_NamePlates.lua
-		hooksecurefunc (NamePlateDriverFrame, "UpdateNamePlateOptions", function()
-			Plater.UpdateSelfPlate()
-			Plater.UpdateBaseNameplateOptions()
-			Plater.UpdatePlateClickSpace()
-			C_Timer.After(0.1, function ()
-				Plater.UpdateBlizzardNameplateFonts(true)
+		if NamePlateDriverFrame and NamePlateDriverFrame.UpdateNamePlateOptions then
+			hooksecurefunc (NamePlateDriverFrame, "UpdateNamePlateOptions", function()
+				Plater.UpdateSelfPlate()
+				Plater.UpdateBaseNameplateOptions()
+				Plater.UpdatePlateClickSpace()
+				C_Timer.After(0.1, function ()
+					Plater.UpdateBlizzardNameplateFonts(true)
+				end)
 			end)
-		end)
+		end
 		
 		--this might come in useful
 		function Plater.SetNamePlatePreferredClickInsets(nameplateType, left, right, top, bottom)
