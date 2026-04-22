@@ -8762,6 +8762,7 @@ end
 		local wrap = plateConfig.actorname_text_wrap
 		if plateFrame.IsFriendlyPlayerWithoutHealthBar or plateFrame.IsNpcWithoutHealthBar then
 			maxWidth = 0
+			wrap = true
 		end
 		local name = plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME] or ""
 		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(name) then
