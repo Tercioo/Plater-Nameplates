@@ -38,6 +38,7 @@ LibSharedMedia:Register ("font", "Accidental Presidency", [[Interface\Addons\Pla
 LibSharedMedia:Register ("font", "TrashHand", [[Interface\Addons\Plater\fonts\TrashHand.TTF]])
 LibSharedMedia:Register ("font", "Harry P", [[Interface\Addons\Plater\fonts\HARRYP__.TTF]])
 LibSharedMedia:Register ("font", "FORCED SQUARE", [[Interface\Addons\Plater\fonts\FORCED SQUARE.ttf]])
+LibSharedMedia:Register ("font", "Expressway", [[Interface\Addons\Plater\fonts\Expressway.TTF]])
 
 LibSharedMedia:Register("sound", "Plater HiHat", [[Interface\Addons\Plater\sounds\Plater HiHat.ogg]])
 LibSharedMedia:Register("sound", "Plater Hit", [[Interface\Addons\Plater\sounds\Plater Hit.ogg]])
