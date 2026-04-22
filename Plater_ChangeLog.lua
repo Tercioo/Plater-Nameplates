@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1776857588, "Bug Fix", "Apr 22nd, 2026", "Fixed a few bugs around Midnight 12.0.5 release (where things just got worse for everyone).", "cont1nuity"},
+			
 			{1776773152, "Bug Fix", "Apr 18th, 2026", "Fixed a few bugs around stored CVars and secrets.", "cont1nuity"},
 			{1776773152, "Backend Change", "Apr 8th, 2026", "Adding public profile API for wago.", "cont1nuity"},
 			{1776773152, "Backend Change", "Apr 5th, 2026", "Re-adding missing options for classic client.", "cont1nuity"},
