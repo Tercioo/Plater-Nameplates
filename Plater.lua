@@ -1774,6 +1774,7 @@ Plater.AnchorNamesByPhraseId = {
 		DB_AURA_SEPARATE_BUFFS = profile.buffs_on_aura2
 
 		DB_NUMBER_REGION_EAST_ASIA = Plater.db.profile.number_region == "eastasia"
+		platerInternal.ReBuildAbbreviateConfig()
 		
 		DB_TICK_THROTTLE = profile.update_throttle
 		DB_LERP_COLOR = not IS_WOW_PROJECT_MIDNIGHT and profile.use_color_lerp or false
@@ -2109,6 +2110,114 @@ Plater.AnchorNamesByPhraseId = {
 			
 		else
 			eastAsiaMyriads_1k, eastAsiaMyriads_10k, eastAsiaMyriads_1B = "천", "만", "억"
+		end
+
+		platerInternal.abbreviateConfig = C_StringUtil and C_StringUtil.GetDefaultAbbreviationBreakpoints and C_StringUtil.GetDefaultAbbreviationBreakpoints(GetLocale()) -- default it
+		platerInternal.ReBuildAbbreviateConfig = function()
+			if not platerInternal.abbreviateConfig then return end -- if it could not be defaulted, skip this.
+			local myriadK, myriadM, myriadB, myriadT
+			if DB_NUMBER_REGION_EAST_ASIA then
+				-- use the easter locale
+				myriadK, myriadM, myriadB = eastAsiaMyriads_1k, eastAsiaMyriads_10k, eastAsiaMyriads_1B
+				platerInternal.abbreviateConfig = {
+					breakpointData = {
+						{
+							breakpoint=1000000000,
+							significandDivisor=100000000,
+							fractionDivisor=1,
+							abbreviationIsGlobal=false,
+							abbreviation=myriadM
+						}, 
+						{
+							breakpoint=100000000, 
+							significandDivisor=10000000,
+							fractionDivisor=10,
+							abbreviationIsGlobal=false,
+							abbreviation=myriadM
+						}, 
+						{
+							breakpoint=100000,
+							significandDivisor=10000,
+							fractionDivisor=1,
+							abbreviationIsGlobal=false,
+							abbreviation=myriadK
+						}, 
+						{
+							breakpoint=10000,
+							significandDivisor=1000,
+							fractionDivisor=10,
+							abbreviationIsGlobal=false,
+							abbreviation=myriadK
+						}
+					}
+				}
+			else
+				-- default to eastern locale
+				myriadK, myriadM, myriadB, myriadT = "K", "M", "B", "T"
+				platerInternal.abbreviateConfig = {
+					breakpointData = {
+						{ 
+							breakpoint=10000000000000,
+							significandDivisor=1000000000000,
+							fractionDivisor=1,
+							abbreviationIsGlobal=false,
+							abbreviation=myriadT
+						},
+						{
+							breakpoint=1000000000000,
+							significandDivisor=100000000000,
+							fractionDivisor=10,
+							abbreviationIsGlobal=false,
+							abbreviation=myriadT
+						},
+						{
+							breakpoint=10000000000,
+							significandDivisor=1000000000,
+							fractionDivisor=1,
+							abbreviationIsGlobal=false,
+							abbreviation=myriadB
+						},
+						{
+							breakpoint=1000000000,
+							significandDivisor=100000000,
+							fractionDivisor=10,
+							abbreviationIsGlobal=false,
+							abbreviation=myriadB 
+						}, 
+						{
+							breakpoint=10000000,
+							significandDivisor=1000000,
+							fractionDivisor=1,
+							abbreviationIsGlobal=false,
+							abbreviation=myriadM
+						}, 
+						{
+							breakpoint=1000000,
+							significandDivisor=100000,
+							fractionDivisor=10,
+							abbreviationIsGlobal=false,
+							abbreviation=myriadM
+						}, 
+						{
+							breakpoint=10000,
+							significandDivisor=1000,
+							fractionDivisor=1,
+							abbreviationIsGlobal=false,
+							abbreviation=myriadK
+						}, 
+						{
+							breakpoint=1000,
+							significandDivisor=100,
+							fractionDivisor=10,
+							abbreviationIsGlobal=false,
+							abbreviation=myriadK
+						}
+					}
+				}
+			end
+		end
+		Plater.GetAbbreviateConfig = function ()
+			return platerInternal.abbreviateConfig
 		end
 
 		function Plater.FormatNumber (number)
@@ -8591,7 +8700,7 @@ end
 			--TODO: MIDNIGHT!!
 			--local currentAbsorb, currentAbsorbMax, currentAbsorbIsClamped = healthBar.currentAbsorb, healthBar.currentAbsorbMax, healthBar.currentAbsorbIsClamped
 			
-			currentHealth = AbbreviateNumbers(currentHealth)
+			currentHealth = AbbreviateNumbers(currentHealth, Plater.GetAbbreviateConfig())
 			if (showHealthAmount or showPercentAmount) then
 				healthBar.lifePercent:SetText(currentHealth)
 			else
