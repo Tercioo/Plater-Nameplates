@@ -1387,13 +1387,30 @@ end
 	local FillingAnimationTime = 5.0; 
 	local evokerEssenceOnUpdate = function(self, elapsed)
 	   	local pace,interrupted = GetPowerRegenForPowerType(Plater.Resources.playerResourceId)
-		if (pace == nil or pace == 0) then
+		if not pace or issecretvalue(pace) then
 			pace = 0.2
 		end
 		local cooldownDuration = 1 / pace
 		local animationSpeedMultiplier = FillingAnimationTime / cooldownDuration
-		self.EssenceFilling.FillingAnim:SetAnimationSpeedMultiplier(animationSpeedMultiplier)
-		self.EssenceFilling.CircleAnim:SetAnimationSpeedMultiplier(animationSpeedMultiplier)
+			
+		local partial = UnitPartialPower("player", Plater.Resources.playerResourceId) / 1000.0
+		if partial == 0 then
+			partial = 0.001
+		end
+		
+		--self.EssenceDepleting.AnimIn:Stop()
+		--self.EssenceFillDone.AnimIn:Stop()
+--
+		--self.EssenceFilling:Show()
+		--self.EssenceDepleting:Hide()
+		--self.EssenceEmpty:Hide()
+		--self.EssenceFillDone:Hide()
+		--self.EssenceFull:Hide()
+--
+		--self.EssenceFilling.FillingAnim:SetAnimationSpeedMultiplier(animationSpeedMultiplier)
+		--self.EssenceFilling.CircleAnim:SetAnimationSpeedMultiplier(animationSpeedMultiplier)
+		--self.EssenceFilling.FillingAnim:Restart(false, partial * self.EssenceFilling.FillingAnim:GetDuration())
+		--self.EssenceFilling.CircleAnim:Restart(false, partial * self.EssenceFilling.CircleAnim:GetDuration())
 	end
 	function resourceWidgetsFunctions.OnEssenceChanged(mainResourceFrame, resourceBar, forcedRefresh, event, unit, powerType)
 		if (event == "UNIT_MAXPOWER" and DB_PLATER_RESOURCE_SHOW_DEPLETED) then
@@ -1411,7 +1428,7 @@ end
 		local maxResources = UnitPowerMax("player", Plater.Resources.playerResourceId)
 		local isAtMaxPoints = currentResources == maxResources
 		local pace, interrupted = GetPowerRegenForPowerType(Plater.Resources.playerResourceId)
-		if (pace == nil or pace == 0) then
+		if not pace or issecretvalue(pace) then
 			pace = 0.2
 		end
 		
