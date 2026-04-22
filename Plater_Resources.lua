@@ -1410,10 +1410,13 @@ end
 		local currentResources = UnitPower("player", Plater.Resources.playerResourceId)
 		local maxResources = UnitPowerMax("player", Plater.Resources.playerResourceId)
 		local isAtMaxPoints = currentResources == maxResources
-		local pace, interrupted = GetPowerRegenForPowerType(Plater.Resources.playerResourceId)
-		if (pace == nil or pace == 0) then
-			pace = 0.2
-		end
+
+		local pace = 0.2
+		--return values are secrets on 12.0.5
+		--cannot check if the pace is bigger than zero or it errors
+		--a division on `cooldownDuration` would divide by zero on line 1475
+		local newPace, interrupted = GetPowerRegenForPowerType(Plater.Resources.playerResourceId)
+		pace = newPace
 		
 		--resources amount got updated?
 		if (currentResources == resourceBar.lastResourceAmount and not forcedRefresh) then
