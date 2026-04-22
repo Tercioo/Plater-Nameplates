@@ -7210,8 +7210,6 @@ end
 			desc = "Height of the health bar when in combat.",
 		},
 		
-		{type = "blank"},
-		
 		--cast bar size out of combat
 		{type = "label", get = function() return "Cast Bar Size out of Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
@@ -8164,8 +8162,6 @@ end
 			desc = "Height of the health bar when in combat.",
 		},
 		
-		{type = "blank"},
-		
 		--cast bar size out of combat
 		{type = "label", get = function() return "Cast Bar Size out of Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
@@ -9108,8 +9104,6 @@ end
 			name = "OPTIONS_HEIGHT",
 			desc = "Height of the health bar when in combat.",
 		},
-		
-		{type = "blank"},
 		
 		--cast bar size out of combat
 		{type = "label", get = function() return "Cast Bar Size out of Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
@@ -10342,7 +10336,6 @@ end
 				name = "OPTIONS_HEIGHT",
 				desc = "Height of the health bar when in combat.",
 			},
-			{type = "blank"},
 			--cast bar size out of combat
 			{type = "label", get = function() return "Cast Bar Size out of Combat:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 			{
