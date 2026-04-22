@@ -1,4 +1,4 @@
-## Interface: 120001, 120005
+## Interface: 120005
 ## Interface-Mainline: 120001, 120005
 ## Interface-Mists: 50503, 50504
 ## Interface-TBC: 20505
