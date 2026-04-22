@@ -6134,10 +6134,10 @@ function Plater.OnInit() --private --~oninit ~init
 						if IS_WOW_PROJECT_MIDNIGHT then
 							local targetName = UnitSpellTargetName(self.unit)
 							if targetName then
-								local targetNameShort = Ambiguate(targetName, "none")
-								if targetNameShort then
-									targetName = targetNameShort
-								end
+								--local targetNameShort = Ambiguate(targetName, "short")
+								--if targetNameShort then
+								--	targetName = targetNameShort
+								--end
 								local classFilename = UnitSpellTargetClass(self.unit)
 								if classFilename then
 									local color = C_ClassColor.GetClassColor(classFilename)
