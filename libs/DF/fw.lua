@@ -1798,6 +1798,8 @@ local ValidOutlines = {
 	["THICKOUTLINE"] = true,
 	["OUTLINEMONOCHROME"] = true,
 	["THICKOUTLINEMONOCHROME"] = true,
+	["MONOCHROME, OUTLINE"] = true, -- backwards compatibility
+	["MONOCHROME, THICKOUTLINE"] = true
 }
 
 --outline flags are used with the function SetFont on fontstrings, signiture: fontString:SetFont(fontFile, size, outlineFlags) -> outlineFlags are usually just called 'flags', 'size' can also be found named as 'height'.
