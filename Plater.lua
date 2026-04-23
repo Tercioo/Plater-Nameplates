@@ -5451,7 +5451,7 @@ function Plater.OnInit() --private --~oninit ~init
 				C_Timer.After(1, function() Plater.SetNamePlatePreferredClickInsets(nameplateType, left, right, top, bottom) end)
 			end
 		end
-		if not IS_WOW_PROJECT_MIDNIGHT then
+		if not IS_WOW_PROJECT_MIDNIGHT and NamePlateDriverFrame then
 			hooksecurefunc(NamePlateDriverFrame.namePlateSetInsetFunctions, "friendly", function()
 				--C_NamePlate.SetNamePlateFriendlyPreferredClickInsets (0, 0, 0, 0)
 				Plater.SetNamePlatePreferredClickInsets("friendly", 0, 0, 0, 0)
