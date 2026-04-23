@@ -3420,6 +3420,9 @@ Plater.AnchorNamesByPhraseId = {
 				plateFrame.ActorNameSpecial:Hide()
 				
 				local ActorTitleSpecial = unitFrame:CreateFontString (nil, "artwork", "GameFontNormal")
+				if ActorTitleSpecial.SetSmoothScaling then
+					ActorTitleSpecial:SetSmoothScaling(true)
+				end
 				unitFrame.ActorTitleSpecial = ActorTitleSpecial --alias for scripts
 				plateFrame.ActorTitleSpecial = ActorTitleSpecial
 				PixelUtil.SetPoint (plateFrame.ActorTitleSpecial, "top", ActorNameSpecial, "bottom", 0, -2)
@@ -3428,10 +3431,16 @@ Plater.AnchorNamesByPhraseId = {
 				
 			--> level text
 				local actorLevel = healthBar:CreateFontString (nil, "overlay", "GameFontNormal")
+				if actorLevel.SetSmoothScaling then
+					actorLevel:SetSmoothScaling(true)
+				end
 				healthBar.actorLevel = actorLevel
 			
 			--> life percent text
 				local lifePercent = healthBar:CreateFontString (nil, "overlay", "GameFontNormal")
+				if lifePercent.SetSmoothScaling then
+					lifePercent:SetSmoothScaling(true)
+				end
 				lifePercent:SetDrawLayer ("overlay", 5)
 				healthBar.lifePercent = lifePercent
 				
@@ -3581,6 +3590,9 @@ Plater.AnchorNamesByPhraseId = {
 				castBar.FrameOverlay:SetBackdropBorderColor (1, 1, 1, 0)
 				--creates the target name overlay which shows who the unit is targetting while casting (this is disabled by default)
 				castBar.FrameOverlay.TargetName = castBar.FrameOverlay:CreateFontString (nil, "overlay", "GameFontNormal")
+				if castBar.FrameOverlay.TargetName.SetSmoothScaling then
+					castBar.FrameOverlay.TargetName:SetSmoothScaling(true)
+				end
 				castBar.TargetName = castBar.FrameOverlay.TargetName --alias for scripts
 			
 				--> create the spell color texture
