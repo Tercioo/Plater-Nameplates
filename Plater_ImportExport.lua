@@ -647,7 +647,7 @@ end
 ---@param profileString string --the encoded profile string to be imported
 ---@param profileKey string --the name of the profile to be imported
 function PlaterAPI:ImportProfile(profileString, profileKey)
-    Plater.ImportAndSwitchProfile(profileKey, profileString, false, false, true, true)
+    Plater.ImportAndSwitchProfile(profileKey, profileString, false, false, true, false)
 end
 
 ---@param profileString string --the profile string to decode
