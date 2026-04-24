@@ -2118,7 +2118,7 @@ Plater.AnchorNamesByPhraseId = {
 			local myriadK, myriadM, myriadB, myriadT
 			if DB_NUMBER_REGION_EAST_ASIA then
 				-- use the easter locale
-				myriadK, myriadM, myriadB = eastAsiaMyriads_1k, eastAsiaMyriads_10k, eastAsiaMyriads_1B
+				myriadM, myriadB = eastAsiaMyriads_10k, eastAsiaMyriads_1B
 				platerInternal.abbreviateConfig = {
 					breakpointData = {
 						{
@@ -2126,28 +2126,28 @@ Plater.AnchorNamesByPhraseId = {
 							significandDivisor=100000000,
 							fractionDivisor=1,
 							abbreviationIsGlobal=false,
-							abbreviation=myriadM
+							abbreviation=myriadB
 						}, 
 						{
 							breakpoint=100000000, 
 							significandDivisor=10000000,
 							fractionDivisor=10,
 							abbreviationIsGlobal=false,
-							abbreviation=myriadM
+							abbreviation=myriadB
 						}, 
 						{
 							breakpoint=100000,
 							significandDivisor=10000,
 							fractionDivisor=1,
 							abbreviationIsGlobal=false,
-							abbreviation=myriadK
+							abbreviation=myriadM
 						}, 
 						{
 							breakpoint=10000,
 							significandDivisor=1000,
 							fractionDivisor=10,
 							abbreviationIsGlobal=false,
-							abbreviation=myriadK
+							abbreviation=myriadM
 						}
 					}
 				}
