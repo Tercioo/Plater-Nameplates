@@ -596,6 +596,10 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
         unitName:Show()
         unitFrame.BuffFrame:Show()
         unitFrame.BuffFrame2:Show()
+
+        plateFrame.unitFrame:SetParent(UIParent)
+        plateFrame.unitFrame:SetFrameStrata("FULLSCREEN")
+        plateFrame.unitFrame:Show()
     end)
 
     editorMainFrame:SetScript("OnHide", function()
@@ -619,6 +623,9 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
             isCastBarSelected = false
             Plater.StopCastBarTest()
         end
+
+        plateFrame.unitFrame:SetParent(editorMainFrame)
+        plateFrame.unitFrame:Hide()
     end)
 
     --/plater editmode
@@ -649,7 +656,7 @@ function designer.CreatePreview(parent)
     plateFrame = CreateFrame("frame", "PlaterDesignerPlatePreview", parent)
     plateFrame.isDesigner = true
 
-    plateFrame.UnitFrame = CreateFrame("frame") --blizzard's unit frame placeholder
+    plateFrame.UnitFrame = CreateFrame("frame", "$parentDummyUnitFrame", plateFrame) --blizzard's unit frame placeholder
 
     plateFrame:SetScale(1.5)
 
