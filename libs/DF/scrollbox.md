@@ -115,7 +115,23 @@ Calls `CreateLine(callback)` in a loop `lineAmount` times.
 
 ### `GetLine(lineIndex)`
 
-Returns the line at `self.Frames[lineIndex]` and marks it as `_InUse = true`. Increments `_LinesInUse`. This is how the refresh function signals which lines are visible.
+Returns the line at `self.Frames[lineIndex]` and marks it as `_InUse = true`. Increments `_LinesInUse`. Call line:Show(). This is how the refresh function signals which lines are visible.
+Call GetLine only after confirming that the data for that line exists; otherwise, the line will remain empty as the loop code will get the next line as the iteration advances to a new data.
+Example:
+Wrong:
+```lua
+local data = dataset[i]
+local line = self:GetLine(lineIndex)
+if data then
+end
+```
+Correct:
+```lua
+local data = dataset[i]
+if data then
+    local line = self:GetLine(lineIndex)
+end
+```
 
 **Returns:** `frame`
 
