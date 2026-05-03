@@ -2256,8 +2256,8 @@ end
 		if IS_WOW_PROJECT_MIDNIGHT then
 			local durationObject = C_UnitAuras.GetAuraDuration and C_UnitAuras.GetAuraDuration(self.unitFrame.namePlateUnitToken, id)
 			duration = durationObject
-			if sourceUnit ~= nil and not issecretvalue(sourceUnit) then
-				local sourceUnitGUID = UnitGUID(sourceUnit)
+			if sourceUnit ~= nil then
+				--local sourceUnitGUID = UnitGUID(sourceUnit)
 				local _, class, _, race, _, name, realm --= GetPlayerInfoByGUID(sourceUnitGUID)
 				local name = UnitName(sourceUnit)
 				local classColor
