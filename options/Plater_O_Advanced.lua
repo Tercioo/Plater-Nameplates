@@ -669,6 +669,7 @@ function platerInternal.CreateAdvancedOptions()
             set = function (self, fixedparam, value)
                 Plater.db.profile.click_space[1] = value
                 Plater.UpdatePlateClickSpace (nil, true)
+                Plater.UpdateAllPlates()
             end,
             min = 1,
             max = 300,
@@ -685,6 +686,7 @@ function platerInternal.CreateAdvancedOptions()
             set = function (self, fixedparam, value)
                 Plater.db.profile.click_space[2] = value
                 Plater.UpdatePlateClickSpace (nil, true)
+                Plater.UpdateAllPlates()
             end,
             min = 1,
             max = 100,
