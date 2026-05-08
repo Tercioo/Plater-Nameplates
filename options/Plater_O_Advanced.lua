@@ -578,6 +578,7 @@ function platerInternal.CreateAdvancedOptions()
         {
             type = "toggle",
             get = function()
+                if not GetCVarDefault("NamePlateHorizontalScale") then return false end
                 local hScale = GetCVarNumberOrDefault("NamePlateHorizontalScale");
                 local vScale = GetCVarNumberOrDefault("NamePlateVerticalScale");
                 local cScale = GetCVarNumberOrDefault("NamePlateClassificationScale");

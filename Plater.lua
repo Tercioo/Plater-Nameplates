@@ -87,6 +87,7 @@ local IS_WOW_PROJECT_CLASSIC_WRATH = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpa
 --local IS_WOW_PROJECT_CLASSIC_CATACLYSM = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_CATACLYSM and ClassicExpansionAtLeast(LE_EXPANSION_CATACLYSM)
 local IS_WOW_PROJECT_CLASSIC_MOP = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_MISTS_OF_PANDARIA and ClassicExpansionAtLeast(LE_EXPANSION_MISTS_OF_PANDARIA)
 local IS_WOW_PROJECT_MIDNIGHT = DF.IsAddonApocalypseWow()
+--local IS_WOW_PROJECT_MIDNIGHT = DF.IsMidnightWowAPI()
 
 local PixelUtil = PixelUtil or DFPixelUtil
 
@@ -5424,7 +5425,7 @@ function Plater.OnInit() --private --~oninit ~init
 				C_Timer.After(1, function() Plater.SetNamePlatePreferredClickInsets(nameplateType, left, right, top, bottom) end)
 			end
 		end
-		if not IS_WOW_PROJECT_MIDNIGHT and NamePlateDriverFrame then
+		if not IS_WOW_PROJECT_MIDNIGHT and NamePlateDriverFrame and NamePlateDriverFrame.namePlateSetInsetFunctions then
 			hooksecurefunc(NamePlateDriverFrame.namePlateSetInsetFunctions, "friendly", function()
 				--C_NamePlate.SetNamePlateFriendlyPreferredClickInsets (0, 0, 0, 0)
 				Plater.SetNamePlatePreferredClickInsets("friendly", 0, 0, 0, 0)
@@ -7082,7 +7083,7 @@ end
 		
 		Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdatePlateClickSpace")
 		
-		if IS_WOW_PROJECT_MIDNIGHT then
+		if IS_WOW_PROJECT_MIDNIGHT or C_NamePlate.SetNamePlateSize then
 			local width, height = Plater.db.profile.click_space[1], Plater.db.profile.click_space[2]
 			local scale = Plater.db.profile.use_ui_parent and Plater.db.profile.ui_parent_scale_tune or 1
 			C_NamePlate.SetNamePlateSize(width*scale, height*scale)
@@ -7109,9 +7110,9 @@ end
 		else
 			-- ensure we support the "large nameplate" setting properly
 			local namePlateVerticalScale = GetCVarNumberOrDefault("NamePlateVerticalScale")
+			local horizontalScale = GetCVarNumberOrDefault("NamePlateHorizontalScale")
 			local zeroBasedScale = namePlateVerticalScale - 1.0
 			local clampedZeroBasedScale = Saturate(zeroBasedScale)
-			local horizontalScale = GetCVarNumberOrDefault("NamePlateHorizontalScale")
 
 			local width, height = Plater.db.profile.click_space[1], Plater.db.profile.click_space[2]
 			C_NamePlate.SetNamePlateEnemySize (width * horizontalScale, height * Lerp(1.0, 1.25, zeroBasedScale)) --classic: {132, 32}, retail: {110, 45},

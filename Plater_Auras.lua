@@ -7,7 +7,9 @@ local _ = nil
 local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_NOT_MAINLINE = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_CLASSIC_ERA = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
-local IS_WOW_PROJECT_MIDNIGHT = DF.IsAddonApocalypseWow()
+--local IS_WOW_PROJECT_MIDNIGHT = DF.IsAddonApocalypseWow()
+local IS_WOW_PROJECT_MIDNIGHT = DF.IsMidnightWowAPI()
+--local IS_WOW_PROJECT_MIDNIGHT_API = DF.IsMidnightWowAPI()
 
 --stop yellow lines on my editor
 local tinsert = _G.tinsert
@@ -842,6 +844,7 @@ end
 
 local function getBlizzardDebuffs(unitFrame)
 	local blizzDebuffFrame = unitFrame.PlateFrame.UnitFrame and unitFrame.PlateFrame.UnitFrame.AurasFrame and unitFrame.PlateFrame.UnitFrame.AurasFrame.DebuffListFrame
+	--DevTool:AddData(unitFrame.PlateFrame.UnitFrame)
 	local blizzardDebuffs = {}
 	if blizzDebuffFrame then
 		for _, child in ipairs(blizzDebuffFrame:GetLayoutChildren()) do
