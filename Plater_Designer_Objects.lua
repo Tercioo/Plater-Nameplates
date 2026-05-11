@@ -174,7 +174,7 @@ function designer.CreateSettings(parentFrame)
                 label = "Texture",
                 widget = "selectstatusbartexture",
                 default = Plater.db.profile.health_statusbar_texture,
-                setter = function(healthBar, value) healthBar:SetTexture(value); designer.UpdateAllNameplates() end,
+                setter = function(healthBar, value) healthBar:SetTexture(LSM:Fetch("statusbar", value)); designer.UpdateAllNameplates() end,
             },
 
             {
@@ -414,9 +414,187 @@ function designer.CreateSettings(parentFrame)
                 maxvalue = 16,
                 step = 1,
                 tableName = "castbar_offset_y",
-            }
+            },
 
+            {type = "blank"},
 
+            --root-level cast bar appearance. profileTable override points reads/writes at Plater.db.profile
+            --since Cast Bar's registration is bound to plate_config.<actorType>.
+            {
+                key = "cast_statusbar_texture",
+                label = "Texture",
+                widget = "selectstatusbartexture",
+                profileTable = Plater.db.profile,
+                default = Plater.db.profile.cast_statusbar_texture,
+                setter = function(castBar, value)
+                    castBar:SetStatusBarTexture(LSM:Fetch("statusbar", value))
+                    designer.UpdateAllNameplates()
+                end,
+            },
+            {
+                key = "cast_statusbar_bgtexture",
+                label = "Background Texture",
+                widget = "selectstatusbartexture",
+                profileTable = Plater.db.profile,
+                default = Plater.db.profile.cast_statusbar_bgtexture,
+                setter = function(castBar, value)
+                    castBar.background:SetTexture(LSM:Fetch("statusbar", value))
+                    designer.UpdateAllNameplates()
+                end,
+            },
+
+            {type = "blank"},
+
+            {
+                key = "cast_statusbar_use_fade_effects",
+                label = "Enable fade animation",
+                widget = "toggle",
+                profileTable = Plater.db.profile,
+                default = Plater.db.profile.cast_statusbar_use_fade_effects,
+                setter = function(castBar, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "cast_statusbar_fadein_time",
+                label = "On start",
+                widget = "slider",
+                minvalue = 0.01,
+                maxvalue = 1,
+                step = 0.01,
+                usedecimals = true,
+                profileTable = Plater.db.profile,
+                default = Plater.db.profile.cast_statusbar_fadein_time,
+                setter = function(castBar, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "cast_statusbar_fadeout_time",
+                label = "On stop",
+                widget = "slider",
+                minvalue = 0.01,
+                maxvalue = 2,
+                step = 0.01,
+                usedecimals = true,
+                profileTable = Plater.db.profile,
+                default = Plater.db.profile.cast_statusbar_fadeout_time,
+                setter = function(castBar, value) designer.UpdateAllNameplates() end,
+            },
+
+            {type = "blank"},
+
+            {
+                key = "show_interrupt_author",
+                label = "Show Interrupt Author",
+                widget = "toggle",
+                profileTable = Plater.db.profile,
+                default = Plater.db.profile.show_interrupt_author,
+                setter = function(castBar, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "cast_statusbar_interrupt_anim",
+                label = "Play Interrupt Animation",
+                widget = "toggle",
+                profileTable = Plater.db.profile,
+                default = Plater.db.profile.cast_statusbar_interrupt_anim,
+                setter = function(castBar, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "cast_statusbar_spark_filloninterrupt",
+                label = "Fill Cast Bar On Interrupt",
+                widget = "toggle",
+                profileTable = Plater.db.profile,
+                default = Plater.db.profile.cast_statusbar_spark_filloninterrupt,
+                setter = function(castBar, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "cast_statusbar_quickhide",
+                label = "Quick Hide Cast Bar",
+                widget = "toggle",
+                profileTable = Plater.db.profile,
+                default = Plater.db.profile.cast_statusbar_quickhide,
+                setter = function(castBar, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "hide_friendly_castbars",
+                label = "Hide Friendly Cast Bar",
+                widget = "toggle",
+                profileTable = Plater.db.profile,
+                default = Plater.db.profile.hide_friendly_castbars,
+                setter = function(castBar, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "hide_enemy_castbars",
+                label = "Hide Enemy Cast Bar",
+                widget = "toggle",
+                profileTable = Plater.db.profile,
+                default = Plater.db.profile.hide_enemy_castbars,
+                setter = function(castBar, value) designer.UpdateAllNameplates() end,
+            },
+
+            {type = "blank"},
+
+            {
+                key = "cast_statusbar_color",
+                label = "Regular",
+                widget = "color",
+                profileTable = Plater.db.profile,
+                default = Plater.db.profile.cast_statusbar_color,
+                setter = function(castBar, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "cast_statusbar_color_channeling",
+                label = "Channelled",
+                widget = "color",
+                profileTable = Plater.db.profile,
+                default = Plater.db.profile.cast_statusbar_color_channeling,
+                setter = function(castBar, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "cast_statusbar_color_empowered",
+                label = "Empowered",
+                widget = "color",
+                profileTable = Plater.db.profile,
+                default = Plater.db.profile.cast_statusbar_color_empowered,
+                setter = function(castBar, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "cast_statusbar_color_important",
+                label = "Important",
+                widget = "color",
+                profileTable = Plater.db.profile,
+                default = Plater.db.profile.cast_statusbar_color_important,
+                setter = function(castBar, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "cast_statusbar_color_nointerrupt",
+                label = "Uninterruptible",
+                widget = "color",
+                profileTable = Plater.db.profile,
+                default = Plater.db.profile.cast_statusbar_color_nointerrupt,
+                setter = function(castBar, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "cast_statusbar_color_interrupted",
+                label = "Interrupted",
+                widget = "color",
+                profileTable = Plater.db.profile,
+                default = Plater.db.profile.cast_statusbar_color_interrupted,
+                setter = function(castBar, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "cast_statusbar_color_finished",
+                label = "Success",
+                widget = "color",
+                profileTable = Plater.db.profile,
+                default = Plater.db.profile.cast_statusbar_color_finished,
+                setter = function(castBar, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "cast_statusbar_bgcolor",
+                label = "Background Color",
+                widget = "color",
+                profileTable = Plater.db.profile,
+                default = Plater.db.profile.cast_statusbar_bgcolor,
+                setter = function(castBar, value) designer.UpdateAllNameplates() end,
+            },
         },
 
         CastBarSpark = {

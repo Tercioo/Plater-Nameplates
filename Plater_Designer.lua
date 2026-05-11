@@ -8,6 +8,7 @@ local detailsFramework = DetailsFramework
 local _
 
 local DEBUG_OPEN_AT_LOGIN = false
+local IS_WOW_PROJECT_MIDNIGHT = detailsFramework.IsAddonApocalypseWow()
 
 ---@class plater_designer : table
 
@@ -147,8 +148,10 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
         no_anchor_points = true,
         start_editing_callback = function(layoutEditor, objectInfo)
             if (objectInfo.id:match("^CAST")) then
-                isCastBarSelected = true
-                Plater.StartCastBarTest()
+                if not isCastBarSelected then
+                    isCastBarSelected = true
+                    Plater.StartCastBarTest()
+                end
             else
                 isCastBarSelected = false
                 Plater.StopCastBarTest()
@@ -477,6 +480,7 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
     ---@type df_editobjectoptions
     local nameplateSizeOptions = detailsFramework.table.copy({}, editObjectDefaultOptions)
     nameplateSizeOptions.can_move = false
+    nameplateSizeOptions.can_click = false --healthBar.dummy fully overlaps the health bar; let those clicks reach Health Bar / Life Percent
     objectInfo = layoutEditor:RegisterObject(healthBar.dummy, "Nameplate Size", "NAMEPLATE_SIZE", plateConfig, subTablePath, options.WidgetSettingsMapTables.NameplateSize, options.WidgetSettingsExtraOptions.NameplateSize, onSettingChanged, nameplateSizeOptions, healthBar)
 
 
@@ -550,6 +554,7 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
         castBar:Show()
         castBar:SetMinMaxValues(0, 3)
         castBar:SetValue(isCastBarSelected and curCastBarValue or 0)
+        castBar.Icon:SetTexture(135815)
 
         healthBar.healthCutOff:SetPoint("left", healthBar, "left", healthBar:GetWidth()*0.2, 0)
         healthBar.healthCutOff:SetSize(healthBar:GetHeight(), healthBar:GetHeight())
@@ -659,9 +664,11 @@ function designer.CreatePreview(parent)
     plateFrame.UnitFrame = CreateFrame("frame", "$parentDummyUnitFrame", plateFrame) --blizzard's unit frame placeholder
 
     plateFrame:SetScale(1.5)
+    plateFrame.SetStackingBoundsFrame = function() end
 
     --simulate the creation of a game's nameplate, this creates the nameplate.unitFrame and its widgets
     platerInternal.Events.GetEventFunction("NAME_PLATE_CREATED")("NAME_PLATE_CREATED", plateFrame)
+
 
     designer.UpdatePreview()
 
