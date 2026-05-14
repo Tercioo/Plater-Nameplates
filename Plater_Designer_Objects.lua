@@ -165,6 +165,8 @@ function designer.CreateSettings(parentFrame)
         },
 
         ExecuteRange = {},
+
+        Target = {},
     }
 
     options.WidgetSettingsExtraOptions = {
@@ -530,6 +532,7 @@ function designer.CreateSettings(parentFrame)
             },
 
             {type = "blank"},
+            {type = "label", get = function() return "OPTIONS_CASTBAR_COLORS" end, text_template = detailsFramework:GetTemplate("font", "ORANGE_FONT_TEMPLATE")},
 
             {
                 key = "cast_statusbar_color",
@@ -593,6 +596,85 @@ function designer.CreateSettings(parentFrame)
                 widget = "color",
                 profileTable = Plater.db.profile,
                 default = Plater.db.profile.cast_statusbar_bgcolor,
+                setter = function(castBar, value) designer.UpdateAllNameplates() end,
+            },
+
+            {type = "blank"},
+            {type = "label", get = function() return "OPTIONS_CASTBAR_SPELLICON" end, text_template = detailsFramework:GetTemplate("font", "ORANGE_FONT_TEMPLATE")},
+
+            {
+                key = "castbar_icon_customization_enabled",
+                label = "Enable Custom Icon",
+                widget = "toggle",
+                profileTable = Plater.db.profile,
+                default = Plater.db.profile.castbar_icon_customization_enabled,
+                setter = function(castBar, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "castbar_icon_show",
+                label = "Show Icon",
+                widget = "toggle",
+                profileTable = Plater.db.profile,
+                default = Plater.db.profile.castbar_icon_show,
+                setter = function(castBar, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "castbar_icon_attach_to_side",
+                label = "Icon Side",
+                widget = "dropdown",
+                profileTable = Plater.db.profile,
+                default = Plater.db.profile.castbar_icon_attach_to_side,
+                dropdownFunc = function()
+                    return {
+                        {value = "left", label = "Left"},
+                        {value = "right", label = "Right"},
+                    }
+                end,
+                setter = function(castBar, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "castbar_icon_size",
+                label = "Icon Size",
+                widget = "dropdown",
+                profileTable = Plater.db.profile,
+                default = Plater.db.profile.castbar_icon_size,
+                dropdownFunc = function()
+                    return {
+                        {value = "same as castbar", label = "Castbar Size"},
+                        {value = "same as castbar plus healthbar", label = "Castbar + Healthbar Size"},
+                    }
+                end,
+                setter = function(castBar, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "castbar_icon_x_offset",
+                label = "X Offset",
+                widget = "slider",
+                minvalue = -20,
+                maxvalue = 20,
+                step = 1,
+                profileTable = Plater.db.profile,
+                default = Plater.db.profile.castbar_icon_x_offset,
+                setter = function(castBar, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "castbar_icon_showshield",
+                label = "Show Shield",
+                widget = "toggle",
+                profileTable = Plater.db.profile,
+                default = Plater.db.profile.castbar_icon_showshield,
+                setter = function(castBar, value) designer.UpdateAllNameplates() end,
+            },
+
+            {type = "blank"},
+            {type = "label", get = function() return "OPTIONS_CASTBAR_BLIZZCASTBAR" end, text_template = detailsFramework:GetTemplate("font", "ORANGE_FONT_TEMPLATE")},
+
+            {
+                key = "hide_blizzard_castbar",
+                label = "Hide Blizzard Cast Bar",
+                widget = "toggle",
+                profileTable = Plater.db.profile,
+                default = Plater.db.profile.hide_blizzard_castbar,
                 setter = function(castBar, value) designer.UpdateAllNameplates() end,
             },
         },
@@ -688,6 +770,215 @@ function designer.CreateSettings(parentFrame)
         },
 
         SpellName = {},
+
+        Target = {
+            --target overlay (acts on the same texture HealthBar's "Target Overlay" exposes; included here per parity with the Plater options panel)
+            {
+                key = "health_selection_overlay",
+                label = "Target Overlay",
+                widget = "selectstatusbartexture",
+                default = Plater.db.profile.health_selection_overlay,
+                setter = function(target, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "health_selection_overlay_alpha",
+                label = "Target Overlay Alpha",
+                widget = "slider",
+                minvalue = 0, maxvalue = 1, step = 0.1, usedecimals = true,
+                default = Plater.db.profile.health_selection_overlay_alpha,
+                setter = function(target, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "health_selection_overlay_color",
+                label = "Target Overlay Color",
+                widget = "color",
+                default = Plater.db.profile.health_selection_overlay_color,
+                setter = function(target, value) designer.UpdateAllNameplates() end,
+            },
+
+            {type = "blank"},
+
+            --target highlight (rectangle that appears around the current target)
+            {
+                key = "target_highlight",
+                label = "Target Highlight",
+                widget = "toggle",
+                default = Plater.db.profile.target_highlight,
+                setter = function(target, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "target_highlight_texture",
+                label = "Highlight Texture",
+                widget = "dropdown",
+                default = Plater.db.profile.target_highlight_texture,
+                dropdownFunc = function()
+                    local opts = {}
+                    for index, texturePath in ipairs(Plater.TargetHighlights) do
+                        opts[#opts + 1] = {value = texturePath, label = "Highlight " .. index, centerTexture = texturePath}
+                    end
+                    return opts
+                end,
+                setter = function(target, value)
+                    if target.NeonUp then target.NeonUp:SetTexture(value) end
+                    if target.NeonDown then target.NeonDown:SetTexture(value) end
+                    designer.UpdateAllNameplates()
+                end,
+            },
+            {
+                key = "target_highlight_alpha",
+                label = "Highlight Alpha",
+                widget = "slider",
+                minvalue = 0, maxvalue = 1, step = 0.1, usedecimals = true,
+                default = Plater.db.profile.target_highlight_alpha,
+                setter = function(target, value)
+                    if target.NeonUp then target.NeonUp:SetAlpha(value) end
+                    if target.NeonDown then target.NeonDown:SetAlpha(value) end
+                    designer.UpdateAllNameplates()
+                end,
+            },
+            {
+                key = "target_highlight_height",
+                label = "Highlight Size",
+                widget = "slider",
+                minvalue = 2, maxvalue = 60, step = 1,
+                default = Plater.db.profile.target_highlight_height,
+                setter = function(target, value)
+                    if target.NeonUp then target.NeonUp:SetHeight(value) end
+                    if target.NeonDown then target.NeonDown:SetHeight(value) end
+                    designer.UpdateAllNameplates()
+                end,
+            },
+            {
+                key = "target_highlight_color",
+                label = "Highlight Color",
+                widget = "color",
+                default = Plater.db.profile.target_highlight_color,
+                setter = function(target, color)
+                    local r, g, b, a = unpack(color)
+                    if target.NeonUp then target.NeonUp:SetVertexColor(r, g, b, a) end
+                    if target.NeonDown then target.NeonDown:SetVertexColor(r, g, b, a) end
+                    designer.UpdateAllNameplates()
+                end,
+            },
+
+            {type = "blank"},
+
+            --bracket indicator on left/right of the target's health bar
+            {
+                key = "target_indicator",
+                label = "Target Bracket Indicator",
+                widget = "dropdown",
+                default = Plater.db.profile.target_indicator,
+                dropdownFunc = function()
+                    local opts = {}
+                    for name, _ in pairs(Plater.TargetIndicators) do
+                        opts[#opts + 1] = {value = name, label = name}
+                    end
+                    return opts
+                end,
+                setter = function(target, value) designer.UpdateAllNameplates() end,
+            },
+
+            {type = "blank"},
+
+            --target shading (dims non-target plates)
+            {
+                key = "target_shady_enabled",
+                label = "Target Shading",
+                widget = "toggle",
+                default = Plater.db.profile.target_shady_enabled,
+                setter = function(target, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "target_shady_combat_only",
+                label = "Target Shading In Combat Only",
+                widget = "toggle",
+                default = Plater.db.profile.target_shady_combat_only,
+                setter = function(target, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "target_shady_alpha",
+                label = "Target Shading Amount",
+                widget = "slider",
+                minvalue = 0, maxvalue = 1, step = 0.1, usedecimals = true,
+                default = Plater.db.profile.target_shady_alpha,
+                setter = function(target, value) designer.UpdateAllNameplates() end,
+            },
+
+            {type = "blank"},
+            {type = "label", get = function() return "Focus:" end, text_template = detailsFramework:GetTemplate("font", "ORANGE_FONT_TEMPLATE")},
+
+            {
+                key = "focus_indicator_enabled",
+                label = "Show Focus Overlay",
+                widget = "toggle",
+                default = Plater.db.profile.focus_indicator_enabled,
+                setter = function(target, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "focus_color",
+                label = "Focus Color",
+                widget = "color",
+                default = Plater.db.profile.focus_color,
+                setter = function(target, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "focus_texture",
+                label = "Focus Texture",
+                widget = "selectstatusbartexture",
+                default = Plater.db.profile.focus_texture,
+                setter = function(target, value) designer.UpdateAllNameplates() end,
+            },
+
+            {type = "blank"},
+            {type = "label", get = function() return "Raid Mark:" end, text_template = detailsFramework:GetTemplate("font", "ORANGE_FONT_TEMPLATE")},
+
+            {
+                key = "indicator_raidmark_scale",
+                label = "Scale",
+                widget = "slider",
+                minvalue = 0.2, maxvalue = 2, step = 0.1, usedecimals = true,
+                default = Plater.db.profile.indicator_raidmark_scale,
+                setter = function(target, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "indicator_raidmark_anchor.side",
+                label = "Anchor",
+                widget = "dropdown",
+                default = Plater.db.profile.indicator_raidmark_anchor.side,
+                dropdownFunc = function()
+                    local opts = {}
+                    for i, name in ipairs(Plater.AnchorNames) do
+                        opts[#opts + 1] = {value = i, label = name}
+                    end
+                    return opts
+                end,
+                setter = function(target, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "indicator_raidmark_anchor.x",
+                label = "X Offset",
+                widget = "slider",
+                minvalue = -100, maxvalue = 100, step = 1, usedecimals = true,
+                default = Plater.db.profile.indicator_raidmark_anchor.x,
+                setter = function(target, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "indicator_raidmark_anchor.y",
+                label = "Y Offset",
+                widget = "slider",
+                minvalue = -100, maxvalue = 100, step = 1, usedecimals = true,
+                default = Plater.db.profile.indicator_raidmark_anchor.y,
+                setter = function(target, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "indicator_extra_raidmark",
+                label = "Extra Raid Mark",
+                widget = "toggle",
+                default = Plater.db.profile.indicator_extra_raidmark,
+                setter = function(target, value) designer.UpdateAllNameplates() end,
+            },
+        },
 
         LifePercent = {
             { --enabled

@@ -172,6 +172,9 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
     layoutEditor:SetPoint("bottomleft", editorMainFrame, "bottomleft", 5, 5)
     layoutEditor:EnableMouse(false)
     layoutEditor:SetFrameLevel(editorMainFrame:GetFrameLevel() + 10)
+    layoutEditor:SetSelectedBackgroundColor(0, 0, 0, 0)
+    --layoutEditor:SetUndoKeybind("CTRL+Z")
+    --layoutEditor:SetRedoKeybind("CTRL+Y")
     --layoutEditor:SetFrameStrata("HIGH")
 
     function designer.UpdateAllNameplates()
@@ -490,6 +493,12 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
     healthBarOptions.can_move = false
     objectInfo = layoutEditor:RegisterObject(healthBar, "Health Bar", "HEALTHBAR", profileRoot, rootKey, options.WidgetSettingsMapTables.HealthBar, options.WidgetSettingsExtraOptions.HealthBar, onSettingChanged, healthBarOptions, healthBar)
 
+    --target (highlight, overlay, indicator, focus, raid mark)
+    ---@type df_editobjectoptions
+    local targetOptions = detailsFramework.table.copy({}, editObjectDefaultOptions)
+    targetOptions.can_move = false
+    objectInfo = layoutEditor:RegisterObject(healthBar.dummyTarget, "Target", "TARGET", profileRoot, rootKey, options.WidgetSettingsMapTables.Target, options.WidgetSettingsExtraOptions.Target, onSettingChanged, targetOptions, healthBar)
+
 
     objectInfo = layoutEditor:RegisterObject(unitName, "Unit Name", "UNITNAME", plateConfig, subTablePath, options.WidgetSettingsMapTables.UnitName, options.WidgetSettingsExtraOptions.UnitName, onSettingChanged, editObjectDefaultOptions, healthBar)
     plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
@@ -714,6 +723,44 @@ function designer.UpdatePreview()
     local dummyHealthBar = CreateFrame("frame", nil, healthBar)
     dummyHealthBar:SetAllPoints()
     healthBar.dummy = dummyHealthBar
+
+    local dummyTargetBar = CreateFrame("frame", nil, healthBar, "BackdropTemplate")
+    dummyTargetBar:SetFrameLevel(healthBar:GetFrameLevel() - 1)
+    dummyTargetBar:SetPoint("topleft", healthBar, "topleft", 20, -20)
+    dummyTargetBar:SetPoint("bottomright", healthBar, "bottomright", 20, -20)
+    dummyTargetBar:SetBackdrop({bgFile = [[Interface\ChatFrame\ChatFrameBackground]], edgeFile = [[Interface\Buttons\WHITE8X8]], tile = true, tileSize = 16, edgeSize = 1, insets = {left = 1, right = 1, top = 1, bottom = 1}})
+    dummyTargetBar:SetBackdropColor(0, 0, 0, 0.1)
+    dummyTargetBar:SetBackdropBorderColor(.2, .2, .2, 0.5)
+    healthBar.dummyTarget = dummyTargetBar
+    dummyTargetBar.text = dummyTargetBar:CreateFontString(nil, "overlay", "GameFontNormal")
+    dummyTargetBar.text:SetPoint("right", dummyTargetBar, "right", -2, 0)
+    dummyTargetBar.text:SetText("target")
+    detailsFramework:SetFontSize(dummyTargetBar.text, 9)
+    detailsFramework:SetFontColor(dummyTargetBar.text, "silver")
+
+    --neon highlight textures that mimic plateFrame.TargetNeonUp/TargetNeonDown so the editor
+    --preview reflects target_highlight_* changes live. seeded from profile values on creation;
+    --the Target widget's setters update these directly via target.NeonUp / target.NeonDown.
+    local targetNeonUp = healthBar:CreateTexture(nil, "overlay")
+    targetNeonUp:SetPoint("bottomleft", healthBar, "topleft", 0, 0)
+    targetNeonUp:SetPoint("bottomright", healthBar, "topright", 0, 0)
+    targetNeonUp:SetHeight(Plater.db.profile.target_highlight_height)
+    targetNeonUp:SetTexture(Plater.db.profile.target_highlight_texture)
+    targetNeonUp:SetVertexColor(unpack(Plater.db.profile.target_highlight_color))
+    targetNeonUp:SetAlpha(Plater.db.profile.target_highlight_alpha)
+    targetNeonUp:SetBlendMode("ADD")
+    dummyTargetBar.NeonUp = targetNeonUp
+
+    local targetNeonDown = healthBar:CreateTexture(nil, "overlay")
+    targetNeonDown:SetPoint("topleft", healthBar, "bottomleft", 0, 0)
+    targetNeonDown:SetPoint("topright", healthBar, "bottomright", 0, 0)
+    targetNeonDown:SetHeight(Plater.db.profile.target_highlight_height)
+    targetNeonDown:SetTexture(Plater.db.profile.target_highlight_texture)
+    targetNeonDown:SetVertexColor(unpack(Plater.db.profile.target_highlight_color))
+    targetNeonDown:SetAlpha(Plater.db.profile.target_highlight_alpha)
+    targetNeonDown:SetBlendMode("ADD")
+    targetNeonDown:SetTexCoord(0, 1, 1, 0) --flip vertically to mirror NeonUp
+    dummyTargetBar.NeonDown = targetNeonDown
 
     local PLAYER_IN_COMBAT = false
 

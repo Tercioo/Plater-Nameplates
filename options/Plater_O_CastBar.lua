@@ -434,7 +434,7 @@ function platerInternal.CreateCastBarOptions()
             desc = "OPTIONS_ALPHA",
         },
 
-        {type = "blank"},
+        {type = "blank"}, --cast bar colors
         {type = "label", get = function() return "OPTIONS_CASTBAR_COLORS" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 
         {
