@@ -3863,6 +3863,7 @@ Plater.AnchorNamesByPhraseId = {
 
 				local width, height = Plater.db.profile.click_space[1], Plater.db.profile.click_space[2]
 				plateFrame.unitFrame.hitTestFrame:SetSize(width, height)
+				plateFrame.unitFrame.hitTestFrame:ClearAllPoints()
 				plateFrame.unitFrame.hitTestFrame:SetPoint("CENTER", plateFrame.unitFrame, "CENTER")
 				if plateFrame:CanChangeHitTestPoints() then
 					plateFrame:ClearAllHitTestPoints()
