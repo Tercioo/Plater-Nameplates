@@ -6120,6 +6120,8 @@ function Plater.OnInit() --private --~oninit ~init
 								
 								targetName = Plater.UpdateTextSize (targetName or "", self.FrameOverlay.TargetName, Plater.db.profile.castbar_target_text_max_width or 0, nil, Plater.db.profile.castbar_target_text_wrap)
 								
+							elseif Plater.IsShowingCastBarTest then
+								self.FrameOverlay.TargetName:SetText("Target Name")
 							else
 								self.FrameOverlay.TargetName:SetText(nil)
 							end
