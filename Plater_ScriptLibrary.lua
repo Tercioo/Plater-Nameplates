@@ -1556,6 +1556,43 @@ do
 		end,
 	})
 
+	--#41 switch to Slug for fontstrings when available in Midnight
+	tinsert (PlaterPatchLibrary, {
+		NotEssential = false,
+
+		Notes = {
+			"- Fix 'Slug' outline value for fonts."
+		},
+		Func = function()
+			if detailsFramework.IsMidnightWow() then
+    			local outlinesToChange = {
+					--["OUTLINE"] = "OUTLINE, SLUG", -- don't migrate all, people might be angry... :)
+					--["NONE"] = "SLUG",
+					["Slug"] = "SLUG",
+				}
+    
+    			local changeFontOutlineRec
+				changeFontOutlineRec = function(table)
+					if type(table) ~= "table" then return end
+					for i, v in pairs(table) do
+						if type(v) == "table" then
+							changeFontOutlineRec(v)
+						else
+							if type(i) == "string" and type(v) == "string" and string.match(i, "%s*_outline$") then
+								local outlineTarget = outlinesToChange[v]
+								if outlineTarget then
+									table[i] = outlineTarget
+									--print("Changed: ", i, v, "->", table[i])
+								end
+							end
+						end
+					end
+				end
+				changeFontOutlineRec(Plater.db.profile)
+			end
+		end,
+	})
+
 	--[=[
 		--#41 midnight pre patch, remove all triggers from scripts
 		tinsert (PlaterPatchLibrary, {
