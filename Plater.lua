@@ -3429,7 +3429,7 @@ Plater.AnchorNamesByPhraseId = {
 				
 				local ActorTitleSpecial = unitFrame:CreateFontString (nil, "artwork", "GameFontNormal")
 				if ActorTitleSpecial.SetSmoothScaling then
-					ActorTitleSpecial:SetSmoothScaling(true)
+					--ActorTitleSpecial:SetSmoothScaling(true)
 				end
 				unitFrame.ActorTitleSpecial = ActorTitleSpecial --alias for scripts
 				plateFrame.ActorTitleSpecial = ActorTitleSpecial
@@ -3440,14 +3440,14 @@ Plater.AnchorNamesByPhraseId = {
 			--> level text
 				local actorLevel = healthBar:CreateFontString (nil, "overlay", "GameFontNormal")
 				if actorLevel.SetSmoothScaling then
-					actorLevel:SetSmoothScaling(true)
+					--actorLevel:SetSmoothScaling(true)
 				end
 				healthBar.actorLevel = actorLevel
 			
 			--> life percent text
 				local lifePercent = healthBar:CreateFontString (nil, "overlay", "GameFontNormal")
 				if lifePercent.SetSmoothScaling then
-					lifePercent:SetSmoothScaling(true)
+					--lifePercent:SetSmoothScaling(true)
 				end
 				lifePercent:SetDrawLayer ("overlay", 5)
 				healthBar.lifePercent = lifePercent
@@ -3599,7 +3599,7 @@ Plater.AnchorNamesByPhraseId = {
 				--creates the target name overlay which shows who the unit is targetting while casting (this is disabled by default)
 				castBar.FrameOverlay.TargetName = castBar.FrameOverlay:CreateFontString (nil, "overlay", "GameFontNormal")
 				if castBar.FrameOverlay.TargetName.SetSmoothScaling then
-					castBar.FrameOverlay.TargetName:SetSmoothScaling(true)
+					--castBar.FrameOverlay.TargetName:SetSmoothScaling(true)
 				end
 				castBar.TargetName = castBar.FrameOverlay.TargetName --alias for scripts
 			

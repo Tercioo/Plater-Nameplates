@@ -1448,7 +1448,7 @@ end
 		end
 		newIcon.CountFrame.Count = newIcon.CountFrame:CreateFontString (nil, "artwork", "NumberFontNormalSmall")
 		if newIcon.CountFrame.Count.SetSmoothScaling then
-			newIcon.CountFrame.Count:SetSmoothScaling(true)
+			--newIcon.CountFrame.Count:SetSmoothScaling(true)
 		end
 		newIcon.CountFrame.Count:SetJustifyH ("right")
 		newIcon.CountFrame.Count:SetPoint ("bottomright", 3, -2)
@@ -1459,7 +1459,7 @@ end
 		if IS_WOW_PROJECT_MIDNIGHT then
 			newIcon.Cooldown:SetMinimumCountdownDuration(0)
 			newIcon.Cooldown.Timer = newIcon.Cooldown:GetRegions()
-			newIcon.Cooldown.Timer:SetSmoothScaling(true)
+			--newIcon.Cooldown.Timer:SetSmoothScaling(true)
 		else
 			newIcon.Cooldown.Timer = newIcon.Cooldown:CreateFontString (nil, "overlay", "NumberFontNormal")
 			newIcon.Cooldown.Timer:SetPoint ("center")
