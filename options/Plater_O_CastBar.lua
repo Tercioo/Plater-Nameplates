@@ -134,7 +134,7 @@ function platerInternal.CreateCastBarOptions()
 
         --outline table
         local outline_modes = {"NONE", "MONOCHROME", "OUTLINE", "THICKOUTLINE", "MONOCHROME, OUTLINE", "MONOCHROME, THICKOUTLINE", "SLUG", "OUTLINE, SLUG"}
-        local outline_modes_names = {"None", "Monochrome", "Outline", "Thick Outline", "Monochrome Outline", "Monochrome Thick Outline", "Slug", "Slug Outline"}
+        local outline_modes_names = {"None", "Monochrome", "Outline", "Thick Outline", "Monochrome Outline", "Monochrome Thick Outline", "SLUG", "Slug Outline"}
         local build_outline_modes_table = function (actorType, member)
             local t = {}
             for i = 1, #outline_modes do
