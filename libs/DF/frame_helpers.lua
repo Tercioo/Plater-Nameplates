@@ -5,588 +5,6 @@ if (not detailsFramework or not DetailsFrameworkCanLoad) then
 	return
 end
 
-local CreateFrame = CreateFrame
-local GetScreenWidth = GetScreenWidth
-local GetScreenHeight = GetScreenHeight
-local defaultRed, defaultGreen, defaultBlue = detailsFramework:GetDefaultBackdropColor()
---local defaultColorTable = {defaultRed, defaultGreen, defaultBlue, 1}
-local defaultColorTable = {0.98, 0.98, 0.98, 1}
-local defaultBorderColorTable = {0.1, 0.1, 0.1, 1}
-
----@type edgenames[]
-local cornerNames = {"TopLeft", "TopRight", "BottomLeft", "BottomRight"}
-
----@param self df_roundedpanel
----@param textures cornertextures
----@param width number|nil
----@param height number|nil
----@param xOffset number|nil
----@param yOffset number|nil
----@param bIsBorder boolean|nil
-local setCornerPoints = function(self, textures, width, height, xOffset, yOffset, bIsBorder)
-    for cornerName, thisTexture in pairs(textures) do
-        thisTexture:SetSize(width or 16, height or 16)
-        thisTexture:SetTexture(self.options.corner_texture)
-
-        --set the mask
-        if (not thisTexture.MaskTexture and bIsBorder) then
-            thisTexture.MaskTexture = self:CreateMaskTexture(nil, "background")
-            thisTexture.MaskTexture:SetSize(74, 64)
-            thisTexture:AddMaskTexture(thisTexture.MaskTexture)
-            thisTexture.MaskTexture:SetTexture([[Interface\Azerite\AzeriteGoldRingRank2]]) --1940690
-            --thisTexture.MaskTexture:Hide()
-        end
-
-        xOffset = xOffset or 0
-        yOffset = yOffset or 0
-
-        --todo: adjust the other corners setpoint offset
-        --todo (done): use mask when the alpha is below 0.98, disable the mask when the alpha is above 0.98
-
-        if (cornerName == "TopLeft") then
-            thisTexture:SetTexCoord(0, 0.5, 0, 0.5)
-            thisTexture:SetPoint(cornerName, self, cornerName, -xOffset, yOffset)
-            if (thisTexture.MaskTexture) then
-                thisTexture.MaskTexture:SetPoint(cornerName, self, cornerName, -18-xOffset, 16+yOffset)
-            end
-
-        elseif (cornerName == "TopRight") then
-            thisTexture:SetTexCoord(0.5, 1, 0, 0.5)
-            thisTexture:SetPoint(cornerName, self, cornerName, xOffset, yOffset)
-            if (thisTexture.MaskTexture) then
-                thisTexture.MaskTexture:SetPoint(cornerName, self, cornerName, -18+xOffset, 16+yOffset)
-            end
-
-        elseif (cornerName == "BottomLeft") then
-            thisTexture:SetTexCoord(0, 0.5, 0.5, 1)
-            thisTexture:SetPoint(cornerName, self, cornerName, -xOffset, -yOffset)
-            if (thisTexture.MaskTexture) then
-                thisTexture.MaskTexture:SetPoint(cornerName, self, cornerName, -18-xOffset, 16-yOffset)
-            end
-
-        elseif (cornerName == "BottomRight") then
-            thisTexture:SetTexCoord(0.5, 1, 0.5, 1)
-            thisTexture:SetPoint(cornerName, self, cornerName, xOffset, -yOffset)
-            if (thisTexture.MaskTexture) then
-                thisTexture.MaskTexture:SetPoint(cornerName, self, cornerName, -18+xOffset, 16-yOffset)
-            end
-        end
-    end
-end
-
-detailsFramework.RoundedCornerPanelMixin = {
-    RoundedCornerConstructor = function(self)
-        self.CornerTextures = {}
-        self.CenterTextures = {}
-        self.BorderCornerTextures = {}
-        self.BorderEdgeTextures = {}
-
-        self.cornerRoundness = 0
-
-        for i = 1, #cornerNames do
-            ---@type texture
-            local newCornerTexture = self:CreateTexture(nil, "border", nil, 0)
-            self.CornerTextures[cornerNames[i]] = newCornerTexture
-            self[cornerNames[i]] = newCornerTexture
-        end
-
-        --create the top texture which connects the top corners with a horizontal line
-        ---@type texture
-        local topHorizontalEdge = self:CreateTexture(nil, "border", nil, 0)
-        topHorizontalEdge:SetPoint("topleft", self.CornerTextures["TopLeft"], "topright", 0, 0)
-        topHorizontalEdge:SetPoint("bottomleft", self.CornerTextures["TopLeft"], "bottomright", 0, 0)
-        topHorizontalEdge:SetPoint("topright", self.CornerTextures["TopRight"], "topleft", 0, 0)
-        topHorizontalEdge:SetPoint("bottomright", self.CornerTextures["TopRight"], "bottomleft", 0, 0)
-        topHorizontalEdge:SetColorTexture(unpack(defaultColorTable))
-
-        --create the bottom texture which connects the bottom corners with a horizontal line
-        ---@type texture
-        local bottomHorizontalEdge = self:CreateTexture(nil, "border", nil, 0)
-        bottomHorizontalEdge:SetPoint("topleft", self.CornerTextures["BottomLeft"], "topright", 0, 0)
-        bottomHorizontalEdge:SetPoint("bottomleft", self.CornerTextures["BottomLeft"], "bottomright", 0, 0)
-        bottomHorizontalEdge:SetPoint("topright", self.CornerTextures["BottomRight"], "topleft", 0, 0)
-        bottomHorizontalEdge:SetPoint("bottomright", self.CornerTextures["BottomRight"], "bottomleft", 0, 0)
-        bottomHorizontalEdge:SetColorTexture(unpack(defaultColorTable))
-
-        --create the center block which connects the bottom left of the topleft corner with the top right of the bottom right corner
-        ---@type texture
-        local centerBlock = self:CreateTexture(nil, "border", nil, 0)
-        centerBlock:SetPoint("topleft", self.CornerTextures["TopLeft"], "bottomleft", 0, 0)
-        centerBlock:SetPoint("bottomleft", self.CornerTextures["BottomLeft"], "topleft", 0, 0)
-        --centerBlock:SetPoint("topright", self.CornerTextures["BottomRight"], "topright", 0, 0)
-        --centerBlock:SetPoint("bottomright", self.CornerTextures["BottomRight"], "topright", 0, 0)
-        centerBlock:SetPoint("topright", self.CornerTextures["TopRight"], "bottomright", 0, 0)
-        centerBlock:SetPoint("bottomright", self.CornerTextures["BottomRight"], "topright", 0, 0)
-        centerBlock:SetColorTexture(unpack(defaultColorTable))
-
-        self.CenterTextures[#self.CenterTextures+1] = topHorizontalEdge
-        self.CenterTextures[#self.CenterTextures+1] = bottomHorizontalEdge
-        self.CenterTextures[#self.CenterTextures+1] = centerBlock
-
-        self.TopHorizontalEdge = topHorizontalEdge
-        self.BottomHorizontalEdge = bottomHorizontalEdge
-        self.CenterBlock = centerBlock
-
-        ---@type width
-        local width = self.options.width
-        ---@type height
-        local height = self.options.height
-
-        self:SetSize(width, height)
-
-        --fill the corner and edge textures table
-        setCornerPoints(self, self.CornerTextures)
-    end,
-
-    ---get the highest frame level of the rounded panel and its children
-    ---@param self df_roundedpanel
-    ---@return framelevel
-    GetMaxFrameLevel = function(self)
-        ---@type framelevel
-        local maxFrameLevel = 0
-        local children = {self:GetChildren()}
-
-        for i = 1, #children do
-            local thisChild = children[i]
-            ---@cast thisChild frame
-            if (thisChild:GetFrameLevel() > maxFrameLevel) then
-                maxFrameLevel = thisChild:GetFrameLevel()
-            end
-        end
-
-        return maxFrameLevel
-    end,
-
-    ---create a frame placed at the top side of the rounded panel, this frame has a member called 'Text' which is a fontstring for the title
-    ---@param self df_roundedpanel
-    ---@return df_roundedpanel
-    CreateTitleBar = function(self)
-        ---@type df_roundedpanel
-        local titleBar = detailsFramework:CreateRoundedPanel(self, "$parentTitleBar", {width = self.options.width - 6, height = 16})
-        titleBar:SetPoint("top", self, "top", 0, -4)
-        titleBar:SetRoundness(5)
-        titleBar:SetFrameLevel(9500)
-        titleBar.bIsTitleBar = true
-        self.TitleBar = titleBar
-        self.bHasTitleBar = true
-
-        local textFontString = titleBar:CreateFontString("$parentText", "overlay", "GameFontNormal")
-        textFontString:SetPoint("center", titleBar, "center", 0, 0)
-        titleBar.Text = textFontString
-
-        local closeButton = detailsFramework:CreateCloseButton(titleBar, "$parentCloseButton")
-        closeButton:SetPoint("right", titleBar, "right", -3, 0)
-		closeButton:SetSize(10, 10)
-		closeButton:SetAlpha(0.3)
-        closeButton:SetScript("OnClick", function(self)
-            self:GetParent():GetParent():Hide()
-        end)
-        detailsFramework:SetButtonTexture(closeButton, "common-search-clearbutton")
-
-        return titleBar
-    end,
-
-    ---return the width and height of the corner textures
-    ---@param self df_roundedpanel
-    ---@return number, number
-    GetCornerSize = function(self)
-        return self.CornerTextures["TopLeft"]:GetSize()
-    end,
-
-    ---set how rounded the corners should be
-    ---@param self df_roundedpanel
-    ---@param roundness number
-    SetRoundness = function(self, roundness)
-        self.cornerRoundness = roundness
-        self:OnSizeChanged()
-    end,
-
-    ---adjust the size of the corner textures and the border edge textures
-    ---@param self df_roundedpanel
-    OnSizeChanged = function(self)
-        --if the frame has a titlebar, need to adjust the size of the titlebar
-        if (self.bHasTitleBar) then
-            self.TitleBar:SetWidth(self:GetWidth() - 14)
-        end
-
-        --if the frame height is below 32, need to recalculate the size of the corners
-        ---@type height
-        local frameHeight = self:GetHeight()
-
-        if (frameHeight < 32) then
-            local newCornerSize = frameHeight / 2
-
-            --set the new size of the corners on all corner textures
-            for _, thisTexture in pairs(self.CornerTextures) do
-                thisTexture:SetSize(newCornerSize - (self.cornerRoundness - 2), newCornerSize)
-            end
-
-            --check if the frame has border and set the size of the border corners as well
-            if (self.bHasBorder) then
-                for _, thisTexture in pairs(self.BorderCornerTextures) do
-                    thisTexture:SetSize(newCornerSize-2, newCornerSize+2)
-                end
-
-                --hide the left and right edges as the corner textures already is enough to fill the frame
-                self.BorderEdgeTextures["Left"]:Hide()
-                self.BorderEdgeTextures["Right"]:Hide()
-
-                local horizontalEdgesNewSize = self:CalculateBorderEdgeSize("horizontal")
-                self.BorderEdgeTextures["Top"]:SetSize(horizontalEdgesNewSize + (self.options.horizontal_border_size_offset or 0), 1)
-                self.BorderEdgeTextures["Bottom"]:SetSize(horizontalEdgesNewSize + (self.options.horizontal_border_size_offset or 0), 1)
-            end
-
-            self.CenterBlock:Hide()
-        else
-            if (self.bHasBorder) then
-                self.BorderEdgeTextures["Left"]:Show()
-                self.BorderEdgeTextures["Right"]:Show()
-            end
-
-            ---@type width, height
-            local cornerWidth, cornerHeight = 16, 16
-
-            self.CenterBlock:Show()
-
-            for _, thisTexture in pairs(self.CornerTextures) do
-                thisTexture:SetSize(cornerWidth-self.cornerRoundness, cornerHeight-self.cornerRoundness)
-            end
-
-            if (self.bHasBorder) then
-                for _, thisTexture in pairs(self.BorderCornerTextures) do
-                    thisTexture:SetSize(cornerWidth-self.cornerRoundness, cornerHeight-self.cornerRoundness)
-                    thisTexture.MaskTexture:SetSize(74-(self.cornerRoundness*0.75), 64-self.cornerRoundness)
-                end
-
-                local horizontalEdgesNewSize = self:CalculateBorderEdgeSize("horizontal")
-                self.BorderEdgeTextures["Top"]:SetSize(horizontalEdgesNewSize, 1)
-                self.BorderEdgeTextures["Bottom"]:SetSize(horizontalEdgesNewSize, 1)
-
-                local verticalEdgesNewSize = self:CalculateBorderEdgeSize("vertical")
-                self.BorderEdgeTextures["Left"]:SetSize(1, verticalEdgesNewSize)
-                self.BorderEdgeTextures["Right"]:SetSize(1, verticalEdgesNewSize)
-            end
-        end
-    end,
-
-    ---get the size of the edge texture
-    ---@param self df_roundedpanel
-    ---@param alignment "vertical"|"horizontal"
-    ---@return number edgeSize
-    CalculateBorderEdgeSize = function(self, alignment)
-        ---@type string
-        local borderCornerName = next(self.BorderCornerTextures)
-        if (not borderCornerName) then
-            return 0
-        end
-
-        ---@type texture
-        local borderTexture = self.BorderCornerTextures[borderCornerName]
-
-        alignment = alignment:lower()
-
-        if (alignment == "vertical") then
-            return self:GetHeight() - (borderTexture:GetHeight() * 2) + 2
-
-        elseif (alignment == "horizontal") then
-            return self:GetWidth() - (borderTexture:GetWidth() * 2) + 2
-        end
-
-        error("df_roundedpanel:CalculateBorderEdgeSize(self, alignment) alignment must be 'vertical' or 'horizontal'")
-    end,
-
-    ---@param self df_roundedpanel
-    CreateBorder = function(self)
-        local r, g, b, a = 0, 0, 0, 0.8
-
-        --create the corner edges
-        for i = 1, #cornerNames do
-            ---@type texture
-            local newBorderTexture = self:CreateTexture(nil, "background", nil, 0)
-            self.BorderCornerTextures[cornerNames[i]] = newBorderTexture
-            newBorderTexture:SetColorTexture(unpack(defaultColorTable))
-            newBorderTexture:SetVertexColor(r, g, b, a)
-            self[cornerNames[i] .. "Border"] = newBorderTexture
-        end
-
-        setCornerPoints(self, self.BorderCornerTextures, 16, 16, 1, 1, true)
-
-        --create the top, left, bottom and right edges, the edge has 1pixel width and connects the corners
-        ---@type texture
-        local topEdge = self:CreateTexture(nil, "background", nil, 0)
-        topEdge:SetPoint("bottom", self, "top", 0, 0)
-        self.BorderEdgeTextures["Top"] = topEdge
-
-        ---@type texture
-        local leftEdge = self:CreateTexture(nil, "background", nil, 0)
-        leftEdge:SetPoint("right", self, "left", 0, 0)
-        self.BorderEdgeTextures["Left"] = leftEdge
-
-        ---@type texture
-        local bottomEdge = self:CreateTexture(nil, "background", nil, 0)
-        bottomEdge:SetPoint("top", self, "bottom", 0, 0)
-        self.BorderEdgeTextures["Bottom"] = bottomEdge
-
-        ---@type texture
-        local rightEdge = self:CreateTexture(nil, "background", nil, 0)
-        rightEdge:SetPoint("left", self, "right", 0, 0)
-        self.BorderEdgeTextures["Right"] = rightEdge
-
-        ---@type width
-        local horizontalEdgeSize = self:CalculateBorderEdgeSize("horizontal")
-        ---@type height
-        local verticalEdgeSize = self:CalculateBorderEdgeSize("vertical")
-
-        --set the edges size
-        topEdge:SetSize(horizontalEdgeSize, 1)
-        leftEdge:SetSize(1, verticalEdgeSize)
-        bottomEdge:SetSize(horizontalEdgeSize, 1)
-        rightEdge:SetSize(1, verticalEdgeSize)
-
-        for edgeName, thisTexture in pairs(self.BorderEdgeTextures) do
-            ---@cast thisTexture texture
-            thisTexture:SetColorTexture(unpack(defaultColorTable))
-            thisTexture:SetVertexColor(r, g, b, a)
-        end
-
-        self.TopEdgeBorder = topEdge
-        self.BottomEdgeBorder = bottomEdge
-        self.LeftEdgeBorder = leftEdge
-        self.RightEdgeBorder = rightEdge
-
-        self.bHasBorder = true
-    end,
-
-    ---@param self df_roundedpanel
-    ---@param red any
-    ---@param green number|nil
-    ---@param blue number|nil
-    ---@param alpha number|nil
-    SetTitleBarColor = function(self, red, green, blue, alpha)
-        if (self.bHasTitleBar) then
-            red, green, blue, alpha = detailsFramework:ParseColors(red, green, blue, alpha)
-            self.TitleBar:SetColor(red, green, blue, alpha)
-        end
-    end,
-
-    ---@param self df_roundedpanel
-    ---@param red any
-    ---@param green number|nil
-    ---@param blue number|nil
-    ---@param alpha number|nil
-    SetBorderCornerColor = function(self, red, green, blue, alpha)
-        if (not self.bHasBorder) then
-            self:CreateBorder()
-        end
-
-        red, green, blue, alpha = detailsFramework:ParseColors(red, green, blue, alpha)
-
-        for _, thisTexture in pairs(self.BorderCornerTextures) do
-            thisTexture:SetVertexColor(red, green, blue, alpha)
-        end
-
-        for _, thisTexture in pairs(self.BorderEdgeTextures) do
-            thisTexture:SetVertexColor(red, green, blue, alpha)
-        end
-    end,
-
-    ---@param self df_roundedpanel
-    ---@param red any
-    ---@param green number|nil
-    ---@param blue number|nil
-    ---@param alpha number|nil
-    SetColor = function(self, red, green, blue, alpha)
-        red, green, blue, alpha = detailsFramework:ParseColors(red, green, blue, alpha)
-
-        for _, thisTexture in pairs(self.CornerTextures) do
-            thisTexture:SetVertexColor(red, green, blue, alpha)
-        end
-
-        for _, thisTexture in pairs(self.CenterTextures) do
-            thisTexture:SetVertexColor(red, green, blue, alpha)
-        end
-
-        if (self.bHasBorder) then
-            if (alpha < 0.98) then
-                --if using borders, the two border textures overlaps making the alpha be darker than it should
-                for _, thisTexture in pairs(self.BorderCornerTextures) do
-                    thisTexture.MaskTexture:Show()
-                end
-            else
-                for _, thisTexture in pairs(self.BorderCornerTextures) do
-                    thisTexture.MaskTexture:Hide()
-                end
-            end
-        end
-    end,
-}
-
-local defaultOptions = {
-    width = 200,
-    height = 200,
-    use_titlebar = false,
-    use_scalebar = false,
-    title = "",
-    scale = 1,
-    roundness = 0,
-    color = defaultColorTable,
-    border_color = defaultColorTable,
-    corner_texture = [[Interface\CHARACTERFRAME\TempPortraitAlphaMaskSmall]],
-}
-
-local defaultPreset = {
-    border_color = {.1, .1, .1, 0.834},
-    color = {defaultRed, defaultGreen, defaultBlue},
-    roundness = 3,
-}
-
----create a regular panel with rounded corner
----@param parent frame
----@param name string|nil
----@param optionsTable table|nil
----@return df_roundedpanel
-function detailsFramework:CreateRoundedPanel(parent, name, optionsTable)
-    ---@type df_roundedpanel
-    local newRoundedPanel = CreateFrame("frame", name, parent, "BackdropTemplate")
-    newRoundedPanel:EnableMouse(true)
-    newRoundedPanel.__dftype = "df_roundedpanel"
-    newRoundedPanel.__rcorners = true
-
-    detailsFramework:Mixin(newRoundedPanel, detailsFramework.RoundedCornerPanelMixin)
-    detailsFramework:Mixin(newRoundedPanel, detailsFramework.OptionsFunctions)
-    newRoundedPanel:BuildOptionsTable(defaultOptions, optionsTable or {})
-    newRoundedPanel:RoundedCornerConstructor()
-    newRoundedPanel:SetScript("OnSizeChanged", newRoundedPanel.OnSizeChanged)
-
-    if (newRoundedPanel.options.use_titlebar) then
-        ---@type df_roundedpanel
-        local titleBar = detailsFramework:CreateRoundedPanel(newRoundedPanel, "$parentTitleBar", {height = 26})
-        titleBar:SetPoint("top", newRoundedPanel, "top", 0, -7)
-        newRoundedPanel.TitleBar = titleBar
-        titleBar:SetRoundness(5)
-        newRoundedPanel.bHasTitleBar = true
-    end
-
-    if (newRoundedPanel.options.use_scalebar) then
-        detailsFramework:CreateScaleBar(newRoundedPanel.TitleBar or newRoundedPanel, newRoundedPanel.options)
-        newRoundedPanel:SetScale(newRoundedPanel.options.scale)
-    end
-
-    newRoundedPanel:SetRoundness(newRoundedPanel.options.roundness)
-    newRoundedPanel:SetColor(newRoundedPanel.options.color)
-    newRoundedPanel:SetBorderCornerColor(newRoundedPanel.options.border_color)
-
-    return newRoundedPanel
-end
-
-local applyPreset = function(frame, preset)
-    if (preset.border_color) then
-        frame:SetBorderCornerColor(preset.border_color)
-    end
-
-    if (preset.color) then
-        frame:SetColor(preset.color)
-    end
-
-    if (preset.roundness) then
-        frame:SetRoundness(preset.roundness)
-    else
-        frame:SetRoundness(1)
-    end
-
-    if (preset.use_titlebar) then
-        frame:CreateTitleBar()
-    end
-end
-
----set a frame to have rounded corners following the settings passed by the preset table
----@param frame frame
----@param preset df_roundedpanel_preset?
-function detailsFramework:AddRoundedCornersToFrame(frame, preset)
-    frame = frame and frame.widget or frame
-    assert(frame and frame.GetObjectType and frame.SetPoint, "AddRoundedCornersToFrame(frame): frame must be a frame object.")
-
-    if (frame.__rcorners) then
-        return
-    end
-
-    if (frame.GetBackdropBorderColor) then
-        local red, green, blue, alpha = frame:GetBackdropBorderColor()
-        if (alpha and alpha > 0) then
-            detailsFramework:MsgWarning("AddRoundedCornersToFrame() applyed to a frame with a backdrop border.")
-            detailsFramework:Msg(debugstack(2, 1, 0))
-        end
-    end
-
-    ---@cast frame +df_roundedcornermixin
-    detailsFramework:Mixin(frame, detailsFramework.RoundedCornerPanelMixin)
-
-    if (not frame["BuildOptionsTable"]) then
-        ---@cast frame +df_optionsmixin
-        detailsFramework:Mixin(frame, detailsFramework.OptionsFunctions)
-    end
-
-    frame:BuildOptionsTable(defaultOptions, {})
-
-    frame.options.width = frame:GetWidth()
-    frame.options.height = frame:GetHeight()
-
-    frame:RoundedCornerConstructor()
-    frame:HookScript("OnSizeChanged", frame.OnSizeChanged)
-
-    frame.__rcorners = true
-
-    --handle preset
-    if (preset and type(preset) == "table") then
-        frame.options.horizontal_border_size_offset = preset.horizontal_border_size_offset
-        applyPreset(frame, preset)
-    else
-        applyPreset(frame, defaultPreset)
-    end
-end
-
----test case:
-C_Timer.After(1, function()
-
-    if true then return end
-
-    local DF = DetailsFramework
-
-    local parent = UIParent
-    local name = "NewRoundedCornerFrame"
-    local optionsTable = {
-        use_titlebar = true,
-        use_scalebar = true,
-        title = "Test",
-        scale = 1.0,
-    }
-
-    ---@type df_roundedpanel
-    local frame = _G[name] or DF:CreateRoundedPanel(parent, name, optionsTable)
-    frame:SetSize(800, 600)
-    frame:SetPoint("center", parent, "center", 0, 0)
-
-    frame:SetColor(.1, .1, .1, 1)
-    frame:SetTitleBarColor(.2, .2, .2, .5)
-    frame:SetBorderCornerColor(.2, .2, .2, .5)
-    frame:SetRoundness(0)
-
-    local radiusSlider = DF:CreateSlider(frame, 120, 14, 0, 15, 1, frame.cornerRoundness, false, "RadiusBar", nil, nil, DF:GetTemplate("slider", "OPTIONS_SLIDER_TEMPLATE"))
-    radiusSlider:SetHook("OnValueChange", function(self, fixedValue, value)
-        value = floor(value)
-        if (frame.cornerRoundness == value) then
-            return
-        end
-        frame:SetRoundness(value)
-    end)
-
-    local radiusText = frame:CreateFontString(nil, "overlay", "GameFontNormal")
-    radiusText:SetText("Radius:")
-    radiusText:SetPoint("bottomleft", radiusSlider.widget, "topleft", 0, 0)
-    radiusSlider:SetPoint(10, -100)
-end)
-
-
 
 --[=[
     Snap System
@@ -627,7 +45,6 @@ local SNAP_AXIS = {left = "x", right = "x", top = "y", bottom = "y"}
 --keys use snake_case because this table is exposed to the addon profile as user configuration.
 local SNAP_DEFAULT_OPTIONS = {
     snap_distance = 12,         --max screen-pixel gap between two edges to be treated as a snap candidate
-    perpendicular_align = true, --when true, also align the perpendicular edges if they are within snap_distance
     hysteresis = 4,             --a new candidate must be this many pixels closer than the current one to replace it
     update_interval = 0.015,    --seconds between proximity scans while dragging (throttle, avoids per-frame cost)
     glow_thickness = 3,         --thickness in pixels of the edge highlight
@@ -746,32 +163,46 @@ local snapHideGlow = function(frame)
 end
 
 --evaluates one side pairing: the dragged frame's `side` edge connecting to the other frame's
---opposite edge. returns the gap (screen pixels) between the two connecting edges, or nil when the
---frames do not overlap enough on the perpendicular axis to be facing each other.
+--opposite edge. returns:
+--  primaryGap: screen-pixel gap between the connecting edges (used for the snap_distance threshold)
+--  perpendicularMisalignment: screen-pixel distance between the two frames' centers along the
+--                             perpendicular axis (used as the tiebreaker so that when two candidates
+--                             have the same primary gap, the one the dragged frame is more visually
+--                             centered on wins -- e.g. dragging below frame A vs below frame B where
+--                             A and B share a bottom edge, A wins if the dragged frame is mostly
+--                             under A.)
+--returns nil when the frames don't overlap enough on the perpendicular axis to be facing each other.
 --rects are passed as (left, bottom, right, top) in screen pixels.
 local snapEvaluatePair = function(draggedLeft, draggedBottom, draggedRight, draggedTop, otherLeft, otherBottom, otherRight, otherTop, side, snapDistance)
     local axis = SNAP_AXIS[side]
-    local gap, perpendicularOverlap
+    local primaryGap, perpendicularOverlap, perpendicularMisalignment
 
     if (axis == "x") then
         --left/right pairings connect along x: measure the horizontal gap between the connecting edges
         if (side == "left") then
-            gap = math.abs(draggedLeft - otherRight)       --dragged left edge meets other right edge
+            primaryGap = math.abs(draggedLeft - otherRight)       --dragged left edge meets other right edge
         else
-            gap = math.abs(draggedRight - otherLeft)       --dragged right edge meets other left edge
+            primaryGap = math.abs(draggedRight - otherLeft)       --dragged right edge meets other left edge
         end
-        --the perpendicular axis is vertical: how much the two frames share vertically
+        --the perpendicular axis is vertical: how much the two frames share vertically (overlap)
+        --and how far their vertical centers are from each other (misalignment, for tiebreaking)
         perpendicularOverlap = math.min(draggedTop, otherTop) - math.max(draggedBottom, otherBottom)
+        local draggedMidY = (draggedTop + draggedBottom) / 2
+        local otherMidY = (otherTop + otherBottom) / 2
+        perpendicularMisalignment = math.abs(draggedMidY - otherMidY)
 
     else
         --top/bottom pairings connect along y: measure the vertical gap between the connecting edges
         if (side == "bottom") then
-            gap = math.abs(draggedBottom - otherTop)       --dragged bottom edge meets other top edge
+            primaryGap = math.abs(draggedBottom - otherTop)       --dragged bottom edge meets other top edge
         else
-            gap = math.abs(draggedTop - otherBottom)       --dragged top edge meets other bottom edge
+            primaryGap = math.abs(draggedTop - otherBottom)       --dragged top edge meets other bottom edge
         end
         --the perpendicular axis is horizontal
         perpendicularOverlap = math.min(draggedRight, otherRight) - math.max(draggedLeft, otherLeft)
+        local draggedMidX = (draggedLeft + draggedRight) / 2
+        local otherMidX = (otherLeft + otherRight) / 2
+        perpendicularMisalignment = math.abs(draggedMidX - otherMidX)
     end
 
     --require the frames to be roughly facing each other. a small negative overlap is tolerated
@@ -780,7 +211,7 @@ local snapEvaluatePair = function(draggedLeft, draggedBottom, draggedRight, drag
         return nil
     end
 
-    return gap
+    return primaryGap, perpendicularMisalignment
 end
 
 --scans every other frame in the group for the closest valid snap candidate to draggedFrame.
@@ -798,8 +229,12 @@ local snapFindCandidate = function(group, draggedFrame)
 
     --frames that belong to the cluster currently being dragged are invalid targets
     local clusterLookup = group.__dragClusterLookup
+    --the dragged frame's own existing links: any side already in use can't host a second snap.
+    --during cluster drag the grabbed frame is the temp root and may already link to its children,
+    --so this is what prevents the chain from being clobbered by an outward snap on the same side.
+    local draggedData = group.__dragFrameData
 
-    local best, bestGap
+    local best, bestScore
     local frames = group.registeredFrames
     for i = 1, #frames do
         local frameData = frames[i]
@@ -808,16 +243,29 @@ local snapFindCandidate = function(group, draggedFrame)
             local otherLeft, otherBottom, otherRight, otherTop = snapGetScreenRect(otherFrame)
             if (otherLeft) then
                 for side in pairs(SNAP_OPPOSITE) do
-                    if (enabledSides[side]) then
-                        local gap = snapEvaluatePair(draggedLeft, draggedBottom, draggedRight, draggedTop, otherLeft, otherBottom, otherRight, otherTop, side, snapDistance)
-                        if (gap and gap <= snapDistance and (not bestGap or gap < bestGap)) then
-                            bestGap = gap
-                            best = best or {}
-                            best.TargetFrame = otherFrame
-                            best.targetData = frameData
-                            best.side = side
-                            best.theirSide = SNAP_OPPOSITE[side]
-                            best.gap = gap
+                    local theirSide = SNAP_OPPOSITE[side]
+                    --skip sides that would conflict with a link already attached on either frame.
+                    --without this, a frame already snapped on its right edge would still be offered
+                    --as a candidate against its right edge, and dropping there would visually overlap
+                    --the frame already chained on that side.
+                    local sideFree = (not draggedData or not draggedData.links[side]) and not frameData.links[theirSide]
+                    if (enabledSides[side] and sideFree) then
+                        local primaryGap, perpendicularMisalignment = snapEvaluatePair(draggedLeft, draggedBottom, draggedRight, draggedTop, otherLeft, otherBottom, otherRight, otherTop, side, snapDistance)
+                        --primaryGap gates validity (snap_distance threshold); the score combines it
+                        --with the perpendicular misalignment so that, when two candidates have the
+                        --same primary gap (e.g. two size-matched frames sharing the same bottom edge),
+                        --the one the dragged frame is more visually centered under wins.
+                        if (primaryGap and primaryGap <= snapDistance) then
+                            local score = primaryGap + perpendicularMisalignment
+                            if (not bestScore or score < bestScore) then
+                                bestScore = score
+                                best = best or {}
+                                best.TargetFrame = otherFrame
+                                best.targetData = frameData
+                                best.side = side
+                                best.theirSide = theirSide
+                                best.score = score
+                            end
                         end
                     end
                 end
@@ -836,12 +284,12 @@ local snapUpdatePreview = function(group, draggedFrame)
 
     if (newCandidate) then
         if (current and current.TargetFrame == newCandidate.TargetFrame and current.side == newCandidate.side) then
-            --same pairing as last frame: just refresh the measured gap, the glow is already in place
-            current.gap = newCandidate.gap
+            --same pairing as last frame: just refresh the measured score, the glow is already in place
+            current.score = newCandidate.score
             return
         end
 
-        if (current and newCandidate.gap >= current.gap - group.options.hysteresis) then
+        if (current and newCandidate.score >= current.score - group.options.hysteresis) then
             --a different pairing exists but is not meaningfully closer, keep the current preview stable
             return
         end
@@ -902,10 +350,42 @@ local snapMakeAbsolute = function(frame)
     frame:SetPoint("bottomleft", UIParent, "bottomleft", left * scale, bottom * scale)
 end
 
---re-applies the SetPoint chain for an entire cluster as a spanning tree rooted at rootData.
---the root keeps an absolute point to UIParent; every other member is anchored to the neighbour it
---was first reached from. links that would close a cycle are ignored for anchoring, which guarantees
---there are never recursive or broken point chains.
+--module-level re-entrancy guard: TRUE while we're inside snapApplyAnchor (i.e. doing our own
+--ClearAllPoints/SetHeight/SetPoint to wire up the chain). the resize hooks installed by
+--RegisterFrame check this flag and skip propagation when set, because the SetHeight/SetWidth
+--triggered synchronously by hooksecurefunc inside snapApplyAnchor MUST NOT trigger a recursive
+--snapPropagateSize -- doing so would call snapGetRoot before the cluster's isRoot flags have been
+--updated, pick the wrong root, and re-anchor in the opposite direction, creating an anchor cycle
+--("Cannot anchor to a region dependent on it") when the outer SetPoint then tries to complete.
+local snapInternalChain = false
+
+--applies a snap anchor between a child frame and its parent: a single SetPoint at the midpoint of
+--the connecting side, plus an explicit SetHeight/SetWidth that matches the perpendicular dimension
+--to the parent's. used uniformly at rest and during drag, because:
+-- (a) Blizzard's StartMoving propagates position reliably with one anchor per child but not two,
+--     so the cluster has to stay single-anchored to be draggable as a unit.
+-- (b) the explicit SetSize keeps the connecting edges flush at both ends, giving the two-anchor
+--     visual without a second anchor.
+-- live resize propagation through the cluster does NOT come from anchors (the owning addon's
+-- resize logic often calls ClearAllPoints which breaks any anchor chain); it comes from an
+-- OnSizeChanged hook installed by RegisterFrame, see snapPropagateSize below.
+local snapApplyAnchor = function(childFrame, parentFrame, childSide, parentSide)
+    snapInternalChain = true
+
+    childFrame:ClearAllPoints()
+    if (SNAP_AXIS[childSide] == "x") then
+        childFrame:SetHeight(parentFrame:GetHeight())
+    else
+        childFrame:SetWidth(parentFrame:GetWidth())
+    end
+    childFrame:SetPoint(childSide, parentFrame, parentSide, 0, 0)
+
+    snapInternalChain = false
+end
+
+--re-applies the SetPoint chain for an entire cluster as a spanning tree rooted at rootData. every
+--non-root member gets the single-anchor + SetSize-matched form. links that would close a cycle
+--are ignored for anchoring, which guarantees there are never recursive or broken point chains.
 local snapRebuildCluster = function(rootData)
     local rootFrame = rootData.Frame
 
@@ -930,8 +410,7 @@ local snapRebuildCluster = function(rootData)
                 --find the child's own link pointing back at this parent and use it to anchor the child
                 for childSide, childLink in pairs(childData.links) do
                     if (childLink.Target == parentFrame) then
-                        childFrame:ClearAllPoints()
-                        childFrame:SetPoint(childLink.mySide, parentFrame, childLink.theirSide, childLink.offsetX, childLink.offsetY)
+                        snapApplyAnchor(childFrame, parentFrame, childLink.mySide, childLink.theirSide)
                         break
                     end
                 end
@@ -955,55 +434,114 @@ local snapGetRoot = function(frameData)
     return frameData
 end
 
---computes the (offsetX, offsetY) offset for draggedFrame:SetPoint(side, targetFrame, theirSide, offsetX, offsetY).
---the connecting (primary) axis is always flush (offset 0). the perpendicular axis preserves the
---drop-time position, unless options.perpendicular_align is set and a perpendicular pair of edges is
---within snap_distance, in which case those edges are aligned flush instead.
-local snapComputeOffset = function(draggedFrame, targetFrame, side, options)
-    local draggedLeft, draggedBottom, draggedRight, draggedTop = snapGetScreenRect(draggedFrame)
-    local otherLeft, otherBottom, otherRight, otherTop = snapGetScreenRect(targetFrame)
-    local snapDistance = options.snap_distance
-    --offsets passed to SetPoint live in the dragged frame's own coordinate space, so screen-pixel
-    --deltas are divided by its effective scale to convert them back.
-    local scale = draggedFrame:GetEffectiveScale()
-    local offsetX, offsetY = 0, 0
-
-    if (SNAP_AXIS[side] == "x") then
-        --connecting axis is x (flush, offsetX = 0); resolve the vertical (perpendicular) offset
-        local draggedHalfHeight = (draggedTop - draggedBottom) / 2
-        local draggedMidY = (draggedBottom + draggedTop) / 2
-        local targetMidY = (otherBottom + otherTop) / 2
-        local screenDeltaY = draggedMidY - targetMidY        --default: preserve current vertical position
-
-        if (options.perpendicular_align) then
-            if (math.abs(draggedTop - otherTop) <= snapDistance) then
-                screenDeltaY = otherTop - targetMidY - draggedHalfHeight        --align the top edges
-            elseif (math.abs(draggedBottom - otherBottom) <= snapDistance) then
-                screenDeltaY = otherBottom - targetMidY + draggedHalfHeight     --align the bottom edges
+--BFS from originData restricted to links of a single axis ("x" or "y"); returns true when targetData
+--is reachable through the axis-only path. used by snapPropagateSize to decide whether the resized
+--frame's new dimension should be pushed onto the cluster root.
+local snapReachesByAxis = function(originData, targetData, axis)
+    if (originData == targetData) then
+        return true
+    end
+    local visited = {[originData.Frame] = true}
+    local queue = {originData}
+    while (#queue > 0) do
+        local current = table.remove(queue, 1)
+        for side, link in pairs(current.links) do
+            if (SNAP_AXIS[link.mySide] == axis and not visited[link.Target]) then
+                if (link.targetData == targetData) then
+                    return true
+                end
+                visited[link.Target] = true
+                queue[#queue+1] = link.targetData
             end
         end
+    end
+    return false
+end
 
-        offsetY = screenDeltaY / scale
-    else
-        --connecting axis is y (flush, offsetY = 0); resolve the horizontal (perpendicular) offset
-        local draggedHalfWidth = (draggedRight - draggedLeft) / 2
-        local draggedMidX = (draggedLeft + draggedRight) / 2
-        local targetMidX = (otherLeft + otherRight) / 2
-        local screenDeltaX = draggedMidX - targetMidX        --default: preserve current horizontal position
-
-        if (options.perpendicular_align) then
-            if (math.abs(draggedLeft - otherLeft) <= snapDistance) then
-                screenDeltaX = otherLeft - targetMidX + draggedHalfWidth        --align the left edges
-            elseif (math.abs(draggedRight - otherRight) <= snapDistance) then
-                screenDeltaX = otherRight - targetMidX - draggedHalfWidth       --align the right edges
-            end
-        end
-
-        offsetX = screenDeltaX / scale
+--called from the SetSize/SetHeight/SetWidth/OnSizeChanged hooks installed by RegisterFrame. it does
+--TWO things, in this order:
+--  1. propagates the resized frame's new dimension to the cluster root, if the resized frame can
+--     reach the root through links of the matching axis (height through x-axis, width through y).
+--     this is what lets the user resize ANY group member, not just the root.
+--  2. rebuilds the whole cluster's snap chain via snapApplyAnchor on every non-root member. this is
+--     what KEEPS THE WINDOWS ALIGNED after a resize: the addon owning the frame frequently calls
+--     ClearAllPoints or SetPoint inside its own resize handler, wiping our snap anchors. just
+--     pushing SetSize without re-anchoring leaves the children floating wherever the addon put them.
+--     re-running snapApplyAnchor re-pins each child at its connecting-side midpoint with the parent
+--     and resets the perpendicular SetSize from the parent's now-current value, so the row/column
+--     stays a coherent layout.
+--
+--axis partition for propagation:
+--   * horizontal group = frames reachable from origin via x-axis (left/right) links; height syncs.
+--   * vertical group   = frames reachable from origin via y-axis (top/bottom) links; width syncs.
+-- a frame can belong to both groups independently.
+local snapPropagateSize = function(group, originData)
+    --suppress propagation when we're inside our own anchor work. SetHeight/SetWidth in
+    --snapApplyAnchor fire hooksecurefunc synchronously; re-entering here mid-rebuild picks the
+    --wrong cluster root (because isRoot flags haven't been updated yet) and creates an anchor cycle.
+    if (snapInternalChain) then
+        return
+    end
+    if (group.__syncingSize) then
+        return
+    end
+    --silently no-op if the frame is no longer in the group (hooksecurefunc and HookScript can't be
+    --removed at UnregisterFrame, so they keep firing for the rest of the frame's lifetime).
+    if (not group.framesByObject[originData.Frame]) then
+        return
     end
 
-    return offsetX, offsetY
+    group.__syncingSize = true
+
+    local originFrame = originData.Frame
+    local newHeight = originFrame:GetHeight()
+    local newWidth = originFrame:GetWidth()
+
+    --step 1: push origin's new dimension onto the root if origin is in the matching-axis chain.
+    --otherwise the chain rebuild in step 2 would revert origin back to root's old dimension.
+    local rootData = snapGetRoot(originData)
+    local rootFrame = rootData.Frame
+    if (originData ~= rootData) then
+        if (snapReachesByAxis(originData, rootData, "x") and math.abs(rootFrame:GetHeight() - newHeight) > 0.5) then
+            rootFrame:SetHeight(newHeight)
+        end
+        if (snapReachesByAxis(originData, rootData, "y") and math.abs(rootFrame:GetWidth() - newWidth) > 0.5) then
+            rootFrame:SetWidth(newWidth)
+        end
+    end
+
+    --step 2: re-apply snap anchors for every non-root cluster member. snapApplyAnchor's built-in
+    --SetHeight/SetWidth to parent's value naturally propagates root's (now-updated) dimension to
+    --x-axis siblings as height and to y-axis siblings as width, in a single BFS pass.
+    local visited = {[rootFrame] = true}
+    local queue = {rootData}
+    while (#queue > 0) do
+        local parentData = table.remove(queue, 1)
+        local parentFrame = parentData.Frame
+        for side, link in pairs(parentData.links) do
+            if (not visited[link.Target]) then
+                visited[link.Target] = true
+                local childData = link.targetData
+                local childFrame = link.Target
+                for childSide, childLink in pairs(childData.links) do
+                    if (childLink.Target == parentFrame) then
+                        snapApplyAnchor(childFrame, parentFrame, childLink.mySide, childLink.theirSide)
+                        break
+                    end
+                end
+                queue[#queue+1] = childData
+            end
+        end
+    end
+
+    group.__syncingSize = false
 end
+
+--snapped frames are anchored at the midpoint of their connecting side AND have their perpendicular
+--dimension matched to the target's, so the connecting edges line up flush at both ends. that means
+--the SetPoint offsets are always (0, 0) -- there is no separate offset computation step. an earlier
+--implementation computed perpendicular offsets dynamically; it was removed once the perpendicular
+--SetHeight/SetWidth in snapRebuildCluster made those offsets always zero.
 
 ---@class snaplink : table a directed snap relationship: frame:SetPoint(mySide, Target, theirSide, offsetX, offsetY)
 ---@field Target frame the frame on the other end of the link
@@ -1021,13 +559,15 @@ end
 ---@field group snapgroup the owning snap group
 ---@field OrigOnDragStart function|nil the frame's OnDragStart script captured before wrapping
 ---@field OrigOnDragStop function|nil the frame's OnDragStop script captured before wrapping
+---@field originalWidth number|nil pre-snap width captured on the first snap; restored by Unsnap
+---@field originalHeight number|nil pre-snap height captured on the first snap; restored by Unsnap
 
 ---@class snapcandidate : table a resolved snap target evaluated while dragging
 ---@field TargetFrame frame the frame the dragged frame would snap to
 ---@field targetData snapframedata the registration data of the target frame
 ---@field side string the dragged frame's side that would connect
 ---@field theirSide string the target frame's side that would connect
----@field gap number the screen-pixel gap between the two connecting edges
+---@field score number combined snap distance: primary edge gap + perpendicular center misalignment; smaller is better, used for both candidate ranking and hysteresis
 
 ---@class snapgroup : table an isolated snap group created by detailsFramework:CreateSnapGroup()
 ---@field groupName string identifies the group and keys its data inside profileTable
@@ -1041,6 +581,7 @@ end
 ---@field __dragFrameData snapframedata|nil the frame being dragged right now, if any
 ---@field __dragClusterLookup table|nil lookup of the cluster being dragged (excluded from candidates)
 ---@field __dragElapsed number time accumulator for throttling the proximity scan
+---@field __syncingSize boolean re-entrancy guard for snapPropagateSize OnSizeChanged cascades
 ---@field RegisterFrame fun(self: snapgroup, frame: frame, id: string?)
 ---@field UnregisterFrame fun(self: snapgroup, frame: frame)
 ---@field Unsnap fun(self: snapgroup, frame: frame)
@@ -1082,7 +623,7 @@ local snapGroupMixin = {
         local frameData = {
             Frame = frame,
             id = id,
-            links = {},     --directed snap links keyed by this frame's side -> {Target, targetData, mySide, theirSide, offsetX, offsetY}
+            links = {},     --directed snap links keyed by this frame's side -> {Target, targetData, mySide, theirSide}
             isRoot = true,  --a lone frame is the root of its own (single member) cluster
             group = self,
         }
@@ -1101,6 +642,28 @@ local snapGroupMixin = {
 
         frame:SetScript("OnDragStop", function(_, ...)
             self:OnFrameDragStop(frameData, ...)
+        end)
+
+        --resize detection uses TWO layers, because either alone isn't reliable enough:
+        --  (a) HookScript("OnSizeChanged", …) catches the event the next render frame. cheap, but
+        --      can be silently lost if the owning addon later calls SetScript("OnSizeChanged", …)
+        --      with its own handler.
+        --  (b) hooksecurefunc on SetSize/SetHeight/SetWidth fires synchronously inside the call.
+        --      hooksecurefunc hooks CANNOT be removed by anything, so they survive whatever the
+        --      addon does to the frame's scripts.
+        --both call snapPropagateSize; the __syncingSize guard in snapPropagateSize coalesces them
+        --so the cluster rebuild only runs once per resize even when both fire.
+        frame:HookScript("OnSizeChanged", function()
+            snapPropagateSize(self, frameData)
+        end)
+        hooksecurefunc(frame, "SetSize", function()
+            snapPropagateSize(self, frameData)
+        end)
+        hooksecurefunc(frame, "SetHeight", function()
+            snapPropagateSize(self, frameData)
+        end)
+        hooksecurefunc(frame, "SetWidth", function()
+            snapPropagateSize(self, frameData)
         end)
 
         --a newly registered frame may complete a relationship described by the saved profile
@@ -1160,14 +723,27 @@ local snapGroupMixin = {
             self:RemoveLink(frameData, side)
         end
 
-        --this frame now stands alone
+        --this frame now stands alone; restore its pre-snap size (captured the first time it snapped)
+        --so the visual size match introduced by Snap/snapRebuildCluster is undone here.
+        if (frameData.originalWidth) then
+            frame:SetSize(frameData.originalWidth, frameData.originalHeight)
+            frameData.originalWidth = nil
+            frameData.originalHeight = nil
+        end
         snapMakeAbsolute(frame)
         frameData.isRoot = true
 
-        --each former neighbour may now head its own cluster; rebuild from a fresh root
+        --each former neighbour may now head its own cluster; rebuild from a fresh root.
+        --if a neighbour is now itself solo (the link we just cut was its only one), restore its
+        --pre-snap size too -- otherwise it would stay stretched to the old cluster's matched size.
         for i = 1, #neighbours do
             local neighbourData = neighbours[i]
             if (self.framesByObject[neighbourData.Frame]) then
+                if (neighbourData.originalWidth and next(neighbourData.links) == nil) then
+                    neighbourData.Frame:SetSize(neighbourData.originalWidth, neighbourData.originalHeight)
+                    neighbourData.originalWidth = nil
+                    neighbourData.originalHeight = nil
+                end
                 snapRebuildCluster(snapGetRoot(neighbourData))
             end
         end
@@ -1248,8 +824,9 @@ local snapGroupMixin = {
         self.currentCandidate = nil
 
         if (#clusterList > 1) then
-            --multi-frame cluster: make the grabbed frame the temporary root so the whole tree is
-            --SetPoint-chained to it, then StartMoving it -> the entire cluster follows the cursor.
+            --multi-frame cluster: re-root the chain on the grabbed frame so the whole cluster is
+            --single-point chained to it, then StartMoving it -> the entire cluster follows the
+            --cursor via Blizzard's anchor propagation (single-anchor children propagate reliably).
             snapRebuildCluster(frameData)
             frame:StartMoving()
 
@@ -1275,7 +852,7 @@ local snapGroupMixin = {
         local frame = frameData.Frame
         self.UpdateFrame:Hide()
 
-        --stop the movement through the same path that started it
+        --end the movement through the path that started it
         local clusterList = snapCollectCluster(frameData)
         if (#clusterList > 1) then
             frame:StopMovingOrSizing()
@@ -1350,15 +927,24 @@ local snapGroupMixin = {
         local orphanA = self:RemoveLink(frameData, side)
         local orphanB = self:RemoveLink(targetData, theirSide)
 
-        --compute the anchor offset and store the link in both directions (reciprocal offsets negate)
-        local offsetX, offsetY = snapComputeOffset(draggedFrame, targetFrame, side, self.options)
+        --capture the dragged frame's pre-snap size so Unsnap can restore it. only the first snap
+        --captures; subsequent snaps reuse the value, so re-snapping after a manual SetSize doesn't
+        --overwrite the truly-original dimensions. saved across sessions via SavePersistent so the
+        --unsnap-restore still works after /reload.
+        if (not frameData.originalWidth) then
+            frameData.originalWidth = draggedFrame:GetWidth()
+            frameData.originalHeight = draggedFrame:GetHeight()
+        end
+
+        --offsets are always (0, 0); the perpendicular SetHeight/SetWidth in snapRebuildCluster
+        --takes care of the visual flush. store the link in both directions for the chain walk.
         frameData.links[side] = {
             Target = targetFrame, targetData = targetData,
-            mySide = side, theirSide = theirSide, offsetX = offsetX, offsetY = offsetY,
+            mySide = side, theirSide = theirSide, offsetX = 0, offsetY = 0,
         }
         targetData.links[theirSide] = {
             Target = draggedFrame, targetData = frameData,
-            mySide = theirSide, theirSide = side, offsetX = -offsetX, offsetY = -offsetY,
+            mySide = theirSide, theirSide = side, offsetX = 0, offsetY = 0,
         }
 
         --rebuild the merged cluster as a spanning tree rooted at the target side's root
@@ -1408,6 +994,12 @@ local snapGroupMixin = {
                 end
             end
 
+            --pre-snap dimensions so Unsnap can restore the original size across /reload sessions
+            if (frameData.originalWidth) then
+                entry.originalWidth = frameData.originalWidth
+                entry.originalHeight = frameData.originalHeight
+            end
+
             data[frameData.id] = entry
         end
     end,
@@ -1430,6 +1022,13 @@ local snapGroupMixin = {
         --recreate links, but only between frames that are both currently registered
         for id, entry in pairs(data) do
             local frameData = self.framesById[id]
+            if (frameData) then
+                --restore the pre-snap size record first so Unsnap (or a later TryRestore round) has it
+                if (entry.originalWidth and not frameData.originalWidth) then
+                    frameData.originalWidth = entry.originalWidth
+                    frameData.originalHeight = entry.originalHeight
+                end
+            end
             if (frameData and entry.links) then
                 for side, savedLink in pairs(entry.links) do
                     local targetData = self.framesById[savedLink.targetId]
@@ -1464,7 +1063,7 @@ local snapGroupMixin = {
 ---mixin pattern), so create as many groups as the addon needs.
 ---@param groupName string identifies the group; also the key the group's data is stored under inside profileTable
 ---@param profileTable table|nil saved-variables table for persistence; this group's data lives at profileTable[groupName]
----@param options table|nil overrides merged on top of the snap defaults (snap_distance, perpendicular_align, hysteresis, ...)
+---@param options table|nil overrides merged on top of the snap defaults (snap_distance, hysteresis, ...)
 ---@return snapgroup
 function detailsFramework:CreateSnapGroup(groupName, profileTable, options)
     assert(type(groupName) == "string", "detailsFramework:CreateSnapGroup(groupName): groupName must be a string.")
@@ -1554,6 +1153,9 @@ end)
           and a matching branch in snapEvaluatePair; the preview/anchor pipeline is already generic.
         - Grid snapping: add an optional virtual grid target to snapFindCandidate (snap edges to the
           nearest grid line when no frame candidate is closer), reusing snapComputeOffset for the math.
-        - Same-side aligned snapping is already covered by options.perpendicular_align.
+        - Two-point flush snap: aligning both endpoints of the connecting side at once (so the dragged
+          frame stretches to match the target's perpendicular dimension) would require giving up
+          StartMoving for cluster drag, because Blizzard's anchor propagation is unreliable with
+          two-point chains. Worth doing only if the stretch behavior is explicitly wanted.
 --]=]
 

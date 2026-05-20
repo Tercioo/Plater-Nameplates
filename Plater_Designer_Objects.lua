@@ -167,6 +167,8 @@ function designer.CreateSettings(parentFrame)
         ExecuteRange = {},
 
         Target = {},
+
+        RaidMark = {},
     }
 
     options.WidgetSettingsExtraOptions = {
@@ -930,16 +932,21 @@ function designer.CreateSettings(parentFrame)
                 setter = function(target, value) designer.UpdateAllNameplates() end,
             },
 
-            {type = "blank"},
-            {type = "label", get = function() return "Raid Mark:" end, text_template = detailsFramework:GetTemplate("font", "ORANGE_FONT_TEMPLATE")},
+        },
 
+        RaidMark = {
+            --setters target the icon's parent (PlaterRaidTargetFrame) since the container
+            --is what gets scaled/anchored on real plates - the icon fills the container.
             {
                 key = "indicator_raidmark_scale",
                 label = "Scale",
                 widget = "slider",
                 minvalue = 0.2, maxvalue = 2, step = 0.1, usedecimals = true,
                 default = Plater.db.profile.indicator_raidmark_scale,
-                setter = function(target, value) designer.UpdateAllNameplates() end,
+                setter = function(raidIcon, value)
+                    raidIcon:GetParent():SetScale(value)
+                    designer.UpdateAllNameplates()
+                end,
             },
             {
                 key = "indicator_raidmark_anchor.side",
@@ -953,7 +960,10 @@ function designer.CreateSettings(parentFrame)
                     end
                     return opts
                 end,
-                setter = function(target, value) designer.UpdateAllNameplates() end,
+                setter = function(raidIcon, value)
+                    Plater.SetAnchor(raidIcon:GetParent(), Plater.db.profile.indicator_raidmark_anchor)
+                    designer.UpdateAllNameplates()
+                end,
             },
             {
                 key = "indicator_raidmark_anchor.x",
@@ -961,7 +971,10 @@ function designer.CreateSettings(parentFrame)
                 widget = "slider",
                 minvalue = -100, maxvalue = 100, step = 1, usedecimals = true,
                 default = Plater.db.profile.indicator_raidmark_anchor.x,
-                setter = function(target, value) designer.UpdateAllNameplates() end,
+                setter = function(raidIcon, value)
+                    Plater.SetAnchor(raidIcon:GetParent(), Plater.db.profile.indicator_raidmark_anchor)
+                    designer.UpdateAllNameplates()
+                end,
             },
             {
                 key = "indicator_raidmark_anchor.y",
@@ -969,14 +982,17 @@ function designer.CreateSettings(parentFrame)
                 widget = "slider",
                 minvalue = -100, maxvalue = 100, step = 1, usedecimals = true,
                 default = Plater.db.profile.indicator_raidmark_anchor.y,
-                setter = function(target, value) designer.UpdateAllNameplates() end,
+                setter = function(raidIcon, value)
+                    Plater.SetAnchor(raidIcon:GetParent(), Plater.db.profile.indicator_raidmark_anchor)
+                    designer.UpdateAllNameplates()
+                end,
             },
             {
                 key = "indicator_extra_raidmark",
                 label = "Extra Raid Mark",
                 widget = "toggle",
                 default = Plater.db.profile.indicator_extra_raidmark,
-                setter = function(target, value) designer.UpdateAllNameplates() end,
+                setter = function(raidIcon, value) designer.UpdateAllNameplates() end,
             },
         },
 

@@ -363,6 +363,18 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
     ---@type texture
     local castBarSpark = castBar.Spark
 
+    local raidTargetIcon = unitFrame.PlaterRaidTargetFrame.RaidTargetIcon
+    local raidTargetFrame = unitFrame.PlaterRaidTargetFrame
+    --anchor the icon to its container so changes to PlaterRaidTargetFrame's scale/anchor
+    --(from the Raid Mark widget's setters) actually move/scale the icon in the preview.
+    raidTargetIcon:ClearAllPoints()
+    raidTargetIcon:SetAllPoints(raidTargetFrame)
+    raidTargetFrame:SetSize(20, 20)
+    raidTargetFrame:SetScale(Plater.db.profile.indicator_raidmark_scale)
+    Plater.SetAnchor(raidTargetFrame, Plater.db.profile.indicator_raidmark_anchor, unitFrame)
+    raidTargetIcon:Show()
+    SetRaidTargetIconTexture(raidTargetIcon, 5)
+
     spellName:SetText("Blizzard")
     unitName:SetText("Unit Name")
     levelText:SetText("60")
@@ -493,11 +505,17 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
     healthBarOptions.can_move = false
     objectInfo = layoutEditor:RegisterObject(healthBar, "Health Bar", "HEALTHBAR", profileRoot, rootKey, options.WidgetSettingsMapTables.HealthBar, options.WidgetSettingsExtraOptions.HealthBar, onSettingChanged, healthBarOptions, healthBar)
 
-    --target (highlight, overlay, indicator, focus, raid mark)
+    --target (highlight, overlay, indicator, focus)
     ---@type df_editobjectoptions
     local targetOptions = detailsFramework.table.copy({}, editObjectDefaultOptions)
     targetOptions.can_move = false
     objectInfo = layoutEditor:RegisterObject(healthBar.dummyTarget, "Target", "TARGET", profileRoot, rootKey, options.WidgetSettingsMapTables.Target, options.WidgetSettingsExtraOptions.Target, onSettingChanged, targetOptions, healthBar)
+
+    --raid mark (the icon on the right of the health bar)
+    ---@type df_editobjectoptions
+    local raidMarkOptions = detailsFramework.table.copy({}, editObjectDefaultOptions)
+    raidMarkOptions.can_move = false
+    objectInfo = layoutEditor:RegisterObject(raidTargetIcon, "Raid Mark", "RAIDMARK", profileRoot, rootKey, options.WidgetSettingsMapTables.RaidMark, options.WidgetSettingsExtraOptions.RaidMark, onSettingChanged, raidMarkOptions, unitFrame)
 
 
     objectInfo = layoutEditor:RegisterObject(unitName, "Unit Name", "UNITNAME", plateConfig, subTablePath, options.WidgetSettingsMapTables.UnitName, options.WidgetSettingsExtraOptions.UnitName, onSettingChanged, editObjectDefaultOptions, healthBar)
@@ -568,6 +586,9 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
         healthBar.healthCutOff:SetPoint("left", healthBar, "left", healthBar:GetWidth()*0.2, 0)
         healthBar.healthCutOff:SetSize(healthBar:GetHeight(), healthBar:GetHeight())
         healthBar.healthCutOff:Show()
+
+        SetRaidTargetIconTexture(raidTargetIcon, 6)
+        raidTargetIcon:Show()
 
         if (curCastBarValue >= 3) then
             curCastBarValue = 0
@@ -719,6 +740,10 @@ function designer.UpdatePreview()
     local powerBar = unitFrame.powerBar
     local castBar = unitFrame.castBar
     local castBar2 = unitFrame.castBar2
+
+    local raidTargetIcon = plateFrame.unitFrame.PlaterRaidTargetFrame.RaidTargetIcon
+    raidTargetIcon:SetPoint("left", healthBar, "right", 10, 0)
+    SetRaidTargetIconTexture(raidTargetIcon, 8)
 
     local dummyHealthBar = CreateFrame("frame", nil, healthBar)
     dummyHealthBar:SetAllPoints()
