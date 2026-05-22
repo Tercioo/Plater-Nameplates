@@ -4070,7 +4070,7 @@ Plater.AnchorNamesByPhraseId = {
 			unitFrame.IsSelf = nil --value exposed to scripts
 			castBar.IsSelf = nil --value exposed to scripts
 
-			unitFrame.unitName.isRenamed = nil
+			unitFrame.isRenamed = nil
 			
 			plateFrame.PlayerCannotAttack = nil
 			plateFrame.playerGuildName = nil
@@ -8859,7 +8859,7 @@ end
 		local name = plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME] or ""
 		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(name) then
 			-- do we try to refresh? is it worth?
-			plateFrame.unitFrame.unitName.isRenamed = true -- force it
+			plateFrame.unitFrame.isRenamed = true -- force it
 			nameString:ClearText()
 			Plater.UpdateNameOnRenamedUnit(plateFrame)
 			name = plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME] or ""
@@ -8948,15 +8948,15 @@ end
 			unitFrame [MEMBER_NAME] = newNpcName
 			unitFrame [MEMBER_NAMELOWER] = plateFrame [MEMBER_NAMELOWER]
 			unitFrame.unitName:SetText(newNpcName)
-			unitFrame.unitName.isRenamed = true
-		elseif (unitFrame.unitName.isRenamed) then
+			unitFrame.isRenamed = true
+		elseif (unitFrame.isRenamed) then
 			newNpcName = UnitName(plateFrame [MEMBER_UNITID] or unitFrame [MEMBER_UNITID])
 			plateFrame [MEMBER_NAME] = newNpcName
 			plateFrame [MEMBER_NAMELOWER] = (IS_WOW_PROJECT_MIDNIGHT and newNpcName or "") or lower (newNpcName)
 			unitFrame [MEMBER_NAME] = newNpcName
 			unitFrame [MEMBER_NAMELOWER] = plateFrame [MEMBER_NAMELOWER]
 			unitFrame.unitName:SetText(newNpcName)
-			unitFrame.unitName.isRenamed = nil
+			unitFrame.isRenamed = nil
 		end
 	end
 	
