@@ -742,6 +742,9 @@ Plater.AnchorNamesByPhraseId = {
 					if IsPlayerSpell(328085) then --Blindside
 						lowExecute = 0.35
 					end
+					if IsPlayerSpell(381798) then --Zoldyck Recipe
+						lowExecute = 0.35
+					end
 				
 				elseif (class == "DEATHKNIGHT") then
 					if IsPlayerSpell(343294) then --Soul Reaper
