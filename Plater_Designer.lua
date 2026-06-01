@@ -109,6 +109,7 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
     local gName = "PlaterDsgn"
 
     local isCastBarSelected = false
+    local isTargetSelected = false
 
     local startX, startY, heightSize = 10, platerInternal.optionsYStart, 755
 
@@ -156,6 +157,8 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
                 isCastBarSelected = false
                 Plater.StopCastBarTest()
             end
+
+            isTargetSelected = objectInfo.id == "TARGET"
         end,
         selection_texture = "Interface\\AddOns\\Plater\\images\\selection_corner.png",
     }
@@ -514,9 +517,8 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
     --raid mark (the icon on the right of the health bar)
     ---@type df_editobjectoptions
     local raidMarkOptions = detailsFramework.table.copy({}, editObjectDefaultOptions)
-    raidMarkOptions.can_move = false
-    objectInfo = layoutEditor:RegisterObject(raidTargetIcon, "Raid Mark", "RAIDMARK", profileRoot, rootKey, options.WidgetSettingsMapTables.RaidMark, options.WidgetSettingsExtraOptions.RaidMark, onSettingChanged, raidMarkOptions, unitFrame)
-
+    --raidMarkOptions.can_move = false
+    objectInfo = layoutEditor:RegisterObject(unitFrame.PlaterRaidTargetFrame, "Raid Mark", "RAIDMARK", profileRoot, rootKey, options.WidgetSettingsMapTables.RaidMark, options.WidgetSettingsExtraOptions.RaidMark, onSettingChanged, raidMarkOptions, unitFrame)
 
     objectInfo = layoutEditor:RegisterObject(unitName, "Unit Name", "UNITNAME", plateConfig, subTablePath, options.WidgetSettingsMapTables.UnitName, options.WidgetSettingsExtraOptions.UnitName, onSettingChanged, editObjectDefaultOptions, healthBar)
     plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
@@ -577,6 +579,9 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
         --stops when the frame hides
         --dv(plateFrame)
 
+        unitFrame.HighlightFrame.unit = "player"
+        unitFrame.HighlightFrame:Show()
+
         --castBarTargetName:Show()
         castBar:Show()
         castBar:SetMinMaxValues(0, 3)
@@ -586,6 +591,31 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
         healthBar.healthCutOff:SetPoint("left", healthBar, "left", healthBar:GetWidth()*0.2, 0)
         healthBar.healthCutOff:SetSize(healthBar:GetHeight(), healthBar:GetHeight())
         healthBar.healthCutOff:Show()
+
+        if (Plater.db.profile.target_highlight) then
+            healthBar.dummyTargetBar.NeonUp:Show()
+            healthBar.dummyTargetBar.NeonDown:Show()
+        else
+            healthBar.dummyTargetBar.NeonUp:Hide()
+            healthBar.dummyTargetBar.NeonDown:Hide()
+        end
+
+        if (isTargetSelected) then
+            unitFrame.targetOverlayTexture:Show()
+        else
+            unitFrame.targetOverlayTexture:Hide()
+        end
+
+        if (Plater.db.profile.indicator_extra_raidmark) then
+            healthBar.ExtraRaidMark:Show()
+            healthBar.ExtraRaidMark:SetTexture([[Interface\TargetingFrame\UI-RaidTargetingIcons]])
+            SetRaidTargetIconTexture(healthBar.ExtraRaidMark, 6)
+            local height = healthBar:GetHeight() - 2
+            plateFrame.RaidTarget:SetSize (height, height)
+            plateFrame.RaidTarget:SetAlpha (.4)
+        else
+            healthBar.ExtraRaidMark:Hide()
+        end
 
         SetRaidTargetIconTexture(raidTargetIcon, 6)
         raidTargetIcon:Show()
@@ -750,15 +780,16 @@ function designer.UpdatePreview()
     healthBar.dummy = dummyHealthBar
 
     local dummyTargetBar = CreateFrame("frame", nil, healthBar, "BackdropTemplate")
+    healthBar.dummyTargetBar = dummyTargetBar
     dummyTargetBar:SetFrameLevel(healthBar:GetFrameLevel() - 1)
-    dummyTargetBar:SetPoint("topleft", healthBar, "topleft", 20, -20)
-    dummyTargetBar:SetPoint("bottomright", healthBar, "bottomright", 20, -20)
+    dummyTargetBar:SetPoint("topleft", healthBar, "topleft", -80, 0)
+    dummyTargetBar:SetPoint("bottomright", healthBar, "bottomright", 3, 0)
     dummyTargetBar:SetBackdrop({bgFile = [[Interface\ChatFrame\ChatFrameBackground]], edgeFile = [[Interface\Buttons\WHITE8X8]], tile = true, tileSize = 16, edgeSize = 1, insets = {left = 1, right = 1, top = 1, bottom = 1}})
     dummyTargetBar:SetBackdropColor(0, 0, 0, 0.1)
     dummyTargetBar:SetBackdropBorderColor(.2, .2, .2, 0.5)
     healthBar.dummyTarget = dummyTargetBar
     dummyTargetBar.text = dummyTargetBar:CreateFontString(nil, "overlay", "GameFontNormal")
-    dummyTargetBar.text:SetPoint("right", dummyTargetBar, "right", -2, 0)
+    dummyTargetBar.text:SetPoint("left", dummyTargetBar, "left", 2, 0)
     dummyTargetBar.text:SetText("target")
     detailsFramework:SetFontSize(dummyTargetBar.text, 9)
     detailsFramework:SetFontColor(dummyTargetBar.text, "silver")

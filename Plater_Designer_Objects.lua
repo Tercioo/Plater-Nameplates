@@ -168,7 +168,24 @@ function designer.CreateSettings(parentFrame)
 
         Target = {},
 
-        RaidMark = {},
+        --indicator_raidmark_anchor is a {side, x, y} table on profile root; mapping anchor +
+        --offsets here lets the editor's built-in anchor handling (mover, side dropdown, offset
+        --sliders) drive the raid mark's PlaterRaidTargetFrame container.
+        RaidMark = {
+            anchor = "indicator_raidmark_anchor.side",
+            anchoroffsetx = "indicator_raidmark_anchor.x",
+            anchoroffsety = "indicator_raidmark_anchor.y",
+        },
+    }
+
+    --in-memory mirror of target-related CVars. used as the profileTable override on Target's
+    --CVar extras because the editor needs a non-nil value at registration time and the actual
+    --CVar lives outside Plater.db.profile. seeded once when the designer first opens; the
+    --setters keep it in sync alongside SetCVar() so re-opens stay consistent within the session.
+    local cvarMirror = {
+        nameplateTargetRadialPosition = GetCVarBool("nameplateTargetRadialPosition"),
+        nameplateTargetBehindMaxDistance = tonumber(GetCVar("nameplateTargetBehindMaxDistance")),
+        nameplateSelectedScale = tonumber(GetCVar("nameplateSelectedScale")),
     }
 
     options.WidgetSettingsExtraOptions = {
@@ -215,43 +232,6 @@ function designer.CreateSettings(parentFrame)
                 default = Plater.db.profile.border_thickness,
                 setter = function(healthBar, value)
                     Plater.UpdatePlateBorders(healthBar.unitFrame.PlateFrame) designer.UpdateAllNameplates()
-                end,
-            },
-
-            {type = "blank"},
-
-            {
-                key = "health_selection_overlay",
-                label = "Target Overlay",
-                widget = "selectstatusbartexture",
-                default = Plater.db.profile.health_selection_overlay,
-                setter = function(healthBar, value)
-                    healthBar.unitFrame.targetOverlayTexture:SetTexture(LSM:Fetch("statusbar", Plater.db.profile.health_selection_overlay)); designer.UpdateAllNameplates()
-                end,
-            },
-            {
-                key = "health_selection_overlay_alpha",
-                label = "Target Overlay Alpha",
-                widget = "slider",
-                minvalue = 0,
-                maxvalue = 1,
-                step = 0.1,
-                usedecimals = true,
-                default = Plater.db.profile.health_selection_overlay_alpha,
-                setter = function(healthBar, value)
-                    healthBar.unitFrame.targetOverlayTexture:SetAlpha(Plater.db.profile.health_selection_overlay_alpha); designer.UpdateAllNameplates()
-                end,
-            },
-
-            --health_selection_overlay_color
-            {
-                key = "health_selection_overlay_color",
-                label = "Target Overlay Color",
-                widget = "color",
-                default = Plater.db.profile.health_selection_overlay_color,
-                setter = function(healthBar, color)
-                    local r, g, b, a = unpack(color)
-                    healthBar.unitFrame.targetOverlayTexture:SetVertexColor(r, g, b, a); designer.UpdateAllNameplates()
                 end,
             },
 
@@ -932,58 +912,70 @@ function designer.CreateSettings(parentFrame)
                 setter = function(target, value) designer.UpdateAllNameplates() end,
             },
 
+            {type = "blank"},
+            {type = "label", get = function() return "CVars:" end, text_template = detailsFramework:GetTemplate("font", "ORANGE_FONT_TEMPLATE")},
+
+            --CVar-backed extras. profileTable points at the in-memory cvarMirror declared at the
+            --top of CreateSettings since the editor needs a non-nil profile-style value to render.
+            --setters call SetCVar and mirror the value back. nocombat behavior is handled inline.
+            {
+                key = "nameplateTargetRadialPosition",
+                label = "Always on Screen",
+                widget = "toggle",
+                profileTable = cvarMirror,
+                default = cvarMirror.nameplateTargetRadialPosition,
+                setter = function(target, value)
+                    if (InCombatLockdown()) then
+                        Plater:Msg(L["OPTIONS_ERROR_CVARMODIFY"])
+                        return
+                    end
+                    SetCVar("clampTargetNameplateToScreen", value and "1" or "0")
+                    SetCVar("nameplateTargetRadialPosition", value and "1" or "0")
+                end,
+            },
+            {
+                key = "nameplateTargetBehindMaxDistance",
+                label = "Target Behind You Distance",
+                widget = "slider",
+                minvalue = 5, maxvalue = 50, step = 1,
+                profileTable = cvarMirror,
+                default = cvarMirror.nameplateTargetBehindMaxDistance,
+                setter = function(target, value)
+                    if (InCombatLockdown()) then
+                        Plater:Msg(L["OPTIONS_ERROR_CVARMODIFY"])
+                        return
+                    end
+                    SetCVar("nameplateTargetBehindMaxDistance", value)
+                end,
+            },
+            {
+                key = "nameplateSelectedScale",
+                label = "Target Scale",
+                widget = "slider",
+                minvalue = 0.75, maxvalue = 1.75, step = 0.1, usedecimals = true,
+                profileTable = cvarMirror,
+                default = cvarMirror.nameplateSelectedScale,
+                setter = function(target, value)
+                    if (InCombatLockdown()) then
+                        Plater:Msg(L["OPTIONS_ERROR_CVARMODIFY"])
+                        return
+                    end
+                    SetCVar("nameplateSelectedScale", value)
+                end,
+            },
         },
 
+        --anchor/offset extras are intentionally omitted - they're driven by the built-in
+        --anchor/anchoroffsetx/anchoroffsety attributes from RaidMark's map.
         RaidMark = {
-            --setters target the icon's parent (PlaterRaidTargetFrame) since the container
-            --is what gets scaled/anchored on real plates - the icon fills the container.
             {
                 key = "indicator_raidmark_scale",
                 label = "Scale",
                 widget = "slider",
                 minvalue = 0.2, maxvalue = 2, step = 0.1, usedecimals = true,
                 default = Plater.db.profile.indicator_raidmark_scale,
-                setter = function(raidIcon, value)
-                    raidIcon:GetParent():SetScale(value)
-                    designer.UpdateAllNameplates()
-                end,
-            },
-            {
-                key = "indicator_raidmark_anchor.side",
-                label = "Anchor",
-                widget = "dropdown",
-                default = Plater.db.profile.indicator_raidmark_anchor.side,
-                dropdownFunc = function()
-                    local opts = {}
-                    for i, name in ipairs(Plater.AnchorNames) do
-                        opts[#opts + 1] = {value = i, label = name}
-                    end
-                    return opts
-                end,
-                setter = function(raidIcon, value)
-                    Plater.SetAnchor(raidIcon:GetParent(), Plater.db.profile.indicator_raidmark_anchor)
-                    designer.UpdateAllNameplates()
-                end,
-            },
-            {
-                key = "indicator_raidmark_anchor.x",
-                label = "X Offset",
-                widget = "slider",
-                minvalue = -100, maxvalue = 100, step = 1, usedecimals = true,
-                default = Plater.db.profile.indicator_raidmark_anchor.x,
-                setter = function(raidIcon, value)
-                    Plater.SetAnchor(raidIcon:GetParent(), Plater.db.profile.indicator_raidmark_anchor)
-                    designer.UpdateAllNameplates()
-                end,
-            },
-            {
-                key = "indicator_raidmark_anchor.y",
-                label = "Y Offset",
-                widget = "slider",
-                minvalue = -100, maxvalue = 100, step = 1, usedecimals = true,
-                default = Plater.db.profile.indicator_raidmark_anchor.y,
-                setter = function(raidIcon, value)
-                    Plater.SetAnchor(raidIcon:GetParent(), Plater.db.profile.indicator_raidmark_anchor)
+                setter = function(raidMark, value)
+                    raidMark:SetScale(value)
                     designer.UpdateAllNameplates()
                 end,
             },
@@ -992,7 +984,7 @@ function designer.CreateSettings(parentFrame)
                 label = "Extra Raid Mark",
                 widget = "toggle",
                 default = Plater.db.profile.indicator_extra_raidmark,
-                setter = function(raidIcon, value) designer.UpdateAllNameplates() end,
+                setter = function(raidMark, value) designer.UpdateAllNameplates() end,
             },
         },
 

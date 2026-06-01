@@ -5518,7 +5518,7 @@ _G.C_Timer.After(1.20, function() --~delay
 	targetOptions.language_addonId = addonId
 	targetOptions.Name = "Target Options"
 	DF:BuildMenu (targetFrame, targetOptions, startX, startY, heightSize, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template, globalCallback)
-end)
+end) --~target
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 --coloca as op��es gerais no main menu logo abaixo dos 4 bot�es
