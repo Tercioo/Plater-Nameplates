@@ -2328,6 +2328,13 @@ end
 			end
 		else
 			startTime = expirationTime - duration
+
+			if IS_WOW_PROJECT_MIDNIGHT_API then -- using midnight api icon code
+				local tmpDuration = C_DurationUtil.CreateDuration()
+				tmpDuration:SetTimeFromEnd(expirationTime, duration, modRate)
+				duration = tmpDuration
+			end
+
 			local _, sourceUnitClassNow = UnitClass(sourceUnit or "")
 			sourceUnitClass = sourceUnitClassNow
 			if (sourceUnitClass and UnitPlayerControlled(sourceUnit)) then
