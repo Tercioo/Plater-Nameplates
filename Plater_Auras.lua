@@ -2340,8 +2340,25 @@ end
 
 			elseif (profile.extra_icon_use_blizzard_border_color) then
 				-- use blizzard border colors
-				local color = DebuffTypeColor[debuffType or "none"] or {r=0, b=0, g=0, a=0} --dispelName is a global? it have been not passed | dispelName is the 5th argument
-				borderColor = {color.r, color.g, color.b, color.a or 1}
+				if IS_WOW_PROJECT_MIDNIGHT_API then
+					local color
+					if DB_AURA_ENABLED then --check for aura testing, so actual auras
+						color = C_UnitAuras.GetAuraDispelTypeColor(self.unitFrame.namePlateUnitToken, id, dispelColorCurve)
+					else
+						color = DEBUFF_DISPLAY_COLOR_INFO[debuffType or "none"]
+					end
+					
+					if color then
+						borderColor = {color.r, color.g, color.b, color.a or 1}
+					else
+						borderColor = profile.aura_border_colors.is_debuff
+					end
+
+				else
+					-- use Blizzards color global 'DebuffTypeColor' for the actual color:
+					local color = DebuffTypeColor[debuffType or "none"] or {r=0, b=0, g=0, a=0} --dispelName is a global? it have been not passed | dispelName is the 5th argument
+					borderColor = {color.r, color.g, color.b, color.a or 1}
+				end
 
 			elseif (CROWDCONTROL_AURA_IDS [spellId]) then
 				borderColor = profile.debuff_show_cc_border

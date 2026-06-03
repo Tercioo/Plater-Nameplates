@@ -11317,7 +11317,7 @@ end
 		local ScanQuestTextCache = {}
 		local useQuestie = false
 		local QuestieTooltips = QuestieLoader and QuestieLoader._modules["QuestieTooltips"]
-		if QuestieTooltips then
+		if QuestieTooltips and QuestieTooltips.GetTooltip then --quick fix
 			ScanQuestTextCache = QuestieTooltips.GetTooltip("m_"..(plateFrame [MEMBER_NPCID] or "N/A"))
 			if not ScanQuestTextCache then
 				ScanQuestTextCache = {}
