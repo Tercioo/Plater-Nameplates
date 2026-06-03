@@ -21,6 +21,7 @@ local LCG = LibStub:GetLibrary("LibCustomGlow-1.0")
 
 local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_MIDNIGHT = DF.IsAddonApocalypseWow()
+local IS_WOW_PROJECT_MIDNIGHT_API = DF.IsMidnightWowAPI()
 
 local UNIT_BOSS_MOD_AURAS_ACTIVE = {} --contains for each [GUID] a list of {texture, duration, desaturate}
 local UNIT_BOSS_MOD_AURAS_TO_BE_REMOVED = {} --contains for each [GUID] a list of texture-ids to be removed
@@ -276,8 +277,17 @@ function Plater.UpdateBossModAuras(unitFrame)
 			if values.duration and values.duration > 0 and curTime > values.starttime + values.duration then
 				tremove(UNIT_BOSS_MOD_AURAS_ACTIVE [guid], activeIndex)
 			else
-				local icon = iconFrame:SetIcon(-1, nil, values.duration and values.duration > 0 and values.starttime, values.duration, values.texture)
+				local icon
+				if IS_WOW_PROJECT_MIDNIGHT_API then -- using midnight api icon code
+					local tmpDuration = C_DurationUtil.CreateDuration()
+					tmpDuration:SetTimeSpan(values.starttime or GetTime(), values.duration or 0)
+					icon = iconFrame:SetIcon(-1, nil, nil, tmpDuration, values.texture)
 				--							spellId, borderColor, startTime, duration, forceTexture, descText, count, debuffType, caster, canStealOrPurge, spellName, isBuff
+				else
+					icon = iconFrame:SetIcon(-1, nil, values.duration and values.duration > 0 and values.starttime, values.duration, values.texture)
+				--							spellId, borderColor, startTime, duration, forceTexture, descText, count, debuffType, caster, canStealOrPurge, spellName, isBuff
+				end
+				
 				icon.Texture:SetDesaturated(values.desaturate)
 				icon.bmData = values
 				icon.lastUpdateCooldown = icon.lastUpdateCooldown or 0
@@ -357,8 +367,16 @@ function Plater.UpdateBossModAuras(unitFrame)
 					timer = nil
 				end
 				--print(timer, start, data.name, data.msg, data.colorId)
-				local icon = iconFrame:SetIcon(-1, data.color, timer and start, timer, data.icon, textEnabled and {text = data.display, text_color = data.color} or nil)
+				local icon
+				if IS_WOW_PROJECT_MIDNIGHT_API then -- using midnight api icon code
+					local tmpDuration = C_DurationUtil.CreateDuration()
+					tmpDuration:SetTimeSpan(start or GetTime(), timer or 0)
+					iconFrame:SetIcon(-1, data.color, timer and start, timer, data.icon, textEnabled and {text = data.display, text_color = data.color} or nil)
 				--							spellId, borderColor, startTime, duration, forceTexture, descText, count, debuffType, caster, canStealOrPurge, spellName, isBuff
+				else
+					iconFrame:SetIcon(-1, data.color, timer and start, timer, data.icon, textEnabled and {text = data.display, text_color = data.color} or nil)
+				--							spellId, borderColor, startTime, duration, forceTexture, descText, count, debuffType, caster, canStealOrPurge, spellName, isBuff
+				end
 				--DF:TruncateText(icon.Desc, Plater.db.profile.bossmod_aura_width)
 				icon.bmData = data
 				icon.lastUpdateCooldown = icon.lastUpdateCooldown or 0
