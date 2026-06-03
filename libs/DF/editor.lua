@@ -1159,6 +1159,17 @@ detailsFramework.EditorMixin = {
         local profileTable, profileMap = self:GetEditingProfile()
         profileMap = profileMap or {}
 
+        --capture the registration + callback at menu-build time so undo/redo replay always
+        --acts on the right widgets. resolving these live inside applyValue via
+        --self:GetEditingRegisteredObject() / self:GetOnEditCallback() breaks during
+        --undo/redo: Undo/Redo run state.undo/.redo BEFORE calling EditObject(targetObject),
+        --so the live editing context is whatever the previous replay step left active -
+        --which fans the wrong registration's setter (e.g. FontString:SetFont) onto another
+        --registration's members (e.g. a Texture), causing "attempt to call a nil value".
+        local registeredForClosure = self:GetEditingRegisteredObject()
+        local onEditCallbackForClosure = self:GetOnEditCallback()
+        local fanoutMembers = registeredForClosure and registeredForClosure.objects or {object}
+
         self.AnchorFrames:DisableAllAnchors()
 
         local conditionalKeys = profileMap.enable_if or {}
@@ -1324,8 +1335,8 @@ detailsFramework.EditorMixin = {
                                 detailsFramework.table.setfrompath(entryProfileTable, profileKey, value)
                             end
 
-                            if (self:GetOnEditCallback()) then
-                                self:GetOnEditCallback()(object, option.key, value, entryProfileTable, profileKey)
+                            if (onEditCallbackForClosure) then
+                                onEditCallbackForClosure(object, option.key, value, entryProfileTable, profileKey)
                             end
 
                             --update the widget visual
@@ -1335,8 +1346,9 @@ detailsFramework.EditorMixin = {
                             --logical anchor all reposition together). consumer setters should be idempotent
                             --since this loop calls them N times per edit; non-idempotent side effects
                             --(network, telemetry) belong in the per-registration onEditCallback above.
-                            local registered = self:GetEditingRegisteredObject()
-                            local fanoutMembers = registered and registered.objects or {object}
+                            --uses fanoutMembers / onEditCallbackForClosure captured at menu-build time
+                            --rather than self:GetEditingRegisteredObject() / self:GetOnEditCallback() so
+                            --undo/redo replay still targets this closure's registration (see prologue).
 
                             if (option.key == "anchor" or option.key == "anchoroffsetx" or option.key == "anchoroffsety") then
                                 anchorSettings = parentTable
@@ -2111,7 +2123,11 @@ function detailsFramework:CreateEditor(parent, name, options)
     editorFrame:SetScript("OnKeyDown", function(self, key)
         if (IsControlKeyDown() and key == "Z") then
             self:SetPropagateKeyboardInput(false)
-            self:Undo()
+            if (IsShiftKeyDown()) then
+                self:Redo()
+            else
+                self:Undo()
+            end
         elseif (IsControlKeyDown() and key == "Y") then
             self:SetPropagateKeyboardInput(false)
             self:Redo()
