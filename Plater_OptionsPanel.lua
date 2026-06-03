@@ -14,8 +14,8 @@ local IS_WOW_PROJECT_CLASSIC_ERA = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
 local IS_WOW_PROJECT_CLASSIC_TBC = WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC
 local IS_WOW_PROJECT_CLASSIC_WRATH = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_WRATH_OF_THE_LICH_KING and ClassicExpansionAtLeast(LE_EXPANSION_WRATH_OF_THE_LICH_KING)
 --local IS_WOW_PROJECT_CLASSIC_CATACLYSM = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_CATACLYSM and ClassicExpansionAtLeast(LE_EXPANSION_CATACLYSM)
---local IS_WOW_PROJECT_MIDNIGHT = DF.IsAddonApocalypseWow()
-local IS_WOW_PROJECT_MIDNIGHT = DF.IsMidnightWowAPI()
+local IS_WOW_PROJECT_MIDNIGHT = DF.IsAddonApocalypseWow()
+local IS_WOW_PROJECT_MIDNIGHT_API = DF.IsMidnightWowAPI()
 
 local PixelUtil = PixelUtil or DFPixelUtil
 
@@ -196,7 +196,7 @@ function Plater.ImportAndSwitchProfile(profileName, profile, bIsUpdate, bKeepMod
 	--check if parent to UIParent is enabled and calculate the new scale
 	if (Plater.db.profile.use_ui_parent) then
 		if ((not bIsUpdate or not bWasUsingUIParent) and not keepScaleTune) then --only update if necessary
-			Plater.db.profile.ui_parent_scale_tune = 1 / (IS_WOW_PROJECT_MIDNIGHT and 1 or UIParent:GetEffectiveScale())
+			Plater.db.profile.ui_parent_scale_tune = 1 / (IS_WOW_PROJECT_MIDNIGHT_API and 1 or UIParent:GetEffectiveScale())
 		end
 	else
 		Plater.db.profile.ui_parent_scale_tune = 0
@@ -5592,7 +5592,7 @@ local relevance_options = {
 			name = "OPTIONS_NAMEPLATE_SHOW_FRIENDLY", --show friendly nameplates
 			desc = "OPTIONS_NAMEPLATE_SHOW_FRIENDLY_DESC",
 			nocombat = true,
-			hidden = IS_WOW_PROJECT_MIDNIGHT,
+			hidden = IS_WOW_PROJECT_MIDNIGHT_API,
 		},
 		{
 			type = "toggle",
@@ -5609,7 +5609,7 @@ local relevance_options = {
 			name = "OPTIONS_NAMEPLATE_SHOW_FRIENDLY", --show friendly nameplates
 			desc = "OPTIONS_NAMEPLATE_SHOW_FRIENDLY_DESC",
 			nocombat = true,
-			hidden = not IS_WOW_PROJECT_MIDNIGHT,
+			hidden = not IS_WOW_PROJECT_MIDNIGHT_API,
 		},
 		{
 			type = "toggle",
@@ -5643,7 +5643,7 @@ local relevance_options = {
 			name = "OPTIONS_NAMEPLATE_HIDE_FRIENDLY_HEALTH",
 			desc = "OPTIONS_NAMEPLATE_HIDE_FRIENDLY_HEALTH_DESC",
 			nocombat = true,
-			hidden = not IS_WOW_PROJECT_MIDNIGHT,
+			hidden = not IS_WOW_PROJECT_MIDNIGHT_API,
 		},
 
 		{
@@ -5656,7 +5656,7 @@ local relevance_options = {
 			name = "Hide Friendly NPCs Health Bar", --show friendly nameplates
 			desc = "Hide Friendly NPCs Health Bar\nWill require the healthbars to be hidden and shown again to take effect after changing.",
 			nocombat = true,
-			hidden = not IS_WOW_PROJECT_MIDNIGHT,
+			hidden = not IS_WOW_PROJECT_MIDNIGHT_API,
 		},
 
 		{
@@ -5670,7 +5670,7 @@ local relevance_options = {
 			name = "Hide Realm Names",
 			desc = "Hide realm names on blizzard nameplates.",
 			nocombat = true,
-			hidden = not IS_WOW_PROJECT_MIDNIGHT,
+			hidden = not IS_WOW_PROJECT_MIDNIGHT_API,
 		},
 		
 		{
@@ -5690,7 +5690,7 @@ local relevance_options = {
 			name = "OPTIONS_NAMEPLATE_HIDE_FRIENDLY_HEALTH",
 			desc = "OPTIONS_NAMEPLATE_HIDE_FRIENDLY_HEALTH_DESC",
 			nocombat = true,
-			hidden = IS_WOW_PROJECT_MIDNIGHT,
+			hidden = IS_WOW_PROJECT_MIDNIGHT_API,
 		},
 		
 		{
@@ -5710,7 +5710,7 @@ local relevance_options = {
 			name = "Class-Color Blizzard Names|cFFFF7700*|r",
 			desc = "Class coloring for blizzard nameplate names",
 			nocombat = true,
-			hidden = not IS_WOW_PROJECT_MIDNIGHT,
+			hidden = not IS_WOW_PROJECT_MIDNIGHT_API,
 		},
 		
 		{
@@ -5765,7 +5765,7 @@ local relevance_options = {
 			nocombat = true,
 		},
 		
-		{type = "blank", hidden = IS_WOW_PROJECT_MIDNIGHT},
+		{type = "blank", hidden = IS_WOW_PROJECT_MIDNIGHT_API},
 		
 		{
 			type = "toggle",
@@ -5783,7 +5783,7 @@ local relevance_options = {
 			name = "OPTIONS_NAMEPLATES_STACKING",
 			desc = "OPTIONS_NAMEPLATES_STACKING_DESC",
 			nocombat = true,
-			hidden = IS_WOW_PROJECT_MIDNIGHT,
+			hidden = IS_WOW_PROJECT_MIDNIGHT_API,
 		},
 		
 		{
@@ -5802,7 +5802,7 @@ local relevance_options = {
 			name = "Stacking Enemy Nameplates",
 			desc = "OPTIONS_NAMEPLATES_STACKING_DESC",
 			nocombat = true,
-			hidden = not IS_WOW_PROJECT_MIDNIGHT,
+			hidden = not IS_WOW_PROJECT_MIDNIGHT_API,
 		},
 		
 		{
@@ -5821,7 +5821,7 @@ local relevance_options = {
 			name = "Stacking Friendly Nameplates",
 			desc = "OPTIONS_NAMEPLATES_STACKING_DESC",
 			nocombat = true,
-			hidden = not IS_WOW_PROJECT_MIDNIGHT,
+			hidden = not IS_WOW_PROJECT_MIDNIGHT_API,
 		},
 		
 		{
@@ -5842,10 +5842,10 @@ local relevance_options = {
 			name = "OPTIONS_NAMEPLATES_OVERLAP",
 			desc = "OPTIONS_NAMEPLATES_OVERLAP_DESC",
 			nocombat = true,
-			hidden = IS_WOW_PROJECT_MIDNIGHT,
+			hidden = IS_WOW_PROJECT_MIDNIGHT_API,
 		},
 		
-		{type = "blank", hidden = not IS_WOW_PROJECT_MIDNIGHT},
+		{type = "blank", hidden = not IS_WOW_PROJECT_MIDNIGHT_API},
 		
 		{
 			type = "range",

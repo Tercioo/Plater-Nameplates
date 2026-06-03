@@ -7,9 +7,9 @@ local _ = nil
 local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_NOT_MAINLINE = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_CLASSIC_ERA = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
---local IS_WOW_PROJECT_MIDNIGHT = DF.IsAddonApocalypseWow()
-local IS_WOW_PROJECT_MIDNIGHT = DF.IsMidnightWowAPI()
---local IS_WOW_PROJECT_MIDNIGHT_API = DF.IsMidnightWowAPI()
+local IS_WOW_PROJECT_MIDNIGHT = DF.IsAddonApocalypseWow()
+--local IS_WOW_PROJECT_MIDNIGHT = DF.IsMidnightWowAPI()
+local IS_WOW_PROJECT_MIDNIGHT_API = DF.IsMidnightWowAPI()
 
 --stop yellow lines on my editor
 local tinsert = _G.tinsert
@@ -1990,9 +1990,25 @@ end
 				auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.steal_or_purge))
 			
 			elseif (Plater.db.profile.aura_border_colors_by_type) then
-				-- use Blizzards color global 'DebuffTypeColor' for the actual color:
-				local color = DebuffTypeColor[dispelName or "none"] or {r=0,b=0,g=0, a=0}
-				auraIconFrame:SetBackdropBorderColor (color.r, color.g, color.b, color.a or 1)
+				if IS_WOW_PROJECT_MIDNIGHT_API then
+					local color
+					if DB_AURA_ENABLED then --check for aura testing, so actual auras
+						color = C_UnitAuras.GetAuraDispelTypeColor(auraIconFrame.unitFrame.namePlateUnitToken, i, dispelColorCurve)
+					else
+						color = DEBUFF_DISPLAY_COLOR_INFO[dispelName or "none"]
+					end
+					
+					if color then
+						--auraIconFrame:SetBackdropBorderColor(color:GetRGBA())
+						auraIconFrame:SetBackdropBorderColor(color.r, color.g, color.b, color.a)
+					else
+						auraIconFrame:SetBackdropBorderColor (unpack (profile.aura_border_colors.is_debuff))
+					end
+				else
+					-- use Blizzards color global 'DebuffTypeColor' for the actual color:
+					local color = DebuffTypeColor[dispelName or "none"] or {r=0,b=0,g=0, a=0}
+					auraIconFrame:SetBackdropBorderColor (color.r, color.g, color.b, color.a or 1)
+				end
 			
 			elseif (CROWDCONTROL_AURA_IDS [spellId]) then 
 				--> CC effects

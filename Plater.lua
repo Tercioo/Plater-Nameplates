@@ -87,7 +87,7 @@ local IS_WOW_PROJECT_CLASSIC_WRATH = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpa
 --local IS_WOW_PROJECT_CLASSIC_CATACLYSM = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_CATACLYSM and ClassicExpansionAtLeast(LE_EXPANSION_CATACLYSM)
 local IS_WOW_PROJECT_CLASSIC_MOP = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_MISTS_OF_PANDARIA and ClassicExpansionAtLeast(LE_EXPANSION_MISTS_OF_PANDARIA)
 local IS_WOW_PROJECT_MIDNIGHT = DF.IsAddonApocalypseWow()
---local IS_WOW_PROJECT_MIDNIGHT = DF.IsMidnightWowAPI()
+local IS_WOW_PROJECT_MIDNIGHT_API = DF.IsMidnightWowAPI()
 
 local PixelUtil = PixelUtil or DFPixelUtil
 
@@ -1512,7 +1512,7 @@ Plater.AnchorNamesByPhraseId = {
 		
 		Plater.db.profile.use_ui_parent = true
 		Plater.db.profile.use_ui_parent_just_enabled = false
-		Plater.db.profile.ui_parent_scale_tune = 1 / (IS_WOW_PROJECT_MIDNIGHT and 1 or UIParent:GetEffectiveScale())
+		Plater.db.profile.ui_parent_scale_tune = 1 / (IS_WOW_PROJECT_MIDNIGHT_API and 1 or UIParent:GetEffectiveScale())
 		
 		--call the user to /reload his UI
 		DF:ShowPromptPanel ("Plater profile reset, do you want /reload now (recommended)?", function() ReloadUI() end, function() end, true, 500)
@@ -1528,37 +1528,37 @@ Plater.AnchorNamesByPhraseId = {
 	--~save ~cvar
 	local cvars_to_store = {
 		["NamePlateClassificationScale"] = true,
-		["NamePlateHorizontalScale"] = not IS_WOW_PROJECT_MIDNIGHT,
-		["NamePlateVerticalScale"] = not IS_WOW_PROJECT_MIDNIGHT,
+		["NamePlateHorizontalScale"] = not IS_WOW_PROJECT_MIDNIGHT_API,
+		["NamePlateVerticalScale"] = not IS_WOW_PROJECT_MIDNIGHT_API,
 		["ShowClassColorInNameplate"] = true,
 		["ShowNamePlateLoseAggroFlash"] = true,
-		["nameplateGlobalScale"] = not IS_WOW_PROJECT_MIDNIGHT,
-		["nameplateLargerScale"] = not IS_WOW_PROJECT_MIDNIGHT,
-		["nameplateLargeTopInset"] = not IS_WOW_PROJECT_MIDNIGHT,
-		["nameplateLargeBottomInset"] = not IS_WOW_PROJECT_MIDNIGHT,
+		["nameplateGlobalScale"] = not IS_WOW_PROJECT_MIDNIGHT_API,
+		["nameplateLargerScale"] = not IS_WOW_PROJECT_MIDNIGHT_API,
+		["nameplateLargeTopInset"] = not IS_WOW_PROJECT_MIDNIGHT_API,
+		["nameplateLargeBottomInset"] = not IS_WOW_PROJECT_MIDNIGHT_API,
 		["nameplateMaxDistance"] = true,
 		["nameplatePlayerMaxDistance"] = true,
 		["nameplateMinScale"] = true,
-		["nameplateMotion"] = not IS_WOW_PROJECT_MIDNIGHT,
-		["nameplateStackingTypes"] = IS_WOW_PROJECT_MIDNIGHT,
-		["nameplateMotionSpeed"] = not IS_WOW_PROJECT_MIDNIGHT,
+		["nameplateMotion"] = not IS_WOW_PROJECT_MIDNIGHT_API,
+		["nameplateStackingTypes"] = IS_WOW_PROJECT_MIDNIGHT_API,
+		["nameplateMotionSpeed"] = not IS_WOW_PROJECT_MIDNIGHT_API,
 		["nameplateOccludedAlphaMult"] = true,
 		["nameplateOtherAtBase"] = true,
-		["nameplateOtherTopInset"] = not IS_WOW_PROJECT_MIDNIGHT,
-		["nameplateOtherBottomInset"] = not IS_WOW_PROJECT_MIDNIGHT,
+		["nameplateOtherTopInset"] = not IS_WOW_PROJECT_MIDNIGHT_API,
+		["nameplateOtherBottomInset"] = not IS_WOW_PROJECT_MIDNIGHT_API,
 		["nameplateOverlapV"] = true,
 		["nameplateOverlapH"] = true,
-		["nameplatePersonalHideDelaySeconds"] = (IS_WOW_PROJECT_MAINLINE and not IS_WOW_PROJECT_MIDNIGHT),
-		["nameplatePersonalShowAlways"] = (IS_WOW_PROJECT_MAINLINE and not IS_WOW_PROJECT_MIDNIGHT),
-		["nameplatePersonalShowInCombat"] = (IS_WOW_PROJECT_MAINLINE and not IS_WOW_PROJECT_MIDNIGHT),
-		["nameplatePersonalShowWithTarget"] = (IS_WOW_PROJECT_MAINLINE and not IS_WOW_PROJECT_MIDNIGHT),
+		["nameplatePersonalHideDelaySeconds"] = (IS_WOW_PROJECT_MAINLINE and not IS_WOW_PROJECT_MIDNIGHT_API),
+		["nameplatePersonalShowAlways"] = (IS_WOW_PROJECT_MAINLINE and not IS_WOW_PROJECT_MIDNIGHT_API),
+		["nameplatePersonalShowInCombat"] = (IS_WOW_PROJECT_MAINLINE and not IS_WOW_PROJECT_MIDNIGHT_API),
+		["nameplatePersonalShowWithTarget"] = (IS_WOW_PROJECT_MAINLINE and not IS_WOW_PROJECT_MIDNIGHT_API),
 		["nameplateResourceOnTarget"] = (IS_WOW_PROJECT_MAINLINE),
 		["nameplateSelectedScale"] = true,
-		["nameplateSelfAlpha"] = (IS_WOW_PROJECT_MAINLINE and not IS_WOW_PROJECT_MIDNIGHT),
-		["nameplateSelfBottomInset"] = (IS_WOW_PROJECT_MAINLINE and not IS_WOW_PROJECT_MIDNIGHT),
-		["nameplateSelfScale"] = (IS_WOW_PROJECT_MAINLINE and not IS_WOW_PROJECT_MIDNIGHT),
-		["nameplateSelfTopInset"] = (IS_WOW_PROJECT_MAINLINE and not IS_WOW_PROJECT_MIDNIGHT),
-		["nameplateSimplifiedTypes"] = IS_WOW_PROJECT_MIDNIGHT,
+		["nameplateSelfAlpha"] = (IS_WOW_PROJECT_MAINLINE and not IS_WOW_PROJECT_MIDNIGHT_API),
+		["nameplateSelfBottomInset"] = (IS_WOW_PROJECT_MAINLINE and not IS_WOW_PROJECT_MIDNIGHT_API),
+		["nameplateSelfScale"] = (IS_WOW_PROJECT_MAINLINE and not IS_WOW_PROJECT_MIDNIGHT_API),
+		["nameplateSelfTopInset"] = (IS_WOW_PROJECT_MAINLINE and not IS_WOW_PROJECT_MIDNIGHT_API),
+		["nameplateSimplifiedTypes"] = IS_WOW_PROJECT_MIDNIGHT_API,
 		["nameplateShowAll"] = true,
 		["nameplateShowEnemies"] = true,
 		["nameplateShowEnemyGuardians"] = true,
@@ -1568,20 +1568,20 @@ Plater.AnchorNamesByPhraseId = {
 		["nameplateShowEnemyTotems"] = true,
 		["nameplateShowFriends"] = true,
 		["nameplateShowFriendlyNPCs"] = true,
-		["nameplateShowFriendlyMinions"] = not IS_WOW_PROJECT_MIDNIGHT,
-		["nameplateShowFriendlyPets"] = not IS_WOW_PROJECT_MIDNIGHT,
-		["nameplateShowFriendlyGuardians"] = not IS_WOW_PROJECT_MIDNIGHT,
-		["nameplateShowFriendlyTotems"] = not IS_WOW_PROJECT_MIDNIGHT,
-		["nameplateShowFriendlyPlayers"] = IS_WOW_PROJECT_MIDNIGHT,
-		["nameplateShowFriendlyPlayerMinions"] = IS_WOW_PROJECT_MIDNIGHT,
-		["nameplateShowFriendlyPlayerPets"] = IS_WOW_PROJECT_MIDNIGHT,
-		["nameplateShowFriendlyPlayerGuardians"] = IS_WOW_PROJECT_MIDNIGHT,
-		["nameplateShowFriendlyPlayerTotems"] = IS_WOW_PROJECT_MIDNIGHT,
+		["nameplateShowFriendlyMinions"] = not IS_WOW_PROJECT_MIDNIGHT_API,
+		["nameplateShowFriendlyPets"] = not IS_WOW_PROJECT_MIDNIGHT_API,
+		["nameplateShowFriendlyGuardians"] = not IS_WOW_PROJECT_MIDNIGHT_API,
+		["nameplateShowFriendlyTotems"] = not IS_WOW_PROJECT_MIDNIGHT_API,
+		["nameplateShowFriendlyPlayers"] = IS_WOW_PROJECT_MIDNIGHT_API,
+		["nameplateShowFriendlyPlayerMinions"] = IS_WOW_PROJECT_MIDNIGHT_API,
+		["nameplateShowFriendlyPlayerPets"] = IS_WOW_PROJECT_MIDNIGHT_API,
+		["nameplateShowFriendlyPlayerGuardians"] = IS_WOW_PROJECT_MIDNIGHT_API,
+		["nameplateShowFriendlyPlayerTotems"] = IS_WOW_PROJECT_MIDNIGHT_API,
 		["nameplateShowFriendlyBuffs"] = true,
-		["nameplateShowOffscreen"] = IS_WOW_PROJECT_MIDNIGHT,
-		["nameplateShowOnlyNames"] = not IS_WOW_PROJECT_MIDNIGHT,
-		["nameplateShowOnlyNameForFriendlyPlayerUnits"] = IS_WOW_PROJECT_MIDNIGHT,
-		["nameplateUseClassColorForFriendlyPlayerUnitNames"] = IS_WOW_PROJECT_MIDNIGHT,
+		["nameplateShowOffscreen"] = IS_WOW_PROJECT_MIDNIGHT_API,
+		["nameplateShowOnlyNames"] = not IS_WOW_PROJECT_MIDNIGHT_API,
+		["nameplateShowOnlyNameForFriendlyPlayerUnits"] = IS_WOW_PROJECT_MIDNIGHT_API,
+		["nameplateUseClassColorForFriendlyPlayerUnitNames"] = IS_WOW_PROJECT_MIDNIGHT_API,
 		["nameplateShowPersonalCooldowns"] = true,
 		["nameplateShowSelf"] = (IS_WOW_PROJECT_MAINLINE),
 		["nameplateTargetBehindMaxDistance"] = true,
@@ -1680,7 +1680,7 @@ Plater.AnchorNamesByPhraseId = {
 			cvar = cvars_to_store_lower[lower(cvar) or "N/A"] -- get right case for storage
 			if cvars_to_store[cvar] then
 				cvarTable [cvar] = Plater.ParseCVarValue(value)
-				local callstack = IS_WOW_PROJECT_MIDNIGHT and debugstack(2) or debugstack() -- starts at "SetCVar" or caller
+				local callstack = IS_WOW_PROJECT_MIDNIGHT_API and debugstack(2) or debugstack() -- starts at "SetCVar" or caller
 				if callstack then
 					local caller, line = callstack:match("\"@([^\"]+)\"%]:(%d+)")
 					if not caller then
@@ -1988,7 +1988,7 @@ Plater.AnchorNamesByPhraseId = {
 		if (unitFrame and unitFrame.PlaterOnScreen) then
 			--local defaultScale = self:GetEffectiveScale() / self:GetScale()
 			local defaultScale = self:GetEffectiveScale()
-			if IS_WOW_PROJECT_MIDNIGHT then
+			if IS_WOW_PROJECT_MIDNIGHT_API then
 				defaultScale = defaultScale / UIParent:GetEffectiveScale() --MIDNIGHT!! normalize for now
 			end
 			
@@ -2810,7 +2810,7 @@ Plater.AnchorNamesByPhraseId = {
 			if (Plater.db.profile.use_ui_parent_just_enabled) then
 				Plater.db.profile.use_ui_parent_just_enabled = false
 				if (Plater.db.profile.ui_parent_scale_tune == 0) then
-					Plater.db.profile.ui_parent_scale_tune = 1 / (IS_WOW_PROJECT_MIDNIGHT and 1 or UIParent:GetEffectiveScale())
+					Plater.db.profile.ui_parent_scale_tune = 1 / (IS_WOW_PROJECT_MIDNIGHT_API and 1 or UIParent:GetEffectiveScale())
 					Plater.RefreshDBUpvalues()
 					Plater.UpdateAllPlates()
 				end
@@ -2994,7 +2994,7 @@ Plater.AnchorNamesByPhraseId = {
 					newUnitFrame:SetAllPoints()
 					newUnitFrame:SetFrameStrata ("BACKGROUND")
 
-					if IS_WOW_PROJECT_MIDNIGHT then
+					if IS_WOW_PROJECT_MIDNIGHT_API then
 						plateFrame:HookScript("OnSizeChanged", Plater.UpdateUIParentScale)
 					end
 					
@@ -3154,7 +3154,7 @@ Plater.AnchorNamesByPhraseId = {
 			unitFrame.CustomIndicators = {}
 			
 			--> cliclable area debug
-				if IS_WOW_PROJECT_MIDNIGHT then
+				if IS_WOW_PROJECT_MIDNIGHT_API then
 					plateFrame.debugAreaTexture = plateFrame.unitFrame.hitTestFrame:CreateTexture (nil, "background")
 					plateFrame.debugAreaText = plateFrame.unitFrame.hitTestFrame:CreateFontString (nil, "artwork", "GameFontNormal")
 				else
@@ -3718,7 +3718,7 @@ Plater.AnchorNamesByPhraseId = {
 		
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitID, true)
 			if (plateFrame) then -- and plateFrame.template == "ForbiddenNamePlateUnitFrameTemplate"
-				if IS_WOW_PROJECT_MIDNIGHT then -- don't simplify
+				if IS_WOW_PROJECT_MIDNIGHT_API then -- don't simplify
 					--C_NamePlateManager.SetNamePlateSimplified(unitID, false) -- some people like them
 				end
 				if (not IS_WOW_PROJECT_MAINLINE) then
@@ -3860,7 +3860,7 @@ Plater.AnchorNamesByPhraseId = {
 			end
 			
 			--MIDNIGHT TESTING
-			if IS_WOW_PROJECT_MIDNIGHT then
+			if IS_WOW_PROJECT_MIDNIGHT_API then
 				--TextureLoadingGroupMixin.AddTexture({ textures = plateFrame.UnitFrame.healthBar }, "capNumericDisplay") -- this is, luckily, baseline now.
 				C_NamePlateManager.SetNamePlateSimplified(unitID, false)
 
@@ -3979,7 +3979,7 @@ Plater.AnchorNamesByPhraseId = {
 			unitFrame.nameplateScaleAdjust = 1
 			
 			if (DB_USE_UIPARENT) then
-				if not IS_WOW_PROJECT_MIDNIGHT then
+				if not IS_WOW_PROJECT_MIDNIGHT_API then
 					plateFrame:HookScript("OnSizeChanged", Plater.UpdateUIParentScale)
 				end
 				Plater.UpdateUIParentScale(plateFrame)
@@ -4971,7 +4971,7 @@ function Plater.OnInit() --private --~oninit ~init
 				if not Plater.db.profile.use_ui_parent or Plater.db.profile.ui_parent_scale_tune == 0 then
 					Plater.db.profile.use_ui_parent = true
 					--adjust the fine tune to player's screen scale
-					Plater.db.profile.ui_parent_scale_tune = 1 / (IS_WOW_PROJECT_MIDNIGHT and 1 or UIParent:GetEffectiveScale())
+					Plater.db.profile.ui_parent_scale_tune = 1 / (IS_WOW_PROJECT_MIDNIGHT_API and 1 or UIParent:GetEffectiveScale())
 					Plater.db.profile.use_ui_parent_just_enabled = false
 					Plater.RefreshDBUpvalues()
 					Plater.UpdateAllPlates()
@@ -5204,7 +5204,7 @@ function Plater.OnInit() --private --~oninit ~init
 				return Plater.UpdatePersonalBar (self)
 			end)
 			
-			if IS_WOW_PROJECT_MIDNIGHT then -- MIDNIGHT!! fucking bullshit workaround for SetAlpha(0) instead of :Hide() until we have proper click-frame control...
+			if IS_WOW_PROJECT_MIDNIGHT_API then
 				
 				--Nameplate base options tables: NamePlateFriendlyFrameOptions / NamePlateEnemyFrameOptions
 				hooksecurefunc(NamePlateDriverFrame, "OnNamePlateAdded", function(_, unit)
@@ -5429,7 +5429,7 @@ function Plater.OnInit() --private --~oninit ~init
 				C_Timer.After(1, function() Plater.SetNamePlatePreferredClickInsets(nameplateType, left, right, top, bottom) end)
 			end
 		end
-		if not IS_WOW_PROJECT_MIDNIGHT and NamePlateDriverFrame and NamePlateDriverFrame.namePlateSetInsetFunctions then
+		if not IS_WOW_PROJECT_MIDNIGHT_API and NamePlateDriverFrame and NamePlateDriverFrame.namePlateSetInsetFunctions then
 			hooksecurefunc(NamePlateDriverFrame.namePlateSetInsetFunctions, "friendly", function()
 				--C_NamePlate.SetNamePlateFriendlyPreferredClickInsets (0, 0, 0, 0)
 				Plater.SetNamePlatePreferredClickInsets("friendly", 0, 0, 0, 0)
@@ -5504,7 +5504,7 @@ function Plater.OnInit() --private --~oninit ~init
 				
 				castBar.playedFinishedTest = nil
 				
-				if IS_WOW_PROJECT_MIDNIGHT then
+				if IS_WOW_PROJECT_MIDNIGHT then --IS_WOW_PROJECT_MIDNIGHT_API?
 					local durationObject = C_DurationUtil.CreateDuration()
 					durationObject:SetTimeFromEnd(castBar.spellEndTime , castBar.maxValue, 1)
 					castBar.durationObject = durationObject
@@ -6440,7 +6440,7 @@ function Plater.OnInit() --private --~oninit ~init
 					--enable UIParent nameplates for new installs of Plater
 					Plater.db.profile.use_ui_parent = true
 					--adjust the fine tune to player's screen scale
-					Plater.db.profile.ui_parent_scale_tune = 1 / (IS_WOW_PROJECT_MIDNIGHT and 1 or UIParent:GetEffectiveScale())
+					Plater.db.profile.ui_parent_scale_tune = 1 / (IS_WOW_PROJECT_MIDNIGHT_API and 1 or UIParent:GetEffectiveScale())
 					Plater.RefreshDBUpvalues()
 					Plater.UpdateAllPlates()
 				end
@@ -7019,7 +7019,7 @@ end
 	
 	-- default blizzard plate shenanigans
 	function Plater.UpdateBaseNameplateOptions()
-		if IS_WOW_PROJECT_MIDNIGHT then
+		if IS_WOW_PROJECT_MIDNIGHT_API then
 			if Plater.db.profile.hide_realm_name_on_blizzard then
 				TextureLoadingGroupMixin.RemoveTexture({ textures = NamePlateFriendlyFrameOptions }, "updateNameUsesGetUnitName")
 			else
@@ -7089,7 +7089,7 @@ end
 		
 		Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdatePlateClickSpace")
 		
-		if IS_WOW_PROJECT_MIDNIGHT or C_NamePlate.SetNamePlateSize then
+		if IS_WOW_PROJECT_MIDNIGHT_API or C_NamePlate.SetNamePlateSize then
 			local width, height = Plater.db.profile.click_space[1], Plater.db.profile.click_space[2]
 			local scale = Plater.db.profile.use_ui_parent and Plater.db.profile.ui_parent_scale_tune or 1
 			C_NamePlate.SetNamePlateSize(width*scale, height*scale)
@@ -8677,7 +8677,7 @@ end
 		local currentHealth, maxHealth, currentHealthMissing, currentHealthPercent = healthBar.currentHealth, healthBar.currentHealthMax, healthBar.currentHealthMissing, healthBar.currentHealthPercent
 		
 		
-		if IS_WOW_PROJECT_MIDNIGHT then
+		if IS_WOW_PROJECT_MIDNIGHT_API then
 			--TODO: MIDNIGHT!!
 			--local currentAbsorb, currentAbsorbMax, currentAbsorbIsClamped = healthBar.currentAbsorb, healthBar.currentAbsorbMax, healthBar.currentAbsorbIsClamped
 			
@@ -8822,7 +8822,7 @@ end
 			end
 		end
 		
-		if IS_WOW_PROJECT_MIDNIGHT then
+		if IS_WOW_PROJECT_MIDNIGHT_API then
 			Plater.UpdateTextSize (spellName, nameString, maxLength, nil)
 		else		
 			while (nameString:GetUnboundedStringWidth() > maxLength) do
@@ -8964,7 +8964,7 @@ end
 	function Plater.UpdateBlizzardNameplateFonts(updateFont, skipSmall)
 		local profile = Plater.db.profile
 		if profile.blizzard_nameplate_font_override_enabled and (updateFont == true or profile.blizzard_nameplate_font == updateFont or profile.blizzard_nameplate_large_font == updateFont)then
-			if IS_WOW_PROJECT_MIDNIGHT then
+			if IS_WOW_PROJECT_MIDNIGHT_API then
 				for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 					DF:SetFontFace (plateFrame.UnitFrame.name, profile.blizzard_nameplate_font)
 					DF:SetFontOutline (plateFrame.UnitFrame.name, profile.blizzard_nameplate_font_outline)
@@ -9015,7 +9015,7 @@ end
 			DF:SetFontOutline (_G.SystemFont_LargeNamePlateFixed, profile.blizzard_nameplate_large_font_outline)
 			DF:SetFontSize (_G.SystemFont_LargeNamePlateFixed, profile.blizzard_nameplate_large_font_size)
 
-			if IS_WOW_PROJECT_MIDNIGHT then
+			if IS_WOW_PROJECT_MIDNIGHT_API then
 				DF:SetFontFace (_G.SystemFont_NamePlate_Outlined, profile.blizzard_nameplate_font)
 				DF:SetFontOutline (_G.SystemFont_NamePlate_Outlined, profile.blizzard_nameplate_font_outline)
 				DF:SetFontSize (_G.SystemFont_NamePlate_Outlined, profile.blizzard_nameplate_font_size)
@@ -9451,7 +9451,7 @@ end
 			unitFrame.ExtraIconFrame:SetOption ("stack_text_size", Plater.db.profile.extra_icon_stack_size)
 			unitFrame.ExtraIconFrame:SetOption ("stack_text_outline", Plater.db.profile.extra_icon_stack_outline)
 			unitFrame.ExtraIconFrame:SetOption ("surpress_tulla_omni_cc", Plater.db.profile.disable_omnicc_on_auras)
-			unitFrame.ExtraIconFrame:SetOption ("surpress_blizzard_cd_timer", not IS_WOW_PROJECT_MIDNIGHT)
+			unitFrame.ExtraIconFrame:SetOption ("surpress_blizzard_cd_timer", not IS_WOW_PROJECT_MIDNIGHT_API)
 			unitFrame.ExtraIconFrame:SetOption ("decimal_timer", Plater.db.profile.extra_icon_timer_decimals)
 			unitFrame.ExtraIconFrame:SetOption ("cooldown_reverse", Plater.db.profile.extra_icon_cooldown_reverse)
 			unitFrame.ExtraIconFrame:SetOption ("cooldown_swipe_enabled", Plater.db.profile.extra_icon_show_swipe)
@@ -9887,7 +9887,7 @@ end
 			--NamePlateDriverFrame:UnregisterEvent("CVAR_UPDATE")
 			if combat or InCombatLockdown() then -- update this separately and only if needed
 				if onlyNamesEnabled ~= profile.auto_toggle_combat.blizz_healthbar_ic then
-					if IS_WOW_PROJECT_MIDNIGHT then
+					if IS_WOW_PROJECT_MIDNIGHT_API then
 						SetCVar("nameplateShowOnlyNameForFriendlyPlayerUnits", profile.auto_toggle_combat.blizz_healthbar_ic and CVAR_ENABLED or CVAR_DISABLED)
 					else
 						SetCVar("nameplateShowOnlyNames", profile.auto_toggle_combat.blizz_healthbar_ic and CVAR_ENABLED or CVAR_DISABLED)
@@ -9899,7 +9899,7 @@ end
 				end
 			else
 				if onlyNamesEnabled ~= profile.auto_toggle_combat.blizz_healthbar_ooc then
-					if IS_WOW_PROJECT_MIDNIGHT then
+					if IS_WOW_PROJECT_MIDNIGHT_API then
 						SetCVar("nameplateShowOnlyNameForFriendlyPlayerUnits", profile.auto_toggle_combat.blizz_healthbar_ooc and CVAR_ENABLED or CVAR_DISABLED)
 					else
 						SetCVar("nameplateShowOnlyNames", profile.auto_toggle_combat.blizz_healthbar_ooc and CVAR_ENABLED or CVAR_DISABLED)
@@ -9913,7 +9913,7 @@ end
 			--NamePlateDriverFrame:RegisterEvent("CVAR_UPDATE")
 			
 			if combat then
-				if IS_WOW_PROJECT_MIDNIGHT then
+				if IS_WOW_PROJECT_MIDNIGHT_API then
 					SetCVar ("nameplateShowFriendlyPlayers",profile.auto_toggle_combat.friendly_ic and CVAR_ENABLED or CVAR_DISABLED)
 				else
 					SetCVar("nameplateShowFriends", profile.auto_toggle_combat.friendly_ic and CVAR_ENABLED or CVAR_DISABLED)
@@ -9921,7 +9921,7 @@ end
 				SetCVar("nameplateShowEnemies", profile.auto_toggle_combat.enemy_ic and CVAR_ENABLED or CVAR_DISABLED)
 				return
 			else
-				if IS_WOW_PROJECT_MIDNIGHT then
+				if IS_WOW_PROJECT_MIDNIGHT_API then
 					SetCVar("nameplateShowFriendlyPlayers", profile.auto_toggle_combat.friendly_ooc and CVAR_ENABLED or CVAR_DISABLED)
 				else
 					SetCVar("nameplateShowFriends", profile.auto_toggle_combat.friendly_ooc and CVAR_ENABLED or CVAR_DISABLED)
@@ -9962,7 +9962,7 @@ end
 		if (profile.auto_toggle_stacking_enabled and profile.stacking_nameplates_enabled) then
 			--discover which is the map type the player is in
 			local function setStacking(state, stateFriendly)
-				if not IS_WOW_PROJECT_MIDNIGHT then
+				if not IS_WOW_PROJECT_MIDNIGHT_API then
 					SetCVar ("nameplateMotion", state and CVAR_ENABLED or CVAR_DISABLED)
 				else
 					if stateFriendly == nil then
@@ -10020,21 +10020,21 @@ end
 		if (profile.auto_toggle_friendly_enabled) then
 			--discover which is the map type the player is in
 			if (zoneType == "party") then
-				if IS_WOW_PROJECT_MIDNIGHT then
+				if IS_WOW_PROJECT_MIDNIGHT_API then
 					SetCVar ("nameplateShowFriendlyPlayers", profile.auto_toggle_friendly ["party"] and CVAR_ENABLED or CVAR_DISABLED)
 				else
 					SetCVar ("nameplateShowFriends", profile.auto_toggle_friendly ["party"] and CVAR_ENABLED or CVAR_DISABLED)
 				end
 				
 			elseif (zoneType == "raid") then
-				if IS_WOW_PROJECT_MIDNIGHT then
+				if IS_WOW_PROJECT_MIDNIGHT_API then
 					SetCVar ("nameplateShowFriendlyPlayers", profile.auto_toggle_friendly ["raid"] and CVAR_ENABLED or CVAR_DISABLED)
 				else
 					SetCVar ("nameplateShowFriends", profile.auto_toggle_friendly ["raid"] and CVAR_ENABLED or CVAR_DISABLED)
 				end
 				
 			elseif (zoneType == "arena" or zoneType == "pvp") then
-				if IS_WOW_PROJECT_MIDNIGHT then
+				if IS_WOW_PROJECT_MIDNIGHT_API then
 					SetCVar ("nameplateShowFriendlyPlayers", profile.auto_toggle_friendly ["arena"] and CVAR_ENABLED or CVAR_DISABLED)
 				else
 					SetCVar ("nameplateShowFriends", profile.auto_toggle_friendly ["arena"] and CVAR_ENABLED or CVAR_DISABLED)
@@ -10043,13 +10043,13 @@ end
 			else
 				--if the player is resting, consider inside a major city
 				if (IsResting()) then
-					if IS_WOW_PROJECT_MIDNIGHT then
+					if IS_WOW_PROJECT_MIDNIGHT_API then
 						SetCVar ("nameplateShowFriendlyPlayers", profile.auto_toggle_friendly ["cities"] and CVAR_ENABLED or CVAR_DISABLED)
 					else
 						SetCVar ("nameplateShowFriends", profile.auto_toggle_friendly ["cities"] and CVAR_ENABLED or CVAR_DISABLED)
 					end
 				else
-					if IS_WOW_PROJECT_MIDNIGHT then
+					if IS_WOW_PROJECT_MIDNIGHT_API then
 						SetCVar ("nameplateShowFriendlyPlayers", profile.auto_toggle_friendly ["world"] and CVAR_ENABLED or CVAR_DISABLED)
 					else
 						SetCVar ("nameplateShowFriends", profile.auto_toggle_friendly ["world"] and CVAR_ENABLED or CVAR_DISABLED)
@@ -11163,7 +11163,7 @@ function Plater.SetCVarsOnFirstRun()
 	
 	--scale when it is too far away from the camera
 	SetCVar ("nameplateMinScale", 1)
-	if not IS_WOW_PROJECT_MIDNIGHT then
+	if not IS_WOW_PROJECT_MIDNIGHT_API then
 		--scale of the nameplate for important units, default is 1.2 which makes the nameplate be too big with the 1.15 target scale
 		SetCVar ("nameplateLargerScale", 1.10)
 	end
@@ -11175,7 +11175,7 @@ function Plater.SetCVarsOnFirstRun()
 	--don't show friendly npcs
 	SetCVar ("nameplateShowFriendlyNPCs", 0)
 
-	if IS_WOW_PROJECT_MIDNIGHT then
+	if IS_WOW_PROJECT_MIDNIGHT_API then
 		--disable friendly minius nameplates
 		SetCVar ("nameplateShowFriendlyPlayerGuardians", CVAR_DISABLED)
 		SetCVar ("nameplateShowFriendlyPlayerPets", CVAR_DISABLED)
@@ -11193,7 +11193,7 @@ function Plater.SetCVarsOnFirstRun()
 	SetCVar ("ShowClassColorInNameplate", CVAR_ENABLED)
 	
 	--> lock nameplates to screen
-	if not IS_WOW_PROJECT_MIDNIGHT then
+	if not IS_WOW_PROJECT_MIDNIGHT_API then
 		SetCVar ("nameplateOtherTopInset", "0.085")
 		SetCVar ("nameplateLargeTopInset", "0.085")
 	end
@@ -11201,7 +11201,7 @@ function Plater.SetCVarsOnFirstRun()
 	SetCVar ("nameplateTargetRadialPosition", "1")
 	SetCVar ("nameplateTargetBehindMaxDistance", "30")
 
-	if not IS_WOW_PROJECT_MIDNIGHT then
+	if not IS_WOW_PROJECT_MIDNIGHT_API then
 		--> reset the horizontal and vertical scale
 		SetCVar ("NamePlateHorizontalScale", CVAR_ENABLED)
 		SetCVar ("NamePlateVerticalScale", CVAR_ENABLED)
@@ -11213,7 +11213,7 @@ function Plater.SetCVarsOnFirstRun()
 	--> make the selection be a little bigger
 	SetCVar ("nameplateSelectedScale", "1.15")
 
-	if not IS_WOW_PROJECT_MIDNIGHT then
+	if not IS_WOW_PROJECT_MIDNIGHT_API then
 		--> movement speed of nameplates when using stacking, going above 0.5 this isn't recommended
 		SetCVar ("nameplateMotionSpeed", "0.025")
 	end

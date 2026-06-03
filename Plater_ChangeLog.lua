@@ -8,6 +8,11 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1780479003, "Bug Fix", "June 3rd, 2026", "Fixing some issues for MoP.", "cont1nuity"},
+			{1780479003, "Bug Fix", "May 22nd, 2026", "Fixing an error around renaming functionality.", "cont1nuity"},
+			{1780479003, "Bug Fix", "May 22nd, 2026", "Fixing execute for rogue on retail.", "cont1nuity"},
+			{1780479003, "Backend Change", "May 21st, 2026", "Additions and fixes for the Designer.", "Terciob"},
+
 			{1779175611, "Bug Fix", "May 19th, 2026", "Fixing wrong outline value.", "cont1nuity"},
 			{1779175611, "Bug Fix", "May 19th, 2026", "Fixing font scaling leading to pixelated fonts.", "cont1nuity"},
 			{1779175611, "Bug Fix", "May 8th, 2026", "Base compatibility for MoP 5.5.4 client.", "cont1nuity"},
