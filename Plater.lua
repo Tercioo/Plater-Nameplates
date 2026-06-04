@@ -6253,8 +6253,8 @@ function Plater.OnInit() --private --~oninit ~init
 		else
 			local unitHealth = UnitHealth (unitFrame.unit)
 			local unitHealthMax = UnitHealthMax (unitFrame.unit)
-			unitFrame.healthBar:SetMinMaxValues (0, unitHealthMax, IS_WOW_PROJECT_MIDNIGHT and Enum.StatusBarInterpolation.ExponentialEaseOut)
-			unitFrame.healthBar:SetValue (unitHealth, IS_WOW_PROJECT_MIDNIGHT and Enum.StatusBarInterpolation.ExponentialEaseOut)
+			unitFrame.healthBar:SetMinMaxValues (0, unitHealthMax, IS_WOW_PROJECT_MIDNIGHT and Enum.StatusBarInterpolation.ExponentialEaseOut or 0)
+			unitFrame.healthBar:SetValue (unitHealth, IS_WOW_PROJECT_MIDNIGHT and Enum.StatusBarInterpolation.ExponentialEaseOut or 0)
 		
 			unitFrame.healthBar.currentHealth = unitHealth
 			unitFrame.healthBar.currentHealthMax = unitHealthMax
