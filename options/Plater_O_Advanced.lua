@@ -6,7 +6,8 @@ local DF = DetailsFramework
 local _
 
 local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
-local IS_WOW_PROJECT_MIDNIGHT = DF.IsAddonApocalypseWow()
+--local IS_WOW_PROJECT_MIDNIGHT = DF.IsAddonApocalypseWow()
+local IS_WOW_PROJECT_MIDNIGHT = DF.IsMidnightWowAPI()
 
 --font select
 local on_select_blizzard_nameplate_font = function (_, _, value)
