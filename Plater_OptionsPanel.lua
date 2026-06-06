@@ -5857,8 +5857,8 @@ local relevance_options = {
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 				end
 			end,
-			min = IS_WOW_PROJECT_MAINLINE and 0 or 20, --20y for tbc and classic
-			max = (IS_WOW_PROJECT_MAINLINE and 60) or ((IS_WOW_PROJECT_CLASSIC_TBC or IS_WOW_PROJECT_CLASSIC_WRATH) and 41) or 20, --41y for tbc, 20y for classic era
+			min = IS_WOW_PROJECT_MIDNIGHT_API and 0 or 20, --20y for tbc and classic
+			max = (IS_WOW_PROJECT_MIDNIGHT_API and 60) or ((IS_WOW_PROJECT_CLASSIC_TBC or IS_WOW_PROJECT_CLASSIC_WRATH) and 41) or 20, --41y for tbc, 20y for classic era
 			step = 1,
 			name = "View Distance" .. CVarIcon,
 			desc = "How far you can see nameplates (in yards).\n\n|cFFFFFFFFCurrent limitations: Retail = 60y, TBC = 20-41y, Classic = 20y|r" .. CVarDesc,
@@ -5876,7 +5876,7 @@ local relevance_options = {
 				end
 			end,
 			min = 0,
-			max = (IS_WOW_PROJECT_MAINLINE and 60) or ((IS_WOW_PROJECT_CLASSIC_TBC or IS_WOW_PROJECT_CLASSIC_WRATH) and 0) or 0, --not available for classic/wrath
+			max = (IS_WOW_PROJECT_MIDNIGHT_API and 60) or ((IS_WOW_PROJECT_CLASSIC_TBC or IS_WOW_PROJECT_CLASSIC_WRATH) and 0) or 0, --not available for classic/wrath
 			step = 1,
 			name = "Player View Distance" .. CVarIcon,
 			desc = "How far you can see player nameplates (in yards).\n\n|cFFFFFFFFLimitations: Retail = 60y, TBC/Classic: not available|r" .. CVarDesc,
