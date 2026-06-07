@@ -371,7 +371,7 @@ function Plater.UpdateBossModAuras(unitFrame)
 				if IS_WOW_PROJECT_MIDNIGHT_API then -- using midnight api icon code
 					local tmpDuration = C_DurationUtil.CreateDuration()
 					tmpDuration:SetTimeSpan(start or GetTime(), timer or 0)
-					iconFrame:SetIcon(-1, data.color, timer and start, timer, data.icon, textEnabled and {text = data.display, text_color = data.color} or nil)
+					iconFrame:SetIcon(-1, data.color, nil, tmpDuration, data.icon, textEnabled and {text = data.display, text_color = data.color} or nil)
 				--							spellId, borderColor, startTime, duration, forceTexture, descText, count, debuffType, caster, canStealOrPurge, spellName, isBuff
 				else
 					iconFrame:SetIcon(-1, data.color, timer and start, timer, data.icon, textEnabled and {text = data.display, text_color = data.color} or nil)
