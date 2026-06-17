@@ -1713,8 +1713,8 @@ Plater.AnchorNamesByPhraseId = {
 			table.sort(orderKeys, cvar_restore_order)
 			
 			for _, CVarName in pairs (orderKeys) do
-				local CVarValue = cvars_to_store[CVarName] and savedCVars [CVarName]
-				if CVarValue then --only restore what we want to store/restore!
+				local CVarValue = savedCVars [CVarName]
+				if cvars_to_store[CVarName] and CVarValue ~= nil then --only restore what we want to store/restore!
 					SetCVar (CVarName, Plater.ParseCVarValue(CVarValue))
 				end
 			end
