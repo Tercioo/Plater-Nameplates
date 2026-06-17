@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1780479003, "Bug Fix", "June 17th, 2026", "Removing IMPORTANT aura filter for Midnight, as it has been removed from the game.", "cont1nuity"},
+			{1780479003, "Bug Fix", "June 17th, 2026", "Fixing some issues with restoring CVars correctly.", "cont1nuity"},
 			{1780479003, "Bug Fix", "June 3rd, 2026", "Fixing some issues for MoP.", "cont1nuity"},
 			{1780479003, "Bug Fix", "May 22nd, 2026", "Fixing an error around renaming functionality.", "cont1nuity"},
 			{1780479003, "Bug Fix", "May 22nd, 2026", "Fixing execute for rogue on retail.", "cont1nuity"},
