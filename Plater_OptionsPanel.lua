@@ -2078,20 +2078,6 @@ local debuff_options = {
 		desc = "Show buffs and debuffs which the game tag as important.",
 		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
-
-	{
-		type = "toggle",
-		boxfirst = true,
-		get = function() return Plater.db.profile.aura_show_important_new end,
-		set = function (self, fixedparam, value) 
-			Plater.db.profile.aura_show_important_new = value
-			Plater.RefreshDBUpvalues()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Show Important Auras",
-		desc = "Show buffs and debuffs which the game tag as important.",
-		hidden = not IS_WOW_PROJECT_MIDNIGHT,
-	},
 	
 	{
 		type = "toggle",

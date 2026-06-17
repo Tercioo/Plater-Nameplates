@@ -58,7 +58,6 @@ local DB_SHOW_ENRAGE_IN_EXTRA_ICONS
 local DB_SHOW_MAGIC_IN_EXTRA_ICONS
 local DB_DEBUFF_BANNED
 local DB_AURA_SHOW_IMPORTANT
-local DB_AURA_SHOW_IMPORTANT_NEW
 local DB_AURA_SHOW_RAID
 local DB_AURA_SHOW_BYPLAYER
 local DB_AURA_SHOW_DEBUFF_BYPLAYER
@@ -2801,8 +2800,6 @@ end
 						can_show_this_debuff = false
 					elseif DB_AURA_SHOW_AS_BLIZZARD and blizzardDebuffs[id] then
 						can_show_this_debuff = true
-					elseif DB_AURA_SHOW_IMPORTANT_NEW and not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "IMPORTANT") then
-						can_show_this_debuff = true
 					elseif DB_AURA_SHOW_DISPELLABLE and self.unitFrame.namePlateUnitReaction > 4 and not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HARMFUL|RAID_PLAYER_DISPELLABLE") then -- this requires rework. shows wl curses on enemy nameplates
 						can_show_this_debuff = true
 					elseif DB_AURA_SHOW_RAID and (not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HARMFUL|RAID_IN_COMBAT") or not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HARMFUL|RAID")) then
@@ -2945,9 +2942,6 @@ end
 						local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
 						Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isFromPlayerOrPlayerPet, isStealable, nameplateShowPersonal, spellId, true, nil, nil, nil, dispelName, timeMod)
 					elseif DB_AURA_SHOW_BUFFS_AS_BLIZZARD and blizzardBuffs[id] then
-						local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
-						Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isFromPlayerOrPlayerPet, isStealable, nameplateShowPersonal, spellId, true, nil, nil, nil, dispelName, timeMod)
-					elseif DB_AURA_SHOW_IMPORTANT_NEW and not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HELPFUL|IMPORTANT") then
 						local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
 						Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isFromPlayerOrPlayerPet, isStealable, nameplateShowPersonal, spellId, true, nil, nil, nil, dispelName, timeMod)
 					elseif DB_AURA_SHOW_DISPELLABLE and self.unitFrame.namePlateUnitReaction < 4 and self.unitFrame.ActorType == "enemynpc" and not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HELPFUL|RAID_PLAYER_DISPELLABLE") then
@@ -3416,7 +3410,6 @@ end
 		DB_AURA_SHOW_IMPORTANT = profile.aura_show_important
 		DB_AURA_SHOW_DISPELLABLE = profile.aura_show_dispellable
 		DB_AURA_SHOW_RAID = profile.aura_show_raid
-		DB_AURA_SHOW_IMPORTANT_NEW = profile.aura_show_important_new
 		DB_AURA_SHOW_ONLY_SHORT_DISPELLABLE_ON_PLAYERS = profile.aura_show_only_short_dispellable_on_players
 		DB_AURA_SHOW_ENRAGE = profile.aura_show_enrage
 		DB_AURA_SHOW_MAGIC = profile.aura_show_magic
