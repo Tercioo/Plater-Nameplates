@@ -1,5 +1,5 @@
-## Interface: 120007
-## Interface-Mainline: 120007
+## Interface: 120007, 120100
+## Interface-Mainline: 120007, 120100
 ## Interface-Mists: 50504
 ## Interface-TBC: 20505
 ## Interface-Vanilla: 11508
