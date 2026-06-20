@@ -500,6 +500,7 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
     nameplateSizeOptions.can_move = false
     nameplateSizeOptions.can_click = false --healthBar.dummy fully overlaps the health bar; let those clicks reach Health Bar / Life Percent
     objectInfo = layoutEditor:RegisterObject(healthBar.dummy, "Nameplate Size", "NAMEPLATE_SIZE", plateConfig, subTablePath, options.WidgetSettingsMapTables.NameplateSize, options.WidgetSettingsExtraOptions.NameplateSize, onSettingChanged, nameplateSizeOptions, healthBar)
+    plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
 
 
     --health options
@@ -529,14 +530,14 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
     plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
     platerInternal.UpdatePercentTextLayout(lifePercent, plateConfig[subTablePath])
 
-    --execute range
+    --execute range (profileRoot-bound; intentionally NOT in plateConfigObjectsInfo - the
+    --plate-config dropdown only repoints registrations whose values live under plate_config.*)
     objectInfo = layoutEditor:RegisterObject(healthBar.healthCutOff, "Execute Range", "EXECUTERANGE", profileRoot, rootKey, options.WidgetSettingsMapTables.ExecuteRange, options.WidgetSettingsExtraOptions.ExecuteRange, onSettingChanged, editObjectNoMoveOptions, healthBar)
-    plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
 
     --actor title and name special
     objectInfo = layoutEditor:RegisterObject(actorNameSpecial, "Big Unit Name", "BIGUNITNAME", plateConfig, subTablePath, options.WidgetSettingsMapTables.BigUnitName, options.WidgetSettingsExtraOptions.BigUnitName, onSettingChanged, editObjectNoMoveOptions, plateFrame)
     plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
-    layoutEditor:RegisterObject(actorTitleSpecial, "Big Unit Title", "BIGUNITTITLE", plateConfig, subTablePath, options.WidgetSettingsMapTables.BigActorTitle, options.WidgetSettingsExtraOptions.BigActorTitle, onSettingChanged, editObjectNoMoveOptions, plateFrame)
+    objectInfo = layoutEditor:RegisterObject(actorTitleSpecial, "Big Unit Title", "BIGUNITTITLE", plateConfig, subTablePath, options.WidgetSettingsMapTables.BigActorTitle, options.WidgetSettingsExtraOptions.BigActorTitle, onSettingChanged, editObjectNoMoveOptions, plateFrame)
     plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
 
     --cast bar [no plate config]
@@ -545,6 +546,7 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
     local castBarOptions = detailsFramework.table.copy({}, editObjectDefaultOptions)
     castBarOptions.can_move = false
     objectInfo = layoutEditor:RegisterObject(castBar, "Cast Bar", "CASTBAR", plateConfig, subTablePath, options.WidgetSettingsMapTables.CastBar, options.WidgetSettingsExtraOptions.CastBar, onSettingChanged, castBarOptions, castBar)
+    plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
 
     objectInfo = layoutEditor:RegisterObject(spellName, "Cast Spell Name", "CASTSPELLNAME", plateConfig, subTablePath, options.WidgetSettingsMapTables.SpellName, options.WidgetSettingsExtraOptions.SpellName, onSettingChanged, editObjectDefaultOptions, castBar)
     plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
