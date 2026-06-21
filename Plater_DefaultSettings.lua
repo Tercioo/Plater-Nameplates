@@ -938,7 +938,6 @@ PLATER_DEFAULT_SETTINGS = {
 		aura_show_only_important_buffs_personal = false,
 		
 		aura_show_important = false,
-		aura_show_important_new = false,
 		aura_show_dispellable = true,
 		aura_show_raid = false,
 		aura_show_only_short_dispellable_on_players = false,
@@ -958,6 +957,7 @@ PLATER_DEFAULT_SETTINGS = {
 		aura_show_crowdcontrol = false,
 		aura_show_offensive_cd = false,
 		aura_show_defensive_cd = false,
+		debuff_hide_permanent = false,
 		
 		aura_border_colors = {
 			steal_or_purge = {0, .5, .98, 1},

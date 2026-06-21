@@ -2756,7 +2756,10 @@ end
 					local sourceIsPlayer = aura.sourceIsPlayer or (sourceUnit and Plater.PlayerPetCache[UnitGUID(sourceUnit)]) and true
 			
 					--> important aura
-					if (DB_AURA_SHOW_IMPORTANT and (nameplateShowAll or isBossAura or (nameplateShowPersonal and sourceIsPlayer))) then
+					if Plater.db.profile.debuff_hide_permanent and (not duration or duration == 0) then
+						can_show_this_debuff = false -- no duration -> permanent -> hide
+
+					elseif (DB_AURA_SHOW_IMPORTANT and (nameplateShowAll or isBossAura or (nameplateShowPersonal and sourceIsPlayer))) then
 						can_show_this_debuff = true
 					
 					--> is casted by the player
@@ -2788,11 +2791,14 @@ end
 						can_show_this_debuff = false
 					end
 				elseif IS_WOW_PROJECT_MIDNIGHT then
+					--local durationObject = C_UnitAuras.GetAuraDuration(unit, id)
 					--print(issecretvalue(C_UnitAuras.AuraIsBigDefensive(spellId)), C_UnitAuras.AuraIsBigDefensive(spellId), issecretvalue(C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "CROWD_CONTROL")), C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "CROWD_CONTROL"))
 					
 					-- TODO: MIDNIGHT!!
 					--print(C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HARMFUL|RAID_IN_COMBAT"), C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HARMFUL|RAID"), C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "IMPORTANT"))
-					if Plater.db.profile.debuff_show_cc and not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HARMFUL|CROWD_CONTROL") then
+					if Plater.db.profile.debuff_hide_permanent and not C_UnitAuras.GetAuraDuration(unit, id) then
+						can_show_this_debuff = false -- no duration -> permanent -> hide
+					elseif Plater.db.profile.debuff_show_cc and not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HARMFUL|CROWD_CONTROL") then
 						Plater.AddExtraIcon (self, name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, false, "HARMFUL", id, timeMod)
 						can_show_this_debuff = false
 					elseif DB_SHOW_PURGE_IN_EXTRA_ICONS and self.unitFrame.namePlateUnitReaction > 4 and not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HARMFUL|RAID_PLAYER_DISPELLABLE") then
@@ -2876,7 +2882,10 @@ end
 						--> important aura
 						local sourceIsPlayer = aura.sourceIsPlayer or (sourceUnit and Plater.PlayerPetCache[UnitGUID(sourceUnit)]) and true
 						
-						if (DB_AURA_SHOW_IMPORTANT and (nameplateShowAll or isBossAura or (nameplateShowPersonal and sourceIsPlayer))) then
+						if Plater.db.profile.debuff_hide_permanent and (not duration or duration == 0) then
+							-- no duration -> permanent -> hide
+
+						elseif (DB_AURA_SHOW_IMPORTANT and (nameplateShowAll or isBossAura or (nameplateShowPersonal and sourceIsPlayer))) then
 							local auraIconFrame, buffFrame = Plater.GetAuraIcon (self, true)
 							Plater.AddAura (buffFrame, auraIconFrame, id, name, icon, applications, auraType, duration, expirationTime, sourceUnit, isFromPlayerOrPlayerPet, isStealable, nameplateShowPersonal, spellId, true, true, nil, nil, dispelName, timeMod)
 						
@@ -2934,7 +2943,9 @@ end
 					end
 
 				elseif IS_WOW_PROJECT_MIDNIGHT then
-					if DB_SHOW_PURGE_IN_EXTRA_ICONS and self.unitFrame.namePlateUnitReaction < 4 and self.unitFrame.ActorType == "enemynpc" and not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HELPFUL|RAID_PLAYER_DISPELLABLE") then
+					if Plater.db.profile.debuff_hide_permanent and not C_UnitAuras.GetAuraDuration(unit, id) then
+						-- no duration -> permanent -> hide
+					elseif DB_SHOW_PURGE_IN_EXTRA_ICONS and self.unitFrame.namePlateUnitReaction < 4 and self.unitFrame.ActorType == "enemynpc" and not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HELPFUL|RAID_PLAYER_DISPELLABLE") then
 						Plater.AddExtraIcon (self, name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, true, "HELPFUL", id, timeMod)
 					elseif Plater.db.profile.extra_icon_show_defensive and (self.unitFrame.ActorType == "enemyplayer" or self.unitFrame.ActorType == "friendlyplayer") and (not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HELPFUL|BIG_DEFENSIVE") or not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HELPFUL|EXTERNAL_DEFENSIVE")) then
 						Plater.AddExtraIcon (self, name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, true, "HELPFUL", id, timeMod)

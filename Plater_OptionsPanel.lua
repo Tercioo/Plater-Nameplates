@@ -2256,7 +2256,22 @@ local debuff_options = {
 		name = "Show defensive player CDs",
 		desc = "Show defensive CDs on enemy/friendly players.",
 	},
-	
+
+	{type = "break"},
+
+	{
+		type = "toggle",
+		boxfirst = true,
+		get = function() return Plater.db.profile.debuff_hide_permanent end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.debuff_hide_permanent = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Hide permanent auras",
+		desc = "Hide auras with no duration.",
+	},
+
 	{type = "breakline"},
 	{type = "label", get = function() return "Aura Frame 1:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	
