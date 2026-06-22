@@ -647,6 +647,22 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
             end
         end
 
+        if (curCastBarValue > 0) then
+            castBarSpark:Show()
+            castBarSpark:SetVertexColor(unpack(Plater.db.profile.cast_statusbar_spark_color))
+            castBarSpark:SetAlpha(Plater.db.profile.cast_statusbar_spark_alpha)
+            PixelUtil.SetSize(castBarSpark, Plater.db.profile.cast_statusbar_spark_width, castBar:GetHeight())
+            --half spark (crops the texture to the left half so only one side is shown)
+            if (Plater.db.profile.cast_statusbar_spark_half) then
+                castBarSpark:SetTexCoord(0, 0.5, 0, 1)
+            else
+                castBarSpark:SetTexCoord(0, 1, 0, 1)
+            end
+            --offset (anchored at the right edge of the bar's fill, shifted by the profile value)
+            castBarSpark:ClearAllPoints()
+            PixelUtil.SetPoint(castBarSpark, "center", castBar.barTexture, "right", Plater.db.profile.cast_statusbar_spark_offset, 0)
+        end
+
         --castBarTargetName:SetText("Target Name")
         --castBarTargetName:Show()
 
