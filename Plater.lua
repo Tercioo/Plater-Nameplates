@@ -6478,9 +6478,20 @@ function Plater.OnInit() --private --~oninit ~init
 			end
 		end)
 	elseif PlayerCastingBarFrame then
+        hooksecurefunc(PlayerCastingBarFrame, "SetAlpha", function(self, alpha)
+			if (Plater.db.profile.hide_blizzard_castbar) then
+				if alpha ~= 0 and self:IsProtected() then
+					self:SetAlpha(0)
+				end
+			end
+        end)
 		PlayerCastingBarFrame:HookScript ("OnShow", function (self)
 			if (Plater.db.profile.hide_blizzard_castbar) then
-				self:Hide()
+				if self:IsProtected() then
+					self:SetAlpha(0)
+				else
+					self:Hide()
+				end
 			end
 		end)		
 	end
