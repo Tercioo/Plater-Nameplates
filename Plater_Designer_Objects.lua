@@ -888,6 +888,31 @@ function designer.CreateSettings(parentFrame)
             },
 
             {type = "blank"},
+            {type = "label", get = function() return "Mouse Hover:" end, text_template = detailsFramework:GetTemplate("font", "ORANGE_FONT_TEMPLATE")},
+
+            --the preview's hover highlight texture lives on healthBar (target.HoverHighlight where
+            --target is the dummyTarget bar). its visibility is driven by the moveUpFrame OnUpdate
+            --in Plater_Designer.lua; this setter only updates the alpha so a slider drag is live.
+            {
+                key = "hover_highlight",
+                label = "Hover Highlight",
+                widget = "toggle",
+                default = Plater.db.profile.hover_highlight,
+                setter = function(target, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "hover_highlight_alpha",
+                label = "Hover Highlight Alpha",
+                widget = "slider",
+                minvalue = 0, maxvalue = 1, step = 0.1, usedecimals = true,
+                default = Plater.db.profile.hover_highlight_alpha,
+                setter = function(target, value)
+                    target.HoverHighlight:SetAlpha(value)
+                    designer.UpdateAllNameplates()
+                end,
+            },
+
+            {type = "blank"},
             {type = "label", get = function() return "Focus:" end, text_template = detailsFramework:GetTemplate("font", "ORANGE_FONT_TEMPLATE")},
 
             {
@@ -895,7 +920,15 @@ function designer.CreateSettings(parentFrame)
                 label = "Show Focus Overlay",
                 widget = "toggle",
                 default = Plater.db.profile.focus_indicator_enabled,
-                setter = function(target, value) designer.UpdateAllNameplates() end,
+                setter = function(target, value)
+                    --Plater.UpdateTarget only hides the focus indicator when the unit is no longer
+                    --the focus; turning the feature off while still focused leaves the texture
+                    --shown until the next target change, so clear it explicitly here.
+                    if (not value) then
+                        Plater.HideFocusIndicator()
+                    end
+                    designer.UpdateAllNameplates()
+                end,
             },
             {
                 key = "focus_color",

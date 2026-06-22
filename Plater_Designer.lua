@@ -608,6 +608,13 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
             unitFrame.targetOverlayTexture:Hide()
         end
 
+        --preview hover-over highlight
+        if (Plater.db.profile.hover_highlight and healthBar:IsMouseOver()) then
+            healthBar.dummyTargetBar.HoverHighlight:Show()
+        else
+            healthBar.dummyTargetBar.HoverHighlight:Hide()
+        end
+
         if (Plater.db.profile.indicator_extra_raidmark) then
             healthBar.ExtraRaidMark:Show()
             healthBar.ExtraRaidMark:SetTexture([[Interface\TargetingFrame\UI-RaidTargetingIcons]])
@@ -819,6 +826,14 @@ function designer.UpdatePreview()
     targetNeonDown:SetBlendMode("ADD")
     targetNeonDown:SetTexCoord(0, 1, 1, 0) --flip vertically to mirror NeonUp
     dummyTargetBar.NeonDown = targetNeonDown
+
+    --hover-over highlight texture it mimics plateFrame.unitFrame.HighlightFrame.HighlightTexture
+    local hoverHighlightTexture = healthBar:CreateTexture(nil, "overlay")
+    hoverHighlightTexture:SetAllPoints(healthBar)
+    hoverHighlightTexture:SetColorTexture(1, 1, 1, 1)
+    hoverHighlightTexture:SetAlpha(Plater.db.profile.hover_highlight_alpha)
+    hoverHighlightTexture:Hide()
+    dummyTargetBar.HoverHighlight = hoverHighlightTexture
 
     local PLAYER_IN_COMBAT = false
 
