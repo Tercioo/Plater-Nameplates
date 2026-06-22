@@ -8021,7 +8021,17 @@ end
 			unitFrame.softInteractIconFrame:Hide()
 		end
 	end
-	
+
+	--iterate all shown nameplates and hide the focus indicator on the first plate where it is visible
+	function Plater.HideFocusIndicator()
+		for index, plateFrame in ipairs(Plater.GetAllShownPlates()) do
+			if (plateFrame.FocusIndicator:IsShown()) then
+				plateFrame.FocusIndicator:Hide()
+				return
+			end
+		end
+	end
+
 	-- ~target ~selection
 	function Plater.UpdateTarget (plateFrame) --private
 

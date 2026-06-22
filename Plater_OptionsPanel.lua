@@ -5414,8 +5414,11 @@ local targetOptions = {
 		{
 			type = "toggle",
 			get = function() return Plater.db.profile.focus_indicator_enabled end,
-			set = function (self, fixedparam, value) 
+			set = function (self, fixedparam, value)
 				Plater.db.profile.focus_indicator_enabled = value
+				if (not value) then
+					Plater.HideFocusIndicator()
+				end
 				Plater.OnPlayerTargetChanged()
 			end,
 			name = "Show Focus Overlay",
