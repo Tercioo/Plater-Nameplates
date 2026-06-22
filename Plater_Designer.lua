@@ -728,6 +728,8 @@ end
 
 function designer.CreatePreview(parent)
     plateFrame = CreateFrame("frame", "PlaterDesignerPlatePreview", parent)
+    --share the preview plate with sibling files (Plater_Designer_Objects.lua setters)
+    designer.plateFrame = plateFrame
     plateFrame.isDesigner = true
 
     plateFrame.UnitFrame = CreateFrame("frame", "$parentDummyUnitFrame", plateFrame) --blizzard's unit frame placeholder
@@ -1000,4 +1002,8 @@ function designer.UpdatePreview()
     plateFrame.unitFrame:SetFrameStrata("FULLSCREEN")
 
     Plater.UpdatePlateSize(plateFrame)
+
+    --draw the bracket indicator on the preview (the preview unit is not the player target
+    --so Plater.UpdateTarget never runs the indicator code path for it)
+    Plater.UpdateTargetIndicator(plateFrame)
 end

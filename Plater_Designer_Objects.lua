@@ -845,7 +845,7 @@ function designer.CreateSettings(parentFrame)
 
             {type = "blank"},
 
-            --bracket indicator on left/right of the target's health bar
+            --bracket indicator on the sides of the target's health bar
             {
                 key = "target_indicator",
                 label = "Target Bracket Indicator",
@@ -853,12 +853,23 @@ function designer.CreateSettings(parentFrame)
                 default = Plater.db.profile.target_indicator,
                 dropdownFunc = function()
                     local opts = {}
-                    for name, _ in pairs(Plater.TargetIndicators) do
-                        opts[#opts + 1] = {value = name, label = name}
+                    --each preset carries a texture path plus a coords table (one set per corner).
+                    --pass the first corner as the option icon so the dropdown shows a preview.
+                    for name, indicatorTable in pairs(Plater.TargetIndicators) do
+                        opts[#opts + 1] = {
+                            value = name,
+                            label = name,
+                            icon = indicatorTable.path,
+                            texcoord = indicatorTable.coords[1],
+                        }
                     end
                     return opts
                 end,
-                setter = function(target, value) designer.UpdateAllNameplates() end,
+                setter = function(target, value)
+                    --redraw the brackets on the preview plate so the pick shows right away
+                    Plater.UpdateTargetIndicator(designer.plateFrame)
+                    designer.UpdateAllNameplates()
+                end,
             },
 
             {type = "blank"},
