@@ -34,3 +34,4 @@ images/cast_bar_debuff.afphoto~lock~
 /images/deprecated
 *.bak
 libs/DF/_lua_fns.txt
+/afphoto
