@@ -521,6 +521,14 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
     --raidMarkOptions.can_move = false
     objectInfo = layoutEditor:RegisterObject(unitFrame.PlaterRaidTargetFrame, "Raid Mark", "RAIDMARK", profileRoot, rootKey, options.WidgetSettingsMapTables.RaidMark, options.WidgetSettingsExtraOptions.RaidMark, onSettingChanged, raidMarkOptions, unitFrame)
 
+    --colors (threat, override, unit type) - global settings, can_click stays off so the dummy
+    --does not steal clicks from the Health Bar select button under it.
+    ---@type df_editobjectoptions
+    local colorsOptions = detailsFramework.table.copy({}, editObjectDefaultOptions)
+    colorsOptions.can_move = false
+    colorsOptions.can_click = false
+    objectInfo = layoutEditor:RegisterObject(healthBar.dummyColors, "Colors", "COLORS", profileRoot, rootKey, options.WidgetSettingsMapTables.Colors, options.WidgetSettingsExtraOptions.Colors, onSettingChanged, colorsOptions, healthBar)
+
     objectInfo = layoutEditor:RegisterObject(unitName, "Unit Name", "UNITNAME", plateConfig, subTablePath, options.WidgetSettingsMapTables.UnitName, options.WidgetSettingsExtraOptions.UnitName, onSettingChanged, editObjectDefaultOptions, healthBar)
     plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
 
@@ -789,6 +797,12 @@ function designer.UpdatePreview()
     local dummyHealthBar = CreateFrame("frame", nil, healthBar)
     dummyHealthBar:SetAllPoints()
     healthBar.dummy = dummyHealthBar
+
+    --invisible anchor frame for the Colors widget (the settings are global so there is no
+    --single visual target, the frame just gives the editor an object to register against)
+    local dummyColors = CreateFrame("frame", nil, healthBar)
+    dummyColors:SetAllPoints()
+    healthBar.dummyColors = dummyColors
 
     local dummyTargetBar = CreateFrame("frame", nil, healthBar, "BackdropTemplate")
     healthBar.dummyTargetBar = dummyTargetBar

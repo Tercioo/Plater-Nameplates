@@ -176,6 +176,8 @@ function designer.CreateSettings(parentFrame)
             anchoroffsetx = "indicator_raidmark_anchor.x",
             anchoroffsety = "indicator_raidmark_anchor.y",
         },
+
+        Colors = {},
     }
 
     --in-memory mirror of target-related CVars. used as the profileTable override on Target's
@@ -752,6 +754,356 @@ function designer.CreateSettings(parentFrame)
         },
 
         SpellName = {},
+
+        --all options copied from the options panel "colors / threat" section (Plater_OptionsPanel.lua
+        --thread_options table). settings are global, so they read and write at profile root.
+        Colors = {
+            {type = "label", get = function() return "Threat Modifies:" end, text_template = detailsFramework:GetTemplate("font", "ORANGE_FONT_TEMPLATE")},
+
+            {
+                key = "aggro_modifies.health_bar_color",
+                label = "Health Bar Color",
+                widget = "toggle",
+                default = Plater.db.profile.aggro_modifies.health_bar_color,
+                setter = function(colors, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "aggro_modifies.border_color",
+                label = "Border Color",
+                widget = "toggle",
+                default = Plater.db.profile.aggro_modifies.border_color,
+                setter = function(colors, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "aggro_modifies.actor_name_color",
+                label = "Unit Name Color",
+                widget = "toggle",
+                default = Plater.db.profile.aggro_modifies.actor_name_color,
+                setter = function(colors, value) designer.UpdateAllNameplates() end,
+            },
+
+            {type = "blank"},
+            {type = "label", get = function() return "Tank Colors:" end, text_template = detailsFramework:GetTemplate("font", "ORANGE_FONT_TEMPLATE")},
+
+            {
+                key = "tank.colors.aggro",
+                label = "Aggro on you",
+                desc = "The unit is attacking you and you have solid aggro.",
+                widget = "color",
+                default = Plater.db.profile.tank.colors.aggro,
+                setter = function(colors, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "tank.colors.anothertank",
+                label = "Aggro on another tank",
+                desc = "The unit is being tanked by another tank in your group.",
+                widget = "color",
+                default = Plater.db.profile.tank.colors.anothertank,
+                setter = function(colors, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "tank.colors.pulling",
+                label = "Pulling (low aggro)",
+                desc = "The unit is attacking you but others are about to pull the aggro.",
+                widget = "color",
+                default = Plater.db.profile.tank.colors.pulling,
+                setter = function(colors, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "tank.colors.noaggro",
+                label = "No aggro",
+                desc = "The unit does not have aggro on you.",
+                widget = "color",
+                default = Plater.db.profile.tank.colors.noaggro,
+                setter = function(colors, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "tank.colors.pulling_from_tank",
+                label = "Pull from another tank",
+                desc = "The unit has aggro on another tank and you're about to pull it.",
+                widget = "color",
+                default = Plater.db.profile.tank.colors.pulling_from_tank,
+                setter = function(colors, value) designer.UpdateAllNameplates() end,
+            },
+
+            {type = "blank"},
+            {type = "label", get = function() return "DPS Colors:" end, text_template = detailsFramework:GetTemplate("font", "ORANGE_FONT_TEMPLATE")},
+
+            {
+                key = "dps.colors.aggro",
+                label = "Aggro on you",
+                desc = "The unit is attacking you.",
+                widget = "color",
+                default = Plater.db.profile.dps.colors.aggro,
+                setter = function(colors, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "dps.colors.pulling",
+                label = "High threat",
+                desc = "The unit is about to start attacking you.",
+                widget = "color",
+                default = Plater.db.profile.dps.colors.pulling,
+                setter = function(colors, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "dps.colors.noaggro",
+                label = "No aggro",
+                desc = "The unit isn't attacking you.",
+                widget = "color",
+                default = Plater.db.profile.dps.colors.noaggro,
+                setter = function(colors, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "dps.use_aggro_solo",
+                label = "Use solo color",
+                desc = "Use the 'Solo' color when not in a group.",
+                widget = "toggle",
+                default = Plater.db.profile.dps.use_aggro_solo,
+                setter = function(colors, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "dps.colors.solo",
+                label = "Solo color",
+                desc = "Use the 'Solo' color when not in a group.",
+                widget = "color",
+                default = Plater.db.profile.dps.colors.solo,
+                setter = function(colors, value) designer.UpdateAllNameplates() end,
+            },
+
+            {type = "blank"},
+
+            {
+                key = "aggro_can_check_notank",
+                label = "Check no tank",
+                desc = "When you don't have aggro as healer or dps, check if the enemy is attacking another unit that isn't a tank.",
+                widget = "toggle",
+                default = Plater.db.profile.aggro_can_check_notank,
+                setter = function(colors, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "dps.colors.notontank",
+                label = "Not on tank",
+                desc = "The unit isn't attacking you or a tank and most likely is attacking another healer or dps from your group.",
+                widget = "color",
+                default = Plater.db.profile.dps.colors.notontank,
+                setter = function(colors, value) designer.UpdateAllNameplates() end,
+            },
+
+            {type = "blank"},
+
+            {
+                key = "tank.colors.nocombat",
+                label = "Out of combat",
+                desc = "The unit isn't in combat.",
+                widget = "color",
+                default = Plater.db.profile.tank.colors.nocombat,
+                setter = function(colors, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "tap_denied_color",
+                label = "Tapped by another",
+                desc = "When someone else has claimed the unit (when you don't receive experience or loot for killing it).",
+                widget = "color",
+                default = Plater.db.profile.tap_denied_color,
+                setter = function(colors, value) designer.UpdateAllNameplates() end,
+            },
+
+            {type = "blank"},
+            {type = "label", get = function() return "Tank or DPS Colors:" end, text_template = detailsFramework:GetTemplate("font", "ORANGE_FONT_TEMPLATE")},
+
+            --this toggle is hidden on retail in the options panel (classic only setting). kept here
+            --so all options are reachable from the editor.
+            {
+                key = "tank_threat_colors",
+                label = "Use tank colors",
+                widget = "toggle",
+                default = Plater.db.profile.tank_threat_colors,
+                setter = function(colors, value)
+                    Plater.RefreshTankCache()
+                    designer.UpdateAllNameplates()
+                end,
+            },
+
+            {type = "blank"},
+            {type = "label", get = function() return "Color Override:" end, text_template = detailsFramework:GetTemplate("font", "ORANGE_FONT_TEMPLATE")},
+
+            {
+                key = "color_override",
+                label = "Enabled",
+                desc = "Modify the default colors set by the game for neutral, hostile and friendly units. During combat, these colors will be override as well if threat colors are allowed to change health bar color.",
+                widget = "toggle",
+                default = Plater.db.profile.color_override,
+                setter = function(colors, value)
+                    Plater.RefreshColorOverride()
+                    designer.UpdateAllNameplates()
+                end,
+            },
+            {
+                key = "color_override_colors[3]",
+                label = "Hostile",
+                desc = "Hostile",
+                widget = "color",
+                default = Plater.db.profile.color_override_colors[3],
+                setter = function(colors, value)
+                    Plater.UpdateAllNameplateColors()
+                    designer.UpdateAllNameplates()
+                end,
+            },
+            {
+                key = "color_override_colors[4]",
+                label = "Neutral",
+                desc = "Neutral",
+                widget = "color",
+                default = Plater.db.profile.color_override_colors[4],
+                setter = function(colors, value)
+                    Plater.UpdateAllNameplateColors()
+                    designer.UpdateAllNameplates()
+                end,
+            },
+            {
+                key = "color_override_colors[5]",
+                label = "Friendly",
+                desc = "Friendly",
+                widget = "color",
+                default = Plater.db.profile.color_override_colors[5],
+                setter = function(colors, value)
+                    Plater.UpdateAllNameplateColors()
+                    designer.UpdateAllNameplates()
+                end,
+            },
+
+            {type = "blank"},
+            {type = "label", get = function() return "Misc:" end, text_template = detailsFramework:GetTemplate("font", "ORANGE_FONT_TEMPLATE")},
+
+            {
+                key = "show_aggro_flash",
+                label = "Show aggro flash",
+                desc = "Enables the -AGGRO- flash animation on the nameplates when gaining aggro as dps.",
+                widget = "toggle",
+                default = Plater.db.profile.show_aggro_flash,
+                setter = function(colors, value) designer.UpdateAllNameplates() end,
+            },
+            {
+                key = "show_aggro_glow",
+                label = "Show aggro glow",
+                desc = "Enables the healthbar glow on the nameplates when gaining aggro as dps or losing aggro as tank.",
+                widget = "toggle",
+                default = Plater.db.profile.show_aggro_glow,
+                setter = function(colors, value) designer.UpdateAllNameplates() end,
+            },
+
+            {type = "blank"},
+            {type = "label", get = function() return "Unit Type Coloring:" end, text_template = detailsFramework:GetTemplate("font", "ORANGE_FONT_TEMPLATE")},
+
+            {
+                key = "unit_type_coloring_enabled",
+                label = "Enabled",
+                desc = "Enable unit type coloring with the colors below. Only active in dungeons and raids. Bad threat states will override this color.",
+                widget = "toggle",
+                default = Plater.db.profile.unit_type_coloring_enabled,
+                setter = function(colors, value)
+                    Plater.UpdateAllNameplateColors()
+                    designer.UpdateAllNameplates()
+                end,
+            },
+            {
+                key = "unit_type_coloring_no_override_threat",
+                label = "Threat overrides unit type",
+                desc = "Threat coloring will have priority over unit type colors.",
+                widget = "toggle",
+                default = Plater.db.profile.unit_type_coloring_no_override_threat,
+                setter = function(colors, value)
+                    Plater.UpdateAllNameplateColors()
+                    designer.UpdateAllNameplates()
+                end,
+            },
+
+            {type = "blank"},
+
+            {
+                key = "unit_type_coloring_boss",
+                label = "Boss",
+                desc = "Color for raid or dungeon bosses.",
+                widget = "color",
+                default = Plater.db.profile.unit_type_coloring_boss,
+                setter = function(colors, value)
+                    Plater.UpdateAllNameplateColors()
+                    designer.UpdateAllNameplates()
+                end,
+            },
+            {
+                key = "unit_type_coloring_miniboss",
+                label = "Miniboss",
+                desc = "Color for minibosses.",
+                widget = "color",
+                default = Plater.db.profile.unit_type_coloring_miniboss,
+                setter = function(colors, value)
+                    Plater.UpdateAllNameplateColors()
+                    designer.UpdateAllNameplates()
+                end,
+            },
+            {
+                key = "unit_type_coloring_caster",
+                label = "Caster",
+                desc = "Color for caster units.",
+                widget = "color",
+                default = Plater.db.profile.unit_type_coloring_caster,
+                setter = function(colors, value)
+                    Plater.UpdateAllNameplateColors()
+                    designer.UpdateAllNameplates()
+                end,
+            },
+
+            {type = "blank"},
+
+            {
+                key = "unit_type_coloring_enable_elite",
+                label = "Enable elite",
+                desc = "Will override non-elite colors as 'elite'.",
+                widget = "toggle",
+                default = Plater.db.profile.unit_type_coloring_enable_elite,
+                setter = function(colors, value)
+                    Plater.UpdateAllNameplateColors()
+                    designer.UpdateAllNameplates()
+                end,
+            },
+            {
+                key = "unit_type_coloring_elite",
+                label = "Elite",
+                desc = "Color for elite units.",
+                widget = "color",
+                default = Plater.db.profile.unit_type_coloring_elite,
+                setter = function(colors, value)
+                    Plater.UpdateAllNameplateColors()
+                    designer.UpdateAllNameplates()
+                end,
+            },
+
+            {type = "blank"},
+
+            {
+                key = "unit_type_coloring_enable_trivial",
+                label = "Enable trivial",
+                desc = "Will override non-elite colors as 'trivial'.",
+                widget = "toggle",
+                default = Plater.db.profile.unit_type_coloring_enable_trivial,
+                setter = function(colors, value)
+                    Plater.UpdateAllNameplateColors()
+                    designer.UpdateAllNameplates()
+                end,
+            },
+            {
+                key = "unit_type_coloring_trivial",
+                label = "Trivial",
+                desc = "Color for non-elite/trivial units.",
+                widget = "color",
+                default = Plater.db.profile.unit_type_coloring_trivial,
+                setter = function(colors, value)
+                    Plater.UpdateAllNameplateColors()
+                    designer.UpdateAllNameplates()
+                end,
+            },
+        },
 
         Target = {
             --target overlay (acts on the same texture HealthBar's "Target Overlay" exposes; included here per parity with the Plater options panel)
