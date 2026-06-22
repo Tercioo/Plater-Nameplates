@@ -1160,8 +1160,14 @@ end
 			local index = 0
 			for _, icon in pairs(iconFrameContainer) do
 				if icon:IsShown() then
-					index = index + 1
-					iconFrameContainerCopy[index] = icon
+					-- some more filtering doing here, as cannot be done earlier for midnight without larger rework...
+					local isPermanentToFilter = IS_WOW_PROJECT_MIDNIGHT and not icon.Cooldown:IsShown() and Plater.db.profile.debuff_hide_permanent or false
+					if not isPermanentToFilter then
+						index = index + 1
+						iconFrameContainerCopy[index] = icon
+					else
+						icon:Hide()
+					end
 				end
 			end
 			iconFrameContainer = iconFrameContainerCopy
@@ -2043,14 +2049,17 @@ end
 		local now = GetTime()
 		--MIDNIGHT!!
 		if IS_WOW_PROJECT_MIDNIGHT then --TODO (lots of...) MIDNIGHT!!
-			local durationObject = C_UnitAuras.GetAuraDuration(auraIconFrame.unitFrame.namePlateUnitToken, i)
+			local durationObjectOrig = C_UnitAuras.GetAuraDuration(auraIconFrame.unitFrame.namePlateUnitToken, i)
+			local durationObject
 			if not DB_AURA_ENABLED then --aura testing
 				durationObject = C_DurationUtil.CreateDuration()
 				durationObject:SetTimeFromEnd(expirationTime, duration, modRate or 1)
-			elseif not durationObject then
+			elseif not durationObjectOrig then
 				-- fallback for 0 duration
 				durationObject = C_DurationUtil.CreateDuration()
 				durationObject:SetTimeFromEnd(0, 0, 1)
+			else
+				durationObject = durationObjectOrig
 			end
 			local timeLeft = durationObject and durationObject:GetRemainingDuration()
 			--local maxduration = C_UnitAuras.GetRefreshExtendedDuration(auraIconFrame.unitFrame.namePlateUnitToken, i)
@@ -2060,7 +2069,13 @@ end
 			--auraIconFrame.Cooldown:SetCooldownDuration(duration, modRate)
 			local noExpirationTime = durationObject:IsZero()--C_UnitAuras.DoesAuraHaveExpirationTime(auraIconFrame.unitFrame.namePlateUnitToken, i)
 			--auraIconFrame.Cooldown:SetCooldownFromExpirationTime(expirationTime, duration, modRate)
-			auraIconFrame.Cooldown:SetCooldownFromDurationObject(durationObject)
+			if durationObjectOrig then
+				auraIconFrame.Cooldown:SetCooldownFromDurationObject(durationObject)
+				auraIconFrame.isPermanent = false
+			else
+				auraIconFrame.Cooldown:Clear()
+				auraIconFrame.isPermanent = true
+			end
 			auraIconFrame.Cooldown:SetAlphaFromBoolean(noExpirationTime, 0, 1)
 			
 			auraIconFrame.noExpirationTime = noExpirationTime
@@ -2796,9 +2811,9 @@ end
 					
 					-- TODO: MIDNIGHT!!
 					--print(C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HARMFUL|RAID_IN_COMBAT"), C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HARMFUL|RAID"), C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "IMPORTANT"))
-					if Plater.db.profile.debuff_hide_permanent and not C_UnitAuras.GetAuraDuration(unit, id) then
-						can_show_this_debuff = false -- no duration -> permanent -> hide
-					elseif Plater.db.profile.debuff_show_cc and not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HARMFUL|CROWD_CONTROL") then
+					--if Plater.db.profile.debuff_hide_permanent and not C_UnitAuras.GetAuraDuration(unit, id) then
+						--can_show_this_debuff = false - no duration -> permanent -> hide. But cannot be done here, as aura duration will be returned. checking visible CD instead as workaround
+					if Plater.db.profile.debuff_show_cc and not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HARMFUL|CROWD_CONTROL") then
 						Plater.AddExtraIcon (self, name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, false, "HARMFUL", id, timeMod)
 						can_show_this_debuff = false
 					elseif DB_SHOW_PURGE_IN_EXTRA_ICONS and self.unitFrame.namePlateUnitReaction > 4 and not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HARMFUL|RAID_PLAYER_DISPELLABLE") then
@@ -2943,9 +2958,9 @@ end
 					end
 
 				elseif IS_WOW_PROJECT_MIDNIGHT then
-					if Plater.db.profile.debuff_hide_permanent and not C_UnitAuras.GetAuraDuration(unit, id) then
-						-- no duration -> permanent -> hide
-					elseif DB_SHOW_PURGE_IN_EXTRA_ICONS and self.unitFrame.namePlateUnitReaction < 4 and self.unitFrame.ActorType == "enemynpc" and not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HELPFUL|RAID_PLAYER_DISPELLABLE") then
+					--if Plater.db.profile.debuff_hide_permanent and not C_UnitAuras.GetAuraDuration(unit, id) then
+						-- no duration -> permanent -> hide. But cannot be done here, as aura duration will be returned. checking visible CD instead as workaround
+					if DB_SHOW_PURGE_IN_EXTRA_ICONS and self.unitFrame.namePlateUnitReaction < 4 and self.unitFrame.ActorType == "enemynpc" and not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HELPFUL|RAID_PLAYER_DISPELLABLE") then
 						Plater.AddExtraIcon (self, name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, true, "HELPFUL", id, timeMod)
 					elseif Plater.db.profile.extra_icon_show_defensive and (self.unitFrame.ActorType == "enemyplayer" or self.unitFrame.ActorType == "friendlyplayer") and (not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HELPFUL|BIG_DEFENSIVE") or not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, aura.auraInstanceID, "HELPFUL|EXTERNAL_DEFENSIVE")) then
 						Plater.AddExtraIcon (self, name, icon, applications, dispelName, duration, expirationTime, sourceUnit, isStealable, nameplateShowPersonal, spellId, true, "HELPFUL", id, timeMod)
