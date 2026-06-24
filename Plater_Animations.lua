@@ -1,7 +1,7 @@
 
 local Plater = _G.Plater
 local DF = _G.DetailsFramework
-local AnimateTexCoords = _G.AnimateTexCoords
+local AnimateTexCoords = _G.AnimateTexCoords or TextureUtil and TextureUtil.AnimateTexCoords or function() end
 local LCG = LibStub:GetLibrary("LibCustomGlow-1.0") -- https://github.com/Stanzilla/LibCustomGlow
 
 local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
