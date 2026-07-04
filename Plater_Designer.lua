@@ -10,6 +10,22 @@ local _
 local DEBUG_OPEN_AT_LOGIN = false
 local IS_WOW_PROJECT_MIDNIGHT = detailsFramework.IsAddonApocalypseWow()
 
+--fake aura data for the designer's Auras preview. structure matches what Plater.AddAura
+--expects (name, texture, count, duration, spellID, type). ApplyTime is mutated per-tick by
+--the driver so each aura cycles its visible time.
+local AURA_TEST_DEBUFFS = {
+    {SpellName = "Shadow Word: Pain", SpellTexture = 136207, Count = 1, Duration = 7, SpellID = 589, Type = "Magic"},
+    {SpellName = "Vampiric Touch", SpellTexture = 135978, Count = 1, Duration = 5, SpellID = 34914, Type = "Magic"},
+    --Count 0 on these two so their stack number does not overlap the "stacks" preview button
+    --sitting directly above them (they are the 3rd and 4th icons under that label).
+    {SpellName = "Mind Flay", SpellTexture = 136208, Count = 0, Duration = 5, SpellID = 15407, Type = "Magic"},
+    {SpellName = "Enrage", SpellTexture = 132345, Count = 0, Duration = 0, SpellID = 228318, Type = ""},
+}
+local AURA_TEST_BUFFS = {
+    {SpellName = "Twist of Fate", SpellTexture = 237566, Count = 1, Duration = 9, SpellID = 123254},
+    {SpellName = "Empty Mind", SpellTexture = 136206, Count = 4, Duration = 7, SpellID = 247226},
+}
+
 ---@class plater_designer : table
 
 platerInternal.Designer = {}
@@ -110,6 +126,22 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
 
     local isCastBarSelected = false
     local isTargetSelected = false
+    local isFocusSelected = false
+    local isAuraTimerSelected = false
+
+    --when true, the fake aura preview is also painted on real game-world nameplates. only
+    --enabled while an aura-related widget is selected so the preview does not clutter the
+    --player's actual nameplates while editing other parts of the design.
+    local isAuraWorldPreviewOn = false
+
+    --widget ids that count as "aura related" for the world-plate preview above.
+    local AURA_WIDGET_IDS = {
+        AURAS = true,
+        AURATRACKING = true,
+        AURABORDERCOLORS = true,
+        STACKCOUNTER = true,
+        AURATIMER = true,
+    }
 
     local startX, startY, heightSize = 10, platerInternal.optionsYStart, 755
 
@@ -136,14 +168,22 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
     --editorMainFrame:SetPoint ("center", UIParent, "center", -100, 0)
     editorMainFrame:SetPoint("topleft", tabFrame, "topleft", 0, startY + 24)
 
+    --derive the object list line count from the scroll box height so the list fills the panel
+    --regardless of screen size. the framework stacks each line at (lineHeight + 1) pixels (1px
+    --gap between rows, see createLineFunc in editor.lua), so divide by that stride.
+    local objectListHeight = editorMainFrame:GetHeight() - 15
+    local objectListLineHeight = 20
+    local objectListLineSpacing = 1
+    local objectListLines = math.floor(objectListHeight / (objectListLineHeight + objectListLineSpacing))
+
     --create the widget editor
     local editorOptions = {
         width = editorMainFrame:GetWidth() - 10,
         create_object_list = true,
         object_list_width = 200,
-        object_list_height = editorMainFrame:GetHeight() - 15,
-        object_list_lines = 20,
-        object_list_line_height = 20,
+        object_list_height = objectListHeight,
+        object_list_lines = objectListLines,
+        object_list_line_height = objectListLineHeight,
         text_template = editorOptionsTextTemplate,
         slider_template = editorOptionsSliderTemplate,
         no_anchor_points = true,
@@ -159,6 +199,21 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
             end
 
             isTargetSelected = objectInfo.id == "TARGET"
+            isFocusSelected = objectInfo.id == "FOCUS"
+            isAuraTimerSelected = objectInfo.id == "AURATIMER"
+
+            --aura preview runs the whole time the designer tab is visible. OnShow does not
+            --fire on every tab switch, but the editor auto-selects a widget when the tab
+            --loads, so this callback fires reliably. StartAuraTest is idempotent (running
+            --guard inside), so this is cheap to call on every selection.
+            if (designer.StartAuraTest) then
+                designer.StartAuraTest()
+            end
+
+            --only paint the fake auras on real world nameplates while an aura widget is selected.
+            if (designer.SetAuraWorldPreview) then
+                designer.SetAuraWorldPreview(AURA_WIDGET_IDS[objectInfo.id] == true)
+            end
         end,
         selection_texture = "Interface\\AddOns\\Plater\\images\\selection_corner.png",
     }
@@ -186,6 +241,337 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
             if thisPlateFrame.namePlateUnitToken or thisPlateFrame.unitToken then
                 platerInternal.Events.GetEventFunction("NAME_PLATE_UNIT_ADDED")("NAME_PLATE_UNIT_ADDED", thisPlateFrame.namePlateUnitToken or thisPlateFrame.unitToken)
             end
+        end
+    end
+
+    --aura preview driver. mirrors Plater.CreateAuraTesting from Plater_Auras.lua but lives
+    --here so the designer can drive it directly. populates both the preview plate (which is
+    --not in C_NamePlate.GetNamePlates()) and every real shown plate, matching the original.
+    local auraTestTicker
+    --running guard so StartAuraTest can be called repeatedly (from OnShow + every widget
+    --selection) without re-running the expensive DisableAuraTrackingForAuraTest + RefreshAuras
+    --setup or restarting the OnUpdate.
+    local auraTestRunning = false
+
+    --apply the fake aura set to one plate's buffFrame(s). called per-plate each tick.
+    local applyTestAurasToPlate = function(plateFrame, isPreview)
+        local unitFrameForPlate = plateFrame and plateFrame.unitFrame
+        if (not unitFrameForPlate) then
+            return
+        end
+        --real plates only get processed when on-screen. preview is always treated as on-screen.
+        if (not isPreview and not unitFrameForPlate.PlaterOnScreen) then
+            return
+        end
+
+        local buffFrame = unitFrameForPlate.BuffFrame
+        local buffFrame2 = unitFrameForPlate.BuffFrame2
+        local unitAuraCache = unitFrameForPlate.AuraCache
+        if (not unitAuraCache) then
+            unitAuraCache = {}
+            unitFrameForPlate.AuraCache = unitAuraCache
+        end
+
+        local alpha = Plater.db.profile.aura_alpha
+        local separate = Plater.db.profile.buffs_on_aura2
+        local unitID = unitFrameForPlate[MEMBER_UNITID] or "player"
+        local isPlayerUnit = UnitIsUnit(unitID, "player")
+
+        --read frame-specific size/border now so the per-icon updates below pick up profile
+        --changes on every tick. real plates get this through Plater.RefreshAuras rebuilding
+        --the pool, but our pooled icons persist so we re-apply the values each cycle.
+        local profile = Plater.db.profile
+        local widthFrame1 = profile.aura_width
+        local heightFrame1 = profile.aura_height
+        local borderFrame1 = profile.aura_border_thickness
+        local widthFrame2 = profile.aura_width2
+        local heightFrame2 = profile.aura_height2
+        local borderFrame2 = profile.aura_border_thickness2
+
+        --inline helper to (re)skin a pooled icon. cheap; runs ~16 times/sec across all auras.
+        local applySize = function(iconFrame, useSecondary)
+            if (not iconFrame) then
+                return
+            end
+            if (useSecondary) then
+                if (iconFrame.SetBorderSize) then
+                    iconFrame:SetBorderSize(borderFrame2)
+                end
+                PixelUtil.SetSize(iconFrame, widthFrame2, heightFrame2)
+            else
+                if (iconFrame.SetBorderSize) then
+                    iconFrame:SetBorderSize(borderFrame1)
+                end
+                PixelUtil.SetSize(iconFrame, widthFrame1, heightFrame1)
+            end
+        end
+
+        buffFrame:SetAlpha(alpha)
+        buffFrame2:SetAlpha(alpha)
+        buffFrame.NextAuraIcon = 1
+        buffFrame2.NextAuraIcon = 1
+
+        if (not separate) then
+            --both buffs and debuffs land on buffFrame (Frame 1) when separation is off.
+            for index, auraTable in ipairs(AURA_TEST_DEBUFFS) do
+                local auraIconFrame = Plater.GetAuraIcon(buffFrame)
+                if (not auraTable.ApplyTime or auraTable.ApplyTime + auraTable.Duration < GetTime()) then
+                    auraTable.ApplyTime = GetTime() + math.random(3, 12)
+                end
+                if (not isPlayerUnit) then
+                    Plater.AddAura(buffFrame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime + auraTable.Duration, "player", true, false, false, auraTable.SpellID, nil, nil, nil, nil, auraTable.Type, 1)
+                else
+                    Plater.AddAura(buffFrame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime + auraTable.Duration, "player", true, false, false, auraTable.SpellID, false, false, true, true, auraTable.Type, 1)
+                end
+                unitAuraCache[auraTable.SpellName] = true
+                unitAuraCache[auraTable.SpellID] = true
+                unitAuraCache[auraTable.SpellName .. "_player"] = true
+                unitAuraCache[auraTable.SpellID .. "_player"] = true
+                applySize(auraIconFrame, false)
+                Plater.UpdateIconAspecRatio(auraIconFrame)
+            end
+            for index, auraTable in ipairs(AURA_TEST_BUFFS) do
+                local auraIconFrame = Plater.GetAuraIcon(buffFrame)
+                if (not auraTable.ApplyTime or auraTable.ApplyTime + auraTable.Duration < GetTime()) then
+                    auraTable.ApplyTime = GetTime() + math.random(3, 12)
+                end
+                if (not isPlayerUnit) then
+                    Plater.AddAura(buffFrame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime + auraTable.Duration, "player", true, true, false, auraTable.SpellID, true, nil, nil, nil, auraTable.Type, 1)
+                else
+                    Plater.AddAura(buffFrame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime + auraTable.Duration, "player", true, true, false, auraTable.SpellID, false, false, false, true, auraTable.Type, 1)
+                end
+                unitAuraCache[auraTable.SpellName] = true
+                unitAuraCache[auraTable.SpellID] = true
+                unitAuraCache[auraTable.SpellName .. "_player"] = true
+                unitAuraCache[auraTable.SpellID .. "_player"] = true
+                applySize(auraIconFrame, false)
+                Plater.UpdateIconAspecRatio(auraIconFrame)
+            end
+            --hide icons left on the second buff frame from a previous tick (in case the
+            --user just toggled separation off).
+            for i = 1, #buffFrame2.PlaterBuffList do
+                local icon = buffFrame2.PlaterBuffList[i]
+                if (icon) then
+                    icon.ShowAnimation:Stop()
+                    icon:Hide()
+                    icon.InUse = false
+                end
+            end
+        else
+            --debuffs on Frame 1, buffs on Frame 2.
+            for index, auraTable in ipairs(AURA_TEST_DEBUFFS) do
+                local auraIconFrame = Plater.GetAuraIcon(buffFrame)
+                if (not auraTable.ApplyTime or auraTable.ApplyTime + auraTable.Duration < GetTime()) then
+                    auraTable.ApplyTime = GetTime() + math.random(3, 12)
+                end
+                if (not isPlayerUnit) then
+                    Plater.AddAura(buffFrame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime + auraTable.Duration, "player", true, false, false, auraTable.SpellID, nil, nil, nil, nil, auraTable.Type, 1)
+                else
+                    Plater.AddAura(buffFrame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "DEBUFF", auraTable.Duration, auraTable.ApplyTime + auraTable.Duration, "player", true, false, false, auraTable.SpellID, false, false, true, true, auraTable.Type, 1)
+                end
+                unitAuraCache[auraTable.SpellName] = true
+                unitAuraCache[auraTable.SpellID] = true
+                unitAuraCache[auraTable.SpellName .. "_player"] = true
+                unitAuraCache[auraTable.SpellID .. "_player"] = true
+                applySize(auraIconFrame, false)
+            end
+            for index, auraTable in ipairs(AURA_TEST_BUFFS) do
+                local auraIconFrame, frame = Plater.GetAuraIcon(buffFrame, true)
+                if (not auraTable.ApplyTime or auraTable.ApplyTime + auraTable.Duration < GetTime()) then
+                    auraTable.ApplyTime = GetTime() + math.random(3, 12)
+                end
+                if (not isPlayerUnit) then
+                    Plater.AddAura(frame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "BUFF", auraTable.Duration, auraTable.ApplyTime + auraTable.Duration, "player", true, true, false, auraTable.SpellID, true, nil, nil, nil, auraTable.Type, 1)
+                else
+                    Plater.AddAura(frame, auraIconFrame, index, auraTable.SpellName, auraTable.SpellTexture, auraTable.Count, "BUFF", auraTable.Duration, auraTable.ApplyTime + auraTable.Duration, "player", true, true, false, auraTable.SpellID, true, false, false, false, auraTable.Type, 1)
+                end
+                unitAuraCache[auraTable.SpellName] = true
+                unitAuraCache[auraTable.SpellID] = true
+                unitAuraCache[auraTable.SpellName .. "_player"] = true
+                unitAuraCache[auraTable.SpellID .. "_player"] = true
+                applySize(auraIconFrame, true)
+            end
+        end
+
+        Plater.HideNonUsedAuraIcons(buffFrame)
+        platerInternal.AlignAuraFrames(buffFrame)
+        if (separate) then
+            platerInternal.AlignAuraFrames(buffFrame.BuffFrame2)
+        end
+
+        --preview only: track the Aura Timer overlay to the 3rd and 4th icons and drive the
+        --mock cooldown swipes + big numbers. real plates never show this.
+        if (isPreview) then
+            local timerOverlay = buffFrame.auraTimerPreview
+            local icon3 = buffFrame.PlaterBuffList[3]
+            local icon4 = buffFrame.PlaterBuffList[4]
+            if (timerOverlay and icon3 and icon4 and icon3:IsShown() and icon4:IsShown()) then
+                --span the clickable overlay across both icons.
+                timerOverlay:ClearAllPoints()
+                timerOverlay:SetPoint("topleft", icon3, "topleft", 0, 0)
+                timerOverlay:SetPoint("bottomright", icon4, "bottomright", 0, 0)
+                timerOverlay:Show()
+
+                local iconForCooldown = {icon3, icon4}
+                for cooldownIndex = 1, 2 do
+                    local cooldown = timerOverlay.cooldowns[cooldownIndex]
+                    cooldown:ClearAllPoints()
+                    cooldown:SetAllPoints(iconForCooldown[cooldownIndex])
+                    cooldown:Show()
+ 
+                    --seconds the mock timer shows. animated (20->0 loop) while the Aura Timer
+                    --widget is selected, otherwise frozen at a static 16.
+                    local remaining
+                    if (isAuraTimerSelected) then
+                        if (cooldown.mode ~= "animate") then
+                            cooldown.mode = "animate"
+                            cooldown.cooldownEnd = 0
+                        end
+                        remaining = (cooldown.cooldownEnd or 0) - GetTime()
+                        if (remaining <= 0) then
+                            cooldown:SetCooldown(GetTime(), 20)
+                            cooldown:Resume()
+                            cooldown.cooldownEnd = GetTime() + 20
+                            remaining = 20
+                        end
+                    else
+                        if (cooldown.mode ~= "static") then
+                            cooldown.mode = "static"
+                            cooldown:SetCooldown(GetTime() - 4, 20)
+                            cooldown:Pause()
+                        end
+                        remaining = 16
+                    end
+
+                    --style the number from the aura_timer_text_* profile settings so every
+                    --Aura Timer option reflects in the preview live. mirrors the real timer
+                    --styling in Plater.AddAura (Plater_Auras.lua).
+                    local timerNumber = cooldown.bigNumber
+                    if (not profile.aura_timer) then
+                        timerNumber:Hide()
+                    else
+                        local text
+                        if (profile.aura_timer_decimals and remaining < 10) then
+                            text = string.format("%.1f", remaining)
+                        else
+                            text = tostring(math.ceil(remaining))
+                        end
+                        timerNumber:SetText(text)
+
+                        detailsFramework:SetFontSize(timerNumber, profile.aura_timer_text_size)
+                        Plater.SetFontOutlineAndShadow(timerNumber, profile.aura_timer_text_outline, profile.aura_timer_text_shadow_color, profile.aura_timer_text_shadow_color_offset[1], profile.aura_timer_text_shadow_color_offset[2])
+                        detailsFramework:SetFontFace(timerNumber, profile.aura_timer_text_font)
+
+                        --pandemic coloring overrides the base color below 25% / 15% remaining.
+                        local fraction = remaining / 20
+                        if (profile.aura_timer_pandemic_color and fraction < 0.15) then
+                            detailsFramework:SetFontColor(timerNumber, 1, 0, 0)
+                        elseif (profile.aura_timer_pandemic_color and fraction < 0.25) then
+                            detailsFramework:SetFontColor(timerNumber, 1, 0.65, 0)
+                        else
+                            detailsFramework:SetFontColor(timerNumber, profile.aura_timer_text_color)
+                        end
+
+                        Plater.SetAnchor(timerNumber, profile.aura_timer_text_anchor)
+                        timerNumber:Show()
+                    end
+                end
+            elseif (timerOverlay) then
+                timerOverlay:Hide()
+            end
+        end
+    end
+
+    function designer.StartAuraTest()
+        if (auraTestRunning) then
+            return
+        end
+        local previewPlate = designer.plateFrame
+        if (not previewPlate) then
+            return
+        end
+        auraTestRunning = true
+
+        --mirrors the options panel test setup. DisableAuraTrackingForAuraTest clears the
+        --DB_AURA_ENABLED upvalue (Plater.lua scope) and RefreshAuras rebuilds the icon pool
+        --on a clean slate so the first tick is not racing against real-aura tracking.
+        Plater.DisableAuraTrackingForAuraTest()
+        Plater.RefreshAuras()
+
+        auraTestTicker = auraTestTicker or CreateFrame("frame")
+        auraTestTicker.nextTickIn = 0.2
+        local tickBody = function(self, deltaTime)
+            self.nextTickIn = self.nextTickIn - deltaTime
+            if (self.nextTickIn > 0) then
+                return
+            end
+            self.nextTickIn = 0.016
+
+            --the designer's own preview plate always shows the fake auras.
+            applyTestAurasToPlate(previewPlate, true)
+
+            --real game-world plates only get the fake auras while an aura widget is selected,
+            --so the preview does not clutter the player's nameplates while editing other parts.
+            if (isAuraWorldPreviewOn) then
+                for _, realPlate in ipairs(Plater.GetAllShownPlates()) do
+                    if (realPlate ~= previewPlate) then
+                        applyTestAurasToPlate(realPlate, false)
+                    end
+                end
+            end
+        end
+
+        --wrap so a silent error inside the body (which OnUpdate normally swallows) surfaces
+        --to the user's chat instead of just halting the driver.
+        auraTestTicker:SetScript("OnUpdate", function(self, deltaTime)
+            xpcall(tickBody, geterrorhandler(), self, deltaTime)
+        end)
+    end
+
+    function designer.StopAuraTest()
+        if (not auraTestRunning) then
+            return
+        end
+        auraTestRunning = false
+        if (auraTestTicker) then
+            auraTestTicker:SetScript("OnUpdate", nil)
+        end
+        --restore real aura tracking now that the test is off. mirrors DisableAuraTest in
+        --Plater_Auras.lua: refresh the upvalues and force a real aura sweep.
+        Plater.RefreshDBUpvalues()
+        Plater.RefreshAuras()
+    end
+
+    --hide the fake aura icons on real game-world nameplates. used when switching away from an
+    --aura widget so the preview stops cluttering the player's actual plates. the designer's
+    --own preview plate is left untouched. resetting NextAuraIcon to 1 then hiding makes
+    --HideNonUsedAuraIcons clear every icon on both buff frames.
+    local clearWorldPlateFakeAuras = function()
+        for _, realPlate in ipairs(Plater.GetAllShownPlates()) do
+            if (realPlate ~= designer.plateFrame and realPlate.unitFrame) then
+                local realBuffFrame = realPlate.unitFrame.BuffFrame
+                local realBuffFrame2 = realPlate.unitFrame.BuffFrame2
+                if (realBuffFrame) then
+                    realBuffFrame.NextAuraIcon = 1
+                    Plater.HideNonUsedAuraIcons(realBuffFrame)
+                end
+                if (realBuffFrame2) then
+                    realBuffFrame2.NextAuraIcon = 1
+                    Plater.HideNonUsedAuraIcons(realBuffFrame2)
+                end
+            end
+        end
+    end
+
+    --toggle whether real game-world nameplates show the fake aura preview. clears them once
+    --on the transition to off so they do not keep the last painted icons frozen.
+    function designer.SetAuraWorldPreview(enabled)
+        if (enabled == isAuraWorldPreviewOn) then
+            return
+        end
+        isAuraWorldPreviewOn = enabled
+        if (not enabled) then
+            clearWorldPlateFakeAuras()
         end
     end
 
@@ -507,13 +893,20 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
     ---@type df_editobjectoptions
     local healthBarOptions = detailsFramework.table.copy({}, editObjectDefaultOptions)
     healthBarOptions.can_move = false
+    healthBarOptions.icon = [[Interface\AddOns\Plater\images\healbar_icon.png]]
     objectInfo = layoutEditor:RegisterObject(healthBar, "Health Bar", "HEALTHBAR", profileRoot, rootKey, options.WidgetSettingsMapTables.HealthBar, options.WidgetSettingsExtraOptions.HealthBar, onSettingChanged, healthBarOptions, healthBar)
 
-    --target (highlight, overlay, indicator, focus)
+    --target highlight, overlay, indicator
     ---@type df_editobjectoptions
     local targetOptions = detailsFramework.table.copy({}, editObjectDefaultOptions)
     targetOptions.can_move = false
     objectInfo = layoutEditor:RegisterObject(healthBar.dummyTarget, "Target", "TARGET", profileRoot, rootKey, options.WidgetSettingsMapTables.Target, options.WidgetSettingsExtraOptions.Target, onSettingChanged, targetOptions, healthBar)
+
+    --focus widget uses its own dummy bar above the target bar
+    ---@type df_editobjectoptions
+    local focusOptions = detailsFramework.table.copy({}, editObjectDefaultOptions)
+    focusOptions.can_move = false
+    objectInfo = layoutEditor:RegisterObject(healthBar.dummyFocus, "Focus", "FOCUS", profileRoot, rootKey, options.WidgetSettingsMapTables.Focus, options.WidgetSettingsExtraOptions.Focus, onSettingChanged, focusOptions, healthBar)
 
     --raid mark (the icon on the right of the health bar)
     ---@type df_editobjectoptions
@@ -521,20 +914,78 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
     --raidMarkOptions.can_move = false
     objectInfo = layoutEditor:RegisterObject(unitFrame.PlaterRaidTargetFrame, "Raid Mark", "RAIDMARK", profileRoot, rootKey, options.WidgetSettingsMapTables.RaidMark, options.WidgetSettingsExtraOptions.RaidMark, onSettingChanged, raidMarkOptions, unitFrame)
 
-    --colors (threat, override, unit type) - global settings, can_click stays off so the dummy
-    --does not steal clicks from the Health Bar select button under it.
+    --aggro colors (threat, override) global settings, top-level entry
     ---@type df_editobjectoptions
     local colorsOptions = detailsFramework.table.copy({}, editObjectDefaultOptions)
     colorsOptions.can_move = false
-    colorsOptions.can_click = false
-    objectInfo = layoutEditor:RegisterObject(healthBar.dummyColors, "Colors", "COLORS", profileRoot, rootKey, options.WidgetSettingsMapTables.Colors, options.WidgetSettingsExtraOptions.Colors, onSettingChanged, colorsOptions, healthBar)
+    objectInfo = layoutEditor:RegisterObject(healthBar.dummyColors, "Aggro Colors", "COLORS", profileRoot, rootKey, options.WidgetSettingsMapTables.Colors, options.WidgetSettingsExtraOptions.Colors, onSettingChanged, colorsOptions, healthBar)
 
-    objectInfo = layoutEditor:RegisterObject(unitName, "Unit Name", "UNITNAME", plateConfig, subTablePath, options.WidgetSettingsMapTables.UnitName, options.WidgetSettingsExtraOptions.UnitName, onSettingChanged, editObjectDefaultOptions, healthBar)
+    --midnight mob colors (unit-type coloring) global settings, no canvas anchor, top-level entry
+    ---@type df_editobjectoptions
+    local midnightMobColorsOptions = detailsFramework.table.copy({}, editObjectDefaultOptions)
+    midnightMobColorsOptions.can_move = false
+    midnightMobColorsOptions.can_click = false
+    objectInfo = layoutEditor:RegisterObject(healthBar.dummyMidnightMobColors, "Midnight Mob Colors", "MIDNIGHTMOBCOLORS", profileRoot, rootKey, options.WidgetSettingsMapTables.MidnightMobColors, options.WidgetSettingsExtraOptions.MidnightMobColors, onSettingChanged, midnightMobColorsOptions, healthBar)
+
+    --auras (buffs and debuffs above the health bar). buffFrame is the registration target so
+    --the user can also click the aura cluster in the preview to select this widget.
+    ---@type df_editobjectoptions
+    local aurasOptions = detailsFramework.table.copy({}, editObjectDefaultOptions)
+    aurasOptions.can_move = false
+    objectInfo = layoutEditor:RegisterObject(unitFrame.BuffFrame, "Auras Layout", "AURAS", profileRoot, rootKey, options.WidgetSettingsMapTables.Auras, options.WidgetSettingsExtraOptions.Auras, onSettingChanged, aurasOptions, unitFrame)
+
+    --aura automatic tracking (which buffs/debuffs Plater picks up). visible auto-tracking
+    --button above the target bar gives the user an on-canvas way to select this widget.
+    --nested under Auras Layout in the object selector.
+    ---@type df_editobjectoptions
+    local auraTrackingOptions = detailsFramework.table.copy({}, editObjectDefaultOptions)
+    auraTrackingOptions.can_move = false
+    auraTrackingOptions.parentId = "AURAS"
+    objectInfo = layoutEditor:RegisterObject(healthBar.dummyAuraTracking, "Aura Automatic Tracking", "AURATRACKING", profileRoot, rootKey, options.WidgetSettingsMapTables.AuraTracking, options.WidgetSettingsExtraOptions.AuraTracking, onSettingChanged, auraTrackingOptions, healthBar)
+
+    --aura border colors. visible "border colors" button above the auto-tracking button
+    --gives the user an on-canvas way to select this widget. nested under Auras Layout.
+    ---@type df_editobjectoptions
+    local auraBorderColorsOptions = detailsFramework.table.copy({}, editObjectDefaultOptions)
+    auraBorderColorsOptions.can_move = false
+    auraBorderColorsOptions.parentId = "AURAS"
+    objectInfo = layoutEditor:RegisterObject(healthBar.dummyAuraBorderColors, "Aura Border Colors", "AURABORDERCOLORS", profileRoot, rootKey, options.WidgetSettingsMapTables.AuraBorderColors, options.WidgetSettingsExtraOptions.AuraBorderColors, onSettingChanged, auraBorderColorsOptions, healthBar)
+
+    --stack counter. visible "stacks" button sits above the buff icons for on-canvas selection.
+    --nested under Auras Layout.
+    ---@type df_editobjectoptions
+    local stackCounterOptions = detailsFramework.table.copy({}, editObjectDefaultOptions)
+    stackCounterOptions.can_move = false
+    stackCounterOptions.parentId = "AURAS"
+    objectInfo = layoutEditor:RegisterObject(healthBar.dummyStackCounter, "Stack Counter", "STACKCOUNTER", profileRoot, rootKey, options.WidgetSettingsMapTables.StackCounter, options.WidgetSettingsExtraOptions.StackCounter, onSettingChanged, stackCounterOptions, healthBar)
+
+    --aura timer. the clickable overlay sits over the 3rd and 4th buff icons (positioned each
+    --tick by the driver) so clicking those icons selects this widget. nested under Auras Layout.
+    ---@type df_editobjectoptions
+    local auraTimerOptions = detailsFramework.table.copy({}, editObjectDefaultOptions)
+    auraTimerOptions.can_move = false
+    auraTimerOptions.parentId = "AURAS"
+    objectInfo = layoutEditor:RegisterObject(healthBar.dummyAuraTimer, "Aura Timer", "AURATIMER", profileRoot, rootKey, options.WidgetSettingsMapTables.AuraTimer, options.WidgetSettingsExtraOptions.AuraTimer, onSettingChanged, auraTimerOptions, healthBar)
+
+    --indicators (pet/execute/boss/class icons, etc.). the indicator selector frame sits on the
+    --left of the health bar (via indicator_anchor) and is clickable to select this widget.
+    ---@type df_editobjectoptions
+    local indicatorsOptions = detailsFramework.table.copy({}, editObjectDefaultOptions)
+    indicatorsOptions.can_move = false
+    objectInfo = layoutEditor:RegisterObject(healthBar.dummyIndicators, "Indicators", "INDICATORS", profileRoot, rootKey, options.WidgetSettingsMapTables.Indicators, options.WidgetSettingsExtraOptions.Indicators, onSettingChanged, indicatorsOptions, healthBar)
+
+    --shared options for the text widgets that live inside the Health Bar group
+    --(copies the defaults so the parentId does not leak onto every other registration).
+    ---@type df_editobjectoptions
+    local inHealthBarGroupOptions = detailsFramework.table.copy({}, editObjectDefaultOptions)
+    inHealthBarGroupOptions.parentId = "HEALTHBAR"
+
+    objectInfo = layoutEditor:RegisterObject(unitName, "Unit Name", "UNITNAME", plateConfig, subTablePath, options.WidgetSettingsMapTables.UnitName, options.WidgetSettingsExtraOptions.UnitName, onSettingChanged, inHealthBarGroupOptions, healthBar)
     plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
 
-    objectInfo = layoutEditor:RegisterObject(levelText, "Unit Level", "UNITLEVEL", plateConfig, subTablePath, options.WidgetSettingsMapTables.UnitLevel, options.WidgetSettingsExtraOptions.UnitLevel, onSettingChanged, editObjectDefaultOptions, healthBar)
+    objectInfo = layoutEditor:RegisterObject(levelText, "Unit Level", "UNITLEVEL", plateConfig, subTablePath, options.WidgetSettingsMapTables.UnitLevel, options.WidgetSettingsExtraOptions.UnitLevel, onSettingChanged, inHealthBarGroupOptions, healthBar)
     plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
-    objectInfo = layoutEditor:RegisterObject(lifePercent, "Life Percent", "LIFEPERCENT", plateConfig, subTablePath, options.WidgetSettingsMapTables.LifePercent, options.WidgetSettingsExtraOptions.LifePercent, onSettingChanged, editObjectDefaultOptions, healthBar)
+    objectInfo = layoutEditor:RegisterObject(lifePercent, "Life Percent", "LIFEPERCENT", plateConfig, subTablePath, options.WidgetSettingsMapTables.LifePercent, options.WidgetSettingsExtraOptions.LifePercent, onSettingChanged, inHealthBarGroupOptions, healthBar)
     plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
     platerInternal.UpdatePercentTextLayout(lifePercent, plateConfig[subTablePath])
 
@@ -556,15 +1007,22 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
     objectInfo = layoutEditor:RegisterObject(castBar, "Cast Bar", "CASTBAR", plateConfig, subTablePath, options.WidgetSettingsMapTables.CastBar, options.WidgetSettingsExtraOptions.CastBar, onSettingChanged, castBarOptions, castBar)
     plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
 
-    objectInfo = layoutEditor:RegisterObject(spellName, "Cast Spell Name", "CASTSPELLNAME", plateConfig, subTablePath, options.WidgetSettingsMapTables.SpellName, options.WidgetSettingsExtraOptions.SpellName, onSettingChanged, editObjectDefaultOptions, castBar)
+    --shared options for the text widgets that live inside the Cast Bar group
+    --(copies the defaults so the parentId does not leak onto every other registration).
+    ---@type df_editobjectoptions
+    local inCastBarGroupOptions = detailsFramework.table.copy({}, editObjectDefaultOptions)
+    inCastBarGroupOptions.parentId = "CASTBAR"
+
+    objectInfo = layoutEditor:RegisterObject(spellName, "Cast Spell Name", "CASTSPELLNAME", plateConfig, subTablePath, options.WidgetSettingsMapTables.SpellName, options.WidgetSettingsExtraOptions.SpellName, onSettingChanged, inCastBarGroupOptions, castBar)
     plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
-    objectInfo = layoutEditor:RegisterObject(castPercentText, "Cast Time", "CASTSPELLTIME", plateConfig, subTablePath, options.WidgetSettingsMapTables.SpellCastTime, options.WidgetSettingsExtraOptions.SpellCastTime, onSettingChanged, editObjectDefaultOptions, castBar)
+    objectInfo = layoutEditor:RegisterObject(castPercentText, "Cast Time", "CASTSPELLTIME", plateConfig, subTablePath, options.WidgetSettingsMapTables.SpellCastTime, options.WidgetSettingsExtraOptions.SpellCastTime, onSettingChanged, inCastBarGroupOptions, castBar)
     plateConfigObjectsInfo[#plateConfigObjectsInfo+1] = objectInfo
 
     --[no plate config]
     ---@type df_editobjectoptions
     local sparkOptions = detailsFramework.table.copy({}, editObjectDefaultOptions)
     sparkOptions.can_move = false
+    sparkOptions.parentId = "CASTBAR"
     objectInfo = layoutEditor:RegisterObject(newcastBarTargetName, "Cast Target Name", "CASTTARGETNAME", profileRoot, rootKey, options.WidgetSettingsMapTables.CastBarTargetName, options.WidgetSettingsExtraOptions.CastBarTargetName, onSettingChanged, sparkOptions, castBar.FrameOverlay)
     --[no plate config]
     objectInfo = layoutEditor:RegisterObject(castBarSpark, "Cast Spark", "CASTSPARK", profileRoot, rootKey, options.WidgetSettingsMapTables.CastBarSpark, options.WidgetSettingsExtraOptions.CastBarSpark, onSettingChanged, sparkOptions, castBar.FrameOverlay)
@@ -614,6 +1072,17 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
             unitFrame.targetOverlayTexture:Show()
         else
             unitFrame.targetOverlayTexture:Hide()
+        end
+
+        --focus preview (texture and color pulled live so dropdown changes reflect immediately)
+        if (isFocusSelected and Plater.db.profile.focus_indicator_enabled) then
+            local SharedMedia = LibStub:GetLibrary("LibSharedMedia-3.0")
+            local focusTexture = SharedMedia:Fetch("statusbar", Plater.db.profile.focus_texture)
+            healthBar.FocusIndicator:SetTexture(focusTexture)
+            healthBar.FocusIndicator:SetVertexColor(unpack(Plater.db.profile.focus_color))
+            healthBar.FocusIndicator:Show()
+        else
+            healthBar.FocusIndicator:Hide()
         end
 
         --preview hover-over highlight
@@ -698,6 +1167,10 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
         plateFrame.unitFrame:SetParent(UIParent)
         plateFrame.unitFrame:SetFrameStrata("FULLSCREEN")
         plateFrame.unitFrame:Show()
+
+        --aura preview runs the whole time the designer tab is visible, not just when the
+        --Auras Layout widget is selected.
+        designer.StartAuraTest()
     end)
 
     editorMainFrame:SetScript("OnHide", function()
@@ -721,6 +1194,8 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
             isCastBarSelected = false
             Plater.StopCastBarTest()
         end
+
+        designer.StopAuraTest()
 
         plateFrame.unitFrame:SetParent(editorMainFrame)
         plateFrame.unitFrame:Hide()
@@ -746,6 +1221,71 @@ function Plater.CreateCustomDesignBorder(frame) --need review
     frameBorderCustom.texture = frameBorderCustom:CreateTexture(nil, "overlay")
     frameBorderCustom.texture:SetAllPoints()
     frameBorderCustom:Hide()
+end
+
+--set the preview indicator texture to resemble a given indicator type. mirrors the texture
+--setup in Plater.AddIndicator (Plater.lua). used for the default icon and the hover preview
+--on the Indicators options. safe to call before the preview exists (no-op then).
+function designer.SetIndicatorPreview(indicatorType)
+    local previewPlate = designer.plateFrame
+    if (not previewPlate or not previewPlate.unitFrame) then
+        return
+    end
+    local selector = previewPlate.unitFrame.healthBar.dummyIndicators
+    if (not selector) then
+        return
+    end
+
+    local texture = selector.texture
+    texture:SetTexCoord(0, 1, 0, 1)
+    texture:SetVertexColor(1, 1, 1)
+    texture:SetDesaturated(false)
+
+    if (indicatorType == "pet") then
+        texture:SetTexture([[Interface\AddOns\Plater\images\peticon]])
+
+    elseif (indicatorType == "Horde") then
+        texture:SetTexture([[Interface\PVPFrame\PVP-Currency-Horde]])
+
+    elseif (indicatorType == "Alliance") then
+        texture:SetTexture([[Interface\PVPFrame\PVP-Currency-Alliance]])
+        texture:SetTexCoord(4/32, 29/32, 2/32, 30/32)
+
+    elseif (indicatorType == "elite") then
+        texture:SetTexture([[Interface\GLUES\CharacterSelect\Glues-AddOn-Icons]])
+        texture:SetTexCoord(0.75, 1, 0, 1)
+        texture:SetVertexColor(1, .8, 0)
+
+    elseif (indicatorType == "rare") then
+        texture:SetTexture([[Interface\GLUES\CharacterSelect\Glues-AddOn-Icons]])
+        texture:SetTexCoord(0.75, 1, 0, 1)
+        texture:SetDesaturated(true)
+
+    elseif (indicatorType == "quest") then
+        texture:SetTexture([[Interface\TARGETINGFRAME\PortraitQuestBadge]])
+        texture:SetTexCoord(2/32, 26/32, 1/32, 31/32)
+
+    elseif (indicatorType == "classicon") then
+        local _, class = UnitClass("player")
+        if (class) then
+            texture:SetTexture([[Interface\GLUES\CHARACTERCREATE\UI-CharacterCreate-Classes]])
+            texture:SetTexCoord(unpack(CLASS_ICON_TCOORDS[class]))
+        end
+
+    elseif (indicatorType == "specicon") then
+        local specTexture = [[Interface\Icons\INV_Misc_QuestionMark]]
+        local specIndex = GetSpecialization and GetSpecialization()
+        if (specIndex) then
+            local _, _, _, icon = GetSpecializationInfo(specIndex)
+            specTexture = icon or specTexture
+        end
+        texture:SetTexture(specTexture)
+
+    elseif (indicatorType == "worldboss") then
+        texture:SetTexture([[Interface\Scenarios\ScenarioIcon-Boss]])
+    end
+
+    selector:SetScale(Plater.db.profile.indicator_scale)
 end
 
 --plateFrame.PlateConfig = DB_PLATE_CONFIG.enemynpc
@@ -814,16 +1354,154 @@ function designer.UpdatePreview()
     dummyHealthBar:SetAllPoints()
     healthBar.dummy = dummyHealthBar
 
-    --invisible anchor frame for the Colors widget (the settings are global so there is no
-    --single visual target, the frame just gives the editor an object to register against)
-    local dummyColors = CreateFrame("frame", nil, healthBar)
-    dummyColors:SetAllPoints()
-    healthBar.dummyColors = dummyColors
+    --colors button (sits to the right of the raid mark, click selects the Colors widget)
+    --anchored to healthBar (not the raid mark) so the height matches the target and focus bars.
+    local colorsButton = CreateFrame("frame", nil, healthBar, "BackdropTemplate")
+    healthBar.dummyColors = colorsButton
+    colorsButton:SetFrameLevel(healthBar:GetFrameLevel() - 2)
+    colorsButton:SetPoint("topleft", healthBar, "topleft", 0, 0)
+    colorsButton:SetPoint("bottomleft", healthBar, "bottomleft", 0, 0)
+    colorsButton:SetPoint("topright", healthBar, "topright", 90, 0)
+    colorsButton:SetPoint("bottomright", healthBar, "bottomright", 90, 0)
+    colorsButton:SetBackdrop({bgFile = [[Interface\ChatFrame\ChatFrameBackground]], edgeFile = [[Interface\Buttons\WHITE8X8]], tile = true, tileSize = 16, edgeSize = 1, insets = {left = 1, right = 1, top = 1, bottom = 1}})
+    colorsButton:SetBackdropColor(0, 0, 0, 0.1)
+    colorsButton:SetBackdropBorderColor(.2, .2, .2, 0.5)
+
+    local textureBlue = colorsButton:CreateTexture(nil, "overlay")
+    textureBlue:SetColorTexture(0, 0, 1, 1)
+    textureBlue:SetWidth(6)
+    textureBlue:SetPoint("topright", colorsButton, "topright", -1, -1)
+    textureBlue:SetPoint("bottomright", colorsButton, "bottomright", -1, 1)
+
+    local textureGreen = colorsButton:CreateTexture(nil, "overlay")
+    textureGreen:SetColorTexture(0, 1, 0, 1)
+    textureGreen:SetWidth(6)
+    textureGreen:SetPoint("topright", textureBlue, "topleft", 0, 0)
+    textureGreen:SetPoint("bottomright", textureBlue, "bottomleft", 0, 0)
+
+    local textureRed = colorsButton:CreateTexture(nil, "overlay")
+    textureRed:SetColorTexture(1, 0, 0, 1)
+    textureRed:SetWidth(6)
+    textureRed:SetPoint("topright", textureGreen, "topleft", 0, 0)
+    textureRed:SetPoint("bottomright", textureGreen, "bottomleft", 0, 0)
+
+    colorsButton.text = colorsButton:CreateFontString(nil, "overlay", "GameFontNormal")
+    colorsButton.text:SetPoint("right", textureRed, "left", -7, 0)
+    colorsButton.text:SetText("colors")
+    detailsFramework:SetFontSize(colorsButton.text, 9)
+    detailsFramework:SetFontColor(colorsButton.text, "silver")
+
+    --invisible anchor for the Midnight Mob Colors widget (unit-type coloring options).
+    --no on-canvas slot today, selectable from the sidebar object list.
+    local dummyMidnightMobColors = CreateFrame("frame", nil, healthBar)
+    dummyMidnightMobColors:SetAllPoints()
+    healthBar.dummyMidnightMobColors = dummyMidnightMobColors
+
+    --indicator selector frame. positioned by the indicator_anchor profile (SetAnchor) so it
+    --sits exactly where a real indicator icon renders (left of the health bar by default).
+    --click selects the Indicators widget. holds one preview texture (real AddIndicator can
+    --stack several; the preview shows just one). default is the elite icon; hovering an
+    --indicator option in the list swaps the shown icon to that indicator.
+    local indicatorSelector = CreateFrame("frame", nil, healthBar)
+    indicatorSelector:SetSize(16, 16)
+    indicatorSelector:SetFrameLevel(healthBar:GetFrameLevel() + 5)
+    healthBar.dummyIndicators = indicatorSelector
+    Plater.SetAnchor(indicatorSelector, Plater.db.profile.indicator_anchor)
+
+    local indicatorTexture = indicatorSelector:CreateTexture(nil, "overlay")
+    indicatorTexture:SetAllPoints()
+    indicatorSelector.texture = indicatorTexture
+
+    --default to the elite icon.
+    designer.SetIndicatorPreview("elite")
+
+    --visible "auto tracking" button. anchored to the right edge of the BuffFrame (the aura
+    --cluster) so it sits alongside the aura icons, not on top of them. click selects the
+    --Aura Automatic Tracking widget.
+    local autoTrackingButton = CreateFrame("frame", nil, healthBar, "BackdropTemplate")
+    healthBar.dummyAuraTracking = autoTrackingButton
+    autoTrackingButton:SetSize(90, 14)
+    autoTrackingButton:SetPoint("topleft", unitFrame.BuffFrame, "topleft", -80, 0)
+    autoTrackingButton:SetPoint("bottomleft", unitFrame.BuffFrame, "bottomleft", -80, 0)
+    autoTrackingButton:SetPoint("topright", unitFrame.BuffFrame, "topright", 2, 0)
+    autoTrackingButton:SetPoint("bottomright", unitFrame.BuffFrame, "bottomright", 2, 0)
+    autoTrackingButton:SetBackdrop({bgFile = [[Interface\ChatFrame\ChatFrameBackground]], edgeFile = [[Interface\Buttons\WHITE8X8]], tile = true, tileSize = 16, edgeSize = 1, insets = {left = 1, right = 1, top = 1, bottom = 1}})
+    autoTrackingButton:SetBackdropColor(0, 0, 0, 0.1)
+    autoTrackingButton:SetBackdropBorderColor(.2, .2, .2, 0.5)
+    autoTrackingButton.text = autoTrackingButton:CreateFontString(nil, "overlay", "GameFontNormal")
+    autoTrackingButton.text:SetPoint("left", autoTrackingButton, "left", 4, 0)
+    autoTrackingButton.text:SetText("aura tracking")
+    detailsFramework:SetFontSize(autoTrackingButton.text, 9)
+    detailsFramework:SetFontColor(autoTrackingButton.text, "silver")
+
+    --visible "border colors" button stacked above auto tracking, sharing its LEFT and RIGHT
+    --edges (same way the colors button shares its left edge with the health bar). click
+    --selects the Aura Border Colors widget.
+    local borderColorsButton = CreateFrame("frame", nil, healthBar, "BackdropTemplate")
+    healthBar.dummyAuraBorderColors = borderColorsButton
+    borderColorsButton:SetHeight(14)
+    borderColorsButton:SetPoint("topleft", unitFrame.BuffFrame, "topleft", -2, 0)
+    borderColorsButton:SetPoint("bottomleft", unitFrame.BuffFrame, "bottomleft", -2, 0)
+    borderColorsButton:SetPoint("topright", unitFrame.BuffFrame, "topright", 85, 0)
+    borderColorsButton:SetPoint("bottomright", unitFrame.BuffFrame, "bottomright", 85, 0)
+    borderColorsButton:SetBackdrop({bgFile = [[Interface\ChatFrame\ChatFrameBackground]], edgeFile = [[Interface\Buttons\WHITE8X8]], tile = true, tileSize = 16, edgeSize = 1, insets = {left = 1, right = 1, top = 1, bottom = 1}})
+    borderColorsButton:SetBackdropColor(0, 0, 0, 0.1)
+    borderColorsButton:SetBackdropBorderColor(.2, .2, .2, 0.5)
+    borderColorsButton.text = borderColorsButton:CreateFontString(nil, "overlay", "GameFontNormal")
+    borderColorsButton.text:SetPoint("right", borderColorsButton, "right", -2, 0)
+    borderColorsButton.text:SetText("aura borders")
+    detailsFramework:SetFontSize(borderColorsButton.text, 9)
+    detailsFramework:SetFontColor(borderColorsButton.text, "silver")
+
+    --visible "stacks" button, sits directly above the buff icons. click selects the Stack
+    --Counter widget. matches the styling of aura tracking / aura borders so the row of
+    --preview-pickers reads as one set.
+    local stacksButton = CreateFrame("frame", nil, healthBar, "BackdropTemplate")
+    healthBar.dummyStackCounter = stacksButton
+    stacksButton:SetHeight(18)
+    stacksButton:SetPoint("bottomleft", unitFrame.BuffFrame, "topleft", -2, -2)
+    stacksButton:SetPoint("bottomright", unitFrame.BuffFrame, "topright", 2, -2)
+    stacksButton:SetBackdrop({bgFile = [[Interface\ChatFrame\ChatFrameBackground]], edgeFile = [[Interface\Buttons\WHITE8X8]], tile = true, tileSize = 16, edgeSize = 1, insets = {left = 1, right = 1, top = 1, bottom = 1}})
+    stacksButton:SetBackdropColor(0, 0, 0, 0.1)
+    stacksButton:SetBackdropBorderColor(.2, .2, .2, 0.5)
+    stacksButton.text = stacksButton:CreateFontString(nil, "overlay", "GameFontNormal")
+    stacksButton.text:SetPoint("center", stacksButton, "center", 0, 0)
+    stacksButton.text:SetText("stacks")
+    detailsFramework:SetFontSize(stacksButton.text, 9)
+    detailsFramework:SetFontColor(stacksButton.text, "silver")
+
+    --clickable Aura Timer selector. sits over the 3rd and 4th buff icons (the driver positions
+    --it each tick). parented to the buff frame with a high frame level so its selectButton wins
+    --clicks over the buff icons (which otherwise select Auras Layout). holds two mock cooldown
+    --swipes with a big number so the user sees where a timer renders.
+    local auraTimerPreview = CreateFrame("frame", nil, unitFrame.BuffFrame)
+    auraTimerPreview:SetFrameLevel(unitFrame.BuffFrame:GetFrameLevel() + 30)
+    auraTimerPreview:SetPoint("topleft", unitFrame.BuffFrame, "topleft", 0, 0)
+    auraTimerPreview:SetSize(40, 20)
+    healthBar.dummyAuraTimer = auraTimerPreview
+    unitFrame.BuffFrame.auraTimerPreview = auraTimerPreview
+
+    --two cooldown frames, one per icon. big number fontstring mocks the timer text.
+    auraTimerPreview.cooldowns = {}
+    for cooldownIndex = 1, 2 do
+        local cooldown = CreateFrame("Cooldown", nil, auraTimerPreview, "CooldownFrameTemplate")
+        cooldown:SetFrameLevel(auraTimerPreview:GetFrameLevel() + 1)
+        cooldown:SetHideCountdownNumbers(true)
+        --darker swipe so the shaded area below the number reads clearly.
+        cooldown:SetSwipeColor(0, 0, 0, 0.9)
+        cooldown.bigNumber = cooldown:CreateFontString(nil, "overlay", "GameFontNormal")
+        cooldown.bigNumber:SetPoint("center", cooldown, "center", 0, 0)
+        cooldown.bigNumber:SetTextColor(1, 1, 1, 1)
+        detailsFramework:SetFontSize(cooldown.bigNumber, 12)
+        auraTimerPreview.cooldowns[cooldownIndex] = cooldown
+    end
 
     local dummyTargetBar = CreateFrame("frame", nil, healthBar, "BackdropTemplate")
     healthBar.dummyTargetBar = dummyTargetBar
-    dummyTargetBar:SetFrameLevel(healthBar:GetFrameLevel() - 1)
-    dummyTargetBar:SetPoint("topleft", healthBar, "topleft", -80, 0)
+    dummyTargetBar:SetFrameLevel(healthBar:GetFrameLevel() - 2)
+    --shifted 24px further left (was -80) to make room for the indicator selector frame that
+    --sits against the health bar's left edge.
+    dummyTargetBar:SetPoint("topleft", healthBar, "topleft", -104, 0)
     dummyTargetBar:SetPoint("bottomright", healthBar, "bottomright", 3, 0)
     dummyTargetBar:SetBackdrop({bgFile = [[Interface\ChatFrame\ChatFrameBackground]], edgeFile = [[Interface\Buttons\WHITE8X8]], tile = true, tileSize = 16, edgeSize = 1, insets = {left = 1, right = 1, top = 1, bottom = 1}})
     dummyTargetBar:SetBackdropColor(0, 0, 0, 0.1)
@@ -832,6 +1510,24 @@ function designer.UpdatePreview()
     dummyTargetBar.text = dummyTargetBar:CreateFontString(nil, "overlay", "GameFontNormal")
     dummyTargetBar.text:SetPoint("left", dummyTargetBar, "left", 2, 0)
     dummyTargetBar.text:SetText("target")
+
+    --dummy focus bar (sits above the target bar, narrower so they do not overlap)
+    local dummyFocusBar = CreateFrame("frame", nil, healthBar, "BackdropTemplate")
+    healthBar.dummyFocusBar = dummyFocusBar
+    dummyFocusBar:SetFrameLevel(healthBar:GetFrameLevel() - 1)
+    --shifted 24px further left (was -40) to match the target bar and clear the indicator slot.
+    dummyFocusBar:SetPoint("topleft", healthBar, "topleft", -64, 0)
+    dummyFocusBar:SetPoint("bottomright", healthBar, "bottomright", 3, 0)
+    dummyFocusBar:SetHeight(15)
+    dummyFocusBar:SetBackdrop({bgFile = [[Interface\ChatFrame\ChatFrameBackground]], edgeFile = [[Interface\Buttons\WHITE8X8]], tile = true, tileSize = 16, edgeSize = 1, insets = {left = 1, right = 1, top = 1, bottom = 1}})
+    dummyFocusBar:SetBackdropColor(0, 0, 0, 0.1)
+    dummyFocusBar:SetBackdropBorderColor(.2, .2, .2, 0.5)
+    healthBar.dummyFocus = dummyFocusBar
+    dummyFocusBar.text = dummyFocusBar:CreateFontString(nil, "overlay", "GameFontNormal")
+    dummyFocusBar.text:SetPoint("left", dummyFocusBar, "left", 2, 0)
+    dummyFocusBar.text:SetText("focus")
+    detailsFramework:SetFontSize(dummyFocusBar.text, 9)
+    detailsFramework:SetFontColor(dummyFocusBar.text, "silver")
     detailsFramework:SetFontSize(dummyTargetBar.text, 9)
     detailsFramework:SetFontColor(dummyTargetBar.text, "silver")
 

@@ -5540,6 +5540,9 @@ function Plater.OnInit() --private --~oninit ~init
 				local textString = castBar.FrameOverlay.TargetName
 				textString:Show()
 				textString:SetText("Target Name")
+
+				--attempt to stop designer from restarting the cast bar
+				castBar.castID = "PLATER_TEST_" .. GetTime()
 			end
 		end
 		

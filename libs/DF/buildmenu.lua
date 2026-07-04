@@ -81,6 +81,8 @@ local _
 ---@field desc string
 ---@field descPhraseId string
 ---@field hooks table
+---@field onenter? fun(widget:any) live-preview hover-enter callback (paired with onleave)
+---@field onleave? fun(widget:any) live-preview hover-leave callback
 ---@field boxfirst boolean
 
 ---@class df_menu_button : df_menu_table
@@ -1684,6 +1686,25 @@ function detailsFramework:BuildMenuVolatile(parent, menuOptions, xOffset, yOffse
                     local descPhrase = getDescPhraseText(languageTable, widgetTable)
                     switch:SetTooltip(descPhrase)
 
+                    --optional hover preview, same mechanism as the color widget. hook the inner
+                    --Blizzard frame once (survives ClearHooks on volatile rebuilds); the swappable
+                    --callback lives on .optionOnEnter / .optionOnLeave, reassigned each rebuild.
+                    if (not switch.hoverPreviewHookInstalled) then
+                        switch.hoverPreviewHookInstalled = true
+                        switch.button:HookScript("OnEnter", function()
+                            if (switch.optionOnEnter) then
+                                switch.optionOnEnter(switch)
+                            end
+                        end)
+                        switch.button:HookScript("OnLeave", function()
+                            if (switch.optionOnLeave) then
+                                switch.optionOnLeave(switch)
+                            end
+                        end)
+                    end
+                    switch.optionOnEnter = widgetTable.onenter
+                    switch.optionOnLeave = widgetTable.onleave
+
                     processLabelIcon(switch.hasLabel, widgetTable, languageTable, widgetTable.text_template or textTemplate, useColon, languageAddonId)
 
                     maxColumnWidth, maxWidgetWidth, extraPaddingY = setToggleProperties(parent, switch, widgetTable, currentXOffset, currentYOffset, switchTemplate, widgetWidth, widgetHeight, bAlignAsPairs, nAlignAsPairsLength, valueChangeHook, maxColumnWidth, true,             bUseBoxFirstOnAllWidgets, menuOptions, index, maxWidgetWidth)
@@ -1712,6 +1733,26 @@ function detailsFramework:BuildMenuVolatile(parent, menuOptions, xOffset, yOffse
 
                     local descPhrase = getDescPhraseText(languageTable, widgetTable)
                     colorpick:SetTooltip(descPhrase)
+
+                    --hook installs once per pooled widget (BuildMenuVolatile reuses colorpicks
+                    --across rebuilds, so HookScript every time would stack duplicate callbacks).
+                    --the swappable per-option callback lives on .optionOnEnter / .optionOnLeave
+                    --and is reassigned on every rebuild below; the hook just reads what is current.
+                    if (not colorpick.hoverPreviewHookInstalled) then
+                        colorpick.hoverPreviewHookInstalled = true
+                        colorpick.button:HookScript("OnEnter", function()
+                            if (colorpick.optionOnEnter) then
+                                colorpick.optionOnEnter(colorpick)
+                            end
+                        end)
+                        colorpick.button:HookScript("OnLeave", function()
+                            if (colorpick.optionOnLeave) then
+                                colorpick.optionOnLeave(colorpick)
+                            end
+                        end)
+                    end
+                    colorpick.optionOnEnter = widgetTable.onenter
+                    colorpick.optionOnLeave = widgetTable.onleave
 
                     processLabelIcon(colorpick.hasLabel, widgetTable, languageTable, widgetTable.text_template or textTemplate, useColon, languageAddonId)
 
