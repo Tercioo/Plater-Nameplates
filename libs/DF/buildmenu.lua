@@ -28,6 +28,8 @@ local _
 ---@field hasLabel any
 ---@field hidden boolean?
 ---@field inline boolean?
+---@field onenter function?
+---@field onleave function?
 ---@field widget table?
 ---@field disableif function? a function that returns true or nil, if true the widget get :Disable(), :Enabled() otherwise
 ---@field tags string[] optional tags that help the search bar to find the option
@@ -81,8 +83,6 @@ local _
 ---@field desc string
 ---@field descPhraseId string
 ---@field hooks table
----@field onenter? fun(widget:any) live-preview hover-enter callback (paired with onleave)
----@field onleave? fun(widget:any) live-preview hover-leave callback
 ---@field boxfirst boolean
 
 ---@class df_menu_button : df_menu_table
@@ -1686,25 +1686,6 @@ function detailsFramework:BuildMenuVolatile(parent, menuOptions, xOffset, yOffse
                     local descPhrase = getDescPhraseText(languageTable, widgetTable)
                     switch:SetTooltip(descPhrase)
 
-                    --optional hover preview, same mechanism as the color widget. hook the inner
-                    --Blizzard frame once (survives ClearHooks on volatile rebuilds); the swappable
-                    --callback lives on .optionOnEnter / .optionOnLeave, reassigned each rebuild.
-                    if (not switch.hoverPreviewHookInstalled) then
-                        switch.hoverPreviewHookInstalled = true
-                        switch.button:HookScript("OnEnter", function()
-                            if (switch.optionOnEnter) then
-                                switch.optionOnEnter(switch)
-                            end
-                        end)
-                        switch.button:HookScript("OnLeave", function()
-                            if (switch.optionOnLeave) then
-                                switch.optionOnLeave(switch)
-                            end
-                        end)
-                    end
-                    switch.optionOnEnter = widgetTable.onenter
-                    switch.optionOnLeave = widgetTable.onleave
-
                     processLabelIcon(switch.hasLabel, widgetTable, languageTable, widgetTable.text_template or textTemplate, useColon, languageAddonId)
 
                     maxColumnWidth, maxWidgetWidth, extraPaddingY = setToggleProperties(parent, switch, widgetTable, currentXOffset, currentYOffset, switchTemplate, widgetWidth, widgetHeight, bAlignAsPairs, nAlignAsPairsLength, valueChangeHook, maxColumnWidth, true,             bUseBoxFirstOnAllWidgets, menuOptions, index, maxWidgetWidth)
@@ -1733,27 +1714,7 @@ function detailsFramework:BuildMenuVolatile(parent, menuOptions, xOffset, yOffse
 
                     local descPhrase = getDescPhraseText(languageTable, widgetTable)
                     colorpick:SetTooltip(descPhrase)
-
-                    --hook installs once per pooled widget (BuildMenuVolatile reuses colorpicks
-                    --across rebuilds, so HookScript every time would stack duplicate callbacks).
-                    --the swappable per-option callback lives on .optionOnEnter / .optionOnLeave
-                    --and is reassigned on every rebuild below; the hook just reads what is current.
-                    if (not colorpick.hoverPreviewHookInstalled) then
-                        colorpick.hoverPreviewHookInstalled = true
-                        colorpick.button:HookScript("OnEnter", function()
-                            if (colorpick.optionOnEnter) then
-                                colorpick.optionOnEnter(colorpick)
-                            end
-                        end)
-                        colorpick.button:HookScript("OnLeave", function()
-                            if (colorpick.optionOnLeave) then
-                                colorpick.optionOnLeave(colorpick)
-                            end
-                        end)
-                    end
-                    colorpick.optionOnEnter = widgetTable.onenter
-                    colorpick.optionOnLeave = widgetTable.onleave
-
+ 
                     processLabelIcon(colorpick.hasLabel, widgetTable, languageTable, widgetTable.text_template or textTemplate, useColon, languageAddonId)
 
                     maxColumnWidth, maxWidgetWidth, extraPaddingY = setColorProperties(parent, colorpick, widgetTable, currentXOffset, currentYOffset, switchTemplate, widgetWidth, widgetHeight, bAlignAsPairs, nAlignAsPairsLength, valueChangeHook, maxColumnWidth, maxWidgetWidth, bUseBoxFirstOnAllWidgets, extraPaddingY)
@@ -1807,6 +1768,25 @@ function detailsFramework:BuildMenuVolatile(parent, menuOptions, xOffset, yOffse
                     widgetCreated = groupFrame
                     setWidgetId(parent, widgetTable, groupFrame)
                     jumpToNextLine = false
+                end
+
+                if (widgetTable.onenter) then
+                    if (widgetCreated.SetHook) then
+                        widgetCreated:SetHook("OnEnter", widgetTable.onenter)
+                    else
+                        widgetCreated:SetScript("OnEnter", widgetTable.onenter)
+                    end
+                end
+                if (widgetTable.onleave) then
+                    if (widgetCreated.SetHook) then
+                        widgetCreated:SetHook("OnLeave", widgetTable.onleave)
+                    else
+                        widgetCreated:SetScript("OnLeave", widgetTable.onleave)
+                    end
+                end
+
+                if languageAddonId and widgetCreated then
+                    widgetCreated.__languageAddonId = languageAddonId
                 end
 
                 if (widgetTable.nocombat) then
@@ -2202,6 +2182,25 @@ function detailsFramework:BuildMenu(parent, menuOptions, xOffset, yOffset, heigh
                 widgetCreated = groupFrame
                 setWidgetId(parent, widgetTable, groupFrame)
                 jumpToNextLine = false
+            end
+
+            if (widgetTable.onenter) then
+                if (widgetCreated.SetHook) then
+                    widgetCreated:SetHook("OnEnter", widgetTable.onenter)
+                else
+                    widgetCreated:SetScript("OnEnter", widgetTable.onenter)
+                end
+            end
+            if (widgetTable.onleave) then
+                if (widgetCreated.SetHook) then
+                    widgetCreated:SetHook("OnLeave", widgetTable.onleave)
+                else
+                    widgetCreated:SetScript("OnLeave", widgetTable.onleave)
+                end
+            end
+
+            if languageAddonId and widgetCreated then
+                widgetCreated.__languageAddonId = languageAddonId
             end
 
             if (widgetTable.nocombat) then
