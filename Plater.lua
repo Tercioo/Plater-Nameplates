@@ -5504,7 +5504,7 @@ function Plater.OnInit() --private --~oninit ~init
 				
 				castBar.playedFinishedTest = nil
 				
-				if IS_WOW_PROJECT_MIDNIGHT then --IS_WOW_PROJECT_MIDNIGHT_API?
+				if IS_WOW_PROJECT_MIDNIGHT_API then
 					local durationObject = C_DurationUtil.CreateDuration()
 					durationObject:SetTimeFromEnd(castBar.spellEndTime , castBar.maxValue, 1)
 					castBar.durationObject = durationObject
