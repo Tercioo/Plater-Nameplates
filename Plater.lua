@@ -9058,7 +9058,7 @@ end
 			
 			local width, height = Plater.db.profile.click_space[1], Plater.db.profile.click_space[2]
 			local widthScale, heightScale
-			if actorType == ACTORTYPE_FRIENDLY_PLAYER or actorType == ACTORTYPE_FRIENDLY_NPC then
+			if plateFrame.actorType == ACTORTYPE_FRIENDLY_PLAYER or plateFrame.actorType == ACTORTYPE_FRIENDLY_NPC then
 				widthScale, heightScale = Plater.db.profile.overlap_space_scale_friendly[1], Plater.db.profile.overlap_space_scale_friendly[2]
 			else
 				widthScale, heightScale = Plater.db.profile.overlap_space_scale[1], Plater.db.profile.overlap_space_scale[2]
