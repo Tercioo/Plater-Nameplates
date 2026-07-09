@@ -9050,32 +9050,32 @@ end
 	function Plater.UpdateStackingSize(plateFrame, customWScale, customHScale)
 		if not plateFrame then return end
 		local unitFrame = plateFrame.unitFrame
+		local profile = Plater.db.profile
+		local width, height = profile.click_space[1], profile.click_space[2]
 		if unitFrame.stackSizeFrame then --TODO: MIDNIGHT!!
 			unitFrame.stackSizeFrame:ClearAllPoints()
 			unitFrame.stackSizeFrame:SetParent(unitFrame.PlaterOnScreen and unitFrame or plateFrame)
 			plateFrame:SetStackingBoundsFrame(unitFrame.stackSizeFrame)
-			--unitFrame.stackSizeFrame:SetAllPoints()
 			
-			local width, height = Plater.db.profile.click_space[1], Plater.db.profile.click_space[2]
 			local widthScale, heightScale
 			if plateFrame.actorType == ACTORTYPE_FRIENDLY_PLAYER or plateFrame.actorType == ACTORTYPE_FRIENDLY_NPC then
-				widthScale, heightScale = Plater.db.profile.overlap_space_scale_friendly[1], Plater.db.profile.overlap_space_scale_friendly[2]
+				widthScale, heightScale = profile.overlap_space_scale_friendly[1], profile.overlap_space_scale_friendly[2]
 			else
-				widthScale, heightScale = Plater.db.profile.overlap_space_scale[1], Plater.db.profile.overlap_space_scale[2]
+				widthScale, heightScale = profile.overlap_space_scale[1], profile.overlap_space_scale[2]
 			end
 			
-			--local offsetW, offsetH = (width - width * widthScale), (height - height * heightScale)
-			
-			unitFrame.stackSizeFrame:SetPoint("CENTER", isPlateEnabled and unitFrame or plateFrame, "CENTER", 0, 0)
+			unitFrame.stackSizeFrame:SetPoint("CENTER", plateFrame.unitFrame.PlaterOnScreen and unitFrame or plateFrame, "CENTER", 0, 0)
 			unitFrame.stackSizeFrame:SetSize(width * (customWScale or widthScale), height * (customHScale or heightScale))
-			--unitFrame.stackSizeFrame:ClearAllPoints()
-			--unitFrame.stackSizeFrame:SetPoint("TOPLEFT", unitFrame.PlaterOnScreen and unitFrame or plateFrame, "TOPLEFT", offsetW, -offsetH)
-			--unitFrame.stackSizeFrame:SetPoint("BOTTOMRIGHT", unitFrame.PlaterOnScreen and unitFrame or plateFrame, "BOTTOMRIGHT", -offsetW, offsetH)
+			
 		end
 		if unitFrame.hitTestFrame then
-			--unitFrame.hitTestFrame:SetPoint("CENTER", isPlateEnabled and unitFrame or plateFrame, "CENTER", 0, 0)
-			local width, height = Plater.db.profile.click_space[1], Plater.db.profile.click_space[2]
-			unitFrame.hitTestFrame:SetSize(width, height)
+			local widthScale, heightScale
+			if plateFrame.actorType == ACTORTYPE_FRIENDLY_PLAYER or plateFrame.actorType == ACTORTYPE_FRIENDLY_NPC then
+				widthScale, heightScale = profile.select_space_scale_friendly[1], profile.select_space_scale_friendly[2]
+			else
+				widthScale, heightScale = profile.select_space_scale[1], profile.select_space_scale[2]
+			end
+			unitFrame.hitTestFrame:SetSize(width * widthScale, height * heightScale)
 		end
 	end
 	

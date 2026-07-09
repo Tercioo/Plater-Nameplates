@@ -507,7 +507,7 @@ function platerInternal.CreateAdvancedOptions()
         },
 
         {type = "blank", hidden = not IS_WOW_PROJECT_MIDNIGHT},
-        {type = "label", get = function() return "Overlap Size Scaling:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+        {type = "label", get = function() return "Overlap Size Scaling:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = not IS_WOW_PROJECT_MIDNIGHT},
         {
             type = "range",
             get = function() return Plater.db.profile.overlap_space_scale[1] end,
@@ -576,6 +576,77 @@ function platerInternal.CreateAdvancedOptions()
             nocombat = true,
             hidden = not IS_WOW_PROJECT_MIDNIGHT,
         },
+
+        {type = "label", get = function() return "Clickable Area Scaling:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = not IS_WOW_PROJECT_MIDNIGHT},
+        {
+            type = "range",
+            get = function() return Plater.db.profile.select_space_scale[1] end,
+            set = function (self, fixedparam, value)
+                Plater.db.profile.select_space_scale[1] = value
+                Plater.UpdatePlateClickSpace (nil, true)
+            end,
+            min = 0.5,
+            max = 1,
+            step = 0.1,
+            thumbscale = 1.7,
+            usedecimals = true,
+            name = "Enemy Nameplate Overlap Select Area Width %",
+            desc = "Scaling for the clickable area width, relative to clickspace, for enemy units.",
+            nocombat = true,
+            hidden = not IS_WOW_PROJECT_MIDNIGHT,
+        },
+        {
+            type = "range",
+            get = function() return  Plater.db.profile.select_space_scale[2] end,
+            set = function (self, fixedparam, value)
+                Plater.db.profile.select_space_scale[2] = value
+                Plater.UpdatePlateClickSpace (nil, true)
+            end,
+            min = 0.5,
+            max = 1,
+            step = 0.1,
+            thumbscale = 1.7,
+            usedecimals = true,
+            name = "Enemy Nameplate Select Area Height %",
+            desc = "Scaling for the clickable area height, relative to clickspace, for enemy units.",
+            nocombat = true,
+            hidden = not IS_WOW_PROJECT_MIDNIGHT,
+        },
+        {
+            type = "range",
+            get = function() return Plater.db.profile.select_space_scale_friendly[1] end,
+            set = function (self, fixedparam, value)
+                Plater.db.profile.select_space_scale_friendly[1] = value
+                Plater.UpdatePlateClickSpace (nil, true)
+            end,
+            min = 0.0,
+            max = 1,
+            step = 0.1,
+            thumbscale = 1.7,
+            usedecimals = true,
+            name = "Friendly Nameplate Select Area Width %",
+            desc = "Scaling for the clickable area width, relative to clickspace, for friendly units.",
+            nocombat = true,
+            hidden = not IS_WOW_PROJECT_MIDNIGHT,
+        },
+        {
+            type = "range",
+            get = function() return  Plater.db.profile.select_space_scale_friendly[2] end,
+            set = function (self, fixedparam, value)
+                Plater.db.profile.select_space_scale_friendly[2] = value
+                Plater.UpdatePlateClickSpace (nil, true)
+            end,
+            min = 0.0,
+            max = 1,
+            step = 0.1,
+            thumbscale = 1.7,
+            usedecimals = true,
+            name = "Friendly Nameplate Select Area Height %",
+            desc = "Scaling for the clickable area height, relative to clickspace, for friendly units.",
+            nocombat = true,
+            hidden = not IS_WOW_PROJECT_MIDNIGHT,
+        },
+
         {
             type = "toggle",
             get = function()
