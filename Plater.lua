@@ -88,6 +88,7 @@ local IS_WOW_PROJECT_CLASSIC_WRATH = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpa
 local IS_WOW_PROJECT_CLASSIC_MOP = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_MISTS_OF_PANDARIA and ClassicExpansionAtLeast(LE_EXPANSION_MISTS_OF_PANDARIA)
 local IS_WOW_PROJECT_MIDNIGHT = DF.IsAddonApocalypseWow()
 local IS_WOW_PROJECT_MIDNIGHT_API = DF.IsMidnightWowAPI()
+local IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS = C_XMLUtil and C_XMLUtil.GetTemplateInfo and C_XMLUtil.GetTemplateInfo("CustomAuraContainerTemplate") and true or false
 
 local PixelUtil = PixelUtil or DFPixelUtil
 
@@ -3105,39 +3106,7 @@ Plater.AnchorNamesByPhraseId = {
 			---@field BuffFrame1 buffframe
 
 			--> buff frames
-				--main buff frame
-				local buffFrame = CreateFrame ("frame", unitFrame:GetName() .. "BuffFrame1", unitFrame, BackdropTemplateMixin and "BackdropTemplate")
-				buffFrame.amountAurasShown = 0
-				buffFrame.PlaterBuffList = {}
-				buffFrame.isNameplate = true
-				buffFrame.unitFrame = unitFrame --used on resource frame anchor update
-				buffFrame.healthBar = unitFrame.healthBar
-				buffFrame.AuraCache = {}
-				unitFrame.BuffFrame = buffFrame
-
-				--secondary buff frame
-				local buffFrame2 = CreateFrame ("frame", unitFrame:GetName() .. "BuffFrame2", unitFrame, BackdropTemplateMixin and "BackdropTemplate")
-				buffFrame2 = CreateFrame ("frame", unitFrame:GetName() .. "BuffFrame2", unitFrame, BackdropTemplateMixin and "BackdropTemplate")
-				buffFrame2.amountAurasShown = 0
-				buffFrame2.PlaterBuffList = {}
-				buffFrame2.isNameplate = true
-				buffFrame2.unitFrame = unitFrame
-				buffFrame2.healthBar = unitFrame.healthBar
-				buffFrame2.AuraCache = {}
-				unitFrame.BuffFrame2 = buffFrame2
-			
-			--> identify aura containers
-				buffFrame.Name = "Main" --aura frame 1
-				buffFrame2.Name = "Secondary" --aura frame 2
-			
-			--> store the secondary anchor inside the regular buff container for speed
-			buffFrame.BuffFrame2 = buffFrame2
-			buffFrame2.BuffFrame1 = buffFrame
-			
-			--> unit aura cache
-			unitFrame.AuraCache = {}
-			unitFrame.GhostAuraCache = {}
-			unitFrame.ExtraAuraCache = {}
+			Plater.CreateOrUpdateAuraContainers(unitFrame)
 			
 			local healthBar = unitFrame.healthBar
 			
@@ -3470,20 +3439,6 @@ Plater.AnchorNamesByPhraseId = {
 				obscuredTexture.Mask:Hide()
 				obscuredTexture:AddMaskTexture(obscuredTexture.Mask)
 
-			--> create the extra icon frame (used for the special aura)
-				local options = {
-					icon_width = 20, 
-					icon_height = 20, 
-					texcoord = {.1, .9, .1, .9},
-					show_text = true,
-				}
-				
-				unitFrame.ExtraIconFrame = DF:CreateIconRow (unitFrame, "$parentExtraIconRow", options)
-				unitFrame.ExtraIconFrame:ClearIcons()
-				unitFrame.ExtraIconFrame.RefreshID = 0
-				unitFrame.ExtraIconFrame.AuraCache = {}
-				--> cache the extra icon frame inside the buff frame for speed
-				unitFrame.BuffFrame.ExtraIconFrame = unitFrame.ExtraIconFrame
 			
 			--> Support for DBM and BigWigs Nameplate Auras
 				Plater.CreateBossModAuraFrame(unitFrame)
@@ -7447,7 +7402,7 @@ end
 			end
 			
 			--update buffs and debuffs
-			if (DB_AURA_ENABLED) then --should update only when the heathbar is shown?
+			if (DB_AURA_ENABLED and not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS) then --should update only when the heathbar is shown?
 				--Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdateAuras")
 				
 				if (DB_TRACK_METHOD == 0x1) then --automatic
@@ -9455,7 +9410,7 @@ end
 		Plater.UpdateNameOnRenamedUnit(plateFrame)
 
 		--update options in the extra icons row frame
-		if (unitFrame.ExtraIconFrame.RefreshID < PLATER_REFRESH_ID) then
+		if (not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS and unitFrame.ExtraIconFrame.RefreshID < PLATER_REFRESH_ID) then
 			Plater.SetAnchor (unitFrame.ExtraIconFrame, Plater.db.profile.extra_icon_anchor)
 			unitFrame.ExtraIconFrame:SetOption ("anchor", Plater.db.profile.extra_icon_anchor)
 			unitFrame.ExtraIconFrame:SetOption ("show_text", Plater.db.profile.extra_icon_show_timer)

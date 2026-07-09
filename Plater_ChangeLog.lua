@@ -8,6 +8,9 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1780479003, "Backend Change", "July 9th, 2026", "Adding base support for the new aura API in Midnight (12.1)", "cont1nuity"},
+			{1780479003, "New Feature", "July 9th, 2026", "Adding 'select area scaling' options to adjust clickable area size for friendly and enemy units.", "cont1nuity"},
+			
 			{1780479003, "Bug Fix", "June 17th, 2026", "Removing IMPORTANT aura filter for Midnight, as it has been removed from the game.", "cont1nuity"},
 			{1780479003, "Bug Fix", "June 17th, 2026", "Fixing some issues with restoring CVars correctly.", "cont1nuity"},
 			{1780479003, "Bug Fix", "June 3rd, 2026", "Fixing some issues for MoP.", "cont1nuity"},

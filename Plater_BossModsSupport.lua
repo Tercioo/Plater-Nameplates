@@ -22,6 +22,7 @@ local LCG = LibStub:GetLibrary("LibCustomGlow-1.0")
 local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_MIDNIGHT = DF.IsAddonApocalypseWow()
 local IS_WOW_PROJECT_MIDNIGHT_API = DF.IsMidnightWowAPI()
+local IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS = C_XMLUtil and C_XMLUtil.GetTemplateInfo and C_XMLUtil.GetTemplateInfo("CustomAuraContainerTemplate") and true or false
 
 local UNIT_BOSS_MOD_AURAS_ACTIVE = {} --contains for each [GUID] a list of {texture, duration, desaturate}
 local UNIT_BOSS_MOD_AURAS_TO_BE_REMOVED = {} --contains for each [GUID] a list of texture-ids to be removed
@@ -181,7 +182,7 @@ function Plater.CreateBossModAuraFrame(unitFrame)
 	unitFrame.BossModIconFrame:SetOption ("surpress_tulla_omni_cc", Plater.db.profile.disable_omnicc_on_auras)
 	unitFrame.BossModIconFrame:SetOption ("surpress_blizzard_cd_timer", true)
 	unitFrame.BossModIconFrame:SetOption ("anchor", Plater.db.profile.bossmod_icons_anchor or {side = 8, x = 0, y = 30})
-	unitFrame.BossModIconFrame:SetOption ("grow_direction", unitFrame.ExtraIconFrame:GetIconGrowDirection())
+	unitFrame.BossModIconFrame:SetOption ("grow_direction", DF.GrowDirectionBySide[Plater.db.profile.extra_icon_anchor.side])
 	Plater.SetAnchor (unitFrame.BossModIconFrame, Plater.db.profile.bossmod_icons_anchor or {side = 8, x = 0, y = 30})
 	
 	unitFrame.BossModIconFrame.OnIconTick = function(self, deltaTime) -- override to add glow effects
@@ -230,7 +231,7 @@ function Plater.UpdateBossModAuraFrameSettings(unitFrame, refreshID)
 		unitFrame.BossModIconFrame:SetOption ("icon_width", Plater.db.profile.bossmod_aura_width)
 		unitFrame.BossModIconFrame:SetOption ("icon_height", Plater.db.profile.bossmod_aura_height)
 		unitFrame.BossModIconFrame:SetOption ("anchor", Plater.db.profile.bossmod_icons_anchor or {side = 8, x = 0, y = 30})
-		unitFrame.BossModIconFrame:SetOption ("grow_direction", unitFrame.ExtraIconFrame:GetIconGrowDirection())
+		unitFrame.BossModIconFrame:SetOption ("grow_direction", DF.GrowDirectionBySide[Plater.db.profile.extra_icon_anchor.side])
 
 		--> update refresh ID
 		unitFrame.BossModIconFrame.RefreshID = refreshID
