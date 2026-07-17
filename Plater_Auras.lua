@@ -812,7 +812,7 @@ end
 
 local currentCreatingFrameName = nil
 local function initAuraFrame(newIcon)
-	DevTool:AddData(newIcon, "initAuraFrame")
+	--DevTool:AddData(newIcon, "initAuraFrame")
 	
 
 	-- create stuff
