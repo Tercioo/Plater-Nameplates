@@ -1,6 +1,7 @@
 ## Interface: 120007, 120100
 ## Interface-Mainline: 120007, 120100
 ## Interface-Mists: 50504
+## Interface-Titan: 30801
 ## Interface-TBC: 20506
 ## Interface-Vanilla: 11508
 ## Title: Plater
