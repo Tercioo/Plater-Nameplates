@@ -604,7 +604,7 @@ end
 --[[
 	New aura container code - MIDNIGHT 12.1!
 ]]--
-local function getCandidateFilters(frame)
+local function getCandidateFilters(frameName)
 	local profile = Plater.db.profile
 
 	local filters = {
@@ -630,7 +630,6 @@ local function getCandidateFilters(frame)
 		}
 	}
 
-	local frameName = frame and frame.Name
 	if frameName == "Main" then
 		if DB_AURA_SEPARATE_BUFFS then
 			filters.mainFilter.processedAuraType = AuraUtil.AuraUpdateChangedType.Debuff
@@ -682,9 +681,8 @@ local function getCandidateFilters(frame)
 	return filters
 end
 
-local function getAuraFilter(frame, type)
+local function getAuraFilter(frameName, type)
 	local filter = ""
-	local frameName = frame and frame.Name
 	if frameName == "Main" and type == "debuffs" then
 		--filter = filter .. (DB_AURA_SHOW_DISPELLABLE and frame.unitFrame.namePlateUnitReaction > 4 and "|RAID_PLAYER_DISPELLABLE" or "")
 		filter = filter .. (DB_AURA_SHOW_DISPELLABLE and "|RAID_PLAYER_DISPELLABLE" or "")
@@ -742,7 +740,7 @@ local function getAuraFilter(frame, type)
 	return filter
 end
 
-local function getAuraFrameLayout(frame)
+local function getAuraFrameLayout(frameName)
 	local profile = Plater.db.profile
 	local layout = {
 		elementSpacingX = profile.aura_padding,
@@ -754,7 +752,6 @@ local function getAuraFrameLayout(frame)
 		elementHeight = 16,
 		rowWidth = math.huge,
 	}
-	local frameName = frame and frame.Name
 	if frameName == "Main" then
 		layout.elementWidth = profile.aura_width
 		layout.elementHeight = profile.aura_height
@@ -770,10 +767,9 @@ local function getAuraFrameLayout(frame)
 	return layout
 end
 
-local function getLayoutGrowthDirection(frame)
+local function getLayoutGrowthDirection(frameName)
 	local profile = Plater.db.profile
 	local horizontalDirection, verticalDirection = AnchorUtil.FlowDirection.Right, AnchorUtil.FlowDirection.Up
-	local frameName = frame and frame.Name
 	if frameName == "Main" then
 		horizontalDirection = (profile.aura_grow_direction == 1) and AnchorUtil.FlowDirection.Left or AnchorUtil.FlowDirection.Right -- default to right
 		local anchorSide = profile.aura_frame1_anchor.side
@@ -791,7 +787,7 @@ local function getLayoutGrowthDirection(frame)
 	return horizontalDirection, verticalDirection
 end
 
-local function getAuraProcessingPolicy(frame)
+local function getAuraProcessingPolicy(frameName)
 	local policy = CustomAuraContainerAuraProcessingPolicy.ProcessAura --none
 	local options = {
 		displayOnlyDispellableDebuffs = false,
@@ -799,7 +795,7 @@ local function getAuraProcessingPolicy(frame)
 		ignoreDebuffs = false,
 		ignoreDispelDebuffs = false
 	}
-	local frameName = frame and frame.Name
+
 	if frameName == "Main" then
 
 	elseif frameName == "Secondary" then
@@ -955,7 +951,7 @@ local function initAuraFrame(newIcon)
 	return newIcon
 end
 
-local function getAuraFrameOptions(frame)
+local function getAuraFrameOptions(frameName)
 	local auraFrameOptions = {
 		-- Maximum number of aura frames this filter group may display.
 		maxFrameCount = Plater.db.profile.aura_max_shown_limit <= 0 and math.huge or Plater.db.profile.aura_max_shown_limit or math.huge,
@@ -966,33 +962,33 @@ local function getAuraFrameOptions(frame)
 		-- Additional templates inherited by frames created for this filter group. CustomAuraButtonTemplate is always inherited first.
 		templateNames = nil,
 		-- Optional candidate filters applied after the aura filter string.
-		candidateFilters = getCandidateFilters(frame),
+		candidateFilters = getCandidateFilters(frameName),
 		-- Optional callback invoked after each frame is created.
 		initializeFrame = initAuraFrame,
 		-- Optional flow layout settings for this filter group's visible frames.
-		layout = getAuraFrameLayout(frame),
+		layout = getAuraFrameLayout(frameName),
 	}
 
 	return auraFrameOptions
 end
 
-local function getFullAuraOptions(frame)
+local function getFullAuraOptions(frameName)
 	local fullOptions = {
-		auraFrameOptions = getAuraFrameOptions(frame),
+		auraFrameOptions = getAuraFrameOptions(frameName),
 		processingPolicy = {},
 		layoutGrowth = {},
 		auraFilter = {
-			buffs = getAuraFilter(frame, "buffs"),
-			debuffs = getAuraFilter(frame, "debuffs"),
-			ExtraIconRow = getAuraFilter(frame, "ExtraIconRow"),
+			buffs = getAuraFilter(frameName, "buffs"),
+			debuffs = getAuraFilter(frameName, "debuffs"),
+			ExtraIconRow = getAuraFilter(frameName, "ExtraIconRow"),
 		},
 	}
 
-	local horizontalDirection, verticalDirection = getLayoutGrowthDirection(frame)
+	local horizontalDirection, verticalDirection = getLayoutGrowthDirection(frameName)
 	fullOptions.layoutGrowth.horizontalDirection = horizontalDirection
 	fullOptions.layoutGrowth.verticalDirection = verticalDirection
 
-	local policy, policyOptions = getAuraProcessingPolicy(frame)
+	local policy, policyOptions = getAuraProcessingPolicy(frameName)
 	fullOptions.processingPolicy.policy = policy
 	fullOptions.processingPolicy.policyOptions = policyOptions
 
@@ -1027,34 +1023,60 @@ local auraFrames = {
 	},
 }
 
+local AURA_CONTAINERS = {
+	BuffFrame = {},
+	BuffFrame2 = {},
+	ExtraIconFrame = {},
+}
+
+function Plater.PreAllocateAuraContainers()
+	if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then return end
+	for i=1, 40 do
+		local unit = "nameplate"..i
+		for _, frameInfo in pairs (auraFrames) do
+			currentCreatingFrameName = frameInfo.name
+			local auraContainer = CreateFrame("AuraContainer", "NamePlate" .. i .. "PlaterUnitFrame" .. frameInfo.frameName, UIParent, "CustomAuraContainerTemplate")
+			AURA_CONTAINERS[frameInfo.key][unit] = auraContainer
+			auraContainer.Name = frameInfo.name
+
+			local options = getFullAuraOptions(frameInfo.name)
+			auraContainer.activeOptions = options
+			auraContainer.groupNames = {}
+
+			for _, groupName in pairs(frameInfo.groups) do
+				auraContainer:AddAuraGroup(groupName, options.auraFilter[groupName], options.auraFrameOptions)
+				auraContainer.groupNames[groupName] = true
+			end
+			auraContainer:SetAuraLayoutGrowthDirection(options.layoutGrowth.horizontalDirection, options.layoutGrowth.verticalDirection)
+			auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
+			--SetAuraLayoutPadding
+
+			auraContainer:SetEnabled(false)
+
+			currentCreatingFrameName = nil
+			--DevTool:AddData(auraContainer, "create")
+		end
+	end
+	DevTool:AddData({containers=AURA_CONTAINERS}, "PreAllocateAuraContainers")
+end
+
 function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 	if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
 		
 		if not unitFrame.BuffFrame then
+			if not unit then return end -- fallback
+
 			for _, frameInfo in pairs (auraFrames) do
-				currentCreatingFrameName = frameInfo.name
-				local auraContainer = CreateFrame("AuraContainer", unitFrame:GetName() .. frameInfo.frameName, unitFrame, "CustomAuraContainerTemplate")
+				
+				local auraContainer = AURA_CONTAINERS[frameInfo.key][unit]
+				DevTool:AddData({containter=auraContainer, containers=AURA_CONTAINERS, unit=unit}, "CreateOrUpdateAuraContainers Loop")
 				unitFrame[frameInfo.key] = auraContainer
-				auraContainer.Name = frameInfo.name
 
 				if unit then
 					auraContainer:SetUnit(unit)
 				end
 
-				local options = getFullAuraOptions(auraContainer)
-				auraContainer.activeOptions = options
-				auraContainer.groupNames = {}
-
-				for _, groupName in pairs(frameInfo.groups) do
-					auraContainer:AddAuraGroup(groupName, options.auraFilter[groupName], options.auraFrameOptions)
-					auraContainer.groupNames[groupName] = true
-				end
-				auraContainer:SetAuraLayoutGrowthDirection(options.layoutGrowth.horizontalDirection, options.layoutGrowth.verticalDirection)
-				auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
-				--SetAuraLayoutPadding
-
 				auraContainer:SetEnabled(DB_AURA_ENABLED and unit and true or false)
-
 
 				-- some standard plater stuff for compatibility
 				auraContainer.unitFrame = unitFrame
@@ -1071,39 +1093,38 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 			unitFrame.AuraCache = {}
 			unitFrame.GhostAuraCache = {}
 			unitFrame.ExtraAuraCache = {}
+		end
 
-		else
-			-- update
-			for _, frameInfo in pairs (auraFrames) do
-				local auraContainer = unitFrame[frameInfo.key]
-				if DB_AURA_ENABLED then
-					local options = getFullAuraOptions(auraContainer)
-					auraContainer.activeOptions = options
-					auraContainer:SetAuraLayoutRowWidth(options.auraFrameOptions.layout.rowWidth)
-					auraContainer:SetAuraLayoutGrowthDirection(options.layoutGrowth.horizontalDirection, options.layoutGrowth.verticalDirection)
-					auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
+		-- update
+		for _, frameInfo in pairs (auraFrames) do
+			local auraContainer = unitFrame[frameInfo.key]
+			if DB_AURA_ENABLED then
+				local options = getFullAuraOptions(auraContainer)
+				auraContainer.activeOptions = options
+				auraContainer:SetAuraLayoutRowWidth(options.auraFrameOptions.layout.rowWidth)
+				auraContainer:SetAuraLayoutGrowthDirection(options.layoutGrowth.horizontalDirection, options.layoutGrowth.verticalDirection)
+				auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
 
-					for _, groupName in pairs(frameInfo.groups) do
-						if auraContainer.groupNames[groupName] then
-							auraContainer:SetAuraGroupMaxFrameCount(groupName, options.auraFrameOptions.maxFrameCount)
-							auraContainer:SetAuraGroupCandidateFilters(groupName, options.auraFrameOptions.candidateFilters)
-							auraContainer:SetAuraGroupSortMethod(groupName, options.auraFrameOptions.sortMethod, options.auraFrameOptions.sortDirection)
-							auraContainer:SetAuraGroupLayout(groupName, options.auraFrameOptions.layout)
-							--auraContainer:SetAuraGroupFilterString(groupName, options.auraFilter[filterName])
-						end
+				for _, groupName in pairs(frameInfo.groups) do
+					if auraContainer.groupNames[groupName] then
+						auraContainer:SetAuraGroupMaxFrameCount(groupName, options.auraFrameOptions.maxFrameCount)
+						auraContainer:SetAuraGroupCandidateFilters(groupName, options.auraFrameOptions.candidateFilters)
+						auraContainer:SetAuraGroupSortMethod(groupName, options.auraFrameOptions.sortMethod, options.auraFrameOptions.sortDirection)
+						auraContainer:SetAuraGroupLayout(groupName, options.auraFrameOptions.layout)
+						--auraContainer:SetAuraGroupFilterString(groupName, options.auraFilter[filterName])
 					end
-					
-					--SetAuraLayoutPadding
 				end
-
-				if unit then
-					auraContainer:SetUnit(unit)
-				end
-
-				auraContainer:SetEnabled(DB_AURA_ENABLED and unit and true or false)
-
-				--DevTool:AddData(auraContainer, "update")
+				
+				--SetAuraLayoutPadding
 			end
+
+			if unit then
+				auraContainer:SetUnit(unit)
+			end
+
+			auraContainer:SetEnabled(DB_AURA_ENABLED and unit and true or false)
+
+			--DevTool:AddData(auraContainer, "update")
 		end
 
 	elseif not unitFrame.BuffFrame then -- old API

@@ -4483,6 +4483,8 @@ Plater.AnchorNamesByPhraseId = {
 			--March 3rd, 2019
 			if (DB_USE_UIPARENT) then
 				-- need to explicitly hide the frame now, as it is not tethered to the blizz nameplate
+				plateFrame.unitFrame:ClearAllPoints()
+				--plateFrame.unitFrame:SetParent(UIParent)
 				plateFrame.unitFrame:Hide()
 			end
 			--end of patch
@@ -5152,6 +5154,8 @@ function Plater.OnInit() --private --~oninit ~init
 			--update resource bar
 			Plater.UpdateResourceFrame()
 		end
+
+		Plater.PreAllocateAuraContainers()
 		
 		--can also hook 'ClassNameplateBar:ShowNameplateBar()' which will show and call NamePlateDriverFrame:SetClassNameplateBar(self); which will call SetupClassNameplateBars()
 		if IS_WOW_PROJECT_MAINLINE then
@@ -10263,13 +10267,15 @@ end
 
 		for i = 1, #allWidgets do
 			local widget = allWidgets[i]
-			widget.FadeAnimation = widget:CreateAnimationGroup()
-			--widget.FadeAnimation:SetScript ("OnPlay", on_play_fade_animation)
-			widget.FadeAnimation:SetScript ("OnFinished", on_finished_fade_animation)
-			widget.FadeAnimation.Animation = widget.FadeAnimation:CreateAnimation ("Alpha")
-			widget.FadeAnimation.Animation:SetOrder (1)
-			widget.FadeAnimation.Animation:SetDuration (0.15)
-			widget.SetAlphaTo = widget_set_alpha
+			if widget then
+				widget.FadeAnimation = widget:CreateAnimationGroup()
+				--widget.FadeAnimation:SetScript ("OnPlay", on_play_fade_animation)
+				widget.FadeAnimation:SetScript ("OnFinished", on_finished_fade_animation)
+				widget.FadeAnimation.Animation = widget.FadeAnimation:CreateAnimation ("Alpha")
+				widget.FadeAnimation.Animation:SetOrder (1)
+				widget.FadeAnimation.Animation:SetDuration (0.15)
+				widget.SetAlphaTo = widget_set_alpha
+			end
 		end
 	end
 
