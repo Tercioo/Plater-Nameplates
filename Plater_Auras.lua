@@ -852,7 +852,12 @@ local function initAuraFrame(newIcon)
 	--newIcon.TimerText:SetPoint ("center")
 	newIcon.TimerText = newIcon.Cooldown:GetRegions()
 
-	newIcon:SetDurationText(newIcon.TimerText)
+	local durationTextOptions = {
+		--formatter = , 
+		--textColorCurve = pandemicColorCurve,
+	}
+	newIcon:SetDurationText(newIcon.TimerText, durationTextOptions)
+	
 
 
 	-- switch to proper border, keep compatibility
@@ -1057,7 +1062,7 @@ function Plater.PreAllocateAuraContainers()
 			--DevTool:AddData(auraContainer, "create")
 		end
 	end
-	DevTool:AddData({containers=AURA_CONTAINERS}, "PreAllocateAuraContainers")
+	--DevTool:AddData({containers=AURA_CONTAINERS}, "PreAllocateAuraContainers")
 end
 
 function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
@@ -1069,7 +1074,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 			for _, frameInfo in pairs (auraFrames) do
 				
 				local auraContainer = AURA_CONTAINERS[frameInfo.key][unit]
-				DevTool:AddData({containter=auraContainer, containers=AURA_CONTAINERS, unit=unit}, "CreateOrUpdateAuraContainers Loop")
+				--DevTool:AddData({containter=auraContainer, containers=AURA_CONTAINERS, unit=unit}, "CreateOrUpdateAuraContainers Loop")
 				unitFrame[frameInfo.key] = auraContainer
 
 				if unit then
