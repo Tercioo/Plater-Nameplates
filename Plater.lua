@@ -5166,79 +5166,76 @@ function Plater.OnInit() --private --~oninit ~init
 		Plater.PreAllocateAuraContainers()
 		
 		--can also hook 'ClassNameplateBar:ShowNameplateBar()' which will show and call NamePlateDriverFrame:SetClassNameplateBar(self); which will call SetupClassNameplateBars()
-		if IS_WOW_PROJECT_MAINLINE then
-			hooksecurefunc (NamePlateDriverFrame, "SetupClassNameplateBars", function (self)
-				return Plater.UpdatePersonalBar (self)
+		hooksecurefunc (NamePlateDriverFrame, "SetupClassNameplateBars", function (self)
+			return Plater.UpdatePersonalBar (self)
+		end)
+		
+		if IS_WOW_PROJECT_MIDNIGHT_API then
+			
+			--Nameplate base options tables: NamePlateFriendlyFrameOptions / NamePlateEnemyFrameOptions
+			hooksecurefunc(NamePlateDriverFrame, "OnNamePlateAdded", function(_, unit)
+				if not unit:match("^nameplate") then return end
+				local profile = Plater.db.profile
+				if not profile.blizzard_nameplate_font_override_enabled then return end
+				local plateFrame = C_NamePlate.GetNamePlateForUnit(unit, issecure())
+				if not plateFrame then
+					Plater.UpdateBlizzardNameplateFonts(true)
+				else
+					DF:SetFontFace (plateFrame.UnitFrame.name, profile.blizzard_nameplate_font)
+					DF:SetFontOutline (plateFrame.UnitFrame.name, profile.blizzard_nameplate_font_outline)
+					DF:SetFontSize (plateFrame.UnitFrame.name, profile.blizzard_nameplate_font_size)
+				end
 			end)
-			
-			if IS_WOW_PROJECT_MIDNIGHT_API then
-				
-				--Nameplate base options tables: NamePlateFriendlyFrameOptions / NamePlateEnemyFrameOptions
-				hooksecurefunc(NamePlateDriverFrame, "OnNamePlateAdded", function(_, unit)
-					if not unit:match("^nameplate") then return end
-					local profile = Plater.db.profile
-					if not profile.blizzard_nameplate_font_override_enabled then return end
-					local plateFrame = C_NamePlate.GetNamePlateForUnit(unit, issecure())
-					if not plateFrame then
-						Plater.UpdateBlizzardNameplateFonts(true)
-					else
-						DF:SetFontFace (plateFrame.UnitFrame.name, profile.blizzard_nameplate_font)
-						DF:SetFontOutline (plateFrame.UnitFrame.name, profile.blizzard_nameplate_font_outline)
-						DF:SetFontSize (plateFrame.UnitFrame.name, profile.blizzard_nameplate_font_size)
-					end
-				end)
-				hooksecurefunc(NamePlatePreviewMixin, "ShowPreviewNamePlateCastBar", function()
-					if not Plater.db.profile.blizzard_nameplate_font_override_enabled then return end
+			hooksecurefunc(NamePlatePreviewMixin, "ShowPreviewNamePlateCastBar", function()
+				if not Plater.db.profile.blizzard_nameplate_font_override_enabled then return end
+				Plater.UpdateBlizzardNameplateFonts(true)
+				C_Timer.After(0.1, function ()
 					Plater.UpdateBlizzardNameplateFonts(true)
-					C_Timer.After(0.1, function ()
-						Plater.UpdateBlizzardNameplateFonts(true)
-					end)
 				end)
-				hooksecurefunc(NamePlateDriverFrame, "UpdateNamePlateSize", function()
-					if not Plater.db.profile.blizzard_nameplate_font_override_enabled then return end
+			end)
+			hooksecurefunc(NamePlateDriverFrame, "UpdateNamePlateSize", function()
+				if not Plater.db.profile.blizzard_nameplate_font_override_enabled then return end
+				Plater.UpdateBlizzardNameplateFonts(true)
+				C_Timer.After(0.1, function ()
 					Plater.UpdateBlizzardNameplateFonts(true)
-					C_Timer.After(0.1, function ()
-						Plater.UpdateBlizzardNameplateFonts(true)
-					end)
 				end)
-				hooksecurefunc(NamePlateUnitFrameMixin, "UpdateNameClassColor", function(self)
-					local plateFrame = C_NamePlate.GetNamePlateForUnit(self.unit)
-					if not plateFrame then -- secure in dungeon
-						--local onlyNamesEnabled = GetCVarBool("nameplateShowOnlyNames") or GetCVarBool("nameplateShowOnlyNameForFriendlyPlayerUnits")
+			end)
+			hooksecurefunc(NamePlateUnitFrameMixin, "UpdateNameClassColor", function(self)
+				local plateFrame = C_NamePlate.GetNamePlateForUnit(self.unit)
+				--if not plateFrame then -- secure in dungeon
+					--local onlyNamesEnabled = GetCVarBool("nameplateShowOnlyNames") or GetCVarBool("nameplateShowOnlyNameForFriendlyPlayerUnits")
 
-						if not UnitIsPlayer(self.unit) then
-							if Plater.db.profile.hide_friendly_npc_healthbar then
-								TextureLoadingGroupMixin.AddTexture({ textures = self.HealthBarsContainer.healthBar }, "showOnlyName")
-								TextureLoadingGroupMixin.AddTexture({ textures = self.castBar }, "showOnlyName")
-								TextureLoadingGroupMixin.AddTexture({ textures = self.castBar }, "widgetsOnly")
-							else
-								TextureLoadingGroupMixin.RemoveTexture({ textures = self.HealthBarsContainer.healthBar }, "showOnlyName")
-								TextureLoadingGroupMixin.RemoveTexture({ textures = self.castBar }, "showOnlyName")
-								TextureLoadingGroupMixin.RemoveTexture({ textures = self.castBar }, "widgetsOnly")
-								--TextureLoadingGroupMixin.RemoveTexture({ textures = self }, "explicitIsPlayer")
-							end
-							--TextureLoadingGroupMixin.AddTexture({ textures = self }, "explicitIsPlayer")
+					if not UnitIsPlayer(self.unit) then
+						if Plater.db.profile.hide_friendly_npc_healthbar then
+							TextureLoadingGroupMixin.AddTexture({ textures = self.HealthBarsContainer.healthBar }, "showOnlyName")
+							TextureLoadingGroupMixin.AddTexture({ textures = self.castBar }, "showOnlyName")
+							TextureLoadingGroupMixin.AddTexture({ textures = self.castBar }, "widgetsOnly")
+						else
+							TextureLoadingGroupMixin.RemoveTexture({ textures = self.HealthBarsContainer.healthBar }, "showOnlyName")
+							TextureLoadingGroupMixin.RemoveTexture({ textures = self.castBar }, "showOnlyName")
+							TextureLoadingGroupMixin.RemoveTexture({ textures = self.castBar }, "widgetsOnly")
+							--TextureLoadingGroupMixin.RemoveTexture({ textures = self }, "explicitIsPlayer")
 						end
-						TextureLoadingGroupMixin.AddTexture({ textures = self.optionTable }, "colorNameBySelection")
+						--TextureLoadingGroupMixin.AddTexture({ textures = self }, "explicitIsPlayer")
 					end
-				end)
-				hooksecurefunc(NamePlateUnitFrameMixin, "UpdateIsFriend", function(self)
-					local plateFrame = C_NamePlate.GetNamePlateForUnit(self.unit)
-					if not plateFrame and not self:IsFriend() then
-						TextureLoadingGroupMixin.RemoveTexture({ textures = self }, "isPlayer")
+					TextureLoadingGroupMixin.AddTexture({ textures = self.optionTable }, "colorNameBySelection")
+				--end
+			end)
+			hooksecurefunc(NamePlateUnitFrameMixin, "UpdateIsFriend", function(self)
+				local plateFrame = C_NamePlate.GetNamePlateForUnit(self.unit)
+				if not plateFrame and not self:IsFriend() then
+					TextureLoadingGroupMixin.RemoveTexture({ textures = self }, "isPlayer")
+				end
+			end)
+			hooksecurefunc(NamePlateUnitFrameMixin, "OnUnitSet", function(self)
+				local plateFrame = C_NamePlate.GetNamePlateForUnit(self.unit)
+				if not plateFrame then -- secure in dungeon
+					local onlyNamesEnabled = GetCVarBool("nameplateShowOnlyNames") or GetCVarBool("nameplateShowOnlyNameForFriendlyPlayerUnits")
+					if onlyNamesEnabled then
+						TextureLoadingGroupMixin.AddTexture({ textures = self }, "showOnlyName")
 					end
-				end)
-				hooksecurefunc(NamePlateUnitFrameMixin, "OnUnitSet", function(self)
-					local plateFrame = C_NamePlate.GetNamePlateForUnit(self.unit)
-					if not plateFrame then -- secure in dungeon
-						local onlyNamesEnabled = GetCVarBool("nameplateShowOnlyNames") or GetCVarBool("nameplateShowOnlyNameForFriendlyPlayerUnits")
-						if onlyNamesEnabled then
-							TextureLoadingGroupMixin.AddTexture({ textures = self }, "showOnlyName")
-						end
-					end
-				end)
-			end
-			
+				end
+			end)
 		end
 
 		--update the resource location and anchor
@@ -8985,8 +8982,8 @@ end
 					DF:SetFontOutline (_G.SystemFont_NamePlate_Outlined, profile.blizzard_nameplate_font_outline)
 					DF:SetFontSize (_G.SystemFont_NamePlate_Outlined, profile.blizzard_nameplate_font_size - 1)
 					
-					C_Timer.After(0, function() Plater.UpdateBlizzardNameplateFonts(true, true) end)
-					return
+					--C_Timer.After(0, function() Plater.UpdateBlizzardNameplateFonts(true, true) end)
+					--return
 				end
 			end
 
