@@ -1767,7 +1767,7 @@ local debuff_options = {
 		end,
 		name = "OPTIONS_ENABLED",
 		desc = "OPTIONS_ENABLED",
-		childrenids = {"auras_general_tooltip", "auras_general_alpha", "auras_general_iconspacing", "auras_general_icon_row_spacing", "auras_general_stack_similar_aura", "auras_general_stack_auratime"},
+		childrenids = {"auras_general_tooltip", "auras_general_tooltip_spellid", "auras_general_alpha", "auras_general_iconspacing", "auras_general_icon_row_spacing", "auras_general_stack_similar_aura", "auras_general_stack_auratime"},
 		children_follow_enabled = true,
 		--children_follow_reverse = true, --if the children should be enabled when the toogle is disabled, for cases like "do this automatically" if not, set manually
 	},
@@ -1783,6 +1783,23 @@ local debuff_options = {
 		name = "OPTIONS_SHOWTOOLTIP",
 		desc = "OPTIONS_SHOWTOOLTIP_DESC",
 		id = "auras_general_tooltip",
+	},
+
+	{
+		type = "toggle",
+		get = function() return GetCVarBool ("tooltipShowAuraSpellIDs") end,
+		set = function (self, fixedparam, value) 
+			if (value) then
+				SetCVar ("tooltipShowAuraSpellIDs", CVAR_ENABLED)
+			else
+				SetCVar ("tooltipShowAuraSpellIDs", CVAR_DISABLED)
+			end
+		end,
+		nocombat = true,
+		name = "Show SpellIDs in Tooltip" .. CVarIcon,
+		desc = "If enabled, the spellID of the aura is shown in the aura tooltip." .. CVarDesc,
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+		id = "auras_general_tooltip_spellid",
 	},
 	
 	{

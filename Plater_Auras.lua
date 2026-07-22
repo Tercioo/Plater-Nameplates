@@ -604,6 +604,41 @@ end
 --[[
 	New aura container code - MIDNIGHT 12.1!
 ]]--
+
+local auraFramesSetup = {
+	{
+		frameName = "BuffFrame1",
+		key = "BuffFrame",
+		name = "Main",
+		groups = {
+			"buffs",
+			"debuffs",
+		},
+	},
+	{
+		frameName = "BuffFrame2",
+		key = "BuffFrame2",
+		name = "Secondary",
+		groups = {
+			"buffs",
+		},
+	},
+	{
+		frameName = "ExtraIconRow",
+		key = "ExtraIconFrame",
+		name = "ExtraIconFrame",
+		groups = {
+			"ExtraIconRow",
+		},
+	},
+}
+
+local AURA_CONTAINERS = {
+	BuffFrame = {},
+	BuffFrame2 = {},
+	ExtraIconFrame = {},
+}
+
 local function getCandidateFilters(frameName)
 	local profile = Plater.db.profile
 
@@ -759,7 +794,7 @@ local function getAuraFrameLayout(frameName)
 	elseif frameName == "Secondary" then
 		layout.elementWidth = profile.aura_width2
 		layout.elementHeight = profile.aura_height2
-		layout.rowWidth = (profile.auras_per_row_auto and Plater.MaxAurasPerRow or profile.auras_per_row_amount or 10) * (layout.elementWidth + layout.elementSpacingX)
+		layout.rowWidth = (profile.auras_per_row_auto and Plater.MaxAurasPerRow or profile.auras_per_row_amount2 or 10) * (layout.elementWidth + layout.elementSpacingX)
 	elseif frameName == "ExtraIconFrame" then
 		layout.elementWidth = profile.extra_icon_width
 		layout.elementHeight = profile.extra_icon_height
@@ -807,71 +842,80 @@ local function getAuraProcessingPolicy(frameName)
 end
 
 local currentCreatingFrameName = nil
-local function initAuraFrame(newIcon)
+local currentCreatingFrameKey = nil
+local currentCreatingUnit = nil
+local function initAuraFrame(auraButton)
 	--DevTool:AddData(newIcon, "initAuraFrame")
-	
+
+	auraButton:SetMouseMotionEnabled(Plater.db.profile.aura_show_tooltip)
 
 	-- create stuff
 	local iconOffset = 0
-	newIcon.Icon = newIcon:CreateTexture (nil, "artwork")
-	PixelUtil.SetPoint (newIcon.Icon, "TOPLEFT", newIcon, "TOPLEFT", -iconOffset, iconOffset)
-	PixelUtil.SetPoint (newIcon.Icon, "TOPRIGHT", newIcon, "TOPRIGHT", iconOffset, iconOffset)
-	PixelUtil.SetPoint (newIcon.Icon, "BOTTOMLEFT", newIcon, "BOTTOMLEFT", -iconOffset, -iconOffset)
-	PixelUtil.SetPoint (newIcon.Icon, "BOTTOMRIGHT", newIcon, "BOTTOMRIGHT", iconOffset, -iconOffset)
-	newIcon.Icon:SetTexCoord (.05, .95, .1, .6)
-	newIcon.Icon:SetTexelSnappingBias(0.0)
-	newIcon.Icon:SetSnapToPixelGrid(false)
+	auraButton.Icon = auraButton:CreateTexture (nil, "artwork")
+	PixelUtil.SetPoint (auraButton.Icon, "TOPLEFT", auraButton, "TOPLEFT", -iconOffset, iconOffset)
+	PixelUtil.SetPoint (auraButton.Icon, "TOPRIGHT", auraButton, "TOPRIGHT", iconOffset, iconOffset)
+	PixelUtil.SetPoint (auraButton.Icon, "BOTTOMLEFT", auraButton, "BOTTOMLEFT", -iconOffset, -iconOffset)
+	PixelUtil.SetPoint (auraButton.Icon, "BOTTOMRIGHT", auraButton, "BOTTOMRIGHT", iconOffset, -iconOffset)
+	auraButton.Icon:SetTexCoord (.05, .95, .1, .6)
+	auraButton.Icon:SetTexelSnappingBias(0.0)
+	auraButton.Icon:SetSnapToPixelGrid(false)
 
-	newIcon:SetIcon(newIcon.Icon)
+	auraButton:SetIcon(auraButton.Icon)
 	
-	newIcon.Cooldown = CreateFrame ("cooldown", "$parentCooldown", newIcon, "CooldownFrameTemplate")
-	PixelUtil.SetPoint (newIcon.Cooldown, "TOPLEFT", newIcon, "TOPLEFT", -iconOffset, iconOffset)
-	PixelUtil.SetPoint (newIcon.Cooldown, "TOPRIGHT", newIcon, "TOPRIGHT", iconOffset, iconOffset)
-	PixelUtil.SetPoint (newIcon.Cooldown, "BOTTOMLEFT", newIcon, "BOTTOMLEFT", -iconOffset, -iconOffset)
-	PixelUtil.SetPoint (newIcon.Cooldown, "BOTTOMRIGHT", newIcon, "BOTTOMRIGHT", iconOffset, -iconOffset)
-	newIcon.Cooldown:EnableMouse (false)
-	if newIcon.Cooldown.EnableMouseMotion then
-		newIcon.Cooldown:EnableMouseMotion (false)
+	auraButton.Cooldown = CreateFrame ("cooldown", "$parentCooldown", auraButton, "CooldownFrameTemplate")
+	PixelUtil.SetPoint (auraButton.Cooldown, "TOPLEFT", auraButton, "TOPLEFT", -iconOffset, iconOffset)
+	PixelUtil.SetPoint (auraButton.Cooldown, "TOPRIGHT", auraButton, "TOPRIGHT", iconOffset, iconOffset)
+	PixelUtil.SetPoint (auraButton.Cooldown, "BOTTOMLEFT", auraButton, "BOTTOMLEFT", -iconOffset, -iconOffset)
+	PixelUtil.SetPoint (auraButton.Cooldown, "BOTTOMRIGHT", auraButton, "BOTTOMRIGHT", iconOffset, -iconOffset)
+	auraButton.Cooldown:EnableMouse (false)
+	if auraButton.Cooldown.EnableMouseMotion then
+		auraButton.Cooldown:EnableMouseMotion (false)
 	end
-	newIcon.Cooldown:SetHideCountdownNumbers (not IS_WOW_PROJECT_MIDNIGHT)
-	newIcon.Cooldown:SetCountdownAbbrevThreshold(60)
-	newIcon.Cooldown:SetMinimumCountdownDuration(0)
-	--newIcon.Cooldown:Hide()
+	auraButton.Cooldown:SetHideCountdownNumbers (not IS_WOW_PROJECT_MIDNIGHT)
+	auraButton.Cooldown:SetCountdownAbbrevThreshold(60)
+	auraButton.Cooldown:SetMinimumCountdownDuration(0)
+	--auraButton.Cooldown:Hide()
 
-	newIcon:SetDurationCooldown(newIcon.Cooldown)
-
-	
-	newIcon.Count = newIcon:CreateFontString (nil, "artwork", "NumberFontNormalSmall")
-	newIcon.Count:SetJustifyH ("right")
-	newIcon.Count:SetPoint ("bottomright", 3, -2)
-
-	newIcon:SetApplicationCount(newIcon.Count)
+	auraButton:SetDurationCooldown(auraButton.Cooldown)
 
 	
-	--newIcon.TimerText = newIcon.Cooldown:CreateFontString (nil, "overlay", "NumberFontNormal")
-	--newIcon.TimerText:SetPoint ("center")
-	newIcon.TimerText = newIcon.Cooldown:GetRegions()
+	auraButton.Count = auraButton:CreateFontString (nil, "artwork", "NumberFontNormalSmall")
+	auraButton.Count:SetJustifyH ("right")
+	auraButton.Count:SetPoint ("bottomright", 3, -2)
+
+	auraButton:SetApplicationCount(auraButton.Count)
+
+	
+	--auraButton.TimerText = auraButton.Cooldown:CreateFontString (nil, "overlay", "NumberFontNormal")
+	--auraButton.TimerText:SetPoint ("center")
+	auraButton.TimerText = auraButton.Cooldown:GetRegions()
 
 	local durationTextOptions = {
 		--formatter = , 
 		--textColorCurve = pandemicColorCurve,
 	}
-	newIcon:SetDurationText(newIcon.TimerText, durationTextOptions)
+	auraButton:SetDurationText(auraButton.TimerText, durationTextOptions)
 	
 
 
 	-- switch to proper border, keep compatibility
-	newIcon.Border = newIcon:CreateTexture(nil, "overlay")
-	newIcon.Border:SetDrawLayer ("overlay", 7)
-	newIcon.Border:SetAllPoints()
+	auraButton.Border = auraButton:CreateTexture(nil, "overlay")
+	--auraButton.Border:SetAllPoints()
+	auraButton.Border:SetTexture([[Interface\AddOns\Plater\images\IconBorderWhite]])
+	auraButton.Border:SetTextureSliceMargins(8, 8, 8, 8)
+	auraButton.Border:SetPoint("TOPLEFT",     auraButton.Icon, "TOPLEFT",     -8,  8)
+	auraButton.Border:SetPoint("BOTTOMRIGHT", auraButton.Icon, "BOTTOMRIGHT",  8, -8)
+	auraButton.Border:SetScale(0.125)
+    auraButton.Border:SetVertexColor(1, 1, 1, 1)
 
 	local borderOptions = {
-		showIcon = true,
+		showIcon = false,
 		showWhenHarmful = true,
 		showWhenHelpful = true,
-		style = AuraButtonBorderStyle.Color,
+		showWithoutDispelType = true,
+		style = Enum.CustomAuraButtonBorderStyle.Color,
 	}
-	newIcon:SetAuraBorder(newIcon.Border, borderOptions)
+	auraButton:SetAuraBorder(auraButton.Border, borderOptions)
 
 
 
@@ -886,7 +930,7 @@ local function initAuraFrame(newIcon)
 		auraHeight = Plater.db.profile.aura_height
 		borderThickness = Plater.db.profile.aura_border_thickness
 
-		local stackLabel = newIcon.Count
+		local stackLabel = auraButton.Count
 		DF:SetFontSize (stackLabel, profile.aura_stack_size)
 		Plater.SetFontOutlineAndShadow (stackLabel, profile.aura_stack_outline, profile.aura_stack_shadow_color, profile.aura_stack_shadow_color_offset[1], profile.aura_stack_shadow_color_offset[2])
 		DF:SetFontColor (stackLabel, profile.aura_stack_color)
@@ -894,7 +938,7 @@ local function initAuraFrame(newIcon)
 		Plater.SetAnchor (stackLabel, profile.aura_stack_anchor)
 		
 		--timer
-		local timerLabel = newIcon.TimerText
+		local timerLabel = auraButton.TimerText
 		DF:SetFontSize (timerLabel, profile.aura_timer_text_size)
 		Plater.SetFontOutlineAndShadow (timerLabel, profile.aura_timer_text_outline, profile.aura_timer_text_shadow_color, profile.aura_timer_text_shadow_color_offset[1], profile.aura_timer_text_shadow_color_offset[2])
 		DF:SetFontFace (timerLabel, profile.aura_timer_text_font)
@@ -907,7 +951,7 @@ local function initAuraFrame(newIcon)
 		auraHeight = Plater.db.profile.aura_height2
 		borderThickness = Plater.db.profile.aura_border_thickness2
 
-		local stackLabel = newIcon.Count
+		local stackLabel = auraButton.Count
 		DF:SetFontSize (stackLabel, profile.aura_stack_size)
 		Plater.SetFontOutlineAndShadow (stackLabel, profile.aura_stack_outline, profile.aura_stack_shadow_color, profile.aura_stack_shadow_color_offset[1], profile.aura_stack_shadow_color_offset[2])
 		DF:SetFontColor (stackLabel, profile.aura_stack_color)
@@ -915,7 +959,7 @@ local function initAuraFrame(newIcon)
 		Plater.SetAnchor (stackLabel, profile.aura_stack_anchor)
 		
 		--timer
-		local timerLabel = newIcon.TimerText
+		local timerLabel = auraButton.TimerText
 		DF:SetFontSize (timerLabel, profile.aura_timer_text_size)
 		Plater.SetFontOutlineAndShadow (timerLabel, profile.aura_timer_text_outline, profile.aura_timer_text_shadow_color, profile.aura_timer_text_shadow_color_offset[1], profile.aura_timer_text_shadow_color_offset[2])
 		DF:SetFontFace (timerLabel, profile.aura_timer_text_font)
@@ -928,7 +972,7 @@ local function initAuraFrame(newIcon)
 		auraHeight = Plater.db.profile.extra_icon_height
 		borderThickness = 1
 
-		local stackLabel = newIcon.Count
+		local stackLabel = auraButton.Count
 		DF:SetFontSize (stackLabel, profile.extra_icon_stack_size)
 		Plater.SetFontOutlineAndShadow (stackLabel, profile.extra_icon_stack_outline)
 		DF:SetFontFace (stackLabel, profile.extra_icon_stack_font)
@@ -936,16 +980,16 @@ local function initAuraFrame(newIcon)
 		
 		
 		--timer
-		local timerLabel = newIcon.TimerText
+		local timerLabel = auraButton.TimerText
 		DF:SetFontSize (timerLabel, profile.extra_icon_timer_size)
 		Plater.SetFontOutlineAndShadow (timerLabel, profile.extra_icon_timer_outline)
 		DF:SetFontFace (timerLabel, profile.extra_icon_timer_font)
 		Plater.SetAnchor (timerLabel, profile.aura_timer_text_anchor) --TODO
 	end
 
-	PixelUtil.SetSize(newIcon, auraWidth, auraHeight)
+	PixelUtil.SetSize(auraButton, auraWidth, auraHeight)
 
-	Plater.UpdateIconAspecRatio (newIcon)
+	Plater.UpdateIconAspecRatio (auraButton)
 
 	--iconOffset = 0
 	--PixelUtil.SetPoint (newIcon.Border, "TOPLEFT", newIcon, "TOPLEFT", -iconOffset, iconOffset)
@@ -953,7 +997,9 @@ local function initAuraFrame(newIcon)
 	--PixelUtil.SetPoint (newIcon.Border, "BOTTOMLEFT", newIcon, "BOTTOMLEFT", -iconOffset, -iconOffset)
 	--PixelUtil.SetPoint (newIcon.Border, "BOTTOMRIGHT", newIcon, "BOTTOMRIGHT", iconOffset, -iconOffset)
 
-	return newIcon
+	tinsert(AURA_CONTAINERS[currentCreatingFrameKey][currentCreatingUnit].auraButtons, auraButton)
+
+	return auraButton
 end
 
 local function getAuraFrameOptions(frameName)
@@ -1000,47 +1046,16 @@ local function getFullAuraOptions(frameName)
 	return fullOptions
 end
 
-local auraFrames = {
-	{
-		frameName = "BuffFrame1",
-		key = "BuffFrame",
-		name = "Main",
-		groups = {
-			"buffs",
-			"debuffs",
-		},
-	},
-	{
-		frameName = "BuffFrame2",
-		key = "BuffFrame2",
-		name = "Secondary",
-		groups = {
-			"buffs",
-		},
-	},
-	{
-		frameName = "ExtraIconRow",
-		key = "ExtraIconFrame",
-		name = "ExtraIconFrame",
-		groups = {
-			"ExtraIconRow",
-		},
-	},
-}
-
-local AURA_CONTAINERS = {
-	BuffFrame = {},
-	BuffFrame2 = {},
-	ExtraIconFrame = {},
-}
-
 function Plater.PreAllocateAuraContainers()
 	if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then return end
 	for i=1, 40 do
 		local unit = "nameplate"..i
-		for _, frameInfo in pairs (auraFrames) do
+		for _, frameInfo in pairs (auraFramesSetup) do
 			currentCreatingFrameName = frameInfo.name
+			currentCreatingFrameKey = frameInfo.key
+			currentCreatingUnit = unit
 			local auraContainer = CreateFrame("AuraContainer", "NamePlate" .. i .. "PlaterUnitFrame" .. frameInfo.frameName, UIParent, "CustomAuraContainerTemplate")
+			auraContainer.auraButtons = {}
 			AURA_CONTAINERS[frameInfo.key][unit] = auraContainer
 			auraContainer.Name = frameInfo.name
 
@@ -1059,6 +1074,8 @@ function Plater.PreAllocateAuraContainers()
 			auraContainer:SetEnabled(false)
 
 			currentCreatingFrameName = nil
+			currentCreatingFrameKey = nil
+			currentCreatingUnit = nil
 			--DevTool:AddData(auraContainer, "create")
 		end
 	end
@@ -1071,7 +1088,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 		if not unitFrame.BuffFrame then
 			if not unit then return end -- fallback
 
-			for _, frameInfo in pairs (auraFrames) do
+			for _, frameInfo in pairs (auraFramesSetup) do
 				
 				local auraContainer = AURA_CONTAINERS[frameInfo.key][unit]
 				--DevTool:AddData({containter=auraContainer, containers=AURA_CONTAINERS, unit=unit}, "CreateOrUpdateAuraContainers Loop")
@@ -1099,10 +1116,11 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 			unitFrame.AuraCache = {}
 			unitFrame.GhostAuraCache = {}
 			unitFrame.ExtraAuraCache = {}
+			unitFrame.BuffFrame.BuffFrame2 = unitFrame.BuffFrame2
 		end
 
 		-- update
-		for _, frameInfo in pairs (auraFrames) do
+		for _, frameInfo in pairs (auraFramesSetup) do
 			local auraContainer = unitFrame[frameInfo.key]
 			if DB_AURA_ENABLED then
 				local options = getFullAuraOptions(auraContainer)
@@ -1113,7 +1131,13 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 
 				for _, groupName in pairs(frameInfo.groups) do
 					if auraContainer.groupNames[groupName] then
-						auraContainer:SetAuraGroupMaxFrameCount(groupName, options.auraFrameOptions.maxFrameCount)
+
+						local maxFrameCount = options.auraFrameOptions.maxFrameCount
+						if DB_AURA_SEPARATE_BUFFS and frameInfo.name == "Main" and groupName == "buffs" then
+							maxFrameCount = 0
+						end
+
+						auraContainer:SetAuraGroupMaxFrameCount(groupName, maxFrameCount)
 						auraContainer:SetAuraGroupCandidateFilters(groupName, options.auraFrameOptions.candidateFilters)
 						auraContainer:SetAuraGroupSortMethod(groupName, options.auraFrameOptions.sortMethod, options.auraFrameOptions.sortDirection)
 						auraContainer:SetAuraGroupLayout(groupName, options.auraFrameOptions.layout)
@@ -3884,6 +3908,10 @@ end
 		end
 
 		auraOptionsFrame.EnableAuraTest = function()
+			if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
+				C_UnitAuras.SwitchAuraDataProvider()
+				return
+			end
 			DB_AURA_ENABLED = false
 			Plater.DisableAuraTrackingForAuraTest()
 			Plater.RefreshAuras()
@@ -3891,6 +3919,10 @@ end
 			auraOptionsFrame:SetScript ("OnUpdate", auraOptionsFrame.OnUpdateFunc)
 		end
 		auraOptionsFrame.DisableAuraTest = function()
+			if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
+				C_UnitAuras.ResetAuraDataProvider()
+				return
+			end
 			Plater.RefreshDBUpvalues()
 			Plater.RefreshAuras()
 			auraOptionsFrame:SetScript ("OnUpdate", nil)
