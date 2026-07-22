@@ -1076,6 +1076,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 				local auraContainer = AURA_CONTAINERS[frameInfo.key][unit]
 				--DevTool:AddData({containter=auraContainer, containers=AURA_CONTAINERS, unit=unit}, "CreateOrUpdateAuraContainers Loop")
 				unitFrame[frameInfo.key] = auraContainer
+				auraContainer:SetParent(unitFrame)
 
 				if unit then
 					auraContainer:SetUnit(unit)
