@@ -5640,6 +5640,7 @@ local relevance_options = {
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
 					SetCVar ("nameplateShowOnlyNameForFriendlyPlayerUnits", value and "1" or "0")
+					SetCVar("UnitNameFriendlyPlayerName", GetCVar("UnitNameFriendlyPlayerName"))
 				else
 					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
 					self:SetValue (GetCVarBool ("nameplateShowOnlyNameForFriendlyPlayerUnits"))
@@ -5657,6 +5658,7 @@ local relevance_options = {
 			get = function() return Plater.db.profile.hide_friendly_npc_healthbar end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.hide_friendly_npc_healthbar = value
+				SetCVar("UnitNameFriendlyPlayerName", GetCVar("UnitNameFriendlyPlayerName"))
 			end,
 			name = "Hide Friendly NPCs Health Bar", --show friendly nameplates
 			desc = "Hide Friendly NPCs Health Bar\nWill require the healthbars to be hidden and shown again to take effect after changing.",
