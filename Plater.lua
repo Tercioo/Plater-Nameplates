@@ -3841,6 +3841,9 @@ Plater.AnchorNamesByPhraseId = {
 			if (nameplateIsEditor) then
 				reaction = Plater.UnitReaction.UNITREACTION_HOSTILE
 			end
+
+			plateFrame.unitFrame.softInteractIcon:SetParent(plateFrame)
+			plateFrame.unitFrame.softInteractIconFrame:SetParent(plateFrame)
 			
 			-- we should clear stuff here, tbh...
 			
@@ -4292,8 +4295,8 @@ Plater.AnchorNamesByPhraseId = {
 			if IS_WOW_PROJECT_MAINLINE then
 				plateFrame.unitFrame.WidgetContainer = plateFrame.UnitFrame.WidgetContainer
 				if plateFrame.unitFrame.WidgetContainer then
-					plateFrame.unitFrame.WidgetContainer:SetParent(plateFrame)
 					plateFrame.unitFrame.WidgetContainer:ClearAllPoints()
+					plateFrame.unitFrame.WidgetContainer:SetParent(plateFrame)
 					plateFrame.unitFrame.WidgetContainer:SetIgnoreParentScale(true)
 					plateFrame.unitFrame.WidgetContainer:SetScale(Plater.db.profile.widget_bar_scale)
 					Plater.SetAnchor (plateFrame.unitFrame.WidgetContainer, Plater.db.profile.widget_bar_anchor, plateFrame.unitFrame)
@@ -4359,9 +4362,14 @@ Plater.AnchorNamesByPhraseId = {
 			Plater.RemoveFromAuraUpdate (unitBarId, plateFrame.unitFrame) -- ensure no updates
 			
 			plateFrame.PlaterAnchorFrame:ClearAllPoints()
-			plateFrame.PlaterAnchorFrame:SetParent(plateFrame)
+			plateFrame.PlaterAnchorFrame:SetParent(UIParent)
 			local enemyHealthSize = Plater.db.profile.plate_config.enemynpc and Plater.db.profile.plate_config.enemynpc.health or {112, 12}
 			plateFrame.PlaterAnchorFrame:SetSize(enemyHealthSize[1] or 112, enemyHealthSize[2] or 12)
+			
+			plateFrame.unitFrame.softInteractIcon:ClearAllPoints()
+			plateFrame.unitFrame.softInteractIcon:SetParent(UIParent)
+			plateFrame.unitFrame.softInteractIconFrame:ClearAllPoints()
+			plateFrame.unitFrame.softInteractIconFrame:SetParent(UIParent)
 			
 			ENABLED_BLIZZARD_PLATEFRAMES[plateFrame.unitFrame.blizzardPlateFrameID] = true -- OnRetailNamePlateShow is called first. ensure the plate might show!
 			if not plateFrame.unitFrame.PlaterOnScreen then
