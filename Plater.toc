@@ -3,7 +3,7 @@
 ## Interface-Mists: 50504
 ## Interface-Titan: 38001
 ## Interface-TBC: 20506
-## Interface-Vanilla: 11508
+## Interface-Vanilla: 11509
 ## Title: Plater
 ## Notes: Nameplate addon designed for advanced users.
 ## Notes-esES: Addon de placa de nombre diseñado para usuarios avanzados
