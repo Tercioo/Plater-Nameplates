@@ -5166,9 +5166,11 @@ function Plater.OnInit() --private --~oninit ~init
 		Plater.PreAllocateAuraContainers()
 		
 		--can also hook 'ClassNameplateBar:ShowNameplateBar()' which will show and call NamePlateDriverFrame:SetClassNameplateBar(self); which will call SetupClassNameplateBars()
-		hooksecurefunc (NamePlateDriverFrame, "SetupClassNameplateBars", function (self)
-			return Plater.UpdatePersonalBar (self)
-		end)
+		if NamePlateDriverFrame.SetupClassNameplateBars then
+			hooksecurefunc (NamePlateDriverFrame, "SetupClassNameplateBars", function (self)
+				return Plater.UpdatePersonalBar (self)
+			end)
+		end
 		
 		if IS_WOW_PROJECT_MIDNIGHT_API then
 			
@@ -5231,7 +5233,7 @@ function Plater.OnInit() --private --~oninit ~init
 						TextureLoadingGroupMixin.RemoveTexture({ textures = self }, "isPlayer")
 					end
 				end)
-				
+
 				hooksecurefunc(NamePlateUnitFrameMixin, "OnUnitSet", function(self)
 					local plateFrame = C_NamePlate.GetNamePlateForUnit(self.unit)
 					if not plateFrame then -- secure in dungeon
