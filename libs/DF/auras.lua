@@ -873,6 +873,7 @@ function DF:CreateAuraConfigPanel(parent, name, db, changeCallback, options, tex
 				end
 			end
 		end
+		DF:QuickDispatch(changeCallback)
 	end
 
 	local buffs_added = self:CreateScrollBox(auraPanel_Manual, "$parentBuffsAdded", scroll_refresh, newAuraPanel.db.aura_tracker.buff, scroll_width, scroll_height, scroll_lines, scroll_line_height)
