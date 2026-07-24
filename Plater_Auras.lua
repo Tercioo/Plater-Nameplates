@@ -611,8 +611,10 @@ local auraFramesSetup = {
 		key = "BuffFrame",
 		name = "Main",
 		groups = {
-			"buffs",
-			"debuffs",
+			["buffs"] = "mainFilter",
+			["buffsAdditions"] = "additionalInclude",
+			["debuffs"] = "mainFilter",
+			["debuffsAdditions"] = "additionalInclude",
 		},
 	},
 	{
@@ -620,7 +622,8 @@ local auraFramesSetup = {
 		key = "BuffFrame2",
 		name = "Secondary",
 		groups = {
-			"buffs",
+			["buffs"] = "mainFilter",
+			["buffsAdditions"] = "additionalInclude",
 		},
 	},
 	{
@@ -628,7 +631,10 @@ local auraFramesSetup = {
 		key = "ExtraIconFrame",
 		name = "ExtraIconFrame",
 		groups = {
-			"ExtraIconRow",
+			["buffs"] = "mainFilter",
+			["buffsAdditions"] = "additionalInclude",
+			["debuffs"] = "mainFilter",
+			["debuffsAdditions"] = "additionalInclude",
 		},
 	},
 }
@@ -708,7 +714,7 @@ local function getCandidateFilters(frameName)
 			DF.table.copy(filters.mainFilter.excludeSpellIDs, MANUAL_TRACKING_BUFFS)
 		end
 	elseif frameName == "ExtraIconFrame" then
-		filters.mainFilter.includeSpellIDs = {} -- just filter by IDs, so main deactivated
+		filters.mainFilter.includeSpellIDs = nil
 
 		DF.table.copy(filters.additionalInclude.includeSpellIDs, SPECIAL_AURAS_AUTO_ADDED)
 		DF.table.copy(filters.additionalInclude.includeSpellIDs, SPECIAL_AURAS_USER_LIST)
@@ -717,24 +723,30 @@ local function getCandidateFilters(frameName)
 end
 
 local function getAuraFilter(frameName, type)
-	local filter = ""
+	local filter = nil
+
+	if DB_TRACK_METHOD == 0x2 then return end -- these are not tracking.
+	
 	if frameName == "Main" and type == "debuffs" then
+		filter = ""
 		--filter = filter .. (DB_AURA_SHOW_DISPELLABLE and frame.unitFrame.namePlateUnitReaction > 4 and "|RAID_PLAYER_DISPELLABLE" or "")
-		filter = filter .. (DB_AURA_SHOW_DISPELLABLE and "|RAID_PLAYER_DISPELLABLE" or "")
+		filter = filter .. (DB_AURA_SHOW_DISPELLABLE and not DB_SHOW_PURGE_IN_EXTRA_ICONS and "|RAID_PLAYER_DISPELLABLE" or "")
 		filter = filter .. (DB_AURA_SHOW_RAID and "|RAID_IN_COMBAT|RAID" or "")
 		filter = filter .. (DB_AURA_SHOW_DEBUFF_BYPLAYER and "|PLAYER" or "")
-		filter = filter .. (Plater.db.profile.aura_show_crowdcontrol and "|CROWD_CONTROL" or "")
+		filter = filter .. (Plater.db.profile.aura_show_crowdcontrol and not Plater.db.profile.debuff_show_cc and "|CROWD_CONTROL" or "")
+		filter = filter .. (not Plater.db.profile.aura_show_crowdcontrol and Plater.db.profile.debuff_show_cc and DB_AURA_SHOW_DEBUFF_BYPLAYER and "|!CROWD_CONTROL" or "")
 
 		if filter ~= "" then
 			filter = "HARMFUL" .. filter
 		end
 
 	elseif frameName == "Main" and not DB_AURA_SEPARATE_BUFFS and type == "buffs" then
+		filter = ""
 		--if DB_AURA_SHOW_BUFFENEMYNPC and frame.unitFrame.namePlateUnitReaction < 4 and frame.unitFrame.ActorType == "enemynpc" then return "HELPFUL" end -- all buffs on enemies
 		if DB_AURA_SHOW_BUFFENEMYNPC then return "HELPFUL" end -- all buffs on enemies
 		--filter = filter .. (Plater.db.profile.aura_show_defensive_cd and (frame.unitFrame.ActorType == "enemyplayer" or frame.unitFrame.ActorType == "friendlyplayer") and "|BIG_DEFENSIVE|EXTERNAL_DEFENSIVE" or "")
 		--filter = filter .. (DB_AURA_SHOW_DISPELLABLE and frame.unitFrame.namePlateUnitReaction < 4 and frame.unitFrame.ActorType == "enemynpc" and "|RAID_PLAYER_DISPELLABLE" or "")
-		filter = filter .. (Plater.db.profile.aura_show_defensive_cd and "|BIG_DEFENSIVE|EXTERNAL_DEFENSIVE" or "")
+		filter = filter .. (Plater.db.profile.aura_show_defensive_cd and not Plater.db.profile.extra_icon_show_defensive and "|BIG_DEFENSIVE|EXTERNAL_DEFENSIVE" or "")
 		filter = filter .. (DB_AURA_SHOW_DISPELLABLE and "|RAID_PLAYER_DISPELLABLE" or "")
 		filter = filter .. (DB_AURA_SHOW_RAID and "|PLAYER|RAID_IN_COMBAT|RAID" or "")
 		filter = filter .. (DB_AURA_SHOW_BUFF_BYPLAYER and "|PLAYER" or "")
@@ -744,11 +756,12 @@ local function getAuraFilter(frameName, type)
 		end
 
 	elseif frameName == "Secondary" and DB_AURA_SEPARATE_BUFFS and type == "buffs" then
+		filter = ""
 		--if DB_AURA_SHOW_BUFFENEMYNPC and frame.unitFrame.namePlateUnitReaction < 4 and frame.unitFrame.ActorType == "enemynpc" then return "HELPFUL" end -- all buffs on enemies
 		if DB_AURA_SHOW_BUFFENEMYNPC then return "HELPFUL" end -- all buffs on enemies
 		--filter = filter .. (Plater.db.profile.aura_show_defensive_cd and (frame.unitFrame.ActorType == "enemyplayer" or frame.unitFrame.ActorType == "friendlyplayer") and "|BIG_DEFENSIVE|EXTERNAL_DEFENSIVE" or "")
 		--filter = filter .. (DB_AURA_SHOW_DISPELLABLE and frame.unitFrame.namePlateUnitReaction < 4 and frame.unitFrame.ActorType == "enemynpc" and "|RAID_PLAYER_DISPELLABLE" or "")
-		filter = filter .. (Plater.db.profile.aura_show_defensive_cd and "|BIG_DEFENSIVE|EXTERNAL_DEFENSIVE" or "")
+		filter = filter .. (Plater.db.profile.aura_show_defensive_cd and not Plater.db.profile.extra_icon_show_defensive and "|BIG_DEFENSIVE|EXTERNAL_DEFENSIVE" or "")
 		filter = filter .. (DB_AURA_SHOW_DISPELLABLE and "|RAID_PLAYER_DISPELLABLE" or "")
 		filter = filter .. (DB_AURA_SHOW_RAID and "|PLAYER|RAID_IN_COMBAT|RAID" or "")
 		filter = filter .. (DB_AURA_SHOW_BUFF_BYPLAYER and "|PLAYER" or "")
@@ -757,17 +770,21 @@ local function getAuraFilter(frameName, type)
 			filter = "HELPFUL" .. filter
 		end
 
-	elseif frameName == "ExtraIconFrame" and type == "ExtraIconRow" then
+	elseif frameName == "ExtraIconFrame" and type == "debuffs" then
+		filter = ""
 		filter = filter .. (Plater.db.profile.debuff_show_cc and "|CROWD_CONTROL" or "")
-		--filter = filter .. (DB_SHOW_PURGE_IN_EXTRA_ICONS and frame.unitFrame.namePlateUnitReaction > 4 and "|RAID_PLAYER_DISPELLABLE" or "")
-		--filter = filter .. (DB_SHOW_PURGE_IN_EXTRA_ICONS and frame.unitFrame.namePlateUnitReaction < 4 and frame.unitFrame.ActorType == "enemynpc" and "|RAID_PLAYER_DISPELLABLE" or "")
 		filter = filter .. (DB_SHOW_PURGE_IN_EXTRA_ICONS and "|RAID_PLAYER_DISPELLABLE" or "")
-		filter = filter .. (DB_SHOW_PURGE_IN_EXTRA_ICONS and "|RAID_PLAYER_DISPELLABLE" or "")
-		--filter = filter .. (Plater.db.profile.extra_icon_show_defensive and (frame.unitFrame.ActorType == "enemyplayer" or frame.unitFrame.ActorType == "friendlyplayer") and "BIG_DEFENSIVE|EXTERNAL_DEFENSIVE" or "")
+
+		if filter ~= "" then
+			filter = "HARMFUL" .. filter
+		end
+		
+	elseif frameName == "ExtraIconFrame" and type == "buffs" then
+		filter = ""
 		filter = filter .. (Plater.db.profile.extra_icon_show_defensive and "|BIG_DEFENSIVE|EXTERNAL_DEFENSIVE" or "")
 
 		if filter ~= "" then
-			filter = "HARMFUL|HELPFUL" .. filter
+			filter = "HELPFUL" .. filter
 		end
 		
 	end
@@ -782,7 +799,7 @@ local function getAuraFrameLayout(frameName)
 		lineSpacing = profile.aura_breakline_space,
 		groupSpacing = profile.aura_padding,
 		groupLineSpacing = profile.aura_breakline_space,
-		forceNewLine = false,
+		--forceNewLine = false,
 		elementWidth = 26,
 		elementHeight = 16,
 		--layoutIndex
@@ -806,22 +823,25 @@ end
 
 local function getLayoutGrowthDirection(frameName)
 	local profile = Plater.db.profile
-	local horizontalDirection, verticalDirection = AnchorUtil.FlowDirection.Right, AnchorUtil.FlowDirection.Up
+	local horizontalDirection, verticalDirection, anchorPoint = AnchorUtil.FlowDirection.Right, AnchorUtil.FlowDirection.Up, "TOPLEFT"
 	if frameName == "Main" then
 		horizontalDirection = (profile.aura_grow_direction == 1) and AnchorUtil.FlowDirection.Left or AnchorUtil.FlowDirection.Right -- default to right
 		local anchorSide = profile.aura_frame1_anchor.side
 		verticalDirection = (anchorSide < 3 or anchorSide > 5) and AnchorUtil.FlowDirection.Up or AnchorUtil.FlowDirection.Down
+		anchorPoint = (anchorSide < 3 or anchorSide > 5) and ((profile.aura_grow_direction == 1) and "BOTTOMRIGHT" or "BOTTOMLEFT") or ((profile.aura_grow_direction == 1) and "TOPRIGHT" or "TOPLEFT")
 
 	elseif frameName == "Secondary" then
 		horizontalDirection = (profile.aura2_grow_direction == 1) and AnchorUtil.FlowDirection.Left or AnchorUtil.FlowDirection.Right -- default to right
 		local anchorSide = profile.aura_frame2_anchor.side
 		verticalDirection = (anchorSide < 3 or anchorSide > 5) and AnchorUtil.FlowDirection.Up or AnchorUtil.FlowDirection.Down
+		anchorPoint = (anchorSide < 3 or anchorSide > 5) and ((profile.aura2_grow_direction == 1) and "BOTTOMRIGHT" or "BOTTOMLEFT") or ((profile.aura2_grow_direction == 1) and "TOPRIGHT" or "TOPLEFT")
 
 	elseif frameName == "ExtraIconFrame" then
 		horizontalDirection = (DF.GrowDirectionBySide[profile.extra_icon_anchor.side] == 2) and AnchorUtil.FlowDirection.Left or AnchorUtil.FlowDirection.Right -- default to right
+		anchorPoint = (DF.GrowDirectionBySide[profile.extra_icon_anchor.side] == 2) and "RIGHT" or "LEFT"
 	end
 
-	return horizontalDirection, verticalDirection
+	return horizontalDirection, verticalDirection, anchorPoint
 end
 
 local function getAuraProcessingPolicy(frameName)
@@ -843,13 +863,11 @@ local function getAuraProcessingPolicy(frameName)
 	return policy, options
 end
 
-local currentCreatingFrameName = nil
-local currentCreatingFrameKey = nil
-local currentCreatingUnit = nil
-local function initAuraFrame(auraButton)
+local function initAuraFrame(auraButton, name, key, unit)
 	--DevTool:AddData(newIcon, "initAuraFrame")
 
 	auraButton:SetMouseMotionEnabled(Plater.db.profile.aura_show_tooltip)
+	auraButton:SetHideTooltipInCombat(true)
 
 	-- create stuff
 	local iconOffset = 0
@@ -897,28 +915,6 @@ local function initAuraFrame(auraButton)
 		--textColorCurve = pandemicColorCurve,
 	}
 	auraButton:SetDurationText(auraButton.TimerText, durationTextOptions)
-	
-
-
-	-- switch to proper border, keep compatibility
-	auraButton.Border = auraButton:CreateTexture(nil, "overlay")
-	--auraButton.Border:SetAllPoints()
-	auraButton.Border:SetTexture([[Interface\AddOns\Plater\images\IconBorderWhite]])
-	auraButton.Border:SetTextureSliceMargins(8, 8, 8, 8)
-	auraButton.Border:SetPoint("TOPLEFT",     auraButton.Icon, "TOPLEFT",     -8,  8)
-	auraButton.Border:SetPoint("BOTTOMRIGHT", auraButton.Icon, "BOTTOMRIGHT",  8, -8)
-	auraButton.Border:SetScale(0.125)
-    auraButton.Border:SetVertexColor(1, 1, 1, 1)
-
-	local borderOptions = {
-		showIcon = false,
-		showWhenHarmful = true,
-		showWhenHelpful = true,
-		showWithoutDispelType = true,
-		style = Enum.CustomAuraButtonDispelTypeTextureStyle.PreserveAsset,
-	}
-	auraButton:SetAuraBorder(auraButton.Border, borderOptions)
-
 
 
 	--sizes and position:
@@ -926,7 +922,7 @@ local function initAuraFrame(auraButton)
 	local auraHeight
 	local borderThickness
 	local profile = Plater.db.profile
-	local frameName = currentCreatingFrameName
+	local frameName = name
 	if frameName == "Main" then
 		auraWidth = Plater.db.profile.aura_width
 		auraHeight = Plater.db.profile.aura_height
@@ -989,22 +985,123 @@ local function initAuraFrame(auraButton)
 		Plater.SetAnchor (timerLabel, profile.aura_timer_text_anchor) --TODO
 	end
 
+	-- switch to proper border, keep compatibility
+	auraButton.Border = auraButton:CreateTexture(nil, "overlay")
+	--auraButton.Border:SetAllPoints()
+	auraButton.Border:SetTexture([[Interface\AddOns\Plater\images\IconBorderWhite]])
+	local band = 8
+	local offset = 0
+	auraButton.Border:SetTextureSliceMargins(band, band, band, band)
+	auraButton.Border:SetPoint("TOPLEFT",     auraButton.Icon, "TOPLEFT",     -band * offset,  band * offset)
+	auraButton.Border:SetPoint("BOTTOMRIGHT", auraButton.Icon, "BOTTOMRIGHT",  band * offset, -band * offset)
+	auraButton.Border:SetScale(borderThickness / band)
+    auraButton.Border:SetVertexColor(1, 1, 1, 1)
+
+	local borderOptions = {
+		showIcon = false,
+		showWhenHarmful = true,
+		showWhenHelpful = true,
+		showWithoutDispelType = true,
+		style = Enum.CustomAuraButtonDispelTypeTextureStyle.PreserveAsset,
+	}
+	auraButton:SetAuraBorder(auraButton.Border, borderOptions)
+
 	PixelUtil.SetSize(auraButton, auraWidth, auraHeight)
 
 	Plater.UpdateIconAspecRatio (auraButton)
 
-	--iconOffset = 0
-	--PixelUtil.SetPoint (newIcon.Border, "TOPLEFT", newIcon, "TOPLEFT", -iconOffset, iconOffset)
-	--PixelUtil.SetPoint (newIcon.Border, "TOPRIGHT", newIcon, "TOPRIGHT", iconOffset, iconOffset)
-	--PixelUtil.SetPoint (newIcon.Border, "BOTTOMLEFT", newIcon, "BOTTOMLEFT", -iconOffset, -iconOffset)
-	--PixelUtil.SetPoint (newIcon.Border, "BOTTOMRIGHT", newIcon, "BOTTOMRIGHT", iconOffset, -iconOffset)
+	auraButton.frameName = name
+	auraButton.frameKey = key
+	auraButton.frameUnit = unit
 
-	tinsert(AURA_CONTAINERS[currentCreatingFrameKey][currentCreatingUnit].auraButtons, auraButton)
+	tinsert(AURA_CONTAINERS[key][unit].auraButtons, auraButton)
 
 	return auraButton
 end
 
-local function getAuraFrameOptions(frameName)
+local function reSkinAuraButtons(auraButtons)
+
+	if C_Secrets.ShouldAurasBeSecret() or InCombatLockdown then return end
+	for _, auraButton in pairs(auraButtons) do
+		
+		auraButton:SetMouseMotionEnabled(Plater.db.profile.aura_show_tooltip)
+
+		local auraWidth
+		local auraHeight
+		local borderThickness
+		local profile = Plater.db.profile
+		local frameName = auraButton.frameName
+		if frameName == "Main" then
+			auraWidth = Plater.db.profile.aura_width
+			auraHeight = Plater.db.profile.aura_height
+			borderThickness = Plater.db.profile.aura_border_thickness
+
+			local stackLabel = auraButton.Count
+			DF:SetFontSize (stackLabel, profile.aura_stack_size)
+			Plater.SetFontOutlineAndShadow (stackLabel, profile.aura_stack_outline, profile.aura_stack_shadow_color, profile.aura_stack_shadow_color_offset[1], profile.aura_stack_shadow_color_offset[2])
+			DF:SetFontColor (stackLabel, profile.aura_stack_color)
+			DF:SetFontFace (stackLabel, profile.aura_stack_font)
+			Plater.SetAnchor (stackLabel, profile.aura_stack_anchor)
+			
+			--timer
+			local timerLabel = auraButton.TimerText
+			DF:SetFontSize (timerLabel, profile.aura_timer_text_size)
+			Plater.SetFontOutlineAndShadow (timerLabel, profile.aura_timer_text_outline, profile.aura_timer_text_shadow_color, profile.aura_timer_text_shadow_color_offset[1], profile.aura_timer_text_shadow_color_offset[2])
+			DF:SetFontFace (timerLabel, profile.aura_timer_text_font)
+			DF:SetFontColor (timerLabel, profile.aura_timer_text_color)
+			Plater.SetAnchor (timerLabel, profile.aura_timer_text_anchor)
+
+
+		elseif frameName == "Secondary" then
+			auraWidth = Plater.db.profile.aura_width2
+			auraHeight = Plater.db.profile.aura_height2
+			borderThickness = Plater.db.profile.aura_border_thickness2
+
+			local stackLabel = auraButton.Count
+			DF:SetFontSize (stackLabel, profile.aura_stack_size)
+			Plater.SetFontOutlineAndShadow (stackLabel, profile.aura_stack_outline, profile.aura_stack_shadow_color, profile.aura_stack_shadow_color_offset[1], profile.aura_stack_shadow_color_offset[2])
+			DF:SetFontColor (stackLabel, profile.aura_stack_color)
+			DF:SetFontFace (stackLabel, profile.aura_stack_font)
+			Plater.SetAnchor (stackLabel, profile.aura_stack_anchor)
+			
+			--timer
+			local timerLabel = auraButton.TimerText
+			DF:SetFontSize (timerLabel, profile.aura_timer_text_size)
+			Plater.SetFontOutlineAndShadow (timerLabel, profile.aura_timer_text_outline, profile.aura_timer_text_shadow_color, profile.aura_timer_text_shadow_color_offset[1], profile.aura_timer_text_shadow_color_offset[2])
+			DF:SetFontFace (timerLabel, profile.aura_timer_text_font)
+			DF:SetFontColor (timerLabel, profile.aura_timer_text_color)
+			Plater.SetAnchor (timerLabel, profile.aura_timer_text_anchor)
+
+
+		elseif frameName == "ExtraIconFrame" then
+			auraWidth = Plater.db.profile.extra_icon_width
+			auraHeight = Plater.db.profile.extra_icon_height
+			borderThickness = 1
+
+			local stackLabel = auraButton.Count
+			DF:SetFontSize (stackLabel, profile.extra_icon_stack_size)
+			Plater.SetFontOutlineAndShadow (stackLabel, profile.extra_icon_stack_outline)
+			DF:SetFontFace (stackLabel, profile.extra_icon_stack_font)
+			Plater.SetAnchor (stackLabel, profile.aura_stack_anchor) --TODO
+			
+			
+			--timer
+			local timerLabel = auraButton.TimerText
+			DF:SetFontSize (timerLabel, profile.extra_icon_timer_size)
+			Plater.SetFontOutlineAndShadow (timerLabel, profile.extra_icon_timer_outline)
+			DF:SetFontFace (timerLabel, profile.extra_icon_timer_font)
+			Plater.SetAnchor (timerLabel, profile.aura_timer_text_anchor) --TODO
+		end
+
+		PixelUtil.SetSize(auraButton, auraWidth, auraHeight)
+
+		local band = 8
+		auraButton.Border:SetScale(borderThickness / band)
+
+	end
+end
+
+local function getAuraFrameOptions(frameName, name, key, unit)
 	local auraFrameOptions = {
 		-- Maximum number of aura frames this filter group may display.
 		maxFrameCount = Plater.db.profile.aura_max_shown_limit <= 0 and math.huge or Plater.db.profile.aura_max_shown_limit or math.huge,
@@ -1015,31 +1112,38 @@ local function getAuraFrameOptions(frameName)
 		-- Additional templates inherited by frames created for this filter group. CustomAuraButtonTemplate is always inherited first.
 		templateNames = nil,
 		-- Optional candidate filters applied after the aura filter string.
-		candidateFilters = getCandidateFilters(frameName),
+		candidateFilters = nil,
+		allCandidateFilters = getCandidateFilters(frameName), -- our own, to apply per group override
 		-- Optional callback invoked after each frame is created.
-		initializeFrame = initAuraFrame,
+		initializeFrame = function(auraButton) initAuraFrame(auraButton, name, key, unit) end,
 		-- Optional flow layout settings for this filter group's visible frames.
 		layout = getAuraFrameLayout(frameName),
 	}
 
+	if frameName == "ExtraIconFrame" then
+		auraFrameOptions.maxFrameCount = math.huge
+	end
+
 	return auraFrameOptions
 end
 
-local function getFullAuraOptions(frameName)
+local function getFullAuraOptions(frameName, name, key, unit)
 	local fullOptions = {
-		auraFrameOptions = getAuraFrameOptions(frameName),
+		auraFrameOptions = getAuraFrameOptions(frameName, name, key, unit),
 		processingPolicy = {},
 		layoutGrowth = {},
 		auraFilter = {
 			buffs = getAuraFilter(frameName, "buffs"),
+			buffsAdditions = "HELPFUL",
 			debuffs = getAuraFilter(frameName, "debuffs"),
-			ExtraIconRow = getAuraFilter(frameName, "ExtraIconRow"),
+			debuffsAdditions = (DB_TRACK_METHOD == 0x2) and "PLAYER|HARMFUL" or "HARMFUL",
 		},
 	}
 
-	local horizontalDirection, verticalDirection = getLayoutGrowthDirection(frameName)
+	local horizontalDirection, verticalDirection, anchorPoint = getLayoutGrowthDirection(frameName)
 	fullOptions.layoutGrowth.horizontalDirection = horizontalDirection
 	fullOptions.layoutGrowth.verticalDirection = verticalDirection
+	fullOptions.layoutGrowth.anchorPoint = anchorPoint
 
 	local policy, policyOptions = getAuraProcessingPolicy(frameName)
 	fullOptions.processingPolicy.policy = policy
@@ -1053,32 +1157,33 @@ function Plater.PreAllocateAuraContainers()
 	for i=1, 40 do
 		local unit = "nameplate"..i
 		for _, frameInfo in pairs (auraFramesSetup) do
-			currentCreatingFrameName = frameInfo.name
-			currentCreatingFrameKey = frameInfo.key
-			currentCreatingUnit = unit
 			local auraContainer = CreateFrame("AuraContainer", "NamePlate" .. i .. "PlaterUnitFrame" .. frameInfo.frameName, UIParent, "CustomAuraContainerTemplate")
-			auraContainer.auraButtons = {}
-			AURA_CONTAINERS[frameInfo.key][unit] = auraContainer
+			AURA_CONTAINERS[frameInfo.key][unit] = {
+				container = auraContainer,
+				auraButtons = {},
+				name = frameInfo.name,
+			}
 			auraContainer.Name = frameInfo.name
 
-			local options = getFullAuraOptions(frameInfo.name)
+			local options = getFullAuraOptions(frameInfo.name, frameInfo.name, frameInfo.key, unit)
 			auraContainer.activeOptions = options
 			auraContainer.groupNames = {}
 
-			for _, groupName in pairs(frameInfo.groups) do
-				auraContainer:AddAuraGroup(groupName, options.auraFilter[groupName], options.auraFrameOptions)
+			for groupName, auraCandidateFilter in pairs(frameInfo.groups) do
+				local auraFilter = options.auraFilter[groupName] or "PLAYER" -- set dummy to create
+				options.auraFrameOptions.candidateFilters = options.auraFrameOptions.allCandidateFilters[auraCandidateFilter]
+				auraContainer:AddAuraGroup(groupName, auraFilter, options.auraFrameOptions)
 				auraContainer.groupNames[groupName] = true
 				auraContainer:SetAuraGroupLayout(groupName, options.auraFrameOptions.layout)
 			end
-			--auraContainer:SetAuraLayoutGrowthDirection(options.layoutGrowth.horizontalDirection, options.layoutGrowth.verticalDirection)
+			auraContainer:SetFlowLayoutAnchorPoint(options.layoutGrowth.anchorPoint)
+			auraContainer:SetFlowLayoutGrowthDirection(options.layoutGrowth.horizontalDirection, options.layoutGrowth.verticalDirection)
+			auraContainer:SetFlowLayoutMaximumLineSize(options.auraFrameOptions.layout.maximumLineSize)
 			auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
 			--SetAuraLayoutPadding
 
 			auraContainer:SetEnabled(false)
 
-			currentCreatingFrameName = nil
-			currentCreatingFrameKey = nil
-			currentCreatingUnit = nil
 			--DevTool:AddData(auraContainer, "create")
 		end
 	end
@@ -1093,7 +1198,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 
 			for _, frameInfo in pairs (auraFramesSetup) do
 				
-				local auraContainer = AURA_CONTAINERS[frameInfo.key][unit]
+				local auraContainer = AURA_CONTAINERS[frameInfo.key][unit].container
 				--DevTool:AddData({containter=auraContainer, containers=AURA_CONTAINERS, unit=unit}, "CreateOrUpdateAuraContainers Loop")
 				unitFrame[frameInfo.key] = auraContainer
 				auraContainer:SetParent(unitFrame)
@@ -1111,7 +1216,6 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 				auraContainer.AuraCache = {}
 				auraContainer.isNameplate = true
 
-				currentCreatingFrameName = nil
 				--DevTool:AddData(auraContainer, "create")
 			end
 
@@ -1120,6 +1224,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 			unitFrame.GhostAuraCache = {}
 			unitFrame.ExtraAuraCache = {}
 			unitFrame.BuffFrame.BuffFrame2 = unitFrame.BuffFrame2
+			unitFrame.BuffFrame.ExtraIconFrame = unitFrame.ExtraIconFrame
 		end
 
 		-- update
@@ -1129,8 +1234,11 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 				local options = getFullAuraOptions(frameInfo.name)
 				auraContainer.activeOptions = options
 				auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
+				auraContainer:SetFlowLayoutMaximumLineSize(options.auraFrameOptions.layout.maximumLineSize)
+				auraContainer:SetFlowLayoutAnchorPoint(options.layoutGrowth.anchorPoint)
+				auraContainer:SetFlowLayoutGrowthDirection(options.layoutGrowth.horizontalDirection, options.layoutGrowth.verticalDirection)
 
-				for _, groupName in pairs(frameInfo.groups) do
+				for groupName, auraCandidateFilter in pairs(frameInfo.groups) do
 					if auraContainer.groupNames[groupName] then
 
 						local maxFrameCount = options.auraFrameOptions.maxFrameCount
@@ -1138,24 +1246,32 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 							maxFrameCount = 0
 						end
 
+						local auraFilter = options.auraFilter[groupName]
+						if not options.auraFilter[groupName] then
+							auraFilter = "PLAYER" -- dummy for now, to deactivate
+							maxFrameCount = 0
+						end
+						auraContainer:SetAuraGroupCandidateFilters(groupName, options.auraFrameOptions.allCandidateFilters[auraCandidateFilter])
+						auraContainer:SetAuraGroupFilterString(groupName, auraFilter)
+						--auraContainer:SetAuraGroupCandidateFilters(groupName, nil)
+						--auraContainer:SetAuraGroupFilterString(groupName, "HELPFUL")
+
 						auraContainer:SetAuraGroupMaxFrameCount(groupName, maxFrameCount)
-						auraContainer:SetAuraGroupCandidateFilters(groupName, options.auraFrameOptions.candidateFilters)
 						auraContainer:SetAuraGroupSortMethod(groupName, options.auraFrameOptions.sortMethod, options.auraFrameOptions.sortDirection)
 						auraContainer:SetAuraGroupLayout(groupName, options.auraFrameOptions.layout)
-						auraContainer:SetAuraGroupFilterString(groupName, options.auraFilter[groupName])
 					end
 				end
 				
-				--SetAuraLayoutPadding
-			end
-
-			if unit then
-				auraContainer:SetUnit(unit)
+				if unit then
+					reSkinAuraButtons(AURA_CONTAINERS[frameInfo.key][unit].auraButtons)
+					auraContainer:SetUnit(unit)
+					--auraContainer:SetUnit("player")
+				end
 			end
 
 			auraContainer:SetEnabled(DB_AURA_ENABLED and unit and true or false)
 
-			--DevTool:AddData(auraContainer, "update")
+			DevTool:AddData(auraContainer, "update")
 		end
 
 	elseif not unitFrame.BuffFrame then -- old API
@@ -4125,7 +4241,11 @@ end
 			for i = 1, #manualDebuffsToTrack do
 				local spellName = GetSpellInfo (tonumber(manualDebuffsToTrack [i]) or manualDebuffsToTrack [i])
 				if (spellName) then
-					MANUAL_TRACKING_DEBUFFS [spellName] = true
+					if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
+						MANUAL_TRACKING_DEBUFFS [tonumber(manualDebuffsToTrack [i])] = true
+					else
+						MANUAL_TRACKING_DEBUFFS [spellName] = true
+					end
 				else
 					--add the entry in case there's a spell name instead of a spellId in the list (for back compatibility)
 					MANUAL_TRACKING_DEBUFFS [manualDebuffsToTrack [i]] = true
@@ -4135,7 +4255,11 @@ end
 			for i = 1, #manualBuffsToTrack do
 				local spellName = GetSpellInfo (tonumber(manualBuffsToTrack [i]) or manualBuffsToTrack [i])
 				if (spellName) then
-					MANUAL_TRACKING_BUFFS [spellName] = true
+					if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
+						MANUAL_TRACKING_BUFFS [tonumber(manualDebuffsToTrack [i])] = true
+					else
+						MANUAL_TRACKING_BUFFS [spellName] = true
+					end
 				else
 					--add the entry in case there's a spell name instead of a spellId in the list (for back compatibility)
 					MANUAL_TRACKING_BUFFS [manualBuffsToTrack [i]]= true

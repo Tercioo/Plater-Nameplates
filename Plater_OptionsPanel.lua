@@ -2204,7 +2204,7 @@ local debuff_options = {
 		end,
 		name = "Show Buffs Blizzard Nameplates show",
 		desc = "Show Buffs as they would be shown on blizzard nameplates.\nIt is advised to disable all other buff auto-trackers for best experience.",
-		hidden = not IS_WOW_PROJECT_MIDNIGHT,
+		hidden = not IS_WOW_PROJECT_MIDNIGHT or IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
 	},
 	{
 		type = "toggle",
@@ -3006,6 +3006,7 @@ Plater.CreateAuraTesting()
 	 
 	local method_change_callback = function()
 		Plater.RefreshDBUpvalues()
+		SetCVar("UnitNameFriendlyPlayerName", GetCVar("UnitNameFriendlyPlayerName"))
 	end
 	
 	local debuff_panel_texts = {
@@ -3032,7 +3033,7 @@ Plater.CreateAuraTesting()
 	local auraConfigPanel = DF:CreateAuraConfigPanel (auraFilterFrame, "$parentAuraConfig", Plater.db.profile, method_change_callback, aura_options, debuff_panel_texts)
 	auraConfigPanel:SetPoint ("topleft", auraFilterFrame, "topleft", 10, startY)
 	auraConfigPanel:SetSize (f:GetWidth() - 20, f:GetHeight() + startY)
-	if IS_WOW_PROJECT_MIDNIGHT then
+	if IS_WOW_PROJECT_MIDNIGHT and not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
 		auraConfigPanel:Hide()
 		local optionsTable = {
             {type = "label", get = function() return "Not available in Midnight and onwards due to API limitations." end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
