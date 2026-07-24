@@ -728,68 +728,90 @@ local function getAuraFilter(frameName, type)
 	if DB_TRACK_METHOD == 0x2 then return end -- these are not tracking.
 	
 	if frameName == "Main" and type == "debuffs" then
-		filter = ""
+		filter = {}
 		--filter = filter .. (DB_AURA_SHOW_DISPELLABLE and frame.unitFrame.namePlateUnitReaction > 4 and "|RAID_PLAYER_DISPELLABLE" or "")
-		filter = filter .. (DB_AURA_SHOW_DISPELLABLE and not DB_SHOW_PURGE_IN_EXTRA_ICONS and "|RAID_PLAYER_DISPELLABLE" or "")
-		filter = filter .. (DB_AURA_SHOW_RAID and "|RAID_IN_COMBAT|RAID" or "")
-		filter = filter .. (DB_AURA_SHOW_DEBUFF_BYPLAYER and "|PLAYER" or "")
-		filter = filter .. (Plater.db.profile.aura_show_crowdcontrol and not Plater.db.profile.debuff_show_cc and "|CROWD_CONTROL" or "")
-		filter = filter .. (not Plater.db.profile.aura_show_crowdcontrol and Plater.db.profile.debuff_show_cc and DB_AURA_SHOW_DEBUFF_BYPLAYER and "|!CROWD_CONTROL" or "")
-
-		if filter ~= "" then
-			filter = "HARMFUL" .. filter
+		if DB_AURA_SHOW_DISPELLABLE and not DB_SHOW_PURGE_IN_EXTRA_ICONS then
+			table.insert(filter, "RAID_PLAYER_DISPELLABLE")
+		end
+		if DB_AURA_SHOW_RAID then
+			table.insert(filter, "RAID_IN_COMBAT")
+			table.insert(filter, "RAID")
+		end
+		if DB_AURA_SHOW_DEBUFF_BYPLAYER then
+			table.insert(filter, "PLAYER")
+		end
+		if Plater.db.profile.aura_show_crowdcontrol and not Plater.db.profile.debuff_show_cc then
+			table.insert(filter, "CROWD_CONTROL")
+		elseif Plater.db.profile.debuff_show_cc then
+			table.insert(filter, "!CROWD_CONTROL")
 		end
 
-	elseif frameName == "Main" and not DB_AURA_SEPARATE_BUFFS and type == "buffs" then
-		filter = ""
-		--if DB_AURA_SHOW_BUFFENEMYNPC and frame.unitFrame.namePlateUnitReaction < 4 and frame.unitFrame.ActorType == "enemynpc" then return "HELPFUL" end -- all buffs on enemies
-		if DB_AURA_SHOW_BUFFENEMYNPC then return "HELPFUL" end -- all buffs on enemies
-		--filter = filter .. (Plater.db.profile.aura_show_defensive_cd and (frame.unitFrame.ActorType == "enemyplayer" or frame.unitFrame.ActorType == "friendlyplayer") and "|BIG_DEFENSIVE|EXTERNAL_DEFENSIVE" or "")
-		--filter = filter .. (DB_AURA_SHOW_DISPELLABLE and frame.unitFrame.namePlateUnitReaction < 4 and frame.unitFrame.ActorType == "enemynpc" and "|RAID_PLAYER_DISPELLABLE" or "")
-		filter = filter .. (Plater.db.profile.aura_show_defensive_cd and not Plater.db.profile.extra_icon_show_defensive and "|BIG_DEFENSIVE|EXTERNAL_DEFENSIVE" or "")
-		filter = filter .. (DB_AURA_SHOW_DISPELLABLE and "|RAID_PLAYER_DISPELLABLE" or "")
-		filter = filter .. (DB_AURA_SHOW_RAID and "|PLAYER|RAID_IN_COMBAT|RAID" or "")
-		filter = filter .. (DB_AURA_SHOW_BUFF_BYPLAYER and "|PLAYER" or "")
-
-		if filter ~= "" then
-			filter = "HELPFUL" .. filter
+		if #filter > 0 then
+			table.insert(filter, 1, "HARMFUL")
 		end
 
-	elseif frameName == "Secondary" and DB_AURA_SEPARATE_BUFFS and type == "buffs" then
-		filter = ""
+	elseif ((frameName == "Main" and not DB_AURA_SEPARATE_BUFFS) or (frameName == "Secondary" and DB_AURA_SEPARATE_BUFFS and type == "buffs")) and type == "buffs" then
+		filter = {}
 		--if DB_AURA_SHOW_BUFFENEMYNPC and frame.unitFrame.namePlateUnitReaction < 4 and frame.unitFrame.ActorType == "enemynpc" then return "HELPFUL" end -- all buffs on enemies
 		if DB_AURA_SHOW_BUFFENEMYNPC then return "HELPFUL" end -- all buffs on enemies
+
 		--filter = filter .. (Plater.db.profile.aura_show_defensive_cd and (frame.unitFrame.ActorType == "enemyplayer" or frame.unitFrame.ActorType == "friendlyplayer") and "|BIG_DEFENSIVE|EXTERNAL_DEFENSIVE" or "")
 		--filter = filter .. (DB_AURA_SHOW_DISPELLABLE and frame.unitFrame.namePlateUnitReaction < 4 and frame.unitFrame.ActorType == "enemynpc" and "|RAID_PLAYER_DISPELLABLE" or "")
-		filter = filter .. (Plater.db.profile.aura_show_defensive_cd and not Plater.db.profile.extra_icon_show_defensive and "|BIG_DEFENSIVE|EXTERNAL_DEFENSIVE" or "")
-		filter = filter .. (DB_AURA_SHOW_DISPELLABLE and "|RAID_PLAYER_DISPELLABLE" or "")
-		filter = filter .. (DB_AURA_SHOW_RAID and "|PLAYER|RAID_IN_COMBAT|RAID" or "")
-		filter = filter .. (DB_AURA_SHOW_BUFF_BYPLAYER and "|PLAYER" or "")
+		if Plater.db.profile.aura_show_defensive_cd and not Plater.db.profile.extra_icon_show_defensive  then
+			table.insert(filter, "BIG_DEFENSIVE")
+			table.insert(filter, "EXTERNAL_DEFENSIVE")
+		elseif Plater.db.profile.extra_icon_show_defensive then
+			table.insert(filter, "!BIG_DEFENSIVE")
+			table.insert(filter, "!EXTERNAL_DEFENSIVE")
+		end
+		if DB_AURA_SHOW_DISPELLABLE and not DB_SHOW_PURGE_IN_EXTRA_ICONS then
+			table.insert(filter, "RAID_PLAYER_DISPELLABLE")
+		elseif DB_SHOW_PURGE_IN_EXTRA_ICONS then
+			table.insert(filter, "!RAID_PLAYER_DISPELLABLE")
+		end
+		if DB_AURA_SHOW_BUFF_BYPLAYER then
+			table.insert(filter, "PLAYER")
+		elseif DB_AURA_SHOW_RAID then
+			table.insert(filter, "PLAYER")
+			table.insert(filter, "RAID_IN_COMBAT")
+			table.insert(filter, "RAID")	
+		end
 
-		if filter ~= "" then
-			filter = "HELPFUL" .. filter
+		if #filter > 0 then
+			table.insert(filter, 1, "HELPFUL")
 		end
 
 	elseif frameName == "ExtraIconFrame" and type == "debuffs" then
-		filter = ""
-		filter = filter .. (Plater.db.profile.debuff_show_cc and "|CROWD_CONTROL" or "")
-		filter = filter .. (DB_SHOW_PURGE_IN_EXTRA_ICONS and "|RAID_PLAYER_DISPELLABLE" or "")
+		filter = {}
+		if Plater.db.profile.debuff_show_cc then
+			table.insert(filter, "CROWD_CONTROL")
+		end
+		if DB_SHOW_PURGE_IN_EXTRA_ICONS then
+			table.insert(filter, "RAID_PLAYER_DISPELLABLE")
+		end
 
-		if filter ~= "" then
-			filter = "HARMFUL" .. filter
+		if #filter > 0 then
+			table.insert(filter, 1, "HARMFUL")
 		end
 		
 	elseif frameName == "ExtraIconFrame" and type == "buffs" then
-		filter = ""
-		filter = filter .. (Plater.db.profile.extra_icon_show_defensive and "|BIG_DEFENSIVE|EXTERNAL_DEFENSIVE" or "")
+		filter = {}
+		if Plater.db.profile.extra_icon_show_defensive then
+			table.insert(filter, "BIG_DEFENSIVE")
+			table.insert(filter, "EXTERNAL_DEFENSIVE")
+		end
 
-		if filter ~= "" then
-			filter = "HELPFUL" .. filter
+		if #filter > 0 then
+			table.insert(filter, 1, "HELPFUL")
 		end
 		
 	end
 	
-	return filter
+	if filter and #filter > 0 then
+		return string.join("|", unpack(filter))
+	else
+		return nil
+	end
 end
 
 local function getAuraFrameLayout(frameName)
@@ -1271,7 +1293,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 
 			auraContainer:SetEnabled(DB_AURA_ENABLED and unit and true or false)
 
-			DevTool:AddData(auraContainer, "update")
+			if DevTool then DevTool:AddData(auraContainer, "update") end
 		end
 
 	elseif not unitFrame.BuffFrame then -- old API

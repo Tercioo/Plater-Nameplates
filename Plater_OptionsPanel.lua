@@ -3006,7 +3006,7 @@ Plater.CreateAuraTesting()
 	 
 	local method_change_callback = function()
 		Plater.RefreshDBUpvalues()
-		SetCVar("UnitNameFriendlyPlayerName", GetCVar("UnitNameFriendlyPlayerName"))
+		if not InCombatLockdown then SetCVar("UnitNameFriendlyPlayerName", GetCVar("UnitNameFriendlyPlayerName")) end
 	end
 	
 	local debuff_panel_texts = {
@@ -5676,7 +5676,7 @@ local relevance_options = {
 			get = function() return Plater.db.profile.hide_friendly_npc_healthbar end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.hide_friendly_npc_healthbar = value
-				SetCVar("UnitNameFriendlyPlayerName", GetCVar("UnitNameFriendlyPlayerName"))
+				if not InCombatLockdown() then SetCVar("UnitNameFriendlyPlayerName", GetCVar("UnitNameFriendlyPlayerName")) end
 			end,
 			name = "Hide Friendly NPCs Health Bar", --show friendly nameplates
 			desc = "Hide Friendly NPCs Health Bar\nWill require the healthbars to be hidden and shown again to take effect after changing.",
