@@ -1142,7 +1142,6 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 						auraContainer:SetAuraGroupCandidateFilters(groupName, options.auraFrameOptions.candidateFilters)
 						auraContainer:SetAuraGroupSortMethod(groupName, options.auraFrameOptions.sortMethod, options.auraFrameOptions.sortDirection)
 						auraContainer:SetAuraGroupLayout(groupName, options.auraFrameOptions.layout)
-						print("filter", options.auraFilter[groupName])
 						auraContainer:SetAuraGroupFilterString(groupName, options.auraFilter[groupName])
 					end
 				end
