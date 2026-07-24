@@ -778,23 +778,25 @@ end
 local function getAuraFrameLayout(frameName)
 	local profile = Plater.db.profile
 	local layout = {
-		elementSpacingX = profile.aura_padding,
-		elementSpacingY = profile.aura_breakline_space,
-		gapX = profile.aura_padding,
-		gapY = profile.aura_breakline_space,
-		forceNewRow = false,
+		elementSpacing = profile.aura_padding,
+		lineSpacing = profile.aura_breakline_space,
+		groupSpacing = profile.aura_padding,
+		groupLineSpacing = profile.aura_breakline_space,
+		forceNewLine = false,
 		elementWidth = 26,
 		elementHeight = 16,
-		rowWidth = math.huge,
+		--layoutIndex
+		maximumLineSize = math.huge,
 	}
+
 	if frameName == "Main" then
 		layout.elementWidth = profile.aura_width
 		layout.elementHeight = profile.aura_height
-		layout.rowWidth = (profile.auras_per_row_auto and Plater.MaxAurasPerRow or profile.auras_per_row_amount or 10) * (layout.elementWidth + layout.elementSpacingX)
+		layout.maximumLineSize = (profile.auras_per_row_auto and Plater.MaxAurasPerRow or profile.auras_per_row_amount or 10) * (layout.elementWidth + layout.elementSpacing)
 	elseif frameName == "Secondary" then
 		layout.elementWidth = profile.aura_width2
 		layout.elementHeight = profile.aura_height2
-		layout.rowWidth = (profile.auras_per_row_auto and Plater.MaxAurasPerRow or profile.auras_per_row_amount2 or 10) * (layout.elementWidth + layout.elementSpacingX)
+		layout.maximumLineSize = (profile.auras_per_row_auto and Plater.MaxAurasPerRow or profile.auras_per_row_amount2 or 10) * (layout.elementWidth + layout.elementSpacing)
 	elseif frameName == "ExtraIconFrame" then
 		layout.elementWidth = profile.extra_icon_width
 		layout.elementHeight = profile.extra_icon_height
@@ -913,7 +915,7 @@ local function initAuraFrame(auraButton)
 		showWhenHarmful = true,
 		showWhenHelpful = true,
 		showWithoutDispelType = true,
-		style = Enum.CustomAuraButtonBorderStyle.Color,
+		style = Enum.CustomAuraButtonDispelTypeTextureStyle.PreserveAsset,
 	}
 	auraButton:SetAuraBorder(auraButton.Border, borderOptions)
 
@@ -1066,8 +1068,9 @@ function Plater.PreAllocateAuraContainers()
 			for _, groupName in pairs(frameInfo.groups) do
 				auraContainer:AddAuraGroup(groupName, options.auraFilter[groupName], options.auraFrameOptions)
 				auraContainer.groupNames[groupName] = true
+				auraContainer:SetAuraGroupLayout(groupName, options.auraFrameOptions.layout)
 			end
-			auraContainer:SetAuraLayoutGrowthDirection(options.layoutGrowth.horizontalDirection, options.layoutGrowth.verticalDirection)
+			--auraContainer:SetAuraLayoutGrowthDirection(options.layoutGrowth.horizontalDirection, options.layoutGrowth.verticalDirection)
 			auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
 			--SetAuraLayoutPadding
 
@@ -1123,10 +1126,8 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 		for _, frameInfo in pairs (auraFramesSetup) do
 			local auraContainer = unitFrame[frameInfo.key]
 			if DB_AURA_ENABLED then
-				local options = getFullAuraOptions(auraContainer)
+				local options = getFullAuraOptions(frameInfo.name)
 				auraContainer.activeOptions = options
-				auraContainer:SetAuraLayoutRowWidth(options.auraFrameOptions.layout.rowWidth)
-				auraContainer:SetAuraLayoutGrowthDirection(options.layoutGrowth.horizontalDirection, options.layoutGrowth.verticalDirection)
 				auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
 
 				for _, groupName in pairs(frameInfo.groups) do
@@ -1141,7 +1142,8 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 						auraContainer:SetAuraGroupCandidateFilters(groupName, options.auraFrameOptions.candidateFilters)
 						auraContainer:SetAuraGroupSortMethod(groupName, options.auraFrameOptions.sortMethod, options.auraFrameOptions.sortDirection)
 						auraContainer:SetAuraGroupLayout(groupName, options.auraFrameOptions.layout)
-						--auraContainer:SetAuraGroupFilterString(groupName, options.auraFilter[filterName])
+						print("filter", options.auraFilter[groupName])
+						auraContainer:SetAuraGroupFilterString(groupName, options.auraFilter[groupName])
 					end
 				end
 				
