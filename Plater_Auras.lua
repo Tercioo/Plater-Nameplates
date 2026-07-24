@@ -645,6 +645,7 @@ local AURA_CONTAINERS = {
 	ExtraIconFrame = {},
 }
 
+-- TODO: filter by buffs/debuffs
 local function getCandidateFilters(frameName)
 	local profile = Plater.db.profile
 
@@ -727,15 +728,18 @@ local function getAuraFilter(frameName, type)
 
 	if DB_TRACK_METHOD == 0x2 then return end -- these are not tracking.
 	
+	--TODO: disable a bit of the filtering for now, as this is not additive, keep player enabled for now
+
 	if frameName == "Main" and type == "debuffs" then
 		filter = {}
+
 		--filter = filter .. (DB_AURA_SHOW_DISPELLABLE and frame.unitFrame.namePlateUnitReaction > 4 and "|RAID_PLAYER_DISPELLABLE" or "")
 		if DB_AURA_SHOW_DISPELLABLE and not DB_SHOW_PURGE_IN_EXTRA_ICONS then
 			table.insert(filter, "RAID_PLAYER_DISPELLABLE")
 		end
 		if DB_AURA_SHOW_RAID then
-			table.insert(filter, "RAID_IN_COMBAT")
-			table.insert(filter, "RAID")
+			--table.insert(filter, "RAID_IN_COMBAT")
+			--table.insert(filter, "RAID")
 		end
 		if DB_AURA_SHOW_DEBUFF_BYPLAYER then
 			table.insert(filter, "PLAYER")
@@ -750,7 +754,7 @@ local function getAuraFilter(frameName, type)
 			table.insert(filter, 1, "HARMFUL")
 		end
 
-	elseif ((frameName == "Main" and not DB_AURA_SEPARATE_BUFFS) or (frameName == "Secondary" and DB_AURA_SEPARATE_BUFFS and type == "buffs")) and type == "buffs" then
+	elseif ((frameName == "Main" and not DB_AURA_SEPARATE_BUFFS) or (frameName == "Secondary" and DB_AURA_SEPARATE_BUFFS)) and type == "buffs" then
 		filter = {}
 		--if DB_AURA_SHOW_BUFFENEMYNPC and frame.unitFrame.namePlateUnitReaction < 4 and frame.unitFrame.ActorType == "enemynpc" then return "HELPFUL" end -- all buffs on enemies
 		if DB_AURA_SHOW_BUFFENEMYNPC then return "HELPFUL" end -- all buffs on enemies
