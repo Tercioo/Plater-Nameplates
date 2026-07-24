@@ -6612,6 +6612,22 @@ end
 		end
 	end
 
+	function platerInternal.SplitEvaluateColor (state, r1, g1, b1, a1, r2, g2, b2, a2)
+		return C_CurveUtil.EvaluateColorValueFromBoolean(state, r1, r2),
+			C_CurveUtil.EvaluateColorValueFromBoolean(state, g1, g2),
+			C_CurveUtil.EvaluateColorValueFromBoolean(state, b1, b2),
+			C_CurveUtil.EvaluateColorValueFromBoolean(state, a1 or 1, a2 or 1)
+	end
+
+	function platerInternal.UnitHasMana (unitID)
+		if UnitPowerType then
+			return UnitPowerType(unitID) == Enum.PowerType.Mana
+		elseif UnitHasPowerType then
+			UnitHasPowerType(unitID, Enum.PowerType.Mana)
+		end
+		return false
+	end
+
 	--do several checkes to determine which are the color of this nameplate
 	--if force refresh is true, it'll ignore aggro and incombat checks in the ColorOverrider function
 	function Plater.FindAndSetNameplateColor (unitFrame, forceRefresh)
@@ -6666,14 +6682,14 @@ end
 					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_miniboss)
 					unitFrame.hasUnitTypeColor = true
 
-				--caster
-				elseif UnitClassBase(unitID) == "PALADIN" then
-					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_caster)
-					unitFrame.hasUnitTypeColor = true
-
 				--elite
 				elseif Plater.db.profile.unit_type_coloring_enable_elite and (unitFrame.namePlateClassification == "elite" or unitFrame.namePlateClassification == "rareelite") then
 					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_elite)
+					unitFrame.hasUnitTypeColor = true
+
+				--caster
+				elseif (not issecretvalue(UnitClassBase(unitID)) and UnitClassBase(unitID) == "PALADIN") or platerInternal.UnitHasMana(unitID) then
+					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_caster)
 					unitFrame.hasUnitTypeColor = true
 
 				--trivial
