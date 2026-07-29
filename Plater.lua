@@ -6277,7 +6277,7 @@ function Plater.OnInit() --private --~oninit ~init
 		if not IS_WOW_PROJECT_MIDNIGHT then
 			oldHealth = oldHealth or currentHealth
 		end
-		if IS_WOW_PROJECT_MIDNIGHT then
+		if IS_WOW_PROJECT_MIDNIGHT_API then
 			--these should be set already...
 			--self.currentHealthMissing = UnitHealthMissing(unitFrame.displayedUnit, true)
 			--self.currentHealthPercent = UnitHealthPercent(unitFrame.displayedUnit, true, CurveConstants.ScaleTo100)

@@ -818,6 +818,7 @@ local function getAuraFilter(frameName, type)
 	end
 end
 
+--TODO: by container group as well. requires larger rework of the whole current setup. support separate sizes for "own" debuffs/buffs
 local function getAuraFrameLayout(frameName)
 	local profile = Plater.db.profile
 	local layout = {
