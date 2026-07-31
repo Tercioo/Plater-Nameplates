@@ -5728,7 +5728,7 @@ function Plater.OnInit() --private --~oninit ~init
 				end
 			else
 				icon:ClearAllPoints()
-				PixelUtil.SetPoint (icon, "left", castBar, "left", 0, 0)
+				icon:SetPoint("left", castBar, "left")
 				PixelUtil.SetSize (icon, castBarHeight, castBarHeight)
 				
 				--setup non interruptible cast shield
