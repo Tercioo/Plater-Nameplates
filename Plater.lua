@@ -6196,11 +6196,11 @@ function Plater.OnInit() --private --~oninit ~init
 							scriptEnv._SpellName = self.SpellName
 							scriptEnv._Texture = self.SpellTexture
 							scriptEnv._Caster = self.unit
-							scriptEnv._Duration = not IS_WOW_PROJECT_MIDNIGHT and (self.SpellEndTime - self.SpellStartTime) or nil
+							scriptEnv._Duration = not IS_WOW_PROJECT_MIDNIGHT_API and (self.SpellEndTime - self.SpellStartTime) or nil
 							scriptEnv._StartTime = self.SpellStartTime
 							scriptEnv._CanInterrupt = self.CanInterrupt
 							scriptEnv._EndTime = self.SpellEndTime
-							scriptEnv._RemainingTime = not IS_WOW_PROJECT_MIDNIGHT and max (self.SpellEndTime - GetTime(), 0) or nil
+							scriptEnv._RemainingTime = not IS_WOW_PROJECT_MIDNIGHT_API and max (self.SpellEndTime - GetTime(), 0) or nil
 							scriptEnv._CanStealOrPurge = self.CanStealOrPurge
 							scriptEnv._AuraType = self.AuraType
 							
@@ -6222,14 +6222,14 @@ function Plater.OnInit() --private --~oninit ~init
 
 	function Plater.QuickHealthUpdate (unitFrame)
 		Plater.StartLogPerformanceCore("Plater-Core", "Health", "QuickHealthUpdate")
-		if IS_WOW_PROJECT_MIDNIGHT then
+		if IS_WOW_PROJECT_MIDNIGHT_API then
 			--unitFrame.healthBar.currentHealthMissing = UnitHealthMissing(unitFrame.unit, true)
 			--unitFrame.healthBar.currentHealthPercent = UnitHealthPercent(unitFrame.unit, true, CurveConstants.ScaleTo100)
 		else
 			local unitHealth = UnitHealth (unitFrame.unit)
 			local unitHealthMax = UnitHealthMax (unitFrame.unit)
-			unitFrame.healthBar:SetMinMaxValues (0, unitHealthMax, IS_WOW_PROJECT_MIDNIGHT and Enum.StatusBarInterpolation.ExponentialEaseOut or 0)
-			unitFrame.healthBar:SetValue (unitHealth, IS_WOW_PROJECT_MIDNIGHT and Enum.StatusBarInterpolation.ExponentialEaseOut or 0)
+			unitFrame.healthBar:SetMinMaxValues (0, unitHealthMax, IS_WOW_PROJECT_MIDNIGHT_API and Enum.StatusBarInterpolation.ExponentialEaseOut or 0)
+			unitFrame.healthBar:SetValue (unitHealth, IS_WOW_PROJECT_MIDNIGHT_API and Enum.StatusBarInterpolation.ExponentialEaseOut or 0)
 		
 			unitFrame.healthBar.currentHealth = unitHealth
 			unitFrame.healthBar.currentHealthMax = unitHealthMax
