@@ -1131,7 +1131,7 @@ end
 local function getAuraFrameOptions(frameName, name, key, unit)
 	local auraFrameOptions = {
 		-- Maximum number of aura frames this filter group may display.
-		maxFrameCount = Plater.db.profile.aura_max_shown_limit <= 0 and math.huge or Plater.db.profile.aura_max_shown_limit or math.huge,
+		maxFrameCount = (Plater.db.profile.aura_max_shown_limit and (Plater.db.profile.aura_max_shown_limit <= 0))and math.huge or Plater.db.profile.aura_max_shown_limit or math.huge,
 		-- Sort method used to order auras accepted by this filter group.
 		sortMethod = Plater.db.profile.aura_sort and AuraContainerSortMethod.Expiration or AuraContainerSortMethod.Default,
 		-- Sort direction applied to the selected sort method.
@@ -4266,10 +4266,11 @@ end
 			wipe(MANUAL_TRACKING_BUFFS)
 
 			for i = 1, #manualDebuffsToTrack do
-				local spellName = GetSpellInfo (tonumber(manualDebuffsToTrack [i]) or manualDebuffsToTrack [i])
+				local spellIDNum = tonumber(manualBuffsToTrack [i])
+				local spellName = GetSpellInfo (spellIDNum or manualBuffsToTrack [i])
 				if (spellName) then
-					if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
-						MANUAL_TRACKING_DEBUFFS [tonumber(manualDebuffsToTrack [i])] = true
+					if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS and spellIDNum then
+						MANUAL_TRACKING_BUFFS [spellIDNum] = true
 					else
 						MANUAL_TRACKING_DEBUFFS [spellName] = true
 					end
@@ -4280,10 +4281,11 @@ end
 			end
 
 			for i = 1, #manualBuffsToTrack do
-				local spellName = GetSpellInfo (tonumber(manualBuffsToTrack [i]) or manualBuffsToTrack [i])
+				local spellIDNum = tonumber(manualBuffsToTrack [i])
+				local spellName = GetSpellInfo (spellIDNum or manualBuffsToTrack [i])
 				if (spellName) then
-					if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
-						MANUAL_TRACKING_BUFFS [tonumber(manualDebuffsToTrack [i])] = true
+					if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS and spellIDNum then
+						MANUAL_TRACKING_BUFFS [spellIDNum] = true
 					else
 						MANUAL_TRACKING_BUFFS [spellName] = true
 					end
