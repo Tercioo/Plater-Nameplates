@@ -610,32 +610,16 @@ local auraFramesSetup = {
 		frameName = "BuffFrame1",
 		key = "BuffFrame",
 		name = "Main",
-		groups = {
-			["buffs"] = "mainFilter",
-			["buffsAdditions"] = "additionalInclude",
-			["debuffs"] = "mainFilter",
-			["debuffsAdditions"] = "additionalInclude",
-		},
 	},
 	{
 		frameName = "BuffFrame2",
 		key = "BuffFrame2",
 		name = "Secondary",
-		groups = {
-			["buffs"] = "mainFilter",
-			["buffsAdditions"] = "additionalInclude",
-		},
 	},
 	{
 		frameName = "ExtraIconRow",
 		key = "ExtraIconFrame",
 		name = "ExtraIconFrame",
-		groups = {
-			["buffs"] = "mainFilter",
-			["buffsAdditions"] = "additionalInclude",
-			["debuffs"] = "mainFilter",
-			["debuffsAdditions"] = "additionalInclude",
-		},
 	},
 }
 
@@ -723,99 +707,127 @@ local function getCandidateFilters(frameName)
 	return filters
 end
 
-local function getAuraFilter(frameName, type)
-	local filter = nil
+local function getAuraFilters(frameName)
+	local filters = {}
+	local pFilters = {}
+	local nFilters = {}
+	local mainFilterString = nil
+	local allCandidates = getCandidateFilters(frameName)
 
-	if DB_TRACK_METHOD == 0x2 then return end -- these are not tracking.
-	
-	--TODO: disable a bit of the filtering for now, as this is not additive, keep player enabled for now
+	if DB_TRACK_METHOD == 0x2 then
+		--manual
+		local filters = {
+			[1] = {
+				filterString = "HELPFUL",
+				candidateFilters = allCandidates.additionalInclude
+			},
+			[2] = {
+				filterString = "HARMFUL",
+				candidateFilters = allCandidates.additionalInclude
+			},
+		}
 
-	if frameName == "Main" and type == "debuffs" then
-		filter = {}
-
-		--filter = filter .. (DB_AURA_SHOW_DISPELLABLE and frame.unitFrame.namePlateUnitReaction > 4 and "|RAID_PLAYER_DISPELLABLE" or "")
-		if DB_AURA_SHOW_DISPELLABLE and not DB_SHOW_PURGE_IN_EXTRA_ICONS then
-			table.insert(filter, "RAID_PLAYER_DISPELLABLE")
-		end
-		if DB_AURA_SHOW_RAID then
-			--table.insert(filter, "RAID_IN_COMBAT")
-			--table.insert(filter, "RAID")
-		end
-		if DB_AURA_SHOW_DEBUFF_BYPLAYER then
-			table.insert(filter, "PLAYER")
-		end
-		if Plater.db.profile.aura_show_crowdcontrol and not Plater.db.profile.debuff_show_cc then
-			table.insert(filter, "CROWD_CONTROL")
-		elseif Plater.db.profile.debuff_show_cc then
-			table.insert(filter, "!CROWD_CONTROL")
-		end
-
-		if #filter > 0 then
-			table.insert(filter, 1, "HARMFUL")
-		end
-
-	elseif ((frameName == "Main" and not DB_AURA_SEPARATE_BUFFS) or (frameName == "Secondary" and DB_AURA_SEPARATE_BUFFS)) and type == "buffs" then
-		filter = {}
-		--if DB_AURA_SHOW_BUFFENEMYNPC and frame.unitFrame.namePlateUnitReaction < 4 and frame.unitFrame.ActorType == "enemynpc" then return "HELPFUL" end -- all buffs on enemies
-		if DB_AURA_SHOW_BUFFENEMYNPC then return "HELPFUL" end -- all buffs on enemies
-
-		--filter = filter .. (Plater.db.profile.aura_show_defensive_cd and (frame.unitFrame.ActorType == "enemyplayer" or frame.unitFrame.ActorType == "friendlyplayer") and "|BIG_DEFENSIVE|EXTERNAL_DEFENSIVE" or "")
-		--filter = filter .. (DB_AURA_SHOW_DISPELLABLE and frame.unitFrame.namePlateUnitReaction < 4 and frame.unitFrame.ActorType == "enemynpc" and "|RAID_PLAYER_DISPELLABLE" or "")
-		if Plater.db.profile.aura_show_defensive_cd and not Plater.db.profile.extra_icon_show_defensive  then
-			table.insert(filter, "BIG_DEFENSIVE")
-			table.insert(filter, "EXTERNAL_DEFENSIVE")
-		elseif Plater.db.profile.extra_icon_show_defensive then
-			table.insert(filter, "!BIG_DEFENSIVE")
-			table.insert(filter, "!EXTERNAL_DEFENSIVE")
-		end
-		if DB_AURA_SHOW_DISPELLABLE and not DB_SHOW_PURGE_IN_EXTRA_ICONS then
-			table.insert(filter, "RAID_PLAYER_DISPELLABLE")
-		elseif DB_SHOW_PURGE_IN_EXTRA_ICONS then
-			table.insert(filter, "!RAID_PLAYER_DISPELLABLE")
-		end
-		if DB_AURA_SHOW_BUFF_BYPLAYER then
-			table.insert(filter, "PLAYER")
-		elseif DB_AURA_SHOW_RAID then
-			table.insert(filter, "PLAYER")
-			table.insert(filter, "RAID_IN_COMBAT")
-			table.insert(filter, "RAID")	
-		end
-
-		if #filter > 0 then
-			table.insert(filter, 1, "HELPFUL")
-		end
-
-	elseif frameName == "ExtraIconFrame" and type == "debuffs" then
-		filter = {}
-		if Plater.db.profile.debuff_show_cc then
-			table.insert(filter, "CROWD_CONTROL")
-		end
-		if DB_SHOW_PURGE_IN_EXTRA_ICONS then
-			table.insert(filter, "RAID_PLAYER_DISPELLABLE")
-		end
-
-		if #filter > 0 then
-			table.insert(filter, 1, "HARMFUL")
-		end
-		
-	elseif frameName == "ExtraIconFrame" and type == "buffs" then
-		filter = {}
-		if Plater.db.profile.extra_icon_show_defensive then
-			table.insert(filter, "BIG_DEFENSIVE")
-			table.insert(filter, "EXTERNAL_DEFENSIVE")
-		end
-
-		if #filter > 0 then
-			table.insert(filter, 1, "HELPFUL")
-		end
-		
+		return filters
 	end
 	
-	if filter and #filter > 0 then
-		return string.join("|", unpack(filter))
-	else
-		return nil
+	for _, type in pairs({"buffs", "debuffs"}) do
+		if frameName == "Main" and type == "debuffs" then
+			--filter = filter .. (DB_AURA_SHOW_DISPELLABLE and frame.unitFrame.namePlateUnitReaction > 4 and "|RAID_PLAYER_DISPELLABLE" or "")
+			if DB_AURA_SHOW_DISPELLABLE and not DB_SHOW_PURGE_IN_EXTRA_ICONS then
+				--table.insert(pFilters, "RAID_PLAYER_DISPELLABLE")
+			end
+			if DB_AURA_SHOW_RAID then
+				--table.insert(filter, "RAID_IN_COMBAT")
+				--table.insert(filter, "RAID")
+			end
+			if DB_AURA_SHOW_DEBUFF_BYPLAYER then
+				table.insert(pFilters, "PLAYER")
+			end
+			if Plater.db.profile.aura_show_crowdcontrol and not Plater.db.profile.debuff_show_cc then
+				table.insert(pFilters, "CROWD_CONTROL")
+			elseif Plater.db.profile.debuff_show_cc then
+				table.insert(nFilters, "!CROWD_CONTROL")
+			end
+
+			mainFilterString = "HARMFUL"
+
+		elseif ((frameName == "Main" and not DB_AURA_SEPARATE_BUFFS) or (frameName == "Secondary" and DB_AURA_SEPARATE_BUFFS)) and type == "buffs" then
+			--if DB_AURA_SHOW_BUFFENEMYNPC and frame.unitFrame.namePlateUnitReaction < 4 and frame.unitFrame.ActorType == "enemynpc" then return "HELPFUL" end -- all buffs on enemies
+			if DB_AURA_SHOW_BUFFENEMYNPC then return "HELPFUL" end -- all buffs on enemies
+
+			--filter = filter .. (Plater.db.profile.aura_show_defensive_cd and (frame.unitFrame.ActorType == "enemyplayer" or frame.unitFrame.ActorType == "friendlyplayer") and "|BIG_DEFENSIVE|EXTERNAL_DEFENSIVE" or "")
+			--filter = filter .. (DB_AURA_SHOW_DISPELLABLE and frame.unitFrame.namePlateUnitReaction < 4 and frame.unitFrame.ActorType == "enemynpc" and "|RAID_PLAYER_DISPELLABLE" or "")
+			if Plater.db.profile.aura_show_defensive_cd and not Plater.db.profile.extra_icon_show_defensive  then
+				table.insert(pFilters, "BIG_DEFENSIVE")
+				table.insert(pFilters, "EXTERNAL_DEFENSIVE")
+			elseif Plater.db.profile.extra_icon_show_defensive then
+				table.insert(nFilters, "!BIG_DEFENSIVE")
+				table.insert(nFilters, "!EXTERNAL_DEFENSIVE")
+			end
+			if DB_AURA_SHOW_DISPELLABLE and not DB_SHOW_PURGE_IN_EXTRA_ICONS then
+				table.insert(pFilters, "RAID_PLAYER_DISPELLABLE")
+			elseif DB_SHOW_PURGE_IN_EXTRA_ICONS then
+				table.insert(nFilters, "!RAID_PLAYER_DISPELLABLE")
+			end
+			if DB_AURA_SHOW_BUFF_BYPLAYER then
+				table.insert(pFilters, "PLAYER")
+			elseif DB_AURA_SHOW_RAID then
+				table.insert(pFilters, "PLAYER")
+				table.insert(pFilters, "RAID_IN_COMBAT")
+				table.insert(pFilters, "RAID")
+			end
+
+			mainFilterString = "HELPFUL"
+			
+		elseif frameName == "ExtraIconFrame" and type == "debuffs" then
+			if Plater.db.profile.debuff_show_cc then
+				table.insert(pFilters, "CROWD_CONTROL")
+			end
+
+			mainFilterString = "HARMFUL"
+			
+		elseif frameName == "ExtraIconFrame" and type == "buffs" then
+			if Plater.db.profile.extra_icon_show_defensive then
+				table.insert(pFilters, "BIG_DEFENSIVE")
+				table.insert(pFilters, "EXTERNAL_DEFENSIVE")
+			end
+			if DB_SHOW_PURGE_IN_EXTRA_ICONS then
+				table.insert(pFilters, "RAID_PLAYER_DISPELLABLE")
+			end
+
+			mainFilterString = "HELPFUL"
+			
+		end
+		
+		for i, filter in pairs(pFilters) do
+
+			local negFilters = {}
+			for j, negFilter in pairs(pFilters) do
+				if j ~= i then table.insert(negFilters, "!" .. negFilter) end
+			end
+
+			local filterString = string.join("|", mainFilterString, filter, unpack(negFilters))
+
+			if #nFilters > 0 then
+				filterString = string.join("|", filterString, unpack(nFilters))
+			end
+			table.insert(filters, {
+				filterString = filterString,
+				candidateFilters = allCandidates.mainFilter
+			})
+		end
 	end
+
+	table.insert(filters, {
+		filterString = "HELPFUL",
+		candidateFilters = allCandidates.additionalInclude
+	})
+	table.insert(filters, {
+		filterString = "HARMFUL",
+		candidateFilters = allCandidates.additionalInclude
+	})
+
+	return filters
 end
 
 --TODO: by container group as well. requires larger rework of the whole current setup. support separate sizes for "own" debuffs/buffs
@@ -890,7 +902,7 @@ local function getAuraProcessingPolicy(frameName)
 	return policy, options
 end
 
-local function initAuraFrame(auraButton, name, key, unit)
+local function initAuraFrame(auraButton, name, key, index)
 	--DevTool:AddData(newIcon, "initAuraFrame")
 
 	auraButton:SetMouseMotionEnabled(Plater.db.profile.aura_show_tooltip)
@@ -1039,9 +1051,9 @@ local function initAuraFrame(auraButton, name, key, unit)
 
 	auraButton.frameName = name
 	auraButton.frameKey = key
-	auraButton.frameUnit = unit
+	auraButton.frameIndex = index
 
-	tinsert(AURA_CONTAINERS[key][unit].auraButtons, auraButton)
+	tinsert(AURA_CONTAINERS[key][index].auraButtons, auraButton)
 
 	return auraButton
 end
@@ -1128,7 +1140,7 @@ local function reSkinAuraButtons(auraButtons)
 	end
 end
 
-local function getAuraFrameOptions(frameName, name, key, unit)
+local function getAuraFrameOptions(frameName, name, key, index)
 	local auraFrameOptions = {
 		-- Maximum number of aura frames this filter group may display.
 		maxFrameCount = (Plater.db.profile.aura_max_shown_limit and (Plater.db.profile.aura_max_shown_limit <= 0))and math.huge or Plater.db.profile.aura_max_shown_limit or math.huge,
@@ -1140,9 +1152,8 @@ local function getAuraFrameOptions(frameName, name, key, unit)
 		templateNames = nil,
 		-- Optional candidate filters applied after the aura filter string.
 		candidateFilters = nil,
-		allCandidateFilters = getCandidateFilters(frameName), -- our own, to apply per group override
 		-- Optional callback invoked after each frame is created.
-		initializeFrame = function(auraButton) initAuraFrame(auraButton, name, key, unit) end,
+		initializeFrame = function(auraButton) initAuraFrame(auraButton, name, key, index) end,
 		-- Optional flow layout settings for this filter group's visible frames.
 		layout = getAuraFrameLayout(frameName),
 	}
@@ -1154,17 +1165,12 @@ local function getAuraFrameOptions(frameName, name, key, unit)
 	return auraFrameOptions
 end
 
-local function getFullAuraOptions(frameName, name, key, unit)
+local function getFullAuraOptions(frameName, name, key, index)
 	local fullOptions = {
-		auraFrameOptions = getAuraFrameOptions(frameName, name, key, unit),
+		auraFrameOptions = getAuraFrameOptions(frameName, name, key, index),
 		processingPolicy = {},
 		layoutGrowth = {},
-		auraFilter = {
-			buffs = getAuraFilter(frameName, "buffs"),
-			buffsAdditions = "HELPFUL",
-			debuffs = getAuraFilter(frameName, "debuffs"),
-			debuffsAdditions = (DB_TRACK_METHOD == 0x2) and "PLAYER|HARMFUL" or "HARMFUL",
-		},
+		auraFilters = getAuraFilters(frameName),
 	}
 
 	local horizontalDirection, verticalDirection, anchorPoint = getLayoutGrowthDirection(frameName)
@@ -1182,25 +1188,28 @@ end
 function Plater.PreAllocateAuraContainers()
 	if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then return end
 	for i=1, 40 do
-		local unit = "nameplate"..i
 		for _, frameInfo in pairs (auraFramesSetup) do
 			local auraContainer = CreateFrame("AuraContainer", "NamePlate" .. i .. "PlaterUnitFrame" .. frameInfo.frameName, UIParent, "CustomAuraContainerTemplate")
-			AURA_CONTAINERS[frameInfo.key][unit] = {
+			AURA_CONTAINERS[frameInfo.key][i] = {
 				container = auraContainer,
 				auraButtons = {},
 				name = frameInfo.name,
 			}
 			auraContainer.Name = frameInfo.name
+			auraContainer.index = i
 
-			local options = getFullAuraOptions(frameInfo.name, frameInfo.name, frameInfo.key, unit)
+			local options = getFullAuraOptions(frameInfo.name, frameInfo.name, frameInfo.key, i)
 			auraContainer.activeOptions = options
-			auraContainer.groupNames = {}
+			auraContainer.groups = {}
 
-			for groupName, auraCandidateFilter in pairs(frameInfo.groups) do
-				local auraFilter = options.auraFilter[groupName] or "PLAYER" -- set dummy to create
-				options.auraFrameOptions.candidateFilters = options.auraFrameOptions.allCandidateFilters[auraCandidateFilter]
-				auraContainer:AddAuraGroup(groupName, auraFilter, options.auraFrameOptions)
-				auraContainer.groupNames[groupName] = true
+			--TODO:GROUPS
+			local index = 0
+			for _, filter in pairs(options.auraFilters) do
+				index = index + 1
+				local groupName = "group"..index
+				options.auraFrameOptions.candidateFilters = filter.candidateFilters
+				auraContainer:AddAuraGroup(groupName, filter.filterString, options.auraFrameOptions)
+				auraContainer.groups[groupName] = true
 				auraContainer:SetAuraGroupLayout(groupName, options.auraFrameOptions.layout)
 			end
 			auraContainer:SetFlowLayoutAnchorPoint(options.layoutGrowth.anchorPoint)
@@ -1217,6 +1226,7 @@ function Plater.PreAllocateAuraContainers()
 	--DevTool:AddData({containers=AURA_CONTAINERS}, "PreAllocateAuraContainers")
 end
 
+local nextAuraIndex = 1
 function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 	if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
 		
@@ -1225,7 +1235,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 
 			for _, frameInfo in pairs (auraFramesSetup) do
 				
-				local auraContainer = AURA_CONTAINERS[frameInfo.key][unit].container
+				local auraContainer = AURA_CONTAINERS[frameInfo.key][nextAuraIndex].container
 				--DevTool:AddData({containter=auraContainer, containers=AURA_CONTAINERS, unit=unit}, "CreateOrUpdateAuraContainers Loop")
 				unitFrame[frameInfo.key] = auraContainer
 				auraContainer:SetParent(unitFrame)
@@ -1246,7 +1256,9 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 				--DevTool:AddData(auraContainer, "create")
 			end
 
-			--> unit aura cache
+			nextAuraIndex = nextAuraIndex + 1
+
+			--> unit aura cache dummy compat
 			unitFrame.AuraCache = {}
 			unitFrame.GhostAuraCache = {}
 			unitFrame.ExtraAuraCache = {}
@@ -1258,39 +1270,51 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 		for _, frameInfo in pairs (auraFramesSetup) do
 			local auraContainer = unitFrame[frameInfo.key]
 			if DB_AURA_ENABLED then
-				local options = getFullAuraOptions(frameInfo.name)
+				local options = getFullAuraOptions(frameInfo.name, frameInfo.name, frameInfo.key, auraContainer.index)
 				auraContainer.activeOptions = options
 				auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
 				auraContainer:SetFlowLayoutMaximumLineSize(options.auraFrameOptions.layout.maximumLineSize)
 				auraContainer:SetFlowLayoutAnchorPoint(options.layoutGrowth.anchorPoint)
 				auraContainer:SetFlowLayoutGrowthDirection(options.layoutGrowth.horizontalDirection, options.layoutGrowth.verticalDirection)
 
-				for groupName, auraCandidateFilter in pairs(frameInfo.groups) do
-					if auraContainer.groupNames[groupName] then
+				--TODO:GROUPS
+				local index = 1
+				for _, filter in pairs(options.auraFilters) do
+					local groupName = "group"..index
+					if not auraContainer.groups[groupName] then
+						options.auraFrameOptions.candidateFilters = filter.candidateFilters
+						auraContainer:AddAuraGroup(groupName, filter.filterString, options.auraFrameOptions)
+					end
 
-						local maxFrameCount = options.auraFrameOptions.maxFrameCount
-						if DB_AURA_SEPARATE_BUFFS and frameInfo.name == "Main" and groupName == "buffs" then
-							maxFrameCount = 0
-						end
+					local maxFrameCount = options.auraFrameOptions.maxFrameCount
+					if DB_AURA_SEPARATE_BUFFS and frameInfo.name == "Main" and groupName == "buffs" then
+						maxFrameCount = 0
+					end
 
-						local auraFilter = options.auraFilter[groupName]
-						if not options.auraFilter[groupName] then
-							auraFilter = "PLAYER" -- dummy for now, to deactivate
-							maxFrameCount = 0
-						end
-						auraContainer:SetAuraGroupCandidateFilters(groupName, options.auraFrameOptions.allCandidateFilters[auraCandidateFilter])
-						auraContainer:SetAuraGroupFilterString(groupName, auraFilter)
-						--auraContainer:SetAuraGroupCandidateFilters(groupName, nil)
-						--auraContainer:SetAuraGroupFilterString(groupName, "HELPFUL")
+					if filter.filterString then
+						auraContainer:SetAuraGroupCandidateFilters(groupName, filter.candidateFilters)
+						auraContainer:SetAuraGroupFilterString(groupName, filter.filterString)
 
 						auraContainer:SetAuraGroupMaxFrameCount(groupName, maxFrameCount)
 						auraContainer:SetAuraGroupSortMethod(groupName, options.auraFrameOptions.sortMethod, options.auraFrameOptions.sortDirection)
-						auraContainer:SetAuraGroupLayout(groupName, options.auraFrameOptions.layout)
+						auraContainer:SetAuraGroupLayout(groupName, options.auraFrameOptions.layout)	
+					else
+						auraContainer:SetAuraGroupFilterString(groupName, "")
+						auraContainer:SetAuraGroupMaxFrameCount(groupName, 0)
 					end
+					
+					index = index + 1
+				end
+
+				while (auraContainer.groups["group"..index]) do
+					--disable surplus
+					auraContainer:SetAuraGroupMaxFrameCount("group"..index, 0)
+					auraContainer:SetAuraGroupFilterString("group"..index, "")
+					index = index + 1
 				end
 				
 				if unit then
-					reSkinAuraButtons(AURA_CONTAINERS[frameInfo.key][unit].auraButtons)
+					reSkinAuraButtons(AURA_CONTAINERS[frameInfo.key][auraContainer.index].auraButtons)
 					auraContainer:SetUnit(unit)
 					--auraContainer:SetUnit("player")
 				end
@@ -1298,7 +1322,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 
 			auraContainer:SetEnabled(DB_AURA_ENABLED and unit and true or false)
 
-			if DevTool then DevTool:AddData(auraContainer, "update") end
+			--if DevTool then DevTool:AddData(auraContainer, "update") end
 		end
 
 	elseif not unitFrame.BuffFrame then -- old API
