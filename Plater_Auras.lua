@@ -4266,8 +4266,8 @@ end
 			wipe(MANUAL_TRACKING_BUFFS)
 
 			for i = 1, #manualDebuffsToTrack do
-				local spellIDNum = tonumber(manualBuffsToTrack [i])
-				local spellName = GetSpellInfo (spellIDNum or manualBuffsToTrack [i])
+				local spellIDNum = tonumber(manualDebuffsToTrack [i])
+				local spellName = GetSpellInfo (spellIDNum or manualDebuffsToTrack [i])
 				if (spellName) then
 					if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS and spellIDNum then
 						MANUAL_TRACKING_BUFFS [spellIDNum] = true
