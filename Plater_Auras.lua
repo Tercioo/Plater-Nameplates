@@ -658,7 +658,7 @@ local function getCandidateFilters(frameName)
 
 	if frameName == "Main" then
 		if DB_AURA_SEPARATE_BUFFS then
-			filters.mainFilter.processedAuraType = AuraUtil.AuraUpdateChangedType.Debuff
+			--filters.mainFilter.processedAuraType = AuraUtil.AuraUpdateChangedType.Debuff
 			
 			if DB_TRACK_METHOD == 1 then 
 				DF.table.copy(filters.additionalInclude.includeSpellIDs, AUTO_TRACKING_EXTRA_DEBUFFS)
@@ -687,7 +687,7 @@ local function getCandidateFilters(frameName)
 			end
 		end
 	elseif frameName == "Secondary" then
-		filters.mainFilter.processedAuraType = AuraUtil.AuraUpdateChangedType.Buff
+		--filters.mainFilter.processedAuraType = AuraUtil.AuraUpdateChangedType.Buff
 
 		if DB_TRACK_METHOD == 1 then 
 			DF.table.copy(filters.mainFilter.excludeSpellIDs, DB_BUFF_BANNED)
@@ -707,9 +707,13 @@ local function getCandidateFilters(frameName)
 	return filters
 end
 
-local function getAuraFilters(frameName)
+local function getAuraFilters(frameName, unit)
 	local filters = {}
 	local allCandidates = getCandidateFilters(frameName)
+	local unitReaction = unit and UnitReaction (unit, "player")
+	local isPlayer = unit and UnitIsPlayer (unit)
+	local canAssist = unit and UnitCanAssist("player", unit)
+	local isFriend = unit and UnitIsFriend("player", unit)
 
 	if DB_TRACK_METHOD == 0x2 then
 		--manual
@@ -727,7 +731,7 @@ local function getAuraFilters(frameName)
 		return filters
 	end
 	
-	for _, type in pairs({"buffs", "debuffs"}) do
+	for _, type in pairs({"debuffs", "buffs"}) do
 		local pFilters = {}
 		local nFilters = {}
 		local mainFilterString = nil
@@ -752,9 +756,6 @@ local function getAuraFilters(frameName)
 			mainFilterString = "HARMFUL"
 
 		elseif ((frameName == "Main" and not DB_AURA_SEPARATE_BUFFS) or (frameName == "Secondary" and DB_AURA_SEPARATE_BUFFS)) and type == "buffs" then
-			--if DB_AURA_SHOW_BUFFENEMYNPC and frame.unitFrame.namePlateUnitReaction < 4 and frame.unitFrame.ActorType == "enemynpc" then return "HELPFUL" end -- all buffs on enemies
-			if DB_AURA_SHOW_BUFFENEMYNPC then return "HELPFUL" end -- all buffs on enemies
-
 			--filter = filter .. (Plater.db.profile.aura_show_defensive_cd and (frame.unitFrame.ActorType == "enemyplayer" or frame.unitFrame.ActorType == "friendlyplayer") and "|BIG_DEFENSIVE|EXTERNAL_DEFENSIVE" or "")
 			--filter = filter .. (DB_AURA_SHOW_DISPELLABLE and frame.unitFrame.namePlateUnitReaction < 4 and frame.unitFrame.ActorType == "enemynpc" and "|RAID_PLAYER_DISPELLABLE" or "")
 			if Plater.db.profile.aura_show_defensive_cd and not Plater.db.profile.extra_icon_show_defensive  then
@@ -778,6 +779,14 @@ local function getAuraFilters(frameName)
 			end
 
 			mainFilterString = "HELPFUL"
+			--if DB_AURA_SHOW_BUFFENEMYNPC and frame.unitFrame.namePlateUnitReaction < 4 and frame.unitFrame.ActorType == "enemynpc" then return "HELPFUL" end -- all buffs on enemies
+			if DB_AURA_SHOW_BUFFENEMYNPC then -- special treatment...
+				table.insert(filters, {
+					filterString = "HELPFUL",
+					candidateFilters = allCandidates.mainFilter
+				})
+				pFilters = {}
+			end
 			
 		elseif frameName == "ExtraIconFrame" and type == "debuffs" then
 			if Plater.db.profile.debuff_show_cc then
@@ -806,7 +815,7 @@ local function getAuraFilters(frameName)
 				if j ~= i then table.insert(negFilters, "!" .. negFilter) end
 			end
 
-			local filterString = string.join("|", mainFilterString, filter, unpack(negFilters))
+			local filterString = mainFilterString and string.join("|", mainFilterString, filter, unpack(negFilters)) or string.join("|", filter, unpack(negFilters))
 
 			if #nFilters > 0 then
 				filterString = string.join("|", filterString, unpack(nFilters))
@@ -818,16 +827,22 @@ local function getAuraFilters(frameName)
 		end
 	end
 
-	table.insert(filters, {
-		filterString = "HELPFUL",
-		candidateFilters = allCandidates.additionalInclude
-	})
-	table.insert(filters, {
-		filterString = "HARMFUL",
-		candidateFilters = allCandidates.additionalInclude
-	})
 
-	--DevTool:AddData(filters, frameName)
+	if canAssist == true then
+		table.insert(filters, {
+			filterString = "HELPFUL",
+			candidateFilters = allCandidates.additionalInclude
+		})
+	end
+
+	if canAssist == false then
+		table.insert(filters, {
+			filterString = "HARMFUL",
+			candidateFilters = allCandidates.additionalInclude
+		})
+	end
+
+	if DevTool then DevTool:AddData(filters, frameName) end
 	return filters
 end
 
@@ -1166,12 +1181,12 @@ local function getAuraFrameOptions(frameName, name, key, index)
 	return auraFrameOptions
 end
 
-local function getFullAuraOptions(frameName, name, key, index)
+local function getFullAuraOptions(frameName, name, key, index, unit)
 	local fullOptions = {
 		auraFrameOptions = getAuraFrameOptions(frameName, name, key, index),
 		processingPolicy = {},
 		layoutGrowth = {},
-		auraFilters = getAuraFilters(frameName),
+		auraFilters = getAuraFilters(frameName, unit),
 	}
 
 	local horizontalDirection, verticalDirection, anchorPoint = getLayoutGrowthDirection(frameName)
@@ -1199,7 +1214,7 @@ function Plater.PreAllocateAuraContainers()
 			auraContainer.Name = frameInfo.name
 			auraContainer.index = i
 
-			local options = getFullAuraOptions(frameInfo.name, frameInfo.name, frameInfo.key, i)
+			local options = getFullAuraOptions(frameInfo.name, frameInfo.name, frameInfo.key, i, nil)
 			auraContainer.activeOptions = options
 			auraContainer.groups = {}
 
@@ -1271,7 +1286,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 		for _, frameInfo in pairs (auraFramesSetup) do
 			local auraContainer = unitFrame[frameInfo.key]
 			if DB_AURA_ENABLED then
-				local options = getFullAuraOptions(frameInfo.name, frameInfo.name, frameInfo.key, auraContainer.index)
+				local options = getFullAuraOptions(frameInfo.name, frameInfo.name, frameInfo.key, auraContainer.index, unitFrame.namePlateUnitToken)
 				auraContainer.activeOptions = options
 				auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
 				auraContainer:SetFlowLayoutMaximumLineSize(options.auraFrameOptions.layout.maximumLineSize)
