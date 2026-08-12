@@ -709,14 +709,11 @@ end
 
 local function getAuraFilters(frameName)
 	local filters = {}
-	local pFilters = {}
-	local nFilters = {}
-	local mainFilterString = nil
 	local allCandidates = getCandidateFilters(frameName)
 
 	if DB_TRACK_METHOD == 0x2 then
 		--manual
-		local filters = {
+		filters = {
 			[1] = {
 				filterString = "HELPFUL",
 				candidateFilters = allCandidates.additionalInclude
@@ -731,6 +728,9 @@ local function getAuraFilters(frameName)
 	end
 	
 	for _, type in pairs({"buffs", "debuffs"}) do
+		local pFilters = {}
+		local nFilters = {}
+		local mainFilterString = nil
 		if frameName == "Main" and type == "debuffs" then
 			--filter = filter .. (DB_AURA_SHOW_DISPELLABLE and frame.unitFrame.namePlateUnitReaction > 4 and "|RAID_PLAYER_DISPELLABLE" or "")
 			if DB_AURA_SHOW_DISPELLABLE and not DB_SHOW_PURGE_IN_EXTRA_ICONS then
@@ -827,6 +827,7 @@ local function getAuraFilters(frameName)
 		candidateFilters = allCandidates.additionalInclude
 	})
 
+	DevTool:AddData(filters, frameName)
 	return filters
 end
 
@@ -1284,6 +1285,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 					if not auraContainer.groups[groupName] then
 						options.auraFrameOptions.candidateFilters = filter.candidateFilters
 						auraContainer:AddAuraGroup(groupName, filter.filterString, options.auraFrameOptions)
+						auraContainer.groups[groupName] = true
 					end
 
 					local maxFrameCount = options.auraFrameOptions.maxFrameCount
@@ -1297,12 +1299,12 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 
 						auraContainer:SetAuraGroupMaxFrameCount(groupName, maxFrameCount)
 						auraContainer:SetAuraGroupSortMethod(groupName, options.auraFrameOptions.sortMethod, options.auraFrameOptions.sortDirection)
-						auraContainer:SetAuraGroupLayout(groupName, options.auraFrameOptions.layout)	
+						auraContainer:SetAuraGroupLayout(groupName, options.auraFrameOptions.layout)
 					else
 						auraContainer:SetAuraGroupFilterString(groupName, "")
 						auraContainer:SetAuraGroupMaxFrameCount(groupName, 0)
 					end
-					
+
 					index = index + 1
 				end
 
@@ -4138,7 +4140,9 @@ end
 				for spellId, _ in pairs (ccList) do
 					local spellName = GetSpellInfo (spellId)
 					if (spellName) then
-						SPECIAL_AURAS_AUTO_ADDED [spellId] = true
+						if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
+							SPECIAL_AURAS_AUTO_ADDED [spellId] = true
+						end
 						CROWDCONTROL_AURA_IDS [spellId] = true
 					end
 				end
@@ -4146,7 +4150,9 @@ end
 				for spellId, _ in pairs (DF.CrowdControlSpells) do
 					local spellName = GetSpellInfo (spellId)
 					if (spellName) then
-						SPECIAL_AURAS_AUTO_ADDED [spellId] = true
+						if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
+							SPECIAL_AURAS_AUTO_ADDED [spellId] = true
+						end
 						CROWDCONTROL_AURA_IDS [spellId] = true
 					end
 				end
@@ -4160,7 +4166,9 @@ end
 			if (cooldownList) then
 				for spellId, cooldownInfo in pairs(cooldownList) do
 					if (cooldownInfo.type == 1) then --offense cooldown
-						SPECIAL_AURAS_AUTO_ADDED[spellId] = true
+						if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
+							SPECIAL_AURAS_AUTO_ADDED[spellId] = true
+						end
 						OFFENSIVE_AURA_IDS[spellId] = true
 					end
 				end
@@ -4168,7 +4176,9 @@ end
 				for spellId, _ in pairs (DF.CooldownsAttack) do
 					local spellName = GetSpellInfo (spellId)
 					if (spellName) then
-						SPECIAL_AURAS_AUTO_ADDED [spellId] = true
+						if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
+							SPECIAL_AURAS_AUTO_ADDED [spellId] = true
+						end
 						OFFENSIVE_AURA_IDS [spellId] = true
 					end
 				end
@@ -4182,7 +4192,9 @@ end
 			if (cooldownList) then
 				for spellId, cooldownInfo in pairs(cooldownList) do
 					if (cooldownInfo.type == 2 or cooldownInfo.type == 3 or cooldownInfo.type == 4) then --personal, targeted or raidwide defense cooldown
-						SPECIAL_AURAS_AUTO_ADDED[spellId] = true
+						if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
+							SPECIAL_AURAS_AUTO_ADDED[spellId] = true
+						end
 						DEFENSIVE_AURA_IDS[spellId] = true
 					end
 				end
@@ -4190,7 +4202,9 @@ end
 				for spellId, _ in pairs (DF.CooldownsAllDeffensive) do
 					local spellName = GetSpellInfo (spellId)
 					if (spellName) then
-						SPECIAL_AURAS_AUTO_ADDED [spellId] = true
+						if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
+							SPECIAL_AURAS_AUTO_ADDED [spellId] = true
+						end
 						DEFENSIVE_AURA_IDS [spellId] = true
 					end
 				end
@@ -4355,7 +4369,9 @@ end
 					local spellName = GetSpellInfo (spellId)
 					if (spellName) then
 						--AUTO_TRACKING_EXTRA_DEBUFFS [spellName] = true
-						AUTO_TRACKING_EXTRA_DEBUFFS [spellId] = true
+						if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
+							AUTO_TRACKING_EXTRA_DEBUFFS [spellId] = true
+						end
 						CROWDCONTROL_AURA_IDS [spellId] = true
 					end
 				end
@@ -4366,7 +4382,9 @@ end
 					local spellName = GetSpellInfo (spellId)
 					if (spellName) then
 						--AUTO_TRACKING_EXTRA_BUFFS [spellName] = true
-						AUTO_TRACKING_EXTRA_BUFFS [spellId] = true
+						if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
+							AUTO_TRACKING_EXTRA_BUFFS [spellId] = true
+						end
 						OFFENSIVE_AURA_IDS [spellId] = true
 					end
 				end
@@ -4377,7 +4395,9 @@ end
 					local spellName = GetSpellInfo (spellId)
 					if (spellName) then
 						--AUTO_TRACKING_EXTRA_BUFFS [spellName] = true
-						AUTO_TRACKING_EXTRA_BUFFS [spellId] = true
+						if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
+							AUTO_TRACKING_EXTRA_BUFFS [spellId] = true
+						end
 						DEFENSIVE_AURA_IDS [spellId] = true
 					end
 				end

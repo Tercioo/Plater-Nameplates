@@ -3196,7 +3196,7 @@ function Plater.CreateScriptingPanel()
 			end
 		end
 
-		if not IsBetaBuild() then
+		if not IsBetaBuild() and not IsTestBuild() then
 			DF:LoadSpellCache(Plater.SpellHashTable, Plater.SpellIndexTable, Plater.SpellSameNameTable)
 		end
 	end)
