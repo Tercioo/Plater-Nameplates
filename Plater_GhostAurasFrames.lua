@@ -210,7 +210,7 @@ function Plater.Auras.BuildGhostAurasOptionsTab(frame)
 
     ghostAuraFrame:SetScript("OnShow", function()
         Plater.Auras.GhostAuras.SetSpec()
-        if not IsBetaBuild() and not IsTestBuild() then
+        if not IsBetaBuild() and not IsPublicTestClient() then
             DF:LoadSpellCache(Plater.SpellHashTable, Plater.SpellIndexTable, Plater.SpellSameNameTable)
         end
     end)

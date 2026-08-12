@@ -3022,7 +3022,7 @@ Plater.CreateAuraTesting()
 	auraFilterFrame:SetSize (f:GetWidth(), f:GetHeight() + startY)
 
 	auraFilterFrame:SetScript("OnShow", function()
-		if not IsBetaBuild() and not IsTestBuild() then
+		if not IsBetaBuild() and not IsPublicTestClient() then
 			DF:LoadSpellCache(Plater.SpellHashTable, Plater.SpellIndexTable, Plater.SpellSameNameTable)
 		end
 	end)
@@ -3848,7 +3848,7 @@ Plater.CreateAuraTesting()
 		
 		specialAuraFrame:SetScript ("OnShow", function()
 			special_auras_added:Refresh()
-			if not IsBetaBuild() and not IsTestBuild() then
+			if not IsBetaBuild() and not IsPublicTestClient() then
 				DF:LoadSpellCache(Plater.SpellHashTable, Plater.SpellIndexTable, Plater.SpellSameNameTable)
 			end
 		end)
