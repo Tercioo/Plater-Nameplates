@@ -827,7 +827,7 @@ local function getAuraFilters(frameName)
 		candidateFilters = allCandidates.additionalInclude
 	})
 
-	DevTool:AddData(filters, frameName)
+	--DevTool:AddData(filters, frameName)
 	return filters
 end
 
