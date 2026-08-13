@@ -1772,7 +1772,7 @@ Plater.AnchorNamesByPhraseId = {
 
 	function platerInternal.GetClassColor(class)
 		if IS_WOW_PROJECT_MIDNIGHT then
-			return C_ClassColor.GetClassColor(class)
+			return class and C_ClassColor.GetClassColor(class) or nil
 		else
 			return DB_CLASS_COLORS and DB_CLASS_COLORS[class or ""] or nil
 		end
