@@ -122,6 +122,26 @@ if pandemicColorCurve then
 	pandemicColorCurve:AddPoint(.15, CreateColor(1, 0.5, 0, 1))
 	pandemicColorCurve:AddPoint(.3, CreateColor(1, 1, 1, 1))
 end
+local timeFormatter = C_StringUtil.CreateNumericRuleFormatter()
+if timeFormatter then
+  	timeFormatter:AddBreakpoint({
+		threshold = 0,
+		step = 1,
+		format = "%d",
+	})
+	timeFormatter:AddBreakpoint({
+		threshold = 60,
+		format = "%d:%02d",
+		components = {
+			{
+				div = 60,
+			},
+			{
+				mod = 60,
+			},
+		}
+ 	})
+end
 
 --> Aura types for usage in AddAura / AddExtraIcon checks
 local AURA_TYPE_ENRAGE = "" -- yes, 'enrage' is just empty string for Blizzard...
@@ -980,17 +1000,16 @@ local function initAuraFrame(auraButton, name, key, index)
 	auraButton:SetApplicationCount(auraButton.Count)
 
 	
-	--auraButton.TimerText = auraButton.Cooldown:CreateFontString (nil, "overlay", "NumberFontNormal")
-	--auraButton.TimerText:SetPoint ("center")
-	auraButton.TimerText = auraButton.Cooldown:GetRegions()
+	auraButton.TimerText = auraButton.Cooldown:CreateFontString (nil, "overlay", "NumberFontNormal")
+	auraButton.TimerText:SetPoint ("center")
+	--auraButton.TimerText = auraButton.Cooldown:GetRegions()
 
 	if profile.aura_timer then
 		local durationTextOptions = {
-			--formatter = , 
-			--textColorCurve = pandemicColorCurve,
+			textFormatter = timeFormatter,
 			textColor = {
 				curve = pandemicColorCurve,
-				property = 0,
+				property = Enum.DurationTextBindingProperty.RemainingPercent,
 			}
 		}
 		auraButton:SetDurationText(auraButton.TimerText, durationTextOptions)
@@ -1188,11 +1207,10 @@ local function reSkinAuraButtons(auraButtons)
 
 		if profile.aura_timer then
 			local durationTextOptions = {
-				--formatter = , 
-				--textColorCurve = pandemicColorCurve,
+				textFormatter = timeFormatter,
 				textColor = {
 					curve = pandemicColorCurve,
-					property = 1,
+					property = Enum.DurationTextBindingProperty.RemainingPercent,
 				}
 			}
 			auraButton:SetDurationText(auraButton.TimerText, durationTextOptions)
