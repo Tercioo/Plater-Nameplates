@@ -1597,6 +1597,7 @@ Plater.AnchorNamesByPhraseId = {
 		["SoftTargetIconGameObject"] = true,
 		["SoftTargetInteract"] = true,
 		["SoftTargetNameplateInteract"] = true,
+		--["tooltipShowAuraSpellIDs"] = IS_WOW_PROJECT_MIDNIGHT_API,
 	}
 	
 	local cvars_to_store_lower = {}
@@ -1767,6 +1768,14 @@ Plater.AnchorNamesByPhraseId = {
 
 	function Plater.DisableAuraTrackingForAuraTest()
 		DB_AURA_ENABLED = false
+	end
+
+	function platerInternal.GetClassColor(class)
+		if IS_WOW_PROJECT_MIDNIGHT then
+			return C_ClassColor.GetClassColor(class)
+		else
+			return DB_CLASS_COLORS and DB_CLASS_COLORS[class or ""] or nil
+		end
 	end
 
 	--> place most used data into local upvalues to save process time
@@ -6602,9 +6611,9 @@ end
 	end
 	
 	--internal function to change the health bar color
-	function Plater.ChangeHealthBarColor_Internal (healthBar, r, g, b, a, forceNoLerp) --private
+	function Plater.ChangeHealthBarColor_Internal (healthBar, r, g, b, a, forceNoLerp, force) --private
 		a = a or 1
-		if (r ~= healthBar.R or g ~= healthBar.G or b ~= healthBar.B or a ~= healthBar.A) then
+		if force or (r ~= healthBar.R or g ~= healthBar.G or b ~= healthBar.B or a ~= healthBar.A) then
 			healthBar.R, healthBar.G, healthBar.B, healthBar.A = r, g, b, a
 			if (not DB_LERP_COLOR or forceNoLerp) then -- ~lerpcolor
 				healthBar.barTexture:SetVertexColor (r, g, b, a)
@@ -6644,7 +6653,7 @@ end
 				if (unitFrame.ActorType == ACTORTYPE_FRIENDLY_PLAYER) then
 					if (Plater.db.profile.use_playerclass_color) then
 						local _, class = UnitClass (unitID)
-						local classColor = DB_CLASS_COLORS [class]
+						local classColor = platerInternal.GetClassColor(class)
 						if (classColor) then -- and unitFrame.optionTable.useClassColors
 							r, g, b, a = classColor.r, classColor.g, classColor.b, classColor.a
 						end
@@ -6654,7 +6663,7 @@ end
 				elseif (unitFrame.ActorType == ACTORTYPE_ENEMY_PLAYER) then
 					if (Plater.db.profile.plate_config.enemyplayer.use_playerclass_color) then
 						local _, class = UnitClass (unitID)
-						local classColor = DB_CLASS_COLORS [class]
+						local classColor = platerInternal.GetClassColor(class)
 						if (classColor) then -- and unitFrame.optionTable.useClassColors
 							r, g, b, a = classColor.r, classColor.g, classColor.b, classColor.a
 						end
@@ -6724,7 +6733,7 @@ end
 			end
 		end
 		
-		Plater.ChangeHealthBarColor_Internal (unitFrame.healthBar, r, g, b, a, true)
+		Plater.ChangeHealthBarColor_Internal (unitFrame.healthBar, r, g, b, a, true, true)
 	end
 
 	--force an update on all nameplates showin in the screen
@@ -6751,7 +6760,7 @@ end
 				_, class = UnitClass (unit)
 			end
 			if (class) then
-				local color = DB_CLASS_COLORS [class]
+				local color = platerInternal.GetClassColor(class)
 				if (color) then
 					text = "|c" .. color.colorStr .. DF:RemoveRealName (text) .. "|r"
 				end
@@ -8384,8 +8393,9 @@ end
 				if (plateConfigs.actorname_use_class_color) then
 					local _, unitClass = UnitClass (plateFrame.unitFrame [MEMBER_UNITID])
 					if (unitClass) then
-						local color = DB_CLASS_COLORS [unitClass]
-						DF:SetFontColor (nameFontString, color.r, color.g, color.b)
+						local color = platerInternal.GetClassColor(unitClass)
+						nameFontString:SetTextColor(color.r, color.g, color.b, color.a)
+						--DF:SetFontColor (nameFontString, color.r, color.g, color.b)
 					else
 						DF:SetFontColor (nameFontString, plateConfigs.actorname_text_color)
 					end
@@ -8576,9 +8586,11 @@ end
 			
 			local _, unitClass = UnitClass (plateFrame.unitFrame [MEMBER_UNITID])
 			if (unitClass) then
-				local color = DB_CLASS_COLORS [unitClass]
-				DF:SetFontColor (nameString, color.r, color.g, color.b)
-				DF:SetFontColor (guildString, color.r, color.g, color.b)
+				local color = platerInternal.GetClassColor(unitClass)
+				nameString:SetTextColor(color.r, color.g, color.b, color.a)
+				guildString:SetTextColor(color.r, color.g, color.b, color.a)
+				--DF:SetFontColor (nameString, color.r, color.g, color.b)
+				--DF:SetFontColor (guildString, color.r, color.g, color.b)
 			else
 				DF:SetFontColor (nameString, plateConfigs.actorname_text_color)
 				DF:SetFontColor (guildString, plateConfigs.actorname_text_color)
@@ -8590,9 +8602,11 @@ end
 			
 			local _, unitClass = UnitClass (plateFrame.unitFrame [MEMBER_UNITID])
 			if (unitClass) then
-				local color = DB_CLASS_COLORS [unitClass]
-				DF:SetFontColor (nameString, color.r, color.g, color.b)
-				DF:SetFontColor (guildString, color.r, color.g, color.b)
+				local color = platerInternal.GetClassColor(unitClass)
+				nameString:SetTextColor(color.r, color.g, color.b, color.a)
+				guildString:SetTextColor(color.r, color.g, color.b, color.a)
+				--DF:SetFontColor (nameString, color.r, color.g, color.b)
+				--DF:SetFontColor (guildString, color.r, color.g, color.b)
 			else
 				DF:SetFontColor (nameString, plateConfigs.actorname_text_color)
 				DF:SetFontColor (guildString, plateConfigs.actorname_text_color)
@@ -9236,8 +9250,8 @@ end
 			else
 				local _, class = UnitClass (unitFrame [MEMBER_UNITID])
 				if (class) then		
-					local color = DB_CLASS_COLORS [class]
-					Plater.ChangeHealthBarColor_Internal (healthBar, color.r, color.g, color.b, color.a)
+					local color = platerInternal.GetClassColor(unitClass)
+					Plater.ChangeHealthBarColor_Internal (healthBar, color.r, color.g, color.b, color.a, true, true)
 				else
 					Plater.ChangeHealthBarColor_Internal (healthBar, 1, 1, 1, 1)
 				end
@@ -9263,8 +9277,8 @@ end
 				if (DB_PLATE_CONFIG [actorType].use_playerclass_color) then
 					local _, class = UnitClass (unitFrame [MEMBER_UNITID])
 					if (class) then		
-						local color = DB_CLASS_COLORS [class]
-						Plater.ChangeHealthBarColor_Internal (healthBar, color.r, color.g, color.b, color.a)
+						local color = platerInternal.GetClassColor(unitClass)
+						Plater.ChangeHealthBarColor_Internal (healthBar, color.r, color.g, color.b, color.a, true, true)
 					else
 						Plater.ChangeHealthBarColor_Internal (healthBar, unpack (DB_PLATE_CONFIG [actorType].fixed_class_color))
 					end
