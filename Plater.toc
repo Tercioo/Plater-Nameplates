@@ -1,4 +1,4 @@
-## Interface: 120007, 120100
+## Interface: 120100
 ## Interface-Mainline: 120007, 120100
 ## Interface-Mists: 50504
 ## Interface-Titan: 38001
