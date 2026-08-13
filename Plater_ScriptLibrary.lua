@@ -1606,12 +1606,13 @@ do
 			"- Adjust aura auto-tracking options for outdated settings."
 		},
 		Func = function()
-			if IS_WOW_PROJECT_MIDNIGHT and IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
-				if Plater.db.profile.aura_show_debuff_as_blizzard_does then
-					Plater.db.profile.aura_show_debuff_by_the_player = true
-					Plater.db.profile.aura_show_debuff_as_blizzard_does = false
-				end
-			end
+			--disabled.
+			--if IS_WOW_PROJECT_MIDNIGHT and IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
+			--	if Plater.db.profile.aura_show_debuff_as_blizzard_does then
+			--		Plater.db.profile.aura_show_debuff_by_the_player = true
+			--		Plater.db.profile.aura_show_debuff_as_blizzard_does = false
+			--	end
+			--end
 		end,
 	})
 

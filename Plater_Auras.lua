@@ -755,6 +755,20 @@ local function getAuraFilters(frameName, unit)
 
 			mainFilterString = "HARMFUL"
 
+			if DB_AURA_SHOW_AS_BLIZZARD then
+				local candidate = DF.table.copy({}, allCandidates.mainFilter)
+				candidate.nameplateShowPersonal = true
+				table.insert(filters, {
+					filterString = "HARMFUL|IMPORTANT|PLAYER|!CROWD_CONTROL",
+					candidateFilters = candidate,
+				})
+				table.insert(filters, {
+					filterString = "HARMFUL|!IMPORTANT|PLAYER|!CROWD_CONTROL ",
+					candidateFilters = candidate,
+				})
+				pFilters = {}
+			end
+
 		elseif ((frameName == "Main" and not DB_AURA_SEPARATE_BUFFS) or (frameName == "Secondary" and DB_AURA_SEPARATE_BUFFS)) and type == "buffs" then
 			--filter = filter .. (Plater.db.profile.aura_show_defensive_cd and (frame.unitFrame.ActorType == "enemyplayer" or frame.unitFrame.ActorType == "friendlyplayer") and "|BIG_DEFENSIVE|EXTERNAL_DEFENSIVE" or "")
 			--filter = filter .. (DB_AURA_SHOW_DISPELLABLE and frame.unitFrame.namePlateUnitReaction < 4 and frame.unitFrame.ActorType == "enemynpc" and "|RAID_PLAYER_DISPELLABLE" or "")
@@ -920,8 +934,9 @@ end
 
 local function initAuraFrame(auraButton, name, key, index)
 	--DevTool:AddData(newIcon, "initAuraFrame")
+	local profile = Plater.db.profile
 
-	auraButton:SetMouseMotionEnabled(Plater.db.profile.aura_show_tooltip)
+	auraButton:SetMouseMotionEnabled(profile.aura_show_tooltip)
 	auraButton:SetHideTooltipInCombat(true)
 
 	-- create stuff
@@ -946,10 +961,14 @@ local function initAuraFrame(auraButton, name, key, index)
 	if auraButton.Cooldown.EnableMouseMotion then
 		auraButton.Cooldown:EnableMouseMotion (false)
 	end
-	auraButton.Cooldown:SetHideCountdownNumbers (not IS_WOW_PROJECT_MIDNIGHT)
+	auraButton.Cooldown:SetHideCountdownNumbers (true)
 	auraButton.Cooldown:SetCountdownAbbrevThreshold(60)
 	auraButton.Cooldown:SetMinimumCountdownDuration(0)
 	--auraButton.Cooldown:Hide()
+
+	auraButton.Cooldown:SetEdgeTexture (profile.aura_cooldown_edge_texture)
+	auraButton.Cooldown:SetReverse (profile.aura_cooldown_reverse)
+	auraButton.Cooldown:SetDrawSwipe (profile.aura_cooldown_show_swipe)
 
 	auraButton:SetDurationCooldown(auraButton.Cooldown)
 
@@ -965,23 +984,32 @@ local function initAuraFrame(auraButton, name, key, index)
 	--auraButton.TimerText:SetPoint ("center")
 	auraButton.TimerText = auraButton.Cooldown:GetRegions()
 
-	local durationTextOptions = {
-		--formatter = , 
-		--textColorCurve = pandemicColorCurve,
-	}
-	auraButton:SetDurationText(auraButton.TimerText, durationTextOptions)
+	if profile.aura_timer then
+		local durationTextOptions = {
+			--formatter = , 
+			--textColorCurve = pandemicColorCurve,
+			textColor = {
+				curve = pandemicColorCurve,
+				property = 0,
+			}
+		}
+		auraButton:SetDurationText(auraButton.TimerText, durationTextOptions)
+		auraButton.TimerText:Show()
+	else
+		auraButton.TimerText:Hide()
+		auraButton:ClearDurationText()
+	end
 
 
 	--sizes and position:
 	local auraWidth
 	local auraHeight
 	local borderThickness
-	local profile = Plater.db.profile
 	local frameName = name
 	if frameName == "Main" then
-		auraWidth = Plater.db.profile.aura_width
-		auraHeight = Plater.db.profile.aura_height
-		borderThickness = Plater.db.profile.aura_border_thickness
+		auraWidth = profile.aura_width
+		auraHeight = profile.aura_height
+		borderThickness = profile.aura_border_thickness
 
 		local stackLabel = auraButton.Count
 		DF:SetFontSize (stackLabel, profile.aura_stack_size)
@@ -1000,9 +1028,9 @@ local function initAuraFrame(auraButton, name, key, index)
 
 
 	elseif frameName == "Secondary" then
-		auraWidth = Plater.db.profile.aura_width2
-		auraHeight = Plater.db.profile.aura_height2
-		borderThickness = Plater.db.profile.aura_border_thickness2
+		auraWidth = profile.aura_width2
+		auraHeight = profile.aura_height2
+		borderThickness = profile.aura_border_thickness2
 
 		local stackLabel = auraButton.Count
 		DF:SetFontSize (stackLabel, profile.aura_stack_size)
@@ -1021,8 +1049,8 @@ local function initAuraFrame(auraButton, name, key, index)
 
 
 	elseif frameName == "ExtraIconFrame" then
-		auraWidth = Plater.db.profile.extra_icon_width
-		auraHeight = Plater.db.profile.extra_icon_height
+		auraWidth = profile.extra_icon_width
+		auraHeight = profile.extra_icon_height
 		borderThickness = 1
 
 		local stackLabel = auraButton.Count
@@ -1076,20 +1104,21 @@ end
 
 local function reSkinAuraButtons(auraButtons)
 
-	if C_Secrets.ShouldAurasBeSecret() or InCombatLockdown then return end
+	local profile = Plater.db.profile
+
+	if C_Secrets.ShouldAurasBeSecret() or InCombatLockdown() then return end
 	for _, auraButton in pairs(auraButtons) do
 		
-		auraButton:SetMouseMotionEnabled(Plater.db.profile.aura_show_tooltip)
+		auraButton:SetMouseMotionEnabled(profile.aura_show_tooltip)
 
 		local auraWidth
 		local auraHeight
 		local borderThickness
-		local profile = Plater.db.profile
 		local frameName = auraButton.frameName
 		if frameName == "Main" then
-			auraWidth = Plater.db.profile.aura_width
-			auraHeight = Plater.db.profile.aura_height
-			borderThickness = Plater.db.profile.aura_border_thickness
+			auraWidth = profile.aura_width
+			auraHeight = profile.aura_height
+			borderThickness = profile.aura_border_thickness
 
 			local stackLabel = auraButton.Count
 			DF:SetFontSize (stackLabel, profile.aura_stack_size)
@@ -1108,9 +1137,9 @@ local function reSkinAuraButtons(auraButtons)
 
 
 		elseif frameName == "Secondary" then
-			auraWidth = Plater.db.profile.aura_width2
-			auraHeight = Plater.db.profile.aura_height2
-			borderThickness = Plater.db.profile.aura_border_thickness2
+			auraWidth = profile.aura_width2
+			auraHeight = profile.aura_height2
+			borderThickness = profile.aura_border_thickness2
 
 			local stackLabel = auraButton.Count
 			DF:SetFontSize (stackLabel, profile.aura_stack_size)
@@ -1129,8 +1158,8 @@ local function reSkinAuraButtons(auraButtons)
 
 
 		elseif frameName == "ExtraIconFrame" then
-			auraWidth = Plater.db.profile.extra_icon_width
-			auraHeight = Plater.db.profile.extra_icon_height
+			auraWidth = profile.extra_icon_width
+			auraHeight = profile.extra_icon_height
 			borderThickness = 1
 
 			local stackLabel = auraButton.Count
@@ -1152,6 +1181,26 @@ local function reSkinAuraButtons(auraButtons)
 
 		local band = 8
 		auraButton.Border:SetScale(borderThickness / band)
+
+		auraButton.Cooldown:SetEdgeTexture (profile.aura_cooldown_edge_texture)
+		auraButton.Cooldown:SetReverse (profile.aura_cooldown_reverse)
+		auraButton.Cooldown:SetDrawSwipe (profile.aura_cooldown_show_swipe)
+
+		if profile.aura_timer then
+			local durationTextOptions = {
+				--formatter = , 
+				--textColorCurve = pandemicColorCurve,
+				textColor = {
+					curve = pandemicColorCurve,
+					property = 1,
+				}
+			}
+			auraButton:SetDurationText(auraButton.TimerText, durationTextOptions)
+			auraButton.TimerText:Show()
+		else
+			auraButton.TimerText:Hide()
+			auraButton:ClearDurationText()
+		end
 
 	end
 end
