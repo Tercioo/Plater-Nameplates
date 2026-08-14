@@ -9250,7 +9250,7 @@ end
 			else
 				local _, class = UnitClass (unitFrame [MEMBER_UNITID])
 				if (class) then		
-					local color = platerInternal.GetClassColor(unitClass)
+					local color = platerInternal.GetClassColor(class)
 					Plater.ChangeHealthBarColor_Internal (healthBar, color.r, color.g, color.b, color.a, true, true)
 				else
 					Plater.ChangeHealthBarColor_Internal (healthBar, 1, 1, 1, 1)
@@ -9277,7 +9277,7 @@ end
 				if (DB_PLATE_CONFIG [actorType].use_playerclass_color) then
 					local _, class = UnitClass (unitFrame [MEMBER_UNITID])
 					if (class) then		
-						local color = platerInternal.GetClassColor(unitClass)
+						local color = platerInternal.GetClassColor(class)
 						Plater.ChangeHealthBarColor_Internal (healthBar, color.r, color.g, color.b, color.a, true, true)
 					else
 						Plater.ChangeHealthBarColor_Internal (healthBar, unpack (DB_PLATE_CONFIG [actorType].fixed_class_color))
