@@ -720,9 +720,13 @@ local function getCandidateFilters(frameName)
 		end
 	elseif frameName == "ExtraIconFrame" then
 		filters.mainFilter.includeSpellIDs = nil
+		filters.additionalInclude.excludeSpellIDs = {}
 
 		DF.table.copy(filters.additionalInclude.includeSpellIDs, SPECIAL_AURAS_AUTO_ADDED)
 		DF.table.copy(filters.additionalInclude.includeSpellIDs, SPECIAL_AURAS_USER_LIST)
+
+		DF.table.copy(filters.additionalInclude.excludeSpellIDs, DB_BUFF_BANNED)
+		DF.table.copy(filters.additionalInclude.excludeSpellIDs, DB_DEBUFF_BANNED)
 	end
 	return filters
 end
