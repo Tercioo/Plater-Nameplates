@@ -119,8 +119,8 @@ local pandemicColorCurve = C_CurveUtil and C_CurveUtil.CreateColorCurve()
 if pandemicColorCurve then
 	pandemicColorCurve:SetType(Enum.LuaCurveType.Step)
 	pandemicColorCurve:AddPoint(0, CreateColor(1, 0, 0, 1))
-	pandemicColorCurve:AddPoint(.15, CreateColor(1, 0.5, 0, 1))
-	pandemicColorCurve:AddPoint(.3, CreateColor(1, 1, 1, 1))
+	pandemicColorCurve:AddPoint(15, CreateColor(1, 0.5, 0, 1))
+	pandemicColorCurve:AddPoint(30, CreateColor(1, 1, 1, 1))
 end
 local timeFormatter = C_StringUtil.CreateNumericRuleFormatter()
 if timeFormatter then
