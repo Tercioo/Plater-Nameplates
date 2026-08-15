@@ -999,10 +999,17 @@ local function initAuraFrame(auraButton, name, key, index)
 	auraButton:SetDurationCooldown(auraButton.Cooldown)
 
 	
-	auraButton.Count = auraButton:CreateFontString (nil, "artwork", "NumberFontNormalSmall")
-	auraButton.Count:SetJustifyH ("right")
-	auraButton.Count:SetPoint ("bottomright", 3, -2)
-
+	auraButton.CountFrame = CreateFrame ("frame", "$parentCountFrame", auraButton)--, BackdropTemplateMixin and "BackdropTemplate")
+	auraButton.CountFrame:SetAllPoints()
+	auraButton.CountFrame:EnableMouse (false)
+	if auraButton.CountFrame.EnableMouseMotion then
+		auraButton.CountFrame:EnableMouseMotion (false)
+	end
+	auraButton.CountFrame.Count = auraButton.CountFrame:CreateFontString (nil, "artwork", "NumberFontNormalSmall")
+	auraButton.Count = auraButton.CountFrame.Count
+	auraButton.CountFrame.Count:SetJustifyH ("right")
+	auraButton.CountFrame.Count:SetPoint ("bottomright", 3, -2)
+	
 	auraButton:SetApplicationCount(auraButton.Count)
 
 	
