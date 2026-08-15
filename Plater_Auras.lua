@@ -738,24 +738,26 @@ local function getAuraFilters(frameName, unit)
 	local isPlayer = unit and UnitIsPlayer (unit)
 	local canAssist = unit and UnitCanAssist("player", unit)
 	local isFriend = unit and UnitIsFriend("player", unit)
-
-	if DB_TRACK_METHOD == 0x2 then
-		--manual
-		filters = {
-			[1] = {
-				filterString = "HELPFUL",
-				candidateFilters = allCandidates.additionalInclude
-			},
-			[2] = {
-				filterString = "HARMFUL",
-				candidateFilters = allCandidates.additionalInclude
-			},
-		}
-
-		return filters
-	end
 	
 	for _, type in pairs({"debuffs", "buffs"}) do
+
+		if DB_TRACK_METHOD == 0x2 then
+			--manual tracking shortcut.
+			if frameName == "Main" and type == "debuffs" then
+				return {
+					filterString = "HARMFUL",
+					candidateFilters = allCandidates.additionalInclude
+				}
+			elseif ((frameName == "Main" and not DB_AURA_SEPARATE_BUFFS) or (frameName == "Secondary" and DB_AURA_SEPARATE_BUFFS)) and type == "buffs" then
+				return {
+					filterString = "HELPFUL",
+					candidateFilters = allCandidates.additionalInclude
+				}
+			end
+			return filters
+		end
+		
+
 		local pFilters = {}
 		local nFilters = {}
 		local mainFilterString = nil
