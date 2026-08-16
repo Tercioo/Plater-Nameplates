@@ -888,6 +888,8 @@ end
 
 --TODO: by container group as well. requires larger rework of the whole current setup. support separate sizes for "own" debuffs/buffs
 local function getAuraFrameLayout(frameName)
+	if not Plater.MaxAurasPerRow then Plater.RefreshAuraCache() end -- security check
+
 	local profile = Plater.db.profile
 	local layout = {
 		elementSpacing = profile.aura_padding,
@@ -1365,7 +1367,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 		-- update
 		for _, frameInfo in pairs (auraFramesSetup) do
 			local auraContainer = unitFrame[frameInfo.key]
-			if DB_AURA_ENABLED then
+			if DB_AURA_ENABLED and unit then
 				local options = getFullAuraOptions(frameInfo.name, frameInfo.name, frameInfo.key, auraContainer.index, unitFrame.namePlateUnitToken)
 				auraContainer.activeOptions = options
 				auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
@@ -1373,7 +1375,6 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 				auraContainer:SetFlowLayoutAnchorPoint(options.layoutGrowth.anchorPoint)
 				auraContainer:SetFlowLayoutGrowthDirection(options.layoutGrowth.horizontalDirection, options.layoutGrowth.verticalDirection)
 
-				--TODO:GROUPS
 				local index = 1
 				for _, filter in pairs(options.auraFilters) do
 					local groupName = "group"..index
@@ -1410,11 +1411,8 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 					index = index + 1
 				end
 				
-				if unit then
-					reSkinAuraButtons(AURA_CONTAINERS[frameInfo.key][auraContainer.index].auraButtons)
-					auraContainer:SetUnit(unit)
-					--auraContainer:SetUnit("player")
-				end
+				reSkinAuraButtons(AURA_CONTAINERS[frameInfo.key][auraContainer.index].auraButtons)
+				auraContainer:SetUnit(unit)
 			end
 
 			auraContainer:SetEnabled(DB_AURA_ENABLED and unit and true or false)
