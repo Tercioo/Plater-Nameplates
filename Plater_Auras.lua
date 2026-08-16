@@ -170,7 +170,6 @@ function Plater.RefreshAuarasCurves()
 		})
 	end
 end
-Plater.RefreshAuarasCurves()
 
 --> Aura types for usage in AddAura / AddExtraIcon checks
 local AURA_TYPE_ENRAGE = "" -- yes, 'enrage' is just empty string for Blizzard...

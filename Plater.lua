@@ -4741,6 +4741,8 @@ function Plater.OnInit() --private --~oninit ~init
 
 	Plater.InitializeSavedVariables()
 	Plater.RefreshDBUpvalues()
+	Plater.RefreshAuarasCurves()
+	Plater.PreAllocateAuraContainers()
 
 	C_Timer.After(0, function()
 		platerInternal.CreatePerformanceUnits(Plater)
@@ -5171,8 +5173,6 @@ function Plater.OnInit() --private --~oninit ~init
 			--update resource bar
 			Plater.UpdateResourceFrame()
 		end
-
-		Plater.PreAllocateAuraContainers()
 		
 		--can also hook 'ClassNameplateBar:ShowNameplateBar()' which will show and call NamePlateDriverFrame:SetClassNameplateBar(self); which will call SetupClassNameplateBars()
 		if NamePlateDriverFrame.SetupClassNameplateBars then
