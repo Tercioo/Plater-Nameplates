@@ -109,39 +109,68 @@ local DEBUFF_DISPLAY_COLOR_INFO = {
 	[11] = DEBUFF_TYPE_BLEED_COLOR,
 }
 local dispelColorCurve = C_CurveUtil and C_CurveUtil.CreateColorCurve() --TODO: correct colors! MIDNIGHT!!
-if dispelColorCurve then
-	dispelColorCurve:SetType(Enum.LuaCurveType.Step)
-	for i, c in pairs(DEBUFF_DISPLAY_COLOR_INFO) do
-		dispelColorCurve:AddPoint(i, c)
+local pandemicColorCurve = C_CurveUtil and C_CurveUtil.CreateColorCurve()
+local timeFormatter = C_StringUtil.CreateNumericRuleFormatter()
+function Plater.RefreshAuarasCurves()
+
+	if dispelColorCurve then
+		dispelColorCurve:SetType(Enum.LuaCurveType.Step)
+		for i, c in pairs(DEBUFF_DISPLAY_COLOR_INFO) do
+			dispelColorCurve:AddPoint(i, c)
+		end
+	end
+
+	if pandemicColorCurve then
+		pandemicColorCurve:SetType(Enum.LuaCurveType.Step)
+		pandemicColorCurve:AddPoint(0, CreateColor(1, 0, 0, 1))
+		pandemicColorCurve:AddPoint(15, CreateColor(1, 0.5, 0, 1))
+		pandemicColorCurve:AddPoint(30, CreateColor(1, 1, 1, 1))
+	end
+
+	if timeFormatter then
+		if Plater.db.profile.aura_timer_decimals then
+			timeFormatter:AddBreakpoint({
+			threshold = 0,
+			step = 0.1,
+			format = "%.1f",
+			})
+			timeFormatter:AddBreakpoint({
+				threshold = 5,
+				step = 1,
+				format = "%d",
+			})
+		else
+			timeFormatter:AddBreakpoint({
+				threshold = 0,
+				step = 1,
+				format = "%d",
+			})
+		end
+		timeFormatter:AddBreakpoint({
+			threshold = 60,
+			format = "%d:%02d",
+			components = {
+				{
+					div = 60,
+				},
+				{
+					mod = 60,
+				},
+			}
+		})
+		timeFormatter:AddBreakpoint({
+			threshold = 180,
+			format = "%dm",
+			components = {
+				{
+					div = 60,
+					step = 1,
+				},
+			}
+		})
 	end
 end
-local pandemicColorCurve = C_CurveUtil and C_CurveUtil.CreateColorCurve()
-if pandemicColorCurve then
-	pandemicColorCurve:SetType(Enum.LuaCurveType.Step)
-	pandemicColorCurve:AddPoint(0, CreateColor(1, 0, 0, 1))
-	pandemicColorCurve:AddPoint(15, CreateColor(1, 0.5, 0, 1))
-	pandemicColorCurve:AddPoint(30, CreateColor(1, 1, 1, 1))
-end
-local timeFormatter = C_StringUtil.CreateNumericRuleFormatter()
-if timeFormatter then
-  	timeFormatter:AddBreakpoint({
-		threshold = 0,
-		step = 1,
-		format = "%d",
-	})
-	timeFormatter:AddBreakpoint({
-		threshold = 60,
-		format = "%d:%02d",
-		components = {
-			{
-				div = 60,
-			},
-			{
-				mod = 60,
-			},
-		}
- 	})
-end
+Plater.RefreshAuarasCurves()
 
 --> Aura types for usage in AddAura / AddExtraIcon checks
 local AURA_TYPE_ENRAGE = "" -- yes, 'enrage' is just empty string for Blizzard...

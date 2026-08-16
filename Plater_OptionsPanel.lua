@@ -2743,12 +2743,13 @@ local debuff_options = {
 		get = function() return Plater.db.profile.aura_timer_pandemic_color end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_timer_pandemic_color = value
+			Plater.RefreshAuarasCurves()
 			Plater.RefreshAuras()
 			Plater.UpdateAllPlates()
 		end,
 		name = "Pandemic coloring",
 		desc = "Coloring the timer value based on duration left: >25%: default, <25%: orange, <15%: red.",
-		hidden = not IS_WOW_PROJECT_MIDNIGHT,
+		--hidden = not IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
 	{
@@ -2757,12 +2758,13 @@ local debuff_options = {
 		get = function() return Plater.db.profile.aura_timer_decimals end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_timer_decimals = value
+			Plater.RefreshAuarasCurves()
 			Plater.RefreshAuras()
 			Plater.UpdateAllPlates()
 		end,
 		name = "Show Decimals",
 		desc = "Show decimals below 10s remaining time",
-		hidden = IS_WOW_PROJECT_MIDNIGHT,
+		--hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 
 	{
