@@ -6638,7 +6638,7 @@ end
 		if UnitPowerType then
 			return UnitPowerType(unitID) == Enum.PowerType.Mana
 		elseif UnitHasPowerType then
-			UnitHasPowerType(unitID, Enum.PowerType.Mana)
+			return UnitHasPowerType(unitID, Enum.PowerType.Mana)
 		end
 		return false
 	end
