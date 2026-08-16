@@ -1441,9 +1441,13 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 				
 				reSkinAuraButtons(AURA_CONTAINERS[frameInfo.key][auraContainer.index].auraButtons)
 				auraContainer:SetUnit(unit)
+				auraContainer:SetEnabled(true)
+			else
+				auraContainer:SetUnit("player") -- dummy
+				auraContainer:SetEnabled(false)
 			end
 
-			auraContainer:SetEnabled(DB_AURA_ENABLED and unit and true or false)
+			--auraContainer:SetEnabled(DB_AURA_ENABLED and unit and true or false)
 
 			--if DevTool then DevTool:AddData(auraContainer, "update") end
 		end
