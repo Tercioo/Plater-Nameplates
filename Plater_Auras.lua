@@ -1050,10 +1050,10 @@ local function initAuraFrame(auraButton, name, key, index)
 	if profile.aura_timer then
 		local durationTextOptions = {
 			textFormatter = timeFormatter,
-			textColor = {
+			textColor = Plater.db.profile.aura_timer_pandemic_color and {
 				curve = pandemicColorCurve,
 				property = Enum.DurationTextBindingProperty.RemainingPercent,
-			}
+			} or nil
 		}
 		auraButton:SetDurationText(auraButton.TimerText, durationTextOptions)
 		auraButton.TimerText:Show()
@@ -1251,10 +1251,10 @@ local function reSkinAuraButtons(auraButtons)
 		if profile.aura_timer then
 			local durationTextOptions = {
 				textFormatter = timeFormatter,
-				textColor = {
+				textColor = Plater.db.profile.aura_timer_pandemic_color and {
 					curve = pandemicColorCurve,
 					property = Enum.DurationTextBindingProperty.RemainingPercent,
-				}
+				} or nil
 			}
 			auraButton:SetDurationText(auraButton.TimerText, durationTextOptions)
 			auraButton.TimerText:Show()
