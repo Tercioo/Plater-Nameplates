@@ -128,13 +128,9 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
     local isTargetSelected = false
     local isFocusSelected = false
     local isAuraTimerSelected = false
+    local isAuraWidgetSelected = false
 
-    --when true, the fake aura preview is also painted on real game-world nameplates. only
-    --enabled while an aura-related widget is selected so the preview does not clutter the
-    --player's actual nameplates while editing other parts of the design.
-    local isAuraWorldPreviewOn = false
-
-    --widget ids that count as "aura related" for the world-plate preview above.
+    --widget ids that count as "aura related", used to show the combat warning in the preview.
     local AURA_WIDGET_IDS = {
         AURAS = true,
         AURATRACKING = true,
@@ -210,10 +206,8 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
                 designer.StartAuraTest()
             end
 
-            --only paint the fake auras on real world nameplates while an aura widget is selected.
-            if (designer.SetAuraWorldPreview) then
-                designer.SetAuraWorldPreview(AURA_WIDGET_IDS[objectInfo.id] == true)
-            end
+            isAuraWidgetSelected = AURA_WIDGET_IDS[objectInfo.id] == true
+            designer.UpdateAuraCombatWarning()
         end,
         selection_texture = "Interface\\AddOns\\Plater\\images\\selection_corner.png",
     }
@@ -244,9 +238,24 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
         end
     end
 
-    --aura preview driver. mirrors Plater.CreateAuraTesting from Plater_Auras.lua but lives
-    --here so the designer can drive it directly. populates both the preview plate (which is
-    --not in C_NamePlate.GetNamePlates()) and every real shown plate, matching the original.
+    --midnight does not let plater push aura changes to the nameplates while in combat, so the
+    --preview freezes until combat ends (see applyTestAurasToPlate). warn the user while an
+    --aura widget is selected.
+    function designer.UpdateAuraCombatWarning()
+        designer.auraCombatWarning:SetShown(IS_WOW_PROJECT_MIDNIGHT and isAuraWidgetSelected and InCombatLockdown())
+    end
+
+    --as we're dealing with secrets, this should use the new events that tell when secrets are not in the ui anymore.
+    local combatWatcher = CreateFrame("frame")
+    combatWatcher:RegisterEvent("PLAYER_REGEN_DISABLED")
+    combatWatcher:RegisterEvent("PLAYER_REGEN_ENABLED")
+    combatWatcher:SetScript("OnEvent", function()
+        designer.UpdateAuraCombatWarning()
+    end)
+
+    --aura preview which mirrors Plater.CreateAuraTesting from Plater_Auras.lua
+    --only the designer's own preview plate is populated
+    --it does not touch, real game-world nameplates
     local auraTestTicker
     --running guard so StartAuraTest can be called repeatedly (from OnShow + every widget
     --selection) without re-running the expensive DisableAuraTrackingForAuraTest + RefreshAuras
@@ -255,6 +264,10 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
 
     --apply the fake aura set to one plate's buffFrame(s). called per-plate each tick.
     local applyTestAurasToPlate = function(plateFrame, isPreview)
+        if detailsFramework.IsAddonApocalypseWow() and InCombatLockdown() then
+            return
+        end
+
         local unitFrameForPlate = plateFrame and plateFrame.unitFrame
         if (not unitFrameForPlate) then
             return
@@ -507,18 +520,8 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
             end
             self.nextTickIn = 0.016
 
-            --the designer's own preview plate always shows the fake auras.
+            --only the designer's own preview plate shows the fake auras.
             applyTestAurasToPlate(previewPlate, true)
-
-            --real game-world plates only get the fake auras while an aura widget is selected,
-            --so the preview does not clutter the player's nameplates while editing other parts.
-            if (isAuraWorldPreviewOn) then
-                for _, realPlate in ipairs(Plater.GetAllShownPlates()) do
-                    if (realPlate ~= previewPlate) then
-                        applyTestAurasToPlate(realPlate, false)
-                    end
-                end
-            end
         end
 
         --wrap so a silent error inside the body (which OnUpdate normally swallows) surfaces
@@ -540,39 +543,6 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
         --Plater_Auras.lua: refresh the upvalues and force a real aura sweep.
         Plater.RefreshDBUpvalues()
         Plater.RefreshAuras()
-    end
-
-    --hide the fake aura icons on real game-world nameplates. used when switching away from an
-    --aura widget so the preview stops cluttering the player's actual plates. the designer's
-    --own preview plate is left untouched. resetting NextAuraIcon to 1 then hiding makes
-    --HideNonUsedAuraIcons clear every icon on both buff frames.
-    local clearWorldPlateFakeAuras = function()
-        for _, realPlate in ipairs(Plater.GetAllShownPlates()) do
-            if (realPlate ~= designer.plateFrame and realPlate.unitFrame) then
-                local realBuffFrame = realPlate.unitFrame.BuffFrame
-                local realBuffFrame2 = realPlate.unitFrame.BuffFrame2
-                if (realBuffFrame) then
-                    realBuffFrame.NextAuraIcon = 1
-                    Plater.HideNonUsedAuraIcons(realBuffFrame)
-                end
-                if (realBuffFrame2) then
-                    realBuffFrame2.NextAuraIcon = 1
-                    Plater.HideNonUsedAuraIcons(realBuffFrame2)
-                end
-            end
-        end
-    end
-
-    --toggle whether real game-world nameplates show the fake aura preview. clears them once
-    --on the transition to off so they do not keep the last painted icons frozen.
-    function designer.SetAuraWorldPreview(enabled)
-        if (enabled == isAuraWorldPreviewOn) then
-            return
-        end
-        isAuraWorldPreviewOn = enabled
-        if (not enabled) then
-            clearWorldPlateFakeAuras()
-        end
     end
 
     --create close button using the framework
@@ -1471,6 +1441,15 @@ function designer.UpdatePreview()
     stacksButton.text:SetText("stacks")
     detailsFramework:SetFontSize(stacksButton.text, 9)
     detailsFramework:SetFontColor(stacksButton.text, "silver")
+
+    --combat warning shown while an aura widget is selected and the player is in combat.
+    local auraCombatWarning = healthBar:CreateFontString(nil, "overlay", "GameFontNormal")
+    designer.auraCombatWarning = auraCombatWarning
+    auraCombatWarning:SetPoint("bottom", stacksButton, "top", 0, 11)
+    auraCombatWarning:SetText("Aura settings apply after you leave combat") --localize-me
+    detailsFramework:SetFontSize(auraCombatWarning, 10)
+    detailsFramework:SetFontColor(auraCombatWarning, 1, 0.247, 0, 1)
+    auraCombatWarning:Hide()
 
     --clickable Aura Timer selector. sits over the 3rd and 4th buff icons (the driver positions
     --it each tick). parented to the buff frame with a high frame level so its selectButton wins
