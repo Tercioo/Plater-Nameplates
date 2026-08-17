@@ -1363,7 +1363,7 @@ local function getFullAuraOptions(frameName, name, key, auraContainer, unit)
 	return fullOptions
 end
 
-local function createAUraContainers(unitFrame)
+local function createAuraContainers(unitFrame)
 	if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then return end
 	for _, frameInfo in pairs (auraFramesSetup) do
 		local auraContainer = CreateFrame("AuraContainer", "$parent" .. frameInfo.frameName, unitFrame, "CustomAuraContainerTemplate")
@@ -1456,7 +1456,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 	if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS and unit ~= "player" then
 		
 		if not unitFrame.BuffFrame then
-			createAUraContainers(unitFrame)
+			createAuraContainers(unitFrame)
 
 			for _, frameInfo in pairs (auraFramesSetup) do
 				
