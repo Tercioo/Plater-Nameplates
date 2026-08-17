@@ -753,8 +753,13 @@ local function getCandidateFilters(frameName)
 		DF.table.copy(filters.additionalInclude.includeSpellIDs, SPECIAL_AURAS_AUTO_ADDED)
 		DF.table.copy(filters.additionalInclude.includeSpellIDs, SPECIAL_AURAS_USER_LIST)
 
+		DF.table.copy(filters.mainFilter.excludeSpellIDs, DB_BUFF_BANNED)
+		DF.table.copy(filters.mainFilter.excludeSpellIDs, DB_DEBUFF_BANNED)
+		DF.table.copy(filters.mainFilter.excludeSpellIDs, SPECIAL_AURAS_USER_LIST_MINE)
+
 		DF.table.copy(filters.additionalInclude.excludeSpellIDs, DB_BUFF_BANNED)
 		DF.table.copy(filters.additionalInclude.excludeSpellIDs, DB_DEBUFF_BANNED)
+		DF.table.copy(filters.additionalInclude.excludeSpellIDs, SPECIAL_AURAS_USER_LIST_MINE)
 	end
 	return filters
 end
@@ -769,34 +774,43 @@ local function getAuraFilters(frameName, unit)
 	
 	for _, type in pairs({"debuffs", "buffs"}) do
 
-		if DB_TRACK_METHOD == 0x2 then
-			--manual tracking shortcut.
-			if frameName == "Main" and type == "debuffs" then
-				return {
-					filterString = "HARMFUL",
-					candidateFilters = allCandidates.additionalInclude
-				}
-			elseif ((frameName == "Main" and not DB_AURA_SEPARATE_BUFFS) or (frameName == "Secondary" and DB_AURA_SEPARATE_BUFFS)) and type == "buffs" then
-				return {
-					filterString = "HELPFUL",
-					candidateFilters = allCandidates.additionalInclude
-				}
-			end
-			return filters
-		end
-		
-
 		local pFilters = {}
 		local nFilters = {}
 		local mainFilterString = nil
-		if frameName == "Main" and type == "debuffs" then
-			--filter = filter .. (DB_AURA_SHOW_DISPELLABLE and frame.unitFrame.namePlateUnitReaction > 4 and "|RAID_PLAYER_DISPELLABLE" or "")
-			if DB_AURA_SHOW_DISPELLABLE and not DB_SHOW_PURGE_IN_EXTRA_ICONS then
-				--table.insert(pFilters, "RAID_PLAYER_DISPELLABLE")
+		if DB_TRACK_METHOD == 0x2 and frameName ~= "ExtraIconFrame" then
+			--manual tracking shortcut.
+			if frameName == "Main" and type == "debuffs" then
+				table.insert(filters, {
+					filterString = "HARMFUL|PLAYER",
+					candidateFilters = allCandidates.additionalInclude
+				})
+			elseif ((frameName == "Main" and not DB_AURA_SEPARATE_BUFFS) or (frameName == "Secondary" and DB_AURA_SEPARATE_BUFFS)) and type == "buffs" then
+				table.insert(filters, {
+					filterString = "HELPFUL",
+					candidateFilters = allCandidates.additionalInclude
+				})
+			end
+		elseif DB_TRACK_METHOD == 0x1 and frameName == "Main" and type == "debuffs" then
+			mainFilterString = "HARMFUL"
+
+			--additional filters
+			if canAssist == false then
+				table.insert(filters, {
+					filterString = "HARMFUL",
+					candidateFilters = allCandidates.additionalInclude
+				})
+			end
+
+			if canAssist then
+				if DB_AURA_SHOW_DISPELLABLE and not DB_SHOW_PURGE_IN_EXTRA_ICONS then
+					table.insert(pFilters, "RAID_PLAYER_DISPELLABLE")
+				elseif DB_SHOW_PURGE_IN_EXTRA_ICONS then
+					table.insert(nFilters, "!RAID_PLAYER_DISPELLABLE")
+				end
 			end
 			if DB_AURA_SHOW_RAID then
-				--table.insert(filter, "RAID_IN_COMBAT")
-				--table.insert(filter, "RAID")
+				table.insert(pFilters, "RAID_IN_COMBAT")
+				--table.insert(pFilters, "RAID")
 			end
 			if DB_AURA_SHOW_DEBUFF_BYPLAYER then
 				table.insert(pFilters, "PLAYER")
@@ -806,8 +820,6 @@ local function getAuraFilters(frameName, unit)
 			elseif Plater.db.profile.debuff_show_cc then
 				table.insert(nFilters, "!CROWD_CONTROL")
 			end
-
-			mainFilterString = "HARMFUL"
 
 			if DB_AURA_SHOW_AS_BLIZZARD then
 				local candidate = DF.table.copy({}, allCandidates.mainFilter)
@@ -823,20 +835,32 @@ local function getAuraFilters(frameName, unit)
 				pFilters = {}
 			end
 
-		elseif ((frameName == "Main" and not DB_AURA_SEPARATE_BUFFS) or (frameName == "Secondary" and DB_AURA_SEPARATE_BUFFS)) and type == "buffs" then
-			--filter = filter .. (Plater.db.profile.aura_show_defensive_cd and (frame.unitFrame.ActorType == "enemyplayer" or frame.unitFrame.ActorType == "friendlyplayer") and "|BIG_DEFENSIVE|EXTERNAL_DEFENSIVE" or "")
-			--filter = filter .. (DB_AURA_SHOW_DISPELLABLE and frame.unitFrame.namePlateUnitReaction < 4 and frame.unitFrame.ActorType == "enemynpc" and "|RAID_PLAYER_DISPELLABLE" or "")
+		elseif DB_TRACK_METHOD == 0x1 and ((frameName == "Main" and not DB_AURA_SEPARATE_BUFFS) or (frameName == "Secondary" and DB_AURA_SEPARATE_BUFFS)) and type == "buffs" then
+			mainFilterString = "HELPFUL"
+
+			--additional filters
+			if canAssist == true then
+				table.insert(filters, {
+					filterString = "HELPFUL",
+					candidateFilters = allCandidates.additionalInclude
+				})
+			end
+
 			if Plater.db.profile.aura_show_defensive_cd and not Plater.db.profile.extra_icon_show_defensive  then
-				table.insert(pFilters, "BIG_DEFENSIVE")
-				table.insert(pFilters, "EXTERNAL_DEFENSIVE")
+				if isPlayer then
+					table.insert(pFilters, "BIG_DEFENSIVE")
+					table.insert(pFilters, "EXTERNAL_DEFENSIVE")
+				end
 			elseif Plater.db.profile.extra_icon_show_defensive then
 				table.insert(nFilters, "!BIG_DEFENSIVE")
 				table.insert(nFilters, "!EXTERNAL_DEFENSIVE")
 			end
-			if DB_AURA_SHOW_DISPELLABLE and not DB_SHOW_PURGE_IN_EXTRA_ICONS then
-				table.insert(pFilters, "RAID_PLAYER_DISPELLABLE")
-			elseif DB_SHOW_PURGE_IN_EXTRA_ICONS then
-				table.insert(nFilters, "!RAID_PLAYER_DISPELLABLE")
+			if not canAssist and not isPlayer then
+				if DB_AURA_SHOW_DISPELLABLE and not DB_SHOW_PURGE_IN_EXTRA_ICONS then
+					table.insert(pFilters, "RAID_PLAYER_DISPELLABLE")
+				elseif DB_SHOW_PURGE_IN_EXTRA_ICONS then
+					table.insert(nFilters, "!RAID_PLAYER_DISPELLABLE")
+				end
 			end
 			if DB_AURA_SHOW_BUFF_BYPLAYER then
 				table.insert(pFilters, "PLAYER")
@@ -846,24 +870,50 @@ local function getAuraFilters(frameName, unit)
 				table.insert(pFilters, "RAID")
 			end
 
-			mainFilterString = "HELPFUL"
-			--if DB_AURA_SHOW_BUFFENEMYNPC and frame.unitFrame.namePlateUnitReaction < 4 and frame.unitFrame.ActorType == "enemynpc" then return "HELPFUL" end -- all buffs on enemies
-			if DB_AURA_SHOW_BUFFENEMYNPC then -- special treatment...
+			if DB_AURA_SHOW_BUFFENEMYNPC and not canAssist and not isPlayer then -- special treatment...
+				local candidateFilter = DF.table.copy({}, allCandidates.mainFilter)
+				candidateFilter.includeSpellIDs = nil
 				table.insert(filters, {
 					filterString = "HELPFUL",
-					candidateFilters = allCandidates.mainFilter
+					candidateFilters = candidateFilter
 				})
 				pFilters = {}
 			end
 			
 		elseif frameName == "ExtraIconFrame" and type == "debuffs" then
+			mainFilterString = "HARMFUL"
+
+			table.insert(filters, {
+				filterString = "HARMFUL",
+				candidateFilters = allCandidates.additionalInclude
+			})
+			-- the "only mine"
+			table.insert(filters, {
+				filterString = "HARMFUL",
+				candidateFilters = {
+					includeSpellIDs = SPECIAL_AURAS_USER_LIST_MINE
+				}
+			})
+			
 			if Plater.db.profile.debuff_show_cc then
 				table.insert(pFilters, "CROWD_CONTROL")
 			end
-
-			mainFilterString = "HARMFUL"
 			
 		elseif frameName == "ExtraIconFrame" and type == "buffs" then
+			mainFilterString = "HELPFUL"
+			
+			table.insert(filters, {
+				filterString = "HELPFUL",
+				candidateFilters = allCandidates.additionalInclude
+			})
+			-- the "only mine"
+			table.insert(filters, {
+				filterString = "HELPFUL",
+				candidateFilters = {
+					includeSpellIDs = SPECIAL_AURAS_USER_LIST_MINE
+				}
+			})
+
 			if Plater.db.profile.extra_icon_show_defensive then
 				table.insert(pFilters, "BIG_DEFENSIVE")
 				table.insert(pFilters, "EXTERNAL_DEFENSIVE")
@@ -871,8 +921,6 @@ local function getAuraFilters(frameName, unit)
 			if DB_SHOW_PURGE_IN_EXTRA_ICONS then
 				table.insert(pFilters, "RAID_PLAYER_DISPELLABLE")
 			end
-
-			mainFilterString = "HELPFUL"
 			
 		end
 		
@@ -893,21 +941,7 @@ local function getAuraFilters(frameName, unit)
 				candidateFilters = allCandidates.mainFilter
 			})
 		end
-	end
-
-
-	if canAssist == true then
-		table.insert(filters, {
-			filterString = "HELPFUL",
-			candidateFilters = allCandidates.additionalInclude
-		})
-	end
-
-	if canAssist == false then
-		table.insert(filters, {
-			filterString = "HARMFUL",
-			candidateFilters = allCandidates.additionalInclude
-		})
+		if DevTool then DevTool:AddData({pFilters = pFilters, nFilters = nFilters, mainFilterString = mainFilterString}, frameName .. " - filters") end
 	end
 
 	if DevTool then DevTool:AddData(filters, frameName) end
@@ -993,7 +1027,7 @@ local function initAuraFrame(auraButton, name, key, index)
 	local profile = Plater.db.profile
 
 	auraButton:SetMouseMotionEnabled(profile.aura_show_tooltip)
-	auraButton:SetHideTooltipInCombat(true)
+	--auraButton:SetHideTooltipInCombat(true)
 
 	-- create stuff
 	local iconOffset = 0
@@ -1137,8 +1171,9 @@ local function initAuraFrame(auraButton, name, key, index)
 	local band = 8
 	local offset = 0
 	auraButton.Border:SetTextureSliceMargins(band, band, band, band)
-	auraButton.Border:SetPoint("TOPLEFT",     auraButton.Icon, "TOPLEFT",     -band * offset,  band * offset)
-	auraButton.Border:SetPoint("BOTTOMRIGHT", auraButton.Icon, "BOTTOMRIGHT",  band * offset, -band * offset)
+	--auraButton.Border:SetPoint("TOPLEFT",     auraButton.Icon, "TOPLEFT",     -band * offset,  band * offset)
+	--auraButton.Border:SetPoint("BOTTOMRIGHT", auraButton.Icon, "BOTTOMRIGHT",  band * offset, -band * offset)
+	auraButton.Border:SetAllPoints()
 	auraButton.Border:SetScale(borderThickness / band)
     auraButton.Border:SetVertexColor(1, 1, 1, 1)
 
@@ -1151,6 +1186,7 @@ local function initAuraFrame(auraButton, name, key, index)
 	}
 	auraButton:SetAuraBorder(auraButton.Border, borderOptions)
 
+	PixelUtil.SetSize(auraButton.Border, auraWidth, auraHeight)
 	PixelUtil.SetSize(auraButton, auraWidth, auraHeight)
 
 	Plater.UpdateIconAspecRatio (auraButton)
@@ -1239,6 +1275,7 @@ local function reSkinAuraButtons(auraButtons)
 			Plater.SetAnchor (timerLabel, profile.aura_timer_text_anchor) --TODO
 		end
 
+		PixelUtil.SetSize(auraButton.Border, auraWidth, auraHeight)
 		PixelUtil.SetSize(auraButton, auraWidth, auraHeight)
 
 		local band = 8
@@ -1331,6 +1368,7 @@ function Plater.PreAllocateAuraContainers()
 			--TODO:GROUPS
 			local index = 0
 			for _, filter in pairs(options.auraFilters) do
+				--if DevTool then DevTool:AddData(filter) end
 				index = index + 1
 				local groupName = "group"..index
 				options.auraFrameOptions.candidateFilters = filter.candidateFilters
@@ -1440,8 +1478,8 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 				end
 				
 				reSkinAuraButtons(AURA_CONTAINERS[frameInfo.key][auraContainer.index].auraButtons)
-				auraContainer:SetUnit(unit)
 				auraContainer:SetEnabled(true)
+				auraContainer:SetUnit(unit)
 			else
 				auraContainer:SetUnit("player") -- dummy
 				auraContainer:SetEnabled(false)
