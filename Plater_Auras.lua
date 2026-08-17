@@ -937,10 +937,10 @@ local function getAuraFilters(frameName, unit)
 				candidateFilters = allCandidates.mainFilter
 			})
 		end
-		if DevTool then DevTool:AddData({pFilters = pFilters, nFilters = nFilters, mainFilterString = mainFilterString}, frameName .. " - filters") end
+		--if DevTool then DevTool:AddData({pFilters = pFilters, nFilters = nFilters, mainFilterString = mainFilterString}, frameName .. " - filters") end
 	end
 
-	if DevTool then DevTool:AddData(filters, frameName) end
+	--if DevTool then DevTool:AddData(filters, frameName) end
 	return filters
 end
 
@@ -1028,10 +1028,11 @@ local function initAuraFrame(auraButton, name, key, auraContainer)
 	-- create stuff
 	local iconOffset = 0
 	auraButton.Icon = auraButton:CreateTexture (nil, "artwork")
-	PixelUtil.SetPoint (auraButton.Icon, "TOPLEFT", auraButton, "TOPLEFT", -iconOffset, iconOffset)
-	PixelUtil.SetPoint (auraButton.Icon, "TOPRIGHT", auraButton, "TOPRIGHT", iconOffset, iconOffset)
-	PixelUtil.SetPoint (auraButton.Icon, "BOTTOMLEFT", auraButton, "BOTTOMLEFT", -iconOffset, -iconOffset)
-	PixelUtil.SetPoint (auraButton.Icon, "BOTTOMRIGHT", auraButton, "BOTTOMRIGHT", iconOffset, -iconOffset)
+	--PixelUtil.SetPoint (auraButton.Icon, "TOPLEFT", auraButton, "TOPLEFT", -iconOffset, iconOffset)
+	--PixelUtil.SetPoint (auraButton.Icon, "TOPRIGHT", auraButton, "TOPRIGHT", iconOffset, iconOffset)
+	--PixelUtil.SetPoint (auraButton.Icon, "BOTTOMLEFT", auraButton, "BOTTOMLEFT", -iconOffset, -iconOffset)
+	--PixelUtil.SetPoint (auraButton.Icon, "BOTTOMRIGHT", auraButton, "BOTTOMRIGHT", iconOffset, -iconOffset)
+	auraButton.Icon:SetPoint("Center")
 	auraButton.Icon:SetTexCoord (.05, .95, .1, .6)
 	auraButton.Icon:SetTexelSnappingBias(0.0)
 	auraButton.Icon:SetSnapToPixelGrid(false)
@@ -1039,17 +1040,19 @@ local function initAuraFrame(auraButton, name, key, auraContainer)
 	auraButton:SetIcon(auraButton.Icon)
 	
 	auraButton.Cooldown = CreateFrame ("cooldown", "$parentCooldown", auraButton, "CooldownFrameTemplate")
-	PixelUtil.SetPoint (auraButton.Cooldown, "TOPLEFT", auraButton, "TOPLEFT", -iconOffset, iconOffset)
-	PixelUtil.SetPoint (auraButton.Cooldown, "TOPRIGHT", auraButton, "TOPRIGHT", iconOffset, iconOffset)
-	PixelUtil.SetPoint (auraButton.Cooldown, "BOTTOMLEFT", auraButton, "BOTTOMLEFT", -iconOffset, -iconOffset)
-	PixelUtil.SetPoint (auraButton.Cooldown, "BOTTOMRIGHT", auraButton, "BOTTOMRIGHT", iconOffset, -iconOffset)
+	--PixelUtil.SetPoint (auraButton.Cooldown, "TOPLEFT", auraButton, "TOPLEFT", -iconOffset, iconOffset)
+	--PixelUtil.SetPoint (auraButton.Cooldown, "TOPRIGHT", auraButton, "TOPRIGHT", iconOffset, iconOffset)
+	--PixelUtil.SetPoint (auraButton.Cooldown, "BOTTOMLEFT", auraButton, "BOTTOMLEFT", -iconOffset, -iconOffset)
+	--PixelUtil.SetPoint (auraButton.Cooldown, "BOTTOMRIGHT", auraButton, "BOTTOMRIGHT", iconOffset, -iconOffset)
+	auraButton.Cooldown:SetPoint("Center")
 	auraButton.Cooldown:EnableMouse (false)
 	if auraButton.Cooldown.EnableMouseMotion then
 		auraButton.Cooldown:EnableMouseMotion (false)
 	end
 	auraButton.Cooldown:SetHideCountdownNumbers (true)
-	auraButton.Cooldown:SetCountdownAbbrevThreshold(60)
-	auraButton.Cooldown:SetMinimumCountdownDuration(0)
+	auraButton.Cooldown:SetDrawBling(false)
+	--auraButton.Cooldown:SetCountdownAbbrevThreshold(60)
+	--auraButton.Cooldown:SetMinimumCountdownDuration(0)
 	--auraButton.Cooldown:Hide()
 
 	auraButton.Cooldown:SetEdgeTexture (profile.aura_cooldown_edge_texture)
@@ -1185,8 +1188,14 @@ local function initAuraFrame(auraButton, name, key, auraContainer)
 		auraButton:SetAuraBorder(auraButton.Border, borderOptions)
 	end
 
-	PixelUtil.SetSize(auraButton.Border, auraWidth, auraHeight)
-	PixelUtil.SetSize(auraButton, auraWidth, auraHeight)
+
+	--PixelUtil.SetSize(auraButton.Border, auraWidth, auraHeight)
+	--PixelUtil.SetSize(auraButton, auraWidth, auraHeight)
+	auraButton:SetSize(auraWidth, auraHeight)
+	auraButton.Border:SetSize(auraWidth, auraHeight)
+	auraButton.Icon:SetSize(auraWidth, auraHeight)
+	auraButton.Cooldown:SetSize(auraWidth, auraHeight)
+	auraButton:SetScale(1)
 
 	Plater.UpdateIconAspecRatio (auraButton)
 
@@ -1274,8 +1283,13 @@ local function reSkinAuraButtons(auraButtons)
 			Plater.SetAnchor (timerLabel, profile.aura_timer_text_anchor) --TODO
 		end
 
-		PixelUtil.SetSize(auraButton.Border, auraWidth, auraHeight)
-		PixelUtil.SetSize(auraButton, auraWidth, auraHeight)
+		--PixelUtil.SetSize(auraButton.Border, auraWidth, auraHeight)
+		--PixelUtil.SetSize(auraButton, auraWidth, auraHeight)
+		auraButton:SetSize(auraWidth, auraHeight)
+		auraButton.Border:SetSize(auraWidth, auraHeight)
+		auraButton.Icon:SetSize(auraWidth, auraHeight)
+		auraButton.Cooldown:SetSize(auraWidth, auraHeight)
+		auraButton:SetScale(1)
 
 		local band = 8
 		auraButton.Border:SetScale(borderThickness / band)
@@ -1461,13 +1475,6 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 			for _, frameInfo in pairs (auraFramesSetup) do
 				
 				local auraContainer = unitFrame[frameInfo.key]
-
-				if unit then
-					auraContainer:SetUnit(unit)
-				end
-
-				auraContainer:SetEnabled(DB_AURA_ENABLED and unit and true or false)
-
 				-- some standard plater stuff for compatibility
 				auraContainer.unitFrame = unitFrame
 				auraContainer.healthBar = unitFrame.healthBar
@@ -1539,7 +1546,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 				auraContainer:SetEnabled(true)
 				auraContainer:SetUnit(unit)
 			else
-				auraContainer:SetUnit("player") -- dummy
+				--auraContainer:SetUnit("player") -- dummy
 				auraContainer:SetEnabled(false)
 			end
 
