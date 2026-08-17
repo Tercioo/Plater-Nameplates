@@ -4748,7 +4748,6 @@ function Plater.OnInit() --private --~oninit ~init
 	Plater.InitializeSavedVariables()
 	Plater.RefreshDBUpvalues()
 	Plater.RefreshAuarasCurves()
-	Plater.PreAllocateAuraContainers()
 
 	C_Timer.After(0, function()
 		platerInternal.CreatePerformanceUnits(Plater)

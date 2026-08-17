@@ -216,6 +216,8 @@ platerInternal.ExtraAuras = {
 	unitFramesToGUID = {}
 }
 
+platerInternal.Auras = {}
+
 local extraAuraGUIDtoUnitFrameCache = platerInternal.ExtraAuras.unitFramesToGUID
 
 --when an extra aura is added to a nameplate, cache the unit GUID to unitFrame to use when the extra aura expired
@@ -671,12 +673,6 @@ local auraFramesSetup = {
 	},
 }
 
-local AURA_CONTAINERS = {
-	BuffFrame = {},
-	BuffFrame2 = {},
-	ExtraIconFrame = {},
-}
-
 -- TODO: filter by buffs/debuffs
 local function getCandidateFilters(frameName)
 	local profile = Plater.db.profile
@@ -1022,7 +1018,7 @@ local function getAuraProcessingPolicy(frameName)
 	return policy, options
 end
 
-local function initAuraFrame(auraButton, name, key, index)
+local function initAuraFrame(auraButton, name, key, auraContainer)
 	--DevTool:AddData(newIcon, "initAuraFrame")
 	local profile = Plater.db.profile
 
@@ -1193,9 +1189,9 @@ local function initAuraFrame(auraButton, name, key, index)
 
 	auraButton.frameName = name
 	auraButton.frameKey = key
-	auraButton.frameIndex = index
+	--auraButton.frameIndex = index
 
-	tinsert(AURA_CONTAINERS[key][index].auraButtons, auraButton)
+	tinsert(auraContainer.auraButtons, auraButton)
 
 	return auraButton
 end
@@ -1303,7 +1299,7 @@ local function reSkinAuraButtons(auraButtons)
 	end
 end
 
-local function getAuraFrameOptions(frameName, name, key, index)
+local function getAuraFrameOptions(frameName, name, key, auraContainer)
 	local auraFrameOptions = {
 		-- Maximum number of aura frames this filter group may display.
 		maxFrameCount = (Plater.db.profile.aura_max_shown_limit and (Plater.db.profile.aura_max_shown_limit <= 0))and math.huge or Plater.db.profile.aura_max_shown_limit or math.huge,
@@ -1316,7 +1312,7 @@ local function getAuraFrameOptions(frameName, name, key, index)
 		-- Optional candidate filters applied after the aura filter string.
 		candidateFilters = nil,
 		-- Optional callback invoked after each frame is created.
-		initializeFrame = function(auraButton) initAuraFrame(auraButton, name, key, index) end,
+		initializeFrame = function(auraButton) initAuraFrame(auraButton, name, key, auraContainer) end,
 		-- Optional flow layout settings for this filter group's visible frames.
 		layout = getAuraFrameLayout(frameName),
 	}
@@ -1328,9 +1324,9 @@ local function getAuraFrameOptions(frameName, name, key, index)
 	return auraFrameOptions
 end
 
-local function getFullAuraOptions(frameName, name, key, index, unit)
+local function getFullAuraOptions(frameName, name, key, auraContainer, unit)
 	local fullOptions = {
-		auraFrameOptions = getAuraFrameOptions(frameName, name, key, index),
+		auraFrameOptions = getAuraFrameOptions(frameName, name, key, auraContainer),
 		processingPolicy = {},
 		layoutGrowth = {},
 		auraFilters = getAuraFilters(frameName, unit),
@@ -1348,61 +1344,104 @@ local function getFullAuraOptions(frameName, name, key, index, unit)
 	return fullOptions
 end
 
-function Plater.PreAllocateAuraContainers()
+local function createAUraContainers(unitFrame)
 	if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then return end
-	for i=1, 40 do
-		for _, frameInfo in pairs (auraFramesSetup) do
-			local auraContainer = CreateFrame("AuraContainer", "NamePlate" .. i .. "PlaterUnitFrame" .. frameInfo.frameName, UIParent, "CustomAuraContainerTemplate")
-			AURA_CONTAINERS[frameInfo.key][i] = {
-				container = auraContainer,
-				auraButtons = {},
-				name = frameInfo.name,
-			}
-			auraContainer.Name = frameInfo.name
-			auraContainer.index = i
+	for _, frameInfo in pairs (auraFramesSetup) do
+		local auraContainer = CreateFrame("AuraContainer", "$parent" .. frameInfo.frameName, unitFrame, "CustomAuraContainerTemplate")
+		unitFrame[frameInfo.key] = auraContainer
+		auraContainer.Name = frameInfo.name
+		--auraContainer.index = i
 
-			local options = getFullAuraOptions(frameInfo.name, frameInfo.name, frameInfo.key, i, nil)
-			auraContainer.activeOptions = options
-			auraContainer.groups = {}
+		local options = getFullAuraOptions(frameInfo.name, frameInfo.name, frameInfo.key, auraContainer, nil)
+		auraContainer.activeOptions = options
+		auraContainer.groups = {}
+		auraContainer.auraButtons = {}
 
-			--TODO:GROUPS
-			local index = 0
-			for _, filter in pairs(options.auraFilters) do
-				--if DevTool then DevTool:AddData(filter) end
-				index = index + 1
-				local groupName = "group"..index
-				options.auraFrameOptions.candidateFilters = filter.candidateFilters
-				auraContainer:AddAuraGroup(groupName, filter.filterString, options.auraFrameOptions)
-				auraContainer.groups[groupName] = true
-				auraContainer:SetAuraGroupLayout(groupName, options.auraFrameOptions.layout)
-			end
-			auraContainer:SetFlowLayoutAnchorPoint(options.layoutGrowth.anchorPoint)
-			auraContainer:SetFlowLayoutGrowthDirection(options.layoutGrowth.horizontalDirection, options.layoutGrowth.verticalDirection)
-			auraContainer:SetFlowLayoutMaximumLineSize(options.auraFrameOptions.layout.maximumLineSize)
-			auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
-			--SetAuraLayoutPadding
-
-			auraContainer:SetEnabled(false)
-
-			--DevTool:AddData(auraContainer, "create")
+		--TODO:GROUPS
+		local index = 0
+		for _, filter in pairs(options.auraFilters) do
+			--if DevTool then DevTool:AddData(filter) end
+			index = index + 1
+			local groupName = "group"..index
+			options.auraFrameOptions.candidateFilters = filter.candidateFilters
+			auraContainer:AddAuraGroup(groupName, filter.filterString, options.auraFrameOptions)
+			auraContainer.groups[groupName] = true
+			auraContainer:SetAuraGroupLayout(groupName, options.auraFrameOptions.layout)
 		end
+		auraContainer:SetFlowLayoutAnchorPoint(options.layoutGrowth.anchorPoint)
+		auraContainer:SetFlowLayoutGrowthDirection(options.layoutGrowth.horizontalDirection, options.layoutGrowth.verticalDirection)
+		auraContainer:SetFlowLayoutMaximumLineSize(options.auraFrameOptions.layout.maximumLineSize)
+		auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
+		--SetAuraLayoutPadding
+
+		auraContainer:SetEnabled(false)
+
+		--DevTool:AddData(auraContainer, "create")
 	end
-	--DevTool:AddData({containers=AURA_CONTAINERS}, "PreAllocateAuraContainers")
+end
+
+function platerInternal.Auras.CreateOldAuraContainers(unitFrame)
+	--main buff frames
+	local buffFrame = CreateFrame ("frame", unitFrame:GetName() .. "BuffFrame1", unitFrame, BackdropTemplateMixin and "BackdropTemplate")
+	buffFrame.amountAurasShown = 0
+	buffFrame.PlaterBuffList = {}
+	buffFrame.isNameplate = true
+	buffFrame.unitFrame = unitFrame --used on resource frame anchor update
+	buffFrame.healthBar = unitFrame.healthBar
+	buffFrame.AuraCache = {}
+	unitFrame.BuffFrame = buffFrame
+
+	--secondary buff frame
+	local buffFrame2 = CreateFrame ("frame", unitFrame:GetName() .. "BuffFrame2", unitFrame, BackdropTemplateMixin and "BackdropTemplate")
+	buffFrame2 = CreateFrame ("frame", unitFrame:GetName() .. "BuffFrame2", unitFrame, BackdropTemplateMixin and "BackdropTemplate")
+	buffFrame2.amountAurasShown = 0
+	buffFrame2.PlaterBuffList = {}
+	buffFrame2.isNameplate = true
+	buffFrame2.unitFrame = unitFrame
+	buffFrame2.healthBar = unitFrame.healthBar
+	buffFrame2.AuraCache = {}
+	unitFrame.BuffFrame2 = buffFrame2
+
+--> identify aura containers
+	buffFrame.Name = "Main" --aura frame 1
+	buffFrame2.Name = "Secondary" --aura frame 2
+
+	--> store the secondary anchor inside the regular buff container for speed
+	buffFrame.BuffFrame2 = buffFrame2
+	buffFrame2.BuffFrame1 = buffFrame
+
+	--> unit aura cache
+	unitFrame.AuraCache = {}
+	unitFrame.GhostAuraCache = {}
+	unitFrame.ExtraAuraCache = {}
+
+	--> create the extra icon frame (used for the special aura)
+	local options = {
+		icon_width = 20, 
+		icon_height = 20, 
+		texcoord = {.1, .9, .1, .9},
+		show_text = true,
+	}
+	
+	unitFrame.ExtraIconFrame = DF:CreateIconRow (unitFrame, "$parentExtraIconRow", options)
+	unitFrame.ExtraIconFrame:ClearIcons()
+	unitFrame.ExtraIconFrame.RefreshID = 0
+	unitFrame.ExtraIconFrame.AuraCache = {}
+	unitFrame.ExtraIconFrame.Name = "ExtraIconFrame"
+	--> cache the extra icon frame inside the buff frame for speed
+	unitFrame.BuffFrame.ExtraIconFrame = unitFrame.ExtraIconFrame
 end
 
 local nextAuraIndex = 1
 function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
-	if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
+	if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS and unit ~= "player" then
 		
 		if not unitFrame.BuffFrame then
-			if not unit then return end -- fallback
+			createAUraContainers(unitFrame)
 
 			for _, frameInfo in pairs (auraFramesSetup) do
 				
-				local auraContainer = AURA_CONTAINERS[frameInfo.key][nextAuraIndex].container
-				--DevTool:AddData({containter=auraContainer, containers=AURA_CONTAINERS, unit=unit}, "CreateOrUpdateAuraContainers Loop")
-				unitFrame[frameInfo.key] = auraContainer
-				auraContainer:SetParent(unitFrame)
+				local auraContainer = unitFrame[frameInfo.key]
 
 				if unit then
 					auraContainer:SetUnit(unit)
@@ -1434,7 +1473,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 		for _, frameInfo in pairs (auraFramesSetup) do
 			local auraContainer = unitFrame[frameInfo.key]
 			if DB_AURA_ENABLED and unit then
-				local options = getFullAuraOptions(frameInfo.name, frameInfo.name, frameInfo.key, auraContainer.index, unitFrame.namePlateUnitToken)
+				local options = getFullAuraOptions(frameInfo.name, frameInfo.name, frameInfo.key, auraContainer, unitFrame.namePlateUnitToken)
 				auraContainer.activeOptions = options
 				auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
 				auraContainer:SetFlowLayoutMaximumLineSize(options.auraFrameOptions.layout.maximumLineSize)
@@ -1477,7 +1516,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 					index = index + 1
 				end
 				
-				reSkinAuraButtons(AURA_CONTAINERS[frameInfo.key][auraContainer.index].auraButtons)
+				reSkinAuraButtons(auraContainer.auraButtons)
 				auraContainer:SetEnabled(true)
 				auraContainer:SetUnit(unit)
 			else
@@ -1491,55 +1530,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 		end
 
 	elseif not unitFrame.BuffFrame then -- old API
-		--main buff frames
-		local buffFrame = CreateFrame ("frame", unitFrame:GetName() .. "BuffFrame1", unitFrame, BackdropTemplateMixin and "BackdropTemplate")
-		buffFrame.amountAurasShown = 0
-		buffFrame.PlaterBuffList = {}
-		buffFrame.isNameplate = true
-		buffFrame.unitFrame = unitFrame --used on resource frame anchor update
-		buffFrame.healthBar = unitFrame.healthBar
-		buffFrame.AuraCache = {}
-		unitFrame.BuffFrame = buffFrame
-
-		--secondary buff frame
-		local buffFrame2 = CreateFrame ("frame", unitFrame:GetName() .. "BuffFrame2", unitFrame, BackdropTemplateMixin and "BackdropTemplate")
-		buffFrame2 = CreateFrame ("frame", unitFrame:GetName() .. "BuffFrame2", unitFrame, BackdropTemplateMixin and "BackdropTemplate")
-		buffFrame2.amountAurasShown = 0
-		buffFrame2.PlaterBuffList = {}
-		buffFrame2.isNameplate = true
-		buffFrame2.unitFrame = unitFrame
-		buffFrame2.healthBar = unitFrame.healthBar
-		buffFrame2.AuraCache = {}
-		unitFrame.BuffFrame2 = buffFrame2
-	
-	--> identify aura containers
-		buffFrame.Name = "Main" --aura frame 1
-		buffFrame2.Name = "Secondary" --aura frame 2
-
-		--> store the secondary anchor inside the regular buff container for speed
-		buffFrame.BuffFrame2 = buffFrame2
-		buffFrame2.BuffFrame1 = buffFrame
-
-		--> unit aura cache
-		unitFrame.AuraCache = {}
-		unitFrame.GhostAuraCache = {}
-		unitFrame.ExtraAuraCache = {}
-
-		--> create the extra icon frame (used for the special aura)
-		local options = {
-			icon_width = 20, 
-			icon_height = 20, 
-			texcoord = {.1, .9, .1, .9},
-			show_text = true,
-		}
-		
-		unitFrame.ExtraIconFrame = DF:CreateIconRow (unitFrame, "$parentExtraIconRow", options)
-		unitFrame.ExtraIconFrame:ClearIcons()
-		unitFrame.ExtraIconFrame.RefreshID = 0
-		unitFrame.ExtraIconFrame.AuraCache = {}
-		unitFrame.ExtraIconFrame.Name = "ExtraIconFrame"
-		--> cache the extra icon frame inside the buff frame for speed
-		unitFrame.BuffFrame.ExtraIconFrame = unitFrame.ExtraIconFrame
+		platerInternal.Auras.CreateOldAuraContainers(unitFrame)
 	end
 end
 
