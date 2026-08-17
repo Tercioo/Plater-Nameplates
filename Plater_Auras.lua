@@ -1212,11 +1212,18 @@ local function initAuraFrame(auraButton, name, key, auraContainer)
 	return auraButton
 end
 
+platerInternal.Auras.reSkinAuraButtonsTimer = {}
 local function reSkinAuraButtons(auraButtons)
 
 	local profile = Plater.db.profile
 
-	if C_Secrets.ShouldAurasBeSecret() or InCombatLockdown() then return end
+	if C_Secrets.ShouldAurasBeSecret() or InCombatLockdown() then
+		if platerInternal.Auras.reSkinAuraButtonsTimer[auraButtons] then
+			platerInternal.Auras.reSkinAuraButtonsTimer[auraButtons]:Cancel()
+		end
+		platerInternal.Auras.reSkinAuraButtonsTimer[auraButtons] = C_Timer.NewTimer(1, function() reSkinAuraButtons(auraButtons) end)
+		return
+	end
 	for _, auraButton in pairs(auraButtons) do
 		
 		auraButton:SetMouseMotionEnabled(profile.aura_show_tooltip)
