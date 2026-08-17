@@ -1303,6 +1303,8 @@ function designer.CreatePreview(parent)
 
     --simulate the creation of a game's nameplate, this creates the nameplate.unitFrame and its widgets
     platerInternal.Events.GetEventFunction("NAME_PLATE_CREATED")("NAME_PLATE_CREATED", plateFrame)
+    
+    platerInternal.Auras.CreateOldAuraContainers(plateFrame.unitFrame) -- override with old style to mitigate issues...
 
 
     designer.UpdatePreview()
