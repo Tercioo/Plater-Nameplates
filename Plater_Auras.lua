@@ -1171,16 +1171,19 @@ local function initAuraFrame(auraButton, name, key, auraContainer)
 	--auraButton.Border:SetPoint("BOTTOMRIGHT", auraButton.Icon, "BOTTOMRIGHT",  band * offset, -band * offset)
 	auraButton.Border:SetAllPoints()
 	auraButton.Border:SetScale(borderThickness / band)
-    auraButton.Border:SetVertexColor(1, 1, 1, 1)
+	local defaultColor = Plater.db.profile.aura_border_colors.default
+    auraButton.Border:SetVertexColor(defaultColor[1], defaultColor[2], defaultColor[3], defaultColor[4])
 
-	local borderOptions = {
-		showIcon = false,
-		showWhenHarmful = true,
-		showWhenHelpful = true,
-		showWithoutDispelType = true,
-		style = Enum.CustomAuraButtonDispelTypeTextureStyle.PreserveAsset,
-	}
-	auraButton:SetAuraBorder(auraButton.Border, borderOptions)
+	if Plater.db.profile.aura_border_colors_by_type then
+		local borderOptions = {
+			showIcon = false,
+			showWhenHarmful = true,
+			showWhenHelpful = true,
+			showWithoutDispelType = true,
+			style = Enum.CustomAuraButtonDispelTypeTextureStyle.PreserveAsset,
+		}
+		auraButton:SetAuraBorder(auraButton.Border, borderOptions)
+	end
 
 	PixelUtil.SetSize(auraButton.Border, auraWidth, auraHeight)
 	PixelUtil.SetSize(auraButton, auraWidth, auraHeight)
@@ -1189,7 +1192,7 @@ local function initAuraFrame(auraButton, name, key, auraContainer)
 
 	auraButton.frameName = name
 	auraButton.frameKey = key
-	--auraButton.frameIndex = index
+	auraButton.auraContainer = auraContainer
 
 	tinsert(auraContainer.auraButtons, auraButton)
 
@@ -1276,6 +1279,22 @@ local function reSkinAuraButtons(auraButtons)
 
 		local band = 8
 		auraButton.Border:SetScale(borderThickness / band)
+
+		local defaultColor = Plater.db.profile.aura_border_colors.default
+    	auraButton.Border:SetVertexColor(defaultColor[1], defaultColor[2], defaultColor[3], defaultColor[4])
+
+		if Plater.db.profile.aura_border_colors_by_type then
+			local borderOptions = {
+				showIcon = false,
+				showWhenHarmful = true,
+				showWhenHelpful = true,
+				showWithoutDispelType = true,
+				style = Enum.CustomAuraButtonDispelTypeTextureStyle.PreserveAsset,
+			}
+			auraButton:SetAuraBorder(auraButton.Border, borderOptions)
+		else
+			auraButton:ClearAuraBorder()
+		end
 
 		auraButton.Cooldown:SetEdgeTexture (profile.aura_cooldown_edge_texture)
 		auraButton.Cooldown:SetReverse (profile.aura_cooldown_reverse)

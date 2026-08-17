@@ -2576,6 +2576,7 @@ local debuff_options = {
 		end,
 		name = "Buffs Border Color",
 		desc = "Buffs Border Color",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 		--border color is debuff
 	{
@@ -2592,6 +2593,7 @@ local debuff_options = {
 		end,
 		name = "Debuffs Border Color",
 		desc = "Debuffs Border Color",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	--border color is offensive
 	{
@@ -2608,6 +2610,7 @@ local debuff_options = {
 		end,
 		name = "Crowd Control Border Color",
 		desc = "Crowd Control Border Color",
+		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	--border color is offensive
 	{
