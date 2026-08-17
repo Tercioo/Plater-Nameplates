@@ -6696,14 +6696,14 @@ end
 					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_miniboss)
 					unitFrame.hasUnitTypeColor = true
 
-				--elite
-				elseif Plater.db.profile.unit_type_coloring_enable_elite and (unitFrame.namePlateClassification == "elite" or unitFrame.namePlateClassification == "rareelite") then
-					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_elite)
-					unitFrame.hasUnitTypeColor = true
-
 				--caster
 				elseif (not issecretvalue(UnitClassBase(unitID)) and UnitClassBase(unitID) == "PALADIN") or platerInternal.UnitHasMana(unitID) then
 					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_caster)
+					unitFrame.hasUnitTypeColor = true
+
+				--elite
+				elseif Plater.db.profile.unit_type_coloring_enable_elite and (unitFrame.namePlateClassification == "elite" or unitFrame.namePlateClassification == "rareelite") then
+					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_elite)
 					unitFrame.hasUnitTypeColor = true
 
 				--trivial
