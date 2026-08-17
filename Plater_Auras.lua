@@ -775,12 +775,12 @@ local function getAuraFilters(frameName, unit)
 		local mainFilterString = nil
 		if DB_TRACK_METHOD == 0x2 and frameName ~= "ExtraIconFrame" then
 			--manual tracking shortcut.
-			if frameName == "Main" and type == "debuffs" then
+			if frameName == "Main" and type == "debuffs" and not canAssist then
 				table.insert(filters, {
 					filterString = "HARMFUL|PLAYER",
 					candidateFilters = allCandidates.additionalInclude
 				})
-			elseif ((frameName == "Main" and not DB_AURA_SEPARATE_BUFFS) or (frameName == "Secondary" and DB_AURA_SEPARATE_BUFFS)) and type == "buffs" then
+			elseif ((frameName == "Main" and not DB_AURA_SEPARATE_BUFFS) or (frameName == "Secondary" and DB_AURA_SEPARATE_BUFFS)) and type == "buffs" and canAssist then
 				table.insert(filters, {
 					filterString = "HELPFUL",
 					candidateFilters = allCandidates.additionalInclude
@@ -879,17 +879,19 @@ local function getAuraFilters(frameName, unit)
 		elseif frameName == "ExtraIconFrame" and type == "debuffs" then
 			mainFilterString = "HARMFUL"
 
-			table.insert(filters, {
-				filterString = "HARMFUL",
-				candidateFilters = allCandidates.additionalInclude
-			})
-			-- the "only mine"
-			table.insert(filters, {
-				filterString = "HARMFUL",
-				candidateFilters = {
-					includeSpellIDs = SPECIAL_AURAS_USER_LIST_MINE
-				}
-			})
+			if not canAssist then
+				table.insert(filters, {
+					filterString = "HARMFUL",
+					candidateFilters = allCandidates.additionalInclude
+				})
+				-- the "only mine"
+				table.insert(filters, {
+					filterString = "HARMFUL|PLAYER",
+					candidateFilters = {
+						includeSpellIDs = SPECIAL_AURAS_USER_LIST_MINE
+					}
+				})
+			end
 			
 			if Plater.db.profile.debuff_show_cc then
 				table.insert(pFilters, "CROWD_CONTROL")
@@ -898,17 +900,19 @@ local function getAuraFilters(frameName, unit)
 		elseif frameName == "ExtraIconFrame" and type == "buffs" then
 			mainFilterString = "HELPFUL"
 			
-			table.insert(filters, {
-				filterString = "HELPFUL",
-				candidateFilters = allCandidates.additionalInclude
-			})
-			-- the "only mine"
-			table.insert(filters, {
-				filterString = "HELPFUL",
-				candidateFilters = {
-					includeSpellIDs = SPECIAL_AURAS_USER_LIST_MINE
-				}
-			})
+			if canAssist then
+				table.insert(filters, {
+					filterString = "HELPFUL",
+					candidateFilters = allCandidates.additionalInclude
+				})
+				-- the "only mine"
+				table.insert(filters, {
+					filterString = "HELPFUL",
+					candidateFilters = {
+						includeSpellIDs = SPECIAL_AURAS_USER_LIST_MINE
+					}
+				})
+			end
 
 			if Plater.db.profile.extra_icon_show_defensive then
 				table.insert(pFilters, "BIG_DEFENSIVE")
@@ -940,7 +944,7 @@ local function getAuraFilters(frameName, unit)
 		--if DevTool then DevTool:AddData({pFilters = pFilters, nFilters = nFilters, mainFilterString = mainFilterString}, frameName .. " - filters") end
 	end
 
-	--if DevTool then DevTool:AddData(filters, frameName) end
+	if DevTool then DevTool:AddData(filters, frameName) end
 	return filters
 end
 
