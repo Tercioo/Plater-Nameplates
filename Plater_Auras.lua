@@ -796,6 +796,8 @@ local function getCandidateFilters(frameName)
 				DF.table.copy(filters.additionalInclude.includeSpellIDs, AUTO_TRACKING_EXTRA_DEBUFFS)
 				DF.table.copy(filters.mainFilter.excludeSpellIDs, AUTO_TRACKING_EXTRA_DEBUFFS)
 				DF.table.copy(filters.mainFilter.excludeSpellIDs, DB_DEBUFF_BANNED)
+				DF.table.copy(filters.mainFilter.excludeSpellIDs, SPECIAL_AURAS_AUTO_ADDED)
+				DF.table.copy(filters.mainFilter.excludeSpellIDs, SPECIAL_AURAS_USER_LIST_MINE)
 			else
 				DF.table.copy(filters.additionalInclude.includeSpellIDs, MANUAL_TRACKING_DEBUFFS)
 				DF.table.copy(filters.mainFilter.excludeSpellIDs, MANUAL_TRACKING_DEBUFFS)
@@ -811,6 +813,8 @@ local function getCandidateFilters(frameName)
 				DF.table.copy(filters.mainFilter.excludeSpellIDs, AUTO_TRACKING_EXTRA_BUFFS)
 				DF.table.copy(filters.additionalInclude.includeSpellIDs, AUTO_TRACKING_EXTRA_DEBUFFS)
 				DF.table.copy(filters.mainFilter.excludeSpellIDs, AUTO_TRACKING_EXTRA_DEBUFFS)
+				DF.table.copy(filters.mainFilter.excludeSpellIDs, SPECIAL_AURAS_AUTO_ADDED)
+				DF.table.copy(filters.mainFilter.excludeSpellIDs, SPECIAL_AURAS_USER_LIST_MINE)
 			else
 				DF.table.copy(filters.additionalInclude.includeSpellIDs, MANUAL_TRACKING_BUFFS)
 				DF.table.copy(filters.mainFilter.excludeSpellIDs, MANUAL_TRACKING_BUFFS)
@@ -844,6 +848,8 @@ local function getCandidateFilters(frameName)
 		DF.table.copy(filters.additionalInclude.excludeSpellIDs, DB_BUFF_BANNED)
 		DF.table.copy(filters.additionalInclude.excludeSpellIDs, DB_DEBUFF_BANNED)
 		DF.table.copy(filters.additionalInclude.excludeSpellIDs, SPECIAL_AURAS_USER_LIST_MINE)
+		DF.table.copy(filters.additionalInclude.excludeSpellIDs, AUTO_TRACKING_EXTRA_BUFFS)
+		DF.table.copy(filters.additionalInclude.excludeSpellIDs, AUTO_TRACKING_EXTRA_DEBUFFS)
 	end
 	return filters
 end
