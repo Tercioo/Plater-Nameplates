@@ -242,7 +242,8 @@ local function expandAuraCaches()
 	for _, container in pairs (containersToExtend) do
 		local containerCopy = DF.table.copy({}, container or {})
 		for id, val in pairs(containerCopy) do
-			local addIDs = allIDsByName[toLowerCase(id)] or allIDsByName[toLowerCase(idToName[id] or "")] or {}
+			--local addIDs = allIDsByName[toLowerCase(id)] or allIDsByName[toLowerCase(idToName[id] or "")] or {}
+			local addIDs = allIDsByName[toLowerCase(id)] or {} -- just expand names
 			for _, addID in pairs(addIDs) do
 				container[addID] = val
 			end
