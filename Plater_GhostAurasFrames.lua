@@ -210,12 +210,12 @@ function Plater.Auras.BuildGhostAurasOptionsTab(frame)
 
     ghostAuraFrame:SetScript("OnShow", function()
         Plater.Auras.GhostAuras.SetSpec()
-        if not IsBetaBuild() and not IsPublicTestClient() then
+        --if not IsBetaBuild() and not IsPublicTestClient() then
             DF:LoadSpellCache(Plater.SpellHashTable, Plater.SpellIndexTable, Plater.SpellSameNameTable)
-        end
+        --end
     end)
     ghostAuraFrame:SetScript("OnHide", function()
-        DF:UnloadSpellCache()
+        --DF:UnloadSpellCache()
     end)
 
     --Plater.Auras.GhostAuras.SetSpec() --debug, will update then the plater options is opened instead when the tab is opened

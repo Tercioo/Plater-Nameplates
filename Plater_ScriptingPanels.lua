@@ -3196,9 +3196,9 @@ function Plater.CreateScriptingPanel()
 			end
 		end
 
-		if not IsBetaBuild() and not IsPublicTestClient() then
+		--if not IsBetaBuild() and not IsPublicTestClient() then
 			DF:LoadSpellCache(Plater.SpellHashTable, Plater.SpellIndexTable, Plater.SpellSameNameTable)
-		end
+		--end
 	end)
 	
 	scriptingFrame:SetScript ("OnHide", function()
@@ -3208,7 +3208,7 @@ function Plater.CreateScriptingPanel()
 			scriptingFrame.SaveScript()
 		end
 
-		DF:UnloadSpellCache()
+		--DF:UnloadSpellCache()
 	end)
 	
 	-- scriptingFrame.ScriptNameTextEntry --name of the script (text entry)
