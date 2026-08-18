@@ -55,7 +55,6 @@ local DB_AURA_SEPARATE_BUFFS
 local DB_SHOW_PURGE_IN_EXTRA_ICONS
 local DB_SHOW_ENRAGE_IN_EXTRA_ICONS
 local DB_SHOW_MAGIC_IN_EXTRA_ICONS
-local DB_DEBUFF_BANNED
 local DB_AURA_SHOW_IMPORTANT
 local DB_AURA_SHOW_RAID
 local DB_AURA_SHOW_BYPLAYER
@@ -65,7 +64,6 @@ local DB_AURA_SHOW_BUFFS_AS_BLIZZARD
 local DB_AURA_SHOW_BUFF_BYPLAYER
 local DB_AURA_SHOW_BYOTHERPLAYERS
 local DB_AURA_SHOW_BYOTHERNPCS
-local DB_BUFF_BANNED
 local DB_AURA_SHOW_DISPELLABLE
 local DB_AURA_SHOW_ONLY_SHORT_DISPELLABLE_ON_PLAYERS
 local DB_AURA_SHOW_ENRAGE
@@ -204,6 +202,10 @@ local MANUAL_TRACKING_DEBUFFS = {}
 local AUTO_TRACKING_EXTRA_BUFFS = {}
 local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 
+--blacklists
+local DB_DEBUFF_BANNED
+local DB_BUFF_BANNED
+
 --Cache for ghost auras
 --Updated on function: Plater.UpdateGhostAurasCache()
 local GHOSTAURAS = {}
@@ -216,7 +218,92 @@ platerInternal.ExtraAuras = {
 	unitFramesToGUID = {}
 }
 
-platerInternal.Auras = {}
+platerInternal.Auras = {
+	spellCaches = {
+		nameToID = {},
+		idToName = {},
+		allIDsByName = {},
+	},
+	spellCachesLoaded = false
+}
+Plater.SpellCaches = platerInternal.Auras.spellCaches
+
+local spellBlacklist = { -- some spells just crash PTR clients... add them here
+
+}
+-- Spell Caches
+local function expandAuraCaches()
+	if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS or not platerInternal.Auras.spellCachesLoaded then return end
+	local toLowerCase = string.lower
+	local cache = platerInternal.Auras.spellCaches
+	local allIDsByName = cache.allIDsByName
+	local idToName = cache.idToName
+	local containersToExtend = DB_TRACK_METHOD == 0x1 and {DB_DEBUFF_BANNED, DB_BUFF_BANNED, SPECIAL_AURAS_AUTO_ADDED, SPECIAL_AURAS_USER_LIST, SPECIAL_AURAS_USER_LIST_MINE, AUTO_TRACKING_EXTRA_BUFFS, AUTO_TRACKING_EXTRA_DEBUFFS} or {SPECIAL_AURAS_AUTO_ADDED, SPECIAL_AURAS_USER_LIST, SPECIAL_AURAS_USER_LIST_MINE, MANUAL_TRACKING_BUFFS, MANUAL_TRACKING_DEBUFFS}
+	for _, container in pairs (containersToExtend) do
+		local containerCopy = DF.table.copy({}, container or {})
+		for id, val in pairs(containerCopy) do
+			local addIDs = allIDsByName[toLowerCase(id)] or allIDsByName[toLowerCase(idToName[id] or "")] or {}
+			for _, addID in pairs(addIDs) do
+				container[addID] = val
+			end
+		end
+	end
+
+	-- update filters
+	for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+		if plateFrame.unitFrame and plateFrame.unitFrame.PlaterOnScreen then
+			if not plateFrame.unitFrame.isPerformanceUnitAura then
+				Plater.AddToAuraUpdate(plateFrame.unitFrame.unit, plateFrame.unitFrame) -- force aura update
+			end
+		end
+	end
+	--if DevTool then DevTool:AddData(containersToExtend, "containers") end
+end
+
+-- Spell Cache init
+local lazyBuildSpellCache
+lazyBuildSpellCache = function(start)
+	local startPoint = start or 1
+	local endPoint = startPoint + 2500
+	local i = startPoint
+
+	local toLowerCase = string.lower
+	local GetSpellInfo = GetSpellInfo
+
+	local hashMap = platerInternal.Auras.spellCaches.nameToID
+	local indexTable = platerInternal.Auras.spellCaches.idToName
+	local allSpellsSameName = platerInternal.Auras.spellCaches.allIDsByName
+
+	while (i < endPoint) do
+		local spellName = (not spellBlacklist[i]) and GetSpellInfo(i)
+
+		if (spellName) then
+			spellName = toLowerCase(spellName)
+			hashMap[spellName] = i --[spellname] = spellId
+			indexTable[#indexTable+1] = spellName --array with all spellnames
+
+			local spellNameTable = allSpellsSameName[spellName]
+			if (not spellNameTable) then
+				spellNameTable = {}
+				allSpellsSameName[spellName] = spellNameTable
+			end
+			spellNameTable[#spellNameTable+1] = i
+		end
+
+		i = i + 1
+	end
+	if i < 500000 then
+		C_Timer.After(0, function() lazyBuildSpellCache(i) end)
+	else
+		--if DevTool then DevTool:AddData(platerInternal.Auras.spellCaches) end
+		platerInternal.Auras.spellCachesLoaded = true
+		expandAuraCaches()
+	end
+end
+lazyBuildSpellCache()
+-- End Spell Caches
+
+
 
 local extraAuraGUIDtoUnitFrameCache = platerInternal.ExtraAuras.unitFramesToGUID
 
@@ -944,7 +1031,7 @@ local function getAuraFilters(frameName, unit)
 		--if DevTool then DevTool:AddData({pFilters = pFilters, nFilters = nFilters, mainFilterString = mainFilterString}, frameName .. " - filters") end
 	end
 
-	if DevTool then DevTool:AddData(filters, frameName) end
+	--if DevTool then DevTool:AddData(filters, frameName) end
 	return filters
 end
 
@@ -4629,4 +4716,7 @@ end
 
 		--> ghost aura cache
 		Plater.UpdateGhostAurasCache()
+		if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
+			expandAuraCaches()
+		end
 	end
