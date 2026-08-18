@@ -1029,10 +1029,10 @@ local function getAuraFilters(frameName, unit)
 				candidateFilters = allCandidates.mainFilter
 			})
 		end
-		--if DevTool then DevTool:AddData({pFilters = pFilters, nFilters = nFilters, mainFilterString = mainFilterString}, frameName .. " - filters") end
+		--if DevTool then DevTool:AddData({pFilters = pFilters, nFilters = nFilters, mainFilterString = mainFilterString, allCandidates = allCandidates}, frameName .. " - filters") end
 	end
 
-	--if DevTool then DevTool:AddData(filters, frameName) end
+	--if DevTool then DevTool:AddData(filters, frameName); DevTool:AddData(MANUAL_TRACKING_BUFFS) end
 	return filters
 end
 
@@ -4586,11 +4586,7 @@ end
 				local spellIDNum = tonumber(manualDebuffsToTrack [i])
 				local spellName = GetSpellInfo (spellIDNum or manualDebuffsToTrack [i])
 				if (spellName) then
-					if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS and spellIDNum then
-						MANUAL_TRACKING_BUFFS [spellIDNum] = true
-					else
-						MANUAL_TRACKING_DEBUFFS [spellName] = true
-					end
+					MANUAL_TRACKING_DEBUFFS [spellName] = true
 				else
 					--add the entry in case there's a spell name instead of a spellId in the list (for back compatibility)
 					MANUAL_TRACKING_DEBUFFS [manualDebuffsToTrack [i]] = true
@@ -4601,11 +4597,7 @@ end
 				local spellIDNum = tonumber(manualBuffsToTrack [i])
 				local spellName = GetSpellInfo (spellIDNum or manualBuffsToTrack [i])
 				if (spellName) then
-					if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS and spellIDNum then
-						MANUAL_TRACKING_BUFFS [spellIDNum] = true
-					else
-						MANUAL_TRACKING_BUFFS [spellName] = true
-					end
+					MANUAL_TRACKING_BUFFS [spellName] = true
 				else
 					--add the entry in case there's a spell name instead of a spellId in the list (for back compatibility)
 					MANUAL_TRACKING_BUFFS [manualBuffsToTrack [i]]= true
