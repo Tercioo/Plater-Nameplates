@@ -855,6 +855,7 @@ local function getCandidateFilters(frameName)
 end
 
 local function getAuraFilters(frameName, unit)
+	Plater.StartLogPerformanceCore("Plater-Core", "Update", "getAuraFilters")
 	local filters = {}
 	local allCandidates = getCandidateFilters(frameName)
 	local unitReaction = unit and UnitReaction (unit, "player")
@@ -1039,6 +1040,8 @@ local function getAuraFilters(frameName, unit)
 	end
 
 	--if DevTool then DevTool:AddData(filters, frameName); DevTool:AddData(MANUAL_TRACKING_BUFFS) end
+
+	Plater.EndLogPerformanceCore("Plater-Core", "Update", "getAuraFilters")
 	return filters
 end
 
@@ -1318,6 +1321,7 @@ local function reSkinAuraButtons(auraButtons)
 		platerInternal.Auras.reSkinAuraButtonsTimer[auraButtons] = C_Timer.NewTimer(1, function() reSkinAuraButtons(auraButtons) end)
 		return
 	end
+	Plater.StartLogPerformanceCore("Plater-Core", "Update", "reSkinAuraButtonsTimer")
 	for _, auraButton in pairs(auraButtons) do
 		
 		auraButton:SetMouseMotionEnabled(profile.aura_show_tooltip)
@@ -1435,9 +1439,11 @@ local function reSkinAuraButtons(auraButtons)
 		end
 
 	end
+	Plater.EndLogPerformanceCore("Plater-Core", "Update", "reSkinAuraButtonsTimer")
 end
 
 local function getAuraFrameOptions(frameName, name, key, auraContainer)
+	Plater.StartLogPerformanceCore("Plater-Core", "Update", "getAuraFrameOptions")
 	local auraFrameOptions = {
 		-- Maximum number of aura frames this filter group may display.
 		maxFrameCount = (Plater.db.profile.aura_max_shown_limit and (Plater.db.profile.aura_max_shown_limit <= 0))and math.huge or Plater.db.profile.aura_max_shown_limit or math.huge,
@@ -1459,6 +1465,7 @@ local function getAuraFrameOptions(frameName, name, key, auraContainer)
 		auraFrameOptions.maxFrameCount = math.huge
 	end
 
+	Plater.EndLogPerformanceCore("Plater-Core", "Update", "getAuraFrameOptions")
 	return auraFrameOptions
 end
 
@@ -1572,6 +1579,7 @@ end
 
 local nextAuraIndex = 1
 function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
+	Plater.StartLogPerformanceCore("Plater-Core", "Update", "CreateOrUpdateAuraContainers")
 	if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS and unit ~= "player" then
 		
 		if not unitFrame.BuffFrame then
@@ -1663,10 +1671,13 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 	elseif not unitFrame.BuffFrame then -- old API
 		platerInternal.Auras.CreateOldAuraContainers(unitFrame)
 	end
+	Plater.EndLogPerformanceCore("Plater-Core", "Update", "CreateOrUpdateAuraContainers")
 end
 
 function Plater.RemoveFromAuraUpdate (unit, unitFrame)
+	Plater.StartLogPerformanceCore("Plater-Core", "Update", "RemoveFromAuraUpdate")
 	if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
+		Plater.EndLogPerformanceCore("Plater-Core", "Update", "RemoveFromAuraUpdate")
 		Plater.CreateOrUpdateAuraContainers(unitFrame, nil)
 		return
 	end
@@ -1676,11 +1687,14 @@ function Plater.RemoveFromAuraUpdate (unit, unitFrame)
 	unitFrame.UnitAuraEventHandlerFrame:SetScript ("OnEvent", nil)
 	UnitAuraCacheData[unit] = nil
 	UnitAuraEventHandlerData[unit] = nil
+	Plater.EndLogPerformanceCore("Plater-Core", "Update", "RemoveFromAuraUpdate")
 end
 
 function Plater.AddToAuraUpdate (unit, unitFrame)
+	Plater.StartLogPerformanceCore("Plater-Core", "Update", "AddToAuraUpdate")
 	if not unit or not unitFrame then return end
 	if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
+		Plater.EndLogPerformanceCore("Plater-Core", "Update", "AddToAuraUpdate")
 		Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 		return
 	end
@@ -1690,6 +1704,7 @@ function Plater.AddToAuraUpdate (unit, unitFrame)
 	UnitAuraEventHandlerData[unit] = { hasBuff = true, hasDebuff = true } --update at least once
 	--UpdateUnitAuraCacheData(unit, {isFullUpdate = true})
 	UpdateUnitAuraCacheData(unit, nil)
+	Plater.EndLogPerformanceCore("Plater-Core", "Update", "AddToAuraUpdate")
 end
 
 
