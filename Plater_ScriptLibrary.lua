@@ -1616,6 +1616,23 @@ do
 		end,
 	})
 
+	--#43 Midnight 12.1: migrate "hide permanet buffs"
+	tinsert (PlaterPatchLibrary, {
+		NotEssential = false,
+
+		Notes = {
+			"- Migrate 'Hide permanent auras' option."
+		},
+		Func = function()
+			if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
+				if Plater.db.profile.debuff_hide_permanent then
+					Plater.db.profile.aura_hide_permanent_buffs = true
+					Plater.db.profile.aura_hide_permanent_debuffs = true
+				end
+			end
+		end,
+	})
+
 	--[=[
 		--#41 midnight pre patch, remove all triggers from scripts
 		tinsert (PlaterPatchLibrary, {

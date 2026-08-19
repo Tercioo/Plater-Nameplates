@@ -797,7 +797,7 @@ local function getCandidateFilters(frameName)
 			excludeSpellIDs = {}, -- needs to exclude anything on the additionalInclude, due to second include group!
 			--includeDispelTypes -- AuraUtil.DispellableDebuffTypes
 			--excludeDispelTypes -- AuraUtil.DispellableDebuffTypes
-			maxDuration = profile.debuff_hide_permanent and math.huge or nil,
+			--maxDuration = nil --profile.debuff_hide_permanent and math.huge or nil,
 			--processedAuraType --AuraUtil.AuraUpdateChangedType
 			--isFromPlayerOrPlayerPet
 			--isRoleAura
@@ -817,8 +817,6 @@ local function getCandidateFilters(frameName)
 
 	if frameName == "Main" then
 		if DB_AURA_SEPARATE_BUFFS then
-			--filters.mainFilter.processedAuraType = AuraUtil.AuraUpdateChangedType.Debuff
-			
 			if DB_TRACK_METHOD == 1 then 
 				DF.table.copy(filters.additionalInclude.includeSpellIDs, AUTO_TRACKING_EXTRA_DEBUFFS)
 
@@ -832,8 +830,6 @@ local function getCandidateFilters(frameName)
 				DF.table.copy(filters.mainFilter.excludeSpellIDs, MANUAL_TRACKING_DEBUFFS)
 			end
 		else
-			--filters.mainFilter.processedAuraType -> all -> no filter
-
 			if DB_TRACK_METHOD == 1 then
 				DF.table.copy(filters.additionalInclude.includeSpellIDs, AUTO_TRACKING_EXTRA_BUFFS)
 				DF.table.copy(filters.additionalInclude.includeSpellIDs, AUTO_TRACKING_EXTRA_DEBUFFS)
@@ -855,8 +851,6 @@ local function getCandidateFilters(frameName)
 			end
 		end
 	elseif frameName == "Secondary" then
-		--filters.mainFilter.processedAuraType = AuraUtil.AuraUpdateChangedType.Buff
-
 		if DB_TRACK_METHOD == 1 then
 			DF.table.copy(filters.mainFilter.excludeSpellIDs, DB_BUFF_BANNED)
 
@@ -941,6 +935,8 @@ local function getAuraFilters(frameName, unit)
 		elseif DB_TRACK_METHOD == 0x1 and frameName == "Main" and type == "debuffs" then
 			mainFilterString = "HARMFUL"
 
+			allCandidates.mainFilter.maxDuration = Plater.db.profile.aura_hide_permanent_debuffs and math.huge or nil
+
 			--additional filters
 			if canAssist == false then
 				table.insert(filters, {
@@ -985,6 +981,8 @@ local function getAuraFilters(frameName, unit)
 
 		elseif DB_TRACK_METHOD == 0x1 and ((frameName == "Main" and not DB_AURA_SEPARATE_BUFFS) or (frameName == "Secondary" and DB_AURA_SEPARATE_BUFFS)) and type == "buffs" then
 			mainFilterString = "HELPFUL"
+
+			allCandidates.mainFilter.maxDuration = Plater.db.profile.aura_hide_permanent_buffs and math.huge or nil
 
 			--additional filters
 			if canAssist == true then

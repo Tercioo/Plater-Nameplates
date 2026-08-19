@@ -2288,6 +2288,33 @@ local debuff_options = {
 		end,
 		name = "Hide permanent auras",
 		desc = "Hide auras with no duration.",
+		hidden = IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
+	{
+		type = "toggle",
+		boxfirst = true,
+		get = function() return Plater.db.profile.aura_hide_permanent_buffs end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_hide_permanent_buffs = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Hide permanent buffs",
+		desc = "Hide auras with no duration.",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
+	{
+		type = "toggle",
+		boxfirst = true,
+		get = function() return Plater.db.profile.aura_hide_permanent_debuffs end,
+		set = function (self, fixedparam, value) 
+			Plater.db.profile.aura_hide_permanent_debuffs = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Hide permanent debuffs",
+		desc = "Hide auras with no duration.",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
 	},
 
 	{type = "breakline"},

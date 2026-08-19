@@ -960,6 +960,8 @@ PLATER_DEFAULT_SETTINGS = {
 		aura_show_offensive_cd = false,
 		aura_show_defensive_cd = false,
 		debuff_hide_permanent = false,
+		debuff_hide_permanent_buffs = false,
+		debuff_hide_permanent_debuffs = false,
 		
 		aura_border_colors = {
 			steal_or_purge = {0, .5, .98, 1},
