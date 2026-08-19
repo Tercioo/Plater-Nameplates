@@ -1245,7 +1245,7 @@ local function initAuraFrame(auraButton, name, key, auraContainer)
 
 	
 	auraButton.CountFrame = CreateFrame ("frame", "$parentCountFrame", auraButton)--, BackdropTemplateMixin and "BackdropTemplate")
-	auraButton.CountFrame:SetAllPoints()
+	auraButton.CountFrame:SetPoint("CENTER")
 	auraButton.CountFrame:EnableMouse (false)
 	if auraButton.CountFrame.EnableMouseMotion then
 		auraButton.CountFrame:EnableMouseMotion (false)
@@ -1377,6 +1377,7 @@ local function initAuraFrame(auraButton, name, key, auraContainer)
 	auraButton.Border:SetSize(auraWidth, auraHeight)
 	auraButton.Icon:SetSize(auraWidth, auraHeight)
 	auraButton.Cooldown:SetSize(auraWidth, auraHeight)
+	auraButton.CountFrame:SetSize(auraWidth, auraHeight)
 	auraButton:SetScale(1)
 
 	Plater.UpdateIconAspecRatio (auraButton)
@@ -1480,6 +1481,7 @@ local function reSkinAuraButtons(auraButtons)
 		auraButton.Border:SetSize(auraWidth, auraHeight)
 		auraButton.Icon:SetSize(auraWidth, auraHeight)
 		auraButton.Cooldown:SetSize(auraWidth, auraHeight)
+		auraButton.CountFrame:SetSize(auraWidth, auraHeight)
 		auraButton:SetScale(1)
 
 		local band = 8
