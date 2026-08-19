@@ -265,7 +265,7 @@ end
 local lazyBuildSpellCache
 lazyBuildSpellCache = function(start)
 	local startPoint = start or 1
-	local endPoint = startPoint + 2500
+	local endPoint = startPoint + 2000
 	local i = startPoint
 
 	local toLowerCase = string.lower
@@ -293,7 +293,7 @@ lazyBuildSpellCache = function(start)
 
 		i = i + 1
 	end
-	if i < 500000 then
+	if i < 1500000 then
 		C_Timer.After(0, function() lazyBuildSpellCache(i) end)
 	else
 		--if DevTool then DevTool:AddData(platerInternal.Auras.spellCaches) end
