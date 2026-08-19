@@ -371,7 +371,20 @@ function Ejc.CreateEncounterJournalDump()
                         iconTexture = buttonImage2,
                         iconTextureSize = {70, 36},
                         iconTextureCoords = {0, 1, 0, 0.95},
+
+                        loot = {},
                     }
+
+                    --loot
+                    local lootCount = EJ_GetNumLoot()
+                    if (lootCount > 0) then
+                        for lootIndex = 1, lootCount do
+                            local itemInfo = C_EncounterJournal.GetLootInfoByIndex(lootIndex)
+                            if (itemInfo) then
+                                instanceData.loot[#instanceData.loot+1] = itemInfo
+                            end
+                        end
+                    end
 
                     --cache the raidData, in different tables, using different keys
                     Ejc.CacheRaidData_ByInstanceId[journalInstanceID] = instanceData

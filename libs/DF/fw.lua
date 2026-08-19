@@ -1,7 +1,7 @@
 -- SPDX-License-Identifier: LGPL-2.1-or-later
 -- Details Framework (DetailsFramework-1.0) -- see Libs/DF/LICENSE
 
-local dversion = 751
+local dversion = 753
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary(major, minor)
 
