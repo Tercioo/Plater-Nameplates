@@ -866,7 +866,7 @@ local function getCandidateFilters(frameName)
 
 		DF.table.copy(filters.additionalInclude.includeSpellIDs, SPECIAL_AURAS_AUTO_ADDED)
 		DF.table.copy(filters.additionalInclude.includeSpellIDs, SPECIAL_AURAS_USER_LIST)
-		DF.table.copy(filters.additionalInclude.includeSpellIDs, SPECIAL_AURAS_USER_LIST_MINE)
+		--DF.table.copy(filters.additionalInclude.includeSpellIDs, SPECIAL_AURAS_USER_LIST_MINE) -- explicitly
 
 		DF.table.copy(filters.mainFilter.excludeSpellIDs, SPECIAL_AURAS_AUTO_ADDED)
 		DF.table.copy(filters.mainFilter.excludeSpellIDs, SPECIAL_AURAS_USER_LIST)
@@ -1057,7 +1057,7 @@ local function getAuraFilters(frameName, unit)
 				})
 				-- the "only mine"
 				table.insert(filters, {
-					filterString = "HELPFUL",
+					filterString = "HELPFUL|PLAYER",
 					candidateFilters = {
 						includeSpellIDs = SPECIAL_AURAS_USER_LIST_MINE
 					}
