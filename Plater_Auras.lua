@@ -762,8 +762,34 @@ local auraFramesSetup = {
 }
 
 -- TODO: filter by buffs/debuffs
+local containerConfigCache = {
+	containerConfigIndex = 0,
+	candidateFilterIndex = 0,
+	candidateFilters = {},
+	auraFilterIndex = 1,
+	auraFilters = {
+		assist = {},
+		assistPlayer = {},
+		noAssist = {},
+		noAssistPlayer = {},
+	},
+}
+function Plater.Auras.SetIconConfigOutdated()
+	containerConfigCache.containerConfigIndex = containerConfigCache.containerConfigIndex + 1
+end
+function Plater.Auras.SetContainerFiltersOutdated()
+	containerConfigCache.candidateFilterIndex = containerConfigCache.candidateFilterIndex + 1
+	containerConfigCache.auraFilterIndex = containerConfigCache.auraFilterIndex + 1
+end
 local function getCandidateFilters(frameName)
+	Plater.StartLogPerformanceCore("Plater-Core", "Update", "getCandidateFilters")
 	local profile = Plater.db.profile
+
+	local cachedFilter = containerConfigCache.candidateFilters[frameName]
+	if cachedFilter and cachedFilter.filterIndex == containerConfigCache.candidateFilterIndex then
+		Plater.EndLogPerformanceCore("Plater-Core", "Update", "getCandidateFilters")
+		return cachedFilter
+	end
 
 	local filters = {
 		mainFilter = {
@@ -785,7 +811,8 @@ local function getCandidateFilters(frameName)
 		},
 		additionalInclude = {
 			includeSpellIDs = {},
-		}
+		},
+		filterIndex = containerConfigCache.candidateFilterIndex
 	}
 
 	if frameName == "Main" then
@@ -794,9 +821,11 @@ local function getCandidateFilters(frameName)
 			
 			if DB_TRACK_METHOD == 1 then 
 				DF.table.copy(filters.additionalInclude.includeSpellIDs, AUTO_TRACKING_EXTRA_DEBUFFS)
+
 				DF.table.copy(filters.mainFilter.excludeSpellIDs, AUTO_TRACKING_EXTRA_DEBUFFS)
 				DF.table.copy(filters.mainFilter.excludeSpellIDs, DB_DEBUFF_BANNED)
 				DF.table.copy(filters.mainFilter.excludeSpellIDs, SPECIAL_AURAS_AUTO_ADDED)
+				DF.table.copy(filters.mainFilter.excludeSpellIDs, SPECIAL_AURAS_USER_LIST)
 				DF.table.copy(filters.mainFilter.excludeSpellIDs, SPECIAL_AURAS_USER_LIST_MINE)
 			else
 				DF.table.copy(filters.additionalInclude.includeSpellIDs, MANUAL_TRACKING_DEBUFFS)
@@ -805,27 +834,30 @@ local function getCandidateFilters(frameName)
 		else
 			--filters.mainFilter.processedAuraType -> all -> no filter
 
-			if DB_TRACK_METHOD == 1 then 
+			if DB_TRACK_METHOD == 1 then
+				DF.table.copy(filters.additionalInclude.includeSpellIDs, AUTO_TRACKING_EXTRA_BUFFS)
+				DF.table.copy(filters.additionalInclude.includeSpellIDs, AUTO_TRACKING_EXTRA_DEBUFFS)
+
 				DF.table.copy(filters.mainFilter.excludeSpellIDs, DB_BUFF_BANNED)
 				DF.table.copy(filters.mainFilter.excludeSpellIDs, DB_DEBUFF_BANNED)
 
-				DF.table.copy(filters.additionalInclude.includeSpellIDs, AUTO_TRACKING_EXTRA_BUFFS)
 				DF.table.copy(filters.mainFilter.excludeSpellIDs, AUTO_TRACKING_EXTRA_BUFFS)
-				DF.table.copy(filters.additionalInclude.includeSpellIDs, AUTO_TRACKING_EXTRA_DEBUFFS)
 				DF.table.copy(filters.mainFilter.excludeSpellIDs, AUTO_TRACKING_EXTRA_DEBUFFS)
 				DF.table.copy(filters.mainFilter.excludeSpellIDs, SPECIAL_AURAS_AUTO_ADDED)
+				DF.table.copy(filters.mainFilter.excludeSpellIDs, SPECIAL_AURAS_USER_LIST)
 				DF.table.copy(filters.mainFilter.excludeSpellIDs, SPECIAL_AURAS_USER_LIST_MINE)
 			else
 				DF.table.copy(filters.additionalInclude.includeSpellIDs, MANUAL_TRACKING_BUFFS)
-				DF.table.copy(filters.mainFilter.excludeSpellIDs, MANUAL_TRACKING_BUFFS)
 				DF.table.copy(filters.additionalInclude.includeSpellIDs, MANUAL_TRACKING_DEBUFFS)
+
+				DF.table.copy(filters.mainFilter.excludeSpellIDs, MANUAL_TRACKING_BUFFS)
 				DF.table.copy(filters.mainFilter.excludeSpellIDs, MANUAL_TRACKING_DEBUFFS)
 			end
 		end
 	elseif frameName == "Secondary" then
 		--filters.mainFilter.processedAuraType = AuraUtil.AuraUpdateChangedType.Buff
 
-		if DB_TRACK_METHOD == 1 then 
+		if DB_TRACK_METHOD == 1 then
 			DF.table.copy(filters.mainFilter.excludeSpellIDs, DB_BUFF_BANNED)
 
 			DF.table.copy(filters.additionalInclude.includeSpellIDs, AUTO_TRACKING_EXTRA_BUFFS)
@@ -840,29 +872,54 @@ local function getCandidateFilters(frameName)
 
 		DF.table.copy(filters.additionalInclude.includeSpellIDs, SPECIAL_AURAS_AUTO_ADDED)
 		DF.table.copy(filters.additionalInclude.includeSpellIDs, SPECIAL_AURAS_USER_LIST)
+		DF.table.copy(filters.additionalInclude.includeSpellIDs, SPECIAL_AURAS_USER_LIST_MINE)
 
-		DF.table.copy(filters.mainFilter.excludeSpellIDs, DB_BUFF_BANNED)
-		DF.table.copy(filters.mainFilter.excludeSpellIDs, DB_DEBUFF_BANNED)
+		DF.table.copy(filters.mainFilter.excludeSpellIDs, SPECIAL_AURAS_AUTO_ADDED)
+		DF.table.copy(filters.mainFilter.excludeSpellIDs, SPECIAL_AURAS_USER_LIST)
 		DF.table.copy(filters.mainFilter.excludeSpellIDs, SPECIAL_AURAS_USER_LIST_MINE)
 
-		DF.table.copy(filters.additionalInclude.excludeSpellIDs, DB_BUFF_BANNED)
-		DF.table.copy(filters.additionalInclude.excludeSpellIDs, DB_DEBUFF_BANNED)
-		DF.table.copy(filters.additionalInclude.excludeSpellIDs, SPECIAL_AURAS_USER_LIST_MINE)
-		DF.table.copy(filters.additionalInclude.excludeSpellIDs, AUTO_TRACKING_EXTRA_BUFFS)
-		DF.table.copy(filters.additionalInclude.excludeSpellIDs, AUTO_TRACKING_EXTRA_DEBUFFS)
+		if DB_TRACK_METHOD == 1 then
+			DF.table.copy(filters.mainFilter.excludeSpellIDs, DB_BUFF_BANNED)
+			DF.table.copy(filters.mainFilter.excludeSpellIDs, DB_DEBUFF_BANNED)
+			DF.table.copy(filters.additionalInclude.excludeSpellIDs, DB_BUFF_BANNED)
+			DF.table.copy(filters.additionalInclude.excludeSpellIDs, DB_DEBUFF_BANNED)
+
+			DF.table.copy(filters.mainFilter.excludeSpellIDs, AUTO_TRACKING_EXTRA_BUFFS)
+			DF.table.copy(filters.mainFilter.excludeSpellIDs, AUTO_TRACKING_EXTRA_DEBUFFS)
+			DF.table.copy(filters.additionalInclude.excludeSpellIDs, AUTO_TRACKING_EXTRA_BUFFS)
+			DF.table.copy(filters.additionalInclude.excludeSpellIDs, AUTO_TRACKING_EXTRA_DEBUFFS)
+		else
+			DF.table.copy(filters.mainFilter.excludeSpellIDs, MANUAL_TRACKING_BUFFS)
+			DF.table.copy(filters.mainFilter.excludeSpellIDs, MANUAL_TRACKING_DEBUFFS)
+			DF.table.copy(filters.additionalInclude.excludeSpellIDs, MANUAL_TRACKING_BUFFS)
+			DF.table.copy(filters.additionalInclude.excludeSpellIDs, MANUAL_TRACKING_DEBUFFS)
+		end
 	end
+
+	containerConfigCache.candidateFilters[frameName] = filters
+
+	Plater.EndLogPerformanceCore("Plater-Core", "Update", "getCandidateFilters")
 	return filters
 end
 
 local function getAuraFilters(frameName, unit)
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "getAuraFilters")
-	local filters = {}
-	local allCandidates = getCandidateFilters(frameName)
-	local unitReaction = unit and UnitReaction (unit, "player")
+
 	local isPlayer = unit and UnitIsPlayer (unit)
 	local canAssist = unit and UnitCanAssist("player", unit)
-	local isFriend = unit and UnitIsFriend("player", unit)
-	
+	--local unitReaction = unit and UnitReaction (unit, "player")
+	--local isFriend = unit and UnitIsFriend("player", unit)
+
+	local auraFiltersCache = containerConfigCache.auraFilters
+	local cachedFilterInfo = (isPlayer and canAssist and auraFiltersCache.assistPlayer) or (not isPlayer and canAssist and auraFiltersCache.assist) or (isPlayer and not canAssist and auraFiltersCache.noAssistPlayer) or auraFiltersCache.noAssist
+	if cachedFilterInfo.filters and cachedFilterInfo.filterIndex == containerConfigCache.auraFilterIndex then
+		Plater.EndLogPerformanceCore("Plater-Core", "Update", "getAuraFilters")
+		return cachedFilterInfo
+	end
+
+	local filters = {}
+	local allCandidates = getCandidateFilters(frameName)
+
 	for _, type in pairs({"debuffs", "buffs"}) do
 
 		local pFilters = {}
@@ -1041,6 +1098,10 @@ local function getAuraFilters(frameName, unit)
 
 	--if DevTool then DevTool:AddData(filters, frameName); DevTool:AddData(MANUAL_TRACKING_BUFFS) end
 
+	cachedFilterInfo = {
+		filters = filters,
+		filterIndex = containerConfigCache.auraFilterIndex
+	}
 	Plater.EndLogPerformanceCore("Plater-Core", "Update", "getAuraFilters")
 	return filters
 end
@@ -1321,7 +1382,8 @@ local function reSkinAuraButtons(auraButtons)
 		platerInternal.Auras.reSkinAuraButtonsTimer[auraButtons] = C_Timer.NewTimer(1, function() reSkinAuraButtons(auraButtons) end)
 		return
 	end
-	Plater.StartLogPerformanceCore("Plater-Core", "Update", "reSkinAuraButtonsTimer")
+	Plater.StartLogPerformanceCore("Plater-Core", "Update", "reSkinAuraButtons")
+	
 	for _, auraButton in pairs(auraButtons) do
 		
 		auraButton:SetMouseMotionEnabled(profile.aura_show_tooltip)
@@ -1439,7 +1501,7 @@ local function reSkinAuraButtons(auraButtons)
 		end
 
 	end
-	Plater.EndLogPerformanceCore("Plater-Core", "Update", "reSkinAuraButtonsTimer")
+	Plater.EndLogPerformanceCore("Plater-Core", "Update", "reSkinAuraButtons")
 end
 
 local function getAuraFrameOptions(frameName, name, key, auraContainer)
@@ -1612,50 +1674,54 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 		for _, frameInfo in pairs (auraFramesSetup) do
 			local auraContainer = unitFrame[frameInfo.key]
 			if DB_AURA_ENABLED and unit then
-				local options = getFullAuraOptions(frameInfo.name, frameInfo.name, frameInfo.key, auraContainer, unitFrame.namePlateUnitToken)
-				auraContainer.activeOptions = options
-				auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
-				auraContainer:SetFlowLayoutMaximumLineSize(options.auraFrameOptions.layout.maximumLineSize)
-				auraContainer:SetFlowLayoutAnchorPoint(options.layoutGrowth.anchorPoint)
-				auraContainer:SetFlowLayoutGrowthDirection(options.layoutGrowth.horizontalDirection, options.layoutGrowth.verticalDirection)
+				if auraContainer.configIndex ~= containerConfigCache.containerConfigIndex then
+					local options = getFullAuraOptions(frameInfo.name, frameInfo.name, frameInfo.key, auraContainer, unitFrame.namePlateUnitToken)
+					auraContainer.activeOptions = options
+					auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
+					auraContainer:SetFlowLayoutMaximumLineSize(options.auraFrameOptions.layout.maximumLineSize)
+					auraContainer:SetFlowLayoutAnchorPoint(options.layoutGrowth.anchorPoint)
+					auraContainer:SetFlowLayoutGrowthDirection(options.layoutGrowth.horizontalDirection, options.layoutGrowth.verticalDirection)
 
-				local index = 1
-				for _, filter in pairs(options.auraFilters) do
-					local groupName = "group"..index
-					if not auraContainer.groups[groupName] then
-						options.auraFrameOptions.candidateFilters = filter.candidateFilters
-						auraContainer:AddAuraGroup(groupName, filter.filterString, options.auraFrameOptions)
-						auraContainer.groups[groupName] = true
+					local index = 1
+					for _, filter in pairs(options.auraFilters) do
+						local groupName = "group"..index
+						if not auraContainer.groups[groupName] then
+							options.auraFrameOptions.candidateFilters = filter.candidateFilters
+							auraContainer:AddAuraGroup(groupName, filter.filterString, options.auraFrameOptions)
+							auraContainer.groups[groupName] = true
+						end
+
+						local maxFrameCount = options.auraFrameOptions.maxFrameCount
+						if DB_AURA_SEPARATE_BUFFS and frameInfo.name == "Main" and groupName == "buffs" then
+							maxFrameCount = 0
+						end
+
+						if filter.filterString then
+							auraContainer:SetAuraGroupCandidateFilters(groupName, filter.candidateFilters)
+							auraContainer:SetAuraGroupFilterString(groupName, filter.filterString)
+
+							auraContainer:SetAuraGroupMaxFrameCount(groupName, maxFrameCount)
+							auraContainer:SetAuraGroupSortMethod(groupName, options.auraFrameOptions.sortMethod, options.auraFrameOptions.sortDirection)
+							auraContainer:SetAuraGroupLayout(groupName, options.auraFrameOptions.layout)
+						else
+							auraContainer:SetAuraGroupFilterString(groupName, "")
+							auraContainer:SetAuraGroupMaxFrameCount(groupName, 0)
+						end
+
+						index = index + 1
 					end
 
-					local maxFrameCount = options.auraFrameOptions.maxFrameCount
-					if DB_AURA_SEPARATE_BUFFS and frameInfo.name == "Main" and groupName == "buffs" then
-						maxFrameCount = 0
+					while (auraContainer.groups["group"..index]) do
+						--disable surplus
+						auraContainer:SetAuraGroupMaxFrameCount("group"..index, 0)
+						auraContainer:SetAuraGroupFilterString("group"..index, "")
+						index = index + 1
 					end
-
-					if filter.filterString then
-						auraContainer:SetAuraGroupCandidateFilters(groupName, filter.candidateFilters)
-						auraContainer:SetAuraGroupFilterString(groupName, filter.filterString)
-
-						auraContainer:SetAuraGroupMaxFrameCount(groupName, maxFrameCount)
-						auraContainer:SetAuraGroupSortMethod(groupName, options.auraFrameOptions.sortMethod, options.auraFrameOptions.sortDirection)
-						auraContainer:SetAuraGroupLayout(groupName, options.auraFrameOptions.layout)
-					else
-						auraContainer:SetAuraGroupFilterString(groupName, "")
-						auraContainer:SetAuraGroupMaxFrameCount(groupName, 0)
-					end
-
-					index = index + 1
+					
+					reSkinAuraButtons(auraContainer.auraButtons)
+					auraContainer.configIndex = containerConfigCache.containerConfigIndex
 				end
 
-				while (auraContainer.groups["group"..index]) do
-					--disable surplus
-					auraContainer:SetAuraGroupMaxFrameCount("group"..index, 0)
-					auraContainer:SetAuraGroupFilterString("group"..index, "")
-					index = index + 1
-				end
-				
-				reSkinAuraButtons(auraContainer.auraButtons)
 				auraContainer:SetEnabled(true)
 				auraContainer:SetUnit(unit)
 			else
@@ -4568,6 +4634,8 @@ end
 		DB_TRACK_METHOD = profile.aura_tracker.track_method
 
 		Plater.MaxAurasPerRow = floor(profile.plate_config.enemynpc.health_incombat[1] / (profile.aura_width + DB_AURA_PADDING))
+		Plater.Auras.SetContainerFiltersOutdated()
+		Plater.Auras.SetIconConfigOutdated()
     end
 
 	local function re_UpdateGhostAurasCache()
