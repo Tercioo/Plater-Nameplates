@@ -2204,7 +2204,7 @@ local debuff_options = {
 		end,
 		name = "Show Buffs Blizzard Nameplates show",
 		desc = "Show Buffs as they would be shown on blizzard nameplates.\nIt is advised to disable all other buff auto-trackers for best experience.",
-		hidden = not IS_WOW_PROJECT_MIDNIGHT or IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+		hidden = not IS_WOW_PROJECT_MIDNIGHT,
 	},
 	{
 		type = "toggle",

@@ -1025,6 +1025,17 @@ local function getAuraFilters(frameName, unit)
 				})
 				pFilters = {}
 			end
+
+			if DB_AURA_SHOW_BUFFS_AS_BLIZZARD then
+				--local candidate = DF.table.copy({}, allCandidates.mainFilter)
+				--candidate.nameplateShowPersonal = true
+				table.insert(filters, {
+					filterString = "HELPFUL|IMPORTANT|!CROWD_CONTROL",
+					--candidateFilters = candidate,
+					candidateFilters = allCandidates.mainFilter,
+				})
+				pFilters = {}
+			end
 			
 		elseif frameName == "ExtraIconFrame" and type == "debuffs" then
 			mainFilterString = "HARMFUL"
