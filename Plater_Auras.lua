@@ -899,6 +899,8 @@ end
 local function getAuraFilters(frameName, unit)
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "getAuraFilters")
 
+	if not unit then return {} end
+
 	local isPlayer = unit and UnitIsPlayer (unit)
 	local canAssist = unit and UnitCanAssist("player", unit)
 	--local unitReaction = unit and UnitReaction (unit, "player")
@@ -906,9 +908,17 @@ local function getAuraFilters(frameName, unit)
 
 	local auraFiltersCache = containerConfigCache.auraFilters
 	local cachedFilterInfo = (isPlayer and canAssist and auraFiltersCache.assistPlayer) or (not isPlayer and canAssist and auraFiltersCache.assist) or (isPlayer and not canAssist and auraFiltersCache.noAssistPlayer) or auraFiltersCache.noAssist
+	if not cachedFilterInfo[frameName] then
+		cachedFilterInfo[frameName] = {}
+	end
+	cachedFilterInfo = cachedFilterInfo[frameName]
 	if cachedFilterInfo.filters and cachedFilterInfo.filterIndex == containerConfigCache.auraFilterIndex then
+		--if not canAssist and isPlayer then
+		--	if unit then print(canAssist, isPlayer, UnitName(unit)) end
+		--	if DevTool then DevTool:AddData(cachedFilterInfo.filters) end
+		--end
 		Plater.EndLogPerformanceCore("Plater-Core", "Update", "getAuraFilters")
-		return cachedFilterInfo
+		return cachedFilterInfo.filters
 	end
 
 	local filters = {}
@@ -1105,12 +1115,13 @@ local function getAuraFilters(frameName, unit)
 		--if DevTool then DevTool:AddData({pFilters = pFilters, nFilters = nFilters, mainFilterString = mainFilterString, allCandidates = allCandidates}, frameName .. " - filters") end
 	end
 
-	--if DevTool then DevTool:AddData(filters, frameName); DevTool:AddData(MANUAL_TRACKING_BUFFS) end
+	--if DevTool then DevTool:AddData(filters, frameName) end
 
-	cachedFilterInfo = {
-		filters = filters,
-		filterIndex = containerConfigCache.auraFilterIndex
-	}
+	if unit then
+		cachedFilterInfo.filters = filters
+		cachedFilterInfo.filterIndex = containerConfigCache.auraFilterIndex
+	end
+	
 	Plater.EndLogPerformanceCore("Plater-Core", "Update", "getAuraFilters")
 	return filters
 end
@@ -1683,50 +1694,50 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 		for _, frameInfo in pairs (auraFramesSetup) do
 			local auraContainer = unitFrame[frameInfo.key]
 			if DB_AURA_ENABLED and unit then
+				local options = getFullAuraOptions(frameInfo.name, frameInfo.name, frameInfo.key, auraContainer, unitFrame.namePlateUnitToken)
+				auraContainer.activeOptions = options
+				auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
+				auraContainer:SetFlowLayoutMaximumLineSize(options.auraFrameOptions.layout.maximumLineSize)
+				auraContainer:SetFlowLayoutAnchorPoint(options.layoutGrowth.anchorPoint)
+				auraContainer:SetFlowLayoutGrowthDirection(options.layoutGrowth.horizontalDirection, options.layoutGrowth.verticalDirection)
+
+				local index = 1
+				for _, filter in pairs(options.auraFilters) do
+					local groupName = "group"..index
+					if not auraContainer.groups[groupName] then
+						options.auraFrameOptions.candidateFilters = filter.candidateFilters
+						auraContainer:AddAuraGroup(groupName, filter.filterString, options.auraFrameOptions)
+						auraContainer.groups[groupName] = true
+					end
+
+					local maxFrameCount = options.auraFrameOptions.maxFrameCount
+					if DB_AURA_SEPARATE_BUFFS and frameInfo.name == "Main" and groupName == "buffs" then
+						maxFrameCount = 0
+					end
+
+					if filter.filterString then
+						auraContainer:SetAuraGroupCandidateFilters(groupName, filter.candidateFilters)
+						auraContainer:SetAuraGroupFilterString(groupName, filter.filterString)
+
+						auraContainer:SetAuraGroupMaxFrameCount(groupName, maxFrameCount)
+						auraContainer:SetAuraGroupSortMethod(groupName, options.auraFrameOptions.sortMethod, options.auraFrameOptions.sortDirection)
+						auraContainer:SetAuraGroupLayout(groupName, options.auraFrameOptions.layout)
+					else
+						auraContainer:SetAuraGroupFilterString(groupName, "")
+						auraContainer:SetAuraGroupMaxFrameCount(groupName, 0)
+					end
+
+					index = index + 1
+				end
+
+				while (auraContainer.groups["group"..index]) do
+					--disable surplus
+					auraContainer:SetAuraGroupMaxFrameCount("group"..index, 0)
+					auraContainer:SetAuraGroupFilterString("group"..index, "")
+					index = index + 1
+				end
+				
 				if auraContainer.configIndex ~= containerConfigCache.containerConfigIndex then
-					local options = getFullAuraOptions(frameInfo.name, frameInfo.name, frameInfo.key, auraContainer, unitFrame.namePlateUnitToken)
-					auraContainer.activeOptions = options
-					auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
-					auraContainer:SetFlowLayoutMaximumLineSize(options.auraFrameOptions.layout.maximumLineSize)
-					auraContainer:SetFlowLayoutAnchorPoint(options.layoutGrowth.anchorPoint)
-					auraContainer:SetFlowLayoutGrowthDirection(options.layoutGrowth.horizontalDirection, options.layoutGrowth.verticalDirection)
-
-					local index = 1
-					for _, filter in pairs(options.auraFilters) do
-						local groupName = "group"..index
-						if not auraContainer.groups[groupName] then
-							options.auraFrameOptions.candidateFilters = filter.candidateFilters
-							auraContainer:AddAuraGroup(groupName, filter.filterString, options.auraFrameOptions)
-							auraContainer.groups[groupName] = true
-						end
-
-						local maxFrameCount = options.auraFrameOptions.maxFrameCount
-						if DB_AURA_SEPARATE_BUFFS and frameInfo.name == "Main" and groupName == "buffs" then
-							maxFrameCount = 0
-						end
-
-						if filter.filterString then
-							auraContainer:SetAuraGroupCandidateFilters(groupName, filter.candidateFilters)
-							auraContainer:SetAuraGroupFilterString(groupName, filter.filterString)
-
-							auraContainer:SetAuraGroupMaxFrameCount(groupName, maxFrameCount)
-							auraContainer:SetAuraGroupSortMethod(groupName, options.auraFrameOptions.sortMethod, options.auraFrameOptions.sortDirection)
-							auraContainer:SetAuraGroupLayout(groupName, options.auraFrameOptions.layout)
-						else
-							auraContainer:SetAuraGroupFilterString(groupName, "")
-							auraContainer:SetAuraGroupMaxFrameCount(groupName, 0)
-						end
-
-						index = index + 1
-					end
-
-					while (auraContainer.groups["group"..index]) do
-						--disable surplus
-						auraContainer:SetAuraGroupMaxFrameCount("group"..index, 0)
-						auraContainer:SetAuraGroupFilterString("group"..index, "")
-						index = index + 1
-					end
-					
 					reSkinAuraButtons(auraContainer.auraButtons)
 					auraContainer.configIndex = containerConfigCache.containerConfigIndex
 				end
