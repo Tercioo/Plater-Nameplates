@@ -8,6 +8,10 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1787083209, "Backend Change", "Aug 19th, 2026", "Added a buff 'blizzard-like' auto-filter.", "cont1nuity"},
+			{1787083209, "Backend Change", "Aug 19th, 2026", "Slight performance improvement through aura container config caching (still in work).", "cont1nuity"},
+			{1787083209, "Bug Fix", "Aug 19th, 2026", "Several fixes for aura filters tracking/blocking.", "cont1nuity"},
+			
 			{1787083209, "Bug Fix", "Aug 18th, 2026", "Fix issues with manual aura tracking.", "cont1nuity"},
 			{1787083209, "Backend Change", "Aug 18th, 2026", "All aura tracking lists (whitelist, blacklist, manual tracking, buff special) now support tracking by spell name as well again.", "cont1nuity"},
 			{1787083209, "Bug Fix", "Aug 18th, 2026", "Fix issues with Designer.", "Terciob"},
