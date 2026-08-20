@@ -220,50 +220,22 @@ platerInternal.ExtraAuras = {
 
 platerInternal.Auras = {
 	spellCaches = {
-		nameToID = {},
-		idToName = {},
 		allIDsByName = {},
 	},
-	spellCachesLoaded = false
+	spellCachesLoaded = false,
+	spellCachesLoading = false,
 }
 Plater.SpellCaches = platerInternal.Auras.spellCaches
 
-local spellBlacklist = { -- some spells just crash PTR clients... add them here
+local spellBlacklist = {} -- some spells just crash PTR clients... add them here
 
-}
 -- Spell Caches
-local function expandAuraCaches()
-	if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS or not platerInternal.Auras.spellCachesLoaded then return end
-	local toLowerCase = string.lower
-	local cache = platerInternal.Auras.spellCaches
-	local allIDsByName = cache.allIDsByName
-	local idToName = cache.idToName
-	local containersToExtend = DB_TRACK_METHOD == 0x1 and {DB_DEBUFF_BANNED, DB_BUFF_BANNED, SPECIAL_AURAS_AUTO_ADDED, SPECIAL_AURAS_USER_LIST, SPECIAL_AURAS_USER_LIST_MINE, AUTO_TRACKING_EXTRA_BUFFS, AUTO_TRACKING_EXTRA_DEBUFFS} or {SPECIAL_AURAS_AUTO_ADDED, SPECIAL_AURAS_USER_LIST, SPECIAL_AURAS_USER_LIST_MINE, MANUAL_TRACKING_BUFFS, MANUAL_TRACKING_DEBUFFS}
-	for _, container in pairs (containersToExtend) do
-		local containerCopy = DF.table.copy({}, container or {})
-		for id, val in pairs(containerCopy) do
-			--local addIDs = allIDsByName[toLowerCase(id)] or allIDsByName[toLowerCase(idToName[id] or "")] or {}
-			local addIDs = allIDsByName[toLowerCase(id)] or {} -- just expand names
-			for _, addID in pairs(addIDs) do
-				container[addID] = val
-			end
-		end
-	end
-
-	-- update filters
-	for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-		if plateFrame.unitFrame and plateFrame.unitFrame.PlaterOnScreen then
-			if not plateFrame.unitFrame.isPerformanceUnitAura then
-				Plater.AddToAuraUpdate(plateFrame.unitFrame.unit, plateFrame.unitFrame) -- force aura update
-			end
-		end
-	end
-	--if DevTool then DevTool:AddData(containersToExtend, "containers") end
-end
-
--- Spell Cache init
+local expandAuraCaches
 local lazyBuildSpellCache
+-- Spell Cache init
 lazyBuildSpellCache = function(start)
+	platerInternal.Auras.spellCachesLoading = true
+	platerInternal.Auras.spellCachesLoaded = false
 	local startPoint = start or 1
 	local endPoint = startPoint + 2000
 	local i = startPoint
@@ -271,8 +243,6 @@ lazyBuildSpellCache = function(start)
 	local toLowerCase = string.lower
 	local GetSpellInfo = GetSpellInfo
 
-	local hashMap = platerInternal.Auras.spellCaches.nameToID
-	local indexTable = platerInternal.Auras.spellCaches.idToName
 	local allSpellsSameName = platerInternal.Auras.spellCaches.allIDsByName
 
 	while (i < endPoint) do
@@ -280,8 +250,6 @@ lazyBuildSpellCache = function(start)
 
 		if (spellName) then
 			spellName = toLowerCase(spellName)
-			hashMap[spellName] = i --[spellname] = spellId
-			indexTable[#indexTable+1] = spellName --array with all spellnames
 
 			local spellNameTable = allSpellsSameName[spellName]
 			if (not spellNameTable) then
@@ -298,10 +266,52 @@ lazyBuildSpellCache = function(start)
 	else
 		--if DevTool then DevTool:AddData(platerInternal.Auras.spellCaches) end
 		platerInternal.Auras.spellCachesLoaded = true
+		platerInternal.Auras.spellCachesLoading = false
 		expandAuraCaches()
 	end
 end
 lazyBuildSpellCache()
+
+function expandAuraCaches()
+	if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS or not platerInternal.Auras.spellCachesLoaded then return end
+	local toLowerCase = string.lower
+	local cache = platerInternal.Auras.spellCaches
+	local allIDsByName = cache.allIDsByName
+	local toKeep = {}
+	local missing = {}
+	local containersToExtend = DB_TRACK_METHOD == 0x1 and {DB_DEBUFF_BANNED, DB_BUFF_BANNED, SPECIAL_AURAS_AUTO_ADDED, SPECIAL_AURAS_USER_LIST, SPECIAL_AURAS_USER_LIST_MINE, AUTO_TRACKING_EXTRA_BUFFS, AUTO_TRACKING_EXTRA_DEBUFFS} or {SPECIAL_AURAS_AUTO_ADDED, SPECIAL_AURAS_USER_LIST, SPECIAL_AURAS_USER_LIST_MINE, MANUAL_TRACKING_BUFFS, MANUAL_TRACKING_DEBUFFS}
+	for _, container in pairs (containersToExtend) do
+		local containerCopy = DF.table.copy({}, container or {})
+		for id, val in pairs(containerCopy) do
+			local addIDs = allIDsByName[toLowerCase(id)] or Plater.SpellSameNameTable[toLowerCase(id)] -- just expand names
+			if addIDs then
+				toKeep[toLowerCase(id)] = addIDs
+				for _, addID in pairs(addIDs) do
+					container[addID] = val
+				end
+			elseif not tonumber(id) then
+				table.insert(missing, toLowerCase(id))
+			end
+		end
+	end
+
+	-- slim it
+	cache.allIDsByName = toKeep
+	if next(missing) and not platerInternal.Auras.spellCachesLoading then
+		C_Timer.After(0, lazyBuildSpellCache)
+	end
+
+	-- update filters
+	Plater.Auras.SetContainerFiltersOutdated()
+	for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+		if plateFrame.unitFrame and plateFrame.unitFrame.PlaterOnScreen then
+			if not plateFrame.unitFrame.isPerformanceUnitAura then
+				Plater.AddToAuraUpdate(plateFrame.unitFrame.unit, plateFrame.unitFrame) -- force aura update
+			end
+		end
+	end
+	--if DevTool then DevTool:AddData(containersToExtend, "containers") end
+end
 -- End Spell Caches
 
 

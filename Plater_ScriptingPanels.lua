@@ -3208,7 +3208,7 @@ function Plater.CreateScriptingPanel()
 			scriptingFrame.SaveScript()
 		end
 
-		--DF:UnloadSpellCache()
+		DF:UnloadSpellCache()
 	end)
 	
 	-- scriptingFrame.ScriptNameTextEntry --name of the script (text entry)
