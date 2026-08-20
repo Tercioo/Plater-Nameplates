@@ -35,3 +35,7 @@ images/cast_bar_debuff.afphoto~lock~
 *.bak
 libs/DF/_lua_fns.txt
 /afphoto
+*.jsonl
+*.py
+*.pyc
+libs/DF/CHANGES.txt
