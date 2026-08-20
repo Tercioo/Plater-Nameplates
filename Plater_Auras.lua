@@ -1002,15 +1002,17 @@ local function getAuraFilters(frameName, unit)
 				})
 			end
 			if DB_AURA_SHOW_AS_BLIZZARD then
-				local candidate = DF.table.copy({}, allCandidates.mainFilter)
-				candidate.nameplateShowPersonal = true
+				--local candidate = DF.table.copy({}, allCandidates.mainFilter)
+				--candidate.nameplateShowPersonal = true
 				table.insert(filters, {
 					filterString = "HARMFUL|IMPORTANT|PLAYER|!CROWD_CONTROL" .. (DB_SHOW_PURGE_IN_EXTRA_ICONS and "|!RAID_PLAYER_DISPELLABLE" or ""),
-					candidateFilters = candidate,
+					--candidateFilters = candidate,
+					candidateFilters = allCandidates.mainFilter,
 				})
 				table.insert(filters, {
 					filterString = "HARMFUL|!IMPORTANT|PLAYER|!CROWD_CONTROL" .. (DB_SHOW_PURGE_IN_EXTRA_ICONS and "|!RAID_PLAYER_DISPELLABLE" or ""),
-					candidateFilters = candidate,
+					--candidateFilters = candidate,
+					candidateFilters = allCandidates.mainFilter,
 				})
 				pFilters = {}
 			end
