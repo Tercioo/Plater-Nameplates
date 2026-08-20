@@ -773,11 +773,23 @@ local containerConfigCache = {
 		noAssist = {},
 		noAssistPlayer = {},
 	},
+	containerLayoutIndex = 0,
+	containerLayouts = {},
+	containerFullOptionIndex = 0,
+	containerFullOptions = {},
+	auraFrameOptionIndex = 0,
+	auraFrameOptions = {},
+	auraFrameLayoutIndex = 0,
+	auraFrameLayouts = {},
 }
 function Plater.Auras.SetIconConfigOutdated()
+	print("config+1")
 	containerConfigCache.containerConfigIndex = containerConfigCache.containerConfigIndex + 1
+	containerConfigCache.containerLayoutIndex = containerConfigCache.containerLayoutIndex + 1
+	containerConfigCache.containerFullOptionIndex = containerConfigCache.containerFullOptionIndex + 1
 end
 function Plater.Auras.SetContainerFiltersOutdated()
+	print("filter+1")
 	containerConfigCache.candidateFilterIndex = containerConfigCache.candidateFilterIndex + 1
 	containerConfigCache.auraFilterIndex = containerConfigCache.auraFilterIndex + 1
 end
@@ -1128,7 +1140,14 @@ end
 
 --TODO: by container group as well. requires larger rework of the whole current setup. support separate sizes for "own" debuffs/buffs
 local function getAuraFrameLayout(frameName)
+	Plater.StartLogPerformanceCore("Plater-Core", "Update", "getAuraFrameLayout")
 	if not Plater.MaxAurasPerRow then Plater.RefreshAuraCache() end -- security check
+
+	local cachedFrameLayout = containerConfigCache.auraFrameLayouts[frameName]
+	if cachedFrameLayout and cachedFrameLayout.optionIndex == containerConfigCache.auraFrameLayoutIndex then
+		Plater.EndLogPerformanceCore("Plater-Core", "Update", "getAuraFrameLayout")
+		return cachedFrameLayout
+	end
 
 	local profile = Plater.db.profile
 	local layout = {
@@ -1141,6 +1160,7 @@ local function getAuraFrameLayout(frameName)
 		elementHeight = 16,
 		--layoutIndex
 		maximumLineSize = math.huge,
+		optionIndex = containerConfigCache.auraFrameLayoutIndex,
 	}
 
 	if frameName == "Main" then
@@ -1155,6 +1175,10 @@ local function getAuraFrameLayout(frameName)
 		layout.elementWidth = profile.extra_icon_width
 		layout.elementHeight = profile.extra_icon_height
 	end
+
+	containerConfigCache.auraFrameLayouts[frameName] = layout
+
+	Plater.EndLogPerformanceCore("Plater-Core", "Update", "getAuraFrameLayout")
 	return layout
 end
 
@@ -1526,8 +1550,14 @@ local function reSkinAuraButtons(auraButtons)
 	Plater.EndLogPerformanceCore("Plater-Core", "Update", "reSkinAuraButtons")
 end
 
-local function getAuraFrameOptions(frameName, name, key, auraContainer)
+local function getAuraFrameOptions(frameName, key, auraContainer)
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "getAuraFrameOptions")
+	local cachedAuraOptions = containerConfigCache.auraFrameOptions[frameName]
+	if cachedAuraOptions and cachedAuraOptions.optionIndex == containerConfigCache.auraFrameOptionIndex then
+		Plater.EndLogPerformanceCore("Plater-Core", "Update", "getAuraFrameOptions")
+		return cachedAuraOptions
+	end
+	
 	local auraFrameOptions = {
 		-- Maximum number of aura frames this filter group may display.
 		maxFrameCount = (Plater.db.profile.aura_max_shown_limit and (Plater.db.profile.aura_max_shown_limit <= 0))and math.huge or Plater.db.profile.aura_max_shown_limit or math.huge,
@@ -1540,25 +1570,35 @@ local function getAuraFrameOptions(frameName, name, key, auraContainer)
 		-- Optional candidate filters applied after the aura filter string.
 		candidateFilters = nil,
 		-- Optional callback invoked after each frame is created.
-		initializeFrame = function(auraButton) initAuraFrame(auraButton, name, key, auraContainer) end,
+		initializeFrame = function(auraButton) initAuraFrame(auraButton, frameName, key, auraContainer) end,
 		-- Optional flow layout settings for this filter group's visible frames.
 		layout = getAuraFrameLayout(frameName),
+		optionIndex = containerConfigCache.auraFrameOptionIndex,
 	}
 
 	if frameName == "ExtraIconFrame" then
 		auraFrameOptions.maxFrameCount = math.huge
 	end
 
+	containerConfigCache.auraFrameOptions[frameName] = auraFrameOptions
+
 	Plater.EndLogPerformanceCore("Plater-Core", "Update", "getAuraFrameOptions")
 	return auraFrameOptions
 end
 
-local function getFullAuraOptions(frameName, name, key, auraContainer, unit)
+local function getFullAuraOptions(frameName, key, auraContainer, unit)
+	Plater.StartLogPerformanceCore("Plater-Core", "Update", "getFullAuraOptions")
+	local cachedAuraOptions = containerConfigCache.containerFullOptions[frameName]
+	if cachedAuraOptions and cachedAuraOptions.optionIndex == containerConfigCache.containerFullOptionIndex then
+		Plater.EndLogPerformanceCore("Plater-Core", "Update", "getFullAuraOptions")
+		return cachedAuraOptions
+	end
 	local fullOptions = {
-		auraFrameOptions = getAuraFrameOptions(frameName, name, key, auraContainer),
+		auraFrameOptions = getAuraFrameOptions(frameName, key, auraContainer),
 		processingPolicy = {},
 		layoutGrowth = {},
 		auraFilters = getAuraFilters(frameName, unit),
+		optionsIndex = containerConfigCache.containerFullOptionIndex
 	}
 
 	local horizontalDirection, verticalDirection, anchorPoint = getLayoutGrowthDirection(frameName)
@@ -1570,6 +1610,9 @@ local function getFullAuraOptions(frameName, name, key, auraContainer, unit)
 	fullOptions.processingPolicy.policy = policy
 	fullOptions.processingPolicy.policyOptions = policyOptions
 
+	containerConfigCache.containerFullOptions[frameName] = fullOptions
+
+	Plater.EndLogPerformanceCore("Plater-Core", "Update", "getFullAuraOptions")
 	return fullOptions
 end
 
@@ -1581,7 +1624,7 @@ local function createAuraContainers(unitFrame)
 		auraContainer.Name = frameInfo.name
 		--auraContainer.index = i
 
-		local options = getFullAuraOptions(frameInfo.name, frameInfo.name, frameInfo.key, auraContainer, nil)
+		local options = getFullAuraOptions(frameInfo.name, frameInfo.key, auraContainer, nil)
 		auraContainer.activeOptions = options
 		auraContainer.groups = {}
 		auraContainer.auraButtons = {}
@@ -1696,7 +1739,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 		for _, frameInfo in pairs (auraFramesSetup) do
 			local auraContainer = unitFrame[frameInfo.key]
 			if DB_AURA_ENABLED and unit then
-				local options = getFullAuraOptions(frameInfo.name, frameInfo.name, frameInfo.key, auraContainer, unitFrame.namePlateUnitToken)
+				local options = getFullAuraOptions(frameInfo.name, frameInfo.key, auraContainer, unitFrame.namePlateUnitToken)
 				auraContainer.activeOptions = options
 				auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
 				auraContainer:SetFlowLayoutMaximumLineSize(options.auraFrameOptions.layout.maximumLineSize)
@@ -4623,6 +4666,8 @@ end
     end
 
 	function Plater.RefreshAuraCache()
+		Plater.StartLogPerformanceCore("Plater-Core", "Update", "RefreshAuraCache")
+
 		local profile = Plater.db.profile
 
 		DB_AURA_ENABLED = profile.aura_enabled
@@ -4658,6 +4703,8 @@ end
 		Plater.MaxAurasPerRow = floor(profile.plate_config.enemynpc.health_incombat[1] / (profile.aura_width + DB_AURA_PADDING))
 		Plater.Auras.SetContainerFiltersOutdated()
 		Plater.Auras.SetIconConfigOutdated()
+
+		Plater.EndLogPerformanceCore("Plater-Core", "Update", "RefreshAuraCache")
     end
 
 	local function re_UpdateGhostAurasCache()
