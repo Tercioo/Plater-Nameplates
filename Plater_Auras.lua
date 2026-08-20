@@ -978,15 +978,19 @@ local function getAuraFilters(frameName, unit)
 				table.insert(pFilters, "RAID_IN_COMBAT")
 				--table.insert(pFilters, "RAID")
 			end
-			if DB_AURA_SHOW_DEBUFF_BYPLAYER then
-				table.insert(pFilters, "PLAYER")
-			end
+			
 			if Plater.db.profile.aura_show_crowdcontrol and not Plater.db.profile.debuff_show_cc then
 				table.insert(pFilters, "CROWD_CONTROL")
 			elseif Plater.db.profile.debuff_show_cc then
 				table.insert(nFilters, "!CROWD_CONTROL")
 			end
 
+			if DB_AURA_SHOW_DEBUFF_BYPLAYER then
+				table.insert(filters, {
+					filterString = "HARMFUL|PLAYER" .. (DB_SHOW_PURGE_IN_EXTRA_ICONS and "|!RAID_PLAYER_DISPELLABLE" or "") .. (RAID_IN_COMBAT and "|!RAID_IN_COMBAT" or "") .. (Plater.db.profile.aura_show_crowdcontrol and "|!CROWD_CONTROL" or ""),
+					candidateFilters = allCandidates.mainFilter,
+				})
+			end
 			if DB_AURA_SHOW_AS_BLIZZARD then
 				local candidate = DF.table.copy({}, allCandidates.mainFilter)
 				candidate.nameplateShowPersonal = true
