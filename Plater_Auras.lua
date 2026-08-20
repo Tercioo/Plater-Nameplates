@@ -979,11 +979,11 @@ local function getAuraFilters(frameName, unit)
 				local candidate = DF.table.copy({}, allCandidates.mainFilter)
 				candidate.nameplateShowPersonal = true
 				table.insert(filters, {
-					filterString = "HARMFUL|IMPORTANT|PLAYER|!CROWD_CONTROL",
+					filterString = "HARMFUL|IMPORTANT|PLAYER|!CROWD_CONTROL" .. (DB_SHOW_PURGE_IN_EXTRA_ICONS and "|!RAID_PLAYER_DISPELLABLE" or ""),
 					candidateFilters = candidate,
 				})
 				table.insert(filters, {
-					filterString = "HARMFUL|!IMPORTANT|PLAYER|!CROWD_CONTROL ",
+					filterString = "HARMFUL|!IMPORTANT|PLAYER|!CROWD_CONTROL" .. (DB_SHOW_PURGE_IN_EXTRA_ICONS and "|!RAID_PLAYER_DISPELLABLE" or ""),
 					candidateFilters = candidate,
 				})
 				pFilters = {}
@@ -1030,17 +1030,17 @@ local function getAuraFilters(frameName, unit)
 				local candidateFilter = DF.table.copy({}, allCandidates.mainFilter)
 				candidateFilter.includeSpellIDs = nil
 				table.insert(filters, {
-					filterString = "HELPFUL",
+					filterString = "HELPFUL" .. (DB_SHOW_PURGE_IN_EXTRA_ICONS and "|!RAID_PLAYER_DISPELLABLE" or "") .. (Plater.db.profile.extra_icon_show_defensive and "|!BIG_DEFENSIVE|!EXTERNAL_DEFENSIVE" or ""),
 					candidateFilters = candidateFilter
 				})
 				pFilters = {}
 			end
 
-			if DB_AURA_SHOW_BUFFS_AS_BLIZZARD then
+			if DB_AURA_SHOW_BUFFS_AS_BLIZZARD and not DB_AURA_SHOW_BUFFENEMYNPC then
 				--local candidate = DF.table.copy({}, allCandidates.mainFilter)
 				--candidate.nameplateShowPersonal = true
 				table.insert(filters, {
-					filterString = "HELPFUL|IMPORTANT|!CROWD_CONTROL",
+					filterString = "HELPFUL|IMPORTANT" .. (DB_SHOW_PURGE_IN_EXTRA_ICONS and "|!RAID_PLAYER_DISPELLABLE" or "") .. (Plater.db.profile.extra_icon_show_defensive and "|!BIG_DEFENSIVE|!EXTERNAL_DEFENSIVE" or ""),
 					--candidateFilters = candidate,
 					candidateFilters = allCandidates.mainFilter,
 				})
