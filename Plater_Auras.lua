@@ -783,13 +783,13 @@ local containerConfigCache = {
 	auraFrameLayouts = {},
 }
 function Plater.Auras.SetIconConfigOutdated()
-	print("config+1")
+	--print("config+1")
 	containerConfigCache.containerConfigIndex = containerConfigCache.containerConfigIndex + 1
 	containerConfigCache.containerLayoutIndex = containerConfigCache.containerLayoutIndex + 1
 	containerConfigCache.containerFullOptionIndex = containerConfigCache.containerFullOptionIndex + 1
 end
 function Plater.Auras.SetContainerFiltersOutdated()
-	print("filter+1")
+	--print("filter+1")
 	containerConfigCache.candidateFilterIndex = containerConfigCache.candidateFilterIndex + 1
 	containerConfigCache.auraFilterIndex = containerConfigCache.auraFilterIndex + 1
 end
