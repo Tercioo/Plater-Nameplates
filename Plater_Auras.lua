@@ -1744,6 +1744,8 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 			nextAuraIndex = nextAuraIndex + 1
 
 			--> unit aura cache dummy compat
+			unitFrame.BuffFrame.amountAurasShown = 0
+			unitFrame.BuffFrame2.amountAurasShown = 0
 			unitFrame.AuraCache = {}
 			unitFrame.GhostAuraCache = {}
 			unitFrame.ExtraAuraCache = {}
