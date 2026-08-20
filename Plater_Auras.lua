@@ -997,20 +997,20 @@ local function getAuraFilters(frameName, unit)
 
 			if DB_AURA_SHOW_DEBUFF_BYPLAYER then
 				table.insert(filters, {
-					filterString = "HARMFUL|PLAYER" .. (DB_SHOW_PURGE_IN_EXTRA_ICONS and "|!RAID_PLAYER_DISPELLABLE" or "") .. (RAID_IN_COMBAT and "|!RAID_IN_COMBAT" or "") .. (Plater.db.profile.aura_show_crowdcontrol and "|!CROWD_CONTROL" or ""),
+					filterString = "HARMFUL|PLAYER" .. (canAssist and DB_SHOW_PURGE_IN_EXTRA_ICONS and "|!RAID_PLAYER_DISPELLABLE" or "") .. (DB_AURA_SHOW_RAID and "|!RAID_IN_COMBAT" or "") .. (Plater.db.profile.aura_show_crowdcontrol and "|!CROWD_CONTROL" or ""),
 					candidateFilters = allCandidates.mainFilter,
 				})
 			end
-			if DB_AURA_SHOW_AS_BLIZZARD then
+			if DB_AURA_SHOW_AS_BLIZZARD and not DB_AURA_SHOW_DEBUFF_BYPLAYER then
 				--local candidate = DF.table.copy({}, allCandidates.mainFilter)
 				--candidate.nameplateShowPersonal = true
 				table.insert(filters, {
-					filterString = "HARMFUL|IMPORTANT|PLAYER|!CROWD_CONTROL" .. (DB_SHOW_PURGE_IN_EXTRA_ICONS and "|!RAID_PLAYER_DISPELLABLE" or ""),
+					filterString = "HARMFUL|IMPORTANT|PLAYER|!CROWD_CONTROL" .. (canAssist and DB_SHOW_PURGE_IN_EXTRA_ICONS and "|!RAID_PLAYER_DISPELLABLE" or ""),
 					--candidateFilters = candidate,
 					candidateFilters = allCandidates.mainFilter,
 				})
 				table.insert(filters, {
-					filterString = "HARMFUL|!IMPORTANT|PLAYER|!CROWD_CONTROL" .. (DB_SHOW_PURGE_IN_EXTRA_ICONS and "|!RAID_PLAYER_DISPELLABLE" or ""),
+					filterString = "HARMFUL|!IMPORTANT|PLAYER|!CROWD_CONTROL" .. (canAssist and DB_SHOW_PURGE_IN_EXTRA_ICONS and "|!RAID_PLAYER_DISPELLABLE" or ""),
 					--candidateFilters = candidate,
 					candidateFilters = allCandidates.mainFilter,
 				})
