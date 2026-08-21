@@ -791,12 +791,15 @@ local containerConfigCache = {
 	auraFrameOptions = {},
 	auraFrameLayoutIndex = 0,
 	auraFrameLayouts = {},
+	auraBorderOptionIndex = 0,
+	auraBorderOptions = {},
 }
 function Plater.Auras.SetIconConfigOutdated()
 	--print("config+1")
 	containerConfigCache.containerConfigIndex = containerConfigCache.containerConfigIndex + 1
 	containerConfigCache.containerLayoutIndex = containerConfigCache.containerLayoutIndex + 1
 	containerConfigCache.containerFullOptionIndex = containerConfigCache.containerFullOptionIndex + 1
+	containerConfigCache.auraBorderOptionIndex = containerConfigCache.auraBorderOptionIndex + 1
 end
 function Plater.Auras.SetContainerFiltersOutdated()
 	--print("filter+1")
@@ -1449,7 +1452,7 @@ local function initAuraFrame(auraButton, frameName, frameKey, auraContainer)
 end
 
 platerInternal.Auras.reSkinAuraButtonsTimer = {}
-local function reSkinAuraButtons(auraButtons)
+local function reSkinAuraButtons(auraButtons, options)
 
 	local profile = Plater.db.profile
 
@@ -1457,7 +1460,7 @@ local function reSkinAuraButtons(auraButtons)
 		if platerInternal.Auras.reSkinAuraButtonsTimer[auraButtons] then
 			platerInternal.Auras.reSkinAuraButtonsTimer[auraButtons]:Cancel()
 		end
-		platerInternal.Auras.reSkinAuraButtonsTimer[auraButtons] = C_Timer.NewTimer(1, function() reSkinAuraButtons(auraButtons) end)
+		platerInternal.Auras.reSkinAuraButtonsTimer[auraButtons] = C_Timer.NewTimer(1, function() reSkinAuraButtons(auraButtons, options) end)
 		return
 	end
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "reSkinAuraButtons")
@@ -1548,31 +1551,7 @@ local function reSkinAuraButtons(auraButtons)
     	auraButton.Border:SetVertexColor(defaultColor[1], defaultColor[2], defaultColor[3], defaultColor[4])
 
 		if frameName ~= "ExtraIconFrame" and Plater.db.profile.aura_border_colors_by_type or frameName == "ExtraIconFrame" and Plater.db.profile.extra_icon_aura_border_colors_by_type then
-			local borderOptions = {
-				showIcon = false,
-				showWhenHarmful = true,
-				showWhenHelpful = true,
-				showWithoutDispelType = true,
-				style = Enum.CustomAuraButtonDispelTypeTextureStyle.PreserveAsset,
-				customDispelColorMap = frameName ~= "ExtraIconFrame" and {
-					["None"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.none)),
-					["Magic"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.magic)),
-					["Curse"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.curse)),
-					["Disease"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.disease)),
-					["Poison"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.poison)),
-					["Bleed"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.bleed)),
-					["Enrage"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.enrage)),
-				} or {
-					["None"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.none)),
-					["Magic"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.magic)),
-					["Curse"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.curse)),
-					["Disease"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.disease)),
-					["Poison"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.poison)),
-					["Bleed"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.bleed)),
-					["Enrage"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.enrage)),
-				}
-			}
-			auraButton:SetAuraBorder(auraButton.Border, borderOptions)
+			auraButton:SetAuraBorder(auraButton.Border, options.borderOptions)
 		else
 			auraButton:ClearAuraBorder()
 		end
@@ -1636,6 +1615,45 @@ local function getAuraFrameOptions(frameName, key, auraContainer)
 	return auraFrameOptions
 end
 
+local function getAuraBorderOptions(frameName)
+	Plater.StartLogPerformanceCore("Plater-Core", "Update", "getAuraBorderOptions")
+	local cachedAuraBorderOptions = containerConfigCache.auraBorderOptions[frameName]
+	if cachedAuraBorderOptions and cachedAuraBorderOptions.optionIndex == containerConfigCache.containerFullOptionIndex then
+		Plater.EndLogPerformanceCore("Plater-Core", "Update", "getAuraBorderOptions")
+		return cachedAuraBorderOptions
+	end
+	local borderOptions = {
+		showIcon = false,
+		showWhenHarmful = true,
+		showWhenHelpful = true,
+		showWithoutDispelType = true,
+		style = Enum.CustomAuraButtonDispelTypeTextureStyle.PreserveAsset,
+		customDispelColorMap = frameName ~= "ExtraIconFrame" and {
+			["None"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.none)),
+			["Magic"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.magic)),
+			["Curse"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.curse)),
+			["Disease"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.disease)),
+			["Poison"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.poison)),
+			["Bleed"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.bleed)),
+			["Enrage"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.enrage)),
+		} or {
+			["None"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.none)),
+			["Magic"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.magic)),
+			["Curse"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.curse)),
+			["Disease"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.disease)),
+			["Poison"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.poison)),
+			["Bleed"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.bleed)),
+			["Enrage"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.enrage)),
+		},
+		optionIndex = containerConfigCache.auraBorderOptionIndex,
+	}
+
+	containerConfigCache.auraBorderOptions[frameName] = borderOptions
+
+	Plater.EndLogPerformanceCore("Plater-Core", "Update", "getAuraBorderOptions")
+	return borderOptions
+end
+
 local function getFullAuraOptions(frameName, key, auraContainer, unit)
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "getFullAuraOptions")
 	local cachedAuraOptions = containerConfigCache.containerFullOptions[frameName]
@@ -1648,6 +1666,7 @@ local function getFullAuraOptions(frameName, key, auraContainer, unit)
 		processingPolicy = {},
 		layoutGrowth = {},
 		auraFilters = getAuraFilters(frameName, unit),
+		borderOptions = getAuraBorderOptions(frameName),
 		optionsIndex = containerConfigCache.containerFullOptionIndex
 	}
 
@@ -1792,51 +1811,54 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 			local auraContainer = unitFrame[frameInfo.key]
 			if DB_AURA_ENABLED and unit then
 				local options = getFullAuraOptions(frameInfo.name, frameInfo.key, auraContainer, unitFrame.namePlateUnitToken)
-				auraContainer.activeOptions = options
-				auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
-				auraContainer:SetFlowLayoutMaximumLineSize(options.auraFrameOptions.layout.maximumLineSize)
-				auraContainer:SetFlowLayoutAnchorPoint(options.layoutGrowth.anchorPoint)
-				auraContainer:SetFlowLayoutGrowthDirection(options.layoutGrowth.horizontalDirection, options.layoutGrowth.verticalDirection)
+				if auraContainer.activeOptions ~= options then
+					auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
+					auraContainer:SetFlowLayoutMaximumLineSize(options.auraFrameOptions.layout.maximumLineSize)
+					auraContainer:SetFlowLayoutAnchorPoint(options.layoutGrowth.anchorPoint)
+					auraContainer:SetFlowLayoutGrowthDirection(options.layoutGrowth.horizontalDirection, options.layoutGrowth.verticalDirection)
 
-				local index = 1
-				for _, filter in pairs(options.auraFilters) do
-					local groupName = "group"..index
-					if not auraContainer.groups[groupName] then
-						options.auraFrameOptions.candidateFilters = filter.candidateFilters
-						auraContainer:AddAuraGroup(groupName, filter.filterString, options.auraFrameOptions)
-						auraContainer.groups[groupName] = true
+					local index = 1
+					for _, filter in pairs(options.auraFilters) do
+						local groupName = "group"..index
+						if not auraContainer.groups[groupName] then
+							options.auraFrameOptions.candidateFilters = filter.candidateFilters
+							auraContainer:AddAuraGroup(groupName, filter.filterString, options.auraFrameOptions)
+							auraContainer.groups[groupName] = true
+						end
+
+						local maxFrameCount = options.auraFrameOptions.maxFrameCount
+						if DB_AURA_SEPARATE_BUFFS and frameInfo.name == "Main" and groupName == "buffs" then
+							maxFrameCount = 0
+						end
+
+						if filter.filterString then
+							auraContainer:SetAuraGroupCandidateFilters(groupName, filter.candidateFilters)
+							auraContainer:SetAuraGroupFilterString(groupName, filter.filterString)
+
+							auraContainer:SetAuraGroupMaxFrameCount(groupName, maxFrameCount)
+							auraContainer:SetAuraGroupSortMethod(groupName, options.auraFrameOptions.sortMethod, options.auraFrameOptions.sortDirection)
+							auraContainer:SetAuraGroupLayout(groupName, options.auraFrameOptions.layout)
+						else
+							auraContainer:SetAuraGroupFilterString(groupName, "")
+							auraContainer:SetAuraGroupMaxFrameCount(groupName, 0)
+						end
+
+						index = index + 1
 					end
 
-					local maxFrameCount = options.auraFrameOptions.maxFrameCount
-					if DB_AURA_SEPARATE_BUFFS and frameInfo.name == "Main" and groupName == "buffs" then
-						maxFrameCount = 0
+					while (auraContainer.groups["group"..index]) do
+						--disable surplus
+						auraContainer:SetAuraGroupMaxFrameCount("group"..index, 0)
+						auraContainer:SetAuraGroupFilterString("group"..index, "")
+						index = index + 1
+					end
+					
+					if auraContainer.configIndex ~= containerConfigCache.containerConfigIndex then
+						reSkinAuraButtons(auraContainer.auraButtons, options)
+						auraContainer.configIndex = containerConfigCache.containerConfigIndex
 					end
 
-					if filter.filterString then
-						auraContainer:SetAuraGroupCandidateFilters(groupName, filter.candidateFilters)
-						auraContainer:SetAuraGroupFilterString(groupName, filter.filterString)
-
-						auraContainer:SetAuraGroupMaxFrameCount(groupName, maxFrameCount)
-						auraContainer:SetAuraGroupSortMethod(groupName, options.auraFrameOptions.sortMethod, options.auraFrameOptions.sortDirection)
-						auraContainer:SetAuraGroupLayout(groupName, options.auraFrameOptions.layout)
-					else
-						auraContainer:SetAuraGroupFilterString(groupName, "")
-						auraContainer:SetAuraGroupMaxFrameCount(groupName, 0)
-					end
-
-					index = index + 1
-				end
-
-				while (auraContainer.groups["group"..index]) do
-					--disable surplus
-					auraContainer:SetAuraGroupMaxFrameCount("group"..index, 0)
-					auraContainer:SetAuraGroupFilterString("group"..index, "")
-					index = index + 1
-				end
-				
-				if auraContainer.configIndex ~= containerConfigCache.containerConfigIndex then
-					reSkinAuraButtons(auraContainer.auraButtons)
-					auraContainer.configIndex = containerConfigCache.containerConfigIndex
+					auraContainer.activeOptions = options
 				end
 
 				auraContainer:SetEnabled(true)
