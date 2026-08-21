@@ -59,6 +59,9 @@ Plater_Data.lua
 Plater_Logs.lua
 Plater_Util.lua
 Plater.lua
+
+util\abbreviate.lua
+
 Plater_ScriptHelpers.lua
 Plater_PerformanceUnits.lua
 Plater_ColorFrame.lua
