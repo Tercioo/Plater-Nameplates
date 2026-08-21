@@ -927,6 +927,17 @@ PLATER_DEFAULT_SETTINGS = {
 		extra_icon_show_offensive_border = {0, .65, .1, 1},
 		extra_icon_show_defensive = false,
 		extra_icon_show_defensive_border = {.85, .45, .1, 1},
+		extra_icon_aura_border_colors_by_type = true,
+		extra_icon_dispel_type_colors = {
+			none = {0.8, 0, 0, 1},
+			magic = {0, 0.5, 1, 1},
+			curse = {0.62, 0.02, 0.9, 1},
+			disease = {0.95, 0.4, 0.04, 1},
+			poison = {0.48, 0.78, 0, 1},
+			bleed = {0.72, 0, 0.06, 1},
+			enrage = {0.85, 0.2, 0.1, 1},
+			default = {0, 0, 0, 1},
+		},
 		
 		extra_icon_auras = {}, --auras for buff special tab
 		extra_icon_auras_mine = {}, --auras in the buff special that are only cast by the player
@@ -960,12 +971,11 @@ PLATER_DEFAULT_SETTINGS = {
 		aura_show_offensive_cd = false,
 		aura_show_defensive_cd = false,
 		debuff_hide_permanent = false,
-		debuff_hide_permanent_buffs = false,
-		debuff_hide_permanent_debuffs = false,
+		aura_hide_permanent_buffs = false,
+		aura_hide_permanent_debuffs = false,
 		
 		aura_border_colors = {
 			steal_or_purge = {0, .5, .98, 1},
-			enrage = {0.85, 0.2, 0.1, 1},
 			is_buff = {0, .65, .1, 1},
 			is_debuff = {1, 0, 0, 1},
 			is_show_all = {.7, .1, .1, 1},
@@ -973,6 +983,14 @@ PLATER_DEFAULT_SETTINGS = {
 			offensive = {0, .65, .1, 1},
 			crowdcontrol = {.3, .2, .2, 1},
 			default = {0, 0, 0, 1},
+
+			none = {0.8, 0, 0, 1},
+			magic = {0, 0.5, 1, 1},
+			curse = {0.62, 0.02, 0.9, 1},
+			disease = {0.95, 0.4, 0.04, 1},
+			poison = {0.48, 0.78, 0, 1},
+			bleed = {0.72, 0, 0.06, 1},
+			enrage = {0.85, 0.2, 0.1, 1},
 		},
 		
 		aura_tracker = {

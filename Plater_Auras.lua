@@ -1186,7 +1186,7 @@ local function getAuraFrameLayout(frameName)
 	elseif frameName == "Secondary" then
 		layout.elementWidth = profile.aura_width2
 		layout.elementHeight = profile.aura_height2
-		layout.maximumLineSize = (profile.auras_per_row_auto and Plater.MaxAurasPerRow or profile.auras_per_row_amount2 or 10) * (layout.elementWidth + layout.elementSpacing)
+		layout.maximumLineSize = (profile.auras_per_row_auto and Plater.MaxAurasPerRow or profile.auras_per_row_amount2 or 10) * (layout.elementWidth + layout.elementSpacing) + 1
 	elseif frameName == "ExtraIconFrame" then
 		layout.elementWidth = profile.extra_icon_width
 		layout.elementHeight = profile.extra_icon_height
@@ -1396,17 +1396,35 @@ local function initAuraFrame(auraButton, name, key, auraContainer)
 	--auraButton.Border:SetPoint("BOTTOMRIGHT", auraButton.Icon, "BOTTOMRIGHT",  band * offset, -band * offset)
 	auraButton.Border:SetAllPoints()
 	auraButton.Border:SetScale(borderThickness / band)
-	local defaultColor = Plater.db.profile.aura_border_colors.default
+	local defaultColor = frameName ~= "ExtraIconFrame" and Plater.db.profile.aura_border_colors.default or Plater.db.profile.extra_icon_dispel_type_colors.default
     auraButton.Border:SetVertexColor(defaultColor[1], defaultColor[2], defaultColor[3], defaultColor[4])
 
-	if Plater.db.profile.aura_border_colors_by_type then
+	if frameName ~= "ExtraIconFrame" and Plater.db.profile.aura_border_colors_by_type or frameName == "ExtraIconFrame" and Plater.db.profile.extra_icon_aura_border_colors_by_type then
 		local borderOptions = {
 			showIcon = false,
 			showWhenHarmful = true,
 			showWhenHelpful = true,
 			showWithoutDispelType = true,
 			style = Enum.CustomAuraButtonDispelTypeTextureStyle.PreserveAsset,
+			customDispelColorMap = frameName ~= "ExtraIconFrame" and {
+				["None"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.none)),
+				["Magic"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.magic)),
+				["Curse"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.curse)),
+				["Disease"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.disease)),
+				["Poison"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.poison)),
+				["Bleed"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.bleed)),
+				["Enrage"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.enrage)),
+			} or {
+				["None"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.none)),
+				["Magic"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.magic)),
+				["Curse"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.curse)),
+				["Disease"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.disease)),
+				["Poison"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.poison)),
+				["Bleed"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.bleed)),
+				["Enrage"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.enrage)),
+			}
 		}
+		--C_AuraContainerUtil.ProcessCustomAuraButtonDispelTypeTextureOptions(borderOptions)
 		auraButton:SetAuraBorder(auraButton.Border, borderOptions)
 	end
 
@@ -1527,16 +1545,33 @@ local function reSkinAuraButtons(auraButtons)
 		local band = 8
 		auraButton.Border:SetScale(borderThickness / band)
 
-		local defaultColor = Plater.db.profile.aura_border_colors.default
+		local defaultColor = frameName ~= "ExtraIconFrame" and Plater.db.profile.aura_border_colors.default or Plater.db.profile.extra_icon_dispel_type_colors.default
     	auraButton.Border:SetVertexColor(defaultColor[1], defaultColor[2], defaultColor[3], defaultColor[4])
 
-		if Plater.db.profile.aura_border_colors_by_type then
+		if frameName ~= "ExtraIconFrame" and Plater.db.profile.aura_border_colors_by_type or frameName == "ExtraIconFrame" and Plater.db.profile.extra_icon_aura_border_colors_by_type then
 			local borderOptions = {
 				showIcon = false,
 				showWhenHarmful = true,
 				showWhenHelpful = true,
 				showWithoutDispelType = true,
 				style = Enum.CustomAuraButtonDispelTypeTextureStyle.PreserveAsset,
+				customDispelColorMap = frameName ~= "ExtraIconFrame" and {
+					["None"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.none)),
+					["Magic"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.magic)),
+					["Curse"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.curse)),
+					["Disease"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.disease)),
+					["Poison"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.poison)),
+					["Bleed"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.bleed)),
+					["Enrage"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.enrage)),
+				} or {
+					["None"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.none)),
+					["Magic"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.magic)),
+					["Curse"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.curse)),
+					["Disease"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.disease)),
+					["Poison"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.poison)),
+					["Bleed"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.bleed)),
+					["Enrage"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.enrage)),
+				}
 			}
 			auraButton:SetAuraBorder(auraButton.Border, borderOptions)
 		else
