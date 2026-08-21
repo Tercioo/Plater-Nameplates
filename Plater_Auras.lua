@@ -778,15 +778,20 @@ local containerConfigCache = {
 	candidateFilters = {},
 	auraFilterIndex = 1,
 	auraFilters = {
-		assist = {},
-		assistPlayer = {},
-		noAssist = {},
-		noAssistPlayer = {},
+		enemynpc = {},
+		friendlynpc = {},
+		enemyplayer = {},
+		friendlyplayer = {},
 	},
 	containerLayoutIndex = 0,
 	containerLayouts = {},
 	containerFullOptionIndex = 0,
-	containerFullOptions = {},
+	containerFullOptions = {
+		enemynpc = {},
+		friendlynpc = {},
+		enemyplayer = {},
+		friendlyplayer = {},
+	},
 	auraFrameOptionIndex = 0,
 	auraFrameOptions = {},
 	auraFrameLayoutIndex = 0,
@@ -795,16 +800,18 @@ local containerConfigCache = {
 	auraBorderOptions = {},
 }
 function Plater.Auras.SetIconConfigOutdated()
-	--print("config+1")
+	Plater.StartLogPerformanceCore("Plater-Core", "Update", "SetIconConfigOutdated")
 	containerConfigCache.containerConfigIndex = containerConfigCache.containerConfigIndex + 1
 	containerConfigCache.containerLayoutIndex = containerConfigCache.containerLayoutIndex + 1
 	containerConfigCache.containerFullOptionIndex = containerConfigCache.containerFullOptionIndex + 1
 	containerConfigCache.auraBorderOptionIndex = containerConfigCache.auraBorderOptionIndex + 1
+	Plater.EndLogPerformanceCore("Plater-Core", "Update", "SetIconConfigOutdated")
 end
 function Plater.Auras.SetContainerFiltersOutdated()
-	--print("filter+1")
+	Plater.StartLogPerformanceCore("Plater-Core", "Update", "SetContainerFiltersOutdated")
 	containerConfigCache.candidateFilterIndex = containerConfigCache.candidateFilterIndex + 1
 	containerConfigCache.auraFilterIndex = containerConfigCache.auraFilterIndex + 1
+	Plater.EndLogPerformanceCore("Plater-Core", "Update", "SetContainerFiltersOutdated")
 end
 local function getCandidateFilters(frameName)
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "getCandidateFilters")
@@ -921,27 +928,22 @@ local function getCandidateFilters(frameName)
 	return filters
 end
 
-local function getAuraFilters(frameName, unit)
+local function getAuraFilters(frameName, actorType)
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "getAuraFilters")
 
-	if not unit then return {} end
+	if not actorType then return {} end
 
-	local isPlayer = unit and UnitIsPlayer (unit)
-	local canAssist = unit and UnitCanAssist("player", unit)
+	local isPlayer = actorType == "enemyplayer" or actorType == "friendlyplayer"
+	local canAssist = actorType == "friendlynpc" or actorType == "friendlyplayer"
 	--local unitReaction = unit and UnitReaction (unit, "player")
 	--local isFriend = unit and UnitIsFriend("player", unit)
 
-	local auraFiltersCache = containerConfigCache.auraFilters
-	local cachedFilterInfo = (isPlayer and canAssist and auraFiltersCache.assistPlayer) or (not isPlayer and canAssist and auraFiltersCache.assist) or (isPlayer and not canAssist and auraFiltersCache.noAssistPlayer) or auraFiltersCache.noAssist
+	local cachedFilterInfo = containerConfigCache.auraFilters[actorType]
 	if not cachedFilterInfo[frameName] then
 		cachedFilterInfo[frameName] = {}
 	end
 	cachedFilterInfo = cachedFilterInfo[frameName]
 	if cachedFilterInfo.filters and cachedFilterInfo.filterIndex == containerConfigCache.auraFilterIndex then
-		--if not canAssist and isPlayer then
-		--	if unit then print(canAssist, isPlayer, UnitName(unit)) end
-		--	if DevTool then DevTool:AddData(cachedFilterInfo.filters) end
-		--end
 		Plater.EndLogPerformanceCore("Plater-Core", "Update", "getAuraFilters")
 		return cachedFilterInfo.filters
 	end
@@ -1148,7 +1150,7 @@ local function getAuraFilters(frameName, unit)
 
 	--if DevTool then DevTool:AddData(filters, frameName) end
 
-	if unit then
+	if actorType then
 		cachedFilterInfo.filters = filters
 		cachedFilterInfo.filterIndex = containerConfigCache.auraFilterIndex
 	end
@@ -1241,6 +1243,33 @@ local function getAuraProcessingPolicy(frameName)
 		
 	end
 	return policy, options
+end
+
+-- allow for override in aura creation and update
+platerInternal.Auras.initAndUpdateAuraFrameOverrides = {}
+platerInternal.Auras.AuraFrameUpdateCallbackTypes = {
+	["Icon"] = true,
+	["Cooldown"] = true,
+	["Count"] = true,
+	["Timer"] = true,
+	["Border"] = true,
+}
+Plater.Auras.AuraFrameUpdateCallbackTypes = {
+	"Icon",
+	"Cooldown",
+	"Count",
+	"Timer",
+	"Border",
+}
+function Plater.Auras.SetAuraFrameUpdateCallback(callbackType, callbackFunc)
+	assert(callbackType and platerInternal.Auras.AuraFrameUpdateCallbackTypes[callbackType], "The aura frame update callback 'type' needs to be 'Icon', 'Cooldown', 'Count', 'Timer' or 'Border'.")
+	assert(type(callbackFunc) == "function", "The aura frame update callback function needs to be a function.")
+
+	platerInternal.Auras.initAndUpdateAuraFrameOverrides[callbackType] = callbackFunc
+end
+function Plater.Auras.ClearAuraFrameUpdateCallback(callbackType)
+	assert(callbackType and platerInternal.Auras.AuraFrameUpdateCallbackTypes[callbackType], "The aura frame update callback 'type' needs to be 'Icon', 'Cooldown', 'Count', 'Timer' or 'Border'.")
+	platerInternal.Auras.initAndUpdateAuraFrameOverrides[callbackType] = nil
 end
 
 local function initAuraFrame(auraButton, frameName, frameKey, auraContainer)
@@ -1654,9 +1683,9 @@ local function getAuraBorderOptions(frameName)
 	return borderOptions
 end
 
-local function getFullAuraOptions(frameName, key, auraContainer, unit)
+local function getFullAuraOptions(frameName, key, auraContainer, actorType)
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "getFullAuraOptions")
-	local cachedAuraOptions = containerConfigCache.containerFullOptions[frameName]
+	local cachedAuraOptions = actorType and containerConfigCache.containerFullOptions[actorType][frameName]
 	if cachedAuraOptions and cachedAuraOptions.optionIndex == containerConfigCache.containerFullOptionIndex then
 		Plater.EndLogPerformanceCore("Plater-Core", "Update", "getFullAuraOptions")
 		return cachedAuraOptions
@@ -1665,7 +1694,7 @@ local function getFullAuraOptions(frameName, key, auraContainer, unit)
 		auraFrameOptions = getAuraFrameOptions(frameName, key, auraContainer),
 		processingPolicy = {},
 		layoutGrowth = {},
-		auraFilters = getAuraFilters(frameName, unit),
+		auraFilters = getAuraFilters(frameName, actorType),
 		borderOptions = getAuraBorderOptions(frameName),
 		optionsIndex = containerConfigCache.containerFullOptionIndex
 	}
@@ -1679,7 +1708,9 @@ local function getFullAuraOptions(frameName, key, auraContainer, unit)
 	fullOptions.processingPolicy.policy = policy
 	fullOptions.processingPolicy.policyOptions = policyOptions
 
-	containerConfigCache.containerFullOptions[frameName] = fullOptions
+	if actorType then
+		containerConfigCache.containerFullOptions[actorType][frameName] = fullOptions
+	end
 
 	Plater.EndLogPerformanceCore("Plater-Core", "Update", "getFullAuraOptions")
 	return fullOptions
@@ -1810,8 +1841,8 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 		for _, frameInfo in pairs (auraFramesSetup) do
 			local auraContainer = unitFrame[frameInfo.key]
 			if DB_AURA_ENABLED and unit then
-				local options = getFullAuraOptions(frameInfo.name, frameInfo.key, auraContainer, unitFrame.namePlateUnitToken)
-				if auraContainer.activeOptions ~= options then
+				if auraContainer.activeOptions ~= unitFrame.ActorType then
+					local options = getFullAuraOptions(frameInfo.name, frameInfo.key, auraContainer, unitFrame.ActorType)
 					auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
 					auraContainer:SetFlowLayoutMaximumLineSize(options.auraFrameOptions.layout.maximumLineSize)
 					auraContainer:SetFlowLayoutAnchorPoint(options.layoutGrowth.anchorPoint)
@@ -1858,7 +1889,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 						auraContainer.configIndex = containerConfigCache.containerConfigIndex
 					end
 
-					auraContainer.activeOptions = options
+					auraContainer.activeOptions = unitFrame.ActorType
 				end
 
 				auraContainer:SetEnabled(true)
