@@ -1182,7 +1182,7 @@ local function getAuraFrameLayout(frameName)
 	if frameName == "Main" then
 		layout.elementWidth = profile.aura_width
 		layout.elementHeight = profile.aura_height
-		layout.maximumLineSize = (profile.auras_per_row_auto and Plater.MaxAurasPerRow or profile.auras_per_row_amount or 10) * (layout.elementWidth + layout.elementSpacing)
+		layout.maximumLineSize = (profile.auras_per_row_auto and Plater.MaxAurasPerRow or profile.auras_per_row_amount or 10) * (layout.elementWidth + layout.elementSpacing) + 1
 	elseif frameName == "Secondary" then
 		layout.elementWidth = profile.aura_width2
 		layout.elementHeight = profile.aura_height2
@@ -1240,7 +1240,7 @@ local function getAuraProcessingPolicy(frameName)
 	return policy, options
 end
 
-local function initAuraFrame(auraButton, name, key, auraContainer)
+local function initAuraFrame(auraButton, frameName, frameKey, auraContainer)
 	--DevTool:AddData(newIcon, "initAuraFrame")
 	local profile = Plater.db.profile
 
@@ -1322,7 +1322,6 @@ local function initAuraFrame(auraButton, name, key, auraContainer)
 	local auraWidth
 	local auraHeight
 	local borderThickness
-	local frameName = name
 	if frameName == "Main" then
 		auraWidth = profile.aura_width
 		auraHeight = profile.aura_height
@@ -1440,8 +1439,8 @@ local function initAuraFrame(auraButton, name, key, auraContainer)
 
 	Plater.UpdateIconAspecRatio (auraButton)
 
-	auraButton.frameName = name
-	auraButton.frameKey = key
+	auraButton.frameName = frameName
+	auraButton.frameKey = frameKey
 	auraButton.auraContainer = auraContainer
 
 	tinsert(auraContainer.auraButtons, auraButton)
