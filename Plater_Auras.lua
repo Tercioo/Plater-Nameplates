@@ -1002,17 +1002,15 @@ local function getAuraFilters(frameName, unit)
 				})
 			end
 			if DB_AURA_SHOW_AS_BLIZZARD and not DB_AURA_SHOW_DEBUFF_BYPLAYER then
-				--local candidate = DF.table.copy({}, allCandidates.mainFilter)
-				--candidate.nameplateShowPersonal = true
+				local candidate = DF.table.copy({}, allCandidates.mainFilter)
+				candidate.nameplateShowPersonal = true
 				table.insert(filters, {
 					filterString = "HARMFUL|IMPORTANT|PLAYER|!CROWD_CONTROL" .. (canAssist and DB_SHOW_PURGE_IN_EXTRA_ICONS and "|!RAID_PLAYER_DISPELLABLE" or ""),
-					--candidateFilters = candidate,
-					candidateFilters = allCandidates.mainFilter,
+					candidateFilters = candidate,
 				})
 				table.insert(filters, {
 					filterString = "HARMFUL|!IMPORTANT|PLAYER|!CROWD_CONTROL" .. (canAssist and DB_SHOW_PURGE_IN_EXTRA_ICONS and "|!RAID_PLAYER_DISPELLABLE" or ""),
-					--candidateFilters = candidate,
-					candidateFilters = allCandidates.mainFilter,
+					candidateFilters = candidate,
 				})
 				pFilters = {}
 			end
@@ -1087,7 +1085,8 @@ local function getAuraFilters(frameName, unit)
 				table.insert(filters, {
 					filterString = "HARMFUL|PLAYER",
 					candidateFilters = {
-						includeSpellIDs = SPECIAL_AURAS_USER_LIST_MINE
+						includeSpellIDs = SPECIAL_AURAS_USER_LIST_MINE,
+						excludeSpellIDs = SPECIAL_AURAS_USER_LIST,
 					}
 				})
 			end
@@ -1108,7 +1107,8 @@ local function getAuraFilters(frameName, unit)
 				table.insert(filters, {
 					filterString = "HELPFUL|PLAYER",
 					candidateFilters = {
-						includeSpellIDs = SPECIAL_AURAS_USER_LIST_MINE
+						includeSpellIDs = SPECIAL_AURAS_USER_LIST_MINE,
+						excludeSpellIDs = SPECIAL_AURAS_USER_LIST,
 					}
 				})
 			end
