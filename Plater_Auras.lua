@@ -303,6 +303,7 @@ function expandAuraCaches()
 
 	-- update filters
 	Plater.Auras.SetContainerFiltersOutdated()
+	--if DevTool then DevTool:AddData(containersToExtend, "containers") end
 	for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 		if plateFrame.unitFrame and plateFrame.unitFrame.PlaterOnScreen then
 			if not plateFrame.unitFrame.isPerformanceUnitAura then
@@ -310,7 +311,6 @@ function expandAuraCaches()
 			end
 		end
 	end
-	if DevTool then DevTool:AddData(containersToExtend, "containers") end
 end
 -- End Spell Caches
 
@@ -1091,7 +1091,7 @@ local function getAuraFilters(frameName, actorType)
 					filterString = "HARMFUL|PLAYER",
 					candidateFilters = {
 						includeSpellIDs = SPECIAL_AURAS_USER_LIST_MINE,
-						excludeSpellIDs = SPECIAL_AURAS_USER_LIST,
+						--excludeSpellIDs = SPECIAL_AURAS_USER_LIST,
 					}
 				})
 			end
@@ -1805,7 +1805,7 @@ function platerInternal.Auras.CreateOldAuraContainers(unitFrame)
 end
 
 local nextAuraIndex = 1
-function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
+function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, force)
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "CreateOrUpdateAuraContainers")
 	if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS and unit ~= "player" then
 		
@@ -1842,7 +1842,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 			local auraContainer = unitFrame[frameInfo.key]
 			if DB_AURA_ENABLED and unit then
 				local options = getFullAuraOptions(frameInfo.name, frameInfo.key, auraContainer, unitFrame.ActorType)
-				if auraContainer.activeOptions ~= unitFrame.ActorType or auraContainer.activeOptions ~= options then
+				if force or auraContainer.activeOptions ~= unitFrame.ActorType or auraContainer.activeOptions ~= options then
 					auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
 					auraContainer:SetFlowLayoutMaximumLineSize(options.auraFrameOptions.layout.maximumLineSize)
 					auraContainer:SetFlowLayoutAnchorPoint(options.layoutGrowth.anchorPoint)
@@ -4768,6 +4768,7 @@ end
 					--> if the user remove the spell, that spell isn't removed from the 'only mine' list
 					--> so need to check if the spell on 'only mine' list is included in the special aura list
 					if (SPECIAL_AURAS_USER_LIST [spellId]) then
+						--SPECIAL_AURAS_USER_LIST [spellId] = nil --TODO is thi safe?
 						SPECIAL_AURAS_USER_LIST_MINE [spellId] = true
 					end
 				end

@@ -2204,7 +2204,7 @@ Plater.AnchorNamesByPhraseId = {
 					
 					Plater.RunScheduledUpdate({unitId = unit}) -- do this now
 					if plateFrame.unitFrame.PlaterOnScreen then
-						Plater.CreateOrUpdateAuraContainers(plateFrame.unitFrame, unit)
+						Plater.CreateOrUpdateAuraContainers(plateFrame.unitFrame, unit, force)
 					end
 				end
 			end

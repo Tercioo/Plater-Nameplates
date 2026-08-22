@@ -3340,7 +3340,7 @@ Plater.CreateAuraTesting()
 		
 		local on_toggle_mine = function (self, spellID, state)
 			Plater.db.profile.extra_icon_auras_mine [spellID] = state
-			Plater.UpdateAuraCache()
+			Plater.RefreshDBUpvalues()
 		end
 		
 		local scroll_createline = function (self, index)
@@ -3512,8 +3512,8 @@ Plater.CreateAuraTesting()
 				end
 				
 				special_auras_added:Refresh()
-				--Plater.RefreshDBUpvalues()
-				Plater.UpdateAuraCache()
+				Plater.RefreshDBUpvalues()
+				--Plater.UpdateAuraCache()
 			end
 			
 		end, 100, 20, "Add Aura", nil, nil, nil, nil, nil, nil, DF:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE"))		
