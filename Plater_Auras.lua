@@ -310,7 +310,7 @@ function expandAuraCaches()
 			end
 		end
 	end
-	--if DevTool then DevTool:AddData(containersToExtend, "containers") end
+	if DevTool then DevTool:AddData(containersToExtend, "containers") end
 end
 -- End Spell Caches
 
@@ -898,7 +898,7 @@ local function getCandidateFilters(frameName)
 
 		DF.table.copy(filters.additionalInclude.includeSpellIDs, SPECIAL_AURAS_AUTO_ADDED)
 		DF.table.copy(filters.additionalInclude.includeSpellIDs, SPECIAL_AURAS_USER_LIST)
-		DF.table.copy(filters.additionalInclude.excludeSpellIDs, SPECIAL_AURAS_USER_LIST_MINE) -- explicitly
+		--DF.table.copy(filters.additionalInclude.excludeSpellIDs, SPECIAL_AURAS_USER_LIST_MINE) -- explicitly
 
 		DF.table.copy(filters.mainFilter.excludeSpellIDs, SPECIAL_AURAS_AUTO_ADDED)
 		DF.table.copy(filters.mainFilter.excludeSpellIDs, SPECIAL_AURAS_USER_LIST)
@@ -1148,7 +1148,7 @@ local function getAuraFilters(frameName, actorType)
 		--if DevTool then DevTool:AddData({pFilters = pFilters, nFilters = nFilters, mainFilterString = mainFilterString, allCandidates = allCandidates}, frameName .. " - filters") end
 	end
 
-	--if DevTool then DevTool:AddData(filters, frameName) end
+	if DevTool then DevTool:AddData(filters, frameName) end
 
 	if actorType then
 		cachedFilterInfo.filters = filters
@@ -1841,8 +1841,8 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 		for _, frameInfo in pairs (auraFramesSetup) do
 			local auraContainer = unitFrame[frameInfo.key]
 			if DB_AURA_ENABLED and unit then
-				if auraContainer.activeOptions ~= unitFrame.ActorType then
-					local options = getFullAuraOptions(frameInfo.name, frameInfo.key, auraContainer, unitFrame.ActorType)
+				local options = getFullAuraOptions(frameInfo.name, frameInfo.key, auraContainer, unitFrame.ActorType)
+				if auraContainer.activeOptions ~= unitFrame.ActorType or auraContainer.activeOptions ~= options then
 					auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
 					auraContainer:SetFlowLayoutMaximumLineSize(options.auraFrameOptions.layout.maximumLineSize)
 					auraContainer:SetFlowLayoutAnchorPoint(options.layoutGrowth.anchorPoint)
@@ -1890,10 +1890,15 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 					end
 
 					auraContainer.activeOptions = unitFrame.ActorType
+					auraContainer.activeOptions = options
 				end
 
-				auraContainer:SetEnabled(true)
-				auraContainer:SetUnit(unit)
+				if auraContainer.enabled and auraContainer.unitToken == unit then
+					auraContainer:UpdateAllAuras()
+				else 
+					auraContainer:SetEnabled(true)
+					auraContainer:SetUnit(unit)
+				end
 			else
 				--auraContainer:SetUnit("player") -- dummy
 				auraContainer:SetEnabled(false)
