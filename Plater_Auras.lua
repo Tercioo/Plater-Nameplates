@@ -1113,7 +1113,7 @@ local function getAuraFilters(frameName, actorType)
 					filterString = "HELPFUL|PLAYER",
 					candidateFilters = {
 						includeSpellIDs = SPECIAL_AURAS_USER_LIST_MINE,
-						excludeSpellIDs = SPECIAL_AURAS_USER_LIST,
+						--excludeSpellIDs = SPECIAL_AURAS_USER_LIST,
 					}
 				})
 			end
