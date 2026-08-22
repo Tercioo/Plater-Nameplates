@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1787261710, "Backend Change", "Aug 21st, 2026", "Implementing custom aura dispel type colors.", "cont1nuity"},
 			{1787261710, "Backend Change", "Aug 20th, 2026", "Performance improvements through aura container config caching.", "cont1nuity"},
 			{1787261710, "Backend Change", "Aug 20th, 2026", "Fixed and improved spell cache build and usage to reduce overall memory footprint.", "cont1nuity"},
 			{1787261710, "Backend Change", "Aug 19th, 2026", "Added a buff 'blizzard-like' auto-filter.", "cont1nuity"},
