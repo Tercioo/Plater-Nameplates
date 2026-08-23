@@ -3174,7 +3174,7 @@ Plater.CreateAuraTesting()
 		--end
 	end)
 	auraFilterFrame:SetScript("OnHide", function()
-		DF:UnloadSpellCache()
+		--DF:UnloadSpellCache()
 	end)
 	
 	local auraConfigPanel = DF:CreateAuraConfigPanel (auraFilterFrame, "$parentAuraConfig", Plater.db.profile, method_change_callback, aura_options, debuff_panel_texts)
@@ -4154,7 +4154,7 @@ Plater.CreateAuraTesting()
 			--end
 		end)
 		specialAuraFrame:SetScript ("OnHide", function()
-			DF:UnloadSpellCache()
+			--DF:UnloadSpellCache()
 		end)
 		
 		--create the description

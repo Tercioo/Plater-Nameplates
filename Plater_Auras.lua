@@ -307,7 +307,7 @@ function expandAuraCaches()
 	for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
 		if plateFrame.unitFrame and plateFrame.unitFrame.PlaterOnScreen then
 			if not plateFrame.unitFrame.isPerformanceUnitAura then
-				Plater.AddToAuraUpdate(plateFrame.unitFrame.unit, plateFrame.unitFrame) -- force aura update
+				Plater.AddToAuraUpdate(plateFrame.unitFrame.namePlateUnitToken, plateFrame.unitFrame) -- force aura update
 			end
 		end
 	end
@@ -898,7 +898,7 @@ local function getCandidateFilters(frameName)
 
 		DF.table.copy(filters.additionalInclude.includeSpellIDs, SPECIAL_AURAS_AUTO_ADDED)
 		DF.table.copy(filters.additionalInclude.includeSpellIDs, SPECIAL_AURAS_USER_LIST)
-		--DF.table.copy(filters.additionalInclude.excludeSpellIDs, SPECIAL_AURAS_USER_LIST_MINE) -- explicitly
+		DF.table.copy(filters.additionalInclude.excludeSpellIDs, SPECIAL_AURAS_USER_LIST_MINE) -- explicitly
 
 		DF.table.copy(filters.mainFilter.excludeSpellIDs, SPECIAL_AURAS_AUTO_ADDED)
 		DF.table.copy(filters.mainFilter.excludeSpellIDs, SPECIAL_AURAS_USER_LIST)
@@ -1148,7 +1148,7 @@ local function getAuraFilters(frameName, actorType)
 		--if DevTool then DevTool:AddData({pFilters = pFilters, nFilters = nFilters, mainFilterString = mainFilterString, allCandidates = allCandidates}, frameName .. " - filters") end
 	end
 
-	if DevTool then DevTool:AddData(filters, frameName) end
+	--if DevTool then DevTool:AddData(filters, frameName) end
 
 	if actorType then
 		cachedFilterInfo.filters = filters
@@ -1918,8 +1918,8 @@ end
 function Plater.RemoveFromAuraUpdate (unit, unitFrame)
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "RemoveFromAuraUpdate")
 	if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
-		Plater.EndLogPerformanceCore("Plater-Core", "Update", "RemoveFromAuraUpdate")
 		Plater.CreateOrUpdateAuraContainers(unitFrame, nil)
+		Plater.EndLogPerformanceCore("Plater-Core", "Update", "RemoveFromAuraUpdate")
 		return
 	end
 	if not unit or not unitFrame then return end
@@ -1935,8 +1935,8 @@ function Plater.AddToAuraUpdate (unit, unitFrame)
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "AddToAuraUpdate")
 	if not unit or not unitFrame then return end
 	if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
+		Plater.CreateOrUpdateAuraContainers(unitFrame, unit, true)
 		Plater.EndLogPerformanceCore("Plater-Core", "Update", "AddToAuraUpdate")
-		Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 		return
 	end
 	unitFrame.UnitAuraEventHandlerFrame = unitFrame.UnitAuraEventHandlerFrame or CreateFrame ("frame")
