@@ -6516,7 +6516,7 @@ end
 				r, g, b, a = unpack (Plater.db.profile.tap_denied_color)
 				
 			--elseif Plater.db.profile.unit_type_coloring_enabled and (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid") and unitFrame.isGoodAggroState then
-			elseif Plater.db.profile.unit_type_coloring_enabled and (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid") then
+			elseif Plater.db.profile.unit_type_coloring_enabled and (Plater.ZoneInstanceType == "party" or Plater.ZoneInstanceType == "raid" or Plater.ZoneInstanceType == "scenario") then
 				local pLevel = UnitEffectiveLevel("player")
                 local uLevel = UnitEffectiveLevel(unitID)
 
