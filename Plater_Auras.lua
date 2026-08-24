@@ -206,6 +206,9 @@ local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 local DB_DEBUFF_BANNED
 local DB_BUFF_BANNED
 
+--cache
+local DB_AURA_NAME_CACHE
+
 --Cache for ghost auras
 --Updated on function: Plater.UpdateGhostAurasCache()
 local GHOSTAURAS = {}
@@ -237,7 +240,7 @@ lazyBuildSpellCache = function(start)
 	platerInternal.Auras.spellCachesLoading = true
 	platerInternal.Auras.spellCachesLoaded = false
 	local startPoint = start or 1
-	local endPoint = startPoint + 2000
+	local endPoint = startPoint + 1500
 	local i = startPoint
 
 	local toLowerCase = string.lower
@@ -270,35 +273,57 @@ lazyBuildSpellCache = function(start)
 		expandAuraCaches()
 	end
 end
-lazyBuildSpellCache()
+--lazyBuildSpellCache()
 
 function expandAuraCaches()
-	if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS or not platerInternal.Auras.spellCachesLoaded then return end
+	--if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS or not platerInternal.Auras.spellCachesLoaded then return end
+	if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then return end
 	local toLowerCase = string.lower
-	local cache = platerInternal.Auras.spellCaches
-	local allIDsByName = cache.allIDsByName
-	local toKeep = {}
+	local allIDsByName = platerInternal.Auras.spellCaches.allIDsByName
 	local missing = {}
 	local containersToExtend = DB_TRACK_METHOD == 0x1 and {DB_DEBUFF_BANNED, DB_BUFF_BANNED, SPECIAL_AURAS_AUTO_ADDED, SPECIAL_AURAS_USER_LIST, SPECIAL_AURAS_USER_LIST_MINE, AUTO_TRACKING_EXTRA_BUFFS, AUTO_TRACKING_EXTRA_DEBUFFS} or {SPECIAL_AURAS_AUTO_ADDED, SPECIAL_AURAS_USER_LIST, SPECIAL_AURAS_USER_LIST_MINE, MANUAL_TRACKING_BUFFS, MANUAL_TRACKING_DEBUFFS}
 	for _, container in pairs (containersToExtend) do
 		local containerCopy = DF.table.copy({}, container or {})
 		for id, val in pairs(containerCopy) do
-			local addIDs = allIDsByName[toLowerCase(id)] or Plater.SpellSameNameTable[toLowerCase(id)] -- just expand names
-			if addIDs then
-				toKeep[toLowerCase(id)] = addIDs
+			local lowerID = toLowerCase(id)
+			local isNumber = tonumber(id) and true or false
+			local addIDs = Plater.SpellSameNameTable[lowerID] or DB_AURA_NAME_CACHE[lowerID] or allIDsByName[lowerID] -- just expand names and refresh automatically
+			if addIDs and not isNumber then
+				DB_AURA_NAME_CACHE[lowerID] = addIDs
 				for _, addID in pairs(addIDs) do
 					container[addID] = val
 				end
-			elseif not tonumber(id) then
-				table.insert(missing, toLowerCase(id))
+			elseif not isNumber then
+				table.insert(missing, lowerID)
 			end
 		end
 	end
 
-	-- slim it
-	cache.allIDsByName = toKeep
 	if next(missing) and not platerInternal.Auras.spellCachesLoading then
 		C_Timer.After(0, lazyBuildSpellCache)
+	elseif not platerInternal.Auras.spellCachesLoading then
+		C_Timer.After(0, function()
+			--clean spell cache
+			local copy = DF.table.copy({}, DB_AURA_NAME_CACHE)
+			local toCheck = {DB_DEBUFF_BANNED, DB_BUFF_BANNED, SPECIAL_AURAS_AUTO_ADDED, SPECIAL_AURAS_USER_LIST, SPECIAL_AURAS_USER_LIST_MINE, AUTO_TRACKING_EXTRA_BUFFS, AUTO_TRACKING_EXTRA_DEBUFFS, MANUAL_TRACKING_BUFFS, MANUAL_TRACKING_DEBUFFS}
+			local fullList = {}
+			for _, cache in pairs (toCheck) do
+				for id in pairs(cache) do
+					if not tonumber(id) then
+						fullList[toLowerCase(id)] = true
+					end
+				end
+			end
+			for name in pairs (copy) do
+				local contained = false
+				if fullList[name] then
+					contained = true
+				end
+				if not contained then
+					DB_AURA_NAME_CACHE[name] = nil
+				end
+			end
+		end)
 	end
 
 	-- update filters
@@ -4810,6 +4835,8 @@ end
 		DB_AURA_GHOSTAURA_ENABLED = profile.ghost_auras.enabled
 		
 		DB_TRACK_METHOD = profile.aura_tracker.track_method
+
+		DB_AURA_NAME_CACHE = profile.aura_tracker.spell_name_cache
 
 		Plater.MaxAurasPerRow = floor(profile.plate_config.enemynpc.health_incombat[1] / (profile.aura_width + DB_AURA_PADDING))
 		Plater.Auras.SetContainerFiltersOutdated()

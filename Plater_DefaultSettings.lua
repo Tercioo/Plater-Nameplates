@@ -1012,6 +1012,7 @@ PLATER_DEFAULT_SETTINGS = {
 			debuff_banned = {},
 			buff_tracked = {},
 			debuff_tracked = {},
+			spell_name_cache = {},
 		},
 		
 		bossmod_support_enabled = true,
