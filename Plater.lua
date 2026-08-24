@@ -2203,10 +2203,20 @@ Plater.AnchorNamesByPhraseId = {
 					--Plater.ScheduleUpdateForNameplate (plateFrame, unit)
 					
 					Plater.RunScheduledUpdate({unitId = unit}) -- do this now
-					if plateFrame.unitFrame.PlaterOnScreen then
-						Plater.CreateOrUpdateAuraContainers(plateFrame.unitFrame, unit, force)
+					if plateFrame.unitFrame.PlaterOnScreen then -- should no longer be needed
+						--Plater.CreateOrUpdateAuraContainers(plateFrame.unitFrame, unit, true)
 					end
 				end
+			elseif NAMEPLATES_ON_SCREEN_CACHE[unit] then
+				-- no nameplate anymore, hide it
+				Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_REMOVED", unit)
+			end
+		end,
+
+		UNIT_CLASSIFICATION_CHANGED = function (_, unit)
+			if NAMEPLATES_ON_SCREEN_CACHE[unit] then -- this is on screen, refresh it.
+				Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_REMOVED", unit)
+				Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_ADDED", unit)
 			end
 		end,
 		
@@ -4206,7 +4216,7 @@ Plater.AnchorNamesByPhraseId = {
 		NAME_PLATE_UNIT_REMOVED = function (event, unitBarId)
 			--ViragDevTool_AddData({ctime = GetTime(), unit = unitBarId or "nil", stack = debugstack()}, "NAME_PLATE_UNIT_REMOVED - " .. (unitBarId or "nil"))
 			---@type plateframe
-			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId)
+			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId) or (NAMEPLATES_ON_SCREEN_CACHE[unitBarId] and NAMEPLATES_ON_SCREEN_CACHE[unitBarId].PlateFrame) -- we had one that requires unloading.
 			
 			Plater.RemoveFromAuraUpdate (unitBarId, plateFrame.unitFrame) -- ensure no updates
 			
@@ -4863,6 +4873,7 @@ function Plater.OnInit() --private --~oninit ~init
 		
 		Plater.EventHandlerFrame:RegisterEvent ("UNIT_FLAGS")
 		Plater.EventHandlerFrame:RegisterEvent ("UNIT_FACTION")
+		Plater.EventHandlerFrame:RegisterEvent ("UNIT_CLASSIFICATION_CHANGED")
 		
 		Plater.EventHandlerFrame:RegisterEvent ("DISPLAY_SIZE_CHANGED")
 		Plater.EventHandlerFrame:RegisterEvent ("UI_SCALE_CHANGED")
