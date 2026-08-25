@@ -383,7 +383,6 @@ Plater.AnchorNamesByPhraseId = {
 --Plater allocate several values in memory to save performance (cpu), this may increase memory usage
 --example: intead of querying Plater.db.profile.tank it just hold a pointer to that table in the variable DB_AGGRO_TANK_COLORS, and this pointer is updated when the user changes something in the options panel
 
-	local DB_NUMBER_REGION_EAST_ASIA
 	local DB_TICK_THROTTLE
 	local DB_LERP_COLOR
 	local DB_LERP_COLOR_SPEED
@@ -1787,7 +1786,6 @@ Plater.AnchorNamesByPhraseId = {
 		DB_AURA_ALPHA = profile.aura_alpha
 		DB_AURA_SEPARATE_BUFFS = profile.buffs_on_aura2
 
-		DB_NUMBER_REGION_EAST_ASIA = Plater.db.profile.number_region == "eastasia"
 		platerInternal.ReBuildAbbreviateConfig()
 		
 		DB_TICK_THROTTLE = profile.update_throttle

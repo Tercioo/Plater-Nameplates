@@ -11,6 +11,8 @@ local _ = nil
 local addonId, platerInternal = ...
 local Plater = _G.Plater
 
+local DB_NUMBER_REGION_EAST_ASIA
+
 --> regional format numbers
 do
     local eastAsiaMyriads_1k, eastAsiaMyriads_10k, eastAsiaMyriads_1B
@@ -29,7 +31,10 @@ do
 
     platerInternal.abbreviateConfig = C_StringUtil and C_StringUtil.GetDefaultAbbreviationBreakpoints and C_StringUtil.GetDefaultAbbreviationBreakpoints(GetLocale()) -- default it
     platerInternal.ReBuildAbbreviateConfig = function()
+        DB_NUMBER_REGION_EAST_ASIA = Plater.db.profile.number_region == "eastasia"
+        
         if not platerInternal.abbreviateConfig then return end -- if it could not be defaulted, skip this.
+
         local myriadK, myriadM, myriadB, myriadT
         if DB_NUMBER_REGION_EAST_ASIA then
             -- use the easter locale
