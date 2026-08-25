@@ -293,7 +293,7 @@ function expandAuraCaches()
 				for _, addID in pairs(addIDs) do
 					container[addID] = val
 				end
-			elseif not isNumber then
+			elseif not isNumber and not platerInternal.Auras.spellCachesLoaded then -- if that's a miss, even in the cache, then ignore it.
 				table.insert(missing, lowerID)
 			end
 		end
