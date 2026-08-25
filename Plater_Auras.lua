@@ -1093,8 +1093,8 @@ local function getAuraFilters(frameName, actorType)
 			end
 
 			if DB_AURA_SHOW_BUFFS_AS_BLIZZARD and not DB_AURA_SHOW_BUFFENEMYNPC then
-				--local candidate = DF.table.copy({}, allCandidates.mainFilter)
-				--candidate.nameplateShowPersonal = true
+				local candidate = DF.table.copy({}, allCandidates.mainFilter)
+				candidate.nameplateShowPersonal = true
 				table.insert(filters, {
 					filterString = "HELPFUL|IMPORTANT" .. (DB_SHOW_PURGE_IN_EXTRA_ICONS and "|!RAID_PLAYER_DISPELLABLE" or "") .. (Plater.db.profile.extra_icon_show_defensive and "|!BIG_DEFENSIVE|!EXTERNAL_DEFENSIVE" or ""),
 					--candidateFilters = candidate,
