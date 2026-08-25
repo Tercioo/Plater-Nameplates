@@ -1092,13 +1092,24 @@ local function getAuraFilters(frameName, actorType, force)
 				pFilters = {}
 			end
 
-			if DB_AURA_SHOW_BUFFS_AS_BLIZZARD and not DB_AURA_SHOW_BUFFENEMYNPC then
+			if DB_AURA_SHOW_BUFFS_AS_BLIZZARD and not DB_AURA_SHOW_BUFFENEMYNPC and not canAssist and not isPlayer then
 				local candidate = DF.table.copy({}, allCandidates.mainFilter)
-				candidate.nameplateShowPersonal = true
+				candidate.includeSpellIDs = nil
+				--candidate.nameplateShowPersonal = true
+				--candidate.nameplateShowAll = true
+				candidate.isStealable = true
+				table.insert(filters, {
+					filterString = "HELPFUL|INCLUDE_NAME_PLATE_ONLY" .. (DB_SHOW_PURGE_IN_EXTRA_ICONS and "|!RAID_PLAYER_DISPELLABLE" or "") .. (Plater.db.profile.extra_icon_show_defensive and "|!BIG_DEFENSIVE|!EXTERNAL_DEFENSIVE" or ""),
+					candidateFilters = candidate,
+					--candidateFilters = allCandidates.mainFilter,
+				})
+				candidate = DF.table.copy({}, allCandidates.mainFilter)
+				candidate.includeSpellIDs = nil
+				candidate.isStealable = false
 				table.insert(filters, {
 					filterString = "HELPFUL|IMPORTANT" .. (DB_SHOW_PURGE_IN_EXTRA_ICONS and "|!RAID_PLAYER_DISPELLABLE" or "") .. (Plater.db.profile.extra_icon_show_defensive and "|!BIG_DEFENSIVE|!EXTERNAL_DEFENSIVE" or ""),
-					--candidateFilters = candidate,
-					candidateFilters = allCandidates.mainFilter,
+					candidateFilters = candidate,
+					--candidateFilters = allCandidates.mainFilter,
 				})
 				pFilters = {}
 			end
