@@ -1870,7 +1870,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, force)
 				local options = getFullAuraOptions(frameInfo.name, frameInfo.key, auraContainer, unitFrame.ActorType, force)
 				--if force or auraContainer.activeUnit ~= unit or (auraContainer.activeOptionsType ~= unitFrame.ActorType) or (auraContainer.activeOptionsIndex ~= options.optionsIndex) then
 				if force or (auraContainer.activeOptionsType ~= unitFrame.ActorType) or (auraContainer.activeOptionsIndex ~= options.optionsIndex) then
-					--if DevTool then DevTool:AddData({force = force, active = auraContainer.activeOptionsType, current = unitFrame.ActorType, activeIndex = auraContainer.activeOptionsIndex, currentIndex = options.optionsIndex, options = options}, "Updating: " .. unit .. " - " .. frameInfo.key) end
+					--if DevTool then DevTool:AddData({stack = debugstack(), force = force, active = auraContainer.activeOptionsType, current = unitFrame.ActorType, activeIndex = auraContainer.activeOptionsIndex, currentIndex = options.optionsIndex, options = options}, "Updating: " .. unit .. " - " .. frameInfo.key) end
 					auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
 					auraContainer:SetFlowLayoutMaximumLineSize(options.auraFrameOptions.layout.maximumLineSize)
 					auraContainer:SetFlowLayoutAnchorPoint(options.layoutGrowth.anchorPoint)
@@ -1925,7 +1925,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, force)
 					end
 				end
 
-				if auraContainer.enabled and auraContainer.unitToken == unit then
+				if auraContainer.enabled and auraContainer.unitToken and auraContainer.unitToken == unit then
 					auraContainer:RebuildAuraParseFilters()
 					auraContainer:UpdateAllAuras()
 				else 

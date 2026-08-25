@@ -2230,7 +2230,7 @@ Plater.AnchorNamesByPhraseId = {
 			if (plateFrame) then
 				Plater.ScheduleUpdateForNameplate (plateFrame)
 				if plateFrame.unitFrame.PlaterOnScreen then
-					Plater.CreateOrUpdateAuraContainers(plateFrame.unitFrame, unit)
+					--Plater.CreateOrUpdateAuraContainers(plateFrame.unitFrame, unit) -- should no longer be needed
 				end
 			end
 		end,
@@ -3764,7 +3764,6 @@ Plater.AnchorNamesByPhraseId = {
 			
 			plateFrame.unitFrame.PlaterOnScreen = true
 			
-			Plater.AddToAuraUpdate(unitID, plateFrame.unitFrame)
 			-- update DBM and BigWigs nameplate auras
 			Plater.EnsureUpdateBossModAuras(plateFrame [MEMBER_GUID])
 			
@@ -3822,6 +3821,8 @@ Plater.AnchorNamesByPhraseId = {
 			plateFrame.actorType = actorType
 			unitFrame.actorType = actorType
 			unitFrame.ActorType = actorType --exposed to scripts
+
+			Plater.AddToAuraUpdate(unitID, plateFrame.unitFrame)
 			
 			--set the unit
 			unitFrame:SetUnit (unitID)
