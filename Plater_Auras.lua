@@ -838,12 +838,12 @@ function Plater.Auras.SetContainerFiltersOutdated()
 	containerConfigCache.auraFilterIndex = containerConfigCache.auraFilterIndex + 1
 	Plater.EndLogPerformanceCore("Plater-Core", "Update", "SetContainerFiltersOutdated")
 end
-local function getCandidateFilters(frameName)
+local function getCandidateFilters(frameName, force)
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "getCandidateFilters")
 	local profile = Plater.db.profile
 
 	local cachedFilter = containerConfigCache.candidateFilters[frameName]
-	if cachedFilter and cachedFilter.filterIndex == containerConfigCache.candidateFilterIndex then
+	if not force and cachedFilter and cachedFilter.filterIndex == containerConfigCache.candidateFilterIndex then
 		Plater.EndLogPerformanceCore("Plater-Core", "Update", "getCandidateFilters")
 		return cachedFilter
 	end
@@ -953,7 +953,7 @@ local function getCandidateFilters(frameName)
 	return filters
 end
 
-local function getAuraFilters(frameName, actorType)
+local function getAuraFilters(frameName, actorType, force)
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "getAuraFilters")
 
 	if not actorType then return {} end
@@ -968,13 +968,13 @@ local function getAuraFilters(frameName, actorType)
 		cachedFilterInfo[frameName] = {}
 	end
 	cachedFilterInfo = cachedFilterInfo[frameName]
-	if cachedFilterInfo.filters and cachedFilterInfo.filterIndex == containerConfigCache.auraFilterIndex then
+	if not force and cachedFilterInfo.filters and cachedFilterInfo.filterIndex == containerConfigCache.auraFilterIndex then
 		Plater.EndLogPerformanceCore("Plater-Core", "Update", "getAuraFilters")
 		return cachedFilterInfo.filters
 	end
 
 	local filters = {}
-	local allCandidates = getCandidateFilters(frameName)
+	local allCandidates = getCandidateFilters(frameName, force)
 
 	for _, type in pairs({"debuffs", "buffs"}) do
 
@@ -1708,7 +1708,7 @@ local function getAuraBorderOptions(frameName)
 	return borderOptions
 end
 
-local function getFullAuraOptions(frameName, key, auraContainer, actorType)
+local function getFullAuraOptions(frameName, key, auraContainer, actorType, force)
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "getFullAuraOptions")
 	local cachedAuraOptions = actorType and containerConfigCache.containerFullOptions[actorType][frameName]
 	if cachedAuraOptions and cachedAuraOptions.optionIndex == containerConfigCache.containerFullOptionIndex then
@@ -1719,9 +1719,10 @@ local function getFullAuraOptions(frameName, key, auraContainer, actorType)
 		auraFrameOptions = getAuraFrameOptions(frameName, key, auraContainer),
 		processingPolicy = {},
 		layoutGrowth = {},
-		auraFilters = getAuraFilters(frameName, actorType),
+		auraFilters = getAuraFilters(frameName, actorType, force),
 		borderOptions = getAuraBorderOptions(frameName),
-		optionsIndex = containerConfigCache.containerFullOptionIndex
+		optionsIndex = actorType and containerConfigCache.containerFullOptionIndex or -1,
+		actorType = actorType,
 	}
 
 	local horizontalDirection, verticalDirection, anchorPoint = getLayoutGrowthDirection(frameName)
@@ -1866,8 +1867,10 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, force)
 		for _, frameInfo in pairs (auraFramesSetup) do
 			local auraContainer = unitFrame[frameInfo.key]
 			if DB_AURA_ENABLED and unit then
-				local options = getFullAuraOptions(frameInfo.name, frameInfo.key, auraContainer, unitFrame.ActorType)
-				if force or auraContainer.activeOptions ~= unitFrame.ActorType or auraContainer.activeOptions ~= options then
+				local options = getFullAuraOptions(frameInfo.name, frameInfo.key, auraContainer, unitFrame.ActorType, force)
+				--if force or auraContainer.activeUnit ~= unit or (auraContainer.activeOptionsType ~= unitFrame.ActorType) or (auraContainer.activeOptionsIndex ~= options.optionsIndex) then
+				if force or (auraContainer.activeOptionsType ~= unitFrame.ActorType) or (auraContainer.activeOptionsIndex ~= options.optionsIndex) then
+					--if DevTool then DevTool:AddData({force = force, active = auraContainer.activeOptionsType, current = unitFrame.ActorType, activeIndex = auraContainer.activeOptionsIndex, currentIndex = options.optionsIndex, options = options}, "Updating: " .. unit .. " - " .. frameInfo.key) end
 					auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
 					auraContainer:SetFlowLayoutMaximumLineSize(options.auraFrameOptions.layout.maximumLineSize)
 					auraContainer:SetFlowLayoutAnchorPoint(options.layoutGrowth.anchorPoint)
@@ -1914,11 +1917,16 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, force)
 						auraContainer.configIndex = containerConfigCache.containerConfigIndex
 					end
 
-					auraContainer.activeOptions = unitFrame.ActorType
-					auraContainer.activeOptions = options
+					if unitFrame.ActorType then
+						auraContainer.activeOptionsType = unitFrame.ActorType
+						auraContainer.activeOptions = options
+						auraContainer.activeOptionsIndex = options.optionsIndex
+						auraContainer.activeUnit = unit
+					end
 				end
 
 				if auraContainer.enabled and auraContainer.unitToken == unit then
+					auraContainer:RebuildAuraParseFilters()
 					auraContainer:UpdateAllAuras()
 				else 
 					auraContainer:SetEnabled(true)
@@ -1960,7 +1968,7 @@ function Plater.AddToAuraUpdate (unit, unitFrame)
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "AddToAuraUpdate")
 	if not unit or not unitFrame then return end
 	if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
-		Plater.CreateOrUpdateAuraContainers(unitFrame, unit, true)
+		Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 		Plater.EndLogPerformanceCore("Plater-Core", "Update", "AddToAuraUpdate")
 		return
 	end
