@@ -1462,7 +1462,12 @@ local function initAuraFrame(auraButton, frameName, frameKey, auraContainer)
 	--auraButton.Border:SetPoint("TOPLEFT",     auraButton.Icon, "TOPLEFT",     -band * offset,  band * offset)
 	--auraButton.Border:SetPoint("BOTTOMRIGHT", auraButton.Icon, "BOTTOMRIGHT",  band * offset, -band * offset)
 	auraButton.Border:SetAllPoints()
-	auraButton.Border:SetScale(borderThickness / band)
+	if borderThickness > 0 then
+		auraButton.Border:SetScale(borderThickness / band)
+		auraButton.Border:Show()
+	else
+		auraButton.Border:Hide()
+	end
 	local defaultColor = frameName ~= "ExtraIconFrame" and Plater.db.profile.aura_border_colors.default or Plater.db.profile.extra_icon_dispel_type_colors.default
     auraButton.Border:SetVertexColor(defaultColor[1], defaultColor[2], defaultColor[3], defaultColor[4])
 
@@ -1610,7 +1615,12 @@ local function reSkinAuraButtons(auraButtons, options)
 		auraButton:SetScale(1)
 
 		local band = 8
-		auraButton.Border:SetScale(borderThickness / band)
+		if borderThickness > 0 then
+			auraButton.Border:SetScale(borderThickness / band)
+			auraButton.Border:Show()
+		else
+			auraButton.Border:Hide()
+		end
 
 		local defaultColor = frameName ~= "ExtraIconFrame" and Plater.db.profile.aura_border_colors.default or Plater.db.profile.extra_icon_dispel_type_colors.default
     	auraButton.Border:SetVertexColor(defaultColor[1], defaultColor[2], defaultColor[3], defaultColor[4])
@@ -1842,7 +1852,7 @@ function platerInternal.Auras.CreateOldAuraContainers(unitFrame)
 end
 
 local nextAuraIndex = 1
-function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, force)
+function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, force, forceLayout)
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "CreateOrUpdateAuraContainers")
 	if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS and unit ~= "player" then
 		
@@ -1878,49 +1888,60 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, force)
 		for _, frameInfo in pairs (auraFramesSetup) do
 			local auraContainer = unitFrame[frameInfo.key]
 			if DB_AURA_ENABLED and unit then
-				local options = getFullAuraOptions(frameInfo.name, frameInfo.key, auraContainer, unitFrame.ActorType, force)
+				local options = getFullAuraOptions(frameInfo.name, frameInfo.key, auraContainer, unitFrame.ActorType, forceFull)
+				if forceFull then
+					forceLayout = true
+					force = true
+				end
 				--if force or auraContainer.activeUnit ~= unit or (auraContainer.activeOptionsType ~= unitFrame.ActorType) or (auraContainer.activeOptionsIndex ~= options.optionsIndex) then
-				if force or (auraContainer.activeOptionsType ~= unitFrame.ActorType) or (auraContainer.activeOptionsIndex ~= options.optionsIndex) then
-					--if DevTool then DevTool:AddData({stack = debugstack(), force = force, active = auraContainer.activeOptionsType, current = unitFrame.ActorType, activeIndex = auraContainer.activeOptionsIndex, currentIndex = options.optionsIndex, options = options}, "Updating: " .. unit .. " - " .. frameInfo.key) end
-					auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
-					auraContainer:SetFlowLayoutMaximumLineSize(options.auraFrameOptions.layout.maximumLineSize)
-					auraContainer:SetFlowLayoutAnchorPoint(options.layoutGrowth.anchorPoint)
-					auraContainer:SetFlowLayoutGrowthDirection(options.layoutGrowth.horizontalDirection, options.layoutGrowth.verticalDirection)
-
-					local index = 1
-					for _, filter in pairs(options.auraFilters) do
-						local groupName = "group"..index
-						if not auraContainer.groups[groupName] then
-							options.auraFrameOptions.candidateFilters = filter.candidateFilters
-							auraContainer:AddAuraGroup(groupName, filter.filterString, options.auraFrameOptions)
-							auraContainer.groups[groupName] = true
-						end
-
-						local maxFrameCount = options.auraFrameOptions.maxFrameCount
-						if DB_AURA_SEPARATE_BUFFS and frameInfo.name == "Main" and groupName == "buffs" then
-							maxFrameCount = 0
-						end
-
-						if filter.filterString then
-							auraContainer:SetAuraGroupCandidateFilters(groupName, filter.candidateFilters)
-							auraContainer:SetAuraGroupFilterString(groupName, filter.filterString)
-
-							auraContainer:SetAuraGroupMaxFrameCount(groupName, maxFrameCount)
-							auraContainer:SetAuraGroupSortMethod(groupName, options.auraFrameOptions.sortMethod, options.auraFrameOptions.sortDirection)
-							auraContainer:SetAuraGroupLayout(groupName, options.auraFrameOptions.layout)
-						else
-							auraContainer:SetAuraGroupFilterString(groupName, "")
-							auraContainer:SetAuraGroupMaxFrameCount(groupName, 0)
-						end
-
-						index = index + 1
+				local shouldUpdate = (auraContainer.activeOptionsType ~= unitFrame.ActorType) or (auraContainer.activeOptionsIndex ~= options.optionsIndex)
+				if force or shouldUpdate or forceLayout then
+					if DevTool then DevTool:AddData({stack = debugstack(), force = force, shouldUpdate = shouldUpdate, forceLayout = forceLayout, forceFull = forceFull, active = auraContainer.activeOptionsType, current = unitFrame.ActorType, activeIndex = auraContainer.activeOptionsIndex, currentIndex = options.optionsIndex, options = options}, "Updating: " .. unit .. " - " .. frameInfo.key) end
+					if shouldUpdate or forceLayout then
+						auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
+						auraContainer:SetFlowLayoutMaximumLineSize(options.auraFrameOptions.layout.maximumLineSize)
+						auraContainer:SetFlowLayoutAnchorPoint(options.layoutGrowth.anchorPoint)
+						auraContainer:SetFlowLayoutGrowthDirection(options.layoutGrowth.horizontalDirection, options.layoutGrowth.verticalDirection)
 					end
 
-					while (auraContainer.groups["group"..index]) do
-						--disable surplus
-						auraContainer:SetAuraGroupMaxFrameCount("group"..index, 0)
-						auraContainer:SetAuraGroupFilterString("group"..index, "")
-						index = index + 1
+					if shouldUpdate or force then
+						local index = 1
+						for _, filter in pairs(options.auraFilters) do
+							local groupName = "group"..index
+							if not auraContainer.groups[groupName] then
+								options.auraFrameOptions.candidateFilters = filter.candidateFilters
+								auraContainer:AddAuraGroup(groupName, filter.filterString, options.auraFrameOptions)
+								auraContainer.groups[groupName] = true
+							end
+
+							local maxFrameCount = options.auraFrameOptions.maxFrameCount
+							if DB_AURA_SEPARATE_BUFFS and frameInfo.name == "Main" and groupName == "buffs" then
+								maxFrameCount = 0
+							end
+
+							if filter.filterString then
+								auraContainer:SetAuraGroupCandidateFilters(groupName, filter.candidateFilters)
+								auraContainer:SetAuraGroupFilterString(groupName, filter.filterString)
+
+								if shouldUpdate or forceLayout then
+									auraContainer:SetAuraGroupMaxFrameCount(groupName, maxFrameCount)
+									auraContainer:SetAuraGroupSortMethod(groupName, options.auraFrameOptions.sortMethod, options.auraFrameOptions.sortDirection)
+									auraContainer:SetAuraGroupLayout(groupName, options.auraFrameOptions.layout)
+								end
+							else
+								auraContainer:SetAuraGroupFilterString(groupName, "")
+								auraContainer:SetAuraGroupMaxFrameCount(groupName, 0)
+							end
+
+							index = index + 1
+						end
+
+						while (auraContainer.groups["group"..index]) do
+							--disable surplus
+							auraContainer:SetAuraGroupMaxFrameCount("group"..index, 0)
+							auraContainer:SetAuraGroupFilterString("group"..index, "")
+							index = index + 1
+						end
 					end
 					
 					if auraContainer.configIndex ~= containerConfigCache.containerConfigIndex then
@@ -1937,7 +1958,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, force)
 				end
 
 				if auraContainer.enabled and auraContainer.unitToken and auraContainer.unitToken == unit then
-					auraContainer:RebuildAuraParseFilters()
+					--auraContainer:RebuildAuraParseFilters()
 					auraContainer:UpdateAllAuras()
 				else 
 					auraContainer:SetEnabled(true)
@@ -1979,7 +2000,8 @@ function Plater.AddToAuraUpdate (unit, unitFrame)
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "AddToAuraUpdate")
 	if not unit or not unitFrame then return end
 	if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
-		Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
+		--Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
+		Plater.CreateOrUpdateAuraContainers(unitFrame, unit, false, true)
 		Plater.EndLogPerformanceCore("Plater-Core", "Update", "AddToAuraUpdate")
 		return
 	end
