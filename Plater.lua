@@ -6531,12 +6531,12 @@ end
                 local uLevel = UnitEffectiveLevel(unitID)
 
 				--boss
-				if uLevel == pLevel + 2 or uLevel == -1 then
+				if uLevel == pLevel + 2 or uLevel == -1 and not unitFrame.namePlateIsLieutenant then
 					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_boss)
 					unitFrame.hasUnitTypeColor = true
 
 				--miniboss
-				elseif uLevel == pLevel + 1 or unitFrame.namePlateIsBossMob or unitFrame.namePlateIsLieutenant then
+				elseif uLevel >= pLevel + 1 or unitFrame.namePlateIsBossMob or unitFrame.namePlateIsLieutenant then
 					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_miniboss)
 					unitFrame.hasUnitTypeColor = true
 
@@ -6551,7 +6551,7 @@ end
 					unitFrame.hasUnitTypeColor = true
 
 				--trivial
-				elseif Plater.db.profile.unit_type_coloring_enable_trivial then
+				elseif Plater.db.profile.unit_type_coloring_enable_trivial and (UnitIsMinion(unitID) or unitFrame.namePlateClassification == "normal" or unitFrame.namePlateClassification == "trivial" or unitFrame.namePlateClassification == "minus") then
 					r, g, b, a = unpack (Plater.db.profile.unit_type_coloring_trivial)
 					unitFrame.hasUnitTypeColor = true
 
