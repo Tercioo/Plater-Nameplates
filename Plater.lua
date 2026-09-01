@@ -6771,8 +6771,10 @@ end
 				healthBar:SetScale(1/unitFrame.nameplateScaleAdjust)
 				
 				healthBar:ClearAllPoints()
-				PixelUtil.SetPoint (healthBar, "topleft", unitFrame, "topleft", xOffSet + profile.global_offset_x, -yOffSet + profile.global_offset_y)
-				PixelUtil.SetPoint (healthBar, "bottomright", unitFrame, "bottomright", -xOffSet + profile.global_offset_x, yOffSet + profile.global_offset_y)
+				--PixelUtil.SetPoint (healthBar, "topleft", unitFrame, "topleft", xOffSet + profile.global_offset_x, -yOffSet + profile.global_offset_y)
+				--PixelUtil.SetPoint (healthBar, "bottomright", unitFrame, "bottomright", -xOffSet + profile.global_offset_x, yOffSet + profile.global_offset_y)
+				healthBar:SetPoint ("topleft", unitFrame, "topleft", xOffSet + profile.global_offset_x, -yOffSet + profile.global_offset_y)
+				healthBar:SetPoint ("bottomright", unitFrame, "bottomright", -xOffSet + profile.global_offset_x, yOffSet + profile.global_offset_y)
 		end
 		
 		--execute indicator
@@ -6785,10 +6787,13 @@ end
 			castBar:ClearAllPoints()
 			PixelUtil.SetPoint (castBar, "topleft", healthBar, "bottomleft", castBarOffSetXRel + castBarOffSetX, castBarOffSetY)
 			PixelUtil.SetPoint (castBar, "topright", healthBar, "bottomright", -castBarOffSetXRel + castBarOffSetX, castBarOffSetY)
-			PixelUtil.SetWidth (castBar, castBarWidth)
-			PixelUtil.SetHeight (castBar, castBarHeight)
+			--PixelUtil.SetWidth (castBar, castBarWidth)
+			--PixelUtil.SetHeight (castBar, castBarHeight)
+			castBar:SetWidth (castBarWidth)
+			castBar:SetHeight (castBarHeight)
 			--PixelUtil.SetSize (castBar.BorderShield, castBarHeight * 1.4, castBarHeight * 1.4)
-			PixelUtil.SetSize (castBar.Spark, profile.cast_statusbar_spark_width, castBarHeight)
+			--PixelUtil.SetSize (castBar.Spark, profile.cast_statusbar_spark_width, castBarHeight)
+			castBar.Spark:SetSize (profile.cast_statusbar_spark_width, castBarHeight)
 			castBar.Spark:SetAlpha (profile.cast_statusbar_spark_alpha)
 			Plater.UpdateCastbarIcon(castBar)
 
@@ -6797,9 +6802,12 @@ end
 
 		--power bar
 			powerBar:ClearAllPoints()
-			PixelUtil.SetPoint (powerBar, "topleft", healthBar, "bottomleft", powerBarOffSetX, powerBarOffSetY)
-			PixelUtil.SetPoint (powerBar, "topright", healthBar, "bottomright", -powerBarOffSetX, powerBarOffSetY)
-			PixelUtil.SetSize (powerBar, powerBarWidth, powerBarHeight)
+			--PixelUtil.SetPoint (powerBar, "topleft", healthBar, "bottomleft", powerBarOffSetX, powerBarOffSetY)
+			--PixelUtil.SetPoint (powerBar, "topright", healthBar, "bottomright", -powerBarOffSetX, powerBarOffSetY)
+			--PixelUtil.SetSize (powerBar, powerBarWidth, powerBarHeight)
+			powerBar:SetPoint ("topleft", healthBar, "bottomleft", powerBarOffSetX, powerBarOffSetY)
+			powerBar:SetPoint ("topright", healthBar, "bottomright", -powerBarOffSetX, powerBarOffSetY)
+			powerBar:SetSize (powerBarWidth, powerBarHeight)
 			
 			--power bar are hidden by default, show it if there's a custom size for it
 			if (unitFrame.customPowerBarWidth and unitFrame.customPowerBarHeight) then
@@ -9965,92 +9973,109 @@ end
 		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
 			local widgetRelative = centered and "bottom" or "bottomleft"
-			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "topleft", config.x, config.y, 0, 0)
+			--PixelUtil.SetPoint (widget, widgetRelative, attachTo, "topleft", config.x, config.y, 0, 0)
+			widget:SetPoint (widgetRelative, attachTo, "topleft", config.x, config.y, 0, 0)
 		end,
 		--2 left
 		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
 			local widgetRelative = centered and "center" or "right"
-			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "left", config.x, config.y, 0, 0)
+			--PixelUtil.SetPoint (widget, widgetRelative, attachTo, "left", config.x, config.y, 0, 0)
+			widget:SetPoint (widgetRelative, attachTo, "left", config.x, config.y, 0, 0)
 		end,
 		--3 bottomleft
 		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
 			local widgetRelative = centered and "top" or "topleft"
-			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "bottomleft", config.x, config.y, 0, 0)
+			--PixelUtil.SetPoint (widget, widgetRelative, attachTo, "bottomleft", config.x, config.y, 0, 0)
+			widget:SetPoint (widgetRelative, attachTo, "bottomleft", config.x, config.y, 0, 0)
 		end,
 		--4 bottom
 		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
-			PixelUtil.SetPoint (widget, "top", attachTo, "bottom", config.x, config.y, 0, 0)
+			--PixelUtil.SetPoint (widget, "top", attachTo, "bottom", config.x, config.y, 0, 0)
+			widget:SetPoint ("top", attachTo, "bottom", config.x, config.y, 0, 0)
 		end,
 		--5 bottomright
 		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
 			local widgetRelative = centered and "top" or "topright"
-			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "bottomright", config.x, config.y, 0, 0)
+			--PixelUtil.SetPoint (widget, widgetRelative, attachTo, "bottomright", config.x, config.y, 0, 0)
+			widget:SetPoint (widgetRelative, attachTo, "bottomright", config.x, config.y, 0, 0)
 		end,
 		--6 right
 		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
 			local widgetRelative = centered and "center" or "left"
-			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "right", config.x, config.y, 0, 0)
+			--PixelUtil.SetPoint (widget, widgetRelative, attachTo, "right", config.x, config.y, 0, 0)
+			widget:SetPoint (widgetRelative, attachTo, "right", config.x, config.y, 0, 0)
 		end,
 		--7 topright
 		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
 			local widgetRelative = centered and "bottom" or "bottomright"
-			PixelUtil.SetPoint (widget, widgetRelative, attachTo, "topright", config.x, config.y, 0, 0)
+			--PixelUtil.SetPoint (widget, widgetRelative, attachTo, "topright", config.x, config.y, 0, 0)
+			widget:SetPoint (widgetRelative, attachTo, "topright", config.x, config.y, 0, 0)
 		end,
 		--8 top
 		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
-			PixelUtil.SetPoint (widget, "bottom", attachTo, "top", config.x, config.y, 0, 0)
+			--PixelUtil.SetPoint (widget, "bottom", attachTo, "top", config.x, config.y, 0, 0)
+			widget:SetPoint ("bottom", attachTo, "top", config.x, config.y, 0, 0)
 		end,
 		--9 center
 		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
-			PixelUtil.SetPoint (widget, "center", attachTo, "center", config.x, config.y, 0, 0)
+			--PixelUtil.SetPoint (widget, "center", attachTo, "center", config.x, config.y, 0, 0)
+			widget:SetPoint ("center", attachTo, "center", config.x, config.y, 0, 0)
 		end,
 		--10 inner left
 		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
-			PixelUtil.SetPoint (widget, "left", attachTo, "left", config.x, config.y, 0, 0)
+			--PixelUtil.SetPoint (widget, "left", attachTo, "left", config.x, config.y, 0, 0)
+			widget:SetPoint ("left", attachTo, "left", config.x, config.y, 0, 0)
 		end,
 		--11 inner right
 		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
-			PixelUtil.SetPoint (widget, "right", attachTo, "right", config.x, config.y, 0, 0)
+			--PixelUtil.SetPoint (widget, "right", attachTo, "right", config.x, config.y, 0, 0)
+			widget:SetPoint ("right", attachTo, "right", config.x, config.y, 0, 0)
 		end,
 		--12 inner top
 		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
-			PixelUtil.SetPoint (widget, "top", attachTo, "top", config.x, config.y, 0, 0)
+			--PixelUtil.SetPoint (widget, "top", attachTo, "top", config.x, config.y, 0, 0)
+			widget:SetPoint ("top", attachTo, "top", config.x, config.y, 0, 0)
 		end,
 		--13 inner bottom
 		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
-			PixelUtil.SetPoint (widget, "bottom", attachTo, "bottom", config.x, config.y, 0, 0)
+			--PixelUtil.SetPoint (widget, "bottom", attachTo, "bottom", config.x, config.y, 0, 0)
+			widget:SetPoint ("bottom", attachTo, "bottom", config.x, config.y, 0, 0)
 		end,
 		--14 inner topleft
 		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
-			PixelUtil.SetPoint (widget, "topleft", attachTo, "topleft", config.x, config.y, 0, 0)
+			--PixelUtil.SetPoint (widget, "topleft", attachTo, "topleft", config.x, config.y, 0, 0)
+			widget:SetPoint ("topleft", attachTo, "topleft", config.x, config.y, 0, 0)
 		end,
 		--15 inner bottom left
 		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
-			PixelUtil.SetPoint (widget, "bottomleft", attachTo, "bottomleft", config.x, config.y, 0, 0)
+			--PixelUtil.SetPoint (widget, "bottomleft", attachTo, "bottomleft", config.x, config.y, 0, 0)
+			widget:SetPoint ("bottomleft", attachTo, "bottomleft", config.x, config.y, 0, 0)
 		end,
 		--16 inner bottom right
 		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
-			PixelUtil.SetPoint (widget, "bottomright", attachTo, "bottomright", config.x, config.y, 0, 0)
+			--PixelUtil.SetPoint (widget, "bottomright", attachTo, "bottomright", config.x, config.y, 0, 0)
+			widget:SetPoint ("bottomright", attachTo, "bottomright", config.x, config.y, 0, 0)
 		end,
 		--17 inner top right
 		function (widget, config, attachTo, centered)
 			widget:ClearAllPoints()
-			PixelUtil.SetPoint (widget, "topright", attachTo, "topright", config.x, config.y, 0, 0)
+			--PixelUtil.SetPoint (widget, "topright", attachTo, "topright", config.x, config.y, 0, 0)
+			widget:SetPoint ("topright", attachTo, "topright", config.x, config.y, 0, 0)
 		end,
 	}
 
