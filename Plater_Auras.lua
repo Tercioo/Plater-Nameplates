@@ -832,6 +832,8 @@ function Plater.Auras.SetIconConfigOutdated()
 	containerConfigCache.containerLayoutIndex = containerConfigCache.containerLayoutIndex + 1
 	containerConfigCache.containerFullOptionIndex = containerConfigCache.containerFullOptionIndex + 1
 	containerConfigCache.auraBorderOptionIndex = containerConfigCache.auraBorderOptionIndex + 1
+	containerConfigCache.auraFrameLayoutIndex = containerConfigCache.auraFrameLayoutIndex + 1
+	containerConfigCache.auraFrameOptionIndex = containerConfigCache.auraFrameOptionIndex + 1
 	Plater.EndLogPerformanceCore("Plater-Core", "Update", "SetIconConfigOutdated")
 end
 function Plater.Auras.SetContainerFiltersOutdated()
@@ -2385,10 +2387,12 @@ end
 	
 	--called from the options panel, request a refresh on all auras shown
 	function Plater.RefreshAuras() --private
-		for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
-			if plateFrame.unitFrame.PlaterOnScreen then -- only for visible
-				UnitAuraEventHandlerData[plateFrame.unitFrame.unit] = { hasBuff = true, hasDebuff = true } -- ensure aura update
-				Plater.NameplateTick (plateFrame.OnTickFrame, 1)
+		if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
+			for _, plateFrame in ipairs (Plater.GetAllShownPlates()) do
+				if plateFrame.unitFrame.PlaterOnScreen then -- only for visible
+					UnitAuraEventHandlerData[plateFrame.unitFrame.unit] = { hasBuff = true, hasDebuff = true } -- ensure aura update
+					Plater.NameplateTick (plateFrame.OnTickFrame, 1)
+				end
 			end
 		end
 		if Plater.Masque then
