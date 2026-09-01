@@ -62,6 +62,7 @@ Plater.lua
 
 util\abbreviate.lua
 
+Plater_Profiling.lua
 Plater_ScriptHelpers.lua
 Plater_PerformanceUnits.lua
 Plater_ColorFrame.lua
@@ -89,7 +90,6 @@ Plater_NpcColorPanels.lua
 Plater_CastColorPanels.lua
 Plater_SpellList.lua
 Plater_Audio.lua
-Plater_Profiling.lua
 Plater_Plugins.lua
 Plater_DebugFrames.lua
 Plater_API.lua

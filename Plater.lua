@@ -4541,6 +4541,8 @@ end
 
 function Plater.OnInit() --private --~oninit ~init
 	LibStub ("AceDBOptions-3.0"):GetOptionsTable (Plater.db, true) -- register this now, to ensure no default "realm", "char - realm" profiles are shown in profiles management
+
+	Plater.StartPreCreateAuraContainers()
 	
 	-- Inspired by and mostly copied from https://github.com/Cidan/BetterBags/pull/934/, thanks Cidan
 	-- PatchWerk breaks WoW addons by patching _G functions and overwriting addon code.
@@ -12624,6 +12626,7 @@ end
 			["ScheduleUpdateForNameplate"] = true,
 			["EventHandlerFrame"] = true,
 			["OnInit"] = true,
+			["StartPreCreateAuraContainers"] = true,
 			["HookLoadCallback"] = true,
 			["CheckFirstRun"] = true,
 			["CommHandler"] = true,

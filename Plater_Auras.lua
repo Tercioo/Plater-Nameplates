@@ -778,6 +778,8 @@ end
 	New aura container code - MIDNIGHT 12.1!
 ]]--
 
+local AURA_CONTAINER_CACHE = {}
+
 local auraFramesSetup = {
 	{
 		frameName = "BuffFrame1",
@@ -1738,7 +1740,7 @@ local function getFullAuraOptions(frameName, key, auraContainer, actorType, forc
 	end
 	local fullOptions = {
 		auraFrameOptions = getAuraFrameOptions(frameName, key, auraContainer),
-		processingPolicy = {},
+		--processingPolicy = {},
 		layoutGrowth = {},
 		auraFilters = getAuraFilters(frameName, actorType, force),
 		borderOptions = getAuraBorderOptions(frameName),
@@ -1751,9 +1753,9 @@ local function getFullAuraOptions(frameName, key, auraContainer, actorType, forc
 	fullOptions.layoutGrowth.verticalDirection = verticalDirection
 	fullOptions.layoutGrowth.anchorPoint = anchorPoint
 
-	local policy, policyOptions = getAuraProcessingPolicy(frameName)
-	fullOptions.processingPolicy.policy = policy
-	fullOptions.processingPolicy.policyOptions = policyOptions
+	--local policy, policyOptions = getAuraProcessingPolicy(frameName)
+	--fullOptions.processingPolicy.policy = policy
+	--fullOptions.processingPolicy.policyOptions = policyOptions
 
 	if actorType then
 		containerConfigCache.containerFullOptions[actorType][frameName] = fullOptions
@@ -1763,13 +1765,26 @@ local function getFullAuraOptions(frameName, key, auraContainer, actorType, forc
 	return fullOptions
 end
 
+local allocIndex = 1
 local function createAuraContainers(unitFrame)
 	if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then return end
+	if allocIndex > 41 then return end
 	for _, frameInfo in pairs (auraFramesSetup) do
-		local auraContainer = CreateFrame("AuraContainer", "$parent" .. frameInfo.frameName, unitFrame, "CustomAuraContainerTemplate")
-		unitFrame[frameInfo.key] = auraContainer
+		local auraContainer = CreateFrame("AuraContainer", "PlaterAuraContainer" .. allocIndex .. frameInfo.frameName, unitFrame or UIParent, "CustomAuraContainerTemplate")
+		auraContainer:SetSize(1, 1)
+		if unitFrame then
+			unitFrame[frameInfo.key] = auraContainer
+		end
+		-- skip ahead and store
+		while AURA_CONTAINER_CACHE[allocIndex] and AURA_CONTAINER_CACHE[allocIndex][frameInfo.key] do
+			allocIndex = allocIndex + 1
+		end
+		AURA_CONTAINER_CACHE[allocIndex] = AURA_CONTAINER_CACHE[allocIndex] or {}
+		AURA_CONTAINER_CACHE[allocIndex][frameInfo.key] = auraContainer
+
+		auraContainer.frameInfo = frameInfo
 		auraContainer.Name = frameInfo.name
-		--auraContainer.index = i
+		auraContainer.index = allocIndex
 
 		local options = getFullAuraOptions(frameInfo.name, frameInfo.key, auraContainer, nil)
 		auraContainer.activeOptions = options
@@ -1790,13 +1805,47 @@ local function createAuraContainers(unitFrame)
 		auraContainer:SetFlowLayoutAnchorPoint(options.layoutGrowth.anchorPoint)
 		auraContainer:SetFlowLayoutGrowthDirection(options.layoutGrowth.horizontalDirection, options.layoutGrowth.verticalDirection)
 		auraContainer:SetFlowLayoutMaximumLineSize(options.auraFrameOptions.layout.maximumLineSize)
-		auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
+		--auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
 		--SetAuraLayoutPadding
 
 		auraContainer:SetEnabled(false)
 
-		--DevTool:AddData(auraContainer, "create")
+		--DevTool:AddData(auraContainer, "create - "..allocIndex)
 	end
+	allocIndex = allocIndex + 1
+end
+
+local nextAuraIndex = 1
+local function createOrAllocateAuraContainers(unitFrame)
+	Plater.StartLogPerformanceCore("Plater-Core", "Update", "createOrAllocateAuraContainers")
+	if nextAuraIndex > allocIndex or not AURA_CONTAINER_CACHE[nextAuraIndex] then
+		--if DevTool then DevTool:AddData(unitFrame, "allocate direct create") end
+		createAuraContainers(unitFrame)
+	else
+		--if DevTool then DevTool:AddData(unitFrame, "allocate from cache") end
+		local auraContainers = AURA_CONTAINER_CACHE[nextAuraIndex]
+		for _, frameInfo in pairs (auraFramesSetup) do
+			local container = auraContainers[frameInfo.key]
+			unitFrame[frameInfo.key] = container
+			container:SetParent(unitFrame)
+		end
+	end
+	nextAuraIndex = nextAuraIndex + 1
+	Plater.EndLogPerformanceCore("Plater-Core", "Update", "createOrAllocateAuraContainers")
+end
+
+local function preCreateAuraContainers()
+	if allocIndex > 41 then return end
+	local curTime = debugprofilestop()
+	local endTime = curTime + 250
+	while curTime < endTime and allocIndex <= 41 do
+		createAuraContainers()
+		curTime = debugprofilestop()
+	end
+	C_Timer.After(0, preCreateAuraContainers)
+end
+function Plater.StartPreCreateAuraContainers()
+	C_Timer.After(0, preCreateAuraContainers)
 end
 
 function platerInternal.Auras.CreateOldAuraContainers(unitFrame)
@@ -1851,13 +1900,13 @@ function platerInternal.Auras.CreateOldAuraContainers(unitFrame)
 	unitFrame.BuffFrame.ExtraIconFrame = unitFrame.ExtraIconFrame
 end
 
-local nextAuraIndex = 1
-function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, force, forceLayout)
+function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, forceFilters, forceLayout)
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "CreateOrUpdateAuraContainers")
 	if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS and unit ~= "player" then
 		
 		if not unitFrame.BuffFrame then
-			createAuraContainers(unitFrame)
+			Plater.StartLogPerformanceCore("Plater-Core", "Update", "createOrAllocateAuraContainers - createallocate")
+			createOrAllocateAuraContainers(unitFrame)
 
 			for _, frameInfo in pairs (auraFramesSetup) do
 				
@@ -1872,8 +1921,6 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, force, 
 				--DevTool:AddData(auraContainer, "create")
 			end
 
-			nextAuraIndex = nextAuraIndex + 1
-
 			--> unit aura cache dummy compat
 			unitFrame.BuffFrame.amountAurasShown = 0
 			unitFrame.BuffFrame2.amountAurasShown = 0
@@ -1882,6 +1929,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, force, 
 			unitFrame.ExtraAuraCache = {}
 			unitFrame.BuffFrame.BuffFrame2 = unitFrame.BuffFrame2
 			unitFrame.BuffFrame.ExtraIconFrame = unitFrame.ExtraIconFrame
+			Plater.EndLogPerformanceCore("Plater-Core", "Update", "createOrAllocateAuraContainers - createallocate")
 		end
 
 		-- update
@@ -1891,20 +1939,23 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, force, 
 				local options = getFullAuraOptions(frameInfo.name, frameInfo.key, auraContainer, unitFrame.ActorType, forceFull)
 				if forceFull then
 					forceLayout = true
-					force = true
+					forceFilters = true
 				end
 				--if force or auraContainer.activeUnit ~= unit or (auraContainer.activeOptionsType ~= unitFrame.ActorType) or (auraContainer.activeOptionsIndex ~= options.optionsIndex) then
 				local shouldUpdate = (auraContainer.activeOptionsType ~= unitFrame.ActorType) or (auraContainer.activeOptionsIndex ~= options.optionsIndex)
-				if force or shouldUpdate or forceLayout then
+				if forceFilters or shouldUpdate or forceLayout then
 					--if DevTool then DevTool:AddData({stack = debugstack(), force = force, shouldUpdate = shouldUpdate, forceLayout = forceLayout, forceFull = forceFull, active = auraContainer.activeOptionsType, current = unitFrame.ActorType, activeIndex = auraContainer.activeOptionsIndex, currentIndex = options.optionsIndex, options = options}, "Updating: " .. unit .. " - " .. frameInfo.key) end
 					if shouldUpdate or forceLayout then
-						auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions)
+						Plater.StartLogPerformanceCore("Plater-Core", "Update", "createOrAllocateAuraContainers - updatelayout")
+						--auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions) -- currently unused
 						auraContainer:SetFlowLayoutMaximumLineSize(options.auraFrameOptions.layout.maximumLineSize)
 						auraContainer:SetFlowLayoutAnchorPoint(options.layoutGrowth.anchorPoint)
 						auraContainer:SetFlowLayoutGrowthDirection(options.layoutGrowth.horizontalDirection, options.layoutGrowth.verticalDirection)
+						Plater.EndLogPerformanceCore("Plater-Core", "Update", "createOrAllocateAuraContainers - updatelayout")
 					end
 
-					if shouldUpdate or force then
+					if shouldUpdate or forceFilters then
+						Plater.StartLogPerformanceCore("Plater-Core", "Update", "createOrAllocateAuraContainers - updatefilters")
 						local index = 1
 						for _, filter in pairs(options.auraFilters) do
 							local groupName = "group"..index
@@ -1942,6 +1993,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, force, 
 							auraContainer:SetAuraGroupFilterString("group"..index, "")
 							index = index + 1
 						end
+						Plater.EndLogPerformanceCore("Plater-Core", "Update", "createOrAllocateAuraContainers - updatefilters")
 					end
 					
 					if auraContainer.configIndex ~= containerConfigCache.containerConfigIndex then
@@ -1958,8 +2010,13 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, force, 
 				end
 
 				if auraContainer.enabled and auraContainer.unitToken and auraContainer.unitToken == unit then
+					Plater.StartLogPerformanceCore("Plater-Core", "Update", "createOrAllocateAuraContainers - rebuildupdate")
 					--auraContainer:RebuildAuraParseFilters()
 					auraContainer:UpdateAllAuras()
+					--C_Timer.After(0, auraContainer.UpdateAllAuras)
+					--auraContainer:Hide()
+					--auraContainer:Show()
+					Plater.EndLogPerformanceCore("Plater-Core", "Update", "createOrAllocateAuraContainers - rebuildupdate")
 				else 
 					auraContainer:SetEnabled(true)
 					auraContainer:SetUnit(unit)
@@ -1971,7 +2028,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, force, 
 
 			--auraContainer:SetEnabled(DB_AURA_ENABLED and unit and true or false)
 
-			--if DevTool then DevTool:AddData(auraContainer, "update") end
+			--if DevTool then DevTool:AddData({auraContainer = auraContainer, unitFrame = unitFrame, debugstack = debugstack()}, "update - " .. (unit or "nil")) end
 		end
 
 	elseif not unitFrame.BuffFrame then -- old API
