@@ -8,6 +8,11 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1788270628, "Backend Change", "Sept 1st, 2026", "Staggering uncritical updates on aura options to make it less impacting.", "cont1nuity"},
+			{1788270628, "Backend Change", "Sept 1st, 2026", "Changing the way the nameplate layout is done internally to improve on performance.", "cont1nuity"},
+			{1788270628, "Backend Change", "Sept 1st, 2026", "Pre-creating aura containers for better overall performance.", "cont1nuity"},
+			{1788270628, "Backend Change", "Aug 31st, 2026", "Adjusting unit type recognition to make it more consistent.", "cont1nuity"},
+			
 			{1787663808, "Bug Fix", "Aug 25th, 2026", "Fixed the number format style not applying correctly.", "cont1nuity"},
 			{1787663808, "Bug Fix", "Aug 25th, 2026", "Fixed an issue with buff filtering.", "cont1nuity"},
 			{1787663808, "Backend Change", "Aug 24th, 2026", "Relevant aura name caches are now persistent and will ignore unknown entries, saving performance while loading after initial buildup.", "cont1nuity"},
