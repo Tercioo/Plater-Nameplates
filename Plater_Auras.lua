@@ -1546,7 +1546,6 @@ local function runScheduledUpdateAuraButtons()
 		curTime = debugprofilestop()
 		if curTime > endTime then break end
 	end
-	print("done: ", #doneItems)
 	for _, auraButtons in pairs (doneItems) do
 		platerInternal.Auras.reSkinAuraButtonsObjects[auraButtons] = nil
 	end
