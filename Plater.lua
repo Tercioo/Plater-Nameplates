@@ -6653,7 +6653,7 @@ end
 					Plater.AddToAuraUpdate(plateFrame.unitFrame.unit, plateFrame.unitFrame) -- force aura update
 				end
 				
-				Plater.UpdatePlateFrame (plateFrame, nil, forceUpdate, justAdded, regenDisabled)
+				Plater.UpdatePlateFrame (plateFrame, plateFrame.unitFrame.ActorType, forceUpdate, justAdded, regenDisabled)
 				--trigger a nameplate updated event
 				Plater.TriggerNameplateUpdatedEvent(plateFrame.unitFrame)
 			end
@@ -8977,7 +8977,7 @@ end
 		unitFrame.actorType = actorType
 		unitFrame.ActorType = actorType --exposed to scripts
 		
-		local shouldForceRefresh = justAdded or forceUpdate
+		local shouldForceRefresh = forceUpdate --or justAdded
 		if (plateFrame.IsNpcWithoutHealthBar or plateFrame.IsFriendlyPlayerWithoutHealthBar) then
 			shouldForceRefresh = true
 		end
