@@ -7906,6 +7906,7 @@ end
 
 	-- ~target ~selection
 	function Plater.UpdateTarget (plateFrame) --private
+		Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdateTarget")
 
 		local profile = Plater.db.profile
 		local unitFrame = plateFrame.unitFrame
@@ -7994,6 +7995,7 @@ end
 
 		Plater.CheckRange (plateFrame, false) --disabled on 2018-10-09 | enabled back on 2020-1-16
 
+		Plater.EndLogPerformanceCore("Plater-Core", "Update", "UpdateTarget")
 	end
 
 	--called when the player targets a new unit, when focus changed or when a unit isn't in the screen any more
@@ -8164,11 +8166,13 @@ end
 	-- update all texts in the nameplate, settings can variate from different unit types
 	-- needReset is true when the previous unit type shown on this place is different from the current unit
 	function Plater.UpdatePlateText (plateFrame, plateConfigs, needReset) --private
+		Plater.StartLogPerformanceCore("Plater-Core", "Update", "UpdatePlateText")
 	
 		if plateFrame.unitFrame.isWidgetOnlyMode then
 			plateFrame.ActorNameSpecial:Hide()
 			plateFrame.ActorTitleSpecial:Hide()
 			
+			Plater.EndLogPerformanceCore("Plater-Core", "Update", "UpdatePlateText")
 			return
 		end
 		
@@ -8265,6 +8269,7 @@ end
 				plateFrame.isFriend = nil
 			end
 			
+			Plater.EndLogPerformanceCore("Plater-Core", "Update", "UpdatePlateText")
 			return
 		
 		elseif (plateFrame.IsNpcWithoutHealthBar) then --not critical code
@@ -8400,6 +8405,7 @@ end
 				end
 			end
 			
+			Plater.EndLogPerformanceCore("Plater-Core", "Update", "UpdatePlateText")
 			return
 		end
 		
@@ -8513,6 +8519,7 @@ end
 			plateFrame.unitFrame.healthBar.unitName:SetText ("")
 		end
 		
+		Plater.EndLogPerformanceCore("Plater-Core", "Update", "UpdatePlateText")
 		return true
 	end
 	
@@ -8973,7 +8980,6 @@ end
 		local shouldForceRefresh = justAdded or forceUpdate
 		if (plateFrame.IsNpcWithoutHealthBar or plateFrame.IsFriendlyPlayerWithoutHealthBar) then
 			shouldForceRefresh = true
-			
 		end
 
 		healthBar.BorderIsAggroIndicator = nil
