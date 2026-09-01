@@ -1905,7 +1905,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, forceFi
 	if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS and unit ~= "player" then
 		
 		if not unitFrame.BuffFrame then
-			Plater.StartLogPerformanceCore("Plater-Core", "Update", "createOrAllocateAuraContainers - createallocate")
+			Plater.StartLogPerformanceCore("Plater-Core", "Update", "CreateOrUpdateAuraContainers - createallocate")
 			createOrAllocateAuraContainers(unitFrame)
 
 			for _, frameInfo in pairs (auraFramesSetup) do
@@ -1929,7 +1929,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, forceFi
 			unitFrame.ExtraAuraCache = {}
 			unitFrame.BuffFrame.BuffFrame2 = unitFrame.BuffFrame2
 			unitFrame.BuffFrame.ExtraIconFrame = unitFrame.ExtraIconFrame
-			Plater.EndLogPerformanceCore("Plater-Core", "Update", "createOrAllocateAuraContainers - createallocate")
+			Plater.EndLogPerformanceCore("Plater-Core", "Update", "CreateOrUpdateAuraContainers - createallocate")
 		end
 
 		-- update
@@ -1946,16 +1946,16 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, forceFi
 				if forceFilters or shouldUpdate or forceLayout then
 					--if DevTool then DevTool:AddData({stack = debugstack(), force = force, shouldUpdate = shouldUpdate, forceLayout = forceLayout, forceFull = forceFull, active = auraContainer.activeOptionsType, current = unitFrame.ActorType, activeIndex = auraContainer.activeOptionsIndex, currentIndex = options.optionsIndex, options = options}, "Updating: " .. unit .. " - " .. frameInfo.key) end
 					if shouldUpdate or forceLayout then
-						Plater.StartLogPerformanceCore("Plater-Core", "Update", "createOrAllocateAuraContainers - updatelayout")
+						Plater.StartLogPerformanceCore("Plater-Core", "Update", "CreateOrUpdateAuraContainers - updatelayout")
 						--auraContainer:SetAuraProcessingPolicy(options.processingPolicy.policy, options.processingPolicy.policyOptions) -- currently unused
 						auraContainer:SetFlowLayoutMaximumLineSize(options.auraFrameOptions.layout.maximumLineSize)
 						auraContainer:SetFlowLayoutAnchorPoint(options.layoutGrowth.anchorPoint)
 						auraContainer:SetFlowLayoutGrowthDirection(options.layoutGrowth.horizontalDirection, options.layoutGrowth.verticalDirection)
-						Plater.EndLogPerformanceCore("Plater-Core", "Update", "createOrAllocateAuraContainers - updatelayout")
+						Plater.EndLogPerformanceCore("Plater-Core", "Update", "CreateOrUpdateAuraContainers - updatelayout")
 					end
 
 					if shouldUpdate or forceFilters then
-						Plater.StartLogPerformanceCore("Plater-Core", "Update", "createOrAllocateAuraContainers - updatefilters")
+						Plater.StartLogPerformanceCore("Plater-Core", "Update", "CreateOrUpdateAuraContainers - updatefilters")
 						local index = 1
 						for _, filter in pairs(options.auraFilters) do
 							local groupName = "group"..index
@@ -1993,7 +1993,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, forceFi
 							auraContainer:SetAuraGroupFilterString("group"..index, "")
 							index = index + 1
 						end
-						Plater.EndLogPerformanceCore("Plater-Core", "Update", "createOrAllocateAuraContainers - updatefilters")
+						Plater.EndLogPerformanceCore("Plater-Core", "Update", "CreateOrUpdateAuraContainers - updatefilters")
 					end
 					
 					if auraContainer.configIndex ~= containerConfigCache.containerConfigIndex then
@@ -2057,8 +2057,8 @@ function Plater.AddToAuraUpdate (unit, unitFrame)
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "AddToAuraUpdate")
 	if not unit or not unitFrame then return end
 	if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
-		--Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
-		Plater.CreateOrUpdateAuraContainers(unitFrame, unit, false, true)
+		Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
+		--Plater.CreateOrUpdateAuraContainers(unitFrame, unit, false, true)
 		Plater.EndLogPerformanceCore("Plater-Core", "Update", "AddToAuraUpdate")
 		return
 	end
