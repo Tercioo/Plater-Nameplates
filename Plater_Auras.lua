@@ -1525,16 +1525,54 @@ local function initAuraFrame(auraButton, frameName, frameKey, auraContainer)
 	return auraButton
 end
 
-platerInternal.Auras.reSkinAuraButtonsTimer = {}
-local function reSkinAuraButtons(auraButtons, options)
+platerInternal.Auras.reSkinAuraButtonsTimer = nil
+platerInternal.Auras.reSkinAuraButtonsObjects = {}
+local reSkinAuraButtons
+local function runScheduledUpdateAuraButtons()
+	Plater.StartLogPerformanceCore("Plater-Core", "Update", "runScheduledUpdateAuraButtons")
+	if C_Secrets.ShouldAurasBeSecret() or InCombatLockdown() then
+		if platerInternal.Auras.reSkinAuraButtonsTimer then
+			platerInternal.Auras.reSkinAuraButtonsTimer:Cancel()
+		end
+		platerInternal.Auras.reSkinAuraButtonsTimer = C_Timer.NewTimer(1, runScheduledUpdateAuraButtons)
+		return
+	end
+	local curTime = debugprofilestop()
+	local endTime = curTime + 100
+	local doneItems = {}
+	for auraButton, options in pairs(platerInternal.Auras.reSkinAuraButtonsObjects) do
+		reSkinAuraButtons(auraButton, options)
+		table.insert(doneItems, auraButton)
+		curTime = debugprofilestop()
+		if curTime > endTime then break end
+	end
+	print("done: ", #doneItems)
+	for _, auraButtons in pairs (doneItems) do
+		platerInternal.Auras.reSkinAuraButtonsObjects[auraButtons] = nil
+	end
+	for _ in pairs(platerInternal.Auras.reSkinAuraButtonsObjects) do
+		-- has something..
+		if platerInternal.Auras.reSkinAuraButtonsTimer then
+			platerInternal.Auras.reSkinAuraButtonsTimer:Cancel()
+		end
+		platerInternal.Auras.reSkinAuraButtonsTimer = C_Timer.NewTimer(0, runScheduledUpdateAuraButtons)
+		break
+	end
+	Plater.EndLogPerformanceCore("Plater-Core", "Update", "runScheduledUpdateAuraButtons")
+end
+local function scheduleReSkinAurButtons(auraButtons, options)
+	if platerInternal.Auras.reSkinAuraButtonsTimer then
+		platerInternal.Auras.reSkinAuraButtonsTimer:Cancel()
+	end
+	platerInternal.Auras.reSkinAuraButtonsObjects[auraButtons] = options
+	platerInternal.Auras.reSkinAuraButtonsTimer = C_Timer.NewTimer(1, runScheduledUpdateAuraButtons)
+end
+function reSkinAuraButtons(auraButtons, options)
 
 	local profile = Plater.db.profile
 
 	if C_Secrets.ShouldAurasBeSecret() or InCombatLockdown() then
-		if platerInternal.Auras.reSkinAuraButtonsTimer[auraButtons] then
-			platerInternal.Auras.reSkinAuraButtonsTimer[auraButtons]:Cancel()
-		end
-		platerInternal.Auras.reSkinAuraButtonsTimer[auraButtons] = C_Timer.NewTimer(1, function() reSkinAuraButtons(auraButtons, options) end)
+		scheduleReSkinAurButtons(auraButtons, options)
 		return
 	end
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "reSkinAuraButtons")
