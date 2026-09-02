@@ -1874,6 +1874,7 @@ local function createOrAllocateAuraContainers(unitFrame)
 end
 
 local function preCreateAuraContainers()
+	if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then return end
 	if allocIndex > 41 then return end
 	local curTime = debugprofilestop()
 	local endTime = curTime + 250
@@ -1884,6 +1885,7 @@ local function preCreateAuraContainers()
 	C_Timer.After(0, preCreateAuraContainers)
 end
 function Plater.StartPreCreateAuraContainers()
+	if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then return end
 	C_Timer.After(0, preCreateAuraContainers)
 end
 
