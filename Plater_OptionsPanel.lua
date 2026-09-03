@@ -11485,10 +11485,10 @@ end
 	
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> ~scripts ~scripting ~code �nimations ~animations
-	Plater.CreateScriptingPanel()
-	Plater.CreateHookingPanel()
-	Plater.CreateWagoPanel() --wago_imports
-	Plater.CreateSpellAnimationPanel()
+	C_Timer.After(0, Plater.CreateScriptingPanel)
+	C_Timer.After(0.5, Plater.CreateHookingPanel)
+	C_Timer.After(1, Plater.CreateWagoPanel) --wago_imports
+	C_Timer.After(1, Plater.CreateSpellAnimationPanel)
 	
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> experimental frame ~experimental
