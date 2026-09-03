@@ -1287,6 +1287,9 @@ local function createLegacyAuraBorder(auraButton, frameName)
 	-- the legacy aura frame. Secure dispel colors live in a separate overlay so
 	-- disabling type colors can leave the normal border untouched.
 	local border = DF:CreateFullBorder(nil, auraButton)
+	for _, texture in ipairs(border.Textures) do
+		texture:SetDrawLayer("overlay", 7)
+	end
 	border.frameName = frameName
 	border.TypeOverlay = CreateFrame("Frame", nil, border)
 	border.TypeOverlay:SetAllPoints()
