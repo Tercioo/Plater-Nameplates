@@ -1230,7 +1230,8 @@ local function getAuraFrameLayout(frameName)
 	local layout = {
 		elementSpacing = profile.aura_padding,
 		lineSpacing = profile.aura_breakline_space,
-		groupSpacing = profile.aura_padding,
+		-- elementSpacing already provides the legacy gap between adjacent groups
+		groupSpacing = 0,
 		groupLineSpacing = profile.aura_breakline_space,
 		--forceNewLine = false,
 		elementWidth = 26,
