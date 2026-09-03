@@ -2162,7 +2162,7 @@ local debuff_options = {
 		end,
 		name = "Show Magic Buffs",
 		desc = "Show auras which are in the magic type category.",
-		hidden = IS_WOW_PROJECT_MIDNIGHT,
+		hidden = false,
 	},
 	
 	{

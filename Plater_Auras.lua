@@ -1062,6 +1062,22 @@ local function getAuraFilters(frameName, actorType, force)
 				})
 			end
 
+			if DB_AURA_SHOW_MAGIC and not DB_SHOW_MAGIC_IN_EXTRA_ICONS and not canAssist then
+				local candidate = DF.table.copy({}, allCandidates.mainFilter)
+				candidate.includeSpellIDs = nil
+				candidate.excludeDispelTypes = nil
+				candidate.includeDispelTypes = {Magic = true}
+				table.insert(filters, {
+					filterString = "HELPFUL" .. (DB_SHOW_PURGE_IN_EXTRA_ICONS and "|!RAID_PLAYER_DISPELLABLE" or "") .. (Plater.db.profile.extra_icon_show_defensive and "|!BIG_DEFENSIVE|!EXTERNAL_DEFENSIVE" or ""),
+					candidateFilters = candidate,
+				})
+
+				-- candidate filters are cached by frame name, do not mutate the cached table
+				local remainingCandidate = DF.table.copy({}, allCandidates.mainFilter)
+				remainingCandidate.excludeDispelTypes = {Magic = true}
+				allCandidates.mainFilter = remainingCandidate
+			end
+
 			if Plater.db.profile.aura_show_defensive_cd and not Plater.db.profile.extra_icon_show_defensive  then
 				if isPlayer then
 					table.insert(pFilters, "BIG_DEFENSIVE")
@@ -1096,7 +1112,7 @@ local function getAuraFilters(frameName, actorType, force)
 				pFilters = {}
 			end
 
-			if DB_AURA_SHOW_BUFFS_AS_BLIZZARD and not DB_AURA_SHOW_BUFFENEMYNPC and not canAssist and not isPlayer then
+			if DB_AURA_SHOW_BUFFS_AS_BLIZZARD and not DB_AURA_SHOW_BUFFENEMYNPC and not canAssist then
 				local candidate = DF.table.copy({}, allCandidates.mainFilter)
 				candidate.includeSpellIDs = nil
 				--candidate.nameplateShowPersonal = true
