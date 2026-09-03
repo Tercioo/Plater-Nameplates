@@ -1255,76 +1255,57 @@ end
 local function getLegacyAuraBorderPresentations(frameName)
 	local profile = Plater.db.profile
 	local presentations = {}
+	local colors
+	local usePersistentTypeColors
 
 	if frameName == "ExtraIconFrame" then
-		local colors = profile.extra_icon_dispel_type_colors
-		local colorMap = profile.extra_icon_aura_border_colors_by_type and makeConfiguredAuraColorMap(colors) or makeUniformAuraColorMap(colors.default)
-		table.insert(presentations, {
-			layer = "Generic",
-			defaultColor = colors.default,
-			options = makeAuraBorderOptions(true, true, colorMap),
-		})
-		return presentations
+		colors = profile.extra_icon_dispel_type_colors
+		usePersistentTypeColors = profile.extra_icon_aura_border_colors_by_type
+	else
+		colors = profile.aura_border_colors
+		usePersistentTypeColors = profile.aura_border_colors_by_type
 	end
 
-	local colors = profile.aura_border_colors
-	if profile.aura_border_colors_by_type then
-		table.insert(presentations, {
-			layer = "Generic",
-			defaultColor = colors.default,
-			options = makeAuraBorderOptions(true, true, makeConfiguredAuraColorMap(colors)),
-		})
-		return presentations
-	end
-
-	local mayShowHelpful = not profile.buffs_on_aura2 or frameName == "Secondary"
-	local mayShowHarmful = not profile.buffs_on_aura2 or frameName == "Main"
-	if mayShowHelpful then
-		table.insert(presentations, {
-			layer = "Helpful",
-			defaultColor = colors.is_buff,
-			options = makeAuraBorderOptions(true, false, makeUniformAuraColorMap(colors.is_buff, colors.enrage)),
-		})
-	end
-	if mayShowHarmful then
-		table.insert(presentations, {
-			layer = "Harmful",
-			defaultColor = colors.is_debuff,
-			options = makeAuraBorderOptions(false, true, makeUniformAuraColorMap(colors.is_debuff)),
-		})
-	end
+	local mayShowHelpful = frameName == "ExtraIconFrame" or not profile.buffs_on_aura2 or frameName == "Secondary"
+	local mayShowHarmful = frameName == "ExtraIconFrame" or not profile.buffs_on_aura2 or frameName == "Main"
+	table.insert(presentations, {
+		layer = "DispelType",
+		options = makeAuraBorderOptions(mayShowHelpful, mayShowHarmful, makeConfiguredAuraColorMap(colors)),
+	})
 	if mayShowHelpful then
 		table.insert(presentations, {
 			layer = "Stealable",
-			defaultColor = colors.steal_or_purge,
-			options = makeAuraBorderOptions(true, false, makeUniformAuraColorMap(colors.steal_or_purge), Enum.CustomAuraButtonDispelTypeStealableFilter.Stealable),
+			options = makeAuraBorderOptions(true, false, makeUniformAuraColorMap(frameName == "ExtraIconFrame" and colors.magic or colors.steal_or_purge), Enum.CustomAuraButtonDispelTypeStealableFilter.Stealable),
 		})
 	end
 
-	return presentations
+	return presentations, colors.default, usePersistentTypeColors
 end
 
 local function createLegacyAuraBorder(auraButton, frameName)
-	local border = CreateFrame("Frame", nil, auraButton)
-	border:SetAllPoints()
-	border:SetIgnoreParentScale(true)
-	border:SetFrameLevel(auraButton:GetFrameLevel())
+	-- Keep the base border on exactly the same direct DF:CreateFullBorder path as
+	-- the legacy aura frame. Secure dispel colors live in a separate overlay so
+	-- disabling type colors can leave the normal border untouched.
+	local border = DF:CreateFullBorder(nil, auraButton)
 	border.frameName = frameName
-	border.Layers = {}
-	border.Textures = {}
+	border.TypeOverlay = CreateFrame("Frame", nil, border)
+	border.TypeOverlay:SetAllPoints()
+	border.TypeOverlay:SetIgnoreParentScale(false)
+	border.TypeOverlay:SetFrameLevel(border:GetFrameLevel())
+	border.TypeOverlay.Layers = {}
+	border.TypeOverlay.persistent = false
 
-	function border:AddLayer(layerName)
-		if self.Layers[layerName] then
-			return self.Layers[layerName]
+	function border:AddTypeLayer(layerName)
+		if self.TypeOverlay.Layers[layerName] then
+			return self.TypeOverlay.Layers[layerName]
 		end
 
-		local layer = DF:CreateFullBorder(nil, border)
-		-- the wrapper owns the old ignore-parent-scale behavior and animation
+		local layer = DF:CreateFullBorder(nil, self.TypeOverlay)
+		-- Let the overlay follow the legacy border's show animation.
 		layer:SetIgnoreParentScale(false)
-		self.Layers[layerName] = layer
+		self.TypeOverlay.Layers[layerName] = layer
 		for _, texture in ipairs(layer.Textures) do
 			texture:SetDrawLayer("overlay", 7)
-			table.insert(self.Textures, texture)
 		end
 		if self.borderSize then
 			local minimumPixels = self.frameName == "ExtraIconFrame" and 1 or 0
@@ -1334,45 +1315,48 @@ local function createLegacyAuraBorder(auraButton, frameName)
 		return layer
 	end
 
-	function border:SetVertexColor(r, g, b, a)
-		for _, texture in ipairs(self.Textures) do
-			texture:SetVertexColor(r, g, b, a)
-		end
-	end
-
 	function border:SetBorderSize(size)
 		local borderSize = (size or 1) * UIParent:GetEffectiveScale()
 		self.borderSize = borderSize
 		local minimumPixels = self.frameName == "ExtraIconFrame" and 1 or 0
-		for _, layer in pairs(self.Layers) do
+		self:SetBorderSizes(borderSize, minimumPixels, borderSize, 0)
+		self:UpdateSizes()
+		for _, layer in pairs(self.TypeOverlay.Layers) do
 			layer:SetBorderSizes(borderSize, minimumPixels, borderSize, 0)
 			layer:UpdateSizes()
 		end
 	end
 
+	function border:SetTypeOverlayPersistent(persistent)
+		self.TypeOverlay.persistent = persistent
+		self.TypeOverlay:SetAlpha(persistent and 1 or 0)
+	end
+
 	for _, presentation in ipairs(getLegacyAuraBorderPresentations(frameName)) do
-		border:AddLayer(presentation.layer)
+		border:AddTypeLayer(presentation.layer)
 	end
 
 	return border
 end
 
 local function applyLegacyAuraBorderPresentation(auraButton, frameName)
-	local presentations = getLegacyAuraBorderPresentations(frameName)
+	local presentations, defaultColor, usePersistentTypeColors = getLegacyAuraBorderPresentations(frameName)
 	auraButton:ClearDispelTypeTextures()
+	auraButton.Border:SetVertexColor(unpack(defaultColor))
 
-	for _, layer in pairs(auraButton.Border.Layers) do
+	for _, layer in pairs(auraButton.Border.TypeOverlay.Layers) do
 		layer:Hide()
 	end
 
 	for _, presentation in ipairs(presentations) do
-		local layer = auraButton.Border:AddLayer(presentation.layer)
+		local layer = auraButton.Border:AddTypeLayer(presentation.layer)
 		layer:Show()
 		for _, texture in ipairs(layer.Textures) do
-			texture:SetVertexColor(unpack(presentation.defaultColor))
 			auraButton:AddDispelTypeTexture(texture, presentation.options)
 		end
 	end
+
+	auraButton.Border:SetTypeOverlayPersistent(usePersistentTypeColors)
 end
 
 local function createLegacyAuraShowAnimation(auraButton)
@@ -1389,13 +1373,24 @@ local function createLegacyAuraShowAnimation(auraButton)
 	DF:CreateAnimation(animation.border, "Scale", 1, .05, .7, .7, 1.1, 1.1)
 	DF:CreateAnimation(animation.border, "Scale", 2, .05, 1.1, 1.1, 1, 1)
 
+	local typeOverlay = auraButton.Border.TypeOverlay
+	animation.typeFlash = DF:CreateAnimationHub(typeOverlay, nil, function()
+		typeOverlay:SetAlpha(typeOverlay.persistent and 1 or 0)
+	end)
+	DF:CreateAnimation(animation.typeFlash, "Alpha", 1, .05, 0, 1)
+	DF:CreateAnimation(animation.typeFlash, "Alpha", 2, .05, 1, 0)
+
 	function animation:Play()
 		self.icon:Play()
 		self.border:Play()
+		if not typeOverlay.persistent then
+			self.typeFlash:Play()
+		end
 	end
 	function animation:Stop()
 		self.icon:Stop()
 		self.border:Stop()
+		self.typeFlash:Stop()
 	end
 
 	auraButton.ShowAnimation = animation
@@ -1702,7 +1697,9 @@ local function initAuraFrame(auraButton, frameName, frameKey, auraContainer)
 	end
 
 	auraButton.frameName = frameName
-	auraButton:SetSize(auraWidth, auraHeight)
+	-- Match the legacy aura path's pixel-rounded frame dimensions. Raw SetSize
+	-- can land the secure icon on fractional physical pixels at non-1 UI scales.
+	PixelUtil.SetSize(auraButton, auraWidth, auraHeight)
 	auraButton:SetSizes()
 	auraButton:SetBorderSize(borderThickness)
 	if borderThickness > 0 then
@@ -1845,10 +1842,11 @@ function reSkinAuraButtons(auraButtons, options)
 			Plater.SetAnchor (timerLabel, profile.aura_timer_text_anchor) --TODO
 		end
 
-		auraButton:SetSize(auraWidth, auraHeight)
+		PixelUtil.SetSize(auraButton, auraWidth, auraHeight)
 		auraButton:SetSizes()
 		auraButton:SetBorderSize(borderThickness)
 		auraButton:SetScale(1)
+		Plater.UpdateIconAspecRatio(auraButton)
 
 		if borderThickness > 0 then
 			auraButton.Border:Show()
