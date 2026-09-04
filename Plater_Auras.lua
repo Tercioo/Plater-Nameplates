@@ -1362,49 +1362,6 @@ local function applyLegacyAuraBorderPresentation(auraButton, frameName)
 	auraButton.Border:SetTypeOverlayPersistent(usePersistentTypeColors)
 end
 
-local function createLegacyAuraShowAnimation(auraButton)
-	local function onStop()
-		auraButton:SetScale(1)
-	end
-
-	local animation = {}
-	animation.icon = DF:CreateAnimationHub(auraButton.Icon, nil, onStop)
-	DF:CreateAnimation(animation.icon, "Scale", 1, .05, .7, .7, 1.1, 1.1)
-	DF:CreateAnimation(animation.icon, "Scale", 2, .05, 1.1, 1.1, 1, 1)
-
-	animation.border = DF:CreateAnimationHub(auraButton.Border, nil, onStop)
-	DF:CreateAnimation(animation.border, "Scale", 1, .05, .7, .7, 1.1, 1.1)
-	DF:CreateAnimation(animation.border, "Scale", 2, .05, 1.1, 1.1, 1, 1)
-
-	local typeOverlay = auraButton.Border.TypeOverlay
-	animation.typeFlash = DF:CreateAnimationHub(typeOverlay, nil, function()
-		typeOverlay:SetAlpha(typeOverlay.persistent and 1 or 0)
-	end)
-	DF:CreateAnimation(animation.typeFlash, "Alpha", 1, .05, 0, 1)
-	DF:CreateAnimation(animation.typeFlash, "Alpha", 2, .05, 1, 0)
-
-	function animation:Play()
-		self.icon:Play()
-		self.border:Play()
-		if not typeOverlay.persistent then
-			self.typeFlash:Play()
-		end
-	end
-	function animation:Stop()
-		self.icon:Stop()
-		self.border:Stop()
-		self.typeFlash:Stop()
-	end
-
-	auraButton.ShowAnimation = animation
-	auraButton:HookScript("OnShow", function(self)
-		self.ShowAnimation:Play()
-	end)
-	auraButton:HookScript("OnHide", function(self)
-		self.ShowAnimation:Stop()
-	end)
-end
-
 --TODO: by container group as well. requires larger rework of the whole current setup. support separate sizes for "own" debuffs/buffs
 local function getAuraFrameLayout(frameName)
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "getAuraFrameLayout")
@@ -1712,7 +1669,6 @@ local function initAuraFrame(auraButton, frameName, frameKey, auraContainer)
 	end
 	applyLegacyAuraBorderPresentation(auraButton, frameName)
 	auraButton:SetScale(1)
-	createLegacyAuraShowAnimation(auraButton)
 
 	Plater.UpdateIconAspecRatio (auraButton)
 
