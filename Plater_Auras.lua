@@ -1062,6 +1062,22 @@ local function getAuraFilters(frameName, actorType, force)
 				})
 			end
 
+			if DB_AURA_SHOW_MAGIC and not DB_SHOW_MAGIC_IN_EXTRA_ICONS and not canAssist then
+				local candidate = DF.table.copy({}, allCandidates.mainFilter)
+				candidate.includeSpellIDs = nil
+				candidate.excludeDispelTypes = nil
+				candidate.includeDispelTypes = {Magic = true}
+				table.insert(filters, {
+					filterString = "HELPFUL" .. (DB_SHOW_PURGE_IN_EXTRA_ICONS and "|!RAID_PLAYER_DISPELLABLE" or "") .. (Plater.db.profile.extra_icon_show_defensive and "|!BIG_DEFENSIVE|!EXTERNAL_DEFENSIVE" or ""),
+					candidateFilters = candidate,
+				})
+
+				-- candidate filters are cached by frame name, do not mutate the cached table
+				local remainingCandidate = DF.table.copy({}, allCandidates.mainFilter)
+				remainingCandidate.excludeDispelTypes = {Magic = true}
+				allCandidates.mainFilter = remainingCandidate
+			end
+
 			if Plater.db.profile.aura_show_defensive_cd and not Plater.db.profile.extra_icon_show_defensive  then
 				if isPlayer then
 					table.insert(pFilters, "BIG_DEFENSIVE")
@@ -1096,7 +1112,7 @@ local function getAuraFilters(frameName, actorType, force)
 				pFilters = {}
 			end
 
-			if DB_AURA_SHOW_BUFFS_AS_BLIZZARD and not DB_AURA_SHOW_BUFFENEMYNPC and not canAssist and not isPlayer then
+			if DB_AURA_SHOW_BUFFS_AS_BLIZZARD and not DB_AURA_SHOW_BUFFENEMYNPC and not canAssist then
 				local candidate = DF.table.copy({}, allCandidates.mainFilter)
 				candidate.includeSpellIDs = nil
 				--candidate.nameplateShowPersonal = true
@@ -1199,6 +1215,153 @@ local function getAuraFilters(frameName, actorType, force)
 	return filters
 end
 
+local function makeUniformAuraColorMap(color, enrageColor)
+	enrageColor = enrageColor or color
+	return {
+		["None"] = CreateColor(unpack(color)),
+		["Magic"] = CreateColor(unpack(color)),
+		["Curse"] = CreateColor(unpack(color)),
+		["Disease"] = CreateColor(unpack(color)),
+		["Poison"] = CreateColor(unpack(color)),
+		["Bleed"] = CreateColor(unpack(color)),
+		["Enrage"] = CreateColor(unpack(enrageColor)),
+	}
+end
+
+local function makeConfiguredAuraColorMap(colors)
+	return {
+		["None"] = CreateColor(unpack(colors.none)),
+		["Magic"] = CreateColor(unpack(colors.magic)),
+		["Curse"] = CreateColor(unpack(colors.curse)),
+		["Disease"] = CreateColor(unpack(colors.disease)),
+		["Poison"] = CreateColor(unpack(colors.poison)),
+		["Bleed"] = CreateColor(unpack(colors.bleed)),
+		["Enrage"] = CreateColor(unpack(colors.enrage)),
+	}
+end
+
+local function makeAuraBorderOptions(showHelpful, showHarmful, colorMap, stealableFilter)
+	return {
+		showIcon = false,
+		showWhenHarmful = showHarmful,
+		showWhenHelpful = showHelpful,
+		showWithoutDispelType = true,
+		stealableFilter = stealableFilter,
+		style = Enum.CustomAuraButtonDispelTypeTextureStyle.PreserveAsset,
+		customDispelColorMap = colorMap,
+	}
+end
+
+local function getLegacyAuraBorderPresentations(frameName)
+	local profile = Plater.db.profile
+	local presentations = {}
+	local colors
+	local usePersistentTypeColors
+
+	if frameName == "ExtraIconFrame" then
+		colors = profile.extra_icon_dispel_type_colors
+		usePersistentTypeColors = profile.extra_icon_aura_border_colors_by_type
+	else
+		colors = profile.aura_border_colors
+		usePersistentTypeColors = profile.aura_border_colors_by_type
+	end
+
+	local mayShowHelpful = frameName == "ExtraIconFrame" or not profile.buffs_on_aura2 or frameName == "Secondary"
+	local mayShowHarmful = frameName == "ExtraIconFrame" or not profile.buffs_on_aura2 or frameName == "Main"
+	table.insert(presentations, {
+		layer = "DispelType",
+		options = makeAuraBorderOptions(mayShowHelpful, mayShowHarmful, makeConfiguredAuraColorMap(colors)),
+	})
+	if mayShowHelpful then
+		table.insert(presentations, {
+			layer = "Stealable",
+			options = makeAuraBorderOptions(true, false, makeUniformAuraColorMap(frameName == "ExtraIconFrame" and colors.magic or colors.steal_or_purge), Enum.CustomAuraButtonDispelTypeStealableFilter.Stealable),
+		})
+	end
+
+	return presentations, colors.default, usePersistentTypeColors
+end
+
+local function createLegacyAuraBorder(auraButton, frameName)
+	-- Keep the base border on exactly the same direct DF:CreateFullBorder path as
+	-- the legacy aura frame. Secure dispel colors live in a separate overlay so
+	-- disabling type colors can leave the normal border untouched.
+	local border = DF:CreateFullBorder(nil, auraButton)
+	for _, texture in ipairs(border.Textures) do
+		texture:SetDrawLayer("overlay", 7)
+	end
+	border.frameName = frameName
+	border.TypeOverlay = CreateFrame("Frame", nil, border)
+	border.TypeOverlay:SetAllPoints()
+	border.TypeOverlay:SetIgnoreParentScale(false)
+	border.TypeOverlay:SetFrameLevel(border:GetFrameLevel())
+	border.TypeOverlay.Layers = {}
+	border.TypeOverlay.persistent = false
+
+	function border:AddTypeLayer(layerName)
+		if self.TypeOverlay.Layers[layerName] then
+			return self.TypeOverlay.Layers[layerName]
+		end
+
+		local layer = DF:CreateFullBorder(nil, self.TypeOverlay)
+		-- Let the overlay follow the legacy border's show animation.
+		layer:SetIgnoreParentScale(false)
+		self.TypeOverlay.Layers[layerName] = layer
+		for _, texture in ipairs(layer.Textures) do
+			texture:SetDrawLayer("overlay", 7)
+		end
+		if self.borderSize then
+			local minimumPixels = self.frameName == "ExtraIconFrame" and 1 or 0
+			layer:SetBorderSizes(self.borderSize, minimumPixels, self.borderSize, 0)
+			layer:UpdateSizes()
+		end
+		return layer
+	end
+
+	function border:SetBorderSize(size)
+		local borderSize = (size or 1) * UIParent:GetEffectiveScale()
+		self.borderSize = borderSize
+		local minimumPixels = self.frameName == "ExtraIconFrame" and 1 or 0
+		self:SetBorderSizes(borderSize, minimumPixels, borderSize, 0)
+		self:UpdateSizes()
+		for _, layer in pairs(self.TypeOverlay.Layers) do
+			layer:SetBorderSizes(borderSize, minimumPixels, borderSize, 0)
+			layer:UpdateSizes()
+		end
+	end
+
+	function border:SetTypeOverlayPersistent(persistent)
+		self.TypeOverlay.persistent = persistent
+		self.TypeOverlay:SetAlpha(persistent and 1 or 0)
+	end
+
+	for _, presentation in ipairs(getLegacyAuraBorderPresentations(frameName)) do
+		border:AddTypeLayer(presentation.layer)
+	end
+
+	return border
+end
+
+local function applyLegacyAuraBorderPresentation(auraButton, frameName)
+	local presentations, defaultColor, usePersistentTypeColors = getLegacyAuraBorderPresentations(frameName)
+	auraButton:ClearDispelTypeTextures()
+	auraButton.Border:SetVertexColor(unpack(defaultColor))
+
+	for _, layer in pairs(auraButton.Border.TypeOverlay.Layers) do
+		layer:Hide()
+	end
+
+	for _, presentation in ipairs(presentations) do
+		local layer = auraButton.Border:AddTypeLayer(presentation.layer)
+		layer:Show()
+		for _, texture in ipairs(layer.Textures) do
+			auraButton:AddDispelTypeTexture(texture, presentation.options)
+		end
+	end
+
+	auraButton.Border:SetTypeOverlayPersistent(usePersistentTypeColors)
+end
+
 --TODO: by container group as well. requires larger rework of the whole current setup. support separate sizes for "own" debuffs/buffs
 local function getAuraFrameLayout(frameName)
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "getAuraFrameLayout")
@@ -1214,7 +1377,8 @@ local function getAuraFrameLayout(frameName)
 	local layout = {
 		elementSpacing = profile.aura_padding,
 		lineSpacing = profile.aura_breakline_space,
-		groupSpacing = profile.aura_padding,
+		-- elementSpacing already provides the legacy gap between adjacent groups
+		groupSpacing = 0,
 		groupLineSpacing = profile.aura_breakline_space,
 		--forceNewLine = false,
 		elementWidth = 26,
@@ -1322,11 +1486,10 @@ local function initAuraFrame(auraButton, frameName, frameKey, auraContainer)
 	-- create stuff
 	local iconOffset = 0
 	auraButton.Icon = auraButton:CreateTexture (nil, "artwork")
-	--PixelUtil.SetPoint (auraButton.Icon, "TOPLEFT", auraButton, "TOPLEFT", -iconOffset, iconOffset)
-	--PixelUtil.SetPoint (auraButton.Icon, "TOPRIGHT", auraButton, "TOPRIGHT", iconOffset, iconOffset)
-	--PixelUtil.SetPoint (auraButton.Icon, "BOTTOMLEFT", auraButton, "BOTTOMLEFT", -iconOffset, -iconOffset)
-	--PixelUtil.SetPoint (auraButton.Icon, "BOTTOMRIGHT", auraButton, "BOTTOMRIGHT", iconOffset, -iconOffset)
-	auraButton.Icon:SetPoint("Center")
+	PixelUtil.SetPoint (auraButton.Icon, "TOPLEFT", auraButton, "TOPLEFT", -iconOffset, iconOffset)
+	PixelUtil.SetPoint (auraButton.Icon, "TOPRIGHT", auraButton, "TOPRIGHT", iconOffset, iconOffset)
+	PixelUtil.SetPoint (auraButton.Icon, "BOTTOMLEFT", auraButton, "BOTTOMLEFT", -iconOffset, -iconOffset)
+	PixelUtil.SetPoint (auraButton.Icon, "BOTTOMRIGHT", auraButton, "BOTTOMRIGHT", iconOffset, -iconOffset)
 	auraButton.Icon:SetTexCoord (.05, .95, .1, .6)
 	auraButton.Icon:SetTexelSnappingBias(0.0)
 	auraButton.Icon:SetSnapToPixelGrid(false)
@@ -1334,11 +1497,10 @@ local function initAuraFrame(auraButton, frameName, frameKey, auraContainer)
 	auraButton:SetIcon(auraButton.Icon)
 	
 	auraButton.Cooldown = CreateFrame ("cooldown", "$parentCooldown", auraButton, "CooldownFrameTemplate")
-	--PixelUtil.SetPoint (auraButton.Cooldown, "TOPLEFT", auraButton, "TOPLEFT", -iconOffset, iconOffset)
-	--PixelUtil.SetPoint (auraButton.Cooldown, "TOPRIGHT", auraButton, "TOPRIGHT", iconOffset, iconOffset)
-	--PixelUtil.SetPoint (auraButton.Cooldown, "BOTTOMLEFT", auraButton, "BOTTOMLEFT", -iconOffset, -iconOffset)
-	--PixelUtil.SetPoint (auraButton.Cooldown, "BOTTOMRIGHT", auraButton, "BOTTOMRIGHT", iconOffset, -iconOffset)
-	auraButton.Cooldown:SetPoint("Center")
+	PixelUtil.SetPoint (auraButton.Cooldown, "TOPLEFT", auraButton, "TOPLEFT", -iconOffset, iconOffset)
+	PixelUtil.SetPoint (auraButton.Cooldown, "TOPRIGHT", auraButton, "TOPRIGHT", iconOffset, iconOffset)
+	PixelUtil.SetPoint (auraButton.Cooldown, "BOTTOMLEFT", auraButton, "BOTTOMLEFT", -iconOffset, -iconOffset)
+	PixelUtil.SetPoint (auraButton.Cooldown, "BOTTOMRIGHT", auraButton, "BOTTOMRIGHT", iconOffset, -iconOffset)
 	auraButton.Cooldown:EnableMouse (false)
 	if auraButton.Cooldown.EnableMouseMotion then
 		auraButton.Cooldown:EnableMouseMotion (false)
@@ -1357,7 +1519,7 @@ local function initAuraFrame(auraButton, frameName, frameKey, auraContainer)
 
 	
 	auraButton.CountFrame = CreateFrame ("frame", "$parentCountFrame", auraButton)--, BackdropTemplateMixin and "BackdropTemplate")
-	auraButton.CountFrame:SetPoint("CENTER")
+	auraButton.CountFrame:SetAllPoints()
 	auraButton.CountFrame:EnableMouse (false)
 	if auraButton.CountFrame.EnableMouseMotion then
 		auraButton.CountFrame:EnableMouseMotion (false)
@@ -1456,67 +1618,60 @@ local function initAuraFrame(auraButton, frameName, frameKey, auraContainer)
 		Plater.SetAnchor (timerLabel, profile.aura_timer_text_anchor) --TODO
 	end
 
-	-- switch to proper border, keep compatibility
-	auraButton.Border = auraButton:CreateTexture(nil, "overlay")
-	--auraButton.Border:SetAllPoints()
-	auraButton.Border:SetTexture([[Interface\AddOns\Plater\images\IconBorderWhite]])
-	local band = 8
-	local offset = 0
-	auraButton.Border:SetTextureSliceMargins(band, band, band, band)
-	--auraButton.Border:SetPoint("TOPLEFT",     auraButton.Icon, "TOPLEFT",     -band * offset,  band * offset)
-	--auraButton.Border:SetPoint("BOTTOMRIGHT", auraButton.Icon, "BOTTOMRIGHT",  band * offset, -band * offset)
-	auraButton.Border:SetAllPoints()
+	-- CustomAuraButton owns the secure color binding, while Plater retains the
+	-- legacy four-edge border geometry and profile sizing.
+	auraButton.Border = createLegacyAuraBorder(auraButton, frameName)
+	auraButton.SetBackdropBorderColor = function(self, r, g, b, a)
+		self.Border:SetVertexColor(r, g, b, a)
+	end
+	auraButton.SetBorderSize = function(self, size)
+		self.Border:SetBorderSize(size)
+	end
+	auraButton.SetSizes = function(self)
+		local extraBorderOffset = 0
+		if self.frameName == "Secondary" then
+			extraBorderOffset = Plater.db.profile.aura_border_extraoffset2 or 0
+		elseif self.frameName == "Main" then
+			extraBorderOffset = Plater.db.profile.aura_border_extraoffset or 0
+		end
+
+		local borderOffset = -1 * UIParent:GetEffectiveScale() + extraBorderOffset
+		self.Border:ClearAllPoints()
+		PixelUtil.SetPoint (self.Border, "TOPLEFT", self, "TOPLEFT", -borderOffset, borderOffset)
+		PixelUtil.SetPoint (self.Border, "TOPRIGHT", self, "TOPRIGHT", borderOffset, borderOffset)
+		PixelUtil.SetPoint (self.Border, "BOTTOMLEFT", self, "BOTTOMLEFT", -borderOffset, -borderOffset)
+		PixelUtil.SetPoint (self.Border, "BOTTOMRIGHT", self, "BOTTOMRIGHT", borderOffset, -borderOffset)
+
+		self.Icon:ClearAllPoints()
+		PixelUtil.SetPoint (self.Icon, "TOPLEFT", self, "TOPLEFT", 0, 0)
+		PixelUtil.SetPoint (self.Icon, "TOPRIGHT", self, "TOPRIGHT", 0, 0)
+		PixelUtil.SetPoint (self.Icon, "BOTTOMLEFT", self, "BOTTOMLEFT", 0, 0)
+		PixelUtil.SetPoint (self.Icon, "BOTTOMRIGHT", self, "BOTTOMRIGHT", 0, 0)
+
+		local cooldownOffset = -1 * UIParent:GetEffectiveScale()
+		self.Cooldown:ClearAllPoints()
+		PixelUtil.SetPoint (self.Cooldown, "TOPLEFT", self, "TOPLEFT", -cooldownOffset, cooldownOffset)
+		PixelUtil.SetPoint (self.Cooldown, "TOPRIGHT", self, "TOPRIGHT", cooldownOffset, cooldownOffset)
+		PixelUtil.SetPoint (self.Cooldown, "BOTTOMLEFT", self, "BOTTOMLEFT", -cooldownOffset, -cooldownOffset)
+		PixelUtil.SetPoint (self.Cooldown, "BOTTOMRIGHT", self, "BOTTOMRIGHT", cooldownOffset, -cooldownOffset)
+	end
+
+	auraButton.frameName = frameName
+	-- Match the legacy aura path's pixel-rounded frame dimensions. Raw SetSize
+	-- can land the secure icon on fractional physical pixels at non-1 UI scales.
+	PixelUtil.SetSize(auraButton, auraWidth, auraHeight)
+	auraButton:SetSizes()
+	auraButton:SetBorderSize(borderThickness)
 	if borderThickness > 0 then
-		auraButton.Border:SetScale(borderThickness / band)
 		auraButton.Border:Show()
 	else
 		auraButton.Border:Hide()
 	end
-	local defaultColor = frameName ~= "ExtraIconFrame" and Plater.db.profile.aura_border_colors.default or Plater.db.profile.extra_icon_dispel_type_colors.default
-    auraButton.Border:SetVertexColor(defaultColor[1], defaultColor[2], defaultColor[3], defaultColor[4])
-
-	if frameName ~= "ExtraIconFrame" and Plater.db.profile.aura_border_colors_by_type or frameName == "ExtraIconFrame" and Plater.db.profile.extra_icon_aura_border_colors_by_type then
-		local borderOptions = {
-			showIcon = false,
-			showWhenHarmful = true,
-			showWhenHelpful = true,
-			showWithoutDispelType = true,
-			style = Enum.CustomAuraButtonDispelTypeTextureStyle.PreserveAsset,
-			customDispelColorMap = frameName ~= "ExtraIconFrame" and {
-				["None"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.none)),
-				["Magic"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.magic)),
-				["Curse"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.curse)),
-				["Disease"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.disease)),
-				["Poison"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.poison)),
-				["Bleed"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.bleed)),
-				["Enrage"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.enrage)),
-			} or {
-				["None"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.none)),
-				["Magic"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.magic)),
-				["Curse"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.curse)),
-				["Disease"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.disease)),
-				["Poison"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.poison)),
-				["Bleed"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.bleed)),
-				["Enrage"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.enrage)),
-			}
-		}
-		--C_AuraContainerUtil.ProcessCustomAuraButtonDispelTypeTextureOptions(borderOptions)
-		auraButton:SetAuraBorder(auraButton.Border, borderOptions)
-	end
-
-
-	--PixelUtil.SetSize(auraButton.Border, auraWidth, auraHeight)
-	--PixelUtil.SetSize(auraButton, auraWidth, auraHeight)
-	auraButton:SetSize(auraWidth, auraHeight)
-	auraButton.Border:SetSize(auraWidth, auraHeight)
-	auraButton.Icon:SetSize(auraWidth, auraHeight)
-	auraButton.Cooldown:SetSize(auraWidth, auraHeight)
-	auraButton.CountFrame:SetSize(auraWidth, auraHeight)
+	applyLegacyAuraBorderPresentation(auraButton, frameName)
 	auraButton:SetScale(1)
 
 	Plater.UpdateIconAspecRatio (auraButton)
 
-	auraButton.frameName = frameName
 	auraButton.frameKey = frameKey
 	auraButton.auraContainer = auraContainer
 
@@ -1646,31 +1801,21 @@ function reSkinAuraButtons(auraButtons, options)
 			Plater.SetAnchor (timerLabel, profile.aura_timer_text_anchor) --TODO
 		end
 
-		--PixelUtil.SetSize(auraButton.Border, auraWidth, auraHeight)
-		--PixelUtil.SetSize(auraButton, auraWidth, auraHeight)
-		auraButton:SetSize(auraWidth, auraHeight)
-		auraButton.Border:SetSize(auraWidth, auraHeight)
-		auraButton.Icon:SetSize(auraWidth, auraHeight)
-		auraButton.Cooldown:SetSize(auraWidth, auraHeight)
-		auraButton.CountFrame:SetSize(auraWidth, auraHeight)
+		PixelUtil.SetSize(auraButton, auraWidth, auraHeight)
+		auraButton:SetSizes()
+		auraButton:SetBorderSize(borderThickness)
 		auraButton:SetScale(1)
+		-- CustomAuraButton:GetSize() returns secret dimensions after Blizzard has
+		-- restricted the frame. The icon crop is initialized while the button is
+		-- created; do not read its protected size again during a later reskin.
 
-		local band = 8
 		if borderThickness > 0 then
-			auraButton.Border:SetScale(borderThickness / band)
 			auraButton.Border:Show()
 		else
 			auraButton.Border:Hide()
 		end
 
-		local defaultColor = frameName ~= "ExtraIconFrame" and Plater.db.profile.aura_border_colors.default or Plater.db.profile.extra_icon_dispel_type_colors.default
-    	auraButton.Border:SetVertexColor(defaultColor[1], defaultColor[2], defaultColor[3], defaultColor[4])
-
-		if frameName ~= "ExtraIconFrame" and Plater.db.profile.aura_border_colors_by_type or frameName == "ExtraIconFrame" and Plater.db.profile.extra_icon_aura_border_colors_by_type then
-			auraButton:SetAuraBorder(auraButton.Border, options.borderOptions)
-		else
-			auraButton:ClearAuraBorder()
-		end
+		applyLegacyAuraBorderPresentation(auraButton, frameName)
 
 		auraButton.Cooldown:SetEdgeTexture (profile.aura_cooldown_edge_texture)
 		auraButton.Cooldown:SetReverse (profile.aura_cooldown_reverse)
@@ -1738,31 +1883,9 @@ local function getAuraBorderOptions(frameName)
 		Plater.EndLogPerformanceCore("Plater-Core", "Update", "getAuraBorderOptions")
 		return cachedAuraBorderOptions
 	end
-	local borderOptions = {
-		showIcon = false,
-		showWhenHarmful = true,
-		showWhenHelpful = true,
-		showWithoutDispelType = true,
-		style = Enum.CustomAuraButtonDispelTypeTextureStyle.PreserveAsset,
-		customDispelColorMap = frameName ~= "ExtraIconFrame" and {
-			["None"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.none)),
-			["Magic"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.magic)),
-			["Curse"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.curse)),
-			["Disease"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.disease)),
-			["Poison"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.poison)),
-			["Bleed"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.bleed)),
-			["Enrage"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.enrage)),
-		} or {
-			["None"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.none)),
-			["Magic"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.magic)),
-			["Curse"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.curse)),
-			["Disease"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.disease)),
-			["Poison"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.poison)),
-			["Bleed"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.bleed)),
-			["Enrage"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.enrage)),
-		},
-		optionIndex = containerConfigCache.auraBorderOptionIndex,
-	}
+	local presentations = getLegacyAuraBorderPresentations(frameName)
+	local borderOptions = presentations[1] and presentations[1].options or {}
+	borderOptions.optionIndex = containerConfigCache.auraBorderOptionIndex
 
 	containerConfigCache.auraBorderOptions[frameName] = borderOptions
 
