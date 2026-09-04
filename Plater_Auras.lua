@@ -1805,7 +1805,9 @@ function reSkinAuraButtons(auraButtons, options)
 		auraButton:SetSizes()
 		auraButton:SetBorderSize(borderThickness)
 		auraButton:SetScale(1)
-		Plater.UpdateIconAspecRatio(auraButton)
+		-- CustomAuraButton:GetSize() returns secret dimensions after Blizzard has
+		-- restricted the frame. The icon crop is initialized while the button is
+		-- created; do not read its protected size again during a later reskin.
 
 		if borderThickness > 0 then
 			auraButton.Border:Show()
