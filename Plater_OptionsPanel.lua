@@ -1798,8 +1798,25 @@ local debuff_options = {
 		nocombat = true,
 		name = "Show SpellIDs in Tooltip" .. CVarIcon,
 		desc = "If enabled, the spellID of the aura is shown in the aura tooltip." .. CVarDesc,
-		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+		hidden = not C_CVar.GetCVarInfo("tooltipShowAuraSpellIDs"),
 		id = "auras_general_tooltip_spellid",
+	},
+	
+	{
+		type = "toggle",
+		get = function() return GetCVarBool ("tooltipShowAuraCasterNames") end,
+		set = function (self, fixedparam, value) 
+			if (value) then
+				SetCVar ("tooltipShowAuraCasterNames", CVAR_ENABLED)
+			else
+				SetCVar ("tooltipShowAuraCasterNames", CVAR_DISABLED)
+			end
+		end,
+		nocombat = true,
+		name = "Show caster in Tooltip" .. CVarIcon,
+		desc = "If enabled, the caster of the aura is shown in the aura tooltip." .. CVarDesc,
+		hidden = not C_CVar.GetCVarInfo("tooltipShowAuraCasterNames"),
+		id = "auras_general_tooltip_caster",
 	},
 	
 	{

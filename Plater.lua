@@ -3541,6 +3541,11 @@ Plater.AnchorNamesByPhraseId = {
 				--Plater.SetAnchor(unitFrame.softInteractIconFrame, unitFrame.softInteractIcon.anchor or { side = 8, x = 0, y = 18, }, unitFrame.healthBar)
 				--Plater.SetAnchor(unitFrame.softInteractIconFrame, unitFrame.softInteractIcon.anchor or { side = 8, x = 0, y = 18, }, unitFrame.PlateFrame)
 			
+
+				if PixelUtil.SetRoundLayoutToNearestPixelRecursively then
+					PixelUtil.SetRoundLayoutToNearestPixelRecursively(unitFrame)
+				end
+
 			--> name plate created hook
 				if (HOOK_NAMEPLATE_CREATED.ScriptAmount > 0) then
 					for i = 1, HOOK_NAMEPLATE_CREATED.ScriptAmount do
