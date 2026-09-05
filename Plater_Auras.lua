@@ -1102,7 +1102,7 @@ local function getAuraFilters(frameName, actorType, force)
 				pFilters = {}
 			end
 
-			if DB_AURA_SHOW_BUFFS_AS_BLIZZARD and not DB_AURA_SHOW_BUFFENEMYNPC and not canAssist and not isPlayer then
+			if DB_AURA_SHOW_BUFFS_AS_BLIZZARD and not DB_AURA_SHOW_BUFFENEMYNPC and not canAssist then
 				local candidate = DF.table.copy({}, allCandidates.mainFilter)
 				candidate.includeSpellIDs = nil
 				--candidate.nameplateShowPersonal = true
@@ -1220,7 +1220,7 @@ local function getAuraFrameLayout(frameName)
 	local layout = {
 		elementSpacing = profile.aura_padding,
 		lineSpacing = profile.aura_breakline_space,
-		groupSpacing = profile.aura_padding,
+		--groupSpacing = profile.aura_padding, -- element spacing is for groups as well
 		groupLineSpacing = profile.aura_breakline_space,
 		--forceNewLine = false,
 		elementWidth = 26,
