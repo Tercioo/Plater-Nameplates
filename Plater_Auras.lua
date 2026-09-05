@@ -1705,6 +1705,7 @@ local function getAuraFrameOptions(frameName, key, auraContainer)
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "getAuraFrameOptions")
 	local cachedAuraOptions = containerConfigCache.auraFrameOptions[frameName]
 	if cachedAuraOptions and cachedAuraOptions.optionIndex == containerConfigCache.auraFrameOptionIndex then
+		cachedAuraOptions.initializeFrame = function(auraButton) initAuraFrame(auraButton, frameName, key, auraContainer) end -- this needs to be up to date!
 		Plater.EndLogPerformanceCore("Plater-Core", "Update", "getAuraFrameOptions")
 		return cachedAuraOptions
 	end
@@ -1780,6 +1781,7 @@ local function getFullAuraOptions(frameName, key, auraContainer, actorType, forc
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "getFullAuraOptions")
 	local cachedAuraOptions = actorType and containerConfigCache.containerFullOptions[actorType][frameName]
 	if cachedAuraOptions and cachedAuraOptions.optionIndex == containerConfigCache.containerFullOptionIndex then
+	if not force and cachedAuraOptions and cachedAuraOptions.optionIndex == containerConfigCache.containerFullOptionIndex then
 		Plater.EndLogPerformanceCore("Plater-Core", "Update", "getFullAuraOptions")
 		return cachedAuraOptions
 	end
@@ -2013,17 +2015,12 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, forceFi
 								auraContainer.groups[groupName] = true
 							end
 
-							local maxFrameCount = options.auraFrameOptions.maxFrameCount
-							if DB_AURA_SEPARATE_BUFFS and frameInfo.name == "Main" and groupName == "buffs" then
-								maxFrameCount = 0
-							end
-
 							if filter.filterString then
 								auraContainer:SetAuraGroupCandidateFilters(groupName, filter.candidateFilters)
 								auraContainer:SetAuraGroupFilterString(groupName, filter.filterString)
 
 								if shouldUpdate or forceLayout then
-									auraContainer:SetAuraGroupMaxFrameCount(groupName, maxFrameCount)
+									auraContainer:SetAuraGroupMaxFrameCount(groupName, options.auraFrameOptions.maxFrameCount)
 									auraContainer:SetAuraGroupSortMethod(groupName, options.auraFrameOptions.sortMethod, options.auraFrameOptions.sortDirection)
 									auraContainer:SetAuraGroupLayout(groupName, options.auraFrameOptions.layout)
 								end
@@ -2068,10 +2065,12 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, forceFi
 				else 
 					auraContainer:SetEnabled(true)
 					auraContainer:SetUnit(unit)
+					auraContainer:Show()
 				end
 			else
 				--auraContainer:SetUnit("player") -- dummy
 				auraContainer:SetEnabled(false)
+				auraContainer:Hide()
 			end
 
 			--auraContainer:SetEnabled(DB_AURA_ENABLED and unit and true or false)
