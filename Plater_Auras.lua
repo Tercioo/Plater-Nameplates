@@ -1587,11 +1587,13 @@ function reSkinAuraButtons(auraButtons, options)
 	local profile = Plater.db.profile
 
 	if C_Secrets.ShouldAurasBeSecret() or InCombatLockdown() then
+		--if DevTool then DevTool:AddData(auraButtons, "schedule - " .. tostring(auraButtons)) end
 		scheduleReSkinAurButtons(auraButtons, options)
 		return
 	end
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "reSkinAuraButtons")
 	
+	--if DevTool then DevTool:AddData(auraButtons, "updating - " .. tostring(auraButtons)) end
 	for _, auraButton in pairs(auraButtons) do
 		
 		auraButton:SetMouseMotionEnabled(profile.aura_show_tooltip)
@@ -1790,7 +1792,6 @@ end
 local function getFullAuraOptions(frameName, key, auraContainer, actorType, force)
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "getFullAuraOptions")
 	local cachedAuraOptions = actorType and containerConfigCache.containerFullOptions[actorType][frameName]
-	if cachedAuraOptions and cachedAuraOptions.optionIndex == containerConfigCache.containerFullOptionIndex then
 	if not force and cachedAuraOptions and cachedAuraOptions.optionIndex == containerConfigCache.containerFullOptionIndex then
 		cachedAuraOptions.initializeFrame = function(auraButton) initAuraFrame(auraButton, frameName, key, auraContainer) end -- this needs to be up to date!
 		Plater.EndLogPerformanceCore("Plater-Core", "Update", "getFullAuraOptions")
@@ -2019,6 +2020,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, forceFi
 						local index = 1
 						for _, filter in pairs(options.auraFilters) do
 							local groupName = "group"..index
+							--if DevTool then DevTool:AddData({hasGroup = auraContainer:HasAuraGroup(groupName), auraContainer = auraContainer, unitFrame = unitFrame}, "update-" .. frameInfo.key .. "-" .. (unit or "nil") .. "-" .. groupName) end
 							if not auraContainer.groups[groupName] then
 								options.auraFrameOptions.candidateFilters = filter.candidateFilters
 								auraContainer:AddAuraGroup(groupName, filter.filterString, options.auraFrameOptions)
@@ -2044,6 +2046,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, forceFi
 
 						while (auraContainer.groups["group"..index]) do
 							--disable surplus
+							--if DevTool then DevTool:AddData({hasGroup = auraContainer:HasAuraGroup(groupName), auraContainer = auraContainer, unitFrame = unitFrame}, "disable-" .. frameInfo.key .. "-" .. (unit or "nil") .. "-" .. "group"..index) end
 							auraContainer:SetAuraGroupMaxFrameCount("group"..index, 0)
 							auraContainer:SetAuraGroupFilterString("group"..index, "")
 							index = index + 1
