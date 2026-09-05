@@ -1395,6 +1395,16 @@ local function initAuraFrame(auraButton, frameName, frameKey, auraContainer)
 		auraButton:ClearDurationText()
 	end
 
+	if auraButton.SetCasterName and frameName == "ExtraIconFrame" then
+		auraButton.Desc = auraButton:CreateFontString(nil, "overlay", "GameFontNormal")
+        auraButton.Desc:SetPoint("bottom", auraButton, "top", 0, 2)
+        auraButton.Desc:SetText("")
+		DF:SetFontSize(auraButton.Desc, Plater.db.profile.extra_icon_caster_size)
+		DF:SetFontFace(auraButton.Desc, Plater.db.profile.extra_icon_caster_font)
+		DF:SetFontOutline(auraButton.Desc, "SLUG")
+		auraButton.SetCasterName(auraButton.Desc, false, true)
+	end
+
 
 	--sizes and position:
 	local auraWidth
