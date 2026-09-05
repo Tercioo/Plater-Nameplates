@@ -2202,7 +2202,7 @@ Plater.AnchorNamesByPhraseId = {
 					
 					Plater.RunScheduledUpdate({unitId = unit}) -- do this now
 					if plateFrame.unitFrame.PlaterOnScreen then -- should no longer be needed
-						--Plater.CreateOrUpdateAuraContainers(plateFrame.unitFrame, unit, true)
+						Plater.CreateOrUpdateAuraContainers(plateFrame.unitFrame, unit, true) -- maybe still need this
 					end
 				end
 			elseif NAMEPLATES_ON_SCREEN_CACHE[unit] then
@@ -2230,7 +2230,7 @@ Plater.AnchorNamesByPhraseId = {
 			if (plateFrame) then
 				Plater.ScheduleUpdateForNameplate (plateFrame)
 				if plateFrame.unitFrame.PlaterOnScreen then
-					--Plater.CreateOrUpdateAuraContainers(plateFrame.unitFrame, unit) -- should no longer be needed
+					Plater.CreateOrUpdateAuraContainers(plateFrame.unitFrame, unit) -- might still need this
 				end
 			end
 		end,
