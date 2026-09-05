@@ -1792,6 +1792,7 @@ local function getFullAuraOptions(frameName, key, auraContainer, actorType, forc
 	local cachedAuraOptions = actorType and containerConfigCache.containerFullOptions[actorType][frameName]
 	if cachedAuraOptions and cachedAuraOptions.optionIndex == containerConfigCache.containerFullOptionIndex then
 	if not force and cachedAuraOptions and cachedAuraOptions.optionIndex == containerConfigCache.containerFullOptionIndex then
+		cachedAuraOptions.initializeFrame = function(auraButton) initAuraFrame(auraButton, frameName, key, auraContainer) end -- this needs to be up to date!
 		Plater.EndLogPerformanceCore("Plater-Core", "Update", "getFullAuraOptions")
 		return cachedAuraOptions
 	end
