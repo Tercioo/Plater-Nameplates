@@ -1814,6 +1814,7 @@ local allocIndex = 1
 local function createAuraContainers(unitFrame)
 	if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then return end
 	if allocIndex > 41 then return end
+	if not unitFrame and allocIndex > 121 then return end
 	for _, frameInfo in pairs (auraFramesSetup) do
 		local auraContainer = CreateFrame("AuraContainer", "PlaterAuraContainer" .. allocIndex .. frameInfo.frameName, unitFrame or UIParent, "CustomAuraContainerTemplate")
 		auraContainer:SetSize(1, 1)
@@ -1881,7 +1882,7 @@ end
 
 local function preCreateAuraContainers()
 	if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then return end
-	if allocIndex > 41 then return end
+	if allocIndex > 121 then return end
 	local curTime = debugprofilestop()
 	local endTime = curTime + 250
 	while curTime < endTime and allocIndex <= 41 do
