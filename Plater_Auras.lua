@@ -248,7 +248,11 @@ lazyBuildSpellCache = function(start)
 
 	local allSpellsSameName = platerInternal.Auras.spellCaches.allIDsByName
 
-	while (i < endPoint) do
+	local curTime = debugprofilestop()
+	local endTime = curTime + 25
+
+	--while (i < endPoint) do
+	while (curTime < endTime) do
 		local spellName = (not spellBlacklist[i]) and GetSpellInfo(i)
 
 		if (spellName) then
@@ -263,6 +267,8 @@ lazyBuildSpellCache = function(start)
 		end
 
 		i = i + 1
+
+		curTime = debugprofilestop()
 	end
 	if i < 1500000 then
 		C_Timer.After(0, function() lazyBuildSpellCache(i) end)
