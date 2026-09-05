@@ -1501,7 +1501,7 @@ Plater.AnchorNamesByPhraseId = {
 		Plater.UpdateAllPlates()
 		
 		if (PlaterOptionsPanelFrame) then
-			PlaterOptionsPanelFrame.RefreshOptionsFrame()
+			--C_Timer.After(1, PlaterOptionsPanelFrame.RefreshOptionsFrame) -- runs through "too long" executes... should be fine
 		end
 		
 		Plater.UpdateSettingsCache()
