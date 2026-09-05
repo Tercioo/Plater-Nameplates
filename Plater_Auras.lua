@@ -2073,7 +2073,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, forceFi
 					auraContainer:UpdateAllAuras()
 					--C_Timer.After(0, auraContainer.UpdateAllAuras)
 					--auraContainer:Hide()
-					--auraContainer:Show()
+					auraContainer:Show()
 					Plater.EndLogPerformanceCore("Plater-Core", "Update", "createOrAllocateAuraContainers - rebuildupdate")
 				else 
 					auraContainer:SetEnabled(true)
