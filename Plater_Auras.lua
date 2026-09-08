@@ -854,6 +854,7 @@ local function getCandidateFilters(frameName, force)
 
 	local cachedFilter = containerConfigCache.candidateFilters[frameName]
 	if not force and cachedFilter and cachedFilter.filterIndex == containerConfigCache.candidateFilterIndex then
+		cachedFilter = DF.table.copy({}, cachedFilter)
 		Plater.EndLogPerformanceCore("Plater-Core", "Update", "getCandidateFilters")
 		return cachedFilter
 	end
@@ -979,6 +980,7 @@ local function getAuraFilters(frameName, actorType, force)
 	end
 	cachedFilterInfo = cachedFilterInfo[frameName]
 	if not force and cachedFilterInfo.filters and cachedFilterInfo.filterIndex == containerConfigCache.auraFilterIndex then
+		cachedFilterInfo = DF.table.copy({}, cachedFilterInfo)
 		Plater.EndLogPerformanceCore("Plater-Core", "Update", "getAuraFilters")
 		return cachedFilterInfo.filters
 	end
@@ -1066,6 +1068,40 @@ local function getAuraFilters(frameName, actorType, force)
 					filterString = "HELPFUL",
 					candidateFilters = allCandidates.additionalInclude
 				})
+			end
+
+			if DB_AURA_SHOW_ENRAGE and not DB_SHOW_ENRAGE_IN_EXTRA_ICONS and not canAssist then
+				local candidate = DF.table.copy({}, allCandidates.mainFilter)
+				candidate.includeSpellIDs = nil
+				candidate.includeDispelTypes = candidate.includeDispelTypes or {}
+				allCandidates.mainFilter.excludeDispelTypes = allCandidates.mainFilter.excludeDispelTypes or {}
+				allCandidates.additionalInclude.excludeDispelTypes = allCandidates.additionalInclude.excludeDispelTypes or {}
+				candidate.includeDispelTypes["Enrage"] = true
+				table.insert(filters, {
+					filterString = "HELPFUL" .. (DB_SHOW_PURGE_IN_EXTRA_ICONS and "|!RAID_PLAYER_DISPELLABLE" or "") .. (Plater.db.profile.extra_icon_show_defensive and "|!BIG_DEFENSIVE|!EXTERNAL_DEFENSIVE" or ""),
+					candidateFilters = candidate,
+				})
+
+				-- remaining exclude magic
+				allCandidates.mainFilter.excludeDispelTypes["Enrage"] = true
+				allCandidates.additionalInclude.excludeDispelTypes["Enrage"] = true
+			end
+
+			if DB_AURA_SHOW_MAGIC and not DB_SHOW_MAGIC_IN_EXTRA_ICONS and not canAssist then
+				local candidate = DF.table.copy({}, allCandidates.mainFilter)
+				candidate.includeSpellIDs = nil
+				candidate.includeDispelTypes = candidate.includeDispelTypes or {}
+				allCandidates.mainFilter.excludeDispelTypes = allCandidates.mainFilter.excludeDispelTypes or {}
+				allCandidates.additionalInclude.excludeDispelTypes = allCandidates.additionalInclude.excludeDispelTypes or {}
+				candidate.includeDispelTypes["Magic"] = true
+				table.insert(filters, {
+					filterString = "HELPFUL" .. (DB_SHOW_PURGE_IN_EXTRA_ICONS and "|!RAID_PLAYER_DISPELLABLE" or "") .. (Plater.db.profile.extra_icon_show_defensive and "|!BIG_DEFENSIVE|!EXTERNAL_DEFENSIVE" or ""),
+					candidateFilters = candidate,
+				})
+
+				-- remaining exclude magic
+				allCandidates.mainFilter.excludeDispelTypes["Magic"] = true
+				allCandidates.additionalInclude.excludeDispelTypes["Magic"] = true
 			end
 
 			if Plater.db.profile.aura_show_defensive_cd and not Plater.db.profile.extra_icon_show_defensive  then
@@ -1164,6 +1200,40 @@ local function getAuraFilters(frameName, actorType, force)
 				})
 			end
 
+			if DB_SHOW_ENRAGE_IN_EXTRA_ICONS and not canAssist then
+				local candidate = DF.table.copy({}, allCandidates.mainFilter)
+				candidate.includeSpellIDs = nil
+				candidate.includeDispelTypes = candidate.includeDispelTypes or {}
+				allCandidates.mainFilter.excludeDispelTypes = allCandidates.mainFilter.excludeDispelTypes or {}
+				allCandidates.additionalInclude.excludeDispelTypes = allCandidates.additionalInclude.excludeDispelTypes or {}
+				candidate.includeDispelTypes["Enrage"] = true
+				table.insert(filters, {
+					filterString = "HELPFUL" .. (DB_SHOW_PURGE_IN_EXTRA_ICONS and "|!RAID_PLAYER_DISPELLABLE" or "") .. (Plater.db.profile.extra_icon_show_defensive and "|!BIG_DEFENSIVE|!EXTERNAL_DEFENSIVE" or ""),
+					candidateFilters = candidate,
+				})
+
+				-- remaining exclude magic
+				allCandidates.mainFilter.excludeDispelTypes["Enrage"] = true
+				allCandidates.additionalInclude.excludeDispelTypes["Enrage"] = true
+			end
+
+			if DB_SHOW_MAGIC_IN_EXTRA_ICONS and not canAssist then
+				local candidate = DF.table.copy({}, allCandidates.mainFilter)
+				candidate.includeSpellIDs = nil
+				candidate.includeDispelTypes = candidate.includeDispelTypes or {}
+				allCandidates.mainFilter.excludeDispelTypes = allCandidates.mainFilter.excludeDispelTypes or {}
+				allCandidates.additionalInclude.excludeDispelTypes = allCandidates.additionalInclude.excludeDispelTypes or {}
+				candidate.includeDispelTypes["Magic"] = true
+				table.insert(filters, {
+					filterString = "HELPFUL" .. (DB_SHOW_PURGE_IN_EXTRA_ICONS and "|!RAID_PLAYER_DISPELLABLE" or "") .. (Plater.db.profile.extra_icon_show_defensive and "|!BIG_DEFENSIVE|!EXTERNAL_DEFENSIVE" or ""),
+					candidateFilters = candidate,
+				})
+
+				-- remaining exclude magic
+				allCandidates.mainFilter.excludeDispelTypes["Magic"] = true
+				allCandidates.additionalInclude.excludeDispelTypes["Magic"] = true
+			end
+
 			if Plater.db.profile.extra_icon_show_defensive then
 				table.insert(pFilters, "BIG_DEFENSIVE")
 				table.insert(pFilters, "EXTERNAL_DEFENSIVE")
@@ -1212,6 +1282,7 @@ local function getAuraFrameLayout(frameName)
 
 	local cachedFrameLayout = containerConfigCache.auraFrameLayouts[frameName]
 	if cachedFrameLayout and cachedFrameLayout.optionIndex == containerConfigCache.auraFrameLayoutIndex then
+		cachedFrameLayout = DF.table.copy({}, cachedFrameLayout)
 		Plater.EndLogPerformanceCore("Plater-Core", "Update", "getAuraFrameLayout")
 		return cachedFrameLayout
 	end
@@ -1717,6 +1788,7 @@ local function getAuraFrameOptions(frameName, key, auraContainer)
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "getAuraFrameOptions")
 	local cachedAuraOptions = containerConfigCache.auraFrameOptions[frameName]
 	if cachedAuraOptions and cachedAuraOptions.optionIndex == containerConfigCache.auraFrameOptionIndex then
+		cachedAuraOptions = DF.table.copy({}, cachedAuraOptions)
 		cachedAuraOptions.initializeFrame = function(auraButton) initAuraFrame(auraButton, frameName, key, auraContainer) end -- this needs to be up to date!
 		Plater.EndLogPerformanceCore("Plater-Core", "Update", "getAuraFrameOptions")
 		return cachedAuraOptions

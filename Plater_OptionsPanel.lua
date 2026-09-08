@@ -2165,7 +2165,6 @@ local debuff_options = {
 		end,
 		name = "Show Enrage Buffs",
 		desc = "Show auras which are in the enrage category.",
-		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
 	{
@@ -2179,7 +2178,6 @@ local debuff_options = {
 		end,
 		name = "Show Magic Buffs",
 		desc = "Show auras which are in the magic type category.",
-		hidden = IS_WOW_PROJECT_MIDNIGHT,
 	},
 	
 	{
@@ -3867,7 +3865,6 @@ Plater.CreateAuraTesting()
 				end,
 				name = "Enrage",
 				desc = "When the unit has an enrage effect on it, show it.",
-				hidden = IS_WOW_PROJECT_MIDNIGHT,
 			},
 			--show enrages
 			{
@@ -3880,7 +3877,6 @@ Plater.CreateAuraTesting()
 				end,
 				name = "Magic",
 				desc = "When the unit has a magic buff on it, show it.",
-				hidden = IS_WOW_PROJECT_MIDNIGHT,
 			},
 			--show offensive player CDs
 			{
