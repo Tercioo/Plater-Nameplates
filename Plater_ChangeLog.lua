@@ -8,10 +8,13 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
-			{1788270628, "Backend Change", "Sept 1st, 2026", "Staggering uncritical updates on aura options to make it less impacting.", "cont1nuity"},
-			{1788270628, "Backend Change", "Sept 1st, 2026", "Changing the way the nameplate layout is done internally to improve on performance.", "cont1nuity"},
-			{1788270628, "Backend Change", "Sept 1st, 2026", "Pre-creating aura containers for better overall performance.", "cont1nuity"},
-			{1788270628, "Backend Change", "Aug 31st, 2026", "Adjusting unit type recognition to make it more consistent.", "cont1nuity"},
+			{1789072128, "Backend Change", "Sept 8st, 2026", "Adding enrage and magic filters.", "cont1nuity"},
+			{1789072128, "Backend Change", "Sept 5th, 2026", "Staggering menu load to be safer on hardcore.", "cont1nuity"},
+			{1789072128, "Bug Fix", "Sept 5th, 2026", "Auras should now consistently show accurately on all units.", "cont1nuity"},
+			{1789072128, "Backend Change", "Sept 1st, 2026", "Staggering uncritical updates on aura options to make it less impacting.", "cont1nuity"},
+			{1789072128, "Backend Change", "Sept 1st, 2026", "Changing the way the nameplate layout is done internally to improve on performance.", "cont1nuity"},
+			{1789072128, "Backend Change", "Sept 1st, 2026", "Pre-creating aura containers for better overall performance.", "cont1nuity"},
+			{1789072128, "Backend Change", "Aug 31st, 2026", "Adjusting unit type recognition to make it more consistent.", "cont1nuity"},
 			
 			{1787663808, "Bug Fix", "Aug 25th, 2026", "Fixed the number format style not applying correctly.", "cont1nuity"},
 			{1787663808, "Bug Fix", "Aug 25th, 2026", "Fixed an issue with buff filtering.", "cont1nuity"},
