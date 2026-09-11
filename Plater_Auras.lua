@@ -986,9 +986,9 @@ local function getAuraFilters(frameName, actorType, force)
 	end
 
 	local filters = {}
-	local allCandidates = getCandidateFilters(frameName, force)
 
 	for _, type in pairs({"debuffs", "buffs"}) do
+		local allCandidates = getCandidateFilters(frameName, force) -- fetch a fresh copy
 
 		local pFilters = {}
 		local nFilters = {}
