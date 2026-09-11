@@ -5689,13 +5689,13 @@ function Plater.OnInit() --private --~oninit ~init
 			return PlaterDB.InterruptableSpells[spellId]
 		end
 
-		function Plater.SetCastBarInterruptedState(unitFrame, sourceGUID, name)
+		function Plater.SetCastBarInterruptedState(unitFrame, sourceGUID, sourceName)
 			if not Plater.db.profile.show_interrupt_author then return end
 			if not unitFrame or not sourceGUID then return end
 			local castBar = unitFrame.castBar
 			
 			local coloredName
-			if IS_WOW_PROJECT_MIDNIGHT or not name then
+			if IS_WOW_PROJECT_MIDNIGHT or not sourceName then
 				local _, class, _, race, _, name, realm = GetPlayerInfoByGUID(sourceGUID)
 				local classColor
 				if class then
@@ -5710,7 +5710,7 @@ function Plater.OnInit() --private --~oninit ~init
 					coloredName = name
 				end
 			else
-				coloredName = Plater.SetTextColorByClass (sourceGUID, name)
+				coloredName = Plater.SetTextColorByClass (sourceGUID, sourceName)
 			end
 			
 			castBar.Text:SetText (INTERRUPTED .. " [" .. coloredName .. "]")
