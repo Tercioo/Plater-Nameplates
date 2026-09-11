@@ -5987,7 +5987,7 @@ function Plater.OnInit() --private --~oninit ~init
 					end
 					
 					if (self.unit and Plater.db.profile.castbar_target_show and not self.unitFrame.IsSelf) then
-						if IS_WOW_PROJECT_MIDNIGHT then
+						if UnitSpellTargetName then
 							local targetName = UnitSpellTargetName(self.unit)
 							if targetName then
 								--local targetNameShort = Ambiguate(targetName, "short")
