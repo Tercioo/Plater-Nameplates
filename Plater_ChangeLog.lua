@@ -8,6 +8,8 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1789326667, "Bug Fix", "Sept 13th, 2026", "Fixing an issue with absorb shield not sizing correctly.", "cont1nuity"},
+			
 			{1789072128, "Backend Change", "Sept 8st, 2026", "Adding enrage and magic filters.", "cont1nuity"},
 			{1789072128, "Backend Change", "Sept 5th, 2026", "Staggering menu load to be safer on hardcore.", "cont1nuity"},
 			{1789072128, "Bug Fix", "Sept 5th, 2026", "Auras should now consistently show accurately on all units.", "cont1nuity"},
