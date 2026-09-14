@@ -1078,7 +1078,7 @@ local function getAuraFilters(frameName, actorType, force)
 				allCandidates.additionalInclude.excludeDispelTypes = allCandidates.additionalInclude.excludeDispelTypes or {}
 				candidate.includeDispelTypes["Enrage"] = true
 				table.insert(filters, {
-					filterString = "HELPFUL" .. (DB_SHOW_PURGE_IN_EXTRA_ICONS and "|!RAID_PLAYER_DISPELLABLE" or "") .. (Plater.db.profile.extra_icon_show_defensive and "|!BIG_DEFENSIVE|!EXTERNAL_DEFENSIVE" or ""),
+					filterString = "HELPFUL" .. (Plater.db.profile.extra_icon_show_defensive and "|!BIG_DEFENSIVE|!EXTERNAL_DEFENSIVE" or ""),
 					candidateFilters = candidate,
 				})
 
@@ -1095,7 +1095,7 @@ local function getAuraFilters(frameName, actorType, force)
 				allCandidates.additionalInclude.excludeDispelTypes = allCandidates.additionalInclude.excludeDispelTypes or {}
 				candidate.includeDispelTypes["Magic"] = true
 				table.insert(filters, {
-					filterString = "HELPFUL" .. (DB_SHOW_PURGE_IN_EXTRA_ICONS and "|!RAID_PLAYER_DISPELLABLE" or "") .. (Plater.db.profile.extra_icon_show_defensive and "|!BIG_DEFENSIVE|!EXTERNAL_DEFENSIVE" or ""),
+					filterString = "HELPFUL" .. (Plater.db.profile.extra_icon_show_defensive and "|!BIG_DEFENSIVE|!EXTERNAL_DEFENSIVE" or ""),
 					candidateFilters = candidate,
 				})
 
@@ -1208,7 +1208,7 @@ local function getAuraFilters(frameName, actorType, force)
 				allCandidates.additionalInclude.excludeDispelTypes = allCandidates.additionalInclude.excludeDispelTypes or {}
 				candidate.includeDispelTypes["Enrage"] = true
 				table.insert(filters, {
-					filterString = "HELPFUL" .. (DB_SHOW_PURGE_IN_EXTRA_ICONS and "|!RAID_PLAYER_DISPELLABLE" or "") .. (Plater.db.profile.extra_icon_show_defensive and "|!BIG_DEFENSIVE|!EXTERNAL_DEFENSIVE" or ""),
+					filterString = "HELPFUL" .. (Plater.db.profile.extra_icon_show_defensive and "|!BIG_DEFENSIVE|!EXTERNAL_DEFENSIVE" or ""),
 					candidateFilters = candidate,
 				})
 
@@ -1225,7 +1225,7 @@ local function getAuraFilters(frameName, actorType, force)
 				allCandidates.additionalInclude.excludeDispelTypes = allCandidates.additionalInclude.excludeDispelTypes or {}
 				candidate.includeDispelTypes["Magic"] = true
 				table.insert(filters, {
-					filterString = "HELPFUL" .. (DB_SHOW_PURGE_IN_EXTRA_ICONS and "|!RAID_PLAYER_DISPELLABLE" or "") .. (Plater.db.profile.extra_icon_show_defensive and "|!BIG_DEFENSIVE|!EXTERNAL_DEFENSIVE" or ""),
+					filterString = "HELPFUL" .. (Plater.db.profile.extra_icon_show_defensive and "|!BIG_DEFENSIVE|!EXTERNAL_DEFENSIVE" or ""),
 					candidateFilters = candidate,
 				})
 
