@@ -1082,7 +1082,12 @@ local function getAuraFilters(frameName, actorType, force)
 					candidateFilters = candidate,
 				})
 
-				-- remaining exclude magic
+				-- remaining exclude enrage
+				allCandidates.mainFilter.excludeDispelTypes["Enrage"] = true
+				allCandidates.additionalInclude.excludeDispelTypes["Enrage"] = true
+			elseif DB_SHOW_ENRAGE_IN_EXTRA_ICONS and not canAssist then
+				allCandidates.mainFilter.excludeDispelTypes = allCandidates.mainFilter.excludeDispelTypes or {}
+				allCandidates.additionalInclude.excludeDispelTypes = allCandidates.additionalInclude.excludeDispelTypes or {}
 				allCandidates.mainFilter.excludeDispelTypes["Enrage"] = true
 				allCandidates.additionalInclude.excludeDispelTypes["Enrage"] = true
 			end
@@ -1100,6 +1105,11 @@ local function getAuraFilters(frameName, actorType, force)
 				})
 
 				-- remaining exclude magic
+				allCandidates.mainFilter.excludeDispelTypes["Magic"] = true
+				allCandidates.additionalInclude.excludeDispelTypes["Magic"] = true
+			elseif DB_SHOW_MAGIC_IN_EXTRA_ICONS and not canAssist then
+				allCandidates.mainFilter.excludeDispelTypes = allCandidates.mainFilter.excludeDispelTypes or {}
+				allCandidates.additionalInclude.excludeDispelTypes = allCandidates.additionalInclude.excludeDispelTypes or {}
 				allCandidates.mainFilter.excludeDispelTypes["Magic"] = true
 				allCandidates.additionalInclude.excludeDispelTypes["Magic"] = true
 			end
@@ -1212,7 +1222,7 @@ local function getAuraFilters(frameName, actorType, force)
 					candidateFilters = candidate,
 				})
 
-				-- remaining exclude magic
+				-- remaining exclude enrage
 				allCandidates.mainFilter.excludeDispelTypes["Enrage"] = true
 				allCandidates.additionalInclude.excludeDispelTypes["Enrage"] = true
 			end
