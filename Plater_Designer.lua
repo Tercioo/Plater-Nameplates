@@ -9,6 +9,7 @@ local _
 
 local DEBUG_OPEN_AT_LOGIN = false
 local IS_WOW_PROJECT_MIDNIGHT = detailsFramework.IsAddonApocalypseWow()
+local IS_WOW_PROJECT_MIDNIGHT_API = detailsFramework.IsMidnightWowAPI()
 
 --fake aura data for the designer's Auras preview. structure matches what Plater.AddAura
 --expects (name, texture, count, duration, spellID, type). ApplyTime is mutated per-tick by
@@ -1238,8 +1239,12 @@ function designer.SetIndicatorPreview(indicatorType)
     elseif (indicatorType == "classicon") then
         local _, class = UnitClass("player")
         if (class) then
-            texture:SetTexture([[Interface\GLUES\CHARACTERCREATE\UI-CharacterCreate-Classes]])
-            texture:SetTexCoord(unpack(CLASS_ICON_TCOORDS[class]))
+            if IS_WOW_PROJECT_MIDNIGHT_API then
+                thisIndicator:SetAtlas("classicon-" .. class)
+            else
+                texture:SetTexture([[Interface\GLUES\CHARACTERCREATE\UI-CharacterCreate-Classes]])
+                texture:SetTexCoord(unpack(CLASS_ICON_TCOORDS[class]))
+            end
         end
 
     elseif (indicatorType == "specicon") then

@@ -9746,8 +9746,12 @@ end
 		elseif (indicator == "classicon") then
 			local _, class = UnitClass (plateFrame.unitFrame [MEMBER_UNITID])
 			if (class) then
-				thisIndicator:SetTexture ([[Interface\GLUES\CHARACTERCREATE\UI-CharacterCreate-Classes]])
-				thisIndicator:SetTexCoord (unpack (CLASS_ICON_TCOORDS [class]))
+				if IS_WOW_PROJECT_MIDNIGHT_API then
+--					thisIndicator:SetAtlas("classicon-" .. class)
+--				else
+					thisIndicator:SetTexture ([[Interface\GLUES\CHARACTERCREATE\UI-CharacterCreate-Classes]])
+					thisIndicator:SetTexCoord (unpack (CLASS_ICON_TCOORDS [class]))
+				end
 			end
 		
 		elseif (indicator == "specicon") then
