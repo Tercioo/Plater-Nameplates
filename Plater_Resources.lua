@@ -13,6 +13,7 @@ local IS_WOW_PROJECT_CLASSIC_ERA = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
 local IS_WOW_PROJECT_CLASSIC_WRATH = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_WRATH_OF_THE_LICH_KING and ClassicExpansionAtLeast(LE_EXPANSION_WRATH_OF_THE_LICH_KING)
 --local IS_WOW_PROJECT_CLASSIC_CATACLYSM = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_CATACLYSM and ClassicExpansionAtLeast(LE_EXPANSION_CATACLYSM)
 local IS_WOW_PROJECT_MIDNIGHT = DF.IsAddonApocalypseWow()
+local IS_WOW_PROJECT_MIDNIGHT_API = DF.IsMidnightWowAPI()
 
 local GetSpecialization = C_SpecializationInfo and C_SpecializationInfo.GetSpecialization or GetSpecialization
 
@@ -383,7 +384,7 @@ end
 	end
 
 	resourceBarCreateFuncByEnumName[CONST_ENUMNAME_COMBOPOINT] = function(mainResourceFrame)
-		local size = IS_WOW_PROJECT_MAINLINE and 20 or 13
+		local size = IS_WOW_PROJECT_MIDNIGHT_API and 20 or 13
 		local resourceWidgetCreationFunc = Plater.Resources.GetCreateResourceWidgetFunctionForSpecId(CONST_SPECID_ROGUE_OUTLAW)
 		local newResourceBar = createResourceBar(mainResourceFrame, "$parentRogueResource", resourceWidgetCreationFunc, size, size)
 		mainResourceFrame.widgetWidth = size
@@ -432,8 +433,8 @@ end
 
 	resourceBarCreateFuncByEnumName[CONST_ENUMNAME_RUNES] = function(mainResourceFrame)
 		local resourceWidgetCreationFunc = Plater.Resources.GetCreateResourceWidgetFunctionForSpecId(CONST_SPECID_DK_FROST)
-		mainResourceFrame.widgetWidth = IS_WOW_PROJECT_MAINLINE and 16 or 18--24
-		mainResourceFrame.widgetHeight = IS_WOW_PROJECT_MAINLINE and 16 or 18--24
+		mainResourceFrame.widgetWidth = IS_WOW_PROJECT_MIDNIGHT_API and 16 or 18--24
+		mainResourceFrame.widgetHeight = IS_WOW_PROJECT_MIDNIGHT_API and 16 or 18--24
 		local newResourceBar = createResourceBar(mainResourceFrame, "$parentDeathKnightResource", resourceWidgetCreationFunc, mainResourceFrame.widgetWidth, mainResourceFrame.widgetHeight)
 		mainResourceFrame.resourceBars[CONST_SPECID_DK_UNHOLY] = newResourceBar
 		mainResourceFrame.resourceBars[CONST_SPECID_DK_FROST] = newResourceBar
@@ -446,7 +447,7 @@ end
 			tinsert(newResourceBar.runeIndexes, i); 
 		end
 		
-		if IS_WOW_PROJECT_MAINLINE then
+		if IS_WOW_PROJECT_MIDNIGHT_API then
 			newResourceBar.updateResourceFunc = resourceWidgetsFunctions.OnRunesChanged
 		else
 			newResourceBar.updateResourceFunc = resourceWidgetsFunctions.OnRunesChangedWotLK
@@ -618,6 +619,9 @@ end
 	end
 
 	function Plater.Resources.EnableEvents()
+		if not DB_USE_PLATER_RESOURCE_BAR then
+			return
+		end
 		local mainResourceFrame = Plater.Resources.GetMainResourceFrame()
 		if (not mainResourceFrame or mainResourceFrame.eventsEnabled) then
 			return
@@ -779,7 +783,7 @@ end
 
 		--get the main resource frame
 		local mainResourceFrame = Plater.Resources.GetMainResourceFrame()
-		if (not mainResourceFrame) then
+		if (not mainResourceFrame or not DB_USE_PLATER_RESOURCE_BAR) then
 			Plater.EndLogPerformanceCore("Plater-Resources", "Update", "UpdateMainResourceFrame")
 			return
 		end
@@ -847,6 +851,11 @@ end
 		end
 
 		mainResourceFrame.currentResourceBarShown = resourceBar
+
+		if not DB_USE_PLATER_RESOURCE_BAR then
+			resourceBar:Hide()
+			return
+		end
 
 		--show the resource bar
 		resourceBar:Show()
@@ -1081,6 +1090,7 @@ end
 	function Plater.Resources.UpdateResources_WithDepleted(resourceBar, currentResources)
 		Plater.StartLogPerformanceCore("Plater-Resources", "Update", "UpdateResources_WithDepleted")
 
+		DevTool:AddData({debugstack()})
 		--fallback if it is not implemented/created
 		if (not resourceBar.widgets[1]) then return end
 
@@ -1182,15 +1192,17 @@ end
 
 		--amount of resources the player has now
 		local currentResources
-		if Plater.PlayerHasTargetNonSelf and IS_WOW_PROJECT_NOT_MAINLINE then
+		if Plater.PlayerHasTargetNonSelf and not IS_WOW_PROJECT_MIDNIGHT_API then
 			currentResources = GetComboPoints("player", "target")
 		else
 			currentResources = UnitPower("player", Plater.Resources.playerResourceId)
 		end
 
 		--resources amount got updated?
-		if (currentResources == resourceBar.lastResourceAmount and not forcedRefresh) then
-			return
+		if IS_WOW_PROJECT_MIDNIGHT_API and not issecretvalue(currentResources) then
+			if (currentResources == resourceBar.lastResourceAmount and not forcedRefresh) then
+				return
+			end
 		end
 
 		--which update method to use

@@ -6378,13 +6378,15 @@ function Plater.OnInit() --private --~oninit ~init
 	if IS_WOW_PROJECT_MAINLINE then
 		for classID = 1, MAX_CLASSES do
 			local _, classFile = GetClassInfo(classID)
-			CLASS_INFO_CACHE[classFile] = {}
-			local GetNumSpecializationsForClassID = GetNumSpecializationsForClassID or C_SpecializationInfo.GetNumSpecializationsForClassID --10.0.5
-			for i = 1, GetNumSpecializationsForClassID(classID) do
-				local specID, maleName, _, iconID, role = GetSpecializationInfoForClassID(classID, i, 2) -- male
-				local _, femaleName, _, iconID, role = GetSpecializationInfoForClassID(classID, i, 3) -- female
-				CLASS_INFO_CACHE[classFile][maleName] = {role = role, specID = specID, iconID = iconID}
-				CLASS_INFO_CACHE[classFile][femaleName] = CLASS_INFO_CACHE[classFile][maleName]
+			if classFile then
+				CLASS_INFO_CACHE[classFile] = {}
+				local GetNumSpecializationsForClassID = GetNumSpecializationsForClassID or C_SpecializationInfo.GetNumSpecializationsForClassID --10.0.5
+				for i = 1, GetNumSpecializationsForClassID(classID) do
+					local specID, maleName, _, iconID, role = GetSpecializationInfoForClassID(classID, i, 2) -- male
+					local _, femaleName, _, iconID, role = GetSpecializationInfoForClassID(classID, i, 3) -- female
+					CLASS_INFO_CACHE[classFile][maleName] = {role = role, specID = specID, iconID = iconID}
+					CLASS_INFO_CACHE[classFile][femaleName] = CLASS_INFO_CACHE[classFile][maleName]
+				end
 			end
 		end
 	end

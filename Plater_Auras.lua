@@ -230,7 +230,9 @@ platerInternal.Auras = {
 }
 Plater.SpellCaches = platerInternal.Auras.spellCaches
 
-local spellBlacklist = {} -- some spells just crash PTR clients... add them here
+local spellBlacklist = { -- some spells just crash PTR clients... add them here
+	[1251678] = true,
+}
 
 -- Spell Caches
 local expandAuraCaches
@@ -1598,7 +1600,11 @@ local function initAuraFrame(auraButton, frameName, frameKey, auraContainer)
 			}
 		}
 		--C_AuraContainerUtil.ProcessCustomAuraButtonDispelTypeTextureOptions(borderOptions)
-		auraButton:SetAuraBorder(auraButton.Border, borderOptions)
+		if auraButton.SetAuraBorder then
+			auraButton:SetAuraBorder(auraButton.Border, options.borderOptions)
+		else
+			auraButton:AddDispelTypeTexture(auraButton.Border, options.borderOptions)
+		end
 	end
 
 
@@ -1766,9 +1772,16 @@ function reSkinAuraButtons(auraButtons, options)
     	auraButton.Border:SetVertexColor(defaultColor[1], defaultColor[2], defaultColor[3], defaultColor[4])
 
 		if frameName ~= "ExtraIconFrame" and Plater.db.profile.aura_border_colors_by_type or frameName == "ExtraIconFrame" and Plater.db.profile.extra_icon_aura_border_colors_by_type then
-			auraButton:SetAuraBorder(auraButton.Border, options.borderOptions)
+			if auraButton.SetAuraBorder then
+				auraButton:SetAuraBorder(auraButton.Border, options.borderOptions)
+			else
+				auraButton:AddDispelTypeTexture(auraButton.Border, options.borderOptions)
+			end
 		else
-			auraButton:ClearAuraBorder()
+			if auraButton.ClearAuraBorder then
+				auraButton:ClearDispelTypeTextures()
+			else
+			end
 		end
 
 		auraButton.Cooldown:SetEdgeTexture (profile.aura_cooldown_edge_texture)
