@@ -1090,7 +1090,6 @@ end
 	function Plater.Resources.UpdateResources_WithDepleted(resourceBar, currentResources)
 		Plater.StartLogPerformanceCore("Plater-Resources", "Update", "UpdateResources_WithDepleted")
 
-		DevTool:AddData({debugstack()})
 		--fallback if it is not implemented/created
 		if (not resourceBar.widgets[1]) then return end
 
