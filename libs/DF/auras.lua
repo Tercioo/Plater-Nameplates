@@ -67,6 +67,7 @@ end
 
 local ignoredSpellIDs = { -- don't load, breaks beta
 	[1251678] = true,
+	[1251535] = true,
 }
 
 local lazyLoadAllSpells = function(payload, iterationCount, maxIterations)
