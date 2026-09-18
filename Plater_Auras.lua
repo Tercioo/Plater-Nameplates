@@ -1601,9 +1601,9 @@ local function initAuraFrame(auraButton, frameName, frameKey, auraContainer)
 		}
 		--C_AuraContainerUtil.ProcessCustomAuraButtonDispelTypeTextureOptions(borderOptions)
 		if auraButton.SetAuraBorder then
-			auraButton:SetAuraBorder(auraButton.Border, options.borderOptions)
+			auraButton:SetAuraBorder(auraButton.Border, borderOptions)
 		else
-			auraButton:AddDispelTypeTexture(auraButton.Border, options.borderOptions)
+			auraButton:AddDispelTypeTexture(auraButton.Border, borderOptions)
 		end
 	end
 

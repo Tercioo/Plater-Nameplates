@@ -3543,7 +3543,7 @@ Plater.AnchorNamesByPhraseId = {
 			
 
 				if PixelUtil.SetRoundLayoutToNearestPixelRecursively then
-					PixelUtil.SetRoundLayoutToNearestPixelRecursively(unitFrame)
+					PixelUtil.SetRoundLayoutToNearestPixelRecursively(unitFrame, true)
 				end
 
 			--> name plate created hook
