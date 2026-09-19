@@ -8,6 +8,10 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1789835738, "Backend Change", "Sept 19th, 2026", "Baseline compatibility with WoW Forever.", "cont1nuity"},
+			{1789835738, "Bug Fix", "Sept 15th, 2026", "Fixing an issue with class indicators.", "cont1nuity"},
+			{1789835738, "Bug Fix", "Sept 15th, 2026", "Fixing some issues with auras not showing correctly.", "cont1nuity"},
+
 			{1789326667, "Bug Fix", "Sept 13th, 2026", "Fixing an issue with absorb shield not sizing correctly.", "cont1nuity"},
 			
 			{1789072128, "Backend Change", "Sept 8st, 2026", "Adding enrage and magic filters.", "cont1nuity"},
