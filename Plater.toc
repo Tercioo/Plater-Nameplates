@@ -4,6 +4,7 @@
 ## Interface-Titan: 38001
 ## Interface-TBC: 20506
 ## Interface-Vanilla: 11509
+## Interface-Camelot: 16001
 ## Title: Plater
 ## Notes: Nameplate addon designed for advanced users.
 ## Notes-esES: Addon de placa de nombre diseñado para usuarios avanzados
@@ -30,6 +31,9 @@
 #@version-classic@
 ## Version: @project-version@-Vanilla
 #@end-version-classic@
+#@version-camelot@
+## Version: @project-version@-Forever
+#@end-version-camelot@
 ## X-Curse-Project-ID: 100547
 ## X-Wago-ID: kRNLep6o
 
