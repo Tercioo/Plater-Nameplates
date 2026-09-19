@@ -11247,6 +11247,8 @@ end
 			if tooltipData then
 				local line = tooltipData.lines and tooltipData.lines[2 + cbMode]
 				subTitle = line and line.leftText or ""
+				--the tooltip hands back a secret string when the unit is restricted, and comparing one throws
+				if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(subTitle) then return end --MIDNIGHT!!
 			end
 		else
 			local GameTooltipFrame = PlaterScanTooltip or CreateFrame ("GameTooltip", "PlaterScanTooltip", nil, "GameTooltipTemplate")
