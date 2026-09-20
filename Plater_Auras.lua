@@ -1486,7 +1486,7 @@ local function initAuraFrame(auraButton, frameName, frameKey, auraContainer)
 		DF:SetFontSize(auraButton.Desc, Plater.db.profile.extra_icon_caster_size)
 		DF:SetFontFace(auraButton.Desc, Plater.db.profile.extra_icon_caster_font)
 		DF:SetFontOutline(auraButton.Desc, "SLUG")
-		auraButton.SetCasterName(auraButton.Desc, false, true)
+		auraButton:SetCasterName(auraButton.Desc, {showRealmName = false, useClassColors = true})
 	end
 
 
@@ -1776,12 +1776,14 @@ function reSkinAuraButtons(auraButtons, options)
 			if auraButton.SetAuraBorder then
 				auraButton:SetAuraBorder(auraButton.Border, options.borderOptions)
 			else
+				auraButton:ClearDispelTypeTextures()
 				auraButton:AddDispelTypeTexture(auraButton.Border, options.borderOptions)
 			end
 		else
 			if auraButton.ClearAuraBorder then
-				auraButton:ClearDispelTypeTextures()
+				auraButton:ClearAuraBorder()
 			else
+				auraButton:ClearDispelTypeTextures()
 			end
 		end
 
