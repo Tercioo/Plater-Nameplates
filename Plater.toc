@@ -31,9 +31,9 @@
 #@version-classic@
 ## Version: @project-version@-Vanilla
 #@end-version-classic@
-#@version-camelot@
+#@version-forever@
 ## Version: @project-version@-Forever
-#@end-version-camelot@
+#@end-version-forever@
 ## X-Curse-Project-ID: 100547
 ## X-Wago-ID: kRNLep6o
 
