@@ -14,8 +14,10 @@ local IS_WOW_PROJECT_CLASSIC_WRATH = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpa
 --local IS_WOW_PROJECT_CLASSIC_CATACLYSM = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_CATACLYSM and ClassicExpansionAtLeast(LE_EXPANSION_CATACLYSM)
 local IS_WOW_PROJECT_MIDNIGHT = DF.IsAddonApocalypseWow()
 local IS_WOW_PROJECT_MIDNIGHT_API = DF.IsMidnightWowAPI()
+local IS_WOW_PROJECT_FOREVER = DF.IsForeverWow()
 
 local GetSpecialization = C_SpecializationInfo and C_SpecializationInfo.GetSpecialization or GetSpecialization
+local GetSpecializationInfo = C_SpecializationInfo and C_SpecializationInfo.GetSpecializationInfo or GetSpecializationInfo
 
 local PlayerClass = select(2, UnitClass("player"))
 
@@ -1191,7 +1193,7 @@ end
 
 		--amount of resources the player has now
 		local currentResources
-		if Plater.PlayerHasTargetNonSelf and not IS_WOW_PROJECT_MIDNIGHT_API then
+		if Plater.PlayerHasTargetNonSelf and (not IS_WOW_PROJECT_MIDNIGHT_API or IS_WOW_PROJECT_FOREVER) then
 			currentResources = GetComboPoints("player", "target")
 		else
 			currentResources = UnitPower("player", Plater.Resources.playerResourceId)
