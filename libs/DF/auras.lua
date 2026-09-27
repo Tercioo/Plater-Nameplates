@@ -101,9 +101,8 @@ local lazyLoadAllSpells = function(payload, iterationCount, maxIterations)
 				end
 				spellNameTable[#spellNameTable+1] = i
 			end
-
-			i = i + 1
 		end
+		i = i + 1
 	end
 end
 
