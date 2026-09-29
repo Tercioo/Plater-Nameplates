@@ -2510,38 +2510,57 @@ Plater.AnchorNamesByPhraseId = {
 
 		ZONE_CHANGED_NEW_AREA = function()
 			if (InCombatLockdown()) then
-				C_Timer.After (1, function() Plater.RunFunctionForEvent ("ZONE_CHANGED_NEW_AREA") end)
+				if Plater.ZoneChangeNewAreaDelayedCombat then
+					Plater.ZoneChangeNewAreaDelayedCombat:Cancel()
+				end
+				Plater.ZoneChangeNewAreaDelayedCombat = C_Timer.NewTimer (1, function() Plater.RunFunctionForEvent ("ZONE_CHANGED_NEW_AREA") end)
 				return
 			end
 			
-			Plater.CurrentEncounterID = nil
-			
-			local pvpType, isFFA, faction = (GetZonePVPInfo or C_PvP.GetZonePVPInfo)()
-			Plater.ZonePvpType = pvpType
-			Plater.UpdateBgPlayerRoleCache()
-			
-			local name, instanceType, difficultyID, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, instanceMapID, instanceGroupSize = GetInstanceInfo()
-			
-			--reset when entering in a battleground
-			if (instanceType == "pvp") then
-				table.wipe (DB_CAPTURED_SPELLS)
+			if Plater.ZoneChangeNewAreaDelayed then
+				return -- just delay, not re-create
 			end
-			Plater.ZoneInstanceType = instanceType
-			Plater.ZoneName = name
-			
-			IS_IN_OPEN_WORLD = Plater.ZoneInstanceType == "none"
-			IS_IN_INSTANCE = Plater.ZoneInstanceType == "raid" or Plater.ZoneInstanceType == "party"
-			
-			Plater.UpdateAllPlates()
-			Plater.RefreshAutoToggle()
-			
-			--hooks
-			Plater.ScheduleZoneChangeHook()
-			
-			if (Plater.PlayerEnteringWorld) then
-				Plater.PlayerEnteringWorld = false
-				C_Timer.After (1, Plater.RunLoadScreenHook)
-			end
+
+			Plater.ZoneChangeNewAreaDelayed = C_Timer.NewTimer (0, function() -- next frame to consolidate the events
+				Plater.CurrentEncounterID = nil
+				
+				local needsFullRefresh = false
+
+				local pvpType, isFFA, faction = (GetZonePVPInfo or C_PvP.GetZonePVPInfo)()
+				needsFullRefresh = needsFullRefresh or Plater.ZonePvpType ~= pvpType
+				Plater.ZonePvpType = pvpType
+				if not pvpType or pvpType == "arena" then
+					Plater.UpdateBgPlayerRoleCache()
+				end
+				
+				local name, instanceType, difficultyID, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, instanceMapID, instanceGroupSize = GetInstanceInfo()
+				
+				--reset when entering in a battleground
+				if (instanceType == "pvp") then
+					table.wipe (DB_CAPTURED_SPELLS)
+				end
+				needsFullRefresh = needsFullRefresh or Plater.ZoneInstanceType ~= instanceType
+				Plater.ZoneInstanceType = instanceType
+				Plater.ZoneName = name
+				
+				IS_IN_OPEN_WORLD = Plater.ZoneInstanceType == "none"
+				IS_IN_INSTANCE = Plater.ZoneInstanceType == "raid" or Plater.ZoneInstanceType == "party"
+				
+				if needsFullRefresh then
+					Plater.UpdateAllPlates()
+				end
+				Plater.RefreshAutoToggle()
+				
+				--hooks
+				Plater.ScheduleZoneChangeHook()
+				
+				if (Plater.PlayerEnteringWorld) then
+					Plater.PlayerEnteringWorld = false
+					C_Timer.After (1, Plater.RunLoadScreenHook)
+				end
+				Plater.ZoneChangeNewAreaDelayed = nil
+			end)
+
 		end,
 
 		ZONE_CHANGED_INDOORS = function()
