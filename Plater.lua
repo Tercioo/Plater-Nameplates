@@ -2232,6 +2232,9 @@ Plater.AnchorNamesByPhraseId = {
 				if plateFrame.unitFrame.PlaterOnScreen then
 					Plater.CreateOrUpdateAuraContainers(plateFrame.unitFrame, unit) -- might still need this
 				end
+			elseif NAMEPLATES_ON_SCREEN_CACHE[unit] then
+				-- no nameplate anymore (e.g. became a forbidden friendly plate), hide it
+				Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_REMOVED", unit)
 			end
 		end,
 
@@ -3580,7 +3583,12 @@ Plater.AnchorNamesByPhraseId = {
 		---@param unitBarId string
 		FORBIDDEN_NAME_PLATE_UNIT_ADDED = function (event, unitBarId)
 			local unitID = unitBarId
-		
+
+			--still registered for this unit (e.g. mind controlled raid member turning friendly inside an instance), unload it
+			if NAMEPLATES_ON_SCREEN_CACHE[unitID] then
+				Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_REMOVED", unitID)
+			end
+
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitID, true)
 			if (plateFrame) then -- and plateFrame.template == "ForbiddenNamePlateUnitFrameTemplate"
 				if IS_WOW_PROJECT_MIDNIGHT_API then -- don't simplify
