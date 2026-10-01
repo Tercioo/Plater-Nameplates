@@ -230,7 +230,9 @@ platerInternal.Auras = {
 }
 Plater.SpellCaches = platerInternal.Auras.spellCaches
 
-local spellBlacklist = { -- some spells just crash PTR clients... add them here
+local spellBlacklist = { -- some spells just crash PTR/beta clients... add them here
+	[255616] = true,
+	[1249911] = true,
 	[1251678] = true,
 	[1251535] = true,
 }
