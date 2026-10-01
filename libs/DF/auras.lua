@@ -65,7 +65,9 @@ function DF:GetSpellCaches()
 	return spellsHashMap, spellsIndexTable, spellsWithSameName
 end
 
-local ignoredSpellIDs = { -- don't load, breaks beta
+local ignoredSpellIDs = { -- don't load, breaks beta and PTR
+	[255616] = true,
+	[1249911] = true,
 	[1251678] = true,
 	[1251535] = true,
 }
