@@ -168,11 +168,22 @@ local cleanfunction = function() end
 		Height = 20,
 	}
 
+	-- Probe whether UNIT_HEALTH_FREQUENT is supported by the client engine
+	local isUnitHealthFrequentSupported = false
+	if IS_WOW_PROJECT_NOT_MAINLINE and not detailsFramework.IsAddonApocalypseWow() and not detailsFramework.IsMidnightWowAPI() then
+		local testFrame = CreateFrame("Frame")
+		local registered = pcall(testFrame.RegisterEvent, testFrame, "UNIT_HEALTH_FREQUENT")
+		if registered then
+			pcall(testFrame.UnregisterEvent, testFrame, "UNIT_HEALTH_FREQUENT")
+			isUnitHealthFrequentSupported = true
+		end
+	end
+
 	healthBarMetaFunctions.HealthBarEvents = {
 		{"PLAYER_ENTERING_WORLD"},
 		{"UNIT_HEALTH", true},
 		{"UNIT_MAXHEALTH", true},
-		{(IS_WOW_PROJECT_NOT_MAINLINE) and "UNIT_HEALTH_FREQUENT", true}, -- this one is classic-only...
+		{isUnitHealthFrequentSupported and "UNIT_HEALTH_FREQUENT", true}, -- this one is classic-only and deprecated in modern engine
 		{"UNIT_HEAL_PREDICTION", true},
 		{(IS_WOW_PROJECT_AT_LEAST_CLASSIC_MOP) and "UNIT_ABSORB_AMOUNT_CHANGED", true},
 		{(IS_WOW_PROJECT_AT_LEAST_CLASSIC_MOP) and "UNIT_HEAL_ABSORB_AMOUNT_CHANGED", true},
@@ -194,25 +205,25 @@ local cleanfunction = function() end
 					local isUnitEvent = eventTable[2]
 					if event then
 						if (isUnitEvent) then
-							self:RegisterUnitEvent(event, self.displayedUnit, self.unit)
+							pcall(self.RegisterUnitEvent, self, event, self.displayedUnit, self.unit)
 						else
-							self:RegisterEvent(event)
+							pcall(self.RegisterEvent, self, event)
 						end
 					end
 				end
 
 				--check for settings and update some events
 				if (not self.Settings.ShowHealingPrediction) then
-					self:UnregisterEvent("UNIT_HEAL_PREDICTION")
-					if IS_WOW_PROJECT_MAINLINE then
-						self:UnregisterEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED")
+					pcall(self.UnregisterEvent, self, "UNIT_HEAL_PREDICTION")
+					if IS_WOW_PROJECT_MAINLINE or (detailsFramework.IsAddonApocalypseWow and detailsFramework.IsAddonApocalypseWow()) then
+						pcall(self.UnregisterEvent, self, "UNIT_HEAL_ABSORB_AMOUNT_CHANGED")
 					end
 					self.incomingHealIndicator:Hide()
 					self.healAbsorbIndicator:Hide()
 				end
 				if (not self.Settings.ShowShields) then
-					if IS_WOW_PROJECT_MAINLINE then
-						self:UnregisterEvent("UNIT_ABSORB_AMOUNT_CHANGED")
+					if IS_WOW_PROJECT_MAINLINE or (detailsFramework.IsAddonApocalypseWow and detailsFramework.IsAddonApocalypseWow()) then
+						pcall(self.UnregisterEvent, self, "UNIT_ABSORB_AMOUNT_CHANGED")
 					end
 					self.shieldAbsorbIndicator:Hide()
 					self.shieldAbsorbGlow:Hide()
@@ -231,7 +242,7 @@ local cleanfunction = function() end
 				for _, eventTable in ipairs(self.HealthBarEvents) do
 					local event = eventTable[1]
 					if event then
-						self:UnregisterEvent(event)
+						pcall(self.UnregisterEvent, self, event)
 					end
 				end
 

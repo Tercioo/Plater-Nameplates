@@ -1160,7 +1160,7 @@ Plater.AnchorNamesByPhraseId = {
 	--true if the 'player' unit is a tank
 	--parameter "hasTankAura" is used to force aura scan skip for paladins -> UpdatePlayerTankState -> SPELL_AURA_APPLIED/REMOVED (CLASSIC)
 	local function IsPlayerEffectivelyTank(hasTankAura)
-		if IS_WOW_PROJECT_MAINLINE then
+		if IS_WOW_PROJECT_MAINLINE or IS_WOW_PROJECT_MIDNIGHT then
 			local assignedRole = UnitGroupRolesAssigned ("player")
 			if (assignedRole == "NONE") then
 				local spec = GetSpecialization()
@@ -1253,7 +1253,7 @@ Plater.AnchorNamesByPhraseId = {
 
 	--return true if the unit is in tank role
 	local function IsUnitEffectivelyTank (unit)
-		if IS_WOW_PROJECT_MAINLINE or IS_WOW_PROJECT_CLASSIC_MOP then
+		if IS_WOW_PROJECT_MAINLINE or IS_WOW_PROJECT_MIDNIGHT or IS_WOW_PROJECT_CLASSIC_MOP then
 			return UnitGroupRolesAssigned (unit) == "TANK"
 		elseif IS_WOW_PROJECT_CLASSIC_WRATH then
 			if IsInRaid() then
@@ -3651,6 +3651,10 @@ Plater.AnchorNamesByPhraseId = {
 			if (not plateFrame.unitFrame or not plateFrame.unitFrame.SetUnit) then
 				plateFrame.unitFrame = plateFrame.unitFramePlater
 			end
+
+			if (not plateFrame.unitFrame) then
+				return
+			end
 			
 			--get and format the reaction to always be the value of the constants, then cache the reaction in some widgets for performance
 			plateFrame.unitFrame [MEMBER_UNITID] = unitID
@@ -4944,11 +4948,11 @@ function Plater.OnInit() --private --~oninit ~init
 		
 		Plater.EventHandlerFrame:RegisterEvent ("UNIT_PET")
 		
-		if IS_WOW_PROJECT_NOT_MAINLINE then -- tank spec detection
+		if IS_WOW_PROJECT_NOT_MAINLINE and not IS_WOW_PROJECT_MIDNIGHT then -- tank spec detection
 			Plater.EventHandlerFrame:RegisterEvent ("UNIT_INVENTORY_CHANGED")
 			Plater.EventHandlerFrame:RegisterEvent ("UPDATE_SHAPESHIFT_FORM")
 			if IS_WOW_PROJECT_CLASSIC_WRATH or IS_WOW_PROJECT_CLASSIC_MOP then
-				Plater.EventHandlerFrame:RegisterEvent ("TALENT_GROUP_ROLE_CHANGED")
+				pcall (Plater.EventHandlerFrame.RegisterEvent, Plater.EventHandlerFrame, "TALENT_GROUP_ROLE_CHANGED")
 			end
 		elseif Plater.PlayerClass == "DRUID" then
 			Plater.EventHandlerFrame:RegisterEvent ("UPDATE_SHAPESHIFT_FORM")
