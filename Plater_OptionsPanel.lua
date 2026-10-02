@@ -16,7 +16,7 @@ local IS_WOW_PROJECT_CLASSIC_WRATH = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpa
 --local IS_WOW_PROJECT_CLASSIC_CATACLYSM = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_CATACLYSM and ClassicExpansionAtLeast(LE_EXPANSION_CATACLYSM)
 local IS_WOW_PROJECT_MIDNIGHT = DF.IsAddonApocalypseWow()
 local IS_WOW_PROJECT_MIDNIGHT_API = DF.IsMidnightWowAPI()
-local IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS = C_XMLUtil and C_XMLUtil.GetTemplateInfo and C_XMLUtil.GetTemplateInfo("CustomAuraContainerTemplate") and true or false
+local IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS = (not DF.IsForeverWow()) and IS_WOW_PROJECT_MIDNIGHT_API and C_XMLUtil and C_XMLUtil.GetTemplateInfo and C_XMLUtil.GetTemplateInfo("CustomAuraContainerTemplate") and true or false
 
 local PixelUtil = PixelUtil or DFPixelUtil
 
