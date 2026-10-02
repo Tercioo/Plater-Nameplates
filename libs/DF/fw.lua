@@ -266,6 +266,8 @@ function DF.IsForeverWow()
 end
 
 function DF.IsMidnightWowAPI()
+	-- Forever 16001 is not the complete Midnight API; use DF classic unit frames.
+	if DF.IsForeverWow() then return false end
 	if (buildInfo < 130000 and buildInfo >= 120000) then return true end
 	if (buildInfo < 60000 and buildInfo >= 50504) then   return true end
 	if (buildInfo < 30000 and buildInfo >= 20506) then   return true end
