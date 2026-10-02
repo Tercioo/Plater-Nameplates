@@ -88,7 +88,8 @@ local IS_WOW_PROJECT_CLASSIC_WRATH = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpa
 local IS_WOW_PROJECT_CLASSIC_MOP = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_MISTS_OF_PANDARIA and ClassicExpansionAtLeast(LE_EXPANSION_MISTS_OF_PANDARIA)
 local IS_WOW_PROJECT_MIDNIGHT = DF.IsAddonApocalypseWow()
 local IS_WOW_PROJECT_MIDNIGHT_API = DF.IsMidnightWowAPI()
-local IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS = C_XMLUtil and C_XMLUtil.GetTemplateInfo and C_XMLUtil.GetTemplateInfo("CustomAuraContainerTemplate") and true or false
+local IS_WOW_PROJECT_FOREVER = DF.IsForeverWow()
+local IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS = IS_WOW_PROJECT_MIDNIGHT_API and C_XMLUtil and C_XMLUtil.GetTemplateInfo and C_XMLUtil.GetTemplateInfo("CustomAuraContainerTemplate") and true or false
 
 local PixelUtil = PixelUtil or DFPixelUtil
 
@@ -2395,7 +2396,7 @@ Plater.AnchorNamesByPhraseId = {
 						Plater.FriendsCache [accountInfo.gameAccountInfo.characterName] = true
 					end
 				end
-			else
+			elseif BNGetNumFriends and BNGetFriendInfo then
 				for i = 1, BNGetNumFriends() do 
 					local presenceID, presenceName, battleTag, isBattleTagPresence, toonName, toonID, client, isOnline, lastOnline, isAFK, isDND, messageText, noteText, isRIDFriend, broadcastTime, canSoR = BNGetFriendInfo (i)
 					if (isOnline and toonName) then
@@ -2624,11 +2625,23 @@ Plater.AnchorNamesByPhraseId = {
 		
 		VARIABLES_LOADED = function()
 			
-			C_Timer.After (0.1, Plater.ForceCVars)
-			
-			C_Timer.After (0.2, Plater.RestoreProfileCVars)
+			-- Forever compatibility: VARIABLES_LOADED can fire before these Plater callbacks
+			-- have been assigned during initialization. Always pass C_Timer.After a real
+			-- function and defer until the target callback exists.
+			local function RunWhenPlaterFunctionExists(functionName, retryDelay)
+				local callback = Plater[functionName]
+				if type(callback) == "function" then
+					callback()
+				else
+					C_Timer.After(retryDelay or 0.1, function()
+						RunWhenPlaterFunctionExists(functionName, retryDelay)
+					end)
+				end
+			end
 
-			C_Timer.After (0.3, Plater.UpdatePlateClickSpace)
+			C_Timer.After(0.1, function() RunWhenPlaterFunctionExists("ForceCVars", 0.1) end)
+			C_Timer.After(0.2, function() RunWhenPlaterFunctionExists("RestoreProfileCVars", 0.1) end)
+			C_Timer.After(0.3, function() RunWhenPlaterFunctionExists("UpdatePlateClickSpace", 0.1) end)
 			
 			C_Timer.After (0.4, function() 
 				Plater.RefreshAutoToggle(InCombatLockdown()) -- refresh this
@@ -2866,6 +2879,21 @@ Plater.AnchorNamesByPhraseId = {
 				--community patch by Ariani#0960 (discord)
 				--make the unitFrame be parented to UIParent allowing frames to be moved between strata levels
 				--March 3rd, 2019
+				-- Forever can share a DetailsFramework instance loaded by Details before Plater.
+				-- If that instance installed the Midnight healthbar event list, remove the event
+				-- that is unavailable in Forever before initializing the nameplate healthbar.
+				if DF.IsForeverWow and DF.IsForeverWow() and DF.GlobalWidgetControlNames then
+					local healthBarMeta = _G[DF.GlobalWidgetControlNames["healthBar"]]
+					if healthBarMeta and healthBarMeta.HealthBarEvents then
+						for eventIndex = #healthBarMeta.HealthBarEvents, 1, -1 do
+							local eventInfo = healthBarMeta.HealthBarEvents[eventIndex]
+							if eventInfo and eventInfo[1] == "UNIT_HEALTH_FREQUENT" then
+								table.remove(healthBarMeta.HealthBarEvents, eventIndex)
+							end
+						end
+					end
+				end
+
 				local newUnitFrame
 				if (DB_USE_UIPARENT) then
 					--TODO: why is it not showing properly when V / V hide / show but when leaving / entering scren??? -> plateFrame for now...
@@ -3647,9 +3675,21 @@ Plater.AnchorNamesByPhraseId = {
 			end
 
 
+			--> Forever can deliver NAME_PLATE_UNIT_ADDED for a plate whose Plater frame was not created yet.
+			--> Lazily run Plater's own NAME_PLATE_CREATED handler through the public internal accessor.
+			if IS_WOW_PROJECT_FOREVER and not plateFrame.unitFramePlater then
+				local createPlateFunc = platerInternal.Events.GetEventFunction and platerInternal.Events.GetEventFunction("NAME_PLATE_CREATED")
+				if createPlateFunc then
+					createPlateFunc("NAME_PLATE_CREATED", plateFrame)
+				end
+			end
+
 			--> check the unit frame integrity, several times some weakaura or script mess with the unit frame
 			if (not plateFrame.unitFrame or not plateFrame.unitFrame.SetUnit) then
 				plateFrame.unitFrame = plateFrame.unitFramePlater
+			end
+			if not plateFrame.unitFrame then
+				return
 			end
 			
 			--get and format the reaction to always be the value of the constants, then cache the reaction in some widgets for performance
@@ -4947,7 +4987,7 @@ function Plater.OnInit() --private --~oninit ~init
 		if IS_WOW_PROJECT_NOT_MAINLINE then -- tank spec detection
 			Plater.EventHandlerFrame:RegisterEvent ("UNIT_INVENTORY_CHANGED")
 			Plater.EventHandlerFrame:RegisterEvent ("UPDATE_SHAPESHIFT_FORM")
-			if IS_WOW_PROJECT_CLASSIC_WRATH or IS_WOW_PROJECT_CLASSIC_MOP then
+			if (IS_WOW_PROJECT_CLASSIC_WRATH or IS_WOW_PROJECT_CLASSIC_MOP) and not IS_WOW_PROJECT_FOREVER then
 				Plater.EventHandlerFrame:RegisterEvent ("TALENT_GROUP_ROLE_CHANGED")
 			end
 		elseif Plater.PlayerClass == "DRUID" then
@@ -11506,7 +11546,7 @@ end
 		--update the quest cache
 		local numEntries, numQuests = C_QuestLog.GetNumQuestLogEntries and C_QuestLog.GetNumQuestLogEntries() or GetNumQuestLogEntries()
 		for questLogId = 1, numEntries do
-			if IS_WOW_PROJECT_MAINLINE then
+			if IS_WOW_PROJECT_MAINLINE or (IS_WOW_PROJECT_FOREVER and not GetQuestLogTitle and C_QuestLog and C_QuestLog.GetInfo) then
 				local questDetails = C_QuestLog.GetInfo(questLogId)
 				--any chance to track via quest objective? no unit IDs given there...
 				--ViragDevTool_AddData({questDetails = questDetails, QuestObjectives = C_QuestLog.GetQuestObjectives(questDetails.questID), Title = C_QuestLog.GetTitleForLogIndex(questLogId)}, "QuestUpdate - " .. questLogId)
