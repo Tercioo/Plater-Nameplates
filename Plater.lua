@@ -83,9 +83,8 @@ local GetSpecializationInfo = C_SpecializationInfo and C_SpecializationInfo.GetS
 local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_NOT_MAINLINE = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_CLASSIC_ERA = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
-local IS_WOW_PROJECT_CLASSIC_WRATH = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_WRATH_OF_THE_LICH_KING and ClassicExpansionAtLeast(LE_EXPANSION_WRATH_OF_THE_LICH_KING)
---local IS_WOW_PROJECT_CLASSIC_CATACLYSM = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_CATACLYSM and ClassicExpansionAtLeast(LE_EXPANSION_CATACLYSM)
-local IS_WOW_PROJECT_CLASSIC_MOP = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_MISTS_OF_PANDARIA and ClassicExpansionAtLeast(LE_EXPANSION_MISTS_OF_PANDARIA)
+local IS_WOW_PROJECT_CLASSIC_WRATH = DF.IsWotLKWow()
+local IS_WOW_PROJECT_CLASSIC_MOP = DF.IsPandaWow()
 local IS_WOW_PROJECT_MIDNIGHT = DF.IsAddonApocalypseWow()
 local IS_WOW_PROJECT_MIDNIGHT_API = DF.IsMidnightWowAPI()
 local IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS = C_XMLUtil and C_XMLUtil.GetTemplateInfo and C_XMLUtil.GetTemplateInfo("CustomAuraContainerTemplate") and true or false
@@ -2387,7 +2386,7 @@ Plater.AnchorNamesByPhraseId = {
 				end
 			end
 			
-			if IS_WOW_PROJECT_MAINLINE then
+			if IS_WOW_PROJECT_MIDNIGHT_API then
 				local _, numBNetOnline = BNGetNumFriends();
 				for i = 1, numBNetOnline do
 					local accountInfo = C_BattleNet.GetFriendAccountInfo(i);
@@ -11294,11 +11293,11 @@ end
 
 	function Plater.IsQuestObjective (plateFrame)
 		local guid
-		if IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(plateFrame [MEMBER_GUID]) then
+		if IS_WOW_PROJECT_MIDNIGHT_API and not issecretvalue(plateFrame [MEMBER_GUID]) then
 			guid = plateFrame [MEMBER_GUID]
-		elseif IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(plateFrame.unitFrame [MEMBER_GUID]) then
+		elseif IS_WOW_PROJECT_MIDNIGHT_API and not issecretvalue(plateFrame.unitFrame [MEMBER_GUID]) then
 			guid = plateFrame.unitFrame [MEMBER_GUID]
-		elseif IS_WOW_PROJECT_MIDNIGHT then
+		elseif IS_WOW_PROJECT_MIDNIGHT_API then
 			return
 		else
 			guid = plateFrame [MEMBER_GUID]
@@ -11331,7 +11330,7 @@ end
 			end
 			useQuestie = true
 		else
-			if IS_WOW_PROJECT_MAINLINE then
+			if IS_WOW_PROJECT_MIDNIGHT_API then
 				local tooltipData = C_TooltipInfo.GetHyperlink ("unit:" .. guid)
 				if tooltipData then
 					for _, line in ipairs(tooltipData.lines or {}) do
@@ -11506,7 +11505,7 @@ end
 		--update the quest cache
 		local numEntries, numQuests = C_QuestLog.GetNumQuestLogEntries and C_QuestLog.GetNumQuestLogEntries() or GetNumQuestLogEntries()
 		for questLogId = 1, numEntries do
-			if IS_WOW_PROJECT_MAINLINE then
+			if IS_WOW_PROJECT_MIDNIGHT_API then
 				local questDetails = C_QuestLog.GetInfo(questLogId)
 				--any chance to track via quest objective? no unit IDs given there...
 				--ViragDevTool_AddData({questDetails = questDetails, QuestObjectives = C_QuestLog.GetQuestObjectives(questDetails.questID), Title = C_QuestLog.GetTitleForLogIndex(questLogId)}, "QuestUpdate - " .. questLogId)
@@ -11524,7 +11523,7 @@ end
 			end
 		end
 		
-		if IS_WOW_PROJECT_MAINLINE then
+		if IS_WOW_PROJECT_MIDNIGHT_API then
 			local mapId = C_Map.GetBestMapForUnit ("player")
 			if (mapId) then
 				local GetQuestsForPlayerByMapID = C_TaskQuest.GetQuestsForPlayerByMapID or C_TaskQuest.GetQuestsOnMap
