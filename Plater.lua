@@ -2387,7 +2387,7 @@ Plater.AnchorNamesByPhraseId = {
 				end
 			end
 			
-			if IS_WOW_PROJECT_MAINLINE then
+			if (IS_WOW_PROJECT_MAINLINE or not BNGetFriendInfo) and C_BattleNet and C_BattleNet.GetFriendAccountInfo then
 				local _, numBNetOnline = BNGetNumFriends();
 				for i = 1, numBNetOnline do
 					local accountInfo = C_BattleNet.GetFriendAccountInfo(i);
@@ -2395,7 +2395,7 @@ Plater.AnchorNamesByPhraseId = {
 						Plater.FriendsCache [accountInfo.gameAccountInfo.characterName] = true
 					end
 				end
-			else
+			elseif BNGetFriendInfo then
 				for i = 1, BNGetNumFriends() do 
 					local presenceID, presenceName, battleTag, isBattleTagPresence, toonName, toonID, client, isOnline, lastOnline, isAFK, isDND, messageText, noteText, isRIDFriend, broadcastTime, canSoR = BNGetFriendInfo (i)
 					if (isOnline and toonName) then
@@ -4948,7 +4948,7 @@ function Plater.OnInit() --private --~oninit ~init
 			Plater.EventHandlerFrame:RegisterEvent ("UNIT_INVENTORY_CHANGED")
 			Plater.EventHandlerFrame:RegisterEvent ("UPDATE_SHAPESHIFT_FORM")
 			if IS_WOW_PROJECT_CLASSIC_WRATH or IS_WOW_PROJECT_CLASSIC_MOP then
-				Plater.EventHandlerFrame:RegisterEvent ("TALENT_GROUP_ROLE_CHANGED")
+				pcall (Plater.EventHandlerFrame.RegisterEvent, Plater.EventHandlerFrame, "TALENT_GROUP_ROLE_CHANGED")
 			end
 		elseif Plater.PlayerClass == "DRUID" then
 			Plater.EventHandlerFrame:RegisterEvent ("UPDATE_SHAPESHIFT_FORM")
@@ -11506,7 +11506,7 @@ end
 		--update the quest cache
 		local numEntries, numQuests = C_QuestLog.GetNumQuestLogEntries and C_QuestLog.GetNumQuestLogEntries() or GetNumQuestLogEntries()
 		for questLogId = 1, numEntries do
-			if IS_WOW_PROJECT_MAINLINE then
+			if (IS_WOW_PROJECT_MAINLINE or not GetQuestLogTitle) and C_QuestLog.GetInfo then
 				local questDetails = C_QuestLog.GetInfo(questLogId)
 				--any chance to track via quest objective? no unit IDs given there...
 				--ViragDevTool_AddData({questDetails = questDetails, QuestObjectives = C_QuestLog.GetQuestObjectives(questDetails.questID), Title = C_QuestLog.GetTitleForLogIndex(questLogId)}, "QuestUpdate - " .. questLogId)
@@ -11516,7 +11516,7 @@ end
 						Plater.QuestCacheCampaign[questDetails.title] = true
 					end
 				end
-			else
+			elseif GetQuestLogTitle then
 				local title, level, suggestedGroup, isHeader, isCollapsed, isComplete, frequency, questId, startEvent, displayQuestID, isOnMap, hasLocalPOI, isTask, isStory = GetQuestLogTitle (questLogId)
 				if (type (questId) == "number" and questId > 0) then -- and not isComplete
 					Plater.QuestCache [title] = true
