@@ -14,7 +14,7 @@ local GetExpansionLevel = GetExpansionLevel
 local IS_WOW_PROJECT_MIDNIGHT = detailsFramework.IsAddonApocalypseWow()
 --local IS_WOW_PROJECT_MIDNIGHT = detailsFramework.IsMidnightWowAPI()
 local IS_WOW_PROJECT_MIDNIGHT_API = detailsFramework.IsMidnightWowAPI()
-local IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS = C_XMLUtil and C_XMLUtil.GetTemplateInfo and C_XMLUtil.GetTemplateInfo("CustomAuraContainerTemplate") and true or false
+local IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS = (not detailsFramework.IsForeverWow()) and IS_WOW_PROJECT_MIDNIGHT_API and C_XMLUtil and C_XMLUtil.GetTemplateInfo and C_XMLUtil.GetTemplateInfo("CustomAuraContainerTemplate") and true or false
 
 --this list of scripts are used at the Cast Colors and Names tab to previre which script the spell is using and also to select a script for the spell
 platerInternal.Scripts.DefaultCastScripts = {
