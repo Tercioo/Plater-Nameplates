@@ -10,7 +10,7 @@ local IS_WOW_PROJECT_CLASSIC_ERA = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
 local IS_WOW_PROJECT_MIDNIGHT = DF.IsAddonApocalypseWow()
 --local IS_WOW_PROJECT_MIDNIGHT = DF.IsMidnightWowAPI()
 local IS_WOW_PROJECT_MIDNIGHT_API = DF.IsMidnightWowAPI()
-local IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS = C_XMLUtil and C_XMLUtil.GetTemplateInfo and C_XMLUtil.GetTemplateInfo("CustomAuraContainerTemplate") and true or false
+local IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS = (not DF.IsForeverWow()) and IS_WOW_PROJECT_MIDNIGHT_API and C_XMLUtil and C_XMLUtil.GetTemplateInfo and C_XMLUtil.GetTemplateInfo("CustomAuraContainerTemplate") and true or false
 
 --stop yellow lines on my editor
 local tinsert = _G.tinsert
