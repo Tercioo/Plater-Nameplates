@@ -4276,6 +4276,7 @@ Plater.AnchorNamesByPhraseId = {
 			--ViragDevTool_AddData({ctime = GetTime(), unit = unitBarId or "nil", stack = debugstack()}, "NAME_PLATE_UNIT_REMOVED - " .. (unitBarId or "nil"))
 			---@type plateframe
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId) or (NAMEPLATES_ON_SCREEN_CACHE[unitBarId] and NAMEPLATES_ON_SCREEN_CACHE[unitBarId].PlateFrame) -- we had one that requires unloading.
+			if not plateFrame then return end
 			
 			Plater.RemoveFromAuraUpdate (unitBarId, plateFrame.unitFrame) -- ensure no updates
 			
@@ -4290,12 +4291,11 @@ Plater.AnchorNamesByPhraseId = {
 			plateFrame.unitFrame.softInteractIconFrame:SetParent(UIParent)
 			
 			ENABLED_BLIZZARD_PLATEFRAMES[plateFrame.unitFrame.blizzardPlateFrameID] = true -- OnRetailNamePlateShow is called first. ensure the plate might show!
-			if not plateFrame.unitFrame.PlaterOnScreen then
-				return
-			end
 			
+			if NAMEPLATES_ON_SCREEN_CACHE[unitBarId] then
+				NUM_NAMEPLATES_ON_SCREEN = NUM_NAMEPLATES_ON_SCREEN - 1
+			end
 			NAMEPLATES_ON_SCREEN_CACHE[unitBarId] = false
-			NUM_NAMEPLATES_ON_SCREEN = NUM_NAMEPLATES_ON_SCREEN - 1
 			
 			--check if this nameplate has an update scheduled
 			if (plateFrame.HasUpdateScheduled) then
@@ -4304,99 +4304,106 @@ Plater.AnchorNamesByPhraseId = {
 				end
 				plateFrame.HasUpdateScheduled = nil
 			end
+
+			--if not plateFrame.unitFrame.PlaterOnScreen then
+			--	plateFrame.unitFrame:Hide()
+			--	return
+			--end
 			
 			--debug for hunter faith death
 			--if (select (2, UnitClass (unitBarId)) == "HUNTER") then
 			--	print ("nameplate removed", UnitName (unitBarId))
 			--end
 			
-			--hooks
-			if (HOOK_NAMEPLATE_REMOVED.ScriptAmount > 0) then
-				for i = 1, HOOK_NAMEPLATE_REMOVED.ScriptAmount do
-					local globalScriptObject = HOOK_NAMEPLATE_REMOVED [i]
-					local unitFrame = plateFrame.unitFrame
-					local scriptContainer = unitFrame:ScriptGetContainer()
-					local scriptInfo = unitFrame:HookGetInfo(globalScriptObject, scriptContainer, "Nameplate Removed")
-					--run
-					plateFrame.unitFrame:ScriptRunHook (scriptInfo, "Nameplate Removed")
+			if plateFrame.unitFrame.PlaterOnScreen then
+				--hooks
+				if (HOOK_NAMEPLATE_REMOVED.ScriptAmount > 0) then
+					for i = 1, HOOK_NAMEPLATE_REMOVED.ScriptAmount do
+						local globalScriptObject = HOOK_NAMEPLATE_REMOVED [i]
+						local unitFrame = plateFrame.unitFrame
+						local scriptContainer = unitFrame:ScriptGetContainer()
+						local scriptInfo = unitFrame:HookGetInfo(globalScriptObject, scriptContainer, "Nameplate Removed")
+						--run
+						plateFrame.unitFrame:ScriptRunHook (scriptInfo, "Nameplate Removed")
+					end
+				end
+				
+				plateFrame.OnTickFrame:SetScript ("OnUpdate", nil)
+				plateFrame.unitFrame.HighlightFrame:SetScript ("OnUpdate", nil)
+				
+				plateFrame [MEMBER_QUEST] = false
+				plateFrame.unitFrame [MEMBER_QUEST] = false
+				plateFrame.QuestInfo = {}
+				plateFrame.unitFrame.QuestInfo = {}
+				plateFrame [MEMBER_TARGET] = nil
+				
+				plateFrame.isObject = nil
+				plateFrame.unitFrame.isObject = nil
+				plateFrame.isSoftInteract = nil
+				plateFrame.unitFrame.isSoftInteract = nil
+				plateFrame.isSoftInteractObject = nil
+				plateFrame.unitFrame.isSoftInteractObject = nil
+				
+				local healthBar = plateFrame.unitFrame.healthBar
+				if (healthBar.TargetHeight) then
+					healthBar:SetHeight (healthBar.TargetHeight)
+				end
+				healthBar.IsIncreasingHeight = nil
+				healthBar.IsDecreasingHeight = nil
+				
+				--hide the highlight
+				--is mouse over ~highlight ~mouseover
+				plateFrame.unitFrame.HighlightFrame:Hide()
+				plateFrame.unitFrame.HighlightFrame.Shown = false
+				
+				--hide target highlight
+				plateFrame.TargetNeonUp:Hide()
+				plateFrame.TargetNeonDown:Hide()
+				
+				--hide threat highlight
+				plateFrame.unitFrame.aggroGlowUpper:Hide()
+				plateFrame.unitFrame.aggroGlowLower:Hide()
+				
+				--> check if is running any script
+				plateFrame.unitFrame:OnHideWidget()
+				plateFrame.unitFrame.castBar:OnHideWidget()
+				for _, auraIconFrame in ipairs (plateFrame.unitFrame.BuffFrame.PlaterBuffList) do
+					auraIconFrame:OnHideWidget()
+				end
+				for _, auraIconFrame in ipairs (plateFrame.unitFrame.BuffFrame2.PlaterBuffList) do
+					auraIconFrame:OnHideWidget()
+				end
+				
+				--stop animations
+				if plateFrame.unitFrame.BodyFlashFrame and plateFrame.unitFrame.BodyFlashFrame.animation then
+					plateFrame.unitFrame.BodyFlashFrame.animation:Stop()
+					plateFrame.unitFrame.BodyFlashFrame:Hide()
+				end
+				if plateFrame.unitFrame.healthBar.HealthFlashFrame and plateFrame.unitFrame.healthBar.HealthFlashFrame.animation then
+					plateFrame.unitFrame.healthBar.HealthFlashFrame.animation:Stop()
+					plateFrame.unitFrame.healthBar.HealthFlashFrame:Hide()
+				end
+
+				--remove private aura anchors
+				Plater.HandlePrivateAuraAnchors(plateFrame)
+				
+				--reset auras
+				Plater.ResetAuraContainer (plateFrame.unitFrame.BuffFrame, true, true)
+				Plater.HideNonUsedAuraIcons (plateFrame.unitFrame.BuffFrame)
+				
+				--tell the framework to execute a cleanup on the unit frame, this is required since Plater set .ClearUnitOnHide to false
+				plateFrame.unitFrame:SetUnit (nil)
+				
+				-- remove widgets
+				if IS_WOW_PROJECT_MAINLINE and plateFrame.unitFrame.WidgetContainer then
+					plateFrame.unitFrame.WidgetContainer:SetIgnoreParentScale(false)
+					plateFrame.unitFrame.WidgetContainer:SetParent(plateFrame.UnitFrame)
+					plateFrame.unitFrame.WidgetContainer:ClearAllPoints()
+					plateFrame.unitFrame.WidgetContainer:SetPoint('TOP', plateFrame.castBar, 'BOTTOM')
 				end
 			end
 			
-			plateFrame.OnTickFrame:SetScript ("OnUpdate", nil)
-			plateFrame.unitFrame.HighlightFrame:SetScript ("OnUpdate", nil)
-			
-			plateFrame [MEMBER_QUEST] = false
-			plateFrame.unitFrame [MEMBER_QUEST] = false
-			plateFrame.QuestInfo = {}
-			plateFrame.unitFrame.QuestInfo = {}
-			plateFrame [MEMBER_TARGET] = nil
-			
-			plateFrame.isObject = nil
-			plateFrame.unitFrame.isObject = nil
-			plateFrame.isSoftInteract = nil
-			plateFrame.unitFrame.isSoftInteract = nil
-			plateFrame.isSoftInteractObject = nil
-			plateFrame.unitFrame.isSoftInteractObject = nil
-			
-			local healthBar = plateFrame.unitFrame.healthBar
-			if (healthBar.TargetHeight) then
-				healthBar:SetHeight (healthBar.TargetHeight)
-			end
-			healthBar.IsIncreasingHeight = nil
-			healthBar.IsDecreasingHeight = nil
-			
-			--hide the highlight
-			--is mouse over ~highlight ~mouseover
-			plateFrame.unitFrame.HighlightFrame:Hide()
-			plateFrame.unitFrame.HighlightFrame.Shown = false
-			
-			--hide target highlight
-			plateFrame.TargetNeonUp:Hide()
-			plateFrame.TargetNeonDown:Hide()
-			
-			--hide threat highlight
-			plateFrame.unitFrame.aggroGlowUpper:Hide()
-			plateFrame.unitFrame.aggroGlowLower:Hide()
-			
-			--> check if is running any script
-			plateFrame.unitFrame:OnHideWidget()
-			plateFrame.unitFrame.castBar:OnHideWidget()
-			for _, auraIconFrame in ipairs (plateFrame.unitFrame.BuffFrame.PlaterBuffList) do
-				auraIconFrame:OnHideWidget()
-			end
-			for _, auraIconFrame in ipairs (plateFrame.unitFrame.BuffFrame2.PlaterBuffList) do
-				auraIconFrame:OnHideWidget()
-			end
-			
-			--stop animations
-			if plateFrame.unitFrame.BodyFlashFrame and plateFrame.unitFrame.BodyFlashFrame.animation then
-				plateFrame.unitFrame.BodyFlashFrame.animation:Stop()
-				plateFrame.unitFrame.BodyFlashFrame:Hide()
-			end
-			if plateFrame.unitFrame.healthBar.HealthFlashFrame and plateFrame.unitFrame.healthBar.HealthFlashFrame.animation then
-				plateFrame.unitFrame.healthBar.HealthFlashFrame.animation:Stop()
-				plateFrame.unitFrame.healthBar.HealthFlashFrame:Hide()
-			end
-			
 			plateFrame.unitFrame.PlaterOnScreen = nil
-
-			--remove private aura anchors
-			Plater.HandlePrivateAuraAnchors(plateFrame)
-			
-			--reset auras
-			Plater.ResetAuraContainer (plateFrame.unitFrame.BuffFrame, true, true)
-			Plater.HideNonUsedAuraIcons (plateFrame.unitFrame.BuffFrame)
-			
-			--tell the framework to execute a cleanup on the unit frame, this is required since Plater set .ClearUnitOnHide to false
-			plateFrame.unitFrame:SetUnit (nil)
-			
-			-- remove widgets
-			if IS_WOW_PROJECT_MAINLINE and plateFrame.unitFrame.WidgetContainer then
-				plateFrame.unitFrame.WidgetContainer:SetIgnoreParentScale(false)
-				plateFrame.unitFrame.WidgetContainer:SetParent(plateFrame.UnitFrame)
-				plateFrame.unitFrame.WidgetContainer:ClearAllPoints()
-				plateFrame.unitFrame.WidgetContainer:SetPoint('TOP', plateFrame.castBar, 'BOTTOM')
-			end
 			
 			--if plateFrame.UnitFrame and plateFrame.UnitFrame.HealthBarsContainerOrigParent then
 			--	DevTool:AddData("removing")
