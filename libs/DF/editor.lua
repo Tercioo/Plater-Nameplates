@@ -1818,6 +1818,15 @@ detailsFramework.EditorMixin = {
         registeredObjects[#registeredObjects+1] = objectRegistered
         self.registeredObjectsByID[id] = objectRegistered
 
+        --later registrations must win clicks even when their widgets live under a
+        --lower-level parent. read the current levels in case a parent was raised.
+        local selectButtonLevel = 0
+        for j = 1, #registeredObjects - 1 do
+            for _, button in ipairs(registeredObjects[j].selectButtons) do
+                selectButtonLevel = math.max(selectButtonLevel, button:GetFrameLevel())
+            end
+        end
+
         --one invisible click-to-select overlay per member widget. each overlay is parented to
         --its own member's parent and sized to that member, so any member can be clicked in the
         --live preview to select this registration. the clicked member becomes the active focus
@@ -1827,14 +1836,12 @@ detailsFramework.EditorMixin = {
             local selectButton = CreateFrame("button", "$parentSelectButton" .. tostring(id) .. "_" .. i, member:GetParent())
             selectButton:SetAllPoints(member)
 
-            --raise above the widget within the same parent so clicks land on selectButton, not the
-            --widget itself. textures and fontstrings are regions (not frames) and have no
-            --GetFrameLevel of their own, so treat their effective level as parent + 1
-            --(mirroring how a child frame would sit). this is what lets a region nested inside a
-            --registered frame win over the frame's own selectButton.
+            --raise above both the widget and earlier selection overlays. textures and
+            --fontstrings have no GetFrameLevel, so use their parent's level + 1.
             ---@diagnostic disable-next-line: undefined-field
             local widgetLevel = member.GetFrameLevel and member:GetFrameLevel() or (member:GetParent():GetFrameLevel() + 1)
-            selectButton:SetFrameLevel(widgetLevel + 1)
+            selectButtonLevel = math.max(widgetLevel + 1, selectButtonLevel + 1)
+            selectButton:SetFrameLevel(selectButtonLevel)
 
             selectButton:SetScript("OnClick", function()
                 self:EditObject(objectRegistered, member)

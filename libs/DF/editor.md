@@ -579,11 +579,11 @@ The toolbar buttons are auto-managed: disabled when their stack is empty, enable
 There are two ways to select a widget for editing:
 
 1. **Click the row in the left-panel list.** The row's `OnClick` calls `editor:EditObject(registeredObjectInfo)`. For multi-member registrations, no specific member is passed, so the editor falls back to the registration's `activeMemberIndex` (the last in-place click) or to `members[1]` if no member has been clicked yet.
-2. **Click the live widget itself in the preview area.** Each member of the registration gets its own invisible `selectButton`, parented to that member's parent, sized to cover the member (`SetAllPoints(member)`), with frame level set to `widgetLevel + 1` so it sits on top. Its `OnClick` calls `EditObject(registration, clickedMember)`. For single-widget registrations there is exactly one such button — same as before.
+2. **Click the live widget itself in the preview area.** Each member of the registration gets its own invisible `selectButton`, parented to that member's parent, sized to cover the member (`SetAllPoints(member)`), with frame level above both its widget and all earlier selection overlays. Later registrations win clicks where overlays overlap within the same frame strata. Its `OnClick` calls `EditObject(registration, clickedMember)`. For single-widget registrations there is exactly one such button — same as before.
 
 Both paths go through the same `EditObject`. Mutually compatible. `EditObject` writes `activeMemberIndex` back onto the registration so subsequent left-list clicks land on the same member.
 
-The frame-level math used to be `editor:GetFrameLevel() + #registeredObjects` — that mixed levels from two parent trees (the editor and the widget's parent) and only worked by coincidence. Now it's `widgetLevel + 1` (or `widgetParentLevel + 1` for Region children that lack their own frame level).
+Each overlay uses the higher of `widgetLevel + 1` and the highest earlier overlay level + 1. Regions without their own frame level use `widgetParentLevel + 1` as their effective widget level. This keeps overlays above their widgets and preserves registration order across different parent frame levels without relying on the editor's frame level.
 
 ---
 

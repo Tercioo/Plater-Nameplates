@@ -168,7 +168,7 @@ Plater.FrameworkList = {
 	{Name = "CreateNameplateGlow",		Signature = "Plater.CreateNameplateGlow (unitFrame.healthBar)",	Desc = "Creates a glow effect around the nameplate.\n\nUse:\n|cFFFFFF00ReturnedValue:Show()|r on OnShow.\n|cFFFFFF00ReturnedValue:Hide()|r on OnHide.\n|cFFFFFF00ReturnedValue:SetColor(dotColor, glowColor)|r to adjust the color.\n\nUse offsets to adjust the dot animation to fit the nameplate.", AddVar = true, AddCall = "--@ENV@:Show() --@ENV@:Hide() --@ENV@:SetOffset (-27, 25, 5, -7)"},
 
 	{Name = "LimitTextSize",			Signature = "Plater.LimitTextSize (fontString, maxWidth)",	Desc = "Cut the text making it shorter.\n\nExample: using 50 as maxWidth with 'Jaina Proudmoore' would result 'Jaina Prou'"},
-	{Name = "FormatNumber",			Signature = "Plater.FormatNumber (number)",			Desc = "Format a number to be short as possible.\n\nExample:\n300000 to 300K\n2500000 to 2.5M"},
+	{Name = "FormatNumber",			Signature = "Plater.FormatNumber (number, isEastAsia)",			Desc = "Format a number to be short as possible.\n\nExample:\n300000 to 300K\n2500000 to 2.5M\n\nPass true as isEastAsia to use east asian myriad symbols instead; omit it for the western symbols."},
 	{Name = "CommaValue",			Signature = "Plater:CommaValue (number)",			Desc = "Format a number separating by thousands and millions.\n\nExample: 300000 to 300.000\n2500000 to 2.500.000"},
 	{Name = "IntegerToTimer",			Signature = "Plater:IntegerToTimer (number)",			Desc = "Format a number to time\n\nExample: 94 to 1:34"},
 	

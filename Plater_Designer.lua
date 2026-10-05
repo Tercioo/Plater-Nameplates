@@ -182,7 +182,10 @@ function Plater.CreateDesignerWindow(tabFrame, tabContainer, parent)
         object_list_lines = objectListLines,
         object_list_line_height = objectListLineHeight,
         text_template = editorOptionsTextTemplate,
-        slider_template = editorOptionsSliderTemplate,
+        slider_template = "DESIGNER_SLIDER_TEMPLATE",
+        switch_template = "DESIGNER_SWITCH_TEMPLATE",
+        dropdown_template = "DESIGNER_DROPDOWN_TEMPLATE",
+        color_template = "DESIGNER_COLORPICK_TEMPLATE",
         no_anchor_points = true,
         start_editing_callback = function(layoutEditor, objectInfo)
             if (objectInfo.id:match("^CAST")) then
