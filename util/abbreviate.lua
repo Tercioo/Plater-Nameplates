@@ -29,14 +29,39 @@ do
         eastAsiaMyriads_1k, eastAsiaMyriads_10k, eastAsiaMyriads_1B = "천", "만", "억"
     end
 
-    platerInternal.abbreviateConfig = C_StringUtil and C_StringUtil.GetDefaultAbbreviationBreakpoints and C_StringUtil.GetDefaultAbbreviationBreakpoints(GetLocale()) -- default it
-    platerInternal.ReBuildAbbreviateConfig = function()
-        DB_NUMBER_REGION_EAST_ASIA = Plater.db.profile.number_region == "eastasia"
-        
+    local defaultBreakpoints = C_StringUtil and C_StringUtil.GetDefaultAbbreviationBreakpoints and C_StringUtil.GetDefaultAbbreviationBreakpoints(GetLocale())
+    platerInternal.abbreviateConfig = defaultBreakpoints -- default it
+
+    --AbbreviateNumbers() reads every field of every entry of 'breakpointData' on each call,
+    --and those entries are addon created tables, so each read taints secure execution and
+    --writes a taint log line: with the lists below that is 40 lines per nameplate health
+    --update. blizzard documents 'config' as the path for repeated calls with the same
+    --options, and reading it costs a single field access instead.
+    local buildAbbreviateConfig = function(breakpointData)
+        if (CreateAbbreviateConfig and breakpointData) then
+            --CreateAbbreviateConfig raises on breakpoints it rejects, so never call it
+            --unguarded; keep the old slow path as the fallback.
+            local okay, config = pcall(CreateAbbreviateConfig, breakpointData)
+            if (okay and config) then
+                return {config = config}
+            end
+        end
+        return {breakpointData = breakpointData}
+    end
+
+    --isEastAsia is an optional override; omitted, the region comes from the profile.
+    --the cached value lives in this file so Plater.FormatNumber reads it as an upvalue
+    --instead of the nil global it used to find here.
+    platerInternal.ReBuildAbbreviateConfig = function(isEastAsia)
+        if (isEastAsia == nil) then
+            isEastAsia = Plater.db.profile.number_region == "eastasia"
+        end
+        DB_NUMBER_REGION_EAST_ASIA = isEastAsia
+
         if not platerInternal.abbreviateConfig then return end -- if it could not be defaulted, skip this.
 
         local myriadK, myriadM, myriadB, myriadT
-        if DB_NUMBER_REGION_EAST_ASIA then
+        if isEastAsia then
             -- use the easter locale
             myriadM, myriadB = eastAsiaMyriads_10k, eastAsiaMyriads_1B
             platerInternal.abbreviateConfig = {
@@ -135,20 +160,30 @@ do
                 }
             }
         end
+
+        --convert the list just built into a cached config object, otherwise every
+        --AbbreviateNumbers() call walks the raw entries again.
+        platerInternal.abbreviateConfig = buildAbbreviateConfig(platerInternal.abbreviateConfig.breakpointData)
     end
 
-    if CreateAbbreviateConfig then
-        local abbreviateSettings = CreateAbbreviateConfig(platerInternal.abbreviateConfig)
-        abbreviateSettings = {config = abbreviateSettings}
-        platerInternal.abbreviateConfig = abbreviateSettings
+    --ReBuildAbbreviateConfig only runs once the profile is loaded, so convert the
+    --locale defaults too for the calls that happen before that.
+    if (defaultBreakpoints) then
+        platerInternal.abbreviateConfig = buildAbbreviateConfig(defaultBreakpoints)
     end
 
     Plater.GetAbbreviateConfig = function ()
         return platerInternal.abbreviateConfig
     end
 
-    function Plater.FormatNumber (number)
-        if (DB_NUMBER_REGION_EAST_ASIA) then
+    --isEastAsia is optional: omitted, it falls back to the region cached from the profile,
+    --so existing Plater.FormatNumber(number) callers and user scripts keep working.
+    function Plater.FormatNumber (number, isEastAsia)
+        if (isEastAsia == nil) then
+            isEastAsia = DB_NUMBER_REGION_EAST_ASIA
+        end
+
+        if (isEastAsia) then
             if (number > 99999999) then
                 return format ("%.2f", number/100000000) .. eastAsiaMyriads_1B
 
