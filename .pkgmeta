@@ -17,7 +17,7 @@ externals:
   libs/AceTimer-3.0: https://repos.curseforge.com/wow/ace3/trunk/AceTimer-3.0
   libs/CallbackHandler-1.0: https://repos.curseforge.com/wow/callbackhandler/trunk/CallbackHandler-1.0
   libs/LibClassicCasterino: https://github.com/rgd87/LibClassicCasterino
-  libs/LibCompress: https://repos.curseforge.com/wow/libcompress/trunk
+  libs/LibCompress: https://github.com/galmok/LibCompress
   libs/LibCustomGlow-1.0: https://github.com/Stanzilla/LibCustomGlow
   libs/LibDataBroker-1.1: https://github.com/tekkub/libdatabroker-1-1
   libs/LibDBIcon-1.0: https://repos.curseforge.com/wow/libdbicon-1-0/trunk/LibDBIcon-1.0
