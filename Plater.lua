@@ -3651,6 +3651,12 @@ Plater.AnchorNamesByPhraseId = {
 				plateFrame.unitFrame = plateFrame.unitFramePlater
 			end
 			
+			--token still registered to a different plate (e.g. mind control ending moved this unit to a new plate), unload the old one first
+			local cachedUnitFrame = NAMEPLATES_ON_SCREEN_CACHE[unitID]
+			if (cachedUnitFrame and cachedUnitFrame ~= plateFrame.unitFrame and cachedUnitFrame [MEMBER_UNITID] == unitID) then
+				Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_REMOVED", unitID, cachedUnitFrame.PlateFrame)
+			end
+			
 			--get and format the reaction to always be the value of the constants, then cache the reaction in some widgets for performance
 			plateFrame.unitFrame [MEMBER_UNITID] = unitID
 			Plater.UpdateSoftInteractTarget(plateFrame)
@@ -4272,10 +4278,11 @@ Plater.AnchorNamesByPhraseId = {
 		-- ~removed
 		---@param event string
 		---@param unitBarId string
-		NAME_PLATE_UNIT_REMOVED = function (event, unitBarId)
+		---@param stalePlateFrame plateframe|nil
+		NAME_PLATE_UNIT_REMOVED = function (event, unitBarId, stalePlateFrame)
 			--ViragDevTool_AddData({ctime = GetTime(), unit = unitBarId or "nil", stack = debugstack()}, "NAME_PLATE_UNIT_REMOVED - " .. (unitBarId or "nil"))
 			---@type plateframe
-			local plateFrame = C_NamePlate.GetNamePlateForUnit (unitBarId) or (NAMEPLATES_ON_SCREEN_CACHE[unitBarId] and NAMEPLATES_ON_SCREEN_CACHE[unitBarId].PlateFrame) -- we had one that requires unloading.
+			local plateFrame = stalePlateFrame or C_NamePlate.GetNamePlateForUnit (unitBarId) or (NAMEPLATES_ON_SCREEN_CACHE[unitBarId] and NAMEPLATES_ON_SCREEN_CACHE[unitBarId].PlateFrame) -- we had one that requires unloading.
 			if not plateFrame then return end
 			
 			Plater.RemoveFromAuraUpdate (unitBarId, plateFrame.unitFrame) -- ensure no updates
