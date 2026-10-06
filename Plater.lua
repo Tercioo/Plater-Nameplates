@@ -2195,7 +2195,7 @@ Plater.AnchorNamesByPhraseId = {
 
 				--can the user attack or no longer attack?
 				local attackableChanged = plateFrame.PlayerCannotAttack ~= not UnitCanAttack ("player", unit)
-				if (reactionChanged or attackableChanged or not plateFrame.unitFrame.PlaterOnScreen) then
+				if (reactionChanged or attackableChanged or plateFrame.unitFrame.PlaterOnScreen == false) then
 					--print ("UNIT_FLAG", plateFrame, issecure(), unit, unit and UnitName (unit))
 					--Plater.ScheduleUpdateForNameplate (plateFrame, unit)
 					
