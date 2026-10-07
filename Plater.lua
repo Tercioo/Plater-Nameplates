@@ -3752,13 +3752,13 @@ Plater.AnchorNamesByPhraseId = {
 				end
 
 				
-				local isPlayer = UnitIsPlayer (unitID)
-				local reaction = UnitReaction (unitID, "player")
-				local isSoftInteract = plateFrame.isSoftInteract
-				local isObject = plateFrame.isObject
-				local isSoftInteractObject = isObject and isSoftInteract
-				reaction = reaction or isSoftInteract and Plater.UnitReaction.UNITREACTION_NEUTRAL or Plater.UnitReaction.UNITREACTION_HOSTILE
-				reaction = reaction <= Plater.UnitReaction.UNITREACTION_HOSTILE and Plater.UnitReaction.UNITREACTION_HOSTILE or reaction >= Plater.UnitReaction.UNITREACTION_FRIENDLY and Plater.UnitReaction.UNITREACTION_FRIENDLY or Plater.UnitReaction.UNITREACTION_NEUTRAL
+				--local isPlayer = UnitIsPlayer (unitID)
+				--local reaction = UnitReaction (unitID, "player")
+				--local isSoftInteract = plateFrame.isSoftInteract
+				--local isObject = plateFrame.isObject
+				--local isSoftInteractObject = isObject and isSoftInteract
+				--reaction = reaction or isSoftInteract and Plater.UnitReaction.UNITREACTION_NEUTRAL or Plater.UnitReaction.UNITREACTION_HOSTILE
+				--reaction = reaction <= Plater.UnitReaction.UNITREACTION_HOSTILE and Plater.UnitReaction.UNITREACTION_HOSTILE or reaction >= Plater.UnitReaction.UNITREACTION_FRIENDLY and Plater.UnitReaction.UNITREACTION_FRIENDLY or Plater.UnitReaction.UNITREACTION_NEUTRAL
 			end
 			
 			if (nameplateIsEditor) then
@@ -3882,7 +3882,16 @@ Plater.AnchorNamesByPhraseId = {
 			
 			--ensure castBar is enabled properly when switching actorType or unit (with unit changing, it will be properly enabled)
 			local castBarWasEnabled = (unitFrame.Settings.ShowCastBar and (plateFrame.PreviousUnitType == actorType)) or (unitFrame.unit ~= unitID)
-			unitFrame.Settings.ShowCastBar = true -- reset to default, clearing later.
+			--final castbar state before SetUnit, no register/unregister churn for hidden castbars
+			local showCastBar
+			if (actorType == ACTORTYPE_PLAYER) then
+				showCastBar = DB_PLATE_CONFIG.player.castbar_enabled
+			elseif (unitFrame.IsNeutralOrHostile) then
+				showCastBar = not DB_CASTBAR_HIDE_ENEMIES
+			else
+				showCastBar = not DB_CASTBAR_HIDE_FRIENDLY
+			end
+			unitFrame.Settings.ShowCastBar = showCastBar
 			
 			plateFrame.actorType = actorType
 			unitFrame.actorType = actorType
@@ -4199,7 +4208,7 @@ Plater.AnchorNamesByPhraseId = {
 							unitFrame.namePlateThreatRawPercent = threatrawpct or 0
 							unitFrame.namePlateThreatValue = threatValue or 0
 
-							Plater.UpdateNameOnRenamedUnit(plateFrame)
+							--Plater.UpdateNameOnRenamedUnit(plateFrame)
 						end
 					end
 				end
@@ -9491,7 +9500,7 @@ end
 			healthBar.DetailsDamageTaken:SetText ("")
 		end
 		
-		if (plateFrame.OnTickFrame.actorType == actorType and plateFrame.OnTickFrame.unit == unitFrame [MEMBER_UNITID]) then
+		if not justAdded and plateFrame.OnTickFrame.actorType == actorType and plateFrame.OnTickFrame.unit == unitFrame [MEMBER_UNITID] then
 			Plater.NameplateTick (plateFrame.OnTickFrame, 10)
 		end
 		

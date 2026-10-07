@@ -1120,7 +1120,7 @@ local function getAuraFilters(frameName, actorType, force)
 			end
 
 			if Plater.db.profile.aura_show_defensive_cd and not Plater.db.profile.extra_icon_show_defensive  then
-				if isPlayer then
+				if isPlayer or canAssist then
 					table.insert(pFilters, "BIG_DEFENSIVE")
 					table.insert(pFilters, "EXTERNAL_DEFENSIVE")
 				end
@@ -2094,17 +2094,18 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, forceFi
 		end
 
 		-- update
+		local auraActorType = unitFrame.ActorType == "friendlyplayer" and "friendlynpc" or unitFrame.ActorType -- shared friendly filters
 		for _, frameInfo in pairs (auraFramesSetup) do
 			local auraContainer = unitFrame[frameInfo.key]
 			if DB_AURA_ENABLED and unit then
-				local options = getFullAuraOptions(frameInfo.name, frameInfo.key, auraContainer, unitFrame.ActorType, forceFull)
 				if forceFull then
 					forceLayout = true
 					forceFilters = true
 				end
 				--if force or auraContainer.activeUnit ~= unit or (auraContainer.activeOptionsType ~= unitFrame.ActorType) or (auraContainer.activeOptionsIndex ~= options.optionsIndex) then
-				local shouldUpdate = (auraContainer.activeOptionsType ~= unitFrame.ActorType) or (auraContainer.activeOptionsIndex ~= options.optionsIndex)
+				local shouldUpdate = (auraContainer.activeOptionsType ~= auraActorType) or (auraContainer.activeOptionsIndex ~= containerConfigCache.containerFullOptionIndex)
 				if forceFilters or shouldUpdate or forceLayout then
+					local options = getFullAuraOptions(frameInfo.name, frameInfo.key, auraContainer, auraActorType, forceFull) -- only build when needed
 					--if DevTool then DevTool:AddData({stack = debugstack(), force = force, shouldUpdate = shouldUpdate, forceLayout = forceLayout, forceFull = forceFull, active = auraContainer.activeOptionsType, current = unitFrame.ActorType, activeIndex = auraContainer.activeOptionsIndex, currentIndex = options.optionsIndex, options = options}, "Updating: " .. unit .. " - " .. frameInfo.key) end
 					if shouldUpdate or forceLayout then
 						Plater.StartLogPerformanceCore("Plater-Core", "Update", "CreateOrUpdateAuraContainers - updatelayout")
@@ -2159,8 +2160,8 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, forceFi
 						auraContainer.configIndex = containerConfigCache.containerConfigIndex
 					end
 
-					if unitFrame.ActorType then
-						auraContainer.activeOptionsType = unitFrame.ActorType
+					if auraActorType then
+						auraContainer.activeOptionsType = auraActorType
 						auraContainer.activeOptions = options
 						auraContainer.activeOptionsIndex = options.optionsIndex
 						auraContainer.activeUnit = unit
