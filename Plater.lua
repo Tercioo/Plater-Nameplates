@@ -3250,6 +3250,13 @@ Plater.AnchorNamesByPhraseId = {
 				onTickFrame.HealthBar = healthBar
 				onTickFrame.PlateFrame = plateFrame
 				onTickFrame.unitFrame = unitFrame
+				--blizzard hid the plate without a NAME_PLATE_UNIT_REMOVED (e.g. mind control ending), unload it
+				onTickFrame:SetScript ("OnHide", function (self)
+					local plateFrame = self.PlateFrame
+					if (plateFrame.unitFrame.PlaterOnScreen and not plateFrame:IsShown()) then
+						Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_REMOVED", plateFrame.unitFrame [MEMBER_UNITID], plateFrame)
+					end
+				end)
 				onTickFrame.BuffFrame = unitFrame.BuffFrame
 				onTickFrame.BuffFrame2 = unitFrame.BuffFrame2
 				
@@ -4308,10 +4315,13 @@ Plater.AnchorNamesByPhraseId = {
 			
 			ENABLED_BLIZZARD_PLATEFRAMES[plateFrame.unitFrame.blizzardPlateFrameID] = true -- OnRetailNamePlateShow is called first. ensure the plate might show!
 			
-			if NAMEPLATES_ON_SCREEN_CACHE[unitBarId] then
-				NUM_NAMEPLATES_ON_SCREEN = NUM_NAMEPLATES_ON_SCREEN - 1
+			--a stale plate must not unregister the token if it is already registered to another plate
+			if (not stalePlateFrame or NAMEPLATES_ON_SCREEN_CACHE[unitBarId] == plateFrame.unitFrame) then
+				if NAMEPLATES_ON_SCREEN_CACHE[unitBarId] then
+					NUM_NAMEPLATES_ON_SCREEN = NUM_NAMEPLATES_ON_SCREEN - 1
+				end
+				NAMEPLATES_ON_SCREEN_CACHE[unitBarId] = false
 			end
-			NAMEPLATES_ON_SCREEN_CACHE[unitBarId] = false
 			
 			--check if this nameplate has an update scheduled
 			if (plateFrame.HasUpdateScheduled) then
@@ -8843,10 +8853,12 @@ end
 	end
 
 	function Plater.AddGuildNameToPlayerName (plateFrame)
-		local currentText = plateFrame.CurrentUnitNameString:GetText()
-		if ((IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(currentText) or not IS_WOW_PROJECT_MIDNIGHT) and not currentText:find ("<")) then -- this might add more ofthen than needed
-			plateFrame.CurrentUnitNameString:SetText (currentText .. "\n" .. "<" .. plateFrame.playerGuildName .. ">")
-		end
+		--local currentText = plateFrame.CurrentUnitNameString:GetText()
+		--if ((IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(currentText) or not IS_WOW_PROJECT_MIDNIGHT) and not currentText:find ("<")) then -- this might add more ofthen than needed
+		--	plateFrame.CurrentUnitNameString:SetText (currentText .. "\n" .. "<" .. plateFrame.playerGuildName .. ">")
+		--end
+		local currentText = plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME] or ""
+		plateFrame.CurrentUnitNameString:SetText (currentText .. "\n" .. "<" .. plateFrame.playerGuildName .. ">")
 	end
 	
 	function Plater.UpdateUnitName (plateFrame)
@@ -11353,7 +11365,7 @@ end
 			end
 			useQuestie = true
 		else
-			if IS_WOW_PROJECT_MIDNIGHT_API then
+			if IS_WOW_PROJECT_MIDNIGHT_API and C_TooltipInfo then
 				local tooltipData = C_TooltipInfo.GetHyperlink ("unit:" .. guid)
 				if tooltipData then
 					for _, line in ipairs(tooltipData.lines or {}) do
@@ -11526,9 +11538,10 @@ end
 		end
 		
 		--update the quest cache
-		local numEntries, numQuests = C_QuestLog.GetNumQuestLogEntries and C_QuestLog.GetNumQuestLogEntries() or GetNumQuestLogEntries()
+		local questApiFunc = C_QuestLog.GetNumQuestLogEntries or GetNumQuestLogEntries or function() end
+		local numEntries, numQuests = questApiFunc()
 		for questLogId = 1, numEntries do
-			if IS_WOW_PROJECT_MIDNIGHT_API then
+			if IS_WOW_PROJECT_MIDNIGHT_API and C_QuestLog.GetInfo then
 				local questDetails = C_QuestLog.GetInfo(questLogId)
 				--any chance to track via quest objective? no unit IDs given there...
 				--ViragDevTool_AddData({questDetails = questDetails, QuestObjectives = C_QuestLog.GetQuestObjectives(questDetails.questID), Title = C_QuestLog.GetTitleForLogIndex(questLogId)}, "QuestUpdate - " .. questLogId)
