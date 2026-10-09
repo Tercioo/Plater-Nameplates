@@ -8948,7 +8948,13 @@ end
 		end
 		
 		--level color
-		local color = GetRelativeDifficultyColor (UnitLevel ("player") or 120, UnitLevel (unitId) or 120) or Plater.DefaultLevelColor
+		local color
+		if C_PlayerInfo and C_PlayerInfo.GetContentDifficultyCreatureForPlayer then
+			local difficulty = C_PlayerInfo.GetContentDifficultyCreatureForPlayer(unitId)
+			color = GetDifficultyColor(difficulty);
+		else
+			color = GetRelativeDifficultyColor (UnitLevel ("player") or 120, UnitLevel (unitId) or 120) or Plater.DefaultLevelColor
+		end
 		levelString:SetTextColor (color.r, color.g, color.b, Plater.db.profile.level_text_alpha)
 	end	
 
