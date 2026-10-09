@@ -8,6 +8,13 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1791537615, "Backend Change", "Oct 7th, 2026", "Some general performance improvements.", "cont1nuity"},
+			{1791537615, "Bug Fix", "Oct 7th, 2026", "Mind Controls should no longer have enemy nameplates lingering when they switch to friendly again.", "cont1nuity"},
+			{1791537615, "Backend Change", "Oct 4th, 2026", "Designer updates.", "Terciob"},
+			{1791537615, "Backend Change", "Oct 2nd, 2026", "More WoW Forever compatibility.", "cont1nuity"},
+			{1791537615, "Backend Change", "Sept 25th, 2026", "Re-enable resources for WoW Forever.", "cont1nuity"},
+			{1791537615, "Backend Change", "Sept 20th, 2026", "Fixing some aura skinning issues.", "cont1nuity"},
+			
 			{1789835738, "Backend Change", "Sept 19th, 2026", "Baseline compatibility with WoW Forever.", "cont1nuity"},
 			{1789835738, "Bug Fix", "Sept 15th, 2026", "Fixing an issue with class indicators.", "cont1nuity"},
 			{1789835738, "Bug Fix", "Sept 15th, 2026", "Fixing some issues with auras not showing correctly.", "cont1nuity"},
