@@ -1876,12 +1876,13 @@ local debuff_options = {
 		get = function() return Plater.db.profile.aura_consolidate end,
 		set = function (self, fixedparam, value) 
 			Plater.db.profile.aura_consolidate = value
+			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
 		name = "OPTIONS_STACK_SIMILAR_AURAS",
-		desc = "OPTIONS_STACK_SIMILAR_AURAS_DESC",
+		desc = IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS and "Show a single icon for debuffs you can apply several copies of to one target (e.g. Blood Plague)." or "OPTIONS_STACK_SIMILAR_AURAS_DESC",
 		id = "auras_general_stack_similar_aura",
-		hidden = IS_WOW_PROJECT_MIDNIGHT_API,
+		hidden = IS_WOW_PROJECT_MIDNIGHT_API and not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
 	},
 	{
 		type = "toggle",

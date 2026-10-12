@@ -202,6 +202,12 @@ local MANUAL_TRACKING_DEBUFFS = {}
 local AUTO_TRACKING_EXTRA_BUFFS = {}
 local AUTO_TRACKING_EXTRA_DEBUFFS = {}
 
+--debuffs the player can apply several copies of to one target under the same spell id
+--with 'aura_consolidate' enabled, the aura containers show a single icon for each of them
+local CONSOLIDATED_DEBUFFS = {
+	[55078] = true, --blood plague
+}
+
 --blacklists
 local DB_DEBUFF_BANNED
 local DB_BUFF_BANNED
@@ -853,6 +859,25 @@ function Plater.Auras.SetContainerFiltersOutdated()
 	containerConfigCache.auraFilterIndex = containerConfigCache.auraFilterIndex + 1
 	Plater.EndLogPerformanceCore("Plater-Core", "Update", "SetContainerFiltersOutdated")
 end
+
+--adds a debuff to the list shown as a single icon while 'aura_consolidate' is enabled, can be called by mods
+---@param spellId number
+function Plater.Auras.AddConsolidatedDebuff(spellId)
+	if (type(spellId) ~= "number") then
+		error("Plater.Auras.AddConsolidatedDebuff: spellId must be a number.", 2)
+	end
+
+	--a mod may call this from a hook that runs on every nameplate update
+	if (CONSOLIDATED_DEBUFFS[spellId]) then
+		return
+	end
+
+	CONSOLIDATED_DEBUFFS[spellId] = true
+	Plater.Auras.SetContainerFiltersOutdated()
+	Plater.Auras.SetIconConfigOutdated()
+	Plater.UpdateAllPlates()
+end
+
 local function getCandidateFilters(frameName, force)
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "getCandidateFilters")
 	local profile = Plater.db.profile
@@ -923,6 +948,17 @@ local function getCandidateFilters(frameName, force)
 				DF.table.copy(filters.mainFilter.excludeSpellIDs, MANUAL_TRACKING_DEBUFFS)
 			end
 		end
+
+		--consolidated debuffs are shown by their own single frame groups, see getAuraFilters
+		if (profile.aura_consolidate) then
+			for spellId in pairs(CONSOLIDATED_DEBUFFS) do
+				filters.additionalInclude.includeSpellIDs[spellId] = nil
+
+				if (DB_AURA_SHOW_DEBUFF_BYPLAYER or DB_AURA_SHOW_AS_BLIZZARD) then
+					filters.mainFilter.excludeSpellIDs[spellId] = true
+				end
+			end
+		end
 	elseif frameName == "Secondary" then
 		if DB_TRACK_METHOD == 1 then
 			DF.table.copy(filters.mainFilter.excludeSpellIDs, DB_BUFF_BANNED)
@@ -961,6 +997,13 @@ local function getCandidateFilters(frameName, force)
 			DF.table.copy(filters.additionalInclude.excludeSpellIDs, MANUAL_TRACKING_BUFFS)
 			DF.table.copy(filters.additionalInclude.excludeSpellIDs, MANUAL_TRACKING_DEBUFFS)
 		end
+
+		--consolidated debuffs are shown by their own single frame groups, see getAuraFilters
+		if (profile.aura_consolidate) then
+			for spellId in pairs(CONSOLIDATED_DEBUFFS) do
+				filters.additionalInclude.includeSpellIDs[spellId] = nil
+			end
+		end
 	end
 
 	containerConfigCache.candidateFilters[frameName] = filters
@@ -998,6 +1041,52 @@ local function getAuraFilters(frameName, actorType, force)
 		local pFilters = {}
 		local nFilters = {}
 		local mainFilterString = nil
+
+		--consolidated debuffs get one single frame group each, the container keeps the top sorted copy and drops the rest
+		if (frameName ~= "Secondary" and type == "debuffs" and not canAssist and Plater.db.profile.aura_consolidate) then
+			for spellId in pairs(CONSOLIDATED_DEBUFFS) do
+				local candidate = {includeSpellIDs = {[spellId] = true}}
+				local filterString = "HARMFUL|PLAYER"
+				local isTracked = false
+				local isSpecialAura = SPECIAL_AURAS_AUTO_ADDED[spellId] or SPECIAL_AURAS_USER_LIST[spellId]
+
+				if (frameName == "ExtraIconFrame") then
+					isTracked = isSpecialAura
+
+					--an 'only mine' special aura is in both user lists, anything else is shown from any caster
+					if (not SPECIAL_AURAS_USER_LIST_MINE[spellId]) then
+						filterString = "HARMFUL"
+						candidate.excludeSpellIDs = allCandidates.additionalInclude.excludeSpellIDs
+					end
+
+				elseif (DB_TRACK_METHOD == 0x2) then
+					isTracked = MANUAL_TRACKING_DEBUFFS[spellId]
+
+				elseif (AUTO_TRACKING_EXTRA_DEBUFFS[spellId]) then
+					--the extra tracking list shows a debuff from any caster
+					isTracked = true
+					filterString = "HARMFUL"
+
+				--special auras are shown on the buff special frame instead
+				elseif (not DB_DEBUFF_BANNED[spellId] and not isSpecialAura) then
+					isTracked = DB_AURA_SHOW_DEBUFF_BYPLAYER or DB_AURA_SHOW_AS_BLIZZARD
+
+					--same restriction as the 'as blizzard' groups below
+					if (not DB_AURA_SHOW_DEBUFF_BYPLAYER) then
+						candidate.nameplateShowPersonal = true
+					end
+				end
+
+				if (isTracked) then
+					table.insert(filters, {
+						filterString = filterString,
+						candidateFilters = candidate,
+						maxFrameCount = 1,
+					})
+				end
+			end
+		end
+
 		if DB_TRACK_METHOD == 0x2 and frameName ~= "ExtraIconFrame" then
 			--manual tracking shortcut.
 			if frameName == "Main" and type == "debuffs" and not canAssist then
@@ -1188,6 +1277,7 @@ local function getAuraFilters(frameName, actorType, force)
 					filterString = "HARMFUL|PLAYER",
 					candidateFilters = {
 						includeSpellIDs = SPECIAL_AURAS_USER_LIST_MINE,
+						excludeSpellIDs = Plater.db.profile.aura_consolidate and CONSOLIDATED_DEBUFFS or nil, --shown by their own groups
 						--excludeSpellIDs = SPECIAL_AURAS_USER_LIST,
 					}
 				})
@@ -2159,7 +2249,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, forceFi
 								auraContainer:SetAuraGroupFilterString(groupName, filter.filterString)
 
 								if shouldUpdate or forceLayout then
-									auraContainer:SetAuraGroupMaxFrameCount(groupName, options.auraFrameOptions.maxFrameCount)
+									auraContainer:SetAuraGroupMaxFrameCount(groupName, filter.maxFrameCount or options.auraFrameOptions.maxFrameCount)
 									auraContainer:SetAuraGroupSortMethod(groupName, options.auraFrameOptions.sortMethod, options.auraFrameOptions.sortDirection)
 									auraContainer:SetAuraGroupLayout(groupName, options.auraFrameOptions.layout)
 								end
