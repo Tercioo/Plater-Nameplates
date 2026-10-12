@@ -3907,7 +3907,9 @@ Plater.AnchorNamesByPhraseId = {
 			Plater.AddToAuraUpdate(unitID, plateFrame.unitFrame)
 			
 			--set the unit
+			Plater.StartLogPerformanceCore("Plater-Core", "Update", "SetUnit - unitFrame")
 			unitFrame:SetUnit (unitID)
+			Plater.EndLogPerformanceCore("Plater-Core", "Update", "SetUnit - unitFrame")
 			
 			--reset performance unit
 			unitFrame.isPerformanceUnit = nil
