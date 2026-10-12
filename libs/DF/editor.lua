@@ -25,8 +25,11 @@ local ROW_HIGHLIGHT_EXTRA_WIDTH = 5
 local DEFAULT_DROPDOWN_HEIGHT = 18
 --the icon is drawn this many pixels inside the button on each side
 local RESET_ICON_INSET = 2
---the icon alpha while the option has no default to reset to
-local RESET_ICON_DISABLED_ALPHA = 0.4
+--the alpha of the whole button while it is disabled
+local RESET_BUTTON_DISABLED_ALPHA = 0.3
+--numbers stored in a profile pick up float error, a 1 can be read back as 0.99999999, so a value this close to the
+--default counts as the default
+local DEFAULT_VALUE_TOLERANCE = 0.00001
 
 --shallow equality for undo snapshots. used to skip pushing undo entries when nothing actually
 --changed - this happens when BuildMenuVolatile fires set() during widget construction with the
@@ -433,7 +436,7 @@ local attributes = {
 ---@field RegisterObject fun(self:df_editor, object:uiobject|uiobject[], localizedLabel:string, id:string, profileTable:table, subTablePath:string, profileKeyMap:table, extraOptions:table?, callback:function?, options:df_editobjectoptions?, refFrame:frame, defaultValues:df_editor_defaultvalues?):df_editor_objectinfo register one or more widgets under a single logical entry. When an array of widgets is passed, all members share the same option set and any in-place selection click selects the registration with the clicked member becoming the brackets/mover focus. All members must share the same object type. defaultValues are what the reset to default buttons put back.
 ---@field GetResetButtonSize fun(self:df_editor):number the width and height of the reset to default buttons, the height of the dropdowns
 ---@field LayoutResetButtons fun(self:df_editor, resetEntries:df_editor_resetentry[], widgetWidth:number) place a reset to default button beside each option row that has one
----@field RefreshResetButtonStates fun(self:df_editor) enable each shown reset button whose option has a default and whose widget is enabled
+---@field RefreshResetButtonStates fun(self:df_editor) enable each shown reset button whose option has a default, whose widget is enabled and whose value is not the default already
 ---@field ResetOptionToDefault fun(self:df_editor, resetEntry:df_editor_resetentry) set an option back to its default, through the same path as a user edit so it can be undone
 ---@field UnregisterObject fun(self:df_editor, object:uiobject)
 ---@field OnHide fun(self:df_editor)
@@ -498,6 +501,7 @@ local editObjectDefaultOptions = {
 ---@field optionTable table the option table given to BuildMenuVolatile, its .widget is the widget built for it
 ---@field widgetType string
 ---@field defaultValue any nil when the option has no default
+---@field getCurrentValue fun():any the option's value as the profile holds it now
 
 ---@type df_editor_defaultoptions
 local editorDefaultOptions = {
@@ -568,6 +572,50 @@ local isOptionWidgetEnabled = function(widget)
         return false
     end
     return true
+end
+
+---@param value1 any
+---@param value2 any
+---@return boolean
+local isNearlyEqual = function(value1, value2)
+    if (type(value1) == "number" and type(value2) == "number") then
+        return math.abs(value1 - value2) < DEFAULT_VALUE_TOLERANCE
+    end
+    return value1 == value2
+end
+
+---true when the option already holds its default, numbers within DEFAULT_VALUE_TOLERANCE of it included
+---@param resetEntry df_editor_resetentry
+---@return boolean
+local isOptionAtDefault = function(resetEntry)
+    local defaultValue = resetEntry.defaultValue
+    local currentValue = resetEntry.getCurrentValue()
+
+    --colors are compared channel by channel after ParseColors, so a default given in any color format still matches
+    if (resetEntry.widgetType == "color") then
+        if (type(currentValue) ~= "table") then
+            return false
+        end
+        local defaultRed, defaultGreen, defaultBlue, defaultAlpha = detailsFramework:ParseColors(defaultValue)
+        local red, green, blue, alpha = detailsFramework:ParseColors(currentValue)
+        return isNearlyEqual(red, defaultRed) and isNearlyEqual(green, defaultGreen) and isNearlyEqual(blue, defaultBlue) and isNearlyEqual(alpha, defaultAlpha)
+    end
+
+    if (type(currentValue) == "table" and type(defaultValue) == "table") then
+        for key, value in pairs(defaultValue) do
+            if (not isNearlyEqual(currentValue[key], value)) then
+                return false
+            end
+        end
+        for key in pairs(currentValue) do
+            if (defaultValue[key] == nil) then
+                return false
+            end
+        end
+        return true
+    end
+
+    return isNearlyEqual(currentValue, defaultValue)
 end
 
 local onClickResetButton = function(blizzButton, mouseButton, editorFrame, resetEntry)
@@ -1130,6 +1178,144 @@ detailsFramework.EditorMixin = {
     ---@param self df_editor
     RefreshDisabledOptions = function(self)
         detailsFramework:RefreshOptionsDisabledState(self:GetOptionsFrame())
+        self:RefreshResetButtonStates()
+    end,
+
+    ---the reset buttons are squares as tall as the dropdowns
+    ---@param self df_editor
+    ---@return number
+    GetResetButtonSize = function(self)
+        local dropdownTemplate = self.options.dropdown_template and detailsFramework:ParseTemplate("dropdown", self.options.dropdown_template)
+        return dropdownTemplate and dropdownTemplate.height or DEFAULT_DROPDOWN_HEIGHT
+    end,
+
+    ---place a reset to default button at the right of each option row in resetEntries and hide the rest.
+    ---widgetWidth is the width the menu was built with, already narrowed to make room for the buttons
+    ---@param self df_editor
+    ---@param resetEntries df_editor_resetentry[]
+    ---@param widgetWidth number
+    LayoutResetButtons = function(self, resetEntries, widgetWidth)
+        local optionsFrame = self:GetOptionsFrame()
+        local resetButtons = self.resetButtons
+        local buttonSize = self:GetResetButtonSize()
+        local labelWidth = self.options.options_label_width
+
+        for i = 1, #resetButtons do
+            resetButtons[i]:Hide()
+        end
+
+        --buildmenu sizes a row highlight only when it creates it, and the highlights are reused by the next menu
+        --build; a menu built after the reset buttons were turned on or off would keep the old width
+        local builtOptions = optionsFrame.build_menu_options or {}
+        for i = 1, #builtOptions do
+            local widget = builtOptions[i].widget
+            if (type(widget) == "table" and widget.highlightFrame) then
+                PixelUtil.SetWidth(widget.highlightFrame, labelWidth + widgetWidth + ROW_HIGHLIGHT_EXTRA_WIDTH)
+            end
+        end
+
+        local buttonIndex = 1
+        for i = 1, #resetEntries do
+            local resetEntry = resetEntries[i]
+            local widget = resetEntry.optionTable.widget
+            local bHasDefault = resetEntry.defaultValue ~= nil
+
+            if (widget and (bHasDefault or self.options.show_disabled_reset_buttons)) then
+                local resetButton = resetButtons[buttonIndex]
+                if (not resetButton) then
+                    resetButton = detailsFramework:CreateButton(optionsFrame, onClickResetButton, buttonSize, buttonSize, "", nil, nil, nil, nil, nil, nil, self.options.button_template)
+                    resetButton:SetTooltip("Reset to Default")
+
+                    local resetIcon = resetButton.widget:CreateTexture(nil, "overlay")
+                    resetIcon:SetAtlas(RESET_BUTTON_ATLAS, false, "TRILINEAR")
+                    resetIcon:SetPoint("topleft", resetButton.widget, "topleft", RESET_ICON_INSET, -RESET_ICON_INSET)
+                    resetIcon:SetPoint("bottomright", resetButton.widget, "bottomright", -RESET_ICON_INSET, RESET_ICON_INSET)
+                    resetButton.ResetIcon = resetIcon
+
+                    resetButtons[buttonIndex] = resetButton
+                end
+                buttonIndex = buttonIndex + 1
+
+                --the button template may carry a size of its own
+                resetButton:SetSize(buttonSize, buttonSize)
+                resetButton:SetClickFunction(onClickResetButton, self, resetEntry)
+
+                --toggles and color pickers end where the row highlight ends less its padding, and so do dropdowns, text
+                --entries and sliders, except a slider's value box drawn at its right, which ends there instead
+                local widgetFrame = widget.widget or widget
+                local xOffset = ROW_HIGHLIGHT_RIGHT_PADDING + RESET_BUTTON_GAP
+                if (widget.widget_type == "range" and widget.GetValueBoxSpace) then
+                    local valueBoxSpace, valueBoxSide = widget:GetValueBoxSpace()
+                    if (valueBoxSide == "right") then
+                        xOffset = xOffset + valueBoxSpace
+                    end
+                end
+
+                resetButton:ClearAllPoints()
+                resetButton:SetPoint("left", widgetFrame, "right", xOffset, 0)
+
+                resetButton.resetEntry = resetEntry
+                resetButton:Show()
+            end
+        end
+
+        self:RefreshResetButtonStates()
+    end,
+
+    ---enable each shown reset button whose option has a default, whose widget is enabled and whose value is not the
+    ---default already. runs after every menu build, after RefreshDisabledOptions, after every value change in the menu,
+    ---which is when a toggle enables or disables the options that follow it, and while the object is dragged
+    ---@param self df_editor
+    RefreshResetButtonStates = function(self)
+        local resetButtons = self.resetButtons
+        for i = 1, #resetButtons do
+            local resetButton = resetButtons[i]
+            if (resetButton:IsShown()) then
+                local resetEntry = resetButton.resetEntry
+                if (resetEntry.defaultValue ~= nil and isOptionWidgetEnabled(resetEntry.optionTable.widget) and not isOptionAtDefault(resetEntry)) then
+                    resetButton:Enable()
+                    resetButton.ResetIcon:SetDesaturated(false)
+                    resetButton:SetAlpha(1)
+                else
+                    resetButton:Disable()
+                    resetButton.ResetIcon:SetDesaturated(true)
+                    resetButton:SetAlpha(RESET_BUTTON_DISABLED_ALPHA)
+                end
+            end
+        end
+    end,
+
+    ---@param self df_editor
+    ---@param resetEntry df_editor_resetentry
+    ResetOptionToDefault = function(self, resetEntry)
+        local optionTable = resetEntry.optionTable
+        local defaultValue = resetEntry.defaultValue
+        if (defaultValue == nil or not isOptionWidgetEnabled(optionTable.widget) or isOptionAtDefault(resetEntry)) then
+            return
+        end
+
+        --the menu's own set() writes the profile, runs the callback and the setter, and records the undo step.
+        --the flag gives that undo step a key of its own, so it is not merged with an edit of the same option made
+        --just before or just after the reset; the flag is cleared even when set() errors
+        self.bIsResettingOption = true
+        xpcall(function()
+            if (resetEntry.widgetType == "color") then
+                local r, g, b, a = detailsFramework:ParseColors(defaultValue)
+                optionTable.set(optionTable.widget, r, g, b, a)
+            else
+                optionTable.set(optionTable.widget, nil, defaultValue)
+            end
+        end, geterrorhandler())
+        self.bIsResettingOption = false
+
+        --the widgets show the values read when the menu was built, so the menu is built again to show the default and
+        --anything that follows it, such as anchor offsets and options it enables; the scroll is kept where the user left it
+        local canvasScrollBox = self:GetCanvasScrollBox()
+        local verticalScroll = canvasScrollBox and canvasScrollBox:GetVerticalScroll()
+        self:Refresh()
+        if (verticalScroll) then
+            canvasScrollBox:SetVerticalScroll(verticalScroll)
+        end
     end,
 
     ---enable / disable the undo / redo buttons based on stack contents. safe to call
@@ -1622,6 +1808,10 @@ detailsFramework.EditorMixin = {
                                 optionTable = optionTable,
                                 widgetType = widgetType,
                                 defaultValue = getOptionDefaultValue(defaultValues, option.key, entryProfileTable, profileKey),
+                                --read from the profile, not from get(), which keeps the value of when the menu was built
+                                getCurrentValue = function()
+                                    return detailsFramework.table.getfrompath(entryProfileTable, profileKey)
+                                end,
                             }
                         end
                     end
@@ -1638,7 +1828,12 @@ detailsFramework.EditorMixin = {
         --buildmenu reads the label column from align_as_pairs_string_space and falls back to 160 without it,
         --which made every row 10 pixels wider than planned, past options_width, and clipped the widgets on the right
         menuOptions.align_as_pairs_string_space = self.options.options_label_width
-        menuOptions.widget_width = self.options.options_widget_width
+        --the reset buttons take their room from the widget column, so the rows keep their width
+        local widgetWidth = self.options.options_widget_width
+        if (bShowResetButtons) then
+            widgetWidth = widgetWidth - self:GetResetButtonSize() - RESET_BUTTON_GAP
+        end
+        menuOptions.widget_width = widgetWidth
         menuOptions.slider_buttons_to_left = true
 
         local optionsFrame = self:GetOptionsFrame()
@@ -1686,7 +1881,15 @@ detailsFramework.EditorMixin = {
         --~build ~menu ~volatile
         menuOptions.no_refresh_on_change = true --the editor .get functions just return a value instead of getting the value from the profile
         --the row highlight sits 5 pixels above its label, so the first row starts 7 pixels down to keep it inside the canvas
-        detailsFramework:BuildMenuVolatile(optionsFrame, menuOptions, 2, -7, maxHeight, bUseColon, options_text_template, options_dropdown_template, options_switch_template, bSwitchIsCheckbox, options_slider_template, options_button_template)
+        --the value change hook runs after a toggle has enabled or disabled the options that follow it, so the reset
+        --buttons follow too
+        local onMenuValueChanged = function()
+            self:RefreshResetButtonStates()
+        end
+        detailsFramework:BuildMenuVolatile(optionsFrame, menuOptions, 2, -7, maxHeight, bUseColon, options_text_template, options_dropdown_template, options_switch_template, bSwitchIsCheckbox, options_slider_template, options_button_template, onMenuValueChanged)
+
+        --runs with the buttons off too, so the ones a previous menu showed are hidden
+        self:LayoutResetButtons(resetEntries, widgetWidth)
 
         --reset the options scroll back to the top whenever the selection changes. without this
         --switching from a long widget (e.g. Auras Layout) to a short one (e.g. Raid Mark) leaves
@@ -1761,6 +1964,9 @@ detailsFramework.EditorMixin = {
                 anchorXSlider:SetValueNoCallback(anchorSettings.x)
                 local anchorYSlider = optionsFrame:GetWidgetById("anchoroffsety")
                 anchorYSlider:SetValueNoCallback(anchorSettings.y)
+
+                --the offset sliders above are moved without their callback, so the menu's value change hook does not run
+                self:RefreshResetButtonStates()
 
                 --anchorSettings IS the profile sub-table (assigned from getParentTable() in
                 --PrepareObjectForEditing for the anchor option). lines 1440-1441 above already

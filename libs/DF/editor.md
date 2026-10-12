@@ -530,7 +530,7 @@ Not the attribute `default` field: Plater fills that with the CURRENT profile va
 
 | `show_disabled_reset_buttons` | Row with a default | Row without a default |
 |---|---|---|
-| `true` (default) | enabled button | button shown, disabled, desaturated icon |
+| `true` (default) | enabled button | button shown, disabled: whole button at alpha 0.3, desaturated icon |
 | `false` | enabled button | no button |
 
 The argument is optional; a registration without it behaves as if no option has a default.
@@ -539,7 +539,9 @@ The argument is optional; a registration without it behaves as if no option has 
 
 `editor:ResetOptionToDefault(resetEntry)` calls the row's own `set()` with the default, so it goes through the same path as a user edit: the profile is written, the 8th-arg callback and the setter run, and an undo entry is pushed (Ctrl+Z brings the old value back). That entry gets a coalesce key of its own (`<id>:<key>:reset`), so it is never merged with an edit of the same option made just before or after: edit 10 → 20, reset → 5, Ctrl+Z gives 20, Ctrl+Z again gives 10.
 
-A reset button is enabled only while its option has a default AND its widget is enabled. It follows the widget when `enable_if`, `disableif` or a `children_follow_enabled` toggle disables it: the states are re-read after every menu build, after every value change in the menu, and in `RefreshDisabledOptions`. `ResetOptionToDefault` also refuses a disabled widget, so a direct call cannot write a disabled option either. A consumer that disables menu widgets some other way should call `editor:RefreshResetButtonStates()` afterwards. Colors are passed through `ParseColors`, so any color format works as a default. Then the menu is rebuilt (`Refresh`), because the widgets show the values read at build time; the scroll position is kept.
+A reset button is enabled only while its option has a default, its widget is enabled, AND the value in the profile is not the default already. "Already the default" tolerates float error: numbers within `0.00001` of the default count as equal (a `1` read back as `0.99999999`), colors are compared channel by channel after `ParseColors` (so a default in any color format matches, a missing alpha counts as 1), and other tables are compared key by key with the same tolerance. The value is read from the profile, not from the row's `get()`, which keeps the value of when the menu was built; the mover refreshes the states on each drag tick, since it moves the offset sliders without their callback.
+
+A reset button is also disabled while its widget is disabled. It follows the widget when `enable_if`, `disableif` or a `children_follow_enabled` toggle disables it: the states are re-read after every menu build, after every value change in the menu, and in `RefreshDisabledOptions`. `ResetOptionToDefault` also refuses a disabled widget, so a direct call cannot write a disabled option either. A consumer that disables menu widgets some other way should call `editor:RefreshResetButtonStates()` afterwards. Colors are passed through `ParseColors`, so any color format works as a default. Then the menu is rebuilt (`Refresh`), because the widgets show the values read at build time; the scroll position is kept.
 
 ### Layout
 
