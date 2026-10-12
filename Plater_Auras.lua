@@ -1404,6 +1404,119 @@ function Plater.Auras.ClearAuraFrameUpdateCallback(callbackType)
 	platerInternal.Auras.initAndUpdateAuraFrameOverrides[callbackType] = nil
 end
 
+local BORDER_DISPEL_KEYS = {None = "none", Magic = "magic", Curse = "curse", Disease = "disease", Poison = "poison", Bleed = "bleed", Enrage = "enrage"}
+
+local function buildBorderColorMap(typeColors, byType, untypedColor)
+	local map = {}
+	for dispelName, key in pairs(BORDER_DISPEL_KEYS) do
+		map[dispelName] = CreateColor(unpack(byType and dispelName ~= "None" and typeColors[key] or untypedColor))
+	end
+	return map
+end
+
+local BORDER_COLOR_KEYS = {"none", "magic", "curse", "disease", "poison", "bleed", "enrage", "is_debuff", "is_buff", "steal_or_purge"}
+
+--every profile value the color maps are built from, to rebuild them only when one of these changed
+local function getAuraBorderOptionsSignature(profile, isExtra, colors)
+	local split = not isExtra and profile.aura_border_colors_split
+	local byType = isExtra and profile.extra_icon_aura_border_colors_by_type or not isExtra and profile.aura_border_colors_by_type
+	if not split and not byType then
+		return "" --no color maps at all
+	end
+	local parts = {tostring(split)}
+	if split then
+		parts[2] = tostring(profile.aura_border_colors_by_type_debuff)
+		parts[3] = tostring(profile.aura_border_colors_by_type_buff)
+		parts[4] = tostring(profile.aura_border_colors_by_type_dispellable)
+	end
+	for _, key in ipairs(BORDER_COLOR_KEYS) do
+		local color = colors[key]
+		parts[#parts + 1] = color and table.concat(color, ",") or ""
+	end
+	return table.concat(parts, ";")
+end
+
+local function getAuraBorderOptions(frameName)
+	Plater.StartLogPerformanceCore("Plater-Core", "Update", "getAuraBorderOptions")
+	local cached = containerConfigCache.auraBorderOptions[frameName]
+	if cached and cached.optionIndex == containerConfigCache.auraBorderOptionIndex then
+		Plater.EndLogPerformanceCore("Plater-Core", "Update", "getAuraBorderOptions")
+		return cached
+	end
+
+	local profile = Plater.db.profile
+	local isExtra = frameName == "ExtraIconFrame"
+	local colors = isExtra and profile.extra_icon_dispel_type_colors or profile.aura_border_colors
+	local signature = getAuraBorderOptionsSignature(profile, isExtra, colors)
+	if cached and cached.signature == signature then
+		cached.optionIndex = containerConfigCache.auraBorderOptionIndex
+		Plater.EndLogPerformanceCore("Plater-Core", "Update", "getAuraBorderOptions")
+		return cached
+	end
+
+	local style = Enum.CustomAuraButtonDispelTypeTextureStyle.PreserveAsset
+	local borderOptions = {optionIndex = containerConfigCache.auraBorderOptionIndex, signature = signature}
+
+	if not isExtra and profile.aura_border_colors_split then
+		local stealable = Enum.CustomAuraButtonDispelTypeStealableFilter
+		borderOptions[1] = { --debuffs
+			showWhenHarmful = true, showWhenHelpful = false, showWithoutDispelType = true, style = style,
+			customDispelColorMap = buildBorderColorMap(colors, profile.aura_border_colors_by_type_debuff, colors.is_debuff),
+		}
+		borderOptions[2] = { --buffs
+			showWhenHarmful = false, showWhenHelpful = true, showWithoutDispelType = true, style = style,
+			stealableFilter = stealable.NotStealable,
+			customDispelColorMap = buildBorderColorMap(colors, profile.aura_border_colors_by_type_buff, colors.is_buff),
+		}
+		borderOptions[3] = { --steal or purge
+			showWhenHarmful = false, showWhenHelpful = true, showWithoutDispelType = true, style = style,
+			stealableFilter = stealable.Stealable,
+			customDispelColorMap = buildBorderColorMap(colors, profile.aura_border_colors_by_type_dispellable, colors.steal_or_purge),
+		}
+	elseif isExtra and profile.extra_icon_aura_border_colors_by_type or not isExtra and profile.aura_border_colors_by_type then
+		borderOptions[1] = { --fallback default
+			showWhenHarmful = true, showWhenHelpful = true, showWithoutDispelType = true, style = style,
+			customDispelColorMap = buildBorderColorMap(colors, true, colors.none),
+		}
+	end
+
+	containerConfigCache.auraBorderOptions[frameName] = borderOptions
+
+	Plater.EndLogPerformanceCore("Plater-Core", "Update", "getAuraBorderOptions")
+	return borderOptions
+end
+
+local function applyAuraBorders(auraButton, frameName, borderOptions, borderThickness, auraWidth, auraHeight)
+	local profile = Plater.db.profile
+	local defaultColor = frameName ~= "ExtraIconFrame" and profile.aura_border_colors.default or profile.extra_icon_dispel_type_colors.default
+	local borders = auraButton.Borders
+
+	auraButton:ClearDispelTypeTextures()
+
+	for i = 1, math.max(#borderOptions, #borders, 1) do
+		local border = borders[i]
+		if not border then
+			border = auraButton:CreateTexture(nil, "overlay")
+			border:SetTexture([[Interface\AddOns\Plater\images\IconBorderWhite]])
+			border:SetTextureSliceMargins(8, 8, 8, 8)
+			border:SetAllPoints()
+			borders[i] = border
+		end
+		border:SetSize(auraWidth, auraHeight)
+		if borderThickness > 0 and (i == 1 or borderOptions[i]) then
+			border:SetScale(borderThickness / 8)
+			border:SetVertexColor(defaultColor[1], defaultColor[2], defaultColor[3], defaultColor[4])
+			border:Show()
+			if borderOptions[i] then
+				auraButton:AddDispelTypeTexture(border, borderOptions[i])
+			end
+		else
+			border:Hide()
+		end
+	end
+	auraButton.Border = borders[1] --compatibility
+end
+
 local function initAuraFrame(auraButton, frameName, frameKey, auraContainer)
 	--DevTool:AddData(newIcon, "initAuraFrame")
 	local profile = Plater.db.profile
@@ -1564,56 +1677,8 @@ local function initAuraFrame(auraButton, frameName, frameKey, auraContainer)
 	end
 
 	-- switch to proper border, keep compatibility
-	auraButton.Border = auraButton:CreateTexture(nil, "overlay")
-	--auraButton.Border:SetAllPoints()
-	auraButton.Border:SetTexture([[Interface\AddOns\Plater\images\IconBorderWhite]])
-	local band = 8
-	local offset = 0
-	auraButton.Border:SetTextureSliceMargins(band, band, band, band)
-	--auraButton.Border:SetPoint("TOPLEFT",     auraButton.Icon, "TOPLEFT",     -band * offset,  band * offset)
-	--auraButton.Border:SetPoint("BOTTOMRIGHT", auraButton.Icon, "BOTTOMRIGHT",  band * offset, -band * offset)
-	auraButton.Border:SetAllPoints()
-	if borderThickness > 0 then
-		auraButton.Border:SetScale(borderThickness / band)
-		auraButton.Border:Show()
-	else
-		auraButton.Border:Hide()
-	end
-	local defaultColor = frameName ~= "ExtraIconFrame" and Plater.db.profile.aura_border_colors.default or Plater.db.profile.extra_icon_dispel_type_colors.default
-    auraButton.Border:SetVertexColor(defaultColor[1], defaultColor[2], defaultColor[3], defaultColor[4])
-
-	if frameName ~= "ExtraIconFrame" and Plater.db.profile.aura_border_colors_by_type or frameName == "ExtraIconFrame" and Plater.db.profile.extra_icon_aura_border_colors_by_type then
-		local borderOptions = {
-			showIcon = false,
-			showWhenHarmful = true,
-			showWhenHelpful = true,
-			showWithoutDispelType = true,
-			style = Enum.CustomAuraButtonDispelTypeTextureStyle.PreserveAsset,
-			customDispelColorMap = frameName ~= "ExtraIconFrame" and {
-				["None"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.none)),
-				["Magic"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.magic)),
-				["Curse"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.curse)),
-				["Disease"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.disease)),
-				["Poison"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.poison)),
-				["Bleed"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.bleed)),
-				["Enrage"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.enrage)),
-			} or {
-				["None"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.none)),
-				["Magic"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.magic)),
-				["Curse"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.curse)),
-				["Disease"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.disease)),
-				["Poison"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.poison)),
-				["Bleed"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.bleed)),
-				["Enrage"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.enrage)),
-			}
-		}
-		--C_AuraContainerUtil.ProcessCustomAuraButtonDispelTypeTextureOptions(borderOptions)
-		if auraButton.SetAuraBorder then
-			auraButton:SetAuraBorder(auraButton.Border, borderOptions)
-		else
-			auraButton:AddDispelTypeTexture(auraButton.Border, borderOptions)
-		end
-	end
+	auraButton.Borders = {}
+	applyAuraBorders(auraButton, frameName, getAuraBorderOptions(frameName), borderThickness, auraWidth, auraHeight)
 
 
 	--PixelUtil.SetSize(auraButton.Border, auraWidth, auraHeight)
@@ -1774,31 +1839,7 @@ function reSkinAuraButtons(auraButtons, options)
 		auraButton.CountFrame:SetSize(auraWidth, auraHeight)
 		auraButton:SetScale(1)
 
-		local band = 8
-		if borderThickness > 0 then
-			auraButton.Border:SetScale(borderThickness / band)
-			auraButton.Border:Show()
-		else
-			auraButton.Border:Hide()
-		end
-
-		local defaultColor = frameName ~= "ExtraIconFrame" and Plater.db.profile.aura_border_colors.default or Plater.db.profile.extra_icon_dispel_type_colors.default
-    	auraButton.Border:SetVertexColor(defaultColor[1], defaultColor[2], defaultColor[3], defaultColor[4])
-
-		if frameName ~= "ExtraIconFrame" and Plater.db.profile.aura_border_colors_by_type or frameName == "ExtraIconFrame" and Plater.db.profile.extra_icon_aura_border_colors_by_type then
-			if auraButton.SetAuraBorder then
-				auraButton:SetAuraBorder(auraButton.Border, options.borderOptions)
-			else
-				auraButton:ClearDispelTypeTextures()
-				auraButton:AddDispelTypeTexture(auraButton.Border, options.borderOptions)
-			end
-		else
-			if auraButton.ClearAuraBorder then
-				auraButton:ClearAuraBorder()
-			else
-				auraButton:ClearDispelTypeTextures()
-			end
-		end
+		applyAuraBorders(auraButton, frameName, options.borderOptions, borderThickness, auraWidth, auraHeight)
 
 		auraButton.Cooldown:SetEdgeTexture (profile.aura_cooldown_edge_texture)
 		auraButton.Cooldown:SetReverse (profile.aura_cooldown_reverse)
@@ -1859,45 +1900,6 @@ local function getAuraFrameOptions(frameName, key, auraContainer)
 
 	Plater.EndLogPerformanceCore("Plater-Core", "Update", "getAuraFrameOptions")
 	return auraFrameOptions
-end
-
-local function getAuraBorderOptions(frameName)
-	Plater.StartLogPerformanceCore("Plater-Core", "Update", "getAuraBorderOptions")
-	local cachedAuraBorderOptions = containerConfigCache.auraBorderOptions[frameName]
-	if cachedAuraBorderOptions and cachedAuraBorderOptions.optionIndex == containerConfigCache.containerFullOptionIndex then
-		Plater.EndLogPerformanceCore("Plater-Core", "Update", "getAuraBorderOptions")
-		return cachedAuraBorderOptions
-	end
-	local borderOptions = {
-		showIcon = false,
-		showWhenHarmful = true,
-		showWhenHelpful = true,
-		showWithoutDispelType = true,
-		style = Enum.CustomAuraButtonDispelTypeTextureStyle.PreserveAsset,
-		customDispelColorMap = frameName ~= "ExtraIconFrame" and {
-			["None"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.none)),
-			["Magic"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.magic)),
-			["Curse"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.curse)),
-			["Disease"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.disease)),
-			["Poison"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.poison)),
-			["Bleed"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.bleed)),
-			["Enrage"] = CreateColor(unpack(Plater.db.profile.aura_border_colors.enrage)),
-		} or {
-			["None"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.none)),
-			["Magic"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.magic)),
-			["Curse"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.curse)),
-			["Disease"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.disease)),
-			["Poison"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.poison)),
-			["Bleed"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.bleed)),
-			["Enrage"] = CreateColor(unpack(Plater.db.profile.extra_icon_dispel_type_colors.enrage)),
-		},
-		optionIndex = containerConfigCache.auraBorderOptionIndex,
-	}
-
-	containerConfigCache.auraBorderOptions[frameName] = borderOptions
-
-	Plater.EndLogPerformanceCore("Plater-Core", "Update", "getAuraBorderOptions")
-	return borderOptions
 end
 
 local function getFullAuraOptions(frameName, key, auraContainer, actorType, force)

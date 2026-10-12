@@ -1809,6 +1809,38 @@ function designer.CreateSettings(parentFrame)
                     default = Plater.db.profile.aura_border_colors_by_type,
                     setter = function(auras, value) refreshAuraDBAndIcons() end,
                 },
+                {
+                    key = "aura_border_colors_split",
+                    label = "Split border colors by aura category",
+                    desc = "Color the borders of debuffs, buffs and dispellable buffs separately. Replaces 'Use type based aura border colors'.",
+                    widget = "toggle",
+                    default = Plater.db.profile.aura_border_colors_split,
+                    setter = function(auras, value) refreshAuraDBAndIcons() end,
+                },
+                {
+                    key = "aura_border_colors_by_type_debuff",
+                    label = "Type based colors: Debuffs",
+                    desc = "When split, debuffs with a dispel type use the dispel type colors.",
+                    widget = "toggle",
+                    default = Plater.db.profile.aura_border_colors_by_type_debuff,
+                    setter = function(auras, value) refreshAuraDBAndIcons() end,
+                },
+                {
+                    key = "aura_border_colors_by_type_buff",
+                    label = "Type based colors: Buffs",
+                    desc = "When split, buffs with a dispel type use the dispel type colors.",
+                    widget = "toggle",
+                    default = Plater.db.profile.aura_border_colors_by_type_buff,
+                    setter = function(auras, value) refreshAuraDBAndIcons() end,
+                },
+                {
+                    key = "aura_border_colors_by_type_dispellable",
+                    label = "Type based colors: Dispellable Buffs",
+                    desc = "When split, buffs you can steal or purge use the dispel type colors if they have a dispel type.",
+                    widget = "toggle",
+                    default = Plater.db.profile.aura_border_colors_by_type_dispellable,
+                    setter = function(auras, value) refreshAuraDBAndIcons() end,
+                },
             }
         end)(),
 

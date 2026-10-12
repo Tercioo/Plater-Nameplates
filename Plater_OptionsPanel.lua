@@ -2580,11 +2580,12 @@ local debuff_options = {
 		set = function (self, r, g, b, a) 
 			local color = Plater.db.profile.aura_border_colors.steal_or_purge
 			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
 		name = "Dispellable Buffs Border Color",
 		desc = "Dispellable Buffs Border Color",
-		hidden = IS_WOW_PROJECT_MIDNIGHT,
+		hidden = IS_WOW_PROJECT_MIDNIGHT and not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
 	},
 	{
 		type = "color",
@@ -2613,11 +2614,12 @@ local debuff_options = {
 		set = function (self, r, g, b, a) 
 			local color = Plater.db.profile.aura_border_colors.is_buff
 			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
 		name = "Buffs Border Color",
 		desc = "Buffs Border Color",
-		hidden = IS_WOW_PROJECT_MIDNIGHT,
+		hidden = IS_WOW_PROJECT_MIDNIGHT and not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
 	},
 		--border color is debuff
 	{
@@ -2630,11 +2632,12 @@ local debuff_options = {
 		set = function (self, r, g, b, a) 
 			local color = Plater.db.profile.aura_border_colors.is_debuff
 			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.RefreshDBUpvalues()
 			Plater.UpdateAllPlates()
 		end,
 		name = "Debuffs Border Color",
 		desc = "Debuffs Border Color",
-		hidden = IS_WOW_PROJECT_MIDNIGHT,
+		hidden = IS_WOW_PROJECT_MIDNIGHT and not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
 	},
 	--border color is offensive
 	{
@@ -2702,6 +2705,62 @@ local debuff_options = {
 		end,
 		name = "Use type based aura border colors",
 		desc = "Use the Blizzard debuff type colors for borders",
+	},
+	{
+		type = "toggle",
+		boxfirst = true,
+		get = function() return Plater.db.profile.aura_border_colors_split end,
+		set = function (self, fixedparam, value)
+			Plater.db.profile.aura_border_colors_split = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+			Plater.RefreshAuras()
+		end,
+		name = "Split border colors by aura category",
+		desc = "Color the borders of debuffs, buffs and dispellable buffs separately, using the 'Debuffs', 'Buffs' and 'Dispellable Buffs' border colors. Replaces 'Use type based aura border colors'.",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
+	{
+		type = "toggle",
+		boxfirst = true,
+		get = function() return Plater.db.profile.aura_border_colors_by_type_debuff end,
+		set = function (self, fixedparam, value)
+			Plater.db.profile.aura_border_colors_by_type_debuff = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+			Plater.RefreshAuras()
+		end,
+		name = "Type based colors: Debuffs",
+		desc = "When split, debuffs with a dispel type use the dispel type colors. Otherwise the 'Debuffs Border Color' is used.",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
+	{
+		type = "toggle",
+		boxfirst = true,
+		get = function() return Plater.db.profile.aura_border_colors_by_type_buff end,
+		set = function (self, fixedparam, value)
+			Plater.db.profile.aura_border_colors_by_type_buff = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+			Plater.RefreshAuras()
+		end,
+		name = "Type based colors: Buffs",
+		desc = "When split, buffs with a dispel type use the dispel type colors. Otherwise the 'Buffs Border Color' is used.",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
+	{
+		type = "toggle",
+		boxfirst = true,
+		get = function() return Plater.db.profile.aura_border_colors_by_type_dispellable end,
+		set = function (self, fixedparam, value)
+			Plater.db.profile.aura_border_colors_by_type_dispellable = value
+			Plater.RefreshDBUpvalues()
+			Plater.UpdateAllPlates()
+			Plater.RefreshAuras()
+		end,
+		name = "Type based colors: Dispellable Buffs",
+		desc = "When split, buffs you can steal or purge use the dispel type colors if they have a dispel type. Otherwise the 'Dispellable Buffs Border Color' is used.",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
 	},
 	{
 		type = "color",
