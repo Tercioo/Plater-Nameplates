@@ -1491,7 +1491,13 @@ local function applyAuraBorders(auraButton, frameName, borderOptions, borderThic
 	local defaultColor = frameName ~= "ExtraIconFrame" and profile.aura_border_colors.default or profile.extra_icon_dispel_type_colors.default
 	local borders = auraButton.Borders
 
-	auraButton:ClearDispelTypeTextures()
+	--false while the border is disabled, turning it back on registers again
+	local activeBorderOptions = borderThickness > 0 and borderOptions
+	local shouldRegister = auraButton.activeBorderOptions ~= activeBorderOptions
+	if (shouldRegister) then
+		auraButton:ClearDispelTypeTextures()
+		auraButton.activeBorderOptions = activeBorderOptions
+	end
 
 	for i = 1, math.max(#borderOptions, #borders, 1) do
 		local border = borders[i]
@@ -1503,13 +1509,20 @@ local function applyAuraBorders(auraButton, frameName, borderOptions, borderThic
 			borders[i] = border
 		end
 		border:SetSize(auraWidth, auraHeight)
-		if borderThickness > 0 and (i == 1 or borderOptions[i]) then
+
+		local borderOption = activeBorderOptions and borderOptions[i]
+		if (borderOption) then
+			border:SetScale(borderThickness / 8)
+			if (shouldRegister) then
+				auraButton:AddDispelTypeTexture(border, borderOption)
+			end
+
+		elseif (i == 1 and borderThickness > 0) then
+			--no option set, static border in the default color
 			border:SetScale(borderThickness / 8)
 			border:SetVertexColor(defaultColor[1], defaultColor[2], defaultColor[3], defaultColor[4])
 			border:Show()
-			if borderOptions[i] then
-				auraButton:AddDispelTypeTexture(border, borderOptions[i])
-			end
+
 		else
 			border:Hide()
 		end
