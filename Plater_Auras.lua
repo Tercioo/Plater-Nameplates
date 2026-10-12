@@ -1481,14 +1481,19 @@ local function initAuraFrame(auraButton, frameName, frameKey, auraContainer)
 		auraButton:ClearDurationText()
 	end
 
-	if auraButton.SetCasterName and frameName == "ExtraIconFrame" then
+	if frameName == "ExtraIconFrame" then
 		auraButton.Desc = auraButton:CreateFontString(nil, "overlay", "GameFontNormal")
-        auraButton.Desc:SetPoint("bottom", auraButton, "top", 0, 2)
-        auraButton.Desc:SetText("")
+		auraButton.Desc:SetPoint("bottom", auraButton, "top", 0, 2)
+		auraButton.Desc:SetText("")
 		DF:SetFontSize(auraButton.Desc, Plater.db.profile.extra_icon_caster_size)
 		DF:SetFontFace(auraButton.Desc, Plater.db.profile.extra_icon_caster_font)
 		DF:SetFontOutline(auraButton.Desc, "SLUG")
+	end
+
+	if auraButton.SetCasterName and frameName == "ExtraIconFrame" and Plater.db.profile.extra_icon_caster_name then
 		auraButton:SetCasterName(auraButton.Desc, {showRealmName = false, useClassColors = true})
+	elseif auraButton.ClearCasterName then
+		auraButton:ClearCasterName()
 	end
 
 
@@ -1752,6 +1757,12 @@ function reSkinAuraButtons(auraButtons, options)
 			Plater.SetFontOutlineAndShadow (timerLabel, profile.extra_icon_timer_outline)
 			DF:SetFontFace (timerLabel, profile.extra_icon_timer_font)
 			Plater.SetAnchor (timerLabel, profile.aura_timer_text_anchor) --TODO
+
+			if auraButton.SetCasterName and Plater.db.profile.extra_icon_caster_name then
+				auraButton:SetCasterName(auraButton.Desc, {showRealmName = false, useClassColors = true})
+			elseif auraButton.ClearCasterName then
+				auraButton:ClearCasterName()
+			end
 		end
 
 		--PixelUtil.SetSize(auraButton.Border, auraWidth, auraHeight)
