@@ -2200,9 +2200,9 @@ Plater.AnchorNamesByPhraseId = {
 					--Plater.ScheduleUpdateForNameplate (plateFrame, unit)
 					
 					Plater.RunScheduledUpdate({unitId = unit}) -- do this now
-					if plateFrame.unitFrame.PlaterOnScreen then -- should no longer be needed
-						Plater.CreateOrUpdateAuraContainers(plateFrame.unitFrame, unit, true) -- maybe still need this
-					end
+					--if plateFrame.unitFrame.PlaterOnScreen then -- should no longer be needed
+					--	Plater.CreateOrUpdateAuraContainers(plateFrame.unitFrame, unit, true) -- maybe still need this
+					--end
 				end
 			elseif NAMEPLATES_ON_SCREEN_CACHE[unit] then
 				-- no nameplate anymore, hide it
@@ -2228,9 +2228,9 @@ Plater.AnchorNamesByPhraseId = {
 			local plateFrame = C_NamePlate.GetNamePlateForUnit (unit, issecure())
 			if (plateFrame) then
 				Plater.ScheduleUpdateForNameplate (plateFrame)
-				if plateFrame.unitFrame.PlaterOnScreen then
-					Plater.CreateOrUpdateAuraContainers(plateFrame.unitFrame, unit) -- might still need this
-				end
+				--if plateFrame.unitFrame.PlaterOnScreen then
+				--	Plater.CreateOrUpdateAuraContainers(plateFrame.unitFrame, unit) -- might still need this
+				--end
 			elseif NAMEPLATES_ON_SCREEN_CACHE[unit] then
 				-- no nameplate anymore (e.g. became a forbidden friendly plate), hide it
 				Plater.RunFunctionForEvent ("NAME_PLATE_UNIT_REMOVED", unit)
