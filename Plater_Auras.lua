@@ -47,6 +47,8 @@ local GetAuraSlots = _G.C_UnitAuras and _G.C_UnitAuras.GetAuraSlots
 local GetAuraDataByAuraInstanceID = _G.C_UnitAuras and _G.C_UnitAuras.GetAuraDataByAuraInstanceID
 local BackdropTemplateMixin = _G.BackdropTemplateMixin
 local BUFF_MAX_DISPLAY_PLATER = nil -- don't limit.
+--size of the pandemic glow relative to the aura icon
+local CONST_PANDEMIC_GLOW_SCALE = 1.4
 
 local DB_AURA_GROW_DIRECTION
 local DB_AURA_GROW_DIRECTION2
@@ -1620,6 +1622,56 @@ local function applyAuraBorders(auraButton, frameName, borderOptions, borderThic
 	auraButton.Border = borders[1] --compatibility
 end
 
+--pulsing glow around the aura while a recast keeps its remaining time (pandemic window, 12.1.5).
+--blizzard shows the texture and plays the animation, plater only registers them
+local applyPandemicGlow = function(auraButton, auraWidth, auraHeight)
+	--the animation hooks and the object based RemovePandemicRegion came with 12.1.5
+	--todo 12.1.5: drop this check once 12.1.5 is live
+	if (not auraButton.AddPandemicActiveAnimation) then
+		return
+	end
+
+	local isEnabled = Plater.db.profile.aura_pandemic_glow
+	local pandemicGlow = auraButton.PandemicGlow
+
+	if (not pandemicGlow) then
+		if (not isEnabled) then
+			return
+		end
+
+		pandemicGlow = auraButton:CreateTexture(nil, "overlay", nil, 7)
+		pandemicGlow:SetTexture([[Interface\SpellActivationOverlay\IconAlert]])
+		pandemicGlow:SetTexCoord(0.00781250, 0.50781250, 0.27734375, 0.52734375)
+		pandemicGlow:SetBlendMode("ADD")
+		pandemicGlow:SetPoint("center")
+		pandemicGlow:Hide()
+		auraButton.PandemicGlow = pandemicGlow
+
+		--a registered animation group cannot get more animations, so it is complete before registering.
+		--ponytail: it stays registered when the option is turned off, the button keeps computing the window until reload
+		local pulseAnimation = pandemicGlow:CreateAnimationGroup()
+		pulseAnimation:SetLooping("BOUNCE")
+		local alphaAnimation = pulseAnimation:CreateAnimation("Alpha")
+		alphaAnimation:SetFromAlpha(1)
+		alphaAnimation:SetToAlpha(0.3)
+		alphaAnimation:SetDuration(0.5)
+		auraButton:AddPandemicActiveAnimation(pulseAnimation)
+	end
+
+	pandemicGlow:SetSize(auraWidth * CONST_PANDEMIC_GLOW_SCALE, auraHeight * CONST_PANDEMIC_GLOW_SCALE)
+
+	--registering the same region twice is an assert error
+	if (isEnabled and not auraButton.hasPandemicGlow) then
+		auraButton:AddPandemicRegion(pandemicGlow)
+		auraButton.hasPandemicGlow = true
+
+	elseif (not isEnabled and auraButton.hasPandemicGlow) then
+		auraButton:RemovePandemicRegion(pandemicGlow)
+		pandemicGlow:Hide()
+		auraButton.hasPandemicGlow = false
+	end
+end
+
 local function initAuraFrame(auraButton, frameName, frameKey, auraContainer)
 	--DevTool:AddData(newIcon, "initAuraFrame")
 	local profile = Plater.db.profile
@@ -1782,6 +1834,7 @@ local function initAuraFrame(auraButton, frameName, frameKey, auraContainer)
 	-- switch to proper border, keep compatibility
 	auraButton.Borders = {}
 	applyAuraBorders(auraButton, frameName, getAuraBorderOptions(frameName), borderThickness, auraWidth, auraHeight)
+	applyPandemicGlow(auraButton, auraWidth, auraHeight)
 
 
 	--PixelUtil.SetSize(auraButton.Border, auraWidth, auraHeight)
@@ -1943,6 +1996,7 @@ function reSkinAuraButtons(auraButtons, options)
 		auraButton:SetScale(1)
 
 		applyAuraBorders(auraButton, frameName, options.borderOptions, borderThickness, auraWidth, auraHeight)
+		applyPandemicGlow(auraButton, auraWidth, auraHeight)
 
 		auraButton.Cooldown:SetEdgeTexture (profile.aura_cooldown_edge_texture)
 		auraButton.Cooldown:SetReverse (profile.aura_cooldown_reverse)
@@ -2038,6 +2092,18 @@ local function getFullAuraOptions(frameName, key, auraContainer, actorType, forc
 
 	Plater.EndLogPerformanceCore("Plater-Core", "Update", "getFullAuraOptions")
 	return fullOptions
+end
+
+--12.1.5 can disable a group. before that an empty filter without frames does the job
+--todo 12.1.5: drop this wrapper and call SetAuraGroupEnabled directly once 12.1.5 is live
+local setAuraGroupEnabled = function(auraContainer, groupName, isEnabled)
+	if (auraContainer.SetAuraGroupEnabled) then
+		auraContainer:SetAuraGroupEnabled(groupName, isEnabled)
+
+	elseif (not isEnabled) then
+		auraContainer:SetAuraGroupFilterString(groupName, "")
+		auraContainer:SetAuraGroupMaxFrameCount(groupName, 0)
+	end
 end
 
 local allocIndex = 1
@@ -2253,9 +2319,11 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, forceFi
 									auraContainer:SetAuraGroupSortMethod(groupName, options.auraFrameOptions.sortMethod, options.auraFrameOptions.sortDirection)
 									auraContainer:SetAuraGroupLayout(groupName, options.auraFrameOptions.layout)
 								end
+
+								--enabled last, a group that was disabled is not parsed with its old filters
+								setAuraGroupEnabled(auraContainer, groupName, true)
 							else
-								auraContainer:SetAuraGroupFilterString(groupName, "")
-								auraContainer:SetAuraGroupMaxFrameCount(groupName, 0)
+								setAuraGroupEnabled(auraContainer, groupName, false)
 							end
 
 							index = index + 1
@@ -2264,8 +2332,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, forceFi
 						while (auraContainer.groups["group"..index]) do
 							--disable surplus
 							--if DevTool then DevTool:AddData({hasGroup = auraContainer:HasAuraGroup(groupName), auraContainer = auraContainer, unitFrame = unitFrame}, "disable-" .. frameInfo.key .. "-" .. (unit or "nil") .. "-" .. "group"..index) end
-							auraContainer:SetAuraGroupMaxFrameCount("group"..index, 0)
-							auraContainer:SetAuraGroupFilterString("group"..index, "")
+							setAuraGroupEnabled(auraContainer, "group"..index, false)
 							index = index + 1
 						end
 						Plater.EndLogPerformanceCore("Plater-Core", "Update", "CreateOrUpdateAuraContainers - updatefilters")
