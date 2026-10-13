@@ -1101,6 +1101,19 @@ local function getAuraFilters(frameName, actorType, force)
 					filterString = "HELPFUL",
 					candidateFilters = allCandidates.additionalInclude
 				})
+
+			--spell IDs may not be matched for debuffs on friends and buffs on enemies. the container rejects what
+			--it may not match, so these two groups show the listed spells that are never secret and nothing else
+			elseif frameName == "Main" and type == "debuffs" and canAssist then
+				table.insert(filters, {
+					filterString = "HARMFUL",
+					candidateFilters = allCandidates.additionalInclude
+				})
+			elseif ((frameName == "Main" and not DB_AURA_SEPARATE_BUFFS) or (frameName == "Secondary" and DB_AURA_SEPARATE_BUFFS)) and type == "buffs" and not canAssist then
+				table.insert(filters, {
+					filterString = "HELPFUL",
+					candidateFilters = allCandidates.additionalInclude
+				})
 			end
 		elseif DB_TRACK_METHOD == 0x1 and frameName == "Main" and type == "debuffs" then
 			mainFilterString = "HARMFUL"
@@ -1625,13 +1638,11 @@ end
 --pulsing glow around the aura while a recast keeps its remaining time (pandemic window, 12.1.5).
 --blizzard shows the texture and plays the animation, plater only registers them
 local applyPandemicGlow = function(auraButton, auraWidth, auraHeight)
-	--the animation hooks and the object based RemovePandemicRegion came with 12.1.5
-	--todo 12.1.5: drop this check once 12.1.5 is live
-	if (not auraButton.AddPandemicActiveAnimation) then
-		return
-	end
-
-	local isEnabled = Plater.db.profile.aura_pandemic_glow
+	local profile = Plater.db.profile
+	local isEnabled = profile.aura_pandemic_glow
+	local glowColor = profile.aura_pandemic_glow_color
+	local glowWidth = auraWidth * CONST_PANDEMIC_GLOW_SCALE
+	local glowHeight = auraHeight * CONST_PANDEMIC_GLOW_SCALE
 	local pandemicGlow = auraButton.PandemicGlow
 
 	if (not pandemicGlow) then
@@ -1639,9 +1650,11 @@ local applyPandemicGlow = function(auraButton, auraWidth, auraHeight)
 			return
 		end
 
+		--desaturated, the color comes from the profile
 		pandemicGlow = auraButton:CreateTexture(nil, "overlay", nil, 7)
 		pandemicGlow:SetTexture([[Interface\SpellActivationOverlay\IconAlert]])
 		pandemicGlow:SetTexCoord(0.00781250, 0.50781250, 0.27734375, 0.52734375)
+		pandemicGlow:SetDesaturated(true)
 		pandemicGlow:SetBlendMode("ADD")
 		pandemicGlow:SetPoint("center")
 		pandemicGlow:Hide()
@@ -1658,7 +1671,8 @@ local applyPandemicGlow = function(auraButton, auraWidth, auraHeight)
 		auraButton:AddPandemicActiveAnimation(pulseAnimation)
 	end
 
-	pandemicGlow:SetSize(auraWidth * CONST_PANDEMIC_GLOW_SCALE, auraHeight * CONST_PANDEMIC_GLOW_SCALE)
+	pandemicGlow:SetSize(glowWidth, glowHeight)
+	pandemicGlow:SetVertexColor(glowColor[1], glowColor[2], glowColor[3], glowColor[4])
 
 	--registering the same region twice is an assert error
 	if (isEnabled and not auraButton.hasPandemicGlow) then
@@ -1670,6 +1684,48 @@ local applyPandemicGlow = function(auraButton, auraWidth, auraHeight)
 		pandemicGlow:Hide()
 		auraButton.hasPandemicGlow = false
 	end
+
+	--one flash when the window opens. the texture has no alpha outside of its animation and is not a
+	--pandemic region, so hiding it is all it takes to turn the flash off
+	local isFlashEnabled = isEnabled and profile.aura_pandemic_glow_flash
+	local pandemicFlash = auraButton.PandemicFlash
+
+	if (not pandemicFlash) then
+		if (not isFlashEnabled) then
+			return
+		end
+
+		pandemicFlash = auraButton:CreateTexture(nil, "overlay", nil, 7)
+		pandemicFlash:SetTexture([[Interface\SpellActivationOverlay\IconAlert]])
+		pandemicFlash:SetTexCoord(0.00781250, 0.50781250, 0.27734375, 0.52734375)
+		pandemicFlash:SetDesaturated(true)
+		pandemicFlash:SetBlendMode("ADD")
+		pandemicFlash:SetPoint("center")
+		pandemicFlash:SetAlpha(0)
+		auraButton.PandemicFlash = pandemicFlash
+
+		local flashAnimation = pandemicFlash:CreateAnimationGroup()
+		local fadeInAnimation = flashAnimation:CreateAnimation("Alpha")
+		fadeInAnimation:SetOrder(1)
+		fadeInAnimation:SetFromAlpha(0)
+		fadeInAnimation:SetToAlpha(1)
+		fadeInAnimation:SetDuration(0.1)
+		local fadeOutAnimation = flashAnimation:CreateAnimation("Alpha")
+		fadeOutAnimation:SetOrder(2)
+		fadeOutAnimation:SetFromAlpha(1)
+		fadeOutAnimation:SetToAlpha(0)
+		fadeOutAnimation:SetDuration(0.4)
+		local growAnimation = flashAnimation:CreateAnimation("Scale")
+		growAnimation:SetOrder(2)
+		growAnimation:SetScaleFrom(1, 1)
+		growAnimation:SetScaleTo(1.4, 1.4)
+		growAnimation:SetDuration(0.4)
+		auraButton:AddPandemicEnterAnimation(flashAnimation)
+	end
+
+	pandemicFlash:SetShown(isFlashEnabled)
+	pandemicFlash:SetSize(glowWidth, glowHeight)
+	pandemicFlash:SetVertexColor(glowColor[1], glowColor[2], glowColor[3], glowColor[4])
 end
 
 local function initAuraFrame(auraButton, frameName, frameKey, auraContainer)
@@ -2094,18 +2150,6 @@ local function getFullAuraOptions(frameName, key, auraContainer, actorType, forc
 	return fullOptions
 end
 
---12.1.5 can disable a group. before that an empty filter without frames does the job
---todo 12.1.5: drop this wrapper and call SetAuraGroupEnabled directly once 12.1.5 is live
-local setAuraGroupEnabled = function(auraContainer, groupName, isEnabled)
-	if (auraContainer.SetAuraGroupEnabled) then
-		auraContainer:SetAuraGroupEnabled(groupName, isEnabled)
-
-	elseif (not isEnabled) then
-		auraContainer:SetAuraGroupFilterString(groupName, "")
-		auraContainer:SetAuraGroupMaxFrameCount(groupName, 0)
-	end
-end
-
 local allocIndex = 1
 local function createAuraContainers(unitFrame)
 	if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then return end
@@ -2321,9 +2365,9 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, forceFi
 								end
 
 								--enabled last, a group that was disabled is not parsed with its old filters
-								setAuraGroupEnabled(auraContainer, groupName, true)
+								auraContainer:SetAuraGroupEnabled(groupName, true)
 							else
-								setAuraGroupEnabled(auraContainer, groupName, false)
+								auraContainer:SetAuraGroupEnabled(groupName, false)
 							end
 
 							index = index + 1
@@ -2332,7 +2376,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, forceFi
 						while (auraContainer.groups["group"..index]) do
 							--disable surplus
 							--if DevTool then DevTool:AddData({hasGroup = auraContainer:HasAuraGroup(groupName), auraContainer = auraContainer, unitFrame = unitFrame}, "disable-" .. frameInfo.key .. "-" .. (unit or "nil") .. "-" .. "group"..index) end
-							setAuraGroupEnabled(auraContainer, "group"..index, false)
+							auraContainer:SetAuraGroupEnabled("group"..index, false)
 							index = index + 1
 						end
 						Plater.EndLogPerformanceCore("Plater-Core", "Update", "CreateOrUpdateAuraContainers - updatefilters")

@@ -1538,6 +1538,34 @@ function designer.CreateSettings(parentFrame)
                         updateAllPlatesOnly()
                     end,
                 },
+
+                {type = "blank"},
+                {type = "label", get = function() return "Pandemic Glow" end, text_template = detailsFramework:GetTemplate("font", "ORANGE_FONT_TEMPLATE")},
+
+                {
+                    key = "aura_pandemic_glow",
+                    label = "Enabled",
+                    desc = "Glow around the aura while recasting it keeps the remaining time (pandemic window).",
+                    widget = "toggle",
+                    default = Plater.db.profile.aura_pandemic_glow,
+                    setter = function(auras, value) refreshAuraDBAndIcons() end,
+                },
+                {
+                    key = "aura_pandemic_glow_color",
+                    label = "Color",
+                    desc = "Color of the pandemic glow.",
+                    widget = "color",
+                    default = Plater.db.profile.aura_pandemic_glow_color,
+                    setter = function(auras, value) refreshAuraDBAndIcons() end,
+                },
+                {
+                    key = "aura_pandemic_glow_flash",
+                    label = "Flash",
+                    desc = "Flash the glow once when the pandemic window opens.",
+                    widget = "toggle",
+                    default = Plater.db.profile.aura_pandemic_glow_flash,
+                    setter = function(auras, value) refreshAuraDBAndIcons() end,
+                },
             }
         end)(),
 

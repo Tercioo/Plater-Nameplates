@@ -2982,7 +2982,37 @@ local debuff_options = {
 		end,
 		name = "Pandemic glow",
 		desc = "Glow around the aura while recasting it keeps the remaining time (pandemic window).",
-		hidden = not (C_UnitAuras and C_UnitAuras.GetRefreshCarryOverDuration), --todo 12.1.5: back to IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS once 12.1.5 is live
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
+	{
+		type = "color",
+		boxfirst = true,
+		get = function()
+			local color = Plater.db.profile.aura_pandemic_glow_color
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a)
+			local color = Plater.db.profile.aura_pandemic_glow_color
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.RefreshAuras()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Pandemic glow color",
+		desc = "Color of the pandemic glow.",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
+	{
+		type = "toggle",
+		boxfirst = true,
+		get = function() return Plater.db.profile.aura_pandemic_glow_flash end,
+		set = function (self, fixedparam, value)
+			Plater.db.profile.aura_pandemic_glow_flash = value
+			Plater.RefreshAuras()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Pandemic glow flash",
+		desc = "Flash the glow once when the pandemic window opens.",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
 	},
 
 	{
