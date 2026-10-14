@@ -966,7 +966,7 @@ Plater.AnchorNamesByPhraseId = {
 			local isInRange = rangeChecker (plateFrame [MEMBER_UNITID] or unitFrame [MEMBER_UNITID])
 			--print(isInRange, issecretvalue(isInRange))
 
-			if (IS_WOW_PROJECT_MIDNIGHT and issecretvalue(isInRange)) then
+			if (issecretvalue(isInRange)) then
 				unitFrame.IsInRange = isInRange -- this might complicate things...
 				
 				unitFrame:SetAlphaFromBoolean (isInRange, nameplateAlpha * inRangeAlpha * (notTheTarget and overallRangeCheckAlpha or 1), (unitIsTarget and inRangeAlpha or overallRangeCheckAlpha) * nameplateAlpha * (notTheTarget and alphaMultiplier or 1))
@@ -2466,7 +2466,7 @@ Plater.AnchorNamesByPhraseId = {
 					local unitFrame = plateFrame.unitFrame
 					local unitName = UnitName (unitID)
 					local unitNameTranslit = unitName
-					if DB_USE_NAME_TRANSLIT and (not IS_WOW_PROJECT_MIDNIGHT or (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(unitName))) then
+					if DB_USE_NAME_TRANSLIT and not issecretvalue(unitName) then
 						unitNameTranslit = LibTranslit:Transliterate(unitName, TRANSLIT_MARK)
 					end
 					plateFrame [MEMBER_NAME] = unitNameTranslit
@@ -2769,14 +2769,12 @@ Plater.AnchorNamesByPhraseId = {
 				---@cast plateFrame plateframe
 				if plateFrame.unitFrame.PlaterOnScreen then
 					local guid
-					if IS_WOW_PROJECT_MIDNIGHT and (issecretvalue(arg1) or issecretvalue(arg2)) then
+					if issecretvalue(arg1) or issecretvalue(arg2) then
 						Plater.UpdateSoftInteractTarget(plateFrame, true) -- just update if any secret...
-					elseif IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(plateFrame [MEMBER_GUID]) then
+					elseif not issecretvalue(plateFrame [MEMBER_GUID]) then
 						guid = plateFrame [MEMBER_GUID]
-					elseif IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(plateFrame.unitFrame [MEMBER_GUID]) then
+					elseif not issecretvalue(plateFrame.unitFrame [MEMBER_GUID]) then
 						guid = plateFrame.unitFrame [MEMBER_GUID]
-					elseif not IS_WOW_PROJECT_MIDNIGHT then
-						guid = plateFrame [MEMBER_GUID]
 					end
 					if guid then
 						if guid == arg1 or guid == arg2 then
@@ -2792,12 +2790,10 @@ Plater.AnchorNamesByPhraseId = {
 				---@cast plateFrame plateframe
 				if plateFrame.unitFrame.PlaterOnScreen then
 					local guid
-					if IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(plateFrame [MEMBER_GUID]) then
+					if not issecretvalue(plateFrame [MEMBER_GUID]) then
 						guid = plateFrame [MEMBER_GUID]
-					elseif IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(plateFrame.unitFrame [MEMBER_GUID]) then
+					elseif not issecretvalue(plateFrame.unitFrame [MEMBER_GUID]) then
 						guid = plateFrame.unitFrame [MEMBER_GUID]
-					elseif not IS_WOW_PROJECT_MIDNIGHT then
-						guid = plateFrame [MEMBER_GUID]
 					end
 					if guid then
 						if guid == arg1 or guid == arg2 then
@@ -2813,12 +2809,10 @@ Plater.AnchorNamesByPhraseId = {
 				---@cast plateFrame plateframe
 				if plateFrame.unitFrame.PlaterOnScreen then
 					local guid
-					if IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(plateFrame [MEMBER_GUID]) then
+					if not issecretvalue(plateFrame [MEMBER_GUID]) then
 						guid = plateFrame [MEMBER_GUID]
-					elseif IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(plateFrame.unitFrame [MEMBER_GUID]) then
+					elseif not issecretvalue(plateFrame.unitFrame [MEMBER_GUID]) then
 						guid = plateFrame.unitFrame [MEMBER_GUID]
-					elseif not IS_WOW_PROJECT_MIDNIGHT then
-						guid = plateFrame [MEMBER_GUID]
 					end
 					if guid then
 						if guid == arg1 or guid == arg2 then
@@ -4015,7 +4009,7 @@ Plater.AnchorNamesByPhraseId = {
 			--cache values
 			local unitName = UnitName (unitID) or ""
 			local unitNameTranslit = unitName
-			if DB_USE_NAME_TRANSLIT and (not IS_WOW_PROJECT_MIDNIGHT or (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(unitName))) then
+			if DB_USE_NAME_TRANSLIT and not issecretvalue(unitName) then
 				unitNameTranslit = LibTranslit:Transliterate(unitName, TRANSLIT_MARK)
 			end
 			plateFrame [MEMBER_NAME] = unitNameTranslit
@@ -5674,7 +5668,7 @@ function Plater.OnInit() --private --~oninit ~init
 					end
 
 					--print(icon:GetHeight(), issecretvalue(icon:GetHeight()))
-					if IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(icon:GetHeight()) then
+					if not issecretvalue(icon:GetHeight()) then
 						icon:SetWidth(icon:GetHeight())
 					else
 						icon:SetWidth(height)
@@ -5850,7 +5844,7 @@ function Plater.OnInit() --private --~oninit ~init
 						return
 					end
 
-					if not IS_WOW_PROJECT_MIDNIGHT or (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(self.SpellName)) then
+					if not issecretvalue(self.SpellName) then
 						-- if we are starting a cast but it is an immediate chained cast, then needs to trigger OnHide and OnShow again afterwards
 						local globalScriptObject = SCRIPT_CASTBAR_TRIGGER_CACHE[self.SpellName]
 						if (globalScriptObject and (self.casting or self.channeling) and not self.IsInterrupted) then
@@ -5919,7 +5913,7 @@ function Plater.OnInit() --private --~oninit ~init
 					self.castColorTexture:Hide()
 
 					--cast color (from options tab Cast Colors)
-					if not IS_WOW_PROJECT_MIDNIGHT or (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(self.spellID)) then
+					if not issecretvalue(self.spellID) then
 						local castColors = profile.cast_colors
 						local customColor = castColors[self.spellID]
 						if (customColor) then
@@ -6081,7 +6075,7 @@ function Plater.OnInit() --private --~oninit ~init
 								end
 
 								if (canShowTargetName) then
-									if DB_USE_NAME_TRANSLIT and (not IS_WOW_PROJECT_MIDNIGHT or (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(targetName))) then
+									if DB_USE_NAME_TRANSLIT and not issecretvalue(targetName) then
 										targetName = LibTranslit:Transliterate(targetName, TRANSLIT_MARK)
 									end
 									
@@ -6106,7 +6100,7 @@ function Plater.OnInit() --private --~oninit ~init
 					
 					self.ThrottleUpdate = self.unitFrame.PlateFrame.OnTickFrame.ThrottleUpdate + DB_TICK_THROTTLE
 
-					if not IS_WOW_PROJECT_MIDNIGHT or (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(self.SpellName)) then
+					if not issecretvalue(self.SpellName) then
 						--get the script object of the aura which will be showing in this icon frame
 						local globalScriptObject = SCRIPT_CASTBAR_TRIGGER_CACHE[self.SpellName]
 
@@ -7361,7 +7355,7 @@ end
 			end
 			
 			local isSoftInteract = UnitIsUnit(tickFrame.unit, "softinteract")
-			if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(isSoftInteract) then isSoftInteract = false end --MIDNIGHT!!
+			if issecretvalue(isSoftInteract) then isSoftInteract = false end --MIDNIGHT!!
 			unitFrame.isSoftInteract = isSoftInteract
 			unitFrame.PlateFrame.isSoftInteract = isSoftInteract
 			unitFrame.isSoftInteractObject = isSoftInteract and (unitFrame.PlateFrame.isObject or unitFrame.isObject)
@@ -7958,7 +7952,7 @@ end
 		local unitID = plateFrame [MEMBER_UNITID] or unitFrame [MEMBER_UNITID]
 		
 		local isSoftInteract = UnitIsUnit(unitID, "softinteract")
-		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(isSoftInteract) then isSoftInteract = false end --MIDNIGHT!!
+		if issecretvalue(isSoftInteract) then isSoftInteract = false end --MIDNIGHT!!
 		local reaction = UnitReaction (unitID, "player")
 		local isObject = (IS_WOW_PROJECT_MAINLINE and UnitIsGameObject(unitID)) or reaction == nil
 		local isSoftInteractObject = isObject and isSoftInteract
@@ -8022,7 +8016,7 @@ end
 		local unitFrame = plateFrame.unitFrame
 		--if IS_WOW_PROJECT_MIDNIGHT then return true end --MIDNIGHT!!
 		local isFocus = UnitIsUnit ("focus", unitFrame [MEMBER_UNITID])
-		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(isFocus) then isFocus = false end
+		if issecretvalue(isFocus) then isFocus = false end
 		if (isFocus) then
 			if profile.focus_indicator_enabled then
 				--this is a rare call, no need to cache these values
@@ -8038,7 +8032,7 @@ end
 		end
 
 		local isTarget = UnitIsUnit ("target", unitFrame [MEMBER_UNITID])
-		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(isTarget) then isTarget = false end
+		if issecretvalue(isTarget) then isTarget = false end
 		if (isTarget) then
 			plateFrame [MEMBER_TARGET] = true
 			unitFrame [MEMBER_TARGET] = true
@@ -8114,13 +8108,13 @@ end
 		--Plater.PlayerHasTarget = Plater.PlayerCurrentTargetGUID and true
 		Plater.PlayerHasTarget = type(Plater.PlayerCurrentTargetGUID) ~= "nil"
 		local selfTarget = UnitIsUnit("player", "target")
-		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(selfTarget) then selfTarget = false end --MIDNIGHT!!
+		if issecretvalue(selfTarget) then selfTarget = false end --MIDNIGHT!!
 		Plater.PlayerHasTargetNonSelf = Plater.PlayerHasTarget and not selfTarget
 		Plater.PlayerCurrentFocusTargetGUID = UnitGUID ("focus")
 		--Plater.PlayerHasFocusTarget = Plater.PlayerCurrentFocusTargetGUID and true
 		Plater.PlayerHasFocusTarget = type(Plater.PlayerCurrentFocusTargetGUID) ~= "nil"
 		local selfFocus = UnitIsUnit("player", "target")
-		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(selfFocus) then selfFocus = false end --MIDNIGHT!!
+		if issecretvalue(selfFocus) then selfFocus = false end --MIDNIGHT!!
 		Plater.PlayerHasFocusTargetNonSelf = Plater.PlayerHasFocusTarget and not selfFocus and true
 		
 		for index, plateFrame in ipairs (Plater.GetAllShownPlates()) do
@@ -8359,7 +8353,7 @@ end
 				DF:SetFontColor (nameFontString, unpack(Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_guild_color))
 				plateFrame.isFriend = true
 				
-			elseif (Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_friends_color and (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(plateFrame.unitNameInternal) or not IS_WOW_PROJECT_MIDNIGHT) and Plater.FriendsCache [plateFrame.unitNameInternal]) then
+			elseif (Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_friends_color and not issecretvalue(plateFrame.unitNameInternal) and Plater.FriendsCache [plateFrame.unitNameInternal]) then
 				--is regular friend
 				DF:SetFontColor (nameFontString, unpack(Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_friend_color))
 				--DF:SetFontOutline (nameFontString, plateConfigs.actorname_text_shadow)
@@ -8559,7 +8553,7 @@ end
 			DF:SetFontColor (guildString, unpack(Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_guild_color))
 			plateFrame.isFriend = true
 		
-		elseif (Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_friends_color and (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(plateFrame.unitNameInternal) or not IS_WOW_PROJECT_MIDNIGHT) and Plater.FriendsCache [plateFrame.unitNameInternal]) then
+		elseif (Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_use_friends_color and not issecretvalue(plateFrame.unitNameInternal) and Plater.FriendsCache [plateFrame.unitNameInternal]) then
 			--is regular friend
 			DF:SetFontColor (nameString, unpack(Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_friend_color))
 			DF:SetFontColor (guildString, unpack(Plater.db.profile.plate_config [ACTORTYPE_FRIENDLY_PLAYER].actorname_friend_color))
@@ -8874,7 +8868,7 @@ end
 			wrap = true -- force wrapping
 		end
 		local name = plateFrame [MEMBER_NAME] or plateFrame.unitFrame [MEMBER_NAME] or ""
-		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(name) then
+		if issecretvalue(name) then
 			-- do we try to refresh? is it worth?
 			plateFrame.unitFrame.isRenamed = true -- force it
 			nameString:ClearText()
@@ -9591,7 +9585,7 @@ end
 		local icon = plateFrame.unitFrame.PlaterRaidTargetFrame.RaidTargetIcon
 		
 		if (index and not plateFrame.IsSelf) then
-			if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(index) then
+			if issecretvalue(index) then
 				--Plater.RaidTargetFontString = Plater.RaidTargetFontString or UIParent:CreateFontString(nil, nil, "GameFontNormal")
 				--Plater.RaidTargetFontString:SetFormattedText("Interface\\TargetingFrame\\UI-RaidTargetingIcon_%d.blp", index)
 				--icon:SetTexture(Plater.RaidTargetFontString:GetText())
@@ -10343,7 +10337,7 @@ end
 
 	function Plater.CheckHighlight (self)
 		local isMouseOver = UnitIsUnit ("mouseover", self.unit)
-		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(isMouseOver) then isMouseOver = false end
+		if issecretvalue(isMouseOver) then isMouseOver = false end
 		if (isMouseOver) then
 			self.HighlightTexture:Show()
 		else
@@ -10667,14 +10661,14 @@ end
 	end
 
 	function Plater.GetNpcIDFromGUID (guid) --private
-		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(guid) then return 0 end --MIDNIGHT!!
+		if issecretvalue(guid) then return 0 end --MIDNIGHT!!
 		local npcID = select (6, strsplit ("-", guid))
 		return tonumber (npcID or "0") or 0
 	end
 
 	function Plater.GetNpcID (plateFrame) --private
 		local npcId = plateFrame [MEMBER_GUID]
-		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(npcId) then return end --MIDNIGHT!!
+		if issecretvalue(npcId) then return end --MIDNIGHT!!
 		if (npcId and npcId ~= "") then
 			npcId = select (6, strsplit ("-", npcId))
 			if (npcId) then
@@ -10703,7 +10697,7 @@ end
 		elseif IS_WOW_PROJECT_MIDNIGHT then
 			local unitID = plateFrame.unitFrame [MEMBER_UNITID]
 			local isPet = UnitIsMinion(unitID) or UnitIsOtherPlayersPet(unitID) or UnitIsUnit("pet", unitID)
-			if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(isPet) then return "normal" end --MIDNIGHT!!
+			if issecretvalue(isPet) then return "normal" end --MIDNIGHT!!
 			if isPet then
 				return "pet"
 			end
@@ -10928,7 +10922,7 @@ end
 		end,
 		
 		SPELL_CAST_SUCCESS = function (time, token, hidding, sourceGUID, sourceName, sourceFlag, sourceFlag2, targetGUID, targetName, targetFlag, targetFlag2, spellID, spellName, spellType, amount, overKill, school, resisted, blocked, absorbed, isCritical)
-			if IS_WOW_PROJECT_MIDNIGHT and (issecretvalue(spellID) or issecretvalue(sourceGUID)) then return end --MIDNIGHT!!
+			if issecretvalue(spellID) or issecretvalue(sourceGUID) then return end --MIDNIGHT!!
 			if ((tonumber(spellID) or 0) > 0 and (not DB_CAPTURED_SPELLS[spellID] or DB_CAPTURED_SPELLS[spellID].isChanneled == nil or not DB_CAPTURED_CASTS[spellID] or DB_CAPTURED_CASTS[spellID].isChanneled == nil)) then -- check isChanneled to ensure update of already existing data
 				if (not platerInternal.HasFriendlyAffiliation[sourceGUID]) then
 					if (not sourceFlag or bit.band(sourceFlag, 0x60) ~= 0) then --is neutral or hostile
@@ -11100,7 +11094,7 @@ end
 		local petName,text1
 		local cbMode = tonumber(GetCVar("colorblindMode")) or 0
 		if IS_WOW_PROJECT_MIDNIGHT_API then
-			if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(serial) then return end
+			if issecretvalue(serial) then return end
 			local tooltipData = C_TooltipInfo.GetHyperlink ("unit:" .. serial or "")
 			if tooltipData then
 				local lines = tooltipData.lines
@@ -11124,7 +11118,7 @@ end
 		local isOtherPet = false
 		local ownerName
 		
-		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(text1) then return end
+		if issecretvalue(text1) then return end
 		if (text1 and text1 ~= "") then
 			local pName = GetUnitName ("player", true)
 			local playerName = pName:gsub ("%-.*", "") --remove realm name
@@ -11139,7 +11133,7 @@ end
 			end
 		end
 		
-		if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(petName) then return end
+		if issecretvalue(petName) then return end
 		if (isPlayerPet or isOtherPet) and petName then
 			local entry = {ownerGUID = IS_WOW_PROJECT_MIDNIGHT and UnitOwnerGUID(unitID) or isPlayerPet and UnitGUID("player") or ownerName and UnitExists(ownerName) and UnitGUID(ownerName) or nil, ownerName = ownerName, petName = petName, time = time()}
 			
@@ -11303,21 +11297,19 @@ end
 		local subTitle = ""
 		if IS_WOW_PROJECT_MIDNIGHT_API then
 			local guid
-			if IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(plateFrame [MEMBER_GUID]) then
+			if not issecretvalue(plateFrame [MEMBER_GUID]) then
 				guid = plateFrame [MEMBER_GUID]
-			elseif IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(plateFrame.unitFrame [MEMBER_GUID]) then
+			elseif not issecretvalue(plateFrame.unitFrame [MEMBER_GUID]) then
 				guid = plateFrame.unitFrame [MEMBER_GUID]
-			elseif IS_WOW_PROJECT_MIDNIGHT then
-				return
 			else
-				guid = plateFrame [MEMBER_GUID]
+				return
 			end
 			local tooltipData = C_TooltipInfo.GetHyperlink("unit:" .. (guid or ""))
 			if tooltipData then
 				local line = tooltipData.lines and tooltipData.lines[2 + cbMode]
 				subTitle = line and line.leftText or ""
 				--the tooltip hands back a secret string when the unit is restricted, and comparing one throws
-				if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(subTitle) then return end --MIDNIGHT!!
+				if issecretvalue(subTitle) then return end --MIDNIGHT!!
 			end
 		else
 			local GameTooltipFrame = PlaterScanTooltip or CreateFrame ("GameTooltip", "PlaterScanTooltip", nil, "GameTooltipTemplate")
@@ -11336,14 +11328,12 @@ end
 
 	function Plater.IsQuestObjective (plateFrame)
 		local guid
-		if IS_WOW_PROJECT_MIDNIGHT_API and not issecretvalue(plateFrame [MEMBER_GUID]) then
+		if not issecretvalue(plateFrame [MEMBER_GUID]) then
 			guid = plateFrame [MEMBER_GUID]
-		elseif IS_WOW_PROJECT_MIDNIGHT_API and not issecretvalue(plateFrame.unitFrame [MEMBER_GUID]) then
+		elseif not issecretvalue(plateFrame.unitFrame [MEMBER_GUID]) then
 			guid = plateFrame.unitFrame [MEMBER_GUID]
-		elseif IS_WOW_PROJECT_MIDNIGHT_API then
-			return
 		else
-			guid = plateFrame [MEMBER_GUID]
+			return
 		end
 		if (not guid) then
 			return
@@ -11377,7 +11367,7 @@ end
 				local tooltipData = C_TooltipInfo.GetHyperlink ("unit:" .. guid)
 				if tooltipData then
 					for _, line in ipairs(tooltipData.lines or {}) do
-						if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(line.type) then break end
+						if issecretvalue(line.type) then break end
 						if line.type == Enum.TooltipDataLineType.QuestObjective or line.type == Enum.TooltipDataLineType.QuestTitle or line.type == Enum.TooltipDataLineType.QuestPlayer then
 							--only add actual quest tooltip lines
 							ScanQuestTextCache [#ScanQuestTextCache + 1] = line.leftText or ""

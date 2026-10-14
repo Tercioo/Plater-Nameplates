@@ -2998,7 +2998,7 @@ end
 		if (unitFrame.IsNeutralOrHostile and not unitFrame.IsSelf) then --and unitFrame.InCombat --removed for debug on training dummies
 			if (InCombatLockdown()) then
 				local unitGUID = unitFrame[MEMBER_GUID]
-				if IS_WOW_PROJECT_MIDNIGHT and issecretvalue(unitGUID) then return end
+				if issecretvalue(unitGUID) then return end
 				local unitExtraAurasSpellIds = EXTRAAURAS_GUIDS[unitGUID]
 
 				--does the mob shown in the nameplate has an extra aura added to it?
@@ -4126,7 +4126,7 @@ end
 				
 				if auraIconFrame:IsShown() then
 					local spellName = auraIconFrame.SpellName
-					if not IS_WOW_PROJECT_MIDNIGHT or (IS_WOW_PROJECT_MIDNIGHT and not issecretvalue(spellName) and not issecretvalue(auraIconFrame.Duration)) then
+					if not issecretvalue(spellName) and not issecretvalue(auraIconFrame.Duration) then
 						--get the script object of the aura which will be showing in this icon frame
 						local globalScriptObject = SCRIPT_AURA_TRIGGER_CACHE[spellName]
 						

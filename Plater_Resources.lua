@@ -1200,7 +1200,7 @@ end
 		end
 
 		--resources amount got updated?
-		if IS_WOW_PROJECT_MIDNIGHT_API and not issecretvalue(currentResources) then
+		if not issecretvalue(currentResources) then
 			if (currentResources == resourceBar.lastResourceAmount and not forcedRefresh) then
 				return
 			end
