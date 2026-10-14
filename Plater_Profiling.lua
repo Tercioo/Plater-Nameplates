@@ -19,8 +19,10 @@ local addonMetricsAtStart = { global = {}, Plater = {} }
 local addonMetricsAtEnd = {}
 local profilingEnabled = false
 local everyFrameLogSkipFirst = true
+local isFrameLogScheduled = false
 
 local PRT_INDENT = "    "
+local CONST_SPIKE_THRESHOLD_MS = 50
 
 
 local addonMetricsNames = {
@@ -179,13 +181,17 @@ end
 
 -- profiling
 local function everyFrameEventLog()
+	isFrameLogScheduled = false
 	if not profilingEnabled then
 		PlaterDBChr.perfEventLog = nil -- reset this.
 		return
 	end
 	
+	isFrameLogScheduled = true
 	C_Timer.After( 0, everyFrameEventLog )
 	
+	--LastTime is the previous frame, so the first tick is the frame profiling started in: the whole load frame for /plater profnext
+	local isFirstTick = everyFrameLogSkipFirst
 	if everyFrameLogSkipFirst then
 		everyFrameLogSkipFirst = false
 	end
@@ -195,9 +201,10 @@ local function everyFrameEventLog()
 	
 	if C_AddOnProfiler then
 		local metricLastTime = C_AddOnProfiler.GetAddOnMetric(addonId, Enum.AddOnProfilerMetric.LastTime)
-		tinsert(loggedEvents, {pType = "Game-Core", event = "Plater Tick", subType = "Frame Tick Plater", timestamp = metricLastTime, startEvent = false, endEvent = false, isFrameTick = false, isMetric = true, curFPS = FPSData.curFPS, curMem = collectgarbage("count")})
+		tinsert(loggedEvents, {pType = "Game-Core", event = isFirstTick and "Plater Tick First" or "Plater Tick", subType = "Frame Tick Plater", timestamp = metricLastTime, startEvent = false, endEvent = false, isFrameTick = false, isMetric = true, curFPS = FPSData.curFPS, curMem = collectgarbage("count")})
 	end
 end
+isFrameLogScheduled = true
 C_Timer.After( 0, everyFrameEventLog )
 
 function Plater.StartLogPerformance()
@@ -220,6 +227,15 @@ local function EndLogPerformance(pType, event, subType)
 	
 	local stopTime = debugprofilestop()
 	tinsert(loggedEvents, {pType = pType, event = event, subType = subType, timestamp = stopTime, startEvent = false, endEvent = true, curFPS = FPSData.curFPS, curMem = collectgarbage("count")})
+end
+
+--logs a span that began before profiling was enabled and ends now, its memory is not known
+function Plater.LogPerformanceSpanUntilNow(pType, event, subType, startTime) --private
+	if not profilingEnabled then return end
+
+	local curMem = collectgarbage("count")
+	tinsert(loggedEvents, {pType = pType, event = event, subType = subType, timestamp = startTime, startEvent = true, endEvent = false, curFPS = FPSData.curFPS, curMem = curMem})
+	tinsert(loggedEvents, {pType = pType, event = event, subType = subType, timestamp = debugprofilestop(), startEvent = false, endEvent = true, curFPS = FPSData.curFPS, curMem = curMem})
 end
 
 function Plater.EnableProfiling(core)
@@ -254,7 +270,11 @@ function Plater.EnableProfiling(core)
 	
 	
 	everyFrameLogSkipFirst = true
-	C_Timer.After( 0, everyFrameEventLog )
+	--profiling can start before the chain scheduled at file load ran (/plater profnext), a second chain would log every frame twice
+	if not isFrameLogScheduled then
+		isFrameLogScheduled = true
+		C_Timer.After( 0, everyFrameEventLog )
+	end
 	
 	Plater:Msg("Plater started profiling.")
 	
@@ -701,7 +721,87 @@ local function getAdvancedPerfData()
 		end
 		printStr = printStr .. PRT_INDENT .. "'" .. name .. "': " .. count .. "\n"
 	end
+
+	--every plater tick over the threshold, with when it happened and the spans logged in the frame it measured.
+	--a frame tick closes the window since the previous one, and the plater tick logged right after it reads that same frame.
+	--ends are paired with starts of the same name: one start without an end must not hide every span after it
+	local spikeHeaderPrinted = false
+	local frameIndex = 0
+	local lastFrameTickTime = profStartTime
+	local frameDuration = 0
+	local openSpans = {}
+	local endsWithoutStart = {}
+	local currentFrameSpans = {}
+	local closedFrameSpans = {}
+	for _, logEntry in ipairs(loggedEvents) do
+		if logEntry.startEvent or logEntry.endEvent then
+			local spanName = logEntry.pType .. " > " .. logEntry.event .. " > " .. logEntry.subType
+			openSpans[spanName] = openSpans[spanName] or {}
+			local spanStarts = openSpans[spanName]
+			if logEntry.startEvent then
+				tinsert(spanStarts, logEntry.timestamp)
+			elseif #spanStarts == 0 then
+				endsWithoutStart[spanName] = (endsWithoutStart[spanName] or 0) + 1
+			else
+				tinsert(currentFrameSpans, {name = spanName, startTime = tremove(spanStarts), endTime = logEntry.timestamp})
+			end
+			
+		elseif logEntry.isFrameTick then
+			frameIndex = frameIndex + 1
+			frameDuration = logEntry.timestamp - lastFrameTickTime
+			lastFrameTickTime = logEntry.timestamp
+			closedFrameSpans = currentFrameSpans
+			currentFrameSpans = {}
+			
+		elseif logEntry.isMetric and logEntry.timestamp > CONST_SPIKE_THRESHOLD_MS then
+			if not spikeHeaderPrinted then
+				printStr = printStr .. "\n\n\nPlater Tick spikes over " .. CONST_SPIKE_THRESHOLD_MS .. "ms:\n"
+				spikeHeaderPrinted = true
+			end
+			
+			--spans are clipped to the frame, a span opened before it (FileLoad) only counts its part inside
+			local windowStartTime = lastFrameTickTime - frameDuration
+			local timePerSpanName = {}
+			local spanNames = {}
+			table.sort(closedFrameSpans, function(a, b) return a.startTime < b.startTime end)
+			
+			--nested spans overlap their parent, so the logged time is the union of the intervals, not their sum
+			local loggedTime = 0
+			local coveredUntil = windowStartTime
+			for _, span in ipairs(closedFrameSpans) do
+				local startTime = math.max(span.startTime, windowStartTime)
+				if not timePerSpanName[span.name] then
+					tinsert(spanNames, span.name)
+				end
+				timePerSpanName[span.name] = (timePerSpanName[span.name] or 0) + (span.endTime - startTime)
+				
+				if span.endTime > coveredUntil then
+					loggedTime = loggedTime + span.endTime - math.max(startTime, coveredUntil)
+					coveredUntil = span.endTime
+				end
+			end
+			table.sort(spanNames, function(a, b) return timePerSpanName[a] > timePerSpanName[b] end)
+			
+			printStr = printStr .. PRT_INDENT .. "frame #" .. frameIndex .. " at +" .. roundTime((lastFrameTickTime - profStartTime) / 1000) .. "s: plater " .. roundTime(logEntry.timestamp) .. "ms, frame " .. roundTime(frameDuration) .. "ms, logged " .. roundTime(loggedTime) .. "ms\n"
+			for index = 1, math.min(#spanNames, 8) do
+				printStr = printStr .. PRT_INDENT .. PRT_INDENT .. spanNames[index] .. ": " .. roundTime(timePerSpanName[spanNames[index]]) .. "ms\n"
+			end
+		end
+	end
 	
+	--an unbalanced span breaks the nesting of every total above, these name the start or end call that is missing
+	local unbalancedHeaderPrinted = false
+	for spanName, spanStarts in pairs(openSpans) do
+		local endCount = endsWithoutStart[spanName]
+		if #spanStarts > 0 or endCount then
+			if not unbalancedHeaderPrinted then
+				printStr = printStr .. "\n\n\nUnbalanced spans:\n"
+				unbalancedHeaderPrinted = true
+			end
+			printStr = printStr .. PRT_INDENT .. spanName .. ": " .. #spanStarts .. " never ended, " .. (endCount or 0) .. " ended without a start\n"
+		end
+	end
+
 	return perfTable, printStr
 end
 

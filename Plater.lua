@@ -4629,10 +4629,17 @@ function Plater.InitializeSavedVariables()
 end
 
 function Plater.OnInit() --private --~oninit ~init
+	--one reload only: /plater profnext sets it and this load consumes it. runs first so the whole init is measured
+	if (PlaterDB.perf_next_reload) then
+		PlaterDB.perf_next_reload = nil
+		Plater.EnableProfiling(true)
+		Plater.LogPerformanceSpanUntilNow("Plater-Core", "Init", "FileLoad", platerInternal.FileLoadStartTime)
+	end
+
+	Plater.StartLogPerformanceCore("Plater-Core", "Init", "OnInit")
+
 	LibStub ("AceDBOptions-3.0"):GetOptionsTable (Plater.db, true) -- register this now, to ensure no default "realm", "char - realm" profiles are shown in profiles management
 
-	Plater.StartPreCreateAuraContainers()
-	
 	-- Inspired by and mostly copied from https://github.com/Cidan/BetterBags/pull/934/, thanks Cidan
 	-- PatchWerk breaks WoW addons by patching _G functions and overwriting addon code.
 	-- Detect it early and force the user to disable it.
@@ -4682,6 +4689,7 @@ function Plater.OnInit() --private --~oninit ~init
 	Plater.InitializeSavedVariables()
 	Plater.RefreshDBUpvalues()
 	Plater.RefreshAuarasCurves()
+	Plater.StartPreCreateAuraContainers()
 
 	C_Timer.After(0, function()
 		platerInternal.CreatePerformanceUnits(Plater)
@@ -6475,6 +6483,8 @@ function Plater.OnInit() --private --~oninit ~init
 	elseif SettingsPanel then
 		SettingsPanel:HookScript('OnHide',Plater.UpdatePlateClickSpace)
 	end
+
+	Plater.EndLogPerformanceCore("Plater-Core", "Init", "OnInit")
 end
 
 

@@ -1019,7 +1019,10 @@ end
 local function getAuraFilters(frameName, actorType, force)
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "getAuraFilters")
 
-	if not actorType then return {} end
+	if not actorType then
+		Plater.EndLogPerformanceCore("Plater-Core", "Update", "getAuraFilters")
+		return {}
+	end
 
 	local isPlayer = actorType == "enemyplayer" or actorType == "friendlyplayer"
 	local canAssist = actorType == "friendlynpc" or actorType == "friendlyplayer"
@@ -1755,6 +1758,8 @@ local applyPandemicGlow = function(auraButton, auraWidth, auraHeight)
 end
 
 local function initAuraFrame(auraButton, frameName, frameKey, auraContainer)
+	Plater.StartLogPerformanceCore("Plater-Core", "Update", "initAuraFrame")
+	Plater.StartLogPerformanceCore("Plater-Core", "Update", "initAuraFrame - create")
 	--DevTool:AddData(newIcon, "initAuraFrame")
 	local profile = Plater.db.profile
 
@@ -1815,7 +1820,9 @@ local function initAuraFrame(auraButton, frameName, frameKey, auraContainer)
 	auraButton.TimerText = auraButton.Cooldown:CreateFontString (nil, "overlay", "NumberFontNormal")
 	auraButton.TimerText:SetPoint ("center")
 	--auraButton.TimerText = auraButton.Cooldown:GetRegions()
+	Plater.EndLogPerformanceCore("Plater-Core", "Update", "initAuraFrame - create")
 
+	Plater.StartLogPerformanceCore("Plater-Core", "Update", "initAuraFrame - durationtext")
 	if profile.aura_timer then
 		local durationTextOptions = {
 			textFormatter = timeFormatter,
@@ -1845,8 +1852,10 @@ local function initAuraFrame(auraButton, frameName, frameKey, auraContainer)
 	elseif auraButton.ClearCasterName then
 		auraButton:ClearCasterName()
 	end
+	Plater.EndLogPerformanceCore("Plater-Core", "Update", "initAuraFrame - durationtext")
 
 
+	Plater.StartLogPerformanceCore("Plater-Core", "Update", "initAuraFrame - fonts")
 	--sizes and position:
 	local auraWidth
 	local auraHeight
@@ -1912,13 +1921,19 @@ local function initAuraFrame(auraButton, frameName, frameKey, auraContainer)
 		DF:SetFontFace (timerLabel, profile.extra_icon_timer_font)
 		Plater.SetAnchor (timerLabel, profile.aura_timer_text_anchor) --TODO
 	end
+	Plater.EndLogPerformanceCore("Plater-Core", "Update", "initAuraFrame - fonts")
 
 	-- switch to proper border, keep compatibility
+	Plater.StartLogPerformanceCore("Plater-Core", "Update", "initAuraFrame - applyAuraBorders")
 	auraButton.Borders = {}
 	applyAuraBorders(auraButton, frameName, getAuraBorderOptions(frameName), borderThickness, auraWidth, auraHeight)
+	Plater.EndLogPerformanceCore("Plater-Core", "Update", "initAuraFrame - applyAuraBorders")
+	Plater.StartLogPerformanceCore("Plater-Core", "Update", "initAuraFrame - applyPandemicGlow")
 	applyPandemicGlow(auraButton, auraWidth, auraHeight)
+	Plater.EndLogPerformanceCore("Plater-Core", "Update", "initAuraFrame - applyPandemicGlow")
 
 
+	Plater.StartLogPerformanceCore("Plater-Core", "Update", "initAuraFrame - size")
 	--PixelUtil.SetSize(auraButton.Border, auraWidth, auraHeight)
 	--PixelUtil.SetSize(auraButton, auraWidth, auraHeight)
 	auraButton:SetSize(auraWidth, auraHeight)
@@ -1929,6 +1944,7 @@ local function initAuraFrame(auraButton, frameName, frameKey, auraContainer)
 	auraButton:SetScale(1)
 
 	Plater.UpdateIconAspecRatio (auraButton)
+	Plater.EndLogPerformanceCore("Plater-Core", "Update", "initAuraFrame - size")
 
 	auraButton.frameName = frameName
 	auraButton.frameKey = frameKey
@@ -1936,6 +1952,7 @@ local function initAuraFrame(auraButton, frameName, frameKey, auraContainer)
 
 	tinsert(auraContainer.auraButtons, auraButton)
 
+	Plater.EndLogPerformanceCore("Plater-Core", "Update", "initAuraFrame")
 	return auraButton
 end
 
@@ -2254,6 +2271,7 @@ local function preCreateAuraContainers()
 		createAuraContainers()
 		curTime = debugprofilestop()
 	end
+	Plater.EndLogPerformanceCore("Plater-Core", "Init", "PreCreateAuraContainers")
 	C_Timer.After(0, preCreateAuraContainers)
 end
 function Plater.StartPreCreateAuraContainers()
@@ -2455,7 +2473,9 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, forceFi
 							--if DevTool then DevTool:AddData({hasGroup = auraContainer:HasAuraGroup(groupName), auraContainer = auraContainer, unitFrame = unitFrame}, "update-" .. frameInfo.key .. "-" .. (unit or "nil") .. "-" .. groupName) end
 							if not auraContainer.groups[groupName] then
 								options.auraFrameOptions.candidateFilters = filter.candidateFilters
+								Plater.StartLogPerformanceCore("Plater-Core", "Update", "updatefilters - AddAuraGroup")
 								auraContainer:AddAuraGroup(groupName, filter.filterString, options.auraFrameOptions)
+								Plater.EndLogPerformanceCore("Plater-Core", "Update", "updatefilters - AddAuraGroup")
 								auraContainer.groups[groupName] = true
 							end
 

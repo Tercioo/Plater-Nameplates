@@ -1,5 +1,8 @@
 local addonName, platerInternal = ...
 
+--first plater file with code, /plater profnext logs the file loading from here to Plater.OnInit
+platerInternal.FileLoadStartTime = debugprofilestop()
+
 --details! framework
 local DF = _G ["DetailsFramework"]
 if (not DF) then

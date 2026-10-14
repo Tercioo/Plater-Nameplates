@@ -856,6 +856,7 @@ end
 
 		if not DB_USE_PLATER_RESOURCE_BAR then
 			resourceBar:Hide()
+			Plater.EndLogPerformanceCore("Plater-Resources", "Update", "UpdateResourceBar")
 			return
 		end
 
