@@ -2293,6 +2293,13 @@ Plater.AnchorNamesByPhraseId = {
 		end,
 
 		PLAYER_REGEN_DISABLED = function()
+			--/plater profcombat. the dispatcher opened this event's span while profiling was off, so it is opened again here
+			if (platerInternal.CombatProfiling == "next") then
+				platerInternal.CombatProfiling = "running"
+				Plater.EnableProfiling(true)
+				Plater.StartLogPerformanceCore("Plater-Core", "Events", "PLAYER_REGEN_DISABLED")
+			end
+
 			PLAYER_IN_COMBAT = true
 
 			Plater.RefreshAutoToggle(PLAYER_IN_COMBAT)
@@ -2373,6 +2380,13 @@ Plater.AnchorNamesByPhraseId = {
 				local OpenOptionspanelAfterCombat = platerInternal.OpenOptionspanelAfterCombat
 				platerInternal.OpenOptionspanelAfterCombat = nil
 				C_Timer.NewTimer (1.5, function() Plater.OpenOptionsPanel(unpack(OpenOptionspanelAfterCombat)) end )
+			end
+
+			--the span is closed before profiling stops, the dispatcher's own end call after this logs nothing
+			if (platerInternal.CombatProfiling == "running") then
+				platerInternal.CombatProfiling = nil
+				Plater.EndLogPerformanceCore("Plater-Core", "Events", "PLAYER_REGEN_ENABLED")
+				Plater.DisableProfiling()
 			end
 		end,
 
