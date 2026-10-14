@@ -1898,7 +1898,7 @@ detailsFramework.EditorMixin = {
             canvasScrollBox:SetVerticalScroll(0)
         end
 
-        if (editingOptions.can_move) then
+       if (editingOptions.can_move and self:IsVisible()) then
             self:StartObjectMovement(anchorSettings)
         else
             --hide mover frame
@@ -2447,28 +2447,19 @@ detailsFramework.EditorMixin = {
 
             --row click selects the registration. we use line.objectRegistered (set in refresh)
             --instead of self.index so the array-index drift caused by hiding collapsed children
-            --does not point at the wrong entry. double-click on a parent row also toggles its
-            --expansion, same as clicking the +/- arrow. timestamp + registration check prevents
-            --misfires from scrollbox row recycling (the same frame line later representing a
-            --different registration) and from rapid clicks across two different rows.
+            --does not point at the wrong entry. a click on a parent row also opens or closes it,
+            --same as clicking the +/- arrow. the toggle goes first so the selector refresh inside
+            --EditObject already shows the children
             line:SetScript("OnClick", function(self)
                 if (not self.objectRegistered) then
                     return
                 end
-                editorFrame:EditObject(self.objectRegistered)
 
-                local now = GetTime()
-                local sameRow = self.lastClickedRegistration == self.objectRegistered
-                local isDoubleClick = sameRow and self.lastClickTime and (now - self.lastClickTime) < 0.4
-                if (isDoubleClick and editorFrame:HasChildRegistrations(self.objectRegistered)) then
+                if (editorFrame:HasChildRegistrations(self.objectRegistered)) then
                     self.objectRegistered.isExpanded = not self.objectRegistered.isExpanded
-                    selectObjectScrollBoxRefresh()
-                    self.lastClickTime = nil
-                    self.lastClickedRegistration = nil
-                else
-                    self.lastClickTime = now
-                    self.lastClickedRegistration = self.objectRegistered
                 end
+
+                editorFrame:EditObject(self.objectRegistered)
             end)
 
             --expand/collapse toggle, only shown for parent rows (refreshFunc shows/hides it).
