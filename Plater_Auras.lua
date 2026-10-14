@@ -49,6 +49,8 @@ local BackdropTemplateMixin = _G.BackdropTemplateMixin
 local BUFF_MAX_DISPLAY_PLATER = nil -- don't limit.
 --size of the pandemic glow relative to the aura icon
 local CONST_PANDEMIC_GLOW_SCALE = 1.4
+--the dispel glow texture is drawn in texture pixels, this brings it down to nameplate size
+local CONST_DISPEL_GLOW_SCALE = 0.6
 
 local DB_AURA_GROW_DIRECTION
 local DB_AURA_GROW_DIRECTION2
@@ -1660,33 +1662,35 @@ local applyPandemicGlow = function(auraButton, auraWidth, auraHeight)
 		pandemicGlow:Hide()
 		auraButton.PandemicGlow = pandemicGlow
 
-		--a registered animation group cannot get more animations, so it is complete before registering.
-		--ponytail: it stays registered when the option is turned off, the button keeps computing the window until reload
+		--a registered animation group cannot get more animations, so it is complete before registering
 		local pulseAnimation = pandemicGlow:CreateAnimationGroup()
 		pulseAnimation:SetLooping("BOUNCE")
 		local alphaAnimation = pulseAnimation:CreateAnimation("Alpha")
 		alphaAnimation:SetFromAlpha(1)
 		alphaAnimation:SetToAlpha(0.3)
 		alphaAnimation:SetDuration(0.5)
-		auraButton:AddPandemicActiveAnimation(pulseAnimation)
+		auraButton.PandemicPulse = pulseAnimation
 	end
 
 	pandemicGlow:SetSize(glowWidth, glowHeight)
 	pandemicGlow:SetVertexColor(glowColor[1], glowColor[2], glowColor[3], glowColor[4])
 
-	--registering the same region twice is an assert error
+	--registering the same region or animation twice is an assert error. with nothing registered the button
+	--stops computing the pandemic window
 	if (isEnabled and not auraButton.hasPandemicGlow) then
 		auraButton:AddPandemicRegion(pandemicGlow)
+		auraButton:AddPandemicActiveAnimation(auraButton.PandemicPulse)
 		auraButton.hasPandemicGlow = true
 
 	elseif (not isEnabled and auraButton.hasPandemicGlow) then
 		auraButton:RemovePandemicRegion(pandemicGlow)
+		auraButton:RemovePandemicActiveAnimation(auraButton.PandemicPulse)
 		pandemicGlow:Hide()
 		auraButton.hasPandemicGlow = false
 	end
 
 	--one flash when the window opens. the texture has no alpha outside of its animation and is not a
-	--pandemic region, so hiding it is all it takes to turn the flash off
+	--pandemic region, so unregistering the animation is all it takes to turn the flash off
 	local isFlashEnabled = isEnabled and profile.aura_pandemic_glow_flash
 	local pandemicFlash = auraButton.PandemicFlash
 
@@ -1720,10 +1724,18 @@ local applyPandemicGlow = function(auraButton, auraWidth, auraHeight)
 		growAnimation:SetScaleFrom(1, 1)
 		growAnimation:SetScaleTo(1.4, 1.4)
 		growAnimation:SetDuration(0.4)
-		auraButton:AddPandemicEnterAnimation(flashAnimation)
+		auraButton.PandemicFlashAnimation = flashAnimation
 	end
 
-	pandemicFlash:SetShown(isFlashEnabled)
+	if (isFlashEnabled and not auraButton.hasPandemicFlash) then
+		auraButton:AddPandemicEnterAnimation(auraButton.PandemicFlashAnimation)
+		auraButton.hasPandemicFlash = true
+
+	elseif (not isFlashEnabled and auraButton.hasPandemicFlash) then
+		auraButton:RemovePandemicEnterAnimation(auraButton.PandemicFlashAnimation)
+		auraButton.hasPandemicFlash = false
+	end
+
 	pandemicFlash:SetSize(glowWidth, glowHeight)
 	pandemicFlash:SetVertexColor(glowColor[1], glowColor[2], glowColor[3], glowColor[4])
 end
@@ -2287,6 +2299,85 @@ function platerInternal.Auras.CreateOldAuraContainers(unitFrame)
 	unitFrame.BuffFrame.ExtraIconFrame = unitFrame.ExtraIconFrame
 end
 
+--colors the dispel glow. the glow belongs to an aura slot frame, which can be locked while auras are secret.
+--there is no event for the end of that, so a locked glow is tried again every second
+local applyDispelGlowColor
+applyDispelGlowColor = function(container)
+	if (not container.Glow:CanBeAccessedInContext()) then
+		container.glowColorTimer = C_Timer.NewTimer(1, function() applyDispelGlowColor(container) end)
+		return
+	end
+
+	local glowColor = Plater.db.profile.aura_dispel_glow_color
+	container.Glow:SetVertexColor(glowColor[1], glowColor[2], glowColor[3], glowColor[4])
+	container.configIndex = containerConfigCache.containerConfigIndex
+	container.glowColorTimer = nil
+end
+
+--makes the nameplate glow while the unit has an aura the player can dispel, purge or soothe. the auras are secret, so an
+--aura slot does the work: the engine shows the slot frame while such an aura is on the unit. 'unit' is nil when the nameplate is removed
+local updateDispelGlow = function(unitFrame, unit)
+	local profile = Plater.db.profile
+	local isEnabled = unit and profile.aura_dispel_glow
+	local container = unitFrame.DispelGlowFrame
+
+	if (not container) then
+		if (not isEnabled) then
+			return
+		end
+
+		container = CreateFrame("AuraContainer", "$parentDispelGlowFrame", unitFrame.healthBar, "CustomAuraContainerTemplate")
+		container:SetScale(CONST_DISPEL_GLOW_SCALE)
+		container:SetAllPoints()
+		container:SetEnabled(false)
+		--with the preview on, the container reads the edit mode source instead of the unit's auras
+		container:SetEditModePreviewEnabled(false)
+		unitFrame.DispelGlowFrame = container
+
+		container:AddAuraSlot("dispel", "HELPFUL|RAID_PLAYER_DISPELLABLE", {
+			--the slot frame is locked while auras are secret, so everything it needs is done in here
+			initializeFrame = function(slotFrame)
+				--the slot frame is a button, it stays tiny so it does not take the clicks on the health bar
+				slotFrame:SetMouseMotionEnabled(false)
+				slotFrame:SetSize(1, 1)
+				slotFrame:SetPoint("center")
+
+				--the texture is black with the glow around a hollow bar, the bar starts 38 pixels from the sides and 24 from top and bottom.
+				--sliced, so the glow keeps its thickness on every health bar size
+				local glowColor = profile.aura_dispel_glow_color
+				local glow = slotFrame:CreateTexture(nil, "overlay")
+				glow:SetTexture([[Interface\AddOns\Plater\images\nameplate_glow]])
+				glow:SetTextureSliceMargins(44, 30, 44, 30)
+				glow:SetBlendMode("ADD")
+				glow:SetPoint("topleft", container, "topleft", -38, 24)
+				glow:SetPoint("bottomright", container, "bottomright", 38, -24)
+				glow:SetVertexColor(glowColor[1], glowColor[2], glowColor[3], glowColor[4])
+				container.Glow = glow
+			end,
+		})
+
+		container.configIndex = containerConfigCache.containerConfigIndex
+	end
+
+	if (not isEnabled) then
+		--a slot keeps its last state while the container is disabled, so the container is hidden as well
+		container:SetEnabled(false)
+		container:Hide()
+		return
+	end
+
+	if (container.configIndex ~= containerConfigCache.containerConfigIndex and not container.glowColorTimer) then
+		applyDispelGlowColor(container)
+	end
+
+	--buffs are removed from enemies and debuffs from friends. without the split a debuff on an enemy matches as well
+	local filterString = UnitCanAssist("player", unit) and "HARMFUL|RAID_PLAYER_DISPELLABLE" or "HELPFUL|RAID_PLAYER_DISPELLABLE"
+	container:SetAuraSlotFilterString("dispel", filterString)
+	container:SetEnabled(true)
+	container:SetUnit(unit)
+	container:Show()
+end
+
 function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, forceFilters, forceLayout)
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "CreateOrUpdateAuraContainers")
 	if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS and unit ~= "player" then
@@ -2418,6 +2509,8 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, forceFi
 
 			--if DevTool then DevTool:AddData({auraContainer = auraContainer, unitFrame = unitFrame, debugstack = debugstack()}, "update - " .. (unit or "nil")) end
 		end
+
+		updateDispelGlow(unitFrame, unit)
 
 	elseif not unitFrame.BuffFrame then -- old API
 		platerInternal.Auras.CreateOldAuraContainers(unitFrame)

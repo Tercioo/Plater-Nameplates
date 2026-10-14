@@ -3014,6 +3014,36 @@ local debuff_options = {
 		desc = "Flash the glow once when the pandemic window opens.",
 		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
 	},
+	{
+		type = "toggle",
+		boxfirst = true,
+		get = function() return Plater.db.profile.aura_dispel_glow end,
+		set = function (self, fixedparam, value)
+			Plater.db.profile.aura_dispel_glow = value
+			Plater.RefreshAuras()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Dispel glow",
+		desc = "Glow around the nameplate while the unit has an aura you can dispel, purge or soothe.",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
+	{
+		type = "color",
+		boxfirst = true,
+		get = function()
+			local color = Plater.db.profile.aura_dispel_glow_color
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a)
+			local color = Plater.db.profile.aura_dispel_glow_color
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.RefreshAuras()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Dispel glow color",
+		desc = "Color of the dispel glow.",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
 
 	{
 		type = "toggle",
