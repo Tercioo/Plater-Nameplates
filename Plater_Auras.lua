@@ -1954,6 +1954,11 @@ local function initAuraFrame(auraButton, frameName, frameKey, auraContainer)
 	Plater.UpdateIconAspecRatio (auraButton)
 	Plater.EndLogPerformanceCore("Plater-Core", "Update", "initAuraFrame - size")
 
+	--the pass in the nameplate created event skips aura containers, so the buttons get it here
+	if (PixelUtil.SetRoundLayoutToNearestPixelRecursively) then
+		PixelUtil.SetRoundLayoutToNearestPixelRecursively(auraButton, true)
+	end
+
 	auraButton.frameName = frameName
 	auraButton.frameKey = frameKey
 	auraButton.auraContainer = auraContainer

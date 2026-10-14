@@ -3565,7 +3565,17 @@ Plater.AnchorNamesByPhraseId = {
 			
 
 				if PixelUtil.SetRoundLayoutToNearestPixelRecursively then
-					PixelUtil.SetRoundLayoutToNearestPixelRecursively(unitFrame, true)
+					unitFrame:SetRoundLayoutToNearestPixel(true)
+					for _, region in ipairs({unitFrame:GetRegions()}) do
+						region:SetRoundLayoutToNearestPixel(true)
+					end
+
+					--aura containers (marked by frameInfo) are skipped, their blizzard aura buttons are forbidden to addon code
+					for _, child in ipairs({unitFrame:GetChildren()}) do
+						if (not child.frameInfo) then
+							PixelUtil.SetRoundLayoutToNearestPixelRecursively(child, true)
+						end
+					end
 				end
 
 			--> name plate created hook
