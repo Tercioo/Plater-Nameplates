@@ -1559,6 +1559,14 @@ function designer.CreateSettings(parentFrame)
                     setter = function(auras, value) refreshAuraDBAndIcons() end,
                 },
                 {
+                    key = "aura_pandemic_glow_pulse",
+                    label = "Pulse",
+                    desc = "Pulse the glow while the pandemic window is open.",
+                    widget = "toggle",
+                    default = Plater.db.profile.aura_pandemic_glow_pulse,
+                    setter = function(auras, value) refreshAuraDBAndIcons() end,
+                },
+                {
                     key = "aura_pandemic_glow_flash",
                     label = "Flash",
                     desc = "Flash the glow once when the pandemic window opens.",

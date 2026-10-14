@@ -1679,18 +1679,28 @@ local applyPandemicGlow = function(auraButton, auraWidth, auraHeight)
 	--stops computing the pandemic window
 	if (isEnabled and not auraButton.hasPandemicGlow) then
 		auraButton:AddPandemicRegion(pandemicGlow)
-		auraButton:AddPandemicActiveAnimation(auraButton.PandemicPulse)
 		auraButton.hasPandemicGlow = true
 
 	elseif (not isEnabled and auraButton.hasPandemicGlow) then
 		auraButton:RemovePandemicRegion(pandemicGlow)
-		auraButton:RemovePandemicActiveAnimation(auraButton.PandemicPulse)
 		pandemicGlow:Hide()
 		auraButton.hasPandemicGlow = false
 	end
 
-	--one flash when the window opens. the texture has no alpha outside of its animation and is not a
-	--pandemic region, so unregistering the animation is all it takes to turn the flash off
+	--blizzard only stops the animations it knows about, so a pulse removed while playing is stopped here
+	local isPulseEnabled = isEnabled and profile.aura_pandemic_glow_pulse
+	if (isPulseEnabled and not auraButton.hasPandemicPulse) then
+		auraButton:AddPandemicActiveAnimation(auraButton.PandemicPulse)
+		auraButton.hasPandemicPulse = true
+
+	elseif (not isPulseEnabled and auraButton.hasPandemicPulse) then
+		auraButton:RemovePandemicActiveAnimation(auraButton.PandemicPulse)
+		auraButton.PandemicPulse:Stop()
+		auraButton.hasPandemicPulse = false
+	end
+
+	--one flash when the window opens. the texture does not keep the alpha 0 it is given once the animation is
+	--registered, so it is a pandemic region as well, and the animation holds its final alpha 0 for the rest of the window
 	local isFlashEnabled = isEnabled and profile.aura_pandemic_glow_flash
 	local pandemicFlash = auraButton.PandemicFlash
 
@@ -1705,10 +1715,11 @@ local applyPandemicGlow = function(auraButton, auraWidth, auraHeight)
 		pandemicFlash:SetDesaturated(true)
 		pandemicFlash:SetBlendMode("ADD")
 		pandemicFlash:SetPoint("center")
-		pandemicFlash:SetAlpha(0)
+		pandemicFlash:Hide()
 		auraButton.PandemicFlash = pandemicFlash
 
 		local flashAnimation = pandemicFlash:CreateAnimationGroup()
+		flashAnimation:SetToFinalAlpha(true)
 		local fadeInAnimation = flashAnimation:CreateAnimation("Alpha")
 		fadeInAnimation:SetOrder(1)
 		fadeInAnimation:SetFromAlpha(0)
@@ -1728,11 +1739,14 @@ local applyPandemicGlow = function(auraButton, auraWidth, auraHeight)
 	end
 
 	if (isFlashEnabled and not auraButton.hasPandemicFlash) then
+		auraButton:AddPandemicRegion(pandemicFlash)
 		auraButton:AddPandemicEnterAnimation(auraButton.PandemicFlashAnimation)
 		auraButton.hasPandemicFlash = true
 
 	elseif (not isFlashEnabled and auraButton.hasPandemicFlash) then
+		auraButton:RemovePandemicRegion(pandemicFlash)
 		auraButton:RemovePandemicEnterAnimation(auraButton.PandemicFlashAnimation)
+		pandemicFlash:Hide()
 		auraButton.hasPandemicFlash = false
 	end
 

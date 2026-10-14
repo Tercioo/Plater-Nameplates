@@ -2977,6 +2977,7 @@ local debuff_options = {
 		get = function() return Plater.db.profile.aura_pandemic_glow end,
 		set = function (self, fixedparam, value)
 			Plater.db.profile.aura_pandemic_glow = value
+			Plater.RefreshDBUpvalues()
 			Plater.RefreshAuras()
 			Plater.UpdateAllPlates()
 		end,
@@ -2994,6 +2995,7 @@ local debuff_options = {
 		set = function (self, r, g, b, a)
 			local color = Plater.db.profile.aura_pandemic_glow_color
 			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.RefreshDBUpvalues()
 			Plater.RefreshAuras()
 			Plater.UpdateAllPlates()
 		end,
@@ -3004,9 +3006,24 @@ local debuff_options = {
 	{
 		type = "toggle",
 		boxfirst = true,
+		get = function() return Plater.db.profile.aura_pandemic_glow_pulse end,
+		set = function (self, fixedparam, value)
+			Plater.db.profile.aura_pandemic_glow_pulse = value
+			Plater.RefreshDBUpvalues()
+			Plater.RefreshAuras()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Pandemic glow pulse",
+		desc = "Pulse the glow while the pandemic window is open.",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
+	{
+		type = "toggle",
+		boxfirst = true,
 		get = function() return Plater.db.profile.aura_pandemic_glow_flash end,
 		set = function (self, fixedparam, value)
 			Plater.db.profile.aura_pandemic_glow_flash = value
+			Plater.RefreshDBUpvalues()
 			Plater.RefreshAuras()
 			Plater.UpdateAllPlates()
 		end,
@@ -3037,6 +3054,7 @@ local debuff_options = {
 		set = function (self, r, g, b, a)
 			local color = Plater.db.profile.aura_dispel_glow_color
 			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.RefreshDBUpvalues()
 			Plater.RefreshAuras()
 			Plater.UpdateAllPlates()
 		end,
