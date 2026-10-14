@@ -8,6 +8,14 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1792002304, "Backend Change", "Oct 14th, 2026", "Bit of performance tuning on aura containers.", "cont1nuity"},
+			{1792002304, "New Feature", "Oct 14th, 2026", "Add dispel glow option to glow the nameplate when something can be dispelled/purged/soothed.", "cont1nuity"},
+			{1792002304, "New Feature", "Oct 13th, 2026", "Add pandemic glow options for auras.", "cont1nuity"},
+			{1792002304, "Backend Change", "Oct 13th, 2026", "Re-enable the aura consolidation, mainly for Blood Plague for DKs.", "cont1nuity"},
+			{1792002304, "Backend Change", "Oct 12th, 2026", "Adding more aura coloring options.", "cont1nuity"},
+			{1792002304, "Bug Fix", "Oct 12th, 2026", "Fixing caster name option for buff special.", "cont1nuity"},
+			{1792002304, "Backend Change", "Oct 12th, 2026", "More performance logging in profiling.", "cont1nuity"},
+
 			{1791537615, "Backend Change", "Oct 7th, 2026", "Some general performance improvements.", "cont1nuity"},
 			{1791537615, "Bug Fix", "Oct 7th, 2026", "Mind Controls should no longer have enemy nameplates lingering when they switch to friendly again.", "cont1nuity"},
 			{1791537615, "Backend Change", "Oct 4th, 2026", "Designer updates.", "Terciob"},
