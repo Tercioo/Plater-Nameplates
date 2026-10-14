@@ -11127,7 +11127,7 @@ end
 		
 		local petName,text1
 		local cbMode = tonumber(GetCVar("colorblindMode")) or 0
-		if IS_WOW_PROJECT_MIDNIGHT_API then
+		if IS_WOW_PROJECT_MIDNIGHT_API and C_TooltipInfo then
 			if issecretvalue(serial) then return end
 			local tooltipData = C_TooltipInfo.GetHyperlink ("unit:" .. serial or "")
 			if tooltipData then
@@ -11329,7 +11329,7 @@ end
 	function Plater.GetActorSubName (plateFrame) --private
 		local cbMode = tonumber(GetCVar("colorblindMode")) or 0
 		local subTitle = ""
-		if IS_WOW_PROJECT_MIDNIGHT_API then
+		if IS_WOW_PROJECT_MIDNIGHT_API and C_TooltipInfo then
 			local guid
 			if not issecretvalue(plateFrame [MEMBER_GUID]) then
 				guid = plateFrame [MEMBER_GUID]
