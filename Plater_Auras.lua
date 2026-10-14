@@ -51,6 +51,9 @@ local BUFF_MAX_DISPLAY_PLATER = nil -- don't limit.
 local CONST_PANDEMIC_GLOW_SCALE = 1.4
 --the dispel glow texture is drawn in texture pixels, this brings it down to nameplate size
 local CONST_DISPEL_GLOW_SCALE = 0.6
+--aura container sets (one per nameplate, 3 containers each) for the 40 nameplates max plus a spare. built with their aura groups
+--behind the loading screen, each costs ~40ms and ~100 aura buttons
+local CONST_MAX_AURA_CONTAINER_SETS = 41
 
 local DB_AURA_GROW_DIRECTION
 local DB_AURA_GROW_DIRECTION2
@@ -1514,14 +1517,19 @@ function Plater.Auras.ClearAuraFrameUpdateCallback(callbackType)
 	platerInternal.Auras.initAndUpdateAuraFrameOverrides[callbackType] = nil
 end
 
-local BORDER_DISPEL_KEYS = {None = "none", Magic = "magic", Curse = "curse", Disease = "disease", Poison = "poison", Bleed = "bleed", Enrage = "enrage"}
+--dispel type id (the curve x value) to profile color key. it is a step curve, so each color holds until the next id:
+--the ids between the named types (stealth, invisibility, ...) get the untyped color
+local BORDER_DISPEL_CURVE_KEYS = {[0] = "none", [1] = "magic", [2] = "curse", [3] = "disease", [4] = "poison", [5] = "none", [9] = "enrage", [10] = "none", [11] = "bleed", [12] = "none"}
 
-local function buildBorderColorMap(typeColors, byType, untypedColor)
-	local map = {}
-	for dispelName, key in pairs(BORDER_DISPEL_KEYS) do
-		map[dispelName] = CreateColor(unpack(byType and dispelName ~= "None" and typeColors[key] or untypedColor))
+--one curve per border option instead of a color map: every AddDispelTypeTexture call securecopies its options per button,
+--and a map of ColorMixin tables made that copy the most expensive part of creating an aura button
+local function buildBorderColorCurve(typeColors, byType, untypedColor)
+	local curve = C_CurveUtil.CreateColorCurve()
+	curve:SetType(Enum.LuaCurveType.Step)
+	for dispelTypeId, key in pairs(BORDER_DISPEL_CURVE_KEYS) do
+		curve:AddPoint(dispelTypeId, CreateColor(unpack(byType and key ~= "none" and typeColors[key] or untypedColor)))
 	end
-	return map
+	return curve
 end
 
 local BORDER_COLOR_KEYS = {"none", "magic", "curse", "disease", "poison", "bleed", "enrage", "is_debuff", "is_buff", "steal_or_purge"}
@@ -1571,22 +1579,22 @@ local function getAuraBorderOptions(frameName)
 		local stealable = Enum.CustomAuraButtonDispelTypeStealableFilter
 		borderOptions[1] = { --debuffs
 			showWhenHarmful = true, showWhenHelpful = false, showWithoutDispelType = true, style = style,
-			customDispelColorMap = buildBorderColorMap(colors, profile.aura_border_colors_by_type_debuff, colors.is_debuff),
+			customDispelColorCurve = buildBorderColorCurve(colors, profile.aura_border_colors_by_type_debuff, colors.is_debuff),
 		}
 		borderOptions[2] = { --buffs
 			showWhenHarmful = false, showWhenHelpful = true, showWithoutDispelType = true, style = style,
 			stealableFilter = stealable.NotStealable,
-			customDispelColorMap = buildBorderColorMap(colors, profile.aura_border_colors_by_type_buff, colors.is_buff),
+			customDispelColorCurve = buildBorderColorCurve(colors, profile.aura_border_colors_by_type_buff, colors.is_buff),
 		}
 		borderOptions[3] = { --steal or purge
 			showWhenHarmful = false, showWhenHelpful = true, showWithoutDispelType = true, style = style,
 			stealableFilter = stealable.Stealable,
-			customDispelColorMap = buildBorderColorMap(colors, profile.aura_border_colors_by_type_dispellable, colors.steal_or_purge),
+			customDispelColorCurve = buildBorderColorCurve(colors, profile.aura_border_colors_by_type_dispellable, colors.steal_or_purge),
 		}
 	elseif isExtra and profile.extra_icon_aura_border_colors_by_type or not isExtra and profile.aura_border_colors_by_type then
 		borderOptions[1] = { --fallback default
 			showWhenHarmful = true, showWhenHelpful = true, showWithoutDispelType = true, style = style,
-			customDispelColorMap = buildBorderColorMap(colors, true, colors.none),
+			customDispelColorCurve = buildBorderColorCurve(colors, true, colors.none),
 		}
 	end
 
@@ -2162,7 +2170,7 @@ local function getFullAuraOptions(frameName, key, auraContainer, actorType, forc
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "getFullAuraOptions")
 	local cachedAuraOptions = actorType and containerConfigCache.containerFullOptions[actorType][frameName]
 	if not force and cachedAuraOptions and cachedAuraOptions.optionIndex == containerConfigCache.containerFullOptionIndex then
-		cachedAuraOptions.initializeFrame = function(auraButton) initAuraFrame(auraButton, frameName, key, auraContainer) end -- this needs to be up to date!
+		cachedAuraOptions.auraFrameOptions.initializeFrame = function(auraButton) initAuraFrame(auraButton, frameName, key, auraContainer) end -- this needs to be up to date!
 		Plater.EndLogPerformanceCore("Plater-Core", "Update", "getFullAuraOptions")
 		return cachedAuraOptions
 	end
@@ -2194,9 +2202,10 @@ local function getFullAuraOptions(frameName, key, auraContainer, actorType, forc
 end
 
 local allocIndex = 1
-local function createAuraContainers(unitFrame)
+--actorType builds the aura groups for that actor type, without it the container gets its groups when a plate takes it
+local function createAuraContainers(unitFrame, actorType)
 	if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then return end
-	if not unitFrame and allocIndex > 121 then return end
+	if not unitFrame and allocIndex > CONST_MAX_AURA_CONTAINER_SETS then return end
 	for _, frameInfo in pairs (auraFramesSetup) do
 		local auraContainer = CreateFrame("AuraContainer", "PlaterAuraContainer" .. allocIndex .. frameInfo.frameName, unitFrame or UIParent, "CustomAuraContainerTemplate")
 		auraContainer:SetSize(1, 1)
@@ -2214,7 +2223,7 @@ local function createAuraContainers(unitFrame)
 		auraContainer.Name = frameInfo.name
 		auraContainer.index = allocIndex
 
-		local options = getFullAuraOptions(frameInfo.name, frameInfo.key, auraContainer, nil)
+		local options = getFullAuraOptions(frameInfo.name, frameInfo.key, auraContainer, actorType)
 		auraContainer.activeOptions = options
 		auraContainer.groups = {}
 		auraContainer.auraButtons = {}
@@ -2237,6 +2246,9 @@ local function createAuraContainers(unitFrame)
 		--SetAuraLayoutPadding
 
 		auraContainer:SetEnabled(false)
+
+		--the buttons were just created with the current config, the plate taking this container does not need to reskin them
+		auraContainer.configIndex = containerConfigCache.containerConfigIndex
 
 		--DevTool:AddData(auraContainer, "create - "..allocIndex)
 	end
@@ -2264,10 +2276,11 @@ end
 
 local function preCreateAuraContainers()
 	if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then return end
-	if allocIndex > 121 then return end
+	if allocIndex > CONST_MAX_AURA_CONTAINER_SETS then return end
+	Plater.StartLogPerformanceCore("Plater-Core", "Init", "PreCreateAuraContainers")
 	local curTime = debugprofilestop()
 	local endTime = curTime + 100
-	while curTime < endTime and allocIndex <= 121 do
+	while curTime < endTime and allocIndex <= CONST_MAX_AURA_CONTAINER_SETS do
 		createAuraContainers()
 		curTime = debugprofilestop()
 	end
@@ -2276,6 +2289,17 @@ local function preCreateAuraContainers()
 end
 function Plater.StartPreCreateAuraContainers()
 	if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then return end
+
+	--runs behind the loading screen. the plates shown after it take these sets and only switch their filters,
+	--building the groups there instead froze the first frame for 1-2s. most plates are enemy npcs
+	if (DB_AURA_ENABLED) then
+		Plater.StartLogPerformanceCore("Plater-Core", "Init", "CreateAuraContainersAtLogin")
+		while (allocIndex <= CONST_MAX_AURA_CONTAINER_SETS) do
+			createAuraContainers(nil, "enemynpc")
+		end
+		Plater.EndLogPerformanceCore("Plater-Core", "Init", "CreateAuraContainersAtLogin")
+	end
+
 	C_Timer.After(0, preCreateAuraContainers)
 end
 
