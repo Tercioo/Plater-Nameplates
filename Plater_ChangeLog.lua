@@ -8,6 +8,7 @@ function Plater.GetChangelogTable()
 	if (not Plater.ChangeLogTable) then
 		Plater.ChangeLogTable = {
 
+			{1792002304, "Bug Fix", "Oct 15th, 2026", "Fixing error for classic versions.", "cont1nuity"},
 			{1792002304, "Bug Fix", "Oct 14th, 2026", "Fixing error with pixel API.", "cont1nuity"},
 			{1792002304, "Backend Change", "Oct 14th, 2026", "Bit of performance tuning on aura containers.", "cont1nuity"},
 			{1792002304, "New Feature", "Oct 14th, 2026", "Add dispel glow option to glow the nameplate when something can be dispelled/purged/soothed.", "cont1nuity"},
