@@ -51,6 +51,8 @@ local BUFF_MAX_DISPLAY_PLATER = nil -- don't limit.
 local CONST_PANDEMIC_GLOW_SCALE = 1.4
 --the dispel glow texture is drawn in texture pixels, this brings it down to nameplate size
 local CONST_DISPEL_GLOW_SCALE = 0.6
+--thickness of the dispel border style, in dispel glow units (scaled by CONST_DISPEL_GLOW_SCALE)
+local CONST_DISPEL_BORDER_SIZE = 3
 --aura container sets (one per nameplate, 3 containers each) for the 40 nameplates max plus a spare. built with their aura groups
 --behind the loading screen, each costs ~40ms and ~100 aura buttons
 local CONST_MAX_AURA_CONTAINER_SETS = 41
@@ -2360,17 +2362,24 @@ function platerInternal.Auras.CreateOldAuraContainers(unitFrame)
 	unitFrame.BuffFrame.ExtraIconFrame = unitFrame.ExtraIconFrame
 end
 
---colors the dispel glow. the glow belongs to an aura slot frame, which can be locked while auras are secret.
---there is no event for the end of that, so a locked glow is tried again every second
-local applyDispelGlowColor
-applyDispelGlowColor = function(container)
+--shows the dispel glow style picked in the profile and colors it. the styles belong to an aura slot frame, which can be
+--locked while auras are secret. there is no event for the end of that, so a locked glow is tried again every second
+local applyDispelGlowStyle
+applyDispelGlowStyle = function(container)
 	if (not container.Glow:CanBeAccessedInContext()) then
-		container.glowColorTimer = C_Timer.NewTimer(1, function() applyDispelGlowColor(container) end)
+		container.glowColorTimer = C_Timer.NewTimer(1, function() applyDispelGlowStyle(container) end)
 		return
 	end
 
-	local glowColor = Plater.db.profile.aura_dispel_glow_color
-	container.Glow:SetVertexColor(glowColor[1], glowColor[2], glowColor[3], glowColor[4])
+	local profile = Plater.db.profile
+	local glowColor = profile.aura_dispel_glow_color
+	for styleName, regions in pairs(container.GlowStyles) do
+		for _, region in ipairs(regions) do
+			region:SetShown(styleName == profile.aura_dispel_glow_type)
+			region:SetVertexColor(glowColor[1], glowColor[2], glowColor[3], glowColor[4])
+		end
+	end
+
 	container.configIndex = containerConfigCache.containerConfigIndex
 	container.glowColorTimer = nil
 end
@@ -2403,21 +2412,79 @@ local updateDispelGlow = function(unitFrame, unit)
 				slotFrame:SetSize(1, 1)
 				slotFrame:SetPoint("center")
 
+				--every style is built here since the slot frame is locked afterwards, applyDispelGlowStyle shows the one in use.
+				--animations are registered as aura shown animations: blizzard plays them when the slot shows and stops them when it hides
+
 				--the texture is black with the glow around a hollow bar, the bar starts 38 pixels from the sides and 24 from top and bottom.
 				--sliced, so the glow keeps its thickness on every health bar size
-				local glowColor = profile.aura_dispel_glow_color
-				local glow = slotFrame:CreateTexture(nil, "overlay")
-				glow:SetTexture([[Interface\AddOns\Plater\images\nameplate_glow]])
-				glow:SetTextureSliceMargins(44, 30, 44, 30)
-				glow:SetBlendMode("ADD")
-				glow:SetPoint("topleft", container, "topleft", -38, 24)
-				glow:SetPoint("bottomright", container, "bottomright", 38, -24)
-				glow:SetVertexColor(glowColor[1], glowColor[2], glowColor[3], glowColor[4])
+				local createGlowTexture = function()
+					local glow = slotFrame:CreateTexture(nil, "overlay")
+					glow:SetTexture([[Interface\AddOns\Plater\images\nameplate_glow]])
+					glow:SetTextureSliceMargins(44, 30, 44, 30)
+					glow:SetBlendMode("ADD")
+					glow:SetPoint("topleft", container, "topleft", -38, 24)
+					glow:SetPoint("bottomright", container, "bottomright", 38, -24)
+					return glow
+				end
+
+				local glow = createGlowTexture()
 				container.Glow = glow
+
+				local pulseGlow = createGlowTexture()
+				local pulseAnimation = pulseGlow:CreateAnimationGroup()
+				pulseAnimation:SetLooping("BOUNCE")
+				local alphaAnimation = pulseAnimation:CreateAnimation("Alpha")
+				alphaAnimation:SetFromAlpha(1)
+				alphaAnimation:SetToAlpha(0.2)
+				alphaAnimation:SetDuration(0.5)
+				slotFrame:AddAuraShownAnimation(pulseAnimation)
+
+				--15 frames of white dots running around a rectangle, 2 columns by 8 rows. the dots sit a few pixels inside each frame,
+				--the offsets put them just outside the health bar
+				local ants = slotFrame:CreateTexture(nil, "overlay")
+				ants:SetTexture([[Interface\AddOns\Plater\images\ants_rectangle_white]])
+				ants:SetBlendMode("ADD")
+				ants:SetPoint("topleft", container, "topleft", -7, 6)
+				ants:SetPoint("bottomright", container, "bottomright", 7, -6)
+				local antsAnimation = ants:CreateAnimationGroup()
+				antsAnimation:SetLooping("REPEAT")
+				local flipBookAnimation = antsAnimation:CreateAnimation("FlipBook")
+				flipBookAnimation:SetFlipBookRows(8)
+				flipBookAnimation:SetFlipBookColumns(2)
+				flipBookAnimation:SetFlipBookFrames(15)
+				flipBookAnimation:SetDuration(0.25)
+				slotFrame:AddAuraShownAnimation(antsAnimation)
+
+				--four solid lines around the health bar
+				local borderTop = slotFrame:CreateTexture(nil, "overlay")
+				borderTop:SetPoint("topleft", container, "topleft", -CONST_DISPEL_BORDER_SIZE, CONST_DISPEL_BORDER_SIZE)
+				borderTop:SetPoint("bottomright", container, "topright", CONST_DISPEL_BORDER_SIZE, 0)
+				local borderBottom = slotFrame:CreateTexture(nil, "overlay")
+				borderBottom:SetPoint("topleft", container, "bottomleft", -CONST_DISPEL_BORDER_SIZE, 0)
+				borderBottom:SetPoint("bottomright", container, "bottomright", CONST_DISPEL_BORDER_SIZE, -CONST_DISPEL_BORDER_SIZE)
+				local borderLeft = slotFrame:CreateTexture(nil, "overlay")
+				borderLeft:SetPoint("topleft", container, "topleft", -CONST_DISPEL_BORDER_SIZE, 0)
+				borderLeft:SetPoint("bottomright", container, "bottomleft", 0, 0)
+				local borderRight = slotFrame:CreateTexture(nil, "overlay")
+				borderRight:SetPoint("topleft", container, "topright", 0, 0)
+				borderRight:SetPoint("bottomright", container, "bottomright", CONST_DISPEL_BORDER_SIZE, 0)
+
+				local borders = {borderTop, borderBottom, borderLeft, borderRight}
+				for _, border in ipairs(borders) do
+					border:SetColorTexture(1, 1, 1, 1)
+				end
+
+				--keys are the values of the aura_dispel_glow_type profile key
+				container.GlowStyles = {
+					glow = {glow},
+					pulse = {pulseGlow},
+					ants = {ants},
+					border = borders,
+				}
+
+				applyDispelGlowStyle(container)
 			end,
 		})
-
-		container.configIndex = containerConfigCache.containerConfigIndex
 	end
 
 	if (not isEnabled) then
@@ -2428,7 +2495,7 @@ local updateDispelGlow = function(unitFrame, unit)
 	end
 
 	if (container.configIndex ~= containerConfigCache.containerConfigIndex and not container.glowColorTimer) then
-		applyDispelGlowColor(container)
+		applyDispelGlowStyle(container)
 	end
 
 	--buffs are removed from enemies and debuffs from friends. without the split a debuff on an enemy matches as well

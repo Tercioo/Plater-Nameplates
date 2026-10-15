@@ -3045,6 +3045,28 @@ local debuff_options = {
 		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
 	},
 	{
+		type = "select",
+		get = function() return Plater.db.profile.aura_dispel_glow_type end,
+		values = function()
+			local onSelectGlowType = function(_, _, value)
+				Plater.db.profile.aura_dispel_glow_type = value
+				Plater.RefreshDBUpvalues()
+				Plater.RefreshAuras()
+				Plater.UpdateAllPlates()
+			end
+
+			return {
+				{label = "Glow", value = "glow", onclick = onSelectGlowType},
+				{label = "Pulsing Glow", value = "pulse", onclick = onSelectGlowType},
+				{label = "Ants", value = "ants", onclick = onSelectGlowType},
+				{label = "Border", value = "border", onclick = onSelectGlowType},
+			}
+		end,
+		name = "Dispel glow type",
+		desc = "How the dispel glow looks.",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
+	{
 		type = "color",
 		boxfirst = true,
 		get = function()

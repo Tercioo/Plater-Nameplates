@@ -883,6 +883,7 @@ PLATER_DEFAULT_SETTINGS = {
 		aura_pandemic_glow_flash = true,
 		aura_dispel_glow = false,
 		aura_dispel_glow_color = {0.2, 0.7, 1, 1},
+		aura_dispel_glow_type = "glow",
 		aura_timer_decimals = false,
 		aura_timer_text_size = 15,
 		aura_timer_text_font = "Arial Narrow",
