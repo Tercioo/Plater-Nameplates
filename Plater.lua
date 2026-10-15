@@ -1778,7 +1778,8 @@ Plater.AnchorNamesByPhraseId = {
 
 	--> place most used data into local upvalues to save process time
 	--> scripts need to call this function if they change something in the profile ~refresh ~db ~upvalues
-	function Plater.RefreshDBUpvalues()
+	--isProfileUnchanged: the profile is the same as on the last refresh, the aura button skins are not marked outdated
+	function Plater.RefreshDBUpvalues(isProfileUnchanged)
 		local profile = Plater.db.profile
 
 		DB_AURA_ENABLED = profile.aura_enabled
@@ -1858,7 +1859,7 @@ Plater.AnchorNamesByPhraseId = {
 		Plater.RefreshDBLists()
 
 		--refresh auras
-		Plater.RefreshAuraCache() --on Plater_Auras.lua
+		Plater.RefreshAuraCache(isProfileUnchanged) --on Plater_Auras.lua
 		Plater.RefreshAuraDBUpvalues() --on Plater_Auras.lua
 		Plater.UpdateAuraCache() --on Plater_Auras.lua
 
@@ -6432,8 +6433,9 @@ function Plater.OnInit() --private --~oninit ~init
 			Plater.FullRefreshAllPlates()
 		end)
 	
+		--the profile has not changed since OnInit, so the aura buttons built behind the loading screen keep their skin
 		for i = 1, 3 do
-			C_Timer.After (i, Plater.RefreshDBUpvalues)
+			C_Timer.After (i, function() Plater.RefreshDBUpvalues(true) end)
 		end
 		
 	if CastingBarFrame then

@@ -5445,7 +5445,8 @@ end
 		end
     end
 
-	function Plater.RefreshAuraCache()
+	--isProfileUnchanged: the profile is the same as on the last refresh, the aura button skins are still valid
+	function Plater.RefreshAuraCache(isProfileUnchanged)
 		Plater.StartLogPerformanceCore("Plater-Core", "Update", "RefreshAuraCache")
 
 		local profile = Plater.db.profile
@@ -5484,7 +5485,9 @@ end
 
 		Plater.MaxAurasPerRow = floor(profile.plate_config.enemynpc.health_incombat[1] / (profile.aura_width + DB_AURA_PADDING))
 		Plater.Auras.SetContainerFiltersOutdated()
-		Plater.Auras.SetIconConfigOutdated()
+		if (not isProfileUnchanged) then
+			Plater.Auras.SetIconConfigOutdated()
+		end
 
 		Plater.EndLogPerformanceCore("Plater-Core", "Update", "RefreshAuraCache")
     end
