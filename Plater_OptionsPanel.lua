@@ -3084,6 +3084,20 @@ local debuff_options = {
 		desc = "Color of the dispel glow.",
 		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
 	},
+	{
+		type = "toggle",
+		boxfirst = true,
+		get = function() return Plater.db.profile.aura_dispel_glow_color_by_type end,
+		set = function (self, fixedparam, value)
+			Plater.db.profile.aura_dispel_glow_color_by_type = value
+			Plater.RefreshDBUpvalues()
+			Plater.RefreshAuras()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Dispel glow color by type",
+		desc = "Color the dispel glow by the dispel type of the aura (magic, curse, disease, poison, enrage, ...), using the aura border dispel type colors. Auras without a type use the dispel glow color.",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
 
 	{
 		type = "toggle",

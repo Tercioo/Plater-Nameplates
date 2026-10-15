@@ -2366,17 +2366,38 @@ end
 --locked while auras are secret. there is no event for the end of that, so a locked glow is tried again every second
 local applyDispelGlowStyle
 applyDispelGlowStyle = function(container)
-	if (not container.Glow:CanBeAccessedInContext()) then
+	local slotFrame = container.GlowSlot
+	if (not slotFrame:CanBeAccessedInContext() or not container.Glow:CanBeAccessedInContext()) then
 		container.glowColorTimer = C_Timer.NewTimer(1, function() applyDispelGlowStyle(container) end)
 		return
 	end
 
 	local profile = Plater.db.profile
 	local glowColor = profile.aura_dispel_glow_color
+
+	--colored by type, the regions of the style in use are dispel type textures: blizzard shows them and colors them from
+	--the dispel type of the aura in the slot. auras without a type get the glow color
+	local dispelTypeOptions
+	if (profile.aura_dispel_glow_color_by_type) then
+		dispelTypeOptions = {
+			showAlways = true,
+			style = Enum.CustomAuraButtonDispelTypeTextureStyle.PreserveAsset,
+			customDispelColorCurve = buildBorderColorCurve(profile.aura_border_colors, true, glowColor),
+		}
+	end
+
+	--a cleared texture keeps the state blizzard gave it, so every region is set again below
+	slotFrame:ClearDispelTypeTextures()
+
 	for styleName, regions in pairs(container.GlowStyles) do
+		local isStyleInUse = styleName == profile.aura_dispel_glow_type
 		for _, region in ipairs(regions) do
-			region:SetShown(styleName == profile.aura_dispel_glow_type)
-			region:SetVertexColor(glowColor[1], glowColor[2], glowColor[3], glowColor[4])
+			if (isStyleInUse and dispelTypeOptions) then
+				slotFrame:AddDispelTypeTexture(region, dispelTypeOptions)
+			else
+				region:SetShown(isStyleInUse)
+				region:SetVertexColor(glowColor[1], glowColor[2], glowColor[3], glowColor[4])
+			end
 		end
 	end
 
@@ -2411,6 +2432,7 @@ local updateDispelGlow = function(unitFrame, unit)
 				slotFrame:SetMouseMotionEnabled(false)
 				slotFrame:SetSize(1, 1)
 				slotFrame:SetPoint("center")
+				container.GlowSlot = slotFrame
 
 				--every style is built here since the slot frame is locked afterwards, applyDispelGlowStyle shows the one in use.
 				--animations are registered as aura shown animations: blizzard plays them when the slot shows and stops them when it hides
