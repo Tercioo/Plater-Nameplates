@@ -1330,6 +1330,19 @@ function platerInternal.CreateAdvancedOptions()
 
         {
             type = "toggle",
+            get = function() return Plater.db.profile.use_custom_names end,
+            set = function (self, fixedparam, value)
+                Plater.db.profile.use_custom_names = value
+                Plater.RefreshDBUpvalues()
+                Plater.FullRefreshAllPlates()
+            end,
+            name = "Custom Names",
+            desc = "Show the names set in the CustomNames addon on nameplates and cast bar targets.",
+            hidden = not LibStub:GetLibrary("CustomNames", true),
+        },
+
+        {
+            type = "toggle",
             get = function() return Plater.db.profile.use_player_combat_state end,
             set = function (self, fixedparam, value)
                 Plater.db.profile.use_player_combat_state = value

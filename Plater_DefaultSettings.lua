@@ -690,6 +690,7 @@ PLATER_DEFAULT_SETTINGS = {
 		enable_masque_support = false,
 		
 		use_name_translit = false,
+		use_custom_names = false,
 		
 		use_player_combat_state = false,
 		

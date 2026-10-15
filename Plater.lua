@@ -97,6 +97,7 @@ local LibSharedMedia = LibStub:GetLibrary ("LibSharedMedia-3.0") -- https://www.
 local LCG = LibStub:GetLibrary("LibCustomGlow-1.0") -- https://github.com/Stanzilla/LibCustomGlow
 local LibRangeCheck = LibStub:GetLibrary ("LibRangeCheck-3.0") -- https://github.com/WeakAuras/LibRangeCheck-3.0
 local LibTranslit = LibStub:GetLibrary ("LibTranslit-1.0") -- https://github.com/Vardex/LibTranslit
+local LibCustomNames = LibStub:GetLibrary ("CustomNames", true) -- https://www.curseforge.com/wow/addons/libcustomnames
 local LDB = LibStub ("LibDataBroker-1.1", true)
 local LDBIcon = LDB and LibStub ("LibDBIcon-1.0", true)
 
@@ -460,6 +461,7 @@ Plater.AnchorNamesByPhraseId = {
 	--store translit option
 	local DB_USE_NAME_TRANSLIT = false
 	local TRANSLIT_MARK = "*"
+	local DB_USE_CUSTOM_NAMES = false
 	
 	--store the npc id cache
 	local DB_NPCIDS_CACHE = {}
@@ -1854,6 +1856,8 @@ Plater.AnchorNamesByPhraseId = {
 		DB_CAPTURED_SPELLS = PlaterDB.captured_spells
 		
 		DB_USE_NAME_TRANSLIT = profile.use_name_translit
+		--custom names only apply while the CustomNames addon is loaded
+		DB_USE_CUSTOM_NAMES = LibCustomNames ~= nil and profile.use_custom_names
 
 		--refresh lists
 		Plater.RefreshDBLists()
@@ -2481,8 +2485,11 @@ Plater.AnchorNamesByPhraseId = {
 					local unitFrame = plateFrame.unitFrame
 					local unitName = UnitName (unitID)
 					local unitNameTranslit = unitName
-					if DB_USE_NAME_TRANSLIT and not issecretvalue(unitName) then
-						unitNameTranslit = LibTranslit:Transliterate(unitName, TRANSLIT_MARK)
+					if DB_USE_CUSTOM_NAMES then
+						unitNameTranslit = LibCustomNames.UnitName (unitID)
+					end
+					if DB_USE_NAME_TRANSLIT and not issecretvalue(unitNameTranslit) then
+						unitNameTranslit = LibTranslit:Transliterate(unitNameTranslit, TRANSLIT_MARK)
 					end
 					plateFrame [MEMBER_NAME] = unitNameTranslit
 					plateFrame [MEMBER_NAMELOWER] = (IS_WOW_PROJECT_MIDNIGHT and plateFrame [MEMBER_NAME] or "") or lower (plateFrame [MEMBER_NAME])
@@ -4034,8 +4041,11 @@ Plater.AnchorNamesByPhraseId = {
 			--cache values
 			local unitName = UnitName (unitID) or ""
 			local unitNameTranslit = unitName
-			if DB_USE_NAME_TRANSLIT and not issecretvalue(unitName) then
-				unitNameTranslit = LibTranslit:Transliterate(unitName, TRANSLIT_MARK)
+			if DB_USE_CUSTOM_NAMES then
+				unitNameTranslit = LibCustomNames.UnitName (unitID) or ""
+			end
+			if DB_USE_NAME_TRANSLIT and not issecretvalue(unitNameTranslit) then
+				unitNameTranslit = LibTranslit:Transliterate(unitNameTranslit, TRANSLIT_MARK)
 			end
 			plateFrame [MEMBER_NAME] = unitNameTranslit
 			plateFrame [MEMBER_NAMELOWER] = (IS_WOW_PROJECT_MIDNIGHT and plateFrame [MEMBER_NAME] or "") or lower (plateFrame [MEMBER_NAME])
@@ -6108,6 +6118,9 @@ function Plater.OnInit() --private --~oninit ~init
 								end
 
 								if (canShowTargetName) then
+									if DB_USE_CUSTOM_NAMES then
+										targetName = LibCustomNames.UnitName (self.unit .. "target") or ""
+									end
 									if DB_USE_NAME_TRANSLIT and not issecretvalue(targetName) then
 										targetName = LibTranslit:Transliterate(targetName, TRANSLIT_MARK)
 									end
@@ -10947,6 +10960,9 @@ end
 						if (petOwnerTable) then
 							name = petOwnerTable.ownerName or name
 							sourceGUID = petOwnerTable.ownerGUID or sourceGUID
+						end
+						if DB_USE_CUSTOM_NAMES then
+							name = LibCustomNames.Get (name)
 						end
 						if DB_USE_NAME_TRANSLIT then
 							name = LibTranslit:Transliterate(name, TRANSLIT_MARK)

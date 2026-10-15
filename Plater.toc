@@ -13,7 +13,7 @@
 ## Notes-ptBR: Addon de placa de nome projetado para usuários avançados
 ## SavedVariables: PlaterDB, PlaterLanguage, PlaterLogs, PlaterBackup
 ## SavedVariablesPerCharacter: PlaterDBChr
-## OptionalDeps: Masque
+## OptionalDeps: Masque, CustomNames
 ## IconTexture-blank: 982414
 ## IconTexture: Interface\AddOns\Plater\images\cast_bar
 #@version-retail@
