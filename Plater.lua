@@ -3073,7 +3073,7 @@ Plater.AnchorNamesByPhraseId = {
 				
 			--> target overlay (the texture added above the nameplate when the unit is selected)
 				unitFrame.targetOverlayTexture = healthBar:CreateTexture (nil, "artwork")
-				unitFrame.targetOverlayTexture:SetDrawLayer ("artwork", 2)
+				unitFrame.targetOverlayTexture:SetDrawLayer ("artwork", 3)
 				unitFrame.targetOverlayTexture:SetBlendMode ("ADD")
 				unitFrame.targetOverlayTexture:SetAllPoints()
 				unitFrame.targetOverlayTexture:Hide()

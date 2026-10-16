@@ -512,7 +512,7 @@ function Plater.OpenOptionsPanel(pageNumber, bIgnoreLazyLoad)
 
 		{name = "ColorManagement",			text = "OPTIONS_TABNAME_NPC_COLORNAME"},
 		{name = "CastColorManagement",		text = "OPTIONS_TABNAME_CASTCOLORS"},
-		{name = "DebuffLastEvent",			text = "OPTIONS_TABNAME_BUFF_LIST"},
+		{name = "DebuffLastEvent",			text = IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS and "Aura Colors" or "OPTIONS_TABNAME_BUFF_LIST"}, --localize-me
 		{name = "AnimationPanel",			text = "OPTIONS_TABNAME_ANIMATIONS"},
 		{name = "Automation",				text = "OPTIONS_TABNAME_AUTO", createOnDemandFunc = platerInternal.CreateAutomationOptions},
 		{name = "ProfileManagement",		text = "OPTIONS_TABNAME_PROFILES"},
@@ -4733,7 +4733,8 @@ do
 			desc = "OPTIONS_CASTBAR_HIDEBLIZZARD",
 		},
 
-		{type = "breakline"},
+		--{type = "breakline"},
+		{type = "break"},
 		
 		--life size
 		{type = "label", get = function() return "Health Bar:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
@@ -4824,6 +4825,8 @@ do
 			name = "OPTIONS_HEIGHT",
 			desc = "OPTIONS_POWERBAR_HEIGHT",
 		},
+
+		{type = "breakline"},
 		
 		--cast bar settings
 		--{type = "blank"},

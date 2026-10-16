@@ -56,6 +56,10 @@ local CONST_DISPEL_BORDER_SIZE = 3
 --aura container sets (one per nameplate, 3 containers each) for the 40 nameplates max plus a spare. built with their aura groups
 --behind the loading screen, each costs ~40ms and ~100 aura buttons
 local CONST_MAX_AURA_CONTAINER_SETS = 41
+--height of a slot frame of the per aura healthbar colors, more than twice the height of any health bar. the masks are half of it
+local CONST_AURA_COLOR_SLOT_HEIGHT = 400
+--width of the masks of the per aura healthbar colors, wider than any health bar
+local CONST_AURA_COLOR_MASK_WIDTH = 2000
 
 local DB_AURA_GROW_DIRECTION
 local DB_AURA_GROW_DIRECTION2
@@ -210,6 +214,8 @@ local MANUAL_TRACKING_BUFFS = {}
 local MANUAL_TRACKING_DEBUFFS = {}
 local AUTO_TRACKING_EXTRA_BUFFS = {}
 local AUTO_TRACKING_EXTRA_DEBUFFS = {}
+--spell names used by the per aura healthbar colors, expandAuraCaches() resolves them into spell ids
+local AURA_COLORS = {}
 
 --debuffs the player can apply several copies of to one target under the same spell id
 --with 'aura_consolidate' enabled, the aura containers show a single icon for each of them
@@ -255,6 +261,7 @@ local spellBlacklist = { -- some spells just crash PTR/beta clients... add them 
 -- Spell Caches
 local expandAuraCaches
 local lazyBuildSpellCache
+local spellCacheCallbacks = {}
 -- Spell Cache init
 lazyBuildSpellCache = function(start)
 	platerInternal.Auras.spellCachesLoading = true
@@ -297,6 +304,28 @@ lazyBuildSpellCache = function(start)
 		platerInternal.Auras.spellCachesLoaded = true
 		platerInternal.Auras.spellCachesLoading = false
 		expandAuraCaches()
+
+		for _, callback in ipairs(spellCacheCallbacks) do
+			callback()
+		end
+
+		wipe(spellCacheCallbacks)
+	end
+end
+
+--builds the spell cache when it isn't built yet. 'callback' runs once the cache is ready
+function platerInternal.Auras.InitSpellCache(callback)
+	if (platerInternal.Auras.spellCachesLoaded) then
+		callback()
+		return
+	end
+
+	spellCacheCallbacks[#spellCacheCallbacks+1] = callback
+
+	if (not platerInternal.Auras.spellCachesLoading) then
+		--the sweep starts on the next frame, the flag keeps expandAuraCaches() from scheduling a second one
+		platerInternal.Auras.spellCachesLoading = true
+		C_Timer.After(0, lazyBuildSpellCache)
 	end
 end
 --lazyBuildSpellCache()
@@ -307,7 +336,7 @@ function expandAuraCaches()
 	local toLowerCase = string.lower
 	local allIDsByName = platerInternal.Auras.spellCaches.allIDsByName
 	local missing = {}
-	local containersToExtend = DB_TRACK_METHOD == 0x1 and {DB_DEBUFF_BANNED, DB_BUFF_BANNED, SPECIAL_AURAS_AUTO_ADDED, SPECIAL_AURAS_USER_LIST, SPECIAL_AURAS_USER_LIST_MINE, AUTO_TRACKING_EXTRA_BUFFS, AUTO_TRACKING_EXTRA_DEBUFFS} or {SPECIAL_AURAS_AUTO_ADDED, SPECIAL_AURAS_USER_LIST, SPECIAL_AURAS_USER_LIST_MINE, MANUAL_TRACKING_BUFFS, MANUAL_TRACKING_DEBUFFS}
+	local containersToExtend = DB_TRACK_METHOD == 0x1 and {DB_DEBUFF_BANNED, DB_BUFF_BANNED, SPECIAL_AURAS_AUTO_ADDED, SPECIAL_AURAS_USER_LIST, SPECIAL_AURAS_USER_LIST_MINE, AUTO_TRACKING_EXTRA_BUFFS, AUTO_TRACKING_EXTRA_DEBUFFS, AURA_COLORS} or {SPECIAL_AURAS_AUTO_ADDED, SPECIAL_AURAS_USER_LIST, SPECIAL_AURAS_USER_LIST_MINE, MANUAL_TRACKING_BUFFS, MANUAL_TRACKING_DEBUFFS, AURA_COLORS}
 	for _, container in pairs (containersToExtend) do
 		local containerCopy = DF.table.copy({}, container or {})
 		for id, val in pairs(containerCopy) do
@@ -331,7 +360,7 @@ function expandAuraCaches()
 		C_Timer.After(0, function()
 			--clean spell cache
 			local copy = DF.table.copy({}, DB_AURA_NAME_CACHE)
-			local toCheck = {DB_DEBUFF_BANNED, DB_BUFF_BANNED, SPECIAL_AURAS_AUTO_ADDED, SPECIAL_AURAS_USER_LIST, SPECIAL_AURAS_USER_LIST_MINE, AUTO_TRACKING_EXTRA_BUFFS, AUTO_TRACKING_EXTRA_DEBUFFS, MANUAL_TRACKING_BUFFS, MANUAL_TRACKING_DEBUFFS}
+			local toCheck = {DB_DEBUFF_BANNED, DB_BUFF_BANNED, SPECIAL_AURAS_AUTO_ADDED, SPECIAL_AURAS_USER_LIST, SPECIAL_AURAS_USER_LIST_MINE, AUTO_TRACKING_EXTRA_BUFFS, AUTO_TRACKING_EXTRA_DEBUFFS, MANUAL_TRACKING_BUFFS, MANUAL_TRACKING_DEBUFFS, AURA_COLORS}
 			local fullList = {}
 			for _, cache in pairs (toCheck) do
 				for id in pairs(cache) do
@@ -2539,6 +2568,252 @@ local updateDispelGlow = function(unitFrame, unit)
 	container:Show()
 end
 
+--per aura healthbar colors ~auracolor
+--creates a mask of the per aura healthbar colors with its bottom edge on the top edge of 'anchorFrame'.
+--it covers the health bar while that bottom edge is 10 below the bottom of the bar, any other position is a slot height away from the bar.
+--with 'pillarName' the mask sits one slot height higher, on top of a frame of that name, which is returned too.
+--an anchor to a collapsed frame loses its offset, so the height is added by that frame instead of an offset
+local createAuraColorMask = function(maskFrame, anchorFrame, pillarName)
+	if (pillarName) then
+		local pillarFrame = CreateFrame("Frame", pillarName, maskFrame, "DisableUntrustedLayoutScriptsTemplate")
+		pillarFrame:SetSize(1, CONST_AURA_COLOR_SLOT_HEIGHT)
+		pillarFrame:SetPoint("bottomleft", anchorFrame, "topleft", 0, 0)
+		anchorFrame = pillarFrame
+	end
+
+	local mask = maskFrame:CreateMaskTexture()
+	--stretched this far, linear filtering fades the outer half pixel of the 8x8 texture to black over 125 pixels, a fade across the whole bar
+	mask:SetTexture([[Interface\BUTTONS\WHITE8X8]], "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE", "NEAREST")
+	mask:SetSize(CONST_AURA_COLOR_MASK_WIDTH, CONST_AURA_COLOR_SLOT_HEIGHT / 2)
+	mask:SetPoint("bottomleft", anchorFrame, "topleft", 0, 0)
+	return mask, anchorFrame
+end
+
+--creates one color of the per aura healthbar colors: a copy of the bar texture directly above it, below every other texture of the health bar
+local createAuraColorTint = function(healthBar)
+	local tint = healthBar:CreateTexture(nil, "artwork", nil, 2)
+	tint:SetTexture(healthBar.barTexture:GetTexture())
+	tint:SetPoint("topleft", healthBar.barTexture, "topleft", 0, 0)
+	tint:SetPoint("bottomright", healthBar.barTexture, "bottomright", 0, 0)
+	return tint
+end
+
+--builds the slots of the per aura healthbar colors from the profile, ordered by priority. the result is cached until the aura filters change
+local getAuraColorSlots = function()
+	if (containerConfigCache.auraColorSlotsIndex == containerConfigCache.candidateFilterIndex) then
+		return containerConfigCache.auraColorSlots
+	end
+
+	local entries = {}
+	for spellId, colorTable in pairs(Plater.db.profile.aura_colors) do
+		if (colorTable[1]) then
+			entries[#entries+1] = {spellId, colorTable}
+		end
+	end
+
+	--higher priority first, equal priorities are ordered by the spell key to keep the result stable
+	table.sort(entries, function(entry1, entry2)
+		local priority1 = entry1[2][5]
+		local priority2 = entry2[2][5]
+		if (priority1 ~= priority2) then
+			return priority1 > priority2
+		end
+
+		return tostring(entry1[1]) < tostring(entry2[1])
+	end)
+
+	local colorSlots = {}
+	local slot
+	for _, entry in ipairs(entries) do
+		local spellId = entry[1]
+		local colorTable = entry[2]
+		local colorName = colorTable[2]
+		local pandemicColorName = colorTable[6]
+		local playerFilter = colorTable[4] and "|PLAYER" or ""
+
+		--entries following each other with the same colors and caster filter share a slot
+		local isSameSlot = slot and slot.colorName == colorName and slot.pandemicColorName == pandemicColorName and slot.playerFilter == playerFilter
+		if (not isSameSlot) then
+			slot = {spellIds = {}, colorName = colorName, pandemicColorName = pandemicColorName, playerFilter = playerFilter}
+			colorSlots[#colorSlots+1] = slot
+		end
+
+		slot.spellIds[spellId] = true
+
+		--a string key is a spell name, a number key tracked by name uses its spell name
+		local spellName
+		if (type(spellId) == "string") then
+			spellName = spellId
+
+		elseif (colorTable[3]) then
+			spellName = GetSpellInfo(spellId)
+		end
+
+		--tracked by name: add all spell ids with that name, expandAuraCaches() resolved them
+		local sameNameIds = spellName and DB_AURA_NAME_CACHE[string.lower(spellName)]
+		if (sameNameIds) then
+			for _, sameNameId in pairs(sameNameIds) do
+				slot.spellIds[sameNameId] = true
+			end
+		end
+	end
+
+	containerConfigCache.auraColorSlots = colorSlots
+	containerConfigCache.auraColorSlotsIndex = containerConfigCache.candidateFilterIndex
+	return colorSlots
+end
+
+--creates and updates the hidden aura container which colors the health bar while a configured aura is active. 'unit' is nil when the nameplate is removed
+local updateAuraColorContainer = function(unitFrame, unit)
+	local colorSlots = getAuraColorSlots()
+	local healthBar = unitFrame.healthBar
+	local barTexture = healthBar.barTexture
+	local container = unitFrame.AuraColorFrame
+
+	if (not container) then
+		if (not unit or #colorSlots == 0) then
+			return
+		end
+
+		container = CreateFrame("AuraContainer", "$parentAuraColorFrame", healthBar, "CustomAuraContainerTemplate")
+		container:SetAllPoints()
+		container:SetEnabled(false)
+		--the colors are no edit mode element: with the preview on, the container reads the edit mode source instead of the unit's auras
+		container:SetEditModePreviewEnabled(false)
+		--owns the masks, this template is what allows anchoring them to the slot frames
+		container.maskFrame = CreateFrame("Frame", "$parentAuraColorMasks", healthBar, "DisableUntrustedLayoutScriptsTemplate")
+		container.maskFrame:SetAllPoints()
+		container.slotFrames = {}
+		container.tints = {}
+		container.pandemicTints = {}
+		unitFrame.AuraColorFrame = container
+	end
+
+	if (container.filterIndex ~= containerConfigCache.candidateFilterIndex) then
+		--after login a slot frame is locked as soon as its initializeFrame returns, and so is everything anchored to it.
+		--so a new slot never uses anything of an older slot: it is added at the base of the stack, the slots added before it stand on top of it.
+		--a slot is never removed, the stack only grows
+		for index = #container.slotFrames + 1, #colorSlots do
+			--a texture is drawn only where all of its masks cover it, each mask checks one condition. a texture takes at most 3 masks,
+			--the colors already end at the bar fill and need no mask of the health bar.
+			--the color and the pandemic color of a slot, the masks keep only one of the two on the bar
+			local tint = createAuraColorTint(healthBar)
+			local pandemicTint = createAuraColorTint(healthBar)
+			container.tints[index] = tint
+			container.pandemicTints[index] = pandemicTint
+
+			--the slot stands on this frame, which never hides and is no slot frame. it starts at the base of the stack,
+			--the next slot moves it on top of itself
+			local footFrame = CreateFrame("Frame", container:GetName() .. "Foot" .. index, container.maskFrame, "DisableUntrustedLayoutScriptsTemplate")
+			footFrame:SetSize(1, 1)
+			footFrame:SetPoint("bottomleft", healthBar, "bottomleft", -10, -10 - CONST_AURA_COLOR_SLOT_HEIGHT)
+
+			container.slotFrames[index] = container:AddAuraSlot(tostring(index), "HARMFUL", {
+				--of several matching auras the player's own and then the one expiring first decides about the pandemic color
+				sortMethod = AuraContainerSortMethod.Expiration,
+				sortDirection = AuraContainerSortDirection.Normal,
+				--the slot frame is locked once this returns, so everything anchored to it is done in here
+				initializeFrame = function(slotFrame)
+					--the slot frame is a button, it stays one pixel wide and doesn't take the mouse
+					slotFrame:SetMouseMotionEnabled(false)
+					slotFrame:SetMouseClickEnabled(false)
+					slotFrame:SetSize(1, CONST_AURA_COLOR_SLOT_HEIGHT)
+					--a frame anchored to a hidden slot takes the anchor of the slot instead, but only one level deep, so foot frames and
+					--slots take turns. the foot frame of the slot added before this one moves on top of this slot: it rises by one slot height
+					--while this slot is shown, and so does everything standing on it
+					slotFrame:SetCollapsesLayout(true)
+					slotFrame:SetPoint("bottomleft", footFrame, "bottomleft", 0, 0)
+
+					--the foot frame of the base slot only has the health bar as anchor, nothing locked depends on it yet
+					if (container.baseFootFrame) then
+						container.baseFootFrame:SetPoint("bottomleft", slotFrame, "topleft", 0, 0)
+					end
+
+					container.baseFootFrame = footFrame
+
+					--no slot below this one is shown: one slot height above its foot frame it is still at the base of the stack
+					local noneBelowMask = createAuraColorMask(container.maskFrame, footFrame, container:GetName() .. "NoneBelow" .. index)
+					tint:AddMaskTexture(noneBelowMask)
+					pandemicTint:AddMaskTexture(noneBelowMask)
+
+					--with no slot below, this slot is shown: its top edge is one slot height above the base of the stack
+					local isShownMask = createAuraColorMask(container.maskFrame, slotFrame)
+					tint:AddMaskTexture(isShownMask)
+					pandemicTint:AddMaskTexture(isShownMask)
+
+					--the engine shows this frame while the aura of the slot is in its pandemic window, hidden it has no height
+					local pandemicFrame = CreateFrame("Frame", container:GetName() .. "Pandemic" .. index, slotFrame, "DisableUntrustedLayoutScriptsTemplate")
+					pandemicFrame:SetSize(1, CONST_AURA_COLOR_SLOT_HEIGHT)
+					pandemicFrame:SetCollapsesLayout(true)
+					pandemicFrame:SetPoint("bottomleft", healthBar, "bottomleft", -10, -10 - CONST_AURA_COLOR_SLOT_HEIGHT)
+					slotFrame:AddPandemicRegion(pandemicFrame)
+
+					--outside the pandemic window the pandemic frame is hidden and the color is shown, inside the window the pandemic color
+					tint:AddMaskTexture(createAuraColorMask(container.maskFrame, pandemicFrame, container:GetName() .. "OutsidePandemic" .. index))
+					pandemicTint:AddMaskTexture(createAuraColorMask(container.maskFrame, pandemicFrame))
+				end,
+			})
+		end
+
+		--the lower a slot in the stack, the higher its priority: the last slot is at the base and takes the first color slot.
+		--surplus slots are disabled, a disabled slot is cleared and hidden by the engine
+		local slotCount = #container.slotFrames
+		for index = 1, slotCount do
+			local slotKey = tostring(index)
+			local slot = colorSlots[slotCount - index + 1]
+			container:SetAuraSlotEnabled(slotKey, slot ~= nil)
+
+			if (slot) then
+				container:SetAuraSlotCandidateFilters(slotKey, {includeSpellIDs = slot.spellIds})
+				container.tints[index]:SetVertexColor(DF:ParseColors(slot.colorName))
+				--without a pandemic color the bar keeps its color inside the pandemic window
+				container.pandemicTints[index]:SetVertexColor(DF:ParseColors(slot.pandemicColorName or slot.colorName))
+			end
+		end
+
+		container.filterIndex = containerConfigCache.candidateFilterIndex
+	end
+
+	--re-copy the bar art after a skin change
+	if (container.configIndex ~= containerConfigCache.containerConfigIndex) then
+		local texture = barTexture:GetTexture()
+		for index, tint in ipairs(container.tints) do
+			tint:SetTexture(texture)
+			container.pandemicTints[index]:SetTexture(texture)
+		end
+
+		container.configIndex = containerConfigCache.containerConfigIndex
+	end
+
+	local hasColors = #colorSlots > 0
+	local isPerformanceUnit = unitFrame.isPerformanceUnitAura
+	local isActive = unit and hasColors and not isPerformanceUnit
+	local slotCount = #container.slotFrames
+	if (isActive) then
+		--spell id filters only apply to debuffs on non-assistable units and buffs on assistable ones
+		local filterString = UnitCanAssist("player", unit, true, true) and "HELPFUL" or "HARMFUL"
+		for index = 1, slotCount do
+			local slot = colorSlots[slotCount - index + 1]
+			if (slot) then
+				container:SetAuraSlotFilterString(tostring(index), filterString .. slot.playerFilter)
+			end
+		end
+
+		container:SetEnabled(true)
+		container:SetUnit(unit)
+		container:UpdateAllAuras()
+	else
+		container:SetEnabled(false)
+	end
+
+	--a slot keeps its last state while the container is disabled, so the colors are hidden by hand
+	for index, tint in ipairs(container.tints) do
+		local isSlotUsed = isActive and colorSlots[slotCount - index + 1] ~= nil or false
+		tint:SetShown(isSlotUsed)
+		container.pandemicTints[index]:SetShown(isSlotUsed)
+	end
+end
+
 function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, forceFilters, forceLayout)
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "CreateOrUpdateAuraContainers")
 	if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS and unit ~= "player" then
@@ -2674,6 +2949,7 @@ function Plater.CreateOrUpdateAuraContainers(unitFrame, unit, forceFull, forceFi
 		end
 
 		updateDispelGlow(unitFrame, unit)
+		updateAuraColorContainer(unitFrame, unit)
 
 	elseif not unitFrame.BuffFrame then -- old API
 		platerInternal.Auras.CreateOldAuraContainers(unitFrame)
@@ -5746,6 +6022,23 @@ end
 						DB_DEBUFF_BANNED [spellName] = true
 					else
 						DB_DEBUFF_BANNED [spellId] = true
+					end
+				end
+			end
+
+		--> per aura healthbar colors, only the spell names: expandAuraCaches() resolves them into spell ids
+			wipe (AURA_COLORS)
+			for spellId, colorTable in pairs (profile.aura_colors) do
+				if (colorTable [1]) then
+					--a string key is a spell name, a number key tracked by name uses its spell name
+					if (type (spellId) == "string") then
+						AURA_COLORS [spellId] = true
+
+					elseif (colorTable [3]) then
+						local spellName = GetSpellInfo (spellId)
+						if (spellName) then
+							AURA_COLORS [spellName] = true
+						end
 					end
 				end
 			end
