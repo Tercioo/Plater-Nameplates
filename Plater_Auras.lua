@@ -2687,8 +2687,8 @@ function Plater.RemoveFromAuraUpdate (unit, unitFrame)
 end
 
 function Plater.AddToAuraUpdate (unit, unitFrame)
-	Plater.StartLogPerformanceCore("Plater-Core", "Update", "AddToAuraUpdate")
 	if not unit or not unitFrame then return end
+	Plater.StartLogPerformanceCore("Plater-Core", "Update", "AddToAuraUpdate")
 	if IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then
 		Plater.CreateOrUpdateAuraContainers(unitFrame, unit)
 		--Plater.CreateOrUpdateAuraContainers(unitFrame, unit, false, true)
