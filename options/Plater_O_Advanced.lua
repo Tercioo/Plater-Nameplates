@@ -1291,6 +1291,16 @@ function platerInternal.CreateAdvancedOptions()
             get = function() return Plater.db.profile.show_health_prediction end,
             set = function (self, fixedparam, value)
                 Plater.db.profile.show_health_prediction = value
+                if (IS_WOW_PROJECT_MIDNIGHT) then
+                    for _, plateFrame in ipairs(Plater.GetAllShownPlates()) do
+                        local healthBar = plateFrame.unitFrame.healthBar
+                        healthBar.Settings.ShowHealingPrediction = value
+                        if (healthBar.unit) then
+                            healthBar:UpdatePredictionEvents()
+                            healthBar:UpdateHealPrediction()
+                        end
+                    end
+                end
             end,
             name = "Show Health Prediction/Absorption",
             desc = "Show an extra bar for health prediction and heal absorption.",
@@ -1300,6 +1310,16 @@ function platerInternal.CreateAdvancedOptions()
             get = function() return Plater.db.profile.show_shield_prediction end,
             set = function (self, fixedparam, value)
                 Plater.db.profile.show_shield_prediction = value
+                if (IS_WOW_PROJECT_MIDNIGHT) then
+                    for _, plateFrame in ipairs(Plater.GetAllShownPlates()) do
+                        local healthBar = plateFrame.unitFrame.healthBar
+                        healthBar.Settings.ShowShields = value
+                        if (healthBar.unit) then
+                            healthBar:UpdatePredictionEvents()
+                            healthBar:UpdateHealPrediction()
+                        end
+                    end
+                end
             end,
             name = "Show Shield Prediction",
             desc = "Show an extra bar for shields (e.g. Power Word: Shield from priests) absorption.",
