@@ -63,7 +63,8 @@ end
 --refresh caches when spec changes
 local specChangeFrame = CreateFrame("frame")
 if IS_WOW_PROJECT_MAINLINE then
-    specChangeFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+    --the event fires for group members too, each refresh marks every aura button skin outdated
+    specChangeFrame:RegisterUnitEvent("PLAYER_SPECIALIZATION_CHANGED", "player")
 else
     --specChangeFrame:RegisterEvent("CHARACTER_POINTS_CHANGED") --not needed for TBC/Classic, as there is no spec differences in the config, just class.
 end
