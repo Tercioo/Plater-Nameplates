@@ -31,6 +31,9 @@
 ---@field GetFunction fun(self:df_dropdown):function
 ---@field GetMenuSize fun(self:df_dropdown):number, number
 ---@field SetMenuSize fun(self:df_dropdown, width:number?, height:number?)
+---@field SetOpenDirection fun(self:df_dropdown, direction:"down"|"up") set the side the menu opens to, "down" is the default
+---@field GetOpenDirection fun(self:df_dropdown):"down"|"up"
+---@field UpdateOpenDirection fun(self:df_dropdown) anchor the menu frames to the side set by SetOpenDirection()
 ---@field Disable fun(self:df_dropdown)
 ---@field Enable fun(self:df_dropdown)
 ---@field IsText fun(self:df_dropdown_text):boolean return true is the dropdown is a text dropdown
@@ -281,6 +284,32 @@ end
 --get menu width and height
 	function DropDownMetaFunctions:GetMenuSize()
 		return rawget(self, "realsizeW"), rawget(self, "realsizeH")
+	end
+
+--side the menu opens to, "down" (default) shows the options below the dropdown and "up" shows them above it
+--example: a dropdown close to the bottom of a scroll frame, where the options would be cut: dropdown:SetOpenDirection("up")
+	function DropDownMetaFunctions:SetOpenDirection(direction)
+		assert(direction == "down" or direction == "up", "SetOpenDirection(direction): direction must be \"down\" or \"up\".")
+		rawset(self, "openDirection", direction)
+		self:UpdateOpenDirection()
+	end
+
+	function DropDownMetaFunctions:GetOpenDirection()
+		return rawget(self, "openDirection") or "down"
+	end
+
+--anchor the menu frames to the side set by SetOpenDirection()
+	function DropDownMetaFunctions:UpdateOpenDirection()
+		local dropdownFrame = self.dropdown
+		local point, relativePoint = "topleft", "bottomleft"
+		if (self:GetOpenDirection() == "up") then
+			point, relativePoint = "bottomleft", "topleft"
+		end
+
+		dropdownFrame.dropdownborder:ClearAllPoints()
+		dropdownFrame.dropdownborder:SetPoint(point, dropdownFrame, relativePoint, 0, 0)
+		dropdownFrame.dropdownframe:ClearAllPoints()
+		dropdownFrame.dropdownframe:SetPoint(point, dropdownFrame, relativePoint, 0, 0)
 	end
 
 --function
@@ -738,7 +767,8 @@ function DropDownMetaFunctions:Selected(thisOption)
 				local fontFace, fontSize, fontFlags = GameFontHighlightSmall:GetFont()
 				DF:SetFont(self.label, fontFace, fontSize, fontFlags)
 			else
-				self.label:SetFont("GameFontHighlightSmall", 10)
+				local fontFace, _, fontFlags = GameFontHighlightSmall:GetFont()
+				self.label:SetFont(fontFace, 10, fontFlags)
 			end
 		end
 	end
@@ -1003,8 +1033,8 @@ function DetailsFrameworkDropDownOnMouseDown(button, buttontype)
 						thisOptionFrame.label:SetFont(thisOption.font, 10.5)
 
 					else
-						thisOptionFrame.label:SetFontObject(_G["GameFontHighlightSmall"])
-						local font, _, flags = thisOptionFrame.label:GetFont()
+						--read the default font from the font object, the label keeps the font of the previous option it showed
+						local font, _, flags = GameFontHighlightSmall:GetFont()
 						thisOptionFrame.label:SetFont(font, 10.5, flags)
 					end
 
