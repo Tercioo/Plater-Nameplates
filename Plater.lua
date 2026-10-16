@@ -1589,8 +1589,8 @@ Plater.AnchorNamesByPhraseId = {
 		["clampTargetNameplateToScreen"] = true,
 		["nameplateTargetRadialPosition"] = true,
 		["nameplateSelectedAlpha"] = true,
-		["nameplateNotSelectedAlpha"] = (IS_WOW_PROJECT_NOT_MAINLINE),
-		["nameplateRemovalAnimation"] = (IS_WOW_PROJECT_NOT_MAINLINE),
+		["nameplateNotSelectedAlpha"] = true,
+		["nameplateRemovalAnimation"] = true,
 		["nameplateMinAlpha"] = true,
 		["nameplateMinAlphaDistance"] = true,
 		["nameplateShowDebuffsOnFriendly"] = true,
@@ -2861,8 +2861,8 @@ Plater.AnchorNamesByPhraseId = {
 				}
 				
 				local healthBarOptions = {
-					ShowHealingPrediction = false,
-					ShowShields = false,
+					ShowHealingPrediction = Plater.db.profile.show_health_prediction,
+					ShowShields = Plater.db.profile.show_shield_prediction,
 				}
 				
 				local castBarOptions = {
@@ -4879,7 +4879,7 @@ function Plater.OnInit() --private --~oninit ~init
 			SetCVar ("nameplateMinAlpha", 0.90135484)
 			SetCVar ("nameplateMinAlphaDistance", -10^5.2)
 			SetCVar ("nameplateSelectedAlpha", 1)
-			SetCVar ("nameplateNotSelectedAlpha", 1)
+			SetCVar ("nameplateNotSelectedAlpha", -1)
 			SetCVar ("nameplateRemovalAnimation", DB_USE_QUICK_HIDE and 0 or 1)
 			SetCVar ("nameplateShowFriendlyBuffs", 0)
 			SetCVar ("nameplateShowPersonalCooldowns", 0)

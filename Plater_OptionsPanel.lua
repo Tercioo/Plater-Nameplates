@@ -16,6 +16,7 @@ local IS_WOW_PROJECT_CLASSIC_WRATH = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpa
 --local IS_WOW_PROJECT_CLASSIC_CATACLYSM = IS_WOW_PROJECT_NOT_MAINLINE and ClassicExpansionAtLeast and LE_EXPANSION_CATACLYSM and ClassicExpansionAtLeast(LE_EXPANSION_CATACLYSM)
 local IS_WOW_PROJECT_MIDNIGHT = DF.IsAddonApocalypseWow()
 local IS_WOW_PROJECT_MIDNIGHT_API = DF.IsMidnightWowAPI()
+local IS_WOW_PROJECT_FOREVER = DF.IsForeverWow()
 local IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS = C_XMLUtil and C_XMLUtil.GetTemplateInfo and C_XMLUtil.GetTemplateInfo("CustomAuraContainerTemplate") and true or false
 
 local PixelUtil = PixelUtil or DFPixelUtil
@@ -6351,29 +6352,6 @@ local relevance_options = {
 		
 		{
 			type = "range",
-			get = function() return tonumber (GetCVar ("nameplateOverlapV")) end,
-			set = function (self, fixedparam, value) 
-				if (not InCombatLockdown()) then
-					SetCVar ("nameplateOverlapV", value)
-				else
-					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
-				end
-			end,
-			min = 0.2,
-			max = 2.5,
-			step = 0.05,
-			thumbscale = 1.7,
-			usedecimals = true,
-			name = "OPTIONS_NAMEPLATES_OVERLAP",
-			desc = "OPTIONS_NAMEPLATES_OVERLAP_DESC",
-			nocombat = true,
-			hidden = IS_WOW_PROJECT_MIDNIGHT_API,
-		},
-		
-		{type = "blank", hidden = not IS_WOW_PROJECT_MIDNIGHT_API},
-		
-		{
-			type = "range",
 			get = function() return tonumber (GetCVar (CVAR_CULLINGDISTANCE)) end,
 			set = function (self, fixedparam, value) 
 				if (not InCombatLockdown()) then
@@ -6383,13 +6361,13 @@ local relevance_options = {
 				end
 			end,
 			min = IS_WOW_PROJECT_MIDNIGHT_API and 0 or 20, --20y for tbc and classic
-			max = (IS_WOW_PROJECT_MIDNIGHT_API and 60) or ((IS_WOW_PROJECT_CLASSIC_TBC or IS_WOW_PROJECT_CLASSIC_WRATH) and 41) or 20, --41y for tbc, 20y for classic era
+			--max = (IS_WOW_PROJECT_FOREVER and 45) or (IS_WOW_PROJECT_MIDNIGHT_API and 60) or ((IS_WOW_PROJECT_CLASSIC_TBC or IS_WOW_PROJECT_CLASSIC_WRATH) and 41) or 20, --41y for tbc, 20y for classic erased
+			max = select(2, C_CVar.GetCVarInfo(CVAR_CULLINGDISTANCE)) or 0,
 			step = 1,
 			name = "View Distance" .. CVarIcon,
 			desc = "How far you can see nameplates (in yards)." .. CVarDesc,
 			nocombat = true,
 		},
-		
 		{
 			type = "range",
 			get = function() return tonumber (GetCVar ("nameplatePlayerMaxDistance")) or 0 end,
@@ -6401,11 +6379,48 @@ local relevance_options = {
 				end
 			end,
 			min = 0,
-			max = (IS_WOW_PROJECT_MIDNIGHT_API and 60) or ((IS_WOW_PROJECT_CLASSIC_TBC or IS_WOW_PROJECT_CLASSIC_WRATH) and 0) or 0, --not available for classic/wrath
+			--max = (IS_WOW_PROJECT_FOREVER and 45) or (IS_WOW_PROJECT_MIDNIGHT_API and 60) or ((IS_WOW_PROJECT_CLASSIC_TBC or IS_WOW_PROJECT_CLASSIC_WRATH) and 0) or 0, --not available for classic/wrapModeHorizontal
+			max = select(2, C_CVar.GetCVarInfo("nameplatePlayerMaxDistance")) or 0,
 			step = 1,
 			name = "Player View Distance" .. CVarIcon,
 			desc = "How far you can see player nameplates (in yards)." .. CVarDesc,
 			nocombat = true,
+		},
+		{
+			type = "range",
+			get = function() return tonumber (GetCVar ("nameplateMaxVerticalDistance")) or 0 end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateMaxVerticalDistance", value)
+				else
+					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+				end
+			end,
+			min = 0,
+			max = select(2, C_CVar.GetCVarInfo("nameplateMaxVerticalDistance")) or 0,
+			step = 1,
+			name = "Vertical View Distance" .. CVarIcon,
+			desc = "How far you can see player nameplates (in yards) above and below you." .. CVarDesc,
+			nocombat = true,
+			hidden = not C_CVar.GetCVarInfo("nameplateMaxVerticalDistance")
+		},
+		{
+			type = "range",
+			get = function() return tonumber (GetCVar ("nameplateMaxVerticalDistanceAtMaxRange")) or 0 end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateMaxVerticalDistanceAtMaxRange", value)
+				else
+					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+				end
+			end,
+			min = 0,
+			max = select(2, C_CVar.GetCVarInfo("nameplateMaxVerticalDistanceAtMaxRange")) or 0,
+			step = 1,
+			name = "Vertical Max View Distance" .. CVarIcon,
+			desc = "How far you can see player nameplates (in yards) above and below you." .. CVarDesc,
+			nocombat = true,
+			hidden = not C_CVar.GetCVarInfo("nameplateMaxVerticalDistanceAtMaxRange")
 		},
 
 		{type = "blank"},
@@ -6473,8 +6488,6 @@ local relevance_options = {
 			name = "OPTIONS_BORDER_THICKNESS",
 			desc = "OPTIONS_BORDER_THICKNESS",
 		},
-
-		{type = "blank"},
 
 		{ --global healthbar width
 			type = "range",
@@ -6734,9 +6747,29 @@ local relevance_options = {
 			thumbscale = 1.7,
 			usedecimals = true,
 			name = "Occluded Alpha Multiplier" .. CVarIcon,
-			desc = "Alpha multiplyer for 'occluded' plates (when they are not in line of sight)." .. CVarDesc,
+			desc = "Blizzard alpha multiplyer for 'occluded' plates (when they are not in line of sight)." .. CVarDesc,
 			nocombat = true,
-			disableif = function() return not Plater.db.profile.honor_blizzard_plate_alpha end,
+			--disableif = function() return not Plater.db.profile.honor_blizzard_plate_alpha end,
+		},
+		{
+			type = "range",
+			get = function() return tonumber (GetCVar ("namePlateNotSelectedAlpha")) end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("namePlateNotSelectedAlpha", value)
+				else
+					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+				end
+			end,
+			min = -1,
+			max = 1,
+			step = 0.1,
+			thumbscale = 1.7,
+			usedecimals = true,
+			name = "Non-target Alpha Multiplier" .. CVarIcon,
+			desc = "Blizzard alpha multiplyer for not targeted plates. -1 disables this feature." .. CVarDesc,
+			nocombat = true,
+			--disableif = function() return not Plater.db.profile.honor_blizzard_plate_alpha end,
 		},		
 
 		{type = "blank"},
