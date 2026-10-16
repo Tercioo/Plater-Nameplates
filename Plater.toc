@@ -1,5 +1,5 @@
-## Interface: 120105
-## Interface-Mainline: 120105
+## Interface: 120105, 120107
+## Interface-Mainline: 120105, 120107
 ## Interface-Mists: 50504
 ## Interface-Titan: 38001
 ## Interface-TBC: 20506
