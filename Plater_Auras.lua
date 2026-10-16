@@ -2209,8 +2209,9 @@ local function getFullAuraOptions(frameName, key, auraContainer, actorType, forc
 end
 
 local allocIndex = 1
---actorType builds the aura groups for that actor type, without it the container gets its groups when a plate takes it
-local function createAuraContainers(unitFrame, actorType)
+--buildGroups gives the container as many aura groups as the actor type that uses the most, a plate taking it then only switches filters.
+--without it the container gets its groups when a plate takes it
+local function createAuraContainers(unitFrame, buildGroups)
 	if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then return end
 	if not unitFrame and allocIndex > CONST_MAX_AURA_CONTAINER_SETS then return end
 	for _, frameInfo in pairs (auraFramesSetup) do
@@ -2230,7 +2231,17 @@ local function createAuraContainers(unitFrame, actorType)
 		auraContainer.Name = frameInfo.name
 		auraContainer.index = allocIndex
 
-		local options = getFullAuraOptions(frameInfo.name, frameInfo.key, auraContainer, actorType)
+		local options = getFullAuraOptions(frameInfo.name, frameInfo.key, auraContainer, nil)
+		if (buildGroups) then
+			--friendly players use the friendly npc filters
+			for _, actorType in ipairs({"enemynpc", "friendlynpc", "enemyplayer"}) do
+				local actorOptions = getFullAuraOptions(frameInfo.name, frameInfo.key, auraContainer, actorType)
+				if (#actorOptions.auraFilters > #options.auraFilters) then
+					options = actorOptions
+				end
+			end
+		end
+
 		auraContainer.activeOptions = options
 		auraContainer.groups = {}
 		auraContainer.auraButtons = {}
@@ -2298,11 +2309,11 @@ function Plater.StartPreCreateAuraContainers()
 	if not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS then return end
 
 	--runs behind the loading screen. the plates shown after it take these sets and only switch their filters,
-	--building the groups there instead froze the first frame for 1-2s. most plates are enemy npcs
+	--building the groups there instead froze the first frame for 1-2s
 	if (DB_AURA_ENABLED) then
 		Plater.StartLogPerformanceCore("Plater-Core", "Init", "CreateAuraContainersAtLogin")
 		while (allocIndex <= CONST_MAX_AURA_CONTAINER_SETS) do
-			createAuraContainers(nil, "enemynpc")
+			createAuraContainers(nil, true)
 		end
 		Plater.EndLogPerformanceCore("Plater-Core", "Init", "CreateAuraContainersAtLogin")
 	end
