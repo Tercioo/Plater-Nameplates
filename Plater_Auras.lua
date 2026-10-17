@@ -2687,6 +2687,14 @@ local updateAuraColorContainer = function(unitFrame, unit)
 		container.tints = {}
 		container.pandemicTints = {}
 		unitFrame.AuraColorFrame = container
+
+		--the colors copy the bar art on every change of it. the first nameplate added gets here before the skin sets the bar texture
+		hooksecurefunc(barTexture, "SetTexture", function(_, texture)
+			for index, tint in ipairs(container.tints) do
+				tint:SetTexture(texture)
+				container.pandemicTints[index]:SetTexture(texture)
+			end
+		end)
 	end
 
 	if (container.filterIndex ~= containerConfigCache.candidateFilterIndex) then
@@ -2772,17 +2780,6 @@ local updateAuraColorContainer = function(unitFrame, unit)
 		end
 
 		container.filterIndex = containerConfigCache.candidateFilterIndex
-	end
-
-	--re-copy the bar art after a skin change
-	if (container.configIndex ~= containerConfigCache.containerConfigIndex) then
-		local texture = barTexture:GetTexture()
-		for index, tint in ipairs(container.tints) do
-			tint:SetTexture(texture)
-			container.pandemicTints[index]:SetTexture(texture)
-		end
-
-		container.configIndex = containerConfigCache.containerConfigIndex
 	end
 
 	local hasColors = #colorSlots > 0
