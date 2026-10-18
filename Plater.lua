@@ -82,10 +82,10 @@ local GetSpecializationInfo = C_SpecializationInfo and C_SpecializationInfo.GetS
 
 local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_NOT_MAINLINE = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
-local IS_WOW_PROJECT_CLASSIC_ERA = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
 local IS_WOW_PROJECT_CLASSIC_WRATH = DF.IsWotLKWow()
 local IS_WOW_PROJECT_CLASSIC_MOP = DF.IsPandaWow()
 local IS_WOW_PROJECT_MIDNIGHT = DF.IsAddonApocalypseWow()
+local IS_WOW_PROJECT_FOREVER = DF.IsForeverWow()
 local IS_WOW_PROJECT_MIDNIGHT_API = DF.IsMidnightWowAPI()
 local IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS = C_XMLUtil and C_XMLUtil.GetTemplateInfo and C_XMLUtil.GetTemplateInfo("CustomAuraContainerTemplate") and true or false
 
@@ -2483,8 +2483,11 @@ Plater.AnchorNamesByPhraseId = {
 				local plateFrame = C_NamePlate.GetNamePlateForUnit (unitID)
 				if (plateFrame and plateFrame.unitFrame.PlaterOnScreen) then
 					local unitFrame = plateFrame.unitFrame
-					local unitName = UnitName (unitID)
+					local unitName, unitSurname = UnitName (unitID)
 					local unitNameTranslit = unitName
+					if (IS_WOW_PROJECT_FOREVER and unitSurname and DB_PLATE_CONFIG[plateFrame.actorType].show_surname) then
+						unitNameTranslit = unitName .. Constants.CharacterNameSeparatorConsts.CHARACTERNAME_SURNAME_SEPARATOR .. unitSurname
+					end
 					if DB_USE_CUSTOM_NAMES then
 						unitNameTranslit = LibCustomNames.UnitName (unitID)
 					end
@@ -4039,8 +4042,12 @@ Plater.AnchorNamesByPhraseId = {
 			end
 			
 			--cache values
-			local unitName = UnitName (unitID) or ""
+			local unitName, unitSurname = UnitName (unitID)
+			unitName = unitName or ""
 			local unitNameTranslit = unitName
+			if (IS_WOW_PROJECT_FOREVER and unitSurname and DB_PLATE_CONFIG[plateFrame.actorType].show_surname) then
+				unitNameTranslit = unitName .. Constants.CharacterNameSeparatorConsts.CHARACTERNAME_SURNAME_SEPARATOR .. unitSurname
+			end
 			if DB_USE_CUSTOM_NAMES then
 				unitNameTranslit = LibCustomNames.UnitName (unitID) or ""
 			end

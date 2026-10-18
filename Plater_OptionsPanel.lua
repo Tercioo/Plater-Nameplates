@@ -7577,6 +7577,17 @@ end
 		},
 		{
 			type = "toggle",
+			get = function() return Plater.db.profile.plate_config.friendlyplayer.show_surname end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.friendlyplayer.show_surname = value
+				Plater.FullRefreshAllPlates()
+			end,
+			name = "Show Surname",
+			desc = "Show the first name and the surname of the player.",
+			hidden = not IS_WOW_PROJECT_FOREVER,
+		},
+		{
+			type = "toggle",
 			get = function() return Plater.db.profile.plate_config.friendlyplayer.click_through end,
 			set = function (self, fixedparam, value) 
 				Plater.db.profile.plate_config.friendlyplayer.click_through = value
@@ -8581,6 +8592,17 @@ end
 			end,
 			name = "Show Guild Name",
 			desc = "Show Guild Name",
+		},
+		{
+			type = "toggle",
+			get = function() return Plater.db.profile.plate_config.enemyplayer.show_surname end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.plate_config.enemyplayer.show_surname = value
+				Plater.FullRefreshAllPlates()
+			end,
+			name = "Show Surname",
+			desc = "Show the first name and the surname of the player.",
+			hidden = not IS_WOW_PROJECT_FOREVER,
 		},
 		
 		{type = "blank"},

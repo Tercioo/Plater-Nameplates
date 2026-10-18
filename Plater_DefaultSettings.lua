@@ -190,6 +190,7 @@ PLATER_DEFAULT_SETTINGS = {
 				only_thename = false,
 				click_through = true,
 				show_guild_name = false,
+				show_surname = true,
 				
 				fixed_class_color = {0, 1, 0, 1},
 				
@@ -266,6 +267,7 @@ PLATER_DEFAULT_SETTINGS = {
 				enabled = true,
 				module_enabled = true,
 				show_guild_name = false,
+				show_surname = true,
 				
 				use_playerclass_color = true,
 				fixed_class_color = {1, .4, .1, 1},
