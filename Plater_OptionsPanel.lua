@@ -3032,73 +3032,6 @@ local debuff_options = {
 		desc = "Flash the glow once when the pandemic window opens.",
 		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
 	},
-	{
-		type = "toggle",
-		boxfirst = true,
-		get = function() return Plater.db.profile.aura_dispel_glow end,
-		set = function (self, fixedparam, value)
-			Plater.db.profile.aura_dispel_glow = value
-			Plater.RefreshAuras()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Dispel glow",
-		desc = "Glow around the nameplate while the unit has an aura you can dispel, purge or soothe.",
-		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
-	},
-	{
-		type = "select",
-		get = function() return Plater.db.profile.aura_dispel_glow_type end,
-		values = function()
-			local onSelectGlowType = function(_, _, value)
-				Plater.db.profile.aura_dispel_glow_type = value
-				Plater.RefreshDBUpvalues()
-				Plater.RefreshAuras()
-				Plater.UpdateAllPlates()
-			end
-
-			return {
-				{label = "Glow", value = "glow", onclick = onSelectGlowType},
-				{label = "Pulsing Glow", value = "pulse", onclick = onSelectGlowType},
-				{label = "Ants", value = "ants", onclick = onSelectGlowType},
-				{label = "Border", value = "border", onclick = onSelectGlowType},
-			}
-		end,
-		name = "Dispel glow type",
-		desc = "How the dispel glow looks.",
-		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
-	},
-	{
-		type = "color",
-		boxfirst = true,
-		get = function()
-			local color = Plater.db.profile.aura_dispel_glow_color
-			return {color[1], color[2], color[3], color[4]}
-		end,
-		set = function (self, r, g, b, a)
-			local color = Plater.db.profile.aura_dispel_glow_color
-			color[1], color[2], color[3], color[4] = r, g, b, a
-			Plater.RefreshDBUpvalues()
-			Plater.RefreshAuras()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Dispel glow color",
-		desc = "Color of the dispel glow.",
-		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
-	},
-	{
-		type = "toggle",
-		boxfirst = true,
-		get = function() return Plater.db.profile.aura_dispel_glow_color_by_type end,
-		set = function (self, fixedparam, value)
-			Plater.db.profile.aura_dispel_glow_color_by_type = value
-			Plater.RefreshDBUpvalues()
-			Plater.RefreshAuras()
-			Plater.UpdateAllPlates()
-		end,
-		name = "Dispel glow color by type",
-		desc = "Color the dispel glow by the dispel type of the aura (magic, curse, disease, poison, enrage, ...), using the aura border dispel type colors. Auras without a type use the dispel glow color.",
-		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
-	},
 
 	{
 		type = "toggle",
@@ -3228,6 +3161,174 @@ local debuff_options = {
 		desc = "OPTIONS_YOFFSET_DESC",
 	},
 	
+	{type = "blank", hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS},
+	{type = "label", get = function() return "Dispel Healthbar Glow:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE"), hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS},
+	{
+		type = "toggle",
+		boxfirst = true,
+		get = function() return Plater.db.profile.aura_dispel_glow end,
+		set = function (self, fixedparam, value)
+			Plater.db.profile.aura_dispel_glow = value
+			Plater.RefreshAuras()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Dispel glow",
+		desc = "Glow around the nameplate while the unit has an aura you can dispel, purge or soothe.",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
+	{
+		type = "select",
+		get = function() return Plater.db.profile.aura_dispel_glow_type end,
+		values = function()
+			local onSelectGlowType = function(_, _, value)
+				Plater.db.profile.aura_dispel_glow_type = value
+				Plater.RefreshDBUpvalues()
+				Plater.RefreshAuras()
+				Plater.UpdateAllPlates()
+			end
+
+			return {
+				{label = "Glow", value = "glow", onclick = onSelectGlowType},
+				{label = "Pulsing Glow", value = "pulse", onclick = onSelectGlowType},
+				{label = "Ants", value = "ants", onclick = onSelectGlowType},
+				{label = "Border", value = "border", onclick = onSelectGlowType},
+				{label = "Pixel Glow", value = "pixel", onclick = onSelectGlowType},
+			}
+		end,
+		name = "Dispel glow type",
+		desc = "How the dispel glow looks.",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
+	{
+		type = "color",
+		boxfirst = true,
+		get = function()
+			local color = Plater.db.profile.aura_dispel_glow_color
+			return {color[1], color[2], color[3], color[4]}
+		end,
+		set = function (self, r, g, b, a)
+			local color = Plater.db.profile.aura_dispel_glow_color
+			color[1], color[2], color[3], color[4] = r, g, b, a
+			Plater.RefreshDBUpvalues()
+			Plater.RefreshAuras()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Dispel glow color",
+		desc = "Color of the dispel glow.",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
+	{
+		type = "toggle",
+		boxfirst = true,
+		get = function() return Plater.db.profile.aura_dispel_glow_color_by_type end,
+		set = function (self, fixedparam, value)
+			Plater.db.profile.aura_dispel_glow_color_by_type = value
+			Plater.RefreshDBUpvalues()
+			Plater.RefreshAuras()
+			Plater.UpdateAllPlates()
+		end,
+		name = "Dispel glow color by type",
+		desc = "Color the dispel glow by the dispel type of the aura (magic, curse, disease, poison, enrage, ...), using the aura border dispel type colors. Auras without a type use the dispel glow color. The pixel glow and the ants only get the enrage color, all other types use the dispel glow color.",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
+	{
+		type = "range",
+		get = function() return Plater.db.profile.aura_dispel_glow_size end,
+		set = function (self, fixedparam, value)
+			Plater.db.profile.aura_dispel_glow_size = value
+			Plater.RefreshDBUpvalues()
+			Plater.RefreshAuras()
+			Plater.UpdateAllPlates()
+		end,
+		min = 0.5,
+		max = 3,
+		step = 0.1,
+		usedecimals = true,
+		name = "Dispel glow size",
+		desc = "Size of the glow, the pulsing glow and the ants, and thickness of the border. Not used by the pixel glow.",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
+	{
+		type = "range",
+		get = function() return Plater.db.profile.aura_dispel_glow_pixel_lines end,
+		set = function (self, fixedparam, value)
+			Plater.db.profile.aura_dispel_glow_pixel_lines = value
+			Plater.RefreshDBUpvalues()
+			Plater.RefreshAuras()
+			Plater.UpdateAllPlates()
+		end,
+		min = 1,
+		max = 30,
+		step = 1,
+		name = "Pixel glow lines",
+		desc = "Number of lines of the pixel glow.",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
+	{
+		type = "range",
+		get = function() return Plater.db.profile.aura_dispel_glow_pixel_length end,
+		set = function (self, fixedparam, value)
+			Plater.db.profile.aura_dispel_glow_pixel_length = value
+			Plater.RefreshDBUpvalues()
+			Plater.RefreshAuras()
+			Plater.UpdateAllPlates()
+		end,
+		min = 1,
+		max = 40,
+		step = 1,
+		name = "Pixel glow length",
+		desc = "Length of the lines of the pixel glow. Lines are never longer than the height of the glow.",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
+	{
+		type = "range",
+		get = function() return Plater.db.profile.aura_dispel_glow_pixel_thickness end,
+		set = function (self, fixedparam, value)
+			Plater.db.profile.aura_dispel_glow_pixel_thickness = value
+			Plater.RefreshDBUpvalues()
+			Plater.RefreshAuras()
+			Plater.UpdateAllPlates()
+		end,
+		min = 1,
+		max = 10,
+		step = 1,
+		name = "Pixel glow thickness",
+		desc = "Thickness of the lines of the pixel glow.",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
+	{
+		type = "range",
+		get = function() return Plater.db.profile.aura_dispel_glow_pixel_speed end,
+		set = function (self, fixedparam, value)
+			Plater.db.profile.aura_dispel_glow_pixel_speed = value
+			Plater.RefreshDBUpvalues()
+			Plater.RefreshAuras()
+			Plater.UpdateAllPlates()
+		end,
+		min = 0.05,
+		max = 2,
+		step = 0.05,
+		usedecimals = true,
+		name = "Pixel glow speed",
+		desc = "Rounds per second the lines of the pixel glow go around the health bar.",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
+	{
+		type = "range",
+		get = function() return Plater.db.profile.aura_dispel_glow_pixel_offset end,
+		set = function (self, fixedparam, value)
+			Plater.db.profile.aura_dispel_glow_pixel_offset = value
+			Plater.RefreshDBUpvalues()
+			Plater.RefreshAuras()
+			Plater.UpdateAllPlates()
+		end,
+		min = -5,
+		max = 10,
+		step = 1,
+		name = "Pixel glow offset",
+		desc = "Position of the lines of the pixel glow and the ants. At 0 they are on the border of the health bar, negative values move them inwards.",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
 	{type = "blank"},
 	{type = "label", get = function() return "Swipe Animation:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 	{

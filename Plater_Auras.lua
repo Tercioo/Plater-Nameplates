@@ -53,6 +53,14 @@ local CONST_PANDEMIC_GLOW_SCALE = 1.4
 local CONST_DISPEL_GLOW_SCALE = 0.6
 --thickness of the dispel border style, in dispel glow units (scaled by CONST_DISPEL_GLOW_SCALE)
 local CONST_DISPEL_BORDER_SIZE = 3
+--the dispel ants style: amount of dots, seconds for one round and the size of a dot in health bar pixels at glow size 1
+local CONST_DISPEL_ANTS_AMOUNT = 16
+local CONST_DISPEL_ANTS_DURATION = 6
+local CONST_DISPEL_ANTS_SIZE = 3
+--lines of the dispel pixel glow, the max of its lines option
+local CONST_DISPEL_PIXEL_MAX_LINES = 30
+--size of the mask showing the dispel pixel glow, in dispel glow units. a square far bigger than any health bar
+local CONST_DISPEL_PIXEL_MASK_SIZE = 4000
 --aura container sets (one per nameplate, 3 containers each) for the 40 nameplates max plus a spare. built with their aura groups
 --behind the loading screen, each costs ~40ms and ~100 aura buttons
 local CONST_MAX_AURA_CONTAINER_SETS = 41
@@ -2402,14 +2410,78 @@ function platerInternal.Auras.CreateOldAuraContainers(unitFrame)
 	unitFrame.BuffFrame.ExtraIconFrame = unitFrame.ExtraIconFrame
 end
 
---shows the dispel glow style picked in the profile and colors it. the styles belong to an aura slot frame, which can be
+--places a part of a dispel pixel glow line on the edge of the glow frame where 'distance' lies, distances run clockwise from
+--the top left corner. the part ends at the next corner at the latest, returns its length
+local placeDispelPixelGlowPart = function(part, glowFrame, width, height, thickness, distance, length)
+	if (distance < width) then
+		length = min(length, width - distance)
+		part:SetPoint("topleft", glowFrame, "topleft", distance, 0)
+		part:SetSize(length, thickness)
+
+	elseif (distance < width + height) then
+		distance = distance - width
+		length = min(length, height - distance)
+		part:SetPoint("topleft", glowFrame, "topleft", width - thickness, -distance)
+		part:SetSize(thickness, length)
+
+	elseif (distance < 2 * width + height) then
+		distance = distance - width - height
+		length = min(length, width - distance)
+		part:SetPoint("topleft", glowFrame, "topleft", width - distance - length, thickness - height)
+		part:SetSize(length, thickness)
+
+	else
+		distance = distance - 2 * width - height
+		length = min(length, height - distance)
+		part:SetPoint("topleft", glowFrame, "topleft", 0, distance + length - height)
+		part:SetSize(thickness, length)
+	end
+
+	return length
+end
+
+--OnUpdate of the dispel pixel glow: moves its lines along the inner edge of the glow frame. every slot of the dispel glow
+--has its own set of lines, all sets are at the same place
+local moveDispelPixelGlowLines = function(glowFrame, elapsed)
+	--the size of the glow frame is secret (it hangs off the aura container and its lines have a mask on the slot frame),
+	--the health bar has the same scale and the glow frame is 'offset' bigger on every side. a negative offset can make it
+	--smaller than nothing on a thin health bar
+	local width, height = glowFrame.healthBar:GetSize()
+	width = max(1, width + 2 * glowFrame.offset)
+	height = max(1, height + 2 * glowFrame.offset)
+	local perimeter = 2 * (width + height)
+	local thickness = glowFrame.thickness
+	local lineAmount = glowFrame.lineAmount
+	local lineSets = glowFrame.lineSets
+	--no longer than the shorter side, so a line goes around one corner at most and has two parts
+	local length = min(glowFrame.length, width, height)
+	glowFrame.progress = (glowFrame.progress + elapsed * glowFrame.speed) % 1
+
+	for setIndex = 1, #lineSets do
+		local lineSet = lineSets[setIndex]
+		for i = 1, lineAmount do
+			local distance = ((glowFrame.progress + (i - 1) / lineAmount) % 1) * perimeter
+			local firstLength = placeDispelPixelGlowPart(lineSet.firstParts[i], glowFrame, width, height, thickness, distance, length)
+			local secondPart = lineSet.secondParts[i]
+			if (firstLength < length) then
+				placeDispelPixelGlowPart(secondPart, glowFrame, width, height, thickness, (distance + firstLength) % perimeter, length - firstLength)
+				secondPart:Show()
+			else
+				secondPart:Hide()
+			end
+		end
+	end
+end
+
+--shows the dispel glow style picked in the profile and colors it. the styles belong to aura slot frames, which can be
 --locked while auras are secret. there is no event for the end of that, so a locked glow is tried again every second
 local applyDispelGlowStyle
 applyDispelGlowStyle = function(container)
-	local slotFrame = container.GlowSlot
-	if (not slotFrame:CanBeAccessedInContext() or not container.Glow:CanBeAccessedInContext()) then
-		container.glowColorTimer = C_Timer.NewTimer(1, function() applyDispelGlowStyle(container) end)
-		return
+	for _, glowSlot in ipairs(container.GlowSlots) do
+		if (not glowSlot.slotFrame:CanBeAccessedInContext() or not glowSlot.glow:CanBeAccessedInContext()) then
+			container.glowColorTimer = C_Timer.NewTimer(1, function() applyDispelGlowStyle(container) end)
+			return
+		end
 	end
 
 	local profile = Plater.db.profile
@@ -2426,27 +2498,195 @@ applyDispelGlowStyle = function(container)
 		}
 	end
 
-	--a cleared texture keeps the state blizzard gave it, so every region is set again below
-	slotFrame:ClearDispelTypeTextures()
+	local glowType = profile.aura_dispel_glow_type
+	local glowSize = profile.aura_dispel_glow_size
+	local lineAmount = profile.aura_dispel_glow_pixel_lines
+	if (glowType == "ants") then
+		lineAmount = CONST_DISPEL_ANTS_AMOUNT
+	end
 
-	for styleName, regions in pairs(container.GlowStyles) do
-		local isStyleInUse = styleName == profile.aura_dispel_glow_type
-		for _, region in ipairs(regions) do
-			if (isStyleInUse and dispelTypeOptions) then
-				slotFrame:AddDispelTypeTexture(region, dispelTypeOptions)
-			else
-				region:SetShown(isStyleInUse)
-				region:SetVertexColor(glowColor[1], glowColor[2], glowColor[3], glowColor[4])
+	for _, glowSlot in ipairs(container.GlowSlots) do
+		local slotFrame = glowSlot.slotFrame
+		--a cleared texture keeps the state blizzard gave it, so every region is set again below
+		slotFrame:ClearDispelTypeTextures()
+
+		for styleName, regions in pairs(glowSlot.styles) do
+			local isStyleInUse = styleName == glowType
+			for _, region in ipairs(regions) do
+				if (isStyleInUse and dispelTypeOptions) then
+					slotFrame:AddDispelTypeTexture(region, dispelTypeOptions)
+				else
+					region:SetShown(isStyleInUse)
+					region:SetVertexColor(glowColor[1], glowColor[2], glowColor[3], glowColor[4])
+				end
 			end
 		end
+
+		--the lines are outside of the slot frame, so they can't be dispel type textures. colored by type, the lines of the
+		--enrage slot get the enrage color, the other slot covers several types and keeps the glow color
+		local lineColor = (glowSlot.isEnrage and dispelTypeOptions) and profile.aura_border_colors.enrage or glowColor
+		local lineSet = glowSlot.lineSet
+		--the OnUpdate shows the second parts of the lines in use when they go around a corner
+		for i = 1, CONST_DISPEL_PIXEL_MAX_LINES do
+			local firstPart = lineSet.firstParts[i]
+			local secondPart = lineSet.secondParts[i]
+			firstPart:SetShown(i <= lineAmount)
+			firstPart:SetVertexColor(lineColor[1], lineColor[2], lineColor[3], lineColor[4])
+			secondPart:SetVertexColor(lineColor[1], lineColor[2], lineColor[3], lineColor[4])
+			if (i > lineAmount) then
+				secondPart:Hide()
+			end
+		end
+	end
+
+	--the container scale sets the thickness of the glow and the border, a region scale would move their anchor offsets
+	--without the slice margins of the glow. the frame of the lines keeps the scale of the health bar
+	container:SetScale(CONST_DISPEL_GLOW_SCALE * glowSize)
+	local pixelGlowFrame = container.PixelGlowFrame
+	pixelGlowFrame:SetScale(1 / (CONST_DISPEL_GLOW_SCALE * glowSize))
+
+	--the pixel glow and the ants are both moving lines, the ants are square lines of the glow size
+	local isPixelGlow = glowType == "pixel" or glowType == "ants"
+	pixelGlowFrame:SetShown(isPixelGlow)
+	if (isPixelGlow) then
+		local speed = profile.aura_dispel_glow_pixel_speed
+		local length = profile.aura_dispel_glow_pixel_length
+		local thickness = profile.aura_dispel_glow_pixel_thickness
+		if (glowType == "ants") then
+			speed = 1 / CONST_DISPEL_ANTS_DURATION
+			thickness = max(1, floor(CONST_DISPEL_ANTS_SIZE * glowSize + 0.5))
+			length = thickness
+		end
+
+		--the lines run along the inner edge of the glow frame. at profile offset 0 they are outside of the health bar on its
+		--border, so the offset of the frame is the profile offset plus their thickness
+		local offset = profile.aura_dispel_glow_pixel_offset + thickness
+		pixelGlowFrame:SetPoint("topleft", container, "topleft", -offset, offset)
+		pixelGlowFrame:SetPoint("bottomright", container, "bottomright", offset, -offset)
+		pixelGlowFrame.offset = offset
+		pixelGlowFrame.lineAmount = lineAmount
+		pixelGlowFrame.speed = speed
+		pixelGlowFrame.length = length
+		pixelGlowFrame.thickness = thickness
 	end
 
 	container.configIndex = containerConfigCache.containerConfigIndex
 	container.glowColorTimer = nil
 end
 
---makes the nameplate glow while the unit has an aura the player can dispel, purge or soothe. the auras are secret, so an
---aura slot does the work: the engine shows the slot frame while such an aura is on the unit. 'unit' is nil when the nameplate is removed
+--adds an aura slot of the dispel glow with every glow style. 'candidateFilters' picks the auras of the slot, 'isEnrage' marks
+--the slot of enrage effects, whose lines get the enrage color. the engine shows the slot frame while such an aura is on the unit
+local addDispelGlowSlot = function(container, slotKey, candidateFilters, isEnrage)
+	local index = #container.GlowSlots + 1
+	local pixelGlowFrame = container.PixelGlowFrame
+
+	container:AddAuraSlot(slotKey, "HELPFUL|RAID_PLAYER_DISPELLABLE", {
+		candidateFilters = candidateFilters,
+		--the slot frame is locked while auras are secret, so everything it needs is done in here
+		initializeFrame = function(slotFrame)
+			--the slot frame is a button, it takes no mouse input so it does not take the clicks on the health bar
+			slotFrame:SetMouseMotionEnabled(false)
+			slotFrame:SetMouseClickEnabled(false)
+
+			--the slot frame runs no addon scripts and takes no other parent, so the moving lines of the pixel glow are outside of it.
+			--a mask standing on top of the slot frame shows them: hidden, the slot frame has no height and the mask is one mask size
+			--below the lines, shown it covers them. the slot frame stands on a foot frame far below the health bar.
+			--an anchor to a collapsed frame loses its offset, so all anchors to the slot frame are without one
+			local footFrame = CreateFrame("frame", container:GetName() .. "PixelGlowFoot" .. index, container.maskFrame, "DisableUntrustedLayoutScriptsTemplate")
+			footFrame:SetSize(1, 1)
+			footFrame:SetPoint("bottomleft", container, "bottomleft", -CONST_DISPEL_PIXEL_MASK_SIZE / 2, -CONST_DISPEL_PIXEL_MASK_SIZE * 1.5)
+			slotFrame:SetSize(1, CONST_DISPEL_PIXEL_MASK_SIZE)
+			slotFrame:SetCollapsesLayout(true)
+			slotFrame:SetPoint("bottomleft", footFrame, "bottomleft", 0, 0)
+
+			local pixelGlowMask = container.maskFrame:CreateMaskTexture()
+			--stretched this far, linear filtering fades the outer half pixel of the 8x8 texture to black over hundreds of pixels
+			pixelGlowMask:SetTexture([[Interface\BUTTONS\WHITE8X8]], "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE", "NEAREST")
+			pixelGlowMask:SetSize(CONST_DISPEL_PIXEL_MASK_SIZE, CONST_DISPEL_PIXEL_MASK_SIZE)
+			pixelGlowMask:SetPoint("bottomleft", slotFrame, "topleft", 0, 0)
+
+			--every style is built here since the slot frame is locked afterwards, applyDispelGlowStyle shows the one in use.
+			--animations are registered as aura shown animations: blizzard plays them when the slot shows and stops them when it hides
+
+			--the texture is black with the glow around a hollow bar, the bar starts 38 pixels from the sides and 24 from top and bottom.
+			--sliced, so the glow keeps its thickness on every health bar size
+			local createGlowTexture = function()
+				local glow = slotFrame:CreateTexture(nil, "overlay")
+				glow:SetTexture([[Interface\AddOns\Plater\images\nameplate_glow]])
+				glow:SetTextureSliceMargins(44, 30, 44, 30)
+				glow:SetBlendMode("ADD")
+				glow:SetPoint("topleft", container, "topleft", -38, 24)
+				glow:SetPoint("bottomright", container, "bottomright", 38, -24)
+				return glow
+			end
+
+			local glow = createGlowTexture()
+
+			local pulseGlow = createGlowTexture()
+			local pulseAnimation = pulseGlow:CreateAnimationGroup()
+			pulseAnimation:SetLooping("BOUNCE")
+			local alphaAnimation = pulseAnimation:CreateAnimation("Alpha")
+			alphaAnimation:SetFromAlpha(1)
+			alphaAnimation:SetToAlpha(0.2)
+			alphaAnimation:SetDuration(0.5)
+			slotFrame:AddAuraShownAnimation(pulseAnimation)
+
+			--four solid lines around the health bar
+			local borderTop = slotFrame:CreateTexture(nil, "overlay")
+			borderTop:SetPoint("topleft", container, "topleft", -CONST_DISPEL_BORDER_SIZE, CONST_DISPEL_BORDER_SIZE)
+			borderTop:SetPoint("bottomright", container, "topright", CONST_DISPEL_BORDER_SIZE, 0)
+			local borderBottom = slotFrame:CreateTexture(nil, "overlay")
+			borderBottom:SetPoint("topleft", container, "bottomleft", -CONST_DISPEL_BORDER_SIZE, 0)
+			borderBottom:SetPoint("bottomright", container, "bottomright", CONST_DISPEL_BORDER_SIZE, -CONST_DISPEL_BORDER_SIZE)
+			local borderLeft = slotFrame:CreateTexture(nil, "overlay")
+			borderLeft:SetPoint("topleft", container, "topleft", -CONST_DISPEL_BORDER_SIZE, 0)
+			borderLeft:SetPoint("bottomright", container, "bottomleft", 0, 0)
+			local borderRight = slotFrame:CreateTexture(nil, "overlay")
+			borderRight:SetPoint("topleft", container, "topright", 0, 0)
+			borderRight:SetPoint("bottomright", container, "bottomright", CONST_DISPEL_BORDER_SIZE, 0)
+
+			local borders = {borderTop, borderBottom, borderLeft, borderRight}
+			for _, border in ipairs(borders) do
+				border:SetColorTexture(1, 1, 1, 1)
+			end
+
+			--the lines of this slot for the pixel and the ants styles. every line has two parts, one for each side of the corner it
+			--goes around. the mask can only be added in here. the enrage lines are drawn above the others
+			local lineSet = {firstParts = {}, secondParts = {}}
+			local createLinePart = function()
+				local part = pixelGlowFrame:CreateTexture(nil, "overlay", nil, isEnrage and 1 or 0)
+				part:SetColorTexture(1, 1, 1, 1)
+				part:AddMaskTexture(pixelGlowMask)
+				return part
+			end
+
+			for i = 1, CONST_DISPEL_PIXEL_MAX_LINES do
+				lineSet.firstParts[i] = createLinePart()
+				lineSet.secondParts[i] = createLinePart()
+			end
+
+			pixelGlowFrame.lineSets[index] = lineSet
+
+			container.GlowSlots[index] = {
+				slotFrame = slotFrame,
+				glow = glow,
+				lineSet = lineSet,
+				isEnrage = isEnrage,
+				--keys are the values of the aura_dispel_glow_type profile key, except "pixel" and "ants"
+				styles = {
+					glow = {glow},
+					pulse = {pulseGlow},
+					border = borders,
+				},
+			}
+
+			applyDispelGlowStyle(container)
+		end,
+	})
+end
+
+--makes the nameplate glow while the unit has an aura the player can dispel, purge or soothe. the auras are secret, so aura
+--slots do the work, one for enrage effects and one for everything else. 'unit' is nil when the nameplate is removed
 local updateDispelGlow = function(unitFrame, unit)
 	local profile = Plater.db.profile
 	local isEnabled = unit and profile.aura_dispel_glow
@@ -2463,90 +2703,24 @@ local updateDispelGlow = function(unitFrame, unit)
 		container:SetEnabled(false)
 		--with the preview on, the container reads the edit mode source instead of the unit's auras
 		container:SetEditModePreviewEnabled(false)
+		container.GlowSlots = {}
 		unitFrame.DispelGlowFrame = container
 
-		container:AddAuraSlot("dispel", "HELPFUL|RAID_PLAYER_DISPELLABLE", {
-			--the slot frame is locked while auras are secret, so everything it needs is done in here
-			initializeFrame = function(slotFrame)
-				--the slot frame is a button, it stays tiny so it does not take the clicks on the health bar
-				slotFrame:SetMouseMotionEnabled(false)
-				slotFrame:SetSize(1, 1)
-				slotFrame:SetPoint("center")
-				container.GlowSlot = slotFrame
+		--owns the masks of the pixel glow and the foot frames of the slots, this template is what allows anchoring them to the slot frames
+		container.maskFrame = CreateFrame("frame", container:GetName() .. "PixelGlowMask", container, "DisableUntrustedLayoutScriptsTemplate")
+		container.maskFrame:SetAllPoints()
 
-				--every style is built here since the slot frame is locked afterwards, applyDispelGlowStyle shows the one in use.
-				--animations are registered as aura shown animations: blizzard plays them when the slot shows and stops them when it hides
+		--the frame of the pixel and the ants styles, its options are in health bar pixels instead of dispel glow units
+		local pixelGlowFrame = CreateFrame("frame", container:GetName() .. "PixelGlow", container)
+		pixelGlowFrame:Hide()
+		pixelGlowFrame.lineSets = {}
+		pixelGlowFrame.progress = 0
+		pixelGlowFrame.healthBar = unitFrame.healthBar
+		pixelGlowFrame:SetScript("OnUpdate", moveDispelPixelGlowLines)
+		container.PixelGlowFrame = pixelGlowFrame
 
-				--the texture is black with the glow around a hollow bar, the bar starts 38 pixels from the sides and 24 from top and bottom.
-				--sliced, so the glow keeps its thickness on every health bar size
-				local createGlowTexture = function()
-					local glow = slotFrame:CreateTexture(nil, "overlay")
-					glow:SetTexture([[Interface\AddOns\Plater\images\nameplate_glow]])
-					glow:SetTextureSliceMargins(44, 30, 44, 30)
-					glow:SetBlendMode("ADD")
-					glow:SetPoint("topleft", container, "topleft", -38, 24)
-					glow:SetPoint("bottomright", container, "bottomright", 38, -24)
-					return glow
-				end
-
-				local glow = createGlowTexture()
-				container.Glow = glow
-
-				local pulseGlow = createGlowTexture()
-				local pulseAnimation = pulseGlow:CreateAnimationGroup()
-				pulseAnimation:SetLooping("BOUNCE")
-				local alphaAnimation = pulseAnimation:CreateAnimation("Alpha")
-				alphaAnimation:SetFromAlpha(1)
-				alphaAnimation:SetToAlpha(0.2)
-				alphaAnimation:SetDuration(0.5)
-				slotFrame:AddAuraShownAnimation(pulseAnimation)
-
-				--15 frames of white dots running around a rectangle, 2 columns by 8 rows. the dots sit a few pixels inside each frame,
-				--the offsets put them just outside the health bar
-				local ants = slotFrame:CreateTexture(nil, "overlay")
-				ants:SetTexture([[Interface\AddOns\Plater\images\ants_rectangle_white]])
-				ants:SetBlendMode("ADD")
-				ants:SetPoint("topleft", container, "topleft", -7, 6)
-				ants:SetPoint("bottomright", container, "bottomright", 7, -6)
-				local antsAnimation = ants:CreateAnimationGroup()
-				antsAnimation:SetLooping("REPEAT")
-				local flipBookAnimation = antsAnimation:CreateAnimation("FlipBook")
-				flipBookAnimation:SetFlipBookRows(8)
-				flipBookAnimation:SetFlipBookColumns(2)
-				flipBookAnimation:SetFlipBookFrames(15)
-				flipBookAnimation:SetDuration(0.25)
-				slotFrame:AddAuraShownAnimation(antsAnimation)
-
-				--four solid lines around the health bar
-				local borderTop = slotFrame:CreateTexture(nil, "overlay")
-				borderTop:SetPoint("topleft", container, "topleft", -CONST_DISPEL_BORDER_SIZE, CONST_DISPEL_BORDER_SIZE)
-				borderTop:SetPoint("bottomright", container, "topright", CONST_DISPEL_BORDER_SIZE, 0)
-				local borderBottom = slotFrame:CreateTexture(nil, "overlay")
-				borderBottom:SetPoint("topleft", container, "bottomleft", -CONST_DISPEL_BORDER_SIZE, 0)
-				borderBottom:SetPoint("bottomright", container, "bottomright", CONST_DISPEL_BORDER_SIZE, -CONST_DISPEL_BORDER_SIZE)
-				local borderLeft = slotFrame:CreateTexture(nil, "overlay")
-				borderLeft:SetPoint("topleft", container, "topleft", -CONST_DISPEL_BORDER_SIZE, 0)
-				borderLeft:SetPoint("bottomright", container, "bottomleft", 0, 0)
-				local borderRight = slotFrame:CreateTexture(nil, "overlay")
-				borderRight:SetPoint("topleft", container, "topright", 0, 0)
-				borderRight:SetPoint("bottomright", container, "bottomright", CONST_DISPEL_BORDER_SIZE, 0)
-
-				local borders = {borderTop, borderBottom, borderLeft, borderRight}
-				for _, border in ipairs(borders) do
-					border:SetColorTexture(1, 1, 1, 1)
-				end
-
-				--keys are the values of the aura_dispel_glow_type profile key
-				container.GlowStyles = {
-					glow = {glow},
-					pulse = {pulseGlow},
-					ants = {ants},
-					border = borders,
-				}
-
-				applyDispelGlowStyle(container)
-			end,
-		})
+		addDispelGlowSlot(container, "dispel", {excludeDispelTypes = {Enrage = true}}, false)
+		addDispelGlowSlot(container, "enrage", {includeDispelTypes = {Enrage = true}}, true)
 	end
 
 	if (not isEnabled) then
@@ -2563,6 +2737,7 @@ local updateDispelGlow = function(unitFrame, unit)
 	--buffs are removed from enemies and debuffs from friends. without the split a debuff on an enemy matches as well
 	local filterString = UnitCanAssist("player", unit) and "HARMFUL|RAID_PLAYER_DISPELLABLE" or "HELPFUL|RAID_PLAYER_DISPELLABLE"
 	container:SetAuraSlotFilterString("dispel", filterString)
+	container:SetAuraSlotFilterString("enrage", filterString)
 	container:SetEnabled(true)
 	container:SetUnit(unit)
 	container:Show()
