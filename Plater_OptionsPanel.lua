@@ -6823,63 +6823,7 @@ local relevance_options = {
 
 		{type = "blank"},
 
-		{
-			type = "toggle",
-			boxfirst = true,
-			get = function() return Plater.db.profile.honor_blizzard_plate_alpha end,
-			set = function (self, fixedparam, value) 
-				Plater.db.profile.honor_blizzard_plate_alpha = value
-				Plater.UpdateAllPlates()
-			end,
-			name = "Use Blizzard's Nameplate Alpha",
-			desc = "Use the 'occluded' and other blizzard nameplate alpha values from blizzard settings.\n\nThis setting only works with 'Use custom strata channels' enabled.",
-			id = "transparency_blizzard_alpha",
-		},
-
-		{
-			type = "range",
-			get = function() return tonumber (GetCVar ("nameplateOccludedAlphaMult")) end,
-			set = function (self, fixedparam, value) 
-				if (not InCombatLockdown()) then
-					SetCVar ("nameplateOccludedAlphaMult", value)
-				else
-					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
-				end
-			end,
-			min = 0,
-			max = 1,
-			step = 0.1,
-			thumbscale = 1.7,
-			usedecimals = true,
-			name = "Occluded Alpha Multiplier" .. CVarIcon,
-			desc = "Blizzard alpha multiplyer for 'occluded' plates (when they are not in line of sight)." .. CVarDesc,
-			nocombat = true,
-			--disableif = function() return not Plater.db.profile.honor_blizzard_plate_alpha end,
-		},
-		{
-			type = "range",
-			get = function() return tonumber (GetCVar ("namePlateNotSelectedAlpha")) end,
-			set = function (self, fixedparam, value) 
-				if (not InCombatLockdown()) then
-					SetCVar ("namePlateNotSelectedAlpha", value)
-				else
-					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
-				end
-			end,
-			min = -1,
-			max = 1,
-			step = 0.1,
-			thumbscale = 1.7,
-			usedecimals = true,
-			name = "Non-target Alpha Multiplier" .. CVarIcon,
-			desc = "Blizzard alpha multiplyer for not targeted plates. -1 disables this feature." .. CVarDesc,
-			nocombat = true,
-			--disableif = function() return not Plater.db.profile.honor_blizzard_plate_alpha end,
-		},		
-
-		{type = "blank"},
-
-		{type = "label", get = function() return "General:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+		--{type = "label", get = function() return "General:" end, text_template = DF:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
 		{
 			type = "toggle",
 			boxfirst = true,
@@ -6932,6 +6876,60 @@ local relevance_options = {
 			usedecimals = true,
 			disableif = function() return not Plater.db.profile.not_affecting_combat_enabled end,
 		},
+
+		{
+			type = "toggle",
+			boxfirst = true,
+			get = function() return Plater.db.profile.honor_blizzard_plate_alpha end,
+			set = function (self, fixedparam, value) 
+				Plater.db.profile.honor_blizzard_plate_alpha = value
+				Plater.UpdateAllPlates()
+			end,
+			name = "Use Blizzard's Nameplate Alpha",
+			desc = "Use the 'occluded' and other blizzard nameplate alpha values from blizzard settings.\n\nThis setting only works with 'Use custom strata channels' enabled.",
+			id = "transparency_blizzard_alpha",
+		},
+
+		{
+			type = "range",
+			get = function() return tonumber (GetCVar ("nameplateOccludedAlphaMult")) end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("nameplateOccludedAlphaMult", value)
+				else
+					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+				end
+			end,
+			min = 0,
+			max = 1,
+			step = 0.1,
+			thumbscale = 1.7,
+			usedecimals = true,
+			name = "Occluded Alpha Multiplier" .. CVarIcon,
+			desc = "Blizzard alpha multiplyer for 'occluded' plates (when they are not in line of sight)." .. CVarDesc,
+			nocombat = true,
+			--disableif = function() return not Plater.db.profile.honor_blizzard_plate_alpha end,
+		},
+		{
+			type = "range",
+			get = function() return tonumber (GetCVar ("namePlateNotSelectedAlpha")) end,
+			set = function (self, fixedparam, value) 
+				if (not InCombatLockdown()) then
+					SetCVar ("namePlateNotSelectedAlpha", value)
+				else
+					Plater:Msg (L["OPTIONS_ERROR_CVARMODIFY"])
+				end
+			end,
+			min = -1,
+			max = 1,
+			step = 0.1,
+			thumbscale = 1.7,
+			usedecimals = true,
+			name = "Non-target Alpha Multiplier" .. CVarIcon,
+			desc = "Blizzard alpha multiplyer for not targeted plates. -1 disables this feature." .. CVarDesc,
+			nocombat = true,
+			--disableif = function() return not Plater.db.profile.honor_blizzard_plate_alpha end,
+		},	
 
 		{type = "blank"},
 		
