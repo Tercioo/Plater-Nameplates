@@ -1,0 +1,14 @@
+## Interface: 120100, 120105, 16001
+## Title: LibOrbitGlow-1.0
+## Notes: Animated frame-glow engine + media-pack glow registry (proc / pandemic highlights).
+## Author: MoONSHO7
+## Version: 1.11
+## X-Category: Libraries
+## X-License: MIT
+## X-Website: https://github.com/MoONSHO7/Orbit-Libs
+## X-Curse-Project-ID: 1586462
+
+# LibStub is bundled (packager external) so the standalone install is self-sufficient.
+# Embedders load LibOrbitGlow-1.0.xml directly and provide their own LibStub instead.
+LibStub\LibStub.lua
+LibOrbitGlow-1.0.xml

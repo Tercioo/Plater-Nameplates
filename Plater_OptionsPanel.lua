@@ -3006,6 +3006,37 @@ local debuff_options = {
 		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
 	},
 	{
+		type = "select",
+		get = function() return Plater.db.profile.aura_pandemic_glow_type end,
+		values = function()
+			local onSelectGlowType = function(_, _, value)
+				Plater.db.profile.aura_pandemic_glow_type = value
+				Plater.RefreshDBUpvalues()
+				Plater.RefreshAuras()
+				Plater.UpdateAllPlates()
+			end
+
+			local glowTypes = {
+				{label = "Glow", value = "glow", onclick = onSelectGlowType},
+			}
+
+			--the icon glows of LibOrbitGlow, including the ones of installed glow packs. plater builds them from the registry, which
+			--works for a flipbook atlas or a glow with only a loop phase, glows of an engine are built by code of the library
+			local LibOrbitGlow = LibStub:GetLibrary("LibOrbitGlow-1.0")
+			for _, glowName in ipairs(LibOrbitGlow:GetGlowList()) do
+				local glowInfo = LibOrbitGlow:GetGlowInfo(glowName)
+				if (glowInfo.atlas or glowInfo.loopOnly) then
+					glowTypes[#glowTypes + 1] = {label = glowName, value = glowName, onclick = onSelectGlowType}
+				end
+			end
+
+			return glowTypes
+		end,
+		name = "Pandemic glow type",
+		desc = "How the pandemic glow looks. Pulse only applies to Glow.\n\nInstall the addon Orbit: Media for additional glows.",
+		hidden = not IS_WOW_PROJECT_MIDNIGHT_API_WITH_AURA_CONTAINERS,
+	},
+	{
 		type = "toggle",
 		boxfirst = true,
 		get = function() return Plater.db.profile.aura_pandemic_glow_pulse end,
@@ -3188,13 +3219,21 @@ local debuff_options = {
 				Plater.UpdateAllPlates()
 			end
 
-			return {
+			local glowTypes = {
 				{label = "Glow", value = "glow", onclick = onSelectGlowType},
 				{label = "Pulsing Glow", value = "pulse", onclick = onSelectGlowType},
 				{label = "Ants", value = "ants", onclick = onSelectGlowType},
 				{label = "Border", value = "border", onclick = onSelectGlowType},
 				{label = "Pixel Glow", value = "pixel", onclick = onSelectGlowType},
 			}
+
+			--the status bar glows of LibOrbitGlow, including the ones of installed glow packs
+			local LibOrbitGlow = LibStub:GetLibrary("LibOrbitGlow-1.0")
+			for _, glowName in ipairs(LibOrbitGlow:GetStatusBarGlowList()) do
+				glowTypes[#glowTypes + 1] = {label = LibOrbitGlow:GetStatusBarGlowInfo(glowName).label, value = glowName, onclick = onSelectGlowType}
+			end
+
+			return glowTypes
 		end,
 		name = "Dispel glow type",
 		desc = "How the dispel glow looks.",

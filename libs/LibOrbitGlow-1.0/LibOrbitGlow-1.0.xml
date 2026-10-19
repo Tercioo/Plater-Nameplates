@@ -1,0 +1,4 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+    <Script file="LibOrbitGlow-1.0.lua"/>
+    <Script file="StatusBarGlows.lua"/>
+</Ui>

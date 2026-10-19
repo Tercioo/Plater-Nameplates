@@ -22,6 +22,9 @@ externals:
   libs/LibDataBroker-1.1: https://github.com/tekkub/libdatabroker-1-1
   libs/LibDBIcon-1.0: https://repos.curseforge.com/wow/libdbicon-1-0/trunk/LibDBIcon-1.0
   libs/LibDeflate: https://github.com/safeteeWow/LibDeflate
+  libs/LibOrbitGlow-1.0:
+    url: https://github.com/MoONSHO7/Orbit-Libs
+    path: LibOrbitGlow/LibOrbitGlow-1.0
   libs/LibRangeCheck-3.0: https://github.com/WeakAuras/LibRangeCheck-3.0
   libs/LibStub: https://repos.curseforge.com/wow/libstub/trunk
   libs/LibSharedMedia-3.0: https://repos.curseforge.com/wow/libsharedmedia-3-0/trunk/LibSharedMedia-3.0
@@ -32,6 +35,8 @@ move-folders:
 
 ignore:
   - luaserver.lua
+  - libs/LibOrbitGlow-1.0/Textures/*-40-*
+  - libs/LibOrbitGlow-1.0/Textures/*-25-*
 
 manual-changelog:
   filename: CHANGELOG.md

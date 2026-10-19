@@ -3,6 +3,7 @@ local Plater = _G.Plater
 local DF = _G.DetailsFramework
 local AnimateTexCoords = _G.AnimateTexCoords or TextureUtil and TextureUtil.AnimateTexCoords or function() end
 local LCG = LibStub:GetLibrary("LibCustomGlow-1.0") -- https://github.com/Stanzilla/LibCustomGlow
+local LibOrbitGlow = LibStub:GetLibrary("LibOrbitGlow-1.0") -- https://github.com/MoONSHO7/LibOrbitGlow
 
 local IS_WOW_PROJECT_MAINLINE = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local IS_WOW_PROJECT_NOT_MAINLINE = WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
@@ -246,6 +247,14 @@ end
 			color = "white", -- all plater color types accepted, from lib: {r,g,b,a}, color of lines and opacity, from 0 to 1. Defaul value is {0.95, 0.95, 0.32, 1}
 			frequency = 0.125, -- frequency, set to negative to inverse direction of rotation. Default value is 0.125;
 		}
+
+		-- any glow name registered in LibOrbitGlow (LibOrbitGlow:GetGlowList(), glow packs add more), e.g. "blizzardants"
+		options = {
+			glowType = "blizzardants",
+			color = "white", -- all plater color types accepted
+			loop = true, -- set to true to skip the start animation
+			key = "", -- key of glow, allows for multiple glows on one frame;
+		}
 	--]]
 	function Plater.StartGlow(frame, color, options, key)
 		if not frame then return end
@@ -290,6 +299,14 @@ end
 			LCG.AutoCastGlow_Start(frame.__PlaterGlowFrame, options.color, options.N, options.frequency, options.scale, options.xOffset, options.yOffset, options.key or "", options.framelevel)
 		elseif options.glowType == "proc" then
 			LCG.ProcGlow_Start(frame.__PlaterGlowFrame, options)
+		elseif LibOrbitGlow:IsGlowRegistered(options.glowType) then
+			local glowFrame = frame.__PlaterGlowFrame
+			local glowKey = options.key or ""
+			options.key = glowKey
+			--the glow name per key, StopGlow without a glowType has to know which ones to remove
+			glowFrame.orbitGlows = glowFrame.orbitGlows or {}
+			glowFrame.orbitGlows[glowKey] = options.glowType
+			LibOrbitGlow.Apply(glowFrame, options.glowType, options)
 		end
 	end
 
@@ -390,12 +407,22 @@ end
 				LCG.AutoCastGlow_Stop(frame.__PlaterGlowFrame, key or "")
 			elseif glowType == "proc" then
 				LCG.ProcGlow_Stop(frame.__PlaterGlowFrame, key or "")
+			elseif LibOrbitGlow:IsGlowRegistered(glowType) then
+				LibOrbitGlow.Remove(frame.__PlaterGlowFrame, glowType, key or "")
+				if frame.__PlaterGlowFrame.orbitGlows then
+					frame.__PlaterGlowFrame.orbitGlows[key or ""] = nil
+				end
 			end
 		else
 			LCG.ButtonGlow_Stop(frame.__PlaterGlowFrame, key or "")
 			LCG.PixelGlow_Stop(frame.__PlaterGlowFrame, key or "")
 			LCG.AutoCastGlow_Stop(frame.__PlaterGlowFrame, key or "")
 			LCG.ProcGlow_Stop(frame.__PlaterGlowFrame, key or "")
+			local orbitGlows = frame.__PlaterGlowFrame.orbitGlows
+			if orbitGlows and orbitGlows[key or ""] then
+				LibOrbitGlow.Remove(frame.__PlaterGlowFrame, orbitGlows[key or ""], key or "")
+				orbitGlows[key or ""] = nil
+			end
 		end
 	end
 

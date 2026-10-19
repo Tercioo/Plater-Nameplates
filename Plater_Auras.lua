@@ -18,6 +18,7 @@ local min = _G.min
 local max = _G.max
 local abs = _G.abs
 local G_CreateFrame = _G.CreateFrame
+local LibOrbitGlow = LibStub:GetLibrary("LibOrbitGlow-1.0")
 
 
 local CreateFrame = function (frameType , name, parent, template, id)
@@ -49,6 +50,12 @@ local BackdropTemplateMixin = _G.BackdropTemplateMixin
 local BUFF_MAX_DISPLAY_PLATER = nil -- don't limit.
 --size of the pandemic glow relative to the aura icon
 local CONST_PANDEMIC_GLOW_SCALE = 1.4
+--size of a LibOrbitGlow pandemic glow without a scale of its own, the default of the library
+local CONST_PANDEMIC_ORBIT_SCALE = 1.4
+--flipbook layout of a LibOrbitGlow glow pack texture without one of its own (rows, columns, frames), the default of the library
+local CONST_PANDEMIC_ORBIT_ROWS = 6
+local CONST_PANDEMIC_ORBIT_COLUMNS = 5
+local CONST_PANDEMIC_ORBIT_FRAMES = 30
 --the dispel glow texture is drawn in texture pixels, this brings it down to nameplate size
 local CONST_DISPEL_GLOW_SCALE = 0.6
 --thickness of the dispel border style, in dispel glow units (scaled by CONST_DISPEL_GLOW_SCALE)
@@ -1696,6 +1703,9 @@ local applyPandemicGlow = function(auraButton, auraWidth, auraHeight)
 	local glowWidth = auraWidth * CONST_PANDEMIC_GLOW_SCALE
 	local glowHeight = auraHeight * CONST_PANDEMIC_GLOW_SCALE
 	local pandemicGlow = auraButton.PandemicGlow
+	--"glow" is plater's own glow, any other value is the name of a LibOrbitGlow glow
+	local isOrbitGlow = profile.aura_pandemic_glow_type ~= "glow"
+	local isGlowEnabled = isEnabled and not isOrbitGlow
 
 	if (not pandemicGlow) then
 		if (not isEnabled) then
@@ -1727,18 +1737,18 @@ local applyPandemicGlow = function(auraButton, auraWidth, auraHeight)
 
 	--registering the same region or animation twice is an assert error. with nothing registered the button
 	--stops computing the pandemic window
-	if (isEnabled and not auraButton.hasPandemicGlow) then
+	if (isGlowEnabled and not auraButton.hasPandemicGlow) then
 		auraButton:AddPandemicRegion(pandemicGlow)
 		auraButton.hasPandemicGlow = true
 
-	elseif (not isEnabled and auraButton.hasPandemicGlow) then
+	elseif (not isGlowEnabled and auraButton.hasPandemicGlow) then
 		auraButton:RemovePandemicRegion(pandemicGlow)
 		pandemicGlow:Hide()
 		auraButton.hasPandemicGlow = false
 	end
 
 	--blizzard only stops the animations it knows about, so a pulse removed while playing is stopped here
-	local isPulseEnabled = isEnabled and profile.aura_pandemic_glow_pulse
+	local isPulseEnabled = isGlowEnabled and profile.aura_pandemic_glow_pulse
 	if (isPulseEnabled and not auraButton.hasPandemicPulse) then
 		auraButton:AddPandemicActiveAnimation(auraButton.PandemicPulse)
 		auraButton.hasPandemicPulse = true
@@ -1747,6 +1757,99 @@ local applyPandemicGlow = function(auraButton, auraWidth, auraHeight)
 		auraButton:RemovePandemicActiveAnimation(auraButton.PandemicPulse)
 		auraButton.PandemicPulse:Stop()
 		auraButton.hasPandemicPulse = false
+	end
+
+	--a LibOrbitGlow glow, built from its registry as flipbooks of plater's own: blizzard shows them and plays their animations inside
+	--the window only. the glows of the library keep playing on every button, also hidden (7000 looping flipbooks cost 130 -> 100 fps).
+	--a glow is a flipbook atlas (one layer) or glow pack textures for the loop phase, a tinted body and a near white core when layered
+	local orbitGlowName = profile.aura_pandemic_glow_type
+	--a glow pack that is no longer installed leaves a name without info
+	local orbitGlowInfo = isEnabled and isOrbitGlow and LibOrbitGlow:GetGlowInfo(orbitGlowName)
+	local pandemicLayers = auraButton.PandemicLayers
+
+	if (orbitGlowInfo and not pandemicLayers) then
+		pandemicLayers = {}
+		for i = 1, 2 do
+			local layer = auraButton:CreateTexture(nil, "overlay", nil, 5 + i)
+			layer:SetPoint("center")
+			layer:Hide()
+
+			--a registered animation group cannot get more animations, so it is complete before registering
+			local loopAnimation = layer:CreateAnimationGroup()
+			loopAnimation:SetLooping("REPEAT")
+			layer.flipBookAnimation = loopAnimation:CreateAnimation("FlipBook")
+			layer.flipBookAnimation:SetDuration(1)
+			layer.loopAnimation = loopAnimation
+			pandemicLayers[i] = layer
+		end
+		auraButton.PandemicLayers = pandemicLayers
+	end
+
+	if (pandemicLayers) then
+		local layerPaths = orbitGlowInfo and not orbitGlowInfo.atlas and LibOrbitGlow:GetResolvedPaths(orbitGlowName)
+		local layerCount = 0
+		if (orbitGlowInfo) then
+			layerCount = orbitGlowInfo.atlas and 1 or #layerPaths
+		end
+
+		for index, layer in ipairs(pandemicLayers) do
+			local isLayerEnabled = index <= layerCount
+			if (isLayerEnabled) then
+				local glowScale = orbitGlowInfo.scale or CONST_PANDEMIC_ORBIT_SCALE
+				local rows = orbitGlowInfo.rows or CONST_PANDEMIC_ORBIT_ROWS
+				local columns = orbitGlowInfo.cols or CONST_PANDEMIC_ORBIT_COLUMNS
+				local frames = orbitGlowInfo.frames or CONST_PANDEMIC_ORBIT_FRAMES
+				local red, green, blue, alpha = glowColor[1], glowColor[2], glowColor[3], glowColor[4]
+
+				if (orbitGlowInfo.atlas) then
+					layer:SetAtlas(orbitGlowInfo.atlas)
+					layer:SetDesaturated(orbitGlowInfo.desaturated ~= false)
+					layer:SetBlendMode(orbitGlowInfo.blendMode or "ADD")
+					--the layout of a flipbook atlas comes with the atlas, a missing atlas has no info
+					local atlasInfo = C_Texture.GetAtlasInfo(orbitGlowInfo.atlas)
+					if (atlasInfo) then
+						rows = orbitGlowInfo.rows or atlasInfo.flipBookRows
+						columns = orbitGlowInfo.cols or atlasInfo.flipBookColumns
+						frames = orbitGlowInfo.frames or atlasInfo.flipBookFrames
+					end
+
+				elseif (orbitGlowInfo.layered and index == 2) then
+					layer:SetTexture(layerPaths[index])
+					layer:SetDesaturated(false)
+					layer:SetBlendMode(orbitGlowInfo.coreBlend or "ADD")
+					red, green, blue, alpha = 0.6 + 0.4 * red, 0.6 + 0.4 * green, 0.6 + 0.4 * blue, 1
+
+				elseif (orbitGlowInfo.layered) then
+					layer:SetTexture(layerPaths[index])
+					layer:SetDesaturated(false)
+					layer:SetBlendMode(orbitGlowInfo.bodyBlend or "BLEND")
+
+				else
+					layer:SetTexture(layerPaths[index])
+					layer:SetDesaturated(false)
+					layer:SetBlendMode(orbitGlowInfo.blendMode or "ADD")
+				end
+
+				layer:SetSize(auraWidth * glowScale, auraHeight * glowScale)
+				layer:SetVertexColor(red, green, blue, alpha)
+				layer.flipBookAnimation:SetFlipBookRows(rows)
+				layer.flipBookAnimation:SetFlipBookColumns(columns)
+				layer.flipBookAnimation:SetFlipBookFrames(frames)
+			end
+
+			if (isLayerEnabled and not layer.isPandemicRegion) then
+				auraButton:AddPandemicRegion(layer)
+				auraButton:AddPandemicActiveAnimation(layer.loopAnimation)
+				layer.isPandemicRegion = true
+
+			elseif (not isLayerEnabled and layer.isPandemicRegion) then
+				auraButton:RemovePandemicRegion(layer)
+				auraButton:RemovePandemicActiveAnimation(layer.loopAnimation)
+				layer.loopAnimation:Stop()
+				layer:Hide()
+				layer.isPandemicRegion = false
+			end
+		end
 	end
 
 	--one flash when the window opens. the texture does not keep the alpha 0 it is given once the animation is
@@ -2473,6 +2576,33 @@ local moveDispelPixelGlowLines = function(glowFrame, elapsed)
 	end
 end
 
+--shows the LibOrbitGlow status bar glow picked as dispel glow style, or hides it. the library takes the size of the health bar
+--when it shows a glow, so this runs again when the health bar changes size. the glows are on a frame of the container and the
+--slot masks show them, so this works while the slot frames are locked
+local updateDispelGlowOutlines = function(container)
+	local profile = Plater.db.profile
+	local glowType = profile.aura_dispel_glow_type
+	local isOutline = LibOrbitGlow:IsStatusBarGlowRegistered(glowType)
+	local outlineFrame = container.OutlineFrame
+	--the outline frame has the scale of the health bar, so the library gets the size in its units
+	local barWidth, barHeight = container.PixelGlowFrame.healthBar:GetSize()
+	outlineFrame:SetScale(1 / (CONST_DISPEL_GLOW_SCALE * profile.aura_dispel_glow_size))
+
+	for _, glowSlot in ipairs(container.GlowSlots) do
+		if (isOutline) then
+			--like the pixel glow lines, colored by type only the enrage slot gets its own color
+			local isEnrageColor = glowSlot.isEnrage and profile.aura_dispel_glow_color_by_type
+			local color = isEnrageColor and profile.aura_border_colors.enrage or profile.aura_dispel_glow_color
+			--returns nil and keeps the glow as it is while the health bar has no size yet
+			LibOrbitGlow.StatusBar:Show(outlineFrame, {glow = glowType, key = glowSlot.slotKey, color = color, width = barWidth, height = barHeight})
+		else
+			LibOrbitGlow.StatusBar:Hide(outlineFrame, glowSlot.slotKey)
+		end
+	end
+
+	container.isOutline = isOutline
+end
+
 --shows the dispel glow style picked in the profile and colors it. the styles belong to aura slot frames, which can be
 --locked while auras are secret. there is no event for the end of that, so a locked glow is tried again every second
 local applyDispelGlowStyle
@@ -2569,6 +2699,8 @@ applyDispelGlowStyle = function(container)
 		pixelGlowFrame.length = length
 		pixelGlowFrame.thickness = thickness
 	end
+
+	updateDispelGlowOutlines(container)
 
 	container.configIndex = containerConfigCache.containerConfigIndex
 	container.glowColorTimer = nil
@@ -2667,12 +2799,20 @@ local addDispelGlowSlot = function(container, slotKey, candidateFilters, isEnrag
 
 			pixelGlowFrame.lineSets[index] = lineSet
 
+			--the LibOrbitGlow status bar glow of this slot, shown by the mask like the lines. the library creates its textures on the
+			--first Show and the mask can only be added in here. its default glow has both layers, so both exist from now on
+			local outline = LibOrbitGlow.StatusBar:Show(container.OutlineFrame, {key = slotKey, width = 1, height = 1})
+			outline.body:AddMaskTexture(pixelGlowMask)
+			outline.core:AddMaskTexture(pixelGlowMask)
+			LibOrbitGlow.StatusBar:Hide(container.OutlineFrame, slotKey)
+
 			container.GlowSlots[index] = {
 				slotFrame = slotFrame,
 				glow = glow,
 				lineSet = lineSet,
+				slotKey = slotKey,
 				isEnrage = isEnrage,
-				--keys are the values of the aura_dispel_glow_type profile key, except "pixel" and "ants"
+				--keys are the values of the aura_dispel_glow_type profile key, except "pixel", "ants" and the LibOrbitGlow styles
 				styles = {
 					glow = {glow},
 					pulse = {pulseGlow},
@@ -2719,8 +2859,21 @@ local updateDispelGlow = function(unitFrame, unit)
 		pixelGlowFrame:SetScript("OnUpdate", moveDispelPixelGlowLines)
 		container.PixelGlowFrame = pixelGlowFrame
 
+		--the frame of the LibOrbitGlow status bar glows, scaled to health bar units by updateDispelGlowOutlines
+		local outlineFrame = CreateFrame("frame", container:GetName() .. "Outline", container)
+		outlineFrame:SetPoint("topleft", container, "topleft", 0, 0)
+		outlineFrame:SetPoint("bottomright", container, "bottomright", 0, 0)
+		container.OutlineFrame = outlineFrame
+
 		addDispelGlowSlot(container, "dispel", {excludeDispelTypes = {Enrage = true}}, false)
 		addDispelGlowSlot(container, "enrage", {includeDispelTypes = {Enrage = true}}, true)
+
+		--the outline styles take the health bar size when shown, the health bar changes size with the actor type
+		unitFrame.healthBar:HookScript("OnSizeChanged", function()
+			if (container.isOutline) then
+				updateDispelGlowOutlines(container)
+			end
+		end)
 	end
 
 	if (not isEnabled) then
