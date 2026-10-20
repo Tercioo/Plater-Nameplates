@@ -4742,6 +4742,7 @@ function Plater.OnInit() --private --~oninit ~init
 		if not mediaType or type(mediaType) ~= 'string' then return end
 		if mediaType:lower() == 'font' then
 			Plater.UpdateBlizzardNameplateFonts(key, true)
+			platerInternal.Auras.OnFontRegistered(key)
 		end
 	end)
 	

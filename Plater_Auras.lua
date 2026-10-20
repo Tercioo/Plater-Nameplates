@@ -906,6 +906,16 @@ function Plater.Auras.SetIconConfigOutdated()
 	containerConfigCache.auraFrameOptionIndex = containerConfigCache.auraFrameOptionIndex + 1
 	Plater.EndLogPerformanceCore("Plater-Core", "Update", "SetIconConfigOutdated")
 end
+--marks the aura button skins outdated when a font used by the aura texts is registered with LibSharedMedia.
+--the containers pre-built in OnInit can be skinned before a media addon registers the font, DF:SetFontFace then keeps the template font
+function platerInternal.Auras.OnFontRegistered(fontName) --private
+	local profile = Plater.db.profile
+	local isAuraFont = fontName == profile.aura_stack_font or fontName == profile.aura_timer_text_font
+	local isExtraIconFont = fontName == profile.extra_icon_stack_font or fontName == profile.extra_icon_timer_font or fontName == profile.extra_icon_caster_font
+	if (isAuraFont or isExtraIconFont) then
+		Plater.Auras.SetIconConfigOutdated()
+	end
+end
 function Plater.Auras.SetContainerFiltersOutdated()
 	Plater.StartLogPerformanceCore("Plater-Core", "Update", "SetContainerFiltersOutdated")
 	containerConfigCache.candidateFilterIndex = containerConfigCache.candidateFilterIndex + 1
